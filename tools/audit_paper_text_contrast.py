@@ -26,7 +26,10 @@ PAPER_FILL_RE = re.compile(r"WuxiaUi\.(?:paper|paper2|panelFill|slotFill)\b")
 ALLOW_RE = re.compile(r"paper-text-audit:\s*allow\b")
 
 SURFACE_CALLS = (
-    "WuxiaPaperPanel",
+    # NOTE: WuxiaPaperPanel is intentionally NOT listed — despite its name it
+    # renders a DARK aged-parchment surface (paperUnderlay #241C13 + paper_bg
+    # texture @24%, effective ~#4D3E29), so WuxiaColors.text* is CORRECT on it.
+    # Only genuinely-light paper surfaces below.
     "PaperPanel",
     "PaperDialog",
     "PaperDialog.show",
