@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/wuxia_tokens.dart';
+import 'panel_surface.dart';
 
 /// 分区小标（UI kit · demo `.wx .shead`）：墨笔标题 + 底部枯笔分隔线。
 class SectionHeader extends StatelessWidget {
@@ -17,6 +18,7 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = PanelSurface.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Column(
@@ -25,8 +27,8 @@ class SectionHeader extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: WuxiaUi.ink,
+            style: TextStyle(
+              color: surface.primary,
               fontSize: 14,
               fontWeight: FontWeight.bold,
               letterSpacing: 2,
@@ -42,7 +44,9 @@ class SectionHeader extends StatelessWidget {
                 height: 8,
                 child: Opacity(
                   opacity: dividerOpacity,
-                  child: const CustomPaint(painter: _SectionDividerPainter()),
+                  child: CustomPaint(
+                  painter: _SectionDividerPainter(surface.secondary),
+                ),
                 ),
               ),
             ),
@@ -54,16 +58,19 @@ class SectionHeader extends StatelessWidget {
 }
 
 class _SectionDividerPainter extends CustomPainter {
-  const _SectionDividerPainter();
+  const _SectionDividerPainter(this.inkColor);
+
+  /// 枯笔分隔线墨色（随面板底色翻转，取 [PanelSurface.secondary]）。
+  final Color inkColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     final main = Paint()
-      ..color = WuxiaUi.ink.withValues(alpha: 0.42)
+      ..color = inkColor.withValues(alpha: 0.42)
       ..strokeWidth = 1.4
       ..strokeCap = StrokeCap.round;
     final dry = Paint()
-      ..color = WuxiaUi.ink.withValues(alpha: 0.18)
+      ..color = inkColor.withValues(alpha: 0.18)
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
     final accent = Paint()
@@ -91,5 +98,6 @@ class _SectionDividerPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _SectionDividerPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _SectionDividerPainter oldDelegate) =>
+      oldDelegate.inkColor != inkColor;
 }
