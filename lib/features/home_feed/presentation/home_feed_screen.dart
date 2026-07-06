@@ -218,6 +218,7 @@ class _FeedItem extends StatelessWidget {
                   child: Text(
                     UiStrings.homeFeedRelativeTime(event.occurredAt, now),
                     style: const TextStyle(
+                      // paper-text-audit: allow 深底 _FeedItem 卡(WuxiaColors.panel@74%);此处 WuxiaUi.paper 仅是 badge 边框，非纸面
                       color: WuxiaColors.textMuted,
                       fontSize: 12,
                     ),
@@ -229,6 +230,7 @@ class _FeedItem extends StatelessWidget {
             Text(
               event.summary,
               style: const TextStyle(
+                // paper-text-audit: allow 深底 _FeedItem 卡(WuxiaColors.panel@74%),非纸面，浅灰字正确
                 color: WuxiaColors.textSecondary,
                 fontSize: 14,
                 height: 1.62,

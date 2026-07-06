@@ -125,4 +125,28 @@ final widget = Container(
       contains('paper text contrast findings: 0'),
     );
   });
+
+  // 真门禁：对真实 lib/ 断言零 finding（此前本套件只测脚本 fixture，
+  // 从不扫真代码，深底文字色误用于纸面可长期潜伏——见 dispel/home_feed 曾漏网）。
+  test('real lib/ has zero paper text contrast findings', () async {
+    final result = await Process.run('python3', [
+      script,
+      '--root',
+      '.',
+    ], workingDirectory: Directory.current.path);
+
+    expect(
+      result.exitCode,
+      0,
+      reason:
+          'paper-text-audit found dark-UI text tokens (WuxiaColors.text*) on '
+          'paper surfaces; use WuxiaUi.ink/muted, or add '
+          '`// paper-text-audit: allow <reason>` for a genuine dark overlay:\n'
+          '${result.stdout}',
+    );
+    expect(
+      result.stdout.toString(),
+      contains('paper text contrast findings: 0'),
+    );
+  });
 }

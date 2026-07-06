@@ -26,6 +26,7 @@ PAPER_FILL_RE = re.compile(r"WuxiaUi\.(?:paper|paper2|panelFill|slotFill)\b")
 ALLOW_RE = re.compile(r"paper-text-audit:\s*allow\b")
 
 SURFACE_CALLS = (
+    "WuxiaPaperPanel",
     "PaperPanel",
     "PaperDialog",
     "PaperDialog.show",

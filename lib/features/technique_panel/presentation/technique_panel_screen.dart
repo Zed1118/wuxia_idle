@@ -78,7 +78,7 @@ class TechniquePanelScreen extends ConsumerWidget {
                 return const Center(
                   child: Text(
                     UiStrings.characterNotFound,
-                    style: TextStyle(color: WuxiaColors.textMuted),
+                    style: TextStyle(color: WuxiaUi.muted),
                   ),
                 );
               }
@@ -112,7 +112,7 @@ class _Body extends StatelessWidget {
       return const Center(
         child: Text(
           UiStrings.techniquePanelEmpty,
-          style: TextStyle(color: WuxiaColors.textMuted),
+          style: TextStyle(color: WuxiaUi.muted),
         ),
       );
     }

@@ -189,7 +189,7 @@ class _ResourceCard extends StatelessWidget {
                     Text(
                       UiStrings.resourceOverviewQuantity(item.quantity),
                       style: const TextStyle(
-                        color: WuxiaColors.resultHighlight,
+                        color: WuxiaUi.ink,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -327,13 +327,13 @@ class _MetaLine extends StatelessWidget {
           TextSpan(
             text: label,
             style: const TextStyle(
-              color: WuxiaColors.textMuted,
+              color: WuxiaUi.muted,
               fontWeight: FontWeight.w600,
             ),
           ),
           TextSpan(
             text: value,
-            style: const TextStyle(color: WuxiaColors.textMuted),
+            style: const TextStyle(color: WuxiaUi.muted),
           ),
         ],
       ),
