@@ -9,6 +9,10 @@ SUITE="smoke"
 OUTPUT_DIR="build/visual_acceptance"
 RESOLUTIONS="1280x720,1440x900,1920x1080,2560x1080"
 ROUTE=""
+# --route 缺省时接受 VISUAL_ROUTE 环境变量兜底(2026-07-05 诊断批 deferred 项:
+# plan/handoff 文档曾误写 `VISUAL_ROUTE=<id> bash ...` 传法,加兼容防复发;
+# flag 显式给出时以 flag 为准)。
+ENV_ROUTE_FALLBACK="${VISUAL_ROUTE:-}"
 DRY_RUN=0
 HITBOX=0
 WAIT_SECONDS=12
@@ -33,6 +37,10 @@ Options:
   -h, --help                 Show this help.
 
 Notes:
+  - VISUAL_ROUTE env var is accepted as a fallback for --route (the flag
+    wins if both are given). The value still becomes a compile-time
+    dart-define per route; exporting VISUAL_ROUTE alone without this
+    script has no effect on a prebuilt app.
   - Uses only local Flutter/macOS tools and screencapture.
   - VISUAL_WINDOW_W/H locks the native macOS window before Flutter starts.
   - Captures the app window by CGWindowID; falls back to region capture.
@@ -85,6 +93,11 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+if [[ -z "$ROUTE" && -n "$ENV_ROUTE_FALLBACK" ]]; then
+  ROUTE="$ENV_ROUTE_FALLBACK"
+  echo "note: --route not given, using VISUAL_ROUTE env fallback: $ROUTE" >&2
+fi
 
 route_ids() {
   if [[ -n "$ROUTE" ]]; then
