@@ -90,7 +90,7 @@ class _RumorItemRow extends StatelessWidget {
       name = DropNameResolver.equipmentName(entry.defId);
       final tier = DropNameResolver.equipmentTier(entry.defId);
       if (tier != null) {
-        color = tierColorForEquipment(tier);
+        color = paperTierColorForEquipment(tier);
         if (currentRealm != null) {
           aboveRealm = DropNameResolver.isAboveRealm(tier, currentRealm!);
         }

@@ -6,6 +6,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/panel_surface.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../application/resource_overview_providers.dart';
@@ -55,9 +56,13 @@ class _ResourceOverviewBody extends StatelessWidget {
           child: SizedBox(
             width: contentWidth,
             height: constraints.maxHeight,
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              children: [
+            // 屏背景为深色，裸用于深底的 SectionHeader 读 PanelSurface 默认(light→ink)
+            // 会深墨压深底近隐形；此处显式供应 dark surface，分区标题取浅色可读。
+            // 内层 LightPaperPanel 卡自 provide light，卡内文字不受影响。
+            child: PanelSurface.dark(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                children: [
                 const Text(
                   UiStrings.resourceOverviewIntro,
                   style: TextStyle(
@@ -105,6 +110,7 @@ class _ResourceOverviewBody extends StatelessWidget {
                     ),
                 ],
               ],
+              ),
             ),
           ),
         );
