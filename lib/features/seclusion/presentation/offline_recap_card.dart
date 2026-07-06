@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
-import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../application/offline_recap_detail.dart';
 import '../application/offline_recap_service.dart';
@@ -12,7 +12,7 @@ import '../application/offline_recap_service.dart';
 ///
 /// 纯渲染 [OfflineRecap] 数据 + 触发 [onGoCollect] / [onDismiss] 回调;
 /// 导航（去收功跳 ActiveRetreatScreen）由调用方在回调里处理,卡本身无副作用,
-/// 故可纯 widget test。水墨样式复用 [PaperPanel] + [PlaqueButton]。
+/// 故可纯 widget test。水墨样式复用 [LightPaperPanel] + [PlaqueButton]。
 class OfflineRecapCard extends StatelessWidget {
   const OfflineRecapCard({
     super.key,
@@ -28,7 +28,7 @@ class OfflineRecapCard extends StatelessWidget {
   /// M2 范围 B 被动离线告知卡（无 active 闭关时弹）。
   ///
   /// 与范围 A 不同：产出已在 settle 入库,此卡仅告知,无「前去收功」按钮
-  /// （守反留存红线 §5.1）。复用 PaperPanel + PlaqueButton 水墨体例。
+  /// （守反留存红线 §5.1）。复用 LightPaperPanel + PlaqueButton 水墨体例。
   const OfflineRecapCard.passive({
     super.key,
     required int mojianshi,
@@ -77,7 +77,7 @@ class OfflineRecapCard extends StatelessWidget {
           );
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 420),
-      child: PaperPanel(
+      child: LightPaperPanel(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -162,7 +162,7 @@ class OfflineRecapCard extends StatelessWidget {
     ));
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 420),
-      child: PaperPanel(
+      child: LightPaperPanel(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,

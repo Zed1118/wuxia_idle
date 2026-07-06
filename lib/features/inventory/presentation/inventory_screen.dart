@@ -30,7 +30,7 @@ import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/item_slot.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
-import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_tab.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
@@ -772,7 +772,7 @@ class _SlotGroupSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

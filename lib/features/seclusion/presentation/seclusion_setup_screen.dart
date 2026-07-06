@@ -120,7 +120,7 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
             children: [
               _MapHero(def: def, compact: compact),
               SizedBox(height: compact ? 10 : 16),
-              PaperPanel(
+              LightPaperPanel(
                 padding: EdgeInsets.fromLTRB(
                   16,
                   compact ? 10 : 14,
@@ -130,7 +130,7 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
                 child: _OutputPreview(def: def, scale: scale),
               ),
               SizedBox(height: compact ? 10 : 18),
-              PaperPanel(
+              LightPaperPanel(
                 padding: EdgeInsets.fromLTRB(
                   16,
                   compact ? 10 : 14,

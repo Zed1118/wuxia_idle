@@ -539,7 +539,7 @@ class _InfoCard extends ConsumerWidget {
     final canDirectEquip = equipped || activeCharacters.isNotEmpty;
     return SizedBox(
       width: double.infinity,
-      child: PaperPanel(
+      child: LightPaperPanel(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1073,7 +1073,7 @@ class _SourceSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sourceLabels = sources.map(_sourceLabel).toList();
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1127,7 +1127,7 @@ class _LoreSectionState extends State<_LoreSection> {
             !content.isPlaceholder &&
             content.defaultLore.isNotEmpty;
         if (!hasPreset && continued.isEmpty) {
-          return const PaperPanel(
+          return const LightPaperPanel(
             child: Center(
               child: Text(
                 UiStrings.loreEmptyPlaceholder,
@@ -1136,7 +1136,7 @@ class _LoreSectionState extends State<_LoreSection> {
             ),
           );
         }
-        return PaperPanel(
+        return LightPaperPanel(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

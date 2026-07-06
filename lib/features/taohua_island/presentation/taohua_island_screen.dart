@@ -572,7 +572,7 @@ class _IslandOverviewPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -836,7 +836,7 @@ class _ProjectStelePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const PaperPanel(
+    return const LightPaperPanel(
       padding: EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -868,7 +868,7 @@ class _PrepAdvicePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -987,7 +987,7 @@ class _BuildingCard extends StatelessWidget {
       material: matHave,
     );
 
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

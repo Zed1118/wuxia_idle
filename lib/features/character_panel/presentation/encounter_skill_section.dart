@@ -394,6 +394,6 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PaperPanel(padding: const EdgeInsets.all(14), child: child);
+    return LightPaperPanel(padding: const EdgeInsets.all(14), child: child);
   }
 }

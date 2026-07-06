@@ -63,7 +63,7 @@ class RetreatResultScreen extends StatelessWidget {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 860),
-              child: PaperPanel(
+              child: LightPaperPanel(
                 padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
                 paperOpacity: 0.32,
                 child: Column(

@@ -31,7 +31,7 @@ class WuxiaColors {
   static const Color avatarFill = Color(0xFF1F1F1F);
   // ⚠️ 红线(2026-06-29):以下三个文字色是【深色 UI 专用浅灰】(white / #CCCCCC / #8A93A0),
   // 只在深底(battle / inkPanel / background 等)上可读。
-  // 【禁用于浅宣纸底】(WuxiaUi.paper / panelFill / slotFill / WuxiaPaperPanel / PaperPanel /
+  // 【禁用于浅宣纸底】(WuxiaUi.paper / panelFill / slotFill / DarkParchmentPanel / LightPaperPanel /
   // PaperDialog / CeremonyImagePanel 浅 veil)——浅底浅字会糊成一片(已多次发生)。
   // 浅宣纸底的文字一律用墨色:正文/主标题 → WuxiaUi.ink,次要/副描述 → WuxiaUi.muted。
   static const Color textPrimary = Colors.white;
@@ -73,7 +73,7 @@ class WuxiaColors {
   static const Color inkPanelTop = Color(0xFF232B33);
   static const Color inkPanelBottom = Color(0xFF161B21);
   static const Color inkPanelEdge = Color(0xFF4A4038);
-  // 宣纸面板暖兜底(WuxiaPaperPanel):内容不满屏时空白区呈暖宣纸调,非冷黑。
+  // 宣纸面板暖兜底(DarkParchmentPanel):内容不满屏时空白区呈暖宣纸调,非冷黑。
   static const Color paperUnderlay = Color(0xFF241C13);
 
   // 伤害飘字色（T15）

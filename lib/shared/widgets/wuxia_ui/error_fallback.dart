@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../strings.dart';
 import '../../theme/colors.dart';
 import '../../theme/wuxia_tokens.dart';
-import 'paper_panel.dart';
+import 'light_paper_panel.dart';
 import 'plaque_button.dart';
 
 /// 统一错误兜底 UI（P0-4 2026-06-29 审查修复 · 水墨风格）。
@@ -14,7 +14,7 @@ import 'plaque_button.dart';
 /// - [onRetry] 非空时显示「重试」[PlaqueButton]（通常 `ref.invalidate(provider)`）;
 /// - [error] 仅 `debugPrint` 记录,**不上屏**（避免暴露 `StateError:...` 等内部细节）。
 ///
-/// 用 [WuxiaColors] / [PaperPanel] / [PlaqueButton],不硬编码颜色。空态请保持
+/// 用 [WuxiaColors] / [LightPaperPanel] / [PlaqueButton],不硬编码颜色。空态请保持
 /// 各自的 `_EmptyHint`,本组件只负责「真出错」分支。
 class ErrorFallback extends StatelessWidget {
   const ErrorFallback({super.key, this.message, this.onRetry, this.error});
@@ -36,7 +36,7 @@ class ErrorFallback extends StatelessWidget {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 320),
-        child: PaperPanel(
+        child: LightPaperPanel(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

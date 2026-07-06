@@ -18,7 +18,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
-import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
@@ -41,7 +41,7 @@ class BulkDisposalDialog extends ConsumerWidget {
       elevation: 0,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
-        child: PaperPanel(
+        child: LightPaperPanel(
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,

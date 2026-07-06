@@ -15,7 +15,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
-import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
@@ -30,7 +30,7 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 ///
 /// 布局：
 /// - 顶部货币栏：银两余额（[silverBalanceProvider]）。
-/// - 货架：[shopItemListProvider] 按 category 分组，[PaperPanel] 包裹。
+/// - 货架：[shopItemListProvider] 按 category 分组，[LightPaperPanel] 包裹。
 /// - 每件商品卡：名（[EnumL10n.itemType]）+ 标价 + 「购买」木牌按钮。
 /// - 点购买 → [PaperDialog] 确认弹窗 → [ShopService.purchase] → 刷新 provider。
 /// - 银两不足：按钮禁用（[PlaqueButton.disabled=true]），图标无变化不弹窗。
@@ -245,7 +245,7 @@ class _SilverBalanceBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
@@ -424,7 +424,7 @@ class _ShelfFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Wrap(
         spacing: 8,
@@ -510,7 +510,7 @@ class _ShelfGroupPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

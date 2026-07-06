@@ -25,7 +25,7 @@ import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/equipment_glyph.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_image.dart';
-import '../../../shared/widgets/wuxia_paper_panel.dart';
+import '../../../shared/widgets/dark_parchment_panel.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/widgets/equipment_art_image.dart';
 import '../../help/domain/help_topic.dart';
@@ -1625,7 +1625,7 @@ class _MainTechniqueTile extends ConsumerWidget {
               cfg: n.skillProficiency,
             );
         return IntrinsicHeight(
-          child: WuxiaPaperPanel(
+          child: DarkParchmentPanel(
             padding: const EdgeInsets.all(14),
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 120),
@@ -2061,7 +2061,7 @@ class _PanelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PaperPanel(padding: const EdgeInsets.all(14), child: child);
+    return LightPaperPanel(padding: const EdgeInsets.all(14), child: child);
   }
 }
 

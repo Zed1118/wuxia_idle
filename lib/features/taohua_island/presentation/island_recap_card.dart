@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
-import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../application/island_settle_service.dart';
 
@@ -37,7 +37,7 @@ class IslandRecapCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 460),
-      child: PaperPanel(
+      child: LightPaperPanel(
         padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
         child: Column(
           mainAxisSize: MainAxisSize.min,

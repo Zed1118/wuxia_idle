@@ -9,7 +9,7 @@ import '../../../features/cultivation/application/skill_proficiency_formatter.da
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
-import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/stage_progress_row.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
@@ -68,7 +68,7 @@ class SkillCodexDetailScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
-          child: PaperPanel(
+          child: LightPaperPanel(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -126,7 +126,7 @@ class SkillCodexDetailScreen extends StatelessWidget {
                     ratio: proficiencySummary.ratio,
                     currentEffect: proficiencySummary.currentEffect,
                     nextEffect: proficiencySummary.nextEffect,
-                    // 浅宣纸底(PaperPanel):下一阶用绛红(默认金叠浅纸糊)。
+                    // 浅宣纸底(LightPaperPanel):下一阶用绛红(默认金叠浅纸糊)。
                     nextEffectColor: WuxiaUi.jiang,
                     progressText: proficiencySummary.progressText,
                   ),

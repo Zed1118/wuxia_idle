@@ -243,7 +243,7 @@ class _TowerSpineOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

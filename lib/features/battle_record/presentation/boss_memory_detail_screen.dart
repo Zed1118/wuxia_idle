@@ -7,7 +7,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_image.dart';
-import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 
@@ -66,7 +66,7 @@ class BossMemoryDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // ── 首胜战绩区 ───────────────────────────────────────────────
-            PaperPanel(
+            LightPaperPanel(
               padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -126,7 +126,7 @@ class BossMemoryDetailScreen extends StatelessWidget {
 
             // ── 此战之最区（topContributorName 有值才渲染）────────────────
             if (memory.topContributorName != null) ...[
-              PaperPanel(
+              LightPaperPanel(
                 padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -167,7 +167,7 @@ class BossMemoryDetailScreen extends StatelessWidget {
 
             // ── 所获区（treasureName 有值才渲染）─────────────────────────
             if (memory.treasureName != null) ...[
-              PaperPanel(
+              LightPaperPanel(
                 padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -204,7 +204,7 @@ class BossMemoryDetailScreen extends StatelessWidget {
 
             // ── 出战区（rosterNames 非空才渲染）──────────────────────────
             if (memory.rosterNames.isNotEmpty) ...[
-              PaperPanel(
+              LightPaperPanel(
                 padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,

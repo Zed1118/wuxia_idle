@@ -936,7 +936,7 @@ class _VictoryFirstClearPreview extends StatelessWidget {
                   children: [
                     const _VictorySealMark(),
                     const SizedBox(height: 12),
-                    PaperPanel(
+                    LightPaperPanel(
                       padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
                       paperOpacity: 0.22,
                       child: Column(

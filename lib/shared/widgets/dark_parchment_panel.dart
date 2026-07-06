@@ -13,8 +13,8 @@ import 'wuxia_image.dart';
 ///
 /// 用法：包面板 body；内容通常自带 padding，故本组件 [padding] 默认 zero。
 /// 体例承自 `equipment_detail_screen` 的 paper_bg 铺法 + `WuxiaInkButton` 墨边。
-class WuxiaPaperPanel extends StatelessWidget {
-  const WuxiaPaperPanel({
+class DarkParchmentPanel extends StatelessWidget {
+  const DarkParchmentPanel({
     super.key,
     required this.child,
     this.padding = EdgeInsets.zero,

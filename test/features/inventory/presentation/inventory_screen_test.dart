@@ -16,7 +16,7 @@ import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/features/shop/presentation/shop_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/item_slot.dart';
-import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_panel.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/light_paper_panel.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_tab.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/section_header.dart';
 
@@ -156,7 +156,7 @@ void main() {
     // 分组头容器语言换 UI kit SectionHeader（callsite 试点）
     expect(find.byType(SectionHeader), findsNWidgets(3));
     expect(
-      find.byType(PaperPanel),
+      find.byType(LightPaperPanel),
       findsNWidgets(3),
       reason: '装备仓库应按武器/护甲/饰品分成三个宣纸小柜，避免整页空纸面',
     );

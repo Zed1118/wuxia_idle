@@ -20,7 +20,7 @@ import '../domain/technique_equip_suggestion.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_image.dart';
-import '../../../shared/widgets/wuxia_paper_panel.dart';
+import '../../../shared/widgets/dark_parchment_panel.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import 'dispel_dialog.dart';
 
@@ -65,7 +65,7 @@ class TechniquePanelScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: WuxiaPaperPanel(
+      body: DarkParchmentPanel(
         child: SafeArea(
           child: chAsync.when(
             loading: () => const Center(child: InkLoadingIndicator()),

@@ -111,7 +111,7 @@ class _EquipSlotDialogState extends ConsumerState<EquipSlotDialog> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final async = ref.watch(allEquipmentsProvider);
-    // 干净冷色深底面板(对齐 EnhanceDialog/App 主题)。原 WuxiaPaperPanel 暖宣纸
+    // 干净冷色深底面板(对齐 EnhanceDialog/App 主题)。原 DarkParchmentPanel 暖宣纸
     // 纹理与冷色 UI 不协调、文字压纹理显模糊(用户实玩反馈),宣纸留给典故/卷轴阅读屏。
     return Dialog(
       backgroundColor: WuxiaColors.panel,

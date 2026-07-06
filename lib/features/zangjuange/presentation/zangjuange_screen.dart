@@ -5,7 +5,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ink_button.dart';
-import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../baike/presentation/baike_screen.dart';
@@ -47,7 +47,7 @@ class ZangjuangeScreen extends ConsumerWidget {
               children: [
                 _CluePanel(clues: clues),
                 const SizedBox(height: 16),
-                PaperPanel(
+                LightPaperPanel(
                   padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -105,7 +105,7 @@ class _CluePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

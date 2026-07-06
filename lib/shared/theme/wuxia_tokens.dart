@@ -27,7 +27,7 @@ class WuxiaUi {
 
   // —— 面（宣纸表面填充：纸色半透铺在墨边内）——
   // 2026-06-29:原 55%/70% 叠深色 scaffold 渲染成偏暗茶褐(~#978D78),墨色次要文字(muted)
-  // 对比不足看不清(商店等 PaperPanel 页)。提到 86%/91% 让面板真正呈浅宣纸色(贴合「宣纸浅色面板」
+  // 对比不足看不清(商店等 LightPaperPanel 页)。提到 86%/91% 让面板真正呈浅宣纸色(贴合「宣纸浅色面板」
   // 设计意图),muted 恢复可读;纸纹理仍由上层 paperOpacity 叠出。
   static const Color panelFill = Color(0xDBE9DCC0); // paper @ 86%
   static const Color slotFill = Color(0xE8E9DCC0); // paper @ 91%

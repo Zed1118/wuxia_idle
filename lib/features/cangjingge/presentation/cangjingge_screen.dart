@@ -258,7 +258,7 @@ class _LoadoutSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const kinds = _SlotKind.values;
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -550,7 +550,7 @@ class _LibrarySection extends ConsumerWidget {
       ?character.equippedEncounterSkillId,
     };
 
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -837,7 +837,7 @@ class _FragmentSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final entriesAsync = ref.watch(_fragmentEntriesProvider);
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

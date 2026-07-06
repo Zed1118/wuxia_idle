@@ -5,7 +5,7 @@ import '../../../core/domain/item_source.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
-import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../application/resource_overview_providers.dart';
@@ -145,7 +145,7 @@ class _ResourceCard extends StatelessWidget {
     final showSourceDetails =
         item.category != ResourceOverviewCategory.scroll &&
         item.sources.isNotEmpty;
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.all(12),
       paperOpacity: 0.12,
       child: Column(

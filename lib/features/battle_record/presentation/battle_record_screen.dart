@@ -12,7 +12,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
-import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import 'boss_memory_detail_screen.dart';
@@ -124,7 +124,7 @@ class _BossGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
