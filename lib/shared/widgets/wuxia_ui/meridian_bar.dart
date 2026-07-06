@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/wuxia_tokens.dart';
+import 'panel_surface.dart';
 
 /// 内息流轨进度条（UI kit · demo `.mbar`）：替 Material LinearProgressIndicator。
 ///
@@ -19,6 +20,7 @@ class MeridianBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = PanelSurface.of(context);
     final f = ratio.clamp(0.0, 1.0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,7 +31,7 @@ class MeridianBar extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 3),
             child: Text(
               label!,
-              style: const TextStyle(color: WuxiaUi.ink, fontSize: 12),
+              style: TextStyle(color: surface.primary, fontSize: 12),
             ),
           ),
         Container(

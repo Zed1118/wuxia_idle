@@ -3,7 +3,6 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/cultivation/application/skill_proficiency_formatter.dart';
 import 'package:wuxia_idle/shared/strings.dart';
-import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/stage_progress_row.dart';
 
 /// 招式熟练度展示行（藏经阁主屏 · P1b Task7）。
@@ -53,8 +52,6 @@ class SkillProficiencyRow extends StatelessWidget {
       ratio: summary.ratio,
       currentEffect: summary.currentEffect,
       nextEffect: summary.nextEffect,
-      // 藏经阁武学库在浅宣纸底(LightPaperPanel):下一阶用绛红(默认金叠浅纸糊)。
-      nextEffectColor: WuxiaUi.jiang,
       progressText: summary.progressText,
       tag: equipped ? UiStrings.cangjingEquippedTag : null,
       tagHighlighted: true,

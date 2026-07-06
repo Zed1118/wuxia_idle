@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../strings.dart';
 import '../../theme/colors.dart';
-import '../../theme/wuxia_tokens.dart';
 import 'light_paper_panel.dart';
+import 'panel_surface.dart';
 import 'plaque_button.dart';
 
 /// 统一错误兜底 UI（P0-4 2026-06-29 审查修复 · 水墨风格）。
@@ -37,23 +37,31 @@ class ErrorFallback extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 320),
         child: LightPaperPanel(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                message ?? UiStrings.errorFallbackMessage,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: WuxiaUi.ink2,
-                  fontSize: 14,
-                  height: 1.4,
-                ),
-              ),
-              if (onRetry != null) ...[
-                const SizedBox(height: 14),
-                PlaqueButton(label: UiStrings.errorRetry, onTap: onRetry),
-              ],
-            ],
+          // 文字色读自身 LightPaperPanel 提供的 surface（恒浅底），用内层
+          // Builder 拿到 PanelSurface.light 的 context——本组件总渲染在自带的
+          // 浅宣纸面板上，即便被放进深色面板也须保持深墨字，不随外层翻白。
+          child: Builder(
+            builder: (context) {
+              final surface = PanelSurface.of(context);
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    message ?? UiStrings.errorFallbackMessage,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: surface.primary,
+                      fontSize: 14,
+                      height: 1.4,
+                    ),
+                  ),
+                  if (onRetry != null) ...[
+                    const SizedBox(height: 14),
+                    PlaqueButton(label: UiStrings.errorRetry, onTap: onRetry),
+                  ],
+                ],
+              );
+            },
           ),
         ),
       ),

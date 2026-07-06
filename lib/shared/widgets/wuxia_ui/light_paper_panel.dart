@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/wuxia_tokens.dart';
 import '../wuxia_image.dart';
+import 'panel_surface.dart';
 
 /// 宣纸浅色面板（UI kit · demo `.wx .panel`）。
 ///
@@ -28,30 +29,32 @@ class LightPaperPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: fillColor ?? WuxiaUi.panelFill,
-        borderRadius: BorderRadius.circular(WuxiaUi.radius),
-        border: showBorder
-            ? Border.all(color: WuxiaUi.ink, width: WuxiaUi.borderWidth)
-            : null,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(WuxiaUi.radius),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Opacity(
-                opacity: paperOpacity,
-                child: WuxiaImage(
-                  WuxiaUi.paperBg,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+    return PanelSurface.light(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: fillColor ?? WuxiaUi.panelFill,
+          borderRadius: BorderRadius.circular(WuxiaUi.radius),
+          border: showBorder
+              ? Border.all(color: WuxiaUi.ink, width: WuxiaUi.borderWidth)
+              : null,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(WuxiaUi.radius),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Opacity(
+                  opacity: paperOpacity,
+                  child: WuxiaImage(
+                    WuxiaUi.paperBg,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  ),
                 ),
               ),
-            ),
-            Padding(padding: padding, child: child),
-          ],
+              Padding(padding: padding, child: child),
+            ],
+          ),
         ),
       ),
     );

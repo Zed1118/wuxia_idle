@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/wuxia_tokens.dart';
+import 'panel_surface.dart';
 import 'plaque_button.dart';
 
 enum InkEmptyStateVariant { empty, locked, unavailable }
@@ -30,6 +31,7 @@ class InkEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = _accentColor();
+    final surface = PanelSurface.of(context);
     final content = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -65,8 +67,8 @@ class InkEmptyState extends StatelessWidget {
                 body,
                 maxLines: compact ? 2 : 4,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: WuxiaUi.ink2,
+                style: TextStyle(
+                  color: surface.secondary,
                   fontSize: 12,
                   height: 1.35,
                 ),

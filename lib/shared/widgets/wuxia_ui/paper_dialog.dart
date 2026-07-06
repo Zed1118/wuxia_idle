@@ -5,6 +5,7 @@ import '../../audio/audio_assets.dart';
 import '../../theme/wuxia_tokens.dart';
 import '../wuxia_image.dart';
 import 'light_paper_panel.dart';
+import 'panel_surface.dart';
 
 /// 卷轴/册页弹窗（UI kit · demo `.report`）：替 Material AlertDialog。
 ///
@@ -78,50 +79,58 @@ class PaperDialog extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             paperOpacity: 0.08,
             fillColor: WuxiaUi.paper,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
+            // 标题/正文坐在自身 LightPaperPanel 恒浅宣纸底上，用内层 Builder
+            // 读自身 surface（PanelSurface.light），恒深墨、不随外层面板翻转。
+            child: Builder(
+              builder: (context) {
+                final surface = PanelSurface.of(context);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          color: WuxiaUi.ink,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 4,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              color: surface.primary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 4,
+                            ),
+                          ),
                         ),
-                      ),
+                        if (showSeal)
+                          SizedBox(
+                            width: 28,
+                            height: 28,
+                            child: WuxiaImage(
+                              WuxiaUi.sealRed,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, _, _) =>
+                                  const SizedBox.shrink(),
+                            ),
+                          ),
+                      ],
                     ),
-                    if (showSeal)
-                      SizedBox(
-                        width: 28,
-                        height: 28,
-                        child: WuxiaImage(
-                          WuxiaUi.sealRed,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                        ),
+                    const SizedBox(height: 12),
+                    DefaultTextStyle.merge(
+                      style: TextStyle(color: surface.primary, fontSize: 13),
+                      child: body,
+                    ),
+                    if (actions.isNotEmpty) ...[
+                      const SizedBox(height: 18),
+                      Wrap(
+                        alignment: WrapAlignment.end,
+                        spacing: 10,
+                        runSpacing: 8,
+                        children: actions,
                       ),
+                    ],
                   ],
-                ),
-                const SizedBox(height: 12),
-                DefaultTextStyle.merge(
-                  style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
-                  child: body,
-                ),
-                if (actions.isNotEmpty) ...[
-                  const SizedBox(height: 18),
-                  Wrap(
-                    alignment: WrapAlignment.end,
-                    spacing: 10,
-                    runSpacing: 8,
-                    children: actions,
-                  ),
-                ],
-              ],
+                );
+              },
             ),
           ),
         ),

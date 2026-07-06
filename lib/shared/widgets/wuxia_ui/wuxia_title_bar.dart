@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../strings.dart';
 import '../../theme/wuxia_tokens.dart';
 import '../wuxia_image.dart';
+import 'panel_surface.dart';
 
 /// 宣纸顶栏（UI kit · demo `.titlebar`）：替 Material AppBar。
 ///
@@ -51,65 +52,77 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         border: Border(bottom: BorderSide(color: WuxiaUi.ink, width: 2)),
       ),
-      child: Row(
-        children: [
-          if (onBack != null)
-            InkWell(
-              onTap: onBack,
-              child: const Padding(
-                padding: EdgeInsets.only(right: 12),
-                child: Icon(
-                  Icons.subdirectory_arrow_left,
-                  color: WuxiaUi.jiang,
-                  size: 22,
-                ),
-              ),
-            ),
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: WuxiaUi.ink,
-                fontSize: 19,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 6,
-              ).merge(titleStyle),
-            ),
-          ),
-          if (trailing != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 4),
-              child: trailing,
-            ),
-          if (showHome)
-            Tooltip(
-              message: UiStrings.titleBarHome,
-              child: InkWell(
-                onTap: onHome ??
-                    () => Navigator.of(context).popUntil((r) => r.isFirst),
-                child: const Padding(
-                  padding: EdgeInsets.only(left: 4, right: 8),
-                  child: Icon(
-                    Icons.home_outlined,
-                    color: WuxiaUi.jiang,
-                    size: 22,
+      // 顶栏自带固定浅色纸渐变底（恒浅底），故 provide 自身 PanelSurface.light，
+      // 标题读自身 surface → 恒深墨 ink，即便被放进深色面板也不随外层翻白
+      // （同 error_fallback 模式）。用内层 Builder 拿到本 surface 的 context。
+      child: PanelSurface.light(
+        child: Builder(
+          builder: (context) {
+            final surface = PanelSurface.of(context);
+            return Row(
+              children: [
+                if (onBack != null)
+                  InkWell(
+                    onTap: onBack,
+                    child: const Padding(
+                      padding: EdgeInsets.only(right: 12),
+                      child: Icon(
+                        Icons.subdirectory_arrow_left,
+                        color: WuxiaUi.jiang,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: surface.primary,
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 6,
+                    ).merge(titleStyle),
                   ),
                 ),
-              ),
-            ),
-          if (showSeal)
-            SizedBox(
-              width: 30,
-              height: 30,
-              child: WuxiaImage(
-                WuxiaUi.sealRed,
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => const SizedBox.shrink(),
-              ),
-            ),
-        ],
+                if (trailing != null)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: trailing,
+                  ),
+                if (showHome)
+                  Tooltip(
+                    message: UiStrings.titleBarHome,
+                    child: InkWell(
+                      onTap:
+                          onHome ??
+                          () =>
+                              Navigator.of(context).popUntil((r) => r.isFirst),
+                      child: const Padding(
+                        padding: EdgeInsets.only(left: 4, right: 8),
+                        child: Icon(
+                          Icons.home_outlined,
+                          color: WuxiaUi.jiang,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (showSeal)
+                  SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: WuxiaImage(
+                      WuxiaUi.sealRed,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

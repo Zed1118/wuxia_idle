@@ -4,6 +4,7 @@ import '../../../core/domain/enums.dart';
 import '../../theme/wuxia_tokens.dart';
 import '../equipment_art_image.dart';
 import '../equipment_glyph.dart';
+import 'panel_surface.dart';
 import 'seal_badge.dart';
 
 /// 宣纸物品格（UI kit · demo `.islot`）：替白底缩略图格。
@@ -72,6 +73,7 @@ class _ItemSlotState extends State<ItemSlot> {
 
   @override
   Widget build(BuildContext context) {
+    final surface = PanelSurface.of(context);
     final tierAccent = widget.highTier ? WuxiaUi.gold : widget.tierColor;
     final frameColor = widget.selected ? WuxiaUi.jiang : tierAccent;
     final frameWidth = widget.selected || _hovered ? 2.8 : 2.2;
@@ -346,7 +348,7 @@ class _ItemSlotState extends State<ItemSlot> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: widget.highTier ? WuxiaUi.gold : WuxiaUi.ink,
+                color: widget.highTier ? WuxiaUi.gold : surface.primary,
                 fontSize: 12,
                 fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
               ),
