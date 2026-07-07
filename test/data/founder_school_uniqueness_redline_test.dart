@@ -6,7 +6,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 /// 祖师塑形 schools 唯一性红线：id 与 school 各自唯一，
 /// 防同一流派配多条 schools 项致创建页选项漂移（覆盖度红线兜不住）。
 void main() {
-  FounderSchoolOption school(String id, TechniqueSchool s) => FounderSchoolOption(
+  FounderSchoolOption school(String id, TechniqueSchool s) =>
+      FounderSchoolOption(
         id: id,
         school: s,
         label: '$id-label',
@@ -14,6 +15,7 @@ void main() {
         summary: '简介',
         attributeHint: '属性提示',
         startingTechniqueIds: const ['tech_x'],
+        startingEquipmentIds: const [],
         goalHint: '目标',
       );
 
@@ -52,9 +54,6 @@ void main() {
   });
 
   test('空列表 → 不抛(覆盖度红线另行兜底)', () {
-    expect(
-      () => enforceFounderSchoolUniqueness(const []),
-      returnsNormally,
-    );
+    expect(() => enforceFounderSchoolUniqueness(const []), returnsNormally);
   });
 }

@@ -189,6 +189,13 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
               onSchoolSelect: (f) => setState(() => _schoolFilter = f),
               onOwnershipSelect: (f) => setState(() => _ownershipFilter = f),
               onSortSelect: (s) => setState(() => _sort = s),
+              onReset: () => setState(() {
+                _slotFilter = InventorySlotFilter.all;
+                _tierFilter = InventoryTierFilter.all;
+                _schoolFilter = InventorySchoolFilter.all;
+                _ownershipFilter = InventoryOwnershipFilter.all;
+                _sort = InventoryEquipmentSort.tierDesc;
+              }),
             ),
             Expanded(
               child: filtered.isEmpty
@@ -261,16 +268,36 @@ _EquipmentInventorySummary _buildEquipmentSummary(
 String _conditionLabel(InventoryEquipmentQuery query) {
   final parts = <String>[];
   if (query.slot != InventorySlotFilter.all) {
-    parts.add(_slotFilterLabel(query.slot));
+    parts.add(
+      UiStrings.inventoryConditionSegment(
+        UiStrings.inventoryFilterGroupSlot,
+        _slotFilterValueLabel(query.slot),
+      ),
+    );
   }
   if (query.tier != InventoryTierFilter.all) {
-    parts.add(_tierFilterLabel(query.tier));
+    parts.add(
+      UiStrings.inventoryConditionSegment(
+        UiStrings.inventoryFilterGroupTier,
+        _tierFilterValueLabel(query.tier),
+      ),
+    );
   }
   if (query.school != InventorySchoolFilter.all) {
-    parts.add(_schoolFilterLabel(query.school));
+    parts.add(
+      UiStrings.inventoryConditionSegment(
+        UiStrings.inventoryFilterGroupSchool,
+        _schoolFilterValueLabel(query.school),
+      ),
+    );
   }
   if (query.ownership != InventoryOwnershipFilter.all) {
-    parts.add(_ownershipFilterLabel(query.ownership));
+    parts.add(
+      UiStrings.inventoryConditionSegment(
+        UiStrings.inventoryFilterGroupStatus,
+        _ownershipFilterValueLabel(query.ownership),
+      ),
+    );
   }
   return UiStrings.inventoryConditionParts(parts);
 }
@@ -364,6 +391,7 @@ class _OrganizationBar extends StatelessWidget {
     required this.onSchoolSelect,
     required this.onOwnershipSelect,
     required this.onSortSelect,
+    required this.onReset,
   });
 
   final InventorySlotFilter slotFilter;
@@ -376,126 +404,206 @@ class _OrganizationBar extends StatelessWidget {
   final ValueChanged<InventorySchoolFilter> onSchoolSelect;
   final ValueChanged<InventoryOwnershipFilter> onOwnershipSelect;
   final ValueChanged<InventoryEquipmentSort> onSortSelect;
+  final VoidCallback onReset;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final f in InventorySlotFilter.values)
-            _FilterChip(
-              label: _slotFilterLabel(f),
-              selected: f == slotFilter,
-              onTap: () => onSlotSelect(f),
+    final query = InventoryEquipmentQuery(
+      slot: slotFilter,
+      tier: tierFilter,
+      school: schoolFilter,
+      ownership: ownershipFilter,
+      sort: sort,
+    );
+    final activeCount = [
+      slotFilter != InventorySlotFilter.all,
+      tierFilter != InventoryTierFilter.all,
+      schoolFilter != InventorySchoolFilter.all,
+      ownershipFilter != InventoryOwnershipFilter.all,
+      sort != InventoryEquipmentSort.tierDesc,
+    ].where((active) => active).length;
+    final hasActive = activeCount > 0;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      decoration: BoxDecoration(
+        color: WuxiaColors.panel,
+        border: Border.all(color: WuxiaColors.border),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= 1180;
+          final filters = [
+            _FilterGroup(
+              icon: Icons.category_outlined,
+              title: UiStrings.inventoryFilterGroupSlot,
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final f in InventorySlotFilter.values)
+                    _FilterChip(
+                      label: _slotFilterValueLabel(f),
+                      selected: f == slotFilter,
+                      onTap: () => onSlotSelect(f),
+                    ),
+                ],
+              ),
             ),
-          for (final f in InventoryTierFilter.values)
-            _FilterChip(
-              label: _tierFilterLabel(f),
-              selected: f == tierFilter,
-              onTap: () => onTierSelect(f),
+            _FilterGroup(
+              icon: Icons.layers_outlined,
+              title: UiStrings.inventoryFilterGroupTier,
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final f in InventoryTierFilter.values)
+                    _FilterChip(
+                      label: _tierFilterValueLabel(f),
+                      selected: f == tierFilter,
+                      onTap: () => onTierSelect(f),
+                    ),
+                ],
+              ),
             ),
-          for (final f in InventorySchoolFilter.values)
-            _FilterChip(
-              label: _schoolFilterLabel(f),
-              selected: f == schoolFilter,
-              onTap: () => onSchoolSelect(f),
+            _FilterGroup(
+              icon: Icons.blur_on_outlined,
+              title: UiStrings.inventoryFilterGroupSchool,
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final f in InventorySchoolFilter.values)
+                    _FilterChip(
+                      label: _schoolFilterValueLabel(f),
+                      selected: f == schoolFilter,
+                      onTap: () => onSchoolSelect(f),
+                    ),
+                ],
+              ),
             ),
-          for (final f in InventoryOwnershipFilter.values)
-            _FilterChip(
-              label: _ownershipFilterLabel(f),
-              selected: f == ownershipFilter,
-              onTap: () => onOwnershipSelect(f),
+            _FilterGroup(
+              icon: Icons.inventory_2_outlined,
+              title: UiStrings.inventoryFilterGroupStatus,
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final f in InventoryOwnershipFilter.values)
+                    _FilterChip(
+                      label: _ownershipFilterValueLabel(f),
+                      selected: f == ownershipFilter,
+                      onTap: () => onOwnershipSelect(f),
+                    ),
+                ],
+              ),
             ),
-          PopupMenuButton<InventoryEquipmentSort>(
-            tooltip: UiStrings.inventorySortLabel(_sortLabel(sort)),
-            color: WuxiaColors.panel,
-            onSelected: onSortSelect,
-            itemBuilder: (context) => [
-              for (final s in InventoryEquipmentSort.values)
-                PopupMenuItem(
-                  value: s,
-                  child: Text(
-                    _sortLabel(s),
-                    style: const TextStyle(color: WuxiaColors.textPrimary),
-                  ),
-                ),
+            _FilterGroup(
+              icon: Icons.swap_vert,
+              title: UiStrings.inventoryFilterGroupSort,
+              child: _SortPicker(sort: sort, onSortSelect: onSortSelect),
+            ),
+          ];
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _FilterHeader(
+                condition: _conditionLabel(query),
+                sortLabel: _sortLabel(sort),
+                activeCount: activeCount,
+                hasActive: hasActive,
+                onReset: onReset,
+              ),
+              const SizedBox(height: 12),
+              if (wide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: filters[0]),
+                    const SizedBox(width: 14),
+                    Expanded(flex: 2, child: filters[1]),
+                    const SizedBox(width: 14),
+                    Expanded(child: filters[2]),
+                  ],
+                )
+              else ...[
+                filters[0],
+                const SizedBox(height: 10),
+                filters[1],
+                const SizedBox(height: 10),
+                filters[2],
+              ],
+              const SizedBox(height: 10),
+              if (wide)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 3, child: filters[3]),
+                    const SizedBox(width: 14),
+                    Expanded(child: filters[4]),
+                  ],
+                )
+              else ...[
+                filters[3],
+                const SizedBox(height: 10),
+                filters[4],
+              ],
             ],
-            child: _FilterChip(
-              label: UiStrings.inventorySortLabel(_sortLabel(sort)),
-              selected: true,
-              onTap: null,
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 }
 
-String _slotFilterLabel(InventorySlotFilter filter) {
+String _slotFilterValueLabel(InventorySlotFilter filter) {
   return switch (filter) {
-    InventorySlotFilter.all => UiStrings.inventoryFilterSlotAll,
-    InventorySlotFilter.weapon => UiStrings.inventoryFilterSlotLabel(
-      EnumL10n.equipmentSlot(EquipmentSlot.weapon),
-    ),
-    InventorySlotFilter.armor => UiStrings.inventoryFilterSlotLabel(
-      EnumL10n.equipmentSlot(EquipmentSlot.armor),
-    ),
-    InventorySlotFilter.accessory => UiStrings.inventoryFilterSlotLabel(
-      EnumL10n.equipmentSlot(EquipmentSlot.accessory),
+    InventorySlotFilter.all => UiStrings.inventoryFilterAll,
+    InventorySlotFilter.weapon => EnumL10n.equipmentSlot(EquipmentSlot.weapon),
+    InventorySlotFilter.armor => EnumL10n.equipmentSlot(EquipmentSlot.armor),
+    InventorySlotFilter.accessory => EnumL10n.equipmentSlot(
+      EquipmentSlot.accessory,
     ),
   };
 }
 
-String _tierFilterLabel(InventoryTierFilter filter) {
+String _tierFilterValueLabel(InventoryTierFilter filter) {
   return switch (filter) {
-    InventoryTierFilter.all => UiStrings.inventoryFilterTierAll,
-    InventoryTierFilter.xunChang => UiStrings.inventoryFilterTierLabel(
-      EnumL10n.equipmentTier(EquipmentTier.xunChang),
+    InventoryTierFilter.all => UiStrings.inventoryFilterAll,
+    InventoryTierFilter.xunChang => EnumL10n.equipmentTier(
+      EquipmentTier.xunChang,
     ),
-    InventoryTierFilter.xiangYang => UiStrings.inventoryFilterTierLabel(
-      EnumL10n.equipmentTier(EquipmentTier.xiangYang),
+    InventoryTierFilter.xiangYang => EnumL10n.equipmentTier(
+      EquipmentTier.xiangYang,
     ),
-    InventoryTierFilter.haoJiaHuo => UiStrings.inventoryFilterTierLabel(
-      EnumL10n.equipmentTier(EquipmentTier.haoJiaHuo),
+    InventoryTierFilter.haoJiaHuo => EnumL10n.equipmentTier(
+      EquipmentTier.haoJiaHuo,
     ),
-    InventoryTierFilter.liQi => UiStrings.inventoryFilterTierLabel(
-      EnumL10n.equipmentTier(EquipmentTier.liQi),
+    InventoryTierFilter.liQi => EnumL10n.equipmentTier(EquipmentTier.liQi),
+    InventoryTierFilter.zhongQi => EnumL10n.equipmentTier(
+      EquipmentTier.zhongQi,
     ),
-    InventoryTierFilter.zhongQi => UiStrings.inventoryFilterTierLabel(
-      EnumL10n.equipmentTier(EquipmentTier.zhongQi),
-    ),
-    InventoryTierFilter.baoWu => UiStrings.inventoryFilterTierLabel(
-      EnumL10n.equipmentTier(EquipmentTier.baoWu),
-    ),
-    InventoryTierFilter.shenWu => UiStrings.inventoryFilterTierLabel(
-      EnumL10n.equipmentTier(EquipmentTier.shenWu),
-    ),
+    InventoryTierFilter.baoWu => EnumL10n.equipmentTier(EquipmentTier.baoWu),
+    InventoryTierFilter.shenWu => EnumL10n.equipmentTier(EquipmentTier.shenWu),
   };
 }
 
-String _schoolFilterLabel(InventorySchoolFilter filter) {
+String _schoolFilterValueLabel(InventorySchoolFilter filter) {
   return switch (filter) {
-    InventorySchoolFilter.all => UiStrings.inventoryFilterSchoolAll,
-    InventorySchoolFilter.gangMeng => UiStrings.inventoryFilterSchoolLabel(
-      EnumL10n.school(TechniqueSchool.gangMeng),
-    ),
-    InventorySchoolFilter.lingQiao => UiStrings.inventoryFilterSchoolLabel(
-      EnumL10n.school(TechniqueSchool.lingQiao),
-    ),
-    InventorySchoolFilter.yinRou => UiStrings.inventoryFilterSchoolLabel(
-      EnumL10n.school(TechniqueSchool.yinRou),
-    ),
+    InventorySchoolFilter.all => UiStrings.inventoryFilterAll,
+    InventorySchoolFilter.gangMeng => EnumL10n.school(TechniqueSchool.gangMeng),
+    InventorySchoolFilter.lingQiao => EnumL10n.school(TechniqueSchool.lingQiao),
+    InventorySchoolFilter.yinRou => EnumL10n.school(TechniqueSchool.yinRou),
     InventorySchoolFilter.none => UiStrings.inventoryFilterSchoolNone,
   };
 }
 
-String _ownershipFilterLabel(InventoryOwnershipFilter filter) {
+String _ownershipFilterValueLabel(InventoryOwnershipFilter filter) {
   return switch (filter) {
-    InventoryOwnershipFilter.all => UiStrings.inventoryFilterOwnershipAll,
+    InventoryOwnershipFilter.all => UiStrings.inventoryFilterAll,
     InventoryOwnershipFilter.free => UiStrings.inventoryFilterFree,
     InventoryOwnershipFilter.equipped => UiStrings.inventoryFilterEquipped,
     InventoryOwnershipFilter.heritage => UiStrings.inventoryFilterHeritage,
@@ -518,43 +626,200 @@ String _sortLabel(InventoryEquipmentSort sort) {
   };
 }
 
+class _FilterHeader extends StatelessWidget {
+  const _FilterHeader({
+    required this.condition,
+    required this.sortLabel,
+    required this.activeCount,
+    required this.hasActive,
+    required this.onReset,
+  });
+
+  final String condition;
+  final String sortLabel;
+  final int activeCount;
+  final bool hasActive;
+  final VoidCallback onReset;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Icon(Icons.tune, size: 18, color: WuxiaColors.textSecondary),
+        const SizedBox(width: 8),
+        const Text(
+          UiStrings.inventoryFilterPanelTitle,
+          style: TextStyle(
+            color: WuxiaColors.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            UiStrings.inventoryFilterPanelSummary(
+              condition: condition,
+              sort: sortLabel,
+              activeCount: activeCount,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+          ),
+        ),
+        const SizedBox(width: 12),
+        _FilterChip(
+          label: UiStrings.inventoryFilterReset,
+          selected: false,
+          enabled: hasActive,
+          icon: Icons.close,
+          onTap: hasActive ? onReset : null,
+        ),
+      ],
+    );
+  }
+}
+
+class _FilterGroup extends StatelessWidget {
+  const _FilterGroup({
+    required this.icon,
+    required this.title,
+    required this.child,
+  });
+
+  final IconData icon;
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 66,
+          height: 32,
+          child: Row(
+            children: [
+              Icon(icon, size: 15, color: WuxiaColors.textMuted),
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  title,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: WuxiaColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(child: child),
+      ],
+    );
+  }
+}
+
+class _SortPicker extends StatelessWidget {
+  const _SortPicker({required this.sort, required this.onSortSelect});
+
+  final InventoryEquipmentSort sort;
+  final ValueChanged<InventoryEquipmentSort> onSortSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<InventoryEquipmentSort>(
+      tooltip: UiStrings.inventorySortLabel(_sortLabel(sort)),
+      color: WuxiaColors.panel,
+      onSelected: onSortSelect,
+      itemBuilder: (context) => [
+        for (final s in InventoryEquipmentSort.values)
+          PopupMenuItem(
+            value: s,
+            child: Text(
+              _sortLabel(s),
+              style: const TextStyle(color: WuxiaColors.textPrimary),
+            ),
+          ),
+      ],
+      child: _FilterChip(
+        label: _sortLabel(sort),
+        selected: true,
+        icon: Icons.arrow_drop_down,
+        onTap: null,
+      ),
+    );
+  }
+}
+
 class _FilterChip extends StatelessWidget {
   const _FilterChip({
     required this.label,
     required this.selected,
     required this.onTap,
+    this.enabled = true,
+    this.icon,
   });
 
   final String label;
   final bool selected;
   final VoidCallback? onTap;
+  final bool enabled;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
+    final active = enabled && onTap != null;
+    final foreground = !enabled
+        ? WuxiaColors.textMuted.withValues(alpha: 0.45)
+        : selected
+        ? WuxiaColors.textPrimary
+        : WuxiaColors.textMuted;
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
-        onTap: onTap,
+        onTap: active ? onTap : null,
         borderRadius: BorderRadius.circular(4),
         child: Container(
-          constraints: const BoxConstraints(minHeight: 36),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          constraints: const BoxConstraints(minHeight: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: selected
+            color: !enabled
+                ? WuxiaColors.panel.withValues(alpha: 0.45)
+                : selected
                 ? WuxiaColors.textPrimary.withValues(alpha: 0.15)
                 : WuxiaColors.panel,
             border: Border.all(
-              color: selected ? WuxiaColors.textPrimary : WuxiaColors.border,
+              color: !enabled
+                  ? WuxiaColors.border.withValues(alpha: 0.55)
+                  : selected
+                  ? WuxiaColors.textPrimary
+                  : WuxiaColors.border,
             ),
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: selected ? WuxiaColors.textPrimary : WuxiaColors.textMuted,
-              fontSize: 12,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 14, color: foreground),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  color: foreground,
+                  fontSize: 12,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1374,7 +1639,10 @@ class _MaterialGridTile extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 // 深屏底次要说明用深底色板 textMuted(浅灰),非浅纸 muted(叠深底更暗)。
-                style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 10),
+                style: const TextStyle(
+                  color: WuxiaColors.textMuted,
+                  fontSize: 10,
+                ),
               ),
             ),
         ],

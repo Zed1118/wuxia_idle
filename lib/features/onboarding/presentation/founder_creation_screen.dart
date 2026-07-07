@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/domain/enums.dart';
+import '../../../data/defs/equipment_def.dart';
 import '../../../data/defs/founder_creation_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
@@ -9,6 +11,8 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/utils/rng.dart';
 import '../../../shared/utils/rng_provider.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../battle/domain/enum_localizations.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../application/onboarding_service.dart';
 import '../domain/founder_creation_selection.dart';
@@ -75,17 +79,22 @@ class _FounderCreationScreenState extends ConsumerState<FounderCreationScreen> {
     setState(() => _submitting = true);
     final founderName = _founderNameController.text.trim();
     final sectName = _sectNameController.text.trim();
-    await OnboardingService(isar: IsarSetup.instance).createFoundingMaster(
-      selection: FounderCreationSelection(
-        school: _school,
-        origin: _origin,
-        fate: _fate,
-        founderName: founderName.isEmpty ? null : founderName,
-        sectName: sectName.isEmpty ? null : sectName,
-      ),
-    );
+    final didSeed = await OnboardingService(isar: IsarSetup.instance)
+        .createFoundingMaster(
+          selection: FounderCreationSelection(
+            school: _school,
+            origin: _origin,
+            fate: _fate,
+            founderName: founderName.isEmpty ? null : founderName,
+            sectName: sectName.isEmpty ? null : sectName,
+          ),
+        );
     ref.invalidate(isarProvider);
     if (!mounted) return;
+    if (didSeed) {
+      await showFounderStarterGearDialog(context, _school);
+      if (!mounted) return;
+    }
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute<void>(builder: (_) => const MainMenu()),
       (_) => false,
@@ -453,6 +462,12 @@ class _PreviewPanel extends StatelessWidget {
                 : UiStrings.founderCreateTechniqueName(techniqueName),
           ),
           _PreviewLine(
+            label: UiStrings.founderCreateStartingEquipment,
+            value: UiStrings.founderCreateEquipmentNames(
+              _equipmentNames(school),
+            ),
+          ),
+          _PreviewLine(
             label: UiStrings.founderCreateStartingResource,
             value: origin.resourceSummary,
           ),
@@ -499,6 +514,157 @@ class _PreviewPanel extends StatelessWidget {
         .techniqueDefs[school.startingTechniqueIds.first]
         ?.name;
   }
+
+  List<String> _equipmentNames(FounderSchoolOption school) {
+    return _startingEquipmentDefs(school).map((e) => e.name).toList();
+  }
+}
+
+Future<void> showFounderStarterGearDialog(
+  BuildContext context,
+  FounderSchoolOption school,
+) async {
+  await PaperDialog.show<void>(
+    context,
+    title: UiStrings.founderStarterGearDialogTitle,
+    barrierDismissible: false,
+    body: FounderStarterGearDialogBody(
+      equipment: _startingEquipmentDefs(school),
+    ),
+    actions: [
+      Builder(
+        builder: (ctx) => PlaqueButton(
+          label: UiStrings.founderStarterGearConfirm,
+          primary: true,
+          autofocus: true,
+          onTap: () => Navigator.of(ctx).pop(),
+        ),
+      ),
+    ],
+  );
+}
+
+class FounderStarterGearDialogBody extends StatelessWidget {
+  const FounderStarterGearDialogBody({super.key, required this.equipment});
+
+  final List<EquipmentDef> equipment;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const Text(
+        UiStrings.founderStarterGearDialogIntro,
+        style: TextStyle(
+          color: WuxiaUi.ink,
+          fontSize: 14,
+          height: 1.7,
+          letterSpacing: 1,
+        ),
+      ),
+      const SizedBox(height: 10),
+      DecoratedBox(
+        decoration: BoxDecoration(
+          color: WuxiaUi.paper2.withValues(alpha: 0.44),
+          border: Border.all(color: WuxiaUi.woodDark.withValues(alpha: 0.52)),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Column(
+          children: [
+            for (var i = 0; i < equipment.length; i++)
+              _StarterEquipmentRow(
+                equipment: equipment[i],
+                showDivider: i != equipment.length - 1,
+              ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 10),
+      const Text(
+        UiStrings.founderStarterGearEquippedHint,
+        style: TextStyle(
+          color: WuxiaUi.muted,
+          fontSize: 12,
+          height: 1.5,
+          letterSpacing: 1,
+        ),
+      ),
+    ],
+  );
+}
+
+class _StarterEquipmentRow extends StatelessWidget {
+  const _StarterEquipmentRow({
+    required this.equipment,
+    required this.showDivider,
+  });
+
+  final EquipmentDef equipment;
+  final bool showDivider;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      border: Border(
+        bottom: showDivider
+            ? BorderSide(color: WuxiaUi.ink.withValues(alpha: 0.12))
+            : BorderSide.none,
+      ),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 44,
+            child: Text(
+              EnumL10n.equipmentSlot(equipment.slot),
+              style: const TextStyle(
+                color: WuxiaUi.muted,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              equipment.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+List<EquipmentDef> _startingEquipmentDefs(FounderSchoolOption school) {
+  if (!GameRepository.isLoaded || school.startingEquipmentIds.isEmpty) {
+    return const [];
+  }
+  final repo = GameRepository.instance;
+  final defs = school.startingEquipmentIds
+      .map((id) => repo.equipmentDefs[id])
+      .whereType<EquipmentDef>()
+      .toList();
+  const slotOrder = [
+    EquipmentSlot.weapon,
+    EquipmentSlot.armor,
+    EquipmentSlot.accessory,
+  ];
+  defs.sort(
+    (a, b) => slotOrder.indexOf(a.slot).compareTo(slotOrder.indexOf(b.slot)),
+  );
+  return defs;
 }
 
 class _PreviewPill extends StatelessWidget {

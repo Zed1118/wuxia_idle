@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
@@ -84,6 +85,18 @@ void main() {
     final main = await isar.techniques.get(founder.mainTechniqueId!);
     expect(main!.defId, school.startingTechniqueIds.single);
     expect(founder.school, TechniqueSchool.yinRou);
+
+    final weapon = await isar.equipments.get(founder.equippedWeaponId!);
+    final armor = await isar.equipments.get(founder.equippedArmorId!);
+    final accessory = await isar.equipments.get(founder.equippedAccessoryId!);
+    expect([
+      weapon!.defId,
+      armor!.defId,
+      accessory!.defId,
+    ], school.startingEquipmentIds);
+    expect(weapon.slot, EquipmentSlot.weapon);
+    expect(armor.slot, EquipmentSlot.armor);
+    expect(accessory.slot, EquipmentSlot.accessory);
 
     final mojianshi = await isar.inventoryItems
         .filter()

@@ -56,6 +56,7 @@ import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/utils/rng.dart';
@@ -809,8 +810,9 @@ class TowerVictoryContent extends StatelessWidget {
               stats!.totalTicks,
             ),
             style: const TextStyle(
-              color: WuxiaColors.textSecondary,
+              color: WuxiaUi.ink2,
               fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

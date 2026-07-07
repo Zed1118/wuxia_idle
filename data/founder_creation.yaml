@@ -13,6 +13,10 @@ schools:
     attributeHint: 更看重根骨与内力承压,起手战斗更稳。
     startingTechniqueIds:
       - tech_gangmeng_jichu
+    startingEquipmentIds:
+      - weapon_xunchang_zhe_dao
+      - armor_xunchang_mian_jia
+      - accessory_xunchang_yu_pei
     goalHint: 先稳住主线前几关,用厚血量换取出手机会。
 
   - id: ling_qiao
@@ -23,7 +27,11 @@ schools:
     attributeHint: 更看重身法与出手频率,起手节奏更轻快。
     startingTechniqueIds:
       - tech_lingqiao_jichu
-    goalHint: 先熟悉拖招与破招时机,用速度拉开回合差。
+    startingEquipmentIds:
+      - weapon_xunchang_tie_jian
+      - armor_xunchang_duan_gua
+      - accessory_xunchang_tong_ling
+    goalHint: 先熟悉拖招与破招时机,用速度拉开节拍差。
 
   - id: yin_rou
     school: yinRou
@@ -33,6 +41,10 @@ schools:
     attributeHint: 更看重悟性与内息积累,起手成长更细水长流。
     startingTechniqueIds:
       - tech_yinrou_jichu
+    startingEquipmentIds:
+      - weapon_xunchang_ruan_bian
+      - armor_xunchang_bu_yi
+      - accessory_xunchang_yao_nang
     goalHint: 先养主修心法,用持续内伤压住强敌节奏。
 
 origins:

@@ -77,7 +77,7 @@ void main() {
     // 首胜战绩区标题
     expect(find.text(UiStrings.battleRecordStatsTitle), findsOneWidget);
 
-    // 伤害/暴击/回合文案可见
+    // 伤害/暴击/节拍文案可见
     expect(find.text(UiStrings.battleRecordDamage(18000)), findsOneWidget);
     expect(find.text(UiStrings.battleRecordCrits(7)), findsOneWidget);
     expect(find.text(UiStrings.battleRecordTurns(12)), findsOneWidget);
@@ -92,7 +92,10 @@ void main() {
     expect(find.text(UiStrings.battleRecordDefeatCount(5)), findsOneWidget);
 
     // 此战之最区
-    expect(find.text(UiStrings.battleRecordTopContributorTitle), findsOneWidget);
+    expect(
+      find.text(UiStrings.battleRecordTopContributorTitle),
+      findsOneWidget,
+    );
     expect(find.text('祖师'), findsWidgets);
     expect(find.text(UiStrings.battleRecordDamage(9500)), findsWidgets);
 
@@ -117,10 +120,10 @@ void main() {
     // 「此役不详·记录之前」可见
     expect(find.text(UiStrings.battleRecordPreRecord), findsOneWidget);
 
-    // 伤害/暴击/回合一律不出现（字段为 null，优雅降级）
+    // 伤害/暴击/节拍一律不出现（字段为 null，优雅降级）
     expect(find.textContaining('总伤害'), findsNothing);
     expect(find.textContaining('暴击'), findsNothing);
-    expect(find.textContaining('回合'), findsNothing);
+    expect(find.textContaining('拍'), findsNothing);
 
     // 此战之最区不显（topContributorName == null）
     expect(find.text(UiStrings.battleRecordTopContributorTitle), findsNothing);

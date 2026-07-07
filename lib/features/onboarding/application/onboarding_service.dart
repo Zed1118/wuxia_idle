@@ -117,7 +117,9 @@ class OnboardingService {
         await equipMasterStarting(
           isar,
           character: seeded[i],
-          defIds: defs[i].startingEquipmentIds,
+          defIds: i == 0 && creation != null
+              ? creation.school.startingEquipmentIds
+              : defs[i].startingEquipmentIds,
           rng: rng,
           now: now,
         );

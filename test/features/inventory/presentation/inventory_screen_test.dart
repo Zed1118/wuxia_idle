@@ -25,6 +25,18 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/section_header.dart';
 /// 装备 Tab（P0-4b 仓库格子化重写 2026-06-04）：按部位分组网格
 /// （武器/护甲/饰品三段）+ 格子图标 contain + tier 边框 + 强化徽章 +
 /// 境界锁灰化 + 缺图 EquipGlyph 占位。物料 Tab：4 用例不变。
+Finder _sectionHeader(String title) {
+  return find.byWidgetPredicate(
+    (widget) => widget is SectionHeader && widget.title == title,
+  );
+}
+
+Finder _itemSlotWithTier(String tierLabel) {
+  return find.byWidgetPredicate(
+    (widget) => widget is ItemSlot && widget.tierLabel == tierLabel,
+  );
+}
+
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
@@ -150,9 +162,9 @@ void main() {
         ),
       ],
     );
-    expect(find.text('武器'), findsOneWidget);
-    expect(find.text('护甲'), findsOneWidget);
-    expect(find.text('饰品'), findsOneWidget);
+    expect(_sectionHeader('武器'), findsOneWidget);
+    expect(_sectionHeader('护甲'), findsOneWidget);
+    expect(_sectionHeader('饰品'), findsOneWidget);
     // 分组头容器语言换 UI kit SectionHeader（callsite 试点）
     expect(find.byType(SectionHeader), findsNWidgets(3));
     expect(
@@ -265,7 +277,7 @@ void main() {
       ..equippedWeaponId = eq.id;
     await pumpInv(tester, equipments: [eq], player: player);
 
-    expect(find.text('神物'), findsOneWidget, reason: '格子应直接显阶位条');
+    expect(_itemSlotWithTier('神物'), findsOneWidget, reason: '格子应直接显阶位条');
     expect(find.text('+9'), findsOneWidget, reason: '强化朱印仍应保留');
     expect(find.text(UiStrings.equippedBadge), findsOneWidget);
     expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
@@ -340,8 +352,8 @@ void main() {
         player: mkCharacter(id: 1, realmTier: RealmTier.wuSheng),
       );
 
-      expect(find.text('武器'), findsOneWidget);
-      expect(find.text('神物'), findsOneWidget);
+      expect(_sectionHeader('武器'), findsOneWidget);
+      expect(_itemSlotWithTier('神物'), findsOneWidget);
       expect(find.text(UiStrings.inventoryProtectedSealText), findsWidgets);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -383,13 +395,12 @@ void main() {
       ],
     );
 
-    expect(find.text(UiStrings.inventoryFilterSlotAll), findsOneWidget);
-    expect(find.text(UiStrings.inventoryFilterTierAll), findsOneWidget);
-    expect(find.text(UiStrings.inventoryFilterOwnershipAll), findsOneWidget);
-    expect(
-      find.text(UiStrings.inventorySortLabel(UiStrings.inventorySortTierDesc)),
-      findsOneWidget,
-    );
+    expect(find.text(UiStrings.inventoryFilterPanelTitle), findsOneWidget);
+    expect(find.text(UiStrings.inventoryFilterGroupSlot), findsOneWidget);
+    expect(find.text(UiStrings.inventoryFilterGroupTier), findsOneWidget);
+    expect(find.text(UiStrings.inventoryFilterGroupStatus), findsOneWidget);
+    expect(find.text(UiStrings.inventorySortTierDesc), findsOneWidget);
+    expect(find.text(UiStrings.inventoryFilterReset), findsOneWidget);
   });
 
   testWidgets('库存整理控件：状态筛选「师承遗物」只显示遗物', (tester) async {
@@ -432,7 +443,7 @@ void main() {
     expect(find.text('物料'), findsOneWidget);
     expect(find.byType(PlaqueTab), findsNWidgets(2));
     // 默认装备 Tab：武器段标题可见;物料行在另一 Tab 不可见
-    expect(find.text('武器'), findsOneWidget);
+    expect(_sectionHeader('武器'), findsOneWidget);
     expect(find.textContaining('磨剑石 ×'), findsNothing);
   });
 
