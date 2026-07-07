@@ -4,9 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
-import '../../../data/isar_setup.dart';
-import '../application/offline_passive_service.dart';
 import '../application/offline_recap_service.dart';
+import '../application/online_presence_controller.dart';
 import 'active_retreat_screen.dart';
 import 'offline_recap_card.dart';
 import 'seclusion_gate.dart';
@@ -27,6 +26,8 @@ Future<void> maybeShowOfflineRecap({
   final session = await ref.read(activeRetreatSessionProvider.future);
 
   if (session != null) {
+    // P0-3:闭关期间也起心跳保基准新鲜(修收功后 stale 基准双吃边角)。
+    ref.read(onlinePresenceControllerProvider).markStartupSettleDone();
     // —— 范围 A：有 active 闭关,引导收功（原逻辑原样,与被动互斥）——
     final ids = await ref.read(activeCharacterIdsProvider.future);
     final id = ids.isNotEmpty ? ids.first : 1;
@@ -72,34 +73,16 @@ Future<void> maybeShowOfflineRecap({
     return;
   }
 
-  // —— 范围 B：无 active 闭关,按 lastOnlineAt 结算被动 ——
-  // Isar 未初始化（如 splash 前 / 纯 widget 测无存档）→ 无可结算基准,静默退。
-  final isar = IsarSetup.instanceOrNull;
-  if (isar == null) return;
-  final save = await IsarSetup.currentSaveData();
-  if (save == null) return;
-
-  // 旧档首启不回溯：lastOnlineAt == createdAt 视为基准未建立,置 now 不结算。
-  if (save.lastOnlineAt == save.createdAt) {
-    await IsarSetup.touchOnlineNow(now: now);
-    return;
-  }
+  // —— 范围 B:无 active 闭关,统一经 OnlinePresenceController 结算被动 ——
+  // (体检 P0-3:基准检查/互斥/旧档首启/回拨守卫全在 controller 单点,
+  //  gate 只保留启动路径专属的弹卡语义。)
+  final controller = ref.read(onlinePresenceControllerProvider);
+  final yield_ = await controller.settlePassiveWindow(now: now);
+  controller.markStartupSettleDone();
+  if (yield_ == null) return;
 
   final cfg = GameRepository.instance.numbers.passiveIdle;
-  final nowDt = now ?? DateTime.now();
-  final awayHours = nowDt.difference(save.lastOnlineAt).inSeconds / 3600.0;
-  if (awayHours <= 0) return;
-
-  final ids = await ref.read(activeCharacterIdsProvider.future);
-  final charId = ids.isNotEmpty ? ids.first : 1;
-  final yield_ = await OfflinePassiveService.settle(
-    saveDataId: save.slotId,
-    characterId: charId,
-    awayHours: awayHours,
-    now: nowDt,
-  );
-
-  if (awayHours < cfg.minRecapHours) return; // 已静默入包,不弹卡
+  if (yield_.awayHours < cfg.minRecapHours) return; // 已静默入包,不弹卡
   if ((yield_.mojianshi == 0 && yield_.experience == 0) || !context.mounted) {
     return;
   }
@@ -111,7 +94,7 @@ Future<void> maybeShowOfflineRecap({
       child: OfflineRecapCard.passive(
         mojianshi: yield_.mojianshi,
         experience: yield_.experience,
-        awayHours: awayHours,
+        awayHours: yield_.awayHours,
         settledHours: yield_.settledHours,
         isCapped: yield_.isCapped,
         onDismiss: () => Navigator.of(ctx).pop(),
