@@ -31,9 +31,7 @@ class BattleAI {
     NumbersConfig n,
   ) {
     if (!actor.isAlive) {
-      throw StateError(
-        'BattleAI.decide: ${actor.name} 已死亡，不应进入决策',
-      );
+      throw StateError('BattleAI.decide: ${actor.name} 已死亡，不应进入决策');
     }
     final skill = _pickSkill(actor, state);
     final enemyTeam = actor.teamSide == 0 ? state.rightTeam : state.leftTeam;
@@ -59,8 +57,9 @@ class BattleAI {
       return (skill, [manualTargetId]);
     }
 
-    final charging =
-        enemyTeam.where((e) => e.isAlive && e.chargingSkill != null);
+    final charging = enemyTeam.where(
+      (e) => e.isAlive && e.chargingSkill != null,
+    );
     final int targetId;
     // 注:此破招锁定路径**有意不加 isGuardedBoss 排除**(taunt 仅覆盖常规目标选择
     // _pickTargetId/_pickFocusTargetId/_pickControlTargetId + aoe)。floor30 Boss 靠
@@ -76,12 +75,14 @@ class BattleAI {
     } else if (actor.lineageRole == LineageRole.junior) {
       // 第七阶段批三:二弟子控场 — 不用破招技这一拍时,优先盯正在蓄力的敌(压制要放大招的威胁),
       // 无蓄力敌回落破绽窗口 → 血最低。纯目标选择,不改伤害量级(§5.4)。
-      targetId = _pickControlTargetId(actor, state) ??
+      targetId =
+          _pickControlTargetId(actor, state) ??
           _pickFocusTargetId(actor, state) ??
           _pickTargetId(actor, state);
     } else {
       // 第六阶段:破绽窗口内敌优先集火(链路爆发);无破绽敌回落血最低。
-      targetId = _pickFocusTargetId(actor, state) ?? _pickTargetId(actor, state);
+      targetId =
+          _pickFocusTargetId(actor, state) ?? _pickTargetId(actor, state);
     }
     return (skill, [targetId]);
   }
@@ -96,8 +97,9 @@ class BattleAI {
 
     // P0:对面有敌人蓄力 + 自己有可用 saveForInterrupt 破招技 → 用它(托管保守破招)
     final enemyTeam = actor.teamSide == 0 ? state.rightTeam : state.leftTeam;
-    final enemyCharging =
-        enemyTeam.any((e) => e.isAlive && e.chargingSkill != null);
+    final enemyCharging = enemyTeam.any(
+      (e) => e.isAlive && e.chargingSkill != null,
+    );
     if (enemyCharging) {
       for (final s in actor.availableSkills) {
         if (s.aiUsePolicy != AiUsePolicy.saveForInterrupt) continue;
@@ -119,7 +121,8 @@ class BattleAI {
     // (新解锁阶段招立即反扑,不被默认排序埋没)。仅在本阶段招都不可用时回落下方
     // 默认优先级。纯招式选择无属性 buff(§5.4)。
     if (_currentBossAiMode(actor) == BossAiMode.aggressive) {
-      final phaseSkills = actor.bossPhaseUnlockSkills != null &&
+      final phaseSkills =
+          actor.bossPhaseUnlockSkills != null &&
               actor.bossPhaseIndex < actor.bossPhaseUnlockSkills!.length
           ? actor.bossPhaseUnlockSkills![actor.bossPhaseIndex]
           : const <SkillDef>[];
@@ -127,7 +130,9 @@ class BattleAI {
       SkillDef? bestPhase;
       for (final s in actor.availableSkills) {
         if (!phaseIds.contains(s.id)) continue;
-        if (s.aiUsePolicy == AiUsePolicy.saveForInterrupt) continue; // 与默认强力技 loop 一致:破招技平时不放(防阶段招混入破招技时被即放,破坏留招语义)
+        if (s.aiUsePolicy == AiUsePolicy.saveForInterrupt) {
+          continue; // 与默认强力技 loop 一致:破招技平时不放(防阶段招混入破招技时被即放,破坏留招语义)
+        }
         if (!_canUse(actor, s)) continue;
         if (bestPhase == null ||
             s.powerMultiplier > bestPhase.powerMultiplier) {
@@ -137,10 +142,14 @@ class BattleAI {
       if (bestPhase != null) return bestPhase;
     }
 
-    // 2) 强力技能：内力够 + CD 0，多个挑 powerMultiplier 最高的
+    // 2) 强力技能：内力够 + CD 0，多个挑 powerMultiplier 最高的。
+    // 敌方也自动使用 ultimate；玩家侧仍通过 pending 手动触发，保留旧手感。
     SkillDef? bestPower;
     for (final s in actor.availableSkills) {
-      if (s.type != SkillType.powerSkill) continue;
+      final isAutoSkill =
+          s.type == SkillType.powerSkill ||
+          (actor.teamSide == 1 && s.type == SkillType.ultimate);
+      if (!isAutoSkill) continue;
       if (s.aiUsePolicy == AiUsePolicy.saveForInterrupt) continue; // P0:平时不放破招技
       if (!_canUse(actor, s)) continue;
       if (bestPower == null || s.powerMultiplier > bestPower.powerMultiplier) {
@@ -169,20 +178,22 @@ class BattleAI {
   /// gate 与 wardMultOf 逐字段一致:guardianWardMult 与 guardianDefIds 皆备才可能被
   /// taunt 保护(二者今日同源共填,但显式镜像 gate 防未来 loader 单字段 desync)。
   static bool isGuardedBoss(BattleCharacter candidate, BattleState state) {
-    if (candidate.guardianWardMult == null || candidate.guardianDefIds.isEmpty) {
+    if (candidate.guardianWardMult == null ||
+        candidate.guardianDefIds.isEmpty) {
       return false;
     }
     final team = candidate.teamSide == 1 ? state.rightTeam : state.leftTeam;
-    return team.any((c) =>
-        c.isAlive &&
-        c.enemyDefId != null &&
-        candidate.guardianDefIds.contains(c.enemyDefId));
+    return team.any(
+      (c) =>
+          c.isAlive &&
+          c.enemyDefId != null &&
+          candidate.guardianDefIds.contains(c.enemyDefId),
+    );
   }
 
   /// 目标选择：对面活角色 currentHp 最低的；同 hp 选 slotIndex 小的（前排优先）。
   static int _pickTargetId(BattleCharacter actor, BattleState state) {
-    final enemyTeam =
-        actor.teamSide == 0 ? state.rightTeam : state.leftTeam;
+    final enemyTeam = actor.teamSide == 0 ? state.rightTeam : state.leftTeam;
     BattleCharacter? best;
     for (final e in enemyTeam) {
       if (!e.isAlive) continue;
@@ -193,7 +204,8 @@ class BattleAI {
       }
       if (e.currentHp < best.currentHp) {
         best = e;
-      } else if (e.currentHp == best.currentHp && e.slotIndex < best.slotIndex) {
+      } else if (e.currentHp == best.currentHp &&
+          e.slotIndex < best.slotIndex) {
         best = e;
       }
     }

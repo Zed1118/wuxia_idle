@@ -14,18 +14,18 @@ import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
 /// （见 numbers.yaml `mirror_vulnerability_per_stage`），别据本合成 def 反推生产。
 
 InnerDemonDef _vulnDef() => InnerDemonDef.fromYaml(<String, dynamic>{
-      'mirror_buff_per_stage': {
-        'stage_inner_demon_01': 0.10,
-        'stage_inner_demon_05': 0.18,
-        'stage_inner_demon_06': 0.20,
-        'stage_inner_demon_07': 0.40,
-      },
-      'mirror_vulnerability_per_stage': {
-        'stage_inner_demon_05': {'outOfWindowDamageMult': 0.12},
-        'stage_inner_demon_06': {'outOfWindowDamageMult': 0.10},
-      },
-      'mirror_charge_skill_id': 'skill_inner_demon_charge',
-    });
+  'mirror_buff_per_stage': {
+    'stage_inner_demon_01': 0.10,
+    'stage_inner_demon_05': 0.18,
+    'stage_inner_demon_06': 0.20,
+    'stage_inner_demon_07': 0.40,
+  },
+  'mirror_vulnerability_per_stage': {
+    'stage_inner_demon_05': {'outOfWindowDamageMult': 0.12},
+    'stage_inner_demon_06': {'outOfWindowDamageMult': 0.10},
+  },
+  'mirror_charge_skill_id': 'skill_inner_demon_charge',
+});
 
 const SkillDef _chargeSkill = SkillDef(
   id: 'skill_inner_demon_charge',
@@ -44,49 +44,49 @@ BattleCharacter _mockPlayer({
   int slotIndex = 0,
   int characterId = 100,
   String name = '玩家',
-}) =>
-    BattleCharacter(
-      characterId: characterId,
-      name: name,
-      realmTier: RealmTier.wuSheng,
-      realmLayer: RealmLayer.huaJing,
-      school: TechniqueSchool.gangMeng,
-      maxHp: 12000,
-      currentHp: 12000,
-      maxInternalForce: 10000,
-      currentInternalForce: 10000,
-      speed: 250,
-      criticalRate: 0.15,
-      evasionRate: 0.05,
-      defenseRate: 0.35,
-      totalEquipmentAttack: 1500,
-      mainCultivationLayer: CultivationLayer.jiJing,
-      availableSkills: const <SkillDef>[
-        SkillDef(
-          id: 'skill_player_power',
-          name: '玩家强力技',
-          description: 'stub',
-          type: SkillType.powerSkill,
-          powerMultiplier: 300,
-          internalForceCost: 100,
-          cooldownTurns: 2,
-          requiresManualTrigger: false,
-          visualEffect: 'x',
-        ),
-      ],
-      skillCooldowns: const {},
-      activeBuffs: const [],
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: 0,
-      slotIndex: slotIndex,
-    );
+}) => BattleCharacter(
+  characterId: characterId,
+  name: name,
+  realmTier: RealmTier.wuSheng,
+  realmLayer: RealmLayer.huaJing,
+  school: TechniqueSchool.gangMeng,
+  maxHp: 12000,
+  currentHp: 12000,
+  maxInternalForce: 10000,
+  currentInternalForce: 10000,
+  speed: 250,
+  criticalRate: 0.15,
+  evasionRate: 0.05,
+  defenseRate: 0.35,
+  totalEquipmentAttack: 1500,
+  mainCultivationLayer: CultivationLayer.jiJing,
+  availableSkills: const <SkillDef>[
+    SkillDef(
+      id: 'skill_player_power',
+      name: '玩家强力技',
+      description: 'stub',
+      type: SkillType.powerSkill,
+      powerMultiplier: 300,
+      internalForceCost: 100,
+      cooldownTurns: 2,
+      requiresManualTrigger: false,
+      visualEffect: 'x',
+    ),
+  ],
+  skillCooldowns: const {},
+  activeBuffs: const [],
+  actionPoint: 0,
+  isAlive: true,
+  teamSide: 0,
+  slotIndex: slotIndex,
+  iconPath: 'assets/portraits/player.png',
+);
 
 List<BattleCharacter> _team() => [
-      _mockPlayer(slotIndex: 0, characterId: 100, name: '主角'),
-      _mockPlayer(slotIndex: 1, characterId: 101, name: '徒弟甲'),
-      _mockPlayer(slotIndex: 2, characterId: 102, name: '徒弟乙'),
-    ];
+  _mockPlayer(slotIndex: 0, characterId: 100, name: '主角'),
+  _mockPlayer(slotIndex: 1, characterId: 101, name: '徒弟甲'),
+  _mockPlayer(slotIndex: 2, characterId: 102, name: '徒弟乙'),
+];
 
 void main() {
   group('buildMirrorEnemyTeam 脆弱窗口注入', () {
@@ -105,8 +105,11 @@ void main() {
         expect(mirrors, hasLength(3), reason: stage);
         for (final m in mirrors) {
           expect(m.vulnerabilityMult, mult, reason: '$stage vulnerabilityMult');
-          expect(m.chargeSkillId, 'skill_inner_demon_charge',
-              reason: '$stage chargeSkillId');
+          expect(
+            m.chargeSkillId,
+            'skill_inner_demon_charge',
+            reason: '$stage chargeSkillId',
+          );
           expect(
             m.availableSkills.any((s) => s.id == 'skill_inner_demon_charge'),
             isTrue,
@@ -169,6 +172,21 @@ void main() {
           isFalse,
         );
       }
+    });
+
+    test('P1-12 镜像显式清空 iconPath,走首字降级', () {
+      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+        playerTeam: _team(),
+        stageId: 'stage_inner_demon_01',
+        innerDemonDef: _vulnDef(),
+      );
+
+      expect(mirrors, hasLength(3));
+      expect(
+        mirrors.every((m) => m.iconPath == null),
+        isTrue,
+        reason: 'BattleCharacter.copyWith 必须允许 iconPath:null 覆盖玩家头像',
+      );
     });
   });
 }

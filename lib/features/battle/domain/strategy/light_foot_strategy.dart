@@ -46,18 +46,15 @@ class LightFootStrategy extends BattleStrategy {
   /// 内部委派 strategy(沿 DefaultGroundStrategy tick 主循环)。
   static const _delegate = DefaultGroundStrategy();
 
-  const LightFootStrategy({
-    required this.terrainBiome,
-    required this.config,
-  });
+  const LightFootStrategy({required this.terrainBiome, required this.config});
 
   @override
-  BattleState tick(
-    BattleState state,
-    NumbersConfig n, {
-    Random? rng,
-  }) =>
-      _delegate.tick(state, n, rng: rng);
+  BattleState tick(BattleState state, NumbersConfig n, {Random? rng}) =>
+      _delegate.tick(_ensureTerrain(state, n), n, rng: rng);
+
+  @override
+  BattleState stepOne(BattleState state, NumbersConfig n, {Random? rng}) =>
+      _delegate.stepOne(_ensureTerrain(state, n), n, rng: rng);
 
   /// 跑完整场战斗。入口烘焙 terrain modifier 到双方 BattleCharacter stat,
   /// 然后委派 _delegate.runToEnd。
@@ -68,7 +65,7 @@ class LightFootStrategy extends BattleStrategy {
     int maxTicks = 1000,
     Random? rng,
   }) {
-    final modified = _applyTerrain(initial, n.combat.redLines.combinedRateCap);
+    final modified = _ensureTerrain(initial, n);
     return _delegate.runToEnd(modified, n, maxTicks: maxTicks, rng: rng);
   }
 
@@ -78,16 +75,22 @@ class LightFootStrategy extends BattleStrategy {
     int characterId,
     SkillDef ultimate, {
     int? targetId,
-  }) =>
-      _delegate.requestUltimate(state, characterId, ultimate,
-          targetId: targetId);
+  }) => _delegate.requestUltimate(
+    state,
+    characterId,
+    ultimate,
+    targetId: targetId,
+  );
 
   BattleState _applyTerrain(BattleState s, double rateCap) => applyTerrainTo(
-        s,
-        terrainBiome: terrainBiome,
-        config: config,
-        rateCap: rateCap,
-      );
+    s,
+    terrainBiome: terrainBiome,
+    config: config,
+    rateCap: rateCap,
+  );
+
+  BattleState _ensureTerrain(BattleState s, NumbersConfig n) =>
+      _applyTerrain(s, n.combat.redLines.combinedRateCap);
 
   /// 烘焙 terrain modifier 到双方 BattleCharacter 入口快照。
   ///
@@ -104,12 +107,15 @@ class LightFootStrategy extends BattleStrategy {
     required LightFootDef config,
     double rateCap = 0.95,
   }) {
-    final m = config.terrainModifiers[terrainBiome] ??
+    final m =
+        config.terrainModifiers[terrainBiome] ??
         LightFootTerrainModifier.neutral();
-    final newLeft =
-        s.leftTeam.map((c) => _bake(c, m, rateCap)).toList(growable: false);
-    final newRight =
-        s.rightTeam.map((c) => _bake(c, m, rateCap)).toList(growable: false);
+    final newLeft = s.leftTeam
+        .map((c) => _bake(c, m, rateCap))
+        .toList(growable: false);
+    final newRight = s.rightTeam
+        .map((c) => _bake(c, m, rateCap))
+        .toList(growable: false);
     return s.copyWith(
       leftTeam: List.unmodifiable(newLeft),
       rightTeam: List.unmodifiable(newRight),
@@ -127,11 +133,15 @@ class LightFootStrategy extends BattleStrategy {
     LightFootTerrainModifier m,
     double rateCap,
   ) {
+    if (c.attackPowerMultiplierSource == AttackPowerMultiplierSource.terrain) {
+      return c;
+    }
     return c.copyWith(
       criticalRate: (c.criticalRate + m.criticalRateDelta).clamp(0.0, rateCap),
       evasionRate: (c.evasionRate + m.evasionRateDelta).clamp(0.0, rateCap),
       defenseRate: (c.defenseRate + m.defenseRateDelta).clamp(0.0, rateCap),
       attackPowerMultiplier: m.damageMultiplier,
+      attackPowerMultiplierSource: AttackPowerMultiplierSource.terrain,
     );
   }
 }

@@ -130,10 +130,6 @@ class IslandActionService {
         await isar.inventoryItems.getByDefId(bCfg.upgradeMaterialItem);
     final materialQty = materialItem?.quantity ?? 0;
 
-    // 预先算出扣除量（txn 内使用）
-    final silverNeeded = bCfg.upgradeSilverFor(currentLevel);
-    final materialNeeded = bCfg.upgradeMaterialFor(currentLevel);
-
     final fullBlock = upgradeBlockReason(
       cfg: bCfg,
       level: currentLevel,
@@ -144,33 +140,45 @@ class IslandActionService {
     if (fullBlock != null) return fullBlock;
 
     // ── 执行阶段（单一 writeTxn 原子）────────────────────────────────────────
+    // P1-7(2026-07-07 体检批5):txn 内重跑完整检查防 check-then-act。上面
+    // sufficiency 检查(:127-144)在 txn 外用快照,连点/并发时两笔都过外层检查,
+    // 旧代码 txn 内直接 -= 扣成负数、越 maxLevel。改为 txn 内用最新快照重跑
+    // upgradeBlockReason,不足/越界则空提交回滚并返回对应 block。
+    UpgradeResult? txnBlock;
     await isar.writeTxn(() async {
-      // txn 内重新 get 取最新快照（沿 Task 6 模式）
       final s = (await isar.saveDatas.get(0))!;
-
-      // 升级建筑 level
-      s.islandBuildings
-          .firstWhere((b) => b.type == buildingType)
-          .level += 1;
-      await isar.saveDatas.put(s);
-
-      // 扣银两
+      final b = s.islandBuildings.firstWhere((b) => b.type == buildingType);
       final silver = await isar.inventoryItems.getByDefId('item_silver');
-      if (silver != null) {
-        silver.quantity -= silverNeeded;
-        await isar.inventoryItems.put(silver);
-      }
-
-      // 扣材料
       final mat =
           await isar.inventoryItems.getByDefId(bCfg.upgradeMaterialItem);
+
+      txnBlock = upgradeBlockReason(
+        cfg: bCfg,
+        level: b.level,
+        founderRealmIndex: founderRealmIndex,
+        silver: silver?.quantity ?? 0,
+        material: mat?.quantity ?? 0,
+      );
+      if (txnBlock != null) return; // 不写任何行,txn 空提交等价回滚
+
+      // 按 txn 内最新 level 重算扣除量(成本随 level 变)
+      final silverNeededNow = bCfg.upgradeSilverFor(b.level);
+      final materialNeededNow = bCfg.upgradeMaterialFor(b.level);
+
+      b.level += 1;
+      await isar.saveDatas.put(s);
+
+      if (silver != null) {
+        silver.quantity -= silverNeededNow;
+        await isar.inventoryItems.put(silver);
+      }
       if (mat != null) {
-        mat.quantity -= materialNeeded;
+        mat.quantity -= materialNeededNow;
         await isar.inventoryItems.put(mat);
       }
     });
 
-    return UpgradeResult.ok;
+    return txnBlock ?? UpgradeResult.ok;
   }
 
   // ── selectRecipe ──────────────────────────────────────────────────────────
