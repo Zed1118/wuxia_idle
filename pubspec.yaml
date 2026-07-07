@@ -67,6 +67,9 @@ flutter:
     - assets/ui/
     - assets/ui/mj/
 
+    # 道具图标(2026-07-07 材料经济 P4 道具素材接线 14 张)
+    - assets/images/items/
+
     # M4 Stage 3 量产(2026-05-21 ~50 张 BOSS / 场景)
     - assets/enemies/
     - assets/scenes/

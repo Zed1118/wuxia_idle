@@ -1249,6 +1249,11 @@ class _MaterialGridTile extends ConsumerWidget {
     final canUse = itemDef?.isUsable ?? false;
     // 显式局部非空引用，供 onTap 闭包捕获（闭包内不做 flow promotion）。
     final usableDef = canUse ? itemDef : null;
+    // 道具图标：按 defId 约定取专图（assets/images/items/<defId>.png），
+    // 秘籍 9 本共用一张通用卷轴图；缺图时 errorBuilder 退回铜钱占位。
+    final iconAsset = itemDef?.type == ItemType.techniqueScroll
+        ? 'assets/images/items/item_scroll_generic.png'
+        : 'assets/images/items/${item.defId}.png';
 
     return SizedBox(
       width: _size,
@@ -1273,13 +1278,17 @@ class _MaterialGridTile extends ConsumerWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // 图标（通用铜钱占位；未来可走 itemDef.iconPath）
+                  // 道具专图（秘籍走通用卷轴）；缺图退回铜钱占位。
                   Padding(
                     padding: const EdgeInsets.all(8),
                     child: WuxiaImage(
-                      'assets/ui/coin_icon.png',
+                      iconAsset,
                       fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const SizedBox.expand(),
+                      errorBuilder: (_, _, _) => WuxiaImage(
+                        'assets/ui/coin_icon.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, _, _) => const SizedBox.expand(),
+                      ),
                     ),
                   ),
                   // 数量角标（右下）
