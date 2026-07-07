@@ -111,7 +111,9 @@ class _InjuryStatusPanelState extends ConsumerState<InjuryStatusPanel> {
       realmLookup: GameRepository.instance.getRealm,
     );
     if (!mounted) return;
-    ref.invalidate(characterByIdProvider(widget.character.id));
+    // 体检批3 P1-11:ItemUseService 疗伤目标是全队最伤者,未必是 widget.character;
+    // 失效整个 family(而非单 id),否则真实被疗伤角色的缓存不刷。
+    ref.invalidate(characterByIdProvider);
     ref.invalidate(activeCharacterIdsProvider);
     ref.invalidate(inventoryQuantityByDefIdProvider('item_liaoshangdan'));
     ref.invalidate(allInventoryItemsProvider);

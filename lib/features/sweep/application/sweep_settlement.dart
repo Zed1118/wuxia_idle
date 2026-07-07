@@ -6,6 +6,7 @@ import '../../../core/domain/enums.dart' show isTechniqueScrollDefId;
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
+import '../../battle/application/post_combat_invalidation.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
 import '../../cultivation/presentation/stage_skill_drop_hook.dart';
 import '../../mainline/application/mainline_progress_service.dart';
@@ -52,6 +53,9 @@ Future<SweepBattleOutcome?> settleMainlineSweepVictory({
     cycle: cycle,
   );
   ref.invalidate(mainlineProgressProvider);
+  // 体检批3 P1-6:扫荡同样改 battleCount / cultivationProgress + 掉落入库,
+  // 须同战斗结算路径失效角色 family + 主菜单门控,否则扫荡后面板读旧值。
+  invalidateAfterCombatSettlement(ref.invalidate);
 
   final skillDrop = await runStageSkillDropHookAfterVictory(
     stage: stage,
@@ -110,6 +114,8 @@ Future<SweepBattleOutcome?> settleTowerSweepVictory({
     floor: floor,
     isFirstClear: clearResult.isFirstClear,
   );
+  // 体检批3 P1-6:塔扫荡同样累 battleCount / skillUsage,失效角色 family + 门控。
+  invalidateAfterCombatSettlement(ref.invalidate);
 
   // 残页 hook：重打可掉（非首通限定），守 §5.1 仅此项。
   var skillFragments = 0;
