@@ -132,6 +132,8 @@ class CharacterAvatar extends StatelessWidget {
             fontSize: 14,
             color: WuxiaColors.textPrimary,
             fontWeight: FontWeight.w600,
+            // 角色名浮在水墨战景上，加描影兜底浅雾区对比(scrim)。
+            shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
           ),
         ),
         Text(
@@ -139,6 +141,8 @@ class CharacterAvatar extends StatelessWidget {
           style: const TextStyle(
             fontSize: 11,
             color: WuxiaColors.textSecondary,
+            // 境界副标浅灰压浅雾景低对比，加描影提可读。
+            shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
           ),
         ),
         const SizedBox(height: 6),
@@ -156,7 +160,7 @@ class CharacterAvatar extends StatelessWidget {
           child: HpBar(
             current: character.currentInternalForce,
             max: character.maxInternalForce,
-            height: 9,
+            height: 12,
             isInternalForce: true,
             labelPrefix: UiStrings.internalForceShortLabel,
           ),

@@ -476,12 +476,16 @@ class _MapCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: locked ? WuxiaUi.muted : WuxiaUi.ink,
+                            // 地点标题浮在可变明暗水墨景上，深墨字压浅景(如悬崖瀑布)
+                            // 几乎不可读；改浅字+强描影(白字压深 scrim 范式)兜底全景。
+                            color: locked
+                                ? WuxiaColors.textSecondary
+                                : WuxiaColors.textPrimary,
                             fontSize: 23,
                             fontWeight: FontWeight.w900,
                             shadows: [
                               Shadow(
-                                color: Colors.black.withValues(alpha: 0.45),
+                                color: Colors.black.withValues(alpha: 0.72),
                                 blurRadius: 8,
                               ),
                             ],

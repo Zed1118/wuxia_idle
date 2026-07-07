@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/colors.dart';
@@ -59,10 +61,14 @@ class HpBar extends StatelessWidget {
               child: Text(
                 '$labelPrefix$current / $max',
                 style: TextStyle(
-                  fontSize: height * 0.72,
+                  // 内力条 height 小(9)时 height*0.72≈6.5px 近不可读，设 10px 下限。
+                  fontSize: math.max(height * 0.72, 10.0),
                   color: WuxiaColors.textPrimary,
                   fontWeight: FontWeight.w600,
                   height: 1,
+                  shadows: const [
+                    Shadow(color: Colors.black54, blurRadius: 2),
+                  ],
                 ),
               ),
             ),

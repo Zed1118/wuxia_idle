@@ -312,6 +312,8 @@ class _StageJourneyMap extends StatelessWidget {
                               color: WuxiaColors.resultHighlight,
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
+                              // banner 顶部 scrim 弱(0.18)，金/灰字压浅雾景低对比，加描影。
+                              shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -338,6 +340,7 @@ class _StageJourneyMap extends StatelessWidget {
                           color: WuxiaColors.textSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
+                          shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
                         ),
                       ),
                     ),
