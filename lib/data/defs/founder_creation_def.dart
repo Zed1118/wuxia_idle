@@ -65,6 +65,7 @@ class FounderSchoolOption {
   final String summary;
   final String attributeHint;
   final List<String> startingTechniqueIds;
+  final List<String> startingEquipmentIds;
   final String goalHint;
 
   const FounderSchoolOption({
@@ -75,6 +76,7 @@ class FounderSchoolOption {
     required this.summary,
     required this.attributeHint,
     required this.startingTechniqueIds,
+    required this.startingEquipmentIds,
     required this.goalHint,
   });
 
@@ -88,6 +90,11 @@ class FounderSchoolOption {
       attributeHint: y['attributeHint'] as String,
       startingTechniqueIds: List<String>.from(
         (y['startingTechniqueIds'] as List? ?? const []).map(
+          (e) => e as String,
+        ),
+      ),
+      startingEquipmentIds: List<String>.from(
+        (y['startingEquipmentIds'] as List? ?? const []).map(
           (e) => e as String,
         ),
       ),

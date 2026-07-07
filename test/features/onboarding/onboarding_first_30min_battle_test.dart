@@ -19,6 +19,7 @@ import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_service.dart';
 import 'package:wuxia_idle/features/equipment/application/enhancement_service.dart';
 import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
+import 'package:wuxia_idle/features/onboarding/domain/founder_creation_selection.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 void main() {
@@ -38,7 +39,14 @@ void main() {
       'wuxia_onboarding_first_30min_',
     );
     await IsarSetup.init(directory: tempDir, inspector: false);
-    await OnboardingService(isar: IsarSetup.instance).ensureFoundingMasters();
+    final creation = GameRepository.instance.founderCreation;
+    await OnboardingService(isar: IsarSetup.instance).createFoundingMaster(
+      selection: FounderCreationSelection(
+        school: creation.schools.first,
+        origin: creation.origins.first,
+        fate: creation.fatePool.first,
+      ),
+    );
   });
 
   tearDown(() async {
@@ -50,33 +58,20 @@ void main() {
     }
   });
 
-  test('production 单人空手开局首关不应右队胜', () async {
+  test('production 创建页三件套开局首关不应右队胜', () async {
     final result = await _runStage('stage_01_01');
 
-    expect(
-      result.leftCount,
-      1,
-      reason: '必须覆盖 production soloStart=true 单人路径',
-    );
+    expect(result.leftCount, 1, reason: '必须覆盖 production soloStart=true 单人路径');
     expect(
       result.result,
       isNot(BattleResult.rightWin),
       reason: 'stage_01_01 不应成为生产单人新档的首战失败点',
     );
-    expect(
-      result.tick,
-      lessThan(1000),
-      reason: 'stage_01_01 不应撞 maxTicks 兜底',
-    );
+    expect(result.tick, lessThan(1000), reason: 'stage_01_01 不应撞 maxTicks 兜底');
   });
 
-  test('production 单人开局按首胜成长和掉落整备后 stage_01_02 至 stage_01_04 不应右队胜',
-      () async {
-    const stageIds = [
-      'stage_01_02',
-      'stage_01_03',
-      'stage_01_04',
-    ];
+  test('production 单人开局按首胜成长和掉落整备后 stage_01_02 至 stage_01_04 不应右队胜', () async {
+    const stageIds = ['stage_01_02', 'stage_01_03', 'stage_01_04'];
 
     await _grantVictoryRewardsAndEquip('stage_01_01');
 
@@ -92,27 +87,19 @@ void main() {
         isNot(BattleResult.rightWin),
         reason: '$stageId 不应成为首胜成长后的前 30 分钟失败点；${result.summary}',
       );
-      expect(
-        result.tick,
-        lessThan(1000),
-        reason: '$stageId 不应撞 maxTicks 兜底',
-      );
+      expect(result.tick, lessThan(1000), reason: '$stageId 不应撞 maxTicks 兜底');
       if (result.result == BattleResult.leftWin) {
         await _grantVictoryRewardsAndEquip(stageId);
       }
     }
   });
 
-  test('production 单人空手开局 stage_01_05 章末 Boss 至少有确定终态', () async {
+  test('production 创建页三件套开局 stage_01_05 章末 Boss 至少有确定终态', () async {
     final result = await _runStage('stage_01_05');
 
     expect(result.leftCount, 1);
     expect(result.result, isNotNull);
-    expect(
-      result.tick,
-      lessThan(1000),
-      reason: '章末 Boss 可以作为拍板项，但不能卡死或无终态',
-    );
+    expect(result.tick, lessThan(1000), reason: '章末 Boss 可以作为拍板项，但不能卡死或无终态');
   });
 }
 
@@ -142,7 +129,10 @@ Future<void> _grantVictoryRewardsAndEquip(String stageId) async {
     await isar.writeTxn(() => isar.equipments.putAll(drops.equipments));
     final equipService = EquipmentService(isar: isar);
     for (final eq in drops.equipments) {
-      await equipService.equip(characterId: activeIds.first, equipmentId: eq.id);
+      await equipService.equip(
+        characterId: activeIds.first,
+        equipmentId: eq.id,
+      );
     }
   }
   for (final item in drops.items) {

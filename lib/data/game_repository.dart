@@ -1445,6 +1445,7 @@ class GameRepository {
   /// 新档祖师塑形红线:
   /// - 三流派选项必须齐全且不重复；
   /// - 每个流派至少 1 本起手心法,且心法存在、入门阶、流派一致；
+  /// - 每个流派必须给 3 件寻常货起手装备,覆盖武器/护甲/饰品各 1 件；
   /// - 出身资源差异只能是低量非负数；
   /// - 命盘池至少 3 份,每份属性单项 [1,10] / 总和 [16,24]。
   void _enforceFounderCreationRedLines() {
@@ -1471,6 +1472,30 @@ class GameRepository {
         if (tech.school != option.school) {
           throw StateError('founder_creation $techId 流派与 ${option.id} 不一致');
         }
+      }
+      if (option.startingEquipmentIds.length != 3) {
+        throw StateError('founder_creation ${option.id} 起手装备必须为 3 件');
+      }
+      final slots = <EquipmentSlot>{};
+      for (final equipId in option.startingEquipmentIds) {
+        final eq = equipmentDefs[equipId];
+        if (eq == null) {
+          throw StateError('founder_creation $equipId 未在 equipment.yaml 中');
+        }
+        if (eq.tier != EquipmentTier.xunChang) {
+          throw StateError('founder_creation $equipId 必须是寻常货');
+        }
+        if (!slots.add(eq.slot)) {
+          throw StateError(
+            'founder_creation ${option.id} 起手装备槽位重复:${eq.slot.name}',
+          );
+        }
+        if (eq.slot == EquipmentSlot.weapon && eq.schoolBias != option.school) {
+          throw StateError('founder_creation $equipId 武器流派与 ${option.id} 不一致');
+        }
+      }
+      if (slots.length != EquipmentSlot.values.length) {
+        throw StateError('founder_creation ${option.id} 起手装备必须覆盖武器/护甲/饰品');
       }
     }
     if (schoolSet.length != TechniqueSchool.values.length) {

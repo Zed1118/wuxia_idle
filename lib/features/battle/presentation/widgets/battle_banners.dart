@@ -95,7 +95,7 @@ class CoopBurstPromptBar extends StatelessWidget {
 // ─── 蓄力危险条（T2）──────────────────────────────────────────────────────
 
 /// 敌人蓄力大招时的顶部警示条。纯读 [BattleState.rightTeam]：取最临近发动
-/// （[BattleCharacter.chargeTicksRemaining] 最小）的存活蓄力敌人，显示招名 + 剩余回合，提示玩家
+/// （[BattleCharacter.chargeTicksRemaining] 最小）的存活蓄力敌人，显示招名 + 剩余节拍，提示玩家
 /// 看准时机破招。无敌人蓄力时返回 [SizedBox.shrink]（不占高度、不渲染 key）。
 class DangerBar extends StatelessWidget {
   final BattleState state;
@@ -161,7 +161,11 @@ class DangerBar extends StatelessWidget {
 class BattleReportStrip extends StatelessWidget {
   final BattleState state;
   final VoidCallback onTap;
-  const BattleReportStrip({super.key, required this.state, required this.onTap});
+  const BattleReportStrip({
+    super.key,
+    required this.state,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

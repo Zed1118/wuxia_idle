@@ -64,7 +64,7 @@ void main() {
       ruleId: 'generic',
       shortfall: DefeatShortfall.technique,
       primaryCause: '惜败',
-      dataLines: ['总伤害：100', '总回合：50'],
+      dataLines: ['总伤害：100', '总节拍：50'],
       suggestions: [DiagnosisSuggestion('调整后再战。', null)],
     );
     await pump(

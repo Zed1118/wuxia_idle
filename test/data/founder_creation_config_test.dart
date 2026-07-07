@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 
 void main() {
@@ -13,6 +14,24 @@ void main() {
     expect(config.schools.map((e) => e.school).toSet().length, 3);
     expect(config.origins.length, greaterThanOrEqualTo(3));
     expect(config.fatePool.length, greaterThanOrEqualTo(3));
+
+    for (final school in config.schools) {
+      expect(
+        school.startingEquipmentIds,
+        hasLength(3),
+        reason: '${school.id} 应有武器/护甲/饰品三件起手装备',
+      );
+      final equips = school.startingEquipmentIds
+          .map((id) => repo.equipmentDefs[id]!)
+          .toList();
+      expect(equips.map((e) => e.slot).toSet(), EquipmentSlot.values.toSet());
+      for (final equip in equips) {
+        expect(equip.tier, EquipmentTier.xunChang);
+        if (equip.slot == EquipmentSlot.weapon) {
+          expect(equip.schoolBias, school.school);
+        }
+      }
+    }
 
     for (final fate in config.fatePool) {
       expect(fate.attributeProfile.total, inInclusiveRange(16, 24));

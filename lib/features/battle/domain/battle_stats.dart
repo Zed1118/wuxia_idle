@@ -1,6 +1,6 @@
 import 'battle_state.dart';
 
-/// 战斗统计汇总(总伤害 / 暴击数 / 回合数),从 [BattleState.actionLog] 派生。
+/// 战斗统计汇总(总伤害 / 暴击数 / 节拍数),从 [BattleState.actionLog] 派生。
 ///
 /// 抽出供 [VictoryOverlay](battle_screen 弹)与结算 dialog(stage/tower flow)
 /// 共用,避免两处各算一遍 fold 公式(时序重排 spec 2026-06-12)。

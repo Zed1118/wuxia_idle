@@ -124,7 +124,7 @@ void main() {
         description: '',
       );
       final str = BattleLog.formatAction(action, s);
-      expect(str, contains('[第 12 回合]'));
+      expect(str, contains('[第 12 拍]'));
       expect(str, contains('左0'));
       expect(str, contains('右0'));
       expect(str, contains('直拳'));
@@ -276,10 +276,10 @@ void main() {
       final skill = GameRepository.instance.getSkill(
         'skill_gangmeng_mingjia_ult',
       );
-      final left = _mkBC(charId: 1, teamSide: 0).copyWith(
-        availableSkills: [skill],
-        skillUses: {skill.id: 300},
-      );
+      final left = _mkBC(
+        charId: 1,
+        teamSide: 0,
+      ).copyWith(availableSkills: [skill], skillUses: {skill.id: 300});
       final right = _mkBC(charId: 11, teamSide: 1);
       final s = BattleState.initial(leftTeam: [left], rightTeam: [right]);
       final action = BattleAction(
@@ -339,7 +339,7 @@ void main() {
       );
       final str = BattleLog.formatSummary(s);
       expect(str, contains('左队胜'));
-      expect(str, contains('87 回合'));
+      expect(str, contains('87 拍'));
       expect(str, contains('8420'));
       expect(str, contains('左0'));
       expect(str, contains('被击杀'));
@@ -352,7 +352,7 @@ void main() {
       final s = BattleState.initial(leftTeam: [left], rightTeam: [right]);
       final str = BattleLog.formatSummary(s);
       expect(str, contains('未结束'));
-      expect(str, contains('0 回合'));
+      expect(str, contains('0 拍'));
       expect(str, isNot(contains('最高单次伤害')));
       expect(str, isNot(contains('被击杀')));
     });

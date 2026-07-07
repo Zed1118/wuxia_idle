@@ -31,7 +31,7 @@ class UiStrings {
   static String battleTitle(int leftAlive, int rightAlive) =>
       '战斗 $leftAlive v $rightAlive';
 
-  static const String tickPrefix = '回合';
+  static const String tickPrefix = '节拍';
   static const String battleLog = '战斗日志';
   // H3:战斗暂停(停 tick + 遮罩 + 继续)。
   static const String battlePause = '暂停';
@@ -85,13 +85,13 @@ class UiStrings {
 
   // P0 破招
   static const String battleInterruptSkill = '破招';
-  // T2 蓄力危险条：敌人正在蓄力大招的顶部警示（招名 + 剩余回合）。
+  // T2 蓄力危险条：敌人正在蓄力大招的顶部警示（招名 + 剩余节拍）。
   static String battleDangerCharging(
     String enemyName,
     String skillName,
     int ticks,
   ) =>
-      '$enemyName 正在${combatTermLabel(CombatTerm.charge)}：$skillName（还有 $ticks 回合发动）';
+      '$enemyName 正在${combatTermLabel(CombatTerm.charge)}：$skillName（还有 $ticks 拍发动）';
   static const String battleDangerPrefix = '⚠ ';
 
   // T1 战斗指令台：技能分组标签 + 状态印 + 内力/冷却短标。
@@ -120,8 +120,8 @@ class UiStrings {
       '${combatTermLabel(CombatTerm.interrupt)} · 可打断${combatTermLabel(CombatTerm.charge)}';
   // 无特殊特性时的占位（普通技无可打断等标签）。
   static const String skillTraitNone = '无';
-  // 冷却值单位（回合）。
-  static String skillInfoCooldownTurns(int turns) => '$turns 回合';
+  // 冷却值单位（战斗节拍）。
+  static String skillInfoCooldownTurns(int turns) => '$turns 拍';
   // 浮层底部操作提示：点选交互说明。
   static const String skillInfoTapHint = '轻点技能：单体技再点敌人出手，群体技一键即放';
   // 技能按钮角标：区分单体 / 群体目标类型。
@@ -190,9 +190,9 @@ class UiStrings {
   static const String battleContinue = '继续';
   static const String sealGlyph = '武'; // 印章符内字
 
-  /// 战斗结算 dialog 内容：`总伤害 X  暴击 Y 次  用时 Z 回合`。
+  /// 战斗结算 dialog 内容：`总伤害 X  暴击 Y 次  用时 Z 拍`。
   static String battleSummary(int totalDamage, int critCount, int totalTicks) =>
-      '总伤害 $totalDamage    暴击 $critCount 次    用时 $totalTicks 回合';
+      '总伤害 $totalDamage    暴击 $critCount 次    用时 $totalTicks 拍';
 
   // ── 战报失败诊断（spec 2026-06-15-battle-report-diagnosis）──
   static String defeatShortfallLabel(String label) => '主要短板：$label';
@@ -230,10 +230,10 @@ class UiStrings {
   static String diagDamageTaken(int dmg) => '受到总伤：$dmg';
   static String diagMinionRatio(int pct) => '小怪伤害占比：$pct%';
   static String diagFrontlineDeath(String name, int tick) =>
-      '$name 在第 $tick 回合倒下';
+      '$name 在第 $tick 拍倒下';
   static String diagFrontlineMaxHp(int hp) => '其最大血量：$hp';
   static String diagRecoveryDone(int hp) => '战中回复：$hp';
-  static String diagTotalTicks(int tick) => '总回合：$tick';
+  static String diagTotalTicks(int tick) => '总节拍：$tick';
   static String diagSurvivorHp(int pct) => '敌方残血：平均 $pct%';
   static String diagTotalDamage(int dmg) => '总伤害：$dmg';
 
@@ -700,7 +700,7 @@ class UiStrings {
   static const String statusInternalInjuryGloss =
       '内伤:经脉受创,每次自己出手都要再受一记暗伤,层数耗尽方止,拖久了能要命。';
 
-  /// 踉跄 debuff(staggerTicksRemaining):被破招后阵脚大乱,数回合内任人宰割。
+  /// 踉跄 debuff(staggerTicksRemaining):被破招后阵脚大乱,数拍内任人宰割。
   static const String statusStaggerLabel = '踉跄';
   static String get statusStaggerGloss => combatTermGloss(CombatTerm.interrupt);
 
@@ -791,6 +791,8 @@ class UiStrings {
   static const String inventoryConditionAll = '全部';
   static String inventoryConditionParts(List<String> parts) =>
       parts.isEmpty ? inventoryConditionAll : parts.join(' / ');
+  static String inventoryConditionSegment(String group, String value) =>
+      '$group：$value';
   static const String equipmentCardCoreStats = '核心属性';
   static const String equipmentCardRealmGate = '门槛';
   static const String equipmentCardStatusReady = '可装备';
@@ -990,19 +992,24 @@ class UiStrings {
   static const String bulkDisposalEmpty = '暂无可整理装备';
 
   // T11 仓库筛选标签。
+  static const String inventoryFilterPanelTitle = '筛选';
+  static String inventoryFilterPanelSummary({
+    required String condition,
+    required String sort,
+    required int activeCount,
+  }) => activeCount == 0 ? '当前：全部 · $sort' : '当前：$condition · $sort';
+  static const String inventoryFilterReset = '清空';
+  static const String inventoryFilterGroupSlot = '部位';
+  static const String inventoryFilterGroupTier = '品阶';
+  static const String inventoryFilterGroupSchool = '流派';
+  static const String inventoryFilterGroupStatus = '状态';
+  static const String inventoryFilterGroupSort = '排序';
   static const String inventoryFilterAll = '全部';
   static const String inventoryFilterEquippable = '可装备';
   static const String inventoryFilterEquipped = '已穿戴';
   static const String inventoryFilterForgeable = '可开锋';
   static const String inventoryFilterRealmLocked = '境界未达';
-  static const String inventoryFilterSlotAll = '部位·全部';
-  static const String inventoryFilterTierAll = '品阶·全部';
-  static const String inventoryFilterSchoolAll = '流派·全部';
   static const String inventoryFilterSchoolNone = '无流派';
-  static const String inventoryFilterOwnershipAll = '状态·全部';
-  static String inventoryFilterSlotLabel(String name) => '部位·$name';
-  static String inventoryFilterTierLabel(String name) => '品阶·$name';
-  static String inventoryFilterSchoolLabel(String name) => '流派·$name';
   static const String inventoryFilterFree = '自由';
   static const String inventoryFilterHeritage = '师承遗物';
   static const String inventoryFilterLocked = '已锁定';
@@ -1091,7 +1098,7 @@ class UiStrings {
   static String forgingSpecialSkillSchool(String label) => '流派：$label';
   static String forgingSpecialSkillTarget(String label) => '目标：$label';
   static String forgingSpecialSkillCostCooldown(int cost, int cooldown) =>
-      '内力 $cost · 冷却 $cooldown 回合';
+      '内力 $cost · 冷却 $cooldown 拍';
   static String forgingSpecialSkillFitCharacters(String school, String names) =>
       '适合：$school 路数 · $names';
   static String forgingSpecialSkillFitSchool(String school) =>
@@ -1477,7 +1484,7 @@ class UiStrings {
   static String cycleTraitDetailZhenqi(String pct) =>
       combatTermGloss(CombatTerm.zhenqi, pct: pct);
   static String cycleTraitDetailFanzhen(int ticks, int damagePerTick) =>
-      '反震：命中带词条的敌人后，攻击者会承受 $ticks 回合内伤，每回合 $damagePerTick。';
+      '反震：命中带词条的敌人后，攻击者会承受 $ticks 拍内伤，每拍 $damagePerTick。';
   static String get cycleTraitDetailShipo =>
       '识破：无${combatTermLabel(CombatTerm.charge)}技的敌人会补一式${combatTermLabel(CombatTerm.charge)}反制，需保留${combatTermLabel(CombatTerm.interrupt)}或爆发内力。';
   static String cycleTraitDetailNingjia(String reductionPct) =>
@@ -1916,11 +1923,14 @@ class UiStrings {
   static const String founderCreateNoConfig = '祖师创建配置未加载';
   static const String founderCreateSelected = '已选';
   static const String founderCreateStartingTechnique = '起手心法';
+  static const String founderCreateStartingEquipment = '起手装备';
   static const String founderCreateStartingResource = '起手资源';
   static const String founderCreateGoalHint = '开局建议';
   static const String founderCreateFateFocus = '命盘侧重';
   static String founderCreateAttributeTotal(int total) => '总点 $total';
   static String founderCreateTechniqueName(String name) => '主修「$name」';
+  static String founderCreateEquipmentNames(List<String> names) =>
+      names.join(' / ');
   static const String founderCreateReversibleHint =
       '起手选择只影响开局手感,日后可用装备、修炼补足,不必纠结。';
   static String founderCreateConfirmLine(
@@ -1928,6 +1938,10 @@ class UiStrings {
     String origin,
     String fate,
   ) => '$school · $origin · $fate';
+  static const String founderStarterGearDialogTitle = '开局行装';
+  static const String founderStarterGearDialogIntro = '门中旧匣启封，获得三件基础装备：';
+  static const String founderStarterGearEquippedHint = '已收入装备仓库，并为祖师穿戴。';
+  static const String founderStarterGearConfirm = '收下';
   static const String founderCreateAttrConstitutionHint = '影响最大生命,久战不溃';
   static const String founderCreateAttrEnlightenmentHint = '影响修炼速度与武学领悟';
   static const String founderCreateAttrAgilityHint = '影响速度、暴击与闪避';
@@ -2449,9 +2463,9 @@ class UiStrings {
   static String cangjingProficiencyNext(String effect) => '下阶 $effect';
   static String cangjingProficiencyDamageBonus(int pct) => '伤害 +$pct%';
   static String cangjingProficiencyCooldownReduction(int turns) =>
-      '冷却 -$turns回合';
+      '冷却 -$turns拍';
   static String cangjingProficiencyInterruptPower(int pct) => '破招减防 +$pct%';
-  static String cangjingProficiencyInterruptWindow(int turns) => '破绽 +$turns回合';
+  static String cangjingProficiencyInterruptWindow(int turns) => '破绽 +$turns拍';
   static String cangjingProficiencyEffectList(List<String> effects) =>
       effects.join(' · ');
   static String skillProficiencyCompact(String stage, String effect) =>
@@ -2826,7 +2840,7 @@ class UiStrings {
   static String battleRecordDefeatCount(int n) => '击败 $n 次';
   static String battleRecordDamage(int d) => '总伤害 $d';
   static String battleRecordCrits(int c) => '暴击 $c';
-  static String battleRecordTurns(int t) => '$t 回合';
+  static String battleRecordTurns(int t) => '$t 拍';
   static String battleRecordClearedAt(String date) => '初胜 $date';
 
   // ── 兵器谱 ──
