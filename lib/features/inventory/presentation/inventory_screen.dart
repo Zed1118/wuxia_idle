@@ -1348,7 +1348,10 @@ class _MaterialGridTile extends ConsumerWidget {
             borderRadius: BorderRadius.circular(3),
             child: Text(
               UiStrings.materialQuantity(displayName, item.quantity),
-              maxLines: 1,
+              // 格子宽 84px,长名字（磨剑石/心血结晶/关山拔戟秘籍）+「× 数量」单行放
+              // 不下会被 ellipsis 截掉数量;放宽到 2 行折行完整显示（Text.data 不变,
+              // T9 find.text('磨剑石 × 500') 断言仍命中）。数量另有右下角标兜底。
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               // 物料格子直接坐在深屏底(无浅底卡),文字用深底色板 WuxiaColors.text*,
