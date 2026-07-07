@@ -17,9 +17,8 @@ import '../../../core/domain/technique.dart';
 import '../../../data/narrative_loader.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../core/application/battle_providers.dart';
-import '../../../core/application/character_providers.dart';
-import '../../../core/application/inventory_providers.dart';
 import '../../battle/application/battle_resolution.dart';
+import '../../battle/application/post_combat_invalidation.dart';
 import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/auto_play_mode.dart';
@@ -151,7 +150,7 @@ Future<void> runStageFlow({
         // W13-v3 fix: writeTxn 写回 character.internalForce / mainTech.layer
         // 后必须 invalidate provider 缓存,否则下次进角色面板/心法面板仍读旧值
         // (Codex v3 截图 15 暴露:banner 显 3800→1900,但面板仍 3800)
-        _invalidateCharacterFamilyAfterCombat(ref);
+        invalidateAfterCombatSettlement(ref.invalidate);
       }
     } else {
       // M3:普通关战败立即重试(试错免费,无惩罚)。选「再战」→ 回循环头重打。
@@ -197,7 +196,8 @@ Future<void> runStageFlow({
     cycle: targetCycle,
   );
   // W13-v3 fix: 同 defeat 分支,invalidate character/equipment/technique family
-  _invalidateCharacterFamilyAfterCombat(ref);
+  // + 主菜单隐藏入口门控 / 银两(体检批3 P0-5),统一走共享 helper。
+  invalidateAfterCombatSettlement(ref.invalidate);
 
   // W12 fix: provider 副作用 getOrCreate 与 recordVictory 存在 race（W6 重构遗留），
   // 主动 ensure 避免 MainlineProgress 未初始化时抛 StateError
@@ -361,23 +361,6 @@ Future<void> runStageFlow({
   await _applyBossKillReputation(ref: ref, stage: stage);
 }
 
-/// W13-v3 fix: 战斗结算(victory / Boss defeat)后必须 invalidate 角色相关
-/// family provider,否则下次进角色面板/心法面板/仓库读到 Riverpod 缓存的
-/// 旧 Character / Equipment / Technique(虽然 Isar 已写入新值)。
-///
-/// **触发场景**:
-/// - 主线 victory:battleCount / cultivationProgress 累 + 关卡 drop 入背包
-/// - 主线 Boss defeat:internalForce ×0.5 + cultivationLayer 回退
-/// - 爬塔 victory:battleCount / cultivationProgress 累(同主线)
-///
-/// 实测根因:Codex v3 截图 15「banner 显 3800→1900,角色面板仍 3800/4180」。
-void _invalidateCharacterFamilyAfterCombat(WidgetRef ref) {
-  ref.invalidate(characterByIdProvider);
-  ref.invalidate(equipmentByIdProvider);
-  ref.invalidate(techniqueByIdProvider);
-  ref.invalidate(characterAllTechniquesProvider);
-  ref.invalidate(allEquipmentsProvider);
-}
 
 /// 推 BattleScreen 并 wait 胜/败/投降回调；返回 (won, surrendered)。
 /// D1: [targetCycle] 默认 1（零回归）。H3: surrendered=true 时 won 恒 false,

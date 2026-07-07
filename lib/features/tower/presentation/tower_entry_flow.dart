@@ -17,12 +17,11 @@ import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/narrative_loader.dart';
 import '../../../core/application/battle_providers.dart';
-import '../../../core/application/character_providers.dart';
-import '../../../core/application/inventory_providers.dart';
 import '../../../data/isar_provider.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
 import '../../battle/application/battle_resolution.dart';
+import '../../battle/application/post_combat_invalidation.dart';
 import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/domain/derived_stats.dart';
 import '../../battle/domain/auto_play_mode.dart';
@@ -210,11 +209,8 @@ Future<void> runTowerFlow({
   final heroCamera = victoryRes.heroCamera;
   // W13-v3 fix: invalidate character/equipment/technique family,否则下次进
   // 角色面板看到 Riverpod 缓存的旧 battleCount / cultivationProgress
-  ref.invalidate(characterByIdProvider);
-  ref.invalidate(equipmentByIdProvider);
-  ref.invalidate(techniqueByIdProvider);
-  ref.invalidate(characterAllTechniquesProvider);
-  ref.invalidate(allEquipmentsProvider);
+  // + 主菜单隐藏入口门控 / 银两(体检批3 P0-5),统一走共享 helper。
+  invalidateAfterCombatSettlement(ref.invalidate);
 
   // ── drops（isFirstClear 控发奖；重打不发奖 CLAUDE §5.1 防刷）──
   DropResult drops = const DropResult(equipments: [], items: []);

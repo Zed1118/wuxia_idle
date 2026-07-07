@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
+import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/inventory_item.dart';
@@ -70,6 +71,10 @@ class _PostBattleHealingPanelState
       realmLookup: GameRepository.instance.getRealm,
     );
     if (!mounted) return;
+    // 体检批3 P1-11:疗伤改角色伤势状态,须失效角色 family(疗伤目标是全队最伤者,
+    // 非固定角色,故失效整个 family 而非单个 id)+ active 列表,否则面板/角色屏读旧伤势。
+    ref.invalidate(characterByIdProvider);
+    ref.invalidate(activeCharacterIdsProvider);
     ref.invalidate(inventoryQuantityByDefIdProvider('item_liaoshangdan'));
     ref.invalidate(allInventoryItemsProvider);
     setState(() {

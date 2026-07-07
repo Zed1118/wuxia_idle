@@ -101,7 +101,8 @@ class OnlinePresenceController {
     );
     // settle 写了 Character/InventoryItem,Future 型 provider 缓存必须刷,
     // 否则聚焦静默结算=「结算了 UI 不刷新」(W13-v3 同型,参照
-    // stage_entry_flow._invalidateCharacterFamilyAfterCombat)。
+    // battle/application/post_combat_invalidation.dart)。离线被动只产磨剑石材料
+    // (offline_passive_service),不涉银两/装备图鉴/Boss 门控,故不刷主菜单门控。
     _ref.invalidate(characterByIdProvider);
     _ref.invalidate(allInventoryItemsProvider);
     return yield_;
