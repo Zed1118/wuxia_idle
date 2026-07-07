@@ -36,41 +36,58 @@ void main() {
     visualEffect: 'stub',
   );
 
-  BattleCharacter unit(int charId, int teamSide, int slot, int speed, int atk) =>
-      BattleCharacter(
-        characterId: charId,
-        name: '$charId',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 12000,
-        currentHp: 12000,
-        maxInternalForce: 2000,
-        currentInternalForce: 2000,
-        speed: speed,
-        criticalRate: 0.5,
-        evasionRate: 0.0,
-        defenseRate: 0.1,
-        totalEquipmentAttack: atk,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: const <SkillDef>[power, normal],
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: teamSide,
-        slotIndex: slot,
-      );
+  BattleCharacter unit(
+    int charId,
+    int teamSide,
+    int slot,
+    int speed,
+    int atk,
+  ) => BattleCharacter(
+    characterId: charId,
+    name: '$charId',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 12000,
+    currentHp: 12000,
+    maxInternalForce: 2000,
+    currentInternalForce: 2000,
+    speed: speed,
+    criticalRate: 0.5,
+    evasionRate: 0.0,
+    defenseRate: 0.1,
+    totalEquipmentAttack: atk,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: const <SkillDef>[power, normal],
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: teamSide,
+    slotIndex: slot,
+  );
 
   String runOnce(int seed) {
     final container = ProviderContainer();
     addTearDown(container.dispose);
-    final sub = container.listen(battleProvider, (_, _) {}, fireImmediately: true);
+    final sub = container.listen(
+      battleProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
     addTearDown(sub.close);
     final notifier = container.read(battleProvider.notifier);
     notifier.startBattle(
-      [unit(1, 0, 0, 130, 700), unit(2, 0, 1, 120, 700), unit(3, 0, 2, 110, 700)],
-      [unit(-1, 1, 0, 105, 450), unit(-2, 1, 1, 100, 450), unit(-3, 1, 2, 95, 450)],
+      [
+        unit(1, 0, 0, 130, 700),
+        unit(2, 0, 1, 120, 700),
+        unit(3, 0, 2, 110, 700),
+      ],
+      [
+        unit(-1, 1, 0, 105, 450),
+        unit(-2, 1, 1, 100, 450),
+        unit(-3, 1, 2, 95, 450),
+      ],
       seed: seed,
     );
     for (var i = 0; i < 3 && !container.read(battleProvider).isFinished; i++) {
@@ -84,8 +101,10 @@ void main() {
     }
     final s = container.read(battleProvider);
     final ops = s.actionLog
-        .map((a) =>
-            '${a.tick}|${a.actorId}|${a.targetId}|${a.skill?.id}|${a.attackResult?.finalDamage}')
+        .map(
+          (a) =>
+              '${a.tick}|${a.actorId}|${a.targetId}|${a.skill?.id}|${a.attackResult?.finalDamage}',
+        )
         .join(';');
     return '${s.result}#$ops';
   }
@@ -94,7 +113,46 @@ void main() {
     final first = runOnce(20260618);
     final second = runOnce(20260618);
     expect(first.split(';').length, greaterThan(10));
-    expect(first, equals(second),
-        reason: 'interveneNow 走同一 seeded _rng,插队路径须确定');
+    expect(
+      first,
+      equals(second),
+      reason: 'interveneNow 走同一 seeded _rng,插队路径须确定',
+    );
+  });
+
+  test('P0-4:非 tick 边界 actorQueue 非空时 interveneNow 不插队', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final sub = container.listen(
+      battleProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(sub.close);
+    final notifier = container.read(battleProvider.notifier);
+    notifier.startBattle(
+      [unit(1, 0, 0, 1200, 700)],
+      [unit(-1, 1, 0, 1100, 450)],
+      seed: 20260707,
+    );
+
+    notifier.step(); // tick 边界步:填 actorQueue,尚未结算任何 actor。
+    final before = container.read(battleProvider);
+    expect(before.actorQueue, isNotEmpty);
+    expect(before.actionLog, isEmpty);
+
+    notifier.interveneNow(1, power, targetId: -1);
+    final after = container.read(battleProvider);
+
+    expect(
+      after.actionLog,
+      isEmpty,
+      reason: 'mid-queue 插队会让同角色本 tick 二次出手,应直接 no-op',
+    );
+    expect(after.actorQueue, before.actorQueue);
+    expect(
+      after.leftTeam.single.actionPoint,
+      before.leftTeam.single.actionPoint,
+    );
   });
 }

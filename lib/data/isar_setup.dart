@@ -285,13 +285,18 @@ class IsarSetup {
         }
       }
 
-      // --- 段 2 ---
+      // --- 段 2(0.21.0 周目 per-stage key · 版本门 <0.21.0)---
+      // P1-10(2026-07-07 体检批5):补版本门。此段与 tower 段(同 0.21.0 引入)
+      // 一致,0.21+ 存档周目键已建,不再每次 saveVer bump 用退役的 clearedStageIds
+      // 快照重跑 "#1" 回填(否则污染周目首通判定)。<0.21.0 旧档仍一次性回填。
       for (final mp in mainlineRows) {
         final keys = List<String>.of(mp.clearedStageCycleKeys);
-        for (final stageId in mp.clearedStageIds) {
-          final key = '$stageId#1';
-          if (!keys.contains(key)) {
-            keys.add(key);
+        if (_compareVersion(fromVersion, '0.21.0') < 0) {
+          for (final stageId in mp.clearedStageIds) {
+            final key = '$stageId#1';
+            if (!keys.contains(key)) {
+              keys.add(key);
+            }
           }
         }
         mp.clearedStageCycleKeys = keys;

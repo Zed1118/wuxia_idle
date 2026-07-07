@@ -124,9 +124,14 @@ class BattleResolutionService {
 
     // 1. 反推 actionLog：actor → {skillId: 使用次数}
     final skillCountsByActor = <int, Map<String, int>>{};
+    final countedSkillCasts = <String>{};
     for (final action in finalState.actionLog) {
       final skillId = action.skill?.id;
       if (skillId == null) continue; // 普通行动（无 skill）不计入修炼度
+      if (action.targetId != null) {
+        final castKey = '${action.tick}|${action.actorId}|$skillId';
+        if (!countedSkillCasts.add(castKey)) continue;
+      }
       skillCountsByActor
           .putIfAbsent(action.actorId, () => <String, int>{})
           .update(skillId, (v) => v + 1, ifAbsent: () => 1);
@@ -160,8 +165,7 @@ class BattleResolutionService {
 
       // 2b/2c. 心法累积（主修走 CultivationService，辅修仅 increment）
       final techs = techniquesByCharacter[ch.id] ?? const <Technique>[];
-      final usedSkills =
-          skillCountsByActor[ch.id] ?? const <String, int>{};
+      final usedSkills = skillCountsByActor[ch.id] ?? const <String, int>{};
       _accumulateSkillUsage(
         character: ch,
         techniques: techs,
@@ -257,7 +261,8 @@ class BattleResolutionService {
           ch: ch,
           mainTech: mainTech,
           penalty: idDef.failurePenalty,
-          residueHours: idDef.failurePenalty.debuffClearViaRetreatHours.toDouble(),
+          residueHours: idDef.failurePenalty.debuffClearViaRetreatHours
+              .toDouble(),
         );
       }
     }

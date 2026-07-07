@@ -135,5 +135,49 @@ void main() {
       expect(save!.skillUnlockProgress.isUnlocked(probeSkillId), isTrue,
           reason: '0.17 旧档段1 仍执行,并入旧池');
     });
+
+    // --- 段 2(0.21.0)版本门(P1-10 · 2026-07-07 体检批5)---
+    // clearedStageIds → clearedStageCycleKeys "#1" 回填是 0.21.0 迁移动作,
+    // 与 tower 段(同 0.21.0 门)一致须加门:0.21+ 存档不再每次升级重跑,
+    // 避免用退役的 clearedStageIds 快照污染周目首通判定。
+
+    const probeStageId = 'stage_p110_gate_probe';
+
+    Future<void> seedClearedStage(String saveVersion) async {
+      final mp = await MainlineProgressService(isar: IsarSetup.instance)
+          .getOrCreate(saveDataId: 1);
+      await IsarSetup.instance.writeTxn(() async {
+        final save = await IsarSetup.instance.saveDatas.get(0);
+        save!.saveVersion = saveVersion;
+        await IsarSetup.instance.saveDatas.put(save);
+        mp.clearedStageIds = [probeStageId];
+        mp.clearedStageCycleKeys = []; // 周目键为空,模拟已推进/已消费
+        await IsarSetup.instance.mainlineProgress.put(mp);
+      });
+    }
+
+    test('0.21+ 存档不重跑段2:clearedStageIds 不再回填 #1 周目键', () async {
+      await seedClearedStage('0.21.0'); // == 0.21.0 → 段2 门 <0.21.0 为 false
+
+      await IsarSetup.close();
+      await IsarSetup.init(directory: tempDir, inspector: false);
+
+      final mp2 = await MainlineProgressService(isar: IsarSetup.instance)
+          .getOrCreate(saveDataId: 1);
+      expect(mp2.clearedStageCycleKeys, isNot(contains('$probeStageId#1')),
+          reason: '0.21+ 存档段2 被版本门跳过,不用退役 clearedStageIds 回填 #1');
+    });
+
+    test('0.20 旧档仍迁段2:clearedStageIds 回填 #1 周目键(门不过度跳过)', () async {
+      await seedClearedStage('0.20.0'); // < 0.21.0 → 段2 仍跑
+
+      await IsarSetup.close();
+      await IsarSetup.init(directory: tempDir, inspector: false);
+
+      final mp2 = await MainlineProgressService(isar: IsarSetup.instance)
+          .getOrCreate(saveDataId: 1);
+      expect(mp2.clearedStageCycleKeys, contains('$probeStageId#1'),
+          reason: '0.20 旧档段2 仍执行,回填 #1 周目键');
+    });
   });
 }

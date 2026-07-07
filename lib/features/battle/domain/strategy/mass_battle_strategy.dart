@@ -62,12 +62,20 @@ class MassBattleStrategy extends BattleStrategy {
   int get waveCount => enemyTeamsPerWave.length;
 
   @override
-  BattleState tick(
-    BattleState state,
-    NumbersConfig n, {
-    Random? rng,
-  }) =>
-      _delegate.tick(state, n, rng: rng);
+  BattleState tick(BattleState state, NumbersConfig n, {Random? rng}) {
+    var s = _advanceWaveIfNeeded(_ensureStarted(state, n));
+    if (s.isFinished) return s;
+    s = _delegate.tick(s, n, rng: rng);
+    return _advanceWaveIfNeeded(s);
+  }
+
+  @override
+  BattleState stepOne(BattleState state, NumbersConfig n, {Random? rng}) {
+    var s = _advanceWaveIfNeeded(_ensureStarted(state, n));
+    if (s.isFinished) return s;
+    s = _delegate.stepOne(s, n, rng: rng);
+    return _advanceWaveIfNeeded(s);
+  }
 
   /// 跑完整守城战(多 wave 循环)。
   ///
@@ -132,16 +140,59 @@ class MassBattleStrategy extends BattleStrategy {
     int characterId,
     SkillDef ultimate, {
     int? targetId,
-  }) =>
-      _delegate.requestUltimate(state, characterId, ultimate,
-          targetId: targetId);
+  }) => _delegate.requestUltimate(
+    state,
+    characterId,
+    ultimate,
+    targetId: targetId,
+  );
 
-  BattleState _applyFormation(BattleState s, double rateCap) => applyFormationTo(
+  BattleState _applyFormation(BattleState s, double rateCap) =>
+      applyFormationTo(
         s,
         formation: formation,
         config: config,
         rateCap: rateCap,
       );
+
+  BattleState _ensureStarted(BattleState s, NumbersConfig n) {
+    if (enemyTeamsPerWave.isEmpty) {
+      return s.copyWith(result: BattleResult.draw, actorQueue: const []);
+    }
+    if (_currentWaveIndex(s) >= 0) return s;
+    return _applyFormation(s, n.combat.redLines.combinedRateCap).copyWith(
+      rightTeam: List.unmodifiable(enemyTeamsPerWave.first),
+      result: null,
+      actorQueue: const [],
+    );
+  }
+
+  BattleState _advanceWaveIfNeeded(BattleState s) {
+    if (s.result != BattleResult.leftWin) return s;
+    final currentWave = _currentWaveIndex(s);
+    if (currentWave < 0 || currentWave >= waveCount - 1) return s;
+    return _intermission(s).copyWith(
+      rightTeam: List.unmodifiable(enemyTeamsPerWave[currentWave + 1]),
+      result: null,
+      actorQueue: const [],
+    );
+  }
+
+  int _currentWaveIndex(BattleState s) {
+    for (var i = 0; i < enemyTeamsPerWave.length; i++) {
+      final wave = enemyTeamsPerWave[i];
+      if (wave.length != s.rightTeam.length) continue;
+      var same = true;
+      for (var j = 0; j < wave.length; j++) {
+        if (wave[j].characterId != s.rightTeam[j].characterId) {
+          same = false;
+          break;
+        }
+      }
+      if (same) return i;
+    }
+    return -1;
+  }
 
   /// 烘焙 formation modifier 到**仅 leftTeam** BattleCharacter 入口快照。
   ///
@@ -160,10 +211,11 @@ class MassBattleStrategy extends BattleStrategy {
     required MassBattleDef config,
     double rateCap = 0.95,
   }) {
-    final m = config.formations[formation] ??
-        MassBattleFormationModifier.neutral();
-    final newLeft =
-        s.leftTeam.map((c) => _bake(c, m, rateCap)).toList(growable: false);
+    final m =
+        config.formations[formation] ?? MassBattleFormationModifier.neutral();
+    final newLeft = s.leftTeam
+        .map((c) => _bake(c, m, rateCap))
+        .toList(growable: false);
     return s.copyWith(
       leftTeam: List.unmodifiable(newLeft),
       // rightTeam 不动 — 阵型仅玩家战略,敌方不沾
@@ -181,11 +233,16 @@ class MassBattleStrategy extends BattleStrategy {
     MassBattleFormationModifier m,
     double rateCap,
   ) {
+    if (c.attackPowerMultiplierSource ==
+        AttackPowerMultiplierSource.formation) {
+      return c;
+    }
     return c.copyWith(
       criticalRate: (c.criticalRate + m.criticalRateDelta).clamp(0.0, rateCap),
       evasionRate: (c.evasionRate + m.evasionRateDelta).clamp(0.0, rateCap),
       defenseRate: (c.defenseRate + m.defenseRateDelta).clamp(0.0, rateCap),
       attackPowerMultiplier: m.damageMultiplier,
+      attackPowerMultiplierSource: AttackPowerMultiplierSource.formation,
     );
   }
 
@@ -204,49 +261,57 @@ class MassBattleStrategy extends BattleStrategy {
   /// 死角色不复活(`isAlive=false` 保留 — 阵型烘焙后死了就死了,§5.1 反留存)。
   BattleState _intermission(BattleState s) {
     final wi = config.waveIntermission;
-    final newLeft = s.leftTeam.map((c) {
-      // 死角色:reviveDeadPct > 0 时复活至 maxHp × pct(P3.2.C 修法 ① · 守城短歇补员)
-      if (!c.isAlive) {
-        if (wi.reviveDeadPct <= 0) return c;
-        return c.copyWith(
-          isAlive: true,
-          currentHp: (c.maxHp * wi.reviveDeadPct).round(),
-          currentInternalForce:
-              (c.maxInternalForce * wi.reviveDeadPct).round(),
-          actionPoint: 0,
-          skillCooldowns: const <String, int>{},
-        );
-      }
-      // 活角色:aliveHpRecoveryPct > 0 与 preserveHp 取 max(短歇 hp 不低于当前残血)
-      final hpAfterRecovery = wi.aliveHpRecoveryPct > 0
-          ? (c.maxHp * wi.aliveHpRecoveryPct).round().clamp(0, c.maxHp)
-          : (wi.preserveHp ? c.currentHp : c.maxHp);
-      final ifAfterRecovery = wi.aliveIfRecoveryPct > 0
-          ? (c.maxInternalForce * wi.aliveIfRecoveryPct)
-              .round()
-              .clamp(0, c.maxInternalForce)
-          : (wi.preserveInternalForce
-              ? c.currentInternalForce
-              : c.maxInternalForce);
-      return c.copyWith(
-        actionPoint: wi.resetActionPoint ? 0 : c.actionPoint,
-        currentHp: wi.preserveHp
-            ? (c.currentHp > hpAfterRecovery ? c.currentHp : hpAfterRecovery)
-            : hpAfterRecovery,
-        currentInternalForce: wi.preserveInternalForce
-            ? (c.currentInternalForce > ifAfterRecovery
-                ? c.currentInternalForce
-                : ifAfterRecovery)
-            : ifAfterRecovery,
-        skillCooldowns:
-            wi.preserveCooldowns ? c.skillCooldowns : const <String, int>{},
-      );
-    }).toList(growable: false);
+    final newLeft = s.leftTeam
+        .map((c) {
+          // 死角色:reviveDeadPct > 0 时复活至 maxHp × pct(P3.2.C 修法 ① · 守城短歇补员)
+          if (!c.isAlive) {
+            if (wi.reviveDeadPct <= 0) return c;
+            return c.copyWith(
+              isAlive: true,
+              currentHp: (c.maxHp * wi.reviveDeadPct).round(),
+              currentInternalForce: (c.maxInternalForce * wi.reviveDeadPct)
+                  .round(),
+              actionPoint: 0,
+              skillCooldowns: const <String, int>{},
+            );
+          }
+          // 活角色:aliveHpRecoveryPct > 0 与 preserveHp 取 max(短歇 hp 不低于当前残血)
+          final hpAfterRecovery = wi.aliveHpRecoveryPct > 0
+              ? (c.maxHp * wi.aliveHpRecoveryPct).round().clamp(0, c.maxHp)
+              : (wi.preserveHp ? c.currentHp : c.maxHp);
+          final ifAfterRecovery = wi.aliveIfRecoveryPct > 0
+              ? (c.maxInternalForce * wi.aliveIfRecoveryPct).round().clamp(
+                  0,
+                  c.maxInternalForce,
+                )
+              : (wi.preserveInternalForce
+                    ? c.currentInternalForce
+                    : c.maxInternalForce);
+          return c.copyWith(
+            actionPoint: wi.resetActionPoint ? 0 : c.actionPoint,
+            currentHp: wi.preserveHp
+                ? (c.currentHp > hpAfterRecovery
+                      ? c.currentHp
+                      : hpAfterRecovery)
+                : hpAfterRecovery,
+            currentInternalForce: wi.preserveInternalForce
+                ? (c.currentInternalForce > ifAfterRecovery
+                      ? c.currentInternalForce
+                      : ifAfterRecovery)
+                : ifAfterRecovery,
+            skillCooldowns: wi.preserveCooldowns
+                ? c.skillCooldowns
+                : const <String, int>{},
+          );
+        })
+        .toList(growable: false);
 
     return s.copyWith(
       leftTeam: List.unmodifiable(newLeft),
       result: null, // 清空 result 让下波继续
       pendingUltimates: const {}, // 不带入下波
+      pendingTargets: const {},
+      actorQueue: const [],
     );
   }
 }

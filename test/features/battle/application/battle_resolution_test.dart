@@ -65,15 +65,14 @@ void main() {
     required int id,
     required EquipmentSlot slot,
     int battleCount = 0,
-  }) =>
-      Equipment.create(
-        defId: 'eq_test',
-        tier: EquipmentTier.xunChang,
-        slot: slot,
-        obtainedAt: t,
-        obtainedFrom: '测试',
-        battleCount: battleCount,
-      )..id = id;
+  }) => Equipment.create(
+    defId: 'eq_test',
+    tier: EquipmentTier.xunChang,
+    slot: slot,
+    obtainedAt: t,
+    obtainedFrom: '测试',
+    battleCount: battleCount,
+  )..id = id;
 
   Technique buildTechnique({
     required int id,
@@ -83,111 +82,108 @@ void main() {
     CultivationLayer layer = CultivationLayer.chuKui,
     int progress = 0,
     int progressToNext = 100,
-  }) =>
-      Technique.create(
-        defId: defId,
-        ownerCharacterId: ownerCharId,
-        tier: TechniqueTier.ruMenGong,
-        school: TechniqueSchool.gangMeng,
-        role: role,
-        learnedAt: t,
-        cultivationLayer: layer,
-        cultivationProgress: progress,
-        cultivationProgressToNext: progressToNext,
-      )..id = id;
+  }) => Technique.create(
+    defId: defId,
+    ownerCharacterId: ownerCharId,
+    tier: TechniqueTier.ruMenGong,
+    school: TechniqueSchool.gangMeng,
+    role: role,
+    learnedAt: t,
+    cultivationLayer: layer,
+    cultivationProgress: progress,
+    cultivationProgressToNext: progressToNext,
+  )..id = id;
 
   /// 极简 SkillDef 占位（only id 被读到）
   SkillDef buildSkill(String id) => SkillDef(
-        id: id,
-        name: id,
-        description: 'd',
-        type: SkillType.normalAttack,
-        powerMultiplier: 500,
-        internalForceCost: 0,
-        cooldownTurns: 0,
-        requiresManualTrigger: false,
-        visualEffect: 'a',
-      );
+    id: id,
+    name: id,
+    description: 'd',
+    type: SkillType.normalAttack,
+    powerMultiplier: 500,
+    internalForceCost: 0,
+    cooldownTurns: 0,
+    requiresManualTrigger: false,
+    visualEffect: 'a',
+  );
 
   /// 极简 BattleCharacter（只用到 characterId 验证 participation）
   BattleCharacter buildBattleChar(int charId, int slot) => BattleCharacter(
-        characterId: charId,
-        name: 'c$charId',
-        realmTier: RealmTier.xueTu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 1000,
-        currentHp: 1000,
-        maxInternalForce: 500,
-        currentInternalForce: 500,
-        speed: 100,
-        criticalRate: 0.1,
-        evasionRate: 0.1,
-        defenseRate: 0.05,
-        totalEquipmentAttack: 100,
-        mainCultivationLayer: CultivationLayer.chuKui,
-        availableSkills: const [],
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: 0,
-        slotIndex: slot,
-      );
+    characterId: charId,
+    name: 'c$charId',
+    realmTier: RealmTier.xueTu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 1000,
+    currentHp: 1000,
+    maxInternalForce: 500,
+    currentInternalForce: 500,
+    speed: 100,
+    criticalRate: 0.1,
+    evasionRate: 0.1,
+    defenseRate: 0.05,
+    totalEquipmentAttack: 100,
+    mainCultivationLayer: CultivationLayer.chuKui,
+    availableSkills: const [],
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: 0,
+    slotIndex: slot,
+  );
 
   BattleAction buildAction({
     required int actorId,
     SkillDef? skill,
     int tick = 1,
-  }) =>
-      BattleAction(
-        tick: tick,
-        actorId: actorId,
-        skill: skill,
-        description: 'a',
-      );
+    int? targetId,
+  }) => BattleAction(
+    tick: tick,
+    actorId: actorId,
+    targetId: targetId,
+    skill: skill,
+    description: 'a',
+  );
 
   TechniqueDef buildTechDef({
     required String id,
     required List<String> skillIds,
-  }) =>
-      TechniqueDef(
-        id: id,
-        name: id,
-        tier: TechniqueTier.ruMenGong,
-        school: TechniqueSchool.gangMeng,
-        description: 'd',
-        skillIds: skillIds,
-        internalForceGrowthBonus: 1.0,
-        speedBonus: 0,
-        acquireSourceTags: const [],
-      );
+  }) => TechniqueDef(
+    id: id,
+    name: id,
+    tier: TechniqueTier.ruMenGong,
+    school: TechniqueSchool.gangMeng,
+    description: 'd',
+    skillIds: skillIds,
+    internalForceGrowthBonus: 1.0,
+    speedBonus: 0,
+    acquireSourceTags: const [],
+  );
 
   StageDef buildStage({
     List<DropEntry> dropTable = const [],
     bool isBossStage = false,
     StageType stageType = StageType.mainline,
-  }) =>
-      StageDef(
-        id: 'stage_test',
-        name: '测试关',
-        stageType: stageType,
-        chapterIndex: 1,
-        requiredRealm: RealmTier.xueTu,
-        enemyTeam: const [],
-        isBossStage: isBossStage,
-        dropTable: dropTable,
-        baseExpReward: 0,
-        difficultyMultiplier: 1.0,
-      );
+  }) => StageDef(
+    id: 'stage_test',
+    name: '测试关',
+    stageType: stageType,
+    chapterIndex: 1,
+    requiredRealm: RealmTier.xueTu,
+    enemyTeam: const [],
+    isBossStage: isBossStage,
+    dropTable: dropTable,
+    baseExpReward: 0,
+    difficultyMultiplier: 1.0,
+  );
 
   /// DropService 默认 mock：空 dropTable 时不会被调到底；有则用 fake def
   DropService dropSvc({EquipmentDef? eqDef}) => DropService(
-        equipmentDefLookup: (id) =>
-            eqDef ??
-            (throw StateError('test eqDef not provided for $id')),
-        now: () => t,
-      );
+    equipmentDefLookup: (id) =>
+        eqDef ?? (throw StateError('test eqDef not provided for $id')),
+    now: () => t,
+  );
 
   // ──────────────────────────────────────────────────────────────────────────
   // 1. 装备 battleCount++：参战三件 +1
@@ -195,10 +191,26 @@ void main() {
 
   test('装备 battleCount++：武器/护甲/饰品三件 +1', () {
     final ch = buildCharacter(id: 1, mainTechId: 200);
-    final w = buildEquipment(id: 100, slot: EquipmentSlot.weapon, battleCount: 5);
-    final a = buildEquipment(id: 101, slot: EquipmentSlot.armor, battleCount: 0);
-    final ac = buildEquipment(id: 102, slot: EquipmentSlot.accessory, battleCount: 99);
-    final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+    final w = buildEquipment(
+      id: 100,
+      slot: EquipmentSlot.weapon,
+      battleCount: 5,
+    );
+    final a = buildEquipment(
+      id: 101,
+      slot: EquipmentSlot.armor,
+      battleCount: 0,
+    );
+    final ac = buildEquipment(
+      id: 102,
+      slot: EquipmentSlot.accessory,
+      battleCount: 99,
+    );
+    final mainTech = buildTechnique(
+      id: 200,
+      ownerCharId: 1,
+      defId: 'tech_main',
+    );
 
     final state = BattleState(
       leftTeam: [buildBattleChar(1, 0)],
@@ -211,8 +223,12 @@ void main() {
     final result = BattleResolutionService.resolve(
       finalState: state,
       participatingCharacters: [ch],
-      equipmentsByCharacter: {1: [w, a, ac]},
-      techniquesByCharacter: {1: [mainTech]},
+      equipmentsByCharacter: {
+        1: [w, a, ac],
+      },
+      techniquesByCharacter: {
+        1: [mainTech],
+      },
       stageDef: buildStage(),
       rng: DefaultRng(seed: 1),
       progressToNextMap: progressMap,
@@ -233,7 +249,11 @@ void main() {
   test('战败 (rightWin) 也涨：装备 +1 + 心法 progress 累加', () {
     final ch = buildCharacter(id: 1, mainTechId: 200);
     final w = buildEquipment(id: 100, slot: EquipmentSlot.weapon);
-    final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+    final mainTech = buildTechnique(
+      id: 200,
+      ownerCharId: 1,
+      defId: 'tech_main',
+    );
     final skill = buildSkill('skill_main_a');
 
     final state = BattleState(
@@ -250,8 +270,12 @@ void main() {
     BattleResolutionService.resolve(
       finalState: state,
       participatingCharacters: [ch],
-      equipmentsByCharacter: {1: [w]},
-      techniquesByCharacter: {1: [mainTech]},
+      equipmentsByCharacter: {
+        1: [w],
+      },
+      techniquesByCharacter: {
+        1: [mainTech],
+      },
       stageDef: buildStage(),
       rng: DefaultRng(seed: 1),
       progressToNextMap: progressMap,
@@ -295,7 +319,9 @@ void main() {
       finalState: state,
       participatingCharacters: [ch],
       equipmentsByCharacter: const {},
-      techniquesByCharacter: {1: [mainTech]},
+      techniquesByCharacter: {
+        1: [mainTech],
+      },
       stageDef: buildStage(),
       rng: DefaultRng(seed: 1),
       progressToNextMap: progressMap,
@@ -320,7 +346,11 @@ void main() {
 
   test('辅修：skillUsageCount.increment 但 cultivationProgress 不动', () {
     final ch = buildCharacter(id: 1, mainTechId: 200);
-    final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+    final mainTech = buildTechnique(
+      id: 200,
+      ownerCharId: 1,
+      defId: 'tech_main',
+    );
     final assistTech = buildTechnique(
       id: 201,
       ownerCharId: 1,
@@ -346,7 +376,9 @@ void main() {
       finalState: state,
       participatingCharacters: [ch],
       equipmentsByCharacter: const {},
-      techniquesByCharacter: {1: [mainTech, assistTech]},
+      techniquesByCharacter: {
+        1: [mainTech, assistTech],
+      },
       stageDef: buildStage(),
       rng: DefaultRng(seed: 1),
       progressToNextMap: progressMap,
@@ -370,7 +402,11 @@ void main() {
 
   test('action.skill == null 不计入修炼度', () {
     final ch = buildCharacter(id: 1, mainTechId: 200);
-    final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+    final mainTech = buildTechnique(
+      id: 200,
+      ownerCharId: 1,
+      defId: 'tech_main',
+    );
     final skill = buildSkill('skill_main_a');
 
     final state = BattleState(
@@ -389,7 +425,9 @@ void main() {
       finalState: state,
       participatingCharacters: [ch],
       equipmentsByCharacter: const {},
-      techniquesByCharacter: {1: [mainTech]},
+      techniquesByCharacter: {
+        1: [mainTech],
+      },
       stageDef: buildStage(),
       rng: DefaultRng(seed: 1),
       progressToNextMap: progressMap,
@@ -399,6 +437,61 @@ void main() {
     );
 
     expect(mainTech.skillUsageCount.countOf('skill_main_a'), 1);
+    expect(mainTech.cultivationProgress, 1);
+  });
+
+  test('P1-14 AOE 多目标 actionLog 只按一次施放累积熟练度', () {
+    final ch = buildCharacter(id: 1, mainTechId: 200);
+    final mainTech = buildTechnique(
+      id: 200,
+      ownerCharId: 1,
+      defId: 'tech_main',
+    );
+    const aoeSkill = SkillDef(
+      id: 'skill_main_a',
+      name: 'aoe',
+      description: 'aoe',
+      type: SkillType.powerSkill,
+      targetType: TargetType.aoe,
+      powerMultiplier: 1200,
+      internalForceCost: 100,
+      cooldownTurns: 2,
+      requiresManualTrigger: false,
+      visualEffect: 'a',
+    );
+
+    final state = BattleState(
+      leftTeam: [buildBattleChar(1, 0)],
+      rightTeam: const [],
+      tick: 5,
+      result: BattleResult.leftWin,
+      actionLog: [
+        buildAction(actorId: 1, skill: aoeSkill, tick: 3, targetId: -1),
+        buildAction(actorId: 1, skill: aoeSkill, tick: 3, targetId: -2),
+        buildAction(actorId: 1, skill: aoeSkill, tick: 3, targetId: -3),
+      ],
+    );
+
+    BattleResolutionService.resolve(
+      finalState: state,
+      participatingCharacters: [ch],
+      equipmentsByCharacter: const {},
+      techniquesByCharacter: {
+        1: [mainTech],
+      },
+      stageDef: buildStage(),
+      rng: DefaultRng(seed: 1),
+      progressToNextMap: progressMap,
+      techniqueDefLookup: (id) =>
+          buildTechDef(id: id, skillIds: const ['skill_main_a']),
+      dropService: dropSvc(),
+    );
+
+    expect(
+      mainTech.skillUsageCount.countOf('skill_main_a'),
+      1,
+      reason: '一次 AOE 施放产生多条 target action,熟练度仍只记一次施放',
+    );
     expect(mainTech.cultivationProgress, 1);
   });
 
@@ -430,8 +523,14 @@ void main() {
     BattleResolutionService.resolve(
       finalState: state,
       participatingCharacters: [ch1, ch2],
-      equipmentsByCharacter: {1: [w1], 2: [w2]},
-      techniquesByCharacter: {1: [tech1], 2: [tech2]},
+      equipmentsByCharacter: {
+        1: [w1],
+        2: [w2],
+      },
+      techniquesByCharacter: {
+        1: [tech1],
+        2: [tech2],
+      },
       stageDef: buildStage(),
       rng: DefaultRng(seed: 1),
       progressToNextMap: progressMap,
@@ -452,7 +551,11 @@ void main() {
 
   test('未参战角色：未传入 participatingCharacters 时装备/心法不动', () {
     final ch1 = buildCharacter(id: 1, mainTechId: 200);
-    final benchEq = buildEquipment(id: 999, slot: EquipmentSlot.weapon, battleCount: 7);
+    final benchEq = buildEquipment(
+      id: 999,
+      slot: EquipmentSlot.weapon,
+      battleCount: 7,
+    );
     final w1 = buildEquipment(id: 100, slot: EquipmentSlot.weapon);
     final tech1 = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
 
@@ -467,8 +570,12 @@ void main() {
     BattleResolutionService.resolve(
       finalState: state,
       participatingCharacters: [ch1],
-      equipmentsByCharacter: {1: [w1]},
-      techniquesByCharacter: {1: [tech1]},
+      equipmentsByCharacter: {
+        1: [w1],
+      },
+      techniquesByCharacter: {
+        1: [tech1],
+      },
       stageDef: buildStage(),
       rng: DefaultRng(seed: 1),
       progressToNextMap: progressMap,
@@ -517,7 +624,11 @@ void main() {
 
   test('DropService 联动：dropTable 必掉 → DropResult 含装备 + 物品', () {
     final ch = buildCharacter(id: 1, mainTechId: 200);
-    final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+    final mainTech = buildTechnique(
+      id: 200,
+      ownerCharId: 1,
+      defId: 'tech_main',
+    );
 
     final state = BattleState(
       leftTeam: [buildBattleChar(1, 0)],
@@ -547,16 +658,20 @@ void main() {
       finalState: state,
       participatingCharacters: [ch],
       equipmentsByCharacter: const {},
-      techniquesByCharacter: {1: [mainTech]},
-      stageDef: buildStage(dropTable: const [
-        EquipmentDrop(equipmentDefId: 'eq_drop_test', dropChance: 1.0),
-        ItemDrop(
-          inventoryItemDefId: 'item_x',
-          quantityMin: 2,
-          quantityMax: 2,
-          dropChance: 1.0,
-        ),
-      ]),
+      techniquesByCharacter: {
+        1: [mainTech],
+      },
+      stageDef: buildStage(
+        dropTable: const [
+          EquipmentDrop(equipmentDefId: 'eq_drop_test', dropChance: 1.0),
+          ItemDrop(
+            inventoryItemDefId: 'item_x',
+            quantityMin: 2,
+            quantityMax: 2,
+            dropChance: 1.0,
+          ),
+        ],
+      ),
       rng: DefaultRng(seed: 1),
       progressToNextMap: progressMap,
       techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
@@ -574,40 +689,50 @@ void main() {
   // 周目平衡 2026-06-26:resolve 透传 cycle → 二周目材料类掉落 ×1.5(真 numbers.yaml)。
   test('周目材料加成：cycle=2 材料 ×1.5、cycle=1 原值', () {
     final ch = buildCharacter(id: 1, mainTechId: 200);
-    final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+    final mainTech = buildTechnique(
+      id: 200,
+      ownerCharId: 1,
+      defId: 'tech_main',
+    );
     BattleState victory() => BattleState(
-          leftTeam: [buildBattleChar(1, 0)],
-          rightTeam: const [],
-          tick: 5,
-          result: BattleResult.leftWin,
-          actionLog: const [],
-        );
+      leftTeam: [buildBattleChar(1, 0)],
+      rightTeam: const [],
+      tick: 5,
+      result: BattleResult.leftWin,
+      actionLog: const [],
+    );
     // item_jingtie → ItemType.miscMaterial(吃加成);qtyMin=qtyMax=4 确定性。
-    final stage = buildStage(dropTable: const [
-      ItemDrop(
-        inventoryItemDefId: 'item_jingtie',
-        quantityMin: 4,
-        quantityMax: 4,
-        dropChance: 1.0,
-      ),
-    ]);
+    final stage = buildStage(
+      dropTable: const [
+        ItemDrop(
+          inventoryItemDefId: 'item_jingtie',
+          quantityMin: 4,
+          quantityMax: 4,
+          dropChance: 1.0,
+        ),
+      ],
+    );
     BattleResolutionResult run(int cycle) => BattleResolutionService.resolve(
-          finalState: victory(),
-          participatingCharacters: [ch],
-          equipmentsByCharacter: const {},
-          techniquesByCharacter: {1: [mainTech]},
-          stageDef: stage,
-          rng: DefaultRng(seed: 1),
-          progressToNextMap: progressMap,
-          techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
-          dropService: dropSvc(),
-          numbersConfig: numbersCfg,
-          cycle: cycle,
-        );
-    expect(run(1).dropResult.items.single.quantity, 4,
-        reason: '一周目材料不加成');
-    expect(run(2).dropResult.items.single.quantity, 6,
-        reason: '二周目材料 ×1.5(numbers.yaml cycle_drop_bonus)');
+      finalState: victory(),
+      participatingCharacters: [ch],
+      equipmentsByCharacter: const {},
+      techniquesByCharacter: {
+        1: [mainTech],
+      },
+      stageDef: stage,
+      rng: DefaultRng(seed: 1),
+      progressToNextMap: progressMap,
+      techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+      dropService: dropSvc(),
+      numbersConfig: numbersCfg,
+      cycle: cycle,
+    );
+    expect(run(1).dropResult.items.single.quantity, 4, reason: '一周目材料不加成');
+    expect(
+      run(2).dropResult.items.single.quantity,
+      6,
+      reason: '二周目材料 ×1.5(numbers.yaml cycle_drop_bonus)',
+    );
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -644,7 +769,9 @@ void main() {
       finalState: state,
       participatingCharacters: [ch],
       equipmentsByCharacter: const {},
-      techniquesByCharacter: {1: [mainTech]},
+      techniquesByCharacter: {
+        1: [mainTech],
+      },
       stageDef: buildStage(),
       rng: DefaultRng(seed: 1),
       progressToNextMap: progressMap,
@@ -671,7 +798,11 @@ void main() {
 
   test('skill 不属于该角色任何心法 → 落账主修 skillUsageCount,修炼度不动', () {
     final ch = buildCharacter(id: 1, mainTechId: 200);
-    final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+    final mainTech = buildTechnique(
+      id: 200,
+      ownerCharId: 1,
+      defId: 'tech_main',
+    );
     final strangeSkill = buildSkill('skill_unknown');
 
     final state = BattleState(
@@ -679,16 +810,16 @@ void main() {
       rightTeam: const [],
       tick: 5,
       result: BattleResult.leftWin,
-      actionLog: [
-        buildAction(actorId: 1, skill: strangeSkill),
-      ],
+      actionLog: [buildAction(actorId: 1, skill: strangeSkill)],
     );
 
     BattleResolutionService.resolve(
       finalState: state,
       participatingCharacters: [ch],
       equipmentsByCharacter: const {},
-      techniquesByCharacter: {1: [mainTech]},
+      techniquesByCharacter: {
+        1: [mainTech],
+      },
       stageDef: buildStage(),
       rng: DefaultRng(seed: 1),
       progressToNextMap: progressMap,
@@ -697,10 +828,12 @@ void main() {
       dropService: dropSvc(),
     );
 
-    expect(mainTech.cultivationProgress, 0,
-        reason: 'standalone 招不推进修炼度');
-    expect(mainTech.skillUsageCount.countOf('skill_unknown'), 1,
-        reason: '波B:standalone 招落账主修(熟练度快照来源)');
+    expect(mainTech.cultivationProgress, 0, reason: 'standalone 招不推进修炼度');
+    expect(
+      mainTech.skillUsageCount.countOf('skill_unknown'),
+      1,
+      reason: '波B:standalone 招落账主修(熟练度快照来源)',
+    );
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -710,7 +843,11 @@ void main() {
   test('平局 (draw) 也结算', () {
     final ch = buildCharacter(id: 1, mainTechId: 200);
     final w = buildEquipment(id: 100, slot: EquipmentSlot.weapon);
-    final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+    final mainTech = buildTechnique(
+      id: 200,
+      ownerCharId: 1,
+      defId: 'tech_main',
+    );
 
     final state = BattleState(
       leftTeam: [buildBattleChar(1, 0)],
@@ -723,8 +860,12 @@ void main() {
     BattleResolutionService.resolve(
       finalState: state,
       participatingCharacters: [ch],
-      equipmentsByCharacter: {1: [w]},
-      techniquesByCharacter: {1: [mainTech]},
+      equipmentsByCharacter: {
+        1: [w],
+      },
+      techniquesByCharacter: {
+        1: [mainTech],
+      },
       stageDef: buildStage(),
       rng: DefaultRng(seed: 1),
       progressToNextMap: progressMap,
@@ -741,7 +882,11 @@ void main() {
 
   test('skillUsageIncrements 汇总：主修 + 辅修分别 by techniqueId', () {
     final ch = buildCharacter(id: 1, mainTechId: 200);
-    final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+    final mainTech = buildTechnique(
+      id: 200,
+      ownerCharId: 1,
+      defId: 'tech_main',
+    );
     final assistTech = buildTechnique(
       id: 201,
       ownerCharId: 1,
@@ -767,7 +912,9 @@ void main() {
       finalState: state,
       participatingCharacters: [ch],
       equipmentsByCharacter: const {},
-      techniquesByCharacter: {1: [mainTech, assistTech]},
+      techniquesByCharacter: {
+        1: [mainTech, assistTech],
+      },
       stageDef: buildStage(),
       rng: DefaultRng(seed: 1),
       progressToNextMap: progressMap,
@@ -812,8 +959,12 @@ void main() {
       final result = BattleResolutionService.resolve(
         finalState: state,
         participatingCharacters: [ch],
-        equipmentsByCharacter: {1: [w]},
-        techniquesByCharacter: {1: [mainTech]},
+        equipmentsByCharacter: {
+          1: [w],
+        },
+        techniquesByCharacter: {
+          1: [mainTech],
+        },
         stageDef: buildStage(isBossStage: true),
         rng: DefaultRng(seed: 1),
         progressToNextMap: progressMap,
@@ -867,8 +1018,13 @@ void main() {
         finalState: state,
         participatingCharacters: [ch],
         equipmentsByCharacter: const {},
-        techniquesByCharacter: {1: [mainTech]},
-        stageDef: buildStage(isBossStage: true, stageType: StageType.innerDemon),
+        techniquesByCharacter: {
+          1: [mainTech],
+        },
+        stageDef: buildStage(
+          isBossStage: true,
+          stageType: StageType.innerDemon,
+        ),
         rng: DefaultRng(seed: 1),
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
@@ -878,13 +1034,19 @@ void main() {
       );
 
       // 互斥：Boss 散功分支不触发（旧 bug 下 defeatPenalty 会有 1 条）。
-      expect(result.defeatPenaltyByCharacter, isEmpty,
-          reason: '心魔关战败不应叠加 Boss 散功（双重惩罚 bug 修复）');
+      expect(
+        result.defeatPenaltyByCharacter,
+        isEmpty,
+        reason: '心魔关战败不应叠加 Boss 散功（双重惩罚 bug 修复）',
+      );
       // 心魔惩罚正常触发，且作用在未被 Boss 散功预扣的原始内力上。
       expect(result.innerDemonPenaltyByCharacter.length, 1);
       final p = result.innerDemonPenaltyByCharacter[1]!;
-      expect(p.internalForceBefore, 8000,
-          reason: '旧 bug 下 Boss 散功先把 8000 扣到 4000，心魔 before 会变 4000');
+      expect(
+        p.internalForceBefore,
+        8000,
+        reason: '旧 bug 下 Boss 散功先把 8000 扣到 4000，心魔 before 会变 4000',
+      );
       expect(ch.internalForce, p.internalForceAfter);
     });
 
@@ -911,8 +1073,12 @@ void main() {
       final result = BattleResolutionService.resolve(
         finalState: state,
         participatingCharacters: [ch],
-        equipmentsByCharacter: {1: [w]},
-        techniquesByCharacter: {1: [mainTech]},
+        equipmentsByCharacter: {
+          1: [w],
+        },
+        techniquesByCharacter: {
+          1: [mainTech],
+        },
         stageDef: buildStage(isBossStage: false), // 普通关
         rng: DefaultRng(seed: 1),
         progressToNextMap: progressMap,
@@ -933,7 +1099,11 @@ void main() {
     test('胜利路径：defeatPenaltyByCharacter 恒空（不论 isBossStage）', () {
       final ch = buildCharacter(id: 1, mainTechId: 200);
       ch.internalForce = 5000;
-      final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+      final mainTech = buildTechnique(
+        id: 200,
+        ownerCharId: 1,
+        defId: 'tech_main',
+      );
       final state = BattleState(
         leftTeam: [buildBattleChar(1, 0)],
         rightTeam: const [],
@@ -946,7 +1116,9 @@ void main() {
         finalState: state,
         participatingCharacters: [ch],
         equipmentsByCharacter: const {},
-        techniquesByCharacter: {1: [mainTech]},
+        techniquesByCharacter: {
+          1: [mainTech],
+        },
         stageDef: buildStage(isBossStage: true),
         rng: DefaultRng(seed: 1),
         progressToNextMap: progressMap,
@@ -961,7 +1133,11 @@ void main() {
 
     test('Boss 战败 + numbersConfig=null → ArgumentError', () {
       final ch = buildCharacter(id: 1, mainTechId: 200);
-      final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+      final mainTech = buildTechnique(
+        id: 200,
+        ownerCharId: 1,
+        defId: 'tech_main',
+      );
       final state = BattleState(
         leftTeam: [buildBattleChar(1, 0)],
         rightTeam: const [],
@@ -975,7 +1151,9 @@ void main() {
           finalState: state,
           participatingCharacters: [ch],
           equipmentsByCharacter: const {},
-          techniquesByCharacter: {1: [mainTech]},
+          techniquesByCharacter: {
+            1: [mainTech],
+          },
           stageDef: buildStage(isBossStage: true),
           rng: DefaultRng(seed: 1),
           progressToNextMap: progressMap,
@@ -988,77 +1166,103 @@ void main() {
       );
     });
 
-    test('Phase 4 W11 #32: stageDef=null + victory → dropResult 空 + battleCount/skillUsage 仍累', () {
-      // 爬塔 victory 路径体例：service 不内部 roll drops（stageDef=null），caller
-      // 自己处理（rollTowerRewards 外层）。但 battleCount/skillUsage 副作用必须照走。
-      final ch = buildCharacter(id: 1, mainTechId: 200);
-      ch.internalForce = 5000;
-      final w = buildEquipment(id: 100, slot: EquipmentSlot.weapon);
-      final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
-      final skill = buildSkill('skill_main_a');
-      final state = BattleState(
-        leftTeam: [buildBattleChar(1, 0)],
-        rightTeam: const [],
-        tick: 5,
-        result: BattleResult.leftWin,
-        actionLog: [
-          buildAction(actorId: 1, skill: skill),
-          buildAction(actorId: 1, skill: skill),
-        ],
-      );
+    test(
+      'Phase 4 W11 #32: stageDef=null + victory → dropResult 空 + battleCount/skillUsage 仍累',
+      () {
+        // 爬塔 victory 路径体例：service 不内部 roll drops（stageDef=null），caller
+        // 自己处理（rollTowerRewards 外层）。但 battleCount/skillUsage 副作用必须照走。
+        final ch = buildCharacter(id: 1, mainTechId: 200);
+        ch.internalForce = 5000;
+        final w = buildEquipment(id: 100, slot: EquipmentSlot.weapon);
+        final mainTech = buildTechnique(
+          id: 200,
+          ownerCharId: 1,
+          defId: 'tech_main',
+        );
+        final skill = buildSkill('skill_main_a');
+        final state = BattleState(
+          leftTeam: [buildBattleChar(1, 0)],
+          rightTeam: const [],
+          tick: 5,
+          result: BattleResult.leftWin,
+          actionLog: [
+            buildAction(actorId: 1, skill: skill),
+            buildAction(actorId: 1, skill: skill),
+          ],
+        );
 
-      final result = BattleResolutionService.resolve(
-        finalState: state,
-        participatingCharacters: [ch],
-        equipmentsByCharacter: {1: [w]},
-        techniquesByCharacter: {1: [mainTech]},
-        // stageDef 故意不传（null）
-        rng: DefaultRng(seed: 1),
-        progressToNextMap: progressMap,
-        techniqueDefLookup: (id) =>
-            buildTechDef(id: id, skillIds: const ['skill_main_a']),
-        dropService: dropSvc(),
-        isVictory: true,
-      );
+        final result = BattleResolutionService.resolve(
+          finalState: state,
+          participatingCharacters: [ch],
+          equipmentsByCharacter: {
+            1: [w],
+          },
+          techniquesByCharacter: {
+            1: [mainTech],
+          },
+          // stageDef 故意不传（null）
+          rng: DefaultRng(seed: 1),
+          progressToNextMap: progressMap,
+          techniqueDefLookup: (id) =>
+              buildTechDef(id: id, skillIds: const ['skill_main_a']),
+          dropService: dropSvc(),
+          isVictory: true,
+        );
 
-      expect(result.dropResult.isEmpty, isTrue,
-          reason: 'stageDef=null 时 service 不内部 roll drops');
-      expect(w.battleCount, 1, reason: '装备 battleCount 仍累');
-      expect(mainTech.cultivationProgress, 2,
-          reason: '心法 progress 仍累（每次 +1）');
-      expect(result.defeatPenaltyByCharacter, isEmpty);
-    });
+        expect(
+          result.dropResult.isEmpty,
+          isTrue,
+          reason: 'stageDef=null 时 service 不内部 roll drops',
+        );
+        expect(w.battleCount, 1, reason: '装备 battleCount 仍累');
+        expect(
+          mainTech.cultivationProgress,
+          2,
+          reason: '心法 progress 仍累（每次 +1）',
+        );
+        expect(result.defeatPenaltyByCharacter, isEmpty);
+      },
+    );
 
-    test('Phase 4 W11 #32: stageDef=null + defeat → 不触发 Boss 散功（无 isBossStage 信号）', () {
-      // tower defeat 路径不走 stage Boss 战败散功（用户决策 ① 只 stage Boss 触发）
-      final ch = buildCharacter(id: 1, mainTechId: 200);
-      ch.internalForce = 5000;
-      final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
-      final state = BattleState(
-        leftTeam: [buildBattleChar(1, 0)],
-        rightTeam: const [],
-        tick: 5,
-        result: BattleResult.rightWin,
-        actionLog: const [],
-      );
+    test(
+      'Phase 4 W11 #32: stageDef=null + defeat → 不触发 Boss 散功（无 isBossStage 信号）',
+      () {
+        // tower defeat 路径不走 stage Boss 战败散功（用户决策 ① 只 stage Boss 触发）
+        final ch = buildCharacter(id: 1, mainTechId: 200);
+        ch.internalForce = 5000;
+        final mainTech = buildTechnique(
+          id: 200,
+          ownerCharId: 1,
+          defId: 'tech_main',
+        );
+        final state = BattleState(
+          leftTeam: [buildBattleChar(1, 0)],
+          rightTeam: const [],
+          tick: 5,
+          result: BattleResult.rightWin,
+          actionLog: const [],
+        );
 
-      final result = BattleResolutionService.resolve(
-        finalState: state,
-        participatingCharacters: [ch],
-        equipmentsByCharacter: const {},
-        techniquesByCharacter: {1: [mainTech]},
-        // stageDef=null + isVictory=false：不进 Boss 散功分支
-        rng: DefaultRng(seed: 1),
-        progressToNextMap: progressMap,
-        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
-        dropService: dropSvc(),
-        isVictory: false,
-        numbersConfig: numbersCfg,
-      );
+        final result = BattleResolutionService.resolve(
+          finalState: state,
+          participatingCharacters: [ch],
+          equipmentsByCharacter: const {},
+          techniquesByCharacter: {
+            1: [mainTech],
+          },
+          // stageDef=null + isVictory=false：不进 Boss 散功分支
+          rng: DefaultRng(seed: 1),
+          progressToNextMap: progressMap,
+          techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+          dropService: dropSvc(),
+          isVictory: false,
+          numbersConfig: numbersCfg,
+        );
 
-      expect(result.defeatPenaltyByCharacter, isEmpty);
-      expect(ch.internalForce, 5000, reason: 'tower defeat 不动玩家内力');
-    });
+        expect(result.defeatPenaltyByCharacter, isEmpty);
+        expect(ch.internalForce, 5000, reason: 'tower defeat 不动玩家内力');
+      },
+    );
 
     test('Boss 战败 + 角色无主修：跳过该角色，无 entry 写入 map', () {
       final ch = buildCharacter(id: 1, mainTechId: null);
@@ -1097,8 +1301,11 @@ void main() {
   group('波B standalone 招落账', () {
     test('无归属心法的招 → 计入主修 skillUsageCount,不推进修炼度', () {
       final ch = buildCharacter(id: 1, mainTechId: 200);
-      final mainTech =
-          buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+      final mainTech = buildTechnique(
+        id: 200,
+        ownerCharId: 1,
+        defId: 'tech_main',
+      );
       final standalone = buildSkill('skill_standalone_drop');
 
       final state = BattleState(
@@ -1118,7 +1325,7 @@ void main() {
         participatingCharacters: [ch],
         equipmentsByCharacter: const {},
         techniquesByCharacter: {
-          1: [mainTech]
+          1: [mainTech],
         },
         stageDef: buildStage(),
         rng: DefaultRng(seed: 1),
@@ -1128,12 +1335,17 @@ void main() {
         dropService: dropSvc(),
       );
 
-      expect(mainTech.skillUsageCount.countOf('skill_standalone_drop'), 3,
-          reason: 'standalone 招应计入主修账本(熟练度快照来源,波A 残留修复)');
-      expect(mainTech.cultivationProgress, 0,
-          reason: 'standalone 招不应推进主修修炼度');
-      expect(result.skillUsageIncrements[200]?['skill_standalone_drop'], 3,
-          reason: '增量表应含 standalone 招(caller putAll 写回)');
+      expect(
+        mainTech.skillUsageCount.countOf('skill_standalone_drop'),
+        3,
+        reason: 'standalone 招应计入主修账本(熟练度快照来源,波A 残留修复)',
+      );
+      expect(mainTech.cultivationProgress, 0, reason: 'standalone 招不应推进主修修炼度');
+      expect(
+        result.skillUsageIncrements[200]?['skill_standalone_drop'],
+        3,
+        reason: '增量表应含 standalone 招(caller putAll 写回)',
+      );
     });
 
     test('无主修心法 → standalone 招忽略不抛', () {
@@ -1209,11 +1421,10 @@ void main() {
         currentHp: (1000 * threshold).floor() - 1,
         isAlive: true,
       );
-      final highBc = buildBattleChar(2, 1).copyWith(
-        maxHp: 1000,
-        currentHp: 1000,
-        isAlive: true,
-      );
+      final highBc = buildBattleChar(
+        2,
+        1,
+      ).copyWith(maxHp: 1000, currentHp: 1000, isAlive: true);
       final state = BattleState(
         leftTeam: [lowBc, highBc],
         rightTeam: const [],
@@ -1237,8 +1448,7 @@ void main() {
         isHardFight: true,
       );
 
-      expect(low.injuryHoursRemaining, greaterThan(0),
-          reason: '低血存活者应重伤');
+      expect(low.injuryHoursRemaining, greaterThan(0), reason: '低血存活者应重伤');
       expect(high.injuryHoursRemaining, 0, reason: '满血者不应重伤');
       expect(low.lightInjuryStacks, 1);
       expect(high.lightInjuryStacks, 1);
@@ -1246,11 +1456,10 @@ void main() {
 
     test('硬仗惨胜：低血但已阵亡者不重伤（仅存活者判定）', () {
       final dead = buildCharacter(id: 1, mainTechId: null, name: '阵亡');
-      final deadBc = buildBattleChar(1, 0).copyWith(
-        maxHp: 1000,
-        currentHp: 0,
-        isAlive: false,
-      );
+      final deadBc = buildBattleChar(
+        1,
+        0,
+      ).copyWith(maxHp: 1000, currentHp: 0, isAlive: false);
       final state = BattleState(
         leftTeam: [deadBc],
         rightTeam: const [],

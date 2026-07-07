@@ -113,6 +113,38 @@ void main() {
         reason: '精铁被扣 40');
   });
 
+  // ── P1-7: 并发连点升级不扣成负数(txn 内重查)──────────────────────────────
+  test('P1-7: 并发连点升级 → 恰一笔成功,银两不落负数', () async {
+    // 只够升一级的银两(500),材料充足
+    await seedInventory('item_silver', 500);
+    await seedInventory('item_jingtie', 100);
+    final save = (await IsarSetup.instance.saveDatas.get(0))!;
+
+    // 两次未 await 的并发升级:旧代码两笔都过 txn 外 sufficiency 检查(读同一
+    // 500 快照),第二笔 txn 内直接 -=500 扣成负数;修后 txn 内重查拒第二笔。
+    // founderRealmIndex 给足(6=武圣),让 realm 不成约束,专测银两守卫。
+    final results = await Future.wait([
+      IslandActionService.upgrade(
+        save: save,
+        buildingType: BuildingType.tieJiangChang,
+        founderRealmIndex: 6,
+      ),
+      IslandActionService.upgrade(
+        save: save,
+        buildingType: BuildingType.tieJiangChang,
+        founderRealmIndex: 6,
+      ),
+    ]);
+
+    expect(results.where((r) => r == UpgradeResult.ok).length, 1,
+        reason: '只够升一级,恰一笔成功');
+    expect(results, contains(UpgradeResult.notEnoughSilver),
+        reason: '第二笔应被 txn 内重查拒(银两不足)');
+    expect(await inventoryQty('item_silver'), 0, reason: '银两不落负数');
+    expect(await buildingLevel(BuildingType.tieJiangChang), 2,
+        reason: '只升一级');
+  });
+
   // ── T2: maxLevelReached ───────────────────────────────────────────────────
   test('T2: maxLevelReached → 拒绝，level/银两/材料不变', () async {
     // 把建筑等级手动设为 max_level=5

@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/light_foot_strategy.dart';
 import 'package:wuxia_idle/features/light_foot/domain/light_foot_def.dart';
@@ -14,6 +17,14 @@ import 'package:wuxia_idle/features/light_foot/domain/light_foot_def.dart';
 ///
 /// 不测 runToEnd 主循环(沿 DefaultGroundStrategy e2e 测路径,本测只关 bake)。
 void main() {
+  setUpAll(() async {
+    if (!GameRepository.isLoaded) {
+      await GameRepository.loadAllDefs(
+        loader: (path) => File(path).readAsString(),
+      );
+    }
+  });
+
   group('LightFootStrategy.applyTerrainTo 烘焙 terrain modifier 到双方', () {
     test('water terrain:evasion +0.15 / defense -0.10 / crit 不变', () {
       final state = _makeState();
@@ -94,20 +105,23 @@ void main() {
       expect(modified.leftTeam.first.criticalRate, closeTo(0.95, 1e-9));
     });
 
-    test('clamp 走 rateCap 配置:传 0.80 时 critRate 0.90+rooftop 0.10 → 0.80(证配置驱动非写死)', () {
-      final state = _makeState(criticalRate: 0.90);
-      final config = _testConfig();
+    test(
+      'clamp 走 rateCap 配置:传 0.80 时 critRate 0.90+rooftop 0.10 → 0.80(证配置驱动非写死)',
+      () {
+        final state = _makeState(criticalRate: 0.90);
+        final config = _testConfig();
 
-      final modified = LightFootStrategy.applyTerrainTo(
-        state,
-        terrainBiome: TerrainBiome.rooftop,
-        config: config,
-        rateCap: 0.80,
-      );
+        final modified = LightFootStrategy.applyTerrainTo(
+          state,
+          terrainBiome: TerrainBiome.rooftop,
+          config: config,
+          rateCap: 0.80,
+        );
 
-      // 写死 0.95 时此断言必红;接 red_lines.combined_rate_cap 后 clamp 跟随传参。
-      expect(modified.leftTeam.first.criticalRate, closeTo(0.80, 1e-9));
-    });
+        // 写死 0.95 时此断言必红;接 red_lines.combined_rate_cap 后 clamp 跟随传参。
+        expect(modified.leftTeam.first.criticalRate, closeTo(0.80, 1e-9));
+      },
+    );
 
     test('clamp ≤0.95:evasionRate 0.85 + bamboo +0.20 → 0.95(不破)', () {
       final state = _makeState(evasionRate: 0.85);
@@ -157,47 +171,88 @@ void main() {
   // 沿 R5 红线测「写约束语义不写瞬时事实」体例:断言烘焙后字段值与 terrain
   // modifier 一致(语义),不写具体伤害值(瞬时)。damage_calculator 末乘
   // 由 default_ground_strategy 串通(已 R5.1 实测 bamboo draws 4→1 印证)。
-  group('LightFootStrategy.applyTerrainTo 烘焙 damage_multiplier 到 attackPowerMultiplier (P3.1.B)',
-      () {
-    test('water terrain → attackPowerMultiplier 1.0(中性)', () {
-      final state = _makeState();
-      final modified = LightFootStrategy.applyTerrainTo(
-        state,
-        terrainBiome: TerrainBiome.water,
-        config: _testConfig(),
-      );
-      expect(modified.leftTeam.first.attackPowerMultiplier, closeTo(1.0, 1e-9));
-    });
+  group(
+    'LightFootStrategy.applyTerrainTo 烘焙 damage_multiplier 到 attackPowerMultiplier (P3.1.B)',
+    () {
+      test('water terrain → attackPowerMultiplier 1.0(中性)', () {
+        final state = _makeState();
+        final modified = LightFootStrategy.applyTerrainTo(
+          state,
+          terrainBiome: TerrainBiome.water,
+          config: _testConfig(),
+        );
+        expect(
+          modified.leftTeam.first.attackPowerMultiplier,
+          closeTo(1.0, 1e-9),
+        );
+      });
 
-    test('rooftop terrain → attackPowerMultiplier 1.15(放大)', () {
-      final state = _makeState();
-      final modified = LightFootStrategy.applyTerrainTo(
-        state,
+      test('rooftop terrain → attackPowerMultiplier 1.15(放大)', () {
+        final state = _makeState();
+        final modified = LightFootStrategy.applyTerrainTo(
+          state,
+          terrainBiome: TerrainBiome.rooftop,
+          config: _testConfig(),
+        );
+        expect(
+          modified.leftTeam.first.attackPowerMultiplier,
+          closeTo(1.15, 1e-9),
+        );
+      });
+
+      test('bamboo terrain → attackPowerMultiplier 0.90(削减)', () {
+        final state = _makeState();
+        final modified = LightFootStrategy.applyTerrainTo(
+          state,
+          terrainBiome: TerrainBiome.bamboo,
+          config: _testConfig(),
+        );
+        expect(
+          modified.leftTeam.first.attackPowerMultiplier,
+          closeTo(0.90, 1e-9),
+        );
+      });
+
+      test('双方对等:left + right 都被烘焙同一 multiplier', () {
+        final state = _makeState(withRight: true);
+        final modified = LightFootStrategy.applyTerrainTo(
+          state,
+          terrainBiome: TerrainBiome.rooftop,
+          config: _testConfig(),
+        );
+        expect(
+          modified.leftTeam.first.attackPowerMultiplier,
+          closeTo(1.15, 1e-9),
+        );
+        expect(
+          modified.rightTeam.first.attackPowerMultiplier,
+          closeTo(1.15, 1e-9),
+        );
+      });
+    },
+  );
+
+  group('LightFootStrategy production stepOne/tick wiring', () {
+    test('P0-2 stepOne 生产路径烘焙 terrain,且多次 step 不重复叠加', () {
+      final strategy = LightFootStrategy(
         terrainBiome: TerrainBiome.rooftop,
         config: _testConfig(),
       );
-      expect(modified.leftTeam.first.attackPowerMultiplier, closeTo(1.15, 1e-9));
-    });
+      final n = GameRepository.instance.numbers;
+      var s = _makeState(withRight: true);
 
-    test('bamboo terrain → attackPowerMultiplier 0.90(削减)', () {
-      final state = _makeState();
-      final modified = LightFootStrategy.applyTerrainTo(
-        state,
-        terrainBiome: TerrainBiome.bamboo,
-        config: _testConfig(),
-      );
-      expect(modified.leftTeam.first.attackPowerMultiplier, closeTo(0.90, 1e-9));
-    });
+      s = strategy.stepOne(s, n);
+      expect(s.leftTeam.first.criticalRate, closeTo(0.25, 1e-9));
+      expect(s.rightTeam.first.criticalRate, closeTo(0.25, 1e-9));
+      expect(s.leftTeam.first.attackPowerMultiplier, closeTo(1.15, 1e-9));
 
-    test('双方对等:left + right 都被烘焙同一 multiplier', () {
-      final state = _makeState(withRight: true);
-      final modified = LightFootStrategy.applyTerrainTo(
-        state,
-        terrainBiome: TerrainBiome.rooftop,
-        config: _testConfig(),
+      s = strategy.stepOne(s, n);
+      expect(
+        s.leftTeam.first.criticalRate,
+        closeTo(0.25, 1e-9),
+        reason: 'terrain bake 应只进一次,不能每个 stepOne 叠加',
       );
-      expect(modified.leftTeam.first.attackPowerMultiplier, closeTo(1.15, 1e-9));
-      expect(modified.rightTeam.first.attackPowerMultiplier, closeTo(1.15, 1e-9));
+      expect(s.rightTeam.first.criticalRate, closeTo(0.25, 1e-9));
     });
   });
 }
@@ -239,53 +294,52 @@ BattleCharacter _makeChar({
   required double criticalRate,
   required double evasionRate,
   required double defenseRate,
-}) =>
-    BattleCharacter(
-      characterId: characterId,
-      name: teamSide == 0 ? '玩家' : '敌',
-      realmTier: RealmTier.yiLiu,
-      realmLayer: RealmLayer.qiMeng,
-      school: TechniqueSchool.gangMeng,
-      maxHp: 12000,
-      currentHp: 12000,
-      maxInternalForce: 10000,
-      currentInternalForce: 10000,
-      speed: 200,
-      criticalRate: criticalRate,
-      evasionRate: evasionRate,
-      defenseRate: defenseRate,
-      totalEquipmentAttack: 1500,
-      mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: const <SkillDef>[],
-      skillCooldowns: const {},
-      activeBuffs: const [],
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: teamSide,
-      slotIndex: slotIndex,
-    );
+}) => BattleCharacter(
+  characterId: characterId,
+  name: teamSide == 0 ? '玩家' : '敌',
+  realmTier: RealmTier.yiLiu,
+  realmLayer: RealmLayer.qiMeng,
+  school: TechniqueSchool.gangMeng,
+  maxHp: 12000,
+  currentHp: 12000,
+  maxInternalForce: 10000,
+  currentInternalForce: 10000,
+  speed: 200,
+  criticalRate: criticalRate,
+  evasionRate: evasionRate,
+  defenseRate: defenseRate,
+  totalEquipmentAttack: 1500,
+  mainCultivationLayer: CultivationLayer.daCheng,
+  availableSkills: const <SkillDef>[],
+  skillCooldowns: const {},
+  activeBuffs: const [],
+  actionPoint: 0,
+  isAlive: true,
+  teamSide: teamSide,
+  slotIndex: slotIndex,
+);
 
 LightFootDef _testConfig() => const LightFootDef(
-      terrainModifiers: {
-        TerrainBiome.water: LightFootTerrainModifier(
-          criticalRateDelta: 0.0,
-          evasionRateDelta: 0.15,
-          defenseRateDelta: -0.10,
-          damageMultiplier: 1.0,
-        ),
-        TerrainBiome.rooftop: LightFootTerrainModifier(
-          criticalRateDelta: 0.10,
-          evasionRateDelta: 0.0,
-          defenseRateDelta: -0.05,
-          damageMultiplier: 1.15,
-        ),
-        TerrainBiome.bamboo: LightFootTerrainModifier(
-          criticalRateDelta: 0.0,
-          evasionRateDelta: 0.20,
-          defenseRateDelta: 0.0,
-          damageMultiplier: 0.90,
-        ),
-      },
-      stageTerrain: {},
-      unlockTriggers: {},
-    );
+  terrainModifiers: {
+    TerrainBiome.water: LightFootTerrainModifier(
+      criticalRateDelta: 0.0,
+      evasionRateDelta: 0.15,
+      defenseRateDelta: -0.10,
+      damageMultiplier: 1.0,
+    ),
+    TerrainBiome.rooftop: LightFootTerrainModifier(
+      criticalRateDelta: 0.10,
+      evasionRateDelta: 0.0,
+      defenseRateDelta: -0.05,
+      damageMultiplier: 1.15,
+    ),
+    TerrainBiome.bamboo: LightFootTerrainModifier(
+      criticalRateDelta: 0.0,
+      evasionRateDelta: 0.20,
+      defenseRateDelta: 0.0,
+      damageMultiplier: 0.90,
+    ),
+  },
+  stageTerrain: {},
+  unlockTriggers: {},
+);

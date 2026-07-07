@@ -41,7 +41,7 @@ const _playerTeamSide = 0;
 enum BattleResult { leftWin, rightWin, draw }
 
 /// attackPowerMultiplier 的来源，用于战报解释乘区。
-enum AttackPowerMultiplierSource { jianghuEnmity }
+enum AttackPowerMultiplierSource { jianghuEnmity, terrain, formation }
 
 /// 一次战斗动作（phase1_tasks.md T11 §638-645）。
 ///
@@ -522,7 +522,7 @@ class BattleCharacter {
     int? slotIndex,
     Object? internalInjury = _unset,
     bool? swordSongResonanceActive,
-    String? iconPath,
+    Object? iconPath = _unset,
     double? attackPowerMultiplier,
     Object? attackPowerMultiplierSource = _unset,
     double? outputMultiplier,
@@ -573,7 +573,9 @@ class BattleCharacter {
           : internalInjury as InternalInjurySlot?,
       swordSongResonanceActive:
           swordSongResonanceActive ?? this.swordSongResonanceActive,
-      iconPath: iconPath ?? this.iconPath,
+      iconPath: identical(iconPath, _unset)
+          ? this.iconPath
+          : iconPath as String?,
       attackPowerMultiplier:
           attackPowerMultiplier ?? this.attackPowerMultiplier,
       attackPowerMultiplierSource:

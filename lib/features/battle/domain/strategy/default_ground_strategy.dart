@@ -209,6 +209,7 @@ class DefaultGroundStrategy implements BattleStrategy {
     required Random rng,
   }) {
     if (state.isFinished) return state;
+    if (state.actorQueue.isNotEmpty) return state;
     final actor0 = _findById(state, characterId, 0);
     if (actor0 == null || !actor0.isAlive) return state;
     // I-2:普攻不走插队(拖招只发技能);strategy 层防线,避免 requestUltimate 抛异常。
@@ -905,8 +906,8 @@ class DefaultGroundStrategy implements BattleStrategy {
       defenderSchoolDamageMult: weaknessMultOf(attacker, defender),
       // floor30 护法结界:守方为结界 Boss 且护法在同队存活 → 承伤乘子(减伤)。
       // 用 preState 行动前快照判护法存活(与 aoe 同帧独立结算口径一致)。
-      defenderWardMult: wardMultOf(defender, state) *
-          vulnerabilityMultOf(defender, state),
+      defenderWardMult:
+          wardMultOf(defender, state) * vulnerabilityMultOf(defender, state),
     );
   }
 
@@ -943,7 +944,10 @@ class DefaultGroundStrategy implements BattleStrategy {
   /// 蓄招中/踉跄中(脆弱窗口)或无机制(null) → 1.0(全额)。
   /// 窗口复发靠现成机制:顶层 chargeSkillId 的技能 CD(§3.2)，或 bossPhases 的
   /// chargeCounter 相位(跌破 hpThreshold 进蓄力态，floor25/30 用此路径)。此处只读状态不改状态。
-  static double vulnerabilityMultOf(BattleCharacter defender, BattleState state) {
+  static double vulnerabilityMultOf(
+    BattleCharacter defender,
+    BattleState state,
+  ) {
     final mult = defender.vulnerabilityMult;
     if (mult == null) return 1.0;
     final vulnerable =

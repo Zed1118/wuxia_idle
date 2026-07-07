@@ -68,6 +68,11 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
   late final TabController _tabCtrl;
   EnhanceResult? _lastResult;
 
+  /// P1-7(2026-07-07 体检批5):in-flight 守卫。强化/保底走 async persist,
+  /// 连点会用过期库存快照重复触发。service 层 txn 重查已防负数(整笔回滚),
+  /// 此守卫再挡住重复触发,避免连点弹一串「材料不足」回滚 toast。
+  bool _busy = false;
+
   @override
   void initState() {
     super.initState();
@@ -111,37 +116,49 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
     required int mojianshiQty,
     required int duancaiQty,
   }) async {
-    final config = ref.read(numbersConfigProvider).enhancement;
-    final rng = ref.read(rngProvider);
-    final result = EnhancementService.tryEnhance(
-      eq: widget.equipment,
-      characterAbsoluteLevel: _capHardLimit,
-      rng: rng,
-      currentMojianshi: mojianshiQty,
-      currentDuancai: duancaiQty,
-      config: config,
-    );
-    if (result.outcome == EnhanceOutcome.success ||
-        result.outcome == EnhanceOutcome.failure) {
-      await _persist(result);
+    if (_busy) return;
+    _busy = true;
+    try {
+      final config = ref.read(numbersConfigProvider).enhancement;
+      final rng = ref.read(rngProvider);
+      final result = EnhancementService.tryEnhance(
+        eq: widget.equipment,
+        characterAbsoluteLevel: _capHardLimit,
+        rng: rng,
+        currentMojianshi: mojianshiQty,
+        currentDuancai: duancaiQty,
+        config: config,
+      );
+      if (result.outcome == EnhanceOutcome.success ||
+          result.outcome == EnhanceOutcome.failure) {
+        await _persist(result);
+      }
+      if (!mounted) return;
+      _runFeedback(result);
+    } finally {
+      _busy = false;
     }
-    if (!mounted) return;
-    _runFeedback(result);
   }
 
   Future<void> _onGuarantee(int crystalQty) async {
-    final config = ref.read(numbersConfigProvider).enhancement;
-    final result = EnhancementService.useCrystalToGuarantee(
-      eq: widget.equipment,
-      characterAbsoluteLevel: _capHardLimit,
-      currentCrystals: crystalQty,
-      config: config,
-    );
-    if (result.outcome == EnhanceOutcome.success) {
-      await _persist(result);
+    if (_busy) return;
+    _busy = true;
+    try {
+      final config = ref.read(numbersConfigProvider).enhancement;
+      final result = EnhancementService.useCrystalToGuarantee(
+        eq: widget.equipment,
+        characterAbsoluteLevel: _capHardLimit,
+        currentCrystals: crystalQty,
+        config: config,
+      );
+      if (result.outcome == EnhanceOutcome.success) {
+        await _persist(result);
+      }
+      if (!mounted) return;
+      _runFeedback(result);
+    } finally {
+      _busy = false;
     }
-    if (!mounted) return;
-    _runFeedback(result);
   }
 
   /// T32 #22a：副作用落地 — 委托给 [EnhancementService.persistResult] 做

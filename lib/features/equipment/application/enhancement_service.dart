@@ -239,6 +239,14 @@ class EnhancementService {
         if (row == null) {
           throw StateError('InventoryItem(itemType=moJianShi) 行不存在；种子阶段必须创建');
         }
+        // P1-7(2026-07-07 体检批5):txn 内重查防负数。tryEnhance 用 UI 快照
+        // 校验,连点/并发致快照过期时真实余量可能不足;不足则 fail-fast 整笔
+        // 回滚(writeTxn 抛异常自动 rollback eq.put + 前序扣减),不落负数。
+        if (row.quantity < result.mojianshiSpent) {
+          throw StateError(
+            '磨剑石余量 ${row.quantity} < 消耗 ${result.mojianshiSpent}；强化整笔回滚(防负数)',
+          );
+        }
         row.quantity -= result.mojianshiSpent;
         await isar.inventoryItems.put(row);
       }
@@ -246,6 +254,11 @@ class EnhancementService {
         final row = await isar.inventoryItems.getByDefId('item_duancai');
         if (row == null) {
           throw StateError('InventoryItem(defId=item_duancai) 行不存在；桃花岛锻材不足');
+        }
+        if (row.quantity < result.duancaiSpent) {
+          throw StateError(
+            '锻材余量 ${row.quantity} < 消耗 ${result.duancaiSpent}；强化整笔回滚(防负数)',
+          );
         }
         row.quantity -= result.duancaiSpent;
         await isar.inventoryItems.put(row);
@@ -258,6 +271,13 @@ class EnhancementService {
         if (row == null) {
           throw StateError(
             'InventoryItem(itemType=xinXueJieJing) 行不存在；种子阶段必须创建',
+          );
+        }
+        // 净扣减(gained 先加后减 spent)不得为负。保底扣结晶时 gained=0。
+        if (row.quantity + result.crystalsGained < result.crystalsSpent) {
+          throw StateError(
+            '心血结晶余量 ${row.quantity}(+${result.crystalsGained}) < 消耗 '
+            '${result.crystalsSpent}；保底整笔回滚(防负数)',
           );
         }
         row.quantity += result.crystalsGained;

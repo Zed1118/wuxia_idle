@@ -317,6 +317,55 @@ void main() {
     expect(await tutorialSvc.getCurrentStep(), 7,
         reason: '+9 未到开锋锚点不推 step 8');
   });
+
+  // ── 7) P1-7 · txn 内重查防负数(过期 UI 快照 / 连点)─────────────────
+  // tryEnhance 只用 UI 快照校验余量;persistResult 落地时若真实余量 < spent
+  // (连点/并发导致快照过期),旧代码直接 row.quantity -= spent 落负数。
+  // 修法:txn 内重查,不足则 fail-fast 抛 StateError,整笔回滚(等级/余量不变)。
+
+  test('P1-7 · mojianshi 真实余量 < spent → StateError 且余量不落负数', () async {
+    await seedInventory(type: ItemType.moJianShi, quantity: 5); // 真实余量少
+    await seedInventory(type: ItemType.xinXueJieJing, quantity: 5);
+    final eq = await seedEq(enhanceLevel: 20);
+
+    const result = EnhanceResult(
+      outcome: EnhanceOutcome.success,
+      oldLevel: 20,
+      newLevel: 21,
+      mojianshiSpent: 100, // > 库存 5(基于过期快照算出)
+    );
+
+    await expectLater(
+      EnhancementService(isar: IsarSetup.instance)
+          .persistResult(eq: eq, result: result),
+      throwsA(isA<StateError>()),
+    );
+    expect(await readQty(ItemType.moJianShi), 5,
+        reason: '余量不足应整笔回滚,不落负数');
+    final eqBack = await IsarSetup.instance.equipments.get(eq.id);
+    expect(eqBack?.enhanceLevel, 20, reason: '材料不足强化整体回滚,等级不变');
+  });
+
+  test('P1-7 · jieJing 真实余量 < crystalsSpent → StateError 且不落负数', () async {
+    await seedInventory(type: ItemType.moJianShi, quantity: 1000);
+    await seedInventory(type: ItemType.xinXueJieJing, quantity: 2); // 少
+    final eq = await seedEq(enhanceLevel: 20);
+
+    const result = EnhanceResult(
+      outcome: EnhanceOutcome.success,
+      oldLevel: 20,
+      newLevel: 21,
+      crystalsSpent: 10, // > 库存 2(保底扣结晶)
+    );
+
+    await expectLater(
+      EnhancementService(isar: IsarSetup.instance)
+          .persistResult(eq: eq, result: result),
+      throwsA(isA<StateError>()),
+    );
+    expect(await readQty(ItemType.xinXueJieJing), 2,
+        reason: '结晶不足应整笔回滚,不落负数');
+  });
 }
 
 class _StubRng implements Rng {
