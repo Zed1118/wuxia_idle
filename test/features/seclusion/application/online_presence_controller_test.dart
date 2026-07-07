@@ -98,6 +98,79 @@ void main() {
     expect((await IsarSetup.currentSaveData())!.lastOnlineAt, t0);
   });
 
+  group('心跳与生命周期门控', () {
+    OnlinePresenceController shortBeat({DateTime Function()? clock}) {
+      final c = ProviderContainer(
+        overrides: [
+          onlinePresenceControllerProvider.overrideWith((ref) {
+            final ctl = OnlinePresenceController(
+              ref,
+              clock: clock,
+              heartbeatInterval: const Duration(milliseconds: 40),
+            );
+            ref.onDispose(ctl.dispose);
+            return ctl;
+          }),
+        ],
+      );
+      addTearDown(c.dispose);
+      return c.read(onlinePresenceControllerProvider);
+    }
+
+    test('R3: markStartupSettleDone 前 onAppFocused 整体 no-op', () async {
+      final t0 = DateTime(2026, 7, 7, 10);
+      await IsarSetup.touchOnlineNow(now: t0);
+      final ctl = shortBeat();
+      ctl.onAppFocused();
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+      expect(ctl.isHeartbeatActive, isFalse);
+      expect((await IsarSetup.currentSaveData())!.lastOnlineAt, t0); // 基准没被碰
+      final item = await IsarSetup.instance.inventoryItems
+          .getByDefId('item_mojianshi');
+      expect(item, isNull); // 未结算
+    });
+
+    test('R2: 心跳持续推进基准(双吃上界≤间隔)', () async {
+      await IsarSetup.touchOnlineNow(now: DateTime(2026, 7, 7, 10));
+      final ctl = shortBeat(); // clock 默认 DateTime.now
+      ctl.markStartupSettleDone();
+      expect(ctl.isHeartbeatActive, isTrue);
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      final save = (await IsarSetup.currentSaveData())!;
+      // 基准已被心跳刷到「现在」附近 → 模拟 kill 后重启,窗口≈0
+      expect(
+        DateTime.now().difference(save.lastOnlineAt).inMilliseconds,
+        lessThan(500),
+      );
+    });
+
+    test('R6: 失焦停心跳+终 touch;再聚焦结算窗口并恢复;重复聚焦幂等', () async {
+      final t0 = DateTime(2026, 7, 7, 10);
+      await IsarSetup.touchOnlineNow(now: t0);
+      // 固定时钟只用于失焦 touch/心跳;结算窗口用显式 now 驱动
+      final tBlur = DateTime(2026, 7, 7, 12);
+      final ctl = shortBeat(clock: () => tBlur);
+      ctl.markStartupSettleDone();
+      ctl.onAppBlurred();
+      expect(ctl.isHeartbeatActive, isFalse);
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      expect((await IsarSetup.currentSaveData())!.lastOnlineAt, tBlur);
+
+      // 8h 后聚焦:先直接调 settlePassiveWindow 验证窗口(focused 的 unawaited
+      // 路径不可注入 now),再验 onAppFocused 恢复心跳 + 幂等不双结。
+      final tBack = DateTime(2026, 7, 7, 20);
+      final yield_ = await ctl.settlePassiveWindow(now: tBack);
+      expect(yield_!.awayHours, closeTo(8.0, 0.001));
+      ctl.onAppFocused();
+      expect(ctl.isHeartbeatActive, isTrue);
+      ctl.onAppFocused(); // 幂等:已在前台直接 return
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      final item = await IsarSetup.instance.inventoryItems
+          .getByDefId('item_mojianshi');
+      expect(item?.quantity, 2); // 只有 8h 窗口那一次入包
+    });
+  });
+
   test('R8: 结算后 allInventoryItemsProvider 读到新值', () async {
     final t0 = DateTime(2026, 7, 7, 10);
     await IsarSetup.touchOnlineNow(now: t0);
