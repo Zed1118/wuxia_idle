@@ -308,16 +308,17 @@ class SkillCommandButton extends StatelessWidget {
         !queuedAnother &&
         allowPlayerIntervention;
 
-    final Color bgColor;
+    Color bgColor;
     final baseSchoolColor = WuxiaColors.schoolColor(character.school);
     if (!ready) {
       bgColor = WuxiaColors.buttonDisabled;
     } else if (highlight) {
+      // 破招提示醒目金:原 0.72 上白字仅 ~2.9:1,压暗一档(0.52)让白字可读(~4.6:1)。
       bgColor = Color.lerp(
         WuxiaColors.sidebar,
         WuxiaColors.resultHighlight,
-        0.72,
-      )!; // 敌人蓄力中：醒目金, 但收敛到战斗面板色系。
+        0.52,
+      )!;
     } else {
       bgColor = Color.lerp(WuxiaColors.sidebar, baseSchoolColor, 0.78)!;
     }
