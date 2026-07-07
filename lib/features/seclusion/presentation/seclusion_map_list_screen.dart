@@ -478,8 +478,11 @@ class _MapCard extends StatelessWidget {
                           style: TextStyle(
                             // 地点标题浮在可变明暗水墨景上，深墨字压浅景(如悬崖瀑布)
                             // 几乎不可读；改浅字+强描影(白字压深 scrim 范式)兜底全景。
+                            // paper-text-audit 豁免:标题浮于水墨实景+0.72黑描影
+                            // (2026-07-07 用户拍板浅字方案),命中的 paper-fill 是
+                            // 下方同级摘要框,非本文字底面。注解贴 token 行生效。
                             color: locked
-                                ? WuxiaColors.textSecondary
+                                ? WuxiaColors.textSecondary // paper-text-audit: allow 浮实景+描影非纸面
                                 : WuxiaColors.textPrimary,
                             fontSize: 23,
                             fontWeight: FontWeight.w900,
