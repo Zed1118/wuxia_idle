@@ -342,6 +342,8 @@ class UiStrings {
   static const String equipProtectedCurrent = '当前装备受保护,请先卸下或解锁';
   static const String equipDirectActionEquip = '装备';
   static const String equipDirectActionUnequip = '卸下';
+  static const String inventoryEquipActionEquip = '装备';
+  static const String inventoryEquipActionUnequip = '卸下';
   static const String equipNoActiveCharacter = '暂无可装备角色';
   static const String equipDirectSuccess = '已装备';
   static const String equipDirectUnequipSuccess = '已卸下';
@@ -358,6 +360,15 @@ class UiStrings {
   static const String equipmentCompareEnhance = '强化等级';
   static const String equipmentCompareTier = '品阶';
   static const String equipmentCompareResonance = '共鸣';
+  static const String inventoryEquipCompareTitle = '装备对比';
+  static const String inventoryEquipCompareNoCurrent = '当前未装备';
+  static String inventoryEquipCompareCurrent(String name) => '当前：$name';
+  static String inventoryEquipCompareCandidate(String name) => '换上：$name';
+  static String inventoryEquipCompareDelta(int delta) => delta == 0
+      ? '±0'
+      : delta > 0
+      ? '+$delta'
+      : '$delta';
   static const String equipmentCompareSchool = '流派';
   static const String equipmentCompareHeritage = '师承遗物';
   static const String equipmentCompareEmptyForging = '—';

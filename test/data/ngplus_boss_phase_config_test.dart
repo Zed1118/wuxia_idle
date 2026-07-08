@@ -54,7 +54,7 @@ void main() {
         .singleWhere((e) => e.id == 'enemy_tower_boss_30');
 
     expect(floor20.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.65, 0.35]);
-    expect(floor25.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.70, 0.5]);
+    expect(floor25.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.80, 0.5]);
     expect(floor30.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.90, 0.50]);
 
     expect(floor20.bossPhasesForCycle(2)!.map((p) => p.hpThresholdPct), [

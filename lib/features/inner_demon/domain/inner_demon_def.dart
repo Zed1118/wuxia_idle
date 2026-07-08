@@ -43,6 +43,15 @@ class InnerDemonDef {
   /// 开窗=永久免疫无解，fromYaml 跨字段校验 fail-fast）。
   final String? mirrorChargeSkillId;
 
+  /// 机制化心魔（配 vulnerability 的 05/06/07）镜像攻击倍率。
+  /// 纯镜像关继续使用 `1 + mirror_buff`；机制关用此倍率避免同款高爆发镜像
+  /// 先手秒杀，把挑战重心放回窗口/撑关。
+  final double mechanicMirrorAttackMultiplier;
+
+  /// 机制化心魔镜像起手行动条。负数表示延后起手，给爆发流一次窗口。
+  /// 纯镜像关仍从 0 起手。
+  final int mechanicMirrorStartActionPoint;
+
   const InnerDemonDef({
     required this.mirrorBuffPerStage,
     required this.mirrorCaps,
@@ -52,6 +61,8 @@ class InnerDemonDef {
     required this.requiredRealmLayer,
     this.mirrorVulnerabilityPerStage = const {},
     this.mirrorChargeSkillId,
+    this.mechanicMirrorAttackMultiplier = 1.0,
+    this.mechanicMirrorStartActionPoint = 0,
   });
 
   /// numbers.yaml 不含 `inner_demon` 段时的空值（fixture 兼容 + Demo 路径无心魔）。
@@ -59,29 +70,31 @@ class InnerDemonDef {
   /// 所有 Map 空 → InnerDemonService.isLayerLocked 始终返 false，不破现有
   /// applyExperience while-loop 升层行为。
   factory InnerDemonDef.empty() => const InnerDemonDef(
-        mirrorBuffPerStage: {},
-        mirrorCaps: InnerDemonMirrorCaps(
-          hpMax: 20000,
-          internalForceMax: 15000,
-          attackPowerMax: 6000,
-        ),
-        failurePenalty: InnerDemonFailurePenalty(
-          internalForceMultiplier: 0.85,
-          mainCultivationMultiplier: 0.90,
-          subCultivationMultiplier: 1.00,
-          debuffId: 'inner_demon_residue',
-          debuffClearViaRetreatHours: 8,
-          internalForceFloorPct: 0.50,
-        ),
-        residueDebuff: InnerDemonResidueDebuff(
-          battleOutputMultiplier: 0.95,
-          internalForceRecoveryMultiplier: 0.80,
-        ),
-        unlockTriggers: {},
-        requiredRealmLayer: {},
-        mirrorVulnerabilityPerStage: {},
-        mirrorChargeSkillId: null,
-      );
+    mirrorBuffPerStage: {},
+    mirrorCaps: InnerDemonMirrorCaps(
+      hpMax: 20000,
+      internalForceMax: 15000,
+      attackPowerMax: 6000,
+    ),
+    failurePenalty: InnerDemonFailurePenalty(
+      internalForceMultiplier: 0.85,
+      mainCultivationMultiplier: 0.90,
+      subCultivationMultiplier: 1.00,
+      debuffId: 'inner_demon_residue',
+      debuffClearViaRetreatHours: 8,
+      internalForceFloorPct: 0.50,
+    ),
+    residueDebuff: InnerDemonResidueDebuff(
+      battleOutputMultiplier: 0.95,
+      internalForceRecoveryMultiplier: 0.80,
+    ),
+    unlockTriggers: {},
+    requiredRealmLayer: {},
+    mirrorVulnerabilityPerStage: {},
+    mirrorChargeSkillId: null,
+    mechanicMirrorAttackMultiplier: 1.0,
+    mechanicMirrorStartActionPoint: 0,
+  );
 
   factory InnerDemonDef.fromYaml(Map<String, dynamic>? y) {
     if (y == null) return InnerDemonDef.empty();
@@ -130,6 +143,16 @@ class InnerDemonDef {
         '(${vuln.keys.join(",")}) 但缺 mirror_charge_skill_id（永不开窗=无解）',
       );
     }
+    final mechanicAttackMultiplier =
+        (y['mechanic_mirror_attack_multiplier'] as num?)?.toDouble() ?? 1.0;
+    if (mechanicAttackMultiplier <= 0 || mechanicAttackMultiplier > 1.0) {
+      throw StateError(
+        'inner_demon.mechanic_mirror_attack_multiplier 必须在 (0,1]，'
+        '实际=$mechanicAttackMultiplier',
+      );
+    }
+    final mechanicStartActionPoint =
+        (y['mechanic_mirror_start_action_point'] as num?)?.toInt() ?? 0;
 
     return InnerDemonDef(
       mirrorBuffPerStage: mirror,
@@ -146,6 +169,8 @@ class InnerDemonDef {
       requiredRealmLayer: required,
       mirrorVulnerabilityPerStage: vuln,
       mirrorChargeSkillId: chargeSkillId,
+      mechanicMirrorAttackMultiplier: mechanicAttackMultiplier,
+      mechanicMirrorStartActionPoint: mechanicStartActionPoint,
     );
   }
 }
@@ -253,6 +278,6 @@ class InnerDemonResidueDebuff {
             (y['battle_output_multiplier'] as num?)?.toDouble() ?? 0.95,
         internalForceRecoveryMultiplier:
             (y['internal_force_recovery_multiplier'] as num?)?.toDouble() ??
-                0.80,
+            0.80,
       );
 }

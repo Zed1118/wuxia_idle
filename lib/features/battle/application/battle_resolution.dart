@@ -110,7 +110,7 @@ class BattleResolutionService {
     required TechniqueDef Function(String defId) techniqueDefLookup,
     required DropService dropService,
     StageDef? stageDef,
-    bool isVictory = true,
+    bool? isVictory,
     NumbersConfig? numbersConfig,
     bool isHardFight = false,
     // 第八阶段 E·稀有彩头:阶池查询 + realm→装备阶映射(注入式·null 则不掉彩头)。
@@ -121,6 +121,8 @@ class BattleResolutionService {
     int cycle = 1,
   }) {
     _assertAllParticipated(finalState, participatingCharacters);
+    final resolvedVictory =
+        isVictory ?? finalState.result == BattleResult.leftWin;
 
     // 1. 反推 actionLog：actor → {skillId: 使用次数}
     final skillCountsByActor = <int, Map<String, int>>{};
@@ -178,11 +180,11 @@ class BattleResolutionService {
     }
 
     // 3. 掉落（战败不掉；victory + stageDef==null 时 caller 自处理 drops 不在此 roll）
-    var dropResult = (isVictory && stageDef != null)
+    var dropResult = (resolvedVictory && stageDef != null)
         ? dropService.rollDrops(stageDef, rng)
         : const DropResult(equipments: [], items: []);
     // 周目平衡 2026-06-26:二周目起(cycle≥2)普通掉落材料类数量加成(主线/扫荡)。
-    if (isVictory && stageDef != null && numbersConfig != null) {
+    if (resolvedVictory && stageDef != null && numbersConfig != null) {
       dropResult = applyCycleMaterialBonus(
         dropResult,
         cycle,
@@ -192,7 +194,7 @@ class BattleResolutionService {
     // 第八阶段 E·稀有彩头:本关固定掉落外额外 roll 高于本关 1-2 阶装备(并入 drops
     // → 自动持久 + victory 仪式展示)。注入齐备 + victory 时才跑。
     // 周目平衡:cycle≥2 各档用 chance_ng_plus 提高命中(主线/扫荡)。
-    if (isVictory &&
+    if (resolvedVictory &&
         stageDef != null &&
         numbersConfig != null &&
         equipmentPoolByTier != null &&
@@ -218,7 +220,7 @@ class BattleResolutionService {
     // 心魔关(stageType==innerDemon)虽 isBossStage=true，但走下方独立心魔惩罚分支，
     // 此处必须排除，否则两分支同时命中 → 内力双扣 + 修炼度双回退（双重惩罚 bug）。
     final defeatPenalty = <int, DefeatPenaltyResult>{};
-    if (!isVictory &&
+    if (!resolvedVictory &&
         stageDef != null &&
         stageDef.isBossStage &&
         stageDef.stageType != StageType.innerDemon) {
@@ -246,7 +248,7 @@ class BattleResolutionService {
     // 与 Boss 散功互斥:心魔关 isBossStage=true,故由上方 Boss 分支显式排除
     // stageType==innerDemon 来保证互斥(本分支独占)。stageDef=null(tower) 不进。
     final innerDemonPenalty = <int, InnerDemonPenaltyResult>{};
-    if (!isVictory &&
+    if (!resolvedVictory &&
         stageDef != null &&
         stageDef.stageType == StageType.innerDemon &&
         numbersConfig != null) {
@@ -275,7 +277,7 @@ class BattleResolutionService {
         participatingCharacters: participatingCharacters,
         finalState: finalState,
         config: numbersConfig.injury,
-        isVictory: isVictory,
+        isVictory: resolvedVictory,
         isHardFight: isHardFight,
       );
     }

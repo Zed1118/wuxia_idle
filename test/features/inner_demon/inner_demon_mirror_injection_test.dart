@@ -16,13 +16,13 @@ import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
 InnerDemonDef _vulnDef() => InnerDemonDef.fromYaml(<String, dynamic>{
   'mirror_buff_per_stage': {
     'stage_inner_demon_01': 0.10,
-    'stage_inner_demon_05': 0.18,
-    'stage_inner_demon_06': 0.20,
-    'stage_inner_demon_07': 0.40,
+    'stage_inner_demon_05': 0.14,
+    'stage_inner_demon_06': 0.14,
+    'stage_inner_demon_07': 0.25,
   },
   'mirror_vulnerability_per_stage': {
-    'stage_inner_demon_05': {'outOfWindowDamageMult': 0.12},
-    'stage_inner_demon_06': {'outOfWindowDamageMult': 0.10},
+    'stage_inner_demon_05': {'outOfWindowDamageMult': 0.16},
+    'stage_inner_demon_06': {'outOfWindowDamageMult': 0.16},
   },
   'mirror_charge_skill_id': 'skill_inner_demon_charge',
 });
@@ -93,8 +93,8 @@ void main() {
     test('Test1 stage 05/06 注入 vulnerabilityMult + chargeSkillId + 蓄力技', () {
       final def = _vulnDef();
       for (final (stage, mult) in [
-        ('stage_inner_demon_05', 0.12),
-        ('stage_inner_demon_06', 0.10),
+        ('stage_inner_demon_05', 0.16),
+        ('stage_inner_demon_06', 0.16),
       ]) {
         final mirrors = InnerDemonService.buildMirrorEnemyTeam(
           playerTeam: _team(),

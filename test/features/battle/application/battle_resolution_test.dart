@@ -686,6 +686,64 @@ void main() {
     expect(result.dropResult.items.first.quantity, 2);
   });
 
+  test('战败默认从 finalState.result 派生 → 不掉落', () {
+    final ch = buildCharacter(id: 1, mainTechId: 200);
+    final mainTech = buildTechnique(
+      id: 200,
+      ownerCharId: 1,
+      defId: 'tech_main',
+    );
+    final state = BattleState(
+      leftTeam: [buildBattleChar(1, 0)],
+      rightTeam: [buildBattleChar(2, 0)],
+      tick: 5,
+      result: BattleResult.rightWin,
+      actionLog: const [],
+    );
+
+    final eqDef = const EquipmentDef(
+      id: 'eq_drop_test',
+      name: '掉落装备',
+      tier: EquipmentTier.xunChang,
+      slot: EquipmentSlot.weapon,
+      baseAttackMin: 50,
+      baseAttackMax: 60,
+      baseHealthMin: 0,
+      baseHealthMax: 0,
+      baseSpeedMin: 0,
+      baseSpeedMax: 5,
+      presetLoreIds: [],
+      dropSourceTags: [],
+      iconPath: '',
+    );
+
+    final result = BattleResolutionService.resolve(
+      finalState: state,
+      participatingCharacters: [ch],
+      equipmentsByCharacter: const {},
+      techniquesByCharacter: {
+        1: [mainTech],
+      },
+      stageDef: buildStage(
+        dropTable: const [
+          EquipmentDrop(equipmentDefId: 'eq_drop_test', dropChance: 1.0),
+          ItemDrop(
+            inventoryItemDefId: 'item_x',
+            quantityMin: 2,
+            quantityMax: 2,
+            dropChance: 1.0,
+          ),
+        ],
+      ),
+      rng: DefaultRng(seed: 1),
+      progressToNextMap: progressMap,
+      techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+      dropService: dropSvc(eqDef: eqDef),
+    );
+
+    expect(result.dropResult.isEmpty, isTrue);
+  });
+
   // 周目平衡 2026-06-26:resolve 透传 cycle → 二周目材料类掉落 ×1.5(真 numbers.yaml)。
   test('周目材料加成：cycle=2 材料 ×1.5、cycle=1 原值', () {
     final ch = buildCharacter(id: 1, mainTechId: 200);

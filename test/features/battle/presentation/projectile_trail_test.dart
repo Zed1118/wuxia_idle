@@ -1,26 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/presentation/projectile_trail.dart';
+import 'package:wuxia_idle/features/battle/presentation/projectile_trail_style.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
 
 void main() {
   testWidgets('ProjectileTrail 渲染 CustomPaint 且随 animation 推进', (tester) async {
     final ctrl = AnimationController(
-        vsync: const TestVSync(),
-        duration: const Duration(milliseconds: 260));
+      vsync: const TestVSync(),
+      duration: const Duration(milliseconds: 260),
+    );
     addTearDown(ctrl.dispose);
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(
+      MaterialApp(
         home: Scaffold(
-            body: ProjectileTrail(
-                animation: ctrl,
-                color: WuxiaColors.gangMeng,
-                strokeWidth: 3,
-                start: const Offset(0, 0),
-                end: const Offset(100, 0)))));
+          body: ProjectileTrail(
+            animation: ctrl,
+            color: WuxiaColors.gangMeng,
+            strokeWidth: 3,
+            start: const Offset(0, 0),
+            end: const Offset(100, 0),
+            seed: 17,
+          ),
+        ),
+      ),
+    );
     expect(find.byType(CustomPaint), findsWidgets);
     ctrl.forward();
     await tester.pump(const Duration(milliseconds: 130));
     expect(tester.takeException(), isNull);
     await tester.pumpAndSettle(); // 收尾动画，避免 ticker 残留
+  });
+
+  testWidgets('ProjectileTrail 技能形态可渲染', (tester) async {
+    final ctrl = AnimationController(
+      vsync: const TestVSync(),
+      duration: const Duration(milliseconds: 260),
+    );
+    addTearDown(ctrl.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ProjectileTrail(
+            animation: ctrl,
+            color: WuxiaColors.lingQiao,
+            strokeWidth: 6.4,
+            start: const Offset(20, 80),
+            end: const Offset(220, 40),
+            style: ProjectileTrailStyle.skill,
+            seed: 29,
+          ),
+        ),
+      ),
+    );
+    expect(find.byType(CustomPaint), findsWidgets);
+    ctrl.forward();
+    await tester.pump(const Duration(milliseconds: 130));
+    expect(tester.takeException(), isNull);
+    await tester.pumpAndSettle();
   });
 }

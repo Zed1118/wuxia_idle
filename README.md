@@ -83,9 +83,9 @@ project_root/
 │   │   └── <feature>/{domain,application,presentation}/
 │   ├── shared/        # 跨 feature 复用（主题、组件、UiStrings）
 │   └── main.dart
-├── data/              # 全部配置与文案（451 个 yaml，数值 + narratives/lore/events）
+├── data/              # 全部配置与文案（452 个 yaml，数值 + narratives/lore/events）
 ├── assets/            # 图片、字体、音频（AI 产出）
-├── test/             # 单元 + golden + 平衡红线测试（516 个测试文件）
+├── test/             # 单元 + golden + 平衡红线测试（553 个测试文件）
 └── docs/             # 设计 spec、审查报告、交接记录、归档
 ```
 
@@ -127,7 +127,7 @@ flutter test --no-pub -j1
 flutter analyze lib/ test/
 ```
 
-测试体系（516 个测试文件）分三类：**单元测试**（公式/service/仓储）、**widget 测试**（各屏交互与桌面语义）、**平衡红线测试**（`test/data/` + `test/balance/` + `test/tools/` 的极值模拟与数值红线守卫，防数值膨胀越界）。
+测试体系（553 个测试文件）分三类：**单元测试**（公式/service/仓储）、**widget 测试**（各屏交互与桌面语义）、**平衡红线测试**（`test/data/` + `test/balance/` + `test/tools/` 的极值模拟与数值红线守卫，防数值膨胀越界）。
 
 > 代码改动的测试节奏：自包含改动只跑 targeted + analyze；跨切面改动（numbers/结算/schema/迁移）或批末合并才跑全量。
 
@@ -180,4 +180,3 @@ flutter analyze lib/ test/
 - **开发**：macOS 单端（Claude Code + Opus），写 `lib/` / `data/` / `test/` / 文档
 - **数值/规则层受保护**：`GDD.md` / `CLAUDE.md` / `numbers.yaml` / `data_schema.md` / `IDS_REGISTRY.md` 改前需确认
 - **Windows**：仅作发布目标平台，ship 前实机验证
-

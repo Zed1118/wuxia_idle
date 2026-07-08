@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.32**
+> v1.32 变更摘要(2026-07-08 外部审查速修 · 低风险修订):① 战斗结算 `BattleResolutionService.resolve` 默认胜负从 `finalState.result` 派生，避免未显式传参时战败误走胜利掉落；② `interveneNow` 补 request 后 null-check，消除拖招边界崩溃点；③ `_enforceEncounterSkillRedLines` 招式倍率上限改读 `numbers.combat.redLines.skillPowerMultiplierMax`；④ 文档 drift 速修：data_schema 降级历史快照、content_guide 清退役 DeepSeek/Windows 引用、README/AGENTS/IDS/GDD 同步已知偏差。
 > **版本:v1.31**
 > v1.31 变更摘要(2026-07-04 批次3 心魔机制型实例登记 · 0 改红线语义):心魔 05/06/07 镜像脆弱窗口(承伤乘子 0.12/0.10/0.08)+ 07 限时生存(survive 20 tick 或击败任一即胜);纯实例追加对齐 v1.30 机制型 Boss 例外条款,减伤方向/新胜负条件不膨胀数字。
 > **版本:v1.30**

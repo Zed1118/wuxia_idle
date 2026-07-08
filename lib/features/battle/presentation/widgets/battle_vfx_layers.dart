@@ -27,6 +27,8 @@ class ProjectileLayer extends StatelessWidget {
                 animation: t.ctrl,
                 color: t.color,
                 strokeWidth: t.strokeWidth,
+                style: t.style,
+                seed: t.id,
                 start: Offset(t.startFrac.dx * w, t.startFrac.dy * h),
                 end: Offset(t.endFrac.dx * w, t.endFrac.dy * h),
               ),

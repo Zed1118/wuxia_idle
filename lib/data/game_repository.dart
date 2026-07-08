@@ -111,7 +111,7 @@ class GameRepository {
   ///
   /// 从 `data/narratives/codex/<id>.md` 加载,id 由 [CodexIndex.entries] 登记。
   /// **graceful**:test fixture 不带 md 时为空 map;档 8 `combat_advanced.md`
-  /// DeepSeek 派单前缺失时跳过该条(其余 7 条仍加载),不阻塞主流程。
+  /// 内容补齐前缺失时跳过该条(其余 7 条仍加载),不阻塞主流程。
   final Map<String, CodexEntry> codexEntries;
 
   /// P4.1 §12.2 山头领地静态 def(`data/territories.yaml`,Q4=A)。
@@ -1024,13 +1024,15 @@ class GameRepository {
   /// 跳过 per-skill cap 校验;但 unlock 引用一致性始终校验(encounters.yaml 在场时),
   /// P2-a 后空池 + 有 unlockSkill 引用 → fail-fast,不再静默跳过。
   void _enforceEncounterSkillRedLines() {
-    // GDD §5.4 红线:全游戏招式 powerMultiplier ≤ 8000。覆盖 skills.yaml +
+    final skillPowerMax = numbers.combat.redLines.skillPowerMultiplierMax;
+    // GDD §5.4 红线:全游戏招式 powerMultiplier ≤ 配置上限。覆盖 skills.yaml +
     // encounter_skills.yaml 全部 skillDefs——此前该上限只在下方 encounterSkillIds
     // 循环内校验,普通心法招(skills.yaml)越界会静默 load(审计 C-F4 缺口)。
     for (final s in skillDefs.values) {
-      if (s.powerMultiplier > 8000) {
+      if (s.powerMultiplier > skillPowerMax) {
         throw StateError(
-          'skill ${s.id} powerMultiplier=${s.powerMultiplier} > 8000 (GDD §5.4)',
+          'skill ${s.id} powerMultiplier=${s.powerMultiplier} > '
+          '$skillPowerMax (GDD §5.4)',
         );
       }
     }

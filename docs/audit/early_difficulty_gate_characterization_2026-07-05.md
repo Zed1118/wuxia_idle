@@ -3,7 +3,7 @@
 > 目的:量化验证「UX对比度+技能成长门控」批(`6ce5e37e`)的两个改动对早期难度的真实影响:
 > ① 心法 3 招按修炼层解锁(初窥第1招/小成第2招/大成大招);② 配套 3 关敌 HP ~7% 下调
 > (01_04 2200→2050 / 04_04 8500→8000 / 06_04 20000←22000)。
-> 探针:`early_difficulty_gate_probe_2026-07-05.dart`(本目录附件,一次性诊断不入 test/)。
+> 探针:`early_difficulty_gate_probe_2026_07_05.dart`(本目录附件,一次性诊断不入 test/)。
 > 体例镜像 `balance_simulator_test.dart`(on-level·floor/ceiling 剖面·25 seed/格·BattleEngine 确定性)。
 
 ## 结论(TL;DR)

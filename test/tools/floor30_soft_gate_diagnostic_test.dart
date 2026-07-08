@@ -37,7 +37,7 @@ import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
 ///      本断言只测 onLevel(underGear 常在 maxTicks 内破不了护法,wardBreakTick=-1
 ///      需特判,不纳入本不变量)。
 ///   ② 满配必胜:onLevel × 全 seed winRate == 100%(护法灭后靠脆弱窗口打残局,能打死)。
-///   ③ 软门槛:underGear × 全 seed 多数应败(跨阶欠配真实败率,半数语义界见断言处)。
+///   ③ 终局硬门槛:underGear × 全 seed 允许全败(跨阶欠配被护法墙拦住是设计目标)。
 ///
 /// 逐 tick 采样(BattleEngine.tick + 单一 Random(seed),复刻 runToEnd 的确定性)
 /// 记录首个 Boss 掉血 tick / 护法全灭 tick / 相位转换 / 终局。
@@ -74,7 +74,7 @@ void main() {
     Directory(_outputDir).createSync(recursive: true);
   });
 
-  test('floor30 护法墙 taunt + 软门槛硬闸诊断', () async {
+  test('floor30 护法墙 taunt + 终局硬门槛诊断', () async {
     final floor = repo.getTowerFloor(30);
     final results = <_Res>[];
     for (final profile in _Profile.values) {
@@ -109,11 +109,10 @@ void main() {
     // ② 满配必胜(护法灭后靠脆弱窗口打残局,能打死)。
     expect(onWins, _seeds, reason: 'onLevel 满配应全 seed 必胜');
 
-    // ③ 软门槛:跨阶欠配多数应败(半数语义界,不写死瞬时胜率;守
-    //    red_line_test_semantics)。对齐 vulnerability_window_diagnostic_test 测 C 写法。
-    //    OBSERVED(30 seed):underGear winRate=13.3%(4/30 胜,86.7% 败)。
+    // ③ 终局硬门槛:跨阶欠配允许全败。floor30 是终局护法墙,不再要求
+    //    underGear 偶尔通关;只要求满配必胜、欠配不优于满配。
     expect(underWins, lessThanOrEqualTo((_seeds * 0.5).floor()),
-        reason: 'underGear 跨阶欠配至少半数应败(软门槛真咬合,非仅「非 100%」)');
+        reason: 'underGear 跨阶欠配至少半数应败(floor30 终局硬门槛)');
 
     expect(results.length, _Profile.values.length * _seeds);
   }, timeout: const Timeout(Duration(minutes: 10)));
@@ -278,14 +277,14 @@ String _summarize(List<_Res> results) {
   }
 
   final buf = StringBuffer();
-  buf.writeln('# floor30 护法墙 taunt + 软门槛硬闸诊断');
+  buf.writeln('# floor30 护法墙 taunt + 终局硬门槛诊断');
   buf.writeln();
   buf.writeln('$_seeds seed · maxTicks=$_maxTicks · 逐 tick 采样只读模拟。');
   buf.writeln();
   buf.writeln('- ① taunt 真生效:护法全灭前 Boss 不掉血(avgBossFirstDmgTick '
       '>= avgWardBreakTick)。');
   buf.writeln('- ② 满配必胜:onLevel winRate == 100%。');
-  buf.writeln('- ③ 软门槛:underGear winRate < 100%。');
+  buf.writeln('- ③ 终局硬门槛:underGear 允许 0% 胜率,但 onLevel 必须 100%。');
   buf.writeln();
   buf.writeln(
     '| profile | winRate | avgTicks | wardBreakRate | avgWardBreakTick | '

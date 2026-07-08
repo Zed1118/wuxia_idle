@@ -991,15 +991,16 @@ floors:
           yinRou: 1.25
           gangMeng: 0.75
         vulnerability:
-          outOfWindowDamageMult: 0.10   # 机制型:窗口外(未蓄招/未踉跄)仅受 10% 伤;
-                                        # 窗口靠 bossPhases chargeCounter 相位(0.70/0.50)开。
-                                        # 批次1 诊断(copyWith 0.10)验:满配20/20胜·ticks 2.66×。
+          outOfWindowDamageMult: 0.12   # 机制教学 soft gate:窗口外(未蓄招/未踉跄)受 12% 伤;
+                                        # 窗口靠 bossPhases chargeCounter 相位(0.80/0.50)开。
+                                        # 2026-07-08 调整:保留满配必胜与机制耗时,同时让同阶 0 强化
+                                        # 保有少量通关空间,避免 floor25 从 soft gate 退化为硬墙。
         cycleVulnerability:
           2:
-            outOfWindowDamageMult: 0.06   # 批次4:二周目收窄窗口(base 0.10)加压;诊断校准
+            outOfWindowDamageMult: 0.07   # 二周目收窄窗口(base 0.12)加压;仍保留机制可读性
         bossPhases:
           - hpThresholdPct: 1.0
-          - hpThresholdPct: 0.70
+          - hpThresholdPct: 0.80
             unlockSkillIds:
               - skill_lingqiao_jianghu_fang_skill
             aiMode: focus

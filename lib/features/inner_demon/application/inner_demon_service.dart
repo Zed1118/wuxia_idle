@@ -141,6 +141,12 @@ class InnerDemonService {
           slotIndex: i,
           vulnerabilityMult: injectMechanic ? vuln.outOfWindowDamageMult : null,
           chargeSkill: injectMechanic ? mirrorChargeSkill : null,
+          attackMultiplier: injectMechanic
+              ? innerDemonDef.mechanicMirrorAttackMultiplier
+              : 1 + buff,
+          startActionPoint: injectMechanic
+              ? innerDemonDef.mechanicMirrorStartActionPoint
+              : 0,
         ),
     ];
   }
@@ -165,10 +171,8 @@ class InnerDemonService {
     final ifBefore = ch.internalForce;
     final progressBefore = mainTech.cultivationProgress;
 
-    final floor =
-        (ch.internalForceMax * penalty.internalForceFloorPct).floor();
-    final scaled =
-        (ch.internalForce * penalty.internalForceMultiplier).floor();
+    final floor = (ch.internalForceMax * penalty.internalForceFloorPct).floor();
+    final scaled = (ch.internalForce * penalty.internalForceMultiplier).floor();
     ch.internalForce = scaled < floor ? floor : scaled;
 
     // §5.4 惩罚单向下调：主修系数必 ≤ 1.0（内力侧已有地板兜底，progress 侧无
@@ -199,24 +203,28 @@ class InnerDemonService {
     required int slotIndex,
     double? vulnerabilityMult,
     SkillDef? chargeSkill,
+    required double attackMultiplier,
+    required int startActionPoint,
   }) {
-    final maxHp =
-        (src.maxHp * (1 + buff)).round().clamp(1, caps.hpMax);
-    final maxIf = (src.maxInternalForce * (1 + buff))
-        .round()
-        .clamp(1, caps.internalForceMax);
-    final attack = (src.totalEquipmentAttack * (1 + buff))
-        .round()
-        .clamp(0, caps.attackPowerMax);
+    final maxHp = (src.maxHp * (1 + buff)).round().clamp(1, caps.hpMax);
+    final maxIf = (src.maxInternalForce * (1 + buff)).round().clamp(
+      1,
+      caps.internalForceMax,
+    );
+    final attack = (src.totalEquipmentAttack * attackMultiplier).round().clamp(
+      0,
+      caps.attackPowerMax,
+    );
 
     // 脆弱窗口机制关（05/06/07）：追加蓄力技进 availableSkills（去重），否则
     // battle_ai._pickSkill 只迭代 availableSkills，永远选不到 chargeSkillId，
     // 蓄力=死机制、窗口永不开=永久免疫无解（镜像 stage_battle_setup.dart:448
     // 识破 pattern）。
     final skills =
-        chargeSkill != null && !src.availableSkills.any((s) => s.id == chargeSkill.id)
-            ? [...src.availableSkills, chargeSkill]
-            : src.availableSkills;
+        chargeSkill != null &&
+            !src.availableSkills.any((s) => s.id == chargeSkill.id)
+        ? [...src.availableSkills, chargeSkill]
+        : src.availableSkills;
 
     return src.copyWith(
       characterId: -(slotIndex + 1),
@@ -229,7 +237,7 @@ class InnerDemonService {
       availableSkills: skills,
       skillCooldowns: const {},
       activeBuffs: const [],
-      actionPoint: 0,
+      actionPoint: startActionPoint,
       isAlive: true,
       teamSide: 1,
       slotIndex: slotIndex,

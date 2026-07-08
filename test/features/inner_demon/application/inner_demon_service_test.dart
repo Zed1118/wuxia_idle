@@ -11,60 +11,74 @@ import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
 /// inner_demon.required_realm_layer 7 配。
 
 InnerDemonDef _fullDef() => const InnerDemonDef(
-      mirrorBuffPerStage: {
-        'stage_inner_demon_01': 0.10,
-        'stage_inner_demon_02': 0.12,
-        'stage_inner_demon_03': 0.14,
-        'stage_inner_demon_04': 0.16,
-        'stage_inner_demon_05': 0.18,
-        'stage_inner_demon_06': 0.20,
-        'stage_inner_demon_07': 0.40, // Batch 2.5.C 升档(+40% 单副本)
-      },
-      mirrorCaps: InnerDemonMirrorCaps(
-        hpMax: 20000,
-        internalForceMax: 15000,
-        attackPowerMax: 6000,
-      ),
-      failurePenalty: InnerDemonFailurePenalty(
-        internalForceMultiplier: 0.85,
-        internalForceFloorPct: 0.50,
-        mainCultivationMultiplier: 0.90,
-        subCultivationMultiplier: 1.00,
-        debuffId: 'inner_demon_residue',
-        debuffClearViaRetreatHours: 8,
-      ),
-      residueDebuff: InnerDemonResidueDebuff(
-        battleOutputMultiplier: 0.95,
-        internalForceRecoveryMultiplier: 0.80,
-      ),
-      unlockTriggers: {
-        'stage_06_05': 'stage_inner_demon_01',
-        'stage_inner_demon_01': 'stage_inner_demon_02',
-        'stage_inner_demon_02': 'stage_inner_demon_03',
-        'stage_inner_demon_03': 'stage_inner_demon_04',
-        'stage_inner_demon_04': 'stage_inner_demon_05',
-        'stage_inner_demon_05': 'stage_inner_demon_06',
-        'stage_inner_demon_06': 'stage_inner_demon_07',
-      },
-      // 拦截关 stage required_realm_layer = 玩家"当前所在 layer"(升 layer N→N+1
-      // 时被 stage_inner_demon_N 拦截,N ∈ qiMeng..huaJing)。
-      requiredRealmLayer: {
-        'stage_inner_demon_01': RealmCoord(
-            tier: RealmTier.wuSheng, layer: RealmLayer.qiMeng),
-        'stage_inner_demon_02': RealmCoord(
-            tier: RealmTier.wuSheng, layer: RealmLayer.ruMen),
-        'stage_inner_demon_03': RealmCoord(
-            tier: RealmTier.wuSheng, layer: RealmLayer.shuLian),
-        'stage_inner_demon_04': RealmCoord(
-            tier: RealmTier.wuSheng, layer: RealmLayer.jingTong),
-        'stage_inner_demon_05': RealmCoord(
-            tier: RealmTier.wuSheng, layer: RealmLayer.yuanShu),
-        'stage_inner_demon_06': RealmCoord(
-            tier: RealmTier.wuSheng, layer: RealmLayer.huaJing),
-        'stage_inner_demon_07': RealmCoord(
-            tier: RealmTier.wuSheng, layer: RealmLayer.dengFeng),
-      },
-    );
+  mirrorBuffPerStage: {
+    'stage_inner_demon_01': 0.10,
+    'stage_inner_demon_02': 0.12,
+    'stage_inner_demon_03': 0.14,
+    'stage_inner_demon_04': 0.16,
+    'stage_inner_demon_05': 0.14,
+    'stage_inner_demon_06': 0.14,
+    'stage_inner_demon_07': 0.25,
+  },
+  mirrorCaps: InnerDemonMirrorCaps(
+    hpMax: 20000,
+    internalForceMax: 15000,
+    attackPowerMax: 6000,
+  ),
+  failurePenalty: InnerDemonFailurePenalty(
+    internalForceMultiplier: 0.85,
+    internalForceFloorPct: 0.50,
+    mainCultivationMultiplier: 0.90,
+    subCultivationMultiplier: 1.00,
+    debuffId: 'inner_demon_residue',
+    debuffClearViaRetreatHours: 8,
+  ),
+  residueDebuff: InnerDemonResidueDebuff(
+    battleOutputMultiplier: 0.95,
+    internalForceRecoveryMultiplier: 0.80,
+  ),
+  unlockTriggers: {
+    'stage_06_05': 'stage_inner_demon_01',
+    'stage_inner_demon_01': 'stage_inner_demon_02',
+    'stage_inner_demon_02': 'stage_inner_demon_03',
+    'stage_inner_demon_03': 'stage_inner_demon_04',
+    'stage_inner_demon_04': 'stage_inner_demon_05',
+    'stage_inner_demon_05': 'stage_inner_demon_06',
+    'stage_inner_demon_06': 'stage_inner_demon_07',
+  },
+  // 拦截关 stage required_realm_layer = 玩家"当前所在 layer"(升 layer N→N+1
+  // 时被 stage_inner_demon_N 拦截,N ∈ qiMeng..huaJing)。
+  requiredRealmLayer: {
+    'stage_inner_demon_01': RealmCoord(
+      tier: RealmTier.wuSheng,
+      layer: RealmLayer.qiMeng,
+    ),
+    'stage_inner_demon_02': RealmCoord(
+      tier: RealmTier.wuSheng,
+      layer: RealmLayer.ruMen,
+    ),
+    'stage_inner_demon_03': RealmCoord(
+      tier: RealmTier.wuSheng,
+      layer: RealmLayer.shuLian,
+    ),
+    'stage_inner_demon_04': RealmCoord(
+      tier: RealmTier.wuSheng,
+      layer: RealmLayer.jingTong,
+    ),
+    'stage_inner_demon_05': RealmCoord(
+      tier: RealmTier.wuSheng,
+      layer: RealmLayer.yuanShu,
+    ),
+    'stage_inner_demon_06': RealmCoord(
+      tier: RealmTier.wuSheng,
+      layer: RealmLayer.huaJing,
+    ),
+    'stage_inner_demon_07': RealmCoord(
+      tier: RealmTier.wuSheng,
+      layer: RealmLayer.dengFeng,
+    ),
+  },
+);
 
 void main() {
   group('InnerDemonService.isLayerLocked', () {
@@ -92,19 +106,21 @@ void main() {
       );
     });
 
-    test('R1.2 zongShi·dengFeng → wuSheng·qiMeng 跨 tier 升 → false(Ch6 自动升)',
-        () {
-      final def = _fullDef();
-      expect(
-        InnerDemonService.isLayerLocked(
-          nextTier: RealmTier.wuSheng,
-          nextLayer: RealmLayer.qiMeng,
-          innerDemonDef: def,
-          clearedStageIds: const {}, // 一关都没通也不拦
-        ),
-        isFalse,
-      );
-    });
+    test(
+      'R1.2 zongShi·dengFeng → wuSheng·qiMeng 跨 tier 升 → false(Ch6 自动升)',
+      () {
+        final def = _fullDef();
+        expect(
+          InnerDemonService.isLayerLocked(
+            nextTier: RealmTier.wuSheng,
+            nextLayer: RealmLayer.qiMeng,
+            innerDemonDef: def,
+            clearedStageIds: const {}, // 一关都没通也不拦
+          ),
+          isFalse,
+        );
+      },
+    );
 
     test('R1.3 wuSheng 内 qiMeng → ruMen,inner_demon_01 未通 → true(拦)', () {
       final def = _fullDef();
@@ -132,8 +148,7 @@ void main() {
       );
     });
 
-    test('R1.5 wuSheng 7 layer 阶梯锁:仅通 inner_demon_01..03 → 4-7 仍拦',
-        () {
+    test('R1.5 wuSheng 7 layer 阶梯锁:仅通 inner_demon_01..03 → 4-7 仍拦', () {
       final def = _fullDef();
       final cleared = {
         'stage_inner_demon_01',
@@ -176,8 +191,7 @@ void main() {
       }
     });
 
-    test('R1.6 empty def(fixture 兼容 / 配置无 required_realm_layer)→ false',
-        () {
+    test('R1.6 empty def(fixture 兼容 / 配置无 required_realm_layer)→ false', () {
       final def = InnerDemonDef.empty();
       expect(
         InnerDemonService.isLayerLocked(
@@ -215,9 +229,7 @@ void main() {
           'battle_output_multiplier': 0.95,
           'internal_force_recovery_multiplier': 0.80,
         },
-        'unlock_triggers': {
-          'stage_06_05': 'stage_inner_demon_01',
-        },
+        'unlock_triggers': {'stage_06_05': 'stage_inner_demon_01'},
         'required_realm_layer': {
           'stage_inner_demon_01': {'tier': 'wuSheng', 'layer': 'qiMeng'},
           'stage_inner_demon_07': {'tier': 'wuSheng', 'layer': 'dengFeng'},
@@ -325,10 +337,7 @@ void main() {
     });
 
     test('R2.3 def 无该 stage_id 配置 → buff=0 镜像保持原样', () {
-      final player = _mockPlayer(
-        maxHp: 12000,
-        totalEquipmentAttack: 1500,
-      );
+      final player = _mockPlayer(maxHp: 12000, totalEquipmentAttack: 1500);
       final mirrors = InnerDemonService.buildMirrorEnemyTeam(
         playerTeam: [player],
         stageId: 'stage_unknown',
@@ -355,8 +364,7 @@ void main() {
       // 玩家 wuSheng·dengFeng 满 build,HP/IF/Attack 接近 cap 上限
       // (Batch 2.5.C: attack_power_max 2000 → 6000,纠 §5.4 维度锚错。
       //  §5.4 装备攻击 2000 是单件 cap,镜像 totalEquipmentAttack 是 3 件
-      //  求和;cap 6000 = 3 × §5.4 单件 2000。fullDef stage_inner_demon_07
-      //  buff +40% Batch 2.5.C 升档。)
+      //  求和;cap 6000 = 3 × §5.4 单件 2000。)
       final player = _mockPlayer(
         maxHp: 19800,
         maxInternalForce: 14500,
@@ -368,16 +376,20 @@ void main() {
         innerDemonDef: _fullDef(),
       );
       final m = mirrors[0];
-      // 19800 ×1.40 = 27720 → cap 20000
+      // 19800 ×1.25 = 24750 → cap 20000
       expect(m.maxHp, 20000, reason: '§5.4 玩家血上限 cap');
       expect(m.currentHp, 20000);
-      // 14500 ×1.40 = 20300 → cap 15000
+      // 14500 ×1.25 = 18125 → cap 15000
       expect(m.maxInternalForce, 15000, reason: '§5.4 内力上限 cap');
       expect(m.currentInternalForce, 15000);
-      // 5500 ×1.40 = 7700 → cap 6000(3 × §5.4 单件 2000)
-      expect(m.totalEquipmentAttack, 6000,
-          reason: 'Batch 2.5.C: 镜像 totalEquipmentAttack cap '
-              '(3 × §5.4 单件 2000 = 6000)');
+      // 5500 ×1.25 = 6875 → cap 6000(3 × §5.4 单件 2000)
+      expect(
+        m.totalEquipmentAttack,
+        6000,
+        reason:
+            'Batch 2.5.C: 镜像 totalEquipmentAttack cap '
+            '(3 × §5.4 单件 2000 = 6000)',
+      );
     });
 
     test('R3.2 player 远低于 cap + 高 buff → 数值未触 cap 不变形', () {
@@ -388,13 +400,13 @@ void main() {
       );
       final mirrors = InnerDemonService.buildMirrorEnemyTeam(
         playerTeam: [player],
-        stageId: 'stage_inner_demon_07', // +40%(Batch 2.5.C 升档)
+        stageId: 'stage_inner_demon_07',
         innerDemonDef: _fullDef(),
       );
       final m = mirrors[0];
-      expect(m.maxHp, 7000, reason: '5000 ×1.40,未达 20000 cap');
-      expect(m.maxInternalForce, 4200);
-      expect(m.totalEquipmentAttack, 1120);
+      expect(m.maxHp, 6250, reason: '5000 ×1.25,未达 20000 cap');
+      expect(m.maxInternalForce, 3750);
+      expect(m.totalEquipmentAttack, 1000);
     });
 
     test('R3.3 empty def(fixture 兼容)→ 0 buff 镜像保持原样不破', () {
@@ -421,28 +433,27 @@ BattleCharacter _mockPlayer({
   RealmTier realmTier = RealmTier.wuSheng,
   RealmLayer realmLayer = RealmLayer.qiMeng,
   TechniqueSchool school = TechniqueSchool.gangMeng,
-}) =>
-    BattleCharacter(
-      characterId: characterId,
-      name: name,
-      realmTier: realmTier,
-      realmLayer: realmLayer,
-      school: school,
-      maxHp: maxHp,
-      currentHp: maxHp,
-      maxInternalForce: maxInternalForce,
-      currentInternalForce: maxInternalForce,
-      speed: 250,
-      criticalRate: 0.15,
-      evasionRate: 0.05,
-      defenseRate: 0.35,
-      totalEquipmentAttack: totalEquipmentAttack,
-      mainCultivationLayer: CultivationLayer.jiJing,
-      availableSkills: const <SkillDef>[],
-      skillCooldowns: const {'skill_a': 2}, // 验证镜像清空 CD
-      activeBuffs: const ['founder_buff'],   // 验证镜像清空 buff
-      actionPoint: 500, // 验证镜像归零
-      isAlive: true,
-      teamSide: 0,
-      slotIndex: slotIndex,
-    );
+}) => BattleCharacter(
+  characterId: characterId,
+  name: name,
+  realmTier: realmTier,
+  realmLayer: realmLayer,
+  school: school,
+  maxHp: maxHp,
+  currentHp: maxHp,
+  maxInternalForce: maxInternalForce,
+  currentInternalForce: maxInternalForce,
+  speed: 250,
+  criticalRate: 0.15,
+  evasionRate: 0.05,
+  defenseRate: 0.35,
+  totalEquipmentAttack: totalEquipmentAttack,
+  mainCultivationLayer: CultivationLayer.jiJing,
+  availableSkills: const <SkillDef>[],
+  skillCooldowns: const {'skill_a': 2}, // 验证镜像清空 CD
+  activeBuffs: const ['founder_buff'], // 验证镜像清空 buff
+  actionPoint: 500, // 验证镜像归零
+  isAlive: true,
+  teamSide: 0,
+  slotIndex: slotIndex,
+);

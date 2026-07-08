@@ -384,8 +384,11 @@
 | +11 ~ +13 | 90% | 仅扣半数材料 |
 | +14 ~ +16 | 75% | 全扣材料 |
 | +17 ~ +19 | 50% | 全扣材料 |
+| +20 ~ +49 | `max(30%, 50% - 2% × (level - 19))` | 全扣材料 |
 
 **关键设计**：**不会破防降级**。最坏结果只是"白扣材料"，不会出现 +18 掉到 +12 的崩溃感。
+
+> +20~+49 段以 `numbers.yaml equipment.enhancement.success_curve` 为准；材料消耗随高段增加，心血结晶保底消耗维持高段兜底语义。
 
 ### 6.3 心血结晶（保底机制）
 
@@ -529,13 +532,13 @@
 | 爬塔层数 | 30 |
 | 爬塔 Boss | 6（3 小 3 大，分别在第 5/15/25 层和第 10/20/30 层） |
 | 闭关地图 | 5 |
-| 武学领悟触发（techniqueInsight encounter） | 20-30 |
-| 基础奇遇（fortuneEvent，非节日） | 15-25 |
+| 武学领悟触发（techniqueInsight encounter） | 36 |
+| 基础奇遇（fortuneEvent，非节日） | 24 |
 | 节日 encounter（festivalRequired 独立通道） | 6-10 |
-| 装备 | 30-50 件（覆盖 7 阶，每阶 5-7 件） |
-| 心法 | 20-30 本（覆盖 7 阶 + 3 流派） |
-| 武学领悟招式 | 30-50 招 |
-| 心法相生组合 | ≥ 5 |
+| 装备 | 80 件（覆盖 7 阶） |
+| 心法 | 49 本（覆盖 7 阶 + 3 流派） |
+| 武学领悟招式 | 246 招 |
+| 心法相生组合 | 12 |
 | 师徒角色 | 3（祖师 + 大弟子 + 二弟子） |
 | 典故文案 | 50-80 段 |
 | 主线剧情字数 | 3,000 ~ 7,000 字 |
@@ -544,8 +547,7 @@
 > 已拆为 3 独立维度,因 encounter type 分 `techniqueInsight`(GDD §7.2 武学领悟
 > 触发,玩家境界突破前置)/ `fortuneEvent`(GDD §6.1 + §10 江湖奇缘内容)/ 节日触发
 > (festivalRequired 独立窗口)。三类玩家感知与触发条件完全不同,合并计数易
-> 漂移。**当前实装(2026-05-17 W18 实测)**:武学领悟触发 20 / 基础奇遇 16
-> （24 fortuneEvent - 8 节日）/ 节日 8。
+> 漂移。**当前实装(2026-07-08 外部审查复核)**:武学领悟触发 36 / 基础奇遇 24 / 节日 8。
 >
 > **节日 encounter 独立通道**（W16/W17 GDD §12.4 落地 2026-05-16/05-17）：8 节日
 > encounter（春节/元宵/端午/七夕/中秋/重阳 + 除夕/清明 共 8 条）走 `festivalRequired`
@@ -610,7 +612,7 @@
 
 ### 10.4 快速开局
 
-- 二周目玩家可**跳过引导直接开档**，避免老玩家折磨。
+- 二周目玩家可**跳过引导直接开档**，避免老玩家折磨。**当前状态（2026-07-08）**：未实装，暂作为 1.0 打磨期候选项；落地前不得把它当作现有功能。
 
 ---
 
@@ -659,7 +661,7 @@ data/
 ### 12.1 剧情与世界
 
 - **江湖恩怨系统**：NPC 之间的关系网，杀某人会被其门派追杀。**已实装 ✅**(2026-05-25 P1.2 100% 闭环 · 与声望系统联动 · 详 `docs/handoff/p1_2_jianghu_full.md`)。
-- **心魔系统**:高境界突破前需面对心魔关卡,剧情化的内心战斗。**v1.10 1.0 P2.2 Batch 2.1-2.5 全收尾 ✅**(2026-05-23,10 commit `e666e4c → b15d34d` 全 push origin/main):7 关 `stage_inner_demon_01..07` 拦截 wuSheng 7 层突破(qiMeng → ruMen → ... → dengFeng → 飞升前置)+ `InnerDemonService.buildMirrorEnemyTeam` 深拷贝 playerTeam ×(1+10-40%) clamp §5.4 cap(`mirror_caps` HP ≤20k/IF ≤15k/Attack ≤6k=3×§5.4 单件 2000)+ `isLayerLocked` 拦截 hook 接 advancement_service.applyExperience(EXP 留账 §5.1)+ 3 callers wire(seclusion/tower/mainline)+ 失败 = 内力 ×0.85 / 主修修炼度 ×0.9 + 「心魔余毒」debuff 闭关 8h 清**(⚠️ 2026-06-16 审计 M6 更正:失败惩罚仅 `InnerDemonFailurePenalty`/`InnerDemonResidueDebuff` 配置定义,代码层从未 wire——InnerDemonService 只实装 isLayerLocked + buildMirrorEnemyTeam + victory 记录,战败惩罚未接入任何结算路径。「全收尾 ✅」此项不实,实装留待拍板)** + 22 narrative ~3,900 字(Tier wuSheng「湛然/寂照/圆融/化机」+ 7 主题贪/嗔/痴/慢/疑/空/真)+ **UI reactive 三态**(InnerDemonScreen cleared/available/locked + main_menu _MenuButton 入口)+ R1-R5 28 测 + **1220 pass / 0 analyze ✅**。Batch 2.5.A R5 实测 7 关分布全 3/0/47(克己语义「难赢但不输」)→ Batch 2.5.C 决议 `_07 +20% → +40%` 单副本 YAGNI(双镜像架构不动)+ `mirror_caps.attack_power_max 2000 → 6000` 纠 §5.4 维度。挂账 1.0 P3+:BreakthroughBlocker 集成 character_panel + 战斗机制层调优 + 7 enemy 立绘。详 `docs/handoff/p2_x_inner_demon_final_closeout_2026-05-23.md`。
+- **心魔系统**:高境界突破前需面对心魔关卡,剧情化的内心战斗。**v1.10 1.0 P2.2 Batch 2.1-2.5 全收尾 ✅**(2026-05-23,10 commit `e666e4c → b15d34d` 全 push origin/main):7 关 `stage_inner_demon_01..07` 拦截 wuSheng 7 层突破(qiMeng → ruMen → ... → dengFeng → 飞升前置)+ `InnerDemonService.buildMirrorEnemyTeam` 深拷贝 playerTeam ×(1+10-40%) clamp §5.4 cap(`mirror_caps` HP ≤20k/IF ≤15k/Attack ≤6k=3×§5.4 单件 2000)+ `isLayerLocked` 拦截 hook 接 advancement_service.applyExperience(EXP 留账 §5.1)+ 3 callers wire(seclusion/tower/mainline)+ 失败 = 内力 ×0.85 / 主修修炼度 ×0.9 + 「心魔余毒」debuff 闭关 8h 清（失败惩罚已由 `BattleResolutionService.resolve` 在心魔战败分支调用 `InnerDemonService.applyFailurePenalty` 接入）+ 22 narrative ~3,900 字(Tier wuSheng「湛然/寂照/圆融/化机」+ 7 主题贪/嗔/痴/慢/疑/空/真)+ **UI reactive 三态**(InnerDemonScreen cleared/available/locked + main_menu _MenuButton 入口)+ R1-R5 28 测。Batch 2.5.A R5 实测 7 关分布全 3/0/47(克己语义「难赢但不输」)→ Batch 2.5.C 决议 `_07 +20% → +40%` 单副本 YAGNI(双镜像架构不动)+ `mirror_caps.attack_power_max 2000 → 6000` 纠 §5.4 维度。挂账 1.0 P3+:BreakthroughBlocker 集成 character_panel + 战斗机制层调优 + 7 enemy 立绘。详 `docs/handoff/p2_x_inner_demon_final_closeout_2026-05-23.md`。
 - **门派事件**：地图上动态出现的门派冲突、武林大会、寻宝事件。
 
 ### 12.2 角色与社交

@@ -1,9 +1,11 @@
 # 项目 ID 注册表 v1.2
 
-> 本文档是项目所有 ID 的权威注册表。Mac 端数值 yaml 与 DeepSeek 端文案文件均须使用此处定义的 ID。
+> **状态警告（2026-07-08）**：本文档覆盖 Demo 阶段及早期 1.0 扩展的一部分 ID，未完整登记心魔、帮派、Boss 阶段、周目机制等后续新增 ID。新增 ID 前优先检查现有 yaml 与代码引用；本文档需补登记后再恢复为权威注册表。
+>
+> 本文档是项目 ID 注册表。Mac 单端维护的数值 yaml 与文案文件均须使用已分配 ID。
 > ID 一旦分配不可随意修改，新增 ID 在本文件末尾追加并标注版本。
 >
-> **ID 总数**：326（ch 3 + stage 36 + eq 45 + tech 22 + move 102 + adv 26 + codex 18 + tpl 7 + encounter_skill 35 + W14-2 encounter 12 + biome 15 + weather 5）
+> **ID 总数**：326（历史口径，待重新统计；ch 3 + stage 36 + eq 45 + tech 22 + move 102 + adv 26 + codex 18 + tpl 7 + encounter_skill 35 + W14-2 encounter 12 + biome 15 + weather 5）
 >
 > **格式**：`[前缀]_[层级/章节]_[拼音名称]`
 > **前缀对照**：`ch`=章节 `stage`=关卡 `eq`=装备 `tech`=心法 `move`=招式 `adv`=奇遇 `codex`=百科 `skill_encounter_`=奇遇招式 `enc_`=奇遇事件(新版) `biome_`=区域 `weather_`=天气

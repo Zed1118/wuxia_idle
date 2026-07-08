@@ -22,6 +22,7 @@ import 'boss_phase_presentation.dart';
 import 'damage_popup.dart';
 import 'impact_glyph_overlay.dart';
 import 'impact_profile.dart';
+import 'projectile_trail_style.dart';
 import 'screen_flash.dart';
 import 'ultimate_caption_overlay.dart';
 
@@ -198,7 +199,7 @@ class BattlePlaybackController {
     _hitFlashControllers[key].forward(from: 0.0);
   }
 
-  /// 弹道：攻击者 slot → 目标 slot 的笔触线（流派色；大招更粗）。命令式 spawn。
+  /// 弹道：攻击者 slot → 目标 slot 的水墨笔触。普攻飞白，技能集中爆墨。
   void _spawnTrail(
     BattleCharacter actor,
     BattleCharacter target,
@@ -222,7 +223,8 @@ class BattlePlaybackController {
         _teamSizeOf(target.teamSide),
       ),
       color: WuxiaColors.schoolColor(actor.school),
-      strokeWidth: isUltimateCaptionSkill(action.skill) ? 5.0 : 3.0,
+      strokeWidth: _trailStrokeWidth(action),
+      style: _trailStyle(action),
     );
     ctrl.addStatusListener((status) {
       if (status == AnimationStatus.completed && !entry.disposed) {
@@ -238,6 +240,19 @@ class BattlePlaybackController {
     });
     _rebuild(() => _activeTrails.add(entry));
     ctrl.forward(from: 0.0);
+  }
+
+  ProjectileTrailStyle _trailStyle(BattleAction action) {
+    final skill = action.skill;
+    if (skill == null || skill.type == SkillType.normalAttack) {
+      return ProjectileTrailStyle.normal;
+    }
+    return ProjectileTrailStyle.skill;
+  }
+
+  double _trailStrokeWidth(BattleAction action) {
+    if (isUltimateCaptionSkill(action.skill)) return 16.0;
+    return _trailStyle(action) == ProjectileTrailStyle.skill ? 12.8 : 9.2;
   }
 
   void _spawnBattleEffects(
@@ -431,9 +446,7 @@ class BattlePlaybackController {
     final gameplaySettings = _currentGameplaySettings;
     final interval = rushing
         ? _animConfig.fastForwardIntervalMs
-        : gameplaySettings.scaledBattleIntervalMs(
-            _animConfig.actionIntervalMs,
-          );
+        : gameplaySettings.scaledBattleIntervalMs(_animConfig.actionIntervalMs);
     // 读秒环节拍:与每拍对齐（本拍内 0→1，供环平滑插值）。起手先扫第一拍，
     // 之后每次 advance 回调里 forward(from:0) 重启，使 remaining 递减与环无缝续扫。
     _beatCtrl
@@ -638,10 +651,7 @@ class BattlePlaybackController {
         final isEnemy = actor?.teamSide == 1;
         // 会心已占用本帧 glyph 通道 → profile 单字跳过，不双弹（flash/shake 照常）。
         if (profile.glyph != null && !weaknessGlyphShown) {
-          _impactGlyphKey.currentState?.show(
-            profile.glyph!,
-            isEnemy: isEnemy,
-          );
+          _impactGlyphKey.currentState?.show(profile.glyph!, isEnemy: isEnemy);
         }
         if (!_reduceFlashing) {
           _screenFlashKey.currentState?.flash(

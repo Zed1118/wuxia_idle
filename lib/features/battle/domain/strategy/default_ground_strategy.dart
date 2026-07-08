@@ -224,11 +224,9 @@ class DefaultGroundStrategy implements BattleStrategy {
       skill,
       targetId: targetId,
     );
-    final borrowed = _findById(
-      pended,
-      characterId,
-      0,
-    )!.copyWith(actionPoint: 1000);
+    final pendedActor = _findById(pended, characterId, 0);
+    if (pendedActor == null || !pendedActor.isAlive) return state;
+    final borrowed = pendedActor.copyWith(actionPoint: 1000);
     final left = pended.leftTeam.toList();
     final right = pended.rightTeam.toList();
     _replaceById(borrowed.teamSide == 0 ? left : right, borrowed);

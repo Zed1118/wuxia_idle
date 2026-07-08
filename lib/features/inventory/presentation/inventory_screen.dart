@@ -4,11 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
+import '../../battle/domain/derived_stats.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../equipment/application/equipment_service.dart';
 import '../../../data/defs/equipment_def.dart';
 import '../../../data/defs/item_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
+import '../../../data/numbers_config.dart';
+import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
@@ -25,6 +29,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
@@ -135,9 +140,13 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
   Widget build(BuildContext context) {
     final async = ref.watch(allEquipmentsProvider);
     final ids = ref.watch(activeCharacterIdsProvider).value ?? const [];
-    final playerRealm = ids.isEmpty
+    final activeCharacters = [
+      for (final id in ids) ref.watch(characterByIdProvider(id)).value,
+    ].nonNulls.toList();
+    final targetCharacter = activeCharacters.isEmpty
         ? null
-        : ref.watch(characterByIdProvider(ids.first)).value?.realmTier;
+        : activeCharacters.first;
+    final playerRealm = targetCharacter?.realmTier;
     final equippedIds = _watchActiveEquippedIds(ref);
     return async.when(
       loading: () => const Center(child: InkLoadingIndicator()),
@@ -209,6 +218,7 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
                       equipments: filtered,
                       playerRealm: playerRealm,
                       equippedIds: equippedIds,
+                      targetCharacter: targetCharacter,
                     ),
             ),
           ],
@@ -956,11 +966,13 @@ class _EquipmentGrid extends ConsumerWidget {
     required this.equipments,
     required this.playerRealm,
     required this.equippedIds,
+    required this.targetCharacter,
   });
 
   final List<Equipment> equipments;
   final RealmTier? playerRealm;
   final Set<int> equippedIds;
+  final Character? targetCharacter;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -968,6 +980,10 @@ class _EquipmentGrid extends ConsumerWidget {
     for (final eq in equipments) {
       bySlot.putIfAbsent(eq.slot, () => []).add(eq);
     }
+    final currentEquipmentBySlot = _currentEquipmentBySlot(
+      targetCharacter,
+      equipments,
+    );
     const order = [
       EquipmentSlot.weapon,
       EquipmentSlot.armor,
@@ -992,6 +1008,8 @@ class _EquipmentGrid extends ConsumerWidget {
                       items: bySlot[slot]!,
                       playerRealm: playerRealm,
                       equippedIds: equippedIds,
+                      targetCharacter: targetCharacter,
+                      currentEquipmentBySlot: currentEquipmentBySlot,
                     ),
                     if (slot != sections.last) const SizedBox(height: 14),
                   ],
@@ -1008,6 +1026,8 @@ class _EquipmentGrid extends ConsumerWidget {
                       items: bySlot[slot]!,
                       playerRealm: playerRealm,
                       equippedIds: equippedIds,
+                      targetCharacter: targetCharacter,
+                      currentEquipmentBySlot: currentEquipmentBySlot,
                     ),
                   ),
                   if (slot != sections.last) const SizedBox(width: 14),
@@ -1028,12 +1048,16 @@ class _SlotGroupSection extends StatelessWidget {
     required this.items,
     required this.playerRealm,
     required this.equippedIds,
+    required this.targetCharacter,
+    required this.currentEquipmentBySlot,
   });
 
   final EquipmentSlot slot;
   final List<Equipment> items;
   final RealmTier? playerRealm;
   final Set<int> equippedIds;
+  final Character? targetCharacter;
+  final Map<EquipmentSlot, Equipment> currentEquipmentBySlot;
 
   @override
   Widget build(BuildContext context) {
@@ -1052,6 +1076,8 @@ class _SlotGroupSection extends StatelessWidget {
                   equipment: eq,
                   playerRealm: playerRealm,
                   equippedIds: equippedIds,
+                  targetCharacter: targetCharacter,
+                  currentEquipment: currentEquipmentBySlot[eq.slot],
                 ),
             ],
           ),
@@ -1068,19 +1094,26 @@ class _EquipmentGridTile extends ConsumerWidget {
     required this.equipment,
     required this.playerRealm,
     required this.equippedIds,
+    required this.targetCharacter,
+    required this.currentEquipment,
   });
 
   final Equipment equipment;
   final RealmTier? playerRealm;
   final Set<int> equippedIds;
+  final Character? targetCharacter;
+  final Equipment? currentEquipment;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final eq = equipment;
     final color = paperTierColorForEquipment(eq.tier);
     final def = GameRepository.instance.equipmentDefs[eq.defId];
+    final n = ref.watch(numbersConfigProvider);
     final locked = playerRealm != null && !eq.isEquippableAtRealm(playerRealm!);
     final equipped = isEquipmentEquippedBySlot(eq, equippedIds);
+    final equippedOnTarget = currentEquipment?.id == eq.id;
+    final canDirectEquip = targetCharacter != null && !locked;
     final protected = isEquipmentProtected(
       eq,
       equippedEquipmentIds: equippedIds,
@@ -1136,6 +1169,35 @@ class _EquipmentGridTile extends ConsumerWidget {
       onView: () async {
         await _openEquipment(context, ref, def, eq);
       },
+      equipActionLabel: equippedOnTarget
+          ? UiStrings.inventoryEquipActionUnequip
+          : UiStrings.inventoryEquipActionEquip,
+      equipTooltip: _buildEquipCompareTooltip(
+        candidate: eq,
+        candidateName: name,
+        current: currentEquipment,
+        currentName: currentEquipment == null
+            ? null
+            : GameRepository
+                      .instance
+                      .equipmentDefs[currentEquipment!.defId]
+                      ?.name ??
+                  currentEquipment!.defId,
+        numbers: n,
+      ),
+      equipEnabled: canDirectEquip,
+      equipPrimary: !equippedOnTarget,
+      onEquip: canDirectEquip
+          ? () async {
+              await _toggleDirectEquip(
+                context,
+                ref,
+                targetCharacter!,
+                currentEquipment,
+                equippedOnTarget: equippedOnTarget,
+              );
+            }
+          : null,
     );
   }
 
@@ -1159,6 +1221,62 @@ class _EquipmentGridTile extends ConsumerWidget {
     }
     ref.invalidate(allEquipmentsProvider);
     ref.invalidate(allInventoryItemsProvider);
+  }
+
+  Future<void> _toggleDirectEquip(
+    BuildContext context,
+    WidgetRef ref,
+    Character target,
+    Equipment? previousEquipment, {
+    required bool equippedOnTarget,
+  }) async {
+    final service = EquipmentService(isar: IsarSetup.instance);
+    if (equippedOnTarget) {
+      await service.unequip(characterId: target.id, slot: equipment.slot);
+      _invalidateAfterEquip(ref, target.id, previousEquipment?.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.equipDirectUnequipSuccess)),
+      );
+      return;
+    }
+
+    final outcome = await service.equip(
+      characterId: target.id,
+      equipmentId: equipment.id,
+    );
+    _invalidateAfterEquip(ref, target.id, previousEquipment?.id);
+    if (!context.mounted) return;
+
+    switch (outcome) {
+      case EquipOutcome.success:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(UiStrings.equipDirectSuccess)),
+        );
+        return;
+      case EquipOutcome.lockedByRealm:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(UiStrings.equipLockedByRealm)),
+        );
+        return;
+      case EquipOutcome.protectedCurrentEquipment:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(UiStrings.equipProtectedCurrent)),
+        );
+        return;
+      case EquipOutcome.notFound:
+        return;
+    }
+  }
+
+  void _invalidateAfterEquip(WidgetRef ref, int characterId, int? previousId) {
+    ref.invalidate(allEquipmentsProvider);
+    ref.invalidate(allInventoryItemsProvider);
+    ref.invalidate(characterByIdProvider(characterId));
+    ref.invalidate(equipmentByIdProvider(equipment.id));
+    if (previousId != null) {
+      ref.invalidate(equipmentByIdProvider(previousId));
+    }
   }
 }
 
@@ -1204,6 +1322,11 @@ class _EquipmentSummaryCard extends StatelessWidget {
     required this.statusLabels,
     required this.accent,
     required this.onView,
+    required this.equipActionLabel,
+    required this.equipTooltip,
+    required this.equipPrimary,
+    this.onEquip,
+    this.equipEnabled = true,
     this.schoolLabel,
   });
 
@@ -1217,6 +1340,11 @@ class _EquipmentSummaryCard extends StatelessWidget {
   final List<String> statusLabels;
   final Color accent;
   final VoidCallback onView;
+  final String equipActionLabel;
+  final InlineSpan equipTooltip;
+  final VoidCallback? onEquip;
+  final bool equipEnabled;
+  final bool equipPrimary;
 
   @override
   Widget build(BuildContext context) {
@@ -1281,15 +1409,33 @@ class _EquipmentSummaryCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(minWidth: 96),
-                        child: PlaqueButton(
-                          label: UiStrings.equipmentCardActionView,
-                          onTap: onView,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: PlaqueButton(
+                            label: UiStrings.equipmentCardActionView,
+                            onTap: onView,
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Tooltip(
+                            richMessage: equipTooltip,
+                            waitDuration: const Duration(milliseconds: 260),
+                            decoration: BoxDecoration(
+                              color: WuxiaColors.panel,
+                              border: Border.all(color: WuxiaColors.border),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: PlaqueButton(
+                              label: equipActionLabel,
+                              primary: equipPrimary,
+                              disabled: !equipEnabled,
+                              onTap: equipEnabled ? onEquip : null,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1300,6 +1446,124 @@ class _EquipmentSummaryCard extends StatelessWidget {
       ),
     );
   }
+}
+
+Map<EquipmentSlot, Equipment> _currentEquipmentBySlot(
+  Character? character,
+  List<Equipment> equipments,
+) {
+  if (character == null) return const {};
+  final byId = {for (final eq in equipments) eq.id: eq};
+  return {
+    if (character.equippedWeaponId != null &&
+        byId.containsKey(character.equippedWeaponId))
+      EquipmentSlot.weapon: byId[character.equippedWeaponId]!,
+    if (character.equippedArmorId != null &&
+        byId.containsKey(character.equippedArmorId))
+      EquipmentSlot.armor: byId[character.equippedArmorId]!,
+    if (character.equippedAccessoryId != null &&
+        byId.containsKey(character.equippedAccessoryId))
+      EquipmentSlot.accessory: byId[character.equippedAccessoryId]!,
+  };
+}
+
+InlineSpan _buildEquipCompareTooltip({
+  required Equipment candidate,
+  required String candidateName,
+  required Equipment? current,
+  required String? currentName,
+  required NumbersConfig numbers,
+}) {
+  const baseStyle = TextStyle(
+    color: WuxiaColors.textSecondary,
+    fontSize: 12,
+    height: 1.45,
+  );
+  final stats = _equipmentCompareStats(candidate, current, numbers);
+  return TextSpan(
+    style: baseStyle,
+    children: [
+      const TextSpan(
+        text: '${UiStrings.inventoryEquipCompareTitle}\n',
+        style: TextStyle(
+          color: WuxiaColors.textPrimary,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      TextSpan(
+        text:
+            '${currentName == null ? UiStrings.inventoryEquipCompareNoCurrent : UiStrings.inventoryEquipCompareCurrent(currentName)}\n',
+      ),
+      TextSpan(
+        text: '${UiStrings.inventoryEquipCompareCandidate(candidateName)}\n',
+      ),
+      for (final stat in stats)
+        TextSpan(
+          children: [
+            TextSpan(
+              text: '${stat.label}  ${stat.current} → ${stat.candidate}  ',
+            ),
+            TextSpan(
+              text: '${UiStrings.inventoryEquipCompareDelta(stat.delta)}\n',
+              style: TextStyle(
+                color: stat.delta > 0
+                    ? WuxiaColors.statIncrease
+                    : stat.delta < 0
+                    ? WuxiaColors.hpLow
+                    : WuxiaColors.textMuted,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+    ],
+  );
+}
+
+List<_EquipmentCompareStat> _equipmentCompareStats(
+  Equipment candidate,
+  Equipment? current,
+  NumbersConfig numbers,
+) {
+  int attack(Equipment? eq) => eq == null
+      ? 0
+      : CharacterDerivedStats.effectiveEquipmentAttack(eq, numbers);
+  int health(Equipment? eq) =>
+      eq == null ? 0 : CharacterDerivedStats.effectiveEquipmentHp(eq, numbers);
+  int speed(Equipment? eq) => eq == null
+      ? 0
+      : CharacterDerivedStats.effectiveEquipmentSpeed(eq, numbers);
+  return [
+    _EquipmentCompareStat(
+      label: UiStrings.equipmentCompareAttack,
+      current: attack(current),
+      candidate: attack(candidate),
+    ),
+    _EquipmentCompareStat(
+      label: UiStrings.equipmentCompareHealth,
+      current: health(current),
+      candidate: health(candidate),
+    ),
+    _EquipmentCompareStat(
+      label: UiStrings.equipmentCompareSpeed,
+      current: speed(current),
+      candidate: speed(candidate),
+    ),
+  ];
+}
+
+class _EquipmentCompareStat {
+  const _EquipmentCompareStat({
+    required this.label,
+    required this.current,
+    required this.candidate,
+  });
+
+  final String label;
+  final int current;
+  final int candidate;
+
+  int get delta => candidate - current;
 }
 
 class _EquipmentSummaryLine extends StatelessWidget {

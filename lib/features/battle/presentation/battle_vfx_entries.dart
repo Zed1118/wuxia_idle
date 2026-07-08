@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'damage_popup.dart';
+import 'projectile_trail_style.dart';
 
 /// 单个飘字条目（id + 数据）。
 class PopupEntry {
@@ -24,6 +25,7 @@ class TrailEntry {
   final Offset endFrac;
   final Color color;
   final double strokeWidth;
+  final ProjectileTrailStyle style;
   bool disposed = false;
   TrailEntry({
     required this.id,
@@ -32,6 +34,7 @@ class TrailEntry {
     required this.endFrac,
     required this.color,
     required this.strokeWidth,
+    required this.style,
   });
 }
 

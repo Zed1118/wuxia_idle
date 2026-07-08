@@ -23,7 +23,7 @@
   - 批2已完成:P0-1/2 MassBattle/LightFoot 的 formation/terrain/wave 接入 tick/stepOne 生产路径;wave 间清 actorQueue/pendingTargets。
   - 已验证:
     - `flutter test test/features/taohua_island/island_action_service_test.dart test/features/equipment/application/enhancement_persist_test.dart test/data/save_migration_version_gate_test.dart test/features/battle/intervene_determinism_test.dart test/features/battle/domain/battle_ai_test.dart test/features/inner_demon/inner_demon_mirror_injection_test.dart test/features/battle/application/battle_resolution_test.dart test/features/battle/domain/strategy/light_foot_strategy_test.dart test/features/battle/domain/strategy/mass_battle_strategy_test.dart`
-    - `flutter analyze` 仅剩既有 info:`docs/audit/early_difficulty_gate_probe_2026-07-05.dart` 文件名非 lower_case。
+    - `flutter analyze` 仅剩既有 info:`docs/audit/early_difficulty_gate_probe_2026_07_05.dart` 文件名非 lower_case。
 
 ## 生产路径关键事实(批2 Phase 0 已验)
 

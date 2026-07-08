@@ -15,8 +15,10 @@ import 'package:wuxia_idle/features/inventory/presentation/inventory_screen.dart
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/features/shop/presentation/shop_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/colors.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/item_slot.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/light_paper_panel.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_tab.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/section_header.dart';
 
@@ -35,6 +37,24 @@ Finder _itemSlotWithTier(String tierLabel) {
   return find.byWidgetPredicate(
     (widget) => widget is ItemSlot && widget.tierLabel == tierLabel,
   );
+}
+
+Finder _plaqueButton(String label) {
+  return find.byWidgetPredicate(
+    (widget) => widget is PlaqueButton && widget.label == label,
+  );
+}
+
+Finder _plaqueTab(String label) {
+  return find.byWidgetPredicate(
+    (widget) => widget is PlaqueTab && widget.label == label,
+  );
+}
+
+bool _spanHasColor(InlineSpan? span, Color color) {
+  if (span is! TextSpan) return false;
+  if (span.style?.color == color) return true;
+  return span.children?.any((child) => _spanHasColor(child, color)) ?? false;
 }
 
 void main() {
@@ -75,6 +95,9 @@ void main() {
     int enhanceLevel = 0,
     bool isLineageHeritage = false,
     bool isLocked = false,
+    int baseAttack = 50,
+    int baseHealth = 0,
+    int baseSpeed = 0,
   }) {
     return Equipment.create(
       defId: defId ?? 'test_$id',
@@ -82,7 +105,9 @@ void main() {
       slot: slot,
       obtainedAt: DateTime(2026, 5, 11),
       obtainedFrom: 'test',
-      baseAttack: 50,
+      baseAttack: baseAttack,
+      baseHealth: baseHealth,
+      baseSpeed: baseSpeed,
       enhanceLevel: enhanceLevel,
       isLineageHeritage: isLineageHeritage,
       isLocked: isLocked,
@@ -328,6 +353,50 @@ void main() {
     expect(find.text(UiStrings.inventoryFilterRealmLocked), findsWidgets);
   });
 
+  testWidgets('专业摘要卡：可直接装备并悬停显示红绿属性对比', (tester) async {
+    final current = mkEq(
+      id: 45,
+      tier: EquipmentTier.xunChang,
+      slot: EquipmentSlot.weapon,
+      defId: 'weapon_xunchang_tie_jian',
+      baseAttack: 80,
+      baseHealth: 60,
+      baseSpeed: 4,
+    );
+    final candidate = mkEq(
+      id: 46,
+      tier: EquipmentTier.xunChang,
+      slot: EquipmentSlot.weapon,
+      defId: 'weapon_xunchang_zhe_dao',
+      baseAttack: 120,
+      baseHealth: 30,
+      baseSpeed: 6,
+    );
+    final player = mkCharacter(id: 1, realmTier: RealmTier.wuSheng)
+      ..equippedWeaponId = current.id;
+
+    await pumpInv(tester, equipments: [current, candidate], player: player);
+
+    expect(
+      _plaqueButton(UiStrings.inventoryEquipActionUnequip),
+      findsOneWidget,
+    );
+    expect(_plaqueButton(UiStrings.inventoryEquipActionEquip), findsOneWidget);
+    expect(
+      find.byWidgetPredicate((widget) {
+        if (widget is! Tooltip) return false;
+        final rich = widget.richMessage;
+        final text = rich?.toPlainText() ?? '';
+        return text.contains(UiStrings.inventoryEquipCompareTitle) &&
+            text.contains('铁剑') &&
+            text.contains('折刀') &&
+            _spanHasColor(rich, WuxiaColors.statIncrease) &&
+            _spanHasColor(rich, WuxiaColors.hpLow);
+      }),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('视觉二期：1280x720 与 1440x900 常规桌面视口 smoke', (tester) async {
     for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
       await pumpInv(
@@ -439,8 +508,8 @@ void main() {
         ),
       ],
     );
-    expect(find.text('装备'), findsOneWidget);
-    expect(find.text('物料'), findsOneWidget);
+    expect(_plaqueTab('装备'), findsOneWidget);
+    expect(_plaqueTab('物料'), findsOneWidget);
     expect(find.byType(PlaqueTab), findsNWidgets(2));
     // 默认装备 Tab：武器段标题可见;物料行在另一 Tab 不可见
     expect(_sectionHeader('武器'), findsOneWidget);

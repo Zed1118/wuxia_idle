@@ -1,6 +1,8 @@
 # data_schema.md · 数据模型定义
 
-> **文档地位**：本项目所有 Dart model 类的字段定义规范。所有持久化逻辑、yaml 配置加载、UI 数据绑定都以本文档为准。
+> **状态警告（2026-07-08）**：本文档为 Demo 阶段历史 schema 快照，已知存在过时实体与过时 ERD（如 StageProgress / AdventureRecord / DailyChallenge / AdventureDef / RetreatMapDef 等）。当前实现的事实源以 `lib/core/domain/`、`lib/features/**/domain/`、`lib/data/defs/`、`lib/data/numbers_config.dart` 与实际 Isar schema 为准。重写前不要把本文档作为新增模型的单一真相源。
+>
+> **文档地位**：历史参考。保留用于理解早期字段设计与源码注释中的 `data_schema.md` 引用，新增或修改持久化字段必须先核对当前 Dart 类型与迁移逻辑。
 >
 > **遵循 GDD.md v1.1**
 >
@@ -1501,7 +1503,7 @@ class SkillDef {
 | requiredRealm | RealmTier | ❌ | 进入门槛境界 |
 | enemyTeam | List\<EnemyDef\> | ❌ | 敌方阵容（最多 3 个） |
 | isBossStage | bool | ❌ | 是否 Boss 关 |
-| narrativeId | String? | ✅ | 关联剧情文案 id（DeepSeek 维护） |
+| narrativeId | String? | ✅ | 关联剧情文案 id（文案层维护） |
 | dropEquipmentDefIds | List\<String\> | ❌ | 可掉落装备 |
 | dropItemDefIds | List\<String\> | ❌ | 可掉落物品 |
 | baseExpReward | int | ❌ | 基础经验 |
@@ -1580,7 +1582,7 @@ class EnemyDef {
 |------|------|------|------|
 | id | String | ❌ | 唯一 id |
 | name | String | ❌ | 奇遇名 |
-| narrativeId | String | ❌ | 关联文案 id（DeepSeek 维护） |
+| narrativeId | String | ❌ | 关联文案 id（文案层维护） |
 | triggerConditions | List\<TriggerCondition\> | ❌ | 触发条件（AND 关系） |
 | baseTriggerProbability | double | ❌ | 基础触发概率 0.0-1.0 |
 | repeatable | bool | ❌ | 是否可重复触发 |
