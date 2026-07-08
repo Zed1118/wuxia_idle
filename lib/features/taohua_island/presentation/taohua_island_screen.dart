@@ -324,26 +324,32 @@ class _IslandSceneHub extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            AspectRatio(
-              aspectRatio: 2.0,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(WuxiaUi.radius),
-                child: CustomPaint(
-                  painter: _IslandScenePainter(),
-                  child: Stack(
-                    children: [
-                      for (final type in _allBuildingTypes)
-                        _SceneBuildingHotspot(
-                          type: type,
-                          state: _stateFor(type),
-                          bCfg: cfg.buildings[type]!,
-                          selected: type == selectedType,
-                          onTap: () => onSelect(type),
-                        ),
-                    ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final compactScene = constraints.maxWidth < 720;
+                return AspectRatio(
+                  aspectRatio: compactScene ? 1.86 : 2.0,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(WuxiaUi.radius),
+                    child: CustomPaint(
+                      painter: _IslandScenePainter(),
+                      child: Stack(
+                        children: [
+                          for (final type in _allBuildingTypes)
+                            _SceneBuildingHotspot(
+                              type: type,
+                              state: _stateFor(type),
+                              bCfg: cfg.buildings[type]!,
+                              selected: type == selectedType,
+                              compact: compactScene,
+                              onTap: () => onSelect(type),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
           ],
         ),
@@ -363,6 +369,7 @@ class _SceneBuildingHotspot extends StatelessWidget {
     required this.state,
     required this.bCfg,
     required this.selected,
+    required this.compact,
     required this.onTap,
   });
 
@@ -370,6 +377,7 @@ class _SceneBuildingHotspot extends StatelessWidget {
   final IslandBuildingState state;
   final BuildingConfig bCfg;
   final bool selected;
+  final bool compact;
   final VoidCallback onTap;
 
   @override
@@ -381,8 +389,8 @@ class _SceneBuildingHotspot extends StatelessWidget {
     return Align(
       alignment: spec.alignment,
       child: FractionallySizedBox(
-        widthFactor: 0.2,
-        heightFactor: 0.28,
+        widthFactor: compact ? 0.15 : 0.2,
+        heightFactor: compact ? 0.23 : 0.28,
         child: Tooltip(
           message: EnumL10n.buildingType(type),
           child: InkWell(
@@ -391,7 +399,10 @@ class _SceneBuildingHotspot extends StatelessWidget {
             onTap: onTap,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 160),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+              padding: EdgeInsets.symmetric(
+                horizontal: compact ? 4 : 6,
+                vertical: compact ? 4 : 6,
+              ),
               decoration: BoxDecoration(
                 color: selected
                     ? WuxiaUi.paper.withValues(alpha: 0.92)
@@ -418,10 +429,10 @@ class _SceneBuildingHotspot extends StatelessWidget {
                 children: [
                   Icon(
                     spec.icon,
-                    size: 22,
+                    size: compact ? 18 : 22,
                     color: selected ? WuxiaUi.jiang : WuxiaUi.qing,
                   ),
-                  const SizedBox(height: 3),
+                  SizedBox(height: compact ? 2 : 3),
                   Flexible(
                     child: Text(
                       EnumL10n.buildingType(type),
@@ -430,21 +441,26 @@ class _SceneBuildingHotspot extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: selected ? WuxiaUi.ink : WuxiaUi.ink2,
-                        fontSize: 11,
+                        fontSize: compact ? 10 : 11,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    UiStrings.taohuaIslandSceneHotspotMeta(state.level, stored),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: active ? WuxiaUi.muted : WuxiaUi.jiang,
-                      fontSize: 9,
+                  if (!compact) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      UiStrings.taohuaIslandSceneHotspotMeta(
+                        state.level,
+                        stored,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: active ? WuxiaUi.muted : WuxiaUi.jiang,
+                        fontSize: 9,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),

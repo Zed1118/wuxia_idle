@@ -67,6 +67,9 @@ BattleCharacter _enemy({
   int currentHp = 1000,
   int maxHp = 1000,
   bool alive = true,
+  String? enemyDefId,
+  double? guardianWardMult,
+  List<String> guardianDefIds = const [],
 }) => BattleCharacter(
   characterId: id,
   name: '敌$id',
@@ -92,6 +95,9 @@ BattleCharacter _enemy({
   slotIndex: slot,
   isBoss: boss,
   chargeSkillId: chargeSkillId,
+  enemyDefId: enemyDefId,
+  guardianWardMult: guardianWardMult,
+  guardianDefIds: guardianDefIds,
 );
 
 AttackResult _hit({
@@ -267,6 +273,49 @@ void main() {
     final d = BattleDiagnosis.from(s, _cfg)!;
     expect(d.ruleId, 'mob_overrun'); // 400/1000 = 0.40 ≥ 0.35
     expect(d.shortfall, DefeatShortfall.roster);
+  });
+
+  test('guardian_ward_active: 护法仍存活时优先提示先破结界', () {
+    final boss = _enemy(
+      id: 100,
+      boss: true,
+      enemyDefId: 'tower_floor_30_boss',
+      guardianWardMult: 0.15,
+      guardianDefIds: const ['tower_floor_30_guardian_a'],
+    );
+    final guardian = _enemy(
+      id: 101,
+      boss: false,
+      enemyDefId: 'tower_floor_30_guardian_a',
+    );
+    final s = _lost(
+      left: [_player()],
+      right: [boss, guardian],
+      log: [
+        BattleAction(
+          tick: 10,
+          actorId: 100,
+          targetId: 1,
+          skill: _normalSkill,
+          attackResult: _hit(damage: 600),
+          description: '',
+        ),
+        BattleAction(
+          tick: 20,
+          actorId: 101,
+          targetId: 1,
+          skill: _normalSkill,
+          attackResult: _hit(damage: 400),
+          description: '',
+        ),
+      ],
+    );
+    final d = BattleDiagnosis.from(s, _cfg)!;
+    expect(d.ruleId, 'guardian_ward_active');
+    expect(d.shortfall, DefeatShortfall.technique);
+    expect(d.primaryCause, contains('护法结界'));
+    expect(d.dataLines, contains('存活护法：1 名'));
+    expect(d.suggestions.first.text, contains('先集火护法'));
   });
 
   test('mob_overrun 边界: 0.34 不命中 → 落 generic', () {

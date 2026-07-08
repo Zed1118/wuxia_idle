@@ -214,6 +214,7 @@ class UiStrings {
   static const String diagCauseCounter = '主力流派被对面克住';
   static const String diagCauseInternalWound = '被内伤层层拖垮';
   static const String diagCauseMob = '被群敌围殴拖死';
+  static const String diagCauseGuardianWard = 'Boss 仍受护法结界庇护';
   static const String diagCauseFrontline = '前排太脆，过早倒下';
   static const String diagCauseSupplies = '续航不足，伤势拖到见底';
   static const String diagCauseDps = '输出不足，未能速决';
@@ -229,6 +230,8 @@ class UiStrings {
   static String diagInternalWoundRatio(int pct) => '内伤占比：$pct%';
   static String diagDamageTaken(int dmg) => '受到总伤：$dmg';
   static String diagMinionRatio(int pct) => '小怪伤害占比：$pct%';
+  static String diagGuardianAliveCount(int count) => '存活护法：$count 名';
+  static String diagGuardianWardDamageTaken(int pct) => 'Boss 当前承伤：$pct%';
   static String diagFrontlineDeath(String name, int tick) =>
       '$name 在第 $tick 拍倒下';
   static String diagFrontlineMaxHp(int hp) => '其最大血量：$hp';
@@ -243,6 +246,7 @@ class UiStrings {
   static const String diagSuggestCounter = '换一名主修不被克的门人上阵，或调整主修流派。';
   static const String diagSuggestInternalWound = '备好回复，或换能压住内伤的心法。';
   static const String diagSuggestMob = '补一名清场手，先清场再攻坚。';
+  static const String diagSuggestGuardianWard = '先集火护法，破掉结界后再打 Boss。';
   static const String diagSuggestFrontline = '强化护具、以虚弱/回复护住前排。';
   static const String diagSuggestSupplies = '查看药囊、疗伤丹与带回复的装备。';
   static const String diagSuggestDps = '提升技能熟练度，使用破防技提速。';

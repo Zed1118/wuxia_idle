@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/character_providers.dart';
+import '../../../core/application/inventory_providers.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
 import '../application/seclusion_service_providers.dart';
@@ -102,6 +104,11 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
         now: DateTime.now(),
       );
       ref.invalidate(activeRetreatSessionProvider);
+      ref.invalidate(characterByIdProvider);
+      ref.invalidate(allEquipmentsProvider);
+      ref.invalidate(allInventoryItemsProvider);
+      ref.invalidate(inventoryQuantityByTypeProvider);
+      ref.invalidate(inventoryQuantityByDefIdProvider);
 
       if (!mounted) return;
       // 大境界突破 jingle(沿胜利 dialog 体例):闭关收功跨 tier 才响。

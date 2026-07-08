@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/character_providers.dart';
+import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
@@ -81,6 +82,11 @@ Future<void> _endRetreatEarly(
     now: DateTime.now(),
   );
   ref.invalidate(activeRetreatSessionProvider);
+  ref.invalidate(characterByIdProvider);
+  ref.invalidate(allEquipmentsProvider);
+  ref.invalidate(allInventoryItemsProvider);
+  ref.invalidate(inventoryQuantityByTypeProvider);
+  ref.invalidate(inventoryQuantityByDefIdProvider);
   if (!context.mounted) return;
   final mapDef = GameRepository.instance.getSeclusionMap(session.mapType);
   await Navigator.of(context).push(

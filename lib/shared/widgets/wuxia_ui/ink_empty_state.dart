@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/colors.dart';
 import '../../theme/wuxia_tokens.dart';
 import 'panel_surface.dart';
 import 'plaque_button.dart';
@@ -32,6 +33,13 @@ class InkEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = _accentColor();
     final surface = PanelSurface.of(context);
+    final isDarkSurface = surface.primary != WuxiaUi.ink;
+    final frameFill = isDarkSurface
+        ? WuxiaColors.panel.withValues(alpha: 0.86)
+        : WuxiaUi.paper.withValues(alpha: 0.72);
+    final frameBorder = isDarkSurface
+        ? surface.secondary.withValues(alpha: 0.42)
+        : WuxiaUi.ink.withValues(alpha: 0.32);
     final content = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -90,12 +98,9 @@ class InkEmptyState extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: WuxiaUi.paper.withValues(alpha: 0.52),
+        color: frameFill,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: WuxiaUi.ink.withValues(alpha: 0.28),
-          width: WuxiaUi.borderWidth,
-        ),
+        border: Border.all(color: frameBorder, width: WuxiaUi.borderWidth),
       ),
       child: Padding(
         padding: EdgeInsets.all(compact ? 10 : 14),
