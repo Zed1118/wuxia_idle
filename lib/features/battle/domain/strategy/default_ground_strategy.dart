@@ -644,6 +644,7 @@ class DefaultGroundStrategy implements BattleStrategy {
       // 既有 bossCharge.defaultChargeTicks(与 _resolveAction 起手蓄力同源,
       // 不硬编新数;n==null 时跳过 = 防御性,正常路径 tick 必传 n)。解锁招为空
       // 则 no-op(不蓄力)。纯机制无属性 buff(§5.4),后续靠现有破招路径破解。
+      SkillDef? phaseChargeStartSkill;
       if (phases[next].onEnterMechanic == BossPhaseMechanic.chargeCounter &&
           n != null &&
           unlocks.isNotEmpty) {
@@ -659,6 +660,7 @@ class DefaultGroundStrategy implements BattleStrategy {
             chargingSkill: signature,
             chargeTicksRemaining: n.combat.bossCharge.defaultChargeTicks,
           );
+          phaseChargeStartSkill = signature;
         }
       }
       actions.add(
@@ -670,6 +672,18 @@ class DefaultGroundStrategy implements BattleStrategy {
           bossPhaseTitleKey: phases[next].titleKey,
         ),
       );
+      if (phaseChargeStartSkill != null) {
+        actions.add(
+          BattleAction(
+            tick: tick,
+            actorId: cur.characterId,
+            description: EnumL10n.chargeStart(
+              cur.name,
+              phaseChargeStartSkill.name,
+            ),
+          ),
+        );
+      }
     }
     return cur;
   }

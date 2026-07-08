@@ -25,7 +25,7 @@ import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 /// 控制在可接受范围，词条提升策略深度。安全门的职责是用数学保证这一点。
 ///
 /// **覆盖场景（最难情形优先）**：
-///   1. 主线 stage_06_05（最高境界 wuSheng boss，baseHp=52000）cycle 3 → 58,240 ≤ 60,000 ✅
+///   1. 主线 stage_06_05（最高境界 wuSheng boss，读取 stages.yaml 当前 baseHp）cycle 3 ≤ 60,000 ✅
 ///   2. 主线 stage_05_05（zongShi boss，baseHp=36600）cycle 3
 ///   3. 主线 stage_04_05（jueDing boss，baseHp=15625）cycle 3
 ///   4. 爬塔 floor 30（最高 Boss，baseHp/baseAttack 从 towers.yaml 当前配置派生）cycle 2
@@ -127,9 +127,10 @@ void main() {
         isTower: false,
       );
 
-      // 西凉霸主 baseHp=32000（2026-06-29 solo 平衡 52000→32000），cycle3 scale=1.20 → 38400 < 60000
-      // （2026-06-26 周目平衡 0.06→0.10 后此 boss 命中 clamp，红线由生产 .clamp 强制）。
-      final expectedBossHp = (32000 * cycle3Scale).toInt().clamp(
+      // 读取生产 stages.yaml 当前 baseHp，精确校验 cycle3 scale 与红线 clamp。
+      // 这样保留“scale 公式必须正确”的断言，同时允许一周目平衡继续调 baseHp。
+      final bossDef = stage.enemyTeam.singleWhere((e) => e.name == '西凉霸主');
+      final expectedBossHp = (bossDef.baseHp * cycle3Scale).toInt().clamp(
         0,
         bossHpRedLine,
       );
@@ -140,7 +141,9 @@ void main() {
       expect(
         bossBc.maxHp,
         expectedBossHp,
-        reason: 'cycle 3 scale 系数 $cycle3Scale 对应西凉霸主 HP 应为 $expectedBossHp',
+        reason:
+            'baseHp=${bossDef.baseHp} × cycle 3 scale $cycle3Scale '
+            '对应西凉霸主 HP 应为 $expectedBossHp',
       );
 
       var maxHp = 0;
@@ -627,7 +630,8 @@ void main() {
         isTower: false,
       );
       final ce = GameRepository.instance.numbers.cycleEvolution;
-      const baseAtk05Boss = 1500; // 西凉霸主三弟子 baseAttack（yaml 锚 · 2026-06-29 solo 1995→1500）
+      const baseAtk05Boss =
+          1500; // 西凉霸主三弟子 baseAttack（yaml 锚 · 2026-06-29 solo 1995→1500）
       final expectedAtk = (baseAtk05Boss * (1.0 + ce.scalePerCycle * 2))
           .toInt();
       final boss05 = team05.firstWhere(
@@ -653,7 +657,9 @@ void main() {
           isTower: true,
         );
         final ce = GameRepository.instance.numbers.cycleEvolution;
-        final baseAtk30 = floor30.enemyTeam.firstWhere((e) => e.isBoss).baseAttack;
+        final baseAtk30 = floor30.enemyTeam
+            .firstWhere((e) => e.isBoss)
+            .baseAttack;
         final expectedAtk = (baseAtk30 * (1.0 + ce.scalePerCycle)).toInt();
         expect(
           team30.first.totalEquipmentAttack,

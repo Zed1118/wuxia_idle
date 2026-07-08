@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/baike/presentation/baike_screen.dart';
 import 'package:wuxia_idle/features/home_feed/application/home_feed_providers.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 /// Nightshift T05 · BaikeScreen MainMenu 11 按钮导航 + 见闻 tab 6 档时间 override edge。
 ///
@@ -45,9 +46,16 @@ void main() {
     await tester.pumpWidget(
       const ProviderScope(child: MaterialApp(home: MainMenu())),
     );
-    await tester.ensureVisible(find.text(UiStrings.mainMenuBaike));
+    final baikeEntry = find.widgetWithText(
+      WuxiaInkButton,
+      UiStrings.mainMenuBaike,
+    );
+    await Scrollable.ensureVisible(
+      tester.element(baikeEntry),
+      alignment: 0.5,
+    );
     await tester.pumpAndSettle();
-    await tester.tap(find.text(UiStrings.mainMenuBaike));
+    await tester.tap(baikeEntry);
     await tester.pumpAndSettle();
     expect(find.byType(BaikeScreen), findsOneWidget);
   });

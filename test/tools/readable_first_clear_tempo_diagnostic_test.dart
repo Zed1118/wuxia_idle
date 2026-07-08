@@ -215,6 +215,11 @@ class _TempoRun {
   final int attackRows;
   final int playerAttackRows;
   final int enemyAttackRows;
+  final int bossPhaseRows;
+  final int chargeStartRows;
+  final int chargingRows;
+  final int interruptRows;
+  final int breakWindowRows;
   final int playerNormalDamage;
   final int playerPowerDamage;
   final int playerUltimateDamage;
@@ -238,6 +243,11 @@ class _TempoRun {
     required this.attackRows,
     required this.playerAttackRows,
     required this.enemyAttackRows,
+    required this.bossPhaseRows,
+    required this.chargeStartRows,
+    required this.chargingRows,
+    required this.interruptRows,
+    required this.breakWindowRows,
     required this.playerNormalDamage,
     required this.playerPowerDamage,
     required this.playerUltimateDamage,
@@ -309,6 +319,19 @@ class _TempoRun {
     final enemyAttackRows = terminal.actionLog
         .where((a) => a.actorId < 0 && a.attackResult != null)
         .length;
+    final bossPhaseRows = terminal.actionLog
+        .where((a) => a.bossPhaseTransitionTo != null)
+        .length;
+    final chargeStartRows = terminal.actionLog
+        .where((a) => a.description.contains('凝气蓄势'))
+        .length;
+    final chargingRows = terminal.actionLog
+        .where((a) => a.description.contains('蓄力中'))
+        .length;
+    final interruptRows = terminal.actionLog.where((a) => a.interrupted).length;
+    final breakWindowRows = terminal.actionLog
+        .where((a) => a.openedBreakWindow)
+        .length;
     return _TempoRun(
       stageId: stage.id,
       chapterIndex: stage.chapterIndex,
@@ -322,6 +345,11 @@ class _TempoRun {
       attackRows: attackRows,
       playerAttackRows: playerAttackRows,
       enemyAttackRows: enemyAttackRows,
+      bossPhaseRows: bossPhaseRows,
+      chargeStartRows: chargeStartRows,
+      chargingRows: chargingRows,
+      interruptRows: interruptRows,
+      breakWindowRows: breakWindowRows,
       playerNormalDamage: normalDamage,
       playerPowerDamage: powerDamage,
       playerUltimateDamage: ultimateDamage,
@@ -347,7 +375,9 @@ void _writeCsv(String path, List<_TempoRun> rows) {
   final buf = StringBuffer()
     ..writeln(
       'stage_id,chapter,realm,is_boss,profile,seed,result,ticks,action_rows,'
-      'attack_rows,player_attack_rows,enemy_attack_rows,player_normal_damage,'
+      'attack_rows,player_attack_rows,enemy_attack_rows,boss_phase_rows,'
+      'charge_start_rows,charging_rows,interrupt_rows,break_window_rows,'
+      'player_normal_damage,'
       'player_skill_damage,player_ultimate_damage,player_normal_kills,'
       'player_skill_kills,player_hp_end_pct,player_if_spent_pct',
     );
@@ -362,6 +392,8 @@ void _writeCsv(String path, List<_TempoRun> rows) {
       '${r.stageId},${r.chapterIndex ?? ""},${r.requiredRealm},${r.isBoss},'
       '${r.profile.name},${r.seed},${r.result},${r.ticks},${r.actionRows},'
       '${r.attackRows},${r.playerAttackRows},${r.enemyAttackRows},'
+      '${r.bossPhaseRows},${r.chargeStartRows},${r.chargingRows},'
+      '${r.interruptRows},${r.breakWindowRows},'
       '${r.playerNormalDamage},${r.playerSkillDamage},'
       '${r.playerUltimateDamage},${r.playerNormalKills},${r.playerSkillKills},'
       '${hpPct.toStringAsFixed(4)},${ifSpent.toStringAsFixed(4)}',
@@ -418,11 +450,11 @@ String _summarize(
     ..writeln()
     ..writeln(
       '| stage | Boss | profile | win | avg actions | est sec | player atk | '
-      'enemy atk | normal dmg | skill dmg | normal kills | skill kills | '
-      'HP end | IF spent |',
+      'enemy atk | phase | charge | break | normal dmg | skill dmg | '
+      'normal kills | skill kills | HP end | IF spent |',
     )
     ..writeln(
-      '|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
+      '|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
     );
 
   for (final stage in stages) {
@@ -464,6 +496,9 @@ String _summarize(
       );
       final avgActions = avgNum(list.map((r) => r.actionRows));
       final avgVisibleSeconds = avgNum(list.map(estVisibleSeconds));
+      final avgChargeRows = avgNum(
+        list.map((r) => r.chargeStartRows + r.chargingRows),
+      );
       buf.writeln(
         '| ${stage.id} | ${stage.isBossStage ? "Boss" : "—"} | '
         '${profile.name} | ${pct(wins / list.length)} | '
@@ -471,6 +506,9 @@ String _summarize(
         '${avgVisibleSeconds.toStringAsFixed(1)} | '
         '${avgNum(list.map((r) => r.playerAttackRows)).toStringAsFixed(1)} | '
         '${avgNum(list.map((r) => r.enemyAttackRows)).toStringAsFixed(1)} | '
+        '${avgNum(list.map((r) => r.bossPhaseRows)).toStringAsFixed(1)} | '
+        '${avgChargeRows.toStringAsFixed(1)} | '
+        '${avgNum(list.map((r) => r.interruptRows)).toStringAsFixed(1)} | '
         '${totalDamage == 0 ? "0.0%" : pct(normalDamage / totalDamage)} | '
         '${totalDamage == 0 ? "0.0%" : pct(skillDamage / totalDamage)} | '
         '${totalKills == 0 ? "0.0%" : pct(normalKills / totalKills)} | '
@@ -489,7 +527,14 @@ String _summarize(
   final totalKills = normalKills + skillKills;
   final avgActions = avgNum(all.map((r) => r.actionRows));
   final avgVisibleSeconds = avgNum(all.map(estVisibleSeconds));
+  final bossRows = rows.where((r) => r.isBoss).toList();
+  final avgBossPhaseRows = avgNum(bossRows.map((r) => r.bossPhaseRows));
+  final avgBossChargeRows = avgNum(
+    bossRows.map((r) => r.chargeStartRows + r.chargingRows),
+  );
+  final avgBossInterruptRows = avgNum(bossRows.map((r) => r.interruptRows));
   final tooShort = <String>[];
+  final missingBossMechanic = <String>[];
   for (final stage in stages) {
     for (final profile in _TempoProfile.values) {
       final list = byStageProfile['${stage.id}/${profile.name}'] ?? const [];
@@ -497,6 +542,18 @@ String _summarize(
       final actions = avgNum(list.map((r) => r.actionRows));
       final threshold = stage.isBossStage ? 9 : 6;
       if (actions < threshold) tooShort.add('${stage.id}/${profile.name}');
+      final hasBossPhaseConfig = stage.enemyTeam.any(
+        (enemy) => enemy.bossPhases != null && enemy.bossPhases!.isNotEmpty,
+      );
+      final phaseRows = avgNum(list.map((r) => r.bossPhaseRows));
+      final chargeRows = avgNum(
+        list.map((r) => r.chargeStartRows + r.chargingRows),
+      );
+      if (stage.isBossStage &&
+          hasBossPhaseConfig &&
+          (phaseRows <= 0 || chargeRows <= 0)) {
+        missingBossMechanic.add('${stage.id}/${profile.name}');
+      }
     }
   }
 
@@ -525,13 +582,23 @@ String _summarize(
       '${totalKills == 0 ? "0.0%" : pct(skillKills / totalKills)}。',
     )
     ..writeln(
+      '- Boss 转阶段平均行: ${avgBossPhaseRows.toStringAsFixed(1)}；'
+      '蓄力可见平均行: ${avgBossChargeRows.toStringAsFixed(1)}；'
+      '破招平均行: ${avgBossInterruptRows.toStringAsFixed(1)}。',
+    )
+    ..writeln(
       '- 低于动作目标候选(普通 <6 / Boss <9): '
       '${tooShort.isEmpty ? "无" : tooShort.join(" / ")}',
+    )
+    ..writeln(
+      '- 配了阶段但可见机制不足候选: '
+      '${missingBossMechanic.isEmpty ? "无" : missingBossMechanic.join(" / ")}',
     )
     ..writeln()
     ..writeln('## 读法')
     ..writeln()
     ..writeln('- `normal dmg / skill dmg` 只统计玩家方直伤；DoT、反震等不纳入。')
+    ..writeln('- `phase / charge / break` 统计转阶段、Boss 蓄力、玩家破招的可见动作行。')
     ..writeln('- `est sec` 是首通 UI 常速 + 胜利保底的视觉估算，不代表扫荡/快进时长。')
     ..writeln('- 本表使用 3 人队 on-level build，后续若调 solo 早期节奏，应另跑 solo 剖面。');
 

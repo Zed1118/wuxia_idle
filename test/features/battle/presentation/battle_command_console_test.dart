@@ -199,6 +199,7 @@ void main() {
       await _pumpWith(tester, left, [charging, ...right.skip(1)]);
 
       expect(find.byKey(const ValueKey('battle_danger_bar')), findsOneWidget);
+      expect(find.text(UiStrings.battleDangerChargeLabel), findsOneWidget);
       expect(find.textContaining(_chargeSkill.name), findsWidgets);
     });
 

@@ -39,6 +39,37 @@ void main() {
     }
   });
 
+  test('主线 6 个章末 Boss 一周目均有背水一击阶段机制', () {
+    const stageIds = [
+      'stage_01_05',
+      'stage_02_05',
+      'stage_03_05',
+      'stage_04_05',
+      'stage_05_05',
+      'stage_06_05',
+    ];
+
+    for (final stageId in stageIds) {
+      final stage = GameRepository.instance.stageDefs[stageId]!;
+      final boss = stage.enemyTeam.singleWhere((e) => e.isBoss);
+      expect(
+        boss.bossPhases,
+        isNotNull,
+        reason: '$stageId first clear should have visible boss phase cadence',
+      );
+      expect(
+        boss.bossPhases!.map((p) => p.hpThresholdPct),
+        [1.0, 0.5],
+        reason: '$stageId first clear should use a readable two-phase boss',
+      );
+      final desperate = boss.bossPhases![1];
+      expect(desperate.aiMode.name, 'aggressive');
+      expect(desperate.onEnterMechanic?.name, 'chargeCounter');
+      expect(desperate.titleKey, 'bossPhase_desperate');
+      expect(desperate.unlockSkillIds, isNotEmpty);
+    }
+  });
+
   test('塔 20/25/30 基础 bossPhases 保持第一梯队阈值，高周目走覆盖', () {
     final floor20 = GameRepository.instance
         .getTowerFloor(20)

@@ -164,10 +164,25 @@ void main() {
     final after = bossOf(s);
     expect(after.bossPhaseIndex, 1, reason: '应进入 phase1');
     expect(after.chargingSkill, isNotNull, reason: '进 chargeCounter 阶段应立即蓄力');
-    expect(after.chargingSkill!.id, 'skill_ai_boss_high',
-        reason: '蓄招应为解锁招里 powerMultiplier 最高者');
-    expect(after.chargeTicksRemaining, numbers.combat.bossCharge.defaultChargeTicks,
-        reason: '蓄力 tick 应复用 bossCharge.defaultChargeTicks');
+    expect(
+      after.chargingSkill!.id,
+      'skill_ai_boss_high',
+      reason: '蓄招应为解锁招里 powerMultiplier 最高者',
+    );
+    expect(
+      after.chargeTicksRemaining,
+      numbers.combat.bossCharge.defaultChargeTicks,
+      reason: '蓄力 tick 应复用 bossCharge.defaultChargeTicks',
+    );
+    final chargeStarts = s.actionLog
+        .where((a) => a.description.contains('凝气蓄势'))
+        .toList();
+    expect(
+      chargeStarts,
+      hasLength(1),
+      reason: 'chargeCounter 入场应立即写一条可见蓄力动作，避免 Boss 被补刀前机制不可见',
+    );
+    expect(chargeStarts.single.description, contains('怒涛'));
   });
 
   test('A: chargeCounter 阶段解锁招为空 → 不蓄力不崩', () {
@@ -220,6 +235,11 @@ void main() {
     final after = bossOf(s);
     expect(after.bossPhaseIndex, 1);
     expect(after.chargingSkill, isNull, reason: '无解锁招不蓄力(no-op)');
+    expect(
+      s.actionLog.where((a) => a.description.contains('凝气蓄势')),
+      isEmpty,
+      reason: '无解锁招时不能写假的蓄力可见行',
+    );
   });
 
   // ── B. aggressive ──
@@ -272,8 +292,7 @@ void main() {
     );
     final boss = s.rightTeam.first;
     final (skill, _) = BattleAI.decide(boss, s, numbers);
-    expect(skill.id, 'skill_ai_boss_high',
-        reason: 'aggressive 应优先放本阶段最高威力解锁招');
+    expect(skill.id, 'skill_ai_boss_high', reason: 'aggressive 应优先放本阶段最高威力解锁招');
   });
 
   test('B: normal 阶段(对照) → decide 返回默认 powerSkill 选择(仍最高威力,但走默认路径)', () {
@@ -307,18 +326,32 @@ void main() {
         globalHigh,
       ],
     );
-    final sNormal =
-        BattleState.initial(leftTeam: [player()], rightTeam: [normalBoss]);
-    final sAgg =
-        BattleState.initial(leftTeam: [player()], rightTeam: [aggBoss]);
-    final (normalSkill, _) = BattleAI.decide(sNormal.rightTeam.first, sNormal, numbers);
+    final sNormal = BattleState.initial(
+      leftTeam: [player()],
+      rightTeam: [normalBoss],
+    );
+    final sAgg = BattleState.initial(
+      leftTeam: [player()],
+      rightTeam: [aggBoss],
+    );
+    final (normalSkill, _) = BattleAI.decide(
+      sNormal.rightTeam.first,
+      sNormal,
+      numbers,
+    );
     final (aggSkill, _) = BattleAI.decide(sAgg.rightTeam.first, sAgg, numbers);
     // normal 走默认 → 全局最高威力 globalHigh(3000)。
-    expect(normalSkill.id, 'skill_ai_boss_global_high',
-        reason: 'normal 默认路径挑全局最高威力,即便它不是本阶段招');
+    expect(
+      normalSkill.id,
+      'skill_ai_boss_global_high',
+      reason: 'normal 默认路径挑全局最高威力,即便它不是本阶段招',
+    );
     // aggressive 优先本阶段解锁招里最高(skillHigh 2500),不碰非阶段 globalHigh。
-    expect(aggSkill.id, 'skill_ai_boss_high',
-        reason: 'aggressive 限定本阶段解锁招,挑其中最高(忽略更高的非阶段招)');
+    expect(
+      aggSkill.id,
+      'skill_ai_boss_high',
+      reason: 'aggressive 限定本阶段解锁招,挑其中最高(忽略更高的非阶段招)',
+    );
   });
 
   test('B: aggressive 但本阶段招都不可用 → 回落默认选择', () {
@@ -328,54 +361,57 @@ void main() {
     );
     final s = BattleState.initial(leftTeam: [player()], rightTeam: [boss]);
     final (skill, _) = BattleAI.decide(s.rightTeam.first, s, numbers);
-    expect(skill.id, 'skill_ai_boss_normal',
-        reason: '阶段招全 CD → 回落默认(无其它强力技 → 普攻兜底)');
+    expect(
+      skill.id,
+      'skill_ai_boss_normal',
+      reason: '阶段招全 CD → 回落默认(无其它强力技 → 普攻兜底)',
+    );
   });
 
   // ── C. focus ──
   BattleCharacter focusBoss({required BossAiMode aiMode}) => BattleCharacter(
-        characterId: -1,
-        name: '专注Boss',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 50000,
-        currentHp: 25000,
-        maxInternalForce: 10000,
-        currentInternalForce: 10000,
-        speed: 300,
-        criticalRate: 0.0,
-        evasionRate: 0.0,
-        defenseRate: 0.0,
-        totalEquipmentAttack: 500,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: const <SkillDef>[bossNormal],
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: 1,
-        slotIndex: 0,
-        isBoss: true,
-        bossPhaseIndex: 1,
-        bossPhases: [
-          const BossPhaseDef(hpThresholdPct: 1.0),
-          BossPhaseDef(hpThresholdPct: 0.5, aiMode: aiMode),
-        ],
-        bossPhaseUnlockSkills: const [<SkillDef>[], <SkillDef>[]],
-      );
+    characterId: -1,
+    name: '专注Boss',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 50000,
+    currentHp: 25000,
+    maxInternalForce: 10000,
+    currentInternalForce: 10000,
+    speed: 300,
+    criticalRate: 0.0,
+    evasionRate: 0.0,
+    defenseRate: 0.0,
+    totalEquipmentAttack: 500,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: const <SkillDef>[bossNormal],
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: 1,
+    slotIndex: 0,
+    isBoss: true,
+    bossPhaseIndex: 1,
+    bossPhases: [
+      const BossPhaseDef(hpThresholdPct: 1.0),
+      BossPhaseDef(hpThresholdPct: 0.5, aiMode: aiMode),
+    ],
+    bossPhaseUnlockSkills: const [<SkillDef>[], <SkillDef>[]],
+  );
 
   test('C: focus vs normal 目标选择差异(破绽窗口 高血 vs 无破绽 低血)', () {
     // enemy A(slot0):高血 + 破绽窗口(staggerTicksRemaining>0)。
     // enemy B(slot1):低血 + 无破绽。
-    final enemyA = player(id: 10, slotIndex: 0).copyWith(
-      currentHp: 11000,
-      staggerTicksRemaining: 2,
-    );
-    final enemyB = player(id: 11, slotIndex: 1).copyWith(
-      currentHp: 3000,
-      staggerTicksRemaining: 0,
-    );
+    final enemyA = player(
+      id: 10,
+      slotIndex: 0,
+    ).copyWith(currentHp: 11000, staggerTicksRemaining: 2);
+    final enemyB = player(
+      id: 11,
+      slotIndex: 1,
+    ).copyWith(currentHp: 3000, staggerTicksRemaining: 0);
 
     final sNormal = BattleState.initial(
       leftTeam: [enemyA, enemyB],
@@ -385,16 +421,23 @@ void main() {
       leftTeam: [enemyA, enemyB],
       rightTeam: [focusBoss(aiMode: BossAiMode.focus)],
     );
-    final (_, normalTargets) =
-        BattleAI.decide(sNormal.rightTeam.first, sNormal, numbers);
-    final (_, focusTargets) =
-        BattleAI.decide(sFocus.rightTeam.first, sFocus, numbers);
-    expect(normalTargets.single, 10,
-        reason: 'normal 偏好破绽窗口目标(enemyA,即便血更高)');
-    expect(focusTargets.single, 11,
-        reason: 'focus 恒打血最低(enemyB),不偏好破绽窗口');
-    expect(normalTargets.single != focusTargets.single, isTrue,
-        reason: '两模式目标必须不同');
+    final (_, normalTargets) = BattleAI.decide(
+      sNormal.rightTeam.first,
+      sNormal,
+      numbers,
+    );
+    final (_, focusTargets) = BattleAI.decide(
+      sFocus.rightTeam.first,
+      sFocus,
+      numbers,
+    );
+    expect(normalTargets.single, 10, reason: 'normal 偏好破绽窗口目标(enemyA,即便血更高)');
+    expect(focusTargets.single, 11, reason: 'focus 恒打血最低(enemyB),不偏好破绽窗口');
+    expect(
+      normalTargets.single != focusTargets.single,
+      isTrue,
+      reason: '两模式目标必须不同',
+    );
   });
 
   // ── D. 零回归 ──

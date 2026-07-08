@@ -116,20 +116,46 @@ class DangerBar extends StatelessWidget {
     return Container(
       key: const ValueKey('battle_danger_bar'),
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
       decoration: BoxDecoration(
-        color: WuxiaColors.danger.withValues(alpha: 0.18),
-        border: const Border(bottom: BorderSide(color: WuxiaColors.danger)),
+        color: WuxiaColors.danger.withValues(alpha: 0.22),
+        border: Border(
+          bottom: BorderSide(
+            color: WuxiaColors.danger.withValues(alpha: 0.82),
+            width: 1.5,
+          ),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: WuxiaColors.danger.withValues(alpha: 0.2),
+              border: Border.all(
+                color: WuxiaColors.danger.withValues(alpha: 0.75),
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              child: Text(
+                UiStrings.battleDangerChargeLabel,
+                style: TextStyle(
+                  color: WuxiaColors.danger,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
           const Icon(
             Icons.warning_amber_rounded,
             color: WuxiaColors.danger,
-            size: 16,
+            size: 19,
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
           Flexible(
             child: Text(
               UiStrings.battleDangerCharging(
@@ -141,8 +167,9 @@ class DangerBar extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: WuxiaColors.danger,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+                height: 1.15,
               ),
             ),
           ),

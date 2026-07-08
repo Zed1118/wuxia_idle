@@ -92,6 +92,7 @@ class UiStrings {
     int ticks,
   ) =>
       '$enemyName 正在${combatTermLabel(CombatTerm.charge)}：$skillName（还有 $ticks 拍发动）';
+  static const String battleDangerChargeLabel = '蓄势';
   static const String battleDangerPrefix = '⚠ ';
 
   // T1 战斗指令台：技能分组标签 + 状态印 + 内力/冷却短标。

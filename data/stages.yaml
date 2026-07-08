@@ -162,8 +162,8 @@ stages:
         realmTier: xueTu
         realmLayer: dengFeng
         school: lingQiao
-        baseHp: 2600     # production 单人线小 Boss:提高血量建立 Boss 信号,不加攻击避免早期硬失败
-        baseAttack: 75
+        baseHp: 2300     # production 单人线小 Boss:保留血量信号,压攻击避免早期硬失败
+        baseAttack: 60
         baseSpeed: 105
         skillIds:
           - skill_lingqiao_jichu_basic
@@ -428,7 +428,7 @@ stages:
         realmTier: sanLiu
         realmLayer: jingTong
         school: gangMeng
-        baseHp: 4500
+        baseHp: 6500
         baseAttack: 320
         baseSpeed: 150
         skillIds:
@@ -487,6 +487,14 @@ stages:
         iconPath: assets/enemies/qingshan_main.png
         isBoss: true
         chargeSkillId: skill_qingshan_qingfeng      # P0.5 破招 · 招牌蓄力技「青锋绝」(玩家用破势拦截)
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            unlockSkillIds:
+              - skill_lingqiao_changlian_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
         cycleBossPhases:
           2:
             - hpThresholdPct: 1.0
@@ -673,7 +681,7 @@ stages:
         realmTier: erLiu
         realmLayer: shuLian
         school: gangMeng
-        baseHp: 4200
+        baseHp: 5000
         baseAttack: 320
         baseSpeed: 175
         skillIds:
@@ -731,6 +739,14 @@ stages:
         iconPath: assets/enemies/huiyi.png
         isBoss: true
         chargeSkillId: skill_qian_jun_zhui_yue      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            unlockSkillIds:
+              - skill_yinrou_mingjia_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
         cycleBossPhases:
           2:
             - hpThresholdPct: 1.0
@@ -925,7 +941,7 @@ stages:
         realmTier: yiLiu
         realmLayer: jingTong
         school: gangMeng
-        baseHp: 8000
+        baseHp: 10000
         baseAttack: 720
         baseSpeed: 180
         skillIds:
@@ -977,7 +993,7 @@ stages:
         realmTier: jueDing
         realmLayer: qiMeng
         school: yinRou
-        baseHp: 11200
+        baseHp: 18000
         baseAttack: 860
         baseSpeed: 215
         skillIds:
@@ -988,6 +1004,14 @@ stages:
         iconPath: assets/enemies/xiliangbazhu.png
         isBoss: true
         chargeSkillId: skill_feng_juan_liu_sha      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            unlockSkillIds:
+              - skill_yinrou_jianghu_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
         cycleBossPhases:
           2:
             - hpThresholdPct: 1.0
@@ -1177,7 +1201,7 @@ stages:
         realmTier: jueDing
         realmLayer: jingTong
         school: gangMeng
-        baseHp: 10000
+        baseHp: 16000
         baseAttack: 850
         baseSpeed: 240
         skillIds:
@@ -1239,6 +1263,14 @@ stages:
         iconPath: assets/enemies/xiliang_sandizi.png
         isBoss: true
         chargeSkillId: skill_shi_dang_shi_jue      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            unlockSkillIds:
+              - skill_yinrou_shichuan_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
         cycleBossPhases:
           2:
             - hpThresholdPct: 1.0
@@ -1490,7 +1522,7 @@ stages:
         realmTier: wuSheng
         realmLayer: qiMeng
         school: yinRou
-        baseHp: 32000
+        baseHp: 48000
         baseAttack: 1800
         baseSpeed: 270
         skillIds:
@@ -1500,6 +1532,14 @@ stages:
         iconPath: assets/enemies/xiliang_bazhu.png
         isBoss: true
         chargeSkillId: skill_yang_guan_wu_gu_ren      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            unlockSkillIds:
+              - skill_yinrou_chuanshuo_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
         cycleBossPhases:
           2:
             - hpThresholdPct: 1.0
