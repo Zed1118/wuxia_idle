@@ -7,9 +7,22 @@ import 'package:wuxia_idle/core/domain/resource_overview_display.dart';
 import 'package:wuxia_idle/features/resource_overview/application/resource_overview_providers.dart';
 import 'package:wuxia_idle/features/resource_overview/domain/resource_overview_item.dart';
 import 'package:wuxia_idle/features/resource_overview/presentation/resource_overview_screen.dart';
+import 'package:wuxia_idle/features/sweep/application/sweep_readiness_providers.dart';
+import 'package:wuxia_idle/features/sweep/domain/sweep_readiness.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 void main() {
+  final sweepReadinessFixture = SweepReadinessState(
+    points: 42,
+    lastRecoveredAt: DateTime(2026),
+    config: const SweepReadinessConfig(
+      enabled: true,
+      maxPoints: 60,
+      recoverMinutesPerPoint: 60,
+      mainlineStageCost: 1,
+    ),
+  );
+
   testWidgets('renders grouped read-only resource cards with use and source', (
     tester,
   ) async {
@@ -57,13 +70,19 @@ void main() {
       ProviderScope(
         overrides: [
           resourceOverviewProvider.overrideWith((ref) async => sections),
+          sweepReadinessStatusProvider.overrideWith(
+            (ref) async => sweepReadinessFixture,
+          ),
         ],
         child: const MaterialApp(home: ResourceOverviewScreen()),
       ),
     );
     await tester.pump();
+    await tester.pump();
 
     expect(find.text(UiStrings.resourceOverviewTitle), findsOneWidget);
+    expect(find.text(UiStrings.sweepReadinessPanelTitle), findsOneWidget);
+    expect(find.text(UiStrings.sweepReadinessShort(42, 60)), findsOneWidget);
     expect(find.text(UiStrings.resourceOverviewIntro), findsOneWidget);
     expect(find.text('银两'), findsAtLeastNWidgets(1));
     expect(find.text(UiStrings.resourceOverviewQuantity(88)), findsOneWidget);
@@ -122,10 +141,14 @@ void main() {
       ProviderScope(
         overrides: [
           resourceOverviewProvider.overrideWith((ref) async => sections),
+          sweepReadinessStatusProvider.overrideWith(
+            (ref) async => sweepReadinessFixture,
+          ),
         ],
         child: const MaterialApp(home: ResourceOverviewScreen()),
       ),
     );
+    await tester.pump();
     await tester.pump();
 
     expect(find.text('旧卷'), findsOneWidget);

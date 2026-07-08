@@ -43,6 +43,7 @@ import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../sect/presentation/sect_screen.dart';
 import '../../settings/presentation/settings_panel.dart';
+import '../../sweep/presentation/sweep_readiness_status.dart';
 import '../../../shared/app_exit.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';
@@ -571,6 +572,11 @@ class MainMenu extends ConsumerWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      const SweepReadinessPill(
+                        tone: CurrencyPillTone.dark,
+                        compact: true,
+                      ),
+                      const SizedBox(width: 8),
                       const SilverBalancePill(
                         tone: CurrencyPillTone.dark,
                         compact: true,

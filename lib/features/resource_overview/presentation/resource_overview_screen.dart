@@ -10,6 +10,7 @@ import '../../../shared/widgets/wuxia_ui/panel_surface.dart';
 import '../../../shared/widgets/wuxia_ui/currency_pill.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
+import '../../sweep/presentation/sweep_readiness_status.dart';
 import '../application/resource_overview_providers.dart';
 import '../domain/resource_overview_item.dart';
 
@@ -65,6 +66,8 @@ class _ResourceOverviewBody extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                 children: [
+                  const SweepReadinessPanel(),
+                  const SizedBox(height: 14),
                   const Text(
                     UiStrings.resourceOverviewIntro,
                     style: TextStyle(

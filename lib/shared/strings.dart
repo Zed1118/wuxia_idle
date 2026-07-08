@@ -3186,6 +3186,13 @@ class UiStrings {
   static const String sweepReadinessLoading = '战备校验中';
   static const String sweepReadinessUnavailable = '战备暂不可用';
   static const String sweepReadinessInsufficientButton = '战备不足，暂缓扫荡';
+  static const String sweepReadinessPanelTitle = '扫荡战备';
+  static const String sweepReadinessPanelBody =
+      '主线已通关关卡扫荡消耗战备，在线离线同速恢复，不影响首通与离线收益';
+  static const String sweepReadinessFull = '战备已满';
+
+  static String sweepReadinessShort(int current, int max) =>
+      '战备 $current / $max';
 
   static String sweepReadinessLine({
     required int current,
