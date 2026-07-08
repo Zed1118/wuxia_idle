@@ -326,9 +326,9 @@ class _IslandSceneHub extends StatelessWidget {
             const SizedBox(height: 10),
             LayoutBuilder(
               builder: (context, constraints) {
-                final compactScene = constraints.maxWidth < 720;
+                final compactScene = constraints.maxWidth < 1320;
                 return AspectRatio(
-                  aspectRatio: compactScene ? 1.86 : 2.0,
+                  aspectRatio: compactScene ? 2.12 : 2.0,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(WuxiaUi.radius),
                     child: CustomPaint(
@@ -389,8 +389,8 @@ class _SceneBuildingHotspot extends StatelessWidget {
     return Align(
       alignment: spec.alignment,
       child: FractionallySizedBox(
-        widthFactor: compact ? 0.15 : 0.2,
-        heightFactor: compact ? 0.23 : 0.28,
+        widthFactor: compact ? 0.13 : 0.2,
+        heightFactor: compact ? 0.2 : 0.28,
         child: Tooltip(
           message: EnumL10n.buildingType(type),
           child: InkWell(
