@@ -342,7 +342,7 @@ class BattleScenarioData {
   /// 玩家主控带「破势」且就绪(内力满 + 不在 CD)。配合 BattleScreen(autoStart:false)
   /// 画面冻结在此 seed 态 —— Boss 头像显蓄力条 + flash 图标,底栏破招按钮金色高亮。
   ///
-  /// 数值照 stages.yaml stage_02_05 青衫剑客调校值(HP9500/攻1150/灵巧/sanLiu·yuanShu)。
+  /// 数值照 stages.yaml stage_02_05 青衫剑客调校值(HP9500/攻900/灵巧/sanLiu·yuanShu)。
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioChargeBreak() {
     final repo = GameRepository.instance;
     final qingfeng = repo.getSkill('skill_qingshan_qingfeng'); // 青锋绝(蓄力大招)
@@ -393,9 +393,7 @@ class BattleScenarioData {
       ]),
       // 弟子甲 seed 成中内伤态 → 头像上显内伤读秒环(SteppedCountdownRing·暗绛),
       // 让本验收路由一帧同显三类读秒环(蓄力/破绽/内伤)。
-      player(2, '弟子甲', 1, [
-        _normal('cb_normal_2', '基础招'),
-      ]).copyWith(
+      player(2, '弟子甲', 1, [_normal('cb_normal_2', '基础招')]).copyWith(
         internalInjury: const InternalInjurySlot(
           remainingTurns: 3,
           damagePerTick: 200,
@@ -416,7 +414,7 @@ class BattleScenarioData {
           maxIf: 4000,
           speed: 175,
           critRate: 0.05,
-          eqAtk: 1150,
+          eqAtk: 900,
           cultivation: CultivationLayer.daCheng,
           skills: [_normal('cb_qs_normal', '青锋斩'), qingfeng],
           teamSide: 1,

@@ -7,6 +7,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_playback_controller.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 /// [BattlePlaybackController] 单元测试 —— Task 4 抽离的收益：`playAction` 本体 +
 /// 播放调度（pause/resume/fast-forward）从 `_BattleScreenState` 抽出后可直接单测。
@@ -55,7 +56,9 @@ class _NoopBattleNotifier extends BattleNotifier {
 }
 
 class _Harness extends ConsumerStatefulWidget {
-  const _Harness({super.key});
+  const _Harness({super.key, this.readablePacing = false});
+
+  final bool readablePacing;
 
   @override
   ConsumerState<_Harness> createState() => _HarnessState();
@@ -75,6 +78,7 @@ class _HarnessState extends ConsumerState<_Harness>
         if (mounted) setState(fn);
       },
       animConfig: _testAnim,
+      readablePacing: widget.readablePacing,
     );
   }
 
@@ -116,7 +120,10 @@ BattleAction _attackAction({bool crit = false}) => BattleAction(
   description: 'test hit',
 );
 
-Future<_HarnessState> _pump(WidgetTester tester) async {
+Future<_HarnessState> _pump(
+  WidgetTester tester, {
+  bool readablePacing = false,
+}) async {
   final key = GlobalKey<_HarnessState>();
   final (left, right) = BattleDemo.mockTeams();
   await tester.pumpWidget(
@@ -128,7 +135,9 @@ Future<_HarnessState> _pump(WidgetTester tester) async {
           ),
         ),
       ],
-      child: MaterialApp(home: _Harness(key: key)),
+      child: MaterialApp(
+        home: _Harness(key: key, readablePacing: readablePacing),
+      ),
     ),
   );
   // 卸载 harness → State.dispose → controller.dispose，取消任何挂起 timer/ticker。
@@ -150,12 +159,20 @@ void main() {
     final firstList = c.popups[_targetSlotKey];
     expect(firstList, isNotNull);
     expect(firstList!.length, 1, reason: '一次命中 → 一条飘字');
+    expect(firstList.first.data.text, '120');
     final firstId = firstList.first.id;
+    final firstAnchor = firstList.first.anchor;
 
     c.playAction(_attackAction(crit: true), c._noopState(tester));
     await tester.pump();
     final secondList = c.popups[_targetSlotKey]!;
     expect(secondList.length, 2, reason: '二次命中 → 队列增长');
+    expect(secondList.last.data.text, UiStrings.criticalDamagePopup(240));
+    expect(
+      secondList.last.anchor,
+      isNot(firstAnchor),
+      reason: '连续飘字应围绕目标散开,避免固定点堆叠',
+    );
     expect(
       secondList.map((e) => e.id).toSet().length,
       2,
@@ -202,6 +219,14 @@ void main() {
     expect(c.isFastForward, isTrue);
     c.toggleFastForward();
     expect(c.isFastForward, isFalse);
+  });
+
+  testWidgets('readablePacing 仅放慢常速播放,不影响快进间隔', (tester) async {
+    final c = (await _pump(tester, readablePacing: true)).controller;
+
+    expect(c.playbackIntervalMsForTest, 1800);
+    c.toggleFastForward();
+    expect(c.playbackIntervalMsForTest, _testAnim.fastForwardIntervalMs);
   });
 }
 

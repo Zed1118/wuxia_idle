@@ -1217,6 +1217,7 @@ class CombatNumbers {
   final CriticalConfig critical;
   final EvasionConfig evasion;
   final EnemyDefaults enemyDefaults;
+  final ReadableFirstClearConfig readableFirstClear;
   final RedLinesConfig redLines;
   final BossChargeConfig bossCharge;
   final ImpactFeedbackConfig impactFeedback;
@@ -1230,6 +1231,7 @@ class CombatNumbers {
     required this.critical,
     required this.evasion,
     required this.enemyDefaults,
+    this.readableFirstClear = const ReadableFirstClearConfig(),
     required this.redLines,
     required this.bossCharge,
     required this.impactFeedback,
@@ -1253,6 +1255,9 @@ class CombatNumbers {
       enemyDefaults: EnemyDefaults.fromYaml(
         y['enemy_defaults'] as Map<String, dynamic>,
       ),
+      readableFirstClear: ReadableFirstClearConfig.fromYaml(
+        y['readable_first_clear'] as Map?,
+      ),
       redLines: RedLinesConfig.fromYaml(
         y['red_lines'] as Map<String, dynamic>? ?? const {},
       ),
@@ -1266,6 +1271,55 @@ class CombatNumbers {
         y['defense_break'] as Map? ?? const {},
       ),
       weakness: WeaknessConfig.fromYaml(y['weakness'] as Map? ?? const {}),
+    );
+  }
+}
+
+class ReadableFirstClearConfig {
+  final double normalEnemyHpMultiplier;
+  final double bossEnemyHpMultiplier;
+  final double enemyAttackMultiplier;
+  final int openingAutoSkillCooldownTurns;
+  final double autoSkillPowerMultiplier;
+
+  const ReadableFirstClearConfig({
+    this.normalEnemyHpMultiplier = 1.0,
+    this.bossEnemyHpMultiplier = 1.0,
+    this.enemyAttackMultiplier = 1.0,
+    this.openingAutoSkillCooldownTurns = 0,
+    this.autoSkillPowerMultiplier = 1.0,
+  });
+
+  double get enemyHpMultiplier => normalEnemyHpMultiplier;
+
+  double hpMultiplierFor({required bool isBoss}) =>
+      isBoss ? bossEnemyHpMultiplier : normalEnemyHpMultiplier;
+
+  factory ReadableFirstClearConfig.fromYaml(Map? y) {
+    if (y == null) return const ReadableFirstClearConfig();
+    final normalHp = (y['enemy_hp_multiplier'] as num?)?.toDouble() ?? 1.0;
+    final bossHp =
+        (y['boss_enemy_hp_multiplier'] as num?)?.toDouble() ?? normalHp;
+    final attack = (y['enemy_attack_multiplier'] as num?)?.toDouble() ?? 1.0;
+    final openingCooldown =
+        (y['opening_auto_skill_cooldown_turns'] as num?)?.toInt() ?? 0;
+    final autoSkillPower =
+        (y['auto_skill_power_multiplier'] as num?)?.toDouble() ?? 1.0;
+    if (normalHp <= 0 || bossHp <= 0 || attack <= 0) {
+      throw StateError('combat.readable_first_clear 倍率必须 > 0');
+    }
+    if (openingCooldown < 0) {
+      throw StateError('combat.readable_first_clear 开局冷却不能为负');
+    }
+    if (autoSkillPower <= 0 || autoSkillPower > 1) {
+      throw StateError('combat.readable_first_clear 自动技能倍率须在 (0, 1]');
+    }
+    return ReadableFirstClearConfig(
+      normalEnemyHpMultiplier: normalHp,
+      bossEnemyHpMultiplier: bossHp,
+      enemyAttackMultiplier: attack,
+      openingAutoSkillCooldownTurns: openingCooldown,
+      autoSkillPowerMultiplier: autoSkillPower,
     );
   }
 }
@@ -1654,6 +1708,7 @@ class AnimationNumbers {
   final int damagePopupMs;
   final int actionIntervalMs;
   final int fastForwardIntervalMs;
+  final int readableVictoryMinMs;
 
   /// 批次 2.4 后不再被消费：战斗屏震振幅改走 combat.impact_feedback 分档
   /// （light/medium/heavy）。保留字段 + yaml key 避免改既有 fixture/schema；
@@ -1685,6 +1740,7 @@ class AnimationNumbers {
     required this.damagePopupMs,
     required this.actionIntervalMs,
     required this.fastForwardIntervalMs,
+    this.readableVictoryMinMs = 10000,
     required this.shakeOffsetPx,
     required this.shakeDurationMs,
     required this.criticalFontScale,
@@ -1702,9 +1758,10 @@ class AnimationNumbers {
     attackRetreatMs: 150,
     attackRushOffsetPx: 40.0,
     damagePopupFloatPx: 50.0,
-    damagePopupMs: 700,
+    damagePopupMs: 1000,
     actionIntervalMs: 1000,
     fastForwardIntervalMs: 100,
+    readableVictoryMinMs: 10000,
     shakeOffsetPx: 3.0,
     shakeDurationMs: 100,
     criticalFontScale: 1.5,
@@ -1718,7 +1775,7 @@ class AnimationNumbers {
   int get attackTotalMs => attackRushMs + attackHoldMs + attackRetreatMs;
 
   /// 飘字有效时长:不超过当前播放拍间隔 [intervalMs],防快档(rapid/快进)下
-  /// 固定 [damagePopupMs](700)> 拍长致跨拍重叠。慢档(700 ≤ 拍长)返回原值,
+  /// 固定 [damagePopupMs](1000)> 拍长致跨拍重叠。慢档(1000 ≤ 拍长)返回原值,
   /// 手感不变。兑现 numbers.yaml `damage_popup_ms` 注释「≤ action_interval_ms
   /// 防跨拍渗漏」的不变量(此前仅 normal 档手动成立,现全档代码 enforce)。
   int effectivePopupMs(int intervalMs) => math.min(damagePopupMs, intervalMs);
@@ -1733,6 +1790,8 @@ class AnimationNumbers {
       damagePopupMs: (y['damage_popup_ms'] as num).toInt(),
       actionIntervalMs: (y['action_interval_ms'] as num).toInt(),
       fastForwardIntervalMs: (y['fast_forward_interval_ms'] as num).toInt(),
+      readableVictoryMinMs:
+          (y['readable_victory_min_ms'] as num?)?.toInt() ?? 10000,
       shakeOffsetPx: (y['shake_offset_px'] as num).toDouble(),
       shakeDurationMs: (y['shake_duration_ms'] as num).toInt(),
       criticalFontScale: (y['critical_font_scale'] as num).toDouble(),

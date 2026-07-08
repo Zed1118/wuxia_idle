@@ -7,10 +7,10 @@ import 'package:wuxia_idle/shared/strings.dart';
 /// damage_popup widget 测试(P1.1 候选 3-c sword_song 浮字)。
 ///
 /// 覆盖:
-/// - 普通 popup → 不显 ✦剑鸣 / 不显 counter
+/// - 普通 popup → 不显 ✦剑鸣 / 不显 counter arrow
 /// - critical + hasSwordSong=true → 显 ✦剑鸣
 /// - critical 但 hasSwordSong=false → 不显 ✦剑鸣
-/// - counter + swordSong 共存(都显)
+/// - counter arrow 不再显示,swordSong 仍显示
 void main() {
   Future<void> pumpPopup(WidgetTester tester, DamagePopupData data) async {
     await tester.pumpWidget(
@@ -30,12 +30,9 @@ void main() {
 
   testWidgets('普通伤害 → 不显 ✦剑鸣 / 不显 counter', (tester) async {
     await pumpPopup(
-        tester,
-        const DamagePopupData(
-          id: 1,
-          text: '1500',
-          type: PopupType.normal,
-        ));
+      tester,
+      const DamagePopupData(id: 1, text: '1500', type: PopupType.normal),
+    );
     expect(find.text('1500'), findsOneWidget);
     expect(find.text(UiStrings.swordSongHint), findsNothing);
     expect(find.text(UiStrings.counterUp), findsNothing);
@@ -43,53 +40,60 @@ void main() {
 
   testWidgets('暴击 + hasSwordSong=true → 显 ✦剑鸣', (tester) async {
     await pumpPopup(
-        tester,
-        const DamagePopupData(
-          id: 1,
-          text: '4500',
-          type: PopupType.critical,
-          hasSwordSong: true,
-        ));
-    expect(find.text('4500'), findsOneWidget);
+      tester,
+      DamagePopupData(
+        id: 1,
+        text: UiStrings.criticalDamagePopup(4500),
+        type: PopupType.critical,
+        hasSwordSong: true,
+      ),
+    );
+    expect(find.text(UiStrings.criticalDamagePopup(4500)), findsOneWidget);
     expect(find.text(UiStrings.swordSongHint), findsOneWidget);
   });
 
   testWidgets('暴击 + hasSwordSong=false → 不显 ✦剑鸣', (tester) async {
     await pumpPopup(
-        tester,
-        const DamagePopupData(
-          id: 1,
-          text: '4500',
-          type: PopupType.critical,
-          hasSwordSong: false,
-        ));
-    expect(find.text('4500'), findsOneWidget);
+      tester,
+      DamagePopupData(
+        id: 1,
+        text: UiStrings.criticalDamagePopup(4500),
+        type: PopupType.critical,
+        hasSwordSong: false,
+      ),
+    );
+    expect(find.text(UiStrings.criticalDamagePopup(4500)), findsOneWidget);
     expect(find.text(UiStrings.swordSongHint), findsNothing);
   });
 
-  testWidgets('counter + swordSong 同时显', (tester) async {
+  testWidgets('counter arrow 不显示, swordSong 仍显示', (tester) async {
     await pumpPopup(
-        tester,
-        const DamagePopupData(
-          id: 1,
-          text: '4500',
-          type: PopupType.critical,
-          hasCounterUp: true,
-          hasSwordSong: true,
-        ));
-    expect(find.text(UiStrings.counterUp), findsOneWidget);
+      tester,
+      DamagePopupData(
+        id: 1,
+        text: UiStrings.criticalDamagePopup(4500),
+        type: PopupType.critical,
+        hasCounterUp: true,
+        hasSwordSong: true,
+      ),
+    );
+    expect(find.text(UiStrings.counterUp), findsNothing);
     expect(find.text(UiStrings.swordSongHint), findsOneWidget);
   });
 
-  // durationMsOverride 消费:快档 clamp 后的短时长真替代 config.damagePopupMs(700)。
+  // durationMsOverride 消费:快档 clamp 后的短时长真替代 config.damagePopupMs(1000)。
   testWidgets('durationMsOverride 非空 → 按覆写时长结束(短于配置默认)', (tester) async {
     var done = false;
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: DamagePopup(
-            data: const DamagePopupData(id: 1, text: '500', type: PopupType.normal),
-            config: AnimationNumbers.defaults, // damagePopupMs = 700
+            data: const DamagePopupData(
+              id: 1,
+              text: '500',
+              type: PopupType.normal,
+            ),
+            config: AnimationNumbers.defaults, // damagePopupMs = 1000
             durationMsOverride: 200,
             onComplete: () => done = true,
           ),
@@ -100,16 +104,22 @@ void main() {
     await tester.pump(const Duration(milliseconds: 150));
     expect(done, isFalse, reason: '200ms 覆写时长未到,不应结束');
     await tester.pump(const Duration(milliseconds: 100)); // 累计 250ms > 200
-    expect(done, isTrue, reason: '超覆写 200ms 应结束(证明用的是覆写非默认 700)');
+    expect(done, isTrue, reason: '超覆写 200ms 应结束(证明用的是覆写非默认 1000)');
   });
 
-  testWidgets('durationMsOverride 为 null → 走配置默认 700(250ms 未结束)', (tester) async {
+  testWidgets('durationMsOverride 为 null → 走配置默认 1000(250ms 未结束)', (
+    tester,
+  ) async {
     var done = false;
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: DamagePopup(
-            data: const DamagePopupData(id: 1, text: '500', type: PopupType.normal),
+            data: const DamagePopupData(
+              id: 1,
+              text: '500',
+              type: PopupType.normal,
+            ),
             config: AnimationNumbers.defaults,
             onComplete: () => done = true,
           ),
@@ -118,18 +128,19 @@ void main() {
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
-    expect(done, isFalse, reason: '默认 700ms 下 250ms 不应结束(对照组)');
-    await tester.pump(const Duration(milliseconds: 500)); // 累计 750 > 700 收尾
+    expect(done, isFalse, reason: '默认 1000ms 下 250ms 不应结束(对照组)');
+    await tester.pump(const Duration(milliseconds: 800)); // 累计 1050 > 1000 收尾
   });
 
   testWidgets('闪避 popup → 文本为闪避 + 无 ✦剑鸣 / 无 counter', (tester) async {
     await pumpPopup(
-        tester,
-        const DamagePopupData(
-          id: 1,
-          text: UiStrings.dodge,
-          type: PopupType.dodge,
-        ));
+      tester,
+      const DamagePopupData(
+        id: 1,
+        text: UiStrings.dodge,
+        type: PopupType.dodge,
+      ),
+    );
     expect(find.text(UiStrings.dodge), findsOneWidget);
     expect(find.text(UiStrings.swordSongHint), findsNothing);
   });

@@ -162,7 +162,7 @@ stages:
         realmTier: xueTu
         realmLayer: dengFeng
         school: lingQiao
-        baseHp: 2050     # production 单人线小 Boss:保留灵巧压迫,但不早于章末形成硬失败点
+        baseHp: 2600     # production 单人线小 Boss:提高血量建立 Boss 信号,不加攻击避免早期硬失败
         baseAttack: 75
         baseSpeed: 105
         skillIds:
@@ -477,7 +477,7 @@ stages:
         realmLayer: yuanShu
         school: lingQiao
         baseHp: 9500
-        baseAttack: 1150
+        baseAttack: 900
         baseSpeed: 175
         skillIds:
           - skill_lingqiao_jichu_basic

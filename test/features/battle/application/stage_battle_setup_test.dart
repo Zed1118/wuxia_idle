@@ -500,6 +500,62 @@ void main() {
             '(改前扁平 1000 < 1600 永久放不出);scale 调校须保此不变式',
       );
     });
+
+    test('主线首通可读调节:敌方普通关 HP 拉长且攻击压低', () {
+      final stage = GameRepository.instance.getStage('stage_03_01');
+      final normal = StageBattleSetup.buildEnemyTeam(stage.enemyTeam).first;
+      final tuned = StageBattleSetup.buildEnemyTeam(
+        stage.enemyTeam,
+        readableFirstClearTuning: true,
+      ).first;
+      final config = GameRepository.instance.numbers.combat.readableFirstClear;
+
+      expect(
+        tuned.maxHp,
+        (normal.maxHp * config.normalEnemyHpMultiplier).toInt(),
+      );
+      expect(
+        tuned.totalEquipmentAttack,
+        (normal.totalEquipmentAttack * config.enemyAttackMultiplier).toInt(),
+      );
+      expect(tuned.maxHp, greaterThan(normal.maxHp));
+      expect(tuned.totalEquipmentAttack, lessThan(normal.totalEquipmentAttack));
+    });
+
+    test('主线首通可读调节:Boss 使用 Boss HP 倍率且自动技能开局冷却', () {
+      final stage = GameRepository.instance.getStage('stage_03_05');
+      final normal = StageBattleSetup.buildEnemyTeam(stage.enemyTeam).first;
+      final tuned = StageBattleSetup.buildEnemyTeam(
+        stage.enemyTeam,
+        readableFirstClearTuning: true,
+      ).first;
+      final config = GameRepository.instance.numbers.combat.readableFirstClear;
+
+      expect(
+        tuned.maxHp,
+        (normal.maxHp * config.bossEnemyHpMultiplier).toInt(),
+      );
+      final expectedCooldown =
+          config.openingAutoSkillCooldownTurns * (1000 / tuned.speed).ceil() +
+          1;
+      for (final skill in tuned.availableSkills) {
+        final baseSkill = normal.availableSkills.firstWhere(
+          (s) => s.id == skill.id,
+        );
+        if (skill.type == SkillType.normalAttack ||
+            skill.requiresManualTrigger) {
+          expect(tuned.skillCooldowns[skill.id], isNull);
+          expect(skill.powerMultiplier, baseSkill.powerMultiplier);
+        } else {
+          expect(tuned.skillCooldowns[skill.id], expectedCooldown);
+          expect(
+            skill.powerMultiplier,
+            (baseSkill.powerMultiplier * config.autoSkillPowerMultiplier)
+                .round(),
+          );
+        }
+      }
+    });
   });
 
   // ── B2: _enemyToBattle 透传 isBoss ────────────────────────────────────────

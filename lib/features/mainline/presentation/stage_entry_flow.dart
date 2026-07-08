@@ -361,7 +361,6 @@ Future<void> runStageFlow({
   await _applyBossKillReputation(ref: ref, stage: stage);
 }
 
-
 /// 推 BattleScreen 并 wait 胜/败/投降回调；返回 (won, surrendered)。
 /// D1: [targetCycle] 默认 1（零回归）。H3: surrendered=true 时 won 恒 false,
 /// caller 据此跳过战败结算直接返回。
@@ -471,6 +470,8 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
   String get _battleKey =>
       stageBattleKey(widget.stage.id, cycle: widget.targetCycle);
 
+  bool _readablePacing = false;
+
   @override
   void initState() {
     super.initState();
@@ -498,17 +499,22 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
           widget.stage.id,
           widget.targetCycle,
         );
-        setState(
-          () => _mode = resolveAutoPlayModeWithFirstClear(
+        setState(() {
+          _readablePacing = firstClear;
+          _mode = resolveAutoPlayModeWithFirstClear(
             isFirstClear: firstClear,
             override: override,
             globalDefault: global,
-          ),
-        );
+          );
+        });
 
-        final (left, right) = await StageBattleSetup(
-          isar: IsarSetup.instance,
-        ).buildTeams(widget.stage, cycleIndex: widget.targetCycle);
+        final (left, right) = await StageBattleSetup(isar: IsarSetup.instance)
+            .buildTeams(
+              widget.stage,
+              cycleIndex: widget.targetCycle,
+              readableFirstClearTuning:
+                  firstClear && widget.stage.stageType == StageType.mainline,
+            );
         if (!mounted) return;
 
         if (widget.stage.stageType == StageType.massBattle) {
@@ -591,6 +597,7 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
       ),
       deferVictoryToCaller: true,
       allowPlayerIntervention: _allowIntervention,
+      readablePacing: _readablePacing,
       onVictory: () {
         widget.onVictory();
         // 不 pop:胜利仪式由 runStageFlow 在战斗界面之上播完后再 pop。

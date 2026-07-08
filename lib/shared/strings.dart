@@ -176,6 +176,7 @@ class UiStrings {
   static const String dodge = '闪';
   static const String counterUp = '⬆';
   static const String counterDown = '⬇';
+  static String criticalDamagePopup(int damage) => '暴击 $damage 伤害';
 
   // 战斗结算（T16）
   static const String close = '关闭';

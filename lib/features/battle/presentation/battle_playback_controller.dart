@@ -45,10 +45,12 @@ class BattlePlaybackController {
     // 拍钟调度初值:startPaused 起手即暂停;startFastForward 起手即快进。
     bool startPaused = false,
     bool startFastForward = false,
+    bool readablePacing = false,
   }) : _vsync = vsync,
        _ref = ref,
        _rebuild = rebuild,
-       _animConfig = animConfig {
+       _animConfig = animConfig,
+       _readablePacing = readablePacing {
     // 读秒圆环节拍 controller（本拍内 0→1，供 CD/蓄力/破绽环平滑插值）。
     // 随 _playTimer 每拍 forward(from:0) 对齐 remaining 递减，暂停/待发/结束时 stop 冻结。
     _beatCtrl = AnimationController(
@@ -92,7 +94,10 @@ class BattlePlaybackController {
   final WidgetRef _ref;
   final void Function(VoidCallback) _rebuild;
   final AnimationNumbers _animConfig;
+  bool _readablePacing;
   bool _disposed = false;
+
+  static const int readablePacingMinIntervalMs = 1800;
 
   // ─── 拍钟调度字段（beat/timer/hit-stop/pause/fast-forward） ──────────────────
   // 读秒圆环节拍 controller（构造体内据 _animConfig 初始化）。
@@ -156,6 +161,7 @@ class BattlePlaybackController {
   bool get isPaused => _isPaused;
   bool get isFastForward => _isFastForward;
   bool get hasTimer => _playTimer != null;
+  int get playbackIntervalMsForTest => _currentPlaybackIntervalMs;
 
   // overlay 编排 / 屏震只读 getter（供 build 读取；[playAction] 内直接用私有字段）。
   AnimationController get shakeCtrl => _shakeCtrl;
@@ -185,9 +191,18 @@ class BattlePlaybackController {
   /// 防快档(rapid/快进)固定 damagePopupMs 超拍致跨拍重叠。
   int get _currentPlaybackIntervalMs => _isFastForward
       ? _animConfig.fastForwardIntervalMs
-      : _currentGameplaySettings.scaledBattleIntervalMs(
-          _animConfig.actionIntervalMs,
+      : _readableIntervalMs(
+          _currentGameplaySettings.scaledBattleIntervalMs(
+            _animConfig.actionIntervalMs,
+          ),
         );
+
+  int _readableIntervalMs(int baseMs) {
+    if (!_readablePacing) return baseMs;
+    return baseMs < readablePacingMinIntervalMs
+        ? readablePacingMinIntervalMs
+        : baseMs;
+  }
 
   /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
   void _triggerHitFlash(BattleCharacter target, bool isCritical) {
@@ -375,15 +390,29 @@ class BattlePlaybackController {
   ) {
     final key = slotKey(target.teamSide, target.slotIndex);
     final data = _buildPopupData(result, attacker);
+    final anchor = _nextPopupAnchor(key, data.type);
     final entry = PopupEntry(
       id: _nextPopupId++,
       data: data,
+      anchor: anchor,
       popupDurationMs: _animConfig.effectivePopupMs(_currentPlaybackIntervalMs),
     );
     _rebuild(() {
       (_popups[key] ??= []).add(entry);
     });
     // 屏震触发已上移至 [playAction]（批次 2.4 分档屏震集中触发）。
+  }
+
+  DamagePopupAnchor _nextPopupAnchor(int slotKey, PopupType type) {
+    if (type == PopupType.critical) return DamagePopupAnchor.centerBurst;
+    final existing = _popups[slotKey]?.length ?? 0;
+    const spread = [
+      DamagePopupAnchor.upperRight,
+      DamagePopupAnchor.upperLeft,
+      DamagePopupAnchor.lowerRight,
+      DamagePopupAnchor.lowerLeft,
+    ];
+    return spread[(_nextPopupId + existing) % spread.length];
   }
 
   DamagePopupData _buildPopupData(
@@ -402,7 +431,9 @@ class BattlePlaybackController {
         result.isCritical && (attacker?.swordSongResonanceActive ?? false);
     return DamagePopupData(
       id: _nextPopupId,
-      text: result.finalDamage.toString(),
+      text: result.isCritical
+          ? UiStrings.criticalDamagePopup(result.finalDamage)
+          : result.finalDamage.toString(),
       type: result.isCritical ? PopupType.critical : PopupType.normal,
       hasCounterUp: result.schoolCounterMultiplier > 1.0,
       hasCounterDown: result.schoolCounterMultiplier < 1.0,
@@ -446,7 +477,11 @@ class BattlePlaybackController {
     final gameplaySettings = _currentGameplaySettings;
     final interval = rushing
         ? _animConfig.fastForwardIntervalMs
-        : gameplaySettings.scaledBattleIntervalMs(_animConfig.actionIntervalMs);
+        : _readableIntervalMs(
+            gameplaySettings.scaledBattleIntervalMs(
+              _animConfig.actionIntervalMs,
+            ),
+          );
     // 读秒环节拍:与每拍对齐（本拍内 0→1，供环平滑插值）。起手先扫第一拍，
     // 之后每次 advance 回调里 forward(from:0) 重启，使 remaining 递减与环无缝续扫。
     _beatCtrl
@@ -466,6 +501,12 @@ class BattlePlaybackController {
 
   void toggleFastForward() {
     _rebuild(() => _isFastForward = !_isFastForward);
+    if (_playTimer != null) startTimer();
+  }
+
+  void setReadablePacing(bool value) {
+    if (_readablePacing == value) return;
+    _readablePacing = value;
     if (_playTimer != null) startTimer();
   }
 

@@ -3,15 +3,26 @@ import 'package:flutter/material.dart';
 import 'damage_popup.dart';
 import 'projectile_trail_style.dart';
 
+/// 飘字围绕受击槽位散开的锚点。
+enum DamagePopupAnchor {
+  upperLeft,
+  upperRight,
+  centerBurst,
+  lowerLeft,
+  lowerRight,
+}
+
 /// 单个飘字条目（id + 数据）。
 class PopupEntry {
   final int id;
   final DamagePopupData data;
+  final DamagePopupAnchor anchor;
   // 飘字有效时长:spawn 时按当前播放速度 clamp(≤ 拍间隔),防快档跨拍重叠。
   final int popupDurationMs;
   const PopupEntry({
     required this.id,
     required this.data,
+    required this.anchor,
     required this.popupDurationMs,
   });
 }

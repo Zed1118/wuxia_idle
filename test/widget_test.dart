@@ -155,11 +155,8 @@ void main() {
     return notifier;
   }
 
-  Finder assetImage(String path) => find.byWidgetPredicate(
-    (w) =>
-        w is Image &&
-        assetNameOf(w.image) == path,
-  );
+  Finder assetImage(String path) =>
+      find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
 
   // ── T14 静态布局 ────────────────────────────────────────────────────────
 
@@ -269,7 +266,7 @@ void main() {
     expect(find.text('闪'), findsOneWidget);
   });
 
-  testWidgets('DamagePopup 克制标记 ⬆ 正确渲染', (WidgetTester tester) async {
+  testWidgets('DamagePopup 不再渲染克制箭头', (WidgetTester tester) async {
     const data = DamagePopupData(
       id: 0,
       text: '3000',
@@ -290,7 +287,7 @@ void main() {
       ),
     );
     expect(find.text('3000'), findsOneWidget);
-    expect(find.text('⬆'), findsOneWidget);
+    expect(find.text('⬆'), findsNothing);
   });
 
   // ── T16 actionLog 增长 → ref.listen → 触发动画 ──────────────────────────
@@ -328,7 +325,7 @@ void main() {
     ]);
     await tester.pump();
     await tester.pump();
-    expect(find.text('3600'), findsOneWidget);
+    expect(find.text(UiStrings.criticalDamagePopup(3600)), findsOneWidget);
   });
 
   testWidgets('actionLog 增长 - 闪避飘字显示「闪」字', (WidgetTester tester) async {
@@ -361,9 +358,7 @@ void main() {
     expect(find.text(UiStrings.battleContinue), findsOneWidget); // '继续'
   });
 
-  testWidgets('T1 指令台大招按钮 内力可用性靠状态文案体现 / 随重点角色变化', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('T1 指令台大招按钮 内力可用性靠状态文案体现 / 随重点角色变化', (WidgetTester tester) async {
     // 批次 1.3：技能方块 onPressed 恒可点（任何态都能看简介），ElevatedButton.enabled
     // 不再随内力变 false。内力是否够放大招改由按钮内**状态文案**体现：
     //   够 → UiStrings.skillCostShort（「耗内N · CDM」）
@@ -420,12 +415,20 @@ void main() {
     await tester.pumpAndSettle();
 
     // 浮层出现：标题=招名、关闭按钮「知道了」可见。
-    expect(find.text(UiStrings.skillInfoClose), findsOneWidget, reason: '弹出简介浮层');
+    expect(
+      find.text(UiStrings.skillInfoClose),
+      findsOneWidget,
+      reason: '弹出简介浮层',
+    );
     expect(find.text('示例大招'), findsWidgets, reason: '浮层标题=招名');
 
     // 不下发：pendingUltimates 为空、无「待发」印。
     expect(notifier.state.pendingUltimates, isEmpty, reason: '点击不写 pending');
-    expect(find.text(UiStrings.skillPendingStamp), findsNothing, reason: '不盖「待发」印');
+    expect(
+      find.text(UiStrings.skillPendingStamp),
+      findsNothing,
+      reason: '不盖「待发」印',
+    );
   });
 
   // ── B2 大招题字 overlay ───────────────────────────────────────────────────

@@ -301,10 +301,10 @@ class CharacterSlot extends StatelessWidget {
         avatar,
         for (var i = 0; i < slotPopups.length; i++)
           _buildPopupPositioned(
-            i,
             slotPopups[i],
             animConfig,
             slotKey,
+            isLeftTeam,
             onPopupComplete,
           ),
       ],
@@ -312,27 +312,125 @@ class CharacterSlot extends StatelessWidget {
   }
 
   static Widget _buildPopupPositioned(
-    int index,
     PopupEntry entry,
     AnimationNumbers config,
     int slotKey,
+    bool isLeftTeam,
     void Function(int, int) onComplete,
   ) {
+    final placement = _popupPlacement(entry.anchor, isLeftTeam);
     return Positioned(
-      top: -36.0 - index * 28.0,
-      left: 0,
-      right: 0,
-      child: Center(
-        child: DamagePopup(
-          key: ValueKey(entry.id),
-          data: entry.data,
-          config: config,
-          durationMsOverride: entry.popupDurationMs,
-          onComplete: () => onComplete(slotKey, entry.id),
+      top: placement.top,
+      right: placement.right,
+      bottom: placement.bottom,
+      left: placement.left,
+      child: Align(
+        alignment: placement.alignment,
+        child: Transform.rotate(
+          angle: placement.rotation,
+          child: IgnorePointer(
+            child: DamagePopup(
+              key: ValueKey(entry.id),
+              data: entry.data,
+              config: config,
+              durationMsOverride: entry.popupDurationMs,
+              onComplete: () => onComplete(slotKey, entry.id),
+            ),
+          ),
         ),
       ),
     );
   }
+
+  static _PopupPlacement _popupPlacement(
+    DamagePopupAnchor anchor,
+    bool isLeftTeam,
+  ) {
+    if (isLeftTeam) {
+      return switch (anchor) {
+        DamagePopupAnchor.upperLeft => const _PopupPlacement(
+          left: 12,
+          top: -18,
+          alignment: Alignment.centerLeft,
+          rotation: -0.03,
+        ),
+        DamagePopupAnchor.upperRight => const _PopupPlacement(
+          left: 56,
+          top: -26,
+          alignment: Alignment.centerLeft,
+          rotation: 0.035,
+        ),
+        DamagePopupAnchor.centerBurst => const _PopupPlacement(
+          left: 4,
+          right: -92,
+          top: 8,
+          alignment: Alignment.center,
+        ),
+        DamagePopupAnchor.lowerLeft => const _PopupPlacement(
+          left: 16,
+          bottom: 24,
+          alignment: Alignment.centerLeft,
+          rotation: 0.03,
+        ),
+        DamagePopupAnchor.lowerRight => const _PopupPlacement(
+          left: 58,
+          bottom: 16,
+          alignment: Alignment.centerLeft,
+          rotation: -0.025,
+        ),
+      };
+    }
+    return switch (anchor) {
+      DamagePopupAnchor.upperLeft => const _PopupPlacement(
+        right: 56,
+        top: -26,
+        alignment: Alignment.centerRight,
+        rotation: -0.04,
+      ),
+      DamagePopupAnchor.upperRight => const _PopupPlacement(
+        right: 12,
+        top: -18,
+        alignment: Alignment.centerRight,
+        rotation: 0.035,
+      ),
+      DamagePopupAnchor.centerBurst => const _PopupPlacement(
+        left: -92,
+        right: 4,
+        top: 8,
+        alignment: Alignment.center,
+      ),
+      DamagePopupAnchor.lowerLeft => const _PopupPlacement(
+        right: 58,
+        bottom: 16,
+        alignment: Alignment.centerRight,
+        rotation: 0.03,
+      ),
+      DamagePopupAnchor.lowerRight => const _PopupPlacement(
+        right: 16,
+        bottom: 24,
+        alignment: Alignment.centerRight,
+        rotation: -0.025,
+      ),
+    };
+  }
+}
+
+class _PopupPlacement {
+  final double? left;
+  final double? top;
+  final double? right;
+  final double? bottom;
+  final Alignment alignment;
+  final double rotation;
+
+  const _PopupPlacement({
+    this.left,
+    this.top,
+    this.right,
+    this.bottom,
+    required this.alignment,
+    this.rotation = 0,
+  });
 }
 
 class EnemyTargetHint extends StatelessWidget {

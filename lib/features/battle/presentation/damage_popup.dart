@@ -104,10 +104,7 @@ class _DamagePopupState extends State<DamagePopup>
       builder: (context, child) {
         return Transform.translate(
           offset: Offset(0, _yOffset.value),
-          child: Opacity(
-            opacity: _opacity.value,
-            child: child,
-          ),
+          child: Opacity(opacity: _opacity.value, child: child),
         );
       },
       child: _PopupContent(
@@ -123,53 +120,81 @@ class _DamagePopupState extends State<DamagePopup>
 class _PopupContent extends StatelessWidget {
   final DamagePopupData data;
   final double criticalFontScale;
-  const _PopupContent({
-    required this.data,
-    required this.criticalFontScale,
-  });
+  const _PopupContent({required this.data, required this.criticalFontScale});
 
   @override
   Widget build(BuildContext context) {
     final color = _color(data.type);
-    const baseFontSize = 18.0;
-    final fontSize =
-        data.type == PopupType.critical ? baseFontSize * criticalFontScale : baseFontSize;
-    final hasCounter = data.hasCounterUp || data.hasCounterDown;
+    const baseFontSize = 28.0;
+    final fontSize = data.type == PopupType.critical
+        ? baseFontSize * criticalFontScale
+        : baseFontSize;
+    final hasSideMark = data.hasSwordSong;
+    final damageText = Text(
+      data.text,
+      style: TextStyle(
+        color: color,
+        fontSize: fontSize,
+        fontWeight: data.type == PopupType.critical
+            ? FontWeight.w900
+            : FontWeight.w800,
+        height: 1.0,
+        letterSpacing: data.type == PopupType.critical ? 0.5 : 0.2,
+        shadows: [
+          if (data.type == PopupType.normal) ...[
+            const Shadow(
+              blurRadius: 0,
+              color: Color(0xFFF9E7C0),
+              offset: Offset(1.4, 0),
+            ),
+            const Shadow(
+              blurRadius: 0,
+              color: Color(0xFFF9E7C0),
+              offset: Offset(-1.4, 0),
+            ),
+            const Shadow(
+              blurRadius: 0,
+              color: Color(0xFFF9E7C0),
+              offset: Offset(0, 1.4),
+            ),
+            const Shadow(
+              blurRadius: 0,
+              color: Color(0xFFF9E7C0),
+              offset: Offset(0, -1.4),
+            ),
+          ],
+          Shadow(
+            blurRadius: data.type == PopupType.critical ? 4 : 2,
+            color: data.type == PopupType.critical
+                ? const Color(0xCC2A0500)
+                : const Color(0xAA2A1C12),
+            offset: const Offset(1, 1),
+          ),
+        ],
+      ),
+    );
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          data.text,
-          style: TextStyle(
-            color: color,
-            fontSize: fontSize,
-            fontWeight: FontWeight.bold,
-            shadows: const [
-              Shadow(
-                blurRadius: 2,
-                color: Color(0xCC000000),
-                offset: Offset(1, 1),
-              ),
-            ],
-          ),
-        ),
-        if (hasCounter) ...[
-          const SizedBox(width: 2),
-          Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: Text(
-              data.hasCounterUp ? UiStrings.counterUp : UiStrings.counterDown,
-              style: TextStyle(
-                fontSize: fontSize * 0.65,
-                color: data.hasCounterUp
-                    ? WuxiaColors.popupCritical
-                    : WuxiaColors.popupDodge,
+        if (data.type == PopupType.critical)
+          SizedBox(
+            width: hasSideMark ? 154 : 190,
+            child: FittedBox(
+              alignment: Alignment.centerLeft,
+              fit: BoxFit.scaleDown,
+              child: CustomPaint(
+                painter: const _CriticalBrushPainter(),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 7, 14, 9),
+                  child: damageText,
+                ),
               ),
             ),
-          ),
-        ],
+          )
+        else
+          damageText,
         // P1.1 候选 3-c:暴击 + 主修武器 xinJianTongLing → 「✦剑鸣」浮字。
         if (data.hasSwordSong) ...[
           const SizedBox(width: 4),
@@ -190,8 +215,68 @@ class _PopupContent extends StatelessWidget {
   }
 
   static Color _color(PopupType type) => switch (type) {
-        PopupType.normal => WuxiaColors.popupNormal,
-        PopupType.critical => WuxiaColors.popupCritical,
-        PopupType.dodge => WuxiaColors.popupDodge,
-      };
+    PopupType.normal => const Color(0xFFB72218),
+    PopupType.critical => const Color(0xFFFFE7CB),
+    PopupType.dodge => WuxiaColors.popupDodge,
+  };
+}
+
+class _CriticalBrushPainter extends CustomPainter {
+  const _CriticalBrushPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final body = Paint()
+      ..color = const Color(0xFFC12D22).withValues(alpha: 0.95)
+      ..style = PaintingStyle.fill;
+    final darkEdge = Paint()
+      ..color = const Color(0xFF5D100B).withValues(alpha: 0.78)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8;
+    final highlight = Paint()
+      ..color = const Color(0xFFFFC6A6).withValues(alpha: 0.18)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.6
+      ..strokeCap = StrokeCap.round;
+
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final path = Path()
+      ..moveTo(rect.left + 3, rect.top + size.height * 0.28)
+      ..quadraticBezierTo(
+        rect.left + size.width * 0.25,
+        rect.top + 1,
+        rect.left + size.width * 0.62,
+        rect.top + 3,
+      )
+      ..quadraticBezierTo(
+        rect.right - 4,
+        rect.top + 4,
+        rect.right - 1,
+        rect.top + size.height * 0.34,
+      )
+      ..quadraticBezierTo(
+        rect.right - 4,
+        rect.bottom - 3,
+        rect.left + size.width * 0.36,
+        rect.bottom - 1,
+      )
+      ..quadraticBezierTo(
+        rect.left + 1,
+        rect.bottom - 4,
+        rect.left + 3,
+        rect.top + size.height * 0.28,
+      )
+      ..close();
+
+    canvas.drawPath(path, body);
+    canvas.drawPath(path, darkEdge);
+    canvas.drawLine(
+      Offset(rect.left + 10, rect.top + size.height * 0.28),
+      Offset(rect.right - 12, rect.top + size.height * 0.22),
+      highlight,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CriticalBrushPainter oldDelegate) => false;
 }

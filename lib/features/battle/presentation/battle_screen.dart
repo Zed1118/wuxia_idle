@@ -115,6 +115,10 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// [AnimationNumbers.fastForwardIntervalMs] 速度连播,免玩家手点快进键。
   final bool startFastForward;
 
+  /// 首通可读节奏:只影响表现层常速播放,不改战斗结算。主线首通打开后会放慢
+  /// 行动拍间隔并在胜利交接前留一个短停顿,让 1-3 拍速胜也能看清最后一击。
+  final bool readablePacing;
+
   /// 一键扫荡用(默认 false → 现有调用零影响):**挂载时若 battleProvider 已是非空
   /// 活跃战斗,自动起播**。常规流程(stage/tower host)是「先挂本屏空团、后 postFrame
   /// startBattle」,靠 build 内 `ref.listen` 的 empty→非空边沿起 timer;扫荡是「先注入、
@@ -143,6 +147,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.allowPlayerIntervention = false,
     this.startPaused = false,
     this.startFastForward = false,
+    this.readablePacing = false,
     this.autoStartOnMount = false,
     this.previewPendingCharacterId,
     this.previewPendingSkillId,
@@ -154,6 +159,10 @@ class BattleScreen extends ConsumerStatefulWidget {
 
 class _BattleScreenState extends ConsumerState<BattleScreen>
     with TickerProviderStateMixin {
+  static const Duration _readableVictoryHandoffDelay = Duration(
+    milliseconds: 1200,
+  );
+
   // VFX 反应原语（飘字/弹道/特效贴片/攻击-受击闪 controller，Task 1）+ 拍钟调度
   // （beat/timer/hit-stop/pause/fast-forward，Task 2）+ overlay 编排/屏震
   // （shake/closeup/overlay keys，Task 3）：均已抽到 BattlePlaybackController，
@@ -199,6 +208,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       animConfig: widget.animConfig,
       startPaused: widget.startPaused,
       startFastForward: widget.startFastForward,
+      readablePacing: widget.readablePacing,
     );
     // _beatCtrl / _isPaused / _isFastForward 初值由 _playback 构造器据
     // startPaused / startFastForward 处理（Task 2）。
@@ -235,6 +245,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   void dispose() {
     _playback.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant BattleScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.readablePacing != widget.readablePacing) {
+      _playback.setReadablePacing(widget.readablePacing);
+    }
   }
 
   // ─── Timer / advance 驱动 ────────────────────────────────────────────────
@@ -506,6 +524,25 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     );
   }
 
+  Future<void> _showResultDialogAfterPacing(
+    BattleResult result,
+    BattleState s,
+  ) async {
+    if (widget.readablePacing && result == BattleResult.leftWin) {
+      await Future<void>.delayed(_readableVictoryDelayFor(s));
+    }
+    if (!mounted) return;
+    _showResultDialog(result, s);
+  }
+
+  Duration _readableVictoryDelayFor(BattleState s) {
+    final shownMs = s.actionLog.length * _playback.playbackIntervalMsForTest;
+    final minVisibleMs = widget.animConfig.readableVictoryMinMs;
+    final fillMs = minVisibleMs > shownMs ? minVisibleMs - shownMs : 0;
+    final handoffMs = _readableVictoryHandoffDelay.inMilliseconds;
+    return Duration(milliseconds: fillMs > handoffMs ? fillMs : handoffMs);
+  }
+
   /// 算败北诊断；numbersConfig 未就绪（如不加载 GameRepository 的轻量 widget
   /// test）时退化为 null，overlay 仍正常弹出（仅无诊断块）。诊断是非关键 UI。
   BattleDiagnosis? _safeDiagnose(BattleState s) {
@@ -583,7 +620,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       if ((prev?.result == null) && next.result != null) {
         _playback.onBattleFinished(); // 停 timer + 冻结读秒环节拍。
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) _showResultDialog(next.result!, next);
+          if (mounted) {
+            unawaited(_showResultDialogAfterPacing(next.result!, next));
+          }
         });
       }
 
@@ -714,7 +753,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                               children: [
                                 BattleField(
                                   state: state,
-                                  attackControllers: _playback.attackControllers,
+                                  attackControllers:
+                                      _playback.attackControllers,
                                   popups: _playback.popups,
                                   animConfig: widget.animConfig,
                                   chargeMaxTicks: chargeMaxTicks,
@@ -833,4 +873,3 @@ BattleSceneBackgroundStyle _backgroundStyleForTrack(BgmTrack track) {
       return BattleSceneBackgroundStyle.generic;
   }
 }
-

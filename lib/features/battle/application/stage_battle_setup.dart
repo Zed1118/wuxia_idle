@@ -51,8 +51,12 @@ class StageBattleSetup {
   Future<(List<BattleCharacter>, List<BattleCharacter>)> buildTeams(
     StageDef stage, {
     int cycleIndex = 1,
+    bool readableFirstClearTuning = false,
   }) async {
-    final left = await _buildPlayerTeam();
+    var left = await _buildPlayerTeam();
+    if (readableFirstClearTuning) {
+      left = _applyReadableFirstClearOpeningCooldown(left);
+    }
     final right = stage.stageType == StageType.innerDemon
         ? InnerDemonService.buildMirrorEnemyTeam(
             playerTeam: left,
@@ -65,6 +69,7 @@ class StageBattleSetup {
             cycleIndex: cycleIndex,
             isTower: false,
             stageNpcId: stage.isBossStage ? stage.npcId : null,
+            readableFirstClearTuning: readableFirstClearTuning,
           );
     if (!stage.isBossStage || stage.npcId == null) return (left, right);
     return EnmityBattleModifier.bakeMultipliers(
@@ -110,6 +115,7 @@ class StageBattleSetup {
     int cycleIndex = 1,
     bool isTower = false,
     String? stageNpcId,
+    bool readableFirstClearTuning = false,
   }) {
     final right = <BattleCharacter>[];
     for (var i = 0; i < enemies.length && i < 3; i++) {
@@ -122,6 +128,7 @@ class StageBattleSetup {
               : null,
           cycleIndex: cycleIndex,
           isTower: isTower,
+          readableFirstClearTuning: readableFirstClearTuning,
         ),
       );
     }
@@ -350,8 +357,10 @@ class StageBattleSetup {
       newMaxIf = redLines.internalForceMax;
     }
     // W18-A1.2 加法叠加,clamp 防止减伤 100% 极端值(上限走 red_lines.combined_rate_cap)
-    final newDefenseRate =
-        (base.defenseRate + m.defensePct).clamp(0.0, redLines.combinedRateCap);
+    final newDefenseRate = (base.defenseRate + m.defensePct).clamp(
+      0.0,
+      redLines.combinedRateCap,
+    );
     // currentHp 起点跟 maxHp 一致(战斗起点满血,fromCharacter 保证)
     final newCurHp = newMaxHp;
     // currentInternalForce 不超新 max(若原 currentInternalForce 已 ≤ maxIf 仍取原值)
@@ -402,6 +411,7 @@ class StageBattleSetup {
     int? characterIdOverride,
     int cycleIndex = 1,
     bool isTower = false,
+    bool readableFirstClearTuning = false,
   }) {
     final numbers = GameRepository.instance.numbers;
     final skills = enemy.skillIds
@@ -417,15 +427,23 @@ class StageBattleSetup {
     // ── 周目缩放系数（cycle 1 = 1.0，零变化）─────────────────────────────
     final ce = numbers.cycleEvolution;
     final scale = 1.0 + ce.scalePerCycle * (cycleIndex - 1);
+    final readable = numbers.combat.readableFirstClear;
+    final readableHpMult = readableFirstClearTuning
+        ? readable.hpMultiplierFor(isBoss: enemy.isBoss)
+        : 1.0;
+    final readableAttackMult = readableFirstClearTuning
+        ? readable.enemyAttackMultiplier
+        : 1.0;
 
     // ── hp：baseHp × scale，clamp ≤ Boss HP 红线（§5.4，防终局周目越线）────
-    final scaledHp = (enemy.baseHp * scale).toInt().clamp(
+    final scaledHp = (enemy.baseHp * scale * readableHpMult).toInt().clamp(
       0,
       numbers.combat.redLines.bossHpMax,
     );
 
     // ── attack：baseAttack × scale ────────────────────────────────────────
-    final scaledAttack = (enemy.baseAttack * scale).toInt();
+    final scaledAttack = (enemy.baseAttack * scale * readableAttackMult)
+        .toInt();
 
     // ── 内力：境界 IF × internalForceScale × scale（真气词条在词条块处理）──
     final baseIf =
@@ -493,7 +511,7 @@ class StageBattleSetup {
               ],
           ];
 
-    return BattleCharacter(
+    final battle = BattleCharacter(
       characterId: characterIdOverride ?? -(slotIndex + 1),
       name: enemy.name,
       realmTier: enemy.realmTier,
@@ -526,7 +544,99 @@ class StageBattleSetup {
       enemyDefId: enemy.id,
       guardianWardMult: enemy.guardianWard?.damageTakenMult,
       guardianDefIds: enemy.guardianWard?.guardianIds ?? const [],
-      vulnerabilityMult: enemy.vulnerabilityForCycle(cycleIndex)?.outOfWindowDamageMult,
+      vulnerabilityMult: enemy
+          .vulnerabilityForCycle(cycleIndex)
+          ?.outOfWindowDamageMult,
+    );
+    return readableFirstClearTuning
+        ? _applyReadableFirstClearOpeningCooldownToOne(battle)
+        : battle;
+  }
+
+  static List<BattleCharacter> _applyReadableFirstClearOpeningCooldown(
+    List<BattleCharacter> team,
+  ) {
+    return [
+      for (final character in team)
+        _applyReadableFirstClearOpeningCooldownToOne(character),
+    ];
+  }
+
+  @visibleForTesting
+  static BattleCharacter debugApplyReadableFirstClearTuning(
+    BattleCharacter character,
+  ) => _applyReadableFirstClearOpeningCooldownToOne(character);
+
+  static BattleCharacter _applyReadableFirstClearOpeningCooldownToOne(
+    BattleCharacter character,
+  ) {
+    final turns = GameRepository
+        .instance
+        .numbers
+        .combat
+        .readableFirstClear
+        .openingAutoSkillCooldownTurns;
+    final autoSkillPowerMultiplier = GameRepository
+        .instance
+        .numbers
+        .combat
+        .readableFirstClear
+        .autoSkillPowerMultiplier;
+    final tunedSkills = [
+      for (final skill in character.availableSkills)
+        _tuneReadableFirstClearSkill(skill, autoSkillPowerMultiplier),
+    ];
+    final tuned = character.copyWith(availableSkills: tunedSkills);
+    if (turns <= 0) return tuned;
+    final ticksPerAction = (1000 / character.speed).ceil();
+    final cooldownTicks = turns * ticksPerAction + 1;
+
+    final cooldowns = Map<String, int>.from(tuned.skillCooldowns);
+    for (final skill in tuned.availableSkills) {
+      if (skill.requiresManualTrigger || skill.type == SkillType.normalAttack) {
+        continue;
+      }
+      final existing = cooldowns[skill.id] ?? 0;
+      if (existing < cooldownTicks) cooldowns[skill.id] = cooldownTicks;
+    }
+    if (cooldowns.isEmpty) return tuned;
+    return tuned.copyWith(skillCooldowns: Map.unmodifiable(cooldowns));
+  }
+
+  static SkillDef _tuneReadableFirstClearSkill(
+    SkillDef skill,
+    double autoSkillPowerMultiplier,
+  ) {
+    if (autoSkillPowerMultiplier >= 1 ||
+        skill.requiresManualTrigger ||
+        skill.type == SkillType.normalAttack) {
+      return skill;
+    }
+    final tunedPower = (skill.powerMultiplier * autoSkillPowerMultiplier)
+        .round()
+        .clamp(1, skill.powerMultiplier)
+        .toInt();
+    return SkillDef(
+      id: skill.id,
+      name: skill.name,
+      description: skill.description,
+      type: skill.type,
+      powerMultiplier: tunedPower,
+      internalForceCost: skill.internalForceCost,
+      cooldownTurns: skill.cooldownTurns,
+      requiresManualTrigger: skill.requiresManualTrigger,
+      parentTechniqueDefId: skill.parentTechniqueDefId,
+      visualEffect: skill.visualEffect,
+      tier: skill.tier,
+      narrativeInsightId: skill.narrativeInsightId,
+      imagePath: skill.imagePath,
+      canInterrupt: skill.canInterrupt,
+      aiUsePolicy: skill.aiUsePolicy,
+      style: skill.style,
+      source: skill.source,
+      proficiency: skill.proficiency,
+      targetType: skill.targetType,
+      defenseBreakPct: skill.defenseBreakPct,
     );
   }
 
@@ -538,10 +648,12 @@ class StageBattleSetup {
     required int slotIndex,
     int cycleIndex = 1,
     bool isTower = false,
+    bool readableFirstClearTuning = false,
   }) => _enemyToBattle(
     enemy: enemy,
     slotIndex: slotIndex,
     cycleIndex: cycleIndex,
     isTower: isTower,
+    readableFirstClearTuning: readableFirstClearTuning,
   );
 }

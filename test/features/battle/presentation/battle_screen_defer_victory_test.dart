@@ -18,6 +18,7 @@ const _testAnim = AnimationNumbers(
   damagePopupMs: 100,
   actionIntervalMs: 50,
   fastForwardIntervalMs: 20,
+  readableVictoryMinMs: 1500,
   shakeOffsetPx: 1.0,
   shakeDurationMs: 50,
   criticalFontScale: 1.5,
@@ -45,6 +46,7 @@ class _TestBattleNotifier extends BattleNotifier {
 Future<_TestBattleNotifier> _pump(
   WidgetTester tester, {
   bool deferVictoryToCaller = false,
+  bool readablePacing = false,
   VoidCallback? onVictory,
   VoidCallback? onBattleEnd,
 }) async {
@@ -66,6 +68,7 @@ Future<_TestBattleNotifier> _pump(
         home: BattleScreen(
           animConfig: _testAnim,
           deferVictoryToCaller: deferVictoryToCaller,
+          readablePacing: readablePacing,
           onVictory: onVictory,
           onBattleEnd: onBattleEnd,
           autoStart: false, // 禁 Timer,避免 GameRepository 读取崩溃
@@ -117,18 +120,38 @@ void main() {
     },
   );
 
+  testWidgets('readablePacing=true: leftWin 胜利交接前保留短停顿', (tester) async {
+    var victoryCalled = 0;
+    final notifier = await _pump(
+      tester,
+      deferVictoryToCaller: true,
+      readablePacing: true,
+      onVictory: () => victoryCalled++,
+    );
+
+    final finished = notifier.state.copyWith(result: BattleResult.leftWin);
+    notifier.push(finished);
+    await tester.pump();
+    await tester.pump();
+
+    expect(victoryCalled, 0, reason: '可读模式下不应立即交接胜利');
+    await tester.pump(const Duration(milliseconds: 1499));
+    expect(victoryCalled, 0, reason: '最短观看时长未满前仍保留战场');
+    await tester.pump(const Duration(milliseconds: 1));
+    expect(victoryCalled, 1);
+  });
+
   // ─── 主测试 2: deferVictoryToCaller=false(默认) + leftWin → 弹 VictoryOverlay ─
 
-  testWidgets(
-    'deferVictoryToCaller=false(默认): leftWin 弹出 VictoryOverlay',
-    (tester) async {
-      final notifier = await _pump(tester, deferVictoryToCaller: false);
+  testWidgets('deferVictoryToCaller=false(默认): leftWin 弹出 VictoryOverlay', (
+    tester,
+  ) async {
+    final notifier = await _pump(tester, deferVictoryToCaller: false);
 
-      await _triggerLeftWin(tester, notifier);
+    await _triggerLeftWin(tester, notifier);
 
-      expect(find.byType(VictoryOverlay), findsOneWidget);
-    },
-  );
+    expect(find.byType(VictoryOverlay), findsOneWidget);
+  });
 
   // ─── 回归测试 3: deferVictoryToCaller=true + rightWin → VictoryOverlay 仍显示 ─
   // defer 只 gate leftWin 分支,败北(rightWin)不受影响,仍走普通 overlay 路径。
