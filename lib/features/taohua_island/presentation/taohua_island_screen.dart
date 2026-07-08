@@ -9,6 +9,7 @@ import '../../../features/battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../inventory/application/item_usage_lookup_service.dart';
 import '../application/island_action_service.dart';
 import '../application/island_production_readability.dart';
@@ -122,6 +123,8 @@ const _workshopBuildingTypes = [
 
 const _allBuildingTypes = [..._rawBuildingTypes, ..._workshopBuildingTypes];
 
+const _taohuaIslandMapAsset = 'assets/maps/taohuaIsland.png';
+
 class _IslandBody extends StatefulWidget {
   const _IslandBody({required this.view, required this.onRefresh});
 
@@ -139,54 +142,92 @@ class _IslandBodyState extends State<_IslandBody> {
   Widget build(BuildContext context) {
     final cfg = GameRepository.instance.numbers.taohuaIsland;
     final snapshot = _IslandSnapshot.from(widget.view, cfg);
-    final selectedCfg = cfg.buildings[_selectedType]!;
-    final selectedState = _stateFor(_selectedType);
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      children: [
-        // 主地图置顶：核心交互场景进首屏第一视野（1280 高度下尤其），
-        // 「岛上总览」摘要下移到地图之后（仍可滚动；一并收取常驻 AppBar）。
-        _IslandSceneHub(
-          selectedType: _selectedType,
-          snapshot: snapshot,
-          states: widget.view.buildings,
-          cfg: cfg,
-          onSelect: (type) => setState(() => _selectedType = type),
-        ),
-        const SizedBox(height: 18),
-        _IslandOverviewPanel(snapshot: snapshot),
-        const SizedBox(height: 18),
-        _SectionHeader(
-          label: UiStrings.taohuaIslandSelectedBuildingTitle(
-            EnumL10n.buildingType(_selectedType),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compactHeight = constraints.maxHeight < 760;
+        return Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: compactHeight ? 14 : 16,
+            vertical: compactHeight ? 10 : 14,
           ),
-          body: UiStrings.taohuaIslandSelectedBuildingBody,
-          summary: _selectedSummary(_selectedType, snapshot),
-        ),
-        const SizedBox(height: 10),
-        _BuildingCard(
-          type: _selectedType,
-          state: selectedState,
-          bCfg: selectedCfg,
-          cfg: cfg,
-          view: widget.view,
-          onRefresh: widget.onRefresh,
-        ),
-        const SizedBox(height: 18),
-        if (widget.view.prepAdvice.isNotEmpty) ...[
-          _PrepAdvicePanel(
-            advice: widget.view.prepAdvice.take(3).toList(growable: false),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _IslandSceneHub(
+                  selectedType: _selectedType,
+                  snapshot: snapshot,
+                  states: widget.view.buildings,
+                  cfg: cfg,
+                  onSelect: _openBuildingMenu,
+                ),
+              ),
+              SizedBox(height: compactHeight ? 10 : 12),
+              _IslandOneScreenSummary(
+                snapshot: snapshot,
+                prepAdvice: widget.view.prepAdvice
+                    .take(compactHeight ? 1 : 2)
+                    .toList(growable: false),
+              ),
+            ],
           ),
-          const SizedBox(height: 18),
-        ],
-        const _ProjectStelePanel(),
-        const SizedBox(height: 18),
-        const _SectionHeader(
-          label: UiStrings.taohuaIslandSectionDock,
-          body: UiStrings.taohuaIslandSectionDockBody,
-        ),
-      ],
+        );
+      },
+    );
+  }
+
+  Future<void> _openBuildingMenu(BuildingType type) async {
+    setState(() => _selectedType = type);
+    final cfg = GameRepository.instance.numbers.taohuaIsland;
+    final bCfg = cfg.buildings[type]!;
+    final state = _stateFor(type);
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 28,
+            vertical: 24,
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 920, maxHeight: 680),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: WuxiaIconButton(
+                    icon: Icons.close,
+                    tooltip: UiStrings.close,
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: _BuildingCard(
+                      type: type,
+                      state: state,
+                      bCfg: bCfg,
+                      cfg: cfg,
+                      view: widget.view,
+                      onRefresh: () {
+                        widget.onRefresh();
+                        if (Navigator.of(dialogContext).canPop()) {
+                          Navigator.of(dialogContext).pop();
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -195,17 +236,6 @@ class _IslandBodyState extends State<_IslandBody> {
         (b) => b.type == type,
         orElse: () => IslandBuildingState()..type = type,
       );
-
-  String _selectedSummary(BuildingType type, _IslandSnapshot snapshot) {
-    if (_rawBuildingTypes.contains(type)) {
-      return UiStrings.taohuaIslandSectionRawSummary(snapshot.rawStored);
-    }
-    return UiStrings.taohuaIslandSectionWorkshopSummary(
-      snapshot.workshopStored,
-      snapshot.activeProcessors,
-      snapshot.pausedProcessors,
-    );
-  }
 }
 
 class _IslandSnapshot {
@@ -324,32 +354,52 @@ class _IslandSceneHub extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final compactScene = constraints.maxWidth < 1320;
-                return AspectRatio(
-                  aspectRatio: compactScene ? 2.12 : 2.0,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(WuxiaUi.radius),
-                    child: CustomPaint(
-                      painter: _IslandScenePainter(),
-                      child: Stack(
-                        children: [
-                          for (final type in _allBuildingTypes)
-                            _SceneBuildingHotspot(
-                              type: type,
-                              state: _stateFor(type),
-                              bCfg: cfg.buildings[type]!,
-                              selected: type == selectedType,
-                              compact: compactScene,
-                              onTap: () => onSelect(type),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final compactScene = constraints.maxWidth < 1500;
+                  final aspectRatio = compactScene ? 2.12 : 2.0;
+                  final sceneWidth = constraints.maxWidth;
+                  final sceneHeight = sceneWidth / aspectRatio;
+                  return FittedBox(
+                    fit: BoxFit.contain,
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      width: sceneWidth,
+                      height: sceneHeight,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(WuxiaUi.radius),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            WuxiaImage(
+                              _taohuaIslandMapAsset,
+                              key: const Key('taohua_scene_map_asset'),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) =>
+                                  CustomPaint(painter: _IslandScenePainter()),
                             ),
-                        ],
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: WuxiaUi.paper.withValues(alpha: 0.12),
+                              ),
+                            ),
+                            for (final type in _allBuildingTypes)
+                              _SceneBuildingHotspot(
+                                type: type,
+                                state: _stateFor(type),
+                                bCfg: cfg.buildings[type]!,
+                                selected: type == selectedType,
+                                compact: compactScene,
+                                onTap: () => onSelect(type),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -386,11 +436,13 @@ class _SceneBuildingHotspot extends StatelessWidget {
     final stored = state.stored.floor();
     final active =
         bCfg.kind == BuildingKind.source || state.activeRecipeId != null;
+    final hotspotWidth = compact ? 126.0 : 154.0;
+    final hotspotHeight = compact ? 82.0 : 96.0;
     return Align(
       alignment: spec.alignment,
-      child: FractionallySizedBox(
-        widthFactor: compact ? 0.13 : 0.2,
-        heightFactor: compact ? 0.2 : 0.28,
+      child: SizedBox(
+        width: hotspotWidth,
+        height: hotspotHeight,
         child: Tooltip(
           message: EnumL10n.buildingType(type),
           child: InkWell(
@@ -581,37 +633,39 @@ class _IslandScenePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _IslandOverviewPanel extends StatelessWidget {
-  const _IslandOverviewPanel({required this.snapshot});
+class _IslandOneScreenSummary extends StatelessWidget {
+  const _IslandOneScreenSummary({
+    required this.snapshot,
+    required this.prepAdvice,
+  });
 
   final _IslandSnapshot snapshot;
+  final List<IslandPrepAdvice> prepAdvice;
 
   @override
   Widget build(BuildContext context) {
     return LightPaperPanel(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            UiStrings.taohuaIslandOverviewTitle,
-            style: TextStyle(
-              color: WuxiaUi.ink,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 3,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            UiStrings.taohuaIslandOverviewBody,
-            style: TextStyle(color: WuxiaUi.ink2, fontSize: 12, height: 1.35),
-          ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 20,
-            runSpacing: 10,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Expanded(
+                child: Text(
+                  UiStrings.taohuaIslandOverviewBody,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: WuxiaUi.ink2,
+                    fontSize: 12,
+                    height: 1.28,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
               _StatusPillar(
                 icon: Icons.grass_outlined,
                 title: UiStrings.taohuaIslandStatusRawTitle,
@@ -638,9 +692,122 @@ class _IslandOverviewPanel extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          const _IslandSceneLines(),
+          const SizedBox(height: 10),
+          const Wrap(
+            spacing: 10,
+            runSpacing: 8,
+            children: [
+              _CompactSceneChip(
+                icon: Icons.house_siding_outlined,
+                label: UiStrings.taohuaIslandSceneCave,
+                body: UiStrings.taohuaIslandSceneCaveBody,
+              ),
+              _CompactSceneChip(
+                icon: Icons.spa_outlined,
+                label: UiStrings.taohuaIslandSceneField,
+                body: UiStrings.taohuaIslandSceneFieldBody,
+              ),
+              _CompactSceneChip(
+                icon: Icons.handyman_outlined,
+                label: UiStrings.taohuaIslandSceneWorkshop,
+                body: UiStrings.taohuaIslandSceneWorkshopBody,
+              ),
+              _CompactSceneChip(
+                icon: Icons.anchor_outlined,
+                label: UiStrings.taohuaIslandSceneDock,
+                body: UiStrings.taohuaIslandSceneDockBody,
+              ),
+            ],
+          ),
+          if (prepAdvice.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 10,
+              runSpacing: 8,
+              children: [
+                for (final item in prepAdvice) _CompactPrepAdvice(item: item),
+              ],
+            ),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _CompactSceneChip extends StatelessWidget {
+  const _CompactSceneChip({
+    required this.icon,
+    required this.label,
+    required this.body,
+  });
+
+  final IconData icon;
+  final String label;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 292,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 17, color: WuxiaUi.ink2),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              body,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: WuxiaUi.ink2,
+                fontSize: 11,
+                height: 1.25,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CompactPrepAdvice extends StatelessWidget {
+  const _CompactPrepAdvice({required this.item});
+
+  final IslandPrepAdvice item;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = item.priority == IslandPrepAdvicePriority.high
+        ? WuxiaUi.jiang
+        : WuxiaUi.qing;
+    return SizedBox(
+      width: 360,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(left: BorderSide(color: accent, width: 3)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: Text(
+            '${item.title}：${item.body}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: accent, fontSize: 11, height: 1.25),
+          ),
+        ),
       ),
     );
   }
@@ -691,262 +858,6 @@ class _StatusPillar extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _IslandSceneLines extends StatelessWidget {
-  const _IslandSceneLines();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        _SceneLine(
-          icon: Icons.house_siding_outlined,
-          label: UiStrings.taohuaIslandSceneCave,
-          body: UiStrings.taohuaIslandSceneCaveBody,
-        ),
-        _SceneDivider(),
-        _SceneLine(
-          icon: Icons.spa_outlined,
-          label: UiStrings.taohuaIslandSceneField,
-          body: UiStrings.taohuaIslandSceneFieldBody,
-        ),
-        _SceneDivider(),
-        _SceneLine(
-          icon: Icons.handyman_outlined,
-          label: UiStrings.taohuaIslandSceneWorkshop,
-          body: UiStrings.taohuaIslandSceneWorkshopBody,
-        ),
-        _SceneDivider(),
-        _SceneLine(
-          icon: Icons.anchor_outlined,
-          label: UiStrings.taohuaIslandSceneDock,
-          body: UiStrings.taohuaIslandSceneDockBody,
-        ),
-      ],
-    );
-  }
-}
-
-class _SceneLine extends StatelessWidget {
-  const _SceneLine({
-    required this.icon,
-    required this.label,
-    required this.body,
-  });
-
-  final IconData icon;
-  final String label;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 18, color: WuxiaUi.ink2),
-        const SizedBox(width: 10),
-        SizedBox(
-          width: 46,
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: WuxiaUi.ink,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            body,
-            style: const TextStyle(
-              color: WuxiaUi.ink2,
-              fontSize: 12,
-              height: 1.35,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SceneDivider extends StatelessWidget {
-  const _SceneDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Divider(
-        height: WuxiaUi.borderWidth,
-        color: WuxiaUi.ink.withValues(alpha: 0.18),
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.label, this.body, this.summary});
-
-  final String label;
-  final String? body;
-  final String? summary;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                color: WuxiaUi.ink,
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 3,
-              ),
-            ),
-            if (summary != null) ...[
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  summary!,
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(
-                    color: WuxiaUi.muted,
-                    fontSize: 12,
-                    height: 1.25,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        if (body != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            body!,
-            style: const TextStyle(
-              color: WuxiaUi.ink2,
-              fontSize: 12,
-              height: 1.35,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _ProjectStelePanel extends StatelessWidget {
-  const _ProjectStelePanel();
-
-  @override
-  Widget build(BuildContext context) {
-    return const LightPaperPanel(
-      padding: EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            UiStrings.islandProjectSteleTitle,
-            style: TextStyle(
-              color: WuxiaUi.ink,
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 3,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            UiStrings.islandProjectSteleLockedLine,
-            style: TextStyle(color: WuxiaUi.ink2, fontSize: 12, height: 1.35),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PrepAdvicePanel extends StatelessWidget {
-  const _PrepAdvicePanel({required this.advice});
-
-  final List<IslandPrepAdvice> advice;
-
-  @override
-  Widget build(BuildContext context) {
-    return LightPaperPanel(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            UiStrings.islandPrepSectionTitle,
-            style: TextStyle(
-              color: WuxiaUi.ink,
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 3,
-            ),
-          ),
-          const SizedBox(height: 10),
-          for (final item in advice) ...[
-            _PrepAdviceRow(advice: item),
-            if (item != advice.last) const SizedBox(height: 10),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _PrepAdviceRow extends StatelessWidget {
-  const _PrepAdviceRow({required this.advice});
-
-  final IslandPrepAdvice advice;
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = advice.priority == IslandPrepAdvicePriority.high
-        ? WuxiaUi.jiang
-        : WuxiaUi.qing;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border(left: BorderSide(color: accent, width: 3)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              advice.title,
-              style: TextStyle(
-                color: accent,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              advice.body,
-              style: const TextStyle(
-                color: WuxiaUi.ink2,
-                fontSize: 12,
-                height: 1.35,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

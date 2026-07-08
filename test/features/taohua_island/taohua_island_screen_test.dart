@@ -127,7 +127,14 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> closeBuildingMenu(WidgetTester tester) async {
+    if (find.byType(Dialog).evaluate().isEmpty) return;
+    await tester.tap(find.byTooltip(UiStrings.close));
+    await tester.pumpAndSettle();
+  }
+
   Future<void> selectBuilding(WidgetTester tester, BuildingType type) async {
+    await closeBuildingMenu(tester);
     await tester.tap(find.byKey(Key('taohua_scene_hotspot_${type.name}')));
     await tester.pumpAndSettle();
   }
@@ -152,25 +159,16 @@ void main() {
       }
     });
 
-    testWidgets('场景标题与默认建筑详情均渲染', (tester) async {
+    testWidgets('场景标题与地图资产均渲染', (tester) async {
       await pump(tester, wrap(buildTestView()));
 
       expect(find.text(UiStrings.taohuaIslandSceneMapTitle), findsOneWidget);
-      expect(
-        find.text(
-          UiStrings.taohuaIslandSelectedBuildingTitle(
-            EnumL10n.buildingType(BuildingType.tieJiangChang),
-          ),
-        ),
-        findsOneWidget,
-      );
-      expect(find.text(UiStrings.taohuaIslandSectionDock), findsOneWidget);
+      expect(find.byKey(const Key('taohua_scene_map_asset')), findsOneWidget);
     });
 
     testWidgets('岛上总览展示物产、加工与关键空间', (tester) async {
       await pump(tester, wrap(buildTestView()));
 
-      expect(find.text(UiStrings.taohuaIslandOverviewTitle), findsOneWidget);
       expect(
         find.text(UiStrings.taohuaIslandStatusRawValue(74)),
         findsOneWidget,
@@ -206,12 +204,14 @@ void main() {
 
     testWidgets('等级文本渲染（level=2 的 tieJiangChang）', (tester) async {
       await pump(tester, wrap(buildTestView()));
+      await selectBuilding(tester, BuildingType.tieJiangChang);
       // tieJiangChang level=2 → '第 2 级'
       expect(find.text(UiStrings.taohuaIslandLevelLabel(2)), findsOneWidget);
     });
 
     testWidgets('仓储文本渲染（50/900 for tieJiangChang level=2）', (tester) async {
       await pump(tester, wrap(buildTestView()));
+      await selectBuilding(tester, BuildingType.tieJiangChang);
       // tieJiangChang: capFor(2) = capBase(450) + 1*capPerLevel(450) = 900
       //（2026-06-25 cap 对齐 72h 后 200/100 → 450/450）
       // stored = 50.floor() = 50
@@ -223,6 +223,7 @@ void main() {
 
     testWidgets('升级按钮存在', (tester) async {
       await pump(tester, wrap(buildTestView()));
+      await selectBuilding(tester, BuildingType.tieJiangChang);
       expect(find.text(UiStrings.taohuaIslandUpgrade), findsOneWidget);
     });
 
@@ -246,8 +247,9 @@ void main() {
     // 场景化主屏单卡模型(scene-hub):一次只渲染选中建筑卡,故按建筑分阶段断言。
     testWidgets('建筑卡显示当前队列、剩余时间、满仓时间与产物去向', (tester) async {
       await pump(tester, wrap(buildTestView()));
+      await selectBuilding(tester, BuildingType.tieJiangChang);
 
-      // 默认卡 tieJiangChang(source):采集精铁 + 下次产出时间 + 满仓未知。
+      // tieJiangChang(source):采集精铁 + 下次产出时间 + 满仓未知。
       expect(
         find.text(UiStrings.taohuaIslandCurrentGathering('精铁')),
         findsOneWidget,
@@ -305,8 +307,9 @@ void main() {
       expect(find.text(UiStrings.taohuaIslandNextOutputPaused), findsWidgets);
     });
 
-    testWidgets('source 建筑显示建筑志、协同影响与产物去向', (tester) async {
+    testWidgets('source 建筑弹窗显示建筑志、协同影响与产物去向', (tester) async {
       await pump(tester, wrap(buildTestView()));
+      await selectBuilding(tester, BuildingType.tieJiangChang);
 
       expect(
         find.text(UiStrings.taohuaIslandBuildingManualTitle),
@@ -347,7 +350,7 @@ void main() {
       );
     });
 
-    testWidgets('processor 建筑显示建筑志、配方消耗与协同来源', (tester) async {
+    testWidgets('processor 建筑弹窗显示建筑志、配方消耗与协同来源', (tester) async {
       await pump(tester, wrap(buildTestView()));
       await selectBuilding(tester, BuildingType.daZaoTai);
 
@@ -425,18 +428,15 @@ void main() {
       );
     });
 
-    testWidgets('点击建筑热区会切换下方详情面板', (tester) async {
+    testWidgets('点击建筑热区会打开详情操作菜单', (tester) async {
       await pump(tester, wrap(buildTestView()));
 
       await selectBuilding(tester, BuildingType.danFang);
 
+      expect(find.byType(Dialog), findsOneWidget);
       expect(
-        find.text(
-          UiStrings.taohuaIslandSelectedBuildingTitle(
-            EnumL10n.buildingType(BuildingType.danFang),
-          ),
-        ),
-        findsOneWidget,
+        find.text(EnumL10n.buildingType(BuildingType.danFang)),
+        findsWidgets,
       );
       expect(find.text(UiStrings.taohuaIslandIdlePaused), findsOneWidget);
     });
@@ -460,13 +460,18 @@ void main() {
 
       await pump(tester, wrap(view));
 
-      expect(find.text(UiStrings.islandPrepSectionTitle), findsOneWidget);
-      expect(find.text(UiStrings.islandPrepBossCycleTitle), findsOneWidget);
-      expect(find.text(UiStrings.islandPrepBossCycleBody), findsOneWidget);
+      expect(
+        find.textContaining(UiStrings.islandPrepBossCycleTitle),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(UiStrings.islandPrepBossCycleBody),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('整备建议面板最多渲染前三条', (tester) async {
-      const hiddenTitle = '第四条不应出现';
+    testWidgets('紧凑整备建议最多渲染前两条', (tester) async {
+      const hiddenTitle = '第三条不应出现';
       final view = buildTestView(
         prepAdvice: const [
           IslandPrepAdvice(
@@ -481,31 +486,18 @@ void main() {
           ),
           IslandPrepAdvice(
             kind: IslandPrepAdviceKind.bossCycle,
-            title: '建议三',
+            title: hiddenTitle,
             body: UiStrings.islandPrepBossCycleBody,
             priority: IslandPrepAdvicePriority.high,
-          ),
-          IslandPrepAdvice(
-            kind: IslandPrepAdviceKind.equipment,
-            title: hiddenTitle,
-            body: UiStrings.islandPrepEquipmentBody,
           ),
         ],
       );
 
       await pump(tester, wrap(view));
 
-      expect(find.text('建议一'), findsOneWidget);
-      expect(find.text('建议二'), findsOneWidget);
-      expect(find.text('建议三'), findsOneWidget);
-      expect(find.text(hiddenTitle), findsNothing);
-    });
-
-    testWidgets('岛务工程碑 first slice 始终渲染只读说明', (tester) async {
-      await pump(tester, wrap(buildTestView()));
-
-      expect(find.text(UiStrings.islandProjectSteleTitle), findsOneWidget);
-      expect(find.text(UiStrings.islandProjectSteleLockedLine), findsOneWidget);
+      expect(find.textContaining('建议一'), findsOneWidget);
+      expect(find.textContaining('建议二'), findsOneWidget);
+      expect(find.textContaining(hiddenTitle), findsNothing);
     });
 
     testWidgets('null view 显示无存档友好态', (tester) async {
@@ -562,6 +554,7 @@ void main() {
         },
       );
       await pump(tester, wrap(view));
+      await selectBuilding(tester, BuildingType.tieJiangChang);
 
       expect(tester.takeException(), isNull, reason: '满级建筑渲染不应抛 RangeError');
       expect(
