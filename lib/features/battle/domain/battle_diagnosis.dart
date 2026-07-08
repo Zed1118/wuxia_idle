@@ -185,6 +185,28 @@ class BattleDiagnosis {
       );
     }
 
+    // 规则 2b（priority 85）guardian_ward_active
+    final ward = _activeGuardianWard(right);
+    if (ward != null) {
+      return BattleDiagnosis(
+        ruleId: 'guardian_ward_active',
+        shortfall: DefeatShortfall.technique,
+        primaryCause: UiStrings.diagCauseGuardianWard,
+        dataLines: [
+          UiStrings.diagGuardianAliveCount(ward.aliveGuardianCount),
+          UiStrings.diagGuardianWardDamageTaken(
+            ((ward.boss.guardianWardMult ?? 1.0) * 100).round(),
+          ),
+        ],
+        suggestions: const [
+          DiagnosisSuggestion(
+            UiStrings.diagSuggestGuardianWard,
+            DiagnosisJumpTarget.skills,
+          ),
+        ],
+      );
+    }
+
     // 规则 3（priority 80）mob_overrun
     if (right.length > 1 &&
         playerDamageTaken > 0 &&
@@ -298,6 +320,26 @@ class BattleDiagnosis {
     );
   }
 
+  static _ActiveGuardianWard? _activeGuardianWard(List<BattleCharacter> right) {
+    for (final boss in right) {
+      if (boss.guardianWardMult == null || boss.guardianDefIds.isEmpty) {
+        continue;
+      }
+      final aliveGuardianCount = right
+          .where(
+            (c) =>
+                c.isAlive &&
+                c.enemyDefId != null &&
+                boss.guardianDefIds.contains(c.enemyDefId),
+          )
+          .length;
+      if (aliveGuardianCount > 0) {
+        return _ActiveGuardianWard(boss, aliveGuardianCount);
+      }
+    }
+    return null;
+  }
+
   static (RealmTier, RealmLayer)? _topRealm(List<BattleCharacter> team) {
     if (team.isEmpty) return null;
     var best = team.first;
@@ -380,6 +422,13 @@ class BattleDiagnosis {
     }
     return best;
   }
+}
+
+class _ActiveGuardianWard {
+  final BattleCharacter boss;
+  final int aliveGuardianCount;
+
+  const _ActiveGuardianWard(this.boss, this.aliveGuardianCount);
 }
 
 class _FrontlineDeath {

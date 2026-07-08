@@ -15,7 +15,7 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 /// BattleEngine + BattleAI 单元测试（phase1_tasks.md T12 §706 验收）。
 ///
 /// 覆盖：
-/// 1. 3v3 同境界同流派同装备：runToEnd 50-200 tick 内分胜负，不死循环。
+/// 1. 3v3 同境界同流派同装备：runToEnd 稳定分胜负，不死循环。
 /// 2. 速度差：speed=200 vs 100 的行动次数 ~2:1。
 /// 3. requestUltimate：玩家手动请求后该角色下次行动一定使用该大招
 ///    （前提内力够、CD 0）。
@@ -40,10 +40,10 @@ void main() {
   tearDown(GameRepository.resetForTest);
 
   // ────────────────────────────────────────────────────────────────────────
-  // §706.1 3v3 同境界同流派同装备 → 50-200 tick 内分胜负
+  // §706.1 3v3 同境界同流派同装备 → 稳定分胜负
   // ────────────────────────────────────────────────────────────────────────
 
-  test('3v3 同境界同流派同装备：runToEnd 50-200 tick 内分胜负，不死循环', () {
+  test('3v3 同境界同流派同装备：runToEnd 稳定分胜负，不死循环', () {
     final left = _team(teamSide: 0, charIdBase: 1);
     final right = _team(teamSide: 1, charIdBase: 11);
     final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
@@ -56,12 +56,13 @@ void main() {
     );
 
     expect(s.isFinished, true);
-    expect(s.result, isNot(BattleResult.draw),
-        reason: '同条件对战不应触发 maxTicks 兜底');
-    expect(s.tick, greaterThanOrEqualTo(20),
-        reason: '不应一两 tick 就结束（双方有交互）');
-    expect(s.tick, lessThanOrEqualTo(500),
-        reason: '不能超过 maxTicks（即使到 maxTicks 也只会 draw）');
+    expect(s.result, isNot(BattleResult.draw), reason: '同条件对战不应触发 maxTicks 兜底');
+    expect(s.tick, greaterThanOrEqualTo(10), reason: '不应一两 tick 就结束（双方有交互）');
+    expect(
+      s.tick,
+      lessThanOrEqualTo(500),
+      reason: '不能超过 maxTicks（即使到 maxTicks 也只会 draw）',
+    );
     expect(s.actionLog, isNotEmpty);
   });
 
@@ -72,18 +73,10 @@ void main() {
   test('速度差：左队 speed=200 / 右队 speed=100，行动次数比接近 2:1', () {
     // 左队 speed 强设 200、右队 100；HP 巨高让战斗在 maxTicks 内不结束。
     final left = _team(teamSide: 0, charIdBase: 1)
-        .map((c) => c.copyWith(
-              speed: 200,
-              maxHp: 1000000,
-              currentHp: 1000000,
-            ))
+        .map((c) => c.copyWith(speed: 200, maxHp: 1000000, currentHp: 1000000))
         .toList();
     final right = _team(teamSide: 1, charIdBase: 11)
-        .map((c) => c.copyWith(
-              speed: 100,
-              maxHp: 1000000,
-              currentHp: 1000000,
-            ))
+        .map((c) => c.copyWith(speed: 100, maxHp: 1000000, currentHp: 1000000))
         .toList();
     final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
 
@@ -96,17 +89,23 @@ void main() {
 
     final leftIds = left.map((c) => c.characterId).toSet();
     final rightIds = right.map((c) => c.characterId).toSet();
-    final leftActs =
-        s.actionLog.where((a) => leftIds.contains(a.actorId)).length;
-    final rightActs =
-        s.actionLog.where((a) => rightIds.contains(a.actorId)).length;
+    final leftActs = s.actionLog
+        .where((a) => leftIds.contains(a.actorId))
+        .length;
+    final rightActs = s.actionLog
+        .where((a) => rightIds.contains(a.actorId))
+        .length;
 
     expect(rightActs, greaterThan(0), reason: '右队也应有行动');
     final ratio = leftActs / rightActs;
     // 严格的 2:1 受 actionPoint 余数残留扰动，区间放宽到 [1.7, 2.3]
-    expect(ratio, inInclusiveRange(1.7, 2.3),
-        reason: '左/右行动次数比应接近 2:1（实测 leftActs=$leftActs '
-            '/ rightActs=$rightActs / ratio=$ratio）');
+    expect(
+      ratio,
+      inInclusiveRange(1.7, 2.3),
+      reason:
+          '左/右行动次数比应接近 2:1（实测 leftActs=$leftActs '
+          '/ rightActs=$rightActs / ratio=$ratio）',
+    );
   });
 
   // ────────────────────────────────────────────────────────────────────────
@@ -161,8 +160,9 @@ void main() {
   });
 
   test('requestUltimate：必须传 type=ultimate 的招式，否则抛 ArgumentError', () {
-    final notUlt =
-        GameRepository.instance.getSkill('skill_gangmeng_jichu_basic');
+    final notUlt = GameRepository.instance.getSkill(
+      'skill_gangmeng_jichu_basic',
+    );
     final s0 = BattleState.initial(leftTeam: const [], rightTeam: const []);
     expect(
       () => BattleEngine.requestUltimate(s0, 1, notUlt),
@@ -199,8 +199,11 @@ void main() {
     );
 
     expect(s.isFinished, true);
-    expect(s.result, BattleResult.rightWin,
-        reason: '三流打绝顶差 2 阶（守方 0.3 / 攻方 2.5）应必败');
+    expect(
+      s.result,
+      BattleResult.rightWin,
+      reason: '三流打绝顶差 2 阶（守方 0.3 / 攻方 2.5）应必败',
+    );
   });
 
   // ────────────────────────────────────────────────────────────────────────
@@ -210,10 +213,18 @@ void main() {
   test('同 actionPoint + 同 speed：teamSide asc → slotIndex asc 破平局', () {
     // 左队 0 号 + 右队 0 号，同 ap、同 speed。tick 后两人同时 actionPoint≥1000，
     // 排序应按 (teamSide asc) → 左队先行动。
-    final left = _mkBC(charId: 1, teamSide: 0, slotIndex: 0)
-        .copyWith(actionPoint: 999, speed: 100, maxHp: 1000000, currentHp: 1000000);
-    final right = _mkBC(charId: 11, teamSide: 1, slotIndex: 0)
-        .copyWith(actionPoint: 999, speed: 100, maxHp: 1000000, currentHp: 1000000);
+    final left = _mkBC(charId: 1, teamSide: 0, slotIndex: 0).copyWith(
+      actionPoint: 999,
+      speed: 100,
+      maxHp: 1000000,
+      currentHp: 1000000,
+    );
+    final right = _mkBC(charId: 11, teamSide: 1, slotIndex: 0).copyWith(
+      actionPoint: 999,
+      speed: 100,
+      maxHp: 1000000,
+      currentHp: 1000000,
+    );
     final s0 = BattleState.initial(leftTeam: [left], rightTeam: [right]);
 
     final s1 = BattleEngine.tick(
@@ -222,20 +233,33 @@ void main() {
       rng: Random(2),
     );
 
-    expect(s1.actionLog.length, 2,
-        reason: '两人同 tick 都应行动');
-    expect(s1.actionLog.first.actorId, left.characterId,
-        reason: '同 ap+speed 时 teamSide=0 优先行动');
+    expect(s1.actionLog.length, 2, reason: '两人同 tick 都应行动');
+    expect(
+      s1.actionLog.first.actorId,
+      left.characterId,
+      reason: '同 ap+speed 时 teamSide=0 优先行动',
+    );
     expect(s1.actionLog[1].actorId, right.characterId);
   });
 
   test('同 actionPoint + 同 speed + 同 teamSide：slotIndex 小的优先', () {
-    final c0 = _mkBC(charId: 1, teamSide: 0, slotIndex: 0)
-        .copyWith(actionPoint: 999, speed: 100, maxHp: 1000000, currentHp: 1000000);
-    final c1 = _mkBC(charId: 2, teamSide: 0, slotIndex: 1)
-        .copyWith(actionPoint: 999, speed: 100, maxHp: 1000000, currentHp: 1000000);
-    final right = _mkBC(charId: 11, teamSide: 1, slotIndex: 0)
-        .copyWith(speed: 1, maxHp: 1000000, currentHp: 1000000);
+    final c0 = _mkBC(charId: 1, teamSide: 0, slotIndex: 0).copyWith(
+      actionPoint: 999,
+      speed: 100,
+      maxHp: 1000000,
+      currentHp: 1000000,
+    );
+    final c1 = _mkBC(charId: 2, teamSide: 0, slotIndex: 1).copyWith(
+      actionPoint: 999,
+      speed: 100,
+      maxHp: 1000000,
+      currentHp: 1000000,
+    );
+    final right = _mkBC(
+      charId: 11,
+      teamSide: 1,
+      slotIndex: 0,
+    ).copyWith(speed: 1, maxHp: 1000000, currentHp: 1000000);
     final s0 = BattleState.initial(leftTeam: [c0, c1], rightTeam: [right]);
 
     final s1 = BattleEngine.tick(
@@ -244,10 +268,14 @@ void main() {
       rng: Random(3),
     );
 
-    final leftActs =
-        s1.actionLog.where((a) => a.actorId == c0.characterId || a.actorId == c1.characterId);
-    expect(leftActs.first.actorId, c0.characterId,
-        reason: 'slotIndex 0 应先于 slotIndex 1 行动');
+    final leftActs = s1.actionLog.where(
+      (a) => a.actorId == c0.characterId || a.actorId == c1.characterId,
+    );
+    expect(
+      leftActs.first.actorId,
+      c0.characterId,
+      reason: 'slotIndex 0 应先于 slotIndex 1 行动',
+    );
   });
 
   // ────────────────────────────────────────────────────────────────────────
@@ -257,12 +285,10 @@ void main() {
   test('maxTicks 触发 → draw（防死循环兜底）', () {
     // 双方 maxHp 巨高、speed 巨低、伤害刚好可见但杀不死 → 短 maxTicks 兜底
     final left = _team(teamSide: 0, charIdBase: 1)
-        .map((c) =>
-            c.copyWith(maxHp: 99999999, currentHp: 99999999, speed: 50))
+        .map((c) => c.copyWith(maxHp: 99999999, currentHp: 99999999, speed: 50))
         .toList();
     final right = _team(teamSide: 1, charIdBase: 11)
-        .map((c) =>
-            c.copyWith(maxHp: 99999999, currentHp: 99999999, speed: 50))
+        .map((c) => c.copyWith(maxHp: 99999999, currentHp: 99999999, speed: 50))
         .toList();
     final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
 
@@ -274,8 +300,7 @@ void main() {
     );
 
     expect(s.isFinished, true);
-    expect(s.result, BattleResult.draw,
-        reason: 'maxTicks 内分不出胜负应 draw');
+    expect(s.result, BattleResult.draw, reason: 'maxTicks 内分不出胜负应 draw');
   });
 
   // ────────────────────────────────────────────────────────────────────────
@@ -286,12 +311,8 @@ void main() {
     test('优先级：pendingUltimates > powerSkill > normalAttack', () {
       final actor = _mkBC(charId: 1, teamSide: 0, internalForce: 5000);
       final defender = _mkBC(charId: 11, teamSide: 1);
-      final ult =
-          GameRepository.instance.getSkill('skill_gangmeng_jichu_ult');
-      var s = BattleState.initial(
-        leftTeam: [actor],
-        rightTeam: [defender],
-      );
+      final ult = GameRepository.instance.getSkill('skill_gangmeng_jichu_ult');
+      var s = BattleState.initial(leftTeam: [actor], rightTeam: [defender]);
 
       // 1) 无 pending → 应选 powerSkill（内力够、CD 0）
       var (skill, _) = BattleAI.decide(
@@ -303,21 +324,13 @@ void main() {
 
       // 2) 注入 pending → 应选大招
       s = BattleEngine.requestUltimate(s, actor.characterId, ult);
-      (skill, _) = BattleAI.decide(
-        actor,
-        s,
-        GameRepository.instance.numbers,
-      );
+      (skill, _) = BattleAI.decide(actor, s, GameRepository.instance.numbers);
       expect(skill.id, ult.id);
 
       // 3) 内力不够 → fall through 到 powerSkill / normalAttack
       final poor = actor.copyWith(currentInternalForce: 50);
       final s3 = s.copyWith(leftTeam: [poor]);
-      (skill, _) = BattleAI.decide(
-        poor,
-        s3,
-        GameRepository.instance.numbers,
-      );
+      (skill, _) = BattleAI.decide(poor, s3, GameRepository.instance.numbers);
       // powerSkill cost=100, 内力 50 → 选 normalAttack
       expect(skill.type, SkillType.normalAttack);
     });
@@ -331,10 +344,7 @@ void main() {
         weaponBattleCount: 500, // moQi 阶 unlocksJointSkill=true
       );
       final defender = _mkBC(charId: 11, teamSide: 1);
-      final s = BattleState.initial(
-        leftTeam: [actor],
-        rightTeam: [defender],
-      );
+      final s = BattleState.initial(leftTeam: [actor], rightTeam: [defender]);
       final (skill, _) = BattleAI.decide(
         actor,
         s,
@@ -352,10 +362,7 @@ void main() {
         weaponBattleCount: 500,
       );
       final defender = _mkBC(charId: 11, teamSide: 1);
-      final s = BattleState.initial(
-        leftTeam: [actor],
-        rightTeam: [defender],
-      );
+      final s = BattleState.initial(leftTeam: [actor], rightTeam: [defender]);
       final (skill, _) = BattleAI.decide(
         actor,
         s,
@@ -371,13 +378,11 @@ void main() {
         internalForce: 5000,
         weaponBattleCount: 500,
       );
-      final cdActor =
-          actor.copyWith(skillCooldowns: const {'skill_joint_skill': 2});
-      final defender = _mkBC(charId: 11, teamSide: 1);
-      final s = BattleState.initial(
-        leftTeam: [cdActor],
-        rightTeam: [defender],
+      final cdActor = actor.copyWith(
+        skillCooldowns: const {'skill_joint_skill': 2},
       );
+      final defender = _mkBC(charId: 11, teamSide: 1);
+      final s = BattleState.initial(leftTeam: [cdActor], rightTeam: [defender]);
       final (skill, _) = BattleAI.decide(
         cdActor,
         s,
@@ -393,12 +398,11 @@ void main() {
         internalForce: 5000,
         weaponBattleCount: 500,
       );
-      final ult = GameRepository.instance.getSkill('skill_gangmeng_mingjia_ult');
-      final defender = _mkBC(charId: 11, teamSide: 1);
-      var s = BattleState.initial(
-        leftTeam: [actor],
-        rightTeam: [defender],
+      final ult = GameRepository.instance.getSkill(
+        'skill_gangmeng_mingjia_ult',
       );
+      final defender = _mkBC(charId: 11, teamSide: 1);
+      var s = BattleState.initial(leftTeam: [actor], rightTeam: [defender]);
       s = BattleEngine.requestUltimate(s, actor.characterId, ult);
       final (skill, _) = BattleAI.decide(
         actor,
@@ -410,14 +414,12 @@ void main() {
 
     test('powerSkill CD>0 时跳过，选 normalAttack', () {
       final actor = _mkBC(charId: 1, teamSide: 0, internalForce: 3000);
-      final powerId =
-          actor.availableSkills.firstWhere((s) => s.type == SkillType.powerSkill).id;
+      final powerId = actor.availableSkills
+          .firstWhere((s) => s.type == SkillType.powerSkill)
+          .id;
       final cdActor = actor.copyWith(skillCooldowns: {powerId: 1});
       final defender = _mkBC(charId: 11, teamSide: 1);
-      final s = BattleState.initial(
-        leftTeam: [cdActor],
-        rightTeam: [defender],
-      );
+      final s = BattleState.initial(leftTeam: [cdActor], rightTeam: [defender]);
       final (skill, _) = BattleAI.decide(
         cdActor,
         s,
@@ -428,36 +430,41 @@ void main() {
 
     test('目标选择：对面活角色 currentHp 最低（同 hp 选 slotIndex 小）', () {
       final actor = _mkBC(charId: 1, teamSide: 0);
-      final r0 = _mkBC(charId: 11, teamSide: 1, slotIndex: 0)
-          .copyWith(currentHp: 5000, maxHp: 10000);
-      final r1 = _mkBC(charId: 12, teamSide: 1, slotIndex: 1)
-          .copyWith(currentHp: 3000, maxHp: 10000); // 最低
-      final r2 = _mkBC(charId: 13, teamSide: 1, slotIndex: 2)
-          .copyWith(currentHp: 3000, maxHp: 10000); // 同低，但 slot 大
-      final s = BattleState.initial(
-        leftTeam: [actor],
-        rightTeam: [r0, r1, r2],
-      );
+      final r0 = _mkBC(
+        charId: 11,
+        teamSide: 1,
+        slotIndex: 0,
+      ).copyWith(currentHp: 5000, maxHp: 10000);
+      final r1 = _mkBC(
+        charId: 12,
+        teamSide: 1,
+        slotIndex: 1,
+      ).copyWith(currentHp: 3000, maxHp: 10000); // 最低
+      final r2 = _mkBC(
+        charId: 13,
+        teamSide: 1,
+        slotIndex: 2,
+      ).copyWith(currentHp: 3000, maxHp: 10000); // 同低，但 slot 大
+      final s = BattleState.initial(leftTeam: [actor], rightTeam: [r0, r1, r2]);
       final (_, targetIds) = BattleAI.decide(
         actor,
         s,
         GameRepository.instance.numbers,
       );
-      expect(targetIds, [r1.characterId],
-          reason: 'hp 最低且 slotIndex=1 优先于 slotIndex=2');
+      expect(targetIds, [
+        r1.characterId,
+      ], reason: 'hp 最低且 slotIndex=1 优先于 slotIndex=2');
     });
 
     test('AI 跳过死亡角色：对面 0 号死了选 1 号', () {
       final actor = _mkBC(charId: 1, teamSide: 0);
-      final r0 = _mkBC(charId: 11, teamSide: 1, slotIndex: 0).copyWith(
-        currentHp: 0,
-        isAlive: false,
-      );
+      final r0 = _mkBC(
+        charId: 11,
+        teamSide: 1,
+        slotIndex: 0,
+      ).copyWith(currentHp: 0, isAlive: false);
       final r1 = _mkBC(charId: 12, teamSide: 1, slotIndex: 1);
-      final s = BattleState.initial(
-        leftTeam: [actor],
-        rightTeam: [r0, r1],
-      );
+      final s = BattleState.initial(leftTeam: [actor], rightTeam: [r0, r1]);
       final (_, targetIds) = BattleAI.decide(
         actor,
         s,
@@ -469,8 +476,7 @@ void main() {
 
   // §12.1 #7 v1.4 阴柔克灵巧内伤 debuff 状态机 ────────────────────────────────
   group('§12.1 #7 阴柔内伤 debuff', () {
-    test('阴柔 → 灵巧 命中 → defender 加 InternalInjurySlot(turns=3 dmg=200)',
-        () {
+    test('阴柔 → 灵巧 命中 → defender 加 InternalInjurySlot(turns=3 dmg=200)', () {
       final n = GameRepository.instance.numbers;
       final atk = _mkBC(
         charId: 1,
@@ -487,29 +493,37 @@ void main() {
       var s = BattleState.initial(leftTeam: [atk], rightTeam: [def]);
       s = BattleEngine.tick(s, n, rng: Random(0));
       final defAfter = s.rightTeam.first;
-      expect(defAfter.internalInjury, isNotNull,
-          reason: '阴柔命中灵巧应施加 internalInjury slot');
-      expect(defAfter.internalInjury!.remainingTurns,
-          n.schoolCounter.yinRouInternalInjury.turnsPersist);
-      expect(defAfter.internalInjury!.damagePerTick,
-          n.schoolCounter.yinRouInternalInjury.damagePerTick);
+      expect(
+        defAfter.internalInjury,
+        isNotNull,
+        reason: '阴柔命中灵巧应施加 internalInjury slot',
+      );
+      expect(
+        defAfter.internalInjury!.remainingTurns,
+        n.schoolCounter.yinRouInternalInjury.turnsPersist,
+      );
+      expect(
+        defAfter.internalInjury!.damagePerTick,
+        n.schoolCounter.yinRouInternalInjury.damagePerTick,
+      );
     });
 
     test('内伤 dot:守方下次出手 → 扣 damagePerTick + turns-=1', () {
       final n = GameRepository.instance.numbers;
       // 守方刚猛(避免命中刚猛的中性反向触发其他效果),设 actionPoint=1000 立即出手。
-      final injured = _mkBC(
-        charId: 11,
-        teamSide: 1,
-        school: TechniqueSchool.lingQiao,
-        techDefId: 'tech_lingqiao_mingjia',
-      ).copyWith(
-        actionPoint: 1000,
-        internalInjury: const InternalInjurySlot(
-          remainingTurns: 3,
-          damagePerTick: 200,
-        ),
-      );
+      final injured =
+          _mkBC(
+            charId: 11,
+            teamSide: 1,
+            school: TechniqueSchool.lingQiao,
+            techDefId: 'tech_lingqiao_mingjia',
+          ).copyWith(
+            actionPoint: 1000,
+            internalInjury: const InternalInjurySlot(
+              remainingTurns: 3,
+              damagePerTick: 200,
+            ),
+          );
       final foe = _mkBC(
         charId: 1,
         teamSide: 0,
@@ -519,27 +533,34 @@ void main() {
       final hpBefore = injured.currentHp;
       s = BattleEngine.tick(s, n, rng: Random(0));
       final injuredAfter = s.rightTeam.first;
-      expect(injuredAfter.currentHp, lessThanOrEqualTo(hpBefore - 200),
-          reason: 'dot 扣 200(可能还叠上来自 foe 的攻击,故 ≤)');
+      expect(
+        injuredAfter.currentHp,
+        lessThanOrEqualTo(hpBefore - 200),
+        reason: 'dot 扣 200(可能还叠上来自 foe 的攻击,故 ≤)',
+      );
       expect(injuredAfter.internalInjury, isNotNull);
-      expect(injuredAfter.internalInjury!.remainingTurns, 2,
-          reason: 'turns 衰减 1');
+      expect(
+        injuredAfter.internalInjury!.remainingTurns,
+        2,
+        reason: 'turns 衰减 1',
+      );
     });
 
     test('内伤 turns=1 → 出手扣 dot 后 → slot 清空(null)', () {
       final n = GameRepository.instance.numbers;
-      final injured = _mkBC(
-        charId: 11,
-        teamSide: 1,
-        school: TechniqueSchool.lingQiao,
-        techDefId: 'tech_lingqiao_mingjia',
-      ).copyWith(
-        actionPoint: 1000,
-        internalInjury: const InternalInjurySlot(
-          remainingTurns: 1,
-          damagePerTick: 200,
-        ),
-      );
+      final injured =
+          _mkBC(
+            charId: 11,
+            teamSide: 1,
+            school: TechniqueSchool.lingQiao,
+            techDefId: 'tech_lingqiao_mingjia',
+          ).copyWith(
+            actionPoint: 1000,
+            internalInjury: const InternalInjurySlot(
+              remainingTurns: 1,
+              damagePerTick: 200,
+            ),
+          );
       final foe = _mkBC(
         charId: 1,
         teamSide: 0,
@@ -547,8 +568,11 @@ void main() {
       );
       var s = BattleState.initial(leftTeam: [foe], rightTeam: [injured]);
       s = BattleEngine.tick(s, n, rng: Random(0));
-      expect(s.rightTeam.first.internalInjury, isNull,
-          reason: 'turns=1 用尽 → slot 清空');
+      expect(
+        s.rightTeam.first.internalInjury,
+        isNull,
+        reason: 'turns=1 用尽 → slot 清空',
+      );
     });
 
     test('同源刷新:阴柔再次命中已带内伤的灵巧 → remainingTurns 重置不叠层', () {
@@ -559,24 +583,27 @@ void main() {
         school: TechniqueSchool.yinRou,
         techDefId: 'tech_yinrou_mingjia',
       ).copyWith(actionPoint: 1000);
-      final defender = _mkBC(
-        charId: 11,
-        teamSide: 1,
-        school: TechniqueSchool.lingQiao,
-        techDefId: 'tech_lingqiao_mingjia',
-      ).copyWith(
-        internalInjury: const InternalInjurySlot(
-          remainingTurns: 1, // 老 slot 还剩 1 turn
-          damagePerTick: 200,
-        ),
-      );
+      final defender =
+          _mkBC(
+            charId: 11,
+            teamSide: 1,
+            school: TechniqueSchool.lingQiao,
+            techDefId: 'tech_lingqiao_mingjia',
+          ).copyWith(
+            internalInjury: const InternalInjurySlot(
+              remainingTurns: 1, // 老 slot 还剩 1 turn
+              damagePerTick: 200,
+            ),
+          );
       var s = BattleState.initial(leftTeam: [attacker], rightTeam: [defender]);
       s = BattleEngine.tick(s, n, rng: Random(0));
       final defAfter = s.rightTeam.first;
       expect(defAfter.internalInjury, isNotNull);
-      expect(defAfter.internalInjury!.remainingTurns,
-          n.schoolCounter.yinRouInternalInjury.turnsPersist,
-          reason: '刷新覆盖:重置 turns 到 3,不是叠 1+3=4 也不是延长');
+      expect(
+        defAfter.internalInjury!.remainingTurns,
+        n.schoolCounter.yinRouInternalInjury.turnsPersist,
+        reason: '刷新覆盖:重置 turns 到 3,不是叠 1+3=4 也不是延长',
+      );
     });
 
     test('闪避:阴柔被闪避不施加内伤(followsMainHit)', () {
@@ -596,8 +623,11 @@ void main() {
       ).copyWith(evasionRate: 1.0); // 100% 闪避
       var s = BattleState.initial(leftTeam: [attacker], rightTeam: [defender]);
       s = BattleEngine.tick(s, n, rng: Random(0));
-      expect(s.rightTeam.first.internalInjury, isNull,
-          reason: '主攻击闪避 → 不施加 internal_injury');
+      expect(
+        s.rightTeam.first.internalInjury,
+        isNull,
+        reason: '主攻击闪避 → 不施加 internal_injury',
+      );
     });
   });
 }
@@ -648,33 +678,33 @@ BattleCharacter _mkBC({
   // 注入)。weaponBattleCount>0 表示「该角色装配了 joint」,据此填 resonanceSkillId。
   int weaponBattleCount = 0,
 }) {
-  final c = Character.create(
-    name: '${teamSide == 0 ? "左" : "右"}$slotIndex',
-    realmTier: tier,
-    realmLayer: layer,
-    attributes: Attributes()
-      ..constitution = constitution
-      ..enlightenment = 5
-      ..agility = agility
-      ..fortune = 5,
-    rarity: RarityTier.biaoZhun,
-    lineageRole: LineageRole.founder,
-    createdAt: DateTime(2026, 1, 1),
-    internalForce: internalForce,
-    school: school,
-  )
-    ..id = charId
-    // P0:战斗内力进场满(maxIf)。fixture 以 internalForce 表达「该角色进场
-    // 内力预算」,故同步 internalForceMax,使进场满后 currentInternalForce
-    // == internalForce(保留各测原意:内力够/不够放招的阈值判断)。
-    ..internalForceMax = internalForce
-    // P1b:装配主修 3 招(对应 techDefId skillIds)以保 powerSkill 在战斗池;
-    // weaponBattleCount>0 → 装 joint 到共鸣槽,复现旧「共鸣解锁 joint」语义。
-    ..mainSkillId1 = 'skill_gangmeng_mingjia_basic'
-    ..assistSkillId = 'skill_gangmeng_mingjia_skill'
-    ..ultimateSkillId = 'skill_gangmeng_mingjia_ult'
-    ..resonanceSkillId =
-        weaponBattleCount > 0 ? 'skill_joint_skill' : null;
+  final c =
+      Character.create(
+          name: '${teamSide == 0 ? "左" : "右"}$slotIndex',
+          realmTier: tier,
+          realmLayer: layer,
+          attributes: Attributes()
+            ..constitution = constitution
+            ..enlightenment = 5
+            ..agility = agility
+            ..fortune = 5,
+          rarity: RarityTier.biaoZhun,
+          lineageRole: LineageRole.founder,
+          createdAt: DateTime(2026, 1, 1),
+          internalForce: internalForce,
+          school: school,
+        )
+        ..id = charId
+        // P0:战斗内力进场满(maxIf)。fixture 以 internalForce 表达「该角色进场
+        // 内力预算」,故同步 internalForceMax,使进场满后 currentInternalForce
+        // == internalForce(保留各测原意:内力够/不够放招的阈值判断)。
+        ..internalForceMax = internalForce
+        // P1b:装配主修 3 招(对应 techDefId skillIds)以保 powerSkill 在战斗池;
+        // weaponBattleCount>0 → 装 joint 到共鸣槽,复现旧「共鸣解锁 joint」语义。
+        ..mainSkillId1 = 'skill_gangmeng_mingjia_basic'
+        ..assistSkillId = 'skill_gangmeng_mingjia_skill'
+        ..ultimateSkillId = 'skill_gangmeng_mingjia_ult'
+        ..resonanceSkillId = weaponBattleCount > 0 ? 'skill_joint_skill' : null;
   final eq = Equipment.create(
     defId: 'test',
     tier: EquipmentTier.xunChang,

@@ -636,22 +636,7 @@ class _ShopItemTile extends StatelessWidget {
                         height: 48,
                         fit: BoxFit.cover,
                         errorBuilder: wuxiaAssetErrorBuilder(
-                          () => Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: WuxiaColors.panel,
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                color: WuxiaUi.ink.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.inventory_2_outlined,
-                              color: Colors.white38,
-                              size: 24,
-                            ),
-                          ),
+                          () => _ShopFallbackIcon(def: def),
                         ),
                       ),
                     ),
@@ -735,6 +720,71 @@ class _ShopItemTile extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _ShopFallbackIcon extends StatelessWidget {
+  const _ShopFallbackIcon({required this.def});
+
+  final ShopItemDef def;
+
+  @override
+  Widget build(BuildContext context) {
+    final icon = _iconFor(def);
+    final accent = _accentFor(def);
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: accent.withValues(alpha: 0.55)),
+      ),
+      child: Icon(icon, color: accent, size: 25),
+    );
+  }
+
+  static IconData _iconFor(ShopItemDef def) {
+    if (def.itemDefId == 'item_silver') return Icons.toll_outlined;
+    if (def.itemDefId.contains('scroll') ||
+        def.itemType == ItemType.techniqueScroll) {
+      return Icons.menu_book_outlined;
+    }
+    if (def.itemDefId.contains('liaoshang') || def.itemDefId.contains('dan')) {
+      return Icons.medication_liquid_outlined;
+    }
+    if (def.itemDefId.contains('kaifeng') ||
+        def.itemDefId.contains('duancai')) {
+      return Icons.auto_fix_high_outlined;
+    }
+    return switch (def.itemType) {
+      ItemType.jingYanDan => Icons.spa_outlined,
+      ItemType.moJianShi => Icons.diamond_outlined,
+      ItemType.xinXueJieJing => Icons.brightness_5_outlined,
+      ItemType.miscMaterial => Icons.category_outlined,
+      _ => Icons.inventory_2_outlined,
+    };
+  }
+
+  static Color _accentFor(ShopItemDef def) {
+    if (def.itemDefId.contains('scroll') ||
+        def.itemType == ItemType.techniqueScroll) {
+      return WuxiaUi.qing;
+    }
+    if (def.itemDefId.contains('liaoshang') || def.itemDefId.contains('dan')) {
+      return WuxiaUi.qing;
+    }
+    if (def.itemDefId.contains('kaifeng') ||
+        def.itemDefId.contains('duancai')) {
+      return WuxiaUi.gold;
+    }
+    return switch (def.itemType) {
+      ItemType.jingYanDan => WuxiaUi.qing,
+      ItemType.moJianShi => WuxiaUi.jiang,
+      ItemType.xinXueJieJing => WuxiaUi.gold,
+      ItemType.miscMaterial => WuxiaUi.muted,
+      _ => WuxiaUi.ink,
+    };
   }
 }
 

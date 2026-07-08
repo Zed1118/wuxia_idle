@@ -17,8 +17,34 @@ import '../../main_menu/presentation/main_menu.dart';
 import '../application/onboarding_service.dart';
 import '../domain/founder_creation_selection.dart';
 
+typedef FounderCreationSeeder =
+    Future<bool> Function(FounderCreationSelection selection);
+typedef FounderStarterGearPresenter =
+    Future<void> Function(BuildContext context, FounderSchoolOption school);
+
+Future<bool> defaultFounderCreationSeeder(
+  FounderCreationSelection selection,
+) async {
+  return OnboardingService(
+    isar: IsarSetup.instance,
+  ).createFoundingMaster(selection: selection);
+}
+
+Widget defaultFounderCreationMainMenuBuilder(BuildContext context) {
+  return const MainMenu();
+}
+
 class FounderCreationScreen extends ConsumerStatefulWidget {
-  const FounderCreationScreen({super.key});
+  const FounderCreationScreen({
+    super.key,
+    this.createFoundingMaster = defaultFounderCreationSeeder,
+    this.showStarterGear = showFounderStarterGearDialog,
+    this.mainMenuBuilder = defaultFounderCreationMainMenuBuilder,
+  });
+
+  final FounderCreationSeeder createFoundingMaster;
+  final FounderStarterGearPresenter showStarterGear;
+  final WidgetBuilder mainMenuBuilder;
 
   @override
   ConsumerState<FounderCreationScreen> createState() =>
@@ -79,24 +105,23 @@ class _FounderCreationScreenState extends ConsumerState<FounderCreationScreen> {
     setState(() => _submitting = true);
     final founderName = _founderNameController.text.trim();
     final sectName = _sectNameController.text.trim();
-    final didSeed = await OnboardingService(isar: IsarSetup.instance)
-        .createFoundingMaster(
-          selection: FounderCreationSelection(
-            school: _school,
-            origin: _origin,
-            fate: _fate,
-            founderName: founderName.isEmpty ? null : founderName,
-            sectName: sectName.isEmpty ? null : sectName,
-          ),
-        );
+    final didSeed = await widget.createFoundingMaster(
+      FounderCreationSelection(
+        school: _school,
+        origin: _origin,
+        fate: _fate,
+        founderName: founderName.isEmpty ? null : founderName,
+        sectName: sectName.isEmpty ? null : sectName,
+      ),
+    );
     ref.invalidate(isarProvider);
     if (!mounted) return;
     if (didSeed) {
-      await showFounderStarterGearDialog(context, _school);
+      await widget.showStarterGear(context, _school);
       if (!mounted) return;
     }
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute<void>(builder: (_) => const MainMenu()),
+      MaterialPageRoute<void>(builder: widget.mainMenuBuilder),
       (_) => false,
     );
   }

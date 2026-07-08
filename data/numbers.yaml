@@ -1856,7 +1856,7 @@ sect_management:
   recruit:                         # 多维 trigger 招收软概率
     encounter_base_prob: 0.15       # Q6 A · encounter NPC 招收 baseProbability
     stage_boss_recruit_prob: 0.40   # P4.1 1.1 Q6 B · 战胜 Boss 后招降 NPC rng pick(spec p4_1_q6b)
-    stage_boss_fail_recover_prob: 0.30  # P4.1 v1.10 预留 · 0 caller · 战败收降留 P5+/1.1
+    stage_boss_fail_recover_prob: 0.30  # P4.1 1.1 战败收降已接 stage_boss_recruit_hook
     mission_recruit_prob: 0.50      # Q7 B · sect_event mission resolve 触发候选
   territory:
     demo_initial_count: 6           # Q4=A · `data/territories.yaml` 静态 def 数量

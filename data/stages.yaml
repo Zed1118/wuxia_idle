@@ -2254,8 +2254,8 @@ stages:
         realmTier: jueDing
         realmLayer: jingTong
         school: gangMeng
-        baseHp: 10860
-        baseAttack: 995
+        baseHp: 10320
+        baseAttack: 925
         baseSpeed: 225
         skillIds:
           - skill_lightfoot_jueding_gangmeng_basic
@@ -2268,8 +2268,8 @@ stages:
         realmTier: jueDing
         realmLayer: jingTong
         school: lingQiao
-        baseHp: 10540
-        baseAttack: 1015
+        baseHp: 10080
+        baseAttack: 945
         baseSpeed: 235
         skillIds:
           - skill_lightfoot_jueding_lingqiao_basic
@@ -2281,8 +2281,8 @@ stages:
         realmTier: jueDing
         realmLayer: jingTong
         school: yinRou
-        baseHp: 10730
-        baseAttack: 980
+        baseHp: 10200
+        baseAttack: 910
         baseSpeed: 220
         skillIds:
           - skill_lightfoot_jueding_yinrou_basic
@@ -2302,4 +2302,4 @@ stages:
     biome: frontier
     sceneBackgroundPath: assets/scenes/battle_frontier.png
     massBattleWaveCount: 4
-    massBattleEnemyCounts: [6, 6, 6, 6]
+    massBattleEnemyCounts: [6, 6, 7, 7]

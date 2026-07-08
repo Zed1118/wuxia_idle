@@ -5,6 +5,7 @@ import '../../../core/application/character_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../seclusion/domain/retreat_session.dart';
 import '../../seclusion/domain/seclusion_map_def.dart';
@@ -47,9 +48,16 @@ class MainMenuRetreatBanner extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: WuxiaUi.jiang.withValues(alpha: 0.14),
+              color: WuxiaColors.background.withValues(alpha: 0.78),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: WuxiaUi.jiang.withValues(alpha: 0.52)),
+              border: Border.all(color: WuxiaUi.gold.withValues(alpha: 0.52)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.28),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               children: [
