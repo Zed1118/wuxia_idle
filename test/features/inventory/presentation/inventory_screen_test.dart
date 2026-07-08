@@ -12,7 +12,6 @@ import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/features/inventory/presentation/inventory_screen.dart';
-import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/features/shop/presentation/shop_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
@@ -607,7 +606,7 @@ void main() {
 
   // ─── 银两货币位（材料经济 P1 Task 9） ────────────────────────────────────
 
-  /// pump 含 silverBalanceProvider override 版本。
+  /// pump 含 item_silver 数量 override 版本。
   Future<void> pumpInvWithSilver(
     WidgetTester tester, {
     required List<Equipment> equipments,
@@ -622,7 +621,9 @@ void main() {
           allEquipmentsProvider.overrideWith((ref) async => equipments),
           allInventoryItemsProvider.overrideWith((ref) async => items),
           activeCharacterIdsProvider.overrideWith((ref) async => []),
-          silverBalanceProvider.overrideWith((ref) async => silverBalance),
+          inventoryQuantityByDefIdProvider(
+            'item_silver',
+          ).overrideWith((ref) async => silverBalance),
         ],
         child: const MaterialApp(home: InventoryScreen()),
       ),
@@ -678,7 +679,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       find.text(UiStrings.silverBalanceLabel(888)),
-      findsOneWidget,
+      findsAtLeastNWidgets(1),
       reason: '物料 Tab 顶栏应显示银两余额',
     );
   });
@@ -692,7 +693,7 @@ void main() {
     );
     await tester.tap(find.text('物料'));
     await tester.pumpAndSettle();
-    expect(find.text(UiStrings.silverBalanceLabel(0)), findsOneWidget);
+    expect(find.text(UiStrings.silverBalanceLabel(0)), findsAtLeastNWidgets(1));
   });
 
   // ─── P2 新材料用途：使用按钮显示条件 + 确认弹窗 ──────────────────────

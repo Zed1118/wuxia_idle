@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart' show isTechniqueScrollDefId;
+import '../../../core/application/battle_providers.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
@@ -19,6 +20,8 @@ import '../../tower/presentation/tower_entry_flow.dart'
     show applyTowerVictoryResolution;
 import '../../tutorial/application/tutorial_providers.dart';
 import '../domain/sweep_recap.dart';
+import 'sweep_readiness_providers.dart';
+import 'sweep_readiness_service.dart';
 
 /// 扫荡结算（复用既有 victory 数据路径，跳过全部 UI 仪式/剧情/弹窗）。
 ///
@@ -32,6 +35,15 @@ Future<SweepBattleOutcome?> settleMainlineSweepVictory({
   required StageDef stage,
   required int cycle,
 }) async {
+  final readinessSpent = await SweepReadinessService(
+    isar: IsarSetup.instance,
+    config: ref.read(numbersConfigProvider).sweepReadiness,
+  ).trySpendMainlineStages(1);
+  ref.invalidate(sweepReadinessStatusProvider);
+  if (!readinessSpent) {
+    return const SweepBattleOutcome(ignoredDrops: 1);
+  }
+
   // 周目平衡 2026-06-26:扫荡透传 cycle → 二周目起提高稀有彩头概率 + 材料加成。
   final outcome = await applyVictoryResolution(
     ref: ref,

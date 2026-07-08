@@ -22,7 +22,9 @@ import '../../loot_preview/presentation/stage_preview_card.dart'
     show difficultyLabelColor;
 import '../../loot_preview/presentation/weakness_hint_line.dart';
 import '../../sweep/application/sweep_unit.dart';
+import '../../sweep/application/sweep_readiness_providers.dart';
 import '../../sweep/domain/sweep_eligibility.dart';
+import '../../sweep/domain/sweep_readiness.dart';
 import '../../sweep/domain/sweep_reward_preview.dart';
 import '../../sweep/presentation/sweep_screen.dart';
 import '../application/mainline_progress_service.dart';
@@ -313,7 +315,9 @@ class _StageJourneyMap extends StatelessWidget {
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
                               // banner 顶部 scrim 弱(0.18)，金/灰字压浅雾景低对比，加描影。
-                              shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
+                              shadows: [
+                                Shadow(color: Colors.black87, blurRadius: 4),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -340,7 +344,9 @@ class _StageJourneyMap extends StatelessWidget {
                           color: WuxiaColors.textSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
+                          shadows: [
+                            Shadow(color: Colors.black87, blurRadius: 4),
+                          ],
                         ),
                       ),
                     ),
@@ -1409,7 +1415,7 @@ class _StageStatusBadge extends StatelessWidget {
 }
 
 /// 一键扫荡本章入口（醒目主按钮）。本周目全关已通 → 高亮可点；否则灰显 + 门槛提示。
-class _ChapterSweepButton extends StatelessWidget {
+class _ChapterSweepButton extends ConsumerWidget {
   const _ChapterSweepButton({
     required this.chapterIndex,
     required this.entries,
@@ -1427,7 +1433,7 @@ class _ChapterSweepButton extends StatelessWidget {
   final int cycle;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // 从未通过本章 → 不显（避免在每章顶堆砌锁定按钮，保持全新章干净）。
     if (!eligible && !everCleared) return const SizedBox.shrink();
     // §5.7：通关过、但当前选定周目未全手工通关 → 灰显 + 提示（不再整块隐藏），
@@ -1460,12 +1466,27 @@ class _ChapterSweepButton extends StatelessWidget {
             repo: GameRepository.instance,
           )
         : null;
+    final readiness = ref.watch(sweepReadinessStatusProvider);
+    final readinessReady = readiness.when<SweepReadinessState?>(
+      data: (state) => state,
+      loading: () => null,
+      error: (_, _) => null,
+    );
+    final chapterCost =
+        readinessReady?.costForMainlineStages(entries.length) ?? entries.length;
+    final canSpendReadiness =
+        readinessReady?.canSweepMainlineStages(entries.length) ?? true;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (preview != null && !preview.isEmpty)
           _SweepRewardPreviewPanel(preview: preview),
+        _SweepReadinessStatusLine(
+          readiness: readiness,
+          chapterCost: chapterCost,
+          stageCount: entries.length,
+        ),
         Container(
           width: double.infinity,
           margin: const EdgeInsets.only(bottom: 8),
@@ -1479,26 +1500,103 @@ class _ChapterSweepButton extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            onPressed: () {
-              final units = [
-                for (final e in entries)
-                  MainlineSweepUnit(stage: e.def, cycle: cycle),
-              ];
-              Navigator.of(context).push<void>(
-                MaterialPageRoute(
-                  builder: (_) => SweepScreen(
-                    units: units,
-                    unitName: UiStrings.chapterTitle(chapterIndex),
-                    cycle: cycle,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.fast_forward, size: 22),
-            label: Text(UiStrings.sweepChapterButtonCycle(cycle)),
+            onPressed: canSpendReadiness
+                ? () {
+                    final units = [
+                      for (final e in entries)
+                        MainlineSweepUnit(stage: e.def, cycle: cycle),
+                    ];
+                    Navigator.of(context).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) => SweepScreen(
+                          units: units,
+                          unitName: UiStrings.chapterTitle(chapterIndex),
+                          cycle: cycle,
+                        ),
+                      ),
+                    );
+                  }
+                : null,
+            icon: Icon(
+              canSpendReadiness ? Icons.fast_forward : Icons.hourglass_empty,
+              size: 22,
+            ),
+            label: Text(
+              canSpendReadiness
+                  ? UiStrings.sweepChapterButtonCycle(cycle)
+                  : UiStrings.sweepReadinessInsufficientButton,
+            ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _SweepReadinessStatusLine extends StatelessWidget {
+  const _SweepReadinessStatusLine({
+    required this.readiness,
+    required this.chapterCost,
+    required this.stageCount,
+  });
+
+  final AsyncValue<SweepReadinessState> readiness;
+  final int chapterCost;
+  final int stageCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = readiness.when(
+      data: (state) {
+        final parts = <String>[
+          UiStrings.sweepReadinessLine(
+            current: state.points,
+            max: state.config.maxPoints,
+            chapterCost: state.costForMainlineStages(stageCount),
+          ),
+        ];
+        final missing = state.missingForMainlineStages(stageCount);
+        if (missing > 0) parts.add(UiStrings.sweepReadinessMissing(missing));
+        final next = state.nextRecoveryAt;
+        if (next != null) {
+          final minutes = next.difference(DateTime.now()).inMinutes + 1;
+          if (minutes > 0) {
+            parts.add(UiStrings.sweepReadinessNextRecoveryMinutes(minutes));
+          }
+        }
+        return parts.join(' · ');
+      },
+      loading: () => '${UiStrings.sweepReadinessLoading} · 本章消耗 $chapterCost',
+      error: (_, _) => UiStrings.sweepReadinessUnavailable,
+    );
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: WuxiaColors.background.withValues(alpha: 0.48),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.55)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.local_fire_department_outlined,
+            color: WuxiaColors.bossFrame,
+            size: 17,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: WuxiaColors.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

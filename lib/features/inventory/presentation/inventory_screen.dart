@@ -39,11 +39,11 @@ import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_tab.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
+import '../../../shared/widgets/wuxia_ui/currency_pill.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../help/domain/help_topic.dart';
 import '../../shop/presentation/shop_screen.dart';
 import '../../help/presentation/context_help_button.dart';
-import '../../shop/application/shop_providers.dart';
 import 'bulk_disposal_dialog.dart';
 import 'equipment_detail_screen.dart';
 import 'material_source_sheet.dart';
@@ -86,7 +86,14 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
       appBar: WuxiaTitleBar(
         title: UiStrings.inventoryTitle,
         onBack: () => Navigator.of(context).maybePop(),
-        trailing: const ContextHelpButton(topic: HelpTopic.equipmentTier),
+        trailing: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SilverBalancePill(compact: true),
+            SizedBox(width: 8),
+            ContextHelpButton(topic: HelpTopic.equipmentTier),
+          ],
+        ),
       ),
       body: SafeArea(
         child: Column(
@@ -863,11 +870,6 @@ class _MaterialTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(allInventoryItemsProvider);
-    final silverAsync = ref.watch(silverBalanceProvider);
-    final silverBalance = silverAsync.maybeWhen(
-      data: (n) => n,
-      orElse: () => 0,
-    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -895,20 +897,7 @@ class _MaterialTab extends ConsumerWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.monetization_on_outlined,
-                            size: 18,
-                            color: WuxiaColors.textPrimary,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            UiStrings.silverBalanceLabel(silverBalance),
-                            style: const TextStyle(
-                              color: WuxiaColors.textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          const SilverBalancePill(tone: CurrencyPillTone.dark),
                           const Spacer(),
                           ConstrainedBox(
                             constraints: const BoxConstraints(minWidth: 104),

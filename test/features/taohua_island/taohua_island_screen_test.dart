@@ -159,6 +159,29 @@ void main() {
       }
     });
 
+    testWidgets('产业热区显示实时下一件产出进度', (tester) async {
+      await pump(tester, wrap(buildTestView()));
+
+      for (final type in BuildingType.values) {
+        expect(
+          find.byKey(Key('taohua_scene_progress_${type.name}')),
+          findsOneWidget,
+          reason: '${EnumL10n.buildingType(type)} 应显示独立产出进度条',
+        );
+      }
+
+      final tieJiangProgress = find.descendant(
+        of: find.byKey(const Key('taohua_scene_progress_tieJiangChang')),
+        matching: find.byType(LinearProgressIndicator),
+      );
+      final before = tester.widget<LinearProgressIndicator>(tieJiangProgress);
+      await tester.pump(const Duration(seconds: 1));
+      final after = tester.widget<LinearProgressIndicator>(tieJiangProgress);
+
+      expect(before.value, 0);
+      expect(after.value, greaterThan(0));
+    });
+
     testWidgets('场景标题与地图资产均渲染', (tester) async {
       await pump(tester, wrap(buildTestView()));
 

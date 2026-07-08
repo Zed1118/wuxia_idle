@@ -1231,6 +1231,14 @@ passive_idle:
   cap_hours: 72                   # 复用闭关封顶，超出不累积
   min_recap_hours: 1.0            # 离开 ≥1h 才弹告知卡(与范围 A 一致)
 
+# 主线已通关扫荡战备(GDD §2.3)。只限制在线连续扫荡刷银两/材料;
+# 不影响首通、普通战斗、离线挂机、闭关、桃花岛或爬塔重打残页。
+sweep_readiness:
+  enabled: true
+  max_points: 60                  # 可跨天囤积，避免日课压力
+  recover_minutes_per_point: 60   # 在线=离线，按真实时间恢复
+  mainline_stage_cost: 1          # 每扫荡 1 个主线关卡消耗 1 点
+
 battle_report:
   # 失败复盘诊断规则阈值（spec 2026-06-15-battle-report-diagnosis）。
   # 规则 id / priority 写死在 battle_diagnosis.dart（代码顺序即优先级），

@@ -107,4 +107,10 @@ class SaveData {
   /// 桃花岛最后结算时间（独立于 lastOnlineAt 避免与被动挂机争用）。
   /// null = 尚未首次结算（Task 6 首开时写入）。旧档读默认 null。
   DateTime? islandLastSettledAt;
+
+  /// 主线扫荡战备点数。null = 旧档/未初始化，读取时补满。
+  int? sweepReadinessPoints;
+
+  /// 战备上次恢复结算时间。null = 旧档/未初始化，读取时按当前时间补满。
+  DateTime? sweepReadinessLastRecoveredAt;
 }

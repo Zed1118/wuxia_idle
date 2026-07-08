@@ -69,7 +69,14 @@ class _CharacterPanelScreenState extends ConsumerState<CharacterPanelScreen> {
         onBack: Navigator.of(context).canPop()
             ? () => Navigator.of(context).pop()
             : null,
-        trailing: const ContextHelpButton(topic: HelpTopic.realm),
+        trailing: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SilverBalancePill(compact: true),
+            SizedBox(width: 8),
+            ContextHelpButton(topic: HelpTopic.realm),
+          ],
+        ),
       ),
       body: SafeArea(
         child: idsAsync.when(

@@ -52,6 +52,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ink_button.dart';
+import '../../../shared/widgets/wuxia_ui/currency_pill.dart';
 import '../../tutorial/application/tutorial_providers.dart';
 import '../../tutorial/domain/tutorial_hint_def.dart';
 import '../../tutorial/presentation/tutorial_banner_card.dart';
@@ -567,13 +568,23 @@ class MainMenu extends ConsumerWidget {
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: const EdgeInsets.all(8),
-                  child: IconButton(
-                    tooltip: UiStrings.mainMenuQuitTooltip,
-                    icon: const Icon(
-                      Icons.power_settings_new,
-                      color: WuxiaColors.textMuted,
-                    ),
-                    onPressed: () => AppExit.confirmAndQuit(context),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SilverBalancePill(
+                        tone: CurrencyPillTone.dark,
+                        compact: true,
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        tooltip: UiStrings.mainMenuQuitTooltip,
+                        icon: const Icon(
+                          Icons.power_settings_new,
+                          color: WuxiaColors.textMuted,
+                        ),
+                        onPressed: () => AppExit.confirmAndQuit(context),
+                      ),
+                    ],
                   ),
                 ),
               ),

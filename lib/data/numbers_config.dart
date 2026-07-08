@@ -9,6 +9,7 @@ import '../features/inner_demon/domain/inner_demon_def.dart';
 import '../features/light_foot/domain/light_foot_def.dart';
 import '../features/mass_battle/domain/mass_battle_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
+import '../features/sweep/domain/sweep_readiness.dart';
 import '../features/taohua_island/domain/taohua_island_config.dart';
 import '../core/domain/enums.dart';
 
@@ -238,6 +239,9 @@ class NumbersConfig {
   /// M2 范围 B 通用被动离线挂机配置（numbers.yaml `passive_idle`，spec 2026-06-15）。
   final PassiveIdleConfig passiveIdle;
 
+  /// 主线已通关扫荡战备配置（numbers.yaml `sweep_readiness`，GDD §2.3）。
+  final SweepReadinessConfig sweepReadiness;
+
   /// 桃花岛岛屿建筑配置（numbers.yaml `taohua_island`，桃花岛一期）。
   final TaohuaIslandConfig taohuaIsland;
 
@@ -303,6 +307,7 @@ class NumbersConfig {
     required this.loadoutUltimatePowerThreshold,
     required this.cycleEvolution,
     required this.passiveIdle,
+    required this.sweepReadiness,
     required this.taohuaIsland,
     required this.battleReport,
     required this.heroCamera,
@@ -491,6 +496,9 @@ class NumbersConfig {
       ),
       passiveIdle: PassiveIdleConfig.fromYaml(
         y['passive_idle'] as Map<String, dynamic>,
+      ),
+      sweepReadiness: SweepReadinessConfig.fromYaml(
+        (y['sweep_readiness'] as Map?)?.cast<String, dynamic>(),
       ),
       taohuaIsland: TaohuaIslandConfig.fromYaml(
         (y['taohua_island'] as Map).cast<String, dynamic>(),
@@ -1447,8 +1455,7 @@ class RedLinesConfig {
           (y['damage_readability_max'] as num?)?.toInt() ?? 1000000,
       normalDamageTypicalTarget:
           (y['normal_damage_typical_target'] as num?)?.toInt() ?? 8000,
-      combinedRateCap:
-          (y['combined_rate_cap'] as num?)?.toDouble() ?? 0.95,
+      combinedRateCap: (y['combined_rate_cap'] as num?)?.toDouble() ?? 0.95,
     );
   }
 }

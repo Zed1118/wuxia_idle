@@ -440,6 +440,8 @@ class UiStrings {
       '岛上修缮与加工牵涉物，只读分层不改产出。';
   static const String shopShelfGroupTechniqueDesc = '武学与秘籍相关线索，仍守江湖偶得。';
   static const String shopShelfGroupCommonDesc = '暂未归入专门用途的常备之物。';
+  static const String currencySilverTooltip = '当前银两';
+  static const String currencySilverUnit = '两';
   static String silverBalanceLabel(int n) => '银两 $n';
   static String shopItemPrice(int p) => '$p 两';
   static String shopFilterLabel(String label, int count) => '$label $count';
@@ -2945,6 +2947,7 @@ class UiStrings {
   static const String taohuaIslandSceneWorkshopBody = '精铁入炉，丹药与辅材各守配方。';
   static const String taohuaIslandSceneDock = '渡口';
   static const String taohuaIslandSceneDockBody = '暂作外出整备与后续工程留白。';
+  static const String taohuaIslandSceneDutyTitle = '空间职责';
   static const String taohuaIslandSceneMapTitle = '岛屿场景';
   static String taohuaIslandSceneMapSummary(
     int rawStored,
@@ -2952,6 +2955,8 @@ class UiStrings {
   ) => '物产 $rawStored · 成品 $workshopStored';
   static String taohuaIslandSceneHotspotMeta(int level, int stored) =>
       'Lv.$level · $stored';
+  static const String taohuaIslandSceneProgressLabel = '产出进度';
+  static const String taohuaIslandScenePausedShort = '暂停';
   static String taohuaIslandSelectedBuildingTitle(String buildingName) =>
       '$buildingName详情';
   static const String taohuaIslandSelectedBuildingBody = '仓储、配方与修缮俱归此处。';
@@ -3177,6 +3182,21 @@ class UiStrings {
   /// 主线章节扫荡按钮（带周目）。
   static String sweepChapterButtonCycle(int cycle) =>
       '$sweepChapterButton · ${sweepCycleBadge(cycle)}';
+
+  static const String sweepReadinessLoading = '战备校验中';
+  static const String sweepReadinessUnavailable = '战备暂不可用';
+  static const String sweepReadinessInsufficientButton = '战备不足，暂缓扫荡';
+
+  static String sweepReadinessLine({
+    required int current,
+    required int max,
+    required int chapterCost,
+  }) => '战备 $current / $max · 本章消耗 $chapterCost';
+
+  static String sweepReadinessMissing(int missing) => '还需 $missing 点';
+
+  static String sweepReadinessNextRecoveryMinutes(int minutes) =>
+      '下点恢复约 $minutes 分钟';
 
   /// 爬塔扫荡按钮（带周目）。
   static String sweepTowerButtonCycle(int cycle) =>

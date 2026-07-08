@@ -153,7 +153,9 @@ class IsarSetup {
   // 0.32.0 装备锁定:Equipment +isLocked(默认 false),旧档装备均视为未锁定,无迁移分支纯 bump。
   // 0.33.0 祖师开局塑形:Character +founderCreationSchoolId/OriginId/FateId
   // nullable id 字段,旧档为空回退传统纪事,无迁移分支纯 bump。
-  static const _currentSaveVersion = '0.33.0';
+  // 0.34.0 扫荡战备:SaveData +sweepReadinessPoints/sweepReadinessLastRecoveredAt,
+  // nullable 字段旧档由 SweepReadinessService 首读补满,无迁移分支纯 bump。
+  static const _currentSaveVersion = '0.34.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,6 +15,7 @@ import '../../../shared/widgets/wuxia_image.dart';
 import '../../inventory/application/item_usage_lookup_service.dart';
 import '../application/island_action_service.dart';
 import '../application/island_production_readability.dart';
+import '../application/island_production_service.dart';
 import '../application/island_providers.dart';
 import '../application/island_settle_service.dart';
 import '../domain/island_building_state.dart';
@@ -48,6 +51,15 @@ class TaohuaIslandScreen extends ConsumerWidget {
           ),
         ),
         actions: [
+          const Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: Center(
+              child: SilverBalancePill(
+                tone: CurrencyPillTone.dark,
+                compact: true,
+              ),
+            ),
+          ),
           asyncView.when(
             data: (view) => view == null
                 ? const SizedBox.shrink()
@@ -137,11 +149,39 @@ class _IslandBody extends StatefulWidget {
 
 class _IslandBodyState extends State<_IslandBody> {
   BuildingType _selectedType = BuildingType.tieJiangChang;
+  late DateTime _projectionStartedAt;
+  late DateTime _liveNow;
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _resetProjectionClock();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() => _liveNow = DateTime.now());
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _IslandBody oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.view, widget.view)) {
+      _resetProjectionClock();
+    }
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final cfg = GameRepository.instance.numbers.taohuaIsland;
-    final snapshot = _IslandSnapshot.from(widget.view, cfg);
+    final liveBuildings = _projectedBuildings(cfg);
+    final liveView = _viewWithBuildings(liveBuildings);
+    final snapshot = _IslandSnapshot.from(liveView, cfg);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -158,8 +198,9 @@ class _IslandBodyState extends State<_IslandBody> {
                 child: _IslandSceneHub(
                   selectedType: _selectedType,
                   snapshot: snapshot,
-                  states: widget.view.buildings,
+                  states: liveBuildings,
                   cfg: cfg,
+                  founderRealmIndex: liveView.founderRealmIndex,
                   onSelect: _openBuildingMenu,
                 ),
               ),
@@ -180,8 +221,10 @@ class _IslandBodyState extends State<_IslandBody> {
   Future<void> _openBuildingMenu(BuildingType type) async {
     setState(() => _selectedType = type);
     final cfg = GameRepository.instance.numbers.taohuaIsland;
+    final liveBuildings = _projectedBuildings(cfg);
+    final liveView = _viewWithBuildings(liveBuildings);
     final bCfg = cfg.buildings[type]!;
-    final state = _stateFor(type);
+    final state = _stateFor(type, liveBuildings);
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -213,7 +256,7 @@ class _IslandBodyState extends State<_IslandBody> {
                       state: state,
                       bCfg: bCfg,
                       cfg: cfg,
-                      view: widget.view,
+                      view: liveView,
                       onRefresh: () {
                         widget.onRefresh();
                         if (Navigator.of(dialogContext).canPop()) {
@@ -231,11 +274,42 @@ class _IslandBodyState extends State<_IslandBody> {
     );
   }
 
-  IslandBuildingState _stateFor(BuildingType type) =>
-      widget.view.buildings.firstWhere(
-        (b) => b.type == type,
-        orElse: () => IslandBuildingState()..type = type,
+  void _resetProjectionClock() {
+    final now = DateTime.now();
+    _projectionStartedAt = now;
+    _liveNow = now;
+  }
+
+  List<IslandBuildingState> _projectedBuildings(TaohuaIslandConfig cfg) {
+    final elapsedHours =
+        _liveNow.difference(_projectionStartedAt).inMilliseconds /
+        Duration.millisecondsPerHour;
+    return IslandProductionService.settle(
+      states: widget.view.buildings,
+      config: cfg,
+      elapsedHours: elapsedHours,
+      founderRealmIndex: widget.view.founderRealmIndex,
+    );
+  }
+
+  IslandView _viewWithBuildings(List<IslandBuildingState> buildings) =>
+      IslandView(
+        buildings: buildings,
+        founderRealmIndex: widget.view.founderRealmIndex,
+        silver: widget.view.silver,
+        materials: widget.view.materials,
+        prepAdvice: widget.view.prepAdvice,
+        injuredCharacterCount: widget.view.injuredCharacterCount,
+        maxInjuryHoursRemaining: widget.view.maxInjuryHoursRemaining,
       );
+
+  IslandBuildingState _stateFor(
+    BuildingType type,
+    List<IslandBuildingState> states,
+  ) => states.firstWhere(
+    (b) => b.type == type,
+    orElse: () => IslandBuildingState()..type = type,
+  );
 }
 
 class _IslandSnapshot {
@@ -300,6 +374,7 @@ class _IslandSceneHub extends StatelessWidget {
     required this.snapshot,
     required this.states,
     required this.cfg,
+    required this.founderRealmIndex,
     required this.onSelect,
   });
 
@@ -307,6 +382,7 @@ class _IslandSceneHub extends StatelessWidget {
   final _IslandSnapshot snapshot;
   final List<IslandBuildingState> states;
   final TaohuaIslandConfig cfg;
+  final int founderRealmIndex;
   final ValueChanged<BuildingType> onSelect;
 
   @override
@@ -389,6 +465,12 @@ class _IslandSceneHub extends StatelessWidget {
                                 type: type,
                                 state: _stateFor(type),
                                 bCfg: cfg.buildings[type]!,
+                                progress: _HotspotProductionProgress.from(
+                                  state: _stateFor(type),
+                                  allStates: states,
+                                  cfg: cfg,
+                                  founderRealmIndex: founderRealmIndex,
+                                ),
                                 selected: type == selectedType,
                                 compact: compactScene,
                                 onTap: () => onSelect(type),
@@ -418,6 +500,7 @@ class _SceneBuildingHotspot extends StatelessWidget {
     required this.type,
     required this.state,
     required this.bCfg,
+    required this.progress,
     required this.selected,
     required this.compact,
     required this.onTap,
@@ -426,6 +509,7 @@ class _SceneBuildingHotspot extends StatelessWidget {
   final BuildingType type;
   final IslandBuildingState state;
   final BuildingConfig bCfg;
+  final _HotspotProductionProgress progress;
   final bool selected;
   final bool compact;
   final VoidCallback onTap;
@@ -436,8 +520,11 @@ class _SceneBuildingHotspot extends StatelessWidget {
     final stored = state.stored.floor();
     final active =
         bCfg.kind == BuildingKind.source || state.activeRecipeId != null;
-    final hotspotWidth = compact ? 126.0 : 154.0;
-    final hotspotHeight = compact ? 82.0 : 96.0;
+    final accent = selected
+        ? WuxiaUi.jiang
+        : (active ? WuxiaUi.qing : WuxiaUi.muted);
+    final hotspotWidth = compact ? 152.0 : 176.0;
+    final hotspotHeight = compact ? 94.0 : 108.0;
     return Align(
       alignment: spec.alignment,
       child: SizedBox(
@@ -452,67 +539,91 @@ class _SceneBuildingHotspot extends StatelessWidget {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 160),
               padding: EdgeInsets.symmetric(
-                horizontal: compact ? 4 : 6,
-                vertical: compact ? 4 : 6,
+                horizontal: compact ? 8 : 10,
+                vertical: compact ? 7 : 9,
               ),
               decoration: BoxDecoration(
                 color: selected
-                    ? WuxiaUi.paper.withValues(alpha: 0.92)
-                    : WuxiaUi.paper.withValues(alpha: 0.72),
+                    ? WuxiaUi.paper.withValues(alpha: 0.94)
+                    : WuxiaUi.paper.withValues(alpha: 0.82),
                 borderRadius: BorderRadius.circular(7),
                 border: Border.all(
                   color: selected
                       ? WuxiaUi.jiang
-                      : WuxiaUi.ink.withValues(alpha: 0.38),
-                  width: selected ? 2 : WuxiaUi.borderWidth,
+                      : WuxiaUi.ink.withValues(alpha: 0.44),
+                  width: selected ? 2.2 : 1.2,
                 ),
                 boxShadow: [
                   if (selected)
                     BoxShadow(
-                      color: WuxiaUi.jiang.withValues(alpha: 0.16),
-                      blurRadius: 12,
+                      color: WuxiaUi.jiang.withValues(alpha: 0.20),
+                      blurRadius: 16,
                       spreadRadius: 1,
                     ),
                 ],
               ),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    spec.icon,
-                    size: compact ? 18 : 22,
-                    color: selected ? WuxiaUi.jiang : WuxiaUi.qing,
-                  ),
-                  SizedBox(height: compact ? 2 : 3),
-                  Flexible(
-                    child: Text(
-                      EnumL10n.buildingType(type),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: selected ? WuxiaUi.ink : WuxiaUi.ink2,
-                        fontSize: compact ? 10 : 11,
-                        fontWeight: FontWeight.bold,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(spec.icon, size: compact ? 18 : 21, color: accent),
+                      SizedBox(width: compact ? 5 : 6),
+                      Flexible(
+                        child: Text(
+                          EnumL10n.buildingType(type),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: selected ? WuxiaUi.ink : WuxiaUi.ink2,
+                            fontSize: compact ? 14 : 15,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                            height: 1.05,
+                          ),
+                        ),
                       ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _HotspotMetaChip(
+                        text: 'Lv.${state.level}',
+                        color: accent,
+                        strong: true,
+                        compact: compact,
+                      ),
+                      const SizedBox(width: 6),
+                      _HotspotMetaChip(
+                        text: '$stored',
+                        color: active ? WuxiaUi.ink2 : WuxiaUi.jiang,
+                        compact: compact,
+                      ),
+                    ],
+                  ),
+                  _HotspotProgressBar(
+                    key: Key('taohua_scene_progress_${type.name}'),
+                    progress: progress,
+                    compact: compact,
+                  ),
+                  Text(
+                    active
+                        ? UiStrings.taohuaIslandSceneProgressLabel
+                        : UiStrings.taohuaIslandScenePausedShort,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: active ? WuxiaUi.muted : WuxiaUi.jiang,
+                      fontSize: compact ? 9.5 : 10.5,
+                      height: 1,
                     ),
                   ),
-                  if (!compact) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      UiStrings.taohuaIslandSceneHotspotMeta(
-                        state.level,
-                        stored,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: active ? WuxiaUi.muted : WuxiaUi.jiang,
-                        fontSize: 9,
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
@@ -559,6 +670,132 @@ class _BuildingSceneSpec {
       icon: Icons.construction_outlined,
     ),
   };
+}
+
+class _HotspotMetaChip extends StatelessWidget {
+  const _HotspotMetaChip({
+    required this.text,
+    required this.color,
+    required this.compact,
+    this.strong = false,
+  });
+
+  final String text;
+  final Color color;
+  final bool compact;
+  final bool strong;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: strong ? 0.13 : 0.08),
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: color.withValues(alpha: 0.34), width: 0.8),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 5 : 6,
+          vertical: compact ? 1 : 2,
+        ),
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: color,
+            fontSize: compact ? 11 : 12,
+            fontWeight: strong ? FontWeight.w800 : FontWeight.w700,
+            height: 1.05,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HotspotProductionProgress {
+  const _HotspotProductionProgress({
+    required this.value,
+    required this.color,
+    required this.backgroundColor,
+  });
+
+  final double value;
+  final Color color;
+  final Color backgroundColor;
+
+  factory _HotspotProductionProgress.from({
+    required IslandBuildingState state,
+    required List<IslandBuildingState> allStates,
+    required TaohuaIslandConfig cfg,
+    required int founderRealmIndex,
+  }) {
+    final intel = IslandProductionReadability.from(
+      state: state,
+      allStates: allStates,
+      config: cfg,
+      founderRealmIndex: founderRealmIndex,
+    );
+    final cap = cfg.buildingOf(state.type).capFor(state.level).toDouble();
+    final stored = state.stored.clamp(0.0, cap).toDouble();
+    final base = WuxiaUi.ink.withValues(alpha: 0.16);
+
+    return switch (intel.pauseReason) {
+      IslandProductionPauseReason.none => _HotspotProductionProgress(
+        value: _fractionalProgress(stored),
+        color: WuxiaUi.qing,
+        backgroundColor: base,
+      ),
+      IslandProductionPauseReason.full => _HotspotProductionProgress(
+        value: 1,
+        color: WuxiaUi.gold,
+        backgroundColor: base,
+      ),
+      IslandProductionPauseReason.realmLocked => _HotspotProductionProgress(
+        value: 0,
+        color: WuxiaUi.jiang,
+        backgroundColor: WuxiaUi.jiang.withValues(alpha: 0.16),
+      ),
+      IslandProductionPauseReason.noRecipe ||
+      IslandProductionPauseReason.noProgress => _HotspotProductionProgress(
+        value: 0,
+        color: WuxiaUi.muted,
+        backgroundColor: base,
+      ),
+    };
+  }
+
+  static double _fractionalProgress(double stored) {
+    final fractional = stored - stored.floorToDouble();
+    if (fractional <= 1e-6) return 0;
+    if (1 - fractional <= 1e-6) return 1;
+    return fractional.clamp(0.0, 1.0);
+  }
+}
+
+class _HotspotProgressBar extends StatelessWidget {
+  const _HotspotProgressBar({
+    super.key,
+    required this.progress,
+    required this.compact,
+  });
+
+  final _HotspotProductionProgress progress;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(3),
+      child: LinearProgressIndicator(
+        value: progress.value,
+        minHeight: compact ? 5 : 6,
+        backgroundColor: progress.backgroundColor,
+        valueColor: AlwaysStoppedAnimation<Color>(progress.color),
+      ),
+    );
+  }
 }
 
 class _IslandScenePainter extends CustomPainter {
@@ -645,91 +882,166 @@ class _IslandOneScreenSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LightPaperPanel(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Expanded(
-                child: Text(
-                  UiStrings.taohuaIslandOverviewBody,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: WuxiaUi.ink2,
-                    fontSize: 12,
-                    height: 1.28,
-                  ),
+              const SizedBox(width: 260, child: _IslandOverviewHeader()),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _StatusPillar(
+                        icon: Icons.grass_outlined,
+                        title: UiStrings.taohuaIslandStatusRawTitle,
+                        value: UiStrings.taohuaIslandStatusRawValue(
+                          snapshot.rawStored,
+                        ),
+                        accent: WuxiaUi.qing,
+                      ),
+                    ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: _StatusPillar(
+                        icon: Icons.local_fire_department_outlined,
+                        title: UiStrings.taohuaIslandStatusWorkshopTitle,
+                        value: UiStrings.taohuaIslandStatusWorkshopValue(
+                          snapshot.workshopStored,
+                          snapshot.activeProcessors,
+                          snapshot.pausedProcessors,
+                        ),
+                        accent: WuxiaUi.jiang,
+                      ),
+                    ),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: _StatusPillar(
+                        icon: Icons.self_improvement_outlined,
+                        title: UiStrings.taohuaIslandStatusHealingTitle,
+                        value: snapshot.injuredCharacterCount > 0
+                            ? UiStrings.taohuaIslandStatusHealingValue(
+                                snapshot.injuredCharacterCount,
+                                snapshot.maxInjuryHoursRemaining,
+                              )
+                            : UiStrings.taohuaIslandStatusHealingNone,
+                        accent: WuxiaUi.gold,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 16),
-              _StatusPillar(
-                icon: Icons.grass_outlined,
-                title: UiStrings.taohuaIslandStatusRawTitle,
-                value: UiStrings.taohuaIslandStatusRawValue(snapshot.rawStored),
-              ),
-              _StatusPillar(
-                icon: Icons.local_fire_department_outlined,
-                title: UiStrings.taohuaIslandStatusWorkshopTitle,
-                value: UiStrings.taohuaIslandStatusWorkshopValue(
-                  snapshot.workshopStored,
-                  snapshot.activeProcessors,
-                  snapshot.pausedProcessors,
-                ),
-              ),
-              _StatusPillar(
-                icon: Icons.self_improvement_outlined,
-                title: UiStrings.taohuaIslandStatusHealingTitle,
-                value: snapshot.injuredCharacterCount > 0
-                    ? UiStrings.taohuaIslandStatusHealingValue(
-                        snapshot.injuredCharacterCount,
-                        snapshot.maxInjuryHoursRemaining,
-                      )
-                    : UiStrings.taohuaIslandStatusHealingNone,
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          const Wrap(
-            spacing: 10,
-            runSpacing: 8,
-            children: [
-              _CompactSceneChip(
-                icon: Icons.house_siding_outlined,
-                label: UiStrings.taohuaIslandSceneCave,
-                body: UiStrings.taohuaIslandSceneCaveBody,
+          const SizedBox(height: 9),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: WuxiaUi.ink.withValues(alpha: 0.16),
+                  width: WuxiaUi.borderWidth,
+                ),
               ),
-              _CompactSceneChip(
-                icon: Icons.spa_outlined,
-                label: UiStrings.taohuaIslandSceneField,
-                body: UiStrings.taohuaIslandSceneFieldBody,
-              ),
-              _CompactSceneChip(
-                icon: Icons.handyman_outlined,
-                label: UiStrings.taohuaIslandSceneWorkshop,
-                body: UiStrings.taohuaIslandSceneWorkshopBody,
-              ),
-              _CompactSceneChip(
-                icon: Icons.anchor_outlined,
-                label: UiStrings.taohuaIslandSceneDock,
-                body: UiStrings.taohuaIslandSceneDockBody,
-              ),
-            ],
-          ),
-          if (prepAdvice.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 10,
-              runSpacing: 8,
-              children: [
-                for (final item in prepAdvice) _CompactPrepAdvice(item: item),
-              ],
             ),
-          ],
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(width: 74, child: _DutySectionLabel()),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Wrap(
+                      spacing: 12,
+                      runSpacing: 7,
+                      children: [
+                        const _CompactSceneChip(
+                          icon: Icons.house_siding_outlined,
+                          label: UiStrings.taohuaIslandSceneCave,
+                          body: UiStrings.taohuaIslandSceneCaveBody,
+                        ),
+                        const _CompactSceneChip(
+                          icon: Icons.spa_outlined,
+                          label: UiStrings.taohuaIslandSceneField,
+                          body: UiStrings.taohuaIslandSceneFieldBody,
+                        ),
+                        const _CompactSceneChip(
+                          icon: Icons.handyman_outlined,
+                          label: UiStrings.taohuaIslandSceneWorkshop,
+                          body: UiStrings.taohuaIslandSceneWorkshopBody,
+                        ),
+                        const _CompactSceneChip(
+                          icon: Icons.anchor_outlined,
+                          label: UiStrings.taohuaIslandSceneDock,
+                          body: UiStrings.taohuaIslandSceneDockBody,
+                        ),
+                        for (final item in prepAdvice)
+                          _CompactPrepAdvice(item: item),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _IslandOverviewHeader extends StatelessWidget {
+  const _IslandOverviewHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          UiStrings.taohuaIslandOverviewTitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: WuxiaUi.ink,
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 2,
+            height: 1.1,
+          ),
+        ),
+        SizedBox(height: 5),
+        Text(
+          UiStrings.taohuaIslandOverviewBody,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: WuxiaUi.ink2, fontSize: 11.5, height: 1.25),
+        ),
+      ],
+    );
+  }
+}
+
+class _DutySectionLabel extends StatelessWidget {
+  const _DutySectionLabel();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text(
+      UiStrings.taohuaIslandSceneDutyTitle,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        color: WuxiaUi.muted,
+        fontSize: 11.5,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.5,
+        height: 1.35,
       ),
     );
   }
@@ -749,22 +1061,23 @@ class _CompactSceneChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 292,
+      width: 288,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 17, color: WuxiaUi.ink2),
-          const SizedBox(width: 8),
+          Icon(icon, size: 16, color: WuxiaUi.qing),
+          const SizedBox(width: 7),
           Text(
             label,
             style: const TextStyle(
               color: WuxiaUi.ink,
               fontSize: 12,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+              height: 1.3,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 7),
           Expanded(
             child: Text(
               body,
@@ -772,8 +1085,8 @@ class _CompactSceneChip extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: WuxiaUi.ink2,
-                fontSize: 11,
-                height: 1.25,
+                fontSize: 11.5,
+                height: 1.3,
               ),
             ),
           ),
@@ -794,7 +1107,7 @@ class _CompactPrepAdvice extends StatelessWidget {
         ? WuxiaUi.jiang
         : WuxiaUi.qing;
     return SizedBox(
-      width: 360,
+      width: 330,
       child: DecoratedBox(
         decoration: BoxDecoration(
           border: Border(left: BorderSide(color: accent, width: 3)),
@@ -805,7 +1118,12 @@ class _CompactPrepAdvice extends StatelessWidget {
             '${item.title}：${item.body}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: accent, fontSize: 11, height: 1.25),
+            style: TextStyle(
+              color: accent,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              height: 1.3,
+            ),
           ),
         ),
       ),
@@ -818,46 +1136,62 @@ class _StatusPillar extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.value,
+    required this.accent,
   });
 
   final IconData icon;
   final String title;
   final String value;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 170,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 18, color: WuxiaUi.qing),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: WuxiaUi.muted,
-                    fontSize: 11,
-                    letterSpacing: 1,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.36),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: accent.withValues(alpha: 0.30), width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18, color: accent),
+            const SizedBox(width: 9),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: WuxiaUi.muted,
+                      fontSize: 11,
+                      letterSpacing: 1.1,
+                      height: 1,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: WuxiaUi.ink,
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 5),
+                  Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: WuxiaUi.ink,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      height: 1.05,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

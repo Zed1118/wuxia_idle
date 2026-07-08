@@ -7,6 +7,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/panel_surface.dart';
+import '../../../shared/widgets/wuxia_ui/currency_pill.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../application/resource_overview_providers.dart';
@@ -23,6 +24,7 @@ class ResourceOverviewScreen extends ConsumerWidget {
       appBar: WuxiaTitleBar(
         title: UiStrings.resourceOverviewTitle,
         onBack: () => Navigator.of(context).maybePop(),
+        trailing: const SilverBalancePill(compact: true),
       ),
       body: SafeArea(
         child: async.when(
@@ -63,53 +65,53 @@ class _ResourceOverviewBody extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                 children: [
-                const Text(
-                  UiStrings.resourceOverviewIntro,
-                  style: TextStyle(
-                    color: WuxiaColors.textMuted,
-                    fontSize: 13,
-                    height: 1.45,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                for (final section in sections) ...[
-                  SectionHeader(_categoryTitle(section.category)),
-                  const SizedBox(height: 4),
-                  if (section.items.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 18),
-                      child: Text(
-                        UiStrings.resourceOverviewEmpty,
-                        style: TextStyle(color: WuxiaColors.textMuted),
-                      ),
-                    )
-                  else
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 18),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final columns = _resourceCardColumns(
-                            constraints.maxWidth,
-                          );
-                          final cardWidth =
-                              (constraints.maxWidth - (columns - 1) * 12) /
-                              columns;
-                          return Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
-                            children: [
-                              for (final item in section.items)
-                                SizedBox(
-                                  width: cardWidth,
-                                  child: _ResourceCard(item: item),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
+                  const Text(
+                    UiStrings.resourceOverviewIntro,
+                    style: TextStyle(
+                      color: WuxiaColors.textMuted,
+                      fontSize: 13,
+                      height: 1.45,
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  for (final section in sections) ...[
+                    SectionHeader(_categoryTitle(section.category)),
+                    const SizedBox(height: 4),
+                    if (section.items.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 18),
+                        child: Text(
+                          UiStrings.resourceOverviewEmpty,
+                          style: TextStyle(color: WuxiaColors.textMuted),
+                        ),
+                      )
+                    else
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 18),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final columns = _resourceCardColumns(
+                              constraints.maxWidth,
+                            );
+                            final cardWidth =
+                                (constraints.maxWidth - (columns - 1) * 12) /
+                                columns;
+                            return Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              children: [
+                                for (final item in section.items)
+                                  SizedBox(
+                                    width: cardWidth,
+                                    child: _ResourceCard(item: item),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                  ],
                 ],
-              ],
               ),
             ),
           ),

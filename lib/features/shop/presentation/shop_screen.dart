@@ -18,6 +18,7 @@ import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
+import '../../../shared/widgets/wuxia_ui/currency_pill.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../inventory/presentation/material_source_sheet.dart';
@@ -247,25 +248,7 @@ class _SilverBalanceBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return LightPaperPanel(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.monetization_on_outlined,
-            color: WuxiaUi.ink,
-            size: 20,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            UiStrings.silverBalanceLabel(silver),
-            style: const TextStyle(
-              color: WuxiaUi.ink,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-            ),
-          ),
-        ],
-      ),
+      child: Row(children: [CurrencyAmountPill(amount: silver)]),
     );
   }
 }
