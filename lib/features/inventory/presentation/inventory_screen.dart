@@ -23,6 +23,7 @@ import '../../equipment/domain/equipment_slot_occupancy.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../application/inventory_organization.dart';
+import '../application/item_use_invalidation.dart';
 import '../application/item_use_service.dart';
 import '../application/item_usage_lookup_service.dart';
 import '../../../shared/strings.dart';
@@ -1966,10 +1967,11 @@ class _MaterialGridTile extends ConsumerWidget {
       levelConfig: GameRepository.instance.numbers.level,
     );
 
-    // 背包数量 + 角色经验/境界刷新。
-    ref.invalidate(allInventoryItemsProvider);
-    ref.invalidate(characterByIdProvider);
-    ref.invalidate(activeCharacterIdsProvider);
+    invalidateAfterItemUse(
+      ref.invalidate,
+      defId: itemDef.defId,
+      itemType: itemDef.type,
+    );
 
     if (!context.mounted) return;
     final message = switch (result.kind) {

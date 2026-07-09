@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
-import '../../../core/application/character_providers.dart';
-import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../data/game_repository.dart';
@@ -11,6 +9,7 @@ import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../injury/presentation/injury_status_view.dart';
+import '../application/item_use_invalidation.dart';
 import '../application/item_use_service.dart';
 
 /// 战后疗伤丹快捷入口。只复用背包道具使用服务，不重算战斗结果。
@@ -71,12 +70,11 @@ class _PostBattleHealingPanelState
       realmLookup: GameRepository.instance.getRealm,
     );
     if (!mounted) return;
-    // 体检批3 P1-11:疗伤改角色伤势状态,须失效角色 family(疗伤目标是全队最伤者,
-    // 非固定角色,故失效整个 family 而非单个 id)+ active 列表,否则面板/角色屏读旧伤势。
-    ref.invalidate(characterByIdProvider);
-    ref.invalidate(activeCharacterIdsProvider);
-    ref.invalidate(inventoryQuantityByDefIdProvider('item_liaoshangdan'));
-    ref.invalidate(allInventoryItemsProvider);
+    invalidateAfterItemUse(
+      ref.invalidate,
+      defId: def.defId,
+      itemType: def.type,
+    );
     setState(() {
       _busy = false;
       _resultLine =
