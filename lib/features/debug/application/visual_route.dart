@@ -52,6 +52,10 @@ enum VisualRoute {
     'battle_scene',
     '战斗屏·背景 scrim + 胜负仪式验收(seed 3v3 带背景,自动播放到胜负 overlay)',
   ),
+  mainlineFirstClearBattle(
+    'mainline_first_clear_battle',
+    '主线首通真战斗验收·真 stage_01_03 + readable_first_clear 调参 + 起手暂停可单步',
+  ),
   battleUltimateCaption(
     'battle_ultimate_caption',
     '战斗屏·大招题字静态验收(玩家暖金 + 敌方绛红 两态)',
@@ -188,6 +192,10 @@ enum VisualRoute {
   taohuaIsland(
     'taohua_island',
     '桃花岛主屏目检·建筑热区 + 生产队列 + 建筑志入口 + 空/错/loading 统一体例',
+  ),
+  taohuaBuildingPopup(
+    'taohua_building_popup',
+    '桃花岛产业弹窗目检·默认打开打造台操作菜单,验一屏信息与操作入口',
   ),
   recruitmentDialog('recruitment_dialog', '收徒页目检·候选卡 + 拜师/谢绝确认弹窗按钮水墨体例'),
   encounterCodex('encounter_codex', '奇遇录 tab 目检·混态(点亮+剪影 3 段分组 + 进度)'),

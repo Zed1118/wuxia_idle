@@ -31,7 +31,11 @@ import 'island_recap_card.dart';
 /// 中文全走 [UiStrings] / [EnumL10n]，不散写字面量（§5.6）。
 /// Scaffold 必带 AppBar（踩坑记录：feedback_flutter_subscreen_appbar_audit）。
 class TaohuaIslandScreen extends ConsumerWidget {
-  const TaohuaIslandScreen({super.key});
+  const TaohuaIslandScreen({super.key, this.initialBuildingMenu});
+
+  /// Debug visual route hook: when set, the screen opens the building menu
+  /// after the first loaded frame. Production callers leave this null.
+  final BuildingType? initialBuildingMenu;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -101,6 +105,7 @@ class TaohuaIslandScreen extends ConsumerWidget {
           return _IslandBody(
             view: view,
             onRefresh: () => ref.invalidate(taohuaIslandViewProvider),
+            initialBuildingMenu: initialBuildingMenu,
           );
         },
       ),
@@ -138,10 +143,15 @@ const _allBuildingTypes = [..._rawBuildingTypes, ..._workshopBuildingTypes];
 const _taohuaIslandMapAsset = 'assets/maps/taohuaIsland.png';
 
 class _IslandBody extends StatefulWidget {
-  const _IslandBody({required this.view, required this.onRefresh});
+  const _IslandBody({
+    required this.view,
+    required this.onRefresh,
+    this.initialBuildingMenu,
+  });
 
   final IslandView view;
   final VoidCallback onRefresh;
+  final BuildingType? initialBuildingMenu;
 
   @override
   State<_IslandBody> createState() => _IslandBodyState();
@@ -152,11 +162,13 @@ class _IslandBodyState extends State<_IslandBody> {
   late DateTime _projectionStartedAt;
   late DateTime _liveNow;
   Timer? _ticker;
+  bool _initialMenuOpened = false;
 
   @override
   void initState() {
     super.initState();
     _resetProjectionClock();
+    _scheduleInitialMenu();
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() => _liveNow = DateTime.now());
     });
@@ -174,6 +186,15 @@ class _IslandBodyState extends State<_IslandBody> {
   void dispose() {
     _ticker?.cancel();
     super.dispose();
+  }
+
+  void _scheduleInitialMenu() {
+    final type = widget.initialBuildingMenu;
+    if (type == null || _initialMenuOpened) return;
+    _initialMenuOpened = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _openBuildingMenu(type);
+    });
   }
 
   @override

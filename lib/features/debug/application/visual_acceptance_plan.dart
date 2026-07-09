@@ -35,10 +35,12 @@ const List<VisualRoute> _smokeRoutes = [
   VisualRoute.mainMenu,
   VisualRoute.inventory,
   VisualRoute.battleScene,
+  VisualRoute.mainlineFirstClearBattle,
   VisualRoute.techniquePanelTierAll,
   VisualRoute.shop,
   VisualRoute.seclusionMapList,
   VisualRoute.towerFloorList,
+  VisualRoute.taohuaBuildingPopup,
   VisualRoute.zangjuange,
   VisualRoute.encounterCodex,
   VisualRoute.skillCodex,
@@ -107,6 +109,11 @@ List<String> _checksFor(VisualRoute route) {
       'HUD 不遮挡角色',
       '无明显 repaint 闪烁',
     ],
+    VisualRoute.mainlineFirstClearBattle => const [
+      '真主线 stage 首通起手暂停可见',
+      'readable pacing 下 HUD/血条/伤害层级可读',
+      '单步/继续控件不遮挡关键角色',
+    ],
     VisualRoute.techniquePanelTierAll => const [
       '七阶心法 cover 同屏',
       '阶层梯度清楚',
@@ -133,6 +140,11 @@ List<String> _checksFor(VisualRoute route) {
       '五类资源分组可扫读',
       '来源/用途/近期去向文字无溢出',
       '库存数量与折叠来源可辨认',
+    ],
+    VisualRoute.taohuaBuildingPopup => const [
+      '产业弹窗默认打开',
+      '产出/升级/配方/建筑志信息分区清楚',
+      '弹窗不依赖页面滚动才能理解操作入口',
     ],
     VisualRoute.seclusionMapList => const [
       '五处闭关地图可扫读',

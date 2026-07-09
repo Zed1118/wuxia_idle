@@ -8,6 +8,7 @@ import '../../../core/domain/attributes.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
+import '../../../core/application/battle_providers.dart';
 import '../../../data/isar_setup.dart';
 import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
@@ -63,6 +64,7 @@ import '../../battle/presentation/hero_camera_overlay.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/battle_state.dart';
+import '../../battle/presentation/battle_screen.dart';
 import '../../encounter/presentation/encounter_dialog.dart';
 import '../../battle_record/domain/boss_memory.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
@@ -86,6 +88,7 @@ import '../../baike/presentation/martial_arts_tab.dart';
 import '../../baike/presentation/skill_codex_detail_screen.dart';
 import '../../character_panel/presentation/lineage_character_detail_screen.dart';
 import '../../zangjuange/presentation/zangjuange_screen.dart';
+import '../../taohua_island/domain/island_building_type.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
 import 'hitbox_debug_overlay.dart';
@@ -356,6 +359,12 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         hint: null,
         sceneBackgroundPath: 'assets/scenes/battle_$sceneName.png',
       );
+    case VisualRoute.mainlineFirstClearBattle:
+      await isar.writeTxn(() => isar.mainlineProgress.clear());
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
+      return const _MainlineFirstClearBattlePreview(stageId: 'stage_01_03');
     case VisualRoute.battleUltimateCaption:
       return const _UltimateCaptionPreview();
     case VisualRoute.battleBossFrame:
@@ -618,6 +627,20 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await _seedInventoryItem(isar, 'item_mucai', 60);
       await _seedInventoryItem(isar, 'item_lingquanshui', 60);
       return const TaohuaIslandScreen();
+    case VisualRoute.taohuaBuildingPopup:
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
+      await _seedInventoryItem(isar, 'item_silver', 260);
+      await _seedInventoryItem(isar, 'item_mojianshi', 90);
+      await _seedInventoryItem(isar, 'item_xinxuejiejing', 12);
+      await _seedInventoryItem(isar, 'item_jingtie', 60);
+      await _seedInventoryItem(isar, 'item_yaocao', 60);
+      await _seedInventoryItem(isar, 'item_mucai', 60);
+      await _seedInventoryItem(isar, 'item_lingquanshui', 60);
+      return const TaohuaIslandScreen(
+        initialBuildingMenu: BuildingType.daZaoTai,
+      );
     case VisualRoute.recruitmentDialog:
       await OnboardingService(
         isar: isar,
@@ -694,6 +717,65 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const _StageRetryDialogPreview();
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
+  }
+}
+
+class _MainlineFirstClearBattlePreview extends ConsumerStatefulWidget {
+  const _MainlineFirstClearBattlePreview({required this.stageId});
+
+  final String stageId;
+
+  @override
+  ConsumerState<_MainlineFirstClearBattlePreview> createState() =>
+      _MainlineFirstClearBattlePreviewState();
+}
+
+class _MainlineFirstClearBattlePreviewState
+    extends ConsumerState<_MainlineFirstClearBattlePreview> {
+  String? _setupError;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      try {
+        final stage = GameRepository.instance.getStage(widget.stageId);
+        final (left, right) = await StageBattleSetup(
+          isar: IsarSetup.instance,
+        ).buildTeams(stage, readableFirstClearTuning: true);
+        if (!mounted) return;
+        ref.read(battleProvider.notifier).startBattle(left, right, seed: 709);
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _setupError = e.toString());
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_setupError != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('主线首通验收')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: SelectableText(UiStrings.battleSetupFailed(_setupError!)),
+          ),
+        ),
+      );
+    }
+    final stage = GameRepository.instance.getStage(widget.stageId);
+    return BattleScreen(
+      hint: '${stage.name} · 首通节奏验收',
+      sceneBackgroundPath: stage.sceneBackgroundPath,
+      autoStart: true,
+      allowPlayerIntervention: true,
+      startPaused: true,
+      readablePacing: true,
+      onBattleEnd: () {},
+    );
   }
 }
 

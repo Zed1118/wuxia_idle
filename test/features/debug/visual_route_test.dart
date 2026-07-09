@@ -11,6 +11,8 @@ import 'package:wuxia_idle/features/battle/presentation/hero_camera_overlay.dart
 import 'package:wuxia_idle/features/debug/application/visual_route.dart';
 import 'package:wuxia_idle/features/debug/presentation/battle_test_menu.dart';
 import 'package:wuxia_idle/features/debug/presentation/visual_route_host.dart';
+import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
+import 'package:wuxia_idle/features/taohua_island/presentation/taohua_island_screen.dart';
 
 void main() {
   group('parseVisualRoute', () {
@@ -132,6 +134,10 @@ void main() {
     test('批次3系统页路由 parse', () {
       expect(parseVisualRoute('taohua_island'), VisualRoute.taohuaIsland);
       expect(
+        parseVisualRoute('taohua_building_popup'),
+        VisualRoute.taohuaBuildingPopup,
+      );
+      expect(
         parseVisualRoute('recruitment_dialog'),
         VisualRoute.recruitmentDialog,
       );
@@ -157,6 +163,13 @@ void main() {
       expect(
         parseVisualRoute('battle_tap_preview'),
         VisualRoute.battleTapPreview,
+      );
+    });
+
+    test('主线首通真战斗验收 route parse', () {
+      expect(
+        parseVisualRoute('mainline_first_clear_battle'),
+        VisualRoute.mainlineFirstClearBattle,
       );
     });
   });
@@ -235,6 +248,34 @@ void main() {
       expect(launcher.startPaused, isTrue);
       expect(launcher.previewPendingCharacterId, 1);
       expect(launcher.previewPendingSkillId, 'dl_single_1');
+    });
+
+    test('mainline_first_clear_battle → 主线首通 preview 接线', () async {
+      if (!GameRepository.isLoaded) {
+        await GameRepository.loadAllDefs(
+          loader: (path) => File(path).readAsString(),
+        );
+      }
+      final target = await buildVisualTarget(
+        VisualRoute.mainlineFirstClearBattle,
+        IsarSetup.instance,
+      );
+      expect(target.runtimeType.toString(), '_MainlineFirstClearBattlePreview');
+    });
+
+    test('taohua_building_popup → 桃花岛自动打开打造台菜单', () async {
+      if (!GameRepository.isLoaded) {
+        await GameRepository.loadAllDefs(
+          loader: (path) => File(path).readAsString(),
+        );
+      }
+      final target = await buildVisualTarget(
+        VisualRoute.taohuaBuildingPopup,
+        IsarSetup.instance,
+      );
+      expect(target, isA<TaohuaIslandScreen>());
+      final screen = target as TaohuaIslandScreen;
+      expect(screen.initialBuildingMenu, BuildingType.daZaoTai);
     });
 
     test('skill_codex_locked_snackbar → snackbar preview route 接线', () async {
