@@ -7,6 +7,8 @@
 
 ## 当前阶段
 
+> 🧹✅ **2026-07-10 Codex 挂机批 O:测试 fixture TODO 文案清噪(`main`)**:清理 `defs_test`/`game_repository_test` 内联 yaml description 的 `TODO` 字符串,改为明确测试描述,不改变生产数据或断言语义。这样后续 `TODO/FIXME/HACK` 扫描不会把 fixture 文案误报成未完成内容;当前 `rg "TODO|FIXME|HACK" lib test -S` 只剩主线文案完整性测试中“禁止 TODO”的守卫断言文本。**验证**:`flutter test --no-pub test/data/defs/defs_test.dart test/data/game_repository_test.dart --reporter expanded` **76 绿**;`flutter analyze` 0 issue。
+
 > 🛠️✅ **2026-07-10 Codex 挂机批 N:README build_runner 命令去废弃参数(`main`)**:快速开始仍写 `dart run build_runner build --delete-conflicting-outputs`,而当前 build_runner 已提示该参数 removed/ignored。本批只更新 README 当前操作指令为 `dart run build_runner build`,保留 `.g.dart` 不入库、fresh checkout 必跑生成器的项目约定;历史审计/计划文档不批量改写。**验证**:`dart run build_runner build` 成功(**0 outputs**,无废弃参数警告);`flutter analyze` 0 issue。
 
 > 🧪✅ **2026-07-10 Codex 挂机批 M:GameEvent lineage 占位测试实化(`main`)**:清理 `game_event_service_lineage_routing_edge_test` 中 skip + `expect(true,isTrue)` 伪绿。当前产品事实是 `lineageInherited` 尚未登记为 `GameEventType`、也无 `recordLineageInherited` API,因此改成真实契约测试:确认事件枚举中不存在 `lineageInherited`;Phase 5+ 一旦新增事件类型会红,提醒改为写库断言 eventType/isRead。同步注释从 placeholder 改为未接入契约。**验证**:`flutter test --no-pub test/features/event/application/game_event_service_lineage_routing_edge_test.dart test/features/event/application/game_event_service_test.dart --reporter expanded` **23 绿**;`flutter analyze` 0 issue。

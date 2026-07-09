@@ -245,7 +245,7 @@ void main() {
       final def = SkillDef.fromYaml({
         'id': 'skill_encounter_ting_yu_jian',
         'name': '听雨剑',
-        'description': 'TODO',
+        'description': '测试招式描述',
         'type': 'powerSkill',
         'powerMultiplier': 2300,
         'internalForceCost': 200,

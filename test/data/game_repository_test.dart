@@ -529,7 +529,7 @@ techniques:
     name: 孤本
     tier: ruMenGong
     school: gangMeng
-    description: TODO
+    description: 测试孤本
     skillIds: []
     internalForceGrowthBonus: 1.0
     speedBonus: 0
@@ -695,7 +695,7 @@ techniques:
     name: 重复 1
     tier: ruMenGong
     school: gangMeng
-    description: TODO
+    description: 测试重复心法一
     skillIds: []
     internalForceGrowthBonus: 1.0
     speedBonus: 0
@@ -704,7 +704,7 @@ techniques:
     name: 重复 2
     tier: ruMenGong
     school: lingQiao
-    description: TODO
+    description: 测试重复心法二
     skillIds: []
     internalForceGrowthBonus: 1.0
     speedBonus: 0
