@@ -7,6 +7,8 @@
 
 ## 当前阶段
 
+> 🛠️✅ **2026-07-10 Codex 挂机批 N:README build_runner 命令去废弃参数(`main`)**:快速开始仍写 `dart run build_runner build --delete-conflicting-outputs`,而当前 build_runner 已提示该参数 removed/ignored。本批只更新 README 当前操作指令为 `dart run build_runner build`,保留 `.g.dart` 不入库、fresh checkout 必跑生成器的项目约定;历史审计/计划文档不批量改写。**验证**:`dart run build_runner build` 成功(**0 outputs**,无废弃参数警告);`flutter analyze` 0 issue。
+
 > 🧪✅ **2026-07-10 Codex 挂机批 M:GameEvent lineage 占位测试实化(`main`)**:清理 `game_event_service_lineage_routing_edge_test` 中 skip + `expect(true,isTrue)` 伪绿。当前产品事实是 `lineageInherited` 尚未登记为 `GameEventType`、也无 `recordLineageInherited` API,因此改成真实契约测试:确认事件枚举中不存在 `lineageInherited`;Phase 5+ 一旦新增事件类型会红,提醒改为写库断言 eventType/isRead。同步注释从 placeholder 改为未接入契约。**验证**:`flutter test --no-pub test/features/event/application/game_event_service_lineage_routing_edge_test.dart test/features/event/application/game_event_service_test.dart --reporter expanded` **23 绿**;`flutter analyze` 0 issue。
 
 > 🧾✅ **2026-07-10 Codex 挂机批 L:factions/territories backlog drift 收口(`main`)**:复核 07-02 P2 “factions/territories.yaml 缺启动校验”已由后续实现销账:`GameRepository._validateFactionTerritoryReferences` 校 faction alignment 枚举、stage/encounter factionId 引用、territory baseDefenseLevel ∈ [1,7],且已有 `faction_territory_validation_test` 3 坏例 + 真实数据回归。同步更新 `docs/spec/full_review_2026-07-02_followup_backlog.md`,避免下一轮审查重复排期。**验证**:`flutter test --no-pub test/features/sect/faction_territory_validation_test.dart --reporter expanded` **4 绿**;`flutter analyze` 0 issue。

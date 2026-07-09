@@ -104,7 +104,7 @@ flutter pub get
 # 2. ⚠️ 必跑：生成代码
 #    .g.dart 不入库（fresh checkout / 新 worktree 都要先跑），
 #    否则 Isar schema 与 Riverpod provider 缺失，编译失败。
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 
 # 3. 运行（Isar 无 web target，开发端只用 macOS）
 flutter run -d macos
