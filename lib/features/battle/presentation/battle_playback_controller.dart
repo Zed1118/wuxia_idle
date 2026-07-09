@@ -8,6 +8,7 @@ import '../domain/battle_state.dart';
 import '../domain/battle_skill_utils.dart';
 import '../domain/damage_calculator.dart';
 import '../../../core/domain/enums.dart';
+import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../shared/audio/audio_assets.dart';
@@ -177,9 +178,13 @@ class BattlePlaybackController {
 
   /// 读打击感配置；GameRepository 未初始化（轻量 widget 测）时返 null 跳过。
   ImpactFeedbackConfig? _impactConfigOrNull() {
+    if (!GameRepository.isLoaded) return null;
     try {
       return _ref.read(numbersConfigProvider).combat.impactFeedback;
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint(
+        'BattlePlaybackController impact config fallback failed: $e\n$st',
+      );
       return null;
     }
   }

@@ -8,6 +8,7 @@ import '../domain/battle_state.dart';
 import '../domain/battle_stats.dart';
 import '../domain/battle_diagnosis.dart';
 import '../../../data/defs/skill_def.dart';
+import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/numbers_config.dart';
 import '../../../core/application/battle_providers.dart';
@@ -546,12 +547,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   /// 算败北诊断；numbersConfig 未就绪（如不加载 GameRepository 的轻量 widget
   /// test）时退化为 null，overlay 仍正常弹出（仅无诊断块）。诊断是非关键 UI。
   BattleDiagnosis? _safeDiagnose(BattleState s) {
+    if (!GameRepository.isLoaded) return null;
     try {
       return BattleDiagnosis.from(
         s,
         ref.read(numbersConfigProvider).battleReport,
       );
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('BattleScreen diagnosis fallback failed: $e\n$st');
       return null;
     }
   }
@@ -584,25 +587,37 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // 蓄力满值：默认走 numbers.combat.bossCharge.defaultChargeTicks；
     // 若 GameRepository 未初始化（widget test 路径）则回落到 schema 默认 3。
     int chargeMaxTicks;
-    try {
-      chargeMaxTicks = ref
-          .read(numbersConfigProvider)
-          .combat
-          .bossCharge
-          .defaultChargeTicks;
-    } catch (_) {
+    if (!GameRepository.isLoaded) {
       chargeMaxTicks = 3;
+    } else {
+      try {
+        chargeMaxTicks = ref
+            .read(numbersConfigProvider)
+            .combat
+            .bossCharge
+            .defaultChargeTicks;
+      } catch (e, st) {
+        debugPrint('BattleScreen charge config fallback failed: $e\n$st');
+        chargeMaxTicks = 3;
+      }
     }
     // 破绽窗口时长(供破绽读秒环分母)；GameRepository 未初始化时回落 schema 默认 3。
     int staggerWindowTicks;
-    try {
-      staggerWindowTicks = ref
-          .read(numbersConfigProvider)
-          .combat
-          .defenseBreak
-          .windowTicks;
-    } catch (_) {
+    if (!GameRepository.isLoaded) {
       staggerWindowTicks = 3;
+    } else {
+      try {
+        staggerWindowTicks = ref
+            .read(numbersConfigProvider)
+            .combat
+            .defenseBreak
+            .windowTicks;
+      } catch (e, st) {
+        debugPrint(
+          'BattleScreen defense break config fallback failed: $e\n$st',
+        );
+        staggerWindowTicks = 3;
+      }
     }
 
     ref.listen<BattleState>(battleProvider, (prev, next) {

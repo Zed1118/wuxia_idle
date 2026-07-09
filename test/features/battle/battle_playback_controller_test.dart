@@ -17,7 +17,8 @@ import 'package:wuxia_idle/shared/strings.dart';
 /// harness（[TickerProviderStateMixin]，控制器内起多个 AnimationController），
 /// initState 里构造控制器并经 GlobalKey 暴露，pumpWidget 后同步断言可观测状态。
 ///
-/// numbersConfigProvider 不覆盖 → `_impactConfigOrNull()` 走 catch 返 null，
+/// numbersConfigProvider 不覆盖且 GameRepository 未加载 → `_impactConfigOrNull()`
+/// 直接返 null，
 /// playAction 的打击感/hit-stop 分支天然跳过（轻量测口径，同 battle_screen 的
 /// 轻量 widget 测约定）；断言聚焦飘字/弹道/特效队列 + 调度标志等同步可观测态。
 
