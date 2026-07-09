@@ -166,30 +166,35 @@ class TeamColumn extends StatelessWidget {
               alignment: isLeftTeam
                   ? Alignment.centerLeft
                   : Alignment.centerRight,
-              child: CharacterSlot(
-                character: team[i],
-                battleState: battleState,
-                isLeftTeam: isLeftTeam,
-                attackController: attackControllers[teamSide * 3 + i],
-                slotPopups: popups[teamSide * 3 + i] ?? const [],
-                animConfig: animConfig,
-                chargeMaxTicks: chargeMaxTicks,
-                beat: beat,
-                staggerWindowTicks: staggerWindowTicks,
-                slotKey: teamSide * 3 + i,
-                onPopupComplete: onPopupComplete,
-                hitFlashController: hitFlashControllers[teamSide * 3 + i],
-                flashColor: hitFlashColors[teamSide * 3 + i] ?? Colors.white,
-                // 待发态:存活敌头像可点选为目标 + 高亮提示。
-                onTap: (onEnemyTap != null && pendingActive && team[i].isAlive)
-                    ? () => onEnemyTap!(team[i].characterId)
-                    : null,
-                hovered: hoveredEnemyId == team[i].characterId,
-                targetable: pendingActive && team[i].isAlive,
-                onHoverChanged:
-                    (onEnemyHover != null && pendingActive && team[i].isAlive)
-                    ? (hovering) => onEnemyHover!(team[i].characterId, hovering)
-                    : null,
+              child: RepaintBoundary(
+                key: ValueKey('battle.characterSlot.repaint.$teamSide.$i'),
+                child: CharacterSlot(
+                  character: team[i],
+                  battleState: battleState,
+                  isLeftTeam: isLeftTeam,
+                  attackController: attackControllers[teamSide * 3 + i],
+                  slotPopups: popups[teamSide * 3 + i] ?? const [],
+                  animConfig: animConfig,
+                  chargeMaxTicks: chargeMaxTicks,
+                  beat: beat,
+                  staggerWindowTicks: staggerWindowTicks,
+                  slotKey: teamSide * 3 + i,
+                  onPopupComplete: onPopupComplete,
+                  hitFlashController: hitFlashControllers[teamSide * 3 + i],
+                  flashColor: hitFlashColors[teamSide * 3 + i] ?? Colors.white,
+                  // 待发态:存活敌头像可点选为目标 + 高亮提示。
+                  onTap:
+                      (onEnemyTap != null && pendingActive && team[i].isAlive)
+                      ? () => onEnemyTap!(team[i].characterId)
+                      : null,
+                  hovered: hoveredEnemyId == team[i].characterId,
+                  targetable: pendingActive && team[i].isAlive,
+                  onHoverChanged:
+                      (onEnemyHover != null && pendingActive && team[i].isAlive)
+                      ? (hovering) =>
+                            onEnemyHover!(team[i].characterId, hovering)
+                      : null,
+                ),
               ),
             ),
           ),
