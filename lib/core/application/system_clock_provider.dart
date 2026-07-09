@@ -1,4 +1,6 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'system_clock_provider.g.dart';
 
 /// 系统时间抽象(1.0 P3 nightshift T19b 技术债清账)。
 ///
@@ -16,4 +18,5 @@ class SystemClock {
 }
 
 /// 测试 seam:override `systemClockProvider.overrideWithValue(FakeClock(...))`。
-final systemClockProvider = Provider<SystemClock>((ref) => const SystemClock());
+@riverpod
+SystemClock systemClock(Ref ref) => const SystemClock();
