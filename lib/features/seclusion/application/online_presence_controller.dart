@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
+import '../../../core/domain/enums.dart';
 import '../../../data/isar_setup.dart';
 import 'offline_passive_service.dart';
 import 'seclusion_service_providers.dart';
@@ -105,6 +106,8 @@ class OnlinePresenceController {
     // (offline_passive_service),不涉银两/装备图鉴/Boss 门控,故不刷主菜单门控。
     _ref.invalidate(characterByIdProvider);
     _ref.invalidate(allInventoryItemsProvider);
+    _ref.invalidate(inventoryQuantityByDefIdProvider('item_mojianshi'));
+    _ref.invalidate(inventoryQuantityByTypeProvider(ItemType.moJianShi));
     return yield_;
   }
 

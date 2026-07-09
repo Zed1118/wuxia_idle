@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/application/character_providers.dart';
-import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../data/game_repository.dart';
@@ -10,6 +8,7 @@ import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../inventory/application/item_use_invalidation.dart';
 import '../../inventory/application/item_use_service.dart';
 
 class InjuryStatusFormatter {
@@ -111,12 +110,11 @@ class _InjuryStatusPanelState extends ConsumerState<InjuryStatusPanel> {
       realmLookup: GameRepository.instance.getRealm,
     );
     if (!mounted) return;
-    // 体检批3 P1-11:ItemUseService 疗伤目标是全队最伤者,未必是 widget.character;
-    // 失效整个 family(而非单 id),否则真实被疗伤角色的缓存不刷。
-    ref.invalidate(characterByIdProvider);
-    ref.invalidate(activeCharacterIdsProvider);
-    ref.invalidate(inventoryQuantityByDefIdProvider('item_liaoshangdan'));
-    ref.invalidate(allInventoryItemsProvider);
+    invalidateAfterItemUse(
+      ref.invalidate,
+      defId: def.defId,
+      itemType: def.type,
+    );
     setState(() {
       _busy = false;
       _resultLine =

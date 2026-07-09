@@ -47,8 +47,9 @@ void main() {
     expect(await controller().settlePassiveWindow(now: now), isNull);
     final save = (await IsarSetup.currentSaveData())!;
     expect(save.lastOnlineAt, now);
-    final item =
-        await IsarSetup.instance.inventoryItems.getByDefId('item_mojianshi');
+    final item = await IsarSetup.instance.inventoryItems.getByDefId(
+      'item_mojianshi',
+    );
     expect(item, isNull);
   });
 
@@ -62,8 +63,9 @@ void main() {
     expect(yield_.mojianshi, 2); // 0.25/h × 8h × 学徒 scale 1.0 → floor 2
     final save = (await IsarSetup.currentSaveData())!;
     expect(save.lastOnlineAt, t1);
-    final item =
-        await IsarSetup.instance.inventoryItems.getByDefId('item_mojianshi');
+    final item = await IsarSetup.instance.inventoryItems.getByDefId(
+      'item_mojianshi',
+    );
     expect(item?.quantity, 2);
   });
 
@@ -83,8 +85,9 @@ void main() {
     expect(await controller().settlePassiveWindow(now: t1), isNull);
     final save = (await IsarSetup.currentSaveData())!;
     expect(save.lastOnlineAt, t1); // touch 发生
-    final item =
-        await IsarSetup.instance.inventoryItems.getByDefId('item_mojianshi');
+    final item = await IsarSetup.instance.inventoryItems.getByDefId(
+      'item_mojianshi',
+    );
     expect(item, isNull); // 被动 0 入包
   });
 
@@ -125,8 +128,9 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 120));
       expect(ctl.isHeartbeatActive, isFalse);
       expect((await IsarSetup.currentSaveData())!.lastOnlineAt, t0); // 基准没被碰
-      final item = await IsarSetup.instance.inventoryItems
-          .getByDefId('item_mojianshi');
+      final item = await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_mojianshi',
+      );
       expect(item, isNull); // 未结算
     });
 
@@ -165,21 +169,54 @@ void main() {
       expect(ctl.isHeartbeatActive, isTrue);
       ctl.onAppFocused(); // 幂等:已在前台直接 return
       await Future<void>.delayed(const Duration(milliseconds: 60));
-      final item = await IsarSetup.instance.inventoryItems
-          .getByDefId('item_mojianshi');
+      final item = await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_mojianshi',
+      );
       expect(item?.quantity, 2); // 只有 8h 窗口那一次入包
     });
   });
 
-  test('R8: 结算后 allInventoryItemsProvider 读到新值', () async {
+  test('R8: 结算后 inventory providers 读到新值', () async {
     final t0 = DateTime(2026, 7, 7, 10);
     await IsarSetup.touchOnlineNow(now: t0);
+    final subs = [
+      container.listen(allInventoryItemsProvider, (_, _) {}),
+      container.listen(
+        inventoryQuantityByDefIdProvider('item_mojianshi'),
+        (_, _) {},
+      ),
+      container.listen(
+        inventoryQuantityByTypeProvider(ItemType.moJianShi),
+        (_, _) {},
+      ),
+    ];
+    addTearDown(() {
+      for (final sub in subs) {
+        sub.close();
+      }
+    });
+
     final before = await container.read(allInventoryItemsProvider.future);
     expect(before.where((i) => i.defId == 'item_mojianshi'), isEmpty);
+    expect(
+      await container.read(
+        inventoryQuantityByDefIdProvider('item_mojianshi').future,
+      ),
+      0,
+    );
     await controller().settlePassiveWindow(now: DateTime(2026, 7, 7, 18));
     final after = await container.read(allInventoryItemsProvider.future);
+    expect(after.singleWhere((i) => i.defId == 'item_mojianshi').quantity, 2);
     expect(
-      after.singleWhere((i) => i.defId == 'item_mojianshi').quantity,
+      await container.read(
+        inventoryQuantityByDefIdProvider('item_mojianshi').future,
+      ),
+      2,
+    );
+    expect(
+      await container.read(
+        inventoryQuantityByTypeProvider(ItemType.moJianShi).future,
+      ),
       2,
     );
   });
