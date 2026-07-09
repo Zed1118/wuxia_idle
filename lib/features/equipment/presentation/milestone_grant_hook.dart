@@ -40,10 +40,10 @@ Future<List<String>> grantMilestoneForClearedStage({
 }
 
 /// post-victory hook 包装。Isar 未 ready → no-op 不阻塞胜利流。
-Future<void> runMilestoneGrantHookAfterVictory({
+Future<List<String>> runMilestoneGrantHookAfterVictory({
   required String stageId,
 }) async {
   final isar = IsarSetup.instanceOrNull;
-  if (isar == null) return;
-  await grantMilestoneForClearedStage(isar: isar, clearedStageId: stageId);
+  if (isar == null) return const [];
+  return grantMilestoneForClearedStage(isar: isar, clearedStageId: stageId);
 }

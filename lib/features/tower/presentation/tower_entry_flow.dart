@@ -346,6 +346,10 @@ Future<void> runTowerFlow({
         .map((e) => e.school)
         .toList(growable: false),
   );
+
+  // 塔首通掉落、Boss 留档、奇遇 hook 都发生在前面的主结算刷新之后。
+  // 离开塔战流程前再刷新一次最终态，避免仓库 / 资源数量 / 战绩册门控缓存旧。
+  invalidateAfterCombatSettlement(ref.invalidate);
 }
 
 /// 推 BattleScreen 并 wait 胜/败/投降回调；返回 (won, surrendered)。

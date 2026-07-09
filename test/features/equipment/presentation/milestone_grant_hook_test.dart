@@ -65,4 +65,16 @@ void main() {
     );
     expect(granted, isEmpty);
   });
+
+  test('post-victory hook 返回本次实际授予的装备 id', () async {
+    final granted = await runMilestoneGrantHookAfterVictory(
+      stageId: 'stage_mass_battle_05',
+    );
+    expect(granted, contains('armor_special_bai_zhan_jia'));
+
+    final second = await runMilestoneGrantHookAfterVictory(
+      stageId: 'stage_mass_battle_05',
+    );
+    expect(second, isEmpty, reason: '已授予过时调用方可据返回值判定 no-op');
+  });
 }

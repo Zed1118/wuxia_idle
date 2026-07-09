@@ -359,6 +359,10 @@ Future<void> runStageFlow({
 
   // P1.2 Boss 击杀 → 声望 delta(boss 所属派系 -delta · 对立阵营 +rivalDelta)。
   await _applyBossKillReputation(ref: ref, stage: stage);
+
+  // 后置 hook（技能掉落、战绩册、里程碑装备、招降等）发生在主结算 helper 之后。
+  // 返回关卡列表前再刷一次最终态，避免主菜单门控 / 仓库 / 资源数量读到旧缓存。
+  invalidateAfterCombatSettlement(ref.invalidate);
 }
 
 /// 推 BattleScreen 并 wait 胜/败/投降回调；返回 (won, surrendered)。
