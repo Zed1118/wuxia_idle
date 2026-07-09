@@ -50,6 +50,7 @@ class OnlinePresenceController {
   Timer? _heartbeat;
   bool _startupSettleDone = false;
   bool _busy = false;
+  bool _disposed = false;
 
   @visibleForTesting
   bool get isHeartbeatActive => _heartbeat != null;
@@ -57,6 +58,7 @@ class OnlinePresenceController {
   /// 对 [SaveData.lastOnlineAt, now] 窗口做一次被动离线结算。
   /// 返回 null = 本次无结算(未 init/无存档/闭关互斥/旧档首启/回拨/并发中)。
   Future<PassiveYield?> settlePassiveWindow({DateTime? now}) async {
+    if (_disposed) return null;
     if (_busy) return null;
     _busy = true;
     try {
@@ -67,17 +69,21 @@ class OnlinePresenceController {
   }
 
   Future<PassiveYield?> _settleLocked({DateTime? now}) async {
+    if (_disposed) return null;
     if (IsarSetup.instanceOrNull == null) return null;
     final save = await IsarSetup.currentSaveData();
+    if (_disposed) return null;
     if (save == null) return null;
 
     final nowDt = now ?? _clock();
 
     // 互斥:有 active 闭关该窗口归闭关,只 touch(顺带修收功后 stale 基准双吃边角)。
+    if (_disposed) return null;
     final svc = _ref.read(seclusionServiceProvider);
     final session = svc == null
         ? null
         : await svc.getActiveSession(IsarSetup.currentSlotId);
+    if (_disposed) return null;
     if (session != null) {
       await IsarSetup.touchOnlineNow(now: nowDt);
       return null;
@@ -92,7 +98,9 @@ class OnlinePresenceController {
     final awayHours = nowDt.difference(save.lastOnlineAt).inSeconds / 3600.0;
     if (awayHours <= 0) return null; // 时钟回拨防御(现状保留)
 
+    if (_disposed) return null;
     final ids = await _ref.read(activeCharacterIdsProvider.future);
+    if (_disposed) return null;
     final charId = ids.isNotEmpty ? ids.first : 1;
     final yield_ = await OfflinePassiveService.settle(
       saveDataId: save.slotId,
@@ -100,6 +108,7 @@ class OnlinePresenceController {
       awayHours: awayHours,
       now: nowDt,
     );
+    if (_disposed) return yield_;
     // settle 写了 Character/InventoryItem,Future 型 provider 缓存必须刷,
     // 否则聚焦静默结算=「结算了 UI 不刷新」(W13-v3 同型,参照
     // battle/application/post_combat_invalidation.dart)。离线被动只产磨剑石材料
@@ -113,6 +122,7 @@ class OnlinePresenceController {
 
   /// onShow/onResume:结算失焦窗口后恢复心跳。首启(gate 未跑)整体 no-op。
   void onAppFocused() {
+    if (_disposed) return;
     if (!_startupSettleDone) return;
     if (_heartbeat != null) return; // 已在前台,幂等
     unawaited(settlePassiveWindow().catchError((_) => null));
@@ -121,19 +131,25 @@ class OnlinePresenceController {
 
   /// onHide/onInactive/onDetach:停心跳 + 终 touch(best-effort)。
   void onAppBlurred() {
+    if (_disposed) return;
     _stopHeartbeat();
     unawaited(_touchSafe());
   }
 
   /// gate 首启结算路径完成后调:开闸 + 起心跳。
   void markStartupSettleDone() {
+    if (_disposed) return;
     _startupSettleDone = true;
     _startHeartbeat();
   }
 
-  void dispose() => _stopHeartbeat();
+  void dispose() {
+    _disposed = true;
+    _stopHeartbeat();
+  }
 
   void _startHeartbeat() {
+    if (_disposed) return;
     _heartbeat?.cancel();
     _heartbeat = Timer.periodic(_heartbeatInterval, (_) {
       if (_busy) return;
@@ -147,6 +163,7 @@ class OnlinePresenceController {
   }
 
   Future<void> _touchSafe() async {
+    if (_disposed) return;
     try {
       await IsarSetup.touchOnlineNow(now: _clock());
     } catch (_) {

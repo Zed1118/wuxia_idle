@@ -134,6 +134,30 @@ void main() {
       expect(item, isNull); // 未结算
     });
 
+    test('disposed controller ignores late lifecycle calls', () async {
+      final c = ProviderContainer(
+        overrides: [
+          onlinePresenceControllerProvider.overrideWith((ref) {
+            final ctl = OnlinePresenceController(
+              ref,
+              heartbeatInterval: const Duration(milliseconds: 40),
+            );
+            ref.onDispose(ctl.dispose);
+            return ctl;
+          }),
+        ],
+      );
+      final ctl = c.read(onlinePresenceControllerProvider);
+      c.dispose();
+
+      ctl.markStartupSettleDone();
+      ctl.onAppFocused();
+      ctl.onAppBlurred();
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+
+      expect(ctl.isHeartbeatActive, isFalse);
+    });
+
     test('R2: 心跳持续推进基准(双吃上界≤间隔)', () async {
       await IsarSetup.touchOnlineNow(now: DateTime(2026, 7, 7, 10));
       final ctl = shortBeat(); // clock 默认 DateTime.now
