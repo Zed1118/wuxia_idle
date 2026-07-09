@@ -108,7 +108,7 @@ void main() {
     test('passive recap 明细不引入银两、熟练度或装备掉落', () {
       const yield_ = (
         mojianshi: 2,
-        experience: 250,
+        experience: 500,
         awayHours: 10.0,
         settledHours: 10.0,
         isCapped: false,

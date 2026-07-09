@@ -1076,8 +1076,8 @@ stages:
         realmTier: jueDing
         realmLayer: qiMeng
         school: gangMeng
-        baseHp: 14500
-        baseAttack: 1200
+        baseHp: 10000
+        baseAttack: 700
         baseSpeed: 200
         skillIds:
           - skill_gangmeng_jianghu_basic
@@ -1118,7 +1118,7 @@ stages:
         realmTier: jueDing
         realmLayer: shuLian
         school: lingQiao
-        baseHp: 10000
+        baseHp: 11000
         baseAttack: 800
         baseSpeed: 215
         skillIds:
@@ -1159,8 +1159,8 @@ stages:
         realmTier: jueDing
         realmLayer: shuLian
         school: gangMeng
-        baseHp: 7500
-        baseAttack: 560
+        baseHp: 12000
+        baseAttack: 850
         baseSpeed: 230
         skillIds:
           - skill_gangmeng_jianghu_basic
@@ -1201,8 +1201,8 @@ stages:
         realmTier: jueDing
         realmLayer: jingTong
         school: gangMeng
-        baseHp: 16000
-        baseAttack: 850
+        baseHp: 17000
+        baseAttack: 1000
         baseSpeed: 240
         skillIds:
           - skill_gangmeng_jianghu_basic

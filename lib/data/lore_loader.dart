@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'loader_fallback_log.dart';
 import 'yaml_loader.dart';
 
 /// 装备典故文案 `data/lore/<id>.yaml`(DeepSeek 维护)按需加载器
@@ -69,20 +70,18 @@ class LoreContent {
   });
 
   factory LoreContent.placeholder(String id) => LoreContent(
-        id: id,
-        name: '',
-        defaultLore: const [],
-        continuedLoreObtainedPool: const [],
-        continuedLoreBossDefeatedPool: const [],
-        isPlaceholder: true,
-      );
+    id: id,
+    name: '',
+    defaultLore: const [],
+    continuedLoreObtainedPool: const [],
+    continuedLoreBossDefeatedPool: const [],
+    isPlaceholder: true,
+  );
 
   factory LoreContent.fromYaml(Map<String, dynamic> y) {
-    List<LoreSegment> parsePool(String key) =>
-        ((y[key] as List?) ?? const [])
-            .map((e) =>
-                LoreSegment.fromYaml(Map<String, dynamic>.from(e as Map)))
-            .toList(growable: false);
+    List<LoreSegment> parsePool(String key) => ((y[key] as List?) ?? const [])
+        .map((e) => LoreSegment.fromYaml(Map<String, dynamic>.from(e as Map)))
+        .toList(growable: false);
     return LoreContent(
       id: y['id'] as String,
       name: (y['name'] as String? ?? '').trim(),
@@ -108,7 +107,8 @@ class LoreLoader {
       final raw = await fn('data/lore/$loreId.yaml');
       final y = parseYamlMap(raw);
       return LoreContent.fromYaml(y);
-    } catch (_) {
+    } catch (e) {
+      debugLoaderFallback('LoreLoader.load($loreId)', e);
       return LoreContent.placeholder(loreId);
     }
   }

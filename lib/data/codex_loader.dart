@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'loader_fallback_log.dart';
 import '../features/codex/domain/codex_entry.dart';
 import '../features/codex/domain/codex_index.dart';
 
@@ -23,7 +24,8 @@ class CodexLoader {
       try {
         final raw = await fn('data/narratives/codex/${indexEntry.id}.md');
         result.add(CodexEntry.fromMd(id: indexEntry.id, raw: raw));
-      } catch (_) {
+      } catch (e) {
+        debugLoaderSkip('CodexLoader.loadAll ${indexEntry.id}', e);
         // graceful 跳过缺失或解析失败,由 GameRepository 红线 warn 汇总
       }
     }

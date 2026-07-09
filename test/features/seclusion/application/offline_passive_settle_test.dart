@@ -33,8 +33,9 @@ void main() {
       createdAt: DateTime(2026, 1, 1),
       internalForce: 500,
     )..id = kCharId;
-    await IsarSetup.instance
-        .writeTxn(() => IsarSetup.instance.characters.put(ch));
+    await IsarSetup.instance.writeTxn(
+      () => IsarSetup.instance.characters.put(ch),
+    );
   });
 
   tearDown(() async => await IsarSetup.close());
@@ -43,23 +44,25 @@ void main() {
     final result = await OfflinePassiveService.settle(
       saveDataId: 1,
       characterId: kCharId,
-      awayHours: 10, // 学徒 → moji 2 / exp 250
+      awayHours: 10, // 学徒 → moji 2 / exp 500
       now: DateTime(2026, 6, 15, 12),
     );
     expect(result.mojianshi, 2);
-    expect(result.experience, 250);
+    expect(result.experience, 500);
 
-    final item =
-        await IsarSetup.instance.inventoryItems.getByDefId('item_mojianshi');
+    final item = await IsarSetup.instance.inventoryItems.getByDefId(
+      'item_mojianshi',
+    );
     expect(item?.quantity, 2);
 
     final save = (await IsarSetup.currentSaveData())!;
     expect(save.totalPassiveMojianshi, 2);
-    expect(save.totalPassiveExperience, 250);
+    expect(save.totalPassiveExperience, 500);
     expect(save.lastOnlineAt, DateTime(2026, 6, 15, 12)); // 重置基准
 
-    final silver =
-        await IsarSetup.instance.inventoryItems.getByDefId('item_silver');
+    final silver = await IsarSetup.instance.inventoryItems.getByDefId(
+      'item_silver',
+    );
     expect(silver, isNull, reason: '被动离线只产经验/磨剑石,不可新建银两行');
   });
 
@@ -77,12 +80,13 @@ void main() {
       awayHours: 10,
       now: DateTime(2026, 6, 15, 22),
     );
-    final item =
-        await IsarSetup.instance.inventoryItems.getByDefId('item_mojianshi');
+    final item = await IsarSetup.instance.inventoryItems.getByDefId(
+      'item_mojianshi',
+    );
     expect(item?.quantity, 4);
     final save = (await IsarSetup.currentSaveData())!;
     expect(save.totalPassiveMojianshi, 4);
-    expect(save.totalPassiveExperience, 500);
+    expect(save.totalPassiveExperience, 1000);
     expect(save.lastOnlineAt, DateTime(2026, 6, 15, 22));
   });
 
@@ -104,8 +108,9 @@ void main() {
       now: DateTime(2026, 6, 15, 12),
     );
 
-    final saved =
-        await IsarSetup.instance.inventoryItems.getByDefId('item_silver');
+    final saved = await IsarSetup.instance.inventoryItems.getByDefId(
+      'item_silver',
+    );
     expect(saved, isNotNull);
     expect(saved!.quantity, 123, reason: '被动离线结算不应提供或扣减银两');
   });

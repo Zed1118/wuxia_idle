@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'loader_fallback_log.dart';
 import 'yaml_loader.dart';
 
 /// 主线/章节剧情内容（Phase 3 T36，对应 `data/narratives/<id>.yaml`
@@ -39,11 +40,11 @@ class NarrativeContent {
   });
 
   factory NarrativeContent.placeholder(String id) => NarrativeContent(
-        id: id,
-        title: null,
-        paragraphs: ['[剧情待补：$id]'],
-        isPlaceholder: true,
-      );
+    id: id,
+    title: null,
+    paragraphs: ['[剧情待补：$id]'],
+    isPlaceholder: true,
+  );
 
   factory NarrativeContent.fromYaml(Map<String, dynamic> y) {
     return NarrativeContent(
@@ -130,14 +131,19 @@ class NarrativeLoader {
     Future<String> Function(String)? loader,
   }) async {
     final fn = loader ?? rootBundle.loadString;
+    Object? lastError;
     for (final prefix in _scanPaths) {
       try {
         final raw = await fn('$prefix$narrativeId.yaml');
         final y = parseYamlMap(raw);
         return NarrativeContent.fromYaml(y);
-      } catch (_) {
+      } catch (e) {
+        lastError = e;
         // 继续尝试下一路径
       }
+    }
+    if (lastError != null) {
+      debugLoaderFallback('NarrativeLoader.load($narrativeId)', lastError);
     }
     return NarrativeContent.placeholder(narrativeId);
   }
@@ -153,7 +159,8 @@ class NarrativeLoader {
       final raw = await fn('data/narratives/chapters/$chapterId.yaml');
       final y = parseYamlMap(raw);
       return ChapterNarrative.fromYaml(y);
-    } catch (_) {
+    } catch (e) {
+      debugLoaderFallback('NarrativeLoader.loadChapter($chapterId)', e);
       return ChapterNarrative.placeholder(chapterId);
     }
   }
