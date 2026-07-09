@@ -36,6 +36,8 @@ void main() {
     expect(find.text('1500'), findsOneWidget);
     expect(find.text(UiStrings.swordSongHint), findsNothing);
     expect(find.text(UiStrings.counterUp), findsNothing);
+    final text = tester.widget<Text>(find.text('1500'));
+    expect(text.style?.color, const Color(0xFF211A13));
   });
 
   testWidgets('暴击 + hasSwordSong=true → 显 ✦剑鸣', (tester) async {
@@ -48,7 +50,10 @@ void main() {
         hasSwordSong: true,
       ),
     );
-    expect(find.text(UiStrings.criticalDamagePopup(4500)), findsOneWidget);
+    expect(find.text(UiStrings.criticalLabel), findsOneWidget);
+    expect(find.text('4500'), findsOneWidget);
+    expect(find.text(UiStrings.damageSuffix), findsOneWidget);
+    expect(find.text(UiStrings.criticalDamagePopup(4500)), findsNothing);
     expect(find.text(UiStrings.swordSongHint), findsOneWidget);
   });
 
@@ -62,7 +67,10 @@ void main() {
         hasSwordSong: false,
       ),
     );
-    expect(find.text(UiStrings.criticalDamagePopup(4500)), findsOneWidget);
+    expect(find.text(UiStrings.criticalLabel), findsOneWidget);
+    expect(find.text('4500'), findsOneWidget);
+    expect(find.text(UiStrings.damageSuffix), findsOneWidget);
+    expect(find.text(UiStrings.criticalDamagePopup(4500)), findsNothing);
     expect(find.text(UiStrings.swordSongHint), findsNothing);
   });
 

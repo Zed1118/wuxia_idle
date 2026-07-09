@@ -124,55 +124,50 @@ class _PopupContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _color(data.type);
-    const baseFontSize = 28.0;
+    const baseFontSize = 30.0;
     final fontSize = data.type == PopupType.critical
         ? baseFontSize * criticalFontScale
         : baseFontSize;
     final hasSideMark = data.hasSwordSong;
-    final damageText = Text(
-      data.text,
-      style: TextStyle(
-        color: color,
-        fontSize: fontSize,
-        fontWeight: data.type == PopupType.critical
-            ? FontWeight.w900
-            : FontWeight.w800,
-        height: 1.0,
-        letterSpacing: data.type == PopupType.critical ? 0.5 : 0.2,
-        shadows: [
-          if (data.type == PopupType.normal) ...[
-            const Shadow(
-              blurRadius: 0,
-              color: Color(0xFFF9E7C0),
-              offset: Offset(1.4, 0),
+    final damageText = data.type == PopupType.critical
+        ? _CriticalDamageText(text: data.text, fontSize: fontSize)
+        : Text(
+            data.text,
+            style: TextStyle(
+              color: _color(data.type),
+              fontSize: fontSize,
+              fontWeight: FontWeight.w900,
+              height: 1.0,
+              letterSpacing: 0,
+              shadows: const [
+                Shadow(
+                  blurRadius: 0,
+                  color: Color(0xFFF8E7C3),
+                  offset: Offset(1.6, 0),
+                ),
+                Shadow(
+                  blurRadius: 0,
+                  color: Color(0xFFF8E7C3),
+                  offset: Offset(-1.6, 0),
+                ),
+                Shadow(
+                  blurRadius: 0,
+                  color: Color(0xFFF8E7C3),
+                  offset: Offset(0, 1.6),
+                ),
+                Shadow(
+                  blurRadius: 0,
+                  color: Color(0xFFF8E7C3),
+                  offset: Offset(0, -1.6),
+                ),
+                Shadow(
+                  blurRadius: 2,
+                  color: Color(0xAA2A1C12),
+                  offset: Offset(1, 1),
+                ),
+              ],
             ),
-            const Shadow(
-              blurRadius: 0,
-              color: Color(0xFFF9E7C0),
-              offset: Offset(-1.4, 0),
-            ),
-            const Shadow(
-              blurRadius: 0,
-              color: Color(0xFFF9E7C0),
-              offset: Offset(0, 1.4),
-            ),
-            const Shadow(
-              blurRadius: 0,
-              color: Color(0xFFF9E7C0),
-              offset: Offset(0, -1.4),
-            ),
-          ],
-          Shadow(
-            blurRadius: data.type == PopupType.critical ? 4 : 2,
-            color: data.type == PopupType.critical
-                ? const Color(0xCC2A0500)
-                : const Color(0xAA2A1C12),
-            offset: const Offset(1, 1),
-          ),
-        ],
-      ),
-    );
+          );
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -180,14 +175,14 @@ class _PopupContent extends StatelessWidget {
       children: [
         if (data.type == PopupType.critical)
           SizedBox(
-            width: hasSideMark ? 154 : 190,
+            width: hasSideMark ? 160 : 218,
             child: FittedBox(
               alignment: Alignment.centerLeft,
               fit: BoxFit.scaleDown,
               child: CustomPaint(
                 painter: const _CriticalBrushPainter(),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 7, 14, 9),
+                  padding: const EdgeInsets.fromLTRB(16, 9, 16, 11),
                   child: damageText,
                 ),
               ),
@@ -215,10 +210,104 @@ class _PopupContent extends StatelessWidget {
   }
 
   static Color _color(PopupType type) => switch (type) {
-    PopupType.normal => const Color(0xFFB72218),
-    PopupType.critical => const Color(0xFFFFE7CB),
+    PopupType.normal => const Color(0xFF211A13),
+    PopupType.critical => const Color(0xFFB72218),
     PopupType.dodge => WuxiaColors.popupDodge,
   };
+}
+
+class _CriticalDamageText extends StatelessWidget {
+  const _CriticalDamageText({required this.text, required this.fontSize});
+
+  final String text;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final parsed = _parseCriticalDamage(text);
+    if (parsed == null) {
+      return Text(text, style: _numberStyle(fontSize));
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(right: 5, bottom: 3),
+          child: Text(
+            UiStrings.criticalLabel,
+            style: TextStyle(
+              color: const Color(0xFF7E1610),
+              fontSize: fontSize * 0.43,
+              fontWeight: FontWeight.w900,
+              height: 1,
+              letterSpacing: 0,
+              shadows: const [
+                Shadow(
+                  blurRadius: 0,
+                  color: Color(0xFFFFE4C6),
+                  offset: Offset(1, 0),
+                ),
+                Shadow(
+                  blurRadius: 1,
+                  color: Color(0x77300000),
+                  offset: Offset(0.5, 0.5),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Text(parsed.damage, style: _numberStyle(fontSize)),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 4),
+          child: Text(
+            UiStrings.damageSuffix,
+            style: TextStyle(
+              color: const Color(0xFF37241A),
+              fontSize: fontSize * 0.36,
+              fontWeight: FontWeight.w800,
+              height: 1,
+              letterSpacing: 0,
+              shadows: const [
+                Shadow(
+                  blurRadius: 0,
+                  color: Color(0xFFFFE4C6),
+                  offset: Offset(1, 0),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static TextStyle _numberStyle(double fontSize) => TextStyle(
+    color: const Color(0xFFC21F17),
+    fontSize: fontSize * 1.1,
+    fontWeight: FontWeight.w900,
+    height: 0.92,
+    letterSpacing: 0,
+    shadows: const [
+      Shadow(blurRadius: 0, color: Color(0xFFFFE4C6), offset: Offset(1.8, 0)),
+      Shadow(blurRadius: 0, color: Color(0xFFFFE4C6), offset: Offset(-1.8, 0)),
+      Shadow(blurRadius: 0, color: Color(0xFFFFE4C6), offset: Offset(0, 1.8)),
+      Shadow(blurRadius: 0, color: Color(0xFFFFE4C6), offset: Offset(0, -1.8)),
+      Shadow(blurRadius: 5, color: Color(0xAA3B0602), offset: Offset(1, 1)),
+    ],
+  );
+
+  static _CriticalDamageParts? _parseCriticalDamage(String text) {
+    final match = RegExp(r'^暴击 (\d+) 伤害$').firstMatch(text);
+    if (match == null) return null;
+    return _CriticalDamageParts(match.group(1)!);
+  }
+}
+
+class _CriticalDamageParts {
+  const _CriticalDamageParts(this.damage);
+
+  final String damage;
 }
 
 class _CriticalBrushPainter extends CustomPainter {
@@ -226,17 +315,22 @@ class _CriticalBrushPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final body = Paint()
-      ..color = const Color(0xFFC12D22).withValues(alpha: 0.95)
+    final paper = Paint()
+      ..color = const Color(0xFFFFE8BF).withValues(alpha: 0.88)
       ..style = PaintingStyle.fill;
-    final darkEdge = Paint()
-      ..color = const Color(0xFF5D100B).withValues(alpha: 0.78)
+    final paperEdge = Paint()
+      ..color = const Color(0xFF7B2B17).withValues(alpha: 0.56)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8;
-    final highlight = Paint()
-      ..color = const Color(0xFFFFC6A6).withValues(alpha: 0.18)
+      ..strokeWidth = 1.2;
+    final brush = Paint()
+      ..color = const Color(0xFFC12D22).withValues(alpha: 0.34)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.6
+      ..strokeWidth = size.height * 0.34
+      ..strokeCap = StrokeCap.round;
+    final slash = Paint()
+      ..color = const Color(0xFF7E1610).withValues(alpha: 0.28)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.height * 0.13
       ..strokeCap = StrokeCap.round;
 
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
@@ -268,13 +362,18 @@ class _CriticalBrushPainter extends CustomPainter {
       )
       ..close();
 
-    canvas.drawPath(path, body);
-    canvas.drawPath(path, darkEdge);
+    canvas.drawPath(path, paper);
     canvas.drawLine(
-      Offset(rect.left + 10, rect.top + size.height * 0.28),
-      Offset(rect.right - 12, rect.top + size.height * 0.22),
-      highlight,
+      Offset(rect.left + 16, rect.top + size.height * 0.58),
+      Offset(rect.right - 14, rect.top + size.height * 0.45),
+      brush,
     );
+    canvas.drawLine(
+      Offset(rect.left + size.width * 0.12, rect.bottom - 7),
+      Offset(rect.right - size.width * 0.12, rect.bottom - 4),
+      slash,
+    );
+    canvas.drawPath(path, paperEdge);
   }
 
   @override

@@ -325,7 +325,9 @@ void main() {
     ]);
     await tester.pump();
     await tester.pump();
-    expect(find.text(UiStrings.criticalDamagePopup(3600)), findsOneWidget);
+    expect(find.text(UiStrings.criticalLabel), findsOneWidget);
+    expect(find.text('3600'), findsOneWidget);
+    expect(find.text(UiStrings.damageSuffix), findsOneWidget);
   });
 
   testWidgets('actionLog 增长 - 闪避飘字显示「闪」字', (WidgetTester tester) async {
