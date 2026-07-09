@@ -56,6 +56,10 @@ enum VisualRoute {
     'mainline_first_clear_battle',
     '主线首通真战斗验收·真 stage_01_03 + readable_first_clear 调参 + 起手暂停可单步',
   ),
+  mainlineFirstClearBattleAuto(
+    'mainline_first_clear_battle_auto',
+    '主线首通真战斗自动播放验收·真 stage_01_03 + readable_first_clear + 起手/爆发/胜利截图',
+  ),
   battleUltimateCaption(
     'battle_ultimate_caption',
     '战斗屏·大招题字静态验收(玩家暖金 + 敌方绛红 两态)',

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -364,7 +366,22 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await OnboardingService(
         isar: isar,
       ).ensureFoundingMasters(soloStart: false);
-      return const _MainlineFirstClearBattlePreview(stageId: 'stage_01_03');
+      return const _MainlineFirstClearBattlePreview(
+        stageId: 'stage_01_03',
+        startPaused: true,
+        autoStep: false,
+      );
+    case VisualRoute.mainlineFirstClearBattleAuto:
+      await isar.writeTxn(() => isar.mainlineProgress.clear());
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
+      return const _MainlineFirstClearBattlePreview(
+        stageId: 'stage_01_03',
+        startPaused: true,
+        autoStep: true,
+        autoStepInitialDelay: Duration(seconds: 60),
+      );
     case VisualRoute.battleUltimateCaption:
       return const _UltimateCaptionPreview();
     case VisualRoute.battleBossFrame:
@@ -721,9 +738,17 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
 }
 
 class _MainlineFirstClearBattlePreview extends ConsumerStatefulWidget {
-  const _MainlineFirstClearBattlePreview({required this.stageId});
+  const _MainlineFirstClearBattlePreview({
+    required this.stageId,
+    required this.startPaused,
+    required this.autoStep,
+    this.autoStepInitialDelay = Duration.zero,
+  });
 
   final String stageId;
+  final bool startPaused;
+  final bool autoStep;
+  final Duration autoStepInitialDelay;
 
   @override
   ConsumerState<_MainlineFirstClearBattlePreview> createState() =>
@@ -733,6 +758,7 @@ class _MainlineFirstClearBattlePreview extends ConsumerStatefulWidget {
 class _MainlineFirstClearBattlePreviewState
     extends ConsumerState<_MainlineFirstClearBattlePreview> {
   String? _setupError;
+  Timer? _autoStepTimer;
 
   @override
   void initState() {
@@ -746,11 +772,33 @@ class _MainlineFirstClearBattlePreviewState
         ).buildTeams(stage, readableFirstClearTuning: true);
         if (!mounted) return;
         ref.read(battleProvider.notifier).startBattle(left, right, seed: 709);
+        if (widget.autoStep) {
+          _autoStepTimer = Timer(widget.autoStepInitialDelay, _startAutoStep);
+        }
       } catch (e) {
         if (!mounted) return;
         setState(() => _setupError = e.toString());
       }
     });
+  }
+
+  void _startAutoStep() {
+    _autoStepTimer?.cancel();
+    _autoStepTimer = Timer.periodic(const Duration(milliseconds: 2200), (_) {
+      if (!mounted) return;
+      final state = ref.read(battleProvider);
+      if (state.isFinished) {
+        _autoStepTimer?.cancel();
+        return;
+      }
+      ref.read(battleProvider.notifier).step();
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoStepTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -772,7 +820,7 @@ class _MainlineFirstClearBattlePreviewState
       sceneBackgroundPath: stage.sceneBackgroundPath,
       autoStart: true,
       allowPlayerIntervention: true,
-      startPaused: true,
+      startPaused: widget.startPaused,
       readablePacing: true,
       onBattleEnd: () {},
     );

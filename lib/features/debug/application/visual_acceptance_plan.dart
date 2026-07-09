@@ -36,6 +36,7 @@ const List<VisualRoute> _smokeRoutes = [
   VisualRoute.inventory,
   VisualRoute.battleScene,
   VisualRoute.mainlineFirstClearBattle,
+  VisualRoute.mainlineFirstClearBattleAuto,
   VisualRoute.techniquePanelTierAll,
   VisualRoute.shop,
   VisualRoute.seclusionMapList,
@@ -113,6 +114,11 @@ List<String> _checksFor(VisualRoute route) {
       '真主线 stage 首通起手暂停可见',
       'readable pacing 下 HUD/血条/伤害层级可读',
       '单步/继续控件不遮挡关键角色',
+    ],
+    VisualRoute.mainlineFirstClearBattleAuto => const [
+      '真主线 stage 首通可自动播放',
+      '起手/爆发/胜利三帧可连续截图',
+      '短战斗不会立即跳过观看窗口',
     ],
     VisualRoute.techniquePanelTierAll => const [
       '七阶心法 cover 同屏',

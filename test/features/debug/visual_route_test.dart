@@ -171,6 +171,10 @@ void main() {
         parseVisualRoute('mainline_first_clear_battle'),
         VisualRoute.mainlineFirstClearBattle,
       );
+      expect(
+        parseVisualRoute('mainline_first_clear_battle_auto'),
+        VisualRoute.mainlineFirstClearBattleAuto,
+      );
     });
   });
 
@@ -258,6 +262,19 @@ void main() {
       }
       final target = await buildVisualTarget(
         VisualRoute.mainlineFirstClearBattle,
+        IsarSetup.instance,
+      );
+      expect(target.runtimeType.toString(), '_MainlineFirstClearBattlePreview');
+    });
+
+    test('mainline_first_clear_battle_auto → 主线首通自动播放 preview 接线', () async {
+      if (!GameRepository.isLoaded) {
+        await GameRepository.loadAllDefs(
+          loader: (path) => File(path).readAsString(),
+        );
+      }
+      final target = await buildVisualTarget(
+        VisualRoute.mainlineFirstClearBattleAuto,
         IsarSetup.instance,
       );
       expect(target.runtimeType.toString(), '_MainlineFirstClearBattlePreview');
