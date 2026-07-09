@@ -64,7 +64,8 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
     setState(() => _preparing = true);
     try {
       await widget.units[_index].startBattle(ref);
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('SweepScreen startBattle failed at index $_index: $e\n$st');
       // 装配失败 → halt（停在该关）。
       _controller.recordDefeat();
       if (mounted) setState(() => _preparing = false);

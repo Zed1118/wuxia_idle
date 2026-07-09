@@ -10,12 +10,12 @@ import 'package:wuxia_idle/features/cultivation/presentation/stage_skill_drop_ho
 import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
 
 TowerFloorDef _bossFloor({String? fragment}) => TowerFloorDef(
-      floorIndex: 10,
-      requiredRealm: RealmTier.sanLiu,
-      enemyTeam: const [],
-      bossKind: TowerBossKind.major,
-      dropSkillFragmentId: fragment,
-    );
+  floorIndex: 10,
+  requiredRealm: RealmTier.sanLiu,
+  enemyTeam: const [],
+  bossKind: TowerBossKind.major,
+  dropSkillFragmentId: fragment,
+);
 
 void main() {
   late Directory tempDir;
@@ -68,7 +68,9 @@ void main() {
       towerFragmentDropProb: 1.0,
       rng: Random(0),
     );
-    // 不抛即可(无 fragment 不写)。
-    expect(true, true);
+    final (cur, threshold) = await svc.fragmentProgress('skill_noop_sentinel');
+    expect(cur, 0);
+    expect(threshold, 5);
+    expect(await svc.isUnlocked('skill_noop_sentinel'), isFalse);
   });
 }

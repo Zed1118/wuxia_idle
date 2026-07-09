@@ -69,7 +69,8 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
             (yaml['defeat_text'] as String?) ??
             UiStrings.sectEventNarrativeFallbackDefeat,
       );
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('SectEventDialog narrative fallback: $e\n$st');
       return _NarrativeData(
         title: widget.event.narrativeId,
         opening: UiStrings.sectEventNarrativeFallbackOpening,

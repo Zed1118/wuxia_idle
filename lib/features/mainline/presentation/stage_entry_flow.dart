@@ -742,7 +742,8 @@ String? _resolveTechName(Character ch, Map<int, List<Technique>> techsByCh) {
   );
   try {
     return GameRepository.instance.getTechnique(mainTech.defId).name;
-  } catch (_) {
+  } catch (e, st) {
+    debugPrint('resolve main technique name failed: $e\n$st');
     return null;
   }
 }

@@ -215,7 +215,10 @@ class _DeedsSection extends StatelessWidget {
           fate.label,
           origin.biographyLine,
         );
-      } catch (_) {
+      } catch (e, st) {
+        debugPrint(
+          'LineageCharacterDetailScreen deeds fallback for founder creation metadata: $e\n$st',
+        );
         return generationText;
       }
     }

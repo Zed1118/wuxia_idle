@@ -20,7 +20,7 @@ final zangjuangeCluesProvider = FutureProvider<List<ArchiveClue>>((ref) async {
     missingFragmentCount: missingFragmentCount,
     unbrokenBossCycleCount: unbrokenBossCycleCount,
   );
-});
+}, dependencies: [equipmentCatalogListProvider]);
 
 List<ArchiveClue> buildZangjuangeClues({
   required int missingEquipmentCount,

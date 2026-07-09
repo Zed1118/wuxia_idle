@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/character.dart';
@@ -129,7 +130,7 @@ final taohuaIslandViewProvider = FutureProvider.autoDispose<IslandView?>((
     injuredCharacterCount: injuredCharacterCount,
     maxInjuryHoursRemaining: maxInjuryHoursRemaining,
   );
-});
+}, dependencies: [islandPrepAdviceProvider]);
 
 /// 藏卷阁线索到桃花岛整备建议的只读 best-effort 桥接。
 ///
@@ -139,7 +140,8 @@ final islandPrepAdviceProvider =
       try {
         final clues = await ref.watch(zangjuangeCluesProvider.future);
         return IslandPrepAdviceService.fromClues(clues);
-      } catch (_) {
+      } catch (e, st) {
+        debugPrint('taohua island prep advice fallback: $e\n$st');
         return const [];
       }
-    });
+    }, dependencies: [zangjuangeCluesProvider]);

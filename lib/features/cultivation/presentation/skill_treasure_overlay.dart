@@ -400,7 +400,8 @@ String? skillFragmentLineFor(SkillDropResult result) {
   if (GameRepository.isLoaded) {
     try {
       skillName = GameRepository.instance.getSkill(skillId).name;
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('skillFragmentLineFor skill lookup fallback: $e\n$st');
       // getSkill 抛 StateError：id 不存在，fallback 用 id 字面量。
     }
   }
@@ -435,7 +436,8 @@ Future<bool> presentSkillTreasure(
       final def = GameRepository.instance.getSkill(skillId);
       skillName = def.name;
       imagePath = def.imagePath;
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('presentSkillTreasure skill lookup fallback: $e\n$st');
       // getSkill 抛 StateError：id 不存在，fallback 用 id 字面量
     }
   }
