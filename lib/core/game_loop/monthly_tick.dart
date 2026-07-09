@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show debugPrint;
+
 /// 月度 tick 协调器(1.0 P3.4 §12.1 Batch 2.2 引入)。
 ///
 /// **最简 infra**:本 Phase 只接 1 callsite stub(SectEventService.checkAndTrigger),
@@ -21,8 +23,8 @@ class MonthlyTickCoordinator {
     for (final cb in _callbacks) {
       try {
         await cb(now);
-      } catch (_) {
-        // 单 cb 异常吞掉 · log 留 Phase 4 接 logger 时落
+      } catch (e, st) {
+        debugPrint('MonthlyTickCoordinator callback failed: $e\n$st');
       }
     }
   }

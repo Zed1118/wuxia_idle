@@ -6,8 +6,8 @@ import 'package:wuxia_idle/features/seclusion/application/offline_passive_servic
 void main() {
   const cfg = PassiveIdleConfig(
     baseMojianshiPerHour: 0.25,
-    baseExpPerHour: 25.0,
-    realmScalePerTier: 1.3,
+    baseExpPerHour: 50.0,
+    realmScalePerTier: 1.6,
     capHours: 72,
     minRecapHours: 1.0,
   );
@@ -31,7 +31,7 @@ void main() {
       config: cfg,
     );
     expect(y.mojianshi, 2); // floor(0.25×10×1.0)=2
-    expect(y.experience, 250); // floor(25×10×1.0)=250
+    expect(y.experience, 500); // floor(50×10×1.0)=500
     expect(y.awayHours, 10);
     expect(y.settledHours, 10);
     expect(y.isCapped, isFalse);
@@ -43,18 +43,27 @@ void main() {
       realmTier: RealmTier.xueTu,
       config: cfg,
     );
-    expect(y.experience, (25.0 * 72).floor()); // 1800
+    expect(y.experience, (50.0 * 72).floor()); // 3600
     expect(y.awayHours, 100);
     expect(y.settledHours, 72);
     expect(y.isCapped, isTrue);
   });
 
-  test('境界 scale 生效(三流 ×1.3)', () {
+  test('境界 scale 生效(三流 ×1.6)', () {
     final y = OfflinePassiveService.compute(
       awayHours: 10,
       realmTier: RealmTier.sanLiu,
       config: cfg,
     );
-    expect(y.experience, (25.0 * 10 * 1.3).floor()); // 325
+    expect(y.experience, (50.0 * 10 * 1.6).floor()); // 800
+  });
+
+  test('武圣 8h 被动经验不再是千分级收益', () {
+    final y = OfflinePassiveService.compute(
+      awayHours: 8,
+      realmTier: RealmTier.wuSheng,
+      config: cfg,
+    );
+    expect(y.experience, (50.0 * 8 * 16.777216).floor()); // 6710
   });
 }

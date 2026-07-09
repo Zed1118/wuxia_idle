@@ -7,6 +7,7 @@ import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/victory_overlay.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 /// 最短测试动画时序，加速 pumpAndSettle。
 const _testAnim = AnimationNumbers(
@@ -94,6 +95,12 @@ Future<void> _triggerLeftWin(
   await tester.pump(const Duration(milliseconds: 300));
 }
 
+Future<void> _closeResultOverlay(WidgetTester tester) async {
+  await tester.tap(find.text(UiStrings.battleContinue));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 300));
+}
+
 void main() {
   // ─── 主测试 1: deferVictoryToCaller=true + leftWin → 不弹 overlay,直接回调 ──
 
@@ -150,6 +157,27 @@ void main() {
 
     await _triggerLeftWin(tester, notifier);
 
+    expect(find.byType(VictoryOverlay), findsOneWidget);
+  });
+
+  testWidgets('连续战斗: 第一场关闭结算后,第二场结束仍会弹出 VictoryOverlay', (tester) async {
+    final notifier = await _pump(tester, deferVictoryToCaller: false);
+    final firstStart = notifier.state;
+
+    await _triggerLeftWin(tester, notifier);
+    expect(find.byType(VictoryOverlay), findsOneWidget);
+    await _closeResultOverlay(tester);
+    expect(find.byType(VictoryOverlay), findsNothing);
+
+    notifier.push(
+      BattleState.initial(
+        leftTeam: firstStart.leftTeam,
+        rightTeam: firstStart.rightTeam,
+      ),
+    );
+    await tester.pump();
+
+    await _triggerLeftWin(tester, notifier);
     expect(find.byType(VictoryOverlay), findsOneWidget);
   });
 

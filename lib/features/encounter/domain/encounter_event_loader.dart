@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../../../data/yaml_loader.dart';
@@ -38,18 +39,18 @@ class EncounterContent {
   });
 
   factory EncounterContent.placeholder(String id) => EncounterContent(
-        id: id,
-        title: null,
-        opening: '[文案待补:$id]',
-        choices: const [
-          EncounterChoice(
-            text: UiStrings.encounterPlaceholderChoice,
-            outcomeId: 'skip',
-            body: '',
-          ),
-        ],
-        isPlaceholder: true,
-      );
+    id: id,
+    title: null,
+    opening: '[文案待补:$id]',
+    choices: const [
+      EncounterChoice(
+        text: UiStrings.encounterPlaceholderChoice,
+        outcomeId: 'skip',
+        body: '',
+      ),
+    ],
+    isPlaceholder: true,
+  );
 
   factory EncounterContent.fromYaml(Map<String, dynamic> y) {
     return EncounterContent(
@@ -57,8 +58,10 @@ class EncounterContent {
       title: y['title'] as String?,
       opening: (y['opening'] as String?)?.trim() ?? '',
       choices: ((y['choices'] as List?) ?? const [])
-          .map((e) =>
-              EncounterChoice.fromYaml(Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) =>
+                EncounterChoice.fromYaml(Map<String, dynamic>.from(e as Map)),
+          )
           .toList(growable: false),
       isPlaceholder: false,
     );
@@ -98,7 +101,11 @@ class EncounterEventLoader {
       final raw = await fn('data/events/$encounterId.yaml');
       final y = parseYamlMap(raw);
       return EncounterContent.fromYaml(y);
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint(
+        'EncounterEventLoader.load($encounterId) fallback to placeholder: '
+        '$e\n$st',
+      );
       return EncounterContent.placeholder(encounterId);
     }
   }

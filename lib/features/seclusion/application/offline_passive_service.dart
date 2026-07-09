@@ -23,7 +23,7 @@ typedef PassiveYield = ({
 
 /// M2 范围 B 通用被动离线挂机服务。
 ///
-/// [compute] 纯函数算产量（≈闭关 25%，base 走 numbers.yaml passive_idle）。
+/// [compute] 纯函数算产量（经验/磨剑石各走 numbers.yaml passive_idle 锚点）。
 /// 副作用入库见 [settle]（Task 4）。与闭关互斥：仅在无 active 闭关时由 gate 调用。
 class OfflinePassiveService {
   OfflinePassiveService._();
