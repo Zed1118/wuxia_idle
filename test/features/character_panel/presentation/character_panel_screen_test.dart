@@ -23,6 +23,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_tab.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/glossary_tip.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/section_header.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/stage_progress_row.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 
 /// T28 角色面板 widget 测试（phase2_tasks.md §407）。
@@ -928,13 +929,10 @@ void main() {
 
     // tap close → sheet 关闭(标题 + 空态文案消失)。
     // 注:该 screen 测试布局下矮空态 sheet 锚到视口下缘外,close 按钮几何中心落屏外
-    // → tester.tap 取中心会 miss;直接取 IconButton.onPressed 调用验证关闭接线
+    // → tester.tap 取中心会 miss;直接取 WuxiaIconButton.onPressed 调用验证关闭接线
     // (按钮可见性已在上方断言,此处验 onPressed → Navigator.pop 真关闭 sheet)。
-    final closeBtn = tester.widget<IconButton>(
-      find.ancestor(
-        of: find.byIcon(Icons.close),
-        matching: find.byType(IconButton),
-      ),
+    final closeBtn = tester.widget<WuxiaIconButton>(
+      find.widgetWithIcon(WuxiaIconButton, Icons.close),
     );
     expect(closeBtn.onPressed, isNotNull);
     closeBtn.onPressed!();
