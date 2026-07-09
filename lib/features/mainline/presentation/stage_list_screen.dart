@@ -36,6 +36,7 @@ import '../domain/onboarding_gate.dart';
 import 'new_save_goal_guidance_view.dart';
 import 'stage_entry_flow.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 
 /// 章节内关卡列表（Phase 3 T35）。
 ///
@@ -1021,28 +1022,9 @@ class _StageRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
-              IconButton(
-                icon: const Icon(Icons.info_outline, size: 16),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(
-                  width: 36,
-                  height: 36,
-                ),
-                splashRadius: 18,
+              WuxiaIconButton(
+                icon: Icons.info_outline,
                 tooltip: UiStrings.prebattleIntelTitle,
-                color: WuxiaColors.textMuted,
-                style: IconButton.styleFrom(
-                  backgroundColor: WuxiaColors.sidebar.withValues(alpha: 0.46),
-                  hoverColor: WuxiaColors.resultHighlight.withValues(
-                    alpha: 0.10,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                    side: BorderSide(
-                      color: WuxiaColors.border.withValues(alpha: 0.62),
-                    ),
-                  ),
-                ),
                 onPressed: () => showStageIntelDialog(
                   context,
                   stage: def,

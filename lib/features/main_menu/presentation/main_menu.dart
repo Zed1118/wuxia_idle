@@ -54,6 +54,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ink_button.dart';
 import '../../../shared/widgets/wuxia_ui/currency_pill.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import '../../tutorial/application/tutorial_providers.dart';
 import '../../tutorial/domain/tutorial_hint_def.dart';
 import '../../tutorial/presentation/tutorial_banner_card.dart';
@@ -582,12 +583,10 @@ class MainMenu extends ConsumerWidget {
                         compact: true,
                       ),
                       const SizedBox(width: 8),
-                      IconButton(
+                      WuxiaIconButton(
                         tooltip: UiStrings.mainMenuQuitTooltip,
-                        icon: const Icon(
-                          Icons.power_settings_new,
-                          color: WuxiaColors.textMuted,
-                        ),
+                        icon: Icons.power_settings_new,
+                        destructive: true,
                         onPressed: () => AppExit.confirmAndQuit(context),
                       ),
                     ],

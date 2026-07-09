@@ -628,10 +628,8 @@ class _ChapterCard extends StatelessWidget {
                         ),
                       ),
                       if (onViewScroll != null) ...[
-                        IconButton(
-                          icon: const Icon(Icons.auto_stories),
-                          color: WuxiaColors.textSecondary,
-                          iconSize: 20,
+                        WuxiaIconButton(
+                          icon: Icons.auto_stories,
                           tooltip: UiStrings.chapterScrollTooltip,
                           onPressed: onViewScroll,
                         ),
