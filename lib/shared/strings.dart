@@ -2939,17 +2939,17 @@ class UiStrings {
   static const String taohuaIslandTitle = '桃花岛';
 
   /// 桃花岛场景化主屏总览。
-  static const String taohuaIslandOverviewTitle = '岛上总览';
-  static const String taohuaIslandOverviewBody = '洞府、药圃、炉坊沿岛势分布，物产、加工与疗养一屏可察。';
+  static const String taohuaIslandOverviewTitle = '岛务概览';
+  static const String taohuaIslandOverviewBody = '先看三项：可收物产、加工成品、伤员疗养。';
   static const String taohuaIslandSceneCave = '洞府';
-  static const String taohuaIslandSceneCaveBody = '门人调息疗养，出岛前先看伤势。';
+  static const String taohuaIslandSceneCaveBody = '疗伤与调息';
   static const String taohuaIslandSceneField = '药圃';
-  static const String taohuaIslandSceneFieldBody = '草药、灵泉与木材随时辰积蓄。';
+  static const String taohuaIslandSceneFieldBody = '原料自然积蓄';
   static const String taohuaIslandSceneWorkshop = '炉坊';
-  static const String taohuaIslandSceneWorkshopBody = '精铁入炉，丹药与辅材各守配方。';
+  static const String taohuaIslandSceneWorkshopBody = '配方加工成品';
   static const String taohuaIslandSceneDock = '渡口';
-  static const String taohuaIslandSceneDockBody = '暂作外出整备与后续工程留白。';
-  static const String taohuaIslandSceneDutyTitle = '空间职责';
+  static const String taohuaIslandSceneDockBody = '外出工程预留';
+  static const String taohuaIslandSceneDutyTitle = '分区职能';
   static const String taohuaIslandSceneMapTitle = '岛屿场景';
   static String taohuaIslandSceneMapSummary(
     int rawStored,
@@ -2964,9 +2964,9 @@ class UiStrings {
   static const String taohuaIslandSelectedBuildingBody = '仓储、配方与修缮俱归此处。';
 
   /// 桃花岛总览状态摘要。
-  static const String taohuaIslandStatusRawTitle = '当前物产';
+  static const String taohuaIslandStatusRawTitle = '可收物产';
   static String taohuaIslandStatusRawValue(int stored) => '可收 $stored 件';
-  static const String taohuaIslandStatusWorkshopTitle = '作坊加工';
+  static const String taohuaIslandStatusWorkshopTitle = '成品加工';
   static String taohuaIslandStatusWorkshopValue(
     int stored,
     int active,
@@ -2974,7 +2974,7 @@ class UiStrings {
   ) => paused > 0
       ? '成品 $stored · $active 动 $paused 停'
       : '成品 $stored · $active 坊运转';
-  static const String taohuaIslandStatusHealingTitle = '洞府疗养';
+  static const String taohuaIslandStatusHealingTitle = '伤员疗养';
   static const String taohuaIslandStatusHealingNone = '无人重伤';
   static String taohuaIslandStatusHealingValue(int count, double hours) =>
       '$count 名调息 · 余 ${hours.ceil()}h';
@@ -3190,7 +3190,7 @@ class UiStrings {
   static const String sweepReadinessInsufficientButton = '战备不足，暂缓扫荡';
   static const String sweepReadinessPanelTitle = '扫荡战备';
   static const String sweepReadinessPanelBody =
-      '主线已通关关卡扫荡消耗战备，在线离线同速恢复，不影响首通与离线收益';
+      '只限制已通关主线的重复扫荡；首通、普通战斗与离线收益不消耗战备';
   static const String sweepReadinessFull = '战备已满';
 
   static String sweepReadinessShort(int current, int max) =>

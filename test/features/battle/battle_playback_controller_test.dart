@@ -35,6 +35,7 @@ const _testAnim = AnimationNumbers(
   criticalFontScale: 1.5,
   projectileMs: 30,
   hitFlashMs: 30,
+  readableActionIntervalMs: 2100,
 );
 
 /// 定住种子态、advance/step 全 no-op，避免 timer 触发真引擎推进。
@@ -224,7 +225,7 @@ void main() {
   testWidgets('readablePacing 仅放慢常速播放,不影响快进间隔', (tester) async {
     final c = (await _pump(tester, readablePacing: true)).controller;
 
-    expect(c.playbackIntervalMsForTest, 1800);
+    expect(c.playbackIntervalMsForTest, _testAnim.readableActionIntervalMs);
     c.toggleFastForward();
     expect(c.playbackIntervalMsForTest, _testAnim.fastForwardIntervalMs);
   });

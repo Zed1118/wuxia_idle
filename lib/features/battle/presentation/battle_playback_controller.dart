@@ -97,8 +97,6 @@ class BattlePlaybackController {
   bool _readablePacing;
   bool _disposed = false;
 
-  static const int readablePacingMinIntervalMs = 1800;
-
   // ─── 拍钟调度字段（beat/timer/hit-stop/pause/fast-forward） ──────────────────
   // 读秒圆环节拍 controller（构造体内据 _animConfig 初始化）。
   late final AnimationController _beatCtrl;
@@ -199,8 +197,8 @@ class BattlePlaybackController {
 
   int _readableIntervalMs(int baseMs) {
     if (!_readablePacing) return baseMs;
-    return baseMs < readablePacingMinIntervalMs
-        ? readablePacingMinIntervalMs
+    return baseMs < _animConfig.readableActionIntervalMs
+        ? _animConfig.readableActionIntervalMs
         : baseMs;
   }
 

@@ -115,11 +115,11 @@ combat:
     evasion_rate: 0.05               # 基础闪避率
 
   readable_first_clear:
-    enemy_hp_multiplier: 2.2          # 主线首通可读节奏:普通关温和拉长,避免 1-3 秒结束但不再出现离谱血条
-    boss_enemy_hp_multiplier: 1.25    # Boss 小幅加血建立关底节奏,攻击仍压低避免变硬墙
-    enemy_attack_multiplier: 0.75     # 普通首通略降敌攻,保留压力但避免拉长血线后变硬墙
-    opening_auto_skill_cooldown_turns: 1 # 首通开局自动技能冷却 1 轮,先露出普攻再让技能第二轮登场
-    auto_skill_power_multiplier: 0.85 # 首通自动技能保留存在感,但压低二轮技能直接收尾的概率
+    enemy_hp_multiplier: 2.4          # 主线首通可读节奏:普通关温和拉长,避免 1-3 秒结束但不再出现离谱血条
+    boss_enemy_hp_multiplier: 1.35    # Boss 小幅加血建立关底节奏,攻击仍压低避免变硬墙
+    enemy_attack_multiplier: 0.70     # 首通略降敌攻,保留压力但避免拉长血线后变硬墙
+    opening_auto_skill_cooldown_turns: 1 # 首通开局自动技能冷却 1 轮,先露出普攻交换再让技能登场
+    auto_skill_power_multiplier: 0.75 # 首通自动技能保留存在感,但压低二轮技能直接收尾的概率
 
   # --- 数值红线 cap（GDD §5.4 硬上限，单一真相源）---
   # 这两条是战斗派生属性的硬天花板：玩家 build（founder buff / 师承遗物 / 心法相生
@@ -1557,7 +1557,8 @@ animation:
   action_interval_ms: 1000     # 正常速度：单拍给够攻击动画(400)+飘字读完
   fast_forward_interval_ms: 100  # 快进速度（一键扫荡的战斗本体也走此速）
   sweep_inter_battle_gap_ms: 150  # 一键扫荡：连播逐关切换的关间过场停顿
-  readable_victory_min_ms: 10000  # 主线首通可读节奏：胜利交接前至少保留战场这么久，短战斗补足观看时间
+  readable_action_interval_ms: 2200 # 主线首通可读节奏：常速单拍下限，保证普攻/技能/破招飘字有读秒
+  readable_victory_min_ms: 14000  # 主线首通可读节奏：胜利交接前至少保留战场这么久，短战斗补足观看时间
 
   # 屏震（暴击时触发）
   shake_offset_px: 3.0         # 最大偏移幅度

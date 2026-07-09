@@ -1708,6 +1708,7 @@ class AnimationNumbers {
   final int damagePopupMs;
   final int actionIntervalMs;
   final int fastForwardIntervalMs;
+  final int readableActionIntervalMs;
   final int readableVictoryMinMs;
 
   /// 批次 2.4 后不再被消费：战斗屏震振幅改走 combat.impact_feedback 分档
@@ -1740,6 +1741,7 @@ class AnimationNumbers {
     required this.damagePopupMs,
     required this.actionIntervalMs,
     required this.fastForwardIntervalMs,
+    this.readableActionIntervalMs = 1800,
     this.readableVictoryMinMs = 10000,
     required this.shakeOffsetPx,
     required this.shakeDurationMs,
@@ -1761,6 +1763,7 @@ class AnimationNumbers {
     damagePopupMs: 1000,
     actionIntervalMs: 1000,
     fastForwardIntervalMs: 100,
+    readableActionIntervalMs: 1800,
     readableVictoryMinMs: 10000,
     shakeOffsetPx: 3.0,
     shakeDurationMs: 100,
@@ -1790,6 +1793,8 @@ class AnimationNumbers {
       damagePopupMs: (y['damage_popup_ms'] as num).toInt(),
       actionIntervalMs: (y['action_interval_ms'] as num).toInt(),
       fastForwardIntervalMs: (y['fast_forward_interval_ms'] as num).toInt(),
+      readableActionIntervalMs:
+          (y['readable_action_interval_ms'] as num?)?.toInt() ?? 1800,
       readableVictoryMinMs:
           (y['readable_victory_min_ms'] as num?)?.toInt() ?? 10000,
       shakeOffsetPx: (y['shake_offset_px'] as num).toDouble(),

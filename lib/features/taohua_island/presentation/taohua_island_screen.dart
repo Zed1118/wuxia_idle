@@ -1009,9 +1009,9 @@ class _IslandOverviewHeader extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: WuxiaUi.ink,
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.w800,
-            letterSpacing: 2,
+            letterSpacing: 1.2,
             height: 1.1,
           ),
         ),
@@ -1020,7 +1020,12 @@ class _IslandOverviewHeader extends StatelessWidget {
           UiStrings.taohuaIslandOverviewBody,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: WuxiaUi.ink2, fontSize: 11.5, height: 1.25),
+          style: TextStyle(
+            color: WuxiaUi.ink2,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            height: 1.25,
+          ),
         ),
       ],
     );
@@ -1038,9 +1043,9 @@ class _DutySectionLabel extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
         color: WuxiaUi.muted,
-        fontSize: 11.5,
+        fontSize: 12,
         fontWeight: FontWeight.w800,
-        letterSpacing: 1.5,
+        letterSpacing: 1.0,
         height: 1.35,
       ),
     );
@@ -1071,9 +1076,9 @@ class _CompactSceneChip extends StatelessWidget {
             label,
             style: const TextStyle(
               color: WuxiaUi.ink,
-              fontSize: 12,
+              fontSize: 12.5,
               fontWeight: FontWeight.w800,
-              letterSpacing: 0.8,
+              letterSpacing: 0.4,
               height: 1.3,
             ),
           ),
@@ -1085,7 +1090,8 @@ class _CompactSceneChip extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: WuxiaUi.ink2,
-                fontSize: 11.5,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
                 height: 1.3,
               ),
             ),
@@ -1170,8 +1176,9 @@ class _StatusPillar extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: WuxiaUi.muted,
-                      fontSize: 11,
-                      letterSpacing: 1.1,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
                       height: 1,
                     ),
                   ),
@@ -1182,7 +1189,7 @@ class _StatusPillar extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: WuxiaUi.ink,
-                      fontSize: 15,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                       height: 1.05,
                     ),

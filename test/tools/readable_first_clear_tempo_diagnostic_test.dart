@@ -27,8 +27,8 @@ import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
 
 const _seedsPerStage = 20;
 const _maxTicks = 240;
-const _readableActionSeconds = 1.8;
 const _readableVictoryHandoffSeconds = 1.2;
+const _reportDate = '2026-07-09';
 const _outputDir = 'test/tools/output';
 
 void main() {
@@ -62,8 +62,8 @@ void main() {
         }
       }
 
-      final csv = '$_outputDir/readable_first_clear_tempo_2026-07-08.csv';
-      final md = '$_outputDir/readable_first_clear_tempo_2026-07-08.md';
+      final csv = '$_outputDir/readable_first_clear_tempo_$_reportDate.csv';
+      final md = '$_outputDir/readable_first_clear_tempo_$_reportDate.md';
       _writeCsv(csv, rows);
       final summary = _summarize(stages, rows, repo);
       File(md).writeAsStringSync(summary);
@@ -422,10 +422,12 @@ String _summarize(
   }
 
   final readable = repo.numbers.combat.readableFirstClear;
+  final readableActionSeconds =
+      repo.numbers.animation.readableActionIntervalMs / 1000.0;
   final minVisibleSeconds =
       repo.numbers.animation.readableVictoryMinMs / 1000.0;
   double estVisibleSeconds(_TempoRun r) {
-    final shown = r.actionRows * _readableActionSeconds;
+    final shown = r.actionRows * readableActionSeconds;
     final fill = minVisibleSeconds > shown ? minVisibleSeconds - shown : 0.0;
     final delay = fill > _readableVictoryHandoffSeconds
         ? fill
@@ -434,7 +436,7 @@ String _summarize(
   }
 
   final buf = StringBuffer()
-    ..writeln('# 首通可读节奏诊断 · 2026-07-08')
+    ..writeln('# 首通可读节奏诊断 · $_reportDate')
     ..writeln()
     ..writeln(
       '$_seedsPerStage seed × ${stages.length} mainline × 2 profile。'
@@ -444,7 +446,7 @@ String _summarize(
       '${readable.enemyAttackMultiplier}、自动技能开局冷却 '
       '${readable.openingAutoSkillCooldownTurns} 拍、自动技能倍率 × '
       '${readable.autoSkillPowerMultiplier}。'
-      '估算展示秒数 = actionLog 行数 × ${_readableActionSeconds}s，'
+      '估算展示秒数 = actionLog 行数 × ${readableActionSeconds.toStringAsFixed(1)}s，'
       '并计入首通最短 ${minVisibleSeconds.toStringAsFixed(1)}s 观看兜底。',
     )
     ..writeln()

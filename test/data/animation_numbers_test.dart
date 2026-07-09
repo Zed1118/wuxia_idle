@@ -90,6 +90,10 @@ void main() {
     expect(AnimationNumbers.defaults.sweepInterBattleGapMs, 150);
   });
 
+  test('AnimationNumbers.defaults 含 readableActionIntervalMs', () {
+    expect(AnimationNumbers.defaults.readableActionIntervalMs, 1800);
+  });
+
   test('fromYaml 解析 sweep_inter_battle_gap_ms', () {
     final n = AnimationNumbers.fromYaml(<String, dynamic>{
       'attack_rush_ms': 1,
@@ -104,9 +108,11 @@ void main() {
       'shake_duration_ms': 1,
       'critical_font_scale': 1,
       'sweep_inter_battle_gap_ms': 222,
+      'readable_action_interval_ms': 2333,
       'readable_victory_min_ms': 9999,
     });
     expect(n.sweepInterBattleGapMs, 222);
+    expect(n.readableActionIntervalMs, 2333);
     expect(n.readableVictoryMinMs, 9999);
   });
 
@@ -125,6 +131,7 @@ void main() {
       'critical_font_scale': 1,
     });
     expect(n.sweepInterBattleGapMs, 150);
+    expect(n.readableActionIntervalMs, 1800);
     expect(n.readableVictoryMinMs, 10000);
   });
 
