@@ -166,8 +166,12 @@ class OnlinePresenceController {
     if (_disposed) return;
     try {
       await IsarSetup.touchOnlineNow(now: _clock());
-    } catch (_) {
+    } catch (e, st) {
       // 未 init / 切槽瞬间 → 安全忽略(与原 main._recordOnline catchError 一致)。
+      // 若 Isar 已存在仍失败,说明存档写入路径异常,保留诊断线索。
+      if (IsarSetup.instanceOrNull != null) {
+        debugPrint('OnlinePresence touchOnlineNow skipped: $e\n$st');
+      }
     }
   }
 }
