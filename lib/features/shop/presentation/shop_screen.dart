@@ -22,6 +22,7 @@ import '../../../shared/widgets/wuxia_ui/currency_pill.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../inventory/presentation/material_source_sheet.dart';
+import '../application/shop_invalidation.dart';
 import '../application/shop_need_hint_service.dart';
 import '../application/shop_providers.dart';
 import '../application/shop_service.dart';
@@ -214,8 +215,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     if (!context.mounted) return;
 
     if (result.success) {
-      ref.invalidate(silverBalanceProvider);
-      ref.invalidate(allInventoryItemsProvider);
+      invalidateAfterShopPurchase(ref.invalidate);
     } else {
       final msg = result.reason == PurchaseFailReason.pricingUnavailable
           ? UiStrings.shopPricingUnavailable
