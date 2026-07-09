@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/save_management/application/save_management_providers.dart';
 import 'package:wuxia_idle/features/save_management/application/save_management_service.dart';
 import 'package:wuxia_idle/features/save_management/domain/save_management_status.dart';
 
@@ -114,6 +116,27 @@ void main() {
         throwsArgumentError,
       );
       expect(await outside.exists(), isTrue);
+    });
+
+    test('providers expose status and refresh after backup creation', () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      final service = container.read(saveManagementServiceProvider);
+      expect(service, isNotNull);
+
+      final initial = await container.read(saveManagementStatusProvider.future);
+      expect(initial.backupCount, 0);
+
+      final backup = await service!.createBackup();
+      container.invalidate(saveManagementStatusProvider);
+
+      final refreshed = await container.read(
+        saveManagementStatusProvider.future,
+      );
+      expect(refreshed.backupCount, 1);
+      expect(refreshed.latestBackup?.fileName, backup.fileName);
+      expect(await File(backup.path).exists(), isTrue);
     });
   });
 }
