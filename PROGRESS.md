@@ -7,6 +7,8 @@
 
 ## 当前阶段
 
+> 🧹✅ **2026-07-10 Codex 挂机批 J:可选 asset fallback catch 意图化(`main`)**:收尾代码层最后一处匿名 `catch(_)`。`GameRepository._loadOptionalAsset` 仍保持旧测试 fixture/未启用模块缺少可选 yaml 时静默返回 fallback 的既有语义,但把 catch 命名并补明设计注释;yaml 文件一旦存在,解析错误仍走下方 fail-fast,不会被吞。**验证**:`flutter analyze` 0 issue;`flutter test --no-pub test/data/game_repository_test.dart test/data/codex_loader_test.dart test/data/pubspec_asset_declaration_test.dart --reporter expanded` **55 绿**;`rg "catch \\(_\\)" lib test -S` 仅剩注释/文档引用,生产代码无匿名 catch。
+
 > 🧪✅ **2026-07-10 Codex 挂机批 I:全量回归失败定位 + 角色面板测试修复(`main`)**:批 H 后做全量复验,首轮 `flutter test --no-pub -j1 --reporter expanded` 到末尾报 1 fail;用 JSON reporter 复跑定位到 `character_panel_screen_test` 的空装备 picker 关闭测试。根因不是产品逻辑,而是批 A 将装备弹窗 close 迁到自研 `WuxiaIconButton` 后,旧测试仍向上查 Flutter `IconButton`,导致 `Iterable.single` 无元素。测试改为按 `find.widgetWithIcon(WuxiaIconButton, Icons.close)` 获取项目自研按钮并触发 `onPressed`,继续验证空态 sheet 可关闭。**验证**:`flutter test --no-pub test/features/character_panel/presentation/character_panel_screen_test.dart --reporter expanded` **28 绿**;`flutter analyze` 0 issue;全量 JSON 复验 `flutter test --no-pub -j1 --reporter json` **success=true / 3803 pass / 1 skip / 0 error**。
 
 > 🫧✅ **2026-07-10 Codex 挂机批 H:在线心跳 touch fallback 可诊断化(`main`)**:收尾 `OnlinePresenceController._touchSafe` 最后一处静默 `catch(_)`。保持生命周期 best-effort 语义:未 init/切槽瞬间仍安全忽略,避免正常切档/退出刷日志;若 Isar 已存在却 `touchOnlineNow` 失败,打印 `debugPrint + stack trace`,便于定位存档时间戳写入异常。零改离线收益数值/心跳频率/schema。**验证**:`flutter test --no-pub test/features/seclusion/application/online_presence_controller_test.dart test/features/seclusion/presentation/online_presence_lifecycle_hook_test.dart test/features/seclusion/presentation/offline_passive_gate_test.dart --reporter expanded` **12 绿**;`flutter analyze` 0 issue。

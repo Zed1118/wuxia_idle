@@ -467,7 +467,9 @@ class GameRepository {
     final String raw;
     try {
       raw = await load(assetPath);
-    } catch (_) {
+    } catch (missingOptionalAsset) {
+      // 可选 asset 缺失是旧测试 fixture/未启用模块的合法路径,此处故意不打日志。
+      // yaml 一旦存在,解析错误会在下方 fail-fast。
       return fallback;
     }
     try {
