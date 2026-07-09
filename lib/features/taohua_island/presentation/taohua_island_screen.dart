@@ -14,6 +14,7 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../inventory/application/item_usage_lookup_service.dart';
 import '../application/island_action_service.dart';
+import '../application/island_invalidation.dart';
 import '../application/island_production_readability.dart';
 import '../application/island_production_service.dart';
 import '../application/island_providers.dart';
@@ -27,7 +28,7 @@ import 'island_recap_card.dart';
 /// 桃花岛主屏：据点分区 + 升级 / 选配方 / 一并收取。
 ///
 /// 数据全来自 [taohuaIslandViewProvider]（进屏 settle gate），
-/// 操作后 `ref.invalidate(taohuaIslandViewProvider)` 刷新。
+/// 操作后经 [invalidateAfterIslandInventoryMutation] 刷新岛务与库存 provider。
 /// 中文全走 [UiStrings] / [EnumL10n]，不散写字面量（§5.6）。
 /// Scaffold 必带 AppBar（踩坑记录：feedback_flutter_subscreen_appbar_audit）。
 class TaohuaIslandScreen extends ConsumerWidget {
@@ -104,7 +105,8 @@ class TaohuaIslandScreen extends ConsumerWidget {
           }
           return _IslandBody(
             view: view,
-            onRefresh: () => ref.invalidate(taohuaIslandViewProvider),
+            onRefresh: () =>
+                invalidateAfterIslandInventoryMutation(ref.invalidate),
             initialBuildingMenu: initialBuildingMenu,
           );
         },
@@ -119,7 +121,7 @@ class TaohuaIslandScreen extends ConsumerWidget {
     final harvest = await IslandSettleService.harvest(save, DateTime.now());
     if (!context.mounted) return;
     await IslandRecapCard.show(context, harvest);
-    ref.invalidate(taohuaIslandViewProvider);
+    invalidateAfterIslandInventoryMutation(ref.invalidate);
   }
 }
 
