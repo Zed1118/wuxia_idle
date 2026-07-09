@@ -19,9 +19,11 @@ import '../../weapon_codex/application/equipment_catalog_providers.dart';
 ///
 /// 失效两类：
 /// 1. **角色 / 装备 / 心法 family**：结算改 battleCount / cultivationProgress /
-///    internalForce（Boss 战败 ×0.5）/ 关卡 drop 入背包，缓存旧 Character/Equipment/
-///    Technique 会让角色面板 / 心法面板 / 仓库读到旧值（W13-v3 实测根因）。
-/// 2. **主菜单隐藏入口门控 + 银两余额**：首次获得对应资源后 §5.7 隐藏入口需解锁。
+///    internalForce（Boss 战败 ×0.5），缓存旧 Character/Equipment/Technique
+///    会让角色面板 / 心法面板读到旧值（W13-v3 实测根因）。
+/// 2. **背包 / 资源派生缓存**：关卡 drop 入背包后,仓库列表、资源总览、
+///    按 defId / type 查询的数量都必须刷新。
+/// 3. **主菜单隐藏入口门控 + 银两余额**：首次获得对应资源后 §5.7 隐藏入口需解锁。
 void invalidateAfterCombatSettlement(
   void Function(ProviderOrFamily) invalidate,
 ) {
@@ -32,7 +34,11 @@ void invalidateAfterCombatSettlement(
   invalidate(techniqueByIdProvider);
   invalidate(characterAllTechniquesProvider);
   invalidate(allEquipmentsProvider);
-  // 2. 主菜单隐藏入口门控 + 银两余额。
+  // 2. 背包 / 资源派生缓存。
+  invalidate(allInventoryItemsProvider);
+  invalidate(inventoryQuantityByDefIdProvider);
+  invalidate(inventoryQuantityByTypeProvider);
+  // 3. 主菜单隐藏入口门控 + 银两余额。
   invalidate(silverBalanceProvider);
   invalidate(shopUnlockedProvider);
   invalidate(equipmentCatalogCountProvider);

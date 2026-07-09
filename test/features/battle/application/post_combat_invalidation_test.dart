@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -56,6 +57,23 @@ void main() {
       final item = InventoryItem()
         ..defId = 'item_silver'
         ..itemType = ItemType.silver
+        ..quantity = quantity
+        ..firstObtainedAt = DateTime(2026, 1, 1)
+        ..lastObtainedAt = DateTime(2026, 1, 1);
+      await isar.inventoryItems.put(item);
+    });
+  }
+
+  Future<void> seedInventoryItem({
+    required String defId,
+    required ItemType type,
+    required int quantity,
+  }) async {
+    final isar = IsarSetup.instance;
+    await isar.writeTxn(() async {
+      final item = InventoryItem()
+        ..defId = defId
+        ..itemType = type
         ..quantity = quantity
         ..firstObtainedAt = DateTime(2026, 1, 1)
         ..lastObtainedAt = DateTime(2026, 1, 1);
@@ -132,5 +150,80 @@ void main() {
     invalidateAfterCombatSettlement(container.invalidate);
 
     expect(await container.read(bossMemoryCountProvider.future), 1);
+  });
+
+  test('战后掉落物品 → helper 失效背包列表与数量派生 provider', () async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final subs = [
+      container.listen(allInventoryItemsProvider, (_, _) {}),
+      container.listen(
+        inventoryQuantityByDefIdProvider('item_mojianshi'),
+        (_, _) {},
+      ),
+      container.listen(
+        inventoryQuantityByTypeProvider(ItemType.moJianShi),
+        (_, _) {},
+      ),
+    ];
+    addTearDown(() {
+      for (final sub in subs) {
+        sub.close();
+      }
+    });
+
+    expect(await container.read(allInventoryItemsProvider.future), isEmpty);
+    expect(
+      await container.read(
+        inventoryQuantityByDefIdProvider('item_mojianshi').future,
+      ),
+      0,
+    );
+    expect(
+      await container.read(
+        inventoryQuantityByTypeProvider(ItemType.moJianShi).future,
+      ),
+      0,
+    );
+
+    await seedInventoryItem(
+      defId: 'item_mojianshi',
+      type: ItemType.moJianShi,
+      quantity: 3,
+    );
+
+    expect(await container.read(allInventoryItemsProvider.future), isEmpty);
+    expect(
+      await container.read(
+        inventoryQuantityByDefIdProvider('item_mojianshi').future,
+      ),
+      0,
+    );
+    expect(
+      await container.read(
+        inventoryQuantityByTypeProvider(ItemType.moJianShi).future,
+      ),
+      0,
+    );
+
+    invalidateAfterCombatSettlement(container.invalidate);
+
+    final refreshed = await container.read(allInventoryItemsProvider.future);
+    expect(
+      refreshed.singleWhere((i) => i.defId == 'item_mojianshi').quantity,
+      3,
+    );
+    expect(
+      await container.read(
+        inventoryQuantityByDefIdProvider('item_mojianshi').future,
+      ),
+      3,
+    );
+    expect(
+      await container.read(
+        inventoryQuantityByTypeProvider(ItemType.moJianShi).future,
+      ),
+      3,
+    );
   });
 }
