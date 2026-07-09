@@ -7,7 +7,9 @@ import 'package:flutter/material.dart';
 /// 安全性:量化到 64px 桶,小幅约束抖动不触发重解码;无界约束返回 null(不限制);
 /// `cacheWidth ≥ 源宽` 时引擎按源宽解码(ResizeImage allowUpscaling=false),
 /// 故对全屏背景(源 ≤ 显示)无副作用、零画质损失。替换 `Image.asset` 即用,
-/// 参数一一对应。
+/// 参数一一对应。若调用方未提供 [errorBuilder]，缺图默认静默收起，避免 widget
+/// test / 新增资产接线漏兜底时抛出异步图片异常；需要可见占位的站点仍应显式传入
+/// 业务 fallback。
 class WuxiaImage extends StatelessWidget {
   const WuxiaImage(
     this.assetPath, {
@@ -54,7 +56,7 @@ class WuxiaImage extends StatelessWidget {
       color: color,
       colorBlendMode: colorBlendMode,
       cacheWidth: cacheW,
-      errorBuilder: errorBuilder,
+      errorBuilder: errorBuilder ?? (_, _, _) => const SizedBox.shrink(),
     );
   }
 }

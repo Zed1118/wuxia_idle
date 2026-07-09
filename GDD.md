@@ -556,12 +556,18 @@
 | 节日 encounter（festivalRequired 独立通道） | 6-10 |
 | 装备 | 80 件（覆盖 7 阶） |
 | 心法 | 49 本（覆盖 7 阶 + 3 流派） |
-| 武学领悟招式 | 246 招 |
+| 通用 / 战斗招式（skills.yaml） | 206 招 |
+| 奇遇专属武学领悟招式（encounter_skills.yaml） | 40 招 |
+| 招式总池（SkillDef） | 246 招（206 + 40） |
 | 心法相生组合 | 12 |
 | 师徒角色 | 3（祖师 + 大弟子 + 二弟子） |
 | 典故文案 | 50-80 段 |
 | 主线剧情字数 | 3,000 ~ 7,000 字 |
 
+> **招式计数口径**（2026-07-10 drift 订正）：`246` 是 `GameRepository.skillDefs`
+> 总池口径，不是 `data/skills.yaml` 单文件口径；其中 `skills.yaml` 206 招，
+> `encounter_skills.yaml` 40 招。外部审查若只数 `skills.yaml` 会误判为 GDD 漂移。
+>
 > **奇遇三通道独立计算**（v1.2 拆分）：原 v1.1「奇遇事件 20-30 + 节日 6」混算
 > 已拆为 3 独立维度,因 encounter type 分 `techniqueInsight`(GDD §7.2 武学领悟
 > 触发,玩家境界突破前置)/ `fortuneEvent`(GDD §6.1 + §10 江湖奇缘内容)/ 节日触发

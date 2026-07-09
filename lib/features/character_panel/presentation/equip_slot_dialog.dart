@@ -10,6 +10,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../equipment/application/equipment_service.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
@@ -269,16 +270,8 @@ class _Header extends StatelessWidget {
     );
   }
 
-  Widget _iconBtn(IconData icon, String tip, VoidCallback? onTap) => IconButton(
-    icon: Icon(
-      icon,
-      size: 20,
-      color: onTap == null ? WuxiaColors.textMuted : WuxiaColors.textSecondary,
-    ),
-    tooltip: tip,
-    onPressed: onTap,
-    visualDensity: VisualDensity.compact,
-  );
+  Widget _iconBtn(IconData icon, String tip, VoidCallback? onTap) =>
+      WuxiaIconButton(icon: icon, tooltip: tip, onPressed: onTap);
 }
 
 class _CandidateList extends StatelessWidget {

@@ -5,6 +5,7 @@ import '../../domain/battle_state.dart';
 import '../../domain/enum_localizations.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
+import '../../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import '../../../help/domain/help_topic.dart';
 import '../../../help/presentation/context_help_button.dart';
 
@@ -240,12 +241,8 @@ class LogDrawer extends StatelessWidget {
                             ),
                           ),
                           const Spacer(),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.close,
-                              color: WuxiaColors.textSecondary,
-                              size: 18,
-                            ),
+                          WuxiaIconButton(
+                            icon: Icons.close,
                             tooltip: UiStrings.close,
                             onPressed: onClose,
                           ),
