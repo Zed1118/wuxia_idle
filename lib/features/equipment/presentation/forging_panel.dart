@@ -11,6 +11,7 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../inventory/presentation/material_source_note.dart';
 import '../../inventory/presentation/material_source_sheet.dart';
+import '../application/equipment_inventory_invalidation.dart';
 import '../application/forging_service.dart';
 import '../application/equipment_service_providers.dart';
 import '../../../shared/strings.dart';
@@ -106,8 +107,7 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
           config: config,
         );
         if (!mounted) return;
-        ref.invalidate(inventoryQuantityByDefIdProvider('item_kaifeng_fucai'));
-        ref.invalidate(allEquipmentsProvider);
+        invalidateAfterEquipmentForging(ref.invalidate);
       }
       if (!mounted) return;
       setState(() {});

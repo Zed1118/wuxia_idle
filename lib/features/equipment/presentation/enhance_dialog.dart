@@ -13,6 +13,7 @@ import '../../inventory/presentation/material_source_note.dart';
 import '../../inventory/presentation/material_source_sheet.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/enhancement_service.dart';
+import '../application/equipment_inventory_invalidation.dart';
 import '../application/equipment_service_providers.dart';
 import '../../../shared/effects/screen_shake.dart';
 import '../../../shared/strings.dart';
@@ -175,10 +176,7 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
     if (service == null) return;
     await service.persistResult(eq: widget.equipment, result: result);
     if (!mounted) return;
-    ref.invalidate(inventoryQuantityByTypeProvider(ItemType.moJianShi));
-    ref.invalidate(inventoryQuantityByTypeProvider(ItemType.xinXueJieJing));
-    ref.invalidate(inventoryQuantityByDefIdProvider('item_duancai'));
-    ref.invalidate(allEquipmentsProvider);
+    invalidateAfterEquipmentEnhancement(ref.invalidate);
   }
 
   @override

@@ -19,6 +19,7 @@ import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/application/equipment_source_lookup.dart';
 import '../../equipment/application/equipment_disposal_service.dart';
+import '../../equipment/application/equipment_inventory_invalidation.dart';
 import '../../equipment/application/equipment_service.dart';
 import '../../equipment/domain/equipment_disposal.dart';
 import '../../equipment/domain/equipment_slot_occupancy.dart';
@@ -26,7 +27,6 @@ import '../../equipment/domain/equipment_source.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
-import '../../shop/application/shop_providers.dart';
 import 'material_source_sheet.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -135,9 +135,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
 
     if (!mounted) return;
     if (outcome == DisposalOutcome.sold) {
-      ref.invalidate(allEquipmentsProvider);
-      ref.invalidate(allInventoryItemsProvider);
-      ref.invalidate(silverBalanceProvider);
+      invalidateAfterEquipmentSale(ref.invalidate);
       Navigator.of(context).pop();
     }
   }
@@ -222,9 +220,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
 
     if (!mounted) return;
     if (outcome == DisposalOutcome.disassembled) {
-      ref.invalidate(allEquipmentsProvider);
-      ref.invalidate(allInventoryItemsProvider);
-      ref.invalidate(silverBalanceProvider);
+      invalidateAfterEquipmentDisassembly(ref.invalidate);
       Navigator.of(context).pop();
     }
   }

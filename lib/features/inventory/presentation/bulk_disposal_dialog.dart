@@ -9,9 +9,9 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../equipment/application/equipment_disposal_service.dart';
+import '../../equipment/application/equipment_inventory_invalidation.dart';
 import '../../equipment/domain/equipment_disposal.dart';
 import '../../equipment/domain/equipment_slot_occupancy.dart';
-import '../../shop/application/shop_providers.dart';
 import '../application/inventory_organization.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -193,9 +193,7 @@ class BulkDisposalDialog extends ConsumerWidget {
       config: config,
     ).sellAllOfTier(tier);
 
-    ref.invalidate(allEquipmentsProvider);
-    ref.invalidate(allInventoryItemsProvider);
-    ref.invalidate(silverBalanceProvider);
+    invalidateAfterEquipmentSale(ref.invalidate);
   }
 }
 
