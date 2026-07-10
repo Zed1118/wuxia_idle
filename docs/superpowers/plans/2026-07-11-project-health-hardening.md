@@ -48,11 +48,11 @@
 **Files:**
 - Modify: `.github/workflows/ci.yml`
 
-- [ ] Add a separate `macos-latest` job using the pinned Flutter version.
-- [ ] Generate ignored code before compiling.
-- [ ] Run `flutter build macos --debug` as a platform smoke gate.
-- [ ] Validate workflow syntax structurally and run the same build locally.
-- [ ] Commit the batch.
+- [x] Add a separate `macos-latest` job using the pinned Flutter version.
+- [x] Generate ignored code before compiling.
+- [x] Run `flutter build macos --debug` as a platform smoke gate.
+- [x] Validate workflow syntax structurally and run the same build locally.
+- [x] Commit the batch.
 
 ### Task 4: Documentation And Repository Hygiene
 
@@ -127,5 +127,5 @@
 
 - Branch: `codex/project-health-hardening`
 - Worktree: `.worktrees/project-health-hardening`
-- Current state: Tasks 1-2 verified. Focused critical-flow group passed 88 tests; sweep settlement coverage is 32.00% and sweep unit coverage is 54.84%. Task 3 is next.
+- Current state: Tasks 1-3 verified. Focused critical-flow group passed 88 tests; local macOS debug build passed. Task 4 is next.
 - Resume command: `git status --short --branch && sed -n '1,260p' docs/superpowers/plans/2026-07-11-project-health-hardening.md`
