@@ -34,8 +34,8 @@
 
 ## 当前恢复点
 
-- 状态：批次 A 执行中，Task 1-3 已完成。
-- 最后完成：A/B 往返恢复和恢复前安全备份按 TDD 通过。
-- 下一步：批次 A Task 4，swap/rollback 故障注入。
-- 已跑验证：save management 7/7；file-ops 1/1；Isar restore + slots 13/13。
+- 状态：批次 A 执行中，Task 1-4 已完成。
+- 最后完成：swap/rollback 两级故障注入与启动自愈验证通过。
+- 下一步：批次 A Task 5，设置页恢复交互。
+- 已跑验证：存档 service/restore/slots 22/22；file-ops 1/1。
 - 阻塞项：无。

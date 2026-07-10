@@ -105,11 +105,11 @@ Future<SaveRestoreResult> restoreBackup(SaveBackupInfo backup)
 - Modify: `test/features/save_management/save_management_service_test.dart`
 - Modify: `lib/features/save_management/application/save_management_service.dart`
 
-- [ ] **Step 1: 用 fake `SaveRestoreFileOps` 在 candidate→正式文件 rename 注入异常。**
-- [ ] **Step 2: 断言正式文件由 rollback 恢复，抛出的 `SaveRestoreException.phase` 为 `swapFiles` 且 `requiresRestart` 为 true。**
-- [ ] **Step 3: 再注入 rollback rename 失败，断言 phase 为 `rollbackFiles` 且安全备份仍存在。**
-- [ ] **Step 4: 运行服务与槽位测试至通过。**
-- [ ] **Step 5: 提交**：`git commit -m "Cover save restore rollback failures"`。
+- [x] **Step 1: 用 fake `SaveRestoreFileOps` 在 candidate→正式文件 rename 注入异常。**
+- [x] **Step 2: 断言正式文件由 rollback 恢复，抛出的 `SaveRestoreException.phase` 为 `swapFiles` 且 `requiresRestart` 为 true。**
+- [x] **Step 3: 再注入 rollback rename 失败，断言 phase 为 `rollbackFiles` 且安全备份仍存在。**
+- [x] **Step 4: 运行服务与槽位测试至通过。**
+- [x] **Step 5: 提交**：`git commit -m "Cover save restore rollback failures"`。
 
 ### Task 5: 设置页恢复交互
 
@@ -143,8 +143,8 @@ Future<SaveRestoreResult> restoreBackup(SaveBackupInfo backup)
 
 ## 当前恢复点
 
-- 状态：Task 1-3 已完成，Task 4 待开始。
-- 最后完成：成功恢复、恢复前安全备份和五类预检拒绝已按 TDD 实现。
-- 下一步：Task 4 Step 1，注入 swap/rollback rename 失败。
-- 已跑验证：save management 7/7；Isar restore + slots 13/13；file-ops 1/1。
+- 状态：Task 1-4 已完成，Task 5 待开始。
+- 最后完成：swap 失败立即回滚与 rollback 再失败的启动自愈路径已由故障注入锁定。
+- 下一步：Task 5 Step 1，设置页恢复交互 widget 红测。
+- 已跑验证：存档 service/restore/slots 22/22；file-ops 1/1。
 - 阻塞项：无。

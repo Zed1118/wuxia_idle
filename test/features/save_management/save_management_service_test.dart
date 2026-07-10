@@ -7,6 +7,7 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/save_management/application/save_management_providers.dart';
 import 'package:wuxia_idle/features/save_management/application/save_management_service.dart';
+import 'package:wuxia_idle/features/save_management/application/save_restore_file_ops.dart';
 import 'package:wuxia_idle/features/save_management/domain/save_management_status.dart';
 import 'package:wuxia_idle/features/save_management/domain/save_restore.dart';
 import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
@@ -228,5 +229,117 @@ void main() {
         expect(IsarSetup.instanceOrNull, same(service.isar));
       }
     });
+
+    test('swap failure restores rollback and requires restart', () async {
+      await seedFounder();
+      final initial = SaveManagementService(
+        isar: IsarSetup.instance,
+        now: () => DateTime(2026, 7, 10, 13),
+      );
+      await writeSlotName('state-A');
+      final selected = await initial.createBackup();
+      await writeSlotName('state-B');
+      final service = SaveManagementService(
+        isar: IsarSetup.instance,
+        now: () => DateTime(2026, 7, 10, 13),
+        fileOps: _FailingRenameFileOps({3}),
+      );
+
+      await expectLater(
+        service.restoreBackup(selected),
+        throwsA(
+          isA<SaveRestoreException>()
+              .having((e) => e.phase, 'phase', SaveRestorePhase.swapFiles)
+              .having((e) => e.requiresRestart, 'requiresRestart', isTrue),
+        ),
+      );
+
+      expect(IsarSetup.instanceOrNull, isNull);
+      expect(
+        await File('${tempDir.path}/wuxia_save_slot1.isar').exists(),
+        isTrue,
+      );
+      await IsarSetup.init(directory: tempDir, inspector: false);
+      expect((await IsarSetup.currentSaveData())!.slotName, 'state-B');
+    });
+
+    test(
+      'rollback rename failure leaves startup-recoverable rollback',
+      () async {
+        await seedFounder();
+        final initial = SaveManagementService(
+          isar: IsarSetup.instance,
+          now: () => DateTime(2026, 7, 10, 14),
+        );
+        await writeSlotName('state-A');
+        final selected = await initial.createBackup();
+        await writeSlotName('state-B');
+        final service = SaveManagementService(
+          isar: IsarSetup.instance,
+          now: () => DateTime(2026, 7, 10, 14),
+          fileOps: _FailingRenameFileOps({3, 4}),
+        );
+        final backupDirectory = service.backupDirectory;
+
+        await expectLater(
+          service.restoreBackup(selected),
+          throwsA(
+            isA<SaveRestoreException>()
+                .having((e) => e.phase, 'phase', SaveRestorePhase.rollbackFiles)
+                .having((e) => e.requiresRestart, 'requiresRestart', isTrue),
+          ),
+        );
+
+        expect(
+          await File('${tempDir.path}/wuxia_save_slot1.isar').exists(),
+          isFalse,
+        );
+        expect(
+          await File(
+            '${tempDir.path}/wuxia_save_slot1_restore_rollback.isar',
+          ).exists(),
+          isTrue,
+        );
+        final backupFiles = await backupDirectory
+            .list()
+            .where((entity) => entity is File && entity.path.endsWith('.isar'))
+            .toList();
+        expect(backupFiles.length, 2);
+
+        await IsarSetup.recoverInterruptedRestoreFiles(tempDir, 1);
+        await IsarSetup.init(directory: tempDir, inspector: false);
+        expect((await IsarSetup.currentSaveData())!.slotName, 'state-B');
+      },
+    );
   });
+}
+
+class _FailingRenameFileOps implements SaveRestoreFileOps {
+  _FailingRenameFileOps(this.failOnRenameCalls);
+
+  final Set<int> failOnRenameCalls;
+  final SaveRestoreFileOps _delegate = const DartIoSaveRestoreFileOps();
+  int _renameCalls = 0;
+
+  @override
+  Future<void> copy(String sourcePath, String targetPath) =>
+      _delegate.copy(sourcePath, targetPath);
+
+  @override
+  Future<void> delete(String path) => _delegate.delete(path);
+
+  @override
+  Future<bool> exists(String path) => _delegate.exists(path);
+
+  @override
+  Future<int> length(String path) => _delegate.length(path);
+
+  @override
+  Future<void> rename(String sourcePath, String targetPath) {
+    _renameCalls++;
+    if (failOnRenameCalls.contains(_renameCalls)) {
+      throw FileSystemException('injected rename failure', sourcePath);
+    }
+    return _delegate.rename(sourcePath, targetPath);
+  }
 }
