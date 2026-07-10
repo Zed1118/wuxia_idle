@@ -6,7 +6,7 @@
 
 ## 批次 2 · 资产瘦身(拍板点:webp 转码质量抽验)
 
-- [x] ~~210MB PNG → webp/jpeg 全量转码~~ **❌口径证伪,不执行全量替换(2026-07-10)**:当前 383 个 `.png` 路径仅 58.0MB,其中 **272 个/44.7MB 实际 magic 已是 WebP**,仅扩展名沿用 `.png`;真 PNG 仅 111 个/13.3MB(110 个 alpha 装备图 + 桃花岛)。8 样本 q82 试点只有桃花岛显著受益(832KB→202KB,-75.8%且目检无明显差异);透明装备有损 WebP 出现明显边缘色块,lossless 全 110 张也只省 0.85MB。结论:全量替换收益远低于 272+ 引用 churn 与画质风险,关闭该任务;桃花岛单张候选待最终人工目检。详 `docs/audit/asset_webp_pilot_2026-07-10.md`。
+- [x] ~~210MB PNG → webp/jpeg 全量转码~~ **❌口径证伪,不执行全量替换(2026-07-10)**:试点时 383 个 `.png` 路径仅 58.0MB,其中 **272 个/44.7MB 实际 magic 已是 WebP**,仅扩展名沿用 `.png`;真 PNG 仅 111 个/13.3MB(110 个 alpha 装备图 + 桃花岛)。透明装备有损 WebP 出现明显边缘色块,lossless 全 110 张也只省 0.85MB。结论:关闭全量替换;唯一显著受益的桃花岛已获人工确认并以 q82 落地(832KB→202KB,-75.8%),当前剩 382 个 `.png` 路径/110 个真 PNG。详 `docs/audit/asset_webp_pilot_2026-07-10.md`。
 - [x] 零引用资产清理 **✅已删(2026-07-03·batch-123)**——**订正**:backlog 原记「44.9MB/67 文件」是 drift(webp 转码 + tier_* 已删后体积变小)。本波独立 grep 现算实为 **59 文件 8.0MB**:`ui/mj/*_01` 旧稿 **17 张**(fx_×10 + overlay_×4 + ui_frame_×2 + ceremony_red_seal_01·全 0 引用,已被 `*_blend` 版替代;entry_/menu_/其余 ceremony 的 *_01 均 1 引用=活,未动)+ `enemies/*.png` **42 张**(129 中 42 张 0 引用,移除史抽验 guard_c/shidi_a 均 commit `e73979ce`(06-28)删敌人定义时连带删 iconPath=废弃品)。iconPath 为静态全路径字面量(`assets/enemies/x.png`)无动态拼接,grep 验证可靠。~~`tier_*.png` 7 张~~ 早于 2026-07-02 删。
 - [x] `docs/reviews/` **✅已治理(上批 .git 瘦身)**——本波复核:仅 4KB tracked,.gitignore 已含 `docs/reviews/`(挡 PNG)。2.4G→658M 历史已 filter-repo 洗过(见 PROGRESS `5bd36fc1`),无需再洗。
 - [x] `assets/audio/_suno_candidates/` 75MB **✅已归档(2026-07-02·用户拍板)**:mv 出项目 → `~/Desktop/wuxia_suno_candidates_archive_2026-07-02`(已 gitignore·不进仓/不进包·可恢复)

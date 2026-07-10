@@ -32,4 +32,17 @@ void main() {
     expect(frame.image.width, 896);
     expect(frame.image.height, 1344);
   });
+
+  test('桃花岛显式 .webp asset 可加载且尺寸保持 1456x816', () async {
+    final data = await rootBundle.load('assets/maps/taohuaIsland.webp');
+    final bytes = data.buffer.asUint8List();
+
+    expect(String.fromCharCodes(bytes.sublist(0, 4)), 'RIFF');
+    expect(String.fromCharCodes(bytes.sublist(8, 12)), 'WEBP');
+
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    expect(frame.image.width, 1456);
+    expect(frame.image.height, 816);
+  });
 }

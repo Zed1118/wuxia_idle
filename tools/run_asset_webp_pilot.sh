@@ -24,7 +24,7 @@ samples=(
   "opaque|assets/enemies/bandit_head.png"
   "alpha|assets/equipment/accessory_liqi_hu_xin_jing_detail.png"
   "alpha|assets/equipment/armor_baowu_wu_jin_zhan_jia_detail.png"
-  "opaque|assets/maps/taohuaIsland.png"
+  "opaque|assets/maps/taohuaIsland.webp"
   "opaque|assets/scenes/battle_alley.png"
   "alpha|assets/ui/mj/overlay_low_health_blend.png"
   "opaque|assets/ui/paper_bg.png"
