@@ -17,10 +17,10 @@
 - Create: `lib/features/save_management/application/save_restore_file_ops.dart`
 - Test: `test/features/save_management/save_restore_file_ops_test.dart`
 
-- [ ] **Step 1: 写失败测试**，验证 `DartIoSaveRestoreFileOps` 可 copy、rename、delete，并且缺失文件的 `exists` 为 false。
-- [ ] **Step 2: 运行测试确认因类型不存在而失败**：
+- [x] **Step 1: 写失败测试**，验证 `DartIoSaveRestoreFileOps` 可 copy、rename、delete，并且缺失文件的 `exists` 为 false。
+- [x] **Step 2: 运行测试确认因类型不存在而失败**：
   `flutter test --no-pub test/features/save_management/save_restore_file_ops_test.dart`
-- [ ] **Step 3: 定义固定类型**：
+- [x] **Step 3: 定义固定类型**：
 
 ```dart
 enum SaveRestorePhase {
@@ -54,8 +54,8 @@ class SaveRestoreException implements Exception {
 }
 ```
 
-- [ ] **Step 4: 实现仅含 `copy/rename/delete/exists/length` 的文件边界并跑绿测试。**
-- [ ] **Step 5: 提交**：`git commit -m "Add save restore file boundary"`。
+- [x] **Step 4: 实现仅含 `copy/rename/delete/exists/length` 的文件边界并跑绿测试。**
+- [x] **Step 5: 提交**：`git commit -m "Add save restore file boundary"`。
 
 ### Task 2: Isar 候选校验与启动自愈
 
@@ -143,9 +143,8 @@ Future<SaveRestoreResult> restoreBackup(SaveBackupInfo backup)
 
 ## 当前恢复点
 
-- 状态：未开始实现。
-- 最后完成：设计规格 `docs/superpowers/specs/2026-07-10-save-restore-design.md` 已批准。
-- 下一步：Task 1 Step 1。
-- 已跑验证：设计文档 diff check 通过。
+- 状态：Task 1 已完成，Task 2 待开始。
+- 最后完成：恢复领域类型与可注入文件边界已按 TDD 实现。
+- 下一步：Task 2 Step 1，写 Isar 候选校验与启动中断恢复测试。
+- 已跑验证：`save_restore_file_ops_test.dart` 1/1 通过；设计文档 diff check 通过。
 - 阻塞项：无。
-
