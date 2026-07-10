@@ -1,16 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 
+import '../support/test_data.dart';
+
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   test('主线 6 个章末 Boss 均配置二周目阶段覆盖', () {
     const stageIds = [

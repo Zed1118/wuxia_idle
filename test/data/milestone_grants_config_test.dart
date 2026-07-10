@@ -1,19 +1,13 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+
+import '../support/test_data.dart';
 
 /// F1 里程碑装备授予映射 production drift guard。
 /// 沿 numbers_config_red_lines_test 体例：loadAllDefs 真 numbers.yaml 后断言。
 void main() {
   group('production numbers.yaml milestone_equipment_grants', () {
-    setUpAll(() async {
-      if (!GameRepository.isLoaded) {
-        await GameRepository.loadAllDefs(
-          loader: (path) => File(path).readAsString(),
-        );
-      }
-    });
+    setUpAll(loadTestGameRepository);
 
     test('解析 2 条 stageId→tag 映射', () {
       final map = GameRepository.instance.numbers.milestoneEquipmentGrants;

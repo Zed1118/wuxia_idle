@@ -10,6 +10,9 @@ import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_progress_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 
+import '../support/isar_test_support.dart';
+import '../support/test_data.dart';
+
 /// P0-5(2026-06-29 审查修复):_migrateSaveData 段1(0.18.0 encounter unlock 池
 /// 并入)与段3(0.22.0 章周目 key 重建)补版本门——不再每次升级重跑、不再依赖
 /// 段3 的隐式启动顺序契约(GameRepository.isLoaded)。两段本幂等,版本门是防御
@@ -17,10 +20,8 @@ import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 void main() {
   group('P0-5 迁移版本门(Isar + GameRepository)', () {
     setUpAll(() async {
-      await Isar.initializeIsarCore(download: true);
-      if (!GameRepository.isLoaded) {
-        await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-      }
+      await initializeTestIsarCore();
+      await loadTestGameRepository();
     });
 
     late Directory tempDir;
@@ -43,10 +44,12 @@ void main() {
 
     test('0.22+ 存档不重跑段3:isLoaded 也不重建 chapter cycle key', () async {
       final repo = GameRepository.instance;
-      final ch1Boss = repo.stageDefs.values.firstWhere((s) =>
-          s.stageType.name == 'mainline' &&
-          s.chapterIndex == 1 &&
-          s.isBossStage);
+      final ch1Boss = repo.stageDefs.values.firstWhere(
+        (s) =>
+            s.stageType.name == 'mainline' &&
+            s.chapterIndex == 1 &&
+            s.isBossStage,
+      );
       final svc = MainlineProgressService(isar: IsarSetup.instance);
       final mp = await svc.getOrCreate(saveDataId: 1);
       await IsarSetup.instance.writeTxn(() async {
@@ -61,19 +64,24 @@ void main() {
       await IsarSetup.close();
       await IsarSetup.init(directory: tempDir, inspector: false);
 
-      final mp2 =
-          await MainlineProgressService(isar: IsarSetup.instance)
-              .getOrCreate(saveDataId: 1);
-      expect(mp2.clearedChapterCycleKeys, isEmpty,
-          reason: '0.22+ 存档段3 被版本门跳过,不重建 chapter cycle key');
+      final mp2 = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
+      expect(
+        mp2.clearedChapterCycleKeys,
+        isEmpty,
+        reason: '0.22+ 存档段3 被版本门跳过,不重建 chapter cycle key',
+      );
     });
 
     test('0.21 旧档仍迁段3:chapter cycle key 正常重建(门不过度跳过)', () async {
       final repo = GameRepository.instance;
-      final ch1Boss = repo.stageDefs.values.firstWhere((s) =>
-          s.stageType.name == 'mainline' &&
-          s.chapterIndex == 1 &&
-          s.isBossStage);
+      final ch1Boss = repo.stageDefs.values.firstWhere(
+        (s) =>
+            s.stageType.name == 'mainline' &&
+            s.chapterIndex == 1 &&
+            s.isBossStage,
+      );
       final svc = MainlineProgressService(isar: IsarSetup.instance);
       final mp = await svc.getOrCreate(saveDataId: 1);
       await IsarSetup.instance.writeTxn(() async {
@@ -88,11 +96,14 @@ void main() {
       await IsarSetup.close();
       await IsarSetup.init(directory: tempDir, inspector: false);
 
-      final mp2 =
-          await MainlineProgressService(isar: IsarSetup.instance)
-              .getOrCreate(saveDataId: 1);
-      expect(mp2.clearedChapterCycleKeys, contains('ch1#2'),
-          reason: '0.21 旧档段3 仍执行,重建 ch1#2');
+      final mp2 = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
+      expect(
+        mp2.clearedChapterCycleKeys,
+        contains('ch1#2'),
+        reason: '0.21 旧档段3 仍执行,重建 ch1#2',
+      );
     });
 
     // --- 段 1(0.18.0)版本门 ---
@@ -121,8 +132,11 @@ void main() {
       await IsarSetup.init(directory: tempDir, inspector: false);
 
       final save = await IsarSetup.instance.saveDatas.get(0);
-      expect(save!.skillUnlockProgress.isUnlocked(probeSkillId), isFalse,
-          reason: '0.18+ 存档段1 被版本门跳过,不并入旧池');
+      expect(
+        save!.skillUnlockProgress.isUnlocked(probeSkillId),
+        isFalse,
+        reason: '0.18+ 存档段1 被版本门跳过,不并入旧池',
+      );
     });
 
     test('0.17 旧档仍迁段1:encounter 旧 unlock 池并入(门不过度跳过)', () async {
@@ -132,8 +146,11 @@ void main() {
       await IsarSetup.init(directory: tempDir, inspector: false);
 
       final save = await IsarSetup.instance.saveDatas.get(0);
-      expect(save!.skillUnlockProgress.isUnlocked(probeSkillId), isTrue,
-          reason: '0.17 旧档段1 仍执行,并入旧池');
+      expect(
+        save!.skillUnlockProgress.isUnlocked(probeSkillId),
+        isTrue,
+        reason: '0.17 旧档段1 仍执行,并入旧池',
+      );
     });
 
     // --- 段 2(0.21.0)版本门(P1-10 · 2026-07-07 体检批5)---
@@ -144,8 +161,9 @@ void main() {
     const probeStageId = 'stage_p110_gate_probe';
 
     Future<void> seedClearedStage(String saveVersion) async {
-      final mp = await MainlineProgressService(isar: IsarSetup.instance)
-          .getOrCreate(saveDataId: 1);
+      final mp = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       await IsarSetup.instance.writeTxn(() async {
         final save = await IsarSetup.instance.saveDatas.get(0);
         save!.saveVersion = saveVersion;
@@ -162,10 +180,14 @@ void main() {
       await IsarSetup.close();
       await IsarSetup.init(directory: tempDir, inspector: false);
 
-      final mp2 = await MainlineProgressService(isar: IsarSetup.instance)
-          .getOrCreate(saveDataId: 1);
-      expect(mp2.clearedStageCycleKeys, isNot(contains('$probeStageId#1')),
-          reason: '0.21+ 存档段2 被版本门跳过,不用退役 clearedStageIds 回填 #1');
+      final mp2 = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
+      expect(
+        mp2.clearedStageCycleKeys,
+        isNot(contains('$probeStageId#1')),
+        reason: '0.21+ 存档段2 被版本门跳过,不用退役 clearedStageIds 回填 #1',
+      );
     });
 
     test('0.20 旧档仍迁段2:clearedStageIds 回填 #1 周目键(门不过度跳过)', () async {
@@ -174,10 +196,14 @@ void main() {
       await IsarSetup.close();
       await IsarSetup.init(directory: tempDir, inspector: false);
 
-      final mp2 = await MainlineProgressService(isar: IsarSetup.instance)
-          .getOrCreate(saveDataId: 1);
-      expect(mp2.clearedStageCycleKeys, contains('$probeStageId#1'),
-          reason: '0.20 旧档段2 仍执行,回填 #1 周目键');
+      final mp2 = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
+      expect(
+        mp2.clearedStageCycleKeys,
+        contains('$probeStageId#1'),
+        reason: '0.20 旧档段2 仍执行,回填 #1 周目键',
+      );
     });
   });
 }

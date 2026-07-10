@@ -1,8 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
+
+import '../support/test_data.dart';
 
 /// 红线值统一到 numbers.yaml(2026-05-29 消 hardcode):RedLinesConfig.fromYaml
 /// 解析 + fixture 缺段 §5.4 default 兜底 + production yaml 真值 drift guard。
@@ -54,13 +54,7 @@ void main() {
   });
 
   group('production data/numbers.yaml 红线单一真相源', () {
-    setUpAll(() async {
-      if (!GameRepository.isLoaded) {
-        await GameRepository.loadAllDefs(
-          loader: (path) => File(path).readAsString(),
-        );
-      }
-    });
+    setUpAll(loadTestGameRepository);
 
     test('R3 combat.red_lines 与 §5.4 红线一致(drift guard)', () {
       final rl = GameRepository.instance.numbers.combat.redLines;

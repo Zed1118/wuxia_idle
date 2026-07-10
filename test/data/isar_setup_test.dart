@@ -14,15 +14,15 @@ import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 
+import '../support/isar_test_support.dart';
+
 /// IsarSetup + 三个核心 Collection 的 round-trip 集成测试
 /// （覆盖 T04 验收剩余 2 条 + T05 验收 SaveData 默认值/再打开读出）。
 ///
 /// 用 `Isar.initializeIsarCore(download: true)` 在 dart test 环境下载
 /// native lib（首次较慢，缓存在 `~/.dart_tool/isar/` 之后即时）。
 void main() {
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
+  setUpAll(initializeTestIsarCore);
 
   group('IsarSetup', () {
     late Directory tempDir;
