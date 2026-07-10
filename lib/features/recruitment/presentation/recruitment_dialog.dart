@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
+import '../../../data/defs/master_def.dart' show AttributeProfile;
 import '../../../data/defs/recruit_candidate_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
@@ -388,8 +389,7 @@ class _CandidateSummary extends StatelessWidget {
 class _AttrRow extends StatelessWidget {
   const _AttrRow({required this.profile});
 
-  // ignore: library_private_types_in_public_api
-  final dynamic profile;
+  final AttributeProfile profile;
 
   @override
   Widget build(BuildContext context) {

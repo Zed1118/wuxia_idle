@@ -20,7 +20,6 @@ import 'defs/shop_item_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
 import 'defs/skill_def.dart';
 import 'defs/stage_def.dart';
-import 'defs/drop_entry.dart';
 import 'defs/synergy_def.dart';
 import 'defs/technique_def.dart';
 import '../features/tower/domain/tower_floor_def.dart';
@@ -28,6 +27,7 @@ import '../features/taohua_island/domain/taohua_island_config.dart';
 import 'lore_loader.dart';
 import '../core/domain/enums.dart';
 import 'numbers_config.dart';
+import 'validation/drop_table_reference_validator.dart';
 import 'yaml_loader.dart';
 
 /// 全局配置仓储（启动时一次性把 `data/*.yaml` 加载到内存）。
@@ -2051,42 +2051,17 @@ class GameRepository {
   ///     [ItemType.miscMaterial]（miscMaterial 是兜底吞值桶，悬空/拼错 defId 会
   ///     静默落入并入背包显示成杂项材料；fail-fast 拦下）。
   ///
-  /// 沿 [enforceWeaknessRedLines] 体例抽 static（接 stageDefs + towerFloors +
-  /// equipmentIds），便于单测直调；[_enforceRedLines] 启动期统一调用。
+  /// 保留本入口兼容既有测试/调用；实现委托给独立校验器，
+  /// [_enforceRedLines] 启动期统一调用。
   static void enforceDropTableReferences({
     required Map<String, StageDef> stageDefs,
     required List<TowerFloorDef> towerFloors,
     required Set<String> equipmentIds,
-  }) {
-    void check(String owner, List<DropEntry> table) {
-      for (final entry in table) {
-        switch (entry) {
-          case EquipmentDrop(:final equipmentDefId):
-            if (!equipmentIds.contains(equipmentDefId)) {
-              throw StateError(
-                '$owner dropTable 悬空 equipmentDefId=$equipmentDefId'
-                '（不在 equipment.yaml，runtime 取装备会崩）',
-              );
-            }
-          case ItemDrop(:final inventoryItemDefId):
-            if (ItemType.fromDefId(inventoryItemDefId) ==
-                ItemType.miscMaterial) {
-              throw StateError(
-                '$owner dropTable 悬空 inventoryItemDefId=$inventoryItemDefId'
-                '（ItemType.fromDefId 兜底 miscMaterial，疑似拼错/未注册物品）',
-              );
-            }
-        }
-      }
-    }
-
-    for (final s in stageDefs.values) {
-      check('stage ${s.id}', s.dropTable);
-    }
-    for (final f in towerFloors) {
-      check('tower floor ${f.floorIndex}', f.dropTable);
-    }
-  }
+  }) => DropTableReferenceValidator.validate(
+    stageDefs: stageDefs,
+    towerFloors: towerFloors,
+    equipmentIds: equipmentIds,
+  );
 
   /// 护法结界引用校验:主 Boss guardianIds 须在同队 enemyTeam 存在,
   /// damageTakenMult ∈ (0,1], guardianIds 非空、不含自身 id。缺失/越界

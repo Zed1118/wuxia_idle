@@ -7,6 +7,7 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/save_management/application/save_management_providers.dart';
 import 'package:wuxia_idle/features/save_management/application/save_management_service.dart';
+import 'package:wuxia_idle/features/save_management/application/save_restore_database_ops.dart';
 import 'package:wuxia_idle/features/save_management/application/save_restore_file_ops.dart';
 import 'package:wuxia_idle/features/save_management/domain/save_management_status.dart';
 import 'package:wuxia_idle/features/save_management/domain/save_restore.dart';
@@ -188,6 +189,31 @@ void main() {
       expect((await IsarSetup.currentSaveData())!.slotName, 'state-B');
     });
 
+    test(
+      'restoreBackup uses the injected database lifecycle boundary',
+      () async {
+        await seedFounder();
+        final databaseOps = _RecordingSaveRestoreDatabaseOps();
+        final service = SaveManagementService(
+          isar: IsarSetup.instance,
+          now: () => DateTime(2026, 7, 10, 12),
+          databaseOps: databaseOps,
+        );
+        await writeSlotName('state-A');
+        final selected = await service.createBackup();
+        await writeSlotName('state-B');
+
+        await service.restoreBackup(selected);
+
+        expect(databaseOps.events, [
+          'recover:1',
+          'validate:1',
+          'touch',
+          'close',
+        ]);
+      },
+    );
+
     test('restoreBackup rejects unsafe files before closing Isar', () async {
       await seedFounder();
       final service = SaveManagementService(isar: IsarSetup.instance);
@@ -312,6 +338,41 @@ void main() {
       },
     );
   });
+}
+
+class _RecordingSaveRestoreDatabaseOps implements SaveRestoreDatabaseOps {
+  final SaveRestoreDatabaseOps _delegate = const IsarSaveRestoreDatabaseOps();
+  final List<String> events = [];
+
+  @override
+  Future<void> closeDatabase() async {
+    events.add('close');
+    await _delegate.closeDatabase();
+  }
+
+  @override
+  Future<void> recoverInterruptedFiles(Directory directory, int slotId) async {
+    events.add('recover:$slotId');
+    await _delegate.recoverInterruptedFiles(directory, slotId);
+  }
+
+  @override
+  Future<void> touchOnlineNow(DateTime now) async {
+    events.add('touch');
+    await _delegate.touchOnlineNow(now);
+  }
+
+  @override
+  Future<void> validateCandidate({
+    required String candidatePath,
+    required int expectedSlotId,
+  }) async {
+    events.add('validate:$expectedSlotId');
+    await _delegate.validateCandidate(
+      candidatePath: candidatePath,
+      expectedSlotId: expectedSlotId,
+    );
+  }
 }
 
 class _FailingRenameFileOps implements SaveRestoreFileOps {

@@ -77,11 +77,11 @@
 - Create/Modify: focused collaborators and tests beside save management
 - Modify: selected internal files under `lib/data/` only if a cohesive validator/loader extraction has a small verified impact radius
 
-- [ ] Replace the recruitment `dynamic` profile access with the existing `AttributeProfile` type and remove the lint suppression.
-- [ ] Write a failing test proving save restore uses an injected recovery boundary.
-- [ ] Introduce a typed recovery collaborator while preserving `SaveManagementService` behavior and public call sites.
-- [ ] Use CodeGraph impact analysis before any `GameRepository` extraction; extract only one cohesive internal concern if the impact stays local.
-- [ ] Run focused tests and analysis, then commit the batch.
+- [x] Replace the recruitment `dynamic` profile access with the existing `AttributeProfile` type and remove the lint suppression.
+- [x] Write a failing test proving save restore uses an injected recovery boundary.
+- [x] Introduce a typed recovery collaborator while preserving `SaveManagementService` behavior and public call sites.
+- [x] Use CodeGraph impact analysis before any `GameRepository` extraction; extract only the pure drop-table reference validator while retaining the compatibility entry point.
+- [x] Run focused tests and analysis, then commit the batch.
 
 ### Task 6: Battle Configuration And Compatibility Debt
 
@@ -128,5 +128,5 @@
 
 - Branch: `codex/project-health-hardening`
 - Worktree: `.worktrees/project-health-hardening`
-- Current state: Tasks 1-4 verified. Documentation drift and repository-size diagnosis are corrected. Task 5 is next.
+- Current state: Tasks 1-5 verified. Save restore now has an injected database lifecycle boundary; one pure GameRepository validator is extracted; recruitment profile access is typed. Task 6 is next.
 - Resume command: `git status --short --branch && sed -n '1,260p' docs/superpowers/plans/2026-07-11-project-health-hardening.md`

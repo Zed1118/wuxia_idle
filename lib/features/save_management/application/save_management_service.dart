@@ -4,9 +4,9 @@ import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/save_data.dart';
 import '../../../data/isar_restore_paths.dart';
-import '../../../data/isar_setup.dart';
 import '../domain/save_management_status.dart';
 import '../domain/save_restore.dart';
+import 'save_restore_database_ops.dart';
 import 'save_restore_file_ops.dart';
 
 class SaveManagementService {
@@ -14,12 +14,15 @@ class SaveManagementService {
     required this.isar,
     DateTime Function()? now,
     SaveRestoreFileOps fileOps = const DartIoSaveRestoreFileOps(),
+    SaveRestoreDatabaseOps databaseOps = const IsarSaveRestoreDatabaseOps(),
   }) : _now = now ?? DateTime.now,
-       _fileOps = fileOps;
+       _fileOps = fileOps,
+       _databaseOps = databaseOps;
 
   final Isar isar;
   final DateTime Function() _now;
   final SaveRestoreFileOps _fileOps;
+  final SaveRestoreDatabaseOps _databaseOps;
 
   Directory get backupDirectory {
     final dir = isar.directory;
@@ -98,14 +101,14 @@ class SaveManagementService {
         throw StateError('Current database path missing');
       }
       paths = IsarRestorePaths(File(databasePath).parent, save.slotId);
-      await IsarSetup.recoverInterruptedRestoreFiles(
+      await _databaseOps.recoverInterruptedFiles(
         File(databasePath).parent,
         save.slotId,
       );
       await _validateBackupFile(backup, save.slotId);
       await _fileOps.copy(backup.path, paths.partial.path);
       await _fileOps.rename(paths.partial.path, paths.candidate.path);
-      await IsarSetup.validateRestoreCandidate(
+      await _databaseOps.validateCandidate(
         candidatePath: paths.candidate.path,
         expectedSlotId: save.slotId,
       );
@@ -123,7 +126,7 @@ class SaveManagementService {
 
     late final SaveBackupInfo safetyBackup;
     try {
-      await IsarSetup.touchOnlineNow(now: _now());
+      await _databaseOps.touchOnlineNow(_now());
       safetyBackup = await createBackup();
     } catch (error) {
       await _cleanupRestoreCopies(
@@ -138,7 +141,7 @@ class SaveManagementService {
     }
 
     try {
-      await IsarSetup.close();
+      await _databaseOps.closeDatabase();
     } catch (error) {
       throw SaveRestoreException(
         phase: SaveRestorePhase.closeDatabase,
