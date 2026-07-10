@@ -63,19 +63,19 @@ class SaveRestoreException implements Exception {
 - Modify: `lib/data/isar_setup.dart`
 - Test: `test/data/isar_setup_slots_test.dart`
 
-- [ ] **Step 1: 写失败测试**：候选档槽位一致时返回元数据；错误槽位、未来版本、无祖师档抛错。
-- [ ] **Step 2: 写失败测试**：正式文件缺失时 rollback 优先于 candidate；正式文件存在时清理 partial/candidate/rollback。
-- [ ] **Step 3: 运行定向测试确认失败**：
+- [x] **Step 1: 写失败测试**：候选档槽位一致时返回元数据；错误槽位、未来版本、无祖师档抛错。
+- [x] **Step 2: 写失败测试**：正式文件缺失时 rollback 优先于 candidate；正式文件存在时清理 partial/candidate/rollback。
+- [x] **Step 3: 运行定向测试确认失败**：
   `flutter test --no-pub test/data/isar_setup_slots_test.dart`
-- [ ] **Step 4: 在 `init()` 的 `Isar.open` 前调用**：
+- [x] **Step 4: 在 `init()` 的 `Isar.open` 前调用**：
 
 ```dart
 await _recoverInterruptedRestore(dir, slotId);
 ```
 
-- [ ] **Step 5: 新增 `validateRestoreCandidate`**，用 `_allSchemas` 打开候选副本，读取 id=0 的 `SaveData` 和祖师，使用 `_compareVersion` 拒绝未来版本，finally 关闭临时实例。
-- [ ] **Step 6: 实现固定文件名恢复顺序并重新运行测试至通过。**
-- [ ] **Step 7: 提交**：`git commit -m "Add Isar restore validation and recovery"`。
+- [x] **Step 5: 新增 `validateRestoreCandidate`**，用 `_allSchemas` 打开候选副本，读取 id=0 的 `SaveData` 和祖师，使用 `_compareVersion` 拒绝未来版本，finally 关闭临时实例。
+- [x] **Step 6: 实现固定文件名恢复顺序并重新运行测试至通过。**
+- [x] **Step 7: 提交**：`git commit -m "Add Isar restore validation and recovery"`。
 
 ### Task 3: 成功恢复与自动安全备份
 
@@ -143,8 +143,8 @@ Future<SaveRestoreResult> restoreBackup(SaveBackupInfo backup)
 
 ## 当前恢复点
 
-- 状态：Task 1 已完成，Task 2 待开始。
-- 最后完成：恢复领域类型与可注入文件边界已按 TDD 实现。
-- 下一步：Task 2 Step 1，写 Isar 候选校验与启动中断恢复测试。
-- 已跑验证：`save_restore_file_ops_test.dart` 1/1 通过；设计文档 diff check 通过。
+- 状态：Task 1-2 已完成，Task 3 待开始。
+- 最后完成：Isar 候选槽位/版本/祖师校验与三种启动中断现场恢复已实现。
+- 下一步：Task 3 Step 1，写成功恢复与自动安全备份测试。
+- 已跑验证：Isar restore + slots 13/13；file-ops 1/1。
 - 阻塞项：无。

@@ -5,6 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'game_repository.dart';
+import 'isar_restore_paths.dart';
 import 'slot_summary.dart';
 import '../core/domain/enums.dart';
 import '../core/domain/character.dart';
@@ -167,6 +168,7 @@ class IsarSetup {
 
     final dir = directory ?? await getApplicationDocumentsDirectory();
     _directory = dir;
+    await recoverInterruptedRestoreFiles(dir, slotId);
     _instance = await Isar.open(
       _allSchemas,
       directory: dir.path,
@@ -405,6 +407,83 @@ class IsarSetup {
   static Future<void> close() async {
     await _instance?.close();
     _instance = null;
+  }
+
+  /// 校验恢复候选副本。候选是历史备份的临时副本，校验可升级其 Isar schema，
+  /// 但不会修改原始备份文件。
+  static Future<void> validateRestoreCandidate({
+    required String candidatePath,
+    required int expectedSlotId,
+  }) async {
+    final file = File(candidatePath);
+    if (!await file.exists() || await file.length() == 0) {
+      throw StateError('恢复候选文件不存在或为空');
+    }
+    final fileName = file.uri.pathSegments.last;
+    if (!fileName.endsWith('.isar')) {
+      throw StateError('恢复候选文件扩展名无效');
+    }
+    final name = fileName.substring(0, fileName.length - '.isar'.length);
+    if (Isar.getInstance(name) != null) {
+      throw StateError('恢复候选数据库已打开');
+    }
+
+    Isar? candidate;
+    try {
+      candidate = await Isar.open(
+        _allSchemas,
+        directory: file.parent.path,
+        name: name,
+        inspector: false,
+      );
+      final save = await candidate.saveDatas.get(0);
+      if (save == null) throw StateError('恢复候选缺少 SaveData');
+      if (save.slotId != expectedSlotId) {
+        throw StateError('恢复候选槽位不匹配');
+      }
+      if (_compareVersion(save.saveVersion, _currentSaveVersion) > 0) {
+        throw StateError('恢复候选版本高于当前程序');
+      }
+      final founderId = save.founderCharacterId;
+      final founder = founderId == null
+          ? null
+          : await candidate.characters.get(founderId);
+      if (founder == null || !founder.isFounder) {
+        throw StateError('恢复候选缺少祖师记录');
+      }
+    } finally {
+      await candidate?.close();
+      final lock = File('$candidatePath.lock');
+      if (await lock.exists()) await lock.delete();
+    }
+  }
+
+  /// 启动前修复被进程中断的恢复现场。正式档存在时以正式档为准；正式档缺失
+  /// 时优先回滚到恢复前版本，只有没有 rollback 才提升完整 candidate。
+  @visibleForTesting
+  static Future<void> recoverInterruptedRestoreFiles(
+    Directory directory,
+    int slotId,
+  ) async {
+    final paths = IsarRestorePaths(directory, slotId);
+    await _deleteIfExists(paths.partial);
+
+    if (await paths.current.exists()) {
+      await _deleteIfExists(paths.candidate);
+      await _deleteIfExists(paths.rollback);
+    } else if (await paths.rollback.exists()) {
+      await _deleteIfExists(paths.candidate);
+      await paths.rollback.rename(paths.current.path);
+    } else if (await paths.candidate.exists()) {
+      await paths.candidate.rename(paths.current.path);
+    }
+
+    await _deleteIfExists(File('${paths.candidate.path}.lock'));
+    await _deleteIfExists(File('${paths.rollback.path}.lock'));
+  }
+
+  static Future<void> _deleteIfExists(File file) async {
+    if (await file.exists()) await file.delete();
   }
 
   // ── 多存档槽(1.0 spec B · 固定 3 槽 · 多 db 方案)───────────────────────
