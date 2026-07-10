@@ -3,6 +3,8 @@ import 'package:wuxia_idle/core/domain/item_usage.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/inventory/application/item_usage_lookup_service.dart';
 
+import '../../support/test_data.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -10,7 +12,7 @@ void main() {
   late ItemUsageLookupService service;
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs();
+    repo = await loadTestGameRepository();
     service = ItemUsageLookupService(repo);
   });
 

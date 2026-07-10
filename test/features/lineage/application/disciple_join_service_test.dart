@@ -5,11 +5,11 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/lineage/application/disciple_join_service.dart';
 import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
 import "../../../support/isar_test_support.dart";
+import "../../../support/test_data.dart";
 
 /// 第七阶段批三 · Task 6:[DiscipleJoinService.joinForClearedStage] 过关懒创建命名弟子。
 ///
@@ -21,11 +21,7 @@ void main() {
 
   setUpAll(() async {
     await initializeTestIsarCore();
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
+    await loadTestGameRepository();
   });
 
   setUp(() async {

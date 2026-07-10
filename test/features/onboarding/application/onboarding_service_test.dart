@@ -14,6 +14,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
 import "../../../support/isar_test_support.dart";
+import "../../../support/test_data.dart";
 
 /// 2026-05-25 P0-1 release 阻塞修复 R5 测族(8 测)。
 ///
@@ -33,11 +34,7 @@ void main() {
 
   setUpAll(() async {
     await initializeTestIsarCore();
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
+    await loadTestGameRepository();
   });
 
   setUp(() async {
@@ -227,4 +224,3 @@ void main() {
     expect(jie?.quantity, 0);
   });
 }
-

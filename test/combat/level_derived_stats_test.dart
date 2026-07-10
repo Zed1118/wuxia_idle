@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -7,20 +6,15 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
+import '../support/test_data.dart';
 
 /// 第八阶段 · 角色等级 Lv 对派生属性的小幅有界加成(TDD)。
 ///
 /// 注入读 `Character.level`:bonus = (level-1) × per_level(level 1 = 0 加成)。
 /// maxHp/内力经 §5.4 clamp 硬守红线;速度无红线。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
   tearDown(GameRepository.resetForTest);
 

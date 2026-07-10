@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -7,6 +6,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_ai.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
+import '../../support/test_data.dart';
 
 /// 终局机制型 Boss 批次2 Task 3 · 模块 A:护法墙 taunt。
 ///
@@ -22,14 +22,8 @@ import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strate
 /// **测 B**:护法全灭 → Boss 进池(可选)。
 /// **测 C**:drift 守卫 —— isGuardedBoss 与 wardMultOf<1.0 同步。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

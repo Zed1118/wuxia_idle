@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -7,13 +6,12 @@ import 'package:wuxia_idle/data/defs/shop_item_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_source_lookup.dart';
 import 'package:wuxia_idle/features/equipment/domain/equipment_source.dart';
+import '../../../support/test_data.dart';
 
 void main() {
-  Future<String> fileLoader(String path) => File(path).readAsString();
-
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: fileLoader);
+      await loadTestGameRepository();
     }
   });
 

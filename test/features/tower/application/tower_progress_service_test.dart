@@ -9,6 +9,7 @@ import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import "../../../support/isar_test_support.dart";
+import "../../../support/test_data.dart";
 
 /// Phase 3 T41 · TowerProgressService 真 Isar 落地测试。
 ///
@@ -19,11 +20,7 @@ void main() {
 
   setUpAll(() async {
     await initializeTestIsarCore();
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
+    await loadTestGameRepository();
   });
 
   setUp(() async {

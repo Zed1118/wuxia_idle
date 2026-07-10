@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +9,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import '../support/test_data.dart';
 
 /// DamageCalculator 单元测试（phase1_tasks.md T10 §574 验收）。
 ///
@@ -23,14 +23,8 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 /// 5. 境界差：高打低 attacker / 低打高 defender / 同 1.0。
 /// 6. formulaBreakdown 字符串包含必要数值。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

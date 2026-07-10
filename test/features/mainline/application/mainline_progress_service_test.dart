@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
@@ -10,6 +9,7 @@ import 'package:wuxia_idle/features/mainline/application/mainline_progress_servi
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
 import "../../../support/isar_test_support.dart";
+import "../../../support/test_data.dart";
 
 /// Phase 3 T34 · MainlineProgressService 真 Isar 落地测试。
 ///
@@ -20,11 +20,7 @@ void main() {
 
   setUpAll(() async {
     await initializeTestIsarCore();
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
+    await loadTestGameRepository();
   });
 
   setUp(() async {

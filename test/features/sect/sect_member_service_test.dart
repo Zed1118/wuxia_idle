@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/sect/application/sect_member_service.dart';
 import 'package:wuxia_idle/features/sect/domain/sect.dart';
 import 'package:wuxia_idle/features/sect/domain/sect_rank.dart';
 import "../../support/isar_test_support.dart";
+import "../../support/test_data.dart";
 
 /// P4.1 §12.2 B4 R5.1+R5.2+R5.3 测族(spec p4_1_sect_management_spec §7)。
 ///
@@ -27,11 +28,7 @@ void main() {
 
   setUpAll(() async {
     await initializeTestIsarCore();
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (p) => File(p).readAsString(),
-      );
-    }
+    await loadTestGameRepository();
   });
 
   setUp(() async {

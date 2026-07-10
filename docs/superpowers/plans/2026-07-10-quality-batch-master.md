@@ -34,8 +34,8 @@
 
 ## 当前恢复点
 
-- 状态：批次 A 功能实现完成；批次 B Isar 迁移完成，GameRepository loader 迁移执行中。
-- 最后完成：134 个纯单例 production loader 样板迁移并完成目录级回归。
-- 下一步：收口需要返回 repo 的单调用与等价 `fileLoader`；批末统一做 A 的 macOS 视觉验收。
-- 已跑验证：批次 A 定向 analyze 0、47 测；Isar 迁移各批全绿；repository 第一批 3525 测全绿，`flutter analyze test` 0 问题。
+- 状态：批次 A 功能实现完成；批次 B 两类测试基础设施迁移均已完成代码与定向验证。
+- 最后完成：GameRepository 新增迁移 204 文件，共享 helper 使用文件 45→249，直接调用文件 230→25；保留自定义/fresh loader。
+- 下一步：提交批次 B 最终恢复点并进入批次 C；批末统一做 A 的 macOS 视觉验收。
+- 已跑验证：批次 A 定向 analyze 0、47 测；Isar 迁移各批全绿；repository 迁移目录级 3525 测及后续定向 639 测全绿，`flutter analyze test` 0 问题。
 - 阻塞项：无。

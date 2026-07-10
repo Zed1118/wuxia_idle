@@ -1,8 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
+
+import '../../../support/test_data.dart';
 
 /// 健康报告 #3 收口（2026-06-25）：encounter_skills.yaml 池中**每一招**都必须
 /// 被至少一个 encounter 的 `unlockSkill` outcome 引用——否则玩家无任何路径解锁
@@ -15,11 +15,7 @@ import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
 /// 不依赖 Isar(纯 GameRepository.loadAllDefs 路径)。
 void main() {
   setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
+    await loadTestGameRepository();
   });
 
   test('encounter_skills 池全部招式都被某 encounter unlockSkill outcome 引用(0 搁浅)',

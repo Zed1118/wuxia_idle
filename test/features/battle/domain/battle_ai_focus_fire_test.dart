@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -6,6 +5,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_ai.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import '../../../support/test_data.dart';
 
 /// 第六阶段 Task 3:AI 集火破绽窗口敌目标优先级测试。
 ///
@@ -20,14 +20,8 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 /// **测试 C**:多个破绽敌中选 HP 最低/slotIndex 最小的。
 /// **测试 D**:死亡敌(isAlive=false, stagger>0) + 活着普通敌 → 不集火死亡敌,选活着敌。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

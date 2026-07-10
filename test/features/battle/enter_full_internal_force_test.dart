@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -7,6 +6,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import '../../support/test_data.dart';
 
 /// P0 破招 Task 4:战斗内力进场满(maxIf · 每场预算模型 · 与敌方对称)。
 ///
@@ -19,14 +19,8 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 /// 关键:character.internalForce(100)< internalForceMax(默认 500)→ maxIf=500,
 /// 进场后 current 应被拉满到 500,使断言在「自然方向」上有意义。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

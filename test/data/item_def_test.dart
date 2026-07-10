@@ -3,6 +3,8 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/item_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 
+import '../support/test_data.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -80,7 +82,7 @@ void main() {
   });
 
   test('GameRepository 加载 items.yaml: 核心道具 def 完整', () async {
-    final repo = await GameRepository.loadAllDefs();
+    final repo = await loadTestGameRepository();
     expect(repo.itemDefs.length, greaterThanOrEqualTo(23));
     expect(repo.itemDefs['item_jingyandan_small']?.layerFraction, 0.2);
     expect(repo.itemDefs['item_liaoshangdan']?.injuryHealHours, 4.0);

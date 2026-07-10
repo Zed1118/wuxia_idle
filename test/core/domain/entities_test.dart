@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -11,6 +9,8 @@ import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 
+import '../../support/test_data.dart';
+
 void main() {
   // 共鸣/散功 extension 改为读 NumbersConfig（清账 #14/#15 同根方案的延伸）：
   // EquipmentResonance.resonanceStage(n) / resonanceBonus(n) / inheritFrom(_, n)
@@ -18,13 +18,7 @@ void main() {
   late final NumbersConfig n;
 
   setUpAll(() async {
-    await GameRepository.loadAllDefs(
-      loader: (path) async {
-        final f = File(path);
-        if (!await f.exists()) throw FileSystemException('不存在', path);
-        return f.readAsString();
-      },
-    );
+    await loadTestGameRepository();
     n = GameRepository.instance.numbers;
   });
 

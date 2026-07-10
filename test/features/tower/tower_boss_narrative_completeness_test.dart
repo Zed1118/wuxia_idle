@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/narrative_loader.dart';
+import '../../support/test_data.dart';
 
 /// 问鼎九霄 Boss 层剧情完整性守护(2026-06-26)。
 ///
@@ -15,7 +16,7 @@ void main() {
   Future<String> fileLoader(String path) => File(path).readAsString();
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs(loader: fileLoader);
+    repo = await loadTestGameRepository();
   });
 
   test('每个配了 narrative id 的塔层都加载到真内容(非占位)', () async {

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -9,17 +8,12 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/loot_preview/domain/drop_rumor.dart';
 import 'package:wuxia_idle/features/loot_preview/presentation/stage_preview_card.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../support/test_data.dart';
 
 /// 第八阶段 C·悬停预览浮层内容 widget 测。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUpAll(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
   tearDownAll(GameRepository.resetForTest);
 

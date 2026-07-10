@@ -28,7 +28,7 @@
 - Modify: production-data tests under `test/core`, `test/combat`, `test/balance`, `test/features`, `test/tools`
 - Reuse: `test/support/test_data.dart`
 
-- [ ] **Step 1: 只选取等价于以下代码的调用**：
+- [x] **Step 1: 只选取等价于以下代码的调用**：
 
 ```dart
 await GameRepository.loadAllDefs(loader: (path) => File(path).readAsString());
@@ -40,9 +40,9 @@ await GameRepository.loadAllDefs(loader: (path) => File(path).readAsString());
 await loadTestGameRepository();
 ```
 
-- [ ] **Step 2: 保留 `game_repository_test.dart`、broken/patched/hybrid loader、期望抛错和必须 fresh repo 的测试。**
-- [ ] **Step 3: 按目录运行定向测试，确认全局 singleton 复用不改变断言。**
-- [ ] **Step 4: 删除迁移后未使用的 `dart:io` import。**
+- [x] **Step 2: 保留 `game_repository_test.dart`、broken/patched/hybrid loader、期望抛错和必须 fresh repo 的测试。**
+- [x] **Step 3: 按目录运行定向测试，确认全局 singleton 复用不改变断言。**
+- [x] **Step 4: 删除迁移后未使用的 `dart:io` import。**
 - [ ] **Step 5: 提交**：`git commit -m "Finish production repository test migration"`。
 
 ### Task 3: 迁移批验证与记录
@@ -54,8 +54,8 @@ await loadTestGameRepository();
 
 ## 当前恢复点
 
-- 状态：Task 1 已提交；Task 2 第一批纯单例初始化迁移完成。
-- 最后完成：134 个只初始化全局单例的 production loader 样板改用 `loadTestGameRepository`。
-- 下一步：提交第一批恢复点；继续审查需要返回 repo 的单调用和等价 `fileLoader`，保留 fresh/custom/broken loader。
-- 已跑验证：Isar 迁移非 feature 104/104、首批 feature 850/850、末批 feature 可运行测试 624 通过并补跑 61/61；repository 第一批 `balance/combat/data` 756/756、`features` 2727/2727、`tools` 42/42；`flutter analyze test` 0 问题。
+- 状态：Task 1 已提交；Task 2 代码与定向验证完成，等待最终恢复点提交。
+- 最后完成：新增迁移 204 文件，使用共享 helper 的文件 45→249；直接 `loadAllDefs` 文件 230→25。
+- 下一步：提交 Task 2；执行 Task 3 批验证与文档记录。
+- 已跑验证：repository 首批目录回归 `balance/combat/data` 756/756、`features` 2727/2727、`tools` 42/42；返回 repo 批 162/162；`fileLoader` 批 232/232；最终补充批 112/112 + 133/133；`flutter analyze test` 0 问题。剩余直接调用均为 helper 自身、broken/patched/hybrid/fresh-instance 或多次重载测试。
 - 阻塞项：无。

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
@@ -10,6 +9,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import '../support/test_data.dart';
 
 /// BattleState / BattleCharacter / BattleAction 单元测试（phase1_tasks.md T11 §649）。
 ///
@@ -26,14 +26,8 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 /// 7. BattleState.initial：tick=0 / result=null / actionLog=[]。
 /// 8. immutable：fromCharacter 返回的 List 不可外部 mutate。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

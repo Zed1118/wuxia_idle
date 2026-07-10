@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +9,7 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+import '../support/test_data.dart';
 
 /// 跨系统数值红线 audit · 2026-05-25 (nightshift T20)
 ///
@@ -33,14 +33,8 @@ import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 ///         ② 手算 APM 末端乘后值(模拟 strategy 实际路径)
 ///         ③ 对 APM 后值 expect lessThanOrEqualTo(red_line)
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

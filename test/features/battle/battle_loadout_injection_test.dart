@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
@@ -7,6 +6,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import '../../support/test_data.dart';
 
 /// P1b 藏经阁 · Task4:BattleCharacter.fromCharacter 的 availableSkills
 /// 改读 7 装配槽(主修×2 / 辅修 / 共鸣 / 大招 / 奇遇 / 破招)非空技能。
@@ -18,14 +18,8 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 /// 3. keySkillId 槽显式装破招技 → 注入。
 /// 4. 5 槽全空 fallback → 主修全招 + 本流派破招技(旧档行为等价)。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);
