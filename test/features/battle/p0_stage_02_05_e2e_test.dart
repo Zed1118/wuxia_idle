@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -17,6 +16,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_ai.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart' show RealmUtils;
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
+import '../../support/test_data.dart';
 
 /// P0 破招 Task 11:stage_02_05「巷中夜雨」端到端验收。
 ///
@@ -38,9 +38,7 @@ void main() {
   late NumbersConfig numbers;
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    repo = await loadTestGameRepository();
     numbers = repo.numbers;
   });
 

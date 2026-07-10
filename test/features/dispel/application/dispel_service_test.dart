@@ -1,7 +1,5 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -9,6 +7,7 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/cultivation/application/cultivation_service.dart';
 import 'package:wuxia_idle/features/dispel/application/dispel_service.dart';
+import '../../../support/test_data.dart';
 
 /// T25 DispelService 验收（phase2_tasks T25 §297-321）。
 ///
@@ -18,9 +17,7 @@ void main() {
   late NumbersConfig n;
 
   setUpAll(() async {
-    final repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    final repo = await loadTestGameRepository();
     n = repo.numbers;
   });
 

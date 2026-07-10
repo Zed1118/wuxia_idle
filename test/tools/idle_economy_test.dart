@@ -32,6 +32,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
+import '../support/test_data.dart';
 
 const String _outputDir = 'test/tools/output';
 
@@ -43,9 +44,7 @@ void main() {
   late GameRepository repo;
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    repo = await loadTestGameRepository();
     Directory(_outputDir).createSync(recursive: true);
   });
 

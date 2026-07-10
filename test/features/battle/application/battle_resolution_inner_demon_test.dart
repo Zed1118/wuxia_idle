@@ -1,10 +1,8 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -13,6 +11,7 @@ import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/application/battle_resolution.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
+import '../../../support/test_data.dart';
 
 /// M6 Task 4：BattleResolutionService.resolve 心魔关战败分支验收。
 void main() {
@@ -20,9 +19,7 @@ void main() {
   late NumbersConfig numbersCfg;
 
   setUpAll(() async {
-    final repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    final repo = await loadTestGameRepository();
     progressMap = repo.numbers.cultivationProgressToNext;
     numbersCfg = repo.numbers;
   });

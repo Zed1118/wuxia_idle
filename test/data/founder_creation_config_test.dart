@@ -1,14 +1,11 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
+import '../support/test_data.dart';
 
 void main() {
   test('founder_creation.yaml 覆盖三流派且命盘池可抽 3 份', () async {
-    final repo = await GameRepository.loadAllDefs(
-      loader: (p) => File(p).readAsString(),
-    );
+    final repo = await loadTestGameRepository();
 
     final config = repo.founderCreation;
     expect(config.schools.map((e) => e.school).toSet().length, 3);

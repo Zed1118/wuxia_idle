@@ -1,12 +1,11 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/forging_slot.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/character_panel/domain/equipment_stat_diff.dart';
+import '../../support/test_data.dart';
 
 Equipment _eq({
   int atk = 100,
@@ -39,9 +38,7 @@ void main() {
   late NumbersConfig n;
 
   setUpAll(() async {
-    final repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    final repo = await loadTestGameRepository();
     n = repo.numbers;
   });
 

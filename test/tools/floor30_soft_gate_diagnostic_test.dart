@@ -18,6 +18,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
     show RealmUtils;
 import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
+import '../support/test_data.dart';
 
 /// floor30 护法墙 taunt + 脆弱窗口硬闸诊断(Task 5,本批核心验证)。
 ///
@@ -68,9 +69,7 @@ void main() {
   late GameRepository repo;
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    repo = await loadTestGameRepository();
     Directory(_outputDir).createSync(recursive: true);
   });
 

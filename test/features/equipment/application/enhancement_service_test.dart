@@ -1,21 +1,18 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/equipment/application/enhancement_service.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
+import '../../../support/test_data.dart';
 
 /// T20 EnhancementService 验收（phase2_tasks T20 §187-219）。
 void main() {
   late EnhancementConfig cfg;
 
   setUpAll(() async {
-    final repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    final repo = await loadTestGameRepository();
     cfg = repo.numbers.enhancement;
   });
 
