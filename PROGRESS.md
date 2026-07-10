@@ -5,6 +5,7 @@
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 
 ## 当前阶段
+> **2026-07-10 Codex 资产 WebP 试点(`codex/asset-webp-pilot`)**:magic audit 订正旧 210MB 口径:383 个 `.png` 路径 58.0MB,其中 272 个/44.7MB 已是 WebP 内容;真 PNG 仅 111 个/13.3MB。8 样本三档转码 + 四联目检证实只有桃花岛 q82 显著受益(-75.8%),alpha 装备有损边缘破坏、全 lossless 仅省 0.85MB,故关闭全量转码任务,只留桃花岛候选待最终人工确认。新增可复现脚本与审计报告;同步销账已完成的 battle_screen 3102 行旧任务。
 > **2026-07-10 Codex 审查债务收口批(`codex/review-debt-cleanup`)**:确认 CI 与 66 篇文案归档已完成;删除不可达 `home_feed` 页面并把事件流查询迁至 event、启动钩子迁至主菜单;删除隐藏逐关 `stage_auto_play` 配置链,保留全局自动战斗与主线首通 interactive;新增测试数据/Isar helper 并首批迁移 8 文件。**验证**:build_runner 成功;`flutter analyze lib/ test/` 0 issue;全量 `flutter test --no-pub` **3769 全绿**。
 > 🧹✅ **2026-07-10 Codex 挂机批 O:测试 fixture TODO 文案清噪(`main`)**:清理 `defs_test`/`game_repository_test` 内联 yaml description 的 `TODO` 字符串,改为明确测试描述,不改变生产数据或断言语义。这样后续 `TODO/FIXME/HACK` 扫描不会把 fixture 文案误报成未完成内容;当前 `rg "TODO|FIXME|HACK" lib test -S` 只剩主线文案完整性测试中“禁止 TODO”的守卫断言文本。**验证**:`flutter test --no-pub test/data/defs/defs_test.dart test/data/game_repository_test.dart --reporter expanded` **76 绿**;`flutter analyze` 0 issue。
 > 🛠️✅ **2026-07-10 Codex 挂机批 N:README build_runner 命令去废弃参数(`main`)**:快速开始仍写 `dart run build_runner build --delete-conflicting-outputs`,而当前 build_runner 已提示该参数 removed/ignored。本批只更新 README 当前操作指令为 `dart run build_runner build`,保留 `.g.dart` 不入库、fresh checkout 必跑生成器的项目约定;历史审计/计划文档不批量改写。**验证**:`dart run build_runner build` 成功(**0 outputs**,无废弃参数警告);`flutter analyze` 0 issue。
@@ -92,7 +93,6 @@
 
 - **M4 #46 美术** 5 段(2026-05-20/21):Stage 2 W1-W6 74/74 + assets 89 张 + stage_audit + #45 Demo §8.4 · 详 art_poc_* / art_assets_integration_* / p1_45_demo_polish_*
 - **Ch4 1.0 P2 第二条主线第 1 章**(2026-05-21/22):Phase 2.1-2.5 全收口 + 13 narrative ~5,880 字 · 详 p1_x_chapter4_phase2_*
-
 ### 2026-05-22/23/24 详条归档
 
 - **2026-05-22 Ch5 + Ch6 飞升 P2 主线全闭环**(2 章 ~12,438 字 · 师父三句遗言完整连通 · 小铜镜+玉佩 hook 闭环 · 详 `p2_x_chapter{5,6}_phase2_full_closeout_2026-05-22.md`)
