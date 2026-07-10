@@ -32,14 +32,14 @@ void main() {
 
   Character mkChar({required int level, required int levelExp}) =>
       Character.create(
-          name: '旧档角色',
-          realmTier: RealmTier.erLiu,
-          realmLayer: RealmLayer.qiMeng,
-          attributes: Attributes(),
-          rarity: RarityTier.xunChang,
-          lineageRole: LineageRole.founder,
-          createdAt: DateTime(2026, 1, 1),
-        )
+        name: '旧档角色',
+        realmTier: RealmTier.erLiu,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: Attributes(),
+        rarity: RarityTier.xunChang,
+        lineageRole: LineageRole.founder,
+        createdAt: DateTime(2026, 1, 1),
+      )
         ..level = level
         ..levelExp = levelExp;
 

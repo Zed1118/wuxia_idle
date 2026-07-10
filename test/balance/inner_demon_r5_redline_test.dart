@@ -64,7 +64,8 @@ void main() {
     late Directory tempDir;
 
     setUpAll(() async {
-      tempDir = await Directory.systemTemp.createTemp('wuxia_r5_inner_demon_');
+      tempDir =
+          await Directory.systemTemp.createTemp('wuxia_r5_inner_demon_');
       await IsarSetup.init(directory: tempDir, inspector: false);
       await Phase2SeedService(isar: IsarSetup.instance).seedP3();
     });
@@ -84,10 +85,9 @@ void main() {
       final repo = GameRepository.instance;
       final numbers = repo.numbers;
       final wuShengX = repo.getRealm(RealmTier.wuSheng, layer);
-      EquipmentDef defOf(EquipmentSlot slot) =>
-          repo.equipmentDefs.values.firstWhere(
-            (d) => d.tier == wuShengX.equipmentTierCap && d.slot == slot,
-          );
+      EquipmentDef defOf(EquipmentSlot slot) => repo.equipmentDefs.values
+          .firstWhere(
+              (d) => d.tier == wuShengX.equipmentTierCap && d.slot == slot);
       Equipment buildEq(EquipmentSlot slot) {
         final def = defOf(slot);
         // 满 build 直接取各维度 max(玩家满 build 验红线)。Ch6 R5 只传
@@ -192,20 +192,15 @@ void main() {
             stageId: stageId,
             innerDemonDef: innerDemonDef,
           );
-          expect(
-            right,
-            hasLength(3),
-            reason: '$stageId 应生成 3 镜像(spec §一末关单副本占位)',
-          );
+          expect(right, hasLength(3),
+              reason: '$stageId 应生成 3 镜像(spec §一末关单副本占位)');
 
           var leftWins = 0;
           var rightWins = 0;
           var draws = 0;
           for (var seed = 0; seed < 50; seed++) {
-            final initial = BattleState.initial(
-              leftTeam: left,
-              rightTeam: right,
-            );
+            final initial =
+                BattleState.initial(leftTeam: left, rightTeam: right);
             final finalState = BattleEngine.runToEnd(
               initial,
               numbers,
@@ -236,25 +231,21 @@ void main() {
         print('R5.1 inner_demon 7 关 50 种子分布(layer / stage / buff %):');
         for (final (stageId, layer) in stageLayers) {
           final (l, r, d) = dist[stageId]!;
-          final buff = (innerDemonDef.mirrorBuffPerStage[stageId] ?? 0.0) * 100;
+          final buff =
+              (innerDemonDef.mirrorBuffPerStage[stageId] ?? 0.0) * 100;
           // ignore: avoid_print
-          print(
-            '  ${layer.name.padRight(8)} $stageId '
-            '(+${buff.toStringAsFixed(0)}%): '
-            'leftWins=$l rightWins=$r draws=$d',
-          );
+          print('  ${layer.name.padRight(8)} $stageId '
+              '(+${buff.toStringAsFixed(0)}%): '
+              'leftWins=$l rightWins=$r draws=$d');
         }
 
         for (final (stageId, layer) in stageLayers) {
           final (l, r, d) = dist[stageId]!;
           // 覆盖率:50 种子全跑完,result 非 null
-          expect(
-            l + r + d,
-            50,
-            reason:
-                '$stageId: 50 种子全应有 result(leftWin/rightWin/draw),'
-                '不应漏跑',
-          );
+          expect(l + r + d, 50,
+              reason:
+                  '$stageId: 50 种子全应有 result(leftWin/rightWin/draw),'
+                  '不应漏跑');
 
           // 主红线:玩家方综合不输面(克己语义难赢但不输)
           expect(
@@ -289,37 +280,21 @@ void main() {
         expect(right, hasLength(3));
         for (final m in right) {
           // §5.4 玩家血上限 20000
-          expect(
-            m.maxHp,
-            lessThanOrEqualTo(20000),
-            reason: '$m: §5.4 玩家血上限 cap',
-          );
-          expect(
-            m.currentHp,
-            lessThanOrEqualTo(20000),
-            reason: '$m: 镜像开战满血 ≤ §5.4 上限',
-          );
+          expect(m.maxHp, lessThanOrEqualTo(20000),
+              reason: '$m: §5.4 玩家血上限 cap');
+          expect(m.currentHp, lessThanOrEqualTo(20000),
+              reason: '$m: 镜像开战满血 ≤ §5.4 上限');
           // §5.4 内力上限 15000
-          expect(
-            m.maxInternalForce,
-            lessThanOrEqualTo(15000),
-            reason: '$m: §5.4 内力上限 cap',
-          );
-          expect(
-            m.currentInternalForce,
-            lessThanOrEqualTo(15000),
-            reason: '$m: 镜像开战满内力 ≤ §5.4 上限',
-          );
+          expect(m.maxInternalForce, lessThanOrEqualTo(15000),
+              reason: '$m: §5.4 内力上限 cap');
+          expect(m.currentInternalForce, lessThanOrEqualTo(15000),
+              reason: '$m: 镜像开战满内力 ≤ §5.4 上限');
           // mirror totalEquipmentAttack cap = 3 × §5.4 单件 2000 = 6000
           // (Batch 2.5.C: 原 2000 锚错 §5.4 维度,§5.4 装备攻击是单件 cap,
           // 镜像 totalEquipmentAttack 是 3 件求和)
-          expect(
-            m.totalEquipmentAttack,
-            lessThanOrEqualTo(6000),
-            reason:
-                '$m: mirror totalEquipmentAttack cap '
-                '(3 × §5.4 单件 2000 = 6000)',
-          );
+          expect(m.totalEquipmentAttack, lessThanOrEqualTo(6000),
+              reason: '$m: mirror totalEquipmentAttack cap '
+                  '(3 × §5.4 单件 2000 = 6000)');
           // teamSide 正确
           expect(m.teamSide, 1, reason: '$m: 右队');
         }
@@ -327,113 +302,101 @@ void main() {
         // 玩家 build wuSheng·dengFeng 满应当真的接近 cap(印证测试本身有
         // 覆盖意义,非「玩家 build 太弱永远不触 cap」假覆盖)
         final maxPlayerHp = left.map((p) => p.maxHp).reduce(max);
-        final maxPlayerAttack = left
-            .map((p) => p.totalEquipmentAttack)
-            .reduce(max);
+        final maxPlayerAttack =
+            left.map((p) => p.totalEquipmentAttack).reduce(max);
         // ignore: avoid_print
-        print(
-          'R5.2 玩家 dengFeng 满 build 接近 cap 验证:'
-          'maxHp=$maxPlayerHp / maxAttack=$maxPlayerAttack',
-        );
+        print('R5.2 玩家 dengFeng 满 build 接近 cap 验证:'
+            'maxHp=$maxPlayerHp / maxAttack=$maxPlayerAttack');
         // 玩家 dengFeng 满 build hp 应过 10000(防玩家 build 退化让 cap 测假阳)
-        expect(
-          maxPlayerHp,
-          greaterThan(10000),
-          reason:
-              'R5.2 玩家 dengFeng 满 build maxHp 应过 10000 — '
-              '否则 cap 验证无意义(玩家 build 退化 → ×1.2 也不触 cap)',
-        );
+        expect(maxPlayerHp, greaterThan(10000),
+            reason: 'R5.2 玩家 dengFeng 满 build maxHp 应过 10000 — '
+                '否则 cap 验证无意义(玩家 build 退化 → ×1.2 也不触 cap)');
       },
     );
 
-    test('R5.3 渐进通关 unlock 链 e2e(qiMeng→dengFeng 6 步逐关放行)', () {
-      // 集成 isLayerLocked + applyExperience hook 真链路。
-      // 起点:Ch6 stage_06_05 通关后玩家自动升 wuSheng·qiMeng(spec §三 R2)。
-      final innerDemonDef = GameRepository.instance.numbers.innerDemon;
-      final realmLookup = GameRepository.instance.getRealm;
+    test(
+      'R5.3 渐进通关 unlock 链 e2e(qiMeng→dengFeng 6 步逐关放行)',
+      () {
+        // 集成 isLayerLocked + applyExperience hook 真链路。
+        // 起点:Ch6 stage_06_05 通关后玩家自动升 wuSheng·qiMeng(spec §三 R2)。
+        final innerDemonDef = GameRepository.instance.numbers.innerDemon;
+        final realmLookup = GameRepository.instance.getRealm;
 
-      final character = Character.create(
-        name: 'r5_unlock_e2e_player',
-        realmTier: RealmTier.wuSheng,
-        realmLayer: RealmLayer.qiMeng,
-        attributes: Attributes()
-          ..constitution = 10
-          ..enlightenment = 10
-          ..agility = 10
-          ..fortune = 10,
-        rarity: RarityTier.jueShi,
-        lineageRole: LineageRole.disciple,
-        createdAt: DateTime(2026, 1, 1),
-        internalForce: 13000,
-        internalForceMax: 13000,
-        experienceToNextLayer: 430000, // wuSheng·qiMeng → ruMen
-      );
+        final character = Character.create(
+          name: 'r5_unlock_e2e_player',
+          realmTier: RealmTier.wuSheng,
+          realmLayer: RealmLayer.qiMeng,
+          attributes: Attributes()
+            ..constitution = 10
+            ..enlightenment = 10
+            ..agility = 10
+            ..fortune = 10,
+          rarity: RarityTier.jueShi,
+          lineageRole: LineageRole.disciple,
+          createdAt: DateTime(2026, 1, 1),
+          internalForce: 13000,
+          internalForceMax: 13000,
+          experienceToNextLayer: 430000, // wuSheng·qiMeng → ruMen
+        );
 
-      // clearedStageIds 起点:Ch6 末关已通(玩家自动升 wuSheng·qiMeng 必经)
-      final cleared = <String>{'stage_06_05'};
-      bool isLocked(RealmTier nextTier, RealmLayer nextLayer) =>
-          InnerDemonService.isLayerLocked(
-            nextTier: nextTier,
-            nextLayer: nextLayer,
-            innerDemonDef: innerDemonDef,
-            clearedStageIds: cleared,
-          );
+        // clearedStageIds 起点:Ch6 末关已通(玩家自动升 wuSheng·qiMeng 必经)
+        final cleared = <String>{'stage_06_05'};
+        bool isLocked(RealmTier nextTier, RealmLayer nextLayer) =>
+            InnerDemonService.isLayerLocked(
+              nextTier: nextTier,
+              nextLayer: nextLayer,
+              innerDemonDef: innerDemonDef,
+              clearedStageIds: cleared,
+            );
 
-      // 灌大量 EXP 一次性(GDD §5.1 反留存焦虑 — 玩家挂机攒 EXP,过心魔关
-      // 后立刻全部消费),inner_demon_01 未通拦截在 qiMeng→ruMen
-      var r = CharacterAdvancementService.applyExperience(
-        character,
-        10000000, // 覆盖 7 layer 累计 EXP 总和(~4.6M)+ 余量
-        realmLookup: realmLookup,
-        isLayerLocked: isLocked,
-      );
-      expect(
-        r.layersGained,
-        0,
-        reason: 'inner_demon_01 未通 → qiMeng→ruMen 被拦,EXP 留账',
-      );
-      expect(character.realmTier, RealmTier.wuSheng);
-      expect(character.realmLayer, RealmLayer.qiMeng);
-      expect(character.experience, 10000000, reason: 'EXP 不归零(GDD §5.1 反留存焦虑)');
-
-      // 逐关通关 inner_demon_01..06 → 每关通 → 升 1 layer。
-      // qiMeng(0) → ruMen(1) → shuLian(2) → jingTong(3) → yuanShu(4) →
-      // huaJing(5) → dengFeng(6),共 6 步,inner_demon_07 留 A1 飞升(P2.3
-      // spec 接管,本测不验)。
-      final expectedAfter = <(String, RealmLayer)>[
-        ('stage_inner_demon_01', RealmLayer.ruMen),
-        ('stage_inner_demon_02', RealmLayer.shuLian),
-        ('stage_inner_demon_03', RealmLayer.jingTong),
-        ('stage_inner_demon_04', RealmLayer.yuanShu),
-        ('stage_inner_demon_05', RealmLayer.huaJing),
-        ('stage_inner_demon_06', RealmLayer.dengFeng),
-      ];
-      for (final (stageId, nextLayer) in expectedAfter) {
-        cleared.add(stageId);
-        // delta=0 在 applyExperience 走短路分支不进 while-loop;喂 1 EXP
-        // 触发 while-loop 消费已攒 EXP(character.experience 已 10M+),
-        // 单次只升 1 layer(因下一关心魔仍 locked → break)。
-        r = CharacterAdvancementService.applyExperience(
+        // 灌大量 EXP 一次性(GDD §5.1 反留存焦虑 — 玩家挂机攒 EXP,过心魔关
+        // 后立刻全部消费),inner_demon_01 未通拦截在 qiMeng→ruMen
+        var r = CharacterAdvancementService.applyExperience(
           character,
-          1,
+          10000000, // 覆盖 7 layer 累计 EXP 总和(~4.6M)+ 余量
           realmLookup: realmLookup,
           isLayerLocked: isLocked,
         );
-        expect(
-          r.layersGained,
-          1,
-          reason: '$stageId 通关 → 应升 1 layer 至 wuSheng·${nextLayer.name}',
-        );
-        expect(
-          character.realmLayer,
-          nextLayer,
-          reason: '$stageId 通关后玩家 layer 应推到 ${nextLayer.name}',
-        );
-      }
+        expect(r.layersGained, 0,
+            reason: 'inner_demon_01 未通 → qiMeng→ruMen 被拦,EXP 留账');
+        expect(character.realmTier, RealmTier.wuSheng);
+        expect(character.realmLayer, RealmLayer.qiMeng);
+        expect(character.experience, 10000000,
+            reason: 'EXP 不归零(GDD §5.1 反留存焦虑)');
 
-      // 6 步全部跑完后玩家应到 wuSheng·dengFeng,inner_demon_07 留 A1 飞升
-      expect(character.realmTier, RealmTier.wuSheng);
-      expect(character.realmLayer, RealmLayer.dengFeng);
-    });
+        // 逐关通关 inner_demon_01..06 → 每关通 → 升 1 layer。
+        // qiMeng(0) → ruMen(1) → shuLian(2) → jingTong(3) → yuanShu(4) →
+        // huaJing(5) → dengFeng(6),共 6 步,inner_demon_07 留 A1 飞升(P2.3
+        // spec 接管,本测不验)。
+        final expectedAfter = <(String, RealmLayer)>[
+          ('stage_inner_demon_01', RealmLayer.ruMen),
+          ('stage_inner_demon_02', RealmLayer.shuLian),
+          ('stage_inner_demon_03', RealmLayer.jingTong),
+          ('stage_inner_demon_04', RealmLayer.yuanShu),
+          ('stage_inner_demon_05', RealmLayer.huaJing),
+          ('stage_inner_demon_06', RealmLayer.dengFeng),
+        ];
+        for (final (stageId, nextLayer) in expectedAfter) {
+          cleared.add(stageId);
+          // delta=0 在 applyExperience 走短路分支不进 while-loop;喂 1 EXP
+          // 触发 while-loop 消费已攒 EXP(character.experience 已 10M+),
+          // 单次只升 1 layer(因下一关心魔仍 locked → break)。
+          r = CharacterAdvancementService.applyExperience(
+            character,
+            1,
+            realmLookup: realmLookup,
+            isLayerLocked: isLocked,
+          );
+          expect(r.layersGained, 1,
+              reason: '$stageId 通关 → 应升 1 layer 至 wuSheng·${nextLayer.name}');
+          expect(character.realmLayer, nextLayer,
+              reason: '$stageId 通关后玩家 layer 应推到 ${nextLayer.name}');
+        }
+
+        // 6 步全部跑完后玩家应到 wuSheng·dengFeng,inner_demon_07 留 A1 飞升
+        expect(character.realmTier, RealmTier.wuSheng);
+        expect(character.realmLayer, RealmLayer.dengFeng);
+      },
+    );
   });
 }

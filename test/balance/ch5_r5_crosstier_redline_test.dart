@@ -78,14 +78,11 @@ void main() {
       final numbers = repo.numbers;
 
       // jueDing cap 装备(jianghu 阶,GDD §5.3 三系锁死 = zhongQi)各 slot 满 hp_max
-      final jueDingDengFeng = repo.getRealm(
-        RealmTier.jueDing,
-        RealmLayer.dengFeng,
-      );
-      EquipmentDef defOf(EquipmentSlot slot) =>
-          repo.equipmentDefs.values.firstWhere(
-            (d) => d.tier == jueDingDengFeng.equipmentTierCap && d.slot == slot,
-          );
+      final jueDingDengFeng =
+          repo.getRealm(RealmTier.jueDing, RealmLayer.dengFeng);
+      EquipmentDef defOf(EquipmentSlot slot) => repo.equipmentDefs.values
+          .firstWhere((d) =>
+              d.tier == jueDingDengFeng.equipmentTierCap && d.slot == slot);
       Equipment buildEq(EquipmentSlot slot) {
         final def = defOf(slot);
         return Equipment.create(
@@ -103,8 +100,8 @@ void main() {
       // jueDing cap 心法(jianghu 阶)— 找任一 jianghu 阶 main role 可用心法
       final jiangHuTechDef = repo.techniqueDefs.values.firstWhere(
         (d) => d.tier == jueDingDengFeng.techniqueTierCap,
-        orElse: () =>
-            throw StateError('r5 Ch5: 找不到 jueDing cap (jiangHuMiChuan) 心法 def'),
+        orElse: () => throw StateError(
+            'r5 Ch5: 找不到 jueDing cap (jiangHuMiChuan) 心法 def'),
       );
 
       BattleCharacter buildOne(int slotIndex, TechniqueSchool school) {
@@ -137,7 +134,7 @@ void main() {
           school: jiangHuTechDef.school,
           role: TechniqueRole.main,
           learnedAt: DateTime(2026, 1, 1),
-          cultivationLayer: CultivationLayer.jiJing, // 心法满修炼度(9 层顶)
+          cultivationLayer: CultivationLayer.jiJing,  // 心法满修炼度(9 层顶)
           cultivationProgress: 100,
           cultivationProgressToNext: 100,
         );
@@ -163,9 +160,8 @@ void main() {
       '50 种子玩家满 build vs zongShi 跨阶 boss · (leftWins + draws) ≥ rightWins',
       () async {
         final stage = GameRepository.instance.getStage('stage_05_05');
-        final (_, right) = await StageBattleSetup(
-          isar: IsarSetup.instance,
-        ).buildTeams(stage);
+        final (_, right) = await StageBattleSetup(isar: IsarSetup.instance)
+            .buildTeams(stage);
         final left = buildR5Players();
         final numbers = GameRepository.instance.numbers;
 
@@ -173,12 +169,10 @@ void main() {
         var rightWins = 0;
         var draws = 0;
         for (var seed = 0; seed < 50; seed++) {
-          final initial = BattleState.initial(leftTeam: left, rightTeam: right);
-          final finalState = BattleEngine.runToEnd(
-            initial,
-            numbers,
-            rng: Random(seed),
-          );
+          final initial =
+              BattleState.initial(leftTeam: left, rightTeam: right);
+          final finalState =
+              BattleEngine.runToEnd(initial, numbers, rng: Random(seed));
           switch (finalState.result) {
             case BattleResult.leftWin:
               leftWins++;
@@ -196,18 +190,14 @@ void main() {
         }
 
         // 覆盖率:50 种子全跑完(runToEnd 不抛 / result 非 null)
-        expect(
-          leftWins + rightWins + draws,
-          50,
-          reason: '50 种子全应有 result(leftWin/rightWin/draw),不应漏跑',
-        );
+        expect(leftWins + rightWins + draws, 50,
+            reason: '50 种子全应有 result(leftWin/rightWin/draw),不应漏跑');
 
         // 主红线上边界:玩家方满 build 综合不输面(跨阶不一边倒)
         expect(
           leftWins + draws,
           greaterThanOrEqualTo(rightWins),
-          reason:
-              'R5 上边界:玩家 jueDing·dengFeng 满 build vs zongShi·qiMeng '
+          reason: 'R5 上边界:玩家 jueDing·dengFeng 满 build vs zongShi·qiMeng '
               '西凉三弟子 + jueDing·dengFeng × 2 副 50 种子 (leftWins=$leftWins + '
               'draws=$draws) 应 ≥ rightWins=$rightWins — 跨阶不一边倒被压垮 '
               '(GDD §5.5 差 1 阶 攻方 ×1.4 守方 ×0.7,玩家方靠装备 + 心法满补境界差)。',
@@ -221,8 +211,7 @@ void main() {
           // 2026-06-29 solo 主线重设计:X_05 改单 Boss 供祖师单人清,3 人队跨阶威慑前提失效
           // → 下边界放宽为 >=0(恒真);solo 清线/不卡死由 solo_mainline_ch1_ch6_balance_test 覆盖
           greaterThanOrEqualTo(0),
-          reason:
-              'R5 下边界:跨阶 boss 三人组威慑应保持(rightWins=$rightWins + '
+          reason: 'R5 下边界:跨阶 boss 三人组威慑应保持(rightWins=$rightWins + '
               'draws=$draws ≥ 1),不该 50 种子全 leftWin。若 0 → 数值平衡 '
               '漂移导致敌方过弱,跨阶设计意图被破坏(memory '
               '`feedback_wuxia_boss_balance_crosstier` 跨 1-2 阶才稳触发战败)。',

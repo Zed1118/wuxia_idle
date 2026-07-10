@@ -45,7 +45,8 @@ void main() {
     return reloaded!;
   }
 
-  test('Isar findAll 后直接 increment 新 skillId → 抛 fixed-length 异常', () async {
+  test('Isar findAll 后直接 increment 新 skillId → 抛 fixed-length 异常',
+      () async {
     final tech = Technique.create(
       defId: 'tech_test',
       ownerCharacterId: 1,
@@ -62,13 +63,13 @@ void main() {
     expect(
       () => reloaded.skillUsageCount.increment('skill_new', 1),
       throwsA(isA<UnsupportedError>()),
-      reason:
-          'Isar @embedded List<SkillUsageEntry> 反序列化是 fixed-length，'
+      reason: 'Isar @embedded List<SkillUsageEntry> 反序列化是 fixed-length，'
           'increment add 分支会抛。W13 之前 catch (_) 静默吞掉。',
     );
   });
 
-  test('List.of 转 growable 后 increment 通过（W13 fix 路径）', () async {
+  test('List.of 转 growable 后 increment 通过（W13 fix 路径）',
+      () async {
     final tech = Technique.create(
       defId: 'tech_test',
       ownerCharacterId: 1,
@@ -91,7 +92,8 @@ void main() {
     expect(reloaded.skillUsageCount.first.count, 3);
   });
 
-  test('已存在 skillId 的 increment 直接累加，不走 add 分支 → 不抛', () async {
+  test('已存在 skillId 的 increment 直接累加，不走 add 分支 → 不抛',
+      () async {
     final tech = Technique.create(
       defId: 'tech_test',
       ownerCharacterId: 1,
