@@ -24,21 +24,21 @@
 - [x] **批次 D：GDD 数据口径销账**
   - 计划：`docs/superpowers/plans/2026-07-10-skill-count-drift.md`
   - 验收：机器实数与 GDD 口径一致，过期 PROGRESS 债务删除。
-- [ ] **批末门禁**
+- [x] **批末门禁**
   - [x] 本批新增与手工修改文件已按范围执行 `dart format`
   - [x] `flutter analyze lib/ test/`
   - [x] `flutter test --no-pub`（3790/3790）
   - [x] `flutter build macos --debug`
   - [x] macOS 1280x720、1440x900 视觉验收（main_menu、chapter_list、equipment_detail_screen）
   - [x] `git diff --check`
-  - PR CI pass 且 annotations 为 0
+  - [x] PR #33 CI pass 且 annotations 为 0
 
 > 格式化说明：对 `main...HEAD` 全部分支 Dart 文件执行只读 formatter 审计时，235 个文件中有 162 个会被当前 SDK 重排；这些主要是仅迁移初始化/helper 调用的既有测试。为避免把大规模无关格式噪声混入迁移，本批不做机械全仓重排，静态分析与全量测试作为代码门禁。
 
 ## 当前恢复点
 
-- 状态：批次 A-D 功能、文档销账、本地门禁与 macOS 双尺寸视觉验收均完成。
-- 最后完成：全量 3790 项测试、静态分析、macOS 构建、六张视觉截图和日志异常扫描。
-- 下一步：提交最终恢复点，推送分支，创建 PR，等待 CI 后合并。
-- 已跑验证：`flutter analyze lib/ test/` 0 问题；`flutter test --no-pub` 3790/3790；macOS Debug 构建成功；main_menu/chapter_list/equipment_detail_screen @ 1280x720、1440x900 均 READY 且 window-id 截图无异常；`git diff --check` 通过。
+- 状态：批次 A-D、全部本地门禁、macOS 双尺寸视觉验收与 PR #33 首轮 CI 均完成。
+- 最后完成：GitHub Actions `test` job 通过，annotations 为 0，PR 状态 MERGEABLE/CLEAN。
+- 下一步：推送本恢复点，等待最终 SHA 的 CI 后合并。
+- 已跑验证：`flutter analyze lib/ test/` 0 问题；`flutter test --no-pub` 3790/3790；macOS Debug 构建成功；main_menu/chapter_list/equipment_detail_screen @ 1280x720、1440x900 均 READY 且 window-id 截图无异常；`git diff --check` 通过；PR #33 CI run 29090269668 成功且 annotations 0。
 - 阻塞项：无。
