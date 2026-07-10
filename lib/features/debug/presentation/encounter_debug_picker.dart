@@ -73,17 +73,18 @@ class _EncounterDebugPickerScreenState
         saveDataId: IsarSetup.currentSlotId,
         encounter: def,
         outcomeId: outcomeId,
-        reputationApplier:
-            reputationService?.deltaApplierFromRng(ref.read(rngProvider)),
+        reputationApplier: reputationService?.deltaApplierFromRng(
+          ref.read(rngProvider),
+        ),
         reputationPlayerId: reputationService == null ? null : 1,
       );
       if (!mounted) return;
       showEncounterOutcomeBanner(context: context, applied: applied);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('触发失败:$e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('触发失败:$e')));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -103,8 +104,7 @@ class _EncounterDebugPickerScreenState
       body: SafeArea(
         child: Column(
           children: [
-            if (_busy)
-              const LinearProgressIndicator(minHeight: 2),
+            if (_busy) const LinearProgressIndicator(minHeight: 2),
             Expanded(
               child: defs.isEmpty
                   ? const Center(
@@ -148,8 +148,11 @@ class _EncounterTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.auto_awesome,
-                  color: WuxiaColors.resultHighlight, size: 18),
+              const Icon(
+                Icons.auto_awesome,
+                color: WuxiaColors.resultHighlight,
+                size: 18,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -175,8 +178,11 @@ class _EncounterTile extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right,
-                  color: WuxiaColors.textMuted, size: 18),
+              const Icon(
+                Icons.chevron_right,
+                color: WuxiaColors.textMuted,
+                size: 18,
+              ),
             ],
           ),
         ),

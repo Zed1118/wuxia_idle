@@ -32,14 +32,14 @@ class RecipeDef {
   });
 
   factory RecipeDef.fromYaml(Map<String, dynamic> y) => RecipeDef(
-        recipeId: y['recipe_id'] as String,
-        outputItem: y['output_item'] as String,
-        inputPerOutput: (y['input_per_output'] as num).toDouble(),
-        ratePerHour: (y['rate_per_hour'] as num).toDouble(),
-        realmUnlockIndex: (y['realm_unlock_index'] as num).toInt(),
-        secondaryInputPerOutput:
-            (y['secondary_input_per_output'] as num?)?.toDouble() ?? 0.0,
-      );
+    recipeId: y['recipe_id'] as String,
+    outputItem: y['output_item'] as String,
+    inputPerOutput: (y['input_per_output'] as num).toDouble(),
+    ratePerHour: (y['rate_per_hour'] as num).toDouble(),
+    realmUnlockIndex: (y['realm_unlock_index'] as num).toInt(),
+    secondaryInputPerOutput:
+        (y['secondary_input_per_output'] as num?)?.toDouble() ?? 0.0,
+  );
 }
 
 const _yamlKeyByType = {

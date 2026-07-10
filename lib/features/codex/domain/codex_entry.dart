@@ -7,6 +7,7 @@ import 'codex_index.dart';
 /// 解析规范见 [CodexEntry.fromMd]。
 class CodexEntry {
   final String id;
+
   /// 8 档机制 1-8;lore 江湖背景 null(永久可查不 gate)。P2 扩段沉淀。
   final int? step;
   final String title;
@@ -34,10 +35,7 @@ class CodexEntry {
   ///
   /// `indexEntry` 由 [CodexIndex.byId] 提供 step + category;**调用方负责校验 id
   /// 已登记**,否则抛 [StateError]。
-  factory CodexEntry.fromMd({
-    required String id,
-    required String raw,
-  }) {
+  factory CodexEntry.fromMd({required String id, required String raw}) {
     final indexEntry = CodexIndex.byId(id);
     if (indexEntry == null) {
       throw StateError('codex id "$id" not registered in CodexIndex.entries');

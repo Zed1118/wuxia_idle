@@ -14,8 +14,9 @@ part 'shop_providers.g.dart';
 /// 行不存在（从未获得银两）返回 0。
 @riverpod
 Future<int> silverBalance(Ref ref) async {
-  final item =
-      await IsarSetup.instance.inventoryItems.getByDefId('item_silver');
+  final item = await IsarSetup.instance.inventoryItems.getByDefId(
+    'item_silver',
+  );
   return item?.quantity ?? 0;
 }
 
@@ -26,8 +27,9 @@ Future<int> silverBalance(Ref ref) async {
 /// quantity=0 也算解锁（曾获得过但全花完）。
 @riverpod
 Future<bool> shopUnlocked(Ref ref) async {
-  final item =
-      await IsarSetup.instance.inventoryItems.getByDefId('item_silver');
+  final item = await IsarSetup.instance.inventoryItems.getByDefId(
+    'item_silver',
+  );
   return item != null;
 }
 

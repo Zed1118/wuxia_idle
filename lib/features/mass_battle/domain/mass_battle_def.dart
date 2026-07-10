@@ -42,11 +42,11 @@ class MassBattleDef {
 
   /// numbers.yaml 不含 `mass_battle` 段时的空值(fixture 兼容)。
   factory MassBattleDef.empty() => const MassBattleDef(
-        formations: {},
-        waveIntermission: MassBattleWaveIntermission.defaults(),
-        stageFormations: {},
-        unlockTriggers: {},
-      );
+    formations: {},
+    waveIntermission: MassBattleWaveIntermission.defaults(),
+    stageFormations: {},
+    unlockTriggers: {},
+  );
 
   factory MassBattleDef.fromYaml(Map<String, dynamic>? y) {
     if (y == null) return MassBattleDef.empty();
@@ -73,8 +73,9 @@ class MassBattleDef {
     final stageYaml = y['stage_formations'] as Map?;
     if (stageYaml != null) {
       for (final e in stageYaml.entries) {
-        stageFormations[e.key as String] =
-            Formation.values.byName(e.value as String);
+        stageFormations[e.key as String] = Formation.values.byName(
+          e.value as String,
+        );
       }
     }
 
@@ -135,12 +136,9 @@ class MassBattleFormationModifier {
       MassBattleFormationModifier(
         criticalRateDelta:
             (y['critical_rate_delta'] as num?)?.toDouble() ?? 0.0,
-        evasionRateDelta:
-            (y['evasion_rate_delta'] as num?)?.toDouble() ?? 0.0,
-        defenseRateDelta:
-            (y['defense_rate_delta'] as num?)?.toDouble() ?? 0.0,
-        damageMultiplier:
-            (y['damage_multiplier'] as num?)?.toDouble() ?? 1.0,
+        evasionRateDelta: (y['evasion_rate_delta'] as num?)?.toDouble() ?? 0.0,
+        defenseRateDelta: (y['defense_rate_delta'] as num?)?.toDouble() ?? 0.0,
+        damageMultiplier: (y['damage_multiplier'] as num?)?.toDouble() ?? 1.0,
       );
 }
 
@@ -186,25 +184,23 @@ class MassBattleWaveIntermission {
 
   /// 默认值(fixture / yaml 段缺失时兜底,与 numbers.yaml 显式配置一致)。
   const MassBattleWaveIntermission.defaults()
-      : resetActionPoint = true,
-        preserveHp = true,
-        preserveInternalForce = true,
-        preserveCooldowns = false,
-        reviveDeadPct = 1.00,
-        aliveHpRecoveryPct = 1.00,
-        aliveIfRecoveryPct = 0.50;
+    : resetActionPoint = true,
+      preserveHp = true,
+      preserveInternalForce = true,
+      preserveCooldowns = false,
+      reviveDeadPct = 1.00,
+      aliveHpRecoveryPct = 1.00,
+      aliveIfRecoveryPct = 0.50;
 
-  factory MassBattleWaveIntermission.fromYaml(Map<String, dynamic> y) =>
-      MassBattleWaveIntermission(
-        resetActionPoint: (y['reset_action_point'] as bool?) ?? true,
-        preserveHp: (y['preserve_hp'] as bool?) ?? true,
-        preserveInternalForce:
-            (y['preserve_internal_force'] as bool?) ?? true,
-        preserveCooldowns: (y['preserve_cooldowns'] as bool?) ?? false,
-        reviveDeadPct: (y['revive_dead_pct'] as num?)?.toDouble() ?? 0.0,
-        aliveHpRecoveryPct:
-            (y['alive_hp_recovery_pct'] as num?)?.toDouble() ?? 0.0,
-        aliveIfRecoveryPct:
-            (y['alive_if_recovery_pct'] as num?)?.toDouble() ?? 0.0,
-      );
+  factory MassBattleWaveIntermission.fromYaml(
+    Map<String, dynamic> y,
+  ) => MassBattleWaveIntermission(
+    resetActionPoint: (y['reset_action_point'] as bool?) ?? true,
+    preserveHp: (y['preserve_hp'] as bool?) ?? true,
+    preserveInternalForce: (y['preserve_internal_force'] as bool?) ?? true,
+    preserveCooldowns: (y['preserve_cooldowns'] as bool?) ?? false,
+    reviveDeadPct: (y['revive_dead_pct'] as num?)?.toDouble() ?? 0.0,
+    aliveHpRecoveryPct: (y['alive_hp_recovery_pct'] as num?)?.toDouble() ?? 0.0,
+    aliveIfRecoveryPct: (y['alive_if_recovery_pct'] as num?)?.toDouble() ?? 0.0,
+  );
 }

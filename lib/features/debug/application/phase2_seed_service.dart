@@ -386,8 +386,10 @@ class Phase2SeedService {
   /// 不动被广泛依赖的 seedMasterDisciple 本体。
   Future<void> seedCharacterPanelGrowth() async {
     await seedMasterDisciple();
-    final realm =
-        GameRepository.instance.getRealm(RealmTier.wuSheng, RealmLayer.shuLian);
+    final realm = GameRepository.instance.getRealm(
+      RealmTier.wuSheng,
+      RealmLayer.shuLian,
+    );
     await isar.writeTxn(() async {
       final founder = await isar.characters.get(1);
       if (founder != null) {
@@ -479,8 +481,9 @@ class Phase2SeedService {
       for (var t = 1; t <= 7; t++)
         if (byTier[t]?.isNotEmpty ?? false) byTier[t]!.first,
     ];
-    final equippedSkillId =
-        (byTier[3]?.isNotEmpty ?? false) ? byTier[3]!.first : null;
+    final equippedSkillId = (byTier[3]?.isNotEmpty ?? false)
+        ? byTier[3]!.first
+        : null;
 
     final encounterService = EncounterService(isar: isar);
     final progress = await encounterService.getOrCreate(
@@ -688,8 +691,7 @@ class Phase2SeedService {
             ..agility = 6
             ..fortune = 6,
           rarity: RarityTier.biaoZhun,
-          lineageRole:
-              isFounder ? LineageRole.founder : LineageRole.disciple,
+          lineageRole: isFounder ? LineageRole.founder : LineageRole.disciple,
           createdAt: now,
           internalForce: realmDef.internalForceMax,
           internalForceMax: realmDef.internalForceMax,
@@ -817,8 +819,7 @@ class Phase2SeedService {
             ..agility = 6
             ..fortune = 6,
           rarity: RarityTier.biaoZhun,
-          lineageRole:
-              isFounder ? LineageRole.founder : LineageRole.disciple,
+          lineageRole: isFounder ? LineageRole.founder : LineageRole.disciple,
           createdAt: now,
           internalForce: realmDef.internalForceMax,
           internalForceMax: realmDef.internalForceMax,
@@ -939,10 +940,7 @@ class Phase2SeedService {
     final svc = MainlineProgressService(isar: isar);
     await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
     final cleared = DateTime.now();
-    for (final stageId in const [
-      'stage_inner_demon_07',
-      'stage_06_05',
-    ]) {
+    for (final stageId in const ['stage_inner_demon_07', 'stage_06_05']) {
       await svc.recordVictory(stageId: stageId, now: cleared);
     }
   }
@@ -965,8 +963,9 @@ class Phase2SeedService {
     // 2. 把出阵 3 角色 boost 成满配 wuSheng——仅改境界标签远不够，内力/血量/
     //    攻击/心法倍率都得拉满才打得赢 P5.2 对称化后能放招的 zongShi 3 敌人。
     final repo = GameRepository.instance;
-    final maxIf =
-        repo.getRealm(RealmTier.wuSheng, RealmLayer.dengFeng).internalForceMax;
+    final maxIf = repo
+        .getRealm(RealmTier.wuSheng, RealmLayer.dengFeng)
+        .internalForceMax;
     final rng = DefaultRng();
     final now = DateTime.now();
     // 神物满配 loadout（昆仑佩留作 06_04 掉落物不预装，饰品改用舍利珠避免混淆）。
@@ -1005,8 +1004,9 @@ class Phase2SeedService {
           now: now,
         );
         // 主修传说神功 + 修炼度拉满（jiJing → 心法加成 ×3.0）。
-        final techDef =
-            repo.getTechnique(chuanshuoMain[i % chuanshuoMain.length]);
+        final techDef = repo.getTechnique(
+          chuanshuoMain[i % chuanshuoMain.length],
+        );
         final tech = Technique.create(
           defId: techDef.id,
           ownerCharacterId: c.id,
@@ -1125,7 +1125,6 @@ class Phase2SeedService {
     );
   }
 
-
   /// Task 2 — 出版美术验收基建：武圣满境界 × 7 阶心法全覆盖。
   ///
   /// 造 1 个 wuSheng·dengFeng 角色（id=1） + 刚猛流 7 阶各 1 本心法，
@@ -1156,7 +1155,9 @@ class Phase2SeedService {
       for (final tier in TechniqueTier.values) {
         final defId = tierDefIds[tier];
         if (defId == null) {
-          throw StateError('seedVisualMasterAllTiers: 缺少 tier ${tier.name} 的 defId 映射');
+          throw StateError(
+            'seedVisualMasterAllTiers: 缺少 tier ${tier.name} 的 defId 映射',
+          );
         }
         final t = _buildTechnique(
           defId: defId,
@@ -1220,7 +1221,8 @@ class Phase2SeedService {
 
     await isar.writeTxn(() async {
       // 2. Sect lazy-init(沿 runSectRecruitFlow 体例 · sectLevel 3 让 cap 充裕)
-      final sect = await isar.sects.get(1) ??
+      final sect =
+          await isar.sects.get(1) ??
           (Sect()
             ..id = 1
             ..name = '无名宗'
@@ -1305,7 +1307,6 @@ class Phase2SeedService {
       }
     });
   }
-
 }
 
 class _ResonanceSpec {

@@ -29,10 +29,11 @@ class InnerDemonScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stages = GameRepository.instance.stageDefs.values
-        .where((s) => s.stageType == StageType.innerDemon)
-        .toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
+    final stages =
+        GameRepository.instance.stageDefs.values
+            .where((s) => s.stageType == StageType.innerDemon)
+            .toList()
+          ..sort((a, b) => a.id.compareTo(b.id));
     final innerDemonDef = GameRepository.instance.numbers.innerDemon;
     final async = ref.watch(mainlineProgressProvider);
 
@@ -65,10 +66,10 @@ class InnerDemonScreen extends ConsumerWidget {
             // 周目按章(Phase 2):整个心魔副本视为一章,chapterKey=stageType.name。
             const chapterKey = 'innerDemon';
             int cycleFor() => resolveTargetCycle(
-                  ref.read(selectedChallengeCycleProvider(chapterKey)),
-                  progress,
-                  chapterKey,
-                );
+              ref.read(selectedChallengeCycleProvider(chapterKey)),
+              progress,
+              chapterKey,
+            );
             return Column(
               children: [
                 const Padding(
@@ -78,7 +79,9 @@ class InnerDemonScreen extends ConsumerWidget {
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     itemCount: stages.length,
                     itemBuilder: (ctx, i) {
                       final s = stages[i];
@@ -95,11 +98,11 @@ class InnerDemonScreen extends ConsumerWidget {
                           onTap: status == _InnerDemonStageStatus.locked
                               ? null
                               : () => runStageFlow(
-                                    context: context,
-                                    ref: ref,
-                                    stage: s,
-                                    targetCycle: cycleFor(),
-                                  ),
+                                  context: context,
+                                  ref: ref,
+                                  stage: s,
+                                  targetCycle: cycleFor(),
+                                ),
                         ),
                       );
                     },
@@ -155,10 +158,8 @@ class _InnerDemonRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final locked = status == _InnerDemonStageStatus.locked;
     final cleared = status == _InnerDemonStageStatus.cleared;
-    final titleColor =
-        locked ? WuxiaColors.textMuted : WuxiaColors.textPrimary;
-    final borderColor =
-        cleared ? WuxiaColors.hpHigh : WuxiaColors.border;
+    final titleColor = locked ? WuxiaColors.textMuted : WuxiaColors.textPrimary;
+    final borderColor = cleared ? WuxiaColors.hpHigh : WuxiaColors.border;
     return Opacity(
       opacity: locked ? 0.45 : 1.0,
       child: Material(
@@ -172,8 +173,7 @@ class _InnerDemonRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: borderColor),
             ),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
                 Expanded(
@@ -218,14 +218,23 @@ class _StatusIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (status) {
       case _InnerDemonStageStatus.cleared:
-        return const Icon(Icons.check_circle,
-            size: 20, color: WuxiaColors.hpHigh);
+        return const Icon(
+          Icons.check_circle,
+          size: 20,
+          color: WuxiaColors.hpHigh,
+        );
       case _InnerDemonStageStatus.available:
-        return const Icon(Icons.chevron_right,
-            size: 20, color: WuxiaColors.textMuted);
+        return const Icon(
+          Icons.chevron_right,
+          size: 20,
+          color: WuxiaColors.textMuted,
+        );
       case _InnerDemonStageStatus.locked:
-        return const Icon(Icons.lock_outline,
-            size: 20, color: WuxiaColors.textMuted);
+        return const Icon(
+          Icons.lock_outline,
+          size: 20,
+          color: WuxiaColors.textMuted,
+        );
     }
   }
 }

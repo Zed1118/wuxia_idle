@@ -36,9 +36,10 @@ class LootRumorContent extends StatelessWidget {
     // 首通门控脚注：爬塔整渠道显塔层串；主线仅当含秘籍(首通必得条)显主线串。
     final String? footer = switch (table.gating) {
       FirstClearGating.wholeChannel => UiStrings.lootTowerFirstClearOnlyFooter,
-      FirstClearGating.scrollOnly => table.hasFirstClearGatedEntry
-          ? UiStrings.lootMainlineScrollFirstClearFooter
-          : null,
+      FirstClearGating.scrollOnly =>
+        table.hasFirstClearGatedEntry
+            ? UiStrings.lootMainlineScrollFirstClearFooter
+            : null,
     };
     return Column(
       mainAxisSize: MainAxisSize.min,

@@ -86,8 +86,10 @@ class SectMonthlyTickService {
       final decayPerMonth = decaySvc.computeDecay(sect: sect, now: now);
       if (decayPerMonth != 0) {
         sect.sectReputation =
-            (sect.sectReputation + decayPerMonth * elapsedMonths)
-                .clamp(repMin, repMax);
+            (sect.sectReputation + decayPerMonth * elapsedMonths).clamp(
+              repMin,
+              repMax,
+            );
       }
 
       // 触发:逐月一次,线程化增长中的 active 列表(过期已腾出的槽位生效)。
@@ -112,8 +114,9 @@ class SectMonthlyTickService {
         }
       }
 
-      sect.lastTickAt =
-          anchor.add(Duration(days: elapsedMonths * _daysPerMonth));
+      sect.lastTickAt = anchor.add(
+        Duration(days: elapsedMonths * _daysPerMonth),
+      );
     }
 
     return SectTickResult(newEvents: newEvents, expiredEvents: expired);

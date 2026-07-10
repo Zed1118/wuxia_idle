@@ -39,7 +39,9 @@ class MaterialSourceSheet extends ConsumerWidget {
       context: context,
       backgroundColor: WuxiaUi.paper,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(WuxiaUi.radius)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(WuxiaUi.radius),
+        ),
         side: BorderSide(color: WuxiaUi.ink, width: WuxiaUi.borderWidth),
       ),
       builder: (_) => MaterialSourceSheet(itemId: itemId, quantity: quantity),
@@ -50,8 +52,10 @@ class MaterialSourceSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final repo = GameRepository.instanceOrNull;
     final displayName =
-        repo?.itemDefs[itemId]?.name ?? EnumL10n.itemType(ItemType.fromDefId(itemId));
-    final owned = quantity ??
+        repo?.itemDefs[itemId]?.name ??
+        EnumL10n.itemType(ItemType.fromDefId(itemId));
+    final owned =
+        quantity ??
         ref.watch(inventoryQuantityByDefIdProvider(itemId)).asData?.value;
 
     final sources = repo == null
@@ -101,7 +105,9 @@ class MaterialSourceSheet extends ConsumerWidget {
                 shrinkWrap: true,
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
                 children: [
-                  const _SectionTitle(UiStrings.materialSourceSheetSourcesTitle),
+                  const _SectionTitle(
+                    UiStrings.materialSourceSheetSourcesTitle,
+                  ),
                   if (sourceLines.isEmpty)
                     const _EntryLine(
                       UiStrings.materialSourceSheetEmptySources,
@@ -198,9 +204,7 @@ class _Header extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: WuxiaUi.slotFill,
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: WuxiaUi.ink.withValues(alpha: 0.4),
-                  ),
+                  border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.4)),
                 ),
                 child: const Icon(
                   Icons.inventory_2_outlined,

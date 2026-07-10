@@ -260,7 +260,9 @@ class StageVictoryContent extends StatelessWidget {
                           ),
                       if (drops.equipments.isNotEmpty) ...[
                         const SizedBox(height: 8),
-                        const _VictoryMutedLine(UiStrings.stageVictoryEquipmentHint),
+                        const _VictoryMutedLine(
+                          UiStrings.stageVictoryEquipmentHint,
+                        ),
                       ],
                     ],
                   ),

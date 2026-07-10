@@ -36,9 +36,7 @@ sealed class DropEntry {
     }
     final chance = (y['dropChance'] as num).toDouble();
     if (chance < 0.0 || chance > 1.0) {
-      throw FormatException(
-        'DropEntry.dropChance 必须 ∈ [0.0, 1.0]，实际 $chance',
-      );
+      throw FormatException('DropEntry.dropChance 必须 ∈ [0.0, 1.0]，实际 $chance');
     }
     if (hasEq) {
       return EquipmentDrop(

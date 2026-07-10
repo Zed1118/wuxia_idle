@@ -65,10 +65,10 @@ class RealmUtils {
   ///
   /// 同大境界 7 层共用同一 `equipmentTierCap`，取 tier 下任一 RealmDef 即可。
   static EquipmentTier equipmentTierCapOf(RealmTier tier) {
-    final r = GameRepository.instance.realms
-        .firstWhere((r) => r.tier == tier,
-            orElse: () =>
-                throw StateError('未找到境界 ${tier.name} 的 RealmDef'));
+    final r = GameRepository.instance.realms.firstWhere(
+      (r) => r.tier == tier,
+      orElse: () => throw StateError('未找到境界 ${tier.name} 的 RealmDef'),
+    );
     return r.equipmentTierCap;
   }
 
@@ -77,10 +77,10 @@ class RealmUtils {
   /// 与 [equipmentTierCapOf] 同源（RealmDef 同时持有装备 / 心法两个 cap），
   /// 同大境界 7 层共用同一 `techniqueTierCap`。
   static TechniqueTier techniqueTierCapOf(RealmTier tier) {
-    final r = GameRepository.instance.realms
-        .firstWhere((r) => r.tier == tier,
-            orElse: () =>
-                throw StateError('未找到境界 ${tier.name} 的 RealmDef'));
+    final r = GameRepository.instance.realms.firstWhere(
+      (r) => r.tier == tier,
+      orElse: () => throw StateError('未找到境界 ${tier.name} 的 RealmDef'),
+    );
     return r.techniqueTierCap;
   }
 
@@ -115,8 +115,7 @@ class CharacterDerivedStats {
     for (final eq in equipped) {
       hp += effectiveEquipmentHp(eq, n);
     }
-    if (founderBuffActive &&
-        _founderBuffAppliesTo(c, n.founderAncestorBuff)) {
+    if (founderBuffActive && _founderBuffAppliesTo(c, n.founderAncestorBuff)) {
       hp *= (1.0 + n.founderAncestorBuff.maxHpPct);
     }
     // 第八阶段·角色等级 Lv:平直加成 (level-1)×per_level(level 1 = 0,新角色不白给),
@@ -190,8 +189,7 @@ class CharacterDerivedStats {
     if (c.school == TechniqueSchool.lingQiao) {
       rate += cfg.lingqiaoCriticalBonus;
     }
-    if (founderBuffActive &&
-        _founderBuffAppliesTo(c, n.founderAncestorBuff)) {
+    if (founderBuffActive && _founderBuffAppliesTo(c, n.founderAncestorBuff)) {
       rate += n.founderAncestorBuff.critRateBonus;
     }
     return rate.clamp(0.0, cfg.maxRate);
@@ -245,7 +243,9 @@ class CharacterDerivedStats {
   /// 区别于单件 [_forgingBonusPct]：pierce/lifesteal 是攻方整体战斗属性
   /// （穿透/回血），非单件攻速加成，故全装备求和。仅 `unlocked` 槽计入。
   static double forgingAggregatePct(
-      List<Equipment> equipped, ForgingSlotType type) {
+    List<Equipment> equipped,
+    ForgingSlotType type,
+  ) {
     var sum = 0;
     for (final eq in equipped) {
       for (final s in eq.forgingSlots) {
@@ -273,11 +273,9 @@ class CharacterDerivedStats {
     bool founderBuffActive = false,
     bool heavyInjured = false,
   }) {
-    final heritageCount =
-        equipped.where((e) => e.isLineageHeritage).length;
+    final heritageCount = equipped.where((e) => e.isLineageHeritage).length;
     var mult = 1.0 + heritageCount * n.lineageInternalForceMaxBonus;
-    if (founderBuffActive &&
-        _founderBuffAppliesTo(c, n.founderAncestorBuff)) {
+    if (founderBuffActive && _founderBuffAppliesTo(c, n.founderAncestorBuff)) {
       mult *= (1.0 + n.founderAncestorBuff.internalForceMaxPct);
     }
     // 第八阶段·重伤 debuff：内力上限乘 (1 - penalty_pct)，在 clamp 之前注入。
@@ -291,7 +289,9 @@ class CharacterDerivedStats {
     // clamp 守红线(P1-b · review 补 · 2026-05-29 消 hardcode)。
     // 第八阶段·角色等级 Lv:平直加成 (level-1)×per_level,不被 mult 缩放;
     // 加在 clamp 前 → §5.4 内力红线硬守(满 Lv 极值靠 clamp 兜底)。
-    final levelBonus = ((c.level < 1 ? 1 : c.level) - 1) * n.level.bonusInternalForceMaxPerLevel;
+    final levelBonus =
+        ((c.level < 1 ? 1 : c.level) - 1) *
+        n.level.bonusInternalForceMaxPerLevel;
     return (c.internalForceMax * mult + levelBonus)
         .clamp(0, n.combat.redLines.internalForceMax)
         .toInt();

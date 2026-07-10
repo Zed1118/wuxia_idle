@@ -4,7 +4,7 @@ import 'audio_backend.dart';
 /// audioplayers 真后端。BGM 单 player 循环；SFX 池 round-robin 叠播。
 class AudioPlayersBackend implements AudioBackend {
   AudioPlayersBackend({int sfxPoolSize = 5})
-      : _sfxPool = List.generate(sfxPoolSize, (_) => AudioPlayer());
+    : _sfxPool = List.generate(sfxPoolSize, (_) => AudioPlayer());
 
   final AudioPlayer _bgm = AudioPlayer()..setReleaseMode(ReleaseMode.loop);
   final List<AudioPlayer> _sfxPool;

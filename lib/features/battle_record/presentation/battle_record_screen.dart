@@ -42,16 +42,13 @@ class BattleRecordScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: memoriesAsync.when(
-          loading: () =>
-              const Center(child: InkLoadingIndicator()),
+          loading: () => const Center(child: InkLoadingIndicator()),
           error: (e, _) => ErrorFallback(
             error: e,
             onRetry: () => ref.invalidate(bossMemoryListProvider),
           ),
-          data: (memories) => _BattleRecordBody(
-            catalog: catalog,
-            memories: memories,
-          ),
+          data: (memories) =>
+              _BattleRecordBody(catalog: catalog, memories: memories),
         ),
       ),
     );
@@ -61,10 +58,7 @@ class BattleRecordScreen extends ConsumerWidget {
 // ── body ────────────────────────────────────────────────────────────────────
 
 class _BattleRecordBody extends StatelessWidget {
-  const _BattleRecordBody({
-    required this.catalog,
-    required this.memories,
-  });
+  const _BattleRecordBody({required this.catalog, required this.memories});
 
   final List<BossCatalogEntry> catalog;
   final List<BossMemory> memories;
@@ -75,20 +69,18 @@ class _BattleRecordBody extends StatelessWidget {
     final memMap = {for (final m in memories) m.bossKey: m};
 
     // 分两大组，组内按 groupIndex 升序再按 bossKey 升序
-    final mainline = catalog
-        .where((e) => e.source == BossMemorySource.mainline)
-        .toList()
-      ..sort((a, b) {
-        final cmp = a.groupIndex.compareTo(b.groupIndex);
-        return cmp != 0 ? cmp : a.bossKey.compareTo(b.bossKey);
-      });
-    final tower = catalog
-        .where((e) => e.source == BossMemorySource.tower)
-        .toList()
-      ..sort((a, b) {
-        final cmp = a.groupIndex.compareTo(b.groupIndex);
-        return cmp != 0 ? cmp : a.bossKey.compareTo(b.bossKey);
-      });
+    final mainline =
+        catalog.where((e) => e.source == BossMemorySource.mainline).toList()
+          ..sort((a, b) {
+            final cmp = a.groupIndex.compareTo(b.groupIndex);
+            return cmp != 0 ? cmp : a.bossKey.compareTo(b.bossKey);
+          });
+    final tower =
+        catalog.where((e) => e.source == BossMemorySource.tower).toList()
+          ..sort((a, b) {
+            final cmp = a.groupIndex.compareTo(b.groupIndex);
+            return cmp != 0 ? cmp : a.bossKey.compareTo(b.bossKey);
+          });
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
@@ -193,8 +185,9 @@ class _VictoryTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: WuxiaColors.panel,
-          border:
-              Border.all(color: WuxiaColors.bossFrame.withValues(alpha: 0.45)),
+          border: Border.all(
+            color: WuxiaColors.bossFrame.withValues(alpha: 0.45),
+          ),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Row(

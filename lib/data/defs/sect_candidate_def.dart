@@ -61,12 +61,14 @@ class SectCandidateDef {
         Map<String, dynamic>.from(y['attributeProfile'] as Map),
       ),
       startingTechniqueIds: List<String>.from(
-        (y['startingTechniqueIds'] as List? ?? const [])
-            .map((e) => e as String),
+        (y['startingTechniqueIds'] as List? ?? const []).map(
+          (e) => e as String,
+        ),
       ),
       startingEquipmentIds: List<String>.from(
-        (y['startingEquipmentIds'] as List? ?? const [])
-            .map((e) => e as String),
+        (y['startingEquipmentIds'] as List? ?? const []).map(
+          (e) => e as String,
+        ),
       ),
       lore: (y['lore'] as String).trim(),
       portraitPath: y['portraitPath'] as String?,

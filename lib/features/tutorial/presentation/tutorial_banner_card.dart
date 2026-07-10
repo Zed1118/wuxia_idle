@@ -25,11 +25,7 @@ class TutorialBannerCard extends ConsumerWidget {
   /// 而非只 markHintRead。父端按需注入(默认 null = 走原 markHintRead 路径)。
   final Future<void> Function()? onTapOverride;
 
-  const TutorialBannerCard({
-    super.key,
-    required this.hint,
-    this.onTapOverride,
-  });
+  const TutorialBannerCard({super.key, required this.hint, this.onTapOverride});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

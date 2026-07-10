@@ -152,9 +152,4 @@ enum PromoteResult {
 }
 
 /// [SectMemberService.dismiss] 返回枚举。
-enum DismissResult {
-  success,
-  notInSect,
-  characterNotFound,
-  sectNotFound,
-}
+enum DismissResult { success, notInSect, characterNotFound, sectNotFound }

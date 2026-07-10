@@ -152,10 +152,7 @@ class StageProgressRow extends StatelessWidget {
                   Expanded(
                     child: Text(
                       currentEffect ?? '',
-                      style: TextStyle(
-                        color: surface.secondary,
-                        fontSize: 11,
-                      ),
+                      style: TextStyle(color: surface.secondary, fontSize: 11),
                     ),
                   ),
                   if (nextEffect != null || progressText != null) ...[

@@ -482,7 +482,8 @@ class _MapCard extends StatelessWidget {
                             // (2026-07-07 用户拍板浅字方案),命中的 paper-fill 是
                             // 下方同级摘要框,非本文字底面。注解贴 token 行生效。
                             color: locked
-                                ? WuxiaColors.textSecondary // paper-text-audit: allow 浮实景+描影非纸面
+                                ? WuxiaColors
+                                      .textSecondary // paper-text-audit: allow 浮实景+描影非纸面
                                 : WuxiaColors.textPrimary,
                             fontSize: 23,
                             fontWeight: FontWeight.w900,

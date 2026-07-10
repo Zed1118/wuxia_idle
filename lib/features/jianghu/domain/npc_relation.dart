@@ -12,8 +12,10 @@ part 'npc_relation.g.dart';
 @collection
 class NpcRelation {
   Id id = Isar.autoIncrement;
-  @Index() late int sourceCharacterId;
-  @Index() late int targetCharacterId;
+  @Index()
+  late int sourceCharacterId;
+  @Index()
+  late int targetCharacterId;
   late String type;
   late int level;
   late DateTime updatedAt;

@@ -101,6 +101,5 @@ class _InkRipplePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_InkRipplePainter old) =>
-      old.t != t || old.color != color;
+  bool shouldRepaint(_InkRipplePainter old) => old.t != t || old.color != color;
 }

@@ -42,13 +42,14 @@ class ShopItemDef {
     this.priceLayerFraction,
     required this.category,
   }) : assert(
-          (price != null) != (priceLayerFraction != null),
-          'ShopItemDef must have exactly one of price or priceLayerFraction',
-        );
+         (price != null) != (priceLayerFraction != null),
+         'ShopItemDef must have exactly one of price or priceLayerFraction',
+       );
 
   factory ShopItemDef.fromYaml(Map<String, dynamic> y) {
     final hasPrice = y.containsKey('price') && y['price'] != null;
-    final hasFraction = y.containsKey('price_layer_fraction') &&
+    final hasFraction =
+        y.containsKey('price_layer_fraction') &&
         y['price_layer_fraction'] != null;
 
     if (!hasPrice && !hasFraction) {
@@ -67,8 +68,9 @@ class ShopItemDef {
       itemDefId: y['itemDefId'] as String,
       itemType: ItemType.values.byName(y['itemType'] as String),
       price: hasPrice ? (y['price'] as num).toInt() : null,
-      priceLayerFraction:
-          hasFraction ? (y['price_layer_fraction'] as num).toDouble() : null,
+      priceLayerFraction: hasFraction
+          ? (y['price_layer_fraction'] as num).toDouble()
+          : null,
       category: y['category'] as String,
     );
   }

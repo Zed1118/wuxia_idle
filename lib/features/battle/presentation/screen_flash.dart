@@ -18,14 +18,15 @@ class ScreenFlashOverlayState extends State<ScreenFlashOverlay>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 120),
-    )..addStatusListener((s) {
-        if (s == AnimationStatus.completed && mounted) {
-          setState(() => _strength = 0.0);
-        }
-      });
+    _ctrl =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 120),
+        )..addStatusListener((s) {
+          if (s == AnimationStatus.completed && mounted) {
+            setState(() => _strength = 0.0);
+          }
+        });
   }
 
   @override

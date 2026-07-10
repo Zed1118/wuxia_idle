@@ -35,12 +35,13 @@ class LevelConfig {
   /// 容缺省解析(仿 `InjuryConfig.fromYaml`):缺段/缺键走默认(=生产初值),
   /// 真 numbers.yaml `level` 段覆盖,旧 fixture 不带该段不崩。
   factory LevelConfig.fromYaml(Map<String, dynamic> y) => LevelConfig(
-        maxLevel: (y['max_level'] as num?)?.toInt() ?? 100,
-        expToNextBase: (y['exp_to_next_base'] as num?)?.toInt() ?? 200, // 缺省=生产初值
-        expToNextPerLevel: (y['exp_to_next_per_level'] as num?)?.toInt() ?? 80, // 缺省=生产初值
-        bonusMaxHpPerLevel: (y['bonus_max_hp_per_level'] as num?)?.toInt() ?? 15,
-        bonusInternalForceMaxPerLevel:
-            (y['bonus_internal_force_max_per_level'] as num?)?.toInt() ?? 8,
-        bonusSpeedPerLevel: (y['bonus_speed_per_level'] as num?)?.toInt() ?? 1,
-      );
+    maxLevel: (y['max_level'] as num?)?.toInt() ?? 100,
+    expToNextBase: (y['exp_to_next_base'] as num?)?.toInt() ?? 200, // 缺省=生产初值
+    expToNextPerLevel:
+        (y['exp_to_next_per_level'] as num?)?.toInt() ?? 80, // 缺省=生产初值
+    bonusMaxHpPerLevel: (y['bonus_max_hp_per_level'] as num?)?.toInt() ?? 15,
+    bonusInternalForceMaxPerLevel:
+        (y['bonus_internal_force_max_per_level'] as num?)?.toInt() ?? 8,
+    bonusSpeedPerLevel: (y['bonus_speed_per_level'] as num?)?.toInt() ?? 1,
+  );
 }

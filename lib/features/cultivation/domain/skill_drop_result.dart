@@ -44,15 +44,16 @@ class SkillDropResult {
 
   @override
   int get hashCode => Object.hash(
-        manualGranted,
-        fragmentSkillId,
-        fragmentCount,
-        fragmentThreshold,
-        fragmentJustUnlocked,
-      );
+    manualGranted,
+    fragmentSkillId,
+    fragmentCount,
+    fragmentThreshold,
+    fragmentJustUnlocked,
+  );
 
   @override
-  String toString() => 'SkillDropResult('
+  String toString() =>
+      'SkillDropResult('
       'manualGranted: $manualGranted, '
       'fragmentSkillId: $fragmentSkillId, '
       'fragmentCount: $fragmentCount, '

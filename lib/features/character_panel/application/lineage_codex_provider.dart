@@ -88,12 +88,14 @@ List<LineageGeneration> groupGenerations({
       return false;
     }).toList();
 
-    gens.add(LineageGeneration(
-      founder: f,
-      disciples: disciples,
-      heritageEquipments: relics,
-      isCurrent: isCurrent,
-    ));
+    gens.add(
+      LineageGeneration(
+        founder: f,
+        disciples: disciples,
+        heritageEquipments: relics,
+        isCurrent: isCurrent,
+      ),
+    );
   }
   return gens;
 }
@@ -106,8 +108,9 @@ Future<List<LineageGeneration>> lineageCodex(Ref ref) async {
   if (isar == null) return const [];
   final characters = await isar.characters.where().findAll();
   final allEquipments = await ref.watch(allEquipmentsProvider.future);
-  final heritage =
-      allEquipments.where((e) => e.isLineageHeritage).toList(growable: false);
+  final heritage = allEquipments
+      .where((e) => e.isLineageHeritage)
+      .toList(growable: false);
   final activeIds = await ref.watch(activeCharacterIdsProvider.future);
   final recruitedIds = await ref.watch(recruitedDiscipleIdsProvider.future);
   final save = await isar.saveDatas.get(0);

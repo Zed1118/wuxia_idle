@@ -51,10 +51,7 @@ Future<List<int>> activeCharacterIds(Ref ref) async {
 /// [techniqueByIdProvider] 单条 family，测试中可以 override 单条心法即生效。
 /// 任一 id 在 Isar 缺失（返回 null）会被丢掉，不抛错——和角色面板兜底一致。
 @riverpod
-Future<List<Technique>> characterAllTechniques(
-  Ref ref,
-  int characterId,
-) async {
+Future<List<Technique>> characterAllTechniques(Ref ref, int characterId) async {
   final ch = await ref.watch(characterByIdProvider(characterId).future);
   if (ch == null) return [];
   final ids = <int>[

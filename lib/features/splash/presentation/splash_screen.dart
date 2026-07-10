@@ -104,9 +104,8 @@ class _SplashScreenState extends State<SplashScreen> {
               WuxiaImage(
                 'assets/ui/landscape_loading.png',
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => Container(
-                  color: WuxiaColors.background,
-                ),
+                errorBuilder: (_, _, _) =>
+                    Container(color: WuxiaColors.background),
               ),
               // 半透明渐变让标题文字可读
               DecoratedBox(

@@ -56,7 +56,8 @@ InnerDemonPanelData? resolveInnerDemonPanel({
   final nextLayer = hasNext ? layers[idx + 1] : null;
   final expFull = character.experience >= character.experienceToNextLayer;
 
-  final locked = expFull &&
+  final locked =
+      expFull &&
       nextLayer != null &&
       InnerDemonService.isLayerLocked(
         nextTier: RealmTier.wuSheng,

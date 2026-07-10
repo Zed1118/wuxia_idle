@@ -66,9 +66,7 @@ class HpBar extends StatelessWidget {
                   color: WuxiaColors.textPrimary,
                   fontWeight: FontWeight.w600,
                   height: 1,
-                  shadows: const [
-                    Shadow(color: Colors.black54, blurRadius: 2),
-                  ],
+                  shadows: const [Shadow(color: Colors.black54, blurRadius: 2)],
                 ),
               ),
             ),

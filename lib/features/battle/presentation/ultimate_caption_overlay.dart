@@ -62,7 +62,10 @@ class UltimateCaptionContent extends StatelessWidget {
               ),
             ),
             Text(name, style: _captionStyle(stroke: true)),
-            Text(name, style: _captionStyle(stroke: false, shadows: glowShadows)),
+            Text(
+              name,
+              style: _captionStyle(stroke: false, shadows: glowShadows),
+            ),
           ],
         ),
       ),
@@ -77,9 +80,9 @@ class UltimateCaptionContent extends StatelessWidget {
         color: stroke ? null : WuxiaUi.paper,
         foreground: stroke
             ? (Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 5
-              ..color = const Color(0xCC0A0A0A))
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 5
+                ..color = const Color(0xCC0A0A0A))
             : null,
         shadows: shadows,
       );
@@ -132,8 +135,12 @@ class UltimateCaptionOverlayState extends State<UltimateCaptionOverlay>
   /// 触发题字。覆盖语义:重置动画 + 换文字。
   /// [fontSize] 默认 56；暴击峰值时传 captionPeakSize。
   /// [glowBlur] 默认 0；暴击时传 captionGlowBlur 产生辉光效果。
-  void show(String name,
-      {required bool isEnemy, double fontSize = 56, double glowBlur = 0}) {
+  void show(
+    String name, {
+    required bool isEnemy,
+    double fontSize = 56,
+    double glowBlur = 0,
+  }) {
     setState(() {
       _name = name;
       _isEnemy = isEnemy;

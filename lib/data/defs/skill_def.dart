@@ -12,13 +12,13 @@ enum SkillSource {
 }
 
 SkillSource _parseSkillSource(String raw) => switch (raw) {
-      'technique' => SkillSource.technique,
-      'encounter' => SkillSource.encounter,
-      'mainline_drop' => SkillSource.mainlineDrop,
-      'fragment' => SkillSource.fragment,
-      'special' => SkillSource.special,
-      _ => throw StateError('未知 skill source: $raw(波A A4 红线)'),
-    };
+  'technique' => SkillSource.technique,
+  'encounter' => SkillSource.encounter,
+  'mainline_drop' => SkillSource.mainlineDrop,
+  'fragment' => SkillSource.fragment,
+  'special' => SkillSource.special,
+  _ => throw StateError('未知 skill source: $raw(波A A4 红线)'),
+};
 
 /// 招式配置（data_schema.md §5.3，纯 Dart，不入 Isar）。
 ///
@@ -134,11 +134,13 @@ class SkillDef {
       style: y['style'] != null
           ? TechniqueSchool.values.byName(y['style'] as String)
           : null,
-      source:
-          y['source'] != null ? _parseSkillSource(y['source'] as String) : null,
+      source: y['source'] != null
+          ? _parseSkillSource(y['source'] as String)
+          : null,
       proficiency: y['proficiency'] != null
           ? SkillProficiencyEffects.fromYaml(
-              Map<String, dynamic>.from(y['proficiency'] as Map))
+              Map<String, dynamic>.from(y['proficiency'] as Map),
+            )
           : null,
       targetType: y['targetType'] != null
           ? TargetType.values.byName(y['targetType'] as String)
@@ -152,7 +154,6 @@ class SkillDef {
       'SkillDef(id=$id, name=$name, type=${type.name}, power=$powerMultiplier)';
 }
 
-
 /// 招式 per-skill 熟练度效果(可玩性 P1a · 只配真解/招牌/破招技)。
 /// key=熟练阶段 id(shunShou/shuLian/jingTong/huaJing),value=该阶段起生效的增量。
 /// damage_pct 与全局阶段倍率综合后仍受 §2.5 130% cap(见 SkillProficiency.combinedMult)。
@@ -162,16 +163,23 @@ class SkillProficiencyEffects {
   final Map<String, double> _interruptPowerPct;
   final Map<String, int> _interruptWindowBonus;
 
-  const SkillProficiencyEffects(this._damagePct, this._cooldownDelta,
-      this._interruptPowerPct, this._interruptWindowBonus);
+  const SkillProficiencyEffects(
+    this._damagePct,
+    this._cooldownDelta,
+    this._interruptPowerPct,
+    this._interruptWindowBonus,
+  );
 
   double damagePctAt(String stageId) => _damagePct[stageId] ?? 0.0;
   int cooldownDeltaAt(String stageId) => _cooldownDelta[stageId] ?? 0;
+
   /// interrupt_power_pct(波A 方向 b 已消费):破招踉跄期有效减防
   /// = staggerDefenseDown × (1 + 此值),clamp 到 interruptPowerCap。
   /// 消费点 default_ground_strategy 破招结算;红线 _enforceInterruptSkillRedLines。
-  double interruptPowerPctAt(String stageId) => _interruptPowerPct[stageId] ?? 0.0;
-  int interruptWindowBonusAt(String stageId) => _interruptWindowBonus[stageId] ?? 0;
+  double interruptPowerPctAt(String stageId) =>
+      _interruptPowerPct[stageId] ?? 0.0;
+  int interruptWindowBonusAt(String stageId) =>
+      _interruptWindowBonus[stageId] ?? 0;
 
   factory SkillProficiencyEffects.fromYaml(Map<String, dynamic> y) {
     final effects = (y['effects'] as Map?)?.cast<String, dynamic>() ?? const {};
@@ -181,10 +189,18 @@ class SkillProficiencyEffects {
     final iw = <String, int>{};
     effects.forEach((stage, v) {
       final m = Map<String, dynamic>.from(v as Map);
-      if (m['damage_pct'] != null) dmg[stage] = (m['damage_pct'] as num).toDouble();
-      if (m['cooldown_delta'] != null) cd[stage] = (m['cooldown_delta'] as num).toInt();
-      if (m['interrupt_power_pct'] != null) ip[stage] = (m['interrupt_power_pct'] as num).toDouble();
-      if (m['interrupt_window_bonus_ticks'] != null) iw[stage] = (m['interrupt_window_bonus_ticks'] as num).toInt();
+      if (m['damage_pct'] != null) {
+        dmg[stage] = (m['damage_pct'] as num).toDouble();
+      }
+      if (m['cooldown_delta'] != null) {
+        cd[stage] = (m['cooldown_delta'] as num).toInt();
+      }
+      if (m['interrupt_power_pct'] != null) {
+        ip[stage] = (m['interrupt_power_pct'] as num).toDouble();
+      }
+      if (m['interrupt_window_bonus_ticks'] != null) {
+        iw[stage] = (m['interrupt_window_bonus_ticks'] as num).toInt();
+      }
     });
     return SkillProficiencyEffects(dmg, cd, ip, iw);
   }

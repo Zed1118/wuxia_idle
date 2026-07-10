@@ -163,8 +163,9 @@ class LevelUpSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final leveled =
-        entries.where((e) => e.levelUp?.didLevelUp ?? false).toList();
+    final leveled = entries
+        .where((e) => e.levelUp?.didLevelUp ?? false)
+        .toList();
     if (leveled.isEmpty) return const SizedBox.shrink();
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 11),

@@ -28,10 +28,11 @@ class InnerDemonProgress {
     required InnerDemonDef innerDemonDef,
     required Set<String> clearedStageIds,
   }) {
-    final demonStages = innerDemonDef.requiredRealmLayer.keys
-        .where((k) => k.startsWith(_prefix))
-        .toList()
-      ..sort();
+    final demonStages =
+        innerDemonDef.requiredRealmLayer.keys
+            .where((k) => k.startsWith(_prefix))
+            .toList()
+          ..sort();
     final cleared = demonStages.where(clearedStageIds.contains).length;
     String? next;
     for (final s in demonStages) {

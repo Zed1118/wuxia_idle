@@ -15,8 +15,8 @@ enum FirstClearGating { scrollOnly, wholeChannel }
 /// 纯由 dropChance + 是否首通门控派生，不引入 DropEntry schema 字段。
 enum DropRumorBucket {
   shouTongBiDe, // 首通必得（仅首通门控上下文 + dropChance==1.0）
-  changKeDe,    // 常可得（非门控 + dropChance==1.0）
-  ouKeDe,       // 偶可得（>=0.30）
+  changKeDe, // 常可得（非门控 + dropChance==1.0）
+  ouKeDe, // 偶可得（>=0.30）
   shaoYouRenDe, // 少有人得（>=0.08）
   jiangHuChuanWen, // 江湖传闻（<0.08）
 }
@@ -68,10 +68,7 @@ class DropRumorTable {
   final List<DropRumorEntry> entries;
   final FirstClearGating gating;
 
-  const DropRumorTable({
-    required this.entries,
-    required this.gating,
-  });
+  const DropRumorTable({required this.entries, required this.gating});
 
   bool get isEmpty => entries.isEmpty;
 
@@ -96,17 +93,13 @@ class DropRumorTable {
       );
       switch (e) {
         case EquipmentDrop():
-          entries.add(DropRumorEntry(
-            defId: defId,
-            isEquipment: true,
-            bucket: bucket,
-          ));
+          entries.add(
+            DropRumorEntry(defId: defId, isEquipment: true, bucket: bucket),
+          );
         case ItemDrop():
-          entries.add(DropRumorEntry(
-            defId: defId,
-            isEquipment: false,
-            bucket: bucket,
-          ));
+          entries.add(
+            DropRumorEntry(defId: defId, isEquipment: false, bucket: bucket),
+          );
       }
     }
     return DropRumorTable(entries: entries, gating: gating);

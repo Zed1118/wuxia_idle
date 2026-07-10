@@ -63,12 +63,15 @@ class _VictorySealFlashState extends State<VictorySealFlash>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1600))
-      ..addStatusListener((s) {
-        if (s == AnimationStatus.completed) _finish();
-      })
-      ..forward();
+    _ctrl =
+        AnimationController(
+            vsync: this,
+            duration: const Duration(milliseconds: 1600),
+          )
+          ..addStatusListener((s) {
+            if (s == AnimationStatus.completed) _finish();
+          })
+          ..forward();
   }
 
   void _finish() {
@@ -185,19 +188,23 @@ bool shouldShowHeroCamera({
   required bool isBoss,
   required bool isFirstClear,
   required HeroCameraData? data,
-}) =>
-    isBoss && isFirstClear && data != null;
+}) => isBoss && isFirstClear && data != null;
 
 /// 弹英雄镜头并 await 至消失(numbers hold_seconds 或点击跳过)。Boss 首胜调用。
-Future<void> presentHeroCamera(BuildContext context, HeroCameraData data) async {
+Future<void> presentHeroCamera(
+  BuildContext context,
+  HeroCameraData data,
+) async {
   if (!context.mounted) return;
   await showGeneralDialog<void>(
     context: context,
     barrierDismissible: false,
     barrierColor: Colors.transparent,
     transitionDuration: Duration.zero,
-    pageBuilder: (ctx, _, _) =>
-        HeroCameraOverlay(data: data, onDone: () => Navigator.of(ctx).maybePop()),
+    pageBuilder: (ctx, _, _) => HeroCameraOverlay(
+      data: data,
+      onDone: () => Navigator.of(ctx).maybePop(),
+    ),
   );
 }
 
@@ -212,8 +219,12 @@ Future<void> presentVictoryCeremony(
   required bool treasureGate,
   Set<EquipmentTier> extraDisplayTiers = const {},
 }) async {
-  final playedTreasure = await playTreasureDropIfAny(context, drops,
-      gate: treasureGate, extraDisplayTiers: extraDisplayTiers);
+  final playedTreasure = await playTreasureDropIfAny(
+    context,
+    drops,
+    gate: treasureGate,
+    extraDisplayTiers: extraDisplayTiers,
+  );
   if (playedTreasure) return;
   if (!context.mounted) return;
   await showVictorySealFlash(context);

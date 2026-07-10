@@ -106,9 +106,11 @@ extension MapLikeOnSchoolKill on List<SchoolKillCount> {
         return;
       }
     }
-    add(SchoolKillCount()
-      ..school = school
-      ..count = delta);
+    add(
+      SchoolKillCount()
+        ..school = school
+        ..count = delta,
+    );
   }
 }
 
@@ -129,9 +131,11 @@ extension MapLikeOnBiomeMinutes on List<BiomeMinutes> {
         return;
       }
     }
-    add(BiomeMinutes()
-      ..biome = biome
-      ..minutes = delta);
+    add(
+      BiomeMinutes()
+        ..biome = biome
+        ..minutes = delta,
+    );
   }
 }
 
@@ -152,8 +156,10 @@ extension MapLikeOnWeatherMinutes on List<WeatherMinutes> {
         return;
       }
     }
-    add(WeatherMinutes()
-      ..weather = weather
-      ..minutes = delta);
+    add(
+      WeatherMinutes()
+        ..weather = weather
+        ..minutes = delta,
+    );
   }
 }

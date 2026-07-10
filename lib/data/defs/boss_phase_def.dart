@@ -28,17 +28,18 @@ class BossPhaseDef {
   });
 
   factory BossPhaseDef.fromYaml(Map<String, dynamic> y) => BossPhaseDef(
-        hpThresholdPct: (y['hpThresholdPct'] as num).toDouble(),
-        unlockSkillIds: List<String>.from(
-            (y['unlockSkillIds'] as List? ?? const []).map((e) => e as String)),
-        aiMode: y['aiMode'] == null
-            ? BossAiMode.normal
-            : BossAiMode.values.byName(y['aiMode'] as String),
-        onEnterMechanic: y['onEnterMechanic'] == null
-            ? null
-            : BossPhaseMechanic.values.byName(y['onEnterMechanic'] as String),
-        titleKey: y['titleKey'] as String?,
-      );
+    hpThresholdPct: (y['hpThresholdPct'] as num).toDouble(),
+    unlockSkillIds: List<String>.from(
+      (y['unlockSkillIds'] as List? ?? const []).map((e) => e as String),
+    ),
+    aiMode: y['aiMode'] == null
+        ? BossAiMode.normal
+        : BossAiMode.values.byName(y['aiMode'] as String),
+    onEnterMechanic: y['onEnterMechanic'] == null
+        ? null
+        : BossPhaseMechanic.values.byName(y['onEnterMechanic'] as String),
+    titleKey: y['titleKey'] as String?,
+  );
 
   /// 解析阶段数组并校验：首项阈值=1.0、阈值严格降序。
   static List<BossPhaseDef> parseList(List<dynamic> raw) {

@@ -21,14 +21,15 @@ class _SeclusionEnterCaptionState extends State<SeclusionEnterCaption>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    )
-      ..addStatusListener((s) {
-        if (s == AnimationStatus.completed) _finish();
-      })
-      ..forward();
+    _ctrl =
+        AnimationController(
+            vsync: this,
+            duration: const Duration(milliseconds: 1600),
+          )
+          ..addStatusListener((s) {
+            if (s == AnimationStatus.completed) _finish();
+          })
+          ..forward();
   }
 
   void _finish() {

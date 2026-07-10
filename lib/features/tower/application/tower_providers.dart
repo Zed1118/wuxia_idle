@@ -14,9 +14,9 @@ part 'tower_providers.g.dart';
 /// 触发刷新，[towerFloorListProvider] 自动级联。
 @Riverpod(dependencies: [])
 Future<TowerProgress> towerProgress(Ref ref) async {
-  return TowerProgressService(isar: IsarSetup.instance).getOrCreate(
-    saveDataId: IsarSetup.currentSlotId,
-  );
+  return TowerProgressService(
+    isar: IsarSetup.instance,
+  ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
 }
 
 /// 30 层列表含三态 status（Phase 3 T42）。

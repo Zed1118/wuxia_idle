@@ -172,8 +172,7 @@ class SynergyDef {
     if (req == null) {
       throw StateError('SynergyDef ${y['id']} 缺 requirement 段');
     }
-    final type = SynergyRequirementType.values
-        .byName(req['type'] as String);
+    final type = SynergyRequirementType.values.byName(req['type'] as String);
     return SynergyDef(
       id: y['id'] as String,
       name: y['name'] as String,

@@ -37,12 +37,14 @@ Future<void> runDiscipleJoinHookAfterVictory({
     if (context.mounted) {
       final content = await NarrativeLoader.load(join.narrativeId);
       if (context.mounted) {
-        await Navigator.of(context).push<void>(MaterialPageRoute(
-          builder: (_) => NarrativeReaderScreen(
-            content: content,
-            fallbackTitle: UiStrings.discipleJoinCaption(disciple.name),
+        await Navigator.of(context).push<void>(
+          MaterialPageRoute(
+            builder: (_) => NarrativeReaderScreen(
+              content: content,
+              fallbackTitle: UiStrings.discipleJoinCaption(disciple.name),
+            ),
           ),
-        ));
+        );
       }
     }
     if (context.mounted) {

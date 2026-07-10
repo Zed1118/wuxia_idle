@@ -89,8 +89,9 @@ class TerritoryService {
     if (!sect.territoryIds.contains(territoryId)) {
       return ReleaseResult.notOwned;
     }
-    sect.territoryIds =
-        sect.territoryIds.where((id) => id != territoryId).toList();
+    sect.territoryIds = sect.territoryIds
+        .where((id) => id != territoryId)
+        .toList();
     await isar.sects.put(sect);
     return ReleaseResult.success;
   }
@@ -128,14 +129,11 @@ enum ClaimResult {
 }
 
 /// [TerritoryService.release] 返回枚举。
-enum ReleaseResult {
-  success,
-  notOwned,
-  sectNotFound,
-}
+enum ReleaseResult { success, notOwned, sectNotFound }
 
 /// 模拟招收 candidate 软概率结果(Q6 A · encounter sectMemberApplier 用 · 待 task 6 接入)。
-typedef SectMemberRecruitApplier = Future<void> Function({
-  required int sectId,
-  required int targetCharacterId,
-});
+typedef SectMemberRecruitApplier =
+    Future<void> Function({
+      required int sectId,
+      required int targetCharacterId,
+    });

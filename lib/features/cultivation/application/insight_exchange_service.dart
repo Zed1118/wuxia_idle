@@ -55,7 +55,9 @@ class InsightExchangeService {
     required int insightSpend,
   }) async {
     if (insightSpend <= 0) {
-      return const InsightRefineResult(status: InsightRefineStatus.invalidAmount);
+      return const InsightRefineResult(
+        status: InsightRefineStatus.invalidAmount,
+      );
     }
     final ch = await isar.characters.get(characterId);
     if (ch == null || ch.mainTechniqueId == null) {

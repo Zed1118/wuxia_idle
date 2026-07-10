@@ -113,8 +113,9 @@ Future<void> runEncounterHookAfterVictory({
     encounterTitle: content.title ?? triggered.id,
     skillNameLookup: (sid) =>
         GameRepository.instance.skillDefs[sid]?.name ?? sid,
-    reputationApplier:
-        reputationService?.deltaApplierFromRng(ref.read(rngProvider)),
+    reputationApplier: reputationService?.deltaApplierFromRng(
+      ref.read(rngProvider),
+    ),
     reputationPlayerId: reputationService == null ? null : 1,
   );
   if (!context.mounted) return;
@@ -168,8 +169,9 @@ Future<void> runEncounterHookAfterVictory({
           encounterTitle: content.title ?? triggeredDef.id,
           skillNameLookup: (sid) =>
               GameRepository.instance.skillDefs[sid]?.name ?? sid,
-          reputationApplier: reputationService
-              ?.deltaApplierFromRng(ref.read(rngProvider)),
+          reputationApplier: reputationService?.deltaApplierFromRng(
+            ref.read(rngProvider),
+          ),
           reputationPlayerId: reputationService == null ? null : 1,
         );
         if (!context.mounted) return;

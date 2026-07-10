@@ -34,14 +34,15 @@ class ImpactGlyphOverlayState extends State<ImpactGlyphOverlay>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: _totalMs),
-    )..addStatusListener((s) {
-        if (s == AnimationStatus.completed && mounted) {
-          setState(() => _glyph = null);
-        }
-      });
+    _ctrl =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: _totalMs),
+        )..addStatusListener((s) {
+          if (s == AnimationStatus.completed && mounted) {
+            setState(() => _glyph = null);
+          }
+        });
   }
 
   @override
@@ -82,8 +83,9 @@ class ImpactGlyphOverlayState extends State<ImpactGlyphOverlay>
   @override
   Widget build(BuildContext context) {
     if (_glyph == null) return const SizedBox.shrink();
-    final accent =
-        _isEnemy ? WuxiaColors.gangMeng : WuxiaColors.resultHighlight;
+    final accent = _isEnemy
+        ? WuxiaColors.gangMeng
+        : WuxiaColors.resultHighlight;
     return IgnorePointer(
       child: AnimatedBuilder(
         animation: _ctrl,
@@ -105,12 +107,12 @@ class ImpactGlyphOverlayState extends State<ImpactGlyphOverlay>
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) =>
                             DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: const Color(0x99000000),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: accent, width: 1.5),
-                          ),
-                        ),
+                              decoration: BoxDecoration(
+                                color: const Color(0x99000000),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: accent, width: 1.5),
+                              ),
+                            ),
                       ),
                     ),
                   ),
@@ -126,14 +128,14 @@ class ImpactGlyphOverlayState extends State<ImpactGlyphOverlay>
   }
 
   TextStyle _glyphStyle({required bool stroke}) => TextStyle(
-        fontSize: 72,
-        fontWeight: FontWeight.bold,
-        color: stroke ? null : WuxiaUi.paper,
-        foreground: stroke
-            ? (Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 6
-              ..color = const Color(0xCC0A0A0A))
-            : null,
-      );
+    fontSize: 72,
+    fontWeight: FontWeight.bold,
+    color: stroke ? null : WuxiaUi.paper,
+    foreground: stroke
+        ? (Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 6
+            ..color = const Color(0xCC0A0A0A))
+        : null,
+  );
 }

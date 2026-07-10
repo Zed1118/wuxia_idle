@@ -23,23 +23,23 @@ class SkillLoadout {
   });
 
   factory SkillLoadout.fromCharacter(Character c) => SkillLoadout(
-        mainSkillId1: c.mainSkillId1,
-        mainSkillId2: c.mainSkillId2,
-        assistSkillId: c.assistSkillId,
-        resonanceSkillId: c.resonanceSkillId,
-        ultimateSkillId: c.ultimateSkillId,
-        keySkillId: c.keySkillId,
-      );
+    mainSkillId1: c.mainSkillId1,
+    mainSkillId2: c.mainSkillId2,
+    assistSkillId: c.assistSkillId,
+    resonanceSkillId: c.resonanceSkillId,
+    ultimateSkillId: c.ultimateSkillId,
+    keySkillId: c.keySkillId,
+  );
 
   /// 非空槽 id（去 null），= 该角色战斗可用心法/共鸣/大招/破招招（不含奇遇）。
   List<String> get equippedIds => [
-        mainSkillId1,
-        mainSkillId2,
-        assistSkillId,
-        resonanceSkillId,
-        ultimateSkillId,
-        keySkillId,
-      ].whereType<String>().toList();
+    mainSkillId1,
+    mainSkillId2,
+    assistSkillId,
+    resonanceSkillId,
+    ultimateSkillId,
+    keySkillId,
+  ].whereType<String>().toList();
 
   /// 自动填充空槽。只填空槽，永不覆盖非空槽（非空=玩家保留）。
   ///
@@ -80,27 +80,29 @@ class SkillLoadout {
     final ults = mainTechniqueSkills
         .where((s) => gate(s) && s.powerMultiplier >= ultimatePowerThreshold)
         .toList();
-    final ultimate = existing.ultimateSkillId ?? (ults.isNotEmpty ? ults.first.id : null);
+    final ultimate =
+        existing.ultimateSkillId ?? (ults.isNotEmpty ? ults.first.id : null);
 
     // 主修2槽：power < 阈值，按 power 降序
-    final mains = mainTechniqueSkills
-        .where((s) => gate(s) && s.powerMultiplier < ultimatePowerThreshold)
-        .toList()
-      ..sort((a, b) => b.powerMultiplier.compareTo(a.powerMultiplier));
+    final mains =
+        mainTechniqueSkills
+            .where((s) => gate(s) && s.powerMultiplier < ultimatePowerThreshold)
+            .toList()
+          ..sort((a, b) => b.powerMultiplier.compareTo(a.powerMultiplier));
     final mainIds = mains.map((s) => s.id).toList();
     final used = <String?>{existing.mainSkillId1, existing.mainSkillId2};
     final pool = mainIds.where((id) => !used.contains(id)).toList();
-    String? m1 = existing.mainSkillId1 ?? (pool.isNotEmpty ? pool.removeAt(0) : null);
-    String? m2 = existing.mainSkillId2 ?? (pool.isNotEmpty ? pool.removeAt(0) : null);
+    String? m1 =
+        existing.mainSkillId1 ?? (pool.isNotEmpty ? pool.removeAt(0) : null);
+    String? m2 =
+        existing.mainSkillId2 ?? (pool.isNotEmpty ? pool.removeAt(0) : null);
 
     // 第六阶段 Task 6 — 大弟子(senior)破防倾向（第七阶段批三收窄：disciple→senior）：
     // 若大弟子身份 + 主修槽均无破防技 + 候选中有破防技 → 替换最低优先级空槽（后填的槽）。
     // 只在该槽原本由 autoFill 新填（existing 对应槽为 null）时才替换（不覆盖玩家手动设置）。
     // junior(二弟子)：破招控场走 battle_ai，autoFill 无破防偏向。
     if (lineageRole == LineageRole.senior && !isFounder) {
-      final eligibleBreak = mains
-          .where((s) => s.defenseBreakPct > 0)
-          .toList();
+      final eligibleBreak = mains.where((s) => s.defenseBreakPct > 0).toList();
       if (eligibleBreak.isNotEmpty) {
         final hasBreakInSlots = [m1, m2].any((slotId) {
           if (slotId == null) return false;
@@ -110,18 +112,21 @@ class SkillLoadout {
         });
         if (!hasBreakInSlots) {
           // 找一个不在当前槽中的破防技
-          final breakCandidate = eligibleBreak
-              .firstWhere((s) => s.id != m1 && s.id != m2,
-                  orElse: () => eligibleBreak.first);
+          final breakCandidate = eligibleBreak.firstWhere(
+            (s) => s.id != m1 && s.id != m2,
+            orElse: () => eligibleBreak.first,
+          );
           // 替换逻辑：优先替换 autoFill 新填的槽（existing 为 null 的槽），
           // 按优先级：m2 先（后填），再 m1（前填）。
-          if (existing.mainSkillId2 == null && m2 != null &&
+          if (existing.mainSkillId2 == null &&
+              m2 != null &&
               breakCandidate.id != m2) {
             m2 = breakCandidate.id;
-          } else if (existing.mainSkillId1 == null && m1 != null &&
+          } else if (existing.mainSkillId1 == null &&
+              m1 != null &&
               breakCandidate.id != m1) {
             m1 = breakCandidate.id;
-          // 空槽兜底：pool 不足导致该槽仍为 null，直接填入破防技。
+            // 空槽兜底：pool 不足导致该槽仍为 null，直接填入破防技。
           } else if (m2 == null && existing.mainSkillId2 == null) {
             m2 = breakCandidate.id;
           } else if (m1 == null && existing.mainSkillId1 == null) {
@@ -133,10 +138,13 @@ class SkillLoadout {
 
     // 辅修槽
     final assists = assistTechniqueSkills.where(gate).toList();
-    final assist = existing.assistSkillId ?? (assists.isNotEmpty ? assists.first.id : null);
+    final assist =
+        existing.assistSkillId ??
+        (assists.isNotEmpty ? assists.first.id : null);
 
     // 共鸣槽（人剑合一招式）
-    final resonance = existing.resonanceSkillId ??
+    final resonance =
+        existing.resonanceSkillId ??
         ((jointSkill != null && gate(jointSkill)) ? jointSkill.id : null);
 
     // 破招槽（波A build gate:canInterrupt && style == school）

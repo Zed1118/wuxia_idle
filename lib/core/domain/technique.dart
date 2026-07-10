@@ -80,8 +80,8 @@ class Technique {
 extension TechniqueDispersion on Technique {
   void disperse(NumbersConfig n) {
     wasMainBeforeReset = true;
-    cultivationProgress =
-        (cultivationProgress * n.dispersionCultivationPenalty).toInt();
+    cultivationProgress = (cultivationProgress * n.dispersionCultivationPenalty)
+        .toInt();
     role = TechniqueRole.assist;
   }
 }

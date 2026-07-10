@@ -48,8 +48,14 @@ class _Cell {
   final int wins;
   final int runs;
   final double avgWinTicks;
-  _Cell(this.stage, this.hpArm, this.buildArm, this.wins, this.runs,
-      this.avgWinTicks);
+  _Cell(
+    this.stage,
+    this.hpArm,
+    this.buildArm,
+    this.wins,
+    this.runs,
+    this.avgWinTicks,
+  );
 
   @override
   String toString() {
@@ -87,26 +93,30 @@ BattleCharacter _buildPlayer(
       (d) => d.tier == eqTierCap && d.slot == wantSlot,
       orElse: () => defs.firstWhere((d) => d.slot == wantSlot),
     );
-    equipped.add(Equipment.create(
-      defId: def.id,
-      tier: def.tier,
-      slot: def.slot,
-      obtainedAt: DateTime(2026, 7, 5),
-      obtainedFrom: 'early_gate_probe',
-      school: school,
-      baseAttack: (def.baseAttackMin + def.baseAttackMax) ~/ 2,
-      baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,
-      baseSpeed: (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
-      enhanceLevel: enhanceLevel,
-      battleCount: battleCount,
-      forgingSlots: const [],
-    ));
+    equipped.add(
+      Equipment.create(
+        defId: def.id,
+        tier: def.tier,
+        slot: def.slot,
+        obtainedAt: DateTime(2026, 7, 5),
+        obtainedFrom: 'early_gate_probe',
+        school: school,
+        baseAttack: (def.baseAttackMin + def.baseAttackMax) ~/ 2,
+        baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,
+        baseSpeed: (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
+        enhanceLevel: enhanceLevel,
+        battleCount: battleCount,
+        forgingSlots: const [],
+      ),
+    );
   }
 
   final techTierCap = RealmUtils.techniqueTierCapOf(tier);
-  final TechniqueDef techDef = _repo.techniqueDefs.values
-      .firstWhere((d) => d.tier == techTierCap);
-  final cultLayer = layerOverride ??
+  final TechniqueDef techDef = _repo.techniqueDefs.values.firstWhere(
+    (d) => d.tier == techTierCap,
+  );
+  final cultLayer =
+      layerOverride ??
       (ceiling ? CultivationLayer.daCheng : CultivationLayer.zhongCheng);
   final mainTech = Technique.create(
     defId: techDef.id,
@@ -150,11 +160,13 @@ BattleCharacter _buildPlayer(
   );
   if (gated) {
     final kept = bc.availableSkills
-        .where((s) => isTechniqueSkillUnlockedByGrowth(
-              technique: mainTech,
-              techniqueDef: techDef,
-              skill: s,
-            ))
+        .where(
+          (s) => isTechniqueSkillUnlockedByGrowth(
+            technique: mainTech,
+            techniqueDef: techDef,
+            skill: s,
+          ),
+        )
         .toList();
     bc = bc.copyWith(availableSkills: kept);
   }
@@ -172,25 +184,31 @@ BattleCharacter _buildPlayer(
 }) {
   final tier = stage.requiredRealm;
   final players = [
-    _buildPlayer(tier,
-        slot: 0,
-        isFounder: true,
+    _buildPlayer(
+      tier,
+      slot: 0,
+      isFounder: true,
+      profile: profile,
+      gated: gated,
+      layerOverride: layerOverride,
+    ),
+    if (!solo) ...[
+      _buildPlayer(
+        tier,
+        slot: 1,
+        isFounder: false,
         profile: profile,
         gated: gated,
-        layerOverride: layerOverride),
-    if (!solo) ...[
-      _buildPlayer(tier,
-          slot: 1,
-          isFounder: false,
-          profile: profile,
-          gated: gated,
-          layerOverride: layerOverride),
-      _buildPlayer(tier,
-          slot: 2,
-          isFounder: false,
-          profile: profile,
-          gated: gated,
-          layerOverride: layerOverride),
+        layerOverride: layerOverride,
+      ),
+      _buildPlayer(
+        tier,
+        slot: 2,
+        isFounder: false,
+        profile: profile,
+        gated: gated,
+        layerOverride: layerOverride,
+      ),
     ],
   ];
   var enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
@@ -203,8 +221,12 @@ BattleCharacter _buildPlayer(
     ];
   }
   final initial = BattleState.initial(leftTeam: players, rightTeam: enemies);
-  final terminal = BattleEngine.runToEnd(initial, _repo.numbers,
-      maxTicks: _maxTicks, rng: Random(seed));
+  final terminal = BattleEngine.runToEnd(
+    initial,
+    _repo.numbers,
+    maxTicks: _maxTicks,
+    rng: Random(seed),
+  );
   return (
     result: terminal.result == null ? 'timeout' : terminal.result!.name,
     ticks: terminal.tick,
@@ -224,18 +246,28 @@ _Cell _cell(
   var wins = 0;
   var tickSum = 0;
   for (var seed = 0; seed < _seeds; seed++) {
-    final r = _run(stage, seed, profile,
-        gated: gated,
-        layerOverride: layerOverride,
-        bossHpOverride: bossHpOverride,
-        solo: solo);
+    final r = _run(
+      stage,
+      seed,
+      profile,
+      gated: gated,
+      layerOverride: layerOverride,
+      bossHpOverride: bossHpOverride,
+      solo: solo,
+    );
     if (r.result == 'leftWin') {
       wins++;
       tickSum += r.ticks;
     }
   }
-  return _Cell(stage.id, hpArm, buildArm, wins, _seeds,
-      wins == 0 ? double.nan : tickSum / wins);
+  return _Cell(
+    stage.id,
+    hpArm,
+    buildArm,
+    wins,
+    _seeds,
+    wins == 0 ? double.nan : tickSum / wins,
+  );
 }
 
 void main() {
@@ -263,47 +295,112 @@ void main() {
       final built = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
       final boss = built.firstWhere((e) => e.isBoss);
       final yamlHp = stage.enemyTeam.firstWhere((e) => e.isBoss).baseHp;
-      expect(boss.maxHp, yamlHp,
-          reason: '$sid boss maxHp 应直通 yaml baseHp(cycle-1)');
+      expect(
+        boss.maxHp,
+        yamlHp,
+        reason: '$sid boss maxHp 应直通 yaml baseHp(cycle-1)',
+      );
 
-      for (final hpArm in [
-        ('cur', null),
-        if (oldHp != null) ('old', oldHp),
-      ]) {
-        cells.add(_cell(stage, hpArm.$1, 'floor·gated(2招)', _P.floor,
-            gated: true, bossHpOverride: hpArm.$2));
-        cells.add(_cell(stage, hpArm.$1, 'floor·ungated(3招)', _P.floor,
-            bossHpOverride: hpArm.$2));
-        cells.add(_cell(stage, hpArm.$1, 'ceiling(3招)', _P.ceiling,
-            bossHpOverride: hpArm.$2));
+      for (final hpArm in [('cur', null), if (oldHp != null) ('old', oldHp)]) {
+        cells.add(
+          _cell(
+            stage,
+            hpArm.$1,
+            'floor·gated(2招)',
+            _P.floor,
+            gated: true,
+            bossHpOverride: hpArm.$2,
+          ),
+        );
+        cells.add(
+          _cell(
+            stage,
+            hpArm.$1,
+            'floor·ungated(3招)',
+            _P.floor,
+            bossHpOverride: hpArm.$2,
+          ),
+        );
+        cells.add(
+          _cell(
+            stage,
+            hpArm.$1,
+            'ceiling(3招)',
+            _P.ceiling,
+            bossHpOverride: hpArm.$2,
+          ),
+        );
         if (sid == 'stage_01_04') {
-          cells.add(_cell(stage, hpArm.$1, 'floor·gated·初窥(1招)', _P.floor,
+          cells.add(
+            _cell(
+              stage,
+              hpArm.$1,
+              'floor·gated·初窥(1招)',
+              _P.floor,
               gated: true,
               layerOverride: CultivationLayer.chuKui,
-              bossHpOverride: hpArm.$2));
+              bossHpOverride: hpArm.$2,
+            ),
+          );
         }
         // 真实早期弧=祖师单人线(收徒前),solo 维度是主读数
         if (sid.startsWith('stage_01') || sid.startsWith('stage_04')) {
-          cells.add(_cell(stage, hpArm.$1, 'SOLO·floor·gated(2招)', _P.floor,
-              gated: true, solo: true, bossHpOverride: hpArm.$2));
-          cells.add(_cell(stage, hpArm.$1, 'SOLO·floor·ungated(3招)',
+          cells.add(
+            _cell(
+              stage,
+              hpArm.$1,
+              'SOLO·floor·gated(2招)',
               _P.floor,
-              solo: true, bossHpOverride: hpArm.$2));
-          cells.add(_cell(stage, hpArm.$1, 'SOLO·ceiling(3招)', _P.ceiling,
-              solo: true, bossHpOverride: hpArm.$2));
+              gated: true,
+              solo: true,
+              bossHpOverride: hpArm.$2,
+            ),
+          );
+          cells.add(
+            _cell(
+              stage,
+              hpArm.$1,
+              'SOLO·floor·ungated(3招)',
+              _P.floor,
+              solo: true,
+              bossHpOverride: hpArm.$2,
+            ),
+          );
+          cells.add(
+            _cell(
+              stage,
+              hpArm.$1,
+              'SOLO·ceiling(3招)',
+              _P.ceiling,
+              solo: true,
+              bossHpOverride: hpArm.$2,
+            ),
+          );
           if (sid == 'stage_01_04' || sid == 'stage_01_05') {
-            cells.add(_cell(
-                stage, hpArm.$1, 'SOLO·floor·gated·初窥(1招)', _P.floor,
+            cells.add(
+              _cell(
+                stage,
+                hpArm.$1,
+                'SOLO·floor·gated·初窥(1招)',
+                _P.floor,
                 gated: true,
                 solo: true,
                 layerOverride: CultivationLayer.chuKui,
-                bossHpOverride: hpArm.$2));
-            cells.add(_cell(
-                stage, hpArm.$1, 'SOLO·floor·gated·小成(2招)', _P.floor,
+                bossHpOverride: hpArm.$2,
+              ),
+            );
+            cells.add(
+              _cell(
+                stage,
+                hpArm.$1,
+                'SOLO·floor·gated·小成(2招)',
+                _P.floor,
                 gated: true,
                 solo: true,
                 layerOverride: CultivationLayer.xiaoCheng,
-                bossHpOverride: hpArm.$2));
+                bossHpOverride: hpArm.$2,
+              ),
+            );
           }
         }
       }

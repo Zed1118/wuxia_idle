@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../core/application/battle_providers.dart' show numbersConfigProvider;
+import '../../../core/application/battle_providers.dart'
+    show numbersConfigProvider;
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
 import '../domain/reputation.dart';

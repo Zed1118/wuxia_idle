@@ -48,8 +48,8 @@ class TechniqueDef {
       skillIds: List<String>.from(
         (y['skillIds'] as List? ?? const []).map((e) => e as String),
       ),
-      internalForceGrowthBonus:
-          (y['internalForceGrowthBonus'] as num).toDouble(),
+      internalForceGrowthBonus: (y['internalForceGrowthBonus'] as num)
+          .toDouble(),
       speedBonus: (y['speedBonus'] as num).toInt(),
       acquireSourceTags: List<String>.from(
         (y['acquireSourceTags'] as List? ?? const []).map((e) => e as String),

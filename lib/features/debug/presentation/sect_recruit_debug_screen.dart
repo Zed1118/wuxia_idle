@@ -42,14 +42,14 @@ class _SectRecruitDebugScreenState
         noSectSnackBar: UiStrings.stageBossRecruitNoSect(candidate.name),
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('结果: ${result.name}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('结果: ${result.name}')));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('失败: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('失败: $e')));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -57,8 +57,7 @@ class _SectRecruitDebugScreenState
 
   @override
   Widget build(BuildContext context) {
-    final candidates =
-        GameRepository.instance.sectCandidates.values.toList();
+    final candidates = GameRepository.instance.sectCandidates.values.toList();
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       appBar: AppBar(
@@ -73,8 +72,10 @@ class _SectRecruitDebugScreenState
             Expanded(
               child: candidates.isEmpty
                   ? const Center(
-                      child: Text('无候选 NPC',
-                          style: TextStyle(color: WuxiaColors.textMuted)),
+                      child: Text(
+                        '无候选 NPC',
+                        style: TextStyle(color: WuxiaColors.textMuted),
+                      ),
                     )
                   : ListView.builder(
                       itemCount: candidates.length,
@@ -82,13 +83,17 @@ class _SectRecruitDebugScreenState
                         final c = candidates[i];
                         return Padding(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 6),
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
                           child: InkWell(
                             onTap: () => _recruit(c),
                             borderRadius: BorderRadius.circular(6),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: WuxiaColors.panel,
                                 borderRadius: BorderRadius.circular(6),
@@ -129,8 +134,11 @@ class _SectRecruitDebugScreenState
                                       ],
                                     ),
                                   ),
-                                  const Icon(Icons.chevron_right,
-                                      color: WuxiaColors.textMuted, size: 18),
+                                  const Icon(
+                                    Icons.chevron_right,
+                                    color: WuxiaColors.textMuted,
+                                    size: 18,
+                                  ),
                                 ],
                               ),
                             ),

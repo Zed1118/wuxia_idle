@@ -17,8 +17,11 @@ class NarrativeSceneBackground extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        WuxiaImage(p, fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => const SizedBox.shrink()),
+        WuxiaImage(
+          p,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+        ),
         const ColoredBox(color: WuxiaColors.narrativeSceneScrim),
       ],
     );

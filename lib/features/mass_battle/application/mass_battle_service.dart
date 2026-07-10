@@ -91,7 +91,7 @@ class MassBattleService {
 /// 关卡三态(沿 [LightFootStageStatus] 体例但 mass_battle 独立 enum 避免跨模块
 /// 耦合 · memory `feedback_avoid_over_engineer_abstraction`)。
 enum MassBattleStageStatus {
-  locked,    // 上一关未通(灰色 + 锁)
+  locked, // 上一关未通(灰色 + 锁)
   available, // 上一关通过 + 本关未通(主色按钮可点)
-  cleared,   // 本关已通(绿勾 · 可重玩)
+  cleared, // 本关已通(绿勾 · 可重玩)
 }

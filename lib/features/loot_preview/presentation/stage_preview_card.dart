@@ -103,14 +103,14 @@ class _DifficultyBadge extends StatelessWidget {
 
 /// 难度判语 → (显示串, 水墨色)。供徽章 + 调用方复用。
 (String, Color) difficultyLabelColor(DifficultyVerdict v) => switch (v) {
-      DifficultyVerdict.comfortable => (
-          UiStrings.difficultyComfortable,
-          WuxiaUi.qing,
-        ),
-      DifficultyVerdict.suitable => (UiStrings.difficultySuitable, WuxiaUi.ink),
-      DifficultyVerdict.risky => (UiStrings.difficultyRisky, WuxiaUi.gold),
-      DifficultyVerdict.deadly => (UiStrings.difficultyDeadly, WuxiaUi.jiang),
-    };
+  DifficultyVerdict.comfortable => (
+    UiStrings.difficultyComfortable,
+    WuxiaUi.qing,
+  ),
+  DifficultyVerdict.suitable => (UiStrings.difficultySuitable, WuxiaUi.ink),
+  DifficultyVerdict.risky => (UiStrings.difficultyRisky, WuxiaUi.gold),
+  DifficultyVerdict.deadly => (UiStrings.difficultyDeadly, WuxiaUi.jiang),
+};
 
 /// 第八阶段 C·桌面悬停预览浮层包装。
 ///
@@ -173,10 +173,12 @@ class _StagePreviewHoverCardState extends State<StagePreviewHoverCard> {
                 link: _link,
                 // 右对齐弹出:卡右缘贴行右缘,向左下(或翻转向左上)展开,不再盖住
                 // 左侧关卡名/掉落文字(旧 bottomLeft 锚把卡甩到左下盖住后续关·突兀)。
-                targetAnchor:
-                    _flipUp ? Alignment.topRight : Alignment.bottomRight,
-                followerAnchor:
-                    _flipUp ? Alignment.bottomRight : Alignment.topRight,
+                targetAnchor: _flipUp
+                    ? Alignment.topRight
+                    : Alignment.bottomRight,
+                followerAnchor: _flipUp
+                    ? Alignment.bottomRight
+                    : Alignment.topRight,
                 offset: Offset(0, _flipUp ? -6 : 6),
                 // IgnorePointer:浮层向下展开会盖住后续关卡行,若浮层自身吃鼠标,
                 // 从本关下移到下一关时鼠标会"进到浮层"使本关 onExit 后立刻被浮层

@@ -81,13 +81,14 @@ class _Phase2TestMenuState extends ConsumerState<Phase2TestMenu> {
       await seed();
       if (!mounted) return;
       _invalidateSeedAffectedProviders();
-      await Navigator.of(context)
-          .push(MaterialPageRoute<void>(builder: (_) => targetBuilder()));
+      await Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => targetBuilder()));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('种子失败：$e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('种子失败：$e')));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -114,172 +115,188 @@ class _Phase2TestMenuState extends ConsumerState<Phase2TestMenu> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                if (_busy)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 16),
-                    child: LinearProgressIndicator(minHeight: 2),
-                  ),
-                _ScenarioButton(
-                  label: UiStrings.scenarioP1,
-                  hint: UiStrings.hintP1,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance).seedP1(),
-                    () => const InventoryScreen(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioP2,
-                  hint: UiStrings.hintP2,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance).seedP2(),
-                    () => const InventoryScreen(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioP3,
-                  hint: UiStrings.hintP3,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance).seedP3(),
-                    () => const TechniquePanelScreen(
-                      characterId: _defaultCharacterId,
+                  if (_busy)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 16),
+                      child: LinearProgressIndicator(minHeight: 2),
+                    ),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioP1,
+                    hint: UiStrings.hintP1,
+                    onTap: () => _seedAndPush(
+                      () =>
+                          Phase2SeedService(isar: IsarSetup.instance).seedP1(),
+                      () => const InventoryScreen(),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioRefineInsight,
-                  hint: UiStrings.hintRefineInsight,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance)
-                        .seedRefineInsight(),
-                    () => const TechniquePanelScreen(
-                      characterId: _defaultCharacterId,
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioP2,
+                    hint: UiStrings.hintP2,
+                    onTap: () => _seedAndPush(
+                      () =>
+                          Phase2SeedService(isar: IsarSetup.instance).seedP2(),
+                      () => const InventoryScreen(),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioP4,
-                  hint: UiStrings.hintP4,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance).seedP4(),
-                    () => const CharacterPanelScreen(
-                      characterId: _defaultCharacterId,
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioP3,
+                    hint: UiStrings.hintP3,
+                    onTap: () => _seedAndPush(
+                      () =>
+                          Phase2SeedService(isar: IsarSetup.instance).seedP3(),
+                      () => const TechniquePanelScreen(
+                        characterId: _defaultCharacterId,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioP5,
-                  hint: UiStrings.hintP5,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple(),
-                    () => const CharacterPanelScreen(
-                      characterId: _defaultCharacterId,
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioRefineInsight,
+                    hint: UiStrings.hintRefineInsight,
+                    onTap: () => _seedAndPush(
+                      () => Phase2SeedService(
+                        isar: IsarSetup.instance,
+                      ).seedRefineInsight(),
+                      () => const TechniquePanelScreen(
+                        characterId: _defaultCharacterId,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioVc,
-                  hint: UiStrings.hintVc,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW7W11(),
-                    () => const CharacterPanelScreen(
-                      characterId: _defaultCharacterId,
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioP4,
+                    hint: UiStrings.hintP4,
+                    onTap: () => _seedAndPush(
+                      () =>
+                          Phase2SeedService(isar: IsarSetup.instance).seedP4(),
+                      () => const CharacterPanelScreen(
+                        characterId: _defaultCharacterId,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioVc14_3,
-                  hint: UiStrings.hintVc14_3,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance)
-                        .seedVisualCheckW14_3(),
-                    () => const CharacterPanelScreen(
-                      characterId: _defaultCharacterId,
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioP5,
+                    hint: UiStrings.hintP5,
+                    onTap: () => _seedAndPush(
+                      () => Phase2SeedService(
+                        isar: IsarSetup.instance,
+                      ).seedMasterDisciple(),
+                      () => const CharacterPanelScreen(
+                        characterId: _defaultCharacterId,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioVcEvent,
-                  hint: UiStrings.hintVcEvent,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const EncounterDebugPickerScreen(),
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioVc,
+                    hint: UiStrings.hintVc,
+                    onTap: () => _seedAndPush(
+                      () => Phase2SeedService(
+                        isar: IsarSetup.instance,
+                      ).seedVisualCheckW7W11(),
+                      () => const CharacterPanelScreen(
+                        characterId: _defaultCharacterId,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioVc15R2,
-                  hint: UiStrings.hintVc15R2,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance)
-                        .seedVisualCheckW15R2(),
-                    () => const InventoryScreen(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioVc15Resonance,
-                  hint: UiStrings.hintVc15Resonance,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance)
-                        .seedVisualCheckW15Resonance(),
-                    () => const InventoryScreen(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioVc15Fresh,
-                  hint: UiStrings.hintVc15Fresh,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance)
-                        .seedVisualCheckW15Fresh(),
-                    () => const CharacterPanelScreen(
-                      characterId: _defaultCharacterId,
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioVc14_3,
+                    hint: UiStrings.hintVc14_3,
+                    onTap: () => _seedAndPush(
+                      () => Phase2SeedService(
+                        isar: IsarSetup.instance,
+                      ).seedVisualCheckW14_3(),
+                      () => const CharacterPanelScreen(
+                        characterId: _defaultCharacterId,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioVc18A1,
-                  hint: UiStrings.hintVc18A1,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance)
-                        .seedVisualCheckW18A1(),
-                    () => const CharacterPanelScreen(
-                      characterId: _defaultCharacterId,
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioVcEvent,
+                    hint: UiStrings.hintVcEvent,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const EncounterDebugPickerScreen(),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioVcP5Plus,
-                  hint: UiStrings.hintVcP5Plus,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance)
-                        .seedVisualCheckP5Plus(),
-                    () => const LineagePanelScreen(),
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioVc15R2,
+                    hint: UiStrings.hintVc15R2,
+                    onTap: () => _seedAndPush(
+                      () => Phase2SeedService(
+                        isar: IsarSetup.instance,
+                      ).seedVisualCheckW15R2(),
+                      () => const InventoryScreen(),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _ScenarioButton(
-                  label: UiStrings.scenarioVcShenwuDrop,
-                  hint: UiStrings.hintVcShenwuDrop,
-                  onTap: () => _seedAndPush(
-                    () => Phase2SeedService(isar: IsarSetup.instance)
-                        .seedVisualCheckShenwuDrop(),
-                    () => const ChapterListScreen(),
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioVc15Resonance,
+                    hint: UiStrings.hintVc15Resonance,
+                    onTap: () => _seedAndPush(
+                      () => Phase2SeedService(
+                        isar: IsarSetup.instance,
+                      ).seedVisualCheckW15Resonance(),
+                      () => const InventoryScreen(),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                const _FestivalOverrideButton(),
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioVc15Fresh,
+                    hint: UiStrings.hintVc15Fresh,
+                    onTap: () => _seedAndPush(
+                      () => Phase2SeedService(
+                        isar: IsarSetup.instance,
+                      ).seedVisualCheckW15Fresh(),
+                      () => const CharacterPanelScreen(
+                        characterId: _defaultCharacterId,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioVc18A1,
+                    hint: UiStrings.hintVc18A1,
+                    onTap: () => _seedAndPush(
+                      () => Phase2SeedService(
+                        isar: IsarSetup.instance,
+                      ).seedVisualCheckW18A1(),
+                      () => const CharacterPanelScreen(
+                        characterId: _defaultCharacterId,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioVcP5Plus,
+                    hint: UiStrings.hintVcP5Plus,
+                    onTap: () => _seedAndPush(
+                      () => Phase2SeedService(
+                        isar: IsarSetup.instance,
+                      ).seedVisualCheckP5Plus(),
+                      () => const LineagePanelScreen(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _ScenarioButton(
+                    label: UiStrings.scenarioVcShenwuDrop,
+                    hint: UiStrings.hintVcShenwuDrop,
+                    onTap: () => _seedAndPush(
+                      () => Phase2SeedService(
+                        isar: IsarSetup.instance,
+                      ).seedVisualCheckShenwuDrop(),
+                      () => const ChapterListScreen(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const _FestivalOverrideButton(),
                 ],
               ),
             ),
@@ -313,9 +330,8 @@ class _FestivalOverrideButton extends ConsumerWidget {
         children: [
           for (final f in Festival.values)
             SimpleDialogOption(
-              onPressed: () => Navigator.of(ctx).pop(
-                _FestivalDialogResult.apply(f),
-              ),
+              onPressed: () =>
+                  Navigator.of(ctx).pop(_FestivalDialogResult.apply(f)),
               child: Text(
                 EnumL10n.festival(f),
                 style: const TextStyle(color: WuxiaColors.textPrimary),
@@ -323,9 +339,8 @@ class _FestivalOverrideButton extends ConsumerWidget {
             ),
           const Divider(color: WuxiaColors.border),
           SimpleDialogOption(
-            onPressed: () => Navigator.of(ctx).pop(
-              const _FestivalDialogResult.clear(),
-            ),
+            onPressed: () =>
+                Navigator.of(ctx).pop(const _FestivalDialogResult.clear()),
             child: const Text(
               UiStrings.debugFestivalOverrideClear,
               style: TextStyle(color: WuxiaColors.textSecondary),
@@ -374,9 +389,7 @@ class _FestivalOverrideButton extends ConsumerWidget {
 
 class _FestivalDialogResult {
   const _FestivalDialogResult.apply(Festival this.festival) : isClear = false;
-  const _FestivalDialogResult.clear()
-      : festival = null,
-        isClear = true;
+  const _FestivalDialogResult.clear() : festival = null, isClear = true;
 
   final Festival? festival;
   final bool isClear;

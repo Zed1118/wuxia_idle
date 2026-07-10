@@ -44,6 +44,9 @@ jobs:
       - name: Generate code (build_runner)
         run: dart run build_runner build
 
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed lib test docs
+
       - name: Analyze
         run: flutter analyze lib/ test/
 

@@ -35,10 +35,11 @@ class MassBattleScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stages = GameRepository.instance.stageDefs.values
-        .where((s) => s.stageType == StageType.massBattle)
-        .toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
+    final stages =
+        GameRepository.instance.stageDefs.values
+            .where((s) => s.stageType == StageType.massBattle)
+            .toList()
+          ..sort((a, b) => a.id.compareTo(b.id));
     final massBattleDef = GameRepository.instance.numbers.massBattle;
     final async = ref.watch(mainlineProgressProvider);
 
@@ -71,10 +72,10 @@ class MassBattleScreen extends ConsumerWidget {
             // 周目按章(Phase 2):整个群战副本视为一章,chapterKey=stageType.name。
             const chapterKey = 'massBattle';
             int cycleFor() => resolveTargetCycle(
-                  ref.read(selectedChallengeCycleProvider(chapterKey)),
-                  progress,
-                  chapterKey,
-                );
+              ref.read(selectedChallengeCycleProvider(chapterKey)),
+              progress,
+              chapterKey,
+            );
             return Column(
               children: [
                 const Padding(
@@ -84,7 +85,9 @@ class MassBattleScreen extends ConsumerWidget {
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     itemCount: stages.length,
                     itemBuilder: (ctx, i) {
                       final s = stages[i];
@@ -106,11 +109,11 @@ class MassBattleScreen extends ConsumerWidget {
                           onTap: status == MassBattleStageStatus.locked
                               ? null
                               : () => runStageFlow(
-                                    context: context,
-                                    ref: ref,
-                                    stage: s,
-                                    targetCycle: cycleFor(),
-                                  ),
+                                  context: context,
+                                  ref: ref,
+                                  stage: s,
+                                  targetCycle: cycleFor(),
+                                ),
                         ),
                       );
                     },
@@ -142,14 +145,11 @@ class _MassBattleRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final locked = status == MassBattleStageStatus.locked;
     final cleared = status == MassBattleStageStatus.cleared;
-    final titleColor =
-        locked ? WuxiaColors.textMuted : WuxiaColors.textPrimary;
-    final borderColor =
-        cleared ? WuxiaColors.hpHigh : WuxiaColors.border;
+    final titleColor = locked ? WuxiaColors.textMuted : WuxiaColors.textPrimary;
+    final borderColor = cleared ? WuxiaColors.hpHigh : WuxiaColors.border;
     final waveCount = def.massBattleWaveCount ?? 0;
     final enemyCounts = def.massBattleEnemyCounts ?? const <int>[];
-    final enemyTotal =
-        enemyCounts.fold<int>(0, (sum, n) => sum + n);
+    final enemyTotal = enemyCounts.fold<int>(0, (sum, n) => sum + n);
     final formationLabel = EnumL10n.formation(formation);
     return Opacity(
       opacity: locked ? 0.45 : 1.0,
@@ -164,8 +164,7 @@ class _MassBattleRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: borderColor),
             ),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
                 Expanded(
@@ -213,14 +212,23 @@ class _StatusIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (status) {
       case MassBattleStageStatus.cleared:
-        return const Icon(Icons.check_circle,
-            size: 20, color: WuxiaColors.hpHigh);
+        return const Icon(
+          Icons.check_circle,
+          size: 20,
+          color: WuxiaColors.hpHigh,
+        );
       case MassBattleStageStatus.available:
-        return const Icon(Icons.chevron_right,
-            size: 20, color: WuxiaColors.textMuted);
+        return const Icon(
+          Icons.chevron_right,
+          size: 20,
+          color: WuxiaColors.textMuted,
+        );
       case MassBattleStageStatus.locked:
-        return const Icon(Icons.lock_outline,
-            size: 20, color: WuxiaColors.textMuted);
+        return const Icon(
+          Icons.lock_outline,
+          size: 20,
+          color: WuxiaColors.textMuted,
+        );
     }
   }
 }

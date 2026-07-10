@@ -14,12 +14,16 @@ import 'drop_service.dart';
 /// 若本次掉落无利器,直接返回空集合(短路,不查库)。
 /// 依赖 [GameRepository] 已加载(用 getEquipment 查 tier);未加载则返回空集合自保。
 Future<Set<EquipmentTier>> computeFirstAcquisitionTiers(
-    Isar isar, DropResult drops) async {
+  Isar isar,
+  DropResult drops,
+) async {
   if (!GameRepository.isLoaded) return const {};
   final droppedLiQi = drops.equipments
-      .where((e) =>
-          GameRepository.instance.getEquipment(e.defId).tier ==
-          EquipmentTier.liQi)
+      .where(
+        (e) =>
+            GameRepository.instance.getEquipment(e.defId).tier ==
+            EquipmentTier.liQi,
+      )
       .length;
   if (droppedLiQi == 0) return const {};
 

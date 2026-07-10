@@ -80,7 +80,10 @@ class DiscipleJoinService {
 
     Character? created;
     await isar.writeTxn(() async {
-      final disciple = buildMasterCharacter(def, now: now); // lineageRole 来自 masters.yaml
+      final disciple = buildMasterCharacter(
+        def,
+        now: now,
+      ); // lineageRole 来自 masters.yaml
       await isar.characters.put(disciple);
       await equipMasterStarting(
         isar,

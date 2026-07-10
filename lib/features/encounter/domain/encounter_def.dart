@@ -7,10 +7,13 @@ import '../../../core/domain/enums.dart';
 enum EncounterType {
   /// 武学领悟:满足触发条件 → 灵光一现 → 领悟新招。
   techniqueInsight,
+
   /// 机缘事件:偶遇高人 / 古迹 / 命运对话,outcome 多为属性微调。
   fortuneEvent,
+
   /// 试炼:战斗向奇遇(Phase 2+)。
   trial,
+
   /// 因果:剧情向奇遇(Phase 2+)。
   karma,
 }
@@ -20,8 +23,10 @@ enum OutcomeType {
   /// 解锁新招式(unlock skill_id 加入 character.unlockedSkillIds,
   /// Phase 1 仅记录,战斗系统消费后续接)。
   unlockSkill,
+
   /// 4 属性微调 +1(GDD §4.1 line 183 生涯总和上限 5)。
   attributeBonus,
+
   /// 无 effect(玩家选了 skip 选项)。
   none,
 }
@@ -39,10 +44,13 @@ enum AttributeKey {
 /// outcome 数值化定义。每条 encounter 的每个 outcome_id 对应一个。
 class OutcomeDef {
   final OutcomeType type;
+
   /// 仅 [OutcomeType.unlockSkill] 时有效。
   final String? skillId;
+
   /// 仅 [OutcomeType.attributeBonus] 时有效。
   final AttributeKey? attributeKey;
+
   /// 仅 [OutcomeType.attributeBonus] 时有效;Demo 阶段固定 +1。
   final int attributeDelta;
 
@@ -92,15 +100,19 @@ class OutcomeDef {
 class EncounterTrigger {
   /// 每流派的击杀阈值。例:`{lingQiao: 100}` = 击败 100 个灵巧流派敌人。
   final Map<TechniqueSchool, int> schoolKillThreshold;
+
   /// 在某 biome 累积分钟数门槛(C-W14-2)。例:`{bambooForest: 600}` =
   /// 在竹林场景累计 10 小时挂机。
   final Map<EncounterBiome, int> biomeMinutes;
+
   /// 在某 weather 累积分钟数门槛(C-W14-2)。例:`{rain: 120}` = 在雨天
   /// 累计 2 小时挂机。
   final Map<EncounterWeather, int> weatherMinutes;
+
   /// 机缘属性下限。`fortune < this` 时不参与软概率计算,直接 0 概率。
   /// `null` 表示无下限(任何 fortune 都参与)。
   final int? fortuneRequired;
+
   /// W16 节日触发门槛。`null` 表示无门槛(任何日子都参与)；
   /// 非 null 时仅在该节日当天通过 [EncounterService] `festivalToday` 维度匹配时才触发。
   final Festival? festivalRequired;
@@ -115,18 +127,24 @@ class EncounterTrigger {
 
   factory EncounterTrigger.fromYaml(Map<String, dynamic> y) {
     return EncounterTrigger(
-      schoolKillThreshold: Map.unmodifiable(_parseEnumIntMap(
-        y['schoolKillThreshold'] as Map?,
-        (k) => TechniqueSchool.values.byName(k),
-      )),
-      biomeMinutes: Map.unmodifiable(_parseEnumIntMap(
-        y['biomeMinutes'] as Map?,
-        (k) => EncounterBiome.values.byName(k),
-      )),
-      weatherMinutes: Map.unmodifiable(_parseEnumIntMap(
-        y['weatherMinutes'] as Map?,
-        (k) => EncounterWeather.values.byName(k),
-      )),
+      schoolKillThreshold: Map.unmodifiable(
+        _parseEnumIntMap(
+          y['schoolKillThreshold'] as Map?,
+          (k) => TechniqueSchool.values.byName(k),
+        ),
+      ),
+      biomeMinutes: Map.unmodifiable(
+        _parseEnumIntMap(
+          y['biomeMinutes'] as Map?,
+          (k) => EncounterBiome.values.byName(k),
+        ),
+      ),
+      weatherMinutes: Map.unmodifiable(
+        _parseEnumIntMap(
+          y['weatherMinutes'] as Map?,
+          (k) => EncounterWeather.values.byName(k),
+        ),
+      ),
       fortuneRequired: (y['fortuneRequired'] as num?)?.toInt(),
       festivalRequired: y['festivalRequired'] == null
           ? null
@@ -158,9 +176,11 @@ class EncounterDef {
   final String id;
   final EncounterType type;
   final EncounterTrigger trigger;
+
   /// trigger 全满足后的基础触发概率 ∈ [0, 1]。
   /// 实际触发概率 = baseProbability * (1 + fortune/20)(C-W14-1 决策点 Q3)。
   final double baseProbability;
+
   /// outcome_id → OutcomeDef 映射。outcome_id 必须与 `events/[id].yaml` 的
   /// `choices[].outcome_id` 一致(`skip` 默认 [OutcomeType.none],
   /// 不必显式配)。
@@ -193,8 +213,9 @@ class EncounterDef {
     final outcomesRaw = (y['outcomeMapping'] as Map?) ?? const {};
     final mapping = <String, OutcomeDef>{};
     for (final entry in outcomesRaw.entries) {
-      mapping[entry.key as String] =
-          OutcomeDef.fromYaml(Map<String, dynamic>.from(entry.value as Map));
+      mapping[entry.key as String] = OutcomeDef.fromYaml(
+        Map<String, dynamic>.from(entry.value as Map),
+      );
     }
     final baseProb = (y['baseProbability'] as num).toDouble();
     if (baseProb < 0 || baseProb > 1) {
@@ -213,19 +234,19 @@ class EncounterDef {
       affectsReputation: (y['affectsReputation'] as Map?) == null
           ? null
           : AffectsReputation.fromYaml(
-              Map<String, dynamic>.from(y['affectsReputation'] as Map)),
+              Map<String, dynamic>.from(y['affectsReputation'] as Map),
+            ),
       affectsSectMembership: (y['affectsSectMembership'] as Map?) == null
           ? null
           : AffectsSectMembership.fromYaml(
-              Map<String, dynamic>.from(
-                  y['affectsSectMembership'] as Map)),
+              Map<String, dynamic>.from(y['affectsSectMembership'] as Map),
+            ),
     );
   }
 
   /// 取 outcome,缺失时 fallback 到 [OutcomeType.none](等同 skip)。
   OutcomeDef resolveOutcome(String outcomeId) =>
-      outcomeMapping[outcomeId] ??
-      const OutcomeDef(type: OutcomeType.none);
+      outcomeMapping[outcomeId] ?? const OutcomeDef(type: OutcomeType.none);
 }
 
 /// P1.2 §6 encounter 影响声望(GDD §12.2)。

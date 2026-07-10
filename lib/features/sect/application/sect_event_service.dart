@@ -38,8 +38,7 @@ class SectEventService {
     final tournament = cfg.tournament;
     final cooldownDays = tournament.cooldownDays;
     final triggerProbability = tournament.triggerProbability;
-    final triggerRealmMin =
-        RealmTier.values.byName(tournament.triggerRealmMin);
+    final triggerRealmMin = RealmTier.values.byName(tournament.triggerRealmMin);
     final activeEventsMax = cfg.activeEventsMax;
 
     // ① cooldown

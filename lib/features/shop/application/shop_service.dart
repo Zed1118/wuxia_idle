@@ -117,9 +117,7 @@ class PurchaseResult {
   /// 失败原因；成功时为 null。
   final PurchaseFailReason? reason;
 
-  const PurchaseResult.success()
-      : success = true,
-        reason = null;
+  const PurchaseResult.success() : success = true, reason = null;
 
   const PurchaseResult.fail(PurchaseFailReason this.reason) : success = false;
 }

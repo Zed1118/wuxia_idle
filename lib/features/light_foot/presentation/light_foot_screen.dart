@@ -32,10 +32,11 @@ class LightFootScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stages = GameRepository.instance.stageDefs.values
-        .where((s) => s.stageType == StageType.lightFoot)
-        .toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
+    final stages =
+        GameRepository.instance.stageDefs.values
+            .where((s) => s.stageType == StageType.lightFoot)
+            .toList()
+          ..sort((a, b) => a.id.compareTo(b.id));
     final lightFootDef = GameRepository.instance.numbers.lightFoot;
     final async = ref.watch(mainlineProgressProvider);
 
@@ -68,10 +69,10 @@ class LightFootScreen extends ConsumerWidget {
             // 周目按章(Phase 2):整个轻功副本视为一章,chapterKey=stageType.name。
             const chapterKey = 'lightFoot';
             int cycleFor() => resolveTargetCycle(
-                  ref.read(selectedChallengeCycleProvider(chapterKey)),
-                  progress,
-                  chapterKey,
-                );
+              ref.read(selectedChallengeCycleProvider(chapterKey)),
+              progress,
+              chapterKey,
+            );
             return Column(
               children: [
                 const Padding(
@@ -81,7 +82,9 @@ class LightFootScreen extends ConsumerWidget {
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     itemCount: stages.length,
                     itemBuilder: (ctx, i) {
                       final s = stages[i];
@@ -98,11 +101,11 @@ class LightFootScreen extends ConsumerWidget {
                           onTap: status == LightFootStageStatus.locked
                               ? null
                               : () => runStageFlow(
-                                    context: context,
-                                    ref: ref,
-                                    stage: s,
-                                    targetCycle: cycleFor(),
-                                  ),
+                                  context: context,
+                                  ref: ref,
+                                  stage: s,
+                                  targetCycle: cycleFor(),
+                                ),
                         ),
                       );
                     },
@@ -132,10 +135,8 @@ class _LightFootRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final locked = status == LightFootStageStatus.locked;
     final cleared = status == LightFootStageStatus.cleared;
-    final titleColor =
-        locked ? WuxiaColors.textMuted : WuxiaColors.textPrimary;
-    final borderColor =
-        cleared ? WuxiaColors.hpHigh : WuxiaColors.border;
+    final titleColor = locked ? WuxiaColors.textMuted : WuxiaColors.textPrimary;
+    final borderColor = cleared ? WuxiaColors.hpHigh : WuxiaColors.border;
     final terrainLabel = EnumL10n.terrainBiome(def.terrainBiome);
     return Opacity(
       opacity: locked ? 0.45 : 1.0,
@@ -150,8 +151,7 @@ class _LightFootRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: borderColor),
             ),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
                 Expanded(
@@ -197,14 +197,23 @@ class _StatusIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (status) {
       case LightFootStageStatus.cleared:
-        return const Icon(Icons.check_circle,
-            size: 20, color: WuxiaColors.hpHigh);
+        return const Icon(
+          Icons.check_circle,
+          size: 20,
+          color: WuxiaColors.hpHigh,
+        );
       case LightFootStageStatus.available:
-        return const Icon(Icons.chevron_right,
-            size: 20, color: WuxiaColors.textMuted);
+        return const Icon(
+          Icons.chevron_right,
+          size: 20,
+          color: WuxiaColors.textMuted,
+        );
       case LightFootStageStatus.locked:
-        return const Icon(Icons.lock_outline,
-            size: 20, color: WuxiaColors.textMuted);
+        return const Icon(
+          Icons.lock_outline,
+          size: 20,
+          color: WuxiaColors.textMuted,
+        );
     }
   }
 }

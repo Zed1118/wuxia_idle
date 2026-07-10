@@ -22,7 +22,9 @@ class RareBonusDropConfig {
     return RareBonusDropConfig(
       enabled: y['enabled'] as bool? ?? false,
       tiers: rawTiers
-          .map((e) => RareBonusTier.fromYaml(Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) => RareBonusTier.fromYaml(Map<String, dynamic>.from(e as Map)),
+          )
           .toList(growable: false),
     );
   }

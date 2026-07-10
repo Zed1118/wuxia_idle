@@ -12,6 +12,6 @@
 /// 规则细化挂账 1.1(spec p4_1_sect_management_spec_2026-05-25 §9 R4)。
 enum SectRank {
   initiate, // 初入
-  inner,    // 内门
-  elder,    // 长老
+  inner, // 内门
+  elder, // 长老
 }

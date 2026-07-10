@@ -76,7 +76,7 @@ class LightFootService {
 /// 关卡三态(沿 [StageStatus] 体例但 light_foot 独立 enum 避免跨模块耦合 ·
 /// memory `feedback_avoid_over_engineer_abstraction`)。
 enum LightFootStageStatus {
-  locked,    // 上一关未通(灰色 + 锁)
+  locked, // 上一关未通(灰色 + 锁)
   available, // 上一关通过 + 本关未通(主色按钮可点)
-  cleared,   // 本关已通(绿勾 · 可重玩)
+  cleared, // 本关已通(绿勾 · 可重玩)
 }

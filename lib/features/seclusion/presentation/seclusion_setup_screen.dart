@@ -175,10 +175,7 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
                       UiStrings.seclusionCapHint(
                         GameRepository.instance.numbers.retreat.capHours,
                       ),
-                      style: const TextStyle(
-                        color: WuxiaUi.ink2,
-                        fontSize: 12,
-                      ),
+                      style: const TextStyle(color: WuxiaUi.ink2, fontSize: 12),
                     ),
                   ],
                 ),

@@ -63,7 +63,9 @@ class AscensionEligibility {
     if (!mainline0605Cleared) {
       reasons.add(UiStrings.ascensionReasonMainlineNotCleared);
     }
-    if (!hasDiscipleTarget) reasons.add(UiStrings.ascensionReasonNoDiscipleTarget);
+    if (!hasDiscipleTarget) {
+      reasons.add(UiStrings.ascensionReasonNoDiscipleTarget);
+    }
     return reasons;
   }
 }

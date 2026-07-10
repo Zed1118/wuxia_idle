@@ -45,8 +45,8 @@ class SectionHeader extends StatelessWidget {
                 child: Opacity(
                   opacity: dividerOpacity,
                   child: CustomPaint(
-                  painter: _SectionDividerPainter(surface.secondary),
-                ),
+                    painter: _SectionDividerPainter(surface.secondary),
+                  ),
                 ),
               ),
             ),

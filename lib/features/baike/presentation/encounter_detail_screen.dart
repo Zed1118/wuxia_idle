@@ -24,7 +24,8 @@ class EncounterDetailScreen extends StatelessWidget {
   final EncounterDef def;
 
   /// 类型标文案,归类规则共用 [encounterGroupKindOf](节庆优先于 type)。
-  String get _typeLabel => labelForEncounterGroupKind(encounterGroupKindOf(def));
+  String get _typeLabel =>
+      labelForEncounterGroupKind(encounterGroupKindOf(def));
 
   @override
   Widget build(BuildContext context) {
@@ -62,9 +63,7 @@ class EncounterDetailScreen extends StatelessWidget {
                           child: SizedBox(
                             width: 28,
                             height: 28,
-                            child: InkLoadingIndicator(
-                              color: WuxiaUi.jiang,
-                            ),
+                            child: InkLoadingIndicator(color: WuxiaUi.jiang),
                           ),
                         ),
                       )

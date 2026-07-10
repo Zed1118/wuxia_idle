@@ -312,8 +312,10 @@ class EnemyDef {
           );
     // 脆弱窗口需有开窗途径:顶层 chargeSkillId(蓄招技 CD 周期开窗)或 bossPhases
     // 含 chargeCounter 相位(进阶跌破阈值时进蓄力态开窗)。二者皆无 → 永不开窗无解。
-    final hasChargePhase = bossPhases
-            ?.any((p) => p.onEnterMechanic == BossPhaseMechanic.chargeCounter) ??
+    final hasChargePhase =
+        bossPhases?.any(
+          (p) => p.onEnterMechanic == BossPhaseMechanic.chargeCounter,
+        ) ??
         false;
     if (vulnerability != null && chargeSkillId == null && !hasChargePhase) {
       throw StateError(
@@ -322,8 +324,9 @@ class EnemyDef {
         '否则脆弱窗口永不开 = 永久免疫无解',
       );
     }
-    final cycleVulnerability =
-        _parseCycleVulnerability(y['cycleVulnerability'] as Map?);
+    final cycleVulnerability = _parseCycleVulnerability(
+      y['cycleVulnerability'] as Map?,
+    );
     if (cycleVulnerability.isNotEmpty && vulnerability == null) {
       throw StateError(
         'EnemyDef ${y['id']}: 配 cycleVulnerability 必须先配 vulnerability'

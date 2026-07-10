@@ -79,14 +79,19 @@ class GameEventService {
     required int actualHours,
     required String mapName,
   }) async {
-    await isar.gameEvents.put(GameEvent()
-      ..eventType = GameEventType.retreatCompleted
-      ..title = UiStrings.gameEventRetreatTitle
-      ..summary = UiStrings.gameEventRetreatSummary(
-          characterName, actualHours, mapName)
-      ..relatedCharacterId = characterId
-      ..occurredAt = DateTime.now()
-      ..isRead = false);
+    await isar.gameEvents.put(
+      GameEvent()
+        ..eventType = GameEventType.retreatCompleted
+        ..title = UiStrings.gameEventRetreatTitle
+        ..summary = UiStrings.gameEventRetreatSummary(
+          characterName,
+          actualHours,
+          mapName,
+        )
+        ..relatedCharacterId = characterId
+        ..occurredAt = DateTime.now()
+        ..isRead = false,
+    );
   }
 
   /// #2 奇遇触发
@@ -95,14 +100,16 @@ class GameEventService {
     required String encounterId,
     required String encounterTitle,
   }) async {
-    await isar.gameEvents.put(GameEvent()
-      ..eventType = GameEventType.adventureTriggered
-      ..title = encounterTitle
-      ..summary = UiStrings.gameEventAdventureSummary(encounterTitle)
-      ..relatedCharacterId = characterId
-      ..relatedEntityIds = [encounterId]
-      ..occurredAt = DateTime.now()
-      ..isRead = false);
+    await isar.gameEvents.put(
+      GameEvent()
+        ..eventType = GameEventType.adventureTriggered
+        ..title = encounterTitle
+        ..summary = UiStrings.gameEventAdventureSummary(encounterTitle)
+        ..relatedCharacterId = characterId
+        ..relatedEntityIds = [encounterId]
+        ..occurredAt = DateTime.now()
+        ..isRead = false,
+    );
   }
 
   /// #3 获得装备
@@ -119,14 +126,16 @@ class GameEventService {
     required String source,
     Equipment? equipment,
   }) async {
-    await isar.gameEvents.put(GameEvent()
-      ..eventType = GameEventType.equipmentObtained
-      ..title = UiStrings.gameEventEquipmentTitle(equipmentName)
-      ..summary = UiStrings.gameEventEquipmentSummary(equipmentName, source)
-      ..relatedCharacterId = characterId
-      ..relatedEntityIds = [equipmentDefId, equipmentId.toString()]
-      ..occurredAt = DateTime.now()
-      ..isRead = false);
+    await isar.gameEvents.put(
+      GameEvent()
+        ..eventType = GameEventType.equipmentObtained
+        ..title = UiStrings.gameEventEquipmentTitle(equipmentName)
+        ..summary = UiStrings.gameEventEquipmentSummary(equipmentName, source)
+        ..relatedCharacterId = characterId
+        ..relatedEntityIds = [equipmentDefId, equipmentId.toString()]
+        ..occurredAt = DateTime.now()
+        ..isRead = false,
+    );
 
     if (equipment != null) {
       final now = DateTime.now();
@@ -154,14 +163,16 @@ class GameEventService {
     required String skillId,
     required String skillName,
   }) async {
-    await isar.gameEvents.put(GameEvent()
-      ..eventType = GameEventType.skillEnlightened
-      ..title = UiStrings.gameEventSkillTitle(skillName)
-      ..summary = UiStrings.gameEventSkillSummary(skillName)
-      ..relatedCharacterId = characterId
-      ..relatedEntityIds = [skillId]
-      ..occurredAt = DateTime.now()
-      ..isRead = false);
+    await isar.gameEvents.put(
+      GameEvent()
+        ..eventType = GameEventType.skillEnlightened
+        ..title = UiStrings.gameEventSkillTitle(skillName)
+        ..summary = UiStrings.gameEventSkillSummary(skillName)
+        ..relatedCharacterId = characterId
+        ..relatedEntityIds = [skillId]
+        ..occurredAt = DateTime.now()
+        ..isRead = false,
+    );
   }
 
   /// #6 realmBreakthrough(主角) / #9 disciplePromoted(弟子)。
@@ -182,16 +193,19 @@ class GameEventService {
     final title = isDisciple
         ? UiStrings.gameEventDiscipleTitle(character.name)
         : UiStrings.gameEventBreakthroughTitle;
-    final realmName =
-        EnumL10n.realm(result.tierAfter, result.layerAfter);
-    await isar.gameEvents.put(GameEvent()
-      ..eventType = eventType
-      ..title = title
-      ..summary =
-          UiStrings.gameEventBreakthroughSummary(character.name, realmName)
-      ..relatedCharacterId = character.id
-      ..occurredAt = DateTime.now()
-      ..isRead = false);
+    final realmName = EnumL10n.realm(result.tierAfter, result.layerAfter);
+    await isar.gameEvents.put(
+      GameEvent()
+        ..eventType = eventType
+        ..title = title
+        ..summary = UiStrings.gameEventBreakthroughSummary(
+          character.name,
+          realmName,
+        )
+        ..relatedCharacterId = character.id
+        ..occurredAt = DateTime.now()
+        ..isRead = false,
+    );
   }
 
   /// #7 共鸣度晋升
@@ -201,15 +215,16 @@ class GameEventService {
     required String equipmentName,
     required int newStage,
   }) async {
-    await isar.gameEvents.put(GameEvent()
-      ..eventType = GameEventType.resonanceUpgraded
-      ..title = UiStrings.gameEventResonanceTitle(equipmentName)
-      ..summary =
-          UiStrings.gameEventResonanceSummary(equipmentName, newStage)
-      ..relatedCharacterId = characterId
-      ..relatedEntityIds = [equipmentId.toString()]
-      ..occurredAt = DateTime.now()
-      ..isRead = false);
+    await isar.gameEvents.put(
+      GameEvent()
+        ..eventType = GameEventType.resonanceUpgraded
+        ..title = UiStrings.gameEventResonanceTitle(equipmentName)
+        ..summary = UiStrings.gameEventResonanceSummary(equipmentName, newStage)
+        ..relatedCharacterId = characterId
+        ..relatedEntityIds = [equipmentId.toString()]
+        ..occurredAt = DateTime.now()
+        ..isRead = false,
+    );
   }
 
   /// #8 击败 Boss
@@ -227,14 +242,16 @@ class GameEventService {
     required String bossName,
     List<Equipment> warbornEquipment = const [],
   }) async {
-    await isar.gameEvents.put(GameEvent()
-      ..eventType = GameEventType.bossDefeated
-      ..title = UiStrings.gameEventBossTitle(bossName)
-      ..summary = UiStrings.gameEventBossSummary(bossName, stageName)
-      ..relatedCharacterId = characterId
-      ..relatedEntityIds = [stageId]
-      ..occurredAt = DateTime.now()
-      ..isRead = false);
+    await isar.gameEvents.put(
+      GameEvent()
+        ..eventType = GameEventType.bossDefeated
+        ..title = UiStrings.gameEventBossTitle(bossName)
+        ..summary = UiStrings.gameEventBossSummary(bossName, stageName)
+        ..relatedCharacterId = characterId
+        ..relatedEntityIds = [stageId]
+        ..occurredAt = DateTime.now()
+        ..isRead = false,
+    );
 
     if (warbornEquipment.isNotEmpty) {
       final now = DateTime.now();
@@ -258,4 +275,3 @@ class GameEventService {
     }
   }
 }
-

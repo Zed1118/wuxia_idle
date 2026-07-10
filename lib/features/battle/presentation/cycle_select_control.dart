@@ -133,11 +133,7 @@ class _CycleStatusRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: TextStyle(
-        color: color,
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-      ),
+      style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w500),
       textAlign: TextAlign.center,
     );
   }
@@ -181,8 +177,8 @@ class _CycleButton extends StatelessWidget {
             color: selected
                 ? accent
                 : (isChallenge
-                    ? WuxiaColors.resultHighlight.withValues(alpha: 0.5)
-                    : WuxiaColors.border),
+                      ? WuxiaColors.resultHighlight.withValues(alpha: 0.5)
+                      : WuxiaColors.border),
             width: selected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(4),
@@ -212,13 +208,7 @@ class _CycleButton extends StatelessWidget {
                 ),
               ],
             ),
-            Text(
-              suffix,
-              style: TextStyle(
-                color: suffixColor,
-                fontSize: 11,
-              ),
-            ),
+            Text(suffix, style: TextStyle(color: suffixColor, fontSize: 11)),
           ],
         ),
       ),

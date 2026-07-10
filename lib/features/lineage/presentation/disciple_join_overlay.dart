@@ -119,10 +119,7 @@ class _DiscipleJoinOverlayState extends State<DiscipleJoinOverlay>
               offset: Offset(_slide.value * _slidePx, 0),
               child: Transform.scale(
                 scale: _scale.value,
-                child: Opacity(
-                  opacity: _opacity.value,
-                  child: child,
-                ),
+                child: Opacity(opacity: _opacity.value, child: child),
               ),
             );
           },
@@ -214,16 +211,16 @@ class _Portrait extends StatelessWidget {
   }
 
   Widget _fallback() => Container(
-        height: _height,
-        width: _height * 0.62,
-        decoration: BoxDecoration(
-          color: WuxiaColors.paperUnderlay.withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: WuxiaColors.inkPanelEdge.withValues(alpha: 0.7),
-          ),
-        ),
-      );
+    height: _height,
+    width: _height * 0.62,
+    decoration: BoxDecoration(
+      color: WuxiaColors.paperUnderlay.withValues(alpha: 0.85),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(
+        color: WuxiaColors.inkPanelEdge.withValues(alpha: 0.7),
+      ),
+    ),
+  );
 }
 
 /// 弹拜入立绘题字 overlay 并 await 至消失(numbers hold_seconds 或点击跳过)。

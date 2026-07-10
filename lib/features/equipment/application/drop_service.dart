@@ -96,18 +96,19 @@ class DropService {
       switch (entry) {
         case EquipmentDrop():
           final def = equipmentDefLookup(entry.equipmentDefId);
-          equipments.add(EquipmentFactory.fromDef(
-            def,
-            rng: rng,
-            obtainedAt: now(),
-            obtainedFrom: defaultObtainedFrom,
-          ));
+          equipments.add(
+            EquipmentFactory.fromDef(
+              def,
+              rng: rng,
+              obtainedAt: now(),
+              obtainedFrom: defaultObtainedFrom,
+            ),
+          );
         case ItemDrop():
           final qty = _rollQuantity(rng, entry.quantityMin, entry.quantityMax);
-          items.add(ItemDropResult(
-            defId: entry.inventoryItemDefId,
-            quantity: qty,
-          ));
+          items.add(
+            ItemDropResult(defId: entry.inventoryItemDefId, quantity: qty),
+          );
       }
     }
 
@@ -189,13 +190,15 @@ DropResult applyCycleMaterialBonus(
 ) {
   final mult = config.qtyMultFor(cycle);
   if (mult == 1.0 || base.items.isEmpty) return base;
-  final boosted = base.items.map((it) {
-    if (!isCycleBonusMaterial(ItemType.fromDefId(it.defId))) return it;
-    final scaled = (it.quantity * mult).floor();
-    return ItemDropResult(
-      defId: it.defId,
-      quantity: scaled < it.quantity ? it.quantity : scaled,
-    );
-  }).toList(growable: false);
+  final boosted = base.items
+      .map((it) {
+        if (!isCycleBonusMaterial(ItemType.fromDefId(it.defId))) return it;
+        final scaled = (it.quantity * mult).floor();
+        return ItemDropResult(
+          defId: it.defId,
+          quantity: scaled < it.quantity ? it.quantity : scaled,
+        );
+      })
+      .toList(growable: false);
   return DropResult(equipments: base.equipments, items: boosted);
 }

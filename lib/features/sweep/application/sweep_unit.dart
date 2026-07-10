@@ -55,8 +55,9 @@ class MainlineSweepUnit implements SweepUnit {
 
   @override
   Future<void> startBattle(WidgetRef ref) async {
-    final (left, right) = await StageBattleSetup(isar: IsarSetup.instance)
-        .buildTeams(stage, cycleIndex: cycle);
+    final (left, right) = await StageBattleSetup(
+      isar: IsarSetup.instance,
+    ).buildTeams(stage, cycleIndex: cycle);
     ref.read(battleProvider.notifier).startBattle(left, right);
   }
 
@@ -86,8 +87,9 @@ class TowerSweepUnit implements SweepUnit {
 
   @override
   Future<void> startBattle(WidgetRef ref) async {
-    final (left, right) = await StageBattleSetup(isar: IsarSetup.instance)
-        .buildTeamsForTower(floor, cycleIndex: cycleIndex);
+    final (left, right) = await StageBattleSetup(
+      isar: IsarSetup.instance,
+    ).buildTeamsForTower(floor, cycleIndex: cycleIndex);
     ref.read(battleProvider.notifier).startBattle(left, right);
   }
 

@@ -29,9 +29,7 @@ class MainlineProgressService {
 
   /// 拿不到对应 saveDataId 的行就建一行（默认 currentChapterIndex=1，
   /// clearedStageIds/clearedAt 空）。
-  Future<MainlineProgress> getOrCreate({
-    required int saveDataId,
-  }) async {
+  Future<MainlineProgress> getOrCreate({required int saveDataId}) async {
     final existing = await isar.mainlineProgress
         .filter()
         .saveDataIdEqualTo(saveDataId)
@@ -71,26 +69,27 @@ class MainlineProgressService {
     // 后续：每轮把 prev 已在 ordered 的关加进来，直到无变化
     while (remaining.isNotEmpty) {
       final orderedIds = ordered.map((s) => s.id).toSet();
-      final next = remaining
-          .where((s) => orderedIds.contains(s.prevStageId))
-          .toList()
-        ..sort((a, b) => a.id.compareTo(b.id));
+      final next =
+          remaining.where((s) => orderedIds.contains(s.prevStageId)).toList()
+            ..sort((a, b) => a.id.compareTo(b.id));
       if (next.isEmpty) break; // 防御：理论上 _enforceRedLines 已拦截链断
       ordered.addAll(next);
       remaining.removeWhere(next.contains);
     }
 
     final cleared = progress.clearedStageIds.toSet();
-    return ordered.map((s) {
-      final selfCleared = cleared.contains(s.id);
-      if (selfCleared) return (def: s, status: StageStatus.cleared);
-      final prev = s.prevStageId;
-      final unlocked = prev == null || cleared.contains(prev);
-      return (
-        def: s,
-        status: unlocked ? StageStatus.available : StageStatus.locked,
-      );
-    }).toList(growable: false);
+    return ordered
+        .map((s) {
+          final selfCleared = cleared.contains(s.id);
+          if (selfCleared) return (def: s, status: StageStatus.cleared);
+          final prev = s.prevStageId;
+          final unlocked = prev == null || cleared.contains(prev);
+          return (
+            def: s,
+            status: unlocked ? StageStatus.available : StageStatus.locked,
+          );
+        })
+        .toList(growable: false);
   }
 
   /// 首通 append；重复通关无副作用（保持首通时间）。

@@ -30,10 +30,12 @@ class RealmDef {
       absoluteLevel: (y['absoluteLevel'] as num).toInt(),
       internalForceMax: (y['internalForceMax'] as num).toInt(),
       experienceToNext: (y['experienceToNext'] as num).toInt(),
-      equipmentTierCap:
-          EquipmentTier.values.byName(y['equipmentTierCap'] as String),
-      techniqueTierCap:
-          TechniqueTier.values.byName(y['techniqueTierCap'] as String),
+      equipmentTierCap: EquipmentTier.values.byName(
+        y['equipmentTierCap'] as String,
+      ),
+      techniqueTierCap: TechniqueTier.values.byName(
+        y['techniqueTierCap'] as String,
+      ),
     );
   }
 

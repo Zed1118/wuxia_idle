@@ -19,17 +19,17 @@ class BattleDemo {
   BattleDemo._();
 
   static SkillDef _ultimate(String id, String name, int cost) => SkillDef(
-        id: id,
-        name: name,
-        description: '',
-        type: SkillType.ultimate,
-        powerMultiplier: 5000,
-        internalForceCost: cost,
-        cooldownTurns: 5,
-        requiresManualTrigger: true,
-        parentTechniqueDefId: null,
-        visualEffect: '',
-      );
+    id: id,
+    name: name,
+    description: '',
+    type: SkillType.ultimate,
+    powerMultiplier: 5000,
+    internalForceCost: cost,
+    cooldownTurns: 5,
+    requiresManualTrigger: true,
+    parentTechniqueDefId: null,
+    visualEffect: '',
+  );
 
   static BattleCharacter _make({
     required int id,
@@ -175,8 +175,7 @@ class BattleDemoLauncher extends ConsumerStatefulWidget {
   const BattleDemoLauncher({super.key});
 
   @override
-  ConsumerState<BattleDemoLauncher> createState() =>
-      _BattleDemoLauncherState();
+  ConsumerState<BattleDemoLauncher> createState() => _BattleDemoLauncherState();
 }
 
 class _BattleDemoLauncherState extends ConsumerState<BattleDemoLauncher> {

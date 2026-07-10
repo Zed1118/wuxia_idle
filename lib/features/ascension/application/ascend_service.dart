@@ -184,9 +184,7 @@ class AscendService {
     // 1. 5 子条件复查(避 UI invalidate 漏窗口 · 防 race)
     final eligibility = await computeEligibility();
     if (!eligibility.canAscend) {
-      throw StateError(
-        '飞升条件未满足:${eligibility.missingReasons.join(' / ')}',
-      );
+      throw StateError('飞升条件未满足:${eligibility.missingReasons.join(' / ')}');
     }
 
     // 2. selections 校验
@@ -306,8 +304,10 @@ class AscendService {
       // e2e 2 + R5.7 auto_swap 2 + R5.8 stack enforce 1 覆盖,详 closeout
       // p5_lineage_full_closeout_2026-05-24)。
       // 单 sect 假设:Demo 阶段全局唯一 sect(p4_1 spec §1 范围)。
-      final sectsToRewire =
-          await isar.sects.filter().founderIdEqualTo(founderId).findAll();
+      final sectsToRewire = await isar.sects
+          .filter()
+          .founderIdEqualTo(founderId)
+          .findAll();
       for (final sect in sectsToRewire) {
         sect.founderId = promotedDiscipleId;
         await isar.sects.put(sect);
@@ -328,8 +328,7 @@ class AscendService {
       heritageEquipmentIds: equipmentsByOrder
           .map((e) => e.id)
           .toList(growable: false),
-      beneficiaryDiscipleIds:
-          selections.values.toSet().toList(growable: false),
+      beneficiaryDiscipleIds: selections.values.toSet().toList(growable: false),
       promotedDiscipleId: promotedDiscipleId,
     );
   }

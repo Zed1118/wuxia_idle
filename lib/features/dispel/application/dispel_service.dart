@@ -44,9 +44,9 @@ class DispelResult {
 
 enum DispelOutcome {
   success,
-  oldMainTechIsNotMain,            // mainTech.role != main
-  newMainTechNotOwnedByCharacter,  // newMainTech.ownerCharacterId != ch.id
-  newMainTechIsNotAssist,          // newMainTech.role != assist（必须从已学辅修挑）
+  oldMainTechIsNotMain, // mainTech.role != main
+  newMainTechNotOwnedByCharacter, // newMainTech.ownerCharacterId != ch.id
+  newMainTechIsNotAssist, // newMainTech.role != assist（必须从已学辅修挑）
 }
 
 /// Boss 战败被动散功结果（Phase 4 W10）。
@@ -250,8 +250,7 @@ class DispelService {
   ) {
     var rolled = 0;
     while (tech.cultivationLayer != CultivationLayer.chuKui) {
-      final prev =
-          CultivationLayer.values[tech.cultivationLayer.index - 1];
+      final prev = CultivationLayer.values[tech.cultivationLayer.index - 1];
       final prevReq = progressToNextMap[prev];
       if (prevReq == null) {
         throw StateError(

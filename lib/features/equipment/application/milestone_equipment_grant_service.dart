@@ -21,7 +21,7 @@ import 'equipment_factory.dart';
 /// [EquipmentFactory.fromDef] 不重复 roll 逻辑。
 class MilestoneEquipmentGrantService {
   MilestoneEquipmentGrantService({required this.isar, DateTime Function()? now})
-      : now = now ?? DateTime.now;
+    : now = now ?? DateTime.now;
 
   final Isar isar;
 
@@ -60,10 +60,12 @@ class MilestoneEquipmentGrantService {
     return _grantInTxn(save, defs, obtainedFrom);
   }
 
-  List<EquipmentDef> _defsForTag(String tag) =>
-      GameRepository.instance.equipmentDefs.values
-          .where((d) => d.dropSourceTags.contains(tag))
-          .toList();
+  List<EquipmentDef> _defsForTag(String tag) => GameRepository
+      .instance
+      .equipmentDefs
+      .values
+      .where((d) => d.dropSourceTags.contains(tag))
+      .toList();
 
   /// 共享授予核心(必须在 writeTxn 内调用)。
   Future<List<String>> _grantInTxn(

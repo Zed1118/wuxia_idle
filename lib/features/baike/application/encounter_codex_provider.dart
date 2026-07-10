@@ -38,17 +38,19 @@ class EncounterCodexGroup {
 /// 奇遇分组归类(节庆优先于 type)。groupEncounters 与详情屏类型标共用,防双份漂移。
 EncounterGroupKind encounterGroupKindOf(EncounterDef d) {
   if (d.trigger.festivalRequired != null) return EncounterGroupKind.festival;
-  if (d.type == EncounterType.techniqueInsight) return EncounterGroupKind.insight;
+  if (d.type == EncounterType.techniqueInsight) {
+    return EncounterGroupKind.insight;
+  }
   // trial/karma(Phase 2+,当前内容无)暂落奇缘桶,实装时重分类。
   return EncounterGroupKind.fortune;
 }
 
 /// 奇遇分组 → 显示名(领悟/奇缘/节庆)。EncounterTab 段标与详情屏类型标共用,防双份漂移。
 String labelForEncounterGroupKind(EncounterGroupKind kind) => switch (kind) {
-      EncounterGroupKind.insight => UiStrings.encounterCodexGroupInsight,
-      EncounterGroupKind.fortune => UiStrings.encounterCodexGroupFortune,
-      EncounterGroupKind.festival => UiStrings.encounterCodexGroupFestival,
-    };
+  EncounterGroupKind.insight => UiStrings.encounterCodexGroupInsight,
+  EncounterGroupKind.fortune => UiStrings.encounterCodexGroupFortune,
+  EncounterGroupKind.festival => UiStrings.encounterCodexGroupFestival,
+};
 
 /// 纯函数：按 type/festivalRequired 分 3 段(节庆优先于 type),算点亮/剪影 + 计数。
 /// 空段不产出。段内保 def 输入顺序。
@@ -60,11 +62,15 @@ List<EncounterCodexGroup> groupEncounters({
   final buckets = <EncounterGroupKind, List<EncounterCodexEntry>>{};
   for (final d in defs) {
     final triggered = triggeredIds.contains(d.id);
-    buckets.putIfAbsent(encounterGroupKindOf(d), () => []).add(EncounterCodexEntry(
-          def: d,
-          isTriggered: triggered,
-          title: triggered ? titles[d.id] : null,
-        ));
+    buckets
+        .putIfAbsent(encounterGroupKindOf(d), () => [])
+        .add(
+          EncounterCodexEntry(
+            def: d,
+            isTriggered: triggered,
+            title: triggered ? titles[d.id] : null,
+          ),
+        );
   }
   const order = [
     EncounterGroupKind.insight,
@@ -88,8 +94,8 @@ Future<List<EncounterCodexGroup>> encounterCodex(Ref ref) async {
   if (!GameRepository.isLoaded) return const [];
   final defs = GameRepository.instance.allEncounters;
   final progress = await ref.watch(currentEncounterProgressProvider.future);
-  final triggered =
-      (progress?.triggeredEncounterIds ?? const <String>[]).toSet();
+  final triggered = (progress?.triggeredEncounterIds ?? const <String>[])
+      .toSet();
   final titles = <String, String>{};
   for (final id in triggered) {
     final content = await EncounterEventLoader.load(id);

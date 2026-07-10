@@ -73,8 +73,12 @@ class IslandActionService {
     if (cfg.upgradeRealmFor(level) > founderRealmIndex) {
       return UpgradeResult.realmLocked;
     }
-    if (silver < cfg.upgradeSilverFor(level)) return UpgradeResult.notEnoughSilver;
-    if (material < cfg.upgradeMaterialFor(level)) return UpgradeResult.notEnoughMaterial;
+    if (silver < cfg.upgradeSilverFor(level)) {
+      return UpgradeResult.notEnoughSilver;
+    }
+    if (material < cfg.upgradeMaterialFor(level)) {
+      return UpgradeResult.notEnoughMaterial;
+    }
     return null;
   }
 
@@ -97,8 +101,9 @@ class IslandActionService {
     final bCfg = cfg.buildings[buildingType]!;
 
     // 从 save 快照取当前建筑（check 用）
-    final building =
-        save.islandBuildings.firstWhere((b) => b.type == buildingType);
+    final building = save.islandBuildings.firstWhere(
+      (b) => b.type == buildingType,
+    );
     final currentLevel = building.level;
 
     // ── 纯检查阶段（txn 外，不写 Isar）──────────────────────────────────────
@@ -126,8 +131,9 @@ class IslandActionService {
     // 3. 银两与材料检查（读 Isar 但不写，再调纯静态函数复用同一判断逻辑）
     final silverItem = await isar.inventoryItems.getByDefId('item_silver');
     final silverQty = silverItem?.quantity ?? 0;
-    final materialItem =
-        await isar.inventoryItems.getByDefId(bCfg.upgradeMaterialItem);
+    final materialItem = await isar.inventoryItems.getByDefId(
+      bCfg.upgradeMaterialItem,
+    );
     final materialQty = materialItem?.quantity ?? 0;
 
     final fullBlock = upgradeBlockReason(
@@ -149,8 +155,9 @@ class IslandActionService {
       final s = (await isar.saveDatas.get(0))!;
       final b = s.islandBuildings.firstWhere((b) => b.type == buildingType);
       final silver = await isar.inventoryItems.getByDefId('item_silver');
-      final mat =
-          await isar.inventoryItems.getByDefId(bCfg.upgradeMaterialItem);
+      final mat = await isar.inventoryItems.getByDefId(
+        bCfg.upgradeMaterialItem,
+      );
 
       txnBlock = upgradeBlockReason(
         cfg: bCfg,
@@ -221,8 +228,9 @@ class IslandActionService {
     await isar.writeTxn(() async {
       final s = (await isar.saveDatas.get(0))!;
       s.islandBuildings
-          .firstWhere((b) => b.type == buildingType)
-          .activeRecipeId = recipeId;
+              .firstWhere((b) => b.type == buildingType)
+              .activeRecipeId =
+          recipeId;
       await isar.saveDatas.put(s);
     });
 

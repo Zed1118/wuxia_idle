@@ -33,8 +33,16 @@ class EquipmentFactory {
   }) {
     _validateRange(def);
 
-    final baseAttack = _rollInclusive(rng, def.baseAttackMin, def.baseAttackMax);
-    final baseHealth = _rollInclusive(rng, def.baseHealthMin, def.baseHealthMax);
+    final baseAttack = _rollInclusive(
+      rng,
+      def.baseAttackMin,
+      def.baseAttackMax,
+    );
+    final baseHealth = _rollInclusive(
+      rng,
+      def.baseHealthMin,
+      def.baseHealthMax,
+    );
     final baseSpeed = _rollInclusive(rng, def.baseSpeedMin, def.baseSpeedMax);
 
     return Equipment.create(

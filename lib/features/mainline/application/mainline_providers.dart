@@ -12,19 +12,16 @@ part 'mainline_providers.g.dart';
 /// recordVictory 后调用 `ref.invalidate(mainlineProgressProvider)` 触发刷新。
 @riverpod
 Future<MainlineProgress> mainlineProgress(Ref ref) async {
-  return MainlineProgressService(isar: IsarSetup.instance).getOrCreate(
-    saveDataId: IsarSetup.currentSlotId,
-  );
+  return MainlineProgressService(
+    isar: IsarSetup.instance,
+  ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
 }
 
 /// 指定章节的关卡列表（含三态 status）。
 ///
 /// 依赖 [mainlineProgressProvider]，前者刷新自动级联。
 @riverpod
-Future<List<StageEntry>> chapterStages(
-  Ref ref,
-  int chapterIndex,
-) async {
+Future<List<StageEntry>> chapterStages(Ref ref, int chapterIndex) async {
   final progress = await ref.watch(mainlineProgressProvider.future);
   return MainlineProgressService.availableStages(
     progress: progress,

@@ -14,7 +14,8 @@ class RewardEntry {
 
 /// 在 `List<RewardEntry>` 上模拟 Map 语义（data_schema.md §3.6）。
 extension MapLikeOnRewards on List<RewardEntry> {
-  int quantityOf(String rewardKey) =>
-      firstWhere((e) => e.rewardKey == rewardKey, orElse: () => RewardEntry())
-          .quantity;
+  int quantityOf(String rewardKey) => firstWhere(
+    (e) => e.rewardKey == rewardKey,
+    orElse: () => RewardEntry(),
+  ).quantity;
 }

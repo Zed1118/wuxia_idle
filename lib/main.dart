@@ -22,7 +22,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   SoundManager.instance = SoundManager(AudioPlayersBackend());
-  await SoundManager.instance.applySettings(await AudioSettingsService().load());
+  await SoundManager.instance.applySettings(
+    await AudioSettingsService().load(),
+  );
 
   // 视觉验收直达:--dart-define=VISUAL_ROUTE=<id>。debug + profile 均生效
   // (profile 下 kDebugMode=false → 隐藏 debug chrome,出干净 Steam 截图);

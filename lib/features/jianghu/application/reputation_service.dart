@@ -2,7 +2,8 @@ import 'package:isar_community/isar.dart';
 
 import '../../../data/numbers_config.dart';
 import '../../../shared/utils/rng.dart';
-import '../../encounter/application/encounter_service.dart' show ReputationDeltaApplier;
+import '../../encounter/application/encounter_service.dart'
+    show ReputationDeltaApplier;
 import '../domain/reputation.dart';
 
 /// 玩家对各门派的声望服务(P1.2 §3 GDD §12.2)。
@@ -55,10 +56,7 @@ class ReputationService {
 
   /// 拉指定 player 的所有 reputation 行(UI ListView 用)。
   Future<List<Reputation>> allFor(int playerId) async {
-    return isar.reputations
-        .filter()
-        .playerIdEqualTo(playerId)
-        .findAll();
+    return isar.reputations.filter().playerIdEqualTo(playerId).findAll();
   }
 
   /// 查单门派当前 value(未存在 → 0,sane fallback 中间档)。

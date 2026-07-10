@@ -31,9 +31,11 @@ extension MapLikeOnSkillUnlock on List<SkillUnlockEntry> {
     if (idx >= 0) {
       this[idx].fragmentCount += delta;
     } else {
-      add(SkillUnlockEntry()
-        ..skillId = skillId
-        ..fragmentCount = delta);
+      add(
+        SkillUnlockEntry()
+          ..skillId = skillId
+          ..fragmentCount = delta,
+      );
     }
   }
 
@@ -42,9 +44,11 @@ extension MapLikeOnSkillUnlock on List<SkillUnlockEntry> {
     if (idx >= 0) {
       this[idx].unlocked = true;
     } else {
-      add(SkillUnlockEntry()
-        ..skillId = skillId
-        ..unlocked = true);
+      add(
+        SkillUnlockEntry()
+          ..skillId = skillId
+          ..unlocked = true,
+      );
     }
   }
 }

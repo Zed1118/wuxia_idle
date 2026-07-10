@@ -254,7 +254,9 @@ class _TierPanel extends StatelessWidget {
               Text(
                 UiStrings.weaponCodexTierProgress(got, defs.length),
                 style: TextStyle(
-                  color: paperTierColorForEquipment(tier).withValues(alpha: 0.9),
+                  color: paperTierColorForEquipment(
+                    tier,
+                  ).withValues(alpha: 0.9),
                   fontSize: 13,
                   letterSpacing: 0.5,
                   fontWeight: FontWeight.w600,

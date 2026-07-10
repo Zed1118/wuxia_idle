@@ -73,8 +73,9 @@ Future<SectRecruitOutcome> runSectRecruitFlow({
   }
   if (sect == null) {
     if (!context.mounted) return SectRecruitOutcome.noSect;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(noSectSnackBar)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(noSectSnackBar)));
     return SectRecruitOutcome.noSect;
   }
   final playerSectId = sect.id;
@@ -89,8 +90,10 @@ Future<SectRecruitOutcome> runSectRecruitFlow({
   }
 
   // 3. 招收 isar.writeTxn(caller 持锁体例)
-  final realmDef =
-      repo.getRealm(candidate.defaultRealm, candidate.defaultLayer);
+  final realmDef = repo.getRealm(
+    candidate.defaultRealm,
+    candidate.defaultLayer,
+  );
   final now = DateTime.now();
   RecruitResult? result;
   int? newCharId;
@@ -130,8 +133,9 @@ Future<SectRecruitOutcome> runSectRecruitFlow({
   if (result == RecruitResult.success) {
     await onMarkTriggered();
     if (!context.mounted) return SectRecruitOutcome.success;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(successSnackBar)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(successSnackBar)));
     return SectRecruitOutcome.success;
   }
 
@@ -143,8 +147,9 @@ Future<SectRecruitOutcome> runSectRecruitFlow({
   if (result == RecruitResult.fullCap) {
     if (onFallback != null) await onFallback();
     if (!context.mounted) return SectRecruitOutcome.capFull;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(capFullSnackBar)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(capFullSnackBar)));
     return SectRecruitOutcome.capFull;
   }
 

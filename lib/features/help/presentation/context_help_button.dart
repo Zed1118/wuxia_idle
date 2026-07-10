@@ -66,11 +66,8 @@ class ContextHelpButton extends ConsumerWidget {
       return _wrap(
         definition: UiStrings.contextHelpLocked,
         enabled: false,
-        onTap: () => _showInfoPopup(
-          context,
-          binding.label,
-          UiStrings.contextHelpLocked,
-        ),
+        onTap: () =>
+            _showInfoPopup(context, binding.label, UiStrings.contextHelpLocked),
       );
     }
 
@@ -79,9 +76,7 @@ class ContextHelpButton extends ConsumerWidget {
       definition: binding.shortText,
       enabled: true,
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => CodexEntryDetail(entry: entry),
-        ),
+        MaterialPageRoute<void>(builder: (_) => CodexEntryDetail(entry: entry)),
       ),
     );
   }
@@ -124,9 +119,7 @@ class ContextHelpButton extends ConsumerWidget {
     return Icon(
       Icons.help_outline,
       size: size,
-      color: enabled
-          ? WuxiaUi.muted
-          : WuxiaUi.muted.withValues(alpha: 0.4),
+      color: enabled ? WuxiaUi.muted : WuxiaUi.muted.withValues(alpha: 0.4),
     );
   }
 }

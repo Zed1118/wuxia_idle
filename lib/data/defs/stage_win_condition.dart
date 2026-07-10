@@ -14,10 +14,7 @@ class StageWinCondition {
   /// 仅 [StageWinConditionType.surviveTicks] 有效：需撑过的 tick 数（>0）。
   final int? surviveTicksRequired;
 
-  const StageWinCondition({
-    required this.type,
-    this.surviveTicksRequired,
-  });
+  const StageWinCondition({required this.type, this.surviveTicksRequired});
 
   factory StageWinCondition.fromYaml(Map<String, dynamic> y) {
     final typeStr = y['type'] as String?;
@@ -30,10 +27,7 @@ class StageWinCondition {
       if (ticks == null || ticks <= 0) {
         throw StateError('winCondition surviveTicks 须配 ticks>0（实为 $ticks）');
       }
-      return StageWinCondition(
-        type: type,
-        surviveTicksRequired: ticks,
-      );
+      return StageWinCondition(type: type, surviveTicksRequired: ticks);
     }
     return StageWinCondition(type: type);
   }

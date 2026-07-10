@@ -28,20 +28,24 @@ List<BossCatalogEntry> bossCatalog(Ref ref) {
   // 主线 Boss
   for (final def in repo.stageDefs.values) {
     if (!def.isBossStage) continue;
-    entries.add(BossCatalogEntry(
-      bossKey: mainlineBossKey(def.id),
-      source: BossMemorySource.mainline,
-      groupIndex: mainlineGroupIndex(def.id),
-    ));
+    entries.add(
+      BossCatalogEntry(
+        bossKey: mainlineBossKey(def.id),
+        source: BossMemorySource.mainline,
+        groupIndex: mainlineGroupIndex(def.id),
+      ),
+    );
   }
 
   // 爬塔 Boss
   for (final floor in _towerBossFloors) {
-    entries.add(BossCatalogEntry(
-      bossKey: towerBossKey(floor),
-      source: BossMemorySource.tower,
-      groupIndex: floor,
-    ));
+    entries.add(
+      BossCatalogEntry(
+        bossKey: towerBossKey(floor),
+        source: BossMemorySource.tower,
+        groupIndex: floor,
+      ),
+    );
   }
 
   return entries;

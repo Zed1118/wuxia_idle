@@ -38,8 +38,9 @@ class DarkParchmentPanel extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: WuxiaColors.paperUnderlay,
-          border:
-              showBorder ? Border.all(color: WuxiaColors.inkPanelEdge) : null,
+          border: showBorder
+              ? Border.all(color: WuxiaColors.inkPanelEdge)
+              : null,
         ),
         child: Stack(
           fit: StackFit.expand,

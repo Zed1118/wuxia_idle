@@ -29,9 +29,7 @@ class TowerProgressService {
   final Isar isar;
 
   /// 拿不到对应 saveDataId 的行就建一行（默认 highestClearedFloor=0）。
-  Future<TowerProgress> getOrCreate({
-    required int saveDataId,
-  }) async {
+  Future<TowerProgress> getOrCreate({required int saveDataId}) async {
     final existing = await isar.towerProgress
         .filter()
         .saveDataIdEqualTo(saveDataId)
@@ -77,14 +75,16 @@ class TowerProgressService {
   }) {
     final highest = progress.highestClearedFloor;
     return allFloors
-        .map((f) => (
-              def: f,
-              status: f.floorIndex <= highest
-                  ? TowerFloorStatus.cleared
-                  : f.floorIndex == highest + 1
-                      ? TowerFloorStatus.available
-                      : TowerFloorStatus.locked,
-            ))
+        .map(
+          (f) => (
+            def: f,
+            status: f.floorIndex <= highest
+                ? TowerFloorStatus.cleared
+                : f.floorIndex == highest + 1
+                ? TowerFloorStatus.available
+                : TowerFloorStatus.locked,
+          ),
+        )
         .toList(growable: false);
   }
 
@@ -115,12 +115,11 @@ class TowerProgressService {
           .saveDataIdEqualTo(IsarSetup.currentSlotId)
           .findFirst();
       if (progress == null) {
-        throw StateError(
-          'TowerProgress 未初始化：getOrCreate 未在 recordClear 前调用',
-        );
+        throw StateError('TowerProgress 未初始化：getOrCreate 未在 recordClear 前调用');
       }
       progress.totalAttempts += 1;
-      final isFirstClear = floorIndex == progress.highestClearedFloor + 1 &&
+      final isFirstClear =
+          floorIndex == progress.highestClearedFloor + 1 &&
           floorIndex >= 1 &&
           floorIndex <= 30;
       if (isFirstClear) {
@@ -170,18 +169,14 @@ class TowerProgressService {
   }
 
   /// 战败：只增 totalAttempts + totalDefeats，不影响 highestClearedFloor。
-  Future<void> recordDefeat({
-    required DateTime now,
-  }) async {
+  Future<void> recordDefeat({required DateTime now}) async {
     await isar.writeTxn(() async {
       final progress = await isar.towerProgress
           .filter()
           .saveDataIdEqualTo(IsarSetup.currentSlotId)
           .findFirst();
       if (progress == null) {
-        throw StateError(
-          'TowerProgress 未初始化：getOrCreate 未在 recordDefeat 前调用',
-        );
+        throw StateError('TowerProgress 未初始化：getOrCreate 未在 recordDefeat 前调用');
       }
       progress.totalAttempts += 1;
       progress.totalDefeats += 1;

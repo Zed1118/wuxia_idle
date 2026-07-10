@@ -30,10 +30,10 @@ class TechniqueLearningResult {
 
 enum LearnOutcome {
   success,
-  techniqueTierTooHigh,        // tier 超过角色境界对应阶（GDD §5.3 三系锁死）
-  mainTechniqueAlreadyExists,  // 主修已存在（必须先散功）
-  assistSlotsFull,             // 辅修槽满 3（GDD §4.2）
-  insufficientInsightPoints,   // 领悟点不足
+  techniqueTierTooHigh, // tier 超过角色境界对应阶（GDD §5.3 三系锁死）
+  mainTechniqueAlreadyExists, // 主修已存在（必须先散功）
+  assistSlotsFull, // 辅修槽满 3（GDD §4.2）
+  insufficientInsightPoints, // 领悟点不足
 }
 
 /// 心法学习服务（phase2_tasks T23 §244-265 / GDD §5.3 / §4.2 / §7.2）。

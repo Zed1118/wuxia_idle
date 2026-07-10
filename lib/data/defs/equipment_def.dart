@@ -88,8 +88,9 @@ class EquipmentDef {
       detailPath: y['detailPath'] as String?,
       tagline: y['tagline'] as String?,
       specialSkillCandidates: List<String>.from(
-        (y['specialSkillCandidates'] as List? ?? const [])
-            .map((e) => e as String),
+        (y['specialSkillCandidates'] as List? ?? const []).map(
+          (e) => e as String,
+        ),
       ),
       isLineageHeritage: (y['isLineageHeritage'] as bool?) ?? false,
     );

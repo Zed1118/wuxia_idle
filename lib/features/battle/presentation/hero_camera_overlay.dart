@@ -54,20 +54,17 @@ class _HeroCameraOverlayState extends State<HeroCameraOverlay>
   bool _done = false;
   Timer? _autoTimer;
 
-  double get _slidePx =>
-      GameRepository.isLoaded
-          ? GameRepository.instance.numbers.heroCamera.portraitSlidePx
-          : 48.0;
+  double get _slidePx => GameRepository.isLoaded
+      ? GameRepository.instance.numbers.heroCamera.portraitSlidePx
+      : 48.0;
 
-  double get _scaleFrom =>
-      GameRepository.isLoaded
-          ? GameRepository.instance.numbers.heroCamera.portraitScaleFrom
-          : 0.88;
+  double get _scaleFrom => GameRepository.isLoaded
+      ? GameRepository.instance.numbers.heroCamera.portraitScaleFrom
+      : 0.88;
 
-  double get _holdSeconds =>
-      GameRepository.isLoaded
-          ? GameRepository.instance.numbers.heroCamera.holdSeconds
-          : 3.0;
+  double get _holdSeconds => GameRepository.isLoaded
+      ? GameRepository.instance.numbers.heroCamera.holdSeconds
+      : 3.0;
 
   @override
   void initState() {
@@ -131,10 +128,7 @@ class _HeroCameraOverlayState extends State<HeroCameraOverlay>
               offset: Offset(_slide.value * _slidePx, 0),
               child: Transform.scale(
                 scale: _scale.value,
-                child: Opacity(
-                  opacity: _opacity.value,
-                  child: child,
-                ),
+                child: Opacity(opacity: _opacity.value, child: child),
               ),
             );
           },
@@ -186,12 +180,16 @@ class _HeroCameraOverlayState extends State<HeroCameraOverlay>
                 const SizedBox(height: 10),
                 // 「本场最强」badge
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: WuxiaColors.resultHighlight.withValues(alpha: 0.18),
                     border: Border.all(
-                      color: WuxiaColors.resultHighlight.withValues(alpha: 0.55),
+                      color: WuxiaColors.resultHighlight.withValues(
+                        alpha: 0.55,
+                      ),
                     ),
                     borderRadius: BorderRadius.circular(4),
                   ),

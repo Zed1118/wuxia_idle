@@ -17,18 +17,21 @@ class SkillUsageEntry {
 /// `increment` 用 `indexWhere` + 直接修改原元素或追加，避免 firstWhere 的
 /// orElse 创建新对象后不回写到原 List 的坑（phase1_tasks.md T03 提示）。
 extension MapLikeOnSkillUsage on List<SkillUsageEntry> {
-  int countOf(String skillId) =>
-      firstWhere((e) => e.skillId == skillId, orElse: () => SkillUsageEntry())
-          .count;
+  int countOf(String skillId) => firstWhere(
+    (e) => e.skillId == skillId,
+    orElse: () => SkillUsageEntry(),
+  ).count;
 
   void increment(String skillId, [int delta = 1]) {
     final idx = indexWhere((e) => e.skillId == skillId);
     if (idx >= 0) {
       this[idx].count += delta;
     } else {
-      add(SkillUsageEntry()
-        ..skillId = skillId
-        ..count = delta);
+      add(
+        SkillUsageEntry()
+          ..skillId = skillId
+          ..count = delta,
+      );
     }
   }
 }

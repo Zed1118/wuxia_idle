@@ -31,10 +31,10 @@ class LightFootDef {
 
   /// numbers.yaml 不含 `light_foot` 段时的空值(fixture 兼容)。
   factory LightFootDef.empty() => const LightFootDef(
-        terrainModifiers: {},
-        stageTerrain: {},
-        unlockTriggers: {},
-      );
+    terrainModifiers: {},
+    stageTerrain: {},
+    unlockTriggers: {},
+  );
 
   factory LightFootDef.fromYaml(Map<String, dynamic>? y) {
     if (y == null) return LightFootDef.empty();
@@ -54,8 +54,9 @@ class LightFootDef {
     final stageYaml = y['stage_terrain'] as Map?;
     if (stageYaml != null) {
       for (final e in stageYaml.entries) {
-        stageTerrain[e.key as String] =
-            TerrainBiome.values.byName(e.value as String);
+        stageTerrain[e.key as String] = TerrainBiome.values.byName(
+          e.value as String,
+        );
       }
     }
 
@@ -101,21 +102,18 @@ class LightFootTerrainModifier {
 
   /// 中性 modifier(无地形 / 默认平地,全 0/1)。
   factory LightFootTerrainModifier.neutral() => const LightFootTerrainModifier(
-        criticalRateDelta: 0.0,
-        evasionRateDelta: 0.0,
-        defenseRateDelta: 0.0,
-        damageMultiplier: 1.0,
-      );
+    criticalRateDelta: 0.0,
+    evasionRateDelta: 0.0,
+    defenseRateDelta: 0.0,
+    damageMultiplier: 1.0,
+  );
 
   factory LightFootTerrainModifier.fromYaml(Map<String, dynamic> y) =>
       LightFootTerrainModifier(
         criticalRateDelta:
             (y['critical_rate_delta'] as num?)?.toDouble() ?? 0.0,
-        evasionRateDelta:
-            (y['evasion_rate_delta'] as num?)?.toDouble() ?? 0.0,
-        defenseRateDelta:
-            (y['defense_rate_delta'] as num?)?.toDouble() ?? 0.0,
-        damageMultiplier:
-            (y['damage_multiplier'] as num?)?.toDouble() ?? 1.0,
+        evasionRateDelta: (y['evasion_rate_delta'] as num?)?.toDouble() ?? 0.0,
+        defenseRateDelta: (y['defense_rate_delta'] as num?)?.toDouble() ?? 0.0,
+        damageMultiplier: (y['damage_multiplier'] as num?)?.toDouble() ?? 1.0,
       );
 }

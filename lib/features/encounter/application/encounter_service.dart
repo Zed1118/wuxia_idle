@@ -77,12 +77,13 @@ class EquipNotFound extends EquipEncounterSkillResult {
 
 /// P1.2 §3 reputation 应用 hook 签名(EncounterService 解耦,不强依赖 ReputationService)。
 /// caller 端绑(ReputationService.applyDelta + rng)注入;test 端可注 mock collect。
-typedef ReputationDeltaApplier = Future<void> Function({
-  required int playerId,
-  required String factionId,
-  required int deltaMin,
-  required int deltaMax,
-});
+typedef ReputationDeltaApplier =
+    Future<void> Function({
+      required int playerId,
+      required String factionId,
+      required int deltaMin,
+      required int deltaMax,
+    });
 
 /// 奇遇 / 武学领悟服务(C-W14-1)。
 ///
@@ -254,8 +255,8 @@ class EncounterService {
           .findFirst();
       if (progress == null) return;
       if (progress.triggeredEncounterIds.contains(encounterId)) return;
-      progress.triggeredEncounterIds =
-          List.of(progress.triggeredEncounterIds)..add(encounterId);
+      progress.triggeredEncounterIds = List.of(progress.triggeredEncounterIds)
+        ..add(encounterId);
       await isar.encounterProgress.put(progress);
     });
   }
@@ -435,8 +436,7 @@ class EncounterService {
         }
         // 波A A4 来源统一:解锁校验改读 SaveData.skillUnlockProgress。
         final save = await isar.saveDatas.get(0);
-        if (save == null ||
-            !save.skillUnlockProgress.isUnlocked(skillDef.id)) {
+        if (save == null || !save.skillUnlockProgress.isUnlocked(skillDef.id)) {
           result = EquipNotUnlocked(skillDef.id);
           return;
         }
@@ -484,8 +484,7 @@ class EncounterService {
   static bool canEquipEncounterSkillByTier({
     required RealmTier realmTier,
     required int skillTier,
-  }) =>
-      realmTier.index >= skillTier - 1;
+  }) => realmTier.index >= skillTier - 1;
 
   /// trigger 全满足判定(纯函数,无 IO,便于测试)。
   ///
@@ -533,23 +532,21 @@ class EncounterService {
 extension EncounterServiceCurrentSlot on EncounterService {
   Future<void> recordKillCurrentSlot({
     required List<TechniqueSchool> defeatedSchools,
-  }) =>
-      recordKill(
-        saveDataId: IsarSetup.currentSlotId,
-        defeatedSchools: defeatedSchools,
-      );
+  }) => recordKill(
+    saveDataId: IsarSetup.currentSlotId,
+    defeatedSchools: defeatedSchools,
+  );
 
   Future<EncounterDef?> evaluateTriggersCurrentSlot({
     required Attributes attributes,
     required List<EncounterDef> encounters,
     required Rng rng,
     Festival? festivalToday,
-  }) =>
-      evaluateTriggers(
-        saveDataId: IsarSetup.currentSlotId,
-        attributes: attributes,
-        encounters: encounters,
-        rng: rng,
-        festivalToday: festivalToday,
-      );
+  }) => evaluateTriggers(
+    saveDataId: IsarSetup.currentSlotId,
+    attributes: attributes,
+    encounters: encounters,
+    rng: rng,
+    festivalToday: festivalToday,
+  );
 }

@@ -44,12 +44,14 @@ class MasterDef {
         Map<String, dynamic>.from(y['attributeProfile'] as Map),
       ),
       startingTechniqueIds: List<String>.from(
-        (y['startingTechniqueIds'] as List? ?? const [])
-            .map((e) => e as String),
+        (y['startingTechniqueIds'] as List? ?? const []).map(
+          (e) => e as String,
+        ),
       ),
       startingEquipmentIds: List<String>.from(
-        (y['startingEquipmentIds'] as List? ?? const [])
-            .map((e) => e as String),
+        (y['startingEquipmentIds'] as List? ?? const []).map(
+          (e) => e as String,
+        ),
       ),
       enabledInDemo: (y['enabledInDemo'] as bool?) ?? true,
       portraitPath: y['portraitPath'] as String?,

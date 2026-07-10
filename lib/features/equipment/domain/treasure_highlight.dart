@@ -35,8 +35,10 @@ class TreasureHighlight {
 ///
 /// [extraDisplayTiers]:额外允许展示的 tier 集合(如利器首次获得),不受 minTier 下限约束。
 TreasureHighlight? pickTreasureHighlight(
-    List<TreasureHighlight> candidates, EquipmentTier minTier,
-    {Set<EquipmentTier> extraDisplayTiers = const {}}) {
+  List<TreasureHighlight> candidates,
+  EquipmentTier minTier, {
+  Set<EquipmentTier> extraDisplayTiers = const {},
+}) {
   TreasureHighlight? best;
   for (final c in candidates) {
     if (c.tier.index < minTier.index && !extraDisplayTiers.contains(c.tier)) {
