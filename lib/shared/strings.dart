@@ -1826,7 +1826,8 @@ class UiStrings {
   static const String quitConfirmMessage = '确定退出挂机武侠?进度已自动保存,关掉之后仍照常挂机,回来照常结算。';
   static const String quitConfirmAction = '退出';
   static const String quitCancelAction = '再想想';
-  // 顶栏「回主菜单」:一键从深层子屏返回主菜单(popUntil isFirst,MainMenu 为栈底首路由)。
+  // 顶栏导航动作。
+  static const String titleBarBack = '返回';
   static const String titleBarHome = '回主菜单';
   // 设置「关于」:版本号(L2 · 与 pubspec.yaml version 手动同步)。
   static const String settingsAbout = '关于';

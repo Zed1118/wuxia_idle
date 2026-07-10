@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 
 void main() {
@@ -22,7 +24,7 @@ void main() {
         body: const SizedBox(),
       ),
     ));
-    await tester.tap(find.byIcon(Icons.subdirectory_arrow_left));
+    await tester.tap(find.byIcon(Icons.arrow_back));
     expect(back, 1);
   });
 
@@ -33,7 +35,61 @@ void main() {
         body: SizedBox(),
       ),
     ));
-    expect(find.byIcon(Icons.subdirectory_arrow_left), findsNothing);
+    expect(find.byIcon(Icons.arrow_back), findsNothing);
+  });
+
+  testWidgets('返回和主页动作使用统一 44x44 热区、tooltip 与按钮语义', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        appBar: WuxiaTitleBar(
+          title: '装备仓库',
+          onBack: () {},
+          onHome: () {},
+          showSeal: false,
+        ),
+        body: const SizedBox(),
+      ),
+    ));
+
+    final backButton = find.ancestor(
+      of: find.byIcon(Icons.arrow_back),
+      matching: find.byType(WuxiaIconButton),
+    );
+    final homeButton = find.ancestor(
+      of: find.byIcon(Icons.home_outlined),
+      matching: find.byType(WuxiaIconButton),
+    );
+    Finder buttonSemantics(Finder button) => find.descendant(
+      of: button,
+      matching: find.byWidgetPredicate(
+        (w) => w is Semantics && w.properties.button == true,
+      ),
+    );
+
+    expect(backButton, findsOneWidget);
+    expect(homeButton, findsOneWidget);
+    expect(tester.getSize(backButton), const Size.square(WuxiaIconButton.size));
+    expect(tester.getSize(homeButton), const Size.square(WuxiaIconButton.size));
+    expect(find.byTooltip(UiStrings.titleBarBack), findsOneWidget);
+    expect(find.byTooltip(UiStrings.titleBarHome), findsOneWidget);
+    expect(
+      tester.getSemantics(buttonSemantics(backButton)),
+      isSemantics(
+        label: UiStrings.titleBarBack,
+        isButton: true,
+        isEnabled: true,
+      ),
+    );
+    expect(
+      tester.getSemantics(buttonSemantics(homeButton)),
+      isSemantics(
+        label: UiStrings.titleBarHome,
+        isButton: true,
+        isEnabled: true,
+      ),
+    );
+    semantics.dispose();
   });
 
   testWidgets('showHome 默认显示回主菜单钮,点击触发 onHome', (tester) async {

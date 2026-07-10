@@ -16,8 +16,8 @@
 - Modify: `lib/shared/widgets/wuxia_ui/wuxia_title_bar.dart`
 - Test: `test/shared/widgets/wuxia_title_bar_test.dart`
 
-- [ ] **Step 1: 写失败测试**：返回和主页均有 44x44 热区、tooltip、Semantics button，点击调用正确 callback。
-- [ ] **Step 2: 用 `WuxiaIconButton` 替换两个裸 `InkWell`，返回使用 `Icons.arrow_back`，主页使用 `Icons.home_outlined`。**
+- [x] **Step 1: 写失败测试**：返回和主页均有 44x44 热区、tooltip、Semantics button，点击调用正确 callback。
+- [x] **Step 2: 用 `WuxiaIconButton` 替换两个裸 `InkWell`，返回使用 `Icons.arrow_back`，主页使用 `Icons.home_outlined`。**
 - [ ] **Step 3: 运行 shared widget 测试与 1280x720 标题栏视觉路由。**
 - [ ] **Step 4: 提交**：`git commit -m "Unify title bar navigation actions"`。
 
@@ -36,9 +36,8 @@
 
 ## 当前恢复点
 
-- 状态：等待批次 A/B。
-- 最后完成：已确认 `WuxiaIconButton` 和 `WuxiaImage` 默认静默 fallback 现状。
-- 下一步：Task 1 写共享标题栏失败测试。
-- 已跑验证：只读审计。
+- 状态：Task 1 代码与共享组件验证完成，macOS 视觉验收留在批末统一执行。
+- 最后完成：标题栏返回/主页动作统一为 44x44 `WuxiaIconButton`，补 tooltip、Semantics 与点击契约。
+- 下一步：提交 Task 1，执行 Task 2 关键图片 fallback 审计。
+- 已跑验证：标题栏/UI icon/surface 13/13；`flutter analyze lib/shared test/shared/widgets/wuxia_ui` 0 问题。
 - 阻塞项：无代码阻塞，按批次顺序等待。
-
