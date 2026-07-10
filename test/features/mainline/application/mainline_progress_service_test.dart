@@ -9,6 +9,7 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_progress_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
+import "../../../support/isar_test_support.dart";
 
 /// Phase 3 T34 · MainlineProgressService 真 Isar 落地测试。
 ///
@@ -18,7 +19,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

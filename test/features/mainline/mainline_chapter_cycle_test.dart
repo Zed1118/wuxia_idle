@@ -8,6 +8,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_progress_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import "../../support/isar_test_support.dart";
 
 /// 周目按章(2026-06-14)· 章级周目派生 + recordVictory 章末 Boss 记账。
 ///
@@ -53,7 +54,7 @@ void main() {
   group('chapterKeyForStage + recordVictory 章末 Boss(Isar + GameRepository)',
       () {
     setUpAll(() async {
-      await Isar.initializeIsarCore(download: true);
+      await initializeTestIsarCore();
       if (!GameRepository.isLoaded) {
         await GameRepository.loadAllDefs(
           loader: (p) => File(p).readAsString(),

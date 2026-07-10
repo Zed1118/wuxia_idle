@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/sect/application/sect_monthly_tick_service.d
 import 'package:wuxia_idle/features/sect/application/sect_reputation_decay.dart';
 import 'package:wuxia_idle/features/sect/domain/sect.dart';
 import 'package:wuxia_idle/features/sect/domain/sect_event.dart';
+import "../../support/isar_test_support.dart";
 
 /// T19b 技术债清账:Sect / SectEvent Isar 真持久化 round-trip 测族。
 ///
@@ -20,7 +21,7 @@ import 'package:wuxia_idle/features/sect/domain/sect_event.dart';
 /// `feedback_isar_widget_test_deadlock`)— 纯 service 层 writeTxn 联调。
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
   });
 
   group('Sect / SectEvent Isar 持久化', () {

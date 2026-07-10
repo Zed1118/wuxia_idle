@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
+import "../../support/isar_test_support.dart";
 
 /// P1 周目进化 Task A2：TowerProgress 周目字段 + advanceCycle 方法。
 ///
@@ -13,7 +14,7 @@ import 'package:wuxia_idle/features/tower/application/tower_progress_service.dar
 ///   - 未全通 30 层时 advanceCycle 是 no-op(防提前推进)
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
   });
 
   late Directory tempDir;

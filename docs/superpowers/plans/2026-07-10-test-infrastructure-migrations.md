@@ -16,10 +16,10 @@
 - Modify: `test/**/*.dart` 中直接调用 `Isar.initializeIsarCore(download: true)` 的测试
 - Reuse: `test/support/isar_test_support.dart`
 
-- [ ] **Step 1: 生成文件清单并按 `data/balance/features/tools` 四批记录基线数量。**
-- [ ] **Step 2: 每批把直接调用替换为 `initializeTestIsarCore`，保留生产配置加载的先后顺序并删除未使用 Isar import。**
-- [ ] **Step 3: 每批运行对应目录定向测试；失败时只修 import/初始化顺序，不改测试语义。**
-- [ ] **Step 4: 断言除 helper 本身和说明注释外直接调用计数为 0。**
+- [x] **Step 1: 生成文件清单并按 `data/balance/features/tools` 四批记录基线数量。**
+- [x] **Step 2: 每批把直接调用替换为 `initializeTestIsarCore`，保留生产配置加载的先后顺序并删除未使用 Isar import。**
+- [x] **Step 3: 每批运行对应目录定向测试；失败时只修 import/初始化顺序，不改测试语义。**
+- [x] **Step 4: 断言除 helper 本身和说明注释外直接调用计数为 0。**
 - [ ] **Step 5: 提交**：`git commit -m "Finish Isar test core migration"`。
 
 ### Task 2: 迁移等价 production repository loader
@@ -54,8 +54,8 @@ await loadTestGameRepository();
 
 ## 当前恢复点
 
-- 状态：Task 1 执行中，非 feature 批已完成。
-- 最后完成：balance/core/data/tools 14 文件迁移，直接调用 66→52。
-- 下一步：迁移 `test/features/` 52 文件并按子目录定向验证。
-- 已跑验证：非 feature 批 104/104。
+- 状态：Task 1 代码与验证完成，等待恢复点提交。
+- 最后完成：共 66 文件迁移，直接调用 66→0。
+- 下一步：提交 Isar 迁移恢复点，然后执行 Task 2 production repository loader 迁移。
+- 已跑验证：非 feature 104/104；首批 feature 850/850；末批 feature 可运行测试 624 通过，修复必要查询扩展导入后补跑 61/61；`flutter analyze test/features` 0 问题。
 - 阻塞项：无。

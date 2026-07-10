@@ -9,6 +9,7 @@ import 'package:wuxia_idle/core/domain/game_event.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/event/application/game_event_service.dart';
+import "../../../support/isar_test_support.dart";
 
 /// P1 #42 补丁 · #4 lineageInherited 未接入契约 + #9 路由 edge test。
 ///
@@ -22,7 +23,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
   });
 
   setUp(() async {

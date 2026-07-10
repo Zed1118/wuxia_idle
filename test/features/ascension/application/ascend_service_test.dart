@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/equipment/application/milestone_equipment_gr
 import 'package:wuxia_idle/features/inheritance/application/founder_buff_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/sect/domain/sect.dart';
+import "../../../support/isar_test_support.dart";
 
 /// P2.3 §7.1 飞升 + 遗物 transfer R5 红线测族(5 族 · spec p2_3_ascension_spec_2026-05-24)。
 ///
@@ -28,7 +29,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

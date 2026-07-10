@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/battle_record/application/boss_memory_hook.d
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_service.dart';
 import 'package:wuxia_idle/features/battle_record/domain/boss_memory_source.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
+import "../../../support/isar_test_support.dart";
 
 /// 最简 BattleStatsSummary（无需 BattleState，直接 const）。
 const _testStats = BattleStatsSummary(
@@ -70,7 +71,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

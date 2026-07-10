@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_progress_service.dart';
+import "../../support/isar_test_support.dart";
 
 /// P1 周目进化 Task A1：MainlineProgress.clearedStageCycleKeys 字段 + 派生方法。
 ///
@@ -14,7 +15,7 @@ import 'package:wuxia_idle/features/mainline/application/mainline_progress_servi
 ///   - 未通关 stage 返回 0
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
   });
 
   late Directory tempDir;

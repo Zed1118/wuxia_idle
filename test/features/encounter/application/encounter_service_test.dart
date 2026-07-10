@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
+import "../../../support/isar_test_support.dart";
 
 /// Phase 4 W14-1 · EncounterService 真 Isar 落地测试。
 ///
@@ -94,7 +95,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       // 不依赖 encounters fixture,但 GameRepository 需 numbers/equipment 等
       await GameRepository.loadAllDefs(

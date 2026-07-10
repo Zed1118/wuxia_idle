@@ -34,8 +34,8 @@
 
 ## 当前恢复点
 
-- 状态：批次 A 功能实现完成；批次 B Isar 迁移执行中。
-- 最后完成：非 feature Isar 初始化 14 文件迁移，直接调用 66→52。
-- 下一步：迁移 `test/features/` 余下 52 文件；批末统一做 A 的 macOS 视觉验收。
-- 已跑验证：批次 A 定向 analyze 0、47 测；Isar 迁移第一批 104/104。
+- 状态：批次 A 功能实现完成；批次 B Isar 迁移代码与定向验证完成。
+- 最后完成：Isar 初始化共 66 文件迁移，直接调用 66→0。
+- 下一步：迁移等价的 production GameRepository loader；批末统一做 A 的 macOS 视觉验收。
+- 已跑验证：批次 A 定向 analyze 0、47 测；Isar 迁移非 feature 104/104、首批 feature 850/850、末批可运行测试 624 通过并补跑修复目录 61/61，`flutter analyze test/features` 0 问题。
 - 阻塞项：无。

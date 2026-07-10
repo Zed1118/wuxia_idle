@@ -11,6 +11,7 @@ import 'package:wuxia_idle/features/battle_record/application/boss_memory_servic
 import 'package:wuxia_idle/features/battle_record/domain/boss_memory_key.dart';
 import 'package:wuxia_idle/features/battle_record/domain/boss_memory_source.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
+import "../../../support/isar_test_support.dart";
 
 /// Task 7：爬塔 victory 留档 hook tower 形态参数验证。
 ///
@@ -42,7 +43,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

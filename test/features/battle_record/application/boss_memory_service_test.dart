@@ -7,12 +7,13 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_service.dart';
 import 'package:wuxia_idle/features/battle_record/domain/boss_memory_source.dart';
+import "../../../support/isar_test_support.dart";
 
 void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

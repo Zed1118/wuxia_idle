@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
@@ -16,6 +15,7 @@ import 'package:wuxia_idle/features/cangjingge/presentation/skill_proficiency_ro
 import 'package:wuxia_idle/features/cultivation/application/skill_loadout_resolver.dart';
 import 'package:wuxia_idle/features/cultivation/application/skill_loadout_service.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import "../../support/isar_test_support.dart";
 
 /// CangJingGeScreen 藏经阁主屏测试（P1b Task9）。
 ///
@@ -30,7 +30,7 @@ import 'package:wuxia_idle/shared/strings.dart';
 ///   验证 mainSkillId1 落库非 null（与屏幕 initState autoFill 行为同源）。
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
     }
