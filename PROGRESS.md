@@ -5,6 +5,7 @@
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 
 ## 当前阶段
+> **2026-07-10 Codex CI 运行时维护(`codex/ci-runtime-refresh`)**:GitHub Actions `checkout@v4` 在 PR #23-25 持续产生 Node 20 弃用注记;核对官方 action.yml 后升级到最新 `actions/checkout@v7`(Node 24),并清除 CI 中 build_runner 已移除/忽略的 `--delete-conflicting-outputs` 参数。PR #26 首轮 CI 全链路绿且 annotations 为空,弃用注记已消失。
 > **2026-07-10 Codex 资产 WebP 试点 + 桃花岛落地**:magic audit 订正旧 210MB 口径:383 个 `.png` 路径 58.0MB,其中 272 个/44.7MB 已是 WebP 内容;真 PNG 仅 111 个/13.3MB。8 样本三档转码 + 四联目检证实只有桃花岛 q82 显著受益,alpha 装备有损边缘破坏、全 lossless 仅省 0.85MB,故关闭全量转码任务。后续获人工确认后桃花岛已改显式 `.webp`(832KB→202KB,-75.8%)并补 bundle 解码/尺寸守卫;同步销账已完成的 battle_screen 3102 行旧任务。
 > **2026-07-10 Codex 审查债务收口批(`codex/review-debt-cleanup`)**:确认 CI 与 66 篇文案归档已完成;删除不可达 `home_feed` 页面并把事件流查询迁至 event、启动钩子迁至主菜单;删除隐藏逐关 `stage_auto_play` 配置链,保留全局自动战斗与主线首通 interactive;新增测试数据/Isar helper 并首批迁移 8 文件。**验证**:build_runner 成功;`flutter analyze lib/ test/` 0 issue;全量 `flutter test --no-pub` **3769 全绿**。
 > 🧹✅ **2026-07-10 Codex 挂机批 O:测试 fixture TODO 文案清噪(`main`)**:清理 `defs_test`/`game_repository_test` 内联 yaml description 的 `TODO` 字符串,改为明确测试描述,不改变生产数据或断言语义。这样后续 `TODO/FIXME/HACK` 扫描不会把 fixture 文案误报成未完成内容;当前 `rg "TODO|FIXME|HACK" lib test -S` 只剩主线文案完整性测试中“禁止 TODO”的守卫断言文本。**验证**:`flutter test --no-pub test/data/defs/defs_test.dart test/data/game_repository_test.dart --reporter expanded` **76 绿**;`flutter analyze` 0 issue。
@@ -49,7 +50,6 @@
 > **2026-07-01 读秒圆环实装 + tap 两段点选 + 夜间 UI 视觉打磨 + 纸底文字根治 已压缩归档**(git log 可溯·3466→3530 测·顶支柱详见上方保留条):CD/内伤/破绽/敌蓄力「转圈读秒圆环」实装 push `fb05277f`(countdown_ring 三组件·四层透传 beat·目检收口见上方 `e4e779de` 条);tap 两段点选替代拖招 `3a984e4d`+真机 PASS;夜间 UI visual-gap-sweep 集成合入(60 文件纯表现层)+纸底 textPrimary→WuxiaUi.ink 根治 `e35c9712`+paper-text-audit 门禁;codex 睡觉模式 3 分支 2 合 1 退 `56f282b3`→battle-density 收口 `cfe4717a`。零碰 numbers/结算/saveVer/schema。
 > **2026-06-29 装备/角色 UI 专业化 + 页面性能 + 祖师塑形 + 5/4 梯队视觉批 + 13 任务批次 已压缩归档**(git log 可溯·3331→3466 测):装备对比/角色面板/仓库专业化 3 分支合;页面切换性能优化 `1c926f04`(WuxiaImage cacheWidth·57 处迁移);新档祖师塑形 `fa428eaa`(saveVer 0.33·命盘/出身/流派);浅宣纸文字对比根治 `d6c1eeee`(PaperPanel panelFill 55%→86%);第 5 梯队 9 分支全合 + 第 4 梯队多批 + 主菜单状态摘要 + 下一阶段 13 任务(12 合 1 缓)。
 > **2026-06-01..28 可玩性内核 + UI kit + P0 战斗可见化 + 装备出售/分解 + 桃花岛一二期 + 全系统审计 A-E + 材料经济 P4 + 弟子终局解锁 + 战前情报 opt-in 已压缩归档**(git log/spec/closeout 可溯·1661→3297 测,历史四条明细见更早 commit 中 PROGRESS.md)。
-
 ---
 
 ## 已知偏差 / 挂账事项

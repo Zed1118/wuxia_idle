@@ -21,7 +21,7 @@
 
 ## 批次 4 · CI 搭建
 
-- [x] GitHub Actions **✅已落地(2026-07-03·PR #18·`5a1e13b1`)**:钉 Flutter 3.41.5 + PUB_HOSTED_URL,执行 build_runner → analyze → 默认并发全量 test；2026-07-10 `528c0d40` push run 绿。
+- [x] GitHub Actions **✅已落地(2026-07-03·PR #18·`5a1e13b1`)**:钉 Flutter 3.41.5 + PUB_HOSTED_URL,执行 build_runner → analyze → 默认并发全量 test；2026-07-10 push run 绿。**运行时维护(2026-07-10)**:`actions/checkout@v4`(Node 20 弃用注记)升级到官方最新 `v7`(Node 24),并移除 build_runner 已废弃的 `--delete-conflicting-outputs` 参数。
 
 ## 批次 5 · battle_screen 拆分(拍板点:排期时机)
 
