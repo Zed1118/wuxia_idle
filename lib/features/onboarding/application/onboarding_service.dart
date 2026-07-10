@@ -13,7 +13,7 @@ import 'master_builder.dart';
 ///
 /// audit `1_0_release_audit_2026-05-25.md` 揭示:`StageBattleSetup._buildPlayerTeam`
 /// 在 Isar 无 Character 时抛 `StateError('先跑 P1 种子')`,玩家全新启动游戏 →
-/// splash → home_feed → main_menu → 任何战斗 → crash。production 路径缺失 seed。
+/// splash → 存档选择 → main_menu → 任何战斗 → crash。production 路径缺失 seed。
 ///
 /// 本服务在 [SplashScreen._bootstrap] IsarSetup.init 之后调用,**幂等**:
 /// 已有 founder(isFounder=true)→ short-circuit 返回 false 不动数据
