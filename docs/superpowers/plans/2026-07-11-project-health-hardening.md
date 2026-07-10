@@ -58,15 +58,16 @@
 
 **Files:**
 - Modify: `README.md`
+- Modify: `CLAUDE.md`
 - Modify: `docs/spec/full_review_2026-07-02_followup_backlog.md`
 - Modify: `docs/superpowers/plans/2026-07-10-test-format-normalization.md`
 - Modify: this plan
 
-- [ ] Correct the README's current architecture, test inventory, visual-test terminology, and measured runtime guidance.
-- [ ] Replace the incorrect `docs/handoff` Git-history diagnosis with measured tracked, ignored-local, and historical-object figures.
-- [ ] Mark the completed 2026-07-10 formatting plan as completed/archived without rewriting its history.
-- [ ] Record which local ignored visual artifacts remain user-owned and require explicit approval before deletion.
-- [ ] Run documentation consistency searches and commit the batch.
+- [x] Correct the README/CLAUDE current architecture, test inventory, visual-test terminology, and runtime guidance.
+- [x] Replace the incorrect `docs/handoff` Git-history diagnosis with measured tracked, ignored-local, and historical-object figures.
+- [x] Mark the completed 2026-07-10 formatting plan as completed/archived without rewriting its history.
+- [x] Record which local ignored visual artifacts remain user-owned and require explicit approval before deletion.
+- [x] Run documentation consistency searches and commit the batch.
 
 ### Task 5: Narrow Coupling And Type-Safety Cleanup
 
@@ -127,5 +128,5 @@
 
 - Branch: `codex/project-health-hardening`
 - Worktree: `.worktrees/project-health-hardening`
-- Current state: Tasks 1-3 verified. Focused critical-flow group passed 88 tests; local macOS debug build passed. Task 4 is next.
+- Current state: Tasks 1-4 verified. Documentation drift and repository-size diagnosis are corrected. Task 5 is next.
 - Resume command: `git status --short --branch && sed -n '1,260p' docs/superpowers/plans/2026-07-11-project-health-hardening.md`

@@ -10,7 +10,7 @@
 - [x] 零引用资产清理 **✅已删(2026-07-03·batch-123)**——**订正**:backlog 原记「44.9MB/67 文件」是 drift(webp 转码 + tier_* 已删后体积变小)。本波独立 grep 现算实为 **59 文件 8.0MB**:`ui/mj/*_01` 旧稿 **17 张**(fx_×10 + overlay_×4 + ui_frame_×2 + ceremony_red_seal_01·全 0 引用,已被 `*_blend` 版替代;entry_/menu_/其余 ceremony 的 *_01 均 1 引用=活,未动)+ `enemies/*.png` **42 张**(129 中 42 张 0 引用,移除史抽验 guard_c/shidi_a 均 commit `e73979ce`(06-28)删敌人定义时连带删 iconPath=废弃品)。iconPath 为静态全路径字面量(`assets/enemies/x.png`)无动态拼接,grep 验证可靠。~~`tier_*.png` 7 张~~ 早于 2026-07-02 删。
 - [x] `docs/reviews/` **✅已治理(上批 .git 瘦身)**——本波复核:仅 4KB tracked,.gitignore 已含 `docs/reviews/`(挡 PNG)。2.4G→658M 历史已 filter-repo 洗过(见 PROGRESS `5bd36fc1`),无需再洗。
 - [x] `assets/audio/_suno_candidates/` 75MB **✅已归档(2026-07-02·用户拍板)**:mv 出项目 → `~/Desktop/wuxia_suno_candidates_archive_2026-07-02`(已 gitignore·不进仓/不进包·可恢复)
-- [ ] **⚠️需拍板** `docs/handoff/` 2.7G(**订正**:本波复核为 **tracked 416 文件**,非「未跟踪」;backlog drift)。选项:①只加 .gitignore 挡未来 ②`git rm --cached`+gitignore 移出跟踪(仍在历史) ③filter-repo 洗历史+force push(彻底但成本高)。涉历史/force push,拍板后做。
+- [x] `docs/handoff/` **✅Git 历史误诊已订正(2026-07-11)**:主 checkout 的 2.7G/1898 文件主要是已被 `.gitignore` 挡住的本地视觉验收产物；实际 tracked 仅 416 文件/2.76MiB，历史 blob 约 3.08MiB，**不是**当前 `.git` 778MiB 的主因。历史体积主要来自旧 `Builds/` blob（约 484.05MiB）；不得基于旧结论执行 `git rm --cached`、`filter-repo` 或 force push。若要清本地 2.7G，属用户视觉证据删除，须单独授权；若要改 Git 历史，应先针对 `Builds/` 运行 `git filter-repo --analyze` 并单独评估协作成本。
 
 ## 批次 3 · 死代码/死文案(拍板点:66 篇文案接线 vs 归档)
 

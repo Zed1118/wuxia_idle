@@ -55,7 +55,7 @@
 | 语言 | Dart | SDK `^3.11.3` |
 | 状态管理 | Riverpod 3.x | `flutter_riverpod ^3.0.0` + `riverpod_annotation ^4.0.0` + 代码生成 |
 | 本地存储 | Isar（`isar_community` fork） | `^3.3.2`（fork 解 analyzer 上限）；角色/装备/进度/存档 |
-| 云端 | Supabase + Edge Function | **仅**排行榜，不做账号同步 |
+| 排行榜同步 | 本地榜 + `LeaderboardSyncService` 抽象 | 当前为 Noop，不含 Supabase 包或网络调用；GDD 保留未来云榜方向 |
 | 战斗表现 | 纯 Flutter Widget + AnimationController | 不引入 Flame 等游戏引擎 |
 | 配置/文案 | YAML | 数值 `data/*.yaml` + 剧情 `data/narratives|lore|events` |
 | 音频 | `audioplayers ^6.0.0` | bgm / sfx |
@@ -78,14 +78,14 @@ project_root/
 ├── content_guide.md   # 文案写作技法指引
 ├── lib/
 │   ├── core/          # 公式、常量、领域模型（纯 Dart，无 Flutter 依赖）
-│   ├── data/          # yaml 加载、Isar 仓储、Supabase 客户端
+│   ├── data/          # yaml 加载、Isar 仓储与配置校验
 │   ├── features/      # 按功能切分（battle / equipment / cultivation / tower / taohua_island / ... 共 40+ 模块）
 │   │   └── <feature>/{domain,application,presentation}/
 │   ├── shared/        # 跨 feature 复用（主题、组件、UiStrings）
 │   └── main.dart
 ├── data/              # 全部配置与文案（452 个 yaml，数值 + narratives/lore/events）
 ├── assets/            # 图片、字体、音频（AI 产出）
-├── test/             # 单元 + golden + 平衡红线测试（553 个测试文件）
+├── test/              # 单元 + widget/视觉路由 + 平衡红线测试
 └── docs/             # 设计 spec、审查报告、交接记录、归档
 ```
 
@@ -117,8 +117,11 @@ flutter run -d macos
 ## 测试
 
 ```bash
-# 全量（默认并发，10 核约 2.5 分钟）
+# 全量（默认并发；耗时随机器与缓存状态变化，通常为数分钟）
 flutter test --no-pub
+
+# 全量并生成 coverage/lcov.info（CI 使用）
+flutter test --coverage --no-pub
 
 # 排查隔离型 flaky 时才用串行
 flutter test --no-pub -j1
@@ -127,7 +130,7 @@ flutter test --no-pub -j1
 flutter analyze lib/ test/
 ```
 
-测试体系（553 个测试文件）分三类：**单元测试**（公式/service/仓储）、**widget 测试**（各屏交互与桌面语义）、**平衡红线测试**（`test/data/` + `test/balance/` + `test/tools/` 的极值模拟与数值红线守卫，防数值膨胀越界）。
+测试体系分三类：**单元测试**（公式/service/仓储）、**widget 与视觉路由测试**（各屏交互、桌面语义和固定验收入口）、**平衡红线测试**（`test/data/` + `test/balance/` + `test/tools/` 的极值模拟与数值红线守卫，防数值膨胀越界）。项目当前未使用像素 Golden matcher。
 
 > 代码改动的测试节奏：自包含改动只跑 targeted + analyze；跨切面改动（numbers/结算/schema/迁移）或批末合并才跑全量。
 

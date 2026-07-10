@@ -35,15 +35,15 @@
 
 ### Task 4: 集成
 
-- [ ] **Step 1:** 提交纯格式化批次。
-- [ ] **Step 2:** 推送并创建 PR。
-- [ ] **Step 3:** 等待 CI 通过且 annotations 为 0 后 squash 合并。
-- [ ] **Step 4:** 同步 `main`，比较 feature/main tree，清理临时 worktree 与分支。
+- [x] **Step 1:** 提交纯格式化批次。
+- [x] **Step 2:** 推送并创建 PR #34。
+- [x] **Step 3:** CI 通过且 annotations 为 0 后 squash 合并。
+- [x] **Step 4:** `main` 已同步到合并提交 `1be0388b`，临时执行分支已收口。
 
 ## 当前恢复点
 
-- 状态：Task 1-3 完成，等待提交和 PR CI。
+- 状态：Task 1-4 全部完成；PR #34 已合并，`main` 已同步。
 - 格式结果：扫描 572 个测试 Dart 文件，349 个由官方 formatter 重排；二次审计 0 changed；变更边界只含 `test/` 和本计划/PROGRESS 记录。
 - 验证结果：build_runner 生成 114 outputs；`flutter analyze lib/ test/` 0 问题；全量复跑 3790/3790；`git diff --check` 通过。
-- 下一步：执行 Task 4，提交、PR、CI 与合并。
+- 下一步：无；本计划作为已完成历史记录保留。
 - 阻塞项：无。

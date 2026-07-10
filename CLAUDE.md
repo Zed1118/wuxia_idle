@@ -67,7 +67,7 @@
 | 引擎 | Flutter Desktop | 发布目标 Windows；开发/验收在 macOS（`-d macos`，Isar 无 web target） |
 | 状态管理 | **Riverpod 3.x**（已迁，`flutter_riverpod ^3.0.0`） | 不引入 BLoC 等其他方案 |
 | 本地存储 | Isar | 角色、装备、进度、共鸣度计数等 |
-| 云端 | Supabase + Edge Function | **仅**排行榜，不做账号同步 |
+| 排行榜同步 | 本地榜 + `LeaderboardSyncService` 抽象 | 当前 Noop、0 Supabase 包/网络调用；GDD 保留未来云榜方向 |
 | 战斗表现 | 纯 Flutter Widget + AnimationController | 不引入 Flame 等游戏引擎 |
 | 打包 | MSIX，内测先发 itch.io | — |
 | 数据格式 | YAML | 数值、配置统一 yaml |
@@ -81,7 +81,7 @@ project_root/
 ├── docs/_archive/             # 退役文档归档（含 WINDOWS_DEEPSEEK_GUIDE.md，v1.8 起退役）
 ├── lib/                       # Dart 源码 ── 你的领地
 │   ├── core/                  # 公式、常量包装、领域模型（纯 Dart，无 Flutter 依赖）
-│   ├── data/                  # yaml 加载、Isar 仓储、Supabase 客户端
+│   ├── data/                  # yaml 加载、Isar 仓储与配置校验
 │   ├── features/              # 按功能切分（battle / equipment / cultivation / ...）
 │   │   └── <feature>/
 │   │       ├── domain/        # 实体与用例
@@ -99,7 +99,7 @@ project_root/
 │   ├── lore/                  # 装备典故                    [你 · v1.8 起接管]
 │   └── events/                # 奇遇事件文本                [你 · v1.8 起接管]
 ├── assets/                    # 图片、字体、音频（AI 产出；audio/{bgm,sfx} 按 enum.name 命名）
-└── test/                      # 单元测试 + golden 测试
+└── test/                      # 单元 + widget/视觉路由 + 平衡红线测试
 ```
 
 **[你] = Mac + Opus 4.7 写**;v1.8 起单端接管全部文件类型(数值 + 文案 + 代码 + 测试 + GDD)。
