@@ -10,6 +10,8 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/seclusion/application/offline_passive_service.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 
+import '../../support/isar_test_support.dart';
+
 /// Task 8：双层伤势靠真实挂机/闭关时间疗养（守 §5.5 在线=离线，无加速）。
 ///   - 重伤 injuryHoursRemaining 按 actualHours / awayHours 累减（clamp ≥ 0）
 ///   - 轻伤 lightInjuryStacks 收功/离线结算即清零（无条件）
@@ -20,7 +22,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

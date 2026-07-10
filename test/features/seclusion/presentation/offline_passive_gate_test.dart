@@ -3,12 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/offline_recap_gate.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+
+import '../../../support/isar_test_support.dart';
 
 /// M2 范围 B gate「旧档首启不回溯」守卫专测（spec §7 #4）。
 ///
@@ -25,7 +26,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
     }

@@ -1,15 +1,16 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+
+import '../../../support/isar_test_support.dart';
 
 void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
     }
