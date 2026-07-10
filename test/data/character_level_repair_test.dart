@@ -6,6 +6,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import "../support/isar_test_support.dart";
 
 /// 第八阶段 A·角色等级 Lv 安全网回填 TDD(真 bug 修复)。
 ///
@@ -13,7 +14,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 /// `repairCharacterLevels` 幂等修复 level<1 / levelExp<0 的角色为 1/0。
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
   });
 
   late Directory tempDir;
@@ -31,14 +32,14 @@ void main() {
 
   Character mkChar({required int level, required int levelExp}) =>
       Character.create(
-        name: '旧档角色',
-        realmTier: RealmTier.erLiu,
-        realmLayer: RealmLayer.qiMeng,
-        attributes: Attributes(),
-        rarity: RarityTier.xunChang,
-        lineageRole: LineageRole.founder,
-        createdAt: DateTime(2026, 1, 1),
-      )
+          name: '旧档角色',
+          realmTier: RealmTier.erLiu,
+          realmLayer: RealmLayer.qiMeng,
+          attributes: Attributes(),
+          rarity: RarityTier.xunChang,
+          lineageRole: LineageRole.founder,
+          createdAt: DateTime(2026, 1, 1),
+        )
         ..level = level
         ..levelExp = levelExp;
 

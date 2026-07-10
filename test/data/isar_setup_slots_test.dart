@@ -9,6 +9,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
+import "../support/isar_test_support.dart";
 
 /// 多存档槽(spec B §3.1/§5):IsarSetup switchSlot / slotHasSave / listSlots /
 /// deleteSlot 隔离与生命周期。多 db 方案 → 切 db = 切全部数据,无串档。
@@ -16,7 +17,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
     }

@@ -8,6 +8,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import "../support/isar_test_support.dart";
 
 /// 第七阶段批三 Task 4：存档 0.24.0 → 0.25.0 迁移测试。
 ///
@@ -20,7 +21,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 ///   c) 弟子不得被删除或改动 lineageRole 之外的任何数据。
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     // 迁移段 b 需要 lineageOnboarding.joinStageIds → 必须先加载 defs。
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(

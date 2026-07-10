@@ -54,9 +54,8 @@ await loadTestGameRepository();
 
 ## 当前恢复点
 
-- 状态：等待批次 A。
-- 最后完成：共享 helper 已存在，上一批直接 Isar 初始化 95→67。
-- 下一步：批次 A 合稳后统计精确剩余文件数。
-- 已跑验证：无。
-- 阻塞项：依赖批次 A 会修改 `isar_setup_slots_test.dart`，为避免冲突暂不开始。
-
+- 状态：Task 1 执行中，非 feature 批已完成。
+- 最后完成：balance/core/data/tools 14 文件迁移，直接调用 66→52。
+- 下一步：迁移 `test/features/` 52 文件并按子目录定向验证。
+- 已跑验证：非 feature 批 104/104。
+- 阻塞项：无。

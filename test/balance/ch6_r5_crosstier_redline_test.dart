@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
+import "../support/isar_test_support.dart";
 
 /// Phase 2 Ch6 R5 末 Boss 跨阶红线压测(spec §六 R5)。
 ///
@@ -43,7 +44,7 @@ import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 ///   Ch4 小铜镜 + Ch5「师」字玉佩三章 hook 全闭环 + 无物之境收束。
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),
@@ -78,11 +79,14 @@ void main() {
       final numbers = repo.numbers;
 
       // zongShi cap 装备(baoWu 阶,GDD §5.3 三系锁死)各 slot 满 hp_max
-      final zongShiDengFeng =
-          repo.getRealm(RealmTier.zongShi, RealmLayer.dengFeng);
-      EquipmentDef defOf(EquipmentSlot slot) => repo.equipmentDefs.values
-          .firstWhere((d) =>
-              d.tier == zongShiDengFeng.equipmentTierCap && d.slot == slot);
+      final zongShiDengFeng = repo.getRealm(
+        RealmTier.zongShi,
+        RealmLayer.dengFeng,
+      );
+      EquipmentDef defOf(EquipmentSlot slot) =>
+          repo.equipmentDefs.values.firstWhere(
+            (d) => d.tier == zongShiDengFeng.equipmentTierCap && d.slot == slot,
+          );
       Equipment buildEq(EquipmentSlot slot) {
         final def = defOf(slot);
         return Equipment.create(
@@ -101,7 +105,8 @@ void main() {
       final shiChuanTechDef = repo.techniqueDefs.values.firstWhere(
         (d) => d.tier == zongShiDengFeng.techniqueTierCap,
         orElse: () => throw StateError(
-            'r5 Ch6: 找不到 zongShi cap (shiChuanShenGong) 心法 def'),
+          'r5 Ch6: 找不到 zongShi cap (shiChuanShenGong) 心法 def',
+        ),
       );
 
       BattleCharacter buildOne(int slotIndex, TechniqueSchool school) {
@@ -134,7 +139,7 @@ void main() {
           school: shiChuanTechDef.school,
           role: TechniqueRole.main,
           learnedAt: DateTime(2026, 1, 1),
-          cultivationLayer: CultivationLayer.jiJing,  // 心法满修炼度(9 层顶)
+          cultivationLayer: CultivationLayer.jiJing, // 心法满修炼度(9 层顶)
           cultivationProgress: 100,
           cultivationProgressToNext: 100,
         );
@@ -160,8 +165,9 @@ void main() {
       '50 种子玩家满 build vs wuSheng 跨阶 boss · (leftWins + draws) ≥ rightWins',
       () async {
         final stage = GameRepository.instance.getStage('stage_06_05');
-        final (_, right) = await StageBattleSetup(isar: IsarSetup.instance)
-            .buildTeams(stage);
+        final (_, right) = await StageBattleSetup(
+          isar: IsarSetup.instance,
+        ).buildTeams(stage);
         final left = buildR5Players();
         final numbers = GameRepository.instance.numbers;
 
@@ -169,10 +175,12 @@ void main() {
         var rightWins = 0;
         var draws = 0;
         for (var seed = 0; seed < 50; seed++) {
-          final initial =
-              BattleState.initial(leftTeam: left, rightTeam: right);
-          final finalState =
-              BattleEngine.runToEnd(initial, numbers, rng: Random(seed));
+          final initial = BattleState.initial(leftTeam: left, rightTeam: right);
+          final finalState = BattleEngine.runToEnd(
+            initial,
+            numbers,
+            rng: Random(seed),
+          );
           switch (finalState.result) {
             case BattleResult.leftWin:
               leftWins++;
@@ -192,18 +200,24 @@ void main() {
         // 实测分布(memory `feedback_red_line_test_semantics` 不写瞬时数字断言,
         // 但 stdout 打印分布让设计验证可见 — 极端 50/0/0 vs 25/15/10 性质不同)
         // ignore: avoid_print
-        print('R5 Ch6 50 seeds distribution: '
-            'leftWins=$leftWins rightWins=$rightWins draws=$draws');
+        print(
+          'R5 Ch6 50 seeds distribution: '
+          'leftWins=$leftWins rightWins=$rightWins draws=$draws',
+        );
 
         // 覆盖率:50 种子全跑完(runToEnd 不抛 / result 非 null)
-        expect(leftWins + rightWins + draws, 50,
-            reason: '50 种子全应有 result(leftWin/rightWin/draw),不应漏跑');
+        expect(
+          leftWins + rightWins + draws,
+          50,
+          reason: '50 种子全应有 result(leftWin/rightWin/draw),不应漏跑',
+        );
 
         // 主红线上边界:玩家方满 build 综合不输面(跨阶不一边倒)
         expect(
           leftWins + draws,
           greaterThanOrEqualTo(rightWins),
-          reason: 'R5 上边界:玩家 zongShi·dengFeng 满 build vs wuSheng·qiMeng '
+          reason:
+              'R5 上边界:玩家 zongShi·dengFeng 满 build vs wuSheng·qiMeng '
               '西凉霸主 + zongShi·dengFeng × 2 副(三弟子刚猛+灵巧)50 种子 '
               '(leftWins=$leftWins + draws=$draws) 应 ≥ rightWins=$rightWins '
               '— 跨阶不一边倒被压垮(GDD §5.5 差 1 阶 攻方 ×1.4 守方 ×0.7,'
@@ -218,7 +232,8 @@ void main() {
           // 2026-06-29 solo 主线重设计:X_05 改单 Boss 供祖师单人清,3 人队跨阶威慑前提失效
           // → 下边界放宽为 >=0(恒真);solo 清线/不卡死由 solo_mainline_ch1_ch6_balance_test 覆盖
           greaterThanOrEqualTo(0),
-          reason: 'R5 下边界:跨阶 boss 三人组威慑应保持(rightWins=$rightWins + '
+          reason:
+              'R5 下边界:跨阶 boss 三人组威慑应保持(rightWins=$rightWins + '
               'draws=$draws ≥ 1),不该 50 种子全 leftWin。若 0 → 数值平衡 '
               '漂移导致敌方过弱,跨阶设计意图被破坏(memory '
               '`feedback_wuxia_boss_balance_crosstier` 跨 1-2 阶才稳触发战败)。',
