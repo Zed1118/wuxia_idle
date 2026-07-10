@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
@@ -10,17 +8,15 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 
+import '../../../support/test_data.dart';
+
 /// Task 2: BattleCharacter.fromCharacter 烘焙开锋 pierce/lifesteal 派生字段。
 ///
 /// 断言：
 /// - 带 pierce20/lifesteal15 槽的武器 → bc.forgingPiercePct=0.20 / bc.forgingLifestealPct=0.15
 /// - 裸装（无装备）→ 两字段均为 0.0
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   Equipment mkWeapon(List<ForgingSlot> slots) => Equipment.create(
     defId: 'weapon_zhongqi_test',

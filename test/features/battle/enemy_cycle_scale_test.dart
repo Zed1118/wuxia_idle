@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/boss_phase_def.dart';
@@ -9,19 +7,15 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 
+import '../../support/test_data.dart';
+
 /// B2 + D1 fix:_enemyToBattle cycleIndex scale + 词条注入 + buildEnemyTeamsPerWave cycleIndex 传递测试。
 ///
 /// 复用 GameRepository.loadAllDefs 加载真实 numbers（含 cycle_evolution 段），
 /// 通过 @visibleForTesting debugEnemyToBattle 直接测 _enemyToBattle，
 /// 不需要 Isar（纯静态方法）。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   // ── 共用 EnemyDef fixture（普通主线敌人，无自带蓄力技）─────────────────────
   const normalEnemy = EnemyDef(

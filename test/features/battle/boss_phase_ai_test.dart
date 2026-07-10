@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +10,8 @@ import 'package:wuxia_idle/features/battle/domain/battle_ai.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 
+import '../../support/test_data.dart';
+
 /// 第七阶段批二 ① Task 4:转阶段 telegraphed 蓄力反扑(A) + aiMode 接 BattleAI(B/C)。
 ///
 /// A. onEnterMechanic==chargeCounter:进阶时立即把 Boss 推入蓄力态,蓄招 = 该阶段
@@ -21,9 +22,7 @@ import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strate
 void main() {
   late NumbersConfig numbers;
   setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
+    await loadTestGameRepository();
     numbers = GameRepository.instance.numbers;
   });
 

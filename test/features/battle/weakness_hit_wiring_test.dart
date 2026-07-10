@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +10,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 
+import '../../support/test_data.dart';
+
 /// 第七阶段批二② Task 7-A：弱点/抗性结算接线（strategy → DamageCalculator）。
 ///
 /// 覆盖语义：
@@ -20,13 +21,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 ///
 /// 用 BattleEngine.tick 走完整 strategy 路径（与 cycle_trait_fanzhen_test 同模式）。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   /// 玩家(刚猛)打敌人一回合，返回那条命中 BattleAction。
   /// [defMult] 传给敌人 schoolDamageTakenMult[gangMeng]；null = 无条目（中性）。

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +7,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
+
+import '../../../support/test_data.dart';
 
 /// 第六阶段 Task 2:破防开窗 - 统一破招/破防窗口字段 + 刷新不叠加 + 减防上限 clamp。
 ///
@@ -22,9 +23,7 @@ void main() {
   late NumbersConfig numbers;
 
   setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
+    await loadTestGameRepository();
     numbers = GameRepository.instance.numbers;
   });
 

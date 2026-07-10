@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
@@ -7,6 +5,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/light_foot_strategy.dart';
 import 'package:wuxia_idle/features/light_foot/domain/light_foot_def.dart';
+
+import '../../../../support/test_data.dart';
 
 /// LightFootStrategy 单测(1.0 P3.1 §12.3 Batch B.1):
 ///   - terrain bake water/rooftop/bamboo 3 terrain × {crit/evasion/defense} delta
@@ -17,13 +17,7 @@ import 'package:wuxia_idle/features/light_foot/domain/light_foot_def.dart';
 ///
 /// 不测 runToEnd 主循环(沿 DefaultGroundStrategy e2e 测路径,本测只关 bake)。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   group('LightFootStrategy.applyTerrainTo 烘焙 terrain modifier 到双方', () {
     test('water terrain:evasion +0.15 / defense -0.10 / crit 不变', () {

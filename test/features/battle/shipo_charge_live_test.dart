@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +8,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
+
+import '../../support/test_data.dart';
 
 /// Fix 验证：识破词条注入 chargeSkillId 的同时把该技能加入 availableSkills。
 ///
@@ -25,13 +26,7 @@ import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strate
 ///   T3 - 集成 e2e：真实 1v1 战斗（strategy.tick 驱动，固定 seed），断言
 ///        敌人在有限步内达到 chargingSkill != null（蓄力真的被 AI 选到）。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   // ── 普通主线敌人：无技能 + 无自带蓄力技（cycle 3 识破会注入）─────────────
   const shipoEnemy = EnemyDef(

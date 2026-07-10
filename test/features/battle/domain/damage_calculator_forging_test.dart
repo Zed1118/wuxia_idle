@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +5,8 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+
+import '../../../support/test_data.dart';
 
 const _skill = SkillDef(
   id: 's_pierce_test',
@@ -22,9 +23,7 @@ const _skill = SkillDef(
 void main() {
   late dynamic n;
   setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
+    await loadTestGameRepository();
     n = GameRepository.instance.numbers;
   });
 

@@ -1,18 +1,12 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/cycle_trait_intel.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
+import '../../support/test_data.dart';
+
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   test('cycle 1 主线无词条说明', () {
     final entries = CycleTraitIntel.entriesFor(
