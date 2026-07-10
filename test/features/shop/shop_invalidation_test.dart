@@ -12,6 +12,8 @@ import 'package:wuxia_idle/features/shop/application/shop_invalidation.dart';
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/features/shop/application/shop_service.dart';
 
+import '../../support/isar_test_support.dart';
+
 void main() {
   late Directory tempDir;
   late Isar isar;
@@ -24,9 +26,7 @@ void main() {
     category: 'material',
   );
 
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
+  setUpAll(initializeTestIsarCore);
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_shop_inval_');

@@ -20,6 +20,8 @@ import 'package:wuxia_idle/features/inventory/presentation/bulk_disposal_dialog.
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
+import '../../../support/isar_test_support.dart';
+
 /// BulkDisposalDialog widget 测试（Task 6 TDD）。
 ///
 /// 覆盖范围：
@@ -36,7 +38,7 @@ void main() {
         loader: (path) => File(path).readAsString(),
       );
     }
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
   });
 
   Equipment mkEq({

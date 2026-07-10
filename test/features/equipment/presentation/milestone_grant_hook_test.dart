@@ -6,13 +6,15 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/equipment/presentation/milestone_grant_hook.dart';
 
+import '../../../support/isar_test_support.dart';
+
 /// F1 里程碑授予 hook 纯逻辑测(stageId→tag→grant 映射)。
 /// 不走 testWidgets(真 Isar writeTxn 不兼容 FakeAsync)。
 void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

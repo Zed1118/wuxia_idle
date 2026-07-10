@@ -12,6 +12,8 @@ import 'package:wuxia_idle/features/equipment/application/enhancement_service.da
 import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
+import '../../../support/isar_test_support.dart';
+
 /// T32 #22a EnhancementService.persistResult 真 Isar 落地测试。
 ///
 /// 不走 testWidgets（FakeAsync 与真 Isar 异步 IO 不兼容），用普通 `test()`
@@ -28,7 +30,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

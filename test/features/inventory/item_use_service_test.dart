@@ -13,6 +13,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/inventory/application/item_use_service.dart';
 
+import '../../support/isar_test_support.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late Directory tempDir;
@@ -20,7 +22,7 @@ void main() {
   late GameRepository repo;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     repo = await GameRepository.loadAllDefs();
   });
 
