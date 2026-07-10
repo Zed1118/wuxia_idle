@@ -186,6 +186,48 @@ class _FounderCreationScreenState extends ConsumerState<FounderCreationScreen> {
                                   ],
                                   selected: {_startMode},
                                   showSelectedIcon: false,
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        WidgetStateProperty.resolveWith(
+                                          (states) =>
+                                              states.contains(
+                                                WidgetState.selected,
+                                              )
+                                              ? WuxiaColors.resultHighlight
+                                                    .withValues(alpha: 0.16)
+                                              : WuxiaColors.panel,
+                                        ),
+                                    foregroundColor:
+                                        WidgetStateProperty.resolveWith(
+                                          (states) =>
+                                              states.contains(
+                                                WidgetState.selected,
+                                              )
+                                              ? WuxiaColors.resultHighlight
+                                              : WuxiaColors.textSecondary,
+                                        ),
+                                    iconColor: WidgetStateProperty.resolveWith(
+                                      (states) =>
+                                          states.contains(WidgetState.selected)
+                                          ? WuxiaColors.resultHighlight
+                                          : WuxiaColors.textMuted,
+                                    ),
+                                    side: WidgetStateProperty.resolveWith(
+                                      (states) => BorderSide(
+                                        color:
+                                            states.contains(
+                                              WidgetState.selected,
+                                            )
+                                            ? WuxiaColors.resultHighlight
+                                            : WuxiaColors.border,
+                                      ),
+                                    ),
+                                    overlayColor: WidgetStatePropertyAll(
+                                      WuxiaColors.resultHighlight.withValues(
+                                        alpha: 0.08,
+                                      ),
+                                    ),
+                                  ),
                                   onSelectionChanged: (selection) => setState(
                                     () => _startMode = selection.single,
                                   ),

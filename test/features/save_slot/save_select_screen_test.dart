@@ -60,7 +60,7 @@ void main() {
 
   testWidgets('没有完成首周目的存档时不显示快速开局提示', (tester) async {
     final incomplete = [
-      SlotSummary(
+      const SlotSummary(
         slotId: 1,
         isEmpty: false,
         founderName: '初行者',
