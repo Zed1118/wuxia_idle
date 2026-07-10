@@ -42,7 +42,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart' show RealmUtils;
+import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
+    show RealmUtils;
 import 'package:wuxia_idle/features/cultivation/application/technique_skill_growth_gate.dart';
 
 const int _seedsPerStage = 50;
@@ -60,17 +61,24 @@ void main() {
   });
 
   test('balance simulation · 30 mainline × $_seedsPerStage seeds', () async {
-    final mainlines = repo.stageDefs.values
-        .where((s) => s.stageType == StageType.mainline)
-        .toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
-    expect(mainlines.length, greaterThanOrEqualTo(25),
-        reason: 'Demo §8.4 15-20 主线 + Ch4-6 P2 扩 = 30 关');
+    final mainlines =
+        repo.stageDefs.values
+            .where((s) => s.stageType == StageType.mainline)
+            .toList()
+          ..sort((a, b) => a.id.compareTo(b.id));
+    expect(
+      mainlines.length,
+      greaterThanOrEqualTo(25),
+      reason: 'Demo §8.4 15-20 主线 + Ch4-6 P2 扩 = 30 关',
+    );
 
     final results = <_SimResult>[];
     for (final stage in mainlines) {
       if (stage.enemyTeam.isEmpty) continue; // 剧情关跳过
-      for (final profile in const [_BuildProfile.floor, _BuildProfile.ceiling]) {
+      for (final profile in const [
+        _BuildProfile.floor,
+        _BuildProfile.ceiling,
+      ]) {
         for (var seed = 0; seed < _seedsPerStage; seed++) {
           results.add(_simulateStage(stage, seed, repo, profile));
         }
@@ -102,20 +110,31 @@ void main() {
         int winAt(int uses) {
           var w = 0;
           for (var seed = 0; seed < seeds; seed++) {
-            final r = _simulateStage(stage, seed, repo, profile,
-                proficiencyUses: uses);
+            final r = _simulateStage(
+              stage,
+              seed,
+              repo,
+              profile,
+              proficiencyUses: uses,
+            );
             if (r.result == 'leftWin') w++;
           }
           return w;
         }
+
         final fresh = winAt(0);
         final maxed = winAt(800);
-        lines.add('[${profile.name}] $sid: '
-            'fresh=${(fresh / seeds * 100).round()}% '
-            '-> maxProf=${(maxed / seeds * 100).round()}% '
-            '(delta ${((maxed - fresh) / seeds * 100).round()}pt)');
-        expect(maxed, greaterThanOrEqualTo(fresh),
-            reason: '$sid[${profile.name}] 熟练度不应降低 winRate');
+        lines.add(
+          '[${profile.name}] $sid: '
+          'fresh=${(fresh / seeds * 100).round()}% '
+          '-> maxProf=${(maxed / seeds * 100).round()}% '
+          '(delta ${((maxed - fresh) / seeds * 100).round()}pt)',
+        );
+        expect(
+          maxed,
+          greaterThanOrEqualTo(fresh),
+          reason: '$sid[${profile.name}] 熟练度不应降低 winRate',
+        );
       }
     }
     print('=== P1a 熟练度 winRate 影响(floor/ceiling · $seeds seeds/档) ===');
@@ -129,92 +148,134 @@ void main() {
   // 隔离熟练度)。输出对照表 + 过易诊断到 output;断言写约束语义:
   //   - per stage/profile:maxed ≥ fresh − 10pt(CD delta 改变战斗流,容噪)
   //   - 全表 mean delta ≥ 0(熟练度整体只增不减)
-  test('波B 熟练度全表 sweep:30 mainline × floor/ceiling × uses{0,800}',
-      () async {
-    const seeds = 25;
-    final mainlines = repo.stageDefs.values
-        .where((s) =>
-            s.stageType == StageType.mainline && s.enemyTeam.isNotEmpty)
-        .toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
+  test(
+    '波B 熟练度全表 sweep:30 mainline × floor/ceiling × uses{0,800}',
+    () async {
+      const seeds = 25;
+      final mainlines =
+          repo.stageDefs.values
+              .where(
+                (s) =>
+                    s.stageType == StageType.mainline && s.enemyTeam.isNotEmpty,
+              )
+              .toList()
+            ..sort((a, b) => a.id.compareTo(b.id));
 
-    final buf = StringBuffer()
-      ..writeln('# 波B 熟练度全表 Sweep · 2026-06-11')
-      ..writeln()
-      ..writeln('$seeds seed × ${mainlines.length} mainline × 2 profile × '
-          'uses{0=fresh,800=化境} · 同 seed A/B')
-      ..writeln()
-      ..writeln('| stage | realm | Boss | floor fresh→max(Δpt) | '
-          'ceiling fresh→max(Δpt) |')
-      ..writeln('|---|---|---|---|---|');
+      final buf = StringBuffer()
+        ..writeln('# 波B 熟练度全表 Sweep · 2026-06-11')
+        ..writeln()
+        ..writeln(
+          '$seeds seed × ${mainlines.length} mainline × 2 profile × '
+          'uses{0=fresh,800=化境} · 同 seed A/B',
+        )
+        ..writeln()
+        ..writeln(
+          '| stage | realm | Boss | floor fresh→max(Δpt) | '
+          'ceiling fresh→max(Δpt) |',
+        )
+        ..writeln('|---|---|---|---|---|');
 
-    String pct(double v) => '${(v * 100).round()}%';
-    var deltaSum = 0.0;
-    var cells = 0;
-    final violations = <String>[];
-    final tooEasy = <String>[];
-    for (final stage in mainlines) {
-      final rowCells = <String>[];
-      final maxedByProfile = <_BuildProfile, double>{};
-      for (final profile in const [_BuildProfile.floor, _BuildProfile.ceiling]) {
-        int winAt(int uses) {
-          var w = 0;
-          for (var seed = 0; seed < seeds; seed++) {
-            final r = _simulateStage(stage, seed, repo, profile,
-                proficiencyUses: uses);
-            if (r.result == 'leftWin') w++;
+      String pct(double v) => '${(v * 100).round()}%';
+      var deltaSum = 0.0;
+      var cells = 0;
+      final violations = <String>[];
+      final tooEasy = <String>[];
+      for (final stage in mainlines) {
+        final rowCells = <String>[];
+        final maxedByProfile = <_BuildProfile, double>{};
+        for (final profile in const [
+          _BuildProfile.floor,
+          _BuildProfile.ceiling,
+        ]) {
+          int winAt(int uses) {
+            var w = 0;
+            for (var seed = 0; seed < seeds; seed++) {
+              final r = _simulateStage(
+                stage,
+                seed,
+                repo,
+                profile,
+                proficiencyUses: uses,
+              );
+              if (r.result == 'leftWin') w++;
+            }
+            return w;
           }
-          return w;
-        }
 
-        final fresh = winAt(0) / seeds;
-        final maxed = winAt(800) / seeds;
-        maxedByProfile[profile] = maxed;
-        deltaSum += maxed - fresh;
-        cells++;
-        if (maxed < fresh - 0.10) {
-          violations.add('${stage.id}[${profile.name}]: '
-              '${pct(fresh)} → ${pct(maxed)}');
+          final fresh = winAt(0) / seeds;
+          final maxed = winAt(800) / seeds;
+          maxedByProfile[profile] = maxed;
+          deltaSum += maxed - fresh;
+          cells++;
+          if (maxed < fresh - 0.10) {
+            violations.add(
+              '${stage.id}[${profile.name}]: '
+              '${pct(fresh)} → ${pct(maxed)}',
+            );
+          }
+          rowCells.add(
+            '${pct(fresh)}→${pct(maxed)}'
+            '(${((maxed - fresh) * 100).round()})',
+          );
         }
-        rowCells.add('${pct(fresh)}→${pct(maxed)}'
-            '(${((maxed - fresh) * 100).round()})');
-      }
-      if (maxedByProfile[_BuildProfile.floor]! > 0.90) {
-        tooEasy.add('${stage.id}(floor maxed '
-            '${pct(maxedByProfile[_BuildProfile.floor]!)})');
-      }
-      buf.writeln('| ${stage.id} | ${stage.requiredRealm.name} | '
+        if (maxedByProfile[_BuildProfile.floor]! > 0.90) {
+          tooEasy.add(
+            '${stage.id}(floor maxed '
+            '${pct(maxedByProfile[_BuildProfile.floor]!)})',
+          );
+        }
+        buf.writeln(
+          '| ${stage.id} | ${stage.requiredRealm.name} | '
           '${stage.isBossStage ? "Boss" : "—"} | ${rowCells[0]} | '
-          '${rowCells[1]} |');
-    }
+          '${rowCells[1]} |',
+        );
+      }
 
-    buf
-      ..writeln()
-      ..writeln('## 诊断')
-      ..writeln()
-      ..writeln('- **高熟练度过易候选**(floor 满熟练 > 90%,熟练度把下限'
-          '冲穿):${tooEasy.isEmpty ? "无" : tooEasy.join(" / ")}')
-      ..writeln('- mean delta = '
-          '${(deltaSum / cells * 100).toStringAsFixed(1)}pt(全表均值)')
-      ..writeln()
-      ..writeln('## 局限')
-      ..writeln()
-      ..writeln('- 沿主表 sweep 局限(on-level / 固定刚猛 / 无辅修 synergy);'
-          '熟练度种到主修全招(含波B Boss 蓄力变化后的难度面)。')
-      ..writeln('- drop 招(真解/残页)未入 sim build(装配为玩家主动行为),'
-          '本表只量化熟练度轴。');
+      buf
+        ..writeln()
+        ..writeln('## 诊断')
+        ..writeln()
+        ..writeln(
+          '- **高熟练度过易候选**(floor 满熟练 > 90%,熟练度把下限'
+          '冲穿):${tooEasy.isEmpty ? "无" : tooEasy.join(" / ")}',
+        )
+        ..writeln(
+          '- mean delta = '
+          '${(deltaSum / cells * 100).toStringAsFixed(1)}pt(全表均值)',
+        )
+        ..writeln()
+        ..writeln('## 局限')
+        ..writeln()
+        ..writeln(
+          '- 沿主表 sweep 局限(on-level / 固定刚猛 / 无辅修 synergy);'
+          '熟练度种到主修全招(含波B Boss 蓄力变化后的难度面)。',
+        )
+        ..writeln(
+          '- drop 招(真解/残页)未入 sim build(装配为玩家主动行为),'
+          '本表只量化熟练度轴。',
+        );
 
-    final outPath = '$_outputDir/proficiency_sweep_2026-06-11.md';
-    File(outPath).writeAsStringSync(buf.toString());
-    print('proficiency sweep done · summary=$outPath');
-    print('mean delta = ${(deltaSum / cells * 100).toStringAsFixed(1)}pt'
-        ' · 过易候选 ${tooEasy.length}');
+      final outPath = '$_outputDir/proficiency_sweep_2026-06-11.md';
+      File(outPath).writeAsStringSync(buf.toString());
+      print('proficiency sweep done · summary=$outPath');
+      print(
+        'mean delta = ${(deltaSum / cells * 100).toStringAsFixed(1)}pt'
+        ' · 过易候选 ${tooEasy.length}',
+      );
 
-    expect(violations, isEmpty,
-        reason: '高熟练度不应明显降低 winRate(容噪 10pt):$violations');
-    expect(deltaSum / cells, greaterThanOrEqualTo(0),
-        reason: '全表 mean delta 应 ≥ 0(熟练度整体只增不减)');
-  }, timeout: const Timeout(Duration(minutes: 15)));
+      expect(
+        violations,
+        isEmpty,
+        reason: '高熟练度不应明显降低 winRate(容噪 10pt):$violations',
+      );
+      expect(
+        deltaSum / cells,
+        greaterThanOrEqualTo(0),
+        reason: '全表 mean delta 应 ≥ 0(熟练度整体只增不减)',
+      );
+    },
+    timeout: const Timeout(Duration(minutes: 15)),
+  );
 
   // ── 极值 build × 周目进化诊断(2026-06-14 红线分两层后 · 外部审查 P1 未处理项)──
   // 满强化神物极值 build(武圣登峰)回刷 Ch6 宗师终局,跨周目 cycle{1,2,3} 敌人 scale
@@ -222,93 +283,118 @@ void main() {
   // 玩家单击实战峰值伤害。软红线唯一硬线 = 不进百万(2026-06-14 诊断实测峰值 13-21 万后
   // 用户拍板从「不进十万」放宽;进十万仍标注但非越线)。
   // 断言只钉死「不进百万」硬不变量;winRate/失衡度/进十万标注纯诊断输出,交人类拍。
-  test('极值 build × 周目进化诊断:武圣满强化神物 vs Ch6 宗师 × cycle{1,2,3}',
-      () async {
-    const ch6 = [
-      'stage_06_01',
-      'stage_06_02',
-      'stage_06_03',
-      'stage_06_04',
-      'stage_06_05',
-    ];
-    const seeds = 30;
-    const cycles = [1, 2, 3]; // max_cycle_mainline = 3
+  test(
+    '极值 build × 周目进化诊断:武圣满强化神物 vs Ch6 宗师 × cycle{1,2,3}',
+    () async {
+      const ch6 = [
+        'stage_06_01',
+        'stage_06_02',
+        'stage_06_03',
+        'stage_06_04',
+        'stage_06_05',
+      ];
+      const seeds = 30;
+      const cycles = [1, 2, 3]; // max_cycle_mainline = 3
 
-    final buf = StringBuffer()
-      ..writeln('# 极值 build × 周目进化诊断 · 2026-06-14')
-      ..writeln()
-      ..writeln('满强化神物极值 build(武圣登峰 · +49 / 心剑通灵 ×1.30 / 开锋 15+20 / '
+      final buf = StringBuffer()
+        ..writeln('# 极值 build × 周目进化诊断 · 2026-06-14')
+        ..writeln()
+        ..writeln(
+          '满强化神物极值 build(武圣登峰 · +49 / 心剑通灵 ×1.30 / 开锋 15+20 / '
           '极境 ×3.0 / 满熟练 uses800 / 属性24 / founder buff)回刷 Ch6 宗师终局 × '
-          '$seeds seed × cycle{1,2,3}。+1 阶差距修正(武圣攻宗师 ×1.4 / 守 ×0.7)。')
-      ..writeln()
-      ..writeln('| cycle | stage | Boss | winRate | 均 ticks | 均掉血% | 峰值单击 |')
-      ..writeln('|---|---|---|---|---|---|---|');
+          '$seeds seed × cycle{1,2,3}。+1 阶差距修正(武圣攻宗师 ×1.4 / 守 ×0.7)。',
+        )
+        ..writeln()
+        ..writeln('| cycle | stage | Boss | winRate | 均 ticks | 均掉血% | 峰值单击 |')
+        ..writeln('|---|---|---|---|---|---|---|');
 
-    var globalPeak = 0;
-    var globalNormalPeak = 0;
-    final peakByCycle = <int, int>{};
-    for (final cycle in cycles) {
-      for (final sid in ch6) {
-        final stage = repo.stageDefs[sid];
-        if (stage == null || stage.enemyTeam.isEmpty) continue;
-        var win = 0;
-        var tickSum = 0;
-        var hpLossSum = 0.0;
-        var peak = 0;
-        for (var seed = 0; seed < seeds; seed++) {
-          final r = _simulateStage(stage, seed, repo, _BuildProfile.extreme,
+      var globalPeak = 0;
+      var globalNormalPeak = 0;
+      final peakByCycle = <int, int>{};
+      for (final cycle in cycles) {
+        for (final sid in ch6) {
+          final stage = repo.stageDefs[sid];
+          if (stage == null || stage.enemyTeam.isEmpty) continue;
+          var win = 0;
+          var tickSum = 0;
+          var hpLossSum = 0.0;
+          var peak = 0;
+          for (var seed = 0; seed < seeds; seed++) {
+            final r = _simulateStage(
+              stage,
+              seed,
+              repo,
+              _BuildProfile.extreme,
               proficiencyUses: 800,
               cycleIndex: cycle,
-              playerTierOverride: RealmTier.wuSheng);
-          if (r.result == 'leftWin') win++;
-          tickSum += r.ticks;
-          hpLossSum += r.initialPlayerHp == 0
-              ? 0
-              : (r.initialPlayerHp - r.playerHpEnd) / r.initialPlayerHp;
-          if (r.peakPlayerDamage > peak) peak = r.peakPlayerDamage;
-          globalNormalPeak = max(globalNormalPeak, r.peakPlayerNormalDamage);
-        }
-        globalPeak = max(globalPeak, peak);
-        peakByCycle[cycle] = max(peakByCycle[cycle] ?? 0, peak);
-        buf.writeln('| $cycle | $sid | ${stage.isBossStage ? "Boss" : "—"} | '
+              playerTierOverride: RealmTier.wuSheng,
+            );
+            if (r.result == 'leftWin') win++;
+            tickSum += r.ticks;
+            hpLossSum += r.initialPlayerHp == 0
+                ? 0
+                : (r.initialPlayerHp - r.playerHpEnd) / r.initialPlayerHp;
+            if (r.peakPlayerDamage > peak) peak = r.peakPlayerDamage;
+            globalNormalPeak = max(globalNormalPeak, r.peakPlayerNormalDamage);
+          }
+          globalPeak = max(globalPeak, peak);
+          peakByCycle[cycle] = max(peakByCycle[cycle] ?? 0, peak);
+          buf.writeln(
+            '| $cycle | $sid | ${stage.isBossStage ? "Boss" : "—"} | '
             '${(win / seeds * 100).round()}% | ${(tickSum / seeds).round()} | '
-            '${(hpLossSum / seeds * 100).toStringAsFixed(1)}% | $peak |');
+            '${(hpLossSum / seeds * 100).toStringAsFixed(1)}% | $peak |',
+          );
+        }
       }
-    }
 
-    // 软红线唯一硬线 = 不进百万(2026-06-14 放宽)。进十万仅信息标注,非越线。
-    String peakTag(int p) => p >= 1000000
-        ? '⚠️ 进百万·越软红线'
-        : (p >= 100000 ? '进十万(6 位可读·软线已放宽不进百万·非越线)' : '✅ 不进十万');
-    buf
-      ..writeln()
-      ..writeln('## 诊断')
-      ..writeln()
-      ..writeln('- 全局玩家单击实战峰值(任意技)= $globalPeak(${peakTag(globalPeak)})')
-      ..writeln('- 全局玩家**普攻**单击实战峰值 = $globalNormalPeak'
+      // 软红线唯一硬线 = 不进百万(2026-06-14 放宽)。进十万仅信息标注,非越线。
+      String peakTag(int p) => p >= 1000000
+          ? '⚠️ 进百万·越软红线'
+          : (p >= 100000 ? '进十万(6 位可读·软线已放宽不进百万·非越线)' : '✅ 不进十万');
+      buf
+        ..writeln()
+        ..writeln('## 诊断')
+        ..writeln()
+        ..writeln('- 全局玩家单击实战峰值(任意技)= $globalPeak(${peakTag(globalPeak)})')
+        ..writeln(
+          '- 全局玩家**普攻**单击实战峰值 = $globalNormalPeak'
           '(${peakTag(globalNormalPeak)})'
-          '${globalNormalPeak >= 100000 ? " ← 实战普攻也进十万:full_build calculator 探针(~5.8万)是下界,漏熟练度×1.30+APM;§5.4 软线已放宽不进百万" : ""}')
-      ..writeln('- 各周目峰值(任意技):'
-          '${cycles.map((c) => "c$c=${peakByCycle[c] ?? 0}").join(" / ")}')
-      ..writeln()
-      ..writeln('## 局限')
-      ..writeln()
-      ..writeln('- AI 自动放 powerSkill burst + ultimate,峰值多来自大招而非普攻;'
-          'full_build_damage_redline_test calculator 探针是普攻下界(~5.8万),本测兜真实派生峰值。')
-      ..writeln('- 固定刚猛 vs Ch6 敌流派分布;playerTier override=武圣'
-          '(神物唯一可装阶 · 无 wuSheng mainline 内容,回刷宗师)。')
-      ..writeln('- 玩家满熟练 ×1.30 叠极境 ×3.0(双修炼度乘子),为真实终局上限。');
+          '${globalNormalPeak >= 100000 ? " ← 实战普攻也进十万:full_build calculator 探针(~5.8万)是下界,漏熟练度×1.30+APM;§5.4 软线已放宽不进百万" : ""}',
+        )
+        ..writeln(
+          '- 各周目峰值(任意技):'
+          '${cycles.map((c) => "c$c=${peakByCycle[c] ?? 0}").join(" / ")}',
+        )
+        ..writeln()
+        ..writeln('## 局限')
+        ..writeln()
+        ..writeln(
+          '- AI 自动放 powerSkill burst + ultimate,峰值多来自大招而非普攻;'
+          'full_build_damage_redline_test calculator 探针是普攻下界(~5.8万),本测兜真实派生峰值。',
+        )
+        ..writeln(
+          '- 固定刚猛 vs Ch6 敌流派分布;playerTier override=武圣'
+          '(神物唯一可装阶 · 无 wuSheng mainline 内容,回刷宗师)。',
+        )
+        ..writeln('- 玩家满熟练 ×1.30 叠极境 ×3.0(双修炼度乘子),为真实终局上限。');
 
-    final outPath = '$_outputDir/extreme_cycle_diagnosis_2026-06-14.md';
-    File(outPath).writeAsStringSync(buf.toString());
-    print('extreme×cycle diagnosis done · summary=$outPath');
-    print('global peak(any)=$globalPeak · ${peakTag(globalPeak)} · '
-        'peak(normal)=$globalNormalPeak · ${peakTag(globalNormalPeak)}');
+      final outPath = '$_outputDir/extreme_cycle_diagnosis_2026-06-14.md';
+      File(outPath).writeAsStringSync(buf.toString());
+      print('extreme×cycle diagnosis done · summary=$outPath');
+      print(
+        'global peak(any)=$globalPeak · ${peakTag(globalPeak)} · '
+        'peak(normal)=$globalNormalPeak · ${peakTag(globalNormalPeak)}',
+      );
 
-    // 硬不变量:实战玩家单击峰值不进百万(GDD/CLAUDE §5.4 软红线绝对天花板)。
-    expect(globalPeak, lessThan(1000000),
-        reason: '极值 build 实战玩家单击峰值不得进百万级膨胀(§5.4 绝对天花板)');
-  }, timeout: const Timeout(Duration(minutes: 15)));
+      // 硬不变量:实战玩家单击峰值不进百万(GDD/CLAUDE §5.4 软红线绝对天花板)。
+      expect(
+        globalPeak,
+        lessThan(1000000),
+        reason: '极值 build 实战玩家单击峰值不得进百万级膨胀(§5.4 绝对天花板)',
+      );
+    },
+    timeout: const Timeout(Duration(minutes: 15)),
+  );
 
   // ── spec A 弟子后移诊断:武圣单人(on-level) Ch4-6 可通性(2026-06-27)──
   // 弟子拜入后移至 stage_06_05 后,整条主线 Ch1-6 变「祖师单人」。Ch4-6 原可能
@@ -316,190 +402,248 @@ void main() {
   // 能否通 Ch4-6,尤其 stage_06_05 Boss。附 3 人队 ceiling 对照列看「单人变难多少」。
   // 纯诊断(不改 numbers.yaml / 不硬断言 winRate 阈值):调参是 spec §4 下游用户拍板项。
   // 输出 md 到 output/,断言仅 runs>0。
-  test('spec A 单人主线诊断:祖师单人 Ch4-6 可通性 × 超阶幅度(on-level/+1/+2/武圣)',
-      () async {
-    final ch456 = repo.stageDefs.values
-        .where((s) =>
-            s.stageType == StageType.mainline &&
-            s.enemyTeam.isNotEmpty &&
-            (s.chapterIndex == 4 ||
-                s.chapterIndex == 5 ||
-                s.chapterIndex == 6))
-        .toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
-    const seeds = 50;
+  test(
+    'spec A 单人主线诊断:祖师单人 Ch4-6 可通性 × 超阶幅度(on-level/+1/+2/武圣)',
+    () async {
+      final ch456 =
+          repo.stageDefs.values
+              .where(
+                (s) =>
+                    s.stageType == StageType.mainline &&
+                    s.enemyTeam.isNotEmpty &&
+                    (s.chapterIndex == 4 ||
+                        s.chapterIndex == 5 ||
+                        s.chapterIndex == 6),
+              )
+              .toList()
+            ..sort((a, b) => a.id.compareTo(b.id));
+      const seeds = 50;
 
-    // 单人 1 打 3:on-level(玩家=requiredRealm)被数量碾压必 0%,非公平基线。挂机
-    // 游戏单人会自然练级超阶,用境界差距修正(差1阶 atk×1.4/def×0.7 · 差2阶 ×2.5/×0.3)
-    // 补偿数量劣势。扫 +0/+1/+2/武圣(顶阶)solo ceiling,找单人可通所需超阶幅度。
-    RealmTier tierAtOffset(RealmTier base, int off) {
-      final i = (RealmTier.values.indexOf(base) + off)
-          .clamp(0, RealmTier.values.length - 1);
-      return RealmTier.values[i];
-    }
-
-    double soloCeil(StageDef stage, RealmTier tier) {
-      var w = 0;
-      for (var seed = 0; seed < seeds; seed++) {
-        final r = _simulateStage(stage, seed, repo, _BuildProfile.ceiling,
-            soloFounder: true, playerTierOverride: tier);
-        if (r.result == 'leftWin') w++;
+      // 单人 1 打 3:on-level(玩家=requiredRealm)被数量碾压必 0%,非公平基线。挂机
+      // 游戏单人会自然练级超阶,用境界差距修正(差1阶 atk×1.4/def×0.7 · 差2阶 ×2.5/×0.3)
+      // 补偿数量劣势。扫 +0/+1/+2/武圣(顶阶)solo ceiling,找单人可通所需超阶幅度。
+      RealmTier tierAtOffset(RealmTier base, int off) {
+        final i = (RealmTier.values.indexOf(base) + off).clamp(
+          0,
+          RealmTier.values.length - 1,
+        );
+        return RealmTier.values[i];
       }
-      return w / seeds;
-    }
 
-    double teamCeil(StageDef stage) {
-      var w = 0;
-      for (var seed = 0; seed < seeds; seed++) {
-        final r = _simulateStage(stage, seed, repo, _BuildProfile.ceiling,
-            soloFounder: false);
-        if (r.result == 'leftWin') w++;
+      double soloCeil(StageDef stage, RealmTier tier) {
+        var w = 0;
+        for (var seed = 0; seed < seeds; seed++) {
+          final r = _simulateStage(
+            stage,
+            seed,
+            repo,
+            _BuildProfile.ceiling,
+            soloFounder: true,
+            playerTierOverride: tier,
+          );
+          if (r.result == 'leftWin') w++;
+        }
+        return w / seeds;
       }
-      return w / seeds;
-    }
 
-    String pct(double v) => '${(v * 100).round()}%';
+      double teamCeil(StageDef stage) {
+        var w = 0;
+        for (var seed = 0; seed < seeds; seed++) {
+          final r = _simulateStage(
+            stage,
+            seed,
+            repo,
+            _BuildProfile.ceiling,
+            soloFounder: false,
+          );
+          if (r.result == 'leftWin') w++;
+        }
+        return w / seeds;
+      }
 
-    final buf = StringBuffer()
-      ..writeln('# spec A 单人主线诊断 · Ch4-6 × 超阶幅度 · 2026-06-27')
-      ..writeln()
-      ..writeln('弟子后移至 stage_06_05 后主线变「祖师单人」。单人 1 打 1-3,on-level'
+      String pct(double v) => '${(v * 100).round()}%';
+
+      final buf = StringBuffer()
+        ..writeln('# spec A 单人主线诊断 · Ch4-6 × 超阶幅度 · 2026-06-27')
+        ..writeln()
+        ..writeln(
+          '弟子后移至 stage_06_05 后主线变「祖师单人」。单人 1 打 1-3,on-level'
           '被数量碾压;靠超阶(挂机自然练级)的境界差距修正补偿。solo ceiling(活跃满配'
-          '单人)× {on-level,+1,+2,武圣顶阶} · $seeds seed/格。team3=3 人队 on-level 对照。')
-      ..writeln()
-      ..writeln('| stage | reqRealm | Boss | solo +0 | solo +1 | solo +2 | '
-          'solo 武圣 | team3 +0 |')
-      ..writeln('|---|---|---|---|---|---|---|---|');
+          '单人)× {on-level,+1,+2,武圣顶阶} · $seeds seed/格。team3=3 人队 on-level 对照。',
+        )
+        ..writeln()
+        ..writeln(
+          '| stage | reqRealm | Boss | solo +0 | solo +1 | solo +2 | '
+          'solo 武圣 | team3 +0 |',
+        )
+        ..writeln('|---|---|---|---|---|---|---|---|');
 
-    // 单人「可通」门槛:取使该关 solo ceiling ≥ 50% 的最小超阶幅度。
-    final neededOffset = <String, String>{};
-    for (final stage in ch456) {
-      final base = stage.requiredRealm;
-      final s0 = soloCeil(stage, tierAtOffset(base, 0));
-      final s1 = soloCeil(stage, tierAtOffset(base, 1));
-      final s2 = soloCeil(stage, tierAtOffset(base, 2));
-      final sw = soloCeil(stage, RealmTier.wuSheng);
-      final tc = teamCeil(stage);
-      buf.writeln('| ${stage.id} | ${base.name} | '
+      // 单人「可通」门槛:取使该关 solo ceiling ≥ 50% 的最小超阶幅度。
+      final neededOffset = <String, String>{};
+      for (final stage in ch456) {
+        final base = stage.requiredRealm;
+        final s0 = soloCeil(stage, tierAtOffset(base, 0));
+        final s1 = soloCeil(stage, tierAtOffset(base, 1));
+        final s2 = soloCeil(stage, tierAtOffset(base, 2));
+        final sw = soloCeil(stage, RealmTier.wuSheng);
+        final tc = teamCeil(stage);
+        buf.writeln(
+          '| ${stage.id} | ${base.name} | '
           '${stage.isBossStage ? "Boss" : "—"} | ${pct(s0)} | ${pct(s1)} | '
-          '${pct(s2)} | ${pct(sw)} | ${pct(tc)} |');
-      final need = s0 >= 0.5
-          ? 'on-level 即可'
-          : s1 >= 0.5
-              ? '+1 阶'
-              : s2 >= 0.5
-                  ? '+2 阶'
-                  : sw >= 0.5
-                      ? '武圣(顶阶)'
-                      : '武圣仍 < 50% ⚠️';
-      neededOffset[stage.id] = need;
-    }
+          '${pct(s2)} | ${pct(sw)} | ${pct(tc)} |',
+        );
+        final need = s0 >= 0.5
+            ? 'on-level 即可'
+            : s1 >= 0.5
+            ? '+1 阶'
+            : s2 >= 0.5
+            ? '+2 阶'
+            : sw >= 0.5
+            ? '武圣(顶阶)'
+            : '武圣仍 < 50% ⚠️';
+        neededOffset[stage.id] = need;
+      }
 
-    final boss0605 = repo.stageDefs['stage_06_05'];
-    final wuShengBlocked = neededOffset.entries
-        .where((e) => e.value.contains('仍 < 50%'))
-        .map((e) => e.key)
-        .toList();
-    buf
-      ..writeln()
-      ..writeln('## 每关单人可通所需超阶幅度')
-      ..writeln();
-    for (final e in neededOffset.entries) {
-      buf.writeln('- ${e.key}: ${e.value}');
-    }
-    buf
-      ..writeln()
-      ..writeln('## 诊断')
-      ..writeln()
-      ..writeln('- **即便武圣(顶阶 +1~+3)单人仍 < 50% 的关(硬卡点·调参候选·待拍板)**:'
-          '${wuShengBlocked.isEmpty ? "无 —— 武圣单人可通全 Ch4-6 ✅" : wuShengBlocked.join(" / ")}')
-      ..writeln('- stage_06_05 Boss:武圣单人 ceiling '
+      final boss0605 = repo.stageDefs['stage_06_05'];
+      final wuShengBlocked = neededOffset.entries
+          .where((e) => e.value.contains('仍 < 50%'))
+          .map((e) => e.key)
+          .toList();
+      buf
+        ..writeln()
+        ..writeln('## 每关单人可通所需超阶幅度')
+        ..writeln();
+      for (final e in neededOffset.entries) {
+        buf.writeln('- ${e.key}: ${e.value}');
+      }
+      buf
+        ..writeln()
+        ..writeln('## 诊断')
+        ..writeln()
+        ..writeln(
+          '- **即便武圣(顶阶 +1~+3)单人仍 < 50% 的关(硬卡点·调参候选·待拍板)**:'
+          '${wuShengBlocked.isEmpty ? "无 —— 武圣单人可通全 Ch4-6 ✅" : wuShengBlocked.join(" / ")}',
+        )
+        ..writeln(
+          '- stage_06_05 Boss:武圣单人 ceiling '
           '${pct(soloCeil(boss0605!, RealmTier.wuSheng))} · '
           '敌队总 HP=${boss0605.enemyTeam.fold<int>(0, (s, e) => s + e.baseHp)}'
-          '(${boss0605.enemyTeam.length} 敌)')
-      ..writeln()
-      ..writeln('## 结论口径')
-      ..writeln()
-      ..writeln('- 单人 on-level 必败(1 打 3 数量劣势),这是挂机游戏的正常预期——'
-          '玩家靠练级超阶通关。读「所需超阶幅度」判断后移是否制造不合理墙。')
-      ..writeln('- 若多数关 +1~+2 阶即可、且武圣无硬卡点 = 后移可接受(单人靠正常'
-          '挂机练级推进),**无需调参**。')
-      ..writeln('- 若存在武圣仍 < 50% 的硬卡点 = 该关按 3 人队调过,单人无解,'
-          '**敌人/关卡调参作为 spec §4 下游独立项待用户拍板**(本诊断不改 numbers.yaml)。')
-      ..writeln()
-      ..writeln('## 局限')
-      ..writeln()
-      ..writeln('- on-level/固定刚猛/无辅修 synergy/无 drop 真解招(装配为玩家主动'
+          '(${boss0605.enemyTeam.length} 敌)',
+        )
+        ..writeln()
+        ..writeln('## 结论口径')
+        ..writeln()
+        ..writeln(
+          '- 单人 on-level 必败(1 打 3 数量劣势),这是挂机游戏的正常预期——'
+          '玩家靠练级超阶通关。读「所需超阶幅度」判断后移是否制造不合理墙。',
+        )
+        ..writeln(
+          '- 若多数关 +1~+2 阶即可、且武圣无硬卡点 = 后移可接受(单人靠正常'
+          '挂机练级推进),**无需调参**。',
+        )
+        ..writeln(
+          '- 若存在武圣仍 < 50% 的硬卡点 = 该关按 3 人队调过,单人无解,'
+          '**敌人/关卡调参作为 spec §4 下游独立项待用户拍板**(本诊断不改 numbers.yaml)。',
+        )
+        ..writeln()
+        ..writeln('## 局限')
+        ..writeln()
+        ..writeln(
+          '- on-level/固定刚猛/无辅修 synergy/无 drop 真解招(装配为玩家主动'
           '行为);单人少 2 输出位 + 协同破绽窗口。境界差距修正(差≥3 阶守方 ×0.05 '
-          '近免疫)是单人超阶的主要补偿来源。');
+          '近免疫)是单人超阶的主要补偿来源。',
+        );
 
-    final outPath = '$_outputDir/solo_mainline_ch456_2026-06-27.md';
-    File(outPath).writeAsStringSync(buf.toString());
-    print('=== spec A 单人 Ch4-6 × 超阶诊断 ===');
-    print(buf.toString());
-    print('solo Ch4-6 diagnosis done · summary=$outPath');
-    print('武圣仍卡点 = ${wuShengBlocked.isEmpty ? "无 ✅" : wuShengBlocked.join(" / ")}');
+      final outPath = '$_outputDir/solo_mainline_ch456_2026-06-27.md';
+      File(outPath).writeAsStringSync(buf.toString());
+      print('=== spec A 单人 Ch4-6 × 超阶诊断 ===');
+      print(buf.toString());
+      print('solo Ch4-6 diagnosis done · summary=$outPath');
+      print(
+        '武圣仍卡点 = ${wuShengBlocked.isEmpty ? "无 ✅" : wuShengBlocked.join(" / ")}',
+      );
 
-    expect(ch456, isNotEmpty, reason: 'Ch4-6 应有 mainline 战斗关');
-  }, timeout: const Timeout(Duration(minutes: 15)));
+      expect(ch456, isNotEmpty, reason: 'Ch4-6 应有 mainline 战斗关');
+    },
+    timeout: const Timeout(Duration(minutes: 15)),
+  );
 
   // 夜间批 K(2026-07-05):早期 solo 剖面常驻读数。真实早期弧=祖师单人(收徒
   // 扩队前),3p 满编 on-level 全表 100% 掩盖早期难度(特征化报告
   // docs/audit/early_difficulty_gate_characterization_2026-07-05.md);门控
   // (gateSkillsByGrowth)按修炼层过滤心法招,对齐生产 autoFill。断言写约束语义
   // 不钉具体百分比:修炼层单调性(中成 ≥ 初窥 − 容噪),硬墙只 print 供人工判读。
-  test('早期 solo 剖面:Ch1-2 × floor(初窥1招/中成2招·gated) × 25 seed', () async {
-    const seeds = 25;
-    final early = repo.stageDefs.values
-        .where((s) =>
-            s.stageType == StageType.mainline &&
-            s.enemyTeam.isNotEmpty &&
-            (s.chapterIndex == 1 || s.chapterIndex == 2))
-        .toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
-    expect(early, isNotEmpty, reason: 'Ch1-2 应有 mainline 战斗关');
+  test(
+    '早期 solo 剖面:Ch1-2 × floor(初窥1招/中成2招·gated) × 25 seed',
+    () async {
+      const seeds = 25;
+      final early =
+          repo.stageDefs.values
+              .where(
+                (s) =>
+                    s.stageType == StageType.mainline &&
+                    s.enemyTeam.isNotEmpty &&
+                    (s.chapterIndex == 1 || s.chapterIndex == 2),
+              )
+              .toList()
+            ..sort((a, b) => a.id.compareTo(b.id));
+      expect(early, isNotEmpty, reason: 'Ch1-2 应有 mainline 战斗关');
 
-    int winsAt(StageDef stage, CultivationLayer layer) {
-      var w = 0;
-      for (var seed = 0; seed < seeds; seed++) {
-        final r = _simulateStage(stage, seed, repo, _BuildProfile.floor,
+      int winsAt(StageDef stage, CultivationLayer layer) {
+        var w = 0;
+        for (var seed = 0; seed < seeds; seed++) {
+          final r = _simulateStage(
+            stage,
+            seed,
+            repo,
+            _BuildProfile.floor,
             soloFounder: true,
             gateSkillsByGrowth: true,
-            cultivationLayerOverride: layer);
-        if (r.result == 'leftWin') w++;
+            cultivationLayerOverride: layer,
+          );
+          if (r.result == 'leftWin') w++;
+        }
+        return w;
       }
-      return w;
-    }
 
-    final buf = StringBuffer()
-      ..writeln('# 早期 solo 剖面 · Ch1-2(常驻读数)')
-      ..writeln()
-      ..writeln('祖师单人 · floor 装备档 · 成长门控生效 · $seeds seed/格')
-      ..writeln()
-      ..writeln('| stage | Boss | 初窥(1招) | 中成(2招) |')
-      ..writeln('|---|---|---|---|');
-    final walls = <String>[];
-    for (final stage in early) {
-      final chu = winsAt(stage, CultivationLayer.chuKui);
-      final zhong = winsAt(stage, CultivationLayer.zhongCheng);
-      buf.writeln('| ${stage.id} | ${stage.isBossStage ? "Boss" : "—"} | '
-          '${(chu / seeds * 100).round()}% | ${(zhong / seeds * 100).round()}% |');
-      if (zhong == 0) walls.add(stage.id);
-      // 约束语义:更高修炼层(多 1 招 + 修炼度加成)不应显著更弱;容噪 3 seed(12pt)。
-      expect(zhong, greaterThanOrEqualTo(chu - 3),
-          reason: '${stage.id} 中成 solo 不应明显弱于初窥(rng 容噪 3 seed)');
-    }
-    buf
-      ..writeln()
-      ..writeln('中成(2招)0% 硬墙关:${walls.isEmpty ? "无 ✅" : walls.join(" / ")}')
-      ..writeln()
-      ..writeln('判读口径:初窥低胜率仅当玩家真会在该关仍处初窥时才是问题'
-          '(修炼节奏未建模);中成 0% 硬墙才是红灯,进挂账待拍板。');
-    final outPath = '$_outputDir/solo_early_ch12.md';
-    File(outPath).writeAsStringSync(buf.toString());
-    print('=== 早期 solo 剖面(Ch1-2 · gated) ===');
-    print(buf.toString());
-  }, timeout: const Timeout(Duration(minutes: 10)));
+      final buf = StringBuffer()
+        ..writeln('# 早期 solo 剖面 · Ch1-2(常驻读数)')
+        ..writeln()
+        ..writeln('祖师单人 · floor 装备档 · 成长门控生效 · $seeds seed/格')
+        ..writeln()
+        ..writeln('| stage | Boss | 初窥(1招) | 中成(2招) |')
+        ..writeln('|---|---|---|---|');
+      final walls = <String>[];
+      for (final stage in early) {
+        final chu = winsAt(stage, CultivationLayer.chuKui);
+        final zhong = winsAt(stage, CultivationLayer.zhongCheng);
+        buf.writeln(
+          '| ${stage.id} | ${stage.isBossStage ? "Boss" : "—"} | '
+          '${(chu / seeds * 100).round()}% | ${(zhong / seeds * 100).round()}% |',
+        );
+        if (zhong == 0) walls.add(stage.id);
+        // 约束语义:更高修炼层(多 1 招 + 修炼度加成)不应显著更弱;容噪 3 seed(12pt)。
+        expect(
+          zhong,
+          greaterThanOrEqualTo(chu - 3),
+          reason: '${stage.id} 中成 solo 不应明显弱于初窥(rng 容噪 3 seed)',
+        );
+      }
+      buf
+        ..writeln()
+        ..writeln('中成(2招)0% 硬墙关:${walls.isEmpty ? "无 ✅" : walls.join(" / ")}')
+        ..writeln()
+        ..writeln(
+          '判读口径:初窥低胜率仅当玩家真会在该关仍处初窥时才是问题'
+          '(修炼节奏未建模);中成 0% 硬墙才是红灯,进挂账待拍板。',
+        );
+      final outPath = '$_outputDir/solo_early_ch12.md';
+      File(outPath).writeAsStringSync(buf.toString());
+      print('=== 早期 solo 剖面(Ch1-2 · gated) ===');
+      print(buf.toString());
+    },
+    timeout: const Timeout(Duration(minutes: 10)),
+  );
 }
 
 class _SimResult {
@@ -537,16 +681,20 @@ class _SimResult {
 }
 
 _SimResult _simulateStage(
-    StageDef stage, int seed, GameRepository repo, _BuildProfile profile,
-    {int proficiencyUses = 0,
-    int cycleIndex = 1,
-    bool isTower = false,
-    bool soloFounder = false,
-    RealmTier? playerTierOverride,
-    // 夜间批 K(2026-07-05):早期 solo 剖面用——修炼层覆盖(初窥/小成等) +
-    // 按成长门控过滤心法招(对齐生产 autoFill;fromCharacter fallback 不过门控)。
-    CultivationLayer? cultivationLayerOverride,
-    bool gateSkillsByGrowth = false}) {
+  StageDef stage,
+  int seed,
+  GameRepository repo,
+  _BuildProfile profile, {
+  int proficiencyUses = 0,
+  int cycleIndex = 1,
+  bool isTower = false,
+  bool soloFounder = false,
+  RealmTier? playerTierOverride,
+  // 夜间批 K(2026-07-05):早期 solo 剖面用——修炼层覆盖(初窥/小成等) +
+  // 按成长门控过滤心法招(对齐生产 autoFill;fromCharacter fallback 不过门控)。
+  CultivationLayer? cultivationLayerOverride,
+  bool gateSkillsByGrowth = false,
+}) {
   // 玩家境界 = stage.requiredRealm(on-level 诚实基线 · 2026-05-29 去 +1 confound):
   // 原 +1「玩家超阶」是旧假 _synthPlayer 时代的补偿 hack;真 build 下 +1 与同阶
   // 敌人叠加 → 玩家凭空 1 阶优势(差1阶 attacker×1.4/defender×0.7)把后段全冲成
@@ -554,37 +702,66 @@ _SimResult _simulateStage(
   // 过度练级(挂机/grind 到 +1)只会更易,不影响「能否在达标阶通关」的下限判断。
   // playerTierOverride:极值诊断强制武圣(神物 build 唯一可装阶 · 无 wuSheng mainline
   // 内容 → 飞升玩家回刷宗师 Ch6,+1 阶差距修正放大碾压)。否则 on-level = required。
-  final tierIndex =
-      RealmTier.values.indexOf(playerTierOverride ?? stage.requiredRealm);
-  final playerTier = RealmTier.values[tierIndex.clamp(0, RealmTier.values.length - 1)];
+  final tierIndex = RealmTier.values.indexOf(
+    playerTierOverride ?? stage.requiredRealm,
+  );
+  final playerTier =
+      RealmTier.values[tierIndex.clamp(0, RealmTier.values.length - 1)];
   // soloFounder(spec A 弟子后移诊断):祖师单人,无弟子在阵(主线变单人挑战)。
   final players = [
-    _buildRealPlayer(repo, playerTier,
-        slot: 0, name: '玩家', isFounder: true, profile: profile,
+    _buildRealPlayer(
+      repo,
+      playerTier,
+      slot: 0,
+      name: '玩家',
+      isFounder: true,
+      profile: profile,
+      proficiencyUses: proficiencyUses,
+      cultivationLayerOverride: cultivationLayerOverride,
+      gateSkillsByGrowth: gateSkillsByGrowth,
+    ),
+    if (!soloFounder) ...[
+      _buildRealPlayer(
+        repo,
+        playerTier,
+        slot: 1,
+        name: '徒弟一',
+        isFounder: false,
+        profile: profile,
         proficiencyUses: proficiencyUses,
         cultivationLayerOverride: cultivationLayerOverride,
-        gateSkillsByGrowth: gateSkillsByGrowth),
-    if (!soloFounder) ...[
-      _buildRealPlayer(repo, playerTier,
-          slot: 1, name: '徒弟一', isFounder: false, profile: profile,
-          proficiencyUses: proficiencyUses,
-          cultivationLayerOverride: cultivationLayerOverride,
-          gateSkillsByGrowth: gateSkillsByGrowth),
-      _buildRealPlayer(repo, playerTier,
-          slot: 2, name: '徒弟二', isFounder: false, profile: profile,
-          proficiencyUses: proficiencyUses,
-          cultivationLayerOverride: cultivationLayerOverride,
-          gateSkillsByGrowth: gateSkillsByGrowth),
+        gateSkillsByGrowth: gateSkillsByGrowth,
+      ),
+      _buildRealPlayer(
+        repo,
+        playerTier,
+        slot: 2,
+        name: '徒弟二',
+        isFounder: false,
+        profile: profile,
+        proficiencyUses: proficiencyUses,
+        cultivationLayerOverride: cultivationLayerOverride,
+        gateSkillsByGrowth: gateSkillsByGrowth,
+      ),
     ],
   ];
-  final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam,
-      cycleIndex: cycleIndex, isTower: isTower);
+  final enemies = StageBattleSetup.buildEnemyTeam(
+    stage.enemyTeam,
+    cycleIndex: cycleIndex,
+    isTower: isTower,
+  );
   final initial = BattleState.initial(leftTeam: players, rightTeam: enemies);
-  final initialPlayerHp =
-      initial.leftTeam.fold<int>(0, (sum, p) => sum + p.maxHp);
+  final initialPlayerHp = initial.leftTeam.fold<int>(
+    0,
+    (sum, p) => sum + p.maxHp,
+  );
   final rng = Random(seed);
-  final terminal = BattleEngine.runToEnd(initial, repo.numbers,
-      maxTicks: _maxTicks, rng: rng);
+  final terminal = BattleEngine.runToEnd(
+    initial,
+    repo.numbers,
+    maxTicks: _maxTicks,
+    rng: rng,
+  );
 
   final playerHpEnd = terminal.leftTeam
       .where((p) => p.isAlive)
@@ -606,9 +783,7 @@ _SimResult _simulateStage(
       }
     }
   }
-  final resultStr = terminal.result == null
-      ? 'timeout'
-      : terminal.result!.name;
+  final resultStr = terminal.result == null ? 'timeout' : terminal.result!.name;
 
   return _SimResult(
     stageId: stage.id,
@@ -691,41 +866,43 @@ BattleCharacter _buildRealPlayer(
             throw StateError('balance_sim: 无 ${wantSlot.name} 装备 def'),
       ),
     );
-    equipped.add(Equipment.create(
-      defId: def.id,
-      tier: def.tier,
-      slot: def.slot,
-      obtainedAt: DateTime(2026, 5, 29),
-      obtainedFrom: 'balance_sim',
-      school: school,
-      // extreme 取基础表值上限(真极值)/ 其余取 midpoint
-      baseAttack: extreme
-          ? def.baseAttackMax
-          : (def.baseAttackMin + def.baseAttackMax) ~/ 2,
-      baseHealth: extreme
-          ? def.baseHealthMax
-          : (def.baseHealthMin + def.baseHealthMax) ~/ 2,
-      baseSpeed: extreme
-          ? def.baseSpeedMax
-          : (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
-      enhanceLevel: enhanceLevel,
-      battleCount: battleCount,
-      // extreme 双攻击开锋槽(15+20),镜像 full_build_damage_redline_test 极值
-      forgingSlots: extreme
-          ? [
-              ForgingSlot()
-                ..slotIndex = 1
-                ..type = ForgingSlotType.attack
-                ..unlocked = true
-                ..bonusValue = 15,
-              ForgingSlot()
-                ..slotIndex = 2
-                ..type = ForgingSlotType.attack
-                ..unlocked = true
-                ..bonusValue = 20,
-            ]
-          : const [],
-    ));
+    equipped.add(
+      Equipment.create(
+        defId: def.id,
+        tier: def.tier,
+        slot: def.slot,
+        obtainedAt: DateTime(2026, 5, 29),
+        obtainedFrom: 'balance_sim',
+        school: school,
+        // extreme 取基础表值上限(真极值)/ 其余取 midpoint
+        baseAttack: extreme
+            ? def.baseAttackMax
+            : (def.baseAttackMin + def.baseAttackMax) ~/ 2,
+        baseHealth: extreme
+            ? def.baseHealthMax
+            : (def.baseHealthMin + def.baseHealthMax) ~/ 2,
+        baseSpeed: extreme
+            ? def.baseSpeedMax
+            : (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
+        enhanceLevel: enhanceLevel,
+        battleCount: battleCount,
+        // extreme 双攻击开锋槽(15+20),镜像 full_build_damage_redline_test 极值
+        forgingSlots: extreme
+            ? [
+                ForgingSlot()
+                  ..slotIndex = 1
+                  ..type = ForgingSlotType.attack
+                  ..unlocked = true
+                  ..bonusValue = 15,
+                ForgingSlot()
+                  ..slotIndex = 2
+                  ..type = ForgingSlotType.attack
+                  ..unlocked = true
+                  ..bonusValue = 20,
+              ]
+            : const [],
+      ),
+    );
   }
 
   // tier-cap 主修心法(从 production techniqueDefs 选 · defId 须真 →
@@ -734,8 +911,7 @@ BattleCharacter _buildRealPlayer(
   final defsT = repo.techniqueDefs.values;
   final TechniqueDef techDef = defsT.firstWhere(
     (d) => d.tier == techTierCap,
-    orElse: () =>
-        throw StateError('balance_sim: 无 ${techTierCap.name} 心法 def'),
+    orElse: () => throw StateError('balance_sim: 无 ${techTierCap.name} 心法 def'),
   );
   final mainTech = Technique.create(
     defId: techDef.id,
@@ -746,10 +922,13 @@ BattleCharacter _buildRealPlayer(
     learnedAt: DateTime(2026, 5, 29),
     // extreme 极境(×3.0 顶层修炼度)/ ceiling 大成 / floor 中成(§4.3 修炼度 9 层);
     // cultivationLayerOverride 供早期 solo 剖面钉初窥/小成。
-    cultivationLayer: cultivationLayerOverride ??
+    cultivationLayer:
+        cultivationLayerOverride ??
         (extreme
             ? CultivationLayer.jiJing
-            : (ceiling ? CultivationLayer.daCheng : CultivationLayer.zhongCheng)),
+            : (ceiling
+                  ? CultivationLayer.daCheng
+                  : CultivationLayer.zhongCheng)),
   );
   // 可玩性 P1a:seed 主修各招 skillUsageCount → fromCharacter 快照 skillUses
   // → 战中按熟练阶应用伤害倍率。默认 0(fresh · 不扰既有 sweep)。
@@ -797,11 +976,13 @@ BattleCharacter _buildRealPlayer(
   // 修炼层过滤;非本心法招(自动注入的破招技等)gate 函数恒放行。
   if (gateSkillsByGrowth) {
     final kept = bc.availableSkills
-        .where((s) => isTechniqueSkillUnlockedByGrowth(
-              technique: mainTech,
-              techniqueDef: techDef,
-              skill: s,
-            ))
+        .where(
+          (s) => isTechniqueSkillUnlockedByGrowth(
+            technique: mainTech,
+            techniqueDef: techDef,
+            skill: s,
+          ),
+        )
         .toList();
     bc = bc.copyWith(availableSkills: kept);
   }
@@ -810,12 +991,16 @@ BattleCharacter _buildRealPlayer(
 
 void _writeCsv(String path, List<_SimResult> results) {
   final buf = StringBuffer();
-  buf.writeln('stage_id,requiredRealm,isBossStage,chapterIndex,profile,seed,'
-      'result,ticks,playerHpEnd,enemyHpRemain');
+  buf.writeln(
+    'stage_id,requiredRealm,isBossStage,chapterIndex,profile,seed,'
+    'result,ticks,playerHpEnd,enemyHpRemain',
+  );
   for (final r in results) {
-    buf.writeln('${r.stageId},${r.requiredRealm},${r.isBossStage},'
-        '${r.chapterIndex ?? ""},${r.profile.name},${r.seed},${r.result},'
-        '${r.ticks},${r.playerHpEnd},${r.enemyHpRemain}');
+    buf.writeln(
+      '${r.stageId},${r.requiredRealm},${r.isBossStage},'
+      '${r.chapterIndex ?? ""},${r.profile.name},${r.seed},${r.result},'
+      '${r.ticks},${r.playerHpEnd},${r.enemyHpRemain}',
+    );
   }
   File(path).writeAsStringSync(buf.toString());
 }
@@ -829,8 +1014,10 @@ String _summarize(List<_SimResult> results, List<StageDef> stages) {
   final buf = StringBuffer();
   buf.writeln('# Balance Simulation Summary · 2026-05-29');
   buf.writeln('');
-  buf.writeln('$_seedsPerStage seed × ${byStage.length} mainline × 2 profile'
-      '(floor/ceiling) = ${results.length} runs · maxTicks=$_maxTicks');
+  buf.writeln(
+    '$_seedsPerStage seed × ${byStage.length} mainline × 2 profile'
+    '(floor/ceiling) = ${results.length} runs · maxTicks=$_maxTicks',
+  );
   buf.writeln('');
   // 每关分 floor / ceiling 两档算 winRate(C 方案 bracket)。
   double winRateOf(List<_SimResult> list, _BuildProfile p) {
@@ -841,7 +1028,9 @@ String _summarize(List<_SimResult> results, List<StageDef> stages) {
 
   buf.writeln('## 通关率 bracket(floor 欠配置 — ceiling 活跃玩家)');
   buf.writeln('');
-  buf.writeln('| stage_id | requiredRealm | isBoss | chap | floor winRate | ceiling winRate |');
+  buf.writeln(
+    '| stage_id | requiredRealm | isBoss | chap | floor winRate | ceiling winRate |',
+  );
   buf.writeln('|---|---|---|---|---|---|');
 
   final floorWin = <String, double>{};
@@ -854,9 +1043,11 @@ String _summarize(List<_SimResult> results, List<StageDef> stages) {
     final cw = winRateOf(list, _BuildProfile.ceiling);
     floorWin[stage.id] = fw;
     ceilWin[stage.id] = cw;
-    buf.writeln('| ${stage.id} | ${stage.requiredRealm.name} | '
-        '${stage.isBossStage ? "Boss" : "—"} | ${stage.chapterIndex ?? "—"} | '
-        '${(fw * 100).toStringAsFixed(1)}% | ${(cw * 100).toStringAsFixed(1)}% |');
+    buf.writeln(
+      '| ${stage.id} | ${stage.requiredRealm.name} | '
+      '${stage.isBossStage ? "Boss" : "—"} | ${stage.chapterIndex ?? "—"} | '
+      '${(fw * 100).toStringAsFixed(1)}% | ${(cw * 100).toStringAsFixed(1)}% |',
+    );
   }
 
   buf.writeln('');
@@ -865,8 +1056,10 @@ String _summarize(List<_SimResult> results, List<StageDef> stages) {
   buf.writeln('- **过难**(连 ceiling 活跃玩家都 < 50%):满配玩家都难过 → 数值偏高,上调候选');
   for (final id in ceilWin.keys) {
     if (ceilWin[id]! < 0.50) {
-      buf.writeln('  - $id:floor ${(floorWin[id]! * 100).toStringAsFixed(0)}% / '
-          'ceiling ${(ceilWin[id]! * 100).toStringAsFixed(0)}%');
+      buf.writeln(
+        '  - $id:floor ${(floorWin[id]! * 100).toStringAsFixed(0)}% / '
+        'ceiling ${(ceilWin[id]! * 100).toStringAsFixed(0)}%',
+      );
     }
   }
   buf.writeln('');
@@ -874,26 +1067,34 @@ String _summarize(List<_SimResult> results, List<StageDef> stages) {
   // 100/100 是**有意结构**(挂机爽感主旋律),不再把 floor>90% 全表误标「下调候选」
   // ——真实难度守门 = 单人段(收徒前)/爬塔机制型/跨阶/心魔,见 solo 剖面读数与
   // docs/audit/early_difficulty_gate_characterization_2026-07-05.md。
-  buf.writeln('- **3p 满编口径说明**:floor/ceiling 全高 = 有意结构(满编主线是'
-      '挂机爽感面,非难度面),不构成下调候选;难度守门在单人段(solo 剖面读数)、'
-      '爬塔机制型 Boss、跨阶与心魔。');
+  buf.writeln(
+    '- **3p 满编口径说明**:floor/ceiling 全高 = 有意结构(满编主线是'
+    '挂机爽感面,非难度面),不构成下调候选;难度守门在单人段(solo 剖面读数)、'
+    '爬塔机制型 Boss、跨阶与心魔。',
+  );
   buf.writeln('');
   buf.writeln('- **健康**:过难列表为空 ∧ solo 剖面无 0% 硬墙。');
   buf.writeln('');
   buf.writeln('## 数据局限');
   buf.writeln('');
-  buf.writeln('- **玩家走真 build**(`BattleCharacter.fromCharacter` derived_stats '
-      '生产路径)· **C 方案 floor+ceiling bracket**:floor 欠配置(0 强化/生疏共鸣/'
-      '无 founder buff/zhongCheng/属性 20)— ceiling 活跃玩家(½ 强化/默契 ×1.20/'
-      'founder buff/daCheng/属性 22),隔离配装/投入轴');
+  buf.writeln(
+    '- **玩家走真 build**(`BattleCharacter.fromCharacter` derived_stats '
+    '生产路径)· **C 方案 floor+ceiling bracket**:floor 欠配置(0 强化/生疏共鸣/'
+    '无 founder buff/zhongCheng/属性 20)— ceiling 活跃玩家(½ 强化/默契 ×1.20/'
+    'founder buff/daCheng/属性 22),隔离配装/投入轴',
+  );
   buf.writeln('- **不含辅修 synergy**(心法相生):只主修单本,SynergyService 未注入');
   buf.writeln('- 流派固定刚猛 gangMeng · 不验阴柔/灵巧分布');
-  buf.writeln('- **playerTier = requiredRealm**(on-level 诚实基线 · 2026-05-29 去 +1 '
-      'confound):玩家恰在 required 阶 · 过度练级(挂机/grind)只会更易,这是「能否在'
-      '达标阶通关」的下限读数');
+  buf.writeln(
+    '- **playerTier = requiredRealm**(on-level 诚实基线 · 2026-05-29 去 +1 '
+    'confound):玩家恰在 required 阶 · 过度练级(挂机/grind)只会更易,这是「能否在'
+    '达标阶通关」的下限读数',
+  );
   buf.writeln('- maxTicks=200 兜底(timeout = 不分胜负)');
   buf.writeln('');
-  buf.writeln('**用途**:难度 bracket **方向性**诊断 · floor/ceiling 区间判断配装是否有意义、'
-      '何处过易(连 floor 都碾压)/过难(连 ceiling 都难过)。');
+  buf.writeln(
+    '**用途**:难度 bracket **方向性**诊断 · floor/ceiling 区间判断配装是否有意义、'
+    '何处过易(连 floor 都碾压)/过难(连 ceiling 都难过)。',
+  );
   return buf.toString();
 }

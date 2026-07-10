@@ -21,7 +21,9 @@ void main() {
   });
 
   setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('wuxia_equipment_catalog_providers_test_');
+    tempDir = await Directory.systemTemp.createTemp(
+      'wuxia_equipment_catalog_providers_test_',
+    );
     await IsarSetup.init(directory: tempDir, inspector: false);
   });
 

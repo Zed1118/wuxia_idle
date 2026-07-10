@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
@@ -41,42 +40,41 @@ void main() {
     required int slot,
     required int speed,
     required int equipAttack,
-  }) =>
-      BattleCharacter(
-        characterId: charId,
-        name: '$charId',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 12000,
-        currentHp: 12000,
-        maxInternalForce: 2000,
-        currentInternalForce: 2000,
-        speed: speed,
-        criticalRate: 0.5,
-        evasionRate: 0.0,
-        defenseRate: 0.1,
-        totalEquipmentAttack: equipAttack,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: const <SkillDef>[power, normal],
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: teamSide,
-        slotIndex: slot,
-      );
+  }) => BattleCharacter(
+    characterId: charId,
+    name: '$charId',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 12000,
+    currentHp: 12000,
+    maxInternalForce: 2000,
+    currentInternalForce: 2000,
+    speed: speed,
+    criticalRate: 0.5,
+    evasionRate: 0.0,
+    defenseRate: 0.1,
+    totalEquipmentAttack: equipAttack,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: const <SkillDef>[power, normal],
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: teamSide,
+    slotIndex: slot,
+  );
 
   List<BattleCharacter> leftTeam() => [
-        unit(charId: 1, teamSide: 0, slot: 0, speed: 130, equipAttack: 700),
-        unit(charId: 2, teamSide: 0, slot: 1, speed: 120, equipAttack: 700),
-        unit(charId: 3, teamSide: 0, slot: 2, speed: 110, equipAttack: 700),
-      ];
+    unit(charId: 1, teamSide: 0, slot: 0, speed: 130, equipAttack: 700),
+    unit(charId: 2, teamSide: 0, slot: 1, speed: 120, equipAttack: 700),
+    unit(charId: 3, teamSide: 0, slot: 2, speed: 110, equipAttack: 700),
+  ];
   List<BattleCharacter> rightTeam() => [
-        unit(charId: -1, teamSide: 1, slot: 0, speed: 105, equipAttack: 450),
-        unit(charId: -2, teamSide: 1, slot: 1, speed: 100, equipAttack: 450),
-        unit(charId: -3, teamSide: 1, slot: 2, speed: 95, equipAttack: 450),
-      ];
+    unit(charId: -1, teamSide: 1, slot: 0, speed: 105, equipAttack: 450),
+    unit(charId: -2, teamSide: 1, slot: 1, speed: 100, equipAttack: 450),
+    unit(charId: -3, teamSide: 1, slot: 2, speed: 95, equipAttack: 450),
+  ];
 
   // 与 battle_step_one_test.dart 的 action-log fingerprint 故意逐字复刻,
   // 锁定同一格式(同 seed 全等比对依赖两测产出可逐字符比较)。各 battle 测
@@ -87,7 +85,11 @@ void main() {
   BattleState runVia(int seed, {required bool oneAction}) {
     final container = ProviderContainer();
     addTearDown(container.dispose);
-    final sub = container.listen(battleProvider, (_, _) {}, fireImmediately: true);
+    final sub = container.listen(
+      battleProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
     addTearDown(sub.close);
     final notifier = container.read(battleProvider.notifier);
     notifier.startBattle(leftTeam(), rightTeam(), seed: seed);
@@ -106,7 +108,11 @@ void main() {
   test('advanceOneAction 每次调用 actionLog 恰好 +1（或战斗已结束）', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
-    final sub = container.listen(battleProvider, (_, _) {}, fireImmediately: true);
+    final sub = container.listen(
+      battleProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
     addTearDown(sub.close);
     final notifier = container.read(battleProvider.notifier);
     notifier.startBattle(leftTeam(), rightTeam(), seed: 2468);
@@ -117,8 +123,11 @@ void main() {
       notifier.advanceOneAction();
       final len = container.read(battleProvider).actionLog.length;
       if (container.read(battleProvider).isFinished && len == prevLen) break;
-      expect(len, prevLen + 1,
-          reason: '单次 advanceOneAction 只产出一个 action（自动跳过空 tick 边界）');
+      expect(
+        len,
+        prevLen + 1,
+        reason: '单次 advanceOneAction 只产出一个 action（自动跳过空 tick 边界）',
+      );
       prevLen = len;
       calls++;
     }
@@ -130,15 +139,25 @@ void main() {
     final stateAdvance = runVia(2468, oneAction: false);
     final viaOne = summarize(stateOne);
     final viaAdvance = summarize(stateAdvance);
-    expect(viaOne.split(';').length, greaterThan(10),
-        reason: '防空过：需足够多 action 暴露 rng 顺序不一致');
-    expect(viaOne, equals(viaAdvance),
-        reason: 'advanceOneAction 与 advance 单一 seeded rng 下复刻同一场战斗');
-    expect(stateOne.leftTeam.map((c) => c.currentHp).toList(),
-        equals(stateAdvance.leftTeam.map((c) => c.currentHp).toList()),
-        reason: '左队终态血量逐位全等');
-    expect(stateOne.rightTeam.map((c) => c.currentHp).toList(),
-        equals(stateAdvance.rightTeam.map((c) => c.currentHp).toList()),
-        reason: '右队终态血量逐位全等');
+    expect(
+      viaOne.split(';').length,
+      greaterThan(10),
+      reason: '防空过：需足够多 action 暴露 rng 顺序不一致',
+    );
+    expect(
+      viaOne,
+      equals(viaAdvance),
+      reason: 'advanceOneAction 与 advance 单一 seeded rng 下复刻同一场战斗',
+    );
+    expect(
+      stateOne.leftTeam.map((c) => c.currentHp).toList(),
+      equals(stateAdvance.leftTeam.map((c) => c.currentHp).toList()),
+      reason: '左队终态血量逐位全等',
+    );
+    expect(
+      stateOne.rightTeam.map((c) => c.currentHp).toList(),
+      equals(stateAdvance.rightTeam.map((c) => c.currentHp).toList()),
+      reason: '右队终态血量逐位全等',
+    );
   });
 }

@@ -10,54 +10,54 @@ import 'package:wuxia_idle/features/battle/presentation/victory_ceremony.dart';
 // ── Fixture builders (沿 top_damage_contributor_test.dart 体例) ──────────────
 
 BattleCharacter _player({required int id, int slot = 0}) => BattleCharacter(
-      characterId: id,
-      name: 'player$id',
-      realmTier: RealmTier.sanLiu,
-      realmLayer: RealmLayer.yuanShu,
-      school: TechniqueSchool.gangMeng,
-      maxHp: 1000,
-      currentHp: 1000,
-      maxInternalForce: 500,
-      currentInternalForce: 500,
-      speed: 100,
-      criticalRate: 0,
-      evasionRate: 0,
-      defenseRate: 0.1,
-      totalEquipmentAttack: 0,
-      mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: const [],
-      skillCooldowns: const {},
-      activeBuffs: const [],
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: 0,
-      slotIndex: slot,
-    );
+  characterId: id,
+  name: 'player$id',
+  realmTier: RealmTier.sanLiu,
+  realmLayer: RealmLayer.yuanShu,
+  school: TechniqueSchool.gangMeng,
+  maxHp: 1000,
+  currentHp: 1000,
+  maxInternalForce: 500,
+  currentInternalForce: 500,
+  speed: 100,
+  criticalRate: 0,
+  evasionRate: 0,
+  defenseRate: 0.1,
+  totalEquipmentAttack: 0,
+  mainCultivationLayer: CultivationLayer.daCheng,
+  availableSkills: const [],
+  skillCooldowns: const {},
+  activeBuffs: const [],
+  actionPoint: 0,
+  isAlive: true,
+  teamSide: 0,
+  slotIndex: slot,
+);
 
 BattleCharacter _enemy({required int id}) => BattleCharacter(
-      characterId: id,
-      name: 'enemy$id',
-      realmTier: RealmTier.sanLiu,
-      realmLayer: RealmLayer.yuanShu,
-      school: TechniqueSchool.gangMeng,
-      maxHp: 1000,
-      currentHp: 0,
-      maxInternalForce: 500,
-      currentInternalForce: 500,
-      speed: 100,
-      criticalRate: 0,
-      evasionRate: 0,
-      defenseRate: 0.1,
-      totalEquipmentAttack: 0,
-      mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: const [],
-      skillCooldowns: const {},
-      activeBuffs: const [],
-      actionPoint: 0,
-      isAlive: false,
-      teamSide: 1,
-      slotIndex: 0,
-    );
+  characterId: id,
+  name: 'enemy$id',
+  realmTier: RealmTier.sanLiu,
+  realmLayer: RealmLayer.yuanShu,
+  school: TechniqueSchool.gangMeng,
+  maxHp: 1000,
+  currentHp: 0,
+  maxInternalForce: 500,
+  currentInternalForce: 500,
+  speed: 100,
+  criticalRate: 0,
+  evasionRate: 0,
+  defenseRate: 0.1,
+  totalEquipmentAttack: 0,
+  mainCultivationLayer: CultivationLayer.daCheng,
+  availableSkills: const [],
+  skillCooldowns: const {},
+  activeBuffs: const [],
+  actionPoint: 0,
+  isAlive: false,
+  teamSide: 1,
+  slotIndex: 0,
+);
 
 const _skill = SkillDef(
   id: 'skill_normal',
@@ -72,36 +72,35 @@ const _skill = SkillDef(
 );
 
 AttackResult _hit(int damage) => AttackResult(
-      finalDamage: damage,
-      mainDamage: damage,
-      quakeDamage: 0,
-      isCritical: false,
-      isDodged: false,
-      schoolCounterMultiplier: 1.0,
-      realmDiffAttackerMod: 1.0,
-      realmDiffDefenderMod: 1.0,
-      cultivationMultiplier: 1.0,
-      criticalMultiplier: 1.0,
-      defenseRate: 0.1,
-      evasionRate: 0,
-      appliedEffects: const [],
-      formulaBreakdown: 'stub',
-    );
+  finalDamage: damage,
+  mainDamage: damage,
+  quakeDamage: 0,
+  isCritical: false,
+  isDodged: false,
+  schoolCounterMultiplier: 1.0,
+  realmDiffAttackerMod: 1.0,
+  realmDiffDefenderMod: 1.0,
+  cultivationMultiplier: 1.0,
+  criticalMultiplier: 1.0,
+  defenseRate: 0.1,
+  evasionRate: 0,
+  appliedEffects: const [],
+  formulaBreakdown: 'stub',
+);
 
 BattleState _state({
   required List<BattleCharacter> left,
   required List<BattleCharacter> right,
   required List<BattleAction> log,
-}) =>
-    BattleState(
-      leftTeam: left,
-      rightTeam: right,
-      tick: 100,
-      result: BattleResult.leftWin,
-      actionLog: log,
-      pendingUltimates: const {},
-      pendingTargets: const {},
-    );
+}) => BattleState(
+  leftTeam: left,
+  rightTeam: right,
+  tick: 100,
+  result: BattleResult.leftWin,
+  actionLog: log,
+  pendingUltimates: const {},
+  pendingTargets: const {},
+);
 
 /// 构造最小化 Character 供测试用（不写 Isar，id 手动设）。
 Character _character({
@@ -142,24 +141,30 @@ void main() {
         right: [e],
         log: [
           BattleAction(
-              tick: 10,
-              actorId: 1,
-              targetId: 10,
-              skill: _skill,
-              attackResult: _hit(200),
-              description: ''),
+            tick: 10,
+            actorId: 1,
+            targetId: 10,
+            skill: _skill,
+            attackResult: _hit(200),
+            description: '',
+          ),
           BattleAction(
-              tick: 20,
-              actorId: 2,
-              targetId: 10,
-              skill: _skill,
-              attackResult: _hit(900),
-              description: ''),
+            tick: 20,
+            actorId: 2,
+            targetId: 10,
+            skill: _skill,
+            attackResult: _hit(900),
+            description: '',
+          ),
         ],
       );
       final ch1 = _character(id: 1, name: '剑客甲');
       final ch2 = _character(
-          id: 2, name: '刀客乙', realmTier: RealmTier.yiLiu, portraitPath: 'assets/a.png');
+        id: 2,
+        name: '刀客乙',
+        realmTier: RealmTier.yiLiu,
+        portraitPath: 'assets/a.png',
+      );
       final characters = [ch1, ch2];
 
       final result = deriveHeroCameraData(
@@ -186,12 +191,13 @@ void main() {
         right: [e],
         log: [
           BattleAction(
-              tick: 10,
-              actorId: 10,
-              targetId: 1,
-              skill: _skill,
-              attackResult: _hit(500),
-              description: ''),
+            tick: 10,
+            actorId: 10,
+            targetId: 1,
+            skill: _skill,
+            attackResult: _hit(500),
+            description: '',
+          ),
         ],
       );
       final ch = _character(id: 1, name: '剑客甲');
@@ -213,12 +219,13 @@ void main() {
         right: [e],
         log: [
           BattleAction(
-              tick: 10,
-              actorId: 1,
-              targetId: 10,
-              skill: _skill,
-              attackResult: _hit(500),
-              description: ''),
+            tick: 10,
+            actorId: 1,
+            targetId: 10,
+            skill: _skill,
+            attackResult: _hit(500),
+            description: '',
+          ),
         ],
       );
       // characters 列表中只有 id=99，不含 top actor(id=1)

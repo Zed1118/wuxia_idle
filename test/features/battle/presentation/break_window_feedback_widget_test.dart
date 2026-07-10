@@ -47,10 +47,7 @@ class _TestBattleNotifier extends BattleNotifier {
   void advance({int maxConsecutiveTicks = 100}) {}
 }
 
-Future<BattleState> _pumpBattle(
-  WidgetTester tester,
-  BattleState state,
-) async {
+Future<BattleState> _pumpBattle(WidgetTester tester, BattleState state) async {
   await tester.binding.setSurfaceSize(const Size(1280, 720));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   await tester.pumpWidget(
@@ -58,9 +55,7 @@ Future<BattleState> _pumpBattle(
       overrides: [
         battleProvider.overrideWith(() => _TestBattleNotifier(state)),
       ],
-      child: const MaterialApp(
-        home: BattleScreen(animConfig: _testAnim),
-      ),
+      child: const MaterialApp(home: BattleScreen(animConfig: _testAnim)),
     ),
   );
   await tester.pump();
@@ -71,7 +66,10 @@ void main() {
   group('开窗题字 ImpactGlyphOverlay', () {
     testWidgets('openedBreakWindow 动作触发「破绽」题字', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
-      await _pumpBattle(tester, BattleState.initial(leftTeam: left, rightTeam: right));
+      await _pumpBattle(
+        tester,
+        BattleState.initial(leftTeam: left, rightTeam: right),
+      );
 
       // 直接调用 ImpactGlyphOverlay.show，验证覆写层是否挂载并能渲染多字。
       // （battle_screen 中 _impactGlyphKey 是私有的；采用与 impact_feedback_widget_test
@@ -80,7 +78,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(home: ImpactGlyphOverlay(key: glyphKey)),
       );
-      glyphKey.currentState!.show(UiStrings.impactGlyphBreakWindow, isEnemy: true);
+      glyphKey.currentState!.show(
+        UiStrings.impactGlyphBreakWindow,
+        isEnemy: true,
+      );
       await tester.pump(const Duration(milliseconds: 60));
       // ImpactGlyphOverlay 使用 Text(_glyph!) 渲染，没有单字限制 → 「破绽」可以渲染。
       expect(find.text(UiStrings.impactGlyphBreakWindow), findsWidgets);
@@ -96,12 +97,17 @@ void main() {
       // 将右队第 0 个角色设置为 stagger>0。
       final staggeredRight = List<BattleCharacter>.from(right);
       staggeredRight[0] = staggeredRight[0].copyWith(staggerTicksRemaining: 3);
-      final state = BattleState.initial(leftTeam: left, rightTeam: staggeredRight);
+      final state = BattleState.initial(
+        leftTeam: left,
+        rightTeam: staggeredRight,
+      );
       await _pumpBattle(tester, state);
 
       // 高亮以 Key('stagger_highlight_${characterId}') 标记，在 _GlowAura 内渲染。
       expect(
-        find.byKey(ValueKey('stagger_highlight_${staggeredRight[0].characterId}')),
+        find.byKey(
+          ValueKey('stagger_highlight_${staggeredRight[0].characterId}'),
+        ),
         findsOneWidget,
       );
     });
@@ -126,12 +132,17 @@ void main() {
       // 将左队第 0 个角色设置为 stagger>0，模拟玩家方被硬直。
       final staggeredLeft = List<BattleCharacter>.from(left);
       staggeredLeft[0] = staggeredLeft[0].copyWith(staggerTicksRemaining: 3);
-      final state = BattleState.initial(leftTeam: staggeredLeft, rightTeam: right);
+      final state = BattleState.initial(
+        leftTeam: staggeredLeft,
+        rightTeam: right,
+      );
       await _pumpBattle(tester, state);
 
       // 玩家方被硬直不应出现集火高亮（spec §6：破绽高亮仅为敌方集火指示）。
       expect(
-        find.byKey(ValueKey('stagger_highlight_${staggeredLeft[0].characterId}')),
+        find.byKey(
+          ValueKey('stagger_highlight_${staggeredLeft[0].characterId}'),
+        ),
         findsNothing,
       );
     });

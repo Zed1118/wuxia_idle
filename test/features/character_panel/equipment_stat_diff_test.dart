@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
@@ -17,22 +16,21 @@ Equipment _eq({
   bool heritage = false,
   TechniqueSchool? school,
   List<ForgingSlot>? forging,
-}) =>
-    Equipment.create(
-      defId: 'weapon_xunchang_tie_jian',
-      tier: tier,
-      slot: EquipmentSlot.weapon,
-      obtainedAt: DateTime(2026),
-      obtainedFrom: 'test',
-      baseAttack: atk,
-      baseHealth: hp,
-      baseSpeed: spd,
-      enhanceLevel: enhance,
-      battleCount: battleCount,
-      isLineageHeritage: heritage,
-      school: school,
-      forgingSlots: forging,
-    );
+}) => Equipment.create(
+  defId: 'weapon_xunchang_tie_jian',
+  tier: tier,
+  slot: EquipmentSlot.weapon,
+  obtainedAt: DateTime(2026),
+  obtainedFrom: 'test',
+  baseAttack: atk,
+  baseHealth: hp,
+  baseSpeed: spd,
+  enhanceLevel: enhance,
+  battleCount: battleCount,
+  isLineageHeritage: heritage,
+  school: school,
+  forgingSlots: forging,
+);
 
 void main() {
   late NumbersConfig n;
@@ -49,8 +47,7 @@ void main() {
       numbers: n,
     );
     expect(cmp.isBaseline, isFalse);
-    final atkRow =
-        cmp.numericRows.firstWhere((r) => r.label.contains('攻'));
+    final atkRow = cmp.numericRows.firstWhere((r) => r.label.contains('攻'));
     final hpRow = cmp.numericRows.firstWhere((r) => r.label.contains('血'));
     final spdRow = cmp.numericRows.firstWhere((r) => r.label.contains('速'));
     expect(atkRow.direction, StatDirection.up);
@@ -79,8 +76,7 @@ void main() {
       candidate: _eq(tier: EquipmentTier.xiangYang),
       numbers: n,
     );
-    final tierRow =
-        cmp.categoryRows.firstWhere((r) => r.label.contains('品阶'));
+    final tierRow = cmp.categoryRows.firstWhere((r) => r.label.contains('品阶'));
     expect(tierRow.highlightUp, isTrue);
   });
 
@@ -89,8 +85,9 @@ void main() {
     expect(cmp.forgingCurrent.length, 3);
     expect(cmp.forgingCandidate.length, 3);
     expect(
-      cmp.forgingCandidate
-          .every((s) => s == EquipmentStatDiffText.emptyForging),
+      cmp.forgingCandidate.every(
+        (s) => s == EquipmentStatDiffText.emptyForging,
+      ),
       isTrue,
     );
   });

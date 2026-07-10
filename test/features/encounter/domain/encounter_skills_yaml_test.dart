@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -22,8 +21,11 @@ void main() {
   group('encounter_skills.yaml 加载', () {
     test('40 招全部解析(原 7 阶 × 5 共 35 + T02 nightshift +5)', () {
       final ids = GameRepository.instance.encounterSkillIds;
-      expect(ids.length, 40,
-          reason: '35 原招 + T02 nightshift +5(tier 3+1 / tier 4+2 / tier 5+2)');
+      expect(
+        ids.length,
+        40,
+        reason: '35 原招 + T02 nightshift +5(tier 3+1 / tier 4+2 / tier 5+2)',
+      );
     });
 
     test('6 个 W14-1/W14-2 引用的 unlock id 全部存在', () {
@@ -31,12 +33,12 @@ void main() {
       expect(
         ids,
         containsAll([
-          'skill_encounter_ting_yu_jian',   // W14-1 bamboo_listen_rain
-          'skill_encounter_relic_blade',    // W14-2 gu_jian_zhong_yin
-          'skill_encounter_water_qi',       // W14-2 xuan_ya_pu_bu_li_lian
-          'skill_encounter_ice_break',      // W14-2 duan_ya_chui_lian
-          'skill_encounter_night_strike',   // W14-2 ye_xing_xun_dao
-          'skill_encounter_drill_strike',   // W14-2 qun_xia_tu
+          'skill_encounter_ting_yu_jian', // W14-1 bamboo_listen_rain
+          'skill_encounter_relic_blade', // W14-2 gu_jian_zhong_yin
+          'skill_encounter_water_qi', // W14-2 xuan_ya_pu_bu_li_lian
+          'skill_encounter_ice_break', // W14-2 duan_ya_chui_lian
+          'skill_encounter_night_strike', // W14-2 ye_xing_xun_dao
+          'skill_encounter_drill_strike', // W14-2 qun_xia_tu
         ]),
       );
     });
@@ -63,39 +65,52 @@ void main() {
       for (final id in GameRepository.instance.encounterSkillIds) {
         final s = GameRepository.instance.skillDefs[id]!;
         final cap = caps[s.tier! - 1];
-        expect(s.powerMultiplier, lessThanOrEqualTo(cap),
-            reason: '$id tier=${s.tier} 越 cap $cap');
-        expect(s.powerMultiplier, lessThanOrEqualTo(8000),
-            reason: 'GDD §5.4 全局招式倍率红线 8000');
+        expect(
+          s.powerMultiplier,
+          lessThanOrEqualTo(cap),
+          reason: '$id tier=${s.tier} 越 cap $cap',
+        );
+        expect(
+          s.powerMultiplier,
+          lessThanOrEqualTo(8000),
+          reason: 'GDD §5.4 全局招式倍率红线 8000',
+        );
       }
     });
 
     test('id 全部以 skill_encounter_ 开头(命名约定)', () {
       for (final id in GameRepository.instance.encounterSkillIds) {
-        expect(id, startsWith('skill_encounter_'),
-            reason: 'encounter skill id 必须 skill_encounter_ 前缀');
+        expect(
+          id,
+          startsWith('skill_encounter_'),
+          reason: 'encounter skill id 必须 skill_encounter_ 前缀',
+        );
       }
     });
 
     test('ting_yu_jian tier=3 / type=powerSkill / cap=2500 内', () {
-      final s = GameRepository.instance.skillDefs[
-          'skill_encounter_ting_yu_jian']!;
+      final s =
+          GameRepository.instance.skillDefs['skill_encounter_ting_yu_jian']!;
       expect(s.tier, 3);
       expect(s.type, SkillType.powerSkill);
       expect(s.powerMultiplier, lessThanOrEqualTo(2500));
       expect(s.isEncounterSkill, isTrue);
     });
 
-    test('ting_yu_jian narrativeInsightId 显式映射 insights/ting_yu_jian (#36)',
-        () {
-      final s = GameRepository.instance.skillDefs[
-          'skill_encounter_ting_yu_jian']!;
-      expect(s.narrativeInsightId, 'ting_yu_jian',
-          reason: 'W14-4 audit 唯一已匹配 insight 需显式落地');
-    });
+    test(
+      'ting_yu_jian narrativeInsightId 显式映射 insights/ting_yu_jian (#36)',
+      () {
+        final s =
+            GameRepository.instance.skillDefs['skill_encounter_ting_yu_jian']!;
+        expect(
+          s.narrativeInsightId,
+          'ting_yu_jian',
+          reason: 'W14-4 audit 唯一已匹配 insight 需显式落地',
+        );
+      },
+    );
 
-    test('encounter skill 池 narrativeInsightId 引用全部命中 insights 池',
-        () {
+    test('encounter skill 池 narrativeInsightId 引用全部命中 insights 池', () {
       // W15 DeepSeek 34 招映射 closeout 后:22 招填 / 13 招留空保留 2 体系独立。
       // 红线:每条 narrativeInsightId 必须是 35 篇 insight 的合法 id(自洽校验)。
       // 不强制覆盖度 — 留空合法(W14-4 audit 推荐保留 2 体系独立性)。
@@ -141,39 +156,46 @@ void main() {
         final s = GameRepository.instance.skillDefs[id]!;
         final ref = s.narrativeInsightId;
         if (ref == null) continue;
-        expect(knownInsights, contains(ref),
-            reason: '$id narrativeInsightId=$ref 不在 35 篇 insights 中');
+        expect(
+          knownInsights,
+          contains(ref),
+          reason: '$id narrativeInsightId=$ref 不在 35 篇 insights 中',
+        );
       }
     });
 
     test('ting_yu_jian 仍是 narrativeInsightId 映射的锚点(#36 不退)', () {
       // 保护 W15 #36 销账锚点不被未来变更不慎清除。
-      final s = GameRepository.instance.skillDefs[
-          'skill_encounter_ting_yu_jian']!;
+      final s =
+          GameRepository.instance.skillDefs['skill_encounter_ting_yu_jian']!;
       expect(s.narrativeInsightId, 'ting_yu_jian');
     });
 
     test('ice_break tier=6 / cap=5500 内(后期奇遇)', () {
-      final s = GameRepository.instance.skillDefs[
-          'skill_encounter_ice_break']!;
+      final s = GameRepository.instance.skillDefs['skill_encounter_ice_break']!;
       expect(s.tier, 6);
       expect(s.powerMultiplier, lessThanOrEqualTo(5500));
     });
 
-    test('encounters.yaml unlock outcome 引用全部命中 encounter skill 池',
-        () {
+    test('encounters.yaml unlock outcome 引用全部命中 encounter skill 池', () {
       final encounterRefs = <String>{};
       for (final def in GameRepository.instance.encounterDefs.values) {
         for (final outcome in def.outcomeMapping.values) {
           if (outcome.skillId != null) encounterRefs.add(outcome.skillId!);
         }
       }
-      expect(encounterRefs, isNotEmpty,
-          reason: '至少 6 条 W14-1/W14-2 encounter 有 unlock outcome');
+      expect(
+        encounterRefs,
+        isNotEmpty,
+        reason: '至少 6 条 W14-1/W14-2 encounter 有 unlock outcome',
+      );
       final pool = GameRepository.instance.encounterSkillIds;
       for (final ref in encounterRefs) {
-        expect(pool, contains(ref),
-            reason: 'encounter outcome 引用 $ref 必须在 encounter skill 池');
+        expect(
+          pool,
+          contains(ref),
+          reason: 'encounter outcome 引用 $ref 必须在 encounter skill 池',
+        );
       }
     });
   });

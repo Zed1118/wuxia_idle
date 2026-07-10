@@ -46,8 +46,10 @@ void main() {
     // 白名单 = _map.values + tower 用 innerrealm, 不写死数字, 避免长尾扩图后 drift
     final valid = {..._map.values, 'battle_innerrealm'};
     for (final s in repo.stageDefs.values) {
-      final name =
-          s.sceneBackgroundPath!.split('/').last.replaceAll('.png', '');
+      final name = s.sceneBackgroundPath!
+          .split('/')
+          .last
+          .replaceAll('.png', '');
       expect(valid.contains(name), isTrue, reason: '${s.id}: $name 非法');
     }
   });

@@ -19,36 +19,35 @@ BattleCharacter _char({
   bool swordSongResonanceActive = false,
   SkillDef? chargingSkill,
   int chargeTicksRemaining = 0,
-}) =>
-    BattleCharacter(
-      characterId: 1,
-      name: '黑风寨主',
-      realmTier: RealmTier.yiLiu,
-      realmLayer: RealmLayer.qiMeng,
-      school: TechniqueSchool.gangMeng,
-      maxHp: 100,
-      currentHp: 100,
-      maxInternalForce: 100,
-      currentInternalForce: 100,
-      speed: 100,
-      criticalRate: 0.05,
-      evasionRate: 0.05,
-      defenseRate: 0.1,
-      totalEquipmentAttack: 100,
-      mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: const [],
-      skillCooldowns: const {},
-      activeBuffs: const [],
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: 1,
-      slotIndex: 0,
-      internalInjury: internalInjury,
-      staggerTicksRemaining: staggerTicksRemaining,
-      swordSongResonanceActive: swordSongResonanceActive,
-      chargingSkill: chargingSkill,
-      chargeTicksRemaining: chargeTicksRemaining,
-    );
+}) => BattleCharacter(
+  characterId: 1,
+  name: '黑风寨主',
+  realmTier: RealmTier.yiLiu,
+  realmLayer: RealmLayer.qiMeng,
+  school: TechniqueSchool.gangMeng,
+  maxHp: 100,
+  currentHp: 100,
+  maxInternalForce: 100,
+  currentInternalForce: 100,
+  speed: 100,
+  criticalRate: 0.05,
+  evasionRate: 0.05,
+  defenseRate: 0.1,
+  totalEquipmentAttack: 100,
+  mainCultivationLayer: CultivationLayer.daCheng,
+  availableSkills: const [],
+  skillCooldowns: const {},
+  activeBuffs: const [],
+  actionPoint: 0,
+  isAlive: true,
+  teamSide: 1,
+  slotIndex: 0,
+  internalInjury: internalInjury,
+  staggerTicksRemaining: staggerTicksRemaining,
+  swordSongResonanceActive: swordSongResonanceActive,
+  chargingSkill: chargingSkill,
+  chargeTicksRemaining: chargeTicksRemaining,
+);
 
 const _chargeSkill = SkillDef(
   id: 'charge1',
@@ -66,9 +65,13 @@ void main() {
   Future<void> pump(WidgetTester tester, BattleCharacter c) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: Center(child: CharacterAvatar(character: c))),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(child: CharacterAvatar(character: c)),
+        ),
+      ),
+    );
   }
 
   testWidgets('无状态时不渲染任何状态标签', (tester) async {
@@ -81,8 +84,10 @@ void main() {
     await pump(
       tester,
       _char(
-        internalInjury:
-            const InternalInjurySlot(remainingTurns: 3, damagePerTick: 200),
+        internalInjury: const InternalInjurySlot(
+          remainingTurns: 3,
+          damagePerTick: 200,
+        ),
       ),
     );
     expect(find.byType(SteppedCountdownRing), findsOneWidget);
@@ -112,22 +117,23 @@ void main() {
     expect(find.text(UiStrings.statusSwordSongLabel), findsOneWidget);
   });
 
-  testWidgets('多状态按优先级排序:生死(内伤环) > 操作(破绽环) > 纯数值(剑鸣药丸)',
-      (tester) async {
+  testWidgets('多状态按优先级排序:生死(内伤环) > 操作(破绽环) > 纯数值(剑鸣药丸)', (tester) async {
     await pump(
       tester,
       _char(
-        internalInjury:
-            const InternalInjurySlot(remainingTurns: 3, damagePerTick: 200),
+        internalInjury: const InternalInjurySlot(
+          remainingTurns: 3,
+          damagePerTick: 200,
+        ),
         staggerTicksRemaining: 2,
         swordSongResonanceActive: true,
       ),
     );
-    final injuryX =
-        tester.getTopLeft(find.byType(SteppedCountdownRing)).dx;
+    final injuryX = tester.getTopLeft(find.byType(SteppedCountdownRing)).dx;
     final staggerX = tester.getTopLeft(find.byType(BeatCountdownRing)).dx;
-    final swordX =
-        tester.getTopLeft(find.text(UiStrings.statusSwordSongLabel)).dx;
+    final swordX = tester
+        .getTopLeft(find.text(UiStrings.statusSwordSongLabel))
+        .dx;
     // 同一水平排（Wrap）按 x 升序即视觉优先级顺序。
     expect(injuryX, lessThan(staggerX));
     expect(staggerX, lessThan(swordX));
@@ -137,8 +143,10 @@ void main() {
     await pump(
       tester,
       _char(
-        internalInjury:
-            const InternalInjurySlot(remainingTurns: 3, damagePerTick: 200),
+        internalInjury: const InternalInjurySlot(
+          remainingTurns: 3,
+          damagePerTick: 200,
+        ),
       ),
     );
     final tip = tester.widget<Tooltip>(

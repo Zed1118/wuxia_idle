@@ -89,7 +89,9 @@ void main() {
     while (guard < 200 && !s.isFinished) {
       s = strategy.tick(s, n, rng: rng);
       for (final a in s.actionLog) {
-        if (a.actorId == 1 && a.attackResult != null && !a.attackResult!.isDodged) {
+        if (a.actorId == 1 &&
+            a.attackResult != null &&
+            !a.attackResult!.isDodged) {
           return a.attackResult!.finalDamage;
         }
       }

@@ -29,61 +29,73 @@ void main() {
   group('production targetType 自洽', () {
     test('普攻/合击一律 single(拖招红线 ①)', () {
       final repo = GameRepository.instance;
-      final naAndJoint = repo.skillDefs.values.where((s) =>
-          s.type == SkillType.normalAttack ||
-          s.type == SkillType.jointSkill);
+      final naAndJoint = repo.skillDefs.values.where(
+        (s) =>
+            s.type == SkillType.normalAttack || s.type == SkillType.jointSkill,
+      );
       expect(naAndJoint, isNotEmpty);
       for (final s in naAndJoint) {
-        expect(s.targetType, TargetType.single,
-            reason: '${s.id}(${s.type.name})普攻/合击不可群体');
+        expect(
+          s.targetType,
+          TargetType.single,
+          reason: '${s.id}(${s.type.name})普攻/合击不可群体',
+        );
       }
     });
 
     test('aoe 群体技集合非空,且当前设计仅大招配 aoe(拖招红线 ②)', () {
       final repo = GameRepository.instance;
-      final aoe =
-          repo.skillDefs.values.where((s) => s.targetType == TargetType.aoe);
+      final aoe = repo.skillDefs.values.where(
+        (s) => s.targetType == TargetType.aoe,
+      );
       expect(aoe, isNotEmpty, reason: 'production 应有群体技(防回填整体丢失)');
       for (final s in aoe) {
-        expect(s.type, SkillType.ultimate,
-            reason: '${s.id} 当前设计群体技仅大招(普攻/power 单体)');
+        expect(
+          s.type,
+          SkillType.ultimate,
+          reason: '${s.id} 当前设计群体技仅大招(普攻/power 单体)',
+        );
       }
     });
 
     test('代表性招目标类型锚设计意图(集合自洽,非全量数字)', () {
       final repo = GameRepository.instance;
       // 万剑诀「漫天剑影」= 群体技代表
-      expect(repo.skillDefs['skill_lingqiao_changlian_ult']!.targetType,
-          TargetType.aoe);
+      expect(
+        repo.skillDefs['skill_lingqiao_changlian_ult']!.targetType,
+        TargetType.aoe,
+      );
       // 直拳 = 普攻单体
-      expect(repo.skillDefs['skill_gangmeng_jichu_basic']!.targetType,
-          TargetType.single);
+      expect(
+        repo.skillDefs['skill_gangmeng_jichu_basic']!.targetType,
+        TargetType.single,
+      );
     });
   });
 
   group('broken loader / 默认值', () {
     test('普攻注入 targetType: aoe → 抛 StateError(红线 ①)', () async {
       String inject(String s) => s.replaceFirst(
-            '    type: normalAttack',
-            '    type: normalAttack\n    targetType: aoe',
-          );
+        '    type: normalAttack',
+        '    type: normalAttack\n    targetType: aoe',
+      );
       expect(
         GameRepository.loadAllDefs(
           loader: makeLoader('data/skills.yaml', inject),
         ),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('拖招红线 ①'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('拖招红线 ①'),
+          ),
+        ),
       );
     });
 
     test('非法 targetType 值 → 解析期抛(枚举红线)', () async {
-      String inject(String s) => s.replaceFirst(
-            '    targetType: single',
-            '    targetType: cleave',
-          );
+      String inject(String s) =>
+          s.replaceFirst('    targetType: single', '    targetType: cleave');
       expect(
         GameRepository.loadAllDefs(
           loader: makeLoader('data/skills.yaml', inject),

@@ -113,19 +113,19 @@ void main() {
 }
 
 LightFootDef _testConfig() => const LightFootDef(
-      terrainModifiers: {},
-      stageTerrain: {
-        'stage_light_foot_01': TerrainBiome.water,
-        'stage_light_foot_02': TerrainBiome.rooftop,
-        'stage_light_foot_03': TerrainBiome.bamboo,
-        'stage_light_foot_04': TerrainBiome.water,
-        'stage_light_foot_05': TerrainBiome.rooftop,
-      },
-      unlockTriggers: {
-        'stage_06_05': 'stage_light_foot_01',
-        'stage_light_foot_01': 'stage_light_foot_02',
-        'stage_light_foot_02': 'stage_light_foot_03',
-        'stage_light_foot_03': 'stage_light_foot_04',
-        'stage_light_foot_04': 'stage_light_foot_05',
-      },
-    );
+  terrainModifiers: {},
+  stageTerrain: {
+    'stage_light_foot_01': TerrainBiome.water,
+    'stage_light_foot_02': TerrainBiome.rooftop,
+    'stage_light_foot_03': TerrainBiome.bamboo,
+    'stage_light_foot_04': TerrainBiome.water,
+    'stage_light_foot_05': TerrainBiome.rooftop,
+  },
+  unlockTriggers: {
+    'stage_06_05': 'stage_light_foot_01',
+    'stage_light_foot_01': 'stage_light_foot_02',
+    'stage_light_foot_02': 'stage_light_foot_03',
+    'stage_light_foot_03': 'stage_light_foot_04',
+    'stage_light_foot_04': 'stage_light_foot_05',
+  },
+);

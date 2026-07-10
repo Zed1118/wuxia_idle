@@ -42,7 +42,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart' show RealmUtils;
+import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
+    show RealmUtils;
 
 const int _maxTicks = 200;
 const int _seeds = 20;
@@ -81,118 +82,163 @@ void main() {
     Directory(_outputDir).createSync(recursive: true);
   });
 
-  test('战斗节奏诊断:普攻 vs 技能 伤害/击杀占比(前中后期代表关 × floor/ceiling × $_seeds seed)',
-      () async {
-    // 代表性样本:各章首关覆盖前/中/后期 + 一个章末 Boss 关。
-    // 用既有关卡 id 体例(stage_0X_0Y),缺失的关跳过(防 drift)。
-    const sampleIds = [
-      'stage_01_01', // 前期 学武出山 首关
-      'stage_02_01', // 武林初识 首关
-      'stage_03_01', // 名扬江湖 首关
-      'stage_04_01', // 中后期 Ch4 首关
-      'stage_05_01', // Ch5 首关
-      'stage_06_01', // 后期 Ch6 首关
-      'stage_03_05', // 中期 Boss 关(章末)
-      'stage_06_05', // 后期 Boss 关(章末)
-    ];
+  test(
+    '战斗节奏诊断:普攻 vs 技能 伤害/击杀占比(前中后期代表关 × floor/ceiling × $_seeds seed)',
+    () async {
+      // 代表性样本:各章首关覆盖前/中/后期 + 一个章末 Boss 关。
+      // 用既有关卡 id 体例(stage_0X_0Y),缺失的关跳过(防 drift)。
+      const sampleIds = [
+        'stage_01_01', // 前期 学武出山 首关
+        'stage_02_01', // 武林初识 首关
+        'stage_03_01', // 名扬江湖 首关
+        'stage_04_01', // 中后期 Ch4 首关
+        'stage_05_01', // Ch5 首关
+        'stage_06_01', // 后期 Ch6 首关
+        'stage_03_05', // 中期 Boss 关(章末)
+        'stage_06_05', // 后期 Boss 关(章末)
+      ];
 
-    final stages = <StageDef>[];
-    for (final id in sampleIds) {
-      final s = repo.stageDefs[id];
-      if (s != null && s.enemyTeam.isNotEmpty) stages.add(s);
-    }
-    expect(stages, isNotEmpty, reason: '至少要有一个有敌方编队的样本关');
+      final stages = <StageDef>[];
+      for (final id in sampleIds) {
+        final s = repo.stageDefs[id];
+        if (s != null && s.enemyTeam.isNotEmpty) stages.add(s);
+      }
+      expect(stages, isNotEmpty, reason: '至少要有一个有敌方编队的样本关');
 
-    // 全样本累计 + 分关累计。
-    final overall = _TempoStat();
-    final perStage = <String, _TempoStat>{}; // key = stageId(两档合并)
-    final perStageRuns = <String, int>{};
+      // 全样本累计 + 分关累计。
+      final overall = _TempoStat();
+      final perStage = <String, _TempoStat>{}; // key = stageId(两档合并)
+      final perStageRuns = <String, int>{};
 
-    for (final stage in stages) {
-      final agg = perStage.putIfAbsent(stage.id, () => _TempoStat());
-      for (final profile in _BuildProfile.values) {
-        for (var seed = 0; seed < _seeds; seed++) {
-          final one = _simulateAndTally(stage, seed, repo, profile);
-          agg.add(one);
-          overall.add(one);
-          perStageRuns[stage.id] = (perStageRuns[stage.id] ?? 0) + 1;
+      for (final stage in stages) {
+        final agg = perStage.putIfAbsent(stage.id, () => _TempoStat());
+        for (final profile in _BuildProfile.values) {
+          for (var seed = 0; seed < _seeds; seed++) {
+            final one = _simulateAndTally(stage, seed, repo, profile);
+            agg.add(one);
+            overall.add(one);
+            perStageRuns[stage.id] = (perStageRuns[stage.id] ?? 0) + 1;
+          }
         }
       }
-    }
 
-    // ── 汇总输出 ──
-    final buf = StringBuffer();
-    String pct(num part, num whole) =>
-        whole == 0 ? '—' : '${(part / whole * 100).toStringAsFixed(1)}%';
+      // ── 汇总输出 ──
+      final buf = StringBuffer();
+      String pct(num part, num whole) =>
+          whole == 0 ? '—' : '${(part / whole * 100).toStringAsFixed(1)}%';
 
-    final totalDmg = overall.normalDamage + overall.skillDamage;
-    final totalKills =
-        overall.normalKills + overall.skillKills + overall.dotOrOtherKills;
-    final attributedKills = overall.normalKills + overall.skillKills;
+      final totalDmg = overall.normalDamage + overall.skillDamage;
+      final totalKills =
+          overall.normalKills + overall.skillKills + overall.dotOrOtherKills;
+      final attributedKills = overall.normalKills + overall.skillKills;
 
-    buf.writeln('# 战斗节奏诊断 · 2026-06-17');
-    buf.writeln();
-    buf.writeln('${stages.length} 关 × ${_BuildProfile.values.length} profile '
+      buf.writeln('# 战斗节奏诊断 · 2026-06-17');
+      buf.writeln();
+      buf.writeln(
+        '${stages.length} 关 × ${_BuildProfile.values.length} profile '
         '× $_seeds seed · maxTicks=$_maxTicks · 仅统计玩家方(actorId>0)有 '
-        'attackResult 的动作');
-    buf.writeln();
-    buf.writeln('## 全样本');
-    buf.writeln();
-    buf.writeln('- 普攻伤害合计 = ${overall.normalDamage} · 技能伤害合计 = '
-        '${overall.skillDamage}');
-    buf.writeln('- **普攻伤害占比 = ${pct(overall.normalDamage, totalDmg)}** · '
-        '技能伤害占比 = ${pct(overall.skillDamage, totalDmg)}');
-    buf.writeln('- 普攻击杀 = ${overall.normalKills} · 技能击杀 = '
-        '${overall.skillKills} · 其他(DoT等) = ${overall.dotOrOtherKills}');
-    buf.writeln('- **普攻击杀占比(占已归因击杀)= '
+        'attackResult 的动作',
+      );
+      buf.writeln();
+      buf.writeln('## 全样本');
+      buf.writeln();
+      buf.writeln(
+        '- 普攻伤害合计 = ${overall.normalDamage} · 技能伤害合计 = '
+        '${overall.skillDamage}',
+      );
+      buf.writeln(
+        '- **普攻伤害占比 = ${pct(overall.normalDamage, totalDmg)}** · '
+        '技能伤害占比 = ${pct(overall.skillDamage, totalDmg)}',
+      );
+      buf.writeln(
+        '- 普攻击杀 = ${overall.normalKills} · 技能击杀 = '
+        '${overall.skillKills} · 其他(DoT等) = ${overall.dotOrOtherKills}',
+      );
+      buf.writeln(
+        '- **普攻击杀占比(占已归因击杀)= '
         '${pct(overall.normalKills, attributedKills)}** · '
-        '技能击杀占比 = ${pct(overall.skillKills, attributedKills)}');
-    buf.writeln('- 普攻击杀占比(占全部击杀)= '
-        '${pct(overall.normalKills, totalKills)}');
-    buf.writeln();
-    buf.writeln('## 分关卡');
-    buf.writeln();
-    buf.writeln('| stage_id | Boss | 普攻伤害% | 普攻击杀% | 均回合数 |');
-    buf.writeln('|---|---|---|---|---|');
-    for (final stage in stages) {
-      final s = perStage[stage.id]!;
-      final runs = perStageRuns[stage.id] ?? 1;
-      final dmg = s.normalDamage + s.skillDamage;
-      final atkKills = s.normalKills + s.skillKills;
-      buf.writeln('| ${stage.id} | ${stage.isBossStage ? "Boss" : "—"} | '
+        '技能击杀占比 = ${pct(overall.skillKills, attributedKills)}',
+      );
+      buf.writeln(
+        '- 普攻击杀占比(占全部击杀)= '
+        '${pct(overall.normalKills, totalKills)}',
+      );
+      buf.writeln();
+      buf.writeln('## 分关卡');
+      buf.writeln();
+      buf.writeln('| stage_id | Boss | 普攻伤害% | 普攻击杀% | 均回合数 |');
+      buf.writeln('|---|---|---|---|---|');
+      for (final stage in stages) {
+        final s = perStage[stage.id]!;
+        final runs = perStageRuns[stage.id] ?? 1;
+        final dmg = s.normalDamage + s.skillDamage;
+        final atkKills = s.normalKills + s.skillKills;
+        buf.writeln(
+          '| ${stage.id} | ${stage.isBossStage ? "Boss" : "—"} | '
           '${pct(s.normalDamage, dmg)} | ${pct(s.normalKills, atkKills)} | '
-          '${(s.ticks / runs).round()} |');
-    }
+          '${(s.ticks / runs).round()} |',
+        );
+      }
 
-    final summary = buf.toString();
-    print(summary);
-    final outPath = '$_outputDir/battle_tempo_diagnostic_2026-06-17.md';
-    File(outPath).writeAsStringSync(summary);
-    print('battle_tempo_diagnostic done · summary=$outPath');
+      final summary = buf.toString();
+      print(summary);
+      final outPath = '$_outputDir/battle_tempo_diagnostic_2026-06-17.md';
+      File(outPath).writeAsStringSync(summary);
+      print('battle_tempo_diagnostic done · summary=$outPath');
 
-    // 极松自洽断言:防测试空跑。普攻+技能伤害占比应 ≈ 100%(允许浮点容差)。
-    expect(totalDmg, greaterThan(0), reason: '玩家应至少打出伤害,否则 sim 空跑');
-    final sumPct = (overall.normalDamage / totalDmg) +
-        (overall.skillDamage / totalDmg);
-    expect(sumPct, closeTo(1.0, 1e-9),
-        reason: '普攻 + 技能伤害占比应自洽求和为 1');
-  }, timeout: const Timeout(Duration(minutes: 10)));
+      // 极松自洽断言:防测试空跑。普攻+技能伤害占比应 ≈ 100%(允许浮点容差)。
+      expect(totalDmg, greaterThan(0), reason: '玩家应至少打出伤害,否则 sim 空跑');
+      final sumPct =
+          (overall.normalDamage / totalDmg) + (overall.skillDamage / totalDmg);
+      expect(sumPct, closeTo(1.0, 1e-9), reason: '普攻 + 技能伤害占比应自洽求和为 1');
+    },
+    timeout: const Timeout(Duration(minutes: 10)),
+  );
 }
 
 /// 跑一场战斗 + 统计节奏。
 _TempoStat _simulateAndTally(
-    StageDef stage, int seed, GameRepository repo, _BuildProfile profile) {
+  StageDef stage,
+  int seed,
+  GameRepository repo,
+  _BuildProfile profile,
+) {
   final tier = stage.requiredRealm; // on-level 诚实基线(沿 balance_simulator 体例)
   final players = [
-    _buildRealPlayer(repo, tier, slot: 0, name: '玩家', isFounder: true, profile: profile),
-    _buildRealPlayer(repo, tier, slot: 1, name: '徒弟一', isFounder: false, profile: profile),
-    _buildRealPlayer(repo, tier, slot: 2, name: '徒弟二', isFounder: false, profile: profile),
+    _buildRealPlayer(
+      repo,
+      tier,
+      slot: 0,
+      name: '玩家',
+      isFounder: true,
+      profile: profile,
+    ),
+    _buildRealPlayer(
+      repo,
+      tier,
+      slot: 1,
+      name: '徒弟一',
+      isFounder: false,
+      profile: profile,
+    ),
+    _buildRealPlayer(
+      repo,
+      tier,
+      slot: 2,
+      name: '徒弟二',
+      isFounder: false,
+      profile: profile,
+    ),
   ];
   final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
   final initial = BattleState.initial(leftTeam: players, rightTeam: enemies);
   final rng = Random(seed);
-  final terminal =
-      BattleEngine.runToEnd(initial, repo.numbers, maxTicks: _maxTicks, rng: rng);
+  final terminal = BattleEngine.runToEnd(
+    initial,
+    repo.numbers,
+    maxTicks: _maxTicks,
+    rng: rng,
+  );
 
   final stat = _TempoStat()
     ..ticks = terminal.tick
@@ -286,20 +332,22 @@ BattleCharacter _buildRealPlayer(
             throw StateError('battle_tempo: 无 ${wantSlot.name} 装备 def'),
       ),
     );
-    equipped.add(Equipment.create(
-      defId: def.id,
-      tier: def.tier,
-      slot: def.slot,
-      obtainedAt: DateTime(2026, 6, 17),
-      obtainedFrom: 'battle_tempo',
-      school: school,
-      baseAttack: (def.baseAttackMin + def.baseAttackMax) ~/ 2,
-      baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,
-      baseSpeed: (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
-      enhanceLevel: enhanceLevel,
-      battleCount: battleCount,
-      forgingSlots: const [],
-    ));
+    equipped.add(
+      Equipment.create(
+        defId: def.id,
+        tier: def.tier,
+        slot: def.slot,
+        obtainedAt: DateTime(2026, 6, 17),
+        obtainedFrom: 'battle_tempo',
+        school: school,
+        baseAttack: (def.baseAttackMin + def.baseAttackMax) ~/ 2,
+        baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,
+        baseSpeed: (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
+        enhanceLevel: enhanceLevel,
+        battleCount: battleCount,
+        forgingSlots: const [],
+      ),
+    );
   }
 
   final techTierCap = RealmUtils.techniqueTierCapOf(tier);
@@ -316,8 +364,9 @@ BattleCharacter _buildRealPlayer(
     school: school,
     role: TechniqueRole.main,
     learnedAt: DateTime(2026, 6, 17),
-    cultivationLayer:
-        ceiling ? CultivationLayer.daCheng : CultivationLayer.zhongCheng,
+    cultivationLayer: ceiling
+        ? CultivationLayer.daCheng
+        : CultivationLayer.zhongCheng,
   );
 
   final attributes = Attributes()

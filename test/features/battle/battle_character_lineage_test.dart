@@ -18,30 +18,30 @@ import 'package:wuxia_idle/data/game_repository.dart';
 // ─── 最小 BattleCharacter fixture(直接构造) ─────────────────────────────────
 
 BattleCharacter _bareCharacter() => const BattleCharacter(
-      characterId: 99,
-      name: 'npc',
-      realmTier: RealmTier.sanLiu,
-      realmLayer: RealmLayer.yuanShu,
-      school: TechniqueSchool.gangMeng,
-      maxHp: 1000,
-      currentHp: 1000,
-      maxInternalForce: 500,
-      currentInternalForce: 500,
-      speed: 100,
-      criticalRate: 0.05,
-      evasionRate: 0.0,
-      defenseRate: 0.1,
-      totalEquipmentAttack: 0,
-      mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: [],
-      skillCooldowns: {},
-      activeBuffs: [],
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: 1,
-      slotIndex: 0,
-      // lineageRole 不传 → 默认 null
-    );
+  characterId: 99,
+  name: 'npc',
+  realmTier: RealmTier.sanLiu,
+  realmLayer: RealmLayer.yuanShu,
+  school: TechniqueSchool.gangMeng,
+  maxHp: 1000,
+  currentHp: 1000,
+  maxInternalForce: 500,
+  currentInternalForce: 500,
+  speed: 100,
+  criticalRate: 0.05,
+  evasionRate: 0.0,
+  defenseRate: 0.1,
+  totalEquipmentAttack: 0,
+  mainCultivationLayer: CultivationLayer.daCheng,
+  availableSkills: [],
+  skillCooldowns: {},
+  activeBuffs: [],
+  actionPoint: 0,
+  isAlive: true,
+  teamSide: 1,
+  slotIndex: 0,
+  // lineageRole 不传 → 默认 null
+);
 
 // ─── fromCharacter 所需最小 fixture ──────────────────────────────────────────
 
@@ -85,8 +85,11 @@ void main() {
 
     test('直接构造 / 敌人路径: lineageRole 缺省为 null', () {
       final bc = _bareCharacter();
-      expect(bc.lineageRole, isNull,
-          reason: '敌人/NPC 直接构造不传 lineageRole → 必须为 null');
+      expect(
+        bc.lineageRole,
+        isNull,
+        reason: '敌人/NPC 直接构造不传 lineageRole → 必须为 null',
+      );
     });
 
     test('fromCharacter 透传 junior → BattleCharacter.lineageRole == junior', () {
@@ -100,8 +103,11 @@ void main() {
         teamSide: 0,
         slotIndex: 1,
       );
-      expect(bc.lineageRole, LineageRole.junior,
-          reason: 'fromCharacter 应将 Character.lineageRole 透传');
+      expect(
+        bc.lineageRole,
+        LineageRole.junior,
+        reason: 'fromCharacter 应将 Character.lineageRole 透传',
+      );
     });
 
     test('fromCharacter 透传 senior → BattleCharacter.lineageRole == senior', () {
@@ -121,16 +127,21 @@ void main() {
     test('copyWith 不传 lineageRole → 保留原值', () {
       final bc = _bareCharacter().copyWith(lineageRole: LineageRole.junior);
       final copied = bc.copyWith(speed: 200);
-      expect(copied.lineageRole, LineageRole.junior,
-          reason: 'copyWith 不传 lineageRole 时应保留 this.lineageRole');
+      expect(
+        copied.lineageRole,
+        LineageRole.junior,
+        reason: 'copyWith 不传 lineageRole 时应保留 this.lineageRole',
+      );
     });
 
     test('copyWith 传入新 lineageRole → 覆盖', () {
       final bc = _bareCharacter().copyWith(lineageRole: LineageRole.junior);
       final overridden = bc.copyWith(lineageRole: LineageRole.senior);
-      expect(overridden.lineageRole, LineageRole.senior,
-          reason: 'copyWith 传入新值时应覆盖旧值');
+      expect(
+        overridden.lineageRole,
+        LineageRole.senior,
+        reason: 'copyWith 传入新值时应覆盖旧值',
+      );
     });
-
   });
 }

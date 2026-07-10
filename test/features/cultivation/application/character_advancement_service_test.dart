@@ -38,19 +38,18 @@ final _realmTable = <RealmTier, Map<RealmLayer, RealmDef>>{
 Map<RealmLayer, RealmDef> _layers(
   RealmTier tier,
   List<(RealmLayer, int, int, int)> rows,
-) =>
-    {
-      for (final r in rows)
-        r.$1: RealmDef(
-          tier: tier,
-          layer: r.$1,
-          absoluteLevel: r.$2,
-          internalForceMax: r.$3,
-          experienceToNext: r.$4,
-          equipmentTierCap: EquipmentTier.xunChang,
-          techniqueTierCap: TechniqueTier.ruMenGong,
-        ),
-    };
+) => {
+  for (final r in rows)
+    r.$1: RealmDef(
+      tier: tier,
+      layer: r.$1,
+      absoluteLevel: r.$2,
+      internalForceMax: r.$3,
+      experienceToNext: r.$4,
+      equipmentTierCap: EquipmentTier.xunChang,
+      techniqueTierCap: TechniqueTier.ruMenGong,
+    ),
+};
 
 RealmDef _lookup(RealmTier tier, RealmLayer layer) {
   final t = _realmTable[tier];
@@ -69,15 +68,15 @@ Character _mkChar({
   int internalForceMax = 500,
 }) =>
     Character.create(
-      name: 'test',
-      realmTier: tier,
-      realmLayer: layer,
-      attributes: Attributes(),
-      rarity: RarityTier.biaoZhun,
-      lineageRole: LineageRole.founder,
-      createdAt: DateTime(2026, 1, 1),
-      internalForce: internalForce,
-    )
+        name: 'test',
+        realmTier: tier,
+        realmLayer: layer,
+        attributes: Attributes(),
+        rarity: RarityTier.biaoZhun,
+        lineageRole: LineageRole.founder,
+        createdAt: DateTime(2026, 1, 1),
+        internalForce: internalForce,
+      )
       ..experience = experience
       ..experienceToNextLayer = experienceToNextLayer
       ..internalForceMax = internalForceMax;

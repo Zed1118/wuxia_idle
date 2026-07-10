@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -30,15 +29,15 @@ void main() {
     ..status = RetreatStatus.active;
 
   Character fakeChar() => Character.create(
-        name: 'hero',
-        realmTier: RealmTier.xueTu,
-        realmLayer: RealmLayer.qiMeng,
-        attributes: Attributes(),
-        rarity: RarityTier.biaoZhun,
-        lineageRole: LineageRole.founder,
-        createdAt: DateTime(2026, 1, 1),
-        internalForce: 500,
-      )..id = 10;
+    name: 'hero',
+    realmTier: RealmTier.xueTu,
+    realmLayer: RealmLayer.qiMeng,
+    attributes: Attributes(),
+    rarity: RarityTier.biaoZhun,
+    lineageRole: LineageRole.founder,
+    createdAt: DateTime(2026, 1, 1),
+    internalForce: 500,
+  )..id = 10;
 
   Future<void> pumpGate(
     WidgetTester tester, {
@@ -70,11 +69,7 @@ void main() {
   }
 
   testWidgets('无 active session → 不弹归来卡', (tester) async {
-    await pumpGate(
-      tester,
-      session: null,
-      now: DateTime(2026, 5, 11, 15),
-    );
+    await pumpGate(tester, session: null, now: DateTime(2026, 5, 11, 15));
     expect(find.text(UiStrings.offlineRecapTitle), findsNothing);
   });
 

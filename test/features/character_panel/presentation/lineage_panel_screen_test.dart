@@ -69,9 +69,7 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          lineageCodexProvider.overrideWith((ref) async => gens),
-        ],
+        overrides: [lineageCodexProvider.overrideWith((ref) async => gens)],
         child: const MaterialApp(home: LineagePanelScreen()),
       ),
     );

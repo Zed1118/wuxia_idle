@@ -24,8 +24,7 @@ void main() {
   });
 
   setUp(() async {
-    tempDir =
-        await Directory.systemTemp.createTemp('wuxia_reputation_test_');
+    tempDir = await Directory.systemTemp.createTemp('wuxia_reputation_test_');
     await IsarSetup.init(directory: tempDir, inspector: false);
   });
 
@@ -38,8 +37,7 @@ void main() {
     test('numbers.yaml jianghu 段 7 阶加载', () {
       final n = GameRepository.instance.numbers;
       final tiers = n.jianghu.reputationTiers;
-      expect(tiers.length, 7,
-          reason: 'P1.2 §2 七阶沿 §5.2 · 不开新阶');
+      expect(tiers.length, 7, reason: 'P1.2 §2 七阶沿 §5.2 · 不开新阶');
       expect(tiers.map((t) => t.tier).toList(), [
         'xueTu',
         'sanLiu',
@@ -54,8 +52,7 @@ void main() {
     });
 
     test('enmity_combat_modifier 加载 spec §2 决议', () {
-      final emc =
-          GameRepository.instance.numbers.jianghu.enmityCombatModifier;
+      final emc = GameRepository.instance.numbers.jianghu.enmityCombatModifier;
       expect(emc.threshold, -50);
       expect(emc.playerAttackPowerMult, 1.15);
       expect(emc.enemyAttackPowerMult, 1.15);
@@ -76,14 +73,18 @@ void main() {
   group('ReputationService.applyDelta', () {
     test('新建:首次 delta 入仓 + clamp', () async {
       final svc = ReputationService(
-          IsarSetup.instance, GameRepository.instance.numbers);
+        IsarSetup.instance,
+        GameRepository.instance.numbers,
+      );
       await svc.applyDelta(1, 'shaolin', 10);
       expect(await svc.valueFor(1, 'shaolin'), 10);
     });
 
     test('累积:重复 delta 加和', () async {
       final svc = ReputationService(
-          IsarSetup.instance, GameRepository.instance.numbers);
+        IsarSetup.instance,
+        GameRepository.instance.numbers,
+      );
       await svc.applyDelta(1, 'wudang', 5);
       await svc.applyDelta(1, 'wudang', 7);
       await svc.applyDelta(1, 'wudang', -3);
@@ -92,24 +93,33 @@ void main() {
 
     test('clamp 上限 +100:连续 +200 锁顶', () async {
       final svc = ReputationService(
-          IsarSetup.instance, GameRepository.instance.numbers);
+        IsarSetup.instance,
+        GameRepository.instance.numbers,
+      );
       await svc.applyDelta(1, 'emei', 200);
-      expect(await svc.valueFor(1, 'emei'), 100,
-          reason: '§5.4 红线防越:applyDelta 必 clamp');
+      expect(
+        await svc.valueFor(1, 'emei'),
+        100,
+        reason: '§5.4 红线防越:applyDelta 必 clamp',
+      );
       await svc.applyDelta(1, 'emei', 50);
       expect(await svc.valueFor(1, 'emei'), 100, reason: '已到顶不再涨');
     });
 
     test('clamp 下限 -100:连续 -200 锁底', () async {
       final svc = ReputationService(
-          IsarSetup.instance, GameRepository.instance.numbers);
+        IsarSetup.instance,
+        GameRepository.instance.numbers,
+      );
       await svc.applyDelta(1, 'jiaoMen', -200);
       expect(await svc.valueFor(1, 'jiaoMen'), -100);
     });
 
     test('多门派隔离', () async {
       final svc = ReputationService(
-          IsarSetup.instance, GameRepository.instance.numbers);
+        IsarSetup.instance,
+        GameRepository.instance.numbers,
+      );
       await svc.applyDelta(1, 'shaolin', 30);
       await svc.applyDelta(1, 'jiaoMen', -50);
       expect(await svc.valueFor(1, 'shaolin'), 30);
@@ -120,7 +130,9 @@ void main() {
 
     test('多 playerId 隔离 · composite unique index 保', () async {
       final svc = ReputationService(
-          IsarSetup.instance, GameRepository.instance.numbers);
+        IsarSetup.instance,
+        GameRepository.instance.numbers,
+      );
       await svc.applyDelta(1, 'shaolin', 20);
       await svc.applyDelta(2, 'shaolin', -10);
       expect(await svc.valueFor(1, 'shaolin'), 20);
@@ -129,7 +141,9 @@ void main() {
 
     test('valueFor 未存在 → 0 sane fallback', () async {
       final svc = ReputationService(
-          IsarSetup.instance, GameRepository.instance.numbers);
+        IsarSetup.instance,
+        GameRepository.instance.numbers,
+      );
       expect(await svc.valueFor(1, 'cijianzhuang'), 0);
     });
   });
@@ -137,7 +151,9 @@ void main() {
   group('ReputationService.tierOf 7 阶映射 + 边界', () {
     test('21 测点 sweep 全 7 阶命中(R5.1)', () {
       final svc = ReputationService(
-          IsarSetup.instance, GameRepository.instance.numbers);
+        IsarSetup.instance,
+        GameRepository.instance.numbers,
+      );
       // (value, expected tier) · 覆盖每阶上下界 + 边界相邻
       const cases = <(int, String)>[
         (-100, 'xueTu'),
@@ -163,8 +179,7 @@ void main() {
         (100, 'wuSheng'),
       ];
       for (final (v, expected) in cases) {
-        expect(svc.tierOf(v), expected,
-            reason: 'value=$v 应映射到 $expected');
+        expect(svc.tierOf(v), expected, reason: 'value=$v 应映射到 $expected');
       }
     });
   });

@@ -33,8 +33,11 @@ void main() {
       }
       // 奇遇池全 encounter
       for (final id in repo.encounterSkillIds) {
-        expect(repo.skillDefs[id]!.source, SkillSource.encounter,
-            reason: '$id 在奇遇池');
+        expect(
+          repo.skillDefs[id]!.source,
+          SkillSource.encounter,
+          reason: '$id 在奇遇池',
+        );
       }
       // 破招技全 special
       for (final s in repo.skillDefs.values.where((s) => s.canInterrupt)) {
@@ -49,8 +52,11 @@ void main() {
         }
         final sf = st.dropSkillFragmentId;
         if (sf != null) {
-          expect(repo.skillDefs[sf]!.source, SkillSource.fragment,
-              reason: '${st.id} 重打残页招 source 应为 fragment(波B 红线 ⑤)');
+          expect(
+            repo.skillDefs[sf]!.source,
+            SkillSource.fragment,
+            reason: '${st.id} 重打残页招 source 应为 fragment(波B 红线 ⑤)',
+          );
         }
       }
       for (final f in repo.towerFloors) {
@@ -63,15 +69,23 @@ void main() {
 
     test('drop 招(mainlineDrop|fragment)必有 style + tier(波B 红线 ⑥)', () {
       final repo = GameRepository.instance;
-      final drops = repo.skillDefs.values.where((s) =>
-          s.source == SkillSource.mainlineDrop ||
-          s.source == SkillSource.fragment);
+      final drops = repo.skillDefs.values.where(
+        (s) =>
+            s.source == SkillSource.mainlineDrop ||
+            s.source == SkillSource.fragment,
+      );
       expect(drops, isNotEmpty, reason: 'production 应有 drop 来源招');
       for (final s in drops) {
-        expect(s.style, isNotNull,
-            reason: '${s.id} drop 招缺 style(装配 gate 按流派,缺=永不可装配)');
-        expect(s.tier, isNotNull,
-            reason: '${s.id} drop 招缺 tier(canEquipAtRealm 恒 true 破 §5.3)');
+        expect(
+          s.style,
+          isNotNull,
+          reason: '${s.id} drop 招缺 style(装配 gate 按流派,缺=永不可装配)',
+        );
+        expect(
+          s.tier,
+          isNotNull,
+          reason: '${s.id} drop 招缺 tier(canEquipAtRealm 恒 true 破 §5.3)',
+        );
       }
     });
 
@@ -101,102 +115,111 @@ void main() {
           .map((s) => s.id)
           .toSet();
       // 集合相等(无孤儿) + 列表长度 == 集合大小(无重复挂载)
-      expect(manualMounts.toSet(), manualSkills,
-          reason: 'mainlineDrop 招集合应与 stage manual 挂载集合一致');
-      expect(manualMounts.length, manualSkills.length,
-          reason: '真解不应被重复挂载');
-      expect(fragmentMounts.toSet(), fragmentSkills,
-          reason: 'fragment 招集合应与残页挂载集合(塔+章末重打)一致');
-      expect(fragmentMounts.length, fragmentSkills.length,
-          reason: '残页不应被重复挂载');
+      expect(
+        manualMounts.toSet(),
+        manualSkills,
+        reason: 'mainlineDrop 招集合应与 stage manual 挂载集合一致',
+      );
+      expect(manualMounts.length, manualSkills.length, reason: '真解不应被重复挂载');
+      expect(
+        fragmentMounts.toSet(),
+        fragmentSkills,
+        reason: 'fragment 招集合应与残页挂载集合(塔+章末重打)一致',
+      );
+      expect(fragmentMounts.length, fragmentSkills.length, reason: '残页不应被重复挂载');
     });
   });
 
   group('broken loader transform', () {
     test('剥掉一招的 source → 抛 StateError(红线 ①)', () async {
-      String inject(String s) => s.replaceFirst(
-            RegExp(r'    source: technique\n'),
-            '',
-          );
+      String inject(String s) =>
+          s.replaceFirst(RegExp(r'    source: technique\n'), '');
       expect(
         GameRepository.loadAllDefs(
           loader: makeLoader('data/skills.yaml', inject),
         ),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('缺 source'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('缺 source'),
+          ),
+        ),
       );
     });
 
     test('非法 source 值 → 解析期抛(红线枚举)', () async {
-      String inject(String s) => s.replaceFirst(
-            '    source: technique',
-            '    source: gacha',
-          );
+      String inject(String s) =>
+          s.replaceFirst('    source: technique', '    source: gacha');
       expect(
         GameRepository.loadAllDefs(
           loader: makeLoader('data/skills.yaml', inject),
         ),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('未知 skill source'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('未知 skill source'),
+          ),
+        ),
       );
     });
 
     test('旧值 tower_fragment 已退役 → 解析期抛(波B fragment 泛化)', () async {
-      String inject(String s) => s.replaceFirst(
-            '    source: fragment',
-            '    source: tower_fragment',
-          );
+      String inject(String s) =>
+          s.replaceFirst('    source: fragment', '    source: tower_fragment');
       expect(
         GameRepository.loadAllDefs(
           loader: makeLoader('data/skills.yaml', inject),
         ),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('未知 skill source'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('未知 skill source'),
+          ),
+        ),
       );
     });
 
     test('drop 招剥掉 style → 抛 StateError(波B 红线 ⑥)', () async {
       // 对一个 mainline_drop 招注掉 style 行(青锋绝)。
       String inject(String s) => s.replaceFirstMapped(
-            RegExp(
-                r'(  - id: skill_qingshan_qingfeng\n(?:.*\n)*?)    style: \w+\n'),
-            (m) => m.group(1)!,
-          );
+        RegExp(
+          r'(  - id: skill_qingshan_qingfeng\n(?:.*\n)*?)    style: \w+\n',
+        ),
+        (m) => m.group(1)!,
+      );
       expect(
         GameRepository.loadAllDefs(
           loader: makeLoader('data/skills.yaml', inject),
         ),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('波B 红线 ⑥'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('波B 红线 ⑥'),
+          ),
+        ),
       );
     });
 
     test('真解挂载点移除 → 孤儿真解抛 StateError(波B 红线 ⑦)', () async {
       String inject(String s) => s.replaceFirst(
-            RegExp(r'    dropSkillManualId: skill_qingshan_qingfeng.*\n'),
-            '',
-          );
+        RegExp(r'    dropSkillManualId: skill_qingshan_qingfeng.*\n'),
+        '',
+      );
       expect(
         GameRepository.loadAllDefs(
           loader: makeLoader('data/stages.yaml', inject),
         ),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('波B 红线 ⑦'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('波B 红线 ⑦'),
+          ),
+        ),
       );
     });
   });

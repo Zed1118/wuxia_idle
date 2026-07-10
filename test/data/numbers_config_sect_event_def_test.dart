@@ -19,11 +19,7 @@ void main() {
         'max': 100,
         'min': 0,
       },
-      'sect_level': {
-        'max': 7,
-        'initial': 1,
-        'promote_wins_threshold': 3,
-      },
+      'sect_level': {'max': 7, 'initial': 1, 'promote_wins_threshold': 3},
       'active_events_max': 3,
     };
 
@@ -68,8 +64,11 @@ void main() {
         'tournament': {'cooldown_days': 7},
       });
       expect(def.tournament.cooldownDays, 7);
-      expect(def.reputation.winDelta, 10,
-          reason: 'reputation 段缺 → 走 SectReputationDef.empty 默认');
+      expect(
+        def.reputation.winDelta,
+        10,
+        reason: 'reputation 段缺 → 走 SectReputationDef.empty 默认',
+      );
     });
   });
 }

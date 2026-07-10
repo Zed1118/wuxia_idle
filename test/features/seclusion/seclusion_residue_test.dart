@@ -32,19 +32,20 @@ void main() {
     await IsarSetup.init(directory: tempDir, inspector: false);
 
     // 写入 fixture 角色（学徒，内力宽裕，experienceToNextLayer 调大防升层副作用）
-    final ch = Character.create(
-      name: 'residue_hero',
-      realmTier: RealmTier.xueTu,
-      realmLayer: RealmLayer.qiMeng,
-      attributes: Attributes(),
-      rarity: RarityTier.biaoZhun,
-      lineageRole: LineageRole.founder,
-      createdAt: DateTime(2026, 1, 1),
-      internalForce: 100,
-    )
-      ..id = kCharId
-      ..internalForceMax = 10000
-      ..experienceToNextLayer = 999999;
+    final ch =
+        Character.create(
+            name: 'residue_hero',
+            realmTier: RealmTier.xueTu,
+            realmLayer: RealmLayer.qiMeng,
+            attributes: Attributes(),
+            rarity: RarityTier.biaoZhun,
+            lineageRole: LineageRole.founder,
+            createdAt: DateTime(2026, 1, 1),
+            internalForce: 100,
+          )
+          ..id = kCharId
+          ..internalForceMax = 10000
+          ..experienceToNextLayer = 999999;
     await IsarSetup.instance.writeTxn(
       () => IsarSetup.instance.characters.put(ch),
     );
@@ -70,7 +71,8 @@ void main() {
         ..saveDataId = kSaveDataId
         ..mapType = RetreatMapType.shanLin
         ..durationHours = 4
-        ..startedAt = DateTime(2026, 5, 11, 10, 0) // 上午 10 点：非子时非节气
+        ..startedAt =
+            DateTime(2026, 5, 11, 10, 0) // 上午 10 点：非子时非节气
         ..status = RetreatStatus.active
         ..actualRewards = [];
     }
@@ -207,11 +209,7 @@ void main() {
       // 无余毒 → 满额 20 点
       expect(out.internalForcePoints, 20, reason: '无余毒不受 0.80 debuff');
       final ch = await IsarSetup.instance.characters.get(kCharId);
-      expect(
-        ch?.innerDemonResidueHoursRemaining,
-        0,
-        reason: '无余毒不累减',
-      );
+      expect(ch?.innerDemonResidueHoursRemaining, 0, reason: '无余毒不累减');
     });
 
     test('有余毒（5h）→ 内力 ×0.80，余毒减去 actualHours(3h) → 剩 2h', () async {

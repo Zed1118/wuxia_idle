@@ -63,29 +63,29 @@ void main() {
   const strategy = DefaultGroundStrategy();
 
   BattleCharacter player({int eqAtk = 1500}) => BattleCharacter(
-        characterId: 1,
-        name: '玩家',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 12000,
-        currentHp: 12000,
-        maxInternalForce: 10000,
-        currentInternalForce: 10000,
-        speed: 400,
-        criticalRate: 0.0,
-        evasionRate: 0.0,
-        defenseRate: 0.0,
-        totalEquipmentAttack: eqAtk,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: const <SkillDef>[playerHit],
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: 0,
-        slotIndex: 0,
-      );
+    characterId: 1,
+    name: '玩家',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 12000,
+    currentHp: 12000,
+    maxInternalForce: 10000,
+    currentInternalForce: 10000,
+    speed: 400,
+    criticalRate: 0.0,
+    evasionRate: 0.0,
+    defenseRate: 0.0,
+    totalEquipmentAttack: eqAtk,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: const <SkillDef>[playerHit],
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: 0,
+    slotIndex: 0,
+  );
 
   /// 两阶段 Boss:phase0 满血起始(无解锁),phase1 在 50% 解锁 skillRage。
   BattleCharacter twoPhaseBoss({required int maxHp, required int currentHp}) =>
@@ -150,10 +150,10 @@ void main() {
       isTrue,
       reason: 'phase1 解锁招应并入 availableSkills',
     );
-    final transitions =
-        s.actionLog.where((a) => a.bossPhaseTransitionTo != null).toList();
-    expect(transitions, hasLength(1),
-        reason: '应恰好记录一条转阶段事件');
+    final transitions = s.actionLog
+        .where((a) => a.bossPhaseTransitionTo != null)
+        .toList();
+    expect(transitions, hasLength(1), reason: '应恰好记录一条转阶段事件');
     expect(transitions.single.bossPhaseTransitionTo, 1);
     expect(transitions.single.bossPhaseTitleKey, 'boss_phase_rage');
     expect(transitions.single.actorId, -1);
@@ -239,9 +239,10 @@ void main() {
       bossPhases: [
         BossPhaseDef(hpThresholdPct: 1.0),
         BossPhaseDef(
-            hpThresholdPct: 0.6,
-            unlockSkillIds: ['skill_phase_boss_rage'],
-            titleKey: 'boss_phase_p1'),
+          hpThresholdPct: 0.6,
+          unlockSkillIds: ['skill_phase_boss_rage'],
+          titleKey: 'boss_phase_p1',
+        ),
         BossPhaseDef(hpThresholdPct: 0.2, titleKey: 'boss_phase_p2'),
       ],
       bossPhaseUnlockSkills: [
@@ -264,13 +265,23 @@ void main() {
     s = strategy.tick(s, numbers, rng: Random(42));
     final after = bossOf(s);
     // Boss 必须存活才能验证多阶段推进机制。
-    expect(after.isAlive, isTrue,
-        reason: 'Boss 必须存活才能验证多阈值推进(hp=${after.currentHp})');
-    expect(after.bossPhaseIndex, 2,
-        reason: '单结算应推进到末阶段 2(hp=${after.currentHp})');
-    final transitions =
-        s.actionLog.where((a) => a.bossPhaseTransitionTo != null).toList();
-    expect(transitions.map((a) => a.bossPhaseTransitionTo), [1, 2],
-        reason: '应按顺序记录两条转阶段事件(1 then 2),且均在同一结算中产生');
+    expect(
+      after.isAlive,
+      isTrue,
+      reason: 'Boss 必须存活才能验证多阈值推进(hp=${after.currentHp})',
+    );
+    expect(
+      after.bossPhaseIndex,
+      2,
+      reason: '单结算应推进到末阶段 2(hp=${after.currentHp})',
+    );
+    final transitions = s.actionLog
+        .where((a) => a.bossPhaseTransitionTo != null)
+        .toList();
+    expect(
+      transitions.map((a) => a.bossPhaseTransitionTo),
+      [1, 2],
+      reason: '应按顺序记录两条转阶段事件(1 then 2),且均在同一结算中产生',
+    );
   });
 }

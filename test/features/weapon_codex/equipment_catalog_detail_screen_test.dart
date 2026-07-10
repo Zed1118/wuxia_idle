@@ -9,22 +9,22 @@ import 'package:wuxia_idle/shared/strings.dart';
 
 /// 手构 minimal def（imagePath 故意指向不存在资源以验 errorBuilder 不崩）。
 EquipmentDef _makeDef() => const EquipmentDef(
-      id: 'test_blade',
-      name: '测试·断水刃',
-      tier: EquipmentTier.liQi,
-      slot: EquipmentSlot.weapon,
-      schoolBias: TechniqueSchool.gangMeng,
-      baseAttackMin: 100,
-      baseAttackMax: 200,
-      baseHealthMin: 50,
-      baseHealthMax: 80,
-      baseSpeedMin: 10,
-      baseSpeedMax: 12,
-      presetLoreIds: [],
-      dropSourceTags: [],
-      iconPath: 'assets/__nonexistent__.png',
-      specialSkillCandidates: ['skill_a', 'skill_b'],
-    );
+  id: 'test_blade',
+  name: '测试·断水刃',
+  tier: EquipmentTier.liQi,
+  slot: EquipmentSlot.weapon,
+  schoolBias: TechniqueSchool.gangMeng,
+  baseAttackMin: 100,
+  baseAttackMax: 200,
+  baseHealthMin: 50,
+  baseHealthMax: 80,
+  baseSpeedMin: 10,
+  baseSpeedMax: 12,
+  presetLoreIds: [],
+  dropSourceTags: [],
+  iconPath: 'assets/__nonexistent__.png',
+  specialSkillCandidates: ['skill_a', 'skill_b'],
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -72,15 +72,14 @@ void main() {
     await tester.pumpWidget(wrap(_makeDef(), entry));
     await tester.pump();
 
-    expect(
-      find.text(UiStrings.weaponCodexHistoryUnknown),
-      findsOneWidget,
-    );
+    expect(find.text(UiStrings.weaponCodexHistoryUnknown), findsOneWidget);
     // 不应渲染任何首得来源 / 日期
     expect(
-      find.text(UiStrings.weaponCodexFirstObtainedFrom(
-        UiStrings.weaponCodexBackfillSource,
-      )),
+      find.text(
+        UiStrings.weaponCodexFirstObtainedFrom(
+          UiStrings.weaponCodexBackfillSource,
+        ),
+      ),
       findsNothing,
     );
     expect(find.text(UiStrings.weaponCodexObtainedCount(1)), findsOneWidget);

@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
@@ -41,13 +40,22 @@ void main() {
     await loadTestGameRepository();
   });
 
-  BattleState runFloor30(RealmTier tier, {required bool geared, required int seed}) {
+  BattleState runFloor30(
+    RealmTier tier, {
+    required bool geared,
+    required int seed,
+  }) {
     final repo = GameRepository.instance;
     final floor30 = repo.getTowerFloor(30);
     final players = [
       for (var slot = 0; slot < 3; slot++)
-        _buildPlayer(repo, tier,
-            slot: slot, isFounder: slot == 0, geared: geared),
+        _buildPlayer(
+          repo,
+          tier,
+          slot: slot,
+          isFounder: slot == 0,
+          geared: geared,
+        ),
     ];
     final enemies = StageBattleSetup.buildEnemyTeam(
       floor30.enemyTeam,
@@ -57,8 +65,11 @@ void main() {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     // 永久 listener 防 autoDispose 在 read 间隙释放 notifier。
-    final sub =
-        container.listen(battleProvider, (_, _) {}, fireImmediately: true);
+    final sub = container.listen(
+      battleProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
     addTearDown(sub.close);
 
     final notifier = container.read(battleProvider.notifier);
@@ -80,21 +91,23 @@ void main() {
 
     // 破结界:两护法皆亡。
     final guardiansAlive = s.rightTeam
-        .where((e) =>
-            (e.enemyDefId == 'enemy_tower_30_cultist_a' ||
-                e.enemyDefId == 'enemy_tower_30_cultist_b') &&
-            e.isAlive)
+        .where(
+          (e) =>
+              (e.enemyDefId == 'enemy_tower_30_cultist_a' ||
+                  e.enemyDefId == 'enemy_tower_30_cultist_b') &&
+              e.isAlive,
+        )
         .length;
     expect(guardiansAlive, 0, reason: '必胜路径应清空双护法破结界');
 
     // 击杀主 Boss。
-    final boss = s.rightTeam
-        .firstWhere((e) => e.enemyDefId == 'enemy_tower_boss_30');
+    final boss = s.rightTeam.firstWhere(
+      (e) => e.enemyDefId == 'enemy_tower_boss_30',
+    );
     expect(boss.isAlive, isFalse, reason: '破结界后应击杀主 Boss');
 
     // 非空过:确有交战动作。
-    expect(s.actionLog.length, greaterThan(3),
-        reason: '应产生实际交战动作,非空过');
+    expect(s.actionLog.length, greaterThan(3), reason: '应产生实际交战动作,非空过');
   });
 
   test('under-geared 绝顶(-1 阶)0 强化队在确定 seed 会败(护法软门槛咬合)', () {
@@ -102,16 +115,18 @@ void main() {
     final s = runFloor30(RealmTier.jueDing, geared: false, seed: 8);
 
     expect(s.isFinished, isTrue, reason: '应在 guard 内分出胜负');
-    expect(s.result, BattleResult.rightWin,
-        reason: 'under-geared 队应被护法血墙+攻击压力拖垮而败——软门槛咬合');
+    expect(
+      s.result,
+      BattleResult.rightWin,
+      reason: 'under-geared 队应被护法血墙+攻击压力拖垮而败——软门槛咬合',
+    );
 
     // 玩家团灭(全败),非平局/超时。
     final playersAlive = s.leftTeam.where((p) => p.isAlive).length;
     expect(playersAlive, 0, reason: '败局应为玩家团灭');
 
     // 非空过:确有交战动作。
-    expect(s.actionLog.length, greaterThan(3),
-        reason: '应产生实际交战动作,非空过');
+    expect(s.actionLog.length, greaterThan(3), reason: '应产生实际交战动作,非空过');
   });
 }
 
@@ -169,8 +184,9 @@ BattleCharacter _buildPlayer(
     school: school,
     role: TechniqueRole.main,
     learnedAt: DateTime(2026, 6, 28),
-    cultivationLayer:
-        geared ? CultivationLayer.daCheng : CultivationLayer.zhongCheng,
+    cultivationLayer: geared
+        ? CultivationLayer.daCheng
+        : CultivationLayer.zhongCheng,
   );
 
   final attributes = Attributes()

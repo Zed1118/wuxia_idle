@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
@@ -63,88 +62,89 @@ void main() {
     CultivationLayer layer = CultivationLayer.chuKui,
     int progress = 800,
     int progressToNext = 1000,
-  }) =>
-      Technique.create(
-        defId: defId,
-        ownerCharacterId: ownerCharId,
-        tier: TechniqueTier.ruMenGong,
-        school: TechniqueSchool.gangMeng,
-        role: TechniqueRole.main,
-        learnedAt: t,
-        cultivationLayer: layer,
-        cultivationProgress: progress,
-        cultivationProgressToNext: progressToNext,
-      )..id = id;
+  }) => Technique.create(
+    defId: defId,
+    ownerCharacterId: ownerCharId,
+    tier: TechniqueTier.ruMenGong,
+    school: TechniqueSchool.gangMeng,
+    role: TechniqueRole.main,
+    learnedAt: t,
+    cultivationLayer: layer,
+    cultivationProgress: progress,
+    cultivationProgressToNext: progressToNext,
+  )..id = id;
 
   BattleCharacter buildBattleChar(int charId, int slot) => BattleCharacter(
-        characterId: charId,
-        name: 'c$charId',
-        realmTier: RealmTier.xueTu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 1000,
-        currentHp: 1000,
-        maxInternalForce: 500,
-        currentInternalForce: 500,
-        speed: 100,
-        criticalRate: 0.1,
-        evasionRate: 0.1,
-        defenseRate: 0.05,
-        totalEquipmentAttack: 100,
-        mainCultivationLayer: CultivationLayer.chuKui,
-        availableSkills: const [],
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: 0,
-        slotIndex: slot,
-      );
+    characterId: charId,
+    name: 'c$charId',
+    realmTier: RealmTier.xueTu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 1000,
+    currentHp: 1000,
+    maxInternalForce: 500,
+    currentInternalForce: 500,
+    speed: 100,
+    criticalRate: 0.1,
+    evasionRate: 0.1,
+    defenseRate: 0.05,
+    totalEquipmentAttack: 100,
+    mainCultivationLayer: CultivationLayer.chuKui,
+    availableSkills: const [],
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: 0,
+    slotIndex: slot,
+  );
 
-  TechniqueDef buildTechDef({required String id, List<String> skillIds = const []}) =>
-      TechniqueDef(
-        id: id,
-        name: id,
-        tier: TechniqueTier.ruMenGong,
-        school: TechniqueSchool.gangMeng,
-        description: 'd',
-        skillIds: skillIds,
-        internalForceGrowthBonus: 1.0,
-        speedBonus: 0,
-        acquireSourceTags: const [],
-      );
+  TechniqueDef buildTechDef({
+    required String id,
+    List<String> skillIds = const [],
+  }) => TechniqueDef(
+    id: id,
+    name: id,
+    tier: TechniqueTier.ruMenGong,
+    school: TechniqueSchool.gangMeng,
+    description: 'd',
+    skillIds: skillIds,
+    internalForceGrowthBonus: 1.0,
+    speedBonus: 0,
+    acquireSourceTags: const [],
+  );
 
   StageDef buildInnerDemonStage() => const StageDef(
-        id: 'inner_demon_01',
-        name: '心魔关·启蒙',
-        stageType: StageType.innerDemon,
-        chapterIndex: 1,
-        requiredRealm: RealmTier.wuSheng,
-        enemyTeam: [],
-        isBossStage: false,
-        dropTable: [],
-        baseExpReward: 0,
-        difficultyMultiplier: 1.0,
-      );
+    id: 'inner_demon_01',
+    name: '心魔关·启蒙',
+    stageType: StageType.innerDemon,
+    chapterIndex: 1,
+    requiredRealm: RealmTier.wuSheng,
+    enemyTeam: [],
+    isBossStage: false,
+    dropTable: [],
+    baseExpReward: 0,
+    difficultyMultiplier: 1.0,
+  );
 
   StageDef buildMainlineStage({bool isBossStage = false}) => StageDef(
-        id: 'stage_test',
-        name: '普通关',
-        stageType: StageType.mainline,
-        chapterIndex: 1,
-        requiredRealm: RealmTier.xueTu,
-        enemyTeam: const [],
-        isBossStage: isBossStage,
-        dropTable: const [],
-        baseExpReward: 0,
-        difficultyMultiplier: 1.0,
-      );
+    id: 'stage_test',
+    name: '普通关',
+    stageType: StageType.mainline,
+    chapterIndex: 1,
+    requiredRealm: RealmTier.xueTu,
+    enemyTeam: const [],
+    isBossStage: isBossStage,
+    dropTable: const [],
+    baseExpReward: 0,
+    difficultyMultiplier: 1.0,
+  );
 
   DropService dropSvc() => DropService(
-        equipmentDefLookup: (id) =>
-            throw StateError('test: eqDef not expected for $id'),
-        now: () => t,
-      );
+    equipmentDefLookup: (id) =>
+        throw StateError('test: eqDef not expected for $id'),
+    now: () => t,
+  );
 
   // ──────────────────────────────────────────────────────────────────────────
   // M6 Task 4 · 心魔关战败惩罚分支
@@ -173,7 +173,9 @@ void main() {
         finalState: state,
         participatingCharacters: [ch],
         equipmentsByCharacter: const {},
-        techniquesByCharacter: {1: [mainTech]},
+        techniquesByCharacter: {
+          1: [mainTech],
+        },
         stageDef: buildInnerDemonStage(),
         rng: DefaultRng(seed: 1),
         progressToNextMap: progressMap,
@@ -231,7 +233,9 @@ void main() {
         finalState: state,
         participatingCharacters: [ch],
         equipmentsByCharacter: const {},
-        techniquesByCharacter: {1: [mainTech]},
+        techniquesByCharacter: {
+          1: [mainTech],
+        },
         stageDef: buildInnerDemonStage(),
         rng: DefaultRng(seed: 1),
         progressToNextMap: progressMap,
@@ -241,10 +245,12 @@ void main() {
         numbersConfig: numbersCfg,
       );
 
-      expect(result.innerDemonPenaltyByCharacter, isEmpty,
-          reason: '心魔关胜利不施加惩罚');
-      expect(ch.innerDemonResidueHoursRemaining, 0,
-          reason: '胜利不写余毒');
+      expect(
+        result.innerDemonPenaltyByCharacter,
+        isEmpty,
+        reason: '心魔关胜利不施加惩罚',
+      );
+      expect(ch.innerDemonResidueHoursRemaining, 0, reason: '胜利不写余毒');
       expect(ch.internalForce, 8000, reason: '胜利不削内力');
     });
 
@@ -267,7 +273,9 @@ void main() {
         finalState: state,
         participatingCharacters: [ch],
         equipmentsByCharacter: const {},
-        techniquesByCharacter: {1: [mainTech]},
+        techniquesByCharacter: {
+          1: [mainTech],
+        },
         stageDef: buildMainlineStage(isBossStage: false),
         rng: DefaultRng(seed: 1),
         progressToNextMap: progressMap,
@@ -277,8 +285,11 @@ void main() {
         numbersConfig: numbersCfg,
       );
 
-      expect(result.innerDemonPenaltyByCharacter, isEmpty,
-          reason: '普通关不触发心魔惩罚');
+      expect(
+        result.innerDemonPenaltyByCharacter,
+        isEmpty,
+        reason: '普通关不触发心魔惩罚',
+      );
       expect(ch.internalForce, 6000, reason: '普通关不动内力');
     });
   });

@@ -16,7 +16,9 @@ import 'package:wuxia_idle/shared/theme/colors.dart';
 /// 5 case 覆盖,本批不重复验)。
 void main() {
   group('渲染', () {
-    testWidgets('step 6 → title + body + Icon people_outline 可见', (tester) async {
+    testWidgets('step 6 → title + body + Icon people_outline 可见', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
@@ -46,8 +48,9 @@ void main() {
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
     });
 
-    testWidgets('step 8 → title + body + Icon flash_on_outlined 可见',
-        (tester) async {
+    testWidgets('step 8 → title + body + Icon flash_on_outlined 可见', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const ProviderScope(
           child: MaterialApp(
@@ -88,14 +91,15 @@ void main() {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(
-          home: Scaffold(
-            body: TutorialBannerCard(hint: TutorialHintDef.step6),
-          ),
+          home: Scaffold(body: TutorialBannerCard(hint: TutorialHintDef.step6)),
         ),
       ),
     );
-    expect(find.byType(InkWell), findsOneWidget,
-        reason: 'banner 必须能点击触发 markHintRead');
+    expect(
+      find.byType(InkWell),
+      findsOneWidget,
+      reason: 'banner 必须能点击触发 markHintRead',
+    );
   });
 
   // ─── 边界 & 派生(纯 unit test,不用 testWidgets) ───────────────────────

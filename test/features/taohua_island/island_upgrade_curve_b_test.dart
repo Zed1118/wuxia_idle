@@ -48,7 +48,8 @@ void main() {
     });
 
     test('四座节奏 B fixture 全满累计 = 52,200 银（2×10,500 + 2×15,600）', () {
-      final total = fullCost(BuildingType.tieJiangChang) +
+      final total =
+          fullCost(BuildingType.tieJiangChang) +
           fullCost(BuildingType.caoYaoYuan) +
           fullCost(BuildingType.daZaoTai) +
           fullCost(BuildingType.danFang);
@@ -67,8 +68,7 @@ void main() {
 
     test('processor upgradeRealmFor [0, 1, 2, 3]', () {
       final dz = cfg.buildingOf(BuildingType.daZaoTai);
-      expect(dz.upgradeRealmFor(4), 3,
-          reason: '升满 L5 需一流，与高阶配方 realm3 同步解锁');
+      expect(dz.upgradeRealmFor(4), 3, reason: '升满 L5 需一流，与高阶配方 realm3 同步解锁');
     });
   });
 
@@ -76,7 +76,8 @@ void main() {
     // loadYaml 返回 unmodifiable map，故用文本替换构造非法配置（replaceFirst
     // 只改 tie_jiang_chang，单建筑越界即足够触发 validate 抛错）。
     TaohuaIslandConfig parse(String yamlText) => TaohuaIslandConfig.fromYaml(
-        (loadYaml(yamlText) as YamlMap).cast<String, dynamic>());
+      (loadYaml(yamlText) as YamlMap).cast<String, dynamic>(),
+    );
 
     test('upgrade_silver_levels 长度 ≠ max_level-1 → 抛错', () {
       final bad = _yaml.replaceFirst(

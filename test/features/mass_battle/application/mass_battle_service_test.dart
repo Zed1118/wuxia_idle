@@ -171,20 +171,20 @@ void main() {
 }
 
 MassBattleDef _testConfig() => const MassBattleDef(
-      formations: {},
-      waveIntermission: MassBattleWaveIntermission.defaults(),
-      stageFormations: {
-        'stage_mass_battle_01': Formation.yanXing,
-        'stage_mass_battle_02': Formation.baGua,
-        'stage_mass_battle_03': Formation.fengShi,
-        'stage_mass_battle_04': Formation.baGua,
-        'stage_mass_battle_05': Formation.fengShi,
-      },
-      unlockTriggers: {
-        'stage_06_05': 'stage_mass_battle_01',
-        'stage_mass_battle_01': 'stage_mass_battle_02',
-        'stage_mass_battle_02': 'stage_mass_battle_03',
-        'stage_mass_battle_03': 'stage_mass_battle_04',
-        'stage_mass_battle_04': 'stage_mass_battle_05',
-      },
-    );
+  formations: {},
+  waveIntermission: MassBattleWaveIntermission.defaults(),
+  stageFormations: {
+    'stage_mass_battle_01': Formation.yanXing,
+    'stage_mass_battle_02': Formation.baGua,
+    'stage_mass_battle_03': Formation.fengShi,
+    'stage_mass_battle_04': Formation.baGua,
+    'stage_mass_battle_05': Formation.fengShi,
+  },
+  unlockTriggers: {
+    'stage_06_05': 'stage_mass_battle_01',
+    'stage_mass_battle_01': 'stage_mass_battle_02',
+    'stage_mass_battle_02': 'stage_mass_battle_03',
+    'stage_mass_battle_03': 'stage_mass_battle_04',
+    'stage_mass_battle_04': 'stage_mass_battle_05',
+  },
+);

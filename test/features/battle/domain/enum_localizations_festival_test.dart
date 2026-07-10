@@ -42,11 +42,7 @@ void main() {
 
     test('所有 Festival enum 值都有非空映射(全覆盖红线)', () {
       for (final f in Festival.values) {
-        expect(
-          EnumL10n.festival(f),
-          isNotEmpty,
-          reason: '$f 缺少中文映射',
-        );
+        expect(EnumL10n.festival(f), isNotEmpty, reason: '$f 缺少中文映射');
       }
     });
   });

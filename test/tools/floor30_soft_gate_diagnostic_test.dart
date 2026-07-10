@@ -60,9 +60,16 @@ class _Res {
   final int bossFirstDamageTick; // 首个 Boss 掉血的 tick;-1=全程满血
   final int phaseTransitions;
   final int bossHpRemain;
-  const _Res(this.profile, this.seed, this.result, this.ticks,
-      this.wardBreakTick, this.bossFirstDamageTick, this.phaseTransitions,
-      this.bossHpRemain);
+  const _Res(
+    this.profile,
+    this.seed,
+    this.result,
+    this.ticks,
+    this.wardBreakTick,
+    this.bossFirstDamageTick,
+    this.phaseTransitions,
+    this.bossHpRemain,
+  );
 }
 
 void main() {
@@ -83,9 +90,9 @@ void main() {
     }
     final summary = _summarize(results);
     print(summary);
-    File('$_outputDir/floor30_soft_gate_diagnostic.md').writeAsStringSync(
-      summary,
-    );
+    File(
+      '$_outputDir/floor30_soft_gate_diagnostic.md',
+    ).writeAsStringSync(summary);
 
     final onLevel = results.where((r) => r.profile == _Profile.onLevel);
     final underGear = results.where((r) => r.profile == _Profile.underGear);
@@ -98,11 +105,18 @@ void main() {
     //    有无 taunt 同结果——taunt 因果由 battle_ai_guardian_taunt_test.dart 隔离证。
     //    OBSERVED(30 seed):onLevel avgWardBreakTick=2.1 / avgBossFirstDmgTick=2.3。
     for (final r in onLevel) {
-      expect(r.wardBreakTick, greaterThan(0),
-          reason: 'onLevel 应打破护法墙(种子 ${r.seed})');
-      expect(r.bossFirstDamageTick, greaterThanOrEqualTo(r.wardBreakTick),
-          reason: '护法全灭前 Boss 不应掉血(集成不变量,种子 ${r.seed}):'
-              'bossFirstDmg=${r.bossFirstDamageTick} wardBreak=${r.wardBreakTick}');
+      expect(
+        r.wardBreakTick,
+        greaterThan(0),
+        reason: 'onLevel 应打破护法墙(种子 ${r.seed})',
+      );
+      expect(
+        r.bossFirstDamageTick,
+        greaterThanOrEqualTo(r.wardBreakTick),
+        reason:
+            '护法全灭前 Boss 不应掉血(集成不变量,种子 ${r.seed}):'
+            'bossFirstDmg=${r.bossFirstDamageTick} wardBreak=${r.wardBreakTick}',
+      );
     }
 
     // ② 满配必胜(护法灭后靠脆弱窗口打残局,能打死)。
@@ -110,8 +124,11 @@ void main() {
 
     // ③ 终局硬门槛:跨阶欠配允许全败。floor30 是终局护法墙,不再要求
     //    underGear 偶尔通关;只要求满配必胜、欠配不优于满配。
-    expect(underWins, lessThanOrEqualTo((_seeds * 0.5).floor()),
-        reason: 'underGear 跨阶欠配至少半数应败(floor30 终局硬门槛)');
+    expect(
+      underWins,
+      lessThanOrEqualTo((_seeds * 0.5).floor()),
+      reason: 'underGear 跨阶欠配至少半数应败(floor30 终局硬门槛)',
+    );
 
     expect(results.length, _Profile.values.length * _seeds);
   }, timeout: const Timeout(Duration(minutes: 10)));
@@ -122,14 +139,19 @@ _Res _sim(TowerFloorDef floor, int seed, GameRepository repo, _Profile p) {
   final geared = p == _Profile.onLevel;
   final players = [
     for (var slot = 0; slot < 3; slot++)
-      _buildPlayer(repo, tier, slot: slot, isFounder: slot == 0, geared: geared),
+      _buildPlayer(
+        repo,
+        tier,
+        slot: slot,
+        isFounder: slot == 0,
+        geared: geared,
+      ),
   ];
   final enemies = StageBattleSetup.buildEnemyTeam(
     floor.enemyTeam,
     isTower: true,
   );
-  final bossMaxHp =
-      enemies.firstWhere((e) => e.enemyDefId == _bossDefId).maxHp;
+  final bossMaxHp = enemies.firstWhere((e) => e.enemyDefId == _bossDefId).maxHp;
 
   // 逐 tick 推进(单一 Random 复刻 runToEnd 的确定性,见 runToEnd 实现:
   // 循环 tick(s, n, rng: r)),每 tick 后采样护法存活 / Boss 承伤。
@@ -163,8 +185,9 @@ _Res _sim(TowerFloorDef floor, int seed, GameRepository repo, _Profile p) {
     (e) => e.enemyDefId == _bossDefId,
     orElse: () => s.rightTeam.first,
   );
-  final phaseTransitions =
-      s.actionLog.where((a) => a.bossPhaseTransitionTo != null).length;
+  final phaseTransitions = s.actionLog
+      .where((a) => a.bossPhaseTransitionTo != null)
+      .length;
 
   return _Res(
     p,
@@ -232,8 +255,9 @@ BattleCharacter _buildPlayer(
     school: school,
     role: TechniqueRole.main,
     learnedAt: DateTime(2026, 6, 28),
-    cultivationLayer:
-        geared ? CultivationLayer.daCheng : CultivationLayer.zhongCheng,
+    cultivationLayer: geared
+        ? CultivationLayer.daCheng
+        : CultivationLayer.zhongCheng,
   );
 
   final attributes = Attributes()
@@ -280,8 +304,10 @@ String _summarize(List<_Res> results) {
   buf.writeln();
   buf.writeln('$_seeds seed · maxTicks=$_maxTicks · 逐 tick 采样只读模拟。');
   buf.writeln();
-  buf.writeln('- ① taunt 真生效:护法全灭前 Boss 不掉血(avgBossFirstDmgTick '
-      '>= avgWardBreakTick)。');
+  buf.writeln(
+    '- ① taunt 真生效:护法全灭前 Boss 不掉血(avgBossFirstDmgTick '
+    '>= avgWardBreakTick)。',
+  );
   buf.writeln('- ② 满配必胜:onLevel winRate == 100%。');
   buf.writeln('- ③ 终局硬门槛:underGear 允许 0% 胜率,但 onLevel 必须 100%。');
   buf.writeln();
@@ -294,9 +320,12 @@ String _summarize(List<_Res> results) {
     final sub = results.where((r) => r.profile == p).toList();
     final wins = sub.where((r) => r.result == 'leftWin').length;
     final wardBroke = sub.where((r) => r.wardBreakTick >= 0).length;
-    final wbTicks = sub.where((r) => r.wardBreakTick >= 0).map((r) => r.wardBreakTick);
-    final bfTicks =
-        sub.where((r) => r.bossFirstDamageTick >= 0).map((r) => r.bossFirstDamageTick);
+    final wbTicks = sub
+        .where((r) => r.wardBreakTick >= 0)
+        .map((r) => r.wardBreakTick);
+    final bfTicks = sub
+        .where((r) => r.bossFirstDamageTick >= 0)
+        .map((r) => r.bossFirstDamageTick);
     buf.writeln(
       '| ${p.name} | ${pct(wins / sub.length)} | '
       '${avg(sub.map((r) => r.ticks)).round()} | '
@@ -310,8 +339,10 @@ String _summarize(List<_Res> results) {
   buf.writeln();
   // 逐 seed 结果表,校准选种子用。
   buf.writeln('## 逐 seed');
-  buf.writeln('| profile | seed | result | ticks | wardBreakTick | '
-      'bossFirstDmgTick | phaseTrans |');
+  buf.writeln(
+    '| profile | seed | result | ticks | wardBreakTick | '
+    'bossFirstDmgTick | phaseTrans |',
+  );
   buf.writeln('|---|---:|---|---:|---:|---:|---:|');
   for (final r in results) {
     buf.writeln(

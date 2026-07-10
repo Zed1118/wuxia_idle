@@ -80,8 +80,11 @@ void main() {
       expect(m.dropTable, isNotEmpty, reason: '${m.mapType} 应有 dropTable');
       for (final entry in m.dropTable.whereType<EquipmentDrop>()) {
         final def = GameRepository.instance.getEquipment(entry.equipmentDefId);
-        expect(def.tier, expected[m.mapType],
-            reason: '${m.mapType} 的 ${entry.equipmentDefId} tier 越界');
+        expect(
+          def.tier,
+          expected[m.mapType],
+          reason: '${m.mapType} 的 ${entry.equipmentDefId} tier 越界',
+        );
       }
     }
   });
@@ -113,7 +116,10 @@ void main() {
     );
     expect(out.equipmentDrops, hasLength(1));
     expect(out.equipmentDrops.first.tier, EquipmentTier.xunChang);
-    expect(out.equipmentDrops.first.obtainedFrom, UiStrings.dropSourceSeclusion);
+    expect(
+      out.equipmentDrops.first.obtainedFrom,
+      UiStrings.dropSourceSeclusion,
+    );
   });
 
   test('computeOutputs：不传 dropService → equipDrops 恒空(零回归)', () {

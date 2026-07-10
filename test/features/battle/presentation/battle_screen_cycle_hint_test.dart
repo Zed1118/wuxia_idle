@@ -39,19 +39,18 @@ class _TestBattleNotifier extends BattleNotifier {
   void advance({int maxConsecutiveTicks = 100}) {}
 }
 
-Future<void> _pump(
-  WidgetTester tester, {
-  String? cycleHint,
-}) async {
+Future<void> _pump(WidgetTester tester, {String? cycleHint}) async {
   await tester.binding.setSurfaceSize(const Size(1280, 720));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   final (left, right) = BattleDemo.mockTeams();
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        battleProvider.overrideWith(() => _TestBattleNotifier(
-              BattleState.initial(leftTeam: left, rightTeam: right),
-            )),
+        battleProvider.overrideWith(
+          () => _TestBattleNotifier(
+            BattleState.initial(leftTeam: left, rightTeam: right),
+          ),
+        ),
       ],
       child: MaterialApp(
         home: BattleScreen(

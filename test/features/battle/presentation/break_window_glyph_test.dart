@@ -14,68 +14,80 @@ SkillDef _skill({
   SkillType type = SkillType.powerSkill,
   TechniqueSchool? style,
 }) => SkillDef(
-      id: 'test_skill',
-      name: '测试招',
-      description: '测试',
-      type: type,
-      powerMultiplier: 500,
-      internalForceCost: 0,
-      cooldownTurns: 0,
-      requiresManualTrigger: false,
-      visualEffect: 'none',
-      style: style,
-    );
+  id: 'test_skill',
+  name: '测试招',
+  description: '测试',
+  type: type,
+  powerMultiplier: 500,
+  internalForceCost: 0,
+  cooldownTurns: 0,
+  requiresManualTrigger: false,
+  visualEffect: 'none',
+  style: style,
+);
 
 AttackResult _result() => const AttackResult(
-      finalDamage: 500,
-      mainDamage: 500,
-      quakeDamage: 0,
-      isCritical: false,
-      isDodged: false,
-      schoolCounterMultiplier: 1.0,
-      realmDiffAttackerMod: 1.0,
-      realmDiffDefenderMod: 1.0,
-      cultivationMultiplier: 1.0,
-      criticalMultiplier: 1.0,
-      defenseRate: 0.1,
-      evasionRate: 0.0,
-      appliedEffects: [],
-      formulaBreakdown: '',
-    );
+  finalDamage: 500,
+  mainDamage: 500,
+  quakeDamage: 0,
+  isCritical: false,
+  isDodged: false,
+  schoolCounterMultiplier: 1.0,
+  realmDiffAttackerMod: 1.0,
+  realmDiffDefenderMod: 1.0,
+  cultivationMultiplier: 1.0,
+  criticalMultiplier: 1.0,
+  defenseRate: 0.1,
+  evasionRate: 0.0,
+  appliedEffects: [],
+  formulaBreakdown: '',
+);
 
 BattleAction _breakWindowAction() => BattleAction(
-      tick: 1,
-      actorId: 1,
-      targetId: 2,
-      skill: _skill(type: SkillType.powerSkill, style: TechniqueSchool.gangMeng),
-      attackResult: _result(),
-      description: 'test',
-      openedBreakWindow: true,
-    );
+  tick: 1,
+  actorId: 1,
+  targetId: 2,
+  skill: _skill(type: SkillType.powerSkill, style: TechniqueSchool.gangMeng),
+  attackResult: _result(),
+  description: 'test',
+  openedBreakWindow: true,
+);
 
 BattleAction _interruptedAction() => BattleAction(
-      tick: 1,
-      actorId: 1,
-      targetId: 2,
-      skill: _skill(type: SkillType.powerSkill, style: TechniqueSchool.gangMeng),
-      attackResult: _result(),
-      description: 'test',
-      interrupted: true,
-    );
+  tick: 1,
+  actorId: 1,
+  targetId: 2,
+  skill: _skill(type: SkillType.powerSkill, style: TechniqueSchool.gangMeng),
+  attackResult: _result(),
+  description: 'test',
+  interrupted: true,
+);
 
 BattleAction _normalPowerAction() => BattleAction(
-      tick: 1,
-      actorId: 1,
-      targetId: 2,
-      skill: _skill(type: SkillType.powerSkill, style: TechniqueSchool.gangMeng),
-      attackResult: _result(),
-      description: 'test',
-    );
+  tick: 1,
+  actorId: 1,
+  targetId: 2,
+  skill: _skill(type: SkillType.powerSkill, style: TechniqueSchool.gangMeng),
+  attackResult: _result(),
+  description: 'test',
+);
 
 const _cfg = ImpactFeedbackConfig(
-  light: ImpactTierParams(hitStopMs: 60, shakeMagnitude: 3, flashStrength: 0.12),
-  medium: ImpactTierParams(hitStopMs: 90, shakeMagnitude: 6, flashStrength: 0.20),
-  heavy: ImpactTierParams(hitStopMs: 120, shakeMagnitude: 10, flashStrength: 0.30),
+  light: ImpactTierParams(
+    hitStopMs: 60,
+    shakeMagnitude: 3,
+    flashStrength: 0.12,
+  ),
+  medium: ImpactTierParams(
+    hitStopMs: 90,
+    shakeMagnitude: 6,
+    flashStrength: 0.20,
+  ),
+  heavy: ImpactTierParams(
+    hitStopMs: 120,
+    shakeMagnitude: 10,
+    flashStrength: 0.30,
+  ),
 );
 
 void main() {
@@ -91,12 +103,18 @@ void main() {
       expect(p!.tier, ImpactTier.medium);
     });
 
-    test('interrupted==true → glyph 为 null（「破!」走 ultimateCaption 不走 impactGlyph）', () {
-      final p = impactProfileFor(_interruptedAction(), _cfg);
-      expect(p, isNotNull);
-      expect(p!.glyph, isNull,
-          reason: '破招动作的「破!」由 _ultimateCaptionKey 弹出,impactGlyph 不应重叠');
-    });
+    test(
+      'interrupted==true → glyph 为 null（「破!」走 ultimateCaption 不走 impactGlyph）',
+      () {
+        final p = impactProfileFor(_interruptedAction(), _cfg);
+        expect(p, isNotNull);
+        expect(
+          p!.glyph,
+          isNull,
+          reason: '破招动作的「破!」由 _ultimateCaptionKey 弹出,impactGlyph 不应重叠',
+        );
+      },
+    );
 
     test('普通强力技（无 flag）→ glyph 为流派字（震）', () {
       final p = impactProfileFor(_normalPowerAction(), _cfg);

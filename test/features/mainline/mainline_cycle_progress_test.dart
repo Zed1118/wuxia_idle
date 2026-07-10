@@ -34,45 +34,53 @@ void main() {
     }
   });
 
-  test('recordVictory(cycle:2) 写 stageId#2 cycleKey + highestClearedCycle 派生',
-      () async {
-    final svc = MainlineProgressService(isar: IsarSetup.instance);
-    await svc.getOrCreate(saveDataId: 1);
+  test(
+    'recordVictory(cycle:2) 写 stageId#2 cycleKey + highestClearedCycle 派生',
+    () async {
+      final svc = MainlineProgressService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
 
-    // 默认 cycle=1
-    await svc.recordVictory(
-      stageId: 'stage_01_01',
-      now: DateTime(2026, 6, 13),
-    );
-    // 显式 cycle=2
-    await svc.recordVictory(
-      stageId: 'stage_01_01',
-      now: DateTime(2026, 6, 14),
-      cycle: 2,
-    );
+      // 默认 cycle=1
+      await svc.recordVictory(
+        stageId: 'stage_01_01',
+        now: DateTime(2026, 6, 13),
+      );
+      // 显式 cycle=2
+      await svc.recordVictory(
+        stageId: 'stage_01_01',
+        now: DateTime(2026, 6, 14),
+        cycle: 2,
+      );
 
-    final p = await svc.getOrCreate(saveDataId: 1);
-    expect(
-      p.clearedStageCycleKeys,
-      containsAll(['stage_01_01#1', 'stage_01_01#2']),
-    );
-    expect(MainlineProgressService.highestClearedCycle(p, 'stage_01_01'), 2);
-    expect(
-      MainlineProgressService.highestClearedCycle(p, 'stage_01_02'),
-      0,
-      reason: '未通关 stage 返回 0',
-    );
+      final p = await svc.getOrCreate(saveDataId: 1);
+      expect(
+        p.clearedStageCycleKeys,
+        containsAll(['stage_01_01#1', 'stage_01_01#2']),
+      );
+      expect(MainlineProgressService.highestClearedCycle(p, 'stage_01_01'), 2);
+      expect(
+        MainlineProgressService.highestClearedCycle(p, 'stage_01_02'),
+        0,
+        reason: '未通关 stage 返回 0',
+      );
 
-    // currentChallengeCycle：highest=2，next=3
-    expect(
-      MainlineProgressService.currentChallengeCycle(p, 'stage_01_01',
-          maxCycle: 3),
-      3, // next=3 ≤ maxCycle 3
-    );
-    expect(
-      MainlineProgressService.currentChallengeCycle(p, 'stage_01_01',
-          maxCycle: 2),
-      2, // next=3 > maxCycle 2 → clamp 2
-    );
-  });
+      // currentChallengeCycle：highest=2，next=3
+      expect(
+        MainlineProgressService.currentChallengeCycle(
+          p,
+          'stage_01_01',
+          maxCycle: 3,
+        ),
+        3, // next=3 ≤ maxCycle 3
+      );
+      expect(
+        MainlineProgressService.currentChallengeCycle(
+          p,
+          'stage_01_01',
+          maxCycle: 2,
+        ),
+        2, // next=3 > maxCycle 2 → clamp 2
+      );
+    },
+  );
 }

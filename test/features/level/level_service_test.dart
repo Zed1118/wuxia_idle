@@ -24,14 +24,14 @@ void main() {
   });
 
   Character mkChar() => Character.create(
-        name: '测试',
-        realmTier: RealmTier.sanLiu,
-        realmLayer: RealmLayer.qiMeng,
-        attributes: Attributes(),
-        rarity: RarityTier.xunChang,
-        lineageRole: LineageRole.founder,
-        createdAt: DateTime(2026, 6, 26),
-      );
+    name: '测试',
+    realmTier: RealmTier.sanLiu,
+    realmLayer: RealmLayer.qiMeng,
+    attributes: Attributes(),
+    rarity: RarityTier.xunChang,
+    lineageRole: LineageRole.founder,
+    createdAt: DateTime(2026, 6, 26),
+  );
 
   test('expToNext 随等级递增:L1=100 / L2=150 / L3=200', () {
     expect(cfg.expToNext(1), 100);

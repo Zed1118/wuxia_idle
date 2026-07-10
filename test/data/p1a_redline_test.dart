@@ -21,9 +21,11 @@ void main() {
   test('§2.5 相对 cap:任意 per-skill damage_pct,熟练满阶综合倍率 ≤ 1.30', () {
     final cfg = GameRepository.instance.numbers.skillProficiency;
     for (final pct in [0.0, 0.05, 0.08, 0.12, 0.20, 0.50, 1.0, 5.0]) {
-      expect(SkillProficiency.combinedMult(800, pct, cfg),
-          lessThanOrEqualTo(1.30),
-          reason: 'per-skill damage_pct=$pct 综合不得破 130% cap');
+      expect(
+        SkillProficiency.combinedMult(800, pct, cfg),
+        lessThanOrEqualTo(1.30),
+        reason: 'per-skill damage_pct=$pct 综合不得破 130% cap',
+      );
     }
   });
 
@@ -31,8 +33,10 @@ void main() {
     final cfg = GameRepository.instance.numbers.skillProficiency;
     for (final uses in [0, 30, 100, 300, 800, 99999]) {
       for (final pct in [0.0, 0.15, 0.50]) {
-        expect(SkillProficiency.combinedMult(uses, pct, cfg),
-            lessThanOrEqualTo(1.30));
+        expect(
+          SkillProficiency.combinedMult(uses, pct, cfg),
+          lessThanOrEqualTo(1.30),
+        );
       }
     }
   });
@@ -47,8 +51,10 @@ void main() {
     expect(p.stages.length, 5);
     for (var i = 1; i < p.stages.length; i++) {
       expect(p.stages[i].minUses, greaterThan(p.stages[i - 1].minUses));
-      expect(p.stages[i].damageMult,
-          greaterThanOrEqualTo(p.stages[i - 1].damageMult));
+      expect(
+        p.stages[i].damageMult,
+        greaterThanOrEqualTo(p.stages[i - 1].damageMult),
+      );
     }
   });
 }

@@ -119,8 +119,9 @@ void main() {
     });
 
     setUp(() async {
-      tempDir =
-          await Directory.systemTemp.createTemp('wuxia_disciple_join_hook_');
+      tempDir = await Directory.systemTemp.createTemp(
+        'wuxia_disciple_join_hook_',
+      );
       await IsarSetup.init(directory: tempDir, inspector: false);
       isar = IsarSetup.instance;
       // SOLO 开局:仅祖师 id=1。
@@ -163,11 +164,13 @@ void main() {
 
       await tester.runAsync(() async {
         // fire-and-forget:hook 末尾的 dialog 会阻塞整个 future,不 await。
-        unawaited(runDiscipleJoinHookAfterVictory(
-          context: capturedContext,
-          ref: capturedRef,
-          stageId: 'stage_06_05',
-        ));
+        unawaited(
+          runDiscipleJoinHookAfterVictory(
+            context: capturedContext,
+            ref: capturedRef,
+            stageId: 'stage_06_05',
+          ),
+        );
       });
       // 轮询到 senior 拜师叙事屏推入(Isar writeTxn + load 落地后 hook 才 push)。
       await _pumpUntilFound(tester, find.byType(NarrativeReaderScreen));
@@ -196,8 +199,11 @@ void main() {
       // 点击关闭 senior 立绘 → hook 续第二段 junior 叙事。
       await tester.tap(find.byType(DiscipleJoinOverlay));
       await _pumpUntilFound(tester, find.byType(NarrativeReaderScreen));
-      expect(find.byType(NarrativeReaderScreen), findsOneWidget,
-          reason: 'junior 第二段拜师叙事');
+      expect(
+        find.byType(NarrativeReaderScreen),
+        findsOneWidget,
+        reason: 'junior 第二段拜师叙事',
+      );
 
       // 跳过 junior 叙事 → junior 立绘 → 关闭,清 pending timer。
       await tester.tap(find.text('跳过'));

@@ -10,17 +10,24 @@ Color? _textColor(WidgetTester t, String text) =>
 
 void main() {
   Widget row() => const StageProgressRow(
-      ratio: 0.5, stageName: '小成', nextEffect: '下一阶 ×2.0');
+    ratio: 0.5,
+    stageName: '小成',
+    nextEffect: '下一阶 ×2.0',
+  );
 
   testWidgets('nextEffect 浅底取 jiang', (t) async {
     await t.pumpWidget(
-      MaterialApp(home: Material(child: LightPaperPanel(child: row()))),
+      MaterialApp(
+        home: Material(child: LightPaperPanel(child: row())),
+      ),
     );
     expect(_textColor(t, '下一阶 ×2.0'), WuxiaUi.jiang);
   });
   testWidgets('nextEffect 深底取 gold', (t) async {
     await t.pumpWidget(
-      MaterialApp(home: Material(child: DarkParchmentPanel(child: row()))),
+      MaterialApp(
+        home: Material(child: DarkParchmentPanel(child: row())),
+      ),
     );
     expect(_textColor(t, '下一阶 ×2.0'), WuxiaUi.gold);
   });

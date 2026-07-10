@@ -47,8 +47,11 @@ void main() {
     await OnboardingService(isar: isar).ensureFoundingMasters();
     final saveAfterOnboard = await isar.saveDatas.get(0);
     expect(saveAfterOnboard, isNotNull);
-    expect(saveAfterOnboard!.activeCharacterIds.length, 1,
-        reason: '单人开局应仅有祖师一人在队');
+    expect(
+      saveAfterOnboard!.activeCharacterIds.length,
+      1,
+      reason: '单人开局应仅有祖师一人在队',
+    );
 
     final svc = DiscipleJoinService(isar: isar);
 
@@ -59,8 +62,11 @@ void main() {
     expect(joined[1].lineageRole, LineageRole.junior, reason: 'junior 后');
 
     final saveFinal = await isar.saveDatas.get(0);
-    expect(saveFinal!.activeCharacterIds.length, 3,
-        reason: '两弟子拜入后队伍应为 3 人(满队)');
+    expect(
+      saveFinal!.activeCharacterIds.length,
+      3,
+      reason: '两弟子拜入后队伍应为 3 人(满队)',
+    );
     expect(
       saveFinal.triggeredDiscipleJoinStageIds,
       contains('stage_06_05'),
@@ -68,28 +74,31 @@ void main() {
     );
   });
 
-  test('founder↔disciple 双向绑定: founder.discipleIds 含两弟子 + 弟子 masterId = founder', () async {
-    await OnboardingService(isar: isar).ensureFoundingMasters();
-    final save0 = await isar.saveDatas.get(0);
-    final founderId = save0!.founderCharacterId!;
+  test(
+    'founder↔disciple 双向绑定: founder.discipleIds 含两弟子 + 弟子 masterId = founder',
+    () async {
+      await OnboardingService(isar: isar).ensureFoundingMasters();
+      final save0 = await isar.saveDatas.get(0);
+      final founderId = save0!.founderCharacterId!;
 
-    final svc = DiscipleJoinService(isar: isar);
-    final joined = await svc.joinForClearedStage('stage_06_05');
-    final senior =
-        joined.firstWhere((c) => c.lineageRole == LineageRole.senior);
-    final junior =
-        joined.firstWhere((c) => c.lineageRole == LineageRole.junior);
+      final svc = DiscipleJoinService(isar: isar);
+      final joined = await svc.joinForClearedStage('stage_06_05');
+      final senior = joined.firstWhere(
+        (c) => c.lineageRole == LineageRole.senior,
+      );
+      final junior = joined.firstWhere(
+        (c) => c.lineageRole == LineageRole.junior,
+      );
 
-    final founder = await isar.characters.get(founderId);
-    expect(founder, isNotNull);
-    expect(
-      founder!.discipleIds,
-      containsAll([senior.id, junior.id]),
-      reason: 'founder.discipleIds 应包含大弟子和小弟子',
-    );
-    expect(senior.masterId, founderId,
-        reason: '大弟子的 masterId 应指向 founder');
-    expect(junior.masterId, founderId,
-        reason: '小弟子的 masterId 应指向 founder');
-  });
+      final founder = await isar.characters.get(founderId);
+      expect(founder, isNotNull);
+      expect(
+        founder!.discipleIds,
+        containsAll([senior.id, junior.id]),
+        reason: 'founder.discipleIds 应包含大弟子和小弟子',
+      );
+      expect(senior.masterId, founderId, reason: '大弟子的 masterId 应指向 founder');
+      expect(junior.masterId, founderId, reason: '小弟子的 masterId 应指向 founder');
+    },
+  );
 }

@@ -22,7 +22,9 @@ void main() {
   });
 
   setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('wuxia_boss_memory_providers_test_');
+    tempDir = await Directory.systemTemp.createTemp(
+      'wuxia_boss_memory_providers_test_',
+    );
     await IsarSetup.init(directory: tempDir, inspector: false);
   });
 
@@ -48,23 +50,40 @@ void main() {
       expect(catalog, hasLength(27), reason: '主线 21 + 塔 6 = 27');
 
       // 塔条目恰好 6 个
-      final towerEntries =
-          catalog.where((e) => e.source == BossMemorySource.tower).toList();
-      expect(towerEntries, hasLength(6), reason: '爬塔 Boss 层 [5,10,15,20,25,30]');
+      final towerEntries = catalog
+          .where((e) => e.source == BossMemorySource.tower)
+          .toList();
+      expect(
+        towerEntries,
+        hasLength(6),
+        reason: '爬塔 Boss 层 [5,10,15,20,25,30]',
+      );
 
       // 主线条目恰好 21 个
-      final mainlineEntries =
-          catalog.where((e) => e.source == BossMemorySource.mainline).toList();
-      expect(mainlineEntries, hasLength(21), reason: '主线 isBossStage=true 共 21 关');
+      final mainlineEntries = catalog
+          .where((e) => e.source == BossMemorySource.mainline)
+          .toList();
+      expect(
+        mainlineEntries,
+        hasLength(21),
+        reason: '主线 isBossStage=true 共 21 关',
+      );
 
       // 特定主线 Boss
       final keys = catalog.map((e) => e.bossKey).toSet();
-      expect(keys.contains('stage_01_05'), isTrue, reason: '主线 Boss stage_01_05 须在 catalog');
+      expect(
+        keys.contains('stage_01_05'),
+        isTrue,
+        reason: '主线 Boss stage_01_05 须在 catalog',
+      );
 
       // 特定塔层
       for (final floor in [5, 10, 15, 20, 25, 30]) {
-        expect(keys.contains('tower_floor_$floor'), isTrue,
-            reason: 'tower_floor_$floor 须在 catalog');
+        expect(
+          keys.contains('tower_floor_$floor'),
+          isTrue,
+          reason: 'tower_floor_$floor 须在 catalog',
+        );
       }
     });
 
@@ -73,8 +92,9 @@ void main() {
       addTearDown(container.dispose);
 
       final catalog = container.read(bossCatalogProvider);
-      final towerEntries =
-          catalog.where((e) => e.source == BossMemorySource.tower).toList();
+      final towerEntries = catalog
+          .where((e) => e.source == BossMemorySource.tower)
+          .toList();
 
       final floors = towerEntries.map((e) => e.groupIndex).toSet();
       expect(floors, containsAll([5, 10, 15, 20, 25, 30]));

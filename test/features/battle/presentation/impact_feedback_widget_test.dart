@@ -24,8 +24,9 @@ void main() {
     expect(find.text('震'), findsNothing);
   });
 
-  testWidgets('ImpactGlyphOverlay clear() 立即隐藏 in-flight 击杀字形（破界抢占）',
-      (tester) async {
+  testWidgets('ImpactGlyphOverlay clear() 立即隐藏 in-flight 击杀字形（破界抢占）', (
+    tester,
+  ) async {
     final key = GlobalKey<ImpactGlyphOverlayState>();
     await tester.pumpWidget(MaterialApp(home: ImpactGlyphOverlay(key: key)));
     key.currentState!.show('斩', isEnemy: false);
@@ -38,7 +39,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('ImpactGlyphOverlay clear() 无 in-flight 题字时为 no-op', (tester) async {
+  testWidgets('ImpactGlyphOverlay clear() 无 in-flight 题字时为 no-op', (
+    tester,
+  ) async {
     final key = GlobalKey<ImpactGlyphOverlayState>();
     await tester.pumpWidget(MaterialApp(home: ImpactGlyphOverlay(key: key)));
     key.currentState!.clear();
@@ -47,36 +50,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('ScreenFlashOverlay idle 渲染 shrink（无 ColoredBox），flash 后出 ColoredBox',
-      (tester) async {
-    final key = GlobalKey<ScreenFlashOverlayState>();
-    await tester.pumpWidget(MaterialApp(home: ScreenFlashOverlay(key: key)));
-    // overlay 自身子树空闲只产 SizedBox.shrink，无 ColoredBox。
-    expect(
-      find.descendant(
-        of: find.byType(ScreenFlashOverlay),
-        matching: find.byType(ColoredBox),
-      ),
-      findsNothing,
-    );
-    key.currentState!.flash(0.3);
-    await tester.pump(const Duration(milliseconds: 16));
-    expect(
-      find.descendant(
-        of: find.byType(ScreenFlashOverlay),
-        matching: find.byType(ColoredBox),
-      ),
-      findsOneWidget,
-    );
-    expect(tester.takeException(), isNull);
-    // 120ms 后淡出归零，回到 shrink。
-    await tester.pumpAndSettle();
-    expect(
-      find.descendant(
-        of: find.byType(ScreenFlashOverlay),
-        matching: find.byType(ColoredBox),
-      ),
-      findsNothing,
-    );
-  });
+  testWidgets(
+    'ScreenFlashOverlay idle 渲染 shrink（无 ColoredBox），flash 后出 ColoredBox',
+    (tester) async {
+      final key = GlobalKey<ScreenFlashOverlayState>();
+      await tester.pumpWidget(MaterialApp(home: ScreenFlashOverlay(key: key)));
+      // overlay 自身子树空闲只产 SizedBox.shrink，无 ColoredBox。
+      expect(
+        find.descendant(
+          of: find.byType(ScreenFlashOverlay),
+          matching: find.byType(ColoredBox),
+        ),
+        findsNothing,
+      );
+      key.currentState!.flash(0.3);
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(
+        find.descendant(
+          of: find.byType(ScreenFlashOverlay),
+          matching: find.byType(ColoredBox),
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+      // 120ms 后淡出归零，回到 shrink。
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byType(ScreenFlashOverlay),
+          matching: find.byType(ColoredBox),
+        ),
+        findsNothing,
+      );
+    },
+  );
 }

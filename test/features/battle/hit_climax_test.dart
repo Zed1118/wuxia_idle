@@ -10,38 +10,35 @@ import 'package:wuxia_idle/features/battle/presentation/impact_profile.dart';
 // ── Fixture builders ──────────────────────────────────────────────────────────
 
 SkillDef _skill({required SkillType type}) => SkillDef(
-      id: 'test_skill',
-      name: '测试招',
-      description: '测试',
-      type: type,
-      powerMultiplier: 500,
-      internalForceCost: 0,
-      cooldownTurns: 0,
-      requiresManualTrigger: false,
-      visualEffect: 'none',
-    );
+  id: 'test_skill',
+  name: '测试招',
+  description: '测试',
+  type: type,
+  powerMultiplier: 500,
+  internalForceCost: 0,
+  cooldownTurns: 0,
+  requiresManualTrigger: false,
+  visualEffect: 'none',
+);
 
 AttackResult _result({bool crit = false, bool dodge = false}) => AttackResult(
-      finalDamage: dodge ? 0 : 100,
-      mainDamage: dodge ? 0 : 100,
-      quakeDamage: 0,
-      isCritical: crit,
-      isDodged: dodge,
-      schoolCounterMultiplier: 1.0,
-      realmDiffAttackerMod: 1.0,
-      realmDiffDefenderMod: 1.0,
-      cultivationMultiplier: 1.0,
-      criticalMultiplier: crit ? 1.5 : 1.0,
-      defenseRate: 0.1,
-      evasionRate: 0.0,
-      appliedEffects: const [],
-      formulaBreakdown: '',
-    );
+  finalDamage: dodge ? 0 : 100,
+  mainDamage: dodge ? 0 : 100,
+  quakeDamage: 0,
+  isCritical: crit,
+  isDodged: dodge,
+  schoolCounterMultiplier: 1.0,
+  realmDiffAttackerMod: 1.0,
+  realmDiffDefenderMod: 1.0,
+  cultivationMultiplier: 1.0,
+  criticalMultiplier: crit ? 1.5 : 1.0,
+  defenseRate: 0.1,
+  evasionRate: 0.0,
+  appliedEffects: const [],
+  formulaBreakdown: '',
+);
 
-BattleAction _action({
-  required SkillDef? skill,
-  AttackResult? result,
-}) =>
+BattleAction _action({required SkillDef? skill, AttackResult? result}) =>
     BattleAction(
       tick: 1,
       actorId: 1,
@@ -117,7 +114,10 @@ void main() {
     test('1. 大招+暴击 → ultimateCrit', () {
       expect(
         hitClimaxFor(
-          _action(skill: _skill(type: SkillType.ultimate), result: _result(crit: true)),
+          _action(
+            skill: _skill(type: SkillType.ultimate),
+            result: _result(crit: true),
+          ),
           _state(),
         ),
         HitClimax.ultimateCrit,
@@ -127,7 +127,10 @@ void main() {
     test('2. 普攻命中使目标 isAlive=false → kill', () {
       expect(
         hitClimaxFor(
-          _action(skill: _skill(type: SkillType.normalAttack), result: _result()),
+          _action(
+            skill: _skill(type: SkillType.normalAttack),
+            result: _result(),
+          ),
           _state(targetAlive: false),
         ),
         HitClimax.kill,
@@ -137,7 +140,10 @@ void main() {
     test('3. 大招暴击且击杀目标 → ultimateCrit (优先级更高)', () {
       expect(
         hitClimaxFor(
-          _action(skill: _skill(type: SkillType.ultimate), result: _result(crit: true)),
+          _action(
+            skill: _skill(type: SkillType.ultimate),
+            result: _result(crit: true),
+          ),
           _state(targetAlive: false),
         ),
         HitClimax.ultimateCrit,
@@ -147,7 +153,10 @@ void main() {
     test('4. 普通命中 非暴击 非击杀 → none', () {
       expect(
         hitClimaxFor(
-          _action(skill: _skill(type: SkillType.normalAttack), result: _result()),
+          _action(
+            skill: _skill(type: SkillType.normalAttack),
+            result: _result(),
+          ),
           _state(),
         ),
         HitClimax.none,
@@ -157,7 +166,10 @@ void main() {
     test('5. 大招 非暴击 → none (只有暴击大招才特写)', () {
       expect(
         hitClimaxFor(
-          _action(skill: _skill(type: SkillType.ultimate), result: _result()),
+          _action(
+            skill: _skill(type: SkillType.ultimate),
+            result: _result(),
+          ),
           _state(),
         ),
         HitClimax.none,

@@ -123,16 +123,16 @@ void main() {
       s = strategy.tick(s, numbers, rng: rng);
     }
     final boss = bossOf(s);
-    expect(boss.chargingSkill, isNotNull,
-        reason: 'Boss 起手应进入蓄力');
+    expect(boss.chargingSkill, isNotNull, reason: 'Boss 起手应进入蓄力');
     expect(boss.chargingSkill!.id, 'skill_p0_boss_signature');
-    expect(boss.chargeTicksRemaining,
-        numbers.combat.bossCharge.defaultChargeTicks,
-        reason: '蓄力剩余 tick == defaultChargeTicks');
+    expect(
+      boss.chargeTicksRemaining,
+      numbers.combat.bossCharge.defaultChargeTicks,
+      reason: '蓄力剩余 tick == defaultChargeTicks',
+    );
     // 蓄力起手本身不出伤:此时玩家 HP 应仍为满(玩家普攻只打 Boss,
     // Boss 蓄力不还手)。
-    expect(playerOf(s).currentHp, 12000,
-        reason: '蓄力起手 tick Boss 不出伤,玩家满血');
+    expect(playerOf(s).currentHp, 12000, reason: '蓄力起手 tick Boss 不出伤,玩家满血');
   });
 
   test('蓄力递减:Boss 后续行动 chargeTicksRemaining 3→2→1', () {
@@ -179,10 +179,12 @@ void main() {
       }
       guard++;
     }
-    expect(playerOf(s).currentHp, lessThan(hpBefore),
-        reason: '蓄力满 Boss 招牌技应命中玩家,玩家掉血');
-    expect(bossOf(s).chargingSkill, isNull,
-        reason: '招牌技放出后 charging 清空');
+    expect(
+      playerOf(s).currentHp,
+      lessThan(hpBefore),
+      reason: '蓄力满 Boss 招牌技应命中玩家,玩家掉血',
+    );
+    expect(bossOf(s).chargingSkill, isNull, reason: '招牌技放出后 charging 清空');
     expect(bossOf(s).chargeTicksRemaining, 0);
   });
 
@@ -262,8 +264,7 @@ void main() {
     return BattleState.initial(leftTeam: [player], rightTeam: [boss]);
   }
 
-  test('测 C 破招:玩家 canInterrupt 技命中 charging Boss → 打断 + 踉跄 + 招牌技上CD',
-      () {
+  test('测 C 破招:玩家 canInterrupt 技命中 charging Boss → 打断 + 踉跄 + 招牌技上CD', () {
     var s = makeStateBreakC();
     final rng = Random(7);
     // 玩家手动请求破招技,推进直到玩家完成一次行动(命中 Boss)。
@@ -277,15 +278,22 @@ void main() {
     }
     final boss = bossOf(s);
     expect(boss.chargingSkill, isNull, reason: '破招后 Boss chargingSkill 清空');
-    expect(boss.staggerTicksRemaining,
-        numbers.combat.bossCharge.defaultStaggerTicks,
-        reason: '破招后 Boss 进入踉跄 == defaultStaggerTicks');
-    expect(boss.skillCooldowns.containsKey('skill_p0_boss_signature'), isTrue,
-        reason: '招牌技被打断 → 进 CD');
+    expect(
+      boss.staggerTicksRemaining,
+      numbers.combat.bossCharge.defaultStaggerTicks,
+      reason: '破招后 Boss 进入踉跄 == defaultStaggerTicks',
+    );
+    expect(
+      boss.skillCooldowns.containsKey('skill_p0_boss_signature'),
+      isTrue,
+      reason: '招牌技被打断 → 进 CD',
+    );
     // B3:破招动作须标记 interrupted=true,供表现层弹「破！」题字 overlay。
-    expect(s.actionLog.where((a) => a.interrupted).length,
-        greaterThanOrEqualTo(1),
-        reason: '破招成功应至少产生一条 interrupted=true 的 BattleAction');
+    expect(
+      s.actionLog.where((a) => a.interrupted).length,
+      greaterThanOrEqualTo(1),
+      reason: '破招成功应至少产生一条 interrupted=true 的 BattleAction',
+    );
   });
 
   test('B3 BattleAction.interrupted 默认 false(非破招动作不弹「破！」)', () {
@@ -385,16 +393,23 @@ void main() {
 
     test('jingTong 阶 0.4 → override = base × 1.4', () {
       final boss = runUntilInterrupt(
-          makePowerState(breakerUses: 300), breakerWithPower);
+        makePowerState(breakerUses: 300),
+        breakerWithPower,
+      );
       final expected = numbers.combat.bossCharge.staggerDefenseDown * 1.4;
-      expect(boss.staggerDefenseDownOverride, isNotNull,
-          reason: '破招结算应写入减防 override');
+      expect(
+        boss.staggerDefenseDownOverride,
+        isNotNull,
+        reason: '破招结算应写入减防 override',
+      );
       expect(boss.staggerDefenseDownOverride!, closeTo(expected, 1e-9));
     });
 
     test('chuShi 阶(0 uses)无 pct → override = base 值', () {
       final boss = runUntilInterrupt(
-          makePowerState(breakerUses: 0), breakerWithPower);
+        makePowerState(breakerUses: 0),
+        breakerWithPower,
+      );
       expect(
         boss.staggerDefenseDownOverride!,
         closeTo(numbers.combat.bossCharge.staggerDefenseDown, 1e-9),
@@ -416,8 +431,9 @@ void main() {
         proficiency: SkillProficiencyEffects({}, {}, {'jingTong': 5.0}, {}),
       );
       final boss = runUntilInterrupt(
-          makePowerState(breakerUses: 300, breaker: extremeBreaker),
-          extremeBreaker);
+        makePowerState(breakerUses: 300, breaker: extremeBreaker),
+        extremeBreaker,
+      );
       expect(
         boss.staggerDefenseDownOverride!,
         closeTo(numbers.combat.bossCharge.interruptPowerCap, 1e-9),
@@ -427,10 +443,14 @@ void main() {
     test('踉跄结束 → override 清 null', () {
       // 低伤玩家(内力仅够一次破招 + 0 装攻):Boss 不会在踉跄结束前被打死。
       var s = strategy.requestUltimate(
-          makePowerState(
-              breakerUses: 300, playerInternalForce: 200, playerEqAtk: 0),
-          1,
-          breakerWithPower);
+        makePowerState(
+          breakerUses: 300,
+          playerInternalForce: 200,
+          playerEqAtk: 0,
+        ),
+        1,
+        breakerWithPower,
+      );
       final rng = Random(7);
       var guard = 0;
       var sawStagger = false;
@@ -439,8 +459,11 @@ void main() {
         final boss = bossOf(s);
         if (boss.staggerTicksRemaining > 0) sawStagger = true;
         if (sawStagger && boss.staggerTicksRemaining == 0) {
-          expect(boss.staggerDefenseDownOverride, isNull,
-              reason: '踉跄结束应清掉减防 override');
+          expect(
+            boss.staggerDefenseDownOverride,
+            isNull,
+            reason: '踉跄结束应清掉减防 override',
+          );
           return;
         }
         guard++;
@@ -514,17 +537,21 @@ void main() {
     // 推进直到 Boss 第一次行动(staggerTicksRemaining 2→1)。
     var guard = 0;
     while (guard < 20 &&
-        s.leftTeam.firstWhere((c) => c.characterId == -1).staggerTicksRemaining ==
+        s.leftTeam
+                .firstWhere((c) => c.characterId == -1)
+                .staggerTicksRemaining ==
             2) {
       s = strategy.tick(s, numbers, rng: rng);
       guard++;
     }
     final boss = s.leftTeam.firstWhere((c) => c.characterId == -1);
     final player = s.rightTeam.firstWhere((c) => c.characterId == 1);
-    expect(player.currentHp, playerHpBefore,
-        reason: '踉跄跳过本次行动,玩家不掉血(player speed=1,本窗口内也未轮到)');
-    expect(boss.staggerTicksRemaining, 1,
-        reason: '踉跄 tick 递减 2→1');
+    expect(
+      player.currentHp,
+      playerHpBefore,
+      reason: '踉跄跳过本次行动,玩家不掉血(player speed=1,本窗口内也未轮到)',
+    );
+    expect(boss.staggerTicksRemaining, 1, reason: '踉跄 tick 递减 2→1');
   });
 
   /// 测 E:Boss 作为防守方被普攻命中,对比踉跄(减防)vs 非踉跄 finalDamage。
@@ -605,8 +632,12 @@ void main() {
     final dmgStagger = firstDamageToBoss(makeStateDefendE(bossStagger: 2));
 
     expect(dmgNoStagger, greaterThan(0), reason: '基线伤害应 > 0');
-    expect(dmgStagger, greaterThan(dmgNoStagger),
-        reason: '踉跄减防 → finalDamage 应高于非踉跄 '
-            '(非踉跄=$dmgNoStagger 踉跄=$dmgStagger)');
+    expect(
+      dmgStagger,
+      greaterThan(dmgNoStagger),
+      reason:
+          '踉跄减防 → finalDamage 应高于非踉跄 '
+          '(非踉跄=$dmgNoStagger 踉跄=$dmgStagger)',
+    );
   });
 }

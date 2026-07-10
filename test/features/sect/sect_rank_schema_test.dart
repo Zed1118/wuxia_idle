@@ -23,7 +23,10 @@ void main() {
     expect(RealmTier.values.length, 7);
     final sectRankNames = SectRank.values.map((e) => e.name).toSet();
     final realmTierNames = RealmTier.values.map((e) => e.name).toSet();
-    expect(sectRankNames.intersection(realmTierNames), isEmpty,
-        reason: 'SectRank 三阶名不与 RealmTier 七阶撞');
+    expect(
+      sectRankNames.intersection(realmTierNames),
+      isEmpty,
+      reason: 'SectRank 三阶名不与 RealmTier 七阶撞',
+    );
   });
 }

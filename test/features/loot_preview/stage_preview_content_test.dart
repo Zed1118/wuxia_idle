@@ -1,4 +1,3 @@
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,13 +17,15 @@ void main() {
   tearDownAll(GameRepository.resetForTest);
 
   DropRumorTable emptyTable() => DropRumorTable.fromDropTable(
-        const <DropEntry>[],
-        gating: FirstClearGating.scrollOnly,
-      );
+    const <DropEntry>[],
+    gating: FirstClearGating.scrollOnly,
+  );
 
   Future<void> pump(WidgetTester tester, Widget child) async {
     await tester.pumpWidget(
-      MaterialApp(home: Scaffold(body: SingleChildScrollView(child: child))),
+      MaterialApp(
+        home: Scaffold(body: SingleChildScrollView(child: child)),
+      ),
     );
   }
 
@@ -37,8 +38,10 @@ void main() {
         playerRealm: RealmTier.sanLiu,
       ),
     );
-    expect(find.textContaining(UiStrings.previewRecommendedRealmLabel),
-        findsOneWidget);
+    expect(
+      find.textContaining(UiStrings.previewRecommendedRealmLabel),
+      findsOneWidget,
+    );
     expect(find.text(UiStrings.difficultyRisky), findsOneWidget); // 偏高
   });
 
@@ -50,8 +53,10 @@ void main() {
         rumorTable: emptyTable(),
       ),
     );
-    expect(find.textContaining(UiStrings.previewRecommendedRealmLabel),
-        findsOneWidget);
+    expect(
+      find.textContaining(UiStrings.previewRecommendedRealmLabel),
+      findsOneWidget,
+    );
     expect(find.text(UiStrings.difficultyRisky), findsNothing);
     expect(find.text(UiStrings.difficultySuitable), findsNothing);
   });
@@ -88,8 +93,7 @@ void main() {
     // 初始不显浮层。
     expect(find.text(UiStrings.difficultyRisky), findsNothing);
 
-    final gesture =
-        await tester.createGesture(kind: PointerDeviceKind.mouse);
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
     await gesture.addPointer(location: Offset.zero);
     addTearDown(gesture.removePointer);
     await gesture.moveTo(tester.getCenter(find.text('关卡')));

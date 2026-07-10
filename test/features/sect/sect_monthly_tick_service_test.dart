@@ -32,11 +32,7 @@ void main() {
         'max': 100,
         'min': 0,
       },
-      'sect_level': {
-        'max': 7,
-        'initial': 1,
-        'promote_wins_threshold': 3,
-      },
+      'sect_level': {'max': 7, 'initial': 1, 'promote_wins_threshold': 3},
       'active_events_max': 3,
     },
   };
@@ -52,25 +48,26 @@ void main() {
     DateTime? lastTickAt,
     int rep = 50,
     DateTime? createdAt,
-  }) =>
-      Sect()
-        ..id = 1
-        ..name = '无名宗'
-        ..founderId = 1
-        ..sectLevel = 1
-        ..sectReputation = rep
-        ..totalWins = 0
-        ..createdAt = createdAt ?? DateTime(2026, 1, 1)
-        ..lastEventAt = lastEventAt
-        ..lastTickAt = lastTickAt;
+  }) => Sect()
+    ..id = 1
+    ..name = '无名宗'
+    ..founderId = 1
+    ..sectLevel = 1
+    ..sectReputation = rep
+    ..totalWins = 0
+    ..createdAt = createdAt ?? DateTime(2026, 1, 1)
+    ..lastEventAt = lastEventAt
+    ..lastTickAt = lastTickAt;
 
-  SectEvent pending({required DateTime triggeredAt, String narrativeId = 'tournament_01'}) =>
-      SectEvent()
-        ..sectId = 1
-        ..type = SectEventType.tournament
-        ..status = SectEventStatus.pending
-        ..triggeredAt = triggeredAt
-        ..narrativeId = narrativeId;
+  SectEvent pending({
+    required DateTime triggeredAt,
+    String narrativeId = 'tournament_01',
+  }) => SectEvent()
+    ..sectId = 1
+    ..type = SectEventType.tournament
+    ..status = SectEventStatus.pending
+    ..triggeredAt = triggeredAt
+    ..narrativeId = narrativeId;
 
   group('B1 月度 tick · 月数 catch-up', () {
     test('R1 同月再开(<30 天)→ 不触发 / lastTickAt 不变', () {
@@ -98,7 +95,11 @@ void main() {
       expect(r.newEvents.length, 1);
       expect(r.newEvents.first.narrativeId, 'tournament_02');
       expect(r.newEvents.first.status, SectEventStatus.pending);
-      expect(sect.lastTickAt, DateTime(2026, 7, 1), reason: '锚点 += 1×30 天,保 4 天余数');
+      expect(
+        sect.lastTickAt,
+        DateTime(2026, 7, 1),
+        reason: '锚点 += 1×30 天,保 4 天余数',
+      );
     });
 
     test('R3 满 1 月 + prob 未命中 → 0 新事件但锚点仍推进', () {
@@ -124,7 +125,10 @@ void main() {
         rng: _SeqRng(doubles: [0.0, 0.0, 0.0], ints: [0, 1, 2]),
       );
       expect(r.newEvents.length, 3, reason: '3 月各触发 1 件,cap=3 不越');
-      expect(sect.lastTickAt, DateTime(2026, 4, 1).add(const Duration(days: 90)));
+      expect(
+        sect.lastTickAt,
+        DateTime(2026, 4, 1).add(const Duration(days: 90)),
+      );
     });
 
     test('R4b 已有 2 active + 多月命中 → 仅再生成 1 件至 cap', () {
@@ -276,18 +280,20 @@ class NumbersConfigStub implements NumbersConfig {
 
   @override
   SectEventDef get sectEvent => SectEventDef.fromYaml(
-      (_raw['sect_event'] as Map?)?.cast<String, dynamic>());
+    (_raw['sect_event'] as Map?)?.cast<String, dynamic>(),
+  );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError(
-      'NumbersConfigStub: only raw impl, invocation=${invocation.memberName}');
+    'NumbersConfigStub: only raw impl, invocation=${invocation.memberName}',
+  );
 }
 
 /// 确定性 rng:doubles 供概率分支 · ints 供 narrativeId pick。
 class _SeqRng implements Random {
   _SeqRng({List<double> doubles = const [], List<int> ints = const []})
-      : _doubles = List.of(doubles),
-        _ints = List.of(ints);
+    : _doubles = List.of(doubles),
+      _ints = List.of(ints);
   final List<double> _doubles;
   final List<int> _ints;
 

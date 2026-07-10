@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
@@ -61,64 +60,59 @@ void main() {
   );
 
   BattleCharacter makeActor() => const BattleCharacter(
-        characterId: 1,
-        name: '玩家',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 12000,
-        currentHp: 12000,
-        maxInternalForce: 10000,
-        currentInternalForce: 10000,
-        speed: 200,
-        criticalRate: 0.15,
-        evasionRate: 0.05,
-        defenseRate: 0.35,
-        totalEquipmentAttack: 1500,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: <SkillDef>[
-          interruptSkill,
-          normalPower,
-          normalAttack,
-        ],
-        skillCooldowns: <String, int>{},
-        activeBuffs: [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: 0,
-        slotIndex: 0,
-      );
+    characterId: 1,
+    name: '玩家',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 12000,
+    currentHp: 12000,
+    maxInternalForce: 10000,
+    currentInternalForce: 10000,
+    speed: 200,
+    criticalRate: 0.15,
+    evasionRate: 0.05,
+    defenseRate: 0.35,
+    totalEquipmentAttack: 1500,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: <SkillDef>[interruptSkill, normalPower, normalAttack],
+    skillCooldowns: <String, int>{},
+    activeBuffs: [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: 0,
+    slotIndex: 0,
+  );
 
   // charId=11 血更低(故意让它血最低,验证 targeting 不挑它);charId=12 是蓄力敌。
   BattleCharacter makeEnemy({
     required int charId,
     required int slotIndex,
     required int currentHp,
-  }) =>
-      BattleCharacter(
-        characterId: charId,
-        name: '敌$charId',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 12000,
-        currentHp: currentHp,
-        maxInternalForce: 10000,
-        currentInternalForce: 10000,
-        speed: 200,
-        criticalRate: 0.15,
-        evasionRate: 0.05,
-        defenseRate: 0.35,
-        totalEquipmentAttack: 1500,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: const <SkillDef>[],
-        skillCooldowns: const <String, int>{},
-        activeBuffs: [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: 1,
-        slotIndex: slotIndex,
-      );
+  }) => BattleCharacter(
+    characterId: charId,
+    name: '敌$charId',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 12000,
+    currentHp: currentHp,
+    maxInternalForce: 10000,
+    currentInternalForce: 10000,
+    speed: 200,
+    criticalRate: 0.15,
+    evasionRate: 0.05,
+    defenseRate: 0.35,
+    totalEquipmentAttack: 1500,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: const <SkillDef>[],
+    skillCooldowns: const <String, int>{},
+    activeBuffs: [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: 1,
+    slotIndex: slotIndex,
+  );
 
   test('测 A:无人蓄力 → 选 normal 技,不选 saveForInterrupt 技', () {
     final actor = makeActor();
@@ -129,14 +123,13 @@ void main() {
       rightTeam: [lowHpEnemy, otherEnemy],
     );
 
-    final (skill, _) =
-        BattleAI.decide(actor, state, GameRepository.instance.numbers);
-
-    expect(
-      skill.id,
-      normalPower.id,
-      reason: '无人蓄力时平时不放破招技,应选倍率更高的 normal 强力技',
+    final (skill, _) = BattleAI.decide(
+      actor,
+      state,
+      GameRepository.instance.numbers,
     );
+
+    expect(skill.id, normalPower.id, reason: '无人蓄力时平时不放破招技,应选倍率更高的 normal 强力技');
     expect(skill.aiUsePolicy, AiUsePolicy.normal);
   });
 
@@ -144,15 +137,21 @@ void main() {
     final actor = makeActor();
     // 血最低的敌人(charId=11)不蓄力;蓄力敌(charId=12)血更高。
     final lowHpEnemy = makeEnemy(charId: 11, slotIndex: 0, currentHp: 3000);
-    final chargingEnemy = makeEnemy(charId: 12, slotIndex: 1, currentHp: 9000)
-        .copyWith(chargingSkill: normalPower, chargeTicksRemaining: 2);
+    final chargingEnemy = makeEnemy(
+      charId: 12,
+      slotIndex: 1,
+      currentHp: 9000,
+    ).copyWith(chargingSkill: normalPower, chargeTicksRemaining: 2);
     final state = BattleState.initial(
       leftTeam: [actor],
       rightTeam: [lowHpEnemy, chargingEnemy],
     );
 
-    final (skill, targetIds) =
-        BattleAI.decide(actor, state, GameRepository.instance.numbers);
+    final (skill, targetIds) = BattleAI.decide(
+      actor,
+      state,
+      GameRepository.instance.numbers,
+    );
 
     expect(
       skill.id,
@@ -160,10 +159,8 @@ void main() {
       reason: '对面有人蓄力 + 有可用 saveForInterrupt 破招技 → 应保守破招',
     );
     expect(skill.aiUsePolicy, AiUsePolicy.saveForInterrupt);
-    expect(
-      targetIds,
-      [chargingEnemy.characterId],
-      reason: '破招技应锁定蓄力敌(12),即使它非血最低(11 血更低)',
-    );
+    expect(targetIds, [
+      chargingEnemy.characterId,
+    ], reason: '破招技应锁定蓄力敌(12),即使它非血最低(11 血更低)');
   });
 }

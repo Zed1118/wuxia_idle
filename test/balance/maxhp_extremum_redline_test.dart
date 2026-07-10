@@ -32,7 +32,8 @@ void main() {
 
   /// 构造 7 阶 dengFeng 极限角色 + 该阶 hp_max 满装备 3 件(weapon/armor/accessory)。
   ({Character character, List<Equipment> equipped}) buildExtremum(
-      RealmTier tier) {
+    RealmTier tier,
+  ) {
     final repo = GameRepository.instance;
     final realmDef = repo.getRealm(tier, RealmLayer.dengFeng);
     final eqTier = realmDef.equipmentTierCap;
@@ -81,8 +82,7 @@ void main() {
   group('P0.1 #38 base maxHp 7 阶极值红线', () {
     // 7 阶主红线 case(约束语义不写具体数字)
     for (final tier in RealmTier.values) {
-      test('${tier.name}·dengFeng base maxHp ≤ 16667(spec §2 目标)',
-          () async {
+      test('${tier.name}·dengFeng base maxHp ≤ 16667(spec §2 目标)', () async {
         await GameRepository.loadAllDefs(loader: fileLoader);
         final (:character, :equipped) = buildExtremum(tier);
         final maxHp = CharacterDerivedStats.maxHp(
@@ -90,16 +90,19 @@ void main() {
           equipped,
           GameRepository.instance.numbers,
         );
-        expect(maxHp, lessThanOrEqualTo(16667),
-            reason: '${tier.name}·dengFeng + const 10 + 装备 hp_max 满 '
-                '极值 $maxHp 必 ≤ 16667 spec §2 目标'
-                '(hpPct 0.20 加成后 ≤ 20000 §5.4 红线)');
+        expect(
+          maxHp,
+          lessThanOrEqualTo(16667),
+          reason:
+              '${tier.name}·dengFeng + const 10 + 装备 hp_max 满 '
+              '极值 $maxHp 必 ≤ 16667 spec §2 目标'
+              '(hpPct 0.20 加成后 ≤ 20000 §5.4 红线)',
+        );
       });
     }
 
     // 销账锚点 case(锁固定数字防数值漂移,memory 配套:锚点单独写)
-    test('销账锚点·wushen·dengFeng 极值 == 16550(P0.1 #38 方案 D 决议)',
-        () async {
+    test('销账锚点·wushen·dengFeng 极值 == 16550(P0.1 #38 方案 D 决议)', () async {
       await GameRepository.loadAllDefs(loader: fileLoader);
       final (:character, :equipped) = buildExtremum(RealmTier.wuSheng);
       final maxHp = CharacterDerivedStats.maxHp(
@@ -109,9 +112,13 @@ void main() {
       );
       // 公式实测:1000 + 15000×0.5 + 10×400 + (350+2300+1400)
       //       = 1000 + 7500 + 4000 + 4050 = 16550
-      expect(maxHp, 16550,
-          reason: 'P0.1 #38 方案 D 决议锚点:wushen 极值精准 16550 '
-              '(numbers.yaml IF×0.5 + const×400 + shenWu hp_max 1750-2300/1000-1400/150-350 装备)');
+      expect(
+        maxHp,
+        16550,
+        reason:
+            'P0.1 #38 方案 D 决议锚点:wushen 极值精准 16550 '
+            '(numbers.yaml IF×0.5 + const×400 + shenWu hp_max 1750-2300/1000-1400/150-350 装备)',
+      );
     });
   });
 
@@ -119,23 +126,32 @@ void main() {
   // (Lv 平直加成加在 clamp 前,极值靠 playerHpMax/internalForceMax clamp 兜底)。
   group('第八阶段 Lv 极值红线(满 build + L100 仍 ≤ §5.4)', () {
     for (final tier in RealmTier.values) {
-      test('${tier.name}·dengFeng + 满 build + L100 + founderBuff maxHp ≤ §5.4 红线',
-          () async {
-        await GameRepository.loadAllDefs(loader: fileLoader);
-        final (:character, :equipped) = buildExtremum(tier);
-        character
-          ..level = GameRepository.instance.numbers.level.maxLevel
-          ..isFounder = true;
-        final n = GameRepository.instance.numbers;
-        final maxHp = CharacterDerivedStats.maxHp(character, equipped, n,
-            founderBuffActive: true);
-        expect(maxHp, lessThanOrEqualTo(n.combat.redLines.playerHpMax),
-            reason: '${tier.name} 满 build + L100 maxHp $maxHp 必 ≤ §5.4 '
-                '${n.combat.redLines.playerHpMax}(clamp 兜底)');
-      });
+      test(
+        '${tier.name}·dengFeng + 满 build + L100 + founderBuff maxHp ≤ §5.4 红线',
+        () async {
+          await GameRepository.loadAllDefs(loader: fileLoader);
+          final (:character, :equipped) = buildExtremum(tier);
+          character
+            ..level = GameRepository.instance.numbers.level.maxLevel
+            ..isFounder = true;
+          final n = GameRepository.instance.numbers;
+          final maxHp = CharacterDerivedStats.maxHp(
+            character,
+            equipped,
+            n,
+            founderBuffActive: true,
+          );
+          expect(
+            maxHp,
+            lessThanOrEqualTo(n.combat.redLines.playerHpMax),
+            reason:
+                '${tier.name} 满 build + L100 maxHp $maxHp 必 ≤ §5.4 '
+                '${n.combat.redLines.playerHpMax}(clamp 兜底)',
+          );
+        },
+      );
 
-      test('${tier.name}·dengFeng + 满 build + L100 内力上限 ≤ §5.4 红线',
-          () async {
+      test('${tier.name}·dengFeng + 满 build + L100 内力上限 ≤ §5.4 红线', () async {
         await GameRepository.loadAllDefs(loader: fileLoader);
         final (:character, :equipped) = buildExtremum(tier);
         character
@@ -143,11 +159,18 @@ void main() {
           ..isFounder = true;
         final n = GameRepository.instance.numbers;
         final ifMax = CharacterDerivedStats.internalForceMaxWithLineage(
-            character, equipped, n,
-            founderBuffActive: true);
-        expect(ifMax, lessThanOrEqualTo(n.combat.redLines.internalForceMax),
-            reason: '${tier.name} 满 build + L100 内力 $ifMax 必 ≤ §5.4 '
-                '${n.combat.redLines.internalForceMax}(clamp 兜底)');
+          character,
+          equipped,
+          n,
+          founderBuffActive: true,
+        );
+        expect(
+          ifMax,
+          lessThanOrEqualTo(n.combat.redLines.internalForceMax),
+          reason:
+              '${tier.name} 满 build + L100 内力 $ifMax 必 ≤ §5.4 '
+              '${n.combat.redLines.internalForceMax}(clamp 兜底)',
+        );
       });
     }
   });

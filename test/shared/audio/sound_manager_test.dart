@@ -16,6 +16,7 @@ class FakeAudioBackend implements AudioBackend {
     if (throwOnPaths.contains(assetPath)) throw Exception('missing asset');
     bgmPlays.add(assetPath);
   }
+
   @override
   Future<void> stopBgm() async => stopBgmCount++;
   @override
@@ -25,6 +26,7 @@ class FakeAudioBackend implements AudioBackend {
     if (throwOnPaths.contains(assetPath)) throw Exception('missing asset');
     sfxPlays.add(assetPath);
   }
+
   @override
   Future<void> dispose() async {}
 }
@@ -64,7 +66,9 @@ void main() {
   test('applySettings 把 master*bgm 应用到后端 bgm 音量', () async {
     final fake = FakeAudioBackend();
     final m = SoundManager(fake);
-    await m.applySettings(const AudioSettings(masterVolume: 0.5, bgmVolume: 0.4));
+    await m.applySettings(
+      const AudioSettings(masterVolume: 0.5, bgmVolume: 0.4),
+    );
     expect(fake.bgmVolumes.last, closeTo(0.2, 1e-9));
   });
 }

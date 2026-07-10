@@ -19,8 +19,11 @@ void main() {
     const banned = ['传奇', '史诗', 'SSR', 'SR', 'legendary', 'epic', '%'];
     for (final s in strings) {
       for (final b in banned) {
-        expect(s.toLowerCase().contains(b.toLowerCase()), false,
-            reason: '词条「$s」含禁用词「$b」');
+        expect(
+          s.toLowerCase().contains(b.toLowerCase()),
+          false,
+          reason: '词条「$s」含禁用词「$b」',
+        );
       }
     }
   });

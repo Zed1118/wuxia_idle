@@ -15,29 +15,34 @@ void main() {
     bool canInterrupt = false,
     TechniqueSchool? style,
     SkillSource? source,
-  }) =>
-      SkillDef(
-        id: id,
-        name: id,
-        description: '',
-        type: type,
-        powerMultiplier: 100,
-        internalForceCost: 0,
-        cooldownTurns: 0,
-        requiresManualTrigger: false,
-        visualEffect: 'none',
-        canInterrupt: canInterrupt,
-        style: style,
-        source: source,
-      );
+  }) => SkillDef(
+    id: id,
+    name: id,
+    description: '',
+    type: type,
+    powerMultiplier: 100,
+    internalForceCost: 0,
+    cooldownTurns: 0,
+    requiresManualTrigger: false,
+    visualEffect: 'none',
+    canInterrupt: canInterrupt,
+    style: style,
+    source: source,
+  );
 
   final mainSkill = mk('m1');
   final assistSkill = mk('a1');
   final jointSkill = mk('joint', type: SkillType.jointSkill);
-  final dropSkill = mk('d1',
-      source: SkillSource.mainlineDrop, style: TechniqueSchool.gangMeng);
-  final interruptSkill =
-      mk('k1', canInterrupt: true, style: TechniqueSchool.gangMeng);
+  final dropSkill = mk(
+    'd1',
+    source: SkillSource.mainlineDrop,
+    style: TechniqueSchool.gangMeng,
+  );
+  final interruptSkill = mk(
+    'k1',
+    canInterrupt: true,
+    style: TechniqueSchool.gangMeng,
+  );
 
   final sources = ResolvedLoadoutSources(
     mainTechniqueSkills: [mainSkill],
@@ -76,10 +81,7 @@ void main() {
   });
 
   test('破招技流派不合 → 不可装 key（合法槽空）', () {
-    expect(
-      legalSlotsForSkill('k1', sources, TechniqueSchool.yinRou),
-      isEmpty,
-    );
+    expect(legalSlotsForSkill('k1', sources, TechniqueSchool.yinRou), isEmpty);
   });
 
   test('未知招 → 合法槽空', () {

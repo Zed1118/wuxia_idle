@@ -31,8 +31,9 @@ void main() {
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_shenwu_drop_');
     await IsarSetup.init(directory: tempDir, inspector: false);
-    await Phase2SeedService(isar: IsarSetup.instance)
-        .seedVisualCheckShenwuDrop();
+    await Phase2SeedService(
+      isar: IsarSetup.instance,
+    ).seedVisualCheckShenwuDrop();
   });
 
   tearDown(() async {
@@ -47,17 +48,22 @@ void main() {
   for (final seed in [1, 42, 99, 2026]) {
     test('满配出阵队打赢 stage_06_04（rng=$seed）→ 触发胜利掉落', () async {
       final stage = GameRepository.instance.getStage('stage_06_04');
-      final (left, right) =
-          await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
+      final (left, right) = await StageBattleSetup(
+        isar: IsarSetup.instance,
+      ).buildTeams(stage);
       final numbers = GameRepository.instance.numbers;
       final finalState = BattleEngine.runToEnd(
         BattleState.initial(leftTeam: left, rightTeam: right),
         numbers,
         rng: Random(seed),
       );
-      expect(finalState.result, BattleResult.leftWin,
-          reason: '满配 wuSheng 队须碾压 stage_06_04 的 zongShi 3 敌人；'
-              '失败=seed 战力不足，Codex 验收会卡在战斗');
+      expect(
+        finalState.result,
+        BattleResult.leftWin,
+        reason:
+            '满配 wuSheng 队须碾压 stage_06_04 的 zongShi 3 敌人；'
+            '失败=seed 战力不足，Codex 验收会卡在战斗',
+      );
     });
   }
 }

@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -25,39 +24,37 @@ void main() {
     RealmLayer layer = RealmLayer.qiMeng,
     int? mainTechniqueId,
     List<int>? assistTechniqueIds,
-  }) =>
-      Character.create(
-        name: '测试者',
-        realmTier: tier,
-        realmLayer: layer,
-        attributes: Attributes()
-          ..constitution = 5
-          ..enlightenment = 5
-          ..agility = 5
-          ..fortune = 5,
-        rarity: RarityTier.biaoZhun,
-        lineageRole: LineageRole.disciple,
-        createdAt: DateTime(2026, 5, 11),
-        mainTechniqueId: mainTechniqueId,
-        assistTechniqueIds: assistTechniqueIds,
-      );
+  }) => Character.create(
+    name: '测试者',
+    realmTier: tier,
+    realmLayer: layer,
+    attributes: Attributes()
+      ..constitution = 5
+      ..enlightenment = 5
+      ..agility = 5
+      ..fortune = 5,
+    rarity: RarityTier.biaoZhun,
+    lineageRole: LineageRole.disciple,
+    createdAt: DateTime(2026, 5, 11),
+    mainTechniqueId: mainTechniqueId,
+    assistTechniqueIds: assistTechniqueIds,
+  );
 
   TechniqueDef defWith({
     String id = 'tech_test',
     TechniqueTier tier = TechniqueTier.ruMenGong,
     TechniqueSchool school = TechniqueSchool.gangMeng,
-  }) =>
-      TechniqueDef(
-        id: id,
-        name: '测试心法',
-        tier: tier,
-        school: school,
-        description: '',
-        skillIds: const [],
-        internalForceGrowthBonus: 1.0,
-        speedBonus: 0,
-        acquireSourceTags: const [],
-      );
+  }) => TechniqueDef(
+    id: id,
+    name: '测试心法',
+    tier: tier,
+    school: school,
+    description: '',
+    skillIds: const [],
+    internalForceGrowthBonus: 1.0,
+    speedBonus: 0,
+    acquireSourceTags: const [],
+  );
 
   final now = DateTime(2026, 5, 11, 12);
 
@@ -96,29 +93,35 @@ void main() {
       expect(r.pointsSpent, 0);
     });
 
-    test('主修已存在：mainTechniqueId 非 null + role=main → mainTechniqueAlreadyExists', () {
-      final r = TechniqueLearningService.learn(
-        ch: newChar(mainTechniqueId: 42),
-        def: defWith(),
-        role: TechniqueRole.main,
-        currentInsightPoints: 99999,
-        costConfig: cost,
-        learnedAt: now,
-      );
-      expect(r.outcome, LearnOutcome.mainTechniqueAlreadyExists);
-    });
+    test(
+      '主修已存在：mainTechniqueId 非 null + role=main → mainTechniqueAlreadyExists',
+      () {
+        final r = TechniqueLearningService.learn(
+          ch: newChar(mainTechniqueId: 42),
+          def: defWith(),
+          role: TechniqueRole.main,
+          currentInsightPoints: 99999,
+          costConfig: cost,
+          learnedAt: now,
+        );
+        expect(r.outcome, LearnOutcome.mainTechniqueAlreadyExists);
+      },
+    );
 
-    test('辅修槽满 3：assistTechniqueIds.length=3 + role=assist → assistSlotsFull', () {
-      final r = TechniqueLearningService.learn(
-        ch: newChar(assistTechniqueIds: [1, 2, 3]),
-        def: defWith(),
-        role: TechniqueRole.assist,
-        currentInsightPoints: 99999,
-        costConfig: cost,
-        learnedAt: now,
-      );
-      expect(r.outcome, LearnOutcome.assistSlotsFull);
-    });
+    test(
+      '辅修槽满 3：assistTechniqueIds.length=3 + role=assist → assistSlotsFull',
+      () {
+        final r = TechniqueLearningService.learn(
+          ch: newChar(assistTechniqueIds: [1, 2, 3]),
+          def: defWith(),
+          role: TechniqueRole.assist,
+          currentInsightPoints: 99999,
+          costConfig: cost,
+          learnedAt: now,
+        );
+        expect(r.outcome, LearnOutcome.assistSlotsFull);
+      },
+    );
 
     test('领悟点不足：499 学主修（需 500）→ insufficientInsightPoints', () {
       final r = TechniqueLearningService.learn(

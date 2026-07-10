@@ -34,11 +34,12 @@ void main() {
         }
       }
 
-      final missing = dirsWithYaml
-          .where((dir) => !dir.split('/').any((seg) => seg == '_archive'))
-          .where((dir) => !declared.contains(dir))
-          .toList()
-        ..sort();
+      final missing =
+          dirsWithYaml
+              .where((dir) => !dir.split('/').any((seg) => seg == '_archive'))
+              .where((dir) => !declared.contains(dir))
+              .toList()
+            ..sort();
 
       expect(
         missing,
@@ -65,11 +66,7 @@ void main() {
       for (final f in files) {
         final content = await rootBundle.loadString(f.path);
         final yaml = loadYaml(content);
-        expect(
-          yaml,
-          isA<Map>(),
-          reason: '${f.path} 应可经 rootBundle 加载并解析为 Map',
-        );
+        expect(yaml, isA<Map>(), reason: '${f.path} 应可经 rootBundle 加载并解析为 Map');
       }
     }
 
@@ -77,9 +74,7 @@ void main() {
       await expectAllLoadable('data/lore/sect_event');
     });
 
-    testWidgets('data/narratives/ 根扁平叙事(tower/lineage)可加载', (
-      tester,
-    ) async {
+    testWidgets('data/narratives/ 根扁平叙事(tower/lineage)可加载', (tester) async {
       final flatFiles = Directory('data/narratives')
           .listSync()
           .whereType<File>()

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -35,11 +34,8 @@ void main() {
     );
   }
 
-  Finder assetImage(String path) => find.byWidgetPredicate(
-    (w) =>
-        w is Image &&
-        assetNameOf(w.image) == path,
-  );
+  Finder assetImage(String path) =>
+      find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
 
   testWidgets('UnlockSkillApplied 显 SkillDef.name 中文招名', (tester) async {
     await tester.pumpWidget(

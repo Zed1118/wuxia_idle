@@ -15,8 +15,14 @@ void main() {
   });
 
   test('秘籍前缀 → techniqueScroll', () {
-    expect(ItemType.fromDefId('item_scroll_kai_bei_shou'), ItemType.techniqueScroll);
-    expect(ItemType.fromDefId('item_scroll_ye_yu_shi_nian_deng'), ItemType.techniqueScroll);
+    expect(
+      ItemType.fromDefId('item_scroll_kai_bei_shou'),
+      ItemType.techniqueScroll,
+    );
+    expect(
+      ItemType.fromDefId('item_scroll_ye_yu_shi_nian_deng'),
+      ItemType.techniqueScroll,
+    );
   });
 
   test('未知 id → miscMaterial 兜底', () {

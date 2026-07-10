@@ -6,8 +6,9 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/error_fallback.dart';
 /// P0-4(2026-06-29 审查修复):统一错误兜底 UI。
 /// 友好中文文案 + 可选重试;原始异常不上屏(仅 debugPrint)。
 void main() {
-  Widget host(Widget child) =>
-      MaterialApp(home: Scaffold(body: Center(child: child)));
+  Widget host(Widget child) => MaterialApp(
+    home: Scaffold(body: Center(child: child)),
+  );
 
   testWidgets('默认文案走 UiStrings.errorFallbackMessage', (tester) async {
     await tester.pumpWidget(host(const ErrorFallback()));

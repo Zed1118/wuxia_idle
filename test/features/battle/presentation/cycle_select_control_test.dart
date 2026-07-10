@@ -21,8 +21,9 @@ void main() {
   MainlineProgress progressWithCycles(List<int> clearedCycles) {
     final p = MainlineProgress()
       ..saveDataId = 1
-      ..clearedChapterCycleKeys =
-          clearedCycles.map((c) => '$chapterKey#$c').toList();
+      ..clearedChapterCycleKeys = clearedCycles
+          .map((c) => '$chapterKey#$c')
+          .toList();
     return p;
   }
 
@@ -118,8 +119,10 @@ void main() {
   });
 
   testWidgets('已达最高周目（highest=maxCycle=3）→ 显示已达最高, 无挑战选项', (tester) async {
-    final c =
-        makeContainer(progress: progressWithCycles([1, 2, 3]), maxCycle: 3);
+    final c = makeContainer(
+      progress: progressWithCycles([1, 2, 3]),
+      maxCycle: 3,
+    );
     addTearDown(c.dispose);
     await tester.pumpWidget(host(c));
     await tester.pumpAndSettle();
@@ -131,29 +134,29 @@ void main() {
 /// NumbersConfig stub：只实现 cycleEvolution，其他字段走 noSuchMethod。
 class _NumbersStub implements NumbersConfig {
   const _NumbersStub({required int maxCycleMainline})
-      : _maxCycle = maxCycleMainline;
+    : _maxCycle = maxCycleMainline;
 
   final int _maxCycle;
 
   @override
   CycleEvolutionConfig get cycleEvolution => CycleEvolutionConfig(
-        maxCycleMainline: _maxCycle,
-        maxCycleTower: 2,
-        scalePerCycle: 0.0,
-        defenseRateCap: 0.6,
-        traits: const CycleTraitsConfig(
-          yuti: YutiTraitParams(
-              defenseRateBonusC2: 0.0, defenseRateBonusC3: 0.0),
-          fanzhen: FanzhenTraitParams(damagePerTick: 0, ticks: 0),
-          ningjia: NingjiaTraitParams(critDamageTakenMult: 1.0),
-          zhenqi: ZhenqiTraitParams(internalForcePct: 0.0),
-          shipo: ShipoTraitParams(chargeSkillId: ''),
-        ),
-        assignment: const {},
-      );
+    maxCycleMainline: _maxCycle,
+    maxCycleTower: 2,
+    scalePerCycle: 0.0,
+    defenseRateCap: 0.6,
+    traits: const CycleTraitsConfig(
+      yuti: YutiTraitParams(defenseRateBonusC2: 0.0, defenseRateBonusC3: 0.0),
+      fanzhen: FanzhenTraitParams(damagePerTick: 0, ticks: 0),
+      ningjia: NingjiaTraitParams(critDamageTakenMult: 1.0),
+      zhenqi: ZhenqiTraitParams(internalForcePct: 0.0),
+      shipo: ShipoTraitParams(chargeSkillId: ''),
+    ),
+    assignment: const {},
+  );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError(
-      '_NumbersStub: 只实现 cycleEvolution, '
-      'invoked=${invocation.memberName}');
+    '_NumbersStub: 只实现 cycleEvolution, '
+    'invoked=${invocation.memberName}',
+  );
 }

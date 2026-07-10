@@ -106,8 +106,7 @@ Future<_TestBattleNotifier> _pumpWith(
 
 void main() {
   group('长按技能方块 → 简介浮层', () {
-    testWidgets('长按单体技方块 → 浮层含 description + 倍率/耗内/CD/目标/特性',
-        (tester) async {
+    testWidgets('长按单体技方块 → 浮层含 description + 倍率/耗内/CD/目标/特性', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_single]);
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
@@ -147,8 +146,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // 长按 = 查看简介,不下发命令。
-      expect(notifier.state.pendingUltimates[1], isNull,
-          reason: '长按只弹浮层，不下发命令');
+      expect(
+        notifier.state.pendingUltimates[1],
+        isNull,
+        reason: '长按只弹浮层，不下发命令',
+      );
     });
   });
 }

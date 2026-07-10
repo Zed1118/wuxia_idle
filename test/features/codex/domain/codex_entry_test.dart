@@ -87,7 +87,9 @@ void main() {
     });
 
     test('8 档机制 isMechanic == true && isLore == false', () {
-      for (final c in CodexCategory.values.where((c) => c != CodexCategory.lore)) {
+      for (final c in CodexCategory.values.where(
+        (c) => c != CodexCategory.lore,
+      )) {
         expect(c.isMechanic, isTrue, reason: '$c 应 isMechanic');
         expect(c.isLore, isFalse, reason: '$c 不应 isLore');
         expect(c.step, isNotNull, reason: '$c step 不应 null');

@@ -5,12 +5,12 @@ import 'package:wuxia_idle/shared/strings.dart';
 
 // 测试用 HeroCameraData 工厂
 HeroCameraData _data({String? portraitPath}) => HeroCameraData(
-      portraitPath: portraitPath,
-      heroName: '祖师',
-      realmLabel: '宗师·化境',
-      bossName: '黑袍人',
-      topDamage: 12345,
-    );
+  portraitPath: portraitPath,
+  heroName: '祖师',
+  realmLabel: '宗师·化境',
+  bossName: '黑袍人',
+  topDamage: 12345,
+);
 
 void main() {
   // 确保测试结束后清理所有 pending timer（全部用 pump 推到 auto-dismiss 触发点）
@@ -79,10 +79,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: HeroCameraOverlay(
-              data: _data(),
-              onDone: () => doneCount++,
-            ),
+            body: HeroCameraOverlay(data: _data(), onDone: () => doneCount++),
           ),
         ),
       );
@@ -105,10 +102,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: HeroCameraOverlay(
-              data: _data(),
-              onDone: () => doneCount++,
-            ),
+            body: HeroCameraOverlay(data: _data(), onDone: () => doneCount++),
           ),
         ),
       );

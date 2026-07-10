@@ -9,8 +9,7 @@ void main() {
   MainlineProgress chapterCleared(String chapterKey, List<int> cycles) {
     return MainlineProgress()
       ..saveDataId = 1
-      ..clearedChapterCycleKeys =
-          cycles.map((c) => '$chapterKey#$c').toList();
+      ..clearedChapterCycleKeys = cycles.map((c) => '$chapterKey#$c').toList();
   }
 
   test('玩家显式选择优先于一切', () {
@@ -44,11 +43,11 @@ void main() {
     addTearDown(container.dispose);
 
     // 模拟选关屏挂载监听 + 玩家选第2周目。
-    final sub =
-        container.listen(selectedChallengeCycleProvider('ch1'), (_, _) {});
-    container
-        .read(selectedChallengeCycleProvider('ch1').notifier)
-        .select(2);
+    final sub = container.listen(
+      selectedChallengeCycleProvider('ch1'),
+      (_, _) {},
+    );
+    container.read(selectedChallengeCycleProvider('ch1').notifier).select(2);
     expect(container.read(selectedChallengeCycleProvider('ch1')), 2);
 
     // 模拟选关屏 unmount(移除监听)→ keepAlive 不回收。

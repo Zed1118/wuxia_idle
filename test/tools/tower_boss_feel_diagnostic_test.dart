@@ -107,8 +107,14 @@ void main() {
       );
     }
 
-    final floor25 = repo.getTowerFloor(25).enemyTeam.firstWhere((e) => e.isBoss);
-    final floor30 = repo.getTowerFloor(30).enemyTeam.firstWhere((e) => e.isBoss);
+    final floor25 = repo
+        .getTowerFloor(25)
+        .enemyTeam
+        .firstWhere((e) => e.isBoss);
+    final floor30 = repo
+        .getTowerFloor(30)
+        .enemyTeam
+        .firstWhere((e) => e.isBoss);
     expect(
       floor25.bossPhases,
       isNotNull,
@@ -135,9 +141,11 @@ void main() {
     // 非 vuln Boss 不适用本豁免。
     for (final floorIndex in [25, 30]) {
       final triggered = results
-          .where((r) =>
-              r.floorIndex == floorIndex &&
-              r.profile == _BuildProfile.ceiling)
+          .where(
+            (r) =>
+                r.floorIndex == floorIndex &&
+                r.profile == _BuildProfile.ceiling,
+          )
           .where((r) => r.phaseTransitions > 0)
           .length;
       expect(

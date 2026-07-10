@@ -12,8 +12,10 @@ void main() {
     final req = <String, RealmCoord>{};
     for (var i = 0; i < 7; i++) {
       final n = (i + 1).toString().padLeft(2, '0');
-      req['stage_inner_demon_$n'] =
-          RealmCoord(tier: RealmTier.wuSheng, layer: layers[i]);
+      req['stage_inner_demon_$n'] = RealmCoord(
+        tier: RealmTier.wuSheng,
+        layer: layers[i],
+      );
     }
     final b = InnerDemonDef.empty();
     return InnerDemonDef(
@@ -54,9 +56,9 @@ void main() {
   }
 
   InnerDemonProgress prog(Set<String> cleared) => InnerDemonProgress.from(
-        innerDemonDef: defWith7(),
-        clearedStageIds: cleared,
-      );
+    innerDemonDef: defWith7(),
+    clearedStageIds: cleared,
+  );
 
   test('非武圣 → null(shrink)', () {
     final r = resolveInnerDemonPanel(
@@ -70,7 +72,7 @@ void main() {
   test('武圣全通 → cleared 7/7', () {
     final cleared = {
       for (var i = 1; i <= 7; i++)
-        'stage_inner_demon_${i.toString().padLeft(2, '0')}'
+        'stage_inner_demon_${i.toString().padLeft(2, '0')}',
     };
     final r = resolveInnerDemonPanel(
       character: ch(tier: RealmTier.wuSheng, layer: RealmLayer.dengFeng),

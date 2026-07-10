@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
@@ -59,37 +58,40 @@ void main() {
     required int speed,
     required int equipAttack,
     List<SkillDef> skills = const [breakSkill, normal],
-  }) =>
-      BattleCharacter(
-        characterId: charId,
-        name: '$charId',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 10000,
-        currentHp: 10000,
-        maxInternalForce: 2000,
-        currentInternalForce: 2000,
-        speed: speed,
-        criticalRate: 0.4, // 足够高暴击率 → 暴露 rng 不确定性
-        evasionRate: 0.0,
-        defenseRate: 0.1,
-        totalEquipmentAttack: equipAttack,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: skills,
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: teamSide,
-        slotIndex: slot,
-      );
+  }) => BattleCharacter(
+    characterId: charId,
+    name: '$charId',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 10000,
+    currentHp: 10000,
+    maxInternalForce: 2000,
+    currentInternalForce: 2000,
+    speed: speed,
+    criticalRate: 0.4, // 足够高暴击率 → 暴露 rng 不确定性
+    evasionRate: 0.0,
+    defenseRate: 0.1,
+    totalEquipmentAttack: equipAttack,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: skills,
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: teamSide,
+    slotIndex: slot,
+  );
 
   String runOnce(int seed) {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     // 永久 listener 防 autoDispose 在 read 间隙释放 notifier。
-    final sub = container.listen(battleProvider, (_, _) {}, fireImmediately: true);
+    final sub = container.listen(
+      battleProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
     addTearDown(sub.close);
 
     final notifier = container.read(battleProvider.notifier);
@@ -115,9 +117,11 @@ void main() {
 
     final s = container.read(battleProvider);
     final ops = s.actionLog
-        .map((a) =>
-            '${a.tick}|${a.actorId}|${a.targetId}|${a.skill?.id}'
-            '|${a.attackResult?.finalDamage}|${a.openedBreakWindow}')
+        .map(
+          (a) =>
+              '${a.tick}|${a.actorId}|${a.targetId}|${a.skill?.id}'
+              '|${a.attackResult?.finalDamage}|${a.openedBreakWindow}',
+        )
         .join(';');
     return '${s.result}#$ops';
   }
@@ -137,13 +141,15 @@ void main() {
     expect(
       first.contains('|true'),
       isTrue,
-      reason: 'breakSkill 应至少打开一次破绽窗口(openedBreakWindow=true),'
+      reason:
+          'breakSkill 应至少打开一次破绽窗口(openedBreakWindow=true),'
           '否则集火路径未被覆盖,该确定性测形同虚设',
     );
     expect(
       first,
       equals(second),
-      reason: '含破防开窗+集火的 advance() 全程须走注入的单一 seeded rng,'
+      reason:
+          '含破防开窗+集火的 advance() 全程须走注入的单一 seeded rng,'
           '同 seed 两跑 actionLog(含 openedBreakWindow 标记)与胜负全等',
     );
   });

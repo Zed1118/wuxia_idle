@@ -13,11 +13,7 @@ Widget wrap(Widget c) => MaterialApp(home: Material(child: c));
 // 顶栏自带固定浅色纸渐变底并 provide 自身 PanelSurface.light，标题恒读 light
 // surface → 恒深墨 ink，不随外层面板翻转。故两个 case（外浅/外深）都断言 ink。
 // 返回/主菜单箭头为 jiang 强调色，不迁移。showSeal/showHome 关掉避免噪音。
-const _component = WuxiaTitleBar(
-  title: '标题',
-  showSeal: false,
-  showHome: false,
-);
+const _component = WuxiaTitleBar(title: '标题', showSeal: false, showHome: false);
 
 void main() {
   testWidgets('外层浅面板标题取 ink', (t) async {

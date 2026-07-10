@@ -20,9 +20,7 @@ void main() {
   }
 
   group('Batch 2.3 R4 · 心魔 narrative 加载', () {
-    final stageIds = [
-      for (var i = 1; i <= 7; i++) 'stage_inner_demon_0$i',
-    ];
+    final stageIds = [for (var i = 1; i <= 7; i++) 'stage_inner_demon_0$i'];
 
     test('7 opening 全加载 + 非 placeholder + paragraphs 非空', () async {
       for (final id in stageIds) {
@@ -30,13 +28,22 @@ void main() {
           '${id}_opening',
           loader: fileLoader,
         );
-        expect(c.isPlaceholder, isFalse,
-            reason: '${id}_opening 应有真实 narrative,不走 placeholder');
-        expect(c.paragraphs, isNotEmpty,
-            reason: '${id}_opening paragraphs 不应为空');
+        expect(
+          c.isPlaceholder,
+          isFalse,
+          reason: '${id}_opening 应有真实 narrative,不走 placeholder',
+        );
+        expect(
+          c.paragraphs,
+          isNotEmpty,
+          reason: '${id}_opening paragraphs 不应为空',
+        );
         expect(c.id, '${id}_opening');
-        expect(c.title, isNotNull,
-            reason: '${id}_opening 应有 title(「心魔·X · 启」体例)');
+        expect(
+          c.title,
+          isNotNull,
+          reason: '${id}_opening 应有 title(「心魔·X · 启」体例)',
+        );
       }
     });
 
@@ -46,8 +53,11 @@ void main() {
           '${id}_victory',
           loader: fileLoader,
         );
-        expect(c.isPlaceholder, isFalse,
-            reason: '${id}_victory 应有真实 narrative');
+        expect(
+          c.isPlaceholder,
+          isFalse,
+          reason: '${id}_victory 应有真实 narrative',
+        );
         expect(c.paragraphs, isNotEmpty);
         expect(c.title, isNotNull);
       }
@@ -59,8 +69,7 @@ void main() {
           '${id}_defeat',
           loader: fileLoader,
         );
-        expect(c.isPlaceholder, isFalse,
-            reason: '${id}_defeat 应有真实 narrative');
+        expect(c.isPlaceholder, isFalse, reason: '${id}_defeat 应有真实 narrative');
         expect(c.paragraphs, isNotEmpty);
         expect(c.title, isNotNull);
       }
@@ -73,11 +82,17 @@ void main() {
       final content = await f.readAsString();
       expect(content, contains('id: chapter_inner_demon'));
       expect(content, contains('title:'));
-      expect(content, contains('prologue:'),
-          reason: 'chapter narrative 体例(参考 chapter_06.yaml)');
+      expect(
+        content,
+        contains('prologue:'),
+        reason: 'chapter narrative 体例(参考 chapter_06.yaml)',
+      );
       expect(content, contains('epilogue:'));
-      expect(content.length, greaterThan(500),
-          reason: 'chapter 内容非空,实际 ~720+ 字');
+      expect(
+        content.length,
+        greaterThan(500),
+        reason: 'chapter 内容非空,实际 ~720+ 字',
+      );
     });
   });
 }

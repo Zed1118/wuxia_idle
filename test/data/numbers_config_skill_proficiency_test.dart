@@ -15,8 +15,10 @@ void main() {
     // 单调递增守
     for (var i = 1; i < p.stages.length; i++) {
       expect(p.stages[i].minUses, greaterThan(p.stages[i - 1].minUses));
-      expect(p.stages[i].damageMult,
-          greaterThanOrEqualTo(p.stages[i - 1].damageMult));
+      expect(
+        p.stages[i].damageMult,
+        greaterThanOrEqualTo(p.stages[i - 1].damageMult),
+      );
     }
     expect(p.maxDamageMult, 1.30); // = 末阶,作综合 cap
   });

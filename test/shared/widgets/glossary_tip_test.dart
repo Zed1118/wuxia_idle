@@ -5,18 +5,13 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
 
 void main() {
   Widget host(Widget child) => MaterialApp(
-        home: Scaffold(body: Center(child: child)),
-      );
+    home: Scaffold(body: Center(child: child)),
+  );
 
   group('GlossaryTip', () {
     testWidgets('包裹 child 且 Tooltip message = 释义', (tester) async {
       await tester.pumpWidget(
-        host(
-          const GlossaryTip(
-            definition: '根骨：决定血量上限根基。',
-            child: Text('根骨'),
-          ),
-        ),
+        host(const GlossaryTip(definition: '根骨：决定血量上限根基。', child: Text('根骨'))),
       );
 
       expect(find.text('根骨'), findsOneWidget);
@@ -26,12 +21,7 @@ void main() {
 
     testWidgets('长按触发气泡显示释义', (tester) async {
       await tester.pumpWidget(
-        host(
-          const GlossaryTip(
-            definition: '内力：施展招式的根本。',
-            child: Text('内力'),
-          ),
-        ),
+        host(const GlossaryTip(definition: '内力：施展招式的根本。', child: Text('内力'))),
       );
 
       final gesture = await tester.startGesture(
@@ -47,12 +37,7 @@ void main() {
   group('GlossaryLabel', () {
     testWidgets('渲染标签文字 + ? 可发现标记 + 释义 tooltip', (tester) async {
       await tester.pumpWidget(
-        host(
-          const GlossaryLabel(
-            label: '身法',
-            definition: '身法：决定出手速度与闪避。',
-          ),
-        ),
+        host(const GlossaryLabel(label: '身法', definition: '身法：决定出手速度与闪避。')),
       );
 
       expect(find.text('身法'), findsOneWidget);
@@ -79,12 +64,7 @@ void main() {
 
     testWidgets('点击 ? 标记 → 弹释义浮层', (tester) async {
       await tester.pumpWidget(
-        host(
-          const GlossaryLabel(
-            label: '身法',
-            definition: '身法：决定出手速度与闪避。',
-          ),
-        ),
+        host(const GlossaryLabel(label: '身法', definition: '身法：决定出手速度与闪避。')),
       );
 
       await tester.tap(find.text(GlossaryLabel.marker));
@@ -95,12 +75,7 @@ void main() {
 
     testWidgets('点击标签文字不弹浮层（只裹 marker，保父级点击）', (tester) async {
       await tester.pumpWidget(
-        host(
-          const GlossaryLabel(
-            label: '身法',
-            definition: '身法：决定出手速度与闪避。',
-          ),
-        ),
+        host(const GlossaryLabel(label: '身法', definition: '身法：决定出手速度与闪避。')),
       );
 
       await tester.tap(find.text('身法'));

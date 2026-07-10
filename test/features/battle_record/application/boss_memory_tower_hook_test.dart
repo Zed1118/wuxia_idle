@@ -28,16 +28,18 @@ const _testStats = BattleStatsSummary(
 );
 
 Future<void> _writeSaveData(Isar isar) async {
-  await isar.writeTxn(() => isar.saveDatas.put(
-        SaveData()
-          ..id = 0
-          ..slotId = IsarSetup.currentSlotId
-          ..saveVersion = '0.0.1'
-          ..createdAt = DateTime(2026, 6, 20)
-          ..lastSavedAt = DateTime(2026, 6, 20)
-          ..lastOnlineAt = DateTime(2026, 6, 20)
-          ..activeCharacterIds = const [],
-      ));
+  await isar.writeTxn(
+    () => isar.saveDatas.put(
+      SaveData()
+        ..id = 0
+        ..slotId = IsarSetup.currentSlotId
+        ..saveVersion = '0.0.1'
+        ..createdAt = DateTime(2026, 6, 20)
+        ..lastSavedAt = DateTime(2026, 6, 20)
+        ..lastOnlineAt = DateTime(2026, 6, 20)
+        ..activeCharacterIds = const [],
+    ),
+  );
 }
 
 void main() {
@@ -51,8 +53,9 @@ void main() {
   });
 
   setUp(() async {
-    tempDir = await Directory.systemTemp
-        .createTemp('wuxia_boss_memory_tower_hook_');
+    tempDir = await Directory.systemTemp.createTemp(
+      'wuxia_boss_memory_tower_hook_',
+    );
     await IsarSetup.init(directory: tempDir, inspector: false);
     await _writeSaveData(IsarSetup.instance);
   });
@@ -80,8 +83,9 @@ void main() {
         topContributorDamage: 12000,
       );
 
-      final all = await BossMemoryService(isar: IsarSetup.instance)
-          .allMemories(IsarSetup.currentSlotId);
+      final all = await BossMemoryService(
+        isar: IsarSetup.instance,
+      ).allMemories(IsarSetup.currentSlotId);
       expect(all, hasLength(1));
       final m = all.first;
       expect(m.source, BossMemorySource.tower);
@@ -108,8 +112,9 @@ void main() {
         drops: const DropResult(equipments: [], items: []),
       );
 
-      final all = await BossMemoryService(isar: IsarSetup.instance)
-          .allMemories(IsarSetup.currentSlotId);
+      final all = await BossMemoryService(
+        isar: IsarSetup.instance,
+      ).allMemories(IsarSetup.currentSlotId);
       expect(all, hasLength(1));
       expect(all.first.bossKey, 'tower_floor_5');
       expect(all.first.source, BossMemorySource.tower);
@@ -129,8 +134,9 @@ void main() {
         );
       }
 
-      final all = await BossMemoryService(isar: IsarSetup.instance)
-          .allMemories(IsarSetup.currentSlotId);
+      final all = await BossMemoryService(
+        isar: IsarSetup.instance,
+      ).allMemories(IsarSetup.currentSlotId);
       expect(all, hasLength(1));
       expect(all.first.defeatCount, 3);
       // 首胜快照冻结，totalDamage 不累加
@@ -156,11 +162,15 @@ void main() {
         drops: drops,
       );
 
-      final all = await BossMemoryService(isar: IsarSetup.instance)
-          .allMemories(IsarSetup.currentSlotId);
+      final all = await BossMemoryService(
+        isar: IsarSetup.instance,
+      ).allMemories(IsarSetup.currentSlotId);
       expect(all, hasLength(2));
       final sources = all.map((m) => m.source).toSet();
-      expect(sources, containsAll([BossMemorySource.mainline, BossMemorySource.tower]));
+      expect(
+        sources,
+        containsAll([BossMemorySource.mainline, BossMemorySource.tower]),
+      );
     });
   });
 }

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -21,12 +20,8 @@ void main() {
   });
 
   Widget wrap(IslandHarvest harvest) => MaterialApp(
-        home: Scaffold(
-          body: IslandRecapCard(harvest: harvest),
-        ),
-      );
-
-
+    home: Scaffold(body: IslandRecapCard(harvest: harvest)),
+  );
 
   group('非空收获', () {
     // 使用 items.yaml 中实际存在的 defId；若查不到则兜底显示 defId 本身。
@@ -111,10 +106,7 @@ void main() {
       await tester.pumpWidget(wrap(emptyHarvest));
       await tester.pumpAndSettle();
 
-      expect(
-        find.byIcon(Icons.inventory_2_outlined),
-        findsNothing,
-      );
+      expect(find.byIcon(Icons.inventory_2_outlined), findsNothing);
     });
   });
 }

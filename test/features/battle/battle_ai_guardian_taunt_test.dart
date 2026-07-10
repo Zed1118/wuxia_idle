@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
@@ -57,29 +56,29 @@ void main() {
   );
 
   BattleCharacter makeActor({List<SkillDef>? skills}) => BattleCharacter(
-        characterId: 100,
-        name: '玩家(taunt测)',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 12000,
-        currentHp: 12000,
-        maxInternalForce: 10000,
-        currentInternalForce: 10000,
-        speed: 200,
-        criticalRate: 0.15,
-        evasionRate: 0.05,
-        defenseRate: 0.35,
-        totalEquipmentAttack: 1500,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: skills ?? const <SkillDef>[normalAttack],
-        skillCooldowns: const <String, int>{},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: 0,
-        slotIndex: 0,
-      );
+    characterId: 100,
+    name: '玩家(taunt测)',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 12000,
+    currentHp: 12000,
+    maxInternalForce: 10000,
+    currentInternalForce: 10000,
+    speed: 200,
+    criticalRate: 0.15,
+    evasionRate: 0.05,
+    defenseRate: 0.35,
+    totalEquipmentAttack: 1500,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: skills ?? const <SkillDef>[normalAttack],
+    skillCooldowns: const <String, int>{},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: 0,
+    slotIndex: 0,
+  );
 
   BattleCharacter makeEnemy({
     required int charId,
@@ -88,34 +87,33 @@ void main() {
     String? enemyDefId,
     double? guardianWardMult,
     List<String> guardianDefIds = const [],
-  }) =>
-      BattleCharacter(
-        characterId: charId,
-        name: '敌$charId',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 12000,
-        currentHp: currentHp,
-        maxInternalForce: 10000,
-        currentInternalForce: 10000,
-        speed: 150,
-        criticalRate: 0.10,
-        evasionRate: 0.05,
-        defenseRate: 0.20,
-        totalEquipmentAttack: 1000,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: const <SkillDef>[],
-        skillCooldowns: const <String, int>{},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: 1,
-        slotIndex: slotIndex,
-        enemyDefId: enemyDefId,
-        guardianWardMult: guardianWardMult,
-        guardianDefIds: guardianDefIds,
-      );
+  }) => BattleCharacter(
+    characterId: charId,
+    name: '敌$charId',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 12000,
+    currentHp: currentHp,
+    maxInternalForce: 10000,
+    currentInternalForce: 10000,
+    speed: 150,
+    criticalRate: 0.10,
+    evasionRate: 0.05,
+    defenseRate: 0.20,
+    totalEquipmentAttack: 1000,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: const <SkillDef>[],
+    skillCooldowns: const <String, int>{},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: 1,
+    slotIndex: slotIndex,
+    enemyDefId: enemyDefId,
+    guardianWardMult: guardianWardMult,
+    guardianDefIds: guardianDefIds,
+  );
 
   const bossCharId = 30;
   const guardianCharId = 31;
@@ -139,7 +137,10 @@ void main() {
     );
     return BattleState.initial(
       leftTeam: [actor],
-      rightTeam: [boss, guardian.copyWith(isAlive: guardianAlive)],
+      rightTeam: [
+        boss,
+        guardian.copyWith(isAlive: guardianAlive),
+      ],
     );
   }
 
@@ -147,39 +148,38 @@ void main() {
     final state = scenario(guardianAlive: true);
     final actor = state.leftTeam.first;
 
-    final (_, targetIds) =
-        BattleAI.decide(actor, state, GameRepository.instance.numbers);
+    final (_, targetIds) = BattleAI.decide(
+      actor,
+      state,
+      GameRepository.instance.numbers,
+    );
 
     expect(
       targetIds,
       isNot(contains(bossCharId)),
       reason: '护法存活 → 被保护 Boss 从目标池排除(taunt)',
     );
-    expect(
-      targetIds,
-      contains(guardianCharId),
-      reason: '护法存活 → 只能选护法',
-    );
+    expect(targetIds, contains(guardianCharId), reason: '护法存活 → 只能选护法');
   });
 
   test('测 B:护法全灭后 Boss 恢复可选', () {
     final state = scenario(guardianAlive: false);
     final actor = state.leftTeam.first;
 
-    final (_, targetIds) =
-        BattleAI.decide(actor, state, GameRepository.instance.numbers);
-
-    expect(
-      targetIds,
-      contains(bossCharId),
-      reason: '护法全灭 → Boss 进池,血最低被选中',
+    final (_, targetIds) = BattleAI.decide(
+      actor,
+      state,
+      GameRepository.instance.numbers,
     );
+
+    expect(targetIds, contains(bossCharId), reason: '护法全灭 → Boss 进池,血最低被选中');
   });
 
   test('测 C:drift 守卫 —— isGuardedBoss 与 wardMultOf 存活判定口径一致', () {
     final aliveState = scenario(guardianAlive: true);
-    final aliveBoss =
-        aliveState.rightTeam.firstWhere((c) => c.characterId == bossCharId);
+    final aliveBoss = aliveState.rightTeam.firstWhere(
+      (c) => c.characterId == bossCharId,
+    );
     expect(BattleAI.isGuardedBoss(aliveBoss, aliveState), isTrue);
     expect(
       DefaultGroundStrategy.wardMultOf(aliveBoss, aliveState) < 1.0,
@@ -188,8 +188,9 @@ void main() {
     );
 
     final deadState = scenario(guardianAlive: false);
-    final deadBoss =
-        deadState.rightTeam.firstWhere((c) => c.characterId == bossCharId);
+    final deadBoss = deadState.rightTeam.firstWhere(
+      (c) => c.characterId == bossCharId,
+    );
     expect(BattleAI.isGuardedBoss(deadBoss, deadState), isFalse);
     expect(
       DefaultGroundStrategy.wardMultOf(deadBoss, deadState) < 1.0,
@@ -208,18 +209,24 @@ void main() {
       guardianWardMult: 0.15,
       guardianDefIds: const ['g1'],
     );
-    final guardian =
-        makeEnemy(charId: guardianCharId, slotIndex: 1, currentHp: 9000, enemyDefId: 'g1');
+    final guardian = makeEnemy(
+      charId: guardianCharId,
+      slotIndex: 1,
+      currentHp: 9000,
+      enemyDefId: 'g1',
+    );
     final state = BattleState.initial(
       leftTeam: [actor],
       rightTeam: [boss, guardian],
     );
 
-    final (_, targetIds) =
-        BattleAI.decide(actor, state, GameRepository.instance.numbers);
+    final (_, targetIds) = BattleAI.decide(
+      actor,
+      state,
+      GameRepository.instance.numbers,
+    );
 
-    expect(targetIds, isNot(contains(bossCharId)),
-        reason: 'aoe 分支也排除被保护 Boss');
+    expect(targetIds, isNot(contains(bossCharId)), reason: 'aoe 分支也排除被保护 Boss');
     expect(targetIds, contains(guardianCharId), reason: 'aoe 命中护法');
   });
 }

@@ -12,11 +12,8 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
-Finder _assetImage(String path) => find.byWidgetPredicate(
-  (w) =>
-      w is Image &&
-      assetNameOf(w.image) == path,
-);
+Finder _assetImage(String path) =>
+    find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
 
 void main() {
   testWidgets('leftWin 显金「勝」+ 统计 + 继续', (tester) async {

@@ -33,10 +33,12 @@ void main() {
 
   // ── 数值红线 ─────────────────────────────────────────────────────────────
   test('source base_rate_per_hour 为负 → StateError', () {
-    final cfg = parse(_validYaml.replaceFirst(
-      'base_rate_per_hour: 6.0',
-      'base_rate_per_hour: -1.0',
-    ));
+    final cfg = parse(
+      _validYaml.replaceFirst(
+        'base_rate_per_hour: 6.0',
+        'base_rate_per_hour: -1.0',
+      ),
+    );
     expect(
       () => TaohuaIslandConfig.validate(cfg, knownIds),
       throwsA(isA<StateError>()),
@@ -44,10 +46,7 @@ void main() {
   });
 
   test('cap_base 为负 → StateError', () {
-    final cfg = parse(_validYaml.replaceFirst(
-      'cap_base: 200',
-      'cap_base: -1',
-    ));
+    final cfg = parse(_validYaml.replaceFirst('cap_base: 200', 'cap_base: -1'));
     expect(
       () => TaohuaIslandConfig.validate(cfg, knownIds),
       throwsA(isA<StateError>()),
@@ -55,10 +54,7 @@ void main() {
   });
 
   test('max_level 为 0 → StateError', () {
-    final cfg = parse(_validYaml.replaceFirst(
-      'max_level: 5',
-      'max_level: 0',
-    ));
+    final cfg = parse(_validYaml.replaceFirst('max_level: 5', 'max_level: 0'));
     expect(
       () => TaohuaIslandConfig.validate(cfg, knownIds),
       throwsA(isA<StateError>()),
@@ -76,10 +72,9 @@ void main() {
 
   // ── recipe 数值红线 ───────────────────────────────────────────────────────
   test('recipe input_per_output = 0 → StateError', () {
-    final cfg = parse(_validYaml.replaceFirst(
-      'input_per_output: 4.0',
-      'input_per_output: 0.0',
-    ));
+    final cfg = parse(
+      _validYaml.replaceFirst('input_per_output: 4.0', 'input_per_output: 0.0'),
+    );
     expect(
       () => TaohuaIslandConfig.validate(cfg, knownIds),
       throwsA(isA<StateError>()),
@@ -87,10 +82,9 @@ void main() {
   });
 
   test('recipe rate_per_hour 为负 → StateError', () {
-    final cfg = parse(_validYaml.replaceFirst(
-      'rate_per_hour: 1.5',
-      'rate_per_hour: -0.5',
-    ));
+    final cfg = parse(
+      _validYaml.replaceFirst('rate_per_hour: 1.5', 'rate_per_hour: -0.5'),
+    );
     expect(
       () => TaohuaIslandConfig.validate(cfg, knownIds),
       throwsA(isA<StateError>()),
@@ -98,10 +92,12 @@ void main() {
   });
 
   test('recipe realm_unlock_index = 7 → StateError', () {
-    final cfg = parse(_validYaml.replaceFirst(
-      'realm_unlock_index: 0 }',
-      'realm_unlock_index: 7 }',
-    ));
+    final cfg = parse(
+      _validYaml.replaceFirst(
+        'realm_unlock_index: 0 }',
+        'realm_unlock_index: 7 }',
+      ),
+    );
     expect(
       () => TaohuaIslandConfig.validate(cfg, knownIds),
       throwsA(isA<StateError>()),
@@ -110,10 +106,12 @@ void main() {
 
   // ── 跨引用：recipe output_item 未知 → StateError ─────────────────────────
   test('recipe output_item 指向未知 defId → StateError', () {
-    final cfg = parse(_validYaml.replaceFirst(
-      'output_item: item_mojianshi',
-      'output_item: item_unknown_xyz',
-    ));
+    final cfg = parse(
+      _validYaml.replaceFirst(
+        'output_item: item_mojianshi',
+        'output_item: item_unknown_xyz',
+      ),
+    );
     expect(
       () => TaohuaIslandConfig.validate(cfg, knownIds),
       throwsA(isA<StateError>()),
@@ -122,10 +120,12 @@ void main() {
 
   // ── 跨引用：source output_item 未知 → StateError ─────────────────────────
   test('source output_item 指向未知 defId → StateError', () {
-    final cfg = parse(_validYaml.replaceFirst(
-      'output_item: item_jingtie',
-      'output_item: item_ghost',
-    ));
+    final cfg = parse(
+      _validYaml.replaceFirst(
+        'output_item: item_jingtie',
+        'output_item: item_ghost',
+      ),
+    );
     expect(
       () => TaohuaIslandConfig.validate(cfg, knownIds),
       throwsA(isA<StateError>()),
@@ -158,23 +158,30 @@ void main() {
     expect(() => TaohuaIslandConfig.validate(cfg, knownIds), returnsNormally);
   });
 
-  test('recipe 声明 secondary_input_per_output 但建筑无 secondary_input_item → StateError', () {
-    // 去掉 secondary_input_item 行,但配方仍带 secondary_input_per_output
-    final cfg = parse(_validDualInputYaml.replaceFirst(
-      '    secondary_input_item: item_lingquanshui\n',
-      '',
-    ));
-    expect(
-      () => TaohuaIslandConfig.validate(cfg, knownIds),
-      throwsA(isA<StateError>()),
-    );
-  });
+  test(
+    'recipe 声明 secondary_input_per_output 但建筑无 secondary_input_item → StateError',
+    () {
+      // 去掉 secondary_input_item 行,但配方仍带 secondary_input_per_output
+      final cfg = parse(
+        _validDualInputYaml.replaceFirst(
+          '    secondary_input_item: item_lingquanshui\n',
+          '',
+        ),
+      );
+      expect(
+        () => TaohuaIslandConfig.validate(cfg, knownIds),
+        throwsA(isA<StateError>()),
+      );
+    },
+  );
 
   test('secondary_input_item 配了却无配方消费（脱节配置）→ StateError', () {
-    final cfg = parse(_validDualInputYaml.replaceFirst(
-      ', secondary_input_per_output: 5.0 }',
-      ' }',
-    ));
+    final cfg = parse(
+      _validDualInputYaml.replaceFirst(
+        ', secondary_input_per_output: 5.0 }',
+        ' }',
+      ),
+    );
     expect(
       () => TaohuaIslandConfig.validate(cfg, knownIds),
       throwsA(isA<StateError>()),
@@ -183,10 +190,12 @@ void main() {
 
   test('secondary_input_item 无 source 供应 → StateError', () {
     // 把次要原料改成一个 known 但无 source 产出的 item
-    final cfg = parse(_validDualInputYaml.replaceFirst(
-      'secondary_input_item: item_lingquanshui',
-      'secondary_input_item: item_liaoshangdan',
-    ));
+    final cfg = parse(
+      _validDualInputYaml.replaceFirst(
+        'secondary_input_item: item_lingquanshui',
+        'secondary_input_item: item_liaoshangdan',
+      ),
+    );
     expect(
       () => TaohuaIslandConfig.validate(cfg, knownIds),
       throwsA(isA<StateError>()),

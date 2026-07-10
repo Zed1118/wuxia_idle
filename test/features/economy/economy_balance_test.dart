@@ -24,8 +24,9 @@ void main() {
   group('材料经济节奏 balance(确定性算式)', () {
     test('闭关 silver_per_hour 随解锁境界梯度单调不减', () {
       final maps = GameRepository.instance.seclusionMaps;
-      final sorted = [...maps]
-        ..sort((a, b) => a.requiredRealm.index.compareTo(b.requiredRealm.index));
+      final sorted = [
+        ...maps,
+      ]..sort((a, b) => a.requiredRealm.index.compareTo(b.requiredRealm.index));
       for (var i = 1; i < sorted.length; i++) {
         expect(
           sorted[i].silverPerHour,
@@ -38,8 +39,9 @@ void main() {
     test('二流 on-level 闭关日收入 = 强化到+15 消费锚的 1/3.0~1/4.5(关卡掉落补到 2-3 天)', () {
       final r = GameRepository.instance;
       // 二流主力收入图 = 悬崖瀑布(唯一 requiredRealm == erLiu 图)。
-      final xuanya = r.seclusionMaps
-          .firstWhere((m) => m.requiredRealm == RealmTier.erLiu);
+      final xuanya = r.seclusionMaps.firstWhere(
+        (m) => m.requiredRealm == RealmTier.erLiu,
+      );
       // 最终银两/h = silverPerHour × realmScale^境界index(seclusion_service 真实公式)。
       final scale = math
           .pow(r.numbers.retreat.realmScalePerTier, RealmTier.erLiu.index)
@@ -58,7 +60,8 @@ void main() {
       expect(
         daysSeclusionOnly,
         inInclusiveRange(3.0, 4.5),
-        reason: '闭关单独应 3–4.5 天买齐一条养成线,配关卡掉落(25–35%)补到 2–3 天锚;'
+        reason:
+            '闭关单独应 3–4.5 天买齐一条养成线,配关卡掉落(25–35%)补到 2–3 天锚;'
             '现状 consumeAnchor=$consumeAnchor dailySeclusion=$dailySeclusion',
       );
     });
@@ -85,7 +88,8 @@ void main() {
         expect(
           buyRatio,
           greaterThanOrEqualTo(idleRatio),
-          reason: '${pair[1]} 买丹银两单价($buyRatio)应≥挂机隐含单价($idleRatio),'
+          reason:
+              '${pair[1]} 买丹银两单价($buyRatio)应≥挂机隐含单价($idleRatio),'
               '否则后期用银两 carry 经验套利,破坏 §5.5 挂机为主',
         );
       }

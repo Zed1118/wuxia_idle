@@ -8,26 +8,25 @@ AdvancementResult _advanced({
   int layersGained = 1,
   RealmTier tierAfter = RealmTier.xueTu,
   RealmLayer layerAfter = RealmLayer.jingTong,
-}) =>
-    AdvancementResult(
-      layersGained: layersGained,
-      tierBefore: RealmTier.xueTu,
-      layerBefore: RealmLayer.qiMeng,
-      tierAfter: tierAfter,
-      layerAfter: layerAfter,
-      internalForceMaxBefore: 500,
-      internalForceMaxAfter: 800,
-    );
+}) => AdvancementResult(
+  layersGained: layersGained,
+  tierBefore: RealmTier.xueTu,
+  layerBefore: RealmLayer.qiMeng,
+  tierAfter: tierAfter,
+  layerAfter: layerAfter,
+  internalForceMaxBefore: 500,
+  internalForceMaxAfter: 800,
+);
 
 AdvancementResult _flat() => const AdvancementResult(
-      layersGained: 0,
-      tierBefore: RealmTier.xueTu,
-      layerBefore: RealmLayer.qiMeng,
-      tierAfter: RealmTier.xueTu,
-      layerAfter: RealmLayer.qiMeng,
-      internalForceMaxBefore: 500,
-      internalForceMaxAfter: 500,
-    );
+  layersGained: 0,
+  tierBefore: RealmTier.xueTu,
+  layerBefore: RealmLayer.qiMeng,
+  tierAfter: RealmTier.xueTu,
+  layerAfter: RealmLayer.qiMeng,
+  internalForceMaxBefore: 500,
+  internalForceMaxAfter: 500,
+);
 
 Future<void> _pump(WidgetTester tester, List<AdvancementEntry> entries) async {
   await tester.pumpWidget(
@@ -45,9 +44,7 @@ void main() {
     });
 
     testWidgets('1 character didAdvance=false → 不渲染 banner', (tester) async {
-      await _pump(tester, [
-        AdvancementEntry(chName: '甲', result: _flat()),
-      ]);
+      await _pump(tester, [AdvancementEntry(chName: '甲', result: _flat())]);
       expect(find.byIcon(Icons.auto_awesome), findsNothing);
       expect(find.textContaining('甲'), findsNothing);
     });
@@ -70,8 +67,9 @@ void main() {
     });
 
     // H2 C2:大境界突破(crossedTier)走醒目标记,区别于小层升级。
-    testWidgets('crossedTier=true → 大境界突破标记(military_tech + badge)',
-        (tester) async {
+    testWidgets('crossedTier=true → 大境界突破标记(military_tech + badge)', (
+      tester,
+    ) async {
       await _pump(tester, [
         AdvancementEntry(
           chName: '甲',
@@ -84,8 +82,11 @@ void main() {
       ]);
       expect(find.byIcon(Icons.military_tech), findsOneWidget);
       expect(find.textContaining('大境界突破'), findsOneWidget);
-      expect(find.byIcon(Icons.auto_awesome), findsNothing,
-          reason: '大境界突破不用普通小层升级图标');
+      expect(
+        find.byIcon(Icons.auto_awesome),
+        findsNothing,
+        reason: '大境界突破不用普通小层升级图标',
+      );
     });
 
     testWidgets('crossedTier + 同 tier 升层 mixed → 各走各样式', (tester) async {
@@ -100,10 +101,16 @@ void main() {
         ),
         AdvancementEntry(chName: '乙', result: _advanced(layersGained: 2)),
       ]);
-      expect(find.byIcon(Icons.military_tech), findsOneWidget,
-          reason: '甲 跨 tier');
-      expect(find.byIcon(Icons.auto_awesome), findsOneWidget,
-          reason: '乙 同 tier 小层升级');
+      expect(
+        find.byIcon(Icons.military_tech),
+        findsOneWidget,
+        reason: '甲 跨 tier',
+      );
+      expect(
+        find.byIcon(Icons.auto_awesome),
+        findsOneWidget,
+        reason: '乙 同 tier 小层升级',
+      );
       expect(find.textContaining('大境界突破'), findsOneWidget);
     });
 

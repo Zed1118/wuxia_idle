@@ -4,23 +4,23 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_loadout.dart';
 
 SkillDef _skill(String id, {int power = 500, int? tier}) => SkillDef(
-      id: id,
-      name: id,
-      description: '',
-      type: SkillType.powerSkill,
-      powerMultiplier: power,
-      internalForceCost: 0,
-      cooldownTurns: 0,
-      requiresManualTrigger: false,
-      parentTechniqueDefId: tier == null ? 'tech_a' : null,
-      visualEffect: '',
-      tier: tier,
-      narrativeInsightId: null,
-      imagePath: null,
-      canInterrupt: false,
-      aiUsePolicy: AiUsePolicy.normal,
-      proficiency: null,
-    );
+  id: id,
+  name: id,
+  description: '',
+  type: SkillType.powerSkill,
+  powerMultiplier: power,
+  internalForceCost: 0,
+  cooldownTurns: 0,
+  requiresManualTrigger: false,
+  parentTechniqueDefId: tier == null ? 'tech_a' : null,
+  visualEffect: '',
+  tier: tier,
+  narrativeInsightId: null,
+  imagePath: null,
+  canInterrupt: false,
+  aiUsePolicy: AiUsePolicy.normal,
+  proficiency: null,
+);
 
 void main() {
   group('SkillLoadout.autoFill', () {
@@ -242,16 +242,16 @@ void main() {
 }
 
 SkillDef _interrupt(String id, TechniqueSchool style) => SkillDef(
-      id: id,
-      name: id,
-      description: '',
-      type: SkillType.powerSkill,
-      powerMultiplier: 800,
-      internalForceCost: 100,
-      cooldownTurns: 3,
-      requiresManualTrigger: false,
-      visualEffect: '',
-      canInterrupt: true,
-      aiUsePolicy: AiUsePolicy.saveForInterrupt,
-      style: style,
-    );
+  id: id,
+  name: id,
+  description: '',
+  type: SkillType.powerSkill,
+  powerMultiplier: 800,
+  internalForceCost: 100,
+  cooldownTurns: 3,
+  requiresManualTrigger: false,
+  visualEffect: '',
+  canInterrupt: true,
+  aiUsePolicy: AiUsePolicy.saveForInterrupt,
+  style: style,
+);

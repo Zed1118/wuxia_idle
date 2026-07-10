@@ -26,16 +26,19 @@ void main() {
         titles: {'a': '听雨悟剑'},
       );
       expect(groups.length, 3);
-      final insight =
-          groups.firstWhere((g) => g.kind == EncounterGroupKind.insight);
+      final insight = groups.firstWhere(
+        (g) => g.kind == EncounterGroupKind.insight,
+      );
       expect(insight.entries.single.def.id, 'a');
       expect(insight.entries.single.isTriggered, true);
       expect(insight.entries.single.title, '听雨悟剑');
-      final festival =
-          groups.firstWhere((g) => g.kind == EncounterGroupKind.festival);
+      final festival = groups.firstWhere(
+        (g) => g.kind == EncounterGroupKind.festival,
+      );
       expect(festival.entries.single.def.id, 'c');
-      final fortune =
-          groups.firstWhere((g) => g.kind == EncounterGroupKind.fortune);
+      final fortune = groups.firstWhere(
+        (g) => g.kind == EncounterGroupKind.fortune,
+      );
       expect(fortune.entries.single.isTriggered, false);
       expect(fortune.entries.single.title, isNull);
     });
@@ -50,8 +53,9 @@ void main() {
         triggeredIds: {'a'},
         titles: {'a': 'X'},
       );
-      final insight =
-          groups.firstWhere((g) => g.kind == EncounterGroupKind.insight);
+      final insight = groups.firstWhere(
+        (g) => g.kind == EncounterGroupKind.insight,
+      );
       expect(insight.triggeredCount, 1);
       expect(insight.entries.length, 2);
       expect(insight.entries.map((e) => e.def.id), ['a', 'b']);

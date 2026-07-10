@@ -17,36 +17,36 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
 
 EnemyDef _enemy() => const EnemyDef(
-      id: 'e1',
-      name: '敌',
-      realmTier: RealmTier.erLiu,
-      realmLayer: RealmLayer.qiMeng,
-      school: TechniqueSchool.gangMeng,
-      baseHp: 1000,
-      baseAttack: 100,
-      baseSpeed: 50,
-      skillIds: ['skill_x'],
-      iconPath: 'x.png',
-    );
+  id: 'e1',
+  name: '敌',
+  realmTier: RealmTier.erLiu,
+  realmLayer: RealmLayer.qiMeng,
+  school: TechniqueSchool.gangMeng,
+  baseHp: 1000,
+  baseAttack: 100,
+  baseSpeed: 50,
+  skillIds: ['skill_x'],
+  iconPath: 'x.png',
+);
 
 StageDef _stage(String id, List<DropEntry> dropTable) => StageDef(
-      id: id,
-      name: '测试关',
-      stageType: StageType.mainline,
-      requiredRealm: RealmTier.erLiu,
-      enemyTeam: [_enemy()],
-      isBossStage: false,
-      dropTable: dropTable,
-      baseExpReward: 100,
-      difficultyMultiplier: 1.0,
-    );
+  id: id,
+  name: '测试关',
+  stageType: StageType.mainline,
+  requiredRealm: RealmTier.erLiu,
+  enemyTeam: [_enemy()],
+  isBossStage: false,
+  dropTable: dropTable,
+  baseExpReward: 100,
+  difficultyMultiplier: 1.0,
+);
 
 TowerFloorDef _floor(int idx, List<DropEntry> dropTable) => TowerFloorDef(
-      floorIndex: idx,
-      requiredRealm: RealmTier.erLiu,
-      enemyTeam: [_enemy()],
-      dropTable: dropTable,
-    );
+  floorIndex: idx,
+  requiredRealm: RealmTier.erLiu,
+  enemyTeam: [_enemy()],
+  dropTable: dropTable,
+);
 
 const _equipmentIds = {'weapon_real', 'armor_real'};
 
@@ -64,25 +64,29 @@ void main() {
         's1': _stage('s1', const [
           EquipmentDrop(equipmentDefId: 'weapon_real', dropChance: 0.5),
           ItemDrop(
-              inventoryItemDefId: 'item_silver',
-              quantityMin: 1,
-              quantityMax: 1,
-              dropChance: 1.0),
+            inventoryItemDefId: 'item_silver',
+            quantityMin: 1,
+            quantityMax: 1,
+            dropChance: 1.0,
+          ),
           ItemDrop(
-              inventoryItemDefId: 'item_mojianshi',
-              quantityMin: 1,
-              quantityMax: 1,
-              dropChance: 1.0),
+            inventoryItemDefId: 'item_mojianshi',
+            quantityMin: 1,
+            quantityMax: 1,
+            dropChance: 1.0,
+          ),
           ItemDrop(
-              inventoryItemDefId: 'item_scroll_kai_bei_shou',
-              quantityMin: 1,
-              quantityMax: 1,
-              dropChance: 1.0),
+            inventoryItemDefId: 'item_scroll_kai_bei_shou',
+            quantityMin: 1,
+            quantityMax: 1,
+            dropChance: 1.0,
+          ),
           ItemDrop(
-              inventoryItemDefId: 'item_jingyandan_large',
-              quantityMin: 1,
-              quantityMax: 1,
-              dropChance: 1.0),
+            inventoryItemDefId: 'item_jingyandan_large',
+            quantityMin: 1,
+            quantityMax: 1,
+            dropChance: 1.0,
+          ),
         ]),
       };
       final floors = [
@@ -96,43 +100,68 @@ void main() {
     test('stage dropTable 悬空 equipmentDefId → 抛 StateError(含坏 id)', () {
       final stages = {
         's1': _stage('s1', const [
-          EquipmentDrop(equipmentDefId: 'weapon_ghost_not_exist', dropChance: 0.5),
+          EquipmentDrop(
+            equipmentDefId: 'weapon_ghost_not_exist',
+            dropChance: 0.5,
+          ),
         ]),
       };
       expect(
         () => enforce(stages, const []),
-        throwsA(isA<StateError>().having(
-            (e) => e.message, 'message', contains('weapon_ghost_not_exist'))),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('weapon_ghost_not_exist'),
+          ),
+        ),
       );
     });
 
-    test('stage dropTable 悬空 inventoryItemDefId（兜底 miscMaterial）→ 抛 StateError', () {
-      final stages = {
-        's1': _stage('s1', const [
-          ItemDrop(
+    test(
+      'stage dropTable 悬空 inventoryItemDefId（兜底 miscMaterial）→ 抛 StateError',
+      () {
+        final stages = {
+          's1': _stage('s1', const [
+            ItemDrop(
               inventoryItemDefId: 'item_typo_unknown',
               quantityMin: 1,
               quantityMax: 1,
-              dropChance: 1.0),
-        ]),
-      };
-      expect(
-        () => enforce(stages, const []),
-        throwsA(isA<StateError>().having(
-            (e) => e.message, 'message', contains('item_typo_unknown'))),
-      );
-    });
+              dropChance: 1.0,
+            ),
+          ]),
+        };
+        expect(
+          () => enforce(stages, const []),
+          throwsA(
+            isA<StateError>().having(
+              (e) => e.message,
+              'message',
+              contains('item_typo_unknown'),
+            ),
+          ),
+        );
+      },
+    );
 
     test('tower floor dropTable 悬空 equipmentDefId → 抛 StateError', () {
       final floors = [
         _floor(1, const [
-          EquipmentDrop(equipmentDefId: 'armor_ghost_not_exist', dropChance: 0.3),
+          EquipmentDrop(
+            equipmentDefId: 'armor_ghost_not_exist',
+            dropChance: 0.3,
+          ),
         ]),
       ];
       expect(
         () => enforce(const {}, floors),
-        throwsA(isA<StateError>().having((e) => e.message, 'message',
-            contains('armor_ghost_not_exist'))),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('armor_ghost_not_exist'),
+          ),
+        ),
       );
     });
   });

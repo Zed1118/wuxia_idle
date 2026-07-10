@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -132,21 +131,21 @@ void main() {
       ProviderScope(
         overrides: [
           activeCharacterIdsProvider.overrideWith((ref) async => ids),
-          characterByIdProvider(character.id).overrideWith(
-            (ref) async => character,
-          ),
+          characterByIdProvider(
+            character.id,
+          ).overrideWith((ref) async => character),
           for (final entry in extraCharacters.entries)
-            characterByIdProvider(entry.key).overrideWith(
-              (ref) async => entry.value,
-            ),
+            characterByIdProvider(
+              entry.key,
+            ).overrideWith((ref) async => entry.value),
           for (final entry in equipments.entries)
-            equipmentByIdProvider(entry.key).overrideWith(
-              (ref) async => entry.value,
-            ),
+            equipmentByIdProvider(
+              entry.key,
+            ).overrideWith((ref) async => entry.value),
           for (final entry in techniques.entries)
-            techniqueByIdProvider(entry.key).overrideWith(
-              (ref) async => entry.value,
-            ),
+            techniqueByIdProvider(
+              entry.key,
+            ).overrideWith((ref) async => entry.value),
         ],
         child: MaterialApp(
           home: CharacterPanelScreen(characterId: character.id),
@@ -161,8 +160,9 @@ void main() {
 
   // ── 用例 A：school=null → TopBar 不崩 ────────────────────────────────────
 
-  testWidgets('school=null → 色条走 textMuted 兜底，name 正常渲染，无 ErrorWidget',
-      (tester) async {
+  testWidgets('school=null → 色条走 textMuted 兜底，name 正常渲染，无 ErrorWidget', (
+    tester,
+  ) async {
     final character = mkCharacter(id: 1, name: '无派隐者', school: null);
 
     await pumpPanel(tester, character: character);
@@ -175,40 +175,41 @@ void main() {
 
   // ── 用例 B：activeIds 不含 initialCharacterId → 兜底 ids.first ────────────
 
-  testWidgets('characterId=99 不在 activeIds=[1] → 兜底渲染 ids.first 角色，无 ErrorWidget',
-      (tester) async {
-    final fallback = mkCharacter(id: 1, name: '备用角色');
+  testWidgets(
+    'characterId=99 不在 activeIds=[1] → 兜底渲染 ids.first 角色，无 ErrorWidget',
+    (tester) async {
+      final fallback = mkCharacter(id: 1, name: '备用角色');
 
-    await tester.binding.setSurfaceSize(const Size(1280, 720));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.binding.setSurfaceSize(const Size(1280, 720));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    // 故意用 characterId=99，但 activeIds 只有 [1]
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          activeCharacterIdsProvider.overrideWith((ref) async => [1]),
-          characterByIdProvider(1).overrideWith((ref) async => fallback),
-        ],
-        child: const MaterialApp(
-          home: CharacterPanelScreen(characterId: 99),
+      // 故意用 characterId=99，但 activeIds 只有 [1]
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            activeCharacterIdsProvider.overrideWith((ref) async => [1]),
+            characterByIdProvider(1).overrideWith((ref) async => fallback),
+          ],
+          child: const MaterialApp(home: CharacterPanelScreen(characterId: 99)),
         ),
-      ),
-    );
-    await tester.pump();
-    await tester.pump();
-    await tester.pump();
-    await tester.pump();
+      );
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
 
-    // effectiveId = ids.first = 1 → 备用角色名字渲染
-    expect(find.text('备用角色'), findsOneWidget);
-    // 兜底路径不产生 ErrorWidget
-    expect(find.byType(ErrorWidget), findsNothing);
-  });
+      // effectiveId = ids.first = 1 → 备用角色名字渲染
+      expect(find.text('备用角色'), findsOneWidget);
+      // 兜底路径不产生 ErrorWidget
+      expect(find.byType(ErrorWidget), findsNothing);
+    },
+  );
 
   // ── 用例 C：cultivationProgressToNext=0 → 防除零，value=0.0 ──────────────
 
-  testWidgets('主修 cultivationProgressToNext=0 → 进度条 value=0.0，不产生 NaN',
-      (tester) async {
+  testWidgets('主修 cultivationProgressToNext=0 → 进度条 value=0.0，不产生 NaN', (
+    tester,
+  ) async {
     final character = mkCharacter(id: 1, mainTechniqueId: 20);
     final main = mkTechnique(
       id: 20,
@@ -220,18 +221,16 @@ void main() {
 
     await pumpPanel(tester, character: character, techniques: {20: main});
 
-    final row = tester.widget<StageProgressRow>(
-      find.byType(StageProgressRow),
-    );
+    final row = tester.widget<StageProgressRow>(find.byType(StageProgressRow));
     // cultivationProgressToNext==0 → 防除零分支 → ratio=0.0，非 NaN/异常
     expect(row.ratio, closeTo(0.0, 1e-9));
   });
 
   // ── 用例 D：装备 isLineageHeritage=false 全过滤 → 遗物行空态 ─────────────
 
-  testWidgets(
-      '3 件装备 isLineageHeritage=false → 遗物行走过滤路径，label 存在且值为「无」',
-      (tester) async {
+  testWidgets('3 件装备 isLineageHeritage=false → 遗物行走过滤路径，label 存在且值为「无」', (
+    tester,
+  ) async {
     // master 和 disciple 有名字，确保师父/徒弟行不显示「无」，
     // 让「无」唯一来源是遗物行（集合过滤自洽验证）
     final master = mkCharacter(
@@ -289,23 +288,25 @@ void main() {
 
   // ── 用例 E：满修炼度 progress=toNext → value clamped 1.0 ─────────────────
 
-  testWidgets('主修 cultivationProgress=cultivationProgressToNext → 进度条 value clamped 1.0',
-      (tester) async {
-    final character = mkCharacter(id: 1, mainTechniqueId: 20);
-    final main = mkTechnique(
-      id: 20,
-      ownerId: 1,
-      role: TechniqueRole.main,
-      cultivationProgress: 300,
-      cultivationProgressToNext: 300,
-    );
+  testWidgets(
+    '主修 cultivationProgress=cultivationProgressToNext → 进度条 value clamped 1.0',
+    (tester) async {
+      final character = mkCharacter(id: 1, mainTechniqueId: 20);
+      final main = mkTechnique(
+        id: 20,
+        ownerId: 1,
+        role: TechniqueRole.main,
+        cultivationProgress: 300,
+        cultivationProgressToNext: 300,
+      );
 
-    await pumpPanel(tester, character: character, techniques: {20: main});
+      await pumpPanel(tester, character: character, techniques: {20: main});
 
-    final row = tester.widget<StageProgressRow>(
-      find.byType(StageProgressRow),
-    );
-    // 300/300 = 1.0，clamp(0.0, 1.0) 仍为 1.0（满修炼度边界自洽）
-    expect(row.ratio, closeTo(1.0, 1e-9));
-  });
+      final row = tester.widget<StageProgressRow>(
+        find.byType(StageProgressRow),
+      );
+      // 300/300 = 1.0，clamp(0.0, 1.0) 仍为 1.0（满修炼度边界自洽）
+      expect(row.ratio, closeTo(1.0, 1e-9));
+    },
+  );
 }

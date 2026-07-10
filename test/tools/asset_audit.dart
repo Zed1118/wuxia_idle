@@ -6,7 +6,14 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/mainline/domain/chapter_assets.dart';
 
-enum AssetCategory { equipment, enemy, portrait, scene, chapterCover, narrative }
+enum AssetCategory {
+  equipment,
+  enemy,
+  portrait,
+  scene,
+  chapterCover,
+  narrative,
+}
 
 class AssetRef {
   final String path;
@@ -44,23 +51,35 @@ List<AssetRef> collectAssetRefs() {
     final ci = s.chapterIndex;
     if (s.stageType == StageType.mainline && ci != null) {
       chapters.add(ci);
-      refs.add(AssetRef(stageNarrativePath(s.id), AssetCategory.narrative, s.id));
+      refs.add(
+        AssetRef(stageNarrativePath(s.id), AssetCategory.narrative, s.id),
+      );
     }
   }
   for (final c in (chapters.toList()..sort())) {
-    refs.add(AssetRef(chapterCoverPath(c), AssetCategory.chapterCover, 'chapter_$c'));
+    refs.add(
+      AssetRef(chapterCoverPath(c), AssetCategory.chapterCover, 'chapter_$c'),
+    );
   }
 
   // 爬塔 floor：敌人 + 场景背景
   for (final f in repo.towerFloors) {
     for (final en in f.enemyTeam) {
       if (en.iconPath.isNotEmpty) {
-        refs.add(AssetRef(en.iconPath, AssetCategory.enemy, 'tower_floor_${f.floorIndex}'));
+        refs.add(
+          AssetRef(
+            en.iconPath,
+            AssetCategory.enemy,
+            'tower_floor_${f.floorIndex}',
+          ),
+        );
       }
     }
     final sb = f.sceneBackgroundPath;
     if (sb != null) {
-      refs.add(AssetRef(sb, AssetCategory.scene, 'tower_floor_${f.floorIndex}'));
+      refs.add(
+        AssetRef(sb, AssetCategory.scene, 'tower_floor_${f.floorIndex}'),
+      );
     }
   }
 
@@ -83,8 +102,9 @@ List<AssetRef> collectAssetRefs() {
 
 /// 缺图路径（去重排序）。
 List<String> missingPaths(List<AssetRef> refs) {
-  final s = refs.map((r) => r.path).where((p) => !assetExists(p)).toSet().toList()
-    ..sort();
+  final s =
+      refs.map((r) => r.path).where((p) => !assetExists(p)).toSet().toList()
+        ..sort();
   return s;
 }
 
@@ -100,19 +120,27 @@ String buildReport(List<AssetRef> refs) {
   buf.writeln('| 类别 | 引用(去重) | 存在 | 缺失 |');
   buf.writeln('|---|---|---|---|');
   for (final cat in AssetCategory.values) {
-    final paths =
-        refs.where((r) => r.category == cat).map((r) => r.path).toSet();
+    final paths = refs
+        .where((r) => r.category == cat)
+        .map((r) => r.path)
+        .toSet();
     final miss = paths.where((p) => !assetExists(p)).length;
-    buf.writeln('| ${cat.name} | ${paths.length} | ${paths.length - miss} | $miss |');
+    buf.writeln(
+      '| ${cat.name} | ${paths.length} | ${paths.length - miss} | $miss |',
+    );
   }
   final all = refs.map((r) => r.path).toSet();
   final allMiss = all.where((p) => !assetExists(p)).length;
-  buf.writeln('| **合计** | ${all.length} | ${all.length - allMiss} | $allMiss |');
+  buf.writeln(
+    '| **合计** | ${all.length} | ${all.length - allMiss} | $allMiss |',
+  );
   buf.writeln();
   buf.writeln('## 缺图清单');
   for (final cat in AssetCategory.values) {
     final byPath = <String, List<String>>{};
-    for (final r in refs.where((r) => r.category == cat && !assetExists(r.path))) {
+    for (final r in refs.where(
+      (r) => r.category == cat && !assetExists(r.path),
+    )) {
       byPath.putIfAbsent(r.path, () => []).add(r.sourceId);
     }
     if (byPath.isEmpty) continue;

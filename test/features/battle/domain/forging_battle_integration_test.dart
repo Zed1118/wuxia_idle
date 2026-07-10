@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
@@ -45,58 +44,57 @@ void main() {
     double piercePct = 0.0,
     double lifestealPct = 0.0,
     int startHp = 10000, // <maxHp 时留回血空间,验证吸血真写回 currentHp
-  }) =>
-      BattleCharacter(
-        characterId: charId,
-        name: 'attacker$charId',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 10000,
-        currentHp: startHp,
-        maxInternalForce: 0, // 无内力 → 永远走普攻
-        currentInternalForce: 0,
-        speed: 200, // 比守方快很多，先手多
-        criticalRate: 0.0, // 关闭暴击，伤害确定
-        evasionRate: 0.0,
-        defenseRate: 0.05,
-        totalEquipmentAttack: 800,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: const [normal],
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: 0,
-        slotIndex: 0,
-        forgingPiercePct: piercePct,
-        forgingLifestealPct: lifestealPct,
-      );
+  }) => BattleCharacter(
+    characterId: charId,
+    name: 'attacker$charId',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 10000,
+    currentHp: startHp,
+    maxInternalForce: 0, // 无内力 → 永远走普攻
+    currentInternalForce: 0,
+    speed: 200, // 比守方快很多，先手多
+    criticalRate: 0.0, // 关闭暴击，伤害确定
+    evasionRate: 0.0,
+    defenseRate: 0.05,
+    totalEquipmentAttack: 800,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: const [normal],
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: 0,
+    slotIndex: 0,
+    forgingPiercePct: piercePct,
+    forgingLifestealPct: lifestealPct,
+  );
 
   BattleCharacter defender({required int charId}) => BattleCharacter(
-        characterId: charId,
-        name: 'defender$charId',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 50000, // 高血量，战斗不会太快结束
-        currentHp: 50000,
-        maxInternalForce: 0,
-        currentInternalForce: 0,
-        speed: 50, // 慢，让攻方多拍手
-        criticalRate: 0.0,
-        evasionRate: 0.0,
-        defenseRate: 0.30, // 明显防御率，便于破甲对比
-        totalEquipmentAttack: 100,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: const [normal],
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: 1,
-        slotIndex: 0,
-      );
+    characterId: charId,
+    name: 'defender$charId',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 50000, // 高血量，战斗不会太快结束
+    currentHp: 50000,
+    maxInternalForce: 0,
+    currentInternalForce: 0,
+    speed: 50, // 慢，让攻方多拍手
+    criticalRate: 0.0,
+    evasionRate: 0.0,
+    defenseRate: 0.30, // 明显防御率，便于破甲对比
+    totalEquipmentAttack: 100,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: const [normal],
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: 1,
+    slotIndex: 0,
+  );
 
   // ── 运行战斗若干拍（固定 action 数上限）并返回最终 BattleState ───────────
   BattleState runBattle(
@@ -151,14 +149,17 @@ void main() {
     // 更精确：累计 lifesteal 回血量 = 所有命中 action 的 lifestealHeal 之和。
 
     final lifestealHealed = stateLifesteal.actionLog
-        .where((a) => a.actorId == 1 && (a.attackResult?.lifestealHeal ?? 0) > 0)
+        .where(
+          (a) => a.actorId == 1 && (a.attackResult?.lifestealHeal ?? 0) > 0,
+        )
         .fold<int>(0, (sum, a) => sum + (a.attackResult!.lifestealHeal));
 
     // 主断言：至少有一次命中产生了 lifestealHeal > 0（证明 wiring 已接通）。
     expect(
       lifestealHealed,
       greaterThan(0),
-      reason: '吸血词条接通后，每次命中应产生 lifestealHeal > 0；'
+      reason:
+          '吸血词条接通后，每次命中应产生 lifestealHeal > 0；'
           '当前累计回血=$lifestealHealed；'
           '若=0 说明 calculateResolved 传参未接通（Task 4 未实装）',
     );
@@ -167,15 +168,18 @@ void main() {
     // 无吸血组保持 9500(或受守方攻击更低);吸血组 9500+回血(clamp 10000)。
     // 主断言已证 lifestealHealed>0(命中回血真发生),故吸血组必严格 > 对照组——
     // 这条直接验证「吸血回血真写回 currentHp」(非仅 lifestealHeal 被计算)。
-    final hpNoLifesteal =
-        stateNoLifesteal.leftTeam.firstWhere((c) => c.characterId == 1).currentHp;
-    final hpLifesteal =
-        stateLifesteal.leftTeam.firstWhere((c) => c.characterId == 1).currentHp;
+    final hpNoLifesteal = stateNoLifesteal.leftTeam
+        .firstWhere((c) => c.characterId == 1)
+        .currentHp;
+    final hpLifesteal = stateLifesteal.leftTeam
+        .firstWhere((c) => c.characterId == 1)
+        .currentHp;
 
     expect(
       hpLifesteal,
       greaterThan(hpNoLifesteal),
-      reason: '吸血组攻方 currentHp($hpLifesteal) 应严格 > 无吸血组($hpNoLifesteal):'
+      reason:
+          '吸血组攻方 currentHp($hpLifesteal) 应严格 > 无吸血组($hpNoLifesteal):'
           '攻方初始 9500,吸血命中回血使 currentHp 真回升写回',
     );
   });
@@ -205,17 +209,14 @@ void main() {
     final dmgPierce = totalDmg(statePierce);
 
     // 至少有一次命中，确保场景有效
-    expect(
-      dmgNoPierce,
-      greaterThan(0),
-      reason: '对照组应至少有一次命中造成伤害（场景有效性检查）',
-    );
+    expect(dmgNoPierce, greaterThan(0), reason: '对照组应至少有一次命中造成伤害（场景有效性检查）');
 
     // 主断言：破甲后累计伤害严格高于无破甲
     expect(
       dmgPierce,
       greaterThan(dmgNoPierce),
-      reason: '破甲 20% 使有效防御 0.30→0.10，累计伤害应明显提升；'
+      reason:
+          '破甲 20% 使有效防御 0.30→0.10，累计伤害应明显提升；'
           '无破甲=$dmgNoPierce，破甲=$dmgPierce；'
           '若相等说明 attackerPiercePct 传参未接通（Task 4 未实装）',
     );

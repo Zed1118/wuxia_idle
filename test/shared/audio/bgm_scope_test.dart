@@ -67,8 +67,11 @@ void main() {
 
     await tester.tap(find.text('back'));
     await tester.pumpAndSettle();
-    expect(rec.bgmPlays.last, bgmAssetPath(BgmTrack.mainMenu),
-        reason: 'pop 战斗路由后应切回上一层 scope 的主菜单轨');
+    expect(
+      rec.bgmPlays.last,
+      bgmAssetPath(BgmTrack.mainMenu),
+      reason: 'pop 战斗路由后应切回上一层 scope 的主菜单轨',
+    );
   });
 
   testWidgets('push 无 scope 路由不切轨,pop 也不重播', (tester) async {
@@ -98,7 +101,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('back'));
     await tester.pumpAndSettle();
-    expect(rec.bgmPlays, [bgmAssetPath(BgmTrack.mainMenu)],
-        reason: '无 scope 的子路由进出不该触发任何切轨');
+    expect(rec.bgmPlays, [
+      bgmAssetPath(BgmTrack.mainMenu),
+    ], reason: '无 scope 的子路由进出不该触发任何切轨');
   });
 }

@@ -9,7 +9,10 @@ void main() {
   group('CycleEvolutionConfig', () {
     test('scale_per_cycle 与 cap 参数', () {
       final ce = GameRepository.instance.numbers.cycleEvolution;
-      expect(ce.scalePerCycle, closeTo(0.10, 1e-9)); // 2026-06-26 周目平衡 0.06→0.10
+      expect(
+        ce.scalePerCycle,
+        closeTo(0.10, 1e-9),
+      ); // 2026-06-26 周目平衡 0.06→0.10
       expect(ce.maxCycleMainline, 3);
       expect(ce.maxCycleTower, 2);
       expect(ce.defenseRateCap, closeTo(0.6, 1e-9));
@@ -51,34 +54,37 @@ void main() {
 
       test('cycle=2 主线普通 → {yuti, zhenqi}（2026-06-26 周目平衡加 zhenqi）', () {
         final ce = GameRepository.instance.numbers.cycleEvolution;
-        expect(
-          ce.traitsFor(cycle: 2, isBoss: false, isTower: false),
-          {'yuti', 'zhenqi'},
-        );
+        expect(ce.traitsFor(cycle: 2, isBoss: false, isTower: false), {
+          'yuti',
+          'zhenqi',
+        });
       });
 
       test('cycle=3 主线普通 → {yuti, fanzhen, shipo}', () {
         final ce = GameRepository.instance.numbers.cycleEvolution;
-        expect(
-          ce.traitsFor(cycle: 3, isBoss: false, isTower: false),
-          {'yuti', 'fanzhen', 'shipo'},
-        );
+        expect(ce.traitsFor(cycle: 3, isBoss: false, isTower: false), {
+          'yuti',
+          'fanzhen',
+          'shipo',
+        });
       });
 
       test('cycle=2 爬塔普通 → {yuti, zhenqi}', () {
         final ce = GameRepository.instance.numbers.cycleEvolution;
-        expect(
-          ce.traitsFor(cycle: 2, isBoss: false, isTower: true),
-          {'yuti', 'zhenqi'},
-        );
+        expect(ce.traitsFor(cycle: 2, isBoss: false, isTower: true), {
+          'yuti',
+          'zhenqi',
+        });
       });
 
       test('cycle=2 爬塔 Boss → {yuti, fanzhen, shipo, ningjia}', () {
         final ce = GameRepository.instance.numbers.cycleEvolution;
-        expect(
-          ce.traitsFor(cycle: 2, isBoss: true, isTower: true),
-          {'yuti', 'fanzhen', 'shipo', 'ningjia'},
-        );
+        expect(ce.traitsFor(cycle: 2, isBoss: true, isTower: true), {
+          'yuti',
+          'fanzhen',
+          'shipo',
+          'ningjia',
+        });
       });
 
       test('cycle=0 → 空集', () {
@@ -88,10 +94,7 @@ void main() {
 
       test('未配置的 cycle=3 爬塔普通 → 空集(无对应 entry)', () {
         final ce = GameRepository.instance.numbers.cycleEvolution;
-        expect(
-          ce.traitsFor(cycle: 3, isBoss: false, isTower: true),
-          isEmpty,
-        );
+        expect(ce.traitsFor(cycle: 3, isBoss: false, isTower: true), isEmpty);
       });
     });
   });

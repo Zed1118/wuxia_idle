@@ -36,50 +36,63 @@ void main() {
     test('4 yaml 全加载 + 非 placeholder + paragraphs 非空 + id 对齐', () async {
       for (final id in ids) {
         final c = await NarrativeLoader.load(id, loader: fileLoader);
-        expect(c.isPlaceholder, isFalse,
-            reason: '$id 应有真实 narrative,不走 placeholder');
-        expect(c.paragraphs, isNotEmpty,
-            reason: '$id paragraphs 不应为空');
+        expect(
+          c.isPlaceholder,
+          isFalse,
+          reason: '$id 应有真实 narrative,不走 placeholder',
+        );
+        expect(c.paragraphs, isNotEmpty, reason: '$id paragraphs 不应为空');
         expect(c.id, id, reason: 'yaml id 字段必须等于文件名(不含 .yaml)');
         expect(c.title, isNotNull, reason: '$id 应有 title');
       }
     });
 
-    test('ascension_intro 至少 2 段(AscensionScreen 仪式横幅 take(2) 消费)',
-        () async {
+    test('ascension_intro 至少 2 段(AscensionScreen 仪式横幅 take(2) 消费)', () async {
       final c = await NarrativeLoader.load(
         'ascension_intro',
         loader: fileLoader,
       );
-      expect(c.paragraphs.length, greaterThanOrEqualTo(2),
-          reason: 'AscensionScreen banner 取 paragraphs.take(2) 显示,'
-              '< 2 段时第二行空白');
+      expect(
+        c.paragraphs.length,
+        greaterThanOrEqualTo(2),
+        reason:
+            'AscensionScreen banner 取 paragraphs.take(2) 显示,'
+            '< 2 段时第二行空白',
+      );
     });
 
-    test('ascension_complete 至少 3 段(NarrativeReaderScreen 翻页体验)',
-        () async {
+    test('ascension_complete 至少 3 段(NarrativeReaderScreen 翻页体验)', () async {
       final c = await NarrativeLoader.load(
         'ascension_complete',
         loader: fileLoader,
       );
-      expect(c.paragraphs.length, greaterThanOrEqualTo(3),
-          reason: 'complete narrative 走 NarrativeReaderScreen 翻页 ≥3 段才有'
-              '「继续」按钮的仪式感');
+      expect(
+        c.paragraphs.length,
+        greaterThanOrEqualTo(3),
+        reason:
+            'complete narrative 走 NarrativeReaderScreen 翻页 ≥3 段才有'
+            '「继续」按钮的仪式感',
+      );
     });
 
-    test('ascension_lineage_chant 至少 3 段 + Tier wuSheng 风格梯度词均匀',
-        () async {
+    test('ascension_lineage_chant 至少 3 段 + Tier wuSheng 风格梯度词均匀', () async {
       final c = await NarrativeLoader.load(
         'ascension_lineage_chant',
         loader: fileLoader,
       );
-      expect(c.paragraphs.length, greaterThanOrEqualTo(3),
-          reason: 'P5+ 多代续灯 narrative · 太祖→师父→我→新弟子三代弧 ≥3 段');
+      expect(
+        c.paragraphs.length,
+        greaterThanOrEqualTo(3),
+        reason: 'P5+ 多代续灯 narrative · 太祖→师父→我→新弟子三代弧 ≥3 段',
+      );
       // Tier wuSheng 4 风格梯度词应各至少 1 处命中(memory feedback_user_offline_autonomous)
       final fullText = c.paragraphs.join('\n');
       for (final word in const ['湛然', '寂照', '圆融', '化机']) {
-        expect(fullText.contains(word), isTrue,
-            reason: 'Tier wuSheng 风格词「$word」应在 narrative 中至少出现 1 次(均匀分布)');
+        expect(
+          fullText.contains(word),
+          isTrue,
+          reason: 'Tier wuSheng 风格词「$word」应在 narrative 中至少出现 1 次(均匀分布)',
+        );
       }
     });
   });

@@ -9,10 +9,8 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/stage_progress_row.dart';
 /// 当前/下一阶/进度三段文案的各种组合。
 void main() {
   Widget wrap(Widget child) => MaterialApp(
-        home: Scaffold(
-          body: SizedBox(width: 400, child: child),
-        ),
-      );
+    home: Scaffold(body: SizedBox(width: 400, child: child)),
+  );
 
   Future<void> pump(WidgetTester tester, Widget child) async {
     await tester.binding.setSurfaceSize(const Size(800, 600));
@@ -20,8 +18,7 @@ void main() {
     await tester.pumpWidget(wrap(child));
   }
 
-  testWidgets('五要素全渲染：标题/阶段名/进度条/当前效果/下一阶/标记',
-      (tester) async {
+  testWidgets('五要素全渲染：标题/阶段名/进度条/当前效果/下一阶/标记', (tester) async {
     await pump(
       tester,
       const StageProgressRow(
@@ -44,15 +41,10 @@ void main() {
     expect(find.text('人剑合一'), findsOneWidget);
   });
 
-  testWidgets('stageName==null → 残页式退化：无阶段名，仍有标题+进度条',
-      (tester) async {
+  testWidgets('stageName==null → 残页式退化：无阶段名，仍有标题+进度条', (tester) async {
     await pump(
       tester,
-      const StageProgressRow(
-        title: '裂石掌谱',
-        ratio: 0.4,
-        tag: '爬塔·第5层',
-      ),
+      const StageProgressRow(title: '裂石掌谱', ratio: 0.4, tag: '爬塔·第5层'),
     );
 
     expect(find.text('裂石掌谱'), findsOneWidget);
@@ -63,8 +55,7 @@ void main() {
     expect(find.text('伤害 +20%'), findsNothing);
   });
 
-  testWidgets('title==null（卡内子段）→ 阶段名领头，无重复实体名',
-      (tester) async {
+  testWidgets('title==null（卡内子段）→ 阶段名领头，无重复实体名', (tester) async {
     await pump(
       tester,
       const StageProgressRow(
@@ -82,8 +73,7 @@ void main() {
     expect(find.text('下一阶 ×2.50'), findsOneWidget);
   });
 
-  testWidgets('最高阶：nextEffect=已至极境（金字），无 progressText',
-      (tester) async {
+  testWidgets('最高阶：nextEffect=已至极境（金字），无 progressText', (tester) async {
     await pump(
       tester,
       const StageProgressRow(
@@ -124,11 +114,7 @@ void main() {
     var tapped = false;
     await pump(
       tester,
-      StageProgressRow(
-        title: '点我',
-        ratio: 0.0,
-        onTap: () => tapped = true,
-      ),
+      StageProgressRow(title: '点我', ratio: 0.0, onTap: () => tapped = true),
     );
 
     await tester.tap(find.byType(StageProgressRow));

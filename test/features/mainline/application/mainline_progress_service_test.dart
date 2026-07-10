@@ -38,20 +38,24 @@ void main() {
   });
 
   group('getOrCreate', () {
-    test('首次调用 → 建一行 + 默认 currentChapterIndex=1 + 空 cleared 列表',
-        () async {
-      final p = await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+    test('首次调用 → 建一行 + 默认 currentChapterIndex=1 + 空 cleared 列表', () async {
+      final p = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       expect(p.saveDataId, 1);
       expect(p.currentChapterIndex, 1);
       expect(p.clearedStageIds, isEmpty);
       expect(p.clearedAt, isEmpty);
-      expect(p.id, isNot(Isar.autoIncrement),
-          reason: 'put 后应分配真实 id');
+      expect(p.id, isNot(Isar.autoIncrement), reason: 'put 后应分配真实 id');
     });
 
     test('二次调用同 saveDataId → 复用同一行（id 不变 + 字段一致）', () async {
-      final p1 = await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
-      final p2 = await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      final p1 = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
+      final p2 = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       expect(p2.id, p1.id);
       expect(
         await IsarSetup.instance.mainlineProgress.count(),
@@ -63,7 +67,9 @@ void main() {
 
   group('availableStages', () {
     test('Ch1 全新进度 → 首关 available + 后续全 locked', () async {
-      final p = await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      final p = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       final entries = MainlineProgressService.availableStages(
         progress: p,
         chapterIndex: 1,
@@ -79,13 +85,15 @@ void main() {
     });
 
     test('Ch1 首关已通 → 01 cleared + 02 available', () async {
-      await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
-      await MainlineProgressService(isar: IsarSetup.instance).recordVictory(
-        stageId: 'stage_01_01',
-        now: DateTime(2026, 5, 11),
-      );
-      final p =
-          await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).recordVictory(stageId: 'stage_01_01', now: DateTime(2026, 5, 11));
+      final p = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       final entries = MainlineProgressService.availableStages(
         progress: p,
         chapterIndex: 1,
@@ -95,15 +103,18 @@ void main() {
     });
 
     test('Ch1 全通（5 关）→ 全部 cleared', () async {
-      await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       for (var i = 1; i <= 5; i++) {
         await MainlineProgressService(isar: IsarSetup.instance).recordVictory(
           stageId: 'stage_01_0$i',
           now: DateTime(2026, 5, 10 + i),
         );
       }
-      final p =
-          await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      final p = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       final entries = MainlineProgressService.availableStages(
         progress: p,
         chapterIndex: 1,
@@ -113,13 +124,15 @@ void main() {
     });
 
     test('Ch2 / Ch3 各自独立解锁链（不会串到 Ch1 的 cleared 集）', () async {
-      await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
-      await MainlineProgressService(isar: IsarSetup.instance).recordVictory(
-        stageId: 'stage_01_01',
-        now: DateTime(2026, 5, 11),
-      );
-      final p =
-          await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).recordVictory(stageId: 'stage_01_01', now: DateTime(2026, 5, 11));
+      final p = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
 
       // Ch2 首关仍 available（与 Ch1 无关）
       final ch2 = MainlineProgressService.availableStages(
@@ -142,47 +155,51 @@ void main() {
 
   group('recordVictory', () {
     test('首通 → append clearedStageIds + clearedAt 同序', () async {
-      await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       final t = DateTime(2026, 5, 11, 14, 30);
-      await MainlineProgressService(isar: IsarSetup.instance).recordVictory(
-        stageId: 'stage_01_01',
-        now: t,
-      );
-      final p =
-          await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).recordVictory(stageId: 'stage_01_01', now: t);
+      final p = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       expect(p.clearedStageIds, ['stage_01_01']);
       expect(p.clearedAt, [t]);
     });
 
     test('重复通关同一 stage → 不重复 append（保留首通时间）', () async {
-      await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       final t1 = DateTime(2026, 5, 11);
       final t2 = DateTime(2026, 5, 12);
-      await MainlineProgressService(isar: IsarSetup.instance).recordVictory(
-        stageId: 'stage_01_01',
-        now: t1,
-      );
-      await MainlineProgressService(isar: IsarSetup.instance).recordVictory(
-        stageId: 'stage_01_01',
-        now: t2,
-      );
-      final p =
-          await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).recordVictory(stageId: 'stage_01_01', now: t1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).recordVictory(stageId: 'stage_01_01', now: t2);
+      final p = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       expect(p.clearedStageIds.length, 1);
       expect(p.clearedAt, [t1], reason: '保留首通时间');
     });
 
     test('未先 getOrCreate 直接 recordVictory → StateError', () async {
       expect(
-        () => MainlineProgressService(isar: IsarSetup.instance).recordVictory(
-          stageId: 'stage_01_01',
-          now: DateTime(2026, 5, 11),
+        () => MainlineProgressService(
+          isar: IsarSetup.instance,
+        ).recordVictory(stageId: 'stage_01_01', now: DateTime(2026, 5, 11)),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('MainlineProgress 未初始化'),
+          ),
         ),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('MainlineProgress 未初始化'),
-        )),
       );
     });
   });
@@ -191,33 +208,36 @@ void main() {
     Future<void> seedSave() async {
       final isar = IsarSetup.instance;
       await isar.writeTxn(() async {
-        await isar.saveDatas.put(SaveData()
-          ..slotId = IsarSetup.currentSlotId
-          ..saveVersion = '0.10.0'
-          ..createdAt = DateTime(2026, 5, 11)
-          ..lastSavedAt = DateTime(2026, 5, 11)
-          ..lastOnlineAt = DateTime(2026, 5, 11)
-          ..tutorialStep = 0);
+        await isar.saveDatas.put(
+          SaveData()
+            ..slotId = IsarSetup.currentSlotId
+            ..saveVersion = '0.10.0'
+            ..createdAt = DateTime(2026, 5, 11)
+            ..lastSavedAt = DateTime(2026, 5, 11)
+            ..lastOnlineAt = DateTime(2026, 5, 11)
+            ..tutorialStep = 0,
+        );
       });
     }
 
-    test('通 stage_01_03 + 注入 tutorialService → SaveData.tutorialStep 递增',
-        () async {
-      await seedSave();
-      final isar = IsarSetup.instance;
-      await MainlineProgressService(isar: isar).getOrCreate(saveDataId: 1);
-      await MainlineProgressService(isar: isar).recordVictory(
-        stageId: 'stage_01_03',
-        now: DateTime(2026, 5, 13),
-        tutorialService: TutorialService(isar),
-      );
+    test(
+      '通 stage_01_03 + 注入 tutorialService → SaveData.tutorialStep 递增',
+      () async {
+        await seedSave();
+        final isar = IsarSetup.instance;
+        await MainlineProgressService(isar: isar).getOrCreate(saveDataId: 1);
+        await MainlineProgressService(isar: isar).recordVictory(
+          stageId: 'stage_01_03',
+          now: DateTime(2026, 5, 13),
+          tutorialService: TutorialService(isar),
+        );
 
-      final tutorialSvc = TutorialService(isar);
-      expect(await tutorialSvc.getCurrentStep(), 3);
-    });
+        final tutorialSvc = TutorialService(isar);
+        expect(await tutorialSvc.getCurrentStep(), 3);
+      },
+    );
 
-    test('通 stage_02_01 + 注入 tutorialService → 非 Ch1 不递增 step',
-        () async {
+    test('通 stage_02_01 + 注入 tutorialService → 非 Ch1 不递增 step', () async {
       await seedSave();
       final isar = IsarSetup.instance;
       await MainlineProgressService(isar: isar).getOrCreate(saveDataId: 1);
@@ -231,74 +251,72 @@ void main() {
       expect(await tutorialSvc.getCurrentStep(), 0);
     });
 
-    test('tutorialService=null(默认)→ recordVictory 不读 SaveData,step 不变',
-        () async {
-      await seedSave();
-      final isar = IsarSetup.instance;
-      await MainlineProgressService(isar: isar).getOrCreate(saveDataId: 1);
-      await MainlineProgressService(isar: isar).recordVictory(
-        stageId: 'stage_01_03',
-        now: DateTime(2026, 5, 11),
-      );
+    test(
+      'tutorialService=null(默认)→ recordVictory 不读 SaveData,step 不变',
+      () async {
+        await seedSave();
+        final isar = IsarSetup.instance;
+        await MainlineProgressService(isar: isar).getOrCreate(saveDataId: 1);
+        await MainlineProgressService(
+          isar: isar,
+        ).recordVictory(stageId: 'stage_01_03', now: DateTime(2026, 5, 11));
 
-      final tutorialSvc = TutorialService(isar);
-      expect(await tutorialSvc.getCurrentStep(), 0,
-          reason: 'tutorialService 未注入时不触发递增(向后兼容)');
-    });
+        final tutorialSvc = TutorialService(isar);
+        expect(
+          await tutorialSvc.getCurrentStep(),
+          0,
+          reason: 'tutorialService 未注入时不触发递增(向后兼容)',
+        );
+      },
+    );
   });
 
   group('chapterCompleted', () {
     test('Ch1 全通（5 关）→ true', () async {
-      await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       for (var i = 1; i <= 5; i++) {
         await MainlineProgressService(isar: IsarSetup.instance).recordVictory(
           stageId: 'stage_01_0$i',
           now: DateTime(2026, 5, 10 + i),
         );
       }
-      final p =
-          await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      final p = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       expect(
-        MainlineProgressService.chapterCompleted(
-          progress: p,
-          chapterIndex: 1,
-        ),
+        MainlineProgressService.chapterCompleted(progress: p, chapterIndex: 1),
         isTrue,
       );
     });
 
     test('Ch1 仅通首关 → false', () async {
-      await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
-      await MainlineProgressService(isar: IsarSetup.instance).recordVictory(
-        stageId: 'stage_01_01',
-        now: DateTime(2026, 5, 11),
-      );
-      final p =
-          await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).recordVictory(stageId: 'stage_01_01', now: DateTime(2026, 5, 11));
+      final p = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       expect(
-        MainlineProgressService.chapterCompleted(
-          progress: p,
-          chapterIndex: 1,
-        ),
+        MainlineProgressService.chapterCompleted(progress: p, chapterIndex: 1),
         isFalse,
       );
     });
 
     test('全新进度 → 任意章节 false', () async {
-      final p =
-          await MainlineProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      final p = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
       expect(
-        MainlineProgressService.chapterCompleted(
-          progress: p,
-          chapterIndex: 1,
-        ),
+        MainlineProgressService.chapterCompleted(progress: p, chapterIndex: 1),
         isFalse,
       );
       expect(
-        MainlineProgressService.chapterCompleted(
-          progress: p,
-          chapterIndex: 3,
-        ),
+        MainlineProgressService.chapterCompleted(progress: p, chapterIndex: 3),
         isFalse,
       );
     });

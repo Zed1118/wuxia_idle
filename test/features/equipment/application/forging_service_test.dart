@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -17,33 +16,33 @@ void main() {
   });
 
   Equipment newEq({int enhanceLevel = 0}) => Equipment.create(
-        defId: 'test',
-        tier: EquipmentTier.haoJiaHuo,
-        slot: EquipmentSlot.weapon,
-        baseAttack: 100,
-        baseHealth: 0,
-        baseSpeed: 10,
-        enhanceLevel: enhanceLevel,
-        obtainedAt: DateTime(2026, 5, 11),
-        obtainedFrom: 'test',
-      );
+    defId: 'test',
+    tier: EquipmentTier.haoJiaHuo,
+    slot: EquipmentSlot.weapon,
+    baseAttack: 100,
+    baseHealth: 0,
+    baseSpeed: 10,
+    enhanceLevel: enhanceLevel,
+    obtainedAt: DateTime(2026, 5, 11),
+    obtainedFrom: 'test',
+  );
 
   EquipmentDef defWith({List<String> candidates = const []}) => EquipmentDef(
-        id: 'test',
-        name: '测试装',
-        tier: EquipmentTier.haoJiaHuo,
-        slot: EquipmentSlot.weapon,
-        baseAttackMin: 100,
-        baseAttackMax: 100,
-        baseHealthMin: 0,
-        baseHealthMax: 0,
-        baseSpeedMin: 10,
-        baseSpeedMax: 10,
-        presetLoreIds: const [],
-        dropSourceTags: const [],
-        iconPath: '',
-        specialSkillCandidates: candidates,
-      );
+    id: 'test',
+    name: '测试装',
+    tier: EquipmentTier.haoJiaHuo,
+    slot: EquipmentSlot.weapon,
+    baseAttackMin: 100,
+    baseAttackMax: 100,
+    baseHealthMin: 0,
+    baseHealthMax: 0,
+    baseSpeedMin: 10,
+    baseSpeedMax: 10,
+    presetLoreIds: const [],
+    dropSourceTags: const [],
+    iconPath: '',
+    specialSkillCandidates: candidates,
+  );
 
   // ────────────────────────────────────────────────────────────────────────────
   // ForgingConfig 解析
@@ -88,11 +87,7 @@ void main() {
     test('+9 时槽 1 锁定，返回空', () {
       final eq = newEq(enhanceLevel: 9);
       expect(
-        ForgingService.availableTypesForSlot(
-          eq: eq,
-          slotIndex: 1,
-          config: cfg,
-        ),
+        ForgingService.availableTypesForSlot(eq: eq, slotIndex: 1, config: cfg),
         isEmpty,
       );
     });
@@ -232,18 +227,21 @@ void main() {
       expect(r, ForgeResult.missingSpecialSkillId);
     });
 
-    test('槽 3 specialSkill 但 def.specialSkillCandidates 为空 → noSpecialSkillCandidates', () {
-      final eq = newEq(enhanceLevel: 19);
-      final r = ForgingService.forge(
-        eq: eq,
-        def: defWith(),
-        slotIndex: 3,
-        type: ForgingSlotType.specialSkill,
-        specialSkillId: 'skill_a',
-        config: cfg,
-      );
-      expect(r, ForgeResult.noSpecialSkillCandidates);
-    });
+    test(
+      '槽 3 specialSkill 但 def.specialSkillCandidates 为空 → noSpecialSkillCandidates',
+      () {
+        final eq = newEq(enhanceLevel: 19);
+        final r = ForgingService.forge(
+          eq: eq,
+          def: defWith(),
+          slotIndex: 3,
+          type: ForgingSlotType.specialSkill,
+          specialSkillId: 'skill_a',
+          config: cfg,
+        );
+        expect(r, ForgeResult.noSpecialSkillCandidates);
+      },
+    );
 
     test('槽 3 specialSkill id 不在 candidates 中 → invalidSpecialSkillId', () {
       final eq = newEq(enhanceLevel: 19);

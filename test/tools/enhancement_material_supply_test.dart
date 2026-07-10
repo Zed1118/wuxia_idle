@@ -114,15 +114,12 @@ _Demand _expectedDemand(EnhancementConfig config, int targetLevel) {
 }
 
 int _penaltyCost(int cost, MaterialPenalty penalty) => switch (penalty) {
-      MaterialPenalty.none => 0,
-      MaterialPenalty.half => cost ~/ 2,
-      MaterialPenalty.full => cost,
-    };
+  MaterialPenalty.none => 0,
+  MaterialPenalty.half => cost ~/ 2,
+  MaterialPenalty.full => cost,
+};
 
-void _writeSummary({
-  required _Supply supply,
-  required List<_Demand> demands,
-}) {
+void _writeSummary({required _Supply supply, required List<_Demand> demands}) {
   final buf = StringBuffer()
     ..writeln('# 强化材料供需模拟 · 2026-06-28')
     ..writeln()

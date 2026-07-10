@@ -18,26 +18,26 @@ class _ConstRng implements Rng {
 
 void main() {
   EquipmentDef def(String id) => EquipmentDef(
-        id: id,
-        name: id,
-        tier: EquipmentTier.xunChang,
-        slot: EquipmentSlot.weapon,
-        baseAttackMin: 1,
-        baseAttackMax: 1,
-        baseHealthMin: 0,
-        baseHealthMax: 0,
-        baseSpeedMin: 0,
-        baseSpeedMax: 0,
-        presetLoreIds: const [],
-        dropSourceTags: const [],
-        iconPath: '',
-      );
+    id: id,
+    name: id,
+    tier: EquipmentTier.xunChang,
+    slot: EquipmentSlot.weapon,
+    baseAttackMin: 1,
+    baseAttackMax: 1,
+    baseHealthMin: 0,
+    baseHealthMax: 0,
+    baseSpeedMin: 0,
+    baseSpeedMax: 0,
+    presetLoreIds: const [],
+    dropSourceTags: const [],
+    iconPath: '',
+  );
 
   DropService svc() => DropService(
-        equipmentDefLookup: def,
-        defaultObtainedFrom: 'T',
-        now: () => DateTime(2026, 6, 24),
-      );
+    equipmentDefLookup: def,
+    defaultObtainedFrom: 'T',
+    now: () => DateTime(2026, 6, 24),
+  );
 
   test('空表返回 null', () {
     expect(svc().rollOneWeighted(const [], _ConstRng(0.0)), isNull);
@@ -56,8 +56,11 @@ void main() {
   test('忽略非 EquipmentDrop 条目', () {
     final table = [
       const ItemDrop(
-          inventoryItemDefId: 'item_x', quantityMin: 1, quantityMax: 1,
-          dropChance: 1.0),
+        inventoryItemDefId: 'item_x',
+        quantityMin: 1,
+        quantityMax: 1,
+        dropChance: 1.0,
+      ),
     ];
     expect(svc().rollOneWeighted(table, _ConstRng(0.0)), isNull);
   });

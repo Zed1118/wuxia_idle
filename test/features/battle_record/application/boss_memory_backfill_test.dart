@@ -22,7 +22,9 @@ void main() {
   });
 
   setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('wuxia_boss_backfill_test_');
+    tempDir = await Directory.systemTemp.createTemp(
+      'wuxia_boss_backfill_test_',
+    );
     await IsarSetup.init(directory: tempDir, inspector: false);
   });
 
@@ -98,34 +100,39 @@ void main() {
       expect(all.first.totalDamage, 18000, reason: '首胜快照冻结不变');
     });
 
-    test('塔：highestClearedFloor=10 → 回填 tower_floor_5 + tower_floor_10', () async {
-      final isar = IsarSetup.instance;
-      final saveDataId = IsarSetup.currentSlotId;
+    test(
+      '塔：highestClearedFloor=10 → 回填 tower_floor_5 + tower_floor_10',
+      () async {
+        final isar = IsarSetup.instance;
+        final saveDataId = IsarSetup.currentSlotId;
 
-      // 种 TowerProgress：最高层 10
-      final tp = TowerProgress()
-        ..saveDataId = saveDataId
-        ..highestClearedFloor = 10
-        ..createdAt = DateTime(2026, 1, 1);
-      await isar.writeTxn(() => isar.towerProgress.put(tp));
+        // 种 TowerProgress：最高层 10
+        final tp = TowerProgress()
+          ..saveDataId = saveDataId
+          ..highestClearedFloor = 10
+          ..createdAt = DateTime(2026, 1, 1);
+        await isar.writeTxn(() => isar.towerProgress.put(tp));
 
-      final svc = BossMemoryService(isar: isar);
-      await svc.backfillFromProgress(saveDataId);
+        final svc = BossMemoryService(isar: isar);
+        await svc.backfillFromProgress(saveDataId);
 
-      final all = await svc.allMemories(saveDataId);
-      final towerEntries = all.where((m) => m.source == BossMemorySource.tower).toList();
-      expect(towerEntries, hasLength(2), reason: 'Boss 层 5、10 均 <= 10 应回填');
+        final all = await svc.allMemories(saveDataId);
+        final towerEntries = all
+            .where((m) => m.source == BossMemorySource.tower)
+            .toList();
+        expect(towerEntries, hasLength(2), reason: 'Boss 层 5、10 均 <= 10 应回填');
 
-      final keys = towerEntries.map((m) => m.bossKey).toSet();
-      expect(keys, containsAll(['tower_floor_5', 'tower_floor_10']));
+        final keys = towerEntries.map((m) => m.bossKey).toSet();
+        expect(keys, containsAll(['tower_floor_5', 'tower_floor_10']));
 
-      for (final m in towerEntries) {
-        expect(m.isPreRecord, isTrue);
-        expect(m.firstClearedAt, isNull, reason: '塔回填无精确时间');
-        expect(m.defeatCount, 1);
-        expect(m.totalDamage, isNull);
-      }
-    });
+        for (final m in towerEntries) {
+          expect(m.isPreRecord, isTrue);
+          expect(m.firstClearedAt, isNull, reason: '塔回填无精确时间');
+          expect(m.defeatCount, 1);
+          expect(m.totalDamage, isNull);
+        }
+      },
+    );
 
     test('幂等：回填多次不重复建行', () async {
       final isar = IsarSetup.instance;

@@ -7,12 +7,14 @@ void main() {
   tearDown(GameRepository.resetForTest);
 
   Future<String> Function(String) makeStagesLoader(
-      String Function(String original) transform) {
+    String Function(String original) transform,
+  ) {
     Future<String> loader(String path) async {
       final original = await File(path).readAsString();
       if (path == 'data/stages.yaml') return transform(original);
       return original;
     }
+
     return loader;
   }
 
@@ -21,32 +23,47 @@ void main() {
     expect(GameRepository.isLoaded, true);
   });
 
-  test('① 非 Boss 关配 dropSkillManualId → 抛 StateError(isBossStage=false)', () async {
-    // stage_01_01 非 Boss · '  - id: stage_01_01' 是 unique 锚
-    // (F5/2026-06-23 删 dropEquipmentDefIds 占位字段后改锚 stage 声明行)。
-    String inject(String s) => s.replaceFirst(
-          '  - id: stage_01_01\n',
-          '  - id: stage_01_01\n    dropSkillManualId: skill_qingshan_qingfeng\n',
-        );
-    expect(
-      GameRepository.loadAllDefs(loader: makeStagesLoader(inject)),
-      throwsA(isA<StateError>()
-          .having((e) => e.message, 'message', contains('isBossStage=false'))),
-    );
-  });
+  test(
+    '① 非 Boss 关配 dropSkillManualId → 抛 StateError(isBossStage=false)',
+    () async {
+      // stage_01_01 非 Boss · '  - id: stage_01_01' 是 unique 锚
+      // (F5/2026-06-23 删 dropEquipmentDefIds 占位字段后改锚 stage 声明行)。
+      String inject(String s) => s.replaceFirst(
+        '  - id: stage_01_01\n',
+        '  - id: stage_01_01\n    dropSkillManualId: skill_qingshan_qingfeng\n',
+      );
+      expect(
+        GameRepository.loadAllDefs(loader: makeStagesLoader(inject)),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('isBossStage=false'),
+          ),
+        ),
+      );
+    },
+  );
 
-  test('② Boss 关配不存在的 dropSkillManualId → 抛 StateError(id 未在 skills.yaml)',
-      () async {
-    // stage_01_05 是 Boss(candidateRef: bamboo_swordsman unique 锚),旁注入幽灵 skill id
-    // stage_01_05 现配 dropSkillManualId: skill_xie_yu_chuan_lian(波B);替为幽灵 id。
-    String inject(String s) => s.replaceFirst(
-          'dropSkillManualId: skill_xie_yu_chuan_lian',
-          'dropSkillManualId: ghost_skill_not_loaded',
-        );
-    expect(
-      GameRepository.loadAllDefs(loader: makeStagesLoader(inject)),
-      throwsA(isA<StateError>().having(
-          (e) => e.message, 'message', contains('ghost_skill_not_loaded'))),
-    );
-  });
+  test(
+    '② Boss 关配不存在的 dropSkillManualId → 抛 StateError(id 未在 skills.yaml)',
+    () async {
+      // stage_01_05 是 Boss(candidateRef: bamboo_swordsman unique 锚),旁注入幽灵 skill id
+      // stage_01_05 现配 dropSkillManualId: skill_xie_yu_chuan_lian(波B);替为幽灵 id。
+      String inject(String s) => s.replaceFirst(
+        'dropSkillManualId: skill_xie_yu_chuan_lian',
+        'dropSkillManualId: ghost_skill_not_loaded',
+      );
+      expect(
+        GameRepository.loadAllDefs(loader: makeStagesLoader(inject)),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('ghost_skill_not_loaded'),
+          ),
+        ),
+      );
+    },
+  );
 }

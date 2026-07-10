@@ -92,12 +92,14 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        wrapWithTrigger((ctx) => openSkillSlotPicker(
-              ctx,
-              candidates: [skillUnlocked, skillLocked],
-              currentRealmTier: lowRealm,
-              equippedId: null,
-            )),
+        wrapWithTrigger(
+          (ctx) => openSkillSlotPicker(
+            ctx,
+            candidates: [skillUnlocked, skillLocked],
+            currentRealmTier: lowRealm,
+            equippedId: null,
+          ),
+        ),
       );
 
       await tester.tap(find.text('open'));
@@ -112,21 +114,20 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        wrapWithTrigger((ctx) => openSkillSlotPicker(
-              ctx,
-              candidates: [skillUnlocked, skillLocked],
-              currentRealmTier: lowRealm,
-              equippedId: null,
-            )),
+        wrapWithTrigger(
+          (ctx) => openSkillSlotPicker(
+            ctx,
+            candidates: [skillUnlocked, skillLocked],
+            currentRealmTier: lowRealm,
+            equippedId: null,
+          ),
+        ),
       );
 
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.textContaining(UiStrings.cangjingTierLocked),
-        findsOneWidget,
-      );
+      expect(find.textContaining(UiStrings.cangjingTierLocked), findsOneWidget);
     });
 
     testWidgets('点高 tier 锁招 → sheet 不关闭（无返回值）', (tester) async {
@@ -205,12 +206,14 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        wrapWithTrigger((ctx) => openSkillSlotPicker(
-              ctx,
-              candidates: [skillUnlocked, skillLocked],
-              currentRealmTier: lowRealm,
-              equippedId: skillUnlocked.id,
-            )),
+        wrapWithTrigger(
+          (ctx) => openSkillSlotPicker(
+            ctx,
+            candidates: [skillUnlocked, skillLocked],
+            currentRealmTier: lowRealm,
+            equippedId: skillUnlocked.id,
+          ),
+        ),
       );
 
       await tester.tap(find.text('open'));
@@ -227,12 +230,14 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        wrapWithTrigger((ctx) => openSkillSlotPicker(
-              ctx,
-              candidates: [skillUnlocked, skillLocked],
-              currentRealmTier: lowRealm,
-              equippedId: null,
-            )),
+        wrapWithTrigger(
+          (ctx) => openSkillSlotPicker(
+            ctx,
+            candidates: [skillUnlocked, skillLocked],
+            currentRealmTier: lowRealm,
+            equippedId: null,
+          ),
+        ),
       );
 
       await tester.tap(find.text('open'));
@@ -247,12 +252,14 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        wrapWithTrigger((ctx) => openSkillSlotPicker(
-              ctx,
-              candidates: [skillInterrupt],
-              currentRealmTier: lowRealm,
-              equippedId: null,
-            )),
+        wrapWithTrigger(
+          (ctx) => openSkillSlotPicker(
+            ctx,
+            candidates: [skillInterrupt],
+            currentRealmTier: lowRealm,
+            equippedId: null,
+          ),
+        ),
       );
 
       await tester.tap(find.text('open'));
@@ -269,18 +276,19 @@ void main() {
       );
     });
 
-    testWidgets('破防技 subtitle 显示「破防」特性标（与 canInterrupt 模式一致）',
-        (tester) async {
+    testWidgets('破防技 subtitle 显示「破防」特性标（与 canInterrupt 模式一致）', (tester) async {
       await tester.binding.setSurfaceSize(const Size(800, 1200));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        wrapWithTrigger((ctx) => openSkillSlotPicker(
-              ctx,
-              candidates: [skillDefenseBreak],
-              currentRealmTier: lowRealm,
-              equippedId: null,
-            )),
+        wrapWithTrigger(
+          (ctx) => openSkillSlotPicker(
+            ctx,
+            candidates: [skillDefenseBreak],
+            currentRealmTier: lowRealm,
+            equippedId: null,
+          ),
+        ),
       );
 
       await tester.tap(find.text('open'));
@@ -298,12 +306,14 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
-        wrapWithTrigger((ctx) => openSkillSlotPicker(
-              ctx,
-              candidates: [skillUnlocked],
-              currentRealmTier: lowRealm,
-              equippedId: null,
-            )),
+        wrapWithTrigger(
+          (ctx) => openSkillSlotPicker(
+            ctx,
+            candidates: [skillUnlocked],
+            currentRealmTier: lowRealm,
+            equippedId: null,
+          ),
+        ),
       );
 
       await tester.tap(find.text('open'));

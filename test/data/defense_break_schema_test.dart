@@ -6,16 +6,28 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 void main() {
   test('SkillDef.defenseBreakPct 默认 0、可从 yaml parse', () {
     const d = SkillDef(
-      id: 'x', name: 'x', description: 'x', type: SkillType.powerSkill,
-      powerMultiplier: 1000, internalForceCost: 50, cooldownTurns: 2,
-      requiresManualTrigger: false, visualEffect: 'none',
+      id: 'x',
+      name: 'x',
+      description: 'x',
+      type: SkillType.powerSkill,
+      powerMultiplier: 1000,
+      internalForceCost: 50,
+      cooldownTurns: 2,
+      requiresManualTrigger: false,
+      visualEffect: 'none',
     );
     expect(d.defenseBreakPct, 0.0);
 
     final parsed = SkillDef.fromYaml({
-      'id': 'y', 'name': 'y', 'description': 'y', 'type': 'powerSkill',
-      'powerMultiplier': 1000, 'internalForceCost': 50, 'cooldownTurns': 2,
-      'requiresManualTrigger': false, 'visualEffect': 'none',
+      'id': 'y',
+      'name': 'y',
+      'description': 'y',
+      'type': 'powerSkill',
+      'powerMultiplier': 1000,
+      'internalForceCost': 50,
+      'cooldownTurns': 2,
+      'requiresManualTrigger': false,
+      'visualEffect': 'none',
       'defenseBreakPct': 0.3,
     });
     expect(parsed.defenseBreakPct, 0.3);

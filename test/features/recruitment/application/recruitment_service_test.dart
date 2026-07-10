@@ -44,13 +44,15 @@ void main() {
   Future<void> seedSave({bool offered = false}) async {
     final isar = IsarSetup.instance;
     await isar.writeTxn(() async {
-      await isar.saveDatas.put(SaveData()
-        ..slotId = IsarSetup.currentSlotId
-        ..saveVersion = '0.12.0'
-        ..createdAt = DateTime.now()
-        ..lastSavedAt = DateTime.now()
-        ..lastOnlineAt = DateTime.now()
-        ..recruitmentOffered = offered);
+      await isar.saveDatas.put(
+        SaveData()
+          ..slotId = IsarSetup.currentSlotId
+          ..saveVersion = '0.12.0'
+          ..createdAt = DateTime.now()
+          ..lastSavedAt = DateTime.now()
+          ..lastOnlineAt = DateTime.now()
+          ..recruitmentOffered = offered,
+      );
     });
   }
 
@@ -80,8 +82,7 @@ void main() {
     await isar.writeTxn(() => svc.declineRecruitment());
 
     expect(await svc.hasOffered(), true);
-    expect(await isar.characters.count(), 0,
-        reason: '谢绝路径不应创任何 Character');
+    expect(await isar.characters.count(), 0, reason: '谢绝路径不应创任何 Character');
   });
 
   test('declineRecruitment 幂等:offered=true 时再调 no-op', () async {
@@ -94,33 +95,44 @@ void main() {
     expect(await svc.hasOffered(), true);
   });
 
-  test('acceptCandidate 创建 Character + recruitedDiscipleIds 追加 + markOffered',
-      () async {
-    await seedSave();
-    final isar = IsarSetup.instance;
-    final svc = RecruitmentService(isar);
+  test(
+    'acceptCandidate 创建 Character + recruitedDiscipleIds 追加 + markOffered',
+    () async {
+      await seedSave();
+      final isar = IsarSetup.instance;
+      final svc = RecruitmentService(isar);
 
-    final newId = await isar.writeTxn(
-      () => svc.acceptCandidate('candidate_a'),
-    );
+      final newId = await isar.writeTxn(
+        () => svc.acceptCandidate('candidate_a'),
+      );
 
-    expect(newId, greaterThan(0));
-    expect(await svc.hasOffered(), true);
-    expect(await svc.getRecruitedIds(), [newId]);
+      expect(newId, greaterThan(0));
+      expect(await svc.hasOffered(), true);
+      expect(await svc.getRecruitedIds(), [newId]);
 
-    final c = await isar.characters.get(newId);
-    expect(c, isNotNull);
-    expect(c!.name, '云寒青',
-        reason: 'D4.b NPC name 来源 recruit_candidates.yaml');
-    expect(c.isFounder, false);
-    expect(c.isActive, false,
-        reason: 'D1.b inactive 池语义:isActive=false + 不入 activeCharacterIds');
+      final c = await isar.characters.get(newId);
+      expect(c, isNotNull);
+      expect(
+        c!.name,
+        '云寒青',
+        reason: 'D4.b NPC name 来源 recruit_candidates.yaml',
+      );
+      expect(c.isFounder, false);
+      expect(
+        c.isActive,
+        false,
+        reason: 'D1.b inactive 池语义:isActive=false + 不入 activeCharacterIds',
+      );
 
-    // 校验 activeCharacterIds 仍为空(D1.b 决议的关键)
-    final save = await isar.saveDatas.get(0);
-    expect(save!.activeCharacterIds, isEmpty,
-        reason: 'active 上限不动 · 红线 demo_max_characters: 3 不破');
-  });
+      // 校验 activeCharacterIds 仍为空(D1.b 决议的关键)
+      final save = await isar.saveDatas.get(0);
+      expect(
+        save!.activeCharacterIds,
+        isEmpty,
+        reason: 'active 上限不动 · 红线 demo_max_characters: 3 不破',
+      );
+    },
+  );
 
   test('acceptCandidate 幂等:offered=true 时返回 -1 no-op', () async {
     await seedSave(offered: true);
@@ -132,8 +144,11 @@ void main() {
     );
 
     expect(result, -1);
-    expect(await isar.characters.count(), 0,
-        reason: 'offered=true 路径 acceptCandidate 不应创 Character');
+    expect(
+      await isar.characters.count(),
+      0,
+      reason: 'offered=true 路径 acceptCandidate 不应创 Character',
+    );
   });
 
   test('acceptCandidate candidateId 不在 yaml → 抛 StateError', () async {
@@ -143,11 +158,13 @@ void main() {
 
     expect(
       () => isar.writeTxn(() => svc.acceptCandidate('not_exist_candidate')),
-      throwsA(isA<StateError>().having(
-        (e) => e.message,
-        'message',
-        contains('未在 recruit_candidates.yaml'),
-      )),
+      throwsA(
+        isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('未在 recruit_candidates.yaml'),
+        ),
+      ),
     );
   });
 }

@@ -35,8 +35,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          reputationsForCurrentPlayerProvider
-              .overrideWith((ref) async => const <Reputation>[]),
+          reputationsForCurrentPlayerProvider.overrideWith(
+            (ref) async => const <Reputation>[],
+          ),
         ],
         child: const MaterialApp(home: ReputationPanelScreen()),
       ),
@@ -47,18 +48,21 @@ void main() {
     expect(find.text(UiStrings.reputationPanelEmpty), findsOneWidget);
   });
 
-  testWidgets('R4.2 3 门派 reputation 渲染 3 row + 0 chip(svc null fallback)',
-      (tester) async {
+  testWidgets('R4.2 3 门派 reputation 渲染 3 row + 0 chip(svc null fallback)', (
+    tester,
+  ) async {
     // 注:reputationServiceProvider 不 override → svc==null → panel 走 empty 分支
     // (走 emptyState),因 svc 为 null 时 list 即使非空也显 empty。本测断 fallback 分支。
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          reputationsForCurrentPlayerProvider.overrideWith((ref) async => [
-                mkRep(id: 1, factionId: 'shaolin', value: 50),
-                mkRep(id: 2, factionId: 'wudang', value: -30),
-                mkRep(id: 3, factionId: 'jiaoMen', value: -80),
-              ]),
+          reputationsForCurrentPlayerProvider.overrideWith(
+            (ref) async => [
+              mkRep(id: 1, factionId: 'shaolin', value: 50),
+              mkRep(id: 2, factionId: 'wudang', value: -30),
+              mkRep(id: 3, factionId: 'jiaoMen', value: -80),
+            ],
+          ),
         ],
         child: const MaterialApp(home: ReputationPanelScreen()),
       ),
@@ -69,8 +73,9 @@ void main() {
     expect(find.text(UiStrings.reputationPanelEmpty), findsOneWidget);
   });
 
-  testWidgets('R4.3 ReputationTierChip 7 阶 label · xueTu/yiLiu/wuSheng 三阶',
-      (tester) async {
+  testWidgets('R4.3 ReputationTierChip 7 阶 label · xueTu/yiLiu/wuSheng 三阶', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -84,13 +89,20 @@ void main() {
         ),
       ),
     );
-    expect(find.text('${UiStrings.reputationTierXueTu} · -100'), findsOneWidget);
+    expect(
+      find.text('${UiStrings.reputationTierXueTu} · -100'),
+      findsOneWidget,
+    );
     expect(find.text('${UiStrings.reputationTierYiLiu} · 10'), findsOneWidget);
-    expect(find.text('${UiStrings.reputationTierWuSheng} · 100'), findsOneWidget);
+    expect(
+      find.text('${UiStrings.reputationTierWuSheng} · 100'),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('R4.4 ReputationTierChip 未知 tier 走 erLiu fallback',
-      (tester) async {
+  testWidgets('R4.4 ReputationTierChip 未知 tier 走 erLiu fallback', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(

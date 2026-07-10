@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -14,12 +13,13 @@ void main() {
   });
   tearDownAll(GameRepository.resetForTest);
 
-  DropService svc() => DropService(
-        equipmentDefLookup: GameRepository.instance.getEquipment,
-      );
+  DropService svc() =>
+      DropService(equipmentDefLookup: GameRepository.instance.getEquipment);
 
   List<dynamic> poolOf(EquipmentTier t) => GameRepository
-      .instance.equipmentDefs.values
+      .instance
+      .equipmentDefs
+      .values
       .where((e) => e.tier == t)
       .toList();
 
@@ -38,7 +38,10 @@ void main() {
     expect(eq, isNotNull);
     expect(eq!.tier, EquipmentTier.xiangYang); // 寻常货 +1
     // 该装备确实属于像样货阶池。
-    expect(poolOf(EquipmentTier.xiangYang).any((d) => d.id == eq.defId), isTrue);
+    expect(
+      poolOf(EquipmentTier.xiangYang).any((d) => d.id == eq.defId),
+      isTrue,
+    );
   });
 
   test('全 chance=0 → 不掉(null)', () {
@@ -67,19 +70,21 @@ void main() {
         .toList(growable: false);
     expect(
       svc().rollRareBonus(
-          baseTier: EquipmentTier.xunChang,
-          config: config,
-          rng: DefaultRng(seed: 3),
-          poolForTier: pool,
-          cycle: 1),
-      isNull,
-    );
-    final ng = svc().rollRareBonus(
         baseTier: EquipmentTier.xunChang,
         config: config,
         rng: DefaultRng(seed: 3),
         poolForTier: pool,
-        cycle: 2);
+        cycle: 1,
+      ),
+      isNull,
+    );
+    final ng = svc().rollRareBonus(
+      baseTier: EquipmentTier.xunChang,
+      config: config,
+      rng: DefaultRng(seed: 3),
+      poolForTier: pool,
+      cycle: 2,
+    );
     expect(ng, isNotNull);
     expect(ng!.tier, EquipmentTier.xiangYang);
   });
@@ -90,12 +95,21 @@ void main() {
     expect(n.rareBonusDrop.tiers, hasLength(2));
     expect(n.rareBonusDrop.tiers[0].offset, 1);
     expect(n.rareBonusDrop.tiers[0].chance, closeTo(0.05, 1e-9));
-    expect(n.rareBonusDrop.tiers[0].chanceNgPlus, closeTo(0.08, 1e-9),
-        reason: '高 1 阶二周目 8%');
+    expect(
+      n.rareBonusDrop.tiers[0].chanceNgPlus,
+      closeTo(0.08, 1e-9),
+      reason: '高 1 阶二周目 8%',
+    );
     expect(n.rareBonusDrop.tiers[1].chance, closeTo(0.015, 1e-9));
-    expect(n.rareBonusDrop.tiers[1].chanceNgPlus, closeTo(0.03, 1e-9),
-        reason: '高 2 阶二周目 3%');
-    expect(n.cycleDropBonus.materialQtyMultNgPlus, closeTo(1.5, 1e-9),
-        reason: '二周目材料数量 ×1.5');
+    expect(
+      n.rareBonusDrop.tiers[1].chanceNgPlus,
+      closeTo(0.03, 1e-9),
+      reason: '高 2 阶二周目 3%',
+    );
+    expect(
+      n.cycleDropBonus.materialQtyMultNgPlus,
+      closeTo(1.5, 1e-9),
+      reason: '二周目材料数量 ×1.5',
+    );
   });
 }

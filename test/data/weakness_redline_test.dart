@@ -11,46 +11,48 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
 
 TowerFloorDef _towerFloor(int floorIndex, List<EnemyDef> team) => TowerFloorDef(
-      floorIndex: floorIndex,
-      requiredRealm: RealmTier.erLiu,
-      enemyTeam: team,
-    );
+  floorIndex: floorIndex,
+  requiredRealm: RealmTier.erLiu,
+  enemyTeam: team,
+);
 
 EnemyDef _enemy({Map<TechniqueSchool, double>? mult}) => EnemyDef(
-      id: 'boss_x',
-      name: '测试Boss',
-      realmTier: RealmTier.erLiu,
-      realmLayer: RealmLayer.qiMeng,
-      school: TechniqueSchool.gangMeng,
-      baseHp: 5000,
-      baseAttack: 200,
-      baseSpeed: 50,
-      skillIds: const ['skill_normal'],
-      iconPath: 'x.png',
-      isBoss: true,
-      schoolDamageTakenMult: mult,
-    );
+  id: 'boss_x',
+  name: '测试Boss',
+  realmTier: RealmTier.erLiu,
+  realmLayer: RealmLayer.qiMeng,
+  school: TechniqueSchool.gangMeng,
+  baseHp: 5000,
+  baseAttack: 200,
+  baseSpeed: 50,
+  skillIds: const ['skill_normal'],
+  iconPath: 'x.png',
+  isBoss: true,
+  schoolDamageTakenMult: mult,
+);
 
 StageDef _stage(String id, List<EnemyDef> team) => StageDef(
-      id: id,
-      name: '测试关',
-      stageType: StageType.mainline,
-      requiredRealm: RealmTier.erLiu,
-      enemyTeam: team,
-      isBossStage: false,
-      baseExpReward: 100,
-      difficultyMultiplier: 1.0,
-    );
+  id: id,
+  name: '测试关',
+  stageType: StageType.mainline,
+  requiredRealm: RealmTier.erLiu,
+  enemyTeam: team,
+  isBossStage: false,
+  baseExpReward: 100,
+  difficultyMultiplier: 1.0,
+);
 
 void main() {
   group('GameRepository.enforceWeaknessRedLines(批二②)', () {
     test('值在 [0.5, 2.0] 内 → 不抛', () {
       final stages = {
         's1': _stage('s1', [
-          _enemy(mult: {
-            TechniqueSchool.lingQiao: 1.25,
-            TechniqueSchool.yinRou: 0.75,
-          }),
+          _enemy(
+            mult: {
+              TechniqueSchool.lingQiao: 1.25,
+              TechniqueSchool.yinRou: 0.75,
+            },
+          ),
         ]),
       };
       expect(
@@ -67,10 +69,12 @@ void main() {
       };
       expect(
         () => GameRepository.enforceWeaknessRedLines(stages, 0.5, 2.0),
-        throwsA(isA<StateError>()
-            .having((e) => e.message, 'message', contains('boss_x'))
-            .having((e) => e.message, 'message', contains('lingQiao'))
-            .having((e) => e.message, 'message', contains('2.5'))),
+        throwsA(
+          isA<StateError>()
+              .having((e) => e.message, 'message', contains('boss_x'))
+              .having((e) => e.message, 'message', contains('lingQiao'))
+              .having((e) => e.message, 'message', contains('2.5')),
+        ),
       );
     });
 
@@ -100,14 +104,17 @@ void main() {
   group('GameRepository.enforceWeaknessRedLines — tower floors(批二②)', () {
     test('塔层 boss 乘子在 [0.5, 2.0] → 不抛', () {
       final floor = _towerFloor(10, [
-        _enemy(mult: {
-          TechniqueSchool.lingQiao: 1.5,
-          TechniqueSchool.yinRou: 0.75,
-        }),
+        _enemy(
+          mult: {TechniqueSchool.lingQiao: 1.5, TechniqueSchool.yinRou: 0.75},
+        ),
       ]);
       expect(
-        () => GameRepository.enforceWeaknessRedLines({}, 0.5, 2.0,
-            towerFloors: [floor]),
+        () => GameRepository.enforceWeaknessRedLines(
+          {},
+          0.5,
+          2.0,
+          towerFloors: [floor],
+        ),
         returnsNormally,
       );
     });
@@ -117,8 +124,12 @@ void main() {
         _enemy(mult: {TechniqueSchool.gangMeng: 2.5}),
       ]);
       expect(
-        () => GameRepository.enforceWeaknessRedLines({}, 0.5, 2.0,
-            towerFloors: [floor]),
+        () => GameRepository.enforceWeaknessRedLines(
+          {},
+          0.5,
+          2.0,
+          towerFloors: [floor],
+        ),
         throwsA(
           isA<StateError>()
               .having((e) => e.message, 'message', contains('boss_x'))
@@ -134,8 +145,12 @@ void main() {
         _enemy(mult: {TechniqueSchool.yinRou: 0.3}),
       ]);
       expect(
-        () => GameRepository.enforceWeaknessRedLines({}, 0.5, 2.0,
-            towerFloors: [floor]),
+        () => GameRepository.enforceWeaknessRedLines(
+          {},
+          0.5,
+          2.0,
+          towerFloors: [floor],
+        ),
         throwsA(isA<StateError>()),
       );
     });
@@ -143,8 +158,12 @@ void main() {
     test('塔层 schoolDamageTakenMult==null 的敌人跳过 → 不抛', () {
       final floor = _towerFloor(3, [_enemy(mult: null)]);
       expect(
-        () => GameRepository.enforceWeaknessRedLines({}, 0.5, 2.0,
-            towerFloors: [floor]),
+        () => GameRepository.enforceWeaknessRedLines(
+          {},
+          0.5,
+          2.0,
+          towerFloors: [floor],
+        ),
         returnsNormally,
       );
     });

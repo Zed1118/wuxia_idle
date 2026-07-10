@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/drop_entry.dart';
@@ -30,7 +29,8 @@ void main() {
 
     final violations = <String>[];
     for (final stage in mainlineStages) {
-      if (stage.dropTable.isEmpty && !stagesNoDropWhitelist.contains(stage.id)) {
+      if (stage.dropTable.isEmpty &&
+          !stagesNoDropWhitelist.contains(stage.id)) {
         violations.add(stage.id);
       }
     }
@@ -38,8 +38,7 @@ void main() {
     expect(
       violations,
       isEmpty,
-      reason:
-          '以下主线关 dropTable 为空，需加白名单注释或补数据：\n${violations.join('\n')}',
+      reason: '以下主线关 dropTable 为空，需加白名单注释或补数据：\n${violations.join('\n')}',
     );
   });
 
@@ -59,8 +58,7 @@ void main() {
     expect(
       violations,
       isEmpty,
-      reason:
-          '以下塔层 dropTable 为空，需加白名单注释或补数据：floors ${violations.join(', ')}',
+      reason: '以下塔层 dropTable 为空，需加白名单注释或补数据：floors ${violations.join(', ')}',
     );
   });
 
@@ -101,7 +99,8 @@ void main() {
       expect(
         violations,
         isEmpty,
-        reason: '以下关卡/塔层存在越阶掉落（超出 requiredRealm + 2）：\n${violations.join('\n')}',
+        reason:
+            '以下关卡/塔层存在越阶掉落（超出 requiredRealm + 2）：\n${violations.join('\n')}',
       );
     },
   );

@@ -144,8 +144,7 @@ void main() {
     var s = makeState(attackerSkill: breakSkill);
     // 确认守方不在蓄力状态。
     expect(defenderOf(s).staggerTicksRemaining, 0);
-    expect(defenderOf(s).chargingSkill, isNull,
-        reason: '守方初始不蓄力');
+    expect(defenderOf(s).chargingSkill, isNull, reason: '守方初始不蓄力');
 
     final rng = Random(42);
     // 推进直到攻方完成第一次命中(守方 HP 下降)。
@@ -155,8 +154,7 @@ void main() {
       s = strategy.tick(s, numbers, rng: rng);
       guard++;
     }
-    expect(defenderOf(s).currentHp, lessThan(hpBefore),
-        reason: '守方应被命中掉血');
+    expect(defenderOf(s).currentHp, lessThan(hpBefore), reason: '守方应被命中掉血');
 
     // 破防开窗断言。
     expect(
@@ -171,8 +169,7 @@ void main() {
     );
 
     // BattleAction 标记断言。
-    final breakActions =
-        s.actionLog.where((a) => a.openedBreakWindow).toList();
+    final breakActions = s.actionLog.where((a) => a.openedBreakWindow).toList();
     expect(
       breakActions,
       isNotEmpty,
@@ -197,8 +194,7 @@ void main() {
       s = strategy.tick(s, numbers, rng: rng);
       guard++;
     }
-    expect(defenderOf(s).currentHp, lessThan(hpBefore),
-        reason: '守方应被命中');
+    expect(defenderOf(s).currentHp, lessThan(hpBefore), reason: '守方应被命中');
 
     // max(0.4, 0.2) = 0.4 保留,不被弱覆盖。
     expect(
@@ -246,7 +242,8 @@ void main() {
     expect(
       defenderOf(s).staggerDefenseDownOverride,
       closeTo(0.5, 1e-9),
-      reason: 'defenseBreakPct(0.8) > cap(0.5) → clamp 到 interruptPowerCap ceiling(§5.4)',
+      reason:
+          'defenseBreakPct(0.8) > cap(0.5) → clamp 到 interruptPowerCap ceiling(§5.4)',
     );
   });
 
@@ -261,15 +258,15 @@ void main() {
       s = strategy.tick(s, numbers, rng: rng);
       guard++;
     }
-    expect(defenderOf(s).currentHp, lessThan(hpBefore),
-        reason: '普攻应命中');
+    expect(defenderOf(s).currentHp, lessThan(hpBefore), reason: '普攻应命中');
 
     // 不开窗。
-    expect(defenderOf(s).staggerTicksRemaining, 0,
-        reason: '普攻不开破防窗口,stagger 维持 0');
-    final breakActions =
-        s.actionLog.where((a) => a.openedBreakWindow).toList();
-    expect(breakActions, isEmpty,
-        reason: '普攻无 openedBreakWindow=true 的动作');
+    expect(
+      defenderOf(s).staggerTicksRemaining,
+      0,
+      reason: '普攻不开破防窗口,stagger 维持 0',
+    );
+    final breakActions = s.actionLog.where((a) => a.openedBreakWindow).toList();
+    expect(breakActions, isEmpty, reason: '普攻无 openedBreakWindow=true 的动作');
   });
 }

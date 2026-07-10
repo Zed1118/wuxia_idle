@@ -59,11 +59,7 @@ void main() {
     });
 
     test('非转阶段动作（bossPhaseTransitionTo==null）→ 返回 null', () {
-      const normal = BattleAction(
-        tick: 1,
-        actorId: 1,
-        description: 'normal',
-      );
+      const normal = BattleAction(tick: 1, actorId: 1, description: 'normal');
       expect(bossPhaseTitleFor(normal, '某甲'), isNull);
     });
   });
@@ -74,7 +70,9 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       final key = GlobalKey<UltimateCaptionOverlayState>();
-      await tester.pumpWidget(MaterialApp(home: UltimateCaptionOverlay(key: key)));
+      await tester.pumpWidget(
+        MaterialApp(home: UltimateCaptionOverlay(key: key)),
+      );
       key.currentState!.show(
         UiStrings.bossPhaseTitle('bossPhase_desperate'),
         isEnemy: true,

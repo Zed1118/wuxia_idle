@@ -18,11 +18,15 @@ void main() {
   });
 
   testWidgets('用作滚动列 tile（无界高度）包 IntrinsicHeight 不抛', (tester) async {
-    await tester.pumpWidget(host(
-      ListView(children: const [
-        IntrinsicHeight(child: LightPaperPanel(child: Text('行'))),
-      ]),
-    ));
+    await tester.pumpWidget(
+      host(
+        ListView(
+          children: const [
+            IntrinsicHeight(child: LightPaperPanel(child: Text('行'))),
+          ],
+        ),
+      ),
+    );
     expect(tester.takeException(), isNull);
     expect(find.text('行'), findsOneWidget);
   });

@@ -33,19 +33,20 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('wuxia_injury_recover_');
     await IsarSetup.init(directory: tempDir, inspector: false);
 
-    final ch = Character.create(
-      name: 'injured_hero',
-      realmTier: RealmTier.xueTu,
-      realmLayer: RealmLayer.qiMeng,
-      attributes: Attributes(),
-      rarity: RarityTier.biaoZhun,
-      lineageRole: LineageRole.founder,
-      createdAt: DateTime(2026, 1, 1),
-      internalForce: 100,
-    )
-      ..id = kCharId
-      ..internalForceMax = 10000
-      ..experienceToNextLayer = 999999;
+    final ch =
+        Character.create(
+            name: 'injured_hero',
+            realmTier: RealmTier.xueTu,
+            realmLayer: RealmLayer.qiMeng,
+            attributes: Attributes(),
+            rarity: RarityTier.biaoZhun,
+            lineageRole: LineageRole.founder,
+            createdAt: DateTime(2026, 1, 1),
+            internalForce: 100,
+          )
+          ..id = kCharId
+          ..internalForceMax = 10000
+          ..experienceToNextLayer = 999999;
     await IsarSetup.instance.writeTxn(
       () => IsarSetup.instance.characters.put(ch),
     );
@@ -100,8 +101,11 @@ void main() {
       );
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
-      expect(ch?.injuryHoursRemaining, closeTo(5.0, 0.01),
-          reason: '8h - 3h = 5h');
+      expect(
+        ch?.injuryHoursRemaining,
+        closeTo(5.0, 0.01),
+        reason: '8h - 3h = 5h',
+      );
       expect(ch?.lightInjuryStacks, 0, reason: '收功即调息，轻伤无条件清零');
     });
 
@@ -149,8 +153,11 @@ void main() {
       );
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
-      expect(ch?.injuryHoursRemaining, closeTo(5.0, 0.01),
-          reason: '8h - 3h = 5h');
+      expect(
+        ch?.injuryHoursRemaining,
+        closeTo(5.0, 0.01),
+        reason: '8h - 3h = 5h',
+      );
       expect(ch?.lightInjuryStacks, 0);
     });
 
@@ -168,8 +175,11 @@ void main() {
       expect(result.mojianshi, 0);
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
-      expect(ch?.injuryHoursRemaining, closeTo(7.999, 0.01),
-          reason: '8h - 0.001h ≈ 7.999h，0 产出路径仍疗养');
+      expect(
+        ch?.injuryHoursRemaining,
+        closeTo(7.999, 0.01),
+        reason: '8h - 0.001h ≈ 7.999h，0 产出路径仍疗养',
+      );
       expect(ch?.lightInjuryStacks, 0, reason: '0 产出路径仍无条件清轻伤');
     });
   });

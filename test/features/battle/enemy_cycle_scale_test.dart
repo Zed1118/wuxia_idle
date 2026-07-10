@@ -467,19 +467,33 @@ void main() {
     });
     test('空 cycleVulnerability 回落基础', () {
       const b = EnemyDef(
-        id: 'b', name: 'b', realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng, school: TechniqueSchool.gangMeng,
-        baseHp: 100, baseAttack: 10, baseSpeed: 10, skillIds: [],
-        iconPath: 'x', isBoss: true, chargeSkillId: 's',
+        id: 'b',
+        name: 'b',
+        realmTier: RealmTier.yiLiu,
+        realmLayer: RealmLayer.qiMeng,
+        school: TechniqueSchool.gangMeng,
+        baseHp: 100,
+        baseAttack: 10,
+        baseSpeed: 10,
+        skillIds: [],
+        iconPath: 'x',
+        isBoss: true,
+        chargeSkillId: 's',
         vulnerability: BossVulnerabilityDef(outOfWindowDamageMult: 0.10),
       );
       expect(b.vulnerabilityForCycle(2)!.outOfWindowDamageMult, 0.10);
     });
     test('无 vulnerability 时 resolver 返 null', () {
       const b = EnemyDef(
-        id: 'b', name: 'b', realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng, school: TechniqueSchool.gangMeng,
-        baseHp: 100, baseAttack: 10, baseSpeed: 10, skillIds: [],
+        id: 'b',
+        name: 'b',
+        realmTier: RealmTier.yiLiu,
+        realmLayer: RealmLayer.qiMeng,
+        school: TechniqueSchool.gangMeng,
+        baseHp: 100,
+        baseAttack: 10,
+        baseSpeed: 10,
+        skillIds: [],
         iconPath: 'x',
       );
       expect(b.vulnerabilityForCycle(3), isNull);
@@ -488,22 +502,38 @@ void main() {
 
   group('vulnerabilityMult plumbing 按周目', () {
     const boss = EnemyDef(
-      id: 'plumb_boss', name: 'b', realmTier: RealmTier.yiLiu,
-      realmLayer: RealmLayer.qiMeng, school: TechniqueSchool.gangMeng,
-      baseHp: 10000, baseAttack: 800, baseSpeed: 120, skillIds: [],
-      iconPath: 'x', isBoss: true, chargeSkillId: 'skill_own_charge',
+      id: 'plumb_boss',
+      name: 'b',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      school: TechniqueSchool.gangMeng,
+      baseHp: 10000,
+      baseAttack: 800,
+      baseSpeed: 120,
+      skillIds: [],
+      iconPath: 'x',
+      isBoss: true,
+      chargeSkillId: 'skill_own_charge',
       vulnerability: BossVulnerabilityDef(outOfWindowDamageMult: 0.20),
-      cycleVulnerability: {2: BossVulnerabilityDef(outOfWindowDamageMult: 0.12)},
+      cycleVulnerability: {
+        2: BossVulnerabilityDef(outOfWindowDamageMult: 0.12),
+      },
     );
     test('cycle 1 灌 base vuln', () {
       final c1 = StageBattleSetup.debugEnemyToBattle(
-        enemy: boss, slotIndex: 0, cycleIndex: 1, isTower: true,
+        enemy: boss,
+        slotIndex: 0,
+        cycleIndex: 1,
+        isTower: true,
       );
       expect(c1.vulnerabilityMult, 0.20);
     });
     test('cycle 2 灌 cycle-2 vuln', () {
       final c2 = StageBattleSetup.debugEnemyToBattle(
-        enemy: boss, slotIndex: 0, cycleIndex: 2, isTower: true,
+        enemy: boss,
+        slotIndex: 0,
+        cycleIndex: 2,
+        isTower: true,
       );
       expect(c2.vulnerabilityMult, 0.12);
     });

@@ -27,12 +27,14 @@ void main() {
   });
 
   Future<String> Function(String) towerLoader(
-      String Function(String) transform) {
+    String Function(String) transform,
+  ) {
     Future<String> loader(String path) async {
       final original = await File(path).readAsString();
       if (path == 'data/towers.yaml') return transform(original);
       return original;
     }
+
     return loader;
   }
 
@@ -44,26 +46,36 @@ void main() {
   test('① 非 Boss 层配 dropSkillFragmentId → 抛 StateError', () async {
     // floor 1 是普通层(bossKind null);注入 dropSkillFragmentId。
     String inject(String s) => s.replaceFirst(
-          '  - floorIndex: 1\n',
-          '  - floorIndex: 1\n    dropSkillFragmentId: skill_gangmeng_mingjia_ult\n',
-        );
+      '  - floorIndex: 1\n',
+      '  - floorIndex: 1\n    dropSkillFragmentId: skill_gangmeng_mingjia_ult\n',
+    );
     expect(
       GameRepository.loadAllDefs(loader: towerLoader(inject)),
-      throwsA(isA<StateError>()
-          .having((e) => e.message, 'message', contains('非 Boss'))),
+      throwsA(
+        isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('非 Boss'),
+        ),
+      ),
     );
   });
 
   test('② Boss 层配不存在的 dropSkillFragmentId → 抛 StateError', () async {
     // floor 10 现配 dropSkillFragmentId: skill_yan_zi_san_chao(波B);替为幽灵 id。
     String inject(String s) => s.replaceFirst(
-          'dropSkillFragmentId: skill_yan_zi_san_chao',
-          'dropSkillFragmentId: ghost_frag_not_loaded',
-        );
+      'dropSkillFragmentId: skill_yan_zi_san_chao',
+      'dropSkillFragmentId: ghost_frag_not_loaded',
+    );
     expect(
       GameRepository.loadAllDefs(loader: towerLoader(inject)),
-      throwsA(isA<StateError>().having(
-          (e) => e.message, 'message', contains('ghost_frag_not_loaded'))),
+      throwsA(
+        isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('ghost_frag_not_loaded'),
+        ),
+      ),
     );
   });
 }

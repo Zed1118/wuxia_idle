@@ -9,33 +9,32 @@ BattleCharacter _c({
   int id = 1,
   SkillDef? chargingSkill,
   int staggerTicksRemaining = 0,
-}) =>
-    BattleCharacter(
-      characterId: id,
-      name: 'c$id',
-      realmTier: RealmTier.sanLiu,
-      realmLayer: RealmLayer.yuanShu,
-      school: TechniqueSchool.gangMeng,
-      maxHp: 1000,
-      currentHp: 1000,
-      maxInternalForce: 500,
-      currentInternalForce: 500,
-      speed: 100,
-      criticalRate: 0.0,
-      evasionRate: 0.0,
-      defenseRate: 0.1,
-      totalEquipmentAttack: 0,
-      mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: const [],
-      skillCooldowns: const {},
-      activeBuffs: const [],
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: 1,
-      slotIndex: 0,
-      chargingSkill: chargingSkill,
-      staggerTicksRemaining: staggerTicksRemaining,
-    );
+}) => BattleCharacter(
+  characterId: id,
+  name: 'c$id',
+  realmTier: RealmTier.sanLiu,
+  realmLayer: RealmLayer.yuanShu,
+  school: TechniqueSchool.gangMeng,
+  maxHp: 1000,
+  currentHp: 1000,
+  maxInternalForce: 500,
+  currentInternalForce: 500,
+  speed: 100,
+  criticalRate: 0.0,
+  evasionRate: 0.0,
+  defenseRate: 0.1,
+  totalEquipmentAttack: 0,
+  mainCultivationLayer: CultivationLayer.daCheng,
+  availableSkills: const [],
+  skillCooldowns: const {},
+  activeBuffs: const [],
+  actionPoint: 0,
+  isAlive: true,
+  teamSide: 1,
+  slotIndex: 0,
+  chargingSkill: chargingSkill,
+  staggerTicksRemaining: staggerTicksRemaining,
+);
 
 const _skill = SkillDef(
   id: 'boss_signature',
@@ -50,10 +49,8 @@ const _skill = SkillDef(
 );
 
 /// 单角色右队 state（左队放一个无关玩家不参与转移）。
-BattleState _state(BattleCharacter enemy) => BattleState.initial(
-      leftTeam: [_c(id: 99)],
-      rightTeam: [enemy],
-    );
+BattleState _state(BattleCharacter enemy) =>
+    BattleState.initial(leftTeam: [_c(id: 99)], rightTeam: [enemy]);
 
 void main() {
   test('prev=null（开局）→ 空', () {
@@ -66,12 +63,14 @@ void main() {
     expect(chargeTransitionSfx(prev, next), [SfxId.battleChargeStart]);
   });
 
-  test('破招（chargingSkill 非null→null + staggerTicks 0→2）→ [battleInterrupt]',
-      () {
-    final prev = _state(_c(chargingSkill: _skill, staggerTicksRemaining: 0));
-    final next = _state(_c(chargingSkill: null, staggerTicksRemaining: 2));
-    expect(chargeTransitionSfx(prev, next), [SfxId.battleInterrupt]);
-  });
+  test(
+    '破招（chargingSkill 非null→null + staggerTicks 0→2）→ [battleInterrupt]',
+    () {
+      final prev = _state(_c(chargingSkill: _skill, staggerTicksRemaining: 0));
+      final next = _state(_c(chargingSkill: null, staggerTicksRemaining: 2));
+      expect(chargeTransitionSfx(prev, next), [SfxId.battleInterrupt]);
+    },
+  );
 
   test('踉跄跳过（staggerTicks 2→1）→ [battleStagger]', () {
     final prev = _state(_c(staggerTicksRemaining: 2));

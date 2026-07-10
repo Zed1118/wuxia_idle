@@ -30,26 +30,33 @@ void main() {
     final repo = GameRepository.instance;
     expect(repo.skillDefs, isNotEmpty);
     for (final s in repo.skillDefs.values) {
-      expect(s.powerMultiplier, lessThanOrEqualTo(8000),
-          reason: '${s.id} powerMultiplier=${s.powerMultiplier} 越 §5.4 红线');
+      expect(
+        s.powerMultiplier,
+        lessThanOrEqualTo(8000),
+        reason: '${s.id} powerMultiplier=${s.powerMultiplier} 越 §5.4 红线',
+      );
     }
   });
 
-  test('broken loader：普通 skill powerMultiplier > 8000 → loadAllDefs 抛 StateError',
-      () async {
-    // 把 skills.yaml 第一处 powerMultiplier: 500（基础普攻）注成 9999 越界。
-    // 旧逻辑下普通招无全局校验会静默 load；修复后全局 ≤8000 校验 fail-fast。
-    String inject(String s) =>
-        s.replaceFirst('powerMultiplier: 500', 'powerMultiplier: 9999');
-    expect(
-      GameRepository.loadAllDefs(
-        loader: makeLoader('data/skills.yaml', inject),
-      ),
-      throwsA(isA<StateError>().having(
-        (e) => e.message,
-        'message',
-        contains('> 8000'),
-      )),
-    );
-  });
+  test(
+    'broken loader：普通 skill powerMultiplier > 8000 → loadAllDefs 抛 StateError',
+    () async {
+      // 把 skills.yaml 第一处 powerMultiplier: 500（基础普攻）注成 9999 越界。
+      // 旧逻辑下普通招无全局校验会静默 load；修复后全局 ≤8000 校验 fail-fast。
+      String inject(String s) =>
+          s.replaceFirst('powerMultiplier: 500', 'powerMultiplier: 9999');
+      expect(
+        GameRepository.loadAllDefs(
+          loader: makeLoader('data/skills.yaml', inject),
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('> 8000'),
+          ),
+        ),
+      );
+    },
+  );
 }

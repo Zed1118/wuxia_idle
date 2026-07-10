@@ -59,8 +59,11 @@ void main() {
             .whereType<ItemDrop>()
             .where((e) => e.inventoryItemDefId == entry.value)
             .toList();
-        expect(drops, isNotEmpty,
-            reason: '${entry.key} 应有 ${entry.value} 掉落条目');
+        expect(
+          drops,
+          isNotEmpty,
+          reason: '${entry.key} 应有 ${entry.value} 掉落条目',
+        );
         for (final d in drops) {
           expect(
             d.dropChance,
@@ -116,8 +119,11 @@ void main() {
             .whereType<ItemDrop>()
             .where((e) => e.inventoryItemDefId == entry.value)
             .toList();
-        expect(drops, isNotEmpty,
-            reason: '爬塔第 ${entry.key} 层应有 ${entry.value} 掉落条目');
+        expect(
+          drops,
+          isNotEmpty,
+          reason: '爬塔第 ${entry.key} 层应有 ${entry.value} 掉落条目',
+        );
         for (final d in drops) {
           expect(
             d.dropChance,

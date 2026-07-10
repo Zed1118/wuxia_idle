@@ -17,9 +17,15 @@ void main() {
 
   test('isAboveRealm：tier.index > currentRealm.index', () {
     // shenWu(6) > sanLiu(1) → true
-    expect(DropNameResolver.isAboveRealm(EquipmentTier.shenWu, RealmTier.sanLiu), true);
+    expect(
+      DropNameResolver.isAboveRealm(EquipmentTier.shenWu, RealmTier.sanLiu),
+      true,
+    );
     // xunChang(0) <= wuSheng(6) → false
-    expect(DropNameResolver.isAboveRealm(EquipmentTier.xunChang, RealmTier.wuSheng), false);
+    expect(
+      DropNameResolver.isAboveRealm(EquipmentTier.xunChang, RealmTier.wuSheng),
+      false,
+    );
   });
 
   test('EquipmentTier 与 RealmTier 阶数对齐（isAboveRealm 依赖 index 同尺度）', () {

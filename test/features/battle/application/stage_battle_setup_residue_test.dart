@@ -24,7 +24,9 @@ void main() {
   });
 
   setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('wuxia_battle_residue_test_');
+    tempDir = await Directory.systemTemp.createTemp(
+      'wuxia_battle_residue_test_',
+    );
     await IsarSetup.init(directory: tempDir, inspector: false);
   });
 
@@ -53,8 +55,12 @@ void main() {
       final stage = GameRepository.instance.getStage('stage_01_01');
       final (left, _) = await StageBattleSetup(isar: isar).buildTeams(stage);
 
-      final expected =
-          GameRepository.instance.numbers.innerDemon.residueDebuff.battleOutputMultiplier;
+      final expected = GameRepository
+          .instance
+          .numbers
+          .innerDemon
+          .residueDebuff
+          .battleOutputMultiplier;
       expect(
         left.first.outputMultiplier,
         closeTo(expected, 1e-9),
@@ -72,8 +78,9 @@ void main() {
       // P3 种子默认 innerDemonResidueHoursRemaining = 0，无需额外写入
 
       final stage = GameRepository.instance.getStage('stage_01_01');
-      final (left, _) =
-          await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
+      final (left, _) = await StageBattleSetup(
+        isar: IsarSetup.instance,
+      ).buildTeams(stage);
 
       expect(
         left.first.outputMultiplier,

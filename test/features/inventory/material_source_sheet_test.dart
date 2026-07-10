@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -54,10 +53,7 @@ void main() {
       await pumpSheet(tester, itemId: 'item_mojianshi', quantity: 42);
 
       expect(find.text('磨剑石'), findsOneWidget);
-      expect(
-        find.text(UiStrings.materialSourceSheetOwned(42)),
-        findsOneWidget,
-      );
+      expect(find.text(UiStrings.materialSourceSheetOwned(42)), findsOneWidget);
       expect(
         find.text(UiStrings.materialSourceSheetSourcesTitle),
         findsOneWidget,
@@ -74,16 +70,16 @@ void main() {
       );
       // 来源：磨剑石必含「装备分解」途径行（派生服务保证）
       await tester.scrollUntilVisible(
-        find.text(UiStrings.itemSourceLabel(
-          const ItemSource.equipmentDisassembly(),
-        )),
+        find.text(
+          UiStrings.itemSourceLabel(const ItemSource.equipmentDisassembly()),
+        ),
         -200,
         scrollable: find.byType(Scrollable),
       );
       expect(
-        find.text(UiStrings.itemSourceLabel(
-          const ItemSource.equipmentDisassembly(),
-        )),
+        find.text(
+          UiStrings.itemSourceLabel(const ItemSource.equipmentDisassembly()),
+        ),
         findsWidgets,
       );
       // 用途：装备强化
@@ -98,10 +94,7 @@ void main() {
         find.text(UiStrings.materialSourceSheetEmptySources),
         findsNothing,
       );
-      expect(
-        find.text(UiStrings.materialSourceSheetEmptyUsages),
-        findsNothing,
-      );
+      expect(find.text(UiStrings.materialSourceSheetEmptyUsages), findsNothing);
     });
 
     testWidgets('未知 defId → 空来源/空用途各一行占位', (tester) async {
@@ -146,7 +139,9 @@ void main() {
             ).overrideWith((ref) async => 3),
           ],
           child: MaterialApp(
-            home: Scaffold(body: Center(child: EnhanceDialog(equipment: eq))),
+            home: Scaffold(
+              body: Center(child: EnhanceDialog(equipment: eq)),
+            ),
           ),
         ),
       );
@@ -202,17 +197,12 @@ void main() {
       await tester.pump();
 
       expect(find.byType(MaterialSourceSheet), findsNothing);
-      await tester.tap(
-        find.text(UiStrings.materialQuantity('磨剑石', 77)),
-      );
+      await tester.tap(find.text(UiStrings.materialQuantity('磨剑石', 77)));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
 
       expect(find.byType(MaterialSourceSheet), findsOneWidget);
-      expect(
-        find.text(UiStrings.materialSourceSheetOwned(77)),
-        findsOneWidget,
-      );
+      expect(find.text(UiStrings.materialSourceSheetOwned(77)), findsOneWidget);
       expect(
         find.text(UiStrings.materialSourceSheetSourcesTitle),
         findsOneWidget,

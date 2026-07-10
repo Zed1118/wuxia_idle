@@ -45,8 +45,7 @@ void main() {
       expect(
         breakSkills,
         isNotEmpty,
-        reason:
-            '流派 ${school.name} 没有玩家可装配的破防技，无法组成开窗手 build（第六阶段红线）',
+        reason: '流派 ${school.name} 没有玩家可装配的破防技，无法组成开窗手 build（第六阶段红线）',
       );
     }
   });

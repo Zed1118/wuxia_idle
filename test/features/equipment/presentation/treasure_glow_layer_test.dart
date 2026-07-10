@@ -7,7 +7,11 @@ void main() {
   Widget host(EquipmentTier tier, double t) => MaterialApp(
     home: Scaffold(
       body: Stack(
-        children: [Positioned.fill(child: TreasureGlowLayer(tier: tier, t: t))],
+        children: [
+          Positioned.fill(
+            child: TreasureGlowLayer(tier: tier, t: t),
+          ),
+        ],
       ),
     ),
   );

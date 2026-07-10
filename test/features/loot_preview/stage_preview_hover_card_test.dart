@@ -37,11 +37,12 @@ void main() {
     // 初始未悬停 → 浮层不显。
     expect(find.text('掉落预览内容'), findsNothing);
 
-    final gesture =
-        await tester.createGesture(kind: PointerDeviceKind.mouse);
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
     await gesture.addPointer(location: Offset.zero);
     addTearDown(gesture.removePointer);
-    await gesture.moveTo(tester.getCenter(find.byKey(const ValueKey('hover_child'))));
+    await gesture.moveTo(
+      tester.getCenter(find.byKey(const ValueKey('hover_child'))),
+    );
     await tester.pumpAndSettle();
 
     // 悬停 → 浮层显示。
@@ -51,8 +52,9 @@ void main() {
     expect(
       find.ancestor(
         of: find.text('掉落预览内容'),
-        matching:
-            find.byWidgetPredicate((w) => w is IgnorePointer && w.ignoring),
+        matching: find.byWidgetPredicate(
+          (w) => w is IgnorePointer && w.ignoring,
+        ),
       ),
       findsOneWidget,
       reason: '浮层须 IgnorePointer(ignoring:true) 纯展示,否则盖住下一关致切不动/卡顿',

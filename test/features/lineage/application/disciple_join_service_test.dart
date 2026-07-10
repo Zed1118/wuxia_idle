@@ -25,7 +25,9 @@ void main() {
   });
 
   setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('wuxia_disciple_join_test_');
+    tempDir = await Directory.systemTemp.createTemp(
+      'wuxia_disciple_join_test_',
+    );
     await IsarSetup.init(directory: tempDir, inspector: false);
     isar = IsarSetup.instance;
     // SOLO 开局:仅祖师 id=1。
@@ -76,20 +78,21 @@ void main() {
     expect((await isar.characters.where().findAll()).length, 1); // 仅 founder
   });
 
-  test('旧档祖年化:已有 senior 的档过 06_05 → 不重建 senior,junior 正常补入',
-      () async {
+  test('旧档祖年化:已有 senior 的档过 06_05 → 不重建 senior,junior 正常补入', () async {
     final svc = DiscipleJoinService(isar: isar);
     // 先在 06_05 拜两人,再删 junior + 清关级标记,模拟「旧档只有 senior 在队」。
     final first = await svc.joinForClearedStage('stage_06_05');
     expect(first.length, 2);
-    final juniorId =
-        first.firstWhere((c) => c.lineageRole == LineageRole.junior).id;
+    final juniorId = first
+        .firstWhere((c) => c.lineageRole == LineageRole.junior)
+        .id;
     await isar.writeTxn(() async {
       await isar.characters.delete(juniorId);
       final s = await isar.saveDatas.get(0);
       s!
-        ..activeCharacterIds =
-            s.activeCharacterIds.where((id) => id != juniorId).toList()
+        ..activeCharacterIds = s.activeCharacterIds
+            .where((id) => id != juniorId)
+            .toList()
         ..triggeredDiscipleJoinStageIds = []; // 清关级标记模拟旧档未按新关标记
       await isar.saveDatas.put(s);
     });

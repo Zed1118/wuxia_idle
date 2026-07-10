@@ -24,10 +24,16 @@ void main() {
 
   test('body 长度 30-120 字(GDD §10.2 50-100 字短介绍范围,放宽 ±20)', () {
     for (final def in TutorialHintDef.all) {
-      expect(def.body.length, greaterThanOrEqualTo(30),
-          reason: 'step ${def.step} body 太短');
-      expect(def.body.length, lessThanOrEqualTo(120),
-          reason: 'step ${def.step} body 太长');
+      expect(
+        def.body.length,
+        greaterThanOrEqualTo(30),
+        reason: 'step ${def.step} body 太短',
+      );
+      expect(
+        def.body.length,
+        lessThanOrEqualTo(120),
+        reason: 'step ${def.step} body 太长',
+      );
     }
   });
 
