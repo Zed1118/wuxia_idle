@@ -15,6 +15,8 @@ import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
+import '../../../support/isar_test_support.dart';
+
 /// 固定 nextDouble 的测试 Rng（驱动外层闸 + 加权抽 1 确定性）。
 class _ConstRng implements Rng {
   _ConstRng(this.value);
@@ -34,7 +36,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

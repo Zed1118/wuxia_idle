@@ -17,6 +17,8 @@ import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
 
+import '../../../support/isar_test_support.dart';
+
 /// Phase 3 T48 · SeclusionService 真 Isar 落地测试。
 void main() {
   late Directory tempDir;
@@ -25,7 +27,7 @@ void main() {
   const kCharId = 10;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),
