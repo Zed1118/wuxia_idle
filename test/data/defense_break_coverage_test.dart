@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+
+import '../support/test_data.dart';
 
 /// 第六阶段 Task 7:三流派 破防技 覆盖红线。
 ///
@@ -14,13 +14,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 ///   source ∈ {technique, encounter, mainlineDrop, fragment}（排除 special 系统招）
 ///   + 流派归属为对应 school（通过 style 显式字段，或通过 parentTechniqueDefId 所属心法推断）。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (p) => File(p).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   test('三流派各有至少一个玩家可装配的破防技(defenseBreakPct>0)', () {
     final repo = GameRepository.instance;

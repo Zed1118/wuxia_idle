@@ -3,19 +3,15 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 
+import '../support/test_data.dart';
+
 /// 审计 C-F4 · 全游戏招式 powerMultiplier ≤ 8000 红线测（GDD §5.4）。
 ///
 /// 此前该上限只在 `_enforceEncounterSkillRedLines` 的 encounterSkillIds 循环内
 /// 校验，普通心法招（skills.yaml）越界会静默 load。修复后改为对全部 skillDefs
 /// 统一校验。本测族写约束语义（production 自洽）+ broken loader 验 fail-fast。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (p) => File(p).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   Future<String> Function(String) makeLoader(
     String targetPath,

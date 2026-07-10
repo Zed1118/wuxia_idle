@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+
+import '../support/test_data.dart';
 
 /// 波B 24 招内容批红线(写约束语义,不锚瞬时数字 ·
 /// memory feedback_red_line_test_semantics)。
@@ -13,13 +13,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 /// - 每章末 Boss 关恰 1 本真解;塔 Boss 层全配残页。
 /// - 流派配平:mainlineDrop / fragment / 破招 各流派等量(玩家侧 build 池 6/6/6)。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (p) => File(p).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   test('章末 Boss 关:真解全配 + 蓄力技 = 掉落真解(双用 canon)', () {
     final repo = GameRepository.instance;

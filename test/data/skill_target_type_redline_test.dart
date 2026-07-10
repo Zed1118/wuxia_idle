@@ -5,17 +5,13 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 
+import '../support/test_data.dart';
+
 /// 2026-06-14 拖招交互 · targetType 红线测族(写约束语义,不锚瞬时数字)。
 ///
 /// production 全量自洽 + broken loader 注错验证 fail-fast + fromYaml 默认值。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (p) => File(p).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   Future<String> Function(String) makeLoader(
     String targetPath,
