@@ -1865,8 +1865,16 @@ class UiStrings {
   static const String saveManagementCreateBackup = '备份当前存档';
   static const String saveManagementRestore = '恢复备份';
   static const String saveManagementDeleteLatest = '删除最近备份';
-  static const String saveManagementRestoreTodo =
-      '恢复需要关闭当前数据库并重载全局状态，本版先提供安全备份/导出能力。';
+  static const String saveManagementSelectBackupTitle = '选择历史备份';
+  static const String saveManagementRestoreConfirmTitle = '确认恢复存档';
+  static const String saveManagementRestoreConfirmAction = '恢复并关闭游戏';
+  static const String saveManagementRestoringTitle = '正在恢复存档';
+  static const String saveManagementRestoringMessage = '正在校验备份并保存当前进度，请勿关闭游戏。';
+  static const String saveManagementRestoreSucceededTitle = '存档恢复完成';
+  static const String saveManagementRestoreFailedTitle = '无法恢复此备份';
+  static const String saveManagementRestoreRestartRequiredTitle = '恢复未能完成';
+  static const String saveManagementCloseGame = '关闭游戏';
+  static const String saveManagementAcknowledge = '知道了';
   static const String saveManagementDeleteConfirmTitle = '删除备份';
   static const String saveManagementDeleteConfirmAction = '删除备份';
   static String saveManagementSummary(
@@ -1885,6 +1893,15 @@ class UiStrings {
       '已删除备份：$fileName';
   static String saveManagementDeleteConfirmMessage(String fileName) =>
       '只删除备份文件，不影响当前存档：$fileName';
+  static String saveManagementBackupDetail(DateTime createdAt, int sizeBytes) =>
+      '${saveManagementDateTime(createdAt)} · ${(sizeBytes / 1024).ceil()} KB';
+  static String saveManagementRestoreConfirmMessage(String fileName) =>
+      '将恢复：$fileName\n\n当前进度会先自动备份。恢复完成后游戏将关闭，请重新打开。';
+  static String saveManagementRestoreSucceededMessage(String safetyFileName) =>
+      '历史存档已经恢复。恢复前的当前进度已另存为：\n$safetyFileName\n\n请关闭并重新打开游戏。';
+  static const String saveManagementRestoreFailedMessage = '备份未通过校验，当前存档没有改变。';
+  static const String saveManagementRestoreRestartRequiredMessage =
+      '数据库已经关闭。恢复前存档仍有安全备份，请关闭并重新打开游戏。';
 
   // ── 多存档槽(spec B 选择/新开/删除/切换)────────────────────────────
   static const String slotSelectTitle = '选择江湖';

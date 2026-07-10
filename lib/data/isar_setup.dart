@@ -460,7 +460,6 @@ class IsarSetup {
 
   /// 启动前修复被进程中断的恢复现场。正式档存在时以正式档为准；正式档缺失
   /// 时优先回滚到恢复前版本，只有没有 rollback 才提升完整 candidate。
-  @visibleForTesting
   static Future<void> recoverInterruptedRestoreFiles(
     Directory directory,
     int slotId,

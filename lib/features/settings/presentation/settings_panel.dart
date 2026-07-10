@@ -11,6 +11,7 @@ import '../../save_slot/presentation/save_select_screen.dart';
 import '../../save_management/application/save_management_providers.dart';
 import '../../save_management/application/save_management_service.dart';
 import '../../save_management/domain/save_management_status.dart';
+import '../../save_management/domain/save_restore.dart';
 import '../application/audio_settings_provider.dart';
 import '../application/display_settings_providers.dart';
 import '../application/gameplay_settings_provider.dart';
@@ -91,7 +92,7 @@ class SettingsPanel extends ConsumerWidget {
               const _DisplaySettingsSection(),
               const Divider(height: 1),
               const _SettingsSectionHeader(UiStrings.settingsSaveSection),
-              const _SaveManagementSection(),
+              const SaveManagementSection(),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.swap_horiz),
@@ -179,8 +180,8 @@ Future<void> _switchSlotFlow(BuildContext context) async {
   );
 }
 
-class _SaveManagementSection extends ConsumerWidget {
-  const _SaveManagementSection();
+class SaveManagementSection extends ConsumerWidget {
+  const SaveManagementSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -260,10 +261,12 @@ class _SaveManagementSection extends ConsumerWidget {
                           }
                         },
                 ),
-                const PlaqueButton(
+                PlaqueButton(
                   label: UiStrings.saveManagementRestore,
-                  onTap: null,
-                  disabled: true,
+                  disabled: service == null || status.backups.isEmpty,
+                  onTap: service == null || status.backups.isEmpty
+                      ? null
+                      : () => _restoreFlow(context, service, status),
                 ),
                 PlaqueButton(
                   label: UiStrings.saveManagementDeleteLatest,
@@ -280,18 +283,163 @@ class _SaveManagementSection extends ConsumerWidget {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                UiStrings.saveManagementRestoreTodo,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-          ),
         ],
       ),
+    );
+  }
+
+  static Future<void> _restoreFlow(
+    BuildContext context,
+    SaveManagementService service,
+    SaveManagementStatus status,
+  ) async {
+    final selected = await PaperDialog.show<SaveBackupInfo>(
+      context,
+      title: UiStrings.saveManagementSelectBackupTitle,
+      body: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 300),
+        child: ListView.separated(
+          shrinkWrap: true,
+          itemCount: status.backups.length,
+          separatorBuilder: (_, _) => const Divider(height: 1),
+          itemBuilder: (dialogContext, index) {
+            final backup = status.backups[index];
+            return ListTile(
+              dense: true,
+              title: Text(backup.fileName),
+              subtitle: Text(
+                UiStrings.saveManagementBackupDetail(
+                  backup.createdAt,
+                  backup.sizeBytes,
+                ),
+              ),
+              onTap: () => Navigator.of(dialogContext).pop(backup),
+            );
+          },
+        ),
+      ),
+      actions: [
+        Builder(
+          builder: (ctx) => PlaqueButton(
+            label: UiStrings.commonCancel,
+            onTap: () => Navigator.of(ctx).pop(),
+          ),
+        ),
+      ],
+    );
+    if (selected == null || !context.mounted) return;
+
+    final confirmed = await PaperDialog.show<bool>(
+      context,
+      title: UiStrings.saveManagementRestoreConfirmTitle,
+      body: Text(
+        UiStrings.saveManagementRestoreConfirmMessage(selected.fileName),
+      ),
+      actions: [
+        Builder(
+          builder: (ctx) => PlaqueButton(
+            label: UiStrings.commonCancel,
+            onTap: () => Navigator.of(ctx).pop(false),
+          ),
+        ),
+        Builder(
+          builder: (ctx) => PlaqueButton(
+            label: UiStrings.saveManagementRestoreConfirmAction,
+            destructive: true,
+            primary: true,
+            onTap: () => Navigator.of(ctx).pop(true),
+          ),
+        ),
+      ],
+    );
+    if (confirmed != true || !context.mounted) return;
+    await _runRestore(context, service, selected);
+  }
+
+  static Future<void> _runRestore(
+    BuildContext context,
+    SaveManagementService service,
+    SaveBackupInfo selected,
+  ) async {
+    final navigator = Navigator.of(context, rootNavigator: true);
+    final processing = PaperDialog.show<void>(
+      context,
+      title: UiStrings.saveManagementRestoringTitle,
+      body: const Text(UiStrings.saveManagementRestoringMessage),
+      actions: const [],
+      barrierDismissible: false,
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    try {
+      final result = await service.restoreBackup(selected);
+      if (navigator.canPop()) navigator.pop();
+      await processing;
+      if (!context.mounted) return;
+      await _showRestartDialog(
+        context,
+        title: UiStrings.saveManagementRestoreSucceededTitle,
+        message: UiStrings.saveManagementRestoreSucceededMessage(
+          result.safetyBackup.fileName,
+        ),
+      );
+    } on SaveRestoreException catch (error) {
+      if (navigator.canPop()) navigator.pop();
+      await processing;
+      if (!context.mounted) return;
+      if (error.requiresRestart) {
+        await _showRestartDialog(
+          context,
+          title: UiStrings.saveManagementRestoreRestartRequiredTitle,
+          message: UiStrings.saveManagementRestoreRestartRequiredMessage,
+        );
+      } else {
+        await _showRecoverableFailure(context);
+      }
+    } catch (_) {
+      if (navigator.canPop()) navigator.pop();
+      await processing;
+      if (!context.mounted) return;
+      await _showRecoverableFailure(context);
+    }
+  }
+
+  static Future<void> _showRecoverableFailure(BuildContext context) {
+    return PaperDialog.show<void>(
+      context,
+      title: UiStrings.saveManagementRestoreFailedTitle,
+      body: const Text(UiStrings.saveManagementRestoreFailedMessage),
+      actions: [
+        Builder(
+          builder: (ctx) => PlaqueButton(
+            label: UiStrings.saveManagementAcknowledge,
+            onTap: () => Navigator.of(ctx).pop(),
+          ),
+        ),
+      ],
+      barrierDismissible: false,
+    );
+  }
+
+  static Future<void> _showRestartDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+  }) {
+    return PaperDialog.show<void>(
+      context,
+      title: title,
+      body: Text(message),
+      actions: [
+        const PlaqueButton(
+          label: UiStrings.saveManagementCloseGame,
+          destructive: true,
+          primary: true,
+          autofocus: true,
+          onTap: AppExit.quitNow,
+        ),
+      ],
+      barrierDismissible: false,
     );
   }
 

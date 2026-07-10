@@ -118,14 +118,14 @@ Future<SaveRestoreResult> restoreBackup(SaveBackupInfo backup)
 - Modify: `lib/features/settings/presentation/settings_panel.dart`
 - Test: `test/features/settings/settings_panel_save_restore_test.dart`
 
-- [ ] **Step 1: 写 widget 失败测试**：无备份禁用；多备份倒序显示文件名、时间、大小；选择后出现自动安全备份与退出说明。
-- [ ] **Step 2: 写 widget 失败测试**：预检失败不调用 `AppExit.quit`；成功和 `requiresRestart=true` 失败只显示关闭动作并调用 quit override。
-- [ ] **Step 3: 运行测试确认失败**：
+- [x] **Step 1: 写 widget 失败测试**：无备份禁用；多备份倒序显示文件名、时间、大小；选择后出现自动安全备份与退出说明。
+- [x] **Step 2: 写 widget 失败测试**：预检失败不调用 `AppExit.quit`；成功和 `requiresRestart=true` 失败只显示关闭动作并调用 quit override。
+- [x] **Step 3: 运行测试确认失败**：
   `flutter test --no-pub test/features/settings/settings_panel_save_restore_test.dart`
-- [ ] **Step 4: 删除 `saveManagementRestoreTodo`，新增选择、确认、处理中、成功、失败和关闭游戏文案。**
-- [ ] **Step 5: 实现 `_selectBackup`、`_confirmRestore`、`_runRestore` 三段流程；处理期间使用不可 dismiss 的 `PaperDialog`。**
-- [ ] **Step 6: 运行 widget 测试与现有 settings overflow/slot-switch 测试至通过。**
-- [ ] **Step 7: 提交**：`git commit -m "Add save restore settings flow"`。
+- [x] **Step 4: 删除 `saveManagementRestoreTodo`，新增选择、确认、处理中、成功、失败和关闭游戏文案。**
+- [x] **Step 5: 实现 `_selectBackup`、`_confirmRestore`、`_runRestore` 三段流程；处理期间使用不可 dismiss 的 `PaperDialog`。**
+- [x] **Step 6: 运行 widget 测试与现有 settings overflow/slot-switch 测试至通过。**
+- [x] **Step 7: 提交**：`git commit -m "Add save restore settings flow"`。
 
 ### Task 6: 存档恢复批验证
 
@@ -143,8 +143,8 @@ Future<SaveRestoreResult> restoreBackup(SaveBackupInfo backup)
 
 ## 当前恢复点
 
-- 状态：Task 1-4 已完成，Task 5 待开始。
-- 最后完成：swap 失败立即回滚与 rollback 再失败的启动自愈路径已由故障注入锁定。
-- 下一步：Task 5 Step 1，设置页恢复交互 widget 红测。
-- 已跑验证：存档 service/restore/slots 22/22；file-ops 1/1。
+- 状态：Task 1-5 已完成，Task 6 验证待执行。
+- 最后完成：设置页备份选择、确认、处理中、可恢复失败和强制重启结果流程已实现。
+- 下一步：Task 6，批次 A 静态检查、定向回归和 macOS 视觉验收。
+- 已跑验证：定向 analyze 0；存档与设置 46/46；file-ops 1/1。
 - 阻塞项：无。

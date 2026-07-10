@@ -94,8 +94,9 @@ class SaveManagementService {
     try {
       save = await _currentSave();
       final databasePath = isar.path;
-      if (databasePath == null)
+      if (databasePath == null) {
         throw StateError('Current database path missing');
+      }
       paths = IsarRestorePaths(File(databasePath).parent, save.slotId);
       await IsarSetup.recoverInterruptedRestoreFiles(
         File(databasePath).parent,
