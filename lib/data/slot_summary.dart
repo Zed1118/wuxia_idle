@@ -12,6 +12,7 @@ class SlotSummary {
     this.realmDisplay,
     this.chapterIndex = 0,
     this.clearedStageCount = 0,
+    this.completedFirstCycle = false,
     this.highestTowerFloor = 0,
     this.lastPlayed,
     this.isMostRecent = false,
@@ -38,6 +39,9 @@ class SlotSummary {
   /// 已通关主线关卡数(空槽 0)。
   final int clearedStageCount;
 
+  /// 是否完成过首周目终章。由主线进度派生,不落额外 schema 字段。
+  final bool completedFirstCycle;
+
   /// 问鼎江湖最高通关层数(空槽 0)。
   final int highestTowerFloor;
 
@@ -58,6 +62,7 @@ class SlotSummary {
     realmDisplay: realmDisplay,
     chapterIndex: chapterIndex,
     clearedStageCount: clearedStageCount,
+    completedFirstCycle: completedFirstCycle,
     highestTowerFloor: highestTowerFloor,
     lastPlayed: lastPlayed,
     isMostRecent: isMostRecent ?? this.isMostRecent,

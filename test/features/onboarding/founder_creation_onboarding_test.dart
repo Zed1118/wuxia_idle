@@ -12,6 +12,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
 import 'package:wuxia_idle/features/onboarding/domain/founder_creation_selection.dart';
+import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 import "../../support/isar_test_support.dart";
 import '../../support/test_data.dart';
@@ -110,6 +111,35 @@ void main() {
         .findFirst();
     expect(mojianshi!.quantity, 50 + origin.mojianshiBonus);
     expect(jieJing!.quantity, origin.jieJingBonus);
+    expect(save.isOnboardingCompleted, false);
+    expect(save.tutorialStep, 0);
+    expect(save.tutorialHintsRead, isEmpty);
+  });
+
+  test('老江湖开局完成基础引导但不跳主线或追加资源', () async {
+    final config = GameRepository.instance.founderCreation;
+    final origin = config.origins.first;
+
+    await OnboardingService(isar: IsarSetup.instance).createFoundingMaster(
+      selection: FounderCreationSelection(
+        school: config.schools.first,
+        origin: origin,
+        fate: config.fatePool.first,
+        startMode: FounderStartMode.quick,
+      ),
+    );
+
+    final isar = IsarSetup.instance;
+    final save = (await isar.saveDatas.get(0))!;
+    final mojianshi = await isar.inventoryItems
+        .filter()
+        .itemTypeEqualTo(ItemType.moJianShi)
+        .findFirst();
+    expect(save.isOnboardingCompleted, true);
+    expect(save.tutorialStep, 5);
+    expect(save.tutorialHintsRead, containsAll([3, 5]));
+    expect(await isar.mainlineProgress.where().count(), 0);
+    expect(mojianshi!.quantity, 50 + origin.mojianshiBonus);
   });
 
   test('ensureFoundingMasters 保持默认模板且不写创建选择 id', () async {

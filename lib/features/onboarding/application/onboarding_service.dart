@@ -141,6 +141,11 @@ class OnboardingService {
         save.founderCharacterId = founder.id;
         save.sectName =
             creation?.sectName ?? save.sectName ?? UiStrings.defaultSectName;
+        if (creation?.startMode == FounderStartMode.quick) {
+          save.isOnboardingCompleted = true;
+          if (save.tutorialStep < 5) save.tutorialStep = 5;
+          save.tutorialHintsRead = {...save.tutorialHintsRead, 3, 5}.toList();
+        }
         await isar.saveDatas.put(save);
       }
 

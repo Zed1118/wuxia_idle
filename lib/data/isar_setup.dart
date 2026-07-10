@@ -588,6 +588,9 @@ class IsarSetup {
       realmDisplay: EnumL10n.realm(founder.realmTier, founder.realmLayer),
       chapterIndex: mp?.currentChapterIndex ?? 1,
       clearedStageCount: mp?.clearedStageIds.length ?? 0,
+      completedFirstCycle:
+          mp?.clearedStageCycleKeys.contains('stage_06_05#1') == true ||
+          mp?.clearedStageIds.contains('stage_06_05') == true,
       highestTowerFloor:
           tp?.highestClearedFloor ?? save?.highestTowerLayer ?? 0,
       lastPlayed: save?.lastOnlineAt,
