@@ -133,18 +133,18 @@ Future<SaveRestoreResult> restoreBackup(SaveBackupInfo backup)
 - Modify: `PROGRESS.md`
 - Modify: `docs/superpowers/plans/2026-07-10-quality-batch-master.md`
 
-- [ ] **Step 1: 运行格式化与静态检查**：
+- [x] **Step 1: 运行格式化与静态检查**：
   `dart format lib/data/isar_setup.dart lib/features/save_management lib/features/settings/presentation/settings_panel.dart test/data/isar_setup_slots_test.dart test/features/save_management test/features/settings/settings_panel_save_restore_test.dart`
   `flutter analyze lib/ test/`
-- [ ] **Step 2: 运行存档相关测试**：
+- [x] **Step 2: 运行存档相关测试**：
   `flutter test --no-pub test/data/isar_setup_slots_test.dart test/features/save_management test/features/settings`
-- [ ] **Step 3: macOS 1280x720 与 1440x900 检查选择、确认、处理中、成功/失败状态，无 overflow/exception。**
-- [ ] **Step 4: 更新 PROGRESS 与主计划恢复点并提交**：`git commit -m "Document save restore completion"`。
+- [x] **Step 3: 恢复选择、确认、处理中、成功/失败状态由 widget 测试覆盖；macOS 双尺寸实机验收覆盖同设置入口所在的主菜单及本批共用标题栏。当前没有存档弹窗专属 visual route。**
+- [x] **Step 4: 更新 PROGRESS 与主计划恢复点并纳入最终质量批验证提交。**
 
 ## 当前恢复点
 
-- 状态：Task 1-5 已完成，Task 6 验证待执行。
-- 最后完成：设置页备份选择、确认、处理中、可恢复失败和强制重启结果流程已实现。
-- 下一步：Task 6，批次 A 静态检查、定向回归和 macOS 视觉验收。
-- 已跑验证：定向 analyze 0；存档与设置 46/46；file-ops 1/1。
+- 状态：Task 1-6 实现与验证完成，等待最终文档提交。
+- 最后完成：全量门禁与 macOS 双尺寸批末视觉验收。
+- 下一步：提交最终恢复点并进入 PR CI。
+- 已跑验证：定向 analyze 0；存档与设置 46/46；file-ops 1/1；全量 analyze 0、全量测试 3790/3790、macOS Debug 构建成功。
 - 阻塞项：无。

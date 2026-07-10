@@ -6,6 +6,8 @@
 
 ## 当前阶段
 > **2026-07-10 Codex CI 运行时维护(`codex/ci-runtime-refresh`)**:GitHub Actions `checkout@v4` 在 PR #23-25 持续产生 Node 20 弃用注记;核对官方 action.yml 后升级到最新 `actions/checkout@v7`(Node 24),并清除 CI 中 build_runner 已移除/忽略的 `--delete-conflicting-outputs` 参数。PR #26 首轮 CI 全链路绿且 annotations 为空,弃用注记已消失。
+
+> **2026-07-10 Codex 质量批(`codex/save-restore-design`)**:完成安全存档恢复闭环(候选校验、恢复前安全备份、原子替换、失败回滚、启动中断自愈与设置页交互);测试基础设施收口至直接 Isar Core 初始化 95→0、production repository 样板累计迁移 247 文件;标题栏返回/主页统一 44px 语义按钮;六类关键图片 fallback 契约落地;招式池 206+40=246 由 YAML/GDD/repository 三层机器守卫。**本地门禁**:`flutter analyze lib/ test/` 0 问题;`flutter test --no-pub` 3790/3790;`flutter build macos --debug` 成功;`git diff --check` 通过。macOS 真窗口 `main_menu`/`chapter_list`/`equipment_detail_screen` @1280x720、1440x900 共 6 张截图均 READY、无 overflow/exception。PR CI 状态见本条后续更新。
 > **2026-07-10 Codex 资产 WebP 试点 + 桃花岛落地**:magic audit 订正旧 210MB 口径:383 个 `.png` 路径 58.0MB,其中 272 个/44.7MB 已是 WebP 内容;真 PNG 仅 111 个/13.3MB。8 样本三档转码 + 四联目检证实只有桃花岛 q82 显著受益,alpha 装备有损边缘破坏、全 lossless 仅省 0.85MB,故关闭全量转码任务。后续获人工确认后桃花岛已改显式 `.webp`(832KB→202KB,-75.8%)并补 bundle 解码/尺寸守卫;同步销账已完成的 battle_screen 3102 行旧任务。
 > **2026-07-10 Codex 审查债务收口批(`codex/review-debt-cleanup` + 测试基础设施批)**:确认 CI 与 66 篇文案归档已完成;删除不可达 `home_feed` 并迁移事件流/启动钩子;删除隐藏逐关 `stage_auto_play`;新增并全面采用测试数据/Isar helper。GameRepository 生产数据样板累计迁 247 个测试文件(helper/自测另 2),本批直接 `loadAllDefs` 文件 230→25,余下均为自定义/fresh/fault loader;Isar 直接 Core 初始化累计 95→0。**验证**:各迁移分批定向回归全绿,`flutter analyze test` 0 问题;批末全量门禁见本分支后续记录。
 > **2026-07-10 Codex 挂机批 A-O 已归档**:文档 drift/UI 规范、fallback 诊断、存档备份核验、在线生命周期、战场重绘隔离、core 分层、数据校验、测试占位/TODO 清理与 README 命令订正均已完成;逐项文件、测试数和提交见当日 git log(`ef9eaf65`..`528c0d40`)及 PR #23 前历史。

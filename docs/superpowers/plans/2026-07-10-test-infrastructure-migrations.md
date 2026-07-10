@@ -20,7 +20,7 @@
 - [x] **Step 2: 每批把直接调用替换为 `initializeTestIsarCore`，保留生产配置加载的先后顺序并删除未使用 Isar import。**
 - [x] **Step 3: 每批运行对应目录定向测试；失败时只修 import/初始化顺序，不改测试语义。**
 - [x] **Step 4: 断言除 helper 本身和说明注释外直接调用计数为 0。**
-- [ ] **Step 5: 提交**：`git commit -m "Finish Isar test core migration"`。
+- [x] **Step 5: 提交**：`git commit -m "Finish Isar test core migration"`。
 
 ### Task 2: 迁移等价 production repository loader
 
@@ -47,15 +47,15 @@ await loadTestGameRepository();
 
 ### Task 3: 迁移批验证与记录
 
-- [ ] **Step 1: `flutter analyze lib/ test/`。**
-- [ ] **Step 2: `flutter test --no-pub`。**
+- [x] **Step 1: `flutter analyze lib/ test/`。**
+- [x] **Step 2: `flutter test --no-pub`。**
 - [x] **Step 3: 更新 backlog 与 PROGRESS 的迁移文件数和剩余直接调用数。**
-- [ ] **Step 4: 提交**：`git commit -m "Document test infrastructure migration"`。
+- [x] **Step 4: 迁移记录纳入最终质量批验证提交。**
 
 ## 当前恢复点
 
-- 状态：Task 1 已提交；Task 2 代码与定向验证完成，等待最终恢复点提交。
-- 最后完成：新增迁移 204 文件，使用共享 helper 的文件 45→249；直接 `loadAllDefs` 文件 230→25。
-- 下一步：提交 Task 2；执行 Task 3 批验证与文档记录。
-- 已跑验证：repository 首批目录回归 `balance/combat/data` 756/756、`features` 2727/2727、`tools` 42/42；返回 repo 批 162/162；`fileLoader` 批 232/232；最终补充批 112/112 + 133/133；`flutter analyze test` 0 问题。剩余直接调用均为 helper 自身、broken/patched/hybrid/fresh-instance 或多次重载测试。
+- 状态：Task 1-3 实现与验证完成，等待最终文档提交。
+- 最后完成：新增迁移 204 文件，使用共享 helper 的文件 45→249；直接 `loadAllDefs` 文件 230→25；直接 Isar Core 初始化 95→0。
+- 下一步：提交最终恢复点并进入 PR CI。
+- 已跑验证：repository 首批目录回归 `balance/combat/data` 756/756、`features` 2727/2727、`tools` 42/42；返回 repo 批 162/162；`fileLoader` 批 232/232；最终补充批 112/112 + 133/133；全量测试 3790/3790；`flutter analyze lib/ test/` 0 问题。剩余直接调用均为 helper 自身、broken/patched/hybrid/fresh-instance 或多次重载测试。
 - 阻塞项：无。

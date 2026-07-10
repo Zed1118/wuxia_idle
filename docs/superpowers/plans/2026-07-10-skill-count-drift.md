@@ -20,12 +20,12 @@
 - [x] **Step 2: 运行测试；若实数不是 206/40/246，先以数据实数订正 GDD，不改 YAML 内容凑数。**
 - [x] **Step 3: 确认 GDD 表格和解释段使用相同三项数字。**
 - [x] **Step 4: 从 PROGRESS 删除“GDD 246 vs skills.yaml 实数 drift”遗留，改为已证伪/已守卫。**
-- [ ] **Step 5: 提交**：`git commit -m "Guard skill count contract"`。
+- [x] **Step 5: 提交**：`git commit -m "Guard skill count contract"`。
 
 ## 当前恢复点
 
-- 状态：代码、文档销账与定向验证完成，等待提交。
+- 状态：代码、文档销账、定向验证与提交均完成。
 - 最后完成：新增 YAML/GDD/repository 三层计数与 ID 唯一性契约；过期债务改为已证伪/已守卫。
-- 下一步：提交批次 D，执行批末全量门禁与 macOS 视觉验收。
-- 已跑验证：`skill_count_contract_test` 1/1；定向 analyze 0 问题。
+- 下一步：批末门禁完成后进入 PR CI。
+- 已跑验证：`skill_count_contract_test` 1/1；全量测试 3790/3790；全量 analyze 0 问题。
 - 阻塞项：无。
