@@ -35,13 +35,13 @@
 - Modify: `.github/workflows/ci.yml`
 - Modify: `.gitignore`
 
-- [ ] Map public behavior and existing fixtures for each low-coverage flow before choosing cases.
-- [ ] Add one behavior-focused failing test at a time and run it to confirm the expected failure.
-- [ ] Add only the fixture seam or production correction required to make each test pass.
-- [ ] Run each focused test after its red-green cycle.
-- [ ] Add `coverage/` to `.gitignore`.
-- [ ] Add a CI coverage run that emits `coverage/lcov.info` and uploads it as an artifact; do not impose a global percentage gate until all executable files are represented consistently.
-- [ ] Run the complete focused test group and commit the batch.
+- [x] Map public behavior and existing fixtures for each low-coverage flow before choosing cases.
+- [x] Add behavior-focused characterization tests for sweep settlement and sweep unit routing.
+- [x] Keep production behavior unchanged; correct only the Flutter fake-async/Isar test harness boundary.
+- [x] Run each focused test while building the new coverage.
+- [x] Add `coverage/` to `.gitignore`.
+- [x] Add a CI coverage run that emits `coverage/lcov.info` and uploads it as an artifact; do not impose a global percentage gate until all executable files are represented consistently.
+- [x] Run the complete focused test group and commit the batch.
 
 ### Task 3: macOS Build Gate
 
@@ -127,5 +127,5 @@
 
 - Branch: `codex/project-health-hardening`
 - Worktree: `.worktrees/project-health-hardening`
-- Current state: Task 1 verified and ready to commit; first full run had one non-reproducible failure, JSON diagnostic rerun completed successfully. Task 2 is next.
+- Current state: Tasks 1-2 verified. Focused critical-flow group passed 88 tests; sweep settlement coverage is 32.00% and sweep unit coverage is 54.84%. Task 3 is next.
 - Resume command: `git status --short --branch && sed -n '1,260p' docs/superpowers/plans/2026-07-11-project-health-hardening.md`

@@ -51,5 +51,13 @@ jobs:
         run: flutter analyze lib/ test/
 
       # 默认并发(每文件独立 isolate,本就隔离);Isar core 由测试内 download:true 拉取
-      - name: Run tests
-        run: flutter test --no-pub
+      - name: Run tests with coverage
+        run: flutter test --coverage --no-pub
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-coverage
+          path: coverage/lcov.info
+          if-no-files-found: error

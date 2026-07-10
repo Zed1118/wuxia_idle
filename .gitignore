@@ -8,6 +8,7 @@
 .pub-cache/
 .pub/
 build/
+coverage/
 
 # 生成代码不入库（fresh checkout / 新 worktree 与 CI 均须先跑 build_runner）
 *.g.dart
