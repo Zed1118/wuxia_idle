@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -7,10 +6,11 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
+import '../../../../support/test_data.dart';
 
 void main() {
   setUpAll(() async {
-    await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
+    await loadTestGameRepository();
   });
 
   const power = SkillDef(

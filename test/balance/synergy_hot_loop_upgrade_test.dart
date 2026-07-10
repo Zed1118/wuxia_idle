@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -6,6 +5,7 @@ import 'package:wuxia_idle/data/defs/synergy_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import '../support/test_data.dart';
 
 /// W18-A1.2 hot-loop 升级版红线压测(deterministic 程序化路径,绕 Isar)。
 ///
@@ -30,9 +30,7 @@ void main() {
     // 消 hardcode);本测仍 deterministic·绕 Isar,只读 config defs 不 seed Isar。
     setUpAll(() async {
       if (!GameRepository.isLoaded) {
-        await GameRepository.loadAllDefs(
-          loader: (path) => File(path).readAsString(),
-        );
+        await loadTestGameRepository();
       }
     });
     // 5 synergy multipliers(对应 data/synergies.yaml 5 组合,本测试不读 yaml

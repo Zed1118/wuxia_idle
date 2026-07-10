@@ -9,6 +9,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_progress_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import "../../support/isar_test_support.dart";
+import '../../support/test_data.dart';
 
 /// 周目按章(2026-06-14)· 章级周目派生 + recordVictory 章末 Boss 记账。
 ///
@@ -56,9 +57,7 @@ void main() {
     setUpAll(() async {
       await initializeTestIsarCore();
       if (!GameRepository.isLoaded) {
-        await GameRepository.loadAllDefs(
-          loader: (p) => File(p).readAsString(),
-        );
+        await loadTestGameRepository();
       }
     });
 

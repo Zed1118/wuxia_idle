@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/equipment/application/equipment_inventory_in
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 
 import '../../../support/isar_test_support.dart';
+import '../../../support/test_data.dart';
 
 void main() {
   late Directory tempDir;
@@ -23,9 +24,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

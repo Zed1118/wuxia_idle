@@ -9,6 +9,7 @@ import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
 import 'package:wuxia_idle/features/jianghu/application/reputation_service.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 import "../../support/isar_test_support.dart";
+import '../../support/test_data.dart';
 
 /// T24 · P1.2 §3 EncounterIntegration 真 wire 闭环测族。
 ///
@@ -48,9 +49,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

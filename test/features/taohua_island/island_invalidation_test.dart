@@ -16,6 +16,7 @@ import 'package:wuxia_idle/features/taohua_island/application/island_providers.d
 import 'package:wuxia_idle/features/taohua_island/application/island_settle_service.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
 import "../../support/isar_test_support.dart";
+import '../../support/test_data.dart';
 
 void main() {
   late Directory tempDir;
@@ -23,9 +24,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

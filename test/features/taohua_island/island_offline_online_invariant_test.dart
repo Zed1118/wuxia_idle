@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -6,6 +5,7 @@ import 'package:wuxia_idle/features/taohua_island/application/island_production_
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_state.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/taohua_island_config.dart';
+import '../../support/test_data.dart';
 
 /// 桃花岛 cap 自洽红线测（2026-06-25 「cap 对齐 72h」拍板后落地）。
 ///
@@ -26,9 +26,7 @@ void main() {
 
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
     cfg = GameRepository.instance.numbers.taohuaIsland;
   });

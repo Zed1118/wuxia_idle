@@ -18,6 +18,7 @@ import 'package:wuxia_idle/features/battle/domain/strategy/light_foot_strategy.d
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/light_foot/application/light_foot_service.dart';
 import "../support/isar_test_support.dart";
+import '../support/test_data.dart';
 
 /// P3.1 §12.3 轻功对决 Batch C.1 R5 跨地形红线压测。
 ///
@@ -43,9 +44,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

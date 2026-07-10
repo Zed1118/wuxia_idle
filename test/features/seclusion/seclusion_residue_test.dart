@@ -11,6 +11,7 @@ import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 
 import '../../support/isar_test_support.dart';
+import '../../support/test_data.dart';
 
 /// M6 Task 7：余毒在身时闭关内力产出 ×0.80，累计满 8h 清余毒。
 void main() {
@@ -22,9 +23,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

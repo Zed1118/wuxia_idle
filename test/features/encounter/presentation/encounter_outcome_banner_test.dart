@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +9,7 @@ import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
 import 'package:wuxia_idle/features/encounter/presentation/encounter_dialog.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
+import '../../../support/test_data.dart';
 
 /// showEncounterOutcomeBanner widget 测试(W15 C-2 → P_NIGHT_UI 居中浮层升级)。
 ///
@@ -25,9 +25,7 @@ import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

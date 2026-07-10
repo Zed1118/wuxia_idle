@@ -16,6 +16,7 @@ import 'package:wuxia_idle/features/cultivation/application/skill_loadout_resolv
 import 'package:wuxia_idle/features/cultivation/application/skill_loadout_service.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import "../../support/isar_test_support.dart";
+import '../../support/test_data.dart';
 
 /// CangJingGeScreen 藏经阁主屏测试（P1b Task9）。
 ///
@@ -32,7 +33,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
+      await loadTestGameRepository();
     }
   });
 

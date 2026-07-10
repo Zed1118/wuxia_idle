@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/jianghu/domain/npc_relation.dart';
 import 'package:wuxia_idle/features/jianghu/domain/reputation.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import "../../support/isar_test_support.dart";
+import '../../support/test_data.dart';
 
 /// P1.2 R5 江湖恩怨 + 声望 红线契约族(spec §7)。
 ///
@@ -33,9 +34,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

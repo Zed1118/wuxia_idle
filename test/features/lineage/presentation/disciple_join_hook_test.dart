@@ -16,6 +16,7 @@ import 'package:wuxia_idle/features/narrative/presentation/narrative_reader_scre
 import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import "../../../support/isar_test_support.dart";
+import '../../../support/test_data.dart';
 
 /// 轮询直到 [finder] 命中(或到 [maxTries] 上限),再走 [settleRounds] 轮让过场 /
 /// hook 续拍落定:全程交替 [WidgetTester.runAsync](让 Isar 写 / 资产加载等真 async
@@ -113,9 +114,7 @@ void main() {
     setUpAll(() async {
       await initializeTestIsarCore();
       if (!GameRepository.isLoaded) {
-        await GameRepository.loadAllDefs(
-          loader: (path) => File(path).readAsString(),
-        );
+        await loadTestGameRepository();
       }
     });
 

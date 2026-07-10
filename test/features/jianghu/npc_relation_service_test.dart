@@ -5,6 +5,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/jianghu/application/npc_relation_service.dart';
 import "../../support/isar_test_support.dart";
+import '../../support/test_data.dart';
 
 /// P1.2 §3 NpcRelationService 红线契约。
 void main() {
@@ -13,9 +14,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

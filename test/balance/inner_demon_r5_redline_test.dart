@@ -17,6 +17,7 @@ import 'package:wuxia_idle/features/cultivation/application/character_advancemen
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
 import "../support/isar_test_support.dart";
+import '../support/test_data.dart';
 
 /// Phase 2 P2.2 §12.1 心魔系统 Batch 2.5.A R5 跨阶红线压测。
 ///
@@ -54,9 +55,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

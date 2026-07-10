@@ -16,6 +16,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import "../support/isar_test_support.dart";
+import '../support/test_data.dart';
 
 /// Phase 2 Ch5 R5 末 Boss 跨阶红线压测(spec §六 R5)。
 ///
@@ -45,9 +46,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

@@ -17,6 +17,7 @@ import 'package:wuxia_idle/features/jianghu/application/npc_relation_service.dar
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import "../../../support/isar_test_support.dart";
+import '../../../support/test_data.dart';
 
 /// T37 StageBattleSetup 真 Isar 落地测试。
 ///
@@ -28,9 +29,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

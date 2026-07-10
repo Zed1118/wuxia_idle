@@ -6,7 +6,6 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/post_combat_invalidation.dart';
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_providers.dart';
@@ -16,6 +15,7 @@ import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/features/weapon_codex/application/equipment_catalog_providers.dart';
 import 'package:wuxia_idle/features/weapon_codex/application/equipment_catalog_service.dart';
 import "../../../support/isar_test_support.dart";
+import '../../../support/test_data.dart';
 
 /// 体检批3 P0-5：战后结算统一失效 helper 验收（TDD）。
 ///
@@ -33,9 +33,7 @@ void main() {
 
   setUpAll(() async {
     await initializeTestIsarCore();
-    await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    await loadTestGameRepository();
   });
 
   setUp(() async {

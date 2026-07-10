@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +10,7 @@ import 'package:wuxia_idle/features/event/application/game_event_feed_providers.
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
+import '../../../support/test_data.dart';
 
 /// Nightshift T05 · BaikeScreen MainMenu 11 按钮导航 + 见闻 tab 6 档时间 override edge。
 ///
@@ -19,9 +19,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

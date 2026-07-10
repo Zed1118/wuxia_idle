@@ -54,8 +54,8 @@ await loadTestGameRepository();
 
 ## 当前恢复点
 
-- 状态：Task 1 代码与验证完成，等待恢复点提交。
-- 最后完成：共 66 文件迁移，直接调用 66→0。
-- 下一步：提交 Isar 迁移恢复点，然后执行 Task 2 production repository loader 迁移。
-- 已跑验证：非 feature 104/104；首批 feature 850/850；末批 feature 可运行测试 624 通过，修复必要查询扩展导入后补跑 61/61；`flutter analyze test/features` 0 问题。
+- 状态：Task 1 已提交；Task 2 第一批纯单例初始化迁移完成。
+- 最后完成：134 个只初始化全局单例的 production loader 样板改用 `loadTestGameRepository`。
+- 下一步：提交第一批恢复点；继续审查需要返回 repo 的单调用和等价 `fileLoader`，保留 fresh/custom/broken loader。
+- 已跑验证：Isar 迁移非 feature 104/104、首批 feature 850/850、末批 feature 可运行测试 624 通过并补跑 61/61；repository 第一批 `balance/combat/data` 756/756、`features` 2727/2727、`tools` 42/42；`flutter analyze test` 0 问题。
 - 阻塞项：无。

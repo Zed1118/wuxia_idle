@@ -7,6 +7,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/recruitment/application/recruitment_service.dart';
 import "../../../support/isar_test_support.dart";
+import '../../../support/test_data.dart';
 
 /// P1.1 A1 E.1 · RecruitmentService 红线契约(audit doc 方案 3 + 5 决策)。
 ///
@@ -26,9 +27,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

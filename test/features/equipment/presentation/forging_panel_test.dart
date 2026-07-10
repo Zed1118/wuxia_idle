@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +12,7 @@ import 'package:wuxia_idle/features/equipment/presentation/forging_panel.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
+import '../../../support/test_data.dart';
 
 /// T30 ForgingPanel widget 测试（phase2_tasks.md §458-459）。
 ///
@@ -24,9 +24,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

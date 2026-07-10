@@ -1,17 +1,15 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/taohua_island/application/island_production_readability.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_state.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
+import '../../support/test_data.dart';
 
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

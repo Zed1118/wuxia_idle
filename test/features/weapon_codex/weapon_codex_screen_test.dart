@@ -1,6 +1,5 @@
 // 兵器谱主屏 widget 测。
 // 跑法:flutter test test/features/weapon_codex/weapon_codex_screen_test.dart
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +10,7 @@ import 'package:wuxia_idle/features/weapon_codex/application/equipment_catalog_p
 import 'package:wuxia_idle/features/weapon_codex/domain/equipment_catalog_entry.dart';
 import 'package:wuxia_idle/features/weapon_codex/presentation/weapon_codex_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../support/test_data.dart';
 
 /// 真实 def id（来自 data/equipment.yaml）。
 const String _acquiredWeaponId = 'weapon_xunchang_tie_jian'; // 铁剑（兵器）
@@ -38,9 +38,7 @@ void main() {
 
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

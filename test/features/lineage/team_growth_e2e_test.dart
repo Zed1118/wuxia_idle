@@ -10,6 +10,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/lineage/application/disciple_join_service.dart';
 import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
 import "../../support/isar_test_support.dart";
+import '../../support/test_data.dart';
 
 /// 第七阶段批三 · Task 12: 队伍成长 e2e — 全弧线验证
 ///
@@ -22,9 +23,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

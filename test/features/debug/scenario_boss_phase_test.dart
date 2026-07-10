@@ -1,9 +1,9 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/debug/presentation/battle_test_menu.dart';
+import '../../support/test_data.dart';
 
 /// 第七阶段批二目检路由 `battle_boss_phase` 的场景工厂结构契约。
 ///
@@ -12,9 +12,7 @@ import 'package:wuxia_idle/features/debug/presentation/battle_test_menu.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

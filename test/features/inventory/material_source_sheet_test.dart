@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +13,7 @@ import 'package:wuxia_idle/features/equipment/presentation/enhance_dialog.dart';
 import 'package:wuxia_idle/features/inventory/presentation/inventory_screen.dart';
 import 'package:wuxia_idle/features/inventory/presentation/material_source_sheet.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../support/test_data.dart';
 
 /// 材料来源反查一期（MaterialSourceSheet · 夜间批 L）widget 测试。
 ///
@@ -25,9 +25,7 @@ import 'package:wuxia_idle/shared/strings.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

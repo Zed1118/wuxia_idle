@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +11,7 @@ import 'package:wuxia_idle/data/lore_loader.dart';
 import 'package:wuxia_idle/features/inventory/presentation/equipment_detail_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
+import '../../../support/test_data.dart';
 
 /// _LoreSection 延续典故渲染 edge 测试(P1 #42 Phase 5 新增延续 hook 0→1 覆盖)。
 ///
@@ -24,9 +24,7 @@ import 'package:wuxia_idle/shared/theme/colors.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

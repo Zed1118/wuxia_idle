@@ -1,9 +1,9 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/cangjingge/domain/fragment_source.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../support/test_data.dart';
 
 /// 残页来源派生测试（T7）。
 ///
@@ -12,7 +12,7 @@ import 'package:wuxia_idle/shared/strings.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
+      await loadTestGameRepository();
     }
   });
 

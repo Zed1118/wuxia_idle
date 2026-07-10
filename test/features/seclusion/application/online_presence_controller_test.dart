@@ -11,6 +11,7 @@ import 'package:wuxia_idle/features/seclusion/application/online_presence_contro
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 
 import '../../../support/isar_test_support.dart';
+import '../../../support/test_data.dart';
 
 void main() {
   late Directory tempDir;
@@ -19,7 +20,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
+      await loadTestGameRepository();
     }
   });
 

@@ -5,6 +5,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/jianghu/application/reputation_service.dart';
 import "../../support/isar_test_support.dart";
+import '../../support/test_data.dart';
 
 /// P1.2 §3 ReputationService 红线契约。
 ///
@@ -18,9 +19,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

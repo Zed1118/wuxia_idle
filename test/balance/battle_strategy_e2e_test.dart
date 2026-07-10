@@ -16,6 +16,7 @@ import 'package:wuxia_idle/features/battle/domain/strategy/battle_strategy.dart'
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import "../support/isar_test_support.dart";
+import '../support/test_data.dart';
 
 /// Batch 2 Phase 4 · battle strategy 重构 e2e 全场景红线压测
 ///
@@ -36,9 +37,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

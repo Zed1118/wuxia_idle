@@ -1,5 +1,4 @@
 // ignore_for_file: avoid_print
-import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +6,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import '../../support/test_data.dart';
 
 /// 关卡掉落银两「占总收入比例」雷达(确定性算式 · 长线平衡审计 2026-07-01)。
 ///
@@ -25,9 +25,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

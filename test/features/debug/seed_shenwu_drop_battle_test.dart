@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import "../../support/isar_test_support.dart";
+import '../../support/test_data.dart';
 
 /// seedVisualCheckShenwuDrop 战力红线：满配 wuSheng 出阵队必须打赢 stage_06_04，
 /// 否则 Codex 进不去胜利掉落弹窗（V3 神物金验收）会 BLOCKED——首版 seed 只 boost
@@ -23,9 +24,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

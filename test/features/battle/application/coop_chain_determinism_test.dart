@@ -1,12 +1,11 @@
-import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import '../../../support/test_data.dart';
 
 /// 第六阶段 Task 3:集火破绽窗口确定性测试。
 ///
@@ -23,9 +22,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 /// 触发 _pickFocusTargetId 路径,验证该路径确定性不受影响。
 void main() {
   setUpAll(() async {
-    await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    await loadTestGameRepository();
   });
 
   // 普攻:无内力消耗,兜底。

@@ -10,6 +10,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/debug/application/visual_route.dart';
 import "../../support/isar_test_support.dart";
+import '../../support/test_data.dart';
 
 // Isar setup 体例照搬 test/features/sect/sect_member_service_test.dart
 void main() {
@@ -23,9 +24,7 @@ void main() {
     setUpAll(() async {
       await initializeTestIsarCore();
       if (!GameRepository.isLoaded) {
-        await GameRepository.loadAllDefs(
-          loader: (p) => File(p).readAsString(),
-        );
+        await loadTestGameRepository();
       }
     });
 

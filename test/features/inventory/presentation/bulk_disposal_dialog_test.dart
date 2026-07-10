@@ -21,6 +21,7 @@ import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 import '../../../support/isar_test_support.dart';
+import '../../../support/test_data.dart';
 
 /// BulkDisposalDialog widget 测试（Task 6 TDD）。
 ///
@@ -34,9 +35,7 @@ import '../../../support/isar_test_support.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
     await initializeTestIsarCore();
   });

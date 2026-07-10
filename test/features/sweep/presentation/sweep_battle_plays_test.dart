@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +12,7 @@ import 'package:wuxia_idle/features/sweep/domain/sweep_recap.dart';
 import 'package:wuxia_idle/features/sweep/presentation/sweep_screen.dart';
 import 'package:wuxia_idle/shared/audio/audio_assets.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../../support/test_data.dart';
 
 /// 回归锚（2026-06-26 一键扫荡黑屏 hang bug）：
 ///
@@ -101,7 +101,7 @@ class _FastWinUnit implements SweepUnit {
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
+      await loadTestGameRepository();
     }
   });
 

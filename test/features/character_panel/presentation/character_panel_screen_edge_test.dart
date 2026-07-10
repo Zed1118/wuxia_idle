@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +11,7 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/character_panel_screen.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/stage_progress_row.dart';
+import '../../../support/test_data.dart';
 
 /// CharacterPanelScreen 边界用例（nightshift T03）。
 ///
@@ -27,9 +27,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/stage_progress_row.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

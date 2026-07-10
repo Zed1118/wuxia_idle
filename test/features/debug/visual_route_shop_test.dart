@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/inventory/presentation/inventory_screen.dart
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/shop/presentation/shop_screen.dart';
 import "../../support/isar_test_support.dart";
+import '../../support/test_data.dart';
 
 /// 材料经济 P1 视觉验收路由接线测(shop / inventory_currency / main_menu_shop)。
 /// 守两件事:① route 透传到正确目标屏 ② seed helper 用 [ItemType.fromDefId] 真映射
@@ -33,9 +34,7 @@ void main() {
     setUpAll(() async {
       await initializeTestIsarCore();
       if (!GameRepository.isLoaded) {
-        await GameRepository.loadAllDefs(
-          loader: (path) => File(path).readAsString(),
-        );
+        await loadTestGameRepository();
       }
     });
 

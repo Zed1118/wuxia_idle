@@ -9,6 +9,7 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import "../support/isar_test_support.dart";
+import '../support/test_data.dart';
 
 /// 第七阶段批三 Task 4：存档 0.24.0 → 0.25.0 迁移测试。
 ///
@@ -24,9 +25,7 @@ void main() {
     await initializeTestIsarCore();
     // 迁移段 b 需要 lineageOnboarding.joinStageIds → 必须先加载 defs。
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

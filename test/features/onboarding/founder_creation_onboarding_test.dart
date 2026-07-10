@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/onboarding/application/onboarding_service.da
 import 'package:wuxia_idle/features/onboarding/domain/founder_creation_selection.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 import "../../support/isar_test_support.dart";
+import '../../support/test_data.dart';
 
 void main() {
   late Directory tempDir;
@@ -21,7 +22,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
+      await loadTestGameRepository();
     }
   });
 

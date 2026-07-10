@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -6,6 +5,7 @@ import 'package:wuxia_idle/features/taohua_island/application/island_production_
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_state.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/taohua_island_config.dart';
+import '../../support/test_data.dart';
 
 /// 测试用配置工厂。允许调参以隔离各场景（cap、产速、境界门槛）。
 ///
@@ -308,9 +308,7 @@ void main() {
 
     test('4b. phase 2 多源多加工 offline=online：8h 一次性 == 4h+4h', () async {
       if (!GameRepository.isLoaded) {
-        await GameRepository.loadAllDefs(
-          loader: (path) => File(path).readAsString(),
-        );
+        await loadTestGameRepository();
       }
       final cfg = GameRepository.instance.numbers.taohuaIsland;
       final initialStates = _phaseTwoLevelOneStates(cfg);

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,6 +19,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/light_paper_panel.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_tab.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/section_header.dart';
+import '../../../support/test_data.dart';
 
 /// InventoryScreen widget 测试。
 ///
@@ -59,9 +59,7 @@ bool _spanHasColor(InlineSpan? span, Color color) {
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 
