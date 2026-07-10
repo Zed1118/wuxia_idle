@@ -102,11 +102,11 @@
 - Modify: `pubspec.yaml`
 - Modify: `pubspec.lock`
 
-- [ ] Re-run `flutter pub outdated` and separate compatible upgrades from constraint changes.
-- [ ] Apply compatible direct/dev dependency upgrades first.
-- [ ] Evaluate `intl 0.20.x` separately against analyzer and tests.
-- [ ] Document the transitive discontinued `js` dependency as upstream-bound if `isar_community` still owns it.
-- [ ] Run code generation, analysis, focused tests, and commit the batch.
+- [x] Re-run `flutter pub outdated` and separate compatible upgrades from constraint changes.
+- [x] Upgrade 21 locked compatible dependencies, including build_runner, path_provider, window_manager, coverage, hooks, and platform packages.
+- [x] Remove unused direct `intl` instead of widening its constraint; no project imports or formatter usage existed.
+- [x] Document `js 0.7.2` as an `isar_community 3.3.2` transitive dependency; it remains upstream-bound and discontinued.
+- [x] Run code generation, analysis, 189 focused tests, and commit the batch.
 
 ### Task 8: Full Verification And Recovery Closeout
 
@@ -128,5 +128,5 @@
 
 - Branch: `codex/project-health-hardening`
 - Worktree: `.worktrees/project-health-hardening`
-- Current state: Tasks 1-6 verified. Battle playback flags are typed and the obsolete BattleEngine facade is removed after migrating all callers. Task 7 is next.
+- Current state: Tasks 1-7 verified. Compatible dependencies are refreshed, unused intl is removed, and the remaining discontinued js package is upstream-bound through isar_community. Task 8 full verification is next.
 - Resume command: `git status --short --branch && sed -n '1,260p' docs/superpowers/plans/2026-07-11-project-health-hardening.md`

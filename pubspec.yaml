@@ -19,9 +19,8 @@ dependencies:
   isar_community_flutter_libs: ^3.3.2
   path_provider: ^2.1.0
 
-  # 配置加载与时间格式化
+  # 配置加载
   yaml: ^3.1.2
-  intl: ^0.19.0
 
   cupertino_icons: ^1.0.8
   audioplayers: ^6.0.0
