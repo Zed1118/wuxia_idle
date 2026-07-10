@@ -10,6 +10,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/taohua_island/application/island_action_service.dart';
 import 'package:wuxia_idle/features/taohua_island/application/island_settle_service.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
+import "../../support/isar_test_support.dart";
 
 /// IslandActionService 升级+选配方 测试。
 ///
@@ -17,7 +18,7 @@ import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.da
 
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

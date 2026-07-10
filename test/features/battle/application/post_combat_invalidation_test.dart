@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/battle_record/domain/boss_memory_source.dart
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/features/weapon_codex/application/equipment_catalog_providers.dart';
 import 'package:wuxia_idle/features/weapon_codex/application/equipment_catalog_service.dart';
+import "../../../support/isar_test_support.dart";
 
 /// 体检批3 P0-5：战后结算统一失效 helper 验收（TDD）。
 ///
@@ -31,7 +32,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     await GameRepository.loadAllDefs(
       loader: (path) => File(path).readAsString(),
     );

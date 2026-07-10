@@ -18,6 +18,7 @@ import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/cultivation/application/synergy_service.dart';
 import 'package:wuxia_idle/data/defs/synergy_def.dart';
+import "../../../support/isar_test_support.dart";
 
 /// T32 子提交 3a：[Phase2SeedService] 真 Isar 落地测试。
 ///
@@ -34,7 +35,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

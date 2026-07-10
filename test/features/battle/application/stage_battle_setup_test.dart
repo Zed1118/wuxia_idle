@@ -16,6 +16,7 @@ import 'package:wuxia_idle/features/jianghu/application/enmity_battle_modifier.d
 import 'package:wuxia_idle/features/jianghu/application/npc_relation_service.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import "../../../support/isar_test_support.dart";
 
 /// T37 StageBattleSetup 真 Isar 落地测试。
 ///
@@ -25,7 +26,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

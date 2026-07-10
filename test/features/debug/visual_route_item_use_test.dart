@@ -10,6 +10,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/debug/application/visual_route.dart';
 import 'package:wuxia_idle/features/debug/presentation/visual_route_host.dart';
 import 'package:wuxia_idle/features/inventory/presentation/inventory_screen.dart';
+import "../../support/isar_test_support.dart";
 
 /// 材料经济 P2 新材料用途视觉验收路由接线测(item_use_inventory)。
 /// 守三件事:① route 透传到物料 tab(InventoryScreen initialTab=1) ② seed 经验丹
@@ -28,7 +29,7 @@ void main() {
 
   group('buildVisualTarget · 材料经济 P2 路由', () {
     setUpAll(() async {
-      await Isar.initializeIsarCore(download: true);
+      await initializeTestIsarCore();
       if (!GameRepository.isLoaded) {
         await GameRepository.loadAllDefs(
           loader: (path) => File(path).readAsString(),
