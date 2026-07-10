@@ -114,19 +114,27 @@
 - Modify: this plan
 - Modify: `PROGRESS.md`
 
-- [ ] Run `dart run build_runner build`.
-- [ ] Run `dart format --output=none --set-exit-if-changed lib test docs`.
-- [ ] Run `flutter analyze lib/ test/`.
-- [ ] Run `flutter test --no-pub`.
-- [ ] Run `flutter test --coverage --no-pub` and summarize critical-flow coverage.
-- [ ] Run `flutter build macos --debug`.
-- [ ] Inspect `git diff --check`, tracked/untracked files, and generated artifacts.
-- [ ] Update `PROGRESS.md` and this plan with completed, verified, residual-risk, and next-batch states.
-- [ ] Create a final `[READY]` commit once the worktree is clean.
+- [x] Run `dart run build_runner build` (114 generated outputs).
+- [x] Run `dart format --output=none --set-exit-if-changed lib test docs` (1080 files, 0 changed).
+- [x] Run `flutter analyze lib/ test/` (0 issues).
+- [x] Run the full suite once with `flutter test --coverage --no-pub` instead of duplicating a second non-coverage run (3794/3794 passed).
+- [x] Summarize full-suite coverage: 80.84% of recorded lines; sweep settlement 32.00%, sweep unit 54.84%, stage entry flow 21.51%.
+- [x] Run `flutter build macos --debug --no-pub`.
+- [x] Inspect `git diff --check`, tracked/untracked files, and generated artifacts.
+- [x] Update `PROGRESS.md` and this plan with completed, verified, residual-risk, and next-batch states.
+- [x] Create a final `[READY]` commit once the worktree is clean.
+
+## Residual Risks
+
+- `stage_entry_flow.dart` still combines battle orchestration, persistence, narrative, recruitment, reputation, and milestone hooks; split by outcome hooks before trying to raise its 21.51% line coverage mechanically.
+- `GameRepository` and `IsarSetup` remain widely accessed global composition points. Continue extracting one pure validator or lifecycle collaborator per behavior-backed batch.
+- `js 0.7.2` is discontinued but remains an `isar_community 3.3.2` transitive dependency; removal is upstream-bound.
+- The main checkout keeps 2.7G of ignored visual evidence under `docs/handoff`; deletion remains user-authorized work, not a Git-history fix.
+- Remote GitHub Actions has not run on this local branch because pushing is an externally visible action.
 
 ## Recovery Point
 
 - Branch: `codex/project-health-hardening`
 - Worktree: `.worktrees/project-health-hardening`
-- Current state: Tasks 1-7 verified. Compatible dependencies are refreshed, unused intl is removed, and the remaining discontinued js package is upstream-bound through isar_community. Task 8 full verification is next.
+- Current state: Tasks 1-8 verified; ready for review from the final `[READY]` branch tip.
 - Resume command: `git status --short --branch && sed -n '1,260p' docs/superpowers/plans/2026-07-11-project-health-hardening.md`

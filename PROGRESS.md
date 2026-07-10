@@ -5,7 +5,7 @@
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 
 ## 当前阶段
-> **2026-07-10 Codex 测试格式统一(`codex/test-format-normalization`)**:使用当前 Dart SDK 对 `test/` 572 个 Dart 文件做全量 formatter 审计并机械重排其中 349 个;生产代码、数据与配置零改动,二次格式审计 0 changed,`git diff --check` 通过。独立 worktree 首次 analyze 因 `.g.dart` 被 gitignore 且尚未 codegen 出现生成符号缺失;按 CI 顺序运行 build_runner(114 outputs)后 `flutter analyze lib/ test/` 0 问题。全量测试首轮出现 1 次瞬时失败,随后 `--fail-fast --reporter expanded` 完整复跑 **3790/3790** 通过;PR CI 状态见本条后续更新。
+> **2026-07-11 Codex 项目健康治理(`codex/project-health-hardening`)**:按 07-10 全量审查建议完成 7 批收口。① `lib/test/docs` 115 个历史格式文件统一,CI 加 formatter 门禁;② 新增扫荡结算/单位 4 测,CI 全量测试产 `lcov.info` artifact;③ 新增独立 macOS debug build job;④ README/CLAUDE/历史计划与 `.git` 体积误诊订正(`docs/handoff` tracked 仅 2.76MiB,本地 ignored 2.7G 不擅删);⑤ 存档恢复抽 `SaveRestoreDatabaseOps`,掉落引用校验移出 GameRepository,招募属性去 `dynamic`;⑥ 六个 BattleScreen 播放 bool 收进 `BattleScreenPlaybackConfig`,25 个测试/诊断调用迁 `defaultGroundStrategy` 后删除旧 `battle_engine.dart`;⑦ 锁文件兼容升级 21 项并删未使用 `intl`。**最终门禁**:build_runner 114 outputs;format 1080/0 changed;analyze 0;coverage 全量 **3794/3794**(约10m16s),已记录行覆盖 **80.84%**;macOS debug build 成功;diff/status 边界通过。**剩余非阻塞**:`stage_entry_flow` 21.51% 且仍混合多 hook;GameRepository/IsarSetup 全局单例继续分批降耦;`js 0.7.2` 为 `isar_community 3.3.2` 上游传递依赖;远端 CI 待分支推送后运行。
 
 > **2026-07-10 Codex CI 运行时维护(`codex/ci-runtime-refresh`)**:GitHub Actions `checkout@v4` 在 PR #23-25 持续产生 Node 20 弃用注记;核对官方 action.yml 后升级到最新 `actions/checkout@v7`(Node 24),并清除 CI 中 build_runner 已移除/忽略的 `--delete-conflicting-outputs` 参数。PR #26 首轮 CI 全链路绿且 annotations 为空,弃用注记已消失。
 
