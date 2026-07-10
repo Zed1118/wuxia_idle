@@ -19,7 +19,9 @@ void main() {
   }
 
   testWidgets('渲染 child', (tester) async {
-    await tester.pumpWidget(host(const DarkParchmentPanel(child: Text('卷轴内容'))));
+    await tester.pumpWidget(
+      host(const DarkParchmentPanel(child: Text('卷轴内容'))),
+    );
     expect(find.text('卷轴内容'), findsOneWidget);
   });
 

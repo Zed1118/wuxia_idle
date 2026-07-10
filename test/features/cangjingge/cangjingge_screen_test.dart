@@ -72,9 +72,7 @@ void main() {
 
   // ── widget test（overrides，无真 Isar）─────────────────────────────────────
 
-  testWidgets('藏经阁主屏：AppBar 标题 + 6 槽 + 武学库行渲染 + 已装配招落槽', (
-    tester,
-  ) async {
+  testWidgets('藏经阁主屏：AppBar 标题 + 6 槽 + 武学库行渲染 + 已装配招落槽', (tester) async {
     await tester.binding.setSurfaceSize(const Size(900, 2400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -118,9 +116,7 @@ void main() {
     expect(find.byType(SkillProficiencyRow), findsWidgets);
   });
 
-  testWidgets('藏经阁出战槽显示用途说明（main1 常用输出 / ultimate 高内力爆发）', (
-    tester,
-  ) async {
+  testWidgets('藏经阁出战槽显示用途说明（main1 常用输出 / ultimate 高内力爆发）', (tester) async {
     await tester.binding.setSurfaceSize(const Size(900, 2400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -194,10 +190,9 @@ void main() {
       // 屏幕 initState autoFill 同一路径：resolver 解析 + service 落库。
       final character = await isar.characters.get(charId);
       final numbers = GameRepository.instance.numbers;
-      final sources = await SkillLoadoutResolver(isar: isar).resolve(
-        character!,
-        numbers: numbers,
-      );
+      final sources = await SkillLoadoutResolver(
+        isar: isar,
+      ).resolve(character!, numbers: numbers);
       await SkillLoadoutService(isar).applyAutoFill(
         characterId: charId,
         mainTechniqueSkills: sources.mainTechniqueSkills,

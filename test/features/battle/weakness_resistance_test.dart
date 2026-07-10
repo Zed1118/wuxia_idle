@@ -15,16 +15,16 @@ import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import '../../support/test_data.dart';
 
 SkillDef _mkSkill({required int power, required SkillType type}) => SkillDef(
-      id: 's',
-      name: 'x',
-      description: 'd',
-      type: type,
-      powerMultiplier: power,
-      internalForceCost: 0,
-      cooldownTurns: 0,
-      requiresManualTrigger: false,
-      visualEffect: 'v',
-    );
+  id: 's',
+  name: 'x',
+  description: 'd',
+  type: type,
+  powerMultiplier: power,
+  internalForceCost: 0,
+  cooldownTurns: 0,
+  requiresManualTrigger: false,
+  visualEffect: 'v',
+);
 
 void main() {
   setUpAll(loadTestGameRepository);

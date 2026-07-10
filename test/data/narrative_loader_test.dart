@@ -15,6 +15,7 @@ paragraphs:
   - 三道身影自林中涌出。
 ''';
       }
+
       final c = await NarrativeLoader.load(
         'stage_01_01_opening',
         loader: mockLoader,
@@ -52,6 +53,7 @@ title: 空
       Future<String> mockLoader(String path) async {
         throw Exception('file not found: $path');
       }
+
       final c = await NarrativeLoader.load('missing', loader: mockLoader);
       expect(c.isPlaceholder, isTrue);
       expect(c.id, 'missing');
@@ -105,27 +107,29 @@ paragraphs:
       ], reason: '扫描顺序契约：先扁平后 stages/');
     });
 
-    test('P1 #1 扁平 + stages/ + ascension/ 都不存在 → 各试一次后 placeholder 兜底',
-        () async {
-      final calls = <String>[];
-      Future<String> mockLoader(String path) async {
-        calls.add(path);
-        throw Exception('not found: $path');
-      }
+    test(
+      'P1 #1 扁平 + stages/ + ascension/ 都不存在 → 各试一次后 placeholder 兜底',
+      () async {
+        final calls = <String>[];
+        Future<String> mockLoader(String path) async {
+          calls.add(path);
+          throw Exception('not found: $path');
+        }
 
-      final c = await NarrativeLoader.load(
-        'stage_99_99_opening',
-        loader: mockLoader,
-      );
-      expect(c.isPlaceholder, isTrue);
-      // P2.3 加 `data/narratives/ascension/` 后 _scanPaths 长度 3
-      // (memory `feedback_red_line_test_semantics`:断言扫描顺序契约非具体数字)。
-      expect(calls, [
-        'data/narratives/stage_99_99_opening.yaml',
-        'data/narratives/stages/stage_99_99_opening.yaml',
-        'data/narratives/ascension/stage_99_99_opening.yaml',
-      ], reason: '扁平 → stages/ → ascension/ 顺序各试一次');
-    });
+        final c = await NarrativeLoader.load(
+          'stage_99_99_opening',
+          loader: mockLoader,
+        );
+        expect(c.isPlaceholder, isTrue);
+        // P2.3 加 `data/narratives/ascension/` 后 _scanPaths 长度 3
+        // (memory `feedback_red_line_test_semantics`:断言扫描顺序契约非具体数字)。
+        expect(calls, [
+          'data/narratives/stage_99_99_opening.yaml',
+          'data/narratives/stages/stage_99_99_opening.yaml',
+          'data/narratives/ascension/stage_99_99_opening.yaml',
+        ], reason: '扁平 → stages/ → ascension/ 顺序各试一次');
+      },
+    );
   });
 
   group('NarrativeContent.placeholder', () {
@@ -202,8 +206,11 @@ epilogue: |
   路还很长。
 ''';
       }
-      final c =
-          await NarrativeLoader.loadChapter('chapter_01', loader: mockLoader);
+
+      final c = await NarrativeLoader.loadChapter(
+        'chapter_01',
+        loader: mockLoader,
+      );
       expect(c.id, 'chapter_01');
       expect(c.title, '学武出山');
       expect(c.prologue, contains('庆元三年'));
@@ -218,8 +225,10 @@ title: 半章
 prologue: |
   只有卷首。
 ''';
-      final c =
-          await NarrativeLoader.loadChapter('chapter_x', loader: mockLoader);
+      final c = await NarrativeLoader.loadChapter(
+        'chapter_x',
+        loader: mockLoader,
+      );
       expect(c.prologue, contains('只有卷首'));
       expect(c.epilogue, isNull);
       expect(c.isPlaceholder, isFalse);
@@ -229,8 +238,11 @@ prologue: |
       Future<String> mockLoader(String path) async {
         throw Exception('not found: $path');
       }
-      final c =
-          await NarrativeLoader.loadChapter('chapter_99', loader: mockLoader);
+
+      final c = await NarrativeLoader.loadChapter(
+        'chapter_99',
+        loader: mockLoader,
+      );
       expect(c.isPlaceholder, isTrue);
       expect(c.id, 'chapter_99');
       expect(c.prologue, isNull);
@@ -239,8 +251,7 @@ prologue: |
 
     test('yaml 损坏 → placeholder(不抛异常)', () async {
       Future<String> mockLoader(String path) async => '{ invalid :::';
-      final c =
-          await NarrativeLoader.loadChapter('broken', loader: mockLoader);
+      final c = await NarrativeLoader.loadChapter('broken', loader: mockLoader);
       expect(c.isPlaceholder, isTrue);
     });
   });

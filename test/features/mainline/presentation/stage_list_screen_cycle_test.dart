@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -68,18 +67,16 @@ void main() {
             _NumbersStub(maxCycleMainline: maxCycle),
           ),
         ],
-        child: const MaterialApp(
-          home: StageListScreen(chapterIndex: 1),
-        ),
+        child: const MaterialApp(home: StageListScreen(chapterIndex: 1)),
       ),
     );
     await tester.pump();
     await tester.pump();
   }
 
-  testWidgets(
-      '整章已通(ch1#1) → 章头唯一 CycleSelectControl 显「挑战第2周目」',
-      (tester) async {
+  testWidgets('整章已通(ch1#1) → 章头唯一 CycleSelectControl 显「挑战第2周目」', (
+    tester,
+  ) async {
     await pumpScreen(tester, progress: mkProgressCleared());
 
     // 周目控件上移到章层 → 全屏唯一一个(非 per-tile)。
@@ -95,9 +92,7 @@ void main() {
     );
   });
 
-  testWidgets(
-      '整章未通 → 章级 CycleSelectControl 内部 guard 不渲染周目文案',
-      (tester) async {
+  testWidgets('整章未通 → 章级 CycleSelectControl 内部 guard 不渲染周目文案', (tester) async {
     await pumpScreen(tester, progress: mkProgressFresh());
 
     // 控件挂在章头但 highestClearedCycleForChapter=0 → 返回 SizedBox。
@@ -137,8 +132,7 @@ void main() {
     expect(find.text(UiStrings.sweepLockedHintCycle(1)), findsNothing);
   });
 
-  testWidgets('第1周目未全通(仅 Boss) → 扫荡按钮灰显 + 周目门槛提示(§5.7 灰掉不隐藏)',
-      (tester) async {
+  testWidgets('第1周目未全通(仅 Boss) → 扫荡按钮灰显 + 周目门槛提示(§5.7 灰掉不隐藏)', (tester) async {
     // mkProgressCleared 仅含 stage_01_05#1(Boss),前 4 关无 #1 → 门槛未达。
     await pumpScreen(tester, progress: mkProgressCleared());
 
@@ -148,26 +142,33 @@ void main() {
     expect(find.text(UiStrings.sweepChapterButtonCycle(1)), findsNothing);
   });
 
-  testWidgets('切到第2周目 → 扫荡按钮响应式刷新(第1金按钮→第2周目门槛灰显)',
-      (tester) async {
+  testWidgets('切到第2周目 → 扫荡按钮响应式刷新(第1金按钮→第2周目门槛灰显)', (tester) async {
     // 第1周目全通→默认 cycleFor=1→金按钮;切第2周目(未通)→须响应式变灰显第2周目。
     // 回归锚:旧 ref.read 非响应式 bug 下,切周目按钮不刷新仍显第1周目。
     await pumpScreen(tester, progress: mkProgressSweepable());
 
-    expect(find.text(UiStrings.sweepChapterButtonCycle(1)), findsOneWidget,
-        reason: '默认回放第1周目(已全通)→金色可点扫荡按钮');
+    expect(
+      find.text(UiStrings.sweepChapterButtonCycle(1)),
+      findsOneWidget,
+      reason: '默认回放第1周目(已全通)→金色可点扫荡按钮',
+    );
 
     await tester.tap(find.text(UiStrings.cycleChallengeNextLabel(2)));
     await tester.pump();
 
-    expect(find.text(UiStrings.sweepChapterButtonCycle(1)), findsNothing,
-        reason: '切周目后第1周目金按钮应消失(响应式刷新)');
-    expect(find.text(UiStrings.sweepLockedHintCycle(2)), findsOneWidget,
-        reason: '第2周目未手工通关→灰显第2周目门槛提示');
+    expect(
+      find.text(UiStrings.sweepChapterButtonCycle(1)),
+      findsNothing,
+      reason: '切周目后第1周目金按钮应消失(响应式刷新)',
+    );
+    expect(
+      find.text(UiStrings.sweepLockedHintCycle(2)),
+      findsOneWidget,
+      reason: '第2周目未手工通关→灰显第2周目门槛提示',
+    );
   });
 
-  testWidgets('第2周目视图 → 关卡按周目显示(本周目未通显可挑战,不再误显已通关)',
-      (tester) async {
+  testWidgets('第2周目视图 → 关卡按周目显示(本周目未通显可挑战,不再误显已通关)', (tester) async {
     // 第1周目全 5 关 #1 已通,但无任何 #2。切第2周目后关卡应全显「可挑战」,
     // 而非沿用第1周目 clearedStageIds 全显「已通关」(修正误导 bug)。
     await pumpScreen(
@@ -183,39 +184,45 @@ void main() {
     await tester.pump();
 
     // 第2周目视图:本周目一关未通→全「可挑战」,无「已通关」。
-    expect(find.text(UiStrings.stageListCleared), findsNothing,
-        reason: '第2周目尚未通任何关→不应显已通关');
-    expect(find.text(UiStrings.stageListAvailable), findsNWidgets(5),
-        reason: '第2周目全关解锁可挑战');
+    expect(
+      find.text(UiStrings.stageListCleared),
+      findsNothing,
+      reason: '第2周目尚未通任何关→不应显已通关',
+    );
+    expect(
+      find.text(UiStrings.stageListAvailable),
+      findsNWidgets(5),
+      reason: '第2周目全关解锁可挑战',
+    );
   });
 }
 
 /// NumbersConfig stub：只实现 cycleEvolution。
 class _NumbersStub implements NumbersConfig {
   const _NumbersStub({required int maxCycleMainline})
-      : _maxCycle = maxCycleMainline;
+    : _maxCycle = maxCycleMainline;
 
   final int _maxCycle;
 
   @override
   CycleEvolutionConfig get cycleEvolution => CycleEvolutionConfig(
-        maxCycleMainline: _maxCycle,
-        maxCycleTower: 2,
-        scalePerCycle: 0.0,
-        defenseRateCap: 0.6,
-        traits: const CycleTraitsConfig(
-          yuti: YutiTraitParams(
-              defenseRateBonusC2: 0.0, defenseRateBonusC3: 0.0),
-          fanzhen: FanzhenTraitParams(damagePerTick: 0, ticks: 0),
-          ningjia: NingjiaTraitParams(critDamageTakenMult: 1.0),
-          zhenqi: ZhenqiTraitParams(internalForcePct: 0.0),
-          shipo: ShipoTraitParams(chargeSkillId: ''),
-        ),
-        assignment: const {},
-      );
+    maxCycleMainline: _maxCycle,
+    maxCycleTower: 2,
+    scalePerCycle: 0.0,
+    defenseRateCap: 0.6,
+    traits: const CycleTraitsConfig(
+      yuti: YutiTraitParams(defenseRateBonusC2: 0.0, defenseRateBonusC3: 0.0),
+      fanzhen: FanzhenTraitParams(damagePerTick: 0, ticks: 0),
+      ningjia: NingjiaTraitParams(critDamageTakenMult: 1.0),
+      zhenqi: ZhenqiTraitParams(internalForcePct: 0.0),
+      shipo: ShipoTraitParams(chargeSkillId: ''),
+    ),
+    assignment: const {},
+  );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError(
-      '_NumbersStub: 只实现 cycleEvolution, '
-      'invoked=${invocation.memberName}');
+    '_NumbersStub: 只实现 cycleEvolution, '
+    'invoked=${invocation.memberName}',
+  );
 }

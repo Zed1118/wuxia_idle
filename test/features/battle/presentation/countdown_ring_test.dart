@@ -6,7 +6,11 @@ void main() {
   Future<void> pump(WidgetTester t, Widget w) async {
     await t.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => t.binding.setSurfaceSize(null));
-    await t.pumpWidget(MaterialApp(home: Scaffold(body: Center(child: w))));
+    await t.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: Center(child: w)),
+      ),
+    );
   }
 
   testWidgets('中心数字 = remaining.ceil()', (t) async {
@@ -69,7 +73,9 @@ void main() {
     expect(find.text('3'), findsOneWidget);
   });
 
-  testWidgets('BeatCountdownRing: beat=0.5 时 remaining3 显 3(ceil 2.5)', (t) async {
+  testWidgets('BeatCountdownRing: beat=0.5 时 remaining3 显 3(ceil 2.5)', (
+    t,
+  ) async {
     final ctrl = AnimationController(
       vsync: const TestVSync(),
       value: 0.5,

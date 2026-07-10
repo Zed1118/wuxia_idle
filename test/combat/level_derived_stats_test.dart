@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
@@ -19,17 +18,17 @@ void main() {
   tearDown(GameRepository.resetForTest);
 
   Character mkChar({int level = 1}) => Character.create(
-        name: '测试',
-        realmTier: RealmTier.erLiu,
-        realmLayer: RealmLayer.qiMeng,
-        attributes: Attributes(),
-        rarity: RarityTier.xunChang,
-        lineageRole: LineageRole.founder,
-        createdAt: DateTime(2026, 6, 26),
-        internalForce: 1000,
-        internalForceMax: 3000,
-        level: level,
-      )..mainTechniqueId = null;
+    name: '测试',
+    realmTier: RealmTier.erLiu,
+    realmLayer: RealmLayer.qiMeng,
+    attributes: Attributes(),
+    rarity: RarityTier.xunChang,
+    lineageRole: LineageRole.founder,
+    createdAt: DateTime(2026, 6, 26),
+    internalForce: 1000,
+    internalForceMax: 3000,
+    level: level,
+  )..mainTechniqueId = null;
 
   test('maxHp:level 11 比 level 1 多 10×bonus_max_hp_per_level', () {
     final n = GameRepository.instance.numbers;
@@ -49,9 +48,15 @@ void main() {
   test('内力上限:level 加成进 base 后再 clamp', () {
     final n = GameRepository.instance.numbers;
     final lo = CharacterDerivedStats.internalForceMaxWithLineage(
-        mkChar(level: 1), [], n);
+      mkChar(level: 1),
+      [],
+      n,
+    );
     final hi = CharacterDerivedStats.internalForceMaxWithLineage(
-        mkChar(level: 21), [], n);
+      mkChar(level: 21),
+      [],
+      n,
+    );
     // base 3000 远低于红线 15000,无 clamp 截断 → 差 = 20×bonus。
     expect(hi - lo, 20 * n.level.bonusInternalForceMaxPerLevel);
   });

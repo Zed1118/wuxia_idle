@@ -9,8 +9,7 @@ void main() {
     expect(UiStrings.weaknessHitGlyph, '会心');
   });
 
-  testWidgets('会心 glyph 经 ImpactGlyphOverlay.show 渲染且不溢出 720p',
-      (tester) async {
+  testWidgets('会心 glyph 经 ImpactGlyphOverlay.show 渲染且不溢出 720p', (tester) async {
     tester.view.physicalSize = const Size(1280, 720);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);

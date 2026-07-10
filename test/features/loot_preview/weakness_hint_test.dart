@@ -10,30 +10,26 @@ EnemyDef _enemy({
   String id = 'e',
   bool isBoss = false,
   Map<TechniqueSchool, double>? mult,
-}) =>
-    EnemyDef(
-      id: id,
-      name: 'n',
-      realmTier: RealmTier.sanLiu,
-      realmLayer: RealmLayer.qiMeng,
-      school: TechniqueSchool.gangMeng,
-      baseHp: 100,
-      baseAttack: 10,
-      baseSpeed: 100,
-      skillIds: const [],
-      iconPath: 'x',
-      isBoss: isBoss,
-      schoolDamageTakenMult: mult,
-    );
+}) => EnemyDef(
+  id: id,
+  name: 'n',
+  realmTier: RealmTier.sanLiu,
+  realmLayer: RealmLayer.qiMeng,
+  school: TechniqueSchool.gangMeng,
+  baseHp: 100,
+  baseAttack: 10,
+  baseSpeed: 100,
+  skillIds: const [],
+  iconPath: 'x',
+  isBoss: isBoss,
+  schoolDamageTakenMult: mult,
+);
 
 void main() {
   group('weaknessHintLines(批二② 事后可查)', () {
     test('未通关 → 空（§5.7 先感受问题再给答案）', () {
       final team = [
-        _enemy(
-          isBoss: true,
-          mult: {TechniqueSchool.lingQiao: 1.5},
-        ),
+        _enemy(isBoss: true, mult: {TechniqueSchool.lingQiao: 1.5}),
       ];
       expect(weaknessHintLines(team, cleared: false), isEmpty);
     });
@@ -65,10 +61,10 @@ void main() {
 
     test('通关 + Boss 弱点+抗性混合 → 两行都出', () {
       final team = [
-        _enemy(isBoss: true, mult: {
-          TechniqueSchool.lingQiao: 1.5,
-          TechniqueSchool.yinRou: 0.5,
-        }),
+        _enemy(
+          isBoss: true,
+          mult: {TechniqueSchool.lingQiao: 1.5, TechniqueSchool.yinRou: 0.5},
+        ),
       ];
       final lines = weaknessHintLines(team, cleared: true);
       expect(lines.length, 2);
@@ -124,9 +120,13 @@ void main() {
       // minion 的弱点不应进结果（只取 boss）。
       expect(
         lines,
-        isNot(contains(
-          UiStrings.weaknessHintWeak(EnumL10n.school(TechniqueSchool.gangMeng)),
-        )),
+        isNot(
+          contains(
+            UiStrings.weaknessHintWeak(
+              EnumL10n.school(TechniqueSchool.gangMeng),
+            ),
+          ),
+        ),
       );
     });
 

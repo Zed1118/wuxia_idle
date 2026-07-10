@@ -144,8 +144,7 @@ void main() {
       expect(after.schoolKillCounts.countOf(TechniqueSchool.gangMeng), 0);
     });
 
-    test('recordKill 多次反序列化 fixed-length list 后仍可累加(W13 教训回归)',
-        () async {
+    test('recordKill 多次反序列化 fixed-length list 后仍可累加(W13 教训回归)', () async {
       final svc = EncounterService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
       // 第一波:gangMeng
@@ -156,10 +155,7 @@ void main() {
       // 第二波:同 saveDataId,触发 findFirst 反序列化(fixed-length)+ 加新 school
       await svc.recordKill(
         saveDataId: 1,
-        defeatedSchools: const [
-          TechniqueSchool.yinRou,
-          TechniqueSchool.yinRou,
-        ],
+        defeatedSchools: const [TechniqueSchool.yinRou, TechniqueSchool.yinRou],
       );
       final p = await IsarSetup.instance.encounterProgress
           .filter()
@@ -185,8 +181,7 @@ void main() {
         encounters: [def],
         rng: _FixedRng(0.0), // rng.nextDouble = 0 → 永远过
       );
-      expect(result, isNull,
-          reason: 'lingQiao=4 < threshold 5,trigger 不满足');
+      expect(result, isNull, reason: 'lingQiao=4 < threshold 5,trigger 不满足');
     });
 
     test('fortune < required → 返回 null', () async {
@@ -207,24 +202,25 @@ void main() {
     });
 
     test(
-        'trigger 满足 + rng < p → 返回 def(fortune 软概率公式 base * (1+f/20))',
-        () async {
-      final svc = EncounterService(isar: IsarSetup.instance);
-      await svc.getOrCreate(saveDataId: 1);
-      await svc.recordKill(
-        saveDataId: 1,
-        defeatedSchools: List.filled(5, TechniqueSchool.lingQiao),
-      );
-      // fortune=10, base=0.5 → p = 0.5 * (1 + 10/20) = 0.75
-      final def = _mkInsight(baseProbability: 0.5);
-      final result = await svc.evaluateTriggers(
-        saveDataId: 1,
-        attributes: _mkAttrs(fortune: 10),
-        encounters: [def],
-        rng: _FixedRng(0.7), // 0.7 < 0.75 → 触发
-      );
-      expect(result?.id, def.id);
-    });
+      'trigger 满足 + rng < p → 返回 def(fortune 软概率公式 base * (1+f/20))',
+      () async {
+        final svc = EncounterService(isar: IsarSetup.instance);
+        await svc.getOrCreate(saveDataId: 1);
+        await svc.recordKill(
+          saveDataId: 1,
+          defeatedSchools: List.filled(5, TechniqueSchool.lingQiao),
+        );
+        // fortune=10, base=0.5 → p = 0.5 * (1 + 10/20) = 0.75
+        final def = _mkInsight(baseProbability: 0.5);
+        final result = await svc.evaluateTriggers(
+          saveDataId: 1,
+          attributes: _mkAttrs(fortune: 10),
+          encounters: [def],
+          rng: _FixedRng(0.7), // 0.7 < 0.75 → 触发
+        );
+        expect(result?.id, def.id);
+      },
+    );
 
     test('trigger 满足但 rng >= p → 返回 null', () async {
       final svc = EncounterService(isar: IsarSetup.instance);
@@ -286,73 +282,82 @@ void main() {
       expect(result, isNull, reason: 'festivalRequired 非 null 但今日非节日');
     });
 
-    test('festivalRequired=chunJie + festivalToday=yuanXiao → 不触发(不同节日)',
-        () async {
-      final svc = EncounterService(isar: IsarSetup.instance);
-      await svc.getOrCreate(saveDataId: 1);
-      final def = const EncounterDef(
-        id: 'enc_festival_chun_jie_2',
-        type: EncounterType.fortuneEvent,
-        trigger: EncounterTrigger(festivalRequired: Festival.chunJie),
-        baseProbability: 1.0,
-        outcomeMapping: {
-          'gain': OutcomeDef(
-            type: OutcomeType.attributeBonus,
-            attributeKey: AttributeKey.fortune,
-          ),
-        },
-      );
-      final result = await svc.evaluateTriggers(
-        saveDataId: 1,
-        attributes: _mkAttrs(fortune: 9),
-        encounters: [def],
-        rng: _FixedRng(0.0),
-        festivalToday: Festival.yuanXiao,
-      );
-      expect(result, isNull, reason: 'festivalRequired=chunJie 但今日是元宵');
-    });
+    test(
+      'festivalRequired=chunJie + festivalToday=yuanXiao → 不触发(不同节日)',
+      () async {
+        final svc = EncounterService(isar: IsarSetup.instance);
+        await svc.getOrCreate(saveDataId: 1);
+        final def = const EncounterDef(
+          id: 'enc_festival_chun_jie_2',
+          type: EncounterType.fortuneEvent,
+          trigger: EncounterTrigger(festivalRequired: Festival.chunJie),
+          baseProbability: 1.0,
+          outcomeMapping: {
+            'gain': OutcomeDef(
+              type: OutcomeType.attributeBonus,
+              attributeKey: AttributeKey.fortune,
+            ),
+          },
+        );
+        final result = await svc.evaluateTriggers(
+          saveDataId: 1,
+          attributes: _mkAttrs(fortune: 9),
+          encounters: [def],
+          rng: _FixedRng(0.0),
+          festivalToday: Festival.yuanXiao,
+        );
+        expect(result, isNull, reason: 'festivalRequired=chunJie 但今日是元宵');
+      },
+    );
 
-    test('festivalRequired=chunJie + festivalToday=chunJie + rng < p → 触发',
-        () async {
-      final svc = EncounterService(isar: IsarSetup.instance);
-      await svc.getOrCreate(saveDataId: 1);
-      final def = const EncounterDef(
-        id: 'enc_festival_chun_jie_3',
-        type: EncounterType.fortuneEvent,
-        trigger: EncounterTrigger(festivalRequired: Festival.chunJie),
-        baseProbability: 1.0,
-        outcomeMapping: {
-          'gain': OutcomeDef(
-            type: OutcomeType.attributeBonus,
-            attributeKey: AttributeKey.fortune,
-          ),
-        },
-      );
-      final result = await svc.evaluateTriggers(
-        saveDataId: 1,
-        attributes: _mkAttrs(fortune: 5),
-        encounters: [def],
-        rng: _FixedRng(0.5), // p = 1.0 * 1.25 = 1.25,0.5 < 1.25 → 触发
-        festivalToday: Festival.chunJie,
-      );
-      expect(result?.id, def.id);
-    });
+    test(
+      'festivalRequired=chunJie + festivalToday=chunJie + rng < p → 触发',
+      () async {
+        final svc = EncounterService(isar: IsarSetup.instance);
+        await svc.getOrCreate(saveDataId: 1);
+        final def = const EncounterDef(
+          id: 'enc_festival_chun_jie_3',
+          type: EncounterType.fortuneEvent,
+          trigger: EncounterTrigger(festivalRequired: Festival.chunJie),
+          baseProbability: 1.0,
+          outcomeMapping: {
+            'gain': OutcomeDef(
+              type: OutcomeType.attributeBonus,
+              attributeKey: AttributeKey.fortune,
+            ),
+          },
+        );
+        final result = await svc.evaluateTriggers(
+          saveDataId: 1,
+          attributes: _mkAttrs(fortune: 5),
+          encounters: [def],
+          rng: _FixedRng(0.5), // p = 1.0 * 1.25 = 1.25,0.5 < 1.25 → 触发
+          festivalToday: Festival.chunJie,
+        );
+        expect(result?.id, def.id);
+      },
+    );
 
-    test('festivalRequired=null + festivalToday=chunJie → 触发(节日维度免审)',
-        () async {
-      final svc = EncounterService(isar: IsarSetup.instance);
-      await svc.getOrCreate(saveDataId: 1);
-      final def = _mkFortune();
-      final result = await svc.evaluateTriggers(
-        saveDataId: 1,
-        attributes: _mkAttrs(fortune: 9),
-        encounters: [def],
-        rng: _FixedRng(0.0),
-        festivalToday: Festival.chunJie,
-      );
-      expect(result?.id, def.id,
-          reason: 'festivalRequired=null → 任何节日/非节日都通过该维度');
-    });
+    test(
+      'festivalRequired=null + festivalToday=chunJie → 触发(节日维度免审)',
+      () async {
+        final svc = EncounterService(isar: IsarSetup.instance);
+        await svc.getOrCreate(saveDataId: 1);
+        final def = _mkFortune();
+        final result = await svc.evaluateTriggers(
+          saveDataId: 1,
+          attributes: _mkAttrs(fortune: 9),
+          encounters: [def],
+          rng: _FixedRng(0.0),
+          festivalToday: Festival.chunJie,
+        );
+        expect(
+          result?.id,
+          def.id,
+          reason: 'festivalRequired=null → 任何节日/非节日都通过该维度',
+        );
+      },
+    );
   });
 
   group('applyOutcome', () {
@@ -366,8 +371,10 @@ void main() {
         outcomeId: 'insight_success',
       );
       expect(result, isA<UnlockSkillApplied>());
-      expect((result as UnlockSkillApplied).skillId,
-          'skill_encounter_ting_yu_jian');
+      expect(
+        (result as UnlockSkillApplied).skillId,
+        'skill_encounter_ting_yu_jian',
+      );
 
       // 重复 apply 不再增列表
       await svc.applyOutcome(
@@ -378,14 +385,17 @@ void main() {
       // 波A A4 来源统一:解锁写 SaveData.skillUnlockProgress(单一真相源),
       // 旧池 EncounterProgress.unlockedSkillIds 退役只读不再写。
       final save = await IsarSetup.instance.saveDatas.get(0);
-      expect(save!.skillUnlockProgress.isUnlocked('skill_encounter_ting_yu_jian'),
-          isTrue);
       expect(
-          save.skillUnlockProgress
-              .where((e) => e.skillId == 'skill_encounter_ting_yu_jian')
-              .length,
-          1,
-          reason: '重复 apply 去重,不增条目');
+        save!.skillUnlockProgress.isUnlocked('skill_encounter_ting_yu_jian'),
+        isTrue,
+      );
+      expect(
+        save.skillUnlockProgress
+            .where((e) => e.skillId == 'skill_encounter_ting_yu_jian')
+            .length,
+        1,
+        reason: '重复 apply 去重,不增条目',
+      );
       final p = await IsarSetup.instance.encounterProgress
           .filter()
           .saveDataIdEqualTo(1)
@@ -394,8 +404,10 @@ void main() {
     });
 
     test('attributeBonus → 写对应字段 + lifetime cap enforce', () async {
-      final svc =
-          EncounterService(isar: IsarSetup.instance, attributeGainCap: 3);
+      final svc = EncounterService(
+        isar: IsarSetup.instance,
+        attributeGainCap: 3,
+      );
       await svc.getOrCreate(saveDataId: 1);
       final def = _mkFortune();
       // 第 1 次:fortune+1 → total=1
@@ -433,8 +445,7 @@ void main() {
       expect(p.attributeGainsTotal, 3);
     });
 
-    test('attributeBonus + founderCharacterId → 真正加到角色属性（审计②修复）',
-        () async {
+    test('attributeBonus + founderCharacterId → 真正加到角色属性（审计②修复）', () async {
       final svc = EncounterService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
       // 建 fortune=5 的主角存 Isar，取 autoIncrement id。
@@ -461,11 +472,16 @@ void main() {
       expect(r, isA<AttributeBonusApplied>());
 
       final updated = await IsarSetup.instance.characters.get(charId);
-      expect(updated!.attributes.fortune, 6,
-          reason:
-              '奇遇属性奖励应真正写到角色 attributes（旧 bug:只记 EncounterProgress 不改角色）');
-      expect(updated.attributeBonusFromAdventure, 1,
-          reason: '生涯累计计数写活（此前 never-written 死字段）');
+      expect(
+        updated!.attributes.fortune,
+        6,
+        reason: '奇遇属性奖励应真正写到角色 attributes（旧 bug:只记 EncounterProgress 不改角色）',
+      );
+      expect(
+        updated.attributeBonusFromAdventure,
+        1,
+        reason: '生涯累计计数写活（此前 never-written 死字段）',
+      );
       // EncounterProgress 仍同步记录（cap 追踪不变）。
       final p = await IsarSetup.instance.encounterProgress
           .filter()
@@ -495,13 +511,15 @@ void main() {
     test('P1.y · founderCharacterId 传入 → tutorialStep 推到 7', () async {
       // seed SaveData tutorialStep=6(已达收徒)
       await IsarSetup.instance.writeTxn(() async {
-        await IsarSetup.instance.saveDatas.put(SaveData()
-          ..slotId = IsarSetup.currentSlotId
-          ..saveVersion = '0.12.0'
-          ..createdAt = DateTime.now()
-          ..lastSavedAt = DateTime.now()
-          ..lastOnlineAt = DateTime.now()
-          ..tutorialStep = 6);
+        await IsarSetup.instance.saveDatas.put(
+          SaveData()
+            ..slotId = IsarSetup.currentSlotId
+            ..saveVersion = '0.12.0'
+            ..createdAt = DateTime.now()
+            ..lastSavedAt = DateTime.now()
+            ..lastOnlineAt = DateTime.now()
+            ..tutorialStep = 6,
+        );
       });
       final svc = EncounterService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
@@ -511,24 +529,30 @@ void main() {
         saveDataId: 1,
         encounter: def,
         outcomeId: 'insight_success',
-        founderCharacterId: 42, // 非 null → 走 tutorialSvc.advanceForFirstAdventure
+        founderCharacterId:
+            42, // 非 null → 走 tutorialSvc.advanceForFirstAdventure
         encounterTitle: 'test',
       );
 
       final tutorialSvc = TutorialService(IsarSetup.instance);
-      expect(await tutorialSvc.getCurrentStep(), 7,
-          reason: '首次奇遇触发 founderCharacterId != null → 推 step 7');
+      expect(
+        await tutorialSvc.getCurrentStep(),
+        7,
+        reason: '首次奇遇触发 founderCharacterId != null → 推 step 7',
+      );
     });
 
     test('P1.y · founderCharacterId=null → tutorialStep 不推进', () async {
       await IsarSetup.instance.writeTxn(() async {
-        await IsarSetup.instance.saveDatas.put(SaveData()
-          ..slotId = IsarSetup.currentSlotId
-          ..saveVersion = '0.12.0'
-          ..createdAt = DateTime.now()
-          ..lastSavedAt = DateTime.now()
-          ..lastOnlineAt = DateTime.now()
-          ..tutorialStep = 6);
+        await IsarSetup.instance.saveDatas.put(
+          SaveData()
+            ..slotId = IsarSetup.currentSlotId
+            ..saveVersion = '0.12.0'
+            ..createdAt = DateTime.now()
+            ..lastSavedAt = DateTime.now()
+            ..lastOnlineAt = DateTime.now()
+            ..tutorialStep = 6,
+        );
       });
       final svc = EncounterService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
@@ -542,8 +566,11 @@ void main() {
       );
 
       final tutorialSvc = TutorialService(IsarSetup.instance);
-      expect(await tutorialSvc.getCurrentStep(), 6,
-          reason: 'founderCharacterId=null 不入 GameEvent / tutorial 路径');
+      expect(
+        await tutorialSvc.getCurrentStep(),
+        6,
+        reason: 'founderCharacterId=null 不入 GameEvent / tutorial 路径',
+      );
     });
   });
 
@@ -552,8 +579,7 @@ void main() {
   // ========================================================================
 
   group('recordIdleMinutes + biome/weather 累加', () {
-    test('biome+weather 同 call → 两个 list 各 +N',
-        () async {
+    test('biome+weather 同 call → 两个 list 各 +N', () async {
       final svc = EncounterService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
 
@@ -578,8 +604,7 @@ void main() {
       expect(p.weatherMinutes.minutesOf(EncounterWeather.mist), 90);
     });
 
-    test('仅 biome / 仅 weather / 都 null 行为',
-        () async {
+    test('仅 biome / 仅 weather / 都 null 行为', () async {
       final svc = EncounterService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
 
@@ -620,9 +645,7 @@ void main() {
       expect(p.biomeMinutes.minutesOf(EncounterBiome.swordTomb), 0);
     });
 
-    test(
-        'recordIdleMinutes 多次累加 fixed-length list 不抛(W13 教训回归)',
-        () async {
+    test('recordIdleMinutes 多次累加 fixed-length list 不抛(W13 教训回归)', () async {
       final svc = EncounterService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
       // 第一次 record 后,findFirst 重新拉的 list 是 fixed-length;
@@ -667,9 +690,7 @@ void main() {
           fortuneRequired: fortune,
         ),
         baseProbability: 1.0,
-        outcomeMapping: const {
-          'ok': OutcomeDef(type: OutcomeType.none),
-        },
+        outcomeMapping: const {'ok': OutcomeDef(type: OutcomeType.none)},
       );
     }
 

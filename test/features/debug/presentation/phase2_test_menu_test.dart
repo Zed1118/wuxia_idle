@@ -23,9 +23,8 @@ import 'package:wuxia_idle/shared/strings.dart';
 /// 正确性已在 MainMenu test 中通过 tap Phase2 → 找到 scenarioP1 验证（即
 /// Phase2TestMenu 路由可达）；按钮 onTap 内部的 seedAndPush 流程由本测覆盖。
 void main() {
-  Widget app() => const ProviderScope(
-        child: MaterialApp(home: Phase2TestMenu()),
-      );
+  Widget app() =>
+      const ProviderScope(child: MaterialApp(home: Phase2TestMenu()));
 
   testWidgets('AppBar 标题 phase2MenuTitle 可见', (tester) async {
     await tester.pumpWidget(app());
@@ -76,19 +75,24 @@ void main() {
 
     // 顺序:从上到下 P1 → ... → VC18-A1 → VC-P5+ → DEBUG-Festival
     final p1Y = tester.getCenter(find.text(UiStrings.scenarioP1)).dy;
-    final vc18A1Y =
-        tester.getCenter(find.text(UiStrings.scenarioVc18A1)).dy;
-    final vcP5PlusY =
-        tester.getCenter(find.text(UiStrings.scenarioVcP5Plus)).dy;
-    final shenwuDropY =
-        tester.getCenter(find.text(UiStrings.scenarioVcShenwuDrop)).dy;
-    final debugFestivalY =
-        tester.getCenter(find.text(UiStrings.debugFestivalOverrideLabel)).dy;
+    final vc18A1Y = tester.getCenter(find.text(UiStrings.scenarioVc18A1)).dy;
+    final vcP5PlusY = tester
+        .getCenter(find.text(UiStrings.scenarioVcP5Plus))
+        .dy;
+    final shenwuDropY = tester
+        .getCenter(find.text(UiStrings.scenarioVcShenwuDrop))
+        .dy;
+    final debugFestivalY = tester
+        .getCenter(find.text(UiStrings.debugFestivalOverrideLabel))
+        .dy;
     expect(p1Y < vc18A1Y, isTrue);
     expect(vc18A1Y < vcP5PlusY, isTrue, reason: 'VC-P5+ 在 VC18-A1 后');
     expect(vcP5PlusY < shenwuDropY, isTrue, reason: '神物掉落 在 VC-P5+ 后');
-    expect(shenwuDropY < debugFestivalY, isTrue,
-        reason: '神物掉落 在 DEBUG-Festival 前');
+    expect(
+      shenwuDropY < debugFestivalY,
+      isTrue,
+      reason: '神物掉落 在 DEBUG-Festival 前',
+    );
   });
 
   testWidgets('16 个场景按钮均为 InkWell(可点)', (tester) async {
@@ -99,8 +103,7 @@ void main() {
     expect(find.byType(InkWell), findsNWidgets(16));
   });
 
-  testWidgets('tap P1 → IsarSetup 未 init → SnackBar 显示「种子失败」',
-      (tester) async {
+  testWidgets('tap P1 → IsarSetup 未 init → SnackBar 显示「种子失败」', (tester) async {
     await tester.pumpWidget(app());
 
     await tester.tap(find.text(UiStrings.scenarioP1));

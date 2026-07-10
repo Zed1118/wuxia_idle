@@ -68,7 +68,8 @@ void main() {
         expect(
           avg[tiers[i]]!,
           greaterThanOrEqualTo(avg[tiers[i - 1]]!),
-          reason: '高阶主线关平均掉落银两不应低于低阶(梯度单调):'
+          reason:
+              '高阶主线关平均掉落银两不应低于低阶(梯度单调):'
               '${tiers[i - 1].name}=${avg[tiers[i - 1]]} '
               '${tiers[i].name}=${avg[tiers[i]]}',
         );
@@ -99,7 +100,8 @@ void main() {
         expect(
           k30,
           inInclusiveRange(lower, 12.0),
-          reason: '${tier.name} 阶:达成 30% 关卡占比需每日打本 ${k30.toStringAsFixed(1)} 关,'
+          reason:
+              '${tier.name} 阶:达成 30% 关卡占比需每日打本 ${k30.toStringAsFixed(1)} 关,'
               '跳出合理带[\$lower,12]→该阶关卡银两初值需校准'
               '(单关期望=$avgStage 闭关日=$seclusionDaily)',
         );

@@ -29,7 +29,9 @@ void main() {
   });
 
   setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('wuxia_visual_master_test_');
+    tempDir = await Directory.systemTemp.createTemp(
+      'wuxia_visual_master_test_',
+    );
     await IsarSetup.init(directory: tempDir, inspector: false);
   });
 
@@ -43,54 +45,76 @@ void main() {
   });
 
   test('seedVisualMasterAllTiers → 1 武圣角色 + mainTechniqueId 非空', () async {
-    await Phase2SeedService(isar: IsarSetup.instance).seedVisualMasterAllTiers();
+    await Phase2SeedService(
+      isar: IsarSetup.instance,
+    ).seedVisualMasterAllTiers();
     final isar = IsarSetup.instance;
 
     expect(await isar.characters.count(), 1);
 
     final ch = await isar.characters.get(1);
     expect(ch, isNotNull);
-    expect(ch!.realmTier, RealmTier.wuSheng,
-        reason: '角色境界必须是武圣(cover 全 7 阶解锁前提)');
-    expect(ch.realmLayer, RealmLayer.dengFeng,
-        reason: '武圣最高层 dengFeng');
-    expect(ch.mainTechniqueId, isNotNull,
-        reason: 'TechniquePanelScreen 显 cover 需要 mainTechniqueId');
+    expect(
+      ch!.realmTier,
+      RealmTier.wuSheng,
+      reason: '角色境界必须是武圣(cover 全 7 阶解锁前提)',
+    );
+    expect(ch.realmLayer, RealmLayer.dengFeng, reason: '武圣最高层 dengFeng');
+    expect(
+      ch.mainTechniqueId,
+      isNotNull,
+      reason: 'TechniquePanelScreen 显 cover 需要 mainTechniqueId',
+    );
   });
 
   test('seedVisualMasterAllTiers → techniques 覆盖全 7 tier', () async {
-    await Phase2SeedService(isar: IsarSetup.instance).seedVisualMasterAllTiers();
+    await Phase2SeedService(
+      isar: IsarSetup.instance,
+    ).seedVisualMasterAllTiers();
     final isar = IsarSetup.instance;
 
     final techs = await isar.techniques.where().findAll();
-    expect(techs.length, TechniqueTier.values.length,
-        reason: '7 阶各 1 本心法');
+    expect(techs.length, TechniqueTier.values.length, reason: '7 阶各 1 本心法');
 
     final tierSet = techs.map((t) => t.tier).toSet();
-    expect(tierSet.length, TechniqueTier.values.length,
-        reason: '7 个 tier 每阶都有心法(不重复不遗漏)');
+    expect(
+      tierSet.length,
+      TechniqueTier.values.length,
+      reason: '7 个 tier 每阶都有心法(不重复不遗漏)',
+    );
 
     for (final tier in TechniqueTier.values) {
-      expect(tierSet.contains(tier), isTrue,
-          reason: '${tier.name} 阶心法必须在 isar.techniques 中');
+      expect(
+        tierSet.contains(tier),
+        isTrue,
+        reason: '${tier.name} 阶心法必须在 isar.techniques 中',
+      );
     }
   });
 
   test('seedVisualMasterAllTiers → 所有心法 tier ≤ 武圣上限(三系锁死合规)', () async {
-    await Phase2SeedService(isar: IsarSetup.instance).seedVisualMasterAllTiers();
+    await Phase2SeedService(
+      isar: IsarSetup.instance,
+    ).seedVisualMasterAllTiers();
     final isar = IsarSetup.instance;
 
     final ch = await isar.characters.get(1);
     expect(ch, isNotNull);
 
     final cap = RealmUtils.techniqueTierCapOf(ch!.realmTier);
-    expect(cap, TechniqueTier.chuanShuoShenGong,
-        reason: '武圣上限必须是传说神功(全 7 阶合法)');
+    expect(
+      cap,
+      TechniqueTier.chuanShuoShenGong,
+      reason: '武圣上限必须是传说神功(全 7 阶合法)',
+    );
 
     final techs = await isar.techniques.where().findAll();
     for (final t in techs) {
-      expect(t.tier.index <= cap.index, isTrue,
-          reason: '${t.defId} tier=${t.tier.name} 超过上限 cap=${cap.name}');
+      expect(
+        t.tier.index <= cap.index,
+        isTrue,
+        reason: '${t.defId} tier=${t.tier.name} 超过上限 cap=${cap.name}',
+      );
     }
   });
 
@@ -99,8 +123,11 @@ void main() {
     await Phase2SeedService(isar: isar).seedVisualMasterAllTiers();
     await Phase2SeedService(isar: isar).seedVisualMasterAllTiers();
 
-    expect(await isar.techniques.count(), TechniqueTier.values.length,
-        reason: '_clearAll 保证反复 reseed 不重复 append');
+    expect(
+      await isar.techniques.count(),
+      TechniqueTier.values.length,
+      reason: '_clearAll 保证反复 reseed 不重复 append',
+    );
     expect(await isar.characters.count(), 1);
   });
 }

@@ -15,10 +15,7 @@ void main() {
     });
 
     test('item_xinxuejiejing → xinXueJieJing', () {
-      expect(
-        ItemType.fromDefId('item_xinxuejiejing'),
-        ItemType.xinXueJieJing,
-      );
+      expect(ItemType.fromDefId('item_xinxuejiejing'), ItemType.xinXueJieJing);
     });
 
     test('item_silver → silver（首次入库类型正确，不泄漏进材料网格）', () {

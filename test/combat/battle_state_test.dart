@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
@@ -87,8 +86,7 @@ void main() {
       expect(bc.iconPath, isNull);
     });
 
-    test('与 CharacterDerivedStats 直接调用结果一致（maxHp/speed/critRate/evRate）',
-        () {
+    test('与 CharacterDerivedStats 直接调用结果一致（maxHp/speed/critRate/evRate）', () {
       final c = _mkChar(
         tier: RealmTier.erLiu,
         layer: RealmLayer.yuanShu,
@@ -120,38 +118,39 @@ void main() {
       expect(bc.evasionRate, CharacterDerivedStats.evasionRate(c, n));
     });
 
-    test('currentHp 初始 = maxHp，currentInternalForce 初始 = maxInternalForce（P0 进场满）',
-        () {
-      // P0:战斗内力进场满(maxIf · 每场预算 · 与敌方对称)。
-      // internalForce(600)与 internalForceMax(默认 500)不同 → 进场 current
-      // 取 maxIf(500),不再取 character.internalForce。
-      final c = _mkChar(
-        tier: RealmTier.xueTu,
-        layer: RealmLayer.ruMen,
-        internalForce: 600,
-        school: TechniqueSchool.gangMeng,
-      );
-      final tech = _mkTech(
-        defId: 'tech_gangmeng_jichu',
-        tier: TechniqueTier.ruMenGong,
-        school: TechniqueSchool.gangMeng,
-      );
-      final bc = BattleCharacter.fromCharacter(
-        character: c,
-        equipped: const [],
-        mainTechnique: tech,
-        numbers: GameRepository.instance.numbers,
-        teamSide: 0,
-        slotIndex: 0,
-      );
-      expect(bc.currentHp, bc.maxHp);
-      expect(bc.maxInternalForce, c.internalForceMax);
-      // P0:进场满,current == max(== c.internalForceMax 500),不再 == 600。
-      expect(bc.currentInternalForce, bc.maxInternalForce);
-    });
+    test(
+      'currentHp 初始 = maxHp，currentInternalForce 初始 = maxInternalForce（P0 进场满）',
+      () {
+        // P0:战斗内力进场满(maxIf · 每场预算 · 与敌方对称)。
+        // internalForce(600)与 internalForceMax(默认 500)不同 → 进场 current
+        // 取 maxIf(500),不再取 character.internalForce。
+        final c = _mkChar(
+          tier: RealmTier.xueTu,
+          layer: RealmLayer.ruMen,
+          internalForce: 600,
+          school: TechniqueSchool.gangMeng,
+        );
+        final tech = _mkTech(
+          defId: 'tech_gangmeng_jichu',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.gangMeng,
+        );
+        final bc = BattleCharacter.fromCharacter(
+          character: c,
+          equipped: const [],
+          mainTechnique: tech,
+          numbers: GameRepository.instance.numbers,
+          teamSide: 0,
+          slotIndex: 0,
+        );
+        expect(bc.currentHp, bc.maxHp);
+        expect(bc.maxInternalForce, c.internalForceMax);
+        // P0:进场满,current == max(== c.internalForceMax 500),不再 == 600。
+        expect(bc.currentInternalForce, bc.maxInternalForce);
+      },
+    );
 
-    test('师承遗物 2 件 → maxInternalForce 含 +10% lineage buff（T55 战斗路径补齐）',
-        () {
+    test('师承遗物 2 件 → maxInternalForce 含 +10% lineage buff（T55 战斗路径补齐）', () {
       final c = _mkChar(
         tier: RealmTier.erLiu,
         layer: RealmLayer.yuanShu,
@@ -182,11 +181,10 @@ void main() {
       // 期望 == internalForceMaxWithLineage 直接计算结果
       expect(
         bc.maxInternalForce,
-        CharacterDerivedStats.internalForceMaxWithLineage(
-          c,
-          [heritage1, heritage2],
-          n,
-        ),
+        CharacterDerivedStats.internalForceMaxWithLineage(c, [
+          heritage1,
+          heritage2,
+        ], n),
       );
       // 显式数值：base 500 × (1 + 2 × 0.05) = 550
       expect(bc.maxInternalForce, 550);
@@ -203,8 +201,7 @@ void main() {
       expect(bcPlain.maxInternalForce, 500);
     });
 
-    test('actionPoint=0 / isAlive=true / 空 cooldowns / 空 buffs 初始',
-        () {
+    test('actionPoint=0 / isAlive=true / 空 cooldowns / 空 buffs 初始', () {
       final c = _mkChar(
         tier: RealmTier.xueTu,
         layer: RealmLayer.ruMen,
@@ -232,50 +229,50 @@ void main() {
       expect(bc.slotIndex, 2);
     });
 
-    test('availableSkills 从 TechniqueDef.skillIds 解析（tech_gangmeng_jichu → 3 招）',
-        () {
-      final c = _mkChar(
-        tier: RealmTier.xueTu,
-        layer: RealmLayer.ruMen,
-        internalForce: 100,
-        school: TechniqueSchool.gangMeng,
-      );
-      final tech = _mkTech(
-        defId: 'tech_gangmeng_jichu',
-        tier: TechniqueTier.ruMenGong,
-        school: TechniqueSchool.gangMeng,
-      );
-      final bc = BattleCharacter.fromCharacter(
-        character: c,
-        equipped: const [],
-        mainTechnique: tech,
-        numbers: GameRepository.instance.numbers,
-        teamSide: 0,
-        slotIndex: 0,
-      );
-      // 主修 3 招 + P0.5 破招技「破势」广发玩家方(teamSide==0)= 4 招。
-      expect(bc.availableSkills.length, 4);
-      expect(
-        bc.availableSkills.map((s) => s.id).toList(),
-        containsAll([
-          'skill_gangmeng_jichu_basic',
-          'skill_gangmeng_jichu_skill',
-          'skill_gangmeng_jichu_ult',
-          'skill_po_shi',
-        ]),
-      );
-      // 破势排在主修 3 招之后(P0.5 注入点)。
-      expect(bc.availableSkills.last.id, 'skill_po_shi');
-      // 确认 SkillDef 实例就是 GameRepository.getSkill 返回的
-      expect(
-        bc.availableSkills.first,
-        same(GameRepository.instance
-            .getSkill('skill_gangmeng_jichu_basic')),
-      );
-    });
+    test(
+      'availableSkills 从 TechniqueDef.skillIds 解析（tech_gangmeng_jichu → 3 招）',
+      () {
+        final c = _mkChar(
+          tier: RealmTier.xueTu,
+          layer: RealmLayer.ruMen,
+          internalForce: 100,
+          school: TechniqueSchool.gangMeng,
+        );
+        final tech = _mkTech(
+          defId: 'tech_gangmeng_jichu',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.gangMeng,
+        );
+        final bc = BattleCharacter.fromCharacter(
+          character: c,
+          equipped: const [],
+          mainTechnique: tech,
+          numbers: GameRepository.instance.numbers,
+          teamSide: 0,
+          slotIndex: 0,
+        );
+        // 主修 3 招 + P0.5 破招技「破势」广发玩家方(teamSide==0)= 4 招。
+        expect(bc.availableSkills.length, 4);
+        expect(
+          bc.availableSkills.map((s) => s.id).toList(),
+          containsAll([
+            'skill_gangmeng_jichu_basic',
+            'skill_gangmeng_jichu_skill',
+            'skill_gangmeng_jichu_ult',
+            'skill_po_shi',
+          ]),
+        );
+        // 破势排在主修 3 招之后(P0.5 注入点)。
+        expect(bc.availableSkills.last.id, 'skill_po_shi');
+        // 确认 SkillDef 实例就是 GameRepository.getSkill 返回的
+        expect(
+          bc.availableSkills.first,
+          same(GameRepository.instance.getSkill('skill_gangmeng_jichu_basic')),
+        );
+      },
+    );
 
-    test('C-W14-3-A:equippedEncounterSkillId 非空 → 4 招(主修 3 + 奇遇 1)',
-        () {
+    test('C-W14-3-A:equippedEncounterSkillId 非空 → 4 招(主修 3 + 奇遇 1)', () {
       final c = _mkChar(
         tier: RealmTier.erLiu,
         layer: RealmLayer.ruMen,
@@ -297,13 +294,16 @@ void main() {
         slotIndex: 0,
       );
       // 主修 3 招 + 奇遇 slot 1 招 + P0.5 破势(玩家方广发)= 5 招。
-      expect(bc.availableSkills.length, 5,
-          reason: '主修 3 招 + 奇遇 slot 1 招 + 破势');
+      expect(bc.availableSkills.length, 5, reason: '主修 3 招 + 奇遇 slot 1 招 + 破势');
       // 奇遇 skill 排在主修 3 招之后、破势之前(破势末位注入)。
-      final encSkill = bc.availableSkills
-          .firstWhere((s) => s.id == 'skill_encounter_ting_yu_jian');
-      expect(bc.availableSkills.last.id, 'skill_po_shi',
-          reason: '破势在 fromCharacter 末位注入玩家方');
+      final encSkill = bc.availableSkills.firstWhere(
+        (s) => s.id == 'skill_encounter_ting_yu_jian',
+      );
+      expect(
+        bc.availableSkills.last.id,
+        'skill_po_shi',
+        reason: '破势在 fromCharacter 末位注入玩家方',
+      );
       // tier 标记验证奇遇 skill 加载到位
       expect(encSkill.tier, 3);
       expect(encSkill.isEncounterSkill, isTrue);
@@ -508,14 +508,10 @@ void main() {
       expect(s1.isFinished, false);
     });
 
-    test('result 用 sentinel：不传保留原值；显式传 null 也保留 null；传值则切换',
-        () {
+    test('result 用 sentinel：不传保留原值；显式传 null 也保留 null；传值则切换', () {
       final left = _mkBattleChar(name: '左', teamSide: 0, slotIndex: 0);
       final right = _mkBattleChar(name: '右', teamSide: 1, slotIndex: 0);
-      final running = BattleState.initial(
-        leftTeam: [left],
-        rightTeam: [right],
-      );
+      final running = BattleState.initial(leftTeam: [left], rightTeam: [right]);
       // 1) 不传 result，应当保留 null
       final t1 = running.copyWith(tick: 1);
       expect(t1.result, null);
@@ -534,10 +530,7 @@ void main() {
     test('initial：tick=0 / result=null / actionLog=空 / 队伍不可变', () {
       final left = _mkBattleChar(name: '左', teamSide: 0, slotIndex: 0);
       final right = _mkBattleChar(name: '右', teamSide: 1, slotIndex: 0);
-      final s = BattleState.initial(
-        leftTeam: [left],
-        rightTeam: [right],
-      );
+      final s = BattleState.initial(leftTeam: [left], rightTeam: [right]);
       expect(s.tick, 0);
       expect(s.result, null);
       expect(s.actionLog, isEmpty);
@@ -554,10 +547,13 @@ void main() {
 
   group('BattleAction', () {
     test('全字段构造（含 attackResult 与 skill）', () {
-      final skill = GameRepository.instance
-          .getSkill('skill_gangmeng_jichu_basic');
-      final attackResult =
-          AttackResult.dodged(evasionRate: 0.0, breakdown: 'dodged');
+      final skill = GameRepository.instance.getSkill(
+        'skill_gangmeng_jichu_basic',
+      );
+      final attackResult = AttackResult.dodged(
+        evasionRate: 0.0,
+        breakdown: 'dodged',
+      );
       final a = BattleAction(
         tick: 5,
         actorId: 1,
@@ -575,11 +571,7 @@ void main() {
     });
 
     test('nullable 字段可省略（targetId/skill/attackResult）', () {
-      const a = BattleAction(
-        tick: 0,
-        actorId: 1,
-        description: '战斗开始',
-      );
+      const a = BattleAction(tick: 0, actorId: 1, description: '战斗开始');
       expect(a.targetId, null);
       expect(a.skill, null);
       expect(a.attackResult, null);
@@ -593,21 +585,22 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────
 
   group('P1b · joint_skill 经共鸣槽装配', () {
-    Character mkPlayer() => _mkChar(
-          tier: RealmTier.erLiu,
-          layer: RealmLayer.yuanShu,
-          internalForce: 3000,
-          school: TechniqueSchool.gangMeng,
-        )
+    Character mkPlayer() =>
+        _mkChar(
+            tier: RealmTier.erLiu,
+            layer: RealmLayer.yuanShu,
+            internalForce: 3000,
+            school: TechniqueSchool.gangMeng,
+          )
           // 装满主修 3 招(否则会落 fallback「主修全招」分支)。
           ..mainSkillId1 = 'skill_gangmeng_mingjia_basic'
           ..assistSkillId = 'skill_gangmeng_mingjia_skill'
           ..ultimateSkillId = 'skill_gangmeng_mingjia_ult';
     Technique mkTech() => _mkTech(
-          defId: 'tech_gangmeng_mingjia',
-          tier: TechniqueTier.mingJiaGong,
-          school: TechniqueSchool.gangMeng,
-        );
+      defId: 'tech_gangmeng_mingjia',
+      tier: TechniqueTier.mingJiaGong,
+      school: TechniqueSchool.gangMeng,
+    );
 
     test('共鸣槽空 → availableSkills 不含 joint_skill', () {
       final bc = BattleCharacter.fromCharacter(
@@ -637,8 +630,11 @@ void main() {
       final js = bc.availableSkills.where((s) => s.id == 'skill_joint_skill');
       expect(js.length, 1, reason: '共鸣槽装配 joint');
       expect(js.first.type, SkillType.jointSkill);
-      expect(js.first.powerMultiplier, 4500,
-          reason: 'numbers.yaml reference_multipliers.joint_skill.base = 4500');
+      expect(
+        js.first.powerMultiplier,
+        4500,
+        reason: 'numbers.yaml reference_multipliers.joint_skill.base = 4500',
+      );
     });
   });
 
@@ -648,34 +644,36 @@ void main() {
 
   group('P1.1 候选 3-c · swordSongResonanceActive', () {
     Character mkPlayer() => _mkChar(
-          tier: RealmTier.erLiu,
-          layer: RealmLayer.yuanShu,
-          internalForce: 3000,
-          school: TechniqueSchool.gangMeng,
-        );
+      tier: RealmTier.erLiu,
+      layer: RealmLayer.yuanShu,
+      internalForce: 3000,
+      school: TechniqueSchool.gangMeng,
+    );
     Technique mkTech() => _mkTech(
-          defId: 'tech_gangmeng_mingjia',
-          tier: TechniqueTier.mingJiaGong,
-          school: TechniqueSchool.gangMeng,
-        );
+      defId: 'tech_gangmeng_mingjia',
+      tier: TechniqueTier.mingJiaGong,
+      school: TechniqueSchool.gangMeng,
+    );
     Equipment mkWeapon({required int battleCount}) {
       final e = _mkEquip(baseAttack: 580);
       e.battleCount = battleCount;
       return e;
     }
 
-    test('武器 battleCount=2000 (xinJianTongLing) → swordSongResonanceActive=true',
-        () {
-      final bc = BattleCharacter.fromCharacter(
-        character: mkPlayer(),
-        equipped: [mkWeapon(battleCount: 2000)],
-        mainTechnique: mkTech(),
-        numbers: GameRepository.instance.numbers,
-        teamSide: 0,
-        slotIndex: 0,
-      );
-      expect(bc.swordSongResonanceActive, isTrue);
-    });
+    test(
+      '武器 battleCount=2000 (xinJianTongLing) → swordSongResonanceActive=true',
+      () {
+        final bc = BattleCharacter.fromCharacter(
+          character: mkPlayer(),
+          equipped: [mkWeapon(battleCount: 2000)],
+          mainTechnique: mkTech(),
+          numbers: GameRepository.instance.numbers,
+          teamSide: 0,
+          slotIndex: 0,
+        );
+        expect(bc.swordSongResonanceActive, isTrue);
+      },
+    );
 
     test('武器 battleCount=500 (moQi) → swordSongResonanceActive=false', () {
       // moQi 阶 hasSwordSongEffect=false,虽然 unlocksJointSkill=true

@@ -10,8 +10,10 @@ void main() {
     final req = <String, RealmCoord>{};
     for (var i = 0; i < 7; i++) {
       final n = (i + 1).toString().padLeft(2, '0');
-      req['stage_inner_demon_$n'] =
-          RealmCoord(tier: RealmTier.wuSheng, layer: layers[i]);
+      req['stage_inner_demon_$n'] = RealmCoord(
+        tier: RealmTier.wuSheng,
+        layer: layers[i],
+      );
     }
     final base = InnerDemonDef.empty();
     return InnerDemonDef(
@@ -51,7 +53,7 @@ void main() {
   test('全通 → 7/7,next = null', () {
     final cleared = {
       for (var i = 1; i <= 7; i++)
-        'stage_inner_demon_${i.toString().padLeft(2, '0')}'
+        'stage_inner_demon_${i.toString().padLeft(2, '0')}',
     };
     final p = InnerDemonProgress.from(
       innerDemonDef: defWith7(),

@@ -31,11 +31,7 @@ void main() {
 
     test('所有 ItemType enum 值都有非空映射(全覆盖红线)', () {
       for (final t in ItemType.values) {
-        expect(
-          EnumL10n.itemType(t),
-          isNotEmpty,
-          reason: '$t 缺少中文映射',
-        );
+        expect(EnumL10n.itemType(t), isNotEmpty, reason: '$t 缺少中文映射');
       }
     });
   });

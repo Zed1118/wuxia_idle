@@ -36,8 +36,11 @@ void main() {
       list.increment('skill_a', 3);
 
       expect(list, hasLength(1));
-      expect(identical(list.first, original), isTrue,
-          reason: 'increment 必须修改原对象，而不是替换为 firstWhere orElse 的临时对象');
+      expect(
+        identical(list.first, original),
+        isTrue,
+        reason: 'increment 必须修改原对象，而不是替换为 firstWhere orElse 的临时对象',
+      );
       expect(list.first.count, 13);
     });
 

@@ -15,10 +15,14 @@ void main() {
 
   group('stageNarrativePath', () {
     test('stageId → assets/scenes/narrative_<id>.png', () {
-      expect(stageNarrativePath('stage_01_01'),
-          'assets/scenes/narrative_stage_01_01.png');
-      expect(stageNarrativePath('stage_06_05'),
-          'assets/scenes/narrative_stage_06_05.png');
+      expect(
+        stageNarrativePath('stage_01_01'),
+        'assets/scenes/narrative_stage_01_01.png',
+      );
+      expect(
+        stageNarrativePath('stage_06_05'),
+        'assets/scenes/narrative_stage_06_05.png',
+      );
     });
   });
 }

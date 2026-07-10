@@ -34,13 +34,15 @@ void main() {
   Future<void> seedSave({int initialStep = 0}) async {
     final isar = IsarSetup.instance;
     await isar.writeTxn(() async {
-      await isar.saveDatas.put(SaveData()
-        ..slotId = IsarSetup.currentSlotId
-        ..saveVersion = '0.10.0'
-        ..createdAt = DateTime.now()
-        ..lastSavedAt = DateTime.now()
-        ..lastOnlineAt = DateTime.now()
-        ..tutorialStep = initialStep);
+      await isar.saveDatas.put(
+        SaveData()
+          ..slotId = IsarSetup.currentSlotId
+          ..saveVersion = '0.10.0'
+          ..createdAt = DateTime.now()
+          ..lastSavedAt = DateTime.now()
+          ..lastOnlineAt = DateTime.now()
+          ..tutorialStep = initialStep,
+      );
     });
   }
 
@@ -107,8 +109,11 @@ void main() {
     for (var i = 1; i <= 5; i++) {
       final stageId = 'stage_01_0$i';
       await isar.writeTxn(() => svc.advanceForStageCleared(stageId));
-      expect(await svc.getCurrentStep(), i,
-          reason: '$stageId cleared 后 step 应 = $i');
+      expect(
+        await svc.getCurrentStep(),
+        i,
+        reason: '$stageId cleared 后 step 应 = $i',
+      );
     }
   });
 
@@ -132,7 +137,9 @@ void main() {
       final isar = IsarSetup.instance;
       final svc = TutorialService(isar);
 
-      await isar.writeTxn(() => svc.advanceForRealmBreakthrough(RealmTier.yiLiu));
+      await isar.writeTxn(
+        () => svc.advanceForRealmBreakthrough(RealmTier.yiLiu),
+      );
 
       expect(await svc.getCurrentStep(), 6);
     });
@@ -150,8 +157,11 @@ void main() {
 
         await isar.writeTxn(() => svc.advanceForRealmBreakthrough(tier));
 
-        expect(await svc.getCurrentStep(), 6,
-            reason: '$tier (>= yiLiu) 应推到 step 6');
+        expect(
+          await svc.getCurrentStep(),
+          6,
+          reason: '$tier (>= yiLiu) 应推到 step 6',
+        );
         await IsarSetup.close();
         await IsarSetup.init(directory: tempDir, inspector: false);
       }
@@ -162,15 +172,20 @@ void main() {
       final isar = IsarSetup.instance;
       final svc = TutorialService(isar);
 
-      await isar.writeTxn(() => svc.advanceForRealmBreakthrough(RealmTier.xueTu));
+      await isar.writeTxn(
+        () => svc.advanceForRealmBreakthrough(RealmTier.xueTu),
+      );
       expect(await svc.getCurrentStep(), 5);
 
-      await isar.writeTxn(() => svc.advanceForRealmBreakthrough(RealmTier.sanLiu));
+      await isar.writeTxn(
+        () => svc.advanceForRealmBreakthrough(RealmTier.sanLiu),
+      );
       expect(await svc.getCurrentStep(), 5);
 
-      await isar.writeTxn(() => svc.advanceForRealmBreakthrough(RealmTier.erLiu));
-      expect(await svc.getCurrentStep(), 5,
-          reason: '二流 < 一流 也不应推到 step 6');
+      await isar.writeTxn(
+        () => svc.advanceForRealmBreakthrough(RealmTier.erLiu),
+      );
+      expect(await svc.getCurrentStep(), 5, reason: '二流 < 一流 也不应推到 step 6');
     });
 
     test('advanceForFirstAdventure → step 7', () async {

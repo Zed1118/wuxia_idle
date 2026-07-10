@@ -43,8 +43,7 @@ void main() {
     await IsarSetup.close();
   });
 
-  testWidgets('旧档首启不回溯：不结算被动、不弹被动卡、建立 lastOnlineAt 基准',
-      (tester) async {
+  testWidgets('旧档首启不回溯：不结算被动、不弹被动卡、建立 lastOnlineAt 基准', (tester) async {
     await tester.runAsync(() async {
       // 确认初始状态：lastOnlineAt == createdAt（守卫触发条件）
       final saveBefore = (await IsarSetup.currentSaveData())!;

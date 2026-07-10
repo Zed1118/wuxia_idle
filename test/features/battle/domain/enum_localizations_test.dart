@@ -11,11 +11,7 @@ void main() {
 
     test('所有 BossMemorySource 值都有非空映射(全覆盖红线)', () {
       for (final s in BossMemorySource.values) {
-        expect(
-          EnumL10n.bossMemorySource(s),
-          isNotEmpty,
-          reason: '$s 缺少中文映射',
-        );
+        expect(EnumL10n.bossMemorySource(s), isNotEmpty, reason: '$s 缺少中文映射');
       }
     });
   });

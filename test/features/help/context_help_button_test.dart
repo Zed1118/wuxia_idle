@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -34,14 +33,18 @@ void main() {
           currentTutorialStepProvider.overrideWith((ref) async => step),
         ],
         child: MaterialApp(
-          home: Scaffold(body: Center(child: ContextHelpButton(topic: topic))),
+          home: Scaffold(
+            body: Center(child: ContextHelpButton(topic: topic)),
+          ),
         ),
       ),
     );
     await tester.pumpAndSettle();
   }
 
-  testWidgets('codexEntryId == null（属性 topic）→ hover tooltip + 点击弹短释义浮层', (tester) async {
+  testWidgets('codexEntryId == null（属性 topic）→ hover tooltip + 点击弹短释义浮层', (
+    tester,
+  ) async {
     await pump(tester, topic: HelpTopic.constitution, step: 8);
 
     expect(find.byIcon(Icons.help_outline), findsOneWidget);

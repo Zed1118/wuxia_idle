@@ -112,11 +112,9 @@ void main() {
     );
     expect(result.success, isTrue);
 
-    await DispelService(isar: IsarSetup.instance).persistResult(
-      ch: ch,
-      mainTech: mainTech,
-      newMainTech: assistTech,
-    );
+    await DispelService(
+      isar: IsarSetup.instance,
+    ).persistResult(ch: ch, mainTech: mainTech, newMainTech: assistTech);
 
     // 关闭再读，验证落盘
     final chId = ch.id;
@@ -128,25 +126,26 @@ void main() {
 
     final chBack = await isar2.characters.get(chId);
     expect(chBack, isNotNull);
-    expect(chBack!.internalForce, ifBefore ~/ 2,
-        reason: '内力 ×0.5 应落盘');
-    expect(chBack.mainTechniqueId, assistId,
-        reason: 'mainTechniqueId 应切到新主修');
-    expect(chBack.assistTechniqueIds, contains(mainId),
-        reason: '旧主修挪入辅修');
-    expect(chBack.assistTechniqueIds, isNot(contains(assistId)),
-        reason: '新主修不再在辅修槽');
+    expect(chBack!.internalForce, ifBefore ~/ 2, reason: '内力 ×0.5 应落盘');
+    expect(chBack.mainTechniqueId, assistId, reason: 'mainTechniqueId 应切到新主修');
+    expect(chBack.assistTechniqueIds, contains(mainId), reason: '旧主修挪入辅修');
+    expect(
+      chBack.assistTechniqueIds,
+      isNot(contains(assistId)),
+      reason: '新主修不再在辅修槽',
+    );
 
     final mainBack = await isar2.techniques.get(mainId);
     expect(mainBack, isNotNull);
-    expect(mainBack!.role, TechniqueRole.assist,
-        reason: '旧主修 role=assist 应落盘');
-    expect(mainBack.cultivationProgress, progressBefore ~/ 2,
-        reason: 'progress ×0.5 应落盘');
+    expect(mainBack!.role, TechniqueRole.assist, reason: '旧主修 role=assist 应落盘');
+    expect(
+      mainBack.cultivationProgress,
+      progressBefore ~/ 2,
+      reason: 'progress ×0.5 应落盘',
+    );
 
     final newMainBack = await isar2.techniques.get(assistId);
     expect(newMainBack, isNotNull);
-    expect(newMainBack!.role, TechniqueRole.main,
-        reason: '新主修 role=main 应落盘');
+    expect(newMainBack!.role, TechniqueRole.main, reason: '新主修 role=main 应落盘');
   });
 }

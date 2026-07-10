@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -26,32 +25,30 @@ void main() {
     int battleCount = 0,
     bool isLineageHeritage = false,
     List<ForgingSlot>? forgingSlots,
-  }) =>
-      Equipment.create(
-        defId: 'test',
-        tier: EquipmentTier.haoJiaHuo,
-        slot: EquipmentSlot.weapon,
-        baseAttack: baseAttack,
-        baseHealth: 0,
-        baseSpeed: 10,
-        enhanceLevel: enhanceLevel,
-        battleCount: battleCount,
-        isLineageHeritage: isLineageHeritage,
-        obtainedAt: DateTime(2026, 5, 11),
-        obtainedFrom: 'test',
-        forgingSlots: forgingSlots,
-      );
+  }) => Equipment.create(
+    defId: 'test',
+    tier: EquipmentTier.haoJiaHuo,
+    slot: EquipmentSlot.weapon,
+    baseAttack: baseAttack,
+    baseHealth: 0,
+    baseSpeed: 10,
+    enhanceLevel: enhanceLevel,
+    battleCount: battleCount,
+    isLineageHeritage: isLineageHeritage,
+    obtainedAt: DateTime(2026, 5, 11),
+    obtainedFrom: 'test',
+    forgingSlots: forgingSlots,
+  );
 
   ForgingSlot openSlot({
     required int slotIndex,
     required ForgingSlotType type,
     required int bonusValue,
-  }) =>
-      ForgingSlot()
-        ..slotIndex = slotIndex
-        ..type = type
-        ..unlocked = true
-        ..bonusValue = bonusValue;
+  }) => ForgingSlot()
+    ..slotIndex = slotIndex
+    ..type = type
+    ..unlocked = true
+    ..bonusValue = bonusValue;
 
   // ────────────────────────────────────────────────────────────────────────────
   // 战例 A：+0 裸装 → baseAttack 即为最终值
@@ -107,11 +104,7 @@ void main() {
       enhanceLevel: 12,
       battleCount: 1500, // 默契段 [500, 2000)
       forgingSlots: [
-        openSlot(
-          slotIndex: 1,
-          type: ForgingSlotType.attack,
-          bonusValue: 15,
-        ),
+        openSlot(slotIndex: 1, type: ForgingSlotType.attack, bonusValue: 15),
         ForgingSlot()..slotIndex = 2,
         ForgingSlot()..slotIndex = 3,
       ],
@@ -150,7 +143,8 @@ void main() {
         ForgingSlot()
           ..slotIndex = 1
           ..type = ForgingSlotType.attack
-          ..unlocked = false // 关键：未解锁
+          ..unlocked =
+              false // 关键：未解锁
           ..bonusValue = 100,
         ForgingSlot()..slotIndex = 2,
         ForgingSlot()..slotIndex = 3,
@@ -203,9 +197,7 @@ void main() {
       createdAt: DateTime(2026, 5, 11),
       internalForceMax: 10000,
     );
-    final equipped = [
-      newEq(baseAttack: 100, isLineageHeritage: false),
-    ];
+    final equipped = [newEq(baseAttack: 100, isLineageHeritage: false)];
     expect(
       CharacterDerivedStats.internalForceMaxWithLineage(ch, equipped, n),
       10000,
@@ -228,9 +220,7 @@ void main() {
       createdAt: DateTime(2026, 5, 11),
       internalForceMax: 10000,
     );
-    final equipped = [
-      newEq(baseAttack: 100, isLineageHeritage: true),
-    ];
+    final equipped = [newEq(baseAttack: 100, isLineageHeritage: true)];
     expect(
       CharacterDerivedStats.internalForceMaxWithLineage(ch, equipped, n),
       10500,

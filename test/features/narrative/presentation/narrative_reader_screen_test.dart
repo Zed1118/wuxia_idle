@@ -16,10 +16,9 @@ void main() {
       paragraphs: ['第一段', '第二段', '第三段'],
       isPlaceholder: false,
     );
-    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
-      content: c,
-      fallbackTitle: 'fallback',
-    )));
+    await tester.pumpWidget(
+      wrap(const NarrativeReaderScreen(content: c, fallbackTitle: 'fallback')),
+    );
 
     expect(find.text('测试章'), findsOneWidget);
     expect(find.text('第一段'), findsOneWidget);
@@ -42,26 +41,36 @@ void main() {
       paragraphs: ['只有一段'],
       isPlaceholder: false,
     );
-    await tester.pumpWidget(wrap(Builder(builder: (ctx) {
-      return ElevatedButton(
-        onPressed: () => Navigator.of(ctx).push(MaterialPageRoute<void>(
-          builder: (_) => NarrativeReaderScreen(
-            content: c,
-            fallbackTitle: '兜底标题',
-            onFinish: () => finished = true,
-          ),
-        )),
-        child: const Text('open'),
-      );
-    })));
+    await tester.pumpWidget(
+      wrap(
+        Builder(
+          builder: (ctx) {
+            return ElevatedButton(
+              onPressed: () => Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => NarrativeReaderScreen(
+                    content: c,
+                    fallbackTitle: '兜底标题',
+                    onFinish: () => finished = true,
+                  ),
+                ),
+              ),
+              child: const Text('open'),
+            );
+          },
+        ),
+      ),
+    );
 
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
-    expect(find.text('兜底标题'), findsOneWidget,
-        reason: 'content.title 为 null 时用 fallbackTitle');
-    expect(find.text('完成'), findsOneWidget,
-        reason: '只有 1 段，首段就是末段');
+    expect(
+      find.text('兜底标题'),
+      findsOneWidget,
+      reason: 'content.title 为 null 时用 fallbackTitle',
+    );
+    expect(find.text('完成'), findsOneWidget, reason: '只有 1 段，首段就是末段');
 
     await tester.tap(find.text('完成'));
     await tester.pumpAndSettle();
@@ -72,10 +81,9 @@ void main() {
 
   testWidgets('placeholder 顶部弱提示「⚠ 剧情占位」可见', (tester) async {
     final c = NarrativeContent.placeholder('stage_01_01_opening');
-    await tester.pumpWidget(wrap(NarrativeReaderScreen(
-      content: c,
-      fallbackTitle: '关卡名',
-    )));
+    await tester.pumpWidget(
+      wrap(NarrativeReaderScreen(content: c, fallbackTitle: '关卡名')),
+    );
 
     expect(find.textContaining('剧情占位'), findsOneWidget);
     expect(find.textContaining('stage_01_01_opening'), findsOneWidget);
@@ -88,23 +96,29 @@ void main() {
       paragraphs: ['撑伞的人没有追。'],
       isPlaceholder: false,
     );
-    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
-      content: c,
-      fallbackTitle: 'fb',
-      topBanner: Padding(
-        padding: EdgeInsets.all(8),
-        child: Text('LOSS_BANNER_MARKER'),
+    await tester.pumpWidget(
+      wrap(
+        const NarrativeReaderScreen(
+          content: c,
+          fallbackTitle: 'fb',
+          topBanner: Padding(
+            padding: EdgeInsets.all(8),
+            child: Text('LOSS_BANNER_MARKER'),
+          ),
+        ),
       ),
-    )));
-    expect(find.text('LOSS_BANNER_MARKER'), findsOneWidget,
-        reason: 'topBanner 应渲染到剧情上方');
+    );
+    expect(
+      find.text('LOSS_BANNER_MARKER'),
+      findsOneWidget,
+      reason: 'topBanner 应渲染到剧情上方',
+    );
     expect(find.text('撑伞的人没有追。'), findsOneWidget);
 
     // 不传 topBanner 时不存在
-    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
-      content: c,
-      fallbackTitle: 'fb',
-    )));
+    await tester.pumpWidget(
+      wrap(const NarrativeReaderScreen(content: c, fallbackTitle: 'fb')),
+    );
     expect(find.text('LOSS_BANNER_MARKER'), findsNothing);
   });
 
@@ -116,18 +130,26 @@ void main() {
       paragraphs: ['段1', '段2', '段3', '段4', '段5'],
       isPlaceholder: false,
     );
-    await tester.pumpWidget(wrap(Builder(builder: (ctx) {
-      return ElevatedButton(
-        onPressed: () => Navigator.of(ctx).push(MaterialPageRoute<void>(
-          builder: (_) => NarrativeReaderScreen(
-            content: c,
-            fallbackTitle: 'fb',
-            onFinish: () => finished = true,
-          ),
-        )),
-        child: const Text('open'),
-      );
-    })));
+    await tester.pumpWidget(
+      wrap(
+        Builder(
+          builder: (ctx) {
+            return ElevatedButton(
+              onPressed: () => Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => NarrativeReaderScreen(
+                    content: c,
+                    fallbackTitle: 'fb',
+                    onFinish: () => finished = true,
+                  ),
+                ),
+              ),
+              child: const Text('open'),
+            );
+          },
+        ),
+      ),
+    );
 
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
@@ -149,10 +171,9 @@ void main() {
       paragraphs: ['段落 A', '段落 B'],
       isPlaceholder: false,
     );
-    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
-      content: c,
-      fallbackTitle: 'fb',
-    )));
+    await tester.pumpWidget(
+      wrap(const NarrativeReaderScreen(content: c, fallbackTitle: 'fb')),
+    );
     expect(find.text('跳过'), findsOneWidget);
   });
 
@@ -164,13 +185,11 @@ void main() {
       isPlaceholder: false,
       mandatory: true,
     );
-    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
-      content: c,
-      fallbackTitle: 'fb',
-    )));
+    await tester.pumpWidget(
+      wrap(const NarrativeReaderScreen(content: c, fallbackTitle: 'fb')),
+    );
     expect(find.text('跳过'), findsNothing);
-    expect(find.text('段落 A'), findsOneWidget,
-        reason: '首段正常渲染,只 Skip 按钮被隐');
+    expect(find.text('段落 A'), findsOneWidget, reason: '首段正常渲染,只 Skip 按钮被隐');
   });
 
   testWidgets('mandatory=true + 中段「继续」仍可推进', (tester) async {
@@ -181,10 +200,9 @@ void main() {
       isPlaceholder: false,
       mandatory: true,
     );
-    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
-      content: c,
-      fallbackTitle: 'fb',
-    )));
+    await tester.pumpWidget(
+      wrap(const NarrativeReaderScreen(content: c, fallbackTitle: 'fb')),
+    );
     expect(find.text('继续'), findsOneWidget);
     expect(find.text('跳过'), findsNothing);
 
@@ -194,8 +212,7 @@ void main() {
     expect(find.text('段 B'), findsOneWidget);
   });
 
-  testWidgets('mandatory=true + 末段「完成」按钮触发 onFinish + pop',
-      (tester) async {
+  testWidgets('mandatory=true + 末段「完成」按钮触发 onFinish + pop', (tester) async {
     var finished = false;
     const c = NarrativeContent(
       id: 'tutorial',
@@ -204,24 +221,31 @@ void main() {
       isPlaceholder: false,
       mandatory: true,
     );
-    await tester.pumpWidget(wrap(Builder(builder: (ctx) {
-      return ElevatedButton(
-        onPressed: () => Navigator.of(ctx).push(MaterialPageRoute<void>(
-          builder: (_) => NarrativeReaderScreen(
-            content: c,
-            fallbackTitle: 'fb',
-            onFinish: () => finished = true,
-          ),
-        )),
-        child: const Text('open'),
-      );
-    })));
+    await tester.pumpWidget(
+      wrap(
+        Builder(
+          builder: (ctx) {
+            return ElevatedButton(
+              onPressed: () => Navigator.of(ctx).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => NarrativeReaderScreen(
+                    content: c,
+                    fallbackTitle: 'fb',
+                    onFinish: () => finished = true,
+                  ),
+                ),
+              ),
+              child: const Text('open'),
+            );
+          },
+        ),
+      ),
+    );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
     expect(find.text('完成'), findsOneWidget);
-    expect(find.text('跳过'), findsNothing,
-        reason: 'mandatory 末段不显跳过');
+    expect(find.text('跳过'), findsNothing, reason: 'mandatory 末段不显跳过');
 
     await tester.tap(find.text('完成'));
     await tester.pumpAndSettle();
@@ -236,10 +260,9 @@ void main() {
       paragraphs: ['第一段', '第二段'],
       isPlaceholder: false,
     );
-    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
-      content: c,
-      fallbackTitle: 'fb',
-    )));
+    await tester.pumpWidget(
+      wrap(const NarrativeReaderScreen(content: c, fallbackTitle: 'fb')),
+    );
     expect(find.text('第一段'), findsOneWidget);
 
     await tester.tap(find.text('第一段'));
@@ -257,10 +280,9 @@ void main() {
       paragraphs: ['第一段', '第二段'],
       isPlaceholder: false,
     );
-    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
-      content: c,
-      fallbackTitle: 'fb',
-    )));
+    await tester.pumpWidget(
+      wrap(const NarrativeReaderScreen(content: c, fallbackTitle: 'fb')),
+    );
     expect(find.text(UiStrings.narrativeReaderTapHint), findsOneWidget);
 
     await tester.tap(find.text('继续'));
@@ -270,28 +292,38 @@ void main() {
     expect(find.text(UiStrings.narrativeReaderTapHint), findsNothing);
   });
 
-  testWidgets('传 backgroundImagePath → 渲染 NarrativeSceneBackground 背景层',
-      (tester) async {
+  testWidgets('传 backgroundImagePath → 渲染 NarrativeSceneBackground 背景层', (
+    tester,
+  ) async {
     const c = NarrativeContent(
-      id: 'x', title: '风雨渡口',
-      paragraphs: ['雨夜渡口，撑伞人独立。'], isPlaceholder: false,
+      id: 'x',
+      title: '风雨渡口',
+      paragraphs: ['雨夜渡口，撑伞人独立。'],
+      isPlaceholder: false,
     );
-    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
-      content: c, fallbackTitle: 'fb',
-      backgroundImagePath: 'assets/scenes/narrative_stage_01_05.png',
-    )));
+    await tester.pumpWidget(
+      wrap(
+        const NarrativeReaderScreen(
+          content: c,
+          fallbackTitle: 'fb',
+          backgroundImagePath: 'assets/scenes/narrative_stage_01_05.png',
+        ),
+      ),
+    );
     expect(find.byType(NarrativeSceneBackground), findsOneWidget);
-    expect(find.text('雨夜渡口，撑伞人独立。'), findsOneWidget,
-        reason: '正文仍在背景之上正常渲染');
+    expect(find.text('雨夜渡口，撑伞人独立。'), findsOneWidget, reason: '正文仍在背景之上正常渲染');
   });
 
   testWidgets('不传 backgroundImagePath → 无背景层(回归纯色底)', (tester) async {
     const c = NarrativeContent(
-      id: 'x', title: 't', paragraphs: ['段'], isPlaceholder: false,
+      id: 'x',
+      title: 't',
+      paragraphs: ['段'],
+      isPlaceholder: false,
     );
-    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
-      content: c, fallbackTitle: 'fb',
-    )));
+    await tester.pumpWidget(
+      wrap(const NarrativeReaderScreen(content: c, fallbackTitle: 'fb')),
+    );
     expect(find.byType(NarrativeSceneBackground), findsNothing);
   });
 }

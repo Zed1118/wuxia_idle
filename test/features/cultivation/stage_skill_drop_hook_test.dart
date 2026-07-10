@@ -11,18 +11,18 @@ import 'package:wuxia_idle/features/cultivation/presentation/stage_skill_drop_ho
 import '../../support/isar_test_support.dart';
 
 StageDef _bossStage({String? manual, String? fragment}) => StageDef(
-      id: 'stage_test_boss',
-      name: '测试Boss关',
-      stageType: StageType.mainline,
-      chapterIndex: 1,
-      requiredRealm: RealmTier.xueTu,
-      enemyTeam: const [],
-      isBossStage: true,
-      baseExpReward: 0,
-      difficultyMultiplier: 1.0,
-      dropSkillManualId: manual,
-      dropSkillFragmentId: fragment,
-    );
+  id: 'stage_test_boss',
+  name: '测试Boss关',
+  stageType: StageType.mainline,
+  chapterIndex: 1,
+  requiredRealm: RealmTier.xueTu,
+  enemyTeam: const [],
+  isBossStage: true,
+  baseExpReward: 0,
+  difficultyMultiplier: 1.0,
+  dropSkillManualId: manual,
+  dropSkillFragmentId: fragment,
+);
 
 void main() {
   late Directory tempDir;

@@ -36,9 +36,7 @@ EncounterDef _mkEnc({
     type: EncounterType.fortuneEvent,
     trigger: const EncounterTrigger(),
     baseProbability: 1.0,
-    outcomeMapping: const {
-      'help': OutcomeDef(type: OutcomeType.none),
-    },
+    outcomeMapping: const {'help': OutcomeDef(type: OutcomeType.none)},
     affectsReputation: affects,
   );
 }
@@ -54,8 +52,7 @@ void main() {
   });
 
   setUp(() async {
-    tempDir =
-        await Directory.systemTemp.createTemp('wuxia_t24_encounter_rep_');
+    tempDir = await Directory.systemTemp.createTemp('wuxia_t24_encounter_rep_');
     await IsarSetup.init(directory: tempDir, inspector: false);
   });
 
@@ -67,81 +64,84 @@ void main() {
   });
 
   group('T24 · EncounterIntegration applier wire', () {
-    test('caller 传 applier + affectsReputation → 真触发 applyDelta 且 args 透传',
-        () async {
-      final svc = EncounterService(isar: IsarSetup.instance);
-      await svc.getOrCreate(saveDataId: 1);
+    test(
+      'caller 传 applier + affectsReputation → 真触发 applyDelta 且 args 透传',
+      () async {
+        final svc = EncounterService(isar: IsarSetup.instance);
+        await svc.getOrCreate(saveDataId: 1);
 
-      final calls = <
-          ({
-            int playerId,
-            String factionId,
-            int deltaMin,
-            int deltaMax,
-          })>[];
-      Future<void> collector({
-        required int playerId,
-        required String factionId,
-        required int deltaMin,
-        required int deltaMax,
-      }) async {
-        calls.add((
-          playerId: playerId,
-          factionId: factionId,
-          deltaMin: deltaMin,
-          deltaMax: deltaMax,
-        ));
-      }
+        final calls =
+            <({int playerId, String factionId, int deltaMin, int deltaMax})>[];
+        Future<void> collector({
+          required int playerId,
+          required String factionId,
+          required int deltaMin,
+          required int deltaMax,
+        }) async {
+          calls.add((
+            playerId: playerId,
+            factionId: factionId,
+            deltaMin: deltaMin,
+            deltaMax: deltaMax,
+          ));
+        }
 
-      final enc = _mkEnc(
-        affects: const AffectsReputation(
-          factionId: 'shaolin',
-          deltaMin: 3,
-          deltaMax: 8,
-        ),
-      );
-      await svc.applyOutcome(
-        saveDataId: 1,
-        encounter: enc,
-        outcomeId: 'help',
-        reputationApplier: collector,
-        reputationPlayerId: 1,
-      );
+        final enc = _mkEnc(
+          affects: const AffectsReputation(
+            factionId: 'shaolin',
+            deltaMin: 3,
+            deltaMax: 8,
+          ),
+        );
+        await svc.applyOutcome(
+          saveDataId: 1,
+          encounter: enc,
+          outcomeId: 'help',
+          reputationApplier: collector,
+          reputationPlayerId: 1,
+        );
 
-      expect(calls, hasLength(1), reason: 'applier 必触发一次');
-      expect(calls.single.playerId, 1);
-      expect(calls.single.factionId, 'shaolin');
-      expect(calls.single.deltaMin, 3);
-      expect(calls.single.deltaMax, 8);
-    });
+        expect(calls, hasLength(1), reason: 'applier 必触发一次');
+        expect(calls.single.playerId, 1);
+        expect(calls.single.factionId, 'shaolin');
+        expect(calls.single.deltaMin, 3);
+        expect(calls.single.deltaMax, 8);
+      },
+    );
 
-    test('caller 不传 applier → service null guard,不 throw 且 reputation 不动',
-        () async {
-      final svc = EncounterService(isar: IsarSetup.instance);
-      await svc.getOrCreate(saveDataId: 1);
-      final repSvc = ReputationService(
-          IsarSetup.instance, GameRepository.instance.numbers);
+    test(
+      'caller 不传 applier → service null guard,不 throw 且 reputation 不动',
+      () async {
+        final svc = EncounterService(isar: IsarSetup.instance);
+        await svc.getOrCreate(saveDataId: 1);
+        final repSvc = ReputationService(
+          IsarSetup.instance,
+          GameRepository.instance.numbers,
+        );
 
-      final enc = _mkEnc(
-        affects: const AffectsReputation(
-          factionId: 'wudang',
-          deltaMin: 5,
-          deltaMax: 5,
-        ),
-      );
-      // 关键:reputationApplier / reputationPlayerId 都不传 → 老路径
-      await svc.applyOutcome(
-        saveDataId: 1,
-        encounter: enc,
-        outcomeId: 'help',
-      );
+        final enc = _mkEnc(
+          affects: const AffectsReputation(
+            factionId: 'wudang',
+            deltaMin: 5,
+            deltaMax: 5,
+          ),
+        );
+        // 关键:reputationApplier / reputationPlayerId 都不传 → 老路径
+        await svc.applyOutcome(
+          saveDataId: 1,
+          encounter: enc,
+          outcomeId: 'help',
+        );
 
-      expect(await repSvc.valueFor(1, 'wudang'), 0,
-          reason: '无 applier → 不写 reputation,sane fallback 0');
-    });
+        expect(
+          await repSvc.valueFor(1, 'wudang'),
+          0,
+          reason: '无 applier → 不写 reputation,sane fallback 0',
+        );
+      },
+    );
 
-    test('affectsReputation == null → 即使传 applier 也不触发(向后兼容)',
-        () async {
+    test('affectsReputation == null → 即使传 applier 也不触发(向后兼容)', () async {
       final svc = EncounterService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
 
@@ -164,14 +164,14 @@ void main() {
         reputationPlayerId: 1,
       );
 
-      expect(called, isFalse,
-          reason: 'encounter 不影响声望时,即使 applier 在场也不调');
+      expect(called, isFalse, reason: 'encounter 不影响声望时,即使 applier 在场也不调');
     });
 
-    test('deltaApplierFromRng 闭包真落 Isar + delta ∈ [min, max]',
-        () async {
+    test('deltaApplierFromRng 闭包真落 Isar + delta ∈ [min, max]', () async {
       final repSvc = ReputationService(
-          IsarSetup.instance, GameRepository.instance.numbers);
+        IsarSetup.instance,
+        GameRepository.instance.numbers,
+      );
       // seed 42 取一致 Rng 序列,验抽样到 reputations 表
       final applier = repSvc.deltaApplierFromRng(DefaultRng(seed: 42));
 
@@ -187,44 +187,61 @@ void main() {
 
       // 累积 5 次,每次 ∈ [4,7] → 总和 ∈ [20, 35]
       final total = await repSvc.valueFor(1, 'rep_range_test');
-      expect(total, inInclusiveRange(20, 35),
-          reason: '5 次抽样累积 ∈ [5*4=20, 5*7=35]');
-    });
-
-    test('deltaApplierFromRng · deltaMin == deltaMax 走 fast-path 不抛错',
-        () async {
-      final repSvc = ReputationService(
-          IsarSetup.instance, GameRepository.instance.numbers);
-      // span=0 时不能 nextInt(0)(会抛 RangeError);helper 应跳分支
-      final applier = repSvc.deltaApplierFromRng(DefaultRng(seed: 1));
-
-      await applier(
-        playerId: 1,
-        factionId: 'fast_path',
-        deltaMin: 5,
-        deltaMax: 5,
+      expect(
+        total,
+        inInclusiveRange(20, 35),
+        reason: '5 次抽样累积 ∈ [5*4=20, 5*7=35]',
       );
-      expect(await repSvc.valueFor(1, 'fast_path'), 5,
-          reason: 'span=0 → delta=deltaMin,无随机分支');
     });
 
-    test('deltaApplierFromRng 写穿 ReputationService.applyDelta clamp [-100,+100]',
-        () async {
-      final repSvc = ReputationService(
-          IsarSetup.instance, GameRepository.instance.numbers);
-      final applier = repSvc.deltaApplierFromRng(DefaultRng(seed: 7));
+    test(
+      'deltaApplierFromRng · deltaMin == deltaMax 走 fast-path 不抛错',
+      () async {
+        final repSvc = ReputationService(
+          IsarSetup.instance,
+          GameRepository.instance.numbers,
+        );
+        // span=0 时不能 nextInt(0)(会抛 RangeError);helper 应跳分支
+        final applier = repSvc.deltaApplierFromRng(DefaultRng(seed: 1));
 
-      // 单次 +50,连 3 次 → 150 但 clamp 到 100
-      for (var i = 0; i < 3; i++) {
         await applier(
           playerId: 1,
-          factionId: 'clamp_test',
-          deltaMin: 50,
-          deltaMax: 50,
+          factionId: 'fast_path',
+          deltaMin: 5,
+          deltaMax: 5,
         );
-      }
-      expect(await repSvc.valueFor(1, 'clamp_test'), 100,
-          reason: '§5.4 红线防越,clamp 由 applyDelta 端落');
-    });
+        expect(
+          await repSvc.valueFor(1, 'fast_path'),
+          5,
+          reason: 'span=0 → delta=deltaMin,无随机分支',
+        );
+      },
+    );
+
+    test(
+      'deltaApplierFromRng 写穿 ReputationService.applyDelta clamp [-100,+100]',
+      () async {
+        final repSvc = ReputationService(
+          IsarSetup.instance,
+          GameRepository.instance.numbers,
+        );
+        final applier = repSvc.deltaApplierFromRng(DefaultRng(seed: 7));
+
+        // 单次 +50,连 3 次 → 150 但 clamp 到 100
+        for (var i = 0; i < 3; i++) {
+          await applier(
+            playerId: 1,
+            factionId: 'clamp_test',
+            deltaMin: 50,
+            deltaMax: 50,
+          );
+        }
+        expect(
+          await repSvc.valueFor(1, 'clamp_test'),
+          100,
+          reason: '§5.4 红线防越,clamp 由 applyDelta 端落',
+        );
+      },
+    );
   });
 }

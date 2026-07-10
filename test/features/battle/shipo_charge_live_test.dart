@@ -56,8 +56,7 @@ void main() {
       isTower: false,
     );
 
-    expect(enemy.chargeSkillId, shipoSkillId,
-        reason: '识破：chargeSkillId 已注入');
+    expect(enemy.chargeSkillId, shipoSkillId, reason: '识破：chargeSkillId 已注入');
     expect(
       enemy.availableSkills.any((s) => s.id == shipoSkillId),
       isTrue,
@@ -101,9 +100,7 @@ void main() {
   });
 
   // T3：e2e 战斗 — 识破敌在有限步内真正进入蓄力 ────────────────────────────
-  test(
-      'T3: 识破敌在真实战斗中（固定 seed）达到 chargingSkill != null（蓄力机制 live）',
-      () {
+  test('T3: 识破敌在真实战斗中（固定 seed）达到 chargingSkill != null（蓄力机制 live）', () {
     final numbers = GameRepository.instance.numbers;
     final ce = numbers.cycleEvolution;
     final shipoSkillId = ce.traits.shipo.chargeSkillId;
@@ -117,10 +114,16 @@ void main() {
     );
 
     // 前置断言：结构层正确（保证 T3 e2e 部分的前提成立）
-    expect(enemy.chargeSkillId, shipoSkillId,
-        reason: 'T3 前提: chargeSkillId 已注入');
-    expect(enemy.availableSkills.any((s) => s.id == shipoSkillId), isTrue,
-        reason: 'T3 前提: 蓄力技在 availableSkills');
+    expect(
+      enemy.chargeSkillId,
+      shipoSkillId,
+      reason: 'T3 前提: chargeSkillId 已注入',
+    );
+    expect(
+      enemy.availableSkills.any((s) => s.id == shipoSkillId),
+      isTrue,
+      reason: 'T3 前提: 蓄力技在 availableSkills',
+    );
 
     // ── 构造玩家（极慢 + 极低攻击，避免打死 Boss 妨碍蓄力观察）──
     const playerNormal = SkillDef(

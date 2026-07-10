@@ -24,11 +24,7 @@ void main() {
 
     test('所有 AttributeKey enum 值都有非空映射(全覆盖红线)', () {
       for (final k in AttributeKey.values) {
-        expect(
-          EnumL10n.attributeKey(k),
-          isNotEmpty,
-          reason: '$k 缺少中文映射',
-        );
+        expect(EnumL10n.attributeKey(k), isNotEmpty, reason: '$k 缺少中文映射');
       }
     });
   });
@@ -52,11 +48,7 @@ void main() {
 
     test('所有 TerrainBiome enum 值都有非空映射(全覆盖红线)', () {
       for (final b in TerrainBiome.values) {
-        expect(
-          EnumL10n.terrainBiome(b),
-          isNotEmpty,
-          reason: '$b 缺少中文映射',
-        );
+        expect(EnumL10n.terrainBiome(b), isNotEmpty, reason: '$b 缺少中文映射');
       }
     });
   });

@@ -79,29 +79,30 @@ void main() {
   });
 
   test(
-      'R5.1 soloStart=false 全新 db ensureFoundingMasters → true + Character × 3 + SaveData wire',
-      () async {
-    final isar = IsarSetup.instance;
-    final svc = OnboardingService(isar: isar);
+    'R5.1 soloStart=false 全新 db ensureFoundingMasters → true + Character × 3 + SaveData wire',
+    () async {
+      final isar = IsarSetup.instance;
+      final svc = OnboardingService(isar: isar);
 
-    final result = await svc.ensureFoundingMasters(soloStart: false);
+      final result = await svc.ensureFoundingMasters(soloStart: false);
 
-    expect(result, isTrue);
-    expect(await isar.characters.count(), 3);
+      expect(result, isTrue);
+      expect(await isar.characters.count(), 3);
 
-    final founder = await isar.characters.get(1);
-    expect(founder, isNotNull);
-    expect(founder!.isFounder, isTrue);
-    expect(founder.lineageRole, LineageRole.founder);
-    expect(founder.realmTier, RealmTier.xueTu); // 2026-06-27 祖师改学徒新手起手
-    expect(founder.discipleIds.length, 2);
+      final founder = await isar.characters.get(1);
+      expect(founder, isNotNull);
+      expect(founder!.isFounder, isTrue);
+      expect(founder.lineageRole, LineageRole.founder);
+      expect(founder.realmTier, RealmTier.xueTu); // 2026-06-27 祖师改学徒新手起手
+      expect(founder.discipleIds.length, 2);
 
-    final save = await isar.saveDatas.get(0);
-    expect(save, isNotNull);
-    expect(save!.activeCharacterIds, [1, 2, 3]);
-    expect(save.founderCharacterId, 1);
-    expect(save.sectName, '我的门派');
-  });
+      final save = await isar.saveDatas.get(0);
+      expect(save, isNotNull);
+      expect(save!.activeCharacterIds, [1, 2, 3]);
+      expect(save.founderCharacterId, 1);
+      expect(save.sectName, '我的门派');
+    },
+  );
 
   test('R5.2 二次调用幂等 → false + Character count 不增', () async {
     final isar = IsarSetup.instance;
@@ -166,20 +167,24 @@ void main() {
     expect(founder.assistTechniqueIds.length, 1);
   });
 
-  test('R5.5 真战斗 e2e:StageBattleSetup._buildPlayerTeam 不抛 StateError',
-      () async {
-    final isar = IsarSetup.instance;
-    await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+  test(
+    'R5.5 真战斗 e2e:StageBattleSetup._buildPlayerTeam 不抛 StateError',
+    () async {
+      final isar = IsarSetup.instance;
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
 
-    // audit P0-1 复现 → 修:onboarding 后 buildTeams 应返 (左 3, 右 ≥1)。
-    final stage = GameRepository.instance.getStage('stage_01_01');
-    final setup = StageBattleSetup(isar: isar);
-    final (left, right) = await setup.buildTeams(stage);
+      // audit P0-1 复现 → 修:onboarding 后 buildTeams 应返 (左 3, 右 ≥1)。
+      final stage = GameRepository.instance.getStage('stage_01_01');
+      final setup = StageBattleSetup(isar: isar);
+      final (left, right) = await setup.buildTeams(stage);
 
-    expect(left.length, 3); // 3 师徒入阵
-    expect(right.length, greaterThan(0));
-    // 不抛 StateError = audit P0-1 修复成功
-  });
+      expect(left.length, 3); // 3 师徒入阵
+      expect(right.length, greaterThan(0));
+      // 不抛 StateError = audit P0-1 修复成功
+    },
+  );
 
   test('R5.6 founder.id 严格锚定 1', () async {
     final isar = IsarSetup.instance;

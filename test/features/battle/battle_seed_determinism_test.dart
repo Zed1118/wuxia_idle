@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
@@ -63,50 +62,53 @@ void main() {
     required int slot,
     required int speed,
     required int equipAttack,
-  }) =>
-      BattleCharacter(
-        characterId: charId,
-        name: '$charId',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 12000,
-        currentHp: 12000,
-        maxInternalForce: 2000,
-        currentInternalForce: 2000,
-        speed: speed,
-        criticalRate: 0.5, // 高暴击率 → 每次攻击都有 rng 分歧
-        evasionRate: 0.0,
-        defenseRate: 0.1,
-        totalEquipmentAttack: equipAttack,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: const <SkillDef>[power, normal],
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: teamSide,
-        slotIndex: slot,
-      );
+  }) => BattleCharacter(
+    characterId: charId,
+    name: '$charId',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 12000,
+    currentHp: 12000,
+    maxInternalForce: 2000,
+    currentInternalForce: 2000,
+    speed: speed,
+    criticalRate: 0.5, // 高暴击率 → 每次攻击都有 rng 分歧
+    evasionRate: 0.0,
+    defenseRate: 0.1,
+    totalEquipmentAttack: equipAttack,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: const <SkillDef>[power, normal],
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: teamSide,
+    slotIndex: slot,
+  );
 
   // 左队略强(更高速度+攻击)→ 稳赢,胜负稳定但伤害序列随暴击 roll 变。
   List<BattleCharacter> leftTeam() => [
-        unit(charId: 1, teamSide: 0, slot: 0, speed: 130, equipAttack: 700),
-        unit(charId: 2, teamSide: 0, slot: 1, speed: 120, equipAttack: 700),
-        unit(charId: 3, teamSide: 0, slot: 2, speed: 110, equipAttack: 700),
-      ];
+    unit(charId: 1, teamSide: 0, slot: 0, speed: 130, equipAttack: 700),
+    unit(charId: 2, teamSide: 0, slot: 1, speed: 120, equipAttack: 700),
+    unit(charId: 3, teamSide: 0, slot: 2, speed: 110, equipAttack: 700),
+  ];
   List<BattleCharacter> rightTeam() => [
-        unit(charId: -1, teamSide: 1, slot: 0, speed: 105, equipAttack: 450),
-        unit(charId: -2, teamSide: 1, slot: 1, speed: 100, equipAttack: 450),
-        unit(charId: -3, teamSide: 1, slot: 2, speed: 95, equipAttack: 450),
-      ];
+    unit(charId: -1, teamSide: 1, slot: 0, speed: 105, equipAttack: 450),
+    unit(charId: -2, teamSide: 1, slot: 1, speed: 100, equipAttack: 450),
+    unit(charId: -3, teamSide: 1, slot: 2, speed: 95, equipAttack: 450),
+  ];
 
   /// 经 ProviderContainer 驱动 notifier 跑完整场,返回逐 action 摘要 + 胜负。
   String runOnce(int seed) {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     // 永久 listener 防 autoDispose 在 read 间隙释放 notifier(否则 state 丢失)。
-    final sub = container.listen(battleProvider, (_, _) {}, fireImmediately: true);
+    final sub = container.listen(
+      battleProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
     addTearDown(sub.close);
 
     final notifier = container.read(battleProvider.notifier);
@@ -120,8 +122,10 @@ void main() {
 
     final s = container.read(battleProvider);
     final ops = s.actionLog
-        .map((a) =>
-            '${a.tick}|${a.actorId}|${a.targetId}|${a.skill?.id}|${a.attackResult?.finalDamage}|${a.interrupted}')
+        .map(
+          (a) =>
+              '${a.tick}|${a.actorId}|${a.targetId}|${a.skill?.id}|${a.attackResult?.finalDamage}|${a.interrupted}',
+        )
         .join(';');
     return '${s.result}#$ops';
   }
@@ -139,7 +143,8 @@ void main() {
     expect(
       first,
       equals(second),
-      reason: 'advance() 必须走 startBattle 注入的单一 seeded rng;'
+      reason:
+          'advance() 必须走 startBattle 注入的单一 seeded rng;'
           '同 seed 两次跑应逐 action(含伤害/暴击)与胜负全等',
     );
   });

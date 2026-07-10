@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -152,7 +151,9 @@ void main() {
     final stage = GameRepository.instance.numbers.skillProficiency.stages[2];
 
     await tester.pumpWidget(
-      MaterialApp(home: SkillCodexDetailScreen(def: def, maxStage: stage)),
+      MaterialApp(
+        home: SkillCodexDetailScreen(def: def, maxStage: stage),
+      ),
     );
     await tester.pumpAndSettle();
 

@@ -461,18 +461,20 @@ void main() {
 
     // §12.1 #7 v1.4:刚猛克阴柔附带 +500 固定震伤 — 主乘式外独立加值。
 
-    test('§12.1 #7 震伤:刚猛 vs 阴柔 → quakeDamage=500 finalDamage=mainDamage+500',
-        () {
-      final r = _calcBoundary(defenderSchool: TechniqueSchool.yinRou);
-      expect(r.schoolCounterMultiplier, 1.25, reason: '主乘式仍是 1.25');
-      expect(r.quakeDamage, 500, reason: '震伤固定 +500');
-      expect(r.finalDamage, r.mainDamage + 500, reason: '震伤与主伤害同 tick 叠加');
-    });
+    test(
+      '§12.1 #7 震伤:刚猛 vs 阴柔 → quakeDamage=500 finalDamage=mainDamage+500',
+      () {
+        final r = _calcBoundary(defenderSchool: TechniqueSchool.yinRou);
+        expect(r.schoolCounterMultiplier, 1.25, reason: '主乘式仍是 1.25');
+        expect(r.quakeDamage, 500, reason: '震伤固定 +500');
+        expect(r.finalDamage, r.mainDamage + 500, reason: '震伤与主伤害同 tick 叠加');
+      },
+    );
 
-    test('§12.1 #7 震伤:非刚猛 attacker → quakeDamage=0(只有刚猛触发)',
-        () {
-      final lqVsGangMeng =
-          _calcBoundary(attackerSchool: TechniqueSchool.lingQiao);
+    test('§12.1 #7 震伤:非刚猛 attacker → quakeDamage=0(只有刚猛触发)', () {
+      final lqVsGangMeng = _calcBoundary(
+        attackerSchool: TechniqueSchool.lingQiao,
+      );
       expect(lqVsGangMeng.quakeDamage, 0, reason: '灵巧 vs 刚猛 不应触发震伤');
       final yrVsLq = _calcBoundary(
         attackerSchool: TechniqueSchool.yinRou,
@@ -484,8 +486,7 @@ void main() {
     test('§12.1 #7 震伤:刚猛 vs 非阴柔 → quakeDamage=0(克制不成立)', () {
       final gmVsGm = _calcBoundary();
       expect(gmVsGm.quakeDamage, 0, reason: '刚猛 vs 刚猛(中性)不触发');
-      final gmVsLq =
-          _calcBoundary(defenderSchool: TechniqueSchool.lingQiao);
+      final gmVsLq = _calcBoundary(defenderSchool: TechniqueSchool.lingQiao);
       expect(gmVsLq.quakeDamage, 0, reason: '刚猛 vs 灵巧(被克制)不触发');
     });
 

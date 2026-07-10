@@ -102,10 +102,9 @@ void main() {
     });
 
     test('无秘籍 → hasFirstClearGatedEntry=false（不显脚注）', () {
-      final t = DropRumorTable.fromDropTable(
-        const [EquipmentDrop(equipmentDefId: 'weapon_a', dropChance: 1.0)],
-        gating: FirstClearGating.scrollOnly,
-      );
+      final t = DropRumorTable.fromDropTable(const [
+        EquipmentDrop(equipmentDefId: 'weapon_a', dropChance: 1.0),
+      ], gating: FirstClearGating.scrollOnly);
       expect(t.hasFirstClearGatedEntry, false);
     });
 

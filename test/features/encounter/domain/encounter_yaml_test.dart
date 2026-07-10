@@ -15,111 +15,117 @@ void main() {
 
   group('encounters.yaml 加载', () {
     test(
-        '68 条 encounter 全部解析成功 '
-        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 4 + P1 #37 yu_zhong_qiao_men 挂回 1 + T02 nightshift 9 + P4.1 1.1 Q6A sect_recruit 3 + 2026-06-25 池接线 11)',
-        () {
-      final repo = GameRepository.instance;
-      expect(repo.encounterDefs.length, 68,
+      '68 条 encounter 全部解析成功 '
+      '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 4 + P1 #37 yu_zhong_qiao_men 挂回 1 + T02 nightshift 9 + P4.1 1.1 Q6A sect_recruit 3 + 2026-06-25 池接线 11)',
+      () {
+        final repo = GameRepository.instance;
+        expect(
+          repo.encounterDefs.length,
+          68,
           reason:
-              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 触发条件 4 + P1 #37 yu_zhong_qiao_men 挂回 1 + T02 nightshift 9(领悟 5 + 奇遇 4) + P4.1 1.1 Q6A sect_recruit 3(bamboo/desert/mountain) + 2026-06-25 池接线 11(11 招搁浅 unlockSkill 各 1 奇遇)');
-      // W14-1 3 条必须仍在
-      expect(
-        repo.encounterDefs.keys,
-        containsAll(
-            {'bamboo_listen_rain', 'cha_ting_dui_ju', 'du_ke_wen_dao'}),
-      );
-      // W14-2 抽样核对若干新 id
-      expect(
-        repo.encounterDefs.keys,
-        containsAll({
-          'gu_jian_zhong_yin',
-          'cang_jing_ge_wu',
-          'shan_lin_qi_yu',
-          'xuan_ya_pu_bu_li_lian',
-          'duan_ya_chui_lian',
-          'ye_xing_xun_dao',
-        }),
-      );
-      // W15 #37 第 1 批 6 条挂回核对
-      expect(
-        repo.encounterDefs.keys,
-        containsAll({
-          'xue_ye_gu_qin',
-          'feng_xue_gu_dian',
-          'ye_du_gu_chuan',
-          'han_mei_ying_xue',
-          'xing_chen_wu_dao',
-          'qiu_ye_wei_qi',
-        }),
-        reason: 'W15 #37 第 1 批 6 条挂回:雨雪夜主题为主',
-      );
-      // W15 #37 第 2 批 7 条挂回核对(tier 1-2/6/7 池补)
-      expect(
-        repo.encounterDefs.keys,
-        containsAll({
-          'shi_dao_shou_hu',
-          'mu_chan_dui_yin',
-          'huang_sha_ke_zhan',
-          'xiang_ye_shen_ji',
-          'luo_hua_jian_yuan',
-          'shan_ya_can_bei',
-          'jue_ding_feng_qi',
-        }),
-        reason: 'W15 #37 第 2 批 7 条:tier 1-2/6/7 池 unlockSkill 补',
-      );
-      // W15 C-1 收尾 2 条挂回核对(tier 7 long_yin / wu_ming 引用补)
-      expect(
-        repo.encounterDefs.keys,
-        containsAll({'huang_miao_jiu_seng', 'jiu_lou_jue_yin'}),
-        reason: 'W15 C-1 收尾 2 条:tier 7 long_yin / wu_ming 池 unlockSkill 补',
-      );
-      // W16 节日 encounter 6 条核对(GDD §12.4 接口预留首批落)
-      expect(
-        repo.encounterDefs.keys,
-        containsAll({
-          'chun_jie_shou_sui',
-          'yuan_xiao_guan_deng',
-          'duan_wu_du_long_zhou',
-          'qi_xi_xi_qiao',
-          'zhong_qiu_yue_xia_du',
-          'chong_yang_deng_gao',
-        }),
-        reason: 'W16 节日 encounter 6 条:春节/元宵/端午/七夕/中秋/重阳 各 1 条',
-      );
-      // W17 节日 encounter 2 条核对(framework 扩 chuXi/qingMingJie)
-      expect(
-        repo.encounterDefs.keys,
-        containsAll({
-          'chu_xi_ci_sui',
-          'qing_ming_yu_si',
-        }),
-        reason: 'W17 节日 encounter 2 条:除夕/清明 各 1 条',
-      );
-      // W17 polish-C 2 条挂回核对(#37 余 8 → 余 6;qiu_quan / wu_xia_yi 池补)
-      expect(
-        repo.encounterDefs.keys,
-        containsAll({
-          'huang_yuan_yi_zhong',
-          'jiang_xin_ye_hua',
-        }),
-        reason: 'W17 polish-C 2 条:荒原遗冢→求拳 / 江心夜话→武侠意',
-      );
-      // W17 polish-C 挂回后 qiu_quan / wu_xia_yi 必须被 encounter outcome 引用
-      final allUnlockSkillIds = <String>{
-        for (final enc in repo.allEncounters)
-          for (final outcome in enc.outcomeMapping.values)
-            if (outcome.type == OutcomeType.unlockSkill &&
-                outcome.skillId != null)
-              outcome.skillId!,
-      };
-      expect(allUnlockSkillIds, contains('skill_encounter_qiu_quan'),
-          reason: 'W17 polish-C 挂回后 qiu_quan 必须被 encounter outcome 引用');
-      expect(allUnlockSkillIds, contains('skill_encounter_wu_xia_yi'),
-          reason: 'W17 polish-C 挂回后 wu_xia_yi 必须被 encounter outcome 引用');
-    });
+              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 触发条件 4 + P1 #37 yu_zhong_qiao_men 挂回 1 + T02 nightshift 9(领悟 5 + 奇遇 4) + P4.1 1.1 Q6A sect_recruit 3(bamboo/desert/mountain) + 2026-06-25 池接线 11(11 招搁浅 unlockSkill 各 1 奇遇)',
+        );
+        // W14-1 3 条必须仍在
+        expect(
+          repo.encounterDefs.keys,
+          containsAll({
+            'bamboo_listen_rain',
+            'cha_ting_dui_ju',
+            'du_ke_wen_dao',
+          }),
+        );
+        // W14-2 抽样核对若干新 id
+        expect(
+          repo.encounterDefs.keys,
+          containsAll({
+            'gu_jian_zhong_yin',
+            'cang_jing_ge_wu',
+            'shan_lin_qi_yu',
+            'xuan_ya_pu_bu_li_lian',
+            'duan_ya_chui_lian',
+            'ye_xing_xun_dao',
+          }),
+        );
+        // W15 #37 第 1 批 6 条挂回核对
+        expect(
+          repo.encounterDefs.keys,
+          containsAll({
+            'xue_ye_gu_qin',
+            'feng_xue_gu_dian',
+            'ye_du_gu_chuan',
+            'han_mei_ying_xue',
+            'xing_chen_wu_dao',
+            'qiu_ye_wei_qi',
+          }),
+          reason: 'W15 #37 第 1 批 6 条挂回:雨雪夜主题为主',
+        );
+        // W15 #37 第 2 批 7 条挂回核对(tier 1-2/6/7 池补)
+        expect(
+          repo.encounterDefs.keys,
+          containsAll({
+            'shi_dao_shou_hu',
+            'mu_chan_dui_yin',
+            'huang_sha_ke_zhan',
+            'xiang_ye_shen_ji',
+            'luo_hua_jian_yuan',
+            'shan_ya_can_bei',
+            'jue_ding_feng_qi',
+          }),
+          reason: 'W15 #37 第 2 批 7 条:tier 1-2/6/7 池 unlockSkill 补',
+        );
+        // W15 C-1 收尾 2 条挂回核对(tier 7 long_yin / wu_ming 引用补)
+        expect(
+          repo.encounterDefs.keys,
+          containsAll({'huang_miao_jiu_seng', 'jiu_lou_jue_yin'}),
+          reason: 'W15 C-1 收尾 2 条:tier 7 long_yin / wu_ming 池 unlockSkill 补',
+        );
+        // W16 节日 encounter 6 条核对(GDD §12.4 接口预留首批落)
+        expect(
+          repo.encounterDefs.keys,
+          containsAll({
+            'chun_jie_shou_sui',
+            'yuan_xiao_guan_deng',
+            'duan_wu_du_long_zhou',
+            'qi_xi_xi_qiao',
+            'zhong_qiu_yue_xia_du',
+            'chong_yang_deng_gao',
+          }),
+          reason: 'W16 节日 encounter 6 条:春节/元宵/端午/七夕/中秋/重阳 各 1 条',
+        );
+        // W17 节日 encounter 2 条核对(framework 扩 chuXi/qingMingJie)
+        expect(
+          repo.encounterDefs.keys,
+          containsAll({'chu_xi_ci_sui', 'qing_ming_yu_si'}),
+          reason: 'W17 节日 encounter 2 条:除夕/清明 各 1 条',
+        );
+        // W17 polish-C 2 条挂回核对(#37 余 8 → 余 6;qiu_quan / wu_xia_yi 池补)
+        expect(
+          repo.encounterDefs.keys,
+          containsAll({'huang_yuan_yi_zhong', 'jiang_xin_ye_hua'}),
+          reason: 'W17 polish-C 2 条:荒原遗冢→求拳 / 江心夜话→武侠意',
+        );
+        // W17 polish-C 挂回后 qiu_quan / wu_xia_yi 必须被 encounter outcome 引用
+        final allUnlockSkillIds = <String>{
+          for (final enc in repo.allEncounters)
+            for (final outcome in enc.outcomeMapping.values)
+              if (outcome.type == OutcomeType.unlockSkill &&
+                  outcome.skillId != null)
+                outcome.skillId!,
+        };
+        expect(
+          allUnlockSkillIds,
+          contains('skill_encounter_qiu_quan'),
+          reason: 'W17 polish-C 挂回后 qiu_quan 必须被 encounter outcome 引用',
+        );
+        expect(
+          allUnlockSkillIds,
+          contains('skill_encounter_wu_xia_yi'),
+          reason: 'W17 polish-C 挂回后 wu_xia_yi 必须被 encounter outcome 引用',
+        );
+      },
+    );
 
-    test('bamboo_listen_rain · techniqueInsight + lingQiao 100 + 解锁招式',
-        () {
+    test('bamboo_listen_rain · techniqueInsight + lingQiao 100 + 解锁招式', () {
       final def = GameRepository.instance.findEncounter('bamboo_listen_rain')!;
       expect(def.type, EncounterType.techniqueInsight);
       expect(def.trigger.schoolKillThreshold[TechniqueSchool.lingQiao], 100);
@@ -154,8 +160,9 @@ void main() {
     });
 
     test('allEncounters 返回按 id 字典序', () {
-      final ids =
-          GameRepository.instance.allEncounters.map((e) => e.id).toList();
+      final ids = GameRepository.instance.allEncounters
+          .map((e) => e.id)
+          .toList();
       final sorted = [...ids]..sort();
       expect(ids, sorted, reason: 'allEncounters 必须字典序');
       // 包含校验(约束语义,不锚瞬时 first 位次,memory
@@ -210,8 +217,10 @@ void main() {
       expect(def.trigger.biomeMinutes[EncounterBiome.swordTomb], 60);
       expect(def.trigger.weatherMinutes[EncounterWeather.mist], 30);
       expect(def.trigger.fortuneRequired, 4);
-      expect(def.outcomeMapping['find_relic_sword']!.type,
-          OutcomeType.unlockSkill);
+      expect(
+        def.outcomeMapping['find_relic_sword']!.type,
+        OutcomeType.unlockSkill,
+      );
     });
 
     test('cang_jing_ge_wu 解 temple 120 + 无 weather', () {
@@ -237,8 +246,7 @@ void main() {
   // C-W15 收尾:tier 7 long_yin / wu_ming 引用补
   group('encounters.yaml W15 C-1 收尾 2 条', () {
     test('huang_miao_jiu_seng · temple 90 + fortune 7 + unlock long_yin', () {
-      final def =
-          GameRepository.instance.findEncounter('huang_miao_jiu_seng')!;
+      final def = GameRepository.instance.findEncounter('huang_miao_jiu_seng')!;
       expect(def.type, EncounterType.techniqueInsight);
       expect(def.trigger.biomeMinutes[EncounterBiome.temple], 90);
       expect(def.trigger.fortuneRequired, 7);
@@ -276,13 +284,20 @@ void main() {
       final allUnlockSkillIds = <String>{
         for (final enc in repo.allEncounters)
           for (final outcome in enc.outcomeMapping.values)
-            if (outcome.type == OutcomeType.unlockSkill && outcome.skillId != null)
+            if (outcome.type == OutcomeType.unlockSkill &&
+                outcome.skillId != null)
               outcome.skillId!,
       };
-      expect(allUnlockSkillIds, contains('skill_encounter_long_yin'),
-          reason: 'C-1 收尾后 long_yin 必须被 encounter outcome 引用');
-      expect(allUnlockSkillIds, contains('skill_encounter_wu_ming'),
-          reason: 'C-1 收尾后 wu_ming 必须被 encounter outcome 引用');
+      expect(
+        allUnlockSkillIds,
+        contains('skill_encounter_long_yin'),
+        reason: 'C-1 收尾后 long_yin 必须被 encounter outcome 引用',
+      );
+      expect(
+        allUnlockSkillIds,
+        contains('skill_encounter_wu_ming'),
+        reason: 'C-1 收尾后 wu_ming 必须被 encounter outcome 引用',
+      );
     });
   });
 
@@ -347,15 +362,27 @@ void main() {
         final encId = entry.$1;
         final skillId = entry.$2;
         final enc = repo.findEncounter(encId)!;
-        expect(enc.type, EncounterType.techniqueInsight,
-            reason: '$encId 应为 techniqueInsight');
+        expect(
+          enc.type,
+          EncounterType.techniqueInsight,
+          reason: '$encId 应为 techniqueInsight',
+        );
         final unlockOutcome = enc.outcomeMapping['insight_success']!;
-        expect(unlockOutcome.type, OutcomeType.unlockSkill,
-            reason: '$encId insight_success 应为 unlockSkill');
-        expect(unlockOutcome.skillId, skillId,
-            reason: '$encId insight_success 应解锁 $skillId');
-        expect(repo.encounterSkillIds, contains(skillId),
-            reason: '$skillId 应在 encounter_skills.yaml 已定义');
+        expect(
+          unlockOutcome.type,
+          OutcomeType.unlockSkill,
+          reason: '$encId insight_success 应为 unlockSkill',
+        );
+        expect(
+          unlockOutcome.skillId,
+          skillId,
+          reason: '$encId insight_success 应解锁 $skillId',
+        );
+        expect(
+          repo.encounterSkillIds,
+          contains(skillId),
+          reason: '$skillId 应在 encounter_skills.yaml 已定义',
+        );
       }
     });
 
@@ -369,10 +396,16 @@ void main() {
       final repo = GameRepository.instance;
       for (final id in newFortunes) {
         final enc = repo.findEncounter(id)!;
-        expect(enc.type, EncounterType.fortuneEvent,
-            reason: '$id 应为 fortuneEvent');
-        expect(enc.trigger.festivalRequired, isNull,
-            reason: '$id 是非节日 fortuneEvent');
+        expect(
+          enc.type,
+          EncounterType.fortuneEvent,
+          reason: '$id 应为 fortuneEvent',
+        );
+        expect(
+          enc.trigger.festivalRequired,
+          isNull,
+          reason: '$id 是非节日 fortuneEvent',
+        );
       }
     });
   });

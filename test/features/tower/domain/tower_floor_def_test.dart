@@ -241,10 +241,10 @@ void main() {
           reason: 'floor=$floorIndex 应至少有起手+两段反扑',
         );
         expect(
-          boss.bossPhases!.skip(1).every(
-                (p) =>
-                    p.unlockSkillIds.isNotEmpty &&
-                    p.onEnterMechanic != null,
+          boss.bossPhases!
+              .skip(1)
+              .every(
+                (p) => p.unlockSkillIds.isNotEmpty && p.onEnterMechanic != null,
               ),
           isTrue,
           reason: 'floor=$floorIndex 每个后续阶段都应提供可破招反制窗口',

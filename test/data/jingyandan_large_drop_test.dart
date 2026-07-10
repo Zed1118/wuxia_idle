@@ -71,10 +71,16 @@ void main() {
             .toList();
         expect(drops, isNotEmpty, reason: '$stageId 应有大还丹条目');
         for (final d in drops) {
-          expect(d.dropChance, greaterThan(0.0),
-              reason: '$stageId 大还丹 dropChance 须 > 0');
-          expect(d.dropChance, lessThanOrEqualTo(1.0),
-              reason: '$stageId 大还丹 dropChance 须 ≤ 1.0');
+          expect(
+            d.dropChance,
+            greaterThan(0.0),
+            reason: '$stageId 大还丹 dropChance 须 > 0',
+          );
+          expect(
+            d.dropChance,
+            lessThanOrEqualTo(1.0),
+            reason: '$stageId 大还丹 dropChance 须 ≤ 1.0',
+          );
         }
       }
 
@@ -87,10 +93,16 @@ void main() {
             .toList();
         expect(drops, isNotEmpty, reason: '爬塔 $floor 层应有大还丹条目');
         for (final d in drops) {
-          expect(d.dropChance, greaterThan(0.0),
-              reason: '爬塔 $floor 层大还丹 dropChance 须 > 0');
-          expect(d.dropChance, lessThanOrEqualTo(1.0),
-              reason: '爬塔 $floor 层大还丹 dropChance 须 ≤ 1.0');
+          expect(
+            d.dropChance,
+            greaterThan(0.0),
+            reason: '爬塔 $floor 层大还丹 dropChance 须 > 0',
+          );
+          expect(
+            d.dropChance,
+            lessThanOrEqualTo(1.0),
+            reason: '爬塔 $floor 层大还丹 dropChance 须 ≤ 1.0',
+          );
         }
       }
     });

@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
@@ -30,18 +29,17 @@ void main() {
     CultivationLayer layer = CultivationLayer.chuKui,
     int progress = 0,
     int progressToNext = 100,
-  }) =>
-      Technique.create(
-        defId: 'tech_test',
-        ownerCharacterId: 1,
-        tier: TechniqueTier.ruMenGong,
-        school: TechniqueSchool.gangMeng,
-        role: TechniqueRole.main,
-        learnedAt: DateTime(2026, 5, 11),
-        cultivationLayer: layer,
-        cultivationProgress: progress,
-        cultivationProgressToNext: progressToNext,
-      );
+  }) => Technique.create(
+    defId: 'tech_test',
+    ownerCharacterId: 1,
+    tier: TechniqueTier.ruMenGong,
+    school: TechniqueSchool.gangMeng,
+    role: TechniqueRole.main,
+    learnedAt: DateTime(2026, 5, 11),
+    cultivationLayer: layer,
+    cultivationProgress: progress,
+    cultivationProgressToNext: progressToNext,
+  );
 
   // ────────────────────────────────────────────────────────────────────────────
   // yaml 解析
@@ -86,20 +84,23 @@ void main() {
       expect(t.cultivationProgressToNext, 100);
     });
 
-    test('跨层 +1：chuKui progress=99 + 1 → xiaoCheng progress=0 / progressToNext=250', () {
-      final t = newTech(progress: 99);
-      final r = CultivationService.recordSkillUsage(
-        tech: t,
-        skillId: 'skill_a',
-        progressToNextMap: progressMap,
-      );
-      expect(r.didLevelUp, isTrue);
-      expect(r.layersGained, 1);
-      expect(r.oldLayer, CultivationLayer.chuKui);
-      expect(r.newLayer, CultivationLayer.xiaoCheng);
-      expect(t.cultivationProgress, 0);
-      expect(t.cultivationProgressToNext, 250);
-    });
+    test(
+      '跨层 +1：chuKui progress=99 + 1 → xiaoCheng progress=0 / progressToNext=250',
+      () {
+        final t = newTech(progress: 99);
+        final r = CultivationService.recordSkillUsage(
+          tech: t,
+          skillId: 'skill_a',
+          progressToNextMap: progressMap,
+        );
+        expect(r.didLevelUp, isTrue);
+        expect(r.layersGained, 1);
+        expect(r.oldLayer, CultivationLayer.chuKui);
+        expect(r.newLayer, CultivationLayer.xiaoCheng);
+        expect(t.cultivationProgress, 0);
+        expect(t.cultivationProgressToNext, 250);
+      },
+    );
 
     test('多层连升：chuKui +1000 → daCheng（100+250+500=850 用完，剩 150）', () {
       final t = newTech();
@@ -115,21 +116,24 @@ void main() {
       expect(t.cultivationProgressToNext, 900);
     });
 
-    test('一次塞 5000 progress：chuKui → tongShen（100+250+500+900+1500+2500=5750>5000 → 停在 tongShen 前一层 dianFeng？）', () {
-      // 100+250+500+900+1500=3250 升到 dianFeng；剩 5000-3250=1750
-      // dianFeng 升下层需 2500，1750 不够，停在 dianFeng
-      final t = newTech();
-      final r = CultivationService.recordSkillUsage(
-        tech: t,
-        skillId: 'skill_a',
-        progressToNextMap: progressMap,
-        delta: 5000,
-      );
-      expect(r.layersGained, 5);
-      expect(r.newLayer, CultivationLayer.dianFeng);
-      expect(t.cultivationProgress, 1750);
-      expect(t.cultivationProgressToNext, 2500);
-    });
+    test(
+      '一次塞 5000 progress：chuKui → tongShen（100+250+500+900+1500+2500=5750>5000 → 停在 tongShen 前一层 dianFeng？）',
+      () {
+        // 100+250+500+900+1500=3250 升到 dianFeng；剩 5000-3250=1750
+        // dianFeng 升下层需 2500，1750 不够，停在 dianFeng
+        final t = newTech();
+        final r = CultivationService.recordSkillUsage(
+          tech: t,
+          skillId: 'skill_a',
+          progressToNextMap: progressMap,
+          delta: 5000,
+        );
+        expect(r.layersGained, 5);
+        expect(r.newLayer, CultivationLayer.dianFeng);
+        expect(t.cultivationProgress, 1750);
+        expect(t.cultivationProgressToNext, 2500);
+      },
+    );
 
     test('9 层全升刚好用完：chuKui +16250 → jiJing progress=0', () {
       final t = newTech();

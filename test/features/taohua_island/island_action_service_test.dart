@@ -70,8 +70,7 @@ void main() {
 
   // ── helper：读背包数量 ────────────────────────────────────────────────────
   Future<int> inventoryQty(String defId) async {
-    final item =
-        await IsarSetup.instance.inventoryItems.getByDefId(defId);
+    final item = await IsarSetup.instance.inventoryItems.getByDefId(defId);
     return item?.quantity ?? 0;
   }
 
@@ -84,7 +83,9 @@ void main() {
   // ── helper：读建筑 activeRecipeId ────────────────────────────────────────
   Future<String?> activeRecipeId(BuildingType type) async {
     final save = (await IsarSetup.instance.saveDatas.get(0))!;
-    return save.islandBuildings.firstWhere((b) => b.type == type).activeRecipeId;
+    return save.islandBuildings
+        .firstWhere((b) => b.type == type)
+        .activeRecipeId;
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -105,12 +106,13 @@ void main() {
     );
 
     expect(result, UpgradeResult.ok);
-    expect(await buildingLevel(BuildingType.tieJiangChang), 2,
-        reason: 'level 应升到 2');
-    expect(await inventoryQty('item_silver'), 500,
-        reason: '银两被扣 500');
-    expect(await inventoryQty('item_jingtie'), 60,
-        reason: '精铁被扣 40');
+    expect(
+      await buildingLevel(BuildingType.tieJiangChang),
+      2,
+      reason: 'level 应升到 2',
+    );
+    expect(await inventoryQty('item_silver'), 500, reason: '银两被扣 500');
+    expect(await inventoryQty('item_jingtie'), 60, reason: '精铁被扣 40');
   });
 
   // ── P1-7: 并发连点升级不扣成负数(txn 内重查)──────────────────────────────
@@ -136,13 +138,18 @@ void main() {
       ),
     ]);
 
-    expect(results.where((r) => r == UpgradeResult.ok).length, 1,
-        reason: '只够升一级,恰一笔成功');
-    expect(results, contains(UpgradeResult.notEnoughSilver),
-        reason: '第二笔应被 txn 内重查拒(银两不足)');
+    expect(
+      results.where((r) => r == UpgradeResult.ok).length,
+      1,
+      reason: '只够升一级,恰一笔成功',
+    );
+    expect(
+      results,
+      contains(UpgradeResult.notEnoughSilver),
+      reason: '第二笔应被 txn 内重查拒(银两不足)',
+    );
     expect(await inventoryQty('item_silver'), 0, reason: '银两不落负数');
-    expect(await buildingLevel(BuildingType.tieJiangChang), 2,
-        reason: '只升一级');
+    expect(await buildingLevel(BuildingType.tieJiangChang), 2, reason: '只升一级');
   });
 
   // ── T2: maxLevelReached ───────────────────────────────────────────────────
@@ -152,8 +159,9 @@ void main() {
     await isar.writeTxn(() async {
       final s = (await isar.saveDatas.get(0))!;
       s.islandBuildings
-          .firstWhere((b) => b.type == BuildingType.tieJiangChang)
-          .level = 5;
+              .firstWhere((b) => b.type == BuildingType.tieJiangChang)
+              .level =
+          5;
       await isar.saveDatas.put(s);
     });
 
@@ -168,12 +176,13 @@ void main() {
     );
 
     expect(result, UpgradeResult.maxLevelReached);
-    expect(await buildingLevel(BuildingType.tieJiangChang), 5,
-        reason: 'level 不应变化');
-    expect(await inventoryQty('item_silver'), 9999,
-        reason: '银两不扣');
-    expect(await inventoryQty('item_jingtie'), 9999,
-        reason: '材料不扣');
+    expect(
+      await buildingLevel(BuildingType.tieJiangChang),
+      5,
+      reason: 'level 不应变化',
+    );
+    expect(await inventoryQty('item_silver'), 9999, reason: '银两不扣');
+    expect(await inventoryQty('item_jingtie'), 9999, reason: '材料不扣');
   });
 
   // ── T3: notEnoughSilver → 拒绝，无副作用 ─────────────────────────────────
@@ -190,12 +199,13 @@ void main() {
     );
 
     expect(result, UpgradeResult.notEnoughSilver);
-    expect(await buildingLevel(BuildingType.tieJiangChang), 1,
-        reason: 'level 不变');
-    expect(await inventoryQty('item_silver'), 100,
-        reason: '银两不扣');
-    expect(await inventoryQty('item_jingtie'), 999,
-        reason: '材料不扣');
+    expect(
+      await buildingLevel(BuildingType.tieJiangChang),
+      1,
+      reason: 'level 不变',
+    );
+    expect(await inventoryQty('item_silver'), 100, reason: '银两不扣');
+    expect(await inventoryQty('item_jingtie'), 999, reason: '材料不扣');
   });
 
   // ── T4: notEnoughMaterial → 拒绝，无副作用 ───────────────────────────────
@@ -212,12 +222,13 @@ void main() {
     );
 
     expect(result, UpgradeResult.notEnoughMaterial);
-    expect(await buildingLevel(BuildingType.tieJiangChang), 1,
-        reason: 'level 不变');
-    expect(await inventoryQty('item_silver'), 9999,
-        reason: '银两不扣');
-    expect(await inventoryQty('item_jingtie'), 10,
-        reason: '材料不扣');
+    expect(
+      await buildingLevel(BuildingType.tieJiangChang),
+      1,
+      reason: 'level 不变',
+    );
+    expect(await inventoryQty('item_silver'), 9999, reason: '银两不扣');
+    expect(await inventoryQty('item_jingtie'), 10, reason: '材料不扣');
   });
 
   // ── T5: realmLocked（建筑 realmUnlockIndex > founderRealmIndex）───────────
@@ -225,85 +236,108 @@ void main() {
   // 用打造台 (processor)，人为 set level=4，然后让我们改用一个 realm>0 的建筑。
   // 由于所有建筑 realmUnlockIndex==0，此检查实际上在当前配置下永不触发，
   // 但代码路径须测。使用 founderRealmIndex=-1 让 0 > -1 触发。
-  test('T5: realmLocked（founderRealmIndex 低于 buildingCfg.realmUnlockIndex）→ 拒绝', () async {
-    await seedInventory('item_silver', 9999);
-    await seedInventory('item_jingtie', 9999);
+  test(
+    'T5: realmLocked（founderRealmIndex 低于 buildingCfg.realmUnlockIndex）→ 拒绝',
+    () async {
+      await seedInventory('item_silver', 9999);
+      await seedInventory('item_jingtie', 9999);
 
-    final save = (await IsarSetup.instance.saveDatas.get(0))!;
-    // founderRealmIndex=-1 使 realmUnlockIndex=0 > -1 → realmLocked
-    final result = await IslandActionService.upgrade(
-      save: save,
-      buildingType: BuildingType.tieJiangChang,
-      founderRealmIndex: -1,
-    );
+      final save = (await IsarSetup.instance.saveDatas.get(0))!;
+      // founderRealmIndex=-1 使 realmUnlockIndex=0 > -1 → realmLocked
+      final result = await IslandActionService.upgrade(
+        save: save,
+        buildingType: BuildingType.tieJiangChang,
+        founderRealmIndex: -1,
+      );
 
-    expect(result, UpgradeResult.realmLocked);
-    expect(await buildingLevel(BuildingType.tieJiangChang), 1,
-        reason: 'level 不变');
-    expect(await inventoryQty('item_silver'), 9999,
-        reason: '银两不扣');
-    expect(await inventoryQty('item_jingtie'), 9999,
-        reason: '材料不扣');
-  });
+      expect(result, UpgradeResult.realmLocked);
+      expect(
+        await buildingLevel(BuildingType.tieJiangChang),
+        1,
+        reason: 'level 不变',
+      );
+      expect(await inventoryQty('item_silver'), 9999, reason: '银两不扣');
+      expect(await inventoryQty('item_jingtie'), 9999, reason: '材料不扣');
+    },
+  );
 
   // ── T5b: 节奏 B 按等级分阶 realm gate（高等级需更高境界）─────────────────
   // 铁匠厂 upgrade_realm_levels=[0,1,2,3]：升 L3→L4 需 realm2(二流)。
   // founderRealmIndex=1(三流) < 2 → realmLocked，即使银两/材料充足。
-  test('T5b: 升 L3→L4 需 realm2，founderRealmIndex=1 → realmLocked，无副作用', () async {
-    final isar = IsarSetup.instance;
-    await isar.writeTxn(() async {
-      final s = (await isar.saveDatas.get(0))!;
-      s.islandBuildings
-          .firstWhere((b) => b.type == BuildingType.tieJiangChang)
-          .level = 3;
-      await isar.saveDatas.put(s);
-    });
-    await seedInventory('item_silver', 9999);
-    await seedInventory('item_jingtie', 9999);
+  test(
+    'T5b: 升 L3→L4 需 realm2，founderRealmIndex=1 → realmLocked，无副作用',
+    () async {
+      final isar = IsarSetup.instance;
+      await isar.writeTxn(() async {
+        final s = (await isar.saveDatas.get(0))!;
+        s.islandBuildings
+                .firstWhere((b) => b.type == BuildingType.tieJiangChang)
+                .level =
+            3;
+        await isar.saveDatas.put(s);
+      });
+      await seedInventory('item_silver', 9999);
+      await seedInventory('item_jingtie', 9999);
 
-    final save = (await IsarSetup.instance.saveDatas.get(0))!;
-    final result = await IslandActionService.upgrade(
-      save: save,
-      buildingType: BuildingType.tieJiangChang,
-      founderRealmIndex: 1,
-    );
+      final save = (await IsarSetup.instance.saveDatas.get(0))!;
+      final result = await IslandActionService.upgrade(
+        save: save,
+        buildingType: BuildingType.tieJiangChang,
+        founderRealmIndex: 1,
+      );
 
-    expect(result, UpgradeResult.realmLocked);
-    expect(await buildingLevel(BuildingType.tieJiangChang), 3,
-        reason: 'level 不变');
-    expect(await inventoryQty('item_silver'), 9999, reason: '银两不扣');
-    expect(await inventoryQty('item_jingtie'), 9999, reason: '材料不扣');
-  });
+      expect(result, UpgradeResult.realmLocked);
+      expect(
+        await buildingLevel(BuildingType.tieJiangChang),
+        3,
+        reason: 'level 不变',
+      );
+      expect(await inventoryQty('item_silver'), 9999, reason: '银两不扣');
+      expect(await inventoryQty('item_jingtie'), 9999, reason: '材料不扣');
+    },
+  );
 
   // ── T5c: 节奏 B 境界达标 → 升级成功（同 L3→L4，founderRealmIndex=2）─────────
-  test('T5c: 升 L3→L4 founderRealmIndex=2(二流)达标 → 成功，扣 silver 2800/精铁 120',
-      () async {
-    final isar = IsarSetup.instance;
-    await isar.writeTxn(() async {
-      final s = (await isar.saveDatas.get(0))!;
-      s.islandBuildings
-          .firstWhere((b) => b.type == BuildingType.tieJiangChang)
-          .level = 3;
-      await isar.saveDatas.put(s);
-    });
-    await seedInventory('item_silver', 5000);
-    await seedInventory('item_jingtie', 300);
+  test(
+    'T5c: 升 L3→L4 founderRealmIndex=2(二流)达标 → 成功，扣 silver 2800/精铁 120',
+    () async {
+      final isar = IsarSetup.instance;
+      await isar.writeTxn(() async {
+        final s = (await isar.saveDatas.get(0))!;
+        s.islandBuildings
+                .firstWhere((b) => b.type == BuildingType.tieJiangChang)
+                .level =
+            3;
+        await isar.saveDatas.put(s);
+      });
+      await seedInventory('item_silver', 5000);
+      await seedInventory('item_jingtie', 300);
 
-    final save = (await IsarSetup.instance.saveDatas.get(0))!;
-    final result = await IslandActionService.upgrade(
-      save: save,
-      buildingType: BuildingType.tieJiangChang,
-      founderRealmIndex: 2,
-    );
+      final save = (await IsarSetup.instance.saveDatas.get(0))!;
+      final result = await IslandActionService.upgrade(
+        save: save,
+        buildingType: BuildingType.tieJiangChang,
+        founderRealmIndex: 2,
+      );
 
-    expect(result, UpgradeResult.ok);
-    expect(await buildingLevel(BuildingType.tieJiangChang), 4,
-        reason: 'level 升到 4');
-    expect(await inventoryQty('item_silver'), 5000 - 2800,
-        reason: 'B 曲线 L3→4 银两 2800');
-    expect(await inventoryQty('item_jingtie'), 300 - 120,
-        reason: '材料 base×level = 40×3 = 120');
-  });
+      expect(result, UpgradeResult.ok);
+      expect(
+        await buildingLevel(BuildingType.tieJiangChang),
+        4,
+        reason: 'level 升到 4',
+      );
+      expect(
+        await inventoryQty('item_silver'),
+        5000 - 2800,
+        reason: 'B 曲线 L3→4 银两 2800',
+      );
+      expect(
+        await inventoryQty('item_jingtie'),
+        300 - 120,
+        reason: '材料 base×level = 40×3 = 120',
+      );
+    },
+  );
 
   // ════════════════════════════════════════════════════════════════════════════
   // selectRecipe 测试组
@@ -328,20 +362,26 @@ void main() {
   });
 
   // ── T7: selectRecipe realmLocked → activeRecipeId 不变 ──────────────────
-  test('T7: selectRecipe realmLocked（高阶配方+低境界）→ 拒绝，activeRecipeId 不变', () async {
-    // forge_xinxue 的 realm_unlock_index=3，founderRealmIndex=0 → realmLocked
-    final save = (await IsarSetup.instance.saveDatas.get(0))!;
-    final result = await IslandActionService.selectRecipe(
-      save: save,
-      buildingType: BuildingType.daZaoTai,
-      recipeId: 'forge_xinxue',
-      founderRealmIndex: 0,
-    );
+  test(
+    'T7: selectRecipe realmLocked（高阶配方+低境界）→ 拒绝，activeRecipeId 不变',
+    () async {
+      // forge_xinxue 的 realm_unlock_index=3，founderRealmIndex=0 → realmLocked
+      final save = (await IsarSetup.instance.saveDatas.get(0))!;
+      final result = await IslandActionService.selectRecipe(
+        save: save,
+        buildingType: BuildingType.daZaoTai,
+        recipeId: 'forge_xinxue',
+        founderRealmIndex: 0,
+      );
 
-    expect(result, SelectRecipeResult.realmLocked);
-    expect(await activeRecipeId(BuildingType.daZaoTai), 'forge_mojianshi',
-        reason: 'activeRecipeId 不应变化');
-  });
+      expect(result, SelectRecipeResult.realmLocked);
+      expect(
+        await activeRecipeId(BuildingType.daZaoTai),
+        'forge_mojianshi',
+        reason: 'activeRecipeId 不应变化',
+      );
+    },
+  );
 
   // ── T8: selectRecipe notProcessor → 拒绝 ─────────────────────────────────
   test('T8: selectRecipe notProcessor（source 建筑）→ 拒绝', () async {
@@ -367,8 +407,11 @@ void main() {
     );
 
     expect(result, SelectRecipeResult.recipeNotFound);
-    expect(await activeRecipeId(BuildingType.daZaoTai), 'forge_mojianshi',
-        reason: 'activeRecipeId 不应变化');
+    expect(
+      await activeRecipeId(BuildingType.daZaoTai),
+      'forge_mojianshi',
+      reason: 'activeRecipeId 不应变化',
+    );
   });
 
   // ── T10: selectRecipe 成功切换到高阶配方（境界够）──────────────────────
@@ -383,7 +426,10 @@ void main() {
     );
 
     expect(result, SelectRecipeResult.ok);
-    expect(await activeRecipeId(BuildingType.daZaoTai), 'forge_xinxue',
-        reason: 'activeRecipeId 应切换到 forge_xinxue');
+    expect(
+      await activeRecipeId(BuildingType.daZaoTai),
+      'forge_xinxue',
+      reason: 'activeRecipeId 应切换到 forge_xinxue',
+    );
   });
 }

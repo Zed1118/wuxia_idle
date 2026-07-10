@@ -11,54 +11,54 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────────
 
   EquipmentDef weaponDef() => const EquipmentDef(
-        id: 'test_weapon_qing_feng',
-        name: '青锋',
-        tier: EquipmentTier.haoJiaHuo,
-        slot: EquipmentSlot.weapon,
-        schoolBias: TechniqueSchool.lingQiao,
-        baseAttackMin: 320,
-        baseAttackMax: 450,
-        baseHealthMin: 0,
-        baseHealthMax: 100,
-        baseSpeedMin: 10,
-        baseSpeedMax: 30,
-        presetLoreIds: [],
-        dropSourceTags: [],
-        iconPath: '',
-      );
+    id: 'test_weapon_qing_feng',
+    name: '青锋',
+    tier: EquipmentTier.haoJiaHuo,
+    slot: EquipmentSlot.weapon,
+    schoolBias: TechniqueSchool.lingQiao,
+    baseAttackMin: 320,
+    baseAttackMax: 450,
+    baseHealthMin: 0,
+    baseHealthMax: 100,
+    baseSpeedMin: 10,
+    baseSpeedMax: 30,
+    presetLoreIds: [],
+    dropSourceTags: [],
+    iconPath: '',
+  );
 
   EquipmentDef armorDef() => const EquipmentDef(
-        id: 'test_armor_jin_pao',
-        name: '锦袍',
-        tier: EquipmentTier.haoJiaHuo,
-        slot: EquipmentSlot.armor,
-        // armor 无攻击：min == max == 0
-        baseAttackMin: 0,
-        baseAttackMax: 0,
-        baseHealthMin: 450,
-        baseHealthMax: 750,
-        baseSpeedMin: 5,
-        baseSpeedMax: 15,
-        presetLoreIds: [],
-        dropSourceTags: [],
-        iconPath: '',
-      );
+    id: 'test_armor_jin_pao',
+    name: '锦袍',
+    tier: EquipmentTier.haoJiaHuo,
+    slot: EquipmentSlot.armor,
+    // armor 无攻击：min == max == 0
+    baseAttackMin: 0,
+    baseAttackMax: 0,
+    baseHealthMin: 450,
+    baseHealthMax: 750,
+    baseSpeedMin: 5,
+    baseSpeedMax: 15,
+    presetLoreIds: [],
+    dropSourceTags: [],
+    iconPath: '',
+  );
 
   EquipmentDef accessoryDef() => const EquipmentDef(
-        id: 'test_accessory_yu_pei',
-        name: '玉佩',
-        tier: EquipmentTier.xunChang,
-        slot: EquipmentSlot.accessory,
-        baseAttackMin: 20,
-        baseAttackMax: 40,
-        baseHealthMin: 50,
-        baseHealthMax: 100,
-        baseSpeedMin: 0,
-        baseSpeedMax: 8,
-        presetLoreIds: [],
-        dropSourceTags: [],
-        iconPath: '',
-      );
+    id: 'test_accessory_yu_pei',
+    name: '玉佩',
+    tier: EquipmentTier.xunChang,
+    slot: EquipmentSlot.accessory,
+    baseAttackMin: 20,
+    baseAttackMax: 40,
+    baseHealthMin: 50,
+    baseHealthMax: 100,
+    baseSpeedMin: 0,
+    baseSpeedMax: 8,
+    presetLoreIds: [],
+    dropSourceTags: [],
+    iconPath: '',
+  );
 
   final t = DateTime(2026, 5, 11);
 
@@ -99,12 +99,21 @@ void main() {
         obtainedAt: t,
         obtainedFrom: '掉落',
       );
-      expect(eq.baseAttack, inInclusiveRange(def.baseAttackMin, def.baseAttackMax),
-          reason: 'baseAttack 越界');
-      expect(eq.baseHealth, inInclusiveRange(def.baseHealthMin, def.baseHealthMax),
-          reason: 'baseHealth 越界');
-      expect(eq.baseSpeed, inInclusiveRange(def.baseSpeedMin, def.baseSpeedMax),
-          reason: 'baseSpeed 越界');
+      expect(
+        eq.baseAttack,
+        inInclusiveRange(def.baseAttackMin, def.baseAttackMax),
+        reason: 'baseAttack 越界',
+      );
+      expect(
+        eq.baseHealth,
+        inInclusiveRange(def.baseHealthMin, def.baseHealthMax),
+        reason: 'baseHealth 越界',
+      );
+      expect(
+        eq.baseSpeed,
+        inInclusiveRange(def.baseSpeedMin, def.baseSpeedMax),
+        reason: 'baseSpeed 越界',
+      );
     }
   });
 
@@ -123,8 +132,14 @@ void main() {
         obtainedFrom: '掉落',
       );
       expect(eq.baseAttack, 0);
-      expect(eq.baseHealth, inInclusiveRange(def.baseHealthMin, def.baseHealthMax));
-      expect(eq.baseSpeed, inInclusiveRange(def.baseSpeedMin, def.baseSpeedMax));
+      expect(
+        eq.baseHealth,
+        inInclusiveRange(def.baseHealthMin, def.baseHealthMax),
+      );
+      expect(
+        eq.baseSpeed,
+        inInclusiveRange(def.baseSpeedMin, def.baseSpeedMax),
+      );
     }
   });
 
@@ -284,55 +299,61 @@ void main() {
 
   group('T55 · isLineageHeritage 透传', () {
     EquipmentDef heritageDef() => const EquipmentDef(
-          id: 'test_heritage_weapon',
-          name: '传家剑',
-          tier: EquipmentTier.liQi,
-          slot: EquipmentSlot.weapon,
-          baseAttackMin: 500,
-          baseAttackMax: 500,
-          baseHealthMin: 0,
-          baseHealthMax: 0,
-          baseSpeedMin: 30,
-          baseSpeedMax: 30,
-          presetLoreIds: [],
-          dropSourceTags: [],
-          iconPath: '',
+      id: 'test_heritage_weapon',
+      name: '传家剑',
+      tier: EquipmentTier.liQi,
+      slot: EquipmentSlot.weapon,
+      baseAttackMin: 500,
+      baseAttackMax: 500,
+      baseHealthMin: 0,
+      baseHealthMax: 0,
+      baseSpeedMin: 30,
+      baseSpeedMax: 30,
+      presetLoreIds: [],
+      dropSourceTags: [],
+      iconPath: '',
+      isLineageHeritage: true,
+    );
+
+    test(
+      'def.isLineageHeritage=true → Equipment.isLineageHeritage=true（参数不传）',
+      () {
+        final eq = EquipmentFactory.fromDef(
+          heritageDef(),
+          rng: DefaultRng(seed: 1),
+          obtainedAt: t,
+          obtainedFrom: 'master_starting',
+        );
+        expect(eq.isLineageHeritage, isTrue);
+      },
+    );
+
+    test(
+      'def.isLineageHeritage=false → 参数 isLineageHeritage=true 仍生效（override）',
+      () {
+        // 普通 def + 调用方强制标遗物（如奇遇赠送的临时遗物路径）
+        final eq = EquipmentFactory.fromDef(
+          weaponDef(),
+          rng: DefaultRng(seed: 1),
+          obtainedAt: t,
+          obtainedFrom: 'encounter_grant',
           isLineageHeritage: true,
         );
+        expect(eq.isLineageHeritage, isTrue);
+      },
+    );
 
-    test('def.isLineageHeritage=true → Equipment.isLineageHeritage=true（参数不传）',
-        () {
-      final eq = EquipmentFactory.fromDef(
-        heritageDef(),
-        rng: DefaultRng(seed: 1),
-        obtainedAt: t,
-        obtainedFrom: 'master_starting',
-      );
-      expect(eq.isLineageHeritage, isTrue);
-    });
-
-    test('def.isLineageHeritage=false → 参数 isLineageHeritage=true 仍生效（override）',
-        () {
-      // 普通 def + 调用方强制标遗物（如奇遇赠送的临时遗物路径）
-      final eq = EquipmentFactory.fromDef(
-        weaponDef(),
-        rng: DefaultRng(seed: 1),
-        obtainedAt: t,
-        obtainedFrom: 'encounter_grant',
-        isLineageHeritage: true,
-      );
-      expect(eq.isLineageHeritage, isTrue);
-    });
-
-    test('def.isLineageHeritage=false + 参数缺省 → Equipment.isLineageHeritage=false',
-        () {
-      final eq = EquipmentFactory.fromDef(
-        weaponDef(),
-        rng: DefaultRng(seed: 1),
-        obtainedAt: t,
-        obtainedFrom: '掉落',
-      );
-      expect(eq.isLineageHeritage, isFalse);
-    });
+    test(
+      'def.isLineageHeritage=false + 参数缺省 → Equipment.isLineageHeritage=false',
+      () {
+        final eq = EquipmentFactory.fromDef(
+          weaponDef(),
+          rng: DefaultRng(seed: 1),
+          obtainedAt: t,
+          obtainedFrom: '掉落',
+        );
+        expect(eq.isLineageHeritage, isFalse);
+      },
+    );
   });
 }

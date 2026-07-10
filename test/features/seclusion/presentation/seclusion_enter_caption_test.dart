@@ -8,9 +8,7 @@ void main() {
     var done = false;
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(
-          body: SeclusionEnterCaption(onDone: () => done = true),
-        ),
+        home: Scaffold(body: SeclusionEnterCaption(onDone: () => done = true)),
       ),
     );
     await tester.pump(const Duration(milliseconds: 100));

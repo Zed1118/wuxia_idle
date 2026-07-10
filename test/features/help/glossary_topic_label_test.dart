@@ -6,8 +6,9 @@ import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/glossary_tip.dart';
 
 void main() {
-  Widget host(Widget child) =>
-      MaterialApp(home: Scaffold(body: Center(child: child)));
+  Widget host(Widget child) => MaterialApp(
+    home: Scaffold(body: Center(child: child)),
+  );
 
   group('GlossaryTopicLabel', () {
     testWidgets('渲染 topic 的 label + ? marker + tooltip 短释义', (tester) async {

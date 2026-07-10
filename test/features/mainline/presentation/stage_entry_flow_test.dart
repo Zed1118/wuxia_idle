@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,39 +30,37 @@ void main() {
     String? openingId,
     String? victoryId,
     String? defeatId,
-  }) =>
-      StageDef(
-        id: 'stage_test_normal',
-        name: '测试普通关',
-        stageType: StageType.mainline,
-        requiredRealm: RealmTier.xueTu,
-        enemyTeam: const [],
-        isBossStage: false,
-        baseExpReward: 0,
-        difficultyMultiplier: 1.0,
-        narrativeOpeningId: openingId,
-        narrativeVictoryId: victoryId,
-        narrativeDefeatId: defeatId,
-      );
+  }) => StageDef(
+    id: 'stage_test_normal',
+    name: '测试普通关',
+    stageType: StageType.mainline,
+    requiredRealm: RealmTier.xueTu,
+    enemyTeam: const [],
+    isBossStage: false,
+    baseExpReward: 0,
+    difficultyMultiplier: 1.0,
+    narrativeOpeningId: openingId,
+    narrativeVictoryId: victoryId,
+    narrativeDefeatId: defeatId,
+  );
 
   StageDef bossStage({
     String? openingId,
     String? victoryId,
     String? defeatId,
-  }) =>
-      StageDef(
-        id: 'stage_test_boss',
-        name: '测试 Boss 关',
-        stageType: StageType.mainline,
-        requiredRealm: RealmTier.xueTu,
-        enemyTeam: const [],
-        isBossStage: true,
-        baseExpReward: 0,
-        difficultyMultiplier: 1.0,
-        narrativeOpeningId: openingId,
-        narrativeVictoryId: victoryId,
-        narrativeDefeatId: defeatId,
-      );
+  }) => StageDef(
+    id: 'stage_test_boss',
+    name: '测试 Boss 关',
+    stageType: StageType.mainline,
+    requiredRealm: RealmTier.xueTu,
+    enemyTeam: const [],
+    isBossStage: true,
+    baseExpReward: 0,
+    difficultyMultiplier: 1.0,
+    narrativeOpeningId: openingId,
+    narrativeVictoryId: victoryId,
+    narrativeDefeatId: defeatId,
+  );
 
   Widget harness({
     required StageDef stage,
@@ -96,13 +93,15 @@ void main() {
   testWidgets('普通关胜利 → victoryRecorder 以正确 stageId 被调用', (tester) async {
     String? recordedStageId;
 
-    await tester.pumpWidget(harness(
-      stage: normalStage(),
-      battleRunner: () async => true,
-      victoryRecorder: (stageId) async {
-        recordedStageId = stageId;
-      },
-    ));
+    await tester.pumpWidget(
+      harness(
+        stage: normalStage(),
+        battleRunner: () async => true,
+        victoryRecorder: (stageId) async {
+          recordedStageId = stageId;
+        },
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
@@ -112,43 +111,51 @@ void main() {
     expect(find.text('done'), findsOneWidget);
   });
 
-  testWidgets('普通关失败 → victoryRecorder / bossDefeatPenalty 均不调',
-      (tester) async {
+  testWidgets('普通关失败 → victoryRecorder / bossDefeatPenalty 均不调', (
+    tester,
+  ) async {
     bool victoryCalled = false;
     bool defeatCalled = false;
 
-    await tester.pumpWidget(harness(
-      stage: normalStage(),
-      battleRunner: () async => false,
-      victoryRecorder: (_) async {
-        victoryCalled = true;
-      },
-      bossDefeatPenalty: (_) async {
-        defeatCalled = true;
-        return const [];
-      },
-    ));
+    await tester.pumpWidget(
+      harness(
+        stage: normalStage(),
+        battleRunner: () async => false,
+        victoryRecorder: (_) async {
+          victoryCalled = true;
+        },
+        bossDefeatPenalty: (_) async {
+          defeatCalled = true;
+          return const [];
+        },
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
     await tester.pumpAndSettle();
 
     expect(victoryCalled, isFalse, reason: '普通关失败不走 victory 链');
-    expect(defeatCalled, isFalse,
-        reason: '普通关非 Boss,_applyBossDefeatPenalty 不调(免费试错)');
+    expect(
+      defeatCalled,
+      isFalse,
+      reason: '普通关非 Boss,_applyBossDefeatPenalty 不调(免费试错)',
+    );
     expect(find.text('done'), findsOneWidget);
   });
 
   testWidgets('Boss 关胜利 → victoryRecorder 以 Boss stageId 被调用', (tester) async {
     String? recordedStageId;
 
-    await tester.pumpWidget(harness(
-      stage: bossStage(),
-      battleRunner: () async => true,
-      victoryRecorder: (stageId) async {
-        recordedStageId = stageId;
-      },
-    ));
+    await tester.pumpWidget(
+      harness(
+        stage: bossStage(),
+        battleRunner: () async => true,
+        victoryRecorder: (stageId) async {
+          recordedStageId = stageId;
+        },
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
@@ -158,22 +165,25 @@ void main() {
     expect(find.text('done'), findsOneWidget);
   });
 
-  testWidgets('Boss 关失败 → bossDefeatPenalty 以 stage 调用,victoryRecorder 不调',
-      (tester) async {
+  testWidgets('Boss 关失败 → bossDefeatPenalty 以 stage 调用,victoryRecorder 不调', (
+    tester,
+  ) async {
     bool victoryCalled = false;
     StageDef? penaltyStage;
 
-    await tester.pumpWidget(harness(
-      stage: bossStage(),
-      battleRunner: () async => false,
-      victoryRecorder: (_) async {
-        victoryCalled = true;
-      },
-      bossDefeatPenalty: (stage) async {
-        penaltyStage = stage;
-        return const [];
-      },
-    ));
+    await tester.pumpWidget(
+      harness(
+        stage: bossStage(),
+        battleRunner: () async => false,
+        victoryRecorder: (_) async {
+          victoryCalled = true;
+        },
+        bossDefeatPenalty: (stage) async {
+          penaltyStage = stage;
+          return const [];
+        },
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
@@ -184,23 +194,26 @@ void main() {
     expect(find.text('done'), findsOneWidget);
   });
 
-  testWidgets('Boss 关投降 → victoryRecorder / bossDefeatPenalty 均不调(主动放弃无惩罚)',
-      (tester) async {
+  testWidgets('Boss 关投降 → victoryRecorder / bossDefeatPenalty 均不调(主动放弃无惩罚)', (
+    tester,
+  ) async {
     bool victoryCalled = false;
     bool penaltyCalled = false;
 
-    await tester.pumpWidget(harness(
-      stage: bossStage(),
-      battleRunner: () async => false,
-      battleOutcome: () async => (won: false, surrendered: true),
-      victoryRecorder: (_) async {
-        victoryCalled = true;
-      },
-      bossDefeatPenalty: (_) async {
-        penaltyCalled = true;
-        return const [];
-      },
-    ));
+    await tester.pumpWidget(
+      harness(
+        stage: bossStage(),
+        battleRunner: () async => false,
+        battleOutcome: () async => (won: false, surrendered: true),
+        victoryRecorder: (_) async {
+          victoryCalled = true;
+        },
+        bossDefeatPenalty: (_) async {
+          penaltyCalled = true;
+          return const [];
+        },
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
@@ -215,21 +228,23 @@ void main() {
     var battleCount = 0;
     String? recordedStageId;
 
-    await tester.pumpWidget(harness(
-      stage: normalStage(),
-      battleRunner: () async => false, // 未用(battleOutcome 覆盖)
-      battleOutcome: () async {
-        battleCount++;
-        // 第一场败 → 重试 → 第二场胜。
-        return battleCount == 1
-            ? (won: false, surrendered: false)
-            : (won: true, surrendered: false);
-      },
-      stageRetryDecider: () async => true, // 选「再战」
-      victoryRecorder: (stageId) async {
-        recordedStageId = stageId;
-      },
-    ));
+    await tester.pumpWidget(
+      harness(
+        stage: normalStage(),
+        battleRunner: () async => false, // 未用(battleOutcome 覆盖)
+        battleOutcome: () async {
+          battleCount++;
+          // 第一场败 → 重试 → 第二场胜。
+          return battleCount == 1
+              ? (won: false, surrendered: false)
+              : (won: true, surrendered: false);
+        },
+        stageRetryDecider: () async => true, // 选「再战」
+        victoryRecorder: (stageId) async {
+          recordedStageId = stageId;
+        },
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
@@ -240,18 +255,19 @@ void main() {
     expect(find.text('done'), findsOneWidget);
   });
 
-  testWidgets(
-      '胜利 + narrativeVictoryId → 触发 victory narrative push '
+  testWidgets('胜利 + narrativeVictoryId → 触发 victory narrative push '
       '(NavigatorObserver 验,不 settle 子屏)', (tester) async {
     // W17 #31 NavigatorObserver mock 套路:不 settle 子屏避免 NarrativeReaderScreen
     // 内部异步死锁,只验 Navigator.push 本身被触发。
     final observer = _RecordingNavigatorObserver();
 
-    await tester.pumpWidget(harness(
-      stage: normalStage(victoryId: 'stage_01_01_victory'),
-      battleRunner: () async => true,
-      navigatorObservers: [observer],
-    ));
+    await tester.pumpWidget(
+      harness(
+        stage: normalStage(victoryId: 'stage_01_01_victory'),
+        battleRunner: () async => true,
+        navigatorObservers: [observer],
+      ),
+    );
     await tester.pump();
 
     // baseline:initial HarnessPage push 已记录
@@ -271,10 +287,7 @@ void main() {
       greaterThan(baseline),
       reason: 'victory narrative MaterialPageRoute 应已 push',
     );
-    expect(
-      observer.pushedRoutes.last,
-      isA<MaterialPageRoute<void>>(),
-    );
+    expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());
   });
 }
 
@@ -297,7 +310,7 @@ class _HarnessPage extends ConsumerStatefulWidget {
   final Future<bool> Function() stageRetryDecider;
   final Future<void> Function(String stageId) victoryRecorder;
   final Future<List<DefeatLossEntry>> Function(StageDef stage)
-      bossDefeatPenalty;
+  bossDefeatPenalty;
 
   @override
   ConsumerState<_HarnessPage> createState() => _HarnessPageState();

@@ -11,10 +11,16 @@ void main() {
     for (final sid in ['stage_01_05', 'stage_02_05', 'stage_03_05']) {
       final m = repo.stageDefs[sid]!.dropSkillManualId;
       expect(m, isNotNull, reason: '$sid 应配真解');
-      expect(repo.skillDefs[m], isNotNull, reason: '$sid 真解 id=$m 应在 skills.yaml');
+      expect(
+        repo.skillDefs[m],
+        isNotNull,
+        reason: '$sid 真解 id=$m 应在 skills.yaml',
+      );
     }
-    expect(repo.stageDefs['stage_02_05']!.dropSkillManualId,
-        'skill_qingshan_qingfeng');
+    expect(
+      repo.stageDefs['stage_02_05']!.dropSkillManualId,
+      'skill_qingshan_qingfeng',
+    );
   });
 
   test('真解/破势/青锋绝 配 proficiency.effects', () {
@@ -22,6 +28,9 @@ void main() {
     expect(repo.skillDefs['skill_qingshan_qingfeng']!.proficiency, isNotNull);
     expect(repo.skillDefs['skill_po_shi']!.proficiency, isNotNull);
     expect(repo.skillDefs['skill_yinrou_mingjia_ult']!.proficiency, isNotNull);
-    expect(repo.skillDefs['skill_gangmeng_mingjia_ult']!.proficiency, isNotNull);
+    expect(
+      repo.skillDefs['skill_gangmeng_mingjia_ult']!.proficiency,
+      isNotNull,
+    );
   });
 }

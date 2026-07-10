@@ -39,66 +39,75 @@ void main() {
       final repo = GameRepository.instance;
       final stage = repo.stageDefs['stage_02_05'];
       expect(stage, isNotNull, reason: 'stage_02_05 应在 stages.yaml 中');
-      final boss = stage!.enemyTeam
-          .firstWhere((e) => e.id == 'enemy_sanLiu_qingshan_main');
-      expect(boss.chargeSkillId, 'skill_qingshan_qingfeng',
-          reason: 'P0.5:青衫剑客招牌大招「青锋绝」(powerSkill,非 _ult)做蓄力技');
-      expect(boss.skillIds, contains(boss.chargeSkillId),
-          reason: 'chargeSkillId 必在敌人 skillIds 内');
+      final boss = stage!.enemyTeam.firstWhere(
+        (e) => e.id == 'enemy_sanLiu_qingshan_main',
+      );
+      expect(
+        boss.chargeSkillId,
+        'skill_qingshan_qingfeng',
+        reason: 'P0.5:青衫剑客招牌大招「青锋绝」(powerSkill,非 _ult)做蓄力技',
+      );
+      expect(
+        boss.skillIds,
+        contains(boss.chargeSkillId),
+        reason: 'chargeSkillId 必在敌人 skillIds 内',
+      );
     });
   });
 
   group('非法 chargeSkillId · broken loader transform(stages.yaml)', () {
     test('青衫剑客 chargeSkillId 改成不在 skillIds 的 id → 抛 StateError', () async {
       String inject(String s) => s.replaceFirst(
-            'chargeSkillId: skill_qingshan_qingfeng',
-            'chargeSkillId: skill_ghost_not_in_skill_ids',
-          );
+        'chargeSkillId: skill_qingshan_qingfeng',
+        'chargeSkillId: skill_ghost_not_in_skill_ids',
+      );
       expect(
         GameRepository.loadAllDefs(
           loader: makeLoader('data/stages.yaml', inject),
         ),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('skill_ghost_not_in_skill_ids'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('skill_ghost_not_in_skill_ids'),
+          ),
+        ),
       );
     });
   });
 
   group('chargeTicks 越界 · broken loader transform(numbers.yaml)', () {
     test('default_charge_ticks 改成 0 → 抛 StateError', () async {
-      String inject(String s) => s.replaceFirst(
-            'default_charge_ticks: 3',
-            'default_charge_ticks: 0',
-          );
+      String inject(String s) =>
+          s.replaceFirst('default_charge_ticks: 3', 'default_charge_ticks: 0');
       expect(
         GameRepository.loadAllDefs(
           loader: makeLoader('data/numbers.yaml', inject),
         ),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('defaultChargeTicks'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('defaultChargeTicks'),
+          ),
+        ),
       );
     });
 
     test('default_charge_ticks 改成 99 → 抛 StateError', () async {
-      String inject(String s) => s.replaceFirst(
-            'default_charge_ticks: 3',
-            'default_charge_ticks: 99',
-          );
+      String inject(String s) =>
+          s.replaceFirst('default_charge_ticks: 3', 'default_charge_ticks: 99');
       expect(
         GameRepository.loadAllDefs(
           loader: makeLoader('data/numbers.yaml', inject),
         ),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('defaultChargeTicks'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('defaultChargeTicks'),
+          ),
+        ),
       );
     });
   });
@@ -106,13 +115,12 @@ void main() {
   group('波A build gate · 破招技必须有 style 流派归属', () {
     test('production 全部 canInterrupt 招都有 style(集合自洽,非瞬时数字)', () {
       final repo = GameRepository.instance;
-      final interruptSkills =
-          repo.skillDefs.values.where((s) => s.canInterrupt);
-      expect(interruptSkills, isNotEmpty,
-          reason: '至少应有破势等破招技存在');
+      final interruptSkills = repo.skillDefs.values.where(
+        (s) => s.canInterrupt,
+      );
+      expect(interruptSkills, isNotEmpty, reason: '至少应有破势等破招技存在');
       for (final s in interruptSkills) {
-        expect(s.style, isNotNull,
-            reason: '破招技 ${s.id} 必须有 style 流派归属(波A红线)');
+        expect(s.style, isNotNull, reason: '破招技 ${s.id} 必须有 style 流派归属(波A红线)');
       }
     });
 
@@ -121,18 +129,20 @@ void main() {
       // style: gangMeng」——开锋专属技批(skills.yaml +21)已在 破势 前插入多条
       // gangMeng style,首匹配会落到非 canInterrupt 专属技,剥掉不触发红线。
       String inject(String s) => s.replaceFirst(
-            RegExp(r'style: gangMeng\s+# 波A build gate[^\n]*'),
-            '',
-          );
+        RegExp(r'style: gangMeng\s+# 波A build gate[^\n]*'),
+        '',
+      );
       expect(
         GameRepository.loadAllDefs(
           loader: makeLoader('data/skills.yaml', inject),
         ),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('canInterrupt=true 但缺 style'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('canInterrupt=true 但缺 style'),
+          ),
+        ),
       );
     });
   });

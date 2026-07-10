@@ -14,7 +14,8 @@ import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_ai.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart' show RealmUtils;
+import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
+    show RealmUtils;
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import '../../support/test_data.dart';
 
@@ -53,10 +54,14 @@ void main() {
     expect(stage.isBossStage, isTrue, reason: 'stage_02_05 是章末 Boss 关');
     expect(stage.requiredRealm, RealmTier.sanLiu);
     // 青衫剑客招牌技改蓄力(stages.yaml chargeSkillId 接线)。
-    final boss = StageBattleSetup.buildEnemyTeam(stage.enemyTeam)
-        .firstWhere((e) => e.name == '青衫剑客');
-    expect(boss.chargeSkillId, 'skill_qingshan_qingfeng',
-        reason: 'Boss 招牌大招「青锋绝」已接蓄力(P0.5 stage 接线)');
+    final boss = StageBattleSetup.buildEnemyTeam(
+      stage.enemyTeam,
+    ).firstWhere((e) => e.name == '青衫剑客');
+    expect(
+      boss.chargeSkillId,
+      'skill_qingshan_qingfeng',
+      reason: 'Boss 招牌大招「青锋绝」已接蓄力(P0.5 stage 接线)',
+    );
 
     // 玩家 on-level(sanLiu)真 build × ceiling 剖面(活跃玩家配装)→ 托管能解。
     // 多 seed 跑,统计通关数:目的是证明托管能解,不是 100% 必胜。
@@ -65,15 +70,39 @@ void main() {
     final outcomes = <String>[];
     for (final seed in seeds) {
       final players = [
-        _buildRealPlayer(repo, RealmTier.sanLiu, slot: 0, name: '玩家', isFounder: true),
-        _buildRealPlayer(repo, RealmTier.sanLiu, slot: 1, name: '徒弟一', isFounder: false),
-        _buildRealPlayer(repo, RealmTier.sanLiu, slot: 2, name: '徒弟二', isFounder: false),
+        _buildRealPlayer(
+          repo,
+          RealmTier.sanLiu,
+          slot: 0,
+          name: '玩家',
+          isFounder: true,
+        ),
+        _buildRealPlayer(
+          repo,
+          RealmTier.sanLiu,
+          slot: 1,
+          name: '徒弟一',
+          isFounder: false,
+        ),
+        _buildRealPlayer(
+          repo,
+          RealmTier.sanLiu,
+          slot: 2,
+          name: '徒弟二',
+          isFounder: false,
+        ),
       ];
       final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
-      final initial =
-          BattleState.initial(leftTeam: players, rightTeam: enemies);
-      final terminal = strategy.runToEnd(initial, numbers,
-          maxTicks: 1000, rng: Random(seed));
+      final initial = BattleState.initial(
+        leftTeam: players,
+        rightTeam: enemies,
+      );
+      final terminal = strategy.runToEnd(
+        initial,
+        numbers,
+        maxTicks: 1000,
+        rng: Random(seed),
+      );
       outcomes.add('seed=$seed → ${terminal.result?.name ?? "timeout"}');
       if (terminal.result == BattleResult.leftWin) wins++;
     }
@@ -82,7 +111,8 @@ void main() {
     expect(
       wins,
       greaterThan(seeds.length ~/ 2),
-      reason: '托管(无破招)应多数通关 stage_02_05;'
+      reason:
+          '托管(无破招)应多数通关 stage_02_05;'
           'wins=$wins/${seeds.length}\n${outcomes.join("\n")}',
     );
   });
@@ -150,110 +180,118 @@ void main() {
   // 测 2:手动破招路径 — requestUltimate 破招技打断 charging Boss
   // ───────────────────────────────────────────────────────────────────────
 
-  test('测 2 手动破招:requestUltimate 破招技命中 charging Boss → staggered + 招牌技未命中玩家',
-      () {
-    // 1v1:玩家(高速先手,含破招技)vs Boss(chargeSkillId 指向 bossSignature)。
-    const player = BattleCharacter(
-      characterId: 1,
-      name: '玩家',
-      realmTier: RealmTier.yiLiu,
-      realmLayer: RealmLayer.qiMeng,
-      school: TechniqueSchool.gangMeng,
-      maxHp: 12000,
-      currentHp: 12000,
-      maxInternalForce: 10000,
-      currentInternalForce: 10000,
-      speed: 400,
-      criticalRate: 0.0,
-      evasionRate: 0.0,
-      defenseRate: 0.0,
-      totalEquipmentAttack: 1500,
-      mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: <SkillDef>[playerBreaker, playerNormal],
-      skillCooldowns: {},
-      activeBuffs: [],
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: 0,
-      slotIndex: 0,
-    );
-    const boss = BattleCharacter(
-      characterId: -1,
-      name: '青衫剑客',
-      realmTier: RealmTier.yiLiu,
-      realmLayer: RealmLayer.qiMeng,
-      school: TechniqueSchool.gangMeng,
-      maxHp: 50000,
-      currentHp: 50000,
-      maxInternalForce: 10000,
-      currentInternalForce: 10000,
-      speed: 100,
-      criticalRate: 0.0,
-      evasionRate: 0.0,
-      defenseRate: 0.0,
-      totalEquipmentAttack: 1500,
-      mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: <SkillDef>[bossSignature, playerNormal],
-      skillCooldowns: {},
-      activeBuffs: [],
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: 1,
-      slotIndex: 0,
-      isBoss: true,
-      chargeSkillId: 'skill_p0_e2e_boss_signature',
-    );
+  test(
+    '测 2 手动破招:requestUltimate 破招技命中 charging Boss → staggered + 招牌技未命中玩家',
+    () {
+      // 1v1:玩家(高速先手,含破招技)vs Boss(chargeSkillId 指向 bossSignature)。
+      const player = BattleCharacter(
+        characterId: 1,
+        name: '玩家',
+        realmTier: RealmTier.yiLiu,
+        realmLayer: RealmLayer.qiMeng,
+        school: TechniqueSchool.gangMeng,
+        maxHp: 12000,
+        currentHp: 12000,
+        maxInternalForce: 10000,
+        currentInternalForce: 10000,
+        speed: 400,
+        criticalRate: 0.0,
+        evasionRate: 0.0,
+        defenseRate: 0.0,
+        totalEquipmentAttack: 1500,
+        mainCultivationLayer: CultivationLayer.daCheng,
+        availableSkills: <SkillDef>[playerBreaker, playerNormal],
+        skillCooldowns: {},
+        activeBuffs: [],
+        actionPoint: 0,
+        isAlive: true,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      const boss = BattleCharacter(
+        characterId: -1,
+        name: '青衫剑客',
+        realmTier: RealmTier.yiLiu,
+        realmLayer: RealmLayer.qiMeng,
+        school: TechniqueSchool.gangMeng,
+        maxHp: 50000,
+        currentHp: 50000,
+        maxInternalForce: 10000,
+        currentInternalForce: 10000,
+        speed: 100,
+        criticalRate: 0.0,
+        evasionRate: 0.0,
+        defenseRate: 0.0,
+        totalEquipmentAttack: 1500,
+        mainCultivationLayer: CultivationLayer.daCheng,
+        availableSkills: <SkillDef>[bossSignature, playerNormal],
+        skillCooldowns: {},
+        activeBuffs: [],
+        actionPoint: 0,
+        isAlive: true,
+        teamSide: 1,
+        slotIndex: 0,
+        isBoss: true,
+        chargeSkillId: 'skill_p0_e2e_boss_signature',
+      );
 
-    var s = BattleState.initial(leftTeam: [player], rightTeam: [boss]);
-    final rng = Random(7);
-    BattleCharacter bossOf(BattleState st) =>
-        st.rightTeam.firstWhere((c) => c.characterId == -1);
-    BattleCharacter playerOf(BattleState st) =>
-        st.leftTeam.firstWhere((c) => c.characterId == 1);
+      var s = BattleState.initial(leftTeam: [player], rightTeam: [boss]);
+      final rng = Random(7);
+      BattleCharacter bossOf(BattleState st) =>
+          st.rightTeam.firstWhere((c) => c.characterId == -1);
+      BattleCharacter playerOf(BattleState st) =>
+          st.leftTeam.firstWhere((c) => c.characterId == 1);
 
-    // 推进到 Boss 进入 charging(招牌技起手蓄力,本 tick 不出伤)。
-    var guard = 0;
-    while (bossOf(s).chargingSkill == null && !s.isFinished && guard < 200) {
-      s = strategy.tick(s, numbers, rng: rng);
-      guard++;
-    }
-    expect(bossOf(s).chargingSkill, isNotNull, reason: 'Boss 应进入蓄力');
-    expect(bossOf(s).chargingSkill!.id, 'skill_p0_e2e_boss_signature');
+      // 推进到 Boss 进入 charging(招牌技起手蓄力,本 tick 不出伤)。
+      var guard = 0;
+      while (bossOf(s).chargingSkill == null && !s.isFinished && guard < 200) {
+        s = strategy.tick(s, numbers, rng: rng);
+        guard++;
+      }
+      expect(bossOf(s).chargingSkill, isNotNull, reason: 'Boss 应进入蓄力');
+      expect(bossOf(s).chargingSkill!.id, 'skill_p0_e2e_boss_signature');
 
-    final playerHpBeforeBreak = playerOf(s).currentHp;
-    final bossHpBeforeBreak = bossOf(s).currentHp;
+      final playerHpBeforeBreak = playerOf(s).currentHp;
+      final bossHpBeforeBreak = bossOf(s).currentHp;
 
-    // 玩家手动请求破招技,推进直到玩家完成那次行动(命中 Boss → 掉血)。
-    s = strategy.requestUltimate(s, 1, playerBreaker);
-    guard = 0;
-    while (guard < 50 && !s.isFinished) {
-      s = strategy.tick(s, numbers, rng: rng);
-      if (bossOf(s).currentHp < bossHpBeforeBreak) break; // 破招命中过 Boss
-      guard++;
-    }
+      // 玩家手动请求破招技,推进直到玩家完成那次行动(命中 Boss → 掉血)。
+      s = strategy.requestUltimate(s, 1, playerBreaker);
+      guard = 0;
+      while (guard < 50 && !s.isFinished) {
+        s = strategy.tick(s, numbers, rng: rng);
+        if (bossOf(s).currentHp < bossHpBeforeBreak) break; // 破招命中过 Boss
+        guard++;
+      }
 
-    final bossAfter = bossOf(s);
-    // 机制断言:Boss 被打断 → 踉跄 + 蓄力清空 + 招牌技进 CD。
-    expect(bossAfter.chargingSkill, isNull, reason: '破招后 Boss 蓄力清空');
-    expect(bossAfter.staggerTicksRemaining,
+      final bossAfter = bossOf(s);
+      // 机制断言:Boss 被打断 → 踉跄 + 蓄力清空 + 招牌技进 CD。
+      expect(bossAfter.chargingSkill, isNull, reason: '破招后 Boss 蓄力清空');
+      expect(
+        bossAfter.staggerTicksRemaining,
         numbers.combat.bossCharge.defaultStaggerTicks,
-        reason: '破招后 Boss 进入踉跄(staggerTicksRemaining > 0)');
-    expect(bossAfter.staggerTicksRemaining, greaterThan(0));
-    expect(bossAfter.skillCooldowns.containsKey('skill_p0_e2e_boss_signature'),
+        reason: '破招后 Boss 进入踉跄(staggerTicksRemaining > 0)',
+      );
+      expect(bossAfter.staggerTicksRemaining, greaterThan(0));
+      expect(
+        bossAfter.skillCooldowns.containsKey('skill_p0_e2e_boss_signature'),
         isTrue,
-        reason: '招牌技被打断 → 进 CD,未在该 tick 命中玩家');
-    // 招牌技未命中玩家:玩家没掉那一大笔(3000 倍率 ≈ 重伤)。破招窗口内玩家血量
-    // 不因招牌技下降(允许等于;关键是没吃到招牌大伤)。
-    expect(playerOf(s).currentHp, greaterThanOrEqualTo(playerHpBeforeBreak),
-        reason: '破招拦下招牌技,玩家未吃招牌技重伤(currentHp 未下降)');
-  });
+        reason: '招牌技被打断 → 进 CD,未在该 tick 命中玩家',
+      );
+      // 招牌技未命中玩家:玩家没掉那一大笔(3000 倍率 ≈ 重伤)。破招窗口内玩家血量
+      // 不因招牌技下降(允许等于;关键是没吃到招牌大伤)。
+      expect(
+        playerOf(s).currentHp,
+        greaterThanOrEqualTo(playerHpBeforeBreak),
+        reason: '破招拦下招牌技,玩家未吃招牌技重伤(currentHp 未下降)',
+      );
+    },
+  );
 
   // ───────────────────────────────────────────────────────────────────────
   // 测 3:targeting — 破招技锁定蓄力 Boss,不挑血最低小怪
   // ───────────────────────────────────────────────────────────────────────
 
-  test('测 3 targeting:3 敌(Boss charging + 两小怪血更低)→ canInterrupt 技命中 Boss',
-      () {
+  test('测 3 targeting:3 敌(Boss charging + 两小怪血更低)→ canInterrupt 技命中 Boss', () {
     const player = BattleCharacter(
       characterId: 1,
       name: '玩家',
@@ -270,7 +308,11 @@ void main() {
       defenseRate: 0.0,
       totalEquipmentAttack: 1500,
       mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: <SkillDef>[playerBreaker, playerNormalPower, playerNormal],
+      availableSkills: <SkillDef>[
+        playerBreaker,
+        playerNormalPower,
+        playerNormal,
+      ],
       skillCooldowns: {},
       activeBuffs: [],
       actionPoint: 0,
@@ -285,37 +327,42 @@ void main() {
       required int hp,
       bool boss = false,
       SkillDef? charging,
-    }) =>
-        BattleCharacter(
-          characterId: charId,
-          name: boss ? '青衫剑客' : '小怪$charId',
-          realmTier: RealmTier.yiLiu,
-          realmLayer: RealmLayer.qiMeng,
-          school: TechniqueSchool.gangMeng,
-          maxHp: 12000,
-          currentHp: hp,
-          maxInternalForce: 10000,
-          currentInternalForce: 10000,
-          speed: 100,
-          criticalRate: 0.0,
-          evasionRate: 0.0,
-          defenseRate: 0.0,
-          totalEquipmentAttack: 1500,
-          mainCultivationLayer: CultivationLayer.daCheng,
-          availableSkills: const <SkillDef>[],
-          skillCooldowns: const {},
-          activeBuffs: const [],
-          actionPoint: 0,
-          isAlive: true,
-          teamSide: 1,
-          slotIndex: slot,
-          isBoss: boss,
-          chargingSkill: charging,
-          chargeTicksRemaining: charging != null ? 2 : 0,
-        );
+    }) => BattleCharacter(
+      characterId: charId,
+      name: boss ? '青衫剑客' : '小怪$charId',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      school: TechniqueSchool.gangMeng,
+      maxHp: 12000,
+      currentHp: hp,
+      maxInternalForce: 10000,
+      currentInternalForce: 10000,
+      speed: 100,
+      criticalRate: 0.0,
+      evasionRate: 0.0,
+      defenseRate: 0.0,
+      totalEquipmentAttack: 1500,
+      mainCultivationLayer: CultivationLayer.daCheng,
+      availableSkills: const <SkillDef>[],
+      skillCooldowns: const {},
+      activeBuffs: const [],
+      actionPoint: 0,
+      isAlive: true,
+      teamSide: 1,
+      slotIndex: slot,
+      isBoss: boss,
+      chargingSkill: charging,
+      chargeTicksRemaining: charging != null ? 2 : 0,
+    );
 
     // Boss(charId=-1)血更高 + charging;两小怪(-2/-3)血更低不蓄力。
-    final boss = enemy(charId: -1, slot: 0, hp: 11000, boss: true, charging: bossSignature);
+    final boss = enemy(
+      charId: -1,
+      slot: 0,
+      hp: 11000,
+      boss: true,
+      charging: bossSignature,
+    );
     final mobLow1 = enemy(charId: -2, slot: 1, hp: 2000);
     final mobLow2 = enemy(charId: -3, slot: 2, hp: 1500);
     final state = BattleState.initial(
@@ -325,14 +372,15 @@ void main() {
 
     final (skill, targetIds) = BattleAI.decide(player, state, numbers);
 
-    expect(skill.canInterrupt, isTrue,
-        reason: '对面有人蓄力 + 有 saveForInterrupt 破招技 → AI 选破招');
-    expect(skill.id, playerBreaker.id);
     expect(
-      targetIds,
-      [boss.characterId],
-      reason: '破招技应锁定蓄力 Boss(-1),不挑血最低小怪(-3 血 1500 最低)',
+      skill.canInterrupt,
+      isTrue,
+      reason: '对面有人蓄力 + 有 saveForInterrupt 破招技 → AI 选破招',
     );
+    expect(skill.id, playerBreaker.id);
+    expect(targetIds, [
+      boss.characterId,
+    ], reason: '破招技应锁定蓄力 Boss(-1),不挑血最低小怪(-3 血 1500 最低)');
   });
 }
 
@@ -366,25 +414,28 @@ BattleCharacter _buildRealPlayer(
       (d) => d.tier == eqTierCap && d.slot == wantSlot,
       orElse: () => defs.firstWhere((d) => d.slot == wantSlot),
     );
-    equipped.add(Equipment.create(
-      defId: def.id,
-      tier: def.tier,
-      slot: def.slot,
-      obtainedAt: DateTime(2026, 6, 9),
-      obtainedFrom: 'p0_e2e',
-      school: school,
-      baseAttack: (def.baseAttackMin + def.baseAttackMax) ~/ 2,
-      baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,
-      baseSpeed: (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
-      enhanceLevel: enhanceLevel,
-      battleCount: battleCount,
-    ));
+    equipped.add(
+      Equipment.create(
+        defId: def.id,
+        tier: def.tier,
+        slot: def.slot,
+        obtainedAt: DateTime(2026, 6, 9),
+        obtainedFrom: 'p0_e2e',
+        school: school,
+        baseAttack: (def.baseAttackMin + def.baseAttackMax) ~/ 2,
+        baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,
+        baseSpeed: (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
+        enhanceLevel: enhanceLevel,
+        battleCount: battleCount,
+      ),
+    );
   }
 
   // tier-cap 主修心法(production techniqueDefs · 真 skillIds)。
   final techTierCap = RealmUtils.techniqueTierCapOf(tier);
-  final TechniqueDef techDef =
-      repo.techniqueDefs.values.firstWhere((d) => d.tier == techTierCap);
+  final TechniqueDef techDef = repo.techniqueDefs.values.firstWhere(
+    (d) => d.tier == techTierCap,
+  );
   final mainTech = Technique.create(
     defId: techDef.id,
     ownerCharacterId: 999 + slot,

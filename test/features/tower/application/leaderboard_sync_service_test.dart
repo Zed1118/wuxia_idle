@@ -24,21 +24,23 @@ void main() {
       );
     });
 
-    test('reportClear 接受边界值(highestFloor=0 / bestClearTimeMs=null / totalAttempts=0)',
-        () async {
-      const sync = NoopLeaderboardSync();
-      // 全新存档边界:0 通关 / null 最佳耗时(Noop 不报错)
-      await expectLater(
-        sync.reportClear(
-          highestFloor: 0,
-          bestClearTimeMs: null,
-          totalAttempts: 0,
-          clearedAt: DateTime(2026, 5, 17),
-        ),
-        completes,
-        reason: '边界值不应抛 — LeaderboardSyncService 契约要求接受所有合法字段',
-      );
-    });
+    test(
+      'reportClear 接受边界值(highestFloor=0 / bestClearTimeMs=null / totalAttempts=0)',
+      () async {
+        const sync = NoopLeaderboardSync();
+        // 全新存档边界:0 通关 / null 最佳耗时(Noop 不报错)
+        await expectLater(
+          sync.reportClear(
+            highestFloor: 0,
+            bestClearTimeMs: null,
+            totalAttempts: 0,
+            clearedAt: DateTime(2026, 5, 17),
+          ),
+          completes,
+          reason: '边界值不应抛 — LeaderboardSyncService 契约要求接受所有合法字段',
+        );
+      },
+    );
 
     test('连调 100 次仍不抛(0 副作用约束)', () async {
       const sync = NoopLeaderboardSync();
@@ -75,8 +77,15 @@ void main() {
 /// 测试用 fake(LeaderboardSyncService 替身),记录每次 reportClear 参数。
 /// 类比未来 SupabaseLeaderboardSync 的实装套路(implements LeaderboardSyncService)。
 class _RecordingLeaderboardSync implements LeaderboardSyncService {
-  final List<({int highestFloor, int? bestClearTimeMs, int totalAttempts, DateTime clearedAt})>
-      reportedClears = [];
+  final List<
+    ({
+      int highestFloor,
+      int? bestClearTimeMs,
+      int totalAttempts,
+      DateTime clearedAt,
+    })
+  >
+  reportedClears = [];
 
   @override
   Future<void> reportClear({

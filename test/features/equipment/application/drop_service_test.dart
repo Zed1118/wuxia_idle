@@ -15,68 +15,66 @@ void main() {
   // ──────────────────────────────────────────────────────────────────────────
 
   EquipmentDef weaponDef() => const EquipmentDef(
-        id: 'test_weapon_tie_jian',
-        name: '铁剑',
-        tier: EquipmentTier.xunChang,
-        slot: EquipmentSlot.weapon,
-        baseAttackMin: 100,
-        baseAttackMax: 150,
-        baseHealthMin: 0,
-        baseHealthMax: 0,
-        baseSpeedMin: 5,
-        baseSpeedMax: 10,
-        presetLoreIds: [],
-        dropSourceTags: [],
-        iconPath: '',
-      );
+    id: 'test_weapon_tie_jian',
+    name: '铁剑',
+    tier: EquipmentTier.xunChang,
+    slot: EquipmentSlot.weapon,
+    baseAttackMin: 100,
+    baseAttackMax: 150,
+    baseHealthMin: 0,
+    baseHealthMax: 0,
+    baseSpeedMin: 5,
+    baseSpeedMax: 10,
+    presetLoreIds: [],
+    dropSourceTags: [],
+    iconPath: '',
+  );
 
   EquipmentDef armorDef() => const EquipmentDef(
-        id: 'test_armor_bu_yi',
-        name: '布衣',
-        tier: EquipmentTier.xunChang,
-        slot: EquipmentSlot.armor,
-        baseAttackMin: 0,
-        baseAttackMax: 0,
-        baseHealthMin: 200,
-        baseHealthMax: 300,
-        baseSpeedMin: 0,
-        baseSpeedMax: 5,
-        presetLoreIds: [],
-        dropSourceTags: [],
-        iconPath: '',
-      );
+    id: 'test_armor_bu_yi',
+    name: '布衣',
+    tier: EquipmentTier.xunChang,
+    slot: EquipmentSlot.armor,
+    baseAttackMin: 0,
+    baseAttackMax: 0,
+    baseHealthMin: 200,
+    baseHealthMax: 300,
+    baseSpeedMin: 0,
+    baseSpeedMax: 5,
+    presetLoreIds: [],
+    dropSourceTags: [],
+    iconPath: '',
+  );
 
   TowerFloorDef floorWith(List<DropEntry> table) => TowerFloorDef(
-        floorIndex: 1,
-        requiredRealm: RealmTier.xueTu,
-        enemyTeam: const [],
-        dropTable: table,
-      );
+    floorIndex: 1,
+    requiredRealm: RealmTier.xueTu,
+    enemyTeam: const [],
+    dropTable: table,
+  );
 
   StageDef stageWith(List<DropEntry> table) => StageDef(
-        id: 'test_stage',
-        name: '测试关',
-        stageType: StageType.mainline,
-        chapterIndex: 1,
-        requiredRealm: RealmTier.xueTu,
-        enemyTeam: const [],
-        isBossStage: false,
-        dropTable: table,
-        baseExpReward: 0,
-        difficultyMultiplier: 1.0,
-      );
+    id: 'test_stage',
+    name: '测试关',
+    stageType: StageType.mainline,
+    chapterIndex: 1,
+    requiredRealm: RealmTier.xueTu,
+    enemyTeam: const [],
+    isBossStage: false,
+    dropTable: table,
+    baseExpReward: 0,
+    difficultyMultiplier: 1.0,
+  );
 
   EquipmentDef lookup(String id) => switch (id) {
-        'test_weapon_tie_jian' => weaponDef(),
-        'test_armor_bu_yi' => armorDef(),
-        _ => throw StateError('未配置 def: $id'),
-      };
+    'test_weapon_tie_jian' => weaponDef(),
+    'test_armor_bu_yi' => armorDef(),
+    _ => throw StateError('未配置 def: $id'),
+  };
 
   final fixedTime = DateTime(2026, 5, 11);
-  DropService service() => DropService(
-        equipmentDefLookup: lookup,
-        now: () => fixedTime,
-      );
+  DropService service() =>
+      DropService(equipmentDefLookup: lookup, now: () => fixedTime);
 
   // ──────────────────────────────────────────────────────────────────────────
   // 1. dropTable 空 → 空 DropResult，不消耗 rng
@@ -137,11 +135,15 @@ void main() {
     );
     expect(result.equipments.length, 1);
     expect(result.equipments.first.defId, 'test_weapon_tie_jian');
-    expect(result.equipments.first.baseAttack,
-        inInclusiveRange(100, 150)); // 走了 EquipmentFactory
+    expect(
+      result.equipments.first.baseAttack,
+      inInclusiveRange(100, 150),
+    ); // 走了 EquipmentFactory
     expect(result.equipments.first.obtainedAt, fixedTime);
-    expect(result.equipments.first.obtainedFrom,
-        UiStrings.dropSourceStageDefault);
+    expect(
+      result.equipments.first.obtainedFrom,
+      UiStrings.dropSourceStageDefault,
+    );
     expect(result.equipments.first.ownerCharacterId, isNull);
     expect(result.items.length, 1);
     expect(result.items.first.defId, 'item_mojianshi');
@@ -235,8 +237,10 @@ void main() {
       DefaultRng(seed: 0),
     );
     expect(result.equipments.length, 2);
-    expect(result.equipments.map((e) => e.defId).toList(),
-        ['test_weapon_tie_jian', 'test_armor_bu_yi']);
+    expect(result.equipments.map((e) => e.defId).toList(), [
+      'test_weapon_tie_jian',
+      'test_armor_bu_yi',
+    ]);
     expect(result.items.length, 2);
     expect(result.items.map((e) => e.defId).toList(), ['item_a', 'item_b']);
   });
@@ -337,17 +341,11 @@ void main() {
 
     test('dropChance 越界 → 抛 FormatException', () {
       expect(
-        () => DropEntry.fromYaml({
-          'equipmentDefId': 'x',
-          'dropChance': 1.5,
-        }),
+        () => DropEntry.fromYaml({'equipmentDefId': 'x', 'dropChance': 1.5}),
         throwsA(isA<FormatException>()),
       );
       expect(
-        () => DropEntry.fromYaml({
-          'equipmentDefId': 'x',
-          'dropChance': -0.1,
-        }),
+        () => DropEntry.fromYaml({'equipmentDefId': 'x', 'dropChance': -0.1}),
         throwsA(isA<FormatException>()),
       );
     });
@@ -370,7 +368,10 @@ void main() {
 
   group('rollTowerRewards（T44）', () {
     test('dropTable 为空 → 返回 isEmpty 的 DropResult', () {
-      final result = service().rollTowerRewards(floorWith(const []), DefaultRng());
+      final result = service().rollTowerRewards(
+        floorWith(const []),
+        DefaultRng(),
+      );
       expect(result.isEmpty, isTrue);
     });
 
@@ -381,7 +382,10 @@ void main() {
       );
       final result = svc.rollTowerRewards(
         floorWith(const [
-          EquipmentDrop(equipmentDefId: 'test_weapon_tie_jian', dropChance: 1.0),
+          EquipmentDrop(
+            equipmentDefId: 'test_weapon_tie_jian',
+            dropChance: 1.0,
+          ),
         ]),
         DefaultRng(seed: 0),
       );
@@ -410,7 +414,9 @@ void main() {
       final result = service().rollTowerRewards(
         floorWith(const [
           EquipmentDrop(
-              equipmentDefId: 'test_weapon_tie_jian', dropChance: 0.0),
+            equipmentDefId: 'test_weapon_tie_jian',
+            dropChance: 0.0,
+          ),
         ]),
         _MockRng(doubles: const [0.0]),
       );

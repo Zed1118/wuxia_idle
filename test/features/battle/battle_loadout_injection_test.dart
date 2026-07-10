@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -51,15 +50,17 @@ void main() {
       'skill_encounter_ting_yu_jian',
     });
     // 未装的主修招(_skill 槽)不应进战斗池 → 证明没走 fallback。
-    expect(ids.contains('skill_gangmeng_jichu_skill'), isFalse,
-        reason: '装配槽非全空时不应注入未装的主修招');
+    expect(
+      ids.contains('skill_gangmeng_jichu_skill'),
+      isFalse,
+      reason: '装配槽非全空时不应注入未装的主修招',
+    );
     // mainSkillId2=null 等空槽 silent skip:不报错、不引入额外技能。
     expect(bc.availableSkills.length, 3);
   });
 
   test('mainSkillId2=null 空槽不注入也不抛错', () {
-    final c = _mkChar()
-      ..mainSkillId1 = 'skill_gangmeng_jichu_basic';
+    final c = _mkChar()..mainSkillId1 = 'skill_gangmeng_jichu_basic';
     // 仅设 1 槽,其余全 null。
     final tech = _mkTech();
 
@@ -110,10 +111,16 @@ void main() {
 
     final ids = bc.availableSkills.map((s) => s.id).toSet();
     // 主修三招 + 刚猛破招技破势(style 匹配 school)。
-    expect(ids.contains('skill_po_shi'), isTrue,
-        reason: '旧档 fallback 自动带本流派破招技,P0 手感不倒退');
-    expect(ids.contains('skill_jie_ying'), isFalse,
-        reason: '灵巧破招技不应发给刚猛角色(build gate)');
+    expect(
+      ids.contains('skill_po_shi'),
+      isTrue,
+      reason: '旧档 fallback 自动带本流派破招技,P0 手感不倒退',
+    );
+    expect(
+      ids.contains('skill_jie_ying'),
+      isFalse,
+      reason: '灵巧破招技不应发给刚猛角色(build gate)',
+    );
   });
 
   test('fallback 流派匹配:lingQiao 角色得截影非破势', () {

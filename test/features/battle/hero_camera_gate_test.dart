@@ -48,11 +48,7 @@ void main() {
 
     test('data == null → false', () {
       expect(
-        shouldShowHeroCamera(
-          isBoss: true,
-          isFirstClear: true,
-          data: null,
-        ),
+        shouldShowHeroCamera(isBoss: true, isFirstClear: true, data: null),
         isFalse,
       );
     });

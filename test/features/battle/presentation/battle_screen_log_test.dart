@@ -167,11 +167,8 @@ const _ultSkill = SkillDef(
   visualEffect: '',
 );
 
-Finder _assetImage(String path) => find.byWidgetPredicate(
-  (w) =>
-      w is Image &&
-      assetNameOf(w.image) == path,
-);
+Finder _assetImage(String path) =>
+    find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
 
 void main() {
   testWidgets('日志默认收起，点开显历史，再点收起（P0-2 Task6）', (tester) async {

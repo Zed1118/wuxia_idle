@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,9 +17,7 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1024, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: FounderCreationScreen()),
-      ),
+      const ProviderScope(child: MaterialApp(home: FounderCreationScreen())),
     );
     // pump 两次触发初始 build；不用 pumpAndSettle 以免触发语义树联动断言。
     await tester.pump();

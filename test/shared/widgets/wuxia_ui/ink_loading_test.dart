@@ -6,8 +6,9 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/ink_loading.dart';
 /// P0-2(2026-06-29 审查修复):水墨 loading 组件,替换 Material
 /// CircularProgressIndicator。墨晕扩散动画 · 用 WuxiaColors 不硬编码。
 void main() {
-  Widget host(Widget child) =>
-      MaterialApp(home: Scaffold(body: Center(child: child)));
+  Widget host(Widget child) => MaterialApp(
+    home: Scaffold(body: Center(child: child)),
+  );
 
   testWidgets('默认尺寸 48 且无异常渲染', (tester) async {
     await tester.pumpWidget(host(const InkLoadingIndicator()));

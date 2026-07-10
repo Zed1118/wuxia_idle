@@ -41,31 +41,30 @@ void main() {
     required int teamSide,
     required int slot,
     int ap = 0,
-  }) =>
-      BattleCharacter(
-        characterId: charId,
-        name: '$charId',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 12000,
-        currentHp: 12000,
-        maxInternalForce: 2000,
-        currentInternalForce: 2000,
-        speed: 120,
-        criticalRate: 0.0,
-        evasionRate: 0.0,
-        defenseRate: 0.1,
-        totalEquipmentAttack: 700,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: const <SkillDef>[power, normal],
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: ap,
-        isAlive: true,
-        teamSide: teamSide,
-        slotIndex: slot,
-      );
+  }) => BattleCharacter(
+    characterId: charId,
+    name: '$charId',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 12000,
+    currentHp: 12000,
+    maxInternalForce: 2000,
+    currentInternalForce: 2000,
+    speed: 120,
+    criticalRate: 0.0,
+    evasionRate: 0.0,
+    defenseRate: 0.1,
+    totalEquipmentAttack: 700,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: const <SkillDef>[power, normal],
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: ap,
+    isAlive: true,
+    teamSide: teamSide,
+    slotIndex: slot,
+  );
 
   test('AP 未满的玩家角色拖招 → 立即出手 + AP 归零 + 命中指定目标', () {
     const strat = DefaultGroundStrategy();
@@ -76,7 +75,9 @@ void main() {
     );
 
     final after = strat.interveneNow(
-      state, 1, power,
+      state,
+      1,
+      power,
       targetId: -1,
       n: n,
       rng: Random(7),
@@ -97,13 +98,23 @@ void main() {
   test('已死角色拖招 → noop（state 不变）', () {
     const strat = DefaultGroundStrategy();
     final n = GameRepository.instance.numbers;
-    final dead = unit(charId: 1, teamSide: 0, slot: 0)
-        .copyWith(currentHp: 0, isAlive: false);
+    final dead = unit(
+      charId: 1,
+      teamSide: 0,
+      slot: 0,
+    ).copyWith(currentHp: 0, isAlive: false);
     final state = BattleState.initial(
       leftTeam: [dead],
       rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
     );
-    final after = strat.interveneNow(state, 1, power, targetId: -1, n: n, rng: Random(7));
+    final after = strat.interveneNow(
+      state,
+      1,
+      power,
+      targetId: -1,
+      n: n,
+      rng: Random(7),
+    );
     expect(after.actionLog, isEmpty);
   });
 
@@ -114,20 +125,38 @@ void main() {
       leftTeam: [unit(charId: 1, teamSide: 0, slot: 0, ap: 300)],
       rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
     );
-    final after = strat.interveneNow(state, 1, normal, targetId: -1, n: n, rng: Random(7));
+    final after = strat.interveneNow(
+      state,
+      1,
+      normal,
+      targetId: -1,
+      n: n,
+      rng: Random(7),
+    );
     expect(after.actionLog, isEmpty, reason: '普攻不走插队,noop 不抛异常');
   });
 
   test('踉跄中的玩家角色拖招 → noop(不静默 fizzle)', () {
     const strat = DefaultGroundStrategy();
     final n = GameRepository.instance.numbers;
-    final staggered = unit(charId: 1, teamSide: 0, slot: 0, ap: 300)
-        .copyWith(staggerTicksRemaining: 2);
+    final staggered = unit(
+      charId: 1,
+      teamSide: 0,
+      slot: 0,
+      ap: 300,
+    ).copyWith(staggerTicksRemaining: 2);
     final state = BattleState.initial(
       leftTeam: [staggered],
       rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
     );
-    final after = strat.interveneNow(state, 1, power, targetId: -1, n: n, rng: Random(7));
+    final after = strat.interveneNow(
+      state,
+      1,
+      power,
+      targetId: -1,
+      n: n,
+      rng: Random(7),
+    );
     expect(after.actionLog, isEmpty, reason: '踉跄中不接受插队');
     final actor = after.leftTeam.firstWhere((c) => c.characterId == 1);
     expect(actor.actionPoint, 300, reason: 'noop 不改 AP');
@@ -136,13 +165,24 @@ void main() {
   test('蓄力中的玩家角色拖招 → noop', () {
     const strat = DefaultGroundStrategy();
     final n = GameRepository.instance.numbers;
-    final charging = unit(charId: 1, teamSide: 0, slot: 0, ap: 300)
-        .copyWith(chargingSkill: power, chargeTicksRemaining: 2);
+    final charging = unit(
+      charId: 1,
+      teamSide: 0,
+      slot: 0,
+      ap: 300,
+    ).copyWith(chargingSkill: power, chargeTicksRemaining: 2);
     final state = BattleState.initial(
       leftTeam: [charging],
       rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
     );
-    final after = strat.interveneNow(state, 1, power, targetId: -1, n: n, rng: Random(7));
+    final after = strat.interveneNow(
+      state,
+      1,
+      power,
+      targetId: -1,
+      n: n,
+      rng: Random(7),
+    );
     expect(after.actionLog, isEmpty, reason: '蓄力中不接受插队');
   });
 }

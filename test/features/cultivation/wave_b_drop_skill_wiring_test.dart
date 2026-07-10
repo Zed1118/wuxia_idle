@@ -88,9 +88,10 @@ void main() {
         c,
         GameRepository.instance,
       );
-      expect(drops.map((s) => s.id).toList(),
-          ['skill_kai_bei_shou', 'skill_qian_jun_zhui_yue'],
-          reason: '只含本流派已解锁招,tier 升序;灵巧招不入刚猛池');
+      expect(drops.map((s) => s.id).toList(), [
+        'skill_kai_bei_shou',
+        'skill_qian_jun_zhui_yue',
+      ], reason: '只含本流派已解锁招,tier 升序;灵巧招不入刚猛池');
     });
 
     test('未解锁任何招 → 空;school null → 空', () async {
@@ -104,8 +105,7 @@ void main() {
 
       final noSchoolId = await seedCharacter(school: null);
       final noSchool = (await isar.characters.get(noSchoolId))!;
-      expect(
-          await resolver.resolveUnlockedDropSkills(noSchool, repo), isEmpty);
+      expect(await resolver.resolveUnlockedDropSkills(noSchool, repo), isEmpty);
     });
   });
 
@@ -133,12 +133,13 @@ void main() {
       expect(result, isA<SlotEquipStyleLocked>());
     });
 
-    test('已解锁但境界不足(高 tier 真解 × xueTu)→ SlotEquipTierLocked',
-        () async {
+    test('已解锁但境界不足(高 tier 真解 × xueTu)→ SlotEquipTierLocked', () async {
       final isar = IsarSetup.instance;
       await SkillUnlockService(isar).grantManual('skill_shi_dang_shi_jue');
       final charId = await seedCharacter(
-          realmTier: RealmTier.xueTu, school: TechniqueSchool.gangMeng);
+        realmTier: RealmTier.xueTu,
+        school: TechniqueSchool.gangMeng,
+      );
       final result = await SkillLoadoutService(isar).equipSkill(
         characterId: charId,
         slot: SkillSlot.main1,
@@ -147,8 +148,7 @@ void main() {
       expect(result, isA<SlotEquipTierLocked>());
     });
 
-    test('drop 招装辅修/共鸣槽 → SlotEquipStyleLocked(槽位限主修/大招)',
-        () async {
+    test('drop 招装辅修/共鸣槽 → SlotEquipStyleLocked(槽位限主修/大招)', () async {
       final isar = IsarSetup.instance;
       await SkillUnlockService(isar).grantManual('skill_kai_bei_shou');
       final charId = await seedCharacter(school: TechniqueSchool.gangMeng);
@@ -158,8 +158,11 @@ void main() {
           slot: slot,
           skillId: 'skill_kai_bei_shou',
         );
-        expect(result, isA<SlotEquipStyleLocked>(),
-            reason: 'drop 招不可装 ${slot.name} 槽');
+        expect(
+          result,
+          isA<SlotEquipStyleLocked>(),
+          reason: 'drop 招不可装 ${slot.name} 槽',
+        );
       }
     });
 
@@ -167,7 +170,9 @@ void main() {
       final isar = IsarSetup.instance;
       await SkillUnlockService(isar).grantManual('skill_kai_bei_shou');
       final charId = await seedCharacter(
-          realmTier: RealmTier.xueTu, school: TechniqueSchool.gangMeng);
+        realmTier: RealmTier.xueTu,
+        school: TechniqueSchool.gangMeng,
+      );
       final result = await SkillLoadoutService(isar).equipSkill(
         characterId: charId,
         slot: SkillSlot.main1,
@@ -183,8 +188,7 @@ void main() {
   // 复用该文件 fixture builders)。
 
   group('e2e:首通真解 → 装配 → 战斗可用 + 章末重打残页', () {
-    test('stage_01_05 首通 → 斜雨穿帘解锁 → 阴柔角色可装 → 战斗 availableSkills 含',
-        () async {
+    test('stage_01_05 首通 → 斜雨穿帘解锁 → 阴柔角色可装 → 战斗 availableSkills 含', () async {
       final isar = IsarSetup.instance;
       final repo = GameRepository.instance;
       final svc = SkillUnlockService(isar);
@@ -194,12 +198,14 @@ void main() {
         stage: repo.stageDefs['stage_01_05']!,
         svc: svc,
         clearedStageIds: const {},
-        towerFragmentDropProb:
-            repo.numbers.skillUnlock.towerFragmentDropProb,
+        towerFragmentDropProb: repo.numbers.skillUnlock.towerFragmentDropProb,
         rng: Random(1),
       );
-      expect(await svc.isUnlocked('skill_xie_yu_chuan_lian'), isTrue,
-          reason: '首通必给真解');
+      expect(
+        await svc.isUnlocked('skill_xie_yu_chuan_lian'),
+        isTrue,
+        reason: '首通必给真解',
+      );
 
       // 2. 阴柔角色装配进主修槽。
       final charId = await seedCharacter(school: TechniqueSchool.yinRou);
@@ -228,9 +234,11 @@ void main() {
         teamSide: 0,
         slotIndex: 0,
       );
-      expect(bc.availableSkills.map((s) => s.id),
-          contains('skill_xie_yu_chuan_lian'),
-          reason: '装配槽真解应进战斗 availableSkills');
+      expect(
+        bc.availableSkills.map((s) => s.id),
+        contains('skill_xie_yu_chuan_lian'),
+        reason: '装配槽真解应进战斗 availableSkills',
+      );
 
       // 4. 重打不再重复给(幂等,真解只首通)。
       await runStageSkillDropHookAfterVictory(
@@ -261,8 +269,11 @@ void main() {
           rng: Random(i),
         );
       }
-      expect(await svc.isUnlocked('skill_guan_shan_ba_ji'), isTrue,
-          reason: '集齐 $threshold 片应自动解锁');
+      expect(
+        await svc.isUnlocked('skill_guan_shan_ba_ji'),
+        isTrue,
+        reason: '集齐 $threshold 片应自动解锁',
+      );
     });
   });
 }

@@ -10,7 +10,8 @@ void main() {
     test('全条 md 提供 → 加载到全条 entry', () async {
       final fakeFs = <String, String>{
         for (final e in CodexIndex.entries)
-          'data/narratives/codex/${e.id}.md': '# ${e.id}_title\n\n'
+          'data/narratives/codex/${e.id}.md':
+              '# ${e.id}_title\n\n'
               '占位段落一,字数控制在 50 字以上。占位占位占位占位占位占位。'
               '占位占位占位占位占位占位占位占位占位占位占位占位占位占位。\n\n'
               '占位段落二,字数充足验证 paragraphs 切段语义。',
@@ -19,8 +20,10 @@ void main() {
         loader: (path) async => fakeFs[path] ?? (throw 'missing $path'),
       );
       expect(entries.length, CodexIndex.entries.length);
-      expect(entries.map((e) => e.id).toSet(),
-          CodexIndex.entries.map((e) => e.id).toSet());
+      expect(
+        entries.map((e) => e.id).toSet(),
+        CodexIndex.entries.map((e) => e.id).toSet(),
+      );
     });
 
     test('某机制档 md 缺失 → graceful 跳过,其余加载', () async {

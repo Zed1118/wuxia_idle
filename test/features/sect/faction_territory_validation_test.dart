@@ -11,32 +11,36 @@ void main() {
   Future<String> realLoad(String path) => File(path).readAsString();
 
   group('#4 门派/领地加载层强校验', () {
-    test('stages/encounters 引的 factionId 不在 factions.yaml → 抛 StateError (声望 wire 静默兜底防线)',
-        () async {
-      // 只留 wudang(合法 alignment,过 ① 枚举校验),其余 factionId(shaolin/jiaoMen…)
-      // 引用落空 → ② 引用校验抛错。
-      Future<String> missingFactionLoader(String path) {
-        if (path == 'data/factions.yaml') {
-          return Future.value('''
+    test(
+      'stages/encounters 引的 factionId 不在 factions.yaml → 抛 StateError (声望 wire 静默兜底防线)',
+      () async {
+        // 只留 wudang(合法 alignment,过 ① 枚举校验),其余 factionId(shaolin/jiaoMen…)
+        // 引用落空 → ② 引用校验抛错。
+        Future<String> missingFactionLoader(String path) {
+          if (path == 'data/factions.yaml') {
+            return Future.value('''
 factions:
   - id: wudang
     name: "武当派"
     alignment: orthodox
     npc_ids: []
 ''');
+          }
+          return realLoad(path);
         }
-        return realLoad(path);
-      }
 
-      await expectLater(
-        GameRepository.loadAllDefs(loader: missingFactionLoader),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('不在 factions.yaml'),
-        )),
-      );
-    });
+        await expectLater(
+          GameRepository.loadAllDefs(loader: missingFactionLoader),
+          throwsA(
+            isA<StateError>().having(
+              (e) => e.message,
+              'message',
+              contains('不在 factions.yaml'),
+            ),
+          ),
+        );
+      },
+    );
 
     test('faction alignment 非 orthodox/neutral/evil → 抛 StateError', () async {
       Future<String> badAlignmentLoader(String path) {
@@ -54,11 +58,13 @@ factions:
 
       await expectLater(
         GameRepository.loadAllDefs(loader: badAlignmentLoader),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          allOf(contains('alignment'), contains('非法')),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains('alignment'), contains('非法')),
+          ),
+        ),
       );
     });
 
@@ -78,11 +84,13 @@ factions:
 
       await expectLater(
         GameRepository.loadAllDefs(loader: badTerritoryLoader),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          allOf(contains('baseDefenseLevel'), contains('越界')),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains('baseDefenseLevel'), contains('越界')),
+          ),
+        ),
       );
     });
 

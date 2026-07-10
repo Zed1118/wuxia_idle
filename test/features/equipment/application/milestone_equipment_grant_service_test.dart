@@ -50,8 +50,7 @@ void main() {
     expect(granted, contains('armor_special_bai_zhan_jia'));
 
     final all = await IsarSetup.instance.equipments.where().findAll();
-    final bzj =
-        all.firstWhere((e) => e.defId == 'armor_special_bai_zhan_jia');
+    final bzj = all.firstWhere((e) => e.defId == 'armor_special_bai_zhan_jia');
     expect(bzj.ownerCharacterId, isNull, reason: '入背包不绑角色');
     expect(bzj.obtainedFrom, '群战军功');
 
@@ -64,8 +63,10 @@ void main() {
 
   test('grantForTag 二次调用幂等 no-op(不重发)', () async {
     await service.grantForTag('mass_battle_merit', obtainedFrom: '群战军功');
-    final second =
-        await service.grantForTag('mass_battle_merit', obtainedFrom: '群战军功');
+    final second = await service.grantForTag(
+      'mass_battle_merit',
+      obtainedFrom: '群战军功',
+    );
     expect(second, isEmpty);
 
     final all = await IsarSetup.instance.equipments

@@ -51,8 +51,11 @@ void main() {
         skillPower: 500,
       );
       // strategy path 末端乘 APM=1.0 default
-      expect(_withApm(r.mainDamage, 1.0), lessThanOrEqualTo(8000),
-          reason: 'R5.1 baseline 无 APM 修饰,Demo 一流境界普攻应远低于红线');
+      expect(
+        _withApm(r.mainDamage, 1.0),
+        lessThanOrEqualTo(8000),
+        reason: 'R5.1 baseline 无 APM 修饰,Demo 一流境界普攻应远低于红线',
+      );
     });
 
     test('R5.2 P3.1 terrain rooftop APM=1.15 单维度 · 普攻 ≤ 8000', () {
@@ -65,8 +68,11 @@ void main() {
         equipmentAttack: 1500,
         skillPower: 500,
       );
-      expect(_withApm(r.mainDamage, 1.15), lessThanOrEqualTo(8000),
-          reason: 'P3.1 rooftop APM=1.15 single dim 不破 §5.4');
+      expect(
+        _withApm(r.mainDamage, 1.15),
+        lessThanOrEqualTo(8000),
+        reason: 'P3.1 rooftop APM=1.15 single dim 不破 §5.4',
+      );
     });
 
     test('R5.3 P3.2 formation fengShi APM=1.10 单维度 · 普攻 ≤ 8000', () {
@@ -79,8 +85,11 @@ void main() {
         equipmentAttack: 1500,
         skillPower: 500,
       );
-      expect(_withApm(r.mainDamage, 1.10), lessThanOrEqualTo(8000),
-          reason: 'P3.2 fengShi APM=1.10 single dim 不破 §5.4');
+      expect(
+        _withApm(r.mainDamage, 1.10),
+        lessThanOrEqualTo(8000),
+        reason: 'P3.2 fengShi APM=1.10 single dim 不破 §5.4',
+      );
     });
 
     test('R5.4 P1.2 enmity APM=1.25 单维度(spec 假定值) · 普攻 ≤ 8000', () {
@@ -93,8 +102,11 @@ void main() {
         equipmentAttack: 1500,
         skillPower: 500,
       );
-      expect(_withApm(r.mainDamage, 1.25), lessThanOrEqualTo(8000),
-          reason: 'P1.2 enmity APM=1.25 spec clamp_max 不破 §5.4');
+      expect(
+        _withApm(r.mainDamage, 1.25),
+        lessThanOrEqualTo(8000),
+        reason: 'P1.2 enmity APM=1.25 spec clamp_max 不破 §5.4',
+      );
     });
 
     test('R5.5 跨系统 P3.1 + P1.2 烘焙覆盖语义实测 · 普攻 ≤ 8000', () {
@@ -111,8 +123,11 @@ void main() {
         skillPower: 500,
       );
       final apmStacked = 1.15 * 1.25; // worst-case 乘语义
-      expect(_withApm(r.mainDamage, apmStacked), lessThanOrEqualTo(8000),
-          reason: 'P3.1×P1.2 乘语义 APM≈1.44 (worst-case) 不破 §5.4');
+      expect(
+        _withApm(r.mainDamage, apmStacked),
+        lessThanOrEqualTo(8000),
+        reason: 'P3.1×P1.2 乘语义 APM≈1.44 (worst-case) 不破 §5.4',
+      );
     });
 
     test('R5.6 跨系统 P3.2 + P1.2 乘语义 APM=1.10×1.25 · 普攻 ≤ 8000', () {
@@ -124,35 +139,45 @@ void main() {
         skillPower: 500,
       );
       final apmStacked = 1.10 * 1.25; // 1.375
-      expect(_withApm(r.mainDamage, apmStacked), lessThanOrEqualTo(8000),
-          reason: 'P3.2×P1.2 乘语义 APM≈1.38 不破 §5.4');
+      expect(
+        _withApm(r.mainDamage, apmStacked),
+        lessThanOrEqualTo(8000),
+        reason: 'P3.2×P1.2 乘语义 APM≈1.38 不破 §5.4',
+      );
     });
 
-    test('R5.7 扁平基 worst-case 暴击 + 三 APM 链 ≤ 100000 (扁平路径紧界·§5.4 软线已放宽不进百万)', () {
-      // 暴击独立路径。**本 audit 用扁平 equipmentAttack=2000**(非派生 ~15000):
-      // worst-case 刚猛打阴柔 1.25 + 心法 jiJing 3.0 + 暴击 1.5 + 三 APM 累乘
-      //           1.15*1.10*1.25 ≈ 1.58 → 结果 ~5 万 = 扁平路径紧界。
-      // 注意:实际 stages 隔离(light_foot vs mass_battle stage 不重)。本界远低于
-      // §5.4 软红线(2026-06-14 放宽后「不进百万」);真实派生满 build 大招峰值 ~21 万
-      // 由 full_build / balance_simulator 极值×周目诊断测兜底。
-      final r = _calcBoundary(
-        attackerTier: RealmTier.wuSheng,
-        defenderTier: RealmTier.wuSheng,
-        internalForce: 15000,
-        equipmentAttack: 2000,
-        skillPower: 500,
-        attackerSchool: TechniqueSchool.gangMeng,
-        defenderSchool: TechniqueSchool.yinRou,
-        cultivationLayer: CultivationLayer.jiJing,
-        forceCritical: true,
-      );
-      // r.mainDamage = base * 3.0 * 1.25 * 1.5 * 0.65 * 1.0
-      // APM 三链乘 1.15 * 1.10 * 1.25 ≈ 1.581
-      final stacked = _withApm(r.mainDamage, 1.15 * 1.10 * 1.25);
-      expect(stacked, lessThanOrEqualTo(100000),
-          reason: '扁平 equipmentAttack=2000 路径 worst-case 紧界(~5万);§5.4 软红线'
-              '已放宽「不进百万」,真实派生满 build 峰值见 full_build/balance_simulator');
-    });
+    test(
+      'R5.7 扁平基 worst-case 暴击 + 三 APM 链 ≤ 100000 (扁平路径紧界·§5.4 软线已放宽不进百万)',
+      () {
+        // 暴击独立路径。**本 audit 用扁平 equipmentAttack=2000**(非派生 ~15000):
+        // worst-case 刚猛打阴柔 1.25 + 心法 jiJing 3.0 + 暴击 1.5 + 三 APM 累乘
+        //           1.15*1.10*1.25 ≈ 1.58 → 结果 ~5 万 = 扁平路径紧界。
+        // 注意:实际 stages 隔离(light_foot vs mass_battle stage 不重)。本界远低于
+        // §5.4 软红线(2026-06-14 放宽后「不进百万」);真实派生满 build 大招峰值 ~21 万
+        // 由 full_build / balance_simulator 极值×周目诊断测兜底。
+        final r = _calcBoundary(
+          attackerTier: RealmTier.wuSheng,
+          defenderTier: RealmTier.wuSheng,
+          internalForce: 15000,
+          equipmentAttack: 2000,
+          skillPower: 500,
+          attackerSchool: TechniqueSchool.gangMeng,
+          defenderSchool: TechniqueSchool.yinRou,
+          cultivationLayer: CultivationLayer.jiJing,
+          forceCritical: true,
+        );
+        // r.mainDamage = base * 3.0 * 1.25 * 1.5 * 0.65 * 1.0
+        // APM 三链乘 1.15 * 1.10 * 1.25 ≈ 1.581
+        final stacked = _withApm(r.mainDamage, 1.15 * 1.10 * 1.25);
+        expect(
+          stacked,
+          lessThanOrEqualTo(100000),
+          reason:
+              '扁平 equipmentAttack=2000 路径 worst-case 紧界(~5万);§5.4 软红线'
+              '已放宽「不进百万」,真实派生满 build 峰值见 full_build/balance_simulator',
+        );
+      },
+    );
 
     test('R5.8 P1.2 enmity clamp_max 真值从 NumbersConfig 加载(契约不放宽)', () {
       // P1.2 spec(p1_2_jianghu_enmity_spec_2026-05-24.md)规定
@@ -162,10 +187,16 @@ void main() {
       final clampMax =
           GameRepository.instance.numbers.jianghu.enmityCombatModifier.clampMax;
       // §5.4 普伤 8000 红线 / APM ≤ 1.25 → 末端乘 ≤ 10000 留余量
-      expect(clampMax, lessThanOrEqualTo(1.25),
-          reason: 'P1.2 spec 契约:enmity APM 上限 ≤ 1.25 不可放宽(防 §5.4 越界)');
-      expect(clampMax, greaterThan(1.0),
-          reason: 'clamp_max 应 > 1.0(否则恩怨 buff 失效)');
+      expect(
+        clampMax,
+        lessThanOrEqualTo(1.25),
+        reason: 'P1.2 spec 契约:enmity APM 上限 ≤ 1.25 不可放宽(防 §5.4 越界)',
+      );
+      expect(
+        clampMax,
+        greaterThan(1.0),
+        reason: 'clamp_max 应 > 1.0(否则恩怨 buff 失效)',
+      );
     });
 
     test('R5.9 LightFoot 单 strategy APM 上限真值从 NumbersConfig 加载', () {
@@ -178,25 +209,41 @@ void main() {
       // 契约假设:不会同时烘焙 → 单 strategy APM ≤ 全 terrain damageMultiplier max。
       // 从 NumbersConfig 加载真值(memory feedback_red_line_test_semantics)。
       final terrainMults = GameRepository
-          .instance.numbers.lightFoot.terrainModifiers.values
+          .instance
+          .numbers
+          .lightFoot
+          .terrainModifiers
+          .values
           .map((m) => m.damageMultiplier);
       final singleStrategyMaxApm = terrainMults.reduce(max);
-      expect(singleStrategyMaxApm, lessThanOrEqualTo(1.15),
-          reason: '单 strategy APM 上限契约(rooftop 1.15)不可放宽');
+      expect(
+        singleStrategyMaxApm,
+        lessThanOrEqualTo(1.15),
+        reason: '单 strategy APM 上限契约(rooftop 1.15)不可放宽',
+      );
     });
 
     test('R5.10 §5.4 数值红线 cap mirror_caps 不破', () {
       final caps = GameRepository.instance.numbers.innerDemon.mirrorCaps;
       // §5.4 玩家血 ≤ 20000
-      expect(caps.hpMax, lessThanOrEqualTo(20000),
-          reason: 'mirror_caps.hp_max 受 §5.4 玩家血上限约束');
+      expect(
+        caps.hpMax,
+        lessThanOrEqualTo(20000),
+        reason: 'mirror_caps.hp_max 受 §5.4 玩家血上限约束',
+      );
       // §5.4 内力 ≤ 15000
-      expect(caps.internalForceMax, lessThanOrEqualTo(15000),
-          reason: 'mirror_caps.internal_force_max 受 §5.4 内力上限约束');
+      expect(
+        caps.internalForceMax,
+        lessThanOrEqualTo(15000),
+        reason: 'mirror_caps.internal_force_max 受 §5.4 内力上限约束',
+      );
       // §5.4 装备攻击:mirror_caps 总和 6000 = 3 件 × 单件 2000(§5.4 单件维度)
       // memory feedback_mirror_buff_cap_dimension:单件 vs 总 cap 不同维
-      expect(caps.attackPowerMax, lessThanOrEqualTo(6000),
-          reason: '3 件求和 cap = 6000(§5.4 单件 2000 × 3 件)');
+      expect(
+        caps.attackPowerMax,
+        lessThanOrEqualTo(6000),
+        reason: '3 件求和 cap = 6000(§5.4 单件 2000 × 3 件)',
+      );
     });
   });
 }

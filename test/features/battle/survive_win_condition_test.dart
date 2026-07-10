@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
@@ -90,7 +89,11 @@ void main() {
     // 永久 listener 防 autoDispose 在 read 间隙释放 notifier(否则 state 丢失,
     // 依 project memory `feedback_wuxia_rngprovider_vs_dartmath_random` /
     // 既有 battle_seed_determinism_test 同构手法)。
-    final sub = container.listen(battleProvider, (_, _) {}, fireImmediately: true);
+    final sub = container.listen(
+      battleProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
     addTearDown(sub.close);
 
     final notifier = container.read(battleProvider.notifier);

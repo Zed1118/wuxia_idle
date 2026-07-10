@@ -25,9 +25,18 @@ void main() {
     test('Ch4 → 4', () => expect(mainlineGroupIndex('stage_04_04'), 4));
     test('Ch5 → 5', () => expect(mainlineGroupIndex('stage_05_05'), 5));
     test('Ch6 → 6', () => expect(mainlineGroupIndex('stage_06_05'), 6));
-    test('inner_demon → 7', () => expect(mainlineGroupIndex('stage_inner_demon_01'), 7));
-    test('light_foot → 8', () => expect(mainlineGroupIndex('stage_light_foot_05'), 8));
-    test('mass_battle → 9', () => expect(mainlineGroupIndex('stage_mass_battle_05'), 9));
+    test(
+      'inner_demon → 7',
+      () => expect(mainlineGroupIndex('stage_inner_demon_01'), 7),
+    );
+    test(
+      'light_foot → 8',
+      () => expect(mainlineGroupIndex('stage_light_foot_05'), 8),
+    );
+    test(
+      'mass_battle → 9',
+      () => expect(mainlineGroupIndex('stage_mass_battle_05'), 9),
+    );
     test('未知前缀 → 99', () => expect(mainlineGroupIndex('unknown_stage'), 99));
   });
 }

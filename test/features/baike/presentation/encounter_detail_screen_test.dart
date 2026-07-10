@@ -16,9 +16,11 @@ void main() {
       baseProbability: 0.1,
       outcomeMapping: {},
     );
-    await tester.pumpWidget(const ProviderScope(
-      child: MaterialApp(home: EncounterDetailScreen(def: def)),
-    ));
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: EncounterDetailScreen(def: def)),
+      ),
+    );
     await tester.pumpAndSettle();
     // 类型标(武学领悟)可见
     expect(find.text(UiStrings.encounterCodexGroupInsight), findsWidgets);

@@ -27,16 +27,16 @@ const kEqAtk = 100;
 const kDefRate = 0.05;
 
 SkillDef mkNingjiaSkill() => const SkillDef(
-      id: 's_ningjia',
-      name: '测试招',
-      description: 'test',
-      type: SkillType.normalAttack,
-      powerMultiplier: kPower,
-      internalForceCost: 0,
-      cooldownTurns: 0,
-      requiresManualTrigger: false,
-      visualEffect: 'v',
-    );
+  id: 's_ningjia',
+  name: '测试招',
+  description: 'test',
+  type: SkillType.normalAttack,
+  powerMultiplier: kPower,
+  internalForceCost: 0,
+  cooldownTurns: 0,
+  requiresManualTrigger: false,
+  visualEffect: 'v',
+);
 
 AttackResult callCalc({
   required bool forceCritical,
@@ -72,8 +72,14 @@ void main() {
     final n = GameRepository.instance.numbers;
     final baseMult = n.combat.critical.baseDamageMultiplier; // e.g. 1.5
 
-    final baseline = callCalc(forceCritical: true, defenderCritDamageTakenMult: 1.0);
-    final ningjia = callCalc(forceCritical: true, defenderCritDamageTakenMult: 0.5);
+    final baseline = callCalc(
+      forceCritical: true,
+      defenderCritDamageTakenMult: 1.0,
+    );
+    final ningjia = callCalc(
+      forceCritical: true,
+      defenderCritDamageTakenMult: 0.5,
+    );
 
     // effectiveCritMult when mult=1.0 = baseMult
     // effectiveCritMult when mult=0.5 = 1 + (baseMult - 1) * 0.5
@@ -81,34 +87,57 @@ void main() {
 
     // base = ifForce*ifFactor + eqAtk*eqFactor + power
     final df = n.combat.damageFormula;
-    final base = kIfForce * df.internalForceFactor +
+    final base =
+        kIfForce * df.internalForceFactor +
         kEqAtk * df.equipmentAttackFactor +
         kPower;
     final cultMult = n.cultivationMultiplier[CultivationLayer.chuKui]!;
     final schoolMult = n.schoolCounter.multiplierFor(
-        TechniqueSchool.gangMeng, TechniqueSchool.gangMeng);
+      TechniqueSchool.gangMeng,
+      TechniqueSchool.gangMeng,
+    );
     final defMult = 1.0 - kDefRate;
 
-    final expectedBaseline = (base * cultMult * schoolMult * baseMult * defMult).toInt();
-    final expectedNingjia = (base * cultMult * schoolMult * effectiveCritHalved * defMult).toInt();
+    final expectedBaseline = (base * cultMult * schoolMult * baseMult * defMult)
+        .toInt();
+    final expectedNingjia =
+        (base * cultMult * schoolMult * effectiveCritHalved * defMult).toInt();
 
-    expect(baseline.mainDamage, expectedBaseline,
-        reason: '凝甲 mult=1.0 基线应与完整暴击倍率一致');
-    expect(ningjia.mainDamage, expectedNingjia,
-        reason: '凝甲 mult=0.5 伤害应体现暴击增量减半');
-    expect(ningjia.mainDamage, lessThan(baseline.mainDamage),
-        reason: '凝甲减伤后必须低于基线');
+    expect(
+      baseline.mainDamage,
+      expectedBaseline,
+      reason: '凝甲 mult=1.0 基线应与完整暴击倍率一致',
+    );
+    expect(
+      ningjia.mainDamage,
+      expectedNingjia,
+      reason: '凝甲 mult=0.5 伤害应体现暴击增量减半',
+    );
+    expect(
+      ningjia.mainDamage,
+      lessThan(baseline.mainDamage),
+      reason: '凝甲减伤后必须低于基线',
+    );
     // 两者均 isCritical=true
     expect(baseline.isCritical, isTrue);
     expect(ningjia.isCritical, isTrue);
   });
 
   test('凝甲:非暴击时 defenderCritDamageTakenMult 无效果', () {
-    final normal10 = callCalc(forceCritical: false, defenderCritDamageTakenMult: 1.0);
-    final normal05 = callCalc(forceCritical: false, defenderCritDamageTakenMult: 0.5);
+    final normal10 = callCalc(
+      forceCritical: false,
+      defenderCritDamageTakenMult: 1.0,
+    );
+    final normal05 = callCalc(
+      forceCritical: false,
+      defenderCritDamageTakenMult: 0.5,
+    );
 
-    expect(normal10.mainDamage, normal05.mainDamage,
-        reason: '非暴击时凝甲 mult 不影响伤害');
+    expect(
+      normal10.mainDamage,
+      normal05.mainDamage,
+      reason: '非暴击时凝甲 mult 不影响伤害',
+    );
     expect(normal10.isCritical, isFalse);
     expect(normal05.isCritical, isFalse);
   });
@@ -116,8 +145,12 @@ void main() {
   test('凝甲:从 numbers.cycleEvolution.traits.ningjia 读取参数值', () {
     final n = GameRepository.instance.numbers;
     // 验证 yaml 里配置的值是 0.5（不硬编码，而是从 config 读）
-    expect(n.cycleEvolution.traits.ningjia.critDamageTakenMult, 0.5,
-        reason: 'numbers.yaml cycle_evolution.traits.ningjia.crit_damage_taken_mult 应为 0.5');
+    expect(
+      n.cycleEvolution.traits.ningjia.critDamageTakenMult,
+      0.5,
+      reason:
+          'numbers.yaml cycle_evolution.traits.ningjia.crit_damage_taken_mult 应为 0.5',
+    );
   });
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -192,13 +225,13 @@ void main() {
     final critsInA = stateA.actionLog
         .where((a) => a.attackResult?.isCritical == true)
         .length;
-    expect(critsInA, greaterThan(0),
-        reason: '场景 A 必须有暴击命中才能验证凝甲效果');
+    expect(critsInA, greaterThan(0), reason: '场景 A 必须有暴击命中才能验证凝甲效果');
 
     expect(
       damageToNingjia,
       lessThan(damageToWithout),
-      reason: '凝甲守方 critDamageTakenMult=0.5 → 暴击增量减半 → '
+      reason:
+          '凝甲守方 critDamageTakenMult=0.5 → 暴击增量减半 → '
           '受到总伤害应低于无 buff 守方\n'
           '  ningjia 受伤=$damageToNingjia, 无buff 受伤=$damageToWithout',
     );
@@ -227,10 +260,16 @@ void main() {
       forceCritical: true,
       // defenderCritDamageTakenMult 不传 → 默认 1.0
     );
-    final explicit10 = callCalc(forceCritical: true, defenderCritDamageTakenMult: 1.0);
+    final explicit10 = callCalc(
+      forceCritical: true,
+      defenderCritDamageTakenMult: 1.0,
+    );
 
-    expect(defaultParam.mainDamage, explicit10.mainDamage,
-        reason: '默认 defenderCritDamageTakenMult=1.0 应与显式传 1.0 结果相同');
+    expect(
+      defaultParam.mainDamage,
+      explicit10.mainDamage,
+      reason: '默认 defenderCritDamageTakenMult=1.0 应与显式传 1.0 结果相同',
+    );
   });
 }
 
@@ -244,26 +283,27 @@ BattleCharacter _mkBCNingjia({
   int slotIndex = 0,
 }) {
   final n = GameRepository.instance.numbers;
-  final c = Character.create(
-    name: '${teamSide == 0 ? "左" : "右"}$slotIndex',
-    realmTier: RealmTier.erLiu,
-    realmLayer: RealmLayer.yuanShu,
-    attributes: Attributes()
-      ..constitution = 5
-      ..enlightenment = 5
-      ..agility = 5
-      ..fortune = 5,
-    rarity: RarityTier.biaoZhun,
-    lineageRole: LineageRole.founder,
-    createdAt: DateTime(2026, 1, 1),
-    internalForce: 3000,
-    school: TechniqueSchool.gangMeng,
-  )
-    ..id = charId
-    ..internalForceMax = 3000
-    ..mainSkillId1 = 'skill_gangmeng_mingjia_basic'
-    ..assistSkillId = 'skill_gangmeng_mingjia_skill'
-    ..ultimateSkillId = 'skill_gangmeng_mingjia_ult';
+  final c =
+      Character.create(
+          name: '${teamSide == 0 ? "左" : "右"}$slotIndex',
+          realmTier: RealmTier.erLiu,
+          realmLayer: RealmLayer.yuanShu,
+          attributes: Attributes()
+            ..constitution = 5
+            ..enlightenment = 5
+            ..agility = 5
+            ..fortune = 5,
+          rarity: RarityTier.biaoZhun,
+          lineageRole: LineageRole.founder,
+          createdAt: DateTime(2026, 1, 1),
+          internalForce: 3000,
+          school: TechniqueSchool.gangMeng,
+        )
+        ..id = charId
+        ..internalForceMax = 3000
+        ..mainSkillId1 = 'skill_gangmeng_mingjia_basic'
+        ..assistSkillId = 'skill_gangmeng_mingjia_skill'
+        ..ultimateSkillId = 'skill_gangmeng_mingjia_ult';
   final eq = Equipment.create(
     defId: 'test',
     tier: EquipmentTier.xunChang,

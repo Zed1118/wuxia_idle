@@ -21,32 +21,32 @@ void main() {
 
   /// 最小 catalog：3 主线 + 2 塔
   List<BossCatalogEntry> mkCatalog() => [
-        const BossCatalogEntry(
-          bossKey: 'stage_01_05',
-          source: BossMemorySource.mainline,
-          groupIndex: 1,
-        ),
-        const BossCatalogEntry(
-          bossKey: 'stage_02_05',
-          source: BossMemorySource.mainline,
-          groupIndex: 2,
-        ),
-        const BossCatalogEntry(
-          bossKey: 'stage_03_05',
-          source: BossMemorySource.mainline,
-          groupIndex: 3,
-        ),
-        const BossCatalogEntry(
-          bossKey: 'tower_floor_5',
-          source: BossMemorySource.tower,
-          groupIndex: 5,
-        ),
-        const BossCatalogEntry(
-          bossKey: 'tower_floor_10',
-          source: BossMemorySource.tower,
-          groupIndex: 10,
-        ),
-      ];
+    const BossCatalogEntry(
+      bossKey: 'stage_01_05',
+      source: BossMemorySource.mainline,
+      groupIndex: 1,
+    ),
+    const BossCatalogEntry(
+      bossKey: 'stage_02_05',
+      source: BossMemorySource.mainline,
+      groupIndex: 2,
+    ),
+    const BossCatalogEntry(
+      bossKey: 'stage_03_05',
+      source: BossMemorySource.mainline,
+      groupIndex: 3,
+    ),
+    const BossCatalogEntry(
+      bossKey: 'tower_floor_5',
+      source: BossMemorySource.tower,
+      groupIndex: 5,
+    ),
+    const BossCatalogEntry(
+      bossKey: 'tower_floor_10',
+      source: BossMemorySource.tower,
+      groupIndex: 10,
+    ),
+  ];
 
   BossMemory mkMemory({
     required String bossKey,
@@ -163,11 +163,7 @@ void main() {
   });
 
   testWidgets('分组标题：主线征程 + 爬塔问鼎均存在', (tester) async {
-    await pumpScreen(
-      tester,
-      catalog: mkCatalog(),
-      memories: [],
-    );
+    await pumpScreen(tester, catalog: mkCatalog(), memories: []);
 
     expect(find.text('主线征程'), findsOneWidget);
     expect(find.text('爬塔问鼎'), findsOneWidget);

@@ -29,9 +29,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (p) => File(p).readAsString(),
-      );
+      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
     }
   });
 
@@ -87,16 +85,22 @@ void main() {
   group('R5.production · 加载层验 production yaml', () {
     test('sect_candidates.yaml 6 NPC 加载 + 字段完整', () {
       final candidates = GameRepository.instance.sectCandidates;
-      expect(candidates.length, 6,
-          reason: '5 PoC + 1 新增(valley_hermit · 1.1 池扩)');
-      expect(candidates.keys, containsAll({
-        'bamboo_swordsman',
-        'desert_wanderer',
-        'mountain_hermit',
-        'river_drifter',
-        'blacksmith_son',
-        'valley_hermit',
-      }));
+      expect(
+        candidates.length,
+        6,
+        reason: '5 PoC + 1 新增(valley_hermit · 1.1 池扩)',
+      );
+      expect(
+        candidates.keys,
+        containsAll({
+          'bamboo_swordsman',
+          'desert_wanderer',
+          'mountain_hermit',
+          'river_drifter',
+          'blacksmith_son',
+          'valley_hermit',
+        }),
+      );
       // 抽样验 bamboo_swordsman 字段
       final bamboo = candidates['bamboo_swordsman']!;
       expect(bamboo.name, '竹影客');
@@ -110,24 +114,44 @@ void main() {
 
     test('3 sect_recruit encounters 加载 + affectsSectMembership 字段', () {
       final repo = GameRepository.instance;
-      final ids = ['sect_recruit_bamboo', 'sect_recruit_desert',
-        'sect_recruit_mountain'];
+      final ids = [
+        'sect_recruit_bamboo',
+        'sect_recruit_desert',
+        'sect_recruit_mountain',
+      ];
       for (final id in ids) {
         final def = repo.encounterDefs[id];
         expect(def, isNotNull, reason: '$id 应在 encounters.yaml 中');
         expect(def!.type, EncounterType.fortuneEvent);
         expect(def.affectsSectMembership, isNotNull);
         expect(def.affectsSectMembership!.fallbackOutcomeId, 'decline_meet');
-        expect(def.outcomeMapping.keys, containsAll({'accept_recruit',
-          'decline_meet'}));
+        expect(
+          def.outcomeMapping.keys,
+          containsAll({'accept_recruit', 'decline_meet'}),
+        );
       }
       // candidateRef 与 sectCandidates 1:1 映射(spec §0 Q9 Demo 单一)
-      expect(repo.encounterDefs['sect_recruit_bamboo']!.affectsSectMembership!
-          .candidateRef, 'bamboo_swordsman');
-      expect(repo.encounterDefs['sect_recruit_desert']!.affectsSectMembership!
-          .candidateRef, 'desert_wanderer');
-      expect(repo.encounterDefs['sect_recruit_mountain']!.affectsSectMembership!
-          .candidateRef, 'mountain_hermit');
+      expect(
+        repo
+            .encounterDefs['sect_recruit_bamboo']!
+            .affectsSectMembership!
+            .candidateRef,
+        'bamboo_swordsman',
+      );
+      expect(
+        repo
+            .encounterDefs['sect_recruit_desert']!
+            .affectsSectMembership!
+            .candidateRef,
+        'desert_wanderer',
+      );
+      expect(
+        repo
+            .encounterDefs['sect_recruit_mountain']!
+            .affectsSectMembership!
+            .candidateRef,
+        'mountain_hermit',
+      );
     });
 
     test('R5.3 decline_meet outcome 是 attributeBonus +1', () {
@@ -143,110 +167,118 @@ void main() {
   });
 
   group('R5.1 招收 e2e + R5.6 sectRank initiate + R5.8 isFounder=false', () {
-    test('encounter accept_recruit → Character.create + recruit success'
-        ' + isInSect/sectId/sectRank=initiate/isFounder=false + memberCount++',
-        () async {
-      final f = await seedFounder();
-      final isar = IsarSetup.instance;
-      final candidate =
-          GameRepository.instance.sectCandidates['bamboo_swordsman']!;
-      final repo = GameRepository.instance;
-      final realmDef = repo.getRealm(
-          candidate.defaultRealm, candidate.defaultLayer);
-      late RecruitResult result;
-      late int newCharId;
-      await isar.writeTxn(() async {
-        final newChar = Character.create(
-          name: candidate.name,
-          realmTier: candidate.defaultRealm,
-          realmLayer: candidate.defaultLayer,
-          attributes: Attributes()
-            ..constitution = candidate.attributeProfile.constitution
-            ..enlightenment = candidate.attributeProfile.enlightenment
-            ..agility = candidate.attributeProfile.agility
-            ..fortune = candidate.attributeProfile.fortune,
-          rarity: RarityTier.biaoZhun,
-          lineageRole: LineageRole.disciple,
-          isFounder: false,
-          isActive: false,
-          createdAt: DateTime(2026, 5, 26),
-          school: candidate.school,
-          internalForce: realmDef.internalForceMax,
-          internalForceMax: realmDef.internalForceMax,
-          experienceToNextLayer: realmDef.experienceToNext,
+    test(
+      'encounter accept_recruit → Character.create + recruit success'
+      ' + isInSect/sectId/sectRank=initiate/isFounder=false + memberCount++',
+      () async {
+        final f = await seedFounder();
+        final isar = IsarSetup.instance;
+        final candidate =
+            GameRepository.instance.sectCandidates['bamboo_swordsman']!;
+        final repo = GameRepository.instance;
+        final realmDef = repo.getRealm(
+          candidate.defaultRealm,
+          candidate.defaultLayer,
         );
-        await isar.characters.put(newChar);
-        newCharId = newChar.id;
+        late RecruitResult result;
+        late int newCharId;
+        await isar.writeTxn(() async {
+          final newChar = Character.create(
+            name: candidate.name,
+            realmTier: candidate.defaultRealm,
+            realmLayer: candidate.defaultLayer,
+            attributes: Attributes()
+              ..constitution = candidate.attributeProfile.constitution
+              ..enlightenment = candidate.attributeProfile.enlightenment
+              ..agility = candidate.attributeProfile.agility
+              ..fortune = candidate.attributeProfile.fortune,
+            rarity: RarityTier.biaoZhun,
+            lineageRole: LineageRole.disciple,
+            isFounder: false,
+            isActive: false,
+            createdAt: DateTime(2026, 5, 26),
+            school: candidate.school,
+            internalForce: realmDef.internalForceMax,
+            internalForceMax: realmDef.internalForceMax,
+            experienceToNextLayer: realmDef.experienceToNext,
+          );
+          await isar.characters.put(newChar);
+          newCharId = newChar.id;
 
-        final memberSvc = SectMemberService(isar);
-        result = await memberSvc.recruit(
-          targetCharacterId: newChar.id,
-          sectId: f.sectId,
-          numbers: repo.numbers,
-        );
-      });
-      expect(result, RecruitResult.success);
-      final newChar = await isar.characters.get(newCharId);
-      expect(newChar, isNotNull);
-      // R5.1 双向 fk
-      expect(newChar!.isInSect, true);
-      expect(newChar.sectId, f.sectId);
-      // R5.6 sectRank initiate
-      expect(newChar.sectRank, SectRank.initiate);
-      // R5.8 isFounder=false(NPC 不误激活 founder buff)
-      expect(newChar.isFounder, false);
-      expect(newChar.isActive, false); // 不入 active 池
-      // memberCount++
-      final sect = await isar.sects.get(f.sectId);
-      expect(sect!.memberCount, 1);
-    });
+          final memberSvc = SectMemberService(isar);
+          result = await memberSvc.recruit(
+            targetCharacterId: newChar.id,
+            sectId: f.sectId,
+            numbers: repo.numbers,
+          );
+        });
+        expect(result, RecruitResult.success);
+        final newChar = await isar.characters.get(newCharId);
+        expect(newChar, isNotNull);
+        // R5.1 双向 fk
+        expect(newChar!.isInSect, true);
+        expect(newChar.sectId, f.sectId);
+        // R5.6 sectRank initiate
+        expect(newChar.sectRank, SectRank.initiate);
+        // R5.8 isFounder=false(NPC 不误激活 founder buff)
+        expect(newChar.isFounder, false);
+        expect(newChar.isActive, false); // 不入 active 池
+        // memberCount++
+        final sect = await isar.sects.get(f.sectId);
+        expect(sect!.memberCount, 1);
+      },
+    );
   });
 
   group('R5.2 cap 满 fallback', () {
-    test('sect.memberCount = cap(3) → recruit 返 fullCap + memberCount 不变',
-        () async {
-      final f = await seedFounder(initialMemberCount: 3); // sectLevel=1 cap=3
-      final isar = IsarSetup.instance;
-      final candidate =
-          GameRepository.instance.sectCandidates['desert_wanderer']!;
-      final repo = GameRepository.instance;
-      final realmDef = repo.getRealm(
-          candidate.defaultRealm, candidate.defaultLayer);
-      late RecruitResult result;
-      await isar.writeTxn(() async {
-        final newChar = Character.create(
-          name: candidate.name,
-          realmTier: candidate.defaultRealm,
-          realmLayer: candidate.defaultLayer,
-          attributes: Attributes()
-            ..constitution = candidate.attributeProfile.constitution
-            ..enlightenment = candidate.attributeProfile.enlightenment
-            ..agility = candidate.attributeProfile.agility
-            ..fortune = candidate.attributeProfile.fortune,
-          rarity: RarityTier.biaoZhun,
-          lineageRole: LineageRole.disciple,
-          isFounder: false,
-          isActive: false,
-          createdAt: DateTime(2026, 5, 26),
-          school: candidate.school,
-          internalForce: realmDef.internalForceMax,
-          internalForceMax: realmDef.internalForceMax,
-          experienceToNextLayer: realmDef.experienceToNext,
+    test(
+      'sect.memberCount = cap(3) → recruit 返 fullCap + memberCount 不变',
+      () async {
+        final f = await seedFounder(initialMemberCount: 3); // sectLevel=1 cap=3
+        final isar = IsarSetup.instance;
+        final candidate =
+            GameRepository.instance.sectCandidates['desert_wanderer']!;
+        final repo = GameRepository.instance;
+        final realmDef = repo.getRealm(
+          candidate.defaultRealm,
+          candidate.defaultLayer,
         );
-        await isar.characters.put(newChar);
+        late RecruitResult result;
+        await isar.writeTxn(() async {
+          final newChar = Character.create(
+            name: candidate.name,
+            realmTier: candidate.defaultRealm,
+            realmLayer: candidate.defaultLayer,
+            attributes: Attributes()
+              ..constitution = candidate.attributeProfile.constitution
+              ..enlightenment = candidate.attributeProfile.enlightenment
+              ..agility = candidate.attributeProfile.agility
+              ..fortune = candidate.attributeProfile.fortune,
+            rarity: RarityTier.biaoZhun,
+            lineageRole: LineageRole.disciple,
+            isFounder: false,
+            isActive: false,
+            createdAt: DateTime(2026, 5, 26),
+            school: candidate.school,
+            internalForce: realmDef.internalForceMax,
+            internalForceMax: realmDef.internalForceMax,
+            experienceToNextLayer: realmDef.experienceToNext,
+          );
+          await isar.characters.put(newChar);
 
-        final memberSvc = SectMemberService(isar);
-        result = await memberSvc.recruit(
-          targetCharacterId: newChar.id,
-          sectId: f.sectId,
-          numbers: repo.numbers,
-        );
-      });
-      expect(result, RecruitResult.fullCap);
-      // memberCount 不变(沿 SectMemberService.recruit 体例 · cap 检查在写之前)
-      final sect = await isar.sects.get(f.sectId);
-      expect(sect!.memberCount, 3);
-    });
+          final memberSvc = SectMemberService(isar);
+          result = await memberSvc.recruit(
+            targetCharacterId: newChar.id,
+            sectId: f.sectId,
+            numbers: repo.numbers,
+          );
+        });
+        expect(result, RecruitResult.fullCap);
+        // memberCount 不变(沿 SectMemberService.recruit 体例 · cap 检查在写之前)
+        final sect = await isar.sects.get(f.sectId);
+        expect(sect!.memberCount, 3);
+      },
+    );
   });
 
   group('R5.4 schema 红线(broken loader inject)', () {
@@ -264,6 +296,7 @@ void main() {
         }
         return File(path).readAsString();
       }
+
       return loader;
     }
 
@@ -271,10 +304,11 @@ void main() {
     // (`loadAllDefs` :340 _enforceRedLines throws 在 :342 _instance 赋值之前)
     // 故 production data 保持 setUpAll 加载状态,无需 reset。
 
-    test('affectsSectMembership.candidateRef 不在 sectCandidates → 抛 StateError',
-        () async {
-      // 用 brokenLoader inject encounters.yaml 末尾加 1 条引用不存在 candidateRef
-      final brokenEncounters = '''
+    test(
+      'affectsSectMembership.candidateRef 不在 sectCandidates → 抛 StateError',
+      () async {
+        // 用 brokenLoader inject encounters.yaml 末尾加 1 条引用不存在 candidateRef
+        final brokenEncounters = '''
 encounters:
   - id: bad_sect_recruit
     type: fortuneEvent
@@ -292,20 +326,25 @@ encounters:
       candidateRef: ghost_npc_not_loaded
       fallbackOutcomeId: decline_meet
 ''';
-      expect(
-        GameRepository.loadAllDefs(
-            loader: makeLoader(brokenEncountersYaml: brokenEncounters)),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('ghost_npc_not_loaded'),
-        )),
-      );
-    });
+        expect(
+          GameRepository.loadAllDefs(
+            loader: makeLoader(brokenEncountersYaml: brokenEncounters),
+          ),
+          throwsA(
+            isA<StateError>().having(
+              (e) => e.message,
+              'message',
+              contains('ghost_npc_not_loaded'),
+            ),
+          ),
+        );
+      },
+    );
 
-    test('affectsSectMembership 缺 accept_recruit outcome → 抛 StateError',
-        () async {
-      final brokenEncounters = '''
+    test(
+      'affectsSectMembership 缺 accept_recruit outcome → 抛 StateError',
+      () async {
+        final brokenEncounters = '''
 encounters:
   - id: bad_sect_recruit
     type: fortuneEvent
@@ -321,20 +360,25 @@ encounters:
       candidateRef: bamboo_swordsman
       fallbackOutcomeId: decline_meet
 ''';
-      expect(
-        GameRepository.loadAllDefs(
-            loader: makeLoader(brokenEncountersYaml: brokenEncounters)),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('accept_recruit'),
-        )),
-      );
-    });
+        expect(
+          GameRepository.loadAllDefs(
+            loader: makeLoader(brokenEncountersYaml: brokenEncounters),
+          ),
+          throwsA(
+            isA<StateError>().having(
+              (e) => e.message,
+              'message',
+              contains('accept_recruit'),
+            ),
+          ),
+        );
+      },
+    );
 
-    test('affectsSectMembership.fallbackOutcomeId 不在 outcomeMapping → 抛',
-        () async {
-      final brokenEncounters = '''
+    test(
+      'affectsSectMembership.fallbackOutcomeId 不在 outcomeMapping → 抛',
+      () async {
+        final brokenEncounters = '''
 encounters:
   - id: bad_sect_recruit
     type: fortuneEvent
@@ -348,15 +392,19 @@ encounters:
       candidateRef: bamboo_swordsman
       fallbackOutcomeId: nonexistent_outcome
 ''';
-      expect(
-        GameRepository.loadAllDefs(
-            loader: makeLoader(brokenEncountersYaml: brokenEncounters)),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('nonexistent_outcome'),
-        )),
-      );
-    });
+        expect(
+          GameRepository.loadAllDefs(
+            loader: makeLoader(brokenEncountersYaml: brokenEncounters),
+          ),
+          throwsA(
+            isA<StateError>().having(
+              (e) => e.message,
+              'message',
+              contains('nonexistent_outcome'),
+            ),
+          ),
+        );
+      },
+    );
   });
 }

@@ -17,19 +17,23 @@ void main() {
 
   test('章末 Boss 关:真解全配 + 蓄力技 = 掉落真解(双用 canon)', () {
     final repo = GameRepository.instance;
-    final chapterEnds = repo.stageDefs.values.where((s) =>
-        s.stageType == StageType.mainline &&
-        s.isBossStage &&
-        s.dropSkillManualId != null);
+    final chapterEnds = repo.stageDefs.values.where(
+      (s) =>
+          s.stageType == StageType.mainline &&
+          s.isBossStage &&
+          s.dropSkillManualId != null,
+    );
     // 每个有真解的章末关:Boss chargeSkillId == 掉落真解(双用)。
     expect(chapterEnds, isNotEmpty);
     final chapters = <int>{};
     for (final st in chapterEnds) {
       final boss = st.enemyTeam.firstWhere((e) => e.isBoss);
-      expect(boss.chargeSkillId, st.dropSkillManualId,
-          reason: '${st.id} 蓄力技应与掉落真解同招(波B 双用 canon)');
-      expect(chapters.add(st.chapterIndex!), isTrue,
-          reason: '每章至多 1 本真解');
+      expect(
+        boss.chargeSkillId,
+        st.dropSkillManualId,
+        reason: '${st.id} 蓄力技应与掉落真解同招(波B 双用 canon)',
+      );
+      expect(chapters.add(st.chapterIndex!), isTrue, reason: '每章至多 1 本真解');
     }
     // 全部主线章(按 chapterIndex 集合)都有真解(内容覆盖完备)。
     final allChapters = repo.stageDefs.values
@@ -37,19 +41,24 @@ void main() {
         .map((s) => s.chapterIndex)
         .whereType<int>()
         .toSet();
-    expect(chapters, allChapters,
-        reason: '每个主线章都应有章末真解(波B 内容覆盖)');
+    expect(chapters, allChapters, reason: '每个主线章都应有章末真解(波B 内容覆盖)');
   });
 
   test('塔 Boss 层(bossKind 非空)残页全配;普通层不配', () {
     final repo = GameRepository.instance;
     for (final f in repo.towerFloors) {
       if (f.bossKind != null) {
-        expect(f.dropSkillFragmentId, isNotNull,
-            reason: 'floor ${f.floorIndex} 是 Boss 层应配残页(波B 内容覆盖)');
+        expect(
+          f.dropSkillFragmentId,
+          isNotNull,
+          reason: 'floor ${f.floorIndex} 是 Boss 层应配残页(波B 内容覆盖)',
+        );
       } else {
-        expect(f.dropSkillFragmentId, isNull,
-            reason: 'floor ${f.floorIndex} 普通层不应配残页');
+        expect(
+          f.dropSkillFragmentId,
+          isNull,
+          reason: 'floor ${f.floorIndex} 普通层不应配残页',
+        );
       }
     }
   });
@@ -66,16 +75,16 @@ void main() {
     }
 
     void assertBalanced(String kind, Map<TechniqueSchool, int> m) {
-      expect(m.keys.toSet(), TechniqueSchool.values.toSet(),
-          reason: '$kind 应覆盖全部三流派');
-      expect(m.values.toSet().length, 1,
-          reason: '$kind 各流派数量应相等(配平),实际 $m');
+      expect(
+        m.keys.toSet(),
+        TechniqueSchool.values.toSet(),
+        reason: '$kind 应覆盖全部三流派',
+      );
+      expect(m.values.toSet().length, 1, reason: '$kind 各流派数量应相等(配平),实际 $m');
     }
 
-    assertBalanced(
-        '真解', countBy((s) => s.source == SkillSource.mainlineDrop));
-    assertBalanced(
-        '残页', countBy((s) => s.source == SkillSource.fragment));
+    assertBalanced('真解', countBy((s) => s.source == SkillSource.mainlineDrop));
+    assertBalanced('残页', countBy((s) => s.source == SkillSource.fragment));
     assertBalanced('破招', countBy((s) => s.canInterrupt));
   });
 
@@ -89,9 +98,13 @@ void main() {
         final skill = repo.skillDefs[cs]!;
         final realm = repo.getRealm(e.realmTier, e.realmLayer);
         final budget = realm.internalForceMax * scale;
-        expect(skill.internalForceCost, lessThanOrEqualTo(budget),
-            reason: '${st.id} ${e.name} 蓄力技 ${skill.id} cost '
-                '${skill.internalForceCost} > 内力预算 $budget,机制死配置');
+        expect(
+          skill.internalForceCost,
+          lessThanOrEqualTo(budget),
+          reason:
+              '${st.id} ${e.name} 蓄力技 ${skill.id} cost '
+              '${skill.internalForceCost} > 内力预算 $budget,机制死配置',
+        );
       }
     }
   });

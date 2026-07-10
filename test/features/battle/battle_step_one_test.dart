@@ -58,42 +58,41 @@ void main() {
     required int slot,
     required int speed,
     required int equipAttack,
-  }) =>
-      BattleCharacter(
-        characterId: charId,
-        name: '$charId',
-        realmTier: RealmTier.yiLiu,
-        realmLayer: RealmLayer.qiMeng,
-        school: TechniqueSchool.gangMeng,
-        maxHp: 12000,
-        currentHp: 12000,
-        maxInternalForce: 2000,
-        currentInternalForce: 2000,
-        speed: speed,
-        criticalRate: 0.5,
-        evasionRate: 0.0,
-        defenseRate: 0.1,
-        totalEquipmentAttack: equipAttack,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: const <SkillDef>[power, normal],
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: teamSide,
-        slotIndex: slot,
-      );
+  }) => BattleCharacter(
+    characterId: charId,
+    name: '$charId',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    maxHp: 12000,
+    currentHp: 12000,
+    maxInternalForce: 2000,
+    currentInternalForce: 2000,
+    speed: speed,
+    criticalRate: 0.5,
+    evasionRate: 0.0,
+    defenseRate: 0.1,
+    totalEquipmentAttack: equipAttack,
+    mainCultivationLayer: CultivationLayer.daCheng,
+    availableSkills: const <SkillDef>[power, normal],
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: teamSide,
+    slotIndex: slot,
+  );
 
   List<BattleCharacter> leftTeam() => [
-        unit(charId: 1, teamSide: 0, slot: 0, speed: 130, equipAttack: 700),
-        unit(charId: 2, teamSide: 0, slot: 1, speed: 120, equipAttack: 700),
-        unit(charId: 3, teamSide: 0, slot: 2, speed: 110, equipAttack: 700),
-      ];
+    unit(charId: 1, teamSide: 0, slot: 0, speed: 130, equipAttack: 700),
+    unit(charId: 2, teamSide: 0, slot: 1, speed: 120, equipAttack: 700),
+    unit(charId: 3, teamSide: 0, slot: 2, speed: 110, equipAttack: 700),
+  ];
   List<BattleCharacter> rightTeam() => [
-        unit(charId: -1, teamSide: 1, slot: 0, speed: 105, equipAttack: 450),
-        unit(charId: -2, teamSide: 1, slot: 1, speed: 100, equipAttack: 450),
-        unit(charId: -3, teamSide: 1, slot: 2, speed: 95, equipAttack: 450),
-      ];
+    unit(charId: -1, teamSide: 1, slot: 0, speed: 105, equipAttack: 450),
+    unit(charId: -2, teamSide: 1, slot: 1, speed: 100, equipAttack: 450),
+    unit(charId: -3, teamSide: 1, slot: 2, speed: 95, equipAttack: 450),
+  ];
 
   String summarize(BattleState s) =>
       '${s.result}#${s.actionLog.map((a) => '${a.tick}|${a.actorId}|${a.targetId}|${a.skill?.id}|${a.attackResult?.finalDamage}|${a.interrupted}').join(';')}';
@@ -112,8 +111,11 @@ void main() {
       final before = s;
       s = strategy.stepOne(s, n, rng: rng);
       expect(s.tick, before.tick + 1, reason: '边界步推进一个 tick');
-      expect(s.actionLog.length, before.actionLog.length,
-          reason: '空队列边界步只推进 AP/CD,不结算任何 actor');
+      expect(
+        s.actionLog.length,
+        before.actionLog.length,
+        reason: '空队列边界步只推进 AP/CD,不结算任何 actor',
+      );
       safety++;
     }
     expect(s.actorQueue, isNotEmpty, reason: '应到达有人行动的 tick 边界,队列被填充');
@@ -121,12 +123,14 @@ void main() {
     // 下一步:恰好弹出/结算队首一个 actor → 队列长度 -1。
     final queueLenBefore = s.actorQueue.length;
     final afterOne = strategy.stepOne(s, n, rng: rng);
-    expect(afterOne.actorQueue.length, queueLenBefore - 1,
-        reason: '一步恰好处理一个 actor(spec §八#3 一步=一 actor)');
+    expect(
+      afterOne.actorQueue.length,
+      queueLenBefore - 1,
+      reason: '一步恰好处理一个 actor(spec §八#3 一步=一 actor)',
+    );
   });
 
-  test('红线:同 seed 下 stepOne 逐步跑完 == tick 整 tick 跑完(actionLog+胜负+血量全等)',
-      () {
+  test('红线:同 seed 下 stepOne 逐步跑完 == tick 整 tick 跑完(actionLog+胜负+血量全等)', () {
     const strategy = DefaultGroundStrategy();
     final n = GameRepository.instance.numbers;
 
@@ -148,17 +152,28 @@ void main() {
       guardB++;
     }
 
-    expect(sa.actionLog.length, greaterThan(10),
-        reason: '防空过:场景需足够多 action(含暴击 roll)才能证伪 rng 顺序发散');
-    expect(summarize(sb), equals(summarize(sa)),
-        reason: 'stepOne 逐 actor 驱动与 tick 整 tick 驱动 rng 消费顺序必须一致 → '
-            '逐 action(含伤害/暴击/破招)与胜负全等');
-    expect(sb.leftTeam.map((c) => c.currentHp).toList(),
-        equals(sa.leftTeam.map((c) => c.currentHp).toList()),
-        reason: '左队终态血量全等');
-    expect(sb.rightTeam.map((c) => c.currentHp).toList(),
-        equals(sa.rightTeam.map((c) => c.currentHp).toList()),
-        reason: '右队终态血量全等');
+    expect(
+      sa.actionLog.length,
+      greaterThan(10),
+      reason: '防空过:场景需足够多 action(含暴击 roll)才能证伪 rng 顺序发散',
+    );
+    expect(
+      summarize(sb),
+      equals(summarize(sa)),
+      reason:
+          'stepOne 逐 actor 驱动与 tick 整 tick 驱动 rng 消费顺序必须一致 → '
+          '逐 action(含伤害/暴击/破招)与胜负全等',
+    );
+    expect(
+      sb.leftTeam.map((c) => c.currentHp).toList(),
+      equals(sa.leftTeam.map((c) => c.currentHp).toList()),
+      reason: '左队终态血量全等',
+    );
+    expect(
+      sb.rightTeam.map((c) => c.currentHp).toList(),
+      equals(sa.rightTeam.map((c) => c.currentHp).toList()),
+      reason: '右队终态血量全等',
+    );
   });
 
   /// 经 ProviderContainer 驱动 notifier 跑完整场,返回逐 action 摘要 + 胜负。
@@ -166,8 +181,11 @@ void main() {
   String runViaNotifier(int seed, {required bool useStep}) {
     final container = ProviderContainer();
     addTearDown(container.dispose);
-    final sub =
-        container.listen(battleProvider, (_, _) {}, fireImmediately: true);
+    final sub = container.listen(
+      battleProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
     addTearDown(sub.close);
 
     final notifier = container.read(battleProvider.notifier);
@@ -190,10 +208,17 @@ void main() {
     final viaStep = runViaNotifier(2468, useStep: true);
     final viaAdvance = runViaNotifier(2468, useStep: false);
 
-    expect(viaStep.split(';').length, greaterThan(10),
-        reason: '防空过:需足够多 action 暴露 rng 顺序不一致');
-    expect(viaStep, equals(viaAdvance),
-        reason: 'notifier 单一 seeded rng 下,逐 actor step 与整 tick advance '
-            '必须复刻同一场战斗');
+    expect(
+      viaStep.split(';').length,
+      greaterThan(10),
+      reason: '防空过:需足够多 action 暴露 rng 顺序不一致',
+    );
+    expect(
+      viaStep,
+      equals(viaAdvance),
+      reason:
+          'notifier 单一 seeded rng 下,逐 actor step 与整 tick advance '
+          '必须复刻同一场战斗',
+    );
   });
 }

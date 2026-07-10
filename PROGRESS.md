@@ -5,6 +5,8 @@
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 
 ## 当前阶段
+> **2026-07-10 Codex 测试格式统一(`codex/test-format-normalization`)**:使用当前 Dart SDK 对 `test/` 572 个 Dart 文件做全量 formatter 审计并机械重排其中 349 个;生产代码、数据与配置零改动,二次格式审计 0 changed,`git diff --check` 通过。独立 worktree 首次 analyze 因 `.g.dart` 被 gitignore 且尚未 codegen 出现生成符号缺失;按 CI 顺序运行 build_runner(114 outputs)后 `flutter analyze lib/ test/` 0 问题。全量测试首轮出现 1 次瞬时失败,随后 `--fail-fast --reporter expanded` 完整复跑 **3790/3790** 通过;PR CI 状态见本条后续更新。
+
 > **2026-07-10 Codex CI 运行时维护(`codex/ci-runtime-refresh`)**:GitHub Actions `checkout@v4` 在 PR #23-25 持续产生 Node 20 弃用注记;核对官方 action.yml 后升级到最新 `actions/checkout@v7`(Node 24),并清除 CI 中 build_runner 已移除/忽略的 `--delete-conflicting-outputs` 参数。PR #26 首轮 CI 全链路绿且 annotations 为空,弃用注记已消失。
 
 > **2026-07-10 Codex 质量批(`codex/save-restore-design`)**:完成安全存档恢复闭环(候选校验、恢复前安全备份、原子替换、失败回滚、启动中断自愈与设置页交互);测试基础设施收口至直接 Isar Core 初始化 95→0、production repository 样板累计迁移 247 文件;标题栏返回/主页统一 44px 语义按钮;六类关键图片 fallback 契约落地;招式池 206+40=246 由 YAML/GDD/repository 三层机器守卫。**本地门禁**:`flutter analyze lib/ test/` 0 问题;`flutter test --no-pub` 3790/3790;`flutter build macos --debug` 成功;`git diff --check` 通过。macOS 真窗口 `main_menu`/`chapter_list`/`equipment_detail_screen` @1280x720、1440x900 共 6 张截图均 READY、无 overflow/exception。**PR #33 首轮 CI**:test job 通过,annotations 0,mergeable/CLEAN。

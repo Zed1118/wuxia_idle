@@ -7,23 +7,24 @@ import 'package:wuxia_idle/shared/strings.dart';
 /// 验证 [buildDefeatLossBanner]（VISUAL_ROUTE defeat_inner_demon_residue 与本测
 /// 共用入口）对心魔余毒 entry 渲染「余毒未消」段,对 Boss 散功 entry 不渲染。
 void main() {
-  Widget wrap(List<DefeatLossEntry> entries) => MaterialApp(
-        home: Scaffold(body: buildDefeatLossBanner(entries)),
-      );
+  Widget wrap(List<DefeatLossEntry> entries) =>
+      MaterialApp(home: Scaffold(body: buildDefeatLossBanner(entries)));
 
   testWidgets('心魔余毒 entry(residueApplied=true)渲染「余毒未消」段', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    await tester.pumpWidget(wrap(const [
-      DefeatLossEntry(
-        characterName: '测试甲',
-        internalForceBefore: 1480,
-        internalForceAfter: 1258,
-        techniqueName: '伏魔禅功',
-        residueApplied: true,
-      ),
-    ]));
+    await tester.pumpWidget(
+      wrap(const [
+        DefeatLossEntry(
+          characterName: '测试甲',
+          internalForceBefore: 1480,
+          internalForceAfter: 1258,
+          techniqueName: '伏魔禅功',
+          residueApplied: true,
+        ),
+      ]),
+    );
 
     expect(
       find.textContaining(UiStrings.innerDemonResidueNote),
@@ -38,19 +39,18 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(800, 600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    await tester.pumpWidget(wrap(const [
-      DefeatLossEntry(
-        characterName: '测试乙',
-        internalForceBefore: 2000,
-        internalForceAfter: 1000,
-        residueApplied: false,
-      ),
-    ]));
-
-    expect(
-      find.textContaining(UiStrings.innerDemonResidueNote),
-      findsNothing,
+    await tester.pumpWidget(
+      wrap(const [
+        DefeatLossEntry(
+          characterName: '测试乙',
+          internalForceBefore: 2000,
+          internalForceAfter: 1000,
+          residueApplied: false,
+        ),
+      ]),
     );
+
+    expect(find.textContaining(UiStrings.innerDemonResidueNote), findsNothing);
     // Boss 散功（非余毒）→ 标题为「散功代价」，非「心魔反噬」。
     expect(find.text(UiStrings.defeatLossTitle), findsOneWidget);
     expect(find.text(UiStrings.defeatLossTitleInnerDemon), findsNothing);

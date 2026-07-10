@@ -15,8 +15,10 @@ void main() {
       createdAt: DateTime(2026, 5, 31),
       portraitPath: 'assets/characters/sect_candidate_bamboo.png',
     );
-    expect(withPortrait.portraitPath,
-        'assets/characters/sect_candidate_bamboo.png');
+    expect(
+      withPortrait.portraitPath,
+      'assets/characters/sect_candidate_bamboo.png',
+    );
 
     final without = Character.create(
       name: '无图',

@@ -19,17 +19,16 @@ LoreContent _loreFor(
   String id, {
   List<String> obtained = const [],
   List<String> bossDefeated = const [],
-}) =>
-    LoreContent(
-      id: id,
-      name: id,
-      defaultLore: const [],
-      continuedLoreObtainedPool:
-          obtained.map((t) => LoreSegment(text: t)).toList(),
-      continuedLoreBossDefeatedPool:
-          bossDefeated.map((t) => LoreSegment(text: t)).toList(),
-      isPlaceholder: false,
-    );
+}) => LoreContent(
+  id: id,
+  name: id,
+  defaultLore: const [],
+  continuedLoreObtainedPool: obtained.map((t) => LoreSegment(text: t)).toList(),
+  continuedLoreBossDefeatedPool: bossDefeated
+      .map((t) => LoreSegment(text: t))
+      .toList(),
+  isPlaceholder: false,
+);
 
 /// P1 #42 Phase 2 · GameEventService 7 type 写入红线契约。
 ///
@@ -63,12 +62,14 @@ void main() {
   test('#1 retreatCompleted 写入 GameEvent + 字段回填', () async {
     final isar = IsarSetup.instance;
     final svc = GameEventService(isar);
-    await isar.writeTxn(() => svc.recordRetreatCompleted(
-          characterId: 10,
-          characterName: '试客',
-          actualHours: 6,
-          mapName: '山林',
-        ));
+    await isar.writeTxn(
+      () => svc.recordRetreatCompleted(
+        characterId: 10,
+        characterName: '试客',
+        actualHours: 6,
+        mapName: '山林',
+      ),
+    );
 
     final all = await isar.gameEvents.where().findAll();
     expect(all, hasLength(1));
@@ -84,11 +85,13 @@ void main() {
   test('#2 adventureTriggered 含 encounterId 入 relatedEntityIds', () async {
     final isar = IsarSetup.instance;
     final svc = GameEventService(isar);
-    await isar.writeTxn(() => svc.recordAdventureTriggered(
-          characterId: 10,
-          encounterId: 'bamboo_listen_rain',
-          encounterTitle: '听雨悟剑',
-        ));
+    await isar.writeTxn(
+      () => svc.recordAdventureTriggered(
+        characterId: 10,
+        encounterId: 'bamboo_listen_rain',
+        encounterTitle: '听雨悟剑',
+      ),
+    );
 
     final e = (await isar.gameEvents.where().findAll()).single;
     expect(e.eventType, GameEventType.adventureTriggered);
@@ -96,34 +99,40 @@ void main() {
     expect(e.title, '听雨悟剑');
   });
 
-  test('#3 equipmentObtained 含 defId + id 双标识 + nullable characterId',
-      () async {
-    final isar = IsarSetup.instance;
-    final svc = GameEventService(isar);
-    await isar.writeTxn(() => svc.recordEquipmentObtained(
+  test(
+    '#3 equipmentObtained 含 defId + id 双标识 + nullable characterId',
+    () async {
+      final isar = IsarSetup.instance;
+      final svc = GameEventService(isar);
+      await isar.writeTxn(
+        () => svc.recordEquipmentObtained(
           characterId: null,
           equipmentId: 42,
           equipmentDefId: 'sword_qiu_ji',
           equipmentName: '秋寂剑',
           source: '夜袭山贼营',
-        ));
+        ),
+      );
 
-    final e = (await isar.gameEvents.where().findAll()).single;
-    expect(e.eventType, GameEventType.equipmentObtained);
-    expect(e.relatedCharacterId, isNull);
-    expect(e.relatedEntityIds, containsAll(['sword_qiu_ji', '42']));
-    expect(e.summary.contains('秋寂剑'), isTrue);
-    expect(e.summary.contains('夜袭山贼营'), isTrue);
-  });
+      final e = (await isar.gameEvents.where().findAll()).single;
+      expect(e.eventType, GameEventType.equipmentObtained);
+      expect(e.relatedCharacterId, isNull);
+      expect(e.relatedEntityIds, containsAll(['sword_qiu_ji', '42']));
+      expect(e.summary.contains('秋寂剑'), isTrue);
+      expect(e.summary.contains('夜袭山贼营'), isTrue);
+    },
+  );
 
   test('#5 skillEnlightened 含 skillId 入 relatedEntityIds', () async {
     final isar = IsarSetup.instance;
     final svc = GameEventService(isar);
-    await isar.writeTxn(() => svc.recordSkillEnlightened(
-          characterId: 10,
-          skillId: 'ting_yu_jian',
-          skillName: '听雨剑',
-        ));
+    await isar.writeTxn(
+      () => svc.recordSkillEnlightened(
+        characterId: 10,
+        skillId: 'ting_yu_jian',
+        skillName: '听雨剑',
+      ),
+    );
 
     final e = (await isar.gameEvents.where().findAll()).single;
     expect(e.eventType, GameEventType.skillEnlightened);
@@ -152,10 +161,9 @@ void main() {
       internalForceMaxBefore: 100,
       internalForceMaxAfter: 200,
     );
-    await isar.writeTxn(() => svc.recordRealmBreakthrough(
-          character: ch,
-          result: result,
-        ));
+    await isar.writeTxn(
+      () => svc.recordRealmBreakthrough(character: ch, result: result),
+    );
 
     final e = (await isar.gameEvents.where().findAll()).single;
     expect(e.eventType, GameEventType.realmBreakthrough);
@@ -183,10 +191,9 @@ void main() {
       internalForceMaxBefore: 200,
       internalForceMaxAfter: 400,
     );
-    await isar.writeTxn(() => svc.recordRealmBreakthrough(
-          character: disciple,
-          result: result,
-        ));
+    await isar.writeTxn(
+      () => svc.recordRealmBreakthrough(character: disciple, result: result),
+    );
 
     final e = (await isar.gameEvents.where().findAll()).single;
     expect(e.eventType, GameEventType.disciplePromoted);
@@ -196,12 +203,14 @@ void main() {
   test('#7 resonanceUpgraded 含 equipmentId 入 relatedEntityIds', () async {
     final isar = IsarSetup.instance;
     final svc = GameEventService(isar);
-    await isar.writeTxn(() => svc.recordResonanceUpgraded(
-          characterId: 10,
-          equipmentId: 42,
-          equipmentName: '秋寂剑',
-          newStage: 3,
-        ));
+    await isar.writeTxn(
+      () => svc.recordResonanceUpgraded(
+        characterId: 10,
+        equipmentId: 42,
+        equipmentName: '秋寂剑',
+        newStage: 3,
+      ),
+    );
 
     final e = (await isar.gameEvents.where().findAll()).single;
     expect(e.eventType, GameEventType.resonanceUpgraded);
@@ -213,12 +222,14 @@ void main() {
   test('#8 bossDefeated 含 stageId 入 relatedEntityIds', () async {
     final isar = IsarSetup.instance;
     final svc = GameEventService(isar);
-    await isar.writeTxn(() => svc.recordBossDefeated(
-          characterId: 10,
-          stageId: 'stage_01_05',
-          stageName: '夜袭山贼营',
-          bossName: '黑面阎罗',
-        ));
+    await isar.writeTxn(
+      () => svc.recordBossDefeated(
+        characterId: 10,
+        stageId: 'stage_01_05',
+        stageName: '夜袭山贼营',
+        bossName: '黑面阎罗',
+      ),
+    );
 
     final e = (await isar.gameEvents.where().findAll()).single;
     expect(e.eventType, GameEventType.bossDefeated);
@@ -252,10 +263,9 @@ void main() {
       internalForceMaxBefore: 100,
       internalForceMaxAfter: 100,
     );
-    await isar.writeTxn(() => svc.recordRealmBreakthrough(
-          character: ch,
-          result: noOp,
-        ));
+    await isar.writeTxn(
+      () => svc.recordRealmBreakthrough(character: ch, result: noOp),
+    );
 
     final all = await isar.gameEvents.where().findAll();
     expect(all, isEmpty);
@@ -292,44 +302,46 @@ void main() {
   // Phase 5 延续典故 hook case
   // ─────────────────────────────────────────────────────────────────────────
 
-  test('#8 bossDefeated 传 warbornEquipment → 每件追加 lore isPreset=false',
-      () async {
-    final isar = IsarSetup.instance;
-    final svc = GameEventService(isar);
-    final eq1 = Equipment.create(
-      defId: 'sword_qiu_ji',
-      tier: EquipmentTier.liQi,
-      slot: EquipmentSlot.weapon,
-      baseAttack: 100,
-      obtainedAt: DateTime(2026, 1, 1),
-      obtainedFrom: 'test',
-    );
-    final eq2 = Equipment.create(
-      defId: 'armor_qiu_ji',
-      tier: EquipmentTier.liQi,
-      slot: EquipmentSlot.armor,
-      obtainedAt: DateTime(2026, 1, 1),
-      obtainedFrom: 'test',
-    );
-    await isar.writeTxn(() async {
-      await isar.equipments.putAll([eq1, eq2]);
-      await svc.recordBossDefeated(
-        characterId: 10,
-        stageId: 'stage_01_05',
-        stageName: '夜袭山贼营',
-        bossName: '黑面阎罗',
-        warbornEquipment: [eq1, eq2],
+  test(
+    '#8 bossDefeated 传 warbornEquipment → 每件追加 lore isPreset=false',
+    () async {
+      final isar = IsarSetup.instance;
+      final svc = GameEventService(isar);
+      final eq1 = Equipment.create(
+        defId: 'sword_qiu_ji',
+        tier: EquipmentTier.liQi,
+        slot: EquipmentSlot.weapon,
+        baseAttack: 100,
+        obtainedAt: DateTime(2026, 1, 1),
+        obtainedFrom: 'test',
       );
-    });
+      final eq2 = Equipment.create(
+        defId: 'armor_qiu_ji',
+        tier: EquipmentTier.liQi,
+        slot: EquipmentSlot.armor,
+        obtainedAt: DateTime(2026, 1, 1),
+        obtainedFrom: 'test',
+      );
+      await isar.writeTxn(() async {
+        await isar.equipments.putAll([eq1, eq2]);
+        await svc.recordBossDefeated(
+          characterId: 10,
+          stageId: 'stage_01_05',
+          stageName: '夜袭山贼营',
+          bossName: '黑面阎罗',
+          warbornEquipment: [eq1, eq2],
+        );
+      });
 
-    final after1 = await isar.equipments.get(eq1.id);
-    final after2 = await isar.equipments.get(eq2.id);
-    expect(after1!.lores, hasLength(1));
-    expect(after2!.lores, hasLength(1));
-    expect(after1.lores.first.isPreset, isFalse);
-    expect(after1.lores.first.triggerEventDesc, contains('bossDefeated'));
-    expect(after2.lores.first.isPreset, isFalse);
-  });
+      final after1 = await isar.equipments.get(eq1.id);
+      final after2 = await isar.equipments.get(eq2.id);
+      expect(after1!.lores, hasLength(1));
+      expect(after2!.lores, hasLength(1));
+      expect(after1.lores.first.isPreset, isFalse);
+      expect(after1.lores.first.triggerEventDesc, contains('bossDefeated'));
+      expect(after2.lores.first.isPreset, isFalse);
+    },
+  );
 
   test('#8 bossDefeated 不传 warbornEquipment → 无 lore 副作用', () async {
     final isar = IsarSetup.instance;
@@ -389,57 +401,62 @@ void main() {
   // ─────────────────────────────────────────────────────────────────────────
 
   test(
-      'P1 #44 · equipmentObtained yaml 池命中 + 占位符替换(deterministic seed)',
-      () async {
-    final isar = IsarSetup.instance;
-    final svc = GameEventService(
-      isar,
-      loreLoader: (id) async => _loreFor(
-        id,
-        obtained: ['于「{source}」初见此剑,寒光乍现。'],
-      ),
-      random: Random(0),
-    );
-    final eq = Equipment.create(
-      defId: 'sword_xun_chang',
-      tier: EquipmentTier.xunChang,
-      slot: EquipmentSlot.weapon,
-      baseAttack: 50,
-      obtainedAt: DateTime(2026, 1, 1),
-      obtainedFrom: 'test',
-    );
-    await isar.writeTxn(() async {
-      await isar.equipments.put(eq);
-      await svc.recordEquipmentObtained(
-        characterId: null,
-        equipmentId: eq.id,
-        equipmentDefId: 'sword_xun_chang',
-        equipmentName: '寻常剑',
-        source: '夜袭山贼营',
-        equipment: eq,
+    'P1 #44 · equipmentObtained yaml 池命中 + 占位符替换(deterministic seed)',
+    () async {
+      final isar = IsarSetup.instance;
+      final svc = GameEventService(
+        isar,
+        loreLoader: (id) async =>
+            _loreFor(id, obtained: ['于「{source}」初见此剑,寒光乍现。']),
+        random: Random(0),
       );
-    });
-    final after = await isar.equipments.get(eq.id);
-    expect(after!.lores, hasLength(1));
-    expect(after.lores.first.text, '于「夜袭山贼营」初见此剑,寒光乍现。');
-    expect(after.lores.first.text.contains('寻常剑'), isFalse,
-        reason: 'yaml 按装备拆池,文案直接写"此剑",不用 {equip_name} 变量');
-    expect(after.lores.first.isPreset, isFalse);
-  });
+      final eq = Equipment.create(
+        defId: 'sword_xun_chang',
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.weapon,
+        baseAttack: 50,
+        obtainedAt: DateTime(2026, 1, 1),
+        obtainedFrom: 'test',
+      );
+      await isar.writeTxn(() async {
+        await isar.equipments.put(eq);
+        await svc.recordEquipmentObtained(
+          characterId: null,
+          equipmentId: eq.id,
+          equipmentDefId: 'sword_xun_chang',
+          equipmentName: '寻常剑',
+          source: '夜袭山贼营',
+          equipment: eq,
+        );
+      });
+      final after = await isar.equipments.get(eq.id);
+      expect(after!.lores, hasLength(1));
+      expect(after.lores.first.text, '于「夜袭山贼营」初见此剑,寒光乍现。');
+      expect(
+        after.lores.first.text.contains('寻常剑'),
+        isFalse,
+        reason: 'yaml 按装备拆池,文案直接写"此剑",不用 {equip_name} 变量',
+      );
+      expect(after.lores.first.isPreset, isFalse);
+    },
+  );
 
-  test('P1 #44 · bossDefeated 多件 warbornEquipment 各自抽各自 yaml 池',
-      () async {
+  test('P1 #44 · bossDefeated 多件 warbornEquipment 各自抽各自 yaml 池', () async {
     final isar = IsarSetup.instance;
     final svc = GameEventService(
       isar,
       loreLoader: (id) async {
         if (id == 'sword_a') {
-          return _loreFor(id,
-              bossDefeated: ['剑 A 见 {boss_name} 于 {stage_name}。']);
+          return _loreFor(
+            id,
+            bossDefeated: ['剑 A 见 {boss_name} 于 {stage_name}。'],
+          );
         }
         if (id == 'sword_b') {
-          return _loreFor(id,
-              bossDefeated: ['剑 B 战 {boss_name} 于 {stage_name}。']);
+          return _loreFor(
+            id,
+            bossDefeated: ['剑 B 战 {boss_name} 于 {stage_name}。'],
+          );
         }
         return LoreContent.placeholder(id);
       },
@@ -477,79 +494,97 @@ void main() {
     expect(after2!.lores.first.text, '剑 B 战 黑面阎罗 于 夜袭山贼营。');
   });
 
-  test('P1 #44 · yaml placeholder → fallback Dart 模板(equipmentObtained)',
-      () async {
-    final isar = IsarSetup.instance;
-    final svc = GameEventService(
-      isar,
-      loreLoader: (id) async => LoreContent.placeholder(id),
-      random: Random(0),
-    );
-    final eq = Equipment.create(
-      defId: 'sword_xun_chang',
-      tier: EquipmentTier.xunChang,
-      slot: EquipmentSlot.weapon,
-      baseAttack: 50,
-      obtainedAt: DateTime(2026, 1, 1),
-      obtainedFrom: 'test',
-    );
-    await isar.writeTxn(() async {
-      await isar.equipments.put(eq);
-      await svc.recordEquipmentObtained(
-        characterId: null,
-        equipmentId: eq.id,
-        equipmentDefId: 'sword_xun_chang',
-        equipmentName: '寻常剑',
-        source: '夜袭山贼营',
-        equipment: eq,
+  test(
+    'P1 #44 · yaml placeholder → fallback Dart 模板(equipmentObtained)',
+    () async {
+      final isar = IsarSetup.instance;
+      final svc = GameEventService(
+        isar,
+        loreLoader: (id) async => LoreContent.placeholder(id),
+        random: Random(0),
       );
-    });
-    final after = await isar.equipments.get(eq.id);
-    expect(after!.lores, hasLength(1));
-    expect(after.lores.first.text.contains('寻常剑'), isTrue,
-        reason: 'fallback Dart 模板含 equipName');
-    expect(after.lores.first.text.contains('夜袭山贼营'), isTrue,
-        reason: 'fallback Dart 模板含 source');
-  });
-
-  test('P1 #44 · yaml non-placeholder 但目标池为空 → fallback(bossDefeated)',
-      () async {
-    final isar = IsarSetup.instance;
-    final svc = GameEventService(
-      isar,
-      // obtained 池非空、bossDefeated 池为空 → bossDefeated 走 fallback
-      loreLoader: (id) async => _loreFor(id,
-          obtained: ['不该被 bossDefeated 抽到。'], bossDefeated: const []),
-      random: Random(0),
-    );
-    final eq = Equipment.create(
-      defId: 'sword_qiu_ji',
-      tier: EquipmentTier.liQi,
-      slot: EquipmentSlot.weapon,
-      baseAttack: 100,
-      obtainedAt: DateTime(2026, 1, 1),
-      obtainedFrom: 'test',
-    );
-    await isar.writeTxn(() async {
-      await isar.equipments.put(eq);
-      await svc.recordBossDefeated(
-        characterId: 10,
-        stageId: 'stage_01_05',
-        stageName: '夜袭山贼营',
-        bossName: '黑面阎罗',
-        warbornEquipment: [eq],
+      final eq = Equipment.create(
+        defId: 'sword_xun_chang',
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.weapon,
+        baseAttack: 50,
+        obtainedAt: DateTime(2026, 1, 1),
+        obtainedFrom: 'test',
       );
-    });
-    final after = await isar.equipments.get(eq.id);
-    expect(after!.lores, hasLength(1));
-    expect(after.lores.first.text.contains('黑面阎罗'), isTrue,
-        reason: 'fallback Dart 模板含 bossName');
-    expect(after.lores.first.text.contains('不该被'), isFalse,
-        reason: 'obtained 池不应被 bossDefeated 触发抽中');
-  });
+      await isar.writeTxn(() async {
+        await isar.equipments.put(eq);
+        await svc.recordEquipmentObtained(
+          characterId: null,
+          equipmentId: eq.id,
+          equipmentDefId: 'sword_xun_chang',
+          equipmentName: '寻常剑',
+          source: '夜袭山贼营',
+          equipment: eq,
+        );
+      });
+      final after = await isar.equipments.get(eq.id);
+      expect(after!.lores, hasLength(1));
+      expect(
+        after.lores.first.text.contains('寻常剑'),
+        isTrue,
+        reason: 'fallback Dart 模板含 equipName',
+      );
+      expect(
+        after.lores.first.text.contains('夜袭山贼营'),
+        isTrue,
+        reason: 'fallback Dart 模板含 source',
+      );
+    },
+  );
 
-  test('多次 bossDefeated 同装备 → lore 累加(防刷由 caller 端 isFirstClear 兜底)',
-      () async {
+  test(
+    'P1 #44 · yaml non-placeholder 但目标池为空 → fallback(bossDefeated)',
+    () async {
+      final isar = IsarSetup.instance;
+      final svc = GameEventService(
+        isar,
+        // obtained 池非空、bossDefeated 池为空 → bossDefeated 走 fallback
+        loreLoader: (id) async => _loreFor(
+          id,
+          obtained: ['不该被 bossDefeated 抽到。'],
+          bossDefeated: const [],
+        ),
+        random: Random(0),
+      );
+      final eq = Equipment.create(
+        defId: 'sword_qiu_ji',
+        tier: EquipmentTier.liQi,
+        slot: EquipmentSlot.weapon,
+        baseAttack: 100,
+        obtainedAt: DateTime(2026, 1, 1),
+        obtainedFrom: 'test',
+      );
+      await isar.writeTxn(() async {
+        await isar.equipments.put(eq);
+        await svc.recordBossDefeated(
+          characterId: 10,
+          stageId: 'stage_01_05',
+          stageName: '夜袭山贼营',
+          bossName: '黑面阎罗',
+          warbornEquipment: [eq],
+        );
+      });
+      final after = await isar.equipments.get(eq.id);
+      expect(after!.lores, hasLength(1));
+      expect(
+        after.lores.first.text.contains('黑面阎罗'),
+        isTrue,
+        reason: 'fallback Dart 模板含 bossName',
+      );
+      expect(
+        after.lores.first.text.contains('不该被'),
+        isFalse,
+        reason: 'obtained 池不应被 bossDefeated 触发抽中',
+      );
+    },
+  );
+
+  test('多次 bossDefeated 同装备 → lore 累加(防刷由 caller 端 isFirstClear 兜底)', () async {
     final isar = IsarSetup.instance;
     final svc = GameEventService(isar);
     final eq = Equipment.create(

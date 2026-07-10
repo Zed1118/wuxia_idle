@@ -18,21 +18,22 @@ void main() {
     await loadTestGameRepository();
   });
 
-  test('encounter_skills 池全部招式都被某 encounter unlockSkill outcome 引用(0 搁浅)',
-      () {
+  test('encounter_skills 池全部招式都被某 encounter unlockSkill outcome 引用(0 搁浅)', () {
     final repo = GameRepository.instance;
     final pool = repo.encounterSkillIds.toSet();
     final referenced = <String>{
       for (final enc in repo.allEncounters)
         for (final outcome in enc.outcomeMapping.values)
-          if (outcome.type == OutcomeType.unlockSkill && outcome.skillId != null)
+          if (outcome.type == OutcomeType.unlockSkill &&
+              outcome.skillId != null)
             outcome.skillId!,
     };
     final stranded = pool.difference(referenced);
     expect(
       stranded,
       isEmpty,
-      reason: '以下 encounter skill 无任何 encounter 解锁(玩家不可达,内容搁浅):'
+      reason:
+          '以下 encounter skill 无任何 encounter 解锁(玩家不可达,内容搁浅):'
           '$stranded —— 需补 encounter unlockSkill outcome 或裁池',
     );
   });

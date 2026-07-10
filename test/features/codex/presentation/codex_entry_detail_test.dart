@@ -14,7 +14,13 @@ CodexEntry _makeEntry({
   int paragraphCount = 2,
 }) {
   final ps = paragraphs ?? List.generate(paragraphCount, (i) => '段落${i + 1}');
-  return CodexEntry(id: id, step: step, title: title, category: category, paragraphs: ps);
+  return CodexEntry(
+    id: id,
+    step: step,
+    title: title,
+    category: category,
+    paragraphs: ps,
+  );
 }
 
 void main() {
@@ -28,9 +34,9 @@ void main() {
       category: CodexCategory.combat,
       paragraphs: ['段落一', '段落二'],
     );
-    await tester.pumpWidget(const MaterialApp(
-      home: CodexEntryDetail(entry: entry),
-    ));
+    await tester.pumpWidget(
+      const MaterialApp(home: CodexEntryDetail(entry: entry)),
+    );
     expect(find.text('境界'), findsOneWidget);
   });
 
@@ -42,9 +48,9 @@ void main() {
       category: CodexCategory.seclusion,
       paragraphs: ['第一段', '第二段', '第三段'],
     );
-    await tester.pumpWidget(const MaterialApp(
-      home: CodexEntryDetail(entry: entry),
-    ));
+    await tester.pumpWidget(
+      const MaterialApp(home: CodexEntryDetail(entry: entry)),
+    );
     expect(find.text('第一段'), findsOneWidget);
     expect(find.text('第二段'), findsOneWidget);
     expect(find.text('第三段'), findsOneWidget);
@@ -85,17 +91,19 @@ void main() {
 
   testWidgets('D. 路由跳入时 AppBar 含 BackButton', (tester) async {
     final entry = _makeEntry();
-    await tester.pumpWidget(MaterialApp(
-      home: Builder(
-        builder: (ctx) => TextButton(
-          onPressed: () => Navigator.push(
-            ctx,
-            MaterialPageRoute(builder: (_) => CodexEntryDetail(entry: entry)),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (ctx) => TextButton(
+            onPressed: () => Navigator.push(
+              ctx,
+              MaterialPageRoute(builder: (_) => CodexEntryDetail(entry: entry)),
+            ),
+            child: const Text('open'),
           ),
-          child: const Text('open'),
         ),
       ),
-    ));
+    );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     expect(find.byType(BackButton), findsOneWidget);
@@ -139,7 +147,9 @@ void main() {
         category: cat,
         paragraphs: const ['测试段落'],
       );
-      await tester.pumpWidget(MaterialApp(home: CodexEntryDetail(entry: entry)));
+      await tester.pumpWidget(
+        MaterialApp(home: CodexEntryDetail(entry: entry)),
+      );
       expect(
         find.text(cat.name),
         findsOneWidget,
@@ -158,14 +168,18 @@ void main() {
       category: CodexCategory.combat,
       paragraphs: [],
     );
-    await tester.pumpWidget(const MaterialApp(home: CodexEntryDetail(entry: entry)));
+    await tester.pumpWidget(
+      const MaterialApp(home: CodexEntryDetail(entry: entry)),
+    );
     expect(find.text(entry.title), findsOneWidget);
     expect(entry.paragraphs.isEmpty, isTrue);
   });
 
   // ── J. 小 viewport 下多段可 scroll，无 overflow ───────────────────────────────
 
-  testWidgets('J. 小 viewport(400×400)下多段 entry 可 scroll 无 overflow', (tester) async {
+  testWidgets('J. 小 viewport(400×400)下多段 entry 可 scroll 无 overflow', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(400, 400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {

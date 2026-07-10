@@ -37,16 +37,18 @@ Equipment _makeEquipment(String defId, EquipmentTier tier) {
 
 /// 将 SaveData 写入（activeCharacterIds 可传入）。
 Future<void> _writeSaveData(Isar isar, {List<int> activeIds = const []}) async {
-  await isar.writeTxn(() => isar.saveDatas.put(
-        SaveData()
-          ..id = 0
-          ..slotId = IsarSetup.currentSlotId
-          ..saveVersion = '0.0.1'
-          ..createdAt = DateTime(2026, 6, 20)
-          ..lastSavedAt = DateTime(2026, 6, 20)
-          ..lastOnlineAt = DateTime(2026, 6, 20)
-          ..activeCharacterIds = activeIds,
-      ));
+  await isar.writeTxn(
+    () => isar.saveDatas.put(
+      SaveData()
+        ..id = 0
+        ..slotId = IsarSetup.currentSlotId
+        ..saveVersion = '0.0.1'
+        ..createdAt = DateTime(2026, 6, 20)
+        ..lastSavedAt = DateTime(2026, 6, 20)
+        ..lastOnlineAt = DateTime(2026, 6, 20)
+        ..activeCharacterIds = activeIds,
+    ),
+  );
 }
 
 /// 构造并入库 Character，返回 id。
@@ -104,8 +106,9 @@ void main() {
         stats: _testStats,
         drops: drops,
       );
-      final all = await BossMemoryService(isar: IsarSetup.instance)
-          .allMemories(IsarSetup.currentSlotId);
+      final all = await BossMemoryService(
+        isar: IsarSetup.instance,
+      ).allMemories(IsarSetup.currentSlotId);
       expect(all, hasLength(1));
       final m = all.first;
       expect(m.bossKey, 'stage_01_05');
@@ -135,8 +138,9 @@ void main() {
         stats: _testStats,
         drops: drops,
       );
-      final all = await BossMemoryService(isar: IsarSetup.instance)
-          .allMemories(IsarSetup.currentSlotId);
+      final all = await BossMemoryService(
+        isar: IsarSetup.instance,
+      ).allMemories(IsarSetup.currentSlotId);
       expect(all, hasLength(1));
       expect(all.first.defeatCount, 2);
       // 首胜快照冻结
@@ -145,8 +149,14 @@ void main() {
 
     test('treasure = 最高阶装备掉落', () async {
       // 两件装备：好家伙(idx2) vs 神物(idx6) → 取 idx6
-      final lowTier = _makeEquipment('equip_placeholder_01', EquipmentTier.haoJiaHuo);
-      final highTier = _makeEquipment('equip_placeholder_01', EquipmentTier.shenWu);
+      final lowTier = _makeEquipment(
+        'equip_placeholder_01',
+        EquipmentTier.haoJiaHuo,
+      );
+      final highTier = _makeEquipment(
+        'equip_placeholder_01',
+        EquipmentTier.shenWu,
+      );
       final drops = DropResult(equipments: [lowTier, highTier], items: []);
       await runBossMemoryHookAfterVictory(
         source: BossMemorySource.mainline,
@@ -156,9 +166,9 @@ void main() {
         stats: _testStats,
         drops: drops,
       );
-      final m = (await BossMemoryService(isar: IsarSetup.instance)
-              .allMemories(IsarSetup.currentSlotId))
-          .single;
+      final m = (await BossMemoryService(
+        isar: IsarSetup.instance,
+      ).allMemories(IsarSetup.currentSlotId)).single;
       expect(m.treasureTier, EquipmentTier.shenWu);
     });
 
@@ -172,9 +182,9 @@ void main() {
         stats: _testStats,
         drops: drops,
       );
-      final m = (await BossMemoryService(isar: IsarSetup.instance)
-              .allMemories(IsarSetup.currentSlotId))
-          .single;
+      final m = (await BossMemoryService(
+        isar: IsarSetup.instance,
+      ).allMemories(IsarSetup.currentSlotId)).single;
       expect(m.treasureTier, isNull);
     });
 
@@ -190,19 +200,25 @@ void main() {
         topContributorName: '祖师',
         topContributorDamage: 9000,
       );
-      final m = (await BossMemoryService(isar: IsarSetup.instance)
-              .allMemories(IsarSetup.currentSlotId))
-          .single;
+      final m = (await BossMemoryService(
+        isar: IsarSetup.instance,
+      ).allMemories(IsarSetup.currentSlotId)).single;
       expect(m.topContributorName, '祖师');
       expect(m.topContributorDamage, 9000);
     });
 
     test('roster 从 activeCharacterIds 读取 name + portrait', () async {
       final isar = IsarSetup.instance;
-      final id1 = await _insertCharacter(isar,
-          name: '祖师', portraitPath: 'portraits/founder.png');
-      final id2 = await _insertCharacter(isar,
-          name: '大弟子', portraitPath: 'portraits/senior.png');
+      final id1 = await _insertCharacter(
+        isar,
+        name: '祖师',
+        portraitPath: 'portraits/founder.png',
+      );
+      final id2 = await _insertCharacter(
+        isar,
+        name: '大弟子',
+        portraitPath: 'portraits/senior.png',
+      );
       // 写 SaveData，activeCharacterIds = [id1, id2]
       await _writeSaveData(isar, activeIds: [id1, id2]);
 
@@ -215,11 +231,14 @@ void main() {
         drops: const DropResult(equipments: [], items: []),
       );
 
-      final m = (await BossMemoryService(isar: isar)
-              .allMemories(IsarSetup.currentSlotId))
-          .single;
+      final m = (await BossMemoryService(
+        isar: isar,
+      ).allMemories(IsarSetup.currentSlotId)).single;
       expect(m.rosterNames, ['祖师', '大弟子']);
-      expect(m.rosterPortraits, ['portraits/founder.png', 'portraits/senior.png']);
+      expect(m.rosterPortraits, [
+        'portraits/founder.png',
+        'portraits/senior.png',
+      ]);
     });
 
     test('Isar 未 ready → no-op 不抛', () async {

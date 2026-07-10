@@ -28,10 +28,7 @@ void main() {
     });
 
     test('xueTu/qiMeng 是 1，wuSheng/dengFeng 是 49（首尾边界）', () {
-      expect(
-        RealmUtils.absoluteLevelOf(RealmTier.xueTu, RealmLayer.qiMeng),
-        1,
-      );
+      expect(RealmUtils.absoluteLevelOf(RealmTier.xueTu, RealmLayer.qiMeng), 1);
       expect(
         RealmUtils.absoluteLevelOf(RealmTier.wuSheng, RealmLayer.dengFeng),
         49,
@@ -66,16 +63,19 @@ void main() {
     });
 
     test('差 3 大境界（低打高）→ (1.0, 0.05)，attacker 走数据层兜底 1.0', () {
-      final m =
-          RealmUtils.realmDiffModifier(RealmTier.sanLiu, RealmTier.jueDing);
-      expect(m.$1, 1.0,
-          reason: 'GDD §5.5：碾压无须放大，attacker=1.0（数据层与公式层语义统一）');
+      final m = RealmUtils.realmDiffModifier(
+        RealmTier.sanLiu,
+        RealmTier.jueDing,
+      );
+      expect(m.$1, 1.0, reason: 'GDD §5.5：碾压无须放大，attacker=1.0（数据层与公式层语义统一）');
       expect(m.$2, 0.05);
     });
 
     test('差 6（最大跨距，xueTu vs wuSheng）→ (1.0, 0.05)', () {
-      final m =
-          RealmUtils.realmDiffModifier(RealmTier.xueTu, RealmTier.wuSheng);
+      final m = RealmUtils.realmDiffModifier(
+        RealmTier.xueTu,
+        RealmTier.wuSheng,
+      );
       expect(m.$1, 1.0);
       expect(m.$2, 0.05);
     });
@@ -110,12 +110,18 @@ void main() {
 
   group('RealmUtils.equipmentTierCapOf', () {
     test('xueTu → xunChang / yiLiu → liQi / wuSheng → shenWu（三系锁死）', () {
-      expect(RealmUtils.equipmentTierCapOf(RealmTier.xueTu),
-          EquipmentTier.xunChang);
       expect(
-          RealmUtils.equipmentTierCapOf(RealmTier.yiLiu), EquipmentTier.liQi);
-      expect(RealmUtils.equipmentTierCapOf(RealmTier.wuSheng),
-          EquipmentTier.shenWu);
+        RealmUtils.equipmentTierCapOf(RealmTier.xueTu),
+        EquipmentTier.xunChang,
+      );
+      expect(
+        RealmUtils.equipmentTierCapOf(RealmTier.yiLiu),
+        EquipmentTier.liQi,
+      );
+      expect(
+        RealmUtils.equipmentTierCapOf(RealmTier.wuSheng),
+        EquipmentTier.shenWu,
+      );
     });
   });
 
@@ -375,7 +381,8 @@ void main() {
         forgingSlots: [
           ForgingSlot()
             ..slotIndex = 1
-            ..unlocked = false // 没解锁
+            ..unlocked =
+                false // 没解锁
             ..type = ForgingSlotType.attack
             ..bonusValue = 15,
           ForgingSlot()..slotIndex = 2,
@@ -424,23 +431,36 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────
 
   group('CharacterDerivedStats.internalForceMaxWithLineage（重伤减内力上限）', () {
-    test('heavyInjured=true 时内力上限 < 无重伤值，且比例 ≈ (1 - heavyInternalForceMaxPenaltyPct)', () {
-      final n = GameRepository.instance.numbers;
-      final c = _mkChar(
-        tier: RealmTier.yiLiu,
-        layer: RealmLayer.qiMeng,
-        internalForce: 5000,
-      );
-      final noInjury = CharacterDerivedStats.internalForceMaxWithLineage(c, [], n);
-      final withInjury = CharacterDerivedStats.internalForceMaxWithLineage(
-        c, [], n, heavyInjured: true,
-      );
-      expect(withInjury, lessThan(noInjury));
-      final expectedPenaltyPct = n.injury.heavyInternalForceMaxPenaltyPct;
-      final ratio = withInjury / noInjury;
-      expect(ratio, closeTo(1.0 - expectedPenaltyPct, 0.01),
-          reason: '重伤扣 ${expectedPenaltyPct * 100}% 内力上限');
-    });
+    test(
+      'heavyInjured=true 时内力上限 < 无重伤值，且比例 ≈ (1 - heavyInternalForceMaxPenaltyPct)',
+      () {
+        final n = GameRepository.instance.numbers;
+        final c = _mkChar(
+          tier: RealmTier.yiLiu,
+          layer: RealmLayer.qiMeng,
+          internalForce: 5000,
+        );
+        final noInjury = CharacterDerivedStats.internalForceMaxWithLineage(
+          c,
+          [],
+          n,
+        );
+        final withInjury = CharacterDerivedStats.internalForceMaxWithLineage(
+          c,
+          [],
+          n,
+          heavyInjured: true,
+        );
+        expect(withInjury, lessThan(noInjury));
+        final expectedPenaltyPct = n.injury.heavyInternalForceMaxPenaltyPct;
+        final ratio = withInjury / noInjury;
+        expect(
+          ratio,
+          closeTo(1.0 - expectedPenaltyPct, 0.01),
+          reason: '重伤扣 ${expectedPenaltyPct * 100}% 内力上限',
+        );
+      },
+    );
 
     test('heavyInjured=false（默认）时不影响内力上限（无回归）', () {
       final n = GameRepository.instance.numbers;
@@ -450,9 +470,16 @@ void main() {
         internalForce: 5000,
       );
       final withFlag = CharacterDerivedStats.internalForceMaxWithLineage(
-        c, [], n, heavyInjured: false,
+        c,
+        [],
+        n,
+        heavyInjured: false,
       );
-      final withoutFlag = CharacterDerivedStats.internalForceMaxWithLineage(c, [], n);
+      final withoutFlag = CharacterDerivedStats.internalForceMaxWithLineage(
+        c,
+        [],
+        n,
+      );
       expect(withFlag, withoutFlag);
     });
   });
@@ -469,7 +496,11 @@ void main() {
       final tech = _mkTech(tier: TechniqueTier.ruMenGong);
       final baseSpeed = CharacterDerivedStats.speed(c, [], tech, n);
       final injuredSpeed = CharacterDerivedStats.speed(
-        c, [], tech, n, lightInjuryStacks: 3,
+        c,
+        [],
+        tech,
+        n,
+        lightInjuryStacks: 3,
       );
       final penaltyPerStack = n.injury.lightSpeedPenaltyPerStack;
       expect(injuredSpeed, baseSpeed - 3 * penaltyPerStack);
@@ -485,7 +516,11 @@ void main() {
       );
       final tech = _mkTech(tier: TechniqueTier.ruMenGong);
       final withStack0 = CharacterDerivedStats.speed(
-        c, [], tech, n, lightInjuryStacks: 0,
+        c,
+        [],
+        tech,
+        n,
+        lightInjuryStacks: 0,
       );
       final withoutParam = CharacterDerivedStats.speed(c, [], tech, n);
       expect(withStack0, withoutParam);
@@ -502,7 +537,11 @@ void main() {
       final tech = _mkTech(tier: TechniqueTier.ruMenGong);
       // 强制传超大 stacks，验证不会负数
       final injuredSpeed = CharacterDerivedStats.speed(
-        c, [], tech, n, lightInjuryStacks: 9999,
+        c,
+        [],
+        tech,
+        n,
+        lightInjuryStacks: 9999,
       );
       expect(injuredSpeed, greaterThanOrEqualTo(0));
     });

@@ -20,17 +20,17 @@ import 'package:wuxia_idle/shared/utils/rng.dart';
 ///   4. 银两/经验丹不受 gate 影响：无论 isFirstClearStage 为何值都不被过滤。
 void main() {
   StageDef stageWith(List<DropEntry> table) => StageDef(
-        id: 'test_stage_boss',
-        name: '测试章末 Boss',
-        stageType: StageType.mainline,
-        chapterIndex: 1,
-        requiredRealm: RealmTier.xueTu,
-        enemyTeam: const [],
-        isBossStage: true,
-        dropTable: table,
-        baseExpReward: 0,
-        difficultyMultiplier: 1.0,
-      );
+    id: 'test_stage_boss',
+    name: '测试章末 Boss',
+    stageType: StageType.mainline,
+    chapterIndex: 1,
+    requiredRealm: RealmTier.xueTu,
+    enemyTeam: const [],
+    isBossStage: true,
+    dropTable: table,
+    baseExpReward: 0,
+    difficultyMultiplier: 1.0,
+  );
 
   final service = DropService(
     equipmentDefLookup: (_) => throw StateError('测试不用装备掉落'),
@@ -68,12 +68,18 @@ void main() {
     ];
 
     final written = items
-        .where((item) =>
-            !shouldSkipScrollDrop(item.defId, isFirstClear: isFirstClearStage))
+        .where(
+          (item) => !shouldSkipScrollDrop(
+            item.defId,
+            isFirstClear: isFirstClearStage,
+          ),
+        )
         .toList();
 
-    expect(written.map((e) => e.defId),
-        containsAll(['item_scroll_guan_shan_ba_ji', 'item_silver']));
+    expect(
+      written.map((e) => e.defId),
+      containsAll(['item_scroll_guan_shan_ba_ji', 'item_silver']),
+    );
     expect(written, hasLength(2));
   });
 
@@ -90,13 +96,19 @@ void main() {
     ];
 
     final written = items
-        .where((item) =>
-            !shouldSkipScrollDrop(item.defId, isFirstClear: isFirstClearStage))
+        .where(
+          (item) => !shouldSkipScrollDrop(
+            item.defId,
+            isFirstClear: isFirstClearStage,
+          ),
+        )
         .toList();
 
     // 秘籍被 gate 掉
-    expect(written.map((e) => e.defId),
-        isNot(contains('item_scroll_guan_shan_ba_ji')));
+    expect(
+      written.map((e) => e.defId),
+      isNot(contains('item_scroll_guan_shan_ba_ji')),
+    );
     // 银两/经验丹正常通过
     expect(written.map((e) => e.defId), contains('item_silver'));
     expect(written.map((e) => e.defId), contains('item_jingyandan_large'));
@@ -110,24 +122,35 @@ void main() {
   test('gate 精确匹配 item_scroll_ 前缀，其余 item 全部放行（含重打场景）', () {
     const isFirstClearStage = false; // 最严情形
     final items = [
-      const _ItemLike(defId: 'item_scroll_guan_shan_ba_ji', quantity: 1), // gate
-      const _ItemLike(defId: 'item_scroll_ma_ta_fei_yan', quantity: 1),   // gate
-      const _ItemLike(defId: 'item_silver', quantity: 20),                  // pass
-      const _ItemLike(defId: 'item_mojianshi', quantity: 3),                // pass
-      const _ItemLike(defId: 'item_xinxuejiejing', quantity: 1),            // pass
-      const _ItemLike(defId: 'item_jingyandan_large', quantity: 1),         // pass
-      const _ItemLike(defId: 'item_jingyandan_peiyu', quantity: 1),         // pass
+      const _ItemLike(
+        defId: 'item_scroll_guan_shan_ba_ji',
+        quantity: 1,
+      ), // gate
+      const _ItemLike(defId: 'item_scroll_ma_ta_fei_yan', quantity: 1), // gate
+      const _ItemLike(defId: 'item_silver', quantity: 20), // pass
+      const _ItemLike(defId: 'item_mojianshi', quantity: 3), // pass
+      const _ItemLike(defId: 'item_xinxuejiejing', quantity: 1), // pass
+      const _ItemLike(defId: 'item_jingyandan_large', quantity: 1), // pass
+      const _ItemLike(defId: 'item_jingyandan_peiyu', quantity: 1), // pass
     ];
 
     final written = items
-        .where((item) =>
-            !shouldSkipScrollDrop(item.defId, isFirstClear: isFirstClearStage))
+        .where(
+          (item) => !shouldSkipScrollDrop(
+            item.defId,
+            isFirstClear: isFirstClearStage,
+          ),
+        )
         .toList();
 
-    expect(written.map((e) => e.defId),
-        isNot(contains('item_scroll_guan_shan_ba_ji')));
-    expect(written.map((e) => e.defId),
-        isNot(contains('item_scroll_ma_ta_fei_yan')));
+    expect(
+      written.map((e) => e.defId),
+      isNot(contains('item_scroll_guan_shan_ba_ji')),
+    );
+    expect(
+      written.map((e) => e.defId),
+      isNot(contains('item_scroll_ma_ta_fei_yan')),
+    );
     expect(written, hasLength(5), reason: '5 个非秘籍 item 全部放行');
   });
 
@@ -135,31 +158,34 @@ void main() {
   // 5. 爬塔 6 本：dropChance=1.0 时 rollTowerRewards 必输出 scroll
   // ─────────────────────────────────────────────────────────────────────────
 
-  test('rollTowerRewards dropChance=1.0 → item_scroll_* 必入 DropResult.items', () {
-    const towerScrollIds = [
-      'item_scroll_kai_bei_shou',
-      'item_scroll_yan_zi_san_chao',
-      'item_scroll_zhu_ying_yao_hong',
-      'item_scroll_jin_gang_fu_mo',
-      'item_scroll_jing_hong_zhao_ying',
-      'item_scroll_yue_luo_wu_sheng',
-    ];
-    for (final scrollId in towerScrollIds) {
-      final result = service.rollDrops(
-        stageWith([
-          ItemDrop(
-            inventoryItemDefId: scrollId,
-            quantityMin: 1,
-            quantityMax: 1,
-            dropChance: 1.0,
-          ),
-        ]),
-        DefaultRng(seed: 7),
-      );
-      expect(result.items, hasLength(1), reason: '$scrollId 应命中');
-      expect(result.items.first.defId, scrollId);
-    }
-  });
+  test(
+    'rollTowerRewards dropChance=1.0 → item_scroll_* 必入 DropResult.items',
+    () {
+      const towerScrollIds = [
+        'item_scroll_kai_bei_shou',
+        'item_scroll_yan_zi_san_chao',
+        'item_scroll_zhu_ying_yao_hong',
+        'item_scroll_jin_gang_fu_mo',
+        'item_scroll_jing_hong_zhao_ying',
+        'item_scroll_yue_luo_wu_sheng',
+      ];
+      for (final scrollId in towerScrollIds) {
+        final result = service.rollDrops(
+          stageWith([
+            ItemDrop(
+              inventoryItemDefId: scrollId,
+              quantityMin: 1,
+              quantityMax: 1,
+              dropChance: 1.0,
+            ),
+          ]),
+          DefaultRng(seed: 7),
+        );
+        expect(result.items, hasLength(1), reason: '$scrollId 应命中');
+        expect(result.items.first.defId, scrollId);
+      }
+    },
+  );
 }
 
 /// 轻量 value class，仅用于模拟 ItemDropResult 的 defId+quantity 字段。

@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
@@ -69,21 +68,24 @@ void main() {
 
   BattleResolutionResult innerDemonDefeatResult({
     required Map<int, InnerDemonPenaltyResult> innerDemonPenalty,
-  }) =>
-      BattleResolutionResult(
-        updatedEquipmentIds: const [],
-        skillUsageIncrements: const {},
-        cultivationEvents: const {},
-        dropResult: const DropResult(equipments: [], items: []),
-        defeatPenaltyByCharacter: const {},
-        innerDemonPenaltyByCharacter: innerDemonPenalty,
-      );
+  }) => BattleResolutionResult(
+    updatedEquipmentIds: const [],
+    skillUsageIncrements: const {},
+    cultivationEvents: const {},
+    dropResult: const DropResult(equipments: [], items: []),
+    defeatPenaltyByCharacter: const {},
+    innerDemonPenaltyByCharacter: innerDemonPenalty,
+  );
 
   // ── tests ────────────────────────────────────────────────────────────────
 
   test('心魔关战败 → entries 含受罚角色内力 before/after', () {
     final ch = makeCharacter(name: '张无忌', id: 1, mainTechniqueId: 10);
-    final tech = makeTechnique(id: 10, ownerCharacterId: 1, defId: 'tech_jiuyang');
+    final tech = makeTechnique(
+      id: 10,
+      ownerCharacterId: 1,
+      defId: 'tech_jiuyang',
+    );
     const penalty = InnerDemonPenaltyResult(
       internalForceBefore: 3000,
       internalForceAfter: 1500,
@@ -94,7 +96,9 @@ void main() {
 
     final entries = buildDefeatLossEntries(
       characters: [ch],
-      techsByCh: {1: [tech]},
+      techsByCh: {
+        1: [tech],
+      },
       result: innerDemonDefeatResult(innerDemonPenalty: {1: penalty}),
     );
 
@@ -107,7 +111,11 @@ void main() {
 
   test('心魔惩罚 entry residueApplied=true', () {
     final ch = makeCharacter(name: '张无忌', id: 1, mainTechniqueId: 10);
-    final tech = makeTechnique(id: 10, ownerCharacterId: 1, defId: 'tech_jiuyang');
+    final tech = makeTechnique(
+      id: 10,
+      ownerCharacterId: 1,
+      defId: 'tech_jiuyang',
+    );
     const penalty = InnerDemonPenaltyResult(
       internalForceBefore: 3000,
       internalForceAfter: 1500,
@@ -118,17 +126,22 @@ void main() {
 
     final entries = buildDefeatLossEntries(
       characters: [ch],
-      techsByCh: {1: [tech]},
+      techsByCh: {
+        1: [tech],
+      },
       result: innerDemonDefeatResult(innerDemonPenalty: {1: penalty}),
     );
 
-    expect(entries.first.residueApplied, isTrue,
-        reason: '心魔惩罚 entry 应标记余毒');
+    expect(entries.first.residueApplied, isTrue, reason: '心魔惩罚 entry 应标记余毒');
   });
 
   test('心魔惩罚 entry layersRolledBack=0（心魔不掉层）', () {
     final ch = makeCharacter(name: '张无忌', id: 1, mainTechniqueId: 10);
-    final tech = makeTechnique(id: 10, ownerCharacterId: 1, defId: 'tech_jiuyang');
+    final tech = makeTechnique(
+      id: 10,
+      ownerCharacterId: 1,
+      defId: 'tech_jiuyang',
+    );
     const penalty = InnerDemonPenaltyResult(
       internalForceBefore: 3000,
       internalForceAfter: 1500,
@@ -139,16 +152,23 @@ void main() {
 
     final entries = buildDefeatLossEntries(
       characters: [ch],
-      techsByCh: {1: [tech]},
+      techsByCh: {
+        1: [tech],
+      },
       result: innerDemonDefeatResult(innerDemonPenalty: {1: penalty}),
     );
 
-    expect(entries.first.layersRolledBack, 0,
-        reason: '心魔惩罚不掉层');
-    expect(entries.first.oldLayerLabel, isNull,
-        reason: '心魔惩罚 oldLayerLabel 为 null');
-    expect(entries.first.newLayerLabel, isNull,
-        reason: '心魔惩罚 newLayerLabel 为 null');
+    expect(entries.first.layersRolledBack, 0, reason: '心魔惩罚不掉层');
+    expect(
+      entries.first.oldLayerLabel,
+      isNull,
+      reason: '心魔惩罚 oldLayerLabel 为 null',
+    );
+    expect(
+      entries.first.newLayerLabel,
+      isNull,
+      reason: '心魔惩罚 newLayerLabel 为 null',
+    );
   });
 
   test('无心魔惩罚（innerDemonPenaltyByCharacter 空）→ entries 空', () {
@@ -160,8 +180,7 @@ void main() {
       result: innerDemonDefeatResult(innerDemonPenalty: {}),
     );
 
-    expect(entries, isEmpty,
-        reason: '无心魔惩罚 entry 且无散功 entry 时应为空');
+    expect(entries, isEmpty, reason: '无心魔惩罚 entry 且无散功 entry 时应为空');
   });
 
   test('既有 Boss 散功路径 residueApplied 默认 false（不破回归）', () {
@@ -172,17 +191,26 @@ void main() {
       internalForceAfter: 1000,
       layersRolledBack: 1,
     );
-    expect(entry.residueApplied, isFalse,
-        reason: 'Boss 散功 entry 默认 residueApplied=false');
+    expect(
+      entry.residueApplied,
+      isFalse,
+      reason: 'Boss 散功 entry 默认 residueApplied=false',
+    );
   });
 
   test('多角色部分受罚 → 仅受罚角色生成 entry', () {
     final ch1 = makeCharacter(name: '张无忌', id: 1, mainTechniqueId: 10);
     final ch2 = makeCharacter(name: '令狐冲', id: 2, mainTechniqueId: 20);
-    final tech1 =
-        makeTechnique(id: 10, ownerCharacterId: 1, defId: 'tech_jiuyang');
-    final tech2 =
-        makeTechnique(id: 20, ownerCharacterId: 2, defId: 'tech_dugu');
+    final tech1 = makeTechnique(
+      id: 10,
+      ownerCharacterId: 1,
+      defId: 'tech_jiuyang',
+    );
+    final tech2 = makeTechnique(
+      id: 20,
+      ownerCharacterId: 2,
+      defId: 'tech_dugu',
+    );
 
     const penalty = InnerDemonPenaltyResult(
       internalForceBefore: 3000,
@@ -194,7 +222,10 @@ void main() {
 
     final entries = buildDefeatLossEntries(
       characters: [ch1, ch2],
-      techsByCh: {1: [tech1], 2: [tech2]},
+      techsByCh: {
+        1: [tech1],
+        2: [tech2],
+      },
       // 仅 ch1 受罚
       result: innerDemonDefeatResult(innerDemonPenalty: {1: penalty}),
     );

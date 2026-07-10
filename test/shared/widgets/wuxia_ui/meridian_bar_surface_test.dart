@@ -21,7 +21,9 @@ void main() {
 
   testWidgets('深底标签取 textPrimary', (t) async {
     await t.pumpWidget(
-      wrap(const DarkParchmentPanel(child: MeridianBar(ratio: 0.5, label: '内息'))),
+      wrap(
+        const DarkParchmentPanel(child: MeridianBar(ratio: 0.5, label: '内息')),
+      ),
     );
     expect(_textColor(t, '内息'), WuxiaColors.textPrimary);
   });

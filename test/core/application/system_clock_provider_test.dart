@@ -14,9 +14,7 @@ void main() {
     test('R3.2 systemClockProvider override 注 FakeClock → 固定返期值', () {
       final fixed = DateTime(2026, 5, 25, 10);
       final container = ProviderContainer(
-        overrides: [
-          systemClockProvider.overrideWithValue(_FakeClock(fixed)),
-        ],
+        overrides: [systemClockProvider.overrideWithValue(_FakeClock(fixed))],
       );
       addTearDown(container.dispose);
 

@@ -28,14 +28,11 @@ void main() {
         expect(
           content.isPlaceholder,
           isFalse,
-          reason: 'floor ${floor.floorIndex} 的 $id 文案缺失(占位符) —— '
+          reason:
+              'floor ${floor.floorIndex} 的 $id 文案缺失(占位符) —— '
               '应在 data/narratives/$id.yaml 补真内容',
         );
-        expect(
-          content.paragraphs,
-          isNotEmpty,
-          reason: '$id 段落为空',
-        );
+        expect(content.paragraphs, isNotEmpty, reason: '$id 段落为空');
         checked.add(id);
       }
     }

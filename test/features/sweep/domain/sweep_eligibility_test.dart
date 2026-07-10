@@ -14,9 +14,7 @@ void main() {
     ];
 
     test('本周目该章全关已通 → 可扫', () {
-      final keys = [
-        for (final id in chapterStageIds) '$id#1',
-      ];
+      final keys = [for (final id in chapterStageIds) '$id#1'];
       expect(
         SweepEligibility.forChapter(
           clearedStageCycleKeys: keys,
@@ -51,9 +49,7 @@ void main() {
     });
 
     test('新周目(cycle2)但只有 cycle1 通关键 → 本周目不可扫(周目重置语义)', () {
-      final cycle1Keys = [
-        for (final id in chapterStageIds) '$id#1',
-      ];
+      final cycle1Keys = [for (final id in chapterStageIds) '$id#1'];
       expect(
         SweepEligibility.forChapter(
           clearedStageCycleKeys: cycle1Keys,

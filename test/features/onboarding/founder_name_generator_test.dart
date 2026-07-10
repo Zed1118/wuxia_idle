@@ -30,9 +30,6 @@ void main() {
       generateFounderName(FounderNamesConfig.empty, DefaultRng(seed: 1)),
       '',
     );
-    expect(
-      generateSectName(FounderNamesConfig.empty, DefaultRng(seed: 1)),
-      '',
-    );
+    expect(generateSectName(FounderNamesConfig.empty, DefaultRng(seed: 1)), '');
   });
 }

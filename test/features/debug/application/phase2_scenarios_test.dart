@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -119,33 +118,33 @@ void main() {
       expect(eq.resonanceBonus(n), closeTo(1.10, 1e-9));
     });
 
-    test('effectiveEquipmentAttack: battleCount 99→100 攻击力 +10%（趁手 buff 落实到 attack 计算）',
-        () {
-      final n = GameRepository.instance.numbers;
-      const baseAttack = 100;
-      final eq99 = _mkBareWeapon(
-        enhanceLevel: 0,
-        battleCount: 99,
-        baseAttack: baseAttack,
-      );
-      final eq100 = _mkBareWeapon(
-        enhanceLevel: 0,
-        battleCount: 100,
-        baseAttack: baseAttack,
-      );
-      final atk99 = CharacterDerivedStats.effectiveEquipmentAttack(eq99, n);
-      final atk100 = CharacterDerivedStats.effectiveEquipmentAttack(eq100, n);
-      expect(atk99, baseAttack, reason: '生疏阶段无 buff');
-      expect(atk100, (baseAttack * 1.10).toInt(),
-          reason: '趁手阶段攻击 ×1.10');
-    });
+    test(
+      'effectiveEquipmentAttack: battleCount 99→100 攻击力 +10%（趁手 buff 落实到 attack 计算）',
+      () {
+        final n = GameRepository.instance.numbers;
+        const baseAttack = 100;
+        final eq99 = _mkBareWeapon(
+          enhanceLevel: 0,
+          battleCount: 99,
+          baseAttack: baseAttack,
+        );
+        final eq100 = _mkBareWeapon(
+          enhanceLevel: 0,
+          battleCount: 100,
+          baseAttack: baseAttack,
+        );
+        final atk99 = CharacterDerivedStats.effectiveEquipmentAttack(eq99, n);
+        final atk100 = CharacterDerivedStats.effectiveEquipmentAttack(eq100, n);
+        expect(atk99, baseAttack, reason: '生疏阶段无 buff');
+        expect(atk100, (baseAttack * 1.10).toInt(), reason: '趁手阶段攻击 ×1.10');
+      },
+    );
   });
 
   // ─── P3 散功代价（spec §502）───────────────────────────────────────────
 
   group('P3 散功代价', () {
-    test('IF 10000 + yuanMan/1500 → daCheng/750 + IF 5000（spec §502 标准答案）',
-        () {
+    test('IF 10000 + yuanMan/1500 → daCheng/750 + IF 5000（spec §502 标准答案）', () {
       final n = GameRepository.instance.numbers;
       final ch = _mkChar(internalForce: 10000, internalForceMax: 10000);
       ch.id = 1;
@@ -184,14 +183,18 @@ void main() {
       expect(r.newLayer, CultivationLayer.daCheng);
       expect(r.layersRolledBack, 1);
       expect(r.progressAfter, 750);
-      expect(r.progressToNextAfter,
-          n.cultivationProgressToNext[CultivationLayer.daCheng]!);
-      expect(r.progressToNextAfter, 900,
-          reason: 'daCheng→yuanMan 阈值 yaml 写死 900');
+      expect(
+        r.progressToNextAfter,
+        n.cultivationProgressToNext[CultivationLayer.daCheng]!,
+      );
+      expect(
+        r.progressToNextAfter,
+        900,
+        reason: 'daCheng→yuanMan 阈值 yaml 写死 900',
+      );
     });
 
-    test('散功后 Character / Technique 字段切换：主修易主 + 旧主修变辅修 + 内力对半',
-        () {
+    test('散功后 Character / Technique 字段切换：主修易主 + 旧主修变辅修 + 内力对半', () {
       final n = GameRepository.instance.numbers;
       final ch = _mkChar(internalForce: 10000, internalForceMax: 10000);
       ch.id = 1;
@@ -226,14 +229,20 @@ void main() {
       expect(ch.internalForce, 5000);
       expect(ch.mainTechniqueId, newMain.id);
       expect(ch.assistTechniqueIds, contains(oldMain.id));
-      expect(ch.assistTechniqueIds, isNot(contains(newMain.id)),
-          reason: '新主修从 assist 列表移除');
+      expect(
+        ch.assistTechniqueIds,
+        isNot(contains(newMain.id)),
+        reason: '新主修从 assist 列表移除',
+      );
       expect(newMain.role, TechniqueRole.main);
       expect(oldMain.role, TechniqueRole.assist);
       expect(oldMain.cultivationLayer, CultivationLayer.daCheng);
       expect(oldMain.cultivationProgress, 750);
-      expect(oldMain.wasMainBeforeReset, isTrue,
-          reason: 'disperse 副作用：标记此心法曾为主修');
+      expect(
+        oldMain.wasMainBeforeReset,
+        isTrue,
+        reason: 'disperse 副作用：标记此心法曾为主修',
+      );
     });
   });
 
@@ -253,64 +262,70 @@ void main() {
       expect(atk, (baseAttack * 1.95).toInt());
     });
 
-    test('+19 + battleCount=2000（心剑通灵 ×1.30）：attack = baseAttack × 1.95 × 1.30',
-        () {
-      final n = GameRepository.instance.numbers;
-      const baseAttack = 100;
-      final eq = _mkBareWeapon(
-        enhanceLevel: 19,
-        battleCount: 2000,
-        baseAttack: baseAttack,
-      );
-      expect(eq.resonanceStage(n), ResonanceStage.xinJianTongLing);
-      expect(eq.resonanceBonus(n), closeTo(1.30, 1e-9));
+    test(
+      '+19 + battleCount=2000（心剑通灵 ×1.30）：attack = baseAttack × 1.95 × 1.30',
+      () {
+        final n = GameRepository.instance.numbers;
+        const baseAttack = 100;
+        final eq = _mkBareWeapon(
+          enhanceLevel: 19,
+          battleCount: 2000,
+          baseAttack: baseAttack,
+        );
+        expect(eq.resonanceStage(n), ResonanceStage.xinJianTongLing);
+        expect(eq.resonanceBonus(n), closeTo(1.30, 1e-9));
 
-      final atk = CharacterDerivedStats.effectiveEquipmentAttack(eq, n);
-      // 100 × 1.95 × 1.30 = 253.5 → toInt 253
-      expect(atk, (baseAttack * 1.95 * 1.30).toInt());
-    });
+        final atk = CharacterDerivedStats.effectiveEquipmentAttack(eq, n);
+        // 100 × 1.95 × 1.30 = 253.5 → toInt 253
+        expect(atk, (baseAttack * 1.95 * 1.30).toInt());
+      },
+    );
 
-    test('+19 + 心剑通灵 + forge1=attack(+15%)：全栈 attack ≈ baseAttack × 2.9，比裸装 ≈ 2.9×',
-        () {
-      final n = GameRepository.instance.numbers;
-      const baseAttack = 100;
+    test(
+      '+19 + 心剑通灵 + forge1=attack(+15%)：全栈 attack ≈ baseAttack × 2.9，比裸装 ≈ 2.9×',
+      () {
+        final n = GameRepository.instance.numbers;
+        const baseAttack = 100;
 
-      final bare = _mkBareWeapon(
-        enhanceLevel: 0,
-        battleCount: 0,
-        baseAttack: baseAttack,
-      );
-      final fullStack = _mkBareWeapon(
-        enhanceLevel: 19,
-        battleCount: 2000,
-        baseAttack: baseAttack,
-      );
-      // 已开锋槽 1 = attack +15%（forge2 为 lifesteal/speed 等不影响 attack 类型）
-      fullStack.forgingSlots = [
-        ForgingSlot()
-          ..slotIndex = 1
-          ..type = ForgingSlotType.attack
-          ..unlocked = true
-          ..bonusValue = 15,
-        ForgingSlot()
-          ..slotIndex = 2
-          ..type = ForgingSlotType.lifesteal
-          ..unlocked = true
-          ..bonusValue = 15,
-        ForgingSlot()..slotIndex = 3, // 未开锋
-      ];
+        final bare = _mkBareWeapon(
+          enhanceLevel: 0,
+          battleCount: 0,
+          baseAttack: baseAttack,
+        );
+        final fullStack = _mkBareWeapon(
+          enhanceLevel: 19,
+          battleCount: 2000,
+          baseAttack: baseAttack,
+        );
+        // 已开锋槽 1 = attack +15%（forge2 为 lifesteal/speed 等不影响 attack 类型）
+        fullStack.forgingSlots = [
+          ForgingSlot()
+            ..slotIndex = 1
+            ..type = ForgingSlotType.attack
+            ..unlocked = true
+            ..bonusValue = 15,
+          ForgingSlot()
+            ..slotIndex = 2
+            ..type = ForgingSlotType.lifesteal
+            ..unlocked = true
+            ..bonusValue = 15,
+          ForgingSlot()..slotIndex = 3, // 未开锋
+        ];
 
-      final bareAtk = CharacterDerivedStats.effectiveEquipmentAttack(bare, n);
-      final fullAtk =
-          CharacterDerivedStats.effectiveEquipmentAttack(fullStack, n);
+        final bareAtk = CharacterDerivedStats.effectiveEquipmentAttack(bare, n);
+        final fullAtk = CharacterDerivedStats.effectiveEquipmentAttack(
+          fullStack,
+          n,
+        );
 
-      expect(bareAtk, baseAttack);
-      // 100 × 1.95 × 1.30 × 1.15 = 291.525 → toInt 291
-      expect(fullAtk, (baseAttack * 1.95 * 1.30 * 1.15).toInt());
+        expect(bareAtk, baseAttack);
+        // 100 × 1.95 × 1.30 × 1.15 = 291.525 → toInt 291
+        expect(fullAtk, (baseAttack * 1.95 * 1.30 * 1.15).toInt());
 
-      final ratio = fullAtk / bareAtk;
-      expect(ratio, closeTo(2.915, 0.01));
-    });
+        final ratio = fullAtk / bareAtk;
+        expect(ratio, closeTo(2.915, 0.01));
+      },
+    );
   });
 }
 
@@ -334,10 +349,7 @@ Equipment _mkBareWeapon({
   );
 }
 
-Character _mkChar({
-  required int internalForce,
-  required int internalForceMax,
-}) {
+Character _mkChar({required int internalForce, required int internalForceMax}) {
   return Character.create(
     name: '测试者',
     realmTier: RealmTier.erLiu,
@@ -394,4 +406,3 @@ class _FixedRng implements Rng {
   @override
   T pick<T>(List<T> list) => list.first;
 }
-

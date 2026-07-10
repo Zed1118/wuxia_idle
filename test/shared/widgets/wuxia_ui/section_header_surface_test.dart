@@ -13,7 +13,9 @@ void main() {
   Widget wrap(Widget child) => MaterialApp(home: Material(child: child));
 
   testWidgets('浅底标题取 ink', (t) async {
-    await t.pumpWidget(wrap(const LightPaperPanel(child: SectionHeader('分段标题'))));
+    await t.pumpWidget(
+      wrap(const LightPaperPanel(child: SectionHeader('分段标题'))),
+    );
     expect(_textColor(t, '分段标题'), WuxiaUi.ink);
   });
 

@@ -43,25 +43,32 @@ void main() {
   });
 
   group('30 层全通 → maxClearedCycle 更新', () {
-    test('通关 30 层 → maxClearedCycle=1；advanceCycle 后 currentCycleIndex=2 从头爬',
-        () async {
-      final svc = TowerProgressService(isar: IsarSetup.instance);
-      await svc.getOrCreate(saveDataId: 1);
-      final now = DateTime(2026, 6, 14);
-      for (var f = 1; f <= 30; f++) {
-        await svc.recordClear(floorIndex: f, now: now, elapsedMs: 1000);
-      }
-      var p = await svc.getOrCreate(saveDataId: 1);
-      expect(p.maxClearedCycle, 1,
-          reason: '30 层全通首次 → 当前周目(1)已完成');
-      expect(p.currentCycleIndex, 1,
-          reason: 'advanceCycle 前 currentCycleIndex 不变');
+    test(
+      '通关 30 层 → maxClearedCycle=1；advanceCycle 后 currentCycleIndex=2 从头爬',
+      () async {
+        final svc = TowerProgressService(isar: IsarSetup.instance);
+        await svc.getOrCreate(saveDataId: 1);
+        final now = DateTime(2026, 6, 14);
+        for (var f = 1; f <= 30; f++) {
+          await svc.recordClear(floorIndex: f, now: now, elapsedMs: 1000);
+        }
+        var p = await svc.getOrCreate(saveDataId: 1);
+        expect(p.maxClearedCycle, 1, reason: '30 层全通首次 → 当前周目(1)已完成');
+        expect(
+          p.currentCycleIndex,
+          1,
+          reason: 'advanceCycle 前 currentCycleIndex 不变',
+        );
 
-      await svc.advanceCycle(saveDataId: 1, maxCycleCap: 99); // 测试不限 cap，专注通关守卫
-      p = await svc.getOrCreate(saveDataId: 1);
-      expect(p.currentCycleIndex, 2, reason: '进入第 2 周目');
-      expect(p.highestClearedFloor, 0, reason: '新周目从第 1 层重新爬');
-    });
+        await svc.advanceCycle(
+          saveDataId: 1,
+          maxCycleCap: 99,
+        ); // 测试不限 cap，专注通关守卫
+        p = await svc.getOrCreate(saveDataId: 1);
+        expect(p.currentCycleIndex, 2, reason: '进入第 2 周目');
+        expect(p.highestClearedFloor, 0, reason: '新周目从第 1 层重新爬');
+      },
+    );
 
     test('通到 29 层（未满 30）→ maxClearedCycle 仍 0', () async {
       final svc = TowerProgressService(isar: IsarSetup.instance);
@@ -76,22 +83,24 @@ void main() {
   });
 
   group('advanceCycle 守卫：未全通时 no-op', () {
-    test('maxClearedCycle=0（未通整塔）→ advanceCycle no-op，currentCycleIndex 不变',
-        () async {
-      final svc = TowerProgressService(isar: IsarSetup.instance);
-      await svc.getOrCreate(saveDataId: 1);
-      // 通 10 层但未满 30
-      final now = DateTime(2026, 6, 14);
-      for (var f = 1; f <= 10; f++) {
-        await svc.recordClear(floorIndex: f, now: now, elapsedMs: 1000);
-      }
+    test(
+      'maxClearedCycle=0（未通整塔）→ advanceCycle no-op，currentCycleIndex 不变',
+      () async {
+        final svc = TowerProgressService(isar: IsarSetup.instance);
+        await svc.getOrCreate(saveDataId: 1);
+        // 通 10 层但未满 30
+        final now = DateTime(2026, 6, 14);
+        for (var f = 1; f <= 10; f++) {
+          await svc.recordClear(floorIndex: f, now: now, elapsedMs: 1000);
+        }
 
-      await svc.advanceCycle(saveDataId: 1, maxCycleCap: 99); // 测试通关守卫，不限 cap
+        await svc.advanceCycle(saveDataId: 1, maxCycleCap: 99); // 测试通关守卫，不限 cap
 
-      final p = await svc.getOrCreate(saveDataId: 1);
-      expect(p.currentCycleIndex, 1, reason: '未全通不应推进周目');
-      expect(p.highestClearedFloor, 10, reason: 'highestClearedFloor 不应被重置');
-    });
+        final p = await svc.getOrCreate(saveDataId: 1);
+        expect(p.currentCycleIndex, 1, reason: '未全通不应推进周目');
+        expect(p.highestClearedFloor, 10, reason: 'highestClearedFloor 不应被重置');
+      },
+    );
   });
 
   group('累计统计在 advanceCycle 后保留', () {
@@ -108,8 +117,11 @@ void main() {
       await svc.advanceCycle(saveDataId: 1, maxCycleCap: 99); // 测试累计统计，不限 cap
 
       final p = await svc.getOrCreate(saveDataId: 1);
-      expect(p.totalAttempts, attemptsBeforeAdvance,
-          reason: 'advanceCycle 本身不改变 totalAttempts 累计值');
+      expect(
+        p.totalAttempts,
+        attemptsBeforeAdvance,
+        reason: 'advanceCycle 本身不改变 totalAttempts 累计值',
+      );
     });
   });
 }

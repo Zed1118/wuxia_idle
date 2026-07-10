@@ -17,24 +17,31 @@ void main() {
   );
 
   testWidgets('showEpilogue=false → 显卷首,不显卷尾', (tester) async {
-    await tester.pumpWidget(host(ChapterTransitionScreen(
-      chapterIndex: 1,
-      showEpilogue: false,
-      loadOverride: (_) async => sample,
-    )));
+    await tester.pumpWidget(
+      host(
+        ChapterTransitionScreen(
+          chapterIndex: 1,
+          showEpilogue: false,
+          loadOverride: (_) async => sample,
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.textContaining('庆元三年'), findsOneWidget);
-    expect(find.textContaining('路还很长'), findsNothing,
-        reason: '章节未通关,卷尾不应解锁');
+    expect(find.textContaining('路还很长'), findsNothing, reason: '章节未通关,卷尾不应解锁');
   });
 
   testWidgets('showEpilogue=true → 卷首 + 卷尾都显', (tester) async {
-    await tester.pumpWidget(host(ChapterTransitionScreen(
-      chapterIndex: 1,
-      showEpilogue: true,
-      loadOverride: (_) async => sample,
-    )));
+    await tester.pumpWidget(
+      host(
+        ChapterTransitionScreen(
+          chapterIndex: 1,
+          showEpilogue: true,
+          loadOverride: (_) async => sample,
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.textContaining('庆元三年'), findsOneWidget);
@@ -42,11 +49,15 @@ void main() {
   });
 
   testWidgets('placeholder → 弱提示,不崩', (tester) async {
-    await tester.pumpWidget(host(ChapterTransitionScreen(
-      chapterIndex: 9,
-      showEpilogue: true,
-      loadOverride: (_) async => ChapterNarrative.placeholder('chapter_09'),
-    )));
+    await tester.pumpWidget(
+      host(
+        ChapterTransitionScreen(
+          chapterIndex: 9,
+          showEpilogue: true,
+          loadOverride: (_) async => ChapterNarrative.placeholder('chapter_09'),
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);

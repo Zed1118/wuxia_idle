@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
@@ -130,14 +129,18 @@ void main() {
         assistTechniqueIds: [11],
       );
       final mainT = newTech(
-        id: 10, ownerCharId: 1,
-        layer: CultivationLayer.xiaoCheng, progress: 100, progressToNext: 250,
+        id: 10,
+        ownerCharId: 1,
+        layer: CultivationLayer.xiaoCheng,
+        progress: 100,
+        progressToNext: 250,
       );
-      final newT = newTech(
-        id: 11, ownerCharId: 1, role: TechniqueRole.assist,
-      );
+      final newT = newTech(id: 11, ownerCharId: 1, role: TechniqueRole.assist);
       final r = DispelService.dispel(
-        ch: ch, mainTech: mainT, newMainTech: newT, n: n,
+        ch: ch,
+        mainTech: mainT,
+        newMainTech: newT,
+        n: n,
       );
       expect(r.outcome, DispelOutcome.success);
       expect(ch.internalForce, 2500);
@@ -155,7 +158,10 @@ void main() {
       final mainT = newTech(id: 10, ownerCharId: 1);
       final newT = newTech(id: 11, ownerCharId: 1, role: TechniqueRole.assist);
       final r = DispelService.dispel(
-        ch: ch, mainTech: mainT, newMainTech: newT, n: n,
+        ch: ch,
+        mainTech: mainT,
+        newMainTech: newT,
+        n: n,
       );
       expect(r.outcome, DispelOutcome.success);
       expect(ch.internalForce, 2500); // 5001*0.5=2500.5 → toInt floor → 2500
@@ -170,12 +176,18 @@ void main() {
     test('回退一层：yuanMan/1500 → daCheng/750', () {
       final ch = newChar(mainTechniqueId: 10, assistTechniqueIds: [11]);
       final mainT = newTech(
-        id: 10, ownerCharId: 1,
-        layer: CultivationLayer.yuanMan, progress: 1500, progressToNext: 1500,
+        id: 10,
+        ownerCharId: 1,
+        layer: CultivationLayer.yuanMan,
+        progress: 1500,
+        progressToNext: 1500,
       );
       final newT = newTech(id: 11, ownerCharId: 1, role: TechniqueRole.assist);
       final r = DispelService.dispel(
-        ch: ch, mainTech: mainT, newMainTech: newT, n: n,
+        ch: ch,
+        mainTech: mainT,
+        newMainTech: newT,
+        n: n,
       );
       expect(r.outcome, DispelOutcome.success);
       expect(r.layersRolledBack, 1);
@@ -186,21 +198,34 @@ void main() {
       expect(mainT.cultivationProgressToNext, 900); // daCheng→yuanMan
     });
 
-    test('不回退：yuanMan/2000 → yuanMan/1000（progress 仍 ≥ daCheng→yuanMan 的 900）', () {
-      final ch = newChar(mainTechniqueId: 10, assistTechniqueIds: [11]);
-      final mainT = newTech(
-        id: 10, ownerCharId: 1,
-        layer: CultivationLayer.yuanMan, progress: 2000, progressToNext: 1500,
-      );
-      final newT = newTech(id: 11, ownerCharId: 1, role: TechniqueRole.assist);
-      final r = DispelService.dispel(
-        ch: ch, mainTech: mainT, newMainTech: newT, n: n,
-      );
-      expect(r.layersRolledBack, 0);
-      expect(r.newLayer, CultivationLayer.yuanMan);
-      expect(mainT.cultivationProgress, 1000); // 2000*0.5
-      expect(mainT.cultivationProgressToNext, 1500);
-    });
+    test(
+      '不回退：yuanMan/2000 → yuanMan/1000（progress 仍 ≥ daCheng→yuanMan 的 900）',
+      () {
+        final ch = newChar(mainTechniqueId: 10, assistTechniqueIds: [11]);
+        final mainT = newTech(
+          id: 10,
+          ownerCharId: 1,
+          layer: CultivationLayer.yuanMan,
+          progress: 2000,
+          progressToNext: 1500,
+        );
+        final newT = newTech(
+          id: 11,
+          ownerCharId: 1,
+          role: TechniqueRole.assist,
+        );
+        final r = DispelService.dispel(
+          ch: ch,
+          mainTech: mainT,
+          newMainTech: newT,
+          n: n,
+        );
+        expect(r.layersRolledBack, 0);
+        expect(r.newLayer, CultivationLayer.yuanMan);
+        expect(mainT.cultivationProgress, 1000); // 2000*0.5
+        expect(mainT.cultivationProgressToNext, 1500);
+      },
+    );
 
     test('多层连退：dianFeng/1600 → daCheng/800', () {
       // disperse: progress=800
@@ -209,12 +234,18 @@ void main() {
       // 800>=500(zhongCheng→daCheng) 停
       final ch = newChar(mainTechniqueId: 10, assistTechniqueIds: [11]);
       final mainT = newTech(
-        id: 10, ownerCharId: 1,
-        layer: CultivationLayer.dianFeng, progress: 1600, progressToNext: 2500,
+        id: 10,
+        ownerCharId: 1,
+        layer: CultivationLayer.dianFeng,
+        progress: 1600,
+        progressToNext: 2500,
       );
       final newT = newTech(id: 11, ownerCharId: 1, role: TechniqueRole.assist);
       final r = DispelService.dispel(
-        ch: ch, mainTech: mainT, newMainTech: newT, n: n,
+        ch: ch,
+        mainTech: mainT,
+        newMainTech: newT,
+        n: n,
       );
       expect(r.layersRolledBack, 2);
       expect(r.newLayer, CultivationLayer.daCheng);
@@ -225,12 +256,18 @@ void main() {
     test('chuKui 边界：layer=chuKui/progress=50 散功 → 仍 chuKui/25（无下限可退）', () {
       final ch = newChar(mainTechniqueId: 10, assistTechniqueIds: [11]);
       final mainT = newTech(
-        id: 10, ownerCharId: 1,
-        layer: CultivationLayer.chuKui, progress: 50, progressToNext: 100,
+        id: 10,
+        ownerCharId: 1,
+        layer: CultivationLayer.chuKui,
+        progress: 50,
+        progressToNext: 100,
       );
       final newT = newTech(id: 11, ownerCharId: 1, role: TechniqueRole.assist);
       final r = DispelService.dispel(
-        ch: ch, mainTech: mainT, newMainTech: newT, n: n,
+        ch: ch,
+        mainTech: mainT,
+        newMainTech: newT,
+        n: n,
       );
       expect(r.layersRolledBack, 0);
       expect(r.newLayer, CultivationLayer.chuKui);
@@ -262,11 +299,17 @@ void main() {
       // 假设 assist=[11,12,13,14]（4 个，但 yaml 限 3）→ 实际上 max 3 不会发生
       // 真正"满"的场景：散功后新主修离开 assist 后槽位仍为 3，即原来 assist 有 4 项
       // 但 spec 说 assist 最多 3，所以"满"只在反常状态下出现。这里测试该兜底逻辑。
-      final ch = newChar(mainTechniqueId: 10, assistTechniqueIds: [11, 12, 13, 99]);
+      final ch = newChar(
+        mainTechniqueId: 10,
+        assistTechniqueIds: [11, 12, 13, 99],
+      );
       final mainT = newTech(id: 10, ownerCharId: 1);
       final newT = newTech(id: 11, ownerCharId: 1, role: TechniqueRole.assist);
       final r = DispelService.dispel(
-        ch: ch, mainTech: mainT, newMainTech: newT, n: n,
+        ch: ch,
+        mainTech: mainT,
+        newMainTech: newT,
+        n: n,
       );
       // assist 移除 11 后剩 [12,13,99]（=3，已满），旧主修 10 不入
       expect(r.oldTechniqueDiscarded, isTrue);
@@ -286,8 +329,11 @@ void main() {
       // 累积 +1500 → 升 dianFeng/0
       final ch = newChar(mainTechniqueId: 10, assistTechniqueIds: [11]);
       final mainT = newTech(
-        id: 10, ownerCharId: 1,
-        layer: CultivationLayer.yuanMan, progress: 1500, progressToNext: 1500,
+        id: 10,
+        ownerCharId: 1,
+        layer: CultivationLayer.yuanMan,
+        progress: 1500,
+        progressToNext: 1500,
       );
       final newT = newTech(id: 11, ownerCharId: 1, role: TechniqueRole.assist);
       DispelService.dispel(ch: ch, mainTech: mainT, newMainTech: newT, n: n);
@@ -333,11 +379,7 @@ void main() {
         progress: 1500,
         progressToNext: 1500,
       );
-      final r = DispelService.applyDefeatPenalty(
-        ch: ch,
-        mainTech: mainT,
-        n: n,
-      );
+      final r = DispelService.applyDefeatPenalty(ch: ch, mainTech: mainT, n: n);
       expect(ch.internalForce, 4000);
       expect(mainT.cultivationProgress, 750);
       expect(mainT.cultivationLayer, CultivationLayer.daCheng);
@@ -364,11 +406,7 @@ void main() {
         progress: 0,
         progressToNext: 100,
       );
-      final r = DispelService.applyDefeatPenalty(
-        ch: ch,
-        mainTech: mainT,
-        n: n,
-      );
+      final r = DispelService.applyDefeatPenalty(ch: ch, mainTech: mainT, n: n);
       expect(ch.internalForce, 50); // 内力仍按比例扣
       expect(mainT.cultivationProgress, 0);
       expect(mainT.cultivationLayer, CultivationLayer.chuKui);
@@ -377,27 +415,30 @@ void main() {
       expect(r.didRollback, isFalse);
     });
 
-    test('单层回退：xiaoCheng/100 → progress=50 < chuKui→xiaoCheng req=100 → 回退 chuKui/50', () {
-      final ch = newChar(internalForce: 1000);
-      final mainT = newTech(
-        id: 10,
-        ownerCharId: 1,
-        role: TechniqueRole.main,
-        layer: CultivationLayer.xiaoCheng,
-        progress: 100,
-        progressToNext: 250,
-      );
-      final r = DispelService.applyDefeatPenalty(
-        ch: ch,
-        mainTech: mainT,
-        n: n,
-      );
-      expect(mainT.cultivationLayer, CultivationLayer.chuKui);
-      expect(mainT.cultivationProgress, 50);
-      expect(mainT.cultivationProgressToNext, 100);
-      expect(r.layersRolledBack, 1);
-      expect(ch.internalForce, 500);
-    });
+    test(
+      '单层回退：xiaoCheng/100 → progress=50 < chuKui→xiaoCheng req=100 → 回退 chuKui/50',
+      () {
+        final ch = newChar(internalForce: 1000);
+        final mainT = newTech(
+          id: 10,
+          ownerCharId: 1,
+          role: TechniqueRole.main,
+          layer: CultivationLayer.xiaoCheng,
+          progress: 100,
+          progressToNext: 250,
+        );
+        final r = DispelService.applyDefeatPenalty(
+          ch: ch,
+          mainTech: mainT,
+          n: n,
+        );
+        expect(mainT.cultivationLayer, CultivationLayer.chuKui);
+        expect(mainT.cultivationProgress, 50);
+        expect(mainT.cultivationProgressToNext, 100);
+        expect(r.layersRolledBack, 1);
+        expect(ch.internalForce, 500);
+      },
+    );
 
     test('role 保持 main：DispelService.dispel 之后状态分叉对照', () {
       // 防回归：与 dispel 路径区别——defeat 后 mainTech 仍是 role=main，

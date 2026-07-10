@@ -79,26 +79,27 @@ BattleCharacter _mkBC({
   int slotIndex = 0,
 }) {
   final n = GameRepository.instance.numbers;
-  final c = Character.create(
-    name: '${teamSide == 0 ? "左" : "右"}$slotIndex',
-    realmTier: RealmTier.erLiu,
-    realmLayer: RealmLayer.yuanShu,
-    attributes: Attributes()
-      ..constitution = 5
-      ..enlightenment = 5
-      ..agility = 5
-      ..fortune = 5,
-    rarity: RarityTier.biaoZhun,
-    lineageRole: LineageRole.founder,
-    createdAt: DateTime(2026, 1, 1),
-    internalForce: 3000,
-    school: TechniqueSchool.gangMeng,
-  )
-    ..id = charId
-    ..internalForceMax = 3000
-    ..mainSkillId1 = 'skill_gangmeng_mingjia_basic'
-    ..assistSkillId = 'skill_gangmeng_mingjia_skill'
-    ..ultimateSkillId = 'skill_gangmeng_mingjia_ult';
+  final c =
+      Character.create(
+          name: '${teamSide == 0 ? "左" : "右"}$slotIndex',
+          realmTier: RealmTier.erLiu,
+          realmLayer: RealmLayer.yuanShu,
+          attributes: Attributes()
+            ..constitution = 5
+            ..enlightenment = 5
+            ..agility = 5
+            ..fortune = 5,
+          rarity: RarityTier.biaoZhun,
+          lineageRole: LineageRole.founder,
+          createdAt: DateTime(2026, 1, 1),
+          internalForce: 3000,
+          school: TechniqueSchool.gangMeng,
+        )
+        ..id = charId
+        ..internalForceMax = 3000
+        ..mainSkillId1 = 'skill_gangmeng_mingjia_basic'
+        ..assistSkillId = 'skill_gangmeng_mingjia_skill'
+        ..ultimateSkillId = 'skill_gangmeng_mingjia_ult';
   final eq = Equipment.create(
     defId: 'test',
     tier: EquipmentTier.xunChang,

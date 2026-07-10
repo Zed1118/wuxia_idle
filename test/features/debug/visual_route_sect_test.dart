@@ -29,8 +29,9 @@ void main() {
     });
 
     setUp(() async {
-      tempDir =
-          await Directory.systemTemp.createTemp('wuxia_sect_portrait_test_');
+      tempDir = await Directory.systemTemp.createTemp(
+        'wuxia_sect_portrait_test_',
+      );
       await IsarSetup.init(directory: tempDir, inspector: false);
     });
 
@@ -39,19 +40,21 @@ void main() {
       if (await tempDir.exists()) await tempDir.delete(recursive: true);
     });
 
-    test('6 sect_candidate NPC 全 isInSect + portraitPath 非空,祖师有 portraitPath',
-        () async {
-      final isar = IsarSetup.instance;
-      await Phase2SeedService(isar: isar).seedSectWithFullNpc();
-      final all = await isar.characters.where().findAll();
-      final npc = all.where((c) => c.isInSect && !c.isFounder).toList();
-      expect(npc.length, greaterThanOrEqualTo(6));
-      for (final c in npc) {
-        expect(c.portraitPath, isNotNull, reason: '${c.name} 应有立绘');
-      }
-      final founder = all.firstWhere((c) => c.isFounder);
-      expect(founder.portraitPath, isNotNull);
-    });
+    test(
+      '6 sect_candidate NPC 全 isInSect + portraitPath 非空,祖师有 portraitPath',
+      () async {
+        final isar = IsarSetup.instance;
+        await Phase2SeedService(isar: isar).seedSectWithFullNpc();
+        final all = await isar.characters.where().findAll();
+        final npc = all.where((c) => c.isInSect && !c.isFounder).toList();
+        expect(npc.length, greaterThanOrEqualTo(6));
+        for (final c in npc) {
+          expect(c.portraitPath, isNotNull, reason: '${c.name} 应有立绘');
+        }
+        final founder = all.firstWhere((c) => c.isFounder);
+        expect(founder.portraitPath, isNotNull);
+      },
+    );
 
     // 回归:模拟真机已存 legacy 祖师(0.14 存档·portraitPath=null)。
     // ensureFoundingMasters 对已存在 founder 短路 → 若 seed 不先 _clearAll,
@@ -78,10 +81,14 @@ void main() {
 
       await Phase2SeedService(isar: isar).seedSectWithFullNpc();
 
-      final founder =
-          (await isar.characters.where().findAll()).firstWhere((c) => c.isFounder);
-      expect(founder.portraitPath, isNotNull,
-          reason: 'seed 须 _clearAll 重建带立绘祖师,不被 legacy 短路');
+      final founder = (await isar.characters.where().findAll()).firstWhere(
+        (c) => c.isFounder,
+      );
+      expect(
+        founder.portraitPath,
+        isNotNull,
+        reason: 'seed 须 _clearAll 重建带立绘祖师,不被 legacy 短路',
+      );
     });
   });
 }

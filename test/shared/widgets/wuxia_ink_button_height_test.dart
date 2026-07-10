@@ -43,8 +43,7 @@ void main() {
         onTap: null,
       ),
     );
-    expect(short.height, long.height,
-        reason: '短/长描述按钮应等高，避免菜单参差');
+    expect(short.height, long.height, reason: '短/长描述按钮应等高，避免菜单参差');
   });
 
   testWidgets('带缩略图 vs 纯图标按钮等高', (tester) async {
@@ -67,7 +66,6 @@ void main() {
         onTap: null,
       ),
     );
-    expect(withThumb.height, iconOnly.height,
-        reason: '带缩略图与纯图标按钮应等高');
+    expect(withThumb.height, iconOnly.height, reason: '带缩略图与纯图标按钮应等高');
   });
 }

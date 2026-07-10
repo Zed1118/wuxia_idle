@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -96,11 +95,8 @@ class _RecordingBackend implements AudioBackend {
   Future<void> dispose() async {}
 }
 
-Finder _assetImage(String path) => find.byWidgetPredicate(
-  (w) =>
-      w is Image &&
-      assetNameOf(w.image) == path,
-);
+Finder _assetImage(String path) =>
+    find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
 
 AdvancementResult _advanced() => const AdvancementResult(
   layersGained: 1,
@@ -588,17 +584,11 @@ void main() {
         _equipDrops(['weapon_xunchang_tie_jian']),
         const [],
       );
-      expect(
-        find.text(UiStrings.stageVictoryEquipmentHint),
-        findsOneWidget,
-      );
+      expect(find.text(UiStrings.stageVictoryEquipmentHint), findsOneWidget);
 
       // 空掉落 → 提示不可见
       await _pumpContent(tester, _emptyDrops(), const []);
-      expect(
-        find.text(UiStrings.stageVictoryEquipmentHint),
-        findsNothing,
-      );
+      expect(find.text(UiStrings.stageVictoryEquipmentHint), findsNothing);
     });
 
     testWidgets('长掉落列表在卷轴层内可滚动且不溢出', (tester) async {

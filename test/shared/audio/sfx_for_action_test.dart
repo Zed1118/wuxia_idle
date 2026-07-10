@@ -5,30 +5,30 @@ import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 
 /// 造一个命中结果（按 AttackResult 真实全参构造器，无 .normal 工厂）。
 AttackResult _hit({required bool isCritical}) => AttackResult(
-      finalDamage: 1500,
-      mainDamage: 1500,
-      quakeDamage: 0,
-      isCritical: isCritical,
-      isDodged: false,
-      schoolCounterMultiplier: 1.0,
-      realmDiffAttackerMod: 1.0,
-      realmDiffDefenderMod: 1.0,
-      cultivationMultiplier: 1.0,
-      criticalMultiplier: isCritical ? 1.5 : 1.0,
-      defenseRate: 0.15,
-      evasionRate: 0.05,
-      appliedEffects: const <String>[],
-      formulaBreakdown: 'test',
-    );
+  finalDamage: 1500,
+  mainDamage: 1500,
+  quakeDamage: 0,
+  isCritical: isCritical,
+  isDodged: false,
+  schoolCounterMultiplier: 1.0,
+  realmDiffAttackerMod: 1.0,
+  realmDiffDefenderMod: 1.0,
+  cultivationMultiplier: 1.0,
+  criticalMultiplier: isCritical ? 1.5 : 1.0,
+  defenseRate: 0.15,
+  evasionRate: 0.05,
+  appliedEffects: const <String>[],
+  formulaBreakdown: 'test',
+);
 
 /// 造一个 BattleAction（attackResult 可空）。
 BattleAction _action({AttackResult? attackResult}) => BattleAction(
-      tick: 0,
-      actorId: 1,
-      targetId: 2,
-      attackResult: attackResult,
-      description: 'test',
-    );
+  tick: 0,
+  actorId: 1,
+  targetId: 2,
+  attackResult: attackResult,
+  description: 'test',
+);
 
 void main() {
   test('无 attackResult → null（非攻击 action 不出声）', () {

@@ -159,8 +159,16 @@ void main() {
   test('重复购买同品 → quantity 叠加', () async {
     await seedSilver(100);
 
-    await ShopService.purchase(isar, def: mojianshiDef, founderEtl: null); // 第 1 次
-    await ShopService.purchase(isar, def: mojianshiDef, founderEtl: null); // 第 2 次
+    await ShopService.purchase(
+      isar,
+      def: mojianshiDef,
+      founderEtl: null,
+    ); // 第 1 次
+    await ShopService.purchase(
+      isar,
+      def: mojianshiDef,
+      founderEtl: null,
+    ); // 第 2 次
 
     final silver = await isar.inventoryItems.getByDefId('item_silver');
     expect(silver!.quantity, 40); // 100 - 30 - 30 = 40
@@ -215,7 +223,10 @@ void main() {
     expect(ShopService.effectivePrice(jingYanDanMidDef, 100), 250);
     expect(ShopService.effectivePrice(jingYanDanMidDef, 400), 1000);
     // 取整验证
-    expect(ShopService.effectivePrice(jingYanDanMidDef, 101), (101 * 2.5).round());
+    expect(
+      ShopService.effectivePrice(jingYanDanMidDef, 101),
+      (101 * 2.5).round(),
+    );
   });
 
   // ──────────────────────────────────────────────────────────────────────────

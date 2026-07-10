@@ -300,10 +300,7 @@ void main() {
       var s = BattleState.initial(
         leftTeam: [player],
         rightTeam: [boss, guardian],
-      ).copyWith(
-        pendingUltimates: {1: profAtk},
-        pendingTargets: {1: 2},
-      );
+      ).copyWith(pendingUltimates: {1: profAtk}, pendingTargets: {1: 2});
       final rng = Random(7);
       var guard = 0;
       while (guard < 200 && !s.isFinished) {

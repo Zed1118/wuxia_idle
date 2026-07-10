@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -37,14 +36,8 @@ void main() {
 
     // ── 左队：3 人，2 刚猛（会心来源）+ 1 灵巧（示抗性）──
     expect(left.length, 3);
-    expect(
-      left.where((c) => c.school == TechniqueSchool.gangMeng).length,
-      2,
-    );
-    expect(
-      left.where((c) => c.school == TechniqueSchool.lingQiao).length,
-      1,
-    );
+    expect(left.where((c) => c.school == TechniqueSchool.gangMeng).length, 2);
+    expect(left.where((c) => c.school == TechniqueSchool.lingQiao).length, 1);
     // at-level（学徒阶），非终局错配。
     expect(left.every((c) => c.realmTier == RealmTier.xueTu), isTrue);
   });

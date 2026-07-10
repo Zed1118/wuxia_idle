@@ -33,35 +33,35 @@ Character _mkChar() {
 }
 
 Technique _mkTech() => Technique.create(
-      defId: 'test_tech',
-      ownerCharacterId: 1,
-      tier: TechniqueTier.ruMenGong,
-      school: TechniqueSchool.gangMeng,
-      role: TechniqueRole.main,
-      learnedAt: DateTime(2026, 1, 1),
-      cultivationLayer: CultivationLayer.chuKui,
-    );
+  defId: 'test_tech',
+  ownerCharacterId: 1,
+  tier: TechniqueTier.ruMenGong,
+  school: TechniqueSchool.gangMeng,
+  role: TechniqueRole.main,
+  learnedAt: DateTime(2026, 1, 1),
+  cultivationLayer: CultivationLayer.chuKui,
+);
 
 Equipment _mkEquip(int baseAttack) => Equipment.create(
-      defId: 'test',
-      tier: EquipmentTier.xunChang,
-      slot: EquipmentSlot.weapon,
-      obtainedAt: DateTime(2026, 1, 1),
-      obtainedFrom: 'test',
-      baseAttack: baseAttack,
-    );
+  defId: 'test',
+  tier: EquipmentTier.xunChang,
+  slot: EquipmentSlot.weapon,
+  obtainedAt: DateTime(2026, 1, 1),
+  obtainedFrom: 'test',
+  baseAttack: baseAttack,
+);
 
 SkillDef _mkSkill() => const SkillDef(
-      id: 's',
-      name: 'x',
-      description: 'd',
-      type: SkillType.normalAttack,
-      powerMultiplier: 500,
-      internalForceCost: 0,
-      cooldownTurns: 0,
-      requiresManualTrigger: false,
-      visualEffect: 'v',
-    );
+  id: 's',
+  name: 'x',
+  description: 'd',
+  type: SkillType.normalAttack,
+  powerMultiplier: 500,
+  internalForceCost: 0,
+  cooldownTurns: 0,
+  requiresManualTrigger: false,
+  visualEffect: 'v',
+);
 
 void main() {
   setUpAll(loadTestGameRepository);

@@ -7,22 +7,22 @@ import 'package:wuxia_idle/data/numbers_config.dart';
 /// 第七阶段批三 P2 红线：lineage_onboarding 配置漂移 fail-fast。
 void main() {
   MasterDef master(int slot, LineageRole role) => MasterDef(
-        id: 'm$slot',
-        lineageRole: role,
-        slotIndex: slot,
-        defaultRealm: RealmTier.erLiu,
-        defaultLayer: RealmLayer.qiMeng,
-        attributeProfile: const AttributeProfile(
-          constitution: 5,
-          enlightenment: 5,
-          agility: 5,
-          fortune: 5,
-        ),
-        startingTechniqueIds: const [],
-        startingEquipmentIds: const [],
-        enabledInDemo: true,
-        portraitPath: 'p.png',
-      );
+    id: 'm$slot',
+    lineageRole: role,
+    slotIndex: slot,
+    defaultRealm: RealmTier.erLiu,
+    defaultLayer: RealmLayer.qiMeng,
+    attributeProfile: const AttributeProfile(
+      constitution: 5,
+      enlightenment: 5,
+      agility: 5,
+      fortune: 5,
+    ),
+    startingTechniqueIds: const [],
+    startingEquipmentIds: const [],
+    enabledInDemo: true,
+    portraitPath: 'p.png',
+  );
 
   final masters = [
     master(0, LineageRole.founder),
@@ -35,13 +35,12 @@ void main() {
     int slot,
     LineageRole role, {
     String narrative = 'narr',
-  }) =>
-      DiscipleJoinDef(
-        stageId: stage,
-        masterSlotIndex: slot,
-        role: role,
-        narrativeId: narrative,
-      );
+  }) => DiscipleJoinDef(
+    stageId: stage,
+    masterSlotIndex: slot,
+    role: role,
+    narrativeId: narrative,
+  );
 
   final stageIds = {'stage_01_02', 'stage_01_04'};
 

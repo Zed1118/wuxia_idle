@@ -36,14 +36,19 @@ void main() {
     });
     test('parseList 首项非 1.0 抛 StateError', () {
       expect(
-        () => BossPhaseDef.parseList([{'hpThresholdPct': 0.9}]),
+        () => BossPhaseDef.parseList([
+          {'hpThresholdPct': 0.9},
+        ]),
         throwsStateError,
       );
     });
     test('parseList 有效降序返回完整列表(order/length)', () {
       final list = BossPhaseDef.parseList([
         {'hpThresholdPct': 1.0},
-        {'hpThresholdPct': 0.6, 'unlockSkillIds': ['skill_b']},
+        {
+          'hpThresholdPct': 0.6,
+          'unlockSkillIds': ['skill_b'],
+        },
         {'hpThresholdPct': 0.3},
       ]);
       expect(list.length, 3);

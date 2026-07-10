@@ -247,10 +247,7 @@ void main() {
           'mainSchool': 'gangMeng',
           'assistSchool': 'yinRou',
         },
-        'multipliers': {
-          'attackPct': 0.10,
-          'hpPct': 0.10,
-        },
+        'multipliers': {'attackPct': 0.10, 'hpPct': 0.10},
       });
       expect(s.id, equals('synergy_yin_yang_he_xie'));
       expect(s.requirementType, equals(SynergyRequirementType.schoolPair));

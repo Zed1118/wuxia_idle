@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -75,11 +74,8 @@ Future<void> _pump(WidgetTester tester, RetreatResult result) async {
   );
 }
 
-Finder _assetImage(String path) => find.byWidgetPredicate(
-  (w) =>
-      w is Image &&
-      assetNameOf(w.image) == path,
-);
+Finder _assetImage(String path) =>
+    find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
 
 void main() {
   setUpAll(() async {

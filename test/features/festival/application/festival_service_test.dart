@@ -82,10 +82,7 @@ void main() {
     });
 
     test('empty config 任何日期都返 null', () {
-      expect(
-        FestivalConfig.empty.festivalOn(DateTime(2026, 2, 17)),
-        isNull,
-      );
+      expect(FestivalConfig.empty.festivalOn(DateTime(2026, 2, 17)), isNull);
     });
   });
 
