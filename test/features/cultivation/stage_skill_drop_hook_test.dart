@@ -2,12 +2,13 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_unlock_service.dart';
 import 'package:wuxia_idle/features/cultivation/presentation/stage_skill_drop_hook.dart';
+
+import '../../support/isar_test_support.dart';
 
 StageDef _bossStage({String? manual, String? fragment}) => StageDef(
       id: 'stage_test_boss',
@@ -26,9 +27,7 @@ StageDef _bossStage({String? manual, String? fragment}) => StageDef(
 void main() {
   late Directory tempDir;
 
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
+  setUpAll(initializeTestIsarCore);
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_skill_drop_hook_');
     await IsarSetup.init(directory: tempDir, inspector: false);

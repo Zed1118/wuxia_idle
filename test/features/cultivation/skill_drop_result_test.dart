@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
@@ -11,14 +10,14 @@ import 'package:wuxia_idle/features/cultivation/domain/skill_unlock_service.dart
 import 'package:wuxia_idle/features/cultivation/presentation/stage_skill_drop_hook.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
 
+import '../../support/isar_test_support.dart';
+
 /// 第七阶段批二 ④：SkillDropResult + service/hook 回传掉落结果 测族。
 void main() {
   // ── Isar 初始化(镜同 skill_unlock_service_test.dart) ──
   late Directory tempDir;
 
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
+  setUpAll(initializeTestIsarCore);
 
   setUp(() async {
     tempDir =

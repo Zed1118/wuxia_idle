@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -14,6 +13,8 @@ import 'package:wuxia_idle/features/cultivation/application/skill_loadout_resolv
 import 'package:wuxia_idle/features/cultivation/application/skill_loadout_service.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_unlock_service.dart';
 import 'package:wuxia_idle/features/cultivation/presentation/stage_skill_drop_hook.dart';
+
+import '../../support/isar_test_support.dart';
 
 /// 波B drop 招(真解/残页)装配 wiring 测族。
 ///
@@ -28,7 +29,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (p) => File(p).readAsString(),
