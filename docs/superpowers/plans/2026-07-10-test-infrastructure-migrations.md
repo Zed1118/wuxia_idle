@@ -43,13 +43,13 @@ await loadTestGameRepository();
 - [x] **Step 2: 保留 `game_repository_test.dart`、broken/patched/hybrid loader、期望抛错和必须 fresh repo 的测试。**
 - [x] **Step 3: 按目录运行定向测试，确认全局 singleton 复用不改变断言。**
 - [x] **Step 4: 删除迁移后未使用的 `dart:io` import。**
-- [ ] **Step 5: 提交**：`git commit -m "Finish production repository test migration"`。
+- [x] **Step 5: 提交**：`git commit -m "Finish production repository test migration"`。
 
 ### Task 3: 迁移批验证与记录
 
 - [ ] **Step 1: `flutter analyze lib/ test/`。**
 - [ ] **Step 2: `flutter test --no-pub`。**
-- [ ] **Step 3: 更新 backlog 与 PROGRESS 的迁移文件数和剩余直接调用数。**
+- [x] **Step 3: 更新 backlog 与 PROGRESS 的迁移文件数和剩余直接调用数。**
 - [ ] **Step 4: 提交**：`git commit -m "Document test infrastructure migration"`。
 
 ## 当前恢复点
