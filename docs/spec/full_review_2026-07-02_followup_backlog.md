@@ -14,14 +14,14 @@
 
 ## 批次 3 · 死代码/死文案(拍板点:66 篇文案接线 vs 归档)
 
-- [x] ~~三死文件删除~~ **❌证伪·全部不删(2026-07-03·batch-123 Phase 0)**——同 tier_* 教训,backlog 误记为「死」。独立 grep 现查:① **`battle_engine.dart`** 被 `test/tools/*`(balance_simulator/tower_boss_feel/floor30_soft_gate 诊断)+ `test/balance/*_crosstier_redline`(跨阶红线)+ 战斗测试共 18 文件引用,是**平衡诊断/红线模拟引擎**,删=摧毁整个红线体系;② **`battle_demo.dart`** `BattleDemo.mockTeams()` 是 7+ 个 **BattleScreen 生产屏 widget 测试的核心夹具**(log/pause/cycle_hint/break_window/coop_burst/command_console),虽 `BattleDemoLauncher` 生产入口已被 battle_test_menu 取代,mockTeams 静态夹具活跃;③ **`stage_auto_play_control.dart`** 是「功能完成未接入入口」组件(接真实 auto-play provider·5 类选关屏挂机开关),`stage_list_screen_test:131` 断言其存在——**与 home_feed 同类,死活模糊需拍板不自主删**(见下条)。**结论:三者皆非死文件,不删。**
-- [ ] **⚠️需拍板** 66 篇不可达文案处置(2026-07-03 Phase 0 复核确认真孤儿):`data/narratives/techniques/` **26 篇**(拼音命名)+ `data/narratives/techniques/insights/` **40 篇**。证据:`NarrativeLoader._scanPaths` 仅含 `narratives/ + stages/ + ascension/ + chapters/`,**不含 techniques/**;`narrativeInsightId` 字段仅在 `skill_def.dart:44/128` 定义+解析,**lib/ 零消费**(无 loader 读)。pubspec 已声明(L61-62)故运行期可达,但无加载管线。选项:①移 `_archive/`(保留内容移出 asset,最保守) ②保持现状(Phase 5 武学领悟 UI 时接线) ③删除。**Phase 5 前接线属提前造轮子(违 §5.7),倾向 ①/②。**
+- [x] ~~三死文件删除~~ **❌部分证伪(2026-07-03·batch-123 Phase 0)**——① **`battle_engine.dart`** 被平衡诊断/红线测试活用;② **`battle_demo.dart`** 的 `BattleDemo.mockTeams()` 是 BattleScreen widget 测试夹具,二者保留。③ `stage_auto_play_control.dart` 当时判为「功能完成未接入」并留待拍板;其最终决策见下条。
+- [x] 66 篇不可达文案 **✅已归档(2026-07-03·`b2098f29`)**:`data/narratives/techniques/` 26 篇 + `insights/` 40 篇迁至 `data/narratives/_archive/techniques/`,保留内容并移出 asset 打包；恢复步骤见归档目录 README。
 - [x] numbers.yaml `tower` 段 + `synergies` 段 **✅已补 unused 头注(2026-07-03·batch-123)**——证实 0 消费:`NumbersConfig.fromYaml`(numbers_config.dart:322+)不解析 `y['tower']`/`y['synergies']`(头注 L18-19「保留 raw」),lib/ 无 raw 访问。synergies 真实源=独立 `data/synergies.yaml`(12 条·multipliers 格式·game_repository:341)。两段各加醒目 UNUSED 头注(保留 tower 段作 GDD §8.2 设计锚·标注 daily_attempts 每日 5 次限制**未实装**)。删除仍需拍板,故留注不删。
-- [ ] **⚠️需拍板** `home_feed_screen.dart`(壳死·无路由引用·但 providers/`UiStrings.homeFeedRelativeTime` 被 baike 活用)+ `stage_auto_play_control.dart`(接真实 auto-play provider·未接入选关屏入口)两个「功能完成未接入」组件:删壳(迁复用逻辑)vs 保留待接入(Phase 5+)。`technique_learning.dart`=活 service(非 dead),留。
+- [x] `home_feed` / `stage_auto_play` **✅已拍板并清理(2026-07-10)**:`home_feed_screen.dart` 删除,事件流查询迁入 `features/event`,离线归来与门派月度 tick 启动钩子迁到 `MainMenuStartupGate`;`stage_auto_play` 逐关偏好/控件/视觉路由删除,战斗入口只读全局 `GameplaySettings.autoPlayDefault`,主线首通强制 interactive 规则保留。`technique_learning.dart`=活 service,继续保留。
 
-## 批次 4 · CI 搭建(拍板点:要不要 CI 本身)
+## 批次 4 · CI 搭建
 
-- [ ] GitHub Actions:build_runner → analyze → 全量 test(-j1 锚点 ~10min);注意 memory `feedback_flutter_ci_local_green_red_divergence` 五坑(钉 flutter-version / PUB_HOSTED_URL 对齐镜像 / golden exclude 等)
+- [x] GitHub Actions **✅已落地(2026-07-03·PR #18·`5a1e13b1`)**:钉 Flutter 3.41.5 + PUB_HOSTED_URL,执行 build_runner → analyze → 默认并发全量 test；2026-07-10 `528c0d40` push run 绿。
 
 ## 批次 5 · battle_screen 拆分(拍板点:排期时机)
 
@@ -33,6 +33,6 @@
 - [x] ~~`0.95` 战斗三率 clamp ×4 进 numbers.yaml~~ **✅已实装(2026-07-03·本条 2026-07-05 夜间批核实为 stale)**:`data/numbers.yaml:130 combined_rate_cap: 0.95` + `RedLinesConfig.combinedRateCap` 解析 + 3 消费点全接线(`stage_battle_setup.dart:354`/`light_foot_strategy.dart:71`/`mass_battle_strategy.dart:96`),测试覆盖 `numbers_config_red_lines_test` + 两 strategy test。lib/ 剩余 `0.95` 字面量全为 UI alpha 无关项。**✅ factions/territories.yaml 校验也已补(2026-07-10 复核)**:`GameRepository._validateFactionTerritoryReferences` 在 `loadAllDefs` 末尾校 faction alignment 枚举、stage/encounter factionId 引用、territory baseDefenseLevel ∈ [1,7];`test/features/sect/faction_territory_validation_test.dart` 覆盖 3 个坏例 + 真实数据回归。
 - [x] `ExactAssetImage` ×5 迁 WuxiaImage **✅已迁(2026-07-03·batch-123)**(seclusion 4 屏 + portrait_frame·全仓 ExactAssetImage 归零·获 cacheWidth 收益);~~shop_screen.dart:606 死路径~~ **证伪已迁出**(现为 WuxiaImage);~~ch6_r5:216 恒真断言删除~~ **证伪=有意软红线下界放宽**(注释明「>=0 恒真·清线由 solo_mainline 覆盖」),不删。
 - [x] ~~battle 144Hz repaint rainbow 实测一次~~ **✅已实测销账(2026-07-05 夜间批E)**:真机自动战斗 10 帧 rainbow 帧差,重绘局部化实证(逐对均值 9.9%/峰值 24.6%,中央大片静止,热区=单位区+底栏),无需优化动作。详 `docs/audit/battle_repaint_rainbow_probe_2026-07-05.md`(含 144Hz 帧率成本非本读数的口径局限)。
-- [ ] 252 测试文件 setUpAll 样板抽 `test/support/def_loading.dart`(**11-15h 大改动·缓做**,建议后续专项重构批·收益<成本本波不压)
+- [ ] 测试 `setUpAll` 样板专项重构(**首批已完成 2026-07-10**):新增 `test/support/test_data.dart` 与 `isar_test_support.dart`,统一生产配置加载和 Isar Core 幂等初始化;已迁 8 个代表性测试文件并有 helper 自测。剩余约 240 个含 `setUpAll` 的文件按触达增量迁移,不做一次性机械改写。
 - [x] **README 重写 ✅完整深度已重写(2026-07-03·用户拍板完整)**:替换默认 Flutter 模板→183 行完整 README(玩法/技术栈/结构/构建/测试/红线/文档索引);所有事实现查 repo(pubspec 版本·.g.dart gitignore build_runner 步骤·516 测试文件·451 data yaml·46 feature)。~~insights 白名单 36 vs 40~~ **证伪已自洽**(`encounter_skills_yaml_test` knownInsights 36=已映射 insight 数,非文件数)
 - [x] 根目录退役 md 归档 docs/_archive/ **✅已归档 12 个(2026-07-03·Phase 0 逐个证伪)**:根 .md 20→8。归档=DeepSeek/Windows 协作期 4(DEEPSEEK_OUTPUT/T32_WINDOWS_HANDOFF/WINDOWS_REVIEW_T16/CHANGELOG·0 活引用)+ Phase1-3 期 7(phase{1,2,3}_{summary,tasks}/PHASE3_KICKOFF)+ ui_structure。phaseN_tasks 被 30+ 源码「出处 citation」(如 `phase2_tasks T26 §324-356`)引用·无路径·find 可达·零 break。**证伪保留**:content_guide.md=wuxia-content skill 硬编码从根读(归档即断·check-redlines 实不引它=backlog drift)/data_schema.md=字段 SoT·源码 §链实引/AGENTS.md=codex stub。git mv 纯 rename·analyze 0。

@@ -7,14 +7,14 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/game_event.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/baike/presentation/baike_screen.dart';
-import 'package:wuxia_idle/features/home_feed/application/home_feed_providers.dart';
+import 'package:wuxia_idle/features/event/application/game_event_feed_providers.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 /// Nightshift T05 · BaikeScreen MainMenu 11 按钮导航 + 见闻 tab 6 档时间 override edge。
 ///
-/// 测试 A/B 用 MainMenu widget 直接 pump（不走 HomeFeedScreen 快速领取链路）。
+/// 测试 A/B 用 MainMenu widget 直接 pump，测试 C 直接覆盖事件 feed provider。
 /// 测试 C 直接 pump BaikeScreen + provider override。
 void main() {
   setUpAll(() async {
@@ -41,8 +41,7 @@ void main() {
   // 「江湖见闻录」是第 9 个按钮,800×600 默认视口需 ensureVisible 滚入再 tap。
   // BaikeScreen._FeedTab 以 isarProvider=null → gameEventsFeed 立即返回 []，
   // 无持续动画，pumpAndSettle 不死循环。
-  testWidgets('B: tap「江湖见闻录」→ 导航到 BaikeScreen（find.byType 验证）',
-      (tester) async {
+  testWidgets('B: tap「江湖见闻录」→ 导航到 BaikeScreen（find.byType 验证）', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(child: MaterialApp(home: MainMenu())),
     );
@@ -50,10 +49,7 @@ void main() {
       WuxiaInkButton,
       UiStrings.mainMenuBaike,
     );
-    await Scrollable.ensureVisible(
-      tester.element(baikeEntry),
-      alignment: 0.5,
-    );
+    await Scrollable.ensureVisible(tester.element(baikeEntry), alignment: 0.5);
     await tester.pumpAndSettle();
     await tester.tap(baikeEntry);
     await tester.pumpAndSettle();
@@ -62,7 +58,7 @@ void main() {
 
   // ── C: 见闻 tab 6 档时间 override 详化 ────────────────────────────────
   //
-  // 6 档相对时间对应 UiStrings.homeFeedRelativeTime 的 6 分支：
+  // 6 档相对时间对应 UiStrings.gameEventRelativeTime 的 6 分支：
   //   < 5min  → '刚才'
   //   5-59min → '$N 分钟前'
   //   同日 <24h → '今日 HH:MM'（测试时刻 <3h 前在同日时触发）
@@ -75,12 +71,12 @@ void main() {
   testWidgets('C: 见闻 tab 6 档时间格式 override 各档正确渲染', (tester) async {
     final now = DateTime.now();
     final offsets = [
-      const Duration(minutes: 2),  // < 5min
+      const Duration(minutes: 2), // < 5min
       const Duration(minutes: 30), // 5-59min
-      const Duration(hours: 3),    // 同日 or 昨日（clock-dependent）
-      const Duration(hours: 26),   // daysAgo ≥ 1
-      const Duration(days: 3),     // 2-6 days
-      const Duration(days: 10),    // ≥ 7 days
+      const Duration(hours: 3), // 同日 or 昨日（clock-dependent）
+      const Duration(hours: 26), // daysAgo ≥ 1
+      const Duration(days: 3), // 2-6 days
+      const Duration(days: 10), // ≥ 7 days
     ];
 
     final events = <GameEvent>[];
@@ -96,15 +92,18 @@ void main() {
     }
 
     // 预计算期望文案：与 widget build 时 DateTime.now() 差距 < 1s，分支不变
-    final expectedLabels =
-        offsets.map((d) => UiStrings.homeFeedRelativeTime(now.subtract(d), now)).toList();
+    final expectedLabels = offsets
+        .map((d) => UiStrings.gameEventRelativeTime(now.subtract(d), now))
+        .toList();
 
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        gameEventsFeedProvider(limit: 50).overrideWith((ref) async => events),
-      ],
-      child: const MaterialApp(home: BaikeScreen()),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          gameEventsFeedProvider(limit: 50).overrideWith((ref) async => events),
+        ],
+        child: const MaterialApp(home: BaikeScreen()),
+      ),
+    );
     await tester.pump();
 
     for (final label in expectedLabels) {

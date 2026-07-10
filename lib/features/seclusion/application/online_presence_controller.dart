@@ -13,7 +13,7 @@ import 'seclusion_service_providers.dart';
 /// 体检 P0-3 修复(方案 B):在线基准 SaveData.lastOnlineAt 的生命周期侧
 /// 唯一写入者 + 被动离线静默结算入口。
 ///
-/// 病根:结算原本只在 HomeFeed 首帧跑一次,失焦(onHide/onInactive/onDetach)
+/// 病根:结算原本只在旧启动页首帧跑一次,失焦(onHide/onInactive/onDetach)
 /// 只重置基准不结算 → 挂后台窗口收益丢失;退出时 fire-and-forget 写不进 →
 /// 基准过期,下次启动把在线时段按离线双吃。
 ///

@@ -71,6 +71,7 @@ import '../../shop/application/shop_providers.dart';
 import '../../shop/presentation/shop_screen.dart';
 import '../../zangjuange/presentation/zangjuange_screen.dart';
 import 'main_menu_status_summary.dart';
+import 'main_menu_startup_gate.dart';
 
 const double _mainMenuContentMaxWidth = 1088;
 const double _entryColumnGap = 16;
@@ -467,134 +468,137 @@ class MainMenu extends ConsumerWidget {
           ]
         : const <Widget>[];
 
-    return BgmScope(
-      track: BgmTrack.mainMenu,
-      child: Scaffold(
-        backgroundColor: WuxiaColors.background,
-        body: Stack(
-          children: [
-            // A2 全屏水墨门面背景(占位 mountain_bg · 精修 bg 后补)。
-            Positioned.fill(
-              child: WuxiaImage(
-                WuxiaUi.mainMenuBg,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+    return MainMenuStartupGate(
+      key: const ValueKey('main-menu-startup-gate'),
+      child: BgmScope(
+        track: BgmTrack.mainMenu,
+        child: Scaffold(
+          backgroundColor: WuxiaColors.background,
+          body: Stack(
+            children: [
+              // A2 全屏水墨门面背景(占位 mountain_bg · 精修 bg 后补)。
+              Positioned.fill(
+                child: WuxiaImage(
+                  WuxiaUi.mainMenuBg,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
               ),
-            ),
-            const Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0x6614181D), Color(0xF014181D)],
+              const Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0x6614181D), Color(0xF014181D)],
+                    ),
                   ),
                 ),
               ),
-            ),
-            SafeArea(
-              child: Center(
-                child: ConstrainedBox(
-                  key: const ValueKey('main-menu-content'),
-                  constraints: const BoxConstraints(
-                    maxWidth: _mainMenuContentMaxWidth,
-                  ),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 32,
-                      horizontal: 24,
+              SafeArea(
+                child: Center(
+                  child: ConstrainedBox(
+                    key: const ValueKey('main-menu-content'),
+                    constraints: const BoxConstraints(
+                      maxWidth: _mainMenuContentMaxWidth,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Text(
-                          UiStrings.mainMenuTitle,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: WuxiaColors.textPrimary,
-                            fontSize: 40,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 8,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 32,
+                        horizontal: 24,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            UiStrings.mainMenuTitle,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: WuxiaColors.textPrimary,
+                              fontSize: 40,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 8,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          UiStrings.mainMenuSubtitle,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: WuxiaColors.resultHighlight,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 4,
+                          const SizedBox(height: 8),
+                          const Text(
+                            UiStrings.mainMenuSubtitle,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: WuxiaColors.resultHighlight,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 4,
+                            ),
                           ),
-                        ),
-                        if (sectName != null && sectName.isNotEmpty) ...[
-                          const SizedBox(height: 10),
-                          SectBanner(sectName: sectName),
+                          if (sectName != null && sectName.isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            SectBanner(sectName: sectName),
+                          ],
+                          const _TodayFestivalChip(),
+                          if (activeHint != null)
+                            TutorialBannerCard(
+                              hint: activeHint,
+                              onTapOverride: activeHint.step == 6
+                                  ? () async {
+                                      if (!context.mounted) return;
+                                      await Navigator.of(context).push<void>(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const RecruitmentDialog(),
+                                        ),
+                                      );
+                                    }
+                                  : null,
+                            ),
+                          const MainMenuRetreatBanner(),
+                          const MainMenuStatusSummaryPanel(),
+                          const SizedBox(height: 24),
+                          _MenuSectionsLayout(
+                            journeyItems: journeyItems,
+                            growthItems: growthItems,
+                            archiveItems: archiveItems,
+                            settingsItems: settingsItems,
+                            debugItems: debugItems,
+                          ),
                         ],
-                        const _TodayFestivalChip(),
-                        if (activeHint != null)
-                          TutorialBannerCard(
-                            hint: activeHint,
-                            onTapOverride: activeHint.step == 6
-                                ? () async {
-                                    if (!context.mounted) return;
-                                    await Navigator.of(context).push<void>(
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            const RecruitmentDialog(),
-                                      ),
-                                    );
-                                  }
-                                : null,
-                          ),
-                        const MainMenuRetreatBanner(),
-                        const MainMenuStatusSummaryPanel(),
-                        const SizedBox(height: 24),
-                        _MenuSectionsLayout(
-                          journeyItems: journeyItems,
-                          growthItems: growthItems,
-                          archiveItems: archiveItems,
-                          settingsItems: settingsItems,
-                          debugItems: debugItems,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // 退出游戏:右上角常驻入口(桌面标配)。置于最上层确保可点。
+              SafeArea(
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SweepReadinessPill(
+                          tone: CurrencyPillTone.dark,
+                          compact: true,
+                        ),
+                        const SizedBox(width: 8),
+                        const SilverBalancePill(
+                          tone: CurrencyPillTone.dark,
+                          compact: true,
+                        ),
+                        const SizedBox(width: 8),
+                        WuxiaIconButton(
+                          tooltip: UiStrings.mainMenuQuitTooltip,
+                          icon: Icons.power_settings_new,
+                          destructive: true,
+                          onPressed: () => AppExit.confirmAndQuit(context),
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
-            ),
-            // 退出游戏:右上角常驻入口(桌面标配)。置于最上层确保可点。
-            SafeArea(
-              child: Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SweepReadinessPill(
-                        tone: CurrencyPillTone.dark,
-                        compact: true,
-                      ),
-                      const SizedBox(width: 8),
-                      const SilverBalancePill(
-                        tone: CurrencyPillTone.dark,
-                        compact: true,
-                      ),
-                      const SizedBox(width: 8),
-                      WuxiaIconButton(
-                        tooltip: UiStrings.mainMenuQuitTooltip,
-                        icon: Icons.power_settings_new,
-                        destructive: true,
-                        onPressed: () => AppExit.confirmAndQuit(context),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

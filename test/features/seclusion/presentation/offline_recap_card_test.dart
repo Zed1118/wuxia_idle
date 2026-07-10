@@ -4,7 +4,7 @@ import 'package:wuxia_idle/features/seclusion/application/offline_recap_service.
 import 'package:wuxia_idle/features/seclusion/presentation/offline_recap_card.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
-/// M2「归来」卡渲染 + 回调行为测试。导航逻辑解耦在 HomeFeed hook,
+/// M2「归来」卡渲染 + 回调行为测试。导航逻辑解耦在主菜单启动 hook,
 /// 卡本身只渲染 recap 数据并触发 onGoCollect / onDismiss。
 void main() {
   Future<void> pumpCard(

@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
+
+import '../support/test_data.dart';
 
 void main() {
   group('TreasureDropConfig', () {
@@ -46,13 +46,7 @@ void main() {
   });
 
   group('production data/numbers.yaml heroCamera 解析', () {
-    setUpAll(() async {
-      if (!GameRepository.isLoaded) {
-        await GameRepository.loadAllDefs(
-          loader: (path) => File(path).readAsString(),
-        );
-      }
-    });
+    setUpAll(loadTestGameRepository);
 
     test('HC4 holdSeconds 在 (0, 4] 区间', () {
       final cfg = GameRepository.instance.numbers.heroCamera;

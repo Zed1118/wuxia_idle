@@ -127,7 +127,7 @@ final widget = Container(
   });
 
   // 真门禁：对真实 lib/ 断言零 finding（此前本套件只测脚本 fixture，
-  // 从不扫真代码，深底文字色误用于纸面可长期潜伏——见 dispel/home_feed 曾漏网）。
+  // 从不扫真代码，深底文字色误用于纸面可长期潜伏——见历史漏网案例）。
   test('real lib/ has zero paper text contrast findings', () async {
     final result = await Process.run('python3', [
       script,

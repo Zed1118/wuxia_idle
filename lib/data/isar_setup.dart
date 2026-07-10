@@ -131,8 +131,8 @@ class IsarSetup {
   //   clearedStageCycleKeys 中的章末 Boss 关(isBoss)→ "chapterKey#cycle" → 0.22.0。
   // 战斗交互重做 Phase 3(2026-06-14):废录制回放,删 BattleReplayRecord collection
   //   (从 _allSchemas 移除)。旧档该 collection 数据 orphaned 不再读;per-stage
-  //   autoPlayOverride 迁 SharedPreferences(设置≠存档,见 stage_auto_play_pref.dart),
-  //   旧 Isar override 不迁移(语义已从「自动/手动单步」变「挂机/拖招」,重置随全局)。
+  //   autoPlayOverride 当时迁 SharedPreferences(设置≠存档);该逐关覆盖链已于
+  //   2026-07-10 退役,入口只读全局 autoPlayDefault。旧 Isar override 不迁移。
   //   无数据迁移动作,仅版本标记 → 0.23.0。
   //   M2 范围 B 被动离线挂机:SaveData 加 totalPassiveMojianshi/totalPassiveExperience
   //   (旧档新 int 字段自动 0,无显式迁移动作,_migrateSaveData 尾部统一落版本号)→ 0.24.0。

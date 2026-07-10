@@ -546,7 +546,7 @@ class _BiographyChip extends StatelessWidget {
 /// 第八阶段·角色等级 Lv chip:「等级 Lv N」+ 经验条(满级显「巅峰」)。
 ///
 /// config 读用 [GameRepository.instanceOrNull] 守:缺 GameRepository(轻量 widget
-/// 测无 game data)时退化为纯 Lv 数字、不渲染经验条,不崩(沿 home_feed 防御体例)。
+/// 测无 game data)时退化为纯 Lv 数字、不渲染经验条,不崩。
 class _LevelChip extends StatelessWidget {
   const _LevelChip({required this.character});
 

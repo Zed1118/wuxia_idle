@@ -9,7 +9,6 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
-import 'package:wuxia_idle/features/battle/presentation/stage_auto_play_control.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -126,12 +125,6 @@ void main() {
     expect(find.text(UiStrings.stageListCleared), findsOneWidget);
     expect(find.text(UiStrings.stageListAvailable), findsOneWidget);
     expect(find.byIcon(Icons.lock), findsNWidgets(3));
-    // 逐关「战斗方式」覆盖 chip 已移除(2026-06-26):已通关关卡不再显该控件。
-    expect(
-      find.byType(StageAutoPlayControl),
-      findsNothing,
-      reason: '逐关战斗方式 chip 已删,全局开关在设置面板',
-    );
     // S4：仅通 stage_01_01（未通章末 stage_01_05）→ replay 提示行隐藏（新手门槛）。
     expect(find.text(UiStrings.stageReplayRouteTitle), findsNothing);
     expect(find.text(UiStrings.stageReplayRouteEquipment), findsNothing);

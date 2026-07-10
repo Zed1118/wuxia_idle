@@ -27,8 +27,8 @@ void main() {
   });
 
   setUp(() {
-    // _TowerBattleHost / StageAutoPlayControl 入口决策读 SharedPreferences
-    // (per-stage override + 全局设置);无 mock 时 getInstance() 会 hang。
+    // _TowerBattleHost 入口决策读全局 GameplaySettings;无 mock 时
+    // SharedPreferences.getInstance() 会 hang。
     SharedPreferences.setMockInitialValues({});
   });
 

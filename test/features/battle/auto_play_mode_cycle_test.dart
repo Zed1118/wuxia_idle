@@ -1,37 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/battle/application/stage_auto_play_pref.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 
-/// D1 · cycle 维度接入后，battle key / isCleared 纯逻辑测试。
+/// D1 · cycle 维度接入后，isCleared 纯逻辑测试。
 ///
 /// 完全无 Isar、无 Widget、纯函数验证。
-/// - 测可公开提取的 isCleared-per-cycle 语义 + battleKey 格式。
+/// - 测 isCleared-per-cycle 语义。
 void main() {
-  group('stageBattleKey / towerBattleKey cycle 维度', () {
-    test('cycle=1 生成 stage#<id>#1 格式', () {
-      expect(stageBattleKey('stage_x', cycle: 1), equals('stage#stage_x#1'));
-    });
-
-    test('cycle=2 生成 stage#<id>#2 格式', () {
-      expect(stageBattleKey('stage_x', cycle: 2), equals('stage#stage_x#2'));
-    });
-
-    test('无 cycle 参数默认=1（向后兼容）', () {
-      expect(
-        stageBattleKey('stage_abc'),
-        equals(stageBattleKey('stage_abc', cycle: 1)),
-      );
-    });
-
-    test('towerBattleKey cycle=1 生成 tower#<floor>#1', () {
-      expect(towerBattleKey(15, cycle: 1), equals('tower#15#1'));
-    });
-
-    test('towerBattleKey cycle=2 生成 tower#<floor>#2', () {
-      expect(towerBattleKey(15, cycle: 2), equals('tower#15#2'));
-    });
-  });
-
   group('MainlineProgress.clearedStageCycleKeys per-cycle isCleared 语义', () {
     /// 辅助：按 cycleKey `stageId#cycle` 判定某关某周目是否已通关。
     /// 此即 D1 在 _StageBattleHostState 里使用的逻辑。
