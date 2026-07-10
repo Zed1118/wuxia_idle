@@ -34,8 +34,8 @@
 
 ## 当前恢复点
 
-- 状态：批次 A 执行中，Task 1-2 已完成。
-- 最后完成：候选档校验和启动中断自愈按 TDD 通过。
-- 下一步：批次 A Task 3，成功恢复与自动安全备份。
-- 已跑验证：存档基线 11/11；file-ops 1/1；Isar restore + slots 13/13。
+- 状态：批次 A 执行中，Task 1-3 已完成。
+- 最后完成：A/B 往返恢复和恢复前安全备份按 TDD 通过。
+- 下一步：批次 A Task 4，swap/rollback 故障注入。
+- 已跑验证：save management 7/7；file-ops 1/1；Isar restore + slots 13/13。
 - 阻塞项：无。

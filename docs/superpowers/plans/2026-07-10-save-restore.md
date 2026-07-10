@@ -84,11 +84,11 @@ await _recoverInterruptedRestore(dir, slotId);
 - Modify: `lib/features/save_management/domain/save_management_status.dart`
 - Test: `test/features/save_management/save_management_service_test.dart`
 
-- [ ] **Step 1: 写失败测试**：备份状态 A、当前改成 B、恢复 A、重开后读到 A，安全备份打开后读到 B。
-- [ ] **Step 2: 写失败测试**：目录外、错误槽、缺失、空文件和损坏备份均在当前 Isar 仍打开时失败。
-- [ ] **Step 3: 运行测试确认失败**：
+- [x] **Step 1: 写失败测试**：备份状态 A、当前改成 B、恢复 A、重开后读到 A，安全备份打开后读到 B。
+- [x] **Step 2: 写失败测试**：目录外、错误槽、缺失、空文件和损坏备份均在当前 Isar 仍打开时失败。
+- [x] **Step 3: 运行测试确认失败**：
   `flutter test --no-pub test/features/save_management/save_management_service_test.dart`
-- [ ] **Step 4: 实现签名**：
+- [x] **Step 4: 实现签名**：
 
 ```dart
 Future<SaveRestoreResult> restoreBackup(SaveBackupInfo backup)
@@ -96,8 +96,8 @@ Future<SaveRestoreResult> restoreBackup(SaveBackupInfo backup)
 
 实现顺序固定为 path/filename 预检、partial copy、candidate rename、Isar 候选校验、`touchOnlineNow()`、`createBackup()`、close、正式档→rollback、candidate→正式档、清理 rollback。
 
-- [ ] **Step 5: 所有第 6 步前异常包装为 `requiresRestart: false`，并清理 partial/candidate。**
-- [ ] **Step 6: 运行服务测试至通过并提交**：`git commit -m "Implement safe save restore"`。
+- [x] **Step 5: 所有第 6 步前异常包装为 `requiresRestart: false`，并清理 partial/candidate。**
+- [x] **Step 6: 运行服务测试至通过并提交**：`git commit -m "Implement safe save restore"`。
 
 ### Task 4: 文件替换失败回滚
 
@@ -143,8 +143,8 @@ Future<SaveRestoreResult> restoreBackup(SaveBackupInfo backup)
 
 ## 当前恢复点
 
-- 状态：Task 1-2 已完成，Task 3 待开始。
-- 最后完成：Isar 候选槽位/版本/祖师校验与三种启动中断现场恢复已实现。
-- 下一步：Task 3 Step 1，写成功恢复与自动安全备份测试。
-- 已跑验证：Isar restore + slots 13/13；file-ops 1/1。
+- 状态：Task 1-3 已完成，Task 4 待开始。
+- 最后完成：成功恢复、恢复前安全备份和五类预检拒绝已按 TDD 实现。
+- 下一步：Task 4 Step 1，注入 swap/rollback rename 失败。
+- 已跑验证：save management 7/7；Isar restore + slots 13/13；file-ops 1/1。
 - 阻塞项：无。

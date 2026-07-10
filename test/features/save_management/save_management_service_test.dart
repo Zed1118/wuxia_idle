@@ -3,14 +3,21 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/save_management/application/save_management_providers.dart';
 import 'package:wuxia_idle/features/save_management/application/save_management_service.dart';
 import 'package:wuxia_idle/features/save_management/domain/save_management_status.dart';
+import 'package:wuxia_idle/features/save_management/domain/save_restore.dart';
+import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
+
+import '../../support/isar_test_support.dart';
+import '../../support/test_data.dart';
 
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
+    await loadTestGameRepository();
   });
 
   group('SaveManagementService', () {
@@ -29,6 +36,17 @@ void main() {
         await tempDir.delete(recursive: true);
       }
     });
+
+    Future<void> seedFounder() async {
+      await OnboardingService(isar: IsarSetup.instance).ensureFoundingMasters();
+    }
+
+    Future<void> writeSlotName(String value) async {
+      final save = (await IsarSetup.currentSaveData())!..slotName = value;
+      await IsarSetup.instance.writeTxn(
+        () => IsarSetup.instance.saveDatas.put(save),
+      );
+    }
 
     test(
       'loadStatus exposes current save metadata and empty backup state',
@@ -137,6 +155,78 @@ void main() {
       expect(refreshed.backupCount, 1);
       expect(refreshed.latestBackup?.fileName, backup.fileName);
       expect(await File(backup.path).exists(), isTrue);
+    });
+
+    test('restoreBackup restores A and safety backup restores B', () async {
+      await seedFounder();
+      final service = SaveManagementService(
+        isar: IsarSetup.instance,
+        now: () => DateTime(2026, 7, 10, 12),
+      );
+      await writeSlotName('state-A');
+      final selected = await service.createBackup();
+      final selectedSize = await File(selected.path).length();
+      await writeSlotName('state-B');
+
+      final result = await service.restoreBackup(selected);
+
+      expect(IsarSetup.instanceOrNull, isNull);
+      expect(await File(selected.path).exists(), isTrue);
+      expect(await File(selected.path).length(), selectedSize);
+      expect(await File(result.safetyBackup.path).exists(), isTrue);
+
+      await IsarSetup.init(directory: tempDir, inspector: false);
+      expect((await IsarSetup.currentSaveData())!.slotName, 'state-A');
+
+      final safetyService = SaveManagementService(
+        isar: IsarSetup.instance,
+        now: () => DateTime(2026, 7, 10, 12),
+      );
+      await safetyService.restoreBackup(result.safetyBackup);
+      await IsarSetup.init(directory: tempDir, inspector: false);
+      expect((await IsarSetup.currentSaveData())!.slotName, 'state-B');
+    });
+
+    test('restoreBackup rejects unsafe files before closing Isar', () async {
+      await seedFounder();
+      final service = SaveManagementService(isar: IsarSetup.instance);
+      await service.backupDirectory.create(recursive: true);
+
+      final outside = File('${tempDir.path}/outside.isar')
+        ..writeAsStringSync('outside');
+      final wrongSlot = File(
+        '${service.backupDirectory.path}/wuxia_save_slot2_20260710_120000.isar',
+      )..writeAsStringSync('wrong-slot');
+      final empty = File(
+        '${service.backupDirectory.path}/wuxia_save_slot1_20260710_120001.isar',
+      )..createSync();
+      final corrupt = File(
+        '${service.backupDirectory.path}/wuxia_save_slot1_20260710_120002.isar',
+      )..writeAsStringSync('not-an-isar-database');
+      final missing = File(
+        '${service.backupDirectory.path}/wuxia_save_slot1_20260710_120003.isar',
+      );
+
+      for (final file in [outside, wrongSlot, empty, corrupt, missing]) {
+        final stat = await file.exists() ? await file.stat() : null;
+        final backup = SaveBackupInfo(
+          path: file.path,
+          fileName: file.uri.pathSegments.last,
+          createdAt: stat?.modified ?? DateTime(2026, 7, 10, 12),
+          sizeBytes: stat?.size ?? 0,
+        );
+
+        await expectLater(
+          service.restoreBackup(backup),
+          throwsA(
+            isA<SaveRestoreException>()
+                .having((e) => e.phase, 'phase', SaveRestorePhase.preflight)
+                .having((e) => e.requiresRestart, 'requiresRestart', isFalse),
+          ),
+          reason: file.path,
+        );
+        expect(IsarSetup.instanceOrNull, same(service.isar));
+      }
     });
   });
 }
