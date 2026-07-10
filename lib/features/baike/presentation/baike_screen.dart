@@ -11,7 +11,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../codex/presentation/codex_tab.dart';
-import '../../home_feed/application/home_feed_providers.dart';
+import '../../event/application/game_event_feed_providers.dart';
 import 'encounter_tab.dart';
 import 'martial_arts_tab.dart';
 import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
@@ -20,7 +20,7 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 /// 江湖见闻录(P1 #42 Phase 4/P1.z / GDD §10.2 第 3 方式百科)。
 ///
 /// 3 tab:
-///   - 见闻:GameEvent 全量列表(分页 limit=50,沿 HomeFeed 体例倒序金色文字)
+///   - 见闻:GameEvent 全量列表(分页 limit=50,按时间倒序)
 ///   - 典故:按 7 阶分组装备清单,显化 [EquipmentDef.presetLoreIds] 引用数
 ///   - 机制(P1.z):8 条机制百科条目(GDD §10.2 第 3 方式,§10.1 8 档对齐解锁)
 class BaikeScreen extends StatelessWidget {
@@ -121,7 +121,7 @@ class _FeedList extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  UiStrings.homeFeedRelativeTime(e.occurredAt, now),
+                  UiStrings.gameEventRelativeTime(e.occurredAt, now),
                   style: const TextStyle(
                     color: WuxiaColors.textMuted,
                     fontSize: 12,

@@ -19,7 +19,6 @@ import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../battle/application/battle_resolution.dart';
 import '../../battle/application/post_combat_invalidation.dart';
-import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/auto_play_mode.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
@@ -466,13 +465,9 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
   String? _setupError;
 
   /// 战斗交互重做 Phase 3:本场进入模式(auto 纯挂机 / interactive 允许拖招)。
-  /// 默认 auto,initState 读 per-stage override + 全局后 setState 刷新。Phase 4
+  /// 默认 auto,initState 读全局设置后 setState 刷新。Phase 4
   /// 拖招层以此门控;Phase 3 战斗无论如何都自动连续播放,本字段暂无可见行为差异。
   AutoPlayMode _mode = AutoPlayMode.auto;
-
-  /// battleKey 按周目维度生成（默认 cycle=1 与旧 key 格式一致）。
-  String get _battleKey =>
-      stageBattleKey(widget.stage.id, cycle: widget.targetCycle);
 
   bool _readablePacing = false;
 
@@ -482,11 +477,7 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       try {
-        // ── 入口决策:首通门控(2.5)优先 → 否则 per-stage override + 全局 ──
-        final override = await ref
-            .read(stageAutoPlayPrefServiceProvider)
-            .override(_battleKey);
-        if (!mounted) return;
+        // ── 入口决策:首通门控(2.5)优先 → 否则跟随全局设置 ──
         final global = (await ref.read(
           gameplaySettingsProvider.future,
         )).autoPlayDefault;
@@ -507,7 +498,6 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
           _readablePacing = firstClear;
           _mode = resolveAutoPlayModeWithFirstClear(
             isFirstClear: firstClear,
-            override: override,
             globalDefault: global,
           );
         });

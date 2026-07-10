@@ -12,7 +12,7 @@ import 'seclusion_gate.dart';
 
 /// M2 离线收益汇总「归来」卡启动挂钩。
 ///
-/// 重开（进 HomeFeed 首帧）后调用一次。若有 active 闭关且离开 ≥ 阈值,
+/// 进入存档后的主菜单首帧调用一次。若有 active 闭关且离开 ≥ 阈值,
 /// 弹一次 [OfflineRecapCard]:「前去收功」push [ActiveRetreatScreen]、
 /// 「稍后再说」关闭。无 active / 离开不足阈值 → 静默不弹（GDD §5.5 红线
 /// 无关：仅把已发生的闭关产出可见化,不发放任何资源、不新增挂机机制）。

@@ -1017,7 +1017,7 @@ class _StageRow extends StatelessWidget {
                       ),
                     // 逐关「战斗方式」覆盖 chip 已移除(2026-06-26):全局「自动战斗」
                     // 开关在设置面板,逐关覆盖冗余且挤占列表。首通仍强制拖招,
-                    // 重打按全局设置(resolveAutoPlayModeWithFirstClear override=null→globalDefault)。
+                    // 重打按全局设置(resolveAutoPlayModeWithFirstClear)。
                   ],
                 ),
               ),

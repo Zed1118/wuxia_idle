@@ -7,7 +7,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/game_event.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/baike/presentation/baike_screen.dart';
-import 'package:wuxia_idle/features/home_feed/application/home_feed_providers.dart';
+import 'package:wuxia_idle/features/event/application/game_event_feed_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 /// P1 #42 Phase 4 · BaikeScreen 红线契约。
@@ -20,10 +20,12 @@ void main() {
     }
   });
 
-  testWidgets('AppBar 标题 = 江湖见闻录 + 5 tab 渲染(P1.z 加机制 tab + 奇缘 tab + 武学 tab)', (tester) async {
-    await tester.pumpWidget(const ProviderScope(
-      child: MaterialApp(home: BaikeScreen()),
-    ));
+  testWidgets('AppBar 标题 = 江湖见闻录 + 5 tab 渲染(P1.z 加机制 tab + 奇缘 tab + 武学 tab)', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: BaikeScreen())),
+    );
     await tester.pump();
     expect(find.text(UiStrings.baikeScreenTitle), findsOneWidget);
     expect(find.text(UiStrings.baikeTabFeed), findsOneWidget);
@@ -34,9 +36,9 @@ void main() {
   });
 
   testWidgets('见闻 tab 空 feed 显占位', (tester) async {
-    await tester.pumpWidget(const ProviderScope(
-      child: MaterialApp(home: BaikeScreen()),
-    ));
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: BaikeScreen())),
+    );
     await tester.pump();
     // 默认 tab=见闻;isarProvider 测试 null → feed 空 → 占位
     expect(find.text(UiStrings.baikeFeedEmpty), findsOneWidget);
@@ -58,22 +60,23 @@ void main() {
         ..occurredAt = now.subtract(const Duration(hours: 2))
         ..isRead = false,
     ];
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        gameEventsFeedProvider(limit: 50)
-            .overrideWith((ref) async => events),
-      ],
-      child: const MaterialApp(home: BaikeScreen()),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          gameEventsFeedProvider(limit: 50).overrideWith((ref) async => events),
+        ],
+        child: const MaterialApp(home: BaikeScreen()),
+      ),
+    );
     await tester.pump();
     expect(find.text('斩 黑面阎罗'), findsOneWidget);
     expect(find.text('闭关收功'), findsOneWidget);
   });
 
   testWidgets('典故 tab GameRepository 加载后显 7 阶分组', (tester) async {
-    await tester.pumpWidget(const ProviderScope(
-      child: MaterialApp(home: BaikeScreen()),
-    ));
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: BaikeScreen())),
+    );
     await tester.pump();
     // 切到典故 tab
     await tester.tap(find.text(UiStrings.baikeTabLore));

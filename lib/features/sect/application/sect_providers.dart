@@ -41,11 +41,12 @@ final sectEventServiceProvider = Provider<SectEventService>((ref) {
   return SectEventService(numbers: numbers);
 });
 
-final sectReputationDecayServiceProvider =
-    Provider<SectReputationDecayService>((ref) {
-  final numbers = ref.watch(numbersConfigProvider);
-  return SectReputationDecayService(numbers: numbers);
-});
+final sectReputationDecayServiceProvider = Provider<SectReputationDecayService>(
+  (ref) {
+    final numbers = ref.watch(numbersConfigProvider);
+    return SectReputationDecayService(numbers: numbers);
+  },
+);
 
 /// 门派月度 tick 编排 service(B1 接通 · 组合 checkAndTrigger + computeDecay + 过期)。
 final sectMonthlyTickServiceProvider = Provider<SectMonthlyTickService>((ref) {
@@ -111,7 +112,7 @@ Future<void> _runSectMonthlyTick(Ref ref, DateTime now) async {
   });
 }
 
-/// HomeFeed 首帧调:跑一次门派月度 tick(与 `maybeShowOfflineRecap` 并列)。
+/// 进入存档后的主菜单首帧调用一次(与 `maybeShowOfflineRecap` 并列)。
 ///
 /// [now] 仅供测试注入;生产用 [systemClockProvider]。
 Future<void> maybeRunSectMonthlyTick(WidgetRef ref, {DateTime? now}) async {
@@ -126,7 +127,11 @@ Future<void> debugSpawnSectEvent(WidgetRef ref) async {
   if (isar == null) return;
   final sect = await ref.read(currentSectProvider.future);
   if (sect == null) return;
-  final pool = ref.read(numbersConfigProvider).sectEvent.tournament.narrativeIds;
+  final pool = ref
+      .read(numbersConfigProvider)
+      .sectEvent
+      .tournament
+      .narrativeIds;
   if (pool.isEmpty) return;
   final now = ref.read(systemClockProvider).now();
   final ev = SectEvent()
@@ -181,8 +186,7 @@ final playerSectIdProvider = Provider<int?>((ref) {
 });
 
 /// active(pending)sect events Stream。
-final activeSectEventsProvider =
-    StreamProvider<List<SectEvent>>((ref) async* {
+final activeSectEventsProvider = StreamProvider<List<SectEvent>>((ref) async* {
   final isar = ref.watch(isarProvider);
   if (isar == null) {
     yield const [];
@@ -196,8 +200,9 @@ final activeSectEventsProvider =
 });
 
 /// historical(resolved + expired)sect events Stream(`resolvedAt` 倒序)。
-final historicalSectEventsProvider =
-    StreamProvider<List<SectEvent>>((ref) async* {
+final historicalSectEventsProvider = StreamProvider<List<SectEvent>>((
+  ref,
+) async* {
   final isar = ref.watch(isarProvider);
   if (isar == null) {
     yield const [];
@@ -283,8 +288,8 @@ class ResolveSectEventNotifier extends AsyncNotifier<void> {
 
 final resolveSectEventProvider =
     AsyncNotifierProvider<ResolveSectEventNotifier, void>(
-  ResolveSectEventNotifier.new,
-);
+      ResolveSectEventNotifier.new,
+    );
 
 // =============================================================================
 // P4.1 §12.2 帮派门派 B2 service + provider 接入(default 决议 Q1-Q8 草案)
@@ -310,8 +315,10 @@ final territoryServiceProvider = Provider<TerritoryService?>((ref) {
 /// [sectId] 全成员 Stream(沿 `Character.sectId` index)。
 ///
 /// Isar 未 init → 退空 Stream。Demo 单 sect 用 sect.id=1。
-final sectMembersProvider =
-    StreamProvider.family<List<Character>, int>((ref, sectId) async* {
+final sectMembersProvider = StreamProvider.family<List<Character>, int>((
+  ref,
+  sectId,
+) async* {
   final isar = ref.watch(isarProvider);
   if (isar == null) {
     yield const [];
@@ -324,8 +331,9 @@ final sectMembersProvider =
 });
 
 /// 中立可占领的 territory list(`TerritoryService.availableForClaim`)。
-final availableTerritoriesProvider =
-    FutureProvider<List<TerritoryDef>>((ref) async {
+final availableTerritoriesProvider = FutureProvider<List<TerritoryDef>>((
+  ref,
+) async {
   final svc = ref.watch(territoryServiceProvider);
   if (svc == null) return TerritoryService.allDefs();
   // sect 写入触发 invalidate(caller `ref.invalidate(availableTerritoriesProvider)`
@@ -392,8 +400,8 @@ class SectMemberMutationNotifier extends AsyncNotifier<void> {
 
 final sectMemberMutationProvider =
     AsyncNotifierProvider<SectMemberMutationNotifier, void>(
-  SectMemberMutationNotifier.new,
-);
+      SectMemberMutationNotifier.new,
+    );
 
 /// 占领 + 释放 AsyncNotifier(B2 spec §3)。
 ///
@@ -430,10 +438,7 @@ class TerritoryMutationNotifier extends AsyncNotifier<void> {
     if (isar == null || svc == null) return ReleaseResult.sectNotFound;
     late ReleaseResult result;
     await isar.writeTxn(() async {
-      result = await svc.release(
-        sectId: sectId,
-        territoryId: territoryId,
-      );
+      result = await svc.release(sectId: sectId, territoryId: territoryId);
     });
     return result;
   }
@@ -441,6 +446,5 @@ class TerritoryMutationNotifier extends AsyncNotifier<void> {
 
 final territoryMutationProvider =
     AsyncNotifierProvider<TerritoryMutationNotifier, void>(
-  TerritoryMutationNotifier.new,
-);
-
+      TerritoryMutationNotifier.new,
+    );

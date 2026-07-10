@@ -1974,19 +1974,6 @@ class UiStrings {
     String fate,
     String originLine,
   ) => '$generationText · $school · $origin · $fate\n$originLine';
-  // 战斗交互重做 Phase 3:选关屏 per-stage「挂机自动 / 允许点选」开关。
-  static const String stageAutoPlayAuto = '自动';
-  static const String stageAutoPlayManual = '点选';
-  // 印章 glyph 单字(绛红方印 ·「自」=纯挂机自动 /「点」=允许点选;暂用现有字体,真小篆待补字体)。
-  static const String stageAutoPlaySealAuto = '自';
-  static const String stageAutoPlaySealManual = '点';
-  static const String stageAutoPlayFollowSuffix = '随设置';
-  static const String stageAutoPlayMenuFollow = '跟随设置';
-  static const String stageAutoPlayMenuAuto = '挂机自动';
-  static const String stageAutoPlayMenuManual = '允许点选';
-  // 爬塔重打 dialog 内的开关标签(塔身布局固定高,toggle 走 dialog)。
-  static const String stageAutoPlayPickLabel = '战斗方式';
-
   // ─── 周目选择控件（P1 周目进化 E1）───────────────────────────────────────────
   // 「江湖记招」：敌人已识得玩家路数，高周目进入手动模式的战前提示（E2 wire）。
   static const String jianghuRememberHint = '此敌已识得你的路数，见招拆招。';
@@ -2138,13 +2125,7 @@ class UiStrings {
   // P2 扩段:江湖背景段标题(永久可查,与 8 档机制分段)
   static const String codexLoreSectionTitle = '江湖背景';
 
-  // ── P1 #42 Phase 3 · HomeFeedScreen 上线第一屏(GDD §9.2)──
-
-  static const String homeFeedTitle = '江湖见闻';
-  static const String homeFeedEmptyHint = '江湖初醒，昨夜风平浪静。\n按下「直入江湖」启程。';
-  static const String homeFeedQuickClaimLabel = '直入江湖';
-
-  /// GameEvent occurredAt 相对时间格式(GDD §9.2 "昨晚发生的事"调子)。
+  /// GameEvent occurredAt 相对时间格式。
   ///
   /// 阈值:
   /// - < 5 分钟:"刚才"
@@ -2154,7 +2135,7 @@ class UiStrings {
   /// - 1 日前:"昨日 HH:MM"
   /// - 2-6 日前:"$N 日前"
   /// - > 7 日:"MM-DD"
-  static String homeFeedRelativeTime(DateTime occurredAt, DateTime now) {
+  static String gameEventRelativeTime(DateTime occurredAt, DateTime now) {
     final diff = now.difference(occurredAt);
     if (diff.inMinutes < 5) return '刚才';
     if (diff.inMinutes < 60) return '${diff.inMinutes} 分钟前';

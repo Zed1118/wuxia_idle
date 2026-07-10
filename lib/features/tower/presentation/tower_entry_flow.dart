@@ -22,7 +22,6 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
 import '../../battle/application/battle_resolution.dart';
 import '../../battle/application/post_combat_invalidation.dart';
-import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/domain/derived_stats.dart';
 import '../../battle/domain/auto_play_mode.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
@@ -853,10 +852,6 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
   /// D1: 由 initState 从 TowerProgress.currentCycleIndex 读入，默认 1。
   int _currentCycleIndex = 1;
 
-  /// D1: battleKey 按周目维度生成（默认 cycle=1 与旧 key 格式一致）。
-  String get _battleKey =>
-      towerBattleKey(widget.floor.floorIndex, cycle: _currentCycleIndex);
-
   @override
   void initState() {
     super.initState();
@@ -867,21 +862,12 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
         if (!mounted) return;
         // D1: 读取当前周目（fresh save = 1，零回归）。
         _currentCycleIndex = progress.currentCycleIndex;
-        // ── 入口决策:per-stage override + 全局 → auto / interactive ──
-        final override = await ref
-            .read(stageAutoPlayPrefServiceProvider)
-            .override(_battleKey);
-        if (!mounted) return;
+        // ── 入口决策:跟随全局设置 → auto / interactive ──
         final global = (await ref.read(
           gameplaySettingsProvider.future,
         )).autoPlayDefault;
         if (!mounted) return;
-        setState(
-          () => _mode = resolveAutoPlayMode(
-            override: override,
-            globalDefault: global,
-          ),
-        );
+        setState(() => _mode = resolveAutoPlayMode(globalDefault: global));
 
         final (left, right) = await StageBattleSetup(
           isar: IsarSetup.instance,

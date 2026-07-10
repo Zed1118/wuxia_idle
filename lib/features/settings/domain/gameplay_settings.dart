@@ -50,8 +50,7 @@ class GameplaySettings {
   });
 
   /// 战斗交互重做 Phase 3:全局默认战斗模式。`true` = 纯挂机自动 / `false` =
-  /// 允许拖招干预。默认 true;每关可经 per-stage override 覆盖(每关记忆,见
-  /// `stage_auto_play_pref.dart`)。
+  /// 允许拖招干预。默认 true;主线首通仍由入口规则强制允许拖招。
   final bool autoPlayDefault;
   final BattlePlaybackSpeed battlePlaybackSpeed;
   final TextDensityPreference textDensity;

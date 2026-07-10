@@ -57,23 +57,21 @@ void main() {
   });
 
   tearDownAll(() {
-    File('$_outputDir/stress_2026-06-02.md')
-        .writeAsStringSync(_report.toString());
+    File(
+      '$_outputDir/stress_2026-06-02.md',
+    ).writeAsStringSync(_report.toString());
     print(_report.toString());
   });
 
   // ───────────────────────────────────────────────────────────────────────
   // A · GameEvent 累积压测(top 隐患:表无界增长)
-  //   验证 (1) 显示 feed limit20+occurredAt index 不退化
-  //        (2) markAllFeedRead 大量未读时一次性 findAll+putAll 峰值
+  //   验证显示 feed limit20+occurredAt index 不退化
   // ───────────────────────────────────────────────────────────────────────
-  test('A · GameEvent 累积 · 显示 feed 不退化 + markAllFeedRead 峰值量化',
-      () async {
+  test('A · GameEvent 累积 · 显示 feed 不退化', () async {
     final isar = IsarSetup.instance;
     _report.writeln('## A · GameEvent 累积压测\n');
-    _report.writeln(
-        '| N(未读) | 写入putAll | 显示feed(limit20) | markAllFeedRead | count |');
-    _report.writeln('|---|---|---|---|---|');
+    _report.writeln('| N | 写入putAll | 显示feed(limit20) | count |');
+    _report.writeln('|---|---|---|---|');
 
     GameEvent mk(int i) => GameEvent()
       ..eventType = GameEventType.adventureTriggered
@@ -102,19 +100,10 @@ void main() {
           .findAll();
       swFeed.stop();
 
-      // markAllFeedRead:快速领取按钮(filter 未读 findAll + putAll,低频)
-      final swMark = Stopwatch()..start();
-      final unread =
-          await isar.gameEvents.filter().isReadEqualTo(false).findAll();
-      for (final e in unread) {
-        e.isRead = true;
-      }
-      await isar.writeTxn(() => isar.gameEvents.putAll(unread));
-      swMark.stop();
-
       final total = await isar.gameEvents.count();
       _report.writeln(
-          '| $n | ${swWrite.elapsedMilliseconds}ms | ${swFeed.elapsedMicroseconds}µs(${feed.length}条) | ${swMark.elapsedMilliseconds}ms | $total |');
+        '| $n | ${swWrite.elapsedMilliseconds}ms | ${swFeed.elapsedMicroseconds}µs(${feed.length}条) | $total |',
+      );
 
       if (n == 10000) feedLenAt10k = feed.length;
       expect(feed.length, 20, reason: 'feed 应恒取满 20 条(N≥20)');
@@ -140,7 +129,8 @@ void main() {
     final startedAt = DateTime(2026, 3, 15, 14, 0);
     RetreatSession session() => RetreatSession()
       ..saveDataId = 1
-      ..mapType = RetreatMapType.duanYaJueBi // 武圣图(产出最高,最易触 clamp)
+      ..mapType = RetreatMapType
+          .duanYaJueBi // 武圣图(产出最高,最易触 clamp)
       ..durationHours = 999999
       ..startedAt = startedAt
       ..status = RetreatStatus.active;
@@ -165,9 +155,11 @@ void main() {
     _report.writeln('## B · 极端时长结算双防线\n');
     _report.writeln('- capHours = $cap, 武圣阶, 断崖绝壁图');
     _report.writeln(
-        '- elapsed=cap:   mojianshi=${atCap.mojianshi} exp=${atCap.experiencePoints} learn=${atCap.techniqueLearnPoints} 内力=${atCap.internalForcePoints}');
+      '- elapsed=cap:   mojianshi=${atCap.mojianshi} exp=${atCap.experiencePoints} learn=${atCap.techniqueLearnPoints} 内力=${atCap.internalForcePoints}',
+    );
     _report.writeln(
-        '- elapsed=100000h: mojianshi=${huge.mojianshi} exp=${huge.experiencePoints} learn=${huge.techniqueLearnPoints} 内力=${huge.internalForcePoints}\n');
+      '- elapsed=100000h: mojianshi=${huge.mojianshi} exp=${huge.experiencePoints} learn=${huge.techniqueLearnPoints} 内力=${huge.internalForcePoints}\n',
+    );
 
     // 防线1:超长 elapsed 被 capHours 截断 → 与 elapsed=cap 产出完全相同
     expect(huge.mojianshi, atCap.mojianshi, reason: 'capHours 应截断超长离线');

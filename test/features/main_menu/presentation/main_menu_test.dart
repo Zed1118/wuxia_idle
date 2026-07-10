@@ -13,6 +13,7 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/core/game_loop/monthly_tick.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_providers.dart';
 import 'package:wuxia_idle/features/festival/application/festival_service_providers.dart';
@@ -20,6 +21,7 @@ import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
+import 'package:wuxia_idle/features/sect/application/sect_providers.dart';
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
@@ -59,6 +61,35 @@ void main() {
   testWidgets('主菜单渲染 MJ 门面背景', (tester) async {
     await tester.pumpWidget(app());
     expect(assetImage(WuxiaUi.mainMenuBg), findsOneWidget);
+  });
+
+  testWidgets('主菜单挂载一次性启动钩子门', (tester) async {
+    await tester.pumpWidget(app());
+    expect(
+      find.byKey(const ValueKey('main-menu-startup-gate')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('主菜单首帧触发一次月度 tick，普通 rebuild 不重复', (tester) async {
+    var tickCount = 0;
+    final coordinator = MonthlyTickCoordinator()
+      ..register((_) async => tickCount++);
+
+    Widget appWithTick() => ProviderScope(
+      overrides: [
+        monthlyTickCoordinatorProvider.overrideWithValue(coordinator),
+      ],
+      child: const MaterialApp(home: MainMenu()),
+    );
+
+    await tester.pumpWidget(appWithTick());
+    await tester.pump();
+    expect(tickCount, 1);
+
+    await tester.pumpWidget(appWithTick());
+    await tester.pump();
+    expect(tickCount, 1);
   });
 
   testWidgets('23 个菜单按钮 label 全部可见且顺序正确', (tester) async {
