@@ -18,7 +18,7 @@
 
 - `battleUlt` SFX：仍为 `realmAdvance` 临时转用，目标 800-1600ms。
 - `battleChargeStart` SFX：仍为 `defeat` 临时转用，目标 500-1200ms。
-- 桃花岛地图素材 `assets/maps/taohuaIsland.png` 已接入并通过 widget/asset 审计，不属于当前阻塞缺口。
+- 桃花岛地图素材 `assets/maps/taohuaIsland.webp` 已接入并通过 widget/asset 审计，不属于当前阻塞缺口。
 
 ## 仍需注意
 

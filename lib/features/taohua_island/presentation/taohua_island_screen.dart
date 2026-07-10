@@ -142,7 +142,7 @@ const _workshopBuildingTypes = [
 
 const _allBuildingTypes = [..._rawBuildingTypes, ..._workshopBuildingTypes];
 
-const _taohuaIslandMapAsset = 'assets/maps/taohuaIsland.png';
+const _taohuaIslandMapAsset = 'assets/maps/taohuaIsland.webp';
 
 class _IslandBody extends StatefulWidget {
   const _IslandBody({
