@@ -12,7 +12,7 @@ import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import "../support/isar_test_support.dart";
@@ -175,7 +175,7 @@ void main() {
         var draws = 0;
         for (var seed = 0; seed < 50; seed++) {
           final initial = BattleState.initial(leftTeam: left, rightTeam: right);
-          final finalState = BattleEngine.runToEnd(
+          final finalState = defaultGroundStrategy.runToEnd(
             initial,
             numbers,
             rng: Random(seed),

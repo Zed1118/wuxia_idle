@@ -14,7 +14,7 @@
 
 ## 批次 3 · 死代码/死文案(拍板点:66 篇文案接线 vs 归档)
 
-- [x] ~~三死文件删除~~ **❌部分证伪(2026-07-03·batch-123 Phase 0)**——① **`battle_engine.dart`** 被平衡诊断/红线测试活用;② **`battle_demo.dart`** 的 `BattleDemo.mockTeams()` 是 BattleScreen widget 测试夹具,二者保留。③ `stage_auto_play_control.dart` 当时判为「功能完成未接入」并留待拍板;其最终决策见下条。
+- [x] 三死文件复核 **✅最终收口(2026-07-11)**——`battle_engine.dart` 生产 0 调用但曾被 25 个平衡/诊断测试文件续用；现已全部迁到无状态 `defaultGroundStrategy`，facade 等价性测试删除，旧包装文件移除。`battle_demo.dart` 的 `BattleDemo.mockTeams()` 仍是 BattleScreen widget 测试夹具，继续保留。`stage_auto_play_control.dart` 最终决策见下条。
 - [x] 66 篇不可达文案 **✅已归档(2026-07-03·`b2098f29`)**:`data/narratives/techniques/` 26 篇 + `insights/` 40 篇迁至 `data/narratives/_archive/techniques/`,保留内容并移出 asset 打包；恢复步骤见归档目录 README。
 - [x] numbers.yaml `tower` 段 + `synergies` 段 **✅已补 unused 头注(2026-07-03·batch-123)**——证实 0 消费:`NumbersConfig.fromYaml`(numbers_config.dart:322+)不解析 `y['tower']`/`y['synergies']`(头注 L18-19「保留 raw」),lib/ 无 raw 访问。synergies 真实源=独立 `data/synergies.yaml`(12 条·multipliers 格式·game_repository:341)。两段各加醒目 UNUSED 头注(保留 tower 段作 GDD §8.2 设计锚·标注 daily_attempts 每日 5 次限制**未实装**)。删除仍需拍板,故留注不删。
 - [x] `home_feed` / `stage_auto_play` **✅已拍板并清理(2026-07-10)**:`home_feed_screen.dart` 删除,事件流查询迁入 `features/event`,离线归来与门派月度 tick 启动钩子迁到 `MainMenuStartupGate`;`stage_auto_play` 逐关偏好/控件/视觉路由删除,战斗入口只读全局 `GameplaySettings.autoPlayDefault`,主线首通强制 interactive 规则保留。`technique_learning.dart`=活 service,继续保留。

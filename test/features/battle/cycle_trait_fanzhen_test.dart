@@ -7,7 +7,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 
 import '../../support/test_data.dart';
@@ -37,7 +37,7 @@ void main() {
       teamSide: 1,
     ).copyWith(activeBuffs: ['cycle_fanzhen'], evasionRate: 0.0);
     var s = BattleState.initial(leftTeam: [player], rightTeam: [enemy]);
-    s = BattleEngine.tick(s, n, rng: Random(0));
+    s = defaultGroundStrategy.tick(s, n, rng: Random(0));
     final playerAfter = s.leftTeam.first;
     expect(
       playerAfter.internalInjury,
@@ -64,7 +64,7 @@ void main() {
       evasionRate: 1.0, // 100% 闪避，强制 isDodged=true
     );
     var s = BattleState.initial(leftTeam: [player], rightTeam: [enemy]);
-    s = BattleEngine.tick(s, n, rng: Random(0));
+    s = defaultGroundStrategy.tick(s, n, rng: Random(0));
     expect(s.leftTeam.first.internalInjury, isNull, reason: '闪避时不触发反震');
   });
 
@@ -76,7 +76,7 @@ void main() {
       evasionRate: 0.0,
     );
     var s = BattleState.initial(leftTeam: [player], rightTeam: [enemy]);
-    s = BattleEngine.tick(s, n, rng: Random(0));
+    s = defaultGroundStrategy.tick(s, n, rng: Random(0));
     expect(
       s.leftTeam.first.internalInjury,
       isNull,
@@ -92,7 +92,7 @@ void main() {
       teamSide: 1,
     ).copyWith(activeBuffs: ['cycle_fanzhen'], evasionRate: 0.0);
     var s = BattleState.initial(leftTeam: [player], rightTeam: [enemy]);
-    s = BattleEngine.tick(s, n, rng: Random(0));
+    s = defaultGroundStrategy.tick(s, n, rng: Random(0));
     expect(
       s.leftTeam.first.internalInjury,
       isNotNull,
@@ -120,7 +120,7 @@ void main() {
       teamSide: 1,
     ).copyWith(activeBuffs: ['cycle_fanzhen'], evasionRate: 0.0);
     var s = BattleState.initial(leftTeam: [player], rightTeam: [enemy]);
-    s = BattleEngine.tick(s, n, rng: Random(0));
+    s = defaultGroundStrategy.tick(s, n, rng: Random(0));
     final playerAfter = s.leftTeam.first;
     expect(playerAfter.internalInjury, isNotNull);
     expect(
@@ -144,7 +144,7 @@ void main() {
       teamSide: 0,
     ).copyWith(activeBuffs: ['cycle_fanzhen'], evasionRate: 0.0);
     var s = BattleState.initial(leftTeam: [player], rightTeam: [enemy]);
-    s = BattleEngine.tick(s, n, rng: Random(0));
+    s = defaultGroundStrategy.tick(s, n, rng: Random(0));
     // 敌人打玩家：敌人(teamSide=1)是攻击者，不应收到内伤
     expect(
       s.rightTeam.first.internalInjury,

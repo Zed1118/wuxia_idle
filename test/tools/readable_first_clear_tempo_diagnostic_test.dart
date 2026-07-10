@@ -20,7 +20,7 @@ import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import '../support/test_data.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
@@ -92,7 +92,7 @@ _TempoRun _simulate(
     readableFirstClearTuning: true,
   );
   final initial = BattleState.initial(leftTeam: players, rightTeam: enemies);
-  final terminal = BattleEngine.runToEnd(
+  final terminal = defaultGroundStrategy.runToEnd(
     initial,
     repo.numbers,
     maxTicks: _maxTicks,

@@ -6,7 +6,7 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import "../../support/isar_test_support.dart";
@@ -52,7 +52,7 @@ void main() {
         isar: IsarSetup.instance,
       ).buildTeams(stage);
       final numbers = GameRepository.instance.numbers;
-      final finalState = BattleEngine.runToEnd(
+      final finalState = defaultGroundStrategy.runToEnd(
         BattleState.initial(leftTeam: left, rightTeam: right),
         numbers,
         rng: Random(seed),

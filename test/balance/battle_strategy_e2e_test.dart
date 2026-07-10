@@ -10,10 +10,9 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/battle_strategy.dart';
-import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import "../support/isar_test_support.dart";
 import '../support/test_data.dart';
@@ -31,8 +30,7 @@ import '../support/test_data.dart';
 /// 1. 主线 30 关 e2e(P3 种子单角色对 stage 三敌人,2026-05-22 P2 Ch6 扩)
 /// 2. 爬塔 30 层 e2e(同上 + buildTeamsForTower 路径)
 /// 3. 心法相生 5 组合 e2e(VC18-A1 fixture 5 角色切 activeCharacterIds 各 1)
-/// 4. backwards compat 5 case(BattleEngine facade 与 DefaultGroundStrategy
-///    instance 行为等价)
+/// 4. DefaultGroundStrategy 无可变实例状态
 void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
@@ -72,7 +70,7 @@ void main() {
 
       late BattleState finalState;
       expect(
-        () => finalState = BattleEngine.runToEnd(
+        () => finalState = defaultGroundStrategy.runToEnd(
           initial,
           numbers,
           rng: Random(42),
@@ -207,7 +205,7 @@ void main() {
 
         late BattleState finalState;
         expect(
-          () => finalState = BattleEngine.runToEnd(
+          () => finalState = defaultGroundStrategy.runToEnd(
             initial,
             numbers,
             rng: Random(42),
@@ -222,10 +220,10 @@ void main() {
   });
 
   // ────────────────────────────────────────────────────────────────────────
-  // 组 4:BattleEngine facade ↔ DefaultGroundStrategy instance 等价
+  // 组 4:DefaultGroundStrategy 无可变实例状态
   // ────────────────────────────────────────────────────────────────────────
 
-  group('backwards compat:BattleEngine facade ↔ DefaultGroundStrategy', () {
+  group('DefaultGroundStrategy stateless contract', () {
     SkillDef normal(String id) => SkillDef(
       id: id,
       name: '普攻',
@@ -308,54 +306,6 @@ void main() {
     }
 
     NumbersConfig numbers() => GameRepository.instance.numbers;
-
-    test(
-      'BattleEngine.tick(s, n, rng: Random(42)) ≡ DefaultGroundStrategy().tick 同种子',
-      () {
-        const strategy = DefaultGroundStrategy();
-        final s0 = fixture();
-        final viaFacade = BattleEngine.tick(s0, numbers(), rng: Random(42));
-        final viaStrategy = strategy.tick(s0, numbers(), rng: Random(42));
-        expect(viaFacade.tick, viaStrategy.tick);
-        expect(viaFacade.actionLog.length, viaStrategy.actionLog.length);
-        expect(
-          viaFacade.leftTeam.first.currentHp,
-          viaStrategy.leftTeam.first.currentHp,
-        );
-        expect(
-          viaFacade.rightTeam.first.currentHp,
-          viaStrategy.rightTeam.first.currentHp,
-        );
-      },
-    );
-
-    test('BattleEngine.runToEnd 同种子 ≡ DefaultGroundStrategy().runToEnd', () {
-      const strategy = DefaultGroundStrategy();
-      final s0 = fixture();
-      final viaFacade = BattleEngine.runToEnd(s0, numbers(), rng: Random(42));
-      final viaStrategy = strategy.runToEnd(s0, numbers(), rng: Random(42));
-      expect(viaFacade.result, viaStrategy.result);
-      expect(viaFacade.tick, viaStrategy.tick);
-      expect(viaFacade.actionLog.length, viaStrategy.actionLog.length);
-    });
-
-    test(
-      'BattleEngine.requestUltimate ≡ DefaultGroundStrategy().requestUltimate',
-      () {
-        const strategy = DefaultGroundStrategy();
-        final s0 = fixture();
-        final viaFacade = BattleEngine.requestUltimate(s0, 1, ult('u'));
-        final viaStrategy = strategy.requestUltimate(s0, 1, ult('u'));
-        expect(
-          viaFacade.pendingUltimates.keys,
-          viaStrategy.pendingUltimates.keys,
-        );
-        expect(
-          viaFacade.pendingUltimates[1]?.id,
-          viaStrategy.pendingUltimates[1]?.id,
-        );
-      },
-    );
 
     test('DefaultGroundStrategy 是 const-canonicalized 单例(无 mutable state)', () {
       const a = DefaultGroundStrategy();

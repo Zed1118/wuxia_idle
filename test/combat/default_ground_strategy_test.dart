@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_ai.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -12,7 +12,7 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import '../support/test_data.dart';
 
-/// BattleEngine + BattleAI 单元测试（phase1_tasks.md T12 §706 验收）。
+/// DefaultGroundStrategy + BattleAI 单元测试（phase1_tasks.md T12 §706 验收）。
 ///
 /// 覆盖：
 /// 1. 3v3 同境界同流派同装备：runToEnd 稳定分胜负，不死循环。
@@ -42,7 +42,7 @@ void main() {
     final right = _team(teamSide: 1, charIdBase: 11);
     final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
 
-    final s = BattleEngine.runToEnd(
+    final s = defaultGroundStrategy.runToEnd(
       s0,
       GameRepository.instance.numbers,
       maxTicks: 500,
@@ -74,7 +74,7 @@ void main() {
         .toList();
     final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
 
-    final s = BattleEngine.runToEnd(
+    final s = defaultGroundStrategy.runToEnd(
       s0,
       GameRepository.instance.numbers,
       maxTicks: 200,
@@ -128,10 +128,10 @@ void main() {
     expect(ult.type, SkillType.ultimate);
 
     final s0 = BattleState.initial(leftTeam: [left], rightTeam: [right]);
-    final s1 = BattleEngine.requestUltimate(s0, left.characterId, ult);
+    final s1 = defaultGroundStrategy.requestUltimate(s0, left.characterId, ult);
     expect(s1.pendingUltimates[left.characterId], same(ult));
 
-    final s2 = BattleEngine.tick(
+    final s2 = defaultGroundStrategy.tick(
       s1,
       GameRepository.instance.numbers,
       rng: Random(1),
@@ -159,7 +159,7 @@ void main() {
     );
     final s0 = BattleState.initial(leftTeam: const [], rightTeam: const []);
     expect(
-      () => BattleEngine.requestUltimate(s0, 1, notUlt),
+      () => defaultGroundStrategy.requestUltimate(s0, 1, notUlt),
       throwsA(isA<ArgumentError>()),
     );
   });
@@ -185,7 +185,7 @@ void main() {
     );
     final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
 
-    final s = BattleEngine.runToEnd(
+    final s = defaultGroundStrategy.runToEnd(
       s0,
       GameRepository.instance.numbers,
       maxTicks: 500,
@@ -221,7 +221,7 @@ void main() {
     );
     final s0 = BattleState.initial(leftTeam: [left], rightTeam: [right]);
 
-    final s1 = BattleEngine.tick(
+    final s1 = defaultGroundStrategy.tick(
       s0,
       GameRepository.instance.numbers,
       rng: Random(2),
@@ -256,7 +256,7 @@ void main() {
     ).copyWith(speed: 1, maxHp: 1000000, currentHp: 1000000);
     final s0 = BattleState.initial(leftTeam: [c0, c1], rightTeam: [right]);
 
-    final s1 = BattleEngine.tick(
+    final s1 = defaultGroundStrategy.tick(
       s0,
       GameRepository.instance.numbers,
       rng: Random(3),
@@ -286,7 +286,7 @@ void main() {
         .toList();
     final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
 
-    final s = BattleEngine.runToEnd(
+    final s = defaultGroundStrategy.runToEnd(
       s0,
       GameRepository.instance.numbers,
       maxTicks: 30,
@@ -317,7 +317,7 @@ void main() {
       expect(skill.type, SkillType.powerSkill);
 
       // 2) 注入 pending → 应选大招
-      s = BattleEngine.requestUltimate(s, actor.characterId, ult);
+      s = defaultGroundStrategy.requestUltimate(s, actor.characterId, ult);
       (skill, _) = BattleAI.decide(actor, s, GameRepository.instance.numbers);
       expect(skill.id, ult.id);
 
@@ -397,7 +397,7 @@ void main() {
       );
       final defender = _mkBC(charId: 11, teamSide: 1);
       var s = BattleState.initial(leftTeam: [actor], rightTeam: [defender]);
-      s = BattleEngine.requestUltimate(s, actor.characterId, ult);
+      s = defaultGroundStrategy.requestUltimate(s, actor.characterId, ult);
       final (skill, _) = BattleAI.decide(
         actor,
         s,
@@ -485,7 +485,7 @@ void main() {
         techDefId: 'tech_lingqiao_mingjia',
       );
       var s = BattleState.initial(leftTeam: [atk], rightTeam: [def]);
-      s = BattleEngine.tick(s, n, rng: Random(0));
+      s = defaultGroundStrategy.tick(s, n, rng: Random(0));
       final defAfter = s.rightTeam.first;
       expect(
         defAfter.internalInjury,
@@ -525,7 +525,7 @@ void main() {
       );
       var s = BattleState.initial(leftTeam: [foe], rightTeam: [injured]);
       final hpBefore = injured.currentHp;
-      s = BattleEngine.tick(s, n, rng: Random(0));
+      s = defaultGroundStrategy.tick(s, n, rng: Random(0));
       final injuredAfter = s.rightTeam.first;
       expect(
         injuredAfter.currentHp,
@@ -561,7 +561,7 @@ void main() {
         school: TechniqueSchool.gangMeng,
       );
       var s = BattleState.initial(leftTeam: [foe], rightTeam: [injured]);
-      s = BattleEngine.tick(s, n, rng: Random(0));
+      s = defaultGroundStrategy.tick(s, n, rng: Random(0));
       expect(
         s.rightTeam.first.internalInjury,
         isNull,
@@ -590,7 +590,7 @@ void main() {
             ),
           );
       var s = BattleState.initial(leftTeam: [attacker], rightTeam: [defender]);
-      s = BattleEngine.tick(s, n, rng: Random(0));
+      s = defaultGroundStrategy.tick(s, n, rng: Random(0));
       final defAfter = s.rightTeam.first;
       expect(defAfter.internalInjury, isNotNull);
       expect(
@@ -616,7 +616,7 @@ void main() {
         techDefId: 'tech_lingqiao_mingjia',
       ).copyWith(evasionRate: 1.0); // 100% 闪避
       var s = BattleState.initial(leftTeam: [attacker], rightTeam: [defender]);
-      s = BattleEngine.tick(s, n, rng: Random(0));
+      s = defaultGroundStrategy.tick(s, n, rng: Random(0));
       expect(
         s.rightTeam.first.internalInjury,
         isNull,

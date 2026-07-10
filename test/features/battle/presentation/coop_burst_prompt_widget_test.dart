@@ -61,8 +61,10 @@ Future<void> _pumpBattle(
       child: MaterialApp(
         home: BattleScreen(
           animConfig: _testAnim,
-          autoStart: false,
-          allowPlayerIntervention: allowPlayerIntervention,
+          playback: BattleScreenPlaybackConfig(
+            autoStart: false,
+            allowPlayerIntervention: allowPlayerIntervention,
+          ),
         ),
       ),
     ),

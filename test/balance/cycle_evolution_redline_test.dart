@@ -34,7 +34,7 @@ import '../support/test_data.dart';
 ///   7. 真气 + scale → maxInternalForce ≤ 红线（爬塔 cycle 2）
 ///   8. clamp 防越线：baseHp 极端值经 scale 超 60k 时被 clamp（§新增防护）
 ///
-/// **不走 Isar / BattleEngine**：静态 stat 断言直接证明 scale+词条 在红线内。
+/// **不走 Isar / DefaultGroundStrategy**：静态 stat 断言直接证明 scale+词条 在红线内。
 /// 动态伤害上界估算（测试 4.3 上界数学推导）不跑实战，避免引入 Isar 死锁风险。
 void main() {
   setUpAll(() async {

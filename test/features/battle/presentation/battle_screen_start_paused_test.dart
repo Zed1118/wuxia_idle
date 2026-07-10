@@ -60,7 +60,10 @@ Future<_TestBattleNotifier> _pumpBattle(
     ProviderScope(
       overrides: [battleProvider.overrideWith(() => notifier)],
       child: MaterialApp(
-        home: BattleScreen(animConfig: _testAnim, startPaused: startPaused),
+        home: BattleScreen(
+          animConfig: _testAnim,
+          playback: BattleScreenPlaybackConfig(startPaused: startPaused),
+        ),
       ),
     ),
   );

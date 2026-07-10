@@ -10,7 +10,7 @@ import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/defs/stage_win_condition.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
     show RealmUtils;
@@ -200,7 +200,7 @@ _Outcome _run(
   var i = 0;
   var everCharged = false;
   while (!s.isFinished && i < _maxTicks) {
-    s = BattleEngine.tick(s, repo.numbers, rng: rng);
+    s = defaultGroundStrategy.tick(s, repo.numbers, rng: rng);
     if (!everCharged) {
       for (final e in s.rightTeam) {
         if (e.chargingSkill != null) {

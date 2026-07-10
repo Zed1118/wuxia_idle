@@ -12,7 +12,7 @@ import 'battle_state.dart';
 /// - 目标选择：对面活角色 currentHp 最低（同 hp 选 slotIndex 小的，前排优先）
 ///
 /// **纯函数无 side effect**：从 [BattleState.pendingUltimates] 移除使用过的
-/// 大招由 [BattleEngine] 行动结算后做（无论本次是否真用上，每次行动后都消费
+/// 大招由默认战斗策略行动结算后处理（无论本次是否真用上，每次行动后都消费
 /// 一次 pending，避免"内力够了下下次突然飞大招"迷惑玩家）。
 class BattleAI {
   BattleAI._();

@@ -55,7 +55,7 @@ Future<void> _pump(WidgetTester tester, {String? cycleHint}) async {
       child: MaterialApp(
         home: BattleScreen(
           animConfig: _testAnim,
-          autoStart: false,
+          playback: const BattleScreenPlaybackConfig(autoStart: false),
           cycleHint: cycleHint,
         ),
       ),

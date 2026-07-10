@@ -590,8 +590,10 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
         isBoss: widget.stage.isBossStage,
       ),
       deferVictoryToCaller: true,
-      allowPlayerIntervention: _allowIntervention,
-      readablePacing: _readablePacing,
+      playback: BattleScreenPlaybackConfig(
+        allowPlayerIntervention: _allowIntervention,
+        readablePacing: _readablePacing,
+      ),
       onVictory: () {
         widget.onVictory();
         // 不 pop:胜利仪式由 runStageFlow 在战斗界面之上播完后再 pop。

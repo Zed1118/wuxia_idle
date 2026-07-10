@@ -147,7 +147,7 @@ void main() {
         child: const MaterialApp(
           home: BattleScreen(
             animConfig: _testAnim,
-            allowPlayerIntervention: true,
+            playback: BattleScreenPlaybackConfig(allowPlayerIntervention: true),
           ),
         ),
       ),

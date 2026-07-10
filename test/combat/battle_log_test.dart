@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_log.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
@@ -366,7 +366,7 @@ void main() {
       (i) => _mkBC(charId: 11 + i, teamSide: 1, slotIndex: i),
     );
     final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
-    final sFinal = BattleEngine.runToEnd(
+    final sFinal = defaultGroundStrategy.runToEnd(
       s0,
       GameRepository.instance.numbers,
       maxTicks: 500,

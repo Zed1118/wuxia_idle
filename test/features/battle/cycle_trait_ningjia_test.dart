@@ -8,7 +8,7 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 
@@ -201,7 +201,7 @@ void main() {
       rightTeam: [defenderWithNingjia],
     );
     for (var i = 0; i < 5; i++) {
-      stateA = BattleEngine.tick(stateA, n, rng: Random(seed + i));
+      stateA = defaultGroundStrategy.tick(stateA, n, rng: Random(seed + i));
     }
 
     // 场景 B：攻方 vs 无 buff 守方，跑 5 tick（相同 seed）
@@ -210,7 +210,7 @@ void main() {
       rightTeam: [defenderWithout],
     );
     for (var i = 0; i < 5; i++) {
-      stateB = BattleEngine.tick(stateB, n, rng: Random(seed + i));
+      stateB = defaultGroundStrategy.tick(stateB, n, rng: Random(seed + i));
     }
 
     final hpNingjia = stateA.rightTeam.first.currentHp;

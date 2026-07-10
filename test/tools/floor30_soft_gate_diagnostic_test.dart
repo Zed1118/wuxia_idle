@@ -13,7 +13,7 @@ import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
     show RealmUtils;
@@ -40,7 +40,7 @@ import '../support/test_data.dart';
 ///   ② 满配必胜:onLevel × 全 seed winRate == 100%(护法灭后靠脆弱窗口打残局,能打死)。
 ///   ③ 终局硬门槛:underGear × 全 seed 允许全败(跨阶欠配被护法墙拦住是设计目标)。
 ///
-/// 逐 tick 采样(BattleEngine.tick + 单一 Random(seed),复刻 runToEnd 的确定性)
+/// 逐 tick 采样(defaultGroundStrategy.tick + 单一 Random(seed),复刻 runToEnd 的确定性)
 /// 记录首个 Boss 掉血 tick / 护法全灭 tick / 相位转换 / 终局。
 const int _maxTicks = 300;
 const int _seeds = 30;
@@ -161,7 +161,7 @@ _Res _sim(TowerFloorDef floor, int seed, GameRepository repo, _Profile p) {
   var bossFirstDamageTick = -1;
   var i = 0;
   while (!s.isFinished && i < _maxTicks) {
-    s = BattleEngine.tick(s, repo.numbers, rng: rng);
+    s = defaultGroundStrategy.tick(s, repo.numbers, rng: rng);
     i++;
     if (wardBreakTick < 0) {
       final aliveGuardians = s.rightTeam

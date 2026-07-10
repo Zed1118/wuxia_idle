@@ -12,6 +12,8 @@ import '../damage_calculator.dart';
 import '../../../cultivation/domain/skill_proficiency.dart';
 import 'battle_strategy.dart';
 
+const defaultGroundStrategy = DefaultGroundStrategy();
+
 /// 地面 3v3 半横版战斗 strategy(Demo 阶段唯一实装)。
 ///
 /// 1.0 路线图 P0 抽 strategy 层重构(详 `docs/handoff/p0_battle_strategy_spec.md`)
@@ -460,7 +462,9 @@ class DefaultGroundStrategy implements BattleStrategy {
     for (final tid in targetIds) {
       final target = _findById(preState, tid, oppSide);
       if (target == null) {
-        throw StateError('BattleEngine._resolveAction: 找不到 targetId=$tid');
+        throw StateError(
+          'DefaultGroundStrategy._resolveAction: 找不到 targetId=$tid',
+        );
       }
       // rng 消费点:每 target 逐个 roll 闪避+暴击(顺序锚 targetIds)。
       final result = _calculateInBattle(

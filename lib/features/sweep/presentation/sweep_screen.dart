@@ -141,10 +141,9 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
             sceneBackgroundPath: unit.sceneBackgroundPath,
             bgmTrack: unit.bgmTrack,
             animConfig: ref.watch(numbersConfigProvider).animation,
-            startFastForward: true,
+            playback: const BattleScreenPlaybackConfig.sweep(),
             // 扫荡「先注入战斗、后挂本屏」:开启挂载后兜底自启,否则错过 startBattle
             // 的 empty→非空边沿 → timer 不起黑屏 hang(配 initState listenManual 保活)。
-            autoStartOnMount: true,
             deferVictoryToCaller: true,
             onVictory: _onVictory,
             onDefeat: _onDefeat,

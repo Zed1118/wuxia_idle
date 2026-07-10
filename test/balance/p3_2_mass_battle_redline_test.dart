@@ -625,7 +625,7 @@ void main() {
         if (finalState.result == BattleResult.leftWin) leftWins++;
       }
       // 残血容差启用后 leftWins ≥ R5.1 stage_01 原 33 wins 的下限
-      // (容差挽救部分原 draw 案例为 leftWin · 不写具体数字防 BattleEngine 漂移)
+      // (容差挽救部分原 draw 案例为 leftWin · 不写具体数字防 DefaultGroundStrategy 漂移)
       expect(
         leftWins,
         greaterThanOrEqualTo(33),

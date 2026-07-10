@@ -69,10 +69,12 @@ Future<_TestBattleNotifier> _pump(
         home: BattleScreen(
           animConfig: _testAnim,
           deferVictoryToCaller: deferVictoryToCaller,
-          readablePacing: readablePacing,
+          playback: BattleScreenPlaybackConfig(
+            autoStart: false,
+            readablePacing: readablePacing,
+          ),
           onVictory: onVictory,
           onBattleEnd: onBattleEnd,
-          autoStart: false, // 禁 Timer,避免 GameRepository 读取崩溃
         ),
       ),
     ),

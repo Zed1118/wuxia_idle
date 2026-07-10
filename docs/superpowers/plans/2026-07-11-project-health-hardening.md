@@ -91,10 +91,10 @@
 - Modify/Delete: `lib/features/battle/domain/battle_engine.dart`
 - Modify: tests that still depend on `BattleEngine`
 
-- [ ] Introduce a typed presentation/debug configuration only where it reduces groups of related boolean parameters without altering defaults.
-- [ ] Migrate remaining `BattleEngine` tests to `DefaultGroundStrategy` or `BattleStrategy` behavior.
-- [ ] Remove the pass-through wrapper only after CodeGraph and literal import scans show no production or test callers.
-- [ ] Run battle-focused tests and analysis, then commit the batch.
+- [x] Introduce `BattleScreenPlaybackConfig` for six related playback/intervention flags without altering defaults.
+- [x] Migrate 25 `BattleEngine` test/diagnostic files to the canonical `defaultGroundStrategy` instance.
+- [x] Remove the pass-through wrapper after CodeGraph and literal import/call scans showed no remaining production or test callers.
+- [x] Run 288 battle/mainline/tower/visual focused tests and analysis, then commit the batch.
 
 ### Task 7: Dependency Maintenance
 
@@ -128,5 +128,5 @@
 
 - Branch: `codex/project-health-hardening`
 - Worktree: `.worktrees/project-health-hardening`
-- Current state: Tasks 1-5 verified. Save restore now has an injected database lifecycle boundary; one pure GameRepository validator is extracted; recruitment profile access is typed. Task 6 is next.
+- Current state: Tasks 1-6 verified. Battle playback flags are typed and the obsolete BattleEngine facade is removed after migrating all callers. Task 7 is next.
 - Resume command: `git status --short --branch && sed -n '1,260p' docs/superpowers/plans/2026-07-11-project-health-hardening.md`

@@ -179,7 +179,7 @@ Future<_TestBattleNotifier> _pumpWith(
       child: const MaterialApp(
         home: BattleScreen(
           animConfig: _testAnim,
-          allowPlayerIntervention: true,
+          playback: BattleScreenPlaybackConfig(allowPlayerIntervention: true),
         ),
       ),
     ),

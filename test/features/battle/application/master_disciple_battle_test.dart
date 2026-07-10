@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
@@ -17,7 +17,7 @@ import '../../../support/test_data.dart';
 /// Phase 3 Week 4 T57 师徒系统 3v3 默认入阵 + 战斗集成测试。
 ///
 /// 目的：复核 [Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple] 落地后，
-/// [StageBattleSetup(isar: IsarSetup.instance).buildTeams] → [BattleState.initial] → [BattleEngine.runToEnd]
+/// [StageBattleSetup(isar: IsarSetup.instance).buildTeams] → [BattleState.initial] → [defaultGroundStrategy.runToEnd]
 /// 全链路能正确装配 3 师徒（境界/装备/心法/师承遗物 buff），战斗可推进到 victory/defeat
 /// 终态而不挂起或抛异常。
 ///
@@ -145,7 +145,7 @@ void main() {
     },
   );
 
-  // ── BattleEngine 端到端 ────────────────────────────────────────────────
+  // ── DefaultGroundStrategy 端到端 ────────────────────────────────────────────────
 
   test('P5 victory：3 师徒 vs stage_01_01 流民 → runToEnd result=leftWin', () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
@@ -156,7 +156,7 @@ void main() {
     ).buildTeams(stage);
     final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
 
-    final s = BattleEngine.runToEnd(
+    final s = defaultGroundStrategy.runToEnd(
       s0,
       GameRepository.instance.numbers,
       maxTicks: 1000,
@@ -182,15 +182,15 @@ void main() {
       isar: IsarSetup.instance,
     ).buildTeams(stage);
     // 装配链产物按 buildTeams 全量生成，仅 copyWith 把 left 三人翻死，验证
-    // BattleEngine 跑到 isFinished 终态（draw 或 rightWin 皆可），不挂起不抛。
-    // 注：BattleEngine 不主动检查 initial state，需要某 actor 行动后才判胜负；
+    // DefaultGroundStrategy 跑到 isFinished 终态（draw 或 rightWin 皆可），不挂起不抛。
+    // 注：DefaultGroundStrategy 不主动检查 initial state，需要某 actor 行动后才判胜负；
     // left 全死 + right 找不到目标 → 双方都不动 → maxTicks 兜底 draw。
     final deadLeft = originalLeft
         .map((c) => c.copyWith(maxHp: 1, currentHp: 0, isAlive: false))
         .toList();
     final s0 = BattleState.initial(leftTeam: deadLeft, rightTeam: right);
 
-    final s = BattleEngine.runToEnd(
+    final s = defaultGroundStrategy.runToEnd(
       s0,
       GameRepository.instance.numbers,
       maxTicks: 200,
@@ -204,7 +204,7 @@ void main() {
       reason: 'left 全员阵亡时绝不能判定 leftWin',
     );
     expect(s.leftTeam.where((c) => c.isAlive).length, 0);
-    // 装配链产物字段在 defeat path 仍完整可读（不被 BattleEngine 改坏）
+    // 装配链产物字段在 defeat path 仍完整可读（不被 DefaultGroundStrategy 改坏）
     for (final bc in s.leftTeam) {
       expect(
         bc.availableSkills,

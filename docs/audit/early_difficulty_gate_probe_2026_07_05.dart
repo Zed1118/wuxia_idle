@@ -28,7 +28,7 @@ import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
     show RealmUtils;
@@ -221,7 +221,7 @@ BattleCharacter _buildPlayer(
     ];
   }
   final initial = BattleState.initial(leftTeam: players, rightTeam: enemies);
-  final terminal = BattleEngine.runToEnd(
+  final terminal = defaultGroundStrategy.runToEnd(
     initial,
     _repo.numbers,
     maxTicks: _maxTicks,

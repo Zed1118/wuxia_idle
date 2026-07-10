@@ -12,7 +12,7 @@
 //   - GameRepository.loadAllDefs(loader: File) 接 production yaml
 //   - StageBattleSetup.buildEnemyTeam 静态构造敌方
 //   - BattleCharacter.fromCharacter derived_stats 生产路径(floor/ceiling 两档 build profile)
-//   - BattleEngine.runToEnd 推到终态,读 terminal.actionLog
+//   - defaultGroundStrategy.runToEnd 推到终态,读 terminal.actionLog
 //
 // 样本:前/中/后期代表性主线关(各章首关 + 一个 Boss 关)× floor/ceiling × 20 seed。
 //
@@ -40,7 +40,7 @@ import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
     show RealmUtils;
@@ -233,7 +233,7 @@ _TempoStat _simulateAndTally(
   final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
   final initial = BattleState.initial(leftTeam: players, rightTeam: enemies);
   final rng = Random(seed);
-  final terminal = BattleEngine.runToEnd(
+  final terminal = defaultGroundStrategy.runToEnd(
     initial,
     repo.numbers,
     maxTicks: _maxTicks,

@@ -851,11 +851,13 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
   Widget build(BuildContext context) => BattleScreen(
     hint: widget.hint,
     sceneBackgroundPath: widget.sceneBackgroundPath,
-    autoStart: widget.autoStart,
-    allowPlayerIntervention: widget.allowPlayerIntervention,
+    playback: BattleScreenPlaybackConfig(
+      autoStart: widget.autoStart,
+      allowPlayerIntervention: widget.allowPlayerIntervention,
+      startPaused: widget.startPaused,
+    ),
     previewPendingCharacterId: widget.previewPendingCharacterId,
     previewPendingSkillId: widget.previewPendingSkillId,
-    startPaused: widget.startPaused,
     onBattleEnd: () => Navigator.of(context).pop(),
   );
 }

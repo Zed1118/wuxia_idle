@@ -904,7 +904,9 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
       cycleHint: _currentCycleIndex >= 2
           ? UiStrings.battleCycleHint(_currentCycleIndex)
           : null,
-      allowPlayerIntervention: _mode == AutoPlayMode.interactive,
+      playback: BattleScreenPlaybackConfig(
+        allowPlayerIntervention: _mode == AutoPlayMode.interactive,
+      ),
       onVictory: () {
         widget.onVictory();
         // 不 pop:胜利仪式由 runTowerFlow 在战斗界面之上播完后再 pop。

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -98,7 +98,7 @@ void main() {
       ),
     ];
 
-    final state = BattleEngine.runToEnd(
+    final state = defaultGroundStrategy.runToEnd(
       BattleState.initial(leftTeam: team(0), rightTeam: team(1)),
       repo.numbers,
     );
@@ -139,7 +139,7 @@ void main() {
     );
 
     // 刚猛 vs 阴柔（刚猛克阴柔）
-    final counterState = BattleEngine.runToEnd(
+    final counterState = defaultGroundStrategy.runToEnd(
       BattleState.initial(
         leftTeam: [c(1, TechniqueSchool.gangMeng, 0)],
         rightTeam: [c(2, TechniqueSchool.yinRou, 1)],
@@ -159,7 +159,7 @@ void main() {
         .first;
 
     // 阴柔 vs 刚猛（阴柔被克制）- 实际是"被克制方打克制方"
-    final counteredState = BattleEngine.runToEnd(
+    final counteredState = defaultGroundStrategy.runToEnd(
       BattleState.initial(
         leftTeam: [c(3, TechniqueSchool.yinRou, 0)],
         rightTeam: [c(4, TechniqueSchool.gangMeng, 1)],
@@ -229,7 +229,7 @@ void main() {
     );
 
     BattleState runOne(BattleCharacter atk, BattleCharacter def) =>
-        BattleEngine.runToEnd(
+        defaultGroundStrategy.runToEnd(
           BattleState.initial(leftTeam: [atk], rightTeam: [def]),
           repo.numbers,
         );
@@ -308,7 +308,7 @@ void main() {
       slotIndex: 0,
     );
 
-    final state = BattleEngine.runToEnd(
+    final state = defaultGroundStrategy.runToEnd(
       BattleState.initial(leftTeam: [lo], rightTeam: [hi]),
       repo.numbers,
     );

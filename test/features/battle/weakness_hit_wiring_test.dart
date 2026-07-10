@@ -7,7 +7,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 
 import '../../support/test_data.dart';
@@ -19,7 +19,7 @@ import '../../support/test_data.dart';
 /// 2. 攻方流派 = 守方抗性（mult<1.0）→ weaknessHit==false 且伤害低于基线；
 /// 3. 中性（守方 schoolDamageTakenMult 无该流派条目）→ weaknessHit==false、基线伤害。
 ///
-/// 用 BattleEngine.tick 走完整 strategy 路径（与 cycle_trait_fanzhen_test 同模式）。
+/// 用 defaultGroundStrategy.tick 走完整 strategy 路径（与 cycle_trait_fanzhen_test 同模式）。
 void main() {
   setUpAll(loadTestGameRepository);
 
@@ -35,7 +35,7 @@ void main() {
       );
     }
     var s = BattleState.initial(leftTeam: [player], rightTeam: [enemy]);
-    s = BattleEngine.tick(s, n, rng: Random(0));
+    s = defaultGroundStrategy.tick(s, n, rng: Random(0));
     return s.actionLog.firstWhere(
       (a) => a.actorId == 1 && a.attackResult != null,
       orElse: () => throw StateError('未找到玩家命中动作'),

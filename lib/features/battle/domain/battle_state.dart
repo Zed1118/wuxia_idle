@@ -662,7 +662,7 @@ class InternalInjurySlot {
 /// `result == null` 表示战斗仍在进行；非空表示已结束。
 ///
 /// `pendingUltimates`：玩家手动按下大招按钮时由
-/// [BattleEngine.requestUltimate] 写入；该角色下次行动时由 [BattleAI.decide]
+/// [DefaultGroundStrategy.requestUltimate] 写入；该角色下次行动时由 [BattleAI.decide]
 /// 优先消费（内力够 + CD 0 时一定使用），然后由引擎从 map 中移除。
 class BattleState {
   final List<BattleCharacter> leftTeam;

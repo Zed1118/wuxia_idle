@@ -12,7 +12,7 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
@@ -354,7 +354,7 @@ Future<_StageRunResult> _runStage(String stageId) async {
   final (left, right) = await StageBattleSetup(
     isar: IsarSetup.instance,
   ).buildTeams(stage);
-  final terminal = BattleEngine.runToEnd(
+  final terminal = defaultGroundStrategy.runToEnd(
     BattleState.initial(leftTeam: left, rightTeam: right),
     GameRepository.instance.numbers,
     rng: Random(_seedForStage(stageId)),

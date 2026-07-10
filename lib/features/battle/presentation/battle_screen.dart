@@ -35,6 +35,9 @@ import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 import '../domain/battle_skill_utils.dart';
 import 'battle_playback_controller.dart';
+import 'battle_screen_config.dart';
+
+export 'battle_screen_config.dart';
 import 'widgets/battle_banners.dart';
 import 'widgets/battle_header.dart';
 import 'widgets/battle_field.dart';
@@ -84,7 +87,7 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// 是否自动启动战斗 tick(opt-in,默认 true 现有调用零影响)。
   /// false 时永不启 Timer,画面冻结在 startBattle 后的 seed 态 ——
   /// 用于静态视觉验收(如 battle_charge_break 截蓄力帧,免被 tick 推进掉)。
-  final bool autoStart;
+  final BattleScreenPlaybackConfig playback;
 
   /// 时序重排(spec 2026-06-12):flow 路径传 true → 胜利时不弹 VictoryOverlay,
   /// 直接回调让 caller(stage/tower flow)接管,按掉落分档播爆品/简版勝。
@@ -104,29 +107,19 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// → `AutoPlayMode.interactive` 算出注入)。**Phase 3 暂无可见行为差异**(战斗
   /// 无论如何都自动连续播放);Phase 4 拖招层将以此门控技能栏 GestureDetector /
   /// 引导线 —— `false` = 纯挂机不挂拖招层。
-  final bool allowPlayerIntervention;
-
   /// 仅验收路由用(默认 false → 生产/现有调用零影响):起手即暂停,战斗冻结在
   /// startBattle seed 初态(timer 因 _isPaused 不启,与 [autoStart] 兼容)。
   /// **为 true 时**头栏额外渲染「单步」按钮(逐步推进战斗,供验收者点选技能/看
   /// 内力不足/debuff hover);生产挂机战斗恒 false,单步按钮严禁出现。
-  final bool startPaused;
-
   /// 一键扫荡用(默认 false → 现有调用零影响):起手即快进态,战斗本体直接以
   /// [AnimationNumbers.fastForwardIntervalMs] 速度连播,免玩家手点快进键。
-  final bool startFastForward;
-
   /// 首通可读节奏:只影响表现层常速播放,不改战斗结算。主线首通打开后会放慢
   /// 行动拍间隔并在胜利交接前留一个短停顿,让 1-3 拍速胜也能看清最后一击。
-  final bool readablePacing;
-
   /// 一键扫荡用(默认 false → 现有调用零影响):**挂载时若 battleProvider 已是非空
   /// 活跃战斗,自动起播**。常规流程(stage/tower host)是「先挂本屏空团、后 postFrame
   /// startBattle」,靠 build 内 `ref.listen` 的 empty→非空边沿起 timer;扫荡是「先注入、
   /// 后挂本屏」,挂载时边沿已过 → 监听捕获不到。本标志为扫荡补一条挂载后兜底自启,
   /// 不影响默认契约(其它调用预填战斗后保持冻结直到显式 advance)。
-  final bool autoStartOnMount;
-
   /// Debug/visual preview only:初始渲染一个纯 presentation 待发态。
   /// 只驱动按钮「待发」印与敌头像可选高亮,不写 [BattleState.pendingUltimates]。
   final int? previewPendingCharacterId;
@@ -141,15 +134,10 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.onDefeat,
     this.onSurrender,
     this.sceneBackgroundPath,
-    this.autoStart = true,
+    this.playback = const BattleScreenPlaybackConfig(),
     this.deferVictoryToCaller = false,
     this.bgmTrack = BgmTrack.battle,
     this.cycleHint,
-    this.allowPlayerIntervention = false,
-    this.startPaused = false,
-    this.startFastForward = false,
-    this.readablePacing = false,
-    this.autoStartOnMount = false,
     this.previewPendingCharacterId,
     this.previewPendingSkillId,
   });
@@ -207,9 +195,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       ref: ref,
       rebuild: setState,
       animConfig: widget.animConfig,
-      startPaused: widget.startPaused,
-      startFastForward: widget.startFastForward,
-      readablePacing: widget.readablePacing,
+      startPaused: widget.playback.startPaused,
+      startFastForward: widget.playback.startFastForward,
+      readablePacing: widget.playback.readablePacing,
     );
     // _beatCtrl / _isPaused / _isFastForward 初值由 _playback 构造器据
     // startPaused / startFastForward 处理（Task 2）。
@@ -221,10 +209,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // hang)。仅当 caller 显式 opt-in [autoStartOnMount] 时补一条挂载后兜底:挂到一场
     // 已就绪的活跃战斗且尚无 timer → 自启。默认 false 保持现有契约(其它调用预填战斗
     // 后保持冻结,由测试/验收显式推进),零回归。
-    if (widget.autoStartOnMount) {
+    if (widget.playback.autoStartOnMount) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted ||
-            !widget.autoStart ||
+            !widget.playback.autoStart ||
             _playback.isPaused ||
             _playback.hasTimer) {
           return;
@@ -251,8 +239,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   @override
   void didUpdateWidget(covariant BattleScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.readablePacing != widget.readablePacing) {
-      _playback.setReadablePacing(widget.readablePacing);
+    if (oldWidget.playback.readablePacing != widget.playback.readablePacing) {
+      _playback.setReadablePacing(widget.playback.readablePacing);
     }
   }
 
@@ -307,7 +295,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   ///
   /// 主线二 2.3:即放·真插队——立即出手(预支 AP 归零),不再走 pending+C5 快进路径。
   void _onSkillCommand(int characterId, SkillDef skill, {int? targetId}) {
-    if (!widget.allowPlayerIntervention) return; // 门控:群战/纯自动不接受指令
+    if (!widget.playback.allowPlayerIntervention) return;
     final s = ref.read(battleProvider);
     BattleCharacter? c;
     for (final ch in s.leftTeam) {
@@ -346,7 +334,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   /// 点技能按钮:single → 进待发态(软暂停);aoe → 直接出手。
   /// 待发态下再点同一技能 = 取消。
   void _onSkillTap(int characterId, SkillDef skill) {
-    if (!widget.allowPlayerIntervention) return;
+    if (!widget.playback.allowPlayerIntervention) return;
     final s = ref.read(battleProvider);
     BattleCharacter? c;
     for (final ch in s.leftTeam) {
@@ -529,7 +517,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     BattleResult result,
     BattleState s,
   ) async {
-    if (widget.readablePacing && result == BattleResult.leftWin) {
+    if (widget.playback.readablePacing && result == BattleResult.leftWin) {
       await Future<void>.delayed(_readableVictoryDelayFor(s));
     }
     if (!mounted) return;
@@ -630,7 +618,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       // 1. 启动 Timer：team 从空 → 非空且未结束 → 自动连续播放(Phase 3:战斗
       //    永远自动流转,advance() 驱动)。
       final wasEmpty = prev == null || prev.leftTeam.isEmpty;
-      if (widget.autoStart &&
+      if (widget.playback.autoStart &&
           wasEmpty &&
           next.leftTeam.isNotEmpty &&
           !next.isFinished) {
@@ -766,7 +754,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                                 ? null
                                 : _confirmSurrender,
                             // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
-                            onStepOnce: widget.startPaused ? _stepOnce : null,
+                            onStepOnce: widget.playback.startPaused
+                                ? _stepOnce
+                                : null,
                           ),
                           DangerBar(state: state),
                           Expanded(
@@ -811,13 +801,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             state: state,
                             onTap: () => setState(() => _logOpen = true),
                           ),
-                          if (widget.allowPlayerIntervention)
+                          if (widget.playback.allowPlayerIntervention)
                             CoopBurstPromptBar(state: state),
                           BottomBar(
                             state: state,
                             focusSlotIndex: _effectiveFocus(state),
                             allowPlayerIntervention:
-                                widget.allowPlayerIntervention,
+                                widget.playback.allowPlayerIntervention,
                             onSelectFocus: _onSelectFocus,
                             onShowSkillInfo: _showSkillInfo,
                             onFastForward: _playback.toggleFastForward,
@@ -861,7 +851,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
             if (_playback.isPaused &&
                 !_pendingActive &&
                 state.result == null &&
-                !widget.startPaused)
+                !widget.playback.startPaused)
               Positioned.fill(child: PauseOverlay(onResume: _togglePause)),
             // 单体技待发 + ≥2 存活敌人:技能格正上方浮出快捷选择栏。
             if (_pendingActive) _buildTargetChipOverlay(state),

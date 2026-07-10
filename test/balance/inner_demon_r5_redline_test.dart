@@ -11,7 +11,7 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
@@ -205,7 +205,7 @@ void main() {
               leftTeam: left,
               rightTeam: right,
             );
-            final finalState = BattleEngine.runToEnd(
+            final finalState = defaultGroundStrategy.runToEnd(
               initial,
               numbers,
               rng: Random(seed),

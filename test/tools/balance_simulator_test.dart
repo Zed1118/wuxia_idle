@@ -13,7 +13,7 @@
 //     BattleCharacter.fromCharacter(生产同一 derived_stats 路径)。替换旧
 //     _synthPlayer 线性硬编码 scale。**C 方案 floor+ceiling bracket**:每关跑两档
 //     剖面(_BuildProfile · floor 欠配置 / ceiling 活跃玩家),隔离配装/投入轴。
-//   - BattleEngine.runToEnd(initial, rng, maxTicks=200) 推到终态
+//   - defaultGroundStrategy.runToEnd(initial, rng, maxTicks=200) 推到终态
 //
 // 跑法:flutter test test/tools/balance_simulator_test.dart
 //
@@ -40,7 +40,7 @@ import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
     show RealmUtils;
@@ -756,7 +756,7 @@ _SimResult _simulateStage(
     (sum, p) => sum + p.maxHp,
   );
   final rng = Random(seed);
-  final terminal = BattleEngine.runToEnd(
+  final terminal = defaultGroundStrategy.runToEnd(
     initial,
     repo.numbers,
     maxTicks: _maxTicks,

@@ -783,10 +783,11 @@ class _MainlineFirstClearBattlePreviewState
     return BattleScreen(
       hint: '${stage.name} · 首通节奏验收',
       sceneBackgroundPath: stage.sceneBackgroundPath,
-      autoStart: true,
-      allowPlayerIntervention: true,
-      startPaused: widget.startPaused,
-      readablePacing: true,
+      playback: BattleScreenPlaybackConfig(
+        allowPlayerIntervention: true,
+        startPaused: widget.startPaused,
+        readablePacing: true,
+      ),
       onBattleEnd: () {},
     );
   }
