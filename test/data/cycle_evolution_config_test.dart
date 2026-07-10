@@ -1,14 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 
+import '../support/test_data.dart';
+
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   group('CycleEvolutionConfig', () {
     test('scale_per_cycle 与 cap 参数', () {

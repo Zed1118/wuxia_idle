@@ -1,14 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 
+import '../support/test_data.dart';
+
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   test('3 主线章末 Boss 配 dropSkillManualId 且 id 在 skills.yaml', () {
     final repo = GameRepository.instance;

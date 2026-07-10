@@ -4,17 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 
+import '../support/test_data.dart';
+
 /// 波A A4 · source 来源 tag 红线测族(写约束语义,不锚瞬时数字)。
 ///
 /// production 全量自洽 + broken loader transform 注错验证 fail-fast。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (p) => File(p).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   Future<String> Function(String) makeLoader(
     String targetPath,

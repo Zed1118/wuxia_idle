@@ -1,13 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'dart:io';
+
+import '../support/test_data.dart';
 
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
-  });
+  setUpAll(loadTestGameRepository);
   test('boss_charge 默认值解析', () {
     final bc = GameRepository.instance.numbers.combat.bossCharge;
     expect(bc.defaultChargeTicks, 3);

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 
+import '../support/test_data.dart';
+
 /// P0 破招 · Boss 蓄力技红线校验测族（spec §9.1）。
 ///
 /// 覆盖维度:
@@ -16,13 +18,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 /// **fixture 策略**(沿 stage_boss_recruit_test brokenLoader 体例):读 production
 /// yaml 后字符串 replace 1 处 inject 触发红线,不破其他 production 红线。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (p) => File(p).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   /// transform 模式:对指定 path 应用 transform,其余 path 读原文。
   Future<String> Function(String) makeLoader(

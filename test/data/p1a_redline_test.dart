@@ -1,8 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_proficiency.dart';
+
+import '../support/test_data.dart';
 
 /// 可玩性 P1a §五 红线测。
 ///
@@ -16,11 +16,7 @@ import 'package:wuxia_idle/features/cultivation/domain/skill_proficiency.dart';
 /// fresh-char(uses=0 → profMult 1.0)零回归已由 balance_simulator 3000 run 验证;
 /// 高熟练度全量平衡扫描见 backlog(simulator 未 seed skillUsageCount)。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   test('§2.5 相对 cap:任意 per-skill damage_pct,熟练满阶综合倍率 ≤ 1.30', () {
     final cfg = GameRepository.instance.numbers.skillProficiency;
