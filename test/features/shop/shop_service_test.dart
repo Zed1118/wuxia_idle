@@ -8,6 +8,8 @@ import 'package:wuxia_idle/data/defs/shop_item_def.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/shop/application/shop_service.dart';
 
+import '../../support/isar_test_support.dart';
+
 /// 材料经济 P1 Task 5：ShopService 购买逻辑验收（TDD）。
 /// 材料经济 balance T3：经验丹动态标价验收（TDD）。
 ///
@@ -52,9 +54,7 @@ void main() {
     category: 'pill',
   );
 
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
+  setUpAll(initializeTestIsarCore);
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_shop_test_');

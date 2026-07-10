@@ -9,6 +9,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 
+import '../../support/isar_test_support.dart';
+
 /// 材料经济 P1 Task 6：商店 Riverpod provider 验收（TDD）。
 ///
 /// 不走 testWidgets（避免 Isar writeTxn + FakeAsync 死锁，
@@ -22,7 +24,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     // shopItemListProvider 依赖 GameRepository.instance.shopItemDefs
     // 用 File loader 加载真实 shop.yaml（沿 balance_simulator_test 体例）
     await GameRepository.loadAllDefs(

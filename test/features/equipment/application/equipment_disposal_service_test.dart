@@ -15,6 +15,8 @@ import 'package:wuxia_idle/features/equipment/application/equipment_service.dart
 import 'package:wuxia_idle/features/equipment/domain/equipment_disposal.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
+import '../../../support/isar_test_support.dart';
+
 /// Task 2 TDD：装备出售/分解 service 单件验收。
 ///
 /// 沿 shop_service_test 体例：test() 不用 testWidgets
@@ -40,9 +42,7 @@ void main() {
     disassembleEnhanceMojianshiPerLevel: 1,
   );
 
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
+  setUpAll(initializeTestIsarCore);
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_disposal_test_');

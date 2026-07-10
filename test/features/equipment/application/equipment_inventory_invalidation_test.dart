@@ -14,12 +14,14 @@ import 'package:wuxia_idle/features/equipment/application/equipment_disposal_ser
 import 'package:wuxia_idle/features/equipment/application/equipment_inventory_invalidation.dart';
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 
+import '../../../support/isar_test_support.dart';
+
 void main() {
   late Directory tempDir;
   late Isar isar;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

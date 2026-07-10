@@ -9,6 +9,8 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/features/equipment/application/forging_service.dart';
 
+import '../../../support/isar_test_support.dart';
+
 /// T32 #22b ForgingService.persistResult 真 Isar 落地测试。
 ///
 /// 不依赖 Flutter binding，普通 `test()`：setUp 临时目录 + IsarSetup.init +
@@ -18,7 +20,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

@@ -8,6 +8,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/equipment/application/milestone_equipment_grant_service.dart';
 
+import '../../../support/isar_test_support.dart';
+
 /// F1 MilestoneEquipmentGrantService 真 Isar 落地测试。
 ///
 /// 不走 testWidgets(真 Isar writeTxn 与 FakeAsync 不兼容 · memory
@@ -18,7 +20,7 @@ void main() {
   late MilestoneEquipmentGrantService service;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),

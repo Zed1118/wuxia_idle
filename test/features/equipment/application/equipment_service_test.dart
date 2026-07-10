@@ -12,6 +12,8 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_service.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
+import '../../../support/isar_test_support.dart';
+
 /// H1 批2 EquipmentService 真 Isar 落地测试(玩家手动装备入口)。
 ///
 /// 不走 testWidgets(真 Isar writeTxn 与 FakeAsync 不兼容 · memory
@@ -28,7 +30,7 @@ void main() {
   late EquipmentService service;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),
