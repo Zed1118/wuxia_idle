@@ -5,7 +5,6 @@
 /// 默认 1.0 = 零回归；结界生效时主伤害 × wardMult（85% 减伤 = 0.15）。
 library;
 
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +14,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
+
+import '../../support/test_data.dart';
 
 // ── Fixture builders ──────────────────────────────────────────────────────
 // wardMultOf 纯测只用 ward 相关字段;e2e 测额外用 speed/hp/内力/技能 驱动真实结算。
@@ -75,11 +76,7 @@ SkillDef _mkSkill({required int power}) => SkillDef(
 );
 
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   group('DefaultGroundStrategy.wardMultOf', () {
     final boss = _mkChar(

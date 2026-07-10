@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +9,8 @@ import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 
+import '../../support/test_data.dart';
+
 /// 第七阶段批二 ① Task 3:Boss 转阶段运行时状态机。
 ///
 /// 验：血量跌破下一阶段 hpThresholdPct → 推进 bossPhaseIndex + 并入解锁招 +
@@ -17,9 +18,7 @@ import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strate
 void main() {
   late NumbersConfig numbers;
   setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
+    await loadTestGameRepository();
     numbers = GameRepository.instance.numbers;
   });
 

@@ -7,7 +7,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
-import 'dart:io';
+
+import '../../support/test_data.dart';
 
 /// P0 破招 Task 7:Boss 蓄力状态机(起手 / 进行 / 触发招牌技)。
 ///
@@ -20,9 +21,7 @@ import 'dart:io';
 void main() {
   late NumbersConfig numbers;
   setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
+    await loadTestGameRepository();
     numbers = GameRepository.instance.numbers;
   });
 

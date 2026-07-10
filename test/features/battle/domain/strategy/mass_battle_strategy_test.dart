@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
@@ -7,6 +5,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/mass_battle_strategy.dart';
 import 'package:wuxia_idle/features/mass_battle/domain/mass_battle_def.dart';
+
+import '../../../../support/test_data.dart';
 
 /// MassBattleStrategy 单测(1.0 P3.2 §12.3 Batch 2.2):
 ///   - R6.1 formation bake yanXing/baGua/fengShi 3 阵型 × {crit/evasion/defense/damage} delta
@@ -18,13 +18,7 @@ import 'package:wuxia_idle/features/mass_battle/domain/mass_battle_def.dart';
 /// 不测 runToEnd 主循环(沿 LightFootStrategy + DefaultGroundStrategy e2e 测路径,
 /// 本测只关 bake + intermission 两 hook;wave 循环路径留 Batch 2.5 R5.1 跨关红线测)。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   group(
     'MassBattleStrategy.applyFormationTo 烘焙 formation modifier 仅到 leftTeam',

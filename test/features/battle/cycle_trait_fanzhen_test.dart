@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +10,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 
+import '../../support/test_data.dart';
+
 /// C2 反震词条单元测试。
 ///
 /// 覆盖语义：
@@ -22,13 +23,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 /// 6. 敌人攻击玩家时不触发（反震只在玩家打敌人时）。
 
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   test('反震:玩家命中有 cycle_fanzhen 的敌人 → 攻击者收到 InternalInjurySlot', () {
     final n = GameRepository.instance.numbers;

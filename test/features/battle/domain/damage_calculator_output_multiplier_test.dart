@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +5,8 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+
+import '../../../support/test_data.dart';
 
 SkillDef _mkSkill({required int power}) => SkillDef(
       id: 's',
@@ -20,11 +21,7 @@ SkillDef _mkSkill({required int power}) => SkillDef(
     );
 
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   AttackResult call({double outputMultiplier = 1.0}) {
     final n = GameRepository.instance.numbers;

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +6,8 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
+
+import '../../../support/test_data.dart';
 
 /// 第五阶段 · aoe 群体技全体伤害结算红线(Task 3)。
 ///
@@ -18,13 +19,7 @@ import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strate
 /// criticalRate=0 / evasionRate=0 → 伤害全确定(无 rng 分支),便于断言「aoe 对
 /// 某敌扣血 == 同条件 single 技对该敌单体伤害」证各目标 = 完整单体值。
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   // 普攻兜底(cost=0 / cd=0)。
   const normal = SkillDef(

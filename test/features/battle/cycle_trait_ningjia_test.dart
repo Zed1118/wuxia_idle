@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +11,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+
+import '../../support/test_data.dart';
 
 /// C1 凝甲词条单元测试。
 ///
@@ -65,11 +66,7 @@ AttackResult callCalc({
 }
 
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   test('凝甲:暴击伤害增量减半(forceCritical + mult=0.5)', () {
     final n = GameRepository.instance.numbers;

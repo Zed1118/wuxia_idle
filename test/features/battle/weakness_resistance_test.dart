@@ -4,7 +4,6 @@
 /// 末端乘项行为（参数已加，caller wiring 在 Task 7）。
 library;
 
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +11,8 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+
+import '../../support/test_data.dart';
 
 SkillDef _mkSkill({required int power, required SkillType type}) => SkillDef(
       id: 's',
@@ -26,11 +27,7 @@ SkillDef _mkSkill({required int power, required SkillType type}) => SkillDef(
     );
 
 void main() {
-  setUpAll(() async {
-    if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
-    }
-  });
+  setUpAll(loadTestGameRepository);
 
   AttackResult call({double schoolMult = 1.0}) {
     final n = GameRepository.instance.numbers;
