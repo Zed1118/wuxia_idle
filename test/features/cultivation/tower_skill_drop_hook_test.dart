@@ -2,12 +2,13 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_unlock_service.dart';
 import 'package:wuxia_idle/features/cultivation/presentation/stage_skill_drop_hook.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
+
+import '../../support/isar_test_support.dart';
 
 TowerFloorDef _bossFloor({String? fragment}) => TowerFloorDef(
   floorIndex: 10,
@@ -20,9 +21,7 @@ TowerFloorDef _bossFloor({String? fragment}) => TowerFloorDef(
 void main() {
   late Directory tempDir;
 
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
+  setUpAll(initializeTestIsarCore);
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_tower_drop_');
     await IsarSetup.init(directory: tempDir, inspector: false);

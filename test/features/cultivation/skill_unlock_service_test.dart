@@ -1,16 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_unlock_service.dart';
+
+import '../../support/isar_test_support.dart';
 
 void main() {
   late Directory tempDir;
 
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
+  setUpAll(initializeTestIsarCore);
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_skill_unlock_');

@@ -10,6 +10,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/cultivation/application/insight_exchange_service.dart';
 
+import '../../../support/isar_test_support.dart';
+
 /// 根因A(2026-05-29):insightPoints 凝练兑换主修修炼度 sink。
 void main() {
   late Directory tempDir;
@@ -17,7 +19,7 @@ void main() {
   const kTechId = 70;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(
         loader: (path) => File(path).readAsString(),
