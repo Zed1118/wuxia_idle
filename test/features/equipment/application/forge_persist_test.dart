@@ -10,6 +10,7 @@ import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/features/equipment/application/forging_service.dart';
 
 import '../../../support/isar_test_support.dart';
+import '../../../support/test_data.dart';
 
 /// T32 #22b ForgingService.persistResult 真 Isar 落地测试。
 ///
@@ -22,9 +23,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

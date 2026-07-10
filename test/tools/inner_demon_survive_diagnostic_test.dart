@@ -1,5 +1,4 @@
 // ignore_for_file: avoid_print
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -16,6 +15,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
     show RealmUtils;
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
+import '../support/test_data.dart';
 
 /// 终局机制型 Boss 批次3 · Task 5（修订）：心魔·真（stage_inner_demon_07）
 /// 「脆弱窗口 + survive 双通道」诊断 + N 重校准。
@@ -244,9 +244,7 @@ List<_Outcome> _sweep(
 void main() {
   late GameRepository repo;
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    repo = await loadTestGameRepository();
   });
 
   test('(0) 前置：07 winCondition surviveTicks=N + 生产路径镜像有脆弱窗口', () {

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -12,6 +11,7 @@ import 'package:wuxia_idle/features/dispel/application/dispel_service.dart';
 import 'package:wuxia_idle/features/equipment/application/enhancement_service.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
+import '../../../support/test_data.dart';
 
 /// Phase 2 调试场景数值断言（phase2_tasks.md T32 §492-509 子提交 4）。
 ///
@@ -28,9 +28,7 @@ import 'package:wuxia_idle/shared/utils/rng.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

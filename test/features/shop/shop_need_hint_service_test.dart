@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -9,6 +8,7 @@ import 'package:wuxia_idle/core/domain/item_usage.dart';
 import 'package:wuxia_idle/data/defs/shop_item_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/shop/application/shop_need_hint_service.dart';
+import '../../support/test_data.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -17,9 +17,7 @@ void main() {
   late ShopNeedHintService service;
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    repo = await loadTestGameRepository();
     service = ShopNeedHintService(repo);
   });
 

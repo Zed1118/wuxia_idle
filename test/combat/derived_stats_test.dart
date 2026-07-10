@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -9,20 +7,14 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/forging_slot.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import '../support/test_data.dart';
 
 /// RealmUtils 单元测试（phase1_tasks T08）。
 ///
-/// 复用 game_repository_test 的 fileLoader 范式：直接 File IO 加载 data/*.yaml，
-/// `flutter test` cwd = 项目根。
+/// 通过共享测试 helper 加载 production data/*.yaml。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

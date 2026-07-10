@@ -51,6 +51,7 @@ import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../../shared/widgets/asset_fallback.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ink_button.dart';
 import '../../../shared/widgets/wuxia_ui/currency_pill.dart';
@@ -481,7 +482,9 @@ class MainMenu extends ConsumerWidget {
                 child: WuxiaImage(
                   WuxiaUi.mainMenuBg,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  errorBuilder: wuxiaAssetErrorBuilder(
+                    () => const ColoredBox(color: WuxiaColors.background),
+                  ),
                 ),
               ),
               const Positioned.fill(

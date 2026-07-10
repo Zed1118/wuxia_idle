@@ -5,11 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 
 import '../../support/isar_test_support.dart';
+import '../../support/test_data.dart';
 
 /// 材料经济 P1 Task 6：商店 Riverpod provider 验收（TDD）。
 ///
@@ -27,9 +27,7 @@ void main() {
     await initializeTestIsarCore();
     // shopItemListProvider 依赖 GameRepository.instance.shopItemDefs
     // 用 File loader 加载真实 shop.yaml（沿 balance_simulator_test 体例）
-    await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    await loadTestGameRepository();
   });
 
   setUp(() async {

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,13 +11,12 @@ import 'package:wuxia_idle/features/loot_preview/domain/drop_rumor.dart';
 import 'package:wuxia_idle/features/loot_preview/presentation/stage_intel_dialog.dart';
 import 'package:wuxia_idle/features/mainline/application/new_save_goal_guidance.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../support/test_data.dart';
 
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -6,6 +5,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_ai.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import '../../support/test_data.dart';
 
 /// 第七阶段批三 Task 11:二弟子(junior)控场目标偏好。
 ///
@@ -21,14 +21,8 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 /// **测 D(对照)**:同 state 但 actor lineageRole=null → 默认血最低。
 /// **测 E(边)**:junior + 无蓄力敌 → 回落血最低,不崩。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

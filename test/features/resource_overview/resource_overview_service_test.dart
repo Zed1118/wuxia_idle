@@ -7,13 +7,15 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/resource_overview/application/resource_overview_service.dart';
 import 'package:wuxia_idle/features/resource_overview/domain/resource_overview_item.dart';
 
+import '../../support/test_data.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late GameRepository repo;
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs();
+    repo = await loadTestGameRepository();
   });
 
   InventoryItem item(String defId, ItemType type, int quantity) {

@@ -8,20 +8,18 @@
 /// 纯 scenario 接线守卫,不跑真实战斗结算。
 library;
 
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/guardian_ward_presentation.dart';
 import 'package:wuxia_idle/features/debug/presentation/battle_test_menu.dart';
+import '../../support/test_data.dart';
 
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

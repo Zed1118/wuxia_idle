@@ -1,12 +1,11 @@
-import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import '../../support/test_data.dart';
 
 /// 半手动战斗 P0 步骤1:确定性 seed 链红线。
 ///
@@ -29,9 +28,7 @@ void main() {
   setUpAll(() async {
     // loadAllDefs 副作用设 GameRepository.instance 单例;advance() 内
     // numbersConfigProvider 默认实现读该单例。
-    await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    await loadTestGameRepository();
   });
 
   // 普攻(兜底,无内力消耗)。

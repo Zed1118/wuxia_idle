@@ -17,6 +17,8 @@ import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strate
 import 'package:wuxia_idle/features/battle/domain/strategy/light_foot_strategy.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/light_foot/application/light_foot_service.dart';
+import "../support/isar_test_support.dart";
+import '../support/test_data.dart';
 
 /// P3.1 §12.3 轻功对决 Batch C.1 R5 跨地形红线压测。
 ///
@@ -40,11 +42,9 @@ import 'package:wuxia_idle/features/light_foot/application/light_foot_service.da
 ///   - ❌ 不写「胜率 X%」「leftWins ≥ 30」之类瞬时数字断言
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

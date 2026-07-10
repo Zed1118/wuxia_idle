@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -10,6 +9,7 @@ import 'package:wuxia_idle/features/battle/application/battle_resolution.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
+import '../../support/test_data.dart';
 
 /// Task 8：心魔关战败损失摘要展示心魔惩罚 + 余毒。
 ///
@@ -22,9 +22,7 @@ import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart'
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

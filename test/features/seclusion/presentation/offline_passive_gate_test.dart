@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 import '../../../support/isar_test_support.dart';
+import '../../../support/test_data.dart';
 
 /// M2 范围 B gate「旧档首启不回溯」守卫专测（spec §7 #4）。
 ///
@@ -28,7 +29,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
+      await loadTestGameRepository();
     }
   });
 

@@ -12,6 +12,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/lore_loader.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/event/application/game_event_service.dart';
+import "../../../support/isar_test_support.dart";
 
 /// P1 #44 · 测试 helper:构造 LoreContent 池(直接传 text 列表)。
 LoreContent _loreFor(
@@ -42,7 +43,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
   });
 
   setUp(() async {

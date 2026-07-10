@@ -13,6 +13,7 @@ import 'package:wuxia_idle/features/equipment/application/equipment_service.dart
 import 'package:wuxia_idle/shared/strings.dart';
 
 import '../../../support/isar_test_support.dart';
+import '../../../support/test_data.dart';
 
 /// H1 批2 EquipmentService 真 Isar 落地测试(玩家手动装备入口)。
 ///
@@ -32,9 +33,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

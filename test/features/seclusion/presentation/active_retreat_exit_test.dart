@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,13 +8,12 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/active_retreat_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../../support/test_data.dart';
 
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

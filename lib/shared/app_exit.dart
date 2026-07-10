@@ -24,6 +24,9 @@ class AppExit {
     if (!kIsWeb) exit(0);
   }
 
+  /// 已完成上层确认或必须重启时，直接结束桌面进程。
+  static void quitNow() => quit();
+
   /// 弹确认对话框,确认则退出。进度已实时落盘 + 离线照常挂机,故退出无损。
   static Future<void> confirmAndQuit(BuildContext context) async {
     final shouldQuit = await PaperDialog.show<bool>(

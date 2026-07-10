@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +6,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
+import '../../../support/test_data.dart';
 
 /// W17 #F · runStageFlow widget integration 测试（@visibleForTesting DI 注入）。
 ///
@@ -21,9 +21,7 @@ import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart'
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

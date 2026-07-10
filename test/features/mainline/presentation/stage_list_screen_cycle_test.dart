@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +10,7 @@ import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../../support/test_data.dart';
 
 /// 周目按章:主线关卡列表屏章级 CycleSelectControl 接线测试(Phase 2 上移)。
 ///
@@ -20,9 +20,7 @@ import 'package:wuxia_idle/shared/strings.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

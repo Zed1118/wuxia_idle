@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -13,6 +12,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import '../support/test_data.dart';
 
 /// BattleLog + EnumL10n 单元测试（phase1_tasks.md T13 §746-748 验收）。
 ///
@@ -23,14 +23,8 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 /// 4. **集成验收（§747）**：跑一场完整战斗，formatAllActions + formatSummary
 ///    输出覆盖 行动顺序 / 伤害数字 / 胜负 / 不出现 enum 拼音。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

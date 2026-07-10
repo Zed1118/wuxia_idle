@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +8,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
+import '../../support/test_data.dart';
 
 /// 半手动战斗 P0 步骤3b:逐 actor 单步推进(intra-tick actor 队列)红线。
 ///
@@ -25,9 +25,7 @@ import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strate
 /// 证伪内容(沿 battle_seed_determinism_test 体例)。
 void main() {
   setUpAll(() async {
-    await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    await loadTestGameRepository();
   });
 
   const normal = SkillDef(

@@ -15,6 +15,8 @@ import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
+import "../support/isar_test_support.dart";
+import '../support/test_data.dart';
 
 /// Phase 2 Ch6 R5 末 Boss 跨阶红线压测(spec §六 R5)。
 ///
@@ -43,11 +45,9 @@ import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 ///   Ch4 小铜镜 + Ch5「师」字玉佩三章 hook 全闭环 + 无物之境收束。
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

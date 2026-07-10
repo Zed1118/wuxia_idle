@@ -1,12 +1,11 @@
-import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import '../../../support/test_data.dart';
 
 /// Task 4:开锋破甲 / 吸血接战斗集成测试。
 ///
@@ -21,9 +20,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 ///   advance() 循环 + 读最终 BattleState。
 void main() {
   setUpAll(() async {
-    await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    await loadTestGameRepository();
   });
 
   // 普攻(无消耗,保证每拍都出手)。

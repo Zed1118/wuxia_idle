@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -6,6 +5,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/seclusion/application/offline_recap_service.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
+import '../../../support/test_data.dart';
 
 /// M2 离线收益汇总「欢迎回来」卡 · 纯函数计算层测试。
 ///
@@ -14,9 +14,7 @@ import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +10,7 @@ import 'package:wuxia_idle/shared/utils/rng_provider.dart';
 import 'package:wuxia_idle/features/equipment/presentation/enhance_dialog.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
+import '../../../support/test_data.dart';
 
 /// T29 EnhanceDialog widget 测试（phase2_tasks.md §433-434）。
 ///
@@ -30,9 +30,7 @@ import 'package:wuxia_idle/shared/utils/rng.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/item_usage.dart';
@@ -6,13 +5,12 @@ import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_replay_reward_route.dart';
 import 'package:wuxia_idle/features/sweep/domain/sweep_reward_preview.dart';
+import '../../../support/test_data.dart';
 
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

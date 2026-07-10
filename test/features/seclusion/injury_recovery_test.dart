@@ -11,6 +11,7 @@ import 'package:wuxia_idle/features/seclusion/application/offline_passive_servic
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 
 import '../../support/isar_test_support.dart';
+import '../../support/test_data.dart';
 
 /// Task 8：双层伤势靠真实挂机/闭关时间疗养（守 §5.5 在线=离线，无加速）。
 ///   - 重伤 injuryHoursRemaining 按 actualHours / awayHours 累减（clamp ≥ 0）
@@ -24,9 +25,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

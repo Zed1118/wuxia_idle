@@ -4,6 +4,7 @@ import '../../strings.dart';
 import '../../theme/wuxia_tokens.dart';
 import '../wuxia_image.dart';
 import 'panel_surface.dart';
+import 'wuxia_icon_button.dart';
 
 /// 宣纸顶栏（UI kit · demo `.titlebar`）：替 Material AppBar。
 ///
@@ -62,16 +63,10 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
             return Row(
               children: [
                 if (onBack != null)
-                  InkWell(
-                    onTap: onBack,
-                    child: const Padding(
-                      padding: EdgeInsets.only(right: 12),
-                      child: Icon(
-                        Icons.subdirectory_arrow_left,
-                        color: WuxiaUi.jiang,
-                        size: 22,
-                      ),
-                    ),
+                  WuxiaIconButton(
+                    icon: Icons.arrow_back,
+                    tooltip: UiStrings.titleBarBack,
+                    onPressed: onBack,
                   ),
                 Expanded(
                   child: Text(
@@ -92,22 +87,12 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
                     child: trailing,
                   ),
                 if (showHome)
-                  Tooltip(
-                    message: UiStrings.titleBarHome,
-                    child: InkWell(
-                      onTap:
-                          onHome ??
-                          () =>
-                              Navigator.of(context).popUntil((r) => r.isFirst),
-                      child: const Padding(
-                        padding: EdgeInsets.only(left: 4, right: 8),
-                        child: Icon(
-                          Icons.home_outlined,
-                          color: WuxiaUi.jiang,
-                          size: 22,
-                        ),
-                      ),
-                    ),
+                  WuxiaIconButton(
+                    icon: Icons.home_outlined,
+                    tooltip: UiStrings.titleBarHome,
+                    onPressed:
+                        onHome ??
+                        () => Navigator.of(context).popUntil((r) => r.isFirst),
                   ),
                 if (showSeal)
                   SizedBox(

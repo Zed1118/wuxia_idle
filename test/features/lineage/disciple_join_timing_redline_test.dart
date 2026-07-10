@@ -1,8 +1,8 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import '../../support/test_data.dart';
 
 /// 队伍解锁时机语义守护(2026-06-27 · spec A 后移至终局)。
 ///
@@ -16,9 +16,7 @@ void main() {
   late GameRepository repo;
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    repo = await loadTestGameRepository();
   });
 
   int chapterOf(String stageId) {

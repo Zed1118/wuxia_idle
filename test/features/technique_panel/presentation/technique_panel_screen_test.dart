@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +15,7 @@ import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/technique_panel/presentation/technique_panel_screen.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../../support/test_data.dart';
 
 /// T31 心法面板 widget 测试（phase2_tasks.md §483）。
 ///
@@ -25,9 +25,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

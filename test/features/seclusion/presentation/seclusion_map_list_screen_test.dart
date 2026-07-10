@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +13,7 @@ import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_map_list_screen.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_setup_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../../support/test_data.dart';
 
 class _FakeSeclusionService implements SeclusionService {
   RetreatSession? activeSession;
@@ -71,9 +71,7 @@ class _FakeSeclusionService implements SeclusionService {
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

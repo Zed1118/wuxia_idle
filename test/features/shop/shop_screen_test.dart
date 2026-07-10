@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,11 +10,11 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/item_usage.dart';
 import 'package:wuxia_idle/data/defs/shop_item_def.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/features/shop/presentation/shop_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../support/test_data.dart';
 
 /// 材料经济 P1 Task 8：ShopScreen widget 测试。
 ///
@@ -29,7 +28,7 @@ import 'package:wuxia_idle/shared/strings.dart';
 /// 本测 override provider 跳过 Isar，只测 UI 渲染与弹窗逻辑。
 void main() {
   setUpAll(() async {
-    await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
+    await loadTestGameRepository();
   });
 
   // 两件测试商品（仿 shop.yaml）

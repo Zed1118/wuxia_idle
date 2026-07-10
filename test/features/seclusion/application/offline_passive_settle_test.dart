@@ -9,6 +9,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/seclusion/application/offline_passive_service.dart';
 
 import '../../../support/isar_test_support.dart';
+import '../../../support/test_data.dart';
 
 void main() {
   late Directory tempDir;
@@ -17,7 +18,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
+      await loadTestGameRepository();
     }
   });
 

@@ -1,7 +1,7 @@
-import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import '../support/test_data.dart';
 
 // biome → 背景文件名(与 design 映射表一致)
 const _map = {
@@ -26,14 +26,8 @@ const _map = {
 void main() {
   late GameRepository repo;
 
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return (await f.readAsString()).replaceAll('\r\n', '\n');
-  }
-
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs(loader: fileLoader);
+    repo = await loadTestGameRepository();
   });
 
   tearDownAll(GameRepository.resetForTest);

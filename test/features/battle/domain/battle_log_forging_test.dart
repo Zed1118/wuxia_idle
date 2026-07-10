@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_log.dart';
@@ -11,6 +10,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import '../../../support/test_data.dart';
 
 /// Task 5 验收：开锋破甲/吸血战报标记（战报展示层）。
 ///
@@ -19,14 +19,8 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 /// 2. formatAction 含吸血标记「吸血 +N」（lifestealHeal > 0 时）。
 /// 3. 无吸血时（lifestealHeal == 0）不含「吸血」字样。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

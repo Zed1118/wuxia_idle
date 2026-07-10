@@ -22,6 +22,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import '../support/test_data.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
     show RealmUtils;
 
@@ -35,9 +36,7 @@ void main() {
   late GameRepository repo;
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    repo = await loadTestGameRepository();
     Directory(_outputDir).createSync(recursive: true);
   });
 

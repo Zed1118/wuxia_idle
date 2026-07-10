@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,14 +8,13 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/baike/presentation/baike_screen.dart';
 import 'package:wuxia_idle/features/event/application/game_event_feed_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../../support/test_data.dart';
 
 /// P1 #42 Phase 4 · BaikeScreen 红线契约。
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

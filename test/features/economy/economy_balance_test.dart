@@ -1,9 +1,9 @@
-import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import '../../support/test_data.dart';
 
 /// 材料经济节奏 balance 验证(确定性算式,非战斗模拟)。
 /// balance_simulator 只模拟战斗 winRate/伤害,不建模挂机银两收入 → 经济节奏
@@ -17,9 +17,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

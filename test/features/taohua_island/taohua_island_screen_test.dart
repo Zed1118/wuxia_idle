@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +10,7 @@ import 'package:wuxia_idle/features/taohua_island/domain/island_prep_advice.dart
 import 'package:wuxia_idle/features/taohua_island/presentation/taohua_island_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
+import '../../support/test_data.dart';
 
 /// TaohuaIslandScreen widget 测试。
 ///
@@ -21,9 +21,7 @@ import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

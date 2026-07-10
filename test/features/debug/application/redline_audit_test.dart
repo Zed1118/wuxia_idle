@@ -1,11 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/debug/application/redline_audit.dart';
 
-Future<String> _fileLoader(String path) async => File(path).readAsString();
+import '../../../support/test_data.dart';
 
 void main() {
   tearDown(GameRepository.resetForTest);
@@ -29,7 +27,7 @@ void main() {
 
   group('buildRedlineAuditReport', () {
     setUp(() async {
-      await GameRepository.loadAllDefs(loader: _fileLoader);
+      await loadTestGameRepository();
     });
 
     test('覆盖 §5.4 关键红线项目', () {

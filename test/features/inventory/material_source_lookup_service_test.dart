@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/item_source.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/inventory/application/material_source_lookup_service.dart';
+
+import '../../support/test_data.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 void main() {
@@ -11,7 +13,7 @@ void main() {
   late MaterialSourceLookupService service;
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs();
+    repo = await loadTestGameRepository();
     service = MaterialSourceLookupService(repo);
   });
 

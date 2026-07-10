@@ -2,7 +2,6 @@
 //
 // Task 8: 验证 _StageRow 正确接入掉落传闻简版行 + info 角标。
 // 通过 StageListScreen 端到端渲染（镜像 stage_list_screen_test.dart 模式）。
-import 'dart:io';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -13,13 +12,12 @@ import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../support/test_data.dart';
 
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

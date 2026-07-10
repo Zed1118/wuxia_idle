@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
@@ -8,6 +7,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/forging_slot.dart';
+import '../support/test_data.dart';
 
 /// T22 装备战斗加成整合验收（phase2_tasks T22 §253-275）。
 ///
@@ -15,9 +15,7 @@ import 'package:wuxia_idle/core/domain/forging_slot.dart';
 /// 公式：`final = baseAttack × (1 + enhanceLevel × 0.05) × resonanceBonus × (1 + forgePct)`
 void main() {
   setUp(() async {
-    await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +9,7 @@ import 'package:wuxia_idle/features/help/presentation/context_help_button.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
+import '../../support/test_data.dart';
 
 /// 上下文帮助系统 · ContextHelpButton 行为契约（2026-06-19 改：三态全部可点）。
 ///
@@ -19,9 +19,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

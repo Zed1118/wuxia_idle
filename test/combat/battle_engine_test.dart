@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +10,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import '../support/test_data.dart';
 
 /// BattleEngine + BattleAI 单元测试（phase1_tasks.md T12 §706 验收）。
 ///
@@ -27,14 +27,8 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 /// 7. BattleAI 招式选择优先级：pendingUltimates > powerSkill > normalAttack。
 /// 8. 死亡角色不行动（AI 跳过）+ AI 选目标取活角色 hp 最低。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

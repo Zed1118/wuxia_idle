@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
+import '../support/test_data.dart';
 
 const String _outputDir = 'test/tools/output';
 
@@ -13,9 +14,7 @@ void main() {
   late GameRepository repo;
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    repo = await loadTestGameRepository();
     Directory(_outputDir).createSync(recursive: true);
   });
 

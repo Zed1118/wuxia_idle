@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/inventory/application/item_use_invalidation.
 import 'package:wuxia_idle/features/inventory/application/item_use_service.dart';
 
 import '../../support/isar_test_support.dart';
+import '../../support/test_data.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +25,7 @@ void main() {
 
   setUpAll(() async {
     await initializeTestIsarCore();
-    repo = await GameRepository.loadAllDefs();
+    repo = await loadTestGameRepository();
   });
 
   setUp(() async {

@@ -1,7 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+
+import '../../support/test_data.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -76,16 +76,10 @@ Technique _mkTech() {
   );
 }
 
-Future<String> _fileLoader(String path) async {
-  final f = File(path);
-  if (!await f.exists()) throw FileSystemException('不存在', path);
-  return f.readAsString();
-}
-
 void main() {
   group('BattleCharacter lineageRole 字段透传', () {
     setUp(() async {
-      await GameRepository.loadAllDefs(loader: _fileLoader);
+      await loadTestGameRepository();
     });
     tearDown(GameRepository.resetForTest);
 

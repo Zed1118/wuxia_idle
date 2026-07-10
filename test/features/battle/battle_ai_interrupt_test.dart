@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -6,6 +5,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_ai.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import '../../support/test_data.dart';
 
 /// P0 破招(Task 6):battle_ai aiUsePolicy 跳过 + 蓄力时破招 + 破招技锁定蓄力敌。
 ///
@@ -13,14 +13,8 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 ///   测 B(有人蓄力 + targeting):对面某敌蓄力 → decide 选 saveForInterrupt 技,
 ///     且 targetId == 该 charging 敌人(即使它非血最低,验证 targeting 锁定蓄力敌)。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   tearDown(GameRepository.resetForTest);

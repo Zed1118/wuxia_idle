@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +8,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/inventory/presentation/inventory_screen.dart';
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+
+import '../../support/test_data.dart';
 
 /// 材料经济 P2 T4：背包物料 tab「使用」按钮 widget 测。
 ///
@@ -30,13 +30,7 @@ void main() {
   }
 
   setUpAll(() async {
-    await GameRepository.loadAllDefs(
-      loader: (path) async {
-        final f = File(path);
-        if (!await f.exists()) throw FileSystemException('不存在', path);
-        return f.readAsString();
-      },
-    );
+    await loadTestGameRepository();
   });
 
   tearDownAll(GameRepository.resetForTest);

@@ -6,10 +6,11 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_state.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
+import "../../support/isar_test_support.dart";
 
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
   });
 
   late Directory tempDir;

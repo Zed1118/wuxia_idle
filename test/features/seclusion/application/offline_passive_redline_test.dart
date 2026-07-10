@@ -12,20 +12,18 @@
 //   12 层·对 Ch1 学徒差 1 阶不碾压」；被动经验补到闭关 1/2，磨剑石仍保持
 //   1/4 涓流。本测以**实数据**钉死分维度锚 + 各境界 72h 产出上界量级。
 
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/seclusion/application/offline_passive_service.dart';
+import '../../../support/test_data.dart';
 
 void main() {
   late GameRepository repo;
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    repo = await loadTestGameRepository();
   });
 
   test('被动 72h 学徒产出按经验 50% / 磨剑石 25% 锚定（实数据，±容差）', () {

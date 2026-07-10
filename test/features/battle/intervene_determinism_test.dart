@@ -1,16 +1,15 @@
-import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import '../../support/test_data.dart';
 
 void main() {
   setUpAll(() async {
-    await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
+    await loadTestGameRepository();
   });
 
   const power = SkillDef(

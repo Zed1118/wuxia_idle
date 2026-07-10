@@ -24,6 +24,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
+import "../support/isar_test_support.dart";
+import '../support/test_data.dart';
 
 const String _outputDir = 'test/tools/output';
 final StringBuffer _report = StringBuffer();
@@ -32,11 +34,9 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
     Directory(_outputDir).createSync(recursive: true);
     _report.writeln('# D 性能稳定性压测报告 · 2026-06-02\n');

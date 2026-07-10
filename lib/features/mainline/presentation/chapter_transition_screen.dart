@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../data/narrative_loader.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/asset_fallback.dart';
 import '../domain/chapter_assets.dart';
 import 'stage_list_screen.dart';
 import '../../../shared/widgets/wuxia_image.dart';
@@ -68,8 +69,8 @@ class ChapterTransitionScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // 章首全宽水墨插图(出版美术 §5.3):无图 errorBuilder
-                            // shrink 折叠不留空,MJ 章节封面落位即显。
+                            // 章首全宽水墨插图(出版美术 §5.3)。缺图保留装裱高度，
+                            // 避免正文上跳，并在 debug 下显示统一诊断角标。
                             ClipRRect(
                               borderRadius: BorderRadius.circular(6),
                               child: WuxiaImage(
@@ -77,8 +78,21 @@ class ChapterTransitionScreen extends StatelessWidget {
                                 height: 172,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) =>
-                                    const SizedBox.shrink(),
+                                errorBuilder: wuxiaAssetErrorBuilder(
+                                  () => const SizedBox(
+                                    height: 172,
+                                    child: ColoredBox(
+                                      color: WuxiaColors.avatarFill,
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.landscape_outlined,
+                                          color: WuxiaColors.textMuted,
+                                          size: 44,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 24),

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/narrative_loader.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import '../../support/test_data.dart';
 
 /// 主线章节剧情完整性守护。
 ///
@@ -14,7 +15,7 @@ void main() {
   Future<String> fileLoader(String path) => File(path).readAsString();
 
   setUpAll(() async {
-    repo = await GameRepository.loadAllDefs(loader: fileLoader);
+    repo = await loadTestGameRepository();
   });
 
   test('主线 stage 绑定的 narrative id 全部能加载到真内容', () async {

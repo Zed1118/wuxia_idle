@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -16,6 +15,7 @@ import 'package:wuxia_idle/features/sect/application/sect_member_service.dart';
 import 'package:wuxia_idle/features/sect/domain/sect.dart';
 import 'package:wuxia_idle/features/sect/presentation/stage_boss_recruit_hook.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
+import "../../support/isar_test_support.dart";
 
 /// P4.1 1.1 Q6B · stage_boss recruit B3 R5 测族(spec §7)。
 ///
@@ -33,7 +33,7 @@ void main() {
   late Directory tempDir;
 
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
     }

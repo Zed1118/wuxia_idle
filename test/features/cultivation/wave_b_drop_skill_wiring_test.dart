@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/cultivation/domain/skill_unlock_service.dart
 import 'package:wuxia_idle/features/cultivation/presentation/stage_skill_drop_hook.dart';
 
 import '../../support/isar_test_support.dart';
+import '../../support/test_data.dart';
 
 /// 波B drop 招(真解/残页)装配 wiring 测族。
 ///
@@ -31,9 +32,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (p) => File(p).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

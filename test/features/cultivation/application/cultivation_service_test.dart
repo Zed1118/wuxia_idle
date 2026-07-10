@@ -1,11 +1,10 @@
-import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/features/cultivation/application/cultivation_service.dart';
+import '../../../support/test_data.dart';
 
 /// T24 CultivationService 验收（phase2_tasks T24 §269-293）。
 ///
@@ -23,9 +22,7 @@ void main() {
   late Map<CultivationLayer, int> progressMap;
 
   setUpAll(() async {
-    final repo = await GameRepository.loadAllDefs(
-      loader: (path) => File(path).readAsString(),
-    );
+    final repo = await loadTestGameRepository();
     progressMap = repo.numbers.cultivationProgressToNext;
   });
 

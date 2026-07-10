@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +24,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/section_header.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/stage_progress_row.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_title_bar.dart';
+import '../../../support/test_data.dart';
 
 /// T28 角色面板 widget 测试（phase2_tasks.md §407）。
 ///
@@ -34,9 +34,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

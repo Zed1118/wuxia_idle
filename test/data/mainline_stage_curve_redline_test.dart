@@ -1,16 +1,14 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 
-Future<String> _fileLoader(String path) => File(path).readAsString();
+import '../support/test_data.dart';
 
 void main() {
   late GameRepository repo;
 
   setUpAll(() async {
     GameRepository.resetForTest();
-    repo = await GameRepository.loadAllDefs(loader: _fileLoader);
+    repo = await loadTestGameRepository();
   });
 
   tearDownAll(GameRepository.resetForTest);

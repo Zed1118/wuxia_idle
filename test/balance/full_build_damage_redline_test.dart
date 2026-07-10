@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +8,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
+import '../support/test_data.dart';
 
 /// 满强化神物 build 普通伤害软红线(2026-06-14 红线语义收口 · 用户拍板分两层)。
 ///
@@ -19,14 +19,8 @@ import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
 /// 爽感**,不是 bug —— 真正的硬约束是「**配置基础表值不得突破**」+「**实战可见值
 /// 不进百万级膨胀(保可读)**」。本测钉死后者:满 build 普攻(含暴击)不进百万。
 void main() {
-  Future<String> fileLoader(String path) async {
-    final f = File(path);
-    if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
-  }
-
   setUp(() async {
-    await GameRepository.loadAllDefs(loader: fileLoader);
+    await loadTestGameRepository();
   });
 
   /// 构造满 build 装备:+49 强化 + 满共鸣(高 battleCount → 心剑通灵)+ 双攻击开锋槽。

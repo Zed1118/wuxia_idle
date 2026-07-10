@@ -6,6 +6,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
+import "../support/isar_test_support.dart";
 
 /// A3 saveVersion 0.20.0 → 0.22.0 迁移测试。
 ///
@@ -17,7 +18,7 @@ import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 /// 5. 迁移幂等：再次 close/init 不重复 append。
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
   });
 
   late Directory tempDir;

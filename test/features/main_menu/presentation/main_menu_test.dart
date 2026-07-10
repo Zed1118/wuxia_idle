@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/image_test_helpers.dart';
+import '../../../support/test_data.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
@@ -12,7 +13,6 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/game_loop/monthly_tick.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_providers.dart';
@@ -45,7 +45,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 /// 渲染断言覆盖。
 void main() {
   setUpAll(() async {
-    await GameRepository.loadAllDefs();
+    await loadTestGameRepository();
   });
 
   Widget app() => const ProviderScope(child: MaterialApp(home: MainMenu()));

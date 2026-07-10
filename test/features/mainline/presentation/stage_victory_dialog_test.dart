@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,6 +20,7 @@ import 'package:wuxia_idle/shared/audio/sound_manager.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
+import '../../../support/test_data.dart';
 
 StageDef _stage() => const StageDef(
   id: 'stage_test_01',
@@ -159,9 +159,7 @@ Future<void> _pumpContent(
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

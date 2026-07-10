@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,11 +5,12 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/baike/presentation/skill_codex_detail_screen.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../../support/test_data.dart';
 
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
+      await loadTestGameRepository();
     }
   });
 

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +10,7 @@ import 'package:wuxia_idle/features/baike/application/martial_codex_provider.dar
 import 'package:wuxia_idle/features/baike/presentation/martial_arts_tab.dart';
 import 'package:wuxia_idle/features/baike/presentation/skill_codex_detail_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../../support/test_data.dart';
 
 SkillDef _s(String id, SkillSource src, {bool ci = false}) => SkillDef(
   id: id,
@@ -68,9 +68,7 @@ Widget _techHost({
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

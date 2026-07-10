@@ -18,6 +18,8 @@ import 'package:wuxia_idle/features/battle/domain/strategy/mass_battle_strategy.
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/mass_battle/application/mass_battle_service.dart';
 import 'package:wuxia_idle/features/mass_battle/domain/mass_battle_def.dart';
+import "../support/isar_test_support.dart";
+import '../support/test_data.dart';
 
 /// P3.2 §12.3 群战守城 Batch 2.5 R5 跨关红线压测。
 ///
@@ -43,11 +45,9 @@ import 'package:wuxia_idle/features/mass_battle/domain/mass_battle_def.dart';
 ///   - ❌ 不写「胜率 X%」「leftWins ≥ 30」之类瞬时数字断言
 void main() {
   setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

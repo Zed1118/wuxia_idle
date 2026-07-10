@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +15,7 @@ import 'package:wuxia_idle/features/seclusion/presentation/retreat_result_screen
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
+import '../../../support/test_data.dart';
 
 SeclusionMapDef _mkMapDef() => const SeclusionMapDef(
   mapType: RetreatMapType.shanLin,
@@ -84,9 +84,7 @@ Finder _assetImage(String path) => find.byWidgetPredicate(
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

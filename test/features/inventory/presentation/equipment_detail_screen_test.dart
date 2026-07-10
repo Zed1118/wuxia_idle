@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +12,7 @@ import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/inventory/presentation/equipment_detail_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../../support/test_data.dart';
 
 /// 取 Image provider 的底层 asset 名;装备图经 cacheWidth 优化后
 /// provider 是 ResizeImage 包 AssetImage,须穿透取 assetName。
@@ -32,9 +32,7 @@ String? assetNameOf(ImageProvider provider) {
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 

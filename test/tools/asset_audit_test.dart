@@ -7,15 +7,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 
 import 'asset_audit.dart';
+import '../support/test_data.dart';
 
 const String _outputDir = 'test/tools/output';
 
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (path) => File(path).readAsString(),
-      );
+      await loadTestGameRepository();
     }
   });
 
