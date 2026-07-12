@@ -98,16 +98,11 @@ combat:
     apply_realm_diff: true               # 应用境界差修正
 
   # --- 最大血量公式 ---
-  # GDD §5.6：血量 = 1000 + 内力 × 5 + 根骨 × 500 + 装备血量
-  # Phase 1 平衡： 血量 = 1000 + 内力 × 0.7 + 根骨 × 500 + 装备血量
-  # P0.1 #38 重平衡(2026-05-17,方案 D):
-  #   血量 = 1000 + 内力 × 0.5 + 根骨 × 400 + 装备血量
-  # 设计目标:全 7 阶 dengFeng + const 10 + 装备 hp_max 满 极值 ≤ 16667
-  #          (心法相生 hpPct 0.20 加成后 ≤ 20000 §5.4 红线,不靠 cap 兜底)
-  # 实测极值(方案 D):wuSheng 16550 / zongShi 14750 / 全阶过红线
+  # 内力与真气拆分后，内力不再提高血量；境界绝对等级承接原成长曲线。
+  # 血量 = 1250 + (境界绝对等级-1) × 156 + 根骨 × 400 + 装备血量。
   max_hp_formula:
-    base: 1000                       # 基础血量(GDD 原值)
-    internal_force_factor: 0.5       # 内力系数(GDD 原写 5,Phase 1 调 0.7,P0.1 #38 方案 D 调 0.5)
+    base: 1250
+    realm_level_factor: 156
     constitution_factor: 400         # 根骨系数(GDD 原写 500,P0.1 #38 方案 D 调 400)
 
   # --- 出手速度公式（GDD §5.6 原值，无需调整）---
@@ -1766,11 +1761,11 @@ mass_battle:
   wave_intermission:                 # wave 间过渡规则(MassBattleStrategy._intermission 消费)
     reset_action_point: true         # wave 间 actionPoint 归 0(走 tick 不快进 · §5.5)
     preserve_hp: true                # wave 间 HP 保留(与 alive_hp_recovery_pct 取 max)
-    preserve_internal_force: true    # wave 间内力保留(限大招使用频率)
+    preserve_internal_force: true    # 历史字段名；实际为 wave 间保留真气
     preserve_cooldowns: false        # wave 间 cd 重置(给玩家下波大招机会)
     revive_dead_pct: 1.00            # 死角色满血复活(P3.2.C 修法 ① · 守城短歇补员 · 平衡 wave 数量劣势)
     alive_hp_recovery_pct: 1.00      # 活角色 hp 回满 maxHp(P3.2.C 修法 ① · 短歇恢复;与 preserve_hp 取 max 不会反向降 hp)
-    alive_if_recovery_pct: 0.50      # 活角色内力恢复 50% maxIF(P3.2.B · 防 wave 3+ IF 耗尽全 draw;与 preserve_internal_force 取 max)
+    alive_if_recovery_pct: 0.25      # 历史字段名；波次间追加恢复 25% 气海，溢出丢弃
 
   stage_formations:                  # 5 关默认阵型(玩家未选时 fallback · 主题契合)
     stage_mass_battle_01: yanXing    # 守村:山贼围攻 yiLiu·qiMeng 攻势启

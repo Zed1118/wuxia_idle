@@ -265,9 +265,9 @@ class BattleAI {
     return phases[actor.bossPhaseIndex].aiMode;
   }
 
-  /// 内力够 + CD 0 才可用（普攻 cost=0、CD=0 永远 true）。
+  /// 真气够 + CD 0 才可用；产气/中性招式的 cost 为 0。
   static bool _canUse(BattleCharacter actor, SkillDef skill) {
-    if (actor.currentInternalForce < skill.internalForceCost) return false;
+    if (actor.currentQi < skill.qiCost) return false;
     final cd = actor.skillCooldowns[skill.id] ?? 0;
     if (cd > 0) return false;
     return true;

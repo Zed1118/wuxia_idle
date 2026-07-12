@@ -144,13 +144,13 @@ void main() {
           slotIndex: 0,
         );
         expect(bc.currentHp, bc.maxHp);
-        expect(bc.maxInternalForce, c.internalForceMax);
-        // P0:进场满,current == max(== c.internalForceMax 500),不再 == 600。
-        expect(bc.currentInternalForce, bc.maxInternalForce);
+        expect(bc.internalForce, c.internalForce);
+        expect(bc.maxQi, 100);
+        expect(bc.currentQi, 40);
       },
     );
 
-    test('师承遗物 2 件 → maxInternalForce 含 +10% lineage buff（T55 战斗路径补齐）', () {
+    test('师承遗物提高永久内力上限，不放大真气气海', () {
       final c = _mkChar(
         tier: RealmTier.erLiu,
         layer: RealmLayer.yuanShu,
@@ -178,16 +178,14 @@ void main() {
         slotIndex: 0,
       );
 
-      // 期望 == internalForceMaxWithLineage 直接计算结果
       expect(
-        bc.maxInternalForce,
         CharacterDerivedStats.internalForceMaxWithLineage(c, [
           heritage1,
           heritage2,
         ], n),
+        550,
       );
-      // 显式数值：base 500 × (1 + 2 × 0.05) = 550
-      expect(bc.maxInternalForce, 550);
+      expect(bc.maxQi, 100);
       // 无遗物对照（用同 character 装非 lineage 装备）
       final plain = _mkEquip(baseAttack: 100);
       final bcPlain = BattleCharacter.fromCharacter(
@@ -198,7 +196,7 @@ void main() {
         teamSide: 0,
         slotIndex: 0,
       );
-      expect(bcPlain.maxInternalForce, 500);
+      expect(bcPlain.maxQi, 100);
     });
 
     test('actionPoint=0 / isAlive=true / 空 cooldowns / 空 buffs 初始', () {

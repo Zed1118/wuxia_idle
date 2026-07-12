@@ -1686,23 +1686,25 @@ class DamageFormula {
   }
 }
 
-/// 最大血量公式系数（GDD §5.6，平衡后 `internal_force_factor=0.7` /
-/// `constitution_factor=500`）。
+/// 最大血量公式系数。内力与血量已解耦，境界绝对等级承接原成长曲线。
 class MaxHpFormula {
   final int base;
-  final double internalForceFactor;
+  final int realmLevelFactor;
   final int constitutionFactor;
 
   const MaxHpFormula({
     required this.base,
-    required this.internalForceFactor,
+    required this.realmLevelFactor,
     required this.constitutionFactor,
   });
+
+  @Deprecated('内力不再参与最大血量公式')
+  double get internalForceFactor => 0;
 
   factory MaxHpFormula.fromYaml(Map<String, dynamic> y) {
     return MaxHpFormula(
       base: (y['base'] as num).toInt(),
-      internalForceFactor: (y['internal_force_factor'] as num).toDouble(),
+      realmLevelFactor: (y['realm_level_factor'] as num?)?.toInt() ?? 156,
       constitutionFactor: (y['constitution_factor'] as num).toInt(),
     );
   }

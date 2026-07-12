@@ -78,14 +78,14 @@ class InnerDemonService {
   /// 心魔关右队镜像 enemy team 构造（Batch 2.2.B）。
   ///
   /// 深拷贝 [playerTeam] 为右队，按 [stageId] 查 mirror_buff_per_stage 强化
-  /// maxHp / maxInternalForce / totalEquipmentAttack ×(1+buff)，clamp §5.4 红线
+  /// maxHp / internalForce / totalEquipmentAttack ×(1+buff)，clamp §5.4 红线
   /// `mirror_caps`（HP ≤20k / IF ≤15k / attack ≤2k）。
   ///
   /// **重置字段**：
   ///   - `characterId` → `-(slotIndex+1)`（避与玩家 Isar autoIncrement 冲突，
   ///     沿 StageBattleSetup 现有约定）
   ///   - `name` → `'心魔·<原名>'`
-  ///   - `currentHp` / `currentInternalForce` → 满值（镜像开战满血满内力）
+  ///   - `currentHp` → 满值；真气保持玩家开战快照
   ///   - `skillCooldowns` / `activeBuffs` → 空（镜像不继承玩家战中状态 + 不继承
   ///     founderBuff，避免「玩家镜像比玩家自己更强」的双重 buff）
   ///   - `actionPoint` → 0
@@ -207,7 +207,7 @@ class InnerDemonService {
     required int startActionPoint,
   }) {
     final maxHp = (src.maxHp * (1 + buff)).round().clamp(1, caps.hpMax);
-    final maxIf = (src.maxInternalForce * (1 + buff)).round().clamp(
+    final internalForce = (src.internalForce * (1 + buff)).round().clamp(
       1,
       caps.internalForceMax,
     );
@@ -231,8 +231,7 @@ class InnerDemonService {
       name: UiStrings.innerDemonMirrorName(src.name),
       maxHp: maxHp,
       currentHp: maxHp,
-      maxInternalForce: maxIf,
-      currentInternalForce: maxIf,
+      internalForce: internalForce,
       totalEquipmentAttack: attack,
       availableSkills: skills,
       skillCooldowns: const {},

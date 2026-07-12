@@ -106,8 +106,7 @@ void main() {
   // §706.3 requestUltimate
   // ────────────────────────────────────────────────────────────────────────
 
-  test('requestUltimate：内力够+CD 0 时，该角色下次行动一定使用该大招', () {
-    // 单角色 1v1：左队 1 人内力 5000（远超 300）；右队 1 人。
+  test('requestUltimate：真气够+CD 0 时，该角色下次行动一定使用该大招', () {
     final leftBase = _mkBC(
       charId: 1,
       teamSide: 0,
@@ -121,7 +120,7 @@ void main() {
       internalForce: 1000,
     );
     // 左队 actionPoint=999，speed 任意 → 一 tick 后必行动
-    final left = leftBase.copyWith(actionPoint: 999);
+    final left = leftBase.copyWith(actionPoint: 999, currentQi: 100);
     final right = rightBase.copyWith(actionPoint: 0, speed: 1); // 慢得几乎不行动
 
     final ult = GameRepository.instance.getSkill('skill_gangmeng_jichu_ult');
@@ -146,9 +145,10 @@ void main() {
     expect(leftAction.skill?.id, ult.id);
     // pendingUltimates 已被消费
     expect(s2.pendingUltimates.containsKey(left.characterId), false);
-    // 内力扣除 ult.internalForceCost (300)
+    // 大招耗气 60，刚猛有效命中追加产气 5。
     final leftAfter = s2.leftTeam.first;
-    expect(leftAfter.currentInternalForce, 5000 - ult.internalForceCost);
+    expect(leftAfter.currentQi, 45);
+    expect(leftAfter.internalForce, 5000, reason: '永久内力不随放招扣除');
     // CD 写入
     expect(leftAfter.skillCooldowns[ult.id], ult.cooldownTurns);
   });
@@ -303,7 +303,11 @@ void main() {
 
   group('BattleAI.decide', () {
     test('优先级：pendingUltimates > powerSkill > normalAttack', () {
-      final actor = _mkBC(charId: 1, teamSide: 0, internalForce: 5000);
+      final actor = _mkBC(
+        charId: 1,
+        teamSide: 0,
+        internalForce: 5000,
+      ).copyWith(currentQi: 100);
       final defender = _mkBC(charId: 11, teamSide: 1);
       final ult = GameRepository.instance.getSkill('skill_gangmeng_jichu_ult');
       var s = BattleState.initial(leftTeam: [actor], rightTeam: [defender]);
@@ -321,11 +325,11 @@ void main() {
       (skill, _) = BattleAI.decide(actor, s, GameRepository.instance.numbers);
       expect(skill.id, ult.id);
 
-      // 3) 内力不够 → fall through 到 powerSkill / normalAttack
-      final poor = actor.copyWith(currentInternalForce: 50);
+      // 3) 真气不够 → fall through 到 normalAttack
+      final poor = actor.copyWith(currentQi: 20);
       final s3 = s.copyWith(leftTeam: [poor]);
       (skill, _) = BattleAI.decide(poor, s3, GameRepository.instance.numbers);
-      // powerSkill cost=100, 内力 50 → 选 normalAttack
+      // powerSkill 耗气 30，当前 20 → 选 normalAttack
       expect(skill.type, SkillType.normalAttack);
     });
 
@@ -336,7 +340,7 @@ void main() {
         teamSide: 0,
         internalForce: 5000,
         weaponBattleCount: 500, // moQi 阶 unlocksJointSkill=true
-      );
+      ).copyWith(currentQi: 100);
       final defender = _mkBC(charId: 11, teamSide: 1);
       final s = BattleState.initial(leftTeam: [actor], rightTeam: [defender]);
       final (skill, _) = BattleAI.decide(
@@ -348,13 +352,13 @@ void main() {
       expect(skill.type, SkillType.jointSkill);
     });
 
-    test('joint_skill 内力不够 (250) → fall through 到 powerSkill', () {
+    test('joint_skill 真气不够 → fall through 到 powerSkill', () {
       final actor = _mkBC(
         charId: 1,
         teamSide: 0,
-        internalForce: 200, // < 250 joint_skill cost, > 100 powerSkill cost
+        internalForce: 200,
         weaponBattleCount: 500,
-      );
+      ); // 开场 40 < joint 50，但 >= power 30
       final defender = _mkBC(charId: 11, teamSide: 1);
       final s = BattleState.initial(leftTeam: [actor], rightTeam: [defender]);
       final (skill, _) = BattleAI.decide(
@@ -371,7 +375,7 @@ void main() {
         teamSide: 0,
         internalForce: 5000,
         weaponBattleCount: 500,
-      );
+      ).copyWith(currentQi: 100);
       final cdActor = actor.copyWith(
         skillCooldowns: const {'skill_joint_skill': 2},
       );
@@ -391,7 +395,7 @@ void main() {
         teamSide: 0,
         internalForce: 5000,
         weaponBattleCount: 500,
-      );
+      ).copyWith(currentQi: 100);
       final ult = GameRepository.instance.getSkill(
         'skill_gangmeng_mingjia_ult',
       );
@@ -499,6 +503,11 @@ void main() {
       expect(
         defAfter.internalInjury!.damagePerTick,
         n.schoolCounter.yinRouInternalInjury.damagePerTick,
+      );
+      expect(
+        s.leftTeam.first.currentQi,
+        15,
+        reason: '开场 40 - 强力技 30 + 阴柔成功施加内伤 5',
       );
     });
 

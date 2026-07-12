@@ -317,13 +317,13 @@ class StageBattleSetup {
   /// 把 [SynergyMultipliers] 应用到 [BattleCharacter] 4 个标量字段(view layer)。
   ///
   /// 数值红线 cap:
-  ///   - maxInternalForce ≤ 15000(§5.4)
+  ///   - internalForce ≤ 15000(§5.4)
   ///   - maxHp ≤ 20000(§5.4,W18-A1.2 hot-loop 升级版加 cap,沿 maxIf cap 体例)
   ///
   /// 装备攻击 ≤ 2000 是 §5.4 单装备红线(equipment.yaml 单件 baseAttack 上限),
   /// 角色 totalEquipmentAttack 是 3 件求和不在 §5.4 红线范畴,applySynergy 不 cap。
-  /// multiplier 上限 0.30 在 _enforceSynergyRedLines 保证。currentHp/currentInternalForce
-  /// 跟 max 同比例放大(战斗起点保持满血 / 当前内力上限按比例)。
+  /// multiplier 上限 0.30 在 _enforceSynergyRedLines 保证。currentHp 跟
+  /// maxHp 同比例放大；内力加成只放大永久内力快照，不改真气。
   ///
   /// W18-A1.2 补 [SynergyMultipliers.defensePct] → defenseRate 加法叠加
   /// (realm max 0.35 + synergy 0.30 = 0.65 ≤ §5.5 红线安全)。
@@ -350,11 +350,11 @@ class StageBattleSetup {
     if (newMaxHp > redLines.playerHpMax) newMaxHp = redLines.playerHpMax;
     final newSpeed = (base.speed * (1 + m.speedPct)).round();
     final newAttack = (base.totalEquipmentAttack * (1 + m.attackPct)).round();
-    var newMaxIf = (base.maxInternalForce * (1 + m.internalForceMaxPct))
+    var newInternalForce = (base.internalForce * (1 + m.internalForceMaxPct))
         .round();
     // §5.4 内力红线(2026-05-29 消 hardcode 走 config)
-    if (newMaxIf > redLines.internalForceMax) {
-      newMaxIf = redLines.internalForceMax;
+    if (newInternalForce > redLines.internalForceMax) {
+      newInternalForce = redLines.internalForceMax;
     }
     // W18-A1.2 加法叠加,clamp 防止减伤 100% 极端值(上限走 red_lines.combined_rate_cap)
     final newDefenseRate = (base.defenseRate + m.defensePct).clamp(
@@ -363,17 +363,12 @@ class StageBattleSetup {
     );
     // currentHp 起点跟 maxHp 一致(战斗起点满血,fromCharacter 保证)
     final newCurHp = newMaxHp;
-    // currentInternalForce 不超新 max(若原 currentInternalForce 已 ≤ maxIf 仍取原值)
-    final newCurIf = base.currentInternalForce > newMaxIf
-        ? newMaxIf
-        : base.currentInternalForce;
     return base.copyWith(
       maxHp: newMaxHp,
       currentHp: newCurHp,
       speed: newSpeed,
       totalEquipmentAttack: newAttack,
-      maxInternalForce: newMaxIf,
-      currentInternalForce: newCurIf,
+      internalForce: newInternalForce,
       defenseRate: newDefenseRate,
     );
   }
@@ -393,7 +388,7 @@ class StageBattleSetup {
   /// EnemyDef → BattleCharacter。
   ///
   /// 敌人不持装备/心法，全靠 yaml `baseHp / baseAttack / baseSpeed`：
-  /// - `maxInternalForce / currentInternalForce` 按境界查表 RealmDef.internalForceMax
+  /// - `internalForce` 按境界查表 RealmDef.internalForceMax
   ///   × `enemy_defaults.internal_force_scale`（P5.2 对称化，满开局，clamp≤红线）；
   ///   `criticalRate / evasionRate` 取 `numbers.yaml combat.enemy_defaults`
   /// - `mainCultivationLayer` 默认 [CultivationLayer.daCheng]（中等加成）
@@ -445,7 +440,7 @@ class StageBattleSetup {
     final scaledAttack = (enemy.baseAttack * scale * readableAttackMult)
         .toInt();
 
-    // ── 内力：境界 IF × internalForceScale × scale（真气词条在词条块处理）──
+    // ── 永久内力：境界 IF × internalForceScale × scale ──
     final baseIf =
         (realm.internalForceMax * enemyDefaults.internalForceScale * scale)
             .round();
@@ -466,7 +461,7 @@ class StageBattleSetup {
       defenseRate = (defenseRate + yutiBonus).clamp(0.0, ce.defenseRateCap);
     }
 
-    // ── 真气词条：内力 ×(1+pct)，clamp 最后执行（§5.4 红线）────────────────
+    // ── 历史“真气”周目词条仍强化永久内力快照，不放大战斗气海。──
     var resolvedIf = baseIf;
     if (traits.contains('zhenqi')) {
       resolvedIf = (baseIf * (1 + ce.traits.zhenqi.internalForcePct)).round();
@@ -519,8 +514,9 @@ class StageBattleSetup {
       school: enemy.school,
       maxHp: scaledHp,
       currentHp: scaledHp,
-      maxInternalForce: resolvedIf,
-      currentInternalForce: resolvedIf,
+      internalForce: resolvedIf,
+      maxQi: numbers.combat.qi.baseMax,
+      currentQi: numbers.combat.qi.openingQi,
       speed: enemy.baseSpeed,
       criticalRate: enemyDefaults.criticalRate,
       evasionRate: enemyDefaults.evasionRate,
@@ -622,7 +618,7 @@ class StageBattleSetup {
       description: skill.description,
       type: skill.type,
       powerMultiplier: tunedPower,
-      internalForceCost: skill.internalForceCost,
+      qiDelta: skill.qiDelta,
       cooldownTurns: skill.cooldownTurns,
       requiresManualTrigger: skill.requiresManualTrigger,
       parentTechniqueDefId: skill.parentTechniqueDefId,

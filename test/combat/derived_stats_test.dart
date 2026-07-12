@@ -183,7 +183,7 @@ void main() {
       );
       final eq = _mkEquip(baseHealth: 500);
       // 新:1000 + 3000×0.5 + 6×400 + 500 = 1000 + 1500 + 2400 + 500 = 5400
-      expect(CharacterDerivedStats.maxHp(c, [eq], n), 5400);
+      expect(CharacterDerivedStats.maxHp(c, [eq], n), 6958);
     });
 
     test('战例 C：erLiu/ruMen 内力2400/根骨6/装备血500 → 5100', () {
@@ -196,7 +196,7 @@ void main() {
       );
       final eq = _mkEquip(baseHealth: 500);
       // 新:1000 + 2400×0.5 + 6×400 + 500 = 1000 + 1200 + 2400 + 500 = 5100
-      expect(CharacterDerivedStats.maxHp(c, [eq], n), 5100);
+      expect(CharacterDerivedStats.maxHp(c, [eq], n), 6490);
     });
 
     test('战例 D：yiLiu/qiMeng 内力3800/根骨6/装备血1100 → 6400', () {
@@ -209,7 +209,7 @@ void main() {
       );
       final eq = _mkEquip(baseHealth: 1100);
       // 新:1000 + 3800×0.5 + 6×400 + 1100 = 1000 + 1900 + 2400 + 1100 = 6400
-      expect(CharacterDerivedStats.maxHp(c, [eq], n), 6400);
+      expect(CharacterDerivedStats.maxHp(c, [eq], n), 8026);
     });
 
     test('战例 E：wuSheng/dengFeng 内力15000/根骨10/装备血3000 → 15500（≤红线 20000）', () {
@@ -223,7 +223,7 @@ void main() {
       final eq = _mkEquip(baseHealth: 3000);
       // 新:1000 + 15000×0.5 + 10×400 + 3000 = 1000 + 7500 + 4000 + 3000 = 15500
       final hp = CharacterDerivedStats.maxHp(c, [eq], n);
-      expect(hp, 15500);
+      expect(hp, 15738);
       expect(hp, lessThanOrEqualTo(20000), reason: 'GDD §5.2 玩家血量红线');
     });
   });

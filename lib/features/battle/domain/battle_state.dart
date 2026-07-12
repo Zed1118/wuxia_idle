@@ -10,6 +10,7 @@ import '../../../core/domain/skill_usage_entry.dart';
 import '../../../data/numbers_config.dart';
 import 'damage_calculator.dart';
 import 'derived_stats.dart';
+import 'qi_cycle.dart';
 
 // P1.1 候选 3-b:resonanceStages 查找的 orElse fallback(防御性,正常情况不触发,
 // numbers.yaml 4 stage 全配)。
@@ -111,8 +112,13 @@ class BattleCharacter {
 
   final int maxHp;
   final int currentHp;
-  final int maxInternalForce;
-  final int currentInternalForce;
+
+  /// Persistent cultivated power used by damage; never spent in battle.
+  final int internalForce;
+
+  /// Bounded per-battle resource.
+  final int maxQi;
+  final int currentQi;
 
   final int speed;
   final double criticalRate;
@@ -251,8 +257,11 @@ class BattleCharacter {
     required this.school,
     required this.maxHp,
     required this.currentHp,
-    required this.maxInternalForce,
-    required this.currentInternalForce,
+    int? internalForce,
+    int? maxQi,
+    int? currentQi,
+    @Deprecated('请使用 maxQi') int? maxInternalForce,
+    @Deprecated('请使用 currentQi') int? currentInternalForce,
     required this.speed,
     required this.criticalRate,
     required this.evasionRate,
@@ -290,7 +299,19 @@ class BattleCharacter {
     this.guardianWardMult,
     this.guardianDefIds = const [],
     this.vulnerabilityMult,
-  });
+  }) : assert(
+         (internalForce != null && maxQi != null && currentQi != null) ||
+             (maxInternalForce != null && currentInternalForce != null),
+       ),
+       internalForce = internalForce ?? currentInternalForce ?? 0,
+       maxQi = maxQi ?? maxInternalForce ?? 0,
+       currentQi = currentQi ?? currentInternalForce ?? 0;
+
+  @Deprecated('战斗资源已拆为真气，请使用 maxQi')
+  int get maxInternalForce => maxQi;
+
+  @Deprecated('战斗资源已拆为真气，请使用 currentQi')
+  int get currentInternalForce => currentQi;
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
   ///
@@ -350,12 +371,11 @@ class BattleCharacter {
       numbers,
       founderBuffActive: founderBuffActive,
     );
-    final maxIf = CharacterDerivedStats.internalForceMaxWithLineage(
-      character,
-      equipped,
-      numbers,
-      founderBuffActive: founderBuffActive,
-      heavyInjured: heavyInjured,
+    final maxQi = numbers.combat.qi.baseMax;
+    final openingQi = QiCycle.openingQi(
+      maxQi: maxQi,
+      openingQi: numbers.combat.qi.openingQi,
+      openingCap: numbers.combat.qi.openingCap,
     );
     final speed = CharacterDerivedStats.speed(
       character,
@@ -468,8 +488,9 @@ class BattleCharacter {
       school: school,
       maxHp: maxHp,
       currentHp: maxHp,
-      maxInternalForce: maxIf,
-      currentInternalForce: maxIf, // P0:战斗内力进场满(每场预算 · 与敌方对称)
+      internalForce: character.internalForce,
+      maxQi: maxQi,
+      currentQi: openingQi,
       speed: speed,
       criticalRate: critRate,
       evasionRate: evRate,
@@ -504,8 +525,11 @@ class BattleCharacter {
     TechniqueSchool? school,
     int? maxHp,
     int? currentHp,
-    int? maxInternalForce,
-    int? currentInternalForce,
+    int? internalForce,
+    int? maxQi,
+    int? currentQi,
+    @Deprecated('请使用 maxQi') int? maxInternalForce,
+    @Deprecated('请使用 currentQi') int? currentInternalForce,
     int? speed,
     double? criticalRate,
     double? evasionRate,
@@ -552,8 +576,9 @@ class BattleCharacter {
       school: school ?? this.school,
       maxHp: maxHp ?? this.maxHp,
       currentHp: currentHp ?? this.currentHp,
-      maxInternalForce: maxInternalForce ?? this.maxInternalForce,
-      currentInternalForce: currentInternalForce ?? this.currentInternalForce,
+      internalForce: internalForce ?? this.internalForce,
+      maxQi: maxQi ?? maxInternalForce ?? this.maxQi,
+      currentQi: currentQi ?? currentInternalForce ?? this.currentQi,
       speed: speed ?? this.speed,
       criticalRate: criticalRate ?? this.criticalRate,
       evasionRate: evasionRate ?? this.evasionRate,
@@ -619,7 +644,7 @@ class BattleCharacter {
   String toString() =>
       'BattleCharacter(id=$characterId, name=$name, '
       '${realmTier.name}/${realmLayer.name}, ${school.name}, '
-      'hp=$currentHp/$maxHp, if=$currentInternalForce/$maxInternalForce, '
+      'hp=$currentHp/$maxHp, innerForce=$internalForce, qi=$currentQi/$maxQi, '
       'spd=$speed, crit=${criticalRate.toStringAsFixed(2)}, '
       'ap=$actionPoint, alive=$isAlive, team=$teamSide#$slotIndex'
       '${internalInjury != null ? ", injury=$internalInjury" : ""})';

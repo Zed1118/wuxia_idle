@@ -7,6 +7,7 @@ import '../../../../data/numbers_config.dart';
 import '../../../../core/domain/enums.dart';
 import '../../../mass_battle/domain/mass_battle_def.dart';
 import '../battle_state.dart';
+import '../qi_cycle.dart';
 import 'battle_strategy.dart';
 import 'default_ground_strategy.dart';
 
@@ -255,7 +256,7 @@ class MassBattleStrategy extends BattleStrategy {
   /// **resetActionPoint=true**:wave 间 actionPoint 归 0,走 tick 不快进
   /// (契 §5.5 在线 = 离线)。
   /// **preserveHp=true**:HP 不回血,守城压力跨 wave 累积。
-  /// **preserveInternalForce=true**:内力保留,限制大招使用频率。
+  /// **preserveInternalForce=true**:历史配置名，实际语义为波次间保留真气。
   /// **preserveCooldowns=false**:cd 全清(map 空),给玩家下波大招机会。
   ///
   /// 死角色不复活(`isAlive=false` 保留 — 阵型烘焙后死了就死了,§5.1 反留存)。
@@ -269,8 +270,11 @@ class MassBattleStrategy extends BattleStrategy {
             return c.copyWith(
               isAlive: true,
               currentHp: (c.maxHp * wi.reviveDeadPct).round(),
-              currentInternalForce: (c.maxInternalForce * wi.reviveDeadPct)
-                  .round(),
+              currentQi: QiCycle.recoverBetweenWaves(
+                currentQi: 0,
+                maxQi: c.maxQi,
+                recoveryPct: wi.aliveIfRecoveryPct,
+              ),
               actionPoint: 0,
               skillCooldowns: const <String, int>{},
             );
@@ -279,14 +283,13 @@ class MassBattleStrategy extends BattleStrategy {
           final hpAfterRecovery = wi.aliveHpRecoveryPct > 0
               ? (c.maxHp * wi.aliveHpRecoveryPct).round().clamp(0, c.maxHp)
               : (wi.preserveHp ? c.currentHp : c.maxHp);
-          final ifAfterRecovery = wi.aliveIfRecoveryPct > 0
-              ? (c.maxInternalForce * wi.aliveIfRecoveryPct).round().clamp(
-                  0,
-                  c.maxInternalForce,
+          final qiAfterRecovery = wi.aliveIfRecoveryPct > 0
+              ? QiCycle.recoverBetweenWaves(
+                  currentQi: wi.preserveInternalForce ? c.currentQi : 0,
+                  maxQi: c.maxQi,
+                  recoveryPct: wi.aliveIfRecoveryPct,
                 )
-              : (wi.preserveInternalForce
-                    ? c.currentInternalForce
-                    : c.maxInternalForce);
+              : (wi.preserveInternalForce ? c.currentQi : c.maxQi);
           return c.copyWith(
             actionPoint: wi.resetActionPoint ? 0 : c.actionPoint,
             currentHp: wi.preserveHp
@@ -294,11 +297,7 @@ class MassBattleStrategy extends BattleStrategy {
                       ? c.currentHp
                       : hpAfterRecovery)
                 : hpAfterRecovery,
-            currentInternalForce: wi.preserveInternalForce
-                ? (c.currentInternalForce > ifAfterRecovery
-                      ? c.currentInternalForce
-                      : ifAfterRecovery)
-                : ifAfterRecovery,
+            currentQi: qiAfterRecovery,
             skillCooldowns: wi.preserveCooldowns
                 ? c.skillCooldowns
                 : const <String, int>{},

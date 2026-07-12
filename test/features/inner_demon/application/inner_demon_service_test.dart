@@ -287,8 +287,9 @@ void main() {
       final m = mirrors[0];
       expect(m.maxHp, 13200, reason: '12000 ×1.10');
       expect(m.currentHp, 13200, reason: '开战满血');
-      expect(m.maxInternalForce, 11000, reason: '10000 ×1.10');
-      expect(m.currentInternalForce, 11000, reason: '开战满内力');
+      expect(m.internalForce, 11000, reason: '永久内力快照 10000 ×1.10');
+      expect(m.maxQi, player.maxQi, reason: '镜像加成不放大真气气海');
+      expect(m.currentQi, player.currentQi, reason: '镜像保持玩家开战真气');
       expect(m.totalEquipmentAttack, 1650, reason: '1500 ×1.10');
       // 字段重置
       expect(m.characterId, -1, reason: 'slotIndex=0 → -1 negative id 防冲突');
@@ -380,8 +381,9 @@ void main() {
       expect(m.maxHp, 20000, reason: '§5.4 玩家血上限 cap');
       expect(m.currentHp, 20000);
       // 14500 ×1.25 = 18125 → cap 15000
-      expect(m.maxInternalForce, 15000, reason: '§5.4 内力上限 cap');
-      expect(m.currentInternalForce, 15000);
+      expect(m.internalForce, 15000, reason: '§5.4 内力上限 cap');
+      expect(m.maxQi, player.maxQi);
+      expect(m.currentQi, player.currentQi);
       // 5500 ×1.25 = 6875 → cap 6000(3 × §5.4 单件 2000)
       expect(
         m.totalEquipmentAttack,
@@ -405,7 +407,7 @@ void main() {
       );
       final m = mirrors[0];
       expect(m.maxHp, 6250, reason: '5000 ×1.25,未达 20000 cap');
-      expect(m.maxInternalForce, 3750);
+      expect(m.internalForce, 3750);
       expect(m.totalEquipmentAttack, 1000);
     });
 

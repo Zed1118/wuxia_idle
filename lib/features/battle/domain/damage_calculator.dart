@@ -94,7 +94,7 @@ class DamageCalculator {
   /// 改一处即两路径同步,不再隐式 drift(原两份复制违 §6)。
   ///
   /// **两路径口径差异 = 显式参数**(由各自 adapter 决定,非公式内分叉):
-  /// - 内力:[calculate] 传满 `internalForce` · 战斗传 `currentInternalForce`(战中扣)
+  /// - 内力：战斗快照传永久 `internalForce`，不随真气消耗变化。
   /// - 防御率:[calculate] 传 numbers.yaml 境界 base · 战斗传 `defenseRate` 缓存
   ///   (叠加相生 defensePct 注入)
   /// - [attackPowerMultiplier]:[calculate] 传 1.0 · 战斗传烘焙值(轻功 terrain /
