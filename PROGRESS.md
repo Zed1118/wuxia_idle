@@ -6,6 +6,8 @@
 
 ## 当前阶段
 
+> **2026-07-13 Codex 角色四项属性职责统一(`codex/character-attribute-roles`)**：**已完成**：根骨缩短新生成重伤时长；悟性统一影响心法修炼、招式熟练度与武学领悟；身法移除暴击贡献并将基础暴击平移至 7.5%；机缘负责普通奇遇概率与 4 个显式门槛选项；角色面板新增实战装备攻击/基础防御并采用响应式 3+4 布局。旧角色属性值、schema、saveVersion 均未迁移。**已验证**：analyze 0；targeted 427 绿；红线/平衡/迁移守门 17 绿；全量与 coverage 全量均 3867/3867；覆盖率 81.62% ≥ 81.25%；macOS debug 实窗角色面板无裁切/overflow。**已知风险**：机缘选项真运行触发依赖随机与存档进度，交互已由 parser/widget/事件引用测试覆盖；Windows 真机表现仍待既有发布验收流程。**下批建议**：评审合并后推送观察 CI，再做一轮属性数值体感试玩，不宜继续扩大属性职责。
+
 > **2026-07-12 最终优化方案首轮六批合并 Gate(`main` @ `4808fffd`，本地未 push)**：**已完成**：首通体验渐进门禁、Splash 生命周期测试、宗门配置读面收窄、存档槽 feature 维护编排、战斗结算胜负单一真相源、战斗播放资源封装、覆盖率 ratchet（81.25%）及手动/每周 Windows release workflow 已逐分支审核后无冲突合入；审核阶段修正 6 份设计文档的 `diff --check` 卫生并重新冻结。**已验证**：build_runner 114 outputs；format 1098/0 changed；analyze 0；合并态 targeted 198 绿；并发全量 `success:true`（345073ms）；macOS `battle_charge_break` @1280×720/1440×900 实窗均无 overflow、空层或遮挡。**已知风险**：Windows workflow 尚未实际触发；MSIX/签名/升级安装、Windows 音频/8h 长稳性能和 closed beta 仍需外部环境；静态视觉路由不等于完整动态手感/帧率验收。**下批建议**：本地确认后 push `main`，观察 Ubuntu/macOS CI 与 Windows 定时/手动构建证据，再安排目标 Windows 真机发布验收。
 
 > **2026-07-12 Codex 内力/真气循环实装(`codex/inner-force-qi-cycle`)**:永久内力改为闭关成长且战斗不消耗、实际值决定伤害；战斗资源拆为有界真气气海，招式显式产耗气，心法提供开场/气海/产气/减耗差异，连续战斗保留并有限恢复。散功、Boss/心魔失败不再扣永久内力，统一改为可由有效战斗和闭关/离线调息恢复的「内息紊乱」；0.35→0.36 旧档保护性补满内力并迁移旧余毒。平衡复校：普通敌人/主线Boss/塔Boss 开场真气20/40/60；心魔05/06高爆发17/20、心魔07高爆发14/20、floor30满配30/30低配0/30、单人闭关整备主线Ch1-6全通。**门禁**:`dart format`无改、`flutter analyze --no-pub`0 issue、全仓4935 pass/0 fail；macOS debug build待本批最后执行。

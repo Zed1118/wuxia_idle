@@ -320,3 +320,11 @@ git log --oneline --decorate -10
 ```
 
 Expected: clean worktree. Do not push until the user explicitly authorizes an external action.
+
+## 当前恢复点（2026-07-13）
+
+- **状态**：全部 8 个任务已完成，分支待评审/合并。
+- **最后完成**：macOS 实窗检查角色面板；覆盖率全量与 ratchet 通过。
+- **下一步**：由用户选择本地合并、推送建 PR 或保留分支。
+- **已跑验证**：`flutter analyze --no-pub` 0 issue；属性相关 targeted 427 绿；数值红线/平衡模拟/旧档迁移守门 17 绿；`flutter test --no-pub` 3867/3867；`flutter test --coverage --no-pub` 3867/3867；行覆盖率 81.62% ≥ 81.25%；`git diff --check` 通过；macOS debug 实窗角色面板无裁切/overflow。
+- **阻塞项**：无。未推送、未合并，未修改 schema/saveVersion。
