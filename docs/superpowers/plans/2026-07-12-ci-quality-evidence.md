@@ -19,15 +19,15 @@
 
 ## CLAUDE.md §8.2 acceptance checklist
 
-- [ ] Production wiring: `.github/workflows/ci.yml` invokes the ratchet after the real coverage run.
-- [ ] Windows evidence: separate workflow builds Windows release on schedule/manual trigger and uploads an unsigned artifact.
-- [ ] Targeted tests: parser, threshold, baseline and workflow contract tests pass.
-- [ ] Real baseline: fresh `flutter test --coverage --no-pub` passes and the CLI accepts its LCOV result.
-- [ ] Static/YAML checks: `flutter analyze --no-pub` and Ruby/Psych parsing pass.
-- [ ] Redlines: no gameplay, YAML numbers, schema, GDD, CLAUDE, dependency or product-behavior changes.
-- [ ] Residual risk: Windows runner execution, signing, upgrade install, audio, performance and beta are explicitly recorded.
-- [ ] Hygiene: no generated coverage/build artifact committed; worktree clean.
-- [ ] Ready signal: final tip begins with `[READY]`.
+- [x] Production wiring: `.github/workflows/ci.yml` invokes the ratchet after the real coverage run.
+- [x] Windows evidence: separate workflow builds Windows release on schedule/manual trigger and uploads an unsigned artifact.
+- [x] Targeted tests: parser, threshold, baseline and workflow contract tests pass.
+- [x] Real baseline: fresh `flutter test --coverage --no-pub` passes and the CLI accepts its LCOV result.
+- [x] Static/YAML checks: `flutter analyze --no-pub` and Ruby/Psych parsing pass.
+- [x] Redlines: no gameplay, YAML numbers, schema, GDD, CLAUDE, dependency or product-behavior changes.
+- [x] Residual risk: Windows runner execution, signing, upgrade install, audio, performance and beta are explicitly recorded.
+- [x] Hygiene: no generated coverage/build artifact committed; worktree clean.
+- [x] Ready signal: final tip begins with `[READY]`.
 
 ### Task 1: Specify coverage and workflow contracts with failing tests
 
@@ -242,7 +242,7 @@ git commit -m "锁定当前覆盖率渐进基线"
 **Files:**
 - Modify: `docs/superpowers/plans/2026-07-12-ci-quality-evidence.md`
 
-- [ ] **Step 1: Run fresh targeted and static checks**
+- [x] **Step 1: Run fresh targeted and static checks**
 
 ```bash
 flutter test --no-pub test/tools/coverage_ratchet_test.dart test/tools/ci_workflow_contract_test.dart
@@ -251,18 +251,18 @@ dart format --output=none --set-exit-if-changed tool test/tools
 git diff --check
 ```
 
-- [ ] **Step 2: Re-run the ratchet against the fresh full coverage file**
+- [x] **Step 2: Re-run the ratchet against the fresh full coverage file**
 
 ```bash
 dart run tool/coverage_ratchet.dart
 ```
 
-- [ ] **Step 3: Update recovery evidence**
+- [x] **Step 3: Update recovery evidence**
 
 Record status, last completed action, exact commands/results, external Windows limitations,
 and no gameplay/redline impact in this plan.
 
-- [ ] **Step 4: Commit and freeze**
+- [x] **Step 4: Commit and freeze**
 
 ```bash
 git add docs/superpowers/plans/2026-07-12-ci-quality-evidence.md
@@ -273,14 +273,16 @@ git status --short --branch
 
 ## Current recovery point
 
-- Status: Tasks 1–4 complete; final static/hygiene verification and READY freeze remain.
+- Status: implementation and verification complete; READY freeze is the only remaining action.
 - Last completed: fresh coverage full suite succeeded in 402589 ms; parser measured
   27115/33348 = 81.31%, and the committed ratchet is 81.25% after the documented tolerance.
   Main CI retains the unfiltered coverage command and runs the ratchet afterward. The separate
   Windows workflow is manual/weekly and uploads an unsigned Release artifact.
-- Next: Task 5, run fresh targeted/analyze/format/diff checks, record final evidence, commit and
-  freeze. Then begin the separate battle-playback subproject.
-- Verification: parser/workflow contracts 8 tests passed; Ruby/Psych parsed both workflows;
-  `dart run tool/coverage_ratchet.dart` passed against fresh LCOV; coverage artifact is ignored.
+- Next: commit this recovery point, append the `[READY]` tip, and freeze the worktree. Then begin
+  the separate battle-playback subproject.
+- Verification: fresh parser/workflow contracts 8 tests passed; `flutter analyze --no-pub`
+  returned 0 issues; formatter reported 0 changes; Ruby/Psych parsed both workflows;
+  `dart run tool/coverage_ratchet.dart` passed at 81.31% against the 81.25% minimum;
+  `git diff --check` passed; coverage artifact is ignored.
 - Blockers: no local blocker. Windows workflow execution, signing, upgrade install, audio,
   performance and beta remain external verification items.

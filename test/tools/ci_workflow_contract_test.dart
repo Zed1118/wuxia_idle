@@ -15,9 +15,9 @@ void main() {
   });
 
   test('覆盖率基线是带采样信息的正数', () async {
-    final json = jsonDecode(
-      await File('.github/coverage-ratchet.json').readAsString(),
-    ) as Map<String, dynamic>;
+    final json =
+        jsonDecode(await File('.github/coverage-ratchet.json').readAsString())
+            as Map<String, dynamic>;
 
     expect(json['lineCoverageMinimum'], isA<num>());
     expect(json['lineCoverageMinimum'] as num, greaterThan(0));
