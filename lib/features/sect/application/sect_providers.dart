@@ -50,10 +50,11 @@ final sectReputationDecayServiceProvider = Provider<SectReputationDecayService>(
 
 /// 门派月度 tick 编排 service(B1 接通 · 组合 checkAndTrigger + computeDecay + 过期)。
 final sectMonthlyTickServiceProvider = Provider<SectMonthlyTickService>((ref) {
+  final config = ref.watch(numbersConfigProvider).sectEvent;
   return SectMonthlyTickService(
     eventSvc: ref.watch(sectEventServiceProvider),
     decaySvc: ref.watch(sectReputationDecayServiceProvider),
-    numbers: ref.watch(numbersConfigProvider),
+    config: config,
   );
 });
 

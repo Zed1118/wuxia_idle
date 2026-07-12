@@ -36,12 +36,12 @@ class SectTickResult {
 class SectMonthlyTickService {
   final SectEventService eventSvc;
   final SectReputationDecayService decaySvc;
-  final NumbersConfig numbers;
+  final SectEventDef config;
 
   const SectMonthlyTickService({
     required this.eventSvc,
     required this.decaySvc,
-    required this.numbers,
+    required this.config,
   });
 
   /// 一个月 = 30 真实天(沿 numbers cooldown_days / decay 30 天 cycle 语义)。
@@ -54,7 +54,7 @@ class SectMonthlyTickService {
     required DateTime now,
     required Random rng,
   }) {
-    final cfg = numbers.sectEvent;
+    final cfg = config;
     final expireDays = cfg.tournament.expireDays;
     final activeEventsMax = cfg.activeEventsMax;
     final repMin = cfg.reputation.min;

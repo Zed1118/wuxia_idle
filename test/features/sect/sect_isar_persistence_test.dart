@@ -111,7 +111,7 @@ void main() {
         final svc = SectMonthlyTickService(
           eventSvc: SectEventService(numbers: numbers),
           decaySvc: SectReputationDecayService(numbers: numbers),
-          numbers: numbers,
+          config: numbers.sectEvent,
         );
         final result = svc.compute(
           sect: sect,
