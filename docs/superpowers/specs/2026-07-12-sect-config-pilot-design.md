@@ -35,4 +35,3 @@
 - 风险：provider 漏改导致编译失败。控制：targeted tests + `flutter analyze`。
 - 风险：测试 fixture 在收窄过程中发生数值漂移。控制：复用原 map，不改字段和值。
 - 风险：误删仍被相邻服务使用的 stub。控制：只删除不再有引用的 stub，并运行宗门月结与 Isar 持久化测试。
-
