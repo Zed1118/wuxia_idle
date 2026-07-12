@@ -11,6 +11,7 @@ import '../features/mass_battle/domain/mass_battle_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
 import '../features/sweep/domain/sweep_readiness.dart';
 import '../features/taohua_island/domain/taohua_island_config.dart';
+import '../core/domain/attribute_effect_policy.dart';
 import '../core/domain/enums.dart';
 
 /// 数值总配置（numbers.yaml 全量包装）。
@@ -23,6 +24,9 @@ import '../core/domain/enums.dart';
 class NumbersConfig {
   final String version;
   final CombatNumbers combat;
+
+  /// 角色四项属性的统一派生规则（顶层 `attribute_effects`）。
+  final AttributeEffectRules attributeEffects;
 
   /// 内息紊乱：不扣永久内力的战败/散功临时代价。
   final InnerBreathDisorderConfig innerBreathDisorder;
@@ -266,6 +270,7 @@ class NumbersConfig {
   const NumbersConfig({
     required this.version,
     required this.combat,
+    required this.attributeEffects,
     required this.innerBreathDisorder,
     required this.skillProficiency,
     required this.skillUnlock,
@@ -338,6 +343,9 @@ class NumbersConfig {
     return NumbersConfig(
       version: meta['version'] as String,
       combat: CombatNumbers.fromYaml(combat),
+      attributeEffects: AttributeEffectRules.fromYaml(
+        (y['attribute_effects'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
       innerBreathDisorder: InnerBreathDisorderConfig.fromYaml(
         ((y['conditions'] as Map?)?['inner_breath_disorder'] as Map?)
                 ?.cast<String, dynamic>() ??

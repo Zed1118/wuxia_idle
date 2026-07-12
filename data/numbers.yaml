@@ -31,6 +31,19 @@ meta:
   last_updated: "2026-05-10"
   notes: "所有数值基于 GDD v1.1 §5.2 数值红线设计；公式系数见 combat 段"
 
+attribute_effects:
+  reference_value: 5
+  constitution:
+    heavy_injury_reduction_per_point: 0.02
+    heavy_injury_reduction_max: 0.20
+  enlightenment:
+    growth_bonus_per_point: 0.02
+    growth_bonus_max: 0.20
+    insight_probability_sensitivity: 20
+  fortune:
+    encounter_probability_sensitivity: 20
+    special_choice_required: 8
+
 # =============================================================================
 # 0. 角色临时状态
 # =============================================================================
