@@ -29,6 +29,13 @@ void main() {
   testWidgets('已满 recap：标题 + 地图圆满 + 预估产出 + 两按钮齐显', (tester) async {
     const recap = (
       awayHours: 5.0,
+      retreatHours: 5.0,
+      passiveHours: 0.0,
+      passiveMojianshi: 0,
+      passiveExperience: 0,
+      equipmentRollCount: 0,
+      nextEquipmentNodeHours: 7.0,
+      fullRateComplete: false,
       mapName: '山林',
       isComplete: true,
       progressPct: 1.0,
@@ -91,6 +98,13 @@ void main() {
   testWidgets('进行中 recap：显示进度百分比（50%）', (tester) async {
     const recap = (
       awayHours: 2.0,
+      retreatHours: 2.0,
+      passiveHours: 0.0,
+      passiveMojianshi: 0,
+      passiveExperience: 0,
+      equipmentRollCount: 0,
+      nextEquipmentNodeHours: 10.0,
+      fullRateComplete: false,
       mapName: '古剑冢',
       isComplete: false,
       progressPct: 0.5,
@@ -119,6 +133,13 @@ void main() {
   testWidgets('系统封顶 recap：提示收益已满 + 一键收功入口', (tester) async {
     const recap = (
       awayHours: 75.0,
+      retreatHours: 72.0,
+      passiveHours: 3.0,
+      passiveMojianshi: 0,
+      passiveExperience: 0,
+      equipmentRollCount: 6,
+      nextEquipmentNodeHours: null,
+      fullRateComplete: true,
       mapName: '断崖绝壁',
       isComplete: true,
       progressPct: 1.0,
@@ -146,6 +167,13 @@ void main() {
   testWidgets('0 值收益项隐藏，保留结算说明与收功揭晓', (tester) async {
     const recap = (
       awayHours: 2.0,
+      retreatHours: 2.0,
+      passiveHours: 0.0,
+      passiveMojianshi: 0,
+      passiveExperience: 0,
+      equipmentRollCount: 0,
+      nextEquipmentNodeHours: 10.0,
+      fullRateComplete: false,
       mapName: '古剑冢',
       isComplete: false,
       progressPct: 0.5,
@@ -177,6 +205,13 @@ void main() {
     var collected = false;
     const recap = (
       awayHours: 5.0,
+      retreatHours: 5.0,
+      passiveHours: 0.0,
+      passiveMojianshi: 0,
+      passiveExperience: 0,
+      equipmentRollCount: 0,
+      nextEquipmentNodeHours: 7.0,
+      fullRateComplete: false,
       mapName: '山林',
       isComplete: true,
       progressPct: 1.0,
@@ -204,6 +239,13 @@ void main() {
     var dismissed = false;
     const recap = (
       awayHours: 5.0,
+      retreatHours: 5.0,
+      passiveHours: 0.0,
+      passiveMojianshi: 0,
+      passiveExperience: 0,
+      equipmentRollCount: 0,
+      nextEquipmentNodeHours: 7.0,
+      fullRateComplete: false,
       mapName: '山林',
       isComplete: true,
       progressPct: 1.0,

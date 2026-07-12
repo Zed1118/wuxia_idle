@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
@@ -15,6 +16,7 @@ import 'package:wuxia_idle/features/seclusion/presentation/seclusion_setup_scree
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
 import '../../../support/test_data.dart';
 
 /// W15 Phase 5 #2 · 闭关 widget e2e test(销 #28 老挂账)。
@@ -61,11 +63,11 @@ class _FakeSeclusionService implements SeclusionService {
   Future<RetreatResult> completeRetreat({
     required RetreatSession session,
     required int characterId,
-    required RealmTier charRealmTier,
-    required dynamic config,
-    required List<dynamic> maps,
+    RealmTier? charRealmTier,
+    required RetreatConfig config,
+    required List<SeclusionMapDef> maps,
     required DateTime now,
-    dynamic rng,
+    Rng? rng,
   }) async {
     completeCallCount++;
     return completeFactory();
@@ -181,6 +183,16 @@ void main() {
     // session 已超时(2h elapsed > 1h plan → done=true)
     final session = mkSession();
     final result = (
+      elapsedHours: 1.0,
+      retreatHours: 1.0,
+      passiveHours: 0.0,
+      passive: (
+        mojianshi: 0,
+        experience: 0,
+        awayHours: 0.0,
+        settledHours: 0.0,
+        isCapped: false,
+      ),
       actualHours: 1.0,
       mojianshi: 100,
       silver: 0,
@@ -234,6 +246,16 @@ void main() {
       durationHours: 1,
     );
     final result = (
+      elapsedHours: 0.5,
+      retreatHours: 0.5,
+      passiveHours: 0.0,
+      passive: (
+        mojianshi: 0,
+        experience: 0,
+        awayHours: 0.0,
+        settledHours: 0.0,
+        isCapped: false,
+      ),
       actualHours: 0.5,
       mojianshi: 50,
       silver: 0,

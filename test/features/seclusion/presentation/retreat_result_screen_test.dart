@@ -51,6 +51,16 @@ RetreatResult _mkResult({
   List<RetreatMapEventRecord>? mapEvents,
   AdvancementResult? advancement,
 }) => (
+  elapsedHours: actualHours,
+  retreatHours: actualHours,
+  passiveHours: 0.0,
+  passive: (
+    mojianshi: 0,
+    experience: 0,
+    awayHours: 0.0,
+    settledHours: 0.0,
+    isCapped: false,
+  ),
   actualHours: actualHours,
   mojianshi: mojianshi,
   silver: silver,

@@ -290,6 +290,16 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       );
       final note = def.eventNotes.first;
       final result = (
+        elapsedHours: 4.0,
+        retreatHours: 4.0,
+        passiveHours: 0.0,
+        passive: (
+          mojianshi: 0,
+          experience: 0,
+          awayHours: 0.0,
+          settledHours: 0.0,
+          isCapped: false,
+        ),
         actualHours: 4.0,
         mojianshi: 18,
         silver: 20,

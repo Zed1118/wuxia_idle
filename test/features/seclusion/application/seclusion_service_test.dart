@@ -742,6 +742,56 @@ void main() {
   // ─────────────────────────────────────────────────────────────────────────
 
   group('completeRetreat', () {
+    test('10 天只结算 72h 闭关 + 168h 普通挂机，且不可重复收功', () async {
+      final start = DateTime(2026, 5, 1, 10);
+      final completeAt = start.add(const Duration(days: 10));
+      final service = SeclusionService(isar: IsarSetup.instance);
+      final session = await service.startRetreat(
+        mapType: RetreatMapType.shanLin,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+
+      final result = await service.completeRetreat(
+        session: session,
+        characterId: kCharId,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: completeAt,
+      );
+
+      expect(result.elapsedHours, 240);
+      expect(result.retreatHours, 72);
+      expect(result.passiveHours, 168);
+      expect(result.passive.experience, 8400);
+      expect(result.passive.mojianshi, 42);
+      expect((await IsarSetup.currentSaveData())!.lastOnlineAt, completeAt);
+
+      final quantityBefore =
+          (await IsarSetup.instance.inventoryItems.getByDefId(
+            'item_mojianshi',
+          ))!.quantity;
+      await expectLater(
+        () => service.completeRetreat(
+          session: session,
+          characterId: kCharId,
+          config: GameRepository.instance.numbers.retreat,
+          maps: GameRepository.instance.seclusionMaps,
+          now: completeAt,
+        ),
+        throwsStateError,
+      );
+      expect(
+        (await IsarSetup.instance.inventoryItems.getByDefId(
+          'item_mojianshi',
+        ))!.quantity,
+        quantityBefore,
+      );
+    });
+
     test('收功后 session.status=completed + actualRewards 有 mojianshi', () async {
       final start = DateTime(2026, 5, 11, 10, 0);
       final session = await SeclusionService(isar: IsarSetup.instance)

@@ -1,8 +1,10 @@
 import '../../../core/domain/enums.dart';
+import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 import 'seclusion_service.dart';
+import 'retreat_settlement_calculator.dart';
 
 enum OfflineRecapLimitReason { inProgress, plannedDuration, systemCap }
 
@@ -13,10 +15,24 @@ typedef OfflineRecap = ({
   /// 距开始闭关的真实流逝小时数（= now - startedAt）。
   double awayHours,
 
+  double retreatHours,
+
+  double passiveHours,
+
+  int passiveMojianshi,
+
+  int passiveExperience,
+
+  int equipmentRollCount,
+
+  double? nextEquipmentNodeHours,
+
+  bool fullRateComplete,
+
   /// 闭关地图显示名（如「山林」）。
   String mapName,
 
-  /// 闭关是否已挂满计划时长（elapsed ≥ durationHours）。
+  /// 闭关是否已挂满前 72 小时地图收益。
   bool isComplete,
 
   /// 进度比例 [0, 1]，用于「进行中 P%」展示。
@@ -71,40 +87,55 @@ class OfflineRecapService {
     final elapsed = now.difference(session.startedAt).inSeconds / 3600.0;
     if (elapsed < minAwayHours) return null;
 
-    final outputs = SeclusionService.computeOutputs(
+    final settlement = SeclusionService.computeSettlement(
       session: session,
-      charRealmTier: charRealmTier,
       config: config,
+      passiveConfig: GameRepository.instance.numbers.passiveIdle,
       maps: maps,
       now: now,
+      legacyRealmTier: charRealmTier,
       charSchool: charSchool,
     );
 
-    final planned = session.durationHours.toDouble();
-    final isComplete = elapsed >= planned;
-    final progressPct = planned <= 0
-        ? 1.0
-        : (elapsed / planned).clamp(0.0, 1.0).toDouble();
-    final def = maps.firstWhere((m) => m.mapType == session.mapType);
     final cap = config.capHours.toDouble();
-    final limitReason = outputs.actualHours >= cap && cap <= planned
-        ? OfflineRecapLimitReason.systemCap
-        : isComplete
-        ? OfflineRecapLimitReason.plannedDuration
-        : OfflineRecapLimitReason.inProgress;
+    final isComplete = settlement.retreatHours >= cap;
+    final progressPct = cap <= 0
+        ? 1.0
+        : (settlement.retreatHours / cap).clamp(0.0, 1.0).toDouble();
+    final def = maps.firstWhere((m) => m.mapType == session.mapType);
+    final rollCount = RetreatSettlementCalculator.equipmentRollCount(
+      retreatHours: settlement.retreatHours,
+      intervalHours: config.equipmentRollIntervalHours,
+      maxCount: config.equipmentRollMaxCount,
+    );
+    final nextNodeHours = rollCount >= config.equipmentRollMaxCount
+        ? null
+        : config.equipmentRollIntervalHours * (rollCount + 1) -
+              settlement.retreatHours;
+    final outputs = settlement.retreat;
 
     return (
       awayHours: elapsed,
+      retreatHours: settlement.retreatHours,
+      passiveHours: settlement.passiveHours,
+      passiveMojianshi: settlement.passive.mojianshi,
+      passiveExperience: settlement.passive.experience,
+      equipmentRollCount: rollCount,
+      nextEquipmentNodeHours: nextNodeHours,
+      fullRateComplete: isComplete,
       mapName: def.mapName,
       isComplete: isComplete,
       progressPct: progressPct,
-      estimatedMojianshi: outputs.mojianshi,
-      estimatedExperience: outputs.experiencePoints,
+      estimatedMojianshi: outputs.mojianshi + settlement.passive.mojianshi,
+      estimatedExperience:
+          outputs.experiencePoints + settlement.passive.experience,
       estimatedItemRewards: outputs.itemRewards,
       estimatedTechniqueLearnPoints: outputs.techniqueLearnPoints,
       estimatedSilver: outputs.silver,
-      settledHours: outputs.actualHours,
-      limitReason: limitReason,
+      settledHours: settlement.elapsedHours,
+      limitReason: isComplete
+          ? OfflineRecapLimitReason.systemCap
+          : OfflineRecapLimitReason.inProgress,
     );
   }
 }

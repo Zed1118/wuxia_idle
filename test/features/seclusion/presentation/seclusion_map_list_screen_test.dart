@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
@@ -13,6 +14,7 @@ import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_map_list_screen.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_setup_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
 import '../../../support/test_data.dart';
 
 class _FakeSeclusionService implements SeclusionService {
@@ -43,11 +45,11 @@ class _FakeSeclusionService implements SeclusionService {
   Future<RetreatResult> completeRetreat({
     required RetreatSession session,
     required int characterId,
-    required RealmTier charRealmTier,
-    required dynamic config,
-    required List<dynamic> maps,
+    RealmTier? charRealmTier,
+    required RetreatConfig config,
+    required List<SeclusionMapDef> maps,
     required DateTime now,
-    dynamic rng,
+    Rng? rng,
   }) => throw UnimplementedError('fake completeRetreat should not be called');
 
   @override
