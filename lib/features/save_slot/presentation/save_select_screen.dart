@@ -15,6 +15,7 @@ import '../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../onboarding/presentation/founder_creation_screen.dart';
+import '../application/save_slot_startup_service.dart';
 import '../application/slot_list_provider.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
@@ -26,7 +27,7 @@ class SaveSelectScreen extends ConsumerWidget {
   const SaveSelectScreen({super.key});
 
   Future<void> _enterSlot(BuildContext context, WidgetRef ref, int n) async {
-    await IsarSetup.switchSlot(n);
+    await SaveSlotStartupService.openSlot(n);
     // 幂等:已有 founder 跳过(老档/已开过的槽);空槽走全新 onboarding。
     await OnboardingService(isar: IsarSetup.instance).ensureFoundingMasters();
     ref.invalidate(isarProvider); // 切档后所有 per-save provider 级联重读新 db
@@ -48,7 +49,7 @@ class SaveSelectScreen extends ConsumerWidget {
       action: UiStrings.slotEnter,
     );
     if (!ok || !context.mounted) return;
-    await IsarSetup.switchSlot(n);
+    await SaveSlotStartupService.openSlot(n);
     ref.invalidate(isarProvider);
     if (!context.mounted) return;
     await Navigator.of(context).push(

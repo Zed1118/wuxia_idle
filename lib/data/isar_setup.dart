@@ -27,9 +27,7 @@ import '../features/sect/domain/sect_event.dart';
 import '../features/pvp/domain/pvp_record.dart';
 import '../features/pvp/domain/pvp_snapshot.dart';
 import '../features/battle_record/domain/boss_memory.dart';
-import '../features/battle_record/application/boss_memory_service.dart';
 import '../features/weapon_codex/domain/equipment_catalog_entry.dart';
-import '../features/weapon_codex/application/equipment_catalog_service.dart';
 
 /// Isar 初始化与生命周期（data_schema.md §7.1）。
 ///
@@ -192,27 +190,6 @@ class IsarSetup {
     if (existing != null) {
       if (existing.saveVersion != _currentSaveVersion) {
         await _migrateSaveData(isar, existing);
-      }
-      // 0.26.0 新增：老档 Boss 回填骨架（幂等，新档无进度时 no-op）。
-      // GameRepository 未加载时 backfillFromProgress 内部会抛 StateError，
-      // 理论不会：splash 先 loadAllDefs 再 init；防御性 try 包住。
-      try {
-        await BossMemoryService(isar: isar).backfillFromProgress(currentSlotId);
-      } catch (e) {
-        // GameRepository 未加载或进度异常时静默 skip（不阻塞启动）；
-        // P0-1(2026-06-29):补 debugPrint 让安全网吞掉的异常至少有日志可溯。
-        debugPrint('IsarSetup: BossMemory 回填 skip(不阻塞启动): $e');
-      }
-      // 0.27.0 兵器谱：扫当前库存兜底回填图鉴（幂等，新档库存空时 no-op）。
-      // 兼任老档当前持有装备的点亮 + 任何漏 hook 路径的安全网。
-      try {
-        await EquipmentCatalogService(
-          isar: isar,
-        ).reconcileFromInventory(currentSlotId);
-      } catch (e) {
-        // 库存异常时静默 skip，不阻塞启动；
-        // P0-1(2026-06-29):补 debugPrint 让安全网吞掉的异常至少有日志可溯。
-        debugPrint('IsarSetup: EquipmentCatalog 回填 skip(不阻塞启动): $e');
       }
       // 0.31.0 角色等级 Lv 安全网回填(幂等·每次启动跑):
       // Isar **不应用 Dart 字段默认值**,旧档 Character 无 level 字段读回是 int64
