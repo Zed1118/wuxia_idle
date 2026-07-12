@@ -1710,6 +1710,7 @@ class AnimationNumbers {
   final int fastForwardIntervalMs;
   final int readableActionIntervalMs;
   final int readableVictoryMinMs;
+  final int victoryHandoffDelayMs;
 
   /// 批次 2.4 后不再被消费：战斗屏震振幅改走 combat.impact_feedback 分档
   /// （light/medium/heavy）。保留字段 + yaml key 避免改既有 fixture/schema；
@@ -1743,6 +1744,7 @@ class AnimationNumbers {
     required this.fastForwardIntervalMs,
     this.readableActionIntervalMs = 1800,
     this.readableVictoryMinMs = 10000,
+    this.victoryHandoffDelayMs = 500,
     required this.shakeOffsetPx,
     required this.shakeDurationMs,
     required this.criticalFontScale,
@@ -1765,6 +1767,7 @@ class AnimationNumbers {
     fastForwardIntervalMs: 100,
     readableActionIntervalMs: 1800,
     readableVictoryMinMs: 10000,
+    victoryHandoffDelayMs: 500,
     shakeOffsetPx: 3.0,
     shakeDurationMs: 100,
     criticalFontScale: 1.5,
@@ -1797,6 +1800,8 @@ class AnimationNumbers {
           (y['readable_action_interval_ms'] as num?)?.toInt() ?? 1800,
       readableVictoryMinMs:
           (y['readable_victory_min_ms'] as num?)?.toInt() ?? 10000,
+      victoryHandoffDelayMs:
+          (y['victory_handoff_delay_ms'] as num?)?.toInt() ?? 500,
       shakeOffsetPx: (y['shake_offset_px'] as num).toDouble(),
       shakeDurationMs: (y['shake_duration_ms'] as num).toInt(),
       criticalFontScale: (y['critical_font_scale'] as num).toDouble(),

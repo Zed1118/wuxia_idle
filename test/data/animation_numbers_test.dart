@@ -110,10 +110,12 @@ void main() {
       'sweep_inter_battle_gap_ms': 222,
       'readable_action_interval_ms': 2333,
       'readable_victory_min_ms': 9999,
+      'victory_handoff_delay_ms': 777,
     });
     expect(n.sweepInterBattleGapMs, 222);
     expect(n.readableActionIntervalMs, 2333);
     expect(n.readableVictoryMinMs, 9999);
+    expect(n.victoryHandoffDelayMs, 777);
   });
 
   test('fromYaml 缺可选动画参数走默认值', () {
@@ -133,6 +135,7 @@ void main() {
     expect(n.sweepInterBattleGapMs, 150);
     expect(n.readableActionIntervalMs, 1800);
     expect(n.readableVictoryMinMs, 10000);
+    expect(n.victoryHandoffDelayMs, 500);
   });
 
   // 飘字随速度缩放:防快档(rapid/快进)飘字时长 > 拍间隔致跨拍重叠。

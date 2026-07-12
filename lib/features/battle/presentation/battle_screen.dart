@@ -148,10 +148,6 @@ class BattleScreen extends ConsumerStatefulWidget {
 
 class _BattleScreenState extends ConsumerState<BattleScreen>
     with TickerProviderStateMixin {
-  static const Duration _readableVictoryHandoffDelay = Duration(
-    milliseconds: 1200,
-  );
-
   // VFX 反应原语（飘字/弹道/特效贴片/攻击-受击闪 controller，Task 1）+ 拍钟调度
   // （beat/timer/hit-stop/pause/fast-forward，Task 2）+ overlay 编排/屏震
   // （shake/closeup/overlay keys，Task 3）：均已抽到 BattlePlaybackController，
@@ -517,19 +513,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     BattleResult result,
     BattleState s,
   ) async {
-    if (widget.playback.readablePacing && result == BattleResult.leftWin) {
-      await Future<void>.delayed(_readableVictoryDelayFor(s));
+    if (result == BattleResult.leftWin) {
+      await Future<void>.delayed(
+        Duration(milliseconds: widget.animConfig.victoryHandoffDelayMs),
+      );
     }
     if (!mounted) return;
     _showResultDialog(result, s);
-  }
-
-  Duration _readableVictoryDelayFor(BattleState s) {
-    final shownMs = s.actionLog.length * _playback.playbackIntervalMsForTest;
-    final minVisibleMs = widget.animConfig.readableVictoryMinMs;
-    final fillMs = minVisibleMs > shownMs ? minVisibleMs - shownMs : 0;
-    final handoffMs = _readableVictoryHandoffDelay.inMilliseconds;
-    return Duration(milliseconds: fillMs > handoffMs ? fillMs : handoffMs);
   }
 
   /// 算败北诊断；numbersConfig 未就绪（如不加载 GameRepository 的轻量 widget

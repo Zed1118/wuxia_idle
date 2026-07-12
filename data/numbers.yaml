@@ -1558,7 +1558,8 @@ animation:
   fast_forward_interval_ms: 100  # 快进速度（一键扫荡的战斗本体也走此速）
   sweep_inter_battle_gap_ms: 150  # 一键扫荡：连播逐关切换的关间过场停顿
   readable_action_interval_ms: 2200 # 主线首通可读节奏：常速单拍下限，保证普攻/技能/破招飘字有读秒
-  readable_victory_min_ms: 14000  # 主线首通可读节奏：胜利交接前至少保留战场这么久，短战斗补足观看时间
+  readable_victory_min_ms: 14000  # 首通节奏诊断目标；生产结算不再补足整场时长
+  victory_handoff_delay_ms: 500  # 最后一击确认胜利后，统一保留 0.5s 反应时间再进结算
 
   # 屏震（暴击时触发）
   shake_offset_px: 3.0         # 最大偏移幅度

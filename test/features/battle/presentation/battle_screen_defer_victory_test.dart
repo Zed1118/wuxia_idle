@@ -20,6 +20,7 @@ const _testAnim = AnimationNumbers(
   actionIntervalMs: 50,
   fastForwardIntervalMs: 20,
   readableVictoryMinMs: 1500,
+  victoryHandoffDelayMs: 500,
   shakeOffsetPx: 1.0,
   shakeDurationMs: 50,
   criticalFontScale: 1.5,
@@ -93,8 +94,8 @@ Future<void> _triggerLeftWin(
   // ref.listen 检测到 result 由 null→非空 → addPostFrameCallback(_showResultDialog)
   await tester.pump(); // 触发 ref.listen + postFrameCallback 注册
   await tester.pump(); // 执行 postFrameCallback
-  // 等待 showGeneralDialog 的过渡动画(若有 overlay 则等其出现)
-  await tester.pump(const Duration(milliseconds: 300));
+  // 等待 500ms 胜利交接 + showGeneralDialog 的过渡动画。
+  await tester.pump(const Duration(milliseconds: 800));
 }
 
 Future<void> _closeResultOverlay(WidgetTester tester) async {
@@ -129,7 +130,7 @@ void main() {
     },
   );
 
-  testWidgets('readablePacing=true: leftWin 胜利交接前保留短停顿', (tester) async {
+  testWidgets('readablePacing=true: leftWin 后 500ms 交接胜利', (tester) async {
     var victoryCalled = 0;
     final notifier = await _pump(
       tester,
@@ -144,8 +145,8 @@ void main() {
     await tester.pump();
 
     expect(victoryCalled, 0, reason: '可读模式下不应立即交接胜利');
-    await tester.pump(const Duration(milliseconds: 1499));
-    expect(victoryCalled, 0, reason: '最短观看时长未满前仍保留战场');
+    await tester.pump(const Duration(milliseconds: 499));
+    expect(victoryCalled, 0, reason: '最后一击后应保留 500ms 反应时间');
     await tester.pump(const Duration(milliseconds: 1));
     expect(victoryCalled, 1);
   });
