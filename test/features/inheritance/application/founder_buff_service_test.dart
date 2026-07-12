@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
@@ -112,6 +113,8 @@ void main() {
       final n = GameRepository.instance.numbers;
       final c = Character()
         ..internalForce = 0
+        ..realmTier = RealmTier.xueTu
+        ..realmLayer = RealmLayer.qiMeng
         ..attributes = Attributes();
       // baseHealth 堆高使裸血量远超 20000,founder buff ×1.05 再推 → 必 clamp
       final equipped = [Equipment()..baseHealth = 30000];

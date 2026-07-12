@@ -118,37 +118,32 @@ void main() {
       expect(bc.evasionRate, CharacterDerivedStats.evasionRate(c, n));
     });
 
-    test(
-      'currentHp 初始 = maxHp，currentInternalForce 初始 = maxInternalForce（P0 进场满）',
-      () {
-        // P0:战斗内力进场满(maxIf · 每场预算 · 与敌方对称)。
-        // internalForce(600)与 internalForceMax(默认 500)不同 → 进场 current
-        // 取 maxIf(500),不再取 character.internalForce。
-        final c = _mkChar(
-          tier: RealmTier.xueTu,
-          layer: RealmLayer.ruMen,
-          internalForce: 600,
-          school: TechniqueSchool.gangMeng,
-        );
-        final tech = _mkTech(
-          defId: 'tech_gangmeng_jichu',
-          tier: TechniqueTier.ruMenGong,
-          school: TechniqueSchool.gangMeng,
-        );
-        final bc = BattleCharacter.fromCharacter(
-          character: c,
-          equipped: const [],
-          mainTechnique: tech,
-          numbers: GameRepository.instance.numbers,
-          teamSide: 0,
-          slotIndex: 0,
-        );
-        expect(bc.currentHp, bc.maxHp);
-        expect(bc.internalForce, c.internalForce);
-        expect(bc.maxQi, 100);
-        expect(bc.currentQi, 40);
-      },
-    );
+    test('生命进场满，永久内力保留实际值，真气按心法部分开场', () {
+      // 永久内力保留角色实际值；战斗真气使用独立气海和开场值。
+      final c = _mkChar(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.ruMen,
+        internalForce: 600,
+        school: TechniqueSchool.gangMeng,
+      );
+      final tech = _mkTech(
+        defId: 'tech_gangmeng_jichu',
+        tier: TechniqueTier.ruMenGong,
+        school: TechniqueSchool.gangMeng,
+      );
+      final bc = BattleCharacter.fromCharacter(
+        character: c,
+        equipped: const [],
+        mainTechnique: tech,
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      expect(bc.currentHp, bc.maxHp);
+      expect(bc.internalForce, c.internalForce);
+      expect(bc.maxQi, 100);
+      expect(bc.currentQi, 55, reason: '刚猛入门心法开场真气 +15');
+    });
 
     test('师承遗物提高永久内力上限，不放大真气气海', () {
       final c = _mkChar(

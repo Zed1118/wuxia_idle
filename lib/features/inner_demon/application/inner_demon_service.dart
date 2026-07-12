@@ -145,6 +145,10 @@ class InnerDemonService {
           attackMultiplier: injectMechanic
               ? innerDemonDef.mechanicMirrorAttackMultiplier
               : 1 + buff,
+          outputMultiplier: injectMechanic
+              ? innerDemonDef.mechanicMirrorOutputMultiplierPerStage[stageId] ??
+                    1.0
+              : 1.0,
           startActionPoint: injectMechanic
               ? innerDemonDef.mechanicMirrorStartActionPoint
               : 0,
@@ -206,6 +210,7 @@ class InnerDemonService {
     double? vulnerabilityMult,
     SkillDef? chargeSkill,
     required double attackMultiplier,
+    required double outputMultiplier,
     required int startActionPoint,
   }) {
     final maxHp = (src.maxHp * (1 + buff)).round().clamp(1, caps.hpMax);
@@ -235,6 +240,7 @@ class InnerDemonService {
       currentHp: maxHp,
       internalForce: internalForce,
       totalEquipmentAttack: attack,
+      outputMultiplier: src.outputMultiplier * outputMultiplier,
       availableSkills: skills,
       skillCooldowns: const {},
       activeBuffs: const [],

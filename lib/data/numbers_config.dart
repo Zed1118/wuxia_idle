@@ -1294,6 +1294,9 @@ class QiConfig {
   const QiConfig({
     required this.baseMax,
     required this.openingQi,
+    required this.enemyOpeningQi,
+    required this.bossOpeningBonus,
+    required this.towerBossOpeningBonus,
     required this.openingCap,
     required this.minMax,
     required this.maxCap,
@@ -1306,6 +1309,9 @@ class QiConfig {
 
   final int baseMax;
   final int openingQi;
+  final int enemyOpeningQi;
+  final int bossOpeningBonus;
+  final int towerBossOpeningBonus;
   final int openingCap;
   final int minMax;
   final int maxCap;
@@ -1319,6 +1325,10 @@ class QiConfig {
     final config = QiConfig(
       baseMax: (y['base_max'] as num?)?.toInt() ?? 100,
       openingQi: (y['opening_qi'] as num?)?.toInt() ?? 40,
+      enemyOpeningQi: (y['enemy_opening_qi'] as num?)?.toInt() ?? 20,
+      bossOpeningBonus: (y['boss_opening_bonus'] as num?)?.toInt() ?? 20,
+      towerBossOpeningBonus:
+          (y['tower_boss_opening_bonus'] as num?)?.toInt() ?? 40,
       openingCap: (y['opening_cap'] as num?)?.toInt() ?? 80,
       minMax: (y['min_max'] as num?)?.toInt() ?? 80,
       maxCap: (y['max_cap'] as num?)?.toInt() ?? 140,
@@ -1332,6 +1342,9 @@ class QiConfig {
         config.baseMax < config.minMax ||
         config.baseMax > config.maxCap ||
         config.openingQi < 0 ||
+        config.enemyOpeningQi < 0 ||
+        config.bossOpeningBonus < 0 ||
+        config.towerBossOpeningBonus < 0 ||
         config.openingCap > config.maxCap ||
         config.schoolBonus < 0 ||
         config.chainRecoveryPct < 0 ||

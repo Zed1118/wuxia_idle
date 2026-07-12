@@ -178,7 +178,8 @@ void main() {
 
       expect(r.outcome, DispelOutcome.success);
       expect(r.internalForceBefore, 10000);
-      expect(r.internalForceAfter, 5000);
+      expect(r.internalForceAfter, 10000);
+      expect(ch.innerBreathDisorderHoursRemaining, greaterThan(0));
       expect(r.oldLayer, CultivationLayer.yuanMan);
       expect(r.newLayer, CultivationLayer.daCheng);
       expect(r.layersRolledBack, 1);
@@ -194,7 +195,7 @@ void main() {
       );
     });
 
-    test('散功后 Character / Technique 字段切换：主修易主 + 旧主修变辅修 + 内力对半', () {
+    test('散功后主修易主、旧主修降层，并施加内息紊乱但不扣永久内力', () {
       final n = GameRepository.instance.numbers;
       final ch = _mkChar(internalForce: 10000, internalForceMax: 10000);
       ch.id = 1;
@@ -226,7 +227,8 @@ void main() {
         n: n,
       );
 
-      expect(ch.internalForce, 5000);
+      expect(ch.internalForce, 10000);
+      expect(ch.innerBreathDisorderHoursRemaining, greaterThan(0));
       expect(ch.mainTechniqueId, newMain.id);
       expect(ch.assistTechniqueIds, contains(oldMain.id));
       expect(

@@ -121,6 +121,7 @@ class BattleCharacter {
   final int currentQi;
   final double qiGainMultiplier;
   final double qiCostReductionPct;
+  final bool autoUltimate;
 
   final int speed;
   final double criticalRate;
@@ -264,6 +265,7 @@ class BattleCharacter {
     int? currentQi,
     this.qiGainMultiplier = 1.0,
     this.qiCostReductionPct = 0.0,
+    this.autoUltimate = false,
     @Deprecated('请使用 maxQi') int? maxInternalForce,
     @Deprecated('请使用 currentQi') int? currentInternalForce,
     required this.speed,
@@ -560,6 +562,7 @@ class BattleCharacter {
     int? currentQi,
     double? qiGainMultiplier,
     double? qiCostReductionPct,
+    bool? autoUltimate,
     @Deprecated('请使用 maxQi') int? maxInternalForce,
     @Deprecated('请使用 currentQi') int? currentInternalForce,
     int? speed,
@@ -613,6 +616,7 @@ class BattleCharacter {
       currentQi: currentQi ?? currentInternalForce ?? this.currentQi,
       qiGainMultiplier: qiGainMultiplier ?? this.qiGainMultiplier,
       qiCostReductionPct: qiCostReductionPct ?? this.qiCostReductionPct,
+      autoUltimate: autoUltimate ?? this.autoUltimate,
       speed: speed ?? this.speed,
       criticalRate: criticalRate ?? this.criticalRate,
       evasionRate: evasionRate ?? this.evasionRate,

@@ -255,7 +255,8 @@ void main() {
     // maxHp=30000 → 30000-25500=4500(15%)<20% 阈值,单结算跨越两阈值,Boss 存活。
     // speed=1000:第一个 tick 内 AP += 1000 → 恰好达到 1000,玩家首 tick 即出手。
     final bigHitter = player(eqAtk: 2000).copyWith(
-      currentInternalForce: 15000,
+      internalForce: 15000,
+      currentQi: 100,
       mainCultivationLayer: CultivationLayer.jiJing,
       speed: 1000,
     );

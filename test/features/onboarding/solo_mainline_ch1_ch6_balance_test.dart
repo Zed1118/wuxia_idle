@@ -53,13 +53,14 @@ void main() {
   });
 
   test(
-    'production 单人主线 Ch1-6 连续整备路径没有 1v3 硬卡死',
+    'production 单人主线 Ch1-6 连续整备与闭关路径没有 1v3 硬卡死',
     () async {
       final rows = <_StageRunResult>[];
 
       for (final stageId in _mainlineStageIds) {
         final stage = GameRepository.instance.getStage(stageId);
         await _advanceFounderToRequiredRealm(stage.requiredRealm);
+        await _cultivateFounderToCurrentCap();
         await _equipRealmCapMainTechnique();
         await _equipBestAvailableForActiveFounder();
         final result = await _runStage(stageId);
@@ -89,6 +90,22 @@ void main() {
     },
     timeout: const Timeout(Duration(minutes: 5)),
   );
+}
+
+/// 代表每次突破后的闭关修炼：新境界只提高上限，玩家需继续修炼填充实际内力。
+Future<void> _cultivateFounderToCurrentCap() async {
+  final isar = IsarSetup.instance;
+  final founder = await isar.characters
+      .filter()
+      .isFounderEqualTo(true)
+      .findFirst();
+  if (founder == null || founder.internalForce >= founder.internalForceMax) {
+    return;
+  }
+  await isar.writeTxn(() async {
+    founder.internalForce = founder.internalForceMax;
+    await isar.characters.put(founder);
+  });
 }
 
 const _mainlineStageIds = [
@@ -366,7 +383,7 @@ Future<_StageRunResult> _runStage(String stageId) async {
     result: terminal.result,
     tick: terminal.tick,
     summary:
-        'left=${left.map((c) => '${c.name}(realm=${c.realmTier.name}.${c.realmLayer.name},hp=${c.maxHp},atk=${c.totalEquipmentAttack},if=${c.maxInternalForce},skills=${c.availableSkills.length})').join(', ')} '
+        'left=${left.map((c) => '${c.name}(realm=${c.realmTier.name}.${c.realmLayer.name},hp=${c.maxHp},atk=${c.totalEquipmentAttack},if=${c.internalForce},skills=${c.availableSkills.length})').join(', ')} '
         'right=${right.map((c) => '${c.name}(realm=${c.realmTier.name}.${c.realmLayer.name},hp=${c.maxHp},atk=${c.totalEquipmentAttack})').join(', ')}',
   );
 }

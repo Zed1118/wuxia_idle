@@ -3,6 +3,7 @@ import 'package:isar_community/isar.dart';
 
 import '../domain/battle_state.dart';
 import '../domain/derived_stats.dart' show RealmUtils;
+import '../domain/qi_cycle.dart';
 import '../../../data/defs/boss_phase_def.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/defs/stage_def.dart';
@@ -507,7 +508,18 @@ class StageBattleSetup {
       currentHp: scaledHp,
       internalForce: resolvedIf,
       maxQi: numbers.combat.qi.baseMax,
-      currentQi: numbers.combat.qi.openingQi,
+      currentQi: QiCycle.openingQi(
+        maxQi: numbers.combat.qi.baseMax,
+        openingQi:
+            numbers.combat.qi.enemyOpeningQi +
+            (enemy.isBoss
+                ? (isTower
+                      ? numbers.combat.qi.towerBossOpeningBonus
+                      : numbers.combat.qi.bossOpeningBonus)
+                : 0),
+        openingCap: numbers.combat.qi.openingCap,
+      ),
+      autoUltimate: true,
       speed: enemy.baseSpeed,
       criticalRate: enemyDefaults.criticalRate,
       evasionRate: enemyDefaults.evasionRate,

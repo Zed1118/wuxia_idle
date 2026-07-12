@@ -420,14 +420,17 @@ class IsarSetup {
       // --- 段 6(0.36.0 内力/真气拆分)---
       if (_compareVersion(fromVersion, '0.36.0') < 0) {
         for (final character in characters) {
-          character.internalForce = character.internalForceMax;
-          if (character.innerDemonResidueHoursRemaining >
-              character.innerBreathDisorderHoursRemaining) {
-            character.innerBreathDisorderHoursRemaining =
-                character.innerDemonResidueHoursRemaining;
+          // 前置迁移段可能已写回同一角色（如 0.25 师徒 role 重映射），
+          // 必须重读当前行，避免用事务前快照覆盖前置迁移结果。
+          final current = await isar.characters.get(character.id) ?? character;
+          current.internalForce = current.internalForceMax;
+          if (current.innerDemonResidueHoursRemaining >
+              current.innerBreathDisorderHoursRemaining) {
+            current.innerBreathDisorderHoursRemaining =
+                current.innerDemonResidueHoursRemaining;
           }
-          character.innerDemonResidueHoursRemaining = 0;
-          await isar.characters.put(character);
+          current.innerDemonResidueHoursRemaining = 0;
+          await isar.characters.put(current);
         }
       }
 

@@ -48,6 +48,9 @@ class InnerDemonDef {
   /// 先手秒杀，把挑战重心放回窗口/撑关。
   final double mechanicMirrorAttackMultiplier;
 
+  /// 机制化心魔逐关总输出倍率。未配置的关保持 1.0，避免影响终关生存路线。
+  final Map<String, double> mechanicMirrorOutputMultiplierPerStage;
+
   /// 机制化心魔镜像起手行动条。负数表示延后起手，给爆发流一次窗口。
   /// 纯镜像关仍从 0 起手。
   final int mechanicMirrorStartActionPoint;
@@ -62,6 +65,7 @@ class InnerDemonDef {
     this.mirrorVulnerabilityPerStage = const {},
     this.mirrorChargeSkillId,
     this.mechanicMirrorAttackMultiplier = 1.0,
+    this.mechanicMirrorOutputMultiplierPerStage = const {},
     this.mechanicMirrorStartActionPoint = 0,
   });
 
@@ -93,6 +97,7 @@ class InnerDemonDef {
     mirrorVulnerabilityPerStage: {},
     mirrorChargeSkillId: null,
     mechanicMirrorAttackMultiplier: 1.0,
+    mechanicMirrorOutputMultiplierPerStage: {},
     mechanicMirrorStartActionPoint: 0,
   );
 
@@ -151,6 +156,21 @@ class InnerDemonDef {
         '实际=$mechanicAttackMultiplier',
       );
     }
+    final mechanicOutputPerStage = <String, double>{};
+    final mechanicOutputYaml =
+        y['mechanic_mirror_output_multiplier_per_stage'] as Map?;
+    if (mechanicOutputYaml != null) {
+      for (final entry in mechanicOutputYaml.entries) {
+        final multiplier = (entry.value as num).toDouble();
+        if (multiplier <= 0 || multiplier > 1.0) {
+          throw StateError(
+            'inner_demon.mechanic_mirror_output_multiplier_per_stage '
+            '${entry.key} 必须在 (0,1]，实际=$multiplier',
+          );
+        }
+        mechanicOutputPerStage[entry.key as String] = multiplier;
+      }
+    }
     final mechanicStartActionPoint =
         (y['mechanic_mirror_start_action_point'] as num?)?.toInt() ?? 0;
 
@@ -170,6 +190,7 @@ class InnerDemonDef {
       mirrorVulnerabilityPerStage: vuln,
       mirrorChargeSkillId: chargeSkillId,
       mechanicMirrorAttackMultiplier: mechanicAttackMultiplier,
+      mechanicMirrorOutputMultiplierPerStage: mechanicOutputPerStage,
       mechanicMirrorStartActionPoint: mechanicStartActionPoint,
     );
   }

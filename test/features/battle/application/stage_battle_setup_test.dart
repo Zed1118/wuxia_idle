@@ -328,9 +328,9 @@ void main() {
       isar: IsarSetup.instance,
     ).buildTeams(stage);
 
-    expect(left[0].maxHp, 8726, reason: '新境界血量曲线 × 阴阳相生 × 祖师 buff');
-    expect(left[1].maxHp, 7272, reason: 'B·刚柔新境界血量曲线 × founder buff');
-    expect(left[2].maxHp, 7272, reason: 'C·阴影 同 B');
+    expect(left[0].maxHp, 8574, reason: '新境界血量曲线 × 阴阳相生 × 祖师 buff');
+    expect(left[1].maxHp, 7145, reason: 'B·刚柔新境界血量曲线 × founder buff');
+    expect(left[2].maxHp, 7145, reason: 'C·阴影 同 B');
   });
 
   // ── W18-A1.2 hot-loop 红线压测 ─────────────────────────────────────────
@@ -465,7 +465,7 @@ void main() {
       final e = StageBattleSetup.buildEnemyTeam(stage.enemyTeam).first;
       expect(e.internalForce, expectedEnemyIf(e));
       expect(e.maxQi, 100);
-      expect(e.currentQi, 40);
+      expect(e.currentQi, 20);
     });
     test('武圣 Boss 内力与真气气海解耦', () {
       final stage = GameRepository.instance.getStage('stage_06_05');

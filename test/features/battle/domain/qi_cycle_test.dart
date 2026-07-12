@@ -140,6 +140,9 @@ void main() {
       final config = QiConfig.fromYaml(const {
         'base_max': 100,
         'opening_qi': 40,
+        'enemy_opening_qi': 20,
+        'boss_opening_bonus': 20,
+        'tower_boss_opening_bonus': 40,
         'opening_cap': 80,
         'min_max': 80,
         'max_cap': 140,
@@ -152,6 +155,9 @@ void main() {
 
       expect(config.baseMax, 100);
       expect(config.openingQi, 40);
+      expect(config.enemyOpeningQi, 20);
+      expect(config.bossOpeningBonus, 20);
+      expect(config.towerBossOpeningBonus, 40);
       expect(config.maxCap, 140);
       expect(config.chainRecoveryPct, 0.25);
     });
@@ -161,6 +167,9 @@ void main() {
         () => QiConfig.fromYaml(const {
           'base_max': 100,
           'opening_qi': 40,
+          'enemy_opening_qi': 20,
+          'boss_opening_bonus': 20,
+          'tower_boss_opening_bonus': 40,
           'opening_cap': 160,
           'min_max': 80,
           'max_cap': 140,

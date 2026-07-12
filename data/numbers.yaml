@@ -57,6 +57,9 @@ combat:
   qi:
     base_max: 100
     opening_qi: 40
+    enemy_opening_qi: 20
+    boss_opening_bonus: 20
+    tower_boss_opening_bonus: 40
     opening_cap: 80
     min_max: 80
     max_cap: 140
@@ -99,9 +102,9 @@ combat:
 
   # --- 最大血量公式 ---
   # 内力与真气拆分后，内力不再提高血量；境界绝对等级承接原成长曲线。
-  # 血量 = 1250 + (境界绝对等级-1) × 156 + 根骨 × 400 + 装备血量。
+  # 血量 = 1129 + (境界绝对等级-1) × 156 + 根骨 × 400 + 装备血量。
   max_hp_formula:
-    base: 1250
+    base: 1129
     realm_level_factor: 156
     constitution_factor: 400         # 根骨系数(GDD 原写 500,P0.1 #38 方案 D 调 400)
 
@@ -1678,9 +1681,12 @@ inner_demon:
     stage_inner_demon_07:
       outOfWindowDamageMult: 0.14
   mirror_charge_skill_id: skill_inner_demon_charge
-  mechanic_mirror_attack_multiplier: 0.75  # 机制化心魔镜像攻击折减。HP/IF 仍按 buff 压迫;
+  mechanic_mirror_attack_multiplier: 0.75  # 机制化心魔装备攻击折减。HP/IF 仍按 buff 压迫;
                                            # 攻击不再复制高爆发 build 后放大,避免 BiS
                                            # 3 tick 固定团灭成硬墙。
+  mechanic_mirror_output_multiplier_per_stage:
+    stage_inner_demon_05: 0.52
+    stage_inner_demon_06: 0.52
   mechanic_mirror_start_action_point: -2000 # 机制化心魔起手延后蓄势,给爆发流先手窗口;
                                             # 纯镜像关仍为 0。
 

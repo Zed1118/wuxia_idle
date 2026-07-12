@@ -96,13 +96,13 @@ void main() {
         );
       }
 
-      final mainTechDef = repo.techniqueDefs.values.firstWhere(
-        (d) => d.tier == realmDef.techniqueTierCap,
-        orElse: () =>
-            throw StateError('r5 mass_battle: 找不到 ${tier.name} cap 心法 def'),
-      );
-
       BattleCharacter buildOne(int slotIndex, TechniqueSchool school) {
+        final mainTechDef = repo.techniqueDefs.values.firstWhere(
+          (d) => d.tier == realmDef.techniqueTierCap && d.school == school,
+          orElse: () => throw StateError(
+            'r5 mass_battle: 找不到 ${tier.name}/${school.name} cap 心法 def',
+          ),
+        );
         final equipped = [
           buildEq(EquipmentSlot.weapon),
           buildEq(EquipmentSlot.armor),
@@ -181,8 +181,9 @@ void main() {
               school: tmpl.school,
               maxHp: tmpl.baseHp,
               currentHp: tmpl.baseHp,
-              maxInternalForce: 1000,
-              currentInternalForce: 1000,
+              internalForce: 1000,
+              maxQi: 100,
+              currentQi: 100,
               speed: tmpl.baseSpeed,
               criticalRate: 0.05,
               evasionRate: 0.05,
@@ -368,9 +369,9 @@ void main() {
               reason: '$formation ${c.name} §5.4 maxHp 红线',
             );
             expect(
-              c.maxInternalForce,
+              c.internalForce,
               lessThanOrEqualTo(15000),
-              reason: '$formation ${c.name} §5.4 maxInternalForce 红线',
+              reason: '$formation ${c.name} §5.4 internalForce 红线',
             );
             expect(
               c.totalEquipmentAttack,

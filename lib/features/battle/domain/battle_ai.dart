@@ -147,13 +147,13 @@ class BattleAI {
       if (bestPhase != null) return bestPhase;
     }
 
-    // 2) 强力技能：内力够 + CD 0，多个挑 powerMultiplier 最高的。
-    // 敌方也自动使用 ultimate；玩家侧仍通过 pending 手动触发，保留旧手感。
+    // 2) 耗气强力技能：真气够 + CD 0，多个挑 powerMultiplier 最高的。
+    // 敌方自动使用 ultimate；玩家绝招仍保留给 pending 手动请求。
     SkillDef? bestPower;
     for (final s in actor.availableSkills) {
       final isAutoSkill =
           s.type == SkillType.powerSkill ||
-          (actor.teamSide == 1 && s.type == SkillType.ultimate);
+          (actor.autoUltimate && s.type == SkillType.ultimate);
       if (!isAutoSkill) continue;
       if (s.aiUsePolicy == AiUsePolicy.saveForInterrupt) continue; // P0:平时不放破招技
       if (!_canUse(actor, s, n)) continue;

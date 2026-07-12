@@ -300,12 +300,12 @@ void main() {
           );
           // §5.4 内力上限 15000
           expect(
-            m.maxInternalForce,
+            m.internalForce,
             lessThanOrEqualTo(15000),
             reason: '$m: §5.4 内力上限 cap',
           );
           expect(
-            m.currentInternalForce,
+            m.currentQi,
             lessThanOrEqualTo(15000),
             reason: '$m: 镜像开战满内力 ≤ §5.4 上限',
           );

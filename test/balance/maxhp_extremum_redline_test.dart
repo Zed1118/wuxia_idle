@@ -17,7 +17,7 @@ import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
 ///
 /// **写法**(memory `feedback_red_line_test_semantics`):
 ///   - 7 阶主红线 case 写「≤ 16667」约束语义,不锁具体数字
-///   - 单独 1 个销账锚点 case 锁 wushen 极值 == 16550 防数值漂移
+///   - 单独 1 个销账锚点 case 锁 wushen 极值 == 16667 防数值漂移
 ///
 /// **不走 Isar**:Character + Equipment 直接构造,公式纯函数 maxHp 调用。
 /// **走真实 yaml**:GameRepository.loadAllDefs 读 data/*.yaml 实测 hp_max。
@@ -102,7 +102,7 @@ void main() {
     }
 
     // 销账锚点 case(锁固定数字防数值漂移,memory 配套:锚点单独写)
-    test('销账锚点·wushen·dengFeng 极值 == 16550(P0.1 #38 方案 D 决议)', () async {
+    test('销账锚点·wushen·dengFeng 极值 == 16667(新血量曲线)', () async {
       await GameRepository.loadAllDefs(loader: fileLoader);
       final (:character, :equipped) = buildExtremum(RealmTier.wuSheng);
       final maxHp = CharacterDerivedStats.maxHp(
@@ -110,14 +110,10 @@ void main() {
         equipped,
         GameRepository.instance.numbers,
       );
-      // 公式实测:1000 + 15000×0.5 + 10×400 + (350+2300+1400)
-      //       = 1000 + 7500 + 4000 + 4050 = 16550
       expect(
         maxHp,
-        16550,
-        reason:
-            'P0.1 #38 方案 D 决议锚点:wushen 极值精准 16550 '
-            '(numbers.yaml IF×0.5 + const×400 + shenWu hp_max 1750-2300/1000-1400/150-350 装备)',
+        16667,
+        reason: '内力移出血量公式后，wushen 极值应精准卡住 16667 pre-synergy 软线',
       );
     });
   });
