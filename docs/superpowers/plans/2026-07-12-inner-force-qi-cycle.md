@@ -8,6 +8,8 @@
 
 **Tech Stack:** Flutter Desktop, Dart, Riverpod 3, Isar Community, YAML configuration, `flutter_test`.
 
+**Status (2026-07-12):** Implementation complete on `codex/inner-force-qi-cycle`; full suite 4935 pass / 0 fail, static analysis clean, macOS debug build successful. Branch handoff remains.
+
 ---
 
 ## Scope and fixed baseline
