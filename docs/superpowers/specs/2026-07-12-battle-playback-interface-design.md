@@ -70,4 +70,3 @@ closeup controllers、三个 GlobalKey。`impactShakeAmplitude` 改为私有。
 - 不按文件行数拆页面，不增加状态管理或依赖。
 - 自动化可以证明结构、布局与行为；最终动画细腻度仍需 Mac 真实窗口目检，Windows
   性能/音频仍属于外部发布验证。
-
