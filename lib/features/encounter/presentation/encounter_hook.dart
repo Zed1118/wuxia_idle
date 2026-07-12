@@ -20,7 +20,7 @@ import 'encounter_dialog.dart';
 ///
 /// stage_entry_flow / tower_entry_flow victory 路径都调一次,共享同一逻辑:
 ///   1. recordKill:按敌人 school +1
-///   2. evaluateTriggers:取主角 fortune,base * (1 + fortune/20) 软概率
+///   2. evaluateTriggers:武学领悟读悟性，其他奇遇读机缘
 ///   3. roll 中 → markTriggered + load events 文案 + 弹 dialog
 ///   4. 玩家选 outcome → applyOutcome + SnackBar 摘要
 ///

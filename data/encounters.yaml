@@ -10,7 +10,8 @@
 #   - 3 条 vertical slice + 后续 W14-2 扩 15-20 条
 #
 # 触发概率公式(C-W14-1 决策点 Q3):
-#   p = baseProbability * (1 + fortune / 20)
+#   武学领悟 p = baseProbability * (1 + enlightenment / 20)
+#   其他奇遇 p = baseProbability * (1 + fortune / 20)
 #   fortune ∈ [1,10] → 系数 [1.05, 1.5]
 #
 # 红线(GameRepository._enforceEncounterRedLines):

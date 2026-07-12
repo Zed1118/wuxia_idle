@@ -96,7 +96,7 @@ typedef ReputationDeltaApplier =
 /// 设计原则:
 ///   - **service 不依赖 GameRepository**:caller 端注入 encounters 列表,
 ///     便于测试与 fixture 隔离(沿用 TowerProgressService 体例)
-///   - **fortune 软概率**:p = base * (1 + fortune / 20)(C-W14-1 决策点 Q3)
+///   - **属性软概率**:武学领悟读悟性，其他奇遇读机缘
 ///   - **lifetime cap**:4 属性总和 ≤ [attributeGainCap](默认 5,
 ///     GDD §4.1 line 183)。达 cap 后 applyOutcome 返回 [AttributeCapReached],
 ///     不写 Isar、不抛错
@@ -206,7 +206,7 @@ class EncounterService {
   ///   1. 过滤已触发的 id
   ///   2. trigger 全部满足(schoolKillThreshold AND 全过 + fortune >= required
   ///      + W16 festivalRequired)
-  ///   3. 软概率公式 p = baseProbability * (1 + fortune/20),roll rng
+  ///   3. 按事件类型选择悟性/机缘计算软概率并 roll rng
   ///   4. 返回首个 roll 通过的 encounter(防止一次战斗连弹多个)
   ///
   /// [festivalToday] 由 caller(encounter_hook)从 [FestivalService.todayFestival]

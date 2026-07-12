@@ -178,7 +178,7 @@ class EncounterDef {
   final EncounterTrigger trigger;
 
   /// trigger 全满足后的基础触发概率 ∈ [0, 1]。
-  /// 实际触发概率 = baseProbability * (1 + fortune/20)(C-W14-1 决策点 Q3)。
+  /// 实际概率由 AttributeEffectPolicy 按事件类型选择悟性或机缘。
   final double baseProbability;
 
   /// outcome_id → OutcomeDef 映射。outcome_id 必须与 `events/[id].yaml` 的
