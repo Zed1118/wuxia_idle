@@ -111,7 +111,6 @@ class BattleResolutionService {
     required TechniqueDef Function(String defId) techniqueDefLookup,
     required DropService dropService,
     StageDef? stageDef,
-    bool? isVictory,
     NumbersConfig? numbersConfig,
     bool isHardFight = false,
     // 第八阶段 E·稀有彩头:阶池查询 + realm→装备阶映射(注入式·null 则不掉彩头)。
@@ -122,8 +121,7 @@ class BattleResolutionService {
     int cycle = 1,
   }) {
     _assertAllParticipated(finalState, participatingCharacters);
-    final resolvedVictory =
-        isVictory ?? finalState.result == BattleResult.leftWin;
+    final resolvedVictory = finalState.result == BattleResult.leftWin;
 
     // 只有至少完成一次行动的有效战斗才调息；失败新增的紊乱在下方
     // 惩罚分支后结算，避免“刚受惩罚就自动抵消一次”。

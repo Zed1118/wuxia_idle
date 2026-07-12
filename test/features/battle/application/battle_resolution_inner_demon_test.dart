@@ -181,7 +181,6 @@ void main() {
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id),
         dropService: dropSvc(),
-        isVictory: false,
         numbersConfig: numbersCfg,
       );
 
@@ -241,7 +240,6 @@ void main() {
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id),
         dropService: dropSvc(),
-        isVictory: true,
         numbersConfig: numbersCfg,
       );
 
@@ -281,7 +279,6 @@ void main() {
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id),
         dropService: dropSvc(),
-        isVictory: false,
         numbersConfig: numbersCfg,
       );
 

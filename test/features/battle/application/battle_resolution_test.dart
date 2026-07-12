@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/data/defs/drop_entry.dart';
@@ -26,6 +28,14 @@ void main() {
     final repo = await loadTestGameRepository();
     progressMap = repo.numbers.cultivationProgressToNext;
     numbersCfg = repo.numbers;
+  });
+
+  test('resolve 公共 API 不允许独立 isVictory 胜负 override', () async {
+    final source = await File(
+      'lib/features/battle/application/battle_resolution.dart',
+    ).readAsString();
+
+    expect(source, isNot(contains('bool? isVictory')));
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -682,7 +692,7 @@ void main() {
     expect(result.dropResult.items.first.quantity, 2);
   });
 
-  test('战败默认从 finalState.result 派生 → 不掉落', () {
+  test('战败从 finalState.result 派生 → 不掉落', () {
     final ch = buildCharacter(id: 1, mainTechId: 200);
     final mainTech = buildTechnique(
       id: 200,
@@ -1024,7 +1034,6 @@ void main() {
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
         dropService: dropSvc(),
-        isVictory: false,
         numbersConfig: numbersCfg,
       );
 
@@ -1087,7 +1096,6 @@ void main() {
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
         dropService: dropSvc(),
-        isVictory: false,
         numbersConfig: numbersCfg,
       );
 
@@ -1142,7 +1150,6 @@ void main() {
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
         dropService: dropSvc(),
-        isVictory: false,
         numbersConfig: numbersCfg,
       );
 
@@ -1182,7 +1189,7 @@ void main() {
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
         dropService: dropSvc(),
-        // isVictory 默认 true，无 numbersConfig 也合法
+        // finalState 是胜利，无 numbersConfig 也合法
       );
 
       expect(result.defeatPenaltyByCharacter, isEmpty);
@@ -1217,7 +1224,6 @@ void main() {
           progressToNextMap: progressMap,
           techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
           dropService: dropSvc(),
-          isVictory: false,
           // 故意不传 numbersConfig
         ),
         throwsArgumentError,
@@ -1264,7 +1270,6 @@ void main() {
           techniqueDefLookup: (id) =>
               buildTechDef(id: id, skillIds: const ['skill_main_a']),
           dropService: dropSvc(),
-          isVictory: true,
         );
 
         expect(
@@ -1308,12 +1313,11 @@ void main() {
           techniquesByCharacter: {
             1: [mainTech],
           },
-          // stageDef=null + isVictory=false：不进 Boss 散功分支
+          // stageDef=null + finalState 败北：不进 Boss 散功分支
           rng: DefaultRng(seed: 1),
           progressToNextMap: progressMap,
           techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
           dropService: dropSvc(),
-          isVictory: false,
           numbersConfig: numbersCfg,
         );
 
@@ -1343,7 +1347,6 @@ void main() {
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
         dropService: dropSvc(),
-        isVictory: false,
         numbersConfig: numbersCfg,
       );
 
@@ -1457,7 +1460,6 @@ void main() {
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
         dropService: dropSvc(),
-        isVictory: false,
         numbersConfig: numbersCfg,
         isHardFight: true,
       );
@@ -1501,7 +1503,6 @@ void main() {
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
         dropService: dropSvc(),
-        isVictory: true,
         numbersConfig: numbersCfg,
         isHardFight: true,
       );
@@ -1536,7 +1537,6 @@ void main() {
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
         dropService: dropSvc(),
-        isVictory: true,
         numbersConfig: numbersCfg,
         isHardFight: true,
       );
@@ -1565,7 +1565,6 @@ void main() {
         progressToNextMap: progressMap,
         techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
         dropService: dropSvc(),
-        isVictory: true,
         numbersConfig: numbersCfg,
         isHardFight: false,
       );
@@ -1596,7 +1595,6 @@ void main() {
           progressToNextMap: progressMap,
           techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
           dropService: dropSvc(),
-          isVictory: true,
           numbersConfig: numbersCfg,
           isHardFight: false,
         );
