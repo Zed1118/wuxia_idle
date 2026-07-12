@@ -353,6 +353,10 @@ void main() {
     expect(find.byType(VictoryOverlay), findsNothing);
 
     notifier.setResult(BattleResult.leftWin);
+    await tester.pump(); // ref.listen 安排 post-frame 结算回调
+    await tester.pump(
+      Duration(milliseconds: _testAnim.victoryHandoffDelayMs),
+    ); // 等待胜利收尾驻留（0.5s）
     await tester.pumpAndSettle(); // 等待 showGeneralDialog 280ms 过渡动画完成
 
     expect(find.byType(VictoryOverlay), findsOneWidget);

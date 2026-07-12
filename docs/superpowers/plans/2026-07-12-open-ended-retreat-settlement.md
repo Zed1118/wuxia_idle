@@ -1,6 +1,6 @@
 # Open-Ended Retreat Settlement Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Replace preset 1/4/12-hour retreats with player-ended retreats whose first 72 hours use full map rewards and whose overflow time earns uncapped passive rewards, while adding deterministic 12-hour equipment rolls and preserving all progression red lines.
 
@@ -20,10 +20,10 @@
 
 ### CLAUDE.md §8.2 delivery checklist
 
-- [ ] Production wiring reaches setup → active session → preview → transactional collect → result UI.
-- [ ] Targeted tests cover time boundaries, uncapped passive yield, deterministic equipment tiers, migration, transaction idempotence, gates, and 1280×720 / 1440×900 UI.
-- [ ] Red lines: online=offline, no same-hour double reward, no login/daily/paid acceleration, no Chinese/numeric literals scattered outside approved sinks, three-system equip lock remains enforced.
-- [ ] Residual risks recorded: long-duration economy, stable-seed compatibility, Isar migration, UI quantity formatting, full-suite isolation flakes.
+- [x] Production wiring reaches setup → active session → preview → transactional collect → result UI.
+- [x] Targeted tests cover time boundaries, uncapped passive yield, deterministic equipment tiers, migration, transaction idempotence, gates, and 1280×720 / 1440×900 UI.
+- [x] Red lines: online=offline, no same-hour double reward, no login/daily/paid acceleration, no Chinese/numeric literals scattered outside approved sinks, three-system equip lock remains enforced.
+- [x] Residual risks recorded: long-duration economy, stable-seed compatibility, Isar migration, UI quantity formatting, full-suite isolation flakes.
 
 ## File map
 
@@ -54,7 +54,7 @@
 - Modify: `test/features/seclusion/application/offline_passive_service_test.dart`
 - Modify: `test/features/seclusion/application/offline_passive_redline_test.dart`
 
-- [ ] **Step 1: Write failing boundary and no-cap tests**
+- [x] **Step 1: Write failing boundary and no-cap tests**
 
 ```dart
 test('split: 72h01m = 72h retreat + 1m passive', () {
@@ -78,14 +78,14 @@ test('passive yield stays linear beyond the former 72h cap', () {
 });
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run:
 `flutter test --no-pub test/features/seclusion/application/retreat_settlement_calculator_test.dart test/features/seclusion/application/offline_passive_service_test.dart`
 
 Expected: compile failure for missing calculator and/or assertion failure because passive settlement still clamps to 72 hours.
 
-- [ ] **Step 3: Implement the minimal pure split and uncapped passive computation**
+- [x] **Step 3: Implement the minimal pure split and uncapped passive computation**
 
 ```dart
 typedef RetreatTimeSplit = ({double retreatHours, double passiveHours});
@@ -104,14 +104,14 @@ abstract final class RetreatSettlementCalculator {
 
 In `OfflinePassiveService.compute`, use `safeHours = max(awayHours, 0)` directly, return `settledHours: safeHours`, `isCapped: false`, and remove the per-result `999999` clamp.
 
-- [ ] **Step 4: Run focused tests and verify GREEN**
+- [x] **Step 4: Run focused tests and verify GREEN**
 
 Run:
 `flutter test --no-pub test/features/seclusion/application/retreat_settlement_calculator_test.dart test/features/seclusion/application/offline_passive_service_test.dart test/features/seclusion/application/offline_passive_redline_test.dart`
 
 Expected: all tests pass; 100-day yield is exactly linear.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/features/seclusion/application/retreat_settlement_calculator.dart \
@@ -131,7 +131,7 @@ git commit -m "取消普通挂机时长上限"
 - Modify: `test/data/save_migration_version_gate_test.dart`
 - Modify: `test/features/seclusion/application/seclusion_service_test.dart`
 
-- [ ] **Step 1: Write failing session and migration tests**
+- [x] **Step 1: Write failing session and migration tests**
 
 ```dart
 test('startRetreat stores realm snapshot and ignores planned duration', () async {
@@ -155,14 +155,14 @@ test('0.34 active retreat gains a realm snapshot during 0.35 migration', () asyn
 });
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run:
 `flutter test --no-pub test/data/save_migration_version_gate_test.dart test/features/seclusion/application/seclusion_service_test.dart --plain-name 'realm snapshot'`
 
 Expected: missing `realmTierAtStart` and obsolete required `durationHours` API.
 
-- [ ] **Step 3: Add schema field and open-ended start API**
+- [x] **Step 3: Add schema field and open-ended start API**
 
 ```dart
 @enumerated
@@ -174,7 +174,7 @@ int durationHours = 0;
 
 Remove `durationHours` from `startRetreat` parameters; set `realmTierAtStart = charRealmTier` and `durationHours = 0`.
 
-- [ ] **Step 4: Add versioned 0.35 migration**
+- [x] **Step 4: Add versioned 0.35 migration**
 
 Set `_currentSaveVersion = '0.35.0'`. For saves `<0.35.0`, find active retreats with a null snapshot, resolve the linked character through `currentRetreatSessionId` (fallback founder), and write exactly one snapshot without changing `startedAt`, map, or status.
 
@@ -187,7 +187,7 @@ if (_compareVersion(fromVersion, '0.35.0') < 0) {
 }
 ```
 
-- [ ] **Step 5: Regenerate Isar code and verify GREEN**
+- [x] **Step 5: Regenerate Isar code and verify GREEN**
 
 Run:
 `dart run build_runner build --delete-conflicting-outputs`
@@ -197,7 +197,7 @@ Then:
 
 Expected: migration and start tests pass; generated files remain gitignored.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add lib/features/seclusion/domain/retreat_session.dart \
@@ -216,7 +216,7 @@ git commit -m "[schema] 固化闭关开始境界快照"
 - Modify: `test/features/seclusion/application/retreat_settlement_calculator_test.dart`
 - Modify: `test/features/seclusion/application/seclusion_drop_test.dart`
 
-- [ ] **Step 1: Write failing node, weight, tier-clamp, and stable-seed tests**
+- [x] **Step 1: Write failing node, weight, tier-clamp, and stable-seed tests**
 
 ```dart
 test('equipment nodes are floor(hours / 12), capped at six', () {
@@ -234,14 +234,14 @@ test('same session and node always return the same equipment', () {
 });
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run:
 `flutter test --no-pub test/features/seclusion/application/retreat_settlement_calculator_test.dart test/features/seclusion/application/seclusion_drop_test.dart`
 
 Expected: existing one-roll-per-session behavior fails node-count and tier-weight assertions.
 
-- [ ] **Step 3: Add YAML-driven weight table**
+- [x] **Step 3: Add YAML-driven weight table**
 
 ```yaml
 retreat:
@@ -258,7 +258,7 @@ retreat:
 
 Parse into immutable `RetreatEquipmentTierWeights`; validate six ordered nodes, each row sum `1.0 ± 1e-9`, non-negative weights, interval 12, and max count 6.
 
-- [ ] **Step 4: Implement deterministic roll selection**
+- [x] **Step 4: Implement deterministic roll selection**
 
 Use stable seed material `(saveDataId, session.id, startedAt.microsecondsSinceEpoch, nodeIndex)` with 32-bit FNV-1a (not Dart `Object.hash`, whose stability is not a persistence contract):
 
@@ -283,14 +283,14 @@ The calculation must:
 4. Apply the approved row; merge overflow weights into `shenWu`.
 5. Pick uniformly from global defs matching target tier and slot; fall back down to the nearest populated tier.
 
-- [ ] **Step 5: Verify GREEN and red lines**
+- [x] **Step 5: Verify GREEN and red lines**
 
 Run:
 `flutter test --no-pub test/features/seclusion/application/retreat_settlement_calculator_test.dart test/features/seclusion/application/seclusion_drop_test.dart test/data/game_repository_test.dart`
 
 Expected: all pass; no guarantee test confirms six misses remain possible; high-tier inventory objects retain normal equip-lock behavior.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add data/numbers.yaml lib/data/numbers_config.dart \
@@ -310,7 +310,7 @@ git commit -m "[schema] 增加闭关分段装备判定"
 - Modify: `test/features/seclusion/application/offline_recap_service_test.dart`
 - Modify: `test/features/seclusion/application/offline_passive_settle_test.dart`
 
-- [ ] **Step 1: Write failing combined-result tests**
+- [x] **Step 1: Write failing combined-result tests**
 
 ```dart
 test('10 days = 72h retreat plus 168h passive without overlap', () {
@@ -343,14 +343,14 @@ test('collect completes once and resets lastOnlineAt to collect time', () async 
 });
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run:
 `flutter test --no-pub -j1 test/features/seclusion/application/seclusion_service_test.dart test/features/seclusion/application/offline_recap_service_test.dart test/features/seclusion/application/offline_passive_settle_test.dart`
 
 Expected: result lacks split fields; current service truncates at planned duration and does not award passive overflow.
 
-- [ ] **Step 3: Define one shared preview/result shape**
+- [x] **Step 3: Define one shared preview/result shape**
 
 ```dart
 typedef RetreatSettlement = ({
@@ -365,22 +365,22 @@ typedef RetreatSettlement = ({
 
 `RetreatEquipmentReward` includes `nodeHour`, `Equipment equipment`, and `isAboveCurrentTier`. `RetreatResult` carries the same split plus advancement.
 
-- [ ] **Step 4: Make `completeRetreat` consume the shared calculation in one write transaction**
+- [x] **Step 4: Make `completeRetreat` consume the shared calculation in one write transaction**
 
 Remove `charRealmTier` from `completeRetreat`; all reward scale and tier decisions read `session.realmTierAtStart` (a null value is a migration/data error on a new session). Write all deterministic resources, overflow passive experience/stones, equipment, character progression, session completion, and `SaveData.lastOnlineAt = now` atomically. Check `session.status == active` inside the transaction before any reward mutation. Feed encounter minutes only for `retreatHours` after the transaction; do not count passive overflow as map biome time.
 
-- [ ] **Step 5: Replace recap planned-duration semantics**
+- [x] **Step 5: Replace recap planned-duration semantics**
 
 Remove `OfflineRecapLimitReason.plannedDuration`; expose `retreatHours`, `passiveHours`, guaranteed resource previews, equipment roll count, next-node remaining time, and `fullRateComplete`.
 
-- [ ] **Step 6: Verify GREEN**
+- [x] **Step 6: Verify GREEN**
 
 Run:
 `flutter test --no-pub -j1 test/features/seclusion/application/seclusion_service_test.dart test/features/seclusion/application/offline_recap_service_test.dart test/features/seclusion/application/offline_passive_settle_test.dart test/features/seclusion/injury_recovery_test.dart test/features/seclusion/seclusion_residue_test.dart`
 
 Expected: split, idempotence, injuries, residue, advancement, encounter minutes, and baseline assertions all pass.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add lib/features/seclusion/application/retreat_settlement_calculator.dart \
@@ -403,7 +403,7 @@ git commit -m "接续闭关与普通挂机结算"
 - Modify: `test/features/seclusion/presentation/seclusion_e2e_test.dart`
 - Modify: `test/features/seclusion/presentation/active_retreat_exit_test.dart`
 
-- [ ] **Step 1: Write failing widget tests at desktop viewports**
+- [x] **Step 1: Write failing widget tests at desktop viewports**
 
 ```dart
 testWidgets('setup removes duration choices and explains the two phases', (tester) async {
@@ -420,25 +420,25 @@ testWidgets('active screen at 10 days shows 72h full-rate and 7d passive', (test
 });
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run:
 `flutter test --no-pub test/features/seclusion/presentation/seclusion_e2e_test.dart test/features/seclusion/presentation/active_retreat_exit_test.dart`
 
 Expected: old duration cards, end time, early/done states, and fixed progress bar violate new assertions.
 
-- [ ] **Step 3: Implement setup and live active screen**
+- [x] **Step 3: Implement setup and live active screen**
 
 Remove `_selectedHours`, `_durations`, and `_DurationButton`. Add the two-phase explanatory panel. Remove `charRealmTier` from `ActiveRetreatScreen`; its preview uses `session.realmTierAtStart`. In active screen, use a one-minute ticker only to refresh display; settlement remains derived from wall-clock `startedAt`. Replace end-time UI with elapsed time, full-rate `min(elapsed,72)` progress, passive overflow, exact guaranteed preview, equipment node count, next-node countdown, and current node tier weights. Keep one always-enabled `收功` action and its confirmation dialog.
 
-- [ ] **Step 4: Verify semantics and desktop interaction**
+- [x] **Step 4: Verify semantics and desktop interaction**
 
 Run:
 `flutter test --no-pub test/features/seclusion/presentation/seclusion_e2e_test.dart test/features/seclusion/presentation/active_retreat_exit_test.dart`
 
 Expected: pass at 1280×720 and 1440×900; Escape/back works, Enter activates collect, focus and mouse semantics remain intact, no overflow exceptions.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/features/seclusion/presentation/seclusion_setup_screen.dart \
@@ -465,7 +465,7 @@ git commit -m "改造开放式闭关交互"
 - Modify: `test/features/main_menu/main_menu_retreat_banner_test.dart`
 - Modify: `test/features/main_menu/presentation/main_menu_test.dart`
 
-- [ ] **Step 1: Write failing presentation and gate tests**
+- [x] **Step 1: Write failing presentation and gate tests**
 
 ```dart
 testWidgets('return card does not auto-collect and offers dismiss or inspect', (tester) async {
@@ -483,25 +483,25 @@ testWidgets('result separates retreat and passive rewards', (tester) async {
 });
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run:
 `flutter test --no-pub test/features/seclusion/presentation/offline_recap_card_test.dart test/features/seclusion/presentation/offline_recap_gate_test.dart test/features/seclusion/presentation/retreat_result_screen_test.dart test/features/seclusion/presentation/seclusion_gate_test.dart test/features/main_menu/main_menu_retreat_banner_test.dart`
 
 Expected: old capped/planned copy and combined result list fail.
 
-- [ ] **Step 3: Implement two-phase summaries and stable locks**
+- [x] **Step 3: Implement two-phase summaries and stable locks**
 
 Return card and banner show elapsed/full-rate/passive phases and never collect automatically. Result screen renders separate resource sections; each equipment row includes its node hour and an above-realm lock label. Keep `guardBattleEntry` as the shared main-menu gate, change copy from “提前出关” to “前去收功”, and verify all battle/mainline/tower/sweep/inner-demon entries still call it.
 
-- [ ] **Step 4: Verify GREEN and viewport semantics**
+- [x] **Step 4: Verify GREEN and viewport semantics**
 
 Run the command from Step 2 plus:
 `flutter test --no-pub test/features/main_menu/presentation/main_menu_test.dart`
 
 Expected: all pass at both desktop viewports; dismissal leaves session active; battle remains blocked until a successful collect.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/features/seclusion/presentation/offline_recap_card.dart \
@@ -526,7 +526,7 @@ git commit -m "展示闭关与接续挂机分段收益"
 - Modify: `CLAUDE.md`
 - Modify: `PROGRESS.md`
 
-- [ ] **Step 1: Write failing config truth tests**
+- [x] **Step 1: Write failing config truth tests**
 
 ```dart
 test('passive idle has no cap while retreat full-rate phase remains 72h', () {
@@ -535,22 +535,22 @@ test('passive idle has no cap while retreat full-rate phase remains 72h', () {
 });
 ```
 
-- [ ] **Step 2: Run test and verify RED**
+- [x] **Step 2: Run test and verify RED**
 
 Run:
 `flutter test --no-pub test/features/seclusion/domain/seclusion_map_def_test.dart test/features/seclusion/presentation/offline_recap_passive_card_test.dart`
 
 Expected: passive config/UI still exposes a 72-hour cap and capped copy.
 
-- [ ] **Step 3: Remove stale passive cap schema and copy**
+- [x] **Step 3: Remove stale passive cap schema and copy**
 
 Delete `passive_idle.cap_hours` and its `PassiveIdleConfig.capHours` consumer. Replace `isCapped` UI branches with uncapped settled-time copy. Keep `retreat.cap_hours: 72`, but rename comments/docs from “超出不累积” to “闭关地图全收益阶段，超出转普通挂机”.
 
-- [ ] **Step 4: Synchronize GDD/CLAUDE/PROGRESS**
+- [x] **Step 4: Synchronize GDD/CLAUDE/PROGRESS**
 
 Document the approved formula, open-ended manual collect, six deterministic rolls with no guarantee, three-system lock, old-save migration, verification status, and explicit exclusion of Taohua Island caps. Remove the old `durationHours [1,4,12]` and “72h stops” statements where they describe production behavior.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run:
 `flutter test --no-pub test/features/seclusion/domain/seclusion_map_def_test.dart test/features/seclusion/presentation/offline_recap_passive_card_test.dart`
@@ -570,7 +570,7 @@ git commit -m "[GDD] 同步开放式闭关规则"
 **Files:**
 - Modify: `docs/superpowers/plans/2026-07-12-open-ended-retreat-settlement.md` (recovery point only)
 
-- [ ] **Step 1: Format and run static analysis**
+- [x] **Step 1: Format and run static analysis**
 
 Run:
 
@@ -581,7 +581,7 @@ flutter analyze
 
 Expected: `No issues found!`
 
-- [ ] **Step 2: Run the full seclusion and migration suite**
+- [x] **Step 2: Run the full seclusion and migration suite**
 
 Run:
 
@@ -591,14 +591,14 @@ flutter test --no-pub -j1 test/features/seclusion test/features/main_menu/main_m
 
 Expected: all pass with zero failures.
 
-- [ ] **Step 3: Run full repository tests**
+- [x] **Step 3: Run full repository tests**
 
 Run:
 `flutter test --no-pub`
 
 Expected: all tests pass. If the known concurrent data isolation flake appears, record the failing test and rerun that file with `-j1`; do not hide a feature-related failure.
 
-- [ ] **Step 4: Run macOS visual smoke**
+- [x] **Step 4: Run macOS visual smoke**
 
 At 1280×720 and 1440×900 verify:
 
@@ -609,7 +609,7 @@ At 1280×720 and 1440×900 verify:
 5. Result page separates both phases and labels locked high-tier equipment.
 6. Keyboard Enter/Escape, focus rings, and mouse cursor remain functional.
 
-- [ ] **Step 5: Inspect diff and red lines**
+- [x] **Step 5: Inspect diff and red lines**
 
 Run:
 
@@ -621,7 +621,7 @@ rg -n "durationHours|cap_hours|999999" lib/features/seclusion data/numbers.yaml
 
 Expected: only intentional legacy/schema references remain; no untracked capture files; no scattered Chinese strings or balance constants in Dart.
 
-- [ ] **Step 6: Update recovery point and commit READY marker**
+- [x] **Step 6: Update recovery point and commit READY marker**
 
 ```bash
 git add docs/superpowers/plans/2026-07-12-open-ended-retreat-settlement.md
@@ -631,8 +631,8 @@ git commit --allow-empty -m "[READY] 完成开放式闭关与无上限接续挂�
 
 ## Current recovery point
 
-- **Status:** Plan written; implementation not started.
-- **Last completed:** Approved design committed at `5c9c205b`; implementation plan created on `main`.
-- **Next step:** Commit this plan, create `.worktrees/open-ended-retreat-settlement` on `codex/open-ended-retreat-settlement`, then execute Task 1 RED test.
-- **Verification run:** Design self-review only; no implementation tests yet.
-- **Blockers:** None.
+- **Status:** Implementation and local verification complete; branch is ready for integration.
+- **Last completed:** Task 8 full gate, macOS visual smoke, and recovery-point update.
+- **Next step:** Choose local merge, push + pull request, retain branch, or discard branch.
+- **Verification run:** `dart format lib test` (1081 files, 0 changed); `flutter analyze --no-pub` (0 issues); full seclusion/migration/main-menu suites green; full repository suite 3807/3807; macOS debug build succeeded; `seclusion_active` (79h) and `seclusion_result` (90h = 72h + 18h) captured and inspected at 1280×720 and 1440×900.
+- **Blockers:** None. Remote CI remains pending until the branch is pushed.

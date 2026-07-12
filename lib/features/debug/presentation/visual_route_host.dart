@@ -268,8 +268,9 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         ..id = 1
         ..saveDataId = IsarSetup.currentSlotId
         ..mapType = def.mapType
-        ..durationHours = 4
-        ..startedAt = DateTime.now().subtract(const Duration(minutes: 96))
+        ..durationHours = 0
+        ..realmTierAtStart = RealmTier.zongShi
+        ..startedAt = DateTime.now().subtract(const Duration(hours: 79))
         ..completedAt = null
         ..status = RetreatStatus.active
         ..actualRewards = [];
@@ -286,26 +287,26 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       );
       final note = def.eventNotes.first;
       final result = (
-        elapsedHours: 4.0,
-        retreatHours: 4.0,
-        passiveHours: 0.0,
+        elapsedHours: 90.0,
+        retreatHours: 72.0,
+        passiveHours: 18.0,
         passive: (
-          mojianshi: 0,
-          experience: 0,
-          awayHours: 0.0,
-          settledHours: 0.0,
+          mojianshi: 18,
+          experience: 360,
+          awayHours: 18.0,
+          settledHours: 18.0,
           isCapped: false,
         ),
-        actualHours: 4.0,
-        mojianshi: 18,
-        silver: 20,
+        actualHours: 72.0,
+        mojianshi: 324,
+        silver: 360,
         itemRewards: const <String, int>{},
         equipmentDrops: <Equipment>[tieJian],
         equipmentDropNodeHours: const [12],
         realmTierAtStart: RealmTier.sanLiu,
-        experiencePoints: 520,
-        techniqueLearnPoints: 6,
-        internalForcePoints: 42,
+        experiencePoints: 9360,
+        techniqueLearnPoints: 108,
+        internalForcePoints: 756,
         routeSteps: def.routeSteps,
         mapEvents: [
           RetreatMapEventRecord(
