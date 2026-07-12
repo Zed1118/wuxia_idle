@@ -8,6 +8,8 @@
 .pub-cache/
 .pub/
 build/
+# 本地分发构建产物（不进入源码仓库）
+/Builds/
 coverage/
 
 # 生成代码不入库（fresh checkout / 新 worktree 与 CI 均须先跑 build_runner）
