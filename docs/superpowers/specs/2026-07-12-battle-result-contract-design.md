@@ -29,4 +29,3 @@
 1. 测试先删除 `isVictory` 调用并新增源码 API 守卫，生产代码未改时应 RED。
 2. service 改为只计算 `finalState.result == BattleResult.leftWin`。
 3. 删除 3 个 production override，运行完整 battle resolution 行为测试和三条调用路径回归。
-
