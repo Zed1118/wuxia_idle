@@ -1,5 +1,5 @@
 {
-  "lineCoverageMinimum": 0.0,
+  "lineCoverageMinimum": 81.25,
   "sampledAt": "2026-07-12",
-  "note": "Provisional value; replaced by the fresh full-suite measurement before READY."
+  "note": "Fresh full-suite line coverage was 81.31% (27115/33348); the ratchet keeps one 0.05-point tolerance step after rounding down."
 }
