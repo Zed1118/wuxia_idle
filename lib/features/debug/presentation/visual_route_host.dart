@@ -301,6 +301,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         silver: 20,
         itemRewards: const <String, int>{},
         equipmentDrops: <Equipment>[tieJian],
+        equipmentDropNodeHours: const [12],
+        realmTierAtStart: RealmTier.sanLiu,
         experiencePoints: 520,
         techniqueLearnPoints: 6,
         internalForcePoints: 42,

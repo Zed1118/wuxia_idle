@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
-import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
@@ -76,7 +75,6 @@ Future<void> _endRetreatEarly(
   final result = await svc.completeRetreat(
     session: session,
     characterId: ch?.id ?? id,
-    charRealmTier: ch?.realmTier ?? RealmTier.xueTu,
     config: GameRepository.instance.numbers.retreat,
     maps: GameRepository.instance.seclusionMaps,
     now: DateTime.now(),

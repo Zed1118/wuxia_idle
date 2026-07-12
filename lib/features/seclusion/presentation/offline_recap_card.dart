@@ -66,11 +66,9 @@ class OfflineRecapCard extends StatelessWidget {
       recap,
       itemNameOf: _itemNameOf,
     );
-    final isCapped = recap.limitReason == OfflineRecapLimitReason.systemCap;
-    final statusLine = isCapped
+    final fullRateComplete = recap.fullRateComplete;
+    final statusLine = fullRateComplete
         ? UiStrings.offlineRecapMapCapped(recap.mapName)
-        : recap.isComplete
-        ? UiStrings.offlineRecapMapComplete(recap.mapName)
         : UiStrings.offlineRecapMapProgress(
             recap.mapName,
             (recap.progressPct * 100).round(),
@@ -102,12 +100,13 @@ class OfflineRecapCard extends StatelessWidget {
               statusLine,
               style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
             ),
-            // P1-6:达系统上限 → 温和建议(不焦虑·守反留存红线)。
-            if (isCapped) ...[
+            if (recap.passiveHours > 0) ...[
               const SizedBox(height: 4),
-              const Text(
-                UiStrings.offlineCappedAdvice,
-                style: TextStyle(color: WuxiaUi.ink2, fontSize: 12),
+              Text(
+                UiStrings.offlineRecapPassiveContinues(
+                  recap.passiveHours.toStringAsFixed(1),
+                ),
+                style: const TextStyle(color: WuxiaUi.ink2, fontSize: 12),
               ),
             ],
             const SizedBox(height: 6),
@@ -135,9 +134,7 @@ class OfflineRecapCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 PlaqueButton(
-                  label: isCapped
-                      ? UiStrings.offlineRecapCollectCapped
-                      : UiStrings.offlineRecapGoCollect,
+                  label: UiStrings.offlineRecapGoCollect,
                   onTap: onGoCollect,
                   primary: true,
                 ),

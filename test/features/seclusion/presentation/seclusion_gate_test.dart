@@ -11,6 +11,7 @@ void main() {
     ..saveDataId = 1
     ..mapType = RetreatMapType.shanLin
     ..durationHours = 4
+    ..realmTierAtStart = RealmTier.xueTu
     ..startedAt = DateTime(2026, 1, 1)
     ..status = RetreatStatus.active;
 

@@ -13,8 +13,7 @@ import '../../seclusion/presentation/seclusion_gate.dart';
 
 /// 主菜单顶部常驻闭关横幅（L3 闭关非阻塞）。
 ///
-/// 有 active session → 显「闭关中 · {地图} · 剩 {时长}」,点击回 ActiveRetreatScreen;
-/// 无 → SizedBox.shrink()。剩余时间为打开时快照（无实时 Timer）。
+/// 有 active session 时展示已闭关时长与当前结算阶段。
 class MainMenuRetreatBanner extends ConsumerWidget {
   const MainMenuRetreatBanner({super.key});
 
@@ -26,16 +25,18 @@ class MainMenuRetreatBanner extends ConsumerWidget {
     if (session == null) return const SizedBox.shrink();
 
     final mapDef = GameRepository.instance.getSeclusionMap(session.mapType);
-    final plannedMin = session.durationHours * 60;
-    final capMin = (GameRepository.instance.numbers.retreat.capHours * 60)
-        .round();
-    final elapsedMin = DateTime.now().difference(session.startedAt).inMinutes;
-    final remainingMin = (plannedMin - elapsedMin).clamp(0, plannedMin);
-    final remaining = UiStrings.retreatRemainingText(
-      remainingMin ~/ 60,
-      remainingMin % 60,
-    );
-    final isCapped = capMin <= plannedMin && elapsedMin >= capMin;
+    final cap = GameRepository.instance.numbers.retreat.capHours;
+    final elapsed =
+        DateTime.now().difference(session.startedAt).inSeconds / 3600.0;
+    final safeElapsed = elapsed < 0 ? 0.0 : elapsed;
+    final retreatHours = safeElapsed > cap ? cap.toDouble() : safeElapsed;
+    final passiveHours = safeElapsed - retreatHours;
+    final phase = passiveHours > 0
+        ? UiStrings.mainMenuRetreatPassivePhase(passiveHours.toStringAsFixed(1))
+        : UiStrings.mainMenuRetreatFullRatePhase(
+            retreatHours.toStringAsFixed(1),
+            cap,
+          );
 
     return Padding(
       padding: const EdgeInsets.only(top: 12),
@@ -68,14 +69,11 @@ class MainMenuRetreatBanner extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    isCapped
-                        ? UiStrings.mainMenuRetreatBannerCappedLine(
-                            mapDef.mapName,
-                          )
-                        : UiStrings.mainMenuRetreatBannerLine(
-                            mapDef.mapName,
-                            remaining,
-                          ),
+                    UiStrings.mainMenuRetreatBannerLine(
+                      mapDef.mapName,
+                      safeElapsed.toStringAsFixed(1),
+                      phase,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

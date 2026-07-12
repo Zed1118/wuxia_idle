@@ -35,6 +35,7 @@ typedef RetreatOutputs = ({
   int silver,
   Map<String, int> itemRewards,
   List<Equipment> equipmentDrops,
+  List<int> equipmentDropNodeHours,
   int experiencePoints,
   int techniqueLearnPoints,
   int internalForcePoints,
@@ -67,6 +68,8 @@ typedef RetreatResult = ({
   int silver,
   Map<String, int> itemRewards,
   List<Equipment> equipmentDrops,
+  List<int> equipmentDropNodeHours,
+  RealmTier realmTierAtStart,
   int experiencePoints,
   int techniqueLearnPoints,
   int internalForcePoints,
@@ -285,6 +288,7 @@ class SeclusionService {
             .clamp(0, 999999);
 
     final equipDrops = <Equipment>[];
+    final equipmentDropNodeHours = <int>[];
     if (dropService != null && GameRepository.isLoaded) {
       final rollCount = RetreatSettlementCalculator.equipmentRollCount(
         retreatHours: actualHours,
@@ -301,7 +305,12 @@ class SeclusionService {
           obtainedAt: dropService.now(),
           obtainedFrom: dropService.defaultObtainedFrom,
         );
-        if (equipment != null) equipDrops.add(equipment);
+        if (equipment != null) {
+          equipDrops.add(equipment);
+          equipmentDropNodeHours.add(
+            nodeIndex * config.equipmentRollIntervalHours,
+          );
+        }
       }
     }
 
@@ -313,6 +322,7 @@ class SeclusionService {
       silver: silver,
       itemRewards: itemRewards,
       equipmentDrops: equipDrops,
+      equipmentDropNodeHours: equipmentDropNodeHours,
       experiencePoints: experiencePoints,
       techniqueLearnPoints: techniqueLearnPoints,
       internalForcePoints: internalForcePoints,
@@ -646,6 +656,9 @@ class SeclusionService {
       silver: outputs.silver,
       itemRewards: outputs.itemRewards,
       equipmentDrops: outputs.equipmentDrops,
+      equipmentDropNodeHours: outputs.equipmentDropNodeHours,
+      realmTierAtStart:
+          session.realmTierAtStart ?? charRealmTier ?? RealmTier.xueTu,
       experiencePoints:
           outputs.experiencePoints + settlement.passive.experience,
       techniqueLearnPoints: outputs.techniqueLearnPoints,
