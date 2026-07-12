@@ -20,7 +20,7 @@ import 'encounter_dialog.dart';
 ///
 /// stage_entry_flow / tower_entry_flow victory 路径都调一次,共享同一逻辑:
 ///   1. recordKill:按敌人 school +1
-///   2. evaluateTriggers:取主角 fortune,base * (1 + fortune/20) 软概率
+///   2. evaluateTriggers:武学领悟读悟性，其他奇遇读机缘
 ///   3. roll 中 → markTriggered + load events 文案 + 弹 dialog
 ///   4. 玩家选 outcome → applyOutcome + SnackBar 摘要
 ///
@@ -42,7 +42,7 @@ Future<void> runEncounterHookAfterVictory({
   final svc = EncounterService(
     isar: isar,
     attributeGainCap: n.adventureAttributeLifetimeCap,
-    fortuneSensitivity: n.encounterFortuneSensitivity,
+    attributeEffects: n.attributeEffects,
   );
   // W13 教训:race 防御,ensure getOrCreate
   await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
@@ -97,6 +97,7 @@ Future<void> runEncounterHookAfterVictory({
     context: context,
     def: triggered,
     content: content,
+    fortune: founder.attributes.fortune,
   );
   if (outcomeId == null) return;
 

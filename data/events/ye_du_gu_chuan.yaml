@@ -18,6 +18,7 @@ choices:
 
   - text: 问价
     outcome_id: negotiate
+    fortune_required: 8
     body: |
       艄公抬起斗笠。一张脸被河风吹得满是裂纹。
       「这河上往来的，不付铜钱。」

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import '../../../core/domain/character.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
@@ -51,7 +52,10 @@ class DamageCalculator {
       );
     }
     // 可玩性 P1a:从攻方主修心法 skillUsageCount 派生该招熟练度综合倍率。
-    final uses = ctx.attackerMainTech.skillUsageCount.countOf(ctx.skill.id);
+    final uses = AttributeEffectPolicy(n.attributeEffects).effectiveUsageCount(
+      rawUses: ctx.attackerMainTech.skillUsageCount.countOf(ctx.skill.id),
+      enlightenment: ctx.attacker.attributes.enlightenment,
+    );
     final perSkillPct =
         ctx.skill.proficiency?.damagePctAt(
           SkillProficiency.stageFor(uses, n.skillProficiency).id,

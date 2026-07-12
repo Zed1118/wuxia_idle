@@ -11,6 +11,7 @@ import '../features/mass_battle/domain/mass_battle_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
 import '../features/sweep/domain/sweep_readiness.dart';
 import '../features/taohua_island/domain/taohua_island_config.dart';
+import '../core/domain/attribute_effect_policy.dart';
 import '../core/domain/enums.dart';
 
 /// 数值总配置（numbers.yaml 全量包装）。
@@ -23,6 +24,9 @@ import '../core/domain/enums.dart';
 class NumbersConfig {
   final String version;
   final CombatNumbers combat;
+
+  /// 角色四项属性的统一派生规则（顶层 `attribute_effects`）。
+  final AttributeEffectRules attributeEffects;
 
   /// 内息紊乱：不扣永久内力的战败/散功临时代价。
   final InnerBreathDisorderConfig innerBreathDisorder;
@@ -225,11 +229,6 @@ class NumbersConfig {
   /// #4③ B2:接入 [EncounterService.attributeGainCap],消除该 yaml key 零消费。
   final int adventureAttributeLifetimeCap;
 
-  /// 奇遇 fortune 软概率灵敏度(numbers.yaml `encounter.fortune_sensitivity`,C-W14-1 Q3)。
-  /// p = baseProbability * (1 + fortune / sensitivity)。
-  /// #4③ B5:从 [EncounterService] 硬编码 20.0 外置。
-  final double encounterFortuneSensitivity;
-
   /// 技能装配大招槽阈值(numbers.yaml `skill_loadout.ultimate_power_threshold`,GDD §6)。
   /// 主修心法招 powerMultiplier ≥ 此值时自动填入大招槽，由 [SkillLoadout.autoFill] 消费。
   final int loadoutUltimatePowerThreshold;
@@ -266,6 +265,7 @@ class NumbersConfig {
   const NumbersConfig({
     required this.version,
     required this.combat,
+    required this.attributeEffects,
     required this.innerBreathDisorder,
     required this.skillProficiency,
     required this.skillUnlock,
@@ -307,7 +307,6 @@ class NumbersConfig {
     required this.sectEvent,
     required this.sectManagement,
     required this.adventureAttributeLifetimeCap,
-    required this.encounterFortuneSensitivity,
     required this.loadoutUltimatePowerThreshold,
     required this.cycleEvolution,
     required this.passiveIdle,
@@ -338,6 +337,9 @@ class NumbersConfig {
     return NumbersConfig(
       version: meta['version'] as String,
       combat: CombatNumbers.fromYaml(combat),
+      attributeEffects: AttributeEffectRules.fromYaml(
+        (y['attribute_effects'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
       innerBreathDisorder: InnerBreathDisorderConfig.fromYaml(
         ((y['conditions'] as Map?)?['inner_breath_disorder'] as Map?)
                 ?.cast<String, dynamic>() ??
@@ -489,11 +491,6 @@ class NumbersConfig {
                   as num?)
               ?.toInt() ??
           5,
-      encounterFortuneSensitivity:
-          ((y['encounter'] as Map<String, dynamic>?)?['fortune_sensitivity']
-                  as num?)
-              ?.toDouble() ??
-          20.0,
       loadoutUltimatePowerThreshold:
           ((y['skill_loadout']
                       as Map<String, dynamic>?)?['ultimate_power_threshold']

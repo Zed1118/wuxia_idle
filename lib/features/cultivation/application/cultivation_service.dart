@@ -1,4 +1,5 @@
 import '../../../core/domain/enums.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/skill_usage_entry.dart';
 import '../../../core/domain/technique.dart';
 
@@ -51,11 +52,24 @@ class CultivationService {
     required String skillId,
     required Map<CultivationLayer, int> progressToNextMap,
     int delta = 1,
+    AttributeEffectPolicy? attributePolicy,
+    int enlightenment = 0,
   }) {
+    final rawBefore = tech.skillUsageCount.fold<int>(
+      0,
+      (sum, entry) => sum + entry.count,
+    );
     tech.skillUsageCount.increment(skillId, delta);
+    final progressDelta =
+        attributePolicy?.effectiveProgressDelta(
+          rawBefore: rawBefore,
+          rawDelta: delta,
+          enlightenment: enlightenment,
+        ) ??
+        delta;
     return applyProgressDelta(
       tech: tech,
-      delta: delta,
+      delta: progressDelta,
       progressToNextMap: progressToNextMap,
     );
   }

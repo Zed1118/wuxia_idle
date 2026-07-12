@@ -691,22 +691,28 @@ class UiStrings {
   static const String statSpeed = '速度';
   static const String statCriticalRate = '暴击率';
   static const String statEvasionRate = '闪避率';
+  static const String statEffectiveEquipmentAttack = '实战装备攻击';
+  static const String statBaseDefenseRate = '基础防御';
 
   // M4 术语释义气泡（GlossaryTip）：四项属性 + 派生数值 + 养成进度术语。
   // §5.7 框架下用悬停/长按气泡，非教程弹窗。文案水墨克制、不用网游词汇。
-  static const String glossaryConstitution = '根骨：体魄根基，决定血量上限。根骨越厚，越能久战不溃。';
+  static const String glossaryConstitution =
+      '根骨：体魄根基，决定血量上限；根骨深厚还能缩短新受重伤的疗养时长。';
   static const String glossaryEnlightenment =
       '悟性：资质灵慧，影响修炼速度与武学领悟概率。悟性高者，一点即通。';
   static const String glossaryAgility = '身法：轻灵敏捷，决定出手速度与闪避。身法高者，快人一步。';
-  static const String glossaryFortune = '机缘：缘法深浅，影响奇遇触发率与商店折扣。机缘厚者，常逢造化。';
+  static const String glossaryFortune = '机缘：缘法深浅，影响普通奇遇触发率，并可解锁少量特殊选择。';
   static const String glossaryHp = '生命：可承受的伤害总量，归零即败。由境界、根骨与装备共同撑起。';
   static const String glossaryInternalForce =
       '内力：闭关积累的永久功力，受当前境界上限约束，决定招式威能，战斗中不消耗。';
   static const String glossaryQi = '真气：每场战斗独立运转的资源。普攻与流派条件产气，强力招式耗气，溢出部分不保留。';
   static const String glossarySpeed = '出手速度：决定行动快慢，速度越高出手越频。由身法、装备与心法共同加成。';
-  static const String glossaryCriticalRate =
-      '暴击率：触发暴击的概率，暴击额外加成伤害。身法越高，暴击越易触发。';
+  static const String glossaryCriticalRate = '暴击率：触发暴击的概率，暴击会额外提高伤害；基础值不受身法影响。';
   static const String glossaryEvasionRate = '闪避率：完全避开来袭的概率。身法越高，越易闪躲。';
+  static const String glossaryEffectiveEquipmentAttack =
+      '实战装备攻击：当前全身装备经过强化、共鸣与开锋后的攻击总和。';
+  static const String glossaryBaseDefenseRate =
+      '基础防御：当前境界提供的减伤比例，战斗中的心法与其他效果会在此基础上叠加。';
   static const String glossaryCultivation = '修炼度：心法的精熟程度，越高则招式伤害倍率越大。随实战与闭关渐积。';
   static const String glossaryResonance = '共鸣度：人与兵刃的默契，血战中渐积。圆满者可悟人剑合一。';
 
@@ -2040,10 +2046,10 @@ class UiStrings {
   static const String founderStarterGearDialogIntro = '门中旧匣启封，获得三件基础装备：';
   static const String founderStarterGearEquippedHint = '已收入装备仓库，并为祖师穿戴。';
   static const String founderStarterGearConfirm = '收下';
-  static const String founderCreateAttrConstitutionHint = '影响最大生命,久战不溃';
+  static const String founderCreateAttrConstitutionHint = '影响最大生命与新受重伤时长';
   static const String founderCreateAttrEnlightenmentHint = '影响修炼速度与武学领悟';
-  static const String founderCreateAttrAgilityHint = '影响速度、暴击与闪避';
-  static const String founderCreateAttrFortuneHint = '影响奇遇与偶得机缘';
+  static const String founderCreateAttrAgilityHint = '影响速度与闪避';
+  static const String founderCreateAttrFortuneHint = '影响普通奇遇与特殊选择';
   static String founderCreationDeeds(
     String generationText,
     String school,
@@ -2483,6 +2489,7 @@ class UiStrings {
   static const String encounterDialogTitleLabel = '机缘';
   static const String encounterDialogOutcomeBodyFallback = '此情此景,已铭于心。';
   static const String encounterDialogConfirmButton = '行路 →';
+  static String encounterFortuneRequirement(int required) => '机缘 $required';
   // outcome banner($ 变量用带参方法,enum 映射由 caller 解析后传入)。
   static const String encounterOutcomeSkillTitle = '灵光一现';
   static const String encounterOutcomeAttributeTitle = '机缘入身';

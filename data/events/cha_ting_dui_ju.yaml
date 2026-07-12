@@ -16,6 +16,7 @@ choices:
 
   - text: 执黑守局
     outcome_id: defend_draw
+    fortune_required: 8
     body: |
       你用黑马死缠红帅，硬生生把棋拖入和局。
       那人笑了一声：「不错。守得住，有时候比拿得下更难。」

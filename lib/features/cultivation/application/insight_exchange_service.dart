@@ -1,6 +1,7 @@
 import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/character.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/game_repository.dart';
 import 'cultivation_service.dart';
@@ -81,7 +82,16 @@ class InsightExchangeService {
     }
 
     final ratio = GameRepository.instance.numbers.insightToCultivationRatio;
-    final delta = (insightSpend * ratio).floor();
+    final policy = AttributeEffectPolicy(
+      GameRepository.instance.numbers.attributeEffects,
+    );
+    final delta =
+        (insightSpend *
+                ratio *
+                policy.growthMultiplier(
+                  enlightenment: ch.attributes.enlightenment,
+                ))
+            .floor();
 
     late CultivationProgressResult progress;
     await isar.writeTxn(() async {

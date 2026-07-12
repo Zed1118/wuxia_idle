@@ -31,6 +31,19 @@ meta:
   last_updated: "2026-05-10"
   notes: "所有数值基于 GDD v1.1 §5.2 数值红线设计；公式系数见 combat 段"
 
+attribute_effects:
+  reference_value: 5
+  constitution:
+    heavy_injury_reduction_per_point: 0.02
+    heavy_injury_reduction_max: 0.20
+  enlightenment:
+    growth_bonus_per_point: 0.02
+    growth_bonus_max: 0.20
+    insight_probability_sensitivity: 20
+  fortune:
+    encounter_probability_sensitivity: 20
+    special_choice_required: 8
+
 # =============================================================================
 # 0. 角色临时状态
 # =============================================================================
@@ -115,10 +128,10 @@ combat:
     agility_factor: 8
 
   # --- 暴击率与暴击伤害 ---
-  # 暴击率主要由身法和心法决定，灵巧流派额外 +20%（GDD §4.4）
+  # 暴击率使用固定基础值，灵巧流派额外 +20%（GDD §4.4）
   critical:
-    base_rate: 0.05                  # 基础暴击率 5%
-    agility_per_point_rate: 0.005    # 每点身法 +0.5% 暴击率
+    base_rate: 0.075                 # 基础暴击率 7.5%（身法不再影响暴击）
+    agility_per_point_rate: 0.0      # 兼容旧配置结构；身法职责仅速度与闪避
     max_rate: 0.50                   # 暴击率硬上限 50%
     base_damage_multiplier: 1.5      # 暴击伤害基础倍率
     max_damage_multiplier: 2.5       # 暴击伤害信息性上限（当前不作运行时 clamp；
@@ -949,16 +962,6 @@ character:
     bonus_per_event_max: 3            # 单次奇遇最多加 3 点
     distribution: "weighted"          # 大部分加 1，少数加 2-3
     weights: [0.65, 0.25, 0.10]      # 1 点/2 点/3 点的概率
-
-# =============================================================================
-# 6b. 奇遇系统
-# =============================================================================
-# GDD §7.2 武学领悟 · fortune 软概率灵敏度
-
-encounter:
-  # fortune 软概率灵敏度:p = baseProbability * (1 + fortune / fortune_sensitivity)
-  # (C-W14-1 决策点 Q3 · #4③ B5 从 encounter_service.dart 硬编码 20.0 外置)
-  fortune_sensitivity: 20
 
 # =============================================================================
 # 7. 闭关系统

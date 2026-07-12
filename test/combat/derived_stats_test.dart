@@ -268,18 +268,25 @@ void main() {
   });
 
   group('CharacterDerivedStats.criticalRate', () {
-    test('身法 5 / 无流派 → 0.05 + 5*0.005 = 0.075', () {
+    test('无流派基础暴击固定 0.075，不再随身法变化', () {
       final n = GameRepository.instance.numbers;
-      final c = _mkChar(
+      final slow = _mkChar(
         tier: RealmTier.xueTu,
         layer: RealmLayer.qiMeng,
         internalForce: 500,
-        agility: 5,
+        agility: 0,
       );
-      expect(CharacterDerivedStats.criticalRate(c, n), closeTo(0.075, 1e-9));
+      final fast = _mkChar(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.qiMeng,
+        internalForce: 500,
+        agility: 15,
+      );
+      expect(CharacterDerivedStats.criticalRate(slow, n), closeTo(0.075, 1e-9));
+      expect(CharacterDerivedStats.criticalRate(fast, n), closeTo(0.075, 1e-9));
     });
 
-    test('身法 5 / 灵巧流派 → 0.05+0.025+0.20 = 0.275', () {
+    test('灵巧流派仍在固定基础上增加 0.20', () {
       final n = GameRepository.instance.numbers;
       final c = _mkChar(
         tier: RealmTier.xueTu,
@@ -291,7 +298,7 @@ void main() {
       expect(CharacterDerivedStats.criticalRate(c, n), closeTo(0.275, 1e-9));
     });
 
-    test('身法 100 + 灵巧流派 → clamp 到 max_rate 0.50（不能超）', () {
+    test('高身法不再把灵巧流派暴击推到上限', () {
       final n = GameRepository.instance.numbers;
       final c = _mkChar(
         tier: RealmTier.wuSheng,
@@ -300,8 +307,7 @@ void main() {
         agility: 100,
         school: TechniqueSchool.lingQiao,
       );
-      // 0.05 + 100*0.005 + 0.20 = 0.75 → clamp 0.50
-      expect(CharacterDerivedStats.criticalRate(c, n), 0.50);
+      expect(CharacterDerivedStats.criticalRate(c, n), closeTo(0.275, 1e-9));
     });
   });
 

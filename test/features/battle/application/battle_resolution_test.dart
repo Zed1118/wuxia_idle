@@ -1442,6 +1442,7 @@ void main() {
     test('硬仗战败：全 participating 角色重伤（injuryHoursRemaining>0）+ 轻伤+1', () {
       final ch1 = buildCharacter(id: 1, mainTechId: null, name: 'c1');
       final ch2 = buildCharacter(id: 2, mainTechId: null, name: 'c2');
+      ch1.attributes.constitution = 10;
       final state = BattleState(
         leftTeam: [buildBattleChar(1, 0), buildBattleChar(2, 1)],
         rightTeam: const [],
@@ -1466,7 +1467,12 @@ void main() {
 
       expect(ch1.injuryHoursRemaining, greaterThan(0));
       expect(ch2.injuryHoursRemaining, greaterThan(0));
-      expect(ch1.injuryHoursRemaining, numbersCfg.injury.heavyRecoveryHours);
+      expect(ch1.injuryHoursRemaining, closeTo(7.2, 1e-9));
+      expect(
+        ch2.injuryHoursRemaining,
+        numbersCfg.injury.heavyRecoveryHours,
+        reason: '基准体魄仍使用基础重伤时长',
+      );
       expect(ch1.lightInjuryStacks, 1);
       expect(ch2.lightInjuryStacks, 1);
     });

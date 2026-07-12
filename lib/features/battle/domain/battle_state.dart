@@ -3,6 +3,7 @@ import '../../../data/defs/skill_def.dart';
 import '../../../data/defs/stage_win_condition.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
@@ -532,7 +533,11 @@ class BattleCharacter {
       skillCooldowns: const {},
       skillUses: {
         for (final sk in skills)
-          sk.id: mainTechnique.skillUsageCount.countOf(sk.id),
+          sk.id: AttributeEffectPolicy(numbers.attributeEffects)
+              .effectiveUsageCount(
+                rawUses: mainTechnique.skillUsageCount.countOf(sk.id),
+                enlightenment: character.attributes.enlightenment,
+              ),
       },
       activeBuffs: const [],
       actionPoint: 0,

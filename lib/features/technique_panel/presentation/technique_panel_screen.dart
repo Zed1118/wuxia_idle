@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../battle/domain/enum_localizations.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/game_repository.dart';
@@ -727,8 +728,15 @@ class _TechniqueTile extends ConsumerWidget {
             mult[layers[layerIdx + 1]] ?? curMult,
           );
     final techDef = GameRepository.instance.techniqueDefs[technique.defId];
+    final policy = AttributeEffectPolicy(
+      GameRepository.instance.numbers.attributeEffects,
+    );
     final skillUsage = {
-      for (final entry in technique.skillUsageCount) entry.skillId: entry.count,
+      for (final entry in technique.skillUsageCount)
+        entry.skillId: policy.effectiveUsageCount(
+          rawUses: entry.count,
+          enlightenment: character.attributes.enlightenment,
+        ),
     };
     final skillSummary = SkillProficiencyFormatter.bestSkillSummaryForTechnique(
       skills: [

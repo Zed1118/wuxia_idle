@@ -4,6 +4,7 @@ import 'package:isar_community/isar.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/attributes.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/skill_unlock_entry.dart';
@@ -95,7 +96,7 @@ typedef ReputationDeltaApplier =
 /// 设计原则:
 ///   - **service 不依赖 GameRepository**:caller 端注入 encounters 列表,
 ///     便于测试与 fixture 隔离(沿用 TowerProgressService 体例)
-///   - **fortune 软概率**:p = base * (1 + fortune / 20)(C-W14-1 决策点 Q3)
+///   - **属性软概率**:武学领悟读悟性，其他奇遇读机缘
 ///   - **lifetime cap**:4 属性总和 ≤ [attributeGainCap](默认 5,
 ///     GDD §4.1 line 183)。达 cap 后 applyOutcome 返回 [AttributeCapReached],
 ///     不写 Isar、不抛错
@@ -106,15 +107,17 @@ class EncounterService {
     required this.isar,
     this.attributeGainCap = 5,
     this.fortuneSensitivity = 20.0,
+    this.attributeEffects,
   });
 
   final Isar isar;
   final int attributeGainCap;
 
-  /// fortune 软概率灵敏度(numbers.yaml `encounter.fortune_sensitivity`,默认 20.0)。
-  /// p = baseProbability * (1 + fortune / fortuneSensitivity)。
-  /// #4③ B5:gameplay provider 从 NumbersConfig 注入,消除硬编码 20.0。
+  /// 旧测试 fixture 的兼容参数；正式玩法统一使用 [attributeEffects]。
   final double fortuneSensitivity;
+
+  /// 正式玩法必须注入统一属性规则；null 仅保留旧测试 fixture 的兼容路径。
+  final AttributeEffectRules? attributeEffects;
 
   /// 获取或创建进度行。
   Future<EncounterProgress> getOrCreate({required int saveDataId}) async {
@@ -203,7 +206,7 @@ class EncounterService {
   ///   1. 过滤已触发的 id
   ///   2. trigger 全部满足(schoolKillThreshold AND 全过 + fortune >= required
   ///      + W16 festivalRequired)
-  ///   3. 软概率公式 p = baseProbability * (1 + fortune/20),roll rng
+  ///   3. 按事件类型选择悟性/机缘计算软概率并 roll rng
   ///   4. 返回首个 roll 通过的 encounter(防止一次战斗连弹多个)
   ///
   /// [festivalToday] 由 caller(encounter_hook)从 [FestivalService.todayFestival]
@@ -231,8 +234,16 @@ class EncounterService {
       if (triggered.contains(def.id)) continue;
       if (!_checkTrigger(def, progress, attributes, festivalToday)) continue;
 
-      final p =
-          def.baseProbability * (1 + attributes.fortune / fortuneSensitivity);
+      final rules = attributeEffects;
+      final p = rules == null
+          ? def.baseProbability * (1 + attributes.fortune / fortuneSensitivity)
+          : AttributeEffectPolicy(rules).encounterProbability(
+              base: def.baseProbability,
+              source: def.type == EncounterType.techniqueInsight
+                  ? EncounterProbabilitySource.enlightenment
+                  : EncounterProbabilitySource.fortune,
+              attributes: attributes,
+            );
       if (rng.nextDouble() < p) {
         return def;
       }

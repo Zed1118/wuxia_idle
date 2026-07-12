@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/features/encounter/domain/encounter_event_loader.dart';
 
 import '../../../support/test_data.dart';
 
@@ -14,6 +15,22 @@ void main() {
   });
 
   group('encounters.yaml 加载', () {
+    test('fortune_required 解析为可见选项门槛', () {
+      final content = EncounterContent.fromYaml({
+        'id': 'test',
+        'opening': 'opening',
+        'choices': [
+          {
+            'text': 'choice',
+            'outcome_id': 'existing',
+            'body': 'body',
+            'fortune_required': 8,
+          },
+        ],
+      });
+      expect(content.choices.single.fortuneRequired, 8);
+    });
+
     test(
       '68 条 encounter 全部解析成功 '
       '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 4 + P1 #37 yu_zhong_qiao_men 挂回 1 + T02 nightshift 9 + P4.1 1.1 Q6A sect_recruit 3 + 2026-06-25 池接线 11)',

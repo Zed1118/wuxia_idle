@@ -306,6 +306,36 @@ void main() {
     expect(tipMessages, contains(UiStrings.glossaryFortune));
   });
 
+  testWidgets('派生属性显示实战装备攻击与基础防御，不常驻显示真气', (tester) async {
+    final character = mkCharacter(
+      mainTechniqueId: 20,
+      weaponId: 10,
+      armorId: 11,
+      accessoryId: 12,
+    );
+    await pumpPanel(
+      tester,
+      character: character,
+      equipments: {
+        10: mkEquipment(id: 10, slot: EquipmentSlot.weapon),
+        11: mkEquipment(id: 11, slot: EquipmentSlot.armor),
+        12: mkEquipment(id: 12, slot: EquipmentSlot.accessory),
+      },
+      techniques: {
+        20: mkTechnique(
+          id: 20,
+          ownerId: character.id,
+          role: TechniqueRole.main,
+          defId: 'tech_gangmeng_jichu',
+        ),
+      },
+    );
+
+    expect(find.text('实战装备攻击'), findsOneWidget);
+    expect(find.text('基础防御'), findsOneWidget);
+    expect(find.text(UiStrings.statQi), findsNothing);
+  });
+
   testWidgets('桌面视口 smoke:1440x900 信息结构与装备概况无布局异常', (tester) async {
     final character = mkCharacter(
       realmTier: RealmTier.erLiu,

@@ -4,7 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.33**
+> **版本:v1.35**
+> v1.35 变更摘要(2026-07-13 角色四项属性职责统一):根骨除血量外缩短新生成重伤时长；悟性统一影响心法修炼、招式熟练度成长与武学领悟概率；身法只管速度/闪避，基础暴击平移至 7.5%；机缘只管普通奇遇概率和显式特殊选项，不参与商店定价/掉落倍率。旧角色属性值、schema、saveVersion 均不迁移。
 > v1.34 变更摘要(2026-07-12 内力/真气拆分):永久内力由闭关增长并决定伤害，战斗不消耗；每角色使用有界真气循环（基础气海100；玩家基础开场40、普通敌人20、主线Boss40、塔Boss60；招式显式产耗气、流派单行动最多一次附加产气、连战恢复25%）。内力不再贡献血量。失败改施加可恢复的内息紊乱，不再永久扣内力；0.35旧档迁至0.36时保护性补满永久内力并迁移旧余毒。
 > v1.32 变更摘要(2026-07-08 外部审查速修 · 低风险修订):① 战斗结算 `BattleResolutionService.resolve` 默认胜负从 `finalState.result` 派生，避免未显式传参时战败误走胜利掉落；② `interveneNow` 补 request 后 null-check，消除拖招边界崩溃点；③ `_enforceEncounterSkillRedLines` 招式倍率上限改读 `numbers.combat.redLines.skillPowerMultiplierMax`；④ 文档 drift 速修：data_schema 降级历史快照、content_guide 清退役 DeepSeek/Windows 引用、README/AGENTS/IDS/GDD 同步已知偏差。
 > **版本:v1.31**
@@ -293,7 +294,7 @@ Demo 必交付内容量（已全部达标）：
     weather: rain
     enemy_class: swordsman
     kill_count_threshold: 100
-  fortune_required: 30           # 机缘属性门槛
+  fortune_required: 8            # 机缘属性门槛
   unlock_technique_id: ting_yu_jian
   cooldown_days: 30
 ```
@@ -396,9 +397,9 @@ choices:
 | 1 | 境界 7 层 vs 修炼度 9 层名重叠 | 代码层严格不同名：境界用「启蒙/入门/熟练/精通/圆熟/化境/登峰」，修炼度用「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」，见 `lib/features/battle/domain/enum_localizations.dart`（`RealmLayer.qiMeng / dengFeng` + `CultivationLayer.wuXia / jiJing`，符号引用不钉行号防 drift） |
 | 2 | 单项属性范围 | `numbers.yaml character.attributes`：单项 [1,10] / 总和 [16,24] / 正态 μ=5.5 σ=1.5 / `rerollable: false` |
 | 3 | 强化 +20-49 成功率与材料 | `numbers.yaml equipment.enhancement.success_curve`：`max(0.30, 0.50 - 0.02*(level-19))`，磨剑石 18/25 颗，心血结晶保底 8 颗 |
-| 4 | 暴击系数 + 防御率 | `numbers.yaml combat.critical`：base 5% + 身法 0.5%/点 + 上限 50%，倍率 1.5-2.5（灵巧固定 2.0）；防御率走 `realms.tiers.defense_rate` 按境界固定档（学徒 5%→武圣 35%） |
+| 4 | 暴击系数 + 防御率 | `numbers.yaml combat.critical`：基础 7.5%，身法不再提供暴击；上限 50%，倍率 1.5-2.5（灵巧固定 2.0）。防御率走 `realms.tiers.defense_rate` 按境界固定档（学徒 5%→武圣 35%） |
 | 5 | 闭关产出公式 | `numbers.yaml retreat`:5 地图 base_outputs + `realm_scale_per_tier: 1.3`;前 `cap_hours: 72` 是地图完整收益阶段,溢出转无上限 `passive_idle`;装备每12h判定、最多6次、无保底(2026-07-12 决议) |
-| 6 | 武学领悟机缘累积规则 | W14-1 简化为「fortune 属性 1-10 静态值 + 软概率 `p = baseProbability * (1 + fortune/20)`」，不再单独累积"机缘值"，见 `encounters.yaml` + `lib/features/encounter/application/encounter_service.dart`（公式实装,搜 `baseProbability`）+ `lib/features/encounter/domain/encounter_def.dart`（schema 注释） |
+| 6 | 武学领悟与普通奇遇概率 | 不单独累积“机缘值”。`techniqueInsight` 使用悟性：`p = baseProbability × (1 + enlightenment/20)`；其他奇遇使用机缘：`p = baseProbability × (1 + fortune/20)`。统一规则见 `numbers.yaml attribute_effects` + `AttributeEffectPolicy`。 |
 | 8 | 心法速度加成 | `numbers.yaml techniques.tiers[*].speed_bonus`：7 阶 0/5/10/15/25/40/60，直接进 GDD §5.6 公式，无独立上限 |
 | 9 | 人剑合一招式定义位置 | `numbers.yaml combat.resonance.unlocks_joint_skill: true`（默契阶段解锁）+ `skills.reference_multipliers.joint_skill.base: 4500`，**统一固定倍率，不绑流派/不绑装备类型**，由共鸣度系统统管。**v1.9 补**:P1.1 候选 3-b(2026-05-21,commit `15ff8aa`)已实装 battle 释放路径 — `skills.yaml` `skill_joint_skill`(mult=4500 / cost=250 / cd=4)+ `ResonanceStageConfig.unlocksJointSkill/hasSwordSongEffect` 解析 + `battle_ai` 优先级 `pending>jointSkill>powerSkill>normalAttack`,红线 27,421 < 100,000 ✅ |
 | 13 | 节气日完整清单 | v1.2 决议方案 A（2026-05-15）：12 个节气均匀覆盖四季，公历 hardcode 不引入农历库；删除原中秋（属农历节日非节气）。已落 `numbers.yaml retreat.solar_term_bonus.days_2026` |

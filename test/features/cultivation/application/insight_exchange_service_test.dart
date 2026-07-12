@@ -45,12 +45,13 @@ void main() {
     required int insightPoints,
     bool withMainTech = true,
     int progress = 0,
+    int enlightenment = 0,
   }) async {
     final ch = Character.create(
       name: 'hero',
       realmTier: RealmTier.xueTu,
       realmLayer: RealmLayer.qiMeng,
-      attributes: Attributes(),
+      attributes: Attributes()..enlightenment = enlightenment,
       rarity: RarityTier.biaoZhun,
       lineageRole: LineageRole.founder,
       createdAt: DateTime(2026, 1, 1),
@@ -89,6 +90,18 @@ void main() {
     expect(tech?.cultivationProgress, 50);
     final ch = await IsarSetup.instance.characters.get(kCharId);
     expect(ch?.insightPoints, 0);
+  });
+
+  test('悟性 10：凝练 50 → 主修 progress +55，真实领悟点仍消费 50', () async {
+    await seed(insightPoints: 50, enlightenment: 10);
+    final svc = InsightExchangeService(IsarSetup.instance);
+    final r = await svc.refine(characterId: kCharId, insightSpend: 50);
+
+    expect(r.status, InsightRefineStatus.success);
+    expect(r.progressGained, 55);
+    expect(r.remainingInsight, 0);
+    final tech = await IsarSetup.instance.techniques.get(kTechId);
+    expect(tech?.cultivationProgress, 55);
   });
 
   test('凝练 100 → 初窥→小成 升 1 层(toNext 100)', () async {

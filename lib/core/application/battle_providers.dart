@@ -226,6 +226,7 @@ class BattleNotifier extends _$BattleNotifier {
       progressToNextMap: numbers.cultivationProgressToNext,
       techniqueDefLookup: GameRepository.instance.getTechnique,
       dropService: dropSvc,
+      numbersConfig: numbers,
     );
   }
 }
