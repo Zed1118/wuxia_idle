@@ -1,5 +1,35 @@
 import '../../core/domain/enums.dart';
 
+class TechniqueQiProfile {
+  const TechniqueQiProfile({
+    this.maxBonus = 0,
+    this.openingBonus = 0,
+    this.gainPct = 0,
+    this.costReductionPct = 0,
+  });
+
+  final int maxBonus;
+  final int openingBonus;
+  final double gainPct;
+  final double costReductionPct;
+
+  factory TechniqueQiProfile.fromYaml(Map<String, dynamic> y) {
+    final profile = TechniqueQiProfile(
+      maxBonus: (y['maxBonus'] as num?)?.toInt() ?? 0,
+      openingBonus: (y['openingBonus'] as num?)?.toInt() ?? 0,
+      gainPct: (y['gainPct'] as num?)?.toDouble() ?? 0,
+      costReductionPct: (y['costReductionPct'] as num?)?.toDouble() ?? 0,
+    );
+    if (profile.maxBonus < 0 ||
+        profile.openingBonus < 0 ||
+        profile.gainPct < 0 ||
+        profile.costReductionPct < 0) {
+      throw StateError('心法真气倾向不得为负数: $y');
+    }
+    return profile;
+  }
+}
+
 /// 心法配置（data_schema.md §5.2，纯 Dart，不入 Isar）。
 class TechniqueDef {
   final String id;
@@ -17,6 +47,7 @@ class TechniqueDef {
   final double internalForceGrowthBonus;
   final int speedBonus;
   final List<String> acquireSourceTags;
+  final TechniqueQiProfile qiProfile;
 
   /// 心法个体卷轴图 png 路径(可选)。当前 techniques.yaml 无任一条目配置 `imagePath`,
   /// 恒为 null;字段保留待未来心法个体立绘。tier 分组头为纯绘制水墨头
@@ -35,6 +66,7 @@ class TechniqueDef {
     required this.internalForceGrowthBonus,
     required this.speedBonus,
     required this.acquireSourceTags,
+    this.qiProfile = const TechniqueQiProfile(),
     this.imagePath,
   });
 
@@ -53,6 +85,9 @@ class TechniqueDef {
       speedBonus: (y['speedBonus'] as num).toInt(),
       acquireSourceTags: List<String>.from(
         (y['acquireSourceTags'] as List? ?? const []).map((e) => e as String),
+      ),
+      qiProfile: TechniqueQiProfile.fromYaml(
+        Map<String, dynamic>.from(y['qiProfile'] as Map? ?? const {}),
       ),
       imagePath: y['imagePath'] as String?,
     );

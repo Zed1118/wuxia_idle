@@ -119,6 +119,8 @@ class BattleCharacter {
   /// Bounded per-battle resource.
   final int maxQi;
   final int currentQi;
+  final double qiGainMultiplier;
+  final double qiCostReductionPct;
 
   final int speed;
   final double criticalRate;
@@ -260,6 +262,8 @@ class BattleCharacter {
     int? internalForce,
     int? maxQi,
     int? currentQi,
+    this.qiGainMultiplier = 1.0,
+    this.qiCostReductionPct = 0.0,
     @Deprecated('请使用 maxQi') int? maxInternalForce,
     @Deprecated('请使用 currentQi') int? currentInternalForce,
     required this.speed,
@@ -365,17 +369,32 @@ class BattleCharacter {
       }
     }
 
+    final repo = GameRepository.instance;
+    final techDef = repo.getTechnique(mainTechnique.defId);
+    final qiConfig = numbers.combat.qi;
+    final profile = techDef.qiProfile;
+    final maxQi = (qiConfig.baseMax + profile.maxBonus).clamp(
+      qiConfig.minMax,
+      qiConfig.maxCap,
+    );
+    final openingQi = QiCycle.openingQi(
+      maxQi: maxQi,
+      openingQi: qiConfig.openingQi + profile.openingBonus,
+      openingCap: qiConfig.openingCap,
+    );
+    final qiGainMultiplier = (1 + profile.gainPct).clamp(
+      1.0,
+      qiConfig.gainMultiplierCap,
+    );
+    final qiCostReductionPct = profile.costReductionPct.clamp(
+      0.0,
+      qiConfig.costReductionCap,
+    );
     final maxHp = CharacterDerivedStats.maxHp(
       character,
       equipped,
       numbers,
       founderBuffActive: founderBuffActive,
-    );
-    final maxQi = numbers.combat.qi.baseMax;
-    final openingQi = QiCycle.openingQi(
-      maxQi: maxQi,
-      openingQi: numbers.combat.qi.openingQi,
-      openingCap: numbers.combat.qi.openingCap,
     );
     final speed = CharacterDerivedStats.speed(
       character,
@@ -405,12 +424,10 @@ class BattleCharacter {
       ForgingSlotType.lifesteal,
     );
 
-    final techDef = GameRepository.instance.getTechnique(mainTechnique.defId);
     // P1b 藏经阁:availableSkills = 6 装配槽非空技能(主修×2 / 辅修 / 共鸣 / 大招 /
     // 奇遇)。getSkill 共享 skillDefs Map(skills.yaml + encounter_skills.yaml
     // 加载合并),encounter skill 与心法招式 runtime 同型(SkillDef)。joint 现在走
     // resonanceSkillId 槽,不再走 hasJointSkillUnlocked 特殊注入。
-    final repo = GameRepository.instance;
     final loadoutIds = <String?>[
       character.mainSkillId1,
       character.mainSkillId2,
@@ -491,6 +508,8 @@ class BattleCharacter {
       internalForce: character.internalForce,
       maxQi: maxQi,
       currentQi: openingQi,
+      qiGainMultiplier: qiGainMultiplier,
+      qiCostReductionPct: qiCostReductionPct,
       speed: speed,
       criticalRate: critRate,
       evasionRate: evRate,
@@ -528,6 +547,8 @@ class BattleCharacter {
     int? internalForce,
     int? maxQi,
     int? currentQi,
+    double? qiGainMultiplier,
+    double? qiCostReductionPct,
     @Deprecated('请使用 maxQi') int? maxInternalForce,
     @Deprecated('请使用 currentQi') int? currentInternalForce,
     int? speed,
@@ -579,6 +600,8 @@ class BattleCharacter {
       internalForce: internalForce ?? this.internalForce,
       maxQi: maxQi ?? maxInternalForce ?? this.maxQi,
       currentQi: currentQi ?? currentInternalForce ?? this.currentQi,
+      qiGainMultiplier: qiGainMultiplier ?? this.qiGainMultiplier,
+      qiCostReductionPct: qiCostReductionPct ?? this.qiCostReductionPct,
       speed: speed ?? this.speed,
       criticalRate: criticalRate ?? this.criticalRate,
       evasionRate: evasionRate ?? this.evasionRate,

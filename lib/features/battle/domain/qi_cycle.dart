@@ -45,6 +45,24 @@ abstract final class QiCycle {
     return (baseCost * (1 - safeReduction)).round().clamp(0, baseCost);
   }
 
+  static int effectiveSkillDelta({
+    required int baseDelta,
+    required double gainMultiplier,
+    required double gainMultiplierCap,
+    required double costReductionPct,
+    required double costReductionCap,
+  }) {
+    if (baseDelta >= 0) {
+      final multiplier = gainMultiplier.clamp(1.0, gainMultiplierCap);
+      return (baseDelta * multiplier).round();
+    }
+    return -effectiveCost(
+      baseCost: -baseDelta,
+      reductionPct: costReductionPct,
+      reductionCap: costReductionCap,
+    );
+  }
+
   static int schoolBonus({
     required TechniqueSchool school,
     required QiActionEvent event,

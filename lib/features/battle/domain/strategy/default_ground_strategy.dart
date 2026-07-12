@@ -546,7 +546,15 @@ class DefaultGroundStrategy implements BattleStrategy {
       currentQi: QiCycle.applyDelta(
         currentQi: preActor.currentQi,
         maxQi: preActor.maxQi,
-        delta: skill.qiDelta + actorSchoolBonus,
+        delta:
+            QiCycle.effectiveSkillDelta(
+              baseDelta: skill.qiDelta,
+              gainMultiplier: preActor.qiGainMultiplier,
+              gainMultiplierCap: n.combat.qi.gainMultiplierCap,
+              costReductionPct: preActor.qiCostReductionPct,
+              costReductionCap: n.combat.qi.costReductionCap,
+            ) +
+            actorSchoolBonus,
       ),
       skillCooldowns: Map.unmodifiable(newCd),
       actionPoint: preActor.actionPoint - 1000,

@@ -3,6 +3,7 @@ import '../../../data/defs/skill_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/numbers_config.dart';
 import 'battle_state.dart';
+import 'qi_cycle.dart';
 
 /// 战斗 AI（phase1_tasks.md T12 §683）。
 ///
@@ -33,7 +34,7 @@ class BattleAI {
     if (!actor.isAlive) {
       throw StateError('BattleAI.decide: ${actor.name} 已死亡，不应进入决策');
     }
-    final skill = _pickSkill(actor, state);
+    final skill = _pickSkill(actor, state, n);
     final enemyTeam = actor.teamSide == 0 ? state.rightTeam : state.leftTeam;
 
     // 群体技自动打全体存活敌人(按 slotIndex 升序),不走单体选目标 / 手动指定 /
@@ -88,10 +89,14 @@ class BattleAI {
   }
 
   /// 招式选择。
-  static SkillDef _pickSkill(BattleCharacter actor, BattleState state) {
+  static SkillDef _pickSkill(
+    BattleCharacter actor,
+    BattleState state,
+    NumbersConfig n,
+  ) {
     // 1) 玩家手动请求的大招（优先级最高）
     final pending = state.pendingUltimates[actor.characterId];
-    if (pending != null && _canUse(actor, pending)) {
+    if (pending != null && _canUse(actor, pending, n)) {
       return pending;
     }
 
@@ -103,7 +108,7 @@ class BattleAI {
     if (enemyCharging) {
       for (final s in actor.availableSkills) {
         if (s.aiUsePolicy != AiUsePolicy.saveForInterrupt) continue;
-        if (!_canUse(actor, s)) continue;
+        if (!_canUse(actor, s, n)) continue;
         return s;
       }
     }
@@ -113,7 +118,7 @@ class BattleAI {
     // 多件武器共鸣解锁也只注入一次(fromCharacter 去重),所以 first 即可。
     for (final s in actor.availableSkills) {
       if (s.type != SkillType.jointSkill) continue;
-      if (!_canUse(actor, s)) continue;
+      if (!_canUse(actor, s, n)) continue;
       return s;
     }
 
@@ -133,7 +138,7 @@ class BattleAI {
         if (s.aiUsePolicy == AiUsePolicy.saveForInterrupt) {
           continue; // 与默认强力技 loop 一致:破招技平时不放(防阶段招混入破招技时被即放,破坏留招语义)
         }
-        if (!_canUse(actor, s)) continue;
+        if (!_canUse(actor, s, n)) continue;
         if (bestPhase == null ||
             s.powerMultiplier > bestPhase.powerMultiplier) {
           bestPhase = s;
@@ -151,7 +156,7 @@ class BattleAI {
           (actor.teamSide == 1 && s.type == SkillType.ultimate);
       if (!isAutoSkill) continue;
       if (s.aiUsePolicy == AiUsePolicy.saveForInterrupt) continue; // P0:平时不放破招技
-      if (!_canUse(actor, s)) continue;
+      if (!_canUse(actor, s, n)) continue;
       if (bestPower == null || s.powerMultiplier > bestPower.powerMultiplier) {
         bestPower = s;
       }
@@ -266,8 +271,15 @@ class BattleAI {
   }
 
   /// 真气够 + CD 0 才可用；产气/中性招式的 cost 为 0。
-  static bool _canUse(BattleCharacter actor, SkillDef skill) {
-    if (actor.currentQi < skill.qiCost) return false;
+  static bool _canUse(BattleCharacter actor, SkillDef skill, NumbersConfig n) {
+    final effectiveCost = -QiCycle.effectiveSkillDelta(
+      baseDelta: -skill.qiCost,
+      gainMultiplier: actor.qiGainMultiplier,
+      gainMultiplierCap: n.combat.qi.gainMultiplierCap,
+      costReductionPct: actor.qiCostReductionPct,
+      costReductionCap: n.combat.qi.costReductionCap,
+    );
+    if (actor.currentQi < effectiveCost) return false;
     final cd = actor.skillCooldowns[skill.id] ?? 0;
     if (cd > 0) return false;
     return true;

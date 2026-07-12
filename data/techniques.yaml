@@ -32,6 +32,8 @@ techniques:
       - skill_gangmeng_jichu_ult
     internalForceGrowthBonus: 1.05
     speedBonus: 0
+    qiProfile:
+      openingBonus: 15
     acquireSourceTags: ["starter"]
 
   - id: tech_lingqiao_jichu
@@ -45,6 +47,8 @@ techniques:
       - skill_lingqiao_jichu_ult
     internalForceGrowthBonus: 1.05
     speedBonus: 0
+    qiProfile:
+      maxBonus: 20
     acquireSourceTags: ["starter"]
 
   - id: tech_yinrou_jichu
@@ -58,6 +62,8 @@ techniques:
       - skill_yinrou_jichu_ult
     internalForceGrowthBonus: 1.05
     speedBonus: 0
+    qiProfile:
+      gainPct: 0.20
     acquireSourceTags: ["starter"]
 
   # === 第 2 阶 常练功 · 三流境界开放 ===
