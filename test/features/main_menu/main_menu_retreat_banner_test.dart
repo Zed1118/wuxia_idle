@@ -20,6 +20,7 @@ void main() {
         ..saveDataId = 1
         ..mapType = RetreatMapType.shanLin
         ..durationHours = durationHours
+        ..realmTierAtStart = RealmTier.xueTu
         ..startedAt = startedAt ?? DateTime.now()
         ..status = RetreatStatus.active;
 
@@ -44,7 +45,7 @@ void main() {
     expect(find.textContaining('山林'), findsOneWidget);
   });
 
-  testWidgets('达到收益封顶 → 横幅显示已满与收功入口', (tester) async {
+  testWidgets('超过 72h → 横幅显示地图圆满与挂机接续', (tester) async {
     final capHours = GameRepository.instance.numbers.retreat.capHours;
     await pumpBanner(
       tester,
@@ -53,8 +54,9 @@ void main() {
         startedAt: DateTime.now().subtract(Duration(hours: capHours + 1)),
       ),
     );
-    expect(find.textContaining('收益已满'), findsOneWidget);
-    expect(find.textContaining('点此收功'), findsOneWidget);
+    expect(find.textContaining('地图圆满'), findsOneWidget);
+    expect(find.textContaining('挂机接续'), findsOneWidget);
+    expect(find.textContaining('收益已满'), findsNothing);
     expect(find.textContaining('剩'), findsNothing);
   });
 

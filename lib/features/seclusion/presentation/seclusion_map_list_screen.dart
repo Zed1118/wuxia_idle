@@ -78,7 +78,6 @@ class _SeclusionMapListScreenState
             session: active,
             mapDef: def,
             characterId: widget.characterId,
-            charRealmTier: widget.charRealmTier,
           ),
         ),
       );
@@ -272,9 +271,9 @@ class _ActiveBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final elapsed = DateTime.now().difference(session.startedAt).inMinutes;
-    final planned = session.durationHours * 60;
-    final remaining = (planned - elapsed).clamp(0, planned);
+    final elapsed =
+        DateTime.now().difference(session.startedAt).inSeconds / 3600.0;
+    final safeElapsed = elapsed < 0 ? 0.0 : elapsed;
 
     return LightPaperPanel(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -307,14 +306,9 @@ class _ActiveBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    remaining > 0
-                        ? UiStrings.seclusionMapActiveBannerRemaining(
-                            UiStrings.retreatRemainingText(
-                              remaining ~/ 60,
-                              remaining % 60,
-                            ),
-                          )
-                        : UiStrings.seclusionMapActiveBannerDone(),
+                    UiStrings.seclusionMapActiveElapsedHint(
+                      safeElapsed.toStringAsFixed(1),
+                    ),
                     style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
                   ),
                 ],
@@ -589,11 +583,11 @@ class _MapCard extends StatelessWidget {
   String _activeHint() {
     final session = activeSession;
     if (session == null) return UiStrings.seclusionMapActiveHint;
-    final elapsed = DateTime.now().difference(session.startedAt).inMinutes;
-    final planned = session.durationHours * 60;
-    final remaining = (planned - elapsed).clamp(0, planned);
-    if (remaining <= 0) return UiStrings.seclusionMapActiveDoneHint;
-    return UiStrings.seclusionMapActiveRemainingHint(remaining);
+    final elapsed =
+        DateTime.now().difference(session.startedAt).inSeconds / 3600.0;
+    return UiStrings.seclusionMapActiveElapsedHint(
+      (elapsed < 0 ? 0.0 : elapsed).toStringAsFixed(1),
+    );
   }
 }
 

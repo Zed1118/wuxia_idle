@@ -297,10 +297,10 @@ class UiStrings {
   static const String mainMenuStatusBreakthroughTitle = '修为已满';
   static const String mainMenuStatusMainlineTitle = '主线目标';
   static const String mainMenuStatusMainlineCompleteDetail = '江湖主线已收束';
-  static String mainMenuStatusRetreatDetail(String mapName, String remaining) =>
-      '$mapName · $remaining';
-  static String mainMenuStatusRetreatCappedDetail(String mapName) =>
-      '$mapName · 收益已满';
+  static String mainMenuStatusRetreatDetail(
+    String mapName,
+    String elapsedHours,
+  ) => '$mapName · 已闭关 $elapsedHours 小时';
   static String mainMenuStatusIslandDetail(int count) => '约$count 件产物待收';
   static String mainMenuStatusInjuryDetail(int count, double maxHours) {
     if (maxHours <= 0) return '$count 名角色需调息';
@@ -1590,15 +1590,14 @@ class UiStrings {
   // ─── 闭关修炼（Phase 3 T49）─────────────────────────────────────────────
 
   static const String mainMenuSeclusion = '闭关修炼';
-  static const String mainMenuSeclusionHint = '5 张地图，离线挂机，最长 72 小时';
+  static const String mainMenuSeclusionHint = '5 张地图 · 开放式闭关 · 挂机无上限';
   static const String mainMenuSeclusionLockedHint = '通关第一章后开放';
   static const String mainMenuSeclusionReadyStatus = '可择地图';
   static const String mainMenuSeclusionLockedStatus = '未开放';
   static String mainMenuSeclusionActiveStatus(String mapName) =>
       '闭关中 · $mapName';
-  static String mainMenuSeclusionDoneStatus(String mapName) => '可收功 · $mapName';
-  static String mainMenuSeclusionCappedStatus(String mapName) =>
-      '收益已满 · $mapName';
+  static String mainMenuSeclusionPassiveStatus(String mapName) =>
+      '挂机接续 · $mapName';
 
   // ─── 心魔境（1.0 P2.2 §12.1,Batch 2.5.B 入口）─────────────────────────────
   static const String mainMenuInnerDemon = '心魔境';
@@ -1709,9 +1708,18 @@ class UiStrings {
   static String seclusionMapActiveBannerRemaining(String remaining) =>
       '$seclusionMapActive · 剩余 $remaining';
   static String seclusionMapActiveBannerDone() => '$activeRetreatDone · 可收功';
+  static String seclusionMapActiveElapsedHint(String elapsed) =>
+      '已闭关 $elapsed 小时，可随时查看或收功';
 
-  static const String seclusionSetupTitle = '选择时长';
+  static const String seclusionSetupTitle = '闭关安排';
   static const String seclusionSetupStartButton = '开始闭关';
+  static const String seclusionOpenEndedTitle = '此行不设归期';
+  static String seclusionOpenEndedRule(int fullRateHours) =>
+      '开始后将持续修炼，由你上线后主动收功。前 $fullRateHours 小时按当前地图完整结算。';
+  static String seclusionOpenEndedOverflowRule(
+    int intervalHours,
+    int maxRolls,
+  ) => '之后的时间继续累积普通挂机收益，不设上限。每满 $intervalHours 小时获得一次装备判定，最多 $maxRolls 次。';
   static String seclusionHourlyPreview(double scale) =>
       '每小时预估产出（境界加成 ×${scale.toStringAsFixed(2)}）';
   static String seclusionEstimatedMojianshi(int amount) => '预估磨剑石 ×$amount';
@@ -1735,6 +1743,28 @@ class UiStrings {
   static const String activeRetreatStatusCardTitle = '闭关状态';
   static String activeRetreatStatusLocation(String mapName) => '地点：$mapName';
   static String activeRetreatElapsed(String elapsed) => '已闭关：$elapsed';
+  static String activeRetreatStartedAt(String start) => '入定于 $start';
+  static String activeRetreatFullRateProgress(String hours, int cap) =>
+      '地图收益：$hours / $cap 小时';
+  static const String activeRetreatFullRateComplete = '地图收益已圆满';
+  static String activeRetreatPassiveOverflow(String hours) =>
+      '普通挂机接续：$hours 小时';
+  static String activeRetreatEquipmentRolls(int count, int max) =>
+      '装备机缘：$count / $max 次';
+  static String activeRetreatNextEquipmentNode(String hours) =>
+      '距下次装备判定：$hours 小时';
+  static String activeRetreatGuaranteedPreview(
+    int mojianshi,
+    int silver,
+    int experience,
+  ) => '当前必得：磨剑石 $mojianshi · 银两 $silver · 修为 $experience';
+  static String activeRetreatTierWeights(
+    int hour,
+    int base,
+    int current,
+    int above1,
+    int above2,
+  ) => '$hour 小时节点品阶：基准 $base% · 当前 $current% · +1 $above1% · +2 $above2%';
   static String activeRetreatPlannedHours(int hours) => '计划：$hours 小时';
   static const String activeRetreatExpectedTypes = '预计收获';
   static const String activeRetreatRewardMojianshi = '磨剑石';
@@ -1745,13 +1775,20 @@ class UiStrings {
   static const String activeRetreatRewardEquipment = '装备机缘';
   static String activeRetreatRewardTypes(String labels) => labels;
   static String activeRetreatProgressPct(int pct) => '$pct%';
-  static const String activeRetreatConfirmTitle = '确认提前收功';
+  static const String activeRetreatConfirmTitle = '确认收功';
   static const String activeRetreatConfirmBody = '现在收功将按实际时间结算，是否确认？';
   static const String activeRetreatConfirm = '确认';
   static const String activeRetreatCancel = '取消';
 
   static const String seclusionResultTitle = '闭关收获';
   static const String seclusionResultReportTitle = '收功战报';
+  static const String seclusionResultRetreatSection = '地图闭关收益';
+  static const String seclusionResultPassiveSection = '普通挂机接续';
+  static String seclusionResultPhaseHours(String hours) => '结算 $hours 小时';
+  static String seclusionEquipmentNode(int hour, String name) =>
+      '$hour 小时机缘 · $name';
+  static String equipmentLockedUntilRealm(String realmName) =>
+      '需达 $realmName 境界方可装备';
   static const String seclusionResultRouteTitle = '行迹记录';
   static const String seclusionResultEmpty = '此次收获甚微';
   static const String seclusionResultBack = '返回';
@@ -2514,13 +2551,15 @@ class UiStrings {
   }
 
   // ── 闭关非阻塞 + 出战锁(2026-06-14 L3)──────────────────────────────
-  /// 主菜单闭关横幅行:闭关中 · {地图名} · 剩 {时长}
-  static String mainMenuRetreatBannerLine(String mapName, String remaining) =>
-      '闭关中 · $mapName · 剩 $remaining';
-
-  /// 主菜单闭关横幅行:收益封顶后直接提示可收功
-  static String mainMenuRetreatBannerCappedLine(String mapName) =>
-      '收益已满 · $mapName · 点此收功';
+  static String mainMenuRetreatBannerLine(
+    String mapName,
+    String elapsedHours,
+    String phase,
+  ) => '闭关中 · $mapName · 已 $elapsedHours 小时 · $phase';
+  static String mainMenuRetreatFullRatePhase(String hours, int cap) =>
+      '地图收益 $hours/$cap';
+  static String mainMenuRetreatPassivePhase(String hours) =>
+      '地图圆满 · 挂机接续 $hours 小时';
 
   /// 剩余时长格式:有小时显「N 时 M 分」,否则「M 分」
   static String retreatRemainingText(int hours, int minutes) =>
@@ -2530,7 +2569,7 @@ class UiStrings {
   static const String seclusionBattleLockTitle = '闭关修行中';
   static const String seclusionBattleLockBody = '正自闭关参修,心神内守,此刻不宜出战。';
   static const String seclusionBattleLockStay = '静心继续';
-  static const String seclusionBattleLockEndEarly = '提前出关';
+  static const String seclusionBattleLockEndEarly = '前去收功';
 
   /// 开始闭关题字过场
   static const String seclusionEnterCaption = '闭关';
@@ -2546,14 +2585,9 @@ class UiStrings {
   static String offlineRecapMapComplete(String mapName) => '「$mapName」闭关已圆满';
 
   /// 闭关已达系统收益封顶状态行
-  static String offlineRecapMapCapped(String mapName) => '「$mapName」闭关收益已满';
-
-  /// P1-6(2026-06-29 审查修复):闭关开始界面前瞻提示——离线最长计入时长。
-  /// 消除「挂 24h 回来只算 X h 觉得亏」的预期落差(在线=离线哲学,想玩才玩)。
-  static String seclusionCapHint(int capHours) => '本次闭关最长计入 $capHours 小时，超出不计';
-
-  /// P1-6:离线归来已达上限时的温和建议(不制造焦虑·守反留存红线)。
-  static const String offlineCappedAdvice = '已达离线上限，可缩短下次闭关间隔';
+  static String offlineRecapMapCapped(String mapName) => '「$mapName」地图收益已圆满';
+  static String offlineRecapPassiveContinues(String hours) =>
+      '超出时间已按普通挂机接续 $hours 小时';
 
   /// 闭关进行中状态行（带进度百分比）
   static String offlineRecapMapProgress(String mapName, int pct) =>
@@ -2643,17 +2677,8 @@ class UiStrings {
   /// passive 被动离线无装备掉落池
   static const String offlineRecapNoDrop = '无';
 
-  /// 离线收益截断：仍在计划时长内
-  static const String offlineRecapLimitInProgress = '未达上限，按已过时长结算';
-
-  /// 离线收益截断：达到本次计划闭关时长
-  static const String offlineRecapLimitPlanned = '已达本次闭关计划时长';
-
-  /// 离线收益截断：达到系统封顶
-  static const String offlineRecapLimitSystemCap = '已达离线收益封顶';
-
-  /// 已达封顶后的收功按钮
-  static const String offlineRecapCollectCapped = '一键收功';
+  static const String offlineRecapLimitInProgress = '地图收益仍在积累';
+  static const String offlineRecapLimitSystemCap = '地图收益已圆满，普通挂机继续';
 
   /// 前去收功按钮
   static const String offlineRecapGoCollect = '前去收功';

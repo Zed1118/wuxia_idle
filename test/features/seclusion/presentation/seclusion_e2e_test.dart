@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
@@ -15,6 +16,7 @@ import 'package:wuxia_idle/features/seclusion/presentation/seclusion_setup_scree
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
 import '../../../support/test_data.dart';
 
 /// W15 Phase 5 #2 · 闭关 widget e2e test(销 #28 老挂账)。
@@ -46,11 +48,11 @@ class _FakeSeclusionService implements SeclusionService {
   @override
   Future<RetreatSession> startRetreat({
     required RetreatMapType mapType,
-    required int durationHours,
+    int? durationHours,
     required int saveDataId,
     required int characterId,
     required RealmTier charRealmTier,
-    required List<dynamic> maps,
+    required List<SeclusionMapDef> maps,
     required DateTime now,
   }) async {
     startCallCount++;
@@ -61,11 +63,11 @@ class _FakeSeclusionService implements SeclusionService {
   Future<RetreatResult> completeRetreat({
     required RetreatSession session,
     required int characterId,
-    required RealmTier charRealmTier,
-    required dynamic config,
-    required List<dynamic> maps,
+    RealmTier? charRealmTier,
+    required RetreatConfig config,
+    required List<SeclusionMapDef> maps,
     required DateTime now,
-    dynamic rng,
+    Rng? rng,
   }) async {
     completeCallCount++;
     return completeFactory();
@@ -96,6 +98,7 @@ void main() {
       ..saveDataId = 1
       ..mapType = mapType
       ..durationHours = durationHours
+      ..realmTierAtStart = RealmTier.xueTu
       ..startedAt =
           startedAt ?? DateTime.now().subtract(const Duration(hours: 2))
       ..completedAt = null
@@ -108,6 +111,8 @@ void main() {
     required _FakeSeclusionService fake,
     RealmTier charRealmTier = RealmTier.xueTu,
   }) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
         overrides: [seclusionServiceProvider.overrideWithValue(fake)],
@@ -136,10 +141,10 @@ void main() {
     expect(find.byType(SeclusionSetupScreen), findsOneWidget);
     // setup 屏可见开始按钮
     expect(find.text(UiStrings.seclusionSetupStartButton), findsOneWidget);
-    // P1-6:setup 屏前瞻提示离线最长计入时长。
+    expect(find.text(UiStrings.seclusionDurationLabel(12)), findsNothing);
     expect(
       find.text(
-        UiStrings.seclusionCapHint(
+        UiStrings.seclusionOpenEndedRule(
           GameRepository.instance.numbers.retreat.capHours,
         ),
       ),
@@ -175,17 +180,29 @@ void main() {
 
   // ─── e2e #3 ────────────────────────────────────────────────────────────────
 
-  testWidgets('e2e: active(已 done)点收功 → pushReplacement ResultScreen', (
+  testWidgets('e2e: active 点收功并确认 → pushReplacement ResultScreen', (
     tester,
   ) async {
     // session 已超时(2h elapsed > 1h plan → done=true)
     final session = mkSession();
     final result = (
+      elapsedHours: 1.0,
+      retreatHours: 1.0,
+      passiveHours: 0.0,
+      passive: (
+        mojianshi: 0,
+        experience: 0,
+        awayHours: 0.0,
+        settledHours: 0.0,
+        isCapped: false,
+      ),
       actualHours: 1.0,
       mojianshi: 100,
       silver: 0,
       itemRewards: const <String, int>{},
       equipmentDrops: <Equipment>[],
+      equipmentDropNodeHours: <int>[],
+      realmTierAtStart: RealmTier.xueTu,
       experiencePoints: 50,
       techniqueLearnPoints: 5,
       internalForcePoints: 30,
@@ -204,7 +221,6 @@ void main() {
             session: session,
             mapDef: def,
             characterId: 1,
-            charRealmTier: RealmTier.xueTu,
           ),
         ),
       ),
@@ -212,10 +228,14 @@ void main() {
     await tester.pump();
 
     expect(find.byType(ActiveRetreatScreen), findsOneWidget);
-    // done=true 时按钮文案为「收功」
     expect(find.text(UiStrings.activeRetreatCollect), findsOneWidget);
 
+    await tester.ensureVisible(find.text(UiStrings.activeRetreatCollect));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(UiStrings.activeRetreatCollect));
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.activeRetreatConfirmTitle), findsOneWidget);
+    await tester.tap(find.text(UiStrings.activeRetreatConfirm));
     await tester.pumpAndSettle();
 
     expect(fake.completeCallCount, 1);
@@ -225,20 +245,30 @@ void main() {
 
   // ─── e2e #4 ────────────────────────────────────────────────────────────────
 
-  testWidgets('e2e: active(未 done)点提前收功 → confirm dialog → 确认后导航', (
-    tester,
-  ) async {
+  testWidgets('e2e: active 收功可取消，再次确认后导航', (tester) async {
     // session 未超时(0.5h elapsed < 1h plan)
     final session = mkSession(
       startedAt: DateTime.now().subtract(const Duration(minutes: 30)),
       durationHours: 1,
     );
     final result = (
+      elapsedHours: 0.5,
+      retreatHours: 0.5,
+      passiveHours: 0.0,
+      passive: (
+        mojianshi: 0,
+        experience: 0,
+        awayHours: 0.0,
+        settledHours: 0.0,
+        isCapped: false,
+      ),
       actualHours: 0.5,
       mojianshi: 50,
       silver: 0,
       itemRewards: const <String, int>{},
       equipmentDrops: <Equipment>[],
+      equipmentDropNodeHours: <int>[],
+      realmTierAtStart: RealmTier.xueTu,
       experiencePoints: 25,
       techniqueLearnPoints: 2,
       internalForcePoints: 15,
@@ -257,17 +287,17 @@ void main() {
             session: session,
             mapDef: def,
             characterId: 1,
-            charRealmTier: RealmTier.xueTu,
           ),
         ),
       ),
     );
     await tester.pump();
 
-    // 未 done 时按钮文案为「提前收功」
-    expect(find.text(UiStrings.activeRetreatEarlyCollect), findsOneWidget);
+    expect(find.text(UiStrings.activeRetreatCollect), findsOneWidget);
 
-    await tester.tap(find.text(UiStrings.activeRetreatEarlyCollect));
+    await tester.ensureVisible(find.text(UiStrings.activeRetreatCollect));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(UiStrings.activeRetreatCollect));
     await tester.pumpAndSettle();
 
     // 弹出 confirm dialog
@@ -282,7 +312,7 @@ void main() {
     expect(find.byType(ActiveRetreatScreen), findsOneWidget);
 
     // 再次点击 + 确认 → 导航到 Result
-    await tester.tap(find.text(UiStrings.activeRetreatEarlyCollect));
+    await tester.tap(find.text(UiStrings.activeRetreatCollect));
     await tester.pumpAndSettle();
     await tester.tap(find.text(UiStrings.activeRetreatConfirm));
     await tester.pumpAndSettle();

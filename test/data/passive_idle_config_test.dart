@@ -8,12 +8,11 @@ void main() {
       'base_mojianshi_per_hour': 0.25,
       'base_exp_per_hour': 50.0,
       'realm_scale_per_tier': 1.6,
-      'cap_hours': 72,
       'min_recap_hours': 1.0,
     });
     expect(cfg.baseMojianshiPerHour, 0.25);
     expect(cfg.baseExpPerHour, 50.0);
-    expect(cfg.capHours, 72);
+    expect(cfg.hasTimeCap, isFalse);
     expect(cfg.minRecapHours, 1.0);
     expect(cfg.realmScaleFor(RealmTier.xueTu), 1.0); // index 0 → 1.6^0
     expect(cfg.realmScaleFor(RealmTier.sanLiu), closeTo(1.6, 1e-9)); // index 1

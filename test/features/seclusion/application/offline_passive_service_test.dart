@@ -8,7 +8,6 @@ void main() {
     baseMojianshiPerHour: 0.25,
     baseExpPerHour: 50.0,
     realmScalePerTier: 1.6,
-    capHours: 72,
     minRecapHours: 1.0,
   );
 
@@ -37,16 +36,28 @@ void main() {
     expect(y.isCapped, isFalse);
   });
 
-  test('超 cap 按 cap 截断(100h→72h)', () {
+  test('超过旧 72h 上限后仍线性累积', () {
     final y = OfflinePassiveService.compute(
       awayHours: 100,
       realmTier: RealmTier.xueTu,
       config: cfg,
     );
-    expect(y.experience, (50.0 * 72).floor()); // 3600
+    expect(y.experience, 5000);
     expect(y.awayHours, 100);
-    expect(y.settledHours, 72);
-    expect(y.isCapped, isTrue);
+    expect(y.settledHours, 100);
+    expect(y.isCapped, isFalse);
+  });
+
+  test('超长挂机不被单次 999999 截断', () {
+    final y = OfflinePassiveService.compute(
+      awayHours: 24000,
+      realmTier: RealmTier.xueTu,
+      config: cfg,
+    );
+
+    expect(y.experience, 1200000);
+    expect(y.settledHours, 24000);
+    expect(y.isCapped, isFalse);
   });
 
   test('境界 scale 生效(三流 ×1.6)', () {

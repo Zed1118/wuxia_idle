@@ -8,6 +8,13 @@ void main() {
     test('active recap 明细总量只来自 recap 现有字段', () {
       const recap = (
         awayHours: 5.0,
+        retreatHours: 4.0,
+        passiveHours: 1.0,
+        passiveMojianshi: 0,
+        passiveExperience: 0,
+        equipmentRollCount: 0,
+        nextEquipmentNodeHours: 8.0,
+        fullRateComplete: false,
         mapName: '山林',
         isComplete: true,
         progressPct: 1.0,
@@ -17,7 +24,7 @@ void main() {
         estimatedTechniqueLearnPoints: 3,
         estimatedSilver: 45,
         settledHours: 4.0,
-        limitReason: OfflineRecapLimitReason.plannedDuration,
+        limitReason: OfflineRecapLimitReason.systemCap,
       );
 
       final detail = OfflineRecapDetailFormatter.forRetreat(
@@ -67,6 +74,13 @@ void main() {
     test('active recap 隐藏 0 值收益项但保留收功揭晓说明', () {
       const recap = (
         awayHours: 2.0,
+        retreatHours: 2.0,
+        passiveHours: 0.0,
+        passiveMojianshi: 0,
+        passiveExperience: 0,
+        equipmentRollCount: 0,
+        nextEquipmentNodeHours: 10.0,
+        fullRateComplete: false,
         mapName: '山林',
         isComplete: false,
         progressPct: 0.5,

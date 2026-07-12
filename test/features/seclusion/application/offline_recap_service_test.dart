@@ -27,6 +27,7 @@ void main() {
       ..saveDataId = 1
       ..mapType = mapType
       ..durationHours = durationHours
+      ..realmTierAtStart = RealmTier.xueTu
       ..startedAt = startedAt
       ..status = status;
   }
@@ -55,7 +56,7 @@ void main() {
       expect(recap, isNull);
     });
 
-    test('闭关已满（挂 5h ≥ 计划 4h）→ isComplete + progress 1.0 + 预估 > 0', () {
+    test('挂 5h 仍在 72h 地图收益阶段', () {
       final started = DateTime(2026, 5, 11, 10);
       final recap = OfflineRecapService.buildRecap(
         session: mkSession(durationHours: 4, startedAt: started),
@@ -65,17 +66,19 @@ void main() {
         now: started.add(const Duration(hours: 5)),
       );
       expect(recap, isNotNull);
-      expect(recap!.isComplete, isTrue);
-      expect(recap.progressPct, 1.0);
+      expect(recap!.isComplete, isFalse);
+      expect(recap.progressPct, closeTo(5 / 72, 0.001));
       expect(recap.estimatedMojianshi, greaterThan(0));
       expect(recap.estimatedExperience, greaterThan(0));
       expect(recap.estimatedSilver, greaterThan(0));
       expect(recap.estimatedTechniqueLearnPoints, greaterThanOrEqualTo(0));
-      expect(recap.settledHours, 4.0);
-      expect(recap.limitReason, OfflineRecapLimitReason.plannedDuration);
+      expect(recap.retreatHours, 5.0);
+      expect(recap.passiveHours, 0.0);
+      expect(recap.settledHours, 5.0);
+      expect(recap.limitReason, OfflineRecapLimitReason.inProgress);
     });
 
-    test('进行中（挂 2h < 计划 4h）→ 未满 + progress ≈ 0.5', () {
+    test('进行中挂 2h → 按 72h 进度展示', () {
       final started = DateTime(2026, 5, 11, 10);
       final recap = OfflineRecapService.buildRecap(
         session: mkSession(durationHours: 4, startedAt: started),
@@ -86,7 +89,7 @@ void main() {
       );
       expect(recap, isNotNull);
       expect(recap!.isComplete, isFalse);
-      expect(recap.progressPct, closeTo(0.5, 0.01));
+      expect(recap.progressPct, closeTo(2 / 72, 0.001));
       expect(recap.settledHours, closeTo(2.0, 0.01));
       expect(recap.limitReason, OfflineRecapLimitReason.inProgress);
     });
@@ -129,7 +132,7 @@ void main() {
       expect(recap.settledHours, direct.actualHours);
     });
 
-    test('超计划离线按 durationHours 截断并标注计划上限', () {
+    test('旧 durationHours 不再截断开放式闭关', () {
       final started = DateTime(2026, 5, 11, 10);
       final recap = OfflineRecapService.buildRecap(
         session: mkSession(durationHours: 4, startedAt: started),
@@ -141,11 +144,13 @@ void main() {
 
       expect(recap, isNotNull);
       expect(recap!.awayHours, closeTo(24, 0.01));
-      expect(recap.settledHours, 4.0);
-      expect(recap.limitReason, OfflineRecapLimitReason.plannedDuration);
+      expect(recap.retreatHours, 24.0);
+      expect(recap.passiveHours, 0.0);
+      expect(recap.settledHours, 24.0);
+      expect(recap.limitReason, OfflineRecapLimitReason.inProgress);
     });
 
-    test('达到 retreat.capHours 时标注系统收益封顶且不提高结算上限', () {
+    test('超过 72h 时分成完整闭关与无上限普通挂机', () {
       final started = DateTime(2026, 5, 11, 10);
       final capHours = GameRepository.instance.numbers.retreat.capHours;
       final recap = OfflineRecapService.buildRecap(
@@ -158,7 +163,11 @@ void main() {
 
       expect(recap, isNotNull);
       expect(recap!.awayHours, closeTo(capHours + 3, 0.01));
-      expect(recap.settledHours, capHours.toDouble());
+      expect(recap.retreatHours, capHours.toDouble());
+      expect(recap.passiveHours, 3.0);
+      expect(recap.settledHours, capHours + 3.0);
+      expect(recap.fullRateComplete, isTrue);
+      expect(recap.equipmentRollCount, 6);
       expect(recap.limitReason, OfflineRecapLimitReason.systemCap);
     });
   });

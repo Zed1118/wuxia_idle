@@ -3,15 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service_providers.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
+import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_map_list_screen.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_setup_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
 import '../../../support/test_data.dart';
 
 class _FakeSeclusionService implements SeclusionService {
@@ -30,11 +33,11 @@ class _FakeSeclusionService implements SeclusionService {
   @override
   Future<RetreatSession> startRetreat({
     required RetreatMapType mapType,
-    required int durationHours,
+    int? durationHours,
     required int saveDataId,
     required int characterId,
     required RealmTier charRealmTier,
-    required List<dynamic> maps,
+    required List<SeclusionMapDef> maps,
     required DateTime now,
   }) => throw UnimplementedError('fake startRetreat should not be called');
 
@@ -42,11 +45,11 @@ class _FakeSeclusionService implements SeclusionService {
   Future<RetreatResult> completeRetreat({
     required RetreatSession session,
     required int characterId,
-    required RealmTier charRealmTier,
-    required dynamic config,
-    required List<dynamic> maps,
+    RealmTier? charRealmTier,
+    required RetreatConfig config,
+    required List<SeclusionMapDef> maps,
     required DateTime now,
-    dynamic rng,
+    Rng? rng,
   }) => throw UnimplementedError('fake completeRetreat should not be called');
 
   @override
@@ -62,7 +65,7 @@ class _FakeSeclusionService implements SeclusionService {
 /// 覆盖：
 ///   1. SeclusionMapListScreen 列表渲染 5 张地图
 ///   2. locked 卡片无 onTap 响应（学徒点古剑冢不导航）
-///   3. SeclusionSetupScreen 显示地图名 + 时长选择按钮
+///   3. SeclusionSetupScreen 显示地图名 + 开放式闭关规则
 ///
 /// 不依赖 Isar：FutureBuilder 的 getActiveSession future 会在 pump 后完成
 /// 并以 snap.hasError 静默处理（active = null）。
@@ -106,6 +109,7 @@ void main() {
       ..saveDataId = 1
       ..mapType = RetreatMapType.shanLin
       ..durationHours = 1
+      ..realmTierAtStart = RealmTier.xueTu
       ..startedAt = DateTime.now()
       ..completedAt = null
       ..status = RetreatStatus.active
@@ -141,7 +145,7 @@ void main() {
   // ─── Test 3 ───────────────────────────────────────────────────────────────
   // SeclusionSetupScreen 直接注入 mapDef（不依赖 Isar 的导航流）
 
-  testWidgets('SeclusionSetupScreen 显示地图名和时长选择按钮', (tester) async {
+  testWidgets('SeclusionSetupScreen 显示地图名和开放式闭关规则', (tester) async {
     final def = GameRepository.instance.getSeclusionMap(RetreatMapType.shanLin);
 
     await tester.pumpWidget(
@@ -159,15 +163,15 @@ void main() {
 
     // AppBar 标题为地图名
     expect(find.text(def.mapName), findsWidgets);
-    // 时长选择按钮（3 档：1h / 4h / 12h）
-    final durations = GameRepository.instance.numbers.retreat.durationHours;
-    for (final h in durations) {
-      expect(
-        find.text(UiStrings.seclusionDurationLabel(h)),
-        findsOneWidget,
-        reason: '${h}h 时长按钮应可见',
-      );
-    }
+    expect(find.text(UiStrings.seclusionDurationLabel(12)), findsNothing);
+    expect(
+      find.text(
+        UiStrings.seclusionOpenEndedRule(
+          GameRepository.instance.numbers.retreat.capHours,
+        ),
+      ),
+      findsOneWidget,
+    );
     // 开始按钮可见
     expect(find.text(UiStrings.seclusionSetupStartButton), findsOneWidget);
   });
@@ -234,16 +238,8 @@ void main() {
 
     expect(find.text(UiStrings.seclusionMapActive), findsWidgets);
     expect(
-      find.text(UiStrings.seclusionMapActiveRemainingHint(60)),
-      findsOneWidget,
-    );
-    expect(
-      find.text(
-        UiStrings.seclusionMapActiveBannerRemaining(
-          UiStrings.retreatRemainingText(1, 0),
-        ),
-      ),
-      findsOneWidget,
+      find.text(UiStrings.seclusionMapActiveElapsedHint('0.0')),
+      findsWidgets,
     );
   });
 

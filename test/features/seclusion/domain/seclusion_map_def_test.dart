@@ -199,10 +199,20 @@ void main() {
     setUp(() {
       config = const RetreatConfig(
         maps: [],
-        durationHours: [1, 4, 12],
         realmScalePerTier: 1.3,
         capHours: 72,
         baseEquipDropProbability: 0.1,
+        equipmentRollIntervalHours: 12,
+        equipmentRollMaxCount: 1,
+        equipmentTierWeights: [
+          RetreatEquipmentTierWeights(
+            hour: 12,
+            base: 1,
+            current: 0,
+            above1: 0,
+            above2: 0,
+          ),
+        ],
         baseInternalForcePerHour: 5,
         baseTechniqueLearnPerHour: 0.5,
         solarTermMultiplier: 1.3,
@@ -319,10 +329,20 @@ void main() {
       expect(
         () => const RetreatConfig(
           maps: [],
-          durationHours: [1],
           realmScalePerTier: 1.3,
           capHours: -1, // 构造层不校验，校验在 GameRepository._enforceSeclusionRedLines
           baseEquipDropProbability: 0.1,
+          equipmentRollIntervalHours: 12,
+          equipmentRollMaxCount: 1,
+          equipmentTierWeights: [
+            RetreatEquipmentTierWeights(
+              hour: 12,
+              base: 1,
+              current: 0,
+              above1: 0,
+              above2: 0,
+            ),
+          ],
           baseInternalForcePerHour: 5,
           baseTechniqueLearnPerHour: 0.5,
           solarTermMultiplier: 1.3,

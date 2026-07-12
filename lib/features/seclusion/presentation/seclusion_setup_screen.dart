@@ -18,9 +18,9 @@ import 'seclusion_enter_caption.dart';
 import 'seclusion_gate.dart';
 import 'seclusion_map_visuals.dart';
 
-/// 闭关时长选择屏（Phase 3 T49）。
+/// 开放式闭关设置屏（Phase 3 T49）。
 ///
-/// 显示地图详情（每小时产出估算 × 境界缩放）+ 三档时长按钮。
+/// 显示地图详情与两段式结算规则。
 /// 点击「开始闭关」：abandon 旧 session（若有）→ startRetreat → push ActiveRetreatScreen。
 class SeclusionSetupScreen extends ConsumerStatefulWidget {
   final SeclusionMapDef mapDef;
@@ -42,11 +42,7 @@ class SeclusionSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
-  int _selectedHours = 4;
   bool _isStarting = false;
-
-  List<int> get _durations =>
-      GameRepository.instance.numbers.retreat.durationHours;
 
   double get _realmScale => GameRepository.instance.numbers.retreat
       .realmScaleFor(widget.charRealmTier);
@@ -62,7 +58,6 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
       }
       final session = await svc.startRetreat(
         mapType: widget.mapDef.mapType,
-        durationHours: _selectedHours,
         saveDataId: IsarSetup.currentSlotId,
         characterId: widget.characterId,
         charRealmTier: widget.charRealmTier,
@@ -85,7 +80,6 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
             session: session,
             mapDef: widget.mapDef,
             characterId: widget.characterId,
-            charRealmTier: widget.charRealmTier,
           ),
         ),
       );
@@ -142,40 +136,44 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
                   children: [
                     const SectionHeader(UiStrings.seclusionSetupTitle),
                     SizedBox(height: compact ? 8 : 12),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final columns = constraints.maxWidth >= 620 ? 3 : 1;
-                        final cardWidth =
-                            (constraints.maxWidth - (columns - 1) * 10) /
-                            columns;
-                        return Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: [
-                            for (final h in _durations)
-                              SizedBox(
-                                width: cardWidth,
-                                child: _DurationButton(
-                                  hours: h,
-                                  selected: _selectedHours == h,
-                                  scale: scale,
-                                  compact: compact,
-                                  mojianshiPerHour: def.mojianshiPerHour,
-                                  onTap: () =>
-                                      setState(() => _selectedHours = h),
-                                ),
-                              ),
-                          ],
-                        );
-                      },
+                    const Text(
+                      UiStrings.seclusionOpenEndedTitle,
+                      style: TextStyle(
+                        color: WuxiaUi.ink,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
-                    SizedBox(height: compact ? 6 : 10),
-                    // P1-6:前瞻提示离线最长计入时长(消除「挂久了只算一截」落差)。
+                    const SizedBox(height: 8),
                     Text(
-                      UiStrings.seclusionCapHint(
+                      UiStrings.seclusionOpenEndedRule(
                         GameRepository.instance.numbers.retreat.capHours,
                       ),
-                      style: const TextStyle(color: WuxiaUi.ink2, fontSize: 12),
+                      style: const TextStyle(
+                        color: WuxiaUi.ink2,
+                        fontSize: 13,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      UiStrings.seclusionOpenEndedOverflowRule(
+                        GameRepository
+                            .instance
+                            .numbers
+                            .retreat
+                            .equipmentRollIntervalHours,
+                        GameRepository
+                            .instance
+                            .numbers
+                            .retreat
+                            .equipmentRollMaxCount,
+                      ),
+                      style: const TextStyle(
+                        color: WuxiaUi.ink2,
+                        fontSize: 13,
+                        height: 1.5,
+                      ),
                     ),
                   ],
                 ),
@@ -384,98 +382,6 @@ class _OutputRow extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _DurationButton extends StatelessWidget {
-  final int hours;
-  final bool selected;
-  final double scale;
-  final bool compact;
-  final double mojianshiPerHour;
-  final VoidCallback onTap;
-
-  const _DurationButton({
-    required this.hours,
-    required this.selected,
-    required this.scale,
-    required this.compact,
-    required this.mojianshiPerHour,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final expectedMoji = (mojianshiPerHour * hours * scale).floor();
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Container(
-        constraints: BoxConstraints(minHeight: compact ? 76 : 96),
-        padding: EdgeInsets.fromLTRB(
-          14,
-          compact ? 9 : 13,
-          14,
-          compact ? 9 : 12,
-        ),
-        decoration: BoxDecoration(
-          color: selected
-              ? WuxiaUi.gold.withValues(alpha: 0.22)
-              : WuxiaUi.paper.withValues(alpha: 0.38),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: selected
-                ? WuxiaUi.gold
-                : WuxiaUi.muted.withValues(alpha: 0.45),
-            width: selected ? 1.5 : 1,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              UiStrings.seclusionStayCardTitle(hours),
-              style: TextStyle(
-                color: selected ? WuxiaUi.ink : WuxiaUi.ink2,
-                fontSize: compact ? 15 : 16,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            SizedBox(height: compact ? 4 : 8),
-            Text(
-              UiStrings.seclusionDurationLabel(hours),
-              style: TextStyle(
-                color: selected ? WuxiaUi.ink : WuxiaUi.muted,
-                fontSize: 13,
-                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-            SizedBox(height: compact ? 6 : 12),
-            Row(
-              children: [
-                Icon(
-                  selected ? Icons.radio_button_checked : Icons.circle_outlined,
-                  size: 16,
-                  color: selected ? WuxiaUi.gold : WuxiaUi.muted,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    UiStrings.seclusionEstimatedMojianshi(expectedMoji),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: selected ? WuxiaUi.ink : WuxiaUi.ink2,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }

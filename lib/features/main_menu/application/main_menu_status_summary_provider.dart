@@ -78,18 +78,12 @@ Future<List<Character>> _activeCharacters(Ref ref) async {
 MainMenuStatusSummaryItem? _retreatItem(RetreatSession? session) {
   if (session == null) return null;
   final mapDef = GameRepository.instance.getSeclusionMap(session.mapType);
-  final plannedMin = session.durationHours * 60;
-  final capMin = (GameRepository.instance.numbers.retreat.capHours * 60)
-      .round();
-  final elapsedMin = DateTime.now().difference(session.startedAt).inMinutes;
-  final remainingMin = (plannedMin - elapsedMin).clamp(0, plannedMin);
-  final isCapped = capMin <= plannedMin && elapsedMin >= capMin;
-  final detail = isCapped
-      ? UiStrings.mainMenuStatusRetreatCappedDetail(mapDef.mapName)
-      : UiStrings.mainMenuStatusRetreatDetail(
-          mapDef.mapName,
-          UiStrings.retreatRemainingText(remainingMin ~/ 60, remainingMin % 60),
-        );
+  final elapsed =
+      DateTime.now().difference(session.startedAt).inSeconds / 3600.0;
+  final detail = UiStrings.mainMenuStatusRetreatDetail(
+    mapDef.mapName,
+    (elapsed < 0 ? 0.0 : elapsed).toStringAsFixed(1),
+  );
   return MainMenuStatusSummaryItem(
     kind: MainMenuStatusKind.retreat,
     route: MainMenuStatusRoute.retreat,

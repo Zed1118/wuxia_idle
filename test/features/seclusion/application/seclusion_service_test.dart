@@ -110,6 +110,22 @@ void main() {
   // ─────────────────────────────────────────────────────────────────────────
 
   group('startRetreat', () {
+    test('开放式闭关固化开始境界且不再需要计划时长', () async {
+      final now = DateTime(2026, 7, 12, 8);
+      final session = await SeclusionService(isar: IsarSetup.instance)
+          .startRetreat(
+            mapType: RetreatMapType.shanLin,
+            saveDataId: kSaveDataId,
+            characterId: kCharId,
+            charRealmTier: RealmTier.erLiu,
+            maps: GameRepository.instance.seclusionMaps,
+            now: now,
+          );
+
+      expect(session.realmTierAtStart, RealmTier.erLiu);
+      expect(session.durationHours, 0, reason: '旧字段仅用于存档兼容');
+    });
+
     test('正常创建 active session，character.currentRetreatSessionId 同步', () async {
       final now = DateTime(2026, 5, 11, 10, 0);
       final session = await SeclusionService(isar: IsarSetup.instance)
@@ -124,7 +140,8 @@ void main() {
           );
 
       expect(session.mapType, RetreatMapType.shanLin);
-      expect(session.durationHours, 4);
+      expect(session.durationHours, 0, reason: '开放式闭关不再保存计划时长');
+      expect(session.realmTierAtStart, RealmTier.xueTu);
       expect(session.status, RetreatStatus.active);
       expect(session.startedAt, now);
       expect(session.completedAt, isNull);
@@ -303,9 +320,9 @@ void main() {
       expect(out.mapEvents, isEmpty);
     });
 
-    test('72h 封顶：超过计划时长取 min(elapsed, plan, cap)', () {
+    test('72h 完整闭关封顶：旧计划时长不再截断结算', () {
       final start = DateTime(2026, 5, 11, 10, 0);
-      // elapsed = 100h, plan = 4h, cap = 72h → actualHours = 4h
+      // elapsed = 100h, legacy plan = 4h, cap = 72h → actualHours = 72h
       final now = start.add(const Duration(hours: 100));
       final session = makeSession(durationHours: 4, startedAt: start);
       final out = SeclusionService.computeOutputs(
@@ -315,7 +332,7 @@ void main() {
         maps: GameRepository.instance.seclusionMaps,
         now: now,
       );
-      expect(out.actualHours, closeTo(4.0, 0.01));
+      expect(out.actualHours, closeTo(72.0, 0.01));
     });
 
     test('cap=72h 封顶情况：plan=1000h 时 actualHours 不超 72', () {
@@ -725,6 +742,56 @@ void main() {
   // ─────────────────────────────────────────────────────────────────────────
 
   group('completeRetreat', () {
+    test('10 天只结算 72h 闭关 + 168h 普通挂机，且不可重复收功', () async {
+      final start = DateTime(2026, 5, 1, 10);
+      final completeAt = start.add(const Duration(days: 10));
+      final service = SeclusionService(isar: IsarSetup.instance);
+      final session = await service.startRetreat(
+        mapType: RetreatMapType.shanLin,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+
+      final result = await service.completeRetreat(
+        session: session,
+        characterId: kCharId,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: completeAt,
+      );
+
+      expect(result.elapsedHours, 240);
+      expect(result.retreatHours, 72);
+      expect(result.passiveHours, 168);
+      expect(result.passive.experience, 8400);
+      expect(result.passive.mojianshi, 42);
+      expect((await IsarSetup.currentSaveData())!.lastOnlineAt, completeAt);
+
+      final quantityBefore =
+          (await IsarSetup.instance.inventoryItems.getByDefId(
+            'item_mojianshi',
+          ))!.quantity;
+      await expectLater(
+        () => service.completeRetreat(
+          session: session,
+          characterId: kCharId,
+          config: GameRepository.instance.numbers.retreat,
+          maps: GameRepository.instance.seclusionMaps,
+          now: completeAt,
+        ),
+        throwsStateError,
+      );
+      expect(
+        (await IsarSetup.instance.inventoryItems.getByDefId(
+          'item_mojianshi',
+        ))!.quantity,
+        quantityBefore,
+      );
+    });
+
     test('收功后 session.status=completed + actualRewards 有 mojianshi', () async {
       final start = DateTime(2026, 5, 11, 10, 0);
       final session = await SeclusionService(isar: IsarSetup.instance)

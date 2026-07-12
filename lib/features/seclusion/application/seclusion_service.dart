@@ -6,6 +6,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/reward_entry.dart';
+import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
@@ -22,6 +23,8 @@ import '../../event/application/game_event_service.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
+import 'offline_passive_service.dart';
+import 'retreat_settlement_calculator.dart';
 
 /// 闭关产出汇总（Phase 3 T48 / W15 #30 扩 2 维度）。
 ///
@@ -32,11 +35,21 @@ typedef RetreatOutputs = ({
   int silver,
   Map<String, int> itemRewards,
   List<Equipment> equipmentDrops,
+  List<int> equipmentDropNodeHours,
   int experiencePoints,
   int techniqueLearnPoints,
   int internalForcePoints,
   List<String> routeSteps,
   List<RetreatMapEventRecord> mapEvents,
+});
+
+/// 开放式闭关的两段式预览：前段地图收益 + 后段普通挂机。
+typedef RetreatSettlement = ({
+  double elapsedHours,
+  double retreatHours,
+  double passiveHours,
+  RetreatOutputs retreat,
+  PassiveYield passive,
 });
 
 /// 闭关收功完整结果(W15 #30 第 3 期扩 advancement)。
@@ -46,11 +59,17 @@ typedef RetreatOutputs = ({
 /// [CharacterAdvancementService.applyExperience] 的结果);为 null 表示无
 /// EXP 累加或 EXP 累加但未跨阈值。
 typedef RetreatResult = ({
+  double elapsedHours,
+  double retreatHours,
+  double passiveHours,
+  PassiveYield passive,
   double actualHours,
   int mojianshi,
   int silver,
   Map<String, int> itemRewards,
   List<Equipment> equipmentDrops,
+  List<int> equipmentDropNodeHours,
+  RealmTier realmTierAtStart,
   int experiencePoints,
   int techniqueLearnPoints,
   int internalForcePoints,
@@ -69,7 +88,7 @@ typedef RetreatResult = ({
 ///   - 同一 saveDataId 至多一条 active session；[startRetreat] 开始前
 ///     先调 [_abandonActive]（内部方法）
 ///   - [computeOutputs] 纯函数（不写 Isar），由 [completeRetreat] 调用
-///   - actualHours = min(elapsed, durationHours, capHours)
+///   - actualHours = min(elapsed, capHours)；旧 durationHours 不再参与结算
 ///   - 加成均按 `session.startedAt` 时刻判定（不跨日切换 — GDD §7.3）：
 ///     * solarBonus = 1.30 if startedAt 是节气日 else 1.00（按月日比对，忽略年）
 ///     * ziShi = 23:00-01:00 → internalForce 维度 ×1.20，其他维度不受影响
@@ -79,7 +98,7 @@ typedef RetreatResult = ({
 ///                            × actualHours × realmScale × solarBonus)
 ///   - internalForce  = floor(config.baseInternalForcePerHour  × def.internalForceGrowth
 ///                            × actualHours × realmScale × solarBonus × ziShiBonus)
-///   - 装备抽检：per session 单次，概率 = equipmentDropRate × baseEquipDropProbability
+///   - 装备判定：每满配置间隔进行一次，各节点使用存档级稳定种子
 ///   - 正午阳刚 +20%：已实装(§12 #7 v1.4 收口)——正午时段(_isZhengWu) + 主修
 ///     == config.zhengWuAppliesToSchool(gangMeng) 时,internalForcePoints 维度乘
 ///     zhengWuYangSchoolMultiplier(1.20);见下方 zhengWuBonus 真消费(非刚猛/非正午 → 1.0)
@@ -125,7 +144,7 @@ class SeclusionService {
   ///   3. 写新 [RetreatSession] + 更新 [Character.currentRetreatSessionId]
   Future<RetreatSession> startRetreat({
     required RetreatMapType mapType,
-    required int durationHours,
+    @Deprecated('开放式闭关不再使用计划时长') int? durationHours,
     required int saveDataId,
     required int characterId,
     required RealmTier charRealmTier,
@@ -162,7 +181,8 @@ class SeclusionService {
       final session = RetreatSession()
         ..saveDataId = saveDataId
         ..mapType = mapType
-        ..durationHours = durationHours
+        ..durationHours = 0
+        ..realmTierAtStart = charRealmTier
         ..startedAt = now
         ..completedAt = null
         ..status = RetreatStatus.active
@@ -200,8 +220,7 @@ class SeclusionService {
     final def = _getDef(session.mapType, maps);
     final elapsed = now.difference(session.startedAt).inSeconds / 3600.0;
     final cap = config.capHours.toDouble();
-    final planned = session.durationHours.toDouble();
-    final actualHours = _clamp(elapsed, 0, _min(planned, cap));
+    final actualHours = _clamp(elapsed, 0, cap);
 
     final scale = config.realmScaleFor(charRealmTier);
     final solarBonus = config.isSolarTermDay(session.startedAt)
@@ -268,14 +287,31 @@ class SeclusionService {
             .floor()
             .clamp(0, 999999);
 
-    // 装备抽检：每 session 单次，概率 = equipmentDropRate × base
-    final effectiveRng = rng ?? DefaultRng();
-    final equipRoll = effectiveRng.nextDouble();
-    final equipProb = def.equipmentDropRate * config.baseEquipDropProbability;
     final equipDrops = <Equipment>[];
-    if (dropService != null && equipRoll < equipProb) {
-      final eq = dropService.rollOneWeighted(def.dropTable, effectiveRng);
-      if (eq != null) equipDrops.add(eq);
+    final equipmentDropNodeHours = <int>[];
+    if (dropService != null && GameRepository.isLoaded) {
+      final rollCount = RetreatSettlementCalculator.equipmentRollCount(
+        retreatHours: actualHours,
+        intervalHours: config.equipmentRollIntervalHours,
+        maxCount: config.equipmentRollMaxCount,
+      );
+      for (var nodeIndex = 1; nodeIndex <= rollCount; nodeIndex++) {
+        final equipment = RetreatSettlementCalculator.rollEquipmentAtNode(
+          session: session,
+          nodeIndex: nodeIndex,
+          map: def,
+          config: config,
+          equipmentDefs: GameRepository.instance.equipmentDefs.values.toList(),
+          obtainedAt: dropService.now(),
+          obtainedFrom: dropService.defaultObtainedFrom,
+        );
+        if (equipment != null) {
+          equipDrops.add(equipment);
+          equipmentDropNodeHours.add(
+            nodeIndex * config.equipmentRollIntervalHours,
+          );
+        }
+      }
     }
 
     final mapEvents = _deriveMapEvents(def, actualHours);
@@ -286,11 +322,59 @@ class SeclusionService {
       silver: silver,
       itemRewards: itemRewards,
       equipmentDrops: equipDrops,
+      equipmentDropNodeHours: equipmentDropNodeHours,
       experiencePoints: experiencePoints,
       techniqueLearnPoints: techniqueLearnPoints,
       internalForcePoints: internalForcePoints,
       routeSteps: def.routeSteps,
       mapEvents: mapEvents,
+    );
+  }
+
+  /// 生成与最终入库同口径的两段式结算预览。
+  static RetreatSettlement computeSettlement({
+    required RetreatSession session,
+    required RetreatConfig config,
+    required PassiveIdleConfig passiveConfig,
+    required List<SeclusionMapDef> maps,
+    required DateTime now,
+    RealmTier? legacyRealmTier,
+    TechniqueSchool? charSchool,
+    double synergyInternalForceGrowthPct = 0.0,
+    double residueInternalForceMultiplier = 1.0,
+    DropService? dropService,
+  }) {
+    final realmTier = session.realmTierAtStart ?? legacyRealmTier;
+    if (realmTier == null) {
+      throw StateError('闭关会话缺少开始境界快照');
+    }
+    final elapsed = now.difference(session.startedAt).inSeconds / 3600.0;
+    final split = RetreatSettlementCalculator.splitHours(
+      elapsedHours: elapsed,
+      fullRateHours: config.capHours.toDouble(),
+    );
+    final retreat = computeOutputs(
+      session: session,
+      charRealmTier: realmTier,
+      config: config,
+      maps: maps,
+      now: now,
+      charSchool: charSchool,
+      synergyInternalForceGrowthPct: synergyInternalForceGrowthPct,
+      residueInternalForceMultiplier: residueInternalForceMultiplier,
+      dropService: dropService,
+    );
+    final passive = OfflinePassiveService.compute(
+      awayHours: split.passiveHours,
+      realmTier: realmTier,
+      config: passiveConfig,
+    );
+    return (
+      elapsedHours: split.retreatHours + split.passiveHours,
+      retreatHours: split.retreatHours,
+      passiveHours: split.passiveHours,
+      retreat: retreat,
+      passive: passive,
     );
   }
 
@@ -302,7 +386,7 @@ class SeclusionService {
   Future<RetreatResult> completeRetreat({
     required RetreatSession session,
     required int characterId,
-    required RealmTier charRealmTier,
+    RealmTier? charRealmTier,
     required RetreatConfig config,
     required List<SeclusionMapDef> maps,
     required DateTime now,
@@ -333,16 +417,16 @@ class SeclusionService {
               .internalForceRecoveryMultiplier
         : 1.0;
 
-    final outputs = computeOutputs(
+    final settlement = computeSettlement(
       session: session,
-      charRealmTier: charRealmTier,
       config: config,
+      passiveConfig: GameRepository.instance.numbers.passiveIdle,
       maps: maps,
       now: now,
+      legacyRealmTier: charRealmTier,
       charSchool: preCharForBonus?.school,
       synergyInternalForceGrowthPct: synergyGrowthPct,
       residueInternalForceMultiplier: residueMult,
-      rng: rng,
       dropService: GameRepository.isLoaded
           ? DropService(
               equipmentDefLookup: GameRepository.instance.getEquipment,
@@ -351,21 +435,29 @@ class SeclusionService {
             )
           : null,
     );
+    final outputs = settlement.retreat;
 
     // W15 #30 第 3 期:applyExperience 返回值,在 writeTxn 内闭包 assign,
     // 跨 writeTxn 暴露给 caller 用于 UI 升层 banner。
     AdvancementResult? advancement;
 
     await isar.writeTxn(() async {
+      final persistedSession = await isar.retreatSessions.get(session.id);
+      if (persistedSession == null ||
+          persistedSession.status != RetreatStatus.active) {
+        throw StateError('闭关会话已结算或不存在');
+      }
+
       // 1. 写 mojianshi → InventoryItem
       // defId 统一为 'item_mojianshi'，与 towers.yaml / stages.yaml drop 体系
       // 及 tower_entry_flow._itemTypeOf 映射对齐，避免同 ItemType 多 defId 分裂。
-      if (outputs.mojianshi > 0) {
+      final totalMojianshi = outputs.mojianshi + settlement.passive.mojianshi;
+      if (totalMojianshi > 0) {
         await _addInventoryItem(
           isar,
           defId: 'item_mojianshi',
           itemType: ItemType.moJianShi,
-          quantity: outputs.mojianshi,
+          quantity: totalMojianshi,
           now: now,
         );
       }
@@ -399,11 +491,11 @@ class SeclusionService {
 
       // 2. 更新 session
       final rewards = <RewardEntry>[];
-      if (outputs.mojianshi > 0) {
+      if (totalMojianshi > 0) {
         rewards.add(
           RewardEntry()
             ..rewardKey = 'item_mojianshi'
-            ..quantity = outputs.mojianshi,
+            ..quantity = totalMojianshi,
         );
       }
       for (final entry in outputs.itemRewards.entries) {
@@ -413,11 +505,15 @@ class SeclusionService {
             ..quantity = entry.value,
         );
       }
+      persistedSession
+        ..completedAt = now
+        ..status = RetreatStatus.completed
+        ..actualRewards = rewards;
+      await isar.retreatSessions.put(persistedSession);
       session
         ..completedAt = now
         ..status = RetreatStatus.completed
         ..actualRewards = rewards;
-      await isar.retreatSessions.put(session);
 
       // 3. 写 Character:internalForce(clamp old max) + insightPoints 累加 +
       //    experience 写回 + 升层(W15 #30 第 2 期 + 第 3 期消费层接入),
@@ -464,14 +560,16 @@ class SeclusionService {
           final left = ch.innerDemonResidueHoursRemaining - outputs.actualHours;
           ch.innerDemonResidueHoursRemaining = left < 0 ? 0 : left;
         }
-        // Task 8: 双层伤势疗养（§5.5 按 actualHours 真实闭关时长累减，无加速）。
+        // Task 8: 双层伤势疗养按整段真实经过时长累减。
         // 重伤按时长累减 clamp ≥ 0；轻伤收功即调息，无条件清零。
         if (ch.injuryHoursRemaining > 0) {
-          final left = ch.injuryHoursRemaining - outputs.actualHours;
+          final left = ch.injuryHoursRemaining - settlement.elapsedHours;
           ch.injuryHoursRemaining = left < 0 ? 0 : left;
         }
         ch.lightInjuryStacks = 0;
-        if (outputs.experiencePoints > 0) {
+        final totalExperience =
+            outputs.experiencePoints + settlement.passive.experience;
+        if (totalExperience > 0) {
           // P2.2 §12.1 心魔关 unlock 拦截 hook(Batch 2.2.B):wuSheng 各 layer
           // 升前查 inner_demon stage cleared 集,未通则 EXP 留账不消费(玩家
           // 挂机攒着,过关后下次闭关一次性消费多 layer)。非 wuSheng tier
@@ -484,7 +582,7 @@ class SeclusionService {
           final innerDemonDef = GameRepository.instance.numbers.innerDemon;
           advancement = CharacterAdvancementService.applyExperience(
             ch,
-            outputs.experiencePoints,
+            totalExperience,
             realmLookup: GameRepository.instance.getRealm,
             isLayerLocked: (tier, layer) => InnerDemonService.isLayerLocked(
               nextTier: tier,
@@ -496,7 +594,7 @@ class SeclusionService {
           // 第八阶段·角色等级 Lv:与境界 EXP 同源并行喂(闭关收功 · 在线=离线守 §5.5)。
           LevelService.applyLevelExp(
             ch,
-            outputs.experiencePoints,
+            totalExperience,
             config: GameRepository.instance.numbers.level,
           );
         }
@@ -528,6 +626,14 @@ class SeclusionService {
           }
         }
       }
+
+      final save = await isar.saveDatas.get(0);
+      if (save != null) {
+        save.totalPassiveMojianshi += settlement.passive.mojianshi;
+        save.totalPassiveExperience += settlement.passive.experience;
+        save.lastOnlineAt = now;
+        await isar.saveDatas.put(save);
+      }
     });
 
     // C-W14-2 idle tick:writeTxn 外单独喂奇遇 biome/weather 累计。
@@ -541,12 +647,20 @@ class SeclusionService {
     );
 
     return (
+      elapsedHours: settlement.elapsedHours,
+      retreatHours: settlement.retreatHours,
+      passiveHours: settlement.passiveHours,
+      passive: settlement.passive,
       actualHours: outputs.actualHours,
-      mojianshi: outputs.mojianshi,
+      mojianshi: outputs.mojianshi + settlement.passive.mojianshi,
       silver: outputs.silver,
       itemRewards: outputs.itemRewards,
       equipmentDrops: outputs.equipmentDrops,
-      experiencePoints: outputs.experiencePoints,
+      equipmentDropNodeHours: outputs.equipmentDropNodeHours,
+      realmTierAtStart:
+          session.realmTierAtStart ?? charRealmTier ?? RealmTier.xueTu,
+      experiencePoints:
+          outputs.experiencePoints + settlement.passive.experience,
       techniqueLearnPoints: outputs.techniqueLearnPoints,
       internalForcePoints: outputs.internalForcePoints,
       routeSteps: outputs.routeSteps,
@@ -677,8 +791,6 @@ class SeclusionService {
     final h = startedAt.hour;
     return h == 11 || h == 12;
   }
-
-  static double _min(double a, double b) => a < b ? a : b;
 
   static double _clamp(double v, double lo, double hi) =>
       v < lo ? lo : (v > hi ? hi : v);

@@ -156,7 +156,9 @@ class IsarSetup {
   // nullable id 字段,旧档为空回退传统纪事,无迁移分支纯 bump。
   // 0.34.0 扫荡战备:SaveData +sweepReadinessPoints/sweepReadinessLastRecoveredAt,
   // nullable 字段旧档由 SweepReadinessService 首读补满,无迁移分支纯 bump。
-  static const _currentSaveVersion = '0.34.0';
+  // 0.35.0 开放式闭关:RetreatSession +realmTierAtStart(nullable enum),
+  // 旧 active session 迁移时以关联角色当前境界固化，startedAt 不动。
+  static const _currentSaveVersion = '0.35.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -275,6 +277,10 @@ class IsarSetup {
     // 段 2(0.21.0):周目字段迁移。
     final mainlineRows = await isar.mainlineProgress.where().findAll();
     final towerRows = await isar.towerProgress.where().findAll();
+    final activeRetreats = (await isar.retreatSessions.where().findAll())
+        .where((s) => s.status == RetreatStatus.active)
+        .toList(growable: false);
+    final characters = await isar.characters.where().findAll();
 
     await isar.writeTxn(() async {
       // --- 段 1(0.18.0 · 版本门 <0.18.0)---
@@ -382,6 +388,30 @@ class IsarSetup {
             if (!cur.contains(id)) cur.add(id);
           }
           save.triggeredDiscipleJoinStageIds = cur;
+        }
+      }
+
+      // --- 段 5(0.35.0 开放式闭关):active session 固化境界快照 ---
+      if (_compareVersion(fromVersion, '0.35.0') < 0) {
+        for (final session in activeRetreats) {
+          if (session.realmTierAtStart != null) continue;
+          Character? linked;
+          for (final character in characters) {
+            if (character.currentRetreatSessionId == session.id) {
+              linked = character;
+              break;
+            }
+          }
+          if (linked == null && save.founderCharacterId != null) {
+            for (final character in characters) {
+              if (character.id == save.founderCharacterId) {
+                linked = character;
+                break;
+              }
+            }
+          }
+          session.realmTierAtStart = linked?.realmTier ?? RealmTier.xueTu;
+          await isar.retreatSessions.put(session);
         }
       }
 

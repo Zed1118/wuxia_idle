@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/game_repository.dart';
+import '../../../core/domain/enums.dart';
 import '../../../features/battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -30,14 +31,14 @@ class RetreatResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mojianshi = result.mojianshi;
+    final mojianshi = result.mojianshi - result.passive.mojianshi;
     final silver = result.silver;
-    final actualHours = result.actualHours;
+    final actualHours = result.elapsedHours;
     final equipDrops = result.equipmentDrops;
     final itemRewards = result.itemRewards;
     final internalForce = result.internalForcePoints;
     final insightPoints = result.techniqueLearnPoints;
-    final experience = result.experiencePoints;
+    final experience = result.experiencePoints - result.passive.experience;
     final advancement = result.advancement;
     final hasReward =
         mojianshi > 0 ||
@@ -46,7 +47,9 @@ class RetreatResultScreen extends StatelessWidget {
         equipDrops.isNotEmpty ||
         internalForce > 0 ||
         insightPoints > 0 ||
-        experience > 0;
+        experience > 0 ||
+        result.passive.mojianshi > 0 ||
+        result.passive.experience > 0;
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -84,6 +87,18 @@ class RetreatResultScreen extends StatelessWidget {
                     if (!hasReward)
                       const _EmptyReward()
                     else ...[
+                      const SectionHeader(
+                        UiStrings.seclusionResultRetreatSection,
+                      ),
+                      Text(
+                        UiStrings.seclusionResultPhaseHours(
+                          result.retreatHours.toStringAsFixed(1),
+                        ),
+                        style: const TextStyle(
+                          color: WuxiaUi.muted,
+                          fontSize: 12,
+                        ),
+                      ),
                       if (mojianshi > 0)
                         _RewardRow(
                           icon: Icons.construction,
@@ -122,17 +137,40 @@ class RetreatResultScreen extends StatelessWidget {
                             insightPoints,
                           ),
                         ),
-                      for (final eq in equipDrops)
+                      for (var i = 0; i < equipDrops.length; i++)
                         _RewardRow(
                           icon: Icons.sports_martial_arts,
-                          // H1 批3:显中文名而非 raw defId(真 bug)。沿 character_panel
-                          // / stage_victory_dialog 体例,GameRepository 未加载兜底 defId。
-                          label: GameRepository.isLoaded
-                              ? GameRepository.instance
-                                    .getEquipment(eq.defId)
-                                    .name
-                              : eq.defId,
+                          label: _equipmentLabel(result, i),
                         ),
+                      if (result.passiveHours > 0) ...[
+                        const SizedBox(height: 10),
+                        const SectionHeader(
+                          UiStrings.seclusionResultPassiveSection,
+                        ),
+                        Text(
+                          UiStrings.seclusionResultPhaseHours(
+                            result.passiveHours.toStringAsFixed(1),
+                          ),
+                          style: const TextStyle(
+                            color: WuxiaUi.muted,
+                            fontSize: 12,
+                          ),
+                        ),
+                        if (result.passive.mojianshi > 0)
+                          _RewardRow(
+                            icon: Icons.construction,
+                            label: UiStrings.seclusionMojianshi(
+                              result.passive.mojianshi,
+                            ),
+                          ),
+                        if (result.passive.experience > 0)
+                          _RewardRow(
+                            icon: Icons.trending_up,
+                            label: UiStrings.seclusionExperience(
+                              result.passive.experience,
+                            ),
+                          ),
+                      ],
                     ],
                     if (insightPoints > 0) ...[
                       const SizedBox(height: 8),
@@ -161,6 +199,19 @@ class RetreatResultScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  static String _equipmentLabel(RetreatResult result, int index) {
+    final equipment = result.equipmentDrops[index];
+    final name = GameRepository.isLoaded
+        ? GameRepository.instance.getEquipment(equipment.defId).name
+        : equipment.defId;
+    final nodeHour = index < result.equipmentDropNodeHours.length
+        ? result.equipmentDropNodeHours[index]
+        : 0;
+    final base = UiStrings.seclusionEquipmentNode(nodeHour, name);
+    if (equipment.tier.index <= result.realmTierAtStart.index) return base;
+    return '$base · ${UiStrings.equipmentLockedUntilRealm(EnumL10n.realmTier(RealmTier.values[equipment.tier.index]))}';
   }
 }
 

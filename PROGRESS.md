@@ -5,6 +5,8 @@
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 
 ## 当前阶段
+> **2026-07-12 Codex 开放式闭关实装(`codex/open-ended-retreat-settlement`)**:取消1/4/12h预选,改为玩家主动收功;前72h地图完整收益+溢出无上限普通挂机在同一事务中结算,幂等防重。每12h一次稳定装备判定(最多6次、无保底),后段高阶权重提升,越境界装备仍受三系锁。存档升至0.35并迁移 active 会话境界快照;设置/进行中/返场/主菜单/结果页已统一两段口径。**最终门禁**:`dart format` 1081/0 changed;`flutter analyze --no-pub` 0 issue;闭关/迁移/主菜单专项全绿;全仓 **3807/3807**;macOS debug build 成功;79h 进行中 + 90h 结算在 1280×720/1440×900 实窗截图通过。**仅剩**:推送后远端 CI 复验。
+
 > **2026-07-11 Codex 项目健康治理(`codex/project-health-hardening`)**:按 07-10 全量审查建议完成 7 批收口。① `lib/test/docs` 115 个历史格式文件统一,CI 加 formatter 门禁;② 新增扫荡结算/单位 4 测,CI 全量测试产 `lcov.info` artifact;③ 新增独立 macOS debug build job;④ README/CLAUDE/历史计划与 `.git` 体积误诊订正(`docs/handoff` tracked 仅 2.76MiB,本地 ignored 2.7G 不擅删);⑤ 存档恢复抽 `SaveRestoreDatabaseOps`,掉落引用校验移出 GameRepository,招募属性去 `dynamic`;⑥ 六个 BattleScreen 播放 bool 收进 `BattleScreenPlaybackConfig`,25 个测试/诊断调用迁 `defaultGroundStrategy` 后删除旧 `battle_engine.dart`;⑦ 锁文件兼容升级 21 项并删未使用 `intl`。**最终门禁**:build_runner 114 outputs;format 1080/0 changed;analyze 0;coverage 全量 **3794/3794**(约10m16s),已记录行覆盖 **80.84%**;macOS debug build 成功;diff/status 边界通过。**剩余非阻塞**:`stage_entry_flow` 21.51% 且仍混合多 hook;GameRepository/IsarSetup 全局单例继续分批降耦;`js 0.7.2` 为 `isar_community 3.3.2` 上游传递依赖;远端 CI 待分支推送后运行。
 
 > **2026-07-10 Codex CI 运行时维护(`codex/ci-runtime-refresh`)**:GitHub Actions `checkout@v4` 在 PR #23-25 持续产生 Node 20 弃用注记;核对官方 action.yml 后升级到最新 `actions/checkout@v7`(Node 24),并清除 CI 中 build_runner 已移除/忽略的 `--delete-conflicting-outputs` 参数。PR #26 首轮 CI 全链路绿且 annotations 为空,弃用注记已消失。

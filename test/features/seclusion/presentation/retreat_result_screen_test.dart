@@ -47,15 +47,31 @@ RetreatResult _mkResult({
   int experience = 0,
   int techniqueLearn = 0,
   int internalForce = 0,
+  double passiveHours = 0,
+  int passiveMojianshi = 0,
+  int passiveExperience = 0,
+  RealmTier realmTierAtStart = RealmTier.xueTu,
   List<String>? routeSteps,
   List<RetreatMapEventRecord>? mapEvents,
   AdvancementResult? advancement,
 }) => (
+  elapsedHours: actualHours + passiveHours,
+  retreatHours: actualHours,
+  passiveHours: passiveHours,
+  passive: (
+    mojianshi: passiveMojianshi,
+    experience: passiveExperience,
+    awayHours: passiveHours,
+    settledHours: passiveHours,
+    isCapped: false,
+  ),
   actualHours: actualHours,
   mojianshi: mojianshi,
   silver: silver,
   itemRewards: itemRewards,
   equipmentDrops: drops,
+  equipmentDropNodeHours: [for (var i = 0; i < drops.length; i++) 12 * (i + 1)],
+  realmTierAtStart: realmTierAtStart,
   experiencePoints: experience,
   techniqueLearnPoints: techniqueLearn,
   internalForcePoints: internalForce,
@@ -95,9 +111,49 @@ void main() {
       );
       await _pump(tester, _mkResult(drops: [tieJian]));
 
-      expect(find.text('铁剑'), findsOneWidget);
+      expect(find.textContaining('铁剑'), findsOneWidget);
       expect(find.textContaining('weapon_xunchang'), findsNothing);
     });
+
+    testWidgets('越境界装备标出节点与装备锁', (tester) async {
+      final gangDao = EquipmentFactory.fromDef(
+        GameRepository.instance.getEquipment('weapon_xiangyang_gang_dao'),
+        rng: DefaultRng(seed: 2),
+        obtainedAt: DateTime(2026, 7, 12),
+        obtainedFrom: '闭关',
+      );
+      await _pump(
+        tester,
+        _mkResult(drops: [gangDao], realmTierAtStart: RealmTier.xueTu),
+      );
+
+      expect(find.textContaining('12 小时机缘'), findsOneWidget);
+      expect(
+        find.textContaining(UiStrings.equipmentLockedUntilRealm('三流')),
+        findsOneWidget,
+      );
+    });
+  });
+
+  testWidgets('10 天结果分开地图闭关与普通挂机收益', (tester) async {
+    await _pump(
+      tester,
+      _mkResult(
+        actualHours: 72,
+        passiveHours: 168,
+        mojianshi: 114,
+        passiveMojianshi: 42,
+        experience: 15600,
+        passiveExperience: 8400,
+      ),
+    );
+
+    expect(find.text(UiStrings.seclusionResultRetreatSection), findsOneWidget);
+    expect(find.text(UiStrings.seclusionResultPassiveSection), findsOneWidget);
+    expect(
+      find.text(UiStrings.seclusionResultPhaseHours('168.0')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('通用物品奖励显示 items.yaml 名称与数量', (tester) async {

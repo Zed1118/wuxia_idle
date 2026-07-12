@@ -238,6 +238,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         ..saveDataId = IsarSetup.currentSlotId
         ..mapType = def.mapType
         ..durationHours = 4
+        ..realmTierAtStart = RealmTier.zongShi
         ..startedAt = DateTime.now().subtract(const Duration(minutes: 82))
         ..completedAt = null
         ..status = RetreatStatus.active
@@ -267,17 +268,13 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         ..id = 1
         ..saveDataId = IsarSetup.currentSlotId
         ..mapType = def.mapType
-        ..durationHours = 4
-        ..startedAt = DateTime.now().subtract(const Duration(minutes: 96))
+        ..durationHours = 0
+        ..realmTierAtStart = RealmTier.zongShi
+        ..startedAt = DateTime.now().subtract(const Duration(hours: 79))
         ..completedAt = null
         ..status = RetreatStatus.active
         ..actualRewards = [];
-      return ActiveRetreatScreen(
-        session: session,
-        mapDef: def,
-        characterId: 1,
-        charRealmTier: RealmTier.zongShi,
-      );
+      return ActiveRetreatScreen(session: session, mapDef: def, characterId: 1);
     case VisualRoute.seclusionResult:
       final def = GameRepository.instance.getSeclusionMap(
         RetreatMapType.guJianZhong,
@@ -290,14 +287,26 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       );
       final note = def.eventNotes.first;
       final result = (
-        actualHours: 4.0,
-        mojianshi: 18,
-        silver: 20,
+        elapsedHours: 90.0,
+        retreatHours: 72.0,
+        passiveHours: 18.0,
+        passive: (
+          mojianshi: 18,
+          experience: 360,
+          awayHours: 18.0,
+          settledHours: 18.0,
+          isCapped: false,
+        ),
+        actualHours: 72.0,
+        mojianshi: 324,
+        silver: 360,
         itemRewards: const <String, int>{},
         equipmentDrops: <Equipment>[tieJian],
-        experiencePoints: 520,
-        techniqueLearnPoints: 6,
-        internalForcePoints: 42,
+        equipmentDropNodeHours: const [12],
+        realmTierAtStart: RealmTier.sanLiu,
+        experiencePoints: 9360,
+        techniqueLearnPoints: 108,
+        internalForcePoints: 756,
         routeSteps: def.routeSteps,
         mapEvents: [
           RetreatMapEventRecord(
@@ -1509,7 +1518,6 @@ class _OfflineRecapPassivePreview extends StatelessWidget {
           experience: 860,
           awayHours: 8.0,
           settledHours: 8.0,
-          isCapped: false,
           onDismiss: () {},
         ),
       ),

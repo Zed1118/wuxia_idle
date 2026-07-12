@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../data/game_repository.dart';
-import '../../../core/domain/enums.dart';
+import '../../../data/numbers_config.dart';
+import '../application/retreat_settlement_calculator.dart';
+import '../application/seclusion_service.dart';
 import '../application/seclusion_service_providers.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
@@ -23,23 +27,20 @@ import 'seclusion_map_visuals.dart';
 
 /// 闭关进行中屏幕（Phase 3 T49）。
 ///
-/// 显示地图名、开始/结束时间、进度条（elapsed/durationHours）。
-/// 不做实时 Timer；打开时计算一次，无自动刷新（Demo 足够）。
+/// 显示开放式闭关的真实流逝时长、两段收益与装备节点。
 ///
-/// 「提前收功」/「收功」按钮 → confirm dialog → SeclusionService(isar: IsarSetup.instance).completeRetreat
+/// 「收功」按钮 → confirm dialog → SeclusionService.completeRetreat
 /// → push RetreatResultScreen。
 class ActiveRetreatScreen extends ConsumerStatefulWidget {
   final RetreatSession session;
   final SeclusionMapDef mapDef;
   final int characterId;
-  final RealmTier charRealmTier;
 
   const ActiveRetreatScreen({
     super.key,
     required this.session,
     required this.mapDef,
     required this.characterId,
-    required this.charRealmTier,
   });
 
   @override
@@ -49,41 +50,44 @@ class ActiveRetreatScreen extends ConsumerStatefulWidget {
 
 class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
   bool _isCollecting = false;
+  late DateTime _now;
+  Timer? _refreshTimer;
 
-  bool get _isDone {
-    final elapsed = DateTime.now().difference(widget.session.startedAt);
-    return elapsed.inSeconds >= widget.session.durationHours * 3600;
+  @override
+  void initState() {
+    super.initState();
+    _now = DateTime.now();
+    _refreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() => _now = DateTime.now());
+    });
   }
 
-  double get _progress {
-    final elapsed =
-        DateTime.now().difference(widget.session.startedAt).inSeconds /
-        (widget.session.durationHours * 3600.0);
-    return elapsed.clamp(0.0, 1.0);
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _onCollect() async {
-    final dialogResult = _isDone
-        ? true
-        : await showDialog<bool>(
-            context: context,
-            builder: (ctx) => PaperDialog(
-              title: UiStrings.activeRetreatConfirmTitle,
-              body: const Text(UiStrings.activeRetreatConfirmBody),
-              actions: [
-                PlaqueButton(
-                  label: UiStrings.activeRetreatCancel,
-                  onTap: () => Navigator.pop(ctx, false),
-                ),
-                PlaqueButton(
-                  label: UiStrings.activeRetreatConfirm,
-                  primary: true,
-                  autofocus: true,
-                  onTap: () => Navigator.pop(ctx, true),
-                ),
-              ],
-            ),
-          );
+    final dialogResult = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => PaperDialog(
+        title: UiStrings.activeRetreatConfirmTitle,
+        body: const Text(UiStrings.activeRetreatConfirmBody),
+        actions: [
+          PlaqueButton(
+            label: UiStrings.activeRetreatCancel,
+            onTap: () => Navigator.pop(ctx, false),
+          ),
+          PlaqueButton(
+            label: UiStrings.activeRetreatConfirm,
+            primary: true,
+            autofocus: true,
+            onTap: () => Navigator.pop(ctx, true),
+          ),
+        ],
+      ),
+    );
 
     if (dialogResult != true || !mounted) return;
     setState(() => _isCollecting = true);
@@ -98,7 +102,6 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
       final result = await svc.completeRetreat(
         session: widget.session,
         characterId: widget.characterId,
-        charRealmTier: widget.charRealmTier,
         config: GameRepository.instance.numbers.retreat,
         maps: GameRepository.instance.seclusionMaps,
         now: DateTime.now(),
@@ -137,12 +140,31 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
     final session = widget.session;
     final def = widget.mapDef;
     final startStr = _formatTime(session.startedAt);
-    final endStr = _formatTime(
-      session.startedAt.add(Duration(hours: session.durationHours)),
+    final config = GameRepository.instance.numbers.retreat;
+    final settlement = SeclusionService.computeSettlement(
+      session: session,
+      config: config,
+      passiveConfig: GameRepository.instance.numbers.passiveIdle,
+      maps: GameRepository.instance.seclusionMaps,
+      now: _now,
     );
-    final now = DateTime.now();
-    final progress = _progress;
-    final done = _isDone;
+    final progress = config.capHours <= 0
+        ? 1.0
+        : (settlement.retreatHours / config.capHours).clamp(0.0, 1.0);
+    final fullRateComplete = progress >= 1.0;
+    final rollCount = RetreatSettlementCalculator.equipmentRollCount(
+      retreatHours: settlement.retreatHours,
+      intervalHours: config.equipmentRollIntervalHours,
+      maxCount: config.equipmentRollMaxCount,
+    );
+    final nextNodeHours = rollCount >= config.equipmentRollMaxCount
+        ? null
+        : config.equipmentRollIntervalHours * (rollCount + 1) -
+              settlement.retreatHours;
+    final rowIndex = rollCount < config.equipmentTierWeights.length
+        ? rollCount
+        : config.equipmentTierWeights.length - 1;
+    final tierWeights = config.equipmentTierWeights[rowIndex];
 
     return Shortcuts(
       shortcuts: <ShortcutActivator, Intent>{
@@ -230,26 +252,31 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                                     ),
                                   ),
                                   _ProgressStamp(
-                                    label: done
-                                        ? UiStrings.activeRetreatDone
+                                    label: fullRateComplete
+                                        ? UiStrings
+                                              .activeRetreatFullRateComplete
                                         : UiStrings.activeRetreatProgressPct(
                                             (progress * 100).round(),
                                           ),
-                                    done: done,
+                                    done: fullRateComplete,
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 18),
                               _TimeRangePanel(
                                 start: startStr,
-                                end: endStr,
-                                hours: session.durationHours,
+                                elapsed: _formatHours(settlement.elapsedHours),
                               ),
                               const SizedBox(height: 12),
                               _ActiveRetreatStatusCard(
                                 session: session,
                                 mapDef: def,
-                                now: now,
+                                now: _now,
+                                settlement: settlement,
+                                rollCount: rollCount,
+                                maxRollCount: config.equipmentRollMaxCount,
+                                nextNodeHours: nextNodeHours,
+                                tierWeights: tierWeights,
                               ),
                               const SizedBox(height: 22),
                               const SectionHeader(
@@ -265,7 +292,7 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                                     alpha: 0.22,
                                   ),
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    done
+                                    fullRateComplete
                                         ? WuxiaUi.gold
                                         : SeclusionMapVisuals.primaryColor(def),
                                   ),
@@ -273,12 +300,17 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                done
-                                    ? UiStrings.activeRetreatDoneHint
-                                    : UiStrings.activeRetreatEarlyHint,
+                                fullRateComplete
+                                    ? UiStrings.activeRetreatFullRateComplete
+                                    : UiStrings.activeRetreatFullRateProgress(
+                                        _formatHours(settlement.retreatHours),
+                                        config.capHours,
+                                      ),
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
-                                  color: done ? WuxiaUi.gold : WuxiaUi.ink2,
+                                  color: fullRateComplete
+                                      ? WuxiaUi.gold
+                                      : WuxiaUi.ink2,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -289,9 +321,7 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                                 child: PlaqueButton(
                                   label: _isCollecting
                                       ? UiStrings.seclusionStarting
-                                      : done
-                                      ? UiStrings.activeRetreatCollect
-                                      : UiStrings.activeRetreatEarlyCollect,
+                                      : UiStrings.activeRetreatCollect,
                                   primary: true,
                                   disabled: _isCollecting,
                                   onTap: _onCollect,
@@ -314,6 +344,8 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
 
   static String _formatTime(DateTime t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+
+  static String _formatHours(double hours) => hours.toStringAsFixed(1);
 }
 
 class _StateSeal extends StatelessWidget {
@@ -373,15 +405,10 @@ class _ProgressStamp extends StatelessWidget {
 }
 
 class _TimeRangePanel extends StatelessWidget {
-  const _TimeRangePanel({
-    required this.start,
-    required this.end,
-    required this.hours,
-  });
+  const _TimeRangePanel({required this.start, required this.elapsed});
 
   final String start;
-  final String end;
-  final int hours;
+  final String elapsed;
 
   @override
   Widget build(BuildContext context) {
@@ -398,7 +425,8 @@ class _TimeRangePanel extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              UiStrings.activeRetreatTimeRange(start, end, hours),
+              '${UiStrings.activeRetreatStartedAt(start)} · '
+              '${UiStrings.activeRetreatElapsed(elapsed)}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -419,11 +447,21 @@ class _ActiveRetreatStatusCard extends StatelessWidget {
     required this.session,
     required this.mapDef,
     required this.now,
+    required this.settlement,
+    required this.rollCount,
+    required this.maxRollCount,
+    required this.nextNodeHours,
+    required this.tierWeights,
   });
 
   final RetreatSession session;
   final SeclusionMapDef mapDef;
   final DateTime now;
+  final RetreatSettlement settlement;
+  final int rollCount;
+  final int maxRollCount;
+  final double? nextNodeHours;
+  final RetreatEquipmentTierWeights tierWeights;
 
   @override
   Widget build(BuildContext context) {
@@ -460,11 +498,55 @@ class _ActiveRetreatStatusCard extends StatelessWidget {
                 text: UiStrings.activeRetreatElapsed(_formatElapsed(elapsed)),
               ),
               _StatusChip(
-                text: UiStrings.activeRetreatPlannedHours(
-                  session.durationHours,
+                text: UiStrings.activeRetreatEquipmentRolls(
+                  rollCount,
+                  maxRollCount,
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            UiStrings.activeRetreatGuaranteedPreview(
+              settlement.retreat.mojianshi + settlement.passive.mojianshi,
+              settlement.retreat.silver,
+              settlement.retreat.experiencePoints +
+                  settlement.passive.experience,
+            ),
+            style: const TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          if (settlement.passiveHours > 0) ...[
+            const SizedBox(height: 6),
+            Text(
+              UiStrings.activeRetreatPassiveOverflow(
+                settlement.passiveHours.toStringAsFixed(1),
+              ),
+              style: const TextStyle(color: WuxiaUi.ink2, fontSize: 12),
+            ),
+          ],
+          const SizedBox(height: 6),
+          Text(
+            nextNodeHours == null
+                ? UiStrings.activeRetreatEquipmentRolls(rollCount, maxRollCount)
+                : UiStrings.activeRetreatNextEquipmentNode(
+                    nextNodeHours!.toStringAsFixed(1),
+                  ),
+            style: const TextStyle(color: WuxiaUi.ink2, fontSize: 12),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            UiStrings.activeRetreatTierWeights(
+              tierWeights.hour,
+              (tierWeights.base * 100).round(),
+              (tierWeights.current * 100).round(),
+              (tierWeights.above1 * 100).round(),
+              (tierWeights.above2 * 100).round(),
+            ),
+            style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
           ),
           const SizedBox(height: 10),
           const Text(
