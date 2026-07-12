@@ -170,14 +170,14 @@ void main() {
   });
 
   // ─────────────────────────────────────────────────────────────────────────
-  // (b) completeRetreat 集成：余毒累减 + 内力 debuff
+  // (b) completeRetreat 集成：内息紊乱恢复，不阻碍内力增长
   // ─────────────────────────────────────────────────────────────────────────
 
-  group('completeRetreat 余毒集成', () {
+  group('completeRetreat 内息紊乱集成', () {
     Future<void> setResidue(double hours) async {
       await IsarSetup.instance.writeTxn(() async {
         final ch = await IsarSetup.instance.characters.get(kCharId);
-        ch!.innerDemonResidueHoursRemaining = hours;
+        ch!.innerBreathDisorderHoursRemaining = hours;
         await IsarSetup.instance.characters.put(ch);
       });
     }
@@ -209,10 +209,10 @@ void main() {
       // 无余毒 → 满额 20 点
       expect(out.internalForcePoints, 20, reason: '无余毒不受 0.80 debuff');
       final ch = await IsarSetup.instance.characters.get(kCharId);
-      expect(ch?.innerDemonResidueHoursRemaining, 0, reason: '无余毒不累减');
+      expect(ch?.innerBreathDisorderHoursRemaining, 0, reason: '无紊乱保持 0');
     });
 
-    test('有余毒（5h）→ 内力 ×0.80，余毒减去 actualHours(3h) → 剩 2h', () async {
+    test('有紊乱（5h）→ 内力正常增长，紊乱减去 actualHours(3h) → 剩 2h', () async {
       await setResidue(5.0);
 
       final start = DateTime(2026, 5, 11, 10, 0);
@@ -236,21 +236,16 @@ void main() {
             now: start.add(const Duration(hours: 3)),
           );
 
-      // 山林 3h，×0.80：floor(5 × 1.0 × 3 × 1.0 × 1.0 × 1.0 × 1.0 × 0.80) = floor(12.0) = 12
-      expect(
-        out.internalForcePoints,
-        12,
-        reason: '余毒在身 ×0.80：3h 基础 15 × 0.80 = 12',
-      );
+      expect(out.internalForcePoints, 15, reason: '内息紊乱不阻碍闭关内力增长');
       final ch = await IsarSetup.instance.characters.get(kCharId);
       expect(
-        ch?.innerDemonResidueHoursRemaining,
+        ch?.innerBreathDisorderHoursRemaining,
         closeTo(2.0, 0.01),
         reason: '5h - 3h = 2h 剩余',
       );
     });
 
-    test('余毒剩 2h，再闭关 3h → 余毒 clamp 到 0（满 8h 累计清）', () async {
+    test('紊乱剩 2h，再闭关 3h → clamp 到 0', () async {
       await setResidue(2.0);
 
       final start = DateTime(2026, 5, 11, 10, 0);
@@ -275,7 +270,7 @@ void main() {
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
       expect(
-        ch?.innerDemonResidueHoursRemaining,
+        ch?.innerBreathDisorderHoursRemaining,
         0,
         reason: '2h - 3h = -1h → clamp 到 0（余毒清除）',
       );

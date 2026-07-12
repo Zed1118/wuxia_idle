@@ -1605,6 +1605,56 @@ void main() {
       expect(ch.lightInjuryStacks, maxStacks);
     });
 
+    test('有效战斗减轻紊乱，空行动退出不恢复', () {
+      final completed = buildCharacter(id: 1, mainTechId: null)
+        ..innerBreathDisorderHoursRemaining = 5;
+      final exited = buildCharacter(id: 2, mainTechId: null)
+        ..innerBreathDisorderHoursRemaining = 5;
+
+      BattleResolutionService.resolve(
+        finalState: BattleState(
+          leftTeam: [buildBattleChar(1, 0)],
+          rightTeam: const [],
+          tick: 1,
+          result: BattleResult.leftWin,
+          actionLog: [buildAction(actorId: 1)],
+        ),
+        participatingCharacters: [completed],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: const {},
+        stageDef: buildStage(),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        numbersConfig: numbersCfg,
+      );
+      BattleResolutionService.resolve(
+        finalState: BattleState(
+          leftTeam: [buildBattleChar(2, 0)],
+          rightTeam: const [],
+          tick: 0,
+          result: BattleResult.draw,
+          actionLog: const [],
+        ),
+        participatingCharacters: [exited],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: const {},
+        stageDef: buildStage(),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        numbersConfig: numbersCfg,
+      );
+
+      expect(
+        completed.innerBreathDisorderHoursRemaining,
+        5 - numbersCfg.innerBreathDisorder.battleRecoveryHours,
+      );
+      expect(exited.innerBreathDisorderHoursRemaining, 5);
+    });
+
     test('numbersConfig 缺省（不传）：伤势逻辑跳过，不报错', () {
       final ch = buildCharacter(id: 1, mainTechId: null);
       final state = BattleState(

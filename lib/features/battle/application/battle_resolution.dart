@@ -4,6 +4,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/technique_def.dart';
 import '../../../shared/strings.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/skill_usage_entry.dart';
@@ -123,6 +124,17 @@ class BattleResolutionService {
     _assertAllParticipated(finalState, participatingCharacters);
     final resolvedVictory =
         isVictory ?? finalState.result == BattleResult.leftWin;
+
+    // 只有至少完成一次行动的有效战斗才调息；失败新增的紊乱在下方
+    // 惩罚分支后结算，避免“刚受惩罚就自动抵消一次”。
+    if (numbersConfig != null && finalState.actionLog.isNotEmpty) {
+      for (final character in participatingCharacters) {
+        InnerBreathDisorder.recover(
+          character: character,
+          hours: numbersConfig.innerBreathDisorder.battleRecoveryHours,
+        );
+      }
+    }
 
     // 1. 反推 actionLog：actor → {skillId: 使用次数}
     final skillCountsByActor = <int, Map<String, int>>{};

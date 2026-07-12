@@ -10,9 +10,7 @@ import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import "../../../support/isar_test_support.dart";
 import '../../../support/test_data.dart';
 
-/// M6 Task 6：余毒在身玩家角色战斗快照 outputMultiplier = 0.95。
-///
-/// 红线 §5.6：数值从 numbers.innerDemon.residueDebuff.battleOutputMultiplier 读，不写死。
+/// 内息紊乱降低有效内力和开场真气，不再使用通用输出乘数。
 void main() {
   late Directory tempDir;
 
@@ -39,37 +37,26 @@ void main() {
     }
   });
 
-  test(
-    'M6 Task6：余毒在身角色(residueHoursRemaining > 0) → outputMultiplier = 0.95',
-    () async {
-      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
-      final isar = IsarSetup.instance;
+  test('内息紊乱在身 → 有效内力与开场真气下降', () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+    final isar = IsarSetup.instance;
 
-      // 给角色打上余毒标记
-      await isar.writeTxn(() async {
-        final ch = await isar.characters.get(1);
-        ch!.innerDemonResidueHoursRemaining = 4.0; // 剩余 4 小时余毒
-        await isar.characters.put(ch);
-      });
+    int actualInnerForce = 0;
+    await isar.writeTxn(() async {
+      final ch = await isar.characters.get(1);
+      actualInnerForce = ch!.internalForce;
+      ch.innerBreathDisorderHoursRemaining =
+          GameRepository.instance.numbers.innerBreathDisorder.maxHours;
+      await isar.characters.put(ch);
+    });
 
-      final stage = GameRepository.instance.getStage('stage_01_01');
-      final (left, _) = await StageBattleSetup(isar: isar).buildTeams(stage);
+    final stage = GameRepository.instance.getStage('stage_01_01');
+    final (left, _) = await StageBattleSetup(isar: isar).buildTeams(stage);
 
-      final expected = GameRepository
-          .instance
-          .numbers
-          .innerDemon
-          .residueDebuff
-          .battleOutputMultiplier;
-      expect(
-        left.first.outputMultiplier,
-        closeTo(expected, 1e-9),
-        reason:
-            '余毒在身玩家角色 outputMultiplier 应等于 '
-            'numbers.innerDemon.residueDebuff.battleOutputMultiplier (=$expected)',
-      );
-    },
-  );
+    expect(left.first.outputMultiplier, 1.0);
+    expect(left.first.internalForce, lessThan(actualInnerForce));
+    expect(left.first.currentQi, 20);
+  });
 
   test(
     'M6 Task6：无余毒角色(residueHoursRemaining == 0) → outputMultiplier = 1.0',
