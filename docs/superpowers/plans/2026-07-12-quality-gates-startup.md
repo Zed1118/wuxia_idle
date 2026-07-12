@@ -12,23 +12,24 @@
 
 ## Recovery Point
 
-- **Status:** plan ready; implementation not started.
+- **Status:** first subproject complete and verified; ready for review.
 - **Branch:** `codex/final-quality-optimization`.
 - **Worktree:** `/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/final-quality-optimization`.
-- **Last completed:** generated 114 `.g.dart` outputs and verified baseline `flutter analyze --no-pub` with 0 issues.
-- **Next:** Task 1, add first-clear ratchet assertions.
-- **Verification run:** `dart run build_runner build`; `flutter analyze --no-pub`.
-- **Blockers:** none. Windows/performance/beta are outside this subproject.
+- **Last completed:** first-clear ratchet, Splash lifecycle seam/tests, shared Builds ignore, unused dependency removal.
+- **Next:** review/merge this batch, then create the separate `GameRepository/NumbersConfig` deepening design.
+- **Verification run:** `dart run build_runner build` (114 outputs); `flutter analyze --no-pub` (0 issues); targeted 10/10; full JSON suite `success:true` in 297126ms.
+- **Blockers:** none for this batch. Windows/performance/beta remain outside this subproject.
+- **Observed flaky:** first compact full run ended with one isolation failure; the named mainline file passed 6/6 alone and the fresh full JSON rerun had no error/non-success events. No unrelated production fix was made.
 
 ## Acceptance Checklist (CLAUDE.md §8.2)
 
-- [ ] Production wiring evidence documented for Splash default loader and destination.
-- [ ] Targeted test commands and passing results recorded.
-- [ ] Red-line statement confirms no numbers/schema/save/three-tier/online-offline changes.
-- [ ] Residual risks list includes no visual smoke and no Windows run.
-- [ ] UI behavior retains semantics, keyboard/focus/mouse behavior because no interactive control type changes.
-- [ ] `flutter analyze --no-pub` passes.
-- [ ] `flutter test --no-pub` passes at batch end.
+- [x] Production wiring evidence documented for Splash default loader and destination.
+- [x] Targeted test commands and passing results recorded.
+- [x] Red-line statement confirms no numbers/schema/save/three-tier/online-offline changes.
+- [x] Residual risks list includes no visual smoke and no Windows run.
+- [x] UI behavior retains semantics, keyboard/focus/mouse behavior because no interactive control type changes.
+- [x] `flutter analyze --no-pub` passes.
+- [x] `flutter test --no-pub` passes at batch end.
 - [ ] Worktree is clean and tip commit starts with `[READY]` at handoff.
 
 ### Task 1: First-clear experience ratchet
@@ -36,7 +37,7 @@
 **Files:**
 - Modify: `test/tools/readable_first_clear_tempo_diagnostic_test.dart`
 
-- [ ] **Step 1: Add aggregation helpers inside the test body**
+- [x] **Step 1: Add aggregation helpers inside the test body**
 
 After collecting `rows`, build a `Map<String, List<_TempoRun>>` keyed by `stageId/profile` and a local average helper. Do not add a second simulator.
 
@@ -55,7 +56,7 @@ double averageActions(String stageId, _TempoProfile profile) {
 }
 ```
 
-- [ ] **Step 2: Add conservative chapter-end assertions**
+- [x] **Step 2: Add conservative chapter-end assertions**
 
 ```dart
 for (var chapter = 1; chapter <= 6; chapter++) {
@@ -71,11 +72,11 @@ expect(
 );
 ```
 
-- [ ] **Step 3: Promote existing configured-mechanic candidate to a gate**
+- [x] **Step 3: Promote existing configured-mechanic candidate to a gate**
 
 Refactor `_summarize` to return a small `_TempoSummary` containing report text and `missingBossMechanic`, or compute the same list once before report writing. Assert that the list is empty while preserving the Markdown output.
 
-- [ ] **Step 4: Run the diagnostic test**
+- [x] **Step 4: Run the diagnostic test**
 
 Run:
 
@@ -85,7 +86,7 @@ flutter test --no-pub test/tools/readable_first_clear_tempo_diagnostic_test.dart
 
 Expected: PASS; output still lists known too-short candidates and no missing configured mechanics.
 
-- [ ] **Step 5: Commit the ratchet**
+- [x] **Step 5: Commit the ratchet**
 
 ```bash
 git add test/tools/readable_first_clear_tempo_diagnostic_test.dart
@@ -98,7 +99,7 @@ git commit -m "增加首通体验渐进门禁"
 - Create: `test/features/splash/presentation/splash_screen_test.dart`
 - Modify later: `lib/features/splash/presentation/splash_screen.dart`
 
-- [ ] **Step 1: Write the failing tests against the wished-for seam**
+- [x] **Step 1: Write the failing tests against the wished-for seam**
 
 Use a `Completer<void>` and a destination widget with a stable key. Cover load-before-tap, automatic navigation, tap-to-skip, and duplicate tap behavior. Construct `SplashScreen` with:
 
@@ -114,7 +115,7 @@ SplashScreen(
 
 Do not wait 2.2 real seconds; use tester virtual time.
 
-- [ ] **Step 2: Run RED and confirm the expected failure**
+- [x] **Step 2: Run RED and confirm the expected failure**
 
 Run:
 
@@ -130,7 +131,7 @@ Expected: compile failure because `loadDefinitions` and `nextScreenBuilder` do n
 - Modify: `lib/features/splash/presentation/splash_screen.dart`
 - Test: `test/features/splash/presentation/splash_screen_test.dart`
 
-- [ ] **Step 1: Add optional constructor fields**
+- [x] **Step 1: Add optional constructor fields**
 
 ```dart
 final Future<void> Function()? loadDefinitions;
@@ -139,15 +140,15 @@ final WidgetBuilder? nextScreenBuilder;
 
 Keep existing defaults by leaving both null in production callers.
 
-- [ ] **Step 2: Preserve the production loader**
+- [x] **Step 2: Preserve the production loader**
 
 In `_bootstrap`, call the injected loader when present. Otherwise execute the existing `GameRepository.loadAllDefs` and debug logging unchanged.
 
-- [ ] **Step 3: Preserve the production destination**
+- [x] **Step 3: Preserve the production destination**
 
 In `_go`, use `widget.nextScreenBuilder?.call(context) ?? const SaveSelectScreen()` as the page.
 
-- [ ] **Step 4: Run GREEN**
+- [x] **Step 4: Run GREEN**
 
 Run:
 
@@ -157,7 +158,7 @@ flutter test --no-pub test/features/splash/presentation/splash_screen_test.dart
 
 Expected: all four lifecycle tests pass, with no pending timers or exceptions.
 
-- [ ] **Step 5: Run related save-slot tests**
+- [x] **Step 5: Run related save-slot tests**
 
 Run:
 
@@ -169,7 +170,7 @@ flutter test --no-pub \
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit Splash work**
+- [x] **Step 6: Commit Splash work**
 
 ```bash
 git add lib/features/splash/presentation/splash_screen.dart \
@@ -184,11 +185,11 @@ git commit -m "补齐启动闪屏生命周期测试"
 - Modify: `pubspec.yaml`
 - Modify: `pubspec.lock`
 
-- [ ] **Step 1: Add the shared Builds ignore**
+- [x] **Step 1: Add the shared Builds ignore**
 
 Add `/Builds/` near `build/` with a comment that it contains local distributable artifacts.
 
-- [ ] **Step 2: Remove the unused dependency**
+- [x] **Step 2: Remove the unused dependency**
 
 Run:
 
@@ -198,11 +199,11 @@ flutter pub remove cupertino_icons
 
 Expected: `pubspec.yaml` and `pubspec.lock` update; no production imports are affected.
 
-- [ ] **Step 3: Update the stale pubspec asset comment**
+- [x] **Step 3: Update the stale pubspec asset comment**
 
 Replace the retired DeepSeek wording with “Mac 单端维护数值与文案”. Do not modify asset declarations.
 
-- [ ] **Step 4: Verify hygiene**
+- [x] **Step 4: Verify hygiene**
 
 Run:
 
@@ -214,7 +215,7 @@ flutter analyze --no-pub
 
 Expected: Builds is ignored by `.gitignore`; `rg` has no matches; analyze passes.
 
-- [ ] **Step 5: Commit hygiene**
+- [x] **Step 5: Commit hygiene**
 
 ```bash
 git add .gitignore pubspec.yaml pubspec.lock
@@ -226,7 +227,7 @@ git commit -m "收口仓库忽略与未用依赖"
 **Files:**
 - Modify: `docs/superpowers/plans/2026-07-12-quality-gates-startup.md`
 
-- [ ] **Step 1: Format touched Dart files**
+- [x] **Step 1: Format touched Dart files**
 
 ```bash
 dart format lib/features/splash/presentation/splash_screen.dart \
@@ -234,7 +235,7 @@ dart format lib/features/splash/presentation/splash_screen.dart \
   test/tools/readable_first_clear_tempo_diagnostic_test.dart
 ```
 
-- [ ] **Step 2: Analyze**
+- [x] **Step 2: Analyze**
 
 ```bash
 flutter analyze --no-pub
@@ -242,7 +243,7 @@ flutter analyze --no-pub
 
 Expected: 0 issues.
 
-- [ ] **Step 3: Run targeted tests**
+- [x] **Step 3: Run targeted tests**
 
 ```bash
 flutter test --no-pub \
@@ -253,7 +254,7 @@ flutter test --no-pub \
 
 Expected: all pass.
 
-- [ ] **Step 4: Run full suite**
+- [x] **Step 4: Run full suite**
 
 ```bash
 flutter test --no-pub
@@ -261,7 +262,7 @@ flutter test --no-pub
 
 Expected: all tests pass; no `-1` loader crashes.
 
-- [ ] **Step 5: Update this plan's recovery point**
+- [x] **Step 5: Update this plan's recovery point**
 
 Record completed commits, exact test counts, analyze result, red-line impact, residual risks, and next subproject (`GameRepository/NumbersConfig` design).
 
@@ -273,4 +274,3 @@ git commit --allow-empty -m "[READY] 完成质量门禁与启动可靠性首批�
 ```
 
 Expected: clean worktree and READY-prefixed tip.
-
