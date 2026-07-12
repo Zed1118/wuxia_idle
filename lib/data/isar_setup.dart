@@ -158,7 +158,9 @@ class IsarSetup {
   // nullable 字段旧档由 SweepReadinessService 首读补满,无迁移分支纯 bump。
   // 0.35.0 开放式闭关:RetreatSession +realmTierAtStart(nullable enum),
   // 旧 active session 迁移时以关联角色当前境界固化，startedAt 不动。
-  static const _currentSaveVersion = '0.35.0';
+  // 0.36.0 内力/真气拆分:Character +innerBreathDisorderHoursRemaining;
+  // 旧档永久内力保护性补满上限，心魔余毒迁入内息紊乱。
+  static const _currentSaveVersion = '0.36.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -412,6 +414,20 @@ class IsarSetup {
           }
           session.realmTierAtStart = linked?.realmTier ?? RealmTier.xueTu;
           await isar.retreatSessions.put(session);
+        }
+      }
+
+      // --- 段 6(0.36.0 内力/真气拆分)---
+      if (_compareVersion(fromVersion, '0.36.0') < 0) {
+        for (final character in characters) {
+          character.internalForce = character.internalForceMax;
+          if (character.innerDemonResidueHoursRemaining >
+              character.innerBreathDisorderHoursRemaining) {
+            character.innerBreathDisorderHoursRemaining =
+                character.innerDemonResidueHoursRemaining;
+          }
+          character.innerDemonResidueHoursRemaining = 0;
+          await isar.characters.put(character);
         }
       }
 

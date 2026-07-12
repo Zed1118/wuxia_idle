@@ -1031,11 +1031,15 @@ void main() {
       expect(result.defeatPenaltyByCharacter.length, 1);
       final p = result.defeatPenaltyByCharacter[1]!;
       expect(p.internalForceBefore, 8000);
-      expect(p.internalForceAfter, 4000);
+      expect(p.internalForceAfter, 8000);
       expect(p.oldLayer, CultivationLayer.yuanMan);
       expect(p.newLayer, CultivationLayer.daCheng);
       expect(p.layersRolledBack, 1);
-      expect(ch.internalForce, 4000);
+      expect(ch.internalForce, 8000);
+      expect(
+        ch.innerBreathDisorderHoursRemaining,
+        numbersCfg.innerBreathDisorder.bossDefeatHours,
+      );
       expect(mainTech.cultivationProgress, 750);
       expect(mainTech.cultivationLayer, CultivationLayer.daCheng);
       // role 不动，下次战斗仍按主修走

@@ -113,7 +113,7 @@ class BattleCharacter {
   final int maxHp;
   final int currentHp;
 
-  /// Persistent cultivated power used by damage; never spent in battle.
+  /// Effective snapshot of persistent cultivated power; never spent in battle.
   final int internalForce;
 
   /// Bounded per-battle resource.
@@ -373,13 +373,19 @@ class BattleCharacter {
     final techDef = repo.getTechnique(mainTechnique.defId);
     final qiConfig = numbers.combat.qi;
     final profile = techDef.qiProfile;
+    final disorder = numbers.innerBreathDisorder;
+    final openingPenalty = QiCycle.disorderOpeningQiPenalty(
+      disorderHours: character.innerBreathDisorderHoursRemaining,
+      disorderMaxHours: disorder.maxHours,
+      maxPenalty: disorder.maxOpeningQiPenalty,
+    );
     final maxQi = (qiConfig.baseMax + profile.maxBonus).clamp(
       qiConfig.minMax,
       qiConfig.maxCap,
     );
     final openingQi = QiCycle.openingQi(
       maxQi: maxQi,
-      openingQi: qiConfig.openingQi + profile.openingBonus,
+      openingQi: qiConfig.openingQi + profile.openingBonus - openingPenalty,
       openingCap: qiConfig.openingCap,
     );
     final qiGainMultiplier = (1 + profile.gainPct).clamp(
@@ -505,7 +511,12 @@ class BattleCharacter {
       school: school,
       maxHp: maxHp,
       currentHp: maxHp,
-      internalForce: character.internalForce,
+      internalForce: QiCycle.effectiveInnerForce(
+        actualInnerForce: character.internalForce,
+        disorderHours: character.innerBreathDisorderHoursRemaining,
+        disorderMaxHours: disorder.maxHours,
+        maxPenaltyPct: disorder.maxInnerForcePenaltyPct,
+      ),
       maxQi: maxQi,
       currentQi: openingQi,
       qiGainMultiplier: qiGainMultiplier,

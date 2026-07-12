@@ -263,8 +263,8 @@ class BattleResolutionService {
           ch: ch,
           mainTech: mainTech,
           penalty: idDef.failurePenalty,
-          residueHours: idDef.failurePenalty.debuffClearViaRetreatHours
-              .toDouble(),
+          residueHours: numbersConfig.innerBreathDisorder.innerDemonHours,
+          disorderMaxHours: numbersConfig.innerBreathDisorder.maxHours,
         );
       }
     }

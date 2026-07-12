@@ -271,17 +271,8 @@ class StageBattleSetup {
       if (assistTech != null) ownedTechs.add(assistTech);
     }
 
-    // M6 Task6：余毒在身 debuff → 战斗输出 ×0.95（§5.6 从 config 读，不写死）。
-    final residueMult = character.innerDemonResidueHoursRemaining > 0
-        ? GameRepository
-              .instance
-              .numbers
-              .innerDemon
-              .residueDebuff
-              .battleOutputMultiplier
-        : 1.0;
-
-    // 第八阶段 Task5：重伤 debuff → 攻击折扣连乘余毒（outputMultiplier 可乘性组合）。
+    // 第八阶段 Task5：重伤 debuff → 攻击折扣。内息紊乱的有效内力和
+    // 开场真气在 BattleCharacter.fromCharacter 中独立烘焙。
     final n = GameRepository.instance.numbers;
     final heavyInjured = character.injuryHoursRemaining > 0;
     final injuryAtkMult = heavyInjured
@@ -296,7 +287,7 @@ class StageBattleSetup {
       teamSide: 0,
       slotIndex: slotIndex,
       founderBuffActive: founderBuffActive,
-      outputMultiplier: residueMult * injuryAtkMult,
+      outputMultiplier: injuryAtkMult,
       heavyInjured: heavyInjured,
       lightInjuryStacks: character.lightInjuryStacks,
     );

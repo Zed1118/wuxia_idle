@@ -114,6 +114,25 @@ void main() {
         800,
       );
     });
+
+    test('disorder reduces opening qi linearly within cap', () {
+      expect(
+        QiCycle.disorderOpeningQiPenalty(
+          disorderHours: 6,
+          disorderMaxHours: 12,
+          maxPenalty: 20,
+        ),
+        10,
+      );
+      expect(
+        QiCycle.disorderOpeningQiPenalty(
+          disorderHours: 99,
+          disorderMaxHours: 12,
+          maxPenalty: 20,
+        ),
+        20,
+      );
+    });
   });
 
   group('qi configuration', () {

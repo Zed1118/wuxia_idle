@@ -40,12 +40,29 @@ void main() {
     expect(yinRou.qiGainMultiplier, 1.20);
     expect(yinRou.maxQi, 100);
   });
+
+  test('内息紊乱只压低战斗有效内力和开场真气', () async {
+    final repo = await GameRepository.loadAllDefs(
+      loader: (path) => File(path).readAsString(),
+    );
+    final affected = snapshot(
+      defId: 'tech_gangmeng_jichu',
+      school: TechniqueSchool.gangMeng,
+      numbers: repo.numbers,
+      disorderHours: repo.numbers.innerBreathDisorder.maxHours,
+    );
+
+    expect(affected.internalForce, 400);
+    expect(affected.currentQi, 35);
+    expect(affected.maxQi, 100);
+  });
 }
 
 BattleCharacter snapshot({
   required String defId,
   required TechniqueSchool school,
   required NumbersConfig numbers,
+  double disorderHours = 0,
 }) {
   final character = Character.create(
     name: '测试角色',
@@ -57,6 +74,7 @@ BattleCharacter snapshot({
     createdAt: DateTime(2026),
     internalForce: 500,
     internalForceMax: 500,
+    innerBreathDisorderHoursRemaining: disorderHours,
     school: school,
   );
   final technique = Technique.create(

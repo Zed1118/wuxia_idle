@@ -9,11 +9,10 @@ import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
 /// M6 心魔关战败惩罚纯逻辑（applyFailurePenalty）TDD 验收。
 ///
 /// 惩罚规则（来自 InnerDemonFailurePenalty defaults）：
-///   - internalForceMultiplier = 0.85（扣 15%）
-///   - internalForceFloorPct   = 0.50（地板 = internalForceMax × 0.50）
+///   - 永久内力不扣，改为临时内息紊乱
 ///   - mainCultivationMultiplier = 0.90（扣 10%，floor 取整）
 ///   - cultivationLayer 不回退（核心红线）
-///   - ch.innerDemonResidueHoursRemaining 设为 residueHours（再败刷新不叠加）
+///   - ch.innerBreathDisorderHoursRemaining 受上限约束
 void main() {
   /// 构造最简 Character，含 internalForce / internalForceMax /
   /// innerDemonResidueHoursRemaining（沿 dispel_service_test.dart 体例）。
@@ -36,7 +35,7 @@ void main() {
       createdAt: DateTime(2026, 6, 16),
       internalForce: internalForce,
       internalForceMax: internalForceMax,
-      innerDemonResidueHoursRemaining: residueHoursRemaining,
+      innerBreathDisorderHoursRemaining: residueHoursRemaining,
     );
     c.id = 1;
     return c;
@@ -66,12 +65,11 @@ void main() {
   final penalty = InnerDemonDef.empty().failurePenalty;
 
   // ────────────────────────────────────────────────────────────────────────────
-  // 内力惩罚（含地板 clamp）
+  // 永久内力保护
   // ────────────────────────────────────────────────────────────────────────────
 
-  group('内力惩罚', () {
-    test('内力 ×0.85 但不低于 internalForceMax×0.50 地板（正常扣减不触底）', () {
-      // 1000 × 0.85 = 850；地板 = 1000 × 0.50 = 500；850 > 500 → 850
+  group('永久内力保护', () {
+    test('心魔战败不扣永久内力', () {
       final ch = newChar(internalForce: 1000, internalForceMax: 1000);
       final tech = newTech(progress: 200);
 
@@ -82,13 +80,13 @@ void main() {
         residueHours: 8,
       );
 
-      expect(ch.internalForce, 850);
-      expect(r.internalForceAfter, 850);
+      expect(ch.internalForce, 1000);
+      expect(r.internalForceAfter, 1000);
       expect(r.internalForceBefore, 1000);
+      expect(ch.innerBreathDisorderHoursRemaining, 8);
     });
 
-    test('内力低于地板时 clamp 到 internalForceMax×0.50', () {
-      // 520 × 0.85 = 442（floor）；地板 = 1000 × 0.50 = 500；442 < 500 → 500
+    test('低于旧地板的已有内力也不被重写', () {
       final ch = newChar(internalForce: 520, internalForceMax: 1000);
       final tech = newTech(progress: 200);
 
@@ -99,7 +97,7 @@ void main() {
         residueHours: 8,
       );
 
-      expect(ch.internalForce, 500); // clamp 到地板
+      expect(ch.internalForce, 520);
     });
 
     test('已在地板附近：500 × 0.85 = 425 < 地板 500 → clamp 500', () {
@@ -116,7 +114,7 @@ void main() {
       expect(ch.internalForce, 500);
     });
 
-    test('floor 精度：1001 × 0.85 = 850.85 → floor → 850', () {
+    test('奇数内力不受取整影响', () {
       final ch = newChar(internalForce: 1001, internalForceMax: 1000);
       final tech = newTech(progress: 100);
 
@@ -127,7 +125,7 @@ void main() {
         residueHours: 8,
       );
 
-      expect(r.internalForceAfter, 850); // floor 不 round
+      expect(r.internalForceAfter, 1001);
     });
   });
 
@@ -207,11 +205,11 @@ void main() {
   });
 
   // ────────────────────────────────────────────────────────────────────────────
-  // 余毒 hours 写入（再败刷新不叠加）
+  // 内息紊乱 hours 写入
   // ────────────────────────────────────────────────────────────────────────────
 
-  group('余毒 hours 写入', () {
-    test('余毒设为 residueHours 参数值', () {
+  group('内息紊乱 hours 写入', () {
+    test('紊乱设为 residueHours 参数值', () {
       final ch = newChar(residueHoursRemaining: 0);
       final tech = newTech();
 
@@ -222,11 +220,11 @@ void main() {
         residueHours: 8,
       );
 
-      expect(ch.innerDemonResidueHoursRemaining, 8.0);
+      expect(ch.innerBreathDisorderHoursRemaining, 8.0);
       expect(r.residueHoursApplied, 8.0);
     });
 
-    test('再败刷新：旧值 3h 被覆盖为 8h（不叠加）', () {
+    test('再败叠加但受本次上限约束', () {
       final ch = newChar(residueHoursRemaining: 3);
       final tech = newTech();
 
@@ -237,7 +235,7 @@ void main() {
         residueHours: 8,
       );
 
-      expect(ch.innerDemonResidueHoursRemaining, 8.0); // 覆盖，不是 3+8=11
+      expect(ch.innerBreathDisorderHoursRemaining, 8.0);
     });
 
     test('自定义 residueHours（非 8）：写入正确', () {
@@ -251,7 +249,7 @@ void main() {
         residueHours: 12,
       );
 
-      expect(ch.innerDemonResidueHoursRemaining, 12.0);
+      expect(ch.innerBreathDisorderHoursRemaining, 12.0);
     });
   });
 
@@ -272,7 +270,7 @@ void main() {
       );
 
       expect(r.internalForceBefore, 1000);
-      expect(r.internalForceAfter, 850);
+      expect(r.internalForceAfter, 1000);
       expect(r.progressBefore, 200);
       expect(r.progressAfter, 180);
       expect(r.residueHoursApplied, 8.0);

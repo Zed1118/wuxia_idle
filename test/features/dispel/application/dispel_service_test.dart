@@ -122,7 +122,7 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────────
 
   group('双重惩罚', () {
-    test('内力 5000 → 2500，progress 100 → 50（floor 精度）', () {
+    test('散功保留永久内力，progress 100 → 50', () {
       final ch = newChar(
         internalForce: 5000,
         mainTechniqueId: 10,
@@ -143,13 +143,17 @@ void main() {
         n: n,
       );
       expect(r.outcome, DispelOutcome.success);
-      expect(ch.internalForce, 2500);
+      expect(ch.internalForce, 5000);
+      expect(
+        ch.innerBreathDisorderHoursRemaining,
+        n.innerBreathDisorder.dispelHours,
+      );
       expect(mainT.cultivationProgress, 50);
       expect(mainT.role, TechniqueRole.assist);
       expect(newT.role, TechniqueRole.main);
     });
 
-    test('内力 5001 → 2500（floor，不 round）', () {
+    test('散功不会因奇数内力产生永久损失', () {
       final ch = newChar(
         internalForce: 5001,
         mainTechniqueId: 10,
@@ -164,7 +168,7 @@ void main() {
         n: n,
       );
       expect(r.outcome, DispelOutcome.success);
-      expect(ch.internalForce, 2500); // 5001*0.5=2500.5 → toInt floor → 2500
+      expect(ch.internalForce, 5001);
     });
   });
 
@@ -380,7 +384,11 @@ void main() {
         progressToNext: 1500,
       );
       final r = DispelService.applyDefeatPenalty(ch: ch, mainTech: mainT, n: n);
-      expect(ch.internalForce, 4000);
+      expect(ch.internalForce, 8000);
+      expect(
+        ch.innerBreathDisorderHoursRemaining,
+        n.innerBreathDisorder.bossDefeatHours,
+      );
       expect(mainT.cultivationProgress, 750);
       expect(mainT.cultivationLayer, CultivationLayer.daCheng);
       expect(mainT.cultivationProgressToNext, 900);
@@ -388,7 +396,7 @@ void main() {
       expect(r.oldLayer, CultivationLayer.yuanMan);
       expect(r.newLayer, CultivationLayer.daCheng);
       expect(r.internalForceBefore, 8000);
-      expect(r.internalForceAfter, 4000);
+      expect(r.internalForceAfter, 8000);
       expect(r.progressBefore, 1500);
       expect(r.didRollback, isTrue);
       // role / wasMainBeforeReset 必须不动（区别于 dispel）
@@ -407,7 +415,7 @@ void main() {
         progressToNext: 100,
       );
       final r = DispelService.applyDefeatPenalty(ch: ch, mainTech: mainT, n: n);
-      expect(ch.internalForce, 50); // 内力仍按比例扣
+      expect(ch.internalForce, 100);
       expect(mainT.cultivationProgress, 0);
       expect(mainT.cultivationLayer, CultivationLayer.chuKui);
       expect(mainT.cultivationProgressToNext, 100);
@@ -436,7 +444,7 @@ void main() {
         expect(mainT.cultivationProgress, 50);
         expect(mainT.cultivationProgressToNext, 100);
         expect(r.layersRolledBack, 1);
-        expect(ch.internalForce, 500);
+        expect(ch.internalForce, 1000);
       },
     );
 

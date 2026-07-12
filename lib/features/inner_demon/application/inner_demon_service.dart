@@ -1,5 +1,6 @@
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
+import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../shared/strings.dart';
@@ -167,13 +168,16 @@ class InnerDemonService {
     required Technique mainTech,
     required InnerDemonFailurePenalty penalty,
     required double residueHours,
+    double? disorderMaxHours,
   }) {
     final ifBefore = ch.internalForce;
     final progressBefore = mainTech.cultivationProgress;
 
-    final floor = (ch.internalForceMax * penalty.internalForceFloorPct).floor();
-    final scaled = (ch.internalForce * penalty.internalForceMultiplier).floor();
-    ch.internalForce = scaled < floor ? floor : scaled;
+    InnerBreathDisorder.apply(
+      character: ch,
+      hours: residueHours,
+      maxHours: disorderMaxHours ?? residueHours,
+    );
 
     // §5.4 惩罚单向下调：主修系数必 ≤ 1.0（内力侧已有地板兜底，progress 侧无
     // 上限守卫，此 assert 防 numbers.yaml 误配 >1.0 反涨修炼度）。
@@ -184,8 +188,6 @@ class InnerDemonService {
     mainTech.cultivationProgress =
         (mainTech.cultivationProgress * penalty.mainCultivationMultiplier)
             .floor();
-
-    ch.innerDemonResidueHoursRemaining = residueHours;
 
     return InnerDemonPenaltyResult(
       internalForceBefore: ifBefore,
