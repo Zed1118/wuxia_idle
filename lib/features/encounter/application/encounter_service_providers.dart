@@ -19,7 +19,7 @@ EncounterService? encounterService(Ref ref) {
   return EncounterService(
     isar: isarInstance,
     attributeGainCap: n.adventureAttributeLifetimeCap,
-    fortuneSensitivity: n.encounterFortuneSensitivity,
+    attributeEffects: n.attributeEffects,
   );
 }
 

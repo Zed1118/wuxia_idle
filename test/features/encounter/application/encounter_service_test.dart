@@ -84,10 +84,10 @@ EncounterDef _mkFortune({
   );
 }
 
-Attributes _mkAttrs({int fortune = 5}) {
+Attributes _mkAttrs({int enlightenment = 5, int fortune = 5}) {
   return Attributes()
     ..constitution = 5
-    ..enlightenment = 5
+    ..enlightenment = enlightenment
     ..agility = 5
     ..fortune = fortune;
 }
@@ -201,26 +201,26 @@ void main() {
       expect(result, isNull, reason: 'fortune=5 < required 8');
     });
 
-    test(
-      'trigger 满足 + rng < p → 返回 def(fortune 软概率公式 base * (1+f/20))',
-      () async {
-        final svc = EncounterService(isar: IsarSetup.instance);
-        await svc.getOrCreate(saveDataId: 1);
-        await svc.recordKill(
-          saveDataId: 1,
-          defeatedSchools: List.filled(5, TechniqueSchool.lingQiao),
-        );
-        // fortune=10, base=0.5 → p = 0.5 * (1 + 10/20) = 0.75
-        final def = _mkInsight(baseProbability: 0.5);
-        final result = await svc.evaluateTriggers(
-          saveDataId: 1,
-          attributes: _mkAttrs(fortune: 10),
-          encounters: [def],
-          rng: _FixedRng(0.7), // 0.7 < 0.75 → 触发
-        );
-        expect(result?.id, def.id);
-      },
-    );
+    test('武学领悟概率读取悟性，不读取机缘', () async {
+      final svc = EncounterService(
+        isar: IsarSetup.instance,
+        attributeEffects: GameRepository.instance.numbers.attributeEffects,
+      );
+      await svc.getOrCreate(saveDataId: 1);
+      await svc.recordKill(
+        saveDataId: 1,
+        defeatedSchools: List.filled(5, TechniqueSchool.lingQiao),
+      );
+      // enlightenment=10,fortune=3,base=0.5 → p=0.75；机缘仅满足硬门槛。
+      final def = _mkInsight(baseProbability: 0.5);
+      final result = await svc.evaluateTriggers(
+        saveDataId: 1,
+        attributes: _mkAttrs(enlightenment: 10, fortune: 3),
+        encounters: [def],
+        rng: _FixedRng(0.7), // 0.7 < 0.75 → 触发
+      );
+      expect(result?.id, def.id);
+    });
 
     test('trigger 满足但 rng >= p → 返回 null', () async {
       final svc = EncounterService(isar: IsarSetup.instance);

@@ -229,11 +229,6 @@ class NumbersConfig {
   /// #4③ B2:接入 [EncounterService.attributeGainCap],消除该 yaml key 零消费。
   final int adventureAttributeLifetimeCap;
 
-  /// 奇遇 fortune 软概率灵敏度(numbers.yaml `encounter.fortune_sensitivity`,C-W14-1 Q3)。
-  /// p = baseProbability * (1 + fortune / sensitivity)。
-  /// #4③ B5:从 [EncounterService] 硬编码 20.0 外置。
-  final double encounterFortuneSensitivity;
-
   /// 技能装配大招槽阈值(numbers.yaml `skill_loadout.ultimate_power_threshold`,GDD §6)。
   /// 主修心法招 powerMultiplier ≥ 此值时自动填入大招槽，由 [SkillLoadout.autoFill] 消费。
   final int loadoutUltimatePowerThreshold;
@@ -312,7 +307,6 @@ class NumbersConfig {
     required this.sectEvent,
     required this.sectManagement,
     required this.adventureAttributeLifetimeCap,
-    required this.encounterFortuneSensitivity,
     required this.loadoutUltimatePowerThreshold,
     required this.cycleEvolution,
     required this.passiveIdle,
@@ -497,11 +491,6 @@ class NumbersConfig {
                   as num?)
               ?.toInt() ??
           5,
-      encounterFortuneSensitivity:
-          ((y['encounter'] as Map<String, dynamic>?)?['fortune_sensitivity']
-                  as num?)
-              ?.toDouble() ??
-          20.0,
       loadoutUltimatePowerThreshold:
           ((y['skill_loadout']
                       as Map<String, dynamic>?)?['ultimate_power_threshold']

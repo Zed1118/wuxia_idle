@@ -4,6 +4,7 @@ import 'package:isar_community/isar.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/attributes.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/skill_unlock_entry.dart';
@@ -106,15 +107,17 @@ class EncounterService {
     required this.isar,
     this.attributeGainCap = 5,
     this.fortuneSensitivity = 20.0,
+    this.attributeEffects,
   });
 
   final Isar isar;
   final int attributeGainCap;
 
-  /// fortune 软概率灵敏度(numbers.yaml `encounter.fortune_sensitivity`,默认 20.0)。
-  /// p = baseProbability * (1 + fortune / fortuneSensitivity)。
-  /// #4③ B5:gameplay provider 从 NumbersConfig 注入,消除硬编码 20.0。
+  /// 旧测试 fixture 的兼容参数；正式玩法统一使用 [attributeEffects]。
   final double fortuneSensitivity;
+
+  /// 正式玩法必须注入统一属性规则；null 仅保留旧测试 fixture 的兼容路径。
+  final AttributeEffectRules? attributeEffects;
 
   /// 获取或创建进度行。
   Future<EncounterProgress> getOrCreate({required int saveDataId}) async {
@@ -231,8 +234,16 @@ class EncounterService {
       if (triggered.contains(def.id)) continue;
       if (!_checkTrigger(def, progress, attributes, festivalToday)) continue;
 
-      final p =
-          def.baseProbability * (1 + attributes.fortune / fortuneSensitivity);
+      final rules = attributeEffects;
+      final p = rules == null
+          ? def.baseProbability * (1 + attributes.fortune / fortuneSensitivity)
+          : AttributeEffectPolicy(rules).encounterProbability(
+              base: def.baseProbability,
+              source: def.type == EncounterType.techniqueInsight
+                  ? EncounterProbabilitySource.enlightenment
+                  : EncounterProbabilitySource.fortune,
+              attributes: attributes,
+            );
       if (rng.nextDouble() < p) {
         return def;
       }

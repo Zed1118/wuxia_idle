@@ -42,7 +42,7 @@ Future<void> runEncounterHookAfterVictory({
   final svc = EncounterService(
     isar: isar,
     attributeGainCap: n.adventureAttributeLifetimeCap,
-    fortuneSensitivity: n.encounterFortuneSensitivity,
+    attributeEffects: n.attributeEffects,
   );
   // W13 教训:race 防御,ensure getOrCreate
   await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);

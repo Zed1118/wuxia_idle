@@ -22,8 +22,7 @@ SeclusionService? seclusionService(Ref ref) {
       isar: isarInstance,
       attributeGainCap:
           GameRepository.instance.numbers.adventureAttributeLifetimeCap,
-      fortuneSensitivity:
-          GameRepository.instance.numbers.encounterFortuneSensitivity,
+      attributeEffects: GameRepository.instance.numbers.attributeEffects,
     ),
   );
 }
