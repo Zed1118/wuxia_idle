@@ -13,7 +13,7 @@ import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
 
-/// M6 Task 7：余毒在身时闭关内力产出 ×0.80，累计满 8h 清余毒。
+/// 内息紊乱会随闭关时长恢复，但不再折减闭关内力产出。
 void main() {
   const kSaveDataId = 1;
   const kCharId = 20;
@@ -61,10 +61,10 @@ void main() {
   });
 
   // ─────────────────────────────────────────────────────────────────────────
-  // (a) computeOutputs 纯函数：residueInternalForceMultiplier 参数
+  // (a) computeOutputs 纯函数：内力产出基线
   // ─────────────────────────────────────────────────────────────────────────
 
-  group('computeOutputs residueInternalForceMultiplier', () {
+  group('computeOutputs 内力产出基线', () {
     RetreatSession makeSession() {
       return RetreatSession()
         ..id = 1
@@ -77,7 +77,7 @@ void main() {
         ..actualRewards = [];
     }
 
-    test('默认 residueInternalForceMultiplier=1.0 → 内力产出不变（回归）', () {
+    test('无额外折减参数 → 内力产出不变（回归）', () {
       final session = makeSession();
       final now = DateTime(2026, 5, 11, 14, 0); // startedAt + 4h
       final out = SeclusionService.computeOutputs(
@@ -86,87 +86,72 @@ void main() {
         config: GameRepository.instance.numbers.retreat,
         maps: GameRepository.instance.seclusionMaps,
         now: now,
-        // 不传 residueInternalForceMultiplier → 默认 1.0
       );
       // 山林 base=5, internalForceGrowth=1.0, xueTu scale=1.0, 4h, 无子时/节气
       // floor(5 × 1.0 × 4 × 1.0 × 1.0 × 1.0 × 1.0) = 20
       expect(out.internalForcePoints, 20, reason: '默认 1.0 乘数：基线 20 不变');
     });
 
-    test(
-      'residueInternalForceMultiplier=0.80 → internalForcePoints = floor(基线 × 0.80)',
-      () {
-        final session = makeSession();
-        final now = DateTime(2026, 5, 11, 14, 0);
+    test('内息紊乱不会通过额外参数折减 internalForcePoints', () {
+      final session = makeSession();
+      final now = DateTime(2026, 5, 11, 14, 0);
 
-        final outBase = SeclusionService.computeOutputs(
-          session: session,
-          charRealmTier: RealmTier.xueTu,
-          config: GameRepository.instance.numbers.retreat,
-          maps: GameRepository.instance.seclusionMaps,
-          now: now,
-          residueInternalForceMultiplier: 1.0,
-        );
+      final outBase = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
 
-        final outDebuff = SeclusionService.computeOutputs(
-          session: session,
-          charRealmTier: RealmTier.xueTu,
-          config: GameRepository.instance.numbers.retreat,
-          maps: GameRepository.instance.seclusionMaps,
-          now: now,
-          residueInternalForceMultiplier: 0.80,
-        );
+      final outDebuff = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
 
-        expect(
-          outDebuff.internalForcePoints,
-          (outBase.internalForcePoints * 0.80).floor(),
-          reason: '余毒 ×0.80 → floor(20 × 0.80) = 16',
-        );
-        expect(outDebuff.internalForcePoints, 16);
-      },
-    );
+      expect(
+        outDebuff.internalForcePoints,
+        outBase.internalForcePoints,
+        reason: '内息紊乱只影响状态恢复，不折减内力产出',
+      );
+      expect(outDebuff.internalForcePoints, 20);
+    });
 
-    test(
-      'residueInternalForceMultiplier=0.80 不影响 mojianshi / experiencePoints / techniqueLearnPoints',
-      () {
-        final session = makeSession();
-        final now = DateTime(2026, 5, 11, 14, 0);
+    test('重复结算输入的其他产出维度保持一致', () {
+      final session = makeSession();
+      final now = DateTime(2026, 5, 11, 14, 0);
 
-        final outBase = SeclusionService.computeOutputs(
-          session: session,
-          charRealmTier: RealmTier.xueTu,
-          config: GameRepository.instance.numbers.retreat,
-          maps: GameRepository.instance.seclusionMaps,
-          now: now,
-          residueInternalForceMultiplier: 1.0,
-        );
+      final outBase = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
 
-        final outDebuff = SeclusionService.computeOutputs(
-          session: session,
-          charRealmTier: RealmTier.xueTu,
-          config: GameRepository.instance.numbers.retreat,
-          maps: GameRepository.instance.seclusionMaps,
-          now: now,
-          residueInternalForceMultiplier: 0.80,
-        );
+      final outDebuff = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
 
-        expect(
-          outDebuff.mojianshi,
-          outBase.mojianshi,
-          reason: '余毒不影响 mojianshi',
-        );
-        expect(
-          outDebuff.experiencePoints,
-          outBase.experiencePoints,
-          reason: '余毒不影响 experiencePoints',
-        );
-        expect(
-          outDebuff.techniqueLearnPoints,
-          outBase.techniqueLearnPoints,
-          reason: '余毒不影响 techniqueLearnPoints',
-        );
-      },
-    );
+      expect(outDebuff.mojianshi, outBase.mojianshi, reason: '余毒不影响 mojianshi');
+      expect(
+        outDebuff.experiencePoints,
+        outBase.experiencePoints,
+        reason: '余毒不影响 experiencePoints',
+      );
+      expect(
+        outDebuff.techniqueLearnPoints,
+        outBase.techniqueLearnPoints,
+        reason: '余毒不影响 techniqueLearnPoints',
+      );
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────

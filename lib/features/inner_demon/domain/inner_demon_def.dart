@@ -7,7 +7,6 @@ import '../../../data/defs/boss_vulnerability_def.dart';
 ///   - mirror_buff_per_stage：各关镜像玩家 character 强化比例
 ///   - mirror_caps：§5.4 数值红线 cap（防玩家 build 超时镜像也超）
 ///   - failure_penalty：散功 ×0.5 阉割版（GDD §6 半惩罚）
-///   - residue_debuff：心魔余毒 buff 效果（闭关 8h 清）
 ///   - unlock_triggers：触发关 victory → 下一关 unlock 链
 ///   - required_realm_layer：玩家当前境界达到该 layer 才能进入
 ///
@@ -22,9 +21,6 @@ class InnerDemonDef {
 
   /// 失败惩罚（散功 ×0.5 阉割版）。
   final InnerDemonFailurePenalty failurePenalty;
-
-  /// 心魔余毒 buff 效果。
-  final InnerDemonResidueDebuff residueDebuff;
 
   /// 触发关 victory → 下一关 unlock 链（如 stage_06_05 → stage_inner_demon_01）。
   final Map<String, String> unlockTriggers;
@@ -59,7 +55,6 @@ class InnerDemonDef {
     required this.mirrorBuffPerStage,
     required this.mirrorCaps,
     required this.failurePenalty,
-    required this.residueDebuff,
     required this.unlockTriggers,
     required this.requiredRealmLayer,
     this.mirrorVulnerabilityPerStage = const {},
@@ -87,10 +82,6 @@ class InnerDemonDef {
       debuffId: 'inner_demon_residue',
       debuffClearViaRetreatHours: 8,
       internalForceFloorPct: 0.50,
-    ),
-    residueDebuff: InnerDemonResidueDebuff(
-      battleOutputMultiplier: 0.95,
-      internalForceRecoveryMultiplier: 0.80,
     ),
     unlockTriggers: {},
     requiredRealmLayer: {},
@@ -181,9 +172,6 @@ class InnerDemonDef {
       ),
       failurePenalty: InnerDemonFailurePenalty.fromYaml(
         y['failure_penalty'] as Map<String, dynamic>? ?? const {},
-      ),
-      residueDebuff: InnerDemonResidueDebuff.fromYaml(
-        y['residue_debuff'] as Map<String, dynamic>? ?? const {},
       ),
       unlockTriggers: unlocks,
       requiredRealmLayer: required,
@@ -277,28 +265,5 @@ class InnerDemonFailurePenalty {
             (y['debuff_clear_via_retreat_hours'] as num?)?.toInt() ?? 8,
         internalForceFloorPct:
             (y['internal_force_floor_pct'] as num?)?.toDouble() ?? 0.50,
-      );
-}
-
-/// 心魔余毒 buff 效果（闭关 8h 清）。
-class InnerDemonResidueDebuff {
-  /// 战斗输出乘数（0.95 = -5%）。
-  final double battleOutputMultiplier;
-
-  /// 内力恢复乘数（0.80 = -20%）。
-  final double internalForceRecoveryMultiplier;
-
-  const InnerDemonResidueDebuff({
-    required this.battleOutputMultiplier,
-    required this.internalForceRecoveryMultiplier,
-  });
-
-  factory InnerDemonResidueDebuff.fromYaml(Map<String, dynamic> y) =>
-      InnerDemonResidueDebuff(
-        battleOutputMultiplier:
-            (y['battle_output_multiplier'] as num?)?.toDouble() ?? 0.95,
-        internalForceRecoveryMultiplier:
-            (y['internal_force_recovery_multiplier'] as num?)?.toDouble() ??
-            0.80,
       );
 }

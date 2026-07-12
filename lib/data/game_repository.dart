@@ -1027,6 +1027,7 @@ class GameRepository {
   /// P2-a 后空池 + 有 unlockSkill 引用 → fail-fast,不再静默跳过。
   void _enforceEncounterSkillRedLines() {
     final skillPowerMax = numbers.combat.redLines.skillPowerMultiplierMax;
+    final qiDeltaAbsCap = numbers.combat.qi.deltaAbsCap;
     // GDD §5.4 红线:全游戏招式 powerMultiplier ≤ 配置上限。覆盖 skills.yaml +
     // encounter_skills.yaml 全部 skillDefs——此前该上限只在下方 encounterSkillIds
     // 循环内校验,普通心法招(skills.yaml)越界会静默 load(审计 C-F4 缺口)。
@@ -1035,6 +1036,12 @@ class GameRepository {
         throw StateError(
           'skill ${s.id} powerMultiplier=${s.powerMultiplier} > '
           '$skillPowerMax (GDD §5.4)',
+        );
+      }
+      if (s.qiDelta.abs() > qiDeltaAbsCap) {
+        throw StateError(
+          'skill ${s.id} qiDelta=${s.qiDelta} abs > '
+          '$qiDeltaAbsCap (numbers.combat.qi.deltaAbsCap)',
         );
       }
     }

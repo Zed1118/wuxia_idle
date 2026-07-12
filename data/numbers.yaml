@@ -1645,10 +1645,6 @@ inner_demon:
     debuff_id: inner_demon_residue
     debuff_clear_via_retreat_hours: 8
 
-  residue_debuff:                    # 心魔余毒 buff 效果（闭关 8h 清）
-    battle_output_multiplier: 0.95   # 战斗输出 -5%
-    internal_force_recovery_multiplier: 0.80  # 内力恢复 -20%
-
   unlock_triggers:                   # 触发关 victory → 下一关 unlock 链
     stage_06_05: stage_inner_demon_01
     stage_inner_demon_01: stage_inner_demon_02

@@ -67,4 +67,26 @@ void main() {
       }
     }
   });
+
+  test(
+    'loadAllDefs rejects a skill whose qi delta exceeds the configured cap',
+    () {
+      Future<String> brokenLoader(String path) async {
+        final original = await File(path).readAsString();
+        if (path != 'data/skills.yaml') return original;
+        return original.replaceFirst('qiDelta: 20', 'qiDelta: 101');
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            allOf(contains('qiDelta=101'), contains('> 100')),
+          ),
+        ),
+      );
+    },
+  );
 }
