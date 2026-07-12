@@ -130,8 +130,8 @@ combat:
   # --- 暴击率与暴击伤害 ---
   # 暴击率主要由身法和心法决定，灵巧流派额外 +20%（GDD §4.4）
   critical:
-    base_rate: 0.05                  # 基础暴击率 5%
-    agility_per_point_rate: 0.005    # 每点身法 +0.5% 暴击率
+    base_rate: 0.075                 # 基础暴击率 7.5%（身法不再影响暴击）
+    agility_per_point_rate: 0.0      # 兼容旧配置结构；身法职责仅速度与闪避
     max_rate: 0.50                   # 暴击率硬上限 50%
     base_damage_multiplier: 1.5      # 暴击伤害基础倍率
     max_damage_multiplier: 2.5       # 暴击伤害信息性上限（当前不作运行时 clamp；

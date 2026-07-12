@@ -1,4 +1,5 @@
 import '../../../core/domain/character.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../battle/domain/battle_state.dart';
 import '../domain/injury_config.dart';
 
@@ -32,6 +33,7 @@ class InjuryService {
     required List<Character> participatingCharacters,
     required BattleState finalState,
     required InjuryConfig config,
+    required AttributeEffectRules attributeEffects,
     required bool isVictory,
     required bool isHardFight,
   }) {
@@ -42,10 +44,16 @@ class InjuryService {
 
     if (!isHardFight) return;
 
+    final policy = AttributeEffectPolicy(attributeEffects);
+    double recoveryHoursFor(Character character) => policy.heavyInjuryHours(
+      baseHours: config.heavyRecoveryHours,
+      constitution: character.attributes.constitution,
+    );
+
     if (!isVictory) {
       // 硬仗战败：全员重伤。
       for (final ch in participatingCharacters) {
-        applyHeavyInjury(ch, recoveryHours: config.heavyRecoveryHours);
+        applyHeavyInjury(ch, recoveryHours: recoveryHoursFor(ch));
       }
       return;
     }
@@ -56,7 +64,7 @@ class InjuryService {
       if (bc == null) continue;
       if (bc.isAlive &&
           bc.currentHp < bc.maxHp * config.heavyWinHpThresholdPct) {
-        applyHeavyInjury(ch, recoveryHours: config.heavyRecoveryHours);
+        applyHeavyInjury(ch, recoveryHours: recoveryHoursFor(ch));
       }
     }
   }

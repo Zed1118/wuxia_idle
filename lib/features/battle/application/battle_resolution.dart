@@ -287,6 +287,7 @@ class BattleResolutionService {
         participatingCharacters: participatingCharacters,
         finalState: finalState,
         config: numbersConfig.injury,
+        attributeEffects: numbersConfig.attributeEffects,
         isVictory: resolvedVictory,
         isHardFight: isHardFight,
       );

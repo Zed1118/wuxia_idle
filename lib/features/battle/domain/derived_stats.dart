@@ -174,7 +174,7 @@ class CharacterDerivedStats {
     return sp.toInt();
   }
 
-  /// 暴击率 = baseRate + 身法*perPointRate（再加灵巧流派 +20% bonus），
+  /// 暴击率 = baseRate（再加灵巧流派 +20% bonus），
   /// **最后**统一 clamp 到 [0, maxRate]（phase1_tasks T09 §514）。
   ///
   /// `school` 取自角色当前主修流派（[Character.school]，可空：无主修时按基础算）。
@@ -188,7 +188,7 @@ class CharacterDerivedStats {
     bool founderBuffActive = false,
   }) {
     final cfg = n.combat.critical;
-    var rate = cfg.baseRate + c.attributes.agility * cfg.agilityPerPointRate;
+    var rate = cfg.baseRate;
     if (c.school == TechniqueSchool.lingQiao) {
       rate += cfg.lingqiaoCriticalBonus;
     }
