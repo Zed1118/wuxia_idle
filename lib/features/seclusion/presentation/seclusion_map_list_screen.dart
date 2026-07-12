@@ -78,7 +78,6 @@ class _SeclusionMapListScreenState
             session: active,
             mapDef: def,
             characterId: widget.characterId,
-            charRealmTier: widget.charRealmTier,
           ),
         ),
       );

@@ -62,7 +62,6 @@ Future<void> maybeShowOfflineRecap({
                   session: session,
                   mapDef: mapDef,
                   characterId: ch?.id ?? id,
-                  charRealmTier: realmTier,
                 ),
               ),
             );

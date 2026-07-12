@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/character_providers.dart';
-import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -111,7 +110,6 @@ class MainMenuRetreatBanner extends ConsumerWidget {
           session: session,
           mapDef: mapDef,
           characterId: ch?.id ?? id,
-          charRealmTier: ch?.realmTier ?? RealmTier.xueTu,
         ),
       ),
     );

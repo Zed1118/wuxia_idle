@@ -16,15 +16,20 @@ void main() {
     }
   });
 
-  RetreatSession fakeSession() => RetreatSession()
+  RetreatSession fakeSession({DateTime? startedAt}) => RetreatSession()
     ..saveDataId = 1
     ..mapType = RetreatMapType.shanLin
     ..durationHours = 4
-    ..startedAt = DateTime.now()
+    ..realmTierAtStart = RealmTier.xueTu
+    ..startedAt = startedAt ?? DateTime.now()
     ..status = RetreatStatus.active;
 
-  Future<void> pumpActive(WidgetTester tester) async {
-    await tester.binding.setSurfaceSize(const Size(1024, 1400));
+  Future<void> pumpActive(
+    WidgetTester tester, {
+    DateTime? startedAt,
+    Size size = const Size(1280, 720),
+  }) async {
+    await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final mapDef = GameRepository.instance.getSeclusionMap(
       RetreatMapType.shanLin,
@@ -38,10 +43,9 @@ void main() {
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => ActiveRetreatScreen(
-                      session: fakeSession(),
+                      session: fakeSession(startedAt: startedAt),
                       mapDef: mapDef,
                       characterId: 1,
-                      charRealmTier: RealmTier.xueTu,
                     ),
                   ),
                 ),
@@ -73,16 +77,25 @@ void main() {
       find.text(UiStrings.activeRetreatStatusLocation(mapDef.mapName)),
       findsOneWidget,
     );
-    expect(find.textContaining('已闭关：'), findsOneWidget);
-    expect(find.text(UiStrings.activeRetreatPlannedHours(4)), findsOneWidget);
+    expect(find.textContaining('已闭关：'), findsWidgets);
+    expect(find.text(UiStrings.activeRetreatPlannedHours(4)), findsNothing);
+    expect(
+      find.text(
+        UiStrings.activeRetreatEquipmentRolls(
+          0,
+          GameRepository.instance.numbers.retreat.equipmentRollMaxCount,
+        ),
+      ),
+      findsOneWidget,
+    );
     expect(find.text(UiStrings.activeRetreatExpectedTypes), findsOneWidget);
     expect(
       find.textContaining(UiStrings.activeRetreatRewardMojianshi),
-      findsOneWidget,
+      findsWidgets,
     );
     expect(
       find.textContaining(UiStrings.activeRetreatRewardExperience),
-      findsOneWidget,
+      findsWidgets,
     );
   });
 
@@ -92,5 +105,31 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pumpAndSettle();
     expect(find.byType(ActiveRetreatScreen), findsNothing);
+  });
+
+  testWidgets('Enter 打开收功确认', (tester) async {
+    await pumpActive(tester);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.activeRetreatConfirmTitle), findsOneWidget);
+  });
+
+  testWidgets('10 天闭关在 1440×900 显示 72h 圆满与 168h 挂机接续', (tester) async {
+    await pumpActive(
+      tester,
+      startedAt: DateTime.now().subtract(const Duration(days: 10)),
+      size: const Size(1440, 900),
+    );
+
+    expect(find.text(UiStrings.activeRetreatFullRateComplete), findsWidgets);
+    expect(
+      find.text(UiStrings.activeRetreatPassiveOverflow('168.0')),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.activeRetreatEquipmentRolls(6, 6)),
+      findsWidgets,
+    );
+    expect(tester.takeException(), isNull);
   });
 }

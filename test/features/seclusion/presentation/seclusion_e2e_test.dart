@@ -98,6 +98,7 @@ void main() {
       ..saveDataId = 1
       ..mapType = mapType
       ..durationHours = durationHours
+      ..realmTierAtStart = RealmTier.xueTu
       ..startedAt =
           startedAt ?? DateTime.now().subtract(const Duration(hours: 2))
       ..completedAt = null
@@ -110,6 +111,8 @@ void main() {
     required _FakeSeclusionService fake,
     RealmTier charRealmTier = RealmTier.xueTu,
   }) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
         overrides: [seclusionServiceProvider.overrideWithValue(fake)],
@@ -138,10 +141,10 @@ void main() {
     expect(find.byType(SeclusionSetupScreen), findsOneWidget);
     // setup 屏可见开始按钮
     expect(find.text(UiStrings.seclusionSetupStartButton), findsOneWidget);
-    // P1-6:setup 屏前瞻提示离线最长计入时长。
+    expect(find.text(UiStrings.seclusionDurationLabel(12)), findsNothing);
     expect(
       find.text(
-        UiStrings.seclusionCapHint(
+        UiStrings.seclusionOpenEndedRule(
           GameRepository.instance.numbers.retreat.capHours,
         ),
       ),
@@ -177,7 +180,7 @@ void main() {
 
   // ─── e2e #3 ────────────────────────────────────────────────────────────────
 
-  testWidgets('e2e: active(已 done)点收功 → pushReplacement ResultScreen', (
+  testWidgets('e2e: active 点收功并确认 → pushReplacement ResultScreen', (
     tester,
   ) async {
     // session 已超时(2h elapsed > 1h plan → done=true)
@@ -216,7 +219,6 @@ void main() {
             session: session,
             mapDef: def,
             characterId: 1,
-            charRealmTier: RealmTier.xueTu,
           ),
         ),
       ),
@@ -224,10 +226,14 @@ void main() {
     await tester.pump();
 
     expect(find.byType(ActiveRetreatScreen), findsOneWidget);
-    // done=true 时按钮文案为「收功」
     expect(find.text(UiStrings.activeRetreatCollect), findsOneWidget);
 
+    await tester.ensureVisible(find.text(UiStrings.activeRetreatCollect));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(UiStrings.activeRetreatCollect));
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.activeRetreatConfirmTitle), findsOneWidget);
+    await tester.tap(find.text(UiStrings.activeRetreatConfirm));
     await tester.pumpAndSettle();
 
     expect(fake.completeCallCount, 1);
@@ -237,9 +243,7 @@ void main() {
 
   // ─── e2e #4 ────────────────────────────────────────────────────────────────
 
-  testWidgets('e2e: active(未 done)点提前收功 → confirm dialog → 确认后导航', (
-    tester,
-  ) async {
+  testWidgets('e2e: active 收功可取消，再次确认后导航', (tester) async {
     // session 未超时(0.5h elapsed < 1h plan)
     final session = mkSession(
       startedAt: DateTime.now().subtract(const Duration(minutes: 30)),
@@ -279,17 +283,17 @@ void main() {
             session: session,
             mapDef: def,
             characterId: 1,
-            charRealmTier: RealmTier.xueTu,
           ),
         ),
       ),
     );
     await tester.pump();
 
-    // 未 done 时按钮文案为「提前收功」
-    expect(find.text(UiStrings.activeRetreatEarlyCollect), findsOneWidget);
+    expect(find.text(UiStrings.activeRetreatCollect), findsOneWidget);
 
-    await tester.tap(find.text(UiStrings.activeRetreatEarlyCollect));
+    await tester.ensureVisible(find.text(UiStrings.activeRetreatCollect));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(UiStrings.activeRetreatCollect));
     await tester.pumpAndSettle();
 
     // 弹出 confirm dialog
@@ -304,7 +308,7 @@ void main() {
     expect(find.byType(ActiveRetreatScreen), findsOneWidget);
 
     // 再次点击 + 确认 → 导航到 Result
-    await tester.tap(find.text(UiStrings.activeRetreatEarlyCollect));
+    await tester.tap(find.text(UiStrings.activeRetreatCollect));
     await tester.pumpAndSettle();
     await tester.tap(find.text(UiStrings.activeRetreatConfirm));
     await tester.pumpAndSettle();

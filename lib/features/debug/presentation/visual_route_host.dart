@@ -238,6 +238,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         ..saveDataId = IsarSetup.currentSlotId
         ..mapType = def.mapType
         ..durationHours = 4
+        ..realmTierAtStart = RealmTier.zongShi
         ..startedAt = DateTime.now().subtract(const Duration(minutes: 82))
         ..completedAt = null
         ..status = RetreatStatus.active
@@ -272,12 +273,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         ..completedAt = null
         ..status = RetreatStatus.active
         ..actualRewards = [];
-      return ActiveRetreatScreen(
-        session: session,
-        mapDef: def,
-        characterId: 1,
-        charRealmTier: RealmTier.zongShi,
-      );
+      return ActiveRetreatScreen(session: session, mapDef: def, characterId: 1);
     case VisualRoute.seclusionResult:
       final def = GameRepository.instance.getSeclusionMap(
         RetreatMapType.guJianZhong,

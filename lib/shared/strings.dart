@@ -1710,8 +1710,15 @@ class UiStrings {
       '$seclusionMapActive · 剩余 $remaining';
   static String seclusionMapActiveBannerDone() => '$activeRetreatDone · 可收功';
 
-  static const String seclusionSetupTitle = '选择时长';
+  static const String seclusionSetupTitle = '闭关安排';
   static const String seclusionSetupStartButton = '开始闭关';
+  static const String seclusionOpenEndedTitle = '此行不设归期';
+  static String seclusionOpenEndedRule(int fullRateHours) =>
+      '开始后将持续修炼，由你上线后主动收功。前 $fullRateHours 小时按当前地图完整结算。';
+  static String seclusionOpenEndedOverflowRule(
+    int intervalHours,
+    int maxRolls,
+  ) => '之后的时间继续累积普通挂机收益，不设上限。每满 $intervalHours 小时获得一次装备判定，最多 $maxRolls 次。';
   static String seclusionHourlyPreview(double scale) =>
       '每小时预估产出（境界加成 ×${scale.toStringAsFixed(2)}）';
   static String seclusionEstimatedMojianshi(int amount) => '预估磨剑石 ×$amount';
@@ -1735,6 +1742,28 @@ class UiStrings {
   static const String activeRetreatStatusCardTitle = '闭关状态';
   static String activeRetreatStatusLocation(String mapName) => '地点：$mapName';
   static String activeRetreatElapsed(String elapsed) => '已闭关：$elapsed';
+  static String activeRetreatStartedAt(String start) => '入定于 $start';
+  static String activeRetreatFullRateProgress(String hours, int cap) =>
+      '地图收益：$hours / $cap 小时';
+  static const String activeRetreatFullRateComplete = '地图收益已圆满';
+  static String activeRetreatPassiveOverflow(String hours) =>
+      '普通挂机接续：$hours 小时';
+  static String activeRetreatEquipmentRolls(int count, int max) =>
+      '装备机缘：$count / $max 次';
+  static String activeRetreatNextEquipmentNode(String hours) =>
+      '距下次装备判定：$hours 小时';
+  static String activeRetreatGuaranteedPreview(
+    int mojianshi,
+    int silver,
+    int experience,
+  ) => '当前必得：磨剑石 $mojianshi · 银两 $silver · 修为 $experience';
+  static String activeRetreatTierWeights(
+    int hour,
+    int base,
+    int current,
+    int above1,
+    int above2,
+  ) => '$hour 小时节点品阶：基准 $base% · 当前 $current% · +1 $above1% · +2 $above2%';
   static String activeRetreatPlannedHours(int hours) => '计划：$hours 小时';
   static const String activeRetreatExpectedTypes = '预计收获';
   static const String activeRetreatRewardMojianshi = '磨剑石';
@@ -1745,7 +1774,7 @@ class UiStrings {
   static const String activeRetreatRewardEquipment = '装备机缘';
   static String activeRetreatRewardTypes(String labels) => labels;
   static String activeRetreatProgressPct(int pct) => '$pct%';
-  static const String activeRetreatConfirmTitle = '确认提前收功';
+  static const String activeRetreatConfirmTitle = '确认收功';
   static const String activeRetreatConfirmBody = '现在收功将按实际时间结算，是否确认？';
   static const String activeRetreatConfirm = '确认';
   static const String activeRetreatCancel = '取消';
