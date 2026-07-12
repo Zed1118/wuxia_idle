@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,6 +15,14 @@ void main() {
     if (!GameRepository.isLoaded) {
       await loadTestGameRepository();
     }
+  });
+
+  test('横幅复用闭关结算的唯一时长切分函数', () async {
+    final source = await File(
+      'lib/features/main_menu/presentation/main_menu_retreat_banner.dart',
+    ).readAsString();
+
+    expect(source, contains('RetreatSettlementCalculator.splitHours'));
   });
 
   RetreatSession fakeSession({DateTime? startedAt, int durationHours = 4}) =>

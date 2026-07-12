@@ -81,7 +81,7 @@ class DamageCalculator {
       rng: ctx.rng ?? Random(),
       forceCritical: ctx.forceCritical,
       proficiencyDamageMult: profMult,
-      outputMultiplier: 1.0, // Character 路径无余毒 debuff,固定 1.0
+      outputMultiplier: 1.0, // Character 路径无临时输出修正，固定 1.0
     );
   }
 
@@ -125,7 +125,7 @@ class DamageCalculator {
     /// 0.5 时 effectiveCritMult = 1 + (critMult-1)*0.5，仅影响暴击增量部分。
     double defenderCritDamageTakenMult = 1.0,
 
-    /// M6 心魔余毒:战斗输出乘数(default 1.0=无余毒,零回归)。
+    /// 战斗输出乘数(default 1.0，零回归)。
     /// 末端乘 mainDamage，与 attackPowerMultiplier / proficiencyDamageMult 并列。
     /// 值由调用方从 BattleCharacter.outputMultiplier 传入，本函数不硬编码 0.95。
     double outputMultiplier = 1.0,
@@ -250,7 +250,7 @@ class DamageCalculator {
         realmMult *
         attackPowerMultiplier *
         proficiencyDamageMult * // 可玩性 P1a:熟练度综合倍率(已含 130% cap)
-        outputMultiplier * // M6 余毒:输出乘数(default 1.0=无余毒)
+        outputMultiplier * // 临时状态输出乘数(default 1.0)
         defenderSchoolDamageMult * // 批二②:弱点/抗性乘子(default 1.0=无)
         defenderWardMult; // 护法结界×脆弱窗口 合并减伤(default 1.0=两者皆无)
     final mainDamage = raw.toInt();
@@ -286,7 +286,7 @@ class DamageCalculator {
         ' * ${_fmt(realmMult)}'
         '${attackPowerMultiplier != 1.0 ? ' * ${_fmt(attackPowerMultiplier)}' : ''}'
         '${proficiencyDamageMult != 1.0 ? ' * ${_fmt(proficiencyDamageMult)}' : ''}'
-        '${outputMultiplier != 1.0 ? ' * ${_fmt(outputMultiplier)}(余毒)' : ''}'
+        '${outputMultiplier != 1.0 ? ' * ${_fmt(outputMultiplier)}(输出修正)' : ''}'
         '${defenderSchoolDamageMult != 1.0 ? ' * ${_fmt(defenderSchoolDamageMult)}(弱点/抗性)' : ''}'
         '${defenderWardMult != 1.0 ? ' * ${_fmt(defenderWardMult)}(防御乘子)' : ''}'
         ' = $mainDamage'

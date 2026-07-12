@@ -33,10 +33,6 @@ InnerDemonDef _fullDef() => const InnerDemonDef(
     debuffId: 'inner_demon_residue',
     debuffClearViaRetreatHours: 8,
   ),
-  residueDebuff: InnerDemonResidueDebuff(
-    battleOutputMultiplier: 0.95,
-    internalForceRecoveryMultiplier: 0.80,
-  ),
   unlockTriggers: {
     'stage_06_05': 'stage_inner_demon_01',
     'stage_inner_demon_01': 'stage_inner_demon_02',
@@ -225,10 +221,6 @@ void main() {
           'debuff_id': 'inner_demon_residue',
           'debuff_clear_via_retreat_hours': 8,
         },
-        'residue_debuff': {
-          'battle_output_multiplier': 0.95,
-          'internal_force_recovery_multiplier': 0.80,
-        },
         'unlock_triggers': {'stage_06_05': 'stage_inner_demon_01'},
         'required_realm_layer': {
           'stage_inner_demon_01': {'tier': 'wuSheng', 'layer': 'qiMeng'},
@@ -241,7 +233,6 @@ void main() {
       expect(def.mirrorCaps.hpMax, 20000);
       expect(def.failurePenalty.internalForceMultiplier, 0.85);
       expect(def.failurePenalty.debuffId, 'inner_demon_residue');
-      expect(def.residueDebuff.battleOutputMultiplier, 0.95);
       expect(def.unlockTriggers['stage_06_05'], 'stage_inner_demon_01');
       expect(
         def.requiredRealmLayer['stage_inner_demon_01'],

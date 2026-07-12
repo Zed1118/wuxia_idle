@@ -6,6 +6,7 @@ import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../seclusion/application/retreat_settlement_calculator.dart';
 import '../../seclusion/domain/retreat_session.dart';
 import '../../seclusion/domain/seclusion_map_def.dart';
 import '../../seclusion/presentation/active_retreat_screen.dart';
@@ -28,9 +29,13 @@ class MainMenuRetreatBanner extends ConsumerWidget {
     final cap = GameRepository.instance.numbers.retreat.capHours;
     final elapsed =
         DateTime.now().difference(session.startedAt).inSeconds / 3600.0;
-    final safeElapsed = elapsed < 0 ? 0.0 : elapsed;
-    final retreatHours = safeElapsed > cap ? cap.toDouble() : safeElapsed;
-    final passiveHours = safeElapsed - retreatHours;
+    final split = RetreatSettlementCalculator.splitHours(
+      elapsedHours: elapsed,
+      fullRateHours: cap.toDouble(),
+    );
+    final safeElapsed = split.retreatHours + split.passiveHours;
+    final retreatHours = split.retreatHours;
+    final passiveHours = split.passiveHours;
     final phase = passiveHours > 0
         ? UiStrings.mainMenuRetreatPassivePhase(passiveHours.toStringAsFixed(1))
         : UiStrings.mainMenuRetreatFullRatePhase(

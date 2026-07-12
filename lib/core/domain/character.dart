@@ -28,17 +28,15 @@ class Character {
   /// 不改变永久内力账面值。
   double innerBreathDisorderHoursRemaining = 0;
 
-  /// 心魔余毒剩余清除所需闭关时长(小时;0=无余毒)。M6 心魔关战败时设为
-  /// failure_penalty.debuff_clear_via_retreat_hours(=8);闭关收功累减 actualHours,
-  /// 归 0 即清。在身时:战斗输出 ×residue_debuff.battle_output_multiplier +
-  /// 闭关内力产出 ×internal_force_recovery_multiplier。
+  /// 0.35 及更早存档的兼容字段。0.36 迁移时合并到
+  /// [innerBreathDisorderHoursRemaining] 并清零；生产逻辑不再读写。
   double innerDemonResidueHoursRemaining = 0;
 
   /// 轻伤(疲劳)累积层数。连战每场 +1,挂机 tick/闭关收功清零。减速度。
   int lightInjuryStacks = 0;
 
   /// 重伤(内伤)疗养剩余真实小时(0=痊愈)。硬仗战败/惨胜设值,挂机/闭关递减。
-  /// 仿 innerDemonResidueHoursRemaining 体例。带伤可出战(debuff 生效)。
+  /// 带伤可出战(debuff 生效)。
   double injuryHoursRemaining = 0;
 
   int experience = 0;

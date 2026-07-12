@@ -214,7 +214,6 @@ class SeclusionService {
     required DateTime now,
     TechniqueSchool? charSchool,
     double synergyInternalForceGrowthPct = 0.0,
-    double residueInternalForceMultiplier = 1.0,
     DropService? dropService,
     Rng? rng,
   }) {
@@ -272,9 +271,6 @@ class SeclusionService {
     // W18-A1.2 心法相生 internalForceGrowthPct 乘进 internalForcePoints
     // (闭关产出维度,与战斗 init internalForceMaxPct 分管;数值红线 ≤ 0.30 + 1.0
     // 基底 → 最大 1.30 倍 clamp 后仍 ≤ 999999)。
-    // M6 Task 7: residueInternalForceMultiplier = 0.80（余毒在身）或 1.0（无余毒）
-    //   从 GameRepository.numbers.innerDemon.residueDebuff.internalForceRecoveryMultiplier
-    //   读取，不硬编码（§5.6 红线）。
     final internalForcePoints =
         (config.baseInternalForcePerHour *
                 def.internalForceGrowth *
@@ -283,8 +279,7 @@ class SeclusionService {
                 solarBonus *
                 ziShiBonus *
                 zhengWuBonus *
-                (1.0 + synergyInternalForceGrowthPct) *
-                residueInternalForceMultiplier)
+                (1.0 + synergyInternalForceGrowthPct))
             .floor()
             .clamp(0, 999999);
 
@@ -342,7 +337,6 @@ class SeclusionService {
     RealmTier? legacyRealmTier,
     TechniqueSchool? charSchool,
     double synergyInternalForceGrowthPct = 0.0,
-    double residueInternalForceMultiplier = 1.0,
     DropService? dropService,
   }) {
     final realmTier = session.realmTierAtStart ?? legacyRealmTier;
@@ -362,7 +356,6 @@ class SeclusionService {
       now: now,
       charSchool: charSchool,
       synergyInternalForceGrowthPct: synergyInternalForceGrowthPct,
-      residueInternalForceMultiplier: residueInternalForceMultiplier,
       dropService: dropService,
     );
     final passive = OfflinePassiveService.compute(

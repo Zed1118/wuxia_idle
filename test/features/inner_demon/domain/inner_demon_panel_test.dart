@@ -22,7 +22,6 @@ void main() {
       mirrorBuffPerStage: b.mirrorBuffPerStage,
       mirrorCaps: b.mirrorCaps,
       failurePenalty: b.failurePenalty,
-      residueDebuff: b.residueDebuff,
       unlockTriggers: b.unlockTriggers,
       requiredRealmLayer: req,
     );

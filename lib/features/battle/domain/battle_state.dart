@@ -183,9 +183,8 @@ class BattleCharacter {
   /// [attackPowerMultiplier] 的解释来源。null 表示无需在战报中展示专名。
   final AttackPowerMultiplierSource? attackPowerMultiplierSource;
 
-  /// M6 心魔余毒:战斗输出乘数(默认 1.0=无)。余毒在身玩家角色 stage_battle_setup
-  /// 设为 residue_debuff.battle_output_multiplier(0.95)。独立末端乘,可乘性组合
-  /// (不与 attackPowerMultiplier 的 SET 语义冲突)。damage_calculator 末端乘 mainDamage。
+  /// 战斗输出乘数(默认 1.0)，用于重伤或心魔机制等临时状态。
+  /// 独立末端乘，可与 attackPowerMultiplier 组合。
   final double outputMultiplier;
 
   /// 出版美术 B2:此角色是否为 Boss(EnemyDef.isBoss 透传)。true 时
