@@ -5,6 +5,7 @@ import '../../battle/domain/derived_stats.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
@@ -1442,7 +1443,10 @@ class _TechniqueSection extends StatelessWidget {
         children: [
           const _SectionTitle(UiStrings.panelTechnique),
           const SizedBox(height: 8),
-          _MainTechniqueTile(techniqueId: character.mainTechniqueId),
+          _MainTechniqueTile(
+            techniqueId: character.mainTechniqueId,
+            enlightenment: character.attributes.enlightenment,
+          ),
           const SizedBox(height: 8),
           Row(
             children: List.generate(3, (i) {
@@ -1552,9 +1556,13 @@ class _SynergyChip extends ConsumerWidget {
 }
 
 class _MainTechniqueTile extends ConsumerWidget {
-  const _MainTechniqueTile({required this.techniqueId});
+  const _MainTechniqueTile({
+    required this.techniqueId,
+    required this.enlightenment,
+  });
 
   final int? techniqueId;
+  final int enlightenment;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1618,8 +1626,13 @@ class _MainTechniqueTile extends ConsumerWidget {
                 n.cultivationMultiplier[layers[layerIdx + 1]] ?? curMult,
               );
         final techDef = GameRepository.instance.techniqueDefs[t.defId];
+        final policy = AttributeEffectPolicy(n.attributeEffects);
         final skillUsage = {
-          for (final entry in t.skillUsageCount) entry.skillId: entry.count,
+          for (final entry in t.skillUsageCount)
+            entry.skillId: policy.effectiveUsageCount(
+              rawUses: entry.count,
+              enlightenment: enlightenment,
+            ),
         };
         final skillSummary =
             SkillProficiencyFormatter.bestSkillSummaryForTechnique(

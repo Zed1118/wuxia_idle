@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/attribute_effect_policy.dart';
 import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/features/cultivation/application/cultivation_service.dart';
@@ -19,10 +20,12 @@ import '../../../support/test_data.dart';
 ///   总和 = 16250
 void main() {
   late Map<CultivationLayer, int> progressMap;
+  late AttributeEffectPolicy attributePolicy;
 
   setUpAll(() async {
     final repo = await loadTestGameRepository();
     progressMap = repo.numbers.cultivationProgressToNext;
+    attributePolicy = AttributeEffectPolicy(repo.numbers.attributeEffects);
   });
 
   Technique newTech({
@@ -200,6 +203,41 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────────
 
   group('skillUsageCount', () {
+    test('悟性 10：真实使用 10 次，修炼度按累计有效值增加 11', () {
+      final t = newTech();
+      CultivationService.recordSkillUsage(
+        tech: t,
+        skillId: 'skill_a',
+        progressToNextMap: progressMap,
+        delta: 10,
+        attributePolicy: attributePolicy,
+        enlightenment: 10,
+      );
+      expect(t.skillUsageCount.countOf('skill_a'), 10);
+      expect(t.cultivationProgress, 11);
+    });
+
+    test('悟性成长采用累计差值：分批 9+1 与一次 10 结果一致', () {
+      final batched = newTech();
+      CultivationService.recordSkillUsage(
+        tech: batched,
+        skillId: 'skill_a',
+        progressToNextMap: progressMap,
+        delta: 9,
+        attributePolicy: attributePolicy,
+        enlightenment: 10,
+      );
+      CultivationService.recordSkillUsage(
+        tech: batched,
+        skillId: 'skill_a',
+        progressToNextMap: progressMap,
+        attributePolicy: attributePolicy,
+        enlightenment: 10,
+      );
+      expect(batched.skillUsageCount.countOf('skill_a'), 10);
+      expect(batched.cultivationProgress, 11);
+    });
+
     test('同 skillId 多次调用：count 单调累加', () {
       final t = newTech();
       CultivationService.recordSkillUsage(

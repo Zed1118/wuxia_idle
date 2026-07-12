@@ -5,6 +5,7 @@ import 'package:isar_community/isar.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/skill_unlock_entry.dart';
@@ -590,6 +591,7 @@ class _LibrarySection extends ConsumerWidget {
   ) {
     if (!GameRepository.isLoaded) return const SizedBox.shrink();
     final repo = GameRepository.instance;
+    final attributePolicy = AttributeEffectPolicy(numbers.attributeEffects);
     // 主修优先，其余按学得顺序。
     final sorted = [...techs]
       ..sort((a, b) {
@@ -608,7 +610,10 @@ class _LibrarySection extends ConsumerWidget {
         rows.add(
           SkillProficiencyRow(
             skill: skill,
-            uses: tech.skillUsageCount.countOf(skillId),
+            uses: attributePolicy.effectiveUsageCount(
+              rawUses: tech.skillUsageCount.countOf(skillId),
+              enlightenment: character.attributes.enlightenment,
+            ),
             cfg: numbers.skillProficiency,
             equipped: equippedIds.contains(skillId),
             onTap: () => _equipFromLibrary(context, ref, skill),
@@ -668,7 +673,10 @@ class _LibrarySection extends ConsumerWidget {
             skill: skill,
             uses: mainTech.isEmpty
                 ? 0
-                : mainTech.first.skillUsageCount.countOf(skill.id),
+                : attributePolicy.effectiveUsageCount(
+                    rawUses: mainTech.first.skillUsageCount.countOf(skill.id),
+                    enlightenment: character.attributes.enlightenment,
+                  ),
             cfg: numbers.skillProficiency,
             equipped: equippedIds.contains(skill.id),
             onTap: () => _equipFromLibrary(context, ref, skill),

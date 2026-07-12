@@ -3,6 +3,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/domain/enums.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
+import '../../../core/domain/character.dart';
 import '../../../core/domain/skill_usage_entry.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/defs/skill_def.dart';
@@ -102,6 +104,26 @@ int maxUsesOf(String skillId, List<Technique> techniques) {
   for (final t in techniques) {
     final c = t.skillUsageCount.countOf(skillId);
     if (c > max) max = c;
+  }
+  return max;
+}
+
+int maxEffectiveUsesOf(
+  String skillId,
+  List<Technique> techniques,
+  Map<int, Character> characters,
+  NumbersConfig numbers,
+) {
+  final policy = AttributeEffectPolicy(numbers.attributeEffects);
+  var max = 0;
+  for (final technique in techniques) {
+    final character = characters[technique.ownerCharacterId];
+    if (character == null) continue;
+    final uses = policy.effectiveUsageCount(
+      rawUses: technique.skillUsageCount.countOf(skillId),
+      enlightenment: character.attributes.enlightenment,
+    );
+    if (uses > max) max = uses;
   }
   return max;
 }
@@ -321,17 +343,20 @@ Future<List<MartialCodexGroup>> martialCodex(Ref ref) async {
   final repo = GameRepository.instance;
   final pool = repo.skillDefs.values.where(isMartialCodexSkill).toList();
 
-  final cfg = ref.watch(numbersConfigProvider).skillProficiency;
+  final numbers = ref.watch(numbersConfigProvider);
+  final cfg = numbers.skillProficiency;
   final unlockedIds = await ref.watch(unlockedSkillIdSetProvider.future);
   final activeIds = await ref.watch(activeCharacterIdsProvider.future);
 
   final allTechniques = <Technique>[];
+  final activeCharacters = <int, Character>{};
   final activeSchools = <TechniqueSchool>{};
   for (final id in activeIds) {
     allTechniques.addAll(
       await ref.watch(characterAllTechniquesProvider(id).future),
     );
     final c = await ref.watch(characterByIdProvider(id).future);
+    if (c != null) activeCharacters[id] = c;
     final s = c?.school;
     if (s != null) activeSchools.add(s);
   }
@@ -345,7 +370,12 @@ Future<List<MartialCodexGroup>> martialCodex(Ref ref) async {
   );
   final stageById = <String, SkillProficiencyStageConfig>{};
   for (final id in lit) {
-    final uses = maxUsesOf(id, allTechniques);
+    final uses = maxEffectiveUsesOf(
+      id,
+      allTechniques,
+      activeCharacters,
+      numbers,
+    );
     if (uses > 0) stageById[id] = SkillProficiency.stageFor(uses, cfg);
   }
   return groupMartialSkills(

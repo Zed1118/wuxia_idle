@@ -8,6 +8,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import '../support/test_data.dart';
 
 /// BattleState / BattleCharacter / BattleAction 单元测试（phase1_tasks.md T11 §649）。
@@ -36,6 +37,38 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────
 
   group('BattleCharacter.fromCharacter 派生属性', () {
+    test('skillUses 按悟性派生有效次数，但心法仍保存真实次数', () {
+      final c = _mkChar(
+        tier: RealmTier.erLiu,
+        layer: RealmLayer.yuanShu,
+        internalForce: 3000,
+        school: TechniqueSchool.gangMeng,
+        enlightenment: 10,
+      );
+      final tech = _mkTech(
+        defId: 'tech_gangmeng_mingjia',
+        tier: TechniqueTier.mingJiaGong,
+        school: TechniqueSchool.gangMeng,
+      );
+      final skillId = GameRepository.instance
+          .getTechnique(tech.defId)
+          .skillIds
+          .first;
+      tech.skillUsageCount.increment(skillId, 10);
+
+      final bc = BattleCharacter.fromCharacter(
+        character: c,
+        equipped: const [],
+        mainTechnique: tech,
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+
+      expect(tech.skillUsageCount.countOf(skillId), 10);
+      expect(bc.skillUses[skillId], 11);
+    });
+
     test('玩家方 iconPath 接线到 character.portraitPath（P0-2）', () {
       final c = _mkChar(
         tier: RealmTier.erLiu,

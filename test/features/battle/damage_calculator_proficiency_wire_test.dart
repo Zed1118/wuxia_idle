@@ -13,10 +13,10 @@ import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 
 import '../../support/test_data.dart';
 
-Character _mkChar() {
+Character _mkChar({int enlightenment = 5}) {
   final attrs = Attributes()
     ..constitution = 5
-    ..enlightenment = 5
+    ..enlightenment = enlightenment
     ..agility = 0
     ..fortune = 5;
   return Character.create(
@@ -66,11 +66,11 @@ SkillDef _mkSkill() => const SkillDef(
 void main() {
   setUpAll(loadTestGameRepository);
 
-  AttackResult calc({required int uses}) {
+  AttackResult calc({required int uses, int enlightenment = 5}) {
     final tech = _mkTech();
     if (uses > 0) tech.skillUsageCount.increment('s', uses);
     final ctx = AttackContext(
-      attacker: _mkChar(),
+      attacker: _mkChar(enlightenment: enlightenment),
       attackerEquipped: [_mkEquip(100)],
       attackerMainTech: tech,
       skill: _mkSkill(),
@@ -92,5 +92,10 @@ void main() {
   test('uses=29 仍 chuShi(1.0),uses=100 shuLian(1.12)', () {
     expect(calc(uses: 29).mainDamage, 950);
     expect(calc(uses: 100).mainDamage, (950 * 1.12).toInt()); // 1064
+  });
+
+  test('悟性 10 把真实 28 次派生为有效 30 次并进入下一熟练阶段', () {
+    expect(calc(uses: 28, enlightenment: 5).mainDamage, 950);
+    expect(calc(uses: 28, enlightenment: 10).mainDamage, greaterThan(950));
   });
 }

@@ -4,6 +4,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/technique_def.dart';
 import '../../../shared/strings.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
@@ -186,6 +187,9 @@ class BattleResolutionService {
         techniqueDefLookup: techniqueDefLookup,
         skillUsageIncrements: skillUsageIncrements,
         cultivationEvents: cultivationEvents,
+        attributePolicy: numbersConfig == null
+            ? null
+            : AttributeEffectPolicy(numbersConfig.attributeEffects),
       );
     }
 
@@ -338,6 +342,7 @@ class BattleResolutionService {
     required TechniqueDef Function(String defId) techniqueDefLookup,
     required Map<int, Map<String, int>> skillUsageIncrements,
     required Map<int, CultivationProgressResult> cultivationEvents,
+    AttributeEffectPolicy? attributePolicy,
   }) {
     if (usedSkills.isEmpty) return;
 
@@ -382,6 +387,8 @@ class BattleResolutionService {
           skillId: skillId,
           progressToNextMap: progressToNextMap,
           delta: count,
+          attributePolicy: attributePolicy,
+          enlightenment: character.attributes.enlightenment,
         );
         mainLayersGained += r.layersGained;
         lastMainResult = r;
