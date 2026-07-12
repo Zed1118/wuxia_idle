@@ -23,6 +23,9 @@ final activeRetreatSessionProvider =
       return svc.getActiveSession(IsarSetup.currentSlotId);
     });
 
+/// 防止同一闭关会话被多个入口同时发起结算。
+final Set<int> _retreatCompletionsInFlight = <int>{};
+
 /// 出战守卫:闭关进行中拦截战斗入口。
 ///
 /// 无 active session → 直接 [onAllowed]();有 → 弹水墨提示,
@@ -69,27 +72,37 @@ Future<void> _endRetreatEarly(
 ) async {
   final svc = ref.read(seclusionServiceProvider);
   if (svc == null) return;
-  final ids = await ref.read(activeCharacterIdsProvider.future);
-  final id = ids.isNotEmpty ? ids.first : 1;
-  final ch = await ref.read(characterByIdProvider(id).future);
-  final result = await svc.completeRetreat(
-    session: session,
-    characterId: ch?.id ?? id,
-    config: GameRepository.instance.numbers.retreat,
-    maps: GameRepository.instance.seclusionMaps,
-    now: DateTime.now(),
-  );
-  ref.invalidate(activeRetreatSessionProvider);
-  ref.invalidate(characterByIdProvider);
-  ref.invalidate(allEquipmentsProvider);
-  ref.invalidate(allInventoryItemsProvider);
-  ref.invalidate(inventoryQuantityByTypeProvider);
-  ref.invalidate(inventoryQuantityByDefIdProvider);
-  if (!context.mounted) return;
-  final mapDef = GameRepository.instance.getSeclusionMap(session.mapType);
-  await Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => RetreatResultScreen(mapDef: mapDef, result: result),
-    ),
-  );
+  if (!_retreatCompletionsInFlight.add(session.id)) return;
+  try {
+    final ids = await ref.read(activeCharacterIdsProvider.future);
+    final id = ids.isNotEmpty ? ids.first : 1;
+    final ch = await ref.read(characterByIdProvider(id).future);
+    final result = await svc.completeRetreat(
+      session: session,
+      characterId: ch?.id ?? id,
+      config: GameRepository.instance.numbers.retreat,
+      maps: GameRepository.instance.seclusionMaps,
+      now: DateTime.now(),
+    );
+    ref.invalidate(activeRetreatSessionProvider);
+    ref.invalidate(characterByIdProvider);
+    ref.invalidate(allEquipmentsProvider);
+    ref.invalidate(allInventoryItemsProvider);
+    ref.invalidate(inventoryQuantityByTypeProvider);
+    ref.invalidate(inventoryQuantityByDefIdProvider);
+    if (!context.mounted) return;
+    final mapDef = GameRepository.instance.getSeclusionMap(session.mapType);
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => RetreatResultScreen(mapDef: mapDef, result: result),
+      ),
+    );
+  } catch (e) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(UiStrings.retreatCollectFailed(e))));
+  } finally {
+    _retreatCompletionsInFlight.remove(session.id);
+  }
 }
