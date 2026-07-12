@@ -15,7 +15,6 @@ import '../../../core/application/battle_providers.dart';
 import '../../../shared/audio/sound_manager.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';
-import '../../../shared/effects/screen_shake.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
@@ -23,9 +22,6 @@ import '../../../shared/theme/colors.dart';
 import 'battle_atmosphere_overlay.dart';
 import 'battle_scene_background.dart';
 import 'guardian_ward_presentation.dart';
-import 'impact_glyph_overlay.dart';
-import 'screen_flash.dart';
-import 'ultimate_caption_overlay.dart';
 import 'victory_overlay.dart';
 import '../../cangjingge/presentation/cangjingge_screen.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
@@ -40,9 +36,7 @@ import 'battle_screen_config.dart';
 export 'battle_screen_config.dart';
 import 'widgets/battle_banners.dart';
 import 'widgets/battle_header.dart';
-import 'widgets/battle_field.dart';
 import 'widgets/battle_bottom_bar.dart';
-import 'widgets/battle_vfx_layers.dart';
 import 'widgets/battle_target_chips.dart';
 
 /// 3v3 战斗主屏（phase1_tasks T14 静态布局 + T15 动画/飘字 + T16 Riverpod 串接）。
@@ -692,141 +686,88 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
               ),
             ),
             SafeArea(
-              child: AnimatedBuilder(
-                animation: _playback.closeupCtrl,
-                builder: (context, child) {
-                  final scale =
-                      1.0 +
-                      (widget.animConfig.hitTier.closeupScale - 1.0) *
-                          _playback.closeupCtrl.value;
-                  return Transform.scale(scale: scale, child: child);
-                },
-                child: AnimatedBuilder(
-                  animation: _playback.shakeCtrl,
-                  builder: (ctx, child) {
-                    return Transform.translate(
-                      offset: screenShakeOffset(
-                        t: _playback.shakeCtrl.value,
-                        amplitude: _playback.impactShakeAmplitude,
-                      ),
-                      child: child,
-                    );
+              child: BattlePlaybackMotion(
+                controller: _playback,
+                child: Focus(
+                  autofocus: true,
+                  onKeyEvent: (node, event) {
+                    if (event is KeyDownEvent &&
+                        event.logicalKey == LogicalKeyboardKey.escape &&
+                        _pendingActive) {
+                      _clearPending();
+                      return KeyEventResult.handled;
+                    }
+                    return KeyEventResult.ignored;
                   },
-                  child: Focus(
-                    autofocus: true,
-                    onKeyEvent: (node, event) {
-                      if (event is KeyDownEvent &&
-                          event.logicalKey == LogicalKeyboardKey.escape &&
-                          _pendingActive) {
-                        _clearPending();
-                        return KeyEventResult.handled;
-                      }
-                      return KeyEventResult.ignored;
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: () {
+                      if (_pendingActive) _clearPending();
                     },
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onTap: () {
-                        if (_pendingActive) _clearPending();
-                      },
-                      child: Column(
-                        children: [
-                          if (widget.hint != null)
-                            HintBanner(hint: widget.hint!),
-                          if (widget.cycleHint != null)
-                            CycleHintBanner(hint: widget.cycleHint!),
-                          Header(
+                    child: Column(
+                      children: [
+                        if (widget.hint != null) HintBanner(hint: widget.hint!),
+                        if (widget.cycleHint != null)
+                          CycleHintBanner(hint: widget.cycleHint!),
+                        Header(
+                          state: state,
+                          onToggleLog: () =>
+                              setState(() => _logOpen = !_logOpen),
+                          onPause: _togglePause,
+                          isPaused: _playback.isPaused,
+                          onSurrender: widget.onSurrender == null
+                              ? null
+                              : _confirmSurrender,
+                          // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
+                          onStepOnce: widget.playback.startPaused
+                              ? _stepOnce
+                              : null,
+                        ),
+                        DangerBar(state: state),
+                        Expanded(
+                          child: BattlePlaybackField(
+                            controller: _playback,
                             state: state,
-                            onToggleLog: () =>
-                                setState(() => _logOpen = !_logOpen),
-                            onPause: _togglePause,
-                            isPaused: _playback.isPaused,
-                            onSurrender: widget.onSurrender == null
-                                ? null
-                                : _confirmSurrender,
-                            // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
-                            onStepOnce: widget.playback.startPaused
-                                ? _stepOnce
-                                : null,
+                            chargeMaxTicks: chargeMaxTicks,
+                            staggerWindowTicks: staggerWindowTicks,
+                            onEnemyTap: _onEnemyTap,
+                            pendingActive: _pendingActive,
+                            hoveredEnemyId: _hoveredPendingEnemyId,
+                            onEnemyHover: _onPendingEnemyHover,
                           ),
-                          DangerBar(state: state),
-                          Expanded(
-                            child: Stack(
-                              children: [
-                                BattleField(
-                                  state: state,
-                                  attackControllers:
-                                      _playback.attackControllers,
-                                  popups: _playback.popups,
-                                  animConfig: widget.animConfig,
-                                  chargeMaxTicks: chargeMaxTicks,
-                                  beat: _playback.beatCtrl,
-                                  staggerWindowTicks: staggerWindowTicks,
-                                  onPopupComplete: _playback.removePopup,
-                                  hitFlashControllers:
-                                      _playback.hitFlashControllers,
-                                  hitFlashColors: _playback.hitFlashColors,
-                                  onEnemyTap: _onEnemyTap,
-                                  pendingActive: _pendingActive,
-                                  hoveredEnemyId: _hoveredPendingEnemyId,
-                                  onEnemyHover: _onPendingEnemyHover,
-                                ),
-                                Positioned.fill(
-                                  child: IgnorePointer(
-                                    child: ProjectileLayer(
-                                      trails: _playback.activeTrails,
-                                    ),
-                                  ),
-                                ),
-                                Positioned.fill(
-                                  child: IgnorePointer(
-                                    child: EffectLayer(
-                                      effects: _playback.activeEffects,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          BattleReportStrip(
-                            state: state,
-                            onTap: () => setState(() => _logOpen = true),
-                          ),
-                          if (widget.playback.allowPlayerIntervention)
-                            CoopBurstPromptBar(state: state),
-                          BottomBar(
-                            state: state,
-                            focusSlotIndex: _effectiveFocus(state),
-                            allowPlayerIntervention:
-                                widget.playback.allowPlayerIntervention,
-                            onSelectFocus: _onSelectFocus,
-                            onShowSkillInfo: _showSkillInfo,
-                            onFastForward: _playback.toggleFastForward,
-                            isFastForward: _playback.isFastForward,
-                            onSkillTap: _onSkillTap,
-                            pendingCharacterId:
-                                _pendingCharId ??
-                                widget.previewPendingCharacterId,
-                            pendingSkillId:
-                                _pendingSkill?.id ??
-                                widget.previewPendingSkillId,
-                            beat: _playback.beatCtrl,
-                            skillTargetLink: _skillTargetLink,
-                          ),
-                        ],
-                      ),
+                        ),
+                        BattleReportStrip(
+                          state: state,
+                          onTap: () => setState(() => _logOpen = true),
+                        ),
+                        if (widget.playback.allowPlayerIntervention)
+                          CoopBurstPromptBar(state: state),
+                        BottomBar(
+                          state: state,
+                          focusSlotIndex: _effectiveFocus(state),
+                          allowPlayerIntervention:
+                              widget.playback.allowPlayerIntervention,
+                          onSelectFocus: _onSelectFocus,
+                          onShowSkillInfo: _showSkillInfo,
+                          onFastForward: _playback.toggleFastForward,
+                          isFastForward: _playback.isFastForward,
+                          onSkillTap: _onSkillTap,
+                          pendingCharacterId:
+                              _pendingCharId ??
+                              widget.previewPendingCharacterId,
+                          pendingSkillId:
+                              _pendingSkill?.id ?? widget.previewPendingSkillId,
+                          beat: _playback.beat,
+                          skillTargetLink: _skillTargetLink,
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
             Positioned.fill(
-              child: ScreenFlashOverlay(key: _playback.screenFlashKey),
-            ),
-            Positioned.fill(
-              child: UltimateCaptionOverlay(key: _playback.ultimateCaptionKey),
-            ),
-            Positioned.fill(
-              child: ImpactGlyphOverlay(key: _playback.impactGlyphKey),
+              child: BattlePlaybackOverlays(controller: _playback),
             ),
             if (_logOpen)
               LogDrawer(
