@@ -154,20 +154,19 @@ void main() {
   testWidgets('playAction 命中 → 飘字入队 popups[slotKey] 且 id 递增', (tester) async {
     final c = (await _pump(tester)).controller;
 
-    expect(c.popups[_targetSlotKey], isNull, reason: '初始无飘字');
+    expect(c.debugPopupsForSlot(_targetSlotKey), isEmpty, reason: '初始无飘字');
 
     c.playAction(_attackAction(), c._noopState(tester));
     await tester.pump();
-    final firstList = c.popups[_targetSlotKey];
-    expect(firstList, isNotNull);
-    expect(firstList!.length, 1, reason: '一次命中 → 一条飘字');
+    final firstList = c.debugPopupsForSlot(_targetSlotKey);
+    expect(firstList.length, 1, reason: '一次命中 → 一条飘字');
     expect(firstList.first.data.text, '120');
     final firstId = firstList.first.id;
     final firstAnchor = firstList.first.anchor;
 
     c.playAction(_attackAction(crit: true), c._noopState(tester));
     await tester.pump();
-    final secondList = c.popups[_targetSlotKey]!;
+    final secondList = c.debugPopupsForSlot(_targetSlotKey);
     expect(secondList.length, 2, reason: '二次命中 → 队列增长');
     expect(secondList.last.data.text, UiStrings.criticalDamagePopup(240));
     expect(
@@ -185,16 +184,20 @@ void main() {
 
   testWidgets('playAction 命中 → 弹道 / 特效队列增长', (tester) async {
     final c = (await _pump(tester)).controller;
-    expect(c.activeTrails, isEmpty);
-    expect(c.activeEffects, isEmpty);
+    expect(c.debugActiveTrailCount, 0);
+    expect(c.debugActiveEffectCount, 0);
 
     c.playAction(_attackAction(crit: true), c._noopState(tester));
     await tester.pump();
 
-    expect(c.activeTrails, isNotEmpty, reason: 'actor→target 弹道 spawn');
     expect(
-      c.activeEffects,
-      isNotEmpty,
+      c.debugActiveTrailCount,
+      greaterThan(0),
+      reason: 'actor→target 弹道 spawn',
+    );
+    expect(
+      c.debugActiveEffectCount,
+      greaterThan(0),
       reason: '流派命中特效 + 暴击特效 spawn（spawnBattleEffects）',
     );
   });
@@ -208,7 +211,7 @@ void main() {
 
     c.pause();
     expect(c.isPaused, isTrue);
-    expect(c.beatCtrl.isAnimating, isFalse, reason: '暂停冻结读秒环节拍');
+    expect(c.debugBeatIsAnimating, isFalse, reason: '暂停冻结读秒环节拍');
 
     c.resume();
     expect(c.isPaused, isFalse, reason: '战斗未结束 → 恢复解除暂停');

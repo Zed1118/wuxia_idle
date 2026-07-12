@@ -13,6 +13,7 @@ import '../../../data/numbers_config.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
+import '../../../shared/effects/screen_shake.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
@@ -26,6 +27,10 @@ import 'impact_profile.dart';
 import 'projectile_trail_style.dart';
 import 'screen_flash.dart';
 import 'ultimate_caption_overlay.dart';
+import 'widgets/battle_field.dart';
+import 'widgets/battle_vfx_layers.dart';
+
+part 'battle_playback_view.dart';
 
 /// BattleScreen 表现层播放控制器：从 `_BattleScreenState` 抽离的战斗屏动画/播放
 /// 编排全体。持有并驱动 —— VFX 反应原语（飘字 / 弹道 / MJ 特效贴片 / 受击闪）、
@@ -121,9 +126,7 @@ class BattlePlaybackController {
   late final AnimationController _closeupCtrl;
 
   // 批次 2.4 当前重击屏震振幅（profile 分档；0=不抖）。复用既有 _shakeCtrl。
-  // 公开字段（非 getter/setter 包装,避免 unnecessary_getters_setters lint）：
-  // [playAction] 内直接写触发屏震振幅，build 内 AnimatedBuilder 读取。
-  double impactShakeAmplitude = 0.0;
+  double _impactShakeAmplitude = 0.0;
 
   // B2 大招题字 overlay 的 key(命令式 show)
   final GlobalKey<UltimateCaptionOverlayState> _ultimateCaptionKey =
@@ -147,28 +150,27 @@ class BattlePlaybackController {
   final Map<int, List<PopupEntry>> _popups = {};
   int _nextPopupId = 0;
 
-  // ─── 公开只读 getter（供 build 读取，State 侧props 透传） ──────────────────
-  List<AnimationController> get attackControllers => _attackControllers;
-  List<AnimationController> get hitFlashControllers => _hitFlashControllers;
-  Map<int, Color> get hitFlashColors => _hitFlashColors;
-  List<TrailEntry> get activeTrails => _activeTrails;
-  List<EffectEntry> get activeEffects => _activeEffects;
-  Map<int, List<PopupEntry>> get popups => _popups;
-
   // 拍钟调度只读 getter（供 build props / 交互条件读取）。
-  AnimationController get beatCtrl => _beatCtrl;
+  Animation<double> get beat => _beatCtrl;
   bool get isPaused => _isPaused;
   bool get isFastForward => _isFastForward;
   bool get hasTimer => _playTimer != null;
+
+  @visibleForTesting
   int get playbackIntervalMsForTest => _currentPlaybackIntervalMs;
 
-  // overlay 编排 / 屏震只读 getter（供 build 读取；[playAction] 内直接用私有字段）。
-  AnimationController get shakeCtrl => _shakeCtrl;
-  AnimationController get closeupCtrl => _closeupCtrl;
-  GlobalKey<UltimateCaptionOverlayState> get ultimateCaptionKey =>
-      _ultimateCaptionKey;
-  GlobalKey<ImpactGlyphOverlayState> get impactGlyphKey => _impactGlyphKey;
-  GlobalKey<ScreenFlashOverlayState> get screenFlashKey => _screenFlashKey;
+  @visibleForTesting
+  List<PopupEntry> debugPopupsForSlot(int slotKey) =>
+      List.unmodifiable(_popups[slotKey] ?? const <PopupEntry>[]);
+
+  @visibleForTesting
+  int get debugActiveTrailCount => _activeTrails.length;
+
+  @visibleForTesting
+  int get debugActiveEffectCount => _activeEffects.length;
+
+  @visibleForTesting
+  bool get debugBeatIsAnimating => _beatCtrl.isAnimating;
 
   GameplaySettings get _currentGameplaySettings => _ref
       .read(gameplaySettingsProvider)
@@ -580,7 +582,7 @@ class BattlePlaybackController {
       }
       // 抖动同 2.4：快进态跳过（保顺滑）。
       if (!_isFastForward) {
-        impactShakeAmplitude = cfg.heavy.shakeMagnitude;
+        _impactShakeAmplitude = cfg.heavy.shakeMagnitude;
         _shakeCtrl.forward(from: 0.0);
       }
     }
@@ -708,7 +710,7 @@ class BattlePlaybackController {
         }
         // hit-stop + 镜头震：快进态跳过（守 2.3 时序 + 保快进顺滑）。
         if (!_isFastForward) {
-          impactShakeAmplitude = profile.shakeMagnitude;
+          _impactShakeAmplitude = profile.shakeMagnitude;
           _shakeCtrl.forward(from: 0.0);
           _applyHitStop(
             playbackHoldMs(
