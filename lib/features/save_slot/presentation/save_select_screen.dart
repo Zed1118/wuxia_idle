@@ -41,6 +41,7 @@ class SaveSelectScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     int n,
+    bool allowQuickStart,
   ) async {
     final ok = await _confirm(
       context,
@@ -53,7 +54,9 @@ class SaveSelectScreen extends ConsumerWidget {
     ref.invalidate(isarProvider);
     if (!context.mounted) return;
     await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const FounderCreationScreen()),
+      MaterialPageRoute<void>(
+        builder: (_) => FounderCreationScreen(allowQuickStart: allowQuickStart),
+      ),
     );
     ref.invalidate(slotListProvider);
   }
@@ -257,38 +260,49 @@ class SaveSelectScreen extends ConsumerWidget {
               error: e,
               onRetry: () => ref.invalidate(slotListProvider),
             ),
-            data: (slots) => SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 28),
-                    child: Text(
-                      UiStrings.slotSelectTitle,
-                      style: TextStyle(
-                        fontSize: 28,
-                        color: WuxiaColors.resultHighlight,
-                        letterSpacing: 6,
-                        fontWeight: FontWeight.w600,
+            data: (slots) {
+              final allowQuickStart = slots.any(
+                (slot) => !slot.isEmpty && slot.completedFirstCycle,
+              );
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 28),
+                      child: Text(
+                        UiStrings.slotSelectTitle,
+                        style: TextStyle(
+                          fontSize: 28,
+                          color: WuxiaColors.resultHighlight,
+                          letterSpacing: 6,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                  for (final s in slots)
-                    _SlotCard(
-                      summary: s,
-                      onTap: () => s.isEmpty
-                          ? _confirmNewGame(context, ref, s.slotId)
-                          : _enterSlot(context, ref, s.slotId),
-                      onRename: s.isEmpty
-                          ? null
-                          : () => _renameSlot(context, ref, s),
-                      onDelete: s.isEmpty
-                          ? null
-                          : () => _deleteSlot(context, ref, s),
-                    ),
-                ],
-              ),
-            ),
+                    for (final s in slots)
+                      _SlotCard(
+                        summary: s,
+                        allowQuickStart: allowQuickStart,
+                        onTap: () => s.isEmpty
+                            ? _confirmNewGame(
+                                context,
+                                ref,
+                                s.slotId,
+                                allowQuickStart,
+                              )
+                            : _enterSlot(context, ref, s.slotId),
+                        onRename: s.isEmpty
+                            ? null
+                            : () => _renameSlot(context, ref, s),
+                        onDelete: s.isEmpty
+                            ? null
+                            : () => _deleteSlot(context, ref, s),
+                      ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -300,12 +314,14 @@ class _SlotCard extends StatelessWidget {
   const _SlotCard({
     required this.summary,
     required this.onTap,
+    required this.allowQuickStart,
     this.onRename,
     this.onDelete,
   });
 
   final SlotSummary summary;
   final VoidCallback onTap;
+  final bool allowQuickStart;
   final VoidCallback? onRename;
   final VoidCallback? onDelete;
 
@@ -326,7 +342,7 @@ class _SlotCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           child: summary.isEmpty
-              ? _EmptySlot(title: displayName)
+              ? _EmptySlot(title: displayName, allowQuickStart: allowQuickStart)
               : _FilledSlot(
                   summary: summary,
                   displayName: displayName,
@@ -340,21 +356,39 @@ class _SlotCard extends StatelessWidget {
 }
 
 class _EmptySlot extends StatelessWidget {
-  const _EmptySlot({required this.title});
+  const _EmptySlot({required this.title, required this.allowQuickStart});
 
   final String title;
+  final bool allowQuickStart;
 
   @override
   Widget build(BuildContext context) => Row(
     children: [
       Expanded(
-        child: InkEmptyState(
-          variant: InkEmptyStateVariant.empty,
-          title: title,
-          body: UiStrings.slotSaveEmpty,
-          icon: Icons.add_circle_outline,
-          compact: true,
-          showFrame: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkEmptyState(
+              variant: InkEmptyStateVariant.empty,
+              title: title,
+              body: UiStrings.slotSaveEmpty,
+              icon: Icons.add_circle_outline,
+              compact: true,
+              showFrame: false,
+            ),
+            if (allowQuickStart)
+              const Padding(
+                padding: EdgeInsets.only(left: 40, top: 4),
+                child: Text(
+                  UiStrings.slotQuickStartAvailable,
+                  style: TextStyle(
+                    color: WuxiaColors.resultHighlight,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
       const Icon(Icons.chevron_right, color: WuxiaColors.textMuted),

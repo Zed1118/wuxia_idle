@@ -2,6 +2,8 @@ import '../../../data/defs/founder_creation_def.dart';
 import '../../../data/defs/founder_names_def.dart';
 import '../../../shared/utils/rng.dart';
 
+enum FounderStartMode { guided, quick }
+
 class FounderCreationSelection {
   final FounderSchoolOption school;
   final FounderOriginOption origin;
@@ -13,12 +15,16 @@ class FounderCreationSelection {
   /// 玩家自定义门派名;留空(null)则 seeding 回退默认「我的门派」。
   final String? sectName;
 
+  /// 循序入门保留第一章菜单引导;老江湖开局仅解除基础菜单门槛。
+  final FounderStartMode startMode;
+
   const FounderCreationSelection({
     required this.school,
     required this.origin,
     required this.fate,
     this.founderName,
     this.sectName,
+    this.startMode = FounderStartMode.guided,
   });
 }
 

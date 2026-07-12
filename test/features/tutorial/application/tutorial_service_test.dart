@@ -101,6 +101,20 @@ void main() {
     expect(await svc.getCurrentStep(), 0);
   });
 
+  test('stage_01_05 标记引导完成,更早关卡不提前完成', () async {
+    await seedSave();
+    final isar = IsarSetup.instance;
+    final svc = TutorialService(isar);
+
+    await isar.writeTxn(() => svc.advanceForStageCleared('stage_01_04'));
+    var save = (await isar.saveDatas.get(0))!;
+    expect(save.isOnboardingCompleted, false);
+
+    await isar.writeTxn(() => svc.advanceForStageCleared('stage_01_05'));
+    save = (await isar.saveDatas.get(0))!;
+    expect(save.isOnboardingCompleted, true);
+  });
+
   test('advanceForStageCleared 5 关顺序通 → step 1→2→3→4→5', () async {
     await seedSave();
     final isar = IsarSetup.instance;

@@ -701,7 +701,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const RedlineAuditScreen();
     case VisualRoute.founderCreation:
       // S1 目检：祖师塑形创建页确认区决策可逆说明(深底 textMuted 提示行)。
-      return const FounderCreationScreen();
+      return const FounderCreationScreen(allowQuickStart: true);
     case VisualRoute.stageRetryDialog:
       // S3 目检：普通关战败重试弹框非教学化短诊断(浅纸底 muted 提示行)。
       // 静态复刻 _showStageRetryDialog 的 PaperDialog 开态(body=StageRetryDialogBody)。

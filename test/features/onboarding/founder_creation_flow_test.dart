@@ -55,6 +55,7 @@ void main() {
       capturedSelection.school,
       GameRepository.instance.founderCreation.schools.first,
     );
+    expect(capturedSelection.startMode, FounderStartMode.guided);
     expect(calls, ['seed', 'dialog:${capturedSelection.school.id}']);
 
     await tester.tap(find.text(UiStrings.founderStarterGearConfirm));
@@ -67,5 +68,47 @@ void main() {
       'dialog:${capturedSelection.school.id}',
       'mainMenu',
     ]);
+  });
+
+  testWidgets('有资格时可选择老江湖开局并随创建选择提交', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    late FounderCreationSelection capturedSelection;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: FounderCreationScreen(
+            allowQuickStart: true,
+            createFoundingMaster: (selection) async {
+              capturedSelection = selection;
+              return false;
+            },
+            mainMenuBuilder: (_) => const SizedBox.shrink(),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(UiStrings.founderCreateGuidedMode), findsOneWidget);
+    expect(find.text(UiStrings.founderCreateQuickMode), findsOneWidget);
+    await tester.tap(find.text(UiStrings.founderCreateQuickMode));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text(UiStrings.founderCreateConfirm));
+    await tester.tap(find.text(UiStrings.founderCreateConfirm));
+    await tester.pumpAndSettle();
+
+    expect(capturedSelection.startMode, FounderStartMode.quick);
+  });
+
+  testWidgets('无资格时不显示开局方式选择', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: FounderCreationScreen())),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(UiStrings.founderCreateStartModeSection), findsNothing);
+    expect(find.text(UiStrings.founderCreateQuickMode), findsNothing);
   });
 }

@@ -1974,6 +1974,7 @@ class UiStrings {
   static const String slotSaveEmpty = '空 · 新开江湖';
   static const String slotNewGameTitle = '新开江湖';
   static const String slotNewGameConfirm = '在此卷开启一段全新的江湖路？';
+  static const String slotQuickStartAvailable = '已解锁老江湖开局';
   static const String slotDelete = '删除存档';
   static const String slotDeleteConfirm = '删除此存档？此举不可挽回。';
   static const String slotDeleteProtectionHint = '输入下方存档名后才可删除';
@@ -2012,6 +2013,11 @@ class UiStrings {
   // 祖师开局塑形
   static const String founderCreateTitle = '开派祖师';
   static const String founderCreateSubtitle = '择流派、定出身、观命盘';
+  static const String founderCreateStartModeSection = '开局方式';
+  static const String founderCreateGuidedMode = '循序入门';
+  static const String founderCreateQuickMode = '老江湖开局';
+  static const String founderCreateGuidedModeHint = '按主线逐步开放心法与闭关';
+  static const String founderCreateQuickModeHint = '立即开放心法与闭关，主线与奖励仍从头开始';
   static const String founderCreateSchoolSection = '一 · 定流派';
   static const String founderCreateOriginSection = '二 · 问出身';
   static const String founderCreateFateSection = '三 · 观命盘';

@@ -21,6 +21,7 @@ void main() {
       chapterIndex: 6,
       clearedStageCount: 30,
       highestTowerFloor: 18,
+      completedFirstCycle: true,
       lastPlayed: DateTime(2026, 6, 29, 20, 15),
       isMostRecent: true,
     ),
@@ -54,6 +55,25 @@ void main() {
     expect(find.textContaining('2026-06-29 20:15'), findsOneWidget);
     // 空槽显「空 · 新开江湖」(slot2/slot3 两处)
     expect(find.text(UiStrings.slotSaveEmpty), findsNWidgets(2));
+    expect(find.text(UiStrings.slotQuickStartAvailable), findsNWidgets(2));
+  });
+
+  testWidgets('没有完成首周目的存档时不显示快速开局提示', (tester) async {
+    final incomplete = [
+      const SlotSummary(
+        slotId: 1,
+        isEmpty: false,
+        founderName: '初行者',
+        realmDisplay: '三流初窥',
+      ),
+      SlotSummary.empty(2),
+      SlotSummary.empty(3),
+    ];
+
+    await tester.pumpWidget(host(incomplete));
+    await tester.pumpAndSettle();
+
+    expect(find.text(UiStrings.slotQuickStartAvailable), findsNothing);
   });
 
   testWidgets('重命名/删除按钮仅有档槽出现', (tester) async {

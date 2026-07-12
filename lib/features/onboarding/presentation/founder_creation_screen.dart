@@ -40,11 +40,13 @@ class FounderCreationScreen extends ConsumerStatefulWidget {
     this.createFoundingMaster = defaultFounderCreationSeeder,
     this.showStarterGear = showFounderStarterGearDialog,
     this.mainMenuBuilder = defaultFounderCreationMainMenuBuilder,
+    this.allowQuickStart = false,
   });
 
   final FounderCreationSeeder createFoundingMaster;
   final FounderStarterGearPresenter showStarterGear;
   final WidgetBuilder mainMenuBuilder;
+  final bool allowQuickStart;
 
   @override
   ConsumerState<FounderCreationScreen> createState() =>
@@ -57,6 +59,7 @@ class _FounderCreationScreenState extends ConsumerState<FounderCreationScreen> {
   int _schoolIndex = 0;
   int _originIndex = 0;
   int _fateIndex = 0;
+  FounderStartMode _startMode = FounderStartMode.guided;
   bool _submitting = false;
   final _founderNameController = TextEditingController();
   final _sectNameController = TextEditingController();
@@ -112,6 +115,7 @@ class _FounderCreationScreenState extends ConsumerState<FounderCreationScreen> {
         fate: _fate,
         founderName: founderName.isEmpty ? null : founderName,
         sectName: sectName.isEmpty ? null : sectName,
+        startMode: _startMode,
       ),
     );
     ref.invalidate(isarProvider);
@@ -157,6 +161,93 @@ class _FounderCreationScreenState extends ConsumerState<FounderCreationScreen> {
                       children: [
                         const _PageHeader(),
                         const SizedBox(height: 20),
+                        if (widget.allowQuickStart) ...[
+                          _Section(
+                            title: UiStrings.founderCreateStartModeSection,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                SegmentedButton<FounderStartMode>(
+                                  segments: const [
+                                    ButtonSegment(
+                                      value: FounderStartMode.guided,
+                                      icon: Icon(Icons.route_outlined),
+                                      label: Text(
+                                        UiStrings.founderCreateGuidedMode,
+                                      ),
+                                    ),
+                                    ButtonSegment(
+                                      value: FounderStartMode.quick,
+                                      icon: Icon(Icons.fast_forward_outlined),
+                                      label: Text(
+                                        UiStrings.founderCreateQuickMode,
+                                      ),
+                                    ),
+                                  ],
+                                  selected: {_startMode},
+                                  showSelectedIcon: false,
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                        WidgetStateProperty.resolveWith(
+                                          (states) =>
+                                              states.contains(
+                                                WidgetState.selected,
+                                              )
+                                              ? WuxiaColors.resultHighlight
+                                                    .withValues(alpha: 0.16)
+                                              : WuxiaColors.panel,
+                                        ),
+                                    foregroundColor:
+                                        WidgetStateProperty.resolveWith(
+                                          (states) =>
+                                              states.contains(
+                                                WidgetState.selected,
+                                              )
+                                              ? WuxiaColors.resultHighlight
+                                              : WuxiaColors.textSecondary,
+                                        ),
+                                    iconColor: WidgetStateProperty.resolveWith(
+                                      (states) =>
+                                          states.contains(WidgetState.selected)
+                                          ? WuxiaColors.resultHighlight
+                                          : WuxiaColors.textMuted,
+                                    ),
+                                    side: WidgetStateProperty.resolveWith(
+                                      (states) => BorderSide(
+                                        color:
+                                            states.contains(
+                                              WidgetState.selected,
+                                            )
+                                            ? WuxiaColors.resultHighlight
+                                            : WuxiaColors.border,
+                                      ),
+                                    ),
+                                    overlayColor: WidgetStatePropertyAll(
+                                      WuxiaColors.resultHighlight.withValues(
+                                        alpha: 0.08,
+                                      ),
+                                    ),
+                                  ),
+                                  onSelectionChanged: (selection) => setState(
+                                    () => _startMode = selection.single,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _startMode == FounderStartMode.quick
+                                      ? UiStrings.founderCreateQuickModeHint
+                                      : UiStrings.founderCreateGuidedModeHint,
+                                  style: const TextStyle(
+                                    color: WuxiaColors.textSecondary,
+                                    fontSize: 13,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                         _Section(
                           title: UiStrings.founderCreateSchoolSection,
                           child: _ChoiceWrap(

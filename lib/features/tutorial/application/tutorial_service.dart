@@ -80,6 +80,14 @@ class TutorialService {
     final targetStep = _ch1StageToStep[stageId];
     if (targetStep == null) return;
     await advanceToStep(targetStep);
+    if (stageId != 'stage_01_05') return;
+    final save = await isar.saveDatas
+        .filter()
+        .slotIdEqualTo(IsarSetup.currentSlotId)
+        .findFirst();
+    if (save == null || save.isOnboardingCompleted) return;
+    save.isOnboardingCompleted = true;
+    await isar.saveDatas.put(save);
   }
 
   /// 主角境界突破 hook(到一流即推 step 6,GDD §7.1 收徒门槛,P1.y)。

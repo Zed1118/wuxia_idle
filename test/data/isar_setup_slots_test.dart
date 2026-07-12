@@ -70,7 +70,8 @@ void main() {
         MainlineProgress()
           ..saveDataId = 1
           ..currentChapterIndex = 4
-          ..clearedStageIds = ['stage_01_01', 'stage_01_02'],
+          ..clearedStageIds = ['stage_01_01', 'stage_01_02']
+          ..clearedStageCycleKeys = ['stage_06_05#1'],
       );
       await IsarSetup.instance.towerProgress.put(
         TowerProgress()
@@ -93,6 +94,7 @@ void main() {
     expect(summaries[0].realmDisplay, isNotNull);
     expect(summaries[0].chapterIndex, 4);
     expect(summaries[0].clearedStageCount, 2);
+    expect(summaries[0].completedFirstCycle, true);
     expect(summaries[0].highestTowerFloor, 12);
     expect(summaries[0].isMostRecent, true);
     expect(summaries[2].isEmpty, true, reason: 'slot3 无 db → 空槽');
@@ -100,6 +102,24 @@ void main() {
     // 读完只读实例必 close,无句柄泄漏。
     expect(Isar.getInstance('wuxia_save_slot1'), isNull);
     expect(Isar.getInstance('wuxia_save_slot3'), isNull);
+  });
+
+  test('listSlots:旧档仅 clearedStageIds 含终章也识别为首周目完成', () async {
+    await IsarSetup.switchSlot(1, directory: tempDir);
+    await OnboardingService(isar: IsarSetup.instance).ensureFoundingMasters();
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.mainlineProgress.put(
+        MainlineProgress()
+          ..saveDataId = 1
+          ..clearedStageIds = ['stage_06_05']
+          ..clearedStageCycleKeys = [],
+      );
+    });
+
+    final summaries = await IsarSetup.listSlots(directory: tempDir);
+
+    expect(summaries[0].completedFirstCycle, true);
+    expect(summaries[1].completedFirstCycle, false);
   });
 
   test('listSlots 当前已打开槽直接读不重开/不关', () async {
