@@ -54,6 +54,9 @@ jobs:
       - name: Run tests with coverage
         run: flutter test --coverage --no-pub
 
+      - name: Enforce line coverage ratchet
+        run: dart run tool/coverage_ratchet.dart
+
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
