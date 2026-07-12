@@ -1051,65 +1051,103 @@ class _DerivedStatsSection extends ConsumerWidget {
     final evadeText = UiStrings.percent(
       CharacterDerivedStats.evasionRate(character, n),
     );
+    final equipmentAttack = equipped.fold<int>(
+      0,
+      (sum, equipment) =>
+          sum + CharacterDerivedStats.effectiveEquipmentAttack(equipment, n),
+    );
+    final defenseRate = n.defenseRateByTier[character.realmTier];
+    if (defenseRate == null) {
+      throw StateError(
+        'numbers.yaml defenseRateByTier 缺 ${character.realmTier.name}',
+      );
+    }
 
     return Column(
       children: [
-        Row(
+        _ResponsiveStatRow(
+          wideColumns: 3,
           children: [
-            Expanded(
-              child: _DerivedStatCard(
-                label: UiStrings.statHp,
-                value: '$hp',
-                glossary: UiStrings.glossaryHp,
-              ),
+            _DerivedStatCard(
+              label: UiStrings.statHp,
+              value: '$hp',
+              glossary: UiStrings.glossaryHp,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _DerivedStatCard(
-                label: UiStrings.statInternalForce,
-                value: UiStrings.internalForceValue(
-                  character.internalForce,
-                  ifMax,
-                ),
-                glossary: UiStrings.glossaryInternalForce,
-                valueFontSize: 22,
+            _DerivedStatCard(
+              label: UiStrings.statInternalForce,
+              value: UiStrings.internalForceValue(
+                character.internalForce,
+                ifMax,
               ),
+              glossary: UiStrings.glossaryInternalForce,
+              valueFontSize: 22,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _DerivedStatCard(
-                label: UiStrings.statSpeed,
-                value: speedText,
-                glossary: UiStrings.glossarySpeed,
-              ),
+            _DerivedStatCard(
+              label: UiStrings.statEffectiveEquipmentAttack,
+              value: '$equipmentAttack',
+              glossary: UiStrings.glossaryEffectiveEquipmentAttack,
             ),
           ],
         ),
         const SizedBox(height: 10),
-        Row(
+        _ResponsiveStatRow(
+          wideColumns: 4,
           children: [
-            Expanded(
-              child: _DerivedStatCard(
-                label: UiStrings.statCriticalRate,
-                value: critText,
-                glossary: UiStrings.glossaryCriticalRate,
-                accentColor: WuxiaUi.jiang,
-              ),
+            _DerivedStatCard(
+              label: UiStrings.statSpeed,
+              value: speedText,
+              glossary: UiStrings.glossarySpeed,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _DerivedStatCard(
-                label: UiStrings.statEvasionRate,
-                value: evadeText,
-                glossary: UiStrings.glossaryEvasionRate,
-                accentColor: WuxiaUi.woodDark,
-              ),
+            _DerivedStatCard(
+              label: UiStrings.statBaseDefenseRate,
+              value: UiStrings.percent(defenseRate),
+              glossary: UiStrings.glossaryBaseDefenseRate,
             ),
-            const SizedBox(width: 10),
-            const Expanded(child: SizedBox.shrink()),
+            _DerivedStatCard(
+              label: UiStrings.statCriticalRate,
+              value: critText,
+              glossary: UiStrings.glossaryCriticalRate,
+              accentColor: WuxiaUi.jiang,
+            ),
+            _DerivedStatCard(
+              label: UiStrings.statEvasionRate,
+              value: evadeText,
+              glossary: UiStrings.glossaryEvasionRate,
+              accentColor: WuxiaUi.woodDark,
+            ),
           ],
         ),
       ],
+    );
+  }
+}
+
+class _ResponsiveStatRow extends StatelessWidget {
+  const _ResponsiveStatRow({required this.wideColumns, required this.children});
+
+  final int wideColumns;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    const spacing = 10.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 720
+            ? wideColumns
+            : constraints.maxWidth >= 420
+            ? 2
+            : 1;
+        final width =
+            (constraints.maxWidth - spacing * (columns - 1)) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final child in children) SizedBox(width: width, child: child),
+          ],
+        );
+      },
     );
   }
 }

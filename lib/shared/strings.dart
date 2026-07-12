@@ -691,6 +691,8 @@ class UiStrings {
   static const String statSpeed = '速度';
   static const String statCriticalRate = '暴击率';
   static const String statEvasionRate = '闪避率';
+  static const String statEffectiveEquipmentAttack = '实战装备攻击';
+  static const String statBaseDefenseRate = '基础防御';
 
   // M4 术语释义气泡（GlossaryTip）：四项属性 + 派生数值 + 养成进度术语。
   // §5.7 框架下用悬停/长按气泡，非教程弹窗。文案水墨克制、不用网游词汇。
@@ -707,6 +709,10 @@ class UiStrings {
   static const String glossaryCriticalRate =
       '暴击率：触发暴击的概率，暴击额外加成伤害。身法越高，暴击越易触发。';
   static const String glossaryEvasionRate = '闪避率：完全避开来袭的概率。身法越高，越易闪躲。';
+  static const String glossaryEffectiveEquipmentAttack =
+      '实战装备攻击：当前全身装备经过强化、共鸣与开锋后的攻击总和。';
+  static const String glossaryBaseDefenseRate =
+      '基础防御：当前境界提供的减伤比例，战斗中的心法与其他效果会在此基础上叠加。';
   static const String glossaryCultivation = '修炼度：心法的精熟程度，越高则招式伤害倍率越大。随实战与闭关渐积。';
   static const String glossaryResonance = '共鸣度：人与兵刃的默契，血战中渐积。圆满者可悟人剑合一。';
 
