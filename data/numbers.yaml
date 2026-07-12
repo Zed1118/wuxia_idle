@@ -32,12 +32,39 @@ meta:
   notes: "所有数值基于 GDD v1.1 §5.2 数值红线设计；公式系数见 combat 段"
 
 # =============================================================================
+# 0. 角色临时状态
+# =============================================================================
+
+conditions:
+  inner_breath_disorder:
+    max_hours: 12.0
+    max_inner_force_penalty_pct: 0.20
+    max_opening_qi_penalty: 20
+    battle_recovery_hours: 1.0
+    dispel_hours: 6.0
+    boss_defeat_hours: 8.0
+    inner_demon_hours: 12.0
+
+# =============================================================================
 # 1. 战斗公式系数
 # =============================================================================
 # 对应 GDD §5.3 / §5.4 / §5.6 三大公式。所有系数提取为可调参数，便于未来
 # 整体平衡调整。
 
 combat:
+
+  # --- 真气运气循环（与永久内力拆分）---
+  qi:
+    base_max: 100
+    opening_qi: 40
+    opening_cap: 80
+    min_max: 80
+    max_cap: 140
+    school_bonus: 5
+    chain_recovery_pct: 0.25
+    gain_multiplier_cap: 1.50
+    cost_reduction_cap: 0.20
+    delta_abs_cap: 100
 
   # --- 招式熟练度阶段(可玩性 P1a · spec §三/§2.5) ---
   # 来源=战斗放招次数(含挂机自动战斗,计数源 Technique.skillUsageCount)。

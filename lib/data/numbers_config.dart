@@ -24,6 +24,9 @@ class NumbersConfig {
   final String version;
   final CombatNumbers combat;
 
+  /// 内息紊乱：不扣永久内力的战败/散功临时代价。
+  final InnerBreathDisorderConfig innerBreathDisorder;
+
   /// 招式熟练度阶段配置(可玩性 P1a · spec §三/§2.5)。
   /// `combat.skill_proficiency`,全局阶段倍率(末阶 1.30 作综合 cap)。
   final SkillProficiencyConfig skillProficiency;
@@ -263,6 +266,7 @@ class NumbersConfig {
   const NumbersConfig({
     required this.version,
     required this.combat,
+    required this.innerBreathDisorder,
     required this.skillProficiency,
     required this.skillUnlock,
     required this.treasureDrop,
@@ -334,6 +338,11 @@ class NumbersConfig {
     return NumbersConfig(
       version: meta['version'] as String,
       combat: CombatNumbers.fromYaml(combat),
+      innerBreathDisorder: InnerBreathDisorderConfig.fromYaml(
+        ((y['conditions'] as Map?)?['inner_breath_disorder'] as Map?)
+                ?.cast<String, dynamic>() ??
+            const {},
+      ),
       skillProficiency: SkillProficiencyConfig.fromYaml(
         combat['skill_proficiency'] as Map<String, dynamic>?,
       ),
@@ -1211,6 +1220,7 @@ class YinRouInternalInjuryConfig {
 
 /// 战斗段强类型（numbers.yaml `combat`）。
 class CombatNumbers {
+  final QiConfig qi;
   final DamageFormula damageFormula;
   final MaxHpFormula maxHpFormula;
   final SpeedFormula speedFormula;
@@ -1225,6 +1235,7 @@ class CombatNumbers {
   final WeaknessConfig weakness;
 
   const CombatNumbers({
+    required this.qi,
     required this.damageFormula,
     required this.maxHpFormula,
     required this.speedFormula,
@@ -1241,6 +1252,9 @@ class CombatNumbers {
 
   factory CombatNumbers.fromYaml(Map<String, dynamic> y) {
     return CombatNumbers(
+      qi: QiConfig.fromYaml(
+        (y['qi'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
       damageFormula: DamageFormula.fromYaml(
         y['damage_formula'] as Map<String, dynamic>,
       ),
@@ -1272,6 +1286,112 @@ class CombatNumbers {
       ),
       weakness: WeaknessConfig.fromYaml(y['weakness'] as Map? ?? const {}),
     );
+  }
+}
+
+/// Bounded per-battle qi economy (`combat.qi`).
+class QiConfig {
+  const QiConfig({
+    required this.baseMax,
+    required this.openingQi,
+    required this.openingCap,
+    required this.minMax,
+    required this.maxCap,
+    required this.schoolBonus,
+    required this.chainRecoveryPct,
+    required this.gainMultiplierCap,
+    required this.costReductionCap,
+    required this.deltaAbsCap,
+  });
+
+  final int baseMax;
+  final int openingQi;
+  final int openingCap;
+  final int minMax;
+  final int maxCap;
+  final int schoolBonus;
+  final double chainRecoveryPct;
+  final double gainMultiplierCap;
+  final double costReductionCap;
+  final int deltaAbsCap;
+
+  factory QiConfig.fromYaml(Map<String, dynamic> y) {
+    final config = QiConfig(
+      baseMax: (y['base_max'] as num?)?.toInt() ?? 100,
+      openingQi: (y['opening_qi'] as num?)?.toInt() ?? 40,
+      openingCap: (y['opening_cap'] as num?)?.toInt() ?? 80,
+      minMax: (y['min_max'] as num?)?.toInt() ?? 80,
+      maxCap: (y['max_cap'] as num?)?.toInt() ?? 140,
+      schoolBonus: (y['school_bonus'] as num?)?.toInt() ?? 5,
+      chainRecoveryPct: (y['chain_recovery_pct'] as num?)?.toDouble() ?? 0.25,
+      gainMultiplierCap: (y['gain_multiplier_cap'] as num?)?.toDouble() ?? 1.5,
+      costReductionCap: (y['cost_reduction_cap'] as num?)?.toDouble() ?? 0.2,
+      deltaAbsCap: (y['delta_abs_cap'] as num?)?.toInt() ?? 100,
+    );
+    if (config.minMax <= 0 ||
+        config.baseMax < config.minMax ||
+        config.baseMax > config.maxCap ||
+        config.openingQi < 0 ||
+        config.openingCap > config.maxCap ||
+        config.schoolBonus < 0 ||
+        config.chainRecoveryPct < 0 ||
+        config.chainRecoveryPct > 1 ||
+        config.gainMultiplierCap < 1 ||
+        config.costReductionCap < 0 ||
+        config.costReductionCap >= 1 ||
+        config.deltaAbsCap <= 0) {
+      throw StateError('combat.qi 配置越界: $y');
+    }
+    return config;
+  }
+}
+
+/// Temporary failure pressure without erasing persistent cultivation.
+class InnerBreathDisorderConfig {
+  const InnerBreathDisorderConfig({
+    required this.maxHours,
+    required this.maxInnerForcePenaltyPct,
+    required this.maxOpeningQiPenalty,
+    required this.battleRecoveryHours,
+    required this.dispelHours,
+    required this.bossDefeatHours,
+    required this.innerDemonHours,
+  });
+
+  final double maxHours;
+  final double maxInnerForcePenaltyPct;
+  final int maxOpeningQiPenalty;
+  final double battleRecoveryHours;
+  final double dispelHours;
+  final double bossDefeatHours;
+  final double innerDemonHours;
+
+  factory InnerBreathDisorderConfig.fromYaml(Map<String, dynamic> y) {
+    final config = InnerBreathDisorderConfig(
+      maxHours: (y['max_hours'] as num?)?.toDouble() ?? 12,
+      maxInnerForcePenaltyPct:
+          (y['max_inner_force_penalty_pct'] as num?)?.toDouble() ?? 0.2,
+      maxOpeningQiPenalty: (y['max_opening_qi_penalty'] as num?)?.toInt() ?? 20,
+      battleRecoveryHours:
+          (y['battle_recovery_hours'] as num?)?.toDouble() ?? 1,
+      dispelHours: (y['dispel_hours'] as num?)?.toDouble() ?? 6,
+      bossDefeatHours: (y['boss_defeat_hours'] as num?)?.toDouble() ?? 8,
+      innerDemonHours: (y['inner_demon_hours'] as num?)?.toDouble() ?? 12,
+    );
+    if (config.maxHours <= 0 ||
+        config.maxInnerForcePenaltyPct < 0 ||
+        config.maxInnerForcePenaltyPct >= 1 ||
+        config.maxOpeningQiPenalty < 0 ||
+        config.battleRecoveryHours < 0 ||
+        config.dispelHours < 0 ||
+        config.bossDefeatHours < 0 ||
+        config.innerDemonHours < 0 ||
+        config.dispelHours > config.maxHours ||
+        config.bossDefeatHours > config.maxHours ||
+        config.innerDemonHours > config.maxHours) {
+      throw StateError('conditions.inner_breath_disorder 配置越界: $y');
+    }
+    return config;
   }
 }
 
