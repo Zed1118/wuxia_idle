@@ -1877,6 +1877,15 @@ class RetreatConfig {
   /// 基础装备触发概率，与地图 equipmentDropRate 相乘后为最终掉落概率。
   final double baseEquipDropProbability;
 
+  /// 装备判定节点间隔（小时）。
+  final int equipmentRollIntervalHours;
+
+  /// 一次闭关最多进行的装备判定次数。
+  final int equipmentRollMaxCount;
+
+  /// 各节点的目标品阶权重。
+  final List<RetreatEquipmentTierWeights> equipmentTierWeights;
+
   /// 内力每小时基础点数（#30）。
   final double baseInternalForcePerHour;
 
@@ -1908,6 +1917,9 @@ class RetreatConfig {
     required this.realmScalePerTier,
     required this.capHours,
     required this.baseEquipDropProbability,
+    required this.equipmentRollIntervalHours,
+    required this.equipmentRollMaxCount,
+    required this.equipmentTierWeights,
     required this.baseInternalForcePerHour,
     required this.baseTechniqueLearnPerHour,
     required this.solarTermMultiplier,
@@ -1948,6 +1960,22 @@ class RetreatConfig {
           return (month: int.parse(parts[1]), day: int.parse(parts[2]));
         })
         .toList(growable: false);
+    final equipmentRollIntervalHours =
+        (y['equipment_roll_interval_hours'] as num).toInt();
+    final equipmentRollMaxCount = (y['equipment_roll_max_count'] as num)
+        .toInt();
+    final equipmentTierWeights = (y['equipment_tier_weights'] as List)
+        .map(
+          (entry) => RetreatEquipmentTierWeights.fromYaml(
+            entry as Map<String, dynamic>,
+          ),
+        )
+        .toList(growable: false);
+    _validateEquipmentRollConfig(
+      intervalHours: equipmentRollIntervalHours,
+      maxCount: equipmentRollMaxCount,
+      weights: equipmentTierWeights,
+    );
     return RetreatConfig(
       maps: [
         for (final m in rawMaps)
@@ -1960,6 +1988,9 @@ class RetreatConfig {
       capHours: (y['cap_hours'] as num).toInt(),
       baseEquipDropProbability: (y['base_equip_drop_probability'] as num)
           .toDouble(),
+      equipmentRollIntervalHours: equipmentRollIntervalHours,
+      equipmentRollMaxCount: equipmentRollMaxCount,
+      equipmentTierWeights: equipmentTierWeights,
       baseInternalForcePerHour: (y['base_internal_force_per_hour'] as num)
           .toDouble(),
       baseTechniqueLearnPerHour: (y['base_technique_learn_per_hour'] as num)
@@ -1973,6 +2004,26 @@ class RetreatConfig {
         zhengWu['applies_to_school'] as String,
       ),
     );
+  }
+
+  static void _validateEquipmentRollConfig({
+    required int intervalHours,
+    required int maxCount,
+    required List<RetreatEquipmentTierWeights> weights,
+  }) {
+    if (intervalHours <= 0 || maxCount <= 0 || weights.length != maxCount) {
+      throw StateError('闭关装备节点配置数量或间隔非法');
+    }
+    for (var i = 0; i < weights.length; i++) {
+      final row = weights[i];
+      if (row.hour != intervalHours * (i + 1)) {
+        throw StateError('闭关装备节点必须按间隔严格递增');
+      }
+      if (row.values.any((value) => value < 0) ||
+          (row.total - 1.0).abs() > 1e-9) {
+        throw StateError('闭关装备品阶权重必须非负且总和为 1');
+      }
+    }
   }
 
   /// 当前日期是否落在节气日（按 month/day 比对，忽略年份 — 方案 A 跨年容忍 1 天偏差）。
@@ -1995,6 +2046,36 @@ class RetreatConfig {
     }
     return scale;
   }
+}
+
+/// 单个闭关装备节点的品阶权重。
+class RetreatEquipmentTierWeights {
+  final int hour;
+  final double base;
+  final double current;
+  final double above1;
+  final double above2;
+
+  const RetreatEquipmentTierWeights({
+    required this.hour,
+    required this.base,
+    required this.current,
+    required this.above1,
+    required this.above2,
+  });
+
+  factory RetreatEquipmentTierWeights.fromYaml(Map<String, dynamic> y) =>
+      RetreatEquipmentTierWeights(
+        hour: (y['hour'] as num).toInt(),
+        base: (y['base'] as num).toDouble(),
+        current: (y['current'] as num).toDouble(),
+        above1: (y['above_1'] as num).toDouble(),
+        above2: (y['above_2'] as num).toDouble(),
+      );
+
+  List<double> get values => [base, current, above1, above2];
+
+  double get total => base + current + above1 + above2;
 }
 
 /// 农历节日配置（numbers.yaml `festivals`，W16 GDD §12.4 接口预留）。

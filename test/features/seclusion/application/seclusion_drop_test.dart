@@ -13,22 +13,9 @@ import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/shared/strings.dart';
-import 'package:wuxia_idle/shared/utils/rng.dart';
 
 import '../../../support/isar_test_support.dart';
 import '../../../support/test_data.dart';
-
-/// 固定 nextDouble 的测试 Rng（驱动外层闸 + 加权抽 1 确定性）。
-class _ConstRng implements Rng {
-  _ConstRng(this.value);
-  final double value;
-  @override
-  double nextDouble() => value;
-  @override
-  int nextInt(int max) => 0;
-  @override
-  T pick<T>(List<T> list) => list[0];
-}
 
 const kSaveDataId = 1;
 const kCharId = 10;
@@ -93,56 +80,94 @@ void main() {
     ..id = id
     ..saveDataId = kSaveDataId
     ..mapType = RetreatMapType.shanLin
-    ..durationHours = 4
+    ..durationHours = 0
+    ..realmTierAtStart = RealmTier.xueTu
     ..startedAt = DateTime(2026, 5, 11, 10, 0)
     ..status = RetreatStatus.active
     ..actualRewards = [];
 
-  test('computeOutputs：闸命中 + dropService → 1 件压一阶(山林 xunChang)', () {
-    final now = DateTime(2026, 5, 11, 14, 0); // start + 4h
+  test('computeOutputs：同一 session 的 6 个节点结果可稳定复现', () {
+    final now = DateTime(2026, 5, 14, 10, 0); // start + 72h
     final dropSvc = DropService(
       equipmentDefLookup: GameRepository.instance.getEquipment,
       defaultObtainedFrom: UiStrings.dropSourceSeclusion,
       now: () => now,
     );
-    final out = SeclusionService.computeOutputs(
-      session: shanLinSession(50),
+    RetreatOutputs calculate(int id) => SeclusionService.computeOutputs(
+      session: shanLinSession(id),
       charRealmTier: RealmTier.xueTu,
       config: GameRepository.instance.numbers.retreat,
       maps: GameRepository.instance.seclusionMaps,
       now: now,
       dropService: dropSvc,
-      rng: _ConstRng(0.0), // 0.0 < equipProb(1.0×0.1) → 命中；抽第 1 条
     );
-    expect(out.equipmentDrops, hasLength(1));
-    expect(out.equipmentDrops.first.tier, EquipmentTier.xunChang);
+    final hitId = List.generate(
+      1000,
+      (index) => index + 1,
+    ).firstWhere((id) => calculate(id).equipmentDrops.isNotEmpty);
+    final first = calculate(hitId);
+    final second = calculate(hitId);
+
     expect(
-      out.equipmentDrops.first.obtainedFrom,
-      UiStrings.dropSourceSeclusion,
+      second.equipmentDrops.map((equipment) => equipment.defId),
+      first.equipmentDrops.map((equipment) => equipment.defId),
+    );
+    expect(first.equipmentDrops.length, lessThanOrEqualTo(6));
+    expect(
+      first.equipmentDrops.every(
+        (equipment) => equipment.obtainedFrom == UiStrings.dropSourceSeclusion,
+      ),
+      isTrue,
+    );
+
+    final allMissId = List.generate(
+      1000,
+      (index) => index + 1,
+    ).firstWhere((id) => calculate(id).equipmentDrops.isEmpty);
+    expect(
+      calculate(allMissId).equipmentDrops,
+      isEmpty,
+      reason: '六次判定仍可全部落空，不设保底',
     );
   });
 
   test('computeOutputs：不传 dropService → equipDrops 恒空(零回归)', () {
-    final now = DateTime(2026, 5, 11, 14, 0);
+    final now = DateTime(2026, 5, 14, 10, 0);
     final out = SeclusionService.computeOutputs(
       session: shanLinSession(51),
       charRealmTier: RealmTier.xueTu,
       config: GameRepository.instance.numbers.retreat,
       maps: GameRepository.instance.seclusionMaps,
       now: now,
-      rng: _ConstRng(0.0),
     );
     expect(out.equipmentDrops, isEmpty);
   });
 
   test('completeRetreat：收功后掉落装备真入 isar.equipments + obtainedFrom 闭关', () async {
     final start = DateTime(2026, 5, 11, 10, 0);
-    final completeAt = start.add(const Duration(hours: 4));
+    final completeAt = start.add(const Duration(hours: 72));
+    final dropSvc = DropService(
+      equipmentDefLookup: GameRepository.instance.getEquipment,
+      defaultObtainedFrom: UiStrings.dropSourceSeclusion,
+      now: () => completeAt,
+    );
+    final hitId = List.generate(1000, (index) => index + 1).firstWhere((id) {
+      final candidate = shanLinSession(id);
+      return SeclusionService.computeOutputs(
+        session: candidate,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: completeAt,
+        dropService: dropSvc,
+      ).equipmentDrops.isNotEmpty;
+    });
     final session = RetreatSession()
-      ..id = 60
+      ..id = hitId
       ..saveDataId = kSaveDataId
       ..mapType = RetreatMapType.shanLin
-      ..durationHours = 4
+      ..durationHours = 0
+      ..realmTierAtStart = RealmTier.xueTu
       ..startedAt = start
       ..status = RetreatStatus.active
       ..actualRewards = [];
@@ -157,12 +182,11 @@ void main() {
       config: GameRepository.instance.numbers.retreat,
       maps: GameRepository.instance.seclusionMaps,
       now: completeAt,
-      rng: _ConstRng(0.0), // 强制外层闸命中
     );
 
     final eqs = await IsarSetup.instance.equipments.where().findAll();
-    expect(eqs, hasLength(1));
-    expect(eqs.first.tier, EquipmentTier.xunChang);
+    expect(eqs, isNotEmpty);
+    expect(eqs.length, lessThanOrEqualTo(6));
     expect(eqs.first.obtainedFrom, UiStrings.dropSourceSeclusion);
   });
 }

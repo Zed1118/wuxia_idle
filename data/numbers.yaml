@@ -942,6 +942,17 @@ encounter:
 
 retreat:
 
+  # 开放式闭关每满 12 小时进行一次独立装备判定，最多六次。
+  equipment_roll_interval_hours: 12
+  equipment_roll_max_count: 6
+  equipment_tier_weights:
+    - {hour: 12, base: 0.80, current: 0.18, above_1: 0.02, above_2: 0.00}
+    - {hour: 24, base: 0.70, current: 0.25, above_1: 0.05, above_2: 0.00}
+    - {hour: 36, base: 0.60, current: 0.30, above_1: 0.08, above_2: 0.02}
+    - {hour: 48, base: 0.50, current: 0.34, above_1: 0.12, above_2: 0.04}
+    - {hour: 60, base: 0.40, current: 0.38, above_1: 0.16, above_2: 0.06}
+    - {hour: 72, base: 0.30, current: 0.40, above_1: 0.20, above_2: 0.10}
+
   # --- 三档闭关时长（GDD §7.3）---
   durations:
     - hours: 1

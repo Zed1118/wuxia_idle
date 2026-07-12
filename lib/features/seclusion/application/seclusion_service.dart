@@ -22,6 +22,7 @@ import '../../event/application/game_event_service.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
+import 'retreat_settlement_calculator.dart';
 
 /// 闭关产出汇总（Phase 3 T48 / W15 #30 扩 2 维度）。
 ///
@@ -79,7 +80,7 @@ typedef RetreatResult = ({
 ///                            × actualHours × realmScale × solarBonus)
 ///   - internalForce  = floor(config.baseInternalForcePerHour  × def.internalForceGrowth
 ///                            × actualHours × realmScale × solarBonus × ziShiBonus)
-///   - 装备抽检：per session 单次，概率 = equipmentDropRate × baseEquipDropProbability
+///   - 装备判定：每满配置间隔进行一次，各节点使用存档级稳定种子
 ///   - 正午阳刚 +20%：已实装(§12 #7 v1.4 收口)——正午时段(_isZhengWu) + 主修
 ///     == config.zhengWuAppliesToSchool(gangMeng) 时,internalForcePoints 维度乘
 ///     zhengWuYangSchoolMultiplier(1.20);见下方 zhengWuBonus 真消费(非刚猛/非正午 → 1.0)
@@ -268,14 +269,25 @@ class SeclusionService {
             .floor()
             .clamp(0, 999999);
 
-    // 装备抽检：每 session 单次，概率 = equipmentDropRate × base
-    final effectiveRng = rng ?? DefaultRng();
-    final equipRoll = effectiveRng.nextDouble();
-    final equipProb = def.equipmentDropRate * config.baseEquipDropProbability;
     final equipDrops = <Equipment>[];
-    if (dropService != null && equipRoll < equipProb) {
-      final eq = dropService.rollOneWeighted(def.dropTable, effectiveRng);
-      if (eq != null) equipDrops.add(eq);
+    if (dropService != null && GameRepository.isLoaded) {
+      final rollCount = RetreatSettlementCalculator.equipmentRollCount(
+        retreatHours: actualHours,
+        intervalHours: config.equipmentRollIntervalHours,
+        maxCount: config.equipmentRollMaxCount,
+      );
+      for (var nodeIndex = 1; nodeIndex <= rollCount; nodeIndex++) {
+        final equipment = RetreatSettlementCalculator.rollEquipmentAtNode(
+          session: session,
+          nodeIndex: nodeIndex,
+          map: def,
+          config: config,
+          equipmentDefs: GameRepository.instance.equipmentDefs.values.toList(),
+          obtainedAt: dropService.now(),
+          obtainedFrom: dropService.defaultObtainedFrom,
+        );
+        if (equipment != null) equipDrops.add(equipment);
+      }
     }
 
     final mapEvents = _deriveMapEvents(def, actualHours);
@@ -677,8 +689,6 @@ class SeclusionService {
     final h = startedAt.hour;
     return h == 11 || h == 12;
   }
-
-  static double _min(double a, double b) => a < b ? a : b;
 
   static double _clamp(double v, double lo, double hi) =>
       v < lo ? lo : (v > hi ? hi : v);

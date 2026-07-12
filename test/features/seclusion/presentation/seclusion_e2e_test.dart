@@ -46,11 +46,11 @@ class _FakeSeclusionService implements SeclusionService {
   @override
   Future<RetreatSession> startRetreat({
     required RetreatMapType mapType,
-    required int durationHours,
+    int? durationHours,
     required int saveDataId,
     required int characterId,
     required RealmTier charRealmTier,
-    required List<dynamic> maps,
+    required List<SeclusionMapDef> maps,
     required DateTime now,
   }) async {
     startCallCount++;
