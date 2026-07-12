@@ -42,7 +42,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 600
-    internalForceCost: 50
+    qiDelta: -30
     cooldownTurns: 1
     requiresManualTrigger: false
     visualEffect: footwork_basic
@@ -55,7 +55,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 900
-    internalForceCost: 80
+    qiDelta: -30
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: breathing_basic
@@ -68,7 +68,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 750
-    internalForceCost: 60
+    qiDelta: -30
     cooldownTurns: 1
     requiresManualTrigger: false
     visualEffect: lightfoot_step
@@ -82,7 +82,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 1200
-    internalForceCost: 120
+    qiDelta: -30
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: focus_strike
@@ -95,7 +95,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 1100
-    internalForceCost: 100
+    qiDelta: -30
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: breathing_advanced
@@ -112,7 +112,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 1600
-    internalForceCost: 140
+    qiDelta: -30
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: sword_sprout
@@ -126,7 +126,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 1400
-    internalForceCost: 120
+    qiDelta: -30
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: fist_seeking
@@ -139,7 +139,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 1700
-    internalForceCost: 150
+    qiDelta: -30
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: hidden_weapon
@@ -152,7 +152,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 1900
-    internalForceCost: 170
+    qiDelta: -30
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: palm_cloud
@@ -166,7 +166,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 1500
-    internalForceCost: 130
+    qiDelta: -30
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: dodge_flow
@@ -184,7 +184,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 2300
-    internalForceCost: 200
+    qiDelta: -30
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: sword_rain_listen
@@ -198,7 +198,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 2100
-    internalForceCost: 180
+    qiDelta: -30
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: drill_combo
@@ -212,7 +212,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 2400
-    internalForceCost: 220
+    qiDelta: -30
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: wuxia_intent
@@ -225,7 +225,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 1900
-    internalForceCost: 170
+    qiDelta: -30
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: fist_flame
@@ -239,7 +239,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 2200
-    internalForceCost: 190
+    qiDelta: -30
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: sword_mystic
@@ -254,7 +254,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 2200
-    internalForceCost: 180
+    qiDelta: -30
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: rain_listen_blade
@@ -271,7 +271,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 2800
-    internalForceCost: 240
+    qiDelta: -30
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: ancient_sword
@@ -284,7 +284,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 2700
-    internalForceCost: 230
+    qiDelta: -30
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: sword_breeze
@@ -298,7 +298,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 2900
-    internalForceCost: 260
+    qiDelta: -30
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: fire_fury
@@ -311,7 +311,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 2600
-    internalForceCost: 220
+    qiDelta: -30
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: finger_dark
@@ -325,7 +325,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 3000
-    internalForceCost: 270
+    qiDelta: -30
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: lightfoot_immortal
@@ -340,7 +340,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 2700
-    internalForceCost: 280
+    qiDelta: -30
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: lonely_isle_blade
@@ -353,7 +353,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 2600
-    internalForceCost: 260
+    qiDelta: -30
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: self_blade_meditation
@@ -370,7 +370,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 3700
-    internalForceCost: 320
+    qiDelta: -30
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: water_flow
@@ -384,7 +384,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 3500
-    internalForceCost: 300
+    qiDelta: -30
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: night_strike
@@ -398,7 +398,7 @@ encounter_skills:
     type: ultimate
     targetType: single
     powerMultiplier: 4000
-    internalForceCost: 380
+    qiDelta: -60
     cooldownTurns: 5
     requiresManualTrigger: true
     visualEffect: thunder_bolt
@@ -411,7 +411,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 3800
-    internalForceCost: 340
+    qiDelta: -30
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: vajra_body
@@ -425,7 +425,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 3900
-    internalForceCost: 350
+    qiDelta: -30
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: sword_mountains_rivers
@@ -440,7 +440,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 3600
-    internalForceCost: 400
+    qiDelta: -30
     cooldownTurns: 5
     requiresManualTrigger: false
     visualEffect: snow_night_star
@@ -453,7 +453,7 @@ encounter_skills:
     type: ultimate
     targetType: aoe
     powerMultiplier: 3900
-    internalForceCost: 500
+    qiDelta: -60
     cooldownTurns: 6
     requiresManualTrigger: true
     visualEffect: dragon_roar_ultimate
@@ -470,7 +470,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 4500
-    internalForceCost: 400
+    qiDelta: -30
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: ice_freeze_slash
@@ -484,7 +484,7 @@ encounter_skills:
     type: ultimate
     targetType: aoe
     powerMultiplier: 5200
-    internalForceCost: 450
+    qiDelta: -60
     cooldownTurns: 5
     requiresManualTrigger: true
     visualEffect: ice_mystic
@@ -498,7 +498,7 @@ encounter_skills:
     type: ultimate
     targetType: aoe
     powerMultiplier: 5500
-    internalForceCost: 480
+    qiDelta: -60
     cooldownTurns: 5
     requiresManualTrigger: true
     visualEffect: flame_heaven
@@ -511,7 +511,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 5000
-    internalForceCost: 430
+    qiDelta: -30
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: palm_qiankun
@@ -524,7 +524,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 4800
-    internalForceCost: 410
+    qiDelta: -30
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: heart_calm
@@ -542,7 +542,7 @@ encounter_skills:
     type: ultimate
     targetType: single
     powerMultiplier: 7500
-    internalForceCost: 600
+    qiDelta: -60
     cooldownTurns: 6
     requiresManualTrigger: true
     visualEffect: dragon_roar
@@ -556,7 +556,7 @@ encounter_skills:
     type: ultimate
     targetType: single
     powerMultiplier: 8000
-    internalForceCost: 650
+    qiDelta: -60
     cooldownTurns: 6
     requiresManualTrigger: true
     visualEffect: phoenix_rise
@@ -569,7 +569,7 @@ encounter_skills:
     type: ultimate
     targetType: single
     powerMultiplier: 7800
-    internalForceCost: 620
+    qiDelta: -60
     cooldownTurns: 6
     requiresManualTrigger: true
     visualEffect: sword_seal_fame
@@ -583,7 +583,7 @@ encounter_skills:
     type: powerSkill
     targetType: single
     powerMultiplier: 7000
-    internalForceCost: 560
+    qiDelta: -30
     cooldownTurns: 5
     requiresManualTrigger: false
     visualEffect: nameless_strike
@@ -597,7 +597,7 @@ encounter_skills:
     type: ultimate
     targetType: single
     powerMultiplier: 6800
-    internalForceCost: 540
+    qiDelta: -60
     cooldownTurns: 6
     requiresManualTrigger: true
     visualEffect: heaven_path
