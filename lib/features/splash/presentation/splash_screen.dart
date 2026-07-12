@@ -18,10 +18,18 @@ class SplashScreen extends StatefulWidget {
   const SplashScreen({
     super.key,
     this.minDisplay = const Duration(milliseconds: 2200),
+    this.loadDefinitions,
+    this.nextScreenBuilder,
   });
 
   /// 最短停留时长——加载过快时也让开场画面驻留,避免一闪而过。测试传 [Duration.zero]。
   final Duration minDisplay;
+
+  /// 配置加载 seam。生产为空时走 [GameRepository.loadAllDefs]；测试可控时序。
+  final Future<void> Function()? loadDefinitions;
+
+  /// 加载完成后的目的页 seam。生产为空时进入 [SaveSelectScreen]。
+  final WidgetBuilder? nextScreenBuilder;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -44,16 +52,21 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _bootstrap() async {
-    final repo = await GameRepository.loadAllDefs();
-    if (kDebugMode) {
-      debugPrint(
-        '[GameRepository] 已加载 ${repo.realms.length} 行境界 / '
-        '${repo.equipmentDefs.length} 件装备 / '
-        '${repo.techniqueDefs.length} 本心法 / '
-        '${repo.skillDefs.length} 招招式 / '
-        '${repo.stageDefs.length} 个关卡 '
-        '(numbers v${repo.numbers.version})',
-      );
+    final injectedLoader = widget.loadDefinitions;
+    if (injectedLoader != null) {
+      await injectedLoader();
+    } else {
+      final repo = await GameRepository.loadAllDefs();
+      if (kDebugMode) {
+        debugPrint(
+          '[GameRepository] 已加载 ${repo.realms.length} 行境界 / '
+          '${repo.equipmentDefs.length} 件装备 / '
+          '${repo.techniqueDefs.length} 本心法 / '
+          '${repo.skillDefs.length} 招招式 / '
+          '${repo.stageDefs.length} 个关卡 '
+          '(numbers v${repo.numbers.version})',
+        );
+      }
     }
     // 多存档槽(spec B):不在此 init Isar / onboard——交由 SaveSelectScreen 选档后
     // switchSlot 开对应 db + ensureFoundingMasters(幂等)。
@@ -78,7 +91,8 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
         transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (_, _, _) => const SaveSelectScreen(),
+        pageBuilder: (_, _, _) =>
+            widget.nextScreenBuilder?.call(context) ?? const SaveSelectScreen(),
         transitionsBuilder: (_, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
       ),

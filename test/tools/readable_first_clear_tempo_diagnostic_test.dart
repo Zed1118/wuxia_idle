@@ -61,6 +61,8 @@ void main() {
         }
       }
 
+      _assertExperienceRatchet(stages, rows);
+
       final csv = '$_outputDir/readable_first_clear_tempo_$_reportDate.csv';
       final md = '$_outputDir/readable_first_clear_tempo_$_reportDate.md';
       _writeCsv(csv, rows);
@@ -73,6 +75,75 @@ void main() {
       expect(rows, isNotEmpty);
     },
     timeout: const Timeout(Duration(minutes: 10)),
+  );
+}
+
+void _assertExperienceRatchet(List<StageDef> stages, List<_TempoRun> rows) {
+  final byStageProfile = <String, List<_TempoRun>>{};
+  for (final row in rows) {
+    byStageProfile
+        .putIfAbsent('${row.stageId}/${row.profile.name}', () => [])
+        .add(row);
+  }
+
+  double averageActions(String stageId, _TempoProfile profile) {
+    final samples =
+        byStageProfile['$stageId/${profile.name}'] ?? const <_TempoRun>[];
+    expect(samples, isNotEmpty, reason: '$stageId/${profile.name} 缺首通节奏样本');
+    return samples.fold<double>(0, (sum, row) => sum + row.actionRows) /
+        samples.length;
+  }
+
+  for (var chapter = 1; chapter <= 6; chapter++) {
+    final stageId = 'stage_${chapter.toString().padLeft(2, '0')}_05';
+    final floor = averageActions(stageId, _TempoProfile.floor);
+    final ceiling = averageActions(stageId, _TempoProfile.ceiling);
+    expect(
+      floor,
+      greaterThanOrEqualTo(6),
+      reason: '$stageId floor 平均动作行 $floor 低于渐进门槛 6',
+    );
+    expect(
+      floor,
+      greaterThanOrEqualTo(ceiling),
+      reason: '$stageId floor=$floor 不应短于 ceiling=$ceiling',
+    );
+  }
+
+  final finalChapterFloor = averageActions('stage_06_05', _TempoProfile.floor);
+  expect(
+    finalChapterFloor,
+    greaterThanOrEqualTo(8),
+    reason: 'stage_06_05 floor 平均动作行 $finalChapterFloor 低于终章门槛 8',
+  );
+
+  final missingBossMechanic = <String>[];
+  for (final stage in stages) {
+    final hasBossPhaseConfig = stage.enemyTeam.any(
+      (enemy) => enemy.bossPhases != null && enemy.bossPhases!.isNotEmpty,
+    );
+    if (!stage.isBossStage || !hasBossPhaseConfig) continue;
+    for (final profile in _TempoProfile.values) {
+      final samples =
+          byStageProfile['${stage.id}/${profile.name}'] ?? const <_TempoRun>[];
+      if (samples.isEmpty) continue;
+      final phaseRows = samples.fold<int>(
+        0,
+        (sum, row) => sum + row.bossPhaseRows,
+      );
+      final chargeRows = samples.fold<int>(
+        0,
+        (sum, row) => sum + row.chargeStartRows + row.chargingRows,
+      );
+      if (phaseRows <= 0 || chargeRows <= 0) {
+        missingBossMechanic.add('${stage.id}/${profile.name}');
+      }
+    }
+  }
+  expect(
+    missingBossMechanic,
+    isEmpty,
+    reason: '配置了阶段但首通不可见的 Boss 机制: $missingBossMechanic',
   );
 }
 
