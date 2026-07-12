@@ -197,16 +197,16 @@ void main() {
         isEmpty,
         reason: '心魔关 isBossStage=false，不触发 Boss 散功',
       );
-      // 余毒已写入角色
+      // 内息紊乱已写入角色
       expect(
-        ch.innerDemonResidueHoursRemaining,
+        ch.innerBreathDisorderHoursRemaining,
         greaterThan(0),
-        reason: 'applyFailurePenalty 应写 innerDemonResidueHoursRemaining',
+        reason: 'applyFailurePenalty 应写 innerBreathDisorderHoursRemaining',
       );
-      // 内力已被削减（numbersConfig.innerDemon.failurePenalty.internalForceMultiplier < 1.0）
+      // 永久内力不被战败削减
       final penalty = result.innerDemonPenaltyByCharacter[ch.id]!;
       expect(penalty.internalForceBefore, 8000);
-      expect(penalty.internalForceAfter, lessThan(8000));
+      expect(penalty.internalForceAfter, 8000);
       // progress 也被削减
       expect(penalty.progressBefore, 800);
       expect(penalty.progressAfter, lessThanOrEqualTo(800));

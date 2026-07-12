@@ -93,7 +93,7 @@ class SkillCodexDetailScreen extends StatelessWidget {
                 ),
                 _StatLine(
                   label: UiStrings.skillCodexCost,
-                  value: '${def.internalForceCost}',
+                  value: UiStrings.skillQiChange(def.qiDelta),
                 ),
                 _StatLine(
                   label: UiStrings.skillCodexCooldown,

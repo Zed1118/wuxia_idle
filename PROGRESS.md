@@ -5,6 +5,10 @@
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 
 ## 当前阶段
+> **内力/真气批最终构建补记**：macOS debug build 已成功，`git diff --check` 已通过；下条记录中的“待执行”已销账。
+
+> **2026-07-12 Codex 内力/真气循环实装(`codex/inner-force-qi-cycle`)**:永久内力改为闭关成长且战斗不消耗、实际值决定伤害；战斗资源拆为有界真气气海，招式显式产耗气，心法提供开场/气海/产气/减耗差异，连续战斗保留并有限恢复。散功、Boss/心魔失败不再扣永久内力，统一改为可由有效战斗和闭关/离线调息恢复的「内息紊乱」；0.35→0.36 旧档保护性补满内力并迁移旧余毒。平衡复校：普通敌人/主线Boss/塔Boss 开场真气20/40/60；心魔05/06高爆发17/20、心魔07高爆发14/20、floor30满配30/30低配0/30、单人闭关整备主线Ch1-6全通。**门禁**:`dart format`无改、`flutter analyze --no-pub`0 issue、全仓4935 pass/0 fail；macOS debug build待本批最后执行。
+
 > **2026-07-12 Codex 开放式闭关实装(`codex/open-ended-retreat-settlement`)**:取消1/4/12h预选,改为玩家主动收功;前72h地图完整收益+溢出无上限普通挂机在同一事务中结算,幂等防重。每12h一次稳定装备判定(最多6次、无保底),后段高阶权重提升,越境界装备仍受三系锁。存档升至0.35并迁移 active 会话境界快照;设置/进行中/返场/主菜单/结果页已统一两段口径。**最终门禁**:`dart format` 1081/0 changed;`flutter analyze --no-pub` 0 issue;闭关/迁移/主菜单专项全绿;全仓 **3807/3807**;macOS debug build 成功;79h 进行中 + 90h 结算在 1280×720/1440×900 实窗截图通过。**仅剩**:推送后远端 CI 复验。
 
 > **2026-07-11 Codex 项目健康治理(`codex/project-health-hardening`)**:按 07-10 全量审查建议完成 7 批收口。① `lib/test/docs` 115 个历史格式文件统一,CI 加 formatter 门禁;② 新增扫荡结算/单位 4 测,CI 全量测试产 `lcov.info` artifact;③ 新增独立 macOS debug build job;④ README/CLAUDE/历史计划与 `.git` 体积误诊订正(`docs/handoff` tracked 仅 2.76MiB,本地 ignored 2.7G 不擅删);⑤ 存档恢复抽 `SaveRestoreDatabaseOps`,掉落引用校验移出 GameRepository,招募属性去 `dynamic`;⑥ 六个 BattleScreen 播放 bool 收进 `BattleScreenPlaybackConfig`,25 个测试/诊断调用迁 `defaultGroundStrategy` 后删除旧 `battle_engine.dart`;⑦ 锁文件兼容升级 21 项并删未使用 `intl`。**最终门禁**:build_runner 114 outputs;format 1080/0 changed;analyze 0;coverage 全量 **3794/3794**(约10m16s),已记录行覆盖 **80.84%**;macOS debug build 成功;diff/status 边界通过。**剩余非阻塞**:`stage_entry_flow` 21.51% 且仍混合多 hook;GameRepository/IsarSetup 全局单例继续分批降耦;`js 0.7.2` 为 `isar_community 3.3.2` 上游传递依赖;远端 CI 待分支推送后运行。

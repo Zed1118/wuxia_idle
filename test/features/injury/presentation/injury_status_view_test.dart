@@ -28,7 +28,7 @@ void main() {
     );
     c.injuryHoursRemaining = injuryHours;
     c.lightInjuryStacks = lightStacks;
-    c.innerDemonResidueHoursRemaining = residueHours;
+    c.innerBreathDisorderHoursRemaining = residueHours;
     return c;
   }
 

@@ -126,7 +126,12 @@ void main() {
 
     final chBack = await isar2.characters.get(chId);
     expect(chBack, isNotNull);
-    expect(chBack!.internalForce, ifBefore ~/ 2, reason: '内力 ×0.5 应落盘');
+    expect(chBack!.internalForce, ifBefore, reason: '散功不再永久扣内力');
+    expect(
+      chBack.innerBreathDisorderHoursRemaining,
+      greaterThan(0),
+      reason: '内息紊乱应落盘',
+    );
     expect(chBack.mainTechniqueId, assistId, reason: 'mainTechniqueId 应切到新主修');
     expect(chBack.assistTechniqueIds, contains(mainId), reason: '旧主修挪入辅修');
     expect(

@@ -333,10 +333,10 @@ void main() {
       );
     });
 
-    test('maxInternalForce > cycle 1（scale + 真气 pct 双重叠加）', () {
+    test('internalForce > cycle 1（scale + 真气 pct 双重叠加）', () {
       expect(
-        c2.maxInternalForce,
-        greaterThan(c1.maxInternalForce),
+        c2.internalForce,
+        greaterThan(c1.internalForce),
         reason: 'scale + 真气 pct 双重叠加后 IF 应更高',
       );
     });
@@ -371,9 +371,9 @@ void main() {
   });
 
   // ══════════════════════════════════════════════════════════════════════════
-  // 真气红线：internalForce clamp ≤ red line
+  // 永久内力红线：internalForce clamp ≤ red line
   // ══════════════════════════════════════════════════════════════════════════
-  test('真气 + scale 叠加后 maxInternalForce ≤ 内力红线', () {
+  test('周目 scale 后永久内力 ≤ 内力红线', () {
     final c2 = StageBattleSetup.debugEnemyToBattle(
       enemy: highRealmEnemy,
       slotIndex: 0,
@@ -383,9 +383,9 @@ void main() {
     final redLine =
         GameRepository.instance.numbers.combat.redLines.internalForceMax;
     expect(
-      c2.maxInternalForce,
+      c2.internalForce,
       lessThanOrEqualTo(redLine),
-      reason: '真气 + scale 后 IF 不应突破 §5.4 红线=$redLine',
+      reason: '周目 scale 后永久内力不应突破 §5.4 红线=$redLine',
     );
   });
 

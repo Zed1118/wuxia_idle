@@ -12,6 +12,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../battle/domain/qi_cycle.dart';
 import 'lineage_widgets.dart';
 
 /// 门人档案（门派谱1.1 Task3）。
@@ -330,12 +331,12 @@ class _ConditionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasResidue = character.innerDemonResidueHoursRemaining > 0;
+    final hasResidue = character.innerBreathDisorderHoursRemaining > 0;
     final hasHeavy = character.injuryHoursRemaining > 0;
     final hasLight = character.lightInjuryStacks > 0;
     if (!hasResidue && !hasHeavy && !hasLight) return const SizedBox.shrink();
-    final residueDebuff = GameRepository.isLoaded
-        ? GameRepository.instance.numbers.innerDemon.residueDebuff
+    final disorder = GameRepository.isLoaded
+        ? GameRepository.instance.numbers.innerBreathDisorder
         : null;
     return Padding(
       padding: const EdgeInsets.only(top: 16),
@@ -360,21 +361,32 @@ class _ConditionSection extends StatelessWidget {
                     label: UiStrings.conditionInnerDemonResidueSource,
                     color: WuxiaColors.textSecondary,
                   ),
-                  if (residueDebuff != null)
+                  if (disorder != null) ...[
                     _ConditionChip(
                       label: UiStrings.conditionInnerDemonResidueEffect(
-                        battleOutputPenaltyPct: _penaltyPct(
-                          residueDebuff.battleOutputMultiplier,
-                        ),
-                        internalForceRecoveryPenaltyPct: _penaltyPct(
-                          residueDebuff.internalForceRecoveryMultiplier,
+                        battleOutputPenaltyPct:
+                            (disorder.maxInnerForcePenaltyPct * 100).round(),
+                        internalForceRecoveryPenaltyPct: 0,
+                      ),
+                      color: WuxiaColors.textSecondary,
+                    ),
+                    _ConditionChip(
+                      label: UiStrings.conditionInnerBreathEffective(
+                        actual: character.internalForce,
+                        effective: QiCycle.effectiveInnerForce(
+                          actualInnerForce: character.internalForce,
+                          disorderHours:
+                              character.innerBreathDisorderHoursRemaining,
+                          disorderMaxHours: disorder.maxHours,
+                          maxPenaltyPct: disorder.maxInnerForcePenaltyPct,
                         ),
                       ),
                       color: WuxiaColors.textSecondary,
                     ),
+                  ],
                   _ConditionChip(
                     label: UiStrings.conditionInnerDemonResidueRecovery(
-                      character.innerDemonResidueHoursRemaining,
+                      character.innerBreathDisorderHoursRemaining,
                     ),
                     color: WuxiaColors.textSecondary,
                   ),
@@ -404,9 +416,6 @@ class _ConditionSection extends StatelessWidget {
       ),
     );
   }
-
-  static int _penaltyPct(double multiplier) =>
-      ((1.0 - multiplier) * 100).round();
 }
 
 class _ConditionChip extends StatelessWidget {

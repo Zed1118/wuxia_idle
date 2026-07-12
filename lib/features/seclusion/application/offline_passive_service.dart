@@ -3,6 +3,7 @@ import 'package:isar_community/isar.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/inventory_item.dart';
+import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
@@ -91,6 +92,7 @@ class OfflinePassiveService {
 
       final c = await isar.characters.get(characterId);
       if (c != null) {
+        InnerBreathDisorder.recover(character: c, hours: yield_.settledHours);
         // Task 8: 双层伤势疗养（§5.5 在线=离线，按 awayHours 真实离线时长累减，
         // 无加速）。重伤按时长累减 clamp ≥ 0；轻伤离线结算即清零。
         // 关键：放在 experience>0 之外的无条件路径——即使本次 0 产出，挂机即疗养。

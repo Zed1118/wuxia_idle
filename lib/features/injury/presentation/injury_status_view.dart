@@ -15,7 +15,9 @@ class InjuryStatusFormatter {
   const InjuryStatusFormatter._();
 
   static bool hasInjury(Character character) =>
-      character.injuryHoursRemaining > 0 || character.lightInjuryStacks > 0;
+      character.injuryHoursRemaining > 0 ||
+      character.lightInjuryStacks > 0 ||
+      character.innerBreathDisorderHoursRemaining > 0;
 
   static String primaryStatus(Character character) {
     final config = GameRepository.instanceOrNull?.numbers.injury;
@@ -39,10 +41,10 @@ class InjuryStatusFormatter {
     required double heavyInternalForceMaxPenaltyPct,
   }) {
     final parts = <String>[];
-    if (character.innerDemonResidueHoursRemaining > 0) {
+    if (character.innerBreathDisorderHoursRemaining > 0) {
       parts.add(
         '${UiStrings.conditionInnerDemonResidueLabel} · '
-        '${UiStrings.conditionInnerDemonResidueRecovery(character.innerDemonResidueHoursRemaining)}',
+        '${UiStrings.conditionInnerDemonResidueRecovery(character.innerBreathDisorderHoursRemaining)}',
       );
     }
     if (character.injuryHoursRemaining > 0) {

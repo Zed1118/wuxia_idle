@@ -32,6 +32,9 @@ techniques:
       - skill_gangmeng_jichu_ult
     internalForceGrowthBonus: 1.05
     speedBonus: 0
+    qiProfile:
+      openingBonus: 15
+      costReductionPct: 0.10
     acquireSourceTags: ["starter"]
 
   - id: tech_lingqiao_jichu
@@ -45,6 +48,9 @@ techniques:
       - skill_lingqiao_jichu_ult
     internalForceGrowthBonus: 1.05
     speedBonus: 0
+    qiProfile:
+      maxBonus: 20
+      costReductionPct: 0.10
     acquireSourceTags: ["starter"]
 
   - id: tech_yinrou_jichu
@@ -58,6 +64,9 @@ techniques:
       - skill_yinrou_jichu_ult
     internalForceGrowthBonus: 1.05
     speedBonus: 0
+    qiProfile:
+      gainPct: 0.20
+      costReductionPct: 0.10
     acquireSourceTags: ["starter"]
 
   # === 第 2 阶 常练功 · 三流境界开放 ===
@@ -192,6 +201,9 @@ techniques:
       - skill_gangmeng_jianghu_ult
     internalForceGrowthBonus: 1.40
     speedBonus: 25
+    qiProfile:
+      openingBonus: 15
+      costReductionPct: 0.20
     acquireSourceTags: ["tower_25"]
 
   - id: tech_lingqiao_jianghu
@@ -205,6 +217,9 @@ techniques:
       - skill_lingqiao_jianghu_ult
     internalForceGrowthBonus: 1.40
     speedBonus: 25
+    qiProfile:
+      maxBonus: 20
+      costReductionPct: 0.20
     acquireSourceTags: ["tower_25"]
 
   - id: tech_yinrou_jianghu
@@ -218,6 +233,9 @@ techniques:
       - skill_yinrou_jianghu_ult
     internalForceGrowthBonus: 1.40
     speedBonus: 25
+    qiProfile:
+      gainPct: 0.20
+      costReductionPct: 0.20
     acquireSourceTags: ["tower_25"]
 
   # === 第 6 阶 失传神功 · 宗师境界开放 ===

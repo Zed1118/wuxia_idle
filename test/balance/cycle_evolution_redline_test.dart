@@ -31,7 +31,7 @@ import '../support/test_data.dart';
 ///   4. 爬塔 floor 30（最高 Boss，baseHp/baseAttack 从 towers.yaml 当前配置派生）cycle 2
 ///   5. 爬塔 floor 20（大 Boss，isTower，cycle 2 凝甲/反震/识破）
 ///   6. 御体 defenseRate clamp ≤ defenseRateCap（C2/C3 高境界敌人）
-///   7. 真气 + scale → maxInternalForce ≤ 红线（爬塔 cycle 2）
+///   7. 真气 + scale → internalForce ≤ 红线（爬塔 cycle 2）
 ///   8. clamp 防越线：baseHp 极端值经 scale 超 60k 时被 clamp（§新增防护）
 ///
 /// **不走 Isar / DefaultGroundStrategy**：静态 stat 断言直接证明 scale+词条 在红线内。
@@ -326,10 +326,10 @@ void main() {
   });
 
   // ════════════════════════════════════════════════════════════════════════════
-  // §3  内力红线：真气词条 + scale 后 maxInternalForce ≤ numbers 红线
+  // §3  内力红线：真气词条 + scale 后 internalForce ≤ numbers 红线
   // ════════════════════════════════════════════════════════════════════════════
 
-  group('§3 真气 + cycle scale 后 maxInternalForce ≤ 内力红线', () {
+  group('§3 真气 + cycle scale 后 internalForce ≤ 内力红线', () {
     test('3.1 爬塔 floor 30（最高 Boss，cycle 2 tower_boss 词条集）', () {
       final floor = GameRepository.instance.getTowerFloor(30);
       final redLine =
@@ -341,13 +341,13 @@ void main() {
       );
       var maxIf = 0;
       for (final bc in team) {
-        if (bc.maxInternalForce > maxIf) maxIf = bc.maxInternalForce;
+        if (bc.internalForce > maxIf) maxIf = bc.internalForce;
         expect(
-          bc.maxInternalForce,
+          bc.internalForce,
           lessThanOrEqualTo(redLine),
           reason:
               'tower floor 30 cycle 2 ${bc.name} '
-              'maxInternalForce=${bc.maxInternalForce} 超 §5.4 红线=$redLine',
+              'internalForce=${bc.internalForce} 超 §5.4 红线=$redLine',
         );
       }
       addTearDown(
@@ -368,11 +368,11 @@ void main() {
       );
       for (final bc in team) {
         expect(
-          bc.maxInternalForce,
+          bc.internalForce,
           lessThanOrEqualTo(redLine),
           reason:
               'tower floor 20 cycle 2 ${bc.name} '
-              'maxInternalForce=${bc.maxInternalForce} 超 §5.4 红线=$redLine',
+              'internalForce=${bc.internalForce} 超 §5.4 红线=$redLine',
         );
       }
     });
@@ -388,13 +388,13 @@ void main() {
       );
       var maxIf = 0;
       for (final bc in team) {
-        if (bc.maxInternalForce > maxIf) maxIf = bc.maxInternalForce;
+        if (bc.internalForce > maxIf) maxIf = bc.internalForce;
         expect(
-          bc.maxInternalForce,
+          bc.internalForce,
           lessThanOrEqualTo(redLine),
           reason:
               'stage_06_05 cycle 3 ${bc.name} '
-              'maxInternalForce=${bc.maxInternalForce} 超 §5.4 红线=$redLine',
+              'internalForce=${bc.internalForce} 超 §5.4 红线=$redLine',
         );
       }
       addTearDown(
@@ -404,7 +404,7 @@ void main() {
       );
     });
 
-    test('3.4 全爬塔所有层（普通+Boss）cycle 2 maxInternalForce ≤ 红线', () {
+    test('3.4 全爬塔所有层（普通+Boss）cycle 2 internalForce ≤ 红线', () {
       final repo = GameRepository.instance;
       final redLine = repo.numbers.combat.redLines.internalForceMax;
       var maxIf = 0;
@@ -416,13 +416,13 @@ void main() {
           isTower: true,
         );
         for (final bc in team) {
-          if (bc.maxInternalForce > maxIf) maxIf = bc.maxInternalForce;
+          if (bc.internalForce > maxIf) maxIf = bc.internalForce;
           expect(
-            bc.maxInternalForce,
+            bc.internalForce,
             lessThanOrEqualTo(redLine),
             reason:
                 'tower floor $i cycle 2 ${bc.name} '
-                'maxIF=${bc.maxInternalForce} 超 §5.4 红线=$redLine',
+                'maxIF=${bc.internalForce} 超 §5.4 红线=$redLine',
           );
         }
       }
@@ -915,7 +915,7 @@ void main() {
 /// 中性对局基础普攻伤害：剥离修炼度/克制/暴击/境界差乘子（全设 1.0），
 /// 仅保留「内力×系数 + 装备攻击×系数 + 普攻招式倍率」基础维度，对应 §5.4
 /// 「普通伤害 ≤ 8000」的基础量级语义。走真实 [DamageCalculator.calculateResolved]
-/// 路径（非手算重演），用敌人战斗态真实 maxInternalForce / totalEquipmentAttack /
+/// 路径（非手算重演），用敌人战斗态真实 internalForce / totalEquipmentAttack /
 /// attackPowerMultiplier / 真实普攻招式。
 int _neutralNormalAttackDamage(BattleCharacter bc) {
   final normalSkill = bc.availableSkills.firstWhere(
@@ -923,7 +923,7 @@ int _neutralNormalAttackDamage(BattleCharacter bc) {
     orElse: () => bc.availableSkills.first,
   );
   return DamageCalculator.calculateResolved(
-    attackerInternalForce: bc.maxInternalForce,
+    attackerInternalForce: bc.internalForce,
     attackerEquipmentAttack: bc.totalEquipmentAttack,
     attackerCultivationLayer: CultivationLayer.chuKui, // cultMult=1.0（中性）
     attackerSchool: bc.school,

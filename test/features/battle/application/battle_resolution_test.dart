@@ -1031,11 +1031,15 @@ void main() {
       expect(result.defeatPenaltyByCharacter.length, 1);
       final p = result.defeatPenaltyByCharacter[1]!;
       expect(p.internalForceBefore, 8000);
-      expect(p.internalForceAfter, 4000);
+      expect(p.internalForceAfter, 8000);
       expect(p.oldLayer, CultivationLayer.yuanMan);
       expect(p.newLayer, CultivationLayer.daCheng);
       expect(p.layersRolledBack, 1);
-      expect(ch.internalForce, 4000);
+      expect(ch.internalForce, 8000);
+      expect(
+        ch.innerBreathDisorderHoursRemaining,
+        numbersCfg.innerBreathDisorder.bossDefeatHours,
+      );
       expect(mainTech.cultivationProgress, 750);
       expect(mainTech.cultivationLayer, CultivationLayer.daCheng);
       // role 不动，下次战斗仍按主修走
@@ -1599,6 +1603,56 @@ void main() {
       }
 
       expect(ch.lightInjuryStacks, maxStacks);
+    });
+
+    test('有效战斗减轻紊乱，空行动退出不恢复', () {
+      final completed = buildCharacter(id: 1, mainTechId: null)
+        ..innerBreathDisorderHoursRemaining = 5;
+      final exited = buildCharacter(id: 2, mainTechId: null)
+        ..innerBreathDisorderHoursRemaining = 5;
+
+      BattleResolutionService.resolve(
+        finalState: BattleState(
+          leftTeam: [buildBattleChar(1, 0)],
+          rightTeam: const [],
+          tick: 1,
+          result: BattleResult.leftWin,
+          actionLog: [buildAction(actorId: 1)],
+        ),
+        participatingCharacters: [completed],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: const {},
+        stageDef: buildStage(),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        numbersConfig: numbersCfg,
+      );
+      BattleResolutionService.resolve(
+        finalState: BattleState(
+          leftTeam: [buildBattleChar(2, 0)],
+          rightTeam: const [],
+          tick: 0,
+          result: BattleResult.draw,
+          actionLog: const [],
+        ),
+        participatingCharacters: [exited],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: const {},
+        stageDef: buildStage(),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        numbersConfig: numbersCfg,
+      );
+
+      expect(
+        completed.innerBreathDisorderHoursRemaining,
+        5 - numbersCfg.innerBreathDisorder.battleRecoveryHours,
+      );
+      expect(exited.innerBreathDisorderHoursRemaining, 5);
     });
 
     test('numbersConfig 缺省（不传）：伤势逻辑跳过，不报错', () {

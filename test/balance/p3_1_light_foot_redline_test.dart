@@ -31,7 +31,7 @@ import '../support/test_data.dart';
 ///     语义对称)+ runToEnd 不抛
 ///   - R5.2 terrain modifier cap e2e:water/rooftop/bamboo 三 terrain bake 后
 ///     critRate/evasionRate/defenseRate clamp ≤0.95 + 不破 §5.4 红线(maxHp ≤20k
-///     / maxInternalForce ≤15k 不动)
+///     / internalForce ≤15k 不动)
 ///   - R5.3 unlock 链 e2e:stage_06_05 victory → light_foot_01 unlock + 链式
 ///     5 关顺序解锁 + LightFootService.statusOf 三态语义对齐
 ///
@@ -291,16 +291,16 @@ void main() {
           expect(c.evasionRate, greaterThanOrEqualTo(0.0));
           expect(c.defenseRate, greaterThanOrEqualTo(0.0));
 
-          // §5.4 红线不动(maxHp/maxInternalForce/totalEquipmentAttack)
+          // §5.4 红线不动(maxHp/internalForce/totalEquipmentAttack)
           expect(
             c.maxHp,
             lessThanOrEqualTo(20000),
             reason: '$terrain ${c.name} §5.4 maxHp 红线',
           );
           expect(
-            c.maxInternalForce,
+            c.internalForce,
             lessThanOrEqualTo(15000),
-            reason: '$terrain ${c.name} §5.4 maxInternalForce 红线',
+            reason: '$terrain ${c.name} §5.4 internalForce 红线',
           );
           // totalEquipmentAttack 是 3 件求和,§5.4 单件 2000 cap,
           // 3 件求和理论上界 6000;light_foot 不动 totalEquipmentAttack。

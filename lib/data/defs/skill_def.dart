@@ -35,7 +35,9 @@ class SkillDef {
   final String description;
   final SkillType type;
   final int powerMultiplier;
-  final int internalForceCost;
+
+  /// Positive = generate qi, zero = neutral, negative = spend qi.
+  final int qiDelta;
   final int cooldownTurns;
   final bool requiresManualTrigger;
   final String? parentTechniqueDefId;
@@ -84,7 +86,8 @@ class SkillDef {
     required this.description,
     required this.type,
     required this.powerMultiplier,
-    required this.internalForceCost,
+    int? qiDelta,
+    @Deprecated('请使用 qiDelta') int? internalForceCost,
     required this.cooldownTurns,
     required this.requiresManualTrigger,
     this.parentTechniqueDefId,
@@ -99,7 +102,16 @@ class SkillDef {
     this.proficiency,
     this.targetType = TargetType.single,
     this.defenseBreakPct = 0.0,
-  });
+  }) : assert(qiDelta != null || internalForceCost != null),
+       qiDelta = qiDelta ?? -(internalForceCost ?? 0);
+
+  bool get generatesQi => qiDelta > 0;
+  bool get spendsQi => qiDelta < 0;
+  int get qiCost => spendsQi ? -qiDelta : 0;
+
+  /// Transitional compatibility for callers migrated in the battle-state task.
+  @Deprecated('战斗资源已拆为真气，请使用 qiCost')
+  int get internalForceCost => qiCost;
 
   /// 奇遇招式 = source == encounter(波B 改单一真相源:drop 招补 tier 后
   /// 旧判定 parent==null && tier!=null 会误判真解/残页为奇遇招)。
@@ -119,7 +131,9 @@ class SkillDef {
       description: y['description'] as String,
       type: SkillType.values.byName(y['type'] as String),
       powerMultiplier: (y['powerMultiplier'] as num).toInt(),
-      internalForceCost: (y['internalForceCost'] as num).toInt(),
+      qiDelta: y.containsKey('qiDelta')
+          ? (y['qiDelta'] as num).toInt()
+          : -((y['internalForceCost'] as num).toInt()),
       cooldownTurns: (y['cooldownTurns'] as num).toInt(),
       requiresManualTrigger: y['requiresManualTrigger'] as bool,
       parentTechniqueDefId: y['parentTechniqueDefId'] as String?,

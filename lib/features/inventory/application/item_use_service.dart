@@ -99,7 +99,7 @@ class ItemUseService {
             }
 
             final beforeInjury = target.injuryHoursRemaining;
-            final beforeResidue = target.innerDemonResidueHoursRemaining;
+            final beforeResidue = target.innerBreathDisorderHoursRemaining;
             final beforeLight = target.lightInjuryStacks;
             final changed =
                 (def.injuryHealHours > 0 && beforeInjury > 0) ||
@@ -117,9 +117,9 @@ class ItemUseService {
               0.0,
               target.injuryHoursRemaining - def.injuryHealHours,
             );
-            target.innerDemonResidueHoursRemaining = math.max(
+            target.innerBreathDisorderHoursRemaining = math.max(
               0.0,
-              target.innerDemonResidueHoursRemaining - def.residueHealHours,
+              target.innerBreathDisorderHoursRemaining - def.residueHealHours,
             );
             if (def.clearLightInjury) {
               target.lightInjuryStacks = 0;
@@ -133,7 +133,7 @@ class ItemUseService {
               targetName: target.name,
               injuryHoursReduced: beforeInjury - target.injuryHoursRemaining,
               residueHoursReduced:
-                  beforeResidue - target.innerDemonResidueHoursRemaining,
+                  beforeResidue - target.innerBreathDisorderHoursRemaining,
               lightInjuryStacksCleared: beforeLight - target.lightInjuryStacks,
             );
           }
@@ -161,7 +161,7 @@ class ItemUseService {
     for (final c in candidates) {
       final score =
           c.injuryHoursRemaining +
-          c.innerDemonResidueHoursRemaining +
+          c.innerBreathDisorderHoursRemaining +
           c.lightInjuryStacks;
       if (score > bestScore) {
         best = c;

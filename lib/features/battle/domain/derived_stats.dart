@@ -97,7 +97,8 @@ class RealmUtils {
 class CharacterDerivedStats {
   CharacterDerivedStats._();
 
-  /// 最大血量 = base + 内力*ifFactor + 根骨*conFactor + Σ装备血量(应用强化/共鸣)。
+  /// 最大血量 = base + (境界绝对等级-1)*realmFactor
+  ///              + 根骨*conFactor + Σ装备血量。
   /// 系数全部来自 numbers.yaml `combat.max_hp_formula`。
   ///
   /// **P1.1 A1 E.5**:可选 `founderBuffActive=true` 时叠加 `founder_ancestor_buff.max_hp_pct`
@@ -110,7 +111,9 @@ class CharacterDerivedStats {
   }) {
     final f = n.combat.maxHpFormula;
     var hp = f.base.toDouble();
-    hp += c.internalForce * f.internalForceFactor;
+    hp +=
+        (RealmUtils.absoluteLevelOf(c.realmTier, c.realmLayer) - 1) *
+        f.realmLevelFactor;
     hp += c.attributes.constitution * f.constitutionFactor;
     for (final eq in equipped) {
       hp += effectiveEquipmentHp(eq, n);

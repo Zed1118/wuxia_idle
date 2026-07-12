@@ -2,6 +2,7 @@ import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
+import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/numbers_config.dart';
 
@@ -129,8 +130,11 @@ class DispelService {
     }
 
     final ifBefore = ch.internalForce;
-    ch.internalForce =
-        (ch.internalForce * (1 - n.dispersionInternalForcePenalty)).toInt();
+    InnerBreathDisorder.apply(
+      character: ch,
+      hours: n.innerBreathDisorder.dispelHours,
+      maxHours: n.innerBreathDisorder.maxHours,
+    );
 
     final layerBefore = mainTech.cultivationLayer;
     mainTech.disperse(n);
@@ -204,8 +208,11 @@ class DispelService {
     final progressBefore = mainTech.cultivationProgress;
     final layerBefore = mainTech.cultivationLayer;
 
-    ch.internalForce =
-        (ch.internalForce * (1 - n.defeatBossInternalForcePenalty)).toInt();
+    InnerBreathDisorder.apply(
+      character: ch,
+      hours: n.innerBreathDisorder.bossDefeatHours,
+      maxHours: n.innerBreathDisorder.maxHours,
+    );
     mainTech.cultivationProgress =
         (mainTech.cultivationProgress * (1 - n.defeatBossCultivationPenalty))
             .toInt();

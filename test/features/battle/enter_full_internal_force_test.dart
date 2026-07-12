@@ -7,16 +7,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import '../../support/test_data.dart';
 
-/// P0 破招 Task 4:战斗内力进场满(maxIf · 每场预算模型 · 与敌方对称)。
-///
-/// 现状 `BattleCharacter.fromCharacter` 玩家进场 currentInternalForce =
-/// character.internalForce(角色当前持有内力),不等于 maxInternalForce。
-/// 敌方进场是 current=max(满)。本测断言玩家进场也满,使「每场内力预算」
-/// 模型干净 + 与敌方对称。
-///
-/// fixture 沿 test/combat/battle_state_test.dart 的 _mkChar/_mkTech 体例。
-/// 关键:character.internalForce(100)< internalForceMax(默认 500)→ maxIf=500,
-/// 进场后 current 应被拉满到 500,使断言在「自然方向」上有意义。
+/// 永久内力与开场真气的进场拆分契约。
 void main() {
   setUp(() async {
     await loadTestGameRepository();
@@ -24,7 +15,7 @@ void main() {
 
   tearDown(GameRepository.resetForTest);
 
-  test('进场内力满:currentInternalForce == maxInternalForce（与敌方对称）', () {
+  test('进场保留实际内力，真气按心法部分开场', () {
     final c = _mkChar(
       tier: RealmTier.xueTu,
       layer: RealmLayer.ruMen,
@@ -46,10 +37,9 @@ void main() {
       slotIndex: 0,
     );
 
-    // 前提:fixture 的 character.internalForce 确实 < maxIf,断言才有意义。
-    expect(c.internalForce, lessThan(bc.maxInternalForce));
-    // 核心断言:进场满。
-    expect(bc.currentInternalForce, bc.maxInternalForce);
+    expect(bc.internalForce, c.internalForce);
+    expect(bc.maxQi, 100);
+    expect(bc.currentQi, 55);
   });
 }
 

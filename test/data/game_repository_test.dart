@@ -200,8 +200,9 @@ void main() {
         final repo = await GameRepository.loadAllDefs(loader: fileLoader);
         expect(repo.numbers.combat.damageFormula.equipmentAttackFactor, 1.0);
         expect(repo.numbers.combat.damageFormula.internalForceFactor, 0.4);
-        // P0.1 #38 重平衡(2026-05-17,方案 D):0.7→0.5 / 500→400
-        expect(repo.numbers.combat.maxHpFormula.internalForceFactor, 0.5);
+        // 内力/真气拆分：内力不再贡献血量。
+        expect(repo.numbers.combat.maxHpFormula.internalForceFactor, 0.0);
+        expect(repo.numbers.combat.maxHpFormula.realmLevelFactor, 156);
         expect(repo.numbers.combat.maxHpFormula.constitutionFactor, 400);
         expect(repo.numbers.defenseRateByTier[RealmTier.xueTu], 0.05);
         expect(repo.numbers.defenseRateByTier[RealmTier.wuSheng], 0.35);

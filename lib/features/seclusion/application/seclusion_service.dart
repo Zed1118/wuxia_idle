@@ -5,6 +5,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
+import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/reward_entry.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
@@ -403,20 +404,6 @@ class SeclusionService {
     // character / tech → growthPct 默认 0.0(无相生),整链 fallthrough。
     final synergyGrowthPct = await _detectSynergyGrowthPct(preCharForBonus);
 
-    // M6 Task 7: 余毒乘数（§5.6: 从 config 读，不硬编码）。
-    // 口径=按本次闭关「开始时」的余毒开关态：开始有余毒则整次产出 ×0.80，
-    // 即便本次闭关时长超过剩余清除小时数（余毒在结束时才累减清除，见下方 ch 改区）。
-    // 简化为「开关态」而非逐小时折算，符合 spec D 段拍板，非 off-by-one bug。
-    final residueMult =
-        (preCharForBonus?.innerDemonResidueHoursRemaining ?? 0) > 0
-        ? GameRepository
-              .instance
-              .numbers
-              .innerDemon
-              .residueDebuff
-              .internalForceRecoveryMultiplier
-        : 1.0;
-
     final settlement = computeSettlement(
       session: session,
       config: config,
@@ -426,7 +413,6 @@ class SeclusionService {
       legacyRealmTier: charRealmTier,
       charSchool: preCharForBonus?.school,
       synergyInternalForceGrowthPct: synergyGrowthPct,
-      residueInternalForceMultiplier: residueMult,
       dropService: GameRepository.isLoaded
           ? DropService(
               equipmentDefLookup: GameRepository.instance.getEquipment,
@@ -555,11 +541,7 @@ class SeclusionService {
             await isar.equipments.put(eq);
           }
         }
-        // M6 Task 7: 余毒累减（§5.5 按 actualHours 闭关时长，不依赖真实时间戳）
-        if (ch.innerDemonResidueHoursRemaining > 0) {
-          final left = ch.innerDemonResidueHoursRemaining - outputs.actualHours;
-          ch.innerDemonResidueHoursRemaining = left < 0 ? 0 : left;
-        }
+        InnerBreathDisorder.recover(character: ch, hours: outputs.actualHours);
         // Task 8: 双层伤势疗养按整段真实经过时长累减。
         // 重伤按时长累减 clamp ≥ 0；轻伤收功即调息，无条件清零。
         if (ch.injuryHoursRemaining > 0) {

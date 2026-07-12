@@ -427,7 +427,7 @@ class _BiographyStrip extends StatelessWidget {
     final hasInjury =
         character.lightInjuryStacks > 0 ||
         character.injuryHoursRemaining > 0 ||
-        character.innerDemonResidueHoursRemaining > 0;
+        character.innerBreathDisorderHoursRemaining > 0;
 
     final items = [
       _BiographyItem(

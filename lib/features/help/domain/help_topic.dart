@@ -12,6 +12,7 @@ enum HelpTopic {
   fortune,
   hp,
   internalForce,
+  qi,
   speed,
   criticalRate,
   evasionRate,
@@ -87,6 +88,10 @@ class HelpCatalog {
     HelpTopic.internalForce: HelpBinding(
       label: UiStrings.statInternalForce,
       shortText: UiStrings.glossaryInternalForce,
+    ),
+    HelpTopic.qi: HelpBinding(
+      label: UiStrings.statQi,
+      shortText: UiStrings.glossaryQi,
     ),
     HelpTopic.speed: HelpBinding(
       label: UiStrings.statSpeed,

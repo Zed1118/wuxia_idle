@@ -9,6 +9,7 @@ import '../battle_ai.dart';
 import '../enum_localizations.dart';
 import '../battle_state.dart';
 import '../damage_calculator.dart';
+import '../qi_cycle.dart';
 import '../../../cultivation/domain/skill_proficiency.dart';
 import 'battle_strategy.dart';
 
@@ -485,7 +486,25 @@ class DefaultGroundStrategy implements BattleStrategy {
         result,
         n,
       );
-      targetAfters.add(resolved.targetAfter);
+      final defenderBonus = QiCycle.schoolBonus(
+        school: target.school,
+        event: QiActionEvent(
+          receivedHit: !result.isDodged,
+          dodged: result.isDodged,
+        ),
+        bonus: n.combat.qi.schoolBonus,
+      );
+      targetAfters.add(
+        defenderBonus == 0
+            ? resolved.targetAfter
+            : resolved.targetAfter.copyWith(
+                currentQi: QiCycle.applyDelta(
+                  currentQi: resolved.targetAfter.currentQi,
+                  maxQi: resolved.targetAfter.maxQi,
+                  delta: defenderBonus,
+                ),
+              ),
+      );
       actions.add(resolved.action);
       if (resolved.fanzhenTriggered != null) {
         actorFanzhen = resolved.fanzhenTriggered;
@@ -494,7 +513,8 @@ class DefaultGroundStrategy implements BattleStrategy {
       lifestealTotal += result.lifestealHeal;
     }
 
-    // 攻方 actorAfter 构造一次(loop 外):扣内力一次 + 写 skill CD 一次 +
+    // 攻方 actorAfter 构造一次(loop 外):结算一次招式真气 +
+    // 最多一次流派附加产气，再写 skill CD / AP。
     // actionPoint -= 1000 一次(保留余数)。
     final newCd = Map<String, int>.from(preActor.skillCooldowns);
     // 可玩性 P1a:per-skill 熟练度 cooldown_delta 缩短有效 CD(下限 0)。
@@ -506,9 +526,36 @@ class DefaultGroundStrategy implements BattleStrategy {
     if (effCd > 0) {
       newCd[skill.id] = effCd;
     }
+    final actorEvent = QiActionEvent(
+      landedHit: actions.any((a) => a.attackResult?.isDodged == false),
+      critical: actions.any((a) => a.attackResult?.isCritical == true),
+      appliedControlOrDot: actions.any(
+        (a) =>
+            (a.attackResult?.appliedEffects.isNotEmpty ?? false) ||
+            a.interrupted ||
+            a.openedBreakWindow,
+      ),
+      chained: actions.length > 1,
+    );
+    final actorSchoolBonus = QiCycle.schoolBonus(
+      school: preActor.school,
+      event: actorEvent,
+      bonus: n.combat.qi.schoolBonus,
+    );
     final actorAfter = preActor.copyWith(
-      currentInternalForce:
-          preActor.currentInternalForce - skill.internalForceCost,
+      currentQi: QiCycle.applyDelta(
+        currentQi: preActor.currentQi,
+        maxQi: preActor.maxQi,
+        delta:
+            QiCycle.effectiveSkillDelta(
+              baseDelta: skill.qiDelta,
+              gainMultiplier: preActor.qiGainMultiplier,
+              gainMultiplierCap: n.combat.qi.gainMultiplierCap,
+              costReductionPct: preActor.qiCostReductionPct,
+              costReductionCap: n.combat.qi.costReductionCap,
+            ) +
+            actorSchoolBonus,
+      ),
       skillCooldowns: Map.unmodifiable(newCd),
       actionPoint: preActor.actionPoint - 1000,
       // C2 反震:命中带 cycle_fanzhen 敌人时将内伤 slot 写到攻击者自身。aoe 下
@@ -856,7 +903,7 @@ class DefaultGroundStrategy implements BattleStrategy {
   ///
   /// P2-c 收敛(2026-05-29):公式数学已抽到 [DamageCalculator.calculateResolved]
   /// 单一真相源 —— 本方法只做 BattleCharacter 快照字段解析 → 调它。字段口径:
-  /// 内力用 `currentInternalForce`(战斗中扣过)· 装备攻击用 `totalEquipmentAttack`
+  /// 伤害用永久 `internalForce`，不随战斗真气消耗下降。
   /// 缓存 · 修炼度从 `mainCultivationLayer` · 防御率用 `defenseRate` 缓存(含相生
   /// defensePct 注入 · W18-A1.2)· attackPowerMultiplier 用烘焙值(轻功/群战/恩怨 ·
   /// P3.1.B · 双方对等 · default 1.0)。
@@ -895,7 +942,7 @@ class DefaultGroundStrategy implements BattleStrategy {
         ? n.cycleEvolution.traits.ningjia.critDamageTakenMult
         : 1.0;
     return DamageCalculator.calculateResolved(
-      attackerInternalForce: attacker.currentInternalForce,
+      attackerInternalForce: attacker.internalForce,
       attackerEquipmentAttack: attacker.totalEquipmentAttack,
       attackerCultivationLayer: attacker.mainCultivationLayer,
       attackerSchool: attacker.school,

@@ -394,7 +394,7 @@ void main() {
       expect(notifier.state.pendingUltimates[1], isNull);
     });
 
-    testWidgets('可用态技能按钮显示「耗内N · CDM」（批次 1.2）', (tester) async {
+    testWidgets('可用态技能按钮显示「耗气N · CDM」', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
         availableSkills: [_power], // cost=200, cd=2
@@ -406,11 +406,11 @@ void main() {
 
       // 耗内200 · CD2
       expect(find.text(UiStrings.skillCostShort(200, 2)), findsOneWidget);
-      expect(find.textContaining('耗内200'), findsOneWidget);
+      expect(find.textContaining('耗气200'), findsOneWidget);
       expect(find.textContaining('CD2'), findsOneWidget);
     });
 
-    testWidgets('内力不足态技能按钮显示「内力不足」（批次 1.2）', (tester) async {
+    testWidgets('真气不足态技能按钮显示「真气不足」', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
         availableSkills: [_power], // cost=200
@@ -421,9 +421,9 @@ void main() {
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
       expect(find.text(UiStrings.skillInsufficientForce), findsOneWidget);
-      expect(find.text('内力不足'), findsOneWidget);
+      expect(find.text('真气不足'), findsOneWidget);
       // 内力不足态不显示可用态的耗内文案。
-      expect(find.textContaining('耗内'), findsNothing);
+      expect(find.textContaining('耗气'), findsNothing);
     });
 
     testWidgets('冷却态技能按钮显读秒环 + 中心剩余拍数（不再显文字「冷却N」）', (tester) async {

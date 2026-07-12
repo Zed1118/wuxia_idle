@@ -328,18 +328,9 @@ void main() {
       isar: IsarSetup.instance,
     ).buildTeams(stage);
 
-    expect(
-      left[0].maxHp,
-      6678,
-      reason:
-          'A·阴阳 maxHp = base 5300 × 1.20 × founder buff 1.05 = 6678(P1.1 A1 E.5)',
-    );
-    expect(
-      left[1].maxHp,
-      5565,
-      reason: 'B·刚柔 base 5300 × founder buff 1.05 = 5565',
-    );
-    expect(left[2].maxHp, 5565, reason: 'C·阴影 同 B');
+    expect(left[0].maxHp, 8574, reason: '新境界血量曲线 × 阴阳相生 × 祖师 buff');
+    expect(left[1].maxHp, 7145, reason: 'B·刚柔新境界血量曲线 × founder buff');
+    expect(left[2].maxHp, 7145, reason: 'C·阴影 同 B');
   });
 
   // ── W18-A1.2 hot-loop 红线压测 ─────────────────────────────────────────
@@ -469,21 +460,23 @@ void main() {
       );
     }
 
-    test('学徒敌人 stage_01_01 内力 = 查表×scale 且满开局(current=max)', () {
+    test('学徒敌人保留永久内力快照并以部分真气开场', () {
       final stage = GameRepository.instance.getStage('stage_01_01');
       final e = StageBattleSetup.buildEnemyTeam(stage.enemyTeam).first;
-      expect(e.maxInternalForce, expectedEnemyIf(e));
-      expect(e.currentInternalForce, e.maxInternalForce);
+      expect(e.internalForce, expectedEnemyIf(e));
+      expect(e.maxQi, 100);
+      expect(e.currentQi, 20);
     });
-    test('武圣 Boss 西凉霸主内力 = 查表×scale 且满开局', () {
+    test('武圣 Boss 内力与真气气海解耦', () {
       final stage = GameRepository.instance.getStage('stage_06_05');
       final boss = StageBattleSetup.buildEnemyTeam(
         stage.enemyTeam,
       ).firstWhere((e) => e.name == '西凉霸主');
-      expect(boss.maxInternalForce, expectedEnemyIf(boss));
-      expect(boss.currentInternalForce, boss.maxInternalForce);
+      expect(boss.internalForce, expectedEnemyIf(boss));
+      expect(boss.maxQi, 100);
+      expect(boss.currentQi, 40);
     });
-    test('P5.2 核心:武圣 Boss 内力 ≥ 阴柔传说大招 cost → 招牌大招能放', () {
+    test('武圣 Boss 可通过普攻产气后释放招牌大招', () {
       final stage = GameRepository.instance.getStage('stage_06_05');
       final boss = StageBattleSetup.buildEnemyTeam(
         stage.enemyTeam,
@@ -491,13 +484,11 @@ void main() {
       final ult = GameRepository.instance.getSkill(
         'skill_yinrou_chuanshuo_ult',
       );
-      expect(ult.internalForceCost, 1600);
+      expect(ult.qiCost, 60);
       expect(
-        boss.currentInternalForce,
-        greaterThanOrEqualTo(ult.internalForceCost),
-        reason:
-            'P5.2 目标:对称化后武圣 Boss 内力须够放其招牌传说大招'
-            '(改前扁平 1000 < 1600 永久放不出);scale 调校须保此不变式',
+        boss.availableSkills.any((s) => s.generatesQi),
+        isTrue,
+        reason: '基础招必须能把开场 40 推到大招所需 60',
       );
     });
 
@@ -714,7 +705,7 @@ void main() {
       );
     });
 
-    test('重伤角色 maxInternalForce 低于无伤同角色', () async {
+    test('重伤不再压低真气气海', () async {
       await Phase2SeedService(isar: IsarSetup.instance).seedP3();
       final stage = GameRepository.instance.getStage('stage_01_01');
 
@@ -722,20 +713,16 @@ void main() {
       final (leftBase, _) = await StageBattleSetup(
         isar: IsarSetup.instance,
       ).buildTeams(stage);
-      final baseIf = leftBase.first.maxInternalForce;
+      final baseQi = leftBase.first.maxQi;
 
       // 重设为重伤
       await setHeavyInjured(IsarSetup.instance);
       final (leftInjured, _) = await StageBattleSetup(
         isar: IsarSetup.instance,
       ).buildTeams(stage);
-      final injuredIf = leftInjured.first.maxInternalForce;
+      final injuredQi = leftInjured.first.maxQi;
 
-      expect(
-        injuredIf,
-        lessThan(baseIf),
-        reason: '重伤 maxInternalForce=$injuredIf 应 < 无伤 baseline=$baseIf',
-      );
+      expect(injuredQi, baseQi, reason: '重伤已由输出折扣承担，不放大或压缩真气池');
     });
 
     test('轻伤角色 speed 低于无伤同角色', () async {

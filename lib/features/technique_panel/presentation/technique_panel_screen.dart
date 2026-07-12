@@ -819,6 +819,21 @@ class _TechniqueTile extends ConsumerWidget {
               technique.cultivationProgressToNext,
             ),
           ),
+          if (techDef != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              UiStrings.techniqueQiProfile(
+                openingBonus: techDef.qiProfile.openingBonus,
+                maxBonus: techDef.qiProfile.maxBonus,
+                gainPct: techDef.qiProfile.gainPct,
+                costReductionPct: techDef.qiProfile.costReductionPct,
+              ),
+              style: const TextStyle(
+                color: WuxiaColors.textSecondary,
+                fontSize: 12,
+              ),
+            ),
+          ],
           if (skillSummary != null) ...[
             const SizedBox(height: 8),
             StageProgressRow(

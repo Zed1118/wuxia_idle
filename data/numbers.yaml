@@ -32,12 +32,42 @@ meta:
   notes: "所有数值基于 GDD v1.1 §5.2 数值红线设计；公式系数见 combat 段"
 
 # =============================================================================
+# 0. 角色临时状态
+# =============================================================================
+
+conditions:
+  inner_breath_disorder:
+    max_hours: 12.0
+    max_inner_force_penalty_pct: 0.20
+    max_opening_qi_penalty: 20
+    battle_recovery_hours: 1.0
+    dispel_hours: 6.0
+    boss_defeat_hours: 8.0
+    inner_demon_hours: 12.0
+
+# =============================================================================
 # 1. 战斗公式系数
 # =============================================================================
 # 对应 GDD §5.3 / §5.4 / §5.6 三大公式。所有系数提取为可调参数，便于未来
 # 整体平衡调整。
 
 combat:
+
+  # --- 真气运气循环（与永久内力拆分）---
+  qi:
+    base_max: 100
+    opening_qi: 40
+    enemy_opening_qi: 20
+    boss_opening_bonus: 20
+    tower_boss_opening_bonus: 40
+    opening_cap: 80
+    min_max: 80
+    max_cap: 140
+    school_bonus: 5
+    chain_recovery_pct: 0.25
+    gain_multiplier_cap: 1.50
+    cost_reduction_cap: 0.20
+    delta_abs_cap: 100
 
   # --- 招式熟练度阶段(可玩性 P1a · spec §三/§2.5) ---
   # 来源=战斗放招次数(含挂机自动战斗,计数源 Technique.skillUsageCount)。
@@ -71,16 +101,11 @@ combat:
     apply_realm_diff: true               # 应用境界差修正
 
   # --- 最大血量公式 ---
-  # GDD §5.6：血量 = 1000 + 内力 × 5 + 根骨 × 500 + 装备血量
-  # Phase 1 平衡： 血量 = 1000 + 内力 × 0.7 + 根骨 × 500 + 装备血量
-  # P0.1 #38 重平衡(2026-05-17,方案 D):
-  #   血量 = 1000 + 内力 × 0.5 + 根骨 × 400 + 装备血量
-  # 设计目标:全 7 阶 dengFeng + const 10 + 装备 hp_max 满 极值 ≤ 16667
-  #          (心法相生 hpPct 0.20 加成后 ≤ 20000 §5.4 红线,不靠 cap 兜底)
-  # 实测极值(方案 D):wuSheng 16550 / zongShi 14750 / 全阶过红线
+  # 内力与真气拆分后，内力不再提高血量；境界绝对等级承接原成长曲线。
+  # 血量 = 1129 + (境界绝对等级-1) × 156 + 根骨 × 400 + 装备血量。
   max_hp_formula:
-    base: 1000                       # 基础血量(GDD 原值)
-    internal_force_factor: 0.5       # 内力系数(GDD 原写 5,Phase 1 调 0.7,P0.1 #38 方案 D 调 0.5)
+    base: 1129
+    realm_level_factor: 156
     constitution_factor: 400         # 根骨系数(GDD 原写 500,P0.1 #38 方案 D 调 400)
 
   # --- 出手速度公式（GDD §5.6 原值，无需调整）---
@@ -1656,9 +1681,12 @@ inner_demon:
     stage_inner_demon_07:
       outOfWindowDamageMult: 0.14
   mirror_charge_skill_id: skill_inner_demon_charge
-  mechanic_mirror_attack_multiplier: 0.75  # 机制化心魔镜像攻击折减。HP/IF 仍按 buff 压迫;
+  mechanic_mirror_attack_multiplier: 0.75  # 机制化心魔装备攻击折减。HP/IF 仍按 buff 压迫;
                                            # 攻击不再复制高爆发 build 后放大,避免 BiS
                                            # 3 tick 固定团灭成硬墙。
+  mechanic_mirror_output_multiplier_per_stage:
+    stage_inner_demon_05: 0.52
+    stage_inner_demon_06: 0.52
   mechanic_mirror_start_action_point: -2000 # 机制化心魔起手延后蓄势,给爆发流先手窗口;
                                             # 纯镜像关仍为 0。
 
@@ -1739,11 +1767,11 @@ mass_battle:
   wave_intermission:                 # wave 间过渡规则(MassBattleStrategy._intermission 消费)
     reset_action_point: true         # wave 间 actionPoint 归 0(走 tick 不快进 · §5.5)
     preserve_hp: true                # wave 间 HP 保留(与 alive_hp_recovery_pct 取 max)
-    preserve_internal_force: true    # wave 间内力保留(限大招使用频率)
+    preserve_internal_force: true    # 历史字段名；实际为 wave 间保留真气
     preserve_cooldowns: false        # wave 间 cd 重置(给玩家下波大招机会)
     revive_dead_pct: 1.00            # 死角色满血复活(P3.2.C 修法 ① · 守城短歇补员 · 平衡 wave 数量劣势)
     alive_hp_recovery_pct: 1.00      # 活角色 hp 回满 maxHp(P3.2.C 修法 ① · 短歇恢复;与 preserve_hp 取 max 不会反向降 hp)
-    alive_if_recovery_pct: 0.50      # 活角色内力恢复 50% maxIF(P3.2.B · 防 wave 3+ IF 耗尽全 draw;与 preserve_internal_force 取 max)
+    alive_if_recovery_pct: 0.25      # 历史字段名；波次间追加恢复 25% 气海，溢出丢弃
 
   stage_formations:                  # 5 关默认阵型(玩家未选时 fallback · 主题契合)
     stage_mass_battle_01: yanXing    # 守村:山贼围攻 yiLiu·qiMeng 攻势启

@@ -10,6 +10,7 @@ import '../../../core/domain/skill_usage_entry.dart';
 import '../../../data/numbers_config.dart';
 import 'damage_calculator.dart';
 import 'derived_stats.dart';
+import 'qi_cycle.dart';
 
 // P1.1 候选 3-b:resonanceStages 查找的 orElse fallback(防御性,正常情况不触发,
 // numbers.yaml 4 stage 全配)。
@@ -111,8 +112,16 @@ class BattleCharacter {
 
   final int maxHp;
   final int currentHp;
-  final int maxInternalForce;
-  final int currentInternalForce;
+
+  /// Effective snapshot of persistent cultivated power; never spent in battle.
+  final int internalForce;
+
+  /// Bounded per-battle resource.
+  final int maxQi;
+  final int currentQi;
+  final double qiGainMultiplier;
+  final double qiCostReductionPct;
+  final bool autoUltimate;
 
   final int speed;
   final double criticalRate;
@@ -251,8 +260,14 @@ class BattleCharacter {
     required this.school,
     required this.maxHp,
     required this.currentHp,
-    required this.maxInternalForce,
-    required this.currentInternalForce,
+    int? internalForce,
+    int? maxQi,
+    int? currentQi,
+    this.qiGainMultiplier = 1.0,
+    this.qiCostReductionPct = 0.0,
+    this.autoUltimate = false,
+    @Deprecated('请使用 maxQi') int? maxInternalForce,
+    @Deprecated('请使用 currentQi') int? currentInternalForce,
     required this.speed,
     required this.criticalRate,
     required this.evasionRate,
@@ -290,7 +305,19 @@ class BattleCharacter {
     this.guardianWardMult,
     this.guardianDefIds = const [],
     this.vulnerabilityMult,
-  });
+  }) : assert(
+         (internalForce != null && maxQi != null && currentQi != null) ||
+             (maxInternalForce != null && currentInternalForce != null),
+       ),
+       internalForce = internalForce ?? currentInternalForce ?? 0,
+       maxQi = maxQi ?? maxInternalForce ?? 0,
+       currentQi = currentQi ?? currentInternalForce ?? 0;
+
+  @Deprecated('战斗资源已拆为真气，请使用 maxQi')
+  int get maxInternalForce => maxQi;
+
+  @Deprecated('战斗资源已拆为真气，请使用 currentQi')
+  int get currentInternalForce => currentQi;
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
   ///
@@ -344,18 +371,38 @@ class BattleCharacter {
       }
     }
 
+    final repo = GameRepository.instance;
+    final techDef = repo.getTechnique(mainTechnique.defId);
+    final qiConfig = numbers.combat.qi;
+    final profile = techDef.qiProfile;
+    final disorder = numbers.innerBreathDisorder;
+    final openingPenalty = QiCycle.disorderOpeningQiPenalty(
+      disorderHours: character.innerBreathDisorderHoursRemaining,
+      disorderMaxHours: disorder.maxHours,
+      maxPenalty: disorder.maxOpeningQiPenalty,
+    );
+    final maxQi = (qiConfig.baseMax + profile.maxBonus).clamp(
+      qiConfig.minMax,
+      qiConfig.maxCap,
+    );
+    final openingQi = QiCycle.openingQi(
+      maxQi: maxQi,
+      openingQi: qiConfig.openingQi + profile.openingBonus - openingPenalty,
+      openingCap: qiConfig.openingCap,
+    );
+    final qiGainMultiplier = (1 + profile.gainPct).clamp(
+      1.0,
+      qiConfig.gainMultiplierCap,
+    );
+    final qiCostReductionPct = profile.costReductionPct.clamp(
+      0.0,
+      qiConfig.costReductionCap,
+    );
     final maxHp = CharacterDerivedStats.maxHp(
       character,
       equipped,
       numbers,
       founderBuffActive: founderBuffActive,
-    );
-    final maxIf = CharacterDerivedStats.internalForceMaxWithLineage(
-      character,
-      equipped,
-      numbers,
-      founderBuffActive: founderBuffActive,
-      heavyInjured: heavyInjured,
     );
     final speed = CharacterDerivedStats.speed(
       character,
@@ -385,12 +432,10 @@ class BattleCharacter {
       ForgingSlotType.lifesteal,
     );
 
-    final techDef = GameRepository.instance.getTechnique(mainTechnique.defId);
     // P1b 藏经阁:availableSkills = 6 装配槽非空技能(主修×2 / 辅修 / 共鸣 / 大招 /
     // 奇遇)。getSkill 共享 skillDefs Map(skills.yaml + encounter_skills.yaml
     // 加载合并),encounter skill 与心法招式 runtime 同型(SkillDef)。joint 现在走
     // resonanceSkillId 槽,不再走 hasJointSkillUnlocked 特殊注入。
-    final repo = GameRepository.instance;
     final loadoutIds = <String?>[
       character.mainSkillId1,
       character.mainSkillId2,
@@ -468,8 +513,16 @@ class BattleCharacter {
       school: school,
       maxHp: maxHp,
       currentHp: maxHp,
-      maxInternalForce: maxIf,
-      currentInternalForce: maxIf, // P0:战斗内力进场满(每场预算 · 与敌方对称)
+      internalForce: QiCycle.effectiveInnerForce(
+        actualInnerForce: character.internalForce,
+        disorderHours: character.innerBreathDisorderHoursRemaining,
+        disorderMaxHours: disorder.maxHours,
+        maxPenaltyPct: disorder.maxInnerForcePenaltyPct,
+      ),
+      maxQi: maxQi,
+      currentQi: openingQi,
+      qiGainMultiplier: qiGainMultiplier,
+      qiCostReductionPct: qiCostReductionPct,
       speed: speed,
       criticalRate: critRate,
       evasionRate: evRate,
@@ -504,8 +557,14 @@ class BattleCharacter {
     TechniqueSchool? school,
     int? maxHp,
     int? currentHp,
-    int? maxInternalForce,
-    int? currentInternalForce,
+    int? internalForce,
+    int? maxQi,
+    int? currentQi,
+    double? qiGainMultiplier,
+    double? qiCostReductionPct,
+    bool? autoUltimate,
+    @Deprecated('请使用 maxQi') int? maxInternalForce,
+    @Deprecated('请使用 currentQi') int? currentInternalForce,
     int? speed,
     double? criticalRate,
     double? evasionRate,
@@ -552,8 +611,12 @@ class BattleCharacter {
       school: school ?? this.school,
       maxHp: maxHp ?? this.maxHp,
       currentHp: currentHp ?? this.currentHp,
-      maxInternalForce: maxInternalForce ?? this.maxInternalForce,
-      currentInternalForce: currentInternalForce ?? this.currentInternalForce,
+      internalForce: internalForce ?? this.internalForce,
+      maxQi: maxQi ?? maxInternalForce ?? this.maxQi,
+      currentQi: currentQi ?? currentInternalForce ?? this.currentQi,
+      qiGainMultiplier: qiGainMultiplier ?? this.qiGainMultiplier,
+      qiCostReductionPct: qiCostReductionPct ?? this.qiCostReductionPct,
+      autoUltimate: autoUltimate ?? this.autoUltimate,
       speed: speed ?? this.speed,
       criticalRate: criticalRate ?? this.criticalRate,
       evasionRate: evasionRate ?? this.evasionRate,
@@ -619,7 +682,7 @@ class BattleCharacter {
   String toString() =>
       'BattleCharacter(id=$characterId, name=$name, '
       '${realmTier.name}/${realmLayer.name}, ${school.name}, '
-      'hp=$currentHp/$maxHp, if=$currentInternalForce/$maxInternalForce, '
+      'hp=$currentHp/$maxHp, innerForce=$internalForce, qi=$currentQi/$maxQi, '
       'spd=$speed, crit=${criticalRate.toStringAsFixed(2)}, '
       'ap=$actionPoint, alive=$isAlive, team=$teamSide#$slotIndex'
       '${internalInjury != null ? ", injury=$internalInjury" : ""})';

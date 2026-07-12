@@ -93,6 +93,7 @@ void main() {
     actionPoint: 0,
     isAlive: true,
     teamSide: teamSide,
+    autoUltimate: teamSide == 1,
     slotIndex: 0,
   );
 

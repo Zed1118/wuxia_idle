@@ -64,11 +64,13 @@ void main() {
   Future<void> setInjury({
     required double injuryHours,
     required int lightStacks,
+    double disorderHours = 0,
   }) async {
     await IsarSetup.instance.writeTxn(() async {
       final ch = await IsarSetup.instance.characters.get(kCharId);
       ch!.injuryHoursRemaining = injuryHours;
       ch.lightInjuryStacks = lightStacks;
+      ch.innerBreathDisorderHoursRemaining = disorderHours;
       await IsarSetup.instance.characters.put(ch);
     });
   }
@@ -78,7 +80,7 @@ void main() {
   // ───────────────────────────────────────────────────────────────────────
   group('completeRetreat 伤势疗养', () {
     test('重伤 8h，收功 actualHours=3h → 剩 5h；轻伤清零', () async {
-      await setInjury(injuryHours: 8.0, lightStacks: 4);
+      await setInjury(injuryHours: 8.0, lightStacks: 4, disorderHours: 6);
 
       final start = DateTime(2026, 5, 11, 10, 0);
       final session = await SeclusionService(isar: IsarSetup.instance)
@@ -107,6 +109,7 @@ void main() {
         reason: '8h - 3h = 5h',
       );
       expect(ch?.lightInjuryStacks, 0, reason: '收功即调息，轻伤无条件清零');
+      expect(ch?.innerBreathDisorderHoursRemaining, closeTo(3.0, 0.01));
     });
 
     test('重伤 2h，收功 actualHours=5h → clamp 到 0（不为负）', () async {
@@ -143,7 +146,7 @@ void main() {
   // ───────────────────────────────────────────────────────────────────────
   group('offline settle 伤势疗养', () {
     test('重伤 8h，离线 awayHours=3h → 剩 5h；轻伤清零', () async {
-      await setInjury(injuryHours: 8.0, lightStacks: 3);
+      await setInjury(injuryHours: 8.0, lightStacks: 3, disorderHours: 6);
 
       await OfflinePassiveService.settle(
         saveDataId: kSaveDataId,
@@ -159,6 +162,7 @@ void main() {
         reason: '8h - 3h = 5h',
       );
       expect(ch?.lightInjuryStacks, 0);
+      expect(ch?.innerBreathDisorderHoursRemaining, closeTo(3.0, 0.01));
     });
 
     test('即使无经验产出（awayHours 极小，0 经验）也疗养 + 清轻伤', () async {

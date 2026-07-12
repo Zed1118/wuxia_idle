@@ -113,8 +113,9 @@ void main() {
         school: school,
         maxHp: maxHp,
         currentHp: maxHp,
-        maxInternalForce: maxIf,
-        currentInternalForce: maxIf,
+        internalForce: maxIf,
+        maxQi: 100,
+        currentQi: 100,
         speed: speed,
         criticalRate: 0.05,
         evasionRate: 0.05,
@@ -144,13 +145,13 @@ void main() {
         reason: '$label currentHp ≤ maxHp 派生不变式',
       );
       expect(
-        ch.maxInternalForce,
+        ch.internalForce,
         lessThanOrEqualTo(15000),
-        reason: '$label maxIf ${ch.maxInternalForce} 必 ≤ §5.4 内力红线 15000',
+        reason: '$label maxIf ${ch.internalForce} 必 ≤ §5.4 内力红线 15000',
       );
       expect(
-        ch.currentInternalForce,
-        lessThanOrEqualTo(ch.maxInternalForce),
+        ch.currentQi,
+        lessThanOrEqualTo(ch.internalForce),
         reason: '$label currentIf ≤ maxIf',
       );
       expect(
@@ -257,7 +258,7 @@ void main() {
       );
       // 15000 × 1.25 = 18750,cap 后 15000
       expect(
-        result.maxInternalForce,
+        result.internalForce,
         15000,
         reason: 'applySynergy maxIf cap 必须把 18750 截到 15000',
       );
@@ -306,7 +307,7 @@ void main() {
       // maxIf:14000 × 1.20 = 16800 → cap 15000
       // defRate:0.50 + 0.50 = 1.00 → clamp 0.95
       expect(result.maxHp, 20000);
-      expect(result.maxInternalForce, 15000);
+      expect(result.internalForce, 15000);
       expect(result.defenseRate, 0.95);
     });
 
