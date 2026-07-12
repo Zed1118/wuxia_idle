@@ -110,6 +110,22 @@ void main() {
   // ─────────────────────────────────────────────────────────────────────────
 
   group('startRetreat', () {
+    test('开放式闭关固化开始境界且不再需要计划时长', () async {
+      final now = DateTime(2026, 7, 12, 8);
+      final session = await SeclusionService(isar: IsarSetup.instance)
+          .startRetreat(
+            mapType: RetreatMapType.shanLin,
+            saveDataId: kSaveDataId,
+            characterId: kCharId,
+            charRealmTier: RealmTier.erLiu,
+            maps: GameRepository.instance.seclusionMaps,
+            now: now,
+          );
+
+      expect(session.realmTierAtStart, RealmTier.erLiu);
+      expect(session.durationHours, 0, reason: '旧字段仅用于存档兼容');
+    });
+
     test('正常创建 active session，character.currentRetreatSessionId 同步', () async {
       final now = DateTime(2026, 5, 11, 10, 0);
       final session = await SeclusionService(isar: IsarSetup.instance)
@@ -124,7 +140,8 @@ void main() {
           );
 
       expect(session.mapType, RetreatMapType.shanLin);
-      expect(session.durationHours, 4);
+      expect(session.durationHours, 0, reason: '开放式闭关不再保存计划时长');
+      expect(session.realmTierAtStart, RealmTier.xueTu);
       expect(session.status, RetreatStatus.active);
       expect(session.startedAt, now);
       expect(session.completedAt, isNull);
@@ -303,9 +320,9 @@ void main() {
       expect(out.mapEvents, isEmpty);
     });
 
-    test('72h 封顶：超过计划时长取 min(elapsed, plan, cap)', () {
+    test('72h 完整闭关封顶：旧计划时长不再截断结算', () {
       final start = DateTime(2026, 5, 11, 10, 0);
-      // elapsed = 100h, plan = 4h, cap = 72h → actualHours = 4h
+      // elapsed = 100h, legacy plan = 4h, cap = 72h → actualHours = 72h
       final now = start.add(const Duration(hours: 100));
       final session = makeSession(durationHours: 4, startedAt: start);
       final out = SeclusionService.computeOutputs(
@@ -315,7 +332,7 @@ void main() {
         maps: GameRepository.instance.seclusionMaps,
         now: now,
       );
-      expect(out.actualHours, closeTo(4.0, 0.01));
+      expect(out.actualHours, closeTo(72.0, 0.01));
     });
 
     test('cap=72h 封顶情况：plan=1000h 时 actualHours 不超 72', () {

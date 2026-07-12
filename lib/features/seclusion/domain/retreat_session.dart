@@ -24,8 +24,13 @@ class RetreatSession {
   @enumerated
   late RetreatMapType mapType;
 
-  /// 计划闭关时长（小时，来自用户选择：1 / 4 / 12）。
-  late int durationHours;
+  /// 旧版计划闭关时长。新 session 固定写 0，仅保留反序列化兼容。
+  int durationHours = 0;
+
+  /// 开始闭关时的大境界快照，结算倍率与装备阶位锚点均以此为准。
+  /// null 仅存在于 0.35.0 之前尚未迁移的旧档。
+  @Enumerated(EnumType.name)
+  RealmTier? realmTierAtStart;
 
   /// 开始闭关时刻（时辰加成以此时刻决定，不动态切换）。
   late DateTime startedAt;

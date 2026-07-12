@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/skill_unlock_entry.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -9,6 +12,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_progress_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 
 import '../support/isar_test_support.dart';
 import '../support/test_data.dart';
@@ -204,6 +208,48 @@ void main() {
         contains('$probeStageId#1'),
         reason: '0.20 旧档段2 仍执行,回填 #1 周目键',
       );
+    });
+
+    test('0.34 active 闭关迁移时固化角色境界快照', () async {
+      final startedAt = DateTime(2026, 7, 10, 8);
+      final character = Character.create(
+        name: 'migration_founder',
+        realmTier: RealmTier.erLiu,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: Attributes(),
+        rarity: RarityTier.biaoZhun,
+        lineageRole: LineageRole.founder,
+        createdAt: startedAt,
+        internalForce: 500,
+      )..id = 10;
+      final session = RetreatSession()
+        ..id = 77
+        ..saveDataId = 1
+        ..mapType = RetreatMapType.shanLin
+        ..durationHours = 12
+        ..startedAt = startedAt
+        ..status = RetreatStatus.active
+        ..actualRewards = [];
+      character.currentRetreatSessionId = session.id;
+
+      await IsarSetup.instance.writeTxn(() async {
+        final save = await IsarSetup.instance.saveDatas.get(0);
+        save!
+          ..saveVersion = '0.34.0'
+          ..founderCharacterId = character.id;
+        await IsarSetup.instance.saveDatas.put(save);
+        await IsarSetup.instance.characters.put(character);
+        await IsarSetup.instance.retreatSessions.put(session);
+      });
+
+      await IsarSetup.close();
+      await IsarSetup.init(directory: tempDir, inspector: false);
+
+      final migrated = await IsarSetup.instance.retreatSessions.get(session.id);
+      expect(migrated!.realmTierAtStart, RealmTier.erLiu);
+      expect(migrated.startedAt, startedAt);
+      expect(migrated.status, RetreatStatus.active);
+      expect(IsarSetup.currentSaveVersion, '0.35.0');
     });
   });
 }

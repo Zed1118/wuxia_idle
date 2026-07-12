@@ -69,7 +69,7 @@ typedef RetreatResult = ({
 ///   - 同一 saveDataId 至多一条 active session；[startRetreat] 开始前
 ///     先调 [_abandonActive]（内部方法）
 ///   - [computeOutputs] 纯函数（不写 Isar），由 [completeRetreat] 调用
-///   - actualHours = min(elapsed, durationHours, capHours)
+///   - actualHours = min(elapsed, capHours)；旧 durationHours 不再参与结算
 ///   - 加成均按 `session.startedAt` 时刻判定（不跨日切换 — GDD §7.3）：
 ///     * solarBonus = 1.30 if startedAt 是节气日 else 1.00（按月日比对，忽略年）
 ///     * ziShi = 23:00-01:00 → internalForce 维度 ×1.20，其他维度不受影响
@@ -125,7 +125,7 @@ class SeclusionService {
   ///   3. 写新 [RetreatSession] + 更新 [Character.currentRetreatSessionId]
   Future<RetreatSession> startRetreat({
     required RetreatMapType mapType,
-    required int durationHours,
+    @Deprecated('开放式闭关不再使用计划时长') int? durationHours,
     required int saveDataId,
     required int characterId,
     required RealmTier charRealmTier,
@@ -162,7 +162,8 @@ class SeclusionService {
       final session = RetreatSession()
         ..saveDataId = saveDataId
         ..mapType = mapType
-        ..durationHours = durationHours
+        ..durationHours = 0
+        ..realmTierAtStart = charRealmTier
         ..startedAt = now
         ..completedAt = null
         ..status = RetreatStatus.active
@@ -200,8 +201,7 @@ class SeclusionService {
     final def = _getDef(session.mapType, maps);
     final elapsed = now.difference(session.startedAt).inSeconds / 3600.0;
     final cap = config.capHours.toDouble();
-    final planned = session.durationHours.toDouble();
-    final actualHours = _clamp(elapsed, 0, _min(planned, cap));
+    final actualHours = _clamp(elapsed, 0, cap);
 
     final scale = config.realmScaleFor(charRealmTier);
     final solarBonus = config.isSolarTermDay(session.startedAt)
