@@ -75,4 +75,3 @@ release 证据。复核后发现：被点名的 10 个 `diagnostic/stress/simula
 - 不减少现有 PR 测试覆盖。
 - GitHub-hosted Windows job 是否成功仍需 workflow 实际触发确认；Mac 本地不能替代
   Windows runner、升级安装、签名、音频和长挂机实机验证。
-
