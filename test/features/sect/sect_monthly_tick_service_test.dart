@@ -13,7 +13,7 @@ import 'package:wuxia_idle/features/sect/domain/sect_event.dart';
 /// (spec `2026-06-24-b1-sect-event-game-loop-wiring-design.md` §6)。
 ///
 /// 不实例化 Isar(memory `feedback_isar_autoincrement_test_id_collision`),
-/// 走 pure-ish service + NumbersConfigStub。
+/// 走 pure-ish service + 配置 fixture。
 void main() {
   final yaml = <String, dynamic>{
     'sect_event': {
@@ -40,7 +40,7 @@ void main() {
   final tick = SectMonthlyTickService(
     eventSvc: SectEventService(numbers: numbers),
     decaySvc: SectReputationDecayService(numbers: numbers),
-    numbers: numbers,
+    config: numbers.sectEvent,
   );
 
   Sect baseSect({
@@ -255,7 +255,7 @@ void main() {
       final t = SectMonthlyTickService(
         eventSvc: SectEventService(numbers: stub),
         decaySvc: SectReputationDecayService(numbers: stub),
-        numbers: stub,
+        config: stub.sectEvent,
       );
       final sect = baseSect(lastTickAt: DateTime(2026, 6, 1));
       final r = t.compute(
