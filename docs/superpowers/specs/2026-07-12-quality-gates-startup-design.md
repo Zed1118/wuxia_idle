@@ -1,6 +1,6 @@
 # 质量门禁与启动可靠性设计
 
-> 上位方案：`/Users/a10506/Desktop/挂机武侠_最终优化方案_2026-07-12.md`  
+> 上位方案：`/Users/a10506/Desktop/挂机武侠_最终优化方案_2026-07-12.md`
 > 范围：第一阶段质量收益最高项；不改战斗数值、不改存档 schema、不改变生产流程
 
 ## 目标
@@ -85,4 +85,3 @@ Splash 直接调用 `GameRepository.loadAllDefs()` 并直接构造 `SaveSelectSc
 - 不修改存档迁移或战斗结算。
 - 不增加 Windows CI。
 - 不删除任何现有 worktree 或分支。
-

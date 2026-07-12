@@ -30,7 +30,7 @@
 - [x] UI behavior retains semantics, keyboard/focus/mouse behavior because no interactive control type changes.
 - [x] `flutter analyze --no-pub` passes.
 - [x] `flutter test --no-pub` passes at batch end.
-- [ ] Worktree is clean and tip commit starts with `[READY]` at handoff.
+- [x] Worktree is clean and tip commit starts with `[READY]` at handoff.
 
 ### Task 1: First-clear experience ratchet
 
@@ -266,7 +266,7 @@ Expected: all tests pass; no `-1` loader crashes.
 
 Record completed commits, exact test counts, analyze result, red-line impact, residual risks, and next subproject (`GameRepository/NumbersConfig` design).
 
-- [ ] **Step 6: Create READY tip**
+- [x] **Step 6: Create READY tip**
 
 ```bash
 git status --short
