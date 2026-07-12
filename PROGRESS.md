@@ -5,7 +5,8 @@
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 
 ## 当前阶段
-> **内力/真气批最终构建补记**：macOS debug build 已成功，`git diff --check` 已通过；下条记录中的“待执行”已销账。
+
+> **2026-07-12 最终优化方案首轮六批合并 Gate(`main` @ `4808fffd`，本地未 push)**：**已完成**：首通体验渐进门禁、Splash 生命周期测试、宗门配置读面收窄、存档槽 feature 维护编排、战斗结算胜负单一真相源、战斗播放资源封装、覆盖率 ratchet（81.25%）及手动/每周 Windows release workflow 已逐分支审核后无冲突合入；审核阶段修正 6 份设计文档的 `diff --check` 卫生并重新冻结。**已验证**：build_runner 114 outputs；format 1098/0 changed；analyze 0；合并态 targeted 198 绿；并发全量 `success:true`（345073ms）；macOS `battle_charge_break` @1280×720/1440×900 实窗均无 overflow、空层或遮挡。**已知风险**：Windows workflow 尚未实际触发；MSIX/签名/升级安装、Windows 音频/8h 长稳性能和 closed beta 仍需外部环境；静态视觉路由不等于完整动态手感/帧率验收。**下批建议**：本地确认后 push `main`，观察 Ubuntu/macOS CI 与 Windows 定时/手动构建证据，再安排目标 Windows 真机发布验收。
 
 > **2026-07-12 Codex 内力/真气循环实装(`codex/inner-force-qi-cycle`)**:永久内力改为闭关成长且战斗不消耗、实际值决定伤害；战斗资源拆为有界真气气海，招式显式产耗气，心法提供开场/气海/产气/减耗差异，连续战斗保留并有限恢复。散功、Boss/心魔失败不再扣永久内力，统一改为可由有效战斗和闭关/离线调息恢复的「内息紊乱」；0.35→0.36 旧档保护性补满内力并迁移旧余毒。平衡复校：普通敌人/主线Boss/塔Boss 开场真气20/40/60；心魔05/06高爆发17/20、心魔07高爆发14/20、floor30满配30/30低配0/30、单人闭关整备主线Ch1-6全通。**门禁**:`dart format`无改、`flutter analyze --no-pub`0 issue、全仓4935 pass/0 fail；macOS debug build待本批最后执行。
 
