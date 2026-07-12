@@ -43,4 +43,3 @@
 - GREEN：实现 service 并迁移两条 production 入口。
 - 回归：战绩回填、兵器谱回填、SaveSelect UI、Isar 迁移、恢复失败回滚和多槽测试。
 - 架构守卫：`isar_setup.dart` 不再导入 feature application 文件。
-
