@@ -72,11 +72,13 @@ class EncounterChoice {
   final String text;
   final String outcomeId;
   final String body;
+  final int? fortuneRequired;
 
   const EncounterChoice({
     required this.text,
     required this.outcomeId,
     required this.body,
+    this.fortuneRequired,
   });
 
   factory EncounterChoice.fromYaml(Map<String, dynamic> y) {
@@ -84,6 +86,7 @@ class EncounterChoice {
       text: (y['text'] as String?)?.trim() ?? '',
       outcomeId: y['outcome_id'] as String,
       body: (y['body'] as String?)?.trim() ?? '',
+      fortuneRequired: (y['fortune_required'] as num?)?.toInt(),
     );
   }
 }

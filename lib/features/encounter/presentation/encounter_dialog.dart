@@ -29,19 +29,26 @@ Future<String?> showEncounterDialog({
   required BuildContext context,
   required EncounterDef def,
   required EncounterContent content,
+  required int fortune,
 }) {
   return showDialog<String>(
     context: context,
     barrierDismissible: false,
-    builder: (ctx) => _EncounterDialog(def: def, content: content),
+    builder: (ctx) =>
+        _EncounterDialog(def: def, content: content, fortune: fortune),
   );
 }
 
 class _EncounterDialog extends StatefulWidget {
-  const _EncounterDialog({required this.def, required this.content});
+  const _EncounterDialog({
+    required this.def,
+    required this.content,
+    required this.fortune,
+  });
 
   final EncounterDef def;
   final EncounterContent content;
+  final int fortune;
 
   @override
   State<_EncounterDialog> createState() => _EncounterDialogState();
@@ -108,6 +115,7 @@ class _EncounterDialogState extends State<_EncounterDialog> {
                             key: const ValueKey('opening'),
                             opening: widget.content.opening,
                             choices: widget.content.choices,
+                            fortune: widget.fortune,
                             onSelect: (c) => setState(() => _selected = c),
                           )
                         : _OutcomeStage(
@@ -132,11 +140,13 @@ class _OpeningStage extends StatelessWidget {
     super.key,
     required this.opening,
     required this.choices,
+    required this.fortune,
     required this.onSelect,
   });
 
   final String opening;
   final List<EncounterChoice> choices;
+  final int fortune;
   final ValueChanged<EncounterChoice> onSelect;
 
   @override
@@ -151,7 +161,16 @@ class _OpeningStage extends StatelessWidget {
           if (i > 0) const SizedBox(height: 10),
           _ChoiceButton(
             text: choices[i].text,
-            onTap: () => onSelect(choices[i]),
+            requirement: choices[i].fortuneRequired == null
+                ? null
+                : UiStrings.encounterFortuneRequirement(
+                    choices[i].fortuneRequired!,
+                  ),
+            onTap:
+                choices[i].fortuneRequired == null ||
+                    fortune >= choices[i].fortuneRequired!
+                ? () => onSelect(choices[i])
+                : null,
           ),
         ],
       ],
@@ -268,43 +287,69 @@ class _OutcomeBody extends StatelessWidget {
 }
 
 class _ChoiceButton extends StatelessWidget {
-  const _ChoiceButton({required this.text, required this.onTap});
+  const _ChoiceButton({
+    required this.text,
+    required this.onTap,
+    this.requirement,
+  });
   final String text;
-  final VoidCallback onTap;
+  final String? requirement;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 52),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
-        decoration: BoxDecoration(
-          color: WuxiaColors.sidebar,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: WuxiaColors.inkPanelEdge),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.chevron_right,
-              color: WuxiaColors.resultHighlight,
-              size: 18,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                text,
-                style: const TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 15,
-                  height: 1.35,
-                  letterSpacing: 1,
+    final enabled = onTap != null;
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: text,
+      child: InkWell(
+        onTap: onTap,
+        canRequestFocus: enabled,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 52),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+          decoration: BoxDecoration(
+            color: enabled ? WuxiaColors.sidebar : WuxiaColors.background,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: WuxiaColors.inkPanelEdge),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.chevron_right,
+                color: enabled
+                    ? WuxiaColors.resultHighlight
+                    : WuxiaColors.textMuted,
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    color: enabled
+                        ? WuxiaColors.textPrimary
+                        : WuxiaColors.textMuted,
+                    fontSize: 15,
+                    height: 1.35,
+                    letterSpacing: 1,
+                  ),
                 ),
               ),
-            ),
-          ],
+              if (requirement != null) ...[
+                const SizedBox(width: 10),
+                Text(
+                  requirement!,
+                  style: const TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );

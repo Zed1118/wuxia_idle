@@ -9,6 +9,7 @@ opening: |
 choices:
   - text: 喝下这杯
     outcome_id: gain_wisdom
+    fortune_required: 8
     body: |
       酒入喉，苦得你皱了下眉。中年人笑了笑：「世人喝酒，
       都想品出点味儿来。但有的酒，就是让你知道什么叫难受。」

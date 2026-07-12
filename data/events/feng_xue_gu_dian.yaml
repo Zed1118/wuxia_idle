@@ -18,6 +18,7 @@ choices:
 
   - text: 与算命先生攀谈
     outcome_id: get_divination
+    fortune_required: 8
     body: |
       算命先生把残缺的罗盘推到一边。「天机不在盘里。在你心里。」
       他用筷子蘸了酒，在桌面上画了一道线。「这条线上，有你找的人。」

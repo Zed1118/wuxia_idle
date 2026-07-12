@@ -97,6 +97,7 @@ Future<void> runEncounterHookAfterVictory({
     context: context,
     def: triggered,
     content: content,
+    fortune: founder.attributes.fortune,
   );
   if (outcomeId == null) return;
 

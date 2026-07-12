@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/yaml_loader.dart';
+import 'package:wuxia_idle/features/encounter/domain/encounter_event_loader.dart';
 
 /// C2 [审计 2026-06-24]:奇遇 events yaml 加载层强校验。
 ///
@@ -16,6 +18,23 @@ void main() {
   Future<String> realLoad(String path) => File(path).readAsString();
 
   group('C2 奇遇 events 加载层强校验', () {
+    test('四个机缘选项门槛均为 8，且复用既有 outcome id', () async {
+      const expected = {
+        'cha_ting_dui_ju': 'defend_draw',
+        'du_ke_wen_dao': 'gain_wisdom',
+        'feng_xue_gu_dian': 'get_divination',
+        'ye_du_gu_chuan': 'negotiate',
+      };
+      for (final entry in expected.entries) {
+        final raw = await realLoad('data/events/${entry.key}.yaml');
+        final content = EncounterContent.fromYaml(parseYamlMap(raw));
+        final choice = content.choices.singleWhere(
+          (candidate) => candidate.outcomeId == entry.value,
+        );
+        expect(choice.fortuneRequired, 8, reason: entry.key);
+      }
+    });
+
     test(
       '缺 events/<id>.yaml 时 loadAllDefs 抛 StateError (违 §8.1 任一端缺失直接抛错)',
       () async {

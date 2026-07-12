@@ -63,6 +63,11 @@ class _EncounterDebugPickerScreenState
         context: context,
         def: def,
         content: content,
+        fortune: GameRepository
+            .instance
+            .numbers
+            .attributeEffects
+            .specialChoiceRequired,
       );
       if (outcomeId == null || !mounted) return;
 
