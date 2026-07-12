@@ -35,21 +35,17 @@ class OfflinePassiveService {
     required RealmTier realmTier,
     required PassiveIdleConfig config,
   }) {
-    final capped = awayHours.clamp(0, config.capHours.toDouble());
+    final settledHours = awayHours < 0 ? 0.0 : awayHours;
     final scale = config.realmScaleFor(realmTier);
-    final mojianshi = (config.baseMojianshiPerHour * capped * scale)
-        .floor()
-        .clamp(0, 999999);
-    final experience = (config.baseExpPerHour * capped * scale).floor().clamp(
-      0,
-      999999,
-    );
+    final mojianshi = (config.baseMojianshiPerHour * settledHours * scale)
+        .floor();
+    final experience = (config.baseExpPerHour * settledHours * scale).floor();
     return (
       mojianshi: mojianshi,
       experience: experience,
       awayHours: awayHours,
-      settledHours: capped.toDouble(),
-      isCapped: awayHours > config.capHours,
+      settledHours: settledHours,
+      isCapped: false,
     );
   }
 
