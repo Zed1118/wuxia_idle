@@ -743,7 +743,7 @@ String? _resolveTechName(Character ch, Map<int, List<Technique>> techsByCh) {
 /// Phase 4 W11 #32 销账：主线 victory 路径战斗结算。
 ///
 /// 从 Isar 拉玩家方角色 + 心法 + 装备 → 跑 [BattleResolutionService.resolve]
-/// (isVictory=true) → in-place battleCount/skillUsage/cultivationProgress 累积 +
+/// （胜负由 `finalState.result` 派生）→ in-place battleCount/skillUsage/cultivationProgress 累积 +
 /// stage.dropTable roll 出装备/物品 → writeTxn putAll + 装备 owner=null 入背包 +
 /// items 写/更新 inventoryItems。
 ///
@@ -827,7 +827,6 @@ applyVictoryResolution({
     progressToNextMap: numbers.cultivationProgressToNext,
     techniqueDefLookup: GameRepository.instance.getTechnique,
     dropService: dropSvc,
-    isVictory: true,
     numbersConfig: numbers,
     // 双层伤势：Boss/心魔关算硬仗，resolve 内部据此判定伤势 mutate character。
     // 受影响 character 经下方 writeTxn putAll(characters) 自然落库，无需额外 txn。
@@ -1043,7 +1042,7 @@ applyVictoryResolution({
 ItemType _itemTypeOfMainline(String defId) => ItemType.fromDefId(defId);
 
 /// Boss 关战败：从 Isar 拉玩家方角色 + 心法 + 装备，跑
-/// [BattleResolutionService.resolve]（isVictory=false），写回 Isar，返回
+/// [BattleResolutionService.resolve]（败北由 `finalState.result` 派生），写回 Isar，返回
 /// 用于 UI 损失摘要展示的轻量结构。
 ///
 /// **错误兜底**：Isar 未 ready / 角色为空 / finalState 异常 → 返回空 list，
@@ -1107,7 +1106,6 @@ Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
     progressToNextMap: numbers.cultivationProgressToNext,
     techniqueDefLookup: GameRepository.instance.getTechnique,
     dropService: dropSvc,
-    isVictory: false,
     numbersConfig: numbers,
     // 双层伤势：Boss/心魔关算硬仗，战败同样可累伤势。
     // 受影响 character 经下方 writeTxn putAll(characters) 自然落库。

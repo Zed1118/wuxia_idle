@@ -483,7 +483,6 @@ applyTowerVictoryResolution({
     progressToNextMap: numbers.cultivationProgressToNext,
     techniqueDefLookup: GameRepository.instance.getTechnique,
     dropService: dropSvc,
-    isVictory: true,
     numbersConfig: numbers,
     // stageDef: null —— 爬塔不走 service 内部 roll drops；drops 在外层
     // rollTowerRewards + _persistDrops 单独控制（首通才发奖）
