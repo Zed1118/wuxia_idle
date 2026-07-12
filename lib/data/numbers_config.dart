@@ -1860,13 +1860,10 @@ class LearningCostConfig {
 
 /// 闭关系统配置（numbers.yaml `retreat`，Phase 3 T47）。
 ///
-/// 包含 5 张地图定义、可选时长、境界缩放系数、封顶小时数、
+/// 包含 5 张地图定义、境界缩放系数、地图完整收益小时数、
 /// 基础装备掉落概率、节气日加成、子时内力加成（#30 闭关 3 维度接 service）。
 class RetreatConfig {
   final List<SeclusionMapDef> maps;
-
-  /// 可选闭关时长（小时），通常 [1, 4, 12]。
-  final List<int> durationHours;
 
   /// 每升一大境界，产出倍率乘以此系数（默认 1.3）。
   final double realmScalePerTier;
@@ -1913,7 +1910,6 @@ class RetreatConfig {
 
   const RetreatConfig({
     required this.maps,
-    required this.durationHours,
     required this.realmScalePerTier,
     required this.capHours,
     required this.baseEquipDropProbability,
@@ -1932,7 +1928,6 @@ class RetreatConfig {
 
   factory RetreatConfig.fromYaml(Map<String, dynamic> y) {
     final rawMaps = y['maps'] as List;
-    final rawDurations = y['durations'] as List;
     final rawSolar = y['solar_term_bonus'] as Map<String, dynamic>;
     final rawTimeOfDay = y['time_of_day_bonus'] as List;
     // 提取子时（period=ziShi）的 multiplier，effect=internal_force_growth
@@ -1980,9 +1975,6 @@ class RetreatConfig {
       maps: [
         for (final m in rawMaps)
           SeclusionMapDef.fromYaml(m as Map<String, dynamic>),
-      ],
-      durationHours: [
-        for (final d in rawDurations) (d['hours'] as num).toInt(),
       ],
       realmScalePerTier: (y['realm_scale_per_tier'] as num).toDouble(),
       capHours: (y['cap_hours'] as num).toInt(),
@@ -2924,14 +2916,12 @@ class PassiveIdleConfig {
   final double baseMojianshiPerHour;
   final double baseExpPerHour;
   final double realmScalePerTier;
-  final int capHours;
   final double minRecapHours;
 
   const PassiveIdleConfig({
     required this.baseMojianshiPerHour,
     required this.baseExpPerHour,
     required this.realmScalePerTier,
-    required this.capHours,
     required this.minRecapHours,
   });
 
@@ -2939,20 +2929,20 @@ class PassiveIdleConfig {
   double realmScaleFor(RealmTier tier) =>
       math.pow(realmScalePerTier, tier.index).toDouble();
 
+  bool get hasTimeCap => false;
+
   factory PassiveIdleConfig.fromYaml(Map<String, dynamic> y) {
     final base = (y['base_mojianshi_per_hour'] as num).toDouble();
     final exp = (y['base_exp_per_hour'] as num).toDouble();
     final scale = (y['realm_scale_per_tier'] as num).toDouble();
-    final cap = (y['cap_hours'] as num).toInt();
     final minRecap = (y['min_recap_hours'] as num).toDouble();
-    if (base < 0 || exp < 0 || scale <= 0 || cap <= 0 || minRecap < 0) {
+    if (base < 0 || exp < 0 || scale <= 0 || minRecap < 0) {
       throw ArgumentError('passive_idle 数值非法: $y');
     }
     return PassiveIdleConfig(
       baseMojianshiPerHour: base,
       baseExpPerHour: exp,
       realmScalePerTier: scale,
-      capHours: cap,
       minRecapHours: minRecap,
     );
   }

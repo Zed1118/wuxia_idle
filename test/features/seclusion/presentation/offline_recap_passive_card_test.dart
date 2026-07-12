@@ -16,7 +16,6 @@ void main() {
             experience: 250,
             awayHours: 10,
             settledHours: 10,
-            isCapped: false,
             onDismiss: () {},
           ),
         ),
@@ -64,7 +63,6 @@ void main() {
             experience: 100,
             awayHours: 3,
             settledHours: 3,
-            isCapped: false,
             onDismiss: () => dismissed = true,
           ),
         ),
@@ -86,7 +84,6 @@ void main() {
             experience: 80,
             awayHours: 6,
             settledHours: 6,
-            isCapped: false,
             onDismiss: () {},
           ),
         ),
@@ -100,7 +97,7 @@ void main() {
     expect(find.text(UiStrings.passiveRecapTitle), findsOneWidget);
   });
 
-  testWidgets('被动卡显示封顶截断原因', (tester) async {
+  testWidgets('被动卡 100h 全量结算，不显示封顶截断', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -108,8 +105,7 @@ void main() {
             mojianshi: 18,
             experience: 1800,
             awayHours: 100,
-            settledHours: 72,
-            isCapped: true,
+            settledHours: 100,
             onDismiss: () {},
           ),
         ),
@@ -122,12 +118,12 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.textContaining(UiStrings.offlineRecapSettledDetail('72 小时')),
+      find.textContaining(UiStrings.offlineRecapSettledDetail('100 小时')),
       findsOneWidget,
     );
     expect(
       find.textContaining(UiStrings.offlineRecapLimitSystemCap),
-      findsOneWidget,
+      findsNothing,
     );
   });
 
@@ -140,7 +136,6 @@ void main() {
             experience: 0,
             awayHours: 0.1,
             settledHours: 0.1,
-            isCapped: false,
             onDismiss: () {},
           ),
         ),

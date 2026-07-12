@@ -6,7 +6,7 @@ import '../domain/seclusion_map_def.dart';
 import 'seclusion_service.dart';
 import 'retreat_settlement_calculator.dart';
 
-enum OfflineRecapLimitReason { inProgress, plannedDuration, systemCap }
+enum OfflineRecapLimitReason { inProgress, systemCap }
 
 /// M2 离线收益汇总「欢迎回来」卡的展示数据。
 ///

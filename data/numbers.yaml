@@ -953,15 +953,6 @@ retreat:
     - {hour: 60, base: 0.40, current: 0.38, above_1: 0.16, above_2: 0.06}
     - {hour: 72, base: 0.30, current: 0.40, above_1: 0.20, above_2: 0.10}
 
-  # --- 三档闭关时长（GDD §7.3）---
-  durations:
-    - hours: 1
-      description: "短闭关 · 适合短时间游玩场景"
-    - hours: 4
-      description: "中闭关 · 适合临睡前安排"
-    - hours: 12
-      description: "长闭关 · 适合工作日全天"
-
   # --- 五张闭关地图（GDD §8.3）---
   # 产出率字段：所有 _per_hour 字段是"每小时基础产出"，最终产出还会乘以
   # 时辰加成、节气加成、心法加成等
@@ -1208,7 +1199,7 @@ retreat:
 
   # --- 产出公式系数（§12 #5 决议：2026-05-11）---
   realm_scale_per_tier: 1.3      # 每升一大境界，产出倍率 ×1.3（学徒 ×1.0，武圣 ≈4.83）
-  cap_hours: 72                  # 离线结算封顶小时数（超出不累积）
+  cap_hours: 72                  # 地图完整收益阶段；超出时间转普通挂机
   base_equip_drop_probability: 0.1  # 基础装备触发概率，与 equipmentDropRate 相乘
 
   # --- 心法领悟 / 内力增长基础锚点（#30 闭关 3 维度接 service,2026-05-15）---
@@ -1246,7 +1237,6 @@ passive_idle:
   base_mojianshi_per_hour: 0.25   # ≈ 入门闭关图 1.0 × 0.25
   base_exp_per_hour: 50.0         # ≈ 入门闭关图 100 × 0.50
   realm_scale_per_tier: 1.6       # 被动经验专用倍率(学徒 ×1.0，武圣 ≈16.78)
-  cap_hours: 72                   # 复用闭关封顶，超出不累积
   min_recap_hours: 1.0            # 离开 ≥1h 才弹告知卡(与范围 A 一致)
 
 # 主线已通关扫荡战备(GDD §2.3)。只限制在线连续扫荡刷银两/材料;

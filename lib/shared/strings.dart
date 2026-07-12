@@ -297,10 +297,10 @@ class UiStrings {
   static const String mainMenuStatusBreakthroughTitle = '修为已满';
   static const String mainMenuStatusMainlineTitle = '主线目标';
   static const String mainMenuStatusMainlineCompleteDetail = '江湖主线已收束';
-  static String mainMenuStatusRetreatDetail(String mapName, String remaining) =>
-      '$mapName · $remaining';
-  static String mainMenuStatusRetreatCappedDetail(String mapName) =>
-      '$mapName · 收益已满';
+  static String mainMenuStatusRetreatDetail(
+    String mapName,
+    String elapsedHours,
+  ) => '$mapName · 已闭关 $elapsedHours 小时';
   static String mainMenuStatusIslandDetail(int count) => '约$count 件产物待收';
   static String mainMenuStatusInjuryDetail(int count, double maxHours) {
     if (maxHours <= 0) return '$count 名角色需调息';
@@ -1590,15 +1590,14 @@ class UiStrings {
   // ─── 闭关修炼（Phase 3 T49）─────────────────────────────────────────────
 
   static const String mainMenuSeclusion = '闭关修炼';
-  static const String mainMenuSeclusionHint = '5 张地图，离线挂机，最长 72 小时';
+  static const String mainMenuSeclusionHint = '5 张地图 · 开放式闭关 · 挂机无上限';
   static const String mainMenuSeclusionLockedHint = '通关第一章后开放';
   static const String mainMenuSeclusionReadyStatus = '可择地图';
   static const String mainMenuSeclusionLockedStatus = '未开放';
   static String mainMenuSeclusionActiveStatus(String mapName) =>
       '闭关中 · $mapName';
-  static String mainMenuSeclusionDoneStatus(String mapName) => '可收功 · $mapName';
-  static String mainMenuSeclusionCappedStatus(String mapName) =>
-      '收益已满 · $mapName';
+  static String mainMenuSeclusionPassiveStatus(String mapName) =>
+      '挂机接续 · $mapName';
 
   // ─── 心魔境（1.0 P2.2 §12.1,Batch 2.5.B 入口）─────────────────────────────
   static const String mainMenuInnerDemon = '心魔境';
@@ -2590,13 +2589,6 @@ class UiStrings {
   static String offlineRecapPassiveContinues(String hours) =>
       '超出时间已按普通挂机接续 $hours 小时';
 
-  /// P1-6(2026-06-29 审查修复):闭关开始界面前瞻提示——离线最长计入时长。
-  /// 消除「挂 24h 回来只算 X h 觉得亏」的预期落差(在线=离线哲学,想玩才玩)。
-  static String seclusionCapHint(int capHours) => '本次闭关最长计入 $capHours 小时，超出不计';
-
-  /// P1-6:离线归来已达上限时的温和建议(不制造焦虑·守反留存红线)。
-  static const String offlineCappedAdvice = '已达离线上限，可缩短下次闭关间隔';
-
   /// 闭关进行中状态行（带进度百分比）
   static String offlineRecapMapProgress(String mapName, int pct) =>
       '「$mapName」闭关进行中 · $pct%';
@@ -2685,17 +2677,8 @@ class UiStrings {
   /// passive 被动离线无装备掉落池
   static const String offlineRecapNoDrop = '无';
 
-  /// 离线收益截断：仍在计划时长内
-  static const String offlineRecapLimitInProgress = '未达上限，按已过时长结算';
-
-  /// 离线收益截断：达到本次计划闭关时长
-  static const String offlineRecapLimitPlanned = '已达本次闭关计划时长';
-
-  /// 离线收益截断：达到系统封顶
-  static const String offlineRecapLimitSystemCap = '已达离线收益封顶';
-
-  /// 已达封顶后的收功按钮
-  static const String offlineRecapCollectCapped = '一键收功';
+  static const String offlineRecapLimitInProgress = '地图收益仍在积累';
+  static const String offlineRecapLimitSystemCap = '地图收益已圆满，普通挂机继续';
 
   /// 前去收功按钮
   static const String offlineRecapGoCollect = '前去收功';

@@ -22,8 +22,7 @@ class OfflineRecapCard extends StatelessWidget {
   }) : passiveMojianshi = null,
        passiveExperience = null,
        passiveAwayHours = null,
-       passiveSettledHours = null,
-       passiveIsCapped = null;
+       passiveSettledHours = null;
 
   /// M2 范围 B 被动离线告知卡（无 active 闭关时弹）。
   ///
@@ -35,15 +34,13 @@ class OfflineRecapCard extends StatelessWidget {
     required int experience,
     required double awayHours,
     required double settledHours,
-    required bool isCapped,
     required this.onDismiss,
   }) : recap = null,
        onGoCollect = null,
        passiveMojianshi = mojianshi,
        passiveExperience = experience,
        passiveAwayHours = awayHours,
-       passiveSettledHours = settledHours,
-       passiveIsCapped = isCapped;
+       passiveSettledHours = settledHours;
 
   final OfflineRecap? recap;
   final VoidCallback? onGoCollect;
@@ -53,7 +50,6 @@ class OfflineRecapCard extends StatelessWidget {
   final int? passiveExperience;
   final double? passiveAwayHours;
   final double? passiveSettledHours;
-  final bool? passiveIsCapped;
 
   bool get _isPassive => passiveMojianshi != null;
 
@@ -155,7 +151,7 @@ class OfflineRecapCard extends StatelessWidget {
       experience: passiveExperience!,
       awayHours: passiveAwayHours!,
       settledHours: passiveSettledHours!,
-      isCapped: passiveIsCapped!,
+      isCapped: false,
     ));
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 420),
@@ -199,14 +195,6 @@ class OfflineRecapCard extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            // P1-6:被动挂机达系统上限 → 同样温和建议。
-            if (passiveIsCapped!) ...[
-              const SizedBox(height: 4),
-              const Text(
-                UiStrings.offlineCappedAdvice,
-                style: TextStyle(color: WuxiaUi.ink2, fontSize: 12),
-              ),
-            ],
             const SizedBox(height: 12),
             _BreakdownBlock(groups: detail.groups),
             const SizedBox(height: 20),

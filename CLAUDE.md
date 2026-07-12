@@ -4,7 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.32**
+> **版本:v1.33**
+> v1.33 变更摘要(2026-07-12 开放式闭关):生产闭关不再选 1/4/12h,玩家主动收功;前 72h 走地图收益,溢出时间走无上限普通挂机且不重叠。装备每 12h 独立判定、最多 6 次、无保底,权重与稳定种子均由 `numbers.yaml`/结算器统管;越境界掉落不放宽三系装备锁。存桨0.35为旧 active 闭关回填开始境界快照。
 > v1.32 变更摘要(2026-07-08 外部审查速修 · 低风险修订):① 战斗结算 `BattleResolutionService.resolve` 默认胜负从 `finalState.result` 派生，避免未显式传参时战败误走胜利掉落；② `interveneNow` 补 request 后 null-check，消除拖招边界崩溃点；③ `_enforceEncounterSkillRedLines` 招式倍率上限改读 `numbers.combat.redLines.skillPowerMultiplierMax`；④ 文档 drift 速修：data_schema 降级历史快照、content_guide 清退役 DeepSeek/Windows 引用、README/AGENTS/IDS/GDD 同步已知偏差。
 > **版本:v1.31**
 > v1.31 变更摘要(2026-07-04 批次3 心魔机制型实例登记 · 2026-07-08 调优后口径):心魔 05/06/07 镜像脆弱窗口(承伤乘子 0.16/0.16/0.14)+ 机制镜像攻击折减 0.75 + 07 限时生存(survive 20 tick 或击败任一即胜);纯实例追加对齐 v1.30 机制型 Boss 例外条款,减伤方向/新胜负条件不膨胀数字。
@@ -391,7 +392,7 @@ choices:
 | 2 | 单项属性范围 | `numbers.yaml character.attributes`：单项 [1,10] / 总和 [16,24] / 正态 μ=5.5 σ=1.5 / `rerollable: false` |
 | 3 | 强化 +20-49 成功率与材料 | `numbers.yaml equipment.enhancement.success_curve`：`max(0.30, 0.50 - 0.02*(level-19))`，磨剑石 18/25 颗，心血结晶保底 8 颗 |
 | 4 | 暴击系数 + 防御率 | `numbers.yaml combat.critical`：base 5% + 身法 0.5%/点 + 上限 50%，倍率 1.5-2.5（灵巧固定 2.0）；防御率走 `realms.tiers.defense_rate` 按境界固定档（学徒 5%→武圣 35%） |
-| 5 | 闭关产出公式 | `numbers.yaml retreat`：5 地图 base_outputs 各产出 + `realm_scale_per_tier: 1.3` + `cap_hours: 72`（2026-05-11 决议） |
+| 5 | 闭关产出公式 | `numbers.yaml retreat`:5 地图 base_outputs + `realm_scale_per_tier: 1.3`;前 `cap_hours: 72` 是地图完整收益阶段,溢出转无上限 `passive_idle`;装备每12h判定、最多6次、无保底(2026-07-12 决议) |
 | 6 | 武学领悟机缘累积规则 | W14-1 简化为「fortune 属性 1-10 静态值 + 软概率 `p = baseProbability * (1 + fortune/20)`」，不再单独累积"机缘值"，见 `encounters.yaml` + `lib/features/encounter/application/encounter_service.dart`（公式实装,搜 `baseProbability`）+ `lib/features/encounter/domain/encounter_def.dart`（schema 注释） |
 | 8 | 心法速度加成 | `numbers.yaml techniques.tiers[*].speed_bonus`：7 阶 0/5/10/15/25/40/60，直接进 GDD §5.6 公式，无独立上限 |
 | 9 | 人剑合一招式定义位置 | `numbers.yaml combat.resonance.unlocks_joint_skill: true`（默契阶段解锁）+ `skills.reference_multipliers.joint_skill.base: 4500`，**统一固定倍率，不绑流派/不绑装备类型**，由共鸣度系统统管。**v1.9 补**:P1.1 候选 3-b(2026-05-21,commit `15ff8aa`)已实装 battle 释放路径 — `skills.yaml` `skill_joint_skill`(mult=4500 / cost=250 / cd=4)+ `ResonanceStageConfig.unlocksJointSkill/hasSwordSongEffect` 解析 + `battle_ai` 优先级 `pending>jointSkill>powerSkill>normalAttack`,红线 27,421 < 100,000 ✅ |

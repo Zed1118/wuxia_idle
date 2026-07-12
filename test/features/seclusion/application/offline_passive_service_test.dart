@@ -8,7 +8,6 @@ void main() {
     baseMojianshiPerHour: 0.25,
     baseExpPerHour: 50.0,
     realmScalePerTier: 1.6,
-    capHours: 72,
     minRecapHours: 1.0,
   );
 

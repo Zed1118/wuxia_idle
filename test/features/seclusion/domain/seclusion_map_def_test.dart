@@ -199,7 +199,6 @@ void main() {
     setUp(() {
       config = const RetreatConfig(
         maps: [],
-        durationHours: [1, 4, 12],
         realmScalePerTier: 1.3,
         capHours: 72,
         baseEquipDropProbability: 0.1,
@@ -330,7 +329,6 @@ void main() {
       expect(
         () => const RetreatConfig(
           maps: [],
-          durationHours: [1],
           realmScalePerTier: 1.3,
           capHours: -1, // 构造层不校验，校验在 GameRepository._enforceSeclusionRedLines
           baseEquipDropProbability: 0.1,

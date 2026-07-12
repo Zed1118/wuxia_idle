@@ -95,7 +95,6 @@ Future<void> maybeShowOfflineRecap({
         experience: yield_.experience,
         awayHours: yield_.awayHours,
         settledHours: yield_.settledHours,
-        isCapped: yield_.isCapped,
         onDismiss: () => Navigator.of(ctx).pop(),
       ),
     ),

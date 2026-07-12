@@ -51,7 +51,7 @@ void main() {
 
     expect(find.text(UiStrings.offlineRecapTitle), findsOneWidget);
     expect(find.textContaining('山林'), findsOneWidget);
-    expect(find.textContaining('圆满'), findsOneWidget);
+    expect(find.textContaining('圆满'), findsWidgets);
     expect(
       find.text(UiStrings.offlineRecapRewardOverview(120, 45, 300)),
       findsOneWidget,
@@ -159,8 +159,8 @@ void main() {
       findsOneWidget,
     );
     expect(find.text(UiStrings.offlineRecapGoCollect), findsOneWidget);
-    expect(find.text(UiStrings.offlineRecapCollectCapped), findsNothing);
-    expect(find.text(UiStrings.offlineCappedAdvice), findsNothing);
+    expect(find.text('一键收功'), findsNothing);
+    expect(find.textContaining('离线上限'), findsNothing);
   });
 
   testWidgets('0 值收益项隐藏，保留结算说明与收功揭晓', (tester) async {
@@ -191,7 +191,7 @@ void main() {
     expect(find.text(UiStrings.offlineRecapMaterialDetail('无')), findsNothing);
     expect(find.text(UiStrings.offlineRecapNoGainsDetail), findsOneWidget);
     // P1-6:非系统上限 → 不显温和建议。
-    expect(find.text(UiStrings.offlineCappedAdvice), findsNothing);
+    expect(find.textContaining('离线上限'), findsNothing);
     expect(
       find.text(
         UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapDropPending),
@@ -220,7 +220,7 @@ void main() {
       estimatedTechniqueLearnPoints: 0,
       estimatedSilver: 45,
       settledHours: 4.0,
-      limitReason: OfflineRecapLimitReason.plannedDuration,
+      limitReason: OfflineRecapLimitReason.inProgress,
     );
     await pumpCard(
       tester,
@@ -254,7 +254,7 @@ void main() {
       estimatedTechniqueLearnPoints: 0,
       estimatedSilver: 45,
       settledHours: 4.0,
-      limitReason: OfflineRecapLimitReason.plannedDuration,
+      limitReason: OfflineRecapLimitReason.inProgress,
     );
     await pumpCard(
       tester,

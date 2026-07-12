@@ -65,7 +65,7 @@ class _FakeSeclusionService implements SeclusionService {
 /// 覆盖：
 ///   1. SeclusionMapListScreen 列表渲染 5 张地图
 ///   2. locked 卡片无 onTap 响应（学徒点古剑冢不导航）
-///   3. SeclusionSetupScreen 显示地图名 + 时长选择按钮
+///   3. SeclusionSetupScreen 显示地图名 + 开放式闭关规则
 ///
 /// 不依赖 Isar：FutureBuilder 的 getActiveSession future 会在 pump 后完成
 /// 并以 snap.hasError 静默处理（active = null）。
@@ -109,6 +109,7 @@ void main() {
       ..saveDataId = 1
       ..mapType = RetreatMapType.shanLin
       ..durationHours = 1
+      ..realmTierAtStart = RealmTier.xueTu
       ..startedAt = DateTime.now()
       ..completedAt = null
       ..status = RetreatStatus.active
@@ -144,7 +145,7 @@ void main() {
   // ─── Test 3 ───────────────────────────────────────────────────────────────
   // SeclusionSetupScreen 直接注入 mapDef（不依赖 Isar 的导航流）
 
-  testWidgets('SeclusionSetupScreen 显示地图名和时长选择按钮', (tester) async {
+  testWidgets('SeclusionSetupScreen 显示地图名和开放式闭关规则', (tester) async {
     final def = GameRepository.instance.getSeclusionMap(RetreatMapType.shanLin);
 
     await tester.pumpWidget(
@@ -162,15 +163,15 @@ void main() {
 
     // AppBar 标题为地图名
     expect(find.text(def.mapName), findsWidgets);
-    // 时长选择按钮（3 档：1h / 4h / 12h）
-    final durations = GameRepository.instance.numbers.retreat.durationHours;
-    for (final h in durations) {
-      expect(
-        find.text(UiStrings.seclusionDurationLabel(h)),
-        findsOneWidget,
-        reason: '${h}h 时长按钮应可见',
-      );
-    }
+    expect(find.text(UiStrings.seclusionDurationLabel(12)), findsNothing);
+    expect(
+      find.text(
+        UiStrings.seclusionOpenEndedRule(
+          GameRepository.instance.numbers.retreat.capHours,
+        ),
+      ),
+      findsOneWidget,
+    );
     // 开始按钮可见
     expect(find.text(UiStrings.seclusionSetupStartButton), findsOneWidget);
   });
@@ -237,16 +238,8 @@ void main() {
 
     expect(find.text(UiStrings.seclusionMapActive), findsWidgets);
     expect(
-      find.text(UiStrings.seclusionMapActiveRemainingHint(60)),
-      findsOneWidget,
-    );
-    expect(
-      find.text(
-        UiStrings.seclusionMapActiveBannerRemaining(
-          UiStrings.retreatRemainingText(1, 0),
-        ),
-      ),
-      findsOneWidget,
+      find.text(UiStrings.seclusionMapActiveElapsedHint('0.0')),
+      findsWidgets,
     );
   });
 

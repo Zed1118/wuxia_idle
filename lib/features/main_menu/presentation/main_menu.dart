@@ -1097,17 +1097,11 @@ class _SeclusionMenuButton extends ConsumerWidget {
 
   static String _activeRetreatStatus(RetreatSession session) {
     final mapDef = GameRepository.instance.getSeclusionMap(session.mapType);
-    final elapsed = DateTime.now().difference(session.startedAt).inSeconds;
-    final planned = session.durationHours * 3600;
-    final cap = (GameRepository.instance.numbers.retreat.capHours * 3600)
-        .round();
-    if (cap <= planned && elapsed >= cap) {
-      return UiStrings.mainMenuSeclusionCappedStatus(mapDef.mapName);
-    }
-    if (elapsed >= planned) {
-      return UiStrings.mainMenuSeclusionDoneStatus(mapDef.mapName);
-    }
-    return UiStrings.mainMenuSeclusionActiveStatus(mapDef.mapName);
+    final elapsedHours =
+        DateTime.now().difference(session.startedAt).inSeconds / 3600.0;
+    return elapsedHours >= GameRepository.instance.numbers.retreat.capHours
+        ? UiStrings.mainMenuSeclusionPassiveStatus(mapDef.mapName)
+        : UiStrings.mainMenuSeclusionActiveStatus(mapDef.mapName);
   }
 }
 

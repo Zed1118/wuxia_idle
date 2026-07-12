@@ -213,8 +213,6 @@ class OfflineRecapDetailFormatter {
     switch (reason) {
       case OfflineRecapLimitReason.inProgress:
         return UiStrings.offlineRecapLimitInProgress;
-      case OfflineRecapLimitReason.plannedDuration:
-        return UiStrings.offlineRecapLimitPlanned;
       case OfflineRecapLimitReason.systemCap:
         return UiStrings.offlineRecapLimitSystemCap;
     }

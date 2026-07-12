@@ -24,7 +24,7 @@ void main() {
         estimatedTechniqueLearnPoints: 3,
         estimatedSilver: 45,
         settledHours: 4.0,
-        limitReason: OfflineRecapLimitReason.plannedDuration,
+        limitReason: OfflineRecapLimitReason.systemCap,
       );
 
       final detail = OfflineRecapDetailFormatter.forRetreat(

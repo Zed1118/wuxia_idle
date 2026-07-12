@@ -1517,7 +1517,6 @@ class _OfflineRecapPassivePreview extends StatelessWidget {
           experience: 860,
           awayHours: 8.0,
           settledHours: 8.0,
-          isCapped: false,
           onDismiss: () {},
         ),
       ),
