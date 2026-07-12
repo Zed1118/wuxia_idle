@@ -179,7 +179,7 @@ analyze, `flutter build windows --release --no-pub`, and artifact upload of
 
 ```bash
 flutter test --no-pub test/tools/ci_workflow_contract_test.dart
-ruby -e 'require "yaml"; ARGV.each { |f| YAML.safe_load_file(f, aliases: true) }' \
+ruby -e 'require "yaml"; ARGV.each { |f| YAML.safe_load(File.read(f), aliases: true, filename: f) }' \
   .github/workflows/ci.yml .github/workflows/windows-release.yml
 ```
 

@@ -1,0 +1,56 @@
+name: Windows Release Evidence
+
+# 生成当前代码的未签名 Windows release 产物，供发布前人工验证。
+# 本 workflow 不负责 MSIX、签名、部署、升级安装或生产配置变更。
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 2 * * 1'
+
+concurrency:
+  group: windows-release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PUB_HOSTED_URL: https://pub.flutter-io.cn
+
+jobs:
+  windows-release:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.41.5
+          channel: stable
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build
+
+      - name: Analyze
+        run: flutter analyze --no-pub
+
+      - name: Build unsigned Windows release
+        run: flutter build windows --release --no-pub
+
+      - name: Upload unsigned Windows release
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release-unsigned-${{ github.sha }}
+          path: build/windows/x64/runner/Release/
+          if-no-files-found: error
+          retention-days: 14
