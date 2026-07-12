@@ -62,7 +62,7 @@ class ShopNeedHintService {
       final wounded =
           activeCharacters.where((character) {
             return character.injuryHoursRemaining > 0 ||
-                character.innerDemonResidueHoursRemaining > 0 ||
+                character.innerBreathDisorderHoursRemaining > 0 ||
                 character.lightInjuryStacks > 0;
           }).toList()..sort(
             (a, b) => _recoveryNeedScore(b).compareTo(_recoveryNeedScore(a)),
@@ -75,7 +75,7 @@ class ShopNeedHintService {
 
   double _recoveryNeedScore(Character character) {
     return character.injuryHoursRemaining +
-        character.innerDemonResidueHoursRemaining +
+        character.innerBreathDisorderHoursRemaining +
         character.lightInjuryStacks;
   }
 }

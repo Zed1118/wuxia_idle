@@ -159,7 +159,7 @@ class InnerDemonService {
   ///                            floor(internalForceMax × internalForceFloorPct))
   ///   - mainTech.cultivationProgress = floor(old × mainCultivationMultiplier)
   ///     （cultivationLayer / cultivationProgressToNext 不动 → 不跌破当前层起点）
-  ///   - ch.innerDemonResidueHoursRemaining = residueHours（再败刷新，不叠加）
+  ///   - ch.innerBreathDisorderHoursRemaining 按配置累加并受上限约束
   ///   - 辅修不动（subCultivationMultiplier=1.00，不触碰辅修字段）
   ///
   /// Isar 持久化由 caller 负责（沿 DispelService.applyDefeatPenalty 体例）。

@@ -74,7 +74,7 @@ void main() {
         isFounder: true,
         isActive: true,
         injuryHoursRemaining: 6,
-        innerDemonResidueHoursRemaining: 3,
+        innerBreathDisorderHoursRemaining: 3,
         lightInjuryStacks: 2,
       );
       id = await isar.characters.put(c);
@@ -278,7 +278,7 @@ void main() {
 
     final ch = await isar.characters.get(id);
     expect(ch?.injuryHoursRemaining, 2.0);
-    expect(ch?.innerDemonResidueHoursRemaining, 1.0);
+    expect(ch?.innerBreathDisorderHoursRemaining, 1.0);
     expect(ch?.lightInjuryStacks, 0);
     final item = await isar.inventoryItems.getByDefId('item_liaoshangdan');
     expect(item?.quantity, 1);
@@ -306,7 +306,7 @@ void main() {
       final ch = await isar.characters.get(id);
       ch!
         ..injuryHoursRemaining = 0
-        ..innerDemonResidueHoursRemaining = 0
+        ..innerBreathDisorderHoursRemaining = 0
         ..lightInjuryStacks = 3;
       await isar.characters.put(ch);
     });

@@ -49,7 +49,7 @@ class _PostBattleHealingPanelState
         .where(
           (c) =>
               c.injuryHoursRemaining > 0 ||
-              c.innerDemonResidueHoursRemaining > 0 ||
+              c.innerBreathDisorderHoursRemaining > 0 ||
               c.lightInjuryStacks > 0,
         )
         .map(InjuryStatusFormatter.namedStatusLine)

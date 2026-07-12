@@ -844,7 +844,7 @@ class _ForgingSpecialSkillSection extends StatelessWidget {
               EnumL10n.targetType(skill.targetType),
             ),
             UiStrings.forgingSpecialSkillCostCooldown(
-              skill.internalForceCost,
+              skill.qiCost,
               skill.cooldownTurns,
             ),
             _fitLabel(skill, def, activeCharacters),
@@ -941,7 +941,7 @@ class _ForgingSpecialSkillSection extends StatelessWidget {
     if (skill.aiUsePolicy == AiUsePolicy.saveForInterrupt) {
       return UiStrings.forgingSpecialSkillTriggerInterrupt;
     }
-    if (skill.internalForceCost > 0 || skill.cooldownTurns > 0) {
+    if (skill.spendsQi || skill.cooldownTurns > 0) {
       return UiStrings.forgingSpecialSkillTriggerAuto;
     }
     return UiStrings.forgingSpecialSkillTriggerReady;

@@ -108,8 +108,9 @@ abstract final class QiCycle {
     required double disorderMaxHours,
     required int maxPenalty,
   }) {
-    if (disorderHours <= 0 || disorderMaxHours <= 0 || maxPenalty <= 0)
+    if (disorderHours <= 0 || disorderMaxHours <= 0 || maxPenalty <= 0) {
       return 0;
+    }
     final severity = (disorderHours / disorderMaxHours).clamp(0.0, 1.0);
     return (maxPenalty * severity).round().clamp(0, maxPenalty);
   }

@@ -158,8 +158,8 @@ class CharacterAvatar extends StatelessWidget {
         SizedBox(
           width: barWidth,
           child: HpBar(
-            current: character.currentInternalForce,
-            max: character.maxInternalForce,
+            current: character.currentQi,
+            max: character.maxQi,
             height: 12,
             isInternalForce: true,
             labelPrefix: UiStrings.internalForceShortLabel,

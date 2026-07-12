@@ -49,7 +49,7 @@ void main() {
     experienceToNextLayer: experienceToNextLayer,
     lightInjuryStacks: lightInjuryStacks,
     injuryHoursRemaining: injuryHoursRemaining,
-    innerDemonResidueHoursRemaining: residueHours,
+    innerBreathDisorderHoursRemaining: residueHours,
   )..id = id;
 
   RetreatSession retreat() => RetreatSession()

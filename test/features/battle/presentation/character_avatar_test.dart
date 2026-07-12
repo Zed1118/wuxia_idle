@@ -124,7 +124,7 @@ void main() {
     expect(find.byType(ColorFiltered), findsNothing);
   });
 
-  testWidgets('内力条带「内 X / Y」标签与数值（批次 1.1）', (tester) async {
+  testWidgets('真气条带「气 X / Y」标签与数值', (tester) async {
     // 内力 80/120，HP 100/100，避免内力与 HP 数值相同导致歧义。
     final c = _char(isBoss: false).copyWith(
       maxHp: 100,
@@ -135,7 +135,7 @@ void main() {
     await pump(tester, c);
 
     // 内力条标签：内 80 / 120
-    expect(find.text('内 80 / 120'), findsOneWidget);
+    expect(find.text('气 80 / 120'), findsOneWidget);
     // HP 条仍是裸数值，不带「内 」前缀（现状不破坏）。
     expect(find.text('100 / 100'), findsOneWidget);
   });

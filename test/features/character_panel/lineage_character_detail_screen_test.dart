@@ -156,7 +156,7 @@ void main() {
     expect(find.textContaining(UiStrings.injuryLightLabel), findsOneWidget);
   });
 
-  testWidgets('心魔余毒角色显示来源、影响与闭关清解路径', (tester) async {
+  testWidgets('内息紊乱角色显示来源、影响与恢复路径', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 2000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final c = Character()
@@ -168,8 +168,9 @@ void main() {
       ..isFounder = true
       ..birthInGameYear = 1
       ..attributes = Attributes()
-      ..innerDemonResidueHoursRemaining = 5.2;
-    final debuff = GameRepository.instance.numbers.innerDemon.residueDebuff;
+      ..internalForce = 1000
+      ..innerBreathDisorderHoursRemaining = 5.2;
+    final disorder = GameRepository.instance.numbers.innerBreathDisorder;
     await tester.pumpWidget(
       _detailHost(LineageCharacterDetailScreen(character: c)),
     );
@@ -190,10 +191,9 @@ void main() {
     expect(
       find.text(
         UiStrings.conditionInnerDemonResidueEffect(
-          battleOutputPenaltyPct: ((1 - debuff.battleOutputMultiplier) * 100)
+          battleOutputPenaltyPct: (disorder.maxInnerForcePenaltyPct * 100)
               .round(),
-          internalForceRecoveryPenaltyPct:
-              ((1 - debuff.internalForceRecoveryMultiplier) * 100).round(),
+          internalForceRecoveryPenaltyPct: 0,
         ),
       ),
       findsOneWidget,

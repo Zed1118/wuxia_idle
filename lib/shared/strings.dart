@@ -102,18 +102,38 @@ class UiStrings {
   static const String skillPendingStamp = '待发';
   static const String skillTargetable = '可选';
   static const String skillTargetLocked = '锁定';
-  // 可用态：耗内 N · CD M（让玩家知道耗的是内力、看得到基础 CD）。
+  // 可用态：耗气 N · CD M。
   static String skillCostShort(int cost, int cooldown) =>
-      '耗内$cost · CD$cooldown';
+      '耗气$cost · CD$cooldown';
+  static String skillQiChange(int delta) => delta > 0
+      ? '产气 +$delta'
+      : delta < 0
+      ? '耗气 ${-delta}'
+      : '中性';
+  static String techniqueQiProfile({
+    required int openingBonus,
+    required int maxBonus,
+    required double gainPct,
+    required double costReductionPct,
+  }) {
+    final parts = <String>[
+      if (openingBonus > 0) '开场真气 +$openingBonus',
+      if (maxBonus > 0) '气海 +$maxBonus',
+      if (gainPct > 0) '产气 +${(gainPct * 100).round()}%',
+      if (costReductionPct > 0) '减耗 ${(costReductionPct * 100).round()}%',
+    ];
+    return parts.isEmpty ? '真气倾向：中性' : '真气倾向：${parts.join(' · ')}';
+  }
+
   static String skillCooldownShort(int turns) => '冷却$turns';
-  // 内力不足态短标。
-  static const String skillInsufficientForce = '内力不足';
+  // 真气不足态短标。
+  static const String skillInsufficientForce = '真气不足';
   // 批次 1.3 技能简介浮层：点击技能方块弹出，直接读 SkillDef 活数据。
   // 字段标签（左列），值由活数据 / EnumL10n 填。
   static const String skillInfoType = '类型';
   static const String skillInfoTarget = '目标';
   static const String skillInfoPower = '倍率';
-  static const String skillInfoCost = '耗内';
+  static const String skillInfoCost = '真气';
   static const String skillInfoCooldown = '冷却';
   static const String skillInfoTrait = '特性';
   // 特性值：可打断 → 破招（命中蓄力中目标可打断其招牌技）。
@@ -139,8 +159,8 @@ class UiStrings {
       '已暂停在护罩生效帧:九霄魔尊头像旁「护法结界」pill(护法存活时刀枪不入)。点顶栏「单步」逐拍推进,先手清完左使/右使 → 结界破「结界破！」题字 + 破界闪白,主 Boss 恢复满承伤。也可点继续自动 / 点选技能干预';
   // 浮层关闭按钮。
   static const String skillInfoClose = '知道了';
-  // 角色头像内力条标签前缀（HpBar labelPrefix），如「内 100 / 100」。
-  static const String internalForceShortLabel = '内 ';
+  // 角色头像真气条标签前缀。
+  static const String internalForceShortLabel = '气 ';
   // B3 破招成功「破！」题字 overlay 文案(破招方暖金/敌方绛红)。
   static const String interruptCaption = '破！';
   // 批次 2.4 打击感单字效果字（重击非破招非大招）。破由现有 interruptCaption 承载。
@@ -228,7 +248,7 @@ class UiStrings {
   static String diagPlayerTopRealm(String realm) => '己方最高境界：$realm';
   static String diagEnemyTopRealm(String realm) => '敌方最高境界：$realm';
   static String diagLethalHit(String skill, int dmg) => '致命一击：$skill $dmg';
-  static String diagInternalForceLeft(int cur, int max) => '内力余量：$cur/$max';
+  static String diagInternalForceLeft(int cur, int max) => '真气余量：$cur/$max';
   static String diagCounteredDamageRatio(int pct) => '受克制伤害占比：$pct%';
   static String diagDominantEnemySchool(String school) => '敌方主攻流派：$school';
   static String diagInternalWoundRatio(int pct) => '内伤占比：$pct%';
@@ -246,7 +266,7 @@ class UiStrings {
 
   // 建议（1 条/规则）
   static const String diagSuggestRealm = '先闭关推境界，再回来碰硬仗。';
-  static const String diagSuggestCharge = '保留内力、装配破招技，看准蓄力时机破招。';
+  static const String diagSuggestCharge = '保留真气、装配破招技，看准蓄力时机破招。';
   static const String diagSuggestCounter = '换一名主修不被克的门人上阵，或调整主修流派。';
   static const String diagSuggestInternalWound = '备好回复，或换能压住内伤的心法。';
   static const String diagSuggestMob = '补一名清场手，先清场再攻坚。';
@@ -667,6 +687,7 @@ class UiStrings {
 
   static const String statHp = '生命';
   static const String statInternalForce = '内力';
+  static const String statQi = '真气';
   static const String statSpeed = '速度';
   static const String statCriticalRate = '暴击率';
   static const String statEvasionRate = '闪避率';
@@ -678,9 +699,10 @@ class UiStrings {
       '悟性：资质灵慧，影响修炼速度与武学领悟概率。悟性高者，一点即通。';
   static const String glossaryAgility = '身法：轻灵敏捷，决定出手速度与闪避。身法高者，快人一步。';
   static const String glossaryFortune = '机缘：缘法深浅，影响奇遇触发率与商店折扣。机缘厚者，常逢造化。';
-  static const String glossaryHp = '生命：可承受的伤害总量，归零即败。由内力、根骨与装备共同撑起。';
+  static const String glossaryHp = '生命：可承受的伤害总量，归零即败。由境界、根骨与装备共同撑起。';
   static const String glossaryInternalForce =
-      '内力：施展招式的根本，关乎招式威能与血量基底。战斗中随出招消耗，大招耗内力尤甚。';
+      '内力：闭关积累的永久功力，受当前境界上限约束，决定招式威能，战斗中不消耗。';
+  static const String glossaryQi = '真气：每场战斗独立运转的资源。普攻与流派条件产气，强力招式耗气，溢出部分不保留。';
   static const String glossarySpeed = '出手速度：决定行动快慢，速度越高出手越频。由身法、装备与心法共同加成。';
   static const String glossaryCriticalRate =
       '暴击率：触发暴击的概率，暴击额外加成伤害。身法越高，暴击越易触发。';
@@ -703,7 +725,7 @@ class UiStrings {
   static const String glossaryLineageHeritage =
       '师承遗物：先辈传下的兵刃，自带传承之力。徒弟境界未及亦不可强用，须待修为相称。';
   static const String glossaryMainTechnique =
-      '主修：当前主修心法，定招式与流派根基。换主修须散功，半数内力与修炼度折损，非同小可。';
+      '主修：当前主修心法，定招式、流派根基与真气倾向。换主修会损失修炼度并引发临时内息紊乱。';
   static const String glossaryAssistTechnique =
       '辅修：旁修的心法，添额外加成而不动根基。换辅修无散功之痛，可放手尝试。';
   static const String glossarySchool = '流派：刚猛克灵巧、灵巧克阴柔、阴柔克刚猛，循环相克。顺克加伤，逆克减伤。';
@@ -1114,12 +1136,12 @@ class UiStrings {
   static const String forgingSpecialSkillDetailSubtitle = '第三锋意已定，战斗中随装备带入。';
   static const String forgingSpecialSkillTriggerManual = '触发：手动下发';
   static const String forgingSpecialSkillTriggerInterrupt = '触发：敌方蓄力时优先破招';
-  static const String forgingSpecialSkillTriggerAuto = '触发：内力足、冷却就绪时自动出手';
+  static const String forgingSpecialSkillTriggerAuto = '触发：真气足、冷却就绪时自动出手';
   static const String forgingSpecialSkillTriggerReady = '触发：自动战斗可用';
   static String forgingSpecialSkillSchool(String label) => '流派：$label';
   static String forgingSpecialSkillTarget(String label) => '目标：$label';
   static String forgingSpecialSkillCostCooldown(int cost, int cooldown) =>
-      '内力 $cost · 冷却 $cooldown 拍';
+      '真气 $cost · 冷却 $cooldown 拍';
   static String forgingSpecialSkillFitCharacters(String school, String names) =>
       '适合：$school 路数 · $names';
   static String forgingSpecialSkillFitSchool(String school) =>
@@ -2103,7 +2125,7 @@ class UiStrings {
   static const String skillCodexProficiencyNone = '未曾习练';
   static const String skillCodexBelongTo = '所属';
   static const String skillCodexMultiplier = '倍率';
-  static const String skillCodexCost = '内力';
+  static const String skillCodexCost = '真气';
   static const String skillCodexCooldown = '冷却';
   static const String skillCodexManualSection = '秘本纲要';
   static const String skillCodexSchool = '流派';
@@ -2771,25 +2793,28 @@ class UiStrings {
       '$techniqueName 修炼度回退';
 
   /// 心魔失败余毒标记段（追加在内力段之后）：`余毒未消`
-  static const String innerDemonResidueNote = '余毒未消';
+  static const String innerDemonResidueNote = '内息紊乱';
 
   // ── 双层伤势 UI（第八阶段 Task 9）──────────────────────────────────────────
-  /// 心魔余毒状态标签。
-  static const String conditionInnerDemonResidueLabel = '心魔余毒';
+  /// 内息紊乱状态标签。
+  static const String conditionInnerDemonResidueLabel = '内息紊乱';
 
   /// 心魔余毒来源提示。
-  static const String conditionInnerDemonResidueSource = '来源：心魔战败反噬';
+  static const String conditionInnerDemonResidueSource = '来源：战败、散功或心魔反噬';
 
   /// 心魔余毒持续影响提示。
   static String conditionInnerDemonResidueEffect({
     required int battleOutputPenaltyPct,
     required int internalForceRecoveryPenaltyPct,
-  }) =>
-      '影响：战斗输出 -$battleOutputPenaltyPct% · 闭关内力 -$internalForceRecoveryPenaltyPct%';
+  }) => '影响：战斗有效内力与开场真气暂时降低';
 
   /// 心魔余毒清解提示。
   static String conditionInnerDemonResidueRecovery(double hours) =>
-      '清解：闭关清调 ${hours.ceil()}h';
+      '调息：闭关/离线 ${hours.ceil()}h，或完成有效战斗';
+  static String conditionInnerBreathEffective({
+    required int actual,
+    required int effective,
+  }) => '内力：$actual · 当前有效 $effective';
 
   /// 轻伤状态标签：`带伤`（含层数时由调用方拼接，如 `带伤×3`）。
   static const String injuryLightLabel = '带伤';

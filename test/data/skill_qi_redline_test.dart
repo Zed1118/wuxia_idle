@@ -18,7 +18,7 @@ Map<String, dynamic> skillYaml({
   'requiresManualTrigger': false,
   'visualEffect': 'none',
   'source': 'technique',
-  if (qiDelta != null) 'qiDelta': qiDelta,
+  'qiDelta': ?qiDelta,
 };
 
 void main() {

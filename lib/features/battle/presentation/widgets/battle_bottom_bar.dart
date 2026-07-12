@@ -331,14 +331,11 @@ class SkillCommandButton extends StatelessWidget {
       statusText = UiStrings.skillPendingStamp; // 待发
     } else if (cd > 0) {
       statusText = ''; // CD 态由读秒环示数,不再显「冷却 N」文字。
-    } else if (character.currentInternalForce < skill.internalForceCost) {
-      statusText = UiStrings.skillInsufficientForce; // 内力不足
+    } else if (character.currentQi < skill.qiCost) {
+      statusText = UiStrings.skillInsufficientForce;
     } else {
       // 耗内 N · CD M
-      statusText = UiStrings.skillCostShort(
-        skill.internalForceCost,
-        skill.cooldownTurns,
-      );
+      statusText = UiStrings.skillCostShort(skill.qiCost, skill.cooldownTurns);
     }
 
     final button = SizedBox(
@@ -541,7 +538,7 @@ class SkillInfoBody extends StatelessWidget {
       (UiStrings.skillInfoType, EnumL10n.skillType(skill.type)),
       (UiStrings.skillInfoTarget, EnumL10n.targetType(skill.targetType)),
       (UiStrings.skillInfoPower, '${skill.powerMultiplier}'),
-      (UiStrings.skillInfoCost, '${skill.internalForceCost}'),
+      (UiStrings.skillInfoCost, UiStrings.skillQiChange(skill.qiDelta)),
       (
         UiStrings.skillInfoCooldown,
         UiStrings.skillInfoCooldownTurns(skill.cooldownTurns),

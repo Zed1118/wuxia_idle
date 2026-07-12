@@ -116,8 +116,8 @@ class BattleDiagnosis {
               lastLethalHit.attackResult!.finalDamage,
             ),
             UiStrings.diagInternalForceLeft(
-              player?.currentInternalForce ?? 0,
-              player?.maxInternalForce ?? 0,
+              player?.currentQi ?? 0,
+              player?.maxQi ?? 0,
             ),
           ],
           suggestions: const [

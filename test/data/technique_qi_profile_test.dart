@@ -11,7 +11,7 @@ Map<String, dynamic> techniqueYaml({Map<String, dynamic>? qiProfile}) => {
   'internalForceGrowthBonus': 1.0,
   'speedBonus': 0,
   'acquireSourceTags': <String>[],
-  if (qiProfile != null) 'qiProfile': qiProfile,
+  'qiProfile': ?qiProfile,
 };
 
 void main() {
