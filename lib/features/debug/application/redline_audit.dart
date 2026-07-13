@@ -129,7 +129,7 @@ RedlineAuditReport buildRedlineAuditReport(GameRepository repo) {
         observed: playerProbe.maxHp,
         limit: red.playerHpMax,
       ),
-      note: UiStrings.redlineNotePlayerHp(repo.numbers.level.maxLevel),
+      note: UiStrings.redlineNotePlayerHp,
     ),
     RedlineAuditItem(
       id: 'boss_hp',
@@ -150,7 +150,7 @@ RedlineAuditReport buildRedlineAuditReport(GameRepository repo) {
         observed: playerProbe.maxInternalForce,
         limit: red.internalForceMax,
       ),
-      note: UiStrings.redlineNoteInternalForce(repo.numbers.level.maxLevel),
+      note: UiStrings.redlineNoteInternalForce,
     ),
     RedlineAuditItem(
       id: 'skill_power_multiplier',
@@ -245,9 +245,7 @@ _measurePlayerExtremum(GameRepository repo) {
 
   for (final tier in RealmTier.values) {
     final built = _buildExtremumCharacter(repo, tier);
-    built.character
-      ..level = repo.numbers.level.maxLevel
-      ..isFounder = true;
+    built.character.isFounder = true;
     final currentHp = CharacterDerivedStats.maxHp(
       built.character,
       built.equipped,

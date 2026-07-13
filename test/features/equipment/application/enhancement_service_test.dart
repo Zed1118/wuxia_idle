@@ -213,16 +213,17 @@ void main() {
       expect(r.mojianshiSpent, 0);
     });
 
-    test('capped：eq=+49（绝对上限）→ capped 即使角色满级', () {
+    test('display Lv490 does not raise the hard enhancement cap above 49', () {
       final eq = newEq(enhanceLevel: 49);
       final r = EnhancementService.tryEnhance(
         eq: eq,
-        characterAbsoluteLevel: 49,
+        characterAbsoluteLevel: 490,
         rng: rngFixed(0.0),
         currentMojianshi: 100,
         config: cfg,
       );
       expect(r.outcome, EnhanceOutcome.capped);
+      expect(eq.enhanceLevel, 49);
     });
 
     test('insufficientMojianshi：磨剑石 0 → 不扣不变 outcome=insufficient', () {

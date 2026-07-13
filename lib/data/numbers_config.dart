@@ -4,7 +4,6 @@ import '../features/equipment/domain/cycle_drop_bonus.dart';
 import '../features/equipment/domain/equipment_disposal.dart';
 import '../features/equipment/domain/rare_bonus_drop.dart';
 import '../features/injury/domain/injury_config.dart';
-import '../features/level/domain/level_config.dart';
 import '../features/inner_demon/domain/inner_demon_def.dart';
 import '../features/light_foot/domain/light_foot_def.dart';
 import '../features/mass_battle/domain/mass_battle_def.dart';
@@ -168,12 +167,6 @@ class NumbersConfig {
   /// fixture 不带 `injury` 段时走缺省值（[InjuryConfig.fromYaml] 空 map 兜底）。
   final InjuryConfig injury;
 
-  /// 角色等级 Lv 配置（numbers.yaml `level`，第八阶段 2026-06-26）。
-  ///
-  /// 升级曲线 + per-level maxHp/内力/速度有界加成（hp/内力经 §5.4 clamp 守红线）。
-  /// fixture 不带 `level` 段时走缺省值（[LevelConfig.fromYaml] 空 map 兜底=生产初值）。
-  final LevelConfig level;
-
   /// 稀有彩头掉落配置（numbers.yaml `rare_bonus_drop`，第八阶段 E 2026-06-26）。
   ///
   /// 每场战斗额外小概率掉「高于本关 1-2 阶」装备。fixture 不带该段时
@@ -297,7 +290,6 @@ class NumbersConfig {
     required this.retreat,
     required this.festivals,
     required this.injury,
-    required this.level,
     required this.rareBonusDrop,
     required this.cycleDropBonus,
     required this.innerDemon,
@@ -452,9 +444,6 @@ class NumbersConfig {
       retreat: RetreatConfig.fromYaml(y['retreat'] as Map<String, dynamic>),
       festivals: FestivalConfig.fromYaml(
         y['festivals'] as Map<String, dynamic>?,
-      ),
-      level: LevelConfig.fromYaml(
-        (y['level'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
       rareBonusDrop: RareBonusDropConfig.fromYaml(
         (y['rare_bonus_drop'] as Map?)?.cast<String, dynamic>() ?? const {},

@@ -607,6 +607,12 @@ class UiStrings {
   static String profileLevelValue(int level) => 'Lv $level';
   static String profileLevelProgress(int current, int next) =>
       '$current / $next';
+  static const String profileCultivationLevelLabel = '修为等级';
+  static String profileCultivationLevel(int level) => 'Lv$level';
+  static String profileCultivationExperience(int current, int next) =>
+      '经验 $current / $next';
+  static const String profileWaitingForInnerDemon = '经验已满 · 待破心魔';
+  static const String profileCultivationPeak = '修为巅峰';
   static const String levelUpCeremonyTitle = '修为精进'; // 第八阶段 D·Lv 升级 banner 标题
   static String cultivationLevelChanged(
     String name,
@@ -3419,12 +3425,12 @@ class UiStrings {
   // 审计项 note（带探针参数的用方法）
   static const String redlineNoteEquipmentAttack =
       '只审计配置基础表值；强化、共鸣、开锋后的派生攻击不属于该硬红线。';
-  static String redlineNotePlayerHp(int maxLevel) =>
-      '使用满 build + L$maxLevel + founder buff 极值探针，走 CharacterDerivedStats.maxHp。';
+  static const String redlineNotePlayerHp =
+      '使用全境界满 build + founder buff 极值探针，走 CharacterDerivedStats.maxHp。';
   static const String redlineNoteBossHp =
       '扫描主线和爬塔 Boss 配置 baseHp；周目 clamp 仍由既有 battle/setup 测试兜底。';
-  static String redlineNoteInternalForce(int maxLevel) =>
-      '使用满 build + L$maxLevel + founder buff 极值探针，走 CharacterDerivedStats.internalForceMaxWithLineage。';
+  static const String redlineNoteInternalForce =
+      '使用全境界满 build + founder buff 极值探针，走 CharacterDerivedStats.internalForceMaxWithLineage。';
   static const String redlineNoteSkillMultiplier =
       '扫描 skills.yaml 与 encounter_skills.yaml 合并后的 skillDefs 全池。';
   static String redlineNoteNormalDamage(int typicalTarget) =>
