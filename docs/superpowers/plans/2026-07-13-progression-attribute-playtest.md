@@ -12,7 +12,7 @@
 
 ## 当前恢复点
 
-- 状态：Task 5 质量复核与最终 tick-cap 边界分类修复已完成；合法 build 与单一 battle run 真相源已补齐，旧首通节奏诊断 1200 场仍逐项等价，下一步执行 Task 6。
+- 状态：Task 6 已完成；统一成长路径 CSV、诊断报告与 commit 绑定证据均已入库，下一步执行 Task 7 P0/P1 证据门禁。
 - 实现分支：`codex/progression-attribute-playtest-implementation`。
 - 无修改基线 commit：`0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
 - 基线验证：重新生成 Git 忽略的 `g.dart` 后，`flutter analyze --no-pub` 为 `No issues found`；计划指定基线共 41 tests PASS；固定种子心魔观察值为 05=`17/20`、06=`17/20`、07=`13/20`；塔诊断 PASS。以上观察值均绑定 commit `0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
@@ -31,7 +31,8 @@
 - Task 5 最终 tick-cap 边界分类：经 `BattleCharacter.isAlive` 与 `DefaultGroundStrategy` 真实结束链核实，规则平局为双方全灭，`runToEnd` 另在到达 tick 上限且战斗未结束时写入兜底 draw，`surviveTicks` 则直接写 `leftWin`。测试层公开纯分类器 `isUnfinishedAtTickCap` 仅在 `tick >= maxTicks && result == draw && 左右各有存活角色` 时拒绝，因此双方全灭恰逢边界的规则 draw 正常返回。TDD 红灯为缺少 `isUnfinishedAtTickCap`；绿灯 probe 6 tests PASS，既证明“双方存活 + `maxTicks=1`”仍抛错，又证明“双方全灭 + `tick == maxTicks` + draw”分类为正常终局；与旧诊断联合共 7 tests PASS。1200 场 60 行与汇总继续逐项等价：平均动作/秒 `5.6/15.3`，普攻/技能伤害 `60.1%/39.9%`，普攻/技能击杀 `21.6%/78.4%`，Boss 转阶段/蓄力/破招 `0.5/0.7/0.4`，47 个低动作候选不变，机制不足候选为“无”。format 0 changed，`flutter analyze --no-pub` 为 `No issues found`，`git diff --check` 通过。实现提交 `277d72f42d5bc74e1db5045fc392065ea53f8609` 独立提交、未 amend；未修改 `lib/` / `data/` / `numbers.yaml`。
 - Task 6 原始 evidence 已完成：`test: record progression and attribute playtest evidence` = `654c317acfca28b2cff492b52f226c299c648c86`，data tree = `c0c557d1f57dfa97e81ef386eb63bd33042f09e2`。同一 commit 上主线 30×3×20=1800 observations 复跑 1 test PASS、6.58 秒，CSV 1801 行、header 精确、三 profile 各 600、30 stages、seed 0～19、组合零重复、零 tick cap、无中文/空行/NaN，重跑后 CSV 无 diff。profile 汇总：undergeared 600/600 胜、ticks/action/HP/Qi delta=`9.71/6.34/93.90%/+33.33`；standard=`8.61/5.94/94.73%/+38.23`；nearMax=`6.86/4.85/97.14%/+50.60`。
 - Task 6 专项 evidence 同样绑定 `654c317acfca28b2cff492b52f226c299c648c86`：计划六文件联合 33/33 tests PASS、18.15 秒；为报告覆盖边界额外重跑 `combat_progression_settlement_service_test.dart` 4/4 PASS。心魔 05/06 BiS 均 17/20，07 BiS 13/20；塔 24/25/29/30 与四属性全部原始值已写入 `docs/audit/progression_attribute_playtest_2026-07-13.md`。P0/P1 均无，P2 仅保留 readable-first-clear 首通样本胜负区分不足与 `stage_02_05` 多配置/多 seed 相邻断崖两个候选，本批零生产代码修改。
-- Task 6 report commit：`docs: record progression playtest audit` = `7d6dedeaa97fe330f971078dcddc4b4a101cd6d0`。报告明确绑定 evidence commit `654c317acfca28b2cff492b52f226c299c648c86`，没有把后续文档状态冒充原始执行证据。本恢复点提交只补记 report commit 与 Task 7 入口，不修改报告结论或 CSV。
+- Task 6 report commit：`docs: record progression playtest audit` = `7d6dedeaa97fe330f971078dcddc4b4a101cd6d0`。报告明确绑定 evidence commit `654c317acfca28b2cff492b52f226c299c648c86`，没有把后续文档状态冒充原始执行证据。后续 `17a74f3bccbd6ae54d0a40a5466b389b83dff70d` 只补记 report commit 与 Task 7 入口，不修改报告结论或 CSV，但其提交消息过早使用 `[READY]`，不代表本计划已完成。
+- READY 状态纠正：本普通纠正提交使分支 tip 不再带 `[READY]`，从而撤销 `17a74f3bccbd6ae54d0a40a5466b389b83dff70d` 的过早 ready 含义；最终 `[READY]` 只允许在 Task 8 全量门禁、macOS 复验与收尾全部完成后使用。
 - 设计规格：`docs/superpowers/specs/2026-07-13-progression-attribute-playtest-design.md`。
 - Task 7 恢复点：先核对报告“问题分级”的 P0/P1 均为无，再运行计划 Task 7 Step 2A 的 `lib/**` / `data/**` diff；预期零输出并关闭生产修改门禁。不要把两个 P2 候选升级为硬失败。
 - 下一步：执行 Task 7，按报告 P0/P1=无关闭生产修改门禁。
