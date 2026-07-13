@@ -49,6 +49,7 @@ void main() {
       for (var index = 0; index < realms.length - 1; index++) {
         final current = realms[index];
         final next = realms[index + 1];
+        final reason = 'absolute=${current.absoluteLevel}';
         final character =
             fixture.createCharacter(GrowthStage.early, id: 1000 + index)
               ..realmTier = current.tier
@@ -62,14 +63,14 @@ void main() {
           realmLookup: repository.getRealm,
         );
 
+        expect(result.layersGained, 1, reason: reason);
+        expect(character.realmTier, next.tier, reason: reason);
+        expect(character.realmLayer, next.layer, reason: reason);
         expect(
-          result.layersGained,
-          1,
-          reason: 'absolute=${current.absoluteLevel}',
+          character.experienceToNextLayer,
+          next.experienceToNext,
+          reason: reason,
         );
-        expect(character.realmTier, next.tier);
-        expect(character.realmLayer, next.layer);
-        expect(character.experienceToNextLayer, next.experienceToNext);
       }
     },
   );
@@ -80,14 +81,24 @@ void main() {
       character.realmTier,
       character.realmLayer,
     );
+    final nextLayer = CharacterAdvancementService.nextLayer(
+      current.tier,
+      current.layer,
+    )!;
+    final next = repository.getRealm(nextLayer.tier, nextLayer.layer);
+    final lockedExperience = current.experienceToNext * 2;
 
     final locked = CharacterAdvancementService.applyExperience(
       character,
-      current.experienceToNext * 2,
+      lockedExperience,
       realmLookup: repository.getRealm,
       isLayerLocked: (_, _) => true,
     );
     expect(locked.layersGained, 0);
+    expect(character.realmTier, current.tier);
+    expect(character.realmLayer, current.layer);
+    expect(character.experience, lockedExperience);
+    expect(character.experienceToNextLayer, current.experienceToNext);
     expect(locked.progressChange.after.level, current.absoluteLevel * 10);
     expect(locked.progressChange.after.isWaitingForBreakthrough, isTrue);
 
@@ -97,7 +108,17 @@ void main() {
       realmLookup: repository.getRealm,
       isLayerLocked: (_, _) => false,
     );
-    expect(unlocked.layersGained, greaterThan(0));
+    final remainingExperience = lockedExperience + 1 - current.experienceToNext;
+    expect(
+      remainingExperience,
+      lessThan(next.experienceToNext),
+      reason: 'real RealmDef curve must stop after the immediate next layer',
+    );
+    expect(unlocked.layersGained, 1);
+    expect(character.realmTier, next.tier);
+    expect(character.realmLayer, next.layer);
+    expect(character.experience, remainingExperience);
+    expect(character.experienceToNextLayer, next.experienceToNext);
   });
 
   test('terminal realm reaches Lv490 and never creates layer 50', () {
@@ -111,14 +132,20 @@ void main() {
       ..experience = 0
       ..experienceToNextLayer = 0
       ..internalForceMax = terminal.internalForceMax;
+    final awardedExperience = terminal.experienceToNext * 2;
 
     final result = CharacterAdvancementService.applyExperience(
       character,
-      terminal.experienceToNext * 2,
+      awardedExperience,
       realmLookup: repository.getRealm,
     );
 
     expect(result.layersGained, 0);
+    expect(result.experienceGained, awardedExperience);
+    expect(character.realmTier, RealmTier.wuSheng);
+    expect(character.realmLayer, RealmLayer.dengFeng);
+    expect(character.experience, awardedExperience);
+    expect(character.experienceToNextLayer, terminal.experienceToNext);
     expect(result.progressChange.after.level, 490);
     expect(result.progressChange.after.didReachPeak, isTrue);
     expect(
