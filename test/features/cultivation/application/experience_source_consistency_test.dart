@@ -2,20 +2,31 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../support/dart_source_contract.dart';
+
 void main() {
   test(
-    'all seven experience entrances delegate to the single experience account',
+    'five production wiring points cover seven experience scenarios',
     () async {
       const combatPaths = {
         'mainline': 'lib/features/mainline/presentation/stage_entry_flow.dart',
         'tower': 'lib/features/tower/presentation/tower_entry_flow.dart',
       };
       for (final entry in combatPaths.entries) {
-        final source = await File(entry.value).readAsString();
-        expect(source, contains('CombatProgressionSettlementService'));
-        expect(source, contains('settlement.applyExperience'));
-        expect(source, isNot(contains('.levelExp =')), reason: entry.key);
-        expect(source, isNot(contains('LevelService')), reason: entry.key);
+        final contract = DartSourceContract.parse(
+          await File(entry.value).readAsString(),
+          path: entry.value,
+        );
+        expect(
+          contract.variableInitializerSource('settlement'),
+          'CombatProgressionSettlementService(GameRepository.instance)',
+          reason: '${entry.key} settlement 必须是真实共享结算服务实例',
+        );
+        final calls = contract.methodCalls(
+          targetSource: 'settlement',
+          methodName: 'applyExperience',
+        );
+        expect(calls, hasLength(1), reason: '${entry.key} 必须有且仅有一个真实经验结算调用');
       }
 
       const directPaths = {
@@ -25,46 +36,106 @@ void main() {
         'item': 'lib/features/inventory/application/item_use_service.dart',
       };
       for (final entry in directPaths.entries) {
-        final source = await File(entry.value).readAsString();
+        final contract = DartSourceContract.parse(
+          await File(entry.value).readAsString(),
+          path: entry.value,
+        );
         expect(
-          source,
-          contains('CharacterAdvancementService.applyExperience'),
+          contract.methodCalls(
+            targetSource: 'CharacterAdvancementService',
+            methodName: 'applyExperience',
+          ),
+          hasLength(1),
           reason: '${entry.key} 未委托唯一成长服务',
         );
-        expect(source, isNot(contains('.levelExp =')), reason: entry.key);
-        expect(source, isNot(contains('LevelService')), reason: entry.key);
       }
     },
   );
 
   test(
-    'mainline replay and tower first-clear policies remain intentionally different',
+    'mainline replay and tower first-clear policies are real call arguments',
     () async {
-      final mainline = await File(
-        'lib/features/mainline/presentation/stage_entry_flow.dart',
-      ).readAsString();
-      final tower = await File(
-        'lib/features/tower/presentation/tower_entry_flow.dart',
-      ).readAsString();
+      const mainlinePath =
+          'lib/features/mainline/presentation/stage_entry_flow.dart';
+      const towerPath = 'lib/features/tower/presentation/tower_entry_flow.dart';
+      final mainline = DartSourceContract.parse(
+        await File(mainlinePath).readAsString(),
+        path: mainlinePath,
+      );
+      final tower = DartSourceContract.parse(
+        await File(towerPath).readAsString(),
+        path: towerPath,
+      );
+      final mainlineCall = mainline
+          .methodCalls(
+            targetSource: 'settlement',
+            methodName: 'applyExperience',
+          )
+          .single;
+      final towerCall = tower
+          .methodCalls(
+            targetSource: 'settlement',
+            methodName: 'applyExperience',
+          )
+          .single;
 
-      expect(mainline, contains('experienceReward: stage.baseExpReward'));
       expect(
-        tower,
-        contains('experienceReward: isFirstClear ? floor.baseExpReward : 0'),
+        mainlineCall.namedArguments['experienceReward'],
+        'stage.baseExpReward',
+        reason: '主线首通与重打都发放经验',
+      );
+      expect(
+        towerCall.namedArguments['experienceReward'],
+        'isFirstClear ? floor.baseExpReward : 0',
+        reason: '爬塔仅首通发放经验',
       );
     },
   );
 
   test(
-    'retreat and passive sources combine before one advancement call',
+    'retreat and passive sources combine before the only advancement call',
     () async {
-      final source = await File(
-        'lib/features/seclusion/application/seclusion_service.dart',
-      ).readAsString();
-      expect(
-        source,
-        contains('outputs.experiencePoints + settlement.passive.experience'),
+      const path = 'lib/features/seclusion/application/seclusion_service.dart';
+      final contract = DartSourceContract.parse(
+        await File(path).readAsString(),
+        path: path,
       );
+      final calls = contract.methodCalls(
+        targetSource: 'CharacterAdvancementService',
+        methodName: 'applyExperience',
+      );
+
+      expect(calls, hasLength(1), reason: '合并经验只能结算一次');
+      expect(
+        contract.variableInitializerSource('totalExperience'),
+        'outputs.experiencePoints + settlement.passive.experience',
+        reason: '唯一入账值必须合并闭关与溢出普通挂机经验',
+      );
+      expect(calls.single.positionalArguments, ['ch', 'totalExperience']);
     },
   );
+
+  test('AST call contracts ignore comments and string literals', () {
+    final contract = DartSourceContract.parse(r'''
+void probe() {
+  // settlement.applyExperience(experienceReward: stage.baseExpReward);
+  const fake = 'CharacterAdvancementService.applyExperience(character, 1)';
+}
+''');
+
+    expect(
+      contract.methodCalls(
+        targetSource: 'settlement',
+        methodName: 'applyExperience',
+      ),
+      isEmpty,
+    );
+    expect(
+      contract.methodCalls(
+        targetSource: 'CharacterAdvancementService',
+        methodName: 'applyExperience',
+      ),
+      isEmpty,
+    );
+  });
 }

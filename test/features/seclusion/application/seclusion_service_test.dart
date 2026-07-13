@@ -10,6 +10,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
@@ -742,7 +743,7 @@ void main() {
   // ─────────────────────────────────────────────────────────────────────────
 
   group('completeRetreat', () {
-    test('10 天只结算 72h 闭关 + 168h 普通挂机，且不可重复收功', () async {
+    test('10 天合并 72h 闭关 + 168h 挂机经验只应用一次且旧账不变', () async {
       await IsarSetup.instance.writeTxn(() async {
         final character = await IsarSetup.instance.characters.get(kCharId);
         character!
@@ -774,10 +775,34 @@ void main() {
       expect(result.retreatHours, 72);
       expect(result.passiveHours, 168);
       expect(result.passive.experience, 8400);
+      expect(result.experiencePoints, 15600, reason: '7200 闭关 + 8400 普通挂机');
       expect(result.passive.mojianshi, 42);
       expect((await IsarSetup.currentSaveData())!.lastOnlineAt, completeAt);
+
+      final expected = Character.create(
+        name: 'single_apply_reference',
+        realmTier: RealmTier.xueTu,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: Attributes(),
+        rarity: RarityTier.biaoZhun,
+        lineageRole: LineageRole.founder,
+        createdAt: DateTime(2026, 1, 1),
+        internalForce: 500,
+      );
+      final expectedAdvancement = CharacterAdvancementService.applyExperience(
+        expected,
+        result.experiencePoints,
+        realmLookup: GameRepository.instance.getRealm,
+      );
       final character = await IsarSetup.instance.characters.get(kCharId);
-      expect(character!.experience, greaterThan(0));
+      expect(character!.realmTier, expected.realmTier);
+      expect(character.realmLayer, expected.realmLayer);
+      expect(character.experience, expected.experience);
+      expect(
+        result.advancement?.layersGained,
+        expectedAdvancement.layersGained,
+        reason: '最终层位与余量必须等于合并经验单次入账',
+      );
       expect(character.level, 77);
       expect(character.levelExp, 4321);
 

@@ -12,7 +12,7 @@
 
 ## 当前恢复点
 
-- 状态：Task 3 已完成；七类经验入口委托、旧等级账零读写与主线/爬塔奖励策略差异已由契约锁定，下一步执行 Task 4。
+- 状态：Task 3 质量加固已完成；5 个生产接线点覆盖 7 个经验场景的 AST 结构契约与既有服务行为证据已建立，下一步执行 Task 4。
 - 实现分支：`codex/progression-attribute-playtest-implementation`。
 - 无修改基线 commit：`0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
 - 基线验证：重新生成 Git 忽略的 `g.dart` 后，`flutter analyze --no-pub` 为 `No issues found`；计划指定基线共 41 tests PASS；固定种子心魔观察值为 05=`17/20`、06=`17/20`、07=`13/20`；塔诊断 PASS。以上观察值均绑定 commit `0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
@@ -20,7 +20,8 @@
 - Task 1 质量加固绿灯：同一目标测试 4 tests PASS；`flutter analyze --no-pub` 仍为 `No issues found`；以上结果绑定 commit `29f48d42324a8db8822c050696ef6c3931541f96`。
 - Task 2 绿灯：新全路径契约单独运行 4 tests PASS；与 `character_advancement_service_test.dart`、`realm_progress_display_test.dart` 联合运行 32 tests PASS；`flutter analyze --no-pub` 为 `No issues found`；未触发 Task 7，且未修改 `lib/` / `data/`。以上结果绑定 commit `b9c677b5ca1085976315eab11dcd0ef86e4813ba`。
 - Task 2 质量加固：心魔锁现在精确守住层位、经验留账和镜像刷新；真实 `RealmDef` 中学徒·精通门槛为 170，学徒·圆熟门槛为 230，锁定积累 340 后解锁 `+1` 的确定余量为 171，因此精确只升 1 层；终境守住 tier/layer、全量经验与终境镜像；逐层 tier/layer/mirror 断言均带 `absoluteLevel` 定位理由。单文件 4 tests PASS，三文件联合 32 tests PASS，`flutter analyze --no-pub` 为 `No issues found`；以上结果绑定 commit `1d6aee30bb9b8c97960adea9c357a9f098fc9872`。
-- Task 3 绿灯：两份经验入口契约与七份真实行为测试联合运行 133 tests PASS；旧 `level/levelExp` 在离线和经验丹路径保持不变，闭关与溢出普通挂机经验合并后只委托一次成长服务；`flutter analyze --no-pub` 为 `No issues found`，未触发 Task 7，且未修改 `lib/` / `data/`。以上结果绑定 commit `90c8d8268669257f2bbe6fd8d3b85193c2c09145`。
+- Task 3 初版绿灯：两份经验入口字符串契约与七份既有行为测试联合运行 133 tests PASS；旧 `level/levelExp` 在离线和经验丹路径保持不变；`flutter analyze --no-pub` 为 `No issues found`，未触发 Task 7，且未修改 `lib/` / `data/`。以上结果绑定 commit `90c8d8268669257f2bbe6fd8d3b85193c2c09145`。
+- Task 3 质量加固：新增 analyzer AST 测试 helper，旧账守卫现在捕获六个生产路径中 `levelExp` 任意成员访问（读、`=`、`+=`、`++`）且忽略注释/字符串；正向契约确认主线/爬塔共享结算服务的真实构造与调用参数，三个 direct path 的真实静态调用，以及闭关合并经验后的唯一调用。真 Isar 测试 `10 天合并 72h 闭关 + 168h 挂机经验只应用一次且旧账不变` 精确断言合并经验 15600，并将最终 tier/layer/experience/layersGained 与单次成长服务参考结果对比。两契约 7 tests PASS，九文件定向集 136 tests PASS，`flutter analyze --no-pub` 为 `No issues found`，format 无改动，`git diff --check` 通过；`analyzer: ^9.0.0` 已显式加入 dev dependencies，lockfile 仅将 analyzer 9.0.0 从 transitive 改为 direct dev，无版本升级。边界：本任务未声称 `runStageFlow` / `runTowerFlow` 首通/重打四案 E2E；公开 resolution helper 的 WidgetRef + 真 Isar 尝试在测试调度中不返回，已撤掉不可靠用例且未改生产代码。未对通用名 `level` 做未解析 AST 全拦截，以避免将其他领域对象的合法成员误报为 `Character.level`；唯一性更强的 `levelExp` 已全成员访问拦截。无 Task 7 硬失败。
 - 设计规格：`docs/superpowers/specs/2026-07-13-progression-attribute-playtest-design.md`。
 - 下一步：执行 Task 4，建立四属性方向性与职责隔离诊断。
 - 强制边界：本计划不改 `numbers.yaml`、schema、save version、属性倍率或发布流程。
@@ -33,6 +34,7 @@
 
 - `test/support/progression_playtest_fixture.dart`：前中后期合法角色、单属性变体和确定性元数据。
 - `test/support/progression_battle_probe.dart`：从既有首通诊断抽出的测试专用玩家构造与战斗采样 API。
+- `test/support/dart_source_contract.dart`：测试专用 analyzer AST 成员访问、方法调用与变量初始值查询。
 - `test/features/cultivation/application/progression_full_path_contract_test.dart`：49 层、490 级、心魔锁和终境封顶硬契约。
 - `test/features/cultivation/application/experience_source_consistency_test.dart`：七类经验入口委托与玩法差异契约。
 - `test/tools/attribute_role_sensitivity_diagnostic_test.dart`：四属性前中后期方向性及职责隔离诊断。
@@ -44,6 +46,8 @@
 
 - `test/tools/readable_first_clear_tempo_diagnostic_test.dart`：改用共享 battle probe，行为与现有断言不变。
 - `test/features/cultivation/application/single_experience_account_contract_test.dart`：扩大旧等级账零写入守卫到全部经验来源。
+- `test/features/seclusion/application/seclusion_service_test.dart`：精确验证闭关 + 溢出挂机经验合并后只应用一次。
+- `pubspec.yaml` / `pubspec.lock`：显式声明测试 AST helper 使用的 analyzer 9.0.0 dev dependency。
 - `PROGRESS.md`：仅在最终门禁完成后记录真实结果。
 - 本计划文件：每个任务提交时更新恢复点。
 
@@ -407,7 +411,11 @@ git commit -m "test: cover the full Lv490 progression path"
 
 **Files:**
 - Create: `test/features/cultivation/application/experience_source_consistency_test.dart`
+- Create: `test/support/dart_source_contract.dart`
 - Modify: `test/features/cultivation/application/single_experience_account_contract_test.dart`
+- Modify: `test/features/seclusion/application/seclusion_service_test.dart`
+- Modify: `pubspec.yaml`
+- Modify: `pubspec.lock`
 - Verify existing behavior tests listed below
 
 - [x] **Step 1: 写入口委托与策略契约**

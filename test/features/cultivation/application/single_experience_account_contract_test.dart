@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../support/dart_source_contract.dart';
+
 void main() {
   const productionExperiencePaths = [
     'lib/features/mainline/presentation/stage_entry_flow.dart',
@@ -16,12 +18,44 @@ void main() {
     'all production experience paths ignore the legacy level account',
     () async {
       for (final path in productionExperiencePaths) {
-        final source = await File(path).readAsString();
-        expect(source, isNot(contains('LevelService')), reason: path);
-        expect(source, isNot(contains('LevelConfig')), reason: path);
-        expect(source, isNot(contains('.levelExp =')), reason: path);
-        expect(source, isNot(contains('numbers.level')), reason: path);
+        final contract = DartSourceContract.parse(
+          await File(path).readAsString(),
+          path: path,
+        );
+        expect(contract.memberAccessCount('levelExp'), 0, reason: path);
+        expect(contract.identifierCount('LevelService'), 0, reason: path);
+        expect(contract.identifierCount('LevelConfig'), 0, reason: path);
+        expect(
+          contract.memberAccessCount('level', receiverSource: 'numbers'),
+          0,
+          reason: path,
+        );
       }
     },
   );
+
+  test('AST guard catches legacy levelExp reads and every write form', () {
+    final contract = DartSourceContract.parse('''
+void probe(dynamic character) {
+  final snapshot = character.levelExp;
+  character.levelExp = 1;
+  character.levelExp += 2;
+  character.levelExp++;
+}
+''');
+
+    expect(contract.memberAccessCount('levelExp'), 4);
+  });
+
+  test('AST guard ignores legacy-looking comments and string literals', () {
+    final contract = DartSourceContract.parse(r'''
+void probe() {
+  // character.levelExp += 1;
+  const fakeRead = 'character.levelExp';
+  const fakeWrite = 'character.levelExp++';
+}
+''');
+
+    expect(contract.memberAccessCount('levelExp'), 0);
+  });
 }
