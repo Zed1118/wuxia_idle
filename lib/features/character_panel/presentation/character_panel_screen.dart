@@ -12,6 +12,8 @@ import '../../../core/domain/technique.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../cultivation/application/skill_proficiency_formatter.dart';
+import '../../cultivation/application/character_advancement_service.dart';
+import '../../cultivation/domain/realm_progress_display.dart';
 import '../../cultivation/application/synergy_service.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
 import '../../sect/application/sect_providers.dart';
@@ -358,7 +360,7 @@ class _RealmCultivationSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          _LevelChip(character: character),
+          _CultivationProgressCard(character: character),
         ],
       ),
     );
@@ -544,24 +546,34 @@ class _BiographyChip extends StatelessWidget {
   }
 }
 
-/// 第八阶段·角色等级 Lv chip:「等级 Lv N」+ 经验条(满级显「巅峰」)。
-///
-/// config 读用 [GameRepository.instanceOrNull] 守:缺 GameRepository(轻量 widget
-/// 测无 game data)时退化为纯 Lv 数字、不渲染经验条,不崩。
-class _LevelChip extends StatelessWidget {
-  const _LevelChip({required this.character});
+/// 境界修为的细粒度展示刻度；只读境界经验，不提供额外战力。
+class _CultivationProgressCard extends StatelessWidget {
+  const _CultivationProgressCard({required this.character});
 
   final Character character;
 
   @override
   Widget build(BuildContext context) {
-    final lvCfg = GameRepository.instanceOrNull?.numbers.level;
-    // 防御:旧档 Isar 哨兵 level(负)漏过启动 repair 时仍显 Lv 1 不崩(双保险)。
-    final lv = character.level < 1 ? 1 : character.level;
-    final lvExp = character.levelExp < 0 ? 0 : character.levelExp;
-    final atMax = lvCfg != null && lv >= lvCfg.maxLevel;
-    final toNext = (lvCfg != null && !atMax) ? lvCfg.expToNext(lv) : 0;
-    final frac = toNext > 0 ? (lvExp / toNext).clamp(0.0, 1.0) : 1.0;
+    final repository = GameRepository.instanceOrNull;
+    final realmDef = repository?.getRealm(
+      character.realmTier,
+      character.realmLayer,
+    );
+    final hasNext =
+        CharacterAdvancementService.nextLayer(
+          character.realmTier,
+          character.realmLayer,
+        ) !=
+        null;
+    final display = RealmProgressDisplay.fromSnapshot(
+      absoluteRealmLevel:
+          realmDef?.absoluteLevel ??
+          RealmUtils.absoluteLevelOf(character.realmTier, character.realmLayer),
+      experience: character.experience,
+      experienceToNext:
+          realmDef?.experienceToNext ?? character.experienceToNextLayer,
+      hasNextRealmLayer: hasNext,
+    );
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
@@ -576,7 +588,7 @@ class _LevelChip extends StatelessWidget {
           Row(
             children: [
               const Text(
-                UiStrings.profileLevelLabel,
+                UiStrings.profileCultivationLevelLabel,
                 style: TextStyle(
                   color: WuxiaUi.muted,
                   fontSize: 12,
@@ -585,7 +597,7 @@ class _LevelChip extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                UiStrings.profileLevelValue(lv),
+                UiStrings.profileCultivationLevel(display.level),
                 style: const TextStyle(
                   color: WuxiaUi.ink,
                   fontSize: 15,
@@ -594,9 +606,11 @@ class _LevelChip extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                atMax
-                    ? UiStrings.profileLevelPeak
-                    : UiStrings.profileLevelProgress(lvExp, toNext),
+                display.didReachPeak
+                    ? UiStrings.profileCultivationPeak
+                    : display.isWaitingForBreakthrough
+                    ? UiStrings.profileWaitingForInnerDemon
+                    : EnumL10n.realm(character.realmTier, character.realmLayer),
                 style: const TextStyle(
                   color: WuxiaUi.muted,
                   fontSize: 11,
@@ -605,20 +619,26 @@ class _LevelChip extends StatelessWidget {
               ),
             ],
           ),
-          if (lvCfg != null) ...[
-            const SizedBox(height: 5),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: LinearProgressIndicator(
-                value: frac,
-                minHeight: 4,
-                backgroundColor: WuxiaUi.ink.withValues(alpha: 0.12),
-                valueColor: AlwaysStoppedAnimation(
-                  WuxiaUi.gold.withValues(alpha: 0.85),
-                ),
+          const SizedBox(height: 4),
+          Text(
+            UiStrings.profileCultivationExperience(
+              display.experience,
+              display.experienceToNext,
+            ),
+            style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
+          ),
+          const SizedBox(height: 5),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: display.progress,
+              minHeight: 4,
+              backgroundColor: WuxiaUi.ink.withValues(alpha: 0.12),
+              valueColor: AlwaysStoppedAnimation(
+                WuxiaUi.gold.withValues(alpha: 0.85),
               ),
             ),
-          ],
+          ),
         ],
       ),
     );

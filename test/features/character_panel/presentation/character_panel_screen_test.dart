@@ -264,17 +264,50 @@ void main() {
     );
   });
 
-  testWidgets('第八阶段·档案头显「等级 Lv N」chip + 经验条', (tester) async {
+  testWidgets('profile derives level and exp from realm progress only', (
+    tester,
+  ) async {
     final character = mkCharacter()
-      ..level = 5
-      ..levelExp = 30;
+      ..realmTier = RealmTier.erLiu
+      ..realmLayer = RealmLayer.yuanShu
+      ..experience = 650
+      ..experienceToNextLayer = 1200
+      ..level = 99
+      ..levelExp = 99999;
     await pumpPanel(tester, character: character);
 
-    expect(find.text(UiStrings.profileLevelLabel), findsOneWidget); // 「等级」
-    expect(find.text(UiStrings.profileLevelValue(5)), findsOneWidget);
-    expect(find.text(UiStrings.realmEquipmentCap('寻常货')), findsOneWidget);
-    // 经验条:GameRepository 已加载 → LinearProgressIndicator 渲染。
+    expect(find.textContaining('修为等级'), findsOneWidget);
+    expect(find.textContaining('经验 650 / 6700'), findsOneWidget);
+    expect(find.textContaining('Lv99'), findsNothing);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
+  });
+
+  testWidgets('locked overflow shows waiting for inner demon', (tester) async {
+    final character = mkCharacter()
+      ..realmTier = RealmTier.wuSheng
+      ..realmLayer = RealmLayer.huaJing
+      ..experience = 1200000;
+    await pumpPanel(tester, character: character);
+
+    expect(find.text(UiStrings.profileWaitingForInnerDemon), findsOneWidget);
+    expect(find.textContaining('1200000 / 1040000'), findsOneWidget);
+  });
+
+  testWidgets('terminal scale shows Lv490 peak', (tester) async {
+    final character = mkCharacter()
+      ..realmTier = RealmTier.wuSheng
+      ..realmLayer = RealmLayer.dengFeng
+      ..experience = 1250000;
+    for (final size in const [Size(1280, 720), Size(1440, 900)]) {
+      await pumpPanel(tester, character: character, surfaceSize: size);
+      expect(find.textContaining('Lv490'), findsOneWidget, reason: '$size');
+      expect(
+        find.text(UiStrings.profileCultivationPeak),
+        findsOneWidget,
+        reason: '$size',
+      );
+      expect(tester.takeException(), isNull, reason: '$size');
+    }
   });
 
   testWidgets('M4 术语气泡:4 属性 + 派生数值标签走 GlossaryLabel 并挂释义', (tester) async {

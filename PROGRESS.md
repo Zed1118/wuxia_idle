@@ -6,6 +6,8 @@
 
 ## 当前阶段
 
+> **2026-07-13 Codex 境界派生 Lv1～Lv490 实装(`codex/realm-derived-490-level`)**：独立 Lv 经验账已退役，`Character.experience` 成为唯一角色经验账；49 个真实境界层各派生 10 个纯展示段。主线、爬塔、闭关、普通离线、经验丹统一走 `CharacterAdvancementService`；战后经验/等级/突破合并为一个反馈区。删除 `LevelService`、`LevelConfig`、`numbers.yaml level` 及旧等级血量/内力/速度加成；旧 `Character.level/levelExp` 仅保留 Isar schema 兼容、生产零读写。角色档案统一显示真实经验、心魔溢出和 Lv490 修为巅峰；终境 1,250,000 只作显示刻度，不产生第 50 层。**实跑门禁**：build_runner 增量 66 outputs；format 1103/0 changed；analyze 0；跨模块专项 **593 pass / 0 fail**；全量 **3878 pass / 0 fail**；macOS debug build 成功；角色面板 31 条测试含 Lv490 @1280×720/1440×900，无异常。
+
 > **2026-07-13 Codex 外部审查复核与分支收敛(`main`)**：已修复提前出关异常/并发重入、`qiDelta` 加载期红线；退役心魔余毒两个无消费倍率及误导注释；主菜单闭关横幅复用唯一时长切分函数；订正 07-12 测试数、心魔观察值属性与推送状态。已审核并合入角色四属性职责统一、二周目快速开局和「境界派生 490 级」设计规格；已清理 5 个已合并 worktree 及 6 个已合并本地分支。**合并态实跑门禁**：`flutter analyze --no-pub` 0 issue；跨分支专项 183 绿；`flutter test --no-pub` **3877 pass / 0 fail**。
 > 🎯✅ **2026-07-11 Codex 二周目快速开局(`codex/mainline-player-loop`)**:先核查原推荐的主线列表/扫荡预估/重打收益/战后装备处理,确认均已于 06-29 既有批次实装,避免重复开工;改做 GDD §10.4 唯一明确未落的玩家功能。任一现存档完成首周目 `stage_06_05` 后,空槽显示「已解锁老江湖开局」,祖师创建页可在「循序入门/老江湖开局」间选择;快速模式复用 `SaveData.isOnboardingCompleted`,只解除心法/闭关前期门槛,主线、首通奖励、塑形、初始资源均从头开始,无 schema/saveVer。兼容旧档 `clearedStageIds`,正常通关 01_05 同步闭环完成态。同步订正 GDD、playability backlog 与 rejected registry 中 19 项已完成却仍可派发的 drift。**TDD**:新增 6 条契约测,定向 43 绿;**分支门禁**:`flutter analyze lib test` 0 issue;全量 **3800/3800**、0 fail(373.8s);`flutter build macos --debug` 成功。macOS 原生 `founder_creation` @1280×720/1440×900 无 overflow/exception/遮挡。
 

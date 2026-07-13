@@ -97,7 +97,6 @@ void main() {
       isar,
       def: def,
       realmLookup: repo.getRealm,
-      levelConfig: repo.numbers.level,
     );
     expect(result.kind, ItemUseKind.experienceApplied);
 

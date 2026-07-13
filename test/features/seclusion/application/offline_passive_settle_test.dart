@@ -25,16 +25,20 @@ void main() {
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_passive_settle_');
     await IsarSetup.init(directory: tempDir, inspector: false);
-    final ch = Character.create(
-      name: 'hero',
-      realmTier: RealmTier.xueTu,
-      realmLayer: RealmLayer.qiMeng,
-      attributes: Attributes(),
-      rarity: RarityTier.biaoZhun,
-      lineageRole: LineageRole.founder,
-      createdAt: DateTime(2026, 1, 1),
-      internalForce: 500,
-    )..id = kCharId;
+    final ch =
+        Character.create(
+            name: 'hero',
+            realmTier: RealmTier.xueTu,
+            realmLayer: RealmLayer.qiMeng,
+            attributes: Attributes(),
+            rarity: RarityTier.biaoZhun,
+            lineageRole: LineageRole.founder,
+            createdAt: DateTime(2026, 1, 1),
+            internalForce: 500,
+          )
+          ..id = kCharId
+          ..level = 77
+          ..levelExp = 4321;
     await IsarSetup.instance.writeTxn(
       () => IsarSetup.instance.characters.put(ch),
     );
@@ -61,6 +65,11 @@ void main() {
     expect(save.totalPassiveMojianshi, 2);
     expect(save.totalPassiveExperience, 500);
     expect(save.lastOnlineAt, DateTime(2026, 6, 15, 12)); // 重置基准
+
+    final character = await IsarSetup.instance.characters.get(kCharId);
+    expect(character!.experience, greaterThan(0));
+    expect(character.level, 77);
+    expect(character.levelExp, 4321);
 
     final silver = await IsarSetup.instance.inventoryItems.getByDefId(
       'item_silver',

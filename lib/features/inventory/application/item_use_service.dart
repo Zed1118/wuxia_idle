@@ -10,8 +10,6 @@ import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../data/defs/item_def.dart';
 import '../../../data/defs/realm_def.dart';
 import '../../cultivation/application/character_advancement_service.dart';
-import '../../level/application/level_service.dart';
-import '../../level/domain/level_config.dart';
 
 /// 材料经济 P2：道具"使用"派发服务。
 ///
@@ -30,8 +28,6 @@ class ItemUseService {
     required ItemDef def,
     required RealmDef Function(RealmTier, RealmLayer) realmLookup,
     bool Function(RealmTier, RealmLayer)? isLayerLocked,
-    // 第八阶段·角色等级 Lv:经验丹增益与境界 EXP 同源并行喂(null=测试不动)。
-    LevelConfig? levelConfig,
   }) async {
     return isar.writeTxn(() async {
       final item = await isar.inventoryItems.getByDefId(def.defId);
@@ -48,18 +44,22 @@ class ItemUseService {
           if (founder == null) {
             return const ItemUseResult(kind: ItemUseKind.noTarget);
           }
-          // 经验增益 = 当层升层所需经验 × layer_fraction（随境界缩放）。
-          final gain = (founder.experienceToNextLayer * def.layerFraction!)
+          // 存档里的阈值只作兼容字段；实际缩放永远读取当前境界定义。
+          final currentRealm = realmLookup(
+            founder.realmTier,
+            founder.realmLayer,
+          );
+          final gain = (currentRealm.experienceToNext * def.layerFraction!)
               .round();
+          if (gain <= 0) {
+            return const ItemUseResult(kind: ItemUseKind.noEffect);
+          }
           final result = CharacterAdvancementService.applyExperience(
             founder,
             gain,
             realmLookup: realmLookup,
             isLayerLocked: isLayerLocked,
           );
-          if (levelConfig != null) {
-            LevelService.applyLevelExp(founder, gain, config: levelConfig);
-          }
           await isar.characters.put(founder);
           await _consumeOne(isar, item);
           return ItemUseResult(

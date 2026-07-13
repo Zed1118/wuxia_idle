@@ -42,15 +42,9 @@ class Character {
   int experience = 0;
   int experienceToNextLayer = 100;
 
-  /// 第八阶段 · 角色等级 Lv(全局连续成长轴,独立于境界,saveVer 0.31)。
-  ///
-  /// 战斗 victory 现有 EXP 事件并行喂 [levelExp](与境界 [experience] 同源不同账),
-  /// **跨境界连续涨不重置**(境界是独立大门槛)。[LevelService.applyLevelExp]
-  /// 消费 levelExp 升 level 至 `level.max_level` 封顶。
-  ///
-  /// **力量模型(红线安全)**:Lv 只经 `CharacterDerivedStats` 注入 maxHp/内力上限/
-  /// 速度三处小幅有界加成(hp/内力经 §5.4 clamp 硬守,速度无红线),**不解锁高阶
-  /// 装备/心法**(§5.3 境界锁死不动)。
+  /// Legacy schema compatibility only (saveVer 0.31).
+  /// Production progression, UI, combat stats, and unlocks must not read or
+  /// write these fields. Remove only in a future schema-cleanup migration.
   int level = 1;
   int levelExp = 0;
 

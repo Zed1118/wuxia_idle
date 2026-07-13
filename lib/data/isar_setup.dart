@@ -148,7 +148,7 @@ class IsarSetup {
   //   新字段旧档读默认空,无数据迁移动作,仅 bump 版本号。
   // 0.29.0 伤势系统:Character +lightInjuryStacks/injuryHoursRemaining,新字段旧档读默认 0,无迁移分支,仅 bump。
   // 0.30.0 桃花岛:SaveData +islandBuildings/islandLastSettledAt(嵌入 IslandBuildingState),新字段旧档读默认空/null,无迁移分支纯 bump。
-  // 0.31.0 第八阶段角色等级:Character +level(默认1)/levelExp(默认0),新字段旧档读默认值,无迁移分支纯 bump。
+  // 0.31.0 曾新增两项角色等级字段；现仅保留旧存档结构兼容，无迁移与运行时消费。
   // 0.32.0 装备锁定:Equipment +isLocked(默认 false),旧档装备均视为未锁定,无迁移分支纯 bump。
   // 0.33.0 祖师开局塑形:Character +founderCreationSchoolId/OriginId/FateId
   // nullable id 字段,旧档为空回退传统纪事,无迁移分支纯 bump。
@@ -191,18 +191,6 @@ class IsarSetup {
       if (existing.saveVersion != _currentSaveVersion) {
         await _migrateSaveData(isar, existing);
       }
-      // 0.31.0 角色等级 Lv 安全网回填(幂等·每次启动跑):
-      // Isar **不应用 Dart 字段默认值**,旧档 Character 无 level 字段读回是 int64
-      // 哨兵(-9.2e18)→ 污染 Lv 显示 + 速度派生。修 level<1 / levelExp<0 的角色。
-      // 每次启动跑(合法 level≥1 不动),兼修「已升版到 0.31 但字段未回填」的破档
-      // (纯 bump 迁移漏回填 → 升版后迁移不再跑,故需启动期幂等安全网而非仅迁移块)。
-      try {
-        await repairCharacterLevels(isar);
-      } catch (e) {
-        // 角色异常时静默 skip,不阻塞启动；
-        // P0-1(2026-06-29):补 debugPrint 让安全网吞掉的异常至少有日志可溯。
-        debugPrint('IsarSetup: repairCharacterLevels skip(不阻塞启动): $e');
-      }
       return existing;
     }
 
@@ -216,23 +204,6 @@ class IsarSetup {
       ..lastOnlineAt = now;
     await isar.writeTxn(() => isar.saveDatas.put(fresh));
     return fresh;
-  }
-
-  /// 0.31.0 角色等级 Lv 安全网回填(幂等)。Isar 不应用 Dart 字段默认值,旧档
-  /// Character 无 level 字段读回 int64 哨兵(负数)→ 重置 `level=1` / `levelExp=0`。
-  /// 合法 level≥1 不动(幂等);levelExp<0 单独归 0(防御)。
-  @visibleForTesting
-  static Future<void> repairCharacterLevels(Isar isar) async {
-    final all = await isar.characters.where().findAll();
-    final broken = all.where((c) => c.level < 1 || c.levelExp < 0).toList();
-    if (broken.isEmpty) return;
-    await isar.writeTxn(() async {
-      for (final c in broken) {
-        if (c.level < 1) c.level = 1;
-        if (c.levelExp < 0) c.levelExp = 0;
-        await isar.characters.put(c);
-      }
-    });
   }
 
   /// 波A A4 0.18.0 迁移:旧池 `EncounterProgress.unlockedSkillIds`(全部行)

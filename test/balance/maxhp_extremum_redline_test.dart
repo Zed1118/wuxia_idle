@@ -118,18 +118,14 @@ void main() {
     });
   });
 
-  // 第八阶段·角色等级 Lv:满 build + 满 Lv + founder buff 的极值仍守 §5.4 硬红线
-  // (Lv 平直加成加在 clamp 前,极值靠 playerHpMax/internalForceMax clamp 兜底)。
-  group('第八阶段 Lv 极值红线(满 build + L100 仍 ≤ §5.4)', () {
+  group('全境界满 build 极值红线', () {
     for (final tier in RealmTier.values) {
       test(
-        '${tier.name}·dengFeng + 满 build + L100 + founderBuff maxHp ≤ §5.4 红线',
+        '${tier.name}·dengFeng + 满 build + founderBuff maxHp ≤ §5.4 红线',
         () async {
           await GameRepository.loadAllDefs(loader: fileLoader);
           final (:character, :equipped) = buildExtremum(tier);
-          character
-            ..level = GameRepository.instance.numbers.level.maxLevel
-            ..isFounder = true;
+          character.isFounder = true;
           final n = GameRepository.instance.numbers;
           final maxHp = CharacterDerivedStats.maxHp(
             character,
@@ -141,18 +137,16 @@ void main() {
             maxHp,
             lessThanOrEqualTo(n.combat.redLines.playerHpMax),
             reason:
-                '${tier.name} 满 build + L100 maxHp $maxHp 必 ≤ §5.4 '
+                '${tier.name} 满 build maxHp $maxHp 必 ≤ §5.4 '
                 '${n.combat.redLines.playerHpMax}(clamp 兜底)',
           );
         },
       );
 
-      test('${tier.name}·dengFeng + 满 build + L100 内力上限 ≤ §5.4 红线', () async {
+      test('${tier.name}·dengFeng + 满 build 内力上限 ≤ §5.4 红线', () async {
         await GameRepository.loadAllDefs(loader: fileLoader);
         final (:character, :equipped) = buildExtremum(tier);
-        character
-          ..level = GameRepository.instance.numbers.level.maxLevel
-          ..isFounder = true;
+        character.isFounder = true;
         final n = GameRepository.instance.numbers;
         final ifMax = CharacterDerivedStats.internalForceMaxWithLineage(
           character,
@@ -164,7 +158,7 @@ void main() {
           ifMax,
           lessThanOrEqualTo(n.combat.redLines.internalForceMax),
           reason:
-              '${tier.name} 满 build + L100 内力 $ifMax 必 ≤ §5.4 '
+              '${tier.name} 满 build 内力 $ifMax 必 ≤ §5.4 '
               '${n.combat.redLines.internalForceMax}(clamp 兜底)',
         );
       });

@@ -32,7 +32,6 @@ import '../../../shared/strings.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../battle/domain/derived_stats.dart';
 import '../../cultivation/application/character_advancement_service.dart';
-import '../../level/application/level_service.dart';
 import '../../cultivation/domain/skill_drop_result.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
 import '../../cultivation/presentation/skill_treasure_overlay.dart';
@@ -867,16 +866,7 @@ applyVictoryResolution({
           clearedStageIds: clearedSet,
         ),
       );
-      // 第八阶段·角色等级 Lv:与境界 EXP 同源并行喂(全局连续涨)。in-place 写
-      // c.level/levelExp,随后续 writeTxn 持久。升级结果供 victory「晋 Lv N」反馈(D)。
-      final lvUp = LevelService.applyLevelExp(
-        c,
-        stage.baseExpReward,
-        config: GameRepository.instance.numbers.level,
-      );
-      advancements.add(
-        AdvancementEntry(chName: c.name, result: r, levelUp: lvUp),
-      );
+      advancements.add(AdvancementEntry(chName: c.name, result: r));
     }
   }
 

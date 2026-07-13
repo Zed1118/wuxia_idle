@@ -415,6 +415,7 @@ void main() {
 
       final r49 = repo.getRealmByAbsoluteLevel(49);
       expect(r49.internalForceMax, 15000);
+      expect(r49.experienceToNext, 1250000);
       expect(r49.equipmentTierCap, EquipmentTier.shenWu);
     });
 
