@@ -9,28 +9,24 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/core/domain/attributes.dart';
-import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
-import 'package:wuxia_idle/core/domain/equipment.dart';
-import 'package:wuxia_idle/core/domain/forging_slot.dart';
-import 'package:wuxia_idle/core/domain/technique.dart';
-import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
-import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import '../support/progression_battle_probe.dart';
 import '../support/test_data.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
-    show RealmUtils;
 
 const _seedsPerStage = 20;
 const _maxTicks = 240;
 const _readableVictoryHandoffSeconds = 1.2;
 const _reportDate = '2026-07-09';
 const _outputDir = 'test/tools/output';
+const readableProfiles = [
+  ProgressionBuildProfile.undergeared,
+  ProgressionBuildProfile.nearMax,
+];
 
 void main() {
   late GameRepository repo;
@@ -41,7 +37,7 @@ void main() {
   });
 
   test(
-    '首通可读节奏诊断:30 mainline × floor/ceiling × $_seedsPerStage seed',
+    '首通可读节奏诊断:30 mainline × undergeared/nearMax × $_seedsPerStage seed',
     () {
       final stages =
           repo.stageDefs.values
@@ -54,7 +50,7 @@ void main() {
 
       final rows = <_TempoRun>[];
       for (final stage in stages) {
-        for (final profile in _TempoProfile.values) {
+        for (final profile in readableProfiles) {
           for (var seed = 0; seed < _seedsPerStage; seed++) {
             rows.add(_simulate(stage, repo, profile, seed));
           }
@@ -86,7 +82,7 @@ void _assertExperienceRatchet(List<StageDef> stages, List<_TempoRun> rows) {
         .add(row);
   }
 
-  double averageActions(String stageId, _TempoProfile profile) {
+  double averageActions(String stageId, ProgressionBuildProfile profile) {
     final samples =
         byStageProfile['$stageId/${profile.name}'] ?? const <_TempoRun>[];
     expect(samples, isNotEmpty, reason: '$stageId/${profile.name} 缺首通节奏样本');
@@ -96,25 +92,33 @@ void _assertExperienceRatchet(List<StageDef> stages, List<_TempoRun> rows) {
 
   for (var chapter = 1; chapter <= 6; chapter++) {
     final stageId = 'stage_${chapter.toString().padLeft(2, '0')}_05';
-    final floor = averageActions(stageId, _TempoProfile.floor);
-    final ceiling = averageActions(stageId, _TempoProfile.ceiling);
+    final undergeared = averageActions(
+      stageId,
+      ProgressionBuildProfile.undergeared,
+    );
+    final nearMax = averageActions(stageId, ProgressionBuildProfile.nearMax);
     expect(
-      floor,
+      undergeared,
       greaterThanOrEqualTo(6),
-      reason: '$stageId floor 平均动作行 $floor 低于渐进门槛 6',
+      reason: '$stageId undergeared 平均动作行 $undergeared 低于渐进门槛 6',
     );
     expect(
-      floor,
-      greaterThanOrEqualTo(ceiling),
-      reason: '$stageId floor=$floor 不应短于 ceiling=$ceiling',
+      undergeared,
+      greaterThanOrEqualTo(nearMax),
+      reason: '$stageId undergeared=$undergeared 不应短于 nearMax=$nearMax',
     );
   }
 
-  final finalChapterFloor = averageActions('stage_06_05', _TempoProfile.floor);
+  final finalChapterUndergeared = averageActions(
+    'stage_06_05',
+    ProgressionBuildProfile.undergeared,
+  );
   expect(
-    finalChapterFloor,
+    finalChapterUndergeared,
     greaterThanOrEqualTo(8),
-    reason: 'stage_06_05 floor 平均动作行 $finalChapterFloor 低于终章门槛 8',
+    reason:
+        'stage_06_05 undergeared 平均动作行 '
+        '$finalChapterUndergeared 低于终章门槛 8',
   );
 
   final missingBossMechanic = <String>[];
@@ -123,7 +127,7 @@ void _assertExperienceRatchet(List<StageDef> stages, List<_TempoRun> rows) {
       (enemy) => enemy.bossPhases != null && enemy.bossPhases!.isNotEmpty,
     );
     if (!stage.isBossStage || !hasBossPhaseConfig) continue;
-    for (final profile in _TempoProfile.values) {
+    for (final profile in readableProfiles) {
       final samples =
           byStageProfile['${stage.id}/${profile.name}'] ?? const <_TempoRun>[];
       if (samples.isEmpty) continue;
@@ -150,13 +154,18 @@ void _assertExperienceRatchet(List<StageDef> stages, List<_TempoRun> rows) {
 _TempoRun _simulate(
   StageDef stage,
   GameRepository repo,
-  _TempoProfile profile,
+  ProgressionBuildProfile profile,
   int seed,
 ) {
   final players = [
-    _buildPlayer(repo, stage.requiredRealm, 0, true, profile),
-    _buildPlayer(repo, stage.requiredRealm, 1, false, profile),
-    _buildPlayer(repo, stage.requiredRealm, 2, false, profile),
+    for (var slot = 0; slot < 3; slot++)
+      buildProgressionPlayer(
+        repository: repo,
+        tier: stage.requiredRealm,
+        slot: slot,
+        isFounder: slot == 0,
+        profile: profile,
+      ),
   ].map(StageBattleSetup.debugApplyReadableFirstClearTuning).toList();
   final enemies = StageBattleSetup.buildEnemyTeam(
     stage.enemyTeam,
@@ -178,106 +187,12 @@ _TempoRun _simulate(
   );
 }
 
-enum _TempoProfile { floor, ceiling }
-
-BattleCharacter _buildPlayer(
-  GameRepository repo,
-  RealmTier tier,
-  int slot,
-  bool isFounder,
-  _TempoProfile profile,
-) {
-  final ceiling = profile == _TempoProfile.ceiling;
-  const school = TechniqueSchool.gangMeng;
-  final numbers = repo.numbers;
-  final realm = repo.getRealm(tier, RealmLayer.huaJing);
-  final enhanceLevel = ceiling ? (realm.absoluteLevel * 0.5).round() : 0;
-  final battleCount = ceiling ? 400 : 0;
-
-  final eqTierCap = RealmUtils.equipmentTierCapOf(tier);
-  final equipped = <Equipment>[];
-  for (final slotType in [
-    EquipmentSlot.weapon,
-    EquipmentSlot.armor,
-    EquipmentSlot.accessory,
-  ]) {
-    final EquipmentDef def = repo.equipmentDefs.values.firstWhere(
-      (d) => d.tier == eqTierCap && d.slot == slotType,
-      orElse: () => throw StateError('tempo_diag: 无 ${slotType.name} 装备 def'),
-    );
-    equipped.add(
-      Equipment.create(
-        defId: def.id,
-        tier: def.tier,
-        slot: def.slot,
-        obtainedAt: DateTime(2026, 7, 8),
-        obtainedFrom: 'readable_tempo_diag',
-        school: school,
-        baseAttack: (def.baseAttackMin + def.baseAttackMax) ~/ 2,
-        baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,
-        baseSpeed: (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
-        enhanceLevel: enhanceLevel,
-        battleCount: battleCount,
-        forgingSlots: const <ForgingSlot>[],
-      ),
-    );
-  }
-
-  final techTierCap = RealmUtils.techniqueTierCapOf(tier);
-  final TechniqueDef techDef = repo.techniqueDefs.values.firstWhere(
-    (d) => d.tier == techTierCap && d.school == school,
-    orElse: () => throw StateError('tempo_diag: 无 ${techTierCap.name} 刚猛心法'),
-  );
-  final mainTech = Technique.create(
-    defId: techDef.id,
-    ownerCharacterId: 7000 + slot,
-    tier: techDef.tier,
-    school: school,
-    role: TechniqueRole.main,
-    learnedAt: DateTime(2026, 7, 8),
-    cultivationLayer: ceiling
-        ? CultivationLayer.daCheng
-        : CultivationLayer.zhongCheng,
-  );
-
-  final attributes = Attributes()
-    ..constitution = ceiling ? 6 : 5
-    ..agility = ceiling ? 6 : 5
-    ..enlightenment = 5
-    ..fortune = 5;
-
-  final character = Character.create(
-    name: isFounder ? '节奏诊断祖师' : '节奏诊断弟子$slot',
-    realmTier: tier,
-    realmLayer: RealmLayer.huaJing,
-    attributes: attributes,
-    rarity: RarityTier.values.first,
-    lineageRole: isFounder ? LineageRole.founder : LineageRole.disciple,
-    createdAt: DateTime(2026, 7, 8),
-    internalForce: realm.internalForceMax,
-    internalForceMax: realm.internalForceMax,
-    school: school,
-    isFounder: isFounder,
-    isActive: true,
-  )..id = 7000 + slot;
-
-  return BattleCharacter.fromCharacter(
-    character: character,
-    equipped: equipped,
-    mainTechnique: mainTech,
-    numbers: numbers,
-    teamSide: 0,
-    slotIndex: slot,
-    founderBuffActive: ceiling,
-  );
-}
-
 class _TempoRun {
   final String stageId;
   final int? chapterIndex;
   final bool isBoss;
   final String requiredRealm;
-  final _TempoProfile profile;
+  final ProgressionBuildProfile profile;
   final int seed;
   final String result;
   final int ticks;
@@ -334,7 +249,7 @@ class _TempoRun {
 
   factory _TempoRun.fromBattle({
     required StageDef stage,
-    required _TempoProfile profile,
+    required ProgressionBuildProfile profile,
     required int seed,
     required BattleState initial,
     required BattleState terminal,
@@ -530,7 +445,7 @@ String _summarize(
     );
 
   for (final stage in stages) {
-    for (final profile in _TempoProfile.values) {
+    for (final profile in readableProfiles) {
       final list = byStageProfile['${stage.id}/${profile.name}'] ?? const [];
       if (list.isEmpty) continue;
       final wins = list
@@ -608,7 +523,7 @@ String _summarize(
   final tooShort = <String>[];
   final missingBossMechanic = <String>[];
   for (final stage in stages) {
-    for (final profile in _TempoProfile.values) {
+    for (final profile in readableProfiles) {
       final list = byStageProfile['${stage.id}/${profile.name}'] ?? const [];
       if (list.isEmpty) continue;
       final actions = avgNum(list.map((r) => r.actionRows));

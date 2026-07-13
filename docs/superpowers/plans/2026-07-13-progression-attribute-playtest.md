@@ -12,7 +12,7 @@
 
 ## 当前恢复点
 
-- 状态：Task 4 二次质量加固已完成；合法样本、动态边界与真实战斗结算入口的四属性职责诊断已建立，下一步执行 Task 5。
+- 状态：Task 5 已完成；测试专用三档合法玩家构造与确定性主线战斗采样 API 已抽取，旧首通节奏诊断数值行为逐项等价，下一步执行 Task 6。
 - 实现分支：`codex/progression-attribute-playtest-implementation`。
 - 无修改基线 commit：`0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
 - 基线验证：重新生成 Git 忽略的 `g.dart` 后，`flutter analyze --no-pub` 为 `No issues found`；计划指定基线共 41 tests PASS；固定种子心魔观察值为 05=`17/20`、06=`17/20`、07=`13/20`；塔诊断 PASS。以上观察值均绑定 commit `0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
@@ -26,8 +26,9 @@
 - Task 4 绿灯：新增四属性前中后期只读诊断，单文件 12 tests PASS，八文件联合 78 tests PASS，`flutter analyze --no-pub` 为 `No issues found`，`git diff --check` 通过。三阶段原始值：根骨重伤时长 `8.0→7.52`；悟性有效使用 `100→106`、进度增量 `50→53`、领悟概率 `0.25→0.27999999999999997`；身法速度前/中/后期分别 `140→164` / `155→179` / `200→224`、闪避 `0.015→0.024`、暴击保持 `0.075`；机缘概率 `0.25→0.27999999999999997`，最大血量前/中/后期分别保持 `3597` / `6873` / `10149`，闪避保持 `0.015`、暴击保持 `0.075`。无 Task 7 硬失败，未修改 `lib/` / `data/` / `numbers.yaml`。以上结果绑定 commit `c02fc4970d98bd43a327f082d43cbbf572a83b83`。
 - Task 4 质量加固：baseline/raised 现在共用相同 `Character.id` 与派生 name，并以本诊断相关生产输入快照锁住境界、稀有度、师承、流派、祖师/active、内力、经验及镜像和三个非目标属性，仅目标属性 `5→8`；心法 owner 同步共用相同角色 id。根骨经真实 `InjuryService.applyBattleInjuries` 硬仗战败入口仍为 `8.0→7.52h`，HP 前/中/后期分别 `3597→4797` / `6873→8073` / `10149→11349`。悟性经真实 `CultivationService.recordSkillUsage` 为 `50→53`，经真实 `DamageCalculator.calculate` 的 95 次原始熟练度跨档伤害分别 `1595→1701` / `3898→4158` / `8118→8659`，真实 `bamboo_listen_rain` + `EncounterService.evaluateTriggers` 固定 roll 均为 `0→1`。机缘经真实 `du_ke_wen_dao` + `EncounterService` 固定 roll 均为 `0→1`，同事件真实 `fortune_required: 8` 选项可用性均为 `0→1`；确定性伤害分别保持 `1519` / `3712` / `7731`，真实 `stage_01_01` 的 `DropService.rollDrops` 相同 seed 完整结果快照一致（每阶段 3 项），HP/闪避/暴击继续不变。身法速度/闪避上升且暴击不变。属性政策本身与阶段无关，故 policy 结果在三阶段有意重复验证；阶段相关 HP、速度、伤害均使用真实境界/心法。单文件 15 tests PASS，计划八文件联合 81 tests PASS，额外 DamageCalculator/DerivedStats/DropService 三文件 116 tests PASS，`flutter analyze --no-pub` 为 `No issues found`，`git diff --check` 通过。无 Task 7 硬失败，未修改 `lib/` / `data/` / `numbers.yaml`。以上结果绑定 commit `f8071e71b47f6a00ac3c9f90016b020e001b254f`。
 - Task 4 二次质量加固：所有攻击样本均保持 fixture 合法四维（defender 身法不再被改为 0），同一固定 seed 下前/中/后期 `isDodged=false`。悟性熟练度不再写死软数值：诊断通过真实 `AttributeEffectPolicy.effectiveUsageCount` 与 `SkillProficiency.stageFor(repository.numbers.skillProficiency)` 在真实最高档门槛内搜索首个跨档输入，当前动态结果为 raw uses `29`、有效次数 `29→30`；该输入同时驱动真实 `CultivationService`（进度 `29→30`）和 `DamageCalculator`（伤害前/中/后期 `1519→1595` / `3712→3898` / `7731→8118`）。奇遇 roll 改由真实 `EncounterDef.baseProbability` 计算两侧概率后取中点：`bamboo_listen_rain` 为 `0.50→0.56`，`du_ke_wen_dao` 为 `0.625→0.70`，真实 `EncounterService` 三阶段均稳定 `0→1`。机缘掉落隔离改为 baseline/raised 分别经真实 `BattleResolutionService.resolve`，复用同一胜利 `BattleState`、真实 `stage_01_01`、seed 与 clock，并比较包含装备全部持久字段/开锋槽/典故和全部物品字段的完整 `DropResult` 快照；两侧每阶段均为 3 项且一致，参战角色的本诊断相关生产输入仅机缘不同。单文件 15 tests PASS，计划八文件 81 tests PASS，扩展 DamageCalculator/DerivedStats/DropService/BattleResolution 相关 11 文件 175 tests PASS，`flutter analyze --no-pub` 为 `No issues found`，format 0 changed，`git diff --check` 通过。无 Task 7 硬失败，未修改 `lib/` / `data/` / `numbers.yaml`。以上结果绑定 commit `d2f55cdea2b4cbc188195082867d3426a884a3bb`。
+- Task 5 基线与等价回归：基线绑定 `HEAD=6c9bd2e272dc0bfc43775796c6f70254e4988798`，旧诊断 1 test PASS，30 mainline × 2 profile × 20 seed = 1200 个真实 battle runs。抽取前后完整汇总数值逐项一致：平均展示动作行/估算秒数 `5.6/15.3`；玩家普攻/技能伤害 `60.1%/39.9%`；普攻/技能击杀 `21.6%/78.4%`；Boss 转阶段/蓄力可见/破招平均行 `0.5/0.7/0.4`；47 个低于动作目标候选集合逐项一致；配了阶段但可见机制不足候选均为“无”。`stage_06_05` undergeared（旧 floor）前后均为：win `100.0%`、avg actions/est sec `8.9/20.8`、player/enemy atk `5.9/0.8`、phase/charge/break `1.0/1.1/1.0`、normal/skill damage `40.4%/59.6%`、normal/skill kills `0.0%/100.0%`、HP end `95.7%`、IF spent `-4.0%`。唯一预期文本差异是 profile 标签 `floor→undergeared`、`ceiling→nearMax`。共享 probe TDD 红灯为缺少文件与公开 API；绿灯 3 tests PASS，证明三 profile 合法且派生战力单调、同参确定性、observation 逐字段来自独立真实 battle。联合运行共享 probe 与旧诊断共 4 tests PASS，`flutter analyze --no-pub` 为 `No issues found`，format 0 changed，`git diff --check` 通过。实现提交为本任务的 `test: share progression battle probes`；未修改 `lib/` / `data/` / `numbers.yaml`。
 - 设计规格：`docs/superpowers/specs/2026-07-13-progression-attribute-playtest-design.md`。
-- 下一步：执行 Task 5，抽取测试专用战斗采样 API。
+- 下一步：执行 Task 6，生成统一成长路径 CSV 与诊断报告。
 - 强制边界：本计划不改 `numbers.yaml`、schema、save version、属性倍率或发布流程。
 
 ---
@@ -38,6 +39,7 @@
 
 - `test/support/progression_playtest_fixture.dart`：前中后期合法角色、单属性变体和确定性元数据。
 - `test/support/progression_battle_probe.dart`：从既有首通诊断抽出的测试专用玩家构造与战斗采样 API。
+- `test/support/progression_battle_probe_test.dart`：三档 profile、确定性与真实战斗观察字段的最小契约。
 - `test/support/dart_source_contract.dart`：测试专用 analyzer AST 成员访问、方法调用与变量初始值查询。
 - `test/features/cultivation/application/progression_full_path_contract_test.dart`：49 层、490 级、心魔锁和终境封顶硬契约。
 - `test/features/cultivation/application/experience_source_consistency_test.dart`：七类经验入口委托与玩法差异契约。
@@ -850,7 +852,7 @@ git commit -m "test: diagnose attribute role sensitivity"
 - Modify: `test/tools/readable_first_clear_tempo_diagnostic_test.dart`
 - Test: `test/tools/readable_first_clear_tempo_diagnostic_test.dart`
 
-- [ ] **Step 1: 先运行既有首通诊断保存行为基线**
+- [x] **Step 1: 先运行既有首通诊断保存行为基线**
 
 Run:
 
@@ -860,7 +862,7 @@ flutter test --no-pub test/tools/readable_first_clear_tempo_diagnostic_test.dart
 
 Expected: PASS；保存最终摘要中的总 run 数、平均展示动作行和 `stage_06_05` floor 数据。
 
-- [ ] **Step 2: 创建共享类型和 API**
+- [x] **Step 2: 创建共享类型和 API**
 
 Create `test/support/progression_battle_probe.dart` with these public declarations:
 
@@ -1059,7 +1061,7 @@ BattleCharacter buildProgressionPlayer({
 }
 ```
 
-- [ ] **Step 3: 改既有首通诊断使用共享 API**
+- [x] **Step 3: 改既有首通诊断使用共享 API**
 
 In `test/tools/readable_first_clear_tempo_diagnostic_test.dart`:
 
@@ -1119,7 +1121,7 @@ Replace `_TempoProfile.values` loops with `readableProfiles`, `_TempoProfile.flo
 with `ProgressionBuildProfile.undergeared`, and `_TempoProfile.ceiling` with
 `ProgressionBuildProfile.nearMax`.
 
-- [ ] **Step 4: 运行格式与等价性回归**
+- [x] **Step 4: 运行格式与等价性回归**
 
 Run:
 
@@ -1132,7 +1134,7 @@ flutter test --no-pub test/tools/readable_first_clear_tempo_diagnostic_test.dart
 
 Expected: PASS，run 数和 Task 5 Step 1 保存的关键摘要相同；若不相同，恢复到语义等价后再继续。
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add \
