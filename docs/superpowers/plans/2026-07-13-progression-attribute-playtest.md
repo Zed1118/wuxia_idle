@@ -12,7 +12,7 @@
 
 ## 当前恢复点
 
-- 状态：Task 7 已完成；P0/P1 证据门禁关闭生产修改路径，下一步执行 Task 8 全量门禁、macOS 复验与收尾。
+- 状态：Task 8 已完成；P0/P1 证据门禁关闭生产修改路径，全量门禁、macOS 双视口复验与文档收尾已通过。
 - 实现分支：`codex/progression-attribute-playtest-implementation`。
 - 无修改基线 commit：`0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
 - 基线验证：重新生成 Git 忽略的 `g.dart` 后，`flutter analyze --no-pub` 为 `No issues found`；计划指定基线共 41 tests PASS；固定种子心魔观察值为 05=`17/20`、06=`17/20`、07=`13/20`；塔诊断 PASS。以上观察值均绑定 commit `0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
@@ -36,7 +36,8 @@
 - Task 6 CSV 副作用质量修复：默认诊断 1/1 PASS，运行前后 committed CSV SHA-256 均为 `dc2308ffd225a1457cbcdb5982d9ee79e6f6bca6cdcf22f8bec4cc11db912316`、mtime 均为 `1783943700`，且 `git diff` 无输出；显式 `UPDATE_PROGRESSION_PLAYTEST_EVIDENCE=1` 诊断亦 1/1 PASS，打印 `updated evidence`，原子更新后的 SHA-256 仍相同且 CSV byte-identical、无 diff。报告修订只改显示精度与覆盖边界，原始 CSV/evidence commit 不变；专项未重跑。
 - 设计规格：`docs/superpowers/specs/2026-07-13-progression-attribute-playtest-design.md`。
 - Task 7 证据门禁：merge-base 为 `f81b8ce220917a57a5da1de61a49eedd36c9803a`。已运行计划 Step 1 的问题分级与全分支文件清单命令；报告实际 P0/P1 行均为“无”，第一批处置已明确“零生产代码修改”，无需修改报告。默认主线诊断 1/1 PASS，1800 场复现值与报告一致，tracked CSV 的 SHA-256 `dc2308ffd225a1457cbcdb5982d9ee79e6f6bca6cdcf22f8bec4cc11db912316` 与 mtime 前后不变且无 diff；计划六文件专项 33/33 PASS，额外共享结算 4/4 PASS。`git diff --name-only $(git merge-base HEAD main)..HEAD -- 'lib/**' 'data/**'` 零输出；全分支另有 `pubspec.yaml` / `pubspec.lock` 非生产依赖变化，仅把 analyzer 9.0.0 显式列为 test AST helper 的 direct dev dependency，未升级版本，不能冒充全仓零变化。P2-1/P2-2 与单 seed/单 profile 观察未升级为 P1；Step 2B 不适用且未执行，未新增生产修复任务。
-- 下一步：执行 Task 8 全量门禁、macOS 复验与收尾；Task 8 完成前 tip 保持普通非 `[READY]`。
+- Task 8 收口门禁绑定收尾前 `HEAD=ea45ff27125771a7d2162d4153613280456fbfe2`：format 1118/0 changed；analyze 0；`git diff --check` 无输出；十文件定向集 JSON reporter 非隐藏 43 success/0 failure/error；全量 JSON reporter 非隐藏 3933 success/0 failure/error，1144 hidden load events 单独排除；macOS debug build 成功，仅有 `audioplayers_darwin` Swift actor isolation 和 Xcode 脚本 output dependency 告警。一次性未提交 debug harness 复用生产 widget/repository/临时 Isar，完成前期、心魔溢出、战后反馈、Lv490 四画面 @1280×720/1440×900 共 8 张真窗口原尺寸目检，全部 PASS；临时 harness 已删除，截图路径与 SHA-256 见审计报告。未新增 P0/P1，P2-1/P2-2 不变，`lib/` / `data/` / `numbers.yaml` / schema / save version 未修改。
+- 下一步：分支已由 `[READY] docs: close progression attribute playtest audit` 提交冻结，等待后续评审；合并和推送不在本计划自动执行。
 - 强制边界：本计划不改 `numbers.yaml`、schema、save version、属性倍率或发布流程。
 
 ---
@@ -1329,7 +1330,7 @@ git commit -m "docs: classify progression audit findings"
 - Modify: `docs/audit/progression_attribute_playtest_2026-07-13.md`
 - Modify: `docs/superpowers/plans/2026-07-13-progression-attribute-playtest.md`
 
-- [ ] **Step 1: 格式检查与静态分析**
+- [x] **Step 1: 格式检查与静态分析**
 
 Run:
 
@@ -1341,7 +1342,7 @@ git diff --check
 
 Expected: formatter 0 changed，analyze `No issues found!`，diff check 无输出。
 
-- [ ] **Step 2: 运行本批定向门禁**
+- [x] **Step 2: 运行本批定向门禁**
 
 Run:
 
@@ -1361,7 +1362,7 @@ flutter test --no-pub \
 
 Expected: all PASS，记录真实非隐藏测试数。
 
-- [ ] **Step 3: 运行全量测试并提取真实计数**
+- [x] **Step 3: 运行全量测试并提取真实计数**
 
 Run:
 
@@ -1374,7 +1375,7 @@ flutter test --no-pub --reporter json 2>/dev/null \
 
 Expected: 仅一行 `<实际数量> success`，无 failure/error。不可把 hidden load events 计入 pass 数。
 
-- [ ] **Step 4: macOS Debug 构建**
+- [x] **Step 4: macOS Debug 构建**
 
 Run:
 
@@ -1384,7 +1385,7 @@ flutter build macos --debug
 
 Expected: `✓ Built build/macos/Build/Products/Debug/wuxia_idle.app`。第三方 warning 单独记录，不把 warning 写成 build failure。
 
-- [ ] **Step 5: 四画面双视口复验**
+- [x] **Step 5: 四画面双视口复验**
 
 用既有 debug visual route/harness 复验：
 
@@ -1395,7 +1396,7 @@ Expected: `✓ Built build/macos/Build/Products/Debug/wuxia_idle.app`。第三�
 
 每个画面检查 1280×720 和 1440×900，验收标准：无 overflow/exception、等级与境界一致、心魔等待说明可见、Lv490 无虚假进度。截图路径和结果写入审计报告；本步不改 UI，发现布局问题按 P1 证据门禁新增具体任务。
 
-- [ ] **Step 6: 更新进度文档**
+- [x] **Step 6: 更新进度文档**
 
 在 `PROGRESS.md` 顶部新增一条，必须区分：
 
@@ -1405,7 +1406,7 @@ Expected: `✓ Built build/macos/Build/Products/Debug/wuxia_idle.app`。第三�
 - 下批建议：只引用审计报告中的第二批候选；
 - 明确是否零生产代码修改，且本批无 `numbers.yaml`/schema/save version 变化。
 
-- [ ] **Step 7: 最终自检与 READY 提交**
+- [x] **Step 7: 最终自检与 READY 提交**
 
 Run:
 

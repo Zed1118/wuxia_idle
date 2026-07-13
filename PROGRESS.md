@@ -6,6 +6,8 @@
 
 ## 当前阶段
 
+> **2026-07-13 Codex 成长路径与四属性体检收口(`codex/progression-attribute-playtest-implementation`)**：**已完成**：建立 49 层/Lv1～Lv490、7 类经验入口、心魔留账/终境封顶与四属性职责的硬契约，完成主线 30 关×3 配置×20 seed=1800 场固定种子体检及审查报告；P0/P1 均无，本批零生产代码修改。**已验证**：format 1118/0 changed；analyze 0；定向 JSON reporter **43 success / 0 fail**；全量 JSON reporter 非隐藏测试 **3933 success / 0 fail**（另有 1144 hidden load events，未计入 pass）；macOS debug build 成功；前期/心魔溢出/战后反馈/Lv490 四画面 @1280×720、1440×900 共 8 张真窗口截图通过。**已知风险**：readable-first-clear 三档样本均 100% 胜、`stage_02_05` 相邻关节拍/Qi 存在断崖候选，当前只是 P2；固定 seed/profile 不等于玩家分布。**下批建议**：先补真实首通存档/战报分布与 02_04～03_01 连续体感证据，再判断是扩充低投入 profile 还是调整数值；暂不动 `numbers.yaml`、schema、save version。
+
 > **2026-07-13 Codex 成长与结算单一真相源收敛(`codex/progression-settlement-convergence`)**：门派声望面板正式显示 `factions.yaml` 中文名称，并保留既有阵营映射兼容；角色升境、面板、心魔、主菜单和商店统一从 `RealmDef` 读取经验阈值，`Character.experienceToNextLayer` 仅保留为 Isar 兼容镜像；主线与通天塔复用公共经验/突破/共鸣/Boss 事件结算，仍分别保留“主线重打给经验、通天塔仅首通给经验”及各自掉落策略。公共服务不开事务，调用方继续保证持久化原子性；同名角色按 `characterId` 关联。**无 schema/saveVersion/数值调整**。**实跑门禁**：format 1109/0 changed；analyze 0；本批定向 **151 pass / 0 fail**；全量 JSON reporter 非隐藏测试 **3897 success / 0 fail**；macOS debug build 成功（仅第三方 Swift 与 Xcode 脚本告警）。
 
 > **2026-07-13 Codex 境界派生 Lv1～Lv490 实装(`codex/realm-derived-490-level`)**：独立 Lv 经验账已退役，`Character.experience` 成为唯一角色经验账；49 个真实境界层各派生 10 个纯展示段。主线、爬塔、闭关、普通离线、经验丹统一走 `CharacterAdvancementService`；战后经验/等级/突破合并为一个反馈区。删除 `LevelService`、`LevelConfig`、`numbers.yaml level` 及旧等级血量/内力/速度加成；旧 `Character.level/levelExp` 仅保留 Isar schema 兼容、生产零读写。角色档案统一显示真实经验、心魔溢出和 Lv490 修为巅峰；终境 1,250,000 只作显示刻度，不产生第 50 层。**实跑门禁**：build_runner 增量 66 outputs；format 1103/0 changed；analyze 0；跨模块专项 **593 pass / 0 fail**；全量 **3878 pass / 0 fail**；macOS debug build 成功；角色面板 31 条测试含 Lv490 @1280×720/1440×900，无异常。

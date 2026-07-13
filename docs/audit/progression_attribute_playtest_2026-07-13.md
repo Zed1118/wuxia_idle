@@ -155,6 +155,34 @@
 - **第二批候选 P2-1：** 可能需要调整，是因为当前三档只体现 ticks、HP、Qi 差异而没有胜负差异；不调整则该测试矩阵继续无法识别主线失败压力过低。还需补真实存档在首通时的境界层、装备阶/强化、心法与属性分布，以及玩家首通失败率、重试率和退出点，才能决定是改数值还是扩充更真实的低投入 profile。当前暂无足够证据执行调整。
 - **第二批候选 P2-2：** 可能需要调整，是因为 02_05 在三档 60 场都同时拉高节拍、动作并压低 Qi；不调整可能保留一处突兀资源耗尽感，但也可能正是章节 Boss 所需峰值。还需补真实玩家 02_04～03_01 连续首通录像/战报、主动招式使用和战后 Qi 可读性反馈，并与其他章节 Boss 的相邻关数据对比。当前暂无足够证据执行调整。
 
+## Task 8 最终门禁与 macOS 视觉复验
+
+以收口前 `HEAD=ea45ff27125771a7d2162d4153613280456fbfe2` 为验证对象（2026-07-13 CST）：
+
+- `dart format --output=none --set-exit-if-changed lib test`：1118 文件，0 changed。
+- `flutter analyze --no-pub`：`No issues found!`。
+- 计划十文件定向集：JSON reporter 非隐藏测试 `43 success`，0 failure/error。
+- `flutter test --no-pub --reporter json`：非隐藏测试 `3933 success`，0 failure/error；另有 1144 条 hidden load event，未计入 pass。
+- `flutter build macos --debug`：成功产出 `build/macos/Build/Products/Debug/wuxia_idle.app`。告警仅来自 `audioplayers_darwin 6.4.0` 的 Swift actor isolation（`WrappedMediaPlayer.swift:205,211`）与 Xcode `Flutter Assemble` 无 output dependency，未当作构建失败。
+- `git diff --check`：无输出。
+
+既有 visual route 不能精确表达“学徒起点”“心魔锁定溢出”“同一战后同时出现经验/Lv/突破反馈”“合法终境 7/7”四个语义状态，因此验收时用一次性、未提交的 debug harness 复用生产 `CharacterPanelScreen`、`StageVictoryContent`、真实 `GameRepository` 与临时 Isar 构造合法横截面。战后案例的 `AdvancementEntry` 形状与既有 advancement summary 测试一致。harness 在收口前已删除，未改 `lib/`、`data/`、包配置或存档。截图按项目约定保存在 Git 忽略的 `build/visual_acceptance/`：
+
+| 画面 | 逻辑视口 | PNG 尺寸 | 路径 | SHA-256 | 结果 |
+|---|---:|---:|---|---|---|
+| 前期角色档案 | 1280×720 | 2560×1440 | `build/visual_acceptance/progression_attribute_task8_ea45ff27/progression_early/1280x720/progression_early.png` | `785c4b14b392b100e6e05fc97bc809a21c4b0611285ce99eeaa6d4ffb13c5590` | PASS |
+| 前期角色档案 | 1440×900 | 2880×1800 | `build/visual_acceptance/progression_attribute_task8_ea45ff27/progression_early/1440x900/progression_early.png` | `b2e77912847374981c2a1d711c536c3f227d344e44969d62d5d7341523242fc9` | PASS |
+| 心魔锁定与经验溢出 | 1280×720 | 2560×1440 | `build/visual_acceptance/progression_attribute_task8_ea45ff27/progression_overflow/1280x720/progression_overflow.png` | `e6e3ac2eec5df84fc3b92a6a75976a7c0ca3b997a8db4bfecfdee03100645183` | PASS |
+| 心魔锁定与经验溢出 | 1440×900 | 2880×1800 | `build/visual_acceptance/progression_attribute_task8_ea45ff27/progression_overflow/1440x900/progression_overflow.png` | `e74ec5e3385a368e20ec92818be83270d0dc744e1e63dcf6bad66c99015d9345` | PASS |
+| 战后经验/Lv/突破反馈 | 1280×720 | 2560×1440 | `build/visual_acceptance/progression_attribute_task8_ea45ff27/progression_postbattle/1280x720/progression_postbattle.png` | `4ac1fa1b00ffe1b52ee12fb017a01c29b9fe29c3fc7e0068ab0cb36f4c87a092` | PASS |
+| 战后经验/Lv/突破反馈 | 1440×900 | 2880×1800 | `build/visual_acceptance/progression_attribute_task8_ea45ff27/progression_postbattle/1440x900/progression_postbattle.png` | `7ba5e5ee99e1493068f0449e4936e0444f53a57f2204666a2c0f9a3fa7bba920` | PASS |
+| Lv490 终境角色档案 | 1280×720 | 2560×1440 | `build/visual_acceptance/progression_attribute_task8_ea45ff27/progression_terminal/1280x720/progression_terminal.png` | `ed871e1923e8b16feb04cc3e72b02d58945212008c45a7d6a25e686d508729fa` | PASS |
+| Lv490 终境角色档案 | 1440×900 | 2880×1800 | `build/visual_acceptance/progression_attribute_task8_ea45ff27/progression_terminal/1440x900/progression_terminal.png` | `8843bdc2a8aaf4240f1f8216d218e5d1fbdc3c66be8de94a71d6f2fca502f665` | PASS |
+
+逐张原尺寸目检结论：无 RenderFlex/exception/裁切/遮挡；前期为学徒·启蒙、Lv1、0/50；溢出态为武圣·化境、Lv480、1200000/1040000、5/7，明确显示“经验已满·待破心魔”和“心魔·空”；战后同时覆盖纯经验、纯 Lv 变化、真实升境 + Lv 变化三种反馈；终境为武圣·登峰、Lv490、1250000/1250000、修为巅峰、7/7，无虚假下一层进度。首轮 overflow 1280 窗口位于负坐标副屏且部分越界，其黑块截图已判废；用 Computer Use 读取 AX 树确认语义状态后，将真实窗口移至主屏并按 CGWindowID 重抓，上表 SHA 对应的是已通过哈希唯一副本原图复核的有效文件。
+
+Task 8 未新增 P0/P1；问题分级与第一批零生产修改结论不变，仅保留上述 P2-1/P2-2 候选。
+
 ## 已知覆盖限制
 
 - Task 3 的 AST 契约是语法级守卫，不做完整 scope/type resolution；当前对指定生产路径的 `.level` / `.levelExp` 成员访问采用零容忍，未来若同路径合法访问其他对象同名成员，仍需显式审查契约。
