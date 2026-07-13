@@ -1964,7 +1964,6 @@ class _MaterialGridTile extends ConsumerWidget {
         innerDemonDef: innerDemonDef,
         clearedStageIds: clearedSet,
       ),
-      levelConfig: GameRepository.instance.numbers.level,
     );
 
     invalidateAfterItemUse(

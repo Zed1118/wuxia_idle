@@ -96,7 +96,7 @@ void main() {
   }
 
   test('经验丹：大还丹(fraction=1.0) 升满一层 + 消费 1', () async {
-    // founder.experienceToNextLayer = 100；gain = round(100 × 1.0) = 100 → 恰好升1层。
+    // 配置 xueTu.qiMeng 阈值 50；gain = round(50 × 1.0) = 50 → 恰好升1层。
     await seedFounder();
     await seedItem('item_jingyandan_large', ItemType.jingYanDan, 2);
     final def = repo.itemDefs['item_jingyandan_large']!; // layerFraction = 1.0
@@ -108,13 +108,13 @@ void main() {
     );
 
     expect(r.kind, ItemUseKind.experienceApplied);
-    expect(r.layersGained, 1); // 100 经验恰好升 1 层
+    expect(r.layersGained, 1);
     final item = await isar.inventoryItems.getByDefId('item_jingyandan_large');
     expect(item?.quantity, 1); // 消费 1
   });
 
   test('经验丹：isLayerLocked 拦截 → 入账不升层（缩放后实际入账值）', () async {
-    // founder.experienceToNextLayer = 100；大还丹 fraction=1.0；gain = round(100×1.0) = 100。
+    // 存档阈值是 100，但配置阈值是 50；gain = round(50 × 1.0) = 50。
     await seedFounder();
     await seedItem('item_jingyandan_large', ItemType.jingYanDan, 1);
     final def = repo.itemDefs['item_jingyandan_large']!;
@@ -132,13 +132,11 @@ void main() {
         .filter()
         .isFounderEqualTo(true)
         .findFirst();
-    // 缩放入账：round(100 × 1.0) = 100（而非旧固定值 1800）。
-    expect(founder?.experience, 100);
+    expect(founder?.experience, 50);
   });
 
-  test('经验丹缩放：培元丹(fraction=0.5) 入账 = round(nextLayer × 0.5)', () async {
-    // 验证缩放生效：gain = round(100 × 0.5) = 50，低于100所需不升层。
-    await seedFounder(); // experienceToNextLayer = 100
+  test('经验丹缩放：培元丹按境界定义阈值乘 fraction', () async {
+    await seedFounder();
     await seedItem('item_jingyandan_mid', ItemType.jingYanDan, 1);
     final def = repo.itemDefs['item_jingyandan_mid']!; // layerFraction = 0.5
 
@@ -149,17 +147,15 @@ void main() {
     );
 
     expect(r.kind, ItemUseKind.experienceApplied);
-    expect(r.layersGained, 0); // 50 < 100，不升层
+    expect(r.layersGained, 0);
     final founder = await isar.characters
         .filter()
         .isFounderEqualTo(true)
         .findFirst();
-    expect(founder?.experience, 50); // round(100 × 0.5) = 50
+    expect(founder?.experience, 25);
   });
 
-  test('经验丹缩放对比：高 experienceToNextLayer 获得更多 experience', () async {
-    // 验证高境界 founder 用同一档丹获得更多绝对经验量（缩放生效）。
-    // setup：高 nextLayer=400 的 founder。
+  test('经验丹缩放读取境界定义，不信任旧存档阈值', () async {
     await isar.writeTxn(() async {
       await isar.characters.put(
         Character.create(
@@ -172,7 +168,7 @@ void main() {
           createdAt: DateTime(2026, 1, 1),
           isFounder: true,
           experience: 0,
-          experienceToNextLayer: 400, // 高于 seedFounder 的 100
+          experienceToNextLayer: 400,
           internalForceMax: 800,
         ),
       );
@@ -186,8 +182,43 @@ void main() {
         .filter()
         .isFounderEqualTo(true)
         .findFirst();
-    // gain = round(400 × 0.5) = 200 > 培元丹对低境界(50)的增益。
-    expect(founder?.experience, 200);
+    expect(founder?.experience, 25);
+  });
+
+  test('旧终境存档阈值为零时，经验丹仍入账且不改旧等级字段', () async {
+    late int founderId;
+    await isar.writeTxn(() async {
+      final founder =
+          Character.create(
+              name: '终境主角',
+              realmTier: RealmTier.wuSheng,
+              realmLayer: RealmLayer.dengFeng,
+              attributes: Attributes(),
+              rarity: RarityTier.values.first,
+              lineageRole: LineageRole.founder,
+              createdAt: DateTime(2026, 1, 1),
+              isFounder: true,
+              experience: 0,
+              experienceToNextLayer: 0,
+              internalForceMax: 15000,
+            )
+            ..level = 77
+            ..levelExp = 4321;
+      founderId = await isar.characters.put(founder);
+    });
+    await seedItem('item_jingyandan_mid', ItemType.jingYanDan, 1);
+
+    final result = await ItemUseService.use(
+      isar,
+      def: repo.itemDefs['item_jingyandan_mid']!,
+      realmLookup: repo.getRealm,
+    );
+
+    final founder = await isar.characters.get(founderId);
+    expect(result.kind, ItemUseKind.experienceApplied);
+    expect(founder!.experience, greaterThan(0));
+    expect(founder.level, 77);
+    expect(founder.levelExp, 4321);
   });
 
   test('秘籍：解锁招 + 消费 1', () async {

@@ -20,4 +20,23 @@ void main() {
       }
     },
   );
+
+  test(
+    'retreat, offline, and item use do not write the legacy level account',
+    () async {
+      for (final path in [
+        'lib/features/seclusion/application/seclusion_service.dart',
+        'lib/features/seclusion/application/offline_passive_service.dart',
+        'lib/features/inventory/application/item_use_service.dart',
+      ]) {
+        final source = await File(path).readAsString();
+        expect(
+          source,
+          isNot(contains('LevelService.applyLevelExp')),
+          reason: path,
+        );
+        expect(source, isNot(contains('LevelConfig')), reason: path);
+      }
+    },
+  );
 }
