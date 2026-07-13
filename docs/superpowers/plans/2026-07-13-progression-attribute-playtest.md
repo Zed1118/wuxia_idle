@@ -29,8 +29,11 @@
 - Task 5 基线与等价回归：基线绑定 `HEAD=6c9bd2e272dc0bfc43775796c6f70254e4988798`，旧诊断 1 test PASS，30 mainline × 2 profile × 20 seed = 1200 个真实 battle runs。抽取前后完整汇总数值逐项一致：平均展示动作行/估算秒数 `5.6/15.3`；玩家普攻/技能伤害 `60.1%/39.9%`；普攻/技能击杀 `21.6%/78.4%`；Boss 转阶段/蓄力可见/破招平均行 `0.5/0.7/0.4`；47 个低于动作目标候选集合逐项一致；配了阶段但可见机制不足候选均为“无”。`stage_06_05` undergeared（旧 floor）前后均为：win `100.0%`、avg actions/est sec `8.9/20.8`、player/enemy atk `5.9/0.8`、phase/charge/break `1.0/1.1/1.0`、normal/skill damage `40.4%/59.6%`、normal/skill kills `0.0%/100.0%`、HP end `95.7%`、IF spent `-4.0%`。唯一预期文本差异是 profile 标签 `floor→undergeared`、`ceiling→nearMax`。共享 probe TDD 红灯为缺少文件与公开 API；绿灯 3 tests PASS，证明三 profile 合法且派生战力单调、同参确定性、observation 逐字段来自独立真实 battle。联合运行共享 probe 与旧诊断共 4 tests PASS，`flutter analyze --no-pub` 为 `No issues found`，format 0 changed，`git diff --check` 通过。实现提交为本任务的 `test: share progression battle probes`；未修改 `lib/` / `data/` / `numbers.yaml`。
 - Task 5 质量复核修复：profile 精确定义为 undergeared=`enhanceRatio 0.0 / battleCount 0 / zhongCheng / constitution+agility 5 / founder buff false / 属性总和20 biaoZhun`，standard=`0.25 / 150 / zhongCheng / 5 / false / 总和20 biaoZhun`，nearMax=`0.5 / 400 / daCheng / 6 / true / 总和22 ziYou`；三者 enlightenment/fortune 均为 5，nearMax 只是接近满配而非全满。新增 immutable `ProgressionPlayerBuild` 与 `ProgressionBattleRun`；唯一 `runProgressionMainlineStage` 统一 3 人 build、首通调节、敌队、初态、`Random(seed)`、strategy 与 `progressionBattleMaxTicks=240`，到达上限且 draw 时抛含 stage/profile/seed/maxTicks 的 `StateError`；probe 只投影 run，旧诊断只把同一 run 喂给 `_TempoRun.fromBattle`。合法中间对象现在同步 owner、3 个领域默认空开锋槽、真实 `experienceToNextLayer` 与属性对应 rarity。代表 def 继续按 repository/yaml 插入顺序取每阶每槽首项，保持旧数值；装备 ID：xunChang=`weapon_xunchang_tie_jian/armor_xunchang_bu_yi/accessory_xunchang_yu_pei`，xiangYang=`weapon_xiangyang_gang_dao/armor_xiangyang_pi_jia/accessory_xiangyang_yin_jie`，haoJiaHuo=`weapon_haojiahuo_qing_feng_jian/armor_haojiahuo_jin_pao/accessory_haojiahuo_yu_pei_lao`，liQi=`weapon_liqi_long_quan/armor_liqi_xuan_tie_jia/accessory_liqi_fei_yu_pei`，zhongQi=`weapon_zhongqi_po_zhen_chui/armor_zhongqi_yin_lin_jia/accessory_zhongqi_qing_yu_huan`，baoWu=`weapon_baowu_xuan_tian_fu/armor_baowu_jin_si_jia/accessory_baowu_yu_long_pei`，shenWu=`weapon_shenwu_po_jun_dao/armor_shenwu_xuan_huang_pao/accessory_shenwu_kun_lun_pei`；刚猛心法 ID 依次为 `tech_gangmeng_jichu/tech_gangmeng_changlian/tech_gangmeng_mingjia/tech_gangmeng_menpai/tech_gangmeng_jianghu/tech_gangmeng_shichuan/tech_gangmeng_chuanshuo`。`schoolBias` 核实结论：`EquipmentFactory.fromDef` 把 bias 作为常规生成默认 school，但领域构造/API 无“实例 school 必须等于 def bias”的硬校验，schema 只守每阶流派武器覆盖与 founder 起手武器匹配，战斗派生数值完全不读 equipment.school/bias，UI 还显式支持 `equipment.school ?? def.schoolBias`；因此本测试夹具保留原 gangMeng 实例 school 以维持旧诊断，不把 bias 误升为硬约束。TDD 红灯为新 build/run API 缺失；probe 5 tests 与旧诊断联合共 6 tests PASS，覆盖全部 7 RealmTier × 3 team slots × 3 profiles、装备/心法 cap、owner/id/三开锋槽/镜像/rarity、投入单调、maxTicks、确定性与投影。1200 场 60 行及汇总继续与 Task 5 基线逐项一致；`flutter analyze --no-pub` 为 `No issues found`，format 0 changed，`git diff --check` 通过。修复提交 `14d3b93894978a79722796b8ff00135563e81a15` 独立于 `622f8f98`，未 amend；未修改 `lib/` / `data/` / `numbers.yaml`。
 - Task 5 最终 tick-cap 边界分类：经 `BattleCharacter.isAlive` 与 `DefaultGroundStrategy` 真实结束链核实，规则平局为双方全灭，`runToEnd` 另在到达 tick 上限且战斗未结束时写入兜底 draw，`surviveTicks` 则直接写 `leftWin`。测试层公开纯分类器 `isUnfinishedAtTickCap` 仅在 `tick >= maxTicks && result == draw && 左右各有存活角色` 时拒绝，因此双方全灭恰逢边界的规则 draw 正常返回。TDD 红灯为缺少 `isUnfinishedAtTickCap`；绿灯 probe 6 tests PASS，既证明“双方存活 + `maxTicks=1`”仍抛错，又证明“双方全灭 + `tick == maxTicks` + draw”分类为正常终局；与旧诊断联合共 7 tests PASS。1200 场 60 行与汇总继续逐项等价：平均动作/秒 `5.6/15.3`，普攻/技能伤害 `60.1%/39.9%`，普攻/技能击杀 `21.6%/78.4%`，Boss 转阶段/蓄力/破招 `0.5/0.7/0.4`，47 个低动作候选不变，机制不足候选为“无”。format 0 changed，`flutter analyze --no-pub` 为 `No issues found`，`git diff --check` 通过。实现提交 `277d72f42d5bc74e1db5045fc392065ea53f8609` 独立提交、未 amend；未修改 `lib/` / `data/` / `numbers.yaml`。
+- Task 6 原始 evidence 已完成：`test: record progression and attribute playtest evidence` = `654c317acfca28b2cff492b52f226c299c648c86`，data tree = `c0c557d1f57dfa97e81ef386eb63bd33042f09e2`。同一 commit 上主线 30×3×20=1800 observations 复跑 1 test PASS、6.58 秒，CSV 1801 行、header 精确、三 profile 各 600、30 stages、seed 0～19、组合零重复、零 tick cap、无中文/空行/NaN，重跑后 CSV 无 diff。profile 汇总：undergeared 600/600 胜、ticks/action/HP/Qi delta=`9.71/6.34/93.90%/+33.33`；standard=`8.61/5.94/94.73%/+38.23`；nearMax=`6.86/4.85/97.14%/+50.60`。
+- Task 6 专项 evidence 同样绑定 `654c317acfca28b2cff492b52f226c299c648c86`：计划六文件联合 33/33 tests PASS、18.15 秒；为报告覆盖边界额外重跑 `combat_progression_settlement_service_test.dart` 4/4 PASS。心魔 05/06 BiS 均 17/20，07 BiS 13/20；塔 24/25/29/30 与四属性全部原始值已写入 `docs/audit/progression_attribute_playtest_2026-07-13.md`。P0/P1 均无，P2 仅保留 readable-first-clear 首通样本胜负区分不足与 `stage_02_05` 多配置/多 seed 相邻断崖两个候选，本批零生产代码修改。
+- Task 6 报告与计划将在本次 docs commit 首次入库；精确 report commit 由紧随其后的恢复点提交记录，避免报告冒充 evidence commit 或自引用未提交 hash。
 - 设计规格：`docs/superpowers/specs/2026-07-13-progression-attribute-playtest-design.md`。
-- 下一步：执行 Task 6，生成统一成长路径 CSV 与诊断报告。
+- 下一步：执行 Task 7，按报告 P0/P1=无关闭生产修改门禁。
 - 强制边界：本计划不改 `numbers.yaml`、schema、save version、属性倍率或发布流程。
 
 ---
@@ -1156,7 +1159,7 @@ git commit -m "test: share progression battle probes"
 - Create: `docs/audit/progression_attribute_playtest_2026-07-13.md`
 - Use: `test/support/progression_battle_probe.dart`
 
-- [ ] **Step 1: 写受控规模成长诊断**
+- [x] **Step 1: 写受控规模成长诊断**
 
 Create `test/tools/progression_playtest_diagnostic_test.dart`:
 
@@ -1238,7 +1241,7 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: 运行诊断并核对 CSV**
+- [x] **Step 2: 运行诊断并核对 CSV**
 
 Run:
 
@@ -1250,7 +1253,7 @@ head -n 2 test/tools/output/progression_attribute_playtest_2026-07-13.csv
 
 Expected: test PASS；CSV 为 1801 行（表头 + 1800 个场景）。
 
-- [ ] **Step 3: 运行心魔、塔和经验专项形成同 commit 证据**
+- [x] **Step 3: 运行心魔、塔和经验专项形成同 commit 证据**
 
 Run:
 
@@ -1268,7 +1271,7 @@ flutter test --no-pub \
 
 Expected: all PASS。记录当前心魔 05/06/07、塔 25/30、Lv490 和属性诊断的真实输出。
 
-- [ ] **Step 4: 写审计报告**
+- [x] **Step 4: 写审计报告**
 
 Create `docs/audit/progression_attribute_playtest_2026-07-13.md`，内容必须按以下固定顺序填写本轮真实值，不引用旧 `PROGRESS.md` 数字：
 
@@ -1310,7 +1313,7 @@ Create `docs/audit/progression_attribute_playtest_2026-07-13.md`，内容必须�
 - 第二批候选：逐项说明为什么可能调整、不调整会怎样
 ```
 
-- [ ] **Step 5: 校验报告引用与 CSV 卫生**
+- [x] **Step 5: 校验报告引用与 CSV 卫生**
 
 Run:
 
@@ -1323,16 +1326,11 @@ rg -n "T[B]D|T[O]DO|待[补]|旧[报]告" \
 
 Expected: `git diff --check` 无输出，`rg` 无命中。
 
-- [ ] **Step 6: 提交诊断证据**
+- [x] **Step 6: 分离提交原始诊断证据与报告恢复点**
 
-```bash
-git add \
-  test/tools/progression_playtest_diagnostic_test.dart \
-  test/tools/output/progression_attribute_playtest_2026-07-13.csv \
-  docs/audit/progression_attribute_playtest_2026-07-13.md \
-  docs/superpowers/plans/2026-07-13-progression-attribute-playtest.md
-git commit -m "test: record progression and attribute playtest evidence"
-```
+原始 test + CSV 先以 `654c317acfca28b2cff492b52f226c299c648c86`
+提交；随后在该 commit 重跑全部证据。报告与计划独立进入 docs commit，确保报告
+明确绑定已提交 evidence，而不引用同一提交中的未提交状态。
 
 ---
 
