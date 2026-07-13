@@ -22,17 +22,29 @@ void main() {
           await File(path).readAsString(),
           path: path,
         );
+        expect(contract.memberAccessCount('level'), 0, reason: path);
         expect(contract.memberAccessCount('levelExp'), 0, reason: path);
         expect(contract.identifierCount('LevelService'), 0, reason: path);
         expect(contract.identifierCount('LevelConfig'), 0, reason: path);
-        expect(
-          contract.memberAccessCount('level', receiverSource: 'numbers'),
-          0,
-          reason: path,
-        );
       }
     },
   );
+
+  test('AST guard catches legacy level reads, writes, and chained access', () {
+    final contract = DartSourceContract.parse('''
+void probe(dynamic character, dynamic repository) {
+  final snapshot = character.level;
+  character.level = 1;
+  character.level += 2;
+  character.level++;
+  final repositoryLevel = repository.numbers.level;
+  final localLevel = this.numbers.level;
+  final singletonLevel = GameRepository.instance.numbers.level;
+}
+''');
+
+    expect(contract.memberAccessCount('level'), 7);
+  });
 
   test('AST guard catches legacy levelExp reads and every write form', () {
     final contract = DartSourceContract.parse('''
@@ -50,12 +62,16 @@ void probe(dynamic character) {
   test('AST guard ignores legacy-looking comments and string literals', () {
     final contract = DartSourceContract.parse(r'''
 void probe() {
+  // character.level += 1;
   // character.levelExp += 1;
+  const fakeLevelRead = 'character.level';
+  const fakeLevelWrite = 'character.level++';
   const fakeRead = 'character.levelExp';
   const fakeWrite = 'character.levelExp++';
 }
 ''');
 
+    expect(contract.memberAccessCount('level'), 0);
     expect(contract.memberAccessCount('levelExp'), 0);
   });
 }
