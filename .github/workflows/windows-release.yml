@@ -19,7 +19,11 @@ env:
 
 jobs:
   windows-release:
-    runs-on: windows-latest
+    # 钉 windows-2022(VS2022):windows-latest 已滚动到 Windows Server 2025 + VS2026,
+    # 其 MSVC STL 将 <experimental/coroutine> 定为 STL1011 硬错,audioplayers_windows 6.x
+    # 编译失败(2026-07-13 run 29227340821)。解除条件 = audioplayers 升级到支持 VS2026
+    # 的版本(backlog §八 有升级项)。
+    runs-on: windows-2022
     timeout-minutes: 45
     steps:
       - name: Checkout
