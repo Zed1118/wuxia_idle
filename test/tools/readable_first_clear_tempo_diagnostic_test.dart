@@ -12,14 +12,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+
 import '../support/progression_battle_probe.dart';
 import '../support/test_data.dart';
 
 const _seedsPerStage = 20;
-const _maxTicks = 240;
 const _readableVictoryHandoffSeconds = 1.2;
 const _reportDate = '2026-07-09';
 const _outputDir = 'test/tools/output';
@@ -157,33 +155,18 @@ _TempoRun _simulate(
   ProgressionBuildProfile profile,
   int seed,
 ) {
-  final players = [
-    for (var slot = 0; slot < 3; slot++)
-      buildProgressionPlayer(
-        repository: repo,
-        tier: stage.requiredRealm,
-        slot: slot,
-        isFounder: slot == 0,
-        profile: profile,
-      ),
-  ].map(StageBattleSetup.debugApplyReadableFirstClearTuning).toList();
-  final enemies = StageBattleSetup.buildEnemyTeam(
-    stage.enemyTeam,
-    readableFirstClearTuning: true,
-  );
-  final initial = BattleState.initial(leftTeam: players, rightTeam: enemies);
-  final terminal = defaultGroundStrategy.runToEnd(
-    initial,
-    repo.numbers,
-    maxTicks: _maxTicks,
-    rng: Random(seed),
+  final run = runProgressionMainlineStage(
+    repository: repo,
+    stage: stage,
+    profile: profile,
+    seed: seed,
   );
   return _TempoRun.fromBattle(
     stage: stage,
     profile: profile,
     seed: seed,
-    initial: initial,
-    terminal: terminal,
+    initial: run.initial,
+    terminal: run.terminal,
   );
 }
 

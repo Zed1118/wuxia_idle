@@ -4,7 +4,6 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
-import 'package:wuxia_idle/core/domain/forging_slot.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
@@ -16,6 +15,29 @@ import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 
 enum ProgressionBuildProfile { undergeared, standard, nearMax }
+
+const progressionBattleMaxTicks = 240;
+
+final class ProgressionPlayerBuild {
+  ProgressionPlayerBuild({
+    required this.character,
+    required List<Equipment> equipped,
+    required this.mainTechnique,
+    required this.battleCharacter,
+  }) : equipped = List.unmodifiable(equipped);
+
+  final Character character;
+  final List<Equipment> equipped;
+  final Technique mainTechnique;
+  final BattleCharacter battleCharacter;
+}
+
+final class ProgressionBattleRun {
+  const ProgressionBattleRun({required this.initial, required this.terminal});
+
+  final BattleState initial;
+  final BattleState terminal;
+}
 
 final class ProgressionBattleObservation {
   const ProgressionBattleObservation({
@@ -49,6 +71,37 @@ ProgressionBattleObservation probeMainlineStage({
   required ProgressionBuildProfile profile,
   required int seed,
 }) {
+  final run = runProgressionMainlineStage(
+    repository: repository,
+    stage: stage,
+    profile: profile,
+    seed: seed,
+  );
+  int sumHp(List<BattleCharacter> team) =>
+      team.fold(0, (sum, character) => sum + character.currentHp);
+  int sumQi(List<BattleCharacter> team) =>
+      team.fold(0, (sum, character) => sum + character.currentQi);
+  return ProgressionBattleObservation(
+    stageId: stage.id,
+    profile: profile,
+    seed: seed,
+    result: run.terminal.result!,
+    ticks: run.terminal.tick,
+    playerHpStart: sumHp(run.initial.leftTeam),
+    playerHpEnd: sumHp(run.terminal.leftTeam),
+    playerQiStart: sumQi(run.initial.leftTeam),
+    playerQiEnd: sumQi(run.terminal.leftTeam),
+    actionRows: run.terminal.actionLog.length,
+  );
+}
+
+ProgressionBattleRun runProgressionMainlineStage({
+  required GameRepository repository,
+  required StageDef stage,
+  required ProgressionBuildProfile profile,
+  required int seed,
+  int maxTicks = progressionBattleMaxTicks,
+}) {
   final players = [
     for (var slot = 0; slot < 3; slot++)
       buildProgressionPlayer(
@@ -67,35 +120,33 @@ ProgressionBattleObservation probeMainlineStage({
   final terminal = defaultGroundStrategy.runToEnd(
     initial,
     repository.numbers,
-    maxTicks: 240,
+    maxTicks: maxTicks,
     rng: Random(seed),
   );
-  final result = terminal.result;
-  if (result == null) {
+  if (terminal.tick >= maxTicks && terminal.result == BattleResult.draw) {
     throw StateError(
-      'progression_probe: ${stage.id}/${profile.name}/seed=$seed '
-      '未在 240 ticks 内结束',
+      'progression_probe: stage=${stage.id} profile=${profile.name} '
+      'seed=$seed reached maxTicks=$maxTicks with draw',
     );
   }
-  int sumHp(List<BattleCharacter> team) =>
-      team.fold(0, (sum, character) => sum + character.currentHp);
-  int sumQi(List<BattleCharacter> team) =>
-      team.fold(0, (sum, character) => sum + character.currentQi);
-  return ProgressionBattleObservation(
-    stageId: stage.id,
-    profile: profile,
-    seed: seed,
-    result: result,
-    ticks: terminal.tick,
-    playerHpStart: sumHp(initial.leftTeam),
-    playerHpEnd: sumHp(terminal.leftTeam),
-    playerQiStart: sumQi(initial.leftTeam),
-    playerQiEnd: sumQi(terminal.leftTeam),
-    actionRows: terminal.actionLog.length,
-  );
+  return ProgressionBattleRun(initial: initial, terminal: terminal);
 }
 
 BattleCharacter buildProgressionPlayer({
+  required GameRepository repository,
+  required RealmTier tier,
+  required int slot,
+  required bool isFounder,
+  required ProgressionBuildProfile profile,
+}) => buildProgressionPlayerBuild(
+  repository: repository,
+  tier: tier,
+  slot: slot,
+  isFounder: isFounder,
+  profile: profile,
+).battleCharacter;
+
+ProgressionPlayerBuild buildProgressionPlayerBuild({
   required GameRepository repository,
   required RealmTier tier,
   required int slot,
@@ -135,6 +186,7 @@ BattleCharacter buildProgressionPlayer({
     ),
   };
   final enhanceLevel = (realm.absoluteLevel * enhanceRatio).round();
+  final ownerId = 7000 + slot;
 
   final equipmentTier = RealmUtils.equipmentTierCapOf(tier);
   final equipped = <Equipment>[];
@@ -143,6 +195,7 @@ BattleCharacter buildProgressionPlayer({
     EquipmentSlot.armor,
     EquipmentSlot.accessory,
   ]) {
+    // 保留旧诊断的代表样本：按 repository/yaml 插入顺序取首个同阶同槽 def。
     final EquipmentDef def = repository.equipmentDefs.values.firstWhere(
       (value) => value.tier == equipmentTier && value.slot == slotType,
       orElse: () => throw StateError(
@@ -161,20 +214,20 @@ BattleCharacter buildProgressionPlayer({
         baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,
         baseSpeed: (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
         enhanceLevel: enhanceLevel,
+        ownerCharacterId: ownerId,
         battleCount: battleCount,
-        forgingSlots: const <ForgingSlot>[],
       ),
     );
   }
 
   final techniqueTier = RealmUtils.techniqueTierCapOf(tier);
+  // 同上，保留旧诊断按 repository/yaml 插入顺序选择的首本刚猛心法。
   final TechniqueDef techniqueDef = repository.techniqueDefs.values.firstWhere(
     (value) => value.tier == techniqueTier && value.school == school,
     orElse: () => throw StateError(
       'progression_probe: 无 ${techniqueTier.name}/${school.name} 心法',
     ),
   );
-  final ownerId = 7000 + slot;
   final mainTechnique = Technique.create(
     defId: techniqueDef.id,
     ownerCharacterId: ownerId,
@@ -194,16 +247,19 @@ BattleCharacter buildProgressionPlayer({
     realmTier: tier,
     realmLayer: RealmLayer.huaJing,
     attributes: attributes,
-    rarity: RarityTier.biaoZhun,
+    rarity: profile == ProgressionBuildProfile.nearMax
+        ? RarityTier.ziYou
+        : RarityTier.biaoZhun,
     lineageRole: isFounder ? LineageRole.founder : LineageRole.disciple,
     createdAt: DateTime.utc(2026, 7, 13),
     internalForce: realm.internalForceMax,
     internalForceMax: realm.internalForceMax,
+    experienceToNextLayer: realm.experienceToNext,
     school: school,
     isFounder: isFounder,
     isActive: true,
   )..id = ownerId;
-  return BattleCharacter.fromCharacter(
+  final battleCharacter = BattleCharacter.fromCharacter(
     character: character,
     equipped: equipped,
     mainTechnique: mainTechnique,
@@ -211,5 +267,11 @@ BattleCharacter buildProgressionPlayer({
     teamSide: 0,
     slotIndex: slot,
     founderBuffActive: buff,
+  );
+  return ProgressionPlayerBuild(
+    character: character,
+    equipped: equipped,
+    mainTechnique: mainTechnique,
+    battleCharacter: battleCharacter,
   );
 }
