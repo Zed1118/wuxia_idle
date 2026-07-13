@@ -12,7 +12,7 @@
 
 ## 当前恢复点
 
-- 状态：Task 6 已完成；统一成长路径 CSV、诊断报告与 commit 绑定证据均已入库，下一步执行 Task 7 P0/P1 证据门禁。
+- 状态：Task 7 已完成；P0/P1 证据门禁关闭生产修改路径，下一步执行 Task 8 全量门禁、macOS 复验与收尾。
 - 实现分支：`codex/progression-attribute-playtest-implementation`。
 - 无修改基线 commit：`0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
 - 基线验证：重新生成 Git 忽略的 `g.dart` 后，`flutter analyze --no-pub` 为 `No issues found`；计划指定基线共 41 tests PASS；固定种子心魔观察值为 05=`17/20`、06=`17/20`、07=`13/20`；塔诊断 PASS。以上观察值均绑定 commit `0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
@@ -35,8 +35,8 @@
 - READY 状态纠正：本普通纠正提交使分支 tip 不再带 `[READY]`，从而撤销 `17a74f3bccbd6ae54d0a40a5466b389b83dff70d` 的过早 ready 含义；最终 `[READY]` 只允许在 Task 8 全量门禁、macOS 复验与收尾全部完成后使用。
 - Task 6 CSV 副作用质量修复：默认诊断 1/1 PASS，运行前后 committed CSV SHA-256 均为 `dc2308ffd225a1457cbcdb5982d9ee79e6f6bca6cdcf22f8bec4cc11db912316`、mtime 均为 `1783943700`，且 `git diff` 无输出；显式 `UPDATE_PROGRESSION_PLAYTEST_EVIDENCE=1` 诊断亦 1/1 PASS，打印 `updated evidence`，原子更新后的 SHA-256 仍相同且 CSV byte-identical、无 diff。报告修订只改显示精度与覆盖边界，原始 CSV/evidence commit 不变；专项未重跑。
 - 设计规格：`docs/superpowers/specs/2026-07-13-progression-attribute-playtest-design.md`。
-- Task 7 恢复点：先以无更新变量的默认模式运行主线诊断（只能临时验证，不得修改 tracked CSV），核对报告“问题分级”的 P0/P1 均为无，再运行计划 Task 7 Step 2A 的 `lib/**` / `data/**` diff；预期零输出并关闭生产修改门禁。不要把两个 P2 候选升级为硬失败，也不要在普通门禁中设置 evidence 更新变量。
-- 下一步：执行 Task 7，按报告 P0/P1=无关闭生产修改门禁。
+- Task 7 证据门禁：merge-base 为 `f81b8ce220917a57a5da1de61a49eedd36c9803a`。已运行计划 Step 1 的问题分级与全分支文件清单命令；报告实际 P0/P1 行均为“无”，第一批处置已明确“零生产代码修改”，无需修改报告。默认主线诊断 1/1 PASS，1800 场复现值与报告一致，tracked CSV 的 SHA-256 `dc2308ffd225a1457cbcdb5982d9ee79e6f6bca6cdcf22f8bec4cc11db912316` 与 mtime 前后不变且无 diff；计划六文件专项 33/33 PASS，额外共享结算 4/4 PASS。`git diff --name-only $(git merge-base HEAD main)..HEAD -- 'lib/**' 'data/**'` 零输出；全分支另有 `pubspec.yaml` / `pubspec.lock` 非生产依赖变化，仅把 analyzer 9.0.0 显式列为 test AST helper 的 direct dev dependency，未升级版本，不能冒充全仓零变化。P2-1/P2-2 与单 seed/单 profile 观察未升级为 P1；Step 2B 不适用且未执行，未新增生产修复任务。
+- 下一步：执行 Task 8 全量门禁、macOS 复验与收尾；Task 8 完成前 tip 保持普通非 `[READY]`。
 - 强制边界：本计划不改 `numbers.yaml`、schema、save version、属性倍率或发布流程。
 
 ---
@@ -1273,7 +1273,7 @@ Expected: `git diff --check` 无输出，`rg` 无命中。
 - Inspect: `docs/audit/progression_attribute_playtest_2026-07-13.md`
 - Modify conditionally: this plan and the exact failing production/test files
 
-- [ ] **Step 1: 审核硬失败列表**
+- [x] **Step 1: 审核硬失败列表**
 
 Run:
 
@@ -1285,7 +1285,7 @@ git diff --name-only $(git merge-base HEAD main)..HEAD | sort
 
 Expected: 问题分级与实际失败测试一致，不能把 P2 或单 seed 观察升级成 P1。
 
-- [ ] **Step 2A: 无 P0/P1 时关闭生产修改门禁**
+- [x] **Step 2A: 无 P0/P1 时关闭生产修改门禁**
 
 If P0/P1 都为“无”，run:
 
@@ -1295,7 +1295,7 @@ git diff --name-only $(git merge-base HEAD main)..HEAD -- 'lib/**' 'data/**'
 
 Expected: 无输出。把报告“第一批处置”写为“零生产代码修改”，继续 Task 8。
 
-- [ ] **Step 2B: 存在 P0/P1 时暂停并具体化修复任务**
+- [x] **Step 2B: 存在 P0/P1 时暂停并具体化修复任务（不适用：P0/P1 均无，未执行）**
 
 If any hard contract fails:
 
@@ -1307,7 +1307,7 @@ If any hard contract fails:
 
 Expected: 未具体化修复任务前保持零生产修改；不允许用通用“修一下”步骤越过门禁。
 
-- [ ] **Step 3: 提交门禁结论**
+- [x] **Step 3: 提交门禁结论**
 
 若报告因门禁审核有文字修正：
 
