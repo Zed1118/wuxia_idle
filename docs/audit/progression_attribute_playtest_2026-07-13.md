@@ -162,7 +162,7 @@
 - `dart format --output=none --set-exit-if-changed lib test`：1118 文件，0 changed。
 - `flutter analyze --no-pub`：`No issues found!`。
 - 计划十文件定向集：JSON reporter 非隐藏测试 `43 success`，0 failure/error。
-- `flutter test --no-pub --reporter json`：非隐藏测试 `3933 success`，0 failure/error；另有 1144 条 hidden load event，未计入 pass。
+- `flutter test --no-pub --reporter json`：非隐藏测试 `3933 success`，0 failure/error；另有 1144 条 hidden testDone records（597 loading + 547 setUpAll/tearDownAll），未计入 pass。
 - `flutter build macos --debug`：成功产出 `build/macos/Build/Products/Debug/wuxia_idle.app`。告警仅来自 `audioplayers_darwin 6.4.0` 的 Swift actor isolation（`WrappedMediaPlayer.swift:205,211`）与 Xcode `Flutter Assemble` 无 output dependency，未当作构建失败。
 - `git diff --check`：无输出。
 
