@@ -17,7 +17,7 @@
 - 无修改基线 commit：`0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
 - 基线验证：重新生成 Git 忽略的 `g.dart` 后，`flutter analyze --no-pub` 为 `No issues found`；计划指定基线共 41 tests PASS；固定种子心魔观察值为 05=`17/20`、06=`17/20`、07=`13/20`；塔诊断 PASS。以上观察值均绑定 commit `0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
 - Task 1 TDD 红灯证据：`flutter test --no-pub test/support/progression_playtest_fixture_test.dart` 退出码 1，报告缺少 `progression_playtest_fixture.dart`，且 `ProgressionPlaytestFixture`、`GrowthStage` 未定义。
-- Task 1 绿灯：同一目标测试 3 tests PASS。
+- Task 1 质量加固绿灯：同一目标测试 4 tests PASS；`flutter analyze --no-pub` 仍为 `No issues found`；以上结果绑定 commit `29f48d42324a8db8822c050696ef6c3931541f96`。
 - 设计规格：`docs/superpowers/specs/2026-07-13-progression-attribute-playtest-design.md`。
 - 下一步：执行 Task 2，建立 49 层与 Lv490 全路径硬契约。
 - 强制边界：本计划不改 `numbers.yaml`、schema、save version、属性倍率或发布流程。
