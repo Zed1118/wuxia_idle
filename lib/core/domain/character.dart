@@ -40,6 +40,10 @@ class Character {
   double injuryHoursRemaining = 0;
 
   int experience = 0;
+
+  /// Legacy Isar compatibility mirror of RealmDef.experienceToNext.
+  /// Production decisions must derive the threshold from realmTier + realmLayer.
+  /// Keep synchronized after creation/advancement until a future schema cleanup.
   int experienceToNextLayer = 100;
 
   /// Legacy schema compatibility only (saveVer 0.31).

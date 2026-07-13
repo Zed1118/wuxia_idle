@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
@@ -113,6 +115,56 @@ void main() {
   });
 
   group('CharacterAdvancementService.applyExperience', () {
+    test('advancement loop never reads the compatibility mirror', () async {
+      final source = await File(
+        'lib/features/cultivation/application/character_advancement_service.dart',
+      ).readAsString();
+      expect(source, isNot(contains('if (ch.experienceToNextLayer')));
+      expect(
+        source,
+        isNot(contains('ch.experience -= ch.experienceToNextLayer')),
+      );
+    });
+
+    test('stored threshold mirror never drives advancement', () {
+      final ch = _mkChar(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.qiMeng,
+        experience: 40,
+        experienceToNextLayer: 999999,
+      );
+
+      final result = CharacterAdvancementService.applyExperience(
+        ch,
+        10,
+        realmLookup: _lookup,
+      );
+
+      expect(result.layersGained, 1);
+      expect(ch.realmLayer, RealmLayer.ruMen);
+      expect(
+        ch.experienceToNextLayer,
+        _lookup(RealmTier.xueTu, RealmLayer.ruMen).experienceToNext,
+      );
+    });
+
+    test('corrupt zero mirror does not stop advancement', () {
+      final ch = _mkChar(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.qiMeng,
+        experience: 49,
+        experienceToNextLayer: 0,
+      );
+
+      final result = CharacterAdvancementService.applyExperience(
+        ch,
+        1,
+        realmLookup: _lookup,
+      );
+
+      expect(result.layersGained, 1);
+    });
+
     test('delta=0 → no-op,didAdvance=false', () {
       final ch = _mkChar(experience: 100);
       final r = CharacterAdvancementService.applyExperience(

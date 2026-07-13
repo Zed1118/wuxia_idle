@@ -70,14 +70,14 @@ class CharacterAdvancementService {
       );
     }
 
-    // 以 RealmDef 刷新当前层门槛，兼容旧终局档保存的 0 哨兵值。
-    ch.experienceToNextLayer = beforeDef.experienceToNext;
+    var currentDef = beforeDef;
     ch.experience += delta;
     int layersGained = 0;
 
     while (true) {
-      if (ch.experienceToNextLayer <= 0) break; // 损坏配置安全网
-      if (ch.experience < ch.experienceToNextLayer) break;
+      final threshold = currentDef.experienceToNext;
+      if (threshold <= 0) break; // 损坏配置安全网
+      if (ch.experience < threshold) break;
 
       final next = nextLayer(ch.realmTier, ch.realmLayer);
       if (next == null) break; // 终局刻度达成，EXP 保留且不产生第 50 层
@@ -89,14 +89,15 @@ class CharacterAdvancementService {
         break;
       }
 
-      ch.experience -= ch.experienceToNextLayer;
+      ch.experience -= threshold;
       ch.realmTier = next.tier;
       ch.realmLayer = next.layer;
-      final def = realmLookup(next.tier, next.layer);
-      ch.internalForceMax = def.internalForceMax;
-      ch.experienceToNextLayer = def.experienceToNext;
+      currentDef = realmLookup(next.tier, next.layer);
+      ch.internalForceMax = currentDef.internalForceMax;
       layersGained++;
     }
+
+    ch.experienceToNextLayer = currentDef.experienceToNext;
 
     final afterDef = realmLookup(ch.realmTier, ch.realmLayer);
     final progressAfter = RealmProgressDisplay.fromSnapshot(

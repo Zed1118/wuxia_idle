@@ -13,9 +13,9 @@
 ## 当前恢复点
 
 - 状态：执行中。
-- 最后完成：Task 2 声望页面显示中文门派名。
-- 下一步：Task 3 升级服务停止依赖存档镜像阈值，先写错误镜像红灯测试。
-- 已跑验证：基线 `flutter analyze --no-pub` 0 issue；基线全量 3878 pass；Task 1 定向 33 pass；Task 2 定向 42 pass。
+- 最后完成：Task 3 升级服务停止依赖存档镜像阈值。
+- 下一步：Task 4 迁移所有生产阈值消费者并加零读取契约。
+- 已跑验证：基线 `flutter analyze --no-pub` 0 issue；基线全量 3878 pass；Task 1 定向 33 pass；Task 2 定向 42 pass；Task 3 定向 31 pass。
 - 阻塞项：无。
 
 ---
