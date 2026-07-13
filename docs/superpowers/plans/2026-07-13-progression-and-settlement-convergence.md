@@ -12,10 +12,10 @@
 
 ## 当前恢复点
 
-- 状态：执行中。
-- 最后完成：Task 7 主线和爬塔接入公共服务，并锁定主线重打/爬塔首通经验策略。
-- 下一步：Task 8 全量验证、macOS debug 构建和进度文档收尾。
-- 已跑验证：基线全量 3878 pass；Task 1 定向 33 pass；Task 2 定向 42 pass；Task 3 定向 31 pass；Task 4 定向 60 pass；Task 5 定向 49 pass；Task 6 联合定向 46 pass；Task 7 联合定向 45 pass，`flutter analyze --no-pub` 0 issue。
+- 状态：实现与验证完成，待分支收尾决策。
+- 最后完成：Task 8 全量验证、macOS debug 构建和进度文档收口。
+- 下一步：按 `finishing-a-development-branch` 流程决定保留、合并或推送分支。
+- 已跑验证：基线全量 3878 pass；Task 1 定向 33 pass；Task 2 定向 42 pass；Task 3 定向 31 pass；Task 4 定向 60 pass；Task 5 定向 49 pass；Task 6 联合定向 46 pass；Task 7 联合定向 45 pass；最终定向 151 pass；全量 JSON reporter 非隐藏测试 3897 success / 0 fail；format 1109/0 changed；`flutter analyze --no-pub` 0 issue；macOS debug build 成功。
 - 阻塞项：无。
 
 ---
@@ -1320,7 +1320,7 @@ git commit -m "refactor: share mainline and tower progression settlement"
 - Modify: `PROGRESS.md`
 - Modify only if contract wording changed: `CLAUDE.md`
 
-- [ ] **Step 1: 格式化修改文件**
+- [x] **Step 1: 格式化修改文件**
 
 Run:
 
@@ -1352,7 +1352,7 @@ dart format \
 
 Expected: formatter completes without error。
 
-- [ ] **Step 2: 静态检查**
+- [x] **Step 2: 静态检查**
 
 Run:
 
@@ -1362,7 +1362,7 @@ flutter analyze --no-pub
 
 Expected: `No issues found!`
 
-- [ ] **Step 3: 运行本批定向测试**
+- [x] **Step 3: 运行本批定向测试**
 
 Run:
 
@@ -1385,7 +1385,7 @@ flutter test --no-pub \
 
 Expected: all PASS。
 
-- [ ] **Step 4: 全量测试**
+- [x] **Step 4: 全量测试**
 
 Run:
 
@@ -1395,7 +1395,7 @@ flutter test --no-pub
 
 Expected: 0 failed；记录终端真实 pass 数，不预填固定数字。
 
-- [ ] **Step 5: macOS debug 构建**
+- [x] **Step 5: macOS debug 构建**
 
 Run:
 
@@ -1405,7 +1405,7 @@ flutter build macos --debug
 
 Expected: build succeeds，产物位于 `build/macos/Build/Products/Debug/`。
 
-- [ ] **Step 6: 更新进度文档**
+- [x] **Step 6: 更新进度文档**
 
 在 `PROGRESS.md` 顶部新增本批条目，只写真实执行结果：
 
@@ -1417,7 +1417,7 @@ Expected: build succeeds，产物位于 `build/macos/Build/Products/Debug/`。
 
 若 `CLAUDE.md` 已明确 Lv1～Lv490 与存档兼容规则且无冲突，不修改它。
 
-- [ ] **Step 7: 文档与工作区检查**
+- [x] **Step 7: 文档与工作区检查**
 
 Run:
 
@@ -1429,7 +1429,7 @@ git log --oneline -8
 
 Expected: 无行尾错误；仅 `PROGRESS.md` 等本步文档待提交；提交历史为本计划的小切片。
 
-- [ ] **Step 8: 提交验证证据**
+- [x] **Step 8: 提交验证证据**
 
 ```bash
 git add PROGRESS.md CLAUDE.md

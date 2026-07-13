@@ -6,6 +6,8 @@
 
 ## 当前阶段
 
+> **2026-07-13 Codex 成长与结算单一真相源收敛(`codex/progression-settlement-convergence`)**：门派声望面板正式显示 `factions.yaml` 中文名称，并保留既有阵营映射兼容；角色升境、面板、心魔、主菜单和商店统一从 `RealmDef` 读取经验阈值，`Character.experienceToNextLayer` 仅保留为 Isar 兼容镜像；主线与通天塔复用公共经验/突破/共鸣/Boss 事件结算，仍分别保留“主线重打给经验、通天塔仅首通给经验”及各自掉落策略。公共服务不开事务，调用方继续保证持久化原子性；同名角色按 `characterId` 关联。**无 schema/saveVersion/数值调整**。**实跑门禁**：format 1109/0 changed；analyze 0；本批定向 **151 pass / 0 fail**；全量 JSON reporter 非隐藏测试 **3897 success / 0 fail**；macOS debug build 成功（仅第三方 Swift 与 Xcode 脚本告警）。
+
 > **2026-07-13 Codex 境界派生 Lv1～Lv490 实装(`codex/realm-derived-490-level`)**：独立 Lv 经验账已退役，`Character.experience` 成为唯一角色经验账；49 个真实境界层各派生 10 个纯展示段。主线、爬塔、闭关、普通离线、经验丹统一走 `CharacterAdvancementService`；战后经验/等级/突破合并为一个反馈区。删除 `LevelService`、`LevelConfig`、`numbers.yaml level` 及旧等级血量/内力/速度加成；旧 `Character.level/levelExp` 仅保留 Isar schema 兼容、生产零读写。角色档案统一显示真实经验、心魔溢出和 Lv490 修为巅峰；终境 1,250,000 只作显示刻度，不产生第 50 层。**实跑门禁**：build_runner 增量 66 outputs；format 1103/0 changed；analyze 0；跨模块专项 **593 pass / 0 fail**；全量 **3878 pass / 0 fail**；macOS debug build 成功；角色面板 31 条测试含 Lv490 @1280×720/1440×900，无异常。
 
 > **2026-07-13 Codex 外部审查复核与分支收敛(`main`)**：已修复提前出关异常/并发重入、`qiDelta` 加载期红线；退役心魔余毒两个无消费倍率及误导注释；主菜单闭关横幅复用唯一时长切分函数；订正 07-12 测试数、心魔观察值属性与推送状态。已审核并合入角色四属性职责统一、二周目快速开局和「境界派生 490 级」设计规格；已清理 5 个已合并 worktree 及 6 个已合并本地分支。**合并态实跑门禁**：`flutter analyze --no-pub` 0 issue；跨分支专项 183 绿；`flutter test --no-pub` **3877 pass / 0 fail**。
