@@ -20,7 +20,7 @@
 - Task 1 质量加固绿灯：同一目标测试 4 tests PASS；`flutter analyze --no-pub` 仍为 `No issues found`；以上结果绑定 commit `29f48d42324a8db8822c050696ef6c3931541f96`。
 - Task 2 绿灯：新全路径契约单独运行 4 tests PASS；与 `character_advancement_service_test.dart`、`realm_progress_display_test.dart` 联合运行 32 tests PASS；`flutter analyze --no-pub` 为 `No issues found`；未触发 Task 7，且未修改 `lib/` / `data/`。以上结果绑定 commit `b9c677b5ca1085976315eab11dcd0ef86e4813ba`。
 - Task 2 质量加固：心魔锁现在精确守住层位、经验留账和镜像刷新；真实 `RealmDef` 中学徒·精通门槛为 170，学徒·圆熟门槛为 230，锁定积累 340 后解锁 `+1` 的确定余量为 171，因此精确只升 1 层；终境守住 tier/layer、全量经验与终境镜像；逐层 tier/layer/mirror 断言均带 `absoluteLevel` 定位理由。单文件 4 tests PASS，三文件联合 32 tests PASS，`flutter analyze --no-pub` 为 `No issues found`；以上结果绑定 commit `1d6aee30bb9b8c97960adea9c357a9f098fc9872`。
-- Task 3 绿灯：两份经验入口契约与七份真实行为测试联合运行 133 tests PASS；旧 `level/levelExp` 在离线和经验丹路径保持不变，闭关与溢出普通挂机经验合并后只委托一次成长服务；`flutter analyze --no-pub` 为 `No issues found`，未触发 Task 7，且未修改 `lib/` / `data/`。以上结果基于 commit `3499d8d730eae6b650d3e8ef46ca2ff5ab15ee22` 及本 Task 3 工作树改动；交付 commit 将在提交后同步为真实值。
+- Task 3 绿灯：两份经验入口契约与七份真实行为测试联合运行 133 tests PASS；旧 `level/levelExp` 在离线和经验丹路径保持不变，闭关与溢出普通挂机经验合并后只委托一次成长服务；`flutter analyze --no-pub` 为 `No issues found`，未触发 Task 7，且未修改 `lib/` / `data/`。以上结果绑定 commit `90c8d8268669257f2bbe6fd8d3b85193c2c09145`。
 - 设计规格：`docs/superpowers/specs/2026-07-13-progression-attribute-playtest-design.md`。
 - 下一步：执行 Task 4，建立四属性方向性与职责隔离诊断。
 - 强制边界：本计划不改 `numbers.yaml`、schema、save version、属性倍率或发布流程。
