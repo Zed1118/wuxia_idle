@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
 
@@ -37,18 +36,30 @@ void main() {
   test('attribute variant changes exactly one field and stays legal', () {
     final fixture = ProgressionPlaytestFixture(repository);
     final base = fixture.createCharacter(GrowthStage.middle, id: 201);
-    final agile = fixture.createCharacter(
-      GrowthStage.middle,
-      id: 202,
-      raisedAttribute: AttributeKey.agility,
-    );
 
     expect(base.attributes.total, 20);
-    expect(agile.attributes.total, 23);
-    expect(agile.attributes.constitution, base.attributes.constitution);
-    expect(agile.attributes.enlightenment, base.attributes.enlightenment);
-    expect(agile.attributes.agility, 8);
-    expect(agile.attributes.fortune, base.attributes.fortune);
+    for (final raisedAttribute in AttributeKey.values) {
+      final variant = fixture.createCharacter(
+        GrowthStage.middle,
+        id: 202 + raisedAttribute.index,
+        raisedAttribute: raisedAttribute,
+      );
+      final values = {
+        AttributeKey.constitution: variant.attributes.constitution,
+        AttributeKey.enlightenment: variant.attributes.enlightenment,
+        AttributeKey.agility: variant.attributes.agility,
+        AttributeKey.fortune: variant.attributes.fortune,
+      };
+
+      expect(variant.attributes.total, 23);
+      for (final attribute in AttributeKey.values) {
+        expect(
+          values[attribute],
+          attribute == raisedAttribute ? 8 : 5,
+          reason: '$raisedAttribute should only raise its own field',
+        );
+      }
+    }
   });
 
   test(
@@ -62,7 +73,24 @@ void main() {
       );
 
       expect(character.experienceToNextLayer, realm.experienceToNext);
+      expect(character.internalForce, realm.internalForceMax);
       expect(character.internalForceMax, realm.internalForceMax);
     },
   );
+
+  test('validation rejects RealmDef resource mismatches', () {
+    final fixture = ProgressionPlaytestFixture(repository);
+    final character = fixture.createCharacter(GrowthStage.middle, id: 401);
+    final realm = repository.getRealm(
+      character.realmTier,
+      character.realmLayer,
+    );
+
+    character.internalForce = realm.internalForceMax - 1;
+    expect(() => fixture.validateCharacter(character), throwsStateError);
+
+    character.internalForce = realm.internalForceMax;
+    character.experienceToNextLayer = realm.experienceToNext + 1;
+    expect(() => fixture.validateCharacter(character), throwsStateError);
+  });
 }

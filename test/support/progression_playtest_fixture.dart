@@ -57,5 +57,11 @@ final class ProgressionPlaytestFixture {
     if (character.internalForceMax != realm.internalForceMax) {
       throw StateError('角色内力上限未使用真实 RealmDef');
     }
+    if (character.internalForce != realm.internalForceMax) {
+      throw StateError('角色当前内力未使用真实 RealmDef');
+    }
+    if (character.experienceToNextLayer != realm.experienceToNext) {
+      throw StateError('角色升级门槛未使用真实 RealmDef');
+    }
   }
 }
