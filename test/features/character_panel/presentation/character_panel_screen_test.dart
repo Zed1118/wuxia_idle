@@ -298,10 +298,16 @@ void main() {
       ..realmTier = RealmTier.wuSheng
       ..realmLayer = RealmLayer.dengFeng
       ..experience = 1250000;
-    await pumpPanel(tester, character: character);
-
-    expect(find.textContaining('Lv490'), findsOneWidget);
-    expect(find.text(UiStrings.profileCultivationPeak), findsOneWidget);
+    for (final size in const [Size(1280, 720), Size(1440, 900)]) {
+      await pumpPanel(tester, character: character, surfaceSize: size);
+      expect(find.textContaining('Lv490'), findsOneWidget, reason: '$size');
+      expect(
+        find.text(UiStrings.profileCultivationPeak),
+        findsOneWidget,
+        reason: '$size',
+      );
+      expect(tester.takeException(), isNull, reason: '$size');
+    }
   });
 
   testWidgets('M4 术语气泡:4 属性 + 派生数值标签走 GlossaryLabel 并挂释义', (tester) async {

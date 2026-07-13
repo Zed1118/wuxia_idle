@@ -1,6 +1,6 @@
 # Realm-Derived 490-Level Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 将独立的角色 Lv 经验账退役，用现有 49 个境界层和唯一境界经验实时派生可见的 Lv1～Lv490。
 
@@ -35,7 +35,7 @@
 - Create: `lib/features/cultivation/domain/realm_progress_display.dart`
 - Create: `test/features/cultivation/domain/realm_progress_display_test.dart`
 
-- [ ] **Step 1: Write the failing boundary tests**
+- [x] **Step 1: Write the failing boundary tests**
 
 ```dart
 void main() {
@@ -89,13 +89,13 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: Run the new test and verify RED**
+- [x] **Step 2: Run the new test and verify RED**
 
 Run: `flutter test --no-pub test/features/cultivation/domain/realm_progress_display_test.dart`
 
 Expected: FAIL because `RealmProgressDisplay` does not exist.
 
-- [ ] **Step 3: Implement the pure model**
+- [x] **Step 3: Implement the pure model**
 
 ```dart
 import 'dart:math' as math;
@@ -161,13 +161,13 @@ final class RealmProgressChange {
 }
 ```
 
-- [ ] **Step 4: Run tests and format**
+- [x] **Step 4: Run tests and format**
 
 Run: `dart format lib/features/cultivation/domain/realm_progress_display.dart test/features/cultivation/domain/realm_progress_display_test.dart && flutter test --no-pub test/features/cultivation/domain/realm_progress_display_test.dart`
 
 Expected: all new tests PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/features/cultivation/domain/realm_progress_display.dart test/features/cultivation/domain/realm_progress_display_test.dart
@@ -183,7 +183,7 @@ git commit -m "feat: derive display levels from realm progress"
 - Modify: `test/data/defs/defs_test.dart`
 - Modify: `test/data/game_repository_test.dart`
 
-- [ ] **Step 1: Write RED tests for terminal progress and result snapshots**
+- [x] **Step 1: Write RED tests for terminal progress and result snapshots**
 
 Add to `character_advancement_service_test.dart`:
 
@@ -229,13 +229,13 @@ expect(finalRealm.absoluteLevel, 49);
 expect(finalRealm.experienceToNext, 1250000);
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run: `flutter test --no-pub test/features/cultivation/application/character_advancement_service_test.dart test/data/defs/defs_test.dart test/data/game_repository_test.dart`
 
 Expected: FAIL because the final YAML threshold is `0` and `AdvancementResult` has no `progressChange`.
 
-- [ ] **Step 3: Change the terminal config and capture before/after displays**
+- [x] **Step 3: Change the terminal config and capture before/after displays**
 
 Change only the final realm row:
 
@@ -295,13 +295,13 @@ experienceGained: delta,
 
 Keep `nextLayer(wuSheng, dengFeng) == null`; the while-loop must break before deducting terminal experience.
 
-- [ ] **Step 4: Run the focused tests**
+- [x] **Step 4: Run the focused tests**
 
 Run: `flutter test --no-pub test/features/cultivation/domain/realm_progress_display_test.dart test/features/cultivation/application/character_advancement_service_test.dart test/data/defs/defs_test.dart test/data/game_repository_test.dart`
 
 Expected: PASS, including Lv490 and no-layer-50 assertions.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add data/numbers.yaml lib/features/cultivation/application/character_advancement_service.dart test/features/cultivation/application/character_advancement_service_test.dart test/data/defs/defs_test.dart test/data/game_repository_test.dart
@@ -323,7 +323,7 @@ git commit -m "feat: add terminal realm progress scale"
 - Modify: relevant tower tests under `test/features/tower/`
 - Modify: `test/features/sweep/application/sweep_settlement_test.dart`
 
-- [ ] **Step 1: Write RED contracts for single-write settlement and unified feedback**
+- [x] **Step 1: Write RED contracts for single-write settlement and unified feedback**
 
 Add widget cases using an `AdvancementResult` whose `progressChange` is Lv186→Lv187:
 
@@ -367,13 +367,13 @@ expect(saved.level, 77);
 expect(saved.levelExp, 4321);
 ```
 
-- [ ] **Step 2: Run focused tests and verify RED**
+- [x] **Step 2: Run focused tests and verify RED**
 
 Run: `flutter test --no-pub test/features/cultivation/presentation/advancement_summary_test.dart test/features/mainline/presentation/stage_victory_dialog_test.dart test/features/tower test/features/sweep/application/sweep_settlement_test.dart`
 
 Expected: FAIL because the old paths still call `LevelService` and render `LevelUpSummary` separately.
 
-- [ ] **Step 3: Remove dual writes and collapse the UI model**
+- [x] **Step 3: Remove dual writes and collapse the UI model**
 
 In both settlement loops, keep only:
 
@@ -410,13 +410,13 @@ final hasCultivationProgress = advancements.any(
 );
 ```
 
-- [ ] **Step 4: Run mainline/tower/cultivation tests**
+- [x] **Step 4: Run mainline/tower/cultivation tests**
 
 Run: `flutter test --no-pub test/features/cultivation/presentation/advancement_summary_test.dart test/features/mainline test/features/tower test/features/sweep/application/sweep_settlement_test.dart`
 
 Expected: PASS; no second Lv ceremony remains.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/features/mainline lib/features/tower lib/features/cultivation/presentation/advancement_summary.dart lib/features/debug/presentation/visual_route_host.dart lib/shared/strings.dart test/features/cultivation test/features/mainline test/features/tower test/features/sweep/application/sweep_settlement_test.dart
@@ -435,7 +435,7 @@ git commit -m "refactor: unify combat cultivation feedback"
 - Modify: `test/features/inventory/item_use_service_test.dart`
 - Modify: `test/features/inventory/item_use_invalidation_test.dart`
 
-- [ ] **Step 1: Write RED tests proving legacy fields stay untouched**
+- [x] **Step 1: Write RED tests proving legacy fields stay untouched**
 
 Seed each character with unmistakable compatibility values before settlement:
 
@@ -469,13 +469,13 @@ expect(result.kind, ItemUseKind.experienceApplied);
 expect((await isar.characters.get(founder.id))!.experience, greaterThan(0));
 ```
 
-- [ ] **Step 2: Run focused tests and verify RED**
+- [x] **Step 2: Run focused tests and verify RED**
 
 Run: `flutter test --no-pub -j1 test/features/seclusion/application/seclusion_service_test.dart test/features/seclusion/application/offline_passive_service_test.dart test/features/inventory/item_use_service_test.dart test/features/inventory/item_use_invalidation_test.dart`
 
 Expected: FAIL because current paths mutate `level/levelExp`; the old-final pill computes gain from stored zero.
 
-- [ ] **Step 3: Delete LevelService calls and fix pill scaling**
+- [x] **Step 3: Delete LevelService calls and fix pill scaling**
 
 Remove every `LevelService.applyLevelExp` call and every `LevelConfig` parameter/import. For experience pills, calculate from the current realm definition instead of the potentially stale stored threshold:
 
@@ -486,13 +486,13 @@ final gain = (currentRealm.experienceToNext * def.layerFraction!).round();
 
 Call `CharacterAdvancementService.applyExperience` exactly once and consume the item only after a positive configured gain. The terminal `RealmDef.experienceToNext=1250000` makes old final-realm saves safe without a schema bump.
 
-- [ ] **Step 4: Run all affected tests**
+- [x] **Step 4: Run all affected tests**
 
 Run: `flutter test --no-pub -j1 test/features/seclusion test/features/inventory`
 
 Expected: PASS, including legacy-field sentinels and old-final-save pill behavior.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/features/seclusion lib/features/inventory test/features/seclusion test/features/inventory
@@ -515,7 +515,7 @@ git commit -m "refactor: remove duplicate experience writes"
 - Modify: `test/balance/maxhp_extremum_redline_test.dart`
 - Modify: `test/features/equipment/application/enhancement_service_test.dart`
 
-- [ ] **Step 1: Write RED tests for stat independence and config removal**
+- [x] **Step 1: Write RED tests for stat independence and config removal**
 
 ```dart
 test('legacy level values do not affect combat stats', () {
@@ -556,13 +556,13 @@ test('display Lv490 does not raise the hard enhancement cap above 49', () {
 });
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run: `flutter test --no-pub test/combat/legacy_level_stats_independence_test.dart test/balance/maxhp_extremum_redline_test.dart test/features/equipment/application/enhancement_service_test.dart`
 
 Expected: FAIL because derived stats still read `Character.level` and `numbers.level`.
 
-- [ ] **Step 3: Remove the independent system**
+- [x] **Step 3: Remove the independent system**
 
 Delete the `level` field/import/constructor argument/parser call from `NumbersConfig`; remove the complete top-level `level:` YAML section. Delete these three terms from derived-stat formulas:
 
@@ -574,13 +574,13 @@ Delete the `level` field/import/constructor argument/parser call from `NumbersCo
 
 In `redline_audit.dart`, stop assigning a synthetic level and update redline notes to describe the actual full realm/build probe rather than Lv100. Preserve all existing hard limits.
 
-- [ ] **Step 4: Run stat, redline, and config tests**
+- [x] **Step 4: Run stat, redline, and config tests**
 
 Run: `flutter test --no-pub test/combat test/balance/maxhp_extremum_redline_test.dart test/data/numbers_config_red_lines_test.dart test/features/debug test/features/equipment/application/enhancement_service_test.dart`
 
 Expected: PASS with no production dependency on `LevelConfig`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/features/level lib/data/numbers_config.dart data/numbers.yaml lib/features/battle/domain/derived_stats.dart lib/features/debug/application/redline_audit.dart lib/shared/strings.dart test/features/level test/combat test/balance/maxhp_extremum_redline_test.dart test/features/equipment/application/enhancement_service_test.dart
@@ -594,7 +594,7 @@ git commit -m "refactor: retire independent level combat power"
 - Modify: `lib/shared/strings.dart`
 - Modify: `test/features/character_panel/presentation/character_panel_screen_test.dart`
 
-- [ ] **Step 1: Replace the old Lv fixture test with three RED UI states**
+- [x] **Step 1: Replace the old Lv fixture test with three RED UI states**
 
 ```dart
 testWidgets('profile derives level and exp from realm progress only', (tester) async {
@@ -625,13 +625,13 @@ testWidgets('terminal scale shows Lv490 peak', (tester) async {
 });
 ```
 
-- [ ] **Step 2: Run the panel test and verify RED**
+- [x] **Step 2: Run the panel test and verify RED**
 
 Run: `flutter test --no-pub test/features/character_panel/presentation/character_panel_screen_test.dart`
 
 Expected: FAIL because `_LevelChip` reads legacy fields.
 
-- [ ] **Step 3: Replace `_LevelChip` with `_CultivationProgressCard`**
+- [x] **Step 3: Replace `_LevelChip` with `_CultivationProgressCard`**
 
 Look up the current `RealmDef` through `GameRepository`, then derive:
 
@@ -653,13 +653,13 @@ final display = RealmProgressDisplay.fromSnapshot(
 
 Render `UiStrings.profileCultivationLevel(display.level)`, `EnumL10n.realm(...)`, real experience numerator/denominator, and a clamped progress bar. Use `profileWaitingForInnerDemon` for nonterminal overflow and `profileCultivationPeak` for final threshold completion. Keep text in `UiStrings`.
 
-- [ ] **Step 4: Run panel and viewport tests**
+- [x] **Step 4: Run panel and viewport tests**
 
 Run: `flutter test --no-pub test/features/character_panel/presentation/character_panel_screen_test.dart test/features/character_panel/presentation/character_panel_screen_edge_test.dart`
 
 Expected: PASS at the existing 1280×720 and 1440×900 test viewports.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/features/character_panel/presentation/character_panel_screen.dart lib/shared/strings.dart test/features/character_panel
@@ -675,7 +675,7 @@ git commit -m "feat: unify profile cultivation progress"
 - Create: `test/data/legacy_level_schema_compatibility_test.dart`
 - Create: `test/data/legacy_level_production_usage_contract_test.dart`
 
-- [ ] **Step 1: Write compatibility and production-usage RED tests**
+- [x] **Step 1: Write compatibility and production-usage RED tests**
 
 Schema round-trip test:
 
@@ -719,13 +719,13 @@ for (final file in formerConsumers) {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run: `flutter test --no-pub -j1 test/data/legacy_level_schema_compatibility_test.dart test/data/legacy_level_production_usage_contract_test.dart`
 
 Expected: FAIL while `repairCharacterLevels` and stale production references still exist.
 
-- [ ] **Step 3: Retire the startup repair and rewrite compatibility comments**
+- [x] **Step 3: Retire the startup repair and rewrite compatibility comments**
 
 Remove the `repairCharacterLevels` invocation/method. Keep both Isar fields and constructor arguments, with this explicit contract:
 
@@ -739,13 +739,13 @@ int levelExp = 0;
 
 Do not bump `_currentSaveVersion`; this batch changes no collection schema.
 
-- [ ] **Step 4: Run compatibility, migration, and generated-schema tests**
+- [x] **Step 4: Run compatibility, migration, and generated-schema tests**
 
 Run: `flutter test --no-pub -j1 test/data/legacy_level_schema_compatibility_test.dart test/data/legacy_level_production_usage_contract_test.dart test/data/inner_force_qi_migration_test.dart test/data/isar_setup_test.dart`
 
 Expected: PASS; old fields still deserialize, but no gameplay path consumes them.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/core/domain/character.dart lib/data/isar_setup.dart test/data
@@ -761,7 +761,7 @@ git commit -m "refactor: isolate legacy level schema fields"
 - Modify: `docs/superpowers/specs/2026-07-13-realm-derived-490-level-design.md` only if implementation names differ from the approved spec
 - Verify: all changed production/test/data files
 
-- [ ] **Step 1: Update the truth-source documentation**
+- [x] **Step 1: Update the truth-source documentation**
 
 Record these exact truths:
 
@@ -772,7 +772,7 @@ Record these exact truths:
 - display Lv adds no stats and does not participate in equipment/technique locks or enhancement caps.
 - mainline, tower, retreat, passive idle, and experience pills use the same advancement service.
 
-- [ ] **Step 2: Run structural scans**
+- [x] **Step 2: Run structural scans**
 
 Run:
 
@@ -783,7 +783,7 @@ rg -n "^level:|bonus_max_hp_per_level|bonus_internal_force_max_per_level|bonus_s
 
 Expected: first command finds only schema-compatible `Character.level` declarations/constructor assignments where applicable; second command returns no matches.
 
-- [ ] **Step 3: Run targeted tests**
+- [x] **Step 3: Run targeted tests**
 
 Run:
 
@@ -805,7 +805,7 @@ flutter test --no-pub -j1 \
 
 Expected: all focused suites PASS with 0 failures.
 
-- [ ] **Step 4: Run repository gates**
+- [x] **Step 4: Run repository gates**
 
 Run:
 
@@ -821,7 +821,7 @@ git status --short
 
 Expected: 114 generated outputs; formatter 0 changed; analyzer 0 issues; full suite 0 failures; macOS debug build succeeds; diff check clean; status contains only this task's intended committed work.
 
-- [ ] **Step 5: Perform visual acceptance**
+- [x] **Step 5: Perform visual acceptance**
 
 Use the existing `character_panel` and a deterministic final-realm debug fixture at both 1280×720 and 1440×900. Verify:
 
@@ -830,7 +830,7 @@ Use the existing `character_panel` and a deterministic final-realm debug fixture
 - real experience can exceed the denominator while the bar stays at 100%;
 - no overflow, clipped text, default Material saturated blue, or duplicate experience bars.
 
-- [ ] **Step 6: Record the final recovery point and commit**
+- [x] **Step 6: Record the final recovery point and commit**
 
 Append to this plan:
 
@@ -854,26 +854,26 @@ git commit --allow-empty -m "[READY] complete realm-derived 490-level batch"
 
 ## §8.2 acceptance checklist
 
-- [ ] `docs/spec/rejected_task_registry.md` 无命中禁做项。
-- [ ] `Character.experience` 是唯一生产可写角色经验账。
-- [ ] Lv1～Lv490 全边界、心魔锁溢出、终局 1,250,000 刻度有纯测试。
-- [ ] 武圣·登峰不会进入第 50 境界层，也不会显示 Lv491。
-- [ ] `Character.level/levelExp` 保留 Isar schema 兼容，生产读写为 0。
-- [ ] `LevelService` / `LevelConfig` / `numbers.yaml level` 已删除。
-- [ ] 数字等级不再增加生命、内力、速度或其他战力。
-- [ ] 装备阶、心法阶、强化上限和玩法解锁仍只读真实境界。
-- [ ] 主线、爬塔、闭关、离线和经验丹对旧 Lv 字段无双写。
-- [ ] 角色面板只显示一套修为等级/经验进度。
-- [ ] 旧终局存档的门槛 0 不会导致经验丹 0 收益。
-- [ ] 数值红线、三系锁死、在线=离线、反主流红线全部保持。
-- [ ] `dart format`、`flutter analyze`、targeted、full suite、macOS debug build、`git diff --check` 全绿。
-- [ ] 1280×720 与 1440×900 角色面板视觉验收通过。
-- [ ] 工作树仅包含本批文件，恢复点与小切片提交完整。
+- [x] `docs/spec/rejected_task_registry.md` 无命中禁做项。
+- [x] `Character.experience` 是唯一生产可写角色经验账。
+- [x] Lv1～Lv490 全边界、心魔锁溢出、终局 1,250,000 刻度有纯测试。
+- [x] 武圣·登峰不会进入第 50 境界层，也不会显示 Lv491。
+- [x] `Character.level/levelExp` 保留 Isar schema 兼容，生产读写为 0。
+- [x] `LevelService` / `LevelConfig` / `numbers.yaml level` 已删除。
+- [x] 数字等级不再增加生命、内力、速度或其他战力。
+- [x] 装备阶、心法阶、强化上限和玩法解锁仍只读真实境界。
+- [x] 主线、爬塔、闭关、离线和经验丹对旧 Lv 字段无双写。
+- [x] 角色面板只显示一套修为等级/经验进度。
+- [x] 旧终局存档的门槛 0 不会导致经验丹 0 收益。
+- [x] 数值红线、三系锁死、在线=离线、反主流红线全部保持。
+- [x] `dart format`、`flutter analyze`、targeted、full suite、macOS debug build、`git diff --check` 全绿。
+- [x] 1280×720 与 1440×900 角色面板视觉验收通过。
+- [x] 工作树仅包含本批文件，恢复点与小切片提交完整。
 
 ## 当前恢复点（2026-07-13）
 
-- **状态**：实施计划已写完，功能代码未开始。
-- **最后完成**：已将批准规格映射到 8 个可独立验证、可小提交的 TDD 任务。
-- **下一步**：从 Task 1 纯派生模型开始执行红-绿-重构。
-- **已跑验证**：计划完整性、规格覆盖、类型名一致性、占位词扫描和 `git diff --check`。
+- **状态**：八个任务已完成，分支待评审/合并。
+- **最后完成**：Lv1～Lv490 统一修为等级全量门禁与双视口验收。
+- **下一步**：审核分支差异，确认后合入 `main`。
+- **已跑验证**：build_runner 增量 66 outputs；format 1103/0 changed；analyze 0；跨模块专项 593 pass / 0 fail；全量 3878 pass / 0 fail；macOS debug build 成功；角色面板 31 条测试含 Lv490 @1280×720/1440×900；结构扫描与 `git diff --check` 通过。
 - **阻塞项**：无。
