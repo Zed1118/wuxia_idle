@@ -9,6 +9,7 @@ import '../features/sect/domain/territory_def.dart';
 import 'codex_loader.dart';
 import 'defs/equipment_def.dart';
 import 'defs/boss_phase_def.dart';
+import 'defs/faction_def.dart';
 import 'defs/founder_creation_def.dart';
 import 'defs/founder_names_def.dart';
 import 'defs/master_def.dart';
@@ -122,6 +123,10 @@ class GameRepository {
   /// 本字段仅静态 def 索引。
   final Map<String, TerritoryDef> territoryDefs;
 
+  /// 门派完整静态定义(`data/factions.yaml`)。
+  /// 显示名与 NPC 归属统一从此读取；fixture 不带 yaml 时为空 map。
+  final Map<String, FactionDef> factionDefs;
+
   /// P1.2 factionId → alignment 映射(`data/factions.yaml`)。
   /// stage boss kill 声望 wire 查 rival faction 用。fixture 不带 yaml 时空 map。
   final Map<String, String> factionAlignments;
@@ -154,6 +159,7 @@ class GameRepository {
     required this.synergies,
     required this.codexEntries,
     required this.territoryDefs,
+    required this.factionDefs,
     required this.factionAlignments,
     required this.shopItemDefs,
     required this.itemDefs,
@@ -377,20 +383,20 @@ class GameRepository {
       fallback: const <String, TerritoryDef>{},
     );
 
-    // P1.2 factions.yaml → factionId→alignment 映射(graceful;fixture 不带时空 map)。
-    final factionAlignments = await _loadOptionalAsset(
-      load,
-      'data/factions.yaml',
-      (raw) {
-        final factionsRaw = parseYamlMap(raw);
-        final list = (factionsRaw['factions'] as List?) ?? const [];
-        return <String, String>{
-          for (final f in list)
-            (f as Map)['id'] as String: (f)['alignment'] as String,
-        };
-      },
-      fallback: const <String, String>{},
-    );
+    // P1.2 factions.yaml 完整定义(graceful;fixture 不带时空 map)。
+    final factionDefs = await _loadOptionalAsset(load, 'data/factions.yaml', (
+      raw,
+    ) {
+      final factionsRaw = parseYamlMap(raw);
+      return _parseDefMap(
+        (factionsRaw['factions'] as List?) ?? const [],
+        FactionDef.fromYaml,
+        idOf: (def) => def.id,
+      );
+    }, fallback: const <String, FactionDef>{});
+    final factionAlignments = <String, String>{
+      for (final def in factionDefs.values) def.id: def.alignment,
+    };
 
     // 材料经济 P1 shop.yaml(graceful;fixture 不带 yaml 时空 map)。
     // 生产路径红线校验在 _enforceShopRedLines 拦标价越界。
@@ -434,6 +440,7 @@ class GameRepository {
       synergies: synergies,
       codexEntries: codexEntries,
       territoryDefs: territoryDefs,
+      factionDefs: factionDefs,
       factionAlignments: factionAlignments,
       shopItemDefs: shopItemDefs,
       itemDefs: itemDefs,

@@ -10,6 +10,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 void main() {
   Future<String> realLoad(String path) => File(path).readAsString();
 
+  tearDown(GameRepository.resetForTest);
+
   group('#4 门派/领地加载层强校验', () {
     test(
       'stages/encounters 引的 factionId 不在 factions.yaml → 抛 StateError (声望 wire 静默兜底防线)',
@@ -95,10 +97,31 @@ factions:
     });
 
     test('真实 factions/territories 现状对齐 → loadAllDefs 不抛 (回归守门)', () async {
-      await GameRepository.loadAllDefs(loader: realLoad);
+      final repo = await GameRepository.loadAllDefs(loader: realLoad);
       // factions.yaml Demo 6 门派;全部 alignment 合法、被 stages/encounters 正确引用。
-      expect(GameRepository.instance.factionAlignments.length, 6);
-      expect(GameRepository.instance.territoryDefs, isNotEmpty);
+      expect(repo.factionDefs, hasLength(6));
+      expect(repo.factionDefs['shaolin']?.name, '少林寺');
+      expect(repo.factionDefs['shaolin']?.npcIds, isEmpty);
+      expect(repo.factionAlignments['shaolin'], 'orthodox');
+      expect(repo.territoryDefs, isNotEmpty);
+    });
+
+    test('factions.yaml 重复 id → 启动失败', () async {
+      Future<String> duplicateLoader(String path) {
+        if (path == 'data/factions.yaml') {
+          return Future.value('''
+factions:
+  - {id: same, name: "甲", alignment: neutral, npc_ids: []}
+  - {id: same, name: "乙", alignment: neutral, npc_ids: []}
+''');
+        }
+        return realLoad(path);
+      }
+
+      await expectLater(
+        GameRepository.loadAllDefs(loader: duplicateLoader),
+        throwsA(isA<FormatException>()),
+      );
     });
   });
 }
