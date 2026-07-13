@@ -40,7 +40,8 @@ class InsightRefineResult {
 /// insightPoints 凝练兑换主修修炼度（根因A 2026-05-29）。
 ///
 /// 闭关挂机 → insightPoints → 玩家凝练 → 主修修炼度 progress。把死钱包
-/// 接成 idle→中期成长链路（不开学心法 UI，维持 GDD §7.2 Phase 5+ scoped）。
+/// 接成 idle→中期成长链路。领悟点第二个 sink = 研习新心法
+/// （TechniqueLearnFlowService，2026-07-14），二者构成「加速当前 vs 拓宽 build」抉择。
 /// 比率走 `numbers.yaml techniques.cultivation.insight_to_cultivation_ratio`，
 /// 升层逻辑复用 [CultivationService.applyProgressDelta]（不计 skillUsageCount）。
 class InsightExchangeService {

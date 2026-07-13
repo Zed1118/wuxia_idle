@@ -1241,6 +1241,31 @@ class UiStrings {
       leveledUp ? '凝练 +$progress 修炼度 · 突破一层！' : '凝练 +$progress 修炼度';
   static const String refineInsightNoPoints = '没有可凝练的领悟点（闭关挂机可得）';
 
+  // ── 研习新心法（学习闭环 · 2026-07-14）──────────────────────────────
+  /// 面板入口常驻态：有领悟点显点数，0 点灰显（承凝练入口体例，§5.7 不推销）。
+  static String learnTechniqueEntryWithPoints(int points) =>
+      '研习新心法 · $points 点领悟';
+  static const String learnTechniqueEntryEmpty = '研习新心法 · 暂无领悟点';
+  static const String learnTechniqueTitle = '研习新心法';
+
+  /// dialog 副标：说明消耗领悟点、境界不足者可观摩不可修（§5.3）。
+  static const String learnTechniqueSubtitle =
+      '静心参悟已知心法，消耗领悟点习得。境界未至者可观摩，不可修习。';
+  static const String learnTechniqueEmptyList = '暂无可研习的心法（已习尽当前所见）。';
+  static String learnTechniqueCost(int cost, {required bool asMain}) =>
+      asMain ? '立为主修 · $cost 点' : '纳为辅修 · $cost 点';
+  static const String learnTechniqueLockedByRealm = '境界不足';
+  static const String learnTechniqueAsMain = '立为主修';
+  static const String learnTechniqueAsAssist = '纳为辅修';
+
+  /// 二确 dialog 正文与反馈。
+  static String learnTechniqueConfirmBody(String techniqueName, int cost) =>
+      '习得「$techniqueName」将消耗 $cost 点领悟。';
+  static const String learnTechniqueConfirm = '研习';
+  static String learnTechniqueSuccess(String techniqueName) =>
+      '已习得「$techniqueName」';
+  static const String learnTechniqueFailed = '研习未成，条件未满足';
+
   /// 散功代价 · 内力：`内力 X → Y`。
   static String dispelCostInternalForce(int before, int after) =>
       '内力 $before → $after';
@@ -2283,6 +2308,12 @@ class UiStrings {
   static String gameEventEquipmentTitle(String equipName) => '得 $equipName';
   static String gameEventEquipmentSummary(String equipName, String source) =>
       '于「$source」得 $equipName，藏入囊中。';
+
+  // #4 techniqueLearned
+  static String gameEventTechniqueTitle(String techniqueName) =>
+      '习得「$techniqueName」';
+  static String gameEventTechniqueSummary(String techniqueName) =>
+      '静心参悟，习得心法「$techniqueName」。';
 
   // #5 skillEnlightened
   static String gameEventSkillTitle(String skillName) => '悟得「$skillName」';

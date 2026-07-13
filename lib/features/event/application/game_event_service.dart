@@ -16,11 +16,11 @@ import '../../cultivation/application/character_advancement_service.dart';
 ///
 /// **设计纪律**:
 /// - **不开 writeTxn**:caller 已持锁(同事务原子性 + 嵌套 writeTxn 抛 IsarError)
-/// - 7 method 对应 7 实装 type:#1 / #2 / #3 / #5 / #6+#9 / #7 / #8
+/// - 8 method 对应 8 实装 type:#1 / #2 / #3 / #4 / #5 / #6+#9 / #7 / #8
 /// - **#9 disciplePromoted 借 [recordRealmBreakthrough] 内 `lineageRole` 路由**,
 ///   不开独立 method(Demo 阶段语义等同 #6,Phase 5+ 真独立路径再拆)
-/// - **#4 techniqueLearned 不实装**:0 业务 caller(`TechniqueLearningService.learn`
-///   只 test/seed 调,Phase 5+ §7.2 武学领悟 UI 实装才能挂)
+/// - **#4 techniqueLearned**:2026-07-14 接线(技能面板研习新心法闭环
+///   `TechniqueLearnFlowService` 消费)
 ///
 /// **GameEvent 表打开方式**:caller 端在 writeTxn 内 `GameEventService(isar)` 直接实例化
 /// (5 处 caller 体例:tower/seclusion/encounter/mainline 已稳定),调用对应 record method 即可。
@@ -155,6 +155,24 @@ class GameEventService {
       ];
       await isar.equipments.put(equipment);
     }
+  }
+
+  /// #4 习得心法(研习新心法闭环 · 2026-07-14)
+  Future<void> recordTechniqueLearned({
+    required int characterId,
+    required String techniqueDefId,
+    required String techniqueName,
+  }) async {
+    await isar.gameEvents.put(
+      GameEvent()
+        ..eventType = GameEventType.techniqueLearned
+        ..title = UiStrings.gameEventTechniqueTitle(techniqueName)
+        ..summary = UiStrings.gameEventTechniqueSummary(techniqueName)
+        ..relatedCharacterId = characterId
+        ..relatedEntityIds = [techniqueDefId]
+        ..occurredAt = DateTime.now()
+        ..isRead = false,
+    );
   }
 
   /// #5 武学领悟
