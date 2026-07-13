@@ -12,7 +12,7 @@
 
 ## 当前恢复点
 
-- 状态：Task 2 已完成并通过质量加固；49 层与 Lv1～Lv490 全路径硬契约已建立，下一步执行 Task 3。
+- 状态：Task 3 已完成；七类经验入口委托、旧等级账零读写与主线/爬塔奖励策略差异已由契约锁定，下一步执行 Task 4。
 - 实现分支：`codex/progression-attribute-playtest-implementation`。
 - 无修改基线 commit：`0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
 - 基线验证：重新生成 Git 忽略的 `g.dart` 后，`flutter analyze --no-pub` 为 `No issues found`；计划指定基线共 41 tests PASS；固定种子心魔观察值为 05=`17/20`、06=`17/20`、07=`13/20`；塔诊断 PASS。以上观察值均绑定 commit `0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
@@ -20,8 +20,9 @@
 - Task 1 质量加固绿灯：同一目标测试 4 tests PASS；`flutter analyze --no-pub` 仍为 `No issues found`；以上结果绑定 commit `29f48d42324a8db8822c050696ef6c3931541f96`。
 - Task 2 绿灯：新全路径契约单独运行 4 tests PASS；与 `character_advancement_service_test.dart`、`realm_progress_display_test.dart` 联合运行 32 tests PASS；`flutter analyze --no-pub` 为 `No issues found`；未触发 Task 7，且未修改 `lib/` / `data/`。以上结果绑定 commit `b9c677b5ca1085976315eab11dcd0ef86e4813ba`。
 - Task 2 质量加固：心魔锁现在精确守住层位、经验留账和镜像刷新；真实 `RealmDef` 中学徒·精通门槛为 170，学徒·圆熟门槛为 230，锁定积累 340 后解锁 `+1` 的确定余量为 171，因此精确只升 1 层；终境守住 tier/layer、全量经验与终境镜像；逐层 tier/layer/mirror 断言均带 `absoluteLevel` 定位理由。单文件 4 tests PASS，三文件联合 32 tests PASS，`flutter analyze --no-pub` 为 `No issues found`；以上结果绑定 commit `1d6aee30bb9b8c97960adea9c357a9f098fc9872`。
+- Task 3 绿灯：两份经验入口契约与七份真实行为测试联合运行 133 tests PASS；旧 `level/levelExp` 在离线和经验丹路径保持不变，闭关与溢出普通挂机经验合并后只委托一次成长服务；`flutter analyze --no-pub` 为 `No issues found`，未触发 Task 7，且未修改 `lib/` / `data/`。以上结果基于 commit `3499d8d730eae6b650d3e8ef46ca2ff5ab15ee22` 及本 Task 3 工作树改动；交付 commit 将在提交后同步为真实值。
 - 设计规格：`docs/superpowers/specs/2026-07-13-progression-attribute-playtest-design.md`。
-- 下一步：执行 Task 3，锁定七类经验入口与玩法差异。
+- 下一步：执行 Task 4，建立四属性方向性与职责隔离诊断。
 - 强制边界：本计划不改 `numbers.yaml`、schema、save version、属性倍率或发布流程。
 
 ---
@@ -409,7 +410,7 @@ git commit -m "test: cover the full Lv490 progression path"
 - Modify: `test/features/cultivation/application/single_experience_account_contract_test.dart`
 - Verify existing behavior tests listed below
 
-- [ ] **Step 1: 写入口委托与策略契约**
+- [x] **Step 1: 写入口委托与策略契约**
 
 Create `test/features/cultivation/application/experience_source_consistency_test.dart`:
 
@@ -476,7 +477,7 @@ void main() {
 }
 ```
 
-- [ ] **Step 2: 扩大旧等级账守卫**
+- [x] **Step 2: 扩大旧等级账守卫**
 
 In `test/features/cultivation/application/single_experience_account_contract_test.dart`, replace both path loops with one list that also covers the shared settlement service:
 
@@ -501,7 +502,7 @@ test('all production experience paths ignore the legacy level account', () async
 });
 ```
 
-- [ ] **Step 3: 运行新契约与真实持久化入口测试**
+- [x] **Step 3: 运行新契约与真实持久化入口测试**
 
 Run:
 
@@ -520,7 +521,7 @@ flutter test --no-pub \
 
 Expected: all PASS；离线和经验丹行为测试继续证明旧 `level/levelExp` 不变，闭关服务测试继续证明合并经验只结算一次。
 
-- [ ] **Step 4: 提交**
+- [x] **Step 4: 提交**
 
 ```bash
 git add \
