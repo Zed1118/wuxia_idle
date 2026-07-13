@@ -32,11 +32,11 @@ import '../../../shared/strings.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../battle/domain/derived_stats.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../cultivation/domain/advancement_entry.dart';
 import '../../cultivation/domain/skill_drop_result.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
 import '../../cultivation/presentation/skill_treasure_overlay.dart';
 import '../../cultivation/presentation/stage_skill_drop_hook.dart';
-import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../equipment/presentation/milestone_grant_hook.dart';
 import '../../jianghu/application/jianghu_providers.dart';
@@ -45,6 +45,7 @@ import '../../sect/presentation/stage_boss_recruit_hook.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/application/equipment_service.dart';
 import '../../equipment/application/first_acquisition_tiers.dart';
+import '../../equipment/domain/resonance_upgrade_notice.dart';
 import '../../event/application/game_event_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../tutorial/application/tutorial_providers.dart';
@@ -866,7 +867,9 @@ applyVictoryResolution({
           clearedStageIds: clearedSet,
         ),
       );
-      advancements.add(AdvancementEntry(chName: c.name, result: r));
+      advancements.add(
+        AdvancementEntry(characterId: c.id, chName: c.name, result: r),
+      );
     }
   }
 

@@ -28,9 +28,11 @@ import '../../settings/application/gameplay_settings_provider.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../../features/equipment/application/drop_service.dart';
 import '../../../features/equipment/application/first_acquisition_tiers.dart';
+import '../../equipment/domain/resonance_upgrade_notice.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../cultivation/domain/advancement_entry.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../cultivation/domain/skill_drop_result.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
@@ -47,7 +49,7 @@ import '../../battle/domain/battle_stats.dart';
 import '../../battle/presentation/hero_camera_overlay.dart' show HeroCameraData;
 import '../../battle/presentation/victory_ceremony.dart';
 import '../../mainline/presentation/stage_victory_dialog.dart'
-    show FirstClearBanner, ResonanceUpgradeNotice, ResonanceUpgradeBanner;
+    show FirstClearBanner, ResonanceUpgradeBanner;
 import '../../inventory/presentation/post_battle_healing_panel.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../tutorial/application/tutorial_service.dart';
@@ -516,7 +518,9 @@ applyTowerVictoryResolution({
           clearedStageIds: clearedSet,
         ),
       );
-      advancements.add(AdvancementEntry(chName: c.name, result: r));
+      advancements.add(
+        AdvancementEntry(characterId: c.id, chName: c.name, result: r),
+      );
     }
   }
 

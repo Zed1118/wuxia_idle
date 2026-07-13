@@ -4,7 +4,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/enum_localizations.dart';
-import '../application/character_advancement_service.dart';
+import '../domain/advancement_entry.dart';
 
 /// 多角色升层 banner（mainline / tower victory dialog 共用）。
 ///
@@ -126,14 +126,6 @@ class _TierUpRow extends StatelessWidget {
       ],
     );
   }
-}
-
-/// [AdvancementSummary.entries] 元素:角色名 + 升层结果。
-class AdvancementEntry {
-  final String chName;
-  final AdvancementResult result;
-
-  const AdvancementEntry({required this.chName, required this.result});
 }
 
 class _ExperienceProgressRow extends StatelessWidget {

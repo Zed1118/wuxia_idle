@@ -9,9 +9,10 @@ import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_stats.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
-import 'package:wuxia_idle/features/cultivation/presentation/advancement_summary.dart';
+import 'package:wuxia_idle/features/cultivation/domain/advancement_entry.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_factory.dart';
+import 'package:wuxia_idle/features/equipment/domain/resonance_upgrade_notice.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_victory_dialog.dart';
 import 'package:wuxia_idle/shared/audio/audio_assets.dart';
 import 'package:wuxia_idle/shared/audio/audio_backend.dart';
@@ -197,7 +198,7 @@ void main() {
 
     testWidgets('empty drops + 1 角色升层 → noDrop + banner 1 行', (tester) async {
       await _pumpContent(tester, _emptyDrops(), [
-        AdvancementEntry(chName: '甲', result: _advanced()),
+        AdvancementEntry(characterId: 1, chName: '甲', result: _advanced()),
       ]);
       expect(find.text(UiStrings.stageVictoryNoDrop), findsOneWidget);
       expect(find.text(UiStrings.advancementCeremonyTitle), findsOneWidget);
@@ -212,8 +213,8 @@ void main() {
 
     testWidgets('drops + 升层 mixed → 两段都显', (tester) async {
       await _pumpContent(tester, _itemDrops(), [
-        AdvancementEntry(chName: '甲', result: _advanced()),
-        AdvancementEntry(chName: '乙', result: _flat()),
+        AdvancementEntry(characterId: 1, chName: '甲', result: _advanced()),
+        AdvancementEntry(characterId: 1, chName: '乙', result: _flat()),
       ]);
       expect(find.textContaining('磨剑石 ×2'), findsOneWidget);
       expect(find.textContaining('item_mojianshi'), findsNothing);
@@ -226,7 +227,7 @@ void main() {
 
     testWidgets('drops + 全员未升层 → drop 显,banner 不显', (tester) async {
       await _pumpContent(tester, _itemDrops(), [
-        AdvancementEntry(chName: '甲', result: _flat()),
+        AdvancementEntry(characterId: 1, chName: '甲', result: _flat()),
       ]);
       expect(find.textContaining('磨剑石 ×2'), findsOneWidget);
       expect(find.textContaining('item_mojianshi'), findsNothing);
@@ -263,7 +264,7 @@ void main() {
       await _pumpContent(
         tester,
         _itemDrops(),
-        [AdvancementEntry(chName: '甲', result: _advanced())],
+        [AdvancementEntry(characterId: 1, chName: '甲', result: _advanced())],
         resonanceUpgrades: const [
           ResonanceUpgradeNotice(
             equipmentName: '青锋剑',
@@ -540,7 +541,11 @@ void main() {
                 ],
               ),
               advancements: [
-                AdvancementEntry(chName: '甲', result: _advanced()),
+                AdvancementEntry(
+                  characterId: 1,
+                  chName: '甲',
+                  result: _advanced(),
+                ),
               ],
               resonanceUpgrades: const [
                 ResonanceUpgradeNotice(
@@ -649,7 +654,11 @@ void main() {
                     ],
                   ),
                   advancements: [
-                    AdvancementEntry(chName: '甲', result: _advanced()),
+                    AdvancementEntry(
+                      characterId: 1,
+                      chName: '甲',
+                      result: _advanced(),
+                    ),
                   ],
                   stats: const BattleStatsSummary(
                     totalDamage: 1234,
@@ -766,7 +775,13 @@ void main() {
       await open(
         tester,
         _emptyDrops(),
-        advancements: [AdvancementEntry(chName: '张三', result: _crossedTier())],
+        advancements: [
+          AdvancementEntry(
+            characterId: 1,
+            chName: '张三',
+            result: _crossedTier(),
+          ),
+        ],
       );
       expect(rec.sfxPlays, contains(sfxAssetPath(SfxId.realmAdvance)));
     });
@@ -775,7 +790,9 @@ void main() {
       await open(
         tester,
         _emptyDrops(),
-        advancements: [AdvancementEntry(chName: '张三', result: _advanced())],
+        advancements: [
+          AdvancementEntry(characterId: 1, chName: '张三', result: _advanced()),
+        ],
       );
       expect(rec.sfxPlays, isNot(contains(sfxAssetPath(SfxId.realmAdvance))));
     });
@@ -786,7 +803,13 @@ void main() {
       await open(
         tester,
         _equipDrops(['weapon_xunchang_tie_jian']),
-        advancements: [AdvancementEntry(chName: '张三', result: _crossedTier())],
+        advancements: [
+          AdvancementEntry(
+            characterId: 1,
+            chName: '张三',
+            result: _crossedTier(),
+          ),
+        ],
       );
       expect(rec.sfxPlays, contains(sfxAssetPath(SfxId.realmAdvance)));
       expect(rec.sfxPlays, isNot(contains(sfxAssetPath(SfxId.reward))));

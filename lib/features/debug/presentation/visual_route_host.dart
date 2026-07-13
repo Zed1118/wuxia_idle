@@ -21,7 +21,8 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/utils/rng.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
-import '../../cultivation/presentation/advancement_summary.dart';
+import '../../cultivation/domain/advancement_entry.dart';
+import '../../equipment/domain/resonance_upgrade_notice.dart';
 import '../../equipment/application/equipment_factory.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/presentation/treasure_drop_overlay.dart';
@@ -1072,6 +1073,7 @@ class _VictoryFirstClearPreview extends StatelessWidget {
                             ),
                             advancements: const [
                               AdvancementEntry(
+                                characterId: 1,
                                 chName: '阴柔丙',
                                 result: AdvancementResult(
                                   layersGained: 1,

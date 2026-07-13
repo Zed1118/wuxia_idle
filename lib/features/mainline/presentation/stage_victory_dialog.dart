@@ -15,10 +15,12 @@ import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/battle_stats.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../cultivation/domain/advancement_entry.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/application/equipment_source_lookup.dart';
 import '../../equipment/domain/equipment_source.dart';
+import '../../equipment/domain/resonance_upgrade_notice.dart';
 import '../../injury/presentation/injury_status_view.dart';
 import '../../inventory/presentation/post_battle_healing_panel.dart';
 
@@ -853,24 +855,6 @@ String _sourceLabel(EquipmentSource source) {
     EquipmentSourceKind.shop => UiStrings.equipmentSourceShop,
     EquipmentSourceKind.tag => UiStrings.equipmentSourceTag(source.tag ?? ''),
   };
-}
-
-/// 单条共鸣度晋阶通知(P1.1 候选 3-a)。
-///
-/// caller(stage_entry_flow / tower_entry_flow)在 GameEvent 写入循环中
-/// 同步 cache 一份,传 victory dialog 显「装备 X 共鸣度晋至 Y 阶」。
-class ResonanceUpgradeNotice {
-  final String equipmentName;
-  final ResonanceStage newStage;
-
-  const ResonanceUpgradeNotice({
-    required this.equipmentName,
-    required this.newStage,
-  });
-
-  @override
-  String toString() =>
-      'ResonanceUpgradeNotice($equipmentName → ${newStage.name})';
 }
 
 /// 共鸣度晋阶 banner(P1.1 候选 3-a)。

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
+import 'package:wuxia_idle/features/cultivation/domain/advancement_entry.dart';
 import 'package:wuxia_idle/features/cultivation/domain/realm_progress_display.dart';
 import 'package:wuxia_idle/features/cultivation/presentation/advancement_summary.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -99,7 +100,9 @@ void main() {
     });
 
     testWidgets('1 character didAdvance=false → 不渲染 banner', (tester) async {
-      await _pump(tester, [AdvancementEntry(chName: '甲', result: _flat())]);
+      await _pump(tester, [
+        AdvancementEntry(characterId: 1, chName: '甲', result: _flat()),
+      ]);
       expect(find.byIcon(Icons.auto_awesome), findsNothing);
       expect(find.textContaining('甲'), findsNothing);
     });
@@ -108,7 +111,7 @@ void main() {
       tester,
     ) async {
       await _pump(tester, [
-        AdvancementEntry(chName: '甲', result: _levelOnly()),
+        AdvancementEntry(characterId: 1, chName: '甲', result: _levelOnly()),
       ]);
 
       expect(
@@ -122,7 +125,11 @@ void main() {
       tester,
     ) async {
       await _pump(tester, [
-        AdvancementEntry(chName: '甲', result: _experienceOnly()),
+        AdvancementEntry(
+          characterId: 1,
+          chName: '甲',
+          result: _experienceOnly(),
+        ),
       ]);
 
       expect(
@@ -136,7 +143,7 @@ void main() {
       tester,
     ) async {
       await _pump(tester, [
-        AdvancementEntry(chName: '甲', result: _realmAndLevel()),
+        AdvancementEntry(characterId: 1, chName: '甲', result: _realmAndLevel()),
       ]);
 
       expect(find.textContaining('甲 · 突破至'), findsOneWidget);
@@ -145,7 +152,11 @@ void main() {
 
     testWidgets('1 character layers=1 → 显「突破至」', (tester) async {
       await _pump(tester, [
-        AdvancementEntry(chName: '甲', result: _advanced(layersGained: 1)),
+        AdvancementEntry(
+          characterId: 1,
+          chName: '甲',
+          result: _advanced(layersGained: 1),
+        ),
       ]);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
       expect(find.textContaining('甲 · 突破至'), findsOneWidget);
@@ -154,7 +165,11 @@ void main() {
 
     testWidgets('1 character layers=4 → 显「连破 4 层 →」', (tester) async {
       await _pump(tester, [
-        AdvancementEntry(chName: '乙', result: _advanced(layersGained: 4)),
+        AdvancementEntry(
+          characterId: 1,
+          chName: '乙',
+          result: _advanced(layersGained: 4),
+        ),
       ]);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
       expect(find.textContaining('乙 · 连破 4 层'), findsOneWidget);
@@ -166,6 +181,7 @@ void main() {
     ) async {
       await _pump(tester, [
         AdvancementEntry(
+          characterId: 1,
           chName: '甲',
           result: _advanced(
             layersGained: 1,
@@ -186,6 +202,7 @@ void main() {
     testWidgets('crossedTier + 同 tier 升层 mixed → 各走各样式', (tester) async {
       await _pump(tester, [
         AdvancementEntry(
+          characterId: 1,
           chName: '甲',
           result: _advanced(
             layersGained: 1,
@@ -193,7 +210,11 @@ void main() {
             layerAfter: RealmLayer.qiMeng,
           ),
         ),
-        AdvancementEntry(chName: '乙', result: _advanced(layersGained: 2)),
+        AdvancementEntry(
+          characterId: 1,
+          chName: '乙',
+          result: _advanced(layersGained: 2),
+        ),
       ]);
       expect(
         find.byIcon(Icons.military_tech),
@@ -210,9 +231,17 @@ void main() {
 
     testWidgets('多 character mixed → 仅显 didAdvance=true', (tester) async {
       await _pump(tester, [
-        AdvancementEntry(chName: '甲', result: _advanced(layersGained: 1)),
-        AdvancementEntry(chName: '乙', result: _flat()),
-        AdvancementEntry(chName: '丙', result: _advanced(layersGained: 2)),
+        AdvancementEntry(
+          characterId: 1,
+          chName: '甲',
+          result: _advanced(layersGained: 1),
+        ),
+        AdvancementEntry(characterId: 1, chName: '乙', result: _flat()),
+        AdvancementEntry(
+          characterId: 1,
+          chName: '丙',
+          result: _advanced(layersGained: 2),
+        ),
       ]);
       expect(find.byIcon(Icons.auto_awesome), findsNWidgets(2));
       expect(find.textContaining('甲 · 突破至'), findsOneWidget);
