@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.37**
+> v1.37 变更摘要(2026-07-14 全量审查收口 · 0 改数值):① §4 注记 skills.yaml camelCase 历史例外(文档与现实收口,不迁移 206 招 key);② §8.2 合并 Gate 补 ⓓ commit message 中文检查项。源:`~/Desktop/挂机武侠全量审查报告_2026-07-14.md` P3-2/P3-4。
 > **版本:v1.36**
 > v1.36 变更摘要(2026-07-13 境界派生 490 级):`Character.experience` 成为唯一可写角色经验账；49 个真实境界层各细分 10 个纯展示段，形成 Lv1～Lv490。数字等级不加战力、不参与装备/心法门槛或强化上限。武圣·登峰的 1,250,000 经验只完成 Lv490 刻度，不生成第 50 层。旧 `Character.level/levelExp` 仅保留 Isar schema 兼容，生产零读写；主线、爬塔、闭关、普通离线与经验丹统一走 `CharacterAdvancementService`。
 > v1.35 变更摘要(2026-07-13 角色四项属性职责统一):根骨除血量外缩短新生成重伤时长；悟性统一影响心法修炼、招式熟练度成长与武学领悟概率；身法只管速度/闪避，基础暴击平移至 7.5%；机缘只管普通奇遇概率和显式特殊选项，不参与商店定价/掉落倍率。旧角色属性值、schema、saveVersion 均不迁移。
@@ -119,6 +121,8 @@ project_root/
 | YAML key | snake_case | `attack_power: 1500` |
 | 文案文件名 | snake_case | `chapter_01_opening.yaml` |
 | 提交分支 | `feat/<feature>` `fix/<bug>` `balance/<topic>` | — |
+
+> **YAML key 历史例外**(2026-07-14 注记):`data/skills.yaml` 全文件沿用 camelCase(`qiDelta`/`powerMultiplier`/`cooldownTurns`,loader 按 camelCase 读),为 7 阶铺开前的历史惯例,**该文件内新增字段保持 camelCase 一致**;其余 yaml(numbers/equipment/stages 等)及新建文件一律 snake_case。
 
 **枚举命名锁死 GDD 词汇**：境界用 `Realm`，层用 `RealmStratum`，装备阶用 `EquipmentTier`，心法阶用 `TechniqueTier`，流派用 `Style { rigid, agile, sinister }`（刚猛/灵巧/阴柔）。**不要用 `legendary` `epic` 这类网游词汇**——本项目不存在这些概念。
 
@@ -328,7 +332,7 @@ choices:
 - **UI/UX 任务加码**:widget test 外必顾常规桌面视口——做 1280×720 / 1440×900 visual smoke,**禁只用超高视口(如 1024×2400)证「内容存在」**(证不了常规窗口体验);改交互组件(按钮/输入等)须验 semantics / 键盘激活 / focus / mouse cursor(`InkWell`→`GestureDetector` 一类改动易丢这些桌面语义)。
 - **外部审查只进 triage**:WorkBuddy 等外部报告**先证伪再修复**,false positive 多、前提常错,**不得直接转任务清单照单执行**。
 
-**Claude 合并审核 Gate**(合每个 Codex 分支前逐项过):核上述 4 证据齐全 + UI 视口/视觉口径 + 外审项已证伪;另查 ⓐ 无中文文案 / 数值常量散写进 Dart ⓑ 无高频路径 debug 日志噪声(如 `build()` 内 `debugPrint` 随 rebuild 刷屏)ⓒ 无误提交(未清 worktree / 未跟踪文件 / capture 目录 / 临时文档 / `.g.dart` / log / 截图,**用户指定保留的 worktree/分支除外**)。
+**Claude 合并审核 Gate**(合每个 Codex 分支前逐项过):核上述 4 证据齐全 + UI 视口/视觉口径 + 外审项已证伪;另查 ⓐ 无中文文案 / 数值常量散写进 Dart ⓑ 无高频路径 debug 日志噪声(如 `build()` 内 `debugPrint` 随 rebuild 刷屏)ⓒ 无误提交(未清 worktree / 未跟踪文件 / capture 目录 / 临时文档 / `.g.dart` / log / 截图,**用户指定保留的 worktree/分支除外**)ⓓ commit message 守 §11 中文动宾(2026-07-13 三批英文前缀 drift 后补入 gate)。
 
 **批次合并后必做**(每梯队/批末):`flutter analyze` 0 issue → 相关 targeted tests → 批末一次全量 `flutter test --no-pub`(默认并发·10 核 ~2.5min;`-j1` 仅排查 flaky) → UI 密集改动至少一轮常规桌面视口 smoke → 清理或归档已合并 worktree/分支 + capture 文件(**用户指定保留的除外**)→ PROGRESS 顶段更新区分四态:**已完成 / 已验证 / 已知风险 / 下批建议**(避免 N 个分支各自堆叠进度段)。
 
