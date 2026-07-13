@@ -12,10 +12,14 @@
 
 ## 当前恢复点
 
-- 状态：计划已写，尚未执行。
-- 基线分支：`codex/progression-attribute-playtest-design`。
+- 状态：Task 1 已完成；合法玩家夹具已按 TDD 建立，下一步执行 Task 2。
+- 实现分支：`codex/progression-attribute-playtest-implementation`。
+- 无修改基线 commit：`0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
+- 基线验证：重新生成 Git 忽略的 `g.dart` 后，`flutter analyze --no-pub` 为 `No issues found`；计划指定基线共 41 tests PASS；固定种子心魔观察值为 05=`17/20`、06=`17/20`、07=`13/20`；塔诊断 PASS。以上观察值均绑定 commit `0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
+- Task 1 TDD 红灯证据：`flutter test --no-pub test/support/progression_playtest_fixture_test.dart` 退出码 1，报告缺少 `progression_playtest_fixture.dart`，且 `ProgressionPlaytestFixture`、`GrowthStage` 未定义。
+- Task 1 绿灯：同一目标测试 3 tests PASS。
 - 设计规格：`docs/superpowers/specs/2026-07-13-progression-attribute-playtest-design.md`。
-- 下一步：执行时用 `superpowers:using-git-worktrees` 从本分支创建独立实现 worktree，先跑 Task 1 基线。
+- 下一步：执行 Task 2，建立 49 层与 Lv490 全路径硬契约。
 - 强制边界：本计划不改 `numbers.yaml`、schema、save version、属性倍率或发布流程。
 
 ---
@@ -53,7 +57,7 @@
 - Test: `test/support/progression_playtest_fixture_test.dart`
 - Modify: `docs/superpowers/plans/2026-07-13-progression-attribute-playtest.md`
 
-- [ ] **Step 1: 记录无修改基线**
+- [x] **Step 1: 记录无修改基线**
 
 Run:
 
@@ -72,7 +76,7 @@ flutter test --no-pub \
 
 Expected: 工作区干净，analyze 为 0，所有指定测试 PASS。把真实通过数和心魔观察值连同 `git rev-parse HEAD` 写入本计划“当前恢复点”，观察值必须附 commit。
 
-- [ ] **Step 2: 写夹具失败测试**
+- [x] **Step 2: 写夹具失败测试**
 
 Create `test/support/progression_playtest_fixture_test.dart`:
 
@@ -132,7 +136,7 @@ void main() {
 }
 ```
 
-- [ ] **Step 3: 运行测试确认失败**
+- [x] **Step 3: 运行测试确认失败**
 
 Run:
 
@@ -142,7 +146,7 @@ flutter test --no-pub test/support/progression_playtest_fixture_test.dart
 
 Expected: FAIL，`progression_playtest_fixture.dart`、`ProgressionPlaytestFixture` 和 `GrowthStage` 尚不存在。
 
-- [ ] **Step 4: 实现最小夹具**
+- [x] **Step 4: 实现最小夹具**
 
 Create `test/support/progression_playtest_fixture.dart`:
 
@@ -207,7 +211,7 @@ final class ProgressionPlaytestFixture {
 }
 ```
 
-- [ ] **Step 5: 格式化并运行夹具测试**
+- [x] **Step 5: 格式化并运行夹具测试**
 
 Run:
 
@@ -218,7 +222,7 @@ flutter test --no-pub test/support/progression_playtest_fixture_test.dart
 
 Expected: 3 tests PASS。
 
-- [ ] **Step 6: 提交**
+- [x] **Step 6: 提交**
 
 ```bash
 git add \
