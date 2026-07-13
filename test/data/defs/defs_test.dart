@@ -458,13 +458,14 @@ void main() {
         'layer': 'dengFeng',
         'absoluteLevel': 49,
         'internalForceMax': 15000,
-        'experienceToNext': 0,
+        'experienceToNext': 1250000,
         'equipmentTierCap': 'shenWu',
         'techniqueTierCap': 'chuanShuoShenGong',
       });
 
       expect(def.absoluteLevel, 49);
       expect(def.internalForceMax, 15000);
+      expect(def.experienceToNext, 1250000);
       expect(def.equipmentTierCap, EquipmentTier.shenWu);
       expect(def.techniqueTierCap, TechniqueTier.chuanShuoShenGong);
     });

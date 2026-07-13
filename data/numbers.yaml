@@ -486,7 +486,7 @@ realms:
         - layer: dengFeng
           absolute_level: 49
           internal_force_max: 15000
-          experience_to_next: 0   # 满级，无下一层
+          experience_to_next: 1250000  # 终局修为刻度，不产生第 50 层
 
 # =============================================================================
 # 3. 装备系统

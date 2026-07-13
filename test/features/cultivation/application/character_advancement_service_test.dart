@@ -31,7 +31,7 @@ final _realmTable = <RealmTier, Map<RealmLayer, RealmDef>>{
     (RealmLayer.dengFeng, 14, 2000, 2500),
   ]),
   RealmTier.wuSheng: _layers(RealmTier.wuSheng, [
-    (RealmLayer.dengFeng, 49, 15000, 0), // 满级
+    (RealmLayer.dengFeng, 49, 15000, 1250000), // 终局修为刻度
   ]),
 };
 
@@ -209,7 +209,7 @@ void main() {
       expect(ch.internalForceMax, 1200);
     });
 
-    test('wuSheng.dengFeng experienceToNext=0 → EXP 累加无升层', () {
+    test('wuSheng.dengFeng reaches Lv490 but never enters layer 50', () {
       final ch = _mkChar(
         tier: RealmTier.wuSheng,
         layer: RealmLayer.dengFeng,
@@ -219,16 +219,36 @@ void main() {
       );
       final r = CharacterAdvancementService.applyExperience(
         ch,
-        1000000,
+        1250000,
         realmLookup: _lookup,
       );
       expect(r.didAdvance, isFalse);
       expect(r.layersGained, 0);
-      // EXP 仍累加(数据无破坏)但不触发升层
-      expect(ch.experience, 1000000);
+      expect(r.experienceGained, 1250000);
+      expect(r.progressChange.before.level, 481);
+      expect(r.progressChange.after.level, 490);
+      expect(r.progressChange.after.didReachPeak, isTrue);
+      expect(ch.experience, 1250000);
+      expect(ch.experienceToNextLayer, 1250000);
       expect(ch.realmTier, RealmTier.wuSheng);
       expect(ch.realmLayer, RealmLayer.dengFeng);
       expect(ch.internalForceMax, 15000);
+    });
+
+    test('locked realm preserves overflow and caps display level', () {
+      final ch = _mkChar(experienceToNextLayer: 50);
+      final r = CharacterAdvancementService.applyExperience(
+        ch,
+        80,
+        realmLookup: _lookup,
+        isLayerLocked: (_, _) => true,
+      );
+
+      expect(ch.experience, 80);
+      expect(r.layersGained, 0);
+      expect(r.experienceGained, 80);
+      expect(r.progressChange.after.level, 10);
+      expect(r.progressChange.after.isWaitingForBreakthrough, isTrue);
     });
 
     test('不动 attributes / 不回血 internalForce', () {

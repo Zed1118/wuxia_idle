@@ -20,6 +20,14 @@ final class RealmProgressDisplay {
   final double progress;
   final RealmProgressDisplayState state;
 
+  static const empty = RealmProgressDisplay(
+    level: 1,
+    experience: 0,
+    experienceToNext: 0,
+    progress: 0,
+    state: RealmProgressDisplayState.progressing,
+  );
+
   bool get didReachPeak => state == RealmProgressDisplayState.peak;
 
   bool get isWaitingForBreakthrough =>
@@ -61,6 +69,11 @@ final class RealmProgressChange {
 
   final RealmProgressDisplay before;
   final RealmProgressDisplay after;
+
+  static const none = RealmProgressChange(
+    before: RealmProgressDisplay.empty,
+    after: RealmProgressDisplay.empty,
+  );
 
   bool get didLevelUp => after.level > before.level;
 }

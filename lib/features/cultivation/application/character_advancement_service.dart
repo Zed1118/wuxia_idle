@@ -1,6 +1,7 @@
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/realm_def.dart';
+import '../domain/realm_progress_display.dart';
 
 /// 角色境界推进服务(W15 #30 第 3 期 experiencePoints 消费层)。
 ///
@@ -10,8 +11,9 @@ import '../../../data/defs/realm_def.dart';
 /// **不回血 `internalForce`**(GDD §5.1 反留存焦虑,升层奖励不"回血"。
 /// 玩家若需补内力走闭关 + 内力维度,设计闭环)。
 ///
-/// 顶级 `wuSheng.dengFeng` 的 `experienceToNext: 0` 在 yaml 表示满级。
-/// 命中后 EXP 仍可累加(数据无破坏)但不再扣减不再升层。
+/// 顶级 `wuSheng.dengFeng` 使用终局修为刻度派生 Lv481～490。
+/// 命中刻度后 EXP 仍可累加，但 [nextLayer] 返回 null，不会扣减
+/// 经验或产生第 50 个境界层。
 class CharacterAdvancementService {
   CharacterAdvancementService._();
 
@@ -43,6 +45,13 @@ class CharacterAdvancementService {
     final tierBefore = ch.realmTier;
     final layerBefore = ch.realmLayer;
     final maxBefore = ch.internalForceMax;
+    final beforeDef = realmLookup(tierBefore, layerBefore);
+    final progressBefore = RealmProgressDisplay.fromSnapshot(
+      absoluteRealmLevel: beforeDef.absoluteLevel,
+      experience: ch.experience,
+      experienceToNext: beforeDef.experienceToNext,
+      hasNextRealmLayer: nextLayer(tierBefore, layerBefore) != null,
+    );
 
     if (delta <= 0) {
       return AdvancementResult(
@@ -53,18 +62,25 @@ class CharacterAdvancementService {
         layerAfter: layerBefore,
         internalForceMaxBefore: maxBefore,
         internalForceMaxAfter: maxBefore,
+        experienceGained: 0,
+        progressChange: RealmProgressChange(
+          before: progressBefore,
+          after: progressBefore,
+        ),
       );
     }
 
+    // 以 RealmDef 刷新当前层门槛，兼容旧终局档保存的 0 哨兵值。
+    ch.experienceToNextLayer = beforeDef.experienceToNext;
     ch.experience += delta;
     int layersGained = 0;
 
     while (true) {
-      if (ch.experienceToNextLayer <= 0) break; // wuSheng.dengFeng 满级
+      if (ch.experienceToNextLayer <= 0) break; // 损坏配置安全网
       if (ch.experience < ch.experienceToNextLayer) break;
 
       final next = nextLayer(ch.realmTier, ch.realmLayer);
-      if (next == null) break; // 安全网:experienceToNextLayer=0 已 break
+      if (next == null) break; // 终局刻度达成，EXP 保留且不产生第 50 层
 
       // 1.0 P2.2 §12.1 心魔关 unlock 拦截 hook(Batch 2.2.A):
       // 升入 wuSheng 各 layer 前查心魔关 cleared 集;未 cleared → break
@@ -82,6 +98,13 @@ class CharacterAdvancementService {
       layersGained++;
     }
 
+    final afterDef = realmLookup(ch.realmTier, ch.realmLayer);
+    final progressAfter = RealmProgressDisplay.fromSnapshot(
+      absoluteRealmLevel: afterDef.absoluteLevel,
+      experience: ch.experience,
+      experienceToNext: afterDef.experienceToNext,
+      hasNextRealmLayer: nextLayer(ch.realmTier, ch.realmLayer) != null,
+    );
     return AdvancementResult(
       layersGained: layersGained,
       tierBefore: tierBefore,
@@ -90,6 +113,11 @@ class CharacterAdvancementService {
       layerAfter: ch.realmLayer,
       internalForceMaxBefore: maxBefore,
       internalForceMaxAfter: ch.internalForceMax,
+      experienceGained: delta,
+      progressChange: RealmProgressChange(
+        before: progressBefore,
+        after: progressAfter,
+      ),
     );
   }
 
@@ -124,6 +152,8 @@ class AdvancementResult {
   final RealmLayer layerAfter;
   final int internalForceMaxBefore;
   final int internalForceMaxAfter;
+  final int experienceGained;
+  final RealmProgressChange progressChange;
 
   const AdvancementResult({
     required this.layersGained,
@@ -133,6 +163,8 @@ class AdvancementResult {
     required this.layerAfter,
     required this.internalForceMaxBefore,
     required this.internalForceMaxAfter,
+    this.experienceGained = 0,
+    this.progressChange = RealmProgressChange.none,
   });
 
   bool get didAdvance => layersGained > 0;
