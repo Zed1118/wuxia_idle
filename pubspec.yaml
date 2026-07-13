@@ -30,6 +30,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # AST 源码契约守卫用(test/support/dart_source_contract.dart · 07-13 体检批引入)。
+  # 本仓 analyzer 版本敏感(isar_community_generator 上游锁 <11 vs riverpod codegen 需 ^12,
+  # 见 2026-06-30 维护轮),动此约束前先确认 pub solve + build_runner + 全量测试。
   analyzer: ^9.0.0
   flutter_lints: ^6.0.0
 

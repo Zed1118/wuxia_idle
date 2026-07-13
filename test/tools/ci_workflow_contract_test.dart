@@ -33,7 +33,10 @@ void main() {
     expect(workflow, contains('workflow_dispatch:'));
     expect(workflow, contains('schedule:'));
     expect(workflow, isNot(contains('pull_request:')));
-    expect(workflow, contains('runs-on: windows-latest'));
+    // windows-latest(=Server 2025/VS2026)下 audioplayers_windows 6.x STL1011
+    // 硬错,钉 windows-2022 止血;audioplayers 升级后此断言随 workflow 一起改回。
+    expect(workflow, contains('runs-on: windows-2022'));
+    expect(workflow, isNot(contains('runs-on: windows-latest')));
     expect(workflow, contains('flutter-version: 3.41.5'));
     expect(workflow, contains('dart run build_runner build'));
     expect(workflow, contains('flutter analyze --no-pub'));

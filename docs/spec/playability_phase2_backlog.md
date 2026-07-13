@@ -65,6 +65,7 @@
 ## 八 · 阶段性审查发现技术债(2026-06-22)
 
 - [x] **战报 `_formatAction` 死字段 + 双轨战报架构梳理(T13)**:已清(`15d4235b`)。实测攻击行动(attackResult!=null)的 description 从不显示——`BattleLog.formatAction` 从 attackResult 重格式化(闪避率/克制/效果/击杀全覆盖)才是 live 路径,description 仅 `battle_log.dart:37` 非攻击兜底(attackResult==null) + toString debug 读,无回放读(replay 按 seed 重跑)。故删 `_formatAction`(连带消其 5 处 §5.6 散写中文),攻击 description 留空 · 破招仍记 EnumL10n(合法 sink) · 非攻击 description(staggered/charging/phase 转换·EnumL10n)不动。无测试依赖其产出。
+- [ ] **audioplayers 升级(6.7.1→上游支持 VS2026 的版本)**(2026-07-14 全量审查 P1 根因):`audioplayers_windows` 6.x 在 Windows Server 2025 + VS2026(MSVC 14.51)下 `<experimental/coroutine>` STL1011 硬错,Windows Release Evidence workflow 已临时 pin `windows-2022` 止血;升级后解除 pin 恢复 `windows-latest`,需查上游 changelog + Windows 真机回归音频(bgm/sfx 全轨)。
 
 ## 九 · 战斗体验打磨(第五阶段 · 2026-06-23)
 
@@ -188,3 +189,13 @@
 1. **可直接推进的小项**:资源总览折叠区复用既有 `MaterialSourceSheet`,只补入口,不重做材料来源模型。
 2. **需实玩而非继续写代码**:残页数量、战斗节奏、音频听感与桃花岛正式美术验收。
 3. **需重新明确允许范围**:终局装备目标追踪与匠人委托仍在暂缓清单,不得自动开工。
+
+## 十三 · 2026-07-14 全量审查 + 专业玩法评估选入(用户拍板加入)
+
+> 来源:2026-07-14 Claude 全量审查(报告 `~/Desktop/挂机武侠全量审查报告_2026-07-14.md`)+ 专业游戏视角缺口评估。用户拍板顺序:先修审查问题(已单独批次),再按下表推进,#1 为下一个玩法任务。
+
+- [ ] **#1 心法获取玩法(设计拍板→实装)**:核心成长轴断链修复——`TechniqueLearningService.learn` 全仓 0 业务 caller(`game_event_service.dart` 注释自认),玩家无主动学新心法通道,新心法只随收徒进队,祖师心法阶终身不变;闭关藏经阁「心法领悟 +50%」指向的循环不存在。`Character.insightPoints` 字段与 learn 服务现成。**先写 spec + 用户拍板获取途径,再实装**;守 §5.3 三系锁死 / §5.1 反主流 / §5.7 隐藏门控。
+- [ ] **#2 战斗爽感二期(表现层)**:首通脚本化展示帧(开局亮相/首技慢镜/Boss 蓄力提示/破招题字,07-09 自审已给方向)+ 技能伤害占比调参(现 38.4%,普攻 61.6% 主导观感)+ battleUlt/battleChargeStart 两个借用 SFX 专属化(整合 §七 听感复核、§九 节奏真机校值两个既有开放项)。
+- [ ] **#3 Windows 端首次实机验收**:workflow 已修(pin windows-2022,2026-07-14 批),取产物后 D 段人工过一遍——安装/启动/存档/音频全轨/手感帧率(144Hz 光栅类问题 Windows 复现与否);MSIX/签名/升级安装仍属后续外部项。
+- [ ] **#4 出战编成/换人 UI(先拍板要不要)**:即 §四 P2② 待拍板项升格候选——收徒扩池已实装但玩家不能主动排 3v3 阵容;与 #1 组合构成终局构筑深度(编成×心法×流派克制)。
+- [ ] **#5 小规模真人试玩(3-5 人)首通分布采集**:平衡决策的数据前提——07-13 playtest 自声明 fixed seed/profile ≠ 玩家分布;并入该批复核 playtest P2 候选(readable-first-clear 三档 100% 胜 / `stage_02_05` 相邻关断崖)。需先拍板采集口径(存档回收 or 战报导出 or 旁观记录)。
