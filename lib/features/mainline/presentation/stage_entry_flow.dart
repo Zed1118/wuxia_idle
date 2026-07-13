@@ -18,6 +18,7 @@ import '../../../data/narrative_loader.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../battle/application/battle_resolution.dart';
+import '../../battle/application/combat_progression_settlement_service.dart';
 import '../../battle/application/post_combat_invalidation.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/auto_play_mode.dart';
@@ -31,7 +32,6 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../battle/domain/derived_stats.dart';
-import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/domain/advancement_entry.dart';
 import '../../cultivation/domain/skill_drop_result.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
@@ -47,9 +47,7 @@ import '../../equipment/application/equipment_service.dart';
 import '../../equipment/application/first_acquisition_tiers.dart';
 import '../../equipment/domain/resonance_upgrade_notice.dart';
 import '../../event/application/game_event_service.dart';
-import '../../inner_demon/application/inner_demon_service.dart';
 import '../../tutorial/application/tutorial_providers.dart';
-import '../../tutorial/application/tutorial_service.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
@@ -840,51 +838,29 @@ applyVictoryResolution({
     cycle: cycle,
   );
 
-  // W15 #30 第 3 期:active 3 character 每人 += stage.baseExpReward + 升层。
-  // 全员 full(Demo §10 不平摊,鼓励多角色养成);apply in-place 改 character,
-  // 后续 putAll 写入。
-  // W15 #30 P3 后续 A:收集 AdvancementResult 暂存供 victory dialog banner。
-  final advancements = <AdvancementEntry>[];
-  if (stage.baseExpReward > 0) {
-    // P2.2 §12.1 心魔关 unlock 拦截 hook(Batch 2.2.B):loop 外一次性算 cleared 集
-    // 避免 N character 各查一次 isar(主线 stage_06_05 之后 wuSheng 各 layer 升前
-    // hook 才生效;Demo Ch1-6 路径 hook 短路 false 不影响)。
-    final progress = await isar.mainlineProgress
-        .filter()
-        .saveDataIdEqualTo(IsarSetup.currentSlotId)
-        .findFirst();
-    final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
-    final innerDemonDef = GameRepository.instance.numbers.innerDemon;
-    for (final c in characters) {
-      final r = CharacterAdvancementService.applyExperience(
-        c,
-        stage.baseExpReward,
-        realmLookup: GameRepository.instance.getRealm,
-        isLayerLocked: (tier, layer) => InnerDemonService.isLayerLocked(
-          nextTier: tier,
-          nextLayer: layer,
-          innerDemonDef: innerDemonDef,
-          clearedStageIds: clearedSet,
-        ),
-      );
-      advancements.add(
-        AdvancementEntry(characterId: c.id, chName: c.name, result: r),
-      );
-    }
-  }
-
   // P1 #42 Phase 2:isFirstClear snapshot(writeTxn 之前 read MainlineProgress,
   // 含 stageId 即 repeat,不含即首通 → bossDefeated 防刷)。
   final mainlineProgressSnapshot = await isar.mainlineProgress
       .filter()
       .saveDataIdEqualTo(IsarSetup.currentSlotId)
       .findFirst();
+  final clearedSet =
+      mainlineProgressSnapshot?.clearedStageIds.toSet() ?? <String>{};
+  final settlement = CombatProgressionSettlementService(
+    GameRepository.instance,
+  );
+  // 主线重打仍发经验；首通门控只约束掉落与 Boss 事件。
+  final advancements = settlement.applyExperience(
+    characters: characters,
+    experienceReward: stage.baseExpReward,
+    clearedStageIds: clearedSet,
+  );
   final isFirstClearStage =
       !(mainlineProgressSnapshot?.clearedStageIds.contains(stage.id) ?? false);
   final founderId = save?.founderCharacterId;
 
   // P1.1 候选 3-a:writeTxn 内 push notice,函数末 return 给 caller 传 dialog。
-  final resonanceUpgrades = <ResonanceUpgradeNotice>[];
+  var resonanceUpgrades = const <ResonanceUpgradeNotice>[];
 
   final now = DateTime.now();
   await isar.writeTxn(() async {
@@ -925,36 +901,8 @@ applyVictoryResolution({
       }
     }
 
-    // P1 #42 Phase 2:GameEvent 写入(同 writeTxn 原子)。
-    // #3 equipmentObtained 每件 drop 装备一条;#6 realmBreakthrough 每角色判
-    // didAdvance;#7 resonanceUpgraded 战斗中跨档装备;#8 bossDefeated 仅
-    // isBossStage && isFirstClearStage 触发。
+    // 主线专属 equipmentObtained 与公共成长事件在同一事务写入。
     final events = GameEventService(isar);
-    final allEquips = equipsByCh.values
-        .expand((list) => list)
-        .toList(growable: false);
-    for (final eqId in result.resonanceUpgradedEquipmentIds) {
-      Equipment? eq;
-      for (final e in allEquips) {
-        if (e.id == eqId) {
-          eq = e;
-          break;
-        }
-      }
-      if (eq == null) continue;
-      final def = GameRepository.instance.getEquipment(eq.defId);
-      final stage = eq.resonanceStage(numbers);
-      await events.recordResonanceUpgraded(
-        characterId: eq.ownerCharacterId ?? founderId ?? 0,
-        equipmentId: eq.id,
-        equipmentName: def.name,
-        newStage: stage.index + 1,
-      );
-      // P1.1 候选 3-a:cache notice 供 victory dialog 显共鸣度晋阶 sub-row。
-      resonanceUpgrades.add(
-        ResonanceUpgradeNotice(equipmentName: def.name, newStage: stage),
-      );
-    }
     for (final drop in result.dropResult.equipments) {
       final def = GameRepository.instance.getEquipment(drop.defId);
       await events.recordEquipmentObtained(
@@ -966,34 +914,26 @@ applyVictoryResolution({
         equipment: drop,
       );
     }
-    final tutorialSvc = TutorialService(isar);
-    for (final entry in advancements) {
-      if (!entry.result.didAdvance) continue;
-      final ch = characters.firstWhere(
-        (c) => c.name == entry.chName,
-        orElse: () => characters.first,
-      );
-      await events.recordRealmBreakthrough(character: ch, result: entry.result);
-      // P1 #42 Phase 2 §10 P1.y:主角达一流 → 推 step 6(收徒门槛)。
-      // 沿 ch == characters.first 判定主角(test fixture 多角色升层时只对
-      // founder 推进,与 founderId 路径保持一致)。
-      if (founderId != null && ch.id == founderId) {
-        await tutorialSvc.advanceForRealmBreakthrough(entry.result.tierAfter);
-      }
-    }
-    if (stage.isBossStage && isFirstClearStage && founderId != null) {
-      final bossName = stage.enemyTeam.isNotEmpty
-          ? stage.enemyTeam.last.name
-          : stage.name;
-      final warborn = equipsByCh[founderId] ?? const <Equipment>[];
-      await events.recordBossDefeated(
-        characterId: founderId,
-        stageId: stage.id,
-        stageName: stage.name,
-        bossName: bossName,
-        warbornEquipment: warborn,
-      );
-    }
+    resonanceUpgrades = await settlement.recordCommonEvents(
+      isar: isar,
+      characters: characters,
+      equipmentsByCharacter: equipsByCh,
+      resonanceUpgradedEquipmentIds: result.resonanceUpgradedEquipmentIds,
+      advancements: advancements,
+      founderId: founderId,
+      bossVictory: stage.isBossStage && isFirstClearStage
+          ? BossVictoryEventContext(
+              stageId: stage.id,
+              stageName: stage.name,
+              bossName: stage.enemyTeam.isNotEmpty
+                  ? stage.enemyTeam.last.name
+                  : stage.name,
+              warbornEquipment: founderId == null
+                  ? const []
+                  : equipsByCh[founderId] ?? const [],
+            )
+          : null,
+    );
   });
 
   // 第七阶段 批一:派生英雄镜头数据（本场最高输出玩家）。纯展示，不改数值。

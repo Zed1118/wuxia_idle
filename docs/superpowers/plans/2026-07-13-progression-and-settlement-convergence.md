@@ -13,9 +13,9 @@
 ## 当前恢复点
 
 - 状态：执行中。
-- 最后完成：Task 6 建立公共成长与事件结算服务，覆盖同名角色和事务回滚。
-- 下一步：Task 7 主线和爬塔接入公共服务并加去重契约。
-- 已跑验证：基线全量 3878 pass；Task 1 定向 33 pass；Task 2 定向 42 pass；Task 3 定向 31 pass；Task 4 定向 60 pass；Task 5 定向 49 pass；Task 6 联合定向 46 pass，`flutter analyze --no-pub` 0 issue。
+- 最后完成：Task 7 主线和爬塔接入公共服务，并锁定主线重打/爬塔首通经验策略。
+- 下一步：Task 8 全量验证、macOS debug 构建和进度文档收尾。
+- 已跑验证：基线全量 3878 pass；Task 1 定向 33 pass；Task 2 定向 42 pass；Task 3 定向 31 pass；Task 4 定向 60 pass；Task 5 定向 49 pass；Task 6 联合定向 46 pass；Task 7 联合定向 45 pass，`flutter analyze --no-pub` 0 issue。
 - 阻塞项：无。
 
 ---
