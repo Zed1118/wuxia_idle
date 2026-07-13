@@ -95,6 +95,17 @@ ProgressionBattleObservation probeMainlineStage({
   );
 }
 
+/// Whether a draw at [maxTicks] is the runner's unfinished-battle fallback.
+///
+/// A rules draw can also finish exactly on the boundary when both teams are
+/// annihilated. The default ground strategy only uses its tick-cap fallback
+/// while both teams still have a living character.
+bool isUnfinishedAtTickCap(BattleState terminal, {required int maxTicks}) =>
+    terminal.tick >= maxTicks &&
+    terminal.result == BattleResult.draw &&
+    terminal.leftTeam.any((character) => character.isAlive) &&
+    terminal.rightTeam.any((character) => character.isAlive);
+
 ProgressionBattleRun runProgressionMainlineStage({
   required GameRepository repository,
   required StageDef stage,
@@ -123,7 +134,7 @@ ProgressionBattleRun runProgressionMainlineStage({
     maxTicks: maxTicks,
     rng: Random(seed),
   );
-  if (terminal.tick >= maxTicks && terminal.result == BattleResult.draw) {
+  if (isUnfinishedAtTickCap(terminal, maxTicks: maxTicks)) {
     throw StateError(
       'progression_probe: stage=${stage.id} profile=${profile.name} '
       'seed=$seed reached maxTicks=$maxTicks with draw',

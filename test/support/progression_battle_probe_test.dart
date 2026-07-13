@@ -207,6 +207,33 @@ void main() {
     );
   });
 
+  test('tick-cap classification accepts a mutual-annihilation draw', () {
+    const maxTicks = 1;
+    final left = buildProgressionPlayer(
+      repository: repository,
+      tier: stage.requiredRealm,
+      slot: 0,
+      isFounder: true,
+      profile: ProgressionBuildProfile.standard,
+    );
+    final right = left.copyWith(
+      characterId: left.characterId + 1,
+      name: '成长体检对手',
+      teamSide: 1,
+    );
+    final terminal = BattleState.initial(leftTeam: [left], rightTeam: [right])
+        .copyWith(
+          leftTeam: [left.copyWith(currentHp: 0, isAlive: false)],
+          rightTeam: [right.copyWith(currentHp: 0, isAlive: false)],
+          tick: maxTicks,
+          result: BattleResult.draw,
+        );
+
+    expect(terminal.tick, maxTicks);
+    expect(terminal.result, BattleResult.draw);
+    expect(isUnfinishedAtTickCap(terminal, maxTicks: maxTicks), isFalse);
+  });
+
   test('probe is deterministic for the same stage profile and seed', () {
     final first = probeMainlineStage(
       repository: repository,
