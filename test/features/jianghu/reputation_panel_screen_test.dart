@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/jianghu/application/jianghu_providers.dart';
 import 'package:wuxia_idle/features/jianghu/domain/reputation.dart';
 import 'package:wuxia_idle/features/jianghu/presentation/reputation_panel_screen.dart';
 import 'package:wuxia_idle/features/jianghu/presentation/widgets/reputation_tier_chip.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+
+import '../../support/test_data.dart';
 
 /// P1.2 §4 R4 ReputationPanelScreen widget 测。
 ///
@@ -18,6 +21,9 @@ import 'package:wuxia_idle/shared/strings.dart';
 /// - 渲染件数 == fixture 长度(计数自洽)
 /// - chip label 与 UiStrings 字段绑定自洽
 void main() {
+  setUpAll(loadTestGameRepository);
+  tearDownAll(GameRepository.resetForTest);
+
   Reputation mkRep({
     required int id,
     required String factionId,
@@ -48,11 +54,18 @@ void main() {
     expect(find.text(UiStrings.reputationPanelEmpty), findsOneWidget);
   });
 
-  testWidgets('R4.2 3 门派 reputation 渲染 3 row + 0 chip(svc null fallback)', (
-    tester,
-  ) async {
-    // 注:reputationServiceProvider 不 override → svc==null → panel 走 empty 分支
-    // (走 emptyState),因 svc 为 null 时 list 即使非空也显 empty。本测断 fallback 分支。
+  test('factionDisplayNameProvider uses config name and falls back to id', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    expect(container.read(factionDisplayNameProvider('shaolin')), '少林寺');
+    expect(
+      container.read(factionDisplayNameProvider('future_faction')),
+      'future_faction',
+    );
+  });
+
+  testWidgets('R4.2 3 门派 reputation 渲染中文名 + 3 chip', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -63,14 +76,22 @@ void main() {
               mkRep(id: 3, factionId: 'jiaoMen', value: -80),
             ],
           ),
+          reputationTierProvider(50).overrideWithValue('zongShi'),
+          reputationTierProvider(-30).overrideWithValue('sanLiu'),
+          reputationTierProvider(-80).overrideWithValue('xueTu'),
         ],
         child: const MaterialApp(home: ReputationPanelScreen()),
       ),
     );
     await tester.pump();
     await tester.pump();
-    // svc==null fallback 分支:list 非空但 svc 缺 → 仍显 empty 文案
-    expect(find.text(UiStrings.reputationPanelEmpty), findsOneWidget);
+    expect(find.text('少林寺'), findsOneWidget);
+    expect(find.text('武当派'), findsOneWidget);
+    expect(find.text('邪教'), findsOneWidget);
+    expect(find.text('shaolin'), findsNothing);
+    expect(find.text('wudang'), findsNothing);
+    expect(find.text('jiaoMen'), findsNothing);
+    expect(find.byType(ReputationTierChip), findsNWidgets(3));
   });
 
   testWidgets('R4.3 ReputationTierChip 7 阶 label · xueTu/yiLiu/wuSheng 三阶', (

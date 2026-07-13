@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/application/battle_providers.dart'
@@ -9,6 +10,15 @@ import 'npc_relation_service.dart';
 import 'reputation_service.dart';
 
 part 'jianghu_providers.g.dart';
+
+final factionDisplayNameProvider = Provider.family<String, String>((ref, id) {
+  final repo = GameRepository.instanceOrNull;
+  return repo?.factionDefs[id]?.name ?? id;
+});
+
+final reputationTierProvider = Provider.family<String, int>((ref, value) {
+  return ref.watch(reputationServiceProvider)?.tierOf(value) ?? 'yiLiu';
+});
 
 /// [ReputationService] provider(P1.2 §3)。
 /// Isar 未 init / GameRepository 未 load → null,caller 兜底文案不抛错。

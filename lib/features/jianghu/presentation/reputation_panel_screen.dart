@@ -13,15 +13,13 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 /// 沿 [LineagePanelScreen] 三段式卡片体例:AppBar + ListView 卡片 + 兜底空态。
 /// Demo 单 save · playerId=1,走 [reputationsForCurrentPlayerProvider]。
 ///
-/// **不渲染门派显示名**(factions.yaml 当前未进 NumbersConfig,1.0 P5+ wire);
-/// 直接显 [Reputation.factionId] 字符串 id + value chip。
+/// 门派显示名从 factions.yaml 加载；未知 id 防御性回退为原始 id。
 class ReputationPanelScreen extends ConsumerWidget {
   const ReputationPanelScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(reputationsForCurrentPlayerProvider);
-    final svc = ref.watch(reputationServiceProvider);
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       appBar: AppBar(
@@ -41,7 +39,7 @@ class ReputationPanelScreen extends ConsumerWidget {
             ),
           ),
           data: (list) {
-            if (list.isEmpty || svc == null) {
+            if (list.isEmpty) {
               return const Center(
                 child: Text(
                   UiStrings.reputationPanelEmpty,
@@ -58,15 +56,25 @@ class ReputationPanelScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   itemCount: list.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 10),
-                  itemBuilder: (_, i) => Center(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: maxWidth),
-                      child: _ReputationRow(
-                        reputation: list[i],
-                        tier: svc.tierOf(list[i].value),
+                  itemBuilder: (_, i) {
+                    final reputation = list[i];
+                    final factionName = ref.watch(
+                      factionDisplayNameProvider(reputation.factionId),
+                    );
+                    final tier = ref.watch(
+                      reputationTierProvider(reputation.value),
+                    );
+                    return Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: maxWidth),
+                        child: _ReputationRow(
+                          reputation: reputation,
+                          factionName: factionName,
+                          tier: tier,
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 );
               },
             );
@@ -78,9 +86,14 @@ class ReputationPanelScreen extends ConsumerWidget {
 }
 
 class _ReputationRow extends StatelessWidget {
-  const _ReputationRow({required this.reputation, required this.tier});
+  const _ReputationRow({
+    required this.reputation,
+    required this.factionName,
+    required this.tier,
+  });
 
   final Reputation reputation;
+  final String factionName;
   final String tier;
 
   @override
@@ -122,7 +135,7 @@ class _ReputationRow extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        reputation.factionId,
+                        factionName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
