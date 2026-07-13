@@ -15,10 +15,12 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/battle/application/battle_resolution.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
 import 'package:wuxia_idle/features/cultivation/application/cultivation_service.dart';
+import 'package:wuxia_idle/features/cultivation/domain/skill_proficiency.dart';
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_event_loader.dart';
@@ -40,7 +42,7 @@ void recordAttributeObservation(
   print(['attribute_role', stage.name, metric, baseline, raised].join(','));
 }
 
-Map<String, Object?> _characterSnapshot(Character character) => {
+Map<String, Object?> _diagnosticInputSnapshot(Character character) => {
   'id': character.id,
   'name': character.name,
   'realmTier': character.realmTier,
@@ -77,8 +79,8 @@ Map<String, Object?> _characterSnapshot(Character character) => {
     raisedAttribute: raisedAttribute,
   );
   final targetKey = 'attributes.${raisedAttribute.name}';
-  final baseSnapshot = _characterSnapshot(base);
-  final raisedSnapshot = _characterSnapshot(raised);
+  final baseSnapshot = _diagnosticInputSnapshot(base);
+  final raisedSnapshot = _diagnosticInputSnapshot(raised);
   final baseStructure = Map<String, Object?>.of(baseSnapshot)
     ..remove(targetKey);
   final raisedStructure = Map<String, Object?>.of(raisedSnapshot)
@@ -87,7 +89,7 @@ Map<String, Object?> _characterSnapshot(Character character) => {
   expect(
     raisedStructure,
     baseStructure,
-    reason: 'baseline/raised 除 $targetKey 外必须是严格单变量',
+    reason: '本诊断相关生产输入中，baseline/raised 除 $targetKey 外必须一致',
   );
   expect(baseSnapshot[targetKey], 5);
   expect(raisedSnapshot[targetKey], 8);
@@ -153,23 +155,96 @@ AttackResult _calculateDamage({
   repository.numbers,
 );
 
-List<String> _dropSnapshot(DropResult result) => [
-  for (final equipment in result.equipments)
-    [
-      'equipment',
-      equipment.defId,
-      equipment.tier.name,
-      equipment.slot.name,
-      equipment.school?.name,
-      equipment.baseAttack,
-      equipment.baseHealth,
-      equipment.baseSpeed,
-      equipment.obtainedAt.toUtc().toIso8601String(),
-      equipment.obtainedFrom,
-    ].join(':'),
-  for (final item in result.items)
-    ['item', item.defId, item.quantity].join(':'),
-];
+int _firstProficiencyBoundaryRawUses({
+  required GameRepository repository,
+  required AttributeEffectPolicy policy,
+  required int baselineEnlightenment,
+  required int raisedEnlightenment,
+  int? searchLimit,
+}) {
+  final limit =
+      searchLimit ?? repository.numbers.skillProficiency.stages.last.minUses;
+  for (var rawUses = 1; rawUses <= limit; rawUses++) {
+    final baselineUses = policy.effectiveUsageCount(
+      rawUses: rawUses,
+      enlightenment: baselineEnlightenment,
+    );
+    final raisedUses = policy.effectiveUsageCount(
+      rawUses: rawUses,
+      enlightenment: raisedEnlightenment,
+    );
+    final baselineStage = SkillProficiency.stageFor(
+      baselineUses,
+      repository.numbers.skillProficiency,
+    );
+    final raisedStage = SkillProficiency.stageFor(
+      raisedUses,
+      repository.numbers.skillProficiency,
+    );
+    if (baselineStage.id != raisedStage.id) return rawUses;
+  }
+  throw StateError('在 rawUses=1..$limit 内未找到悟性 5→8 会跨越真实熟练度档位的输入');
+}
+
+double _encounterProbability({
+  required AttributeEffectPolicy policy,
+  required EncounterDef encounter,
+  required Character character,
+}) => policy.encounterProbability(
+  base: encounter.baseProbability,
+  source: encounter.type == EncounterType.techniqueInsight
+      ? EncounterProbabilitySource.enlightenment
+      : EncounterProbabilitySource.fortune,
+  attributes: character.attributes,
+);
+
+Map<String, Object?> _dropSnapshot(DropResult result) => {
+  'equipments': [
+    for (final equipment in result.equipments)
+      <String, Object?>{
+        'id': equipment.id,
+        'defId': equipment.defId,
+        'customName': equipment.customName,
+        'tier': equipment.tier,
+        'slot': equipment.slot,
+        'school': equipment.school,
+        'baseAttack': equipment.baseAttack,
+        'baseHealth': equipment.baseHealth,
+        'baseSpeed': equipment.baseSpeed,
+        'enhanceLevel': equipment.enhanceLevel,
+        'ownerCharacterId': equipment.ownerCharacterId,
+        'isLineageHeritage': equipment.isLineageHeritage,
+        'isLocked': equipment.isLocked,
+        'previousOwnerCharacterIds': [...equipment.previousOwnerCharacterIds],
+        'battleCount': equipment.battleCount,
+        'forgingSlots': [
+          for (final slot in equipment.forgingSlots)
+            <String, Object?>{
+              'slotIndex': slot.slotIndex,
+              'type': slot.type,
+              'unlocked': slot.unlocked,
+              'bonusValue': slot.bonusValue,
+              'specialSkillId': slot.specialSkillId,
+            },
+        ],
+        'lores': [
+          for (final lore in equipment.lores)
+            <String, Object?>{
+              'text': lore.text,
+              'isPreset': lore.isPreset,
+              'addedAt': lore.addedAt,
+              'triggerEventDesc': lore.triggerEventDesc,
+            },
+        ],
+        'obtainedAt': equipment.obtainedAt,
+        'obtainedFrom': equipment.obtainedFrom,
+      },
+  ],
+  'items': [
+    for (final item in result.items)
+      <String, Object?>{'defId': item.defId, 'quantity': item.quantity},
+  ],
+};
 
 Future<T> _withTestIsar<T>(Future<T> Function(Isar isar) body) async {
   final tempDir = await Directory.systemTemp.createTemp(
@@ -364,26 +439,54 @@ void main() {
           rawDelta: 50,
           enlightenment: pair.raised.attributes.enlightenment,
         );
-        final encounterBase = policy.encounterProbability(
-          base: 0.2,
-          source: EncounterProbabilitySource.enlightenment,
-          attributes: pair.base.attributes,
+        final encounterBase = _encounterProbability(
+          policy: policy,
+          encounter: insightEncounter,
+          character: pair.base,
         );
-        final encounterRaised = policy.encounterProbability(
-          base: 0.2,
-          source: EncounterProbabilitySource.enlightenment,
-          attributes: pair.raised.attributes,
+        final encounterRaised = _encounterProbability(
+          policy: policy,
+          encounter: insightEncounter,
+          character: pair.raised,
         );
+        expect(encounterRaised, greaterThan(encounterBase));
+        final encounterRoll = (encounterBase + encounterRaised) / 2;
 
         final def = _gangMengTechniqueDef(repository, pair.base);
         final skill = repository.getSkill(def.skillIds.first);
+        final boundaryRawUses = _firstProficiencyBoundaryRawUses(
+          repository: repository,
+          policy: policy,
+          baselineEnlightenment: pair.base.attributes.enlightenment,
+          raisedEnlightenment: pair.raised.attributes.enlightenment,
+        );
+        final boundaryEffectiveUsesBase = policy.effectiveUsageCount(
+          rawUses: boundaryRawUses,
+          enlightenment: pair.base.attributes.enlightenment,
+        );
+        final boundaryEffectiveUsesRaised = policy.effectiveUsageCount(
+          rawUses: boundaryRawUses,
+          enlightenment: pair.raised.attributes.enlightenment,
+        );
+        expect(
+          SkillProficiency.stageFor(
+            boundaryEffectiveUsesRaised,
+            repository.numbers.skillProficiency,
+          ).id,
+          isNot(
+            SkillProficiency.stageFor(
+              boundaryEffectiveUsesBase,
+              repository.numbers.skillProficiency,
+            ).id,
+          ),
+        );
         final cultivationBase = _techniqueFor(repository, pair.base, def);
         final cultivationRaised = _techniqueFor(repository, pair.raised, def);
         CultivationService.recordSkillUsage(
           tech: cultivationBase,
           skillId: skill.id,
           progressToNextMap: repository.numbers.cultivationProgressToNext,
-          delta: 50,
+          delta: boundaryRawUses,
           attributePolicy: policy,
           enlightenment: pair.base.attributes.enlightenment,
         );
@@ -391,7 +494,7 @@ void main() {
           tech: cultivationRaised,
           skillId: skill.id,
           progressToNextMap: repository.numbers.cultivationProgressToNext,
-          delta: 50,
+          delta: boundaryRawUses,
           attributePolicy: policy,
           enlightenment: pair.raised.attributes.enlightenment,
         );
@@ -401,21 +504,20 @@ void main() {
           pair.base,
           def,
           usedSkillId: skill.id,
-          rawUses: 95,
+          rawUses: boundaryRawUses,
         );
         final damageRaisedTechnique = _techniqueFor(
           repository,
           pair.raised,
           def,
           usedSkillId: skill.id,
-          rawUses: 95,
+          rawUses: boundaryRawUses,
         );
         expect(
           damageRaisedTechnique.ownerCharacterId,
           damageBaseTechnique.ownerCharacterId,
         );
-        final defender = fixture.createCharacter(stage, id: 900 + stage.index)
-          ..attributes.agility = 0;
+        final defender = fixture.createCharacter(stage, id: 900 + stage.index);
         final defenderTechnique = _techniqueFor(
           repository,
           defender,
@@ -453,13 +555,13 @@ void main() {
             saveDataId: saveDataId,
             attributes: pair.base.attributes,
             encounters: [insightEncounter],
-            rng: const _FixedRng(0.53),
+            rng: _FixedRng(encounterRoll),
           );
           final raisedResult = await service.evaluateTriggers(
             saveDataId: saveDataId,
             attributes: pair.raised.attributes,
             encounters: [insightEncounter],
-            rng: const _FixedRng(0.53),
+            rng: _FixedRng(encounterRoll),
           );
           return (
             base: baseResult?.id == insightEncounter.id ? 1 : 0,
@@ -478,6 +580,18 @@ void main() {
           'enlightenment_progress_delta',
           progressBase,
           progressRaised,
+        );
+        recordAttributeObservation(
+          stage,
+          'enlightenment_proficiency_boundary_raw_uses',
+          boundaryRawUses,
+          boundaryRawUses,
+        );
+        recordAttributeObservation(
+          stage,
+          'enlightenment_proficiency_boundary_effective_uses',
+          boundaryEffectiveUsesBase,
+          boundaryEffectiveUsesRaised,
         );
         recordAttributeObservation(
           stage,
@@ -511,8 +625,14 @@ void main() {
           cultivationBase.skillUsageCount.countOf(skill.id),
         );
         expect(
-          cultivationRaised.cultivationProgress,
-          greaterThan(cultivationBase.cultivationProgress),
+          cultivationRaised.cultivationLayer.index >
+                  cultivationBase.cultivationLayer.index ||
+              (cultivationRaised.cultivationLayer ==
+                      cultivationBase.cultivationLayer &&
+                  cultivationRaised.cultivationProgress >
+                      cultivationBase.cultivationProgress),
+          isTrue,
+          reason: '同一动态 rawUses 下，高悟性真实修炼结果必须领先',
         );
         expect(damageBase.isDodged, isFalse);
         expect(damageRaised.isDodged, isFalse);
@@ -600,16 +720,18 @@ void main() {
           id: 700 + stage.index,
           raisedAttribute: AttributeKey.fortune,
         );
-        final encounterBase = policy.encounterProbability(
-          base: 0.2,
-          source: EncounterProbabilitySource.fortune,
-          attributes: pair.base.attributes,
+        final encounterBase = _encounterProbability(
+          policy: policy,
+          encounter: fortuneEncounter,
+          character: pair.base,
         );
-        final encounterRaised = policy.encounterProbability(
-          base: 0.2,
-          source: EncounterProbabilitySource.fortune,
-          attributes: pair.raised.attributes,
+        final encounterRaised = _encounterProbability(
+          policy: policy,
+          encounter: fortuneEncounter,
+          character: pair.raised,
         );
+        expect(encounterRaised, greaterThan(encounterBase));
+        final encounterRoll = (encounterBase + encounterRaised) / 2;
         final hpBase = CharacterDerivedStats.maxHp(
           pair.base,
           const [],
@@ -648,13 +770,13 @@ void main() {
             saveDataId: saveDataId,
             attributes: pair.base.attributes,
             encounters: [fortuneEncounter],
-            rng: const _FixedRng(0.65),
+            rng: _FixedRng(encounterRoll),
           );
           final raisedResult = await service.evaluateTriggers(
             saveDataId: saveDataId,
             attributes: pair.raised.attributes,
             encounters: [fortuneEncounter],
-            rng: const _FixedRng(0.65),
+            rng: _FixedRng(encounterRoll),
           );
           return (
             base: baseResult?.id == fortuneEncounter.id ? 1 : 0,
@@ -669,8 +791,7 @@ void main() {
           techniqueRaised.ownerCharacterId,
           techniqueBase.ownerCharacterId,
         );
-        final defender = fixture.createCharacter(stage, id: 1100 + stage.index)
-          ..attributes.agility = 0;
+        final defender = fixture.createCharacter(stage, id: 1100 + stage.index);
         final defenderTechnique = _techniqueFor(
           repository,
           defender,
@@ -698,16 +819,48 @@ void main() {
           now: () => fixedNow,
         );
         final stageDef = repository.getStage('stage_01_01');
-        final dropsBase = dropService.rollDrops(
-          stageDef,
-          DefaultRng(seed: 20260713),
+        final victoryState = BattleState(
+          leftTeam: [
+            BattleCharacter.fromCharacter(
+              character: pair.base,
+              equipped: const [],
+              mainTechnique: techniqueBase,
+              numbers: repository.numbers,
+              teamSide: 0,
+              slotIndex: 0,
+            ),
+          ],
+          rightTeam: const [],
+          tick: 1,
+          result: BattleResult.leftWin,
+          actionLog: const [],
         );
-        final dropsRaised = dropService.rollDrops(
-          stageDef,
-          DefaultRng(seed: 20260713),
-        );
+        DropResult resolveDrops(Character character) =>
+            BattleResolutionService.resolve(
+              finalState: victoryState,
+              participatingCharacters: [character],
+              equipmentsByCharacter: const {},
+              techniquesByCharacter: const {},
+              rng: DefaultRng(seed: 20260713),
+              progressToNextMap: repository.numbers.cultivationProgressToNext,
+              techniqueDefLookup: repository.getTechnique,
+              dropService: dropService,
+              stageDef: stageDef,
+            ).dropResult;
+        final dropsBase = resolveDrops(pair.base);
+        final dropsRaised = resolveDrops(pair.raised);
         final dropSnapshotBase = _dropSnapshot(dropsBase);
         final dropSnapshotRaised = _dropSnapshot(dropsRaised);
+        expect(
+          dropsBase.isEmpty,
+          isFalse,
+          reason: '固定 seed 必须让真实 stage_01_01 产生掉落，避免空结果伪隔离',
+        );
+        expect(
+          _diagnosticInputSnapshot(pair.raised)..remove('attributes.fortune'),
+          _diagnosticInputSnapshot(pair.base)..remove('attributes.fortune'),
+          reason: 'BattleResolution 掉落对照的本诊断相关生产输入仅允许机缘不同',
+        );
         recordAttributeObservation(
           stage,
           'fortune_encounter_probability',
@@ -742,8 +895,8 @@ void main() {
         recordAttributeObservation(
           stage,
           'fortune_drop_result_count',
-          dropSnapshotBase.length,
-          dropSnapshotRaised.length,
+          dropsBase.equipments.length + dropsBase.items.length,
+          dropsRaised.equipments.length + dropsRaised.items.length,
         );
         expect(encounterRaised, greaterThan(encounterBase));
         expect(serviceTriggered.base, 0);
