@@ -4,13 +4,12 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/enum_localizations.dart';
-import '../../level/application/level_service.dart';
 import '../application/character_advancement_service.dart';
 
 /// 多角色升层 banner（mainline / tower victory dialog 共用）。
 ///
-/// 收一组 `(角色名, AdvancementResult)`,仅渲染 `didAdvance == true` 的条目。
-/// 若无任何角色升层,返回 [SizedBox.shrink],dialog caller 不用单独判空。
+/// 收一组 `(角色名, AdvancementResult)`,统一渲染修为经验、派生等级和境界突破。
+/// 若无任何修为变化,返回 [SizedBox.shrink],dialog caller 不用单独判空。
 ///
 /// 体例对齐 `retreat_result_screen._AdvancementBanner`(单角色版)。
 /// seclusion 用单 `seclusionAdvancement` 文案;本组件多角色版用
@@ -22,8 +21,10 @@ class AdvancementSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final advanced = entries.where((e) => e.result.didAdvance).toList();
-    if (advanced.isEmpty) return const SizedBox.shrink();
+    final progressed = entries
+        .where((e) => e.result.experienceGained > 0 || e.result.didAdvance)
+        .toList();
+    if (progressed.isEmpty) return const SizedBox.shrink();
     return CeremonyImagePanel(
       assetPath: WuxiaUi.ceremonyRealmBreakthrough,
       padding: const EdgeInsets.fromLTRB(14, 11, 14, 12),
@@ -40,12 +41,14 @@ class AdvancementSummary extends StatelessWidget {
             title: UiStrings.advancementCeremonyTitle,
           ),
           const SizedBox(height: 8),
-          for (final e in advanced)
+          for (final e in progressed)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 3),
               child: e.result.crossedTier
                   ? _TierUpRow(entry: e)
-                  : _LayerUpRow(entry: e),
+                  : e.result.didAdvance
+                  ? _LayerUpRow(entry: e)
+                  : _ExperienceProgressRow(entry: e),
             ),
         ],
       ),
@@ -67,11 +70,7 @@ class _LayerUpRow extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: Text(
-            UiStrings.advancementForCharacter(
-              entry.chName,
-              EnumL10n.realm(entry.result.tierAfter, entry.result.layerAfter),
-              entry.result.layersGained,
-            ),
+            _realmProgressText(entry),
             style: const TextStyle(
               color: WuxiaUi.ink,
               fontSize: 15,
@@ -114,14 +113,7 @@ class _TierUpRow extends StatelessWidget {
                 ),
               ),
               Text(
-                UiStrings.advancementForCharacter(
-                  entry.chName,
-                  EnumL10n.realm(
-                    entry.result.tierAfter,
-                    entry.result.layerAfter,
-                  ),
-                  entry.result.layersGained,
-                ),
+                _realmProgressText(entry),
                 style: const TextStyle(
                   color: WuxiaUi.ink,
                   fontSize: 16,
@@ -141,64 +133,59 @@ class AdvancementEntry {
   final String chName;
   final AdvancementResult result;
 
-  /// 第八阶段·角色等级 Lv:本场该角色的升级结果(null=未接入/未升级)。
-  /// 与境界 [result] 并列,victory dialog 用 [LevelUpSummary] 单独展示「晋 Lv N」。
-  final LevelUpResult? levelUp;
-
-  const AdvancementEntry({
-    required this.chName,
-    required this.result,
-    this.levelUp,
-  });
+  const AdvancementEntry({required this.chName, required this.result});
 }
 
-/// 第八阶段 D·角色等级 Lv 升级 banner(victory dialog · 与境界突破并列独立一格)。
-///
-/// 仅渲染 `levelUp?.didLevelUp == true` 的条目,显「晋 · {名} Lv N」。无则
-/// [SizedBox.shrink]。区别于 [AdvancementSummary](境界层突破),本组件是 Lv 轴反馈。
-class LevelUpSummary extends StatelessWidget {
-  final List<AdvancementEntry> entries;
+class _ExperienceProgressRow extends StatelessWidget {
+  const _ExperienceProgressRow({required this.entry});
 
-  const LevelUpSummary({super.key, required this.entries});
+  final AdvancementEntry entry;
 
   @override
   Widget build(BuildContext context) {
-    final leveled = entries
-        .where((e) => e.levelUp?.didLevelUp ?? false)
-        .toList();
-    if (leveled.isEmpty) return const SizedBox.shrink();
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 11),
-      decoration: BoxDecoration(
-        color: WuxiaColors.panel.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: WuxiaUi.gold.withValues(alpha: 0.50)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _CeremonyTitle(
-            icon: Icons.trending_up,
-            title: UiStrings.levelUpCeremonyTitle,
-          ),
-          const SizedBox(height: 6),
-          for (final e in leveled)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Text(
-                '晋 · ${e.chName} Lv ${e.levelUp!.levelAfter}',
-                style: const TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+    final progress = entry.result.progressChange;
+    return Row(
+      children: [
+        const _RowGlyph(icon: Icons.trending_up, color: WuxiaColors.gangMeng),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            progress.didLevelUp
+                ? UiStrings.cultivationLevelChanged(
+                    entry.chName,
+                    progress.before.level,
+                    progress.after.level,
+                  )
+                : UiStrings.cultivationExperienceGained(
+                    entry.chName,
+                    entry.result.experienceGained,
+                  ),
+            style: const TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
             ),
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
+}
+
+String _realmProgressText(AdvancementEntry entry) {
+  final realmText = UiStrings.advancementForCharacter(
+    entry.chName,
+    EnumL10n.realm(entry.result.tierAfter, entry.result.layerAfter),
+    entry.result.layersGained,
+  );
+  final progress = entry.result.progressChange;
+  return progress.didLevelUp
+      ? UiStrings.cultivationRealmAndLevelChanged(
+          realmText,
+          progress.before.level,
+          progress.after.level,
+        )
+      : realmText;
 }
 
 class _CeremonyTitle extends StatelessWidget {

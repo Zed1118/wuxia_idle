@@ -608,6 +608,18 @@ class UiStrings {
   static String profileLevelProgress(int current, int next) =>
       '$current / $next';
   static const String levelUpCeremonyTitle = '修为精进'; // 第八阶段 D·Lv 升级 banner 标题
+  static String cultivationLevelChanged(
+    String name,
+    int levelBefore,
+    int levelAfter,
+  ) => '$name · 修为等级 Lv$levelBefore → Lv$levelAfter';
+  static String cultivationExperienceGained(String name, int amount) =>
+      '$name · 修为经验 +$amount';
+  static String cultivationRealmAndLevelChanged(
+    String realmText,
+    int levelBefore,
+    int levelAfter,
+  ) => '$realmText · Lv$levelBefore → Lv$levelAfter';
   static const String profilePortraitPlaque = '人物签';
   static const String characterBiographyTitle = '门人小传';
   static String characterBiographyRole(String role) => '身份 $role';

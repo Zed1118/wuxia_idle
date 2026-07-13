@@ -187,8 +187,9 @@ class StageVictoryContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final didAdvance = advancements.any((e) => e.result.didAdvance);
-    final didLevelUp = advancements.any((e) => e.levelUp?.didLevelUp ?? false);
+    final hasCultivationProgress = advancements.any(
+      (e) => e.result.experienceGained > 0 || e.result.didAdvance,
+    );
     final materialItems = drops.items
         .where(
           (item) => ItemType.fromDefId(item.defId) != ItemType.techniqueScroll,
@@ -225,19 +226,10 @@ class StageVictoryContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
               ],
-              if (didAdvance || didLevelUp)
+              if (hasCultivationProgress)
                 _VictoryReportSection(
                   title: UiStrings.stageVictoryExperienceSection,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (didAdvance) AdvancementSummary(entries: advancements),
-                      if (didAdvance && didLevelUp) const SizedBox(height: 10),
-                      // 第八阶段 D·角色等级 Lv 升级反馈(与境界突破并列独立一格)。
-                      if (didLevelUp) LevelUpSummary(entries: advancements),
-                    ],
-                  ),
+                  child: AdvancementSummary(entries: advancements),
                 ),
               if (hasEquipmentSection)
                 _VictoryReportSection(
