@@ -12,13 +12,14 @@
 
 ## 当前恢复点
 
-- 状态：Task 2 已完成；49 层与 Lv1～Lv490 全路径硬契约已建立，下一步执行 Task 3。
+- 状态：Task 2 已完成并通过质量加固；49 层与 Lv1～Lv490 全路径硬契约已建立，下一步执行 Task 3。
 - 实现分支：`codex/progression-attribute-playtest-implementation`。
 - 无修改基线 commit：`0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
 - 基线验证：重新生成 Git 忽略的 `g.dart` 后，`flutter analyze --no-pub` 为 `No issues found`；计划指定基线共 41 tests PASS；固定种子心魔观察值为 05=`17/20`、06=`17/20`、07=`13/20`；塔诊断 PASS。以上观察值均绑定 commit `0b5d4b234f9630b43dfda9ce9b8ed1d81e3e2bbf`。
 - Task 1 TDD 红灯证据：`flutter test --no-pub test/support/progression_playtest_fixture_test.dart` 退出码 1，报告缺少 `progression_playtest_fixture.dart`，且 `ProgressionPlaytestFixture`、`GrowthStage` 未定义。
 - Task 1 质量加固绿灯：同一目标测试 4 tests PASS；`flutter analyze --no-pub` 仍为 `No issues found`；以上结果绑定 commit `29f48d42324a8db8822c050696ef6c3931541f96`。
 - Task 2 绿灯：新全路径契约单独运行 4 tests PASS；与 `character_advancement_service_test.dart`、`realm_progress_display_test.dart` 联合运行 32 tests PASS；`flutter analyze --no-pub` 为 `No issues found`；未触发 Task 7，且未修改 `lib/` / `data/`。以上结果绑定 commit `b9c677b5ca1085976315eab11dcd0ef86e4813ba`。
+- Task 2 质量加固：心魔锁现在精确守住层位、经验留账和镜像刷新；真实 `RealmDef` 中学徒·精通门槛为 170，学徒·圆熟门槛为 230，锁定积累 340 后解锁 `+1` 的确定余量为 171，因此精确只升 1 层；终境守住 tier/layer、全量经验与终境镜像；逐层 tier/layer/mirror 断言均带 `absoluteLevel` 定位理由。单文件 4 tests PASS，三文件联合 32 tests PASS，`flutter analyze --no-pub` 为 `No issues found`；以上结果绑定 commit `1d6aee30bb9b8c97960adea9c357a9f098fc9872`。
 - 设计规格：`docs/superpowers/specs/2026-07-13-progression-attribute-playtest-design.md`。
 - 下一步：执行 Task 3，锁定七类经验入口与玩法差异。
 - 强制边界：本计划不改 `numbers.yaml`、schema、save version、属性倍率或发布流程。
