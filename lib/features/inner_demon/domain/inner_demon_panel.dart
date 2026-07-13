@@ -34,6 +34,7 @@ class InnerDemonPanelData {
 /// 不引新突破机制 —— 进阶仍自动(applyExperience),本解析仅决定展示态。
 InnerDemonPanelData? resolveInnerDemonPanel({
   required Character character,
+  required int experienceToNext,
   required InnerDemonProgress progress,
   required InnerDemonDef innerDemonDef,
 }) {
@@ -54,7 +55,8 @@ InnerDemonPanelData? resolveInnerDemonPanel({
   final idx = layers.indexOf(character.realmLayer);
   final hasNext = idx >= 0 && idx < layers.length - 1;
   final nextLayer = hasNext ? layers[idx + 1] : null;
-  final expFull = character.experience >= character.experienceToNextLayer;
+  final expFull =
+      experienceToNext > 0 && character.experience >= experienceToNext;
 
   final locked =
       expFull &&

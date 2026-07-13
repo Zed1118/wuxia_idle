@@ -13,9 +13,9 @@
 ## 当前恢复点
 
 - 状态：执行中。
-- 最后完成：Task 3 升级服务停止依赖存档镜像阈值。
-- 下一步：Task 4 迁移所有生产阈值消费者并加零读取契约。
-- 已跑验证：基线 `flutter analyze --no-pub` 0 issue；基线全量 3878 pass；Task 1 定向 33 pass；Task 2 定向 42 pass；Task 3 定向 31 pass。
+- 最后完成：Task 4 迁移所有生产阈值消费者并加零读取契约。
+- 下一步：Task 5 把跨玩法结算结果移出 presentation。
+- 已跑验证：基线 `flutter analyze --no-pub` 0 issue；基线全量 3878 pass；Task 1 定向 33 pass；Task 2 定向 42 pass；Task 3 定向 31 pass；Task 4 定向 60 pass。
 - 阻塞项：无。
 
 ---

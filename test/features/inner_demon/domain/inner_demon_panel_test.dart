@@ -62,6 +62,7 @@ void main() {
   test('非武圣 → null(shrink)', () {
     final r = resolveInnerDemonPanel(
       character: ch(tier: RealmTier.yiLiu),
+      experienceToNext: 100,
       progress: prog(const {}),
       innerDemonDef: defWith7(),
     );
@@ -75,6 +76,7 @@ void main() {
     };
     final r = resolveInnerDemonPanel(
       character: ch(tier: RealmTier.wuSheng, layer: RealmLayer.dengFeng),
+      experienceToNext: 100,
       progress: prog(cleared),
       innerDemonDef: defWith7(),
     )!;
@@ -91,6 +93,7 @@ void main() {
         experience: 100,
         experienceToNextLayer: 100,
       ),
+      experienceToNext: 100,
       progress: prog(const {'stage_inner_demon_01', 'stage_inner_demon_02'}),
       innerDemonDef: defWith7(),
     )!;
@@ -107,6 +110,7 @@ void main() {
         experience: 10,
         experienceToNextLayer: 100,
       ),
+      experienceToNext: 100,
       progress: prog(const {'stage_inner_demon_01'}),
       innerDemonDef: defWith7(),
     )!;
@@ -126,9 +130,25 @@ void main() {
         experience: 100,
         experienceToNextLayer: 100,
       ),
+      experienceToNext: 100,
       progress: empty,
       innerDemonDef: InnerDemonDef.empty(),
     );
     expect(r, isNull);
+  });
+
+  test('满经验判断使用调用方阈值而非角色镜像', () {
+    final r = resolveInnerDemonPanel(
+      character: ch(
+        tier: RealmTier.wuSheng,
+        layer: RealmLayer.shuLian,
+        experience: 100,
+        experienceToNextLayer: 999999,
+      ),
+      experienceToNext: 100,
+      progress: prog(const {'stage_inner_demon_01', 'stage_inner_demon_02'}),
+      innerDemonDef: defWith7(),
+    )!;
+    expect(r.state, InnerDemonPanelState.blocked);
   });
 }

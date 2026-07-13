@@ -3,8 +3,12 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/core/application/character_providers.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 
@@ -116,6 +120,35 @@ void main() {
       final list = container.read(shopItemListProvider);
       expect(list, isNotEmpty);
       expect(list.any((d) => d.id == 'shop_mojianshi'), true);
+    });
+  });
+
+  group('founderEtlProvider', () {
+    test('使用 RealmDef 阈值而非角色兼容镜像', () async {
+      final founder = Character.create(
+        name: '祖师',
+        realmTier: RealmTier.xueTu,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: Attributes(),
+        rarity: RarityTier.biaoZhun,
+        lineageRole: LineageRole.founder,
+        createdAt: DateTime(2026, 7, 13),
+        isFounder: true,
+        experienceToNextLayer: 999999,
+      )..id = 1;
+      final container = ProviderContainer(
+        overrides: [
+          activeCharacterIdsProvider.overrideWith((ref) async => [1]),
+          characterByIdProvider(1).overrideWith((ref) async => founder),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final threshold = await container.read(founderEtlProvider.future);
+      final expected = GameRepository.instance
+          .getRealm(RealmTier.xueTu, RealmLayer.qiMeng)
+          .experienceToNext;
+      expect(threshold, expected);
     });
   });
 }

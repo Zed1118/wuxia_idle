@@ -55,7 +55,13 @@ final mainMenuStatusSummaryProvider =
       final injuryItem = _injuryItem(characters);
       if (injuryItem != null) items.add(injuryItem);
 
-      final breakthroughItem = _breakthroughItem(characters);
+      final repository = GameRepository.instance;
+      final breakthroughItem = _breakthroughItem(
+        characters,
+        (character) => repository
+            .getRealm(character.realmTier, character.realmLayer)
+            .experienceToNext,
+      );
       if (breakthroughItem != null) items.add(breakthroughItem);
 
       final progress = await ref.watch(mainlineProgressProvider.future);
@@ -129,10 +135,13 @@ MainMenuStatusSummaryItem? _injuryItem(List<Character> characters) {
   );
 }
 
-MainMenuStatusSummaryItem? _breakthroughItem(List<Character> characters) {
+MainMenuStatusSummaryItem? _breakthroughItem(
+  List<Character> characters,
+  int Function(Character character) thresholdFor,
+) {
   for (final character in characters) {
-    if (character.experienceToNextLayer <= 0) continue;
-    if (character.experience < character.experienceToNextLayer) continue;
+    final threshold = thresholdFor(character);
+    if (threshold <= 0 || character.experience < threshold) continue;
     return MainMenuStatusSummaryItem(
       kind: MainMenuStatusKind.breakthrough,
       route: MainMenuStatusRoute.character,

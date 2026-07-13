@@ -32,7 +32,7 @@ class ShopService {
   ///
   /// - [isar] 已打开的 Isar 实例。
   /// - [def] 商品静态定义（来自 shop.yaml 加载的 [ShopItemDef]）。
-  /// - [founderEtl] 祖师当前单层所需经验（`Character.experienceToNextLayer`）。
+  /// - [founderEtl] 祖师当前单层所需经验（`RealmDef.experienceToNext`）。
   ///   固定价商品可传 null；动态价商品（经验丹）必须传，传 null 返回 [PurchaseFailReason.pricingUnavailable]。
   ///
   /// 返回 [PurchaseResult]：

@@ -570,8 +570,7 @@ class _CultivationProgressCard extends StatelessWidget {
           realmDef?.absoluteLevel ??
           RealmUtils.absoluteLevelOf(character.realmTier, character.realmLayer),
       experience: character.experience,
-      experienceToNext:
-          realmDef?.experienceToNext ?? character.experienceToNextLayer,
+      experienceToNext: realmDef?.experienceToNext ?? 1,
       hasNextRealmLayer: hasNext,
     );
 
@@ -948,8 +947,13 @@ class _BreakthroughBlockerSection extends ConsumerWidget {
     if (progress == null) return const SizedBox.shrink(); // loading/err 不闪
 
     final innerDemonDef = GameRepository.instance.numbers.innerDemon;
+    final realmDef = GameRepository.instance.getRealm(
+      character.realmTier,
+      character.realmLayer,
+    );
     final data = resolveInnerDemonPanel(
       character: character,
+      experienceToNext: realmDef.experienceToNext,
       progress: progress,
       innerDemonDef: innerDemonDef,
     );

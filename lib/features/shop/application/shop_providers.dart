@@ -44,7 +44,7 @@ List<ShopItemDef> shopItemList(Ref ref) {
 
 /// 祖师（founder）当前单层所需经验（balance T3 动态标价）。
 ///
-/// 读 active 角色中 isFounder=true 的 `experienceToNextLayer`。
+/// 由 active 祖师当前境界对应的 `RealmDef.experienceToNext` 派生。
 /// - 无 founder（存档异常）返回 null → UI 隐藏动态价商品或禁用购买。
 /// - 随 founder 境界推进，provider invalidate 后自动刷新商店显示价。
 @riverpod
@@ -52,7 +52,11 @@ Future<int?> founderEtl(Ref ref) async {
   final ids = await ref.watch(activeCharacterIdsProvider.future);
   for (final id in ids) {
     final c = await ref.watch(characterByIdProvider(id).future);
-    if (c != null && c.isFounder) return c.experienceToNextLayer;
+    if (c != null && c.isFounder) {
+      return GameRepository.instance
+          .getRealm(c.realmTier, c.realmLayer)
+          .experienceToNext;
+    }
   }
   return null; // 无 founder（异常存档兜底）
 }
