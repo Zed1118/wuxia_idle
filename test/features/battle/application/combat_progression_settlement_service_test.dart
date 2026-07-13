@@ -5,10 +5,12 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/game_event.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/combat_progression_settlement_service.dart';
+import 'package:wuxia_idle/features/equipment/domain/resonance_upgrade_notice.dart';
 
 import '../../../support/test_data.dart';
 import '../../../support/isar_test_support.dart';
@@ -151,6 +153,42 @@ void main() {
 
       expect(await isar.gameEvents.where().count(), 0);
       expect(await isar.characters.get(founder.id), isNull);
+    },
+  );
+
+  test(
+    'ownerless equipment with null founder skips event but keeps notice',
+    () async {
+      final isar = IsarSetup.instance;
+      final character = makeCharacter(id: 1, name: '祖师');
+      final equipment = Equipment.create(
+        defId: 'weapon_xunchang_tie_jian',
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.weapon,
+        obtainedAt: DateTime(2026, 7, 14),
+        obtainedFrom: '测试',
+      )..id = 11;
+      final service = CombatProgressionSettlementService(repository);
+
+      late List<ResonanceUpgradeNotice> notices;
+      await isar.writeTxn(() async {
+        await isar.characters.put(character);
+        notices = await service.recordCommonEvents(
+          isar: isar,
+          characters: [character],
+          equipmentsByCharacter: {
+            1: [equipment],
+          },
+          resonanceUpgradedEquipmentIds: [equipment.id],
+          advancements: const [],
+          founderId: null,
+          bossVictory: null,
+        );
+      });
+
+      expect(notices, hasLength(1));
+      final events = await isar.gameEvents.where().findAll();
+      expect(events, isEmpty);
     },
   );
 }

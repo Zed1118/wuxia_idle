@@ -83,12 +83,17 @@ class CombatProgressionSettlementService {
       if (equipment == null) continue;
       final def = repository.getEquipment(equipment.defId);
       final stage = equipment.resonanceStage(repository.numbers);
-      await events.recordResonanceUpgraded(
-        characterId: equipment.ownerCharacterId ?? founderId ?? 0,
-        equipmentId: equipment.id,
-        equipmentName: def.name,
-        newStage: stage.index + 1,
-      );
+      // 无可归属角色(装备无主且无祖师)时跳过事件记录,不写 characterId=0
+      // 的幽灵行;UI notice 与事件记录解耦,仍然返回。
+      final eventCharacterId = equipment.ownerCharacterId ?? founderId;
+      if (eventCharacterId != null) {
+        await events.recordResonanceUpgraded(
+          characterId: eventCharacterId,
+          equipmentId: equipment.id,
+          equipmentName: def.name,
+          newStage: stage.index + 1,
+        );
+      }
       notices.add(
         ResonanceUpgradeNotice(equipmentName: def.name, newStage: stage),
       );
