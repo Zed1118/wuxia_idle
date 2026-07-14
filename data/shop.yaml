@@ -24,11 +24,11 @@ shop:
   - id: shop_jingyandan_small
     itemDefId: item_jingyandan_small
     itemType: jingYanDan
-    price_layer_fraction: 1.0   # T6 校准:凝神丹 buyRatio=1.0/0.2=5,守无套利(挂机为主丹为辅 §5.5)
+    price_layer_fraction: 0.6   # buyRatio=0.6/0.1=6，高于当前地图银两/经验比
     category: pill
 
   - id: shop_jingyandan_mid
     itemDefId: item_jingyandan_mid
     itemType: jingYanDan
-    price_layer_fraction: 2.5   # T6 校准:培元丹 buyRatio=2.5/0.5=5,守无套利(挂机为主丹为辅 §5.5)
+    price_layer_fraction: 1.2   # buyRatio=1.2/0.2=6，守无套利
     category: pill

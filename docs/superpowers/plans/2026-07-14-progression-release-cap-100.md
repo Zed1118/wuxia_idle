@@ -39,10 +39,10 @@
 
 ## 当前恢复点
 
-- **状态:** Task 3 已完成，全部生产经验来源已共用发布上限+心魔的统一门禁，分支仍为 WIP。
-- **最后完成:** 战斗结算、闭关、离线挂机和经验丹入口均调用 `ProgressionGateService`；心魔或 Lv100 上限拦截时保留溢出 EXP；Lv101+ 旧档不回退且不再进层。
-- **下一步:** 执行 Task 4，先建立主线/全内容/闭关/离线四条经验预算 RED 合同，再重校 YAML 真相源。
-- **已跑验证:** Task 1 定向 6 tests passed；Task 2 心魔+数据+角色面板定向集 110 tests passed；Task 3 五类经验来源定向集 102 tests passed，真 Isar 离线结算+红线 5 tests passed；`git diff --check` 通过。
+- **状态:** Task 4 已完成，当前内容经验总预算、闭关/离线和三档经验丹已按 Lv100 发布节奏重校，分支仍为 WIP。
+- **最后完成:** 30 主线总 EXP=492，30 塔总 EXP=507，轻功/群战各 200；三流可达图 72h 推进 3–6 显示级，三流 8h 普通离线不超过 1 级；丹药为 10%/20%/30%，商店价格比保持无套利。
+- **下一步:** 执行 Task 5，将 30 个主线关的需求境界、敌人境界/属性和当前掉落重排到学徒—三流。
+- **已跑验证:** Task 1 定向 6 tests passed；Task 2 心魔+数据+角色面板定向集 110 tests passed；Task 3 五类经验来源定向集 102 tests passed；Task 4 预算 4 tests、经济/丹药/商店 33 tests 和闭关/离线 62 tests 均通过；`git diff --check` 通过。
 - **阻塞项:** 无。Claude `feat/combat-feel-phase2` 仍为 WIP，可并行；已知重叠仅为 `data/numbers.yaml` 的不同配置段，交付前再对比。
 
 ## 文件地图
@@ -240,20 +240,20 @@
 - Modify: `data/items.yaml`
 - Modify: `data/shop.yaml`
 
-- [ ] **Step 1: 先写四条 RED 预算断言**
+- [x] **Step 1: 先写四条 RED 预算断言**
 
   - 30 主线首通从 Lv1 出发，忽略心魔但启用发布上限，结束于 Lv35～50。
   - 主线 + 30 塔 + 10 支线 + 7 心魔 + 72h 闭关 + 24h 离线 + 各 1 枚丹药，结束于 Lv80～95，且不超过 Lv100。
   - 三流可达地图 72h 闭关仅提升 3～6 个显示级。
   - 三流 8h 离线不超过 1 个显示级，三枚经验丹分别是当层 10%/20%/30%。
 
-- [ ] **Step 2: 跑预算与道具测试并确认 RED**
+- [x] **Step 2: 跑预算与道具测试并确认 RED**
 
   ```bash
   flutter test --no-pub test/features/cultivation/application/progression_release_budget_test.dart test/tools/idle_economy_test.dart test/data/item_def_test.dart
   ```
 
-- [ ] **Step 3: 写入经验真相源**
+- [x] **Step 3: 写入经验真相源**
 
   主线 30 关奖励依次为：
 
@@ -271,13 +271,13 @@
 
   合计 507。轻功与群战各用 `[20, 25, 30, 50, 75]`。
 
-- [ ] **Step 4: 调整挂机和消耗品**
+- [x] **Step 4: 调整挂机和消耗品**
 
   - 当前可达地图：`山林 3.0/h`、`古剑冢 2.5/h`、`藏经阁 3.0/h`。未来二流/宗师地图保留高阶产出，不纳入当前版路线。
   - `passive_idle.base_exp_per_hour: 3.0`。
   - 三种丹药 `layer_fraction: 0.1 / 0.2 / 0.3`，同步调整 `shop.yaml` 价格比例，继续满足无套利红线。
 
-- [ ] **Step 5: 跑 GREEN 并提交**
+- [x] **Step 5: 跑 GREEN 并提交**
 
   ```bash
   dart format test/features/cultivation/application/progression_release_budget_test.dart test/tools/idle_economy_test.dart test/data/item_def_test.dart

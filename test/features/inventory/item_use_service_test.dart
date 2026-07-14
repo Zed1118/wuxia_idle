@@ -95,11 +95,11 @@ void main() {
     });
   }
 
-  test('经验丹：大还丹(fraction=1.0) 升满一层 + 消费 1', () async {
-    // 配置 xueTu.qiMeng 阈值 50；gain = round(50 × 1.0) = 50 → 恰好升1层。
+  test('经验丹：大还丹推进当层 30% + 消费 1', () async {
+    // 配置 xueTu.qiMeng 阈值 50；gain = round(50 × 0.3) = 15。
     await seedFounder();
     await seedItem('item_jingyandan_large', ItemType.jingYanDan, 2);
-    final def = repo.itemDefs['item_jingyandan_large']!; // layerFraction = 1.0
+    final def = repo.itemDefs['item_jingyandan_large']!; // layerFraction = 0.3
 
     final r = await ItemUseService.use(
       isar,
@@ -108,13 +108,18 @@ void main() {
     );
 
     expect(r.kind, ItemUseKind.experienceApplied);
-    expect(r.layersGained, 1);
+    expect(r.layersGained, 0);
+    final founder = await isar.characters
+        .filter()
+        .isFounderEqualTo(true)
+        .findFirst();
+    expect(founder?.experience, 15);
     final item = await isar.inventoryItems.getByDefId('item_jingyandan_large');
     expect(item?.quantity, 1); // 消费 1
   });
 
   test('经验丹：isLayerLocked 拦截 → 入账不升层（缩放后实际入账值）', () async {
-    // 存档阈值是 100，但配置阈值是 50；gain = round(50 × 1.0) = 50。
+    // 存档阈值是 100，但配置阈值是 50；gain = round(50 × 0.3) = 15。
     await seedFounder();
     await seedItem('item_jingyandan_large', ItemType.jingYanDan, 1);
     final def = repo.itemDefs['item_jingyandan_large']!;
@@ -132,13 +137,13 @@ void main() {
         .filter()
         .isFounderEqualTo(true)
         .findFirst();
-    expect(founder?.experience, 50);
+    expect(founder?.experience, 15);
   });
 
   test('经验丹缩放：培元丹按境界定义阈值乘 fraction', () async {
     await seedFounder();
     await seedItem('item_jingyandan_mid', ItemType.jingYanDan, 1);
-    final def = repo.itemDefs['item_jingyandan_mid']!; // layerFraction = 0.5
+    final def = repo.itemDefs['item_jingyandan_mid']!; // layerFraction = 0.2
 
     final r = await ItemUseService.use(
       isar,
@@ -152,7 +157,7 @@ void main() {
         .filter()
         .isFounderEqualTo(true)
         .findFirst();
-    expect(founder?.experience, 25);
+    expect(founder?.experience, 10);
   });
 
   test('经验丹缩放读取境界定义，不信任旧存档阈值', () async {
@@ -174,7 +179,7 @@ void main() {
       );
     });
     await seedItem('item_jingyandan_mid', ItemType.jingYanDan, 1);
-    final def = repo.itemDefs['item_jingyandan_mid']!; // layerFraction = 0.5
+    final def = repo.itemDefs['item_jingyandan_mid']!; // layerFraction = 0.2
 
     await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
 
@@ -182,7 +187,7 @@ void main() {
         .filter()
         .isFounderEqualTo(true)
         .findFirst();
-    expect(founder?.experience, 25);
+    expect(founder?.experience, 10);
   });
 
   test('旧终境存档阈值为零时，经验丹仍入账且不改旧等级字段', () async {

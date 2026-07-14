@@ -864,15 +864,15 @@ class GameRepository {
     for (final d in shopItemDefs.values) {
       // F8（2026-06-23 掉落优化）：§5.7「仅掉落不上架」守门。
       //   - 秘籍（techniqueScroll）：GDD §5.7 仅掉落，上架破"先感受问题再给答案"。
-      //   - 大还丹（大档经验丹 layerFraction=1.0，"一次顶满一层"）：仅掉落不上架
-      //     （§5.5 挂机为主丹为辅；小/中档 layerFraction<1.0 仍可上架）。
+      //   - 大还丹（大档经验丹）：仅掉落不上架。档位由稳定 defId 识别，
+      //     不与可调的 layerFraction 数值耦合。
       if (d.itemType == ItemType.techniqueScroll) {
         throw StateError('红线:商店 ${d.id} 上架秘籍 ${d.itemDefId}，违反 §5.7（秘籍仅掉落不上架）');
       }
       final item = itemDefs[d.itemDefId];
       if (item != null &&
           item.type == ItemType.jingYanDan &&
-          item.layerFraction == 1.0) {
+          item.defId == 'item_jingyandan_large') {
         throw StateError(
           '红线:商店 ${d.id} 上架大还丹 ${d.itemDefId}，违反 §5.7（大档经验丹仅掉落不上架）',
         );

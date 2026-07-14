@@ -1003,7 +1003,7 @@ retreat:
       map_name: "山林"
       required_realm: xueTu                  # 学徒即可进入
       base_outputs:
-        experience_per_hour: 100             # B2 finding 修正(2026-05-29):低 tier 回 ×1.0(原值)·避免挂机优先早期碾压(满挂 72h 二流 16 层→三流 12 层·对 Ch1 学徒差 1 阶不碾压)·根因A ×2.5 保留在 erLiu+ 中期
+        experience_per_hour: 3.0             # Lv100 发布版：72h 约推进 3–6 个显示级
         mojianshi_per_hour: 1.0
         silver_per_hour: 8.0                 # 银两/小时(T6 balance:山林学徒图,提早期降门槛)
         equipment_drop_rate: 1.0             # 基础掉率（无加成）
@@ -1041,7 +1041,7 @@ retreat:
       map_name: "古剑冢"
       required_realm: sanLiu                 # 三流境界解锁
       base_outputs:
-        experience_per_hour: 80              # B2 finding 修正(2026-05-29):三流图回 ×1.0(原值)·低 tier 不享根因A ×2.5(中期保留在 erLiu+)
+        experience_per_hour: 2.5             # Lv100 发布版：古剑冢偏装备，经验略低
         mojianshi_per_hour: 0.8
         silver_per_hour: 14.0                # 银两/小时(T6 balance:古剑冢三流图)
         equipment_drop_rate: 1.5             # 兵器掉率 +50%（GDD §8.3）
@@ -1079,7 +1079,7 @@ retreat:
       map_name: "藏经阁"
       required_realm: sanLiu
       base_outputs:
-        experience_per_hour: 90              # B2 finding 修正(2026-05-29):三流图回 ×1.0(原值)·低 tier 不享根因A ×2.5(中期保留在 erLiu+)
+        experience_per_hour: 3.0             # Lv100 发布版：藏经阁偏心法，经验与山林持平
         mojianshi_per_hour: 0.5
         silver_per_hour: 14.0                # 银两/小时(T6 balance:藏经阁三流图)
         equipment_drop_rate: 1.0
@@ -1272,7 +1272,7 @@ retreat:
 # 解决高境界被动离线 8h 仅千分级进度的问题；磨剑石仍取 25%，避免经济侧膨胀。
 passive_idle:
   base_mojianshi_per_hour: 0.25   # ≈ 入门闭关图 1.0 × 0.25
-  base_exp_per_hour: 50.0         # ≈ 入门闭关图 100 × 0.50
+  base_exp_per_hour: 3.0          # 三流 8h 不超过 1 个显示级
   realm_scale_per_tier: 1.6       # 被动经验专用倍率(学徒 ×1.0，武圣 ≈16.78)
   min_recap_hours: 1.0            # 离开 ≥1h 才弹告知卡(与范围 A 一致)
 

@@ -84,7 +84,9 @@ void main() {
   test('GameRepository 加载 items.yaml: 核心道具 def 完整', () async {
     final repo = await loadTestGameRepository();
     expect(repo.itemDefs.length, greaterThanOrEqualTo(23));
-    expect(repo.itemDefs['item_jingyandan_small']?.layerFraction, 0.2);
+    expect(repo.itemDefs['item_jingyandan_small']?.layerFraction, 0.1);
+    expect(repo.itemDefs['item_jingyandan_mid']?.layerFraction, 0.2);
+    expect(repo.itemDefs['item_jingyandan_large']?.layerFraction, 0.3);
     expect(repo.itemDefs['item_liaoshangdan']?.injuryHealHours, 4.0);
     expect(repo.itemDefs['item_liaoshangdan']?.residueHealHours, 2.0);
     expect(repo.itemDefs['item_liaoshangdan']?.clearLightInjury, isTrue);

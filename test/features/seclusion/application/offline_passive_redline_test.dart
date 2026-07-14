@@ -5,12 +5,10 @@
 // 本测守护的是**养成速度**这条间接风险线：满 72h 被动涓流不得把低境界玩家
 // 推到碾压跨阶内容的量级。
 //
-// 锚定结论（2026-07-09 复评，修正高境界离线失能）：
-//   被动经验 = 闭关同时长 × 50%（base_exp 50 / 入门山林图 100）。
+// 锚定结论（2026-07-14 Lv100 发布版）：
+//   被动经验 = 山林闭关同时长（base_exp 3 / 山林 3）。
 //   被动磨剑石 = 闭关同时长 × 25%（base_moji 0.25 / 入门山林图 1.0）。
-//   闭关 B2 finding（numbers.yaml retreat shanLin 注释）已确认「满挂 72h 二流 16 层→三流
-//   12 层·对 Ch1 学徒差 1 阶不碾压」；被动经验补到闭关 1/2，磨剑石仍保持
-//   1/4 涓流。本测以**实数据**钉死分维度锚 + 各境界 72h 产出上界量级。
+//   磨剑石仍保持山林闭关的 1/4 涓流。本测以实数据守住各境界 72h 产出量级。
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -25,7 +23,7 @@ void main() {
     repo = await loadTestGameRepository();
   });
 
-  test('被动 72h 学徒产出按经验 50% / 磨剑石 25% 锚定（实数据，±容差）', () {
+  test('被动 72h 学徒经验与山林同率，磨剑石为 25%', () {
     final cfg = repo.numbers.passiveIdle;
     // 入门山林图：required_realm xueTu，闭关产率锚点的基准图。
     final entryMap = repo.numbers.retreat.maps.firstWhere(
@@ -42,11 +40,11 @@ void main() {
     final retreatExp72h = entryMap.experiencePerHour * 72;
     final retreatMoji72h = entryMap.mojianshiPerHour * 72;
 
-    // 被动经验补到闭关 50%，磨剑石仍按 25% 涓流。容差吸收 floor 取整。
+    // 被动经验与山林同率，磨剑石按 25% 涓流。
     expect(
       passive.experience,
-      closeTo(retreatExp72h * 0.50, 50),
-      reason: '被动 72h exp 应 ≈ 入门闭关 72h × 50%（${retreatExp72h * 0.50}）',
+      closeTo(retreatExp72h, 1),
+      reason: '被动 72h exp 应 ≈ 山林闭关 72h（$retreatExp72h）',
     );
     expect(
       passive.mojianshi,
@@ -54,8 +52,8 @@ void main() {
       reason: '被动 72h 磨剑石应 ≈ 入门闭关 72h × 25%（${retreatMoji72h * 0.25}）',
     );
 
-    // 入门图当前 100 exp/h、1.0 moji/h → 3600 exp、18 moji。锚死防 yaml 漂移。
-    expect(passive.experience, 3600);
+    // 当前 3 exp/h、1.0 moji/h → 216 exp、18 moji。
+    expect(passive.experience, 216);
     expect(passive.mojianshi, 18);
   });
 
@@ -79,12 +77,12 @@ void main() {
     );
 
     // 实测锚（scale = 1.6^index）：
-    //   学徒 idx0 ×1.00 → exp 3600  / moji 18
-    //   二流 idx2 ×2.56 → exp 9216  / moji 46
-    //   武圣 idx6 ×16.78 → exp 60397 / moji 301（满 72h × 满境界 = 被动绝对天花板）
-    expect(xueTu.experience, 3600);
-    expect(erLiu.experience, 9216);
-    expect(wuSheng.experience, 60397);
+    //   学徒 idx0 ×1.00 → exp 216  / moji 18
+    //   二流 idx2 ×2.56 → exp 552  / moji 46
+    //   武圣 idx6 ×16.78 → exp 3623 / moji 301
+    expect(xueTu.experience, 216);
+    expect(erLiu.experience, 552);
+    expect(wuSheng.experience, 3623);
     expect(xueTu.mojianshi, 18);
     expect(erLiu.mojianshi, 46);
     expect(wuSheng.mojianshi, 301);
@@ -97,8 +95,8 @@ void main() {
     // 磨剑石仍是慢速补料，不直接冲掉闭关收益定位。
     expect(
       wuSheng.experience,
-      lessThan(80000),
-      reason: '被动绝对天花板（武圣 72h）经验须 < 80000，避免离线直接跳级',
+      lessThan(5000),
+      reason: '被动绝对天花板（武圣 72h）经验须 < 5000',
     );
     expect(
       wuSheng.mojianshi,

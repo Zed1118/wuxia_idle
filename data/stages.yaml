@@ -62,7 +62,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [5, 10]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 50
+    baseExpReward: 5
     difficultyMultiplier: 1.0
     biome: mountainForest
     sceneBackgroundPath: assets/scenes/battle_mountainforest.png
@@ -100,7 +100,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [5, 10]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 120
+    baseExpReward: 5
     difficultyMultiplier: 1.2
     biome: inn
     sceneBackgroundPath: assets/scenes/battle_inn.png
@@ -140,7 +140,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [5, 10]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 200
+    baseExpReward: 5
     difficultyMultiplier: 1.4
     biome: mountainPath
     sceneBackgroundPath: assets/scenes/battle_mountainpath.png
@@ -184,7 +184,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [15, 25]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 500
+    baseExpReward: 10
     difficultyMultiplier: 1.6
     biome: cityWall
     sceneBackgroundPath: assets/scenes/battle_citywall.png
@@ -284,7 +284,7 @@ stages:
       - inventoryItemDefId: item_scroll_guan_shan_ba_ji
         quantity: [1, 1]
         dropChance: 1.0  # 秘籍掉落(T5 balance:首通必得,isFirstClear gate 于 stage_entry_flow;重打 skip)
-    baseExpReward: 750
+    baseExpReward: 15
     difficultyMultiplier: 1.8
     biome: dock
     sceneBackgroundPath: assets/scenes/battle_dock.png
@@ -325,7 +325,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [8, 15]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 350
+    baseExpReward: 8
     difficultyMultiplier: 1.5
     biome: escortRoad
     sceneBackgroundPath: assets/scenes/battle_escortroad.png
@@ -365,7 +365,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [8, 15]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 700
+    baseExpReward: 8
     difficultyMultiplier: 1.7
     biome: teaHouse
     sceneBackgroundPath: assets/scenes/battle_teahouse.png
@@ -406,7 +406,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [8, 15]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 950
+    baseExpReward: 8
     difficultyMultiplier: 1.9
     biome: smithy
     sceneBackgroundPath: assets/scenes/battle_smithy.png
@@ -453,7 +453,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 1100
+    baseExpReward: 15
     difficultyMultiplier: 2.1
     biome: drillGround
     sceneBackgroundPath: assets/scenes/battle_drillground.png
@@ -533,7 +533,7 @@ stages:
       - inventoryItemDefId: item_scroll_ma_ta_fei_yan
         quantity: [1, 1]
         dropChance: 1.0  # 秘籍掉落(T5 balance:首通必得,isFirstClear gate 于 stage_entry_flow;重打 skip)
-    baseExpReward: 1800
+    baseExpReward: 20
     difficultyMultiplier: 2.3
     biome: alley
     sceneBackgroundPath: assets/scenes/battle_alley.png
@@ -575,7 +575,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [12, 20]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 1500
+    baseExpReward: 10
     difficultyMultiplier: 2.0
     biome: cityWall
     sceneBackgroundPath: assets/scenes/battle_citywall.png
@@ -617,7 +617,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [12, 20]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 2200
+    baseExpReward: 10
     difficultyMultiplier: 2.2
     biome: drillGround
     sceneBackgroundPath: assets/scenes/battle_drillground.png
@@ -659,7 +659,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [12, 20]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 3200
+    baseExpReward: 8
     difficultyMultiplier: 2.4
     biome: temple
     sceneBackgroundPath: assets/scenes/battle_temple.png
@@ -705,7 +705,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [30, 45]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 4000
+    baseExpReward: 20
     difficultyMultiplier: 2.6
     biome: mountainPath
     sceneBackgroundPath: assets/scenes/battle_mountainpath.png
@@ -783,7 +783,7 @@ stages:
       - inventoryItemDefId: item_scroll_ye_yu_shi_nian_deng
         quantity: [1, 1]
         dropChance: 1.0  # 秘籍掉落(T5 balance:首通必得,isFirstClear gate 于 stage_entry_flow;重打 skip)
-    baseExpReward: 6000
+    baseExpReward: 25
     difficultyMultiplier: 2.8
     biome: drillGround
     sceneBackgroundPath: assets/scenes/battle_drillground.png
@@ -832,7 +832,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 11000
+    baseExpReward: 12
     difficultyMultiplier: 3.0
     biome: mountainForest
     sceneBackgroundPath: assets/scenes/battle_mountainforest.png
@@ -875,7 +875,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 13000
+    baseExpReward: 12
     difficultyMultiplier: 3.2
     biome: frontier
     sceneBackgroundPath: assets/scenes/battle_frontier.png
@@ -919,7 +919,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 15500
+    baseExpReward: 10
     difficultyMultiplier: 3.4
     biome: desert
     sceneBackgroundPath: assets/scenes/battle_desert.png
@@ -969,7 +969,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [50, 70]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 16000
+    baseExpReward: 25
     difficultyMultiplier: 3.6
     biome: drillGround
     sceneBackgroundPath: assets/scenes/battle_drillground.png
@@ -1047,7 +1047,7 @@ stages:
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
         dropChance: 0.25  # 经验丹大档(balance T4 Ch4 章末扩展)
-    baseExpReward: 20000
+    baseExpReward: 30
     difficultyMultiplier: 4.0
     biome: frontier
     sceneBackgroundPath: assets/scenes/battle_frontier.png
@@ -1097,7 +1097,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [35, 55]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 22000
+    baseExpReward: 15
     difficultyMultiplier: 3.7
     biome: mountainForest
     sceneBackgroundPath: assets/scenes/battle_mountainforest.png
@@ -1138,7 +1138,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [35, 55]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 25000
+    baseExpReward: 15
     difficultyMultiplier: 3.9
     biome: temple
     sceneBackgroundPath: assets/scenes/battle_temple.png
@@ -1179,7 +1179,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [35, 55]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 28000
+    baseExpReward: 10
     difficultyMultiplier: 4.1
     biome: dock
     sceneBackgroundPath: assets/scenes/battle_dock.png
@@ -1228,7 +1228,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [80, 110]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 32000
+    baseExpReward: 30
     difficultyMultiplier: 4.3
     biome: drillGround
     sceneBackgroundPath: assets/scenes/battle_drillground.png
@@ -1306,7 +1306,7 @@ stages:
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
         dropChance: 0.25  # 经验丹大档(balance T4 Ch5 章末扩展)
-    baseExpReward: 40000
+    baseExpReward: 35
     difficultyMultiplier: 4.6
     biome: cityWall
     sceneBackgroundPath: assets/scenes/battle_citywall.png
@@ -1355,7 +1355,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [55, 80]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 48000
+    baseExpReward: 18
     difficultyMultiplier: 4.8
     biome: cityWall
     sceneBackgroundPath: assets/scenes/battle_citywall.png
@@ -1399,7 +1399,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [55, 80]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 54000
+    baseExpReward: 18
     difficultyMultiplier: 5.1
     biome: mountainForest
     sceneBackgroundPath: assets/scenes/battle_mountainforest.png
@@ -1445,7 +1445,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [55, 80]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 60000
+    baseExpReward: 10
     difficultyMultiplier: 5.4
     biome: dock
     sceneBackgroundPath: assets/scenes/battle_dock.png
@@ -1496,7 +1496,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [120, 160]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 67000
+    baseExpReward: 35
     difficultyMultiplier: 5.7
     biome: desert
     sceneBackgroundPath: assets/scenes/battle_desert.png
@@ -1578,7 +1578,7 @@ stages:
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
         dropChance: 0.25  # 经验丹大档(balance T4 Ch6 章末扩展)
-    baseExpReward: 80000
+    baseExpReward: 45
     difficultyMultiplier: 6.1
     biome: mountainForest
     sceneBackgroundPath: assets/scenes/battle_mountainforest.png
@@ -1776,7 +1776,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 4500
+    baseExpReward: 20
     difficultyMultiplier: 5.0
     biome: dock
     sceneBackgroundPath: assets/scenes/battle_dock.png
@@ -1836,7 +1836,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 5500
+    baseExpReward: 25
     difficultyMultiplier: 5.4
     biome: cityWall
     sceneBackgroundPath: assets/scenes/battle_citywall.png
@@ -1898,7 +1898,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 6500
+    baseExpReward: 30
     difficultyMultiplier: 5.8
     biome: bambooForest
     sceneBackgroundPath: assets/scenes/battle_bambooforest.png
@@ -1957,7 +1957,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 7500
+    baseExpReward: 50
     difficultyMultiplier: 6.2
     biome: cliffWaterfall
     sceneBackgroundPath: assets/scenes/battle_cliffwaterfall.png
@@ -2020,7 +2020,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [50, 80]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 9000
+    baseExpReward: 75
     difficultyMultiplier: 6.5
     biome: frontier
     sceneBackgroundPath: assets/scenes/battle_frontier.png
@@ -2089,7 +2089,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 4800
+    baseExpReward: 20
     difficultyMultiplier: 6.5
     biome: mountainPath
     sceneBackgroundPath: assets/scenes/battle_mountainpath.png
@@ -2150,7 +2150,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 5800
+    baseExpReward: 25
     difficultyMultiplier: 7.0
     biome: cityWall
     sceneBackgroundPath: assets/scenes/battle_citywall.png
@@ -2213,7 +2213,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 6800
+    baseExpReward: 30
     difficultyMultiplier: 7.5
     biome: cityWall
     sceneBackgroundPath: assets/scenes/battle_citywall.png
@@ -2273,7 +2273,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 7800
+    baseExpReward: 50
     difficultyMultiplier: 8.0
     biome: frontier
     sceneBackgroundPath: assets/scenes/battle_frontier.png
@@ -2337,7 +2337,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [50, 80]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 9500
+    baseExpReward: 75
     difficultyMultiplier: 8.5
     biome: frontier
     sceneBackgroundPath: assets/scenes/battle_frontier.png

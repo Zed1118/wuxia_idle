@@ -368,9 +368,9 @@ void main() {
       // 子时不参与 mojianshi 公式 → 4 而非 floor(4×1.2)=4(此处 floor 巧合相同，
       // 用 experiencePoints 反例更明确)
       expect(out.mojianshi, 4);
-      // experience 山林 perHour=100(B2 finding 修正回 ×1.0),无节气 → floor(100×4×1.0)=400
-      // 子时同样不参与 experience 公式 → 400 而非 floor(400×1.2)
-      expect(out.experiencePoints, 400);
+      // experience 山林 perHour=3,无节气 → floor(3×4×1.0)=12。
+      // 子时同样不参与 experience 公式。
+      expect(out.experiencePoints, 12);
       // internalForce 山林 base=5,internalForceGrowth=1.0,xueTu scale=1.0,
       // 子时×1.2 → floor(5×1.0×4×1.0×1.0×1.2)=floor(24.0)=24
       expect(out.internalForcePoints, 24);
@@ -454,7 +454,7 @@ void main() {
         // mojianshi / experience / techniqueLearn 公式中不含 synergyGrowthPct
         // 项,数值与基线一致(回归断言)
         expect(out.mojianshi, 4, reason: 'mojianshi 不受相生 growth 影响');
-        expect(out.experiencePoints, 400, reason: 'experience 不受相生 growth 影响');
+        expect(out.experiencePoints, 12, reason: 'experience 不受相生 growth 影响');
       },
     );
 
@@ -472,8 +472,8 @@ void main() {
       );
       // mojianshi floor(1.0×4×1.0×1.30)=5
       expect(out.mojianshi, 5);
-      // experience floor(100×4×1.0×1.30)=520（B2 finding 修正回 ×1.0）
-      expect(out.experiencePoints, 520);
+      // experience floor(3×4×1.0×1.30)=15
+      expect(out.experiencePoints, 15);
       // internalForce floor(5×1.0×4×1.0×1.30×1.0)=26
       expect(out.internalForcePoints, 26);
     });
@@ -563,7 +563,7 @@ void main() {
       );
       // 其他维度不受 zhengWu 加成
       expect(out.mojianshi, 4, reason: '正午 mojianshi 不加成');
-      expect(out.experiencePoints, 400, reason: '正午 experience 不加成');
+      expect(out.experiencePoints, 12, reason: '正午 experience 不加成');
     });
 
     test('§12.1 #7 正午但非刚猛 → internalForcePoints 不加成', () {
@@ -775,8 +775,8 @@ void main() {
       expect(result.elapsedHours, 240);
       expect(result.retreatHours, 72);
       expect(result.passiveHours, 168);
-      expect(result.passive.experience, 8400);
-      expect(result.experiencePoints, 15600, reason: '7200 闭关 + 8400 普通挂机');
+      expect(result.passive.experience, 504);
+      expect(result.experiencePoints, 720, reason: '216 闭关 + 504 普通挂机');
       expect(result.passive.mojianshi, 42);
       expect((await IsarSetup.currentSaveData())!.lastOnlineAt, completeAt);
 
@@ -1180,20 +1180,20 @@ void main() {
             charRealmTier: RealmTier.xueTu,
             config: GameRepository.instance.numbers.retreat,
             maps: GameRepository.instance.seclusionMaps,
-            now: start.add(const Duration(hours: 4)),
+            now: start.add(const Duration(hours: 72)),
           );
 
-      expect(result.experiencePoints, 400); // B2 finding 修正回 ×1.0(原 400)
+      expect(result.experiencePoints, 216);
       expect(result.advancement, isNotNull);
       expect(result.advancement!.didAdvance, isTrue);
-      // 400 EXP - 50 - 80 = 270，溢出经验保留在熟练层。
+      // 216 EXP - 50 - 80 = 86，低于熟练层的 120 门槛。
       expect(result.advancement!.layersGained, 2);
       expect(result.advancement!.tierAfter, RealmTier.xueTu);
       expect(result.advancement!.layerAfter, RealmLayer.shuLian);
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
       expect(ch?.realmLayer, RealmLayer.shuLian);
-      expect(ch?.experience, 270);
+      expect(ch?.experience, 86);
       // shuLian yaml experience_to_next=120 / internalForceMax=700
       expect(ch?.experienceToNextLayer, 120);
       expect(ch?.internalForceMax, 700);
@@ -1221,13 +1221,13 @@ void main() {
             now: start.add(const Duration(minutes: 20)),
           );
 
-      expect(result.experiencePoints, 33);
+      expect(result.experiencePoints, 1);
       expect(result.advancement, isNotNull);
       expect(result.advancement!.didAdvance, isFalse);
       expect(result.advancement!.layersGained, 0);
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
-      expect(ch?.experience, 33, reason: 'EXP 累加但不升层');
+      expect(ch?.experience, 1, reason: 'EXP 累加但不升层');
       expect(ch?.realmLayer, RealmLayer.qiMeng);
       expect(ch?.internalForceMax, 500);
     });

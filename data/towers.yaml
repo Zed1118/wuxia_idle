@@ -37,7 +37,7 @@ floors:
 
   - floorIndex: 1
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 80
+    baseExpReward: 8
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_tower_01
@@ -60,7 +60,7 @@ floors:
 
   - floorIndex: 2
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 160
+    baseExpReward: 8
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_tower_02
@@ -83,7 +83,7 @@ floors:
 
   - floorIndex: 3
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 240
+    baseExpReward: 8
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_tower_03
@@ -108,7 +108,7 @@ floors:
 
   - floorIndex: 4
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 320
+    baseExpReward: 8
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_tower_04
@@ -135,7 +135,7 @@ floors:
   - floorIndex: 5
     dropSkillFragmentId: skill_kai_bei_shou  # 波B 残页(刚猛「开碑手」· 每胜概率掉,集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 800
+    baseExpReward: 20
     requiredRealm: xueTu
     bossKind: minor
     narrativeOpeningId: tower_05_opening
@@ -174,7 +174,7 @@ floors:
 
   - floorIndex: 6
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 480
+    baseExpReward: 10
     requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_tower_06
@@ -197,7 +197,7 @@ floors:
 
   - floorIndex: 7
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 560
+    baseExpReward: 10
     requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_tower_07
@@ -220,7 +220,7 @@ floors:
 
   - floorIndex: 8
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 640
+    baseExpReward: 10
     requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_tower_08
@@ -245,7 +245,7 @@ floors:
 
   - floorIndex: 9
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 720
+    baseExpReward: 10
     requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_tower_09
@@ -272,7 +272,7 @@ floors:
   - floorIndex: 10
     dropSkillFragmentId: skill_yan_zi_san_chao  # 波B 残页 re-point(灵巧「燕子三抄」· 集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 2400
+    baseExpReward: 25
     requiredRealm: sanLiu
     bossKind: major
     narrativeOpeningId: tower_10_opening
@@ -346,7 +346,7 @@ floors:
 
   - floorIndex: 11
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 880
+    baseExpReward: 12
     requiredRealm: erLiu
     enemyTeam:
       - id: enemy_tower_11a
@@ -379,7 +379,7 @@ floors:
 
   - floorIndex: 12
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 960
+    baseExpReward: 12
     requiredRealm: erLiu
     enemyTeam:
       - id: enemy_tower_12a
@@ -412,7 +412,7 @@ floors:
 
   - floorIndex: 13
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 1040
+    baseExpReward: 12
     requiredRealm: erLiu
     enemyTeam:
       - id: enemy_tower_13a
@@ -447,7 +447,7 @@ floors:
 
   - floorIndex: 14
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 1120
+    baseExpReward: 12
     requiredRealm: erLiu
     enemyTeam:
       - id: enemy_tower_14a
@@ -484,7 +484,7 @@ floors:
   - floorIndex: 15
     dropSkillFragmentId: skill_zhu_ying_yao_hong  # 波B 残页(阴柔「烛影摇红」· 每胜概率掉,集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 2400
+    baseExpReward: 30
     requiredRealm: erLiu
     bossKind: minor
     narrativeOpeningId: tower_15_opening
@@ -525,7 +525,7 @@ floors:
 
   - floorIndex: 16
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 1280
+    baseExpReward: 14
     requiredRealm: yiLiu
     enemyTeam:
       - id: enemy_tower_16a
@@ -558,7 +558,7 @@ floors:
 
   - floorIndex: 17
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 1360
+    baseExpReward: 14
     requiredRealm: yiLiu
     enemyTeam:
       - id: enemy_tower_17a
@@ -591,7 +591,7 @@ floors:
 
   - floorIndex: 18
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 1440
+    baseExpReward: 14
     requiredRealm: yiLiu
     enemyTeam:
       - id: enemy_tower_18a
@@ -629,7 +629,7 @@ floors:
 
   - floorIndex: 19
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 1520
+    baseExpReward: 14
     requiredRealm: yiLiu
     enemyTeam:
       - id: enemy_tower_19a
@@ -672,7 +672,7 @@ floors:
   - floorIndex: 20
     dropSkillFragmentId: skill_jin_gang_fu_mo  # 波B 残页 re-point(刚猛「金刚伏魔」· 集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 4800
+    baseExpReward: 35
     requiredRealm: yiLiu
     bossKind: major
     narrativeOpeningId: tower_20_opening
@@ -773,7 +773,7 @@ floors:
 
   - floorIndex: 21
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 1680
+    baseExpReward: 16
     requiredRealm: jueDing
     enemyTeam:
       - id: enemy_tower_21a
@@ -818,7 +818,7 @@ floors:
 
   - floorIndex: 22
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 1760
+    baseExpReward: 16
     requiredRealm: jueDing
     enemyTeam:
       - id: enemy_tower_22a
@@ -863,7 +863,7 @@ floors:
 
   - floorIndex: 23
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 1840
+    baseExpReward: 16
     requiredRealm: jueDing
     enemyTeam:
       - id: enemy_tower_23a
@@ -911,7 +911,7 @@ floors:
 
   - floorIndex: 24
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 1920
+    baseExpReward: 16
     requiredRealm: jueDing
     enemyTeam:
       - id: enemy_tower_24a
@@ -965,7 +965,7 @@ floors:
   - floorIndex: 25
     dropSkillFragmentId: skill_jing_hong_zhao_ying  # 波B 残页(灵巧「惊鸿照影」· 每胜概率掉,集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 4000
+    baseExpReward: 40
     requiredRealm: jueDing
     bossKind: minor
     narrativeOpeningId: tower_25_opening
@@ -1072,7 +1072,7 @@ floors:
 
   - floorIndex: 26
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 2080
+    baseExpReward: 18
     requiredRealm: zongShi
     enemyTeam:
       - id: enemy_tower_26a
@@ -1120,7 +1120,7 @@ floors:
 
   - floorIndex: 27
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 2160
+    baseExpReward: 18
     requiredRealm: zongShi
     enemyTeam:
       - id: enemy_tower_27a
@@ -1168,7 +1168,7 @@ floors:
 
   - floorIndex: 28
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 2240
+    baseExpReward: 18
     requiredRealm: zongShi
     enemyTeam:
       - id: enemy_tower_28a
@@ -1220,7 +1220,7 @@ floors:
 
   - floorIndex: 29
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 2320
+    baseExpReward: 18
     requiredRealm: zongShi
     enemyTeam:
       - id: enemy_tower_29a
@@ -1274,7 +1274,7 @@ floors:
   - floorIndex: 30
     dropSkillFragmentId: skill_yue_luo_wu_sheng  # 波B 残页(阴柔「月落无声」· 每胜概率掉,集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 7200
+    baseExpReward: 45
     requiredRealm: zongShi
     bossKind: major
     narrativeOpeningId: tower_30_opening

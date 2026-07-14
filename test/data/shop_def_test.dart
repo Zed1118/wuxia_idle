@@ -71,9 +71,9 @@ void main() {
       final mid = defs['shop_jingyandan_mid'];
       expect(small?.itemType, ItemType.jingYanDan);
       expect(small?.isDynamicPrice, true);
-      expect(small?.priceLayerFraction, 1.0);
+      expect(small?.priceLayerFraction, 0.6);
       expect(mid?.isDynamicPrice, true);
-      expect(mid?.priceLayerFraction, 2.5);
+      expect(mid?.priceLayerFraction, 1.2);
       // 动态价商品 price 字段为 null
       expect(small?.price, isNull);
       expect(mid?.price, isNull);
@@ -116,11 +116,9 @@ shop:
       );
     });
 
-    test(
-      '大还丹（大档经验丹 layer_fraction=1.0）上架 shop → 抛 StateError（§5.7 守门，F8）',
-      () async {
-        final Map<String, String> memOverrides = {
-          'data/shop.yaml': '''
+    test('大还丹（大档经验丹）上架 shop → 抛 StateError（§5.7 守门，F8）', () async {
+      final Map<String, String> memOverrides = {
+        'data/shop.yaml': '''
 shop:
   - id: shop_evil_dahuandan
     itemDefId: item_jingyandan_large
@@ -128,24 +126,23 @@ shop:
     price_layer_fraction: 1.0
     category: pill
 ''',
-        };
-        Future<String> hybridLoader(String path) async {
-          if (memOverrides.containsKey(path)) return memOverrides[path]!;
-          return fileLoader(path);
-        }
+      };
+      Future<String> hybridLoader(String path) async {
+        if (memOverrides.containsKey(path)) return memOverrides[path]!;
+        return fileLoader(path);
+      }
 
-        await expectLater(
-          GameRepository.loadAllDefs(loader: hybridLoader),
-          throwsA(
-            isA<StateError>().having(
-              (e) => e.toString(),
-              'message',
-              contains('§5.7'),
-            ),
+      await expectLater(
+        GameRepository.loadAllDefs(loader: hybridLoader),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.toString(),
+            'message',
+            contains('§5.7'),
           ),
-        );
-      },
-    );
+        ),
+      );
+    });
 
     test(
       '凝神丹/培元丹（小/中档 layer_fraction<1.0）上架 shop → 不因 §5.7 抛（正例，F8）',
