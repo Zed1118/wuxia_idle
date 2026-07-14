@@ -163,6 +163,9 @@ class UiStrings {
   static const String internalForceShortLabel = '气 ';
   // B3 破招成功「破！」题字 overlay 文案(破招方暖金/敌方绛红)。
   static const String interruptCaption = '破！';
+  // 玩法评估 §十三 #2 首通展示帧题字:开局亮相 / 敌方首次蓄力教学提示。
+  static const String firstClearOpening = '初战';
+  static const String firstClearChargeCue = '蓄力可破';
   // 批次 2.4 打击感单字效果字（重击非破招非大招）。破由现有 interruptCaption 承载。
   static const String impactGlyphZhan = '斩'; // 灵巧 / 无流派 默认
   static const String impactGlyphZhen = '震'; // 刚猛

@@ -13,6 +13,7 @@ void main() {
       expect(config.startFastForward, isFalse);
       expect(config.readablePacing, isFalse);
       expect(config.autoStartOnMount, isFalse);
+      expect(config.firstClearShowcase, isFalse);
     },
   );
 
@@ -25,5 +26,7 @@ void main() {
     expect(config.startFastForward, isTrue);
     expect(config.readablePacing, isFalse);
     expect(config.autoStartOnMount, isTrue);
+    // 扫荡是复刷路径,首通展示帧永不参与。
+    expect(config.firstClearShowcase, isFalse);
   });
 }

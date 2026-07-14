@@ -140,6 +140,11 @@ List<String> _checksFor(VisualRoute route) {
       '玩家/敌方两态颜色区分',
       '题字不遮挡核心 HUD',
     ],
+    VisualRoute.battleFirstClearShowcase => const [
+      '三态题字可读(初战/蓄力可破/峰值破！)',
+      'flourish 峰值字号明显大于基准且带辉光',
+      '双分辨率无溢出裁切',
+    ],
     VisualRoute.battleDefeat => const ['败北题字与战报可读', '破招提示存在', '背景压暗后内容层级清楚'],
     VisualRoute.shop => const ['货币顶栏可读', '可买/不可买态清楚', '货架按钮无文字溢出'],
     VisualRoute.resourceOverview => const [

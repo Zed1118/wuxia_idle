@@ -188,6 +188,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       startPaused: widget.playback.startPaused,
       startFastForward: widget.playback.startFastForward,
       readablePacing: widget.playback.readablePacing,
+      firstClearShowcase: widget.playback.firstClearShowcase,
     );
     // _beatCtrl / _isPaused / _isFastForward 初值由 _playback 构造器据
     // startPaused / startFastForward 处理（Task 2）。
@@ -231,6 +232,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.playback.readablePacing != widget.playback.readablePacing) {
       _playback.setReadablePacing(widget.playback.readablePacing);
+    }
+    if (oldWidget.playback.firstClearShowcase !=
+        widget.playback.firstClearShowcase) {
+      _playback.setFirstClearShowcase(widget.playback.firstClearShowcase);
     }
   }
 
@@ -643,6 +648,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
           }
         }
       }
+
+      // 6. 首通展示帧:敌方首次蓄力提示(教学题字+停顿),整场一次。非首通
+      //    no-op(纯表现层,不入 domain,守 §5.4)。
+      _playback.onShowcaseStateTransition(prev, next);
     });
 
     ref.listen(gameplaySettingsProvider, (_, _) {
