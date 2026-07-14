@@ -84,7 +84,7 @@ stages:
         realmLayer: ruMen
         school: gangMeng
         baseHp: 2100
-        baseAttack: 105
+        baseAttack: 110
         baseSpeed: 100
         skillIds: [skill_gangmeng_jichu_basic]
         iconPath: assets/enemies/ruffian_a.png
@@ -124,7 +124,7 @@ stages:
         baseHp: 2900
         baseAttack: 130
         baseSpeed: 110
-        skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
+        skillIds: [skill_gangmeng_jichu_basic]
         iconPath: assets/enemies/bandit_head.png
     isBossStage: false
     dropTable:
@@ -215,7 +215,7 @@ stages:
         realmLayer: dengFeng
         school: yinRou
         baseHp: 3800
-        baseAttack: 165
+        baseAttack: 170
         baseSpeed: 165
         skillIds:
           - skill_yinrou_jichu_basic
@@ -281,7 +281,7 @@ stages:
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
         dropChance: 0.25  # 经验丹大档(balance T4 校准统一 0.2→0.25)
-      - inventoryItemDefId: item_scroll_guan_shan_ba_ji
+      - inventoryItemDefId: item_scroll_kai_bei_shou
         quantity: [1, 1]
         dropChance: 1.0  # 秘籍掉落(T5 balance:首通必得,isFirstClear gate 于 stage_entry_flow;重打 skip)
     baseExpReward: 15
@@ -301,17 +301,17 @@ stages:
     chapterIndex: 2
     narrativeOpeningId: stage_02_01_opening
     narrativeVictoryId: stage_02_01_victory
-    requiredRealm: sanLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_sanLiu_thief_a
         name: 黑衣杀手
-        realmTier: sanLiu
+        realmTier: xueTu
         realmLayer: qiMeng
         school: lingQiao
-        baseHp: 3500
-        baseAttack: 280
+        baseHp: 2500
+        baseAttack: 100
         baseSpeed: 150
-        skillIds: [skill_lingqiao_jichu_basic, skill_lingqiao_jichu_skill]
+        skillIds: [skill_lingqiao_jichu_basic]
         iconPath: assets/enemies/black_killer.png
     isBossStage: false
     dropTable:
@@ -339,15 +339,15 @@ stages:
     prevStageId: stage_02_01
     narrativeOpeningId: stage_02_02_opening
     narrativeVictoryId: stage_02_02_victory
-    requiredRealm: sanLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_sanLiu_elder
         name: 花白胡子老者
-        realmTier: sanLiu
+        realmTier: xueTu
         realmLayer: ruMen
         school: gangMeng
-        baseHp: 4800
-        baseAttack: 340
+        baseHp: 4100
+        baseAttack: 290
         baseSpeed: 145
         skillIds:
           - skill_gangmeng_jichu_basic
@@ -379,15 +379,15 @@ stages:
     prevStageId: stage_02_02
     narrativeOpeningId: stage_02_03_opening
     narrativeVictoryId: stage_02_03_victory
-    requiredRealm: sanLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_sanLiu_shaonian
         name: 春水堂少年
-        realmTier: sanLiu
+        realmTier: xueTu
         realmLayer: shuLian
         school: lingQiao
-        baseHp: 2600
-        baseAttack: 200
+        baseHp: 2200
+        baseAttack: 170
         baseSpeed: 165
         skillIds:
           - skill_lingqiao_jichu_basic
@@ -421,20 +421,19 @@ stages:
     narrativeOpeningId: stage_02_04_opening
     narrativeVictoryId: stage_02_04_victory
     narrativeDefeatId: stage_02_04_defeat
-    requiredRealm: sanLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_sanLiu_guntou
         name: 光头汉子
-        realmTier: sanLiu
-        realmLayer: jingTong
+        realmTier: xueTu
+        realmLayer: ruMen
         school: gangMeng
-        baseHp: 6500
-        baseAttack: 320
+        baseHp: 2300
+        baseAttack: 60
         baseSpeed: 150
         skillIds:
           - skill_gangmeng_jichu_basic
           - skill_gangmeng_jichu_skill
-          - skill_gangmeng_jichu_ult
         iconPath: assets/enemies/guntou.png
         isBoss: true
     isBossStage: true
@@ -469,15 +468,15 @@ stages:
     narrativeOpeningId: stage_02_05_opening
     narrativeVictoryId: stage_02_05_victory
     narrativeDefeatId: stage_02_05_defeat
-    requiredRealm: sanLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_sanLiu_qingshan_main
         name: 青衫剑客
-        realmTier: sanLiu
+        realmTier: xueTu
         realmLayer: yuanShu
         school: lingQiao
-        baseHp: 9500
-        baseAttack: 900
+        baseHp: 8100
+        baseAttack: 770
         baseSpeed: 175
         skillIds:
           - skill_lingqiao_jichu_basic
@@ -515,9 +514,9 @@ stages:
     bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
       candidateRef: desert_wanderer               # data/sect_candidates.yaml 已配(gangMeng 三系)
     dropTable:
-      - equipmentDefId: weapon_haojiahuo_qing_feng_jian
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 1.0
-      - equipmentDefId: armor_haojiahuo_jin_pao
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 1.0
       - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.50
@@ -530,7 +529,7 @@ stages:
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
         dropChance: 0.25  # 经验丹大档(balance T4 校准统一 0.2→0.25)
-      - inventoryItemDefId: item_scroll_ma_ta_fei_yan
+      - inventoryItemDefId: item_scroll_yan_zi_san_chao
         quantity: [1, 1]
         dropChance: 1.0  # 秘籍掉落(T5 balance:首通必得,isFirstClear gate 于 stage_entry_flow;重打 skip)
     baseExpReward: 20
@@ -550,24 +549,24 @@ stages:
     chapterIndex: 3
     narrativeOpeningId: stage_03_01_opening
     narrativeVictoryId: stage_03_01_victory
-    requiredRealm: erLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_erLiu_master_a
         name: 名门弟子
-        realmTier: erLiu
+        realmTier: xueTu
         realmLayer: qiMeng
         school: lingQiao
-        baseHp: 3200
-        baseAttack: 220
-        baseSpeed: 175
+        baseHp: 2100
+        baseAttack: 80
+        baseSpeed: 100
         skillIds:
-          - skill_lingqiao_mingjia_basic
+          - skill_lingqiao_jichu_basic
         iconPath: assets/enemies/mingmen_a.png
     isBossStage: false
     dropTable:
-      - equipmentDefId: weapon_haojiahuo_xuan_hua_fu
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.30
-      - equipmentDefId: accessory_haojiahuo_ping_an_kou
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [1, 2]
@@ -589,27 +588,27 @@ stages:
     prevStageId: stage_03_01
     narrativeOpeningId: stage_03_02_opening
     narrativeVictoryId: stage_03_02_victory
-    requiredRealm: erLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_erLiu_guntou_zhu
         name: 擂主光头汉
-        realmTier: erLiu
+        realmTier: xueTu
         realmLayer: qiMeng
         school: gangMeng
-        baseHp: 4500
-        baseAttack: 350
+        baseHp: 2950
+        baseAttack: 230
         baseSpeed: 170
         skillIds:
-          - skill_gangmeng_mingjia_basic
-          - skill_gangmeng_mingjia_skill
+          - skill_gangmeng_jichu_basic
+          - skill_gangmeng_jichu_skill
         iconPath: assets/enemies/guntou_zhu.png
     isBossStage: false
     dropTable:
-      - equipmentDefId: weapon_haojiahuo_qing_feng_jian
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.50
-      - equipmentDefId: weapon_haojiahuo_chan_si_suo
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.35
-      - equipmentDefId: armor_haojiahuo_chou_shan
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 4]
@@ -631,27 +630,27 @@ stages:
     prevStageId: stage_03_02
     narrativeOpeningId: stage_03_03_opening
     narrativeVictoryId: stage_03_03_victory
-    requiredRealm: erLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_erLiu_seng_huiyi
         name: 灰袍僧人
-        realmTier: erLiu
+        realmTier: xueTu
         realmLayer: shuLian
         school: yinRou
-        baseHp: 5000
-        baseAttack: 380
+        baseHp: 3250
+        baseAttack: 250
         baseSpeed: 175
         skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
+          - skill_yinrou_jichu_basic
+          - skill_yinrou_jichu_skill
         iconPath: assets/enemies/seng_huiyi.png
     isBossStage: false
     dropTable:
-      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.40
-      - equipmentDefId: weapon_haojiahuo_yuan_yang_yue
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.35
-      - equipmentDefId: armor_haojiahuo_suo_zi_jia
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 5]
@@ -674,30 +673,30 @@ stages:
     narrativeOpeningId: stage_03_04_opening
     narrativeVictoryId: stage_03_04_victory
     narrativeDefeatId: stage_03_04_defeat
-    requiredRealm: erLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_erLiu_balian
         name: 疤脸汉子
-        realmTier: erLiu
+        realmTier: xueTu
         realmLayer: shuLian
         school: gangMeng
-        baseHp: 5000
-        baseAttack: 320
+        baseHp: 2500
+        baseAttack: 80
         baseSpeed: 175
         skillIds:
-          - skill_gangmeng_mingjia_basic
-          - skill_gangmeng_mingjia_skill
+          - skill_gangmeng_jichu_basic
+          - skill_gangmeng_jichu_skill
         iconPath: assets/enemies/balian.png
         isBoss: true
     isBossStage: true
     dropTable:
-      - equipmentDefId: armor_haojiahuo_jin_pao
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.80
-      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.60
-      - equipmentDefId: weapon_haojiahuo_mei_hua_biao
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.40
-      - equipmentDefId: accessory_haojiahuo_she_dan_wan
+      - equipmentDefId: accessory_xiangyang_cui_yu_zhui
         dropChance: 0.30
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [3, 6]
@@ -714,31 +713,30 @@ stages:
   # === stage_03_05 · 一剑封名（章末大 Boss · 灰衣人）===
   - id: stage_03_05
     name: 一剑封名
-    dropSkillManualId: skill_qian_jun_zhui_yue  # 波B 真解(灰衣人「千钧坠岳」· 同招为其蓄力技)
     stageType: mainline
     chapterIndex: 3
     prevStageId: stage_03_04
     narrativeOpeningId: stage_03_05_opening
     narrativeVictoryId: stage_03_05_victory
     narrativeDefeatId: stage_03_05_defeat
-    requiredRealm: erLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_erLiu_huiyi
         name: 灰衣人
-        realmTier: erLiu
+        realmTier: xueTu
         realmLayer: yuanShu
         school: yinRou
-        baseHp: 9000
-        baseAttack: 700
+        baseHp: 5850
+        baseAttack: 460
         baseSpeed: 190
         skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
-          - skill_yinrou_mingjia_ult
-          - skill_qian_jun_zhui_yue                 # 波B 真解双用:Boss 招牌蓄力技「千钧坠岳」
+          - skill_yinrou_jichu_basic
+          - skill_yinrou_jichu_skill
+          - skill_yinrou_jichu_ult
+          - skill_xie_yu_chuan_lian                 # 波B 真解双用:Boss 招牌蓄力技「千钧坠岳」
         iconPath: assets/enemies/huiyi.png
         isBoss: true
-        chargeSkillId: skill_qian_jun_zhui_yue      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        chargeSkillId: skill_xie_yu_chuan_lian      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.5
@@ -767,9 +765,9 @@ stages:
     bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
       candidateRef: mountain_hermit               # data/sect_candidates.yaml 已配(yinRou 三系)
     dropTable:
-      - equipmentDefId: weapon_liqi_long_quan
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 1.0
-      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.60
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [5, 8]
@@ -780,7 +778,7 @@ stages:
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
         dropChance: 0.25  # 经验丹大档(balance T4 校准统一 0.2→0.25)
-      - inventoryItemDefId: item_scroll_ye_yu_shi_nian_deng
+      - inventoryItemDefId: item_scroll_kai_bei_shou
         quantity: [1, 1]
         dropChance: 1.0  # 秘籍掉落(T5 balance:首通必得,isFirstClear gate 于 stage_entry_flow;重打 skip)
     baseExpReward: 25
@@ -804,27 +802,27 @@ stages:
     chapterIndex: 4
     narrativeOpeningId: stage_04_01_opening
     narrativeVictoryId: stage_04_01_victory
-    requiredRealm: yiLiu
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_yiLiu_liukou_a
         name: 流寇头领
-        realmTier: yiLiu
+        realmTier: sanLiu
         realmLayer: qiMeng
         school: gangMeng
-        baseHp: 7200
-        baseAttack: 720
+        baseHp: 3950
+        baseAttack: 400
         baseSpeed: 170
         skillIds:
-          - skill_gangmeng_menpai_basic
-          - skill_gangmeng_menpai_skill
+          - skill_gangmeng_changlian_basic
+          - skill_gangmeng_changlian_skill
         iconPath: assets/enemies/liukou_a.png
     isBossStage: false
     dropTable:
-      - equipmentDefId: weapon_liqi_long_quan
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.80
-      - equipmentDefId: armor_liqi_xuan_tie_jia
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.30
-      - equipmentDefId: accessory_liqi_hu_xin_jing
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [6, 9]
@@ -846,28 +844,28 @@ stages:
     prevStageId: stage_04_01
     narrativeOpeningId: stage_04_02_opening
     narrativeVictoryId: stage_04_02_victory
-    requiredRealm: yiLiu
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_yiLiu_guard_a
         name: 玉门关把总
-        realmTier: yiLiu
+        realmTier: sanLiu
         realmLayer: ruMen
         school: gangMeng
-        baseHp: 7500
-        baseAttack: 700
+        baseHp: 4150
+        baseAttack: 390
         baseSpeed: 175
         skillIds:
-          - skill_gangmeng_menpai_basic
-          - skill_gangmeng_menpai_skill
-          - skill_gangmeng_menpai_ult
+          - skill_gangmeng_changlian_basic
+          - skill_gangmeng_changlian_skill
+          - skill_gangmeng_changlian_ult
         iconPath: assets/enemies/guard_a.png
     isBossStage: false
     dropTable:
-      - equipmentDefId: weapon_liqi_pan_long_dao
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.70
-      - equipmentDefId: weapon_liqi_hu_tou_gou
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.35
-      - equipmentDefId: armor_liqi_qing_luo_shan
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [7, 10]
@@ -889,29 +887,29 @@ stages:
     prevStageId: stage_04_02
     narrativeOpeningId: stage_04_03_opening
     narrativeVictoryId: stage_04_03_victory
-    requiredRealm: yiLiu
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_yiLiu_shafei_a
         name: 沙匪头领
-        realmTier: yiLiu
+        realmTier: sanLiu
         realmLayer: shuLian
         school: gangMeng
-        baseHp: 6500
-        baseAttack: 600
+        baseHp: 3600
+        baseAttack: 330
         baseSpeed: 180
         skillIds:
-          - skill_gangmeng_menpai_basic
-          - skill_gangmeng_menpai_skill
+          - skill_gangmeng_changlian_basic
+          - skill_gangmeng_changlian_skill
         iconPath: assets/enemies/shafei_a.png
     isBossStage: false
     dropTable:
-      - equipmentDefId: weapon_liqi_lian_zi_bian
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.70
-      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.50
-      - equipmentDefId: weapon_liqi_li_hua_zhen
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.35
-      - equipmentDefId: accessory_liqi_jin_chuang_gao
+      - equipmentDefId: accessory_xiangyang_cui_yu_zhui
         dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [8, 11]
@@ -934,34 +932,33 @@ stages:
     narrativeOpeningId: stage_04_04_opening
     narrativeVictoryId: stage_04_04_victory
     narrativeDefeatId: stage_04_04_defeat
-    requiredRealm: yiLiu
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_yiLiu_xiliangboss
         name: 西凉武林名宿
-        realmTier: yiLiu
-        realmLayer: jingTong
+        realmTier: sanLiu
+        realmLayer: qiMeng
         school: gangMeng
-        baseHp: 10000
-        baseAttack: 720
+        baseHp: 3400
+        baseAttack: 250
         baseSpeed: 180
         skillIds:
-          - skill_gangmeng_menpai_basic
-          - skill_gangmeng_menpai_skill
+          - skill_gangmeng_changlian_basic
         iconPath: assets/enemies/xiliangboss.png
         isBoss: true
     isBossStage: true
     dropTable:
-      - equipmentDefId: weapon_liqi_lian_zi_bian
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 1.0
-      - equipmentDefId: weapon_zhongqi_qing_xu_jian
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 1.0
-      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.60
-      - equipmentDefId: armor_zhongqi_han_tie_zhong_jia
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.50
-      - equipmentDefId: accessory_liqi_fei_yu_pei
+      - equipmentDefId: accessory_xiangyang_cui_yu_zhui
         dropChance: 0.40
-      - equipmentDefId: armor_liqi_tie_ye_jia
+      - equipmentDefId: armor_xiangyang_ye_xing_yi
         dropChance: 0.30
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [9, 12]
@@ -978,32 +975,30 @@ stages:
   # === stage_04_05 · 阳关一决(章末大 Boss · 西凉霸主跨阶 jueDing)===
   - id: stage_04_05
     name: 阳关一决
-    dropSkillManualId: skill_feng_juan_liu_sha  # 波B 真解(西凉霸主「风卷流沙」· 同招为其蓄力技)
-    dropSkillFragmentId: skill_guan_shan_ba_ji  # 波B 章末重打残页(每胜概率掉,高阶 farm)
     stageType: mainline
     chapterIndex: 4
     prevStageId: stage_04_04
     narrativeOpeningId: stage_04_05_opening
     narrativeVictoryId: stage_04_05_victory
     narrativeDefeatId: stage_04_05_defeat
-    requiredRealm: jueDing
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_jueDing_xiliangbazhu
         name: 西凉霸主
-        realmTier: jueDing
-        realmLayer: qiMeng
+        realmTier: sanLiu
+        realmLayer: shuLian
         school: yinRou
-        baseHp: 18000
-        baseAttack: 860
+        baseHp: 9900
+        baseAttack: 470
         baseSpeed: 215
         skillIds:
-          - skill_yinrou_jianghu_basic
-          - skill_yinrou_jianghu_skill
-          - skill_yinrou_jianghu_ult
-          - skill_feng_juan_liu_sha                 # 波B 真解双用:Boss 招牌蓄力技「风卷流沙」
+          - skill_yinrou_changlian_basic
+          - skill_yinrou_changlian_skill
+          - skill_yinrou_changlian_ult
+          - skill_xie_yu_chuan_lian                 # 波B 真解双用:Boss 招牌蓄力技「风卷流沙」
         iconPath: assets/enemies/xiliangbazhu.png
         isBoss: true
-        chargeSkillId: skill_feng_juan_liu_sha      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        chargeSkillId: skill_xie_yu_chuan_lian      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.5
@@ -1032,11 +1027,11 @@ stages:
       candidateRef: river_drifter                 # data/sect_candidates.yaml 已配(lingQiao)
     npcId: cijianzhuang_bazhu                    # P1.2 §6 占位
     dropTable:
-      - equipmentDefId: weapon_zhongqi_qing_xu_jian
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 1.0
-      - equipmentDefId: accessory_zhongqi_qing_yu_huan
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.50
-      - equipmentDefId: armor_zhongqi_han_tie_zhong_jia  # F3:原 baoWu 金丝甲越 2 阶,改 zhongQi 与跨阶 jueDing Boss 同阶对齐(qing_xu_jian/qing_yu_huan 亦 zhongQi);金丝甲回归 dropSourceTags 声明来源 tower_30/zongShi_unlock
+      - equipmentDefId: armor_xiangyang_pi_jia  # F3:原 baoWu 金丝甲越 2 阶,改 zhongQi 与跨阶 jueDing Boss 同阶对齐(qing_xu_jian/qing_yu_huan 亦 zhongQi);金丝甲回归 dropSourceTags 声明来源 tower_30/zongShi_unlock
         dropChance: 0.30  # F3:0.40→0.30,与饰品 0.50 拉开层次
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [10, 14]
@@ -1069,27 +1064,27 @@ stages:
     chapterIndex: 5
     narrativeOpeningId: stage_05_01_opening
     narrativeVictoryId: stage_05_01_victory
-    requiredRealm: jueDing
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_jueDing_tongguan_shoujiang
         name: 潼关守将
-        realmTier: jueDing
+        realmTier: sanLiu
         realmLayer: qiMeng
         school: gangMeng
-        baseHp: 10000
-        baseAttack: 700
+        baseHp: 3500
+        baseAttack: 250
         baseSpeed: 200
         skillIds:
-          - skill_gangmeng_jianghu_basic
-          - skill_gangmeng_jianghu_skill
+          - skill_gangmeng_changlian_basic
+          - skill_gangmeng_changlian_skill
         iconPath: assets/enemies/tongguan_shoujiang.png
     isBossStage: false
     dropTable:
-      - equipmentDefId: weapon_zhongqi_po_zhen_chui
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.70
-      - equipmentDefId: weapon_zhongqi_qing_xu_jian
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.30
-      - equipmentDefId: accessory_zhongqi_bi_xi_shou_chuan
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [10, 13]
@@ -1111,26 +1106,26 @@ stages:
     prevStageId: stage_05_01
     narrativeOpeningId: stage_05_02_opening
     narrativeVictoryId: stage_05_02_victory
-    requiredRealm: jueDing
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_jueDing_songshan_daozong_dizi
         name: 嵩山道宗弟子
-        realmTier: jueDing
+        realmTier: sanLiu
         realmLayer: shuLian
         school: lingQiao
-        baseHp: 11000
-        baseAttack: 800
+        baseHp: 3850
+        baseAttack: 280
         baseSpeed: 215
         skillIds:
-          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_changlian_basic
         iconPath: assets/enemies/songshan_daozong_dizi.png
     isBossStage: false
     dropTable:
-      - equipmentDefId: weapon_zhongqi_du_long_suo
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.70
-      - equipmentDefId: weapon_zhongqi_ri_yue_lun
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.35
-      - equipmentDefId: armor_zhongqi_yu_lin_qing_jia
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [11, 14]
@@ -1152,26 +1147,26 @@ stages:
     prevStageId: stage_05_02
     narrativeOpeningId: stage_05_03_opening
     narrativeVictoryId: stage_05_03_victory
-    requiredRealm: jueDing
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_jueDing_caobang_duozhu
         name: 漕帮舵主
-        realmTier: jueDing
+        realmTier: sanLiu
         realmLayer: shuLian
         school: gangMeng
-        baseHp: 12000
-        baseAttack: 850
+        baseHp: 4200
+        baseAttack: 300
         baseSpeed: 230
         skillIds:
-          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_changlian_basic
         iconPath: assets/enemies/caobang_duozhu.png
     isBossStage: false
     dropTable:
-      - equipmentDefId: armor_zhongqi_yin_lin_jia
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.50
-      - equipmentDefId: weapon_zhongqi_zhui_hun_ding
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.35
-      - equipmentDefId: accessory_zhongqi_xuan_tie_zhi_huan
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [12, 15]
@@ -1194,33 +1189,33 @@ stages:
     narrativeOpeningId: stage_05_04_opening
     narrativeVictoryId: stage_05_04_victory
     narrativeDefeatId: stage_05_04_defeat
-    requiredRealm: jueDing
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_jueDing_zhongzhou_lunjian_xianfeng
         name: 中州论剑先锋
-        realmTier: jueDing
-        realmLayer: jingTong
+        realmTier: sanLiu
+        realmLayer: shuLian
         school: gangMeng
-        baseHp: 17000
-        baseAttack: 1000
-        baseSpeed: 240
+        baseHp: 4200
+        baseAttack: 300
+        baseSpeed: 180
         skillIds:
-          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_changlian_basic
         iconPath: assets/enemies/zhongzhou_lunjian_xianfeng.png
         isBoss: true
     isBossStage: true
     dropTable:
-      - equipmentDefId: weapon_baowu_xuan_tian_fu
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 1.0
-      - equipmentDefId: armor_baowu_can_si_ruan_jia
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 1.0
-      - equipmentDefId: weapon_zhongqi_po_zhen_chui
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 1.0
-      - equipmentDefId: armor_zhongqi_yin_lin_jia
+      - equipmentDefId: armor_xiangyang_ye_xing_yi
         dropChance: 0.60
-      - equipmentDefId: accessory_zhongqi_qing_yu_huan
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.40
-      - equipmentDefId: armor_zhongqi_han_tie_zhong_jia
+      - equipmentDefId: armor_xiangyang_tie_pian_jia
         dropChance: 0.30
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [13, 16]
@@ -1237,32 +1232,30 @@ stages:
   # === stage_05_05 · 嵩山一决(章末大 Boss · C 复合三人组 · 跨阶 zongShi·qiMeng)===
   - id: stage_05_05
     name: 嵩山一决
-    dropSkillManualId: skill_shi_dang_shi_jue  # 波B 真解(三弟子「十荡十决」· 同招为其蓄力技)
-    dropSkillFragmentId: skill_ma_ta_fei_yan  # 波B 章末重打残页(每胜概率掉,高阶 farm)
     stageType: mainline
     chapterIndex: 5
     prevStageId: stage_05_04
     narrativeOpeningId: stage_05_05_opening
     narrativeVictoryId: stage_05_05_victory
     narrativeDefeatId: stage_05_05_defeat
-    requiredRealm: zongShi
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_zongShi_xiliang_sandizi
         name: 西凉霸主三弟子
-        realmTier: zongShi
-        realmLayer: qiMeng
+        realmTier: sanLiu
+        realmLayer: shuLian
         school: yinRou
-        baseHp: 24000
-        baseAttack: 1500
+        baseHp: 8400
+        baseAttack: 530
         baseSpeed: 250
         skillIds:
-          - skill_yinrou_shichuan_basic
-          - skill_yinrou_shichuan_skill
-          - skill_yinrou_shichuan_ult
-          - skill_shi_dang_shi_jue                 # 波B 真解双用:Boss 招牌蓄力技「十荡十决」
+          - skill_yinrou_changlian_basic
+          - skill_yinrou_changlian_skill
+          - skill_yinrou_changlian_ult
+          - skill_xie_yu_chuan_lian                 # 波B 真解双用:Boss 招牌蓄力技「十荡十决」
         iconPath: assets/enemies/xiliang_sandizi.png
         isBoss: true
-        chargeSkillId: skill_shi_dang_shi_jue      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        chargeSkillId: skill_xie_yu_chuan_lian      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.5
@@ -1291,11 +1284,11 @@ stages:
       candidateRef: blacksmith_son                # data/sect_candidates.yaml 已配(gangMeng)
     npcId: jiaoMen_songshan_daozong              # P1.2 §6 占位
     dropTable:
-      - equipmentDefId: weapon_baowu_chang_hong_jian
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 1.0
-      - equipmentDefId: accessory_baowu_yu_long_pei
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.50
-      - equipmentDefId: armor_zhongqi_yin_lin_jia
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.40
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [14, 18]
@@ -1326,28 +1319,28 @@ stages:
     chapterIndex: 6
     narrativeOpeningId: stage_06_01_opening
     narrativeVictoryId: stage_06_01_victory
-    requiredRealm: zongShi
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_zongShi_lunjian_sanchang_xunluo
         name: 论剑场散场巡逻
-        realmTier: zongShi
+        realmTier: sanLiu
         realmLayer: qiMeng
         school: yinRou
-        baseHp: 15000
-        baseAttack: 1100
+        baseHp: 3750
+        baseAttack: 280
         baseSpeed: 245
         skillIds:
-          - skill_yinrou_shichuan_basic
+          - skill_yinrou_changlian_basic
         iconPath: assets/enemies/lunjian_sanchang_xunluo.png
     isBossStage: false
     dropTable:
-      - equipmentDefId: weapon_baowu_xuan_tian_fu
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 1.0
-      - equipmentDefId: weapon_baowu_chang_hong_jian
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.30
-      - equipmentDefId: armor_baowu_can_si_ruan_jia
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.25
-      - equipmentDefId: accessory_baowu_long_gu_lian
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.20
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [12, 16]
@@ -1369,29 +1362,29 @@ stages:
     prevStageId: stage_06_01
     narrativeOpeningId: stage_06_02_opening
     narrativeVictoryId: stage_06_02_victory
-    requiredRealm: zongShi
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_zongShi_songshan_shouguan
         name: 嵩山守关
-        realmTier: zongShi
+        realmTier: sanLiu
         realmLayer: shuLian
         school: yinRou
-        baseHp: 17000
-        baseAttack: 1250
-        baseSpeed: 252
+        baseHp: 4250
+        baseAttack: 310
+        baseSpeed: 180
         skillIds:
-          - skill_yinrou_shichuan_basic
-          - skill_yinrou_shichuan_skill
+          - skill_yinrou_changlian_basic
+          - skill_yinrou_changlian_skill
         iconPath: assets/enemies/songshan_shouguan.png
     isBossStage: false
     dropTable:
-      - equipmentDefId: weapon_baowu_xue_lian_bian
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 1.0
-      - equipmentDefId: weapon_baowu_yin_yang_ci
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.35
-      - equipmentDefId: armor_baowu_wu_jin_zhan_jia
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.25
-      - equipmentDefId: accessory_baowu_zi_jin_hu_lu
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.20
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [13, 17]
@@ -1413,31 +1406,31 @@ stages:
     prevStageId: stage_06_02
     narrativeOpeningId: stage_06_03_opening
     narrativeVictoryId: stage_06_03_victory
-    requiredRealm: zongShi
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_zongShi_huanghe_yuantou_yufu
         name: 黄河源头渔人
-        realmTier: zongShi
+        realmTier: sanLiu
         realmLayer: shuLian
         school: gangMeng
-        baseHp: 18000
-        baseAttack: 1300
-        baseSpeed: 260
+        baseHp: 4500
+        baseAttack: 330
+        baseSpeed: 180
         skillIds:
-          - skill_gangmeng_shichuan_basic
-          - skill_gangmeng_shichuan_skill
+          - skill_gangmeng_changlian_basic
+          - skill_gangmeng_changlian_skill
         iconPath: assets/enemies/huanghe_yuantou_yufu.png
     isBossStage: false
     dropTable:
-      - equipmentDefId: armor_baowu_jin_si_jia
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 1.0
-      - equipmentDefId: accessory_baowu_yu_long_pei
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.50
-      - equipmentDefId: weapon_baowu_bing_po_zhen
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.35
-      - equipmentDefId: weapon_shenwu_hun_yuan_chui
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.15
-      - equipmentDefId: armor_shenwu_bing_can_yi
+      - equipmentDefId: armor_xiangyang_ye_xing_yi
         dropChance: 0.10
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [14, 18]
@@ -1460,35 +1453,34 @@ stages:
     narrativeOpeningId: stage_06_04_opening
     narrativeVictoryId: stage_06_04_victory
     narrativeDefeatId: stage_06_04_defeat
-    requiredRealm: zongShi
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_zongShi_kunlun_waimen_shouguan
         name: 昆仑外门守关
-        realmTier: zongShi
-        realmLayer: jingTong
+        realmTier: sanLiu
+        realmLayer: shuLian
         school: lingQiao
-        baseHp: 20000
-        baseAttack: 1350
-        baseSpeed: 250
+        baseHp: 4200
+        baseAttack: 250
+        baseSpeed: 180
         skillIds:
-          - skill_lingqiao_shichuan_basic
-          - skill_lingqiao_shichuan_skill
+          - skill_lingqiao_changlian_basic
         iconPath: assets/enemies/kunlun_waimen_shouguan.png
         isBoss: true
     isBossStage: true
     npcId: cijianzhuang_kunlun_dunke             # P1.2 §6 占位
     dropTable:
-      - equipmentDefId: accessory_shenwu_kun_lun_pei
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 1.0
-      - equipmentDefId: weapon_shenwu_po_jun_dao
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 1.0
-      - equipmentDefId: armor_shenwu_tian_can_bao_jia
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 1.0
-      - equipmentDefId: weapon_baowu_xuan_tian_fu
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.50
-      - equipmentDefId: weapon_shenwu_huan_meng_bian
+      - equipmentDefId: weapon_xiangyang_jiu_jie_bian
         dropChance: 0.15
-      - equipmentDefId: accessory_shenwu_she_li_zhu
+      - equipmentDefId: accessory_xiangyang_cui_yu_zhui
         dropChance: 0.15
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [16, 20]
@@ -1507,31 +1499,29 @@ stages:
   # Ch4 小铜镜 + Ch5 玉佩三章 hook 全闭环 / 师父第三句遗言完整联通 / 无物之境收束
   - id: stage_06_05
     name: 昆仑山顶
-    dropSkillManualId: skill_yang_guan_wu_gu_ren  # 波B 真解(西凉霸主「阳关无故人」· 同招为其蓄力技)
-    dropSkillFragmentId: skill_ye_yu_shi_nian_deng  # 波B 章末重打残页(每胜概率掉,高阶 farm)
     stageType: mainline
     chapterIndex: 6
     prevStageId: stage_06_04
     narrativeOpeningId: stage_06_05_opening
     narrativeVictoryId: stage_06_05_victory
     narrativeDefeatId: stage_06_05_defeat
-    requiredRealm: wuSheng
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_wuSheng_xiliang_bazhu
         name: 西凉霸主
-        realmTier: wuSheng
-        realmLayer: qiMeng
+        realmTier: sanLiu
+        realmLayer: shuLian
         school: yinRou
-        baseHp: 48000
-        baseAttack: 1800
+        baseHp: 12000
+        baseAttack: 450
         baseSpeed: 270
         skillIds:
-          - skill_yinrou_chuanshuo_basic
-          - skill_yinrou_chuanshuo_skill
-          - skill_yang_guan_wu_gu_ren                 # 波B 真解双用:Boss 招牌蓄力技「阳关无故人」
+          - skill_yinrou_changlian_basic
+          - skill_yinrou_changlian_skill
+          - skill_xie_yu_chuan_lian                 # 波B 真解双用:Boss 招牌蓄力技「阳关无故人」
         iconPath: assets/enemies/xiliang_bazhu.png
         isBoss: true
-        chargeSkillId: skill_yang_guan_wu_gu_ren      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        chargeSkillId: skill_xie_yu_chuan_lian      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.5
@@ -1559,15 +1549,15 @@ stages:
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
       candidateRef: valley_hermit                 # data/sect_candidates.yaml 1.1 新增(yinRou)
     dropTable:
-      - equipmentDefId: weapon_shenwu_tian_wen_jian
+      - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 1.0
-      - equipmentDefId: armor_shenwu_xuan_huang_pao
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.50
-      - equipmentDefId: accessory_baowu_yu_long_pei
+      - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.40
-      - equipmentDefId: weapon_shenwu_kong_que_ling
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.30
-      - equipmentDefId: accessory_shenwu_tian_yuan_zhi
+      - equipmentDefId: accessory_xiangyang_cui_yu_zhui
         dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [18, 24]

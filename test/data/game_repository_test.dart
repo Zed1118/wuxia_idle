@@ -609,7 +609,7 @@ void main() {
       },
     );
 
-    test('drop 覆盖率红线:除 special 外每件装备至少有 1 个主线关卡 dropTable 来源', () async {
+    test('drop 覆盖率红线:当前发布阶装备至少有 1 个主线来源', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       final specialTags = {
         'ascension_reward',
@@ -632,11 +632,13 @@ void main() {
       final missing = <String>[];
       for (final e in repo.equipmentDefs.values) {
         final isSpecial = e.dropSourceTags.any(specialTags.contains);
-        if (!isSpecial && !droppedIds.contains(e.id)) {
+        final isCurrentReleaseTier =
+            e.tier.index <= EquipmentTier.xiangYang.index;
+        if (isCurrentReleaseTier && !isSpecial && !droppedIds.contains(e.id)) {
           missing.add(e.id);
         }
       }
-      expect(missing, isEmpty, reason: '以下装备无主线 drop 来源: $missing');
+      expect(missing, isEmpty, reason: '以下当前阶装备无主线 drop 来源: $missing');
     });
 
     test('未配置的 id → 抛 StateError', () async {

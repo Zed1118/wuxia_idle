@@ -1822,8 +1822,16 @@ class GameRepository {
   /// ⑤ 任何 dropSkillFragmentId(塔层/章末重打)指向的招 = fragment(波B 泛化);
   /// ⑥ drop 招(mainlineDrop|fragment)必有 style + tier(缺 style 永不可装配,
   ///    缺 tier canEquipAtRealm 恒 true 破 §5.3,均属配置错误);
-  /// ⑦ drop 招挂载完备:每招恰 1 个挂载点,无孤儿无重复(内容批账实一致)。
+  /// ⑦ 当前发布阶 drop 招挂载完备:每招恰 1 个挂载点。高于发布
+  /// 上限的招式定义允许暂无挂载，留给后续副本与玩法。
   void _enforceSkillSourceRedLines() {
+    final releaseRealm = getRealmByAbsoluteLevel(
+      numbers.progressionReleaseCap.maxAbsoluteRealmLevel,
+    );
+    final releaseSkillTierCap = releaseRealm.tier.index + 1;
+    bool isCurrentReleaseSkill(String id) =>
+        (skillDefs[id]?.tier ?? releaseSkillTierCap + 1) <= releaseSkillTierCap;
+
     for (final s in skillDefs.values) {
       if (s.source == null) {
         throw StateError('skill ${s.id} 缺 source 来源 tag(波A A4 红线 ①)');
@@ -1857,7 +1865,7 @@ class GameRepository {
             'stage ${st.id} dropSkillManualId=$m source 应为 mainline_drop(波A A4 红线 ④)',
           );
         }
-        manualMounts.add(m);
+        if (isCurrentReleaseSkill(m)) manualMounts.add(m);
       }
       final sf = st.dropSkillFragmentId;
       if (sf != null) {
@@ -1866,7 +1874,7 @@ class GameRepository {
             'stage ${st.id} dropSkillFragmentId=$sf source 应为 fragment(波B 红线 ⑤)',
           );
         }
-        fragmentMounts.add(sf);
+        if (isCurrentReleaseSkill(sf)) fragmentMounts.add(sf);
       }
     }
     for (final f in towerFloors) {
@@ -1878,18 +1886,26 @@ class GameRepository {
             'source 应为 fragment(波B 红线 ⑤)',
           );
         }
-        fragmentMounts.add(fr);
+        if (isCurrentReleaseSkill(fr)) fragmentMounts.add(fr);
       }
     }
     // ⑦ 挂载完备性(test fixture 无 stage/tower defs 时跳过:挂载列表空 +
     // production 加载两者必在,fixture 只载 skills 不应误杀)。
     if (stageDefs.isNotEmpty || towerFloors.isNotEmpty) {
       final manualSkills = skillDefs.values
-          .where((s) => s.source == SkillSource.mainlineDrop)
+          .where(
+            (s) =>
+                s.source == SkillSource.mainlineDrop &&
+                (s.tier ?? releaseSkillTierCap + 1) <= releaseSkillTierCap,
+          )
           .map((s) => s.id)
           .toSet();
       final fragmentSkills = skillDefs.values
-          .where((s) => s.source == SkillSource.fragment)
+          .where(
+            (s) =>
+                s.source == SkillSource.fragment &&
+                (s.tier ?? releaseSkillTierCap + 1) <= releaseSkillTierCap,
+          )
           .map((s) => s.id)
           .toSet();
       void check(String kind, List<String> mounts, Set<String> skills) {

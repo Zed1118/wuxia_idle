@@ -39,10 +39,10 @@
 
 ## 当前恢复点
 
-- **状态:** Task 4 已完成，当前内容经验总预算、闭关/离线和三档经验丹已按 Lv100 发布节奏重校，分支仍为 WIP。
-- **最后完成:** 30 主线总 EXP=492，30 塔总 EXP=507，轻功/群战各 200；三流可达图 72h 推进 3–6 显示级，三流 8h 普通离线不超过 1 级；丹药为 10%/20%/30%，商店价格比保持无套利。
-- **下一步:** 执行 Task 5，将 30 个主线关的需求境界、敌人境界/属性和当前掉落重排到学徒—三流。
-- **已跑验证:** Task 1 定向 6 tests passed；Task 2 心魔+数据+角色面板定向集 110 tests passed；Task 3 五类经验来源定向集 102 tests passed；Task 4 预算 4 tests、经济/丹药/商店 33 tests 和闭关/离线 62 tests 均通过；`git diff --check` 通过。
+- **状态:** Task 5 已完成，30 个主线关、当前掉落和技能来源已重排到学徒—三流，分支仍为 WIP。
+- **最后完成:** Ch1–3 统一为学徒、Ch4–6 统一为三流；当前主线装备不高于襄阳阶，技能不高于 tier 2；新档前 30 分钟与单人 30 关连续路径均可通过。对实际失败关只做了敌方速度/技能和基础面板的局部微调。
+- **下一步:** 执行 Task 6，将 30 层塔和轻功/群战支线重排到 Lv100 前。
+- **已跑验证:** Task 1 定向 6 tests passed；Task 2 心魔+数据+角色面板定向集 110 tests passed；Task 3 五类经验来源定向集 102 tests passed；Task 4 预算 4 tests、经济/丹药/商店 33 tests 和闭关/离线 62 tests 均通过；Task 5 主线数据/掉落/新档战斗定向集 65 tests passed；`git diff --check` 通过。
 - **阻塞项:** 无。Claude `feat/combat-feel-phase2` 仍为 WIP，可并行；已知重叠仅为 `data/numbers.yaml` 的不同配置段，交付前再对比。
 
 ## 文件地图
@@ -297,25 +297,25 @@
 - Modify: `test/features/onboarding/onboarding_first_30min_battle_test.dart`
 - Modify: `test/features/onboarding/solo_mainline_ch1_ch6_balance_test.dart`
 
-- [ ] **Step 1: 为主线境界、单关跳级与当前掉落上限写 RED 测试**
+- [x] **Step 1: 为主线境界、单关跳级与当前掉落上限写 RED 测试**
 
   合同：Ch1～3 均要求/使用 `xueTu`，Ch4～6 均为 `sanLiu`；普通关从推荐等级进入时增加 0～1 级，Boss 增加 1～3 级；当前主线装备掉落不高于 `xiangYang`，掉落技能不高于 tier 2。
 
-- [ ] **Step 2: 跑主线数据/战斗测试并确认 RED**
+- [x] **Step 2: 跑主线数据/战斗测试并确认 RED**
 
   ```bash
   flutter test --no-pub test/data/mainline_stage_curve_redline_test.dart test/data/game_repository_test.dart test/data/stage_skill_drop_redline_test.dart test/data/drop_table_reference_redline_test.dart test/features/onboarding/onboarding_first_30min_battle_test.dart test/features/onboarding/solo_mainline_ch1_ch6_balance_test.dart
   ```
 
-- [ ] **Step 3: 重排境界与敌方基础数值**
+- [x] **Step 3: 重排境界与敌方基础数值**
 
   保留每关阵容、Boss 机制、速度和剧情。以现有 HP/攻击为基线按章缩放：Ch1 `1.00`、Ch2 `0.85`、Ch3 `0.65`、Ch4 `0.55`、Ch5 `0.35`、Ch6 `0.25`；HP 四舍五入到 50（最少 500），攻击四舍五入到 10（最少 50）。`difficultyMultiplier` 不参与战斗，不把它当作平衡杠杆。
 
-- [ ] **Step 4: 收窄装备/技能来源**
+- [x] **Step 4: 收窄装备/技能来源**
 
   高阶定义原样保留，但当前普通掉落表只引用 `xunChang` / `xiangYang`；师承或明确的 +1/+2 收藏例外继续由既有三系门禁管理。将现有 tier 3+ 真解/残页来源移出当前关卡或替换为 tier 1/2 技能。
 
-- [ ] **Step 5: 跑 GREEN；若战斗失败，只微调失败关敌人/掉落，不 buff 玩家全局**
+- [x] **Step 5: 跑 GREEN；若战斗失败，只微调失败关敌人/掉落，不 buff 玩家全局**
 
   ```bash
   flutter test --no-pub test/data/mainline_stage_curve_redline_test.dart test/data/game_repository_test.dart test/data/stage_skill_drop_redline_test.dart test/data/drop_table_reference_redline_test.dart test/features/onboarding/onboarding_first_30min_battle_test.dart test/features/onboarding/solo_mainline_ch1_ch6_balance_test.dart
