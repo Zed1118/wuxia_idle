@@ -17,7 +17,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import '../support/progression_battle_probe.dart';
 import '../support/test_data.dart';
 
-const _seedsPerStage = 20;
+const _seedsPerStage = 50;
 const _readableVictoryHandoffSeconds = 1.2;
 const _reportDate = '2026-07-09';
 const _outputDir = 'test/tools/output';

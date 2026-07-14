@@ -19,7 +19,7 @@ void main() {
     repo = await loadTestGameRepository();
   });
 
-  test('30 主线首通从 Lv1 出发，结束于 Lv35–50', () {
+  test('30 主线首通从 Lv1 出发，累计 492 经验结束于 Lv44', () {
     final character = _newCharacter(repo);
     final mainline =
         repo.stageDefs.values
@@ -28,14 +28,28 @@ void main() {
           ..sort((a, b) => a.id.compareTo(b.id));
 
     expect(mainline, hasLength(30));
+    var cumulativeExperience = 0;
+    var maximumJump = 0;
     for (final stage in mainline) {
+      final before = _displayLevel(repo, character);
+      cumulativeExperience += stage.baseExpReward;
       _applyExperience(repo, character, stage.baseExpReward);
+      final after = _displayLevel(repo, character);
+      final jump = after - before;
+      if (jump > maximumJump) maximumJump = jump;
+      expect(
+        jump,
+        stage.isBossStage ? inInclusiveRange(1, 3) : inInclusiveRange(0, 1),
+        reason: '${stage.id}: Lv$before → Lv$after',
+      );
     }
 
-    expect(_displayLevel(repo, character), inInclusiveRange(35, 50));
+    expect(cumulativeExperience, 492);
+    expect(maximumJump, 3);
+    expect(_displayLevel(repo, character), 44);
   });
 
-  test('当前全内容 + 72h 闭关 + 24h 离线 + 三枚丹药结束于 Lv80–95', () {
+  test('当前全内容 + 72h 闭关 + 24h 离线 + 三枚丹药结束于 Lv85', () {
     final character = _newCharacter(repo);
     final combatRewards = <int>[
       ..._stageRewards(repo, StageType.mainline),
@@ -47,6 +61,8 @@ void main() {
     for (final reward in combatRewards) {
       _applyExperience(repo, character, reward);
     }
+    expect(combatRewards.fold<int>(0, (sum, reward) => sum + reward), 1399);
+    expect(_displayLevel(repo, character), 71);
 
     final retreatExperience = _retreatExperience(
       repo,
@@ -55,6 +71,8 @@ void main() {
       72,
     );
     _applyExperience(repo, character, retreatExperience);
+    expect(retreatExperience, 280);
+    expect(_displayLevel(repo, character), 77);
 
     final passive = OfflinePassiveService.compute(
       awayHours: 24,
@@ -62,6 +80,8 @@ void main() {
       config: repo.numbers.passiveIdle,
     );
     _applyExperience(repo, character, passive.experience);
+    expect(passive.experience, 115);
+    expect(_displayLevel(repo, character), 79);
 
     for (final id in const [
       'item_jingyandan_small',
@@ -76,8 +96,7 @@ void main() {
     }
 
     final level = _displayLevel(repo, character);
-    expect(level, inInclusiveRange(80, 95));
-    expect(level, lessThanOrEqualTo(100));
+    expect(level, 85);
   });
 
   test('三流可达地图 72h 闭关仅提升 3–6 个显示级', () {

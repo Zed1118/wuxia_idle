@@ -21,7 +21,7 @@ import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
 import '../support/test_data.dart';
 
 const int _maxTicks = 200;
-const int _seeds = 20;
+const int _seeds = 50;
 const String _outputDir = 'test/tools/output';
 
 enum _BuildProfile { floor, ceiling }
@@ -133,11 +133,11 @@ void main() {
     // 为何豁免 floor profile(实测差异):
     //   - **floor25(首相位阈值 0.70 深)**:窗口外承伤 ×0.10 让零投入队 DPS 啃不到
     //     -30% 的首阈值 → 触发不了相位(bootstrapping:要开窗须先跌破阈值,而跌破所
-    //     需伤害又被窗口外 0.10 折扣压住)。实测 floor profile 仅 8/20 触发,材料上确
-    //     需豁免。这是有意软门槛(用户 2026-07-03 拍板「接受为软门槛」)。
+    //     需伤害又被窗口外 0.10 折扣压住)。因此 floor profile 不承担相位可见性的
+    //     硬门槛；这是有意软门槛(用户 2026-07-03 拍板「接受为软门槛」)。
     //   - **floor30(首相位阈值 0.90 浅)**:只需啃到 -10% 即开窗,零投入队也啃得到,
-    //     实测 floor profile 20/20 触发,**本不受 vuln bootstrapping 困**;豁免对
-    //     floor30 无实际影响,只是统一 ceiling-only 断言口径。
+    //     **本不受 vuln bootstrapping 困**；豁免对 floor30 无实际影响,只是统一
+    //     ceiling-only 断言口径。
     // 非 vuln Boss 不适用本豁免。
     for (final floorIndex in [25, 30]) {
       final triggered = results

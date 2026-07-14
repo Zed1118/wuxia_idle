@@ -11,7 +11,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import '../support/progression_battle_probe.dart';
 import '../support/test_data.dart';
 
-const _seedCount = 20;
+const _seedCount = 50;
 const _csvPath =
     'test/tools/output/progression_attribute_playtest_2026-07-13.csv';
 const _updateEvidenceEnvironment = 'UPDATE_PROGRESSION_PLAYTEST_EVIDENCE';
@@ -24,7 +24,7 @@ void main() {
   });
 
   test(
-    'progression playtest: 30 mainline × 3 profiles × 20 seeds',
+    'progression playtest: 30 mainline × 3 profiles × $_seedCount seeds',
     () {
       final evidenceFile = File(_csvPath);
       expect(evidenceFile.existsSync(), isTrue);
@@ -141,7 +141,10 @@ void _validateCsvStructure(String csv) {
       'stage_id,profile,seed,result,ticks,player_hp_start,player_hp_end,'
       'player_qi_start,player_qi_end,action_rows';
   final lines = const LineSplitter().convert(csv);
-  expect(lines, hasLength(1801));
+  expect(
+    lines,
+    hasLength(1 + 30 * ProgressionBuildProfile.values.length * _seedCount),
+  );
   expect(lines.first, header);
 
   final combinations = <String>{};
@@ -163,10 +166,14 @@ void _validateCsvStructure(String csv) {
   }
   expect(stages, hasLength(30));
   expect(profileCounts, {
-    for (final profile in ProgressionBuildProfile.values) profile.name: 600,
+    for (final profile in ProgressionBuildProfile.values)
+      profile.name: 30 * _seedCount,
   });
   expect(seeds, Set<int>.from(List<int>.generate(_seedCount, (seed) => seed)));
-  expect(combinations, hasLength(1800));
+  expect(
+    combinations,
+    hasLength(30 * ProgressionBuildProfile.values.length * _seedCount),
+  );
 }
 
 void _writeAtomically(File destination, String contents) {

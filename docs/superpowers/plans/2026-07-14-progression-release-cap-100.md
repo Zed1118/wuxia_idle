@@ -39,10 +39,10 @@
 
 ## 当前恢复点
 
-- **状态:** Task 6 已完成，主线、塔、轻功和群战当前内容已全部收口在 Lv100 内，分支仍为 WIP。
-- **最后完成:** 塔 1–15 层映射学徒三段、16–30 层映射三流·启蒙/入门/熟练；轻功和群战各 5 关映射学徒后段至三流·熟练；高阶塔掉落已移出当前入口。floor30 三流满配 30/30 胜且护法/两段相位均触发，低一阶 0/30 胜。
-- **下一步:** 执行 Task 7，运行完整发布路线、首通可读性和塔 Boss 诊断，只修复高影响断点。
-- **已跑验证:** Task 1 定向 6 tests passed；Task 2 心魔+数据+角色面板定向集 110 tests passed；Task 3 五类经验来源定向集 102 tests passed；Task 4 预算 4 tests、经济/丹药/商店 33 tests 和闭关/离线 62 tests 均通过；Task 5 主线数据/掉落/新档战斗定向集 65 tests passed；Task 6 塔/支线数据和战斗诊断定向集 60 tests passed；`git diff --check` 通过。
+- **状态:** Task 7 已完成，发布路线预算与 50 seed 战斗边界已固化，分支仍为 WIP。
+- **最后完成:** 30 主线累计 492 经验，Lv1→Lv44，普通关单关最多 +1、Boss 最多 +3；当前全部战斗内容后 Lv71，叠加 72h 闭关到 Lv77、24h 离线到 Lv79、三枚经验丹后终局 Lv85。30 关三档各 50 seed 均 100% 通过，无首个失败关；塔 25 层 floor/ceiling 为 90%/100%，30 层为 14%/100%，保留终关养成门槛。
+- **下一步:** 执行 Task 8，更新 GDD/PROGRESS 真相源并完成静态分析、全量测试、Claude 冲突面检查和 READY 标记。
+- **已跑验证:** Task 1 定向 6 tests passed；Task 2 心魔+数据+角色面板定向集 110 tests passed；Task 3 五类经验来源定向集 102 tests passed；Task 4 预算 4 tests、经济/丹药/商店 33 tests 和闭关/离线 62 tests 均通过；Task 5 主线数据/掉落/新档战斗定向集 65 tests passed；Task 6 塔/支线数据和战斗诊断定向集 60 tests passed；Task 7 发布预算、单人路线、主线三档与塔 Boss 共 11 tests passed（主线与塔诊断均提升为 50 seed）；`git diff --check` 通过。
 - **阻塞项:** 无。Claude `feat/combat-feel-phase2` 仍为 WIP，可并行；已知重叠仅为 `data/numbers.yaml` 的不同配置段，交付前再对比。
 
 ## 文件地图
@@ -374,7 +374,7 @@
 - Modify: `test/tools/progression_playtest_diagnostic_test.dart`
 - Modify: `test/tools/readable_first_clear_tempo_diagnostic_test.dart`
 
-- [ ] **Step 1: 运行预算、新档主线和可读性诊断**
+- [x] **Step 1: 运行预算、新档主线和可读性诊断**
 
   ```bash
   flutter test --no-pub test/features/cultivation/application/progression_release_budget_test.dart test/features/onboarding/solo_mainline_ch1_ch6_balance_test.dart test/tools/progression_playtest_diagnostic_test.dart test/tools/readable_first_clear_tempo_diagnostic_test.dart test/tools/tower_boss_feel_diagnostic_test.dart
@@ -382,7 +382,7 @@
 
   必须记录：每关前后 Lv、累计经验、首个失败关、各50个种子的通过率，以及完整路线终局 Lv。
 
-- [ ] **Step 2: 按优先级修正诊断结果**
+- [x] **Step 2: 按优先级修正诊断结果**
 
   1. 先修复死锁、不可通过和超 Lv100。
   2. 再修复单关跳级超预算。
@@ -390,11 +390,11 @@
 
   只调整相应关卡敌人基础数值、掉落或小额奖励；不改玩家全局成长公式，不引入新系统。
 
-- [ ] **Step 3: 固化最终预算与重要战斗回归**
+- [x] **Step 3: 固化最终预算与重要战斗回归**
 
   把最终通过的总预算和战斗边界保留为硬断言，不把 diagnostic 日志本身当成验收。
 
-- [ ] **Step 4: 跑定向 GREEN 并提交**
+- [x] **Step 4: 跑定向 GREEN 并提交**
 
   ```bash
   dart format test/features/cultivation/application/progression_release_budget_test.dart test/features/onboarding/solo_mainline_ch1_ch6_balance_test.dart test/tools/progression_playtest_diagnostic_test.dart test/tools/readable_first_clear_tempo_diagnostic_test.dart
@@ -402,6 +402,19 @@
   git add data/stages.yaml data/towers.yaml test/features/cultivation/application/progression_release_budget_test.dart test/features/onboarding/solo_mainline_ch1_ch6_balance_test.dart test/tools/progression_playtest_diagnostic_test.dart test/tools/readable_first_clear_tempo_diagnostic_test.dart
   git commit -m "[balance] 收口Lv100发布路线可玩性"
   ```
+
+**Task 7 验收记录（2026-07-14）**
+
+- 逐关显示等级（括号内为本关经验 / 累计经验；`B` 为 Boss）：
+  - Ch1：`1→2(5/5)`、`2→3(5/10)`、`3→4(5/15)`、`4→6(B,10/25)`、`6→9(B,15/40)`。
+  - Ch2：`9→10(8/48)`、`10→11(8/56)`、`11→12(8/64)`、`12→14(B,15/79)`、`14→17(B,20/99)`。
+  - Ch3：`17→18(10/109)`、`18→19(10/119)`、`19→20(8/127)`、`20→22(B,20/147)`、`22→24(B,25/172)`。
+  - Ch4：`24→25(12/184)`、`25→26(12/196)`、`26→27(10/206)`、`27→29(B,25/231)`、`29→31(B,30/261)`。
+  - Ch5：`31→32(15/276)`、`32→33(15/291)`、`33→34(10/301)`、`34→35(B,30/331)`、`35→37(B,35/366)`。
+  - Ch6：`37→38(18/384)`、`38→39(18/402)`、`39→40(10/412)`、`40→42(B,35/447)`、`42→44(B,45/492)`。
+- 完整路线节点：全部当前战斗奖励累计 `1399 EXP / Lv71`；72h 藏经阁 `+280 / Lv77`；24h 离线 `+115 / Lv79`；三枚经验丹后 `Lv85`。
+- 50 seed 诊断：主线 30 关 × undergeared/standard/nearMax = `4500/4500` 胜，首个失败关为“无”，最大 34 ticks；可读性双档 `3000/3000` 胜。塔 25 层 floor `45/50`、ceiling `50/50`，塔 30 层 floor `7/50`、ceiling `50/50`，符合终关需养成的边界。
+- 非阻断观察：部分早期主线在满配下动作数偏低，但已有首通 14 秒展示兜底，且不影响本次“放慢升级、控制当前内容低于 Lv100”的目标，未扩张为战斗体感重做。
 
 ### Task 8: 更新真相源并做一次完成级验证
 
