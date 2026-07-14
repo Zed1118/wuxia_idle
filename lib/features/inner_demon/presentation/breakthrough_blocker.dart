@@ -8,7 +8,7 @@ import '../domain/inner_demon_panel.dart';
 /// 心魔成长瓶颈面板(P0-3 ③,泛化自旧 InnerDemonBreakthroughBlocker)。
 ///
 /// 纯渲染职责:按 [state] 显示 cleared / blocked / inProgress 三态。
-/// 武圣常驻(由 caller `_BreakthroughBlockerSection` 决定显隐),
+/// 到达配置节点后显示(由 caller `_BreakthroughBlockerSection` 决定显隐),
 /// X/total 进度条数据单一真相源 = MainlineProgress.clearedStageIds。
 /// stage 名由 caller 用 stageDefs 解后传入。「突破」CTA = onNavigate(导航至
 /// InnerDemonScreen,不引新突破机制,进阶仍自动)。

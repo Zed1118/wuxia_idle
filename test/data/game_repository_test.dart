@@ -6,6 +6,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
+import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 /// GameRepository + yaml 加载器 + NumbersConfig 集成测试。
@@ -80,6 +81,53 @@ void main() {
         7,
         reason: '心魔 7 关(2026-05-22 P2.2 §12.1 Batch 2.1 schema)',
       );
+      expect(
+        repo.numbers.innerDemon.unlockTriggers['stage_01_03'],
+        'stage_inner_demon_01',
+        reason: '当前版第一个心魔节点从主线 01_03 触发',
+      );
+      const expectedInnerDemonCoords = <String, RealmCoord>{
+        'stage_inner_demon_01': RealmCoord(
+          tier: RealmTier.xueTu,
+          layer: RealmLayer.shuLian,
+        ),
+        'stage_inner_demon_02': RealmCoord(
+          tier: RealmTier.xueTu,
+          layer: RealmLayer.jingTong,
+        ),
+        'stage_inner_demon_03': RealmCoord(
+          tier: RealmTier.xueTu,
+          layer: RealmLayer.yuanShu,
+        ),
+        'stage_inner_demon_04': RealmCoord(
+          tier: RealmTier.xueTu,
+          layer: RealmLayer.huaJing,
+        ),
+        'stage_inner_demon_05': RealmCoord(
+          tier: RealmTier.xueTu,
+          layer: RealmLayer.dengFeng,
+        ),
+        'stage_inner_demon_06': RealmCoord(
+          tier: RealmTier.sanLiu,
+          layer: RealmLayer.qiMeng,
+        ),
+        'stage_inner_demon_07': RealmCoord(
+          tier: RealmTier.sanLiu,
+          layer: RealmLayer.ruMen,
+        ),
+      };
+      expect(
+        repo.numbers.innerDemon.requiredRealmLayer,
+        expectedInnerDemonCoords,
+      );
+      for (var i = 1; i <= 7; i++) {
+        final id = 'stage_inner_demon_${i.toString().padLeft(2, '0')}';
+        expect(
+          repo.getStage(id).requiredRealm,
+          i <= 5 ? RealmTier.xueTu : RealmTier.sanLiu,
+          reason: '$id 必须在 Lv100 发布上限内',
+        );
+      }
       expect(
         lightFootCount,
         5,

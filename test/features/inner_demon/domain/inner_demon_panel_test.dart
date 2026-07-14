@@ -8,15 +8,36 @@ import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_progress.dart
 
 void main() {
   InnerDemonDef defWith7() {
-    const layers = RealmLayer.values;
-    final req = <String, RealmCoord>{};
-    for (var i = 0; i < 7; i++) {
-      final n = (i + 1).toString().padLeft(2, '0');
-      req['stage_inner_demon_$n'] = RealmCoord(
-        tier: RealmTier.wuSheng,
-        layer: layers[i],
-      );
-    }
+    const req = <String, RealmCoord>{
+      'stage_inner_demon_01': RealmCoord(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.shuLian,
+      ),
+      'stage_inner_demon_02': RealmCoord(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.jingTong,
+      ),
+      'stage_inner_demon_03': RealmCoord(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.yuanShu,
+      ),
+      'stage_inner_demon_04': RealmCoord(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.huaJing,
+      ),
+      'stage_inner_demon_05': RealmCoord(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.dengFeng,
+      ),
+      'stage_inner_demon_06': RealmCoord(
+        tier: RealmTier.sanLiu,
+        layer: RealmLayer.qiMeng,
+      ),
+      'stage_inner_demon_07': RealmCoord(
+        tier: RealmTier.sanLiu,
+        layer: RealmLayer.ruMen,
+      ),
+    };
     final b = InnerDemonDef.empty();
     return InnerDemonDef(
       mirrorBuffPerStage: b.mirrorBuffPerStage,
@@ -59,9 +80,9 @@ void main() {
     clearedStageIds: cleared,
   );
 
-  test('非武圣 → null(shrink)', () {
+  test('尚未到第一个心魔节点 → null(shrink)', () {
     final r = resolveInnerDemonPanel(
-      character: ch(tier: RealmTier.yiLiu),
+      character: ch(tier: RealmTier.xueTu, layer: RealmLayer.ruMen),
       experienceToNext: 100,
       progress: prog(const {}),
       innerDemonDef: defWith7(),
@@ -69,13 +90,13 @@ void main() {
     expect(r, isNull);
   });
 
-  test('武圣全通 → cleared 7/7', () {
+  test('当前发布层全通 → cleared 7/7', () {
     final cleared = {
       for (var i = 1; i <= 7; i++)
         'stage_inner_demon_${i.toString().padLeft(2, '0')}',
     };
     final r = resolveInnerDemonPanel(
-      character: ch(tier: RealmTier.wuSheng, layer: RealmLayer.dengFeng),
+      character: ch(tier: RealmTier.sanLiu, layer: RealmLayer.shuLian),
       experienceToNext: 100,
       progress: prog(cleared),
       innerDemonDef: defWith7(),
@@ -85,11 +106,11 @@ void main() {
     expect(r.totalCount, 7);
   });
 
-  test('武圣 exp满 + 拦截 → blocked,blockingStageId 对应当前 layer', () {
+  test('学徒 exp满 + 拦截 → blocked,blockingStageId 对应当前 layer', () {
     final r = resolveInnerDemonPanel(
       character: ch(
-        tier: RealmTier.wuSheng,
-        layer: RealmLayer.shuLian,
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.yuanShu,
         experience: 100,
         experienceToNextLayer: 100,
       ),
@@ -102,10 +123,10 @@ void main() {
     expect(r.clearedCount, 2);
   });
 
-  test('武圣 exp未满 → inProgress,nextStageId = 首个未通', () {
+  test('学徒 exp未满 → inProgress,nextStageId = 首个未通', () {
     final r = resolveInnerDemonPanel(
       character: ch(
-        tier: RealmTier.wuSheng,
+        tier: RealmTier.xueTu,
         layer: RealmLayer.shuLian,
         experience: 10,
         experienceToNextLayer: 100,
@@ -118,14 +139,14 @@ void main() {
     expect(r.nextStageId, 'stage_inner_demon_02');
   });
 
-  test('武圣但空心魔配置(total 0)→ null(不显空面板)', () {
+  test('空心魔配置(total 0)→ null(不显空面板)', () {
     final empty = InnerDemonProgress.from(
       innerDemonDef: InnerDemonDef.empty(),
       clearedStageIds: const {},
     );
     final r = resolveInnerDemonPanel(
       character: ch(
-        tier: RealmTier.wuSheng,
+        tier: RealmTier.xueTu,
         layer: RealmLayer.shuLian,
         experience: 100,
         experienceToNextLayer: 100,
@@ -140,8 +161,8 @@ void main() {
   test('满经验判断使用调用方阈值而非角色镜像', () {
     final r = resolveInnerDemonPanel(
       character: ch(
-        tier: RealmTier.wuSheng,
-        layer: RealmLayer.shuLian,
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.yuanShu,
         experience: 100,
         experienceToNextLayer: 999999,
       ),

@@ -21,7 +21,7 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 ///   - locked(未解锁):灰显 + 锁图标,点击 disabled
 ///
 /// **三态判定**(`InnerDemonDef.unlockTriggers` reverse 查 prev stage):
-///   - stage_06_05 是 _01 的 prev(Ch6 末关 victory → 自动解 _01)
+///   - stage_01_03 是 _01 的 prev(首个成长节点 victory → 自动解 _01)
 ///   - _01 victory → _02 解;_02 victory → _03 解;... 链式
 ///   - _07 victory → A1 飞升(P2.3 留接口,本 widget 不涉)
 class InnerDemonScreen extends ConsumerWidget {

@@ -1079,10 +1079,12 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('③ 非武圣 → 心魔面板不显', (tester) async {
+  testWidgets('③ 尚未到首个心魔节点 → 心魔面板不显', (tester) async {
+    final beforeFirstNode = mkCharacter(realmTier: RealmTier.xueTu)
+      ..realmLayer = RealmLayer.ruMen;
     await pumpPanel(
       tester,
-      character: mkCharacter(realmTier: RealmTier.xueTu),
+      character: beforeFirstNode,
       innerDemonProgress: const InnerDemonProgress(
         clearedCount: 0,
         totalCount: 7,
@@ -1093,14 +1095,14 @@ void main() {
     expect(find.text(UiStrings.innerDemonPanelTitle), findsNothing);
   });
 
-  testWidgets('③ 武圣 exp满被拦 → 显心魔面板 + X/7 + 突破 CTA', (tester) async {
-    final wuSheng = mkCharacter(realmTier: RealmTier.wuSheng)
-      ..realmLayer = RealmLayer.shuLian
+  testWidgets('③ 学徒 exp满被拦 → 显心魔面板 + X/7 + 突破 CTA', (tester) async {
+    final xueTu = mkCharacter(realmTier: RealmTier.xueTu)
+      ..realmLayer = RealmLayer.yuanShu
       ..experience = 999999
       ..experienceToNextLayer = 100;
     await pumpPanel(
       tester,
-      character: wuSheng,
+      character: xueTu,
       innerDemonProgress: const InnerDemonProgress(
         clearedCount: 2,
         totalCount: 7,

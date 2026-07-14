@@ -926,9 +926,9 @@ class _AttributeChip extends StatelessWidget {
   }
 }
 
-/// wuSheng 阶心魔关未通 + 满经验时,在 _TopBar 下方插入拦截提示。
+/// 到达配置的心魔节点后,在 _TopBar 下方插入成长提示。
 ///
-/// P0-3 ③:武圣常驻心魔成长瓶颈面板。非武圣 → shrink;否则 watch
+/// P0-3 ③:心魔成长瓶颈面板。未到首节点 → shrink;否则 watch
 /// [innerDemonProgressProvider] + [resolveInnerDemonPanel] 决定 cleared /
 /// blocked / inProgress 三态,渲染 [InnerDemonProgressPanel]。进阶仍自动,
 /// 「突破」CTA 仅导航至 [InnerDemonScreen]。
@@ -939,9 +939,6 @@ class _BreakthroughBlockerSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (character.realmTier != RealmTier.wuSheng) {
-      return const SizedBox.shrink();
-    }
     final progressAsync = ref.watch(innerDemonProgressProvider);
     final progress = progressAsync.asData?.value;
     if (progress == null) return const SizedBox.shrink(); // loading/err 不闪

@@ -4,17 +4,38 @@ import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
 import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_progress.dart';
 
 void main() {
-  // 7 关 fixture(stage_inner_demon_01..07 → wuSheng 各 layer)。
+  // 7 关 fixture(stage_inner_demon_01..07 → 当前学徒—三流节点)。
   InnerDemonDef defWith7() {
-    const layers = RealmLayer.values;
-    final req = <String, RealmCoord>{};
-    for (var i = 0; i < 7; i++) {
-      final n = (i + 1).toString().padLeft(2, '0');
-      req['stage_inner_demon_$n'] = RealmCoord(
-        tier: RealmTier.wuSheng,
-        layer: layers[i],
-      );
-    }
+    const req = <String, RealmCoord>{
+      'stage_inner_demon_01': RealmCoord(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.shuLian,
+      ),
+      'stage_inner_demon_02': RealmCoord(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.jingTong,
+      ),
+      'stage_inner_demon_03': RealmCoord(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.yuanShu,
+      ),
+      'stage_inner_demon_04': RealmCoord(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.huaJing,
+      ),
+      'stage_inner_demon_05': RealmCoord(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.dengFeng,
+      ),
+      'stage_inner_demon_06': RealmCoord(
+        tier: RealmTier.sanLiu,
+        layer: RealmLayer.qiMeng,
+      ),
+      'stage_inner_demon_07': RealmCoord(
+        tier: RealmTier.sanLiu,
+        layer: RealmLayer.ruMen,
+      ),
+    };
     final base = InnerDemonDef.empty();
     return InnerDemonDef(
       mirrorBuffPerStage: base.mirrorBuffPerStage,
@@ -39,12 +60,12 @@ void main() {
     final p = InnerDemonProgress.from(
       innerDemonDef: defWith7(),
       clearedStageIds: const {
-        'stage_06_05',
+        'stage_01_03',
         'stage_inner_demon_01',
         'stage_inner_demon_02',
       },
     );
-    expect(p.clearedCount, 2); // stage_06_05 不计入心魔关
+    expect(p.clearedCount, 2); // stage_01_03 不计入心魔关
     expect(p.totalCount, 7);
     expect(p.nextUnclearedStageId, 'stage_inner_demon_03');
   });

@@ -35,46 +35,36 @@ class InnerDemonPenaltyResult {
 ///   - 全部静态方法（无 mutable state，无需 Riverpod provider 持有）
 ///   - 不直接读 Isar / GameRepository（caller 注入 def + clearedStageIds）→
 ///     test 易，hook closure 易构造
-///   - 非 wuSheng tier 短路 → 不影响 Demo + Ch4-6 主线升层路径
+///   - 使用境界枚举顺序比较绝对层，支持同阶与跨阶节点
 class InnerDemonService {
   InnerDemonService._();
 
   /// 玩家升 layer 时心魔关 unlock 拦截判定。
   ///
-  /// **拦截规则**：
-  ///   1. [nextTier] 非 [RealmTier.wuSheng] → false（不影响 Demo 7 阶 + Ch4-6
-  ///      主线，Ch6 mainline_06_05 victory 跨 tier 升 wuSheng·qiMeng 自动通过）
-  ///   2. [nextLayer] == [RealmLayer.qiMeng]（跨 tier 升 wuSheng 起步层） → false
-  ///   3. wuSheng 内 layer N→N+1（N ∈ qiMeng..huaJing）：找 innerDemonDef
-  ///      `required_realm_layer` 中 `(wuSheng, prevLayer=N)` 对应的拦截关 →
-  ///      该 stage_id ∉ [clearedStageIds] → true（拦截）
-  ///   4. 无对应拦截关配置（fixture 不带 inner_demon 段 / 配置不全） → false
-  ///
-  /// **不处理 wuSheng·dengFeng → 飞升**（next == null 时 advancement_service
-  /// 直接 break，本 hook 不被调用；飞升前置 inner_demon_07 留 P2.3 spec 接管）。
+  /// `required_realm_layer` 记录玩家被拦截时的当前层。
+  /// 待进入层的绝对顺序减一命中某节点，且对应关卡未通关时返回 true。
+  /// 因此同 tier 进层和 `dengFeng → 下一 tier.qiMeng` 共用同一规则。
   static bool isLayerLocked({
     required RealmTier nextTier,
     required RealmLayer nextLayer,
     required InnerDemonDef innerDemonDef,
     required Set<String> clearedStageIds,
   }) {
-    if (nextTier != RealmTier.wuSheng) return false;
-
-    final layers = RealmLayer.values;
-    final nextIdx = layers.indexOf(nextLayer);
-    if (nextIdx <= 0) return false; // qiMeng 是 wuSheng 起步层（跨 tier 升入）
-
-    final prevLayer = layers[nextIdx - 1];
+    final nextAbsoluteIndex = _absoluteIndex(nextTier, nextLayer);
+    if (nextAbsoluteIndex <= 0) return false;
 
     for (final entry in innerDemonDef.requiredRealmLayer.entries) {
-      if (entry.value.tier == RealmTier.wuSheng &&
-          entry.value.layer == prevLayer) {
+      if (_absoluteIndex(entry.value.tier, entry.value.layer) ==
+          nextAbsoluteIndex - 1) {
         return !clearedStageIds.contains(entry.key);
       }
     }
 
     return false;
   }
+
+  static int _absoluteIndex(RealmTier tier, RealmLayer layer) =>
+      tier.index * RealmLayer.values.length + layer.index;
 
   /// 心魔关右队镜像 enemy team 构造（Batch 2.2.B）。
   ///

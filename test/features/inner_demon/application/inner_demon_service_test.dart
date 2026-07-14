@@ -76,8 +76,52 @@ InnerDemonDef _fullDef() => const InnerDemonDef(
   },
 );
 
+InnerDemonDef _releaseDef() {
+  final base = InnerDemonDef.empty();
+  return InnerDemonDef(
+    mirrorBuffPerStage: base.mirrorBuffPerStage,
+    mirrorCaps: base.mirrorCaps,
+    failurePenalty: base.failurePenalty,
+    unlockTriggers: const {},
+    requiredRealmLayer: const {
+      'stage_inner_demon_05': RealmCoord(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.dengFeng,
+      ),
+      'stage_inner_demon_06': RealmCoord(
+        tier: RealmTier.sanLiu,
+        layer: RealmLayer.qiMeng,
+      ),
+    },
+  );
+}
+
 void main() {
   group('InnerDemonService.isLayerLocked', () {
+    test('release node blocks a cross-tier breakthrough', () {
+      expect(
+        InnerDemonService.isLayerLocked(
+          nextTier: RealmTier.sanLiu,
+          nextLayer: RealmLayer.qiMeng,
+          innerDemonDef: _releaseDef(),
+          clearedStageIds: const {},
+        ),
+        isTrue,
+      );
+    });
+
+    test('clearing the matching release node unlocks the next layer', () {
+      expect(
+        InnerDemonService.isLayerLocked(
+          nextTier: RealmTier.sanLiu,
+          nextLayer: RealmLayer.ruMen,
+          innerDemonDef: _releaseDef(),
+          clearedStageIds: const {'stage_inner_demon_06'},
+        ),
+        isFalse,
+      );
+    });
+
     test('R1.1 非 wuSheng tier 升迁 → false(不影响 Demo + Ch4-6)', () {
       final def = _fullDef();
       // 例:sanLiu·dengFeng → erLiu·qiMeng 跨 tier

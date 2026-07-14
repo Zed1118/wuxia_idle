@@ -39,10 +39,10 @@
 
 ## 当前恢复点
 
-- **状态:** Task 1 已完成，发布上限配置与统一门禁已 GREEN，分支仍为 WIP。
-- **最后完成:** 新增 `ProgressionReleaseCap` 和 `ProgressionGateService`；生产 `numbers.yaml` 配置绝对境界层 10；fixture 缺配置时保持 49 层全开。
-- **下一步:** 执行 Task 2，先为跨 tier 心魔锁和 7 个新节点建立 RED 测试。
-- **已跑验证:** 基线 `flutter analyze --no-pub` No issues found；Task 1 定向 `flutter test --no-pub test/features/cultivation/application/progression_gate_service_test.dart test/data/numbers_config_progression_release_cap_test.dart` 6 tests passed；`git diff --check` 通过。
+- **状态:** Task 2 已完成，七个心魔节点已重排且跨 tier 门禁/面板已 GREEN，分支仍为 WIP。
+- **最后完成:** 心魔锁改为境界绝对顺序比较；节点从 `stage_01_03` 起链，分布在学徒·熟练至三流·入门；学徒镜像增幅重校为 3%/4%/5%/5%/5%；角色面板不再写死武圣显隐。
+- **下一步:** 执行 Task 3，先为主线/塔、闭关、离线和经验丹的统一封顶接线建立 RED 合同。
+- **已跑验证:** Task 1 定向 6 tests passed；Task 2 心魔+数据+角色面板定向集 110 tests passed；心魔 7×50 种子双边红线通过；`git diff --check` 通过。
 - **阻塞项:** 无。Claude `feat/combat-feel-phase2` 仍为 WIP，可并行；已知重叠仅为 `data/numbers.yaml` 的不同配置段，交付前再对比。
 
 ## 文件地图
@@ -145,7 +145,7 @@
 - Modify: `test/balance/inner_demon_r5_redline_test.dart`
 - Modify: `test/data/game_repository_test.dart`
 
-- [ ] **Step 1: 为跨 tier 心魔锁和 7 个新节点写 RED 测试**
+- [x] **Step 1: 为跨 tier 心魔锁和 7 个新节点写 RED 测试**
 
   断言心魔锁使用 `RealmUtils.absoluteLevelOf`，能拦截 `xueTu.dengFeng → sanLiu.qiMeng`，通关对应心魔后解锁。生产节点精确映射：
 
@@ -159,23 +159,23 @@
   | `stage_inner_demon_06` | `sanLiu.qiMeng` | 9 |
   | `stage_inner_demon_07` | `sanLiu.ruMen` | 10 |
 
-- [ ] **Step 2: 跑定向测试并确认 RED**
+- [x] **Step 2: 跑定向测试并确认 RED**
 
   ```bash
   flutter test --no-pub test/features/inner_demon/application/inner_demon_service_test.dart test/features/inner_demon/domain/inner_demon_def_test.dart test/features/inner_demon/domain/inner_demon_panel_test.dart test/features/inner_demon/domain/inner_demon_progress_test.dart test/balance/inner_demon_r5_redline_test.dart test/data/game_repository_test.dart
   ```
 
-- [ ] **Step 3: 实现绝对层心魔锁**
+- [x] **Step 3: 实现绝对层心魔锁**
 
   对待进入的 `(nextTier, nextLayer)` 计算 `nextAbsolute`，在 `requiredRealmLayer` 中查找绝对层为 `nextAbsolute - 1` 的节点，对应关卡未通关则锁定。删掉仅武圣可用的分支和过时注释。
 
-- [ ] **Step 4: 重排生产心魔数据**
+- [x] **Step 4: 重排生产心魔数据**
 
   - `unlock_triggers` 从 `stage_01_03 → stage_inner_demon_01` 开始，后续保持心魔链。
   - 心魔01～05 `requiredRealm: xueTu`，06～07 `requiredRealm: sanLiu`。
   - 保留现有 7 关机制、故事、掉落 ID；只重校解锁与数值。
 
-- [ ] **Step 5: 跑 GREEN 并提交**
+- [x] **Step 5: 跑 GREEN 并提交**
 
   ```bash
   dart format lib/features/inner_demon/application/inner_demon_service.dart lib/features/inner_demon/domain/inner_demon_def.dart lib/features/inner_demon/domain/inner_demon_panel.dart test/features/inner_demon/application/inner_demon_service_test.dart test/features/inner_demon/domain/inner_demon_def_test.dart test/features/inner_demon/domain/inner_demon_panel_test.dart test/features/inner_demon/domain/inner_demon_progress_test.dart test/balance/inner_demon_r5_redline_test.dart test/data/game_repository_test.dart

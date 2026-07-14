@@ -30,7 +30,7 @@ class InnerDemonPanelData {
 
 /// 角色 + 全局进度 + 心魔 def → 面板数据(null = 不显示 / shrink)。
 ///
-/// 优先级:非武圣 null > 全通 cleared > exp满且拦截 blocked > 其余 inProgress。
+/// 优先级:尚未到首节点 null > 全通 cleared > exp满且拦截 blocked > 其余 inProgress。
 /// 不引新突破机制 —— 进阶仍自动(applyExperience),本解析仅决定展示态。
 InnerDemonPanelData? resolveInnerDemonPanel({
   required Character character,
@@ -38,11 +38,17 @@ InnerDemonPanelData? resolveInnerDemonPanel({
   required InnerDemonProgress progress,
   required InnerDemonDef innerDemonDef,
 }) {
-  if (character.realmTier != RealmTier.wuSheng) return null;
-
   final total = progress.totalCount;
   // 无心魔配置(Demo / InnerDemonDef.empty)→ 无瓶颈可显,不出面板。
   if (total == 0) return null;
+  final currentAbsoluteIndex = _absoluteIndex(
+    character.realmTier,
+    character.realmLayer,
+  );
+  final firstNodeAbsoluteIndex = innerDemonDef.requiredRealmLayer.values
+      .map((coord) => _absoluteIndex(coord.tier, coord.layer))
+      .reduce((a, b) => a < b ? a : b);
+  if (currentAbsoluteIndex < firstNodeAbsoluteIndex) return null;
   if (progress.clearedCount >= total) {
     return InnerDemonPanelData(
       state: InnerDemonPanelState.cleared,
@@ -51,18 +57,26 @@ InnerDemonPanelData? resolveInnerDemonPanel({
     );
   }
 
-  const layers = RealmLayer.values;
-  final idx = layers.indexOf(character.realmLayer);
-  final hasNext = idx >= 0 && idx < layers.length - 1;
-  final nextLayer = hasNext ? layers[idx + 1] : null;
+  final layerCount = RealmLayer.values.length;
+  final maxAbsoluteIndex = RealmTier.values.length * layerCount - 1;
+  final nextAbsoluteIndex = currentAbsoluteIndex < maxAbsoluteIndex
+      ? currentAbsoluteIndex + 1
+      : null;
+  final nextTier = nextAbsoluteIndex == null
+      ? null
+      : RealmTier.values[nextAbsoluteIndex ~/ layerCount];
+  final nextLayer = nextAbsoluteIndex == null
+      ? null
+      : RealmLayer.values[nextAbsoluteIndex % layerCount];
   final expFull =
       experienceToNext > 0 && character.experience >= experienceToNext;
 
   final locked =
       expFull &&
+      nextTier != null &&
       nextLayer != null &&
       InnerDemonService.isLayerLocked(
-        nextTier: RealmTier.wuSheng,
+        nextTier: nextTier,
         nextLayer: nextLayer,
         innerDemonDef: innerDemonDef,
         clearedStageIds: progress.clearedStageIds,
@@ -71,7 +85,7 @@ InnerDemonPanelData? resolveInnerDemonPanel({
   if (locked) {
     String? blockingStageId;
     for (final e in innerDemonDef.requiredRealmLayer.entries) {
-      if (e.value.tier == RealmTier.wuSheng &&
+      if (e.value.tier == character.realmTier &&
           e.value.layer == character.realmLayer) {
         blockingStageId = e.key;
         break;
@@ -92,3 +106,6 @@ InnerDemonPanelData? resolveInnerDemonPanel({
     nextStageId: progress.nextUnclearedStageId,
   );
 }
+
+int _absoluteIndex(RealmTier tier, RealmLayer layer) =>
+    tier.index * RealmLayer.values.length + layer.index;

@@ -3,7 +3,7 @@ import '../../../data/defs/boss_vulnerability_def.dart';
 
 /// 心魔系统配置（1.0 P2.2 §12.1，data/numbers.yaml `inner_demon` 段强类型化）。
 ///
-/// 7 关心魔(stage_inner_demon_01..07)拦截 wuSheng 7 层突破：
+/// 7 关心魔(stage_inner_demon_01..07)拦截配置的境界层突破：
 ///   - mirror_buff_per_stage：各关镜像玩家 character 强化比例
 ///   - mirror_caps：§5.4 数值红线 cap（防玩家 build 超时镜像也超）
 ///   - failure_penalty：散功 ×0.5 阉割版（GDD §6 半惩罚）
@@ -22,11 +22,10 @@ class InnerDemonDef {
   /// 失败惩罚（散功 ×0.5 阉割版）。
   final InnerDemonFailurePenalty failurePenalty;
 
-  /// 触发关 victory → 下一关 unlock 链（如 stage_06_05 → stage_inner_demon_01）。
+  /// 触发关 victory → 下一关 unlock 链。
   final Map<String, String> unlockTriggers;
 
-  /// stage_id → 玩家当前境界达到该 layer 才能进入（如 stage_inner_demon_01 →
-  /// wuSheng·qiMeng）。
+  /// stage_id → 玩家被拦截时的当前境界层。
   final Map<String, RealmCoord> requiredRealmLayer;
 
   /// 终局机制型 Boss 批次3 · 高层心魔关（05/06/07）镜像脆弱窗口配置。
