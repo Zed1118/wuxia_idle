@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
+import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
@@ -223,6 +225,96 @@ void main() {
       );
     });
 
+    test('当前塔与支线全部收口在 Lv100 发布上限内', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      const groupTiers = [
+        RealmTier.xueTu,
+        RealmTier.xueTu,
+        RealmTier.xueTu,
+        RealmTier.sanLiu,
+        RealmTier.sanLiu,
+        RealmTier.sanLiu,
+      ];
+      const groupLayers = [
+        RealmLayer.qiMeng,
+        RealmLayer.ruMen,
+        RealmLayer.shuLian,
+        RealmLayer.qiMeng,
+        RealmLayer.ruMen,
+        RealmLayer.shuLian,
+      ];
+
+      for (final floor in repo.towerFloors) {
+        final group = (floor.floorIndex - 1) ~/ 5;
+        expect(floor.requiredRealm, groupTiers[group]);
+        for (final enemy in floor.enemyTeam) {
+          expect(enemy.realmTier, groupTiers[group]);
+          expect(enemy.realmLayer, groupLayers[group]);
+        }
+      }
+
+      const sideCoords = [
+        (RealmTier.xueTu, RealmLayer.yuanShu),
+        (RealmTier.xueTu, RealmLayer.dengFeng),
+        (RealmTier.sanLiu, RealmLayer.qiMeng),
+        (RealmTier.sanLiu, RealmLayer.ruMen),
+        (RealmTier.sanLiu, RealmLayer.shuLian),
+      ];
+      final currentStages = <StageDef>[];
+      for (final prefix in ['stage_light_foot_', 'stage_mass_battle_']) {
+        for (var i = 0; i < sideCoords.length; i++) {
+          final stage = repo.getStage(
+            '$prefix${(i + 1).toString().padLeft(2, '0')}',
+          );
+          final (tier, layer) = sideCoords[i];
+          expect(stage.requiredRealm, tier);
+          for (final enemy in stage.enemyTeam) {
+            expect(enemy.realmTier, tier);
+            expect(enemy.realmLayer, layer);
+          }
+          currentStages.add(stage);
+        }
+      }
+
+      void expectDropWithinReleaseCap(Iterable<DropEntry> drops, String label) {
+        for (final drop in drops) {
+          if (drop case EquipmentDrop(:final equipmentDefId)) {
+            expect(
+              repo.getEquipment(equipmentDefId).tier.index,
+              lessThanOrEqualTo(EquipmentTier.xiangYang.index),
+              reason: '$label 不应掉落三流以上装备 $equipmentDefId',
+            );
+          } else if (drop case ItemDrop(:final inventoryItemDefId)) {
+            final skillId = repo.itemDefs[inventoryItemDefId]?.unlockSkillId;
+            if (skillId != null) {
+              expect(
+                repo.getSkill(skillId).tier,
+                lessThanOrEqualTo(2),
+                reason: '$label 不应掉落 tier 3+ 秘籍 $inventoryItemDefId',
+              );
+            }
+          }
+        }
+      }
+
+      for (final floor in repo.towerFloors) {
+        expectDropWithinReleaseCap(floor.dropTable, '塔 ${floor.floorIndex} 层');
+        final fragmentId = floor.dropSkillFragmentId;
+        if (fragmentId != null) {
+          expect(repo.getSkill(fragmentId).tier, lessThanOrEqualTo(2));
+        }
+      }
+      for (final stage in currentStages) {
+        expectDropWithinReleaseCap(stage.dropTable, stage.id);
+        for (final skillId in [
+          stage.dropSkillManualId,
+          stage.dropSkillFragmentId,
+        ].whereType<String>()) {
+          expect(repo.getSkill(skillId).tier, lessThanOrEqualTo(2));
+        }
+      }
+    });
+
     test('祖师起手 = 学徒新手·空手·入门功（2026-06-27 回归 GDD / T55 放宽）', () async {
       // 加载不抛 = T55「祖师起手须含师承遗物」已放宽（空 startingEquipmentIds
       // 合法）+ 三系锁死（tier ≤ 学徒 cap）通过。
@@ -339,12 +431,12 @@ void main() {
         expect(stages[3].prevStageId, 'stage_mass_battle_03');
         expect(stages[4].prevStageId, 'stage_mass_battle_04');
 
-        // §5.4 Tier 锁死:01-03 yiLiu / 04-05 jueDing
-        expect(stages[0].requiredRealm, RealmTier.yiLiu);
-        expect(stages[1].requiredRealm, RealmTier.yiLiu);
-        expect(stages[2].requiredRealm, RealmTier.yiLiu);
-        expect(stages[3].requiredRealm, RealmTier.jueDing);
-        expect(stages[4].requiredRealm, RealmTier.jueDing);
+        // Lv100 发布节奏：学徒后段过渡到三流前段。
+        expect(stages[0].requiredRealm, RealmTier.xueTu);
+        expect(stages[1].requiredRealm, RealmTier.xueTu);
+        expect(stages[2].requiredRealm, RealmTier.sanLiu);
+        expect(stages[3].requiredRealm, RealmTier.sanLiu);
+        expect(stages[4].requiredRealm, RealmTier.sanLiu);
 
         // 05 BOSS(沿 LightFoot 末关 isBossStage=true 体例)
         expect(

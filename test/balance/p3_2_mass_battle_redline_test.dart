@@ -208,11 +208,11 @@ void main() {
 
     // 5 关玩家 tier/layer 矩阵(对齐 stages.yaml + spec §4)
     const stageMatrix = <(String, RealmTier, RealmLayer)>[
-      ('stage_mass_battle_01', RealmTier.yiLiu, RealmLayer.qiMeng),
-      ('stage_mass_battle_02', RealmTier.yiLiu, RealmLayer.jingTong),
-      ('stage_mass_battle_03', RealmTier.yiLiu, RealmLayer.dengFeng),
-      ('stage_mass_battle_04', RealmTier.jueDing, RealmLayer.qiMeng),
-      ('stage_mass_battle_05', RealmTier.jueDing, RealmLayer.jingTong),
+      ('stage_mass_battle_01', RealmTier.xueTu, RealmLayer.yuanShu),
+      ('stage_mass_battle_02', RealmTier.xueTu, RealmLayer.dengFeng),
+      ('stage_mass_battle_03', RealmTier.sanLiu, RealmLayer.qiMeng),
+      ('stage_mass_battle_04', RealmTier.sanLiu, RealmLayer.ruMen),
+      ('stage_mass_battle_05', RealmTier.sanLiu, RealmLayer.shuLian),
     ];
 
     test(
@@ -510,8 +510,8 @@ void main() {
         final massBattleDef = numbers.massBattle;
         final stage = repo.getStage('stage_mass_battle_02');
         final left = buildPlayerTeam(
-          tier: RealmTier.yiLiu,
-          layer: RealmLayer.jingTong,
+          tier: RealmTier.xueTu,
+          layer: RealmLayer.dengFeng,
         );
         final waves = buildWavesFor(stage);
         expect(waves.length, 3, reason: 'stage_02 配 3 wave');
@@ -553,12 +553,12 @@ void main() {
             );
           }
         }
-        // 守城成功率非全 0(玩家强 build vs yiLiu·jingTong wave 3)·
+        // 守城成功率非全 0(玩家强 build vs xueTu·dengFeng wave 3)·
         // 写约束语义不写瞬时数字(memory feedback_red_line_test_semantics)
         expect(
           leftWins,
           greaterThan(0),
-          reason: '10 seed 至少 1 守城成功(玩家 yiLiu·jingTong 满 build 主导)',
+          reason: '10 seed 至少 1 守城成功(玩家 xueTu·dengFeng 满 build 主导)',
         );
       },
     );
@@ -567,7 +567,7 @@ void main() {
       // 验证 MassBattleStrategy.runToEnd 末尾的残血容差判定语义:
       //   - draw 且 rightExitHp ≤ rightEntryHp × threshold → leftWin
       //   - draw 且 rightExitHp > rightEntryHp × threshold → 维持 draw
-      // 沿 stage_01 yiLiu·qiMeng 体例:residual_hp_threshold_pct=0.30 时
+      // 沿 stage_01 xueTu·yuanShu 体例:residual_hp_threshold_pct=0.30 时
       // R5.1 distribution 改善(33→46 wins,memory feedback_red_line_test_semantics
       // 写约束语义不写瞬时数字)。
       final repo = GameRepository.instance;
@@ -598,8 +598,8 @@ void main() {
       // (容差触发 = leftWins 含来自 draw 改判的 case;33→46 实测改善源头)
       final stage = repo.getStage('stage_mass_battle_01');
       final left = buildPlayerTeam(
-        tier: RealmTier.yiLiu,
-        layer: RealmLayer.qiMeng,
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.yuanShu,
       );
       final waves = buildWavesFor(stage);
       final strategy = MassBattleStrategy(

@@ -39,10 +39,10 @@
 
 ## 当前恢复点
 
-- **状态:** Task 5 已完成，30 个主线关、当前掉落和技能来源已重排到学徒—三流，分支仍为 WIP。
-- **最后完成:** Ch1–3 统一为学徒、Ch4–6 统一为三流；当前主线装备不高于襄阳阶，技能不高于 tier 2；新档前 30 分钟与单人 30 关连续路径均可通过。对实际失败关只做了敌方速度/技能和基础面板的局部微调。
-- **下一步:** 执行 Task 6，将 30 层塔和轻功/群战支线重排到 Lv100 前。
-- **已跑验证:** Task 1 定向 6 tests passed；Task 2 心魔+数据+角色面板定向集 110 tests passed；Task 3 五类经验来源定向集 102 tests passed；Task 4 预算 4 tests、经济/丹药/商店 33 tests 和闭关/离线 62 tests 均通过；Task 5 主线数据/掉落/新档战斗定向集 65 tests passed；`git diff --check` 通过。
+- **状态:** Task 6 已完成，主线、塔、轻功和群战当前内容已全部收口在 Lv100 内，分支仍为 WIP。
+- **最后完成:** 塔 1–15 层映射学徒三段、16–30 层映射三流·启蒙/入门/熟练；轻功和群战各 5 关映射学徒后段至三流·熟练；高阶塔掉落已移出当前入口。floor30 三流满配 30/30 胜且护法/两段相位均触发，低一阶 0/30 胜。
+- **下一步:** 执行 Task 7，运行完整发布路线、首通可读性和塔 Boss 诊断，只修复高影响断点。
+- **已跑验证:** Task 1 定向 6 tests passed；Task 2 心魔+数据+角色面板定向集 110 tests passed；Task 3 五类经验来源定向集 102 tests passed；Task 4 预算 4 tests、经济/丹药/商店 33 tests 和闭关/离线 62 tests 均通过；Task 5 主线数据/掉落/新档战斗定向集 65 tests passed；Task 6 塔/支线数据和战斗诊断定向集 60 tests passed；`git diff --check` 通过。
 - **阻塞项:** 无。Claude `feat/combat-feel-phase2` 仍为 WIP，可并行；已知重叠仅为 `data/numbers.yaml` 的不同配置段，交付前再对比。
 
 ## 文件地图
@@ -335,27 +335,27 @@
 - Modify: `test/tools/tower_boss_feel_diagnostic_test.dart`
 - Modify: `test/features/tower/floor30_soft_gate_battle_test.dart`
 
-- [ ] **Step 1: 为境界分布、经验和掉落写 RED 合同**
+- [x] **Step 1: 为境界分布、经验和掉落写 RED 合同**
 
-  - 塔1～15为学徒，16～30为三流；每 5 层 layer 依次 `qiMeng, ruMen, shuLian, jingTong, yuanShu`。
+  - 塔1～15为学徒，16～30为三流；六个 5 层分段依次为 `xueTu.qiMeng / xueTu.ruMen / xueTu.shuLian / sanLiu.qiMeng / sanLiu.ruMen / sanLiu.shuLian`，确保终层不超 Lv100。
   - 轻功/群战各5关依次为 `xueTu.yuanShu`、`xueTu.dengFeng`、`sanLiu.qiMeng`、`sanLiu.ruMen`、`sanLiu.shuLian`。
   - 当前塔/支线掉落不引用超过当前发布上限的装备或技能。
 
-- [ ] **Step 2: 跑定向测试并确认 RED**
+- [x] **Step 2: 跑定向测试并确认 RED**
 
   ```bash
   flutter test --no-pub test/data/game_repository_test.dart test/balance/p3_1_light_foot_redline_test.dart test/balance/p3_2_mass_battle_redline_test.dart test/tools/floor30_soft_gate_diagnostic_test.dart test/tools/tower_boss_feel_diagnostic_test.dart
   ```
 
-- [ ] **Step 3: 重校塔数据**
+- [x] **Step 3: 重校塔数据**
 
   保留 Boss 层和机制，按 5 层分组缩放现有 HP/攻击：`1.00 / 0.80 / 0.60 / 0.50 / 0.40 / 0.30`，沿用主线的 50/10 取整规则。写入 Task 4 的 507 经验预算，保留地板 30 机制体验。
 
-- [ ] **Step 4: 重校两类支线**
+- [x] **Step 4: 重校两类支线**
 
-  关01～03的敌人 HP/攻击按现值 `0.60`，04～05按 `0.40`；保留地形、波次和特殊机制，写入各自 `[20, 25, 30, 50, 75]` 的经验。
+  关01～03的敌人 HP/攻击先按现值 `0.60`，04～05先按 `0.40`；保留地形、波次和特殊机制，写入各自 `[20, 25, 30, 50, 75]` 的经验。群战因 10～26 人连续波次产生额外磨损，再以 50 种子实战对失败关局部降压。
 
-- [ ] **Step 5: 跑 GREEN 并提交**
+- [x] **Step 5: 跑 GREEN 并提交**
 
   ```bash
   dart format test/data/game_repository_test.dart test/balance/p3_1_light_foot_redline_test.dart test/balance/p3_2_mass_battle_redline_test.dart test/tools/floor30_soft_gate_diagnostic_test.dart test/tools/tower_boss_feel_diagnostic_test.dart

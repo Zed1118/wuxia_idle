@@ -18,15 +18,13 @@ import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
 /// Task 5 · floor30 护法结界软门槛确定性回归。
 ///
 /// **软门槛不变量**(spec §4.3):
-///   - on-level 宗师满配队 → 全自动打 floor30 必胜(先清双护法破结界 → 秒 Boss),
-///     不削弱极值爽感。
-///   - under-geared(-1 阶绝顶,0 强化 0 战意)队 → 存在会输的确定 seed
+///   - on-level 三流·熟练满配队 → 全自动打 floor30 必胜，并完整触发护法/相位。
+///   - under-geared(-1 阶学徒,0 强化 0 战意)队 → 存在会输的确定 seed
 ///     (护法当血墙 + 攻击压力拖垮清关窗口)。
 ///
 /// **诊断实测背景**(test/tools/floor30_soft_gate_diagnostic_test.dart,30 seed):
-///   guardian HP 9000/8500, ward 0.15 时 → onLevel 100% 胜 / underGear 66.7% 胜
-///   (33% 败)。护法 HP 提到 ≥9250 即崩到 13.3% 胜(离散悬崖),9000/8500 是
-///   「仍算软门槛」的甜点。**注意**:全自动 lowest-HP 选敌下,Boss 在护法全灭
+///   当前三流版本下，onLevel 必胜，学徒欠配队被护法墙稳定拦住。**注意**:
+///   全自动 lowest-HP 选敌下,Boss 在护法全灭
 ///   前从不被攻击,故 guardianWard.damageTakenMult 对自动战斗无实效——门槛全由
 ///   护法血墙+攻击压力构成。damageTakenMult 只对手动越过护法直捶 Boss 的玩家生效。
 ///
@@ -42,6 +40,7 @@ void main() {
 
   BattleState runFloor30(
     RealmTier tier, {
+    required RealmLayer layer,
     required bool geared,
     required int seed,
   }) {
@@ -52,6 +51,7 @@ void main() {
         _buildPlayer(
           repo,
           tier,
+          layer: layer,
           slot: slot,
           isFounder: slot == 0,
           geared: geared,
@@ -83,8 +83,13 @@ void main() {
     return container.read(battleProvider);
   }
 
-  test('on-level 宗师满配队全自动必胜:破结界 + 击杀 Boss(极值爽感不削)', () {
-    final s = runFloor30(RealmTier.zongShi, geared: true, seed: 0);
+  test('on-level 三流·熟练满配队全自动必胜:破结界 + 击杀 Boss', () {
+    final s = runFloor30(
+      RealmTier.sanLiu,
+      layer: RealmLayer.shuLian,
+      geared: true,
+      seed: 0,
+    );
 
     expect(s.isFinished, isTrue, reason: '应在 guard 内分出胜负');
     expect(s.result, BattleResult.leftWin, reason: 'on-level 满配队应必胜');
@@ -110,9 +115,14 @@ void main() {
     expect(s.actionLog.length, greaterThan(3), reason: '应产生实际交战动作,非空过');
   });
 
-  test('under-geared 绝顶(-1 阶)0 强化队在确定 seed 会败(护法软门槛咬合)', () {
+  test('under-geared 学徒(-1 阶)0 强化队在确定 seed 会败(护法软门槛咬合)', () {
     // seed 8:诊断中 underGear rightWin(tick~5,团灭于清关窗口)。
-    final s = runFloor30(RealmTier.jueDing, geared: false, seed: 8);
+    final s = runFloor30(
+      RealmTier.xueTu,
+      layer: RealmLayer.shuLian,
+      geared: false,
+      seed: 8,
+    );
 
     expect(s.isFinished, isTrue, reason: '应在 guard 内分出胜负');
     expect(
@@ -133,11 +143,11 @@ void main() {
 BattleCharacter _buildPlayer(
   GameRepository repo,
   RealmTier tier, {
+  required RealmLayer layer,
   required int slot,
   required bool isFounder,
   required bool geared,
 }) {
-  const layer = RealmLayer.huaJing;
   const school = TechniqueSchool.gangMeng;
   final numbers = repo.numbers;
   final realmDef = repo.getRealm(tier, layer);

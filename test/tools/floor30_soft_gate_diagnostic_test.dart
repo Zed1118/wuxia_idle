@@ -23,14 +23,14 @@ import '../support/test_data.dart';
 /// floor30 护法墙 taunt + 脆弱窗口硬闸诊断(Task 5,本批核心验证)。
 ///
 /// 两个 team profile 对同一 floor30 全自动跑到底:
-///   - onLevel   : 宗师(zongShi)满配 + 50% 强化 + 400 战意 + 创始 buff。意图必胜。
-///   - underGear : 绝顶(jueDing,-1 阶)本阶装 + 0 强化 + 0 战意。意图可败。
+///   - onLevel   : floor30 当前推荐阶(三流)满配 + 50% 强化 + 400 战意 + 创始 buff。意图必胜。
+///   - underGear : 低一阶(学徒)本阶装 + 0 强化 + 0 战意。意图可败。
 ///
 /// 三个断言:
 ///   ① 集成 sanity(**非 taunt 因果隔离**):真实 floor30 配置下,护法全灭前主 Boss
 ///      从不掉血 → 首个 Boss 掉血 tick >= 护法全灭 tick(bossFirstDamageTick >=
 ///      wardBreakTick)。这是有用的集成不变量(证真实关卡里玩家确实被逼先清护法),
-///      **但不隔离 taunt 的因果**:floor30 护法血(9000/8500)<< Boss 血(42000),
+///      **但不隔离 taunt 的因果**:floor30 护法血显著低于 Boss，
 ///      既有的「最低血集火」AI 本就避开高血 Boss,故有无 taunt 此断言同结果
 ///      (对抗验证:把 isGuardedBoss patch 成 return false,本诊断输出逐字节相同)。
 ///      **taunt 的因果正确性由 test/features/battle/battle_ai_guardian_taunt_test.dart
@@ -135,13 +135,17 @@ void main() {
 }
 
 _Res _sim(TowerFloorDef floor, int seed, GameRepository repo, _Profile p) {
-  final tier = p == _Profile.onLevel ? RealmTier.zongShi : RealmTier.jueDing;
+  final tier = p == _Profile.onLevel
+      ? floor.requiredRealm
+      : RealmTier.values[floor.requiredRealm.index - 1];
+  final layer = floor.enemyTeam.first.realmLayer;
   final geared = p == _Profile.onLevel;
   final players = [
     for (var slot = 0; slot < 3; slot++)
       _buildPlayer(
         repo,
         tier,
+        layer: layer,
         slot: slot,
         isFounder: slot == 0,
         geared: geared,
@@ -204,11 +208,11 @@ _Res _sim(TowerFloorDef floor, int seed, GameRepository repo, _Profile p) {
 BattleCharacter _buildPlayer(
   GameRepository repo,
   RealmTier tier, {
+  required RealmLayer layer,
   required int slot,
   required bool isFounder,
   required bool geared,
 }) {
-  const layer = RealmLayer.huaJing;
   const school = TechniqueSchool.gangMeng;
   final numbers = repo.numbers;
   final realmDef = repo.getRealm(tier, layer);

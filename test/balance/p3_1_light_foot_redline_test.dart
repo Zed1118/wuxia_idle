@@ -26,7 +26,7 @@ import '../support/test_data.dart';
 /// memory `feedback_red_line_test_semantics`(约束语义不写瞬时事实)。
 ///
 /// **3 测**:
-///   - R5.1 5 关 × 50 种子分布:玩家 yiLiu/jueDing 满 build vs stage enemyTeam,
+///   - R5.1 5 关 × 50 种子分布:玩家学徒/三流满 build vs stage enemyTeam,
 ///     断言 leftWins + draws ≥ rightWins(玩家强 build 应主导支线 · 与心魔克己
 ///     语义对称)+ runToEnd 不抛
 ///   - R5.2 terrain modifier cap e2e:water/rooftop/bamboo 三 terrain bake 后
@@ -153,11 +153,11 @@ void main() {
 
     // 5 关玩家 tier/layer 矩阵(对齐 stages.yaml + spec §一)
     const stageMatrix = <(String, RealmTier, RealmLayer)>[
-      ('stage_light_foot_01', RealmTier.yiLiu, RealmLayer.qiMeng),
-      ('stage_light_foot_02', RealmTier.yiLiu, RealmLayer.jingTong),
-      ('stage_light_foot_03', RealmTier.yiLiu, RealmLayer.dengFeng),
-      ('stage_light_foot_04', RealmTier.jueDing, RealmLayer.qiMeng),
-      ('stage_light_foot_05', RealmTier.jueDing, RealmLayer.jingTong),
+      ('stage_light_foot_01', RealmTier.xueTu, RealmLayer.yuanShu),
+      ('stage_light_foot_02', RealmTier.xueTu, RealmLayer.dengFeng),
+      ('stage_light_foot_03', RealmTier.sanLiu, RealmLayer.qiMeng),
+      ('stage_light_foot_04', RealmTier.sanLiu, RealmLayer.ruMen),
+      ('stage_light_foot_05', RealmTier.sanLiu, RealmLayer.shuLian),
     ];
 
     test('R5.1 5 关 × 50 种子分布 · leftWins+draws ≥ rightWins(平行支线玩家主导)', () {

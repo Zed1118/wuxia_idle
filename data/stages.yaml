@@ -1710,8 +1710,8 @@ stages:
   # ============================================================================
   # Light Foot · 轻功对决(1.0 P3.1 §12.3,GDD v1.11)
   # ============================================================================
-  # 5 关 yiLiu 3 + jueDing 2 平行支线(不接管 wuSheng 突破链)
-  # 跨 3 terrain(water/rooftop/bamboo)+ 2 高阶混合
+  # 5 关从学徒后段过渡至三流·熟练，全部位于 Lv100 发布上限内。
+  # 跨 3 terrain(water/rooftop/bamboo)+ 2 高阶地形混合
   # unlock 链:stage_06_05 victory → light_foot_01 → 02 → 03 → 04 → 05
   # numbers.yaml light_foot 段配 terrain_modifiers / stage_terrain / unlock_triggers
   # ============================================================================
@@ -1722,41 +1722,41 @@ stages:
     stageType: lightFoot
     narrativeOpeningId: stage_light_foot_01_opening
     narrativeVictoryId: stage_light_foot_01_victory
-    requiredRealm: yiLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_yiLiu_lightfoot_shuikou_a
         name: 渡口水寇
-        realmTier: yiLiu
-        realmLayer: qiMeng
+        realmTier: xueTu
+        realmLayer: yuanShu
         school: gangMeng
-        baseHp: 7000
-        baseAttack: 720
+        baseHp: 4200
+        baseAttack: 430
         baseSpeed: 175
         skillIds:
-          - skill_lightfoot_yiliu_gangmeng_basic
-          - skill_lightfoot_yiliu_gangmeng_skill
+          - skill_gangmeng_jichu_basic
+          - skill_gangmeng_jichu_skill
         iconPath: assets/enemies/lightfoot_shuikou_a.png
       - id: enemy_yiLiu_lightfoot_shuikou_b
         name: 渡口船工
-        realmTier: yiLiu
-        realmLayer: qiMeng
+        realmTier: xueTu
+        realmLayer: yuanShu
         school: lingQiao
-        baseHp: 6700
-        baseAttack: 750
+        baseHp: 4000
+        baseAttack: 450
         baseSpeed: 190
         skillIds:
-          - skill_lightfoot_yiliu_lingqiao_basic
+          - skill_lingqiao_jichu_basic
         iconPath: assets/enemies/lightfoot_shuikou_b.png
       - id: enemy_yiLiu_lightfoot_shuikou_c
         name: 渡口刀客
-        realmTier: yiLiu
-        realmLayer: qiMeng
+        realmTier: xueTu
+        realmLayer: yuanShu
         school: yinRou
-        baseHp: 6800
-        baseAttack: 730
+        baseHp: 4100
+        baseAttack: 440
         baseSpeed: 170
         skillIds:
-          - skill_lightfoot_yiliu_yinrou_basic
+          - skill_yinrou_jichu_basic
         iconPath: assets/enemies/lightfoot_shuikou_c.png
     isBossStage: false
     dropTable:
@@ -1779,44 +1779,44 @@ stages:
     prevStageId: stage_light_foot_01
     narrativeOpeningId: stage_light_foot_02_opening
     narrativeVictoryId: stage_light_foot_02_victory
-    requiredRealm: yiLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_yiLiu_lightfoot_yexun_a
         name: 城防夜巡
-        realmTier: yiLiu
-        realmLayer: jingTong
+        realmTier: xueTu
+        realmLayer: dengFeng
         school: gangMeng
-        baseHp: 9000
-        baseAttack: 900
+        baseHp: 5400
+        baseAttack: 540
         baseSpeed: 185
         skillIds:
-          - skill_lightfoot_yiliu_gangmeng_basic
-          - skill_lightfoot_yiliu_gangmeng_skill
-          - skill_lightfoot_yiliu_gangmeng_ult
+          - skill_gangmeng_jichu_basic
+          - skill_gangmeng_jichu_skill
+          - skill_gangmeng_jichu_ult
         iconPath: assets/enemies/lightfoot_yexun_a.png
       - id: enemy_yiLiu_lightfoot_yexun_b
         name: 飞檐捕快
-        realmTier: yiLiu
-        realmLayer: jingTong
+        realmTier: xueTu
+        realmLayer: dengFeng
         school: lingQiao
-        baseHp: 8500
-        baseAttack: 920
+        baseHp: 5100
+        baseAttack: 550
         baseSpeed: 205
         skillIds:
-          - skill_lightfoot_yiliu_lingqiao_basic
-          - skill_lightfoot_yiliu_lingqiao_skill
+          - skill_lingqiao_jichu_basic
+          - skill_lingqiao_jichu_skill
         iconPath: assets/enemies/lightfoot_yexun_b.png
       - id: enemy_yiLiu_lightfoot_yexun_c
         name: 瓦上刺客
-        realmTier: yiLiu
-        realmLayer: jingTong
+        realmTier: xueTu
+        realmLayer: dengFeng
         school: yinRou
-        baseHp: 8700
-        baseAttack: 880
+        baseHp: 5200
+        baseAttack: 530
         baseSpeed: 195
         skillIds:
-          - skill_lightfoot_yiliu_yinrou_basic
-          - skill_lightfoot_yiliu_yinrou_skill
+          - skill_yinrou_jichu_basic
+          - skill_yinrou_jichu_skill
         iconPath: assets/enemies/lightfoot_yexun_c.png
     isBossStage: false
     dropTable:
@@ -1839,46 +1839,46 @@ stages:
     prevStageId: stage_light_foot_02
     narrativeOpeningId: stage_light_foot_03_opening
     narrativeVictoryId: stage_light_foot_03_victory
-    requiredRealm: yiLiu
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_yiLiu_lightfoot_zhuke_a
         name: 江南剑客
-        realmTier: yiLiu
-        realmLayer: dengFeng
+        realmTier: sanLiu
+        realmLayer: qiMeng
         school: lingQiao
-        baseHp: 10800
-        baseAttack: 1050
+        baseHp: 6500
+        baseAttack: 630
         baseSpeed: 215
         skillIds:
-          - skill_lightfoot_yiliu_lingqiao_basic
-          - skill_lightfoot_yiliu_lingqiao_skill
-          - skill_lightfoot_yiliu_lingqiao_ult
+          - skill_lingqiao_changlian_basic
+          - skill_lingqiao_changlian_skill
+          - skill_lingqiao_changlian_ult
         iconPath: assets/enemies/lightfoot_zhuke_a.png
       - id: enemy_yiLiu_lightfoot_zhuke_b
         name: 密竹刀客
-        realmTier: yiLiu
-        realmLayer: dengFeng
+        realmTier: sanLiu
+        realmLayer: qiMeng
         school: yinRou
-        baseHp: 10500
-        baseAttack: 1080
+        baseHp: 6300
+        baseAttack: 650
         baseSpeed: 200
         skillIds:
-          - skill_lightfoot_yiliu_yinrou_basic
-          - skill_lightfoot_yiliu_yinrou_skill
-          - skill_lightfoot_yiliu_yinrou_ult
+          - skill_yinrou_changlian_basic
+          - skill_yinrou_changlian_skill
+          - skill_yinrou_changlian_ult
         iconPath: assets/enemies/lightfoot_zhuke_b.png
       - id: enemy_yiLiu_lightfoot_zhuke_c
         name: 竹林游侠
-        realmTier: yiLiu
-        realmLayer: dengFeng
+        realmTier: sanLiu
+        realmLayer: qiMeng
         school: gangMeng
-        baseHp: 11000
-        baseAttack: 1020
+        baseHp: 6600
+        baseAttack: 610
         baseSpeed: 195
         skillIds:
-          - skill_lightfoot_yiliu_gangmeng_basic
-          - skill_lightfoot_yiliu_gangmeng_skill
-          - skill_lightfoot_yiliu_gangmeng_ult
+          - skill_gangmeng_changlian_basic
+          - skill_gangmeng_changlian_skill
+          - skill_gangmeng_changlian_ult
         iconPath: assets/enemies/lightfoot_zhuke_c.png
     isBossStage: false
     dropTable:
@@ -1901,43 +1901,43 @@ stages:
     prevStageId: stage_light_foot_03
     narrativeOpeningId: stage_light_foot_04_opening
     narrativeVictoryId: stage_light_foot_04_victory
-    requiredRealm: jueDing
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_jueDing_lightfoot_pubu_a
         name: 山涧剑客
-        realmTier: jueDing
-        realmLayer: qiMeng
+        realmTier: sanLiu
+        realmLayer: ruMen
         school: lingQiao
-        baseHp: 14000
-        baseAttack: 1180
+        baseHp: 5600
+        baseAttack: 470
         baseSpeed: 220
         skillIds:
-          - skill_lightfoot_jueding_lingqiao_basic
-          - skill_lightfoot_jueding_lingqiao_skill
+          - skill_lingqiao_changlian_basic
+          - skill_lingqiao_changlian_skill
         iconPath: assets/enemies/lightfoot_pubu_a.png
       - id: enemy_jueDing_lightfoot_pubu_b
         name: 瀑布刀客
-        realmTier: jueDing
-        realmLayer: qiMeng
+        realmTier: sanLiu
+        realmLayer: ruMen
         school: yinRou
-        baseHp: 13700
-        baseAttack: 1150
+        baseHp: 5500
+        baseAttack: 460
         baseSpeed: 205
         skillIds:
-          - skill_lightfoot_jueding_yinrou_basic
-          - skill_lightfoot_jueding_yinrou_skill
+          - skill_yinrou_changlian_basic
+          - skill_yinrou_changlian_skill
         iconPath: assets/enemies/lightfoot_pubu_b.png
       - id: enemy_jueDing_lightfoot_pubu_c
         name: 险崖游侠
-        realmTier: jueDing
-        realmLayer: qiMeng
+        realmTier: sanLiu
+        realmLayer: ruMen
         school: gangMeng
-        baseHp: 14200
-        baseAttack: 1200
+        baseHp: 5700
+        baseAttack: 480
         baseSpeed: 200
         skillIds:
-          - skill_lightfoot_jueding_gangmeng_basic
-          - skill_lightfoot_jueding_gangmeng_skill
+          - skill_gangmeng_changlian_basic
+          - skill_gangmeng_changlian_skill
         iconPath: assets/enemies/lightfoot_pubu_c.png
     isBossStage: false
     dropTable:
@@ -1960,47 +1960,47 @@ stages:
     prevStageId: stage_light_foot_04
     narrativeOpeningId: stage_light_foot_05_opening
     narrativeVictoryId: stage_light_foot_05_victory
-    requiredRealm: jueDing
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_jueDing_lightfoot_changfeng_a
         name: 关楼守将
-        realmTier: jueDing
-        realmLayer: jingTong
+        realmTier: sanLiu
+        realmLayer: shuLian
         school: gangMeng
-        baseHp: 17000
-        baseAttack: 1400
+        baseHp: 6800
+        baseAttack: 560
         baseSpeed: 225
         skillIds:
-          - skill_lightfoot_jueding_gangmeng_basic
-          - skill_lightfoot_jueding_gangmeng_skill
-          - skill_lightfoot_jueding_gangmeng_ult
+          - skill_gangmeng_changlian_basic
+          - skill_gangmeng_changlian_skill
+          - skill_gangmeng_changlian_ult
         iconPath: assets/enemies/lightfoot_changfeng_a.png
         isBoss: true
       - id: enemy_jueDing_lightfoot_changfeng_b
         name: 长风剑客
-        realmTier: jueDing
-        realmLayer: jingTong
+        realmTier: sanLiu
+        realmLayer: shuLian
         school: lingQiao
-        baseHp: 16500
-        baseAttack: 1430
+        baseHp: 6600
+        baseAttack: 570
         baseSpeed: 235
         skillIds:
-          - skill_lightfoot_jueding_lingqiao_basic
-          - skill_lightfoot_jueding_lingqiao_skill
-          - skill_lightfoot_jueding_lingqiao_ult
+          - skill_lingqiao_changlian_basic
+          - skill_lingqiao_changlian_skill
+          - skill_lingqiao_changlian_ult
         iconPath: assets/enemies/lightfoot_changfeng_b.png
       - id: enemy_jueDing_lightfoot_changfeng_c
         name: 万里刀客
-        realmTier: jueDing
-        realmLayer: jingTong
+        realmTier: sanLiu
+        realmLayer: shuLian
         school: yinRou
-        baseHp: 16800
-        baseAttack: 1380
+        baseHp: 6700
+        baseAttack: 550
         baseSpeed: 220
         skillIds:
-          - skill_lightfoot_jueding_yinrou_basic
-          - skill_lightfoot_jueding_yinrou_skill
-          - skill_lightfoot_jueding_yinrou_ult
+          - skill_yinrou_changlian_basic
+          - skill_yinrou_changlian_skill
+          - skill_yinrou_changlian_ult
         iconPath: assets/enemies/lightfoot_changfeng_c.png
     isBossStage: true
     dropTable:
@@ -2018,58 +2018,58 @@ stages:
 
   # ============================================================================
   # 1.0 P3.2 §12.3 群战守城 stages(GDD v1.13,2026-05-24)
-  # 5 关 yiLiu 3 + jueDing 2 平行支线(不接管 wuSheng 突破链)
+  # 5 关从学徒后段过渡至三流·熟练，全部位于 Lv100 发布上限内。
   # wave-based 守城:玩家 3 vs 敌 5-7「以少胜多」(沿 inner_demon mirror 体例)
   # unlock 链:stage_06_05 victory → mass_battle_01 → 02 → 03 → 04 → 05
   # 默认阵型:01 yanXing(攻势启)/ 02 baGua(守势教)/ 03 fengShi(突击教)/
-  #           04 baGua(jueDing 沉着守)/ 05 fengShi(jueDing 破城)
+  #           04 baGua(三流沉着守)/ 05 fengShi(三流破城)
   # enemyTeam 配 3 模板(三流派覆盖),service 层 buildWavesFor 循环复制扩展到
   # enemy_counts[w] 个填 wave;wave 间数值不渐强(Batch 2.5 R5.1 实测后再决议)
   # numbers.yaml mass_battle 段配 formations / wave_intermission / stage_formations /
-  # unlock_triggers · skill 复用 LightFoot 18 招 lightfoot pool(2 阶 × 3 school × 3 type)
+  # unlock_triggers · 敌人技能按当前学徒/三流心法阶重映射
   # ============================================================================
 
-  # === stage_mass_battle_01 · 守村抗匪(山贼围攻 · yiLiu·qiMeng wave=2[5,5])===
+  # === stage_mass_battle_01 · 守村抗匪(山贼围攻 · xueTu·yuanShu wave=2[5,5])===
   - id: stage_mass_battle_01
     name: 守村抗匪
     stageType: massBattle
     narrativeOpeningId: stage_mass_battle_01_opening
     narrativeVictoryId: stage_mass_battle_01_victory
-    requiredRealm: yiLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_yiLiu_massbattle_cunfei_a
         name: 山贼头目
-        realmTier: yiLiu
-        realmLayer: qiMeng
+        realmTier: xueTu
+        realmLayer: yuanShu
         school: gangMeng
-        baseHp: 7000
-        baseAttack: 720
+        baseHp: 2500
+        baseAttack: 260
         baseSpeed: 175
         skillIds:
-          - skill_lightfoot_yiliu_gangmeng_basic
-          - skill_lightfoot_yiliu_gangmeng_skill
+          - skill_gangmeng_jichu_basic
+          - skill_gangmeng_jichu_skill
         iconPath: assets/enemies/massbattle_cunfei_a.png
       - id: enemy_yiLiu_massbattle_cunfei_b
         name: 山贼弓手
-        realmTier: yiLiu
-        realmLayer: qiMeng
+        realmTier: xueTu
+        realmLayer: yuanShu
         school: lingQiao
-        baseHp: 6700
-        baseAttack: 750
+        baseHp: 2400
+        baseAttack: 270
         baseSpeed: 190
         skillIds:
-          - skill_lightfoot_yiliu_lingqiao_basic
+          - skill_lingqiao_jichu_basic
         iconPath: assets/enemies/massbattle_cunfei_b.png
       - id: enemy_yiLiu_massbattle_cunfei_c
         name: 山贼刀客
-        realmTier: yiLiu
-        realmLayer: qiMeng
+        realmTier: xueTu
+        realmLayer: yuanShu
         school: yinRou
-        baseHp: 6800
-        baseAttack: 730
+        baseHp: 2450
+        baseAttack: 260
         baseSpeed: 170
         skillIds:
-          - skill_lightfoot_yiliu_yinrou_basic
+          - skill_yinrou_jichu_basic
         iconPath: assets/enemies/massbattle_cunfei_c.png
     isBossStage: false
     dropTable:
@@ -2086,51 +2086,51 @@ stages:
     massBattleWaveCount: 2
     massBattleEnemyCounts: [5, 5]
 
-  # === stage_mass_battle_02 · 守镇御寇(江湖匪众 · yiLiu·jingTong wave=3[5,6,6])===
+  # === stage_mass_battle_02 · 守镇御寇(江湖匪众 · xueTu·dengFeng wave=3[5,6,6])===
   - id: stage_mass_battle_02
     name: 守镇御寇
     stageType: massBattle
     prevStageId: stage_mass_battle_01
     narrativeOpeningId: stage_mass_battle_02_opening
     narrativeVictoryId: stage_mass_battle_02_victory
-    requiredRealm: yiLiu
+    requiredRealm: xueTu
     enemyTeam:
       - id: enemy_yiLiu_massbattle_zhenkou_a
         name: 匪众头领
-        realmTier: yiLiu
-        realmLayer: jingTong
+        realmTier: xueTu
+        realmLayer: dengFeng
         school: gangMeng
-        baseHp: 9000
-        baseAttack: 900
+        baseHp: 1800
+        baseAttack: 180
         baseSpeed: 185
         skillIds:
-          - skill_lightfoot_yiliu_gangmeng_basic
-          - skill_lightfoot_yiliu_gangmeng_skill
-          - skill_lightfoot_yiliu_gangmeng_ult
+          - skill_gangmeng_jichu_basic
+          - skill_gangmeng_jichu_skill
+          - skill_gangmeng_jichu_ult
         iconPath: assets/enemies/massbattle_zhenkou_a.png
       - id: enemy_yiLiu_massbattle_zhenkou_b
         name: 匪众游侠
-        realmTier: yiLiu
-        realmLayer: jingTong
+        realmTier: xueTu
+        realmLayer: dengFeng
         school: lingQiao
-        baseHp: 8500
-        baseAttack: 920
+        baseHp: 1700
+        baseAttack: 180
         baseSpeed: 205
         skillIds:
-          - skill_lightfoot_yiliu_lingqiao_basic
-          - skill_lightfoot_yiliu_lingqiao_skill
+          - skill_lingqiao_jichu_basic
+          - skill_lingqiao_jichu_skill
         iconPath: assets/enemies/massbattle_zhenkou_b.png
       - id: enemy_yiLiu_massbattle_zhenkou_c
         name: 匪众刺客
-        realmTier: yiLiu
-        realmLayer: jingTong
+        realmTier: xueTu
+        realmLayer: dengFeng
         school: yinRou
-        baseHp: 8700
-        baseAttack: 880
+        baseHp: 1750
+        baseAttack: 180
         baseSpeed: 195
         skillIds:
-          - skill_lightfoot_yiliu_yinrou_basic
-          - skill_lightfoot_yiliu_yinrou_skill
+          - skill_yinrou_jichu_basic
+          - skill_yinrou_jichu_skill
         iconPath: assets/enemies/massbattle_zhenkou_c.png
     isBossStage: false
     dropTable:
@@ -2147,53 +2147,47 @@ stages:
     massBattleWaveCount: 3
     massBattleEnemyCounts: [5, 6, 6]
 
-  # === stage_mass_battle_03 · 守县拒敌(他派偷袭 · yiLiu·dengFeng wave=3[6,6,7])===
+  # === stage_mass_battle_03 · 守县拒敌(他派偷袭 · sanLiu·qiMeng wave=3[6,6,7])===
   - id: stage_mass_battle_03
     name: 守县拒敌
     stageType: massBattle
     prevStageId: stage_mass_battle_02
     narrativeOpeningId: stage_mass_battle_03_opening
     narrativeVictoryId: stage_mass_battle_03_victory
-    requiredRealm: yiLiu
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_yiLiu_massbattle_xianjie_a
         name: 他派宗主
-        realmTier: yiLiu
-        realmLayer: dengFeng
+        realmTier: sanLiu
+        realmLayer: qiMeng
         school: lingQiao
-        baseHp: 8640
-        baseAttack: 893
-        baseSpeed: 215
+        baseHp: 500
+        baseAttack: 50
+        baseSpeed: 100
         skillIds:
-          - skill_lightfoot_yiliu_lingqiao_basic
-          - skill_lightfoot_yiliu_lingqiao_skill
-          - skill_lightfoot_yiliu_lingqiao_ult
+          - skill_lingqiao_changlian_basic
         iconPath: assets/enemies/massbattle_xianjie_a.png
       - id: enemy_yiLiu_massbattle_xianjie_b
         name: 他派护法
-        realmTier: yiLiu
-        realmLayer: dengFeng
+        realmTier: sanLiu
+        realmLayer: qiMeng
         school: yinRou
-        baseHp: 8400
-        baseAttack: 918
-        baseSpeed: 200
+        baseHp: 500
+        baseAttack: 50
+        baseSpeed: 100
         skillIds:
-          - skill_lightfoot_yiliu_yinrou_basic
-          - skill_lightfoot_yiliu_yinrou_skill
-          - skill_lightfoot_yiliu_yinrou_ult
+          - skill_yinrou_changlian_basic
         iconPath: assets/enemies/massbattle_xianjie_b.png
       - id: enemy_yiLiu_massbattle_xianjie_c
         name: 他派门徒
-        realmTier: yiLiu
-        realmLayer: dengFeng
+        realmTier: sanLiu
+        realmLayer: qiMeng
         school: gangMeng
-        baseHp: 8800
-        baseAttack: 867
-        baseSpeed: 195
+        baseHp: 500
+        baseAttack: 50
+        baseSpeed: 100
         skillIds:
-          - skill_lightfoot_yiliu_gangmeng_basic
-          - skill_lightfoot_yiliu_gangmeng_skill
-          - skill_lightfoot_yiliu_gangmeng_ult
+          - skill_gangmeng_changlian_basic
         iconPath: assets/enemies/massbattle_xianjie_c.png
     isBossStage: false
     dropTable:
@@ -2210,50 +2204,47 @@ stages:
     massBattleWaveCount: 3
     massBattleEnemyCounts: [6, 6, 7]
 
-  # === stage_mass_battle_04 · 守关御胡(边镇胡骑 · jueDing·qiMeng wave=4[5,6,6,7])===
+  # === stage_mass_battle_04 · 守关御胡(边镇胡骑 · sanLiu·ruMen wave=4[5,6,6,7])===
   - id: stage_mass_battle_04
     name: 守关御胡
     stageType: massBattle
     prevStageId: stage_mass_battle_03
     narrativeOpeningId: stage_mass_battle_04_opening
     narrativeVictoryId: stage_mass_battle_04_victory
-    requiredRealm: jueDing
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_jueDing_massbattle_guanqi_a
         name: 胡骑万夫
-        realmTier: jueDing
-        realmLayer: qiMeng
+        realmTier: sanLiu
+        realmLayer: ruMen
         school: lingQiao
-        baseHp: 10080
-        baseAttack: 953
-        baseSpeed: 220
+        baseHp: 500
+        baseAttack: 50
+        baseSpeed: 100
         skillIds:
-          - skill_lightfoot_jueding_lingqiao_basic
-          - skill_lightfoot_jueding_lingqiao_skill
+          - skill_lingqiao_changlian_basic
         iconPath: assets/enemies/massbattle_guanqi_a.png
       - id: enemy_jueDing_massbattle_guanqi_b
         name: 胡骑游骑
-        realmTier: jueDing
-        realmLayer: qiMeng
+        realmTier: sanLiu
+        realmLayer: ruMen
         school: yinRou
-        baseHp: 9864
-        baseAttack: 929
-        baseSpeed: 205
+        baseHp: 500
+        baseAttack: 50
+        baseSpeed: 100
         skillIds:
-          - skill_lightfoot_jueding_yinrou_basic
-          - skill_lightfoot_jueding_yinrou_skill
+          - skill_yinrou_changlian_basic
         iconPath: assets/enemies/massbattle_guanqi_b.png
       - id: enemy_jueDing_massbattle_guanqi_c
         name: 胡骑铁卫
-        realmTier: jueDing
-        realmLayer: qiMeng
+        realmTier: sanLiu
+        realmLayer: ruMen
         school: gangMeng
-        baseHp: 10224
-        baseAttack: 969
-        baseSpeed: 200
+        baseHp: 500
+        baseAttack: 50
+        baseSpeed: 100
         skillIds:
-          - skill_lightfoot_jueding_gangmeng_basic
-          - skill_lightfoot_jueding_gangmeng_skill
+          - skill_gangmeng_changlian_basic
         iconPath: assets/enemies/massbattle_guanqi_c.png
     isBossStage: false
     dropTable:
@@ -2270,54 +2261,48 @@ stages:
     massBattleWaveCount: 4
     massBattleEnemyCounts: [5, 6, 6, 7]
 
-  # === stage_mass_battle_05 · 守城却敌(西凉残部 · jueDing·jingTong wave=4[6,6,7,7] BOSS)===
+  # === stage_mass_battle_05 · 守城却敌(西凉残部 · sanLiu·shuLian wave=4[6,6,7,7] BOSS)===
   - id: stage_mass_battle_05
     name: 守城却敌
     stageType: massBattle
     prevStageId: stage_mass_battle_04
     narrativeOpeningId: stage_mass_battle_05_opening
     narrativeVictoryId: stage_mass_battle_05_victory
-    requiredRealm: jueDing
+    requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_jueDing_massbattle_canbu_a
         name: 西凉残将
-        realmTier: jueDing
-        realmLayer: jingTong
+        realmTier: sanLiu
+        realmLayer: shuLian
         school: gangMeng
-        baseHp: 10320
-        baseAttack: 925
-        baseSpeed: 225
+        baseHp: 500
+        baseAttack: 50
+        baseSpeed: 100
         skillIds:
-          - skill_lightfoot_jueding_gangmeng_basic
-          - skill_lightfoot_jueding_gangmeng_skill
-          - skill_lightfoot_jueding_gangmeng_ult
+          - skill_gangmeng_changlian_basic
         iconPath: assets/enemies/massbattle_canbu_a.png
         isBoss: true
       - id: enemy_jueDing_massbattle_canbu_b
         name: 西凉狂骑
-        realmTier: jueDing
-        realmLayer: jingTong
+        realmTier: sanLiu
+        realmLayer: shuLian
         school: lingQiao
-        baseHp: 10080
-        baseAttack: 945
-        baseSpeed: 235
+        baseHp: 500
+        baseAttack: 50
+        baseSpeed: 100
         skillIds:
-          - skill_lightfoot_jueding_lingqiao_basic
-          - skill_lightfoot_jueding_lingqiao_skill
-          - skill_lightfoot_jueding_lingqiao_ult
+          - skill_lingqiao_changlian_basic
         iconPath: assets/enemies/massbattle_canbu_b.png
       - id: enemy_jueDing_massbattle_canbu_c
         name: 西凉刺客
-        realmTier: jueDing
-        realmLayer: jingTong
+        realmTier: sanLiu
+        realmLayer: shuLian
         school: yinRou
-        baseHp: 10200
-        baseAttack: 910
-        baseSpeed: 220
+        baseHp: 500
+        baseAttack: 50
+        baseSpeed: 100
         skillIds:
-          - skill_lightfoot_jueding_yinrou_basic
-          - skill_lightfoot_jueding_yinrou_skill
-          - skill_lightfoot_jueding_yinrou_ult
+          - skill_yinrou_changlian_basic
         iconPath: assets/enemies/massbattle_canbu_c.png
     isBossStage: true
     dropTable:

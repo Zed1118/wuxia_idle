@@ -190,10 +190,12 @@ _FloorResult _simulateFloor(
   GameRepository repo,
   _BuildProfile profile,
 ) {
+  final layer = floor.enemyTeam.first.realmLayer;
   final players = [
     _buildRealPlayer(
       repo,
       floor.requiredRealm,
+      layer: layer,
       slot: 0,
       name: '玩家',
       isFounder: true,
@@ -202,6 +204,7 @@ _FloorResult _simulateFloor(
     _buildRealPlayer(
       repo,
       floor.requiredRealm,
+      layer: layer,
       slot: 1,
       name: '徒弟一',
       isFounder: false,
@@ -210,6 +213,7 @@ _FloorResult _simulateFloor(
     _buildRealPlayer(
       repo,
       floor.requiredRealm,
+      layer: layer,
       slot: 2,
       name: '徒弟二',
       isFounder: false,
@@ -259,13 +263,13 @@ _FloorResult _simulateFloor(
 BattleCharacter _buildRealPlayer(
   GameRepository repo,
   RealmTier tier, {
+  required RealmLayer layer,
   required int slot,
   required String name,
   required bool isFounder,
   required _BuildProfile profile,
 }) {
   final ceiling = profile == _BuildProfile.ceiling;
-  const layer = RealmLayer.huaJing;
   const school = TechniqueSchool.gangMeng;
   final numbers = repo.numbers;
   final realmDef = repo.getRealm(tier, layer);
