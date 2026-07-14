@@ -49,7 +49,7 @@
 
 ## 当前恢复点
 
-- **状态**:T0/T1/T2/T5 完成(draft PR #37,全量 3969/0);T3 素材 2026-07-14 用户拍板挂账(借用态维持,backlog §七 承载);T4 视觉 smoke PASS,手感终调等用户真机。
-- **最后完成**:T5 门禁+PR + T3 挂账登记。
-- **已跑验证**:analyze 0;format 0 changed;全量 3969 pass / 0 fail;tempo 诊断(含 ratchet)+ solo Ch1-6 + 首30min 绿;题字双分辨率截图 PASS。
-- **阻塞项**:仅 T4 手感终调(用户真机);T3 已挂账不阻塞。
+- **状态**:T0/T1/T2/T5 完成;T3 挂账(backlog §七);T4 真机验收(2026-07-14 bg 会话代跑,用户授权)**发现生产竞态 P1 并已修复**:StageEntryFlow 首通判定 postFrame 异步落定,BattleScreen 控制器构造期 `_showcase` 定死 null → 生产首通四拍整套不呈现(集成测以常量 config 挂载,绕过竞态);可读节奏经 didUpdateWidget 透传不受影响(真机实测 2.2s/拍 ✓)。修复=控制器 `setFirstClearShowcase`(仅起拍前可武装)+ didUpdateWidget 透传 + 生产时序回归测(红绿双验:旧代码红/修复后绿)。
+- **最后完成**:竞态修复 3 文件;analyze 0;format 0 changed;battle presentation 目录 178/178。
+- **已跑验证(修复前基线)**:全量 3969/0;tempo 诊断(含 ratchet)+ solo Ch1-6 + 首30min 绿;题字双分辨率截图 PASS;真机首通(风雨渡口)节奏 2.2s/拍、蓄力预警/破招点亮/战后卷宗全正常、日志零异常。
+- **阻塞项**:修复后真机复验四拍呈现 + 全量重跑 + CI 绿,然后 §8.2 Gate 合并。

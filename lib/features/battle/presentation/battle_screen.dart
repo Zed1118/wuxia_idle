@@ -233,6 +233,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     if (oldWidget.playback.readablePacing != widget.playback.readablePacing) {
       _playback.setReadablePacing(widget.playback.readablePacing);
     }
+    if (oldWidget.playback.firstClearShowcase !=
+        widget.playback.firstClearShowcase) {
+      _playback.setFirstClearShowcase(widget.playback.firstClearShowcase);
+    }
   }
 
   // ─── Timer / advance 驱动 ────────────────────────────────────────────────

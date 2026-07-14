@@ -105,8 +105,10 @@ class BattlePlaybackController {
   final AnimationNumbers _animConfig;
   bool _readablePacing;
 
-  /// 首通展示帧导演(null=非首通,整套展示帧不参与)。
-  final FirstClearShowcaseDirector? _showcase;
+  /// 首通展示帧导演(null=非首通,整套展示帧不参与)。生产入口(StageEntryFlow)
+  /// 的首通判定在 postFrame 异步落定,首帧构造本控制器时恒 false,判定完成后
+  /// 经 didUpdateWidget → [setFirstClearShowcase] 补挂,故非 final。
+  FirstClearShowcaseDirector? _showcase;
   bool _disposed = false;
 
   // ─── 拍钟调度字段（beat/timer/hit-stop/pause/fast-forward） ──────────────────
@@ -535,6 +537,19 @@ class BattlePlaybackController {
     if (_readablePacing == value) return;
     _readablePacing = value;
     if (_playTimer != null) startTimer();
+  }
+
+  /// 首通展示帧开关(与 [setReadablePacing] 同源:生产入口异步首通判定的透传口)。
+  /// 只允许在起拍前武装——拍钟与开局停顿计时器都未启动;开播后翻 true 忽略,
+  /// 防止中途补挂令「开局亮相」迟到错拍。翻 false 随时生效(卸下导演即不再呈现)。
+  void setFirstClearShowcase(bool value) {
+    if (value == (_showcase != null)) return;
+    if (!value) {
+      _showcase = null;
+      return;
+    }
+    if (_playTimer != null || _hitStopTimer != null) return;
+    _showcase = FirstClearShowcaseDirector();
   }
 
   /// H3 暂停:停 tick(startTimer 内 _isPaused gate 兜住所有重启路径)、冻结读秒环。

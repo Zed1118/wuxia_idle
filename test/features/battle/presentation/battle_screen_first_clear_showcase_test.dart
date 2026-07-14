@@ -130,6 +130,56 @@ void main() {
     );
   });
 
+  testWidgets('生产入口竞态回归:挂载后才翻 firstClearShowcase,起拍前补挂生效', (tester) async {
+    // 复刻 StageEntryFlow 真实时序:首通判定在 postFrame 异步落定,首帧以
+    // false 挂空团 BattleScreen → setState 翻 true(didUpdateWidget 透传)→
+    // startBattle 空→非空边沿起拍。修复前 _showcase 构造期定死 null,
+    // 生产首通四拍整套丢失(2026-07-14 真机 T4 实测发现)。
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final notifier = _TestBattleNotifier(
+      BattleState.initial(leftTeam: const [], rightTeam: const []),
+    );
+    Future<void> pumpHost({required bool showcase}) => tester.pumpWidget(
+      ProviderScope(
+        overrides: [battleProvider.overrideWith(() => notifier)],
+        child: MaterialApp(
+          home: BattleScreen(
+            animConfig: _testAnim,
+            playback: BattleScreenPlaybackConfig(
+              autoStartOnMount: true,
+              firstClearShowcase: showcase,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // 首帧:判定未落定(false)+ 空团不起拍,无题字。
+    await pumpHost(showcase: false);
+    await tester.pump();
+    expect(find.text(UiStrings.firstClearOpening), findsNothing);
+
+    // 异步判定落定:同一屏翻 true(didUpdateWidget → setFirstClearShowcase)。
+    await pumpHost(showcase: true);
+    // startBattle:空→非空边沿起拍(build 内 ref.listen 生产同路径)。
+    final (left, right) = BattleDemo.mockTeams();
+    notifier.emit(BattleState.initial(leftTeam: left, rightTeam: right));
+    await tester.pump(); // 空团 placeholder → 战斗 body 挂载
+    await tester.pump(); // 开局题字 postFrame 兜底补一帧(同 _pumpBattle 注释)
+
+    // 开局亮相题字在场 + 停顿内不推进(修复前:无题字且 50ms 拍立即推进)。
+    expect(find.text(UiStrings.firstClearOpening), findsWidgets);
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(notifier.advanceOneActionCalls, 0, reason: '补挂后开局停顿应生效');
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(
+      notifier.advanceOneActionCalls,
+      greaterThan(0),
+      reason: '停顿结束后应自动起拍',
+    );
+  });
+
   testWidgets('非首通:无开局题字,立即起拍(现有路径回归)', (tester) async {
     final notifier = await _pumpBattle(tester, firstClearShowcase: false);
     expect(find.text(UiStrings.firstClearOpening), findsNothing);
