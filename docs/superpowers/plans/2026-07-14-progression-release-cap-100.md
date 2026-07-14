@@ -39,11 +39,11 @@
 
 ## 当前恢复点
 
-- **状态:** Task 7 已完成，发布路线预算与 50 seed 战斗边界已固化，分支仍为 WIP。
-- **最后完成:** 30 主线累计 492 经验，Lv1→Lv44，普通关单关最多 +1、Boss 最多 +3；当前全部战斗内容后 Lv71，叠加 72h 闭关到 Lv77、24h 离线到 Lv79、三枚经验丹后终局 Lv85。30 关三档各 50 seed 均 100% 通过，无首个失败关；塔 25 层 floor/ceiling 为 90%/100%，30 层为 14%/100%，保留终关养成门槛。
-- **下一步:** 执行 Task 8，更新 GDD/PROGRESS 真相源并完成静态分析、全量测试、Claude 冲突面检查和 READY 标记。
-- **已跑验证:** Task 1 定向 6 tests passed；Task 2 心魔+数据+角色面板定向集 110 tests passed；Task 3 五类经验来源定向集 102 tests passed；Task 4 预算 4 tests、经济/丹药/商店 33 tests 和闭关/离线 62 tests 均通过；Task 5 主线数据/掉落/新档战斗定向集 65 tests passed；Task 6 塔/支线数据和战斗诊断定向集 60 tests passed；Task 7 发布预算、单人路线、主线三档与塔 Boss 共 11 tests passed（主线与塔诊断均提升为 50 seed）；`git diff --check` 通过。
-- **阻塞项:** 无。Claude `feat/combat-feel-phase2` 仍为 WIP，可并行；已知重叠仅为 `data/numbers.yaml` 的不同配置段，交付前再对比。
+- **状态:** Task 8 已完成，分支已通过完成级验证并冻结为 Claude 可评审状态。
+- **最后完成:** 30 主线累计 492 经验，Lv1→Lv44，普通关单关最多 +1、Boss 最多 +3；当前全部战斗内容后 Lv71，叠加 72h 闭关到 Lv77、24h 离线到 Lv79、三枚经验丹后终局 Lv85。串行权威全量测试 3967/3967 通过，静态分析无问题；与 Claude 分支的三处已提交文件重叠均可自动合并。
+- **下一步:** Claude 可评审并按需合并 `codex/progression-cap-100`；不再在本分支追加功能改动。
+- **已跑验证:** Task 1～7 定向集均通过；Task 8 `dart format lib test` 检查 1129 文件且无改动，最终定向集 83 tests passed，`flutter test --no-pub -j1` 3967/3967 passed，补充诊断 3/3 passed，`flutter analyze --no-pub` 无问题，`git diff --check` 通过。
+- **阻塞项:** 无。Claude `feat/combat-feel-phase2` 的未提交文件与本分支零重叠；已提交重叠为 `PROGRESS.md`、`data/numbers.yaml`、`lib/data/numbers_config.dart`，最终 `git merge-tree` 检查无冲突标记，可自动合并。
 
 ## 文件地图
 
@@ -424,11 +424,11 @@
 - Modify: `docs/superpowers/specs/2026-07-14-progression-release-cap-100-design.md` only if implementation discovered an approved-spec mismatch
 - Modify: this plan file (checkboxes and final recovery point)
 
-- [ ] **Step 1: 更新设计/进度真相源**
+- [x] **Step 1: 更新设计/进度真相源**
 
   记录：当前版发布上限 Lv100，对应绝对境界层 10；经验溢出保留；当前主线目标 Lv35～50；当前完整路线 Lv80～95；高阶境界、装备和心法定义为未来副本保留。
 
-- [ ] **Step 2: 运行格式、静态分析和最终定向集**
+- [x] **Step 2: 运行格式、静态分析和最终定向集**
 
   ```bash
   dart format lib test
@@ -436,7 +436,7 @@
   flutter test --no-pub test/features/cultivation/application/progression_gate_service_test.dart test/features/cultivation/application/experience_source_consistency_test.dart test/features/cultivation/application/progression_release_budget_test.dart test/features/inner_demon/application/inner_demon_service_test.dart test/features/onboarding/onboarding_first_30min_battle_test.dart test/features/onboarding/solo_mainline_ch1_ch6_balance_test.dart test/tools/idle_economy_test.dart test/tools/tower_boss_feel_diagnostic_test.dart test/data/game_repository_test.dart
   ```
 
-- [ ] **Step 3: 运行一次全量测试**
+- [x] **Step 3: 运行一次全量测试**
 
   ```bash
   flutter test --no-pub
@@ -444,7 +444,7 @@
 
   Expected: PASS。若失败，只修复本次改动引起的回归；无关既有失败记录证据与风险，不扩张范围。
 
-- [ ] **Step 4: 检查 diff、冲突面和工作树清洁度**
+- [x] **Step 4: 检查 diff、冲突面和工作树清洁度**
 
   ```bash
   git diff --check main...HEAD
@@ -456,7 +456,7 @@
 
   单独对比 Claude 分支对 `data/numbers.yaml` 的改动，确认只有 YAML 独立键层面的可手工合并重叠。
 
-- [ ] **Step 5: 提交文档与最终收口**
+- [x] **Step 5: 提交文档与最终收口**
 
   ```bash
   git add GDD.md PROGRESS.md docs/superpowers/specs/2026-07-14-progression-release-cap-100-design.md docs/superpowers/plans/2026-07-14-progression-release-cap-100.md
@@ -464,7 +464,7 @@
   git status --short
   ```
 
-- [ ] **Step 6: 冻结分支并打 Claude 可评审标记**
+- [x] **Step 6: 冻结分支并打 Claude 可评审标记**
 
   先确认本计划的“当前恢复点”已改为完成、验证数字已录入且 `git status --short` 为空，再执行：
 
@@ -478,12 +478,12 @@
 
 ## 最终验收清单
 
-- [ ] 新档不会因任何经验来源超过 Lv100。
-- [ ] 旧档 Lv101+ 不降级、经验不丢失，但不再进层。
-- [ ] 封顶经验无上限累加，展示保持 Lv100/待开放。
-- [ ] 30 主线首通终局在 Lv35～50。
-- [ ] 当前完整参考路线终局在 Lv80～95。
-- [ ] 普通主线单关 +0～1，Boss +1～3，8h 离线不超过约 1 级。
-- [ ] 当前关卡的三系掉落不穿越学徒/三流上限。
-- [ ] 现有 49 层、高阶定义、Isar schema 和存档版本未被破坏。
-- [ ] `flutter analyze --no-pub` 与一次全量 `flutter test --no-pub` 通过。
+- [x] 新档不会因任何经验来源超过 Lv100。
+- [x] 旧档 Lv101+ 不降级、经验不丢失，但不再进层。
+- [x] 封顶经验无上限累加，展示保持 Lv100/待开放。
+- [x] 30 主线首通终局在 Lv35～50。
+- [x] 当前完整参考路线终局在 Lv80～95。
+- [x] 普通主线单关 +0～1，Boss +1～3，8h 离线不超过约 1 级。
+- [x] 当前关卡的三系掉落不穿越学徒/三流上限。
+- [x] 现有 49 层、高阶定义、Isar schema 和存档版本未被破坏。
+- [x] `flutter analyze --no-pub` 与一次全量 `flutter test --no-pub` 通过。
