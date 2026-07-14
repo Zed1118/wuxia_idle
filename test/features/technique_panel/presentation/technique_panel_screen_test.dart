@@ -429,4 +429,64 @@ void main() {
       findsOneWidget,
     );
   });
+
+  // ── 用例 8/9/10：研习新心法入口（学习闭环 · 2026-07-14）──────────────────
+
+  testWidgets('insightPoints>0 → 研习新心法入口显点数且可点', (tester) async {
+    final character = mkCharacter(mainTechniqueId: 100, insightPoints: 500);
+    final main = mkTechnique(id: 100, ownerId: 1, role: TechniqueRole.main);
+
+    await pumpPanel(tester, character: character, techniques: {100: main});
+
+    final label = UiStrings.learnTechniqueEntryWithPoints(500);
+    expect(find.text(label), findsOneWidget);
+    expect(find.text(UiStrings.learnTechniqueEntryEmpty), findsNothing);
+    final btn = tester.widget<TextButton>(
+      find.ancestor(
+        of: find.text(UiStrings.learnTechniqueTitle),
+        matching: find.byType(TextButton),
+      ),
+    );
+    expect(btn.onPressed, isNotNull);
+  });
+
+  testWidgets('insightPoints=0 → 研习新心法入口灰显常驻且不可点', (tester) async {
+    final character = mkCharacter(mainTechniqueId: 100, insightPoints: 0);
+    final main = mkTechnique(id: 100, ownerId: 1, role: TechniqueRole.main);
+
+    await pumpPanel(tester, character: character, techniques: {100: main});
+
+    expect(find.text(UiStrings.learnTechniqueEntryEmpty), findsOneWidget);
+    final btn = tester.widget<TextButton>(
+      find.ancestor(
+        of: find.text(UiStrings.learnTechniqueTitle),
+        matching: find.byType(TextButton),
+      ),
+    );
+    expect(btn.onPressed, isNull);
+  });
+
+  testWidgets('点击研习新心法 → 打开候选列表 dialog', (tester) async {
+    // 学徒境界 cap = ruMenGong；持有一本非真实 defId 的主修，全部真实 def 均为候选。
+    final character = mkCharacter(mainTechniqueId: 100, insightPoints: 500);
+    final main = mkTechnique(id: 100, ownerId: 1, role: TechniqueRole.main);
+
+    await pumpPanel(tester, character: character, techniques: {100: main});
+
+    final tapTarget = find.widgetWithText(
+      TextButton,
+      UiStrings.learnTechniqueTitle,
+    );
+    await tester.ensureVisible(tapTarget);
+    await tester.pumpAndSettle();
+    await tester.tap(tapTarget);
+    await tester.pump();
+    await tester.pump();
+
+    // dialog 打开：副标 + 境界内候选以「纳为辅修」成本 tag 呈现（已有主修 → 辅修角色）。
+    // 列表 tier 低→高排序，境界内候选在顶部先可见。超阶灰显（learnable=false）逻辑
+    // 由 learnable_technique_test 单测覆盖，此处只验 UI 接线打开候选列表。
+    expect(find.text(UiStrings.learnTechniqueSubtitle), findsOneWidget);
+    expect(find.textContaining(UiStrings.learnTechniqueAsAssist), findsWidgets);
+  });
 }

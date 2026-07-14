@@ -835,7 +835,8 @@ techniques:
     boss_cultivation_penalty: 0.50    # 战败后主修 progress ×0.5（再走 layer 反向重算）
 
   # --- 学习成本（phase2_tasks T23，Pen 拍板）---
-  # Demo 阶段统一固定值；领悟点来源待 GDD §7.2 武学领悟系统实装后接入
+  # 统一固定值。领悟点来源 = 闭关挂机（SeclusionService.techniqueLearnPoints）；
+  # 消费 = 研习新心法（TechniqueLearnFlowService，2026-07-14 接线，技能面板入口）
   learning_cost:
     assist: 100                       # 学辅修消耗领悟点
     main: 500                         # 学主修消耗领悟点

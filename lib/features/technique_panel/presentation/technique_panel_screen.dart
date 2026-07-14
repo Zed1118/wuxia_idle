@@ -17,6 +17,10 @@ import '../../dispel/application/dispel_service_providers.dart';
 import '../../cultivation/application/insight_exchange_service.dart';
 import '../../cultivation/application/insight_exchange_service_providers.dart';
 import '../../cultivation/application/skill_proficiency_formatter.dart';
+import '../../cultivation/application/technique_learn_flow_service_providers.dart';
+import '../../battle/domain/derived_stats.dart';
+import '../../../data/defs/technique_def.dart';
+import '../domain/learnable_technique.dart';
 import '../domain/technique_equip_suggestion.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -148,6 +152,11 @@ class _Body extends StatelessWidget {
                     character: character,
                     techniques: techniques,
                     mainTech: mainTech,
+                  ),
+                  const SizedBox(height: 14),
+                  _LearnNewTechniqueEntry(
+                    character: character,
+                    ownedTechniques: techniques,
                   ),
                   const SizedBox(height: 14),
                   if (mainTech != null) ...[
@@ -1054,6 +1063,338 @@ class _TechniqueTile extends ConsumerWidget {
             result.progressGained,
             leveledUp: result.didLevelUp,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 研习新心法入口（学习闭环 · 2026-07-14）。
+///
+/// 常驻行：显领悟点，有可研习候选且有领悟点时可点，否则灰显（§5.7 不推销）。
+/// 点击弹可研习列表 dialog（境界内可学、超阶灰显承 §5.3「可观摩不可修」）。
+class _LearnNewTechniqueEntry extends ConsumerWidget {
+  const _LearnNewTechniqueEntry({
+    required this.character,
+    required this.ownedTechniques,
+  });
+
+  final Character character;
+  final List<Technique> ownedTechniques;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!GameRepository.isLoaded) return const SizedBox.shrink();
+    final points = character.insightPoints;
+    final enabled = points > 0;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaColors.inkPanelBottom.withValues(alpha: 0.58),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: WuxiaUi.gold.withValues(alpha: 0.28)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 10, 12, 10),
+        child: Row(
+          children: [
+            const Icon(Icons.menu_book_outlined, size: 18, color: WuxiaUi.gold),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                enabled
+                    ? UiStrings.learnTechniqueEntryWithPoints(points)
+                    : UiStrings.learnTechniqueEntryEmpty,
+                style: TextStyle(
+                  color: enabled
+                      ? WuxiaColors.textPrimary
+                      : WuxiaColors.textMuted,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 34,
+              child: TextButton(
+                onPressed: enabled
+                    ? () => _openLearnDialog(context, ref)
+                    : null,
+                style: TextButton.styleFrom(
+                  foregroundColor: WuxiaUi.gold,
+                  disabledForegroundColor: WuxiaColors.textMuted,
+                  backgroundColor:
+                      (enabled ? WuxiaUi.gold : WuxiaColors.buttonDisabled)
+                          .withValues(alpha: 0.1),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    side: BorderSide(
+                      color: (enabled ? WuxiaUi.gold : WuxiaColors.textMuted)
+                          .withValues(alpha: 0.42),
+                    ),
+                  ),
+                ),
+                child: const Text(UiStrings.learnTechniqueTitle),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<LearnableTechnique> _candidates() {
+    final owned = ownedTechniques.map((t) => t.defId).toSet();
+    return computeLearnableTechniques(
+      allDefs: GameRepository.instance.techniqueDefs.values,
+      ownedDefIds: owned,
+      realmTierCap: RealmUtils.techniqueTierCapOf(character.realmTier),
+    );
+  }
+
+  Future<void> _openLearnDialog(BuildContext context, WidgetRef ref) async {
+    final candidates = _candidates();
+    final selected = await PaperDialog.show<TechniqueDef>(
+      context,
+      title: UiStrings.learnTechniqueTitle,
+      body: _LearnTechniqueDialogBody(
+        candidates: candidates,
+        character: character,
+      ),
+      actions: [
+        PlaqueButton(
+          label: UiStrings.commonCancel,
+          onTap: () => Navigator.of(context).pop(),
+        ),
+      ],
+    );
+    if (selected == null) return;
+    if (!context.mounted) return;
+    await _confirmAndLearn(context, ref, selected);
+  }
+
+  Future<void> _confirmAndLearn(
+    BuildContext context,
+    WidgetRef ref,
+    TechniqueDef def,
+  ) async {
+    // 无主修 → 可选立为主修；否则纳为辅修。角色主修占位由服务层再校验。
+    final role = character.mainTechniqueId == null
+        ? TechniqueRole.main
+        : TechniqueRole.assist;
+    final cost = GameRepository.instance.numbers.learningCost.costFor(role);
+
+    final confirmed = await PaperDialog.show<bool>(
+      context,
+      title: UiStrings.learnTechniqueTitle,
+      body: Text(
+        UiStrings.learnTechniqueConfirmBody(def.name, cost),
+        style: const TextStyle(
+          color: WuxiaUi.ink,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      actions: [
+        PlaqueButton(
+          label: UiStrings.commonCancel,
+          onTap: () => Navigator.of(context).pop(false),
+        ),
+        PlaqueButton(
+          label: UiStrings.learnTechniqueConfirm,
+          primary: true,
+          onTap: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    );
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    final svc = ref.read(techniqueLearnFlowServiceProvider);
+    if (svc == null) return; // 测试旁路:未 init Isar
+    final result = await svc.learn(
+      characterId: character.id,
+      techniqueDefId: def.id,
+      role: role,
+    );
+
+    if (!context.mounted) return;
+    if (result.isSuccess) {
+      ref.invalidate(characterByIdProvider(character.id));
+      ref.invalidate(characterAllTechniquesProvider(character.id));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(UiStrings.learnTechniqueSuccess(def.name))),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.learnTechniqueFailed)),
+      );
+    }
+  }
+}
+
+class _LearnTechniqueDialogBody extends StatelessWidget {
+  const _LearnTechniqueDialogBody({
+    required this.candidates,
+    required this.character,
+  });
+
+  final List<LearnableTechnique> candidates;
+  final Character character;
+
+  @override
+  Widget build(BuildContext context) {
+    if (candidates.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 18),
+        child: Text(
+          UiStrings.learnTechniqueEmptyList,
+          style: TextStyle(color: WuxiaUi.muted, fontSize: 13),
+        ),
+      );
+    }
+    final role = character.mainTechniqueId == null
+        ? TechniqueRole.main
+        : TechniqueRole.assist;
+    final cost = GameRepository.instance.numbers.learningCost.costFor(role);
+    final affordable = character.insightPoints >= cost;
+
+    return SizedBox(
+      width: 380,
+      height: 360,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            UiStrings.learnTechniqueSubtitle,
+            style: TextStyle(color: WuxiaUi.ink2, fontSize: 12, height: 1.35),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: ListView.separated(
+              itemCount: candidates.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 6),
+              itemBuilder: (context, i) => _LearnTechniqueRow(
+                candidate: candidates[i],
+                role: role,
+                cost: cost,
+                affordable: affordable,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LearnTechniqueRow extends StatelessWidget {
+  const _LearnTechniqueRow({
+    required this.candidate,
+    required this.role,
+    required this.cost,
+    required this.affordable,
+  });
+
+  final LearnableTechnique candidate;
+  final TechniqueRole role;
+  final int cost;
+  final bool affordable;
+
+  @override
+  Widget build(BuildContext context) {
+    final def = candidate.def;
+    final schoolColor = WuxiaColors.schoolColor(def.school);
+    final canTap = candidate.learnable && affordable;
+
+    return Material(
+      color: WuxiaUi.ink.withValues(alpha: 0.04),
+      borderRadius: BorderRadius.circular(4),
+      child: InkWell(
+        onTap: canTap ? () => Navigator.of(context).pop(def) : null,
+        borderRadius: BorderRadius.circular(4),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              Container(
+                width: 3,
+                height: 32,
+                color: schoolColor.withValues(
+                  alpha: candidate.learnable ? 0.9 : 0.4,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      def.name,
+                      style: TextStyle(
+                        color: candidate.learnable
+                            ? WuxiaUi.ink
+                            : WuxiaUi.muted,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${EnumL10n.school(def.school)} · ${EnumL10n.techniqueTier(def.tier)}',
+                      style: const TextStyle(
+                        color: WuxiaUi.muted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (!candidate.learnable)
+                const _LearnTag(
+                  text: UiStrings.learnTechniqueLockedByRealm,
+                  color: WuxiaUi.muted,
+                )
+              else
+                _LearnTag(
+                  text: UiStrings.learnTechniqueCost(
+                    cost,
+                    asMain: role == TechniqueRole.main,
+                  ),
+                  color: affordable ? WuxiaUi.jiang : WuxiaUi.muted,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LearnTag extends StatelessWidget {
+  const _LearnTag({required this.text, required this.color});
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

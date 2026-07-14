@@ -6,6 +6,8 @@
 >
 > **版本:v1.37**
 > v1.37 变更摘要(2026-07-14 全量审查收口 · 0 改数值):① §4 注记 skills.yaml camelCase 历史例外(文档与现实收口,不迁移 206 招 key);② §8.2 合并 Gate 补 ⓓ commit message 中文检查项。源:`~/Desktop/挂机武侠全量审查报告_2026-07-14.md` P3-2/P3-4。
+> **版本:v1.38**
+> v1.38 变更摘要(2026-07-14 心法学习闭环 · 0 改数值):研习新心法接线——技能面板心法区新增「研习新心法」入口,消耗领悟点(闭关挂机产出·`numbers.yaml learning_cost` 辅修100/主修500,值未改)学境界内未持有心法,经 `TechniqueLearnFlowService` 落库并记 `techniqueLearned` 事件;超阶心法 UI 灰显不可学(§5.3)。领悟点第二个 sink(与凝练并列)。无 schema/saveVersion 变更。源:backlog §十三 #1。
 > **版本:v1.36**
 > v1.36 变更摘要(2026-07-13 境界派生 490 级):`Character.experience` 成为唯一可写角色经验账；49 个真实境界层各细分 10 个纯展示段，形成 Lv1～Lv490。数字等级不加战力、不参与装备/心法门槛或强化上限。武圣·登峰的 1,250,000 经验只完成 Lv490 刻度，不生成第 50 层。旧 `Character.level/levelExp` 仅保留 Isar schema 兼容，生产零读写；主线、爬塔、闭关、普通离线与经验丹统一走 `CharacterAdvancementService`。
 > v1.35 变更摘要(2026-07-13 角色四项属性职责统一):根骨除血量外缩短新生成重伤时长；悟性统一影响心法修炼、招式熟练度成长与武学领悟概率；身法只管速度/闪避，基础暴击平移至 7.5%；机缘只管普通奇遇概率和显式特殊选项，不参与商店定价/掉落倍率。旧角色属性值、schema、saveVersion 均不迁移。
@@ -144,7 +146,7 @@ project_root/
 新增任何"阶/品/级"概念前先问：能否复用 7 阶？不能 → 找人类讨论。
 
 ### 5.3 三系锁死同步（不可破，无例外）
-境界 ↔ 装备阶 ↔ 心法阶 一一对应。例：二流境界 → 最多装备「好家伙」、最多修「名家功」。**任何允许低境界使用更高阶装备/心法的设计都是错的**。校验点实符号(v1.28 订正,旧文引用的 `EquipmentRepository.canEquip()`/`TechniqueRepository.canPractice()` 不存在):装备侧 `Equipment.isEquippableAtRealm()`(`lib/core/domain/equipment.dart`,唯一换装路径 `EquipmentService.equip` 消费,战斗入场/飞升 auto-swap 再校验);心法侧 `TechniqueLearningService.learn`(`RealmUtils.techniqueTierCapOf` 硬拦;学心法 UI 属 Phase 5+,当前心法来源为种子/收徒,由 yaml 层 `_enforceMasterRedLines`/`_enforceRecruitCandidateRedLines` 兜底);奇遇招式侧 `EncounterService.canEquipEncounterSkillByTier`。在这些校验点上保持硬约束。
+境界 ↔ 装备阶 ↔ 心法阶 一一对应。例：二流境界 → 最多装备「好家伙」、最多修「名家功」。**任何允许低境界使用更高阶装备/心法的设计都是错的**。校验点实符号(v1.28 订正,旧文引用的 `EquipmentRepository.canEquip()`/`TechniqueRepository.canPractice()` 不存在):装备侧 `Equipment.isEquippableAtRealm()`(`lib/core/domain/equipment.dart`,唯一换装路径 `EquipmentService.equip` 消费,战斗入场/飞升 auto-swap 再校验);心法侧 `TechniqueLearningService.learn`(`RealmUtils.techniqueTierCapOf` 硬拦;2026-07-14 起技能面板「研习新心法」入口经 `TechniqueLearnFlowService` 消费此校验,超阶心法 UI 灰显不可学;种子/收徒来源另由 yaml 层 `_enforceMasterRedLines`/`_enforceRecruitCandidateRedLines` 兜底);奇遇招式侧 `EncounterService.canEquipEncounterSkillByTier`。在这些校验点上保持硬约束。
 
 **例外说明（v1.1 明确）**：
 - **师承遗物同样受锁死约束**：虽自带传承 buff（内力上限 +5%），但徒弟境界未达对应阶时不可装备，只能存放在背包等到达阶时才可装备。规则统一，无网开一面。
