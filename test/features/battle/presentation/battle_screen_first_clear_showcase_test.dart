@@ -148,9 +148,7 @@ void main() {
     // 敌方首个角色起手蓄力(chargingSkill null→非null 边沿)。
     final s = notifier.state;
     final charged = s.rightTeam.first.copyWith(chargingSkill: _powerSkill);
-    notifier.emit(
-      s.copyWith(rightTeam: [charged, ...s.rightTeam.skip(1)]),
-    );
+    notifier.emit(s.copyWith(rightTeam: [charged, ...s.rightTeam.skip(1)]));
     await tester.pump();
     expect(find.text(UiStrings.firstClearChargeCue), findsWidgets);
   });
@@ -170,7 +168,9 @@ void main() {
     );
     notifier.emit(s.copyWith(actionLog: [...s.actionLog, action]));
     await tester.pump();
-    final texts = tester.widgetList<Text>(find.text(UiStrings.interruptCaption));
+    final texts = tester.widgetList<Text>(
+      find.text(UiStrings.interruptCaption),
+    );
     expect(texts, isNotEmpty);
     for (final t in texts) {
       expect(
@@ -196,7 +196,9 @@ void main() {
     );
     notifier.emit(s.copyWith(actionLog: [...s.actionLog, action]));
     await tester.pump();
-    final texts = tester.widgetList<Text>(find.text(UiStrings.interruptCaption));
+    final texts = tester.widgetList<Text>(
+      find.text(UiStrings.interruptCaption),
+    );
     expect(texts, isNotEmpty);
     for (final t in texts) {
       expect(t.style?.fontSize, 56, reason: '非首通破招题字保持基准字号');

@@ -92,6 +92,10 @@ enum VisualRoute {
     'battle_interrupt_caption',
     '战斗屏·破招「破！」题字静态验收(破招方暖金 + 敌方绛红 两态)',
   ),
+  battleFirstClearShowcase(
+    'battle_first_clear_showcase',
+    '战斗屏·首通展示帧题字静态验收(开局「初战」+ 敌方「蓄力可破」+ 破招 flourish 峰值字号三态,§十三 #2 T1)',
+  ),
   battleDefeat('battle_defeat', '战斗屏·败北页验收(敗 题字 + 败北 + 破招提示 + 战报,战场背景上结算)'),
   defeatInnerDemonResidue(
     'defeat_inner_demon_residue',

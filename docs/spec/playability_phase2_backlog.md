@@ -59,7 +59,7 @@
 
 - [x] **jingle 扩槽**:~~victory/rareDrop~~(2026-06-10 迭代1)+ ~~defeat/realmAdvance~~(2026-06-11 `3fb2ebc9`:defeat 接「敗」overlay / realmAdvance 接跨 tier 大境界突破〔主线+塔 dialog+闭关收功三处〕,同 dialog 优先于 reward 不叠播;素材 V1 推荐 3s 剪辑版与 victory 同产线)。四槽全收口,听感待用户终验。
 - [x] **uiPaperOpen 素材**(2026-06-12 完成):Suno 已产出,用户听选 `uiPaperOpen_v1_01`(宣纸轻展 0.55s)落位 `assets/audio/sfx/`,接线 + 守卫测齐(`audio_assets_test.dart`)。
-- [ ] **转用素材听感复核**:battleUlt(realmAdvance_v2_01 裁 2.4s)/ battleChargeStart(defeat_v2_02 负向预警)是转用,真玩听感不合再重打专属 prompt。
+- [ ] **转用素材听感复核**:battleUlt(realmAdvance_v2_01 裁 2.4s)/ battleChargeStart(defeat_v2_02 负向预警)是转用,真玩听感不合再重打专属 prompt。**2026-07-14 并入 §十三 #2 T3**:专属 prompt 已重发用户(源 `docs/_archive/suno/suno_dedicated_battle_sfx_prompts_2026-06-29.md` 每槽 3 条),等生成+听选后按 manifest 流程落位并翻 `finalAsset`。
 - [x] **扩展 BGM 8 轨**(波C 2026-06-12 `461c1e9a`):mainline/tower/boss/innerDemon/lightFoot/massBattle/lineage/baike 全接线(`BgmTrack` enum + `bgmTrackForStage` 路由 + 各 screen hook);A/B 验收 8 轨全采用 candidate_01。
 
 ## 八 · 阶段性审查发现技术债(2026-06-22)
@@ -69,7 +69,7 @@
 
 ## 九 · 战斗体验打磨(第五阶段 · 2026-06-23)
 
-- [ ] **战斗节奏真机校值**:A+C 已实装(spec/plan `2026-06-23-battle-pacing-readability-*` · 合 main)。初值 `action_interval_ms=1000`/`key_moment_hold_ms=400`/`damage_popup_ms=700` 待真机 `flutter run -d macos` 看常速战斗手感调定(纯 numbers.yaml 配置·连带同步 `AnimationNumbers.defaults`)。用户拍板先 merge 初值,真机后调。
+- [ ] **战斗节奏真机校值**:A+C 已实装(spec/plan `2026-06-23-battle-pacing-readability-*` · 合 main)。初值 `action_interval_ms=1000`/`key_moment_hold_ms=400`/`damage_popup_ms=1000`(旧记 700 已 drift,以 numbers.yaml 现值为准)待真机 `flutter run -d macos` 看常速战斗手感调定(纯 numbers.yaml 配置·连带同步 `AnimationNumbers.defaults`)。**2026-07-14 并入 §十三 #2 T4**:三初值建议维持;新增首通展示帧三停顿(900/800/700,animation.first_clear_*)同场一并手感;等用户真机 session 终确认后勾账。
 
 ## 十 · 桃花岛(养成经营 · 一期 2026-06-25 合入 main)
 
@@ -195,7 +195,7 @@
 > 来源:2026-07-14 Claude 全量审查(报告 `~/Desktop/挂机武侠全量审查报告_2026-07-14.md`)+ 专业游戏视角缺口评估。用户拍板顺序:先修审查问题(已单独批次),再按下表推进,#1 为下一个玩法任务。
 
 - [x] **#1 心法获取玩法(设计拍板→实装 · 2026-07-14 合入)**:核心成长轴断链修复——`TechniqueLearningService.learn` 全仓 0 业务 caller(`game_event_service.dart` 注释自认),玩家无主动学新心法通道,新心法只随收徒进队,祖师心法阶终身不变;闭关藏经阁「心法领悟 +50%」指向的循环不存在。`Character.insightPoints` 字段与 learn 服务现成。**先写 spec + 用户拍板获取途径,再实装**;守 §5.3 三系锁死 / §5.1 反主流 / §5.7 隐藏门控。
-- [ ] **#2 战斗爽感二期(表现层)**:首通脚本化展示帧(开局亮相/首技慢镜/Boss 蓄力提示/破招题字,07-09 自审已给方向)+ 技能伤害占比调参(现 38.4%,普攻 61.6% 主导观感)+ battleUlt/battleChargeStart 两个借用 SFX 专属化(整合 §七 听感复核、§九 节奏真机校值两个既有开放项)。
+- [ ] **#2 战斗爽感二期(表现层)**:首通脚本化展示帧(开局亮相/首技慢镜/Boss 蓄力提示/破招题字,07-09 自审已给方向)+ 技能伤害占比调参(现 38.4%,普攻 61.6% 主导观感)+ battleUlt/battleChargeStart 两个借用 SFX 专属化(整合 §七 听感复核、§九 节奏真机校值两个既有开放项)。**2026-07-14 实装批(`feat/combat-feel-phase2`)**:T1 展示帧四拍(纯表现层,整场各一次)+ T2 占比校准 39.9%→47.1%([balance] 首通血线 3.0/1.5,探针证据见 plan)+ 展示帧题字验收路由已合入分支;**余两用户环节**:T3 SFX 素材生成+听选落位、T4 真机手感终确认(含 §九 三值),完成后本条勾账。
 - [ ] **#3 Windows 端首次实机验收**:workflow 已修(pin windows-2022,2026-07-14 批),取产物后 D 段人工过一遍——安装/启动/存档/音频全轨/手感帧率(144Hz 光栅类问题 Windows 复现与否);MSIX/签名/升级安装仍属后续外部项。
 - [ ] **#4 出战编成/换人 UI(先拍板要不要)**:即 §四 P2② 待拍板项升格候选——收徒扩池已实装但玩家不能主动排 3v3 阵容;与 #1 组合构成终局构筑深度(编成×心法×流派克制)。
 - [ ] **#5 小规模真人试玩(3-5 人)首通分布采集**:平衡决策的数据前提——07-13 playtest 自声明 fixed seed/profile ≠ 玩家分布;并入该批复核 playtest P2 候选(readable-first-clear 三档 100% 胜 / `stage_02_05` 相邻关断崖)。需先拍板采集口径(存档回收 or 战报导出 or 旁观记录)。

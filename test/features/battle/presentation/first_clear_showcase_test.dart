@@ -6,35 +6,32 @@ import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/presentation/first_clear_showcase.dart';
 
 /// 最小 BattleCharacter（沿 charge_transition_sfx_test 体例，补 teamSide 参数）。
-BattleCharacter _c({
-  int id = 1,
-  int teamSide = 0,
-  SkillDef? chargingSkill,
-}) => BattleCharacter(
-  characterId: id,
-  name: 'c$id',
-  realmTier: RealmTier.sanLiu,
-  realmLayer: RealmLayer.yuanShu,
-  school: TechniqueSchool.gangMeng,
-  maxHp: 1000,
-  currentHp: 1000,
-  maxInternalForce: 500,
-  currentInternalForce: 500,
-  speed: 100,
-  criticalRate: 0.0,
-  evasionRate: 0.0,
-  defenseRate: 0.1,
-  totalEquipmentAttack: 0,
-  mainCultivationLayer: CultivationLayer.daCheng,
-  availableSkills: const [],
-  skillCooldowns: const {},
-  activeBuffs: const [],
-  actionPoint: 0,
-  isAlive: true,
-  teamSide: teamSide,
-  slotIndex: 0,
-  chargingSkill: chargingSkill,
-);
+BattleCharacter _c({int id = 1, int teamSide = 0, SkillDef? chargingSkill}) =>
+    BattleCharacter(
+      characterId: id,
+      name: 'c$id',
+      realmTier: RealmTier.sanLiu,
+      realmLayer: RealmLayer.yuanShu,
+      school: TechniqueSchool.gangMeng,
+      maxHp: 1000,
+      currentHp: 1000,
+      maxInternalForce: 500,
+      currentInternalForce: 500,
+      speed: 100,
+      criticalRate: 0.0,
+      evasionRate: 0.0,
+      defenseRate: 0.1,
+      totalEquipmentAttack: 0,
+      mainCultivationLayer: CultivationLayer.daCheng,
+      availableSkills: const [],
+      skillCooldowns: const {},
+      activeBuffs: const [],
+      actionPoint: 0,
+      isAlive: true,
+      teamSide: teamSide,
+      slotIndex: 0,
+      chargingSkill: chargingSkill,
+    );
 
 const _powerSkill = SkillDef(
   id: 'power_1',
@@ -121,10 +118,7 @@ void main() {
 
     test('普攻不触发 firstSkill', () {
       final d = FirstClearShowcaseDirector();
-      expect(
-        d.onAction(_act(skill: _normalSkill, result: _hit), _s()),
-        isNull,
-      );
+      expect(d.onAction(_act(skill: _normalSkill, result: _hit), _s()), isNull);
     });
 
     test('敌方技能不触发', () {

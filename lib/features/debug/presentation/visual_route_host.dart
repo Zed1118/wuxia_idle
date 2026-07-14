@@ -54,6 +54,7 @@ import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../../resource_overview/presentation/resource_overview_screen.dart';
 import '../application/phase2_seed_service.dart';
 import '../../battle/presentation/ultimate_caption_overlay.dart';
+import '../../../data/numbers_config.dart' show AnimationNumbers;
 import '../../battle/presentation/battle_scene_background.dart';
 import '../../battle/presentation/victory_overlay.dart';
 import '../../battle/domain/battle_diagnosis.dart';
@@ -431,6 +432,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const InventoryScreen();
     case VisualRoute.battleInterruptCaption:
       return const _InterruptCaptionPreview();
+    case VisualRoute.battleFirstClearShowcase:
+      return const _FirstClearShowcasePreview();
     case VisualRoute.battleDefeat:
       return const _DefeatCeremonyPreview();
     case VisualRoute.defeatInnerDemonResidue:
@@ -1495,6 +1498,46 @@ class _InterruptCaptionPreview extends StatelessWidget {
             child: UltimateCaptionContent(
               name: UiStrings.interruptCaption,
               isEnemy: true,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 首通展示帧题字静态验收(玩法评估 §十三 #2 T1):开局亮相「初战」/
+/// 敌方蓄力教学「蓄力可破」/ 破招 flourish(峰值字号+辉光,对照 interrupt
+/// 路由的基准态)。纯静态截图;动态节拍(停顿/特写/时序)由真机首通目检。
+class _FirstClearShowcasePreview extends StatelessWidget {
+  const _FirstClearShowcasePreview();
+
+  @override
+  Widget build(BuildContext context) {
+    final hitTier = AnimationNumbers.defaults.hitTier;
+    return Scaffold(
+      backgroundColor: const Color(0xFF14181D),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          const Expanded(
+            child: UltimateCaptionContent(
+              name: UiStrings.firstClearOpening,
+              isEnemy: false,
+            ),
+          ),
+          const Expanded(
+            child: UltimateCaptionContent(
+              name: UiStrings.firstClearChargeCue,
+              isEnemy: true,
+            ),
+          ),
+          Expanded(
+            child: UltimateCaptionContent(
+              name: UiStrings.interruptCaption,
+              isEnemy: false,
+              fontSize: hitTier.captionPeakSize.toDouble(),
+              glowBlur: hitTier.captionGlowBlur,
             ),
           ),
         ],
