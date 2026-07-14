@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../features/cultivation/domain/progression_release_cap.dart';
 import '../features/equipment/domain/cycle_drop_bonus.dart';
 import '../features/equipment/domain/equipment_disposal.dart';
 import '../features/equipment/domain/rare_bonus_drop.dart';
@@ -185,6 +186,10 @@ class NumbersConfig {
   /// requiredRealmLayer 均空 → isLayerLocked 始终 false，不破现有升层行为）。
   final InnerDemonDef innerDemon;
 
+  /// Current release progression boundary (`progression.release_cap`).
+  /// Missing fixture data keeps all configured realm layers available.
+  final ProgressionReleaseCap progressionReleaseCap;
+
   /// 轻功对决配置(1.0 P3.1 §12.3,GDD v1.11)。
   ///
   /// 5 关 stage_light_foot_01..05 跨 yiLiu/jueDing 2 Tier × 3 terrain
@@ -293,6 +298,7 @@ class NumbersConfig {
     required this.rareBonusDrop,
     required this.cycleDropBonus,
     required this.innerDemon,
+    required this.progressionReleaseCap,
     required this.lightFoot,
     required this.massBattle,
     required this.jianghu,
@@ -456,6 +462,9 @@ class NumbersConfig {
       ),
       innerDemon: InnerDemonDef.fromYaml(
         y['inner_demon'] as Map<String, dynamic>?,
+      ),
+      progressionReleaseCap: ProgressionReleaseCap.fromYaml(
+        (y['progression'] as Map?)?.cast<String, dynamic>(),
       ),
       lightFoot: LightFootDef.fromYaml(
         y['light_foot'] as Map<String, dynamic>?,

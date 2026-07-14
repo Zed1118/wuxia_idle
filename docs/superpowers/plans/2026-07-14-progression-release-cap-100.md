@@ -39,10 +39,10 @@
 
 ## 当前恢复点
 
-- **状态:** 设计与实施计划已完成，生产代码未开始，分支仍为 WIP。
-- **最后完成:** 已建 `codex/progression-cap-100` 独立 worktree；已提交用户确认的设计文档 `d1fbd6a9`；已完成经验预算模拟与 Claude 冲突面诊断。
-- **下一步:** 使用 `superpowers:executing-plans` 从 Task 1 的 RED 测试开始。
-- **已跑验证:** `flutter pub get`；`dart run build_runner build --delete-conflicting-outputs`（116 outputs）；`flutter analyze --no-pub`（No issues found）；`git diff --check`。
+- **状态:** Task 1 已完成，发布上限配置与统一门禁已 GREEN，分支仍为 WIP。
+- **最后完成:** 新增 `ProgressionReleaseCap` 和 `ProgressionGateService`；生产 `numbers.yaml` 配置绝对境界层 10；fixture 缺配置时保持 49 层全开。
+- **下一步:** 执行 Task 2，先为跨 tier 心魔锁和 7 个新节点建立 RED 测试。
+- **已跑验证:** 基线 `flutter analyze --no-pub` No issues found；Task 1 定向 `flutter test --no-pub test/features/cultivation/application/progression_gate_service_test.dart test/data/numbers_config_progression_release_cap_test.dart` 6 tests passed；`git diff --check` 通过。
 - **阻塞项:** 无。Claude `feat/combat-feel-phase2` 仍为 WIP，可并行；已知重叠仅为 `data/numbers.yaml` 的不同配置段，交付前再对比。
 
 ## 文件地图
@@ -72,7 +72,7 @@
 - Modify: `lib/data/numbers_config.dart`
 - Modify: `data/numbers.yaml`
 
-- [ ] **Step 1: 为解析、边界和旧档行为写 RED 测试**
+- [x] **Step 1: 为解析、边界和旧档行为写 RED 测试**
 
   覆盖以下合同：
 
@@ -95,7 +95,7 @@
   expect(gateFor(nextAbsolute: 12), isTrue);
   ```
 
-- [ ] **Step 2: 运行新测试并确认 RED**
+- [x] **Step 2: 运行新测试并确认 RED**
 
   Run:
 
@@ -105,7 +105,7 @@
 
   Expected: FAIL，因为新类和 `NumbersConfig.progressionReleaseCap` 尚不存在。
 
-- [ ] **Step 3: 实现配置值对象与解析校验**
+- [x] **Step 3: 实现配置值对象与解析校验**
 
   `ProgressionReleaseCap.fromYaml` 仅接受 1～49；无配置时默认 49，保证单元测试/局部 fixture 不被意外封顶。生产 YAML 明确配置：
 
@@ -117,11 +117,11 @@
 
   把解析结果注入 `NumbersConfig`，不在 Dart 业务代码写死 10 或 100。
 
-- [ ] **Step 4: 实现统一门禁**
+- [x] **Step 4: 实现统一门禁**
 
   `ProgressionGateService.isLayerLocked` 先查下一境界层的 `absoluteLevel` 是否超过发布上限，再委托 `InnerDemonService.isLayerLocked`。它只回答“能否进入下一层”，不修改角色、不截断经验。
 
-- [ ] **Step 5: 跑 GREEN、格式化并提交**
+- [x] **Step 5: 跑 GREEN、格式化并提交**
 
   ```bash
   dart format lib/data/numbers_config.dart lib/features/cultivation/domain/progression_release_cap.dart lib/features/cultivation/application/progression_gate_service.dart test/features/cultivation/application/progression_gate_service_test.dart test/data/numbers_config_progression_release_cap_test.dart
