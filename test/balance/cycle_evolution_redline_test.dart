@@ -575,7 +575,7 @@ void main() {
       );
     });
 
-    test('5.3 主线 stage_05_05 Boss（baseHp=36600）cycle 3 scale 精确验算', () {
+    test('5.3 主线 stage_05_05 Boss 按当前 baseHp 精确缩放', () {
       final stage = GameRepository.instance.getStage('stage_05_05');
       final team = StageBattleSetup.buildEnemyTeam(
         stage.enemyTeam,
@@ -586,8 +586,10 @@ void main() {
       final bossHpMax =
           GameRepository.instance.numbers.combat.redLines.bossHpMax;
       final scale3 = 1.0 + ce.scalePerCycle * (3 - 1);
-      // 西凉霸主三弟子 baseHp=24000（2026-06-29 solo 36600→24000）→ (24000 × 1.20).toInt() = 28,800
-      const baseHp = 24000;
+      final bossDef = stage.enemyTeam.firstWhere(
+        (enemy) => enemy.name == '西凉霸主三弟子',
+      );
+      final baseHp = bossDef.baseHp;
       final expectedHp = (baseHp * scale3).toInt();
       final boss = team.firstWhere(
         (bc) => bc.name == '西凉霸主三弟子',
@@ -620,7 +622,7 @@ void main() {
   //   (b) 记录各最坏情形实测值，供人类数值层审查决策（是否需要限帽 enemy attack）。
 
   group('§6 敌人攻击 scale 精确验算与分布记录', () {
-    test('6.1 stage_05_05 cycle 3 attack scale 精确（baseAttack 1995 × 1.20）', () {
+    test('6.1 stage_05_05 cycle 3 attack 按当前 baseAttack 精确缩放', () {
       final stage05 = GameRepository.instance.getStage('stage_05_05');
       final team05 = StageBattleSetup.buildEnemyTeam(
         stage05.enemyTeam,
@@ -628,8 +630,9 @@ void main() {
         isTower: false,
       );
       final ce = GameRepository.instance.numbers.cycleEvolution;
-      const baseAtk05Boss =
-          1500; // 西凉霸主三弟子 baseAttack（yaml 锚 · 2026-06-29 solo 1995→1500）
+      final baseAtk05Boss = stage05.enemyTeam
+          .firstWhere((enemy) => enemy.name == '西凉霸主三弟子')
+          .baseAttack;
       final expectedAtk = (baseAtk05Boss * (1.0 + ce.scalePerCycle * 2))
           .toInt();
       final boss05 = team05.firstWhere(
@@ -641,7 +644,7 @@ void main() {
         expectedAtk,
         reason:
             'stage_05_05 cycle 3 attack scale 精确验算 '
-            '1995 × ${1.0 + ce.scalePerCycle * 2} = $expectedAtk',
+            '$baseAtk05Boss × ${1.0 + ce.scalePerCycle * 2} = $expectedAtk',
       );
     });
 

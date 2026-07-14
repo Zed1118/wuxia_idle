@@ -6,11 +6,11 @@ import 'package:wuxia_idle/data/game_repository.dart';
 
 /// 材料经济 balance T5:秘籍(item_scroll_*)掉落校准红线测。
 ///
-/// 方案(T5 首通必得):
-///   - 主线 3 本(stage_01_05/02_05/03_05):dropChance=1.0 + isFirstClear gate 于
+/// 当前发布方案(T5 首通必得):
+///   - 主线前三章各 1 本当前阶秘籍:dropChance=1.0 + isFirstClear gate 于
 ///     stage_entry_flow.dart(非首通跳过写入,避免重复刷)
-///   - 爬塔 6 本(5/10/15/20/25/30 层):dropChance=1.0 + tower_entry_flow
-///     isFirstClear 门控(已有,重打不 roll)
+///   - 爬塔 2 本(5/10 层):dropChance=1.0 + tower_entry_flow isFirstClear 门控。
+/// 高阶秘籍定义保留给未来副本，不从当前主线/塔提前投放。
 void main() {
   Future<String> fileLoader(String path) async {
     final f = File(path);
@@ -21,13 +21,13 @@ void main() {
   tearDown(GameRepository.resetForTest);
 
   group('秘籍掉落校准', () {
-    test('主线 3 本秘籍挂在对应章末 Boss 关', () async {
+    test('主线前三章只投放当前阶秘籍', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
       final expected = {
-        'stage_01_05': 'item_scroll_guan_shan_ba_ji',
-        'stage_02_05': 'item_scroll_ma_ta_fei_yan',
-        'stage_03_05': 'item_scroll_ye_yu_shi_nian_deng',
+        'stage_01_05': 'item_scroll_kai_bei_shou',
+        'stage_02_05': 'item_scroll_yan_zi_san_chao',
+        'stage_03_05': 'item_scroll_kai_bei_shou',
       };
 
       for (final entry in expected.entries) {
@@ -44,13 +44,13 @@ void main() {
       }
     });
 
-    test('主线 3 本秘籍 dropChance=1.0(首通必得)', () async {
+    test('主线当前阶秘籍 dropChance=1.0(首通必得)', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
       const mainlineScrolls = {
-        'stage_01_05': 'item_scroll_guan_shan_ba_ji',
-        'stage_02_05': 'item_scroll_ma_ta_fei_yan',
-        'stage_03_05': 'item_scroll_ye_yu_shi_nian_deng',
+        'stage_01_05': 'item_scroll_kai_bei_shou',
+        'stage_02_05': 'item_scroll_yan_zi_san_chao',
+        'stage_03_05': 'item_scroll_kai_bei_shou',
       };
 
       for (final entry in mainlineScrolls.entries) {
@@ -75,16 +75,12 @@ void main() {
       }
     });
 
-    test('爬塔 6 本秘籍挂在对应层', () async {
+    test('爬塔只投放当前阶 2 本秘籍', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
-      const towerScrolls = {
+      const towerScrolls = <int, String>{
         5: 'item_scroll_kai_bei_shou',
         10: 'item_scroll_yan_zi_san_chao',
-        15: 'item_scroll_zhu_ying_yao_hong',
-        20: 'item_scroll_jin_gang_fu_mo',
-        25: 'item_scroll_jing_hong_zhao_ying',
-        30: 'item_scroll_yue_luo_wu_sheng',
       };
 
       for (final entry in towerScrolls.entries) {
@@ -101,16 +97,12 @@ void main() {
       }
     });
 
-    test('爬塔 6 本秘籍 dropChance=1.0(首通必得)', () async {
+    test('爬塔当前阶 2 本秘籍 dropChance=1.0(首通必得)', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
-      const towerScrolls = {
+      const towerScrolls = <int, String>{
         5: 'item_scroll_kai_bei_shou',
         10: 'item_scroll_yan_zi_san_chao',
-        15: 'item_scroll_zhu_ying_yao_hong',
-        20: 'item_scroll_jin_gang_fu_mo',
-        25: 'item_scroll_jing_hong_zhao_ying',
-        30: 'item_scroll_yue_luo_wu_sheng',
       };
 
       for (final entry in towerScrolls.entries) {

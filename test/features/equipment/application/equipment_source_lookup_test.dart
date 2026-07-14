@@ -35,7 +35,7 @@ void main() {
   test('爬塔 dropTable 反查装备来源', () {
     final sources = EquipmentSourceLookup(
       GameRepository.instance,
-    ).sourcesFor('weapon_baowu_xue_lian_bian');
+    ).sourcesFor('weapon_xiangyang_chang_jian');
 
     expect(
       sources,

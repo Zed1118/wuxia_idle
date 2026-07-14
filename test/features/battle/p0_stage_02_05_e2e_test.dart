@@ -52,7 +52,7 @@ void main() {
   test('测 1 托管 parity:生产 stage_02_05 + 真 build → 多 seed 多数 leftWin', () {
     final stage = repo.getStage('stage_02_05');
     expect(stage.isBossStage, isTrue, reason: 'stage_02_05 是章末 Boss 关');
-    expect(stage.requiredRealm, RealmTier.sanLiu);
+    expect(stage.requiredRealm, RealmTier.xueTu);
     // 青衫剑客招牌技改蓄力(stages.yaml chargeSkillId 接线)。
     final boss = StageBattleSetup.buildEnemyTeam(
       stage.enemyTeam,
@@ -63,7 +63,7 @@ void main() {
       reason: 'Boss 招牌大招「青锋绝」已接蓄力(P0.5 stage 接线)',
     );
 
-    // 玩家 on-level(sanLiu)真 build × ceiling 剖面(活跃玩家配装)→ 托管能解。
+    // 玩家 on-level 真 build × ceiling 剖面(活跃玩家配装)→ 托管能解。
     // 多 seed 跑,统计通关数:目的是证明托管能解,不是 100% 必胜。
     const seeds = [1, 7, 13, 42, 99, 123, 777, 2024];
     var wins = 0;
@@ -72,21 +72,21 @@ void main() {
       final players = [
         _buildRealPlayer(
           repo,
-          RealmTier.sanLiu,
+          stage.requiredRealm,
           slot: 0,
           name: '玩家',
           isFounder: true,
         ),
         _buildRealPlayer(
           repo,
-          RealmTier.sanLiu,
+          stage.requiredRealm,
           slot: 1,
           name: '徒弟一',
           isFounder: false,
         ),
         _buildRealPlayer(
           repo,
-          RealmTier.sanLiu,
+          stage.requiredRealm,
           slot: 2,
           name: '徒弟二',
           isFounder: false,

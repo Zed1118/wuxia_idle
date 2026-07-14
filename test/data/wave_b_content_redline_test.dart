@@ -10,7 +10,7 @@ import '../support/test_data.dart';
 ///
 /// 设计 spec:docs/superpowers/specs/2026-06-11-wave-b-24-skills-content-design.md
 /// - 真解=Boss 蓄力技双用 canon(「破他的招、学他的招」,沿青锋绝)。
-/// - 每章末 Boss 关恰 1 本真解;塔 Boss 层全配残页。
+/// - 当前发布上限内的真解/残页必须挂载;高阶招式定义保留给未来内容。
 /// - 流派配平:mainlineDrop / fragment / 破招 各流派等量(玩家侧 build 池 6/6/6)。
 void main() {
   setUpAll(loadTestGameRepository);
@@ -35,32 +35,53 @@ void main() {
       );
       expect(chapters.add(st.chapterIndex!), isTrue, reason: '每章至多 1 本真解');
     }
-    // 全部主线章(按 chapterIndex 集合)都有真解(内容覆盖完备)。
-    final allChapters = repo.stageDefs.values
-        .where((s) => s.stageType == StageType.mainline)
-        .map((s) => s.chapterIndex)
-        .whereType<int>()
+    final releaseTier = _releaseCapTier(repo);
+    final releaseManualSkills = repo.skillDefs.values
+        .where(
+          (s) =>
+              s.source == SkillSource.mainlineDrop &&
+              s.canEquipAtRealm(releaseTier),
+        )
+        .map((s) => s.id)
         .toSet();
-    expect(chapters, allChapters, reason: '每个主线章都应有章末真解(波B 内容覆盖)');
+    expect(
+      chapterEnds.map((s) => s.dropSkillManualId).toSet(),
+      releaseManualSkills,
+      reason: '当前发布上限内的真解应全部挂载，高阶真解留给未来内容',
+    );
   });
 
-  test('塔 Boss 层(bossKind 非空)残页全配;普通层不配', () {
+  test('塔残页只投放当前发布上限内招式;普通层不配', () {
     final repo = GameRepository.instance;
+    final releaseTier = _releaseCapTier(repo);
+    final mountedFragments = <String>{};
     for (final f in repo.towerFloors) {
-      if (f.bossKind != null) {
+      final fragmentId = f.dropSkillFragmentId;
+      if (fragmentId != null) {
+        expect(f.bossKind, isNotNull, reason: '残页只能挂在 Boss 层');
         expect(
-          f.dropSkillFragmentId,
-          isNotNull,
-          reason: 'floor ${f.floorIndex} 是 Boss 层应配残页(波B 内容覆盖)',
+          repo.skillDefs[fragmentId]!.canEquipAtRealm(releaseTier),
+          isTrue,
+          reason: 'floor ${f.floorIndex} 不应提前投放高阶残页',
         );
-      } else {
-        expect(
-          f.dropSkillFragmentId,
-          isNull,
-          reason: 'floor ${f.floorIndex} 普通层不应配残页',
-        );
+        expect(mountedFragments.add(fragmentId), isTrue, reason: '残页不可重复挂载');
+      } else if (f.bossKind == null) {
+        expect(fragmentId, isNull, reason: 'floor ${f.floorIndex} 普通层不应配残页');
       }
     }
+    final releaseFragments = repo.skillDefs.values
+        .where(
+          (s) =>
+              s.source == SkillSource.fragment &&
+              s.canEquipAtRealm(releaseTier),
+        )
+        .map((s) => s.id)
+        .toSet();
+    expect(
+      mountedFragments,
+      releaseFragments,
+      reason: '当前发布上限内的塔残页应全部挂载，高阶残页留给未来内容',
+    );
   });
 
   test('流派配平:mainlineDrop / fragment / 破招 各流派等量', () {
@@ -108,4 +129,10 @@ void main() {
       }
     }
   });
+}
+
+RealmTier _releaseCapTier(GameRepository repo) {
+  final absoluteLevel =
+      repo.numbers.progressionReleaseCap.maxAbsoluteRealmLevel;
+  return RealmTier.values[(absoluteLevel - 1) ~/ RealmLayer.values.length];
 }

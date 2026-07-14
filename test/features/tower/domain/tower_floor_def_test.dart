@@ -176,15 +176,11 @@ void main() {
       }
     });
 
-    test('境界曲线：每 5 层升一阶（学徒→三流→二流→一流→绝顶→宗师）', () async {
+    test('当前发布境界曲线：1-15 学徒，16-30 三流', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       const expectedByRange = <RealmTier, List<int>>{
-        RealmTier.xueTu: [1, 5],
-        RealmTier.sanLiu: [6, 10],
-        RealmTier.erLiu: [11, 15],
-        RealmTier.yiLiu: [16, 20],
-        RealmTier.jueDing: [21, 25],
-        RealmTier.zongShi: [26, 30],
+        RealmTier.xueTu: [1, 15],
+        RealmTier.sanLiu: [16, 30],
       };
       for (final entry in expectedByRange.entries) {
         for (var i = entry.value[0]; i <= entry.value[1]; i++) {
@@ -298,8 +294,8 @@ void main() {
       final overrides = _buildBrokenTowersYaml((floors) {
         // floor=6 是普通层，强行塞 bossKind: minor
         floors[5] = floors[5].replaceFirst(
-          'requiredRealm: sanLiu',
-          '''requiredRealm: sanLiu
+          'requiredRealm: xueTu',
+          '''requiredRealm: xueTu
     bossKind: minor''',
         );
       });

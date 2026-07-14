@@ -251,15 +251,15 @@ void main() {
       expect(await svc.isUnlocked('skill_xie_yu_chuan_lian'), isTrue);
     });
 
-    test('stage_04_05 重打:残页每胜概率累计,集齐阈值解锁关山拔戟', () async {
+    test('stage_04_05 当前版不提前投放高阶残页', () async {
       final isar = IsarSetup.instance;
       final repo = GameRepository.instance;
       final threshold = repo.numbers.skillUnlock.fragmentThreshold;
       final svc = SkillUnlockService(isar, fragmentThreshold: threshold);
       final stage = repo.stageDefs['stage_04_05']!;
-      expect(stage.dropSkillFragmentId, 'skill_guan_shan_ba_ji');
+      expect(stage.dropSkillFragmentId, isNull);
 
-      // 重打 threshold 次,掉率 1.0 全命中 → 集齐解锁。
+      // 即使重打并强制命中，未挂载的未来残页也不能产生解锁进度。
       for (var i = 0; i < threshold; i++) {
         await runStageSkillDropHookAfterVictory(
           stage: stage,
@@ -269,11 +269,7 @@ void main() {
           rng: Random(i),
         );
       }
-      expect(
-        await svc.isUnlocked('skill_guan_shan_ba_ji'),
-        isTrue,
-        reason: '集齐 $threshold 片应自动解锁',
-      );
+      expect(await svc.isUnlocked('skill_guan_shan_ba_ji'), isFalse);
     });
   });
 }

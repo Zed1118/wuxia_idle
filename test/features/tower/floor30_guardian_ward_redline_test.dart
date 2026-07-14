@@ -7,13 +7,13 @@ import 'package:wuxia_idle/data/game_repository.dart';
 /// Task 7 · floor30 护法结界红线守护测
 ///
 /// 覆盖(GDD §5.4 红线 + 三系锁死):
-///   1. Boss HP 红线:baseHp == 42000 且 <= bossHpMax(60000),护法结界不得
+///   1. Boss HP 红线:baseHp == 12600 且 <= bossHpMax(60000),护法结界不得
 ///      变相把 Boss 血量堆到红线之上。
 ///   2. 护法结界承伤倍率 ∈ (0, 1],不允许 >=1(等于没结界)或 <=0(免疫)。
 ///   3. Scope 收敛:guardianWard 仅 floor30 主 Boss 配置,遍历全部 30 层验证。
-///   4. 三系锁死:floor30 主 Boss + 两名护法均为 zongShi 境界,结界/HP 改动
+///   4. 三系锁死:floor30 主 Boss + 两名护法均为 sanLiu 境界,结界/HP 改动
 ///      不应连带偷改境界档位。
-///   5. 护法 HP 校准值钉死:9000 / 8500(Task 5 平衡校准结果),防止后续
+///   5. 护法 HP 校准值钉死:2700 / 2550(当前发布重校结果),防止后续
 ///      改动静默漂移。
 ///   6. 招式倍率红线:floor30 相关招式 powerMultiplier <= 8000 —— 全仓已有
 ///      `_enforceEncounterSkillRedLines`(在 loadAllDefs 内对全部 skillDefs
@@ -28,7 +28,7 @@ void main() {
 
   tearDown(GameRepository.resetForTest);
 
-  test('floor30 Boss HP 红线:baseHp==42000 且 <= bossHpMax(60000)', () async {
+  test('floor30 Boss HP 红线:baseHp==12600 且 <= bossHpMax(60000)', () async {
     final repo = await GameRepository.loadAllDefs(loader: fileLoader);
     final floor30 = repo.towerFloors.firstWhere((f) => f.floorIndex == 30);
     final boss = floor30.enemyTeam.firstWhere((e) => e.isBoss);
@@ -38,7 +38,7 @@ void main() {
       'enemy_tower_boss_30',
       reason: 'floor30 主 Boss id 应为 enemy_tower_boss_30',
     );
-    expect(boss.baseHp, 42000, reason: '护法结界校准不应连带改动 Boss 基础血量(应仍为 42000)');
+    expect(boss.baseHp, 12600, reason: 'Lv100 终关 Boss 基础血量漂移需人工复核');
     final bossHpMax = repo.numbers.combat.redLines.bossHpMax;
     expect(bossHpMax, 60000, reason: 'GDD §5.4 Boss HP 上限应为 60000,drift 需人工确认');
     expect(
@@ -107,7 +107,7 @@ void main() {
     );
   });
 
-  test('三系锁死:floor30 主 Boss + 两护法均为 zongShi 境界', () async {
+  test('三系锁死:floor30 主 Boss + 两护法均为 sanLiu 境界', () async {
     final repo = await GameRepository.loadAllDefs(loader: fileLoader);
     final floor30 = repo.towerFloors.firstWhere((f) => f.floorIndex == 30);
     final boss = floor30.enemyTeam.firstWhere((e) => e.isBoss);
@@ -120,22 +120,22 @@ void main() {
 
     expect(
       boss.realmTier,
-      RealmTier.zongShi,
+      RealmTier.sanLiu,
       reason: 'floor30 主 Boss 境界不应被护法结界/HP 校准连带偷改',
     );
     expect(
       guardianA.realmTier,
-      RealmTier.zongShi,
+      RealmTier.sanLiu,
       reason: '护法(左使)境界不应被提血校准连带偷改',
     );
     expect(
       guardianB.realmTier,
-      RealmTier.zongShi,
+      RealmTier.sanLiu,
       reason: '护法(右使)境界不应被提血校准连带偷改',
     );
   });
 
-  test('护法 HP 校准值钉死:左使 9000 / 右使 8500', () async {
+  test('护法 HP 校准值钉死:左使 2700 / 右使 2550', () async {
     final repo = await GameRepository.loadAllDefs(loader: fileLoader);
     final floor30 = repo.towerFloors.firstWhere((f) => f.floorIndex == 30);
     final boss = floor30.enemyTeam.firstWhere((e) => e.isBoss);
@@ -146,12 +146,11 @@ void main() {
       (e) => e.id == 'enemy_tower_30_cultist_b',
     );
 
-    expect(guardianA.baseHp, 9000, reason: 'Task 5 平衡校准值(左使),漂移需人工复核');
-    expect(guardianB.baseHp, 8500, reason: 'Task 5 平衡校准值(右使),漂移需人工复核');
-    // 双重保险:即使校准值未来微调,护法 HP 也应保持在原初值(4200/4000)
-    // 与 Boss HP 之间的合理区间内。
-    expect(guardianA.baseHp, greaterThan(4200));
-    expect(guardianB.baseHp, greaterThan(4000));
+    expect(guardianA.baseHp, 2700, reason: '当前发布平衡校准值(左使),漂移需人工复核');
+    expect(guardianB.baseHp, 2550, reason: '当前发布平衡校准值(右使),漂移需人工复核');
+    // 双重保险:护法保持正血量且显著低于主 Boss。
+    expect(guardianA.baseHp, greaterThan(0));
+    expect(guardianB.baseHp, greaterThan(0));
     expect(guardianA.baseHp, lessThan(boss.baseHp));
     expect(guardianB.baseHp, lessThan(boss.baseHp));
   });

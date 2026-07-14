@@ -161,10 +161,7 @@ void main() {
       ).buildTeams(stage);
       expect(right.length, 1);
       expect(right[0].name, '灰衣人');
-      expect(
-        right[0].maxHp,
-        9000,
-      ); // baseHp from yaml（2026-06-29 solo 11000→9000）
+      expect(right[0].maxHp, stage.enemyTeam.single.baseHp);
     },
   );
 

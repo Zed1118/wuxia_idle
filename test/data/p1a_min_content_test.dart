@@ -6,9 +6,9 @@ import '../support/test_data.dart';
 void main() {
   setUpAll(loadTestGameRepository);
 
-  test('3 主线章末 Boss 配 dropSkillManualId 且 id 在 skills.yaml', () {
+  test('当前发布阶 2 本主线真解挂载，高阶真解暂不投放', () {
     final repo = GameRepository.instance;
-    for (final sid in ['stage_01_05', 'stage_02_05', 'stage_03_05']) {
+    for (final sid in ['stage_01_05', 'stage_02_05']) {
       final m = repo.stageDefs[sid]!.dropSkillManualId;
       expect(m, isNotNull, reason: '$sid 应配真解');
       expect(
@@ -21,6 +21,7 @@ void main() {
       repo.stageDefs['stage_02_05']!.dropSkillManualId,
       'skill_qingshan_qingfeng',
     );
+    expect(repo.stageDefs['stage_03_05']!.dropSkillManualId, isNull);
   });
 
   test('真解/破势/青锋绝 配 proficiency.effects', () {

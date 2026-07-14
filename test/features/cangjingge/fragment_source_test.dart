@@ -7,7 +7,7 @@ import '../../support/test_data.dart';
 /// 残页来源派生测试（T7）。
 ///
 /// 用真实 GameRepository defs（不构造 StageDef fixture，避免必填字段繁琐），
-/// 断言塔层 / 主线章末重打残页能反查出来源，未知残页返 null。
+/// 断言当前塔层残页能反查出来源，未投放的未来残页与未知残页返 null。
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
@@ -27,16 +27,15 @@ void main() {
     );
   });
 
-  test('主线章末残页 skill_guan_shan_ba_ji → 主线·第N章重打', () {
+  test('未来主线残页 skill_guan_shan_ba_ji 当前未投放 → null', () {
     final repo = GameRepository.instance;
-    final chapter = repo.stageDefs['stage_04_05']!.chapterIndex!;
     expect(
       fragmentSourceLabel(
         'skill_guan_shan_ba_ji',
         floors: repo.towerFloors,
         stages: repo.stageDefs.values,
       ),
-      UiStrings.cangjingFragmentSourceMainline(chapter),
+      isNull,
     );
   });
 

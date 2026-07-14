@@ -314,9 +314,9 @@ void main() {
     );
 
     expect(find.text(UiStrings.stagePrepareLabel), findsWidgets);
-    expect(find.text(UiStrings.stagePrepareRecommended('二流')), findsWidgets);
-    expect(find.text(UiStrings.difficultyRisky), findsWidgets);
-    expect(find.text(UiStrings.stagePrepareLoadoutGap(1)), findsWidgets);
+    expect(find.text(UiStrings.stagePrepareRecommended('学徒')), findsWidgets);
+    expect(find.text(UiStrings.difficultyComfortable), findsWidgets);
+    expect(find.text(UiStrings.stagePrepareSteady), findsWidgets);
     expect(
       find.byIcon(Icons.info_outline),
       findsWidgets,

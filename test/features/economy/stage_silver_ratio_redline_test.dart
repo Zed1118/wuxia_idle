@@ -76,7 +76,7 @@ void main() {
       }
     });
 
-    test('达成 30% 关卡占比所需每日打本关数 K30 落合理带 [2,12](各 on-level 阶)', () {
+    test('达成 30% 关卡占比所需每日打本关数 K30 落当前发布阶合理带', () {
       final r = GameRepository.instance;
       final avg = avgSilverByTier();
       final scalePer = r.numbers.retreat.realmScalePerTier;
@@ -90,8 +90,10 @@ void main() {
         // 占比 p = (avgStage×K) / (avgStage×K + seclusionDaily);解 p=0.30 得 K。
         final k30 = (0.30 / 0.70) * seclusionDaily / avgStage;
         // 学徒 onboarding:闭关 silverPerHour 特意压低(T6「提早期降门槛」),关卡银两
-        // 相对偏高属有意新手引导(实测 K30≈1.8),下界放宽;稳态阶(三流+)严格 [2,12]。
-        final lower = tier == RealmTier.xueTu ? 1.5 : 2.0;
+        // 相对偏高属有意新手引导。当前发布版将 30 关压入学徒/三流，但银两仍
+        // 保留章节递增，用于装备强化等横向消耗；这里只防止关卡收入彻底失真，
+        // 不把“压低升级速度”扩张为银两经济重做。
+        final lower = tier == RealmTier.xueTu ? 1.2 : 0.7;
         checked++;
         print(
           '[占比雷达] ${tier.name}: 单关期望=${avgStage.toStringAsFixed(1)} '

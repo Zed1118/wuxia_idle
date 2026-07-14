@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 
@@ -106,15 +107,25 @@ void main() {
           fragmentMounts.add(f.dropSkillFragmentId!);
         }
       }
+      final releaseTier = _releaseCapTier(repo);
       final manualSkills = repo.skillDefs.values
-          .where((s) => s.source == SkillSource.mainlineDrop)
+          .where(
+            (s) =>
+                s.source == SkillSource.mainlineDrop &&
+                s.canEquipAtRealm(releaseTier),
+          )
           .map((s) => s.id)
           .toSet();
       final fragmentSkills = repo.skillDefs.values
-          .where((s) => s.source == SkillSource.fragment)
+          .where(
+            (s) =>
+                s.source == SkillSource.fragment &&
+                s.canEquipAtRealm(releaseTier),
+          )
           .map((s) => s.id)
           .toSet();
-      // 集合相等(无孤儿) + 列表长度 == 集合大小(无重复挂载)
+      // 当前发布范围内集合相等(无孤儿) + 列表长度 == 集合大小(无重复挂载)。
+      // 高阶 drop 定义保留给未来副本，不要求在当前内容提前投放。
       expect(
         manualMounts.toSet(),
         manualSkills,
@@ -223,4 +234,10 @@ void main() {
       );
     });
   });
+}
+
+RealmTier _releaseCapTier(GameRepository repo) {
+  final absoluteLevel =
+      repo.numbers.progressionReleaseCap.maxAbsoluteRealmLevel;
+  return RealmTier.values[(absoluteLevel - 1) ~/ RealmLayer.values.length];
 }

@@ -50,11 +50,11 @@ void main() {
     final result = await OfflinePassiveService.settle(
       saveDataId: 1,
       characterId: kCharId,
-      awayHours: 10, // 学徒 → moji 2 / exp 500
+      awayHours: 10, // 学徒 → moji 2 / exp 30
       now: DateTime(2026, 6, 15, 12),
     );
     expect(result.mojianshi, 2);
-    expect(result.experience, 500);
+    expect(result.experience, 30);
 
     final item = await IsarSetup.instance.inventoryItems.getByDefId(
       'item_mojianshi',
@@ -63,7 +63,7 @@ void main() {
 
     final save = (await IsarSetup.currentSaveData())!;
     expect(save.totalPassiveMojianshi, 2);
-    expect(save.totalPassiveExperience, 500);
+    expect(save.totalPassiveExperience, 30);
     expect(save.lastOnlineAt, DateTime(2026, 6, 15, 12)); // 重置基准
 
     final character = await IsarSetup.instance.characters.get(kCharId);
@@ -97,7 +97,7 @@ void main() {
     expect(item?.quantity, 4);
     final save = (await IsarSetup.currentSaveData())!;
     expect(save.totalPassiveMojianshi, 4);
-    expect(save.totalPassiveExperience, 1000);
+    expect(save.totalPassiveExperience, 60);
     expect(save.lastOnlineAt, DateTime(2026, 6, 15, 22));
   });
 
