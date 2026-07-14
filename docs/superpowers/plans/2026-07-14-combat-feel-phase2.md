@@ -43,13 +43,13 @@
 - [x] **T0 Phase 0 grep(~20min)**:六维 + 战斗 wiring 第七维。重点:`lib/features/battle/presentation/battle_playback_controller.dart` tick/advance 播放路径;首通 flag 注入链(`lib/features/battle/domain/auto_play_mode.dart:25` isFirstClear 既有);`battle_screen_config.dart` BattleScreenPlaybackConfig 扩展点;可复用 overlay 清单(hero_camera_overlay / ultimate_caption_overlay / impact_glyph_overlay / countdown_ring / screen_flash / victory_ceremony);`git worktree list` + branch 查在途为空。
 - [x] **T1 首通脚本化展示帧(纯表现层)**(commit `af66ea93`:director 12 测 + BattleScreen 集成 5 测 + 受影响范围 243 绿;视觉 smoke 与 T4 同批):四拍 = 开局亮相 / 首技慢镜 / Boss 蓄力提示强化 / 破招题字强化(后两拍基于既有 countdown_ring + battleInterrupt 题字做首通强化)。新建 `lib/features/battle/presentation/first_clear_showcase.dart`(编排配置+节拍状态机,复用既有 overlay),接线 battle_playback_controller;测试 `test/features/battle/presentation/first_clear_showcase_test.dart`(widget)+ 播放控制单测。验证:targeted 绿 + `tools/visual_capture` 双分辨率 + 真机手感。
 - [x] **T2 技能伤害占比调参(balance 轴)**(终值 readable_first_clear 3.0/1.5 → 47.1%,探针证据见上表,[balance] commit):Phase 0.5 三轮(最廉探针→诊断 print(git diff 撤净)→三值校准),基准工具 `test/tools/readable_first_clear_tempo_diagnostic_test.dart` + `test/tools/balance_simulator_test.dart`;确认真实杠杆(倍率 vs CD vs 产耗气)后改 `data/skills.yaml` / `data/numbers.yaml`;重跑 tempo 诊断出对比报告;红线守卫测绿(≤8000/软红线)。commit 前缀 `[balance]`。
-- [ ] **T3 SFX 专属化(收口 §七听感复核)**:Suno prompt 两条(battleUlt 800-1600ms 大招爆发 / battleChargeStart 500-1200ms 负向预警)→ 用户生成+听选 → 覆盖落位 `assets/audio/sfx/battleUlt.mp3`、`battleChargeStart.mp3` → `dedicated_audio_assets.dart` readiness 翻 `finalAsset` → 守卫测同步(`test/shared/audio/dedicated_audio_assets_test.dart` + `audio_assets_test.dart`)。
+- [ ] **T3 SFX 专属化(收口 §七听感复核)**(2026-07-14 用户拍板挂账:素材暂不生成,借用态维持,backlog §七 承载,不阻塞本批):Suno prompt 两条(battleUlt 800-1600ms 大招爆发 / battleChargeStart 500-1200ms 负向预警)→ 用户生成+听选 → 覆盖落位 `assets/audio/sfx/battleUlt.mp3`、`battleChargeStart.mp3` → `dedicated_audio_assets.dart` readiness 翻 `finalAsset` → 守卫测同步(`test/shared/audio/dedicated_audio_assets_test.dart` + `audio_assets_test.dart`)。
 - [ ] **T4 节奏真机校值(收口 §九)**:真机常速战斗看手感,调定 `data/numbers.yaml` 三值——`action_interval_ms=1000`(:1587)/ `key_moment_hold_ms=400`(:1604)/ `damage_popup_ms=1000`(:1584;backlog §九 旧口径 700 已 drift,以现值为准)——纯配置 + `lib/data/numbers_config.dart:1823` AnimationNumbers.defaults 同步。
 - [ ] **T5 门禁+收尾**:build_runner / analyze / format / targeted / 全量;PROGRESS 登记;backlog §十三 #2(+§七/§九 对应项)勾账;PR + §8.2 Gate 四证据。
 
 ## 当前恢复点
 
-- **状态**:T0/T1/T2 完成(分支 `feat/combat-feel-phase2` 基 `e727322d`);T3 prompts 已交付,等用户 Suno 生成+听选;T4 视觉 smoke 本会话做,手感终调等用户真机;T5 批末。
-- **最后完成**:T2 [balance] 校准(占比 47.1%)+ Phase 0.5 探针记录上表。
-- **已跑验证**:analyze 0;tempo 诊断(含 ratchet)绿;solo Ch1-6 + 首30min 回归绿;T1 相关 243 测绿。
-- **阻塞项**:T3 素材落位(用户环节);T4 手感终调(用户真机)。
+- **状态**:T0/T1/T2/T5 完成(draft PR #37,全量 3969/0);T3 素材 2026-07-14 用户拍板挂账(借用态维持,backlog §七 承载);T4 视觉 smoke PASS,手感终调等用户真机。
+- **最后完成**:T5 门禁+PR + T3 挂账登记。
+- **已跑验证**:analyze 0;format 0 changed;全量 3969 pass / 0 fail;tempo 诊断(含 ratchet)+ solo Ch1-6 + 首30min 绿;题字双分辨率截图 PASS。
+- **阻塞项**:仅 T4 手感终调(用户真机);T3 已挂账不阻塞。
