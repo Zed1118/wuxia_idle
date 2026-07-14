@@ -12,8 +12,8 @@ import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
+import '../../cultivation/application/progression_gate_service.dart';
 import '../../equipment/application/drop_service.dart';
-import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../../core/domain/technique.dart';
 import '../../cultivation/application/character_advancement_service.dart';
@@ -544,26 +544,26 @@ class SeclusionService {
         final totalExperience =
             outputs.experiencePoints + settlement.passive.experience;
         if (totalExperience > 0) {
-          // P2.2 §12.1 心魔关 unlock 拦截 hook(Batch 2.2.B):wuSheng 各 layer
-          // 升前查 inner_demon stage cleared 集,未通则 EXP 留账不消费(玩家
-          // 挂机攒着,过关后下次闭关一次性消费多 layer)。非 wuSheng tier
-          // (Demo + Ch4-6 路径)hook 短路 false,行为同 1.0 前。
+          // 统一升层门禁：发布上限或心魔未通时，EXP 留账不消费。
           final progress = await isar.mainlineProgress
               .filter()
               .saveDataIdEqualTo(session.saveDataId)
               .findFirst();
           final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
-          final innerDemonDef = GameRepository.instance.numbers.innerDemon;
+          final repository = GameRepository.instance;
           advancement = CharacterAdvancementService.applyExperience(
             ch,
             totalExperience,
-            realmLookup: GameRepository.instance.getRealm,
-            isLayerLocked: (tier, layer) => InnerDemonService.isLayerLocked(
-              nextTier: tier,
-              nextLayer: layer,
-              innerDemonDef: innerDemonDef,
-              clearedStageIds: clearedSet,
-            ),
+            realmLookup: repository.getRealm,
+            isLayerLocked: (tier, layer) =>
+                ProgressionGateService.isLayerLocked(
+                  nextTier: tier,
+                  nextLayer: layer,
+                  releaseCap: repository.numbers.progressionReleaseCap,
+                  realmLookup: repository.getRealm,
+                  innerDemonDef: repository.numbers.innerDemon,
+                  clearedStageIds: clearedSet,
+                ),
           );
         }
         ch.currentRetreatSessionId = null;

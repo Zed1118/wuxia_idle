@@ -11,6 +11,7 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
+import 'package:wuxia_idle/features/cultivation/application/progression_gate_service.dart';
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
@@ -793,6 +794,14 @@ void main() {
         expected,
         result.experiencePoints,
         realmLookup: GameRepository.instance.getRealm,
+        isLayerLocked: (tier, layer) => ProgressionGateService.isLayerLocked(
+          nextTier: tier,
+          nextLayer: layer,
+          releaseCap: GameRepository.instance.numbers.progressionReleaseCap,
+          realmLookup: GameRepository.instance.getRealm,
+          innerDemonDef: GameRepository.instance.numbers.innerDemon,
+          clearedStageIds: const {},
+        ),
       );
       final character = await IsarSetup.instance.characters.get(kCharId);
       expect(character!.realmTier, expected.realmTier);
@@ -1151,8 +1160,8 @@ void main() {
 
     // W15 #30 第 3 期 experiencePoints 消费层接入 ───────────────────────────
 
-    test('收功后 Character.experience 累加 experiencePoints + 升层', () async {
-      // 唯一真相源使用 yaml 真值：50 + 80 + 120 后升至精通。
+    test('收功后 Character.experience 累加，心魔节点保留溢出经验', () async {
+      // 50 + 80 后到达熟练；首个心魔阻止进入精通。
       final start = DateTime(2026, 5, 11, 10, 0);
       final session = await SeclusionService(isar: IsarSetup.instance)
           .startRetreat(
@@ -1177,17 +1186,17 @@ void main() {
       expect(result.experiencePoints, 400); // B2 finding 修正回 ×1.0(原 400)
       expect(result.advancement, isNotNull);
       expect(result.advancement!.didAdvance, isTrue);
-      // 400 EXP - 50 - 80 - 120 = 150，低于精通所需 170。
-      expect(result.advancement!.layersGained, 3);
+      // 400 EXP - 50 - 80 = 270，溢出经验保留在熟练层。
+      expect(result.advancement!.layersGained, 2);
       expect(result.advancement!.tierAfter, RealmTier.xueTu);
-      expect(result.advancement!.layerAfter, RealmLayer.jingTong);
+      expect(result.advancement!.layerAfter, RealmLayer.shuLian);
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
-      expect(ch?.realmLayer, RealmLayer.jingTong);
-      expect(ch?.experience, 150);
-      // jingTong yaml experience_to_next=170 / internalForceMax=800
-      expect(ch?.experienceToNextLayer, 170);
-      expect(ch?.internalForceMax, 800);
+      expect(ch?.realmLayer, RealmLayer.shuLian);
+      expect(ch?.experience, 270);
+      // shuLian yaml experience_to_next=120 / internalForceMax=700
+      expect(ch?.experienceToNextLayer, 120);
+      expect(ch?.internalForceMax, 700);
     });
 
     test('收功 EXP 累加但不足以升层 → advancement.didAdvance=false', () async {
@@ -1225,7 +1234,7 @@ void main() {
 
     // ── P1.y · step 6 hook ─────────────────────────────────────────
 
-    test('P1.y · founder 升层到 yiLiu → tutorialStep 推到 6', () async {
+    test('Lv100 发布上限阻止旧档继续升层，tutorialStep 不推进', () async {
       await IsarSetup.instance.writeTxn(() async {
         final ch = await IsarSetup.instance.characters.get(kCharId);
         ch!
@@ -1257,17 +1266,18 @@ void main() {
       );
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
-      expect(ch?.realmTier, RealmTier.yiLiu, reason: '应升到一流');
+      expect(ch?.realmTier, RealmTier.erLiu, reason: '高于发布上限的旧档保留当前境界');
+      expect(ch?.realmLayer, RealmLayer.dengFeng);
 
       final tutorialSvc = TutorialService(IsarSetup.instance);
       expect(
         await tutorialSvc.getCurrentStep(),
-        6,
-        reason: 'founder 达一流 → 推 step 6',
+        0,
+        reason: '未进入一流，不触发未来内容的 step 6',
       );
     });
 
-    test('P1.y · disciple 升层到 yiLiu → tutorialStep 不推进', () async {
+    test('Lv100 发布上限对 disciple 同样生效', () async {
       await IsarSetup.instance.writeTxn(() async {
         final ch = await IsarSetup.instance.characters.get(kCharId);
         ch!
@@ -1299,12 +1309,12 @@ void main() {
         now: start.add(const Duration(hours: 4)),
       );
 
+      final ch = await IsarSetup.instance.characters.get(kCharId);
+      expect(ch?.realmTier, RealmTier.erLiu);
+      expect(ch?.realmLayer, RealmLayer.dengFeng);
+
       final tutorialSvc = TutorialService(IsarSetup.instance);
-      expect(
-        await tutorialSvc.getCurrentStep(),
-        0,
-        reason: 'disciple 升层不触发 step 6(GDD §7.1 收徒是 founder 的事)',
-      );
+      expect(await tutorialSvc.getCurrentStep(), 0, reason: '未进入一流，不触发 step 6');
     });
   });
 

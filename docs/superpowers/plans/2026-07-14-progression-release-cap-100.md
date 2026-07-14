@@ -39,10 +39,10 @@
 
 ## 当前恢复点
 
-- **状态:** Task 2 已完成，七个心魔节点已重排且跨 tier 门禁/面板已 GREEN，分支仍为 WIP。
-- **最后完成:** 心魔锁改为境界绝对顺序比较；节点从 `stage_01_03` 起链，分布在学徒·熟练至三流·入门；学徒镜像增幅重校为 3%/4%/5%/5%/5%；角色面板不再写死武圣显隐。
-- **下一步:** 执行 Task 3，先为主线/塔、闭关、离线和经验丹的统一封顶接线建立 RED 合同。
-- **已跑验证:** Task 1 定向 6 tests passed；Task 2 心魔+数据+角色面板定向集 110 tests passed；心魔 7×50 种子双边红线通过；`git diff --check` 通过。
+- **状态:** Task 3 已完成，全部生产经验来源已共用发布上限+心魔的统一门禁，分支仍为 WIP。
+- **最后完成:** 战斗结算、闭关、离线挂机和经验丹入口均调用 `ProgressionGateService`；心魔或 Lv100 上限拦截时保留溢出 EXP；Lv101+ 旧档不回退且不再进层。
+- **下一步:** 执行 Task 4，先建立主线/全内容/闭关/离线四条经验预算 RED 合同，再重校 YAML 真相源。
+- **已跑验证:** Task 1 定向 6 tests passed；Task 2 心魔+数据+角色面板定向集 110 tests passed；Task 3 五类经验来源定向集 102 tests passed，真 Isar 离线结算+红线 5 tests passed；`git diff --check` 通过。
 - **阻塞项:** 无。Claude `feat/combat-feel-phase2` 仍为 WIP，可并行；已知重叠仅为 `data/numbers.yaml` 的不同配置段，交付前再对比。
 
 ## 文件地图
@@ -197,7 +197,7 @@
 - Modify: `test/features/seclusion/application/seclusion_service_test.dart`
 - Modify: `test/features/inventory/item_use_service_test.dart`
 
-- [ ] **Step 1: 为主线/重打/扫荡、塔、闭关、离线和经验丹写 RED 合同**
+- [x] **Step 1: 为主线/重打/扫荡、塔、闭关、离线和经验丹写 RED 合同**
 
   扩展 `experience_source_consistency_test.dart`，不再只找 `InnerDemonService.isLayerLocked`，而是要求生产入口统一调用 `ProgressionGateService.isLayerLocked`。行为测试使用低阈值 fixture，验证：
 
@@ -208,17 +208,17 @@
   expect(display.level, 100);
   ```
 
-- [ ] **Step 2: 跑定向测试并确认 RED**
+- [x] **Step 2: 跑定向测试并确认 RED**
 
   ```bash
   flutter test --no-pub test/features/cultivation/application/experience_source_consistency_test.dart test/features/cultivation/application/character_advancement_service_test.dart test/features/seclusion/application/offline_passive_service_test.dart test/features/seclusion/application/seclusion_service_test.dart test/features/inventory/item_use_service_test.dart
   ```
 
-- [ ] **Step 3: 替换五个生产接线点**
+- [x] **Step 3: 替换五个生产接线点**
 
   在各接线点从 `GameRepository.instance.numbers.progressionReleaseCap` 取配置，向统一门禁传入 `realmLookup`、`innerDemonDef` 与 `clearedStageIds`。`CharacterAdvancementService` 的经验累加循环不改，扫荡继续复用主线/塔的 settlement。
 
-- [ ] **Step 4: 跑 GREEN、检查生产中无旧门禁直接接线，然后提交**
+- [x] **Step 4: 跑 GREEN、检查生产中无旧门禁直接接线，然后提交**
 
   ```bash
   dart format lib/features/battle/application/combat_progression_settlement_service.dart lib/features/seclusion/application/offline_passive_service.dart lib/features/seclusion/application/seclusion_service.dart lib/features/inventory/presentation/inventory_screen.dart test/features/cultivation/application/experience_source_consistency_test.dart test/features/cultivation/application/character_advancement_service_test.dart test/features/seclusion/application/offline_passive_service_test.dart test/features/seclusion/application/seclusion_service_test.dart test/features/inventory/item_use_service_test.dart

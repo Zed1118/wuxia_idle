@@ -20,7 +20,7 @@ import '../../../core/application/inventory_providers.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
 import '../../equipment/domain/equipment_disposal.dart';
 import '../../equipment/domain/equipment_slot_occupancy.dart';
-import '../../inner_demon/application/inner_demon_service.dart';
+import '../../cultivation/application/progression_gate_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../application/inventory_organization.dart';
 import '../application/item_use_invalidation.dart';
@@ -1946,22 +1946,24 @@ class _MaterialGridTile extends ConsumerWidget {
     if (!context.mounted) return;
 
     final isar = IsarSetup.instance;
-    // 心魔余毒锁层 hook：照搬 stage_entry_flow 体例（升层时拦截）。
+    // 统一升层门禁：发布上限与心魔均在入账时检查。
     final progress = await isar.mainlineProgress
         .filter()
         .saveDataIdEqualTo(IsarSetup.currentSlotId)
         .findFirst();
     final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
-    final innerDemonDef = GameRepository.instance.numbers.innerDemon;
+    final repository = GameRepository.instance;
 
     final result = await ItemUseService.use(
       isar,
       def: itemDef,
-      realmLookup: GameRepository.instance.getRealm,
-      isLayerLocked: (tier, layer) => InnerDemonService.isLayerLocked(
+      realmLookup: repository.getRealm,
+      isLayerLocked: (tier, layer) => ProgressionGateService.isLayerLocked(
         nextTier: tier,
         nextLayer: layer,
-        innerDemonDef: innerDemonDef,
+        releaseCap: repository.numbers.progressionReleaseCap,
+        realmLookup: repository.getRealm,
+        innerDemonDef: repository.numbers.innerDemon,
         clearedStageIds: clearedSet,
       ),
     );

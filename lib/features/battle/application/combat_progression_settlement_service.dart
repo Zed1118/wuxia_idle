@@ -4,10 +4,10 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../data/game_repository.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../cultivation/application/progression_gate_service.dart';
 import '../../cultivation/domain/advancement_entry.dart';
 import '../../equipment/domain/resonance_upgrade_notice.dart';
 import '../../event/application/game_event_service.dart';
-import '../../inner_demon/application/inner_demon_service.dart';
 import '../../tutorial/application/tutorial_service.dart';
 
 class BossVictoryEventContext {
@@ -36,6 +36,7 @@ class CombatProgressionSettlementService {
   }) {
     if (experienceReward <= 0) return const [];
     final innerDemonDef = repository.numbers.innerDemon;
+    final releaseCap = repository.numbers.progressionReleaseCap;
     return [
       for (final character in characters)
         AdvancementEntry(
@@ -45,12 +46,15 @@ class CombatProgressionSettlementService {
             character,
             experienceReward,
             realmLookup: repository.getRealm,
-            isLayerLocked: (tier, layer) => InnerDemonService.isLayerLocked(
-              nextTier: tier,
-              nextLayer: layer,
-              innerDemonDef: innerDemonDef,
-              clearedStageIds: clearedStageIds,
-            ),
+            isLayerLocked: (tier, layer) =>
+                ProgressionGateService.isLayerLocked(
+                  nextTier: tier,
+                  nextLayer: layer,
+                  releaseCap: releaseCap,
+                  realmLookup: repository.getRealm,
+                  innerDemonDef: innerDemonDef,
+                  clearedStageIds: clearedStageIds,
+                ),
           ),
         ),
     ];

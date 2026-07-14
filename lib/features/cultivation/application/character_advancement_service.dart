@@ -22,12 +22,11 @@ class CharacterAdvancementService {
   /// [realmLookup] 注入便于 test(生产路径走
   /// `GameRepository.instance.getRealm`)。
   ///
-  /// [isLayerLocked] 心魔关 unlock 拦截 hook(1.0 P2.2 §12.1,Batch 2.2.A)。
+  /// [isLayerLocked] 升层门禁 hook，生产路径同时检查发布上限与心魔。
   /// 注入函数接 `(nextTier, nextLayer)` 返 true → 升层被拦,EXP 留账不消费
   /// (GDD §5.1 反留存焦虑 + spec §三 — 玩家挂机攒 EXP,过心魔关后立刻全部
   /// 消费多 layer)。null = 不拦截(test fixture / Batch 2.2.A 前 caller 默认)。
-  /// 实装见 `lib/features/inner_demon/application/inner_demon_service.dart`
-  /// `InnerDemonService.isLayerLocked`。
+  /// 实装见 `ProgressionGateService.isLayerLocked`。
   ///
   /// **副作用(in-place 写 [ch])**:
   ///   - `ch.experience += delta`,while 内累减

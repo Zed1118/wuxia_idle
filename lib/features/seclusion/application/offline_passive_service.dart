@@ -9,7 +9,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../data/numbers_config.dart';
 import '../../cultivation/application/character_advancement_service.dart';
-import '../../inner_demon/application/inner_demon_service.dart';
+import '../../cultivation/application/progression_gate_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 
 /// 被动离线挂机一次结算的产量（纯数据）。
@@ -107,17 +107,20 @@ class OfflinePassiveService {
               .saveDataIdEqualTo(saveDataId)
               .findFirst();
           final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
-          final innerDemonDef = GameRepository.instance.numbers.innerDemon;
+          final repository = GameRepository.instance;
           CharacterAdvancementService.applyExperience(
             c,
             yield_.experience,
-            realmLookup: GameRepository.instance.getRealm,
-            isLayerLocked: (tier, layer) => InnerDemonService.isLayerLocked(
-              nextTier: tier,
-              nextLayer: layer,
-              innerDemonDef: innerDemonDef,
-              clearedStageIds: clearedSet,
-            ),
+            realmLookup: repository.getRealm,
+            isLayerLocked: (tier, layer) =>
+                ProgressionGateService.isLayerLocked(
+                  nextTier: tier,
+                  nextLayer: layer,
+                  releaseCap: repository.numbers.progressionReleaseCap,
+                  realmLookup: repository.getRealm,
+                  innerDemonDef: repository.numbers.innerDemon,
+                  clearedStageIds: clearedSet,
+                ),
           );
         }
         await isar.characters.put(c);

@@ -5,6 +5,40 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../support/dart_source_contract.dart';
 
 void main() {
+  test('all production experience gates include the release cap', () async {
+    const gatePaths = {
+      'combat':
+          'lib/features/battle/application/combat_progression_settlement_service.dart',
+      'retreat': 'lib/features/seclusion/application/seclusion_service.dart',
+      'offline':
+          'lib/features/seclusion/application/offline_passive_service.dart',
+      'item': 'lib/features/inventory/presentation/inventory_screen.dart',
+    };
+
+    for (final entry in gatePaths.entries) {
+      final contract = DartSourceContract.parse(
+        await File(entry.value).readAsString(),
+        path: entry.value,
+      );
+      expect(
+        contract.methodCalls(
+          targetSource: 'ProgressionGateService',
+          methodName: 'isLayerLocked',
+        ),
+        hasLength(1),
+        reason: '${entry.key} 必须经过统一发布上限门禁',
+      );
+      expect(
+        contract.methodCalls(
+          targetSource: 'InnerDemonService',
+          methodName: 'isLayerLocked',
+        ),
+        isEmpty,
+        reason: '${entry.key} 不得绕过发布上限直接接心魔锁',
+      );
+    }
+  });
+
   test(
     'five production wiring points cover seven experience scenarios',
     () async {
