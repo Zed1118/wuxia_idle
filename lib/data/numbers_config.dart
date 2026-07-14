@@ -1847,6 +1847,12 @@ class AnimationNumbers {
   /// 快进/拖招态不触发（沿 hit-stop 既有跳过约定）。
   final int keyMomentHoldMs;
 
+  /// 首通展示帧（玩法评估 §十三 #2）：整场各一次的脚本化停顿（纯表现层，
+  /// 只延迟播放节拍不碰结算）。开局亮相 / 首技慢镜 / 敌方首次蓄力教学。
+  final int firstClearOpeningHoldMs;
+  final int firstClearFirstSkillHoldMs;
+  final int firstClearBossChargeHoldMs;
+
   /// 一键扫荡：连播逐关切换时的关间过场停顿（ms）。战斗本体走
   /// [fastForwardIntervalMs] 快进，本字段只是两场之间喘口气的短停。
   final int sweepInterBattleGapMs;
@@ -1872,6 +1878,9 @@ class AnimationNumbers {
     required this.projectileMs,
     required this.hitFlashMs,
     this.keyMomentHoldMs = 400,
+    this.firstClearOpeningHoldMs = 900,
+    this.firstClearFirstSkillHoldMs = 800,
+    this.firstClearBossChargeHoldMs = 700,
     this.sweepInterBattleGapMs = 150,
     this.hitTier = HitTierConfig.defaults,
   });
@@ -1895,6 +1904,9 @@ class AnimationNumbers {
     projectileMs: 260,
     hitFlashMs: 150,
     keyMomentHoldMs: 400,
+    firstClearOpeningHoldMs: 900,
+    firstClearFirstSkillHoldMs: 800,
+    firstClearBossChargeHoldMs: 700,
     sweepInterBattleGapMs: 150,
     hitTier: HitTierConfig.defaults,
   );
@@ -1929,6 +1941,12 @@ class AnimationNumbers {
       projectileMs: (y['projectile_ms'] as num?)?.toInt() ?? 260,
       hitFlashMs: (y['hit_flash_ms'] as num?)?.toInt() ?? 150,
       keyMomentHoldMs: (y['key_moment_hold_ms'] as num?)?.toInt() ?? 400,
+      firstClearOpeningHoldMs:
+          (y['first_clear_opening_hold_ms'] as num?)?.toInt() ?? 900,
+      firstClearFirstSkillHoldMs:
+          (y['first_clear_first_skill_hold_ms'] as num?)?.toInt() ?? 800,
+      firstClearBossChargeHoldMs:
+          (y['first_clear_boss_charge_hold_ms'] as num?)?.toInt() ?? 700,
       sweepInterBattleGapMs:
           (y['sweep_inter_battle_gap_ms'] as num?)?.toInt() ?? 150,
       hitTier: HitTierConfig.fromYaml(y['hit_tier'] as Map? ?? const {}),

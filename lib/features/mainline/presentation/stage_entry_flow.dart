@@ -591,6 +591,8 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
       playback: BattleScreenPlaybackConfig(
         allowPlayerIntervention: _allowIntervention,
         readablePacing: _readablePacing,
+        // 首通展示帧与可读节奏同门控(本场为该 (stageId, cycle) 首通)。
+        firstClearShowcase: _readablePacing,
       ),
       onVictory: () {
         widget.onVictory();

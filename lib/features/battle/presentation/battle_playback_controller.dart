@@ -22,6 +22,7 @@ import '../../settings/domain/gameplay_settings.dart';
 import 'battle_vfx_entries.dart';
 import 'boss_phase_presentation.dart';
 import 'damage_popup.dart';
+import 'first_clear_showcase.dart';
 import 'impact_glyph_overlay.dart';
 import 'impact_profile.dart';
 import 'projectile_trail_style.dart';
@@ -52,11 +53,13 @@ class BattlePlaybackController {
     bool startPaused = false,
     bool startFastForward = false,
     bool readablePacing = false,
+    bool firstClearShowcase = false,
   }) : _vsync = vsync,
        _ref = ref,
        _rebuild = rebuild,
        _animConfig = animConfig,
-       _readablePacing = readablePacing {
+       _readablePacing = readablePacing,
+       _showcase = firstClearShowcase ? FirstClearShowcaseDirector() : null {
     // 读秒圆环节拍 controller（本拍内 0→1，供 CD/蓄力/破绽环平滑插值）。
     // 随 _playTimer 每拍 forward(from:0) 对齐 remaining 递减，暂停/待发/结束时 stop 冻结。
     _beatCtrl = AnimationController(
@@ -101,6 +104,9 @@ class BattlePlaybackController {
   final void Function(VoidCallback) _rebuild;
   final AnimationNumbers _animConfig;
   bool _readablePacing;
+
+  /// 首通展示帧导演(null=非首通,整套展示帧不参与)。
+  final FirstClearShowcaseDirector? _showcase;
   bool _disposed = false;
 
   // ─── 拍钟调度字段（beat/timer/hit-stop/pause/fast-forward） ──────────────────
@@ -477,6 +483,22 @@ class BattlePlaybackController {
       _beatCtrl.stop(); // 暂停态冻结读秒环节拍在当前扫位。
       return; // H3 暂停态:任何重启请求都不启动 timer。
     }
+    // 首通展示帧·开局亮相:首次起手先题字+停顿,停顿结束再真正起拍。快进态
+    // 消费不呈现(复刷/扫荡不叠慢镜);停顿只延迟第一拍,拖招层已在场不阻塞
+    // 出手;只动播放节拍不碰结算(守 §5.5)。复用 _hitStopTimer 槽位(顶部已
+    // 统一 cancel,与 hit-stop 复播互斥无叠加)。
+    if ((_showcase?.consumeOpening() ?? false) && !_isFastForward) {
+      _showOpeningCaption();
+      _hitStopTimer = Timer(
+        Duration(milliseconds: _animConfig.firstClearOpeningHoldMs),
+        () {
+          if (!_disposed && !_ref.read(battleProvider).isFinished) {
+            startTimer();
+          }
+        },
+      );
+      return;
+    }
     // 快进态:玩家手动开了快进。
     final rushing = _isFastForward;
     final gameplaySettings = _currentGameplaySettings;
@@ -588,6 +610,41 @@ class BattlePlaybackController {
     }
   }
 
+  /// 首通展示帧·开局亮相题字。empty→非空边沿的同帧,战斗 body(含题字
+  /// overlay)可能尚未挂载 → currentState 为 null 时推迟一帧兜底。
+  void _showOpeningCaption() {
+    final st = _ultimateCaptionKey.currentState;
+    if (st != null) {
+      st.show(UiStrings.firstClearOpening, isEnemy: false);
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_disposed) {
+        _ultimateCaptionKey.currentState?.show(
+          UiStrings.firstClearOpening,
+          isEnemy: false,
+        );
+      }
+    });
+  }
+
+  /// 首通展示帧·敌方首次蓄力提示:state 边沿(敌方 chargingSkill null→非null)
+  /// 整场一次 → 教学题字+停顿(让玩家看清「可拖技能破招」时机)。PUBLIC:由
+  /// build 内 `ref.listen` 逐 state 转发;非首通 no-op;快进态消费不呈现。
+  /// 纯读 state,不写 BattleState(守 §5.4)。
+  void onShowcaseStateTransition(BattleState? prev, BattleState next) {
+    final d = _showcase;
+    if (d == null) return;
+    if (!d.consumeEnemyChargeCue(prev, next)) return;
+    if (_isFastForward) return;
+    _impactGlyphKey.currentState?.clear();
+    _ultimateCaptionKey.currentState?.show(
+      UiStrings.firstClearChargeCue,
+      isEnemy: true,
+    );
+    _applyHitStop(_animConfig.firstClearBossChargeHoldMs);
+  }
+
   /// floor30 护法结界（Task 6）破界演出：结界失效边沿（最后一名护法阵亡）
   /// → 题字 + 闪白。复用 [playBossPhaseTransition] 同一套题字 / 闪白通道
   /// （[_ultimateCaptionKey] + [_screenFlashKey]），不另起平行系统；不触发
@@ -620,6 +677,9 @@ class BattlePlaybackController {
   /// `ref.listen` 逐条转发。
   void playAction(BattleAction action, BattleState s) {
     final actor = findCharacter(action.actorId, s);
+    // 首通展示帧:本动作触发的节拍(null=无);「首次」判定在 director 内消费,
+    // 快进态消费不呈现(下方各触发点带 !_isFastForward gate)。
+    final showcaseBeat = _showcase?.onAction(action, s);
     if (actor != null) {
       final key = slotKey(actor.teamSide, actor.slotIndex);
       _attackControllers[key].forward(from: 0.0);
@@ -648,11 +708,26 @@ class BattlePlaybackController {
       );
     }
     // B3 破招:打断蓄力 → 弹「破！」题字(破招方暖金/敌方绛红,纯读 state)。
+    // 首通首次破招(interruptFlourish)升峰值字号+辉光+闪白,强化教学仪式感。
     if (action.interrupted) {
+      final flourish = showcaseBeat == ShowcaseBeat.interruptFlourish;
       _ultimateCaptionKey.currentState?.show(
         UiStrings.interruptCaption,
         isEnemy: actor?.teamSide == 1,
+        fontSize: flourish
+            ? _animConfig.hitTier.captionPeakSize.toDouble()
+            : 56,
+        glowBlur: flourish ? _animConfig.hitTier.captionGlowBlur : 0,
       );
+      if (flourish && !_isFastForward && !_reduceFlashing) {
+        final flourishCfg = _impactConfigOrNull();
+        if (flourishCfg != null) {
+          _screenFlashKey.currentState?.flash(
+            flourishCfg.heavy.flashStrength,
+            color: WuxiaColors.internalForce,
+          );
+        }
+      }
     }
     final sfx = sfxForAction(
       action: action,
@@ -729,6 +804,15 @@ class BattlePlaybackController {
       _closeupCtrl.forward(from: 0.0).then((_) {
         if (!_disposed) _closeupCtrl.reverse();
       });
+    }
+
+    // 首通展示帧·首技慢镜:玩家首个非普攻真命中 → 额外顿帧+命中特写。顿帧
+    // 走既有 hit-stop 通道只延后下一拍(守 §5.5);快进态消费不呈现。
+    if (showcaseBeat == ShowcaseBeat.firstSkill && !_isFastForward) {
+      _closeupCtrl.forward(from: 0.0).then((_) {
+        if (!_disposed) _closeupCtrl.reverse();
+      });
+      _applyHitStop(_animConfig.firstClearFirstSkillHoldMs);
     }
   }
 

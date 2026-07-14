@@ -138,6 +138,56 @@ void main() {
     expect(n.victoryHandoffDelayMs, 500);
   });
 
+  // 首通展示帧(玩法评估 §十三 #2):三个脚本化停顿时长。
+  group('first_clear_showcase 三时长', () {
+    test('defaults 含三值(900/800/700)', () {
+      expect(AnimationNumbers.defaults.firstClearOpeningHoldMs, 900);
+      expect(AnimationNumbers.defaults.firstClearFirstSkillHoldMs, 800);
+      expect(AnimationNumbers.defaults.firstClearBossChargeHoldMs, 700);
+    });
+
+    test('fromYaml 解析三 key', () {
+      final n = AnimationNumbers.fromYaml(<String, dynamic>{
+        'attack_rush_ms': 1,
+        'attack_hold_ms': 1,
+        'attack_retreat_ms': 1,
+        'attack_rush_offset_px': 1,
+        'damage_popup_float_px': 1,
+        'damage_popup_ms': 1,
+        'action_interval_ms': 1,
+        'fast_forward_interval_ms': 1,
+        'shake_offset_px': 1,
+        'shake_duration_ms': 1,
+        'critical_font_scale': 1,
+        'first_clear_opening_hold_ms': 111,
+        'first_clear_first_skill_hold_ms': 222,
+        'first_clear_boss_charge_hold_ms': 333,
+      });
+      expect(n.firstClearOpeningHoldMs, 111);
+      expect(n.firstClearFirstSkillHoldMs, 222);
+      expect(n.firstClearBossChargeHoldMs, 333);
+    });
+
+    test('fromYaml 缺三 key 走默认', () {
+      final n = AnimationNumbers.fromYaml(<String, dynamic>{
+        'attack_rush_ms': 1,
+        'attack_hold_ms': 1,
+        'attack_retreat_ms': 1,
+        'attack_rush_offset_px': 1,
+        'damage_popup_float_px': 1,
+        'damage_popup_ms': 1,
+        'action_interval_ms': 1,
+        'fast_forward_interval_ms': 1,
+        'shake_offset_px': 1,
+        'shake_duration_ms': 1,
+        'critical_font_scale': 1,
+      });
+      expect(n.firstClearOpeningHoldMs, 900);
+      expect(n.firstClearFirstSkillHoldMs, 800);
+      expect(n.firstClearBossChargeHoldMs, 700);
+    });
+  });
+
   // 飘字随速度缩放:防快档(rapid/快进)飘字时长 > 拍间隔致跨拍重叠。
   // 慢档(relaxed/normal)飘字 1000 ≤ 拍长,手感保持不变。
   group('effectivePopupMs 随拍间隔 clamp', () {
