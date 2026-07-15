@@ -280,7 +280,7 @@ class BattleScenarioData {
       isBoss: isBoss,
       iconPath: icon,
     );
-    // Boss 位注入真实 boss 立绘(xiliangboss)验金边;其余真敌人图。
+    // Boss 位注入已配透明战斗立绘的塔主，验全身轮廓、体量与金边。
     return (
       [
         c(
@@ -316,7 +316,7 @@ class BattleScenarioData {
           1,
           0,
           isBoss: true,
-          icon: 'assets/enemies/xiliangboss.png',
+          icon: 'assets/enemies/tower_boss_20.png',
         ),
         c(
           32,

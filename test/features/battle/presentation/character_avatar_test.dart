@@ -197,4 +197,58 @@ void main() {
       expect(standeeImage.fit, BoxFit.contain);
     }
   });
+
+  testWidgets('战场仅将已配套的旧原画映射到透明立绘', (tester) async {
+    const cases = [
+      ('assets/characters/founder.png', WuxiaUi.battleFounderFallback),
+      ('assets/enemies/thug_a.png', WuxiaUi.battleThugStandee),
+      ('assets/enemies/black_killer.png', WuxiaUi.battleBlackKillerStandee),
+      ('assets/enemies/umbrella.png', WuxiaUi.battleUmbrellaStandee),
+      ('assets/enemies/tower_boss_20.png', WuxiaUi.battleTowerBoss20Standee),
+    ];
+
+    for (final (sourcePath, standeePath) in cases) {
+      final character = _char(
+        isBoss: sourcePath.contains('boss'),
+      ).copyWith(iconPath: sourcePath);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CharacterAvatar(
+              character: character,
+              displayMode: CharacterDisplayMode.stageStandee,
+            ),
+          ),
+        ),
+      );
+
+      final image = tester.widget<WuxiaImage>(
+        find.byWidgetPredicate(
+          (widget) => widget is WuxiaImage && widget.assetPath == standeePath,
+        ),
+      );
+      expect(image.fit, BoxFit.contain);
+    }
+  });
+
+  testWidgets('未配套透明图的旧敌人原画保持遮罩降级路径', (tester) async {
+    final character = _char(
+      isBoss: false,
+    ).copyWith(iconPath: 'assets/enemies/unmapped.png');
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: character,
+            displayMode: CharacterDisplayMode.stageStandee,
+          ),
+        ),
+      ),
+    );
+
+    final image = tester.widget<WuxiaImage>(find.byType(WuxiaImage));
+    expect(image.assetPath, 'assets/enemies/unmapped.png');
+    expect(image.fit, BoxFit.cover);
+    expect(find.byType(ShaderMask), findsOneWidget);
+  });
 }

@@ -120,6 +120,13 @@ class WuxiaUi {
       'assets/characters/battle_first_disciple.png';
   static const String battleSecondDiscipleFallback =
       'assets/characters/battle_second_disciple.png';
+  static const String battleThugStandee = 'assets/enemies/battle_thug_a.png';
+  static const String battleBlackKillerStandee =
+      'assets/enemies/battle_black_killer.png';
+  static const String battleUmbrellaStandee =
+      'assets/enemies/battle_umbrella.png';
+  static const String battleTowerBoss20Standee =
+      'assets/enemies/battle_tower_boss_20.png';
   static const String battleBossEntranceBg =
       'assets/scenes/mj/battle_boss_entrance_bg_01.png';
 }

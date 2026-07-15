@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'battle_layout_tokens.dart';
+
 /// 人物舞台比例锚点（0..1）。
 ///
 /// slot 0 是靠近中场的主位，slot 1/2 是斜向展开的后位。右队只镜像
@@ -18,7 +20,7 @@ Offset battleStageAnchor(int teamSide, int slotIndex, int teamSize) {
 }
 
 /// 后位略缩小，形成前后景深度；1v1/2v2 时两人都保持主体尺寸。
-double battleStageScale(int slotIndex, int teamSize) {
-  if (teamSize < 3 || slotIndex == 0) return 1;
-  return 0.84;
+double battleStageScale(int slotIndex, int teamSize, {bool isBoss = false}) {
+  final depthScale = teamSize < 3 || slotIndex == 0 ? 1.0 : 0.84;
+  return depthScale * (isBoss ? BattleLayoutTokens.bossStageScale : 1);
 }

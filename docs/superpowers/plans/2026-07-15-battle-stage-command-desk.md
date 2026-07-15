@@ -20,7 +20,7 @@
 5. **特殊战斗适配**：Boss、心魔、轻功、群战与自动/允许点选双形态。
 6. **收口**：双视口视觉验收、targeted tests、`flutter analyze`、GDD 旧拖招口径同步与交付证据。
 
-每完成一个可独立运行的切片即提交并更新恢复点；当前只执行切片 1，不提前写切片 2–6。
+每完成一个可独立运行的切片即提交并更新恢复点；切片 1–4 已完成，当前收口切片 5 的 Boss 体量与特殊状态适配。
 
 ## 3. 切片 1 验收标准
 
@@ -42,12 +42,12 @@
 - [x] **桌面语义**：技能签改为原生 `ElevatedButton` 承接点击/长按，保留 semantics、focus、键盘激活与 mouse cursor；顶栏继续使用 `IconButton`。
 - [x] **视觉证据**：`battle_tap_preview` 已截 1280×720（实图 2560×1440）与 1440×900（实图 2880×1800），路径 `build/visual_acceptance/battle_ui_stage_slice1/`；二次截取无 overflow/exception/error 日志。
 - [x] **残留风险**：透明立绘、人物舞台、动作模板、特殊战斗均明确留在后续切片，本次只交付案台灰盒。
-- [ ] **清洁度**：无 debugPrint 高频噪声、无误提交 `.g.dart`/临时 capture/log；中文动宾提交信息。
+- [x] **清洁度**：无 debugPrint 高频噪声、无误提交 `.g.dart`/临时 capture/log；中文动宾提交信息。
 
 ## 5. 当前恢复点
 
-- **状态**：切片 1 `4599d73d`、切片 2 `917e143d`、切片 3 `1a8a2598`、祖师样板 `63eb0822` 均已提交；切片 4 已补齐两名弟子透明立绘，待提交恢复点。
-- **最后完成**：五类动作模板已接入表现层；近战移向中央交锋点，远程留位并生成水墨弹道，范围技落敌方阵心，控制/大招复用现有题字与命中特效。祖师与两弟子均已生成、绿幕去背并压至约 `512×768 RGBA / 265–297KB`；生产战场对透明图走 `contain` 且跳过旧 RGB 原画的径向遮罩。
-- **下一步**：提交两弟子透明立绘恢复点；按同一脚底基线与画风扩展三普通敌和一 Boss，并补 Boss/死亡/蓄力状态验收。
-- **已跑验证**：战斗 presentation 全套 194 项与 controller 测试通过、`flutter analyze` 无问题；祖师样板定向 11 项通过。`battle_tap_preview` 1280×720 / 1440×900 真机截图在 `build/visual_acceptance/battle_ui_stage_slice4_founder_fixed/`，均为 window-id 干净窗口，日志无 overflow/exception/error。
+- **状态**：切片 1 `4599d73d`、切片 2 `917e143d`、切片 3 `1a8a2598`、祖师样板 `63eb0822`、两弟子样板 `750dfcf6` 均已提交；切片 4 的三普通敌与一 Boss 已接入，切片 5 的 Boss 体量强化已完成，待提交恢复点。
+- **最后完成**：七张透明战斗立绘已齐备：祖师、两弟子、山匪、黑衣杀手、撑伞高手和塔主 Boss。旧头像路径仅在战场展示层映射为透明全身图，其他角色页面不受影响；Boss 在同一阵列深度上额外放大 `1.12×`，不改变碰撞、目标或数值语义。蓄力/破招圆环、目标高亮、死亡灰显继续复用现有状态层。
+- **下一步**：提交敌方立绘/Boss 体量恢复点；随后进入切片 5 剩余心魔、轻功和群战兼容检查。
+- **已跑验证**：战斗 presentation 全套与 controller 共 198 项通过；定向 `flutter analyze` 无问题，`dart format --set-exit-if-changed` 与 `git diff --check` 通过。七张战斗立绘均为有效 RGBA、alpha 范围 `0–255` 且四角透明。Boss 实战帧位于 `build/visual_acceptance/battle_ui_stage_slice5_boss_initial/`，蓄力/破招帧位于 `build/visual_acceptance/battle_ui_stage_slice5_states/`；日志均无 overflow/exception/error。macOS 截图外围黑边为窗口缩放捕获伪影，不计入游戏画布。
 - **阻塞项**：无。Claude 并行分支可能同时改 `lib/shared/strings.dart`，本分支只追加战斗案台必要文案并保持小提交，交付时明确冲突点。

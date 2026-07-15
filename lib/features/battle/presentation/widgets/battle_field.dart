@@ -93,6 +93,7 @@ class BattleField extends StatelessWidget {
                     final scale = battleStageScale(
                       slot.slotIndex,
                       slot.teamSize,
+                      isBoss: slot.character.isBoss,
                     );
                     final width = baseWidth * scale;
                     final height = baseHeight * scale;

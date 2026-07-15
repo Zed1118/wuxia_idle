@@ -33,4 +33,12 @@ void main() {
       );
     });
   });
+
+  test('Boss 在相同站位比普通角色大一档', () {
+    final normal = battleStageScale(0, 3);
+    final boss = battleStageScale(0, 3, isBoss: true);
+
+    expect(boss, greaterThan(normal));
+    expect(boss / normal, closeTo(1.12, 1e-9));
+  });
 }

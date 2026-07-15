@@ -280,8 +280,9 @@ class _StageCharacterStandee extends StatelessWidget {
         : character.name.characters.first;
     final resolvedIconPath = _resolvedStageIconPath(character);
     final hasIcon = resolvedIconPath != null;
-    final usesTransparentStandee =
-        resolvedIconPath?.startsWith('assets/characters/battle_') ?? false;
+    final usesTransparentStandee = _isTransparentBattleStandee(
+      resolvedIconPath,
+    );
     final wardActive =
         battleState != null && isGuardianWardActive(character, battleState!);
 
@@ -452,7 +453,9 @@ class _StageCharacterStandee extends StatelessWidget {
 
 String? _resolvedStageIconPath(BattleCharacter character) {
   final iconPath = character.iconPath;
-  if (iconPath != null && iconPath.isNotEmpty) return iconPath;
+  if (iconPath != null && iconPath.isNotEmpty) {
+    return _battleStandeeOverrides[iconPath] ?? iconPath;
+  }
   if (character.teamSide != 0) return null;
   return switch (character.slotIndex) {
     0 => WuxiaUi.battleFounderFallback,
@@ -461,6 +464,20 @@ String? _resolvedStageIconPath(BattleCharacter character) {
     _ => null,
   };
 }
+
+const _battleStandeeOverrides = <String, String>{
+  'assets/characters/founder.png': WuxiaUi.battleFounderFallback,
+  'assets/characters/first_disciple.png': WuxiaUi.battleFirstDiscipleFallback,
+  'assets/characters/second_disciple.png': WuxiaUi.battleSecondDiscipleFallback,
+  'assets/enemies/thug_a.png': WuxiaUi.battleThugStandee,
+  'assets/enemies/black_killer.png': WuxiaUi.battleBlackKillerStandee,
+  'assets/enemies/umbrella.png': WuxiaUi.battleUmbrellaStandee,
+  'assets/enemies/tower_boss_20.png': WuxiaUi.battleTowerBoss20Standee,
+};
+
+bool _isTransparentBattleStandee(String? path) =>
+    path?.startsWith('assets/characters/battle_') == true ||
+    path?.startsWith('assets/enemies/battle_') == true;
 
 class _FirstGlyphStandee extends StatelessWidget {
   const _FirstGlyphStandee({

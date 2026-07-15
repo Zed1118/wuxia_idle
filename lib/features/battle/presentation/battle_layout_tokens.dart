@@ -22,4 +22,5 @@ abstract final class BattleLayoutTokens {
   static const double stageMaxStandeeHeight = 250;
   static const double stageWidthFraction = 0.145;
   static const double stageHeightFraction = 0.52;
+  static const double bossStageScale = 1.12;
 }
