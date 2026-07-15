@@ -115,7 +115,7 @@ class WuxiaUi {
   static const String bossFrameLarge =
       'assets/ui/mj/ui_big_boss_frame_blend.png';
   static const String battleFounderFallback =
-      'assets/characters/battle_founder.png';
+      'assets/characters/battle_founder_v2.png';
   static const String battleFirstDiscipleFallback =
       'assets/characters/battle_first_disciple.png';
   static const String battleSecondDiscipleFallback =
@@ -123,6 +123,12 @@ class WuxiaUi {
   static const String battleThugStandee = 'assets/enemies/battle_thug_a.png';
   static const String battleBlackKillerStandee =
       'assets/enemies/battle_black_killer.png';
+  static const String battleHiddenElderStandee =
+      'assets/enemies/battle_hidden_elder.png';
+  static const String battleBanditBladeStandee =
+      'assets/enemies/battle_bandit_blade.png';
+  static const String battleBanditArcherStandee =
+      'assets/enemies/battle_bandit_archer.png';
   static const String battleUmbrellaStandee =
       'assets/enemies/battle_umbrella.png';
   static const String battleTowerBoss20Standee =

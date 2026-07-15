@@ -633,7 +633,7 @@ class _GlowAuraState extends State<GlowAura>
     // 浅金静态强光(hovered) 优先;
     // 第六阶段：破绽窗口绛红脉动（集火指示）次之；都无则裸 child。
     if (widget.hovered) {
-      return _box(WuxiaColors.resultHighlight, 0.85, 22.0, 4.0, widget.child);
+      return Transform.scale(scale: 1.025, child: widget.child);
     }
     if (!widget.staggered) return widget.child;
     return AnimatedBuilder(

@@ -14,6 +14,9 @@ class HpBar extends StatelessWidget {
   final double height;
   final bool isInternalForce;
   final bool showLabel;
+  final Color? fillColorOverride;
+  final double? labelFontSize;
+  final bool compactLabel;
 
   /// 居中数值前的标签前缀（如内力条传「内 」→「内 100 / 100」）。
   /// 走 [UiStrings]，不在调用点内联中文。
@@ -27,14 +30,19 @@ class HpBar extends StatelessWidget {
     this.isInternalForce = false,
     this.showLabel = true,
     this.labelPrefix = '',
+    this.fillColorOverride,
+    this.labelFontSize,
+    this.compactLabel = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final ratio = max <= 0 ? 0.0 : (current / max).clamp(0.0, 1.0).toDouble();
-    final fillColor = isInternalForce
-        ? WuxiaColors.internalForce
-        : WuxiaColors.hpColor(ratio);
+    final fillColor =
+        fillColorOverride ??
+        (isInternalForce
+            ? WuxiaColors.internalForce
+            : WuxiaColors.hpColor(ratio));
     final borderRadius = BorderRadius.circular(2);
 
     return SizedBox(
@@ -59,10 +67,12 @@ class HpBar extends StatelessWidget {
           if (showLabel)
             Center(
               child: Text(
-                '$labelPrefix$current / $max',
+                compactLabel
+                    ? '$labelPrefix$current/$max'
+                    : '$labelPrefix$current / $max',
                 style: TextStyle(
                   // 内力条 height 小(9)时 height*0.72≈6.5px 近不可读，设 10px 下限。
-                  fontSize: math.max(height * 0.72, 10.0),
+                  fontSize: labelFontSize ?? math.max(height * 0.72, 10.0),
                   color: WuxiaColors.textPrimary,
                   fontWeight: FontWeight.w600,
                   height: 1,

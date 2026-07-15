@@ -199,14 +199,14 @@ void main() {
     }
   });
 
-  testWidgets('战场仅将已配套的旧原画映射到透明立绘', (tester) async {
+  testWidgets('战场将已配套的旧原画映射到对应透明立绘', (tester) async {
     const cases = [
       ('assets/characters/founder.png', WuxiaUi.battleFounderFallback),
       ('assets/enemies/thug_a.png', WuxiaUi.battleThugStandee),
-      ('assets/enemies/qingshan_main.png', WuxiaUi.battleThugStandee),
+      ('assets/enemies/qingshan_main.png', WuxiaUi.battleHiddenElderStandee),
       ('assets/enemies/black_killer.png', WuxiaUi.battleBlackKillerStandee),
-      ('assets/enemies/killer_a.png', WuxiaUi.battleBlackKillerStandee),
-      ('assets/enemies/killer_b.png', WuxiaUi.battleBlackKillerStandee),
+      ('assets/enemies/killer_a.png', WuxiaUi.battleBanditBladeStandee),
+      ('assets/enemies/killer_b.png', WuxiaUi.battleBanditArcherStandee),
       ('assets/enemies/umbrella.png', WuxiaUi.battleUmbrellaStandee),
       ('assets/enemies/tower_boss_20.png', WuxiaUi.battleTowerBoss20Standee),
     ];

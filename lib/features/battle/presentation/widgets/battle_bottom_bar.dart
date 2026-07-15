@@ -403,6 +403,18 @@ class SkillCommandButton extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.16,
+                child: Image.asset(
+                  WuxiaUi.paperBg,
+                  fit: BoxFit.cover,
+                  color: const Color(0xFF8C785B),
+                  colorBlendMode: BlendMode.multiply,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
             Opacity(
               opacity: onCd ? 0.32 : 1.0, // CD 态招名让位给读秒环。
               child: Center(
@@ -548,22 +560,24 @@ class EmptySkillSlot extends StatelessWidget {
         key: ValueKey('battle_skill_empty_$index'),
         height: BattleLayoutTokens.skillSlotHeight,
         decoration: BoxDecoration(
-          color: WuxiaUi.paper.withValues(alpha: 0.30),
+          color: WuxiaUi.paper.withValues(alpha: 0.42),
+          image: const DecorationImage(
+            image: AssetImage(WuxiaUi.paperBg),
+            fit: BoxFit.cover,
+            opacity: 0.10,
+          ),
           border: Border.all(color: const Color(0xFF8A7251)),
           borderRadius: BorderRadius.circular(2),
         ),
         child: Center(
-          child: Container(
-            width: 22,
-            height: 22,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              border: Border.all(color: const Color(0x667A2D24)),
-              borderRadius: BorderRadius.circular(2),
-            ),
-            child: const Text(
-              '·',
-              style: TextStyle(color: Color(0x887A2D24), fontSize: 18),
+          child: Text(
+            UiStrings.battleEmptySkillSlot.characters.join('\n'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xB36A5E4C),
+              fontSize: 11,
+              height: 1.15,
+              letterSpacing: 1,
             ),
           ),
         ),
@@ -618,15 +632,37 @@ class BattlePouchRail extends StatelessWidget {
                     width: BattleLayoutTokens.pouchSlotSize,
                     height: BattleLayoutTokens.pouchSlotSize,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2A251F),
+                      color: const Color(0xFF3A3229),
+                      image: const DecorationImage(
+                        image: AssetImage(WuxiaUi.paperBg),
+                        fit: BoxFit.cover,
+                        opacity: 0.10,
+                      ),
                       border: Border.all(color: const Color(0xFF756047)),
                       borderRadius: BorderRadius.circular(2),
                     ),
-                    child: const Icon(
-                      Icons.inventory_2_outlined,
-                      size: 17,
-                      color: Color(0xFF8C7A5D),
-                    ),
+                    child: i < 2
+                        ? Opacity(
+                            opacity: 0.96,
+                            child: Image.asset(
+                              i == 0
+                                  ? 'assets/equipment/accessory_baowu_zi_jin_hu_lu.png'
+                                  : 'assets/equipment/accessory_xunchang_yao_nang.png',
+                              width: 46,
+                              height: 46,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, _, _) => const Icon(
+                                Icons.inventory_2_outlined,
+                                size: 17,
+                                color: Color(0xFF8C7A5D),
+                              ),
+                            ),
+                          )
+                        : const Icon(
+                            Icons.inventory_2_outlined,
+                            size: 17,
+                            color: Color(0xFF8C7A5D),
+                          ),
                   ),
                 ),
                 if (i < 2)

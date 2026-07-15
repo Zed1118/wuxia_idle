@@ -57,11 +57,18 @@ class BattleSceneBackground extends StatelessWidget {
           ),
         CustomPaint(
           key: const ValueKey('battle_scene_mist_layers'),
-          painter: _MistLayerPainter(profile),
+          painter: _MistLayerPainter(
+            profile,
+            intensity: hasImage ? 0.12 : 1,
+            blurSigma: hasImage ? 32 : 0,
+          ),
         ),
         CustomPaint(
           key: const ValueKey('battle_scene_ground_texture'),
-          painter: _GroundTexturePainter(profile),
+          painter: _GroundTexturePainter(
+            profile,
+            intensity: hasImage ? 0.28 : 1,
+          ),
         ),
         DecoratedBox(
           key: const ValueKey('battle_scene_glow_vignette'),
@@ -293,15 +300,26 @@ class _DistantMountainPainter extends CustomPainter {
 }
 
 class _MistLayerPainter extends CustomPainter {
-  const _MistLayerPainter(this.profile);
+  const _MistLayerPainter(
+    this.profile, {
+    required this.intensity,
+    required this.blurSigma,
+  });
 
   final _SceneDepthProfile profile;
+  final double intensity;
+  final double blurSigma;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..style = PaintingStyle.fill
-      ..color = profile.mistColor.withValues(alpha: profile.mistAlpha);
+      ..maskFilter = blurSigma > 0
+          ? MaskFilter.blur(BlurStyle.normal, blurSigma)
+          : null
+      ..color = profile.mistColor.withValues(
+        alpha: profile.mistAlpha * intensity,
+      );
 
     canvas.drawOval(
       Rect.fromLTWH(
@@ -320,7 +338,9 @@ class _MistLayerPainter extends CustomPainter {
         size.height * 0.12,
       ),
       paint
-        ..color = profile.mistColor.withValues(alpha: profile.mistAlpha * 0.7),
+        ..color = profile.mistColor.withValues(
+          alpha: profile.mistAlpha * intensity * 0.7,
+        ),
     );
     canvas.drawOval(
       Rect.fromLTWH(
@@ -330,19 +350,24 @@ class _MistLayerPainter extends CustomPainter {
         size.height * 0.16,
       ),
       paint
-        ..color = profile.mistColor.withValues(alpha: profile.mistAlpha * 0.54),
+        ..color = profile.mistColor.withValues(
+          alpha: profile.mistAlpha * intensity * 0.54,
+        ),
     );
   }
 
   @override
   bool shouldRepaint(covariant _MistLayerPainter oldDelegate) =>
-      oldDelegate.profile != profile;
+      oldDelegate.profile != profile ||
+      oldDelegate.intensity != intensity ||
+      oldDelegate.blurSigma != blurSigma;
 }
 
 class _GroundTexturePainter extends CustomPainter {
-  const _GroundTexturePainter(this.profile);
+  const _GroundTexturePainter(this.profile, {required this.intensity});
 
   final _SceneDepthProfile profile;
+  final double intensity;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -358,8 +383,12 @@ class _GroundTexturePainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          profile.groundColor.withValues(alpha: profile.groundAlpha * 0.36),
-          profile.groundColor.withValues(alpha: profile.groundAlpha),
+          profile.groundColor.withValues(
+            alpha: profile.groundAlpha * intensity * 0.36,
+          ),
+          profile.groundColor.withValues(
+            alpha: profile.groundAlpha * intensity,
+          ),
         ],
       ).createShader(groundRect);
     canvas.drawRect(groundRect, groundPaint);
@@ -367,7 +396,9 @@ class _GroundTexturePainter extends CustomPainter {
     final linePaint = Paint()
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke
-      ..color = profile.mistColor.withValues(alpha: profile.groundAlpha * 0.36);
+      ..color = profile.mistColor.withValues(
+        alpha: profile.groundAlpha * intensity * 0.36,
+      );
     for (var i = 0; i < 9; i++) {
       final y = groundTop + size.height * (0.025 + i * 0.034);
       final start = Offset(size.width * ((i % 3) - 1) * 0.12, y);
@@ -378,5 +409,5 @@ class _GroundTexturePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _GroundTexturePainter oldDelegate) =>
-      oldDelegate.profile != profile;
+      oldDelegate.profile != profile || oldDelegate.intensity != intensity;
 }

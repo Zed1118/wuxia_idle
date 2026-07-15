@@ -12,6 +12,7 @@ import '../battle_layout_tokens.dart';
 
 class Header extends StatelessWidget {
   final BattleState state;
+  final String? sceneTitle;
   final VoidCallback onToggleLog;
   final VoidCallback onPause;
   final bool isPaused;
@@ -25,6 +26,7 @@ class Header extends StatelessWidget {
   const Header({
     super.key,
     required this.state,
+    this.sceneTitle,
     required this.onToggleLog,
     required this.onPause,
     required this.isPaused,
@@ -65,12 +67,33 @@ class Header extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.centerLeft,
-            child: Text(
-              '${UiStrings.tickPrefix} ${state.tick}',
-              style: const TextStyle(
-                color: Color(0xFFBFAE8D),
-                fontSize: 13,
-                letterSpacing: 1,
+            child: SizedBox(
+              width: 330,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (sceneTitle != null)
+                    Text(
+                      sceneTitle!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFFD8C29A),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  Text(
+                    '${UiStrings.tickPrefix} ${state.tick}',
+                    style: TextStyle(
+                      color: const Color(0xFFBFAE8D),
+                      fontSize: sceneTitle == null ? 13 : 9,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

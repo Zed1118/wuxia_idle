@@ -395,7 +395,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioMassBattleStage,
         hint: null,
-        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        sceneBackgroundPath: 'assets/scenes/battle_mountainforest.png',
         bgmTrack: BgmTrack.massBattle,
         autoStart: false,
       );
@@ -403,8 +403,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // 两段点选真玩/验收:真战斗 + 干预层挂上 + 高血耐久敌久撑。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioDragLive,
-        hint: UiStrings.battleTapLiveHint,
-        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        hint: UiStrings.chapter1Title,
+        sceneBackgroundPath: 'assets/scenes/battle_mountainforest.png',
         allowPlayerIntervention: true,
         startPaused: true,
       );
@@ -413,7 +413,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // 给截图稳定展示技能焦点、敌头像可选标记和单体/群体角标。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioDragLive,
-        hint: UiStrings.battleTapPreviewHint,
+        hint: UiStrings.chapter1Title,
         sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
         autoStart: false,
         allowPlayerIntervention: true,

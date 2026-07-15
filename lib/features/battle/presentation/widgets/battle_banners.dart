@@ -113,67 +113,66 @@ class DangerBar extends StatelessWidget {
     }
     if (imminent == null) return const SizedBox.shrink();
 
-    return Container(
+    return SizedBox(
       key: const ValueKey('battle_danger_bar'),
+      height: 34,
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-      decoration: BoxDecoration(
-        color: WuxiaColors.danger.withValues(alpha: 0.22),
-        border: Border(
-          bottom: BorderSide(
-            color: WuxiaColors.danger.withValues(alpha: 0.82),
-            width: 1.5,
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: WuxiaColors.danger.withValues(alpha: 0.2),
-              border: Border.all(
-                color: WuxiaColors.danger.withValues(alpha: 0.75),
-              ),
-              borderRadius: BorderRadius.circular(4),
+      child: Align(
+        alignment: Alignment.topRight,
+        child: Container(
+          width: 390,
+          margin: const EdgeInsets.only(right: 112),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.transparent,
+                WuxiaColors.danger.withValues(alpha: 0.54),
+                WuxiaColors.danger.withValues(alpha: 0.34),
+                Colors.transparent,
+              ],
+              stops: const [0, 0.14, 0.86, 1],
             ),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              child: Text(
+            border: Border(
+              bottom: BorderSide(
+                color: WuxiaColors.danger.withValues(alpha: 0.68),
+              ),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
                 UiStrings.battleDangerChargeLabel,
                 style: TextStyle(
-                  color: WuxiaColors.danger,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
+                  color: Color(0xFFE3C59F),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 2,
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          const Icon(
-            Icons.warning_amber_rounded,
-            color: WuxiaColors.danger,
-            size: 19,
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              UiStrings.battleDangerCharging(
-                imminent.name,
-                imminent.chargingSkill!.name,
-                imminent.chargeTicksRemaining,
+              const SizedBox(width: 8),
+              Container(width: 1, height: 14, color: const Color(0x888A2B21)),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  UiStrings.battleDangerCharging(
+                    imminent.name,
+                    imminent.chargingSkill!.name,
+                    imminent.chargeTicksRemaining,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFFD8C8AF),
+                    fontSize: 11,
+                    height: 1.1,
+                  ),
+                ),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: WuxiaColors.danger,
-                fontSize: 15,
-                fontWeight: FontWeight.w900,
-                height: 1.15,
-              ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

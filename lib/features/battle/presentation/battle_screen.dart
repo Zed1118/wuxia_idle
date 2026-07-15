@@ -718,11 +718,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                     },
                     child: Column(
                       children: [
-                        if (widget.hint != null) HintBanner(hint: widget.hint!),
                         if (widget.cycleHint != null)
                           CycleHintBanner(hint: widget.cycleHint!),
                         Header(
                           state: state,
+                          sceneTitle: widget.hint,
                           onToggleLog: () =>
                               setState(() => _logOpen = !_logOpen),
                           onPause: _togglePause,
