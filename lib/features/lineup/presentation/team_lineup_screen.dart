@@ -761,10 +761,7 @@ class _ReserveTile extends ConsumerWidget {
               ),
             if (noMain) ...[
               if (isWeak) const SizedBox(width: 4),
-              const _Tag(
-                UiStrings.lineupNoMainTag,
-                color: WuxiaColors.textMuted,
-              ),
+              const _Tag(UiStrings.lineupNoMainTag, color: WuxiaUi.muted),
             ],
             if (inRetreat) ...[
               if (isWeak || noMain) const SizedBox(width: 4),

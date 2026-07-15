@@ -264,7 +264,7 @@ class FocusChip extends StatelessWidget {
                 height: 8,
                 decoration: BoxDecoration(
                   color: dim
-                      ? WuxiaColors.textMuted
+                      ? const Color(0xFF8F8574)
                       : (selected ? WuxiaUi.jiang : color),
                   shape: BoxShape.circle,
                 ),
@@ -279,7 +279,7 @@ class FocusChip extends StatelessWidget {
                     fontSize: 11,
                     fontWeight: selected ? FontWeight.bold : FontWeight.w500,
                     color: dim
-                        ? WuxiaColors.textMuted
+                        ? const Color(0xFF8F8574)
                         : (selected ? WuxiaUi.ink : const Color(0xFFD4C5A7)),
                   ),
                 ),

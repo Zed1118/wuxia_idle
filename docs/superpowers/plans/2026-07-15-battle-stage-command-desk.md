@@ -139,3 +139,10 @@
 
 - 闭关修炼地图页改用宣纸 `WuxiaTitleBar`，帮助入口和打坐题签收入统一右侧操作区；原五张水墨地图卡、进行中状态、境界门槛与产出信息不变。
 - 1280×720 实机帧位于 `build/visual_acceptance/seclusion_titlebar_unified/`；9 项地图状态与双视口定向测试通过。
+
+## 最终验收恢复点（2026-07-16）
+
+- 标准战斗最终双视口帧已固化：`build/visual_acceptance/final_acceptance/battle_tap_live/1280x720/frame.png` 与 `1440x900/frame.png`。站位按首席靠近交锋线、双方同序严格镜像；人物脚底依据透明图 alpha 边界锚定，并由接触墨影接入连续石滩地面。
+- 技能仍为点击释放：单体技先点技能签再点目标，群体技点击后立即释放；长按只看详情，没有拖放。战备行囊只保留可见预留位，不接入背包消费。
+- 全量 `flutter test` 共 4048 项通过；纸面文字对比审计零发现；`flutter analyze` 零问题；`flutter build macos --debug` 成功生成 `wuxia_idle.app`；Dart format 与 `git diff --check` 通过。
+- 本轮未改 `lib/shared/strings.dart`、数值 YAML、schema/saveVersion 或战斗结算；未 push、未开 PR、未合入 main，继续保留在 `codex/battle-ui-stage` 独立 worktree 等待人工目检。

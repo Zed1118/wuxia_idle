@@ -49,8 +49,8 @@ class ChapterListScreen extends ConsumerWidget {
           fontWeight: FontWeight.w800,
           letterSpacing: 2.4,
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
           child: SizedBox(
             height: 1,
             child: ColoredBox(color: Color(0x805F4B2C)),
