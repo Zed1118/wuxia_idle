@@ -1,0 +1,6 @@
+# 百草岭远征配置（§8.2）。A2 最小合法骨架；Phase B 填节点权重/深度曲线/奖励表。
+normal_node_minutes: 90
+elite_node_minutes: 180
+hp_recover_pct_per_node: 0.10
+qi_recover_pct_per_node: 0.25
+zhangshi_pct_per_layer: 0.05

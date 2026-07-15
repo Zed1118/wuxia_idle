@@ -25,6 +25,8 @@ import 'defs/synergy_def.dart';
 import 'defs/technique_def.dart';
 import '../features/tower/domain/tower_floor_def.dart';
 import '../features/taohua_island/domain/taohua_island_config.dart';
+import '../features/expedition/domain/expedition_config.dart';
+import '../features/boss_gauntlet/domain/boss_gauntlet_config.dart';
 import 'lore_loader.dart';
 import '../core/domain/enums.dart';
 import 'numbers_config.dart';
@@ -140,6 +142,11 @@ class GameRepository {
   /// 经验丹经验值 / 秘籍 unlockSkillId / 道具名。fixture 不带 yaml 时空 map。
   final Map<String, ItemDef> itemDefs;
 
+  /// 江湖远行配置（§8.2，纯 Dart 非 Isar）。fixture 不带 yaml 时为 null；
+  /// yaml 存在但结构非法 → 加载期 FormatException fail-fast。
+  final ExpeditionConfig? expeditionConfig;
+  final BossGauntletConfig? bossGauntletConfig;
+
   GameRepository._({
     required this.numbers,
     required this.realms,
@@ -163,6 +170,8 @@ class GameRepository {
     required this.factionAlignments,
     required this.shopItemDefs,
     required this.itemDefs,
+    this.expeditionConfig,
+    this.bossGauntletConfig,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -421,6 +430,20 @@ class GameRepository {
       );
     }, fallback: const <String, ItemDef>{});
 
+    // 江湖远行 A2 配置骨架(graceful;fixture 无 yaml 时 null,损坏/非法 fail-fast)。
+    final expeditionConfig = await _loadOptionalAsset<ExpeditionConfig?>(
+      load,
+      'data/expeditions.yaml',
+      (raw) => ExpeditionConfig.fromYaml(parseYamlMap(raw)),
+      fallback: null,
+    );
+    final bossGauntletConfig = await _loadOptionalAsset<BossGauntletConfig?>(
+      load,
+      'data/boss_gauntlets.yaml',
+      (raw) => BossGauntletConfig.fromYaml(parseYamlMap(raw)),
+      fallback: null,
+    );
+
     final repo = GameRepository._(
       numbers: numbers,
       realms: realms,
@@ -444,6 +467,8 @@ class GameRepository {
       factionAlignments: factionAlignments,
       shopItemDefs: shopItemDefs,
       itemDefs: itemDefs,
+      expeditionConfig: expeditionConfig,
+      bossGauntletConfig: bossGauntletConfig,
     );
     repo._enforceRedLines();
     await _validatePresetLoreReferences(equipmentDefs, load);
