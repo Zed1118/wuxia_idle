@@ -1,11 +1,19 @@
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:isar_community/isar.dart';
 
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/reward_entry.dart';
 import '../../../core/domain/save_data.dart';
+import '../../../data/game_repository.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
+import '../../cultivation/application/character_advancement_service.dart';
+import '../../cultivation/application/progression_gate_service.dart';
+import '../../injury/application/injury_service.dart';
+import '../../mainline/domain/mainline_progress.dart';
 import '../domain/expedition_config.dart';
 import '../domain/expedition_rules.dart';
 import '../domain/expedition_seed.dart';
@@ -264,6 +272,123 @@ class ExpeditionService {
     );
   }
 
+  /// 召回 / 战败返程单事务（§4.6/§9.1）。
+  ///
+  /// 同一 `writeTxn`：发 `stagedRewards`（全员含途中倒下者得完成节点经验 §4.6）+
+  /// 结算伤势（[defeated] 时倒下者重伤、其余轻伤；召回不附伤）+ 删 `ExpeditionRun`
+  /// 关闭会话（占用由 active run 派生 → 自动解除、角色释放）。失败节点不在
+  /// `stagedRewards`（settle 战败即停未暂存），故「失败节点无奖励」自然成立。
+  /// 经验受发布上限层锁门禁（同闭关口径），超阶留账不消费。
+  Future<ExpeditionReturnResult> recall({
+    bool defeated = false,
+    DateTime? now,
+  }) async {
+    final run = await _activeRun();
+    if (run == null) {
+      return const ExpeditionReturnResult(
+        returned: false,
+        deepestNode: 0,
+        grantedRewards: [],
+        downedCount: 0,
+        defeated: false,
+      );
+    }
+
+    final at = now ?? DateTime.now();
+    final deepest = run.currentNode;
+    final memberIds = run.members.map((m) => m.characterId).toList();
+    final downedIds = run.members
+        .where((m) => m.isDowned)
+        .map((m) => m.characterId)
+        .toSet();
+    // 快照暂存奖励（脱离 Isar fixed-length list）。
+    final granted = <RewardEntry>[
+      for (final e in run.stagedRewards)
+        RewardEntry()
+          ..rewardKey = e.rewardKey
+          ..quantity = e.quantity,
+    ];
+
+    final numbers = GameRepository.instance.numbers;
+    final stagedExp = granted.quantityOf('exp');
+
+    await _isar.writeTxn(() async {
+      // 1. 全员发经验（含途中倒下者）+ 战败伤势。
+      final progress = await _isar.mainlineProgress
+          .filter()
+          .saveDataIdEqualTo(run.saveDataId)
+          .findFirst();
+      final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
+      for (final id in memberIds) {
+        final ch = await _isar.characters.get(id);
+        if (ch == null) continue; // §10：找不到角色仍安全结算，不悬挂会话
+        if (stagedExp > 0) {
+          CharacterAdvancementService.applyExperience(
+            ch,
+            stagedExp,
+            realmLookup: GameRepository.instance.getRealm,
+            isLayerLocked: (tier, layer) => ProgressionGateService.isLayerLocked(
+              nextTier: tier,
+              nextLayer: layer,
+              releaseCap: numbers.progressionReleaseCap,
+              realmLookup: GameRepository.instance.getRealm,
+              innerDemonDef: numbers.innerDemon,
+              clearedStageIds: clearedSet,
+            ),
+          );
+        }
+        if (defeated) {
+          // §4.6：倒下者重伤、其余轻伤；召回不进此分支（不附伤）。
+          if (downedIds.contains(id)) {
+            final hours = AttributeEffectPolicy(numbers.attributeEffects)
+                .heavyInjuryHours(
+                  baseHours: numbers.injury.heavyRecoveryHours,
+                  constitution: ch.attributes.constitution,
+                );
+            InjuryService.applyHeavyInjury(ch, recoveryHours: hours);
+          } else {
+            InjuryService.accumulateLightInjury(
+              ch,
+              maxStacks: numbers.injury.lightMaxStacks,
+            );
+          }
+        }
+        await _isar.characters.put(ch);
+      }
+
+      // 2. 发暂存物品到背包（exp 已发，跳过）。
+      for (final r in granted) {
+        if (r.rewardKey == 'exp' || r.quantity <= 0) continue;
+        final existing = await _isar.inventoryItems.getByDefId(r.rewardKey);
+        if (existing != null) {
+          existing.quantity += r.quantity;
+          existing.lastObtainedAt = at;
+          await _isar.inventoryItems.put(existing);
+        } else {
+          await _isar.inventoryItems.put(
+            InventoryItem()
+              ..defId = r.rewardKey
+              ..itemType = ItemType.fromDefId(r.rewardKey)
+              ..quantity = r.quantity
+              ..firstObtainedAt = at
+              ..lastObtainedAt = at,
+          );
+        }
+      }
+
+      // 3. 关闭会话：删 run → 占用自动解除（占用由 active run 派生）。
+      await _isar.expeditionRuns.delete(run.id);
+    });
+
+    return ExpeditionReturnResult(
+      returned: true,
+      deepestNode: deepest,
+      grantedRewards: granted,
+      downedCount: downedIds.length,
+      defeated: defeated,
+    );
+  }
+
   /// active 远征（每存档最多一条）。
   Future<ExpeditionRun?> _activeRun() async {
     final save = await _isar.saveDatas.get(0);
@@ -357,5 +482,31 @@ class ExpeditionSettlementResult {
   final bool caughtUp;
 
   /// 战败即停（§4.2）。
+  final bool defeated;
+}
+
+/// 召回 / 战败返程结果（B2.3）。
+class ExpeditionReturnResult {
+  const ExpeditionReturnResult({
+    required this.returned,
+    required this.deepestNode,
+    required this.grantedRewards,
+    required this.downedCount,
+    required this.defeated,
+  });
+
+  /// 有 active 远征被返程关闭；false = 无远征、无操作。
+  final bool returned;
+
+  /// 最深完成节点（= 返程时 `currentNode`）。
+  final int deepestNode;
+
+  /// 本次发放的暂存奖励（完成节点累计）。
+  final List<RewardEntry> grantedRewards;
+
+  /// 倒下成员数（战败伤势结算依据）。
+  final int downedCount;
+
+  /// 是否战败返程（true）或主动召回（false）。
   final bool defeated;
 }
