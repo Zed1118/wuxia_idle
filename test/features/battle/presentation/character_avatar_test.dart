@@ -5,6 +5,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
+import 'package:wuxia_idle/features/battle/presentation/hp_bar.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_image.dart';
@@ -253,5 +254,25 @@ void main() {
     expect(image.assetPath, 'assets/enemies/unmapped.png');
     expect(image.fit, BoxFit.cover);
     expect(find.byType(ShaderMask), findsOneWidget);
+  });
+
+  testWidgets('心魔镜像只给人物图施加反相墨色层', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: _char(isBoss: false),
+            displayMode: CharacterDisplayMode.stageStandee,
+            inkMirror: true,
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(const ValueKey('battle.innerDemonInkMirror')),
+      findsOneWidget,
+    );
+    expect(find.byType(HpBar), findsNWidgets(2));
   });
 }

@@ -32,6 +32,27 @@ void main() {
         lessThan(battleStageAnchor(0, 1, 2).dy),
       );
     });
+
+    test('轻功舞台扩大上下错层与向中央位移距离', () {
+      final standardTop = battleStageAnchor(0, 1, 3);
+      final lightFootTop = battleStageAnchor(
+        0,
+        1,
+        3,
+        mode: BattleStageLayoutMode.lightFoot,
+      );
+      final standardBottom = battleStageAnchor(0, 2, 3);
+      final lightFootBottom = battleStageAnchor(
+        0,
+        2,
+        3,
+        mode: BattleStageLayoutMode.lightFoot,
+      );
+
+      expect(lightFootTop.dx, lessThan(standardTop.dx));
+      expect(lightFootTop.dy, lessThan(standardTop.dy));
+      expect(lightFootBottom.dy, greaterThan(standardBottom.dy));
+    });
   });
 
   test('Boss 在相同站位比普通角色大一档', () {

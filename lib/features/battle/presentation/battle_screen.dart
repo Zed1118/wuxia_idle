@@ -32,6 +32,7 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 import '../domain/battle_skill_utils.dart';
 import 'battle_playback_controller.dart';
 import 'battle_screen_config.dart';
+import 'battle_stage_geometry.dart';
 
 export 'battle_screen_config.dart';
 import 'widgets/battle_banners.dart';
@@ -675,6 +676,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       (c) => c.isAlive && c.maxHp > 0 && c.currentHp / c.maxHp <= 0.3,
     );
     final showBossInkCloud = state.rightTeam.any((c) => c.isBoss);
+    final backgroundStyle = _backgroundStyleForTrack(widget.bgmTrack);
+    final stageLayout = _stageLayoutForTrack(widget.bgmTrack);
 
     return BgmScope(
       track: widget.bgmTrack,
@@ -685,7 +688,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
             Positioned.fill(
               child: BattleSceneBackground(
                 path: widget.sceneBackgroundPath,
-                style: _backgroundStyleForTrack(widget.bgmTrack),
+                style: backgroundStyle,
               ),
             ),
             Positioned.fill(
@@ -741,6 +744,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                           child: BattlePlaybackField(
                             controller: _playback,
                             state: state,
+                            stageLayout: stageLayout,
                             chargeMaxTicks: chargeMaxTicks,
                             staggerWindowTicks: staggerWindowTicks,
                             onEnemyTap: _onEnemyTap,
@@ -802,6 +806,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       ),
     );
   }
+}
+
+BattleStageLayoutMode _stageLayoutForTrack(BgmTrack track) {
+  return switch (track) {
+    BgmTrack.innerDemon => BattleStageLayoutMode.innerDemon,
+    BgmTrack.lightFoot => BattleStageLayoutMode.lightFoot,
+    BgmTrack.massBattle => BattleStageLayoutMode.massBattle,
+    _ => BattleStageLayoutMode.standard,
+  };
 }
 
 BattleSceneBackgroundStyle _backgroundStyleForTrack(BgmTrack track) {

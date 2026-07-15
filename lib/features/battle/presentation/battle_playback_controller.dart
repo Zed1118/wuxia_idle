@@ -232,7 +232,7 @@ class BattlePlaybackController {
   /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
   void _triggerHitFlash(BattleCharacter target, bool isCritical) {
     if (_reduceFlashing) return;
-    final key = slotKey(target.teamSide, target.slotIndex);
+    final key = _visualSlotKey(target);
     _rebuild(() {
       _hitFlashColors[key] = isCritical ? WuxiaColors.gangMeng : Colors.white;
     });
@@ -417,7 +417,7 @@ class BattlePlaybackController {
     AttackResult result,
     BattleCharacter? attacker,
   ) {
-    final key = slotKey(target.teamSide, target.slotIndex);
+    final key = _visualSlotKey(target);
     final data = _buildPopupData(result, attacker);
     final anchor = _nextPopupAnchor(key, data.type);
     final entry = PopupEntry(
@@ -711,7 +711,7 @@ class BattlePlaybackController {
     // 快进态消费不呈现(下方各触发点带 !_isFastForward gate)。
     final showcaseBeat = _showcase?.onAction(action, s);
     if (actor != null) {
-      final key = slotKey(actor.teamSide, actor.slotIndex);
+      final key = _visualSlotKey(actor);
       _actionTemplates[key] = actionTemplate;
       _attackControllers[key].forward(from: 0.0);
     }
@@ -848,6 +848,9 @@ class BattlePlaybackController {
       _applyHitStop(_animConfig.firstClearFirstSkillHoldMs);
     }
   }
+
+  int _visualSlotKey(BattleCharacter character) =>
+      slotKey(character.teamSide, character.slotIndex.clamp(0, 2));
 
   void dispose() {
     _disposed = true;

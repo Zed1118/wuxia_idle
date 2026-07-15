@@ -14,6 +14,7 @@ import '../../../core/application/battle_providers.dart';
 import '../../../data/isar_setup.dart';
 import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_app_theme.dart';
 import '../../../shared/widgets/wuxia_image.dart';
@@ -372,6 +373,30 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         teamsFactory: BattleScenarioData.scenarioChargeBreak,
         hint: null,
         sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
+        autoStart: false,
+      );
+    case VisualRoute.battleInnerDemonStage:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioDragLive,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_inner_demon.png',
+        bgmTrack: BgmTrack.innerDemon,
+        autoStart: false,
+      );
+    case VisualRoute.battleLightFootStage:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioDragLive,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_bamboo.png',
+        bgmTrack: BgmTrack.lightFoot,
+        autoStart: false,
+      );
+    case VisualRoute.battleMassBattleStage:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioMassBattleStage,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        bgmTrack: BgmTrack.massBattle,
         autoStart: false,
       );
     case VisualRoute.battleTapLive:

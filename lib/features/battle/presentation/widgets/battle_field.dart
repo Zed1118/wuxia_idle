@@ -15,6 +15,7 @@ import '../hit_flash.dart';
 
 class BattleField extends StatelessWidget {
   final BattleState state;
+  final BattleStageLayoutMode stageLayout;
   final List<AnimationController> attackControllers;
   final List<BattleActionTemplate> actionTemplates;
   final Map<int, List<PopupEntry>> popups;
@@ -35,6 +36,7 @@ class BattleField extends StatelessWidget {
   const BattleField({
     super.key,
     required this.state,
+    this.stageLayout = BattleStageLayoutMode.standard,
     required this.attackControllers,
     required this.actionTemplates,
     required this.popups,
@@ -53,20 +55,24 @@ class BattleField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final leftTeamSize = state.leftTeam.length.clamp(1, 3);
+    final rightTeamSize = state.rightTeam.length.clamp(1, 3);
     final slots = <_StageSlotData>[
-      for (var i = 0; i < state.leftTeam.length; i++)
+      for (var i = 0; i < state.leftTeam.length && i < 3; i++)
         _StageSlotData(
           teamSide: 0,
           slotIndex: i,
-          teamSize: state.leftTeam.length,
+          teamSize: leftTeamSize,
           character: state.leftTeam[i],
+          stageLayout: stageLayout,
         ),
-      for (var i = 0; i < state.rightTeam.length; i++)
+      for (var i = 0; i < state.rightTeam.length && i < 3; i++)
         _StageSlotData(
           teamSide: 1,
           slotIndex: i,
-          teamSize: state.rightTeam.length,
+          teamSize: rightTeamSize,
           character: state.rightTeam[i],
+          stageLayout: stageLayout,
         ),
     ]..sort((a, b) => a.anchor.dy.compareTo(b.anchor.dy));
 
@@ -87,6 +93,22 @@ class BattleField extends StatelessWidget {
           return Stack(
             clipBehavior: Clip.none,
             children: [
+              if (stageLayout == BattleStageLayoutMode.massBattle &&
+                  state.rightTeam.length > 3)
+                Positioned(
+                  key: const ValueKey('battle.massBattleInkQueue'),
+                  right: constraints.maxWidth * 0.02,
+                  top: constraints.maxHeight * 0.08,
+                  width: constraints.maxWidth * 0.18,
+                  height: constraints.maxHeight * 0.70,
+                  child: IgnorePointer(
+                    child: CustomPaint(
+                      painter: _MassBattleInkQueuePainter(
+                        count: state.rightTeam.length - 3,
+                      ),
+                    ),
+                  ),
+                ),
               for (final slot in slots)
                 Builder(
                   builder: (context) {
@@ -135,6 +157,10 @@ class BattleField extends StatelessWidget {
                             flashColor: hitFlashColors[slotKey] ?? Colors.white,
                             standeeWidth: width,
                             standeeHeight: height,
+                            inkMirror:
+                                stageLayout ==
+                                    BattleStageLayoutMode.innerDemon &&
+                                !isLeftTeam,
                             clashTravelPx:
                                 templateMovesToClash(actionTemplates[slotKey])
                                 ? ((0.5 - slot.anchor.dx).abs() *
@@ -184,14 +210,53 @@ class _StageSlotData {
     required this.slotIndex,
     required this.teamSize,
     required this.character,
+    required this.stageLayout,
   });
 
   final int teamSide;
   final int slotIndex;
   final int teamSize;
   final BattleCharacter character;
+  final BattleStageLayoutMode stageLayout;
 
-  Offset get anchor => battleStageAnchor(teamSide, slotIndex, teamSize);
+  Offset get anchor =>
+      battleStageAnchor(teamSide, slotIndex, teamSize, mode: stageLayout);
+}
+
+class _MassBattleInkQueuePainter extends CustomPainter {
+  const _MassBattleInkQueuePainter({required this.count});
+
+  final int count;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final visibleCount = count.clamp(1, 4);
+    for (var i = 0; i < visibleCount; i++) {
+      final t = visibleCount == 1 ? 0.5 : i / (visibleCount - 1);
+      final x = size.width * (0.24 + (i.isEven ? 0.10 : 0.48));
+      final y = size.height * (0.18 + t * 0.60);
+      final scale = 0.72 + t * 0.18;
+      final paint = Paint()
+        ..color = Colors.black.withValues(alpha: 0.22 + t * 0.12);
+      canvas.drawCircle(Offset(x, y), 7 * scale, paint);
+      final body = Path()
+        ..moveTo(x, y + 7 * scale)
+        ..quadraticBezierTo(
+          x - 15 * scale,
+          y + 30 * scale,
+          x - 10 * scale,
+          y + 64 * scale,
+        )
+        ..lineTo(x + 10 * scale, y + 64 * scale)
+        ..quadraticBezierTo(x + 15 * scale, y + 30 * scale, x, y + 7 * scale)
+        ..close();
+      canvas.drawPath(body, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MassBattleInkQueuePainter oldDelegate) =>
+      oldDelegate.count != count;
 }
 
 /// 单个角色槽：攻击动画包 + 头像 + 飘字（Stack 叠加，clipBehavior: none 允许溢出）。
@@ -213,6 +278,7 @@ class CharacterSlot extends StatelessWidget {
   final double standeeWidth;
   final double standeeHeight;
   final double clashTravelPx;
+  final bool inkMirror;
   // 两段点选:待发态下敌头像点选目标的回调(null=不可点);待发态高亮。
   final VoidCallback? onTap;
   final bool hovered;
@@ -237,6 +303,7 @@ class CharacterSlot extends StatelessWidget {
     required this.standeeWidth,
     required this.standeeHeight,
     required this.clashTravelPx,
+    this.inkMirror = false,
     this.onTap,
     this.hovered = false,
     this.targetable = false,
@@ -257,6 +324,7 @@ class CharacterSlot extends StatelessWidget {
           displayMode: CharacterDisplayMode.stageStandee,
           standeeWidth: standeeWidth,
           standeeHeight: standeeHeight,
+          inkMirror: inkMirror,
         ),
         if (targetable)
           Positioned(

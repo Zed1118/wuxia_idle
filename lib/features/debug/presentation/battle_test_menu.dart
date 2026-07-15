@@ -8,6 +8,7 @@ import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../battle/presentation/battle_screen.dart';
+import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 
@@ -562,6 +563,21 @@ class BattleScenarioData {
     return (left, right);
   }
 
+  /// 群战舞台静态验收：当前三名主战敌 + 四名后续敌军墨影。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioMassBattleStage() {
+    final (left, templates) = scenarioDragLive();
+    final right = [
+      for (var i = 0; i < 7; i++)
+        templates[i % templates.length].copyWith(
+          characterId: 200 + i,
+          slotIndex: i,
+          isAlive: true,
+        ),
+    ];
+    return (left, right);
+  }
+
   /// 第七阶段批二目检专用（battle_boss_phase 路由）。
   ///
   /// 真 stage_01_05「撑伞高人」Boss 队（经 [StageBattleSetup.buildEnemyTeam] 建，
@@ -798,6 +814,9 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   /// 出版美术验收:传给 BattleScreen 渲染场景背景 + scrim。null = 无背景。
   final String? sceneBackgroundPath;
 
+  /// 特殊战斗舞台模式由 BGM 轨道同源派生（心魔/轻功/群战）。
+  final BgmTrack bgmTrack;
+
   /// 透传给 BattleScreen.autoStart(默认 true 现有用法不变);
   /// false 时画面冻结在 startBattle seed 态,用于静态截蓄力/破招帧。
   final bool autoStart;
@@ -821,6 +840,7 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
     required this.teamsFactory,
     required this.hint,
     this.sceneBackgroundPath,
+    this.bgmTrack = BgmTrack.battle,
     this.autoStart = true,
     this.seed,
     this.allowPlayerIntervention = false,
@@ -851,6 +871,7 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
   Widget build(BuildContext context) => BattleScreen(
     hint: widget.hint,
     sceneBackgroundPath: widget.sceneBackgroundPath,
+    bgmTrack: widget.bgmTrack,
     playback: BattleScreenPlaybackConfig(
       autoStart: widget.autoStart,
       allowPlayerIntervention: widget.allowPlayerIntervention,

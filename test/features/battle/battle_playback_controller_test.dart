@@ -142,17 +142,16 @@ BattleAction _attackAction({bool crit = false, SkillDef? skill}) =>
 Future<_HarnessState> _pump(
   WidgetTester tester, {
   bool readablePacing = false,
+  BattleState? state,
 }) async {
   final key = GlobalKey<_HarnessState>();
   final (left, right) = BattleDemo.mockTeams();
+  final initial =
+      state ?? BattleState.initial(leftTeam: left, rightTeam: right);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        battleProvider.overrideWith(
-          () => _NoopBattleNotifier(
-            BattleState.initial(leftTeam: left, rightTeam: right),
-          ),
-        ),
+        battleProvider.overrideWith(() => _NoopBattleNotifier(initial)),
       ],
       child: MaterialApp(
         home: _Harness(key: key, readablePacing: readablePacing),
@@ -232,6 +231,46 @@ void main() {
     expect(c.debugActiveTrailCount, 0);
     expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.melee);
     expect(c.debugActiveEffectCount, greaterThan(0));
+  });
+
+  testWidgets('群战第 4–7 敌人的动作与受击安全归并到敌方后景表现槽', (tester) async {
+    final (left, rightBase) = BattleDemo.mockTeams();
+    final right = [
+      for (var i = 0; i < 7; i++)
+        rightBase[i % rightBase.length].copyWith(
+          characterId: 100 + i,
+          slotIndex: i,
+          isAlive: true,
+        ),
+    ];
+    final state = BattleState.initial(leftTeam: left, rightTeam: right);
+    final c = (await _pump(tester, state: state)).controller;
+
+    c.playAction(
+      BattleAction(
+        tick: 1,
+        actorId: right.last.characterId,
+        targetId: left.first.characterId,
+        attackResult: _hitResult(),
+        description: 'overflow actor hit',
+      ),
+      state,
+    );
+    c.playAction(
+      BattleAction(
+        tick: 2,
+        actorId: left.first.characterId,
+        targetId: right.last.characterId,
+        attackResult: _hitResult(),
+        description: 'overflow target hit',
+      ),
+      state,
+    );
+    await tester.pump();
+
+    expect(c.debugActionTemplateForSlot(5), BattleActionTemplate.melee);
+    expect(c.debugPopupsForSlot(5), hasLength(1));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('pause / resume 调度标志', (tester) async {

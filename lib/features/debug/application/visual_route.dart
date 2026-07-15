@@ -64,6 +64,15 @@ enum VisualRoute {
     'battle_charge_break',
     '战斗屏·青衫剑客蓄力青锋绝 + 玩家破招按钮高亮(静态验收破招 UI)',
   ),
+  battleInnerDemonStage(
+    'battle_inner_demon_stage',
+    '战斗屏·心魔镜像墨色反相 + 敌方轮廓晕染静态验收',
+  ),
+  battleLightFootStage('battle_light_foot_stage', '战斗屏·轻功上下错层 + 加长交锋位移静态验收'),
+  battleMassBattleStage(
+    'battle_mass_battle_stage',
+    '战斗屏·群战三名主战立绘 + 余敌墨影队列静态验收',
+  ),
   battleVictoryFirstClear(
     'battle_victory_first_clear',
     '胜利弹窗·Boss 首胜封签 + 掉落/升层/共鸣三段验收',

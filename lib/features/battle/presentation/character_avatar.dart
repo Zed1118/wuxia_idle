@@ -31,6 +31,7 @@ class CharacterAvatar extends StatelessWidget {
   final CharacterDisplayMode displayMode;
   final double standeeWidth;
   final double standeeHeight;
+  final bool inkMirror;
 
   /// Boss/敌人蓄力满值（`numbers.combat.bossCharge.defaultChargeTicks`）。
   /// 用于把 [BattleCharacter.chargeTicksRemaining] 换算成蓄力读秒环比例。
@@ -56,6 +57,7 @@ class CharacterAvatar extends StatelessWidget {
     this.displayMode = CharacterDisplayMode.avatar,
     this.standeeWidth = 160,
     this.standeeHeight = 230,
+    this.inkMirror = false,
     this.chargeMaxTicks = 3,
     this.beat,
     this.staggerWindowTicks = 3,
@@ -73,6 +75,7 @@ class CharacterAvatar extends StatelessWidget {
         staggerWindowTicks: staggerWindowTicks,
         width: standeeWidth,
         height: standeeHeight,
+        inkMirror: inkMirror,
       );
     }
 
@@ -260,6 +263,7 @@ class _StageCharacterStandee extends StatelessWidget {
     required this.staggerWindowTicks,
     required this.width,
     required this.height,
+    required this.inkMirror,
   });
 
   final BattleCharacter character;
@@ -269,6 +273,7 @@ class _StageCharacterStandee extends StatelessWidget {
   final int staggerWindowTicks;
   final double width;
   final double height;
+  final bool inkMirror;
 
   @override
   Widget build(BuildContext context) {
@@ -309,7 +314,7 @@ class _StageCharacterStandee extends StatelessWidget {
             firstGlyph: firstGlyph,
           );
 
-    final portraitImage = usesTransparentStandee
+    Widget portraitImage = usesTransparentStandee
         ? image
         : ShaderMask(
             blendMode: BlendMode.dstIn,
@@ -321,6 +326,34 @@ class _StageCharacterStandee extends StatelessWidget {
             ).createShader(rect),
             child: image,
           );
+    if (inkMirror) {
+      portraitImage = ColorFiltered(
+        key: const ValueKey('battle.innerDemonInkMirror'),
+        colorFilter: const ColorFilter.matrix(<double>[
+          0.42,
+          0.36,
+          0.22,
+          0,
+          8,
+          0.22,
+          0.34,
+          0.24,
+          0,
+          0,
+          0.36,
+          0.28,
+          0.48,
+          0,
+          18,
+          0,
+          0,
+          0,
+          0.92,
+          0,
+        ]),
+        child: portraitImage,
+      );
+    }
 
     Widget portrait = Container(
       width: width,
@@ -329,6 +362,15 @@ class _StageCharacterStandee extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         border: character.isBoss
             ? Border.all(color: borderColor.withValues(alpha: 0.9), width: 3)
+            : null,
+        boxShadow: inkMirror
+            ? [
+                BoxShadow(
+                  color: WuxiaColors.yinRou.withValues(alpha: 0.28),
+                  blurRadius: 14,
+                  spreadRadius: 1,
+                ),
+              ]
             : null,
       ),
       clipBehavior: Clip.antiAlias,
