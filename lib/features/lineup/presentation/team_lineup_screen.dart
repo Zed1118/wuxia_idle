@@ -104,24 +104,8 @@ class _Body extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
           SizedBox(
-            height: 208,
-            child: Row(
-              children: [
-                for (var i = 0; i < 3; i++) ...[
-                  if (i > 0) const SizedBox(width: 12),
-                  Expanded(
-                    child: i < actives.length && actives[i] != null
-                        ? _ActiveSlotCard(
-                            character: actives[i]!,
-                            slotIndex: i,
-                            activeIds: activeIds,
-                            actives: actives,
-                          )
-                        : const _EmptySlotCard(),
-                  ),
-                ],
-              ],
-            ),
+            height: 252,
+            child: _FormationStage(activeIds: activeIds, actives: actives),
           ),
           const SizedBox(height: 16),
           _SectionTitle(UiStrings.lineupReserveSection(reserve.length)),
@@ -156,6 +140,100 @@ class _Body extends ConsumerWidget {
                   ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 把编成顺序直接投影成战场站位预览。锦标位置与标准战场的
+/// 我方三席同构：首席靠近中场，二/三席向左后方展开。
+/// 这里仍是点选交换，不引入拖放。
+class _FormationStage extends StatelessWidget {
+  const _FormationStage({required this.activeIds, required this.actives});
+
+  final List<int> activeIds;
+  final List<Character?> actives;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('lineup.formationStage'),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: const Color(0xFF29251F),
+        image: DecorationImage(
+          image: const AssetImage(WuxiaUi.battleMountainPassStage),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(
+            Colors.black.withValues(alpha: 0.28),
+            BlendMode.darken,
+          ),
+        ),
+        border: Border.all(color: const Color(0xFF6D5940)),
+        boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 12)],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 1000;
+          final rearWidth = compact ? 186.0 : 214.0;
+          final frontWidth = compact ? 224.0 : 252.0;
+          final rearHeight = compact ? 172.0 : 180.0;
+          final frontHeight = compact ? 202.0 : 216.0;
+
+          Widget slot(int index) {
+            final isFront = index == 0;
+            final width = isFront ? frontWidth : rearWidth;
+            final height = isFront ? frontHeight : rearHeight;
+            // 卡片按「三席 → 二席 → 首席」向交锋方向递进，
+            // 与战场的斜向阵列同语义；保留间距使每张卡的整个
+            // 点选面都可命中，不用重叠卡片牺牲操作性。
+            final left = switch (index) {
+              0 => rearWidth * 2 + 48,
+              1 => rearWidth + 28,
+              _ => 8.0,
+            }.clamp(8.0, constraints.maxWidth - width - 8);
+            final top = switch (index) {
+              0 => 18.0,
+              1 => 56.0,
+              _ => 12.0,
+            }.clamp(8.0, constraints.maxHeight - height - 8);
+            return Positioned(
+              key: ValueKey('lineup.formationSlot.$index'),
+              left: left,
+              top: top,
+              width: width,
+              height: height,
+              child: index < actives.length && actives[index] != null
+                  ? _ActiveSlotCard(
+                      character: actives[index]!,
+                      slotIndex: index,
+                      activeIds: activeIds,
+                      actives: actives,
+                    )
+                  : const _EmptySlotCard(),
+            );
+          }
+
+          return Stack(
+            children: [
+              Positioned(
+                right: constraints.maxWidth * 0.11,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: Icon(
+                    Icons.east,
+                    size: compact ? 58 : 72,
+                    color: WuxiaUi.gold.withValues(alpha: 0.42),
+                  ),
+                ),
+              ),
+              slot(2),
+              slot(1),
+              slot(0),
+            ],
+          );
+        },
       ),
     );
   }
@@ -423,7 +501,7 @@ class _EquipAttackText extends ConsumerWidget {
     }
     return Text(
       UiStrings.lineupEquipAttack(sum),
-      style: const TextStyle(color: WuxiaColors.textSecondary, fontSize: 11),
+      style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
     );
   }
 }
@@ -457,9 +535,20 @@ class _ActiveSlotCard extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: WuxiaColors.panel,
+          color: WuxiaUi.paper.withValues(alpha: 0.94),
+          image: const DecorationImage(
+            image: AssetImage(WuxiaUi.paperBg),
+            fit: BoxFit.cover,
+            opacity: 0.12,
+          ),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: WuxiaUi.gold.withValues(alpha: 0.35)),
+          border: Border.all(
+            color: slotIndex == 0
+                ? WuxiaUi.gold
+                : _schoolColor(character.school).withValues(alpha: 0.58),
+            width: slotIndex == 0 ? 1.6 : 1,
+          ),
+          boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 9)],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -468,10 +557,7 @@ class _ActiveSlotCard extends ConsumerWidget {
               children: [
                 Text(
                   UiStrings.lineupSlotLabel(slotIndex),
-                  style: const TextStyle(
-                    color: WuxiaColors.textMuted,
-                    fontSize: 10,
-                  ),
+                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 10),
                 ),
                 const SizedBox(width: 6),
                 if (slotIndex == 0)
@@ -492,6 +578,7 @@ class _ActiveSlotCard extends ConsumerWidget {
                   portraitPath: character.portraitPath,
                   size: 44,
                   borderColor: _schoolColor(character.school),
+                  placeholderText: character.name,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -500,7 +587,7 @@ class _ActiveSlotCard extends ConsumerWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: WuxiaColors.textPrimary,
+                      color: WuxiaUi.ink,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
@@ -528,7 +615,7 @@ class _ActiveSlotCard extends ConsumerWidget {
 }
 
 class _InfoLine extends StatelessWidget {
-  const _InfoLine(this.text, {this.color = WuxiaColors.textSecondary});
+  const _InfoLine(this.text, {this.color = WuxiaUi.muted});
 
   final String text;
   final Color color;
@@ -549,8 +636,9 @@ class _EmptySlotCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.48),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: WuxiaColors.border),
+        border: Border.all(color: WuxiaUi.gold.withValues(alpha: 0.45)),
       ),
       child: Center(
         child: Column(
@@ -558,13 +646,13 @@ class _EmptySlotCard extends StatelessWidget {
           children: [
             const Text(
               UiStrings.lineupEmptySlotLabel,
-              style: TextStyle(color: WuxiaColors.textMuted, fontSize: 13),
+              style: TextStyle(color: WuxiaUi.ink, fontSize: 13),
             ),
             const SizedBox(height: 4),
             Text(
               UiStrings.lineupEmptySlotHint,
               style: TextStyle(
-                color: WuxiaColors.textMuted.withValues(alpha: 0.7),
+                color: WuxiaUi.muted.withValues(alpha: 0.8),
                 fontSize: 10,
               ),
             ),
@@ -604,7 +692,12 @@ class _ReserveTile extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: WuxiaColors.panel.withValues(alpha: inRetreat ? 0.55 : 1),
+          color: WuxiaUi.paper.withValues(alpha: inRetreat ? 0.56 : 0.92),
+          image: const DecorationImage(
+            image: AssetImage(WuxiaUi.paperBg),
+            fit: BoxFit.cover,
+            opacity: 0.08,
+          ),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
             color: isWeak
@@ -618,6 +711,7 @@ class _ReserveTile extends ConsumerWidget {
               portraitPath: character.portraitPath,
               size: 36,
               borderColor: _schoolColor(character.school),
+              placeholderText: character.name,
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -629,9 +723,7 @@ class _ReserveTile extends ConsumerWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: inRetreat
-                          ? WuxiaColors.textMuted
-                          : WuxiaColors.textPrimary,
+                      color: inRetreat ? WuxiaUi.muted : WuxiaUi.ink,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
@@ -644,10 +736,7 @@ class _ReserveTile extends ConsumerWidget {
                             character.realmLayer,
                           )
                         : '${EnumL10n.realm(character.realmTier, character.realmLayer)} · ${EnumL10n.school(character.school!)}',
-                    style: const TextStyle(
-                      color: WuxiaColors.textSecondary,
-                      fontSize: 11,
-                    ),
+                    style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
                   ),
                 ],
               ),
@@ -658,10 +747,7 @@ class _ReserveTile extends ConsumerWidget {
               children: [
                 Text(
                   _aiTendency(character),
-                  style: const TextStyle(
-                    color: WuxiaColors.textSecondary,
-                    fontSize: 11,
-                  ),
+                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
                 ),
                 const SizedBox(height: 2),
                 _EquipAttackText(character: character),

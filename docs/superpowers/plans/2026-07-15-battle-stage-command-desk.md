@@ -81,3 +81,9 @@
 - `battle_charge_break` 1440×900 复截位于 `build/visual_acceptance/battle_ui_stagger_ground_seal/`；旧帧右侧杀手背后大面积红色矩形已消失，无 overflow / exception / error。
 - Boss、蓄势/破招、点选冻结与 Boss 阶段验收路由统一使用山口舞台，不再在特殊状态中退回旧纸墙/城墙背景。`scenarioBoss` 冻结帧的六人也改用透明全身立绘，去除四张带底纸的历史头像。
 - 后排立绘缩小后的状态牌独立放宽，1280 视口下四位/五位气血值不再挤成一团。统一后 Boss 帧位于 `build/visual_acceptance/battle_ui_boss_standee_unified/`。
+
+## 战斗邻接编成页恢复点（2026-07-16）
+
+- 将原本横向三张深灰信息卡改为山口地图上的阵列预览：第三席 → 第二席 → 第一席朝交锋方向递进，首席放大并保留前排印，与战场 `slot 0/1/2` 语义对齐。
+- 交互仍是点击卡片后在纸弹窗选换席，未引入拖放；三卡刻意不重叠，并增加 widget 几何断言保护整卡点选面。
+- 出战/替补卡改用宣纸底与水墨占位字，无立绘角色不再显示空黑框。两视口帧位于 `build/visual_acceptance/team_lineup_formation_stage/`，最终 1280 帧位于 `build/visual_acceptance/team_lineup_formation_final/`。
