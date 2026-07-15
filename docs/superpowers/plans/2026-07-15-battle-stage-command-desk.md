@@ -46,8 +46,8 @@
 
 ## 5. 当前恢复点
 
-- **状态**：切片 1 `4599d73d`、切片 2 `917e143d`、切片 3 `1a8a2598`、祖师样板 `63eb0822`、两弟子样板 `750dfcf6`、敌方立绘与 Boss 体量 `17eadf85` 均已提交；切片 1–6 已完成，敌方旧资源别名与 GDD 点按口径待最终恢复提交。
+- **状态**：切片 1 `4599d73d`、切片 2 `917e143d`、切片 3 `1a8a2598`、祖师样板 `63eb0822`、两弟子样板 `750dfcf6`、敌方立绘与 Boss 体量 `17eadf85`、全人物别名与点按口径 `ac12adc9` 均已提交；切片 1–6 完成。
 - **最后完成**：七张透明战斗立绘已齐备：祖师、两弟子、山匪、黑衣杀手、撑伞高手和塔主 Boss。旧头像路径仅在战场展示层映射为透明全身图，其他角色页面不受影响；Boss 在同一阵列深度上额外放大 `1.12×`，不改变碰撞、目标或数值语义。蓄力/破招圆环、目标高亮、死亡灰显继续复用现有状态层。心魔、轻功、群战确认共用同一 `BattleScreen`，仅替换策略和背景；群战维持纯自动，心魔/轻功维持点按干预。
-- **下一步**：提交最终恢复点并交付用户目检；不主动 push/开 PR，避免 main 尚未 push 时扩大并行集成面。
+- **下一步**：交付用户目检；不主动 push/开 PR，避免 main 尚未 push 时扩大并行集成面。
 - **已跑验证**：战斗 presentation 全套与 controller 共 198 项通过；心魔/轻功/群战链路 116 项通过；定向 `flutter analyze` 无问题，`dart format --set-exit-if-changed` 与 `git diff --check` 通过。七张战斗立绘均为有效 RGBA、alpha 范围 `0–255` 且四角透明。Boss 实战帧位于 `build/visual_acceptance/battle_ui_stage_slice5_boss_initial/`，蓄力/破招帧位于 `build/visual_acceptance/battle_ui_stage_slice5_states/`，最终双视口帧位于 `build/visual_acceptance/battle_ui_stage_slice6_final_alias_fixed/`；日志均无 overflow/exception/error。macOS 截图外围黑边为窗口缩放捕获伪影，不计入游戏画布。
 - **阻塞项**：无。集成风险为 Claude 并行分支可能同时改 `lib/shared/strings.dart` / `GDD.md`；本分支仅追加战斗案台必要文案，并在 GDD §5.7/§5.8 修正点按口径，交付时明确冲突点。
