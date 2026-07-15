@@ -73,8 +73,12 @@
 
 ## 当前恢复点
 
-- 状态:Phase 0 完成,切片 1 进行中(TDD 红)。
-- 最后完成:worktree 环境预热(pub get + dylib + build_runner 116 outputs + 冒烟 8/8 绿)。
-- 下一步:写 lineup_service_test 校验矩阵(红)→ 实装 LineupService(绿)→ commit。
-- 已跑验证:冒烟 technique_learn_flow_service_test 8 pass(本 worktree)。
-- 阻塞项:PR #38 CI test job 重跑中(bg watcher 盯),合并后才能做切片 6 docs rebase。
+- 状态:**切片 1-7 全部完成,PR #39(draft)待用户审合**。
+- 最后完成:批末门禁全绿(analyze 0 / format 0 changed / 全量 4024 pass 0 fail =
+  基线 3987 + 37 新测)+ docs 收口(spec §2 订正块 / backlog #4 勾账 / PROGRESS /
+  CLAUDE v1.39)+ push + PR #39。
+- 实装期两处 spec 缺口(均已落 spec §2 订正块):①战斗态拒→路由结构性保证;
+  ②加入者须已修主修(wiring 回归测逮到,noMainTechnique 校验+「未修主修」标)。
+- 下一步:用户审 PR #39 → 合并 → Codex 真机目检(visual_route `team_lineup`)→
+  合并后清 worktree `team-lineup-impl` + 本地分支。
+- 阻塞项:无。

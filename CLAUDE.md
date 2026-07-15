@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.39**
+> v1.39 变更摘要(2026-07-15 出战编成屏 · 0 改数值):玩法评估 §十三 #4 实装——门派谱「出战编成」入口→编成屏(3 席+替补池,点选交换);`LineupService` 单事务唯一编成写入口(`activeCharacterIds` 唯一真相源=列表序即站位序,`Character.isActive` 镜像),校验=祖师必在/1-3 人/闭关锁(增删拦、纯重排放行)/已飞升太祖禁回场/**加入者须已修主修**(镜像 `stage_battle_setup._playerToBattle` 硬前置);替补池口径=`isActive==false` 索引查询(覆盖四条 inactive 进入管线,recruitedDiscipleIds 只覆盖 E.1 不可用)。研习首门心法弹「立为主修/纳为辅修」择路(PR #36 观察① 收窄版,有主修维持仅辅修零新散功),零心法态保留研习入口。无 schema/saveVersion 变更。源:spec `docs/spec/2026-07-14-team-lineup-screen-design.md`(含 §2 实装订正块)。
 > **版本:v1.37**
 > v1.37 变更摘要(2026-07-14 全量审查收口 · 0 改数值):① §4 注记 skills.yaml camelCase 历史例外(文档与现实收口,不迁移 206 招 key);② §8.2 合并 Gate 补 ⓓ commit message 中文检查项。源:`~/Desktop/挂机武侠全量审查报告_2026-07-14.md` P3-2/P3-4。
 > **版本:v1.38**
