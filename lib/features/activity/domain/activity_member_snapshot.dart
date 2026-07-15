@@ -1,5 +1,7 @@
 import 'package:isar_community/isar.dart';
 
+part 'activity_member_snapshot.g.dart';
+
 /// 活动会话（远征/断魂庄）内单个角色的关次/节点边界快照。
 ///
 /// 保留字段 [reservedEquipmentIds]/[reservedTechniqueIds] 是占用契约的真相来源：
