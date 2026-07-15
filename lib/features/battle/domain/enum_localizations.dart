@@ -202,6 +202,7 @@ class EnumL10n {
       ItemType.xinXueJieJing => '心血结晶',
       ItemType.jingYanDan => '经验丹',
       ItemType.techniqueScroll => '心法秘籍',
+      ItemType.ticket => '断魂帖',
       ItemType.miscMaterial => '杂项材料',
       ItemType.silver => '银两',
     };

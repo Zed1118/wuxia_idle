@@ -142,6 +142,7 @@ Color _inlineLootColor(DropRumorEntry entry) {
     ItemType.xinXueJieJing => WuxiaColors.yinRou,
     ItemType.jingYanDan => WuxiaColors.hpHigh,
     ItemType.techniqueScroll => WuxiaColors.lingQiao,
+    ItemType.ticket => WuxiaColors.sealCrimson,
     ItemType.miscMaterial => WuxiaColors.hpMid,
     ItemType.silver => WuxiaColors.resultHighlight,
   };

@@ -36,3 +36,5 @@ items:
   - { defId: item_mojianshi,     type: moJianShi,     name: 磨剑石 }
   - { defId: item_xinxuejiejing, type: xinXueJieJing, name: 心血结晶 }
   - { defId: item_silver,        type: silver,        name: 银两 }
+  # 副本凭证（断魂庄入场帖，Phase C 入场扣帖消费；运行期归类同 ItemType.fromDefId）
+  - { defId: item_duanhuntie,    type: ticket,        name: 断魂帖 }

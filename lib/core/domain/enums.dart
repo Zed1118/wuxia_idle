@@ -339,6 +339,7 @@ enum ItemType {
   xinXueJieJing, // 心血结晶（强化保底，GDD §6.3）
   jingYanDan, // 经验丹
   techniqueScroll, // 心法秘籍
+  ticket, // 副本凭证（断魂帖等）
   miscMaterial, // 杂项材料
   silver; // 银两（货币）
 
@@ -356,6 +357,8 @@ enum ItemType {
         return ItemType.xinXueJieJing;
       case 'item_silver':
         return ItemType.silver;
+      case 'item_duanhuntie':
+        return ItemType.ticket;
       default:
         return ItemType.miscMaterial;
     }

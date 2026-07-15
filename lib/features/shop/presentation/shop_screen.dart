@@ -574,7 +574,10 @@ class _ShopItemTile extends StatelessWidget {
     ItemType.moJianShi ||
     ItemType.xinXueJieJing ||
     ItemType.miscMaterial => true,
-    ItemType.jingYanDan || ItemType.techniqueScroll || ItemType.silver => false,
+    ItemType.jingYanDan ||
+    ItemType.techniqueScroll ||
+    ItemType.silver ||
+    ItemType.ticket => false,
   };
 
   @override
