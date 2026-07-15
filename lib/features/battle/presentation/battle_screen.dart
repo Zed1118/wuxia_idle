@@ -724,6 +724,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                               setState(() => _logOpen = !_logOpen),
                           onPause: _togglePause,
                           isPaused: _playback.isPaused,
+                          onFastForward: _playback.toggleFastForward,
+                          isFastForward: _playback.isFastForward,
+                          allowPlayerIntervention:
+                              widget.playback.allowPlayerIntervention,
                           onSurrender: widget.onSurrender == null
                               ? null
                               : _confirmSurrender,
@@ -758,8 +762,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                               widget.playback.allowPlayerIntervention,
                           onSelectFocus: _onSelectFocus,
                           onShowSkillInfo: _showSkillInfo,
-                          onFastForward: _playback.toggleFastForward,
-                          isFastForward: _playback.isFastForward,
                           onSkillTap: _onSkillTap,
                           pendingCharacterId:
                               _pendingCharId ??

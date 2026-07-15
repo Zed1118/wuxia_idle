@@ -8,9 +8,10 @@ import '../../../../data/defs/skill_def.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
+import '../battle_layout_tokens.dart';
 import '../countdown_ring.dart';
 
-/// T1 战斗指令台：左侧重点角色选择器 + 该角色全部可用技能的分组指令按钮 + 快进。
+/// T1 武学案台：左侧执招者 + 中部 7 个稳定技能签 + 右侧 3 个战备行囊位。
 ///
 /// 旧版每角色只暴露大招/破招两按钮；新版聚焦单个"重点角色"，把它的
 /// [BattleCharacter.availableSkills]（除普攻）全摊开成 强力/破招/共鸣/大招 分组按钮，
@@ -24,8 +25,6 @@ class BottomBar extends StatelessWidget {
   final void Function(int slotIndex) onSelectFocus;
   // 两段点选:长按技能方块 = 弹简介浮层(直接读 SkillDef 活数据);点击 = 释放(见 onSkillTap)。
   final void Function(SkillDef skill) onShowSkillInfo;
-  final VoidCallback onFastForward;
-  final bool isFastForward;
   // 两段点选:点技能按钮(single → 进待发态 / aoe → 一键出手 / 待发态再点同一技能取消)。
   final void Function(int characterId, SkillDef skill) onSkillTap;
   // 两段点选本地待发态:纯 presentation,不写 BattleState.pendingUltimates。
@@ -43,8 +42,6 @@ class BottomBar extends StatelessWidget {
     required this.allowPlayerIntervention,
     required this.onSelectFocus,
     required this.onShowSkillInfo,
-    required this.onFastForward,
-    required this.isFastForward,
     required this.onSkillTap,
     required this.pendingCharacterId,
     required this.pendingSkillId,
@@ -86,8 +83,12 @@ class BottomBar extends StatelessWidget {
     ]..sort((a, b) => _groupRank(a).compareTo(_groupRank(b)));
 
     return Container(
-      height: 124,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      key: const ValueKey('battle_command_desk'),
+      height: BattleLayoutTokens.commandDeskHeight,
+      padding: const EdgeInsets.symmetric(
+        horizontal: BattleLayoutTokens.commandDeskHorizontalPadding,
+        vertical: BattleLayoutTokens.commandDeskVerticalPadding,
+      ),
       decoration: const BoxDecoration(
         color: WuxiaColors.panel,
         border: Border(top: BorderSide(color: WuxiaColors.border)),
@@ -100,40 +101,45 @@ class BottomBar extends StatelessWidget {
             focusSlotIndex: focusSlotIndex,
             onSelectFocus: onSelectFocus,
           ),
-          const SizedBox(width: 12),
-          Container(width: 1, height: 82, color: WuxiaColors.border),
-          const SizedBox(width: 12),
+          const SizedBox(width: BattleLayoutTokens.sectionGap),
+          Container(
+            width: 1,
+            height: BattleLayoutTokens.sectionDividerHeight,
+            color: WuxiaColors.border,
+          ),
+          const SizedBox(width: BattleLayoutTokens.sectionGap),
           Expanded(
-            child: focus == null
-                ? const SizedBox.shrink()
-                : SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        for (final s in skills) ...[
-                          Builder(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var index = 0; index < 7; index++) ...[
+                  Expanded(
+                    key: ValueKey('battle_skill_slot_$index'),
+                    child: index < skills.length && focus != null
+                        ? Builder(
                             builder: (context) {
+                              final skill = skills[index];
                               final localPendingThis =
-                                  localPendingForFocus == s.id;
+                                  localPendingForFocus == skill.id;
                               final domainPendingThis =
-                                  domainPending?.id == s.id;
+                                  domainPending?.id == skill.id;
                               final button = SkillCommandButton(
                                 character: focus,
-                                skill: s,
+                                skill: skill,
                                 isPending:
                                     localPendingThis || domainPendingThis,
                                 pendingTapEnabled: localPendingThis,
                                 queuedAnother:
                                     domainPending != null &&
-                                    domainPending.id != s.id,
-                                highlight: enemyCharging && s.canInterrupt,
+                                    domainPending.id != skill.id,
+                                highlight: enemyCharging && skill.canInterrupt,
                                 allowPlayerIntervention:
                                     allowPlayerIntervention,
                                 beat: beat,
-                                onTap: () => onSkillTap(focus.characterId, s),
-                                onShowInfo: () => onShowSkillInfo(s),
+                                onTap: () =>
+                                    onSkillTap(focus.characterId, skill),
+                                onShowInfo: () => onShowSkillInfo(skill),
                               );
-                              // 待发的单体技格挂锚点,供其上方浮出敌人快捷选择栏。
                               return localPendingThis
                                   ? CompositedTransformTarget(
                                       link: skillTargetLink,
@@ -141,15 +147,17 @@ class BottomBar extends StatelessWidget {
                                     )
                                   : button;
                             },
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                      ],
-                    ),
+                          )
+                        : EmptySkillSlot(index: index),
                   ),
+                  if (index < 6)
+                    const SizedBox(width: BattleLayoutTokens.skillSlotGap),
+                ],
+              ],
+            ),
           ),
-          const SizedBox(width: 12),
-          FastForwardButton(onPressed: onFastForward, isActive: isFastForward),
+          const SizedBox(width: BattleLayoutTokens.sectionGap),
+          const BattlePouchRail(),
         ],
       ),
     );
@@ -171,19 +179,32 @@ class FocusSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < team.length; i++) ...[
-          FocusChip(
-            key: ValueKey('focus_chip_$i'),
-            character: team[i],
-            selected: i == focusSlotIndex,
-            onTap: () => onSelectFocus(i),
+    return SizedBox(
+      width: BattleLayoutTokens.actorRailWidth,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            UiStrings.battleCommandDesk,
+            style: TextStyle(
+              color: WuxiaColors.textMuted,
+              fontSize: 10,
+              letterSpacing: 2,
+            ),
           ),
-          if (i < team.length - 1) const SizedBox(width: 6),
+          const SizedBox(height: 5),
+          for (var i = 0; i < team.length; i++) ...[
+            FocusChip(
+              key: ValueKey('focus_chip_$i'),
+              character: team[i],
+              selected: i == focusSlotIndex,
+              onTap: () => onSelectFocus(i),
+            ),
+            if (i < team.length - 1) const SizedBox(height: 4),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -208,8 +229,7 @@ class FocusChip extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
       child: Container(
-        width: 50,
-        height: 76,
+        height: BattleLayoutTokens.actorChipHeight,
         decoration: BoxDecoration(
           color: selected ? color.withValues(alpha: 0.28) : WuxiaColors.sidebar,
           border: Border.all(
@@ -219,9 +239,9 @@ class FocusChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(6),
         ),
         child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: Row(
             children: [
+              const SizedBox(width: 9),
               Container(
                 width: 8,
                 height: 8,
@@ -230,17 +250,15 @@ class FocusChip extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
               ),
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
+              const SizedBox(width: 7),
+              Expanded(
                 child: Text(
                   character.name,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 10,
-                    height: 1.1,
+                    fontSize: 11,
+                    fontWeight: selected ? FontWeight.bold : FontWeight.w500,
                     color: dim
                         ? WuxiaColors.textMuted
                         : (selected
@@ -249,6 +267,14 @@ class FocusChip extends StatelessWidget {
                   ),
                 ),
               ),
+              Text(
+                '${character.currentQi}/${character.maxQi}',
+                style: const TextStyle(
+                  color: WuxiaColors.textMuted,
+                  fontSize: 9,
+                ),
+              ),
+              const SizedBox(width: 8),
             ],
           ),
         ),
@@ -339,17 +365,17 @@ class SkillCommandButton extends StatelessWidget {
     }
 
     final button = SizedBox(
-      width: 102,
-      height: 86,
+      height: BattleLayoutTokens.skillSlotHeight,
       child: ElevatedButton(
-        // 两段点选:手势由外层 GestureDetector 接管(点击=释放 / 长按=简介);
-        // 这里 onPressed 仅为保持「可用态」视觉(非空 → 不走 disabled 灰底),
-        // 外层 AbsorbPointer 拦掉本按钮自身的点击/涟漪,故此回调不会被触发。
-        onPressed: () {},
+        // 使用原生按钮同时承接点击释放与长按简介，保留桌面端
+        // focus / 键盘激活 / mouse cursor / semantics，不用裸手势容器。
+        onPressed: enabled ? onTap : null,
+        onLongPress: onShowInfo,
         style: ElevatedButton.styleFrom(
           // 背景已由 bgColor(!ready→buttonDisabled)表达,
           // 前景按 enabled 手动切 muted/primary 保留「不可下发」灰态观感。
           backgroundColor: bgColor,
+          disabledBackgroundColor: bgColor,
           foregroundColor: enabled
               ? WuxiaColors.textPrimary
               : WuxiaColors.textMuted,
@@ -373,7 +399,7 @@ class SkillCommandButton extends StatelessWidget {
                   children: [
                     Text(
                       _groupLabel(skill),
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 10,
@@ -468,16 +494,100 @@ class SkillCommandButton extends StatelessWidget {
       ],
     );
 
-    // 两段点选:点击 = 释放(仅 enabled 时;single 进待发态 / aoe 一键出手),
-    // 长按 = 弹简介浮层(始终可用,CD/内力不足/待发态亦可查看)。
-    // ValueKey 移到外层 GestureDetector(它是命中目标);AbsorbPointer 拦掉内层
-    // ElevatedButton 自身的点击/涟漪,保证手势进到外层识别器(且不抢横向滚动)。
-    return GestureDetector(
+    return Semantics(
       key: ValueKey('skill_cmd_${character.characterId}_${skill.id}'),
-      behavior: HitTestBehavior.opaque,
-      onTap: enabled ? onTap : null,
-      onLongPress: onShowInfo,
-      child: AbsorbPointer(child: buttonWithBadge),
+      button: true,
+      enabled: enabled,
+      label: '${_groupLabel(skill)} ${skill.name}',
+      child: buttonWithBadge,
+    );
+  }
+}
+
+class EmptySkillSlot extends StatelessWidget {
+  const EmptySkillSlot({super.key, required this.index});
+
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: UiStrings.battleEmptySkillSlot,
+      child: Container(
+        key: ValueKey('battle_skill_empty_$index'),
+        height: BattleLayoutTokens.skillSlotHeight,
+        decoration: BoxDecoration(
+          color: WuxiaColors.sidebar.withValues(alpha: 0.42),
+          border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.7)),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: const Center(
+          child: Icon(Icons.add, size: 14, color: WuxiaColors.textMuted),
+        ),
+      ),
+    );
+  }
+}
+
+class BattlePouchRail extends StatelessWidget {
+  const BattlePouchRail({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: BattleLayoutTokens.pouchWidth,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Row(
+            children: [
+              Text(
+                UiStrings.battlePouch,
+                style: TextStyle(
+                  color: WuxiaColors.textSecondary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+              Spacer(),
+              Text(
+                UiStrings.battlePouchReserved,
+                style: TextStyle(color: WuxiaColors.textMuted, fontSize: 9),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              for (var i = 0; i < 3; i++) ...[
+                Semantics(
+                  label: '${UiStrings.battlePouch} ${i + 1}',
+                  value: UiStrings.battlePouchReserved,
+                  child: Container(
+                    key: ValueKey('battle_pouch_slot_$i'),
+                    width: BattleLayoutTokens.pouchSlotSize,
+                    height: BattleLayoutTokens.pouchSlotSize,
+                    decoration: BoxDecoration(
+                      color: WuxiaColors.sidebar.withValues(alpha: 0.62),
+                      border: Border.all(color: WuxiaColors.border),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: const Icon(
+                      Icons.inventory_2_outlined,
+                      size: 17,
+                      color: WuxiaColors.textMuted,
+                    ),
+                  ),
+                ),
+                if (i < 2)
+                  const SizedBox(width: BattleLayoutTokens.pouchSlotGap),
+              ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -591,42 +701,6 @@ class SkillInfoBody extends StatelessWidget {
           style: TextStyle(color: WuxiaUi.qing, fontSize: 11, letterSpacing: 1),
         ),
       ],
-    );
-  }
-}
-
-class FastForwardButton extends StatelessWidget {
-  final VoidCallback onPressed;
-  final bool isActive;
-  const FastForwardButton({
-    super.key,
-    required this.onPressed,
-    required this.isActive,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 100,
-      height: 60,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: isActive
-              ? WuxiaColors.resultHighlight
-              : WuxiaColors.textPrimary,
-          side: BorderSide(
-            color: isActive
-                ? WuxiaColors.resultHighlight
-                : WuxiaColors.textSecondary,
-          ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        ),
-        child: const Text(
-          UiStrings.fastForward,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-      ),
     );
   }
 }

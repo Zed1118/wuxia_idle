@@ -8,12 +8,16 @@ import '../../../../shared/theme/colors.dart';
 import '../../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import '../../../help/domain/help_topic.dart';
 import '../../../help/presentation/context_help_button.dart';
+import '../battle_layout_tokens.dart';
 
 class Header extends StatelessWidget {
   final BattleState state;
   final VoidCallback onToggleLog;
   final VoidCallback onPause;
   final bool isPaused;
+  final VoidCallback onFastForward;
+  final bool isFastForward;
+  final bool allowPlayerIntervention;
   final VoidCallback? onSurrender;
 
   /// 验收路由(startPaused)专用:暂停态逐步推进。null = 生产挂机不渲染单步按钮。
@@ -24,6 +28,9 @@ class Header extends StatelessWidget {
     required this.onToggleLog,
     required this.onPause,
     required this.isPaused,
+    required this.onFastForward,
+    required this.isFastForward,
+    required this.allowPlayerIntervention,
     this.onSurrender,
     this.onStepOnce,
   });
@@ -34,7 +41,7 @@ class Header extends StatelessWidget {
     final aliveRight = state.rightTeam.where((c) => c.isAlive).length;
 
     return Container(
-      height: 48,
+      height: BattleLayoutTokens.headerHeight,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: const BoxDecoration(
         color: WuxiaColors.panel,
@@ -70,6 +77,16 @@ class Header extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
+          BattleModePill(allowPlayerIntervention: allowPlayerIntervention),
+          const SizedBox(width: 4),
+          if (state.result == null)
+            BattleHeaderIconButton(
+              key: const ValueKey('battle_fast_forward_toggle'),
+              icon: Icons.fast_forward,
+              tooltip: UiStrings.fastForward,
+              onPressed: onFastForward,
+              isActive: isFastForward,
+            ),
           if (state.result == null)
             BattleHeaderIconButton(
               key: const ValueKey('battle_pause_toggle'),
@@ -114,11 +131,13 @@ class BattleHeaderIconButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
+    this.isActive = false,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
+  final bool isActive;
 
   @override
   Widget build(BuildContext context) {
@@ -128,18 +147,63 @@ class BattleHeaderIconButton extends StatelessWidget {
         tooltip: tooltip,
         onPressed: onPressed,
         icon: Icon(icon, size: 19),
-        color: WuxiaColors.textSecondary,
+        color: isActive
+            ? WuxiaColors.resultHighlight
+            : WuxiaColors.textSecondary,
         disabledColor: WuxiaColors.textMuted,
         constraints: const BoxConstraints.tightFor(width: 36, height: 36),
         padding: EdgeInsets.zero,
         splashRadius: 18,
         style: IconButton.styleFrom(
-          backgroundColor: WuxiaColors.sidebar.withValues(alpha: 0.58),
+          backgroundColor: isActive
+              ? WuxiaColors.resultHighlight.withValues(alpha: 0.12)
+              : WuxiaColors.sidebar.withValues(alpha: 0.58),
           hoverColor: WuxiaColors.resultHighlight.withValues(alpha: 0.10),
           highlightColor: WuxiaColors.resultHighlight.withValues(alpha: 0.14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
-            side: BorderSide(color: WuxiaColors.border.withValues(alpha: 0.78)),
+            side: BorderSide(
+              color: isActive
+                  ? WuxiaColors.resultHighlight
+                  : WuxiaColors.border.withValues(alpha: 0.78),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class BattleModePill extends StatelessWidget {
+  const BattleModePill({super.key, required this.allowPlayerIntervention});
+
+  final bool allowPlayerIntervention;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: UiStrings.battleAutoMode,
+      value: allowPlayerIntervention
+          ? UiStrings.battleAutoIntervention
+          : UiStrings.battleAutoMode,
+      child: Container(
+        key: const ValueKey('battle_auto_mode'),
+        height: 30,
+        padding: const EdgeInsets.symmetric(horizontal: 9),
+        decoration: BoxDecoration(
+          color: WuxiaColors.sidebar.withValues(alpha: 0.58),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: WuxiaColors.border),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          allowPlayerIntervention
+              ? '${UiStrings.battleAutoMode}·${UiStrings.battleAutoIntervention}'
+              : UiStrings.battleAutoMode,
+          style: const TextStyle(
+            color: WuxiaColors.textSecondary,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),

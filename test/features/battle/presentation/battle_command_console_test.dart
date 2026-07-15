@@ -143,6 +143,39 @@ const _ult = SkillDef(
   requiresManualTrigger: true,
   visualEffect: '',
 );
+const _joint = SkillDef(
+  id: 'j1',
+  name: '双剑合璧',
+  description: '',
+  type: SkillType.jointSkill,
+  powerMultiplier: 2400,
+  internalForceCost: 320,
+  cooldownTurns: 3,
+  requiresManualTrigger: false,
+  visualEffect: '',
+);
+const _powerC = SkillDef(
+  id: 'pC',
+  name: '回风掌',
+  description: '',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1300,
+  internalForceCost: 180,
+  cooldownTurns: 2,
+  requiresManualTrigger: false,
+  visualEffect: '',
+);
+const _ultB = SkillDef(
+  id: 'uB',
+  name: '天外飞仙',
+  description: '',
+  type: SkillType.ultimate,
+  powerMultiplier: 4800,
+  internalForceCost: 760,
+  cooldownTurns: 5,
+  requiresManualTrigger: true,
+  visualEffect: '',
+);
 
 /// 敌人蓄力中的大招（T2 危险条用）。
 const _chargeSkill = SkillDef(
@@ -346,6 +379,103 @@ void main() {
   });
 
   group('T1 战斗指令台', () {
+    testWidgets('1280宽案台固定展示7个技能位与3个战备行囊位', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [
+          _power,
+          _powerB,
+          _powerC,
+          _break,
+          _joint,
+          _ult,
+          _ultB,
+        ],
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      final desk = find.byKey(const ValueKey('battle_command_desk'));
+      expect(desk, findsOneWidget);
+      for (var i = 0; i < 7; i++) {
+        expect(
+          find.descendant(
+            of: desk,
+            matching: find.byKey(ValueKey('battle_skill_slot_$i')),
+          ),
+          findsOneWidget,
+        );
+      }
+      for (var i = 0; i < 3; i++) {
+        expect(
+          find.descendant(
+            of: desk,
+            matching: find.byKey(ValueKey('battle_pouch_slot_$i')),
+          ),
+          findsOneWidget,
+        );
+      }
+      expect(
+        find.descendant(of: desk, matching: find.byType(SingleChildScrollView)),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('1440×900案台7技能位与3行囊位不溢出', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [
+          _power,
+          _powerB,
+          _powerC,
+          _break,
+          _joint,
+          _ult,
+          _ultB,
+        ],
+      );
+      await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        size: const Size(1440, 900),
+      );
+
+      expect(find.byKey(const ValueKey('battle_skill_slot_6')), findsOneWidget);
+      expect(find.byKey(const ValueKey('battle_pouch_slot_2')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('技能不足7个时保留稳定空槽', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_power, _break, _ult],
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      for (var i = 0; i < 7; i++) {
+        expect(find.byKey(ValueKey('battle_skill_slot_$i')), findsOneWidget);
+      }
+      for (var i = 3; i < 7; i++) {
+        expect(find.byKey(ValueKey('battle_skill_empty_$i')), findsOneWidget);
+      }
+    });
+
+    testWidgets('快进控制在顶栏而不在武学案台', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      await _pumpWith(tester, left, right);
+
+      final speed = find.byKey(const ValueKey('battle_fast_forward_toggle'));
+      expect(speed, findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('battle_command_desk')),
+          matching: speed,
+        ),
+        findsNothing,
+      );
+    });
+
     testWidgets('指令台暴露重点角色的全部可用技能（分组按钮）', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
