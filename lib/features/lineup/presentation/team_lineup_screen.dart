@@ -289,9 +289,11 @@ Future<void> _onActiveTap(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
-          UiStrings.lineupActiveActionBody,
-          style: TextStyle(
+        Text(
+          canRetire
+              ? UiStrings.lineupActiveActionBody
+              : UiStrings.lineupActiveActionBodySwapOnly,
+          style: const TextStyle(
             color: WuxiaUi.ink,
             fontSize: 13,
             fontWeight: FontWeight.w700,
