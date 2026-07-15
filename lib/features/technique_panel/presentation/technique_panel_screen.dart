@@ -1304,7 +1304,6 @@ class _LearnNewTechniqueEntry extends ConsumerWidget {
     TechniqueDef def,
     TechniqueLearnFlowResult result,
   ) {
-
     if (!context.mounted) return;
     if (result.isSuccess) {
       ref.invalidate(characterByIdProvider(character.id));

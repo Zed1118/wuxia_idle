@@ -48,21 +48,20 @@ void main() {
   }) {
     final realm = repository.getRealm(RealmTier.xueTu, RealmLayer.qiMeng);
     return Character.create(
-          name: name,
-          realmTier: RealmTier.xueTu,
-          realmLayer: RealmLayer.qiMeng,
-          attributes: Attributes(),
-          rarity: RarityTier.biaoZhun,
-          lineageRole: isFounder ? LineageRole.founder : LineageRole.disciple,
-          createdAt: DateTime(2026, 7, 14),
-          internalForce: realm.internalForceMax,
-          internalForceMax: realm.internalForceMax,
-          experienceToNextLayer: realm.experienceToNext,
-          isFounder: isFounder,
-          isActive: isActive,
-          mainTechniqueId: mainTechniqueId,
-        )
-        ..id = id;
+      name: name,
+      realmTier: RealmTier.xueTu,
+      realmLayer: RealmLayer.qiMeng,
+      attributes: Attributes(),
+      rarity: RarityTier.biaoZhun,
+      lineageRole: isFounder ? LineageRole.founder : LineageRole.disciple,
+      createdAt: DateTime(2026, 7, 14),
+      internalForce: realm.internalForceMax,
+      internalForceMax: realm.internalForceMax,
+      experienceToNextLayer: realm.experienceToNext,
+      isFounder: isFounder,
+      isActive: isActive,
+      mainTechniqueId: mainTechniqueId,
+    )..id = id;
   }
 
   Future<void> seed() async {

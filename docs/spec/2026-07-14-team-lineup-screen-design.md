@@ -49,6 +49,15 @@
 - 保存后 invalidate `activeCharacterIdsProvider`(`post_combat_invalidation.dart:32` 同款),
   下场战斗自动生效——`stage_battle_setup` 已按此列表组队,战斗侧零改动。
 
+> **实装订正(2026-07-15 实装批,as-implemented)**:
+> ① 「仅非战斗态可改」落地为**路由结构性保证**——全仓无「战斗进行中」持久信号
+> (战斗 roster 于 `StageBattleSetup._buildPlayerTeam` 进场时快照,结算 roster 由
+> caller 传快照列表),编成屏与 BattleScreen 路由互斥,服务层不做(也无从做)战斗态校验。
+> ② 校验矩阵补条:**加入者必须已修主修且 Technique 行在库**(镜像
+> `stage_battle_setup._playerToBattle` 硬前置——否则换上后下一场战斗直接抛错;
+> 既有出战成员不回溯,重排/移除不受影响)。设计期缺口,实装期编成→组队 wiring
+> 回归测发现;替补卡「未修主修」标注+入口拦截,与 §3 择路流(研习立为主修)天然衔接。
+
 ## 3. PR #36 观察① 并入(范围收窄版)
 
 - 研习新心法时:**无主修 → 弹「学为主修/辅修」选择**(消费预留的

@@ -58,42 +58,40 @@ void main() {
   }) {
     final realm = repository.getRealm(tier, layer);
     return Character.create(
-          name: name,
-          realmTier: tier,
-          realmLayer: layer,
-          attributes: Attributes()
-            ..constitution = 5
-            ..enlightenment = 5
-            ..agility = 5
-            ..fortune = 5,
-          rarity: RarityTier.biaoZhun,
-          lineageRole: lineageRole,
-          createdAt: DateTime(2026, 7, 14),
-          internalForce: realm.internalForceMax,
-          internalForceMax: realm.internalForceMax,
-          experienceToNextLayer: realm.experienceToNext,
-          isFounder: isFounder,
-          isActive: isActive,
-          currentRetreatSessionId: currentRetreatSessionId,
-          mainTechniqueId: mainTechniqueId,
-        )
-        ..id = id;
+      name: name,
+      realmTier: tier,
+      realmLayer: layer,
+      attributes: Attributes()
+        ..constitution = 5
+        ..enlightenment = 5
+        ..agility = 5
+        ..fortune = 5,
+      rarity: RarityTier.biaoZhun,
+      lineageRole: lineageRole,
+      createdAt: DateTime(2026, 7, 14),
+      internalForce: realm.internalForceMax,
+      internalForceMax: realm.internalForceMax,
+      experienceToNextLayer: realm.experienceToNext,
+      isFounder: isFounder,
+      isActive: isActive,
+      currentRetreatSessionId: currentRetreatSessionId,
+      mainTechniqueId: mainTechniqueId,
+    )..id = id;
   }
 
   /// 主修 Technique 行(加入出战的硬前置,LineupService 校验行在库)。
   Technique makeMainTech({required int id, required int ownerId}) {
     return Technique.create(
-          defId: 'tech_gangmeng_jichu',
-          ownerCharacterId: ownerId,
-          tier: TechniqueTier.ruMenGong,
-          school: TechniqueSchool.gangMeng,
-          role: TechniqueRole.main,
-          learnedAt: DateTime(2026, 7, 14),
-          cultivationProgress: 0,
-          cultivationProgressToNext: 100,
-          cultivationLayer: CultivationLayer.chuKui,
-        )
-        ..id = id;
+      defId: 'tech_gangmeng_jichu',
+      ownerCharacterId: ownerId,
+      tier: TechniqueTier.ruMenGong,
+      school: TechniqueSchool.gangMeng,
+      role: TechniqueRole.main,
+      learnedAt: DateTime(2026, 7, 14),
+      cultivationProgress: 0,
+      cultivationProgressToNext: 100,
+      cultivationLayer: CultivationLayer.chuKui,
+    )..id = id;
   }
 
   /// 默认棋盘:祖师1+大弟子2+二弟子3 出战;可选替补。
@@ -179,9 +177,7 @@ void main() {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: TeamLineupScreen()),
-      ),
+      const ProviderScope(child: MaterialApp(home: TeamLineupScreen())),
     );
     await pumpUntilFound(tester, waitFor);
   }
@@ -265,9 +261,7 @@ void main() {
   testWidgets('闭关锁定:替补带「闭关中」标签,点击仅提示不弹换防', (tester) async {
     await tester.runAsync(
       () => seed(
-        reserves: [
-          makeChar(id: 6, name: '闭关者', currentRetreatSessionId: 99),
-        ],
+        reserves: [makeChar(id: 6, name: '闭关者', currentRetreatSessionId: 99)],
       ),
     );
     await pumpScreen(
@@ -276,10 +270,7 @@ void main() {
     );
 
     await tester.tap(find.text('闭关者'));
-    await pumpUntilFound(
-      tester,
-      find.text(UiStrings.lineupRetreatLockedSnack),
-    );
+    await pumpUntilFound(tester, find.text(UiStrings.lineupRetreatLockedSnack));
 
     expect(find.text(UiStrings.lineupRetreatLockedSnack), findsOneWidget);
     expect(find.text(UiStrings.lineupChooseSlotBody), findsNothing);
@@ -320,10 +311,7 @@ void main() {
     await pumpScreen(tester, waitFor: find.text('替补甲'));
 
     await tester.tap(find.text('祖师'));
-    await pumpUntilFound(
-      tester,
-      find.text(UiStrings.lineupActiveActionBody),
-    );
+    await pumpUntilFound(tester, find.text(UiStrings.lineupActiveActionBody));
     expect(find.text(UiStrings.lineupActionRetire), findsNothing);
     await tester.tap(find.text(UiStrings.commonCancel));
     await pumpUntilFound(tester, find.text('替补甲'));
@@ -343,10 +331,7 @@ void main() {
     await pumpScreen(tester, waitFor: find.text('替补甲'));
 
     await tester.tap(find.text('大弟子'));
-    await pumpUntilFound(
-      tester,
-      find.text(UiStrings.lineupActiveActionBody),
-    );
+    await pumpUntilFound(tester, find.text(UiStrings.lineupActiveActionBody));
     await tester.tap(
       find.text(
         UiStrings.lineupActionSwapWith(UiStrings.lineupSlotLabel(0), '祖师'),

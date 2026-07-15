@@ -54,39 +54,37 @@ void main() {
   }) {
     final realm = repository.getRealm(tier, layer);
     return Character.create(
-          name: name,
-          realmTier: tier,
-          realmLayer: layer,
-          attributes: Attributes(),
-          rarity: RarityTier.biaoZhun,
-          lineageRole: lineageRole,
-          createdAt: DateTime(2026, 7, 14),
-          internalForce: realm.internalForceMax,
-          internalForceMax: realm.internalForceMax,
-          experienceToNextLayer: realm.experienceToNext,
-          isFounder: isFounder,
-          isActive: isActive,
-          isAlive: isAlive,
-          currentRetreatSessionId: currentRetreatSessionId,
-          mainTechniqueId: mainTechniqueId,
-        )
-        ..id = id;
+      name: name,
+      realmTier: tier,
+      realmLayer: layer,
+      attributes: Attributes(),
+      rarity: RarityTier.biaoZhun,
+      lineageRole: lineageRole,
+      createdAt: DateTime(2026, 7, 14),
+      internalForce: realm.internalForceMax,
+      internalForceMax: realm.internalForceMax,
+      experienceToNextLayer: realm.experienceToNext,
+      isFounder: isFounder,
+      isActive: isActive,
+      isAlive: isAlive,
+      currentRetreatSessionId: currentRetreatSessionId,
+      mainTechniqueId: mainTechniqueId,
+    )..id = id;
   }
 
   /// 主修 Technique 行(战斗组队硬前置:mainTechniqueId 指向的行必须在库)。
   Technique makeMainTech({required int id, required int ownerId}) {
     return Technique.create(
-          defId: 'tech_gangmeng_jichu',
-          ownerCharacterId: ownerId,
-          tier: TechniqueTier.ruMenGong,
-          school: TechniqueSchool.gangMeng,
-          role: TechniqueRole.main,
-          learnedAt: DateTime(2026, 7, 14),
-          cultivationProgress: 0,
-          cultivationProgressToNext: 100,
-          cultivationLayer: CultivationLayer.chuKui,
-        )
-        ..id = id;
+      defId: 'tech_gangmeng_jichu',
+      ownerCharacterId: ownerId,
+      tier: TechniqueTier.ruMenGong,
+      school: TechniqueSchool.gangMeng,
+      role: TechniqueRole.main,
+      learnedAt: DateTime(2026, 7, 14),
+      cultivationProgress: 0,
+      cultivationProgressToNext: 100,
+      cultivationLayer: CultivationLayer.chuKui,
+    )..id = id;
   }
 
   /// 标准棋盘:祖师1 + 大弟子2 + 二弟子3 出战;替补4(E.1 式)、5(sect 式
@@ -179,9 +177,7 @@ void main() {
     });
 
     test('纯槽序重排:闭关中成员不拦(成员集不变)', () async {
-      await seedRoster(
-        extra: [],
-      );
+      await seedRoster(extra: []);
       final isar = IsarSetup.instance;
       await isar.writeTxn(() async {
         final c = await isar.characters.get(2);
@@ -309,9 +305,7 @@ void main() {
 
     test('加入闭关中替补 → retreatLocked', () async {
       await seedRoster(
-        extra: [
-          makeChar(id: 6, name: '闭关替补', currentRetreatSessionId: 99),
-        ],
+        extra: [makeChar(id: 6, name: '闭关替补', currentRetreatSessionId: 99)],
       );
       final service = LineupService(IsarSetup.instance);
 
@@ -323,9 +317,7 @@ void main() {
     });
 
     test('加入非存活角色 → deadCharacter', () async {
-      await seedRoster(
-        extra: [makeChar(id: 7, name: '亡者', isAlive: false)],
-      );
+      await seedRoster(extra: [makeChar(id: 7, name: '亡者', isAlive: false)]);
       final service = LineupService(IsarSetup.instance);
 
       final result = await service.apply(newActiveIds: [1, 7]);
@@ -347,9 +339,7 @@ void main() {
 
     test('加入主修行悬空(Technique 缺失)→ noMainTechnique', () async {
       await seedRoster(
-        extra: [
-          makeChar(id: 8, name: '悬空主修', mainTechniqueId: 999),
-        ],
+        extra: [makeChar(id: 8, name: '悬空主修', mainTechniqueId: 999)],
       );
       final service = LineupService(IsarSetup.instance);
 
@@ -395,8 +385,11 @@ void main() {
 
       final reserve = await service.loadReserve();
 
-      expect(reserve.map((c) => c.id).toList(), [8, 4, 5],
-          reason: '一流精通 > 三流启蒙 > 学徒启蒙;同级按 id 升序');
+      expect(reserve.map((c) => c.id).toList(), [
+        8,
+        4,
+        5,
+      ], reason: '一流精通 > 三流启蒙 > 学徒启蒙;同级按 id 升序');
     });
 
     test('替补池空(全员出战)→ 空列表', () async {

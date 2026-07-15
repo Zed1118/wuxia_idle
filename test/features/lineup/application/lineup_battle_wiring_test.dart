@@ -49,43 +49,41 @@ void main() {
   }) {
     final realm = repository.getRealm(RealmTier.xueTu, RealmLayer.shuLian);
     return Character.create(
-          name: name,
-          realmTier: RealmTier.xueTu,
-          realmLayer: RealmLayer.shuLian,
-          attributes: Attributes()
-            ..constitution = 5
-            ..enlightenment = 5
-            ..agility = 5
-            ..fortune = 5,
-          rarity: RarityTier.biaoZhun,
-          lineageRole: lineageRole,
-          createdAt: DateTime(2026, 7, 14),
-          school: TechniqueSchool.gangMeng,
-          internalForce: realm.internalForceMax,
-          internalForceMax: realm.internalForceMax,
-          experienceToNextLayer: realm.experienceToNext,
-          isFounder: isFounder,
-          isActive: isActive,
-          mainTechniqueId: mainTechniqueId,
-        )
-        ..id = id;
+      name: name,
+      realmTier: RealmTier.xueTu,
+      realmLayer: RealmLayer.shuLian,
+      attributes: Attributes()
+        ..constitution = 5
+        ..enlightenment = 5
+        ..agility = 5
+        ..fortune = 5,
+      rarity: RarityTier.biaoZhun,
+      lineageRole: lineageRole,
+      createdAt: DateTime(2026, 7, 14),
+      school: TechniqueSchool.gangMeng,
+      internalForce: realm.internalForceMax,
+      internalForceMax: realm.internalForceMax,
+      experienceToNextLayer: realm.experienceToNext,
+      isFounder: isFounder,
+      isActive: isActive,
+      mainTechniqueId: mainTechniqueId,
+    )..id = id;
   }
 
   /// 主修行用真 def(tech_gangmeng_jichu):battle setup 后续 loadout resolver
   /// 按 defId 取真招式,保证组队全链走通(战斗组队要求主修行在库)。
   Technique makeMainTech({required int id, required int ownerId}) {
     return Technique.create(
-          defId: 'tech_gangmeng_jichu',
-          ownerCharacterId: ownerId,
-          tier: TechniqueTier.ruMenGong,
-          school: TechniqueSchool.gangMeng,
-          role: TechniqueRole.main,
-          learnedAt: DateTime(2026, 7, 14),
-          cultivationProgress: 0,
-          cultivationProgressToNext: 100,
-          cultivationLayer: CultivationLayer.chuKui,
-        )
-        ..id = id;
+      defId: 'tech_gangmeng_jichu',
+      ownerCharacterId: ownerId,
+      tier: TechniqueTier.ruMenGong,
+      school: TechniqueSchool.gangMeng,
+      role: TechniqueRole.main,
+      learnedAt: DateTime(2026, 7, 14),
+      cultivationProgress: 0,
+      cultivationProgressToNext: 100,
+      cultivationLayer: CultivationLayer.chuKui,
+    )..id = id;
   }
 
   Future<void> seed() async {
@@ -129,16 +127,16 @@ void main() {
     await seed();
     final isar = IsarSetup.instance;
 
-    final applied = await LineupService(
-      isar,
-    ).apply(newActiveIds: [4, 1]);
+    final applied = await LineupService(isar).apply(newActiveIds: [4, 1]);
     expect(applied.isSuccess, isTrue);
 
     final stage = GameRepository.instance.getStage('stage_01_01');
     final (left, _) = await StageBattleSetup(isar: isar).buildTeams(stage);
 
-    expect(left.map((c) => c.characterId).toList(), [4, 1],
-        reason: '列表序=站位序,slot0 前排为替补甲');
+    expect(left.map((c) => c.characterId).toList(), [
+      4,
+      1,
+    ], reason: '列表序=站位序,slot0 前排为替补甲');
     expect(left[0].slotIndex, 0);
     expect(left[1].slotIndex, 1);
   });

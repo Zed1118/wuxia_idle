@@ -222,10 +222,7 @@ enum VisualRoute {
     'stage_retry_dialog',
     '普通关战败重试弹框·非教学化短诊断验收(S3·浅纸底 muted 提示行)',
   ),
-  teamLineup(
-    'team_lineup',
-    '出战编成屏目检·三席(前排标+梯度境界)+替补池三态(无标/境界偏低/闭关中),§十三 #4',
-  ),
+  teamLineup('team_lineup', '出战编成屏目检·三席(前排标+梯度境界)+替补池三态(无标/境界偏低/闭关中),§十三 #4'),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);

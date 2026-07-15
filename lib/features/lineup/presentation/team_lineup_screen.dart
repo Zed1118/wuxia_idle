@@ -82,16 +82,13 @@ class _Body extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // 槽位角色按 activeCharacterIds 原序解析(列表序=站位序)。
     final actives = <Character?>[
-      for (final id in activeIds)
-        ref.watch(characterByIdProvider(id)).value,
+      for (final id in activeIds) ref.watch(characterByIdProvider(id)).value,
     ];
     final loaded = actives.whereType<Character>().toList();
     final int? minActiveLevel = loaded.isEmpty
         ? null
         : loaded
-              .map(
-                (c) => RealmUtils.absoluteLevelOf(c.realmTier, c.realmLayer),
-              )
+              .map((c) => RealmUtils.absoluteLevelOf(c.realmTier, c.realmLayer))
               .reduce(math.min);
 
     return Padding(
@@ -211,9 +208,9 @@ Future<void> _onReserveTap(
   // 未修主修入口即拦(服务层同规校验兜底,含主修行悬空边缘;
   // §5.7 引导:研习立为主修后自然可上场,不写教程弹窗)。
   if (candidate.mainTechniqueId == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text(UiStrings.lineupNoMainSnack)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text(UiStrings.lineupNoMainSnack)));
     return;
   }
   final slotIndex = await PaperDialog.show<int>(
