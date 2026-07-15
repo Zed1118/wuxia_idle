@@ -37,6 +37,7 @@ import '../../onboarding/application/onboarding_service.dart';
 import '../../onboarding/application/master_builder.dart';
 import '../../onboarding/presentation/founder_creation_screen.dart';
 import '../../lineage/presentation/disciple_join_overlay.dart';
+import '../../lineup/presentation/team_lineup_screen.dart';
 import '../../sect/presentation/sect_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../tower/application/tower_progress_service.dart';
@@ -710,6 +711,11 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // S3 目检：普通关战败重试弹框非教学化短诊断(浅纸底 muted 提示行)。
       // 静态复刻 _showStageRetryDialog 的 PaperDialog 开态(body=StageRetryDialogBody)。
       return const _StageRetryDialogPreview();
+    case VisualRoute.teamLineup:
+      // 出战编成屏目检(§十三 #4):真种子三席梯度境界 + 替补三态
+      // (无标/境界偏低/闭关中),屏走真 provider 链验点选交换入口与标签。
+      await Phase2SeedService(isar: isar).seedTeamLineup();
+      return const TeamLineupScreen();
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }

@@ -44,6 +44,7 @@ void main() {
         parseVisualRoute('equipment_detail_screen'),
         VisualRoute.equipmentDetailScreen,
       );
+      expect(parseVisualRoute('team_lineup'), VisualRoute.teamLineup);
     });
 
     test('未知 id → null', () {

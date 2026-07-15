@@ -17,6 +17,7 @@ import '../../dispel/application/dispel_service_providers.dart';
 import '../../cultivation/application/insight_exchange_service.dart';
 import '../../cultivation/application/insight_exchange_service_providers.dart';
 import '../../cultivation/application/skill_proficiency_formatter.dart';
+import '../../cultivation/application/technique_learn_flow_service.dart';
 import '../../cultivation/application/technique_learn_flow_service_providers.dart';
 import '../../battle/domain/derived_stats.dart';
 import '../../../data/defs/technique_def.dart';
@@ -114,11 +115,37 @@ class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (techniques.isEmpty) {
-      return const Center(
-        child: Text(
-          UiStrings.techniquePanelEmpty,
-          style: TextStyle(color: WuxiaColors.textMuted),
-        ),
+      // 零心法态保留研习入口(择路流主场景:新收弟子学首门心法,spec §3
+      // 出战编成批;此前整屏空态文案把入口一并藏掉,无主修分支不可达),
+      // 其余区块以空态文案替代。
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final horizontalPadding = constraints.maxWidth >= 1100 ? 24.0 : 16.0;
+          return SingleChildScrollView(
+            padding: EdgeInsets.all(horizontalPadding),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1160),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _LearnNewTechniqueEntry(
+                      character: character,
+                      ownedTechniques: techniques,
+                    ),
+                    const SizedBox(height: 24),
+                    const Center(
+                      child: Text(
+                        UiStrings.techniquePanelEmpty,
+                        style: TextStyle(color: WuxiaColors.textMuted),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       );
     }
 
@@ -1180,10 +1207,14 @@ class _LearnNewTechniqueEntry extends ConsumerWidget {
     WidgetRef ref,
     TechniqueDef def,
   ) async {
-    // 无主修 → 可选立为主修；否则纳为辅修。角色主修占位由服务层再校验。
-    final role = character.mainTechniqueId == null
-        ? TechniqueRole.main
-        : TechniqueRole.assist;
+    // 出战编成批并入 PR #36 观察①(spec §3 收窄版):无主修 → 弹「立为主修/
+    // 纳为辅修」择路;有主修 → 维持仅辅修(换主修=散功语义走散功入口,
+    // 零新散功路径)。角色主修占位由服务层再校验。
+    final TechniqueRole? role = character.mainTechniqueId != null
+        ? TechniqueRole.assist
+        : await _chooseFirstTechniqueRole(context);
+    if (role == null) return; // 择路取消
+    if (!context.mounted) return;
     final cost = GameRepository.instance.numbers.learningCost.costFor(role);
 
     final confirmed = await PaperDialog.show<bool>(
@@ -1219,7 +1250,60 @@ class _LearnNewTechniqueEntry extends ConsumerWidget {
       techniqueDefId: def.id,
       role: role,
     );
+    if (!context.mounted) return;
+    _handleLearnResult(context, ref, def, result);
+  }
 
+  /// 首门心法择路 dialog:立为主修(余额不足禁用)/纳为辅修/取消(null)。
+  Future<TechniqueRole?> _chooseFirstTechniqueRole(BuildContext context) {
+    final costs = GameRepository.instance.numbers.learningCost;
+    final mainCost = costs.costFor(TechniqueRole.main);
+    final assistCost = costs.costFor(TechniqueRole.assist);
+    return PaperDialog.show<TechniqueRole>(
+      context,
+      title: UiStrings.learnTechniqueTitle,
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            UiStrings.learnTechniqueFirstChoiceBody,
+            style: TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          PlaqueButton(
+            label: UiStrings.learnTechniqueAsMain,
+            primary: true,
+            disabled: character.insightPoints < mainCost,
+            onTap: () => Navigator.of(context).pop(TechniqueRole.main),
+          ),
+          const SizedBox(height: 8),
+          PlaqueButton(
+            label: UiStrings.learnTechniqueAsAssist,
+            disabled: character.insightPoints < assistCost,
+            onTap: () => Navigator.of(context).pop(TechniqueRole.assist),
+          ),
+        ],
+      ),
+      actions: [
+        PlaqueButton(
+          label: UiStrings.commonCancel,
+          onTap: () => Navigator.of(context).pop(),
+        ),
+      ],
+    );
+  }
+
+  void _handleLearnResult(
+    BuildContext context,
+    WidgetRef ref,
+    TechniqueDef def,
+    TechniqueLearnFlowResult result,
+  ) {
     if (!context.mounted) return;
     if (result.isSuccess) {
       ref.invalidate(characterByIdProvider(character.id));
@@ -1255,11 +1339,17 @@ class _LearnTechniqueDialogBody extends StatelessWidget {
         ),
       );
     }
-    final role = character.mainTechniqueId == null
-        ? TechniqueRole.main
-        : TechniqueRole.assist;
-    final cost = GameRepository.instance.numbers.learningCost.costFor(role);
-    final affordable = character.insightPoints >= cost;
+    // 择路流(spec §3):无主修行内双价预览,可负担门槛取低价档(择路 dialog
+    // 内再按选项余额禁用);有主修维持辅修单价。
+    final costs = GameRepository.instance.numbers.learningCost;
+    final mainCost = costs.costFor(TechniqueRole.main);
+    final assistCost = costs.costFor(TechniqueRole.assist);
+    final hasMain = character.mainTechniqueId != null;
+    final costLabel = hasMain
+        ? UiStrings.learnTechniqueCost(assistCost, asMain: false)
+        : UiStrings.learnTechniqueCostFirstChoice(mainCost, assistCost);
+    final gateCost = hasMain ? assistCost : math.min(mainCost, assistCost);
+    final affordable = character.insightPoints >= gateCost;
 
     return SizedBox(
       width: 380,
@@ -1278,8 +1368,7 @@ class _LearnTechniqueDialogBody extends StatelessWidget {
               separatorBuilder: (_, _) => const SizedBox(height: 6),
               itemBuilder: (context, i) => _LearnTechniqueRow(
                 candidate: candidates[i],
-                role: role,
-                cost: cost,
+                costLabel: costLabel,
                 affordable: affordable,
               ),
             ),
@@ -1293,14 +1382,12 @@ class _LearnTechniqueDialogBody extends StatelessWidget {
 class _LearnTechniqueRow extends StatelessWidget {
   const _LearnTechniqueRow({
     required this.candidate,
-    required this.role,
-    required this.cost,
+    required this.costLabel,
     required this.affordable,
   });
 
   final LearnableTechnique candidate;
-  final TechniqueRole role;
-  final int cost;
+  final String costLabel;
   final bool affordable;
 
   @override
@@ -1360,10 +1447,7 @@ class _LearnTechniqueRow extends StatelessWidget {
                 )
               else
                 _LearnTag(
-                  text: UiStrings.learnTechniqueCost(
-                    cost,
-                    asMain: role == TechniqueRole.main,
-                  ),
+                  text: costLabel,
                   color: affordable ? WuxiaUi.jiang : WuxiaUi.muted,
                 ),
             ],

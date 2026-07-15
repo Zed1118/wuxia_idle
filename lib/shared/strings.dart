@@ -1257,6 +1257,10 @@ class UiStrings {
   static const String learnTechniqueEmptyList = '暂无可研习的心法（已习尽当前所见）。';
   static String learnTechniqueCost(int cost, {required bool asMain}) =>
       asMain ? '立为主修 · $cost 点' : '纳为辅修 · $cost 点';
+
+  /// 无主修首学候选行双价预览(择路 dialog 内再按余额禁用单项)。
+  static String learnTechniqueCostFirstChoice(int mainCost, int assistCost) =>
+      '主修 $mainCost / 辅修 $assistCost 点';
   static const String learnTechniqueLockedByRealm = '境界不足';
   static const String learnTechniqueAsMain = '立为主修';
   static const String learnTechniqueAsAssist = '纳为辅修';
@@ -1268,6 +1272,45 @@ class UiStrings {
   static String learnTechniqueSuccess(String techniqueName) =>
       '已习得「$techniqueName」';
   static const String learnTechniqueFailed = '研习未成，条件未满足';
+
+  /// 首门心法择路 dialog(出战编成批并入 PR #36 观察① · 2026-07-14):
+  /// 无主修时研习弹「立为主修/纳为辅修」选择;有主修维持仅辅修。
+  static const String learnTechniqueFirstChoiceBody = '此为首门心法，请择修行之路。';
+
+  // ── 出战编成(玩法评估 §十三 #4 · 2026-07-14)──────────────────────────
+  static const String lineupTitle = '出战编成';
+  static const String lineupActiveSection = '出战席位';
+  static String lineupReserveSection(int count) => '替补门人（$count）';
+  static const String lineupFrontRowTag = '前排';
+  static const String lineupFrontRowHint = '首席居前排，同血量时更易被集火。';
+  static const String lineupEmptySlotLabel = '空席';
+  static const String lineupEmptySlotHint = '点替补门人入席';
+  static const String lineupReserveEmptyGuide = '门下暂无替补。行走江湖、收徒招贤后，此处自会有人。';
+  static const String lineupRetreatLockedTag = '闭关中';
+  static const String lineupWeakTag = '境界偏低';
+  static const String lineupNoMainTag = '未修主修';
+  static const String lineupAiControl = '控场·压制蓄力';
+  static const String lineupAiFocus = '破绽集火';
+  static String lineupEquipAttack(int value) => '装备攻击 $value';
+
+  /// 席位序号:slot 0-2 → 第一/二/三席。
+  static String lineupSlotLabel(int index) =>
+      '第${const ['一', '二', '三'][index]}席';
+  static String lineupSwapInTitle(String name) => '「$name」入席';
+  static const String lineupChooseSlotBody = '择一席位换防：';
+  static String lineupReplaceSlot(String slotLabel, String occupantName) =>
+      '$slotLabel · 换下「$occupantName」';
+  static String lineupTakeEmptySlot(String slotLabel) => '$slotLabel · 入空席';
+  static String lineupActiveActionTitle(String name) => '「$name」调度';
+  static const String lineupActiveActionBody = '下场歇息或与他席互换。';
+  static const String lineupActionRetire = '下场歇息';
+  static String lineupActionSwapWith(String slotLabel, String occupantName) =>
+      '与$slotLabel「$occupantName」互换';
+  static const String lineupApplySuccess = '编成已定';
+  static const String lineupRetreatLockedSnack = '闭关中门人不可调整';
+  static const String lineupNoMainSnack = '未修主修心法，研习立为主修后方可上场';
+  static const String lineupFounderMustStay = '祖师须坐镇出战席';
+  static const String lineupApplyFailed = '编成未成，条件未满足';
 
   /// 散功代价 · 内力：`内力 X → Y`。
   static String dispelCostInternalForce(int before, int after) =>

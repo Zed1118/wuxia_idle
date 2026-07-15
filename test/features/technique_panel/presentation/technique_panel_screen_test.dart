@@ -489,4 +489,97 @@ void main() {
     expect(find.text(UiStrings.learnTechniqueSubtitle), findsOneWidget);
     expect(find.textContaining(UiStrings.learnTechniqueAsAssist), findsWidgets);
   });
+
+  // ── 用例 11-14:无主修择路流(出战编成批并入 PR #36 观察① · spec §3)────────
+
+  /// 打开研习候选列表并点选 tech_gangmeng_jichu(学徒可学的入门功)。
+  Future<void> openAndPickCandidate(WidgetTester tester) async {
+    final tapTarget = find.widgetWithText(
+      TextButton,
+      UiStrings.learnTechniqueTitle,
+    );
+    await tester.ensureVisible(tapTarget);
+    await tester.pumpAndSettle();
+    await tester.tap(tapTarget);
+    await tester.pumpAndSettle();
+
+    final defName =
+        GameRepository.instance.techniqueDefs['tech_gangmeng_jichu']!.name;
+    final row = find.text(defName);
+    await tester.ensureVisible(row);
+    await tester.pumpAndSettle();
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('无主修:点选候选弹择路,选主修 → 二确显主修价', (tester) async {
+    final character = mkCharacter(insightPoints: 1000);
+    await pumpPanel(tester, character: character, techniques: {});
+
+    final costs = GameRepository.instance.numbers.learningCost;
+    await openAndPickCandidate(tester);
+
+    // 择路 dialog:提示文案 + 主/辅修双选项。
+    expect(find.text(UiStrings.learnTechniqueFirstChoiceBody), findsOneWidget);
+    expect(find.text(UiStrings.learnTechniqueAsMain), findsOneWidget);
+    expect(find.text(UiStrings.learnTechniqueAsAssist), findsOneWidget);
+
+    await tester.tap(find.text(UiStrings.learnTechniqueAsMain));
+    await tester.pumpAndSettle();
+
+    final defName =
+        GameRepository.instance.techniqueDefs['tech_gangmeng_jichu']!.name;
+    expect(
+      find.text(UiStrings.learnTechniqueConfirmBody(defName, costs.main)),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('无主修:择路选辅修 → 二确显辅修价', (tester) async {
+    final character = mkCharacter(insightPoints: 1000);
+    await pumpPanel(tester, character: character, techniques: {});
+
+    final costs = GameRepository.instance.numbers.learningCost;
+    await openAndPickCandidate(tester);
+    await tester.tap(find.text(UiStrings.learnTechniqueAsAssist));
+    await tester.pumpAndSettle();
+
+    final defName =
+        GameRepository.instance.techniqueDefs['tech_gangmeng_jichu']!.name;
+    expect(
+      find.text(UiStrings.learnTechniqueConfirmBody(defName, costs.assist)),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('有主修:点选候选不弹择路,直接二确辅修价(零新散功路径)', (tester) async {
+    final character = mkCharacter(mainTechniqueId: 100, insightPoints: 1000);
+    final main = mkTechnique(id: 100, ownerId: 1, role: TechniqueRole.main);
+    await pumpPanel(tester, character: character, techniques: {100: main});
+
+    final costs = GameRepository.instance.numbers.learningCost;
+    await openAndPickCandidate(tester);
+
+    expect(find.text(UiStrings.learnTechniqueFirstChoiceBody), findsNothing);
+    final defName =
+        GameRepository.instance.techniqueDefs['tech_gangmeng_jichu']!.name;
+    expect(
+      find.text(UiStrings.learnTechniqueConfirmBody(defName, costs.assist)),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('无主修但仅够辅修价:候选行可点(低价档门槛),择路主修禁用', (tester) async {
+    final costs = GameRepository.instance.numbers.learningCost;
+    final character = mkCharacter(insightPoints: costs.assist);
+    await pumpPanel(tester, character: character, techniques: {});
+
+    await openAndPickCandidate(tester);
+
+    expect(find.text(UiStrings.learnTechniqueFirstChoiceBody), findsOneWidget);
+    final mainButton = tester.widget<PlaqueButton>(
+      find.widgetWithText(PlaqueButton, UiStrings.learnTechniqueAsMain),
+    );
+    expect(mainButton.disabled, isTrue, reason: '余额不足主修价,择路内禁用');
+  });
 }
