@@ -881,7 +881,8 @@ Widget _buildEncounterCodexVisual() {
   final titles = <String, String>{};
   for (final (index, def) in defs.take(2).indexed) {
     final kind = labelForEncounterGroupKind(encounterGroupKindOf(def));
-    titles[def.id] = '$kind札记 ${index + 1}';
+    titles[def.id] =
+        '$kind · ${UiStrings.encounterCodexNoteLabel} ${index + 1}';
   }
   final groups = groupEncounters(
     defs: defs,
