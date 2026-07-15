@@ -272,6 +272,44 @@ class ExpeditionService {
     );
   }
 
+  /// 循环分批结算追平到 [now]（每批一事务、分帧让出的批间由 caller 控）。
+  ///
+  /// 单次 [settle] 最多推进 `maxNodesPerBatch` 个节点；本方法循环驱动至追平或
+  /// 战败，返回聚合结果（`nodesSettled` 为累计）。[maxBatches] 兜底防病态自旋。
+  Future<ExpeditionSettlementResult> settleToNow({
+    required ExpeditionCombat combat,
+    required ExpeditionConfig config,
+    DateTime? now,
+    int maxNodesPerBatch = defaultMaxNodesPerBatch,
+    int maxBatches = 4096,
+  }) async {
+    var total = 0;
+    var last = const ExpeditionSettlementResult(
+      nodesSettled: 0,
+      currentNode: 0,
+      caughtUp: true,
+      defeated: false,
+    );
+    for (var i = 0; i < maxBatches; i++) {
+      final r = await settle(
+        combat: combat,
+        config: config,
+        now: now,
+        maxNodesPerBatch: maxNodesPerBatch,
+      );
+      total += r.nodesSettled;
+      last = r;
+      if (r.caughtUp) break;
+      if (r.nodesSettled == 0) break; // 无进展（并发弃批）→ 不空转
+    }
+    return ExpeditionSettlementResult(
+      nodesSettled: total,
+      currentNode: last.currentNode,
+      caughtUp: last.caughtUp,
+      defeated: last.defeated,
+    );
+  }
+
   /// 召回 / 战败返程单事务（§4.6/§9.1）。
   ///
   /// 同一 `writeTxn`：发 `stagedRewards`（全员含途中倒下者得完成节点经验 §4.6）+

@@ -272,4 +272,35 @@ void main() {
     expect(r3.nodesSettled, 0);
     expect(digest(await readRun(runId)), d1);
   });
+
+  test('settleToNow：多批循环追平到 now（catch-up 累计）', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final svc = ExpeditionService(IsarSetup.instance);
+    // 810 分 → 8 节点；maxNodesPerBatch=2 强制 4 批循环。
+    final result = await svc.settleToNow(
+      combat: _FakeCombat(),
+      config: _config(),
+      now: departedAt.add(const Duration(minutes: 810)),
+      maxNodesPerBatch: 2,
+    );
+
+    expect(result.caughtUp, isTrue);
+    expect(result.nodesSettled, 8); // 跨多批累计
+    expect((await readRun(runId)).currentNode, 8);
+  });
+
+  test('settleToNow：战败即停不空转', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final svc = ExpeditionService(IsarSetup.instance);
+    final result = await svc.settleToNow(
+      combat: _FakeCombat(loseAtNode: 5),
+      config: _config(),
+      now: departedAt.add(const Duration(minutes: 1080)),
+      maxNodesPerBatch: 2,
+    );
+
+    expect(result.defeated, isTrue);
+    expect(result.caughtUp, isTrue);
+    expect((await readRun(runId)).currentNode, 4);
+  });
 }
