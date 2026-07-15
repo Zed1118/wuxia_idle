@@ -117,9 +117,9 @@ class WuxiaUi {
   static const String battleFounderFallback =
       'assets/characters/battle_founder.png';
   static const String battleFirstDiscipleFallback =
-      'assets/characters/first_disciple.png';
+      'assets/characters/battle_first_disciple.png';
   static const String battleSecondDiscipleFallback =
-      'assets/characters/second_disciple.png';
+      'assets/characters/battle_second_disciple.png';
   static const String battleBossEntranceBg =
       'assets/scenes/mj/battle_boss_entrance_bg_01.png';
 }

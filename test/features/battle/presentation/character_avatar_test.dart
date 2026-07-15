@@ -164,28 +164,37 @@ void main() {
     expect(find.byIcon(Icons.flash_on), findsOneWidget);
   });
 
-  testWidgets('战场祖师降级位使用透明全身立绘且保持完整头脚', (tester) async {
-    final founder = _char(isBoss: false).copyWith(teamSide: 0, slotIndex: 0);
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: CharacterAvatar(
-            character: founder,
-            displayMode: CharacterDisplayMode.stageStandee,
-            standeeWidth: 160,
-            standeeHeight: 230,
+  testWidgets('战场三名我方降级位使用透明全身立绘且保持完整头脚', (tester) async {
+    const expectedPaths = [
+      WuxiaUi.battleFounderFallback,
+      WuxiaUi.battleFirstDiscipleFallback,
+      WuxiaUi.battleSecondDiscipleFallback,
+    ];
+
+    for (var slot = 0; slot < expectedPaths.length; slot++) {
+      final character = _char(
+        isBoss: false,
+      ).copyWith(teamSide: 0, slotIndex: slot);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CharacterAvatar(
+              character: character,
+              displayMode: CharacterDisplayMode.stageStandee,
+              standeeWidth: 160,
+              standeeHeight: 230,
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    final standeeImage = tester.widget<WuxiaImage>(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is WuxiaImage &&
-            widget.assetPath == WuxiaUi.battleFounderFallback,
-      ),
-    );
-    expect(standeeImage.fit, BoxFit.contain);
+      final standeeImage = tester.widget<WuxiaImage>(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is WuxiaImage && widget.assetPath == expectedPaths[slot],
+        ),
+      );
+      expect(standeeImage.fit, BoxFit.contain);
+    }
   });
 }
