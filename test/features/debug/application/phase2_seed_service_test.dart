@@ -1072,4 +1072,45 @@ void main() {
         .length;
     expect(demonCleared, 2, reason: '心魔 2/7');
   });
+
+  // ── 出战编成目检 seed · seedTeamLineup（观察 #2 修） ──────────────────────
+  test('seedTeamLineup → 出战三席各有主修(换下可换回) + 降将/闭关行者留拦截态', () async {
+    final isar = IsarSetup.instance;
+    await Phase2SeedService(isar: isar).seedTeamLineup();
+
+    // 出战三席各有主修——生产态一致(无主修出战会撞 stage_battle_setup),
+    // 换下进替补后带主修才能换回(观察 #2)。
+    final save = await isar.saveDatas.get(0);
+    expect(save, isNotNull);
+    expect(save!.activeCharacterIds.length, 3);
+    for (final id in save.activeCharacterIds) {
+      final c = await isar.characters.get(id);
+      expect(c, isNotNull);
+      expect(c!.mainTechniqueId, isNotNull, reason: '出战成员 ${c.name} 须有主修');
+      final main = await isar.techniques.get(c.mainTechniqueId!);
+      expect(main?.school, c.school, reason: '${c.name} 主修流派须与角色一致');
+    }
+
+    Future<Character?> byName(String name) =>
+        isar.characters.filter().nameEqualTo(name).findFirst();
+
+    // 记名弟子有主修 → 无拦截标,可换上。
+    expect(
+      (await byName('记名弟子'))?.mainTechniqueId,
+      isNotNull,
+      reason: '记名弟子须有主修可换上',
+    );
+    // 降将故意无主修 → 留「未修主修」拦截态。
+    expect(
+      (await byName('降将'))?.mainTechniqueId,
+      isNull,
+      reason: '降将须留「未修主修」拦截态',
+    );
+    // 闭关行者闭关中 → 留「闭关中」拦截态。
+    expect(
+      (await byName('闭关行者'))?.currentRetreatSessionId,
+      isNotNull,
+      reason: '闭关行者须闭关中',
+    );
+  });
 }

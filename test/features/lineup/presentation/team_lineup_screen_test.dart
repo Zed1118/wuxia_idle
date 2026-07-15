@@ -315,8 +315,13 @@ void main() {
     await pumpScreen(tester, waitFor: find.text('替补甲'));
 
     await tester.tap(find.text('祖师'));
-    await pumpUntilFound(tester, find.text(UiStrings.lineupActiveActionBody));
+    await pumpUntilFound(
+      tester,
+      find.text(UiStrings.lineupActiveActionBodySwapOnly),
+    );
     expect(find.text(UiStrings.lineupActionRetire), findsNothing);
+    // 说明行不得提「下场歇息」——祖师无该按钮,文案须同步(观察 #1)。
+    expect(find.text(UiStrings.lineupActiveActionBody), findsNothing);
     await tester.tap(find.text(UiStrings.commonCancel));
     await pumpUntilFound(tester, find.text('替补甲'));
 

@@ -1302,7 +1302,13 @@ class UiStrings {
       '$slotLabel · 换下「$occupantName」';
   static String lineupTakeEmptySlot(String slotLabel) => '$slotLabel · 入空席';
   static String lineupActiveActionTitle(String name) => '「$name」调度';
+
+  /// 可下场时(非祖师·出战>1人·非闭关)的调度说明:含「下场歇息」。
   static const String lineupActiveActionBody = '下场歇息或与他席互换。';
+
+  /// 不可下场时(祖师坐镇 / 仅剩 1 人出战 / 闭关中)的调度说明:仅换防,
+  /// 不提「下场歇息」——该情形下场按钮隐藏,说明行须同步(否则提到不存在的按钮)。
+  static const String lineupActiveActionBodySwapOnly = '与他席互换。';
   static const String lineupActionRetire = '下场歇息';
   static String lineupActionSwapWith(String slotLabel, String occupantName) =>
       '与$slotLabel「$occupantName」互换';

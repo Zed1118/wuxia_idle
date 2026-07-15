@@ -1374,20 +1374,29 @@ class Phase2SeedService {
         reserveRetreat,
       ]);
 
-      // 记名弟子种主修行(唯一可真换上场的替补;降将/闭关行者留「未修主修/
-      // 闭关中」拦截态,目检覆盖全部标签)。
-      final mainTech = _buildTechnique(
-        defId: 'tech_gangmeng_jichu',
-        tier: TechniqueTier.ruMenGong,
-        school: TechniqueSchool.gangMeng,
-        role: TechniqueRole.main,
-        cultivationLayer: CultivationLayer.chuKui,
-        cultivationProgress: 0,
-        cultivationProgressToNext: 100,
-      )..ownerCharacterId = reserveNormal.id;
-      final mainTechId = await isar.techniques.put(mainTech);
-      reserveNormal.mainTechniqueId = mainTechId;
-      await isar.characters.put(reserveNormal);
+      // 主修心法种植:出战三席 + 记名弟子各种一门本流派入门功
+      // (观察 #2 修:出战成员生产态皆有主修——换下后带主修才能换回,
+      // 也让 fixture 与「加入者须已修主修」的硬前置自洽)。降将/闭关行者
+      // 故意不种,分别留「未修主修 / 闭关中」拦截态供目检覆盖全部标签。
+      String jichuDefId(TechniqueSchool school) => switch (school) {
+        TechniqueSchool.gangMeng => 'tech_gangmeng_jichu',
+        TechniqueSchool.lingQiao => 'tech_lingqiao_jichu',
+        TechniqueSchool.yinRou => 'tech_yinrou_jichu',
+      };
+      for (final c in [founder, senior, junior, reserveNormal]) {
+        final mainTech = _buildTechnique(
+          defId: jichuDefId(c.school!),
+          tier: TechniqueTier.ruMenGong,
+          school: c.school!,
+          role: TechniqueRole.main,
+          cultivationLayer: CultivationLayer.chuKui,
+          cultivationProgress: 0,
+          cultivationProgressToNext: 100,
+        )..ownerCharacterId = c.id;
+        final mainTechId = await isar.techniques.put(mainTech);
+        c.mainTechniqueId = mainTechId;
+        await isar.characters.put(c);
+      }
 
       final save = await isar.saveDatas.get(0) ?? (SaveData()..id = 0);
       save.founderCharacterId = founder.id;
