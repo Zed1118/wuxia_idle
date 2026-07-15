@@ -11,6 +11,7 @@ import '../../battle/presentation/battle_screen.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 
 // ─── 场景数据工厂（内存构造，不写 Isar）───────────────────────────────────────
 
@@ -281,7 +282,8 @@ class BattleScenarioData {
       isBoss: isBoss,
       iconPath: icon,
     );
-    // Boss 位注入已配透明战斗立绘的塔主，验全身轮廓、体量与金边。
+    // 冻结帧直接使用透明战斗立绘，避免旧头像纸底在全人物舞台上
+    // 显露矩形边缘。Boss 位保留塔主体量与金边验收语义。
     return (
       [
         c(
@@ -290,7 +292,7 @@ class BattleScenarioData {
           TechniqueSchool.gangMeng,
           0,
           0,
-          icon: 'assets/enemies/thug_a.png',
+          icon: WuxiaUi.battleFounderFallback,
         ),
         c(
           22,
@@ -298,7 +300,7 @@ class BattleScenarioData {
           TechniqueSchool.lingQiao,
           0,
           1,
-          icon: 'assets/enemies/ruffian_a.png',
+          icon: WuxiaUi.battleFirstDiscipleFallback,
         ),
         c(
           23,
@@ -306,7 +308,7 @@ class BattleScenarioData {
           TechniqueSchool.yinRou,
           0,
           2,
-          icon: 'assets/enemies/bandit_b.png',
+          icon: WuxiaUi.battleSecondDiscipleFallback,
         ),
       ],
       [
@@ -317,7 +319,7 @@ class BattleScenarioData {
           1,
           0,
           isBoss: true,
-          icon: 'assets/enemies/tower_boss_20.png',
+          icon: WuxiaUi.battleTowerBoss20Standee,
         ),
         c(
           32,
@@ -325,7 +327,7 @@ class BattleScenarioData {
           TechniqueSchool.gangMeng,
           1,
           1,
-          icon: 'assets/enemies/you_hufa.png',
+          icon: WuxiaUi.battleBanditBladeStandee,
         ),
         c(
           33,
@@ -333,7 +335,7 @@ class BattleScenarioData {
           TechniqueSchool.lingQiao,
           1,
           2,
-          icon: 'assets/enemies/shidi_b.png',
+          icon: WuxiaUi.battleBanditArcherStandee,
         ),
       ],
     );

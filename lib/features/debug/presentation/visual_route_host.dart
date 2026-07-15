@@ -366,13 +366,13 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioBoss,
         hint: null,
-        sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
       );
     case VisualRoute.battleChargeBreak:
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioChargeBreak,
         hint: null,
-        sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         autoStart: false,
       );
     case VisualRoute.battleInnerDemonStage:
@@ -414,7 +414,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioDragLive,
         hint: UiStrings.chapter1Title,
-        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         autoStart: false,
         allowPlayerIntervention: true,
         startPaused: true,
@@ -473,7 +473,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioBossPhase,
         hint: UiStrings.battleBossPhaseHint,
-        sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         allowPlayerIntervention: true,
         startPaused: true,
       );

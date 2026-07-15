@@ -13,6 +13,7 @@ import 'package:wuxia_idle/features/debug/presentation/battle_test_menu.dart';
 import 'package:wuxia_idle/features/debug/presentation/visual_route_host.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
 import 'package:wuxia_idle/features/taohua_island/presentation/taohua_island_screen.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 void main() {
   group('parseVisualRoute', () {
@@ -209,6 +210,17 @@ void main() {
       expect(target, isA<ScenarioLauncher>());
       final launcher = target as ScenarioLauncher;
       expect(launcher.autoStart, isFalse);
+      expect(launcher.sceneBackgroundPath, WuxiaUi.battleMountainPassStage);
+    });
+
+    test('battle_boss_frame → 统一全人物山口舞台', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.battleBossFrame,
+        IsarSetup.instance,
+      );
+      expect(target, isA<ScenarioLauncher>());
+      final launcher = target as ScenarioLauncher;
+      expect(launcher.sceneBackgroundPath, WuxiaUi.battleMountainPassStage);
     });
 
     test('battle_tap_live → allowPlayerIntervention:true + autoStart:true '
@@ -239,6 +251,7 @@ void main() {
       expect(launcher.startPaused, isTrue);
       expect(launcher.previewPendingCharacterId, 1);
       expect(launcher.previewPendingSkillId, 'dl_single_1');
+      expect(launcher.sceneBackgroundPath, WuxiaUi.battleMountainPassStage);
     });
 
     test('battle_tap_preview → 复用点选冻结预置态', () async {

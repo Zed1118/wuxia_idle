@@ -79,3 +79,5 @@
 
 - 破绽窗口原先对整个 `CharacterSlot` 施加绛红 `boxShadow`，会直接显露矩形 Widget 边界，与透明全身立绘冲突。现改为脚下窄幅破绽印，保留呼吸节拍和既有测试 key，不改战斗机制。
 - `battle_charge_break` 1440×900 复截位于 `build/visual_acceptance/battle_ui_stagger_ground_seal/`；旧帧右侧杀手背后大面积红色矩形已消失，无 overflow / exception / error。
+- Boss、蓄势/破招、点选冻结与 Boss 阶段验收路由统一使用山口舞台，不再在特殊状态中退回旧纸墙/城墙背景。`scenarioBoss` 冻结帧的六人也改用透明全身立绘，去除四张带底纸的历史头像。
+- 后排立绘缩小后的状态牌独立放宽，1280 视口下四位/五位气血值不再挤成一团。统一后 Boss 帧位于 `build/visual_acceptance/battle_ui_boss_standee_unified/`。

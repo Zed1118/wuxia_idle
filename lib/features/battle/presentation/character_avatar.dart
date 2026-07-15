@@ -290,6 +290,9 @@ class _StageCharacterStandee extends StatelessWidget {
     );
     final footY = portraitHeight * _stageStandeeFootFraction(resolvedIconPath);
     final groundingHeight = height * 0.065;
+    // 后排立绘会按景深缩小，状态牌不能再与主位使用相同的
+    // 24% 内缩，否则四位/五位气血数字会在 1280 视口挤在一起。
+    final statusInsetFraction = character.slotIndex == 0 ? 0.24 : 0.16;
     final wardActive =
         battleState != null && isGuardianWardActive(character, battleState!);
 
@@ -436,8 +439,8 @@ class _StageCharacterStandee extends StatelessWidget {
               ),
             ),
           Positioned(
-            left: width * 0.24,
-            right: width * 0.24,
+            left: width * statusInsetFraction,
+            right: width * statusInsetFraction,
             top: (footY + 2).clamp(0.0, height - 40),
             child: Container(
               padding: const EdgeInsets.fromLTRB(5, 2, 5, 3),
