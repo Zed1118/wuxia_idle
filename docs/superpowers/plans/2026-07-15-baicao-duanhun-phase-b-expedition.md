@@ -521,20 +521,22 @@ class ExpeditionBattleRunner {
 - [ ] macOS debug build
 
 ## 当前恢复点（2026-07-16 · 分支 feat/baicao-duanhun-phase-b·worktree·未 push）
-- **状态：** **B1 全 4 + B2.1 派遣 + B2.2 结算（a+b）+ `settleToNow` + B2.3 返程 完成并 commit**；A2 基建已 FF 合入本地 main `a61df363`（未 push）。**B2.4 UI / B.V 未开工**。
+- **状态：** **B1 全 4 + B2.1 派遣 + B2.2 结算（a+b）+ `settleToNow` + B2.3 返程 + B2.4a provider + §4.7 返程行记屏 完成并 commit**；A2 基建已 FF 合入本地 main `a61df363`（未 push）。**B2.4 总览屏 / settle-on-open 接线 / 主导航入口 / B.V 未开工（交互+集成·morning 真机目检 gated）**。
 - **已完成（严格 TDD·各独立 commit）：**
   - B1.1-1.4 + B2.1（commit `8926be46..5dab9768`）
   - **B2.2a `settle` 状态机**（`225c98d3`）：6 不变式全测（在线分段==一次性离线/幂等/单批上限 `defaultMaxNodesPerBatch=24`/cursor 守卫/战败即停/时间回拨）。节点完成时刻按 `departedAt+累计时长`绝对锚定→推进为 `(run,now)` 确定函数。敌队经 `ExpeditionCombat`（`expedition_combat.dart`）注入 seam 解耦。
   - **B2.2b 生产战斗接线**（`6ec6a1d5`）：`ExpeditionCombatRunner`（`expedition_combat_runner.dart`）派遣成员经 `StageBattleSetup.buildPlayerTeamForCharacters`（additive 公开法·零回归）装真队 + 占位敌（`_synthesizeEnemies`·学徒阶·`TODO(batch3-probe)`）+ `ExpeditionBattleRunner`。e2e 真角色→派遣→settle 推进节点 5 真打真赢。
   - **`settleToNow`**（`37419c6e`）：循环分批 settle 至追平/战败，供 B2.4 provider 消费。
   - **B2.3 `recall({defeated})`**（`9d4668be`）：单 writeTxn 发 `stagedRewards`（全员含倒下者经验·受发布上限层锁）+ 物品入库（`ItemType.fromDefId` + `inventoryItems.getByDefId` 增量）+ 战败伤势（倒下者 `applyHeavyInjury`/其余 `accumulateLightInjury`·召回不附伤）+ 删 `ExpeditionRun`（占用自动解除）。
-- **已跑验证（本会话 worktree 实测）：** `flutter analyze --no-pub lib test` 0；**全量 `flutter test --no-pub` 4071 pass/0 fail**；`stage_battle_setup_test` 35 回归绿。macOS build **本环境不能跑**（仅 CommandLineTools·`xcodebuild` 缺）→ morning。
+  - **B2.4a provider**（`4ec4a0d0`）：`expeditionServiceProvider`（isar==null→null·nullable propagation 沿 lineup 体例）+ `activeExpeditionProvider`（watch 无远征→null·写路径后 caller `ref.invalidate`）+ `ExpeditionService.activeRun()` 公开访问器。战斗协作者 `ExpeditionCombatRunner` 有跨节点缓存、按结算次新建、**不入 provider**（避陈旧缓存）。
+  - **§4.7 返程行记只读屏**（`21f893fd`）：`ExpeditionRecapScreen(result:)`（`expedition/presentation/`）展示 `ExpeditionReturnResult` 的最深/完成节点·主要奖获·断魂帖里程碑高亮·伤势三态（战败绛红/负伤/安然）。照 `retreat_result_screen` 水墨体例（`LightPaperPanel`/`SectionHeader`/`PlaqueButton`）；文案入 `UiStrings` 集中 sink（守 §5.6）。visual_route `expedition_recap` + 3 widget 测 @1280×720/1440×900 断言无溢出。**「重要战斗」明细当前 result 不载**（settle 应用恢复后丢弃逐节点战斗详情）→ 待 batch3 富化 result（附战斗摘要·涉 schema）后补。
+- **已跑验证（本会话 worktree 实测）：** `flutter analyze --no-pub lib test` 0；**全量 `flutter test --no-pub` 4075 pass/0 fail**（4071 基线 +provider1 +recap3）；`stage_battle_setup_test` 35 回归绿；debug visual_route 32 测绿（新 `expedition_recap` id 往返通过）。macOS build **本环境不能跑**（仅 CommandLineTools·`xcodebuild` 缺）→ morning。
 - **关键决策（B2.4 必读）：**
   - provider 需注入 `ExpeditionCombatRunner(isar)` + `GameRepository.instance.expeditionConfig!`；结算入口走 `settleToNow`，召回/战败走 `recall(defeated:)`（战败由 `settleToNow().defeated` 触发）。
   - 战败无持久 flag（可复现）；exp 全员各得；敌队/伤势深度曲线占位待 batch3 探针。
   - **异步 config race**（`feedback_flutter_async_config_race_controller_final`）：provider 装 config 别在构造期定死 null，didUpdateWidget/watch 透传。
-- **下一步：** B2.4 provider + `expedition_overview_screen`/`expedition_recap_screen` + 3 visual_route（`expedition_overview/active/recap`·seed 沿 team_lineup 体例）；UI 建好后 Codex 真机 @1280×720/1440×900 目检。B.V：macOS build + 目检收口。
-- **阻塞项：** 无（B2.4 纯视觉，需 morning 真机验收）。
+- **下一步（morning·keystone=总览屏）：** ① **B2.4 总览屏 `ExpeditionOverviewScreen`**（§7.1·派遣态[队伍+方针选]+active 态[深度/完成/下一节点剩余/召回]两态·dispatch/recall 唯一玩家入口=此簇 keystone·**async-config-race**：读 config/combat 在动作时新建、别构造期定死 null）；② **离线追平 settle-on-open 接线**（**架构已探明**：镜像 `main_menu_startup_gate.dart` 的 `maybeRunSectMonthlyTick`，post-frame `unawaited(maybeSettleExpedition(ref))`；核心可抽 `settleActiveExpeditionOnOpen(service,isar,config)` 纯 dep 便单测；走 startup-gate **非** 屏 initState）；③ 主导航「江湖远行」入口；④ 2 visual_route（`expedition_overview/active`·seed 沿 team_lineup 体例）；⑤ B.V macOS build + Codex 真机 @1280×720/1440×900 目检两屏。**未先建 action controller**——总览屏未定形前抽 controller = speculative abstraction（`feedback_avoid_over_engineer_abstraction`），随屏共设。
+- **阻塞项：** 无（backend/provider/recap 已全绿 unblocked；余总览屏交互+集成需 morning 真机验收，本环境缺全 Xcode）。
 
 ## 自检（写完 vs 源规格）
 - **Spec 覆盖：** §4.1 派遣/占用（B2.1）·§4.2-4.4 节点/方针/里程碑（B1.2/1.3）·§4.5 瘴蚀/封顶/恢复（B1.2/1.3/2.2）·§4.6 召回战败（B2.3）·§4.7 稳定随机/行记（B1.1/B2.4）·§9.1 事务（B2.1/2.2/2.3）·§10 时间回拨（B2.2）·§12.1 在线=离线（B2.2）·§12.4 visual_route（B2.4）。
