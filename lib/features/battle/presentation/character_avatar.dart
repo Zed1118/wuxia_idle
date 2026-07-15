@@ -12,6 +12,8 @@ import 'hp_bar.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 
+enum CharacterDisplayMode { avatar, stageStandee }
+
 /// 战斗角色头像（phase1_tasks.md T14 §784;M4 Stage 3 2026-05-21 美术接入)。
 ///
 /// 主入口:[BattleCharacter.iconPath] 非空且非空串时,走 [Image.asset] + ClipOval
@@ -26,6 +28,9 @@ class CharacterAvatar extends StatelessWidget {
   final BattleCharacter character;
   final double avatarSize;
   final double barWidth;
+  final CharacterDisplayMode displayMode;
+  final double standeeWidth;
+  final double standeeHeight;
 
   /// Boss/敌人蓄力满值（`numbers.combat.bossCharge.defaultChargeTicks`）。
   /// 用于把 [BattleCharacter.chargeTicksRemaining] 换算成蓄力读秒环比例。
@@ -48,6 +53,9 @@ class CharacterAvatar extends StatelessWidget {
     required this.character,
     this.avatarSize = 110,
     this.barWidth = 160,
+    this.displayMode = CharacterDisplayMode.avatar,
+    this.standeeWidth = 160,
+    this.standeeHeight = 230,
     this.chargeMaxTicks = 3,
     this.beat,
     this.staggerWindowTicks = 3,
@@ -56,6 +64,18 @@ class CharacterAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (displayMode == CharacterDisplayMode.stageStandee) {
+      return _StageCharacterStandee(
+        character: character,
+        battleState: battleState,
+        beat: beat ?? const AlwaysStoppedAnimation<double>(0),
+        chargeMaxTicks: chargeMaxTicks,
+        staggerWindowTicks: staggerWindowTicks,
+        width: standeeWidth,
+        height: standeeHeight,
+      );
+    }
+
     final color = WuxiaColors.schoolColor(character.school);
     final borderColor = character.isBoss ? WuxiaColors.bossFrame : color;
     final borderWidth = character.isBoss ? 6.0 : 4.0;
@@ -228,6 +248,268 @@ class CharacterAvatar extends StatelessWidget {
     );
   }
 }
+
+/// 战场全人物站姿。当前复用现有大图，以水墨晕染遮罩淡化图片矩形边缘；
+/// 后续透明立绘到位时只替换图像层，姓名/状态/血气板与目标交互不变。
+class _StageCharacterStandee extends StatelessWidget {
+  const _StageCharacterStandee({
+    required this.character,
+    required this.battleState,
+    required this.beat,
+    required this.chargeMaxTicks,
+    required this.staggerWindowTicks,
+    required this.width,
+    required this.height,
+  });
+
+  final BattleCharacter character;
+  final BattleState? battleState;
+  final Animation<double> beat;
+  final int chargeMaxTicks;
+  final int staggerWindowTicks;
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final schoolColor = WuxiaColors.schoolColor(character.school);
+    final borderColor = character.isBoss ? WuxiaColors.bossFrame : schoolColor;
+    final portraitHeight = height * 0.78;
+    final firstGlyph = character.name.characters.isEmpty
+        ? '?'
+        : character.name.characters.first;
+    final resolvedIconPath = _resolvedStageIconPath(character);
+    final hasIcon = resolvedIconPath != null;
+    final wardActive =
+        battleState != null && isGuardianWardActive(character, battleState!);
+
+    final image = hasIcon
+        ? WuxiaImage(
+            resolvedIconPath,
+            width: width,
+            height: portraitHeight,
+            fit: BoxFit.cover,
+            alignment: Alignment.topCenter,
+            errorBuilder: wuxiaAssetErrorBuilder(
+              () => _FirstGlyphStandee(
+                width: width,
+                height: portraitHeight,
+                color: borderColor,
+                firstGlyph: firstGlyph,
+              ),
+            ),
+          )
+        : _FirstGlyphStandee(
+            width: width,
+            height: portraitHeight,
+            color: borderColor,
+            firstGlyph: firstGlyph,
+          );
+
+    Widget portrait = Container(
+      width: width,
+      height: portraitHeight,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: character.isBoss
+            ? Border.all(color: borderColor.withValues(alpha: 0.9), width: 3)
+            : null,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: ShaderMask(
+        blendMode: BlendMode.dstIn,
+        shaderCallback: (rect) => const RadialGradient(
+          center: Alignment(0, -0.08),
+          radius: 0.72,
+          colors: [Colors.white, Colors.white, Colors.transparent],
+          stops: [0, 0.50, 0.88],
+        ).createShader(rect),
+        child: image,
+      ),
+    );
+    if (character.isBoss) {
+      portrait = Container(
+        key: const ValueKey<String>('battle.bossAvatarFrame'),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: WuxiaColors.bossFrame.withValues(alpha: 0.24),
+              blurRadius: 16,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: portrait,
+      );
+    }
+
+    final content = SizedBox(
+      width: width,
+      height: height,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          portrait,
+          Positioned(
+            top: 4,
+            left: 4,
+            right: 4,
+            child: Center(
+              child: AvatarStatusTags(
+                character: character,
+                beat: beat,
+                staggerWindowTicks: staggerWindowTicks,
+                wardActive: wardActive,
+              ),
+            ),
+          ),
+          if (character.chargingSkill != null)
+            Positioned(
+              top: 34,
+              right: 6,
+              child: BeatCountdownRing(
+                remaining: character.chargeTicksRemaining,
+                total: chargeMaxTicks,
+                beat: beat,
+                color: WuxiaColors.hpLow,
+                size: 34,
+              ),
+            ),
+          Positioned(
+            left: 5,
+            right: 5,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(7, 6, 7, 7),
+              decoration: BoxDecoration(
+                color: WuxiaColors.panel.withValues(alpha: 0.92),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: borderColor.withValues(alpha: 0.72)),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black45, blurRadius: 8),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    character.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: WuxiaColors.textPrimary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    EnumL10n.realm(character.realmTier, character.realmLayer),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: WuxiaColors.textSecondary,
+                      fontSize: 9,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  HpBar(
+                    current: character.currentHp,
+                    max: character.maxHp,
+                    height: 11,
+                  ),
+                  const SizedBox(height: 2),
+                  HpBar(
+                    current: character.currentQi,
+                    max: character.maxQi,
+                    height: 9,
+                    isInternalForce: true,
+                    labelPrefix: UiStrings.internalForceShortLabel,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final dimmed = Opacity(
+      opacity: character.isAlive ? 1 : 0.45,
+      child: content,
+    );
+    if (character.isAlive) return dimmed;
+    return ColorFiltered(colorFilter: _grayscaleFilter, child: dimmed);
+  }
+}
+
+String? _resolvedStageIconPath(BattleCharacter character) {
+  final iconPath = character.iconPath;
+  if (iconPath != null && iconPath.isNotEmpty) return iconPath;
+  if (character.teamSide != 0) return null;
+  return switch (character.slotIndex) {
+    0 => WuxiaUi.battleFounderFallback,
+    1 => WuxiaUi.battleFirstDiscipleFallback,
+    2 => WuxiaUi.battleSecondDiscipleFallback,
+    _ => null,
+  };
+}
+
+class _FirstGlyphStandee extends StatelessWidget {
+  const _FirstGlyphStandee({
+    required this.width,
+    required this.height,
+    required this.color,
+    required this.firstGlyph,
+  });
+
+  final double width;
+  final double height;
+  final Color color;
+  final String firstGlyph;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      color: WuxiaColors.avatarFill,
+      alignment: Alignment.center,
+      child: Text(
+        firstGlyph,
+        style: TextStyle(
+          color: color,
+          fontSize: width * 0.38,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
+
+const _grayscaleFilter = ColorFilter.matrix(<double>[
+  0.2126,
+  0.7152,
+  0.0722,
+  0,
+  0,
+  0.2126,
+  0.7152,
+  0.0722,
+  0,
+  0,
+  0.2126,
+  0.7152,
+  0.0722,
+  0,
+  0,
+  0,
+  0,
+  0,
+  1,
+  0,
+]);
 
 class _BossAvatarFrame extends StatelessWidget {
   const _BossAvatarFrame({required this.avatarSize, required this.child});

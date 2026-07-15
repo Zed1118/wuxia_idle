@@ -53,6 +53,10 @@ void main() {
           find.byKey(ValueKey('battle.characterSlot.repaint.$side.$slot')),
           findsOneWidget,
         );
+        expect(
+          find.byKey(ValueKey('battle.stageCharacter.$side.$slot')),
+          findsOneWidget,
+        );
       }
     }
   });

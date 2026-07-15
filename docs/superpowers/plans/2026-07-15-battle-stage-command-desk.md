@@ -46,8 +46,8 @@
 
 ## 5. 当前恢复点
 
-- **状态**：切片 1 已完成，待提交恢复点。
-- **最后完成**：案台灰盒已接入生产 `BattleScreen`；实机首截发现 macOS 字体度量导致左栏溢出，按系统化调试定位为高度临界值，留 6px 安全余量后二次截图无黄黑条且日志无 overflow。
-- **下一步**：提交切片 1 恢复点，然后进入切片 2：人物舞台灰盒。
-- **已跑验证**：worktree 分支/隔离检查通过；`flutter pub get` 成功；build_runner 写 118 ignored outputs 成功；4 个战斗/widget 文件 56 项全通过；`flutter analyze` 无问题；双视口实机截图二次目检通过。
+- **状态**：切片 1 已提交 `4599d73d`；切片 2 已完成，待提交恢复点。
+- **最后完成**：生产 `BattleField` 改为统一比例锚点的 1v1/2v2/3v3 斜向人物舞台；弹道与人物共用 `battleStageAnchor`；`CharacterAvatar` 新增全人物站姿模式，复用现有大图加墨晕边缘，保留姓名/境界/血气/状态/死亡灰化/Boss 金框/蓄力环/目标点选。我方无 `iconPath` 时仅作槽位级祖师/弟子立绘降级，不影响真角色资产。
+- **下一步**：提交切片 2 恢复点，然后进入切片 3：`melee/projectile/area/control/cinematic` 动作模板。
+- **已跑验证**：切片 2 定向 6 文件共 60 项全通过；`flutter analyze` 无问题；`battle_tap_preview` 1280×720 / 1440×900 细化截图在 `build/visual_acceptance/battle_ui_stage_slice2_refined/`，日志无 overflow/exception/error。
 - **阻塞项**：无。Claude 并行分支可能同时改 `lib/shared/strings.dart`，本分支只追加战斗案台必要文案并保持小提交，交付时明确冲突点。

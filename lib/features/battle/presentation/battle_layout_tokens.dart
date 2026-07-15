@@ -16,4 +16,10 @@ abstract final class BattleLayoutTokens {
   static const double pouchWidth = 184;
   static const double pouchSlotSize = 44;
   static const double pouchSlotGap = 6;
+  static const double stageHorizontalPadding = 20;
+  static const double stageVerticalPadding = 6;
+  static const double stageMaxStandeeWidth = 184;
+  static const double stageMaxStandeeHeight = 250;
+  static const double stageWidthFraction = 0.145;
+  static const double stageHeightFraction = 0.52;
 }

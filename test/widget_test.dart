@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'support/image_test_helpers.dart';
-
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
@@ -17,7 +15,6 @@ import 'package:wuxia_idle/features/battle/presentation/damage_popup.dart';
 import 'package:wuxia_idle/features/battle/presentation/ultimate_caption_overlay.dart';
 import 'package:wuxia_idle/features/battle/presentation/victory_overlay.dart';
 import 'package:wuxia_idle/shared/strings.dart';
-import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 /// 短时序动画配置，加速 widget test 运行。
 const _testAnim = AnimationNumbers(
@@ -155,9 +152,6 @@ void main() {
     return notifier;
   }
 
-  Finder assetImage(String path) =>
-      find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
-
   // ── T14 静态布局 ────────────────────────────────────────────────────────
 
   testWidgets('BattleScreen 渲染 3v3 + 顶栏 + 6 个 CharacterAvatar', (
@@ -192,7 +186,7 @@ void main() {
     expect(opacity.opacity, 0.45);
   });
 
-  testWidgets('Boss 头像叠加 MJ 圆环外框', (WidgetTester tester) async {
+  testWidgets('Boss 全人物位使用金色舞台外框', (WidgetTester tester) async {
     await setSurface(tester);
     final (left, right) = BattleDemo.mockTeams();
     final boss = right.first.copyWith(isBoss: true);
@@ -214,7 +208,10 @@ void main() {
     );
     await tester.pump();
 
-    expect(assetImage(WuxiaUi.bossFrameLarge), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('battle.bossAvatarFrame')),
+      findsOneWidget,
+    );
   });
 
   // ── T15 dispose ─────────────────────────────────────────────────────────

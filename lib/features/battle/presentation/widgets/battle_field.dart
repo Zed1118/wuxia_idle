@@ -5,6 +5,8 @@ import '../../../../data/numbers_config.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
 import '../attack_animation.dart';
+import '../battle_layout_tokens.dart';
+import '../battle_stage_geometry.dart';
 import '../battle_vfx_entries.dart';
 import '../character_avatar.dart';
 import '../damage_popup.dart';
@@ -48,159 +50,136 @@ class BattleField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final slots = <_StageSlotData>[
+      for (var i = 0; i < state.leftTeam.length; i++)
+        _StageSlotData(
+          teamSide: 0,
+          slotIndex: i,
+          teamSize: state.leftTeam.length,
+          character: state.leftTeam[i],
+        ),
+      for (var i = 0; i < state.rightTeam.length; i++)
+        _StageSlotData(
+          teamSide: 1,
+          slotIndex: i,
+          teamSize: state.rightTeam.length,
+          character: state.rightTeam[i],
+        ),
+    ]..sort((a, b) => a.anchor.dy.compareTo(b.anchor.dy));
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 46, vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 168,
-            child: TeamColumn(
-              team: state.leftTeam,
-              battleState: state,
-              isLeftTeam: true,
-              alignment: CrossAxisAlignment.start,
-              attackControllers: attackControllers,
-              popups: popups,
-              animConfig: animConfig,
-              chargeMaxTicks: chargeMaxTicks,
-              beat: beat,
-              staggerWindowTicks: staggerWindowTicks,
-              onPopupComplete: onPopupComplete,
-              hitFlashControllers: hitFlashControllers,
-              hitFlashColors: hitFlashColors,
-              onEnemyTap: null,
-              pendingActive: false,
-              hoveredEnemyId: null,
-              onEnemyHover: null,
-            ),
-          ),
-          const Expanded(child: SizedBox.shrink()),
-          SizedBox(
-            width: 168,
-            child: TeamColumn(
-              team: state.rightTeam,
-              battleState: state,
-              isLeftTeam: false,
-              alignment: CrossAxisAlignment.end,
-              attackControllers: attackControllers,
-              popups: popups,
-              animConfig: animConfig,
-              chargeMaxTicks: chargeMaxTicks,
-              beat: beat,
-              staggerWindowTicks: staggerWindowTicks,
-              onPopupComplete: onPopupComplete,
-              hitFlashControllers: hitFlashControllers,
-              hitFlashColors: hitFlashColors,
-              onEnemyTap: onEnemyTap,
-              pendingActive: pendingActive,
-              hoveredEnemyId: hoveredEnemyId,
-              onEnemyHover: onEnemyHover,
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.symmetric(
+        horizontal: BattleLayoutTokens.stageHorizontalPadding,
+        vertical: BattleLayoutTokens.stageVerticalPadding,
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final baseWidth =
+              (constraints.maxWidth * BattleLayoutTokens.stageWidthFraction)
+                  .clamp(132.0, BattleLayoutTokens.stageMaxStandeeWidth);
+          final baseHeight =
+              (constraints.maxHeight * BattleLayoutTokens.stageHeightFraction)
+                  .clamp(176.0, BattleLayoutTokens.stageMaxStandeeHeight);
+
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              for (final slot in slots)
+                Builder(
+                  builder: (context) {
+                    final scale = battleStageScale(
+                      slot.slotIndex,
+                      slot.teamSize,
+                    );
+                    final width = baseWidth * scale;
+                    final height = baseHeight * scale;
+                    final left =
+                        (slot.anchor.dx * constraints.maxWidth - width / 2)
+                            .clamp(0.0, constraints.maxWidth - width);
+                    final top =
+                        (slot.anchor.dy * constraints.maxHeight - height / 2)
+                            .clamp(0.0, constraints.maxHeight - height);
+                    final slotKey = slot.teamSide * 3 + slot.slotIndex;
+                    final isLeftTeam = slot.teamSide == 0;
+
+                    return Positioned(
+                      left: left,
+                      top: top,
+                      width: width,
+                      height: height,
+                      child: RepaintBoundary(
+                        key: ValueKey(
+                          'battle.characterSlot.repaint.${slot.teamSide}.${slot.slotIndex}',
+                        ),
+                        child: SizedBox(
+                          key: ValueKey(
+                            'battle.stageCharacter.${slot.teamSide}.${slot.slotIndex}',
+                          ),
+                          child: CharacterSlot(
+                            character: slot.character,
+                            battleState: state,
+                            isLeftTeam: isLeftTeam,
+                            attackController: attackControllers[slotKey],
+                            slotPopups: popups[slotKey] ?? const [],
+                            animConfig: animConfig,
+                            chargeMaxTicks: chargeMaxTicks,
+                            beat: beat,
+                            staggerWindowTicks: staggerWindowTicks,
+                            slotKey: slotKey,
+                            onPopupComplete: onPopupComplete,
+                            hitFlashController: hitFlashControllers[slotKey],
+                            flashColor: hitFlashColors[slotKey] ?? Colors.white,
+                            standeeWidth: width,
+                            standeeHeight: height,
+                            onTap:
+                                (!isLeftTeam &&
+                                    pendingActive &&
+                                    slot.character.isAlive)
+                                ? () => onEnemyTap(slot.character.characterId)
+                                : null,
+                            hovered:
+                                hoveredEnemyId == slot.character.characterId,
+                            targetable:
+                                !isLeftTeam &&
+                                pendingActive &&
+                                slot.character.isAlive,
+                            onHoverChanged:
+                                (!isLeftTeam &&
+                                    pendingActive &&
+                                    slot.character.isAlive)
+                                ? (hovering) => onEnemyHover(
+                                    slot.character.characterId,
+                                    hovering,
+                                  )
+                                : null,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
-class TeamColumn extends StatelessWidget {
-  final List<BattleCharacter> team;
-  // floor30 护法结界(Task 6):完整战场快照,逐槽透传给 CharacterAvatar 判定结界。
-  final BattleState battleState;
-  final bool isLeftTeam;
-  final CrossAxisAlignment alignment;
-  final List<AnimationController> attackControllers;
-  final Map<int, List<PopupEntry>> popups;
-  final AnimationNumbers animConfig;
-  final int chargeMaxTicks;
-  final Animation<double> beat;
-  final int staggerWindowTicks;
-  final void Function(int slotKey, int popupId) onPopupComplete;
-  final List<AnimationController> hitFlashControllers;
-  final Map<int, Color> hitFlashColors;
-  // 两段点选:点敌头像出手回调(仅右队/敌方非空,我方队为 null);
-  // pendingActive = 待发态(敌头像可点 + 全员存活敌高亮为可选目标)。
-  final void Function(int enemyId)? onEnemyTap;
-  final bool pendingActive;
-  final int? hoveredEnemyId;
-  final void Function(int enemyId, bool hovering)? onEnemyHover;
-
-  const TeamColumn({
-    super.key,
-    required this.team,
-    required this.battleState,
-    required this.isLeftTeam,
-    required this.alignment,
-    required this.attackControllers,
-    required this.popups,
-    required this.animConfig,
-    required this.chargeMaxTicks,
-    required this.beat,
-    required this.staggerWindowTicks,
-    required this.onPopupComplete,
-    required this.hitFlashControllers,
-    required this.hitFlashColors,
-    required this.onEnemyTap,
-    required this.pendingActive,
-    required this.hoveredEnemyId,
-    required this.onEnemyHover,
+class _StageSlotData {
+  const _StageSlotData({
+    required this.teamSide,
+    required this.slotIndex,
+    required this.teamSize,
+    required this.character,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    final teamSide = isLeftTeam ? 0 : 1;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: alignment,
-      children: [
-        // 2026-06-25:只渲染 team.length 个槽(去掉末尾空占位),Column 等分 → 1 怪
-        // 居中 / 2 怪上下对称 / 3 怪不变,与 _slotFrac 的 slotVerticalFraction 同步。
-        // P0-2 fix(2026-06-04 Codex 报 RenderFlex overflow @1280×720):每槽包
-        // Expanded+FittedBox(scaleDown)——大窗保持原尺寸,最小窗自动等比微缩不溢出;
-        // alignment 锁外缘,头像维持 0.12/0.88 与 projectile 比例坐标对齐。
-        for (var i = 0; i < team.length; i++)
-          Expanded(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: isLeftTeam
-                  ? Alignment.centerLeft
-                  : Alignment.centerRight,
-              child: RepaintBoundary(
-                key: ValueKey('battle.characterSlot.repaint.$teamSide.$i'),
-                child: CharacterSlot(
-                  character: team[i],
-                  battleState: battleState,
-                  isLeftTeam: isLeftTeam,
-                  attackController: attackControllers[teamSide * 3 + i],
-                  slotPopups: popups[teamSide * 3 + i] ?? const [],
-                  animConfig: animConfig,
-                  chargeMaxTicks: chargeMaxTicks,
-                  beat: beat,
-                  staggerWindowTicks: staggerWindowTicks,
-                  slotKey: teamSide * 3 + i,
-                  onPopupComplete: onPopupComplete,
-                  hitFlashController: hitFlashControllers[teamSide * 3 + i],
-                  flashColor: hitFlashColors[teamSide * 3 + i] ?? Colors.white,
-                  // 待发态:存活敌头像可点选为目标 + 高亮提示。
-                  onTap:
-                      (onEnemyTap != null && pendingActive && team[i].isAlive)
-                      ? () => onEnemyTap!(team[i].characterId)
-                      : null,
-                  hovered: hoveredEnemyId == team[i].characterId,
-                  targetable: pendingActive && team[i].isAlive,
-                  onHoverChanged:
-                      (onEnemyHover != null && pendingActive && team[i].isAlive)
-                      ? (hovering) =>
-                            onEnemyHover!(team[i].characterId, hovering)
-                      : null,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
+  final int teamSide;
+  final int slotIndex;
+  final int teamSize;
+  final BattleCharacter character;
+
+  Offset get anchor => battleStageAnchor(teamSide, slotIndex, teamSize);
 }
 
 /// 单个角色槽：攻击动画包 + 头像 + 飘字（Stack 叠加，clipBehavior: none 允许溢出）。
@@ -219,6 +198,8 @@ class CharacterSlot extends StatelessWidget {
   final void Function(int slotKey, int popupId) onPopupComplete;
   final AnimationController hitFlashController;
   final Color flashColor;
+  final double standeeWidth;
+  final double standeeHeight;
   // 两段点选:待发态下敌头像点选目标的回调(null=不可点);待发态高亮。
   final VoidCallback? onTap;
   final bool hovered;
@@ -240,6 +221,8 @@ class CharacterSlot extends StatelessWidget {
     required this.onPopupComplete,
     required this.hitFlashController,
     required this.flashColor,
+    required this.standeeWidth,
+    required this.standeeHeight,
     this.onTap,
     this.hovered = false,
     this.targetable = false,
@@ -257,8 +240,9 @@ class CharacterSlot extends StatelessWidget {
           chargeMaxTicks: chargeMaxTicks,
           beat: beat,
           staggerWindowTicks: staggerWindowTicks,
-          avatarSize: 92,
-          barWidth: 140,
+          displayMode: CharacterDisplayMode.stageStandee,
+          standeeWidth: standeeWidth,
+          standeeHeight: standeeHeight,
         ),
         if (targetable)
           Positioned(
@@ -287,17 +271,20 @@ class CharacterSlot extends StatelessWidget {
       ),
     );
     if (onTap != null) {
-      avatar = GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: avatar,
-      );
-    }
-    if (onHoverChanged != null) {
-      avatar = MouseRegion(
-        onEnter: (_) => onHoverChanged!(true),
-        onExit: (_) => onHoverChanged!(false),
-        child: avatar,
+      avatar = Semantics(
+        button: true,
+        enabled: character.isAlive,
+        label: '${character.name} ${UiStrings.skillTargetable}',
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            onHover: onHoverChanged,
+            mouseCursor: SystemMouseCursors.click,
+            borderRadius: BorderRadius.circular(8),
+            child: avatar,
+          ),
+        ),
       );
     }
     return Stack(

@@ -20,6 +20,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
 import '../../settings/domain/gameplay_settings.dart';
 import 'battle_vfx_entries.dart';
+import 'battle_stage_geometry.dart';
 import 'boss_phase_presentation.dart';
 import 'damage_popup.dart';
 import 'first_clear_showcase.dart';
@@ -460,12 +461,10 @@ class BattlePlaybackController {
     });
   }
 
-  /// 战场比例坐标（0..1）：左队 x=0.12 / 右队 x=0.88；竖直按队伍人数 [teamSize]
-  /// 均分(见 [slotVerticalFraction]):1 怪居中 / 2 怪对称 / 3 怪 1/6,3/6,5/6。
+  /// 战场比例坐标（0..1）：与人物舞台共用斜向阵列锚点。
   /// 弹道层在 LayoutBuilder 内解析为像素，避免依赖 RenderBox（widget test 稳定）。
   static Offset _slotFrac(int teamSide, int slotIndex, int teamSize) {
-    final x = teamSide == 0 ? 0.12 : 0.88;
-    return Offset(x, slotVerticalFraction(slotIndex, teamSize));
+    return battleStageAnchor(teamSide, slotIndex, teamSize);
   }
 
   /// 取某队当前人数(供 [_slotFrac] 竖直均分)。死亡单位保留在队列(灰显)故长度稳定。
