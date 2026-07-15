@@ -117,8 +117,15 @@ class BattleField extends StatelessWidget {
                       slot.teamSize,
                       isBoss: slot.character.isBoss,
                     );
-                    final width = baseWidth * scale;
-                    final height = baseHeight * scale;
+                    final rawWidth = baseWidth * scale;
+                    final rawHeight = baseHeight * scale;
+                    final fitScale = [
+                      1.0,
+                      constraints.maxWidth / rawWidth,
+                      constraints.maxHeight / rawHeight,
+                    ].reduce((a, b) => a < b ? a : b);
+                    final width = rawWidth * fitScale;
+                    final height = rawHeight * fitScale;
                     final left =
                         (slot.anchor.dx * constraints.maxWidth - width / 2)
                             .clamp(0.0, constraints.maxWidth - width);

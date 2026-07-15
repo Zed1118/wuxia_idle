@@ -28,20 +28,36 @@ Offset battleStageAnchor(
           ],
         }
       : switch (normalizedSize) {
-          1 => const [Offset(0.28, 0.52)],
-          2 => const [Offset(0.30, 0.34), Offset(0.22, 0.70)],
+          1 => const [Offset(0.27, 0.53)],
+          2 => const [Offset(0.19, 0.58), Offset(0.36, 0.38)],
           _ => const [
-            Offset(0.31, 0.52),
-            Offset(0.17, 0.25),
-            Offset(0.19, 0.77),
+            Offset(0.13, 0.58),
+            Offset(0.29, 0.49),
+            Offset(0.40, 0.31),
           ],
         };
   final anchor = left[normalizedSlot];
-  return teamSide == 0 ? anchor : Offset(1 - anchor.dx, anchor.dy);
+  if (teamSide == 0 || mode == BattleStageLayoutMode.lightFoot) {
+    return teamSide == 0 ? anchor : Offset(1 - anchor.dx, anchor.dy);
+  }
+  if (normalizedSize == 3) {
+    return const [
+      Offset(0.66, 0.43),
+      Offset(0.80, 0.53),
+      Offset(0.91, 0.60),
+    ][normalizedSlot];
+  }
+  return Offset(1 - anchor.dx, anchor.dy);
 }
 
 /// 后位略缩小，形成前后景深度；1v1/2v2 时两人都保持主体尺寸。
 double battleStageScale(int slotIndex, int teamSize, {bool isBoss = false}) {
-  final depthScale = teamSize < 3 || slotIndex == 0 ? 1.0 : 0.84;
+  final depthScale = teamSize < 3
+      ? 1.0
+      : switch (slotIndex) {
+          0 => 1.18,
+          1 => 0.98,
+          _ => 0.86,
+        };
   return depthScale * (isBoss ? BattleLayoutTokens.bossStageScale : 1);
 }

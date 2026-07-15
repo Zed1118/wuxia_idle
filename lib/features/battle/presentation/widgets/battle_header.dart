@@ -42,83 +42,103 @@ class Header extends StatelessWidget {
 
     return Container(
       height: BattleLayoutTokens.headerHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 28),
       decoration: const BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border(bottom: BorderSide(color: WuxiaColors.border)),
+        color: Color(0xF2191816),
+        border: Border(bottom: BorderSide(color: Color(0xFF6D5940))),
+        boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 12)],
       ),
-      child: Row(
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Text(
-            UiStrings.battleTitle(aliveLeft, aliveRight),
-            style: const TextStyle(
-              color: WuxiaColors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Spacer(),
-          if (state.result != null) ...[
-            Text(
-              EnumL10n.battleResult(state.result!),
+          Center(
+            child: Text(
+              UiStrings.battleTitle(aliveLeft, aliveRight),
               style: const TextStyle(
-                color: WuxiaColors.resultHighlight,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+                color: Color(0xFFE2CFAB),
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 4,
+                shadows: [Shadow(color: Colors.black, blurRadius: 4)],
               ),
             ),
-            const SizedBox(width: 16),
-          ],
-          Text(
-            '${UiStrings.tickPrefix} ${state.tick}',
-            style: const TextStyle(
-              color: WuxiaColors.textSecondary,
-              fontSize: 14,
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '${UiStrings.tickPrefix} ${state.tick}',
+              style: const TextStyle(
+                color: Color(0xFFBFAE8D),
+                fontSize: 13,
+                letterSpacing: 1,
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          BattleModePill(allowPlayerIntervention: allowPlayerIntervention),
-          const SizedBox(width: 4),
-          if (state.result == null)
-            BattleHeaderIconButton(
-              key: const ValueKey('battle_fast_forward_toggle'),
-              icon: Icons.fast_forward,
-              tooltip: UiStrings.fastForward,
-              onPressed: onFastForward,
-              isActive: isFastForward,
+          Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (state.result != null) ...[
+                  Text(
+                    EnumL10n.battleResult(state.result!),
+                    style: const TextStyle(
+                      color: WuxiaColors.resultHighlight,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                BattleModePill(
+                  allowPlayerIntervention: allowPlayerIntervention,
+                ),
+                const SizedBox(width: 4),
+                if (state.result == null)
+                  BattleHeaderIconButton(
+                    key: const ValueKey('battle_fast_forward_toggle'),
+                    icon: Icons.fast_forward,
+                    tooltip: UiStrings.fastForward,
+                    onPressed: onFastForward,
+                    isActive: isFastForward,
+                  ),
+                if (state.result == null)
+                  BattleHeaderIconButton(
+                    key: const ValueKey('battle_pause_toggle'),
+                    icon: isPaused ? Icons.play_arrow : Icons.pause,
+                    tooltip: isPaused
+                        ? UiStrings.battleResume
+                        : UiStrings.battlePause,
+                    onPressed: onPause,
+                  ),
+                if (state.result == null && onStepOnce != null)
+                  BattleHeaderIconButton(
+                    key: const ValueKey('battle_step_once'),
+                    icon: Icons.skip_next,
+                    tooltip: UiStrings.battleStepOnce,
+                    onPressed: onStepOnce,
+                  ),
+                if (state.result == null && onSurrender != null)
+                  BattleHeaderIconButton(
+                    key: const ValueKey('battle_surrender'),
+                    icon: Icons.flag_outlined,
+                    tooltip: UiStrings.battleSurrender,
+                    onPressed: onSurrender,
+                  ),
+                BattleHeaderIconButton(
+                  key: const ValueKey('battle_log_toggle'),
+                  icon: Icons.list_alt,
+                  tooltip: UiStrings.battleLog,
+                  onPressed: onToggleLog,
+                ),
+                const SizedBox(width: 4),
+                const ContextHelpButton(
+                  topic: HelpTopic.combatAdvanced,
+                  size: 20,
+                ),
+              ],
             ),
-          if (state.result == null)
-            BattleHeaderIconButton(
-              key: const ValueKey('battle_pause_toggle'),
-              icon: isPaused ? Icons.play_arrow : Icons.pause,
-              tooltip: isPaused
-                  ? UiStrings.battleResume
-                  : UiStrings.battlePause,
-              onPressed: onPause,
-            ),
-          // 验收路由(startPaused)专用单步键:仅 onStepOnce 非空时渲染,生产挂机不出现。
-          if (state.result == null && onStepOnce != null)
-            BattleHeaderIconButton(
-              key: const ValueKey('battle_step_once'),
-              icon: Icons.skip_next,
-              tooltip: UiStrings.battleStepOnce,
-              onPressed: onStepOnce,
-            ),
-          if (state.result == null && onSurrender != null)
-            BattleHeaderIconButton(
-              key: const ValueKey('battle_surrender'),
-              icon: Icons.flag_outlined,
-              tooltip: UiStrings.battleSurrender,
-              onPressed: onSurrender,
-            ),
-          BattleHeaderIconButton(
-            key: const ValueKey('battle_log_toggle'),
-            icon: Icons.list_alt,
-            tooltip: UiStrings.battleLog,
-            onPressed: onToggleLog,
           ),
-          const SizedBox(width: 4),
-          const ContextHelpButton(topic: HelpTopic.combatAdvanced, size: 20),
         ],
       ),
     );
@@ -157,15 +177,15 @@ class BattleHeaderIconButton extends StatelessWidget {
         style: IconButton.styleFrom(
           backgroundColor: isActive
               ? WuxiaColors.resultHighlight.withValues(alpha: 0.12)
-              : WuxiaColors.sidebar.withValues(alpha: 0.58),
+              : Colors.black.withValues(alpha: 0.28),
           hoverColor: WuxiaColors.resultHighlight.withValues(alpha: 0.10),
           highlightColor: WuxiaColors.resultHighlight.withValues(alpha: 0.14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(18),
             side: BorderSide(
               color: isActive
                   ? WuxiaColors.resultHighlight
-                  : WuxiaColors.border.withValues(alpha: 0.78),
+                  : const Color(0xFF6D5940),
             ),
           ),
         ),
@@ -191,9 +211,9 @@ class BattleModePill extends StatelessWidget {
         height: 30,
         padding: const EdgeInsets.symmetric(horizontal: 9),
         decoration: BoxDecoration(
-          color: WuxiaColors.sidebar.withValues(alpha: 0.58),
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: WuxiaColors.border),
+          color: Colors.black.withValues(alpha: 0.28),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: const Color(0xFF6D5940)),
         ),
         alignment: Alignment.center,
         child: Text(

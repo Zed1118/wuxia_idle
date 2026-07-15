@@ -3,24 +3,24 @@
 /// 视觉数值集中在此，避免案台后续换立绘/动作模板时在多个
 /// widget 中散改魔法数。
 abstract final class BattleLayoutTokens {
-  static const double headerHeight = 48;
-  static const double commandDeskHeight = 154;
-  static const double commandDeskHorizontalPadding = 14;
-  static const double commandDeskVerticalPadding = 9;
-  static const double actorRailWidth = 166;
-  static const double actorChipHeight = 34;
-  static const double skillSlotHeight = 116;
-  static const double skillSlotGap = 6;
-  static const double sectionGap = 12;
-  static const double sectionDividerHeight = 116;
-  static const double pouchWidth = 184;
-  static const double pouchSlotSize = 44;
-  static const double pouchSlotGap = 6;
-  static const double stageHorizontalPadding = 20;
-  static const double stageVerticalPadding = 6;
-  static const double stageMaxStandeeWidth = 184;
-  static const double stageMaxStandeeHeight = 250;
-  static const double stageWidthFraction = 0.145;
-  static const double stageHeightFraction = 0.52;
-  static const double bossStageScale = 1.12;
+  static const double headerHeight = 58;
+  static const double commandDeskHeight = 188;
+  static const double commandDeskHorizontalPadding = 28;
+  static const double commandDeskVerticalPadding = 12;
+  static const double actorRailWidth = 222;
+  static const double actorChipHeight = 36;
+  static const double skillSlotHeight = 150;
+  static const double skillSlotGap = 8;
+  static const double sectionGap = 16;
+  static const double sectionDividerHeight = 148;
+  static const double pouchWidth = 222;
+  static const double pouchSlotSize = 54;
+  static const double pouchSlotGap = 8;
+  static const double stageHorizontalPadding = 10;
+  static const double stageVerticalPadding = 0;
+  static const double stageMaxStandeeWidth = 282;
+  static const double stageMaxStandeeHeight = 392;
+  static const double stageWidthFraction = 0.19;
+  static const double stageHeightFraction = 0.78;
+  static const double bossStageScale = 1.22;
 }

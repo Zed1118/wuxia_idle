@@ -90,8 +90,17 @@ class BottomBar extends StatelessWidget {
         vertical: BattleLayoutTokens.commandDeskVerticalPadding,
       ),
       decoration: const BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border(top: BorderSide(color: WuxiaColors.border)),
+        color: Color(0xFF211D18),
+        image: DecorationImage(
+          image: AssetImage(WuxiaUi.paperBg),
+          fit: BoxFit.cover,
+          opacity: 0.12,
+          colorFilter: ColorFilter.mode(Color(0xFF33291F), BlendMode.multiply),
+        ),
+        border: Border(top: BorderSide(color: Color(0xFF756047), width: 1.2)),
+        boxShadow: [
+          BoxShadow(color: Colors.black54, blurRadius: 18, spreadRadius: 3),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -105,7 +114,7 @@ class BottomBar extends StatelessWidget {
           Container(
             width: 1,
             height: BattleLayoutTokens.sectionDividerHeight,
-            color: WuxiaColors.border,
+            color: const Color(0xFF6D5940),
           ),
           const SizedBox(width: BattleLayoutTokens.sectionGap),
           Expanded(
@@ -179,8 +188,14 @@ class FocusSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: BattleLayoutTokens.actorRailWidth,
+      padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
+      decoration: BoxDecoration(
+        color: const Color(0xB3131210),
+        border: Border.all(color: const Color(0xFF6D5940)),
+        boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 8)],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -188,12 +203,12 @@ class FocusSelector extends StatelessWidget {
           const Text(
             UiStrings.battleCommandDesk,
             style: TextStyle(
-              color: WuxiaColors.textMuted,
-              fontSize: 10,
-              letterSpacing: 2,
+              color: Color(0xFFCBB58C),
+              fontSize: 11,
+              letterSpacing: 3,
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 7),
           for (var i = 0; i < team.length; i++) ...[
             FocusChip(
               key: ValueKey('focus_chip_$i'),
@@ -227,16 +242,18 @@ class FocusChip extends StatelessWidget {
     final dim = !character.isAlive;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(2),
       child: Container(
         height: BattleLayoutTokens.actorChipHeight,
         decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.28) : WuxiaColors.sidebar,
+          color: selected
+              ? WuxiaUi.paper.withValues(alpha: 0.92)
+              : Colors.black.withValues(alpha: 0.16),
           border: Border.all(
-            color: selected ? color : WuxiaColors.border,
-            width: selected ? 2 : 1,
+            color: selected ? const Color(0xFFC3A46A) : const Color(0xFF4C4439),
+            width: selected ? 1.5 : 1,
           ),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(2),
         ),
         child: Center(
           child: Row(
@@ -246,7 +263,9 @@ class FocusChip extends StatelessWidget {
                 width: 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: dim ? WuxiaColors.textMuted : color,
+                  color: dim
+                      ? WuxiaColors.textMuted
+                      : (selected ? WuxiaUi.jiang : color),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -261,19 +280,15 @@ class FocusChip extends StatelessWidget {
                     fontWeight: selected ? FontWeight.bold : FontWeight.w500,
                     color: dim
                         ? WuxiaColors.textMuted
-                        : (selected
-                              ? WuxiaColors.textPrimary
-                              : WuxiaColors.textSecondary),
+                        : (selected ? WuxiaUi.ink : const Color(0xFFD4C5A7)),
                   ),
                 ),
               ),
-              Text(
-                '${character.currentQi}/${character.maxQi}',
-                style: const TextStyle(
-                  color: WuxiaColors.textMuted,
-                  fontSize: 9,
+              if (selected)
+                Text(
+                  '${character.currentQi}/${character.maxQi}',
+                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 9),
                 ),
-              ),
               const SizedBox(width: 8),
             ],
           ),
@@ -335,18 +350,13 @@ class SkillCommandButton extends StatelessWidget {
         allowPlayerIntervention;
 
     Color bgColor;
-    final baseSchoolColor = WuxiaColors.schoolColor(character.school);
     if (!ready) {
-      bgColor = WuxiaColors.buttonDisabled;
+      bgColor = const Color(0xFF8F8675);
     } else if (highlight) {
       // 破招提示醒目金:原 0.72 上白字仅 ~2.9:1,压暗一档(0.52)让白字可读(~4.6:1)。
-      bgColor = Color.lerp(
-        WuxiaColors.sidebar,
-        WuxiaColors.resultHighlight,
-        0.52,
-      )!;
+      bgColor = const Color(0xFFF2DFB4);
     } else {
-      bgColor = Color.lerp(WuxiaColors.sidebar, baseSchoolColor, 0.78)!;
+      bgColor = WuxiaUi.paper;
     }
 
     // CD 态(非待发):招名让位,中心浮现读秒环示剩余拍数。
@@ -376,17 +386,19 @@ class SkillCommandButton extends StatelessWidget {
           // 前景按 enabled 手动切 muted/primary 保留「不可下发」灰态观感。
           backgroundColor: bgColor,
           disabledBackgroundColor: bgColor,
-          foregroundColor: enabled
-              ? WuxiaColors.textPrimary
-              : WuxiaColors.textMuted,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          foregroundColor: enabled ? WuxiaUi.ink : const Color(0xFF514B42),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
           side: highlight && enabled
-              ? const BorderSide(color: WuxiaColors.textPrimary, width: 2)
+              ? const BorderSide(color: WuxiaUi.gold, width: 2)
               : BorderSide(
-                  color: baseSchoolColor.withValues(alpha: 0.46),
+                  color: const Color(0xFF6C5A43).withValues(alpha: 0.78),
                   width: 1,
                 ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          elevation: highlight ? 8 : 3,
+          shadowColor: highlight
+              ? WuxiaUi.gold.withValues(alpha: 0.65)
+              : Colors.black54,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
         ),
         child: Stack(
           clipBehavior: Clip.none,
@@ -398,27 +410,47 @@ class SkillCommandButton extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      _groupLabel(skill),
-                      maxLines: 2,
+                      skill.name.characters.take(4).join('\n'),
+                      maxLines: 4,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        height: 1.1,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        height: 1.05,
+                        letterSpacing: 1,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: WuxiaUi.jiang.withValues(alpha: 0.90),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: Text(
+                        _groupLabel(skill).characters.take(1).join(),
+                        style: const TextStyle(
+                          color: Color(0xFFF1DFC0),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
                     Text(
-                      skill.name,
+                      _groupLabel(skill),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        height: 1.15,
+                        color: WuxiaUi.muted,
+                        fontSize: 8,
+                        height: 1,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 4),
                     Text(
                       statusText,
                       maxLines: 1,
@@ -430,10 +462,10 @@ class SkillCommandButton extends StatelessWidget {
                             ? FontWeight.bold
                             : FontWeight.w600,
                         color: isPending
-                            ? WuxiaColors.resultHighlight
+                            ? WuxiaUi.jiang
                             : (enabled
-                                  ? WuxiaColors.textPrimary
-                                  : WuxiaColors.textMuted),
+                                  ? WuxiaUi.qing
+                                  : const Color(0xFF514B42)),
                       ),
                     ),
                   ],
@@ -464,16 +496,15 @@ class SkillCommandButton extends StatelessWidget {
         ? UiStrings.skillBadgeAoe
         : UiStrings.skillBadgeSingle;
     final badgeColor = skill.targetType == TargetType.aoe
-        ? WuxiaColors
-              .resultHighlight // 群体用暖金色，醒目提示一键释放
-        : WuxiaColors.textMuted.withValues(alpha: 0.70); // 单体用静默灰，提示需选目标
+        ? WuxiaUi.jiang
+        : const Color(0xFF5E5548);
     final buttonWithBadge = Stack(
       clipBehavior: Clip.none,
       children: [
         button,
         Positioned(
-          top: -4,
-          right: -4,
+          top: 5,
+          right: 5,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
             decoration: BoxDecoration(
@@ -485,7 +516,7 @@ class SkillCommandButton extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
-                color: WuxiaColors.textPrimary,
+                color: Color(0xFFF0DFC2),
                 height: 1.2,
               ),
             ),
@@ -517,12 +548,24 @@ class EmptySkillSlot extends StatelessWidget {
         key: ValueKey('battle_skill_empty_$index'),
         height: BattleLayoutTokens.skillSlotHeight,
         decoration: BoxDecoration(
-          color: WuxiaColors.sidebar.withValues(alpha: 0.42),
-          border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.7)),
-          borderRadius: BorderRadius.circular(5),
+          color: WuxiaUi.paper.withValues(alpha: 0.30),
+          border: Border.all(color: const Color(0xFF8A7251)),
+          borderRadius: BorderRadius.circular(2),
         ),
-        child: const Center(
-          child: Icon(Icons.add, size: 14, color: WuxiaColors.textMuted),
+        child: Center(
+          child: Container(
+            width: 22,
+            height: 22,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color(0x667A2D24)),
+              borderRadius: BorderRadius.circular(2),
+            ),
+            child: const Text(
+              '·',
+              style: TextStyle(color: Color(0x887A2D24), fontSize: 18),
+            ),
+          ),
         ),
       ),
     );
@@ -534,8 +577,13 @@ class BattlePouchRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: BattleLayoutTokens.pouchWidth,
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+      decoration: BoxDecoration(
+        color: const Color(0xB3131210),
+        border: Border.all(color: const Color(0xFF6D5940)),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -545,8 +593,8 @@ class BattlePouchRail extends StatelessWidget {
               Text(
                 UiStrings.battlePouch,
                 style: TextStyle(
-                  color: WuxiaColors.textSecondary,
-                  fontSize: 11,
+                  color: Color(0xFFCBB58C),
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1,
                 ),
@@ -570,14 +618,14 @@ class BattlePouchRail extends StatelessWidget {
                     width: BattleLayoutTokens.pouchSlotSize,
                     height: BattleLayoutTokens.pouchSlotSize,
                     decoration: BoxDecoration(
-                      color: WuxiaColors.sidebar.withValues(alpha: 0.62),
-                      border: Border.all(color: WuxiaColors.border),
-                      borderRadius: BorderRadius.circular(5),
+                      color: const Color(0xFF2A251F),
+                      border: Border.all(color: const Color(0xFF756047)),
+                      borderRadius: BorderRadius.circular(2),
                     ),
                     child: const Icon(
                       Icons.inventory_2_outlined,
                       size: 17,
-                      color: WuxiaColors.textMuted,
+                      color: Color(0xFF8C7A5D),
                     ),
                   ),
                 ),

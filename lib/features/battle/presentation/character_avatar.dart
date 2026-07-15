@@ -279,7 +279,7 @@ class _StageCharacterStandee extends StatelessWidget {
   Widget build(BuildContext context) {
     final schoolColor = WuxiaColors.schoolColor(character.school);
     final borderColor = character.isBoss ? WuxiaColors.bossFrame : schoolColor;
-    final portraitHeight = height * 0.78;
+    final portraitHeight = height * 0.91;
     final firstGlyph = character.name.characters.isEmpty
         ? '?'
         : character.name.characters.first;
@@ -359,10 +359,6 @@ class _StageCharacterStandee extends StatelessWidget {
       width: width,
       height: portraitHeight,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: character.isBoss
-            ? Border.all(color: borderColor.withValues(alpha: 0.9), width: 3)
-            : null,
         boxShadow: inkMirror
             ? [
                 BoxShadow(
@@ -373,19 +369,17 @@ class _StageCharacterStandee extends StatelessWidget {
               ]
             : null,
       ),
-      clipBehavior: Clip.antiAlias,
       child: portraitImage,
     );
     if (character.isBoss) {
       portrait = Container(
         key: const ValueKey<String>('battle.bossAvatarFrame'),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: WuxiaColors.bossFrame.withValues(alpha: 0.24),
-              blurRadius: 16,
-              spreadRadius: 2,
+              color: WuxiaColors.bossFrame.withValues(alpha: 0.20),
+              blurRadius: 28,
+              spreadRadius: 4,
             ),
           ],
         ),
@@ -427,17 +421,27 @@ class _StageCharacterStandee extends StatelessWidget {
               ),
             ),
           Positioned(
-            left: 5,
-            right: 5,
-            bottom: 0,
+            left: width * 0.10,
+            right: width * 0.10,
+            bottom: 2,
             child: Container(
-              padding: const EdgeInsets.fromLTRB(7, 6, 7, 7),
+              padding: const EdgeInsets.fromLTRB(7, 3, 7, 5),
               decoration: BoxDecoration(
-                color: WuxiaColors.panel.withValues(alpha: 0.92),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: borderColor.withValues(alpha: 0.72)),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.12),
+                    Colors.black.withValues(alpha: 0.82),
+                  ],
+                ),
+                border: Border(
+                  bottom: BorderSide(
+                    color: borderColor.withValues(alpha: 0.68),
+                  ),
+                ),
                 boxShadow: const [
-                  BoxShadow(color: Colors.black45, blurRadius: 8),
+                  BoxShadow(color: Colors.black38, blurRadius: 7),
                 ],
               ),
               child: Column(
@@ -449,30 +453,22 @@ class _StageCharacterStandee extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: WuxiaColors.textPrimary,
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
+                      shadows: [Shadow(color: Colors.black, blurRadius: 4)],
                     ),
                   ),
-                  Text(
-                    EnumL10n.realm(character.realmTier, character.realmLayer),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: WuxiaColors.textSecondary,
-                      fontSize: 9,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   HpBar(
                     current: character.currentHp,
                     max: character.maxHp,
-                    height: 11,
+                    height: 10,
                   ),
                   const SizedBox(height: 2),
                   HpBar(
                     current: character.currentQi,
                     max: character.maxQi,
-                    height: 9,
+                    height: 7,
                     isInternalForce: true,
                     labelPrefix: UiStrings.internalForceShortLabel,
                   ),

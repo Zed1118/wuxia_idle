@@ -51,4 +51,11 @@
 - **最后完成**：七张透明战斗立绘已齐备：祖师、两弟子、山匪、黑衣杀手、撑伞高手和塔主 Boss。旧头像路径仅在战场展示层映射为透明全身图，其他角色页面不受影响；Boss 在同一阵列深度上额外放大 `1.12×`，不改变碰撞、目标或数值语义。蓄力/破招圆环、目标高亮、死亡灰显继续复用现有状态层。心魔敌方人物增加反相墨色与阴柔晕光；轻功阵列扩大上下错层和交锋位移；群战只渲染前三名完整人物，额外 2–4 人显示远阵墨影，溢出角色动作与受击归并到安全表现槽，消除 3v5/6/7 索引越界。
 - **下一步**：交付用户目检；不主动 push/开 PR，避免 main 尚未 push 时扩大并行集成面。
 - **已跑验证**：切片 7 完成后，战斗 presentation、播放控制器、群战策略与视觉路由合计 245 项通过；定向 `flutter analyze` 无问题，`dart format --set-exit-if-changed` 与 `git diff --check` 通过。七张战斗立绘均为有效 RGBA、alpha 范围 `0–255` 且四角透明。Boss 实战帧位于 `build/visual_acceptance/battle_ui_stage_slice5_boss_initial/`，蓄力/破招帧位于 `build/visual_acceptance/battle_ui_stage_slice5_states/`，最终双视口帧位于 `build/visual_acceptance/battle_ui_stage_slice6_final_alias_fixed/`，心魔/轻功帧位于 `build/visual_acceptance/battle_ui_stage_special_modes/`，最终群战帧位于 `build/visual_acceptance/battle_ui_stage_special_modes_final/`；日志均无 overflow/exception/error。macOS 截图外围黑边为窗口缩放捕获伪影，不计入游戏画布。
+
+## 视觉纠偏恢复点（2026-07-15）
+
+- 用户以 V2 概念稿复核后明确指出实机与效果图差距过大；原“完成视觉验收”仅代表功能/溢出验收，不再视为视觉质量达标。
+- 已完成纠偏 V1：标准 3v3 改为概念稿式非对称纵深，人物最大高度提升并移除卡片式立绘框，状态板缩为贴身墨底；顶栏改为居中题字；武学案台改为木案底、竖向宣纸招式签、纸化空槽与收束式行囊框。
+- 1280×720 最大密度场景曾因 Boss 前景倍率使角色高度超过可用战场，现于 `BattleField` 在站位倍率之后按实际约束等比回落；对应 Boss 低血与最大密度 HUD 复现测试已通过。
+- 纠偏截图：`build/visual_acceptance/battle_ui_concept_realign_final/`（最终点选预览）与 `build/visual_acceptance/battle_ui_concept_realign_v2/`（动态战斗帧）。后续仍需用户对纠偏方向做视觉确认，再继续处理敌方重复立绘、场景题签与案台细节，不得再次把“测试绿”表述成“视觉已定稿”。
 - **阻塞项**：无。集成风险为 Claude 并行分支可能同时改 `lib/shared/strings.dart` / `GDD.md`；本分支仅追加战斗案台必要文案，并在 GDD §5.7/§5.8 修正点按口径，交付时明确冲突点。
