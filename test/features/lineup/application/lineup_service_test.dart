@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/lineup/application/lineup_service.dart';
@@ -49,6 +49,7 @@ void main() {
     bool isActive = false,
     bool isAlive = true,
     int? currentRetreatSessionId,
+    int? mainTechniqueId,
     LineageRole lineageRole = LineageRole.disciple,
   }) {
     final realm = repository.getRealm(tier, layer);
@@ -67,6 +68,23 @@ void main() {
           isActive: isActive,
           isAlive: isAlive,
           currentRetreatSessionId: currentRetreatSessionId,
+          mainTechniqueId: mainTechniqueId,
+        )
+        ..id = id;
+  }
+
+  /// 主修 Technique 行(战斗组队硬前置:mainTechniqueId 指向的行必须在库)。
+  Technique makeMainTech({required int id, required int ownerId}) {
+    return Technique.create(
+          defId: 'tech_gangmeng_jichu',
+          ownerCharacterId: ownerId,
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.gangMeng,
+          role: TechniqueRole.main,
+          learnedAt: DateTime(2026, 7, 14),
+          cultivationProgress: 0,
+          cultivationProgressToNext: 100,
+          cultivationLayer: CultivationLayer.chuKui,
         )
         ..id = id;
   }
@@ -103,12 +121,19 @@ void main() {
         isActive: true,
         lineageRole: LineageRole.junior,
       ),
-      makeChar(id: 4, name: '记名弟子', tier: RealmTier.sanLiu),
+      makeChar(
+        id: 4,
+        name: '记名弟子',
+        tier: RealmTier.sanLiu,
+        mainTechniqueId: 904,
+      ),
       makeChar(id: 5, name: '降将'),
       ...extra,
     ];
     await isar.writeTxn(() async {
       await isar.characters.putAll(chars);
+      // 记名弟子已修主修(可上场);降将无主修(不可上场,战斗组队硬前置)。
+      await isar.techniques.put(makeMainTech(id: 904, ownerId: 4));
       final save = SaveData()
         ..saveVersion = '0.36'
         ..createdAt = DateTime(2026, 7, 14)
@@ -306,6 +331,32 @@ void main() {
       final result = await service.apply(newActiveIds: [1, 7]);
 
       expect(result.status, LineupApplyStatus.deadCharacter);
+      await expectNoSideEffect();
+    });
+
+    test('加入无主修替补 → noMainTechnique(战斗组队硬前置)', () async {
+      await seedRoster();
+      final service = LineupService(IsarSetup.instance);
+
+      final result = await service.apply(newActiveIds: [1, 2, 5]);
+
+      expect(result.status, LineupApplyStatus.noMainTechnique);
+      expect(result.offendingCharacterId, 5);
+      await expectNoSideEffect();
+    });
+
+    test('加入主修行悬空(Technique 缺失)→ noMainTechnique', () async {
+      await seedRoster(
+        extra: [
+          makeChar(id: 8, name: '悬空主修', mainTechniqueId: 999),
+        ],
+      );
+      final service = LineupService(IsarSetup.instance);
+
+      final result = await service.apply(newActiveIds: [1, 8]);
+
+      expect(result.status, LineupApplyStatus.noMainTechnique);
+      expect(result.offendingCharacterId, 8);
       await expectNoSideEffect();
     });
 

@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderOrFamily;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/lineup/application/lineup_invalidation.dart';
@@ -44,6 +44,7 @@ void main() {
     required String name,
     bool isFounder = false,
     bool isActive = false,
+    int? mainTechniqueId,
   }) {
     final realm = repository.getRealm(RealmTier.xueTu, RealmLayer.qiMeng);
     return Character.create(
@@ -59,6 +60,7 @@ void main() {
           experienceToNextLayer: realm.experienceToNext,
           isFounder: isFounder,
           isActive: isActive,
+          mainTechniqueId: mainTechniqueId,
         )
         ..id = id;
   }
@@ -68,9 +70,23 @@ void main() {
     await isar.writeTxn(() async {
       await isar.characters.putAll([
         makeChar(id: 1, name: '祖师', isFounder: true, isActive: true),
-        makeChar(id: 4, name: '替补甲'),
+        makeChar(id: 4, name: '替补甲', mainTechniqueId: 904),
         makeChar(id: 5, name: '替补乙'),
       ]);
+      // 替补甲主修行(加入出战的硬前置)。
+      await isar.techniques.put(
+        Technique.create(
+          defId: 'tech_gangmeng_jichu',
+          ownerCharacterId: 4,
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.gangMeng,
+          role: TechniqueRole.main,
+          learnedAt: DateTime(2026, 7, 14),
+          cultivationProgress: 0,
+          cultivationProgressToNext: 100,
+          cultivationLayer: CultivationLayer.chuKui,
+        )..id = 904,
+      );
       final save = SaveData()
         ..saveVersion = '0.36'
         ..createdAt = DateTime(2026, 7, 14)

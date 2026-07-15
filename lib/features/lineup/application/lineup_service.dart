@@ -2,6 +2,7 @@ import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/character.dart';
 import '../../../core/domain/save_data.dart';
+import '../../../core/domain/technique.dart';
 import '../../battle/domain/derived_stats.dart';
 
 /// 编成写入结果状态(spec `2026-07-14-team-lineup-screen-design.md` §2 校验矩阵)。
@@ -16,6 +17,7 @@ enum LineupApplyStatus {
   founderMissing, // 祖师(save.founderCharacterId)必在
   ascendedFounder, // 已飞升太祖(isFounder 且非当代祖师)不可回场
   retreatLocked, // 成员增删涉及闭关中角色(currentRetreatSessionId 非空)
+  noMainTechnique, // 加入者未修主修(战斗组队硬前置,实装期补条)
 }
 
 /// 编成写入结果。失败态零副作用;[offendingCharacterId] 供 UI 指认拒因角色。
@@ -112,6 +114,17 @@ class LineupService {
       if (members[id]!.currentRetreatSessionId != null) {
         return LineupApplyResult(
           LineupApplyStatus.retreatLocked,
+          offendingCharacterId: id,
+        );
+      }
+      // 战斗组队硬前置(spec §2 实装期补条,镜像
+      // stage_battle_setup._playerToBattle 语义):加入者必须已修主修且
+      // Technique 行在库,否则换上场后下一场战斗直接抛错。既有出战成员
+      // 不回溯(重排/移除不受影响)。
+      final mainId = members[id]!.mainTechniqueId;
+      if (mainId == null || await isar.techniques.get(mainId) == null) {
+        return LineupApplyResult(
+          LineupApplyStatus.noMainTechnique,
           offendingCharacterId: id,
         );
       }

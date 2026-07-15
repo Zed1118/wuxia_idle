@@ -7,11 +7,13 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../ascension/application/ascend_service_providers.dart';
 import '../../ascension/presentation/ascension_screen.dart';
+import '../../lineup/presentation/team_lineup_screen.dart';
 import '../application/lineage_codex_provider.dart';
 import 'lineage_character_detail_screen.dart';
 import 'lineage_widgets.dart';
@@ -41,6 +43,21 @@ class LineagePanelScreen extends ConsumerWidget {
           leading: Navigator.of(context).canPop()
               ? BackButton(onPressed: () => Navigator.of(context).pop())
               : null,
+          actions: [
+            // 出战编成入口(玩法评估 §十三 #4 · spec §1:顶部动作位,主菜单不加)。
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const TeamLineupScreen(),
+                  ),
+                ),
+                style: TextButton.styleFrom(foregroundColor: WuxiaUi.gold),
+                child: const Text(UiStrings.lineupTitle),
+              ),
+            ),
+          ],
         ),
         body: SafeArea(
           child: async.when(

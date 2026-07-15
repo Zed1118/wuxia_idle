@@ -1279,6 +1279,123 @@ class Phase2SeedService {
     });
   }
 
+  /// 出战编成屏目检 seed(玩法评估 §十三 #4):祖师(二流)+大弟子(三流)+
+  /// 二弟子(学徒)出战;替补三态=记名弟子(三流·无标)+降将(学徒·境界偏低标)+
+  /// 闭关行者(闭关中标)。屏走真 provider 链,不 override。
+  Future<void> seedTeamLineup() async {
+    final isar = this.isar;
+    final repo = GameRepository.instance;
+    final now = DateTime(2026, 7, 14);
+
+    Character mk({
+      required String name,
+      required RealmTier tier,
+      required RealmLayer layer,
+      LineageRole role = LineageRole.disciple,
+      bool isFounder = false,
+      bool isActive = false,
+      TechniqueSchool? school,
+      int? retreatSessionId,
+    }) {
+      final realmDef = repo.getRealm(tier, layer);
+      return Character.create(
+        name: name,
+        realmTier: tier,
+        realmLayer: layer,
+        attributes: Attributes()
+          ..constitution = 5
+          ..enlightenment = 5
+          ..agility = 5
+          ..fortune = 5,
+        rarity: RarityTier.biaoZhun,
+        lineageRole: role,
+        isFounder: isFounder,
+        isActive: isActive,
+        createdAt: now,
+        school: school,
+        internalForce: realmDef.internalForceMax,
+        internalForceMax: realmDef.internalForceMax,
+        experienceToNextLayer: realmDef.experienceToNext,
+        currentRetreatSessionId: retreatSessionId,
+      );
+    }
+
+    await isar.writeTxn(() async {
+      await isar.characters.clear();
+      final founder = mk(
+        name: '祖师',
+        tier: RealmTier.erLiu,
+        layer: RealmLayer.shuLian,
+        role: LineageRole.founder,
+        isFounder: true,
+        isActive: true,
+        school: TechniqueSchool.gangMeng,
+      );
+      final senior = mk(
+        name: '大弟子',
+        tier: RealmTier.sanLiu,
+        layer: RealmLayer.jingTong,
+        role: LineageRole.senior,
+        isActive: true,
+        school: TechniqueSchool.lingQiao,
+      );
+      final junior = mk(
+        name: '二弟子',
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.shuLian,
+        role: LineageRole.junior,
+        isActive: true,
+        school: TechniqueSchool.yinRou,
+      );
+      final reserveNormal = mk(
+        name: '记名弟子',
+        tier: RealmTier.sanLiu,
+        layer: RealmLayer.ruMen,
+        school: TechniqueSchool.gangMeng,
+      );
+      final reserveWeak = mk(
+        name: '降将',
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.qiMeng,
+        school: TechniqueSchool.yinRou,
+      );
+      final reserveRetreat = mk(
+        name: '闭关行者',
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.ruMen,
+        retreatSessionId: 1,
+      );
+      await isar.characters.putAll([
+        founder,
+        senior,
+        junior,
+        reserveNormal,
+        reserveWeak,
+        reserveRetreat,
+      ]);
+
+      // 记名弟子种主修行(唯一可真换上场的替补;降将/闭关行者留「未修主修/
+      // 闭关中」拦截态,目检覆盖全部标签)。
+      final mainTech = _buildTechnique(
+        defId: 'tech_gangmeng_jichu',
+        tier: TechniqueTier.ruMenGong,
+        school: TechniqueSchool.gangMeng,
+        role: TechniqueRole.main,
+        cultivationLayer: CultivationLayer.chuKui,
+        cultivationProgress: 0,
+        cultivationProgressToNext: 100,
+      )..ownerCharacterId = reserveNormal.id;
+      final mainTechId = await isar.techniques.put(mainTech);
+      reserveNormal.mainTechniqueId = mainTechId;
+      await isar.characters.put(reserveNormal);
+
+      final save = await isar.saveDatas.get(0) ?? (SaveData()..id = 0);
+      save.founderCharacterId = founder.id;
+      save.activeCharacterIds = [founder.id, senior.id, junior.id];
+      await isar.saveDatas.put(save);
+    });
+  }
+
   /// P0-4b 仓库格子化视觉验收 seed:在共鸣谱(6 武器·阶 1-7 + 强化谱 + 师承)
   /// 基础上补护甲/饰品各 2 件(阶 5-7),凑齐武器/护甲/饰品三段 → 验部位分组
   /// 网格 + tier 边框 + 强化徽章 + 师承标 + 境界锁(activeCharacter 境界基准)。
