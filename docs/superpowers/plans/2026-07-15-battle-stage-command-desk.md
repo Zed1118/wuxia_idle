@@ -87,3 +87,8 @@
 - 将原本横向三张深灰信息卡改为山口地图上的阵列预览：第三席 → 第二席 → 第一席朝交锋方向递进，首席放大并保留前排印，与战场 `slot 0/1/2` 语义对齐。
 - 交互仍是点击卡片后在纸弹窗选换席，未引入拖放；三卡刻意不重叠，并增加 widget 几何断言保护整卡点选面。
 - 出战/替补卡改用宣纸底与水墨占位字，无立绘角色不再显示空黑框。两视口帧位于 `build/visual_acceptance/team_lineup_formation_stage/`，最终 1280 帧位于 `build/visual_acceptance/team_lineup_formation_final/`。
+
+## 战场状态牌数值收口（2026-07-16）
+
+- 全人物舞台的紧凑气血/真气条对五位数以上使用 `K` 缩写（例如 `12K/12K`、`40K/40K`），解决边缘后排状态牌的数字挤压；角色详情等未开 `compactLabel` 的界面仍保留完整数值。
+- 最终 1280 帧位于 `build/visual_acceptance/battle_ui_compact_status/`，六人的状态值均可快速读取。

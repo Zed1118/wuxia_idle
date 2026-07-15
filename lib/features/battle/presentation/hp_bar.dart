@@ -68,7 +68,7 @@ class HpBar extends StatelessWidget {
             Center(
               child: Text(
                 compactLabel
-                    ? '$labelPrefix$current/$max'
+                    ? '$labelPrefix${_compactBattleValue(current)}/${_compactBattleValue(max)}'
                     : '$labelPrefix$current / $max',
                 style: TextStyle(
                   // 内力条 height 小(9)时 height*0.72≈6.5px 近不可读，设 10px 下限。
@@ -84,4 +84,15 @@ class HpBar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 全人物舞台的状态牌宽度受站位景深限制，五位数以上改用
+/// K 缩写避免挤压。通用详情页未开 [HpBar.compactLabel]，仍显示完整值。
+String _compactBattleValue(int value) {
+  if (value.abs() < 10000) return '$value';
+  final thousands = value / 1000;
+  final fractionDigits = value.abs() < 100000 && value.abs() % 1000 != 0
+      ? 1
+      : 0;
+  return '${thousands.toStringAsFixed(fractionDigits)}K';
 }
