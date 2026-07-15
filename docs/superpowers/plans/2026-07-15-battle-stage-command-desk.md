@@ -46,8 +46,8 @@
 
 ## 5. 当前恢复点
 
-- **状态**：切片 1 `4599d73d`、切片 2 `917e143d`、切片 3 `1a8a2598`、祖师样板 `63eb0822`、两弟子样板 `750dfcf6` 均已提交；切片 4 的三普通敌与一 Boss 已接入，切片 5 的 Boss 体量强化已完成，待提交恢复点。
+- **状态**：切片 1 `4599d73d`、切片 2 `917e143d`、切片 3 `1a8a2598`、祖师样板 `63eb0822`、两弟子样板 `750dfcf6`、敌方立绘与 Boss 体量 `17eadf85` 均已提交；切片 4 完成，切片 5 已完成 Boss 与蓄力/破招适配。
 - **最后完成**：七张透明战斗立绘已齐备：祖师、两弟子、山匪、黑衣杀手、撑伞高手和塔主 Boss。旧头像路径仅在战场展示层映射为透明全身图，其他角色页面不受影响；Boss 在同一阵列深度上额外放大 `1.12×`，不改变碰撞、目标或数值语义。蓄力/破招圆环、目标高亮、死亡灰显继续复用现有状态层。
-- **下一步**：提交敌方立绘/Boss 体量恢复点；随后进入切片 5 剩余心魔、轻功和群战兼容检查。
+- **下一步**：进入切片 5 剩余心魔、轻功和群战兼容检查，确认特殊玩法继续复用同一人物舞台且无状态层遮挡。
 - **已跑验证**：战斗 presentation 全套与 controller 共 198 项通过；定向 `flutter analyze` 无问题，`dart format --set-exit-if-changed` 与 `git diff --check` 通过。七张战斗立绘均为有效 RGBA、alpha 范围 `0–255` 且四角透明。Boss 实战帧位于 `build/visual_acceptance/battle_ui_stage_slice5_boss_initial/`，蓄力/破招帧位于 `build/visual_acceptance/battle_ui_stage_slice5_states/`；日志均无 overflow/exception/error。macOS 截图外围黑边为窗口缩放捕获伪影，不计入游戏画布。
 - **阻塞项**：无。Claude 并行分支可能同时改 `lib/shared/strings.dart`，本分支只追加战斗案台必要文案并保持小提交，交付时明确冲突点。
