@@ -1,3 +1,4 @@
+import '../../../core/domain/reward_entry.dart';
 import '../../../shared/utils/rng.dart';
 import 'expedition_node.dart';
 import 'expedition_run.dart' show ExpeditionPolicy;
@@ -75,5 +76,52 @@ class ExpeditionRules {
   static double recoveryMultiplier(int layers, {double perLayer = 0.05}) {
     final reduction = (layers * perLayer).clamp(0.0, 1.0);
     return 1.0 - reduction;
+  }
+
+  /// 固定里程碑：第 10/20/30… 节点各一张断魂帖（§4.4）。
+  static bool isTicketMilestone(int node) => node > 0 && node % 10 == 0;
+
+  /// 单节点奖励（§4.4/§6.1）。exp/材料 defId 与数量走 rewardKey；
+  /// 第 30 节点后 exp 系数封顶（§4.5），深度 >30 不再随节点增长。
+  /// saveId/runSerial 预留给未来按节点 seed 抖动奖励量（batch3 探针）。
+  static List<RewardEntry> rewardsForNode({
+    required ExpeditionNode node,
+    required int saveId,
+    required int runSerial,
+    int baseExpPerBattle = 200, // TODO(batch3-probe): 探针定案后回填 expeditions.yaml
+    int baseExpCapNode = 30,
+  }) {
+    final rewards = <RewardEntry>[];
+    final capNode = node.index > baseExpCapNode ? baseExpCapNode : node.index;
+
+    switch (node.type) {
+      case ExpeditionNodeType.caiYao:
+        rewards.add(RewardEntry()
+          ..rewardKey = 'item_yaocao'
+          ..quantity = 1);
+        rewards.add(RewardEntry()
+          ..rewardKey = 'item_lingquanshui'
+          ..quantity = 1);
+      case ExpeditionNodeType.feiYi:
+        rewards.add(RewardEntry()
+          ..rewardKey = 'item_silver'
+          ..quantity = 50);
+      case ExpeditionNodeType.zaoYu:
+      case ExpeditionNodeType.xianGuan:
+        final mult = node.type == ExpeditionNodeType.xianGuan ? 3 : 1;
+        rewards.add(RewardEntry()
+          ..rewardKey = 'exp'
+          ..quantity = baseExpPerBattle * mult * (capNode ~/ 5 + 1) ~/ 7);
+      case ExpeditionNodeType.yiJi:
+        rewards.add(RewardEntry()
+          ..rewardKey = 'item_silver'
+          ..quantity = 30);
+    }
+    if (isTicketMilestone(node.index)) {
+      rewards.add(RewardEntry()
+        ..rewardKey = 'item_duanhuntie'
+        ..quantity = 1);
+    }
+    return rewards;
   }
 }
