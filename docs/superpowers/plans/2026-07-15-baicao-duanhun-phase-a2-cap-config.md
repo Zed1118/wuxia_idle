@@ -645,12 +645,13 @@ Expected: 0 fail。重点核 ItemType 新值未破坏既有背包/掉落/资源�
 
 ---
 
-## 当前恢复点
+## 当前恢复点（2026-07-15 A2 实装批·分支 `feat/baicao-duanhun-phase-a2`·未 push）
 
-- **状态：** 未开工（依赖 A1 先完成）。
-- **下一步：** Task 1（发布上限 10→17）。
-- **已跑验证：** 接口对真实代码核（`numbers.yaml:206`/`progression_release_cap.dart` [1,49] 界/`enums.dart:337` ItemType/`item_def.dart:39-58`/`game_repository.dart:172,415,512` 加载校验体例/`applyExperience` 签名）。
-- **阻塞项：** A1 未完成前不开工（需 `ExpeditionRun`/0.37 已在分支）。
+- **状态：** **Task 2/3/4/5 已完成并 commit**（cap 无关基建全落）；**Task 1（发布上限 10→17）阻塞待用户拍板**。commit 区间 `c14f4b15`(T3)→`3830a80b`(T2)，基于本地 main HEAD `e2e4385c`（含 A1）。
+- **已跑验证：** `flutter analyze --no-pub`（lib+test）**0**；全量 `flutter test --no-pub` **4046 pass / 0 fail**（基线 4034 +12 新测）。
+- **Task 1 阻塞根因（计划盲点·实装期发现）：** 发布上限 10→17 使 `releaseSkillTierCap` 从三流(2)→二流(3)，触发 `game_repository.dart:_enforceSkillSourceRedLines`（波B 红线⑦）要求所有二流 mainlineDrop/fragment 招挂载到掉落点——**2 招孤儿**致 `loadAllDefs` 抛错、生产不加载：① `skill_qian_jun_zhui_yue`（千钧坠岳·mainline_drop）② `skill_zhu_ying_yao_hong`（烛影摇红·fragment）。wave-B 设计（`2026-06-11-wave-b-24-skills-content-design.md`）原挂 stage_03_05（Ch3 灰衣人 Boss）/ tower f15，但 **Codex Lv100 批已把二者敌人 re-tier 到 xueTu（学徒）**，把二流招挂到学徒内容属跨阶错配，须内容级重排（属 Phase B/C「填真敌人/奖励表」）。
+- **下一步（待用户拍板）：** Task 1 phasing——**推荐 defer 到 B/C**（cap→17 与二流内容/正确挂载同批落）；A2 已交付全部 cap 无关基建。溢出探针（T2）已实测一次性兑现安全，cap 抬升时机不影响该结论。
+- **未 push 原因：** 分支基于本地 main（含用户 24 未 push commit·「push 是用户的活」），push 分支会连带上传用户未 push work，留用户处置。
 
 ## 交给 Phase B/C 的接口
 
