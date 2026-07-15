@@ -129,3 +129,8 @@
 
 - 心法面板从默认冷灰 `AppBar` 改用与角色面板一致的宣纸 `WuxiaTitleBar`，保留返回/主页与莲花题签，并使养成页与角色档案在同一导航层级上。
 - 主修、辅修、领悟点、三系相克和研习流程未改；1280×720 实机帧位于 `build/visual_acceptance/technique_panel_titlebar_unified/`，18 项定向测试通过。
+
+## 问鼎九霄标题栏统一（2026-07-16）
+
+- 问鼎九霄从默认冷灰 `AppBar` 改为宣纸 `WuxiaTitleBar`，与角色/心法页的导航层一致；塔势长卷、楼层轴、节点、周目与挑战流程不变。
+- 1280×720 实机帧位于 `build/visual_acceptance/tower_titlebar_unified/`；9 项楼层状态/挑战/扫荡定向测试通过。
