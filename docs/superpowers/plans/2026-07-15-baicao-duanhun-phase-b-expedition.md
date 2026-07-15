@@ -521,16 +521,17 @@ class ExpeditionBattleRunner {
 - [ ] macOS debug build
 
 ## 当前恢复点（2026-07-16 · 分支 feat/baicao-duanhun-phase-b·worktree·未 push）
-- **状态：** **B1 全 4 任务 + B2.1 派遣入场完成并 commit**；A2 基建已 FF 合入本地 main `a61df363`（未 push）。B2.2/B2.3/B2.4 未开工。
+- **状态：** **B1 全 4 + B2.1 派遣 + B2.2 离线分批幂等结算（a+b）完成并 commit**；A2 基建已 FF 合入本地 main `a61df363`（未 push）。B2.3/B2.4/B.V 未开工。
 - **已完成（严格 TDD·各独立 commit）：**
-  - B1.1 `ExpeditionSeed.forNode` / B1.2 `ExpeditionNode`+`ExpeditionRules`（节点/方针权重/瘴蚀/恢复乘子）/ B1.3 `rewardsForNode`+`isTicketMilestone` / B1.4 `ExpeditionBattleRunner.runNodeBattle`
-  - B2.1 `ExpeditionService.dispatch`（单 writeTxn：count 1-3/去重/founder/占用/主修 校验 → 建 ExpeditionRun 成员快照 → serial++ → put；每存档单 active）
-- **已跑验证（本会话）：** `flutter test --no-pub test/features/expedition/` 全绿（**23 测**）；`flutter analyze --no-pub lib test` 0。
-- **关键 seam 决策（B2.2 必读）：**
-  - `run.seed` = 新 serial（非 hash）；B2.2 出节点用 `ExpeditionRules.generateNode(saveId: run.saveDataId, runSerial: run.seed, node: n)`。
-  - 成员 HP/qi 派遣期存 0（未开战）；`currentNode==0` = fresh，B2.2 首战按 `BattleCharacter.fromCharacter` 满血起，战后写回快照 currentHp/qi（× `ExpeditionRules.recoveryMultiplier(zhangshiLayers)`）。
-  - `ExpeditionBattleRunner.runNodeBattle` 返回 `finalState`+survivorHp/Qi+leftWin，**不内调 resolve**；B2.2 在 finalState 上调 `BattleResolutionService.resolve`（修炼/伤势，Isar 对象在结算事务内）。
-- **下一步：** B2.2 离线分批幂等结算（**本 feature 最难点**）——`settle({now})`：在线分段==一次性离线 / 幂等（节点只兑现一次）/ 单批上限 maxNodesPerBatch / cursor 守卫（提交前校验 lastSettledAt 未被并发改）/ 战败即停 / 时间回拨 max(lastSettledAt, now)；每批 writeTxn 更新 currentNode/members HP-qi/stagedRewards/lastSettledAt。
+  - B1.1-1.4 + B2.1（见前，commit `8926be46..5dab9768`）
+  - **B2.2a `settle` 状态机**（commit `225c98d3`）：6 不变式全测（在线分段==一次性离线/幂等/单批上限 `defaultMaxNodesPerBatch=24`/cursor 守卫/战败即停/时间回拨）。节点完成时刻按 `departedAt+累计时长`绝对锚定→推进为 `(run,now)` 确定函数，幂等与在线=离线自然成立。敌队经 `ExpeditionCombat`（`expedition_combat.dart`）注入 seam 解耦。
+  - **B2.2b 生产战斗接线**（commit `6ec6a1d5`）：`ExpeditionCombatRunner`（`expedition_combat_runner.dart`）派遣成员经 `StageBattleSetup.buildPlayerTeamForCharacters`（新增 additive 公开法·零回归）装配真队 + 占位敌合成（`_synthesizeEnemies`·学徒阶·`TODO(batch3-probe)`）+ `ExpeditionBattleRunner`。e2e 测真角色→派遣→settle 推进到节点 5 真打真赢。
+- **已跑验证（本会话 worktree 实测）：** `flutter test --no-pub test/features/expedition/` 全绿（**31 测**=旧23+settle 6+combat_runner 1+... 复跑为准）；`stage_battle_setup_test` 35 回归绿；`flutter analyze --no-pub` 0。
+- **关键决策（B2.3 必读）：**
+  - **修炼/伤势不在 B2.2 per-node 调 resolve**：§4.6 伤势按「返程时最深节点+倒下人数」结算 → 归 **B2.3**；per-node resolve 会与返程伤势模型冲突。远征奖励走 `stagedRewards`（`rewardsForNode`），非 resolve 掉落。
+  - **战败无持久 flag**：defeat 由「下一战确定性再败」可复现，settle 停在最后完成节点不推进；B2.3 返程读 `settle().defeated` 触发。
+  - `run.stagedRewards` 累加合并（`_mergeRewards`）；Isar 读回 list fixed-length → 合并走 growable 副本回写（已在 settle 提交事务处理）。
+- **下一步：** B2.3 召回/战败返程单事务——同一 writeTxn：发 `stagedRewards`（全员含倒下者得完成节点经验）+ 结算伤势（战败按最深节点+倒下人数轻/重伤·召回不附伤）+ 关闭会话（删 `ExpeditionRun` → 占用自动解除）+ 释放角色；召回保留完成节点奖励、当前节点作废。
 - **阻塞项：** 无。
 
 ## 自检（写完 vs 源规格）
