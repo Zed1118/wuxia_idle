@@ -10,6 +10,13 @@
 
 ---
 
+> **2026-07-15 审查订正记录**（跨计划审查 companion 拍板落地，纯计划文档，不改本轮代码）：
+> ① 强化真实下限 +10→**+17**（+11~+19 不掉级、仅 +20 起掉级，+19 冲 +20 失败最多回落 +17；删 `currentLevel:10/targetLevel:20` 伪造测试，改真实下限测试）；
+> ② 助炼资格/批量处置/强化目标校验接收通用 `reservedEquipmentIds`（Q5 活动占用；Phase A 冻结前默认空集，装备批可独立先行）；
+> ③ 仓库强化上限 roster 计入被远征/断魂庄占用的角色（Q7）；
+> ④ 真相源同步 step 增补 `AGENTS.md`（反主流红线仍 stale 列「装备分解」）。
+> 逐项去向见 `2026-07-15-expedition-equipment-cross-plan-companion.md`。
+
 ## 0. Execution prerequisites and file map
 
 Execute from an isolated worktree created with `superpowers:using-git-worktrees`, based on current `main` after this plan document is committed. Before work, verify `git merge-base --is-ancestor fab938cd HEAD`; `fab938cd` is the approved-design anchor, not the branch tip. Suggested branch: `feat/equipment-aid-enhancement`.
@@ -100,7 +107,7 @@ test('downgrade ranges and floor come from YAML', () {
   expect(cfg.downgradeRangeFor(20), const DowngradeRange(1, 2));
   expect(cfg.downgradeRangeFor(30), const DowngradeRange(1, 3));
   expect(cfg.downgradeRangeFor(40), const DowngradeRange(1, 4));
-  expect(cfg.downgradeFloorLevel, 10);
+  expect(cfg.downgradeFloorLevel, 17);
 });
 ~~~
 
@@ -159,7 +166,7 @@ Expected: compile failure because the new config queries do not exist.
         decrease_per_level: 0.025
         floor_rate: 0.30
     downgrade:
-      floor_level: 10
+      floor_level: 17
       ranges:
         - { level_range: [20, 29], min_levels: 1, max_levels: 2 }
         - { level_range: [30, 39], min_levels: 1, max_levels: 3 }
@@ -301,17 +308,31 @@ test('unprotected +40 failure samples both 1 and 4 inclusively', () {
   );
 });
 
-test('+10 is the only downgrade floor and protection holds level', () {
+test('+17 is the real reachable floor and protection holds level', () {
+  // 合法流程只有目标 +20 起才掉级：冲 +20 失败最多回落 2 级（+19 → +17），
+  // 因此 +17 是真实可达下限；+10 floor 在合法状态流中不可达（详设计 §8）。
   expect(
     EnhancementRules.levelAfterFailure(
-      currentLevel: 10,
+      currentLevel: 19,
       targetLevel: 20,
       protected: false,
       rng: SequenceRng(ints: [1]),
       config: config,
     ),
-    10,
+    17,
   );
+  // +11~+19 段不掉级：冲 +19 失败维持当前等级。
+  expect(
+    EnhancementRules.levelAfterFailure(
+      currentLevel: 18,
+      targetLevel: 19,
+      protected: false,
+      rng: SequenceRng(),
+      config: config,
+    ),
+    18,
+  );
+  // 保护时维持当前等级、不执行随机掉级。
   expect(
     EnhancementRules.levelAfterFailure(
       currentLevel: 39,
@@ -483,7 +504,7 @@ git commit -m "feat: 实现强化概率与随机掉级纯规则"
 
 - [ ] **Step 1: Write one-condition-at-a-time safety tests**
 
-Cover same def +25; junk +10/+6/+3 capped at +25; mixed modes; more than three junk items; wrong slot; higher tier; +0 only; no battle count; no forged fields; no lock, lineage, equipped slot, personal lore, previous owner, or protected source. Assert shared definition preset lore is not stored in Equipment.lores and therefore does not block a plain instance.
+Cover same def +25; junk +10/+6/+3 capped at +25; mixed modes; more than three junk items; wrong slot; higher tier; +0 only; no battle count; no forged fields; no lock, lineage, equipped slot, personal lore, previous owner, protected source, or reservation by an active expedition/gauntlet (`reservedEquipmentIds`; an empty set until Phase A freezes the interface, so the equipment batch can ship independently first). Assert shared definition preset lore is not stored in Equipment.lores and therefore does not block a plain instance.
 
 - [ ] **Step 2: Run RED**
 
@@ -528,6 +549,7 @@ abstract final class EnhancementAidRules {
     required Equipment candidate,
     required Set<int> equippedIds,
     required Set<int> activeFormationEquipmentIds,
+    required Set<int> reservedEquipmentIds,
     required Set<String> protectedObtainedFrom,
   }) {
     return candidate.id != target.id &&
@@ -541,7 +563,8 @@ abstract final class EnhancementAidRules {
         candidate.previousOwnerCharacterIds.isEmpty &&
         !protectedObtainedFrom.contains(candidate.obtainedFrom) &&
         !equippedIds.contains(candidate.id) &&
-        !activeFormationEquipmentIds.contains(candidate.id);
+        !activeFormationEquipmentIds.contains(candidate.id) &&
+        !reservedEquipmentIds.contains(candidate.id);
   }
 
   static EnhancementAidEvaluation evaluate({
@@ -549,6 +572,7 @@ abstract final class EnhancementAidRules {
     required List<Equipment> selected,
     required Set<int> equippedIds,
     required Set<int> activeFormationEquipmentIds,
+    required Set<int> reservedEquipmentIds,
     required Set<String> protectedObtainedFrom,
     required EnhancementAidConfig config,
   }) {
@@ -568,6 +592,7 @@ abstract final class EnhancementAidRules {
           candidate: e,
           equippedIds: equippedIds,
           activeFormationEquipmentIds: activeFormationEquipmentIds,
+          reservedEquipmentIds: reservedEquipmentIds,
           protectedObtainedFrom: protectedObtainedFrom,
         ))) {
       return _invalid(EnhancementAidInvalidReason.ineligible);
@@ -720,7 +745,7 @@ class EnhanceResult {
 
 - [ ] **Step 4: Implement transaction-local cap resolution**
 
-Find the wearer by Character equipped slot reference, never by ownerCharacterId alone. For warehouse equipment, current roster is SaveData.activeCharacterIds plus characters satisfying isAlive && !isActive && !isFounder. Clamp to config.maxLevel. This excludes an inactive historical founder while retaining active members and reserves.
+Find the wearer by Character equipped slot reference, never by ownerCharacterId alone. For warehouse equipment, current roster is SaveData.activeCharacterIds plus characters satisfying isAlive && !isActive && !isFounder. Clamp to config.maxLevel. This excludes an inactive historical founder while retaining active members and reserves. Characters occupied by an expedition or gauntlet stay in these lists (occupancy never mutates activeCharacterIds), so they still count toward the warehouse enhancement cap baseline (Q7).
 
 - [ ] **Step 5: Implement EnhancementService.attempt**
 
@@ -1151,13 +1176,14 @@ git commit -m "feat: 增加安全批量分解清单"
 ### Task 10: Synchronize truth sources and perform completion verification
 
 **Files:**
-- Modify: GDD.md:60-72 and 414-443
+- Modify: GDD.md:60-72 and 414-443 (verify line anchors before editing; they may have drifted)
 - Modify: CLAUDE.md version summary and section 5.1
+- Modify: AGENTS.md anti-mainstream redline (still stale-lists 装备分解, retired 2026-06-26; also carries old no-downgrade wording)
 - Modify: approved design spec status
 
 - [ ] **Step 1: Update GDD**
 
-Record the dated reversal. Replace old success, no-downgrade, and direct-guarantee text with the complete approved curve, aid use/consumption, random ranges, +10 floor, no decade checkpoints, linear crystal protection, and forging dormancy.
+Record the dated reversal. Replace old success, no-downgrade, and direct-guarantee text with the complete approved curve, aid use/consumption, random ranges, +17 real reachable floor (downgrade only from +20, so +19→+17 is the true lower bound; +10 is unreachable in a legal flow), no decade checkpoints, linear crystal protection, and forging dormancy.
 
 - [ ] **Step 2: Update CLAUDE**
 
@@ -1171,7 +1197,8 @@ Do not change the spec status before all commands below pass.
 
 ~~~bash
 rg -n "tryEnhance|useCrystalToGuarantee|neverDegrade|never_degrade|materialPenaltyFor|guaranteed_success_costs" lib test data
-rg -n "直接成功|永不破防降级|不会破防降级" GDD.md CLAUDE.md
+rg -n "直接成功|永不破防降级|不会破防降级" GDD.md CLAUDE.md AGENTS.md
+rg -n "装备分解" AGENTS.md   # 反主流清单不应再正列（2026-06-26 已推翻），仅允许带日期的退役 changelog 句
 ~~~
 
 Expected: the API search has no references. The documentation search has no active normative statement retaining the old behavior; a dated changelog sentence that explicitly says the rule was retired is acceptable. Do not rewrite `docs/_archive`.
