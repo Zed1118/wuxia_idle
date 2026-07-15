@@ -292,6 +292,8 @@ void main() {
       ),
     );
     await pumpUntilFound(tester, find.text(UiStrings.lineupApplySuccess));
+    // snackbar 断言紧跟其轮询(后续再推假时钟会触发 4s auto-dismiss)。
+    expect(find.text(UiStrings.lineupApplySuccess), findsOneWidget);
 
     expect(await readActiveIds(tester), [1, 4, 3]);
     late Character swappedOut;
@@ -299,9 +301,11 @@ void main() {
       swappedOut = (await IsarSetup.instance.characters.get(2))!;
     });
     expect(swappedOut.isActive, isFalse);
-    // UI:大弟子落入替补区(仍可见一次),编成成功提示在场。
+    // UI:大弟子落入替补区。慢跑器(CI)上替补池 provider 重算可迟于成功
+    // snackbar 出现,对终态本身轮询到位再断言,不依赖固定 settle 轮数
+    // (2026-07-15 PR #39 首轮 CI 实锚:本地绿/ubuntu 慢机 0 widget)。
+    await pumpUntilFound(tester, find.text('大弟子'));
     expect(find.text('大弟子'), findsOneWidget);
-    expect(find.text(UiStrings.lineupApplySuccess), findsOneWidget);
     await flushSnackBarTimers(tester);
     expect(tester.takeException(), isNull);
   });
