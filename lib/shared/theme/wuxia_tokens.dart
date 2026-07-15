@@ -114,7 +114,8 @@ class WuxiaUi {
   static const String bossFrame = 'assets/ui/mj/ui_boss_frame_blend.png';
   static const String bossFrameLarge =
       'assets/ui/mj/ui_big_boss_frame_blend.png';
-  static const String battleFounderFallback = 'assets/characters/founder.png';
+  static const String battleFounderFallback =
+      'assets/characters/battle_founder.png';
   static const String battleFirstDiscipleFallback =
       'assets/characters/first_disciple.png';
   static const String battleSecondDiscipleFallback =

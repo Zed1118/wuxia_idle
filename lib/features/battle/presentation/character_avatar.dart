@@ -249,8 +249,8 @@ class CharacterAvatar extends StatelessWidget {
   }
 }
 
-/// 战场全人物站姿。当前复用现有大图，以水墨晕染遮罩淡化图片矩形边缘；
-/// 后续透明立绘到位时只替换图像层，姓名/状态/血气板与目标交互不变。
+/// 战场全人物站姿。透明战斗立绘保持完整头脚；旧 RGB 原画作为降级路径，
+/// 继续用水墨晕染遮罩淡化图片矩形边缘。
 class _StageCharacterStandee extends StatelessWidget {
   const _StageCharacterStandee({
     required this.character,
@@ -280,6 +280,8 @@ class _StageCharacterStandee extends StatelessWidget {
         : character.name.characters.first;
     final resolvedIconPath = _resolvedStageIconPath(character);
     final hasIcon = resolvedIconPath != null;
+    final usesTransparentStandee =
+        resolvedIconPath?.startsWith('assets/characters/battle_') ?? false;
     final wardActive =
         battleState != null && isGuardianWardActive(character, battleState!);
 
@@ -288,7 +290,7 @@ class _StageCharacterStandee extends StatelessWidget {
             resolvedIconPath,
             width: width,
             height: portraitHeight,
-            fit: BoxFit.cover,
+            fit: usesTransparentStandee ? BoxFit.contain : BoxFit.cover,
             alignment: Alignment.topCenter,
             errorBuilder: wuxiaAssetErrorBuilder(
               () => _FirstGlyphStandee(
@@ -306,6 +308,19 @@ class _StageCharacterStandee extends StatelessWidget {
             firstGlyph: firstGlyph,
           );
 
+    final portraitImage = usesTransparentStandee
+        ? image
+        : ShaderMask(
+            blendMode: BlendMode.dstIn,
+            shaderCallback: (rect) => const RadialGradient(
+              center: Alignment(0, -0.08),
+              radius: 0.72,
+              colors: [Colors.white, Colors.white, Colors.transparent],
+              stops: [0, 0.50, 0.88],
+            ).createShader(rect),
+            child: image,
+          );
+
     Widget portrait = Container(
       width: width,
       height: portraitHeight,
@@ -316,16 +331,7 @@ class _StageCharacterStandee extends StatelessWidget {
             : null,
       ),
       clipBehavior: Clip.antiAlias,
-      child: ShaderMask(
-        blendMode: BlendMode.dstIn,
-        shaderCallback: (rect) => const RadialGradient(
-          center: Alignment(0, -0.08),
-          radius: 0.72,
-          colors: [Colors.white, Colors.white, Colors.transparent],
-          stops: [0, 0.50, 0.88],
-        ).createShader(rect),
-        child: image,
-      ),
+      child: portraitImage,
     );
     if (character.isBoss) {
       portrait = Container(

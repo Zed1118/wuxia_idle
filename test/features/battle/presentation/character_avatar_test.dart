@@ -6,6 +6,8 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_image.dart';
 
 const _bossFrameKey = ValueKey<String>('battle.bossAvatarFrame');
 
@@ -160,5 +162,30 @@ void main() {
     expect(denseSize, plainSize);
     expect(find.byType(BeatCountdownRing), findsNWidgets(2));
     expect(find.byIcon(Icons.flash_on), findsOneWidget);
+  });
+
+  testWidgets('战场祖师降级位使用透明全身立绘且保持完整头脚', (tester) async {
+    final founder = _char(isBoss: false).copyWith(teamSide: 0, slotIndex: 0);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: founder,
+            displayMode: CharacterDisplayMode.stageStandee,
+            standeeWidth: 160,
+            standeeHeight: 230,
+          ),
+        ),
+      ),
+    );
+
+    final standeeImage = tester.widget<WuxiaImage>(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is WuxiaImage &&
+            widget.assetPath == WuxiaUi.battleFounderFallback,
+      ),
+    );
+    expect(standeeImage.fit, BoxFit.contain);
   });
 }

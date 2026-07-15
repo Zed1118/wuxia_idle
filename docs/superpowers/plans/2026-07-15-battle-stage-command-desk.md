@@ -46,8 +46,8 @@
 
 ## 5. 当前恢复点
 
-- **状态**：切片 1 已提交 `4599d73d`；切片 2 已完成，待提交恢复点。
-- **最后完成**：生产 `BattleField` 改为统一比例锚点的 1v1/2v2/3v3 斜向人物舞台；弹道与人物共用 `battleStageAnchor`；`CharacterAvatar` 新增全人物站姿模式，复用现有大图加墨晕边缘，保留姓名/境界/血气/状态/死亡灰化/Boss 金框/蓄力环/目标点选。我方无 `iconPath` 时仅作槽位级祖师/弟子立绘降级，不影响真角色资产。
-- **下一步**：提交切片 2 恢复点，然后进入切片 3：`melee/projectile/area/control/cinematic` 动作模板。
-- **已跑验证**：切片 2 定向 6 文件共 60 项全通过；`flutter analyze` 无问题；`battle_tap_preview` 1280×720 / 1440×900 细化截图在 `build/visual_acceptance/battle_ui_stage_slice2_refined/`，日志无 overflow/exception/error。
+- **状态**：切片 1 `4599d73d`、切片 2 `917e143d`、切片 3 `1a8a2598` 均已提交；切片 4 已完成祖师透明立绘样板，待提交恢复点。
+- **最后完成**：五类动作模板已接入表现层；近战移向中央交锋点，远程留位并生成水墨弹道，范围技落敌方阵心，控制/大招复用现有题字与命中特效。祖师样板已生成、绿幕去背、压缩为 `511×768 RGBA / 292KB`，生产战场对透明图走 `contain` 且跳过旧 RGB 原画的径向遮罩。
+- **下一步**：提交祖师透明立绘样板恢复点；按同一脚底基线与画风扩展两弟子、三普通敌和一 Boss，并补 Boss/死亡/蓄力状态验收。
+- **已跑验证**：战斗 presentation 全套 194 项与 controller 测试通过、`flutter analyze` 无问题；祖师样板定向 11 项通过。`battle_tap_preview` 1280×720 / 1440×900 真机截图在 `build/visual_acceptance/battle_ui_stage_slice4_founder_fixed/`，均为 window-id 干净窗口，日志无 overflow/exception/error。
 - **阻塞项**：无。Claude 并行分支可能同时改 `lib/shared/strings.dart`，本分支只追加战斗案台必要文案并保持小提交，交付时明确冲突点。
