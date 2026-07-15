@@ -11,6 +11,54 @@ class ExpeditionRules {
   /// 每 5 的倍数节点为险关（§4.2）。
   static bool isEliteNode(int node) => node > 0 && node % 5 == 0;
 
+  /// 节点 [node]（1-based）的时长：险关取 [eliteMinutes]，否则 [normalMinutes]（§4.2）。
+  static int nodeDurationMinutes(
+    int node, {
+    required int normalMinutes,
+    required int eliteMinutes,
+  }) => isEliteNode(node) ? eliteMinutes : normalMinutes;
+
+  /// 从出发累计到「完成节点 [node]」所需分钟（node ≤ 0 → 0）。节点按 1..node 逐个
+  /// 求和，险关按 [eliteMinutes] 计入。settle 的完成节点判定与总览「下一节点剩余
+  /// 时间」共用此单调曲线（绝对时间锚定，§7.1/§10）。
+  static int cumulativeMinutesToCompleteNode(
+    int node, {
+    required int normalMinutes,
+    required int eliteMinutes,
+  }) {
+    if (node <= 0) return 0;
+    var total = 0;
+    for (var n = 1; n <= node; n++) {
+      total += nodeDurationMinutes(
+        n,
+        normalMinutes: normalMinutes,
+        eliteMinutes: eliteMinutes,
+      );
+    }
+    return total;
+  }
+
+  /// 距「下一节点」完成尚余多少（总览显示，§7.1）。已完成 [completedNodes] 个节点时，
+  /// 下一节点是第 `completedNodes+1` 个；其完成时刻 = [departedAt] + 累计时长（与
+  /// settle 同曲线绝对锚定）。返回非负 Duration；[now] 已越过该时刻（可结算未追平）
+  /// → [Duration.zero]。
+  static Duration nextNodeRemaining({
+    required DateTime departedAt,
+    required int completedNodes,
+    required DateTime now,
+    required int normalMinutes,
+    required int eliteMinutes,
+  }) {
+    final targetMinutes = cumulativeMinutesToCompleteNode(
+      completedNodes + 1,
+      normalMinutes: normalMinutes,
+      eliteMinutes: eliteMinutes,
+    );
+    final completionTime = departedAt.add(Duration(minutes: targetMinutes));
+    final remaining = completionTime.difference(now);
+    return remaining.isNegative ? Duration.zero : remaining;
+  }
+
   /// 普通节点四类权重（方针偏移，§4.3）。险关不走此表。
   /// 权重和为正；数值填表见 expeditions.yaml（此处为规则骨架默认）。
   static Map<ExpeditionNodeType, int> _normalWeights(ExpeditionPolicy policy) {

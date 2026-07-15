@@ -448,9 +448,11 @@ class ExpeditionService {
     var node = 0;
     while (true) {
       final next = node + 1;
-      final dur = ExpeditionRules.isEliteNode(next)
-          ? config.eliteNodeMinutes
-          : config.normalNodeMinutes;
+      final dur = ExpeditionRules.nodeDurationMinutes(
+        next,
+        normalMinutes: config.normalNodeMinutes,
+        eliteMinutes: config.eliteNodeMinutes,
+      );
       if (cumulative + dur > elapsedMinutes) break;
       cumulative += dur;
       node = next;
