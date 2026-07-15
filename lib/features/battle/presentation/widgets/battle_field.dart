@@ -568,8 +568,9 @@ class EnemyTargetHint extends StatelessWidget {
   }
 }
 
-/// Phase 4 拖招表现层:角色头像光晕。
-/// - [hovered](拖招悬停命中敌头像):静态浅金强光,优先级最高。
+/// 角色状态表现层。
+/// - [hovered](点选目标命中敌方):轻微放大,优先级最高。
+/// - [staggered]:脚下绛红破绽印,避免整个人物槽位出现矩形光框。
 /// - 均不满足:无光晕,直接返回 child(等价旧 boxShadow 为空)。
 class GlowAura extends StatefulWidget {
   final bool hovered;
@@ -640,41 +641,77 @@ class _GlowAuraState extends State<GlowAura>
       animation: _pulse,
       builder: (context, child) {
         final t = Curves.easeInOut.transform(_pulse.value);
-        // 破绽窗口：绛红呼吸脉动（集火指示），水墨克制——稍弱于蓄势强光。
+        // 破绽窗口：绛红呼吸脉动（集火指示）。只落在脚下，
+        // 不再对整个 CharacterSlot 施加 boxShadow，以免暴露矩形组件边界。
         return KeyedSubtree(
           key: ValueKey('stagger_highlight_${widget.characterId}'),
-          child: _box(
-            WuxiaColors.gangMeng, // 绛红 = WuxiaColors.gangMeng（刚猛流派色 / 攻击色）
-            0.35 + 0.35 * t, // alpha 0.35 → 0.70（克制，不刺眼）
-            10.0 + 8.0 * t, // blur 10 → 18
-            1.0 + 1.5 * t, // spread 1.0 → 2.5
-            child!,
+          child: Stack(
+            fit: StackFit.passthrough,
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(
+                    painter: _StaggerGroundSealPainter(pulse: t),
+                  ),
+                ),
+              ),
+              child!,
+            ],
           ),
         );
       },
       child: widget.child,
     );
   }
+}
 
-  Widget _box(
-    Color color,
-    double alpha,
-    double blur,
-    double spread,
-    Widget child,
-  ) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: alpha),
-            blurRadius: blur,
-            spreadRadius: spread,
-          ),
-        ],
-      ),
-      child: child,
+class _StaggerGroundSealPainter extends CustomPainter {
+  const _StaggerGroundSealPainter({required this.pulse});
+
+  final double pulse;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width * 0.5, size.height * 0.82);
+    final width = size.width * (0.46 + pulse * 0.04);
+    final height = size.height * (0.045 + pulse * 0.008);
+    final sealRect = Rect.fromCenter(
+      center: center,
+      width: width,
+      height: height,
+    );
+
+    canvas.drawOval(
+      sealRect,
+      Paint()
+        ..color = WuxiaColors.gangMeng.withValues(alpha: 0.12 + pulse * 0.08)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 5 + pulse * 3),
+    );
+
+    final ringPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 1.1 + pulse * 0.7
+      ..color = WuxiaColors.gangMeng.withValues(alpha: 0.48 + pulse * 0.18);
+    canvas.drawArc(sealRect, 3.34, 2.32, false, ringPaint);
+    canvas.drawArc(sealRect.deflate(3), 0.20, 2.18, false, ringPaint);
+
+    final fleckPaint = Paint()
+      ..color = WuxiaColors.gangMeng.withValues(alpha: 0.35 + pulse * 0.18);
+    canvas.drawCircle(
+      Offset(center.dx - width * 0.42, center.dy - height * 0.55),
+      1.1 + pulse * 0.6,
+      fleckPaint,
+    );
+    canvas.drawCircle(
+      Offset(center.dx + width * 0.36, center.dy + height * 0.32),
+      0.8 + pulse * 0.5,
+      fleckPaint,
     );
   }
+
+  @override
+  bool shouldRepaint(covariant _StaggerGroundSealPainter oldDelegate) =>
+      oldDelegate.pulse != pulse;
 }

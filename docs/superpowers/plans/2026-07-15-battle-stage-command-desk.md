@@ -74,3 +74,8 @@
 - 系统调整能力已存在：`TeamLineupScreen` 以 `activeCharacterIds` 列表顺序作为站位顺序，点出战角色可与其他席位交换；祖师必须出战，但不强制永远占首席。
 - 立绘落地不再依赖 Widget 容器底边：根据每张 RGBA 立绘的 alpha 有效边界标定真实脚底，将接触墨影和状态牌贴到真实脚底。其中山贼刀客原图有约 18% 透明底边，不再导致信息牌大幅下坠。
 - 新增无人物、无 UI 的专用山口战场背景 `assets/scenes/battle_mountain_pass_stage_v2.png`，中央与两侧六个站位共享连续石滩地面和同一透视；1440 对照帧位于 `build/visual_acceptance/battle_ui_ground_plane_v3/`，1280 无异常复验帧位于 `build/visual_acceptance/battle_ui_ground_plane_final/`。
+
+## 特殊状态融合恢复点（2026-07-16）
+
+- 破绽窗口原先对整个 `CharacterSlot` 施加绛红 `boxShadow`，会直接显露矩形 Widget 边界，与透明全身立绘冲突。现改为脚下窄幅破绽印，保留呼吸节拍和既有测试 key，不改战斗机制。
+- `battle_charge_break` 1440×900 复截位于 `build/visual_acceptance/battle_ui_stagger_ground_seal/`；旧帧右侧杀手背后大面积红色矩形已消失，无 overflow / exception / error。
