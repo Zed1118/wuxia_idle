@@ -67,3 +67,10 @@
 - 人物状态牌收窄并改为绛红气血 / 青灰真气，数值改用紧凑排版，消除文字裁切。顶栏场景题签代替验收说明长文。
 - 满配验收场景展示 7 张真实可点技能签，两段点选机制不变；战备行囊的葫芦与药囊预留图标提亮，仍不读背包、不消耗道具。
 - 最终对照帧：`build/visual_acceptance/battle_ui_match_final/battle_tap_live/1440x900/` 与 `1280x720/`；两视口无 overflow，结构已与 V2 概念稿统一为“上方全人物水墨舞台 + 下方竖签武学案台 + 右侧战备行囊”。
+
+## 站位与落地融合恢复点（2026-07-15）
+
+- 根因修正：战场注释与编成规则均定义 `slot 0` 为靠近中场的首席，但概念稿纠偏曾将我方 `slot 0` 写成最外侧且为敌方单独写了一组非镜像坐标。现改为首席居中前排，1v1 / 2v2 / 3v3 左右同序槽位严格镜像。
+- 系统调整能力已存在：`TeamLineupScreen` 以 `activeCharacterIds` 列表顺序作为站位顺序，点出战角色可与其他席位交换；祖师必须出战，但不强制永远占首席。
+- 立绘落地不再依赖 Widget 容器底边：根据每张 RGBA 立绘的 alpha 有效边界标定真实脚底，将接触墨影和状态牌贴到真实脚底。其中山贼刀客原图有约 18% 透明底边，不再导致信息牌大幅下坠。
+- 新增无人物、无 UI 的专用山口战场背景 `assets/scenes/battle_mountain_pass_stage_v2.png`，中央与两侧六个站位共享连续石滩地面和同一透视；1440 对照帧位于 `build/visual_acceptance/battle_ui_ground_plane_v3/`，1280 无异常复验帧位于 `build/visual_acceptance/battle_ui_ground_plane_final/`。

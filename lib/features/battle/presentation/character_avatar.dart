@@ -288,6 +288,8 @@ class _StageCharacterStandee extends StatelessWidget {
     final usesTransparentStandee = _isTransparentBattleStandee(
       resolvedIconPath,
     );
+    final footY = portraitHeight * _stageStandeeFootFraction(resolvedIconPath);
+    final groundingHeight = height * 0.065;
     final wardActive =
         battleState != null && isGuardianWardActive(character, battleState!);
 
@@ -394,6 +396,19 @@ class _StageCharacterStandee extends StatelessWidget {
         clipBehavior: Clip.none,
         alignment: Alignment.topCenter,
         children: [
+          Positioned(
+            key: const ValueKey('battle.stageStandeeGrounding'),
+            left: width * 0.17,
+            right: width * 0.17,
+            top: (footY - groundingHeight * 0.45).clamp(
+              0.0,
+              height - groundingHeight,
+            ),
+            height: groundingHeight,
+            child: const IgnorePointer(
+              child: CustomPaint(painter: _StandeeGroundingPainter()),
+            ),
+          ),
           portrait,
           Positioned(
             top: 4,
@@ -423,7 +438,7 @@ class _StageCharacterStandee extends StatelessWidget {
           Positioned(
             left: width * 0.24,
             right: width * 0.24,
-            bottom: 2,
+            top: (footY + 2).clamp(0.0, height - 40),
             child: Container(
               padding: const EdgeInsets.fromLTRB(5, 2, 5, 3),
               decoration: BoxDecoration(
@@ -495,6 +510,56 @@ class _StageCharacterStandee extends StatelessWidget {
   }
 }
 
+/// 透明立绘的接触影与脚底墨晕。影子贴在人物层内，会跟随冲锋、
+/// 受击和缩放一起移动，不改战场点击区与角色实际站位。
+class _StandeeGroundingPainter extends CustomPainter {
+  const _StandeeGroundingPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width * 0.5, size.height * 0.58);
+    final contact = Paint()
+      ..color = const Color(0xFF17130F).withValues(alpha: 0.46)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center,
+        width: size.width * 0.78,
+        height: size.height * 0.46,
+      ),
+      contact,
+    );
+
+    final wash = Paint()
+      ..color = const Color(0xFF29231D).withValues(alpha: 0.24)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 1.4
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
+    final leftWash = Path()
+      ..moveTo(size.width * 0.12, size.height * 0.72)
+      ..quadraticBezierTo(
+        size.width * 0.32,
+        size.height * 0.42,
+        size.width * 0.53,
+        size.height * 0.67,
+      );
+    final rightWash = Path()
+      ..moveTo(size.width * 0.42, size.height * 0.76)
+      ..quadraticBezierTo(
+        size.width * 0.70,
+        size.height * 0.48,
+        size.width * 0.91,
+        size.height * 0.70,
+      );
+    canvas.drawPath(leftWash, wash);
+    canvas.drawPath(rightWash, wash..strokeWidth = 1.0);
+  }
+
+  @override
+  bool shouldRepaint(covariant _StandeeGroundingPainter oldDelegate) => false;
+}
+
 String? _resolvedStageIconPath(BattleCharacter character) {
   final iconPath = character.iconPath;
   if (iconPath != null && iconPath.isNotEmpty) {
@@ -525,6 +590,18 @@ const _battleStandeeOverrides = <String, String>{
 bool _isTransparentBattleStandee(String? path) =>
     path?.startsWith('assets/characters/battle_') == true ||
     path?.startsWith('assets/enemies/battle_') == true;
+
+/// 透明图脚底在原图高度中的实际比例。生成立绘的透明画布留白不同，
+/// 不能用 Widget 容器底边冒充脚底；否则接触影和状态牌会漂在人物下方。
+double _stageStandeeFootFraction(String? path) => switch (path) {
+  WuxiaUi.battleFounderFallback => 0.938,
+  WuxiaUi.battleFirstDiscipleFallback => 0.961,
+  WuxiaUi.battleSecondDiscipleFallback => 0.957,
+  WuxiaUi.battleHiddenElderStandee => 0.952,
+  WuxiaUi.battleBanditBladeStandee => 0.823,
+  WuxiaUi.battleBanditArcherStandee => 0.939,
+  _ => 0.95,
+};
 
 class _FirstGlyphStandee extends StatelessWidget {
   const _FirstGlyphStandee({

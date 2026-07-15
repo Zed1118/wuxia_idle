@@ -395,7 +395,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioMassBattleStage,
         hint: null,
-        sceneBackgroundPath: 'assets/scenes/battle_mountainforest.png',
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         bgmTrack: BgmTrack.massBattle,
         autoStart: false,
       );
@@ -404,7 +404,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioDragLive,
         hint: UiStrings.chapter1Title,
-        sceneBackgroundPath: 'assets/scenes/battle_mountainforest.png',
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         allowPlayerIntervention: true,
         startPaused: true,
       );

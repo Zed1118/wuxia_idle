@@ -3,19 +3,17 @@ import 'package:wuxia_idle/features/battle/presentation/battle_stage_geometry.da
 
 void main() {
   group('battleStageAnchor', () {
-    test('3v3 我方主位压低前景，两名弟子向中场抬高展开', () {
+    test('3v3 首席靠近中场，其余两席向外展开', () {
       final leftMain = battleStageAnchor(0, 0, 3);
-      final leftRearTop = battleStageAnchor(0, 1, 3);
-      final leftRearBottom = battleStageAnchor(0, 2, 3);
+      final leftSecond = battleStageAnchor(0, 1, 3);
+      final leftThird = battleStageAnchor(0, 2, 3);
 
-      expect(leftMain.dx, lessThan(leftRearTop.dx));
-      expect(leftRearTop.dx, lessThan(leftRearBottom.dx));
-      expect(leftRearTop.dy, lessThan(leftMain.dy));
-      expect(leftRearBottom.dy, lessThan(leftRearTop.dy));
+      expect(leftMain.dx, greaterThan(leftSecond.dx));
+      expect(leftSecond.dx, greaterThan(leftThird.dx));
     });
 
-    test('1v1/2v2 保持镜像，3v3 敌方主位前压形成非对称对峙', () {
-      for (var teamSize = 1; teamSize <= 2; teamSize++) {
+    test('1v1/2v2/3v3 左右同序槽位严格镜像', () {
+      for (var teamSize = 1; teamSize <= 3; teamSize++) {
         for (var slot = 0; slot < teamSize; slot++) {
           final left = battleStageAnchor(0, slot, teamSize);
           final right = battleStageAnchor(1, slot, teamSize);
@@ -23,10 +21,6 @@ void main() {
           expect(left.dy, closeTo(right.dy, 1e-9));
         }
       }
-      final rightMain = battleStageAnchor(1, 0, 3);
-      final rightRear = battleStageAnchor(1, 2, 3);
-      expect(rightMain.dx, lessThan(rightRear.dx));
-      expect(rightMain.dy, lessThan(rightRear.dy));
     });
 
     test('1v1 居中对峙，2v2 保持前低后高层次', () {

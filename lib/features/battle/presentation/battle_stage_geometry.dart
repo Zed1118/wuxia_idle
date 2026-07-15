@@ -31,23 +31,13 @@ Offset battleStageAnchor(
           1 => const [Offset(0.27, 0.53)],
           2 => const [Offset(0.19, 0.58), Offset(0.36, 0.38)],
           _ => const [
-            Offset(0.13, 0.58),
-            Offset(0.29, 0.49),
-            Offset(0.40, 0.31),
+            Offset(0.35, 0.50),
+            Offset(0.15, 0.62),
+            Offset(0.06, 0.36),
           ],
         };
   final anchor = left[normalizedSlot];
-  if (teamSide == 0 || mode == BattleStageLayoutMode.lightFoot) {
-    return teamSide == 0 ? anchor : Offset(1 - anchor.dx, anchor.dy);
-  }
-  if (normalizedSize == 3) {
-    return const [
-      Offset(0.66, 0.43),
-      Offset(0.80, 0.53),
-      Offset(0.91, 0.60),
-    ][normalizedSlot];
-  }
-  return Offset(1 - anchor.dx, anchor.dy);
+  return teamSide == 0 ? anchor : Offset(1 - anchor.dx, anchor.dy);
 }
 
 /// 后位略缩小，形成前后景深度；1v1/2v2 时两人都保持主体尺寸。

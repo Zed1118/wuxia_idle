@@ -199,6 +199,26 @@ void main() {
     }
   });
 
+  testWidgets('战场全身立绘具有独立脚底接触墨影', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: _char(isBoss: false),
+            displayMode: CharacterDisplayMode.stageStandee,
+            standeeWidth: 160,
+            standeeHeight: 230,
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(const ValueKey('battle.stageStandeeGrounding')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('战场将已配套的旧原画映射到对应透明立绘', (tester) async {
     const cases = [
       ('assets/characters/founder.png', WuxiaUi.battleFounderFallback),

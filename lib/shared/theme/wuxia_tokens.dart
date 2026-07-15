@@ -116,6 +116,8 @@ class WuxiaUi {
       'assets/ui/mj/ui_big_boss_frame_blend.png';
   static const String battleFounderFallback =
       'assets/characters/battle_founder_v2.png';
+  static const String battleMountainPassStage =
+      'assets/scenes/battle_mountain_pass_stage_v2.png';
   static const String battleFirstDiscipleFallback =
       'assets/characters/battle_first_disciple.png';
   static const String battleSecondDiscipleFallback =
