@@ -427,6 +427,9 @@ class ExpeditionService {
     );
   }
 
+  /// 当前 active 远征（供 provider/UI 读；无 → null）。
+  Future<ExpeditionRun?> activeRun() => _activeRun();
+
   /// active 远征（每存档最多一条）。
   Future<ExpeditionRun?> _activeRun() async {
     final save = await _isar.saveDatas.get(0);
