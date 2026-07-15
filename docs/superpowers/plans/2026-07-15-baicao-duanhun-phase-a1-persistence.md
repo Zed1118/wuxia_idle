@@ -788,11 +788,14 @@ Expected: 0 fail（基线较 A1 前 +新增测试）。若有失败，先 `git g
 
 ## 当前恢复点
 
-- **状态：** 未开工（计划已写，待执行）。
-- **最后完成：** —
-- **下一步：** Task 1（SaveData 字段）。
-- **已跑验证：** 计划期接口对真实代码核（`save_data.dart:92`/`isar_setup.dart:82,161,368`/`character.dart:69-112`/`retreat_session.dart` 体例/`inner_force_qi_migration_test.dart` 迁移测体例）。
-- **阻塞项：** 无（批1 已冻结拍板）。
+- **状态：** ✅ A1 全 7 任务完成（2026-07-15 实装批 · 分支 `feat/baicao-duanhun-phase-a1` · 6 commit `d745aa59`→`8030334a` · 未 push/未 merge，等用户拍板整合）。
+- **最后完成：** T7 批末验证——`flutter analyze --no-pub` **0 issue**；全量 `flutter test --no-pub` **4034 pass / 0 fail**（exit 0）。每任务严格 TDD 红→绿→commit。
+- **下一步：** Phase A2（发布上限 10→17 / 断魂帖 / 配置校验），依赖本批冻结契约。
+- **实装期计划订正（3 处 · 均已落实并验证 · A2/B/C 复用体例时注意）：**
+  1. `@embedded` 类须补 `part '<name>.g.dart';`（isar_community 要求，计划 T2 漏；否则 collection 引用其 `...Schema` 编译失败）。已随 T3 commit 修 `ActivityMemberSnapshot`。
+  2. saveVer 当前版本断言实为 **3 处**（计划 T5 只点名 1）：`inner_force_qi_migration_test.dart:57` + `save_migration_version_gate_test.dart:252` + `passive_idle_migration_test.dart:38`（后者是全仓「误 bump」tripwire）；历史 `fromVersion` 构造行不动。
+  3. 占用测 `Character` 须设全 7 个必填 late 字段（name/realmTier/realmLayer/attributes/rarity/lineageRole/createdAt），裸 `Character()..name` 会抛 LateInitializationError；迁移/占用测调 `.saveDatas`/`.expeditionRuns` 等 Isar collection 访问器须 import 其定义库（extension getter，非实例方法）。
+- **阻塞项：** 无。冻结契约（见下节）已全部实装、验证、下游可依赖。
 
 ## 冻结产物（下游依赖，不得改名/改签名）
 
