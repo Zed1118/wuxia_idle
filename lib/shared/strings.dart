@@ -3540,4 +3540,24 @@ class UiStrings {
 
   /// 分解确认弹窗返还材料旁的小来源按钮：`磨剑石来源`。
   static String materialSourceLinkNamed(String name) => '$name来源';
+
+  // ── 百草岭远征 · 返程行记（§4.7 · Phase B2.4）────────────────────────
+  static const String expeditionRecapTitle = '返程行记';
+  static const String expeditionRecapReturnedTitle = '百草岭远征 · 归';
+  static const String expeditionRecapDefeatedTitle = '败走百草岭';
+  static String expeditionRecapDeepest(int node) => '最深抵达第 $node 处险境';
+  static const String expeditionRecapResultSection = '此行战果';
+  static String expeditionRecapCompletedNodes(int node) => '踏平节点 $node 处';
+  static const String expeditionRecapRewardSection = '主要奖获';
+  static const String expeditionRecapNoReward = '未及采获，空手而归。';
+  static String expeditionRecapExp(int amount) => '修为 +$amount';
+  static String expeditionRecapRewardItem(String name, int qty) => '$name ×$qty';
+  static String expeditionRecapTicket(int count) => '断魂帖 ×$count';
+  static const String expeditionRecapInjurySection = '伤势';
+  static String expeditionRecapDefeatedInjury(int downed) =>
+      '力战不敌，$downed 人重伤而返，需静养多时。';
+  static String expeditionRecapDownedInjury(int downed) =>
+      '$downed 人力竭负伤，回山调息即可。';
+  static const String expeditionRecapSafeReturn = '全员安然归返，毫发无伤。';
+  static const String expeditionRecapBack = '返回';
 }

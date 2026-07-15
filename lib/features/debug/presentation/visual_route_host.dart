@@ -95,6 +95,9 @@ import '../../zangjuange/presentation/zangjuange_screen.dart';
 import '../../taohua_island/domain/island_building_type.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
+import '../../expedition/application/expedition_service.dart';
+import '../../expedition/presentation/expedition_recap_screen.dart';
+import '../../../core/domain/reward_entry.dart';
 import 'hitbox_debug_overlay.dart';
 
 /// 出版美术验收入口 App。
@@ -716,9 +719,36 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // (无标/境界偏低/闭关中),屏走真 provider 链验点选交换入口与标签。
       await Phase2SeedService(isar: isar).seedTeamLineup();
       return const TeamLineupScreen();
+    case VisualRoute.expeditionRecap:
+      // 百草岭远征返程行记目检(§4.7):纯只读屏,直接注入一份丰奖获 + 1 人负伤的
+      // 主动召回结果(GameRepository 已在 _prepare 加载 → 物料名正常渲染)。
+      return _buildExpeditionRecapVisual();
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }
+}
+
+/// 百草岭远征返程行记验收 fixture:构造一份主动召回结果(最深 14 处·奖获修为/
+/// 药草/灵泉/银两·断魂帖 ×1 里程碑·1 人负伤),直传只读 [ExpeditionRecapScreen]。
+Widget _buildExpeditionRecapVisual() {
+  RewardEntry r(String key, int qty) => RewardEntry()
+    ..rewardKey = key
+    ..quantity = qty;
+  return ExpeditionRecapScreen(
+    result: ExpeditionReturnResult(
+      returned: true,
+      deepestNode: 14,
+      grantedRewards: [
+        r('exp', 1200),
+        r('item_yaocao', 4),
+        r('item_lingquanshui', 2),
+        r('item_silver', 180),
+        r('item_duanhuntie', 1),
+      ],
+      downedCount: 1,
+      defeated: false,
+    ),
+  );
 }
 
 class _MainlineFirstClearBattlePreview extends ConsumerStatefulWidget {

@@ -223,6 +223,10 @@ enum VisualRoute {
     '普通关战败重试弹框·非教学化短诊断验收(S3·浅纸底 muted 提示行)',
   ),
   teamLineup('team_lineup', '出战编成屏目检·三席(前排标+梯度境界)+替补池三态(无标/境界偏低/闭关中),§十三 #4'),
+  expeditionRecap(
+    'expedition_recap',
+    '百草岭远征返程行记目检·主动召回态(最深14处+奖获修为/药草/灵泉/银两+断魂帖×1里程碑高亮+1人负伤调息),§4.7',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);
