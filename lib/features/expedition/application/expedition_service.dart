@@ -1,10 +1,16 @@
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/character.dart';
+import '../../../core/domain/reward_entry.dart';
 import '../../../core/domain/save_data.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
+import '../domain/expedition_config.dart';
+import '../domain/expedition_rules.dart';
+import '../domain/expedition_seed.dart';
 import '../domain/expedition_run.dart';
+import 'expedition_combat.dart';
 
 /// 百草岭远征应用服务（§4.1/§9.1）。
 ///
@@ -91,4 +97,265 @@ class ExpeditionService {
       return _isar.expeditionRuns.put(run);
     });
   }
+
+  /// 单批离线结算允许的最大节点数（禁数十节点一事务，§4.4）。
+  // TODO(batch3-probe): 探针定案后可下沉 expeditions.yaml。
+  static const int defaultMaxNodesPerBatch = 24;
+
+  /// 离线分批幂等结算（§4.4/§9.1，本 feature 最难点）。
+  ///
+  /// 节点完成时刻按 `departedAt + 累计节点时长` 绝对锚定，故推进是
+  /// `(run 状态, now)` 的确定函数：**在线分段 == 一次性离线**、重复调用**幂等**
+  /// （已完成节点不再兑现）自然成立。单批最多 [maxNodesPerBatch] 个节点一事务；
+  /// 战败即停；系统时间回拨以 `max(lastSettledAt, now)` 处理不产生负进度。
+  Future<ExpeditionSettlementResult> settle({
+    required ExpeditionCombat combat,
+    required ExpeditionConfig config,
+    DateTime? now,
+    int maxNodesPerBatch = defaultMaxNodesPerBatch,
+    @visibleForTesting Future<void> Function()? beforeCommitForTest,
+  }) async {
+    final effectiveNow = now ?? DateTime.now();
+    final run = await _activeRun();
+    if (run == null) {
+      return const ExpeditionSettlementResult(
+        nodesSettled: 0,
+        currentNode: 0,
+        caughtUp: true,
+        defeated: false,
+      );
+    }
+
+    final startNode = run.currentNode;
+    final anchor = run.lastSettledAt ?? run.departedAt;
+    final clampedNow = effectiveNow.isBefore(anchor) ? anchor : effectiveNow;
+    final elapsed = clampedNow.difference(run.departedAt).inMinutes;
+    final targetNode = _completedNodesBy(elapsed, config);
+    if (targetNode <= startNode) {
+      return ExpeditionSettlementResult(
+        nodesSettled: 0,
+        currentNode: startNode,
+        caughtUp: true,
+        defeated: false,
+      );
+    }
+
+    // 成员工作副本（fresh: currentNode==0 → 满血起）。
+    final caps = await combat.memberCaps(
+      run.members.map((m) => m.characterId).toList(),
+    );
+    final fresh = startNode == 0;
+    final vitals = <int, ExpeditionMemberVital>{};
+    final downed = <int, bool>{};
+    for (final m in run.members) {
+      final cap = caps[m.characterId];
+      vitals[m.characterId] = ExpeditionMemberVital(
+        hp: fresh ? (cap?.maxHp ?? 0) : m.currentHp,
+        qi: fresh ? (cap?.maxQi ?? 0) : m.currentQi,
+      );
+      downed[m.characterId] = fresh ? false : m.isDowned;
+    }
+
+    // 单批上限：本次最多结算 maxNodesPerBatch 个节点，余下 elapsed 留下批。
+    final batchEnd = (startNode + maxNodesPerBatch < targetNode)
+        ? startNode + maxNodesPerBatch
+        : targetNode;
+
+    // txn 外逐节点跑规则 + 战斗，攒本批增量。
+    final newRewards = <RewardEntry>[];
+    var node = startNode;
+    var defeated = false;
+    while (node < batchEnd) {
+      final index = node + 1;
+      final genNode = ExpeditionRules.generateNode(
+        saveId: run.saveDataId,
+        runSerial: run.seed,
+        node: index,
+        policy: run.policy,
+        normalMinutes: config.normalNodeMinutes,
+        eliteMinutes: config.eliteNodeMinutes,
+      );
+      if (genNode.isBattle) {
+        final alive = <int, ExpeditionMemberVital>{
+          for (final e in vitals.entries)
+            if (!(downed[e.key] ?? false)) e.key: e.value,
+        };
+        final outcome = await combat.fight(
+          node: genNode,
+          memberStates: alive,
+          nodeSeed: ExpeditionSeed.forNode(
+            saveId: run.saveDataId,
+            runSerial: run.seed,
+            node: index,
+          ),
+        );
+        outcome.survivorHp.forEach((id, hp) {
+          vitals[id] = ExpeditionMemberVital(
+            hp: hp,
+            qi: outcome.survivorQi[id] ?? vitals[id]?.qi ?? 0,
+          );
+          if (hp <= 0) downed[id] = true;
+        });
+        if (!outcome.leftWin) {
+          // 战败即停（§4.2）：失败节点无奖励、不计入 currentNode，停止后续节点。
+          defeated = true;
+          break;
+        }
+      }
+      _applyRecovery(vitals, downed, caps, config, deepestCompletedNode: index);
+      _mergeRewards(
+        newRewards,
+        ExpeditionRules.rewardsForNode(
+          node: genNode,
+          saveId: run.saveDataId,
+          runSerial: run.seed,
+        ),
+      );
+      node = index;
+    }
+
+    final settledCount = node - startNode;
+
+    // 测试钩子：模拟提交前的并发推进（生产恒 null）。
+    await beforeCommitForTest?.call();
+
+    var committed = false;
+    await _isar.writeTxn(() async {
+      final row = await _isar.expeditionRuns.get(run.id);
+      if (row == null) return;
+      // cursor 守卫（§4.4.3）：提交前校验 run 未被并发推进；被改则弃本批，
+      // 交外层重试，避免把过期批结果覆盖到更新状态上（重复发奖/回退进度）。
+      if (row.currentNode != startNode ||
+          row.lastSettledAt != run.lastSettledAt) {
+        return;
+      }
+      row.currentNode = node;
+      row.lastSettledAt = clampedNow;
+      for (final m in row.members) {
+        final v = vitals[m.characterId];
+        if (v != null) {
+          m.currentHp = v.hp;
+          m.currentQi = v.qi;
+          m.isDowned = downed[m.characterId] ?? m.isDowned;
+        }
+      }
+      // Isar 读回的 list 为 fixed-length，合并须走 growable 副本再回写。
+      final mergedRewards = List<RewardEntry>.from(row.stagedRewards);
+      _mergeRewards(mergedRewards, newRewards);
+      row.stagedRewards = mergedRewards;
+      await _isar.expeditionRuns.put(row);
+      committed = true;
+    });
+
+    if (!committed) {
+      return ExpeditionSettlementResult(
+        nodesSettled: 0,
+        currentNode: startNode,
+        caughtUp: false,
+        defeated: false,
+      );
+    }
+
+    return ExpeditionSettlementResult(
+      nodesSettled: settledCount,
+      currentNode: node,
+      caughtUp: defeated || node >= targetNode,
+      defeated: defeated,
+    );
+  }
+
+  /// active 远征（每存档最多一条）。
+  Future<ExpeditionRun?> _activeRun() async {
+    final save = await _isar.saveDatas.get(0);
+    if (save == null) return null;
+    final runs = await _isar.expeditionRuns.where().findAll();
+    for (final r in runs) {
+      if (r.saveDataId == save.id) return r;
+    }
+    return null;
+  }
+
+  /// `departedAt → clampedNow` 已完成节点数：累计节点时长 ≤ elapsed 的最大节点。
+  static int _completedNodesBy(int elapsedMinutes, ExpeditionConfig config) {
+    if (elapsedMinutes <= 0) return 0;
+    var cumulative = 0;
+    var node = 0;
+    while (true) {
+      final next = node + 1;
+      final dur = ExpeditionRules.isEliteNode(next)
+          ? config.eliteNodeMinutes
+          : config.normalNodeMinutes;
+      if (cumulative + dur > elapsedMinutes) break;
+      cumulative += dur;
+      node = next;
+    }
+    return node;
+  }
+
+  /// 节点完成后存活成员恢复（§4.5），瘴蚀按最深节点递减恢复效果。
+  static void _applyRecovery(
+    Map<int, ExpeditionMemberVital> vitals,
+    Map<int, bool> downed,
+    Map<int, ExpeditionMemberCaps> caps,
+    ExpeditionConfig config, {
+    required int deepestCompletedNode,
+  }) {
+    final layers = ExpeditionRules.zhangshiLayers(deepestCompletedNode);
+    final mult = ExpeditionRules.recoveryMultiplier(
+      layers,
+      perLayer: config.zhangshiPctPerLayer,
+    );
+    for (final id in vitals.keys.toList()) {
+      if (downed[id] ?? false) continue; // 倒下者不恢复
+      final cap = caps[id];
+      if (cap == null) continue;
+      final v = vitals[id]!;
+      final hp = (v.hp + cap.maxHp * config.hpRecoverPctPerNode * mult)
+          .round()
+          .clamp(0, cap.maxHp);
+      final qi = (v.qi + cap.maxQi * config.qiRecoverPctPerNode * mult)
+          .round()
+          .clamp(0, cap.maxQi);
+      vitals[id] = ExpeditionMemberVital(hp: hp, qi: qi);
+    }
+  }
+
+  /// 按 rewardKey 累加合并到 [into]。
+  static void _mergeRewards(List<RewardEntry> into, List<RewardEntry> add) {
+    for (final r in add) {
+      final existing = into.firstWhere(
+        (e) => e.rewardKey == r.rewardKey,
+        orElse: () {
+          final n = RewardEntry()
+            ..rewardKey = r.rewardKey
+            ..quantity = 0;
+          into.add(n);
+          return n;
+        },
+      );
+      existing.quantity += r.quantity;
+    }
+  }
+}
+
+/// 单批离线结算结果（B2.2）。
+class ExpeditionSettlementResult {
+  const ExpeditionSettlementResult({
+    required this.nodesSettled,
+    required this.currentNode,
+    required this.caughtUp,
+    required this.defeated,
+  });
+
+  /// 本批完成节点数。
+  final int nodesSettled;
+
+  /// 结算后已完成节点数（= `ExpeditionRun.currentNode`）。
+  final int currentNode;
+
+  /// 已追平 `now`（无更多可结算节点）或已战败 → 外层循环可停。
+  final bool caughtUp;
+
+  /// 战败即停（§4.2）。
+  final bool defeated;
 }

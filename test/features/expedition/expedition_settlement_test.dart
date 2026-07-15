@@ -1,0 +1,275 @@
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
+import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/expedition/application/expedition_combat.dart';
+import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_config.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_node.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
+
+/// 确定性 fake：可控哪个节点战败、成员满值上限。隔离 Isar/真实战斗/敌队构建，
+/// 专测结算状态机 6 不变式。
+class _FakeCombat implements ExpeditionCombat {
+  _FakeCombat({this.loseAtNode});
+
+  final int? loseAtNode;
+  final int maxHp = 1000;
+  final int maxQi = 100;
+  final List<int> foughtNodes = [];
+
+  @override
+  Future<Map<int, ExpeditionMemberCaps>> memberCaps(List<int> ids) async => {
+        for (final id in ids)
+          id: ExpeditionMemberCaps(maxHp: maxHp, maxQi: maxQi),
+      };
+
+  @override
+  Future<ExpeditionNodeOutcome> fight({
+    required ExpeditionNode node,
+    required Map<int, ExpeditionMemberVital> memberStates,
+    required int nodeSeed,
+  }) async {
+    foughtNodes.add(node.index);
+    final win = loseAtNode == null || node.index != loseAtNode;
+    final hp = <int, int>{};
+    final qi = <int, int>{};
+    memberStates.forEach((id, v) {
+      hp[id] = win ? (v.hp - 100).clamp(0, maxHp) : 0;
+      qi[id] = win ? (v.qi - 10).clamp(0, maxQi) : 0;
+    });
+    return ExpeditionNodeOutcome(leftWin: win, survivorHp: hp, survivorQi: qi);
+  }
+}
+
+ExpeditionConfig _config() => const ExpeditionConfig(
+      normalNodeMinutes: 90,
+      eliteNodeMinutes: 180,
+      hpRecoverPctPerNode: 0.10,
+      qiRecoverPctPerNode: 0.25,
+      zhangshiPctPerLayer: 0.05,
+    );
+
+void main() {
+  late Directory tempDir;
+  final departedAt = DateTime(2026, 7, 16, 10);
+
+  setUp(() async {
+    tempDir = await Directory.systemTemp.createTemp('wuxia_expedition_settle_');
+    await IsarSetup.init(directory: tempDir, inspector: false);
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.saveDatas.put(
+        SaveData()
+          ..id = 0
+          ..saveVersion = '0.37.0'
+          ..createdAt = departedAt
+          ..lastSavedAt = departedAt
+          ..lastOnlineAt = departedAt,
+      );
+    });
+  });
+
+  tearDown(() async {
+    await IsarSetup.close();
+    if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+  });
+
+  Future<int> putDisciple({int? mainTech = 5}) async {
+    late int id;
+    await IsarSetup.instance.writeTxn(() async {
+      final c = Character()
+        ..name = '弟子'
+        ..realmTier = RealmTier.sanLiu
+        ..realmLayer = RealmLayer.qiMeng
+        ..attributes = Attributes()
+        ..rarity = RarityTier.biaoZhun
+        ..lineageRole = LineageRole.disciple
+        ..createdAt = departedAt
+        ..isFounder = false
+        ..mainTechniqueId = mainTech;
+      id = await IsarSetup.instance.characters.put(c);
+    });
+    return id;
+  }
+
+  Future<int> dispatch(ExpeditionPolicy policy) async {
+    final cid = await putDisciple();
+    return ExpeditionService(IsarSetup.instance)
+        .dispatch(characterIds: [cid], policy: policy, now: departedAt);
+  }
+
+  Future<ExpeditionRun> readRun(int runId) async =>
+      (await IsarSetup.instance.expeditionRuns.get(runId))!;
+
+  String digest(ExpeditionRun r) => [
+        'node=${r.currentNode}',
+        for (final m in r.members)
+          '${m.characterId}:${m.currentHp}/${m.currentQi}/${m.isDowned}',
+        for (final e in (r.stagedRewards.toList()
+              ..sort((a, b) => a.rewardKey.compareTo(b.rewardKey))))
+          '${e.rewardKey}=${e.quantity}',
+      ].join('|');
+
+  Future<void> resetRun(int runId) async {
+    await IsarSetup.instance.writeTxn(() async {
+      final r = (await IsarSetup.instance.expeditionRuns.get(runId))!
+        ..currentNode = 0
+        ..lastSettledAt = null
+        ..stagedRewards = [];
+      for (final m in r.members) {
+        m
+          ..currentHp = 0
+          ..currentQi = 0
+          ..isDowned = false;
+      }
+      await IsarSetup.instance.expeditionRuns.put(r);
+    });
+  }
+
+  test('按 elapsed 推进已完成节点并暂存奖励（全胜连战）', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final svc = ExpeditionService(IsarSetup.instance);
+    // 前 5 节点累计 = 90×4 + 180 = 540 分（第 5 节点为险关）。
+    final result = await svc.settle(
+      combat: _FakeCombat(),
+      config: _config(),
+      now: departedAt.add(const Duration(minutes: 540)),
+    );
+
+    final run = await readRun(runId);
+    expect(run.currentNode, 5);
+    expect(result.nodesSettled, 5);
+    expect(result.defeated, isFalse);
+    expect(result.caughtUp, isTrue);
+    expect(run.stagedRewards, isNotEmpty);
+  });
+
+  test('单批上限：一次 settle 最多 maxNodesPerBatch 个节点，余下留下批', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final svc = ExpeditionService(IsarSetup.instance);
+    // 10 节点累计 = 90×8 + 180×2 = 1080 分（第 5、10 为险关）。
+    final result = await svc.settle(
+      combat: _FakeCombat(),
+      config: _config(),
+      now: departedAt.add(const Duration(minutes: 1080)),
+      maxNodesPerBatch: 3,
+    );
+
+    expect(result.nodesSettled, 3);
+    expect(result.caughtUp, isFalse);
+    final run = await readRun(runId);
+    expect(run.currentNode, 3);
+  });
+
+  test('战败即停：败于险关5 → 停在节点4、defeated、不续打后续节点', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final svc = ExpeditionService(IsarSetup.instance);
+    final combat = _FakeCombat(loseAtNode: 5);
+    // 给足 10 节点时间，但应停在节点 4（第 5 险关战败）。
+    final result = await svc.settle(
+      combat: combat,
+      config: _config(),
+      now: departedAt.add(const Duration(minutes: 1080)),
+    );
+
+    expect(result.defeated, isTrue);
+    expect(result.caughtUp, isTrue);
+    expect(result.currentNode, 4);
+    final run = await readRun(runId);
+    expect(run.currentNode, 4);
+    // 打过第 5 节点（失败），未继续打 6 及以后。
+    expect(combat.foughtNodes.contains(5), isTrue);
+    expect(combat.foughtNodes.where((n) => n > 5), isEmpty);
+  });
+
+  test('cursor 守卫：提交前 run 被并发推进 → 本批弃写不覆盖', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final svc = ExpeditionService(IsarSetup.instance);
+    final marker = departedAt.add(const Duration(hours: 99));
+
+    final result = await svc.settle(
+      combat: _FakeCombat(),
+      config: _config(),
+      now: departedAt.add(const Duration(minutes: 540)), // 目标 5 节点
+      beforeCommitForTest: () async {
+        // 模拟并发结算：主 settle 提交前，run 已被推进 + 打标记。
+        await IsarSetup.instance.writeTxn(() async {
+          final r = await IsarSetup.instance.expeditionRuns.get(runId);
+          r!
+            ..currentNode = 5
+            ..lastSettledAt = marker;
+          await IsarSetup.instance.expeditionRuns.put(r);
+        });
+      },
+    );
+
+    expect(result.nodesSettled, 0); // 本批弃写
+    expect(result.caughtUp, isFalse); // 未追平，交外层重试
+    final run = await readRun(runId);
+    expect(run.currentNode, 5); // 并发值保留
+    expect(run.lastSettledAt, marker); // 未被主 settle 覆盖
+  });
+
+  test('在线分段 == 一次性离线：分批推进与一次结算得同一最终状态', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final svc = ExpeditionService(IsarSetup.instance);
+    final combat = _FakeCombat();
+
+    Future<void> settleTo(DateTime now) async {
+      for (var guard = 0; guard < 1000; guard++) {
+        final r = await svc.settle(
+          combat: combat,
+          config: _config(),
+          now: now,
+          maxNodesPerBatch: 2, // 强制多批，跨批边界
+        );
+        if (r.caughtUp) return;
+      }
+      fail('settleTo 未追平（疑死循环）');
+    }
+
+    // A：在线分段（多个时间点各自追平）；节点累计 n2=180 n4=360 n5=540 n8=810。
+    for (final m in [200, 400, 600, 810]) {
+      await settleTo(departedAt.add(Duration(minutes: m)));
+    }
+    final digestA = digest(await readRun(runId));
+
+    await resetRun(runId);
+
+    // B：一次性离线到最终时间点。
+    await settleTo(departedAt.add(const Duration(minutes: 810)));
+    final digestB = digest(await readRun(runId));
+
+    expect(digestA, digestB);
+    expect((await readRun(runId)).currentNode, 8);
+  });
+
+  test('幂等 + 时间回拨：重复结算不重复发奖、回拨不产生负进度', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final svc = ExpeditionService(IsarSetup.instance);
+    final combat = _FakeCombat();
+    final at540 = departedAt.add(const Duration(minutes: 540));
+
+    final r1 = await svc.settle(combat: combat, config: _config(), now: at540);
+    expect(r1.nodesSettled, 5);
+    final d1 = digest(await readRun(runId));
+
+    // 幂等：同 now 再结算 → 0 节点、状态不变。
+    final r2 = await svc.settle(combat: combat, config: _config(), now: at540);
+    expect(r2.nodesSettled, 0);
+    expect(digest(await readRun(runId)), d1);
+
+    // 时间回拨：now 早于已结算 → 不倒退、不重复发奖。
+    final r3 = await svc.settle(
+      combat: combat,
+      config: _config(),
+      now: departedAt.add(const Duration(minutes: 100)),
+    );
+    expect(r3.nodesSettled, 0);
+    expect(digest(await readRun(runId)), d1);
+  });
+}
