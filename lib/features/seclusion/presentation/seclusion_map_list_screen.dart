@@ -126,23 +126,27 @@ class _SeclusionMapListScreenState
       track: BgmTrack.seclusion,
       child: Scaffold(
         backgroundColor: WuxiaColors.background,
-        appBar: AppBar(
-          title: const Text(UiStrings.seclusionTitle),
-          backgroundColor: WuxiaColors.sidebar,
-          foregroundColor: WuxiaColors.textPrimary,
-          actions: [
-            const ContextHelpButton(topic: HelpTopic.seclusion),
-            Padding(
-              padding: const EdgeInsets.only(left: 8, right: 16),
-              child: WuxiaImage(
-                'assets/ui/meditation_icon.png',
-                width: 24,
-                height: 24,
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+        appBar: WuxiaTitleBar(
+          title: UiStrings.seclusionTitle,
+          onBack: Navigator.of(context).canPop()
+              ? () => Navigator.of(context).pop()
+              : null,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const ContextHelpButton(topic: HelpTopic.seclusion),
+              Padding(
+                padding: const EdgeInsets.only(left: 8, right: 4),
+                child: WuxiaImage(
+                  'assets/ui/meditation_icon.png',
+                  width: 24,
+                  height: 24,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         body: SafeArea(
           child: FutureBuilder<RetreatSession?>(

@@ -134,3 +134,8 @@
 
 - 问鼎九霄从默认冷灰 `AppBar` 改为宣纸 `WuxiaTitleBar`，与角色/心法页的导航层一致；塔势长卷、楼层轴、节点、周目与挑战流程不变。
 - 1280×720 实机帧位于 `build/visual_acceptance/tower_titlebar_unified/`；9 项楼层状态/挑战/扫荡定向测试通过。
+
+## 闭关地图标题栏统一（2026-07-16）
+
+- 闭关修炼地图页改用宣纸 `WuxiaTitleBar`，帮助入口和打坐题签收入统一右侧操作区；原五张水墨地图卡、进行中状态、境界门槛与产出信息不变。
+- 1280×720 实机帧位于 `build/visual_acceptance/seclusion_titlebar_unified/`；9 项地图状态与双视口定向测试通过。
