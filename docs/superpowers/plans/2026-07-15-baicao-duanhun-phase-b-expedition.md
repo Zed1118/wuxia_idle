@@ -520,11 +520,13 @@ class ExpeditionBattleRunner {
 - [ ] visual_route 三条 @1280×720/1440×900 截图（Codex 目检派单）
 - [ ] macOS debug build
 
-## 当前恢复点
-- **状态：** 未开工（依赖 Phase A 完成）。
-- **下一步：** B1.1 稳定 seed。
-- **已跑验证：** 接口对真实代码核（`battle_resolution.dart:105` resolve 签名 / `rng.dart:10-31` Rng / `reward_entry.dart` / `ExpeditionRun`（A1）/ `expeditions.yaml`（A2））。
-- **阻塞项：** Phase A 未完成前不开工。
+## 当前恢复点（2026-07-16 · 分支 feat/baicao-duanhun-phase-b·worktree·未 push）
+- **状态：** **B1 全 4 任务完成并 commit**（纯规则/领域）；A2 基建已 FF 合入本地 main `a61df363`（未 push）。B2 未开工。
+- **已完成（B1·严格 TDD·各独立 commit）：** B1.1 `ExpeditionSeed.forNode` / B1.2 `ExpeditionNode`+`ExpeditionRules`（节点/方针权重/瘴蚀/恢复乘子）/ B1.3 `rewardsForNode`+`isTicketMilestone`（里程碑断魂帖；item_yaocao/lingquanshui 已在 items.yaml）/ B1.4 `ExpeditionBattleRunner.runNodeBattle`（复用 `defaultGroundStrategy.runToEnd`）。
+- **已跑验证（本会话）：** `flutter test --no-pub test/features/expedition/` 全绿（19 测）；`flutter analyze --no-pub lib test` 0。
+- **B1.4 设计偏差：** runner 返回 `finalState`+survivorHp/Qi+leftWin，**不在 runner 内调 resolve**（原计划 step3 bundle）。理由：远征奖励走 rewardsForNode 非 resolve 掉落；resolve 需 Isar 对象 + DropService，属 B2.2 结算事务；纯函数确定性可测。B2.2 在 finalState 上按需 resolve（修炼/伤势）。
+- **下一步：** B2.1 `ExpeditionService.dispatch`（单 writeTxn 占用校验→拒 founder/已占用/>3人→建 ExpeditionRun 快照→expeditionRunSerial++→put）。
+- **阻塞项：** 无。
 
 ## 自检（写完 vs 源规格）
 - **Spec 覆盖：** §4.1 派遣/占用（B2.1）·§4.2-4.4 节点/方针/里程碑（B1.2/1.3）·§4.5 瘴蚀/封顶/恢复（B1.2/1.3/2.2）·§4.6 召回战败（B2.3）·§4.7 稳定随机/行记（B1.1/B2.4）·§9.1 事务（B2.1/2.2/2.3）·§10 时间回拨（B2.2）·§12.1 在线=离线（B2.2）·§12.4 visual_route（B2.4）。
