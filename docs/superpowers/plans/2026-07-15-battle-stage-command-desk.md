@@ -146,3 +146,9 @@
 - 技能仍为点击释放：单体技先点技能签再点目标，群体技点击后立即释放；长按只看详情，没有拖放。战备行囊只保留可见预留位，不接入背包消费。
 - 全量 `flutter test` 共 4048 项通过；纸面文字对比审计零发现；`flutter analyze` 零问题；`flutter build macos --debug` 成功生成 `wuxia_idle.app`；Dart format 与 `git diff --check` 通过。
 - 本轮未改 `lib/shared/strings.dart`、数值 YAML、schema/saveVersion 或战斗结算；未 push、未开 PR、未合入 main，继续保留在 `codex/battle-ui-stage` 独立 worktree 等待人工目检。
+
+## 江湖见闻录视觉收口（2026-07-16）
+
+- 见闻录从默认深灰 `AppBar` 改为宣纸 `WuxiaTitleBar`，五个分页改为独立暖纸签栏；正常入口仍从「见闻」开始，直达验收可指定奇缘/武学首屏。
+- 奇缘与武学验收路由现在渲染完整生产外壳，不再只截孤立 tab；奇缘样例不再把内部英文 id 当标题。武学点亮/未解锁条目改为有边界的卷册卡，增加书卷、锁和行进提示，解决列表像未排版文本的问题。
+- 1280×720 复核帧位于 `build/visual_acceptance/baike_titlebar_unified/` 与 `build/visual_acceptance/baike_cards_refined/`；百科 presentation 26 项、视觉路由 30 项及武学页 6 项定向测试通过，`flutter analyze` 零问题。

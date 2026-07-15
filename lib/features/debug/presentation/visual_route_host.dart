@@ -86,10 +86,9 @@ import '../../../core/domain/inventory_item.dart';
 import '../../character_panel/application/lineage_codex_provider.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
 import '../../baike/application/encounter_codex_provider.dart';
-import '../../baike/presentation/encounter_tab.dart';
 import '../../baike/presentation/encounter_detail_screen.dart';
+import '../../baike/presentation/baike_screen.dart';
 import '../../baike/application/martial_codex_provider.dart';
-import '../../baike/presentation/martial_arts_tab.dart';
 import '../../baike/presentation/skill_codex_detail_screen.dart';
 import '../../character_panel/presentation/lineage_character_detail_screen.dart';
 import '../../zangjuange/presentation/zangjuange_screen.dart';
@@ -879,7 +878,11 @@ class _StageRetryDialogPreview extends StatelessWidget {
 Widget _buildEncounterCodexVisual() {
   final defs = GameRepository.instance.allEncounters;
   final triggered = defs.take(2).map((d) => d.id).toSet();
-  final titles = {for (final d in defs.take(2)) d.id: '（已际遇）${d.id}'};
+  final titles = <String, String>{};
+  for (final (index, def) in defs.take(2).indexed) {
+    final kind = labelForEncounterGroupKind(encounterGroupKindOf(def));
+    titles[def.id] = '$kind札记 ${index + 1}';
+  }
   final groups = groupEncounters(
     defs: defs,
     triggeredIds: triggered,
@@ -887,7 +890,7 @@ Widget _buildEncounterCodexVisual() {
   );
   return ProviderScope(
     overrides: [encounterCodexProvider.overrideWith((ref) async => groups)],
-    child: const Scaffold(body: EncounterTab()),
+    child: const BaikeScreen(initialTab: 3),
   );
 }
 
@@ -912,7 +915,7 @@ Widget _buildSkillCodexVisual() {
   );
   return ProviderScope(
     overrides: [martialCodexProvider.overrideWith((ref) async => groups)],
-    child: const Scaffold(body: MartialArtsTab()),
+    child: const BaikeScreen(initialTab: 4),
   );
 }
 
