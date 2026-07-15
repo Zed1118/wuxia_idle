@@ -468,7 +468,7 @@ class BattleScenarioData {
   /// 播放、点选干预层已挂。**给足时间操作**是核心:
   ///   - 主控**只带普攻 + 两个大招(ultimate)**,不带 powerSkill —— AI `_pickSkill`
   ///     会自动连放 ready 的 powerSkill 造成瞬间 burst;ultimate **只走 pending
-  ///     手动触发**(拖/点才放),所以自动战斗只剩弱普攻 chip,战斗拖得很长。
+  ///     手动触发**(点按才放),所以自动战斗只剩弱普攻 chip,战斗持续很久。
   ///   - 敌人**超高血(40000) + 低攻低速** → 普攻 chip 啃半天不死、也不秒玩家。
   /// 主控 single 大招(点敌头像指定目标)+ aoe 大招(点技能即对全体触发)演示两种交互。
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioDragLive() {
@@ -501,7 +501,7 @@ class BattleScenarioData {
     final left = [
       player(1, '主控', 0, [
         _normal('dl_normal_1', '基础招'),
-        // single 大招:拖到敌头像指定目标(ultimate → 只手动触发,不自动 burst)。
+        // single 大招:点技能后点敌方人物指定目标(ultimate → 只手动触发,不自动 burst)。
         const SkillDef(
           id: 'dl_single_1',
           name: '裂石指',

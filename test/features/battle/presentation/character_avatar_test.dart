@@ -202,7 +202,10 @@ void main() {
     const cases = [
       ('assets/characters/founder.png', WuxiaUi.battleFounderFallback),
       ('assets/enemies/thug_a.png', WuxiaUi.battleThugStandee),
+      ('assets/enemies/qingshan_main.png', WuxiaUi.battleThugStandee),
       ('assets/enemies/black_killer.png', WuxiaUi.battleBlackKillerStandee),
+      ('assets/enemies/killer_a.png', WuxiaUi.battleBlackKillerStandee),
+      ('assets/enemies/killer_b.png', WuxiaUi.battleBlackKillerStandee),
       ('assets/enemies/umbrella.png', WuxiaUi.battleUmbrellaStandee),
       ('assets/enemies/tower_boss_20.png', WuxiaUi.battleTowerBoss20Standee),
     ];
