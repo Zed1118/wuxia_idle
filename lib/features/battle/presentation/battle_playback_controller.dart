@@ -328,8 +328,8 @@ class BattlePlaybackController {
       _spawnEffect(
         assetPath: _schoolFx(actor.school, isUltimate: isUltimate),
         centerFrac: effectFrac,
-        size: isUltimate ? 360 : 250,
-        opacity: isUltimate ? 0.76 : 0.64,
+        size: isUltimate ? 330 : 220,
+        opacity: isUltimate ? 0.68 : 0.52,
         rotation: actor.teamSide == 0 ? -0.08 : 0.08,
         mirrored: actor.teamSide == 1,
       );
