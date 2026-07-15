@@ -47,8 +47,8 @@
 
 ## 5. 当前恢复点
 
-- **状态**：切片 1 `4599d73d`、切片 2 `917e143d`、切片 3 `1a8a2598`、祖师样板 `63eb0822`、两弟子样板 `750dfcf6`、敌方立绘与 Boss 体量 `17eadf85`、全人物别名与点按口径 `ac12adc9` 均已提交；切片 1–6 完成，切片 7 待最终恢复提交。
+- **状态**：切片 1 `4599d73d`、切片 2 `917e143d`、切片 3 `1a8a2598`、祖师样板 `63eb0822`、两弟子样板 `750dfcf6`、敌方立绘与 Boss 体量 `17eadf85`、全人物别名与点按口径 `ac12adc9`、特殊战斗人物舞台 `d6c29b4c` 均已提交；切片 1–7 完成。
 - **最后完成**：七张透明战斗立绘已齐备：祖师、两弟子、山匪、黑衣杀手、撑伞高手和塔主 Boss。旧头像路径仅在战场展示层映射为透明全身图，其他角色页面不受影响；Boss 在同一阵列深度上额外放大 `1.12×`，不改变碰撞、目标或数值语义。蓄力/破招圆环、目标高亮、死亡灰显继续复用现有状态层。心魔敌方人物增加反相墨色与阴柔晕光；轻功阵列扩大上下错层和交锋位移；群战只渲染前三名完整人物，额外 2–4 人显示远阵墨影，溢出角色动作与受击归并到安全表现槽，消除 3v5/6/7 索引越界。
-- **下一步**：完成切片 7 全量回归、提交恢复点并交付用户目检；不主动 push/开 PR，避免 main 尚未 push 时扩大并行集成面。
+- **下一步**：交付用户目检；不主动 push/开 PR，避免 main 尚未 push 时扩大并行集成面。
 - **已跑验证**：切片 7 完成后，战斗 presentation、播放控制器、群战策略与视觉路由合计 245 项通过；定向 `flutter analyze` 无问题，`dart format --set-exit-if-changed` 与 `git diff --check` 通过。七张战斗立绘均为有效 RGBA、alpha 范围 `0–255` 且四角透明。Boss 实战帧位于 `build/visual_acceptance/battle_ui_stage_slice5_boss_initial/`，蓄力/破招帧位于 `build/visual_acceptance/battle_ui_stage_slice5_states/`，最终双视口帧位于 `build/visual_acceptance/battle_ui_stage_slice6_final_alias_fixed/`，心魔/轻功帧位于 `build/visual_acceptance/battle_ui_stage_special_modes/`，最终群战帧位于 `build/visual_acceptance/battle_ui_stage_special_modes_final/`；日志均无 overflow/exception/error。macOS 截图外围黑边为窗口缩放捕获伪影，不计入游戏画布。
 - **阻塞项**：无。集成风险为 Claude 并行分支可能同时改 `lib/shared/strings.dart` / `GDD.md`；本分支仅追加战斗案台必要文案，并在 GDD §5.7/§5.8 修正点按口径，交付时明确冲突点。
