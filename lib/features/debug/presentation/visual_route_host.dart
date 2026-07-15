@@ -848,7 +848,7 @@ class _StageRetryDialogPreview extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        const ColoredBox(color: WuxiaColors.background),
+        const BattleSceneBackground(path: WuxiaUi.battleMountainPassStage),
         const ModalBarrier(color: Color(0x99000000)),
         Center(
           child: PaperDialog(
@@ -856,10 +856,12 @@ class _StageRetryDialogPreview extends StatelessWidget {
             body: const StageRetryDialogBody(),
             actions: [
               TextButton(
+                style: TextButton.styleFrom(foregroundColor: WuxiaUi.muted),
                 onPressed: () {},
                 child: const Text(UiStrings.stageRetryBackAction),
               ),
               TextButton(
+                style: TextButton.styleFrom(foregroundColor: WuxiaUi.jiang),
                 onPressed: () {},
                 child: const Text(UiStrings.stageRetryAction),
               ),
@@ -1218,15 +1220,13 @@ class _VictorySealMarkState extends State<_VictorySealMark>
                       color: WuxiaUi.paper.withValues(alpha: 0.88),
                       borderRadius: BorderRadius.circular(3),
                       border: Border.all(
-                        color: WuxiaColors.sealCrimson.withValues(
-                          alpha: 0.64,
-                        ),
+                        color: WuxiaColors.sealCrimson.withValues(alpha: 0.64),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFB9974E).withValues(
-                            alpha: 0.18 + breath * 0.08,
-                          ),
+                          color: const Color(
+                            0xFFB9974E,
+                          ).withValues(alpha: 0.18 + breath * 0.08),
                           blurRadius: 8 + breath * 5,
                           offset: const Offset(0, 4),
                         ),
@@ -1270,10 +1270,7 @@ class _VictorySealMarkState extends State<_VictorySealMark>
                                 blurRadius: 11,
                                 offset: Offset(0, 5),
                               ),
-                              Shadow(
-                                color: Color(0x667D6336),
-                                blurRadius: 10,
-                              ),
+                              Shadow(color: Color(0x667D6336), blurRadius: 10),
                             ],
                           ),
                         ),

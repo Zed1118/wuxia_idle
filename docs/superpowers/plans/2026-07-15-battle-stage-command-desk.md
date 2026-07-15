@@ -117,3 +117,4 @@
 - 生产胜利闪印与胜负结算大字从 96px 高饱和奖励黄收为 76px 旧纸金，败北从高饱和流派红收为深绛印泥；印符和投影同步缩小。
 - 首通视觉验收路由 `_VictorySealMark` 同步生产参数，不再用比真实界面更夸张的孤立黄字。胜利卷宗、掉落、境界精进与继续流程未改。
 - 收口后 1280×720 帧位于 `build/visual_acceptance/battle_victory_ceremony_refined/frame3.png`；胜负、诊断、仪式与视觉路由定向测试通过。
+- 败北诊断在 720p 下无溢出；重试弹框验收路由改用山口战场底图并套入生产的灰/绛红按钮色，避免黑底黄字造成错误视觉判断。复核帧位于 `build/visual_acceptance/stage_retry_dialog_refined/`。
