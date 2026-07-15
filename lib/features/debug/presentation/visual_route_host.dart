@@ -1211,20 +1211,20 @@ class _VictorySealMarkState extends State<_VictorySealMark>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 46,
-                    height: 46,
+                    width: 38,
+                    height: 38,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: WuxiaUi.paper.withValues(alpha: 0.88),
                       borderRadius: BorderRadius.circular(3),
                       border: Border.all(
-                        color: WuxiaColors.popupCritical.withValues(
+                        color: WuxiaColors.sealCrimson.withValues(
                           alpha: 0.64,
                         ),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: WuxiaColors.resultHighlight.withValues(
+                          color: const Color(0xFFB9974E).withValues(
                             alpha: 0.18 + breath * 0.08,
                           ),
                           blurRadius: 8 + breath * 5,
@@ -1235,20 +1235,20 @@ class _VictorySealMarkState extends State<_VictorySealMark>
                     child: const Text(
                       '武',
                       style: TextStyle(
-                        color: WuxiaColors.popupCritical,
-                        fontSize: 25,
+                        color: WuxiaColors.sealCrimson,
+                        fontSize: 20,
                         fontWeight: FontWeight.w900,
                         fontFamily: 'Songti SC',
                         fontFamilyFallback: ['KaiTi', 'SimSun', 'serif'],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 5),
                   Stack(
                     alignment: Alignment.center,
                     children: [
                       CustomPaint(
-                        size: const Size(132, 112),
+                        size: const Size(112, 90),
                         painter: _VictoryBrushAuraPainter(
                           alpha: 0.18 + breath * 0.08,
                         ),
@@ -1258,8 +1258,8 @@ class _VictorySealMarkState extends State<_VictorySealMark>
                         child: const Text(
                           '勝',
                           style: TextStyle(
-                            color: WuxiaColors.resultHighlight,
-                            fontSize: 96,
+                            color: Color(0xFFB9974E),
+                            fontSize: 76,
                             height: 0.92,
                             fontWeight: FontWeight.w900,
                             fontFamily: 'Songti SC',
@@ -1267,12 +1267,12 @@ class _VictorySealMarkState extends State<_VictorySealMark>
                             shadows: [
                               Shadow(
                                 color: Color(0xAA000000),
-                                blurRadius: 16,
+                                blurRadius: 11,
                                 offset: Offset(0, 5),
                               ),
                               Shadow(
-                                color: WuxiaColors.visualGoldShadow,
-                                blurRadius: 14,
+                                color: Color(0x667D6336),
+                                blurRadius: 10,
                               ),
                             ],
                           ),
