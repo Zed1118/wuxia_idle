@@ -18,7 +18,7 @@ enum EquipOutcome {
   /// 角色或装备不存在(防御性,UI 正常不触发)。
   notFound,
 
-  /// 旧槽装备被玩家锁定或为传承遗物，拒绝静默替换。
+  /// 旧槽装备为传承遗物，或目标装备仍在出战角色身上，拒绝静默替换。
   protectedCurrentEquipment,
 }
 
@@ -112,7 +112,7 @@ class EquipmentService {
   }
 
   bool _isProtectedForDirectReplacement(Equipment equipment) =>
-      equipment.isLocked || equipment.isLineageHeritage;
+      equipment.isLineageHeritage;
 
   Future<Set<int>> _activeFormationEquipmentIds() async {
     final save = await isar.saveDatas.get(0);

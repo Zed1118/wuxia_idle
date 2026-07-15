@@ -144,7 +144,7 @@ void main() {
     expect(stillHeld, isFalse, reason: '旧装应回自由池');
   });
 
-  test('换装遇到锁定旧装 → protectedCurrentEquipment + 0 状态变化', () async {
+  test('换装遇到锁定旧装 → success + 旧装保留锁定并回自由池', () async {
     final cid = await seedCharacter();
     final oldId = await seedEquipment(
       slot: EquipmentSlot.weapon,
@@ -155,13 +155,14 @@ void main() {
     await service.equip(characterId: cid, equipmentId: oldId);
     final outcome = await service.equip(characterId: cid, equipmentId: newId);
 
-    expect(outcome, EquipOutcome.protectedCurrentEquipment);
+    expect(outcome, EquipOutcome.success);
     final c = await IsarSetup.instance.characters.get(cid);
     final oldEq = await IsarSetup.instance.equipments.get(oldId);
     final newEq = await IsarSetup.instance.equipments.get(newId);
-    expect(c!.equippedWeaponId, oldId);
-    expect(oldEq!.ownerCharacterId, cid);
-    expect(newEq!.ownerCharacterId, isNull);
+    expect(c!.equippedWeaponId, newId);
+    expect(oldEq!.ownerCharacterId, isNull);
+    expect(oldEq.isLocked, isTrue, reason: '换下后仍应受整理保护');
+    expect(newEq!.ownerCharacterId, cid);
   });
 
   test('换装遇到高阶或剧情来源旧装 → success + 旧装回自由池', () async {

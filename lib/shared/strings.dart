@@ -370,7 +370,7 @@ class UiStrings {
   static const String equipQuickReplace = '更换装备';
   static const String equipQuickViewLore = '查看典故';
   static const String equipLockedByRealm = '境界不足,无法装备(三系锁死)';
-  static const String equipProtectedCurrent = '当前装备受保护,请先卸下或解锁';
+  static const String equipProtectedCurrent = '装备受保护，请先手动卸下后再更换';
   static const String equipDirectActionEquip = '装备';
   static const String equipDirectActionUnequip = '卸下';
   static const String inventoryEquipActionEquip = '装备';
