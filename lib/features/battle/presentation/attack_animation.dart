@@ -21,6 +21,7 @@ class AttackAnimationWidget extends StatelessWidget {
   final bool isLeftTeam;
   final Animation<double> animation;
   final AnimationNumbers config;
+  final double? rushOffsetPx;
 
   const AttackAnimationWidget({
     super.key,
@@ -28,6 +29,7 @@ class AttackAnimationWidget extends StatelessWidget {
     required this.isLeftTeam,
     required this.animation,
     required this.config,
+    this.rushOffsetPx,
   });
 
   @override
@@ -49,7 +51,7 @@ class AttackAnimationWidget extends StatelessWidget {
     final total = config.attackTotalMs;
     final phase1End = config.attackRushMs / total;
     final phase2End = (config.attackRushMs + config.attackHoldMs) / total;
-    final rushPx = config.attackRushOffsetPx;
+    final rushPx = rushOffsetPx ?? config.attackRushOffsetPx;
     if (t < phase1End) {
       return Curves.easeIn.transform(t / phase1End) * rushPx;
     } else if (t < phase2End) {

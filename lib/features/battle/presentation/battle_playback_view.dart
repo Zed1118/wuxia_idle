@@ -69,6 +69,7 @@ class BattlePlaybackField extends StatelessWidget {
         BattleField(
           state: state,
           attackControllers: controller._attackControllers,
+          actionTemplates: controller._actionTemplates,
           popups: controller._popups,
           animConfig: controller._animConfig,
           chargeMaxTicks: chargeMaxTicks,

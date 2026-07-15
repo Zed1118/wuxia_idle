@@ -20,6 +20,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
 import '../../settings/domain/gameplay_settings.dart';
 import 'battle_vfx_entries.dart';
+import 'battle_action_template.dart';
 import 'battle_stage_geometry.dart';
 import 'boss_phase_presentation.dart';
 import 'damage_popup.dart';
@@ -155,6 +156,12 @@ class BattlePlaybackController {
   final List<EffectEntry> _activeEffects = [];
   int _nextEffectId = 0;
 
+  // 每个角色槽最近一次动作模板，仅驱动表现层位移。
+  final List<BattleActionTemplate> _actionTemplates = List.filled(
+    6,
+    BattleActionTemplate.melee,
+  );
+
   // 飘字状态：slotKey → 活跃飘字列表
   final Map<int, List<PopupEntry>> _popups = {};
   int _nextPopupId = 0;
@@ -180,6 +187,10 @@ class BattlePlaybackController {
 
   @visibleForTesting
   bool get debugBeatIsAnimating => _beatCtrl.isAnimating;
+
+  @visibleForTesting
+  BattleActionTemplate debugActionTemplateForSlot(int slotKey) =>
+      _actionTemplates[slotKey];
 
   GameplaySettings get _currentGameplaySettings => _ref
       .read(gameplaySettingsProvider)
@@ -228,7 +239,7 @@ class BattlePlaybackController {
     _hitFlashControllers[key].forward(from: 0.0);
   }
 
-  /// 弹道：攻击者 slot → 目标 slot 的水墨笔触。普攻飞白，技能集中爆墨。
+  /// 远程弹道：攻击者 slot → 目标 slot 的水墨笔触；近战不生成此层。
   void _spawnTrail(
     BattleCharacter actor,
     BattleCharacter target,
@@ -288,6 +299,7 @@ class BattlePlaybackController {
     BattleCharacter? actor,
     BattleCharacter target,
     BattleAction action,
+    BattleActionTemplate actionTemplate,
   ) {
     final result = action.attackResult;
     if (result == null) return;
@@ -296,11 +308,14 @@ class BattlePlaybackController {
       target.slotIndex,
       _teamSizeOf(target.teamSide),
     );
+    final effectFrac = actionTemplate == BattleActionTemplate.area
+        ? Offset(target.teamSide == 0 ? 0.28 : 0.72, 0.5)
+        : targetFrac;
 
     if (result.isDodged) {
       _spawnEffect(
         assetPath: WuxiaUi.fxDodgeShadow,
-        centerFrac: targetFrac,
+        centerFrac: effectFrac,
         size: 230,
         opacity: 0.64,
         mirrored: target.teamSide == 1,
@@ -312,7 +327,7 @@ class BattlePlaybackController {
       final isUltimate = isUltimateCaptionSkill(action.skill);
       _spawnEffect(
         assetPath: _schoolFx(actor.school, isUltimate: isUltimate),
-        centerFrac: targetFrac,
+        centerFrac: effectFrac,
         size: isUltimate ? 360 : 250,
         opacity: isUltimate ? 0.76 : 0.64,
         rotation: actor.teamSide == 0 ? -0.08 : 0.08,
@@ -691,19 +706,23 @@ class BattlePlaybackController {
   /// `ref.listen` 逐条转发。
   void playAction(BattleAction action, BattleState s) {
     final actor = findCharacter(action.actorId, s);
+    final actionTemplate = battleActionTemplateFor(action.skill);
     // 首通展示帧:本动作触发的节拍(null=无);「首次」判定在 director 内消费,
     // 快进态消费不呈现(下方各触发点带 !_isFastForward gate)。
     final showcaseBeat = _showcase?.onAction(action, s);
     if (actor != null) {
       final key = slotKey(actor.teamSide, actor.slotIndex);
+      _actionTemplates[key] = actionTemplate;
       _attackControllers[key].forward(from: 0.0);
     }
     if (action.attackResult != null && action.targetId != null) {
       final target = findCharacter(action.targetId!, s);
       if (target != null) {
         _spawnPopup(target, action.attackResult!, actor);
-        if (actor != null) _spawnTrail(actor, target, action);
-        _spawnBattleEffects(actor, target, action);
+        if (actor != null && templateUsesProjectile(actionTemplate)) {
+          _spawnTrail(actor, target, action);
+        }
+        _spawnBattleEffects(actor, target, action, actionTemplate);
         if (!action.attackResult!.isDodged) {
           _triggerHitFlash(target, action.attackResult!.isCritical);
         }

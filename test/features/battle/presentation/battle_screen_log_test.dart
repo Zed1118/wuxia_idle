@@ -167,6 +167,18 @@ const _ultSkill = SkillDef(
   visualEffect: '',
 );
 
+const _projectileSkill = SkillDef(
+  id: 'test_hidden_weapon',
+  name: '飞针',
+  description: '',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1000,
+  qiDelta: -100,
+  cooldownTurns: 2,
+  requiresManualTrigger: false,
+  visualEffect: 'hidden_weapon',
+);
+
 Finder _assetImage(String path) =>
     find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
 
@@ -188,7 +200,7 @@ void main() {
     expect(find.byKey(const ValueKey('battle_log_drawer')), findsNothing);
   });
 
-  testWidgets('攻击命中时出现弹道 ProjectileTrail（P0-2 Task7·不污染 state）', (
+  testWidgets('远程攻击命中时出现弹道 ProjectileTrail（P0-2 Task7·不污染 state）', (
     tester,
   ) async {
     final notifier = await _pumpBattle(tester);
@@ -199,8 +211,9 @@ void main() {
         tick: 1,
         actorId: 1, // 萧夜寒 left[0]
         targetId: 11, // 黑风寨主 right[0]
+        skill: _projectileSkill,
         attackResult: _attackResult,
-        description: '普攻测试',
+        description: '远程测试',
       ),
     ]);
     await tester.pump(); // ref.listen → _playAction setState

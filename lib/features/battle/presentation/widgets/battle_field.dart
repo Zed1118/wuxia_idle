@@ -5,6 +5,7 @@ import '../../../../data/numbers_config.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
 import '../attack_animation.dart';
+import '../battle_action_template.dart';
 import '../battle_layout_tokens.dart';
 import '../battle_stage_geometry.dart';
 import '../battle_vfx_entries.dart';
@@ -15,6 +16,7 @@ import '../hit_flash.dart';
 class BattleField extends StatelessWidget {
   final BattleState state;
   final List<AnimationController> attackControllers;
+  final List<BattleActionTemplate> actionTemplates;
   final Map<int, List<PopupEntry>> popups;
   final AnimationNumbers animConfig;
   final int chargeMaxTicks;
@@ -34,6 +36,7 @@ class BattleField extends StatelessWidget {
     super.key,
     required this.state,
     required this.attackControllers,
+    required this.actionTemplates,
     required this.popups,
     required this.animConfig,
     required this.chargeMaxTicks,
@@ -131,6 +134,14 @@ class BattleField extends StatelessWidget {
                             flashColor: hitFlashColors[slotKey] ?? Colors.white,
                             standeeWidth: width,
                             standeeHeight: height,
+                            clashTravelPx:
+                                templateMovesToClash(actionTemplates[slotKey])
+                                ? ((0.5 - slot.anchor.dx).abs() *
+                                              constraints.maxWidth -
+                                          width * 0.42)
+                                      .clamp(0.0, constraints.maxWidth)
+                                      .toDouble()
+                                : 0,
                             onTap:
                                 (!isLeftTeam &&
                                     pendingActive &&
@@ -200,6 +211,7 @@ class CharacterSlot extends StatelessWidget {
   final Color flashColor;
   final double standeeWidth;
   final double standeeHeight;
+  final double clashTravelPx;
   // 两段点选:待发态下敌头像点选目标的回调(null=不可点);待发态高亮。
   final VoidCallback? onTap;
   final bool hovered;
@@ -223,6 +235,7 @@ class CharacterSlot extends StatelessWidget {
     required this.flashColor,
     required this.standeeWidth,
     required this.standeeHeight,
+    required this.clashTravelPx,
     this.onTap,
     this.hovered = false,
     this.targetable = false,
@@ -257,6 +270,7 @@ class CharacterSlot extends StatelessWidget {
       animation: attackController,
       isLeftTeam: isLeftTeam,
       config: animConfig,
+      rushOffsetPx: clashTravelPx,
       child: HitFlash(
         animation: hitFlashController,
         color: flashColor,

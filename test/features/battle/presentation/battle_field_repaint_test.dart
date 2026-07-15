@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_action_template.dart';
 import 'package:wuxia_idle/features/battle/presentation/widgets/battle_field.dart';
 
 void main() {
@@ -30,6 +31,7 @@ void main() {
           body: BattleField(
             state: BattleState.initial(leftTeam: left, rightTeam: right),
             attackControllers: attackControllers,
+            actionTemplates: List.filled(6, BattleActionTemplate.melee),
             popups: const {},
             animConfig: AnimationNumbers.defaults,
             chargeMaxTicks: 3,
