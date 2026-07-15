@@ -521,11 +521,16 @@ class ExpeditionBattleRunner {
 - [ ] macOS debug build
 
 ## 当前恢复点（2026-07-16 · 分支 feat/baicao-duanhun-phase-b·worktree·未 push）
-- **状态：** **B1 全 4 任务完成并 commit**（纯规则/领域）；A2 基建已 FF 合入本地 main `a61df363`（未 push）。B2 未开工。
-- **已完成（B1·严格 TDD·各独立 commit）：** B1.1 `ExpeditionSeed.forNode` / B1.2 `ExpeditionNode`+`ExpeditionRules`（节点/方针权重/瘴蚀/恢复乘子）/ B1.3 `rewardsForNode`+`isTicketMilestone`（里程碑断魂帖；item_yaocao/lingquanshui 已在 items.yaml）/ B1.4 `ExpeditionBattleRunner.runNodeBattle`（复用 `defaultGroundStrategy.runToEnd`）。
-- **已跑验证（本会话）：** `flutter test --no-pub test/features/expedition/` 全绿（19 测）；`flutter analyze --no-pub lib test` 0。
-- **B1.4 设计偏差：** runner 返回 `finalState`+survivorHp/Qi+leftWin，**不在 runner 内调 resolve**（原计划 step3 bundle）。理由：远征奖励走 rewardsForNode 非 resolve 掉落；resolve 需 Isar 对象 + DropService，属 B2.2 结算事务；纯函数确定性可测。B2.2 在 finalState 上按需 resolve（修炼/伤势）。
-- **下一步：** B2.1 `ExpeditionService.dispatch`（单 writeTxn 占用校验→拒 founder/已占用/>3人→建 ExpeditionRun 快照→expeditionRunSerial++→put）。
+- **状态：** **B1 全 4 任务 + B2.1 派遣入场完成并 commit**；A2 基建已 FF 合入本地 main `a61df363`（未 push）。B2.2/B2.3/B2.4 未开工。
+- **已完成（严格 TDD·各独立 commit）：**
+  - B1.1 `ExpeditionSeed.forNode` / B1.2 `ExpeditionNode`+`ExpeditionRules`（节点/方针权重/瘴蚀/恢复乘子）/ B1.3 `rewardsForNode`+`isTicketMilestone` / B1.4 `ExpeditionBattleRunner.runNodeBattle`
+  - B2.1 `ExpeditionService.dispatch`（单 writeTxn：count 1-3/去重/founder/占用/主修 校验 → 建 ExpeditionRun 成员快照 → serial++ → put；每存档单 active）
+- **已跑验证（本会话）：** `flutter test --no-pub test/features/expedition/` 全绿（**23 测**）；`flutter analyze --no-pub lib test` 0。
+- **关键 seam 决策（B2.2 必读）：**
+  - `run.seed` = 新 serial（非 hash）；B2.2 出节点用 `ExpeditionRules.generateNode(saveId: run.saveDataId, runSerial: run.seed, node: n)`。
+  - 成员 HP/qi 派遣期存 0（未开战）；`currentNode==0` = fresh，B2.2 首战按 `BattleCharacter.fromCharacter` 满血起，战后写回快照 currentHp/qi（× `ExpeditionRules.recoveryMultiplier(zhangshiLayers)`）。
+  - `ExpeditionBattleRunner.runNodeBattle` 返回 `finalState`+survivorHp/Qi+leftWin，**不内调 resolve**；B2.2 在 finalState 上调 `BattleResolutionService.resolve`（修炼/伤势，Isar 对象在结算事务内）。
+- **下一步：** B2.2 离线分批幂等结算（**本 feature 最难点**）——`settle({now})`：在线分段==一次性离线 / 幂等（节点只兑现一次）/ 单批上限 maxNodesPerBatch / cursor 守卫（提交前校验 lastSettledAt 未被并发改）/ 战败即停 / 时间回拨 max(lastSettledAt, now)；每批 writeTxn 更新 currentNode/members HP-qi/stagedRewards/lastSettledAt。
 - **阻塞项：** 无。
 
 ## 自检（写完 vs 源规格）
