@@ -305,7 +305,7 @@ Claude 本轮只交付文档，不实施功能代码：
 | §3.4 Boss 奖励三选一崩溃恢复 | **采纳 Q4**：新增 `awaitingRewardChoice` 阶段 | 并入 baicao §8.3／§9.2 |
 | §3.5 活动占用不能只锁角色 | **采纳 Q5**：`reservedEquipmentIds`／`reservedTechniqueIds`，装备服务全接收 | 并入 baicao §8.1；装备 plan（助炼资格 `isCandidateEligible`/`evaluate` 加 `reservedEquipmentIds` 参数，Phase A 冻结前默认空集） |
 | §3.6 命名装备保护与助炼冲突 | **采纳 Q6**：重复未培养可助炼/分解；首破典故·培养·锁定·占用受保护 | 并入 baicao §6.2；装备 plan |
-| §4.1 分阶段实施计划 A1/A2/B1/B2/C1/C2 | 保留后续 | 批 2（A1/A2）＋批 3（B1/B2/C1/C2） |
+| §4.1 分阶段实施计划 A1/A2/B1/B2/C1/C2 | **批2 已产 A1/A2 计划**（B1/B2/C1/C2 留批3） | Phase A1 → `plans/2026-07-15-baicao-duanhun-phase-a1-persistence.md`（SaveData 永久进度/两会话 collection/0.37 迁移/CharacterOccupancyService＋保留 DTO）；Phase A2 → `plans/2026-07-15-baicao-duanhun-phase-a2-cap-config.md`（发布上限10→17/溢出探针/断魂帖/副本内效果字段/配置加载校验）；A1/A2 拆两文件（§4.1「可独立恢复的计划」），A2 依赖 A1 冻结 collection；B1/B2/C1/C2 批3 |
 | §4.2 跨战状态白名单 | 保留后续 | 批 3 Phase C1 |
 | §4.3 稳定随机协议 | 保留后续 | 批 3 Phase B1/C1 |
 | §4.4 百草岭长离线性能与幂等 | 保留后续 | 批 3 Phase B2（分帧/单批上限/settlement cursor） |
