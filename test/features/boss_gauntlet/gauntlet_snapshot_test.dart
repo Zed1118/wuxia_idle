@@ -97,6 +97,41 @@ void main() {
       expect(after[1].reservedEquipmentIds, [12]);
     });
 
+    test('捕获战斗 maxHp/maxQi 供整备页用药 ceiling（C2.2·§5.1）', () {
+      final finalState = _stateOf([
+        _pc(id: 1, hp: 300, qi: 58, alive: true),
+        _pc(id: 2, hp: 0, qi: 0, alive: false),
+      ]);
+      final after = GauntletController.snapshotAfterStage(
+        before: [_before(1), _before(2)],
+        finalState: finalState,
+      );
+      // _pc fixture maxHp:1000 / maxQi:140
+      expect(after[0].maxHp, 1000);
+      expect(after[0].maxQi, 140);
+      // 倒下者也记 max（用药不复活，但 max 是关次边界的战斗上界）
+      expect(after[1].maxHp, 1000);
+      expect(after[1].maxQi, 140);
+    });
+
+    test('finalState 缺该角色 → maxHp/maxQi 保留 before 原值（防御分支）', () {
+      final before = [
+        ActivityMemberSnapshot()
+          ..characterId = 9
+          ..currentHp = 111
+          ..currentQi = 22
+          ..maxHp = 1500
+          ..maxQi = 130
+          ..isDowned = false,
+      ];
+      final after = GauntletController.snapshotAfterStage(
+        before: before,
+        finalState: _stateOf(const []), // 无角色 9
+      );
+      expect(after[0].maxHp, 1500);
+      expect(after[0].maxQi, 130);
+    });
+
     test('临时态无路径进快照：仅 activeBuffs/actionPoint 不同的两战末态产出相同快照', () {
       final plain = _stateOf([
         _pc(id: 1, hp: 300, qi: 58, alive: true, cooldowns: {'x': 2}),

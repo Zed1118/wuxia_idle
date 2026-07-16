@@ -71,6 +71,8 @@ class GauntletController {
       return next
         ..currentHp = prior.currentHp
         ..currentQi = prior.currentQi
+        ..maxHp = prior.maxHp
+        ..maxQi = prior.maxQi
         ..isDowned = prior.isDowned
         ..skillCooldownKeys = List<String>.from(prior.skillCooldownKeys)
         ..skillCooldownTurns = List<int>.from(prior.skillCooldownTurns);
@@ -88,6 +90,8 @@ class GauntletController {
     return next
       ..currentHp = combatant.currentHp
       ..currentQi = combatant.currentQi
+      ..maxHp = combatant.maxHp
+      ..maxQi = combatant.maxQi
       ..isDowned = !combatant.isAlive
       ..skillCooldownKeys = keys
       ..skillCooldownTurns = turns;

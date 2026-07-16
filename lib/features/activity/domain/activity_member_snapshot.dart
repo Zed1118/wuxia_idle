@@ -21,6 +21,12 @@ class ActivityMemberSnapshot {
   int currentQi = 0;
   bool isDowned = false;
 
+  /// 关次边界的战斗最大生命/最大真气（= 产出 [currentHp]/[currentQi] 那场战斗的
+  /// `BattleCharacter.maxHp`/`maxQi`）。断魂庄整备页用药按「% 最大值」恢复需此上界
+  /// （design §5.1）；远征逐节点独立战斗不写入，留 0（可加性列·无 saveVer 迁移）。
+  int maxHp = 0;
+  int maxQi = 0;
+
   /// 关次边界技能冷却快照键（Isar @embedded 无 Map，与 [skillCooldownTurns] 平行同序，
   /// 只存 CD>0 项）。断魂庄三关之间继承冷却（design §5.5，避免连关刷新绝招）；远征
   /// 逐节点独立战斗不写入，留空。
