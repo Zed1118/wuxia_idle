@@ -111,6 +111,8 @@ class UiStrings {
   // 可用态：耗气 N · CD M。
   static String skillCostShort(int cost, int cooldown) =>
       '耗气$cost · CD$cooldown';
+  static String skillQiCostChip(int cost) => '气 $cost';
+  static String skillCooldownChip(int cooldown) => '息 $cooldown';
   static String skillQiChange(int delta) => delta > 0
       ? '产气 +$delta'
       : delta < 0

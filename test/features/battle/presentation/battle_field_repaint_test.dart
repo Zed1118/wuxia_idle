@@ -60,8 +60,25 @@ void main() {
           find.byKey(ValueKey('battle.stageCharacter.$side.$slot')),
           findsOneWidget,
         );
+        expect(
+          find.byKey(ValueKey('battle.stageStatusOverlay.$side.$slot')),
+          findsOneWidget,
+        );
       }
     }
+
+    // 状态牌必须脱离按景深排序的人物槽，统一位于人物绘制层之后；否则
+    // 前景角色的透明立绘会遮住后排角色血条。
+    final stack = tester.widget<Stack>(
+      find.byKey(const ValueKey('battle.stageLayerStack')),
+    );
+    final firstStatusLayer = stack.children.indexWhere(
+      (child) => child.key == const ValueKey('battle.stageStatusOverlay.0.0'),
+    );
+    final lastCharacterLayer = stack.children.lastIndexWhere(
+      (child) => child.key == const ValueKey('battle.stageCharacterLayer.1.1'),
+    );
+    expect(firstStatusLayer, greaterThan(lastCharacterLayer));
   });
 
   testWidgets('群战 3v7 只渲染六个完整人物并用墨影队列表达余敌', (tester) async {

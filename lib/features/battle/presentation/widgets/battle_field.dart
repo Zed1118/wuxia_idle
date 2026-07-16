@@ -89,8 +89,19 @@ class BattleField extends StatelessWidget {
           final baseHeight =
               (constraints.maxHeight * BattleLayoutTokens.stageHeightFraction)
                   .clamp(176.0, BattleLayoutTokens.stageMaxStandeeHeight);
+          final layouts = <_StageSlotLayout>[
+            for (final slot in slots)
+              _StageSlotLayout.fromConstraints(
+                slot: slot,
+                maxWidth: constraints.maxWidth,
+                maxHeight: constraints.maxHeight,
+                baseWidth: baseWidth,
+                baseHeight: baseHeight,
+              ),
+          ];
 
           return Stack(
+            key: const ValueKey('battle.stageLayerStack'),
             clipBehavior: Clip.none,
             children: [
               if (stageLayout == BattleStageLayoutMode.massBattle &&
@@ -109,35 +120,22 @@ class BattleField extends StatelessWidget {
                     ),
                   ),
                 ),
-              for (final slot in slots)
+              // 人物层：保持按脚下深度排序，前景人物可以自然压住后排立绘。
+              for (final layout in layouts)
                 Builder(
                   builder: (context) {
-                    final scale = battleStageScale(
-                      slot.slotIndex,
-                      slot.teamSize,
-                      isBoss: slot.character.isBoss,
-                    );
-                    final rawWidth = baseWidth * scale;
-                    final rawHeight = baseHeight * scale;
-                    final fitScale = [
-                      1.0,
-                      constraints.maxWidth / rawWidth,
-                      constraints.maxHeight / rawHeight,
-                    ].reduce((a, b) => a < b ? a : b);
-                    final width = rawWidth * fitScale;
-                    final height = rawHeight * fitScale;
-                    final left =
-                        (slot.anchor.dx * constraints.maxWidth - width / 2)
-                            .clamp(0.0, constraints.maxWidth - width);
-                    final top =
-                        (slot.anchor.dy * constraints.maxHeight - height / 2)
-                            .clamp(0.0, constraints.maxHeight - height);
+                    final slot = layout.slot;
+                    final width = layout.width;
+                    final height = layout.height;
                     final slotKey = slot.teamSide * 3 + slot.slotIndex;
                     final isLeftTeam = slot.teamSide == 0;
 
                     return Positioned(
-                      left: left,
-                      top: top,
+                      key: ValueKey(
+                        'battle.stageCharacterLayer.${slot.teamSide}.${slot.slotIndex}',
+                      ),
+                      left: layout.left,
+                      top: layout.top,
                       width: width,
                       height: height,
                       child: RepaintBoundary(
@@ -164,6 +162,7 @@ class BattleField extends StatelessWidget {
                             flashColor: hitFlashColors[slotKey] ?? Colors.white,
                             standeeWidth: width,
                             standeeHeight: height,
+                            showStageStatusOverlay: false,
                             inkMirror:
                                 stageLayout ==
                                     BattleStageLayoutMode.innerDemon &&
@@ -203,12 +202,95 @@ class BattleField extends StatelessWidget {
                     );
                   },
                 ),
+              // 状态层：全部人物画完后再统一叠加。状态牌仍跟随各自脚底锚点，
+              // 但不会再被前景人物的透明立绘遮住。
+              for (final layout in layouts)
+                Positioned(
+                  key: ValueKey(
+                    'battle.stageStatusOverlay.${layout.slot.teamSide}.${layout.slot.slotIndex}',
+                  ),
+                  left: layout.left,
+                  top: layout.top,
+                  width: layout.width,
+                  height: layout.height,
+                  child: IgnorePointer(
+                    child: SizedBox(
+                      width: layout.width,
+                      height: layout.height,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          StageCharacterStatusOverlay(
+                            character: layout.slot.character,
+                            battleState: state,
+                            width: layout.width,
+                            height: layout.height,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
             ],
           );
         },
       ),
     );
   }
+}
+
+class _StageSlotLayout {
+  const _StageSlotLayout({
+    required this.slot,
+    required this.left,
+    required this.top,
+    required this.width,
+    required this.height,
+  });
+
+  factory _StageSlotLayout.fromConstraints({
+    required _StageSlotData slot,
+    required double maxWidth,
+    required double maxHeight,
+    required double baseWidth,
+    required double baseHeight,
+  }) {
+    final scale = battleStageScale(
+      slot.slotIndex,
+      slot.teamSize,
+      isBoss: slot.character.isBoss,
+    );
+    final rawWidth = baseWidth * scale;
+    final rawHeight = baseHeight * scale;
+    final fitScale = [
+      1.0,
+      maxWidth / rawWidth,
+      maxHeight / rawHeight,
+    ].reduce((a, b) => a < b ? a : b);
+    final width = rawWidth * fitScale;
+    final height = rawHeight * fitScale;
+    final left = (slot.anchor.dx * maxWidth - width / 2).clamp(
+      0.0,
+      maxWidth - width,
+    );
+    final top = (slot.anchor.dy * maxHeight - height / 2).clamp(
+      0.0,
+      maxHeight - height,
+    );
+    return _StageSlotLayout(
+      slot: slot,
+      left: left,
+      top: top,
+      width: width,
+      height: height,
+    );
+  }
+
+  final _StageSlotData slot;
+  final double left;
+  final double top;
+  final double width;
+  final double height;
 }
 
 class _StageSlotData {
@@ -284,6 +366,7 @@ class CharacterSlot extends StatelessWidget {
   final Color flashColor;
   final double standeeWidth;
   final double standeeHeight;
+  final bool showStageStatusOverlay;
   final double clashTravelPx;
   final bool inkMirror;
   // 两段点选:待发态下敌头像点选目标的回调(null=不可点);待发态高亮。
@@ -309,6 +392,7 @@ class CharacterSlot extends StatelessWidget {
     required this.flashColor,
     required this.standeeWidth,
     required this.standeeHeight,
+    this.showStageStatusOverlay = true,
     required this.clashTravelPx,
     this.inkMirror = false,
     this.onTap,
@@ -331,6 +415,7 @@ class CharacterSlot extends StatelessWidget {
           displayMode: CharacterDisplayMode.stageStandee,
           standeeWidth: standeeWidth,
           standeeHeight: standeeHeight,
+          showStageStatusOverlay: showStageStatusOverlay,
           inkMirror: inkMirror,
         ),
         if (targetable)

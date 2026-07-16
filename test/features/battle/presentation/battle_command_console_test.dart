@@ -524,7 +524,7 @@ void main() {
       expect(notifier.state.pendingUltimates[1], isNull);
     });
 
-    testWidgets('可用态技能按钮显示「耗气N · CDM」', (tester) async {
+    testWidgets('可用态技能签将招名、分类与耗气冷却收进完整卡面层级', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
         availableSkills: [_power], // cost=200, cd=2
@@ -534,10 +534,30 @@ void main() {
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      // 耗内200 · CD2
-      expect(find.text(UiStrings.skillCostShort(200, 2)), findsOneWidget);
-      expect(find.textContaining('耗气200'), findsOneWidget);
-      expect(find.textContaining('CD2'), findsOneWidget);
+      final skill = find.byKey(const ValueKey('skill_cmd_1_p1'));
+      expect(
+        find.descendant(
+          of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipHeader')),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipTitle')),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipFooter')),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.skillQiCostChip(200)), findsOneWidget);
+      expect(find.text(UiStrings.skillCooldownChip(2)), findsOneWidget);
     });
 
     testWidgets('真气不足态技能按钮显示「真气不足」', (tester) async {

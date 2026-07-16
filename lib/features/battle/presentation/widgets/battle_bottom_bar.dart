@@ -362,17 +362,23 @@ class SkillCommandButton extends StatelessWidget {
     // CD 态(非待发):招名让位,中心浮现读秒环示剩余拍数。
     final onCd = cd > 0 && !isPending;
 
-    final String statusText;
+    final String blockingStatus;
     if (isPending) {
-      statusText = UiStrings.skillPendingStamp; // 待发
+      blockingStatus = UiStrings.skillPendingStamp; // 待发
     } else if (cd > 0) {
-      statusText = ''; // CD 态由读秒环示数,不再显「冷却 N」文字。
+      blockingStatus = ''; // CD 态由读秒环示数。
     } else if (character.currentQi < skill.qiCost) {
-      statusText = UiStrings.skillInsufficientForce;
+      blockingStatus = UiStrings.skillInsufficientForce;
     } else {
-      // 耗内 N · CD M
-      statusText = UiStrings.skillCostShort(skill.qiCost, skill.cooldownTurns);
+      blockingStatus = '';
     }
+
+    final badgeText = skill.targetType == TargetType.aoe
+        ? UiStrings.skillBadgeAoe
+        : UiStrings.skillBadgeSingle;
+    final badgeColor = skill.targetType == TargetType.aoe
+        ? WuxiaUi.jiang
+        : const Color(0xFF5E5548);
 
     final button = SizedBox(
       height: BattleLayoutTokens.skillSlotHeight,
@@ -387,7 +393,7 @@ class SkillCommandButton extends StatelessWidget {
           backgroundColor: bgColor,
           disabledBackgroundColor: bgColor,
           foregroundColor: enabled ? WuxiaUi.ink : const Color(0xFF514B42),
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+          padding: EdgeInsets.zero,
           side: highlight && enabled
               ? const BorderSide(color: WuxiaUi.gold, width: 2)
               : BorderSide(
@@ -415,73 +421,131 @@ class SkillCommandButton extends StatelessWidget {
                 ),
               ),
             ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: _SkillSlipFramePainter(
+                    accent: highlight ? WuxiaUi.gold : WuxiaUi.jiang,
+                  ),
+                ),
+              ),
+            ),
             Opacity(
               opacity: onCd ? 0.32 : 1.0, // CD 态招名让位给读秒环。
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      skill.name.characters.take(4).join('\n'),
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        height: 1.05,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: WuxiaUi.jiang.withValues(alpha: 0.90),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                      child: Text(
-                        _groupLabel(skill).characters.take(1).join(),
-                        style: const TextStyle(
-                          color: Color(0xFFF1DFC0),
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+              child: Column(
+                children: [
+                  Container(
+                    key: const ValueKey('battle.skillSlipHeader'),
+                    height: 25,
+                    padding: const EdgeInsets.fromLTRB(9, 4, 7, 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF5B4934).withValues(alpha: 0.10),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: const Color(
+                            0xFF6C5A43,
+                          ).withValues(alpha: 0.42),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _groupLabel(skill),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: WuxiaUi.muted,
-                        fontSize: 8,
-                        height: 1,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _groupLabel(skill),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: WuxiaUi.muted,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                              height: 1,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: badgeColor,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: Text(
+                            badgeText,
+                            style: const TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFFF0DFC2),
+                              height: 1.2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: _VerticalSkillTitle(
+                        key: const ValueKey('battle.skillSlipTitle'),
+                        name: skill.name,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      statusText,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 10,
-                        height: 1.1,
-                        fontWeight: isPending
-                            ? FontWeight.bold
-                            : FontWeight.w600,
-                        color: isPending
-                            ? WuxiaUi.jiang
-                            : (enabled
-                                  ? WuxiaUi.qing
-                                  : const Color(0xFF514B42)),
+                  ),
+                  Container(
+                    key: const ValueKey('battle.skillSlipFooter'),
+                    height: 33,
+                    margin: const EdgeInsets.fromLTRB(5, 0, 5, 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF342B22).withValues(alpha: 0.10),
+                      border: Border.all(
+                        color: const Color(0xFF79674D).withValues(alpha: 0.36),
                       ),
                     ),
-                  ],
-                ),
+                    child: blockingStatus.isNotEmpty
+                        ? Center(
+                            child: Text(
+                              blockingStatus,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: isPending
+                                    ? WuxiaUi.jiang
+                                    : const Color(0xFF514B42),
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          )
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: _SkillMetric(
+                                  text: UiStrings.skillQiCostChip(skill.qiCost),
+                                  color: WuxiaUi.qing,
+                                ),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 16,
+                                color: const Color(
+                                  0xFF79674D,
+                                ).withValues(alpha: 0.35),
+                              ),
+                              Expanded(
+                                child: _SkillMetric(
+                                  text: UiStrings.skillCooldownChip(
+                                    skill.cooldownTurns,
+                                  ),
+                                  color: WuxiaUi.muted,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ],
               ),
             ),
             if (onCd)
@@ -503,48 +567,111 @@ class SkillCommandButton extends StatelessWidget {
       ),
     );
 
-    // 单体/群体角标：右上角小 chip，区分目标类型让玩家一眼看出操作语义。
-    final badgeText = skill.targetType == TargetType.aoe
-        ? UiStrings.skillBadgeAoe
-        : UiStrings.skillBadgeSingle;
-    final badgeColor = skill.targetType == TargetType.aoe
-        ? WuxiaUi.jiang
-        : const Color(0xFF5E5548);
-    final buttonWithBadge = Stack(
-      clipBehavior: Clip.none,
-      children: [
-        button,
-        Positioned(
-          top: 5,
-          right: 5,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-            decoration: BoxDecoration(
-              color: badgeColor,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              badgeText,
-              style: const TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFFF0DFC2),
-                height: 1.2,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-
     return Semantics(
       key: ValueKey('skill_cmd_${character.characterId}_${skill.id}'),
       button: true,
       enabled: enabled,
       label: '${_groupLabel(skill)} ${skill.name}',
-      child: buttonWithBadge,
+      child: button,
     );
   }
+}
+
+class _VerticalSkillTitle extends StatelessWidget {
+  const _VerticalSkillTitle({super.key, required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      name.characters.take(4).join('\n'),
+      maxLines: 4,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        color: WuxiaUi.ink,
+        fontFamily: 'Songti SC',
+        fontFamilyFallback: ['KaiTi', 'SimSun', 'serif'],
+        fontSize: 15.5,
+        fontWeight: FontWeight.w700,
+        height: 0.92,
+        letterSpacing: 0,
+      ),
+    );
+  }
+}
+
+class _SkillMetric extends StatelessWidget {
+  const _SkillMetric({required this.text, required this.color});
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: color,
+          fontSize: 8.5,
+          fontWeight: FontWeight.w800,
+          height: 1,
+        ),
+      ),
+    );
+  }
+}
+
+class _SkillSlipFramePainter extends CustomPainter {
+  const _SkillSlipFramePainter({required this.accent});
+
+  final Color accent;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final ink = Paint()
+      ..color = const Color(0xFF5B4934).withValues(alpha: 0.42)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+    canvas.drawRect(
+      Rect.fromLTWH(4.5, 4.5, size.width - 9, size.height - 9),
+      ink,
+    );
+
+    final accentPaint = Paint()
+      ..color = accent.withValues(alpha: 0.82)
+      ..strokeWidth = 2.2
+      ..strokeCap = StrokeCap.square;
+    canvas.drawLine(
+      const Offset(4.5, 7),
+      Offset(4.5, size.height - 7),
+      accentPaint,
+    );
+
+    final corner = Paint()
+      ..color = const Color(0xFF382E24).withValues(alpha: 0.54)
+      ..strokeWidth = 1.1;
+    canvas.drawLine(const Offset(9, 9), const Offset(20, 9), corner);
+    canvas.drawLine(const Offset(9, 9), const Offset(9, 18), corner);
+    canvas.drawLine(
+      Offset(size.width - 9, size.height - 9),
+      Offset(size.width - 20, size.height - 9),
+      corner,
+    );
+    canvas.drawLine(
+      Offset(size.width - 9, size.height - 9),
+      Offset(size.width - 9, size.height - 18),
+      corner,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _SkillSlipFramePainter oldDelegate) =>
+      oldDelegate.accent != accent;
 }
 
 class EmptySkillSlot extends StatelessWidget {

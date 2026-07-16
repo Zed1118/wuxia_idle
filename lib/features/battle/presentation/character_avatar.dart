@@ -32,6 +32,7 @@ class CharacterAvatar extends StatelessWidget {
   final double standeeWidth;
   final double standeeHeight;
   final bool inkMirror;
+  final bool showStageStatusOverlay;
 
   /// Boss/敌人蓄力满值（`numbers.combat.bossCharge.defaultChargeTicks`）。
   /// 用于把 [BattleCharacter.chargeTicksRemaining] 换算成蓄力读秒环比例。
@@ -58,6 +59,7 @@ class CharacterAvatar extends StatelessWidget {
     this.standeeWidth = 160,
     this.standeeHeight = 230,
     this.inkMirror = false,
+    this.showStageStatusOverlay = true,
     this.chargeMaxTicks = 3,
     this.beat,
     this.staggerWindowTicks = 3,
@@ -76,6 +78,7 @@ class CharacterAvatar extends StatelessWidget {
         width: standeeWidth,
         height: standeeHeight,
         inkMirror: inkMirror,
+        showStatusOverlay: showStageStatusOverlay,
       );
     }
 
@@ -264,6 +267,7 @@ class _StageCharacterStandee extends StatelessWidget {
     required this.width,
     required this.height,
     required this.inkMirror,
+    required this.showStatusOverlay,
   });
 
   final BattleCharacter character;
@@ -274,6 +278,7 @@ class _StageCharacterStandee extends StatelessWidget {
   final double width;
   final double height;
   final bool inkMirror;
+  final bool showStatusOverlay;
 
   @override
   Widget build(BuildContext context) {
@@ -290,9 +295,6 @@ class _StageCharacterStandee extends StatelessWidget {
     );
     final footY = portraitHeight * _stageStandeeFootFraction(resolvedIconPath);
     final groundingHeight = height * 0.065;
-    // 后排立绘会按景深缩小，状态牌不能再与主位使用相同的
-    // 24% 内缩，否则四位/五位气血数字会在 1280 视口挤在一起。
-    final statusInsetFraction = character.slotIndex == 0 ? 0.24 : 0.16;
     final wardActive =
         battleState != null && isGuardianWardActive(character, battleState!);
 
@@ -438,68 +440,13 @@ class _StageCharacterStandee extends StatelessWidget {
                 size: 34,
               ),
             ),
-          Positioned(
-            left: width * statusInsetFraction,
-            right: width * statusInsetFraction,
-            top: (footY + 2).clamp(0.0, height - 40),
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(5, 2, 5, 3),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.12),
-                    Colors.black.withValues(alpha: 0.82),
-                  ],
-                ),
-                border: Border(
-                  bottom: BorderSide(
-                    color: borderColor.withValues(alpha: 0.68),
-                  ),
-                ),
-                boxShadow: const [
-                  BoxShadow(color: Colors.black38, blurRadius: 7),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    character.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: WuxiaColors.textPrimary,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      shadows: [Shadow(color: Colors.black, blurRadius: 4)],
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  HpBar(
-                    current: character.currentHp,
-                    max: character.maxHp,
-                    height: 11,
-                    fillColorOverride: WuxiaUi.jiang,
-                    labelFontSize: 8,
-                    compactLabel: true,
-                  ),
-                  const SizedBox(height: 1),
-                  HpBar(
-                    current: character.currentQi,
-                    max: character.maxQi,
-                    height: 9,
-                    isInternalForce: true,
-                    labelPrefix: UiStrings.internalForceShortLabel,
-                    fillColorOverride: WuxiaUi.qing,
-                    labelFontSize: 7.5,
-                    compactLabel: true,
-                  ),
-                ],
-              ),
+          if (showStatusOverlay)
+            StageCharacterStatusOverlay(
+              character: character,
+              battleState: battleState,
+              width: width,
+              height: height,
             ),
-          ),
         ],
       ),
     );
@@ -510,6 +457,98 @@ class _StageCharacterStandee extends StatelessWidget {
     );
     if (character.isAlive) return dimmed;
     return ColorFiltered(colorFilter: _grayscaleFilter, child: dimmed);
+  }
+}
+
+/// 全人物舞台的名字与双状态条。战场主路径会把它从人物槽中拆出，
+/// 在所有按景深排序的立绘绘制完成后统一叠加，避免前景人物遮挡邻位血条。
+class StageCharacterStatusOverlay extends StatelessWidget {
+  const StageCharacterStatusOverlay({
+    super.key,
+    required this.character,
+    required this.battleState,
+    required this.width,
+    required this.height,
+  });
+
+  final BattleCharacter character;
+  final BattleState? battleState;
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final resolvedIconPath = _resolvedStageIconPath(character);
+    final portraitHeight = height * 0.91;
+    final footY = portraitHeight * _stageStandeeFootFraction(resolvedIconPath);
+    final insetFraction = character.slotIndex == 0 ? 0.24 : 0.16;
+    final borderColor = character.isBoss
+        ? WuxiaColors.bossFrame
+        : WuxiaColors.schoolColor(character.school);
+
+    return Positioned(
+      left: width * insetFraction,
+      right: width * insetFraction,
+      top: (footY + 2).clamp(0.0, height - 40),
+      child: Opacity(
+        opacity: character.isAlive ? 1 : 0.45,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(5, 2, 5, 3),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withValues(alpha: 0.28),
+                Colors.black.withValues(alpha: 0.90),
+              ],
+            ),
+            border: Border(
+              bottom: BorderSide(color: borderColor.withValues(alpha: 0.78)),
+            ),
+            boxShadow: const [
+              BoxShadow(color: Colors.black54, blurRadius: 8, spreadRadius: 1),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                character.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+                ),
+              ),
+              const SizedBox(height: 2),
+              HpBar(
+                current: character.currentHp,
+                max: character.maxHp,
+                height: 11,
+                fillColorOverride: WuxiaUi.jiang,
+                labelFontSize: 8,
+                compactLabel: true,
+              ),
+              const SizedBox(height: 1),
+              HpBar(
+                current: character.currentQi,
+                max: character.maxQi,
+                height: 9,
+                isInternalForce: true,
+                labelPrefix: UiStrings.internalForceShortLabel,
+                fillColorOverride: WuxiaUi.qing,
+                labelFontSize: 7.5,
+                compactLabel: true,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
