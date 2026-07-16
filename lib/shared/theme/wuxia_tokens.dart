@@ -159,6 +159,12 @@ class WuxiaUi {
       'assets/enemies/battle_balian.png';
   static const String battleGreySwordsmanStandee =
       'assets/enemies/battle_huiyi.png';
+  static const String battleFerryBanditStandee =
+      'assets/enemies/battle_lightfoot_shuikou_a.png';
+  static const String battleFerryBoatmanStandee =
+      'assets/enemies/battle_lightfoot_shuikou_b.png';
+  static const String battleFerrySaberStandee =
+      'assets/enemies/battle_lightfoot_shuikou_c.png';
   static const String battleUmbrellaStandee =
       'assets/enemies/battle_umbrella.png';
   static const String battleTowerBoss20Standee =
