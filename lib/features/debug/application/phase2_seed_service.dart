@@ -15,6 +15,8 @@ import '../../../core/domain/technique.dart';
 import '../../../shared/utils/rng.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../equipment/application/equipment_factory.dart';
+import '../../expedition/application/expedition_service.dart';
+import '../../expedition/domain/expedition_run.dart';
 import '../../mainline/application/mainline_progress_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../onboarding/application/master_builder.dart';
@@ -1402,6 +1404,37 @@ class Phase2SeedService {
       save.founderCharacterId = founder.id;
       save.activeCharacterIds = [founder.id, senior.id, junior.id];
       await isar.saveDatas.put(save);
+    });
+  }
+
+  /// 江湖远行·派遣中 seed(§7.1):在 [seedTeamLineup] 基础上派遣两名带主修弟子,
+  /// 并把远征推进到第 8 节点,供总览屏「在途态」目检(深度/完成/方针/下一节点
+  /// 剩余/召回)。departedAt 取 now-810min(=完成 8 节点累计时长),使「下一节点
+  /// 剩余」≈90min 稳定可读,与 currentNode=8 自洽。
+  Future<void> seedExpeditionActive() async {
+    await seedTeamLineup();
+    final service = ExpeditionService(isar);
+    final chars = await isar.characters
+        .filter()
+        .isFounderEqualTo(false)
+        .findAll();
+    final ids = chars
+        .where(
+          (c) =>
+              c.mainTechniqueId != null && c.currentRetreatSessionId == null,
+        )
+        .take(2)
+        .map((c) => c.id)
+        .toList();
+    await service.dispatch(
+      characterIds: ids,
+      policy: ExpeditionPolicy.yiZhanLiXing,
+      now: DateTime.now().subtract(const Duration(minutes: 810)),
+    );
+    await isar.writeTxn(() async {
+      final run = (await isar.expeditionRuns.where().findAll()).first;
+      run.currentNode = 8;
+      await isar.expeditionRuns.put(run);
     });
   }
 

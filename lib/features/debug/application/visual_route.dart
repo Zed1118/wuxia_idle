@@ -227,6 +227,14 @@ enum VisualRoute {
     'expedition_recap',
     '百草岭远征返程行记目检·主动召回态(最深14处+奖获修为/药草/灵泉/银两+断魂帖×1里程碑高亮+1人负伤调息),§4.7',
   ),
+  expeditionOverview(
+    'expedition_overview',
+    '江湖远行总览·派遣态目检(百草岭卡·候选多选[可派遣/在外/未修主修三态]+三方针择一+拔营出发),§7.1',
+  ),
+  expeditionActive(
+    'expedition_active',
+    '江湖远行·派遣中目检(在途态·当前深入第8处/已踏平节点/本次方针/下一节点剩余/召回队伍),§7.1',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);

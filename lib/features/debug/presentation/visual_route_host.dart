@@ -96,6 +96,7 @@ import '../../taohua_island/domain/island_building_type.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../expedition/application/expedition_service.dart';
+import '../../expedition/presentation/expedition_overview_screen.dart';
 import '../../expedition/presentation/expedition_recap_screen.dart';
 import '../../../core/domain/reward_entry.dart';
 import 'hitbox_debug_overlay.dart';
@@ -723,6 +724,16 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // 百草岭远征返程行记目检(§4.7):纯只读屏,直接注入一份丰奖获 + 1 人负伤的
       // 主动召回结果(GameRepository 已在 _prepare 加载 → 物料名正常渲染)。
       return _buildExpeditionRecapVisual();
+    case VisualRoute.expeditionOverview:
+      // 江湖远行总览·派遣态(§7.1):复用 team_lineup 种子(founder + 带主修弟子 +
+      // 降将无主修 + 闭关行者占用),无 active run → 派遣态显候选三态 + 三方针 + 拔营。
+      await Phase2SeedService(isar: isar).seedTeamLineup();
+      return const ExpeditionOverviewScreen();
+    case VisualRoute.expeditionActive:
+      // 江湖远行·派遣中(§7.1):种子 + 派遣两人 + 推进到第 8 节点,显在途态
+      // (深度/完成/方针/下一节点剩余/召回)。
+      await Phase2SeedService(isar: isar).seedExpeditionActive();
+      return const ExpeditionOverviewScreen();
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }
