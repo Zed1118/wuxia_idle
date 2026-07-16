@@ -151,6 +151,12 @@ enum VisualRoute {
   battleTowerFloor14('battle_tower_floor_14', '敌人立绘验收·真塔14层（江湖前辈 + 师爷）'),
   battleTowerFloor19('battle_tower_floor_19', '敌人立绘验收·真塔19层（武林前辈 + 武林宿老）'),
   battleTowerFloor22('battle_tower_floor_22', '敌人立绘验收·真塔22层（绝顶护法甲 + 乙）'),
+  battleStage0102('battle_stage_01_02', '敌人立绘验收·真主线1-2（ruffian_a）'),
+  battleStage0103('battle_stage_01_03', '敌人立绘验收·真主线1-3（bandit_head）'),
+  battleStage0104('battle_stage_01_04', '敌人立绘验收·真主线1-4（qingshan）'),
+  battleTowerFloor02('battle_tower_floor_02', '敌人立绘验收·真塔2层（thug_b）'),
+  battleTowerFloor03('battle_tower_floor_03', '敌人立绘验收·真塔3层（thug_c）'),
+  battleTowerFloor08('battle_tower_floor_08', '敌人立绘验收·真塔8层（bandit_head）'),
   discipleJoinCeremony(
     'disciple_join_ceremony',
     '第七阶段批三目检·拜入立绘题字 overlay 动效(读真 lineage_onboarding 配置:大弟子/二弟子真立绘交替循环滑入+放大+「XX 拜入门下」题字,自动重播;单帧截不出须真机看动效)',

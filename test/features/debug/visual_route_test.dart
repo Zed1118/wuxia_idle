@@ -257,6 +257,36 @@ void main() {
       }
     });
 
+    test('早期主线与低层塔验收路由 → 真关卡冻结帧', () async {
+      for (final route in const [
+        VisualRoute.battleStage0102,
+        VisualRoute.battleStage0103,
+        VisualRoute.battleStage0104,
+      ]) {
+        final target = await buildVisualTarget(route, IsarSetup.instance);
+        expect(target, isA<ScenarioLauncher>());
+        final launcher = target as ScenarioLauncher;
+        expect(launcher.startPaused, isTrue);
+        expect(launcher.sceneBackgroundPath, WuxiaUi.battleMountainPassStage);
+      }
+
+      for (final route in const [
+        VisualRoute.battleTowerFloor02,
+        VisualRoute.battleTowerFloor03,
+        VisualRoute.battleTowerFloor08,
+      ]) {
+        final target = await buildVisualTarget(route, IsarSetup.instance);
+        expect(target, isA<ScenarioLauncher>());
+        final launcher = target as ScenarioLauncher;
+        expect(launcher.bgmTrack, BgmTrack.tower);
+        expect(launcher.startPaused, isTrue);
+        expect(
+          launcher.sceneBackgroundPath,
+          'assets/scenes/battle_innerrealm.png',
+        );
+      }
+    });
+
     test('battle_tap_live → allowPlayerIntervention:true + autoStart:true '
         '(两段点选干预层必须挂,守 ScenarioLauncher 透传缺口)', () async {
       final target = await buildVisualTarget(

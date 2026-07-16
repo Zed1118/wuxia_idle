@@ -83,4 +83,30 @@ void main() {
       );
     }
   });
+
+  test('早期主线过渡覆盖验收路由读取真关卡与低层塔队伍', () {
+    final cases = [
+      (BattleScenarioData.scenarioStage0102, {'assets/enemies/ruffian_a.png'}),
+      (
+        BattleScenarioData.scenarioStage0103,
+        {'assets/enemies/bandit_head.png'},
+      ),
+      (BattleScenarioData.scenarioStage0104, {'assets/enemies/qingshan.png'}),
+      (BattleScenarioData.scenarioTowerFloor02, {'assets/enemies/thug_b.png'}),
+      (BattleScenarioData.scenarioTowerFloor03, {'assets/enemies/thug_c.png'}),
+      (
+        BattleScenarioData.scenarioTowerFloor08,
+        {'assets/enemies/bandit_head.png'},
+      ),
+    ];
+
+    for (final (factory, expectedPaths) in cases) {
+      final (left, right) = factory();
+      expect(left.length, 3);
+      expect(
+        right.map((character) => character.iconPath).toSet(),
+        containsAll(expectedPaths),
+      );
+    }
+  });
 }

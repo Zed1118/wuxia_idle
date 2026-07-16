@@ -520,6 +520,51 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         bgmTrack: BgmTrack.tower,
         startPaused: true,
       );
+    case VisualRoute.battleStage0102:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0102,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0103:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0103,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0104:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0104,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor02:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor02,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor03:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor03,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor08:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor08,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
     case VisualRoute.discipleJoinCeremony:
       // 第七阶段批三目检:拜入立绘题字 overlay 动效。读真 lineage_onboarding 配置,
       // 大弟子/二弟子真立绘交替循环重播(GameRepository 已在 _prepare 加载完)。

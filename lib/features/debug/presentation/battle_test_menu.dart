@@ -759,6 +759,33 @@ class BattleScenarioData {
   static (List<BattleCharacter>, List<BattleCharacter>)
   scenarioTowerFloor22() => _scenarioTowerFloorStandeeAudit(22);
 
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0102() =>
+      _scenarioStageStandeeAudit('stage_01_02');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0103() =>
+      _scenarioStageStandeeAudit('stage_01_03');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0104() =>
+      _scenarioStageStandeeAudit('stage_01_04');
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor02() => _scenarioTowerFloorStandeeAudit(2);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor03() => _scenarioTowerFloorStandeeAudit(3);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor08() => _scenarioTowerFloorStandeeAudit(8);
+
+  /// 敌人立绘逐关验收：右队读取真主线关卡，左队只提供稳定的三人尺度参照。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  _scenarioStageStandeeAudit(String stageId) {
+    final stage = GameRepository.instance.getStage(stageId);
+    final right = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
+    final (left, _) = scenarioGuardianWard();
+    return (left, right);
+  }
+
   /// 敌人立绘逐层验收：右队读取真塔层，左队只提供稳定的三人尺度参照。
   static (List<BattleCharacter>, List<BattleCharacter>)
   _scenarioTowerFloorStandeeAudit(int floorIndex) {
