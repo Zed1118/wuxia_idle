@@ -253,6 +253,12 @@ class WuxiaUi {
       'assets/enemies/battle_bandit_c.png';
   static const String battleIndependentWandererStandee =
       'assets/enemies/battle_jianghu_b.png';
+  static const String battleRaiderLeaderStandee =
+      'assets/enemies/battle_liukou_a.png';
+  static const String battleYumenGarrisonOfficerStandee =
+      'assets/enemies/battle_guard_a.png';
+  static const String battleDesertBanditLeaderStandee =
+      'assets/enemies/battle_shafei_a.png';
   static const String battleLeftGuardianStandee =
       'assets/enemies/battle_zuo_hufa.png';
   static const String battleRightGuardianStandee =

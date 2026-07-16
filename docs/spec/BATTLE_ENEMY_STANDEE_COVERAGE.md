@@ -76,9 +76,9 @@
 - `bandit_b`（专属三流刀客立绘）
 - `bandit_c`（专属黑风寨老喽啰立绘）
 - `jianghu_b`（专属江湖游侠立绘）
-- `liukou_a`（过渡复用 `battle_fu_zhaizhu`）
-- `guard_a`（过渡复用 `battle_wulin_bazhu`）
-- `shafei_a`（过渡复用 `battle_bandit_archer`）
+- `liukou_a`（专属流寇头领立绘）
+- `guard_a`（专属玉门关把总立绘）
+- `shafei_a`（专属沙匪头领立绘）
 - `xiliangboss`（专属西凉武林名宿立绘）
 - `xiliangbazhu`（专属西凉霸主立绘）
 - `tongguan_shoujiang`（过渡复用 `battle_tower_boss_20`）
@@ -243,7 +243,9 @@
 - `jianghu_a`、`mingmen_a`、`bandit_b`、`bandit_c`、`jianghu_b` 已分别替换为戴笠掌客、名门剑弟子、青年三流刀客、黑风寨老喽啰与中年游侠专属立绘。
 - 五图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；四边有效留白均不小于 7%。
 - 早期塔层与江湖队伍不再复用江湖前辈、武林霸主、山匪刀客、打手或师爷的脸。
-- 待完成：余下 9 名普通敌人过渡复用及真实双视口验收。
+- `liukou_a`、`guard_a`、`shafei_a` 已分别替换为巨斧流寇头领、长枪玉门把总、弓刀沙匪头领专属立绘。
+- 边塞三图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；长枪画像保留完整枪尖与脚底。
+- 待完成：余下 6 名普通敌人过渡复用及真实双视口验收。
 
 ## 后续优先级
 

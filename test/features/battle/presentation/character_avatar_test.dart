@@ -453,9 +453,9 @@ void main() {
         'assets/enemies/mingmen_a.png',
         WuxiaUi.battleEstablishedSectDiscipleStandee,
       ),
-      ('assets/enemies/liukou_a.png', WuxiaUi.battleFuChiefStandee),
-      ('assets/enemies/guard_a.png', WuxiaUi.battleWulinOverlordStandee),
-      ('assets/enemies/shafei_a.png', WuxiaUi.battleBanditArcherStandee),
+      ('assets/enemies/liukou_a.png', WuxiaUi.battleRaiderLeaderStandee),
+      ('assets/enemies/guard_a.png', WuxiaUi.battleYumenGarrisonOfficerStandee),
+      ('assets/enemies/shafei_a.png', WuxiaUi.battleDesertBanditLeaderStandee),
       (
         'assets/enemies/xiliangboss.png',
         WuxiaUi.battleWesternMartialSeniorStandee,
