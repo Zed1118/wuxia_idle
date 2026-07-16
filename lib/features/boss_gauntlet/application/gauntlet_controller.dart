@@ -1,5 +1,6 @@
 import '../../activity/domain/activity_member_snapshot.dart';
 import '../../battle/domain/battle_state.dart';
+import '../domain/boss_gauntlet_run.dart';
 
 /// 断魂庄三关编排控制器（design §5.2-5.5）。
 ///
@@ -22,6 +23,37 @@ class GauntletController {
       for (final prior in before)
         _mergeMember(prior, finalState.characterById(prior.characterId)),
     ];
+  }
+
+  /// 消费当前关战末态 [finalState]：关次边界快照继承 + 推进一关（§9.2）。
+  ///
+  /// 胜利非终关 → [GauntletPhase.interlude] 停整备 + `currentStage++`（不自动连打，
+  /// 玩家在整备页点「继续闯关」才由 service 开下一关）；胜利终关（[isBossStage]）→
+  /// [GauntletPhase.awaitingRewardChoice]（待三选一，Q4）；败/平 → 不推进、停当前关
+  /// （`sessionPhase`/`currentStage` 不变），失败结算归 C2.5，但仍写战末快照供结伤/给经验。
+  ///
+  /// [isBossStage] 由 caller 从 `BossGauntletConfig.stages[currentStage-1].role == 'boss'`
+  /// 判定（保持本编排纯 + 与配置解耦）。Isar 持久化归 caller 事务（§9.2）。
+  static void advance({
+    required BossGauntletRun run,
+    required BattleState finalState,
+    required bool isBossStage,
+  }) {
+    // 无论胜负都记战末快照（失败结算据此结伤/给经验）。
+    run.members = snapshotAfterStage(
+      before: run.members,
+      finalState: finalState,
+    );
+    if (finalState.result != BattleResult.leftWin) {
+      // 败/平：不推进，停当前关（sessionPhase 留 inBattle），失败结算归 C2.5。
+      return;
+    }
+    if (isBossStage) {
+      run.sessionPhase = GauntletPhase.awaitingRewardChoice;
+    } else {
+      run.currentStage += 1;
+      run.sessionPhase = GauntletPhase.interlude;
+    }
   }
 
   static ActivityMemberSnapshot _mergeMember(
