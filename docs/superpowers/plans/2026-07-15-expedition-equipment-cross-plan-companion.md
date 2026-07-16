@@ -2,7 +2,7 @@
 
 **日期：** 2026-07-15
 
-**状态：** 待 Claude Code 审核、修订并并回正式规格／实施计划
+**状态：** 已审查（2026-07-15 批 1：Q1–Q7 拍板已并回正式规格＋实施计划；逐项去向见文末 §9）
 
 **性质：** 临时审查输入，不是新的长期真相源
 
@@ -290,3 +290,30 @@ Claude 本轮只交付文档，不实施功能代码：
 5. 一份简短审查报告：发现的矛盾、采用的决策、实施顺序、仍需用户拍板的事项。
 
 如果审查发现会改变用户已拍板的玩法体验，而不是单纯技术修正，Claude 应在文档中明确标记 `DECISION REQUIRED`，不得静默替用户决定。
+
+---
+
+## 9. 审查去向（2026-07-15 批 1 · 逐项）
+
+> 说明：§3 P0 六项均由用户 Q1–Q7 拍板并本批并回正式文件；§4 P1 与 §5 矩阵为「保留后续」——落入批 2（Phase A1/A2）与批 3（B1/B2/C1/C2＋联合探针＋审查报告）。本批无 `DECISION REQUIRED` 遗留（拍板已定）。
+
+| 审查项 | 结论 | 去向（文件·章节） |
+|---|---|---|
+| §3.1 +10 底线与实际可达下限矛盾 | **采纳 Q1**：真实下限 **+17**（保持仅 +20 起掉级、订正恢复底线，不新增持久化状态） | 并入 装备 design §8＋§4；装备 plan（删 `current:10/target:20` 伪造测试、`floor_level` 10→17、真实 +17 下限测试、§8 状态演算） |
+| §3.2 断魂庄补给托管语义 | **采纳 Q2**：会话托管 | 并入 baicao §5.1／§8.3／§9.2 |
+| §3.3 缺永久玩法进度 | **采纳 Q3**：`SaveData` 加字段（仿 `grantedMilestoneEquipmentIds`）；**不采纳** companion 推荐的新建 `JianghuJourneyProgress` collection，原因：更贴合现有 `SaveData` 单一真相源模式 | 并入 baicao §8.3 |
+| §3.4 Boss 奖励三选一崩溃恢复 | **采纳 Q4**：新增 `awaitingRewardChoice` 阶段 | 并入 baicao §8.3／§9.2 |
+| §3.5 活动占用不能只锁角色 | **采纳 Q5**：`reservedEquipmentIds`／`reservedTechniqueIds`，装备服务全接收 | 并入 baicao §8.1；装备 plan（助炼资格 `isCandidateEligible`/`evaluate` 加 `reservedEquipmentIds` 参数，Phase A 冻结前默认空集） |
+| §3.6 命名装备保护与助炼冲突 | **采纳 Q6**：重复未培养可助炼/分解；首破典故·培养·锁定·占用受保护 | 并入 baicao §6.2；装备 plan |
+| §4.1 分阶段实施计划 A1/A2/B1/B2/C1/C2 | **批2/3 已产全部 Phase 计划** | Phase A1 → `plans/2026-07-15-baicao-duanhun-phase-a1-persistence.md`（SaveData 永久进度/两会话 collection/0.37 迁移/CharacterOccupancyService＋保留 DTO）；Phase A2 → `plans/2026-07-15-baicao-duanhun-phase-a2-cap-config.md`（发布上限10→17/溢出探针/断魂帖/副本内效果字段/配置加载校验）；A1/A2 拆两文件（§4.1「可独立恢复的计划」），A2 依赖 A1 冻结 collection；Phase B → `plans/2026-07-15-baicao-duanhun-phase-b-expedition.md`（B1 规则/随机/节点/战斗＋B2 持久化/离线/UI）；Phase C → `plans/2026-07-15-baicao-duanhun-phase-c-gauntlet.md`（C1 控制器/真气扣减/快照＋C2 整备/托管/恢复/奖励/UI）；B/C 各合一 feature（§8.3 说明理由），均只依赖 A 可并行 |
+| §4.2 跨战状态白名单 | **批3 已产** | Phase C 计划 C1.2（跨关白名单快照，逐类保留/清除测） |
+| §4.3 稳定随机协议 | **批3 已产** | Phase B B1.1 `ExpeditionSeed`（显式混种禁对象 hashCode）；Phase C 同款 |
+| §4.4 百草岭长离线性能与幂等 | **批3 已产** | Phase B B2.2（分帧/单批上限/settlement cursor/幂等，在线=离线不变式） |
+| §4.5 联合经济与时间吞吐探针 | **批3 已产** | `plans/2026-07-15-baicao-duanhun-joint-economy-probe.md`（五段链＋三档＋四不变式 ratchet） |
+| §4.6 道具来源/用途/资源总览 | **批2/3 已产** | A2（断魂帖 item）＋Phase C C2.5（资源总览/用途） |
+| §4.7 存档/备份/恢复兼容 | **批2/3 已产** | A1（0.37 迁移＋恢复守卫）＋Phase C C2.3（崩溃恢复） |
+| §4.8 内容与视觉资产清单 | **批3 已产** | Phase B/C 各资产段（5 visual_route：expedition_overview/active/recap＋gauntlet_loadout/interlude） |
+| §4.9 真相源与状态同步 | **本批部分采纳**：装备 design 状态改「已批准待实施」／baicao 复核记录 ⑧／AGENTS 同步纳入装备 plan Task10 红线 step；GDD·CLAUDE·AGENTS 的正式索引与版本摘要由各实装批改（计划已列 Task） | 并入 装备 design §5／§2.1；baicao 复核记录；装备 plan Task10 |
+| §5 联合验收矩阵（10 项） | **批3 已产** | 审查报告 `superpowers/2026-07-15-baicao-duanhun-orchestration-review.md`（§3 实施顺序＋§4 待拍板）＋各 Phase 批末验证段 |
+| §6 推荐执行顺序（8 步） | **采纳为批次编排依据** | 批1＝§6.1-3／批2＝§6.4-5／批3＝§6.6-8 |
+| §7 不扩展范围 | 沿用（无改动） | 各 Phase 非目标段 |

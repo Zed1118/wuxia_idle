@@ -113,4 +113,24 @@ class SaveData {
 
   /// 战备上次恢复结算时间。null = 旧档/未初始化，读取时按当前时间补满。
   DateTime? sweepReadinessLastRecoveredAt;
+
+  // --- 江湖远行永久进度（0.37；companion Q3/§8.3，非 active 会话可承载）---
+
+  /// 任一角色首达 Lv100 后永久解锁「江湖远行」；离队/传承/境界变化不回锁。
+  bool jianghuJourneyUnlocked = false;
+
+  /// 百草岭历史最深节点（展示用，§3.3）。
+  int baicaoMaxDepth = 0;
+
+  /// 远征序号；每次派遣自增，进稳定随机种子（§4.7）。
+  int expeditionRunSerial = 0;
+
+  /// 断魂庄首通 gauntlet id 集合（一次性防重，仿 [grantedMilestoneEquipmentIds]）。
+  List<String> clearedGauntletIds = [];
+
+  /// 断魂庄首通时间（展示用，§3.3；DateTime? 沿 [islandLastSettledAt] 体例）。
+  DateTime? duanhunFirstClearedAt;
+
+  /// 问鼎江湖第 10/20/30 层断魂帖·旧档补发防重（§6.4，F1 里程碑同款一次性体例）。
+  List<String> grantedTicketMilestoneIds = [];
 }

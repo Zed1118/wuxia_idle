@@ -17,6 +17,12 @@ class ItemDef {
   final double residueHealHours;
   final bool clearLightInjury;
 
+  /// 断魂庄内：恢复一名存活角色最大生命比例（§5.1；副本外无此效果）。
+  final double gauntletHpHealPct;
+
+  /// 断魂庄内：恢复全体存活角色最大真气比例（§5.1）。
+  final double gauntletQiRestorePct;
+
   const ItemDef({
     required this.defId,
     required this.type,
@@ -26,6 +32,8 @@ class ItemDef {
     this.injuryHealHours = 0.0,
     this.residueHealHours = 0.0,
     this.clearLightInjury = false,
+    this.gauntletHpHealPct = 0.0,
+    this.gauntletQiRestorePct = 0.0,
   });
 
   bool get hasRecoveryEffect =>
@@ -46,6 +54,10 @@ class ItemDef {
     final residueHealHours =
         (y['residue_heal_hours'] as num?)?.toDouble() ?? 0.0;
     final clearLightInjury = y['clear_light_injury'] as bool? ?? false;
+    final gauntletHpHealPct =
+        (y['gauntlet_hp_heal_pct'] as num?)?.toDouble() ?? 0.0;
+    final gauntletQiRestorePct =
+        (y['gauntlet_qi_restore_pct'] as num?)?.toDouble() ?? 0.0;
     if (type == ItemType.jingYanDan && layerFraction == null) {
       throw StateError('ItemDef $defId: jingYanDan 必须配 layer_fraction');
     }
@@ -64,6 +76,8 @@ class ItemDef {
       injuryHealHours: injuryHealHours,
       residueHealHours: residueHealHours,
       clearLightInjury: clearLightInjury,
+      gauntletHpHealPct: gauntletHpHealPct,
+      gauntletQiRestorePct: gauntletQiRestorePct,
     );
   }
 }

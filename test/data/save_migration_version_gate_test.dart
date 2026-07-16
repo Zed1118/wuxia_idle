@@ -249,7 +249,7 @@ void main() {
       expect(migrated!.realmTierAtStart, RealmTier.erLiu);
       expect(migrated.startedAt, startedAt);
       expect(migrated.status, RetreatStatus.active);
-      expect(IsarSetup.currentSaveVersion, '0.36.0');
+      expect(IsarSetup.currentSaveVersion, '0.37.0');
     });
   });
 }

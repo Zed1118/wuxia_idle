@@ -1,0 +1,6 @@
+# 断魂庄三关配置（§8.2）。A2 最小合法骨架；Phase C 填敌队机制/奖励。
+supply_cap: 3
+stages:
+  - { role: elite, enemy_team_id: gauntlet_su_wujiu }
+  - { role: elite, enemy_team_id: gauntlet_shi_zhenyue }
+  - { role: boss,  enemy_team_id: gauntlet_wen_jiuzhen }

@@ -28,6 +28,8 @@ import '../features/pvp/domain/pvp_record.dart';
 import '../features/pvp/domain/pvp_snapshot.dart';
 import '../features/battle_record/domain/boss_memory.dart';
 import '../features/weapon_codex/domain/equipment_catalog_entry.dart';
+import '../features/expedition/domain/expedition_run.dart';
+import '../features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 
 /// Isar 初始化与生命周期（data_schema.md §7.1）。
 ///
@@ -98,6 +100,8 @@ class IsarSetup {
     PvpSnapshotSchema,
     BossMemorySchema,
     EquipmentCatalogEntrySchema,
+    ExpeditionRunSchema,
+    BossGauntletRunSchema,
   ];
 
   /// 当前 schema 对应的存档版本（写入新建 SaveData.saveVersion）。
@@ -158,7 +162,9 @@ class IsarSetup {
   // 旧 active session 迁移时以关联角色当前境界固化，startedAt 不动。
   // 0.36.0 内力/真气拆分:Character +innerBreathDisorderHoursRemaining;
   // 旧档永久内力保护性补满上限，心魔余毒迁入内息紊乱。
-  static const _currentSaveVersion = '0.36.0';
+  // 0.37.0 江湖远行:SaveData +6 永久进度字段(默认空/false)+ ExpeditionRun/
+  //   BossGauntletRun 两个空会话 collection(可加性迁移,旧档零 active 记录)。
+  static const _currentSaveVersion = '0.37.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -380,6 +386,14 @@ class IsarSetup {
           current.innerDemonResidueHoursRemaining = 0;
           await isar.characters.put(current);
         }
+      }
+
+      // --- 段 7(0.37.0 江湖远行)---
+      // SaveData 新字段为可加性(List/bool/DateTime? 均有默认),旧档 load 时 Isar
+      // 自动取 Dart 字段初值,无需显式回填;两新 collection 旧档初始为空。此段仅作
+      // 幂等占位与版本文档锚,真正落版本号由本函数尾部统一执行。
+      if (_compareVersion(fromVersion, '0.37.0') < 0) {
+        // 无显式迁移动作(纯可加)。
       }
 
       save.saveVersion = _currentSaveVersion;
