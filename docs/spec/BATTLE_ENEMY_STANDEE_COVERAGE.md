@@ -71,8 +71,8 @@
 - `mingmen_a`（过渡复用 `battle_wulin_bazhu`）
 - `tower_boss_05`（专属试剑石老叟立绘）
 - `tower_boss_10`（专属黑风寨主立绘）
-- `tower_boss_15`（过渡复用 `battle_anye`）
-- `tower_boss_25`（过渡复用 `battle_bandit_blade`）
+- `tower_boss_15`（专属暗夜阁主立绘）
+- `tower_boss_25`（专属绝顶剑魔立绘）
 - `bandit_b`（过渡复用 `battle_bandit_blade`）
 - `bandit_c`（过渡复用 `battle_thug_a`）
 - `jianghu_b`（过渡复用 `battle_shiye`）
@@ -222,8 +222,10 @@
 
 - `tower_boss_05` 已由普通山匪刀客复用替换为专属“试剑石老叟”：秃顶白发、补丁灰袍、横持试剑铁剑。
 - `tower_boss_10` 已由江湖前辈复用替换为专属“黑风寨主”：文士面貌、黑风披肩、铁骨扇与佩剑。
-- 两图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；已接入脚底锚点及光学校准。
-- 待完成：`tower_boss_15`、`tower_boss_25` 专属化，以及塔 5 / 10 / 15 / 25 的真实双视口验收。
+- `tower_boss_15` 已由普通暗夜剑客复用替换为专属“暗夜阁主”：长发黑袍、冷峻直剑、克制阴柔轮廓。
+- `tower_boss_25` 已由普通山匪刀客复用替换为专属“绝顶剑魔”：破旧蓝灰衣、双剑、写实疲惫面貌。
+- 四图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；已接入脚底锚点及光学校准。
+- 待完成：塔 5 / 10 / 15 / 25 的真实双视口验收。
 
 ## 后续优先级
 
