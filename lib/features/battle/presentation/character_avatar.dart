@@ -293,7 +293,8 @@ class _StageCharacterStandee extends StatelessWidget {
     final usesTransparentStandee = _isTransparentBattleStandee(
       resolvedIconPath,
     );
-    final footY = portraitHeight * _stageStandeeFootFraction(resolvedIconPath);
+    final sourceFootFraction = _stageStandeeFootFraction(resolvedIconPath);
+    final footY = portraitHeight * _stageStandeeAnchorFootFraction;
     final groundingHeight = height * 0.065;
     final wardActive =
         battleState != null && isGuardianWardActive(character, battleState!);
@@ -361,6 +362,23 @@ class _StageCharacterStandee extends StatelessWidget {
         child: portraitImage,
       );
     }
+
+    // 立绘生成时的透明画布留白不一致。绕实际脚底缩放，使成对角色的
+    // 有效人物高度接近；水平修正 alpha 重心，垂直将脚底对齐公共基准线。
+    final opticalProfile = _stageStandeeOpticalProfile(resolvedIconPath);
+    portraitImage = Transform.translate(
+      key: const ValueKey('battle.stageStandeeOpticalShift'),
+      offset: Offset(
+        width * opticalProfile.horizontalShiftFraction,
+        portraitHeight * (_stageStandeeAnchorFootFraction - sourceFootFraction),
+      ),
+      child: Transform.scale(
+        key: const ValueKey('battle.stageStandeeOpticalScale'),
+        scale: opticalProfile.scale,
+        alignment: Alignment(0, sourceFootFraction * 2 - 1),
+        child: portraitImage,
+      ),
+    );
 
     Widget portrait = Container(
       width: width,
@@ -478,9 +496,8 @@ class StageCharacterStatusOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedIconPath = _resolvedStageIconPath(character);
     final portraitHeight = height * 0.91;
-    final footY = portraitHeight * _stageStandeeFootFraction(resolvedIconPath);
+    final footY = portraitHeight * _stageStandeeAnchorFootFraction;
     final insetFraction = switch (character.slotIndex) {
       0 => 0.24,
       2 => 0.18,
@@ -639,6 +656,8 @@ bool _isTransparentBattleStandee(String? path) =>
 
 /// 透明图脚底在原图高度中的实际比例。生成立绘的透明画布留白不同，
 /// 不能用 Widget 容器底边冒充脚底；否则接触影和状态牌会漂在人物下方。
+const _stageStandeeAnchorFootFraction = 0.95;
+
 double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleFounderFallback => 0.938,
   WuxiaUi.battleFirstDiscipleFallback => 0.961,
@@ -648,6 +667,34 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleBanditArcherStandee => 0.939,
   _ => 0.95,
 };
+
+typedef _StageStandeeOpticalProfile = ({
+  double scale,
+  double horizontalShiftFraction,
+});
+
+/// 以透明像素的有效包围盒为基准的光学校准。
+/// 数值只补偿原图画布留白，不表示战斗单位的体型或阵型位置。
+_StageStandeeOpticalProfile _stageStandeeOpticalProfile(String? path) =>
+    switch (path) {
+      WuxiaUi.battleFounderFallback => (
+        scale: 1.055,
+        horizontalShiftFraction: 0,
+      ),
+      WuxiaUi.battleFirstDiscipleFallback => (
+        scale: 1,
+        horizontalShiftFraction: 0.04,
+      ),
+      WuxiaUi.battleBanditBladeStandee => (
+        scale: 1.18,
+        horizontalShiftFraction: 0.015,
+      ),
+      WuxiaUi.battleBanditArcherStandee => (
+        scale: 1.045,
+        horizontalShiftFraction: 0,
+      ),
+      _ => (scale: 1, horizontalShiftFraction: 0),
+    };
 
 class _FirstGlyphStandee extends StatelessWidget {
   const _FirstGlyphStandee({

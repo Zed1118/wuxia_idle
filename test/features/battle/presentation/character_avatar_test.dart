@@ -219,6 +219,54 @@ void main() {
     );
   });
 
+  testWidgets('战场立绘按有效人物边界校准尺度与视觉重心', (tester) async {
+    Future<(double scale, double shiftX, double shiftY)> opticalTransformFor(
+      String iconPath,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CharacterAvatar(
+              character: _char(isBoss: false).copyWith(iconPath: iconPath),
+              displayMode: CharacterDisplayMode.stageStandee,
+              standeeWidth: 160,
+              standeeHeight: 230,
+            ),
+          ),
+        ),
+      );
+
+      final scaleTransform = tester.widget<Transform>(
+        find.byKey(const ValueKey('battle.stageStandeeOpticalScale')),
+      );
+      final shiftTransform = tester.widget<Transform>(
+        find.byKey(const ValueKey('battle.stageStandeeOpticalShift')),
+      );
+      return (
+        scaleTransform.transform.storage[0],
+        shiftTransform.transform.storage[12],
+        shiftTransform.transform.storage[13],
+      );
+    }
+
+    final founder = await opticalTransformFor('assets/characters/founder.png');
+    final firstDisciple = await opticalTransformFor(
+      'assets/characters/first_disciple.png',
+    );
+    final banditBlade = await opticalTransformFor(
+      'assets/enemies/killer_a.png',
+    );
+    final banditArcher = await opticalTransformFor(
+      'assets/enemies/killer_b.png',
+    );
+
+    expect(founder.$1, closeTo(1.055, 0.001));
+    expect(firstDisciple.$2, greaterThan(0));
+    expect(banditBlade.$1, closeTo(1.18, 0.001));
+    expect(banditBlade.$3, greaterThan(0));
+    expect(banditArcher.$1, closeTo(1.045, 0.001));
+  });
+
   testWidgets('战场将已配套的旧原画映射到对应透明立绘', (tester) async {
     const cases = [
       ('assets/characters/founder.png', WuxiaUi.battleFounderFallback),
