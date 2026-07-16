@@ -40,7 +40,7 @@ class BaicaoHourlyYield {
 BaicaoHourlyYield baicaoHourlyYield({
   required ExpeditionPolicy policy,
   required int avgDepth,
-  int baseExpPerBattle = 200,
+  int baseExpPerBattle = 170,
   int normalMinutes = 90,
   int eliteMinutes = 180,
   int saveId = 1,

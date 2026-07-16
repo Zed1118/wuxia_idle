@@ -217,6 +217,7 @@ class ExpeditionService {
           node: genNode,
           saveId: run.saveDataId,
           runSerial: run.seed,
+          baseExpPerBattle: config.baseExpPerBattle,
         ),
       );
       node = index;

@@ -136,7 +136,7 @@ class ExpeditionRules {
     required ExpeditionNode node,
     required int saveId,
     required int runSerial,
-    int baseExpPerBattle = 200, // TODO(batch3-probe): 探针定案后回填 expeditions.yaml
+    int baseExpPerBattle = 170, // batch3 探针拍板中档;生产走 expeditions.yaml base_exp_per_battle
     int baseExpCapNode = 30,
   }) {
     final rewards = <RewardEntry>[];

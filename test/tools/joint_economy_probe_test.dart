@@ -189,6 +189,18 @@ void main() {
     buf.writeln('③ 助炼/分解/收藏三路径取舍：待 Phase C 断魂庄产出 + 助炼机制'
         '定案后补硬 ratchet（本批不硬断言，防占位假绿）');
 
+    // 存量溢出连跳分布（A2 同源探针结论纳入本报告，§3.1）。
+    buf
+      ..writeln()
+      ..writeln('## 存量溢出连跳分布（§3.1·A2 同源 overflow_layer_jump_probe）')
+      ..writeln()
+      ..writeln('cap 10→17 一次性兑现：停在 Lv100 封顶的存量经验按层均单位 '
+          '1×~12× 实测连跳 1-6 层（worstJump ≤7 ratchet 守），判定**一次性兑现**'
+          '（非分段抬升 10→13→17）。详 `test/tools/overflow_layer_jump_probe_test.dart`。')
+      ..writeln()
+      ..writeln('> 探针留作 ratchet：本探针四不变式 + overflow worstJump ≤7 '
+          '一并守后续经济数值改动不破坏 Lv100→170 曲线。');
+
     Directory(_outputDir).createSync(recursive: true);
     final out = '$_outputDir/joint_economy_probe_2026-07-16.md';
     File(out).writeAsStringSync(buf.toString());

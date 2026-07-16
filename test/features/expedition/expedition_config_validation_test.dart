@@ -31,6 +31,29 @@ void main() {
         throwsStateError,
       );
     });
+    test('解析 base_exp_per_battle（缺省默认 170·batch3 探针拍板中档）', () {
+      final c = ExpeditionConfig.fromYaml(const {
+        'normal_node_minutes': 90,
+        'elite_node_minutes': 180,
+        'base_exp_per_battle': 250,
+      });
+      expect(c.baseExpPerBattle, 250);
+      final d = ExpeditionConfig.fromYaml(const {
+        'normal_node_minutes': 90,
+        'elite_node_minutes': 180,
+      });
+      expect(d.baseExpPerBattle, 170);
+    });
+    test('base_exp_per_battle 非正 → StateError', () {
+      expect(
+        () => ExpeditionConfig.fromYaml(const {
+          'normal_node_minutes': 90,
+          'elite_node_minutes': 180,
+          'base_exp_per_battle': 0,
+        }),
+        throwsStateError,
+      );
+    });
   });
 
   group('BossGauntletConfig.fromYaml', () {

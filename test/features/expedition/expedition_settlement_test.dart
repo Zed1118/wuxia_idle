@@ -46,12 +46,13 @@ class _FakeCombat implements ExpeditionCombat {
   }
 }
 
-ExpeditionConfig _config() => const ExpeditionConfig(
+ExpeditionConfig _config({int baseExp = 170}) => ExpeditionConfig(
       normalNodeMinutes: 90,
       eliteNodeMinutes: 180,
       hpRecoverPctPerNode: 0.10,
       qiRecoverPctPerNode: 0.25,
       zhangshiPctPerLayer: 0.05,
+      baseExpPerBattle: baseExp,
     );
 
 void main() {
@@ -146,6 +147,29 @@ void main() {
     expect(result.defeated, isFalse);
     expect(result.caughtUp, isTrue);
     expect(run.stagedRewards, isNotEmpty);
+  });
+
+  test('结算 exp 奖励随 config.baseExpPerBattle 缩放（batch3 wire）', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final svc = ExpeditionService(IsarSetup.instance);
+    int expOf(ExpeditionRun r) => r.stagedRewards
+        .where((e) => e.rewardKey == 'exp')
+        .fold(0, (s, e) => s + e.quantity);
+    final now = departedAt.add(const Duration(minutes: 540));
+
+    await svc.settle(combat: _FakeCombat(), config: _config(baseExp: 100), now: now);
+    final lowExp = expOf(await readRun(runId));
+
+    await resetRun(runId);
+    await svc.settle(combat: _FakeCombat(), config: _config(baseExp: 300), now: now);
+    final highExp = expOf(await readRun(runId));
+
+    expect(lowExp, greaterThan(0));
+    expect(
+      highExp,
+      greaterThan(lowExp),
+      reason: 'settle exp 未随 config.baseExpPerBattle 缩放 → wire 未接',
+    );
   });
 
   test('单批上限：一次 settle 最多 maxNodesPerBatch 个节点，余下留下批', () async {
