@@ -7,8 +7,8 @@
 - 正式数据：`data/stages.yaml` + `data/towers.yaml`
 - 不重复敌人原画：79 种
 - 关卡中敌人出场记录：120 次
-- 已接入透明全身立绘：73 / 79
-- 已覆盖出场记录：114 / 120
+- 已接入透明全身立绘：76 / 79
+- 已覆盖出场记录：117 / 120
 
 已覆盖正式敌人：
 
@@ -61,6 +61,9 @@
 - `massbattle_xianjie_a`（专属他派宗主立绘）
 - `massbattle_xianjie_b`（专属他派护法立绘）
 - `massbattle_xianjie_c`（专属他派门徒立绘）
+- `massbattle_guanqi_a`（专属胡骑万夫长立绘）
+- `massbattle_guanqi_b`（专属胡骑游骑立绘）
+- `massbattle_guanqi_c`（专属胡骑铁卫立绘）
 - `jianghu_a`（过渡复用 `battle_jianghu_qianbei`）
 - `mingmen_a`（过渡复用 `battle_wulin_bazhu`）
 - `tower_boss_05`（过渡复用 `battle_bandit_blade`）
@@ -205,10 +208,11 @@
 - 已完成村匪队：`massbattle_cunfei_a`（卷须阔背铁蒺藜头目）、`massbattle_cunfei_b`（布帽猎弓手）、`massbattle_cunfei_c`（卷须伏身阔刀客）。
 - 已完成镇口队：`massbattle_zhenkou_a`（皮护胸巨斧头领）、`massbattle_zhenkou_b`（灰衣双头枪游侠）、`massbattle_zhenkou_c`（黑帽匕首钩刃刺客）。
 - 已完成险界队：`massbattle_xianjie_a`（冷灰青直剑宗主）、`massbattle_xianjie_b`（方巾双判官笔护法）、`massbattle_xianjie_c`（灰青铁棍青年门徒）。
-- 新增覆盖：9 种敌人 / 9 次出场；累计覆盖 73 / 79 种、114 / 120 次出场。
-- 组队差异：三人共享山村补丁旧衣和土灰色相，分别以重钝器、远程弓和近战阔刀拆分体态与轮廓。
-- 技术验收：三图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器，边距均不小于 5%。
-- 待完成：其余 6 名群战敌人，以及 `stage_mass_battle_01` 至 `05` 的真实整队双视口验收。
+- 已完成关骑队：`massbattle_guanqi_a`（玄甲弓刀万夫长）、`massbattle_guanqi_b`（轻甲披风游骑）、`massbattle_guanqi_c`（圆盾短矛铁卫）。
+- 新增覆盖：12 种敌人 / 12 次出场；累计覆盖 76 / 79 种、117 / 120 次出场。
+- 组队差异：每队共享材质和色相，但通过统领、轻捷、重守三类体态及不同兵器拆分轮廓；关骑队不使用坐骑，避免破坏三人阵型和脚底落地关系。
+- 技术验收：新增关骑三图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；四边有效留白均不小于 8%。
+- 待完成：最后 3 名西凉残部群战敌人，以及 `stage_mass_battle_01` 至 `05` 的真实整队双视口验收。
 
 ## 后续优先级
 

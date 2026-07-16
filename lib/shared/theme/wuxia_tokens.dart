@@ -207,6 +207,12 @@ class WuxiaUi {
       'assets/enemies/battle_massbattle_xianjie_b.png';
   static const String battleRivalSectDiscipleStandee =
       'assets/enemies/battle_massbattle_xianjie_c.png';
+  static const String battleFrontierCommanderStandee =
+      'assets/enemies/battle_massbattle_guanqi_a.png';
+  static const String battleFrontierOutriderStandee =
+      'assets/enemies/battle_massbattle_guanqi_b.png';
+  static const String battleFrontierIronGuardStandee =
+      'assets/enemies/battle_massbattle_guanqi_c.png';
   static const String battleUmbrellaStandee =
       'assets/enemies/battle_umbrella.png';
   static const String battleTowerBoss20Standee =
