@@ -1,6 +1,7 @@
 import '../../../core/domain/enums.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
 import '../../encounter/domain/encounter_def.dart' show AttributeKey;
+import '../../expedition/domain/expedition_run.dart' show ExpeditionPolicy;
 import '../../taohua_island/domain/island_building_type.dart';
 import '../../../shared/strings.dart';
 import 'battle_state.dart' show BattleResult;
@@ -28,6 +29,20 @@ class EnumL10n {
       TechniqueSchool.yinRou => '阴柔',
     };
   }
+
+  /// 百草岭出发方针名（baicao design §4.3）。switch 穷尽，增删 enum 值编译期报漏。
+  static String expeditionPolicy(ExpeditionPolicy p) => switch (p) {
+    ExpeditionPolicy.yanJingCaiYao => '沿径采药',
+    ExpeditionPolicy.xunJiFangYou => '寻迹访幽',
+    ExpeditionPolicy.yiZhanLiXing => '以战砺行',
+  };
+
+  /// 出发方针一句话侧重（design §4.3；只述节点权重侧重，不承诺掉落倍率/战斗属性）。
+  static String expeditionPolicyHint(ExpeditionPolicy p) => switch (p) {
+    ExpeditionPolicy.yanJingCaiYao => '偏采药节点，多得药草灵泉',
+    ExpeditionPolicy.xunJiFangYou => '偏遗迹节点，多遇断魂帖奇缘',
+    ExpeditionPolicy.yiZhanLiXing => '偏遭遇战，多历练修为',
+  };
 
   /// 师徒身份（GDD §7.1）。switch 穷尽，增删 enum 值编译期报漏。
   static String lineageRole(LineageRole r) {

@@ -1733,6 +1733,10 @@ class UiStrings {
   // ─── 群战守城（1.0 P3.2 §12.3,Batch 2.4 入口）────────────────────────────
   static const String mainMenuMassBattle = '守城试炼';
   static const String mainMenuMassBattleHint = '5 关守城 · 以少胜多';
+
+  // ─── 江湖远行（百草岭远征 · Phase B2.4 入口，§7.1 Lv100 解锁）─────────────
+  static const String mainMenuExpedition = '江湖远行';
+  static const String mainMenuExpeditionHint = '整队远征百草岭 · 挂机采药历练';
   static const String massBattleFormationTitle = '选择阵型';
   static const String massBattleFormationYanXing = '雁行阵';
   static const String massBattleFormationYanXingHint = '暴击 +10% · 防御 -5%';
@@ -3560,4 +3564,33 @@ class UiStrings {
       '$downed 人力竭负伤，回山调息即可。';
   static const String expeditionRecapSafeReturn = '全员安然归返，毫发无伤。';
   static const String expeditionRecapBack = '返回';
+
+  // ── 百草岭远征 · 江湖远行总览（§7.1 · Phase B2.4）────────────────────
+  static const String expeditionOverviewTitle = '江湖远行';
+  static const String expeditionBaicaoName = '百草岭';
+  static const String expeditionBaicaoSubtitle = '整队远征，深入无尽药径';
+  // 派遣态
+  static const String expeditionDispatchTeamSection = '择人出征';
+  static const String expeditionDispatchTeamHint = '选 1-3 名门人同行；祖师坐镇门中，不亲赴远征。';
+  static const String expeditionDispatchPolicySection = '出发方针';
+  static const String expeditionDispatchButton = '拔营出发';
+  static String expeditionSelectedCount(int n) => '已择 $n / 3 人';
+  static const String expeditionCandidateOccupiedTag = '在外';
+  static const String expeditionCandidateNoMainTag = '未修主修';
+  static const String expeditionNoCandidates = '暂无可出征门人。招收弟子、研习主修之后再来。';
+  static const String expeditionDispatchFailed = '出征受阻，稍后再试。';
+  // active 态
+  static const String expeditionActiveSection = '远征在途';
+  static String expeditionActiveDepth(int node) => '当前深入第 $node 处险境';
+  static String expeditionActiveCompleted(int node) => '已踏平 $node 处节点';
+  static const String expeditionActivePolicyLabel = '本次方针';
+  static String expeditionNextNodeIn(String remaining) => '下一处约 $remaining 后抵达';
+  static const String expeditionNextNodeReady = '下一处将至……';
+  static String expeditionRemainingText(int hours, int minutes) =>
+      hours > 0 ? '$hours 时 $minutes 分' : '$minutes 分';
+  static const String expeditionRecallButton = '召回队伍';
+  static const String expeditionRecallConfirmTitle = '召回远征队伍';
+  static const String expeditionRecallConfirmBody =
+      '召回后本次远征结束：已踏平节点的奖励照常入账，当前未完成的节点作废。';
+  static const String expeditionRecallConfirm = '召回';
 }
