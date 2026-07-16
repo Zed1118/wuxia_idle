@@ -653,6 +653,10 @@ const _battleStandeeOverrides = <String, String>{
   'assets/enemies/elder_grey.png': WuxiaUi.battleGreyElderStandee,
   'assets/enemies/shaonian.png': WuxiaUi.battleSpringHallYouthStandee,
   'assets/enemies/guntou.png': WuxiaUi.battleBaldStaffFighterStandee,
+  'assets/enemies/guntou_zhu.png': WuxiaUi.battleArenaChampionStandee,
+  'assets/enemies/seng_huiyi.png': WuxiaUi.battleGreyMonkStandee,
+  'assets/enemies/balian.png': WuxiaUi.battleScarredBossStandee,
+  'assets/enemies/huiyi.png': WuxiaUi.battleGreySwordsmanStandee,
   'assets/enemies/black_killer.png': WuxiaUi.battleBlackKillerStandee,
   'assets/enemies/killer_a.png': WuxiaUi.battleBanditBladeStandee,
   'assets/enemies/killer_b.png': WuxiaUi.battleBanditArcherStandee,
@@ -715,6 +719,10 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleGreyElderStandee => 0.943,
   WuxiaUi.battleSpringHallYouthStandee => 0.962,
   WuxiaUi.battleBaldStaffFighterStandee => 0.911,
+  WuxiaUi.battleArenaChampionStandee => 0.969,
+  WuxiaUi.battleGreyMonkStandee => 0.943,
+  WuxiaUi.battleScarredBossStandee => 0.969,
+  WuxiaUi.battleGreySwordsmanStandee => 0.971,
   WuxiaUi.battleLeftGuardianStandee => 0.940,
   WuxiaUi.battleRightGuardianStandee => 0.956,
   WuxiaUi.battleTowerBoss30Standee => 0.972,
@@ -767,6 +775,15 @@ _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
   WuxiaUi.battleBaldStaffFighterStandee => (
     scale: 1.04,
     horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleGreyMonkStandee => (scale: 1.04, horizontalShiftFraction: 0),
+  WuxiaUi.battleScarredBossStandee => (
+    scale: 0.96,
+    horizontalShiftFraction: 0.015,
+  ),
+  WuxiaUi.battleGreySwordsmanStandee => (
+    scale: 0.95,
+    horizontalShiftFraction: 0.02,
   ),
   _ => (scale: 1, horizontalShiftFraction: 0),
 };
