@@ -86,6 +86,14 @@ class SkillDef {
   /// （封顶减防 = 有效防御有地板，红线 §5.4）。
   final double defenseBreakPct;
 
+  /// C1.3.1 断魂庄:此招蓄力完成且未破招时,对存活对方队每人扣
+  /// `qiDrainPct × 最大真气` 的真气(§5.2 苏无咎锁脉针,消费 `QiDrainEffect`)。
+  /// 0 = 无剥夺(默认)。schema 硬界 [0, 0.5](>0 段再由 `QiDrainEffect` 兜死
+  /// (0, 0.5];load 期 `game_repository._enforceEncounterSkillRedLines` fail-fast,
+  /// 越界配置启动即抛而非战斗中崩)。属资源剥夺方向机制,不膨胀伤害(守 §5.4)。
+  /// skills.yaml camelCase 例外(§4)。
+  final double qiDrainPct;
+
   const SkillDef({
     required this.id,
     required this.name,
@@ -109,6 +117,7 @@ class SkillDef {
     this.proficiency,
     this.targetType = TargetType.single,
     this.defenseBreakPct = 0.0,
+    this.qiDrainPct = 0.0,
   }) : assert(qiDelta != null || internalForceCost != null),
        qiDelta = qiDelta ?? -(internalForceCost ?? 0);
 
@@ -168,6 +177,7 @@ class SkillDef {
           ? TargetType.values.byName(y['targetType'] as String)
           : TargetType.single,
       defenseBreakPct: (y['defenseBreakPct'] as num?)?.toDouble() ?? 0.0,
+      qiDrainPct: (y['qiDrainPct'] as num?)?.toDouble() ?? 0.0,
     );
   }
 

@@ -135,6 +135,9 @@ class EnumL10n {
   /// P0 破招:踉跄跳过本次行动日志。
   static String staggered(String name) => '$name 踉跄难稳。';
 
+  /// C1.3.1 断魂庄:敌方蓄力技完成夺取真气(锁脉针·§5.2)日志。
+  static String qiDrained(String name, int amount) => '$name 经脉被封,真气散去 $amount';
+
   /// 第七阶段批二 ①:Boss 转阶段日志(血量跌破阈值进入下一阶段)。
   static String bossPhaseTransition(String name, int phaseIndex) =>
       '$name 气势陡变,进入第 ${phaseIndex + 1} ${UiStrings.combatTermLabel(CombatTerm.phase)}!';

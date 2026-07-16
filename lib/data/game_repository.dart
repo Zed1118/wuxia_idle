@@ -1076,6 +1076,13 @@ class GameRepository {
           '$qiDeltaAbsCap (numbers.combat.qi.deltaAbsCap)',
         );
       }
+      // C1.3.1 断魂庄 qi_drain schema 硬界:qiDrainPct ∈ [0, 0.5](0=无剥夺)。
+      // 越界配置启动即 fail-fast,避免战斗中 QiDrainEffect 构造抛 ArgumentError。
+      if (s.qiDrainPct < 0 || s.qiDrainPct > 0.5) {
+        throw StateError(
+          'skill ${s.id} qiDrainPct=${s.qiDrainPct} 越界 [0, 0.5]',
+        );
+      }
     }
     const tierCaps = [1500, 2000, 2500, 3000, 4000, 5500, 8000];
     for (final id in encounterSkillIds) {

@@ -11,6 +11,7 @@ import '../battle_state.dart';
 import '../damage_calculator.dart';
 import '../qi_cycle.dart';
 import '../../../cultivation/domain/skill_proficiency.dart';
+import '../../../boss_gauntlet/domain/qi_drain_effect.dart';
 import 'battle_strategy.dart';
 
 const defaultGroundStrategy = DefaultGroundStrategy();
@@ -575,6 +576,31 @@ class DefaultGroundStrategy implements BattleStrategy {
       _replaceById(ta.teamSide == 0 ? left : right, ta);
     }
 
+    // === C1.3.1 断魂庄 qi_drain(§5.2)===
+    // 蓄力技完成且未破招(forcedSkill != null)、配 qiDrainPct → 对存活对方队每人施
+    // QiDrainEffect(苏无咎锁脉针夺气)。破招者已在上方 stagger 路径早返回,不达此处。
+    // 纯资源剥夺、不消费 rng(在 rng 消费点之后)、只降真气不膨胀伤害(守 §5.4)。
+    final drainActions = <BattleAction>[];
+    if (forcedSkill != null && skill.qiDrainPct > 0) {
+      final effect = QiDrainEffect(pct: skill.qiDrainPct);
+      final oppTeam = oppSide == 0 ? left : right;
+      for (var i = 0; i < oppTeam.length; i++) {
+        final t = oppTeam[i];
+        if (!t.isAlive) continue;
+        final newQi = effect.applyTo(currentQi: t.currentQi, maxQi: t.maxQi);
+        if (newQi != t.currentQi) {
+          oppTeam[i] = t.copyWith(currentQi: newQi);
+          drainActions.add(
+            BattleAction(
+              tick: preState.tick,
+              actorId: t.characterId,
+              description: EnumL10n.qiDrained(t.name, t.currentQi - newQi),
+            ),
+          );
+        }
+      }
+    }
+
     // BattleAction 已由 _resolveOneTarget 组装(description 用 preActor.name,
     // copyWith 不改 name/characterId,与原 actorAfter 口径逐字节等价)。
 
@@ -596,8 +622,9 @@ class DefaultGroundStrategy implements BattleStrategy {
     var next = preState.copyWith(
       leftTeam: List.unmodifiable(left),
       rightTeam: List.unmodifiable(right),
-      // aoe 每 target 一条 BattleAction(single 单元素,与原逐字节等价)。
-      actionLog: [...preState.actionLog, ...actions],
+      // aoe 每 target 一条 BattleAction(single 单元素,与原逐字节等价)+
+      // C1.3.1 蓄力技 qi_drain 每被夺成员一条(无剥夺时 drainActions 空,零变化)。
+      actionLog: [...preState.actionLog, ...actions, ...drainActions],
       pendingUltimates: newPending,
       pendingTargets: newTargets,
     );
