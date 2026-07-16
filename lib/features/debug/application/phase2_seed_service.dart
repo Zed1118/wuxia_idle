@@ -1324,6 +1324,11 @@ class Phase2SeedService {
 
     await isar.writeTxn(() async {
       await isar.characters.clear();
+      // 清在途远征残留:seedTeamLineup 声称重置到确定编成态,seedExpeditionActive
+      // 在此基础上 dispatch 远征。visual_capture 多分辨率复用同一磁盘 Isar 库时,
+      // 上次的 active ExpeditionRun 若不清会撞 ExpeditionService.dispatch 的
+      // 「单 active」红线校验(2026-07-16 目检 1440x900 第二跑失败修)。无远征时 no-op。
+      await isar.expeditionRuns.clear();
       final founder = mk(
         name: '祖师',
         tier: RealmTier.erLiu,
