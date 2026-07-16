@@ -43,7 +43,7 @@ worktree：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-sta
 - `flutter build macos --debug`：成功生成 `build/macos/Build/Products/Debug/wuxia_idle.app`。
 - `dart format --set-exit-if-changed`：通过。
 - `git diff --check`：通过。
-- 最终烟测：14 条 1280×720 路由 + 战斗双视口 + 百科复拍，共 19 份日志全部含 `VISUAL_ROUTE_READY` 和窗口级 `VISUAL_CAPTURE`；无 `VISUAL_ROUTE_ERROR`、RenderFlex overflow 或未处理异常。
+- 最终烟测：14 条路由在 1280×720 与 1440×900 各完整跑一轮，并补拍战斗与百科关键帧；共 35 份日志全部含 `VISUAL_ROUTE_READY` 和窗口级 `VISUAL_CAPTURE`，无 `VISUAL_ROUTE_ERROR`、RenderFlex overflow 或未处理异常。
 - worktree 在验收单提交前为 clean。
 
 ## 5. 集成边界与冲突提示
