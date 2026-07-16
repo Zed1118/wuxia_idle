@@ -13,6 +13,7 @@ import 'package:wuxia_idle/features/debug/presentation/battle_test_menu.dart';
 import 'package:wuxia_idle/features/debug/presentation/visual_route_host.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
 import 'package:wuxia_idle/features/taohua_island/presentation/taohua_island_screen.dart';
+import 'package:wuxia_idle/shared/audio/audio_assets.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 void main() {
@@ -221,6 +222,39 @@ void main() {
       expect(target, isA<ScenarioLauncher>());
       final launcher = target as ScenarioLauncher;
       expect(launcher.sceneBackgroundPath, WuxiaUi.battleMountainPassStage);
+    });
+
+    test('battle_guardian_ward → 真实塔境轨道 + 异境背景', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.battleGuardianWard,
+        IsarSetup.instance,
+      );
+      expect(target, isA<ScenarioLauncher>());
+      final launcher = target as ScenarioLauncher;
+      expect(launcher.bgmTrack, BgmTrack.tower);
+      expect(
+        launcher.sceneBackgroundPath,
+        'assets/scenes/battle_innerrealm.png',
+      );
+    });
+
+    test('高复用敌人四个塔层路由 → 真塔境冻结帧', () async {
+      for (final route in const [
+        VisualRoute.battleTowerFloor13,
+        VisualRoute.battleTowerFloor14,
+        VisualRoute.battleTowerFloor19,
+        VisualRoute.battleTowerFloor22,
+      ]) {
+        final target = await buildVisualTarget(route, IsarSetup.instance);
+        expect(target, isA<ScenarioLauncher>());
+        final launcher = target as ScenarioLauncher;
+        expect(launcher.bgmTrack, BgmTrack.tower);
+        expect(launcher.startPaused, isTrue);
+        expect(
+          launcher.sceneBackgroundPath,
+          'assets/scenes/battle_innerrealm.png',
+        );
+      }
     });
 
     test('battle_tap_live → allowPlayerIntervention:true + autoStart:true '

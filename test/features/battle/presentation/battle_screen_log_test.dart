@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/battle/presentation/battle_effect_sprite.dar
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/projectile_trail.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+import 'package:wuxia_idle/shared/audio/audio_assets.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 const _testAnim = AnimationNumbers(
@@ -250,6 +251,56 @@ void main() {
     expect(_assetImage(WuxiaUi.overlayLanternGlow), findsOneWidget);
     expect(_assetImage(WuxiaUi.overlayInkCloud), findsOneWidget);
     expect(_assetImage(WuxiaUi.overlayLowHealth), findsOneWidget);
+  });
+
+  testWidgets('爬塔异境不叠加灯笼暖光，避免浅色背景偏黄', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final (left, right) = BattleDemo.mockTeams();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          battleProvider.overrideWith(
+            () => _TestBattleNotifier(
+              BattleState.initial(leftTeam: left, rightTeam: right),
+            ),
+          ),
+        ],
+        child: const MaterialApp(
+          home: BattleScreen(animConfig: _testAnim, bgmTrack: BgmTrack.tower),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(_assetImage(WuxiaUi.overlayMistLayer), findsOneWidget);
+    expect(_assetImage(WuxiaUi.overlayLanternGlow), findsNothing);
+  });
+
+  testWidgets('异境路径即使入口漏传 tower 轨道也不叠加灯笼暖光', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final (left, right) = BattleDemo.mockTeams();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          battleProvider.overrideWith(
+            () => _TestBattleNotifier(
+              BattleState.initial(leftTeam: left, rightTeam: right),
+            ),
+          ),
+        ],
+        child: const MaterialApp(
+          home: BattleScreen(
+            animConfig: _testAnim,
+            sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(_assetImage(WuxiaUi.overlayLanternGlow), findsNothing);
   });
 
   testWidgets('actionLog 触发 MJ battle_fx sprite', (tester) async {

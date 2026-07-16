@@ -118,6 +118,8 @@ class WuxiaUi {
       'assets/characters/battle_founder_v2.png';
   static const String battleMountainPassStage =
       'assets/scenes/battle_mountain_pass_stage_v2.png';
+  static const String battleInnerRealmCool =
+      'assets/scenes/battle_innerrealm_cool_v2.png';
   static const String battleFirstDiscipleFallback =
       'assets/characters/battle_first_disciple.png';
   static const String battleSecondDiscipleFallback =
@@ -140,7 +142,16 @@ class WuxiaUi {
   static const String battleRightGuardianStandee =
       'assets/enemies/battle_you_hufa.png';
   static const String battleTowerBoss30Standee =
-      'assets/enemies/battle_tower_boss_30.png';
+      'assets/enemies/battle_tower_boss_30_v2.png';
+  static const String battleJianghuSeniorStandee =
+      'assets/enemies/battle_jianghu_qianbei.png';
+  static const String battleWulinOverlordStandee =
+      'assets/enemies/battle_wulin_bazhu.png';
+  static const String battleNightSwordsmanStandee =
+      'assets/enemies/battle_anye.png';
+  static const String battleAdviserStandee = 'assets/enemies/battle_shiye.png';
+  static const String battleFuChiefStandee =
+      'assets/enemies/battle_fu_zhaizhu.png';
   static const String battleBossEntranceBg =
       'assets/scenes/mj/battle_boss_entrance_bg_01.png';
 }

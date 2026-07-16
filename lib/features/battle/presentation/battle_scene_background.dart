@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 
 enum BattleSceneBackgroundStyle {
@@ -30,8 +31,12 @@ class BattleSceneBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = path;
     final hasImage = p != null && p.isNotEmpty;
+    final isTowerScene =
+        style == BattleSceneBackgroundStyle.tower ||
+        (style == BattleSceneBackgroundStyle.generic &&
+            p?.contains('innerrealm') == true);
     final profile = _SceneDepthProfile.resolve(path: p, style: style);
-    return Stack(
+    final scene = Stack(
       fit: StackFit.expand,
       children: [
         DecoratedBox(
@@ -51,7 +56,12 @@ class BattleSceneBackground extends StatelessWidget {
         ),
         if (hasImage)
           WuxiaImage(
-            p,
+            isTowerScene && p.contains('battle_innerrealm.png')
+                ? WuxiaUi.battleInnerRealmCool
+                : p,
+            key: isTowerScene
+                ? const ValueKey('battle_scene_tower_asset')
+                : null,
             fit: BoxFit.cover,
             errorBuilder: (_, _, _) => const SizedBox.shrink(),
           ),
@@ -88,8 +98,39 @@ class BattleSceneBackground extends StatelessWidget {
         if (hasImage) const ColoredBox(color: WuxiaColors.battleSceneScrim),
       ],
     );
+    if (!isTowerScene) return scene;
+    return ColorFiltered(
+      key: const ValueKey('battle_scene_tower_color_grade'),
+      colorFilter: _towerSceneColorGrade,
+      child: scene,
+    );
   }
 }
+
+/// 塔境整张背景（原画 + 景深 + 地面 + 暗角）统一为冷灰低彩。
+/// 仅包背景组件，不影响人物肤色、流派色、状态牌与技能案台。
+const _towerSceneColorGrade = ColorFilter.matrix(<double>[
+  0.299,
+  0.587,
+  0.114,
+  0,
+  -8,
+  0.299,
+  0.587,
+  0.114,
+  0,
+  0,
+  0.299,
+  0.587,
+  0.114,
+  0,
+  12,
+  0,
+  0,
+  0,
+  1,
+  0,
+]);
 
 class _SceneDepthProfile {
   const _SceneDepthProfile({

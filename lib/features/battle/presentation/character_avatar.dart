@@ -642,6 +642,11 @@ const _battleStandeeOverrides = <String, String>{
   'assets/characters/first_disciple.png': WuxiaUi.battleFirstDiscipleFallback,
   'assets/characters/second_disciple.png': WuxiaUi.battleSecondDiscipleFallback,
   'assets/enemies/thug_a.png': WuxiaUi.battleThugStandee,
+  'assets/enemies/thug_b.png': WuxiaUi.battleBanditArcherStandee,
+  'assets/enemies/thug_c.png': WuxiaUi.battleBanditBladeStandee,
+  'assets/enemies/ruffian_a.png': WuxiaUi.battleThugStandee,
+  'assets/enemies/bandit_head.png': WuxiaUi.battleBanditBladeStandee,
+  'assets/enemies/qingshan.png': WuxiaUi.battleHiddenElderStandee,
   'assets/enemies/qingshan_main.png': WuxiaUi.battleHiddenElderStandee,
   'assets/enemies/black_killer.png': WuxiaUi.battleBlackKillerStandee,
   'assets/enemies/killer_a.png': WuxiaUi.battleBanditBladeStandee,
@@ -651,6 +656,11 @@ const _battleStandeeOverrides = <String, String>{
   'assets/enemies/zuo_hufa.png': WuxiaUi.battleLeftGuardianStandee,
   'assets/enemies/you_hufa.png': WuxiaUi.battleRightGuardianStandee,
   'assets/enemies/tower_boss_30.png': WuxiaUi.battleTowerBoss30Standee,
+  'assets/enemies/jianghu_qianbei.png': WuxiaUi.battleJianghuSeniorStandee,
+  'assets/enemies/wulin_bazhu.png': WuxiaUi.battleWulinOverlordStandee,
+  'assets/enemies/anye.png': WuxiaUi.battleNightSwordsmanStandee,
+  'assets/enemies/shiye.png': WuxiaUi.battleAdviserStandee,
+  'assets/enemies/fu_zhaizhu.png': WuxiaUi.battleFuChiefStandee,
 };
 
 bool _isTransparentBattleStandee(String? path) =>
@@ -670,7 +680,12 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleBanditArcherStandee => 0.939,
   WuxiaUi.battleLeftGuardianStandee => 0.940,
   WuxiaUi.battleRightGuardianStandee => 0.956,
-  WuxiaUi.battleTowerBoss30Standee => 0.976,
+  WuxiaUi.battleTowerBoss30Standee => 0.972,
+  WuxiaUi.battleJianghuSeniorStandee => 0.950,
+  WuxiaUi.battleWulinOverlordStandee => 0.958,
+  WuxiaUi.battleNightSwordsmanStandee => 0.951,
+  WuxiaUi.battleAdviserStandee => 0.951,
+  WuxiaUi.battleFuChiefStandee => 0.927,
   _ => 0.95,
 };
 

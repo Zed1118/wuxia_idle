@@ -268,9 +268,23 @@ void main() {
   });
 
   testWidgets('战场将已配套的旧原画映射到对应透明立绘', (tester) async {
+    expect(
+      WuxiaUi.battleTowerBoss30Standee,
+      'assets/enemies/battle_tower_boss_30_v2.png',
+    );
+    expect(
+      WuxiaUi.battleTowerBoss30Standee,
+      isNot(WuxiaUi.battleFounderFallback),
+    );
+
     const cases = [
       ('assets/characters/founder.png', WuxiaUi.battleFounderFallback),
       ('assets/enemies/thug_a.png', WuxiaUi.battleThugStandee),
+      ('assets/enemies/thug_b.png', WuxiaUi.battleBanditArcherStandee),
+      ('assets/enemies/thug_c.png', WuxiaUi.battleBanditBladeStandee),
+      ('assets/enemies/ruffian_a.png', WuxiaUi.battleThugStandee),
+      ('assets/enemies/bandit_head.png', WuxiaUi.battleBanditBladeStandee),
+      ('assets/enemies/qingshan.png', WuxiaUi.battleHiddenElderStandee),
       ('assets/enemies/qingshan_main.png', WuxiaUi.battleHiddenElderStandee),
       ('assets/enemies/black_killer.png', WuxiaUi.battleBlackKillerStandee),
       ('assets/enemies/killer_a.png', WuxiaUi.battleBanditBladeStandee),
@@ -280,6 +294,14 @@ void main() {
       ('assets/enemies/zuo_hufa.png', WuxiaUi.battleLeftGuardianStandee),
       ('assets/enemies/you_hufa.png', WuxiaUi.battleRightGuardianStandee),
       ('assets/enemies/tower_boss_30.png', WuxiaUi.battleTowerBoss30Standee),
+      (
+        'assets/enemies/jianghu_qianbei.png',
+        WuxiaUi.battleJianghuSeniorStandee,
+      ),
+      ('assets/enemies/wulin_bazhu.png', WuxiaUi.battleWulinOverlordStandee),
+      ('assets/enemies/anye.png', WuxiaUi.battleNightSwordsmanStandee),
+      ('assets/enemies/shiye.png', WuxiaUi.battleAdviserStandee),
+      ('assets/enemies/fu_zhaizhu.png', WuxiaUi.battleFuChiefStandee),
     ];
 
     for (final (sourcePath, standeePath) in cases) {

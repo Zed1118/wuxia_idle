@@ -9,10 +9,12 @@ class BattleAtmosphereOverlay extends StatelessWidget {
     super.key,
     this.showLowHealth = false,
     this.showInkCloud = false,
+    this.showLanternGlow = true,
   });
 
   final bool showLowHealth;
   final bool showInkCloud;
+  final bool showLanternGlow;
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +23,11 @@ class BattleAtmosphereOverlay extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           const _AtmosphereImage(path: WuxiaUi.overlayMistLayer, opacity: 0.18),
-          const _AtmosphereImage(
-            path: WuxiaUi.overlayLanternGlow,
-            opacity: 0.16,
-          ),
+          if (showLanternGlow)
+            const _AtmosphereImage(
+              path: WuxiaUi.overlayLanternGlow,
+              opacity: 0.16,
+            ),
           if (showInkCloud)
             const _AtmosphereImage(
               path: WuxiaUi.overlayInkCloud,

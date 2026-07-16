@@ -484,7 +484,40 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         teamsFactory: BattleScenarioData.scenarioGuardianWard,
         hint: UiStrings.battleGuardianWardHint,
         sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
         allowPlayerIntervention: true,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor13:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor13,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor14:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor14,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor19:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor19,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor22:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor22,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
         startPaused: true,
       );
     case VisualRoute.discipleJoinCeremony:

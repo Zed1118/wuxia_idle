@@ -147,6 +147,10 @@ enum VisualRoute {
     'battle_guardian_ward',
     'floor30 护法结界目检·真终局塔队(九霄魔尊+左使/右使)vs 宗师 on-level:起手冻结在护罩生效帧看「护法结界」pill(内力色)+ boss 金边 + 流派克制标多 tag 堆叠;手动步进清完两护法 → 「结界破！」题字 + 破界闪白动效(单帧截不出手感须真机步进看)',
   ),
+  battleTowerFloor13('battle_tower_floor_13', '敌人立绘验收·真塔13层（暗夜剑客 + 暗夜刀客）'),
+  battleTowerFloor14('battle_tower_floor_14', '敌人立绘验收·真塔14层（江湖前辈 + 师爷）'),
+  battleTowerFloor19('battle_tower_floor_19', '敌人立绘验收·真塔19层（武林前辈 + 武林宿老）'),
+  battleTowerFloor22('battle_tower_floor_22', '敌人立绘验收·真塔22层（绝顶护法甲 + 乙）'),
   discipleJoinCeremony(
     'disciple_join_ceremony',
     '第七阶段批三目检·拜入立绘题字 overlay 动效(读真 lineage_onboarding 配置:大弟子/二弟子真立绘交替循环滑入+放大+「XX 拜入门下」题字,自动重播;单帧截不出须真机看动效)',

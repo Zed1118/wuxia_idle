@@ -747,6 +747,30 @@ class BattleScenarioData {
     return (left, right);
   }
 
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor13() => _scenarioTowerFloorStandeeAudit(13);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor14() => _scenarioTowerFloorStandeeAudit(14);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor19() => _scenarioTowerFloorStandeeAudit(19);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor22() => _scenarioTowerFloorStandeeAudit(22);
+
+  /// 敌人立绘逐层验收：右队读取真塔层，左队只提供稳定的三人尺度参照。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  _scenarioTowerFloorStandeeAudit(int floorIndex) {
+    final floor = GameRepository.instance.towerFloors[floorIndex - 1];
+    final right = StageBattleSetup.buildEnemyTeam(
+      floor.enemyTeam,
+      isTower: true,
+    );
+    final (left, _) = scenarioGuardianWard();
+    return (left, right);
+  }
+
   // ── 场景 C：二流·圆熟 1v1，装备对比 ─────────────────────────────────────────
   //
   // 左：基础攻400 × 强化1.60 × 默契1.20 = 768

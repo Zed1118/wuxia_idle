@@ -17,6 +17,8 @@ DRY_RUN=0
 HITBOX=0
 WAIT_SECONDS=12
 READY_TIMEOUT=90
+ALL_SPACES=0
+EXISTING_WINDOW=0
 
 usage() {
   cat <<'USAGE'
@@ -33,6 +35,9 @@ Options:
   --hitbox                   Enable debug hitbox overlay.
   --wait <seconds>           Seconds to wait after launch before screenshot.
   --ready-timeout <seconds>  Seconds to wait for VISUAL_ROUTE_READY. Default: 90.
+  --all-spaces              Find the app window across all macOS Spaces.
+  --existing-window         Capture an already-running window; do not launch,
+                            focus, resize, or terminate the app.
   --dry-run                  Print planned commands only.
   -h, --help                 Show this help.
 
@@ -44,6 +49,8 @@ Notes:
   - Uses only local Flutter/macOS tools and screencapture.
   - VISUAL_WINDOW_W/H locks the native macOS window before Flutter starts.
   - Captures the app window by CGWindowID; falls back to region capture.
+  - Use --existing-window --all-spaces for background capture from another
+    desktop without switching Spaces or stealing focus.
   - Output path pattern: <output>/<suite-or-route>/<resolution>/<route>.png
 USAGE
 }
@@ -77,6 +84,14 @@ while [[ $# -gt 0 ]]; do
     --ready-timeout)
       READY_TIMEOUT="$2"
       shift 2
+      ;;
+    --all-spaces)
+      ALL_SPACES=1
+      shift
+      ;;
+    --existing-window)
+      EXISTING_WINDOW=1
+      shift
       ;;
     --dry-run)
       DRY_RUN=1
@@ -141,7 +156,11 @@ capture_region() {
 window_id() {
   local err
   err="$(mktemp -t vc_winid.XXXXXX)"
-  swift "$SWIFT_WINID" "$APP_PROCESS_NAME" >/dev/null 2>"$err" || true
+  local args=("$SWIFT_WINID" "$APP_PROCESS_NAME")
+  if [[ "$ALL_SPACES" -eq 1 ]]; then
+    args+=(--all-spaces)
+  fi
+  swift "${args[@]}" >/dev/null 2>"$err" || true
   local best
   best="$(grep -o 'BEST=[0-9-]*' "$err" | cut -d= -f2)"
   rm -f "$err"
@@ -229,6 +248,28 @@ run_capture() {
   fi
 
   mkdir -p "$dir"
+
+  if [[ "$EXISTING_WINDOW" -eq 1 ]]; then
+    if [[ "$DRY_RUN" -eq 1 ]]; then
+      printf '[dry-run] existing-window capture all_spaces=%s %s\n' "$ALL_SPACES" "$png"
+      return
+    fi
+    local existing_wid
+    existing_wid="$(window_id)"
+    if [[ -z "$existing_wid" ]]; then
+      echo "Existing visual window not found (all_spaces=$ALL_SPACES)" >&2
+      return 1
+    fi
+    if ! screencapture -x -o -l"$existing_wid" "$png" >/dev/null 2>&1 || [[ ! -s "$png" ]]; then
+      echo "Failed to capture existing visual window id=$existing_wid" >&2
+      return 1
+    fi
+    {
+      printf 'VISUAL_CAPTURE: existing_window_id:%s\n' "$existing_wid"
+      printf 'VISUAL_CAPTURE_ALL_SPACES: %s\n' "$ALL_SPACES"
+    } >"$log"
+    return
+  fi
 
   local cmd=(
     flutter run -d macos

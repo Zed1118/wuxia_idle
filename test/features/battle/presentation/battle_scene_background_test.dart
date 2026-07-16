@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_scene_background.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_image.dart';
 
 Widget _wrap(Widget c) => MaterialApp(home: Scaffold(body: c));
 
@@ -100,6 +102,42 @@ void main() {
     expect(
       innerDemonGradient.colors.first,
       isNot(lightFootGradient.colors.first),
+    );
+  });
+
+  testWidgets('爬塔背景图单独进入冷灰色分级，不染色其他战斗层', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        const BattleSceneBackground(
+          path: 'assets/scenes/battle_innerrealm.png',
+          style: BattleSceneBackgroundStyle.tower,
+        ),
+      ),
+    );
+    expect(
+      find.byKey(const ValueKey('battle_scene_tower_color_grade')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<WuxiaImage>(
+            find.byKey(const ValueKey('battle_scene_tower_asset')),
+          )
+          .assetPath,
+      WuxiaUi.battleInnerRealmCool,
+    );
+
+    await tester.pumpWidget(
+      _wrap(
+        const BattleSceneBackground(
+          path: 'assets/scenes/battle_citywall.png',
+          style: BattleSceneBackgroundStyle.mainline,
+        ),
+      ),
+    );
+    expect(
+      find.byKey(const ValueKey('battle_scene_tower_color_grade')),
+      findsNothing,
     );
   });
 

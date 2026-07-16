@@ -695,6 +695,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
               child: BattleAtmosphereOverlay(
                 showLowHealth: showLowHealthOverlay,
                 showInkCloud: showBossInkCloud,
+                showLanternGlow:
+                    _usesLanternGlow(backgroundStyle) &&
+                    !_isInnerRealmBackground(widget.sceneBackgroundPath),
               ),
             ),
             SafeArea(
@@ -839,3 +842,11 @@ BattleSceneBackgroundStyle _backgroundStyleForTrack(BgmTrack track) {
       return BattleSceneBackgroundStyle.generic;
   }
 }
+
+bool _usesLanternGlow(BattleSceneBackgroundStyle style) =>
+    style == BattleSceneBackgroundStyle.generic ||
+    style == BattleSceneBackgroundStyle.mainline ||
+    style == BattleSceneBackgroundStyle.boss;
+
+bool _isInnerRealmBackground(String? path) =>
+    path?.contains('battle_innerrealm.png') == true;

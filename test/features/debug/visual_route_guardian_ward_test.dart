@@ -53,4 +53,34 @@ void main() {
     final state = BattleState.initial(leftTeam: left, rightTeam: broken);
     expect(isGuardianWardActive(boss, state), isFalse);
   });
+
+  test('高复用敌人验收路由读取真 13/14/19/22 层队伍', () {
+    final cases = [
+      (BattleScenarioData.scenarioTowerFloor13, {'assets/enemies/anye.png'}),
+      (
+        BattleScenarioData.scenarioTowerFloor14,
+        {'assets/enemies/jianghu_qianbei.png', 'assets/enemies/shiye.png'},
+      ),
+      (
+        BattleScenarioData.scenarioTowerFloor19,
+        {
+          'assets/enemies/wulin_bazhu.png',
+          'assets/enemies/jianghu_qianbei.png',
+        },
+      ),
+      (
+        BattleScenarioData.scenarioTowerFloor22,
+        {'assets/enemies/wulin_bazhu.png', 'assets/enemies/fu_zhaizhu.png'},
+      ),
+    ];
+
+    for (final (factory, expectedPaths) in cases) {
+      final (left, right) = factory();
+      expect(left.length, 3);
+      expect(
+        right.map((character) => character.iconPath).toSet(),
+        containsAll(expectedPaths),
+      );
+    }
+  });
 }
