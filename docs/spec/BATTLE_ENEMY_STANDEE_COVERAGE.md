@@ -7,8 +7,8 @@
 - 正式数据：`data/stages.yaml` + `data/towers.yaml`
 - 不重复敌人原画：79 种
 - 关卡中敌人出场记录：120 次
-- 已接入透明全身立绘：55 / 79
-- 已覆盖出场记录：96 / 120
+- 已接入透明全身立绘：58 / 79
+- 已覆盖出场记录：99 / 120
 
 已覆盖正式敌人：
 
@@ -43,6 +43,9 @@
 - `lightfoot_yexun_a`（专属城防夜巡立绘）
 - `lightfoot_yexun_b`（专属飞檐捕快立绘）
 - `lightfoot_yexun_c`（专属瓦上刺客立绘）
+- `lightfoot_zhuke_a`（专属江南剑客立绘）
+- `lightfoot_zhuke_b`（专属密竹刀客立绘）
+- `lightfoot_zhuke_c`（专属竹林游侠立绘）
 - `jianghu_a`（过渡复用 `battle_jianghu_qianbei`）
 - `mingmen_a`（过渡复用 `battle_wulin_bazhu`）
 - `tower_boss_05`（过渡复用 `battle_bandit_blade`）
@@ -173,10 +176,11 @@
 
 - 已完成渡口队：`lightfoot_shuikou_a`（宽刃水寇）、`lightfoot_shuikou_b`（斗笠竹篙船工）、`lightfoot_shuikou_c`（蒙巾窄刀客）。
 - 已完成夜巡队：`lightfoot_yexun_a`（长枪城防夜巡）、`lightfoot_yexun_b`（绳钩飞檐捕快）、`lightfoot_yexun_c`（双匕瓦上刺客）。
-- 新增覆盖：6 种敌人 / 6 次出场；累计覆盖 55 / 79 种、96 / 120 次出场。
+- 已完成竹林队：`lightfoot_zhuke_a`（灰绿长袍直剑客）、`lightfoot_zhuke_b`（暗紫褐伏身刀客）、`lightfoot_zhuke_c`（卷发阔背棍游侠）。
+- 新增覆盖：9 种敌人 / 9 次出场；累计覆盖 58 / 79 种、99 / 120 次出场。
 - 组队差异：三人共享渡口旧衣与湿冷暗色，但分别使用宽刃、竹篙、窄刀，并以壮年、老者、中年三种体态拆分轮廓。
 - 技术验收：三图均为 RGBA、alpha `0–255`、四角透明、完整头脚与兵器；脚底比例及长兵器画像的视觉体量已校准。
-- 待完成：其余 9 名轻功敌人，以及 `stage_light_foot_01` 至 `05` 的真实整队双视口验收。
+- 待完成：其余 6 名轻功敌人，以及 `stage_light_foot_01` 至 `05` 的真实整队双视口验收。
 
 ## 后续优先级
 

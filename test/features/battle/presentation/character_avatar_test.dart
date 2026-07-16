@@ -319,6 +319,18 @@ void main() {
         'assets/enemies/lightfoot_yexun_c.png',
         WuxiaUi.battleRooftopAssassinStandee,
       ),
+      (
+        'assets/enemies/lightfoot_zhuke_a.png',
+        WuxiaUi.battleJiangnanSwordsmanStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_zhuke_b.png',
+        WuxiaUi.battleBambooSaberStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_zhuke_c.png',
+        WuxiaUi.battleBambooWandererStandee,
+      ),
       ('assets/enemies/black_killer.png', WuxiaUi.battleBlackKillerStandee),
       ('assets/enemies/killer_a.png', WuxiaUi.battleBanditBladeStandee),
       ('assets/enemies/killer_b.png', WuxiaUi.battleBanditArcherStandee),
