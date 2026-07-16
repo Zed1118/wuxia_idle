@@ -6,9 +6,14 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/defs/item_def.dart';
+import '../../../data/numbers_config.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
+import '../../battle/application/stage_battle_setup.dart';
+import '../domain/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
+import 'gauntlet_battle_runner.dart';
+import 'gauntlet_controller.dart';
 
 /// 断魂庄应用服务（spec §5.1/§9.2）。
 ///
@@ -212,6 +217,86 @@ class GauntletService {
       await _isar.bossGauntletRuns.delete(run.id);
     });
   }
+
+  /// 单场战斗驱动：驱动当前关次一场 headless 战斗并原子推进会话（C2.3a·§5.6/§9.2）。
+  ///
+  /// load run → 从会话成员建满血基准队（`buildPlayerTeamForCharacters` 真生产路径：
+  /// autoFill/相生/祖师 buff/伤势）→ `GauntletController.stagePlayerTeam` 按快照装配
+  /// （首关满血/关次间继承 生命·真气·冷却·剔阵亡）→ `GauntletBattleRunner.runStage`
+  /// （seed 混 currentStage·`Random` 确定性）→ `GauntletController.advance` → 单
+  /// `writeTxn` 持久化。**建队/战斗在事务外**（纯计算），仅推进落一个原子事务——
+  /// 战斗中崩溃（未落事务）→ 会话留当前关开打前态·重开重打（§5.6）。
+  ///
+  /// [config]/[numbers] 由 caller 从 `GameRepository.instance` 注入（可测）。
+  Future<GauntletStageResult> fightCurrentStage({
+    required BossGauntletConfig config,
+    required NumbersConfig numbers,
+  }) async {
+    final save = await _isar.saveDatas.get(0);
+    if (save == null) throw StateError('断魂庄开打：无存档');
+    final run = await _activeRun(save.id);
+    if (run == null) throw StateError('断魂庄开打：无进行中会话');
+    if (run.sessionPhase != GauntletPhase.inBattle) {
+      throw StateError('断魂庄开打：仅关次开打态可战斗（当前 ${run.sessionPhase.name}）');
+    }
+    if (run.currentStage < 1 || run.currentStage > config.stages.length) {
+      throw StateError('断魂庄开打：关次越界 ${run.currentStage}');
+    }
+    final stageCfg = config.stages[run.currentStage - 1];
+    final enemyDefs = config.enemiesForTeam(stageCfg.enemyTeamId);
+    if (enemyDefs.isEmpty) {
+      throw StateError('断魂庄开打：关次 ${run.currentStage} 敌队为空（配置损坏）');
+    }
+
+    // 满血基准队（真生产路径）→ 按会话快照装配本关出战队（事务外·纯计算）。
+    final memberIds = run.members.map((m) => m.characterId).toList();
+    final baseTeam = await StageBattleSetup(
+      isar: _isar,
+    ).buildPlayerTeamForCharacters(memberIds);
+    final playerTeam = GauntletController.stagePlayerTeam(
+      baseTeam: baseTeam,
+      members: run.members,
+    );
+    final result = GauntletBattleRunner.runStage(
+      playerTeam: playerTeam,
+      enemyDefs: enemyDefs,
+      numbers: numbers,
+      seed: _stageSeed(run.seed, run.currentStage),
+    );
+    final isBoss = stageCfg.role == 'boss';
+
+    // 单事务原子推进：re-load fresh → advance → put（战斗结果一次落地）。
+    await _isar.writeTxn(() async {
+      final fresh = await _activeRun(save.id);
+      if (fresh == null) return; // 防御：会话已被并发关闭
+      GauntletController.advance(
+        run: fresh,
+        finalState: result.finalState,
+        isBossStage: isBoss,
+      );
+      await _isar.bossGauntletRuns.put(fresh);
+    });
+    return result;
+  }
+
+  /// 整备页「继续闯关」：单 `writeTxn` 把 interlude 翻回 inBattle 开打下一关（§7.2）。
+  /// 关次由上关 [GauntletController.advance] 已递增，本调用只翻相位。
+  Future<void> continueToNextStage() async {
+    return _isar.writeTxn(() async {
+      final save = await _isar.saveDatas.get(0);
+      if (save == null) throw StateError('断魂庄续战：无存档');
+      final run = await _activeRun(save.id);
+      if (run == null) throw StateError('断魂庄续战：无进行中会话');
+      if (run.sessionPhase != GauntletPhase.interlude) {
+        throw StateError('断魂庄续战：仅整备页可继续闯关（当前 ${run.sessionPhase.name}）');
+      }
+      run.sessionPhase = GauntletPhase.inBattle;
+      await _isar.bossGauntletRuns.put(run);
+    });
+  }
+
+  /// 关次稳定种子：会话 [baseSeed] 混当前 [stage]（§5.6·重打同关不重抽·跨关不同流）。
+  static int _stageSeed(int baseSeed, int stage) => baseSeed * 31 + stage;
 
   /// 当前存档的 active 断魂庄会话（每存档 ≤1，§8.3）；无则 null。
   Future<BossGauntletRun?> _activeRun(int saveId) async {

@@ -25,6 +25,48 @@ class GauntletController {
     ];
   }
 
+  /// 关次快照 → 本关玩家出战队（C2.3a·[snapshotAfterStage] 的逆向）。
+  ///
+  /// [baseTeam] = `StageBattleSetup.buildPlayerTeamForCharacters` 满血基准队；按会话
+  /// [members] 快照装配本关出战队：
+  /// - `member.maxHp==0`（enter 占位·首关无检查点）→ 保满血基准，不覆盖；
+  /// - `maxHp>0`（关次间有战末检查点）→ `copyWith` 覆盖当前生命/真气/技能冷却；
+  /// - 阵亡（`isDowned`）或血尽（`currentHp<=0`）→ 剔除（残阵只带存活者·§5.5，
+  ///   镜像 `ExpeditionCombatRunner.fight`）。
+  /// 迭代以 [baseTeam] 为准；无对应 member 的角色跳过（防御）。纯函数。
+  static List<BattleCharacter> stagePlayerTeam({
+    required List<BattleCharacter> baseTeam,
+    required List<ActivityMemberSnapshot> members,
+  }) {
+    final byId = {for (final m in members) m.characterId: m};
+    final team = <BattleCharacter>[];
+    for (final c in baseTeam) {
+      final m = byId[c.characterId];
+      if (m == null) continue; // 非会话成员（防御）
+      if (m.maxHp == 0) {
+        team.add(c); // 首关无检查点·满血基准
+        continue;
+      }
+      if (m.isDowned || m.currentHp <= 0) continue; // 残阵只带存活者
+      team.add(
+        c.copyWith(
+          currentHp: m.currentHp,
+          currentQi: m.currentQi,
+          skillCooldowns: _cooldownMap(m),
+        ),
+      );
+    }
+    return team;
+  }
+
+  static Map<String, int> _cooldownMap(ActivityMemberSnapshot m) {
+    final map = <String, int>{};
+    for (var i = 0; i < m.skillCooldownKeys.length; i++) {
+      map[m.skillCooldownKeys[i]] = m.skillCooldownTurns[i];
+    }
+    return map;
+  }
+
   /// 消费当前关战末态 [finalState]：关次边界快照继承 + 推进一关（§9.2）。
   ///
   /// 胜利非终关 → [GauntletPhase.interlude] 停整备 + `currentStage++`（不自动连打，
