@@ -7,8 +7,8 @@
 - 正式数据：`data/stages.yaml` + `data/towers.yaml`
 - 不重复敌人原画：79 种
 - 关卡中敌人出场记录：120 次
-- 已接入透明全身立绘：30 / 79
-- 已覆盖出场记录：71 / 120
+- 已接入透明全身立绘：42 / 79
+- 已覆盖出场记录：83 / 120
 
 已覆盖正式敌人：
 
@@ -42,6 +42,18 @@
 - `liukou_a`（过渡复用 `battle_fu_zhaizhu`）
 - `guard_a`（过渡复用 `battle_wulin_bazhu`）
 - `shafei_a`（过渡复用 `battle_bandit_archer`）
+- `xiliangboss`（过渡复用 `battle_shiye`）
+- `xiliangbazhu`（过渡复用 `battle_wulin_bazhu`）
+- `tongguan_shoujiang`（过渡复用 `battle_tower_boss_20`）
+- `songshan_daozong_dizi`（过渡复用 `battle_umbrella`）
+- `caobang_duozhu`（过渡复用 `battle_jianghu_qianbei`）
+- `zhongzhou_lunjian_xianfeng`（过渡复用 `battle_zuo_hufa`）
+- `xiliang_sandizi`（过渡复用 `battle_you_hufa`）
+- `lunjian_sanchang_xunluo`（过渡复用 `battle_black_killer`）
+- `songshan_shouguan`（过渡复用 `battle_hidden_elder`）
+- `huanghe_yuantou_yufu`（过渡复用 `battle_jianghu_qianbei`）
+- `kunlun_waimen_shouguan`（过渡复用 `battle_tower_boss_20`）
+- `xiliang_bazhu`（过渡复用 `battle_wulin_bazhu`）
 
 ## 统一资产规格
 
@@ -121,6 +133,13 @@
 - 新增覆盖：6 次敌人出场记录；累计覆盖 71 / 120。
 - 选择依据：分别保留刀客、喽啰、游侠、魁梧头领、关隘武官与荒漠远程手的体型/武器轮廓差异，避免整队使用同一模型。
 - 限制：仍属过渡复用；特别是 `guard_a` 和 `shafei_a` 需在图像生成恢复后重做带关隘甲胄、风沙衣料的专属立绘。
+
+### 批次 07：第四至六章主线全身化（已接入，待专属重做）
+
+- 覆盖范围：`stage_04_04` 至 `stage_06_05` 共 12 名正式敌人。
+- 新增覆盖：12 次敌人出场记录；累计覆盖 83 / 120。
+- 轮廓分组：武林名宿/霸主使用文士与掌门体型；潼关、论剑、昆仑守将使用甲胄、持剑与长兵轮廓；嵩山门人、漕帮舵主、黄河渔人使用轻袍、杖客与老者轮廓。
+- 限制：本批目标是让连续主线不再回落到纸底头像，仍非专属画像定稿。`tongguan_shoujiang`、`kunlun_waimen_shouguan`、`xiliangbazhu` / `xiliang_bazhu` 的身份级别差异需要后续专属立绘强化。
 
 ## 后续优先级
 

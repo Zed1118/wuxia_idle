@@ -311,6 +311,42 @@ void main() {
       ('assets/enemies/liukou_a.png', WuxiaUi.battleFuChiefStandee),
       ('assets/enemies/guard_a.png', WuxiaUi.battleWulinOverlordStandee),
       ('assets/enemies/shafei_a.png', WuxiaUi.battleBanditArcherStandee),
+      ('assets/enemies/xiliangboss.png', WuxiaUi.battleAdviserStandee),
+      ('assets/enemies/xiliangbazhu.png', WuxiaUi.battleWulinOverlordStandee),
+      (
+        'assets/enemies/tongguan_shoujiang.png',
+        WuxiaUi.battleTowerBoss20Standee,
+      ),
+      (
+        'assets/enemies/songshan_daozong_dizi.png',
+        WuxiaUi.battleUmbrellaStandee,
+      ),
+      ('assets/enemies/caobang_duozhu.png', WuxiaUi.battleJianghuSeniorStandee),
+      (
+        'assets/enemies/zhongzhou_lunjian_xianfeng.png',
+        WuxiaUi.battleLeftGuardianStandee,
+      ),
+      (
+        'assets/enemies/xiliang_sandizi.png',
+        WuxiaUi.battleRightGuardianStandee,
+      ),
+      (
+        'assets/enemies/lunjian_sanchang_xunluo.png',
+        WuxiaUi.battleBlackKillerStandee,
+      ),
+      (
+        'assets/enemies/songshan_shouguan.png',
+        WuxiaUi.battleHiddenElderStandee,
+      ),
+      (
+        'assets/enemies/huanghe_yuantou_yufu.png',
+        WuxiaUi.battleJianghuSeniorStandee,
+      ),
+      (
+        'assets/enemies/kunlun_waimen_shouguan.png',
+        WuxiaUi.battleTowerBoss20Standee,
+      ),
+      ('assets/enemies/xiliang_bazhu.png', WuxiaUi.battleWulinOverlordStandee),
       ('assets/enemies/anye.png', WuxiaUi.battleNightSwordsmanStandee),
       ('assets/enemies/shiye.png', WuxiaUi.battleAdviserStandee),
       ('assets/enemies/fu_zhaizhu.png', WuxiaUi.battleFuChiefStandee),
