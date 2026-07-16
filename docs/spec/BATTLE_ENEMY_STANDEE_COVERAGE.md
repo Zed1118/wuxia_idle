@@ -89,8 +89,8 @@
 - `lunjian_sanchang_xunluo`（过渡复用 `battle_black_killer`）
 - `songshan_shouguan`（过渡复用 `battle_hidden_elder`）
 - `huanghe_yuantou_yufu`（过渡复用 `battle_jianghu_qianbei`）
-- `kunlun_waimen_shouguan`（过渡复用 `battle_tower_boss_20`）
-- `xiliang_bazhu`（过渡复用 `battle_wulin_bazhu`）
+- `kunlun_waimen_shouguan`（专属昆仑外门守关立绘）
+- `xiliang_bazhu`（专属武圣阶段西凉霸主立绘）
 
 ## 统一资产规格
 
@@ -233,8 +233,10 @@
 - `xiliangbazhu` 已由通用武林霸主复用替换为专属“西凉霸主”：毛领重衣、重型长柄刀、宽阔压迫体态。
 - `zhongzhou_lunjian_xianfeng` 已由左护法复用替换为专属“中州论剑先锋”：烟灰正统袍服、正式低位剑势。
 - `xiliang_sandizi` 已由右护法复用替换为专属“西凉霸主三弟子”：年长秃首、暗梅短披、双月牙钩刃。
-- 四图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；生产映射、脚底锚点均已接入。
-- 待完成：其余正式章节 Boss 过渡复用，以及真实双视口验收。
+- `kunlun_waimen_shouguan` 已由通用塔 20 守将复用替换为专属昆仑守关：冷地毛领、额甲、铁头长棍。
+- `xiliang_bazhu` 已由通用霸主复用替换为专属武圣形态：年长灰髯、无兵器开掌、克制宗师轮廓。
+- 六图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；生产映射、脚底锚点均已接入。
+- 待完成：章节 Boss 真实双视口验收；正式数据中已无仍复用他人立绘的 Boss。
 
 ## 后续优先级
 

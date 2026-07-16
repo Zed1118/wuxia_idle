@@ -483,9 +483,12 @@ void main() {
       ),
       (
         'assets/enemies/kunlun_waimen_shouguan.png',
-        WuxiaUi.battleTowerBoss20Standee,
+        WuxiaUi.battleKunlunGateGuardianStandee,
       ),
-      ('assets/enemies/xiliang_bazhu.png', WuxiaUi.battleWulinOverlordStandee),
+      (
+        'assets/enemies/xiliang_bazhu.png',
+        WuxiaUi.battleWesternOverlordSaintStandee,
+      ),
       ('assets/enemies/anye.png', WuxiaUi.battleNightSwordsmanStandee),
       ('assets/enemies/shiye.png', WuxiaUi.battleAdviserStandee),
       ('assets/enemies/fu_zhaizhu.png', WuxiaUi.battleFuChiefStandee),

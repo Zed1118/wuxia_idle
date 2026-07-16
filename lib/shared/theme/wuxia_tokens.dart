@@ -239,6 +239,10 @@ class WuxiaUi {
       'assets/enemies/battle_zhongzhou_lunjian_xianfeng.png';
   static const String battleWesternThirdDiscipleStandee =
       'assets/enemies/battle_xiliang_sandizi.png';
+  static const String battleKunlunGateGuardianStandee =
+      'assets/enemies/battle_kunlun_waimen_shouguan.png';
+  static const String battleWesternOverlordSaintStandee =
+      'assets/enemies/battle_xiliang_bazhu.png';
   static const String battleLeftGuardianStandee =
       'assets/enemies/battle_zuo_hufa.png';
   static const String battleRightGuardianStandee =
