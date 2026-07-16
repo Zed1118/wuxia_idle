@@ -419,8 +419,11 @@ void main() {
       ('assets/enemies/killer_a.png', WuxiaUi.battleBanditBladeStandee),
       ('assets/enemies/killer_b.png', WuxiaUi.battleBanditArcherStandee),
       ('assets/enemies/umbrella.png', WuxiaUi.battleUmbrellaStandee),
-      ('assets/enemies/tower_boss_05.png', WuxiaUi.battleBanditBladeStandee),
-      ('assets/enemies/tower_boss_10.png', WuxiaUi.battleJianghuSeniorStandee),
+      (
+        'assets/enemies/tower_boss_05.png',
+        WuxiaUi.battleSwordStoneElderStandee,
+      ),
+      ('assets/enemies/tower_boss_10.png', WuxiaUi.battleBlackWindChiefStandee),
       ('assets/enemies/tower_boss_15.png', WuxiaUi.battleNightSwordsmanStandee),
       ('assets/enemies/tower_boss_20.png', WuxiaUi.battleTowerBoss20Standee),
       ('assets/enemies/tower_boss_25.png', WuxiaUi.battleBanditBladeStandee),

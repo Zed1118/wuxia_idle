@@ -69,8 +69,8 @@
 - `massbattle_canbu_c`（专属西凉刺客立绘）
 - `jianghu_a`（过渡复用 `battle_jianghu_qianbei`）
 - `mingmen_a`（过渡复用 `battle_wulin_bazhu`）
-- `tower_boss_05`（过渡复用 `battle_bandit_blade`）
-- `tower_boss_10`（过渡复用 `battle_jianghu_qianbei`）
+- `tower_boss_05`（专属试剑石老叟立绘）
+- `tower_boss_10`（专属黑风寨主立绘）
 - `tower_boss_15`（过渡复用 `battle_anye`）
 - `tower_boss_25`（过渡复用 `battle_bandit_blade`）
 - `bandit_b`（过渡复用 `battle_bandit_blade`）
@@ -217,6 +217,13 @@
 - 组队差异：每队共享材质和色相，但通过统领、轻捷、重守三类体态及不同兵器拆分轮廓；关骑队不使用坐骑，避免破坏三人阵型和脚底落地关系。
 - 技术验收：关骑与残部六图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；四边有效留白均不小于 8%。
 - 待完成：`stage_mass_battle_01` 至 `05` 的真实整队双视口验收，以及台账中“过渡复用”条目的专属化重做。
+
+### 批次 12：爬塔 Boss 过渡复用清理（进行中）
+
+- `tower_boss_05` 已由普通山匪刀客复用替换为专属“试剑石老叟”：秃顶白发、补丁灰袍、横持试剑铁剑。
+- `tower_boss_10` 已由江湖前辈复用替换为专属“黑风寨主”：文士面貌、黑风披肩、铁骨扇与佩剑。
+- 两图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；已接入脚底锚点及光学校准。
+- 待完成：`tower_boss_15`、`tower_boss_25` 专属化，以及塔 5 / 10 / 15 / 25 的真实双视口验收。
 
 ## 后续优先级
 
