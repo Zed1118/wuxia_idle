@@ -463,13 +463,16 @@ void main() {
       ('assets/enemies/xiliangbazhu.png', WuxiaUi.battleWesternOverlordStandee),
       (
         'assets/enemies/tongguan_shoujiang.png',
-        WuxiaUi.battleTowerBoss20Standee,
+        WuxiaUi.battleTongguanDefenderStandee,
       ),
       (
         'assets/enemies/songshan_daozong_dizi.png',
-        WuxiaUi.battleUmbrellaStandee,
+        WuxiaUi.battleSongshanDaoistDiscipleStandee,
       ),
-      ('assets/enemies/caobang_duozhu.png', WuxiaUi.battleJianghuSeniorStandee),
+      (
+        'assets/enemies/caobang_duozhu.png',
+        WuxiaUi.battleCanalGangHelmsmanStandee,
+      ),
       (
         'assets/enemies/zhongzhou_lunjian_xianfeng.png',
         WuxiaUi.battleCentralPlainsVanguardStandee,
@@ -480,15 +483,15 @@ void main() {
       ),
       (
         'assets/enemies/lunjian_sanchang_xunluo.png',
-        WuxiaUi.battleBlackKillerStandee,
+        WuxiaUi.battleArenaPatrolStandee,
       ),
       (
         'assets/enemies/songshan_shouguan.png',
-        WuxiaUi.battleHiddenElderStandee,
+        WuxiaUi.battleSongshanGatekeeperStandee,
       ),
       (
         'assets/enemies/huanghe_yuantou_yufu.png',
-        WuxiaUi.battleJianghuSeniorStandee,
+        WuxiaUi.battleYellowRiverFisherStandee,
       ),
       (
         'assets/enemies/kunlun_waimen_shouguan.png',

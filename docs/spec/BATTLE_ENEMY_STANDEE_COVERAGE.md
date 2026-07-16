@@ -81,14 +81,14 @@
 - `shafei_a`（专属沙匪头领立绘）
 - `xiliangboss`（专属西凉武林名宿立绘）
 - `xiliangbazhu`（专属西凉霸主立绘）
-- `tongguan_shoujiang`（过渡复用 `battle_tower_boss_20`）
-- `songshan_daozong_dizi`（过渡复用 `battle_umbrella`）
-- `caobang_duozhu`（过渡复用 `battle_jianghu_qianbei`）
+- `tongguan_shoujiang`（专属潼关守将立绘）
+- `songshan_daozong_dizi`（专属嵩山道宗弟子立绘）
+- `caobang_duozhu`（专属漕帮舵主立绘）
 - `zhongzhou_lunjian_xianfeng`（专属中州论剑先锋立绘）
 - `xiliang_sandizi`（专属西凉霸主三弟子立绘）
-- `lunjian_sanchang_xunluo`（过渡复用 `battle_black_killer`）
-- `songshan_shouguan`（过渡复用 `battle_hidden_elder`）
-- `huanghe_yuantou_yufu`（过渡复用 `battle_jianghu_qianbei`）
+- `lunjian_sanchang_xunluo`（专属论剑场散场巡逻立绘）
+- `songshan_shouguan`（专属嵩山守关立绘）
+- `huanghe_yuantou_yufu`（专属黄河源头渔人立绘）
 - `kunlun_waimen_shouguan`（专属昆仑外门守关立绘）
 - `xiliang_bazhu`（专属武圣阶段西凉霸主立绘）
 
@@ -169,7 +169,7 @@
 - 西域映射：`liukou_a` → `battle_fu_zhaizhu`、`guard_a` → `battle_wulin_bazhu`、`shafei_a` → `battle_bandit_archer`
 - 新增覆盖：6 次敌人出场记录；累计覆盖 71 / 120。
 - 选择依据：分别保留刀客、喽啰、游侠、魁梧头领、关隘武官与荒漠远程手的体型/武器轮廓差异，避免整队使用同一模型。
-- 限制：仍属过渡复用；特别是 `guard_a` 和 `shafei_a` 需在图像生成恢复后重做带关隘甲胄、风沙衣料的专属立绘。
+- 后续状态：本批最初使用共享资源的 `guard_a` 与 `shafei_a`，已在批次 14 分别重做为关隘甲胄与风沙衣料的专属立绘。
 
 ### 批次 07：第四至六章主线全身化（已接入，待专属重做）
 
@@ -216,9 +216,9 @@
 - 新增覆盖：15 种敌人 / 15 次出场；累计覆盖 79 / 79 种、120 / 120 次出场。
 - 组队差异：每队共享材质和色相，但通过统领、轻捷、重守三类体态及不同兵器拆分轮廓；关骑队不使用坐骑，避免破坏三人阵型和脚底落地关系。
 - 技术验收：关骑与残部六图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；四边有效留白均不小于 8%。
-- 待完成：`stage_mass_battle_01` 至 `05` 的真实整队双视口验收，以及台账中“过渡复用”条目的专属化重做。
+- 待完成：`stage_mass_battle_01` 至 `05` 的真实整队双视口验收；共享资源专属化已在后续批次完成。
 
-### 批次 12：爬塔 Boss 过渡复用清理（进行中）
+### 批次 12：爬塔 Boss 共享资源专属化（资产完成，验收待办）
 
 - `tower_boss_05` 已由普通山匪刀客复用替换为专属“试剑石老叟”：秃顶白发、补丁灰袍、横持试剑铁剑。
 - `tower_boss_10` 已由江湖前辈复用替换为专属“黑风寨主”：文士面貌、黑风披肩、铁骨扇与佩剑。
@@ -227,7 +227,7 @@
 - 四图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；已接入脚底锚点及光学校准。
 - 待完成：塔 5 / 10 / 15 / 25 的真实双视口验收。
 
-### 批次 13：章节 Boss 过渡复用清理（进行中）
+### 批次 13：章节 Boss 共享资源专属化（资产完成，验收待办）
 
 - `xiliangboss` 已由师爷复用替换为专属“西凉武林名宿”：灰发长髯、厚重旅袍、无兵器掌法起手。
 - `xiliangbazhu` 已由通用武林霸主复用替换为专属“西凉霸主”：毛领重衣、重型长柄刀、宽阔压迫体态。
@@ -238,14 +238,17 @@
 - 六图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；生产映射、脚底锚点均已接入。
 - 待完成：章节 Boss 真实双视口验收；正式数据中已无仍复用他人立绘的 Boss。
 
-### 批次 14：早期普通敌人过渡复用清理（进行中）
+### 批次 14：普通敌人共享资源专属化（资产完成，验收待办）
 
 - `jianghu_a`、`mingmen_a`、`bandit_b`、`bandit_c`、`jianghu_b` 已分别替换为戴笠掌客、名门剑弟子、青年三流刀客、黑风寨老喽啰与中年游侠专属立绘。
 - 五图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；四边有效留白均不小于 7%。
 - 早期塔层与江湖队伍不再复用江湖前辈、武林霸主、山匪刀客、打手或师爷的脸。
 - `liukou_a`、`guard_a`、`shafei_a` 已分别替换为巨斧流寇头领、长枪玉门把总、弓刀沙匪头领专属立绘。
 - 边塞三图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；长枪画像保留完整枪尖与脚底。
-- 待完成：余下 6 名普通敌人过渡复用及真实双视口验收。
+- `tongguan_shoujiang`、`songshan_daozong_dizi`、`caobang_duozhu`、`lunjian_sanchang_xunluo`、`songshan_shouguan`、`huanghe_yuantou_yufu` 已分别接入专属潼关重守、道宗剑客、河运舵主、论剑巡逻、嵩山杖客、黄河渔人立绘。
+- 最后六图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；嵩山守关已在接入前修正为面向屏幕左侧。
+- 正式 79 种敌人现均拥有独立透明全身战斗资源，台账中已无临时共享条目。
+- 待完成：真实关卡双视口验收与截图审计，不再新增角色立绘，除非验收发现明确风格或构图缺陷。
 
 ## 后续优先级
 

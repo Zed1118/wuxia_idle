@@ -729,17 +729,21 @@ const _battleStandeeOverrides = <String, String>{
   'assets/enemies/shafei_a.png': WuxiaUi.battleDesertBanditLeaderStandee,
   'assets/enemies/xiliangboss.png': WuxiaUi.battleWesternMartialSeniorStandee,
   'assets/enemies/xiliangbazhu.png': WuxiaUi.battleWesternOverlordStandee,
-  'assets/enemies/tongguan_shoujiang.png': WuxiaUi.battleTowerBoss20Standee,
-  'assets/enemies/songshan_daozong_dizi.png': WuxiaUi.battleUmbrellaStandee,
-  'assets/enemies/caobang_duozhu.png': WuxiaUi.battleJianghuSeniorStandee,
+  'assets/enemies/tongguan_shoujiang.png':
+      WuxiaUi.battleTongguanDefenderStandee,
+  'assets/enemies/songshan_daozong_dizi.png':
+      WuxiaUi.battleSongshanDaoistDiscipleStandee,
+  'assets/enemies/caobang_duozhu.png': WuxiaUi.battleCanalGangHelmsmanStandee,
   'assets/enemies/zhongzhou_lunjian_xianfeng.png':
       WuxiaUi.battleCentralPlainsVanguardStandee,
   'assets/enemies/xiliang_sandizi.png':
       WuxiaUi.battleWesternThirdDiscipleStandee,
   'assets/enemies/lunjian_sanchang_xunluo.png':
-      WuxiaUi.battleBlackKillerStandee,
-  'assets/enemies/songshan_shouguan.png': WuxiaUi.battleHiddenElderStandee,
-  'assets/enemies/huanghe_yuantou_yufu.png': WuxiaUi.battleJianghuSeniorStandee,
+      WuxiaUi.battleArenaPatrolStandee,
+  'assets/enemies/songshan_shouguan.png':
+      WuxiaUi.battleSongshanGatekeeperStandee,
+  'assets/enemies/huanghe_yuantou_yufu.png':
+      WuxiaUi.battleYellowRiverFisherStandee,
   'assets/enemies/kunlun_waimen_shouguan.png':
       WuxiaUi.battleKunlunGateGuardianStandee,
   'assets/enemies/xiliang_bazhu.png': WuxiaUi.battleWesternOverlordSaintStandee,
@@ -823,6 +827,12 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleRaiderLeaderStandee => 0.934,
   WuxiaUi.battleYumenGarrisonOfficerStandee => 0.947,
   WuxiaUi.battleDesertBanditLeaderStandee => 0.944,
+  WuxiaUi.battleTongguanDefenderStandee => 0.953,
+  WuxiaUi.battleSongshanDaoistDiscipleStandee => 0.921,
+  WuxiaUi.battleCanalGangHelmsmanStandee => 0.934,
+  WuxiaUi.battleArenaPatrolStandee => 0.936,
+  WuxiaUi.battleSongshanGatekeeperStandee => 0.942,
+  WuxiaUi.battleYellowRiverFisherStandee => 0.926,
   WuxiaUi.battleLeftGuardianStandee => 0.940,
   WuxiaUi.battleRightGuardianStandee => 0.956,
   WuxiaUi.battleTowerBoss30Standee => 0.972,
@@ -979,6 +989,11 @@ _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
     scale: 1.05,
     horizontalShiftFraction: 0,
   ),
+  WuxiaUi.battleTongguanDefenderStandee => (
+    scale: 1.05,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleArenaPatrolStandee => (scale: 1.08, horizontalShiftFraction: 0),
   _ => (scale: 1, horizontalShiftFraction: 0),
 };
 

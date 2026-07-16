@@ -259,6 +259,18 @@ class WuxiaUi {
       'assets/enemies/battle_guard_a.png';
   static const String battleDesertBanditLeaderStandee =
       'assets/enemies/battle_shafei_a.png';
+  static const String battleTongguanDefenderStandee =
+      'assets/enemies/battle_tongguan_shoujiang.png';
+  static const String battleSongshanDaoistDiscipleStandee =
+      'assets/enemies/battle_songshan_daozong_dizi.png';
+  static const String battleCanalGangHelmsmanStandee =
+      'assets/enemies/battle_caobang_duozhu.png';
+  static const String battleArenaPatrolStandee =
+      'assets/enemies/battle_lunjian_sanchang_xunluo.png';
+  static const String battleSongshanGatekeeperStandee =
+      'assets/enemies/battle_songshan_shouguan.png';
+  static const String battleYellowRiverFisherStandee =
+      'assets/enemies/battle_huanghe_yuantou_yufu.png';
   static const String battleLeftGuardianStandee =
       'assets/enemies/battle_zuo_hufa.png';
   static const String battleRightGuardianStandee =
