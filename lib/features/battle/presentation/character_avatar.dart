@@ -642,7 +642,7 @@ const _battleStandeeOverrides = <String, String>{
   'assets/characters/first_disciple.png': WuxiaUi.battleFirstDiscipleFallback,
   'assets/characters/second_disciple.png': WuxiaUi.battleSecondDiscipleFallback,
   'assets/enemies/thug_a.png': WuxiaUi.battleThugStandee,
-  'assets/enemies/thug_b.png': WuxiaUi.battleBanditArcherStandee,
+  'assets/enemies/thug_b.png': WuxiaUi.battleYoungRuffianStandee,
   'assets/enemies/thug_c.png': WuxiaUi.battleBanditBladeStandee,
   'assets/enemies/ruffian_a.png': WuxiaUi.battleThugStandee,
   'assets/enemies/bandit_b.png': WuxiaUi.battleBanditBladeStandee,
@@ -704,6 +704,7 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleHiddenElderStandee => 0.952,
   WuxiaUi.battleBanditBladeStandee => 0.823,
   WuxiaUi.battleBanditArcherStandee => 0.939,
+  WuxiaUi.battleYoungRuffianStandee => 0.928,
   WuxiaUi.battleLeftGuardianStandee => 0.940,
   WuxiaUi.battleRightGuardianStandee => 0.956,
   WuxiaUi.battleTowerBoss30Standee => 0.972,
@@ -738,6 +739,10 @@ _StageStandeeOpticalProfile _stageStandeeOpticalProfile(String? path) =>
       ),
       WuxiaUi.battleBanditArcherStandee => (
         scale: 1.045,
+        horizontalShiftFraction: 0,
+      ),
+      WuxiaUi.battleYoungRuffianStandee => (
+        scale: 1.06,
         horizontalShiftFraction: 0,
       ),
       _ => (scale: 1, horizontalShiftFraction: 0),

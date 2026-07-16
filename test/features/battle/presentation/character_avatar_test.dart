@@ -280,7 +280,7 @@ void main() {
     const cases = [
       ('assets/characters/founder.png', WuxiaUi.battleFounderFallback),
       ('assets/enemies/thug_a.png', WuxiaUi.battleThugStandee),
-      ('assets/enemies/thug_b.png', WuxiaUi.battleBanditArcherStandee),
+      ('assets/enemies/thug_b.png', WuxiaUi.battleYoungRuffianStandee),
       ('assets/enemies/thug_c.png', WuxiaUi.battleBanditBladeStandee),
       ('assets/enemies/ruffian_a.png', WuxiaUi.battleThugStandee),
       ('assets/enemies/bandit_b.png', WuxiaUi.battleBanditBladeStandee),
