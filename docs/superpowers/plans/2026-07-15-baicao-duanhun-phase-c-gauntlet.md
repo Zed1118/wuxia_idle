@@ -45,7 +45,7 @@ git grep -n "gauntletHpHealPct\|item_duanhuntie\|class BossGauntletConfig" lib/ 
 
 # ── C1：控制器 / 真气扣减 / 关次快照 ──
 
-## Task C1.1: 敌方真气扣减通用效果（§5.2，引擎新维度）
+## Task C1.1: 敌方真气扣减通用效果（§5.2，引擎新维度） ✅ 完成 `2000fd55`
 
 **Files:**
 - Create: `lib/features/boss_gauntlet/domain/qi_drain_effect.dart`
@@ -111,7 +111,7 @@ class QiDrainEffect {
 
 ---
 
-## Task C1.2: 跨关状态白名单快照（§4.2/§5.5）
+## Task C1.2: 跨关状态白名单快照（§4.2/§5.5） ✅ 完成 `17d14e5e`
 
 **Files:**
 - Create: `lib/features/boss_gauntlet/application/gauntlet_controller.dart`（快照部分）
@@ -189,10 +189,14 @@ class QiDrainEffect {
 - [ ] macOS debug build
 
 ## 当前恢复点
-- **状态：** 未开工（依赖 Phase A；与 Phase B 独立可并行）。
-- **下一步：** C1.1 qi_drain 效果。
-- **已跑验证：** 接口对真实代码核（`BossGauntletRun`/`GauntletPhase`/托管三列表（A1）/`gauntletHpHealPct`/断魂帖/`BossGauntletConfig`（A2）/`BattleResolutionService.resolve`（`battle_resolution.dart:105`）/`RewardEntry`/`CharacterOccupancyService`）。
-- **阻塞项：** Phase A 未完成前不开工。
+- **状态：** C1 组进行中。**C1.1** qi_drain 效果 ✅ commit `2000fd55`；**C1.2** 关次边界白名单快照 ✅ commit `17d14e5e`（`ActivityMemberSnapshot` 加冷却平行列 `skillCooldownKeys/Turns`，可加性无 saveVer 迁移、远征留空）。C1.3 未开工。
+- **下一步：** C1.3 分三子切片（TDD·建议序）：
+  1. **qi_drain 引擎接线（风险点·先做）**：`SkillDef` 加 `qiDrainPct`（skills.yaml camelCase 例外·§4）；`default_ground_strategy._resolveAction` 蓄力完成（`forcedSkill != null` = 未破招，line ~407）后对存活对方队施 `QiDrainEffect`（复用 C1.1）；测走 battle-determinism harness（ProviderContainer + notifier.advance，memory `feedback_battle_determinism_test_via_notifier`）。**破招/stagger/承伤窗口复用既有 charge-break-vulnerability，无需新引擎码**。
+  2. **敌队内容 3 队 `EnemyDef`**：苏无咎+2 青衣护院（灵巧·锁脉针 charge+qiDrainPct 0.30·破招 vulnerability 窗外 0.65）/石镇岳+2 执杖庄客（刚猛·guardianWard 0.25·全倒「铁衣破」）/闻九针（阴柔·bossPhases 三阶段 100-70 集中/70-35 逆行封脉 vuln 0.35/<35 断魂九针）。机制全走 `EnemyDef` 既有字段（bossPhases/guardianWard/vulnerability）；数值占位 `TODO(batch3-probe)`。合成参照 `expedition_combat_runner._synthesizeEnemies` → `StageBattleSetup.buildEnemyTeam`；`boss_gauntlets.yaml` enemy_team_id 已配。
+  3. **`gauntlet_battle_runner` + `GauntletController.advance()`**：runner 沿 `ExpeditionBattleRunner.runNodeBattle`（`default_ground_strategy.runToEnd` + `Random(seed)`）；advance 跑当前关 → `snapshotAfterStage`（C1.2 已备）→ currentStage++/进 interlude 不自动连打；seed = `stableSeed(saveId, gauntletRunId, stage)`。
+- **已跑验证（2026-07-16 本会话 worktree 实测）：** analyze `lib test` 0；C1.1 3/3；C1.2 2/2；expedition+activity+boss_gauntlet 回归 75/0；**全量 `flutter test --no-pub` 4125 pass / 0 fail**（基线 4120+5）。
+- **阻塞项：** 无（Phase A 冻结完备）。**C2.4 奖励发放前需用户拍板**：2 孤儿招（千钧坠岳/烛影摇红·`mount_deferred:true`）挂载去向——本 Phase C 计划未含（首通奖励是新招「锁脉针法」），推荐并入远征遗迹掉落做独立小批。
+- **计划修订记录：** ① C1.1 测原 plan 有矛盾期望值（`applyTo(100,140)` 同时写 70 与 58），已按 design §5.2「30% 最大真气」订正为 **58**；② C1.2 `snapshotAfterStage` 签名加 `before` 入参以保留 reserved 占用冻结（plan 原单参签名会丢 reserved）。
 
 ## 自检（写完 vs 源规格）
 - **Spec 覆盖：** §5.1 入场托管（C2.1）·§5.2 真气扣减（C1.1）·§5.2-5.4 三关机制（C1.3）·§4.2/5.5 跨关白名单（C1.2）·§5.6/§10 恢复（C2.3）·§6.2 命名装备+保护（C2.4）·§6.3 失败（C2.5）·§9.2 事务幂等（C2.1/2.2/2.4）·§7 UI（C2.5）·§12.2 战斗测试（C1.3）·§12.4 visual_route（C2.5）。
