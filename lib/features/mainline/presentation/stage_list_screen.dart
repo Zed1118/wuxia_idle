@@ -55,153 +55,193 @@ class StageListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(chapterStagesProvider(chapterIndex));
     return Scaffold(
-      backgroundColor: WuxiaColors.background,
+      backgroundColor: const Color(0xFF17130F),
       appBar: AppBar(
         title: Text(UiStrings.chapterTitle(chapterIndex)),
-        backgroundColor: WuxiaColors.sidebar,
-        foregroundColor: WuxiaColors.textPrimary,
+        centerTitle: true,
+        toolbarHeight: 60,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        backgroundColor: const Color(0xF216130F),
+        foregroundColor: const Color(0xFFE2CDA2),
+        titleTextStyle: const TextStyle(
+          color: Color(0xFFE2CDA2),
+          fontSize: 21,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 2.4,
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: const Color(0x805F4B2C)),
+        ),
       ),
-      body: SafeArea(
-        child: async.when(
-          loading: () => const Center(child: InkLoadingIndicator()),
-          error: (e, _) => Center(
-            child: SelectableText(
-              UiStrings.loadFailed(e),
-              style: const TextStyle(color: WuxiaColors.hpLow),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          WuxiaImage(
+            chapterCoverPath(chapterIndex),
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) =>
+                const ColoredBox(color: Color(0xFF17130F)),
+          ),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xD916130F), Color(0xF2181511)],
+              ),
             ),
           ),
-          data: (entries) {
-            if (entries.isEmpty) {
-              return const Center(
-                child: Text(
-                  UiStrings.stageListEmpty,
-                  style: TextStyle(color: WuxiaColors.textMuted),
+          SafeArea(
+            child: async.when(
+              loading: () => const Center(child: InkLoadingIndicator()),
+              error: (e, _) => Center(
+                child: SelectableText(
+                  UiStrings.loadFailed(e),
+                  style: const TextStyle(color: WuxiaColors.hpLow),
                 ),
-              );
-            }
-            // 周目按章(Phase 2):章 key + 该章已通最高周目决定进入周目。
-            final chapterKey = 'ch$chapterIndex';
-            final progress = ref
-                .watch(mainlineProgressProvider)
-                .maybeWhen(data: (d) => d, orElse: () => null);
-            // watch(非 read):玩家在 CycleSelectControl 切周目时本屏须重建,
-            // 使扫荡按钮标签/门槛、各关卡按周目状态都随选定周目刷新。
-            final selectedCycle = ref.watch(
-              selectedChallengeCycleProvider(chapterKey),
-            );
-            int cycleFor() {
-              if (progress == null) return 1;
-              return resolveTargetCycle(selectedCycle, progress, chapterKey);
-            }
-
-            // 按选定周目算关卡显示状态:cycle 1 用原解锁链状态;cycle≥2 时全关已由
-            // 首周目解锁→该周目通过该关(clearedStageCycleKeys 含 id#cycle)显「已通关」,
-            // 否则显「可挑战」。修正旧 bug:二周目视图沿用首周目 clearedStageIds 全显
-            // 「已通关」误导玩家以为本周目已打完。
-            StageStatus statusFor(StageEntry e) {
-              final c = cycleFor();
-              if (c <= 1 || progress == null) return e.status;
-              final clearedThisCycle = progress.clearedStageCycleKeys.contains(
-                '${e.def.id}#$c',
-              );
-              return clearedThisCycle
-                  ? StageStatus.cleared
-                  : StageStatus.available;
-            }
-
-            // 主战角色当前境界（用于掉落传闻弹窗 above-realm 提示）。
-            // 任一层 async 未就绪 → null（dialog 宽容 null，仅跳过超境提示）。
-            final activeIds = ref
-                .watch(activeCharacterIdsProvider)
-                .maybeWhen(data: (ids) => ids, orElse: () => const <int>[]);
-            final activeCharacters = <Character>[
-              for (final id in activeIds)
-                if (ref
-                        .watch(characterByIdProvider(id))
-                        .maybeWhen(data: (c) => c, orElse: () => null)
-                    case final Character c)
-                  c,
-            ];
-            final currentRealm = activeCharacters.isEmpty
-                ? null
-                : activeCharacters.first.realmTier;
-            final currentGoal = NewSaveGoalGuidance.fromChapterEntries(
-              chapterIndex: chapterIndex,
-              entries: [
-                for (final entry in entries)
-                  (def: entry.def, status: statusFor(entry)),
-              ],
-            );
-
-            final sweepEligible =
-                progress != null &&
-                SweepEligibility.forChapter(
-                  clearedStageCycleKeys: progress.clearedStageCycleKeys,
-                  cycle: cycleFor(),
-                  chapterStageIds: [for (final e in entries) e.def.id],
-                );
-            final everCleared =
-                progress != null &&
-                MainlineProgressService.highestClearedCycleForChapter(
-                      progress,
-                      chapterKey,
-                    ) >=
-                    1;
-            final replayRewardUnlocked =
-                progress != null &&
-                progress.clearedStageIds.contains(kFirstChapterFinalStageId);
-
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                return Align(
-                  alignment: Alignment.topCenter,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1120),
-                    child: ListView(
-                      padding: EdgeInsets.fromLTRB(
-                        constraints.maxWidth >= 900 ? 24 : 16,
-                        16,
-                        constraints.maxWidth >= 900 ? 24 : 16,
-                        20,
-                      ),
-                      children: [
-                        _StageJourneyMap(
-                          chapterIndex: chapterIndex,
-                          entries: entries,
-                        ),
-                        _ChapterFarmSpotsPanel(entries: entries),
-                        const SizedBox(height: 12),
-                        _StageActionBand(
-                          chapterKey: chapterKey,
-                          chapterIndex: chapterIndex,
-                          entries: entries,
-                          eligible: sweepEligible,
-                          everCleared: everCleared,
-                          cycle: cycleFor(),
-                        ),
-                        _ChapterStageTimeline(
-                          entries: entries,
-                          statusFor: statusFor,
-                          targetCycle: cycleFor(),
-                          currentRealm: currentRealm,
-                          activeCharacters: activeCharacters,
-                          goalGuidance: currentGoal,
-                          replayRewardUnlocked: replayRewardUnlocked,
-                          onRunStage: (stage) => runStageFlow(
-                            context: context,
-                            ref: ref,
-                            stage: stage,
-                            targetCycle: cycleFor(),
-                          ),
-                        ),
-                      ],
+              ),
+              data: (entries) {
+                if (entries.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      UiStrings.stageListEmpty,
+                      style: TextStyle(color: WuxiaColors.textMuted),
                     ),
-                  ),
+                  );
+                }
+                // 周目按章(Phase 2):章 key + 该章已通最高周目决定进入周目。
+                final chapterKey = 'ch$chapterIndex';
+                final progress = ref
+                    .watch(mainlineProgressProvider)
+                    .maybeWhen(data: (d) => d, orElse: () => null);
+                // watch(非 read):玩家在 CycleSelectControl 切周目时本屏须重建,
+                // 使扫荡按钮标签/门槛、各关卡按周目状态都随选定周目刷新。
+                final selectedCycle = ref.watch(
+                  selectedChallengeCycleProvider(chapterKey),
+                );
+                int cycleFor() {
+                  if (progress == null) return 1;
+                  return resolveTargetCycle(
+                    selectedCycle,
+                    progress,
+                    chapterKey,
+                  );
+                }
+
+                // 按选定周目算关卡显示状态:cycle 1 用原解锁链状态;cycle≥2 时全关已由
+                // 首周目解锁→该周目通过该关(clearedStageCycleKeys 含 id#cycle)显「已通关」,
+                // 否则显「可挑战」。修正旧 bug:二周目视图沿用首周目 clearedStageIds 全显
+                // 「已通关」误导玩家以为本周目已打完。
+                StageStatus statusFor(StageEntry e) {
+                  final c = cycleFor();
+                  if (c <= 1 || progress == null) return e.status;
+                  final clearedThisCycle = progress.clearedStageCycleKeys
+                      .contains('${e.def.id}#$c');
+                  return clearedThisCycle
+                      ? StageStatus.cleared
+                      : StageStatus.available;
+                }
+
+                // 主战角色当前境界（用于掉落传闻弹窗 above-realm 提示）。
+                // 任一层 async 未就绪 → null（dialog 宽容 null，仅跳过超境提示）。
+                final activeIds = ref
+                    .watch(activeCharacterIdsProvider)
+                    .maybeWhen(data: (ids) => ids, orElse: () => const <int>[]);
+                final activeCharacters = <Character>[
+                  for (final id in activeIds)
+                    if (ref
+                            .watch(characterByIdProvider(id))
+                            .maybeWhen(data: (c) => c, orElse: () => null)
+                        case final Character c)
+                      c,
+                ];
+                final currentRealm = activeCharacters.isEmpty
+                    ? null
+                    : activeCharacters.first.realmTier;
+                final currentGoal = NewSaveGoalGuidance.fromChapterEntries(
+                  chapterIndex: chapterIndex,
+                  entries: [
+                    for (final entry in entries)
+                      (def: entry.def, status: statusFor(entry)),
+                  ],
+                );
+
+                final sweepEligible =
+                    progress != null &&
+                    SweepEligibility.forChapter(
+                      clearedStageCycleKeys: progress.clearedStageCycleKeys,
+                      cycle: cycleFor(),
+                      chapterStageIds: [for (final e in entries) e.def.id],
+                    );
+                final everCleared =
+                    progress != null &&
+                    MainlineProgressService.highestClearedCycleForChapter(
+                          progress,
+                          chapterKey,
+                        ) >=
+                        1;
+                final replayRewardUnlocked =
+                    progress != null &&
+                    progress.clearedStageIds.contains(
+                      kFirstChapterFinalStageId,
+                    );
+
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1120),
+                        child: ListView(
+                          padding: EdgeInsets.fromLTRB(
+                            constraints.maxWidth >= 900 ? 24 : 16,
+                            16,
+                            constraints.maxWidth >= 900 ? 24 : 16,
+                            20,
+                          ),
+                          children: [
+                            _StageJourneyMap(
+                              chapterIndex: chapterIndex,
+                              entries: entries,
+                            ),
+                            _ChapterFarmSpotsPanel(entries: entries),
+                            const SizedBox(height: 12),
+                            _StageActionBand(
+                              chapterKey: chapterKey,
+                              chapterIndex: chapterIndex,
+                              entries: entries,
+                              eligible: sweepEligible,
+                              everCleared: everCleared,
+                              cycle: cycleFor(),
+                            ),
+                            _ChapterStageTimeline(
+                              entries: entries,
+                              statusFor: statusFor,
+                              targetCycle: cycleFor(),
+                              currentRealm: currentRealm,
+                              activeCharacters: activeCharacters,
+                              goalGuidance: currentGoal,
+                              replayRewardUnlocked: replayRewardUnlocked,
+                              onRunStage: (stage) => runStageFlow(
+                                context: context,
+                                ref: ref,
+                                stage: stage,
+                                targetCycle: cycleFor(),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
-            );
-          },
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -235,9 +275,9 @@ class _StageActionBand extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       decoration: BoxDecoration(
-        color: WuxiaColors.panel.withValues(alpha: 0.78),
+        color: const Color(0xE6221B14),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.70)),
+        border: Border.all(color: const Color(0x805F4B2C)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -273,9 +313,16 @@ class _StageJourneyMap extends StatelessWidget {
     return Container(
       height: 224,
       decoration: BoxDecoration(
-        color: WuxiaColors.panel,
+        color: const Color(0xFF211A14),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: WuxiaColors.border),
+        border: Border.all(color: const Color(0xA06E5836)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 16,
+            offset: Offset(0, 7),
+          ),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
@@ -591,7 +638,7 @@ class _TimelineAxisMarker extends StatelessWidget {
       StageStatus.available => WuxiaColors.resultHighlight,
       StageStatus.locked => WuxiaColors.textMuted,
     };
-    final lineColor = WuxiaColors.textMuted.withValues(alpha: 0.34);
+    const lineColor = Color(0x806E5836);
     return SizedBox(
       height: 108,
       child: Stack(
@@ -610,7 +657,7 @@ class _TimelineAxisMarker extends StatelessWidget {
                 width: boss ? 42 : 34,
                 height: boss ? 42 : 34,
                 decoration: BoxDecoration(
-                  color: WuxiaColors.background.withValues(alpha: 0.88),
+                  color: const Color(0xF2241C15),
                   borderRadius: BorderRadius.circular(boss ? 6 : 17),
                   border: Border.all(
                     color: color,
@@ -891,13 +938,13 @@ class _StageRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             color: locked
-                ? WuxiaColors.avatarFill
-                : WuxiaColors.panel.withValues(alpha: boss ? 0.96 : 0.88),
+                ? const Color(0xE61B1815)
+                : Color(boss ? 0xF22B2117 : 0xEB241D17),
             borderRadius: BorderRadius.circular(6),
             border: Border.all(
               color: boss
                   ? WuxiaColors.resultHighlight.withValues(alpha: 0.55)
-                  : WuxiaColors.border.withValues(alpha: 0.6),
+                  : const Color(0x995F4B2C),
             ),
             boxShadow: [
               BoxShadow(

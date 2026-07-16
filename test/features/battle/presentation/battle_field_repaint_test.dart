@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_action_template.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_stage_geometry.dart';
 import 'package:wuxia_idle/features/battle/presentation/widgets/battle_field.dart';
 
 void main() {
@@ -30,6 +32,7 @@ void main() {
           body: BattleField(
             state: BattleState.initial(leftTeam: left, rightTeam: right),
             attackControllers: attackControllers,
+            actionTemplates: List.filled(6, BattleActionTemplate.melee),
             popups: const {},
             animConfig: AnimationNumbers.defaults,
             chargeMaxTicks: 3,
@@ -53,7 +56,86 @@ void main() {
           find.byKey(ValueKey('battle.characterSlot.repaint.$side.$slot')),
           findsOneWidget,
         );
+        expect(
+          find.byKey(ValueKey('battle.stageCharacter.$side.$slot')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(ValueKey('battle.stageStatusOverlay.$side.$slot')),
+          findsOneWidget,
+        );
       }
     }
+
+    // 状态牌必须脱离按景深排序的人物槽，统一位于人物绘制层之后；否则
+    // 前景角色的透明立绘会遮住后排角色血条。
+    final stack = tester.widget<Stack>(
+      find.byKey(const ValueKey('battle.stageLayerStack')),
+    );
+    final firstStatusLayer = stack.children.indexWhere(
+      (child) => child.key == const ValueKey('battle.stageStatusOverlay.0.0'),
+    );
+    final lastCharacterLayer = stack.children.lastIndexWhere(
+      (child) => child.key == const ValueKey('battle.stageCharacterLayer.1.1'),
+    );
+    expect(firstStatusLayer, greaterThan(lastCharacterLayer));
+  });
+
+  testWidgets('群战 3v7 只渲染六个完整人物并用墨影队列表达余敌', (tester) async {
+    final (left, rightBase) = BattleDemo.mockTeams();
+    final right = [
+      for (var i = 0; i < 7; i++)
+        rightBase[i % rightBase.length].copyWith(
+          characterId: 100 + i,
+          slotIndex: i,
+          isAlive: true,
+        ),
+    ];
+    final attackControllers = List.generate(
+      6,
+      (_) => AnimationController(vsync: tester),
+    );
+    final hitFlashControllers = List.generate(
+      6,
+      (_) => AnimationController(vsync: tester),
+    );
+    addTearDown(() {
+      for (final controller in [...attackControllers, ...hitFlashControllers]) {
+        controller.dispose();
+      }
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: BattleField(
+            state: BattleState.initial(leftTeam: left, rightTeam: right),
+            stageLayout: BattleStageLayoutMode.massBattle,
+            attackControllers: attackControllers,
+            actionTemplates: List.filled(6, BattleActionTemplate.melee),
+            popups: const {},
+            animConfig: AnimationNumbers.defaults,
+            chargeMaxTicks: 3,
+            beat: const AlwaysStoppedAnimation<double>(0),
+            staggerWindowTicks: 3,
+            onPopupComplete: (_, _) {},
+            hitFlashControllers: hitFlashControllers,
+            hitFlashColors: const {},
+            onEnemyTap: (_) {},
+            pendingActive: false,
+            hoveredEnemyId: null,
+            onEnemyHover: (_, _) {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const ValueKey('battle.massBattleInkQueue')), findsOne);
+    expect(
+      find.byKey(const ValueKey('battle.stageCharacter.1.3')),
+      findsNothing,
+    );
+    expect(find.byType(CharacterSlot), findsNWidgets(6));
+    expect(tester.takeException(), isNull);
   });
 }

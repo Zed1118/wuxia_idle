@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 
 enum BattleSceneBackgroundStyle {
@@ -30,8 +31,16 @@ class BattleSceneBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = path;
     final hasImage = p != null && p.isNotEmpty;
+    final isTowerScene =
+        style == BattleSceneBackgroundStyle.tower ||
+        (style == BattleSceneBackgroundStyle.generic &&
+            p?.contains('innerrealm') == true);
+    final isMountainPassScene =
+        style == BattleSceneBackgroundStyle.mainline ||
+        (style == BattleSceneBackgroundStyle.generic &&
+            p?.contains('battle_mountain_pass_stage') == true);
     final profile = _SceneDepthProfile.resolve(path: p, style: style);
-    return Stack(
+    final scene = Stack(
       fit: StackFit.expand,
       children: [
         DecoratedBox(
@@ -51,17 +60,33 @@ class BattleSceneBackground extends StatelessWidget {
         ),
         if (hasImage)
           WuxiaImage(
-            p,
+            _resolvedBackgroundAsset(
+              p,
+              isTowerScene: isTowerScene,
+              isMountainPassScene: isMountainPassScene,
+            ),
+            key: isTowerScene
+                ? const ValueKey('battle_scene_tower_asset')
+                : isMountainPassScene
+                ? const ValueKey('battle_scene_mainline_asset')
+                : null,
             fit: BoxFit.cover,
             errorBuilder: (_, _, _) => const SizedBox.shrink(),
           ),
         CustomPaint(
           key: const ValueKey('battle_scene_mist_layers'),
-          painter: _MistLayerPainter(profile),
+          painter: _MistLayerPainter(
+            profile,
+            intensity: hasImage ? 0.12 : 1,
+            blurSigma: hasImage ? 32 : 0,
+          ),
         ),
         CustomPaint(
           key: const ValueKey('battle_scene_ground_texture'),
-          painter: _GroundTexturePainter(profile),
+          painter: _GroundTexturePainter(
+            profile,
+            intensity: hasImage ? 0.28 : 1,
+          ),
         ),
         DecoratedBox(
           key: const ValueKey('battle_scene_glow_vignette'),
@@ -81,8 +106,85 @@ class BattleSceneBackground extends StatelessWidget {
         if (hasImage) const ColoredBox(color: WuxiaColors.battleSceneScrim),
       ],
     );
+    if (isMountainPassScene) {
+      return ColorFiltered(
+        key: const ValueKey('battle_scene_mainline_color_grade'),
+        colorFilter: _mainlineSceneColorGrade,
+        child: scene,
+      );
+    }
+    if (!isTowerScene) return scene;
+    return ColorFiltered(
+      key: const ValueKey('battle_scene_tower_color_grade'),
+      colorFilter: _towerSceneColorGrade,
+      child: scene,
+    );
   }
 }
+
+/// 塔境整张背景（原画 + 景深 + 地面 + 暗角）统一为冷灰低彩。
+/// 仅包背景组件，不影响人物肤色、流派色、状态牌与技能案台。
+const _towerSceneColorGrade = ColorFilter.matrix(<double>[
+  0.299,
+  0.587,
+  0.114,
+  0,
+  -8,
+  0.299,
+  0.587,
+  0.114,
+  0,
+  0,
+  0.299,
+  0.587,
+  0.114,
+  0,
+  12,
+  0,
+  0,
+  0,
+  1,
+  0,
+]);
+
+String _resolvedBackgroundAsset(
+  String path, {
+  required bool isTowerScene,
+  required bool isMountainPassScene,
+}) {
+  if (isTowerScene && path.contains('battle_innerrealm.png')) {
+    return WuxiaUi.battleInnerRealmCool;
+  }
+  if (isMountainPassScene && path.contains('battle_mountain_pass_stage')) {
+    return WuxiaUi.battleMountainPassStageCool;
+  }
+  return path;
+}
+
+/// 主线山道背景轻微冷灰化，压掉径向 glow 与原图叠加后的暖黄块。
+/// 只作用于背景组件，人物、状态牌和技能案台不参与滤镜。
+const _mainlineSceneColorGrade = ColorFilter.matrix(<double>[
+  0.84,
+  0.08,
+  0.08,
+  0,
+  -8,
+  0.06,
+  0.90,
+  0.04,
+  0,
+  -2,
+  0.06,
+  0.10,
+  0.96,
+  0,
+  8,
+  0,
+  0,
+  0,
+  1,
+  0,
+]);
 
 class _SceneDepthProfile {
   const _SceneDepthProfile({
@@ -178,7 +280,7 @@ class _SceneDepthProfile {
           mountainColor: WuxiaColors.gangMeng,
           mistColor: WuxiaColors.textMuted,
           groundColor: WuxiaColors.gangMeng,
-          glowColor: WuxiaColors.resultHighlight,
+          glowColor: WuxiaColors.textMuted,
           glowCenter: Alignment(0.42, -0.08),
           glowRadius: 1.2,
           mountainAlpha: 0.14,
@@ -217,7 +319,7 @@ class _SceneDepthProfile {
           mountainAlpha: 0.16,
           mistAlpha: 0.22,
           groundAlpha: 0.2,
-          glowAlpha: 0.09,
+          glowAlpha: 0.035,
           vignetteAlpha: 0.34,
         );
     }
@@ -293,15 +395,26 @@ class _DistantMountainPainter extends CustomPainter {
 }
 
 class _MistLayerPainter extends CustomPainter {
-  const _MistLayerPainter(this.profile);
+  const _MistLayerPainter(
+    this.profile, {
+    required this.intensity,
+    required this.blurSigma,
+  });
 
   final _SceneDepthProfile profile;
+  final double intensity;
+  final double blurSigma;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..style = PaintingStyle.fill
-      ..color = profile.mistColor.withValues(alpha: profile.mistAlpha);
+      ..maskFilter = blurSigma > 0
+          ? MaskFilter.blur(BlurStyle.normal, blurSigma)
+          : null
+      ..color = profile.mistColor.withValues(
+        alpha: profile.mistAlpha * intensity,
+      );
 
     canvas.drawOval(
       Rect.fromLTWH(
@@ -320,7 +433,9 @@ class _MistLayerPainter extends CustomPainter {
         size.height * 0.12,
       ),
       paint
-        ..color = profile.mistColor.withValues(alpha: profile.mistAlpha * 0.7),
+        ..color = profile.mistColor.withValues(
+          alpha: profile.mistAlpha * intensity * 0.7,
+        ),
     );
     canvas.drawOval(
       Rect.fromLTWH(
@@ -330,19 +445,24 @@ class _MistLayerPainter extends CustomPainter {
         size.height * 0.16,
       ),
       paint
-        ..color = profile.mistColor.withValues(alpha: profile.mistAlpha * 0.54),
+        ..color = profile.mistColor.withValues(
+          alpha: profile.mistAlpha * intensity * 0.54,
+        ),
     );
   }
 
   @override
   bool shouldRepaint(covariant _MistLayerPainter oldDelegate) =>
-      oldDelegate.profile != profile;
+      oldDelegate.profile != profile ||
+      oldDelegate.intensity != intensity ||
+      oldDelegate.blurSigma != blurSigma;
 }
 
 class _GroundTexturePainter extends CustomPainter {
-  const _GroundTexturePainter(this.profile);
+  const _GroundTexturePainter(this.profile, {required this.intensity});
 
   final _SceneDepthProfile profile;
+  final double intensity;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -358,8 +478,12 @@ class _GroundTexturePainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          profile.groundColor.withValues(alpha: profile.groundAlpha * 0.36),
-          profile.groundColor.withValues(alpha: profile.groundAlpha),
+          profile.groundColor.withValues(
+            alpha: profile.groundAlpha * intensity * 0.36,
+          ),
+          profile.groundColor.withValues(
+            alpha: profile.groundAlpha * intensity,
+          ),
         ],
       ).createShader(groundRect);
     canvas.drawRect(groundRect, groundPaint);
@@ -367,7 +491,9 @@ class _GroundTexturePainter extends CustomPainter {
     final linePaint = Paint()
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke
-      ..color = profile.mistColor.withValues(alpha: profile.groundAlpha * 0.36);
+      ..color = profile.mistColor.withValues(
+        alpha: profile.groundAlpha * intensity * 0.36,
+      );
     for (var i = 0; i < 9; i++) {
       final y = groundTop + size.height * (0.025 + i * 0.034);
       final start = Offset(size.width * ((i % 3) - 1) * 0.12, y);
@@ -378,5 +504,5 @@ class _GroundTexturePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _GroundTexturePainter oldDelegate) =>
-      oldDelegate.profile != profile;
+      oldDelegate.profile != profile || oldDelegate.intensity != intensity;
 }

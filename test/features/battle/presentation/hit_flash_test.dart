@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/presentation/hit_flash.dart';
 
 void main() {
-  testWidgets('HitFlash 命中时叠半透明色块，淡出无异常', (tester) async {
+  testWidgets('HitFlash 命中时只染亮目标轮廓，淡出无异常', (tester) async {
     final ctrl = AnimationController(
       vsync: const TestVSync(),
       duration: const Duration(milliseconds: 150),
@@ -21,6 +21,20 @@ void main() {
       ),
     );
     expect(find.byType(HitFlash), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(HitFlash),
+        matching: find.byType(ColorFiltered),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(HitFlash),
+        matching: find.byType(ColoredBox),
+      ),
+      findsNothing,
+    );
     ctrl.forward();
     await tester.pump(const Duration(milliseconds: 75));
     expect(tester.takeException(), isNull);

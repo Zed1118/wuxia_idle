@@ -14,6 +14,7 @@ import '../../../core/application/battle_providers.dart';
 import '../../../data/isar_setup.dart';
 import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_app_theme.dart';
 import '../../../shared/widgets/wuxia_image.dart';
@@ -85,10 +86,9 @@ import '../../../core/domain/inventory_item.dart';
 import '../../character_panel/application/lineage_codex_provider.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
 import '../../baike/application/encounter_codex_provider.dart';
-import '../../baike/presentation/encounter_tab.dart';
 import '../../baike/presentation/encounter_detail_screen.dart';
+import '../../baike/presentation/baike_screen.dart';
 import '../../baike/application/martial_codex_provider.dart';
-import '../../baike/presentation/martial_arts_tab.dart';
 import '../../baike/presentation/skill_codex_detail_screen.dart';
 import '../../character_panel/presentation/lineage_character_detail_screen.dart';
 import '../../zangjuange/presentation/zangjuange_screen.dart';
@@ -365,21 +365,45 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioBoss,
         hint: null,
-        sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
       );
     case VisualRoute.battleChargeBreak:
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioChargeBreak,
         hint: null,
-        sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        autoStart: false,
+      );
+    case VisualRoute.battleInnerDemonStage:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioDragLive,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_inner_demon.png',
+        bgmTrack: BgmTrack.innerDemon,
+        autoStart: false,
+      );
+    case VisualRoute.battleLightFootStage:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioDragLive,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_bamboo.png',
+        bgmTrack: BgmTrack.lightFoot,
+        autoStart: false,
+      );
+    case VisualRoute.battleMassBattleStage:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioMassBattleStage,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        bgmTrack: BgmTrack.massBattle,
         autoStart: false,
       );
     case VisualRoute.battleTapLive:
       // 两段点选真玩/验收:真战斗 + 干预层挂上 + 高血耐久敌久撑。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioDragLive,
-        hint: UiStrings.battleTapLiveHint,
-        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        hint: UiStrings.chapter1Title,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         allowPlayerIntervention: true,
         startPaused: true,
       );
@@ -388,8 +412,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // 给截图稳定展示技能焦点、敌头像可选标记和单体/群体角标。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioDragLive,
-        hint: UiStrings.battleTapPreviewHint,
-        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        hint: UiStrings.chapter1Title,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         autoStart: false,
         allowPlayerIntervention: true,
         startPaused: true,
@@ -448,7 +472,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioBossPhase,
         hint: UiStrings.battleBossPhaseHint,
-        sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         allowPlayerIntervention: true,
         startPaused: true,
       );
@@ -460,7 +484,85 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         teamsFactory: BattleScenarioData.scenarioGuardianWard,
         hint: UiStrings.battleGuardianWardHint,
         sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
         allowPlayerIntervention: true,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor13:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor13,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor14:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor14,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor19:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor19,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor22:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor22,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0102:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0102,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0103:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0103,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0104:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0104,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor02:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor02,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor03:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor03,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor08:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor08,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
         startPaused: true,
       );
     case VisualRoute.discipleJoinCeremony:
@@ -823,7 +925,7 @@ class _StageRetryDialogPreview extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        const ColoredBox(color: WuxiaColors.background),
+        const BattleSceneBackground(path: WuxiaUi.battleMountainPassStage),
         const ModalBarrier(color: Color(0x99000000)),
         Center(
           child: PaperDialog(
@@ -831,10 +933,12 @@ class _StageRetryDialogPreview extends StatelessWidget {
             body: const StageRetryDialogBody(),
             actions: [
               TextButton(
+                style: TextButton.styleFrom(foregroundColor: WuxiaUi.muted),
                 onPressed: () {},
                 child: const Text(UiStrings.stageRetryBackAction),
               ),
               TextButton(
+                style: TextButton.styleFrom(foregroundColor: WuxiaUi.jiang),
                 onPressed: () {},
                 child: const Text(UiStrings.stageRetryAction),
               ),
@@ -852,7 +956,12 @@ class _StageRetryDialogPreview extends StatelessWidget {
 Widget _buildEncounterCodexVisual() {
   final defs = GameRepository.instance.allEncounters;
   final triggered = defs.take(2).map((d) => d.id).toSet();
-  final titles = {for (final d in defs.take(2)) d.id: '（已际遇）${d.id}'};
+  final titles = <String, String>{};
+  for (final (index, def) in defs.take(2).indexed) {
+    final kind = labelForEncounterGroupKind(encounterGroupKindOf(def));
+    titles[def.id] =
+        '$kind · ${UiStrings.encounterCodexNoteLabel} ${index + 1}';
+  }
   final groups = groupEncounters(
     defs: defs,
     triggeredIds: triggered,
@@ -860,7 +969,7 @@ Widget _buildEncounterCodexVisual() {
   );
   return ProviderScope(
     overrides: [encounterCodexProvider.overrideWith((ref) async => groups)],
-    child: const Scaffold(body: EncounterTab()),
+    child: const BaikeScreen(initialTab: 3),
   );
 }
 
@@ -885,7 +994,7 @@ Widget _buildSkillCodexVisual() {
   );
   return ProviderScope(
     overrides: [martialCodexProvider.overrideWith((ref) async => groups)],
-    child: const Scaffold(body: MartialArtsTab()),
+    child: const BaikeScreen(initialTab: 4),
   );
 }
 
@@ -1186,22 +1295,20 @@ class _VictorySealMarkState extends State<_VictorySealMark>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 46,
-                    height: 46,
+                    width: 38,
+                    height: 38,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: WuxiaUi.paper.withValues(alpha: 0.88),
                       borderRadius: BorderRadius.circular(3),
                       border: Border.all(
-                        color: WuxiaColors.popupCritical.withValues(
-                          alpha: 0.64,
-                        ),
+                        color: WuxiaColors.sealCrimson.withValues(alpha: 0.64),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: WuxiaColors.resultHighlight.withValues(
-                            alpha: 0.18 + breath * 0.08,
-                          ),
+                          color: const Color(
+                            0xFFB9974E,
+                          ).withValues(alpha: 0.18 + breath * 0.08),
                           blurRadius: 8 + breath * 5,
                           offset: const Offset(0, 4),
                         ),
@@ -1210,20 +1317,20 @@ class _VictorySealMarkState extends State<_VictorySealMark>
                     child: const Text(
                       '武',
                       style: TextStyle(
-                        color: WuxiaColors.popupCritical,
-                        fontSize: 25,
+                        color: WuxiaColors.sealCrimson,
+                        fontSize: 20,
                         fontWeight: FontWeight.w900,
                         fontFamily: 'Songti SC',
                         fontFamilyFallback: ['KaiTi', 'SimSun', 'serif'],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 5),
                   Stack(
                     alignment: Alignment.center,
                     children: [
                       CustomPaint(
-                        size: const Size(132, 112),
+                        size: const Size(112, 90),
                         painter: _VictoryBrushAuraPainter(
                           alpha: 0.18 + breath * 0.08,
                         ),
@@ -1233,8 +1340,8 @@ class _VictorySealMarkState extends State<_VictorySealMark>
                         child: const Text(
                           '勝',
                           style: TextStyle(
-                            color: WuxiaColors.resultHighlight,
-                            fontSize: 96,
+                            color: Color(0xFFB9974E),
+                            fontSize: 76,
                             height: 0.92,
                             fontWeight: FontWeight.w900,
                             fontFamily: 'Songti SC',
@@ -1242,13 +1349,10 @@ class _VictorySealMarkState extends State<_VictorySealMark>
                             shadows: [
                               Shadow(
                                 color: Color(0xAA000000),
-                                blurRadius: 16,
+                                blurRadius: 11,
                                 offset: Offset(0, 5),
                               ),
-                              Shadow(
-                                color: WuxiaColors.visualGoldShadow,
-                                blurRadius: 14,
-                              ),
+                              Shadow(color: Color(0x667D6336), blurRadius: 10),
                             ],
                           ),
                         ),

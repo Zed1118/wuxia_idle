@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/battle/presentation/battle_effect_sprite.dar
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/projectile_trail.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+import 'package:wuxia_idle/shared/audio/audio_assets.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 const _testAnim = AnimationNumbers(
@@ -167,6 +168,18 @@ const _ultSkill = SkillDef(
   visualEffect: '',
 );
 
+const _projectileSkill = SkillDef(
+  id: 'test_hidden_weapon',
+  name: '飞针',
+  description: '',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1000,
+  qiDelta: -100,
+  cooldownTurns: 2,
+  requiresManualTrigger: false,
+  visualEffect: 'hidden_weapon',
+);
+
 Finder _assetImage(String path) =>
     find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
 
@@ -188,7 +201,7 @@ void main() {
     expect(find.byKey(const ValueKey('battle_log_drawer')), findsNothing);
   });
 
-  testWidgets('攻击命中时出现弹道 ProjectileTrail（P0-2 Task7·不污染 state）', (
+  testWidgets('远程攻击命中时出现弹道 ProjectileTrail（P0-2 Task7·不污染 state）', (
     tester,
   ) async {
     final notifier = await _pumpBattle(tester);
@@ -199,8 +212,9 @@ void main() {
         tick: 1,
         actorId: 1, // 萧夜寒 left[0]
         targetId: 11, // 黑风寨主 right[0]
+        skill: _projectileSkill,
         attackResult: _attackResult,
-        description: '普攻测试',
+        description: '远程测试',
       ),
     ]);
     await tester.pump(); // ref.listen → _playAction setState
@@ -237,6 +251,56 @@ void main() {
     expect(_assetImage(WuxiaUi.overlayLanternGlow), findsOneWidget);
     expect(_assetImage(WuxiaUi.overlayInkCloud), findsOneWidget);
     expect(_assetImage(WuxiaUi.overlayLowHealth), findsOneWidget);
+  });
+
+  testWidgets('爬塔异境不叠加灯笼暖光，避免浅色背景偏黄', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final (left, right) = BattleDemo.mockTeams();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          battleProvider.overrideWith(
+            () => _TestBattleNotifier(
+              BattleState.initial(leftTeam: left, rightTeam: right),
+            ),
+          ),
+        ],
+        child: const MaterialApp(
+          home: BattleScreen(animConfig: _testAnim, bgmTrack: BgmTrack.tower),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(_assetImage(WuxiaUi.overlayMistLayer), findsOneWidget);
+    expect(_assetImage(WuxiaUi.overlayLanternGlow), findsNothing);
+  });
+
+  testWidgets('异境路径即使入口漏传 tower 轨道也不叠加灯笼暖光', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final (left, right) = BattleDemo.mockTeams();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          battleProvider.overrideWith(
+            () => _TestBattleNotifier(
+              BattleState.initial(leftTeam: left, rightTeam: right),
+            ),
+          ),
+        ],
+        child: const MaterialApp(
+          home: BattleScreen(
+            animConfig: _testAnim,
+            sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(_assetImage(WuxiaUi.overlayLanternGlow), findsNothing);
   });
 
   testWidgets('actionLog 触发 MJ battle_fx sprite', (tester) async {

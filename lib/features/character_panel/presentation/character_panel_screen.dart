@@ -655,8 +655,9 @@ class _ProfilePortraitPlaque extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final standeePath = _profileStandeePath(character);
     return Container(
-      width: 136,
+      width: 156,
       padding: const EdgeInsets.fromLTRB(7, 7, 7, 8),
       decoration: BoxDecoration(
         color: WuxiaUi.paper.withValues(alpha: 0.22),
@@ -706,10 +707,14 @@ class _ProfilePortraitPlaque extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               Container(
-                width: 112,
-                height: 112,
+                width: 136,
+                height: 184,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE7D8B8),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFF0E5CC), Color(0xFFD5C29C)],
+                  ),
                   border: Border.all(
                     color: WuxiaUi.ink.withValues(alpha: 0.58),
                     width: 1.5,
@@ -725,8 +730,8 @@ class _ProfilePortraitPlaque extends StatelessWidget {
               ),
               Positioned(
                 left: 4,
-                top: 8,
-                bottom: 8,
+                top: 12,
+                bottom: 12,
                 child: Container(
                   width: 4,
                   decoration: BoxDecoration(
@@ -738,31 +743,63 @@ class _ProfilePortraitPlaque extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(2),
                 child: SizedBox(
-                  width: 102,
-                  height: 102,
+                  width: 126,
+                  height: 174,
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Opacity(
-                        opacity: 0.9,
-                        child: PortraitFrame(
-                          portraitPath: character.portraitPath,
-                          size: 102,
-                          borderColor: Colors.transparent,
-                          placeholderText: character.name,
-                          fit: BoxFit.contain,
+                      Positioned(
+                        left: 18,
+                        right: 18,
+                        bottom: 17,
+                        height: 13,
+                        child: DecoratedBox(
+                          key: const ValueKey('profile.standeeGrounding'),
+                          decoration: BoxDecoration(
+                            gradient: RadialGradient(
+                              colors: [
+                                WuxiaUi.ink.withValues(alpha: 0.32),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                      ColoredBox(color: WuxiaUi.paper.withValues(alpha: 0.12)),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(5, 2, 5, 7),
+                        child: standeePath == null
+                            ? Center(
+                                child: PortraitFrame(
+                                  portraitPath: character.portraitPath,
+                                  size: 116,
+                                  borderColor: Colors.transparent,
+                                  placeholderText: character.name,
+                                  fit: BoxFit.contain,
+                                ),
+                              )
+                            : WuxiaImage(
+                                standeePath,
+                                fit: BoxFit.contain,
+                                alignment: Alignment.bottomCenter,
+                                errorBuilder: (_, _, _) => PortraitFrame(
+                                  portraitPath: character.portraitPath,
+                                  size: 116,
+                                  borderColor: Colors.transparent,
+                                  placeholderText: character.name,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                      ),
+                      ColoredBox(color: WuxiaUi.paper.withValues(alpha: 0.06)),
                       DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              WuxiaUi.ink.withValues(alpha: 0.18),
+                              WuxiaUi.ink.withValues(alpha: 0.12),
                               Colors.transparent,
-                              WuxiaUi.ink.withValues(alpha: 0.22),
+                              WuxiaUi.ink.withValues(alpha: 0.18),
                             ],
                           ),
                         ),
@@ -821,6 +858,17 @@ class _ProfilePortraitPlaque extends StatelessWidget {
       LineageRole.senior => UiStrings.lineageRoleSenior,
       LineageRole.junior => UiStrings.lineageRoleJunior,
       LineageRole.grandDisciple => UiStrings.lineageRoleGrandDisciple,
+    };
+  }
+
+  String? _profileStandeePath(Character character) {
+    return switch (character.portraitPath) {
+      'assets/characters/founder.png' => WuxiaUi.battleFounderFallback,
+      'assets/characters/first_disciple.png' =>
+        WuxiaUi.battleFirstDiscipleFallback,
+      'assets/characters/second_disciple.png' =>
+        WuxiaUi.battleSecondDiscipleFallback,
+      _ => null,
     };
   }
 }

@@ -5,6 +5,9 @@ import '../../../../data/numbers_config.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
 import '../attack_animation.dart';
+import '../battle_action_template.dart';
+import '../battle_layout_tokens.dart';
+import '../battle_stage_geometry.dart';
 import '../battle_vfx_entries.dart';
 import '../character_avatar.dart';
 import '../damage_popup.dart';
@@ -12,7 +15,9 @@ import '../hit_flash.dart';
 
 class BattleField extends StatelessWidget {
   final BattleState state;
+  final BattleStageLayoutMode stageLayout;
   final List<AnimationController> attackControllers;
+  final List<BattleActionTemplate> actionTemplates;
   final Map<int, List<PopupEntry>> popups;
   final AnimationNumbers animConfig;
   final int chargeMaxTicks;
@@ -31,7 +36,9 @@ class BattleField extends StatelessWidget {
   const BattleField({
     super.key,
     required this.state,
+    this.stageLayout = BattleStageLayoutMode.standard,
     required this.attackControllers,
+    required this.actionTemplates,
     required this.popups,
     required this.animConfig,
     required this.chargeMaxTicks,
@@ -48,159 +55,297 @@ class BattleField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final leftTeamSize = state.leftTeam.length.clamp(1, 3);
+    final rightTeamSize = state.rightTeam.length.clamp(1, 3);
+    final slots = <_StageSlotData>[
+      for (var i = 0; i < state.leftTeam.length && i < 3; i++)
+        _StageSlotData(
+          teamSide: 0,
+          slotIndex: i,
+          teamSize: leftTeamSize,
+          character: state.leftTeam[i],
+          stageLayout: stageLayout,
+        ),
+      for (var i = 0; i < state.rightTeam.length && i < 3; i++)
+        _StageSlotData(
+          teamSide: 1,
+          slotIndex: i,
+          teamSize: rightTeamSize,
+          character: state.rightTeam[i],
+          stageLayout: stageLayout,
+        ),
+    ]..sort((a, b) => a.anchor.dy.compareTo(b.anchor.dy));
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 46, vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 168,
-            child: TeamColumn(
-              team: state.leftTeam,
-              battleState: state,
-              isLeftTeam: true,
-              alignment: CrossAxisAlignment.start,
-              attackControllers: attackControllers,
-              popups: popups,
-              animConfig: animConfig,
-              chargeMaxTicks: chargeMaxTicks,
-              beat: beat,
-              staggerWindowTicks: staggerWindowTicks,
-              onPopupComplete: onPopupComplete,
-              hitFlashControllers: hitFlashControllers,
-              hitFlashColors: hitFlashColors,
-              onEnemyTap: null,
-              pendingActive: false,
-              hoveredEnemyId: null,
-              onEnemyHover: null,
-            ),
-          ),
-          const Expanded(child: SizedBox.shrink()),
-          SizedBox(
-            width: 168,
-            child: TeamColumn(
-              team: state.rightTeam,
-              battleState: state,
-              isLeftTeam: false,
-              alignment: CrossAxisAlignment.end,
-              attackControllers: attackControllers,
-              popups: popups,
-              animConfig: animConfig,
-              chargeMaxTicks: chargeMaxTicks,
-              beat: beat,
-              staggerWindowTicks: staggerWindowTicks,
-              onPopupComplete: onPopupComplete,
-              hitFlashControllers: hitFlashControllers,
-              hitFlashColors: hitFlashColors,
-              onEnemyTap: onEnemyTap,
-              pendingActive: pendingActive,
-              hoveredEnemyId: hoveredEnemyId,
-              onEnemyHover: onEnemyHover,
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.symmetric(
+        horizontal: BattleLayoutTokens.stageHorizontalPadding,
+        vertical: BattleLayoutTokens.stageVerticalPadding,
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final baseWidth =
+              (constraints.maxWidth * BattleLayoutTokens.stageWidthFraction)
+                  .clamp(132.0, BattleLayoutTokens.stageMaxStandeeWidth);
+          final baseHeight =
+              (constraints.maxHeight * BattleLayoutTokens.stageHeightFraction)
+                  .clamp(176.0, BattleLayoutTokens.stageMaxStandeeHeight);
+          final layouts = <_StageSlotLayout>[
+            for (final slot in slots)
+              _StageSlotLayout.fromConstraints(
+                slot: slot,
+                maxWidth: constraints.maxWidth,
+                maxHeight: constraints.maxHeight,
+                baseWidth: baseWidth,
+                baseHeight: baseHeight,
+              ),
+          ];
+
+          return Stack(
+            key: const ValueKey('battle.stageLayerStack'),
+            clipBehavior: Clip.none,
+            children: [
+              if (stageLayout == BattleStageLayoutMode.massBattle &&
+                  state.rightTeam.length > 3)
+                Positioned(
+                  key: const ValueKey('battle.massBattleInkQueue'),
+                  right: constraints.maxWidth * 0.02,
+                  top: constraints.maxHeight * 0.08,
+                  width: constraints.maxWidth * 0.18,
+                  height: constraints.maxHeight * 0.70,
+                  child: IgnorePointer(
+                    child: CustomPaint(
+                      painter: _MassBattleInkQueuePainter(
+                        count: state.rightTeam.length - 3,
+                      ),
+                    ),
+                  ),
+                ),
+              // 人物层：保持按脚下深度排序，前景人物可以自然压住后排立绘。
+              for (final layout in layouts)
+                Builder(
+                  builder: (context) {
+                    final slot = layout.slot;
+                    final width = layout.width;
+                    final height = layout.height;
+                    final slotKey = slot.teamSide * 3 + slot.slotIndex;
+                    final isLeftTeam = slot.teamSide == 0;
+
+                    return Positioned(
+                      key: ValueKey(
+                        'battle.stageCharacterLayer.${slot.teamSide}.${slot.slotIndex}',
+                      ),
+                      left: layout.left,
+                      top: layout.top,
+                      width: width,
+                      height: height,
+                      child: RepaintBoundary(
+                        key: ValueKey(
+                          'battle.characterSlot.repaint.${slot.teamSide}.${slot.slotIndex}',
+                        ),
+                        child: SizedBox(
+                          key: ValueKey(
+                            'battle.stageCharacter.${slot.teamSide}.${slot.slotIndex}',
+                          ),
+                          child: CharacterSlot(
+                            character: slot.character,
+                            battleState: state,
+                            isLeftTeam: isLeftTeam,
+                            attackController: attackControllers[slotKey],
+                            slotPopups: popups[slotKey] ?? const [],
+                            animConfig: animConfig,
+                            chargeMaxTicks: chargeMaxTicks,
+                            beat: beat,
+                            staggerWindowTicks: staggerWindowTicks,
+                            slotKey: slotKey,
+                            onPopupComplete: onPopupComplete,
+                            hitFlashController: hitFlashControllers[slotKey],
+                            flashColor: hitFlashColors[slotKey] ?? Colors.white,
+                            standeeWidth: width,
+                            standeeHeight: height,
+                            showStageStatusOverlay: false,
+                            inkMirror:
+                                stageLayout ==
+                                    BattleStageLayoutMode.innerDemon &&
+                                !isLeftTeam,
+                            clashTravelPx:
+                                templateMovesToClash(actionTemplates[slotKey])
+                                ? ((0.5 - slot.anchor.dx).abs() *
+                                              constraints.maxWidth -
+                                          width * 0.42)
+                                      .clamp(0.0, constraints.maxWidth)
+                                      .toDouble()
+                                : 0,
+                            onTap:
+                                (!isLeftTeam &&
+                                    pendingActive &&
+                                    slot.character.isAlive)
+                                ? () => onEnemyTap(slot.character.characterId)
+                                : null,
+                            hovered:
+                                hoveredEnemyId == slot.character.characterId,
+                            targetable:
+                                !isLeftTeam &&
+                                pendingActive &&
+                                slot.character.isAlive,
+                            onHoverChanged:
+                                (!isLeftTeam &&
+                                    pendingActive &&
+                                    slot.character.isAlive)
+                                ? (hovering) => onEnemyHover(
+                                    slot.character.characterId,
+                                    hovering,
+                                  )
+                                : null,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              // 状态层：全部人物画完后再统一叠加。状态牌仍跟随各自脚底锚点，
+              // 但不会再被前景人物的透明立绘遮住。
+              for (final layout in layouts)
+                Positioned(
+                  key: ValueKey(
+                    'battle.stageStatusOverlay.${layout.slot.teamSide}.${layout.slot.slotIndex}',
+                  ),
+                  left: layout.left,
+                  top: layout.top,
+                  width: layout.width,
+                  height: layout.height,
+                  child: IgnorePointer(
+                    child: SizedBox(
+                      width: layout.width,
+                      height: layout.height,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          StageCharacterStatusOverlay(
+                            character: layout.slot.character,
+                            battleState: state,
+                            width: layout.width,
+                            height: layout.height,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
-class TeamColumn extends StatelessWidget {
-  final List<BattleCharacter> team;
-  // floor30 护法结界(Task 6):完整战场快照,逐槽透传给 CharacterAvatar 判定结界。
-  final BattleState battleState;
-  final bool isLeftTeam;
-  final CrossAxisAlignment alignment;
-  final List<AnimationController> attackControllers;
-  final Map<int, List<PopupEntry>> popups;
-  final AnimationNumbers animConfig;
-  final int chargeMaxTicks;
-  final Animation<double> beat;
-  final int staggerWindowTicks;
-  final void Function(int slotKey, int popupId) onPopupComplete;
-  final List<AnimationController> hitFlashControllers;
-  final Map<int, Color> hitFlashColors;
-  // 两段点选:点敌头像出手回调(仅右队/敌方非空,我方队为 null);
-  // pendingActive = 待发态(敌头像可点 + 全员存活敌高亮为可选目标)。
-  final void Function(int enemyId)? onEnemyTap;
-  final bool pendingActive;
-  final int? hoveredEnemyId;
-  final void Function(int enemyId, bool hovering)? onEnemyHover;
-
-  const TeamColumn({
-    super.key,
-    required this.team,
-    required this.battleState,
-    required this.isLeftTeam,
-    required this.alignment,
-    required this.attackControllers,
-    required this.popups,
-    required this.animConfig,
-    required this.chargeMaxTicks,
-    required this.beat,
-    required this.staggerWindowTicks,
-    required this.onPopupComplete,
-    required this.hitFlashControllers,
-    required this.hitFlashColors,
-    required this.onEnemyTap,
-    required this.pendingActive,
-    required this.hoveredEnemyId,
-    required this.onEnemyHover,
+class _StageSlotLayout {
+  const _StageSlotLayout({
+    required this.slot,
+    required this.left,
+    required this.top,
+    required this.width,
+    required this.height,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    final teamSide = isLeftTeam ? 0 : 1;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: alignment,
-      children: [
-        // 2026-06-25:只渲染 team.length 个槽(去掉末尾空占位),Column 等分 → 1 怪
-        // 居中 / 2 怪上下对称 / 3 怪不变,与 _slotFrac 的 slotVerticalFraction 同步。
-        // P0-2 fix(2026-06-04 Codex 报 RenderFlex overflow @1280×720):每槽包
-        // Expanded+FittedBox(scaleDown)——大窗保持原尺寸,最小窗自动等比微缩不溢出;
-        // alignment 锁外缘,头像维持 0.12/0.88 与 projectile 比例坐标对齐。
-        for (var i = 0; i < team.length; i++)
-          Expanded(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: isLeftTeam
-                  ? Alignment.centerLeft
-                  : Alignment.centerRight,
-              child: RepaintBoundary(
-                key: ValueKey('battle.characterSlot.repaint.$teamSide.$i'),
-                child: CharacterSlot(
-                  character: team[i],
-                  battleState: battleState,
-                  isLeftTeam: isLeftTeam,
-                  attackController: attackControllers[teamSide * 3 + i],
-                  slotPopups: popups[teamSide * 3 + i] ?? const [],
-                  animConfig: animConfig,
-                  chargeMaxTicks: chargeMaxTicks,
-                  beat: beat,
-                  staggerWindowTicks: staggerWindowTicks,
-                  slotKey: teamSide * 3 + i,
-                  onPopupComplete: onPopupComplete,
-                  hitFlashController: hitFlashControllers[teamSide * 3 + i],
-                  flashColor: hitFlashColors[teamSide * 3 + i] ?? Colors.white,
-                  // 待发态:存活敌头像可点选为目标 + 高亮提示。
-                  onTap:
-                      (onEnemyTap != null && pendingActive && team[i].isAlive)
-                      ? () => onEnemyTap!(team[i].characterId)
-                      : null,
-                  hovered: hoveredEnemyId == team[i].characterId,
-                  targetable: pendingActive && team[i].isAlive,
-                  onHoverChanged:
-                      (onEnemyHover != null && pendingActive && team[i].isAlive)
-                      ? (hovering) =>
-                            onEnemyHover!(team[i].characterId, hovering)
-                      : null,
-                ),
-              ),
-            ),
-          ),
-      ],
+  factory _StageSlotLayout.fromConstraints({
+    required _StageSlotData slot,
+    required double maxWidth,
+    required double maxHeight,
+    required double baseWidth,
+    required double baseHeight,
+  }) {
+    final scale = battleStageScale(
+      slot.slotIndex,
+      slot.teamSize,
+      isBoss: slot.character.isBoss,
+    );
+    final rawWidth = baseWidth * scale;
+    final rawHeight = baseHeight * scale;
+    final fitScale = [
+      1.0,
+      maxWidth / rawWidth,
+      maxHeight / rawHeight,
+    ].reduce((a, b) => a < b ? a : b);
+    final width = rawWidth * fitScale;
+    final height = rawHeight * fitScale;
+    final left = (slot.anchor.dx * maxWidth - width / 2).clamp(
+      0.0,
+      maxWidth - width,
+    );
+    final top = (slot.anchor.dy * maxHeight - height / 2).clamp(
+      0.0,
+      maxHeight - height,
+    );
+    return _StageSlotLayout(
+      slot: slot,
+      left: left,
+      top: top,
+      width: width,
+      height: height,
     );
   }
+
+  final _StageSlotData slot;
+  final double left;
+  final double top;
+  final double width;
+  final double height;
+}
+
+class _StageSlotData {
+  const _StageSlotData({
+    required this.teamSide,
+    required this.slotIndex,
+    required this.teamSize,
+    required this.character,
+    required this.stageLayout,
+  });
+
+  final int teamSide;
+  final int slotIndex;
+  final int teamSize;
+  final BattleCharacter character;
+  final BattleStageLayoutMode stageLayout;
+
+  Offset get anchor =>
+      battleStageAnchor(teamSide, slotIndex, teamSize, mode: stageLayout);
+}
+
+class _MassBattleInkQueuePainter extends CustomPainter {
+  const _MassBattleInkQueuePainter({required this.count});
+
+  final int count;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final visibleCount = count.clamp(1, 4);
+    for (var i = 0; i < visibleCount; i++) {
+      final t = visibleCount == 1 ? 0.5 : i / (visibleCount - 1);
+      final x = size.width * (0.24 + (i.isEven ? 0.10 : 0.48));
+      final y = size.height * (0.18 + t * 0.60);
+      final scale = 0.72 + t * 0.18;
+      final paint = Paint()
+        ..color = Colors.black.withValues(alpha: 0.22 + t * 0.12);
+      canvas.drawCircle(Offset(x, y), 7 * scale, paint);
+      final body = Path()
+        ..moveTo(x, y + 7 * scale)
+        ..quadraticBezierTo(
+          x - 15 * scale,
+          y + 30 * scale,
+          x - 10 * scale,
+          y + 64 * scale,
+        )
+        ..lineTo(x + 10 * scale, y + 64 * scale)
+        ..quadraticBezierTo(x + 15 * scale, y + 30 * scale, x, y + 7 * scale)
+        ..close();
+      canvas.drawPath(body, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MassBattleInkQueuePainter oldDelegate) =>
+      oldDelegate.count != count;
 }
 
 /// 单个角色槽：攻击动画包 + 头像 + 飘字（Stack 叠加，clipBehavior: none 允许溢出）。
@@ -219,6 +364,11 @@ class CharacterSlot extends StatelessWidget {
   final void Function(int slotKey, int popupId) onPopupComplete;
   final AnimationController hitFlashController;
   final Color flashColor;
+  final double standeeWidth;
+  final double standeeHeight;
+  final bool showStageStatusOverlay;
+  final double clashTravelPx;
+  final bool inkMirror;
   // 两段点选:待发态下敌头像点选目标的回调(null=不可点);待发态高亮。
   final VoidCallback? onTap;
   final bool hovered;
@@ -240,6 +390,11 @@ class CharacterSlot extends StatelessWidget {
     required this.onPopupComplete,
     required this.hitFlashController,
     required this.flashColor,
+    required this.standeeWidth,
+    required this.standeeHeight,
+    this.showStageStatusOverlay = true,
+    required this.clashTravelPx,
+    this.inkMirror = false,
     this.onTap,
     this.hovered = false,
     this.targetable = false,
@@ -257,8 +412,11 @@ class CharacterSlot extends StatelessWidget {
           chargeMaxTicks: chargeMaxTicks,
           beat: beat,
           staggerWindowTicks: staggerWindowTicks,
-          avatarSize: 92,
-          barWidth: 140,
+          displayMode: CharacterDisplayMode.stageStandee,
+          standeeWidth: standeeWidth,
+          standeeHeight: standeeHeight,
+          showStageStatusOverlay: showStageStatusOverlay,
+          inkMirror: inkMirror,
         ),
         if (targetable)
           Positioned(
@@ -273,6 +431,7 @@ class CharacterSlot extends StatelessWidget {
       animation: attackController,
       isLeftTeam: isLeftTeam,
       config: animConfig,
+      rushOffsetPx: clashTravelPx,
       child: HitFlash(
         animation: hitFlashController,
         color: flashColor,
@@ -287,17 +446,20 @@ class CharacterSlot extends StatelessWidget {
       ),
     );
     if (onTap != null) {
-      avatar = GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: avatar,
-      );
-    }
-    if (onHoverChanged != null) {
-      avatar = MouseRegion(
-        onEnter: (_) => onHoverChanged!(true),
-        onExit: (_) => onHoverChanged!(false),
-        child: avatar,
+      avatar = Semantics(
+        button: true,
+        enabled: character.isAlive,
+        label: '${character.name} ${UiStrings.skillTargetable}',
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            onHover: onHoverChanged,
+            mouseCursor: SystemMouseCursors.click,
+            borderRadius: BorderRadius.circular(8),
+            child: avatar,
+          ),
+        ),
       );
     }
     return Stack(
@@ -491,8 +653,9 @@ class EnemyTargetHint extends StatelessWidget {
   }
 }
 
-/// Phase 4 拖招表现层:角色头像光晕。
-/// - [hovered](拖招悬停命中敌头像):静态浅金强光,优先级最高。
+/// 角色状态表现层。
+/// - [hovered](点选目标命中敌方):轻微放大,优先级最高。
+/// - [staggered]:脚下绛红破绽印,避免整个人物槽位出现矩形光框。
 /// - 均不满足:无光晕,直接返回 child(等价旧 boxShadow 为空)。
 class GlowAura extends StatefulWidget {
   final bool hovered;
@@ -556,48 +719,84 @@ class _GlowAuraState extends State<GlowAura>
     // 浅金静态强光(hovered) 优先;
     // 第六阶段：破绽窗口绛红脉动（集火指示）次之；都无则裸 child。
     if (widget.hovered) {
-      return _box(WuxiaColors.resultHighlight, 0.85, 22.0, 4.0, widget.child);
+      return Transform.scale(scale: 1.025, child: widget.child);
     }
     if (!widget.staggered) return widget.child;
     return AnimatedBuilder(
       animation: _pulse,
       builder: (context, child) {
         final t = Curves.easeInOut.transform(_pulse.value);
-        // 破绽窗口：绛红呼吸脉动（集火指示），水墨克制——稍弱于蓄势强光。
+        // 破绽窗口：绛红呼吸脉动（集火指示）。只落在脚下，
+        // 不再对整个 CharacterSlot 施加 boxShadow，以免暴露矩形组件边界。
         return KeyedSubtree(
           key: ValueKey('stagger_highlight_${widget.characterId}'),
-          child: _box(
-            WuxiaColors.gangMeng, // 绛红 = WuxiaColors.gangMeng（刚猛流派色 / 攻击色）
-            0.35 + 0.35 * t, // alpha 0.35 → 0.70（克制，不刺眼）
-            10.0 + 8.0 * t, // blur 10 → 18
-            1.0 + 1.5 * t, // spread 1.0 → 2.5
-            child!,
+          child: Stack(
+            fit: StackFit.passthrough,
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(
+                    painter: _StaggerGroundSealPainter(pulse: t),
+                  ),
+                ),
+              ),
+              child!,
+            ],
           ),
         );
       },
       child: widget.child,
     );
   }
+}
 
-  Widget _box(
-    Color color,
-    double alpha,
-    double blur,
-    double spread,
-    Widget child,
-  ) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: alpha),
-            blurRadius: blur,
-            spreadRadius: spread,
-          ),
-        ],
-      ),
-      child: child,
+class _StaggerGroundSealPainter extends CustomPainter {
+  const _StaggerGroundSealPainter({required this.pulse});
+
+  final double pulse;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width * 0.5, size.height * 0.82);
+    final width = size.width * (0.46 + pulse * 0.04);
+    final height = size.height * (0.045 + pulse * 0.008);
+    final sealRect = Rect.fromCenter(
+      center: center,
+      width: width,
+      height: height,
+    );
+
+    canvas.drawOval(
+      sealRect,
+      Paint()
+        ..color = WuxiaColors.gangMeng.withValues(alpha: 0.12 + pulse * 0.08)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 5 + pulse * 3),
+    );
+
+    final ringPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 1.1 + pulse * 0.7
+      ..color = WuxiaColors.gangMeng.withValues(alpha: 0.48 + pulse * 0.18);
+    canvas.drawArc(sealRect, 3.34, 2.32, false, ringPaint);
+    canvas.drawArc(sealRect.deflate(3), 0.20, 2.18, false, ringPaint);
+
+    final fleckPaint = Paint()
+      ..color = WuxiaColors.gangMeng.withValues(alpha: 0.35 + pulse * 0.18);
+    canvas.drawCircle(
+      Offset(center.dx - width * 0.42, center.dy - height * 0.55),
+      1.1 + pulse * 0.6,
+      fleckPaint,
+    );
+    canvas.drawCircle(
+      Offset(center.dx + width * 0.36, center.dy + height * 0.32),
+      0.8 + pulse * 0.5,
+      fleckPaint,
     );
   }
+
+  @override
+  bool shouldRepaint(covariant _StaggerGroundSealPainter oldDelegate) =>
+      oldDelegate.pulse != pulse;
 }

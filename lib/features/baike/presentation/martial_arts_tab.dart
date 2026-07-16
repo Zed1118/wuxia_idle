@@ -308,32 +308,52 @@ class _LitRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) =>
-              SkillCodexDetailScreen(def: entry.def, maxStage: entry.maxStage),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: InkWell(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => SkillCodexDetailScreen(
+              def: entry.def,
+              maxStage: entry.maxStage,
+            ),
+          ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                entry.def.name,
-                style: const TextStyle(
-                  color: WuxiaColors.textSecondary,
-                  fontSize: 13,
+        borderRadius: BorderRadius.circular(5),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: WuxiaColors.inkPanelTop,
+            border: Border.all(color: WuxiaColors.inkPanelEdge),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.menu_book_outlined,
+                  color: WuxiaColors.resultHighlight,
+                  size: 17,
                 ),
-              ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    entry.def.name,
+                    style: const TextStyle(
+                      color: WuxiaColors.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: WuxiaColors.textMuted,
+                  size: 18,
+                ),
+              ],
             ),
-            const Icon(
-              Icons.chevron_right,
-              color: WuxiaColors.textMuted,
-              size: 18,
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -346,25 +366,46 @@ class _SilhouetteRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text(UiStrings.skillCodexNotMet))),
-      child: const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Icon(Icons.help_outline, color: WuxiaColors.textMuted, size: 16),
-            SizedBox(width: 8),
-            Text(
-              UiStrings.skillCodexLocked,
-              style: TextStyle(
-                color: WuxiaColors.textMuted,
-                fontSize: 13,
-                letterSpacing: 1,
-              ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: InkWell(
+        onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(UiStrings.skillCodexNotMet)),
+        ),
+        borderRadius: BorderRadius.circular(5),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: WuxiaColors.panel,
+            border: Border.all(color: WuxiaColors.border),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.help_outline,
+                  color: WuxiaColors.textMuted,
+                  size: 16,
+                ),
+                SizedBox(width: 10),
+                Text(
+                  UiStrings.skillCodexLocked,
+                  style: TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 13,
+                    letterSpacing: 1,
+                  ),
+                ),
+                Spacer(),
+                Icon(
+                  Icons.lock_outline,
+                  color: WuxiaColors.textMuted,
+                  size: 15,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

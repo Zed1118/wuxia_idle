@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'support/image_test_helpers.dart';
-
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
@@ -17,7 +15,6 @@ import 'package:wuxia_idle/features/battle/presentation/damage_popup.dart';
 import 'package:wuxia_idle/features/battle/presentation/ultimate_caption_overlay.dart';
 import 'package:wuxia_idle/features/battle/presentation/victory_overlay.dart';
 import 'package:wuxia_idle/shared/strings.dart';
-import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 /// 短时序动画配置，加速 widget test 运行。
 const _testAnim = AnimationNumbers(
@@ -155,9 +152,6 @@ void main() {
     return notifier;
   }
 
-  Finder assetImage(String path) =>
-      find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
-
   // ── T14 静态布局 ────────────────────────────────────────────────────────
 
   testWidgets('BattleScreen 渲染 3v3 + 顶栏 + 6 个 CharacterAvatar', (
@@ -192,7 +186,7 @@ void main() {
     expect(opacity.opacity, 0.45);
   });
 
-  testWidgets('Boss 头像叠加 MJ 圆环外框', (WidgetTester tester) async {
+  testWidgets('Boss 全人物位使用金色舞台外框', (WidgetTester tester) async {
     await setSurface(tester);
     final (left, right) = BattleDemo.mockTeams();
     final boss = right.first.copyWith(isBoss: true);
@@ -214,7 +208,10 @@ void main() {
     );
     await tester.pump();
 
-    expect(assetImage(WuxiaUi.bossFrameLarge), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('battle.bossAvatarFrame')),
+      findsOneWidget,
+    );
   });
 
   // ── T15 dispose ─────────────────────────────────────────────────────────
@@ -367,23 +364,30 @@ void main() {
   testWidgets('T1 指令台大招按钮 内力可用性靠状态文案体现 / 随重点角色变化', (WidgetTester tester) async {
     // 批次 1.3：技能方块 onPressed 恒可点（任何态都能看简介），ElevatedButton.enabled
     // 不再随内力变 false。内力是否够放大招改由按钮内**状态文案**体现：
-    //   够 → UiStrings.skillCostShort（「耗内N · CDM」）
+    //   够 → 卡面底栏分别显示耗气与调息拍数
     //   不够 → UiStrings.skillInsufficientForce（「内力不足」）
     // BattleDemo mock 数据（每角色 1 个示例大招 cost=800，key=skill_cmd_<id>_demo_ult_<id>）：
     //   left[0] 萧夜寒 id=1 currentIf=5400 → 内力够
     //   left[2] 苏锦书 id=3 currentIf=600  → 内力不够
     await pumpBattle(tester);
 
-    // 默认重点角色 = left[0]（萧夜寒，内力够）→ 其大招按钮显示可用态耗内文案，
+    // 默认重点角色 = left[0]（萧夜寒，内力够）→ 其大招按钮显示可用态耗气，
     // 不显示「内力不足」。
     final focus0UltBtn = find.byKey(const ValueKey('skill_cmd_1_demo_ult_1'));
     expect(
       find.descendant(
         of: focus0UltBtn,
-        matching: find.text(UiStrings.skillCostShort(800, 5)),
+        matching: find.text(UiStrings.skillQiCostChip(800)),
       ),
       findsOneWidget,
       reason: 'left[0] 萧夜寒 内力够 → 显示耗内文案',
+    );
+    expect(
+      find.descendant(
+        of: focus0UltBtn,
+        matching: find.text(UiStrings.skillCooldownChip(5)),
+      ),
+      findsOneWidget,
     );
     expect(
       find.descendant(

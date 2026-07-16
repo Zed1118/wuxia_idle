@@ -21,6 +21,7 @@ tools/visual_capture/visual_capture.sh --suite full
 tools/visual_capture/visual_capture.sh --route main_menu
 tools/visual_capture/visual_capture.sh --suite full --resolutions 1280x720,1440x900,1920x1080
 tools/visual_capture/visual_capture.sh --route battle_scene --hitbox
+tools/visual_capture/visual_capture.sh --route battle_scene --existing-window --all-spaces --resolutions 1440x900
 tools/visual_capture/visual_capture.sh --dry-run
 ```
 
@@ -33,6 +34,9 @@ tools/visual_capture/visual_capture.sh --dry-run
 - `--hitbox`：启用 debug-only hitbox overlay。
 - `--wait <seconds>`：READY 后等待资源稳定再截图。
 - `--ready-timeout <seconds>`：等待 `VISUAL_ROUTE_READY` 的最长秒数。
+- `--all-spaces`：跨 macOS Space 枚举应用窗口。
+- `--existing-window`：只截已运行窗口，不启动、不聚焦、不缩放、不关闭应用；与
+  `--all-spaces` 合用可在桌面 1 后台截取桌面 2 的目检窗口。
 
 输出结构：
 
