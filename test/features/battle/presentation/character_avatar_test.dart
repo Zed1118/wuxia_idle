@@ -403,6 +403,18 @@ void main() {
         'assets/enemies/massbattle_guanqi_c.png',
         WuxiaUi.battleFrontierIronGuardStandee,
       ),
+      (
+        'assets/enemies/massbattle_canbu_a.png',
+        WuxiaUi.battleWesternRemnantGeneralStandee,
+      ),
+      (
+        'assets/enemies/massbattle_canbu_b.png',
+        WuxiaUi.battleWesternFrenziedRiderStandee,
+      ),
+      (
+        'assets/enemies/massbattle_canbu_c.png',
+        WuxiaUi.battleWesternRemnantAssassinStandee,
+      ),
       ('assets/enemies/black_killer.png', WuxiaUi.battleBlackKillerStandee),
       ('assets/enemies/killer_a.png', WuxiaUi.battleBanditBladeStandee),
       ('assets/enemies/killer_b.png', WuxiaUi.battleBanditArcherStandee),

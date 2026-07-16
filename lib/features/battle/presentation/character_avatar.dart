@@ -701,6 +701,12 @@ const _battleStandeeOverrides = <String, String>{
       WuxiaUi.battleFrontierOutriderStandee,
   'assets/enemies/massbattle_guanqi_c.png':
       WuxiaUi.battleFrontierIronGuardStandee,
+  'assets/enemies/massbattle_canbu_a.png':
+      WuxiaUi.battleWesternRemnantGeneralStandee,
+  'assets/enemies/massbattle_canbu_b.png':
+      WuxiaUi.battleWesternFrenziedRiderStandee,
+  'assets/enemies/massbattle_canbu_c.png':
+      WuxiaUi.battleWesternRemnantAssassinStandee,
   'assets/enemies/black_killer.png': WuxiaUi.battleBlackKillerStandee,
   'assets/enemies/killer_a.png': WuxiaUi.battleBanditBladeStandee,
   'assets/enemies/killer_b.png': WuxiaUi.battleBanditArcherStandee,
@@ -794,6 +800,9 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleFrontierCommanderStandee => 0.910,
   WuxiaUi.battleFrontierOutriderStandee => 0.855,
   WuxiaUi.battleFrontierIronGuardStandee => 0.840,
+  WuxiaUi.battleWesternRemnantGeneralStandee => 0.907,
+  WuxiaUi.battleWesternFrenziedRiderStandee => 0.766,
+  WuxiaUi.battleWesternRemnantAssassinStandee => 0.814,
   WuxiaUi.battleLeftGuardianStandee => 0.940,
   WuxiaUi.battleRightGuardianStandee => 0.956,
   WuxiaUi.battleTowerBoss30Standee => 0.972,
@@ -928,6 +937,14 @@ _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
   ),
   WuxiaUi.battleFrontierIronGuardStandee => (
     scale: 1.08,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleWesternFrenziedRiderStandee => (
+    scale: 1.18,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleWesternRemnantAssassinStandee => (
+    scale: 1.12,
     horizontalShiftFraction: 0,
   ),
   _ => (scale: 1, horizontalShiftFraction: 0),
