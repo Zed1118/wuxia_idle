@@ -21,6 +21,8 @@ class BossGauntletConfig {
     this.enemyTeams = const {},
     this.firstClearRewardSkillId = '',
     this.rewardCandidateEquipmentIds = const [],
+    this.firstClearRewardExp = 0,
+    this.firstClearRewardInsight = 0,
   });
 
   final List<GauntletStageConfig> stages;
@@ -35,6 +37,10 @@ class BossGauntletConfig {
   /// Boss 胜利三选一命名装备候选 defId（恰 3 件·§6.2）。数值/命名 TODO(batch3-probe)：
   /// 现引用现有好家伙(二流)装备占位，后续替换为断魂庄专属命名奖励。
   final List<String> rewardCandidateEquipmentIds;
+
+  /// 首通经验/领悟点奖励（§6.2·重复通关取半）。TODO(batch3-probe) 占位。
+  final int firstClearRewardExp;
+  final int firstClearRewardInsight;
 
   /// 解析关次敌队；未知 teamId 返回空列表（引用完整性由加载期红线守）。
   List<EnemyDef> enemiesForTeam(String teamId) =>
@@ -101,6 +107,9 @@ class BossGauntletConfig {
       enemyTeams: enemyTeams,
       firstClearRewardSkillId: firstClearSkill,
       rewardCandidateEquipmentIds: rewardCandidates,
+      firstClearRewardExp: (y['first_clear_reward_exp'] as num?)?.toInt() ?? 0,
+      firstClearRewardInsight:
+          (y['first_clear_reward_insight'] as num?)?.toInt() ?? 0,
     );
   }
 }

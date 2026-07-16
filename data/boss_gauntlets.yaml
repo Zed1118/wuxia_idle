@@ -22,6 +22,9 @@ reward_candidate_equipment_ids:
   - weapon_haojiahuo_qing_feng_jian
   - armor_haojiahuo_jin_pao
   - accessory_haojiahuo_yu_pei_lao
+# 参战全员经验/领悟点（§6.2·首通全额，重复通关取半）。TODO(batch3-probe) 占位。
+first_clear_reward_exp: 300
+first_clear_reward_insight: 20
 
 enemy_teams:
   # ── 第一关：飞针使·苏无咎（灵巧 + 锁脉针 charge 夺真气 + 破招脆弱窗外 0.65）──

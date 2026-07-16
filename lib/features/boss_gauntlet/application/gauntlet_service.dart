@@ -4,13 +4,21 @@ import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
+import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
+import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../data/defs/item_def.dart';
+import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
+import '../../../shared/utils/rng.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
 import '../../battle/application/stage_battle_setup.dart';
+import '../../cultivation/application/character_advancement_service.dart';
+import '../../cultivation/application/progression_gate_service.dart';
+import '../../equipment/application/equipment_factory.dart';
+import '../../mainline/domain/mainline_progress.dart';
 import '../domain/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
 import 'gauntlet_battle_runner.dart';
@@ -325,6 +333,113 @@ class GauntletService {
       }
       run.sessionPhase = GauntletPhase.inBattle;
       await _isar.bossGauntletRuns.put(run);
+    });
+  }
+
+  /// 断魂庄奖励三选一原子结算（最关键幂等·§6.2/§9.2）。单 `writeTxn`：发
+  /// [chosenEquipmentDefId] 命名装备入背包（owner=null）+ 参战全员经验（层锁·同远征/
+  /// 闭关口径受发布上限）与领悟点（首通全额 / 重复取半·§6.2）+ 首通解锁秘籍
+  /// （[BossGauntletConfig.firstClearRewardSkillId]）+ 记 `clearedGauntletIds` /
+  /// `duanhunFirstClearedAt` + 返还托管补给 + 关会话。**只成功一次**：会话已结算（run
+  /// 已删）→ 重入 no-op 不重复发（§inv4/5·`clearedGauntletIds` 防重）。[rng] 供命名
+  /// 装备属性 roll；[config]/[numbers] 由 caller 从 `GameRepository` 注入。
+  Future<void> chooseReward({
+    required String chosenEquipmentDefId,
+    required BossGauntletConfig config,
+    required NumbersConfig numbers,
+    required Rng rng,
+    DateTime? now,
+  }) async {
+    final at = now ?? DateTime.now();
+    final save0 = await _isar.saveDatas.get(0);
+    if (save0 == null) throw StateError('断魂庄选奖：无存档');
+    final run0 = await _activeRun(save0.id);
+    if (run0 == null) return; // 幂等：会话已结算关闭·重入 no-op
+    if (run0.sessionPhase != GauntletPhase.awaitingRewardChoice) {
+      throw StateError('断魂庄选奖：非奖励选择态（当前 ${run0.sessionPhase.name}）');
+    }
+    if (!run0.rewardCandidateDefIds.contains(chosenEquipmentDefId)) {
+      throw StateError('断魂庄选奖：$chosenEquipmentDefId 不在三选一候选');
+    }
+
+    final repo = GameRepository.instance;
+    final eqDef = repo.getEquipment(chosenEquipmentDefId);
+    final isFirstClear = run0.isFirstClearPending;
+    final memberIds = run0.members.map((m) => m.characterId).toList();
+    // §6.2：首通全额，重复通关取半。
+    final rewardExp = isFirstClear
+        ? config.firstClearRewardExp
+        : config.firstClearRewardExp ~/ 2;
+    final rewardInsight = isFirstClear
+        ? config.firstClearRewardInsight
+        : config.firstClearRewardInsight ~/ 2;
+
+    await _isar.writeTxn(() async {
+      final run = await _activeRun(save0.id);
+      if (run == null) return; // 幂等
+      if (run.sessionPhase != GauntletPhase.awaitingRewardChoice) return;
+      final save = (await _isar.saveDatas.get(0))!;
+      final alreadyCleared = save.clearedGauntletIds.contains(gauntletId);
+
+      // ① 选中命名装备入背包（owner=null·走标准 roll 路径）。
+      final eq = EquipmentFactory.fromDef(
+        eqDef,
+        rng: rng,
+        obtainedAt: at,
+        obtainedFrom: '断魂庄',
+      );
+      await _isar.equipments.put(eq);
+
+      // ② 参战全员经验（层锁受发布上限·同远征/闭关口径）+ 领悟点。
+      if (rewardExp > 0 || rewardInsight > 0) {
+        final progress = await _isar.mainlineProgress
+            .filter()
+            .saveDataIdEqualTo(save.id)
+            .findFirst();
+        final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
+        for (final id in memberIds) {
+          final ch = await _isar.characters.get(id);
+          if (ch == null) continue; // §10：找不到角色仍安全结算
+          if (rewardExp > 0) {
+            CharacterAdvancementService.applyExperience(
+              ch,
+              rewardExp,
+              realmLookup: repo.getRealm,
+              isLayerLocked: (tier, layer) =>
+                  ProgressionGateService.isLayerLocked(
+                    nextTier: tier,
+                    nextLayer: layer,
+                    releaseCap: numbers.progressionReleaseCap,
+                    realmLookup: repo.getRealm,
+                    innerDemonDef: numbers.innerDemon,
+                    clearedStageIds: clearedSet,
+                  ),
+            );
+          }
+          if (rewardInsight > 0) ch.insightPoints += rewardInsight;
+          await _isar.characters.put(ch);
+        }
+      }
+
+      // ③ 首通：解锁秘籍（inline markUnlocked·避嵌套 writeTxn）+ 记首通时间。
+      if (isFirstClear && !alreadyCleared) {
+        save.skillUnlockProgress = List.of(save.skillUnlockProgress);
+        if (!save.skillUnlockProgress.isUnlocked(
+          config.firstClearRewardSkillId,
+        )) {
+          save.skillUnlockProgress.markUnlocked(config.firstClearRewardSkillId);
+        }
+        save.duanhunFirstClearedAt = at;
+      }
+      // ④ 记通关（防重键·首通秘籍不重复掉落靠此·§inv5）。
+      if (!alreadyCleared) {
+        save.clearedGauntletIds = [...save.clearedGauntletIds, gauntletId];
+      }
+      await _isar.saveDatas.put(save);
+
+      // ⑤ 返还托管补给 + 关会话。
+      await _returnEscrow(run);
+      await _isar.bossGauntletRuns.delete(run.id);
     });
   }
 
