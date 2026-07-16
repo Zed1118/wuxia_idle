@@ -20,4 +20,12 @@ class ActivityMemberSnapshot {
   int currentHp = 0;
   int currentQi = 0;
   bool isDowned = false;
+
+  /// 关次边界技能冷却快照键（Isar @embedded 无 Map，与 [skillCooldownTurns] 平行同序，
+  /// 只存 CD>0 项）。断魂庄三关之间继承冷却（design §5.5，避免连关刷新绝招）；远征
+  /// 逐节点独立战斗不写入，留空。
+  List<String> skillCooldownKeys = [];
+
+  /// 对应剩余冷却回合数（与 [skillCooldownKeys] 平行同序）。
+  List<int> skillCooldownTurns = [];
 }
