@@ -2232,6 +2232,23 @@ class GameRepository {
       // ⑤ 护法结界引用完整性/值域/自引用。
       enforceGuardianWardReferences(team, location: loc);
     }
+
+    // ⑥ 通关奖励引用不悬空（C2.4·§6.2/§8.2）：首通秘籍在 skills.yaml、
+    //    三选一命名装备候选在 equipment.yaml。
+    if (!skillIdSet.contains(config.firstClearRewardSkillId)) {
+      throw StateError(
+        'boss_gauntlets: first_clear_reward_skill_id='
+        '${config.firstClearRewardSkillId} 未在 skills.yaml 存在（§8.2 引用悬空）',
+      );
+    }
+    for (final eqId in config.rewardCandidateEquipmentIds) {
+      if (!equipmentDefs.containsKey(eqId)) {
+        throw StateError(
+          'boss_gauntlets: reward_candidate_equipment_id=$eqId '
+          '未在 equipment.yaml 存在（§8.2 引用悬空）',
+        );
+      }
+    }
   }
 
   void _enforceSeclusionRedLines() {

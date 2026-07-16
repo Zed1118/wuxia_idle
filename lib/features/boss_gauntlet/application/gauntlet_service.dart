@@ -49,6 +49,10 @@ class GauntletService {
   /// 副本凭证 defId（断魂帖）。每次入场消耗一张，消耗凭证与建会话同事务（§5.1）。
   static const String ticketDefId = 'item_duanhuntie';
 
+  /// 断魂庄副本标识（`SaveData.clearedGauntletIds` 键·首通判定/防重·§9.2）。
+  /// 单副本，无 yaml id；未来多副本时移入配置。
+  static const String gauntletId = 'duanhunzhuang';
+
   /// 入场：单 `writeTxn` 建断魂庄 active 会话，返回落库的 run id。
   ///
   /// [supplies] = defId → 份数（疗伤丹/行囊补给自由混装），总份数 ≤ [supplyCap]。
@@ -295,6 +299,13 @@ class GauntletService {
         run: fresh,
         finalState: result.finalState,
         isBossStage: isBoss,
+      );
+      // Boss 胜利固化三选一候选 + 首通判定（同事务·选择前不可重抽·C2.4b）；
+      // 非终关胜利时 no-op（stageBossReward 内按相位判定）。
+      GauntletController.stageBossReward(
+        run: fresh,
+        config: config,
+        alreadyCleared: save.clearedGauntletIds.contains(gauntletId),
       );
       await _isar.bossGauntletRuns.put(fresh);
     });

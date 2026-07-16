@@ -1,5 +1,6 @@
 import '../../activity/domain/activity_member_snapshot.dart';
 import '../../battle/domain/battle_state.dart';
+import '../domain/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
 
 /// 断魂庄三关编排控制器（design §5.2-5.5）。
@@ -96,6 +97,22 @@ class GauntletController {
       run.currentStage += 1;
       run.sessionPhase = GauntletPhase.interlude;
     }
+  }
+
+  /// Boss 胜利固化奖励（C2.4b·§9.2）：进入 [GauntletPhase.awaitingRewardChoice] 时把
+  /// [config] 三选一命名装备候选固化进 [run]（选择前不可重抽）+ 记首通判定
+  /// （[alreadyCleared]＝`SaveData.clearedGauntletIds` 是否已含本副本）。非该相位 no-op。
+  /// caller（`GauntletService.fightCurrentStage`）在 advance 之后于同一事务内调用。
+  static void stageBossReward({
+    required BossGauntletRun run,
+    required BossGauntletConfig config,
+    required bool alreadyCleared,
+  }) {
+    if (run.sessionPhase != GauntletPhase.awaitingRewardChoice) return;
+    run.rewardCandidateDefIds = List<String>.from(
+      config.rewardCandidateEquipmentIds,
+    );
+    run.isFirstClearPending = !alreadyCleared;
   }
 
   static ActivityMemberSnapshot _mergeMember(

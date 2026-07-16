@@ -13,6 +13,16 @@ stages:
   - { role: elite, enemy_team_id: gauntlet_shi_zhenyue }
   - { role: boss,  enemy_team_id: gauntlet_wen_jiuzhen }
 
+# ── 通关奖励（§6.2·数值/命名装备 TODO(batch3-probe)）──
+# 首通解锁「锁脉针法」秘籍（= 苏无咎所用锁脉针·skill_suo_mai_zhen，击败后习得）。
+first_clear_reward_skill_id: skill_suo_mai_zhen
+# Boss 胜利三选一命名装备候选（恰 3 件·一槽一件）。TODO(batch3-probe)：现引用现有
+# 好家伙(二流)装备占位，后续替换为断魂庄专属命名奖励（名/数值/典故随美术批）。
+reward_candidate_equipment_ids:
+  - weapon_haojiahuo_qing_feng_jian
+  - armor_haojiahuo_jin_pao
+  - accessory_haojiahuo_yu_pei_lao
+
 enemy_teams:
   # ── 第一关：飞针使·苏无咎（灵巧 + 锁脉针 charge 夺真气 + 破招脆弱窗外 0.65）──
   gauntlet_su_wujiu:
