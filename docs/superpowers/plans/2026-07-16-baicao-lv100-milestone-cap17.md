@@ -39,10 +39,11 @@
 - `flutter analyze --no-pub lib test` 0；A2 T1 targeted（cap 测 + 红线⑦测 + 触发测）；**全量 `flutter test --no-pub`**（改了 numbers/红线/触发·跨切面）0 fail；macOS debug build 成功。
 - 目检：Lv100 触发后主菜单江湖远行入口出现（生产存档现在可达·可 seed 一个 ≥Lv100 角色验 visual_route）。
 
-## 恢复点（2026-07-16·plan 就绪·未动实装）
-- 状态：Phase 0 完成、设计拍板（选项 A + xhigh）、plan 固化。**下一步：切片 1**（红线⑦豁免）。
-- 已跑验证：analyze `lib test` 0（本会话·#1 收尾后）。
-- 阻塞/待决：无（2 招 phasing 已拍板豁免）。D2（Lv100→170 经济节奏·快/中/慢档）留 batch3 联合经济探针，不在本批。
+## 恢复点（2026-07-16·切片 1-4 全实装完成·未 push）
+- 状态：**四切片全绿完成**。cap 10→17、`SkillDef.mountDeferred` 豁免红线⑦、Lv100→`jianghuJourneyUnlocked` 触发接线（`journey_unlock.dart` 挂 `MainMenuStartupGate` post-frame）均落地。
+- 已跑验证：analyze `lib test` **0**；全量 `flutter test --no-pub` **4104/0**（基线 4092 + 12 新测=切片1 红线豁免 3 + 切片3 journey_unlock 9）；dart format 12 文件 clean；macOS debug build **✓ Built wuxia_idle.app**。
+- Phase 0 外新捕获并 reconcile 4 处 cap 耦合站点（plan 未名）：wave_b/skill_source 生产「挂载完备」测补 `!s.mountDeferred`；inner_demon R5.3「停绝对层10」改 cap-agnostic（末关后存量兑现至发布上限）；overflow 探针/seclusion/game_repository stale 文案 de-drift。
+- 阻塞/待决：无。live 主菜单江湖远行入口目检（seed ≥Lv100 角色）为残留 nice-to-have（gate seam 镜像已验的 `maybeSettleExpedition` + Isar 测覆盖）。D2（Lv100→170 经济节奏）留 batch3 联合经济探针。
 
 ## 验收标准
 - cap=17 下 `loadAllDefs` 不抛错（2 招豁免生效）；2 招定义保留、零挂载、mount_deferred 留痕。

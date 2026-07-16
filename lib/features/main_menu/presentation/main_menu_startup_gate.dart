@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../expedition/application/expedition_startup.dart';
+import '../../expedition/application/journey_unlock.dart';
 import '../../seclusion/presentation/offline_recap_gate.dart';
 import '../../sect/application/sect_providers.dart';
 
@@ -27,6 +28,7 @@ class _MainMenuStartupGateState extends ConsumerState<MainMenuStartupGate> {
       unawaited(maybeShowOfflineRecap(context: context, ref: ref));
       unawaited(maybeRunSectMonthlyTick(ref));
       unawaited(maybeSettleExpedition(ref));
+      unawaited(maybeUnlockJianghuJourney(ref));
     });
   }
 

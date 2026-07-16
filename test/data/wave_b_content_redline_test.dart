@@ -36,10 +36,12 @@ void main() {
       expect(chapters.add(st.chapterIndex!), isTrue, reason: '每章至多 1 本真解');
     }
     final releaseTier = _releaseCapTier(repo);
+    // mountDeferred 招豁免挂载完备性(发布阶内但正式挂载点留 batch3/Phase C)。
     final releaseManualSkills = repo.skillDefs.values
         .where(
           (s) =>
               s.source == SkillSource.mainlineDrop &&
+              !s.mountDeferred &&
               s.canEquipAtRealm(releaseTier),
         )
         .map((s) => s.id)
@@ -73,6 +75,7 @@ void main() {
         .where(
           (s) =>
               s.source == SkillSource.fragment &&
+              !s.mountDeferred &&
               s.canEquipAtRealm(releaseTier),
         )
         .map((s) => s.id)

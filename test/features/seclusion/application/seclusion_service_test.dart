@@ -1234,7 +1234,7 @@ void main() {
 
     // ── P1.y · step 6 hook ─────────────────────────────────────────
 
-    test('Lv100 发布上限阻止旧档继续升层，tutorialStep 不推进', () async {
+    test('发布上限阻止旧档继续升层，tutorialStep 不推进', () async {
       await IsarSetup.instance.writeTxn(() async {
         final ch = await IsarSetup.instance.characters.get(kCharId);
         ch!
@@ -1277,7 +1277,7 @@ void main() {
       );
     });
 
-    test('Lv100 发布上限对 disciple 同样生效', () async {
+    test('发布上限对 disciple 同样生效', () async {
       await IsarSetup.instance.writeTxn(() async {
         final ch = await IsarSetup.instance.characters.get(kCharId);
         ch!

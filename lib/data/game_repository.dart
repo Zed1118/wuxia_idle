@@ -1848,7 +1848,9 @@ class GameRepository {
   /// ⑥ drop 招(mainlineDrop|fragment)必有 style + tier(缺 style 永不可装配,
   ///    缺 tier canEquipAtRealm 恒 true 破 §5.3,均属配置错误);
   /// ⑦ 当前发布阶 drop 招挂载完备:每招恰 1 个挂载点。高于发布
-  /// 上限的招式定义允许暂无挂载，留给后续副本与玩法。
+  /// 上限的招式定义允许暂无挂载，留给后续副本与玩法;发布阶内但标记
+  /// mountDeferred 的招同样豁免挂载完备性(正式挂载点尚未做,留 batch3
+  /// 远征掉落 / Phase C 断魂庄,挂载时删标记 = 发布)。
   void _enforceSkillSourceRedLines() {
     final releaseRealm = getRealmByAbsoluteLevel(
       numbers.progressionReleaseCap.maxAbsoluteRealmLevel,
@@ -1921,6 +1923,7 @@ class GameRepository {
           .where(
             (s) =>
                 s.source == SkillSource.mainlineDrop &&
+                !s.mountDeferred &&
                 (s.tier ?? releaseSkillTierCap + 1) <= releaseSkillTierCap,
           )
           .map((s) => s.id)
@@ -1929,6 +1932,7 @@ class GameRepository {
           .where(
             (s) =>
                 s.source == SkillSource.fragment &&
+                !s.mountDeferred &&
                 (s.tier ?? releaseSkillTierCap + 1) <= releaseSkillTierCap,
           )
           .map((s) => s.id)

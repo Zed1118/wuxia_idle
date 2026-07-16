@@ -126,7 +126,7 @@ void main() {
         expect(
           repo.getStage(id).requiredRealm,
           i <= 5 ? RealmTier.xueTu : RealmTier.sanLiu,
-          reason: '$id 必须在 Lv100 发布上限内',
+          reason: '$id 必须在发布上限内',
         );
       }
       expect(
@@ -224,7 +224,7 @@ void main() {
       );
     });
 
-    test('当前塔与支线全部收口在 Lv100 发布上限内', () async {
+    test('当前塔与支线全部收口在发布上限内', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       const groupTiers = [
         RealmTier.xueTu,

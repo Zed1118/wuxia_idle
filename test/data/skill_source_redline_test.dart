@@ -108,10 +108,12 @@ void main() {
         }
       }
       final releaseTier = _releaseCapTier(repo);
+      // mountDeferred 招豁免挂载完备性(定义在发布阶内但正式挂载点留后续内容)。
       final manualSkills = repo.skillDefs.values
           .where(
             (s) =>
                 s.source == SkillSource.mainlineDrop &&
+                !s.mountDeferred &&
                 s.canEquipAtRealm(releaseTier),
           )
           .map((s) => s.id)
@@ -120,6 +122,7 @@ void main() {
           .where(
             (s) =>
                 s.source == SkillSource.fragment &&
+                !s.mountDeferred &&
                 s.canEquipAtRealm(releaseTier),
           )
           .map((s) => s.id)
@@ -230,6 +233,86 @@ void main() {
             'message',
             contains('波B 红线 ⑦'),
           ),
+        ),
+      );
+    });
+  });
+
+  group('mount_deferred 豁免（波B 红线 ⑦ opt-in·里程碑批切片1）', () {
+    // 单元:字段解析(缺省 false / 显式 true)。
+    test('SkillDef.fromYaml 解析 mount_deferred(缺省 false)', () {
+      final base = <String, dynamic>{
+        'id': 'test_skill',
+        'name': 'n',
+        'description': 'd',
+        'type': 'powerSkill',
+        'powerMultiplier': 100,
+        'qiDelta': -10,
+        'cooldownTurns': 1,
+        'requiresManualTrigger': false,
+        'visualEffect': 'none',
+      };
+      expect(SkillDef.fromYaml(base).mountDeferred, isFalse);
+      expect(
+        SkillDef.fromYaml({...base, 'mount_deferred': true}).mountDeferred,
+        isTrue,
+      );
+    });
+
+    // 集成:发布上限拉到二流(cap=17·releaseSkillTierCap=3)时,二流 drop 招
+    // (千钧坠岳/烛影摇红)本会触发红线⑦孤儿;经 mount_deferred: true 豁免后
+    // loadAllDefs 不再抛(正式挂载留 batch3 远征掉落 / Phase C 断魂庄)。
+    test('cap=17 下 mount_deferred 招不触发孤儿(loadAllDefs 成功)', () async {
+      String bumpCap(String s) => s.replaceFirst(
+        'max_absolute_realm_level: 10',
+        'max_absolute_realm_level: 17',
+      );
+      // 不抛即通过(若存在未豁免的二流孤儿招则会抛红线⑦)。
+      await GameRepository.loadAllDefs(
+        loader: makeLoader('data/numbers.yaml', bumpCap),
+      );
+    });
+
+    // 集成:豁免按招粒度且确被消费 — 保留千钧坠岳(mainlineDrop)豁免、只抹掉
+    // 烛影摇红(fragment)的 mount_deferred。孤儿应只报烛影摇红、不报千钧坠岳:
+    // ① 证明烛影摇红的豁免确被消费(抹掉即重新成孤儿);② 证明千钧坠岳的豁免仍
+    // 生效(否则 mainlineDrop 检查会先抛出它,孤儿里就会出现千钧坠岳)。
+    test('cap=17 下只抹掉 fragment 招 mount_deferred → 只该招触发孤儿(按招豁免)', () async {
+      Future<String> loader(String path) async {
+        final original = await File(path).readAsString();
+        if (path == 'data/numbers.yaml') {
+          return original.replaceFirst(
+            'max_absolute_realm_level: 10',
+            'max_absolute_realm_level: 17',
+          );
+        }
+        if (path == 'data/skills.yaml') {
+          // 抹掉烛影摇红块内的 mount_deferred 行(非贪婪定位到本招首个)。
+          return original.replaceFirstMapped(
+            RegExp(
+              r'(  - id: skill_zhu_ying_yao_hong\n(?:.*\n)*?)    mount_deferred: true\n',
+            ),
+            (m) => m.group(1)!,
+          );
+        }
+        return original;
+      }
+
+      await expectLater(
+        GameRepository.loadAllDefs(loader: loader),
+        throwsA(
+          isA<StateError>()
+              .having((e) => e.message, 'message', contains('波B 红线 ⑦'))
+              .having(
+                (e) => e.message,
+                'orphan 含被抹的 fragment 招',
+                contains('skill_zhu_ying_yao_hong'),
+              )
+              .having(
+                (e) => e.message,
+                'orphan 不含仍豁免的 mainline 招',
+                isNot(contains('skill_qian_jun_zhui_yue')),
+              ),
         ),
       );
     });

@@ -64,6 +64,12 @@ class SkillDef {
   /// 波A A4:获取来源。yaml 必填(红线 not-null);直接构造的测试 fixture 可空。
   final SkillSource? source;
 
+  /// 里程碑批(2026-07-16):正式挂载延后标记。true = 此 drop 招(真解/残页)
+  /// 定义合法但当前发布阶段暂无 stage/tower 挂载点,豁免红线⑦「每招恰 1 挂载点」
+  /// (仅豁免挂载完备性;style+tier 红线⑥仍必守,定义仍需自洽)。正式挂载
+  /// (batch3 远征掉落 / Phase C 断魂庄)时删本标记 = 发布。默认 false。
+  final bool mountDeferred;
+
   /// 招式 per-skill 熟练度效果(可玩性 P1a · 只配真解/招牌/破招技)。null=不配。
   final SkillProficiencyEffects? proficiency;
 
@@ -99,6 +105,7 @@ class SkillDef {
     this.aiUsePolicy = AiUsePolicy.normal,
     this.style,
     this.source,
+    this.mountDeferred = false,
     this.proficiency,
     this.targetType = TargetType.single,
     this.defenseBreakPct = 0.0,
@@ -151,6 +158,7 @@ class SkillDef {
       source: y['source'] != null
           ? _parseSkillSource(y['source'] as String)
           : null,
+      mountDeferred: y['mount_deferred'] as bool? ?? false,
       proficiency: y['proficiency'] != null
           ? SkillProficiencyEffects.fromYaml(
               Map<String, dynamic>.from(y['proficiency'] as Map),

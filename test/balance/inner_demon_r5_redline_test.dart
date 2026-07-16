@@ -34,7 +34,7 @@ import '../support/test_data.dart';
 ///     印证 R3 在真实 numbers.yaml innerDemon 数据流真生效
 ///   - R5.3 当前发布节点 e2e:起点 xueTu·shuLian + EXP 留账 →
 ///     inner_demon_01..07 逐关通关 → applyExperience + 统一门禁 →
-///     停在 sanLiu·shuLian（绝对层 10）
+///     末关后心魔门禁全清,存量 EXP 兑现至发布上限（绝对层 17·cap-agnostic 断言）
 ///
 /// **断言语义**(memory `feedback_red_line_test_semantics`):
 ///   - ✅ 50 种子全有 result(覆盖率 + runToEnd 不抛)
@@ -344,7 +344,7 @@ void main() {
       },
     );
 
-    test('R5.3 当前版七节点逐关放行并停在绝对层10', () {
+    test('R5.3 当前版七节点逐关放行,末关后存量兑现至发布上限', () {
       // 集成 isLayerLocked + applyExperience hook 真链路。
       final innerDemonDef = GameRepository.instance.numbers.innerDemon;
       final realmLookup = GameRepository.instance.getRealm;
@@ -379,17 +379,23 @@ void main() {
 
       // 灌大量 EXP 一次性(GDD §5.1 反留存焦虑 — 玩家挂机攒 EXP,过心魔关
       // 后立刻全部消费),inner_demon_01 未通拦截在绝对层3→4。
+      const bankedExp = 100000000;
       var r = CharacterAdvancementService.applyExperience(
         character,
-        10000,
+        bankedExp,
         realmLookup: realmLookup,
         isLayerLocked: isLocked,
       );
       expect(r.layersGained, 0, reason: 'inner_demon_01 未通 → 绝对层3→4 被拦,EXP 留账');
       expect(character.realmTier, RealmTier.xueTu);
       expect(character.realmLayer, RealmLayer.shuLian);
-      expect(character.experience, 10000, reason: 'EXP 不归零(GDD §5.1 反留存焦虑)');
+      expect(
+        character.experience,
+        bankedExp,
+        reason: 'EXP 不归零(GDD §5.1 反留存焦虑)',
+      );
 
+      // 节点 1-6 逐关放行:每通一关只解锁 1 层(下一心魔仍 locked → break)。
       final expectedAfter = <(String, RealmTier, RealmLayer)>[
         ('stage_inner_demon_01', RealmTier.xueTu, RealmLayer.jingTong),
         ('stage_inner_demon_02', RealmTier.xueTu, RealmLayer.yuanShu),
@@ -397,13 +403,11 @@ void main() {
         ('stage_inner_demon_04', RealmTier.xueTu, RealmLayer.dengFeng),
         ('stage_inner_demon_05', RealmTier.sanLiu, RealmLayer.qiMeng),
         ('stage_inner_demon_06', RealmTier.sanLiu, RealmLayer.ruMen),
-        ('stage_inner_demon_07', RealmTier.sanLiu, RealmLayer.shuLian),
       ];
       for (final (stageId, nextTier, nextLayer) in expectedAfter) {
         cleared.add(stageId);
-        // delta=0 在 applyExperience 走短路分支不进 while-loop;喂 1 EXP
-        // 触发 while-loop 消费已攒 EXP(character.experience 已 10M+),
-        // 单次只升 1 layer(因下一关心魔仍 locked → break)。
+        // 喂 1 EXP 触发 while-loop 消费已攒 EXP,单次只升 1 layer
+        // (因下一关心魔仍 locked → break)。
         r = CharacterAdvancementService.applyExperience(
           character,
           1,
@@ -424,8 +428,34 @@ void main() {
         );
       }
 
-      expect(character.realmTier, RealmTier.sanLiu);
-      expect(character.realmLayer, RealmLayer.shuLian);
+      // 末关 07 通关:七心魔门禁全清,不再逐层 gate → 存量 EXP 一次性兑现,
+      // 停在发布上限(cap 抬到二流后 = 绝对层17)。cap-agnostic 断言,不锚层名。
+      cleared.add('stage_inner_demon_07');
+      final capAbs = GameRepository
+          .instance
+          .numbers
+          .progressionReleaseCap
+          .maxAbsoluteRealmLevel;
+      final ruMenAbs = realmLookup(
+        RealmTier.sanLiu,
+        RealmLayer.ruMen,
+      ).absoluteLevel;
+      r = CharacterAdvancementService.applyExperience(
+        character,
+        1,
+        realmLookup: realmLookup,
+        isLayerLocked: isLocked,
+      );
+      expect(
+        r.layersGained,
+        capAbs - ruMenAbs,
+        reason: '末关后心魔门禁全清,存量 EXP 兑现至发布上限(绝对层$capAbs)',
+      );
+      expect(
+        realmLookup(character.realmTier, character.realmLayer).absoluteLevel,
+        capAbs,
+        reason: '停在发布上限,不越界',
+      );
     });
   });
 }
