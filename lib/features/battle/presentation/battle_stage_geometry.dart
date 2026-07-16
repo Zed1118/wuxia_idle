@@ -31,8 +31,8 @@ Offset battleStageAnchor(
           1 => const [Offset(0.27, 0.53)],
           2 => const [Offset(0.19, 0.58), Offset(0.36, 0.38)],
           _ => const [
-            Offset(0.35, 0.50),
-            Offset(0.15, 0.62),
+            Offset(0.36, 0.50),
+            Offset(0.21, 0.62),
             Offset(0.06, 0.36),
           ],
         };

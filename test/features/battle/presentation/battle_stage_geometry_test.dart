@@ -10,6 +10,10 @@ void main() {
 
       expect(leftMain.dx, greaterThan(leftSecond.dx));
       expect(leftSecond.dx, greaterThan(leftThird.dx));
+      expect(
+        leftMain.dx - leftSecond.dx,
+        closeTo(leftSecond.dx - leftThird.dx, 1e-9),
+      );
     });
 
     test('1v1/2v2/3v3 左右同序槽位严格镜像', () {

@@ -481,7 +481,11 @@ class StageCharacterStatusOverlay extends StatelessWidget {
     final resolvedIconPath = _resolvedStageIconPath(character);
     final portraitHeight = height * 0.91;
     final footY = portraitHeight * _stageStandeeFootFraction(resolvedIconPath);
-    final insetFraction = character.slotIndex == 0 ? 0.24 : 0.16;
+    final insetFraction = switch (character.slotIndex) {
+      0 => 0.24,
+      2 => 0.18,
+      _ => 0.16,
+    };
     final borderColor = character.isBoss
         ? WuxiaColors.bossFrame
         : WuxiaColors.schoolColor(character.school);
