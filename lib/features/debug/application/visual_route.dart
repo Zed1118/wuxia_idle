@@ -160,6 +160,27 @@ enum VisualRoute {
   battleStage0401('battle_stage_04_01', '敌人立绘验收·真主线4-1（liukou_a）'),
   battleStage0402('battle_stage_04_02', '敌人立绘验收·真主线4-2（guard_a）'),
   battleStage0403('battle_stage_04_03', '敌人立绘验收·真主线4-3（shafei_a）'),
+  battleStage0404('battle_stage_04_04', '敌人立绘验收·真主线4-4（xiliangboss）'),
+  battleStage0405('battle_stage_04_05', '敌人立绘验收·真主线4-5（xiliangbazhu）'),
+  battleStage0501('battle_stage_05_01', '敌人立绘验收·真主线5-1（tongguan_shoujiang）'),
+  battleStage0502('battle_stage_05_02', '敌人立绘验收·真主线5-2（songshan_daozong_dizi）'),
+  battleStage0503('battle_stage_05_03', '敌人立绘验收·真主线5-3（caobang_duozhu）'),
+  battleStage0504(
+    'battle_stage_05_04',
+    '敌人立绘验收·真主线5-4（zhongzhou_lunjian_xianfeng）',
+  ),
+  battleStage0505('battle_stage_05_05', '敌人立绘验收·真主线5-5（xiliang_sandizi）'),
+  battleStage0601(
+    'battle_stage_06_01',
+    '敌人立绘验收·真主线6-1（lunjian_sanchang_xunluo）',
+  ),
+  battleStage0602('battle_stage_06_02', '敌人立绘验收·真主线6-2（songshan_shouguan）'),
+  battleStage0603('battle_stage_06_03', '敌人立绘验收·真主线6-3（huanghe_yuantou_yufu）'),
+  battleStage0604(
+    'battle_stage_06_04',
+    '敌人立绘验收·真主线6-4（kunlun_waimen_shouguan）',
+  ),
+  battleStage0605('battle_stage_06_05', '敌人立绘验收·真主线6-5（xiliang_bazhu）'),
   battleTowerFloor06('battle_tower_floor_06', '敌人立绘验收·真塔6层（bandit_b）'),
   battleTowerFloor07('battle_tower_floor_07', '敌人立绘验收·真塔7层（bandit_c）'),
   battleTowerFloor12(

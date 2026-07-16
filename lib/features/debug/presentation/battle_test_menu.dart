@@ -786,6 +786,42 @@ class BattleScenarioData {
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0403() =>
       _scenarioStageStandeeAudit('stage_04_03');
 
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0404() =>
+      _scenarioStageStandeeAudit('stage_04_04');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0405() =>
+      _scenarioStageStandeeAudit('stage_04_05');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0501() =>
+      _scenarioStageStandeeAudit('stage_05_01');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0502() =>
+      _scenarioStageStandeeAudit('stage_05_02');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0503() =>
+      _scenarioStageStandeeAudit('stage_05_03');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0504() =>
+      _scenarioStageStandeeAudit('stage_05_04');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0505() =>
+      _scenarioStageStandeeAudit('stage_05_05');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0601() =>
+      _scenarioStageStandeeAudit('stage_06_01');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0602() =>
+      _scenarioStageStandeeAudit('stage_06_02');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0603() =>
+      _scenarioStageStandeeAudit('stage_06_03');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0604() =>
+      _scenarioStageStandeeAudit('stage_06_04');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0605() =>
+      _scenarioStageStandeeAudit('stage_06_05');
+
   static (List<BattleCharacter>, List<BattleCharacter>)
   scenarioTowerFloor06() => _scenarioTowerFloorStandeeAudit(6);
 

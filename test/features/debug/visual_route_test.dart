@@ -296,6 +296,27 @@ void main() {
         ),
         (VisualRoute.battleStage0402, 'assets/scenes/battle_frontier.png'),
         (VisualRoute.battleStage0403, 'assets/scenes/battle_desert.png'),
+        (VisualRoute.battleStage0404, 'assets/scenes/battle_drillground.png'),
+        (VisualRoute.battleStage0405, 'assets/scenes/battle_frontier.png'),
+        (
+          VisualRoute.battleStage0501,
+          'assets/scenes/battle_mountainforest.png',
+        ),
+        (VisualRoute.battleStage0502, 'assets/scenes/battle_temple.png'),
+        (VisualRoute.battleStage0503, 'assets/scenes/battle_dock.png'),
+        (VisualRoute.battleStage0504, 'assets/scenes/battle_drillground.png'),
+        (VisualRoute.battleStage0505, 'assets/scenes/battle_citywall.png'),
+        (VisualRoute.battleStage0601, 'assets/scenes/battle_citywall.png'),
+        (
+          VisualRoute.battleStage0602,
+          'assets/scenes/battle_mountainforest.png',
+        ),
+        (VisualRoute.battleStage0603, 'assets/scenes/battle_dock.png'),
+        (VisualRoute.battleStage0604, 'assets/scenes/battle_desert.png'),
+        (
+          VisualRoute.battleStage0605,
+          'assets/scenes/battle_mountainforest.png',
+        ),
       ]) {
         final target = await buildVisualTarget(route, IsarSetup.instance);
         expect(target, isA<ScenarioLauncher>());

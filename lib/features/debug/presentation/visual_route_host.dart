@@ -586,6 +586,90 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         sceneBackgroundPath: 'assets/scenes/battle_desert.png',
         startPaused: true,
       );
+    case VisualRoute.battleStage0404:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0404,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_drillground.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0405:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0405,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_frontier.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0501:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0501,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_mountainforest.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0502:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0502,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_temple.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0503:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0503,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_dock.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0504:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0504,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_drillground.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0505:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0505,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0601:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0601,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0602:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0602,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_mountainforest.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0603:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0603,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_dock.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0604:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0604,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_desert.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0605:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0605,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_mountainforest.png',
+        startPaused: true,
+      );
     case VisualRoute.battleTowerFloor06:
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioTowerFloor06,
