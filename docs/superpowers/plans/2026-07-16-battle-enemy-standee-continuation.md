@@ -30,7 +30,7 @@
 ## 当前恢复点
 
 - **状态**：进行中。
-- **最后完成**：从 `80136768` 建立独立续作 worktree；`flutter analyze --no-pub` 零问题，立绘映射与视觉路由 47 项通过。图像生成能力已恢复，完成 `thug_b` 青年棍手专属原画、色键抠图与 alpha 技术验收；生产映射、脚底比例和光学体量已接线。
-- **下一步**：运行 `thug_b` 定向测试并用真实 `stage_01_02` / tower 2 冻结帧检查体量；通过后提交首个可恢复切片，再继续 `thug_c`。
-- **已跑验证**：`flutter analyze --no-pub`（0 issue）；`flutter test --no-pub test/features/battle/presentation/character_avatar_test.dart test/features/debug/visual_route_test.dart`（47 pass）。新资产为 1024×1536 RGBA，alpha `0–255`，四角全透明，有效脚底比例 `0.928385`。
+- **最后完成**：`bd63148e` 已提交 `thug_b` 青年棍手专属立绘；继续完成 `thug_c` 瘦削短刃客专属原画、色键抠图与 alpha 技术验收，生产映射、脚底比例和光学体量已接线。
+- **下一步**：运行 `thug_c` 定向测试并清理生成中间稿；提交第二个可恢复切片后，处理 `ruffian_a`，再集中跑早期主线真实关卡双视口验收。
+- **已跑验证**：首切片提交前 `flutter analyze --no-pub`（0 issue）、`character_avatar_test.dart`（14 pass）。`battle_thug_b.png` 为 1024×1536 RGBA、脚底比例 `0.928385`；`battle_thug_c.png` 为 1024×1535 RGBA、alpha `0–255`、四角全透明、脚底比例 `0.943322`。
 - **阻塞项**：无。Claude 若完成稳定检查点合并，后续在本分支批末吸收新 `main`，不在当前资产切片中途改基线。

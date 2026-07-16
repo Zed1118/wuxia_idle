@@ -281,7 +281,7 @@ void main() {
       ('assets/characters/founder.png', WuxiaUi.battleFounderFallback),
       ('assets/enemies/thug_a.png', WuxiaUi.battleThugStandee),
       ('assets/enemies/thug_b.png', WuxiaUi.battleYoungRuffianStandee),
-      ('assets/enemies/thug_c.png', WuxiaUi.battleBanditBladeStandee),
+      ('assets/enemies/thug_c.png', WuxiaUi.battleGauntCutpurseStandee),
       ('assets/enemies/ruffian_a.png', WuxiaUi.battleThugStandee),
       ('assets/enemies/bandit_b.png', WuxiaUi.battleBanditBladeStandee),
       ('assets/enemies/bandit_c.png', WuxiaUi.battleThugStandee),
