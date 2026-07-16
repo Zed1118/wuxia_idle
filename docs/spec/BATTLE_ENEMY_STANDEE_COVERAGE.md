@@ -7,8 +7,8 @@
 - 正式数据：`data/stages.yaml` + `data/towers.yaml`
 - 不重复敌人原画：79 种
 - 关卡中敌人出场记录：120 次
-- 已接入透明全身立绘：64 / 79
-- 已覆盖出场记录：105 / 120
+- 已接入透明全身立绘：67 / 79
+- 已覆盖出场记录：108 / 120
 
 已覆盖正式敌人：
 
@@ -52,6 +52,9 @@
 - `lightfoot_changfeng_a`（专属关楼守将 Boss 立绘）
 - `lightfoot_changfeng_b`（专属长风剑客立绘）
 - `lightfoot_changfeng_c`（专属万里刀客立绘）
+- `massbattle_cunfei_a`（专属山贼头目立绘）
+- `massbattle_cunfei_b`（专属山贼弓手立绘）
+- `massbattle_cunfei_c`（专属山贼刀客立绘）
 - `jianghu_a`（过渡复用 `battle_jianghu_qianbei`）
 - `mingmen_a`（过渡复用 `battle_wulin_bazhu`）
 - `tower_boss_05`（过渡复用 `battle_bandit_blade`）
@@ -190,6 +193,14 @@
 - 技术验收：三图均为 RGBA、alpha `0–255`、四角透明、完整头脚与兵器；脚底比例及长兵器画像的视觉体量已校准。
 - 资产覆盖：15 名轻功敌人全部完成专属透明全身立绘。
 - 待完成：`stage_light_foot_01` 至 `05` 的真实整队双视口验收。
+
+### 批次 11：群战特殊玩法专属化（进行中）
+
+- 已完成村匪队：`massbattle_cunfei_a`（卷须阔背铁蒺藜头目）、`massbattle_cunfei_b`（布帽猎弓手）、`massbattle_cunfei_c`（卷须伏身阔刀客）。
+- 新增覆盖：3 种敌人 / 3 次出场；累计覆盖 67 / 79 种、108 / 120 次出场。
+- 组队差异：三人共享山村补丁旧衣和土灰色相，分别以重钝器、远程弓和近战阔刀拆分体态与轮廓。
+- 技术验收：三图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器，边距均不小于 5%。
+- 待完成：其余 12 名群战敌人，以及 `stage_mass_battle_01` 至 `05` 的真实整队双视口验收。
 
 ## 后续优先级
 

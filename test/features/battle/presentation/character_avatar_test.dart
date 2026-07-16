@@ -355,6 +355,18 @@ void main() {
         'assets/enemies/lightfoot_changfeng_c.png',
         WuxiaUi.battleLongRoadSaberStandee,
       ),
+      (
+        'assets/enemies/massbattle_cunfei_a.png',
+        WuxiaUi.battleVillageBanditLeaderStandee,
+      ),
+      (
+        'assets/enemies/massbattle_cunfei_b.png',
+        WuxiaUi.battleVillageBanditArcherStandee,
+      ),
+      (
+        'assets/enemies/massbattle_cunfei_c.png',
+        WuxiaUi.battleVillageBanditSaberStandee,
+      ),
       ('assets/enemies/black_killer.png', WuxiaUi.battleBlackKillerStandee),
       ('assets/enemies/killer_a.png', WuxiaUi.battleBanditBladeStandee),
       ('assets/enemies/killer_b.png', WuxiaUi.battleBanditArcherStandee),
