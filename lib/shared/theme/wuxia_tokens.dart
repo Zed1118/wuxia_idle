@@ -231,6 +231,10 @@ class WuxiaUi {
       'assets/enemies/battle_tower_boss_20.png';
   static const String battleSummitSwordDemonStandee =
       'assets/enemies/battle_tower_boss_25.png';
+  static const String battleWesternMartialSeniorStandee =
+      'assets/enemies/battle_xiliangboss.png';
+  static const String battleWesternOverlordStandee =
+      'assets/enemies/battle_xiliangbazhu.png';
   static const String battleLeftGuardianStandee =
       'assets/enemies/battle_zuo_hufa.png';
   static const String battleRightGuardianStandee =

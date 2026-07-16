@@ -79,8 +79,8 @@
 - `liukou_a`（过渡复用 `battle_fu_zhaizhu`）
 - `guard_a`（过渡复用 `battle_wulin_bazhu`）
 - `shafei_a`（过渡复用 `battle_bandit_archer`）
-- `xiliangboss`（过渡复用 `battle_shiye`）
-- `xiliangbazhu`（过渡复用 `battle_wulin_bazhu`）
+- `xiliangboss`（专属西凉武林名宿立绘）
+- `xiliangbazhu`（专属西凉霸主立绘）
 - `tongguan_shoujiang`（过渡复用 `battle_tower_boss_20`）
 - `songshan_daozong_dizi`（过渡复用 `battle_umbrella`）
 - `caobang_duozhu`（过渡复用 `battle_jianghu_qianbei`）
@@ -226,6 +226,13 @@
 - `tower_boss_25` 已由普通山匪刀客复用替换为专属“绝顶剑魔”：破旧蓝灰衣、双剑、写实疲惫面貌。
 - 四图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；已接入脚底锚点及光学校准。
 - 待完成：塔 5 / 10 / 15 / 25 的真实双视口验收。
+
+### 批次 13：章节 Boss 过渡复用清理（进行中）
+
+- `xiliangboss` 已由师爷复用替换为专属“西凉武林名宿”：灰发长髯、厚重旅袍、无兵器掌法起手。
+- `xiliangbazhu` 已由通用武林霸主复用替换为专属“西凉霸主”：毛领重衣、重型长柄刀、宽阔压迫体态。
+- 两图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；生产映射、脚底锚点均已接入。
+- 待完成：其余正式章节 Boss 过渡复用，以及真实双视口验收。
 
 ## 后续优先级
 

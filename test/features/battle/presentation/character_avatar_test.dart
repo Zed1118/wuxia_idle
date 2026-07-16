@@ -447,8 +447,11 @@ void main() {
       ('assets/enemies/liukou_a.png', WuxiaUi.battleFuChiefStandee),
       ('assets/enemies/guard_a.png', WuxiaUi.battleWulinOverlordStandee),
       ('assets/enemies/shafei_a.png', WuxiaUi.battleBanditArcherStandee),
-      ('assets/enemies/xiliangboss.png', WuxiaUi.battleAdviserStandee),
-      ('assets/enemies/xiliangbazhu.png', WuxiaUi.battleWulinOverlordStandee),
+      (
+        'assets/enemies/xiliangboss.png',
+        WuxiaUi.battleWesternMartialSeniorStandee,
+      ),
+      ('assets/enemies/xiliangbazhu.png', WuxiaUi.battleWesternOverlordStandee),
       (
         'assets/enemies/tongguan_shoujiang.png',
         WuxiaUi.battleTowerBoss20Standee,
