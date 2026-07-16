@@ -67,15 +67,15 @@
 - `massbattle_canbu_a`（专属西凉残将 Boss 立绘）
 - `massbattle_canbu_b`（专属西凉狂骑立绘）
 - `massbattle_canbu_c`（专属西凉刺客立绘）
-- `jianghu_a`（过渡复用 `battle_jianghu_qianbei`）
-- `mingmen_a`（过渡复用 `battle_wulin_bazhu`）
+- `jianghu_a`（专属戴笠江湖掌客立绘）
+- `mingmen_a`（专属名门弟子立绘）
 - `tower_boss_05`（专属试剑石老叟立绘）
 - `tower_boss_10`（专属黑风寨主立绘）
 - `tower_boss_15`（专属暗夜阁主立绘）
 - `tower_boss_25`（专属绝顶剑魔立绘）
-- `bandit_b`（过渡复用 `battle_bandit_blade`）
-- `bandit_c`（过渡复用 `battle_thug_a`）
-- `jianghu_b`（过渡复用 `battle_shiye`）
+- `bandit_b`（专属三流刀客立绘）
+- `bandit_c`（专属黑风寨老喽啰立绘）
+- `jianghu_b`（专属江湖游侠立绘）
 - `liukou_a`（过渡复用 `battle_fu_zhaizhu`）
 - `guard_a`（过渡复用 `battle_wulin_bazhu`）
 - `shafei_a`（过渡复用 `battle_bandit_archer`）
@@ -237,6 +237,13 @@
 - `xiliang_bazhu` 已由通用霸主复用替换为专属武圣形态：年长灰髯、无兵器开掌、克制宗师轮廓。
 - 六图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；生产映射、脚底锚点均已接入。
 - 待完成：章节 Boss 真实双视口验收；正式数据中已无仍复用他人立绘的 Boss。
+
+### 批次 14：早期普通敌人过渡复用清理（进行中）
+
+- `jianghu_a`、`mingmen_a`、`bandit_b`、`bandit_c`、`jianghu_b` 已分别替换为戴笠掌客、名门剑弟子、青年三流刀客、黑风寨老喽啰与中年游侠专属立绘。
+- 五图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；四边有效留白均不小于 7%。
+- 早期塔层与江湖队伍不再复用江湖前辈、武林霸主、山匪刀客、打手或师爷的脸。
+- 待完成：余下 9 名普通敌人过渡复用及真实双视口验收。
 
 ## 后续优先级
 
