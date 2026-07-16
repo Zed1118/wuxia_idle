@@ -54,6 +54,7 @@ worktree：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-sta
 - `GDD.md` 将已拍板的技能拖放口径改为点按；与其他分支合并时应保留该口径。
 - `lib/shared/theme/wuxia_tokens.dart` 追加战斗立绘与山口背景路径。
 - 与 Claude 分支集成时，优先人工处理 `lib/shared/strings.dart`、`GDD.md`；其余主要改动位于 battle presentation、邻接 UI 与新资产。
+- 已对 Claude 当前 `docs/equip-baicao-orchestration@25221323` 执行只读 `git merge-tree --write-tree` 预演，返回成功且无文本冲突；共享文件仍建议合并后人工复核语义，不把“无冲突”当作“无需检查”。
 
 ## 6. 9:10 目检顺序
 
@@ -63,4 +64,3 @@ worktree：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-sta
 4. 看近战前压、远程弹道、受击闪和破绽脚印是否克制。
 5. 打开出战编成，交换第一/第二/第三席，再进战斗确认顺序同步。
 6. 快速看章节、关卡、角色、心法、九霄、闭关、见闻录的导航视觉是否连续。
-
