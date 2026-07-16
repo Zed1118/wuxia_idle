@@ -1,21 +1,28 @@
+import 'dart:math' as math;
+
 import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/character.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
+import '../../../data/defs/item_def.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
 import '../domain/boss_gauntlet_run.dart';
 
 /// 断魂庄应用服务（spec §5.1/§9.2）。
 ///
-/// C2.1 入场扣帖 + 补给会话托管：单 `writeTxn` 内校验 → 扣一张断魂帖 →
-/// 最多三份补给从普通库存移入 [BossGauntletRun] 托管栏 → 建 active 会话。
-/// 关闭/结算返还托管、离线恢复、奖励发放见后续切片（C2.2–C2.5）。
+/// C2.1 入场扣帖 + 补给会话托管；C2.2 整备页用药 + 关闭返还（守恒）。均单 `writeTxn`。
+/// 离线恢复、奖励发放见后续切片（C2.3–C2.5）。[itemDefs] 供 [useSupply]/[close]
+/// 读补给效果（`gauntletHpHealPct`/`gauntletQiRestorePct`）与库存重建类型，生产由
+/// `GameRepository.instance.itemDefs` 注入；[enter] 不需。
 class GauntletService {
-  const GauntletService(this._isar);
+  const GauntletService(this._isar, {this.itemDefs = const {}});
 
   final Isar _isar;
+
+  /// 道具效果查表（defId → [ItemDef]）。
+  final Map<String, ItemDef> itemDefs;
 
   /// 副本凭证 defId（断魂帖）。每次入场消耗一张，消耗凭证与建会话同事务（§5.1）。
   static const String ticketDefId = 'item_duanhuntie';
@@ -116,5 +123,109 @@ class GauntletService {
 
       return _isar.bossGauntletRuns.put(run);
     });
+  }
+
+  /// 整备页用药：单 `writeTxn` 只减托管 `escrowUsedQty`（**不碰普通库存**·§5.1）。
+  ///
+  /// [index] 指托管栏条目；疗伤丹恢复 [targetCharacterId]（须存活）`gauntletHpHealPct`
+  /// 最大生命，行囊补给恢复全体存活 `gauntletQiRestorePct` 最大真气（均钳到 max·
+  /// 不复活倒下者）。仅 [GauntletPhase.interlude]（关次间整备页）可用；战斗中不可用药。
+  Future<void> useSupply({required int index, int? targetCharacterId}) async {
+    return _isar.writeTxn(() async {
+      final save = await _isar.saveDatas.get(0);
+      if (save == null) throw StateError('断魂庄用药：无存档');
+      final run = await _activeRun(save.id);
+      if (run == null) throw StateError('断魂庄用药：无进行中会话');
+      if (run.sessionPhase != GauntletPhase.interlude) {
+        throw StateError('断魂庄用药：仅整备页可用药（当前 ${run.sessionPhase.name}）');
+      }
+      if (index < 0 || index >= run.escrowItemDefIds.length) {
+        throw StateError('断魂庄用药：补给下标越界 $index');
+      }
+      if (run.escrowUsedQty[index] >= run.escrowLoadedQty[index]) {
+        throw StateError('断魂庄用药：该补给已用尽');
+      }
+      final defId = run.escrowItemDefIds[index];
+      final def = itemDefs[defId];
+      if (def == null) throw StateError('断魂庄用药：未知补给道具 $defId');
+
+      if (def.gauntletHpHealPct > 0) {
+        if (targetCharacterId == null) {
+          throw StateError('断魂庄用药：疗伤丹须指定目标角色');
+        }
+        final m = _memberOf(run, targetCharacterId);
+        if (m == null) {
+          throw StateError('断魂庄用药：目标 $targetCharacterId 不在队伍');
+        }
+        if (m.isDowned) throw StateError('断魂庄用药：不可对倒下者用药');
+        final heal = (m.maxHp * def.gauntletHpHealPct).round();
+        m.currentHp = math.min(m.maxHp, m.currentHp + heal);
+      } else if (def.gauntletQiRestorePct > 0) {
+        for (final m in run.members) {
+          if (m.isDowned) continue;
+          final restore = (m.maxQi * def.gauntletQiRestorePct).round();
+          m.currentQi = math.min(m.maxQi, m.currentQi + restore);
+        }
+      } else {
+        throw StateError('断魂庄用药：$defId 无断魂庄补给效果');
+      }
+
+      run.escrowUsedQty[index] += 1; // 只减托管（增用量）·不碰普通库存
+      await _isar.bossGauntletRuns.put(run);
+    });
+  }
+
+  /// 关闭会话：单 `writeTxn` 把每份托管补给的 `Loaded - Used` 原子**返还**普通库存，
+  /// 删除会话（占用随之解除）。无 active 会话时幂等 no-op（供崩溃恢复重入·§5.6）。
+  /// 胜利/失败/认输/安全恢复各自的奖励/伤势结算由 caller 先于本调用完成（C2.4/C2.5）。
+  Future<void> close() async {
+    return _isar.writeTxn(() async {
+      final save = await _isar.saveDatas.get(0);
+      if (save == null) return;
+      final run = await _activeRun(save.id);
+      if (run == null) return; // 幂等：无 active 会话
+      for (var i = 0; i < run.escrowItemDefIds.length; i++) {
+        final remaining = run.escrowLoadedQty[i] - run.escrowUsedQty[i];
+        if (remaining <= 0) continue;
+        final defId = run.escrowItemDefIds[i];
+        final existing = await _isar.inventoryItems.getByDefId(defId);
+        if (existing != null) {
+          existing.quantity += remaining;
+          await _isar.inventoryItems.put(existing);
+        } else {
+          // 防御：入场保留了库存行（可能 qty=0）；若缺则据 ItemDef 重建。
+          final def = itemDefs[defId];
+          if (def == null) {
+            throw StateError('断魂庄关闭：补给 $defId 库存行缺失且无 ItemDef 重建');
+          }
+          final now = DateTime.now();
+          await _isar.inventoryItems.put(
+            InventoryItem()
+              ..defId = defId
+              ..itemType = def.type
+              ..quantity = remaining
+              ..firstObtainedAt = now
+              ..lastObtainedAt = now,
+          );
+        }
+      }
+      await _isar.bossGauntletRuns.delete(run.id);
+    });
+  }
+
+  /// 当前存档的 active 断魂庄会话（每存档 ≤1，§8.3）；无则 null。
+  Future<BossGauntletRun?> _activeRun(int saveId) async {
+    final runs = await _isar.bossGauntletRuns.where().findAll();
+    for (final r in runs) {
+      if (r.saveDataId == saveId) return r;
+    }
+    return null;
+  }
+
+  ActivityMemberSnapshot? _memberOf(BossGauntletRun run, int characterId) {
+    for (final m in run.members) {
+      if (m.characterId == characterId) return m;
+    }
+    return null;
   }
 }
