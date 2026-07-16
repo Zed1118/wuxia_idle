@@ -733,8 +733,9 @@ const _battleStandeeOverrides = <String, String>{
   'assets/enemies/songshan_daozong_dizi.png': WuxiaUi.battleUmbrellaStandee,
   'assets/enemies/caobang_duozhu.png': WuxiaUi.battleJianghuSeniorStandee,
   'assets/enemies/zhongzhou_lunjian_xianfeng.png':
-      WuxiaUi.battleLeftGuardianStandee,
-  'assets/enemies/xiliang_sandizi.png': WuxiaUi.battleRightGuardianStandee,
+      WuxiaUi.battleCentralPlainsVanguardStandee,
+  'assets/enemies/xiliang_sandizi.png':
+      WuxiaUi.battleWesternThirdDiscipleStandee,
   'assets/enemies/lunjian_sanchang_xunluo.png':
       WuxiaUi.battleBlackKillerStandee,
   'assets/enemies/songshan_shouguan.png': WuxiaUi.battleHiddenElderStandee,
@@ -809,6 +810,8 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleSummitSwordDemonStandee => 0.900,
   WuxiaUi.battleWesternMartialSeniorStandee => 0.928,
   WuxiaUi.battleWesternOverlordStandee => 0.925,
+  WuxiaUi.battleCentralPlainsVanguardStandee => 0.936,
+  WuxiaUi.battleWesternThirdDiscipleStandee => 0.932,
   WuxiaUi.battleLeftGuardianStandee => 0.940,
   WuxiaUi.battleRightGuardianStandee => 0.956,
   WuxiaUi.battleTowerBoss30Standee => 0.972,

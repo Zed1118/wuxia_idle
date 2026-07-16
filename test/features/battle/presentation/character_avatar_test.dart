@@ -463,11 +463,11 @@ void main() {
       ('assets/enemies/caobang_duozhu.png', WuxiaUi.battleJianghuSeniorStandee),
       (
         'assets/enemies/zhongzhou_lunjian_xianfeng.png',
-        WuxiaUi.battleLeftGuardianStandee,
+        WuxiaUi.battleCentralPlainsVanguardStandee,
       ),
       (
         'assets/enemies/xiliang_sandizi.png',
-        WuxiaUi.battleRightGuardianStandee,
+        WuxiaUi.battleWesternThirdDiscipleStandee,
       ),
       (
         'assets/enemies/lunjian_sanchang_xunluo.png',

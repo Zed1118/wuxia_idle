@@ -84,8 +84,8 @@
 - `tongguan_shoujiang`（过渡复用 `battle_tower_boss_20`）
 - `songshan_daozong_dizi`（过渡复用 `battle_umbrella`）
 - `caobang_duozhu`（过渡复用 `battle_jianghu_qianbei`）
-- `zhongzhou_lunjian_xianfeng`（过渡复用 `battle_zuo_hufa`）
-- `xiliang_sandizi`（过渡复用 `battle_you_hufa`）
+- `zhongzhou_lunjian_xianfeng`（专属中州论剑先锋立绘）
+- `xiliang_sandizi`（专属西凉霸主三弟子立绘）
 - `lunjian_sanchang_xunluo`（过渡复用 `battle_black_killer`）
 - `songshan_shouguan`（过渡复用 `battle_hidden_elder`）
 - `huanghe_yuantou_yufu`（过渡复用 `battle_jianghu_qianbei`）
@@ -231,7 +231,9 @@
 
 - `xiliangboss` 已由师爷复用替换为专属“西凉武林名宿”：灰发长髯、厚重旅袍、无兵器掌法起手。
 - `xiliangbazhu` 已由通用武林霸主复用替换为专属“西凉霸主”：毛领重衣、重型长柄刀、宽阔压迫体态。
-- 两图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；生产映射、脚底锚点均已接入。
+- `zhongzhou_lunjian_xianfeng` 已由左护法复用替换为专属“中州论剑先锋”：烟灰正统袍服、正式低位剑势。
+- `xiliang_sandizi` 已由右护法复用替换为专属“西凉霸主三弟子”：年长秃首、暗梅短披、双月牙钩刃。
+- 四图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器；生产映射、脚底锚点均已接入。
 - 待完成：其余正式章节 Boss 过渡复用，以及真实双视口验收。
 
 ## 后续优先级
