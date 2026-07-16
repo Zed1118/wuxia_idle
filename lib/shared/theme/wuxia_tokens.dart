@@ -183,6 +183,12 @@ class WuxiaUi {
       'assets/enemies/battle_lightfoot_pubu_b.png';
   static const String battleCliffWandererStandee =
       'assets/enemies/battle_lightfoot_pubu_c.png';
+  static const String battleGateCommanderStandee =
+      'assets/enemies/battle_lightfoot_changfeng_a.png';
+  static const String battleLongWindSwordStandee =
+      'assets/enemies/battle_lightfoot_changfeng_b.png';
+  static const String battleLongRoadSaberStandee =
+      'assets/enemies/battle_lightfoot_changfeng_c.png';
   static const String battleUmbrellaStandee =
       'assets/enemies/battle_umbrella.png';
   static const String battleTowerBoss20Standee =

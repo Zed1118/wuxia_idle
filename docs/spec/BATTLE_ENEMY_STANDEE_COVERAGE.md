@@ -7,8 +7,8 @@
 - 正式数据：`data/stages.yaml` + `data/towers.yaml`
 - 不重复敌人原画：79 种
 - 关卡中敌人出场记录：120 次
-- 已接入透明全身立绘：61 / 79
-- 已覆盖出场记录：102 / 120
+- 已接入透明全身立绘：64 / 79
+- 已覆盖出场记录：105 / 120
 
 已覆盖正式敌人：
 
@@ -49,6 +49,9 @@
 - `lightfoot_pubu_a`（专属山涧剑客立绘）
 - `lightfoot_pubu_b`（专属瀑布刀客立绘）
 - `lightfoot_pubu_c`（专属险崖游侠立绘）
+- `lightfoot_changfeng_a`（专属关楼守将 Boss 立绘）
+- `lightfoot_changfeng_b`（专属长风剑客立绘）
+- `lightfoot_changfeng_c`（专属万里刀客立绘）
 - `jianghu_a`（过渡复用 `battle_jianghu_qianbei`）
 - `mingmen_a`（过渡复用 `battle_wulin_bazhu`）
 - `tower_boss_05`（过渡复用 `battle_bandit_blade`）
@@ -181,10 +184,12 @@
 - 已完成夜巡队：`lightfoot_yexun_a`（长枪城防夜巡）、`lightfoot_yexun_b`（绳钩飞檐捕快）、`lightfoot_yexun_c`（双匕瓦上刺客）。
 - 已完成竹林队：`lightfoot_zhuke_a`（灰绿长袍直剑客）、`lightfoot_zhuke_b`（暗紫褐伏身刀客）、`lightfoot_zhuke_c`（卷发阔背棍游侠）。
 - 已完成瀑布队：`lightfoot_pubu_a`（湿灰披风山涧剑客）、`lightfoot_pubu_b`（瘦削长刀客）、`lightfoot_pubu_c`（卷发灰须铁环杖游侠）。
-- 新增覆盖：12 种敌人 / 12 次出场；累计覆盖 61 / 79 种、102 / 120 次出场。
+- 已完成长风队：`lightfoot_changfeng_a`（暗铁甲关楼守将 Boss）、`lightfoot_changfeng_b`（削鬓灰须蓝灰剑客）、`lightfoot_changfeng_c`（风尘高领阔刀客）。
+- 新增覆盖：15 种敌人 / 15 次出场；累计覆盖 64 / 79 种、105 / 120 次出场。
 - 组队差异：三人共享渡口旧衣与湿冷暗色，但分别使用宽刃、竹篙、窄刀，并以壮年、老者、中年三种体态拆分轮廓。
 - 技术验收：三图均为 RGBA、alpha `0–255`、四角透明、完整头脚与兵器；脚底比例及长兵器画像的视觉体量已校准。
-- 待完成：长风队 3 名轻功敌人，以及 `stage_light_foot_01` 至 `05` 的真实整队双视口验收。
+- 资产覆盖：15 名轻功敌人全部完成专属透明全身立绘。
+- 待完成：`stage_light_foot_01` 至 `05` 的真实整队双视口验收。
 
 ## 后续优先级
 
