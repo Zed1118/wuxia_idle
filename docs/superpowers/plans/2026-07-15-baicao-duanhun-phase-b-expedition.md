@@ -521,7 +521,7 @@ class ExpeditionBattleRunner {
 - [ ] macOS debug build
 
 ## 当前恢复点（2026-07-16 · 分支 feat/baicao-duanhun-phase-b·worktree·未 push）
-- **状态：** **B1 全 4 + B2.1 派遣 + B2.2 结算（a+b）+ `settleToNow` + B2.3 返程 + B2.4a provider + §4.7 返程行记屏 完成并 commit**；A2 基建已 FF 合入本地 main `a61df363`（未 push）。**B2.4 总览屏 / settle-on-open 接线 / 主导航入口 / B.V 未开工（交互+集成·morning 真机目检 gated）**。
+- **状态：** **Phase B 全线完成（B1 全 4 + B2.1-2.4 全 + B.V）**；A2 基建已 FF 合入本地 main `a61df363`（未 push）。**B2.4 交互层已收口（2026-07-16 承接会话）**：总览屏 `ExpeditionOverviewScreen`（派遣+active 两态）+ 派遣候选 `expeditionCandidatesProvider` + settle-on-open（`settleActiveExpeditionOnOpen` 纯核心 + `maybeSettleExpedition` 挂 startup gate）+ 主导航「江湖远行」入口（gate `jianghuJourneyUnlocked`·§5.7）+ 2 visual_route（`expedition_overview`/`expedition_active`）全部完成并 commit。**已验证**：analyze 0·全量 **4091 pass/0 fail**（+9 新测）·**macOS debug build 成功**（本环境已装全 Xcode 26.4.1）。**剩**：① Codex 真机目检两屏 @1280×720/1440×900；② **Lv100→解锁触发 + 发布上限 10→17 里程碑**（耦合·待用户拍 cap·2 孤儿招阻塞）；③ batch3 探针（敌队/伤势曲线 + result 富化涉 schema）。
 - **已完成（严格 TDD·各独立 commit）：**
   - B1.1-1.4 + B2.1（commit `8926be46..5dab9768`）
   - **B2.2a `settle` 状态机**（`225c98d3`）：6 不变式全测（在线分段==一次性离线/幂等/单批上限 `defaultMaxNodesPerBatch=24`/cursor 守卫/战败即停/时间回拨）。节点完成时刻按 `departedAt+累计时长`绝对锚定→推进为 `(run,now)` 确定函数。敌队经 `ExpeditionCombat`（`expedition_combat.dart`）注入 seam 解耦。
