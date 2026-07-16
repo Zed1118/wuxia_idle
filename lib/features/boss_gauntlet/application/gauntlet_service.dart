@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/defs/item_def.dart';
@@ -14,6 +15,22 @@ import '../domain/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
 import 'gauntlet_battle_runner.dart';
 import 'gauntlet_controller.dart';
+
+/// 断魂庄崩溃恢复结果（C2.3b·§5.6/§10）。
+enum GauntletRecoveryOutcome {
+  /// 无 active 会话（正常入口）。
+  none,
+
+  /// 会话可恢复：caller 按 `run.sessionPhase` 路由（inBattle 重打当前关 / interlude
+  /// 整备 / awaitingRewardChoice 奖励页）；本调用不改会话。
+  resumed,
+
+  /// 配置损坏且第一关前未开战 → 已退帖 + 返还托管补给 + 删会话。
+  refundedTicket,
+
+  /// 配置损坏且已开战 → 需认输结算（信号交 C2.5·本调用不改会话不退帖）。
+  concedeRequired,
+}
 
 /// 断魂庄应用服务（spec §5.1/§9.2）。
 ///
@@ -189,33 +206,38 @@ class GauntletService {
       if (save == null) return;
       final run = await _activeRun(save.id);
       if (run == null) return; // 幂等：无 active 会话
-      for (var i = 0; i < run.escrowItemDefIds.length; i++) {
-        final remaining = run.escrowLoadedQty[i] - run.escrowUsedQty[i];
-        if (remaining <= 0) continue;
-        final defId = run.escrowItemDefIds[i];
-        final existing = await _isar.inventoryItems.getByDefId(defId);
-        if (existing != null) {
-          existing.quantity += remaining;
-          await _isar.inventoryItems.put(existing);
-        } else {
-          // 防御：入场保留了库存行（可能 qty=0）；若缺则据 ItemDef 重建。
-          final def = itemDefs[defId];
-          if (def == null) {
-            throw StateError('断魂庄关闭：补给 $defId 库存行缺失且无 ItemDef 重建');
-          }
-          final now = DateTime.now();
-          await _isar.inventoryItems.put(
-            InventoryItem()
-              ..defId = defId
-              ..itemType = def.type
-              ..quantity = remaining
-              ..firstObtainedAt = now
-              ..lastObtainedAt = now,
-          );
-        }
-      }
+      await _returnEscrow(run);
       await _isar.bossGauntletRuns.delete(run.id);
     });
+  }
+
+  /// 把托管补给的 `Loaded - Used` 返还普通库存（**假定已在 `writeTxn` 内**）。
+  /// [close] 与 [recover] 退帖共用。库存行缺失（防御）据 [itemDefs] 重建。
+  Future<void> _returnEscrow(BossGauntletRun run) async {
+    for (var i = 0; i < run.escrowItemDefIds.length; i++) {
+      final remaining = run.escrowLoadedQty[i] - run.escrowUsedQty[i];
+      if (remaining <= 0) continue;
+      final defId = run.escrowItemDefIds[i];
+      final existing = await _isar.inventoryItems.getByDefId(defId);
+      if (existing != null) {
+        existing.quantity += remaining;
+        await _isar.inventoryItems.put(existing);
+      } else {
+        final def = itemDefs[defId];
+        if (def == null) {
+          throw StateError('断魂庄返还：补给 $defId 库存行缺失且无 ItemDef 重建');
+        }
+        final now = DateTime.now();
+        await _isar.inventoryItems.put(
+          InventoryItem()
+            ..defId = defId
+            ..itemType = def.type
+            ..quantity = remaining
+            ..firstObtainedAt = now
+            ..lastObtainedAt = now,
+        );
+      }
+    }
   }
 
   /// 单场战斗驱动：驱动当前关次一场 headless 战斗并原子推进会话（C2.3a·§5.6/§9.2）。
@@ -292,6 +314,68 @@ class GauntletService {
       }
       run.sessionPhase = GauntletPhase.inBattle;
       await _isar.bossGauntletRuns.put(run);
+    });
+  }
+
+  /// 崩溃/重开恢复关次边界（§5.6/§10）。检查点已随会话持久、驱动已原子（C2.3a），
+  /// 本方法只判「配置损坏」边界：
+  /// - 无 active 会话 → [GauntletRecoveryOutcome.none]；
+  /// - 配置对当前关可用 → [GauntletRecoveryOutcome.resumed]（caller 按 `sessionPhase`
+  ///   路由；不改会话·断魂帖不重扣·已用补给不返·检查点原值不回满·同流不重抽）；
+  /// - 配置损坏（[config] 为空 / 关次越界 / 敌队解析空）+ 第一关前未开战 →
+  ///   [GauntletRecoveryOutcome.refundedTicket]（退帖 + 返还托管 + 删会话）；
+  /// - 配置损坏 + 已开战 → [GauntletRecoveryOutcome.concedeRequired]（交 C2.5 认输
+  ///   结算·保已结算经验不复制补给·本调用不改会话不退帖）。
+  Future<GauntletRecoveryOutcome> recover({
+    required BossGauntletConfig? config,
+  }) async {
+    final save = await _isar.saveDatas.get(0);
+    if (save == null) return GauntletRecoveryOutcome.none;
+    final run = await _activeRun(save.id);
+    if (run == null) return GauntletRecoveryOutcome.none;
+    if (_configUsableForStage(config, run.currentStage)) {
+      return GauntletRecoveryOutcome.resumed;
+    }
+    // 配置损坏：区分「第一关前未开战」（战末快照 maxHp 恒 0·未推进·未离 inBattle）
+    // 与「已开战」。
+    final hasFought =
+        run.currentStage > 1 ||
+        run.sessionPhase != GauntletPhase.inBattle ||
+        run.members.any((m) => m.maxHp > 0);
+    if (hasFought) return GauntletRecoveryOutcome.concedeRequired;
+    await _refundTicketAndClose(run);
+    return GauntletRecoveryOutcome.refundedTicket;
+  }
+
+  /// 配置对指定关次是否可用（非空 / 关次在界 / 敌队解析非空）。
+  bool _configUsableForStage(BossGauntletConfig? config, int stage) {
+    if (config == null) return false;
+    if (stage < 1 || stage > config.stages.length) return false;
+    return config
+        .enemiesForTeam(config.stages[stage - 1].enemyTeamId)
+        .isNotEmpty;
+  }
+
+  /// 退帖关会话（§10）：单 `writeTxn` 退回一张断魂帖 + 返还托管补给 + 删会话。
+  Future<void> _refundTicketAndClose(BossGauntletRun run) async {
+    return _isar.writeTxn(() async {
+      final ticket = await _isar.inventoryItems.getByDefId(ticketDefId);
+      if (ticket != null) {
+        ticket.quantity += 1;
+        await _isar.inventoryItems.put(ticket);
+      } else {
+        final now = DateTime.now();
+        await _isar.inventoryItems.put(
+          InventoryItem()
+            ..defId = ticketDefId
+            ..itemType = ItemType.ticket
+            ..quantity = 1
+            ..firstObtainedAt = now
+            ..lastObtainedAt = now,
+        );
+      }
+      await _returnEscrow(run);
+      await _isar.bossGauntletRuns.delete(run.id);
     });
   }
 
