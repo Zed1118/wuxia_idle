@@ -7,8 +7,8 @@
 - 正式数据：`data/stages.yaml` + `data/towers.yaml`
 - 不重复敌人原画：79 种
 - 关卡中敌人出场记录：120 次
-- 已接入透明全身立绘：24 / 79
-- 已覆盖出场记录：65 / 120
+- 已接入透明全身立绘：30 / 79
+- 已覆盖出场记录：71 / 120
 
 已覆盖正式敌人：
 
@@ -36,6 +36,12 @@
 - `tower_boss_10`（过渡复用 `battle_jianghu_qianbei`）
 - `tower_boss_15`（过渡复用 `battle_anye`）
 - `tower_boss_25`（过渡复用 `battle_bandit_blade`）
+- `bandit_b`（过渡复用 `battle_bandit_blade`）
+- `bandit_c`（过渡复用 `battle_thug_a`）
+- `jianghu_b`（过渡复用 `battle_shiye`）
+- `liukou_a`（过渡复用 `battle_fu_zhaizhu`）
+- `guard_a`（过渡复用 `battle_wulin_bazhu`）
+- `shafei_a`（过渡复用 `battle_bandit_archer`）
 
 ## 统一资产规格
 
@@ -107,6 +113,14 @@
 - 新增覆盖：4 次敌人出场记录；累计覆盖 65 / 120。
 - 目的：优先移除 Boss 关卡中的纸底半身图，保证正式战斗至少全身透明展示。
 - 限制：本批为复用过渡，四名爬塔 Boss 身份差异明显，后续必须补专属透明全身立绘。
+
+### 批次 06：低层塔敌与西域主线过渡覆盖（已接入，待专属重做）
+
+- 过渡映射：`bandit_b` → `battle_bandit_blade`、`bandit_c` → `battle_thug_a`、`jianghu_b` → `battle_shiye`
+- 西域映射：`liukou_a` → `battle_fu_zhaizhu`、`guard_a` → `battle_wulin_bazhu`、`shafei_a` → `battle_bandit_archer`
+- 新增覆盖：6 次敌人出场记录；累计覆盖 71 / 120。
+- 选择依据：分别保留刀客、喽啰、游侠、魁梧头领、关隘武官与荒漠远程手的体型/武器轮廓差异，避免整队使用同一模型。
+- 限制：仍属过渡复用；特别是 `guard_a` 和 `shafei_a` 需在图像生成恢复后重做带关隘甲胄、风沙衣料的专属立绘。
 
 ## 后续优先级
 

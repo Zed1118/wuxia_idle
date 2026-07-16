@@ -98,6 +98,21 @@ void main() {
         BattleScenarioData.scenarioTowerFloor08,
         {'assets/enemies/bandit_head.png'},
       ),
+      (BattleScenarioData.scenarioStage0401, {'assets/enemies/liukou_a.png'}),
+      (BattleScenarioData.scenarioStage0402, {'assets/enemies/guard_a.png'}),
+      (BattleScenarioData.scenarioStage0403, {'assets/enemies/shafei_a.png'}),
+      (
+        BattleScenarioData.scenarioTowerFloor06,
+        {'assets/enemies/bandit_b.png'},
+      ),
+      (
+        BattleScenarioData.scenarioTowerFloor07,
+        {'assets/enemies/bandit_c.png'},
+      ),
+      (
+        BattleScenarioData.scenarioTowerFloor12,
+        {'assets/enemies/jianghu_a.png', 'assets/enemies/jianghu_b.png'},
+      ),
     ];
 
     for (final (factory, expectedPaths) in cases) {

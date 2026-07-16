@@ -777,6 +777,24 @@ class BattleScenarioData {
   static (List<BattleCharacter>, List<BattleCharacter>)
   scenarioTowerFloor08() => _scenarioTowerFloorStandeeAudit(8);
 
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0401() =>
+      _scenarioStageStandeeAudit('stage_04_01');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0402() =>
+      _scenarioStageStandeeAudit('stage_04_02');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0403() =>
+      _scenarioStageStandeeAudit('stage_04_03');
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor06() => _scenarioTowerFloorStandeeAudit(6);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor07() => _scenarioTowerFloorStandeeAudit(7);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor12() => _scenarioTowerFloorStandeeAudit(12);
+
   /// 敌人立绘逐关验收：右队读取真主线关卡，左队只提供稳定的三人尺度参照。
   static (List<BattleCharacter>, List<BattleCharacter>)
   _scenarioStageStandeeAudit(String stageId) {

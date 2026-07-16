@@ -274,6 +274,9 @@ void main() {
         VisualRoute.battleTowerFloor02,
         VisualRoute.battleTowerFloor03,
         VisualRoute.battleTowerFloor08,
+        VisualRoute.battleTowerFloor06,
+        VisualRoute.battleTowerFloor07,
+        VisualRoute.battleTowerFloor12,
       ]) {
         final target = await buildVisualTarget(route, IsarSetup.instance);
         expect(target, isA<ScenarioLauncher>());
@@ -284,6 +287,21 @@ void main() {
           launcher.sceneBackgroundPath,
           'assets/scenes/battle_innerrealm.png',
         );
+      }
+
+      for (final (route, expectedBackground) in const [
+        (
+          VisualRoute.battleStage0401,
+          'assets/scenes/battle_mountainforest.png',
+        ),
+        (VisualRoute.battleStage0402, 'assets/scenes/battle_frontier.png'),
+        (VisualRoute.battleStage0403, 'assets/scenes/battle_desert.png'),
+      ]) {
+        final target = await buildVisualTarget(route, IsarSetup.instance);
+        expect(target, isA<ScenarioLauncher>());
+        final launcher = target as ScenarioLauncher;
+        expect(launcher.startPaused, isTrue);
+        expect(launcher.sceneBackgroundPath, expectedBackground);
       }
     });
 

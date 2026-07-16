@@ -565,6 +565,51 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         bgmTrack: BgmTrack.tower,
         startPaused: true,
       );
+    case VisualRoute.battleStage0401:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0401,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_mountainforest.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0402:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0402,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_frontier.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0403:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0403,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_desert.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor06:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor06,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor07:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor07,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor12:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor12,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
     case VisualRoute.discipleJoinCeremony:
       // 第七阶段批三目检:拜入立绘题字 overlay 动效。读真 lineage_onboarding 配置,
       // 大弟子/二弟子真立绘交替循环重播(GameRepository 已在 _prepare 加载完)。
