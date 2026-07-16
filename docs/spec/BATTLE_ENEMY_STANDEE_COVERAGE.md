@@ -7,8 +7,8 @@
 - 正式数据：`data/stages.yaml` + `data/towers.yaml`
 - 不重复敌人原画：79 种
 - 关卡中敌人出场记录：120 次
-- 已接入透明全身立绘：18 / 79
-- 已覆盖出场记录：57 / 120
+- 已接入透明全身立绘：20 / 79
+- 已覆盖出场记录：61 / 120
 
 已覆盖正式敌人：
 
@@ -30,6 +30,8 @@
 - `ruffian_a`（过渡复用 `battle_thug_a`）
 - `bandit_head`（过渡复用 `battle_bandit_blade`）
 - `qingshan`（过渡复用 `battle_bandit_blade`）
+- `jianghu_a`（过渡复用 `battle_jianghu_qianbei`）
+- `mingmen_a`（过渡复用 `battle_wulin_bazhu`）
 
 ## 统一资产规格
 
@@ -87,6 +89,13 @@
 - 限制：本批为复用过渡，不代表五名敌人专属画像最终完成；待图片生成能力恢复后补 `battle_thug_b` / `battle_thug_c` / `battle_ruffian_a` / `battle_bandit_head` / `battle_qingshan` 专属立绘。
 - 真实截图：`stage_01_04` 1440×900 已跑通，发现 `qingshan` 复用白须长者会与玩家祖师撞脸，已改为刀客系过渡；山道背景右半区仍有暖黄块，待后续做山道冷灰校正。
 - 待验收：`stage_01_02`、`stage_01_03`、`stage_01_04` 与塔 2 / 3 / 8 层整队双视口。
+
+### 批次 04：高频纸底半身图过渡覆盖（已接入，待专属重做）
+
+- 过渡映射：`jianghu_a` → `battle_jianghu_qianbei`、`mingmen_a` → `battle_wulin_bazhu`
+- 新增覆盖：4 次敌人出场记录；累计覆盖 61 / 120。
+- 目的：优先移除仍以纸底半身图进入正式战斗的高频敌人。
+- 限制：本批为复用过渡，不代表 `jianghu_a` / `mingmen_a` 专属画像最终完成；后续需要按“江湖客 / 名门执事”身份重做专属透明全身立绘。
 
 ## 后续优先级
 
