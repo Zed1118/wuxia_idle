@@ -290,6 +290,7 @@ void main() {
       ('assets/enemies/qingshan_main.png', WuxiaUi.battleHiddenElderStandee),
       ('assets/enemies/elder_grey.png', WuxiaUi.battleGreyElderStandee),
       ('assets/enemies/shaonian.png', WuxiaUi.battleSpringHallYouthStandee),
+      ('assets/enemies/guntou.png', WuxiaUi.battleBaldStaffFighterStandee),
       ('assets/enemies/black_killer.png', WuxiaUi.battleBlackKillerStandee),
       ('assets/enemies/killer_a.png', WuxiaUi.battleBanditBladeStandee),
       ('assets/enemies/killer_b.png', WuxiaUi.battleBanditArcherStandee),
