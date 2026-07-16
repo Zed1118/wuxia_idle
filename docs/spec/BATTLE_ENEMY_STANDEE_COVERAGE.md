@@ -28,8 +28,8 @@
 - `thug_b`（专属青年棍手立绘）
 - `thug_c`（专属落魄短刃客立绘）
 - `ruffian_a`（专属乡野泼皮立绘）
-- `bandit_head`（过渡复用 `battle_bandit_blade`）
-- `qingshan`（过渡复用 `battle_bandit_blade`）
+- `bandit_head`（专属独眼匪首立绘）
+- `qingshan`（专属青衫青年剑客立绘）
 - `jianghu_a`（过渡复用 `battle_jianghu_qianbei`）
 - `mingmen_a`（过渡复用 `battle_wulin_bazhu`）
 - `tower_boss_05`（过渡复用 `battle_bandit_blade`）
@@ -103,13 +103,12 @@
 - 技术验收：五图均为 RGBA PNG，alpha 范围 `0–255`、四角透明、完整头脚；脚底比例已写入战场锚点。
 - 待验收：真实关卡整队的 1280×720 / 1440×900 体量、遮挡、色温与状态牌边界。
 
-### 批次 03：早期主线过渡覆盖（已接入，专属重做进行中）
+### 批次 03：早期主线专属覆盖（资产接入完成，整队验收中）
 
-- 专属立绘：`thug_b` → `battle_thug_b`（青年棍手，保留旧原画的少年流民身份，避免复用中年弓手）；`thug_c` → `battle_thug_c`（瘦削落魄短刃客，保留旧原画的长脸、披衣与戒备气质）；`ruffian_a` → `battle_ruffian_a`（束发短棍、斜挎布囊的乡野泼皮，与蓬发重棍壮汉区分）。
-- 过渡映射：`bandit_head` → `battle_bandit_blade`、`qingshan` → `battle_bandit_blade`
+- 专属立绘：`thug_b` → `battle_thug_b`（青年棍手）；`thug_c` → `battle_thug_c`（瘦削落魄短刃客）；`ruffian_a` → `battle_ruffian_a`（束发短棍、斜挎布囊的乡野泼皮）；`bandit_head` → `battle_bandit_head`（独眼、灰须、宽背刀的魁梧匪首）；`qingshan` → `battle_qingshan`（青色束额、窄身直剑的青年剑客）。
 - 新增覆盖：6 次敌人出场记录；累计覆盖 57 / 120。
 - 目的：先让早期主线与低层爬塔脱离旧纸底头像降级路径，进入透明全身立绘战斗展示。
-- 限制：`thug_b`、`thug_c`、`ruffian_a` 已完成专属画像；其余两名仍是复用过渡，后续补 `battle_bandit_head` / `battle_qingshan` 专属立绘。
+- 限制：五名早期过渡敌人均已替换为专属画像；本批剩余工作是 `stage_01_02`、`stage_01_03`、`stage_01_04` 与塔 2 / 3 / 8 层整队双视口验收。
 - 真实截图：`stage_01_04` 1440×900 已跑通，发现 `qingshan` 复用白须长者会与玩家祖师撞脸，已改为刀客系过渡；山道背景右半区仍有暖黄块，待后续做山道冷灰校正。
 - 待验收：`stage_01_02`、`stage_01_03`、`stage_01_04` 与塔 2 / 3 / 8 层整队双视口。
 
@@ -145,7 +144,7 @@
 ## 后续优先级
 
 1. 完成高复用组真实关卡整队双视口验收。
-2. 将早期主线剩余过渡覆盖替换为专属新立绘：`bandit_head` / `qingshan`。
-3. 章节 Boss 与爬塔 Boss 组。
+2. 完成早期主线与低层塔整队双视口验收。
+3. 章节 Boss 与爬塔 Boss 专属重做组。
 4. 轻功与群战专属敌人组。
 5. 其余低复用普通敌人，最后进行全关卡自动截图审计。

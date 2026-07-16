@@ -141,6 +141,10 @@ class WuxiaUi {
       'assets/enemies/battle_thug_c.png';
   static const String battleVillageRuffianStandee =
       'assets/enemies/battle_ruffian_a.png';
+  static const String battleBanditHeadStandee =
+      'assets/enemies/battle_bandit_head.png';
+  static const String battleQingshanStandee =
+      'assets/enemies/battle_qingshan.png';
   static const String battleUmbrellaStandee =
       'assets/enemies/battle_umbrella.png';
   static const String battleTowerBoss20Standee =

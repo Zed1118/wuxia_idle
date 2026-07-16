@@ -647,8 +647,8 @@ const _battleStandeeOverrides = <String, String>{
   'assets/enemies/ruffian_a.png': WuxiaUi.battleVillageRuffianStandee,
   'assets/enemies/bandit_b.png': WuxiaUi.battleBanditBladeStandee,
   'assets/enemies/bandit_c.png': WuxiaUi.battleThugStandee,
-  'assets/enemies/bandit_head.png': WuxiaUi.battleBanditBladeStandee,
-  'assets/enemies/qingshan.png': WuxiaUi.battleBanditBladeStandee,
+  'assets/enemies/bandit_head.png': WuxiaUi.battleBanditHeadStandee,
+  'assets/enemies/qingshan.png': WuxiaUi.battleQingshanStandee,
   'assets/enemies/qingshan_main.png': WuxiaUi.battleHiddenElderStandee,
   'assets/enemies/black_killer.png': WuxiaUi.battleBlackKillerStandee,
   'assets/enemies/killer_a.png': WuxiaUi.battleBanditBladeStandee,
@@ -707,6 +707,8 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleYoungRuffianStandee => 0.928,
   WuxiaUi.battleGauntCutpurseStandee => 0.943,
   WuxiaUi.battleVillageRuffianStandee => 0.957,
+  WuxiaUi.battleBanditHeadStandee => 0.968,
+  WuxiaUi.battleQingshanStandee => 0.958,
   WuxiaUi.battleLeftGuardianStandee => 0.940,
   WuxiaUi.battleRightGuardianStandee => 0.956,
   WuxiaUi.battleTowerBoss30Standee => 0.972,
@@ -725,38 +727,38 @@ typedef _StageStandeeOpticalProfile = ({
 
 /// 以透明像素的有效包围盒为基准的光学校准。
 /// 数值只补偿原图画布留白，不表示战斗单位的体型或阵型位置。
-_StageStandeeOpticalProfile _stageStandeeOpticalProfile(String? path) =>
-    switch (path) {
-      WuxiaUi.battleFounderFallback => (
-        scale: 1.055,
-        horizontalShiftFraction: 0,
-      ),
-      WuxiaUi.battleFirstDiscipleFallback => (
-        scale: 1,
-        horizontalShiftFraction: 0.04,
-      ),
-      WuxiaUi.battleBanditBladeStandee => (
-        scale: 1.18,
-        horizontalShiftFraction: 0.015,
-      ),
-      WuxiaUi.battleBanditArcherStandee => (
-        scale: 1.045,
-        horizontalShiftFraction: 0,
-      ),
-      WuxiaUi.battleYoungRuffianStandee => (
-        scale: 1.06,
-        horizontalShiftFraction: 0,
-      ),
-      WuxiaUi.battleGauntCutpurseStandee => (
-        scale: 1.07,
-        horizontalShiftFraction: 0,
-      ),
-      WuxiaUi.battleVillageRuffianStandee => (
-        scale: 1.1,
-        horizontalShiftFraction: 0.03,
-      ),
-      _ => (scale: 1, horizontalShiftFraction: 0),
-    };
+_StageStandeeOpticalProfile _stageStandeeOpticalProfile(
+  String? path,
+) => switch (path) {
+  WuxiaUi.battleFounderFallback => (scale: 1.055, horizontalShiftFraction: 0),
+  WuxiaUi.battleFirstDiscipleFallback => (
+    scale: 1,
+    horizontalShiftFraction: 0.04,
+  ),
+  WuxiaUi.battleBanditBladeStandee => (
+    scale: 1.18,
+    horizontalShiftFraction: 0.015,
+  ),
+  WuxiaUi.battleBanditArcherStandee => (
+    scale: 1.045,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleYoungRuffianStandee => (
+    scale: 1.06,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleGauntCutpurseStandee => (
+    scale: 1.07,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleVillageRuffianStandee => (
+    scale: 1.1,
+    horizontalShiftFraction: 0.03,
+  ),
+  WuxiaUi.battleBanditHeadStandee => (scale: 1, horizontalShiftFraction: 0.02),
+  WuxiaUi.battleQingshanStandee => (scale: 1, horizontalShiftFraction: 0.02),
+  _ => (scale: 1, horizontalShiftFraction: 0),
+};
 
 class _FirstGlyphStandee extends StatelessWidget {
   const _FirstGlyphStandee({
