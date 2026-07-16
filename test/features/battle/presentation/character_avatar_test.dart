@@ -277,6 +277,9 @@ void main() {
       ('assets/enemies/killer_b.png', WuxiaUi.battleBanditArcherStandee),
       ('assets/enemies/umbrella.png', WuxiaUi.battleUmbrellaStandee),
       ('assets/enemies/tower_boss_20.png', WuxiaUi.battleTowerBoss20Standee),
+      ('assets/enemies/zuo_hufa.png', WuxiaUi.battleLeftGuardianStandee),
+      ('assets/enemies/you_hufa.png', WuxiaUi.battleRightGuardianStandee),
+      ('assets/enemies/tower_boss_30.png', WuxiaUi.battleTowerBoss30Standee),
     ];
 
     for (final (sourcePath, standeePath) in cases) {

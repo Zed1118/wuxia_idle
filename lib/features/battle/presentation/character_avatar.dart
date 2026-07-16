@@ -648,6 +648,9 @@ const _battleStandeeOverrides = <String, String>{
   'assets/enemies/killer_b.png': WuxiaUi.battleBanditArcherStandee,
   'assets/enemies/umbrella.png': WuxiaUi.battleUmbrellaStandee,
   'assets/enemies/tower_boss_20.png': WuxiaUi.battleTowerBoss20Standee,
+  'assets/enemies/zuo_hufa.png': WuxiaUi.battleLeftGuardianStandee,
+  'assets/enemies/you_hufa.png': WuxiaUi.battleRightGuardianStandee,
+  'assets/enemies/tower_boss_30.png': WuxiaUi.battleTowerBoss30Standee,
 };
 
 bool _isTransparentBattleStandee(String? path) =>
@@ -665,6 +668,9 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleHiddenElderStandee => 0.952,
   WuxiaUi.battleBanditBladeStandee => 0.823,
   WuxiaUi.battleBanditArcherStandee => 0.939,
+  WuxiaUi.battleLeftGuardianStandee => 0.940,
+  WuxiaUi.battleRightGuardianStandee => 0.956,
+  WuxiaUi.battleTowerBoss30Standee => 0.976,
   _ => 0.95,
 };
 
