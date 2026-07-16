@@ -30,7 +30,7 @@
 ## 当前恢复点
 
 - **状态**：进行中。
-- **最后完成**：`bd63148e` / `d2a1deae` 已提交 `thug_b` 青年棍手与 `thug_c` 瘦削短刃客专属立绘；继续完成 `ruffian_a` 束发短棍泼皮专属原画、色键抠图与 alpha 技术验收，生产映射、脚底比例和光学体量已接线。
-- **下一步**：运行 `ruffian_a` 定向测试并提交第三个恢复点；随后用真实 `stage_01_02` / `stage_01_03` / tower 2–3 冻结帧集中做双视口体量验收。
-- **已跑验证**：前两切片提交前 `flutter analyze --no-pub`（0 issue）、`character_avatar_test.dart`（各 14 pass）。`battle_thug_b.png` 为 1024×1536 RGBA、脚底比例 `0.928385`；`battle_thug_c.png` 为 1024×1535 RGBA、脚底比例 `0.943322`；`battle_ruffian_a.png` 为 1024×1536 RGBA、alpha `0–255`、四角全透明、脚底比例 `0.957031`。
+- **最后完成**：`bd63148e` / `d2a1deae` / `0e30bec2` 已分别提交 `thug_b` 青年棍手、`thug_c` 瘦削短刃客与 `ruffian_a` 束发短棍泼皮专属立绘。Claude 已将阶段一检查点合入 `main@41de1e46`；续作分支随后以 `同步战斗界面阶段一合并基线` 合入新 main，自动合并无冲突。
+- **下一步**：用真实 `stage_01_02` / `stage_01_03` / tower 2–3 冻结帧集中做双视口体量验收；再处理 `bandit_head` / `qingshan` 两名剩余早期过渡敌人。
+- **已跑验证**：三个资产切片提交前均为 `character_avatar_test.dart` 14 pass + `flutter analyze --no-pub` 0 issue。吸收新 main 并重跑 build_runner 后，战斗立绘/视觉路由/远征配置 49 项通过，Claude 新增角色占用服务 3 项通过，`flutter analyze --no-pub` 0 issue；首次占用服务运行因新 worktree 缺 `libisar.dylib` 失败，补本地忽略软链后同命令通过。三图均为 RGBA、alpha `0–255`、四角透明；脚底比例依次为 `0.928385` / `0.943322` / `0.957031`。
 - **阻塞项**：无。Claude 若完成稳定检查点合并，后续在本分支批末吸收新 `main`，不在当前资产切片中途改基线。
