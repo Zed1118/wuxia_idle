@@ -7,8 +7,8 @@
 - 正式数据：`data/stages.yaml` + `data/towers.yaml`
 - 不重复敌人原画：79 种
 - 关卡中敌人出场记录：120 次
-- 已接入透明全身立绘：67 / 79
-- 已覆盖出场记录：108 / 120
+- 已接入透明全身立绘：70 / 79
+- 已覆盖出场记录：111 / 120
 
 已覆盖正式敌人：
 
@@ -55,6 +55,9 @@
 - `massbattle_cunfei_a`（专属山贼头目立绘）
 - `massbattle_cunfei_b`（专属山贼弓手立绘）
 - `massbattle_cunfei_c`（专属山贼刀客立绘）
+- `massbattle_zhenkou_a`（专属匪众头领立绘）
+- `massbattle_zhenkou_b`（专属匪众游侠立绘）
+- `massbattle_zhenkou_c`（专属匪众刺客立绘）
 - `jianghu_a`（过渡复用 `battle_jianghu_qianbei`）
 - `mingmen_a`（过渡复用 `battle_wulin_bazhu`）
 - `tower_boss_05`（过渡复用 `battle_bandit_blade`）
@@ -197,10 +200,11 @@
 ### 批次 11：群战特殊玩法专属化（进行中）
 
 - 已完成村匪队：`massbattle_cunfei_a`（卷须阔背铁蒺藜头目）、`massbattle_cunfei_b`（布帽猎弓手）、`massbattle_cunfei_c`（卷须伏身阔刀客）。
-- 新增覆盖：3 种敌人 / 3 次出场；累计覆盖 67 / 79 种、108 / 120 次出场。
+- 已完成镇口队：`massbattle_zhenkou_a`（皮护胸巨斧头领）、`massbattle_zhenkou_b`（灰衣双头枪游侠）、`massbattle_zhenkou_c`（黑帽匕首钩刃刺客）。
+- 新增覆盖：6 种敌人 / 6 次出场；累计覆盖 70 / 79 种、111 / 120 次出场。
 - 组队差异：三人共享山村补丁旧衣和土灰色相，分别以重钝器、远程弓和近战阔刀拆分体态与轮廓。
 - 技术验收：三图均为 RGBA、alpha `0–255`、四角透明、完整头脚和兵器，边距均不小于 5%。
-- 待完成：其余 12 名群战敌人，以及 `stage_mass_battle_01` 至 `05` 的真实整队双视口验收。
+- 待完成：其余 9 名群战敌人，以及 `stage_mass_battle_01` 至 `05` 的真实整队双视口验收。
 
 ## 后续优先级
 
