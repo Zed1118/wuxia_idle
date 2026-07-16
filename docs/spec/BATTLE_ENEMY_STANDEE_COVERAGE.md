@@ -7,8 +7,8 @@
 - 正式数据：`data/stages.yaml` + `data/towers.yaml`
 - 不重复敌人原画：79 种
 - 关卡中敌人出场记录：120 次
-- 已接入透明全身立绘：20 / 79
-- 已覆盖出场记录：61 / 120
+- 已接入透明全身立绘：24 / 79
+- 已覆盖出场记录：65 / 120
 
 已覆盖正式敌人：
 
@@ -32,6 +32,10 @@
 - `qingshan`（过渡复用 `battle_bandit_blade`）
 - `jianghu_a`（过渡复用 `battle_jianghu_qianbei`）
 - `mingmen_a`（过渡复用 `battle_wulin_bazhu`）
+- `tower_boss_05`（过渡复用 `battle_bandit_blade`）
+- `tower_boss_10`（过渡复用 `battle_jianghu_qianbei`）
+- `tower_boss_15`（过渡复用 `battle_anye`）
+- `tower_boss_25`（过渡复用 `battle_bandit_blade`）
 
 ## 统一资产规格
 
@@ -96,6 +100,13 @@
 - 新增覆盖：4 次敌人出场记录；累计覆盖 61 / 120。
 - 目的：优先移除仍以纸底半身图进入正式战斗的高频敌人。
 - 限制：本批为复用过渡，不代表 `jianghu_a` / `mingmen_a` 专属画像最终完成；后续需要按“江湖客 / 名门执事”身份重做专属透明全身立绘。
+
+### 批次 05：中段爬塔 Boss 过渡覆盖（已接入，待专属重做）
+
+- 过渡映射：`tower_boss_05` → `battle_bandit_blade`、`tower_boss_10` → `battle_jianghu_qianbei`、`tower_boss_15` → `battle_anye`、`tower_boss_25` → `battle_bandit_blade`
+- 新增覆盖：4 次敌人出场记录；累计覆盖 65 / 120。
+- 目的：优先移除 Boss 关卡中的纸底半身图，保证正式战斗至少全身透明展示。
+- 限制：本批为复用过渡，四名爬塔 Boss 身份差异明显，后续必须补专属透明全身立绘。
 
 ## 后续优先级
 
