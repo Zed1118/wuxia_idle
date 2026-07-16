@@ -47,13 +47,15 @@ void main() {
       // + 波B 24 招内容批: 真解 5 + 塔残页 6 + 章末重打残页 3 = 184
       // + 开锋槽 3 装备专属技 21 = 205
       // + 终局机制型 Boss 批次3:心魔蓄力技 skill_inner_demon_charge = 206
-      // + 40 encounter_skills.yaml = 246 total
+      // + 断魂庄 Phase C C1.3.2:苏无咎锁脉针 skill_suo_mai_zhen = 207
+      // + 40 encounter_skills.yaml = 247 total
       expect(
         repo.skillDefs.length,
-        246,
+        247,
         reason:
-            '206 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
-            ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技) + 40 奇遇招',
+            '207 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+            ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技 + 1 断魂庄锁脉针)'
+            ' + 40 奇遇招',
       );
       expect(
         repo.encounterSkillIds.length,

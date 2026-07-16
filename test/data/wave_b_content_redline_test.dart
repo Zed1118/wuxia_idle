@@ -107,7 +107,24 @@ void main() {
       expect(m.values.toSet().length, 1, reason: '$kind 各流派数量应相等(配平),实际 $m');
     }
 
-    assertBalanced('真解', countBy((s) => s.source == SkillSource.mainlineDrop));
+    // 断魂庄等副本奖励招（锁脉针法）属独立奖励流，不并入 wave_b 主线章末 build 配平池
+    // （design §6.2 首通仅一枚阴柔奖励招，非配平三件套）。以 gauntlet 敌队 skillIds 界定
+    // 排除，排除后主线 6 真解仍守 2/2/2 配平不变式。
+    final gauntletConfig = repo.bossGauntletConfig;
+    final gauntletSkillIds = <String>{
+      if (gauntletConfig != null)
+        for (final team in gauntletConfig.enemyTeams.values)
+          for (final e in team) ...e.skillIds,
+    };
+
+    assertBalanced(
+      '真解',
+      countBy(
+        (s) =>
+            s.source == SkillSource.mainlineDrop &&
+            !gauntletSkillIds.contains(s.id),
+      ),
+    );
     assertBalanced('残页', countBy((s) => s.source == SkillSource.fragment));
     assertBalanced('破招', countBy((s) => s.canInterrupt));
   });

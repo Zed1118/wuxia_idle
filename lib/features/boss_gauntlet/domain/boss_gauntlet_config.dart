@@ -1,15 +1,35 @@
+import '../../../data/defs/stage_def.dart';
+
 class GauntletStageConfig {
   const GauntletStageConfig({required this.role, required this.enemyTeamId});
   final String role; // 'elite' | 'boss'
   final String enemyTeamId;
 }
 
-/// 断魂庄配置（§8.2）。A2 落关次角色/补给上限校验；Phase C 扩展敌队机制/奖励。
+/// 断魂庄配置（§8.2）。A2 落关次角色/补给上限校验；Phase C C1.3.2 扩展敌队机制。
+///
+/// 敌队随 `enemy_teams`（teamId → `EnemyDef` 列表）解析（design §8.2：敌队进
+/// `boss_gauntlets.yaml`，机制走 `EnemyDef` 既有字段 bossPhases/guardianWard/
+/// vulnerability，skillIds 引用现有 `skills.yaml`）。敌队引用完整性校验
+/// （每关 enemy_team_id 解析、chargeSkillId∈skillIds、相位招/护法/弱点引用不悬空）
+/// 在 `GameRepository` 加载期统一跑（需 skillDefs/队内 id 交叉核对，纯配置无法自足），
+/// 见 `GameRepository._enforceGauntletEnemyRedLines`。
 class BossGauntletConfig {
-  const BossGauntletConfig({required this.stages, required this.supplyCap});
+  const BossGauntletConfig({
+    required this.stages,
+    required this.supplyCap,
+    this.enemyTeams = const {},
+  });
 
   final List<GauntletStageConfig> stages;
   final int supplyCap;
+
+  /// teamId → 敌队（关次经 [GauntletStageConfig.enemyTeamId] 引用）。
+  final Map<String, List<EnemyDef>> enemyTeams;
+
+  /// 解析关次敌队；未知 teamId 返回空列表（引用完整性由加载期红线守）。
+  List<EnemyDef> enemiesForTeam(String teamId) =>
+      enemyTeams[teamId] ?? const <EnemyDef>[];
 
   factory BossGauntletConfig.fromYaml(Map<String, dynamic> y) {
     final supplyCap = (y['supply_cap'] as num?)?.toInt() ?? 0;
@@ -21,6 +41,15 @@ class BossGauntletConfig {
           enemyTeamId: s['enemy_team_id'] as String? ?? '',
         ),
     ];
+
+    final rawTeams = (y['enemy_teams'] as Map?) ?? const {};
+    final enemyTeams = <String, List<EnemyDef>>{
+      for (final entry in rawTeams.entries)
+        entry.key as String: [
+          for (final e in (entry.value as List? ?? const []))
+            EnemyDef.fromYaml(Map<String, dynamic>.from(e as Map)),
+        ],
+    };
 
     if (supplyCap != 3) {
       throw StateError('boss_gauntlets: 补给上限固定为 3，got $supplyCap');
@@ -38,6 +67,10 @@ class BossGauntletConfig {
         throw StateError('boss_gauntlets: 关次 enemy_team_id 不得为空');
       }
     }
-    return BossGauntletConfig(stages: stages, supplyCap: supplyCap);
+    return BossGauntletConfig(
+      stages: stages,
+      supplyCap: supplyCap,
+      enemyTeams: enemyTeams,
+    );
   }
 }

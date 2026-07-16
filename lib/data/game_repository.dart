@@ -815,6 +815,10 @@ class GameRepository {
       );
     }
 
+    // C1.3.2 断魂庄:敌队随 BossGauntletConfig 独立解析(非 stageDefs/towerFloors),
+    // 单独跑同口径引用完整性红线(design §8.2 引用不得悬空)。
+    _enforceGauntletEnemyRedLines();
+
     // 波A build gate:破招技(canInterrupt=true)必须有 style 流派归属
     _enforceInterruptSkillRedLines();
 
@@ -2164,6 +2168,69 @@ class GameRepository {
           );
         }
       }
+    }
+  }
+
+  /// C1.3.2 断魂庄敌队引用完整性红线（design §8.2「敌人/招式引用不得悬空」）。
+  ///
+  /// 断魂庄敌队随 [BossGauntletConfig.enemyTeams] 独立解析（非 stageDefs/
+  /// towerFloors），故在此单独跑与主线/爬塔同口径的校验：
+  ///   ① 每关 enemy_team_id 有对应敌队定义（关次引用不悬空）；
+  ///   ② 敌人 skillIds 全在 skillDefs（招式引用不悬空）；
+  ///   ③ chargeSkillId（若配）在该敌人 skillIds 内（破招红线①同口径）；
+  ///   ④ bossPhases/cycleBossPhases 的 unlockSkillIds 全在 skillDefs（批二①同口径）；
+  ///   ⑤ guardianWard 引用完整性/值域/自引用（复用 [enforceGuardianWardReferences]）。
+  /// vulnerability 开窗途径与 bossPhases 阈值降序已由 `EnemyDef.fromYaml` 兜底。
+  void _enforceGauntletEnemyRedLines() {
+    final config = bossGauntletConfig;
+    if (config == null) return;
+    final skillIdSet = skillDefs.keys.toSet();
+
+    // ① 关次 → 敌队引用不悬空。
+    for (final stage in config.stages) {
+      if (!config.enemyTeams.containsKey(stage.enemyTeamId)) {
+        throw StateError(
+          'boss_gauntlets: 关次 enemy_team_id=${stage.enemyTeamId} '
+          '无对应敌队定义（§8.2 引用悬空）',
+        );
+      }
+    }
+
+    for (final teamEntry in config.enemyTeams.entries) {
+      final teamId = teamEntry.key;
+      final team = teamEntry.value;
+      final loc = 'boss_gauntlets 敌队 $teamId ';
+      for (final e in team) {
+        // ② skillIds 引用不悬空。
+        for (final sid in e.skillIds) {
+          if (!skillIdSet.contains(sid)) {
+            throw StateError('$loc敌人 ${e.id} skillId=$sid 未在 skills.yaml 存在');
+          }
+        }
+        // ③ chargeSkillId 在自身 skillIds（破招红线①同口径）。
+        final cs = e.chargeSkillId;
+        if (cs != null && !e.skillIds.contains(cs)) {
+          throw StateError(
+            '$loc敌人 ${e.id} chargeSkillId=$cs 不在其 skillIds（破招红线①）',
+          );
+        }
+        // ④ bossPhases/cycleBossPhases unlockSkillIds 引用不悬空（批二①同口径）。
+        for (final phase in <BossPhaseDef>[
+          ...?e.bossPhases,
+          for (final ps in e.cycleBossPhases.values) ...ps,
+        ]) {
+          for (final sid in phase.unlockSkillIds) {
+            if (!skillIdSet.contains(sid)) {
+              throw StateError(
+                '$loc敌人 ${e.id} bossPhase unlockSkillIds 引用 $sid '
+                '未在 skills.yaml 存在（批二①红线）',
+              );
+            }
+          }
+        }
+      }
+      // ⑤ 护法结界引用完整性/值域/自引用。
+      enforceGuardianWardReferences(team, location: loc);
     }
   }
 
