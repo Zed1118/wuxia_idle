@@ -5,7 +5,10 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
+import 'package:wuxia_idle/features/battle/presentation/hp_bar.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_image.dart';
 
 const _bossFrameKey = ValueKey<String>('battle.bossAvatarFrame');
 
@@ -160,5 +163,209 @@ void main() {
     expect(denseSize, plainSize);
     expect(find.byType(BeatCountdownRing), findsNWidgets(2));
     expect(find.byIcon(Icons.flash_on), findsOneWidget);
+  });
+
+  testWidgets('战场三名我方降级位使用透明全身立绘且保持完整头脚', (tester) async {
+    const expectedPaths = [
+      WuxiaUi.battleFounderFallback,
+      WuxiaUi.battleFirstDiscipleFallback,
+      WuxiaUi.battleSecondDiscipleFallback,
+    ];
+
+    for (var slot = 0; slot < expectedPaths.length; slot++) {
+      final character = _char(
+        isBoss: false,
+      ).copyWith(teamSide: 0, slotIndex: slot);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CharacterAvatar(
+              character: character,
+              displayMode: CharacterDisplayMode.stageStandee,
+              standeeWidth: 160,
+              standeeHeight: 230,
+            ),
+          ),
+        ),
+      );
+
+      final standeeImage = tester.widget<WuxiaImage>(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is WuxiaImage && widget.assetPath == expectedPaths[slot],
+        ),
+      );
+      expect(standeeImage.fit, BoxFit.contain);
+    }
+  });
+
+  testWidgets('战场全身立绘具有独立脚底接触墨影', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: _char(isBoss: false),
+            displayMode: CharacterDisplayMode.stageStandee,
+            standeeWidth: 160,
+            standeeHeight: 230,
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(const ValueKey('battle.stageStandeeGrounding')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('战场立绘按有效人物边界校准尺度与视觉重心', (tester) async {
+    Future<(double scale, double shiftX, double shiftY)> opticalTransformFor(
+      String iconPath,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CharacterAvatar(
+              character: _char(isBoss: false).copyWith(iconPath: iconPath),
+              displayMode: CharacterDisplayMode.stageStandee,
+              standeeWidth: 160,
+              standeeHeight: 230,
+            ),
+          ),
+        ),
+      );
+
+      final scaleTransform = tester.widget<Transform>(
+        find.byKey(const ValueKey('battle.stageStandeeOpticalScale')),
+      );
+      final shiftTransform = tester.widget<Transform>(
+        find.byKey(const ValueKey('battle.stageStandeeOpticalShift')),
+      );
+      return (
+        scaleTransform.transform.storage[0],
+        shiftTransform.transform.storage[12],
+        shiftTransform.transform.storage[13],
+      );
+    }
+
+    final founder = await opticalTransformFor('assets/characters/founder.png');
+    final firstDisciple = await opticalTransformFor(
+      'assets/characters/first_disciple.png',
+    );
+    final banditBlade = await opticalTransformFor(
+      'assets/enemies/killer_a.png',
+    );
+    final banditArcher = await opticalTransformFor(
+      'assets/enemies/killer_b.png',
+    );
+
+    expect(founder.$1, closeTo(1.055, 0.001));
+    expect(firstDisciple.$2, greaterThan(0));
+    expect(banditBlade.$1, closeTo(1.18, 0.001));
+    expect(banditBlade.$3, greaterThan(0));
+    expect(banditArcher.$1, closeTo(1.045, 0.001));
+  });
+
+  testWidgets('战场将已配套的旧原画映射到对应透明立绘', (tester) async {
+    expect(
+      WuxiaUi.battleTowerBoss30Standee,
+      'assets/enemies/battle_tower_boss_30_v2.png',
+    );
+    expect(
+      WuxiaUi.battleTowerBoss30Standee,
+      isNot(WuxiaUi.battleFounderFallback),
+    );
+
+    const cases = [
+      ('assets/characters/founder.png', WuxiaUi.battleFounderFallback),
+      ('assets/enemies/thug_a.png', WuxiaUi.battleThugStandee),
+      ('assets/enemies/thug_b.png', WuxiaUi.battleBanditArcherStandee),
+      ('assets/enemies/thug_c.png', WuxiaUi.battleBanditBladeStandee),
+      ('assets/enemies/ruffian_a.png', WuxiaUi.battleThugStandee),
+      ('assets/enemies/bandit_head.png', WuxiaUi.battleBanditBladeStandee),
+      ('assets/enemies/qingshan.png', WuxiaUi.battleBanditBladeStandee),
+      ('assets/enemies/qingshan_main.png', WuxiaUi.battleHiddenElderStandee),
+      ('assets/enemies/black_killer.png', WuxiaUi.battleBlackKillerStandee),
+      ('assets/enemies/killer_a.png', WuxiaUi.battleBanditBladeStandee),
+      ('assets/enemies/killer_b.png', WuxiaUi.battleBanditArcherStandee),
+      ('assets/enemies/umbrella.png', WuxiaUi.battleUmbrellaStandee),
+      ('assets/enemies/tower_boss_20.png', WuxiaUi.battleTowerBoss20Standee),
+      ('assets/enemies/zuo_hufa.png', WuxiaUi.battleLeftGuardianStandee),
+      ('assets/enemies/you_hufa.png', WuxiaUi.battleRightGuardianStandee),
+      ('assets/enemies/tower_boss_30.png', WuxiaUi.battleTowerBoss30Standee),
+      (
+        'assets/enemies/jianghu_qianbei.png',
+        WuxiaUi.battleJianghuSeniorStandee,
+      ),
+      ('assets/enemies/wulin_bazhu.png', WuxiaUi.battleWulinOverlordStandee),
+      ('assets/enemies/anye.png', WuxiaUi.battleNightSwordsmanStandee),
+      ('assets/enemies/shiye.png', WuxiaUi.battleAdviserStandee),
+      ('assets/enemies/fu_zhaizhu.png', WuxiaUi.battleFuChiefStandee),
+    ];
+
+    for (final (sourcePath, standeePath) in cases) {
+      final character = _char(
+        isBoss: sourcePath.contains('boss'),
+      ).copyWith(iconPath: sourcePath);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CharacterAvatar(
+              character: character,
+              displayMode: CharacterDisplayMode.stageStandee,
+            ),
+          ),
+        ),
+      );
+
+      final image = tester.widget<WuxiaImage>(
+        find.byWidgetPredicate(
+          (widget) => widget is WuxiaImage && widget.assetPath == standeePath,
+        ),
+      );
+      expect(image.fit, BoxFit.contain);
+    }
+  });
+
+  testWidgets('未配套透明图的旧敌人原画保持遮罩降级路径', (tester) async {
+    final character = _char(
+      isBoss: false,
+    ).copyWith(iconPath: 'assets/enemies/unmapped.png');
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: character,
+            displayMode: CharacterDisplayMode.stageStandee,
+          ),
+        ),
+      ),
+    );
+
+    final image = tester.widget<WuxiaImage>(find.byType(WuxiaImage));
+    expect(image.assetPath, 'assets/enemies/unmapped.png');
+    expect(image.fit, BoxFit.cover);
+    expect(find.byType(ShaderMask), findsOneWidget);
+  });
+
+  testWidgets('心魔镜像只给人物图施加反相墨色层', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: _char(isBoss: false),
+            displayMode: CharacterDisplayMode.stageStandee,
+            inkMirror: true,
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(const ValueKey('battle.innerDemonInkMirror')),
+      findsOneWidget,
+    );
+    expect(find.byType(HpBar), findsNWidgets(2));
   });
 }

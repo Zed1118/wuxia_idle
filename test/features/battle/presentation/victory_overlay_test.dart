@@ -5,7 +5,6 @@ import '../../../support/image_test_helpers.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/victory_overlay.dart';
 import 'package:wuxia_idle/shared/strings.dart';
-import 'package:wuxia_idle/shared/theme/colors.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/ceremony_image_panel.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
@@ -31,9 +30,9 @@ void main() {
     );
     expect(find.text(UiStrings.victoryTitle), findsOneWidget);
     expect(find.text(UiStrings.victorySubtitle), findsOneWidget);
-    // 大题字金色
+    // 大题字使用克制的旧纸金，不使用高饱和奖励黄。
     final title = tester.widget<Text>(find.text(UiStrings.victoryTitle));
-    expect(title.style?.color, WuxiaColors.resultHighlight);
+    expect(title.style?.color, const Color(0xFFB9974E));
     // 统计含总伤
     expect(find.textContaining('12000'), findsOneWidget);
     expect(find.byType(CeremonyImagePanel), findsOneWidget);
@@ -60,7 +59,7 @@ void main() {
     );
     expect(find.text(UiStrings.defeatTitle), findsOneWidget);
     final title = tester.widget<Text>(find.text(UiStrings.defeatTitle));
-    expect(title.style?.color, WuxiaColors.gangMeng);
+    expect(title.style?.color, const Color(0xFF9E2B25));
     expect(_assetImage(WuxiaUi.ceremonyFailureInk), findsOneWidget);
   });
 

@@ -117,8 +117,8 @@ class _VictorySealFlashState extends State<VictorySealFlash>
                   Transform.rotate(
                     angle: -0.08,
                     child: SizedBox(
-                      width: 48,
-                      height: 48,
+                      width: 38,
+                      height: 38,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
@@ -136,7 +136,7 @@ class _VictorySealFlashState extends State<VictorySealFlash>
                             UiStrings.sealGlyph,
                             style: TextStyle(
                               color: WuxiaColors.textPrimary,
-                              fontSize: 20,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -144,16 +144,16 @@ class _VictorySealFlashState extends State<VictorySealFlash>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   const Text(
                     UiStrings.victoryTitle,
                     style: TextStyle(
-                      color: WuxiaColors.resultHighlight,
-                      fontSize: 96,
+                      color: Color(0xFFB9974E),
+                      fontSize: 76,
                       fontWeight: FontWeight.bold,
                       shadows: [
                         Shadow(
-                          blurRadius: 12,
+                          blurRadius: 9,
                           color: Color(0xCC000000),
                           offset: Offset(2, 3),
                         ),

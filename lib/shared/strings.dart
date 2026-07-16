@@ -55,6 +55,12 @@ class UiStrings {
   static const String emptyLog = '（无动作）';
   static const String ultimate = '大招';
   static const String fastForward = '快进';
+  static const String battleAutoMode = '自动战斗';
+  static const String battleAutoIntervention = '可点选';
+  static const String battleCommandDesk = '武学案台';
+  static const String battlePouch = '战备行囊';
+  static const String battlePouchReserved = '待装配';
+  static const String battleEmptySkillSlot = '空技能位';
 
   static String combatTermLabel(CombatTerm term) => switch (term) {
     CombatTerm.charge => '蓄力',
@@ -105,6 +111,8 @@ class UiStrings {
   // 可用态：耗气 N · CD M。
   static String skillCostShort(int cost, int cooldown) =>
       '耗气$cost · CD$cooldown';
+  static String skillQiCostChip(int cost) => '气 $cost';
+  static String skillCooldownChip(int cooldown) => '息 $cooldown';
   static String skillQiChange(int delta) => delta > 0
       ? '产气 +$delta'
       : delta < 0

@@ -20,6 +20,8 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
 import '../../settings/domain/gameplay_settings.dart';
 import 'battle_vfx_entries.dart';
+import 'battle_action_template.dart';
+import 'battle_stage_geometry.dart';
 import 'boss_phase_presentation.dart';
 import 'damage_popup.dart';
 import 'first_clear_showcase.dart';
@@ -154,6 +156,12 @@ class BattlePlaybackController {
   final List<EffectEntry> _activeEffects = [];
   int _nextEffectId = 0;
 
+  // 每个角色槽最近一次动作模板，仅驱动表现层位移。
+  final List<BattleActionTemplate> _actionTemplates = List.filled(
+    6,
+    BattleActionTemplate.melee,
+  );
+
   // 飘字状态：slotKey → 活跃飘字列表
   final Map<int, List<PopupEntry>> _popups = {};
   int _nextPopupId = 0;
@@ -179,6 +187,10 @@ class BattlePlaybackController {
 
   @visibleForTesting
   bool get debugBeatIsAnimating => _beatCtrl.isAnimating;
+
+  @visibleForTesting
+  BattleActionTemplate debugActionTemplateForSlot(int slotKey) =>
+      _actionTemplates[slotKey];
 
   GameplaySettings get _currentGameplaySettings => _ref
       .read(gameplaySettingsProvider)
@@ -220,14 +232,14 @@ class BattlePlaybackController {
   /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
   void _triggerHitFlash(BattleCharacter target, bool isCritical) {
     if (_reduceFlashing) return;
-    final key = slotKey(target.teamSide, target.slotIndex);
+    final key = _visualSlotKey(target);
     _rebuild(() {
       _hitFlashColors[key] = isCritical ? WuxiaColors.gangMeng : Colors.white;
     });
     _hitFlashControllers[key].forward(from: 0.0);
   }
 
-  /// 弹道：攻击者 slot → 目标 slot 的水墨笔触。普攻飞白，技能集中爆墨。
+  /// 远程弹道：攻击者 slot → 目标 slot 的水墨笔触；近战不生成此层。
   void _spawnTrail(
     BattleCharacter actor,
     BattleCharacter target,
@@ -287,6 +299,7 @@ class BattlePlaybackController {
     BattleCharacter? actor,
     BattleCharacter target,
     BattleAction action,
+    BattleActionTemplate actionTemplate,
   ) {
     final result = action.attackResult;
     if (result == null) return;
@@ -295,11 +308,14 @@ class BattlePlaybackController {
       target.slotIndex,
       _teamSizeOf(target.teamSide),
     );
+    final effectFrac = actionTemplate == BattleActionTemplate.area
+        ? Offset(target.teamSide == 0 ? 0.28 : 0.72, 0.5)
+        : targetFrac;
 
     if (result.isDodged) {
       _spawnEffect(
         assetPath: WuxiaUi.fxDodgeShadow,
-        centerFrac: targetFrac,
+        centerFrac: effectFrac,
         size: 230,
         opacity: 0.64,
         mirrored: target.teamSide == 1,
@@ -311,9 +327,9 @@ class BattlePlaybackController {
       final isUltimate = isUltimateCaptionSkill(action.skill);
       _spawnEffect(
         assetPath: _schoolFx(actor.school, isUltimate: isUltimate),
-        centerFrac: targetFrac,
-        size: isUltimate ? 360 : 250,
-        opacity: isUltimate ? 0.76 : 0.64,
+        centerFrac: effectFrac,
+        size: isUltimate ? 330 : 220,
+        opacity: isUltimate ? 0.68 : 0.52,
         rotation: actor.teamSide == 0 ? -0.08 : 0.08,
         mirrored: actor.teamSide == 1,
       );
@@ -401,7 +417,7 @@ class BattlePlaybackController {
     AttackResult result,
     BattleCharacter? attacker,
   ) {
-    final key = slotKey(target.teamSide, target.slotIndex);
+    final key = _visualSlotKey(target);
     final data = _buildPopupData(result, attacker);
     final anchor = _nextPopupAnchor(key, data.type);
     final entry = PopupEntry(
@@ -460,12 +476,10 @@ class BattlePlaybackController {
     });
   }
 
-  /// 战场比例坐标（0..1）：左队 x=0.12 / 右队 x=0.88；竖直按队伍人数 [teamSize]
-  /// 均分(见 [slotVerticalFraction]):1 怪居中 / 2 怪对称 / 3 怪 1/6,3/6,5/6。
+  /// 战场比例坐标（0..1）：与人物舞台共用斜向阵列锚点。
   /// 弹道层在 LayoutBuilder 内解析为像素，避免依赖 RenderBox（widget test 稳定）。
   static Offset _slotFrac(int teamSide, int slotIndex, int teamSize) {
-    final x = teamSide == 0 ? 0.12 : 0.88;
-    return Offset(x, slotVerticalFraction(slotIndex, teamSize));
+    return battleStageAnchor(teamSide, slotIndex, teamSize);
   }
 
   /// 取某队当前人数(供 [_slotFrac] 竖直均分)。死亡单位保留在队列(灰显)故长度稳定。
@@ -692,19 +706,23 @@ class BattlePlaybackController {
   /// `ref.listen` 逐条转发。
   void playAction(BattleAction action, BattleState s) {
     final actor = findCharacter(action.actorId, s);
+    final actionTemplate = battleActionTemplateFor(action.skill);
     // 首通展示帧:本动作触发的节拍(null=无);「首次」判定在 director 内消费,
     // 快进态消费不呈现(下方各触发点带 !_isFastForward gate)。
     final showcaseBeat = _showcase?.onAction(action, s);
     if (actor != null) {
-      final key = slotKey(actor.teamSide, actor.slotIndex);
+      final key = _visualSlotKey(actor);
+      _actionTemplates[key] = actionTemplate;
       _attackControllers[key].forward(from: 0.0);
     }
     if (action.attackResult != null && action.targetId != null) {
       final target = findCharacter(action.targetId!, s);
       if (target != null) {
         _spawnPopup(target, action.attackResult!, actor);
-        if (actor != null) _spawnTrail(actor, target, action);
-        _spawnBattleEffects(actor, target, action);
+        if (actor != null && templateUsesProjectile(actionTemplate)) {
+          _spawnTrail(actor, target, action);
+        }
+        _spawnBattleEffects(actor, target, action, actionTemplate);
         if (!action.attackResult!.isDodged) {
           _triggerHitFlash(target, action.attackResult!.isCritical);
         }
@@ -830,6 +848,9 @@ class BattlePlaybackController {
       _applyHitStop(_animConfig.firstClearFirstSkillHoldMs);
     }
   }
+
+  int _visualSlotKey(BattleCharacter character) =>
+      slotKey(character.teamSide, character.slotIndex.clamp(0, 2));
 
   void dispose() {
     _disposed = true;

@@ -8,8 +8,10 @@ import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../battle/presentation/battle_screen.dart';
+import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 
 // ─── 场景数据工厂（内存构造，不写 Isar）───────────────────────────────────────
 
@@ -280,7 +282,8 @@ class BattleScenarioData {
       isBoss: isBoss,
       iconPath: icon,
     );
-    // Boss 位注入真实 boss 立绘(xiliangboss)验金边;其余真敌人图。
+    // 冻结帧直接使用透明战斗立绘，避免旧头像纸底在全人物舞台上
+    // 显露矩形边缘。Boss 位保留塔主体量与金边验收语义。
     return (
       [
         c(
@@ -289,7 +292,7 @@ class BattleScenarioData {
           TechniqueSchool.gangMeng,
           0,
           0,
-          icon: 'assets/enemies/thug_a.png',
+          icon: WuxiaUi.battleFounderFallback,
         ),
         c(
           22,
@@ -297,7 +300,7 @@ class BattleScenarioData {
           TechniqueSchool.lingQiao,
           0,
           1,
-          icon: 'assets/enemies/ruffian_a.png',
+          icon: WuxiaUi.battleFirstDiscipleFallback,
         ),
         c(
           23,
@@ -305,7 +308,7 @@ class BattleScenarioData {
           TechniqueSchool.yinRou,
           0,
           2,
-          icon: 'assets/enemies/bandit_b.png',
+          icon: WuxiaUi.battleSecondDiscipleFallback,
         ),
       ],
       [
@@ -316,7 +319,7 @@ class BattleScenarioData {
           1,
           0,
           isBoss: true,
-          icon: 'assets/enemies/xiliangboss.png',
+          icon: WuxiaUi.battleTowerBoss20Standee,
         ),
         c(
           32,
@@ -324,7 +327,7 @@ class BattleScenarioData {
           TechniqueSchool.gangMeng,
           1,
           1,
-          icon: 'assets/enemies/you_hufa.png',
+          icon: WuxiaUi.battleBanditBladeStandee,
         ),
         c(
           33,
@@ -332,7 +335,7 @@ class BattleScenarioData {
           TechniqueSchool.lingQiao,
           1,
           2,
-          icon: 'assets/enemies/shidi_b.png',
+          icon: WuxiaUi.battleBanditArcherStandee,
         ),
       ],
     );
@@ -468,7 +471,7 @@ class BattleScenarioData {
   /// 播放、点选干预层已挂。**给足时间操作**是核心:
   ///   - 主控**只带普攻 + 两个大招(ultimate)**,不带 powerSkill —— AI `_pickSkill`
   ///     会自动连放 ready 的 powerSkill 造成瞬间 burst;ultimate **只走 pending
-  ///     手动触发**(拖/点才放),所以自动战斗只剩弱普攻 chip,战斗拖得很长。
+  ///     手动触发**(点按才放),所以自动战斗只剩弱普攻 chip,战斗持续很久。
   ///   - 敌人**超高血(40000) + 低攻低速** → 普攻 chip 啃半天不死、也不秒玩家。
   /// 主控 single 大招(点敌头像指定目标)+ aoe 大招(点技能即对全体触发)演示两种交互。
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioDragLive() {
@@ -501,7 +504,7 @@ class BattleScenarioData {
     final left = [
       player(1, '主控', 0, [
         _normal('dl_normal_1', '基础招'),
-        // single 大招:拖到敌头像指定目标(ultimate → 只手动触发,不自动 burst)。
+        // single 大招:点技能后点敌方人物指定目标(ultimate → 只手动触发,不自动 burst)。
         const SkillDef(
           id: 'dl_single_1',
           name: '裂石指',
@@ -525,6 +528,62 @@ class BattleScenarioData {
           requiresManualTrigger: true,
           visualEffect: '',
           targetType: TargetType.aoe,
+        ),
+        const SkillDef(
+          id: 'dl_single_2',
+          name: '断流',
+          description: '',
+          type: SkillType.ultimate,
+          powerMultiplier: 2600,
+          internalForceCost: 180,
+          cooldownTurns: 2,
+          requiresManualTrigger: true,
+          visualEffect: '',
+        ),
+        const SkillDef(
+          id: 'dl_aoe_2',
+          name: '踏雪',
+          description: '',
+          type: SkillType.ultimate,
+          powerMultiplier: 3200,
+          internalForceCost: 300,
+          cooldownTurns: 4,
+          requiresManualTrigger: true,
+          visualEffect: '',
+          targetType: TargetType.aoe,
+        ),
+        const SkillDef(
+          id: 'dl_single_3',
+          name: '归一式',
+          description: '',
+          type: SkillType.ultimate,
+          powerMultiplier: 4000,
+          internalForceCost: 420,
+          cooldownTurns: 6,
+          requiresManualTrigger: true,
+          visualEffect: '',
+        ),
+        const SkillDef(
+          id: 'dl_single_4',
+          name: '燕回',
+          description: '',
+          type: SkillType.ultimate,
+          powerMultiplier: 2800,
+          internalForceCost: 220,
+          cooldownTurns: 3,
+          requiresManualTrigger: true,
+          visualEffect: '',
+        ),
+        const SkillDef(
+          id: 'dl_single_5',
+          name: '截脉',
+          description: '',
+          type: SkillType.ultimate,
+          powerMultiplier: 3500,
+          internalForceCost: 360,
+          cooldownTurns: 5,
+          requiresManualTrigger: true,
+          visualEffect: '',
         ),
       ]),
       player(2, '弟子甲', 1, [
@@ -559,6 +618,21 @@ class BattleScenarioData {
       tankMob(13, '巷尾杀手', 2, 'assets/enemies/killer_b.png'),
     ];
 
+    return (left, right);
+  }
+
+  /// 群战舞台静态验收：当前三名主战敌 + 四名后续敌军墨影。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioMassBattleStage() {
+    final (left, templates) = scenarioDragLive();
+    final right = [
+      for (var i = 0; i < 7; i++)
+        templates[i % templates.length].copyWith(
+          characterId: 200 + i,
+          slotIndex: i,
+          isAlive: true,
+        ),
+    ];
     return (left, right);
   }
 
@@ -670,6 +744,57 @@ class BattleScenarioData {
       player(3, '弟子乙', 2, TechniqueSchool.lingQiao),
     ];
 
+    return (left, right);
+  }
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor13() => _scenarioTowerFloorStandeeAudit(13);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor14() => _scenarioTowerFloorStandeeAudit(14);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor19() => _scenarioTowerFloorStandeeAudit(19);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor22() => _scenarioTowerFloorStandeeAudit(22);
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0102() =>
+      _scenarioStageStandeeAudit('stage_01_02');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0103() =>
+      _scenarioStageStandeeAudit('stage_01_03');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0104() =>
+      _scenarioStageStandeeAudit('stage_01_04');
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor02() => _scenarioTowerFloorStandeeAudit(2);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor03() => _scenarioTowerFloorStandeeAudit(3);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor08() => _scenarioTowerFloorStandeeAudit(8);
+
+  /// 敌人立绘逐关验收：右队读取真主线关卡，左队只提供稳定的三人尺度参照。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  _scenarioStageStandeeAudit(String stageId) {
+    final stage = GameRepository.instance.getStage(stageId);
+    final right = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
+    final (left, _) = scenarioGuardianWard();
+    return (left, right);
+  }
+
+  /// 敌人立绘逐层验收：右队读取真塔层，左队只提供稳定的三人尺度参照。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  _scenarioTowerFloorStandeeAudit(int floorIndex) {
+    final floor = GameRepository.instance.towerFloors[floorIndex - 1];
+    final right = StageBattleSetup.buildEnemyTeam(
+      floor.enemyTeam,
+      isTower: true,
+    );
+    final (left, _) = scenarioGuardianWard();
     return (left, right);
   }
 
@@ -798,6 +923,9 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   /// 出版美术验收:传给 BattleScreen 渲染场景背景 + scrim。null = 无背景。
   final String? sceneBackgroundPath;
 
+  /// 特殊战斗舞台模式由 BGM 轨道同源派生（心魔/轻功/群战）。
+  final BgmTrack bgmTrack;
+
   /// 透传给 BattleScreen.autoStart(默认 true 现有用法不变);
   /// false 时画面冻结在 startBattle seed 态,用于静态截蓄力/破招帧。
   final bool autoStart;
@@ -821,6 +949,7 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
     required this.teamsFactory,
     required this.hint,
     this.sceneBackgroundPath,
+    this.bgmTrack = BgmTrack.battle,
     this.autoStart = true,
     this.seed,
     this.allowPlayerIntervention = false,
@@ -851,6 +980,7 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
   Widget build(BuildContext context) => BattleScreen(
     hint: widget.hint,
     sceneBackgroundPath: widget.sceneBackgroundPath,
+    bgmTrack: widget.bgmTrack,
     playback: BattleScreenPlaybackConfig(
       autoStart: widget.autoStart,
       allowPlayerIntervention: widget.allowPlayerIntervention,

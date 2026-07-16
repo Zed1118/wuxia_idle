@@ -8,12 +8,17 @@ import '../../../../shared/theme/colors.dart';
 import '../../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import '../../../help/domain/help_topic.dart';
 import '../../../help/presentation/context_help_button.dart';
+import '../battle_layout_tokens.dart';
 
 class Header extends StatelessWidget {
   final BattleState state;
+  final String? sceneTitle;
   final VoidCallback onToggleLog;
   final VoidCallback onPause;
   final bool isPaused;
+  final VoidCallback onFastForward;
+  final bool isFastForward;
+  final bool allowPlayerIntervention;
   final VoidCallback? onSurrender;
 
   /// 验收路由(startPaused)专用:暂停态逐步推进。null = 生产挂机不渲染单步按钮。
@@ -21,9 +26,13 @@ class Header extends StatelessWidget {
   const Header({
     super.key,
     required this.state,
+    this.sceneTitle,
     required this.onToggleLog,
     required this.onPause,
     required this.isPaused,
+    required this.onFastForward,
+    required this.isFastForward,
+    required this.allowPlayerIntervention,
     this.onSurrender,
     this.onStepOnce,
   });
@@ -34,74 +43,125 @@ class Header extends StatelessWidget {
     final aliveRight = state.rightTeam.where((c) => c.isAlive).length;
 
     return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      height: BattleLayoutTokens.headerHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 28),
       decoration: const BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border(bottom: BorderSide(color: WuxiaColors.border)),
+        color: Color(0xF2191816),
+        border: Border(bottom: BorderSide(color: Color(0xFF6D5940))),
+        boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 12)],
       ),
-      child: Row(
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Text(
-            UiStrings.battleTitle(aliveLeft, aliveRight),
-            style: const TextStyle(
-              color: WuxiaColors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Spacer(),
-          if (state.result != null) ...[
-            Text(
-              EnumL10n.battleResult(state.result!),
+          Center(
+            child: Text(
+              UiStrings.battleTitle(aliveLeft, aliveRight),
               style: const TextStyle(
-                color: WuxiaColors.resultHighlight,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+                color: Color(0xFFE2CFAB),
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 4,
+                shadows: [Shadow(color: Colors.black, blurRadius: 4)],
               ),
             ),
-            const SizedBox(width: 16),
-          ],
-          Text(
-            '${UiStrings.tickPrefix} ${state.tick}',
-            style: const TextStyle(
-              color: WuxiaColors.textSecondary,
-              fontSize: 14,
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: 330,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (sceneTitle != null)
+                    Text(
+                      sceneTitle!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFFD8C29A),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  Text(
+                    '${UiStrings.tickPrefix} ${state.tick}',
+                    style: TextStyle(
+                      color: const Color(0xFFBFAE8D),
+                      fontSize: sceneTitle == null ? 13 : 9,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          if (state.result == null)
-            BattleHeaderIconButton(
-              key: const ValueKey('battle_pause_toggle'),
-              icon: isPaused ? Icons.play_arrow : Icons.pause,
-              tooltip: isPaused
-                  ? UiStrings.battleResume
-                  : UiStrings.battlePause,
-              onPressed: onPause,
+          Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (state.result != null) ...[
+                  Text(
+                    EnumL10n.battleResult(state.result!),
+                    style: const TextStyle(
+                      color: WuxiaColors.resultHighlight,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                BattleModePill(
+                  allowPlayerIntervention: allowPlayerIntervention,
+                ),
+                const SizedBox(width: 4),
+                if (state.result == null)
+                  BattleHeaderIconButton(
+                    key: const ValueKey('battle_fast_forward_toggle'),
+                    icon: Icons.fast_forward,
+                    tooltip: UiStrings.fastForward,
+                    onPressed: onFastForward,
+                    isActive: isFastForward,
+                  ),
+                if (state.result == null)
+                  BattleHeaderIconButton(
+                    key: const ValueKey('battle_pause_toggle'),
+                    icon: isPaused ? Icons.play_arrow : Icons.pause,
+                    tooltip: isPaused
+                        ? UiStrings.battleResume
+                        : UiStrings.battlePause,
+                    onPressed: onPause,
+                  ),
+                if (state.result == null && onStepOnce != null)
+                  BattleHeaderIconButton(
+                    key: const ValueKey('battle_step_once'),
+                    icon: Icons.skip_next,
+                    tooltip: UiStrings.battleStepOnce,
+                    onPressed: onStepOnce,
+                  ),
+                if (state.result == null && onSurrender != null)
+                  BattleHeaderIconButton(
+                    key: const ValueKey('battle_surrender'),
+                    icon: Icons.flag_outlined,
+                    tooltip: UiStrings.battleSurrender,
+                    onPressed: onSurrender,
+                  ),
+                BattleHeaderIconButton(
+                  key: const ValueKey('battle_log_toggle'),
+                  icon: Icons.list_alt,
+                  tooltip: UiStrings.battleLog,
+                  onPressed: onToggleLog,
+                ),
+                const SizedBox(width: 4),
+                const ContextHelpButton(
+                  topic: HelpTopic.combatAdvanced,
+                  size: 20,
+                ),
+              ],
             ),
-          // 验收路由(startPaused)专用单步键:仅 onStepOnce 非空时渲染,生产挂机不出现。
-          if (state.result == null && onStepOnce != null)
-            BattleHeaderIconButton(
-              key: const ValueKey('battle_step_once'),
-              icon: Icons.skip_next,
-              tooltip: UiStrings.battleStepOnce,
-              onPressed: onStepOnce,
-            ),
-          if (state.result == null && onSurrender != null)
-            BattleHeaderIconButton(
-              key: const ValueKey('battle_surrender'),
-              icon: Icons.flag_outlined,
-              tooltip: UiStrings.battleSurrender,
-              onPressed: onSurrender,
-            ),
-          BattleHeaderIconButton(
-            key: const ValueKey('battle_log_toggle'),
-            icon: Icons.list_alt,
-            tooltip: UiStrings.battleLog,
-            onPressed: onToggleLog,
           ),
-          const SizedBox(width: 4),
-          const ContextHelpButton(topic: HelpTopic.combatAdvanced, size: 20),
         ],
       ),
     );
@@ -114,11 +174,13 @@ class BattleHeaderIconButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     required this.onPressed,
+    this.isActive = false,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
+  final bool isActive;
 
   @override
   Widget build(BuildContext context) {
@@ -128,18 +190,63 @@ class BattleHeaderIconButton extends StatelessWidget {
         tooltip: tooltip,
         onPressed: onPressed,
         icon: Icon(icon, size: 19),
-        color: WuxiaColors.textSecondary,
+        color: isActive
+            ? WuxiaColors.resultHighlight
+            : WuxiaColors.textSecondary,
         disabledColor: WuxiaColors.textMuted,
         constraints: const BoxConstraints.tightFor(width: 36, height: 36),
         padding: EdgeInsets.zero,
         splashRadius: 18,
         style: IconButton.styleFrom(
-          backgroundColor: WuxiaColors.sidebar.withValues(alpha: 0.58),
+          backgroundColor: isActive
+              ? WuxiaColors.resultHighlight.withValues(alpha: 0.12)
+              : Colors.black.withValues(alpha: 0.28),
           hoverColor: WuxiaColors.resultHighlight.withValues(alpha: 0.10),
           highlightColor: WuxiaColors.resultHighlight.withValues(alpha: 0.14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-            side: BorderSide(color: WuxiaColors.border.withValues(alpha: 0.78)),
+            borderRadius: BorderRadius.circular(18),
+            side: BorderSide(
+              color: isActive
+                  ? WuxiaColors.resultHighlight
+                  : const Color(0xFF6D5940),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class BattleModePill extends StatelessWidget {
+  const BattleModePill({super.key, required this.allowPlayerIntervention});
+
+  final bool allowPlayerIntervention;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: UiStrings.battleAutoMode,
+      value: allowPlayerIntervention
+          ? UiStrings.battleAutoIntervention
+          : UiStrings.battleAutoMode,
+      child: Container(
+        key: const ValueKey('battle_auto_mode'),
+        height: 30,
+        padding: const EdgeInsets.symmetric(horizontal: 9),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.28),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: const Color(0xFF6D5940)),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          allowPlayerIntervention
+              ? '${UiStrings.battleAutoMode}·${UiStrings.battleAutoIntervention}'
+              : UiStrings.battleAutoMode,
+          style: const TextStyle(
+            color: WuxiaColors.textSecondary,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),

@@ -33,75 +33,101 @@ class ChapterListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(mainlineProgressProvider);
     return Scaffold(
-      backgroundColor: WuxiaColors.background,
+      backgroundColor: const Color(0xFF17130F),
       appBar: AppBar(
         title: const Text(UiStrings.chapterListTitle),
-        backgroundColor: WuxiaColors.sidebar,
-        foregroundColor: WuxiaColors.textPrimary,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(36),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-            child: WuxiaImage(
-              'assets/ui/scroll_horizontal.png',
-              height: 28,
-              fit: BoxFit.fitWidth,
-              errorBuilder: (_, _, _) => const SizedBox.shrink(),
-            ),
+        centerTitle: true,
+        toolbarHeight: 60,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        backgroundColor: const Color(0xF216130F),
+        foregroundColor: const Color(0xFFE2CDA2),
+        titleTextStyle: const TextStyle(
+          color: Color(0xFFE2CDA2),
+          fontSize: 21,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 2.4,
+        ),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: SizedBox(
+            height: 1,
+            child: ColoredBox(color: Color(0x805F4B2C)),
           ),
         ),
       ),
-      body: SafeArea(
-        child: async.when(
-          loading: () => const Center(child: InkLoadingIndicator()),
-          error: (e, _) => Center(
-            child: SelectableText(
-              UiStrings.loadFailed(e),
-              style: const TextStyle(color: WuxiaColors.hpLow),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          WuxiaImage(
+            chapterCoverPath(1),
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) =>
+                const ColoredBox(color: Color(0xFF17130F)),
+          ),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xD916130F), Color(0xF2181511)],
+              ),
             ),
           ),
-          data: (progress) {
-            final chapterStatuses = {
-              for (final ch in _chapters)
-                ch: _statusFor(progress: progress, chapterIndex: ch),
-            };
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                return Align(
-                  alignment: Alignment.topCenter,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1160),
-                    child: ListView(
-                      padding: EdgeInsets.fromLTRB(
-                        constraints.maxWidth >= 900 ? 24 : 16,
-                        16,
-                        constraints.maxWidth >= 900 ? 24 : 16,
-                        20,
+          SafeArea(
+            child: async.when(
+              loading: () => const Center(child: InkLoadingIndicator()),
+              error: (e, _) => Center(
+                child: SelectableText(
+                  UiStrings.loadFailed(e),
+                  style: const TextStyle(color: WuxiaColors.hpLow),
+                ),
+              ),
+              data: (progress) {
+                final chapterStatuses = {
+                  for (final ch in _chapters)
+                    ch: _statusFor(progress: progress, chapterIndex: ch),
+                };
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1160),
+                        child: ListView(
+                          padding: EdgeInsets.fromLTRB(
+                            constraints.maxWidth >= 900 ? 24 : 16,
+                            16,
+                            constraints.maxWidth >= 900 ? 24 : 16,
+                            20,
+                          ),
+                          children: [
+                            _ChapterRouteMap(
+                              statuses: chapterStatuses,
+                              stagesByChapter: {
+                                for (final ch in _chapters)
+                                  ch: MainlineProgressService.availableStages(
+                                    progress: progress,
+                                    chapterIndex: ch,
+                                  ),
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            _ChapterCardGrid(
+                              chapters: _chapters,
+                              statuses: chapterStatuses,
+                            ),
+                          ],
+                        ),
                       ),
-                      children: [
-                        _ChapterRouteMap(
-                          statuses: chapterStatuses,
-                          stagesByChapter: {
-                            for (final ch in _chapters)
-                              ch: MainlineProgressService.availableStages(
-                                progress: progress,
-                                chapterIndex: ch,
-                              ),
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        _ChapterCardGrid(
-                          chapters: _chapters,
-                          statuses: chapterStatuses,
-                        ),
-                      ],
-                    ),
-                  ),
+                    );
+                  },
                 );
               },
-            );
-          },
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,17 +1,20 @@
 // 取指定 owner name 的 macOS 窗口 id(给 screencapture -l 用)。
 // 零安装(CommandLineTools swift)、零辅助功能权限(CGWindowList 列窗口不需权限)。
-// 用法: swift window_id.swift <ownerNameSubstring>
+// 用法: swift window_id.swift <ownerNameSubstring> [--all-spaces]
 //   stdout: 每行 "num<TAB>layer<TAB>owner<TAB>x,y,w,h"
 //   stderr 末行: BEST=<id>  (layer 0 面积最大的主窗;无则 BEST=-1)
 import CoreGraphics
 import Foundation
 
-let opts = CGWindowListOption(arrayLiteral: .optionOnScreenOnly)
+let includeAllSpaces = CommandLine.arguments.contains("--all-spaces")
+let opts = includeAllSpaces
+    ? CGWindowListOption(arrayLiteral: .optionAll, .excludeDesktopElements)
+    : CGWindowListOption(arrayLiteral: .optionOnScreenOnly)
 guard let list = CGWindowListCopyWindowInfo(opts, kCGNullWindowID) as? [[String: Any]] else {
     FileHandle.standardError.write("ERR: no window list (permission?)\n".data(using: .utf8)!)
     exit(2)
 }
-let target = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : ""
+let target = CommandLine.arguments.dropFirst().first(where: { !$0.hasPrefix("--") }) ?? ""
 var best = -1, bestArea = -1.0
 for w in list {
     let owner = w[kCGWindowOwnerName as String] as? String ?? ""

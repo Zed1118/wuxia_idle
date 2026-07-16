@@ -114,6 +114,46 @@ class WuxiaUi {
   static const String bossFrame = 'assets/ui/mj/ui_boss_frame_blend.png';
   static const String bossFrameLarge =
       'assets/ui/mj/ui_big_boss_frame_blend.png';
+  static const String battleFounderFallback =
+      'assets/characters/battle_founder_v2.png';
+  static const String battleMountainPassStage =
+      'assets/scenes/battle_mountain_pass_stage_v2.png';
+  static const String battleMountainPassStageCool =
+      'assets/scenes/battle_mountain_pass_stage_cool_v3.png';
+  static const String battleInnerRealmCool =
+      'assets/scenes/battle_innerrealm_cool_v2.png';
+  static const String battleFirstDiscipleFallback =
+      'assets/characters/battle_first_disciple.png';
+  static const String battleSecondDiscipleFallback =
+      'assets/characters/battle_second_disciple.png';
+  static const String battleThugStandee = 'assets/enemies/battle_thug_a.png';
+  static const String battleBlackKillerStandee =
+      'assets/enemies/battle_black_killer.png';
+  static const String battleHiddenElderStandee =
+      'assets/enemies/battle_hidden_elder.png';
+  static const String battleBanditBladeStandee =
+      'assets/enemies/battle_bandit_blade.png';
+  static const String battleBanditArcherStandee =
+      'assets/enemies/battle_bandit_archer.png';
+  static const String battleUmbrellaStandee =
+      'assets/enemies/battle_umbrella.png';
+  static const String battleTowerBoss20Standee =
+      'assets/enemies/battle_tower_boss_20.png';
+  static const String battleLeftGuardianStandee =
+      'assets/enemies/battle_zuo_hufa.png';
+  static const String battleRightGuardianStandee =
+      'assets/enemies/battle_you_hufa.png';
+  static const String battleTowerBoss30Standee =
+      'assets/enemies/battle_tower_boss_30_v2.png';
+  static const String battleJianghuSeniorStandee =
+      'assets/enemies/battle_jianghu_qianbei.png';
+  static const String battleWulinOverlordStandee =
+      'assets/enemies/battle_wulin_bazhu.png';
+  static const String battleNightSwordsmanStandee =
+      'assets/enemies/battle_anye.png';
+  static const String battleAdviserStandee = 'assets/enemies/battle_shiye.png';
+  static const String battleFuChiefStandee =
+      'assets/enemies/battle_fu_zhaizhu.png';
   static const String battleBossEntranceBg =
       'assets/scenes/mj/battle_boss_entrance_bg_01.png';
 }

@@ -16,6 +16,7 @@ import 'encounter_tab.dart';
 import 'martial_arts_tab.dart';
 import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 
 /// 江湖见闻录(P1 #42 Phase 4/P1.z / GDD §10.2 第 3 方式百科)。
 ///
@@ -24,7 +25,10 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 ///   - 典故:按 7 阶分组装备清单,显化 [EquipmentDef.presetLoreIds] 引用数
 ///   - 机制(P1.z):8 条机制百科条目(GDD §10.2 第 3 方式,§10.1 8 档对齐解锁)
 class BaikeScreen extends StatelessWidget {
-  const BaikeScreen({super.key});
+  const BaikeScreen({super.key, this.initialTab = 0});
+
+  /// 仅供直达验收/深链接选择首屏；正常入口仍从「见闻」开始。
+  final int initialTab;
 
   @override
   Widget build(BuildContext context) {
@@ -32,34 +36,60 @@ class BaikeScreen extends StatelessWidget {
       track: BgmTrack.baike,
       child: DefaultTabController(
         length: 5,
+        initialIndex: initialTab,
         child: Scaffold(
           backgroundColor: WuxiaColors.background,
-          appBar: AppBar(
-            backgroundColor: WuxiaColors.background,
-            title: const Text(
-              UiStrings.baikeScreenTitle,
-              style: TextStyle(color: WuxiaColors.resultHighlight),
-            ),
-            bottom: const TabBar(
-              indicatorColor: WuxiaColors.resultHighlight,
-              labelColor: WuxiaColors.resultHighlight,
-              unselectedLabelColor: WuxiaColors.textMuted,
-              tabs: [
-                Tab(text: UiStrings.baikeTabFeed),
-                Tab(text: UiStrings.baikeTabLore),
-                Tab(text: UiStrings.baikeTabCodex),
-                Tab(text: UiStrings.baikeTabEncounter),
-                Tab(text: UiStrings.baikeTabSkills),
-              ],
-            ),
+          appBar: WuxiaTitleBar(
+            title: UiStrings.baikeScreenTitle,
+            onBack: Navigator.of(context).canPop()
+                ? () => Navigator.of(context).pop()
+                : null,
           ),
-          body: const TabBarView(
+          body: Column(
             children: [
-              _FeedTab(),
-              _LoreTab(),
-              CodexTab(),
-              EncounterTab(),
-              MartialArtsTab(),
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFE8D8B7), Color(0xFFD7C196)],
+                  ),
+                  border: Border(bottom: BorderSide(color: Color(0xFF6B5637))),
+                ),
+                child: const TabBar(
+                  indicatorColor: Color(0xFF8D2F25),
+                  indicatorWeight: 3,
+                  labelColor: Color(0xFF2A241C),
+                  unselectedLabelColor: Color(0xFF756A58),
+                  dividerColor: Colors.transparent,
+                  labelStyle: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                  ),
+                  unselectedLabelStyle: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1.5,
+                  ),
+                  tabs: [
+                    Tab(text: UiStrings.baikeTabFeed),
+                    Tab(text: UiStrings.baikeTabLore),
+                    Tab(text: UiStrings.baikeTabCodex),
+                    Tab(text: UiStrings.baikeTabEncounter),
+                    Tab(text: UiStrings.baikeTabSkills),
+                  ],
+                ),
+              ),
+              const Expanded(
+                child: TabBarView(
+                  children: [
+                    _FeedTab(),
+                    _LoreTab(),
+                    CodexTab(),
+                    EncounterTab(),
+                    MartialArtsTab(),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

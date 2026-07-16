@@ -83,19 +83,19 @@ class ImpactGlyphOverlayState extends State<ImpactGlyphOverlay>
   @override
   Widget build(BuildContext context) {
     if (_glyph == null) return const SizedBox.shrink();
-    final accent = _isEnemy
-        ? WuxiaColors.gangMeng
-        : WuxiaColors.resultHighlight;
+    // 战场是低饱和水墨舞台，题字只做短促的印记，不应读成
+    // 高饱和的手游爆炸贴纸。我方使用旧纸金，敌方使用深绛印泥。
+    final accent = _isEnemy ? WuxiaColors.sealCrimson : const Color(0xFF8B7046);
     return IgnorePointer(
       child: AnimatedBuilder(
         animation: _ctrl,
         builder: (_, _) => Opacity(
           opacity: _opacity.clamp(0.0, 1.0),
           child: Align(
-            alignment: const Alignment(0, -0.3),
+            alignment: const Alignment(0, -0.22),
             child: SizedBox(
-              width: 200,
-              height: 160,
+              width: 148,
+              height: 116,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -128,14 +128,14 @@ class ImpactGlyphOverlayState extends State<ImpactGlyphOverlay>
   }
 
   TextStyle _glyphStyle({required bool stroke}) => TextStyle(
-    fontSize: 72,
+    fontSize: 52,
     fontWeight: FontWeight.bold,
     color: stroke ? null : WuxiaUi.paper,
     foreground: stroke
         ? (Paint()
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 6
-            ..color = const Color(0xCC0A0A0A))
+            ..strokeWidth = 4
+            ..color = const Color(0xB30A0A0A))
         : null,
   );
 }

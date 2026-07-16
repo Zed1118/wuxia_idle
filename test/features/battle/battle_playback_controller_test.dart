@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_action_template.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_playback_controller.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
@@ -112,30 +115,43 @@ AttackResult _hitResult({bool crit = false}) => AttackResult(
   formulaBreakdown: '',
 );
 
-/// 左首(actorId=1) 攻 右首(targetId=11) 的普攻动作。target 位于 teamSide=1
-/// slotIndex=0 → slotKey = 1*3+0 = 3。
-BattleAction _attackAction({bool crit = false}) => BattleAction(
-  tick: 1,
-  actorId: 1,
-  targetId: 11,
-  attackResult: _hitResult(crit: crit),
-  description: 'test hit',
+const _projectileSkill = SkillDef(
+  id: 'test_hidden_weapon',
+  name: '飞针',
+  description: '',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1000,
+  qiDelta: -100,
+  cooldownTurns: 2,
+  requiresManualTrigger: false,
+  visualEffect: 'hidden_weapon',
 );
+
+/// 左首(actorId=1) 攻 右首(targetId=11) 的动作。target 位于 teamSide=1
+/// slotIndex=0 → slotKey = 1*3+0 = 3。
+BattleAction _attackAction({bool crit = false, SkillDef? skill}) =>
+    BattleAction(
+      tick: 1,
+      actorId: 1,
+      targetId: 11,
+      skill: skill,
+      attackResult: _hitResult(crit: crit),
+      description: 'test hit',
+    );
 
 Future<_HarnessState> _pump(
   WidgetTester tester, {
   bool readablePacing = false,
+  BattleState? state,
 }) async {
   final key = GlobalKey<_HarnessState>();
   final (left, right) = BattleDemo.mockTeams();
+  final initial =
+      state ?? BattleState.initial(leftTeam: left, rightTeam: right);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        battleProvider.overrideWith(
-          () => _NoopBattleNotifier(
-            BattleState.initial(leftTeam: left, rightTeam: right),
-          ),
-        ),
+        battleProvider.overrideWith(() => _NoopBattleNotifier(initial)),
       ],
       child: MaterialApp(
         home: _Harness(key: key, readablePacing: readablePacing),
@@ -187,7 +203,10 @@ void main() {
     expect(c.debugActiveTrailCount, 0);
     expect(c.debugActiveEffectCount, 0);
 
-    c.playAction(_attackAction(crit: true), c._noopState(tester));
+    c.playAction(
+      _attackAction(crit: true, skill: _projectileSkill),
+      c._noopState(tester),
+    );
     await tester.pump();
 
     expect(
@@ -200,6 +219,58 @@ void main() {
       greaterThan(0),
       reason: '流派命中特效 + 暴击特效 spawn（spawnBattleEffects）',
     );
+    expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.projectile);
+  });
+
+  testWidgets('近战动作前冲但不生成远程弹道', (tester) async {
+    final c = (await _pump(tester)).controller;
+
+    c.playAction(_attackAction(), c._noopState(tester));
+    await tester.pump();
+
+    expect(c.debugActiveTrailCount, 0);
+    expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.melee);
+    expect(c.debugActiveEffectCount, greaterThan(0));
+  });
+
+  testWidgets('群战第 4–7 敌人的动作与受击安全归并到敌方后景表现槽', (tester) async {
+    final (left, rightBase) = BattleDemo.mockTeams();
+    final right = [
+      for (var i = 0; i < 7; i++)
+        rightBase[i % rightBase.length].copyWith(
+          characterId: 100 + i,
+          slotIndex: i,
+          isAlive: true,
+        ),
+    ];
+    final state = BattleState.initial(leftTeam: left, rightTeam: right);
+    final c = (await _pump(tester, state: state)).controller;
+
+    c.playAction(
+      BattleAction(
+        tick: 1,
+        actorId: right.last.characterId,
+        targetId: left.first.characterId,
+        attackResult: _hitResult(),
+        description: 'overflow actor hit',
+      ),
+      state,
+    );
+    c.playAction(
+      BattleAction(
+        tick: 2,
+        actorId: left.first.characterId,
+        targetId: right.last.characterId,
+        attackResult: _hitResult(),
+        description: 'overflow target hit',
+      ),
+      state,
+    );
+    await tester.pump();
+
+    expect(c.debugActionTemplateForSlot(5), BattleActionTemplate.melee);
+    expect(c.debugPopupsForSlot(5), hasLength(1));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('pause / resume 调度标志', (tester) async {

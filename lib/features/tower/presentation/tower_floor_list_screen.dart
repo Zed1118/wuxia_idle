@@ -99,10 +99,11 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
-      appBar: AppBar(
-        title: const Text(UiStrings.towerTitle),
-        backgroundColor: WuxiaColors.sidebar,
-        foregroundColor: WuxiaColors.textPrimary,
+      appBar: WuxiaTitleBar(
+        title: UiStrings.towerTitle,
+        onBack: Navigator.of(context).canPop()
+            ? () => Navigator.of(context).pop()
+            : null,
       ),
       body: SafeArea(
         // skipLoadingOnReload:通关后 invalidate(towerProgressProvider) 重载时

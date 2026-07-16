@@ -212,6 +212,15 @@ void main() {
     expect(find.text(UiStrings.lineupEquipAttack(0)), findsNWidgets(5));
     // 未修主修标:仅替补乙(替补甲已种主修行)。
     expect(find.text(UiStrings.lineupNoMainTag), findsOneWidget);
+    expect(find.byKey(const ValueKey('lineup.formationStage')), findsOneWidget);
+    final slotRects = [
+      for (var i = 0; i < 3; i++)
+        tester.getRect(find.byKey(ValueKey('lineup.formationSlot.$i'))),
+    ];
+    expect(slotRects[0].left, greaterThan(slotRects[1].left));
+    expect(slotRects[1].left, greaterThan(slotRects[2].left));
+    expect(slotRects[0].overlaps(slotRects[1]), isFalse);
+    expect(slotRects[1].overlaps(slotRects[2]), isFalse);
     expect(tester.takeException(), isNull);
   });
 

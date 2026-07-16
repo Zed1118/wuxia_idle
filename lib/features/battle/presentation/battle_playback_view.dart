@@ -45,6 +45,7 @@ class BattlePlaybackField extends StatelessWidget {
     super.key,
     required this.controller,
     required this.state,
+    required this.stageLayout,
     required this.chargeMaxTicks,
     required this.staggerWindowTicks,
     required this.onEnemyTap,
@@ -55,6 +56,7 @@ class BattlePlaybackField extends StatelessWidget {
 
   final BattlePlaybackController controller;
   final BattleState state;
+  final BattleStageLayoutMode stageLayout;
   final int chargeMaxTicks;
   final int staggerWindowTicks;
   final void Function(int enemyId) onEnemyTap;
@@ -68,7 +70,9 @@ class BattlePlaybackField extends StatelessWidget {
       children: [
         BattleField(
           state: state,
+          stageLayout: stageLayout,
           attackControllers: controller._attackControllers,
+          actionTemplates: controller._actionTemplates,
           popups: controller._popups,
           animConfig: controller._animConfig,
           chargeMaxTicks: chargeMaxTicks,

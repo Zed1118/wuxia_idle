@@ -47,8 +47,8 @@ class VictoryOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = _isVictory
-        ? WuxiaColors.resultHighlight
-        : WuxiaColors.gangMeng;
+        ? const Color(0xFFB9974E)
+        : WuxiaColors.sealCrimson;
     final title = _isVictory ? UiStrings.victoryTitle : UiStrings.defeatTitle;
     final subtitle = _isVictory
         ? UiStrings.victorySubtitle
@@ -77,11 +77,11 @@ class VictoryOverlay extends StatelessWidget {
               title,
               style: TextStyle(
                 color: accent,
-                fontSize: 96,
+                fontSize: 76,
                 fontWeight: FontWeight.bold,
                 shadows: const [
                   Shadow(
-                    blurRadius: 12,
+                    blurRadius: 9,
                     color: Color(0xCC000000),
                     offset: Offset(2, 3),
                   ),

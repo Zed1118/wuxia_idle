@@ -64,6 +64,15 @@ enum VisualRoute {
     'battle_charge_break',
     '战斗屏·青衫剑客蓄力青锋绝 + 玩家破招按钮高亮(静态验收破招 UI)',
   ),
+  battleInnerDemonStage(
+    'battle_inner_demon_stage',
+    '战斗屏·心魔镜像墨色反相 + 敌方轮廓晕染静态验收',
+  ),
+  battleLightFootStage('battle_light_foot_stage', '战斗屏·轻功上下错层 + 加长交锋位移静态验收'),
+  battleMassBattleStage(
+    'battle_mass_battle_stage',
+    '战斗屏·群战三名主战立绘 + 余敌墨影队列静态验收',
+  ),
   battleVictoryFirstClear(
     'battle_victory_first_clear',
     '胜利弹窗·Boss 首胜封签 + 掉落/升层/共鸣三段验收',
@@ -138,6 +147,16 @@ enum VisualRoute {
     'battle_guardian_ward',
     'floor30 护法结界目检·真终局塔队(九霄魔尊+左使/右使)vs 宗师 on-level:起手冻结在护罩生效帧看「护法结界」pill(内力色)+ boss 金边 + 流派克制标多 tag 堆叠;手动步进清完两护法 → 「结界破！」题字 + 破界闪白动效(单帧截不出手感须真机步进看)',
   ),
+  battleTowerFloor13('battle_tower_floor_13', '敌人立绘验收·真塔13层（暗夜剑客 + 暗夜刀客）'),
+  battleTowerFloor14('battle_tower_floor_14', '敌人立绘验收·真塔14层（江湖前辈 + 师爷）'),
+  battleTowerFloor19('battle_tower_floor_19', '敌人立绘验收·真塔19层（武林前辈 + 武林宿老）'),
+  battleTowerFloor22('battle_tower_floor_22', '敌人立绘验收·真塔22层（绝顶护法甲 + 乙）'),
+  battleStage0102('battle_stage_01_02', '敌人立绘验收·真主线1-2（ruffian_a）'),
+  battleStage0103('battle_stage_01_03', '敌人立绘验收·真主线1-3（bandit_head）'),
+  battleStage0104('battle_stage_01_04', '敌人立绘验收·真主线1-4（qingshan）'),
+  battleTowerFloor02('battle_tower_floor_02', '敌人立绘验收·真塔2层（thug_b）'),
+  battleTowerFloor03('battle_tower_floor_03', '敌人立绘验收·真塔3层（thug_c）'),
+  battleTowerFloor08('battle_tower_floor_08', '敌人立绘验收·真塔8层（bandit_head）'),
   discipleJoinCeremony(
     'disciple_join_ceremony',
     '第七阶段批三目检·拜入立绘题字 overlay 动效(读真 lineage_onboarding 配置:大弟子/二弟子真立绘交替循环滑入+放大+「XX 拜入门下」题字,自动重播;单帧截不出须真机看动效)',
