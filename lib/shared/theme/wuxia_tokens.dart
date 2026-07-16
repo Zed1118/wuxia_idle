@@ -201,6 +201,12 @@ class WuxiaUi {
       'assets/enemies/battle_massbattle_zhenkou_b.png';
   static const String battleTownBanditAssassinStandee =
       'assets/enemies/battle_massbattle_zhenkou_c.png';
+  static const String battleRivalSectMasterStandee =
+      'assets/enemies/battle_massbattle_xianjie_a.png';
+  static const String battleRivalSectProtectorStandee =
+      'assets/enemies/battle_massbattle_xianjie_b.png';
+  static const String battleRivalSectDiscipleStandee =
+      'assets/enemies/battle_massbattle_xianjie_c.png';
   static const String battleUmbrellaStandee =
       'assets/enemies/battle_umbrella.png';
   static const String battleTowerBoss20Standee =

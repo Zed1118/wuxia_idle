@@ -379,6 +379,18 @@ void main() {
         'assets/enemies/massbattle_zhenkou_c.png',
         WuxiaUi.battleTownBanditAssassinStandee,
       ),
+      (
+        'assets/enemies/massbattle_xianjie_a.png',
+        WuxiaUi.battleRivalSectMasterStandee,
+      ),
+      (
+        'assets/enemies/massbattle_xianjie_b.png',
+        WuxiaUi.battleRivalSectProtectorStandee,
+      ),
+      (
+        'assets/enemies/massbattle_xianjie_c.png',
+        WuxiaUi.battleRivalSectDiscipleStandee,
+      ),
       ('assets/enemies/black_killer.png', WuxiaUi.battleBlackKillerStandee),
       ('assets/enemies/killer_a.png', WuxiaUi.battleBanditBladeStandee),
       ('assets/enemies/killer_b.png', WuxiaUi.battleBanditArcherStandee),
