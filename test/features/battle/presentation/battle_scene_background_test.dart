@@ -141,6 +141,28 @@ void main() {
     );
   });
 
+  testWidgets('主线山道背景进入轻冷灰分级，压制右半区暖黄 glow', (tester) async {
+    await tester.pumpWidget(
+      _wrap(const BattleSceneBackground(path: WuxiaUi.battleMountainPassStage)),
+    );
+    expect(
+      find.byKey(const ValueKey('battle_scene_mainline_color_grade')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<WuxiaImage>(
+            find.byKey(const ValueKey('battle_scene_mainline_asset')),
+          )
+          .assetPath,
+      WuxiaUi.battleMountainPassStageCool,
+    );
+    expect(
+      find.byKey(const ValueKey('battle_scene_tower_color_grade')),
+      findsNothing,
+    );
+  });
+
   testWidgets('无图兜底覆盖常规桌面视口', (tester) async {
     addTearDown(() {
       tester.view.resetPhysicalSize();

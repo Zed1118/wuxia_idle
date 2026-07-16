@@ -118,6 +118,8 @@ class WuxiaUi {
       'assets/characters/battle_founder_v2.png';
   static const String battleMountainPassStage =
       'assets/scenes/battle_mountain_pass_stage_v2.png';
+  static const String battleMountainPassStageCool =
+      'assets/scenes/battle_mountain_pass_stage_cool_v3.png';
   static const String battleInnerRealmCool =
       'assets/scenes/battle_innerrealm_cool_v2.png';
   static const String battleFirstDiscipleFallback =

@@ -646,7 +646,7 @@ const _battleStandeeOverrides = <String, String>{
   'assets/enemies/thug_c.png': WuxiaUi.battleBanditBladeStandee,
   'assets/enemies/ruffian_a.png': WuxiaUi.battleThugStandee,
   'assets/enemies/bandit_head.png': WuxiaUi.battleBanditBladeStandee,
-  'assets/enemies/qingshan.png': WuxiaUi.battleHiddenElderStandee,
+  'assets/enemies/qingshan.png': WuxiaUi.battleBanditBladeStandee,
   'assets/enemies/qingshan_main.png': WuxiaUi.battleHiddenElderStandee,
   'assets/enemies/black_killer.png': WuxiaUi.battleBlackKillerStandee,
   'assets/enemies/killer_a.png': WuxiaUi.battleBanditBladeStandee,
