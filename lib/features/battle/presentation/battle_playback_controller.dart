@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -253,7 +254,11 @@ class BattlePlaybackController {
   ) {
     final ctrl = AnimationController(
       vsync: _vsync,
-      duration: Duration(milliseconds: _animConfig.projectileMs),
+      duration: Duration(
+        milliseconds: _isFastForward
+            ? math.min(_animConfig.projectileMs, _currentPlaybackIntervalMs)
+            : _animConfig.projectileMs,
+      ),
     );
     final entry = TrailEntry(
       id: _nextTrailId++,
@@ -413,7 +418,11 @@ class BattlePlaybackController {
     }
     final ctrl = AnimationController(
       vsync: _vsync,
-      duration: const Duration(milliseconds: 520),
+      duration: Duration(
+        milliseconds: _isFastForward
+            ? math.min(520, _currentPlaybackIntervalMs)
+            : 520,
+      ),
     );
     final entry = EffectEntry(
       id: _nextEffectId++,
@@ -942,7 +951,7 @@ class BattlePlaybackController {
       action: action,
       isUltimate: isUltimateCaptionSkill(action.skill),
     );
-    if (sfx != null) {
+    if (sfx != null && !_isFastForward) {
       // 平A 按出手单位放固定变体音色（我方轻击系/敌方重击系）；其余槽位单文件。
       if (sfx == SfxId.battleHit && actor != null) {
         SoundManager.instance.playSfxPath(

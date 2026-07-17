@@ -12,6 +12,8 @@ import 'package:wuxia_idle/features/battle/presentation/battle_action_template.d
 import 'package:wuxia_idle/features/battle/presentation/battle_playback_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_vfx_entries.dart';
 import 'package:wuxia_idle/features/battle/presentation/ultimate_caption_overlay.dart';
+import 'package:wuxia_idle/shared/audio/audio_backend.dart';
+import 'package:wuxia_idle/shared/audio/sound_manager.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 /// [BattlePlaybackController] 单元测试 —— Task 4 抽离的收益：`playAction` 本体 +
@@ -60,6 +62,27 @@ class _NoopBattleNotifier extends BattleNotifier {
 
   @override
   void step() {}
+}
+
+class _RecordingAudioBackend implements AudioBackend {
+  final List<String> sfxPaths = [];
+
+  @override
+  Future<void> playSfx(String assetPath, double volume) async {
+    sfxPaths.add(assetPath);
+  }
+
+  @override
+  Future<void> playBgm(String assetPath, double volume) async {}
+
+  @override
+  Future<void> stopBgm() async {}
+
+  @override
+  void setBgmVolume(double volume) {}
+
+  @override
+  Future<void> dispose() async {}
 }
 
 class _Harness extends ConsumerStatefulWidget {
@@ -376,6 +399,50 @@ void main() {
       isTrue,
       reason: '远程交付不得降级技能类型或丢失大招题字入口',
     );
+  });
+
+  testWidgets('快进态连续动作的弹道与贴片不过拍堆积', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    c.toggleFastForward();
+
+    for (var tick = 1; tick <= 6; tick++) {
+      c.playAction(
+        BattleAction(
+          tick: tick,
+          actorId: 1,
+          targetId: 11,
+          skill: _projectileSkill,
+          attackResult: _hitResult(crit: true),
+          description: 'fast hit',
+        ),
+        state,
+      );
+    }
+    expect(c.debugActiveTrailCount, 6);
+    expect(c.debugActiveEffectCount, 12);
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 21));
+    expect(c.debugActiveTrailCount, 0, reason: '快进弹道应在一个 20ms 拍长后退场');
+    expect(c.debugActiveEffectCount, 0, reason: '快进贴片应在一个 20ms 拍长后退场');
+  });
+
+  testWidgets('常速保留逐击音效而快进态抑制音频叠播', (tester) async {
+    final backend = _RecordingAudioBackend();
+    SoundManager.instance = SoundManager(backend);
+    addTearDown(
+      () => SoundManager.instance = SoundManager(const SilentAudioBackend()),
+    );
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+
+    c.playAction(_attackAction(), state);
+    expect(backend.sfxPaths, hasLength(1));
+
+    c.toggleFastForward();
+    c.playAction(_attackAction(), state);
+    expect(backend.sfxPaths, hasLength(1), reason: '快进不应以逐动作频率叠播 SFX');
   });
 
   testWidgets('近战动作前冲但不生成远程弹道', (tester) async {
