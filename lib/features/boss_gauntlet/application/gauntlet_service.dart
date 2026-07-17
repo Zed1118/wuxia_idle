@@ -10,12 +10,14 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../data/defs/item_def.dart';
+import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/utils/rng.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
 import '../../battle/application/stage_battle_setup.dart';
+import '../../battle/domain/battle_state.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../equipment/application/equipment_factory.dart';
@@ -25,6 +27,15 @@ import '../domain/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
 import 'gauntlet_battle_runner.dart';
 import 'gauntlet_controller.dart';
+
+/// 断魂庄当前关出战计划：`prepareStage` 事务外纯计算产出，供 live BattleScreen 路
+/// （`gauntlet_entry_flow`）与 headless [GauntletService.fightCurrentStage] 共用。
+typedef GauntletStagePlan = ({
+  List<BattleCharacter> playerTeam,
+  List<EnemyDef> enemyDefs,
+  int seed,
+  bool isBoss,
+});
 
 /// 断魂庄崩溃恢复结果（C2.3b·§5.6/§10）。
 enum GauntletRecoveryOutcome {
@@ -268,6 +279,23 @@ class GauntletService {
     required BossGauntletConfig config,
     required NumbersConfig numbers,
   }) async {
+    final plan = await prepareStage(config: config);
+    final result = GauntletBattleRunner.runStage(
+      playerTeam: plan.playerTeam,
+      enemyDefs: plan.enemyDefs,
+      numbers: numbers,
+      seed: plan.seed,
+    );
+    await settleStageResult(finalState: result.finalState, config: config);
+    return result;
+  }
+
+  /// 事务外纯计算：load run → 校验 → 建当前关出战计划（满血基准队按会话快照继承
+  /// 生命·真气·冷却 + 关次敌队 + 混 currentStage 的确定性 seed + isBoss）。live
+  /// BattleScreen 路（`gauntlet_entry_flow`）与 headless [fightCurrentStage] 共用此段。
+  Future<GauntletStagePlan> prepareStage({
+    required BossGauntletConfig config,
+  }) async {
     final save = await _isar.saveDatas.get(0);
     if (save == null) throw StateError('断魂庄开打：无存档');
     final run = await _activeRun(save.id);
@@ -283,8 +311,6 @@ class GauntletService {
     if (enemyDefs.isEmpty) {
       throw StateError('断魂庄开打：关次 ${run.currentStage} 敌队为空（配置损坏）');
     }
-
-    // 满血基准队（真生产路径）→ 按会话快照装配本关出战队（事务外·纯计算）。
     final memberIds = run.members.map((m) => m.characterId).toList();
     final baseTeam = await StageBattleSetup(
       isar: _isar,
@@ -293,25 +319,36 @@ class GauntletService {
       baseTeam: baseTeam,
       members: run.members,
     );
-    final result = GauntletBattleRunner.runStage(
+    return (
       playerTeam: playerTeam,
       enemyDefs: enemyDefs,
-      numbers: numbers,
       seed: _stageSeed(run.seed, run.currentStage),
+      isBoss: stageCfg.role == 'boss',
     );
-    final isBoss = stageCfg.role == 'boss';
+  }
 
-    // 单事务原子推进：re-load fresh → advance → put（战斗结果一次落地）。
+  /// 消费当前关战末态 [finalState]（headless `runStage` 或 live BattleScreen 均可）：
+  /// 单 `writeTxn` 原子推进——re-load fresh → `advance`（战末快照继承 + 推进相位）→
+  /// `stageBossReward`（Boss 胜利固化三选一候选·非该相位 no-op）→ put。会话已并发
+  /// 关闭（fresh null）或关次越界 → 防御 no-op（§9.2 原子性即崩溃安全）。
+  Future<void> settleStageResult({
+    required BattleState finalState,
+    required BossGauntletConfig config,
+  }) async {
     await _isar.writeTxn(() async {
+      final save = await _isar.saveDatas.get(0);
+      if (save == null) return;
       final fresh = await _activeRun(save.id);
       if (fresh == null) return; // 防御：会话已被并发关闭
+      if (fresh.currentStage < 1 || fresh.currentStage > config.stages.length) {
+        return; // 防御：关次越界（配置漂移）
+      }
+      final isBoss = config.stages[fresh.currentStage - 1].role == 'boss';
       GauntletController.advance(
         run: fresh,
-        finalState: result.finalState,
+        finalState: finalState,
         isBossStage: isBoss,
       );
-      // Boss 胜利固化三选一候选 + 首通判定（同事务·选择前不可重抽·C2.4b）；
-      // 非终关胜利时 no-op（stageBossReward 内按相位判定）。
       GauntletController.stageBossReward(
         run: fresh,
         config: config,
@@ -319,7 +356,6 @@ class GauntletService {
       );
       await _isar.bossGauntletRuns.put(fresh);
     });
-    return result;
   }
 
   /// 整备页「继续闯关」：单 `writeTxn` 把 interlude 翻回 inBattle 开打下一关（§7.2）。
