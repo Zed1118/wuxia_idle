@@ -63,6 +63,13 @@ class GauntletDefeatSummary {
     required this.members,
   });
 
+  /// 幂等 no-op（无存档 / 会话已结算重入）时的空摘要。
+  static const empty = GauntletDefeatSummary(
+    elitesDefeated: 0,
+    eliteExpPerMember: 0,
+    members: [],
+  );
+
   /// 已击败精英关数（战败关之前 role==elite 计数·§6.2 每精英一份）。
   final int elitesDefeated;
 
@@ -518,16 +525,18 @@ class GauntletService {
   /// `clearedGauntletIds`、不设保底/每日首胜/登录补偿（§6.3）。幂等：无 active 会话
   /// （已结算）→ no-op。仅 [GauntletPhase.inBattle]（战败）/ [GauntletPhase.interlude]
   /// （认输）可结算；[GauntletPhase.awaitingRewardChoice]（Boss 已胜）应走 [chooseReward]。
-  /// [config]/[numbers] 由 caller 从 `GameRepository` 注入。
-  Future<void> settleDefeat({
+  /// [config]/[numbers] 由 caller 从 `GameRepository` 注入。返回失败结算摘要
+  /// （[GauntletDefeatSummary]·供 live 战败屏只读展示；结算即删会话故须随带出）。
+  /// 幂等 no-op（无存档 / 已结算）→ [GauntletDefeatSummary.empty]。
+  Future<GauntletDefeatSummary> settleDefeat({
     required BossGauntletConfig config,
     required NumbersConfig numbers,
     DateTime? now,
   }) async {
     final save0 = await _isar.saveDatas.get(0);
-    if (save0 == null) return; // 幂等：无存档
+    if (save0 == null) return GauntletDefeatSummary.empty; // 幂等：无存档
     final run0 = await _activeRun(save0.id);
-    if (run0 == null) return; // 幂等：会话已结算关闭·重入 no-op
+    if (run0 == null) return GauntletDefeatSummary.empty; // 幂等：已结算·重入 no-op
     if (run0.sessionPhase == GauntletPhase.awaitingRewardChoice) {
       throw StateError(
         '断魂庄失败结算：Boss 已胜（应走 chooseReward·当前 awaitingRewardChoice）',
@@ -547,6 +556,14 @@ class GauntletService {
     final downedById = {
       for (final m in run0.members) m.characterId: m.isDowned,
     };
+    // 战败屏摘要成员（名 + 伤势·会话即将删故先建）；名沿整备屏 fallback 口径。
+    final summaryMembers = <GauntletDefeatMember>[];
+    for (final m in run0.members) {
+      final ch = await _isar.characters.get(m.characterId);
+      summaryMembers.add(
+        GauntletDefeatMember(name: ch?.name ?? '门人', downed: m.isDowned),
+      );
+    }
     final repo = GameRepository.instance;
     final injuryPolicy = AttributeEffectPolicy(numbers.attributeEffects);
 
@@ -605,6 +622,12 @@ class GauntletService {
       await _returnEscrow(run);
       await _isar.bossGauntletRuns.delete(run.id);
     });
+
+    return GauntletDefeatSummary(
+      elitesDefeated: elitesDefeated,
+      eliteExpPerMember: eliteExp,
+      members: summaryMembers,
+    );
   }
 
   /// 崩溃/重开恢复关次边界（§5.6/§10）。检查点已随会话持久、驱动已原子（C2.3a），

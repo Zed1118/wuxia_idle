@@ -3686,4 +3686,7 @@ class UiStrings {
   static const String gauntletDefeatHeavyTag = '重伤';
   static const String gauntletDefeatLightTag = '轻伤';
   static const String gauntletLeaveButton = '离庄';
+
+  // 战斗驱动编排（#1 wiring Task 4）
+  static const String gauntletSessionNotReady = '断魂庄会话未就绪';
 }
