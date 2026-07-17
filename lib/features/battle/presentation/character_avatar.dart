@@ -397,17 +397,11 @@ class _StageCharacterStandee extends StatelessWidget {
       child: portraitImage,
     );
     if (character.isBoss) {
-      portrait = Container(
+      // Boss 的旧金色 BoxShadow 画在矩形 Container 外轮廓上，会在浅色水墨
+      // 场景里形成明显黄底方块。Boss 已由放大尺度、Boss HUD 金框与战场墨云
+      // 建立层级，此处只保留稳定验收 key，不再给透明立绘垫矩形光晕。
+      portrait = KeyedSubtree(
         key: const ValueKey<String>('battle.bossAvatarFrame'),
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: WuxiaColors.bossFrame.withValues(alpha: 0.20),
-              blurRadius: 28,
-              spreadRadius: 4,
-            ),
-          ],
-        ),
         child: portrait,
       );
     }

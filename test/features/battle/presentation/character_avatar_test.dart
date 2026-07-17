@@ -219,6 +219,25 @@ void main() {
     );
   });
 
+  testWidgets('Boss全身立绘不再绘制矩形金色黄底', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: _char(isBoss: true),
+            displayMode: CharacterDisplayMode.stageStandee,
+            standeeWidth: 160,
+            standeeHeight: 230,
+          ),
+        ),
+      ),
+    );
+
+    final frame = tester.widget(find.byKey(_bossFrameKey));
+    expect(frame, isA<KeyedSubtree>());
+    expect(frame, isNot(isA<Container>()));
+  });
+
   testWidgets('战场立绘按有效人物边界校准尺度与视觉重心', (tester) async {
     Future<(double scale, double shiftX, double shiftY)> opticalTransformFor(
       String iconPath,
