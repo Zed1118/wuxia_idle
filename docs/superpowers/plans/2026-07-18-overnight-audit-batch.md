@@ -34,7 +34,7 @@
 
 ## 当前恢复点
 
-- **状态**:批A ✅(19b9431e) 批B ✅(1aa21961·全量4088/0) C1 ✅(905cbe7a·19 def 迁移) C2a-c ✅(f2fbcae0) **C2d-f ✅编辑完成,全量验证跑批中→绿了就 commit** → 批D
+- **状态**:**全批完成 ✅**(A 19b9431e / B 1aa21961 / C1 905cbe7a / C2 f2fbcae0+dda4503f / D 8af2a85f / E a1026647 / 收尾 docs commit)·批末终验全量 4088/0(04:50)·已 push + draft PR·worktree 保留待用户审
 - **C2 终态**:GameRepository **2402→1137 行**;22 个 private _enforce* + 2 个类外自由函数(lineage_onboarding/founder_school_uniqueness,连带 2 个测试文件 import 迁移)→ 6 个域校验文件(economy_codex/encounter/technique_equipment/progression/lineage_recruit/skill);唯一体改=enforceSkillSourceRedLines 的 releaseRealm 改调用方传参(原实例方法内查);4 个 public static enforce* 是公共 API 不动;dart format 已归一
 - **C1 追加发现**:numbers_config 8 个 feature 子配置模型一并迁 defs;equipment_disposal 跳过(级联)→ backlog;isar_setup=composition root 豁免+注释
 - **下一步**:全量绿 → commit C2d-f → 批D(main_menu 1137 行/462 行 build 同文件私有 widget 拆)→ 批E(tower_entry_flow 空catch/battle_demo 迁 test/support/README 计数/tool README/strict-casts 试探/backlog 文件)→ 收尾(push 分支+draft PR+handoff+PROGRESS)
