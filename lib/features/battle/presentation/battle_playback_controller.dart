@@ -238,7 +238,7 @@ class BattlePlaybackController {
 
   /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
   void _triggerHitFlash(BattleCharacter target, bool isCritical) {
-    if (_reduceFlashing) return;
+    if (_isFastForward || _reduceFlashing) return;
     final key = _visualSlotKey(target);
     _rebuild(() {
       _hitFlashColors[key] = isCritical ? WuxiaColors.gangMeng : Colors.white;
@@ -714,6 +714,7 @@ class BattlePlaybackController {
   ///
   void _playBossPhaseTransition(BattleAction action, BattleCharacter? actor) {
     if (action.bossPhaseTransitionTo == null) return;
+    if (_isFastForward) return;
     final bossName = actor?.name ?? '';
     final title = bossPhaseTitleFor(action, bossName);
     if (title == null) return;
@@ -785,6 +786,7 @@ class BattlePlaybackController {
   ///
   /// PUBLIC：由 build 内 `ref.listen` 的护法结界破界边沿调用。
   void playGuardianWardBreak(BattleCharacter boss) {
+    if (_isFastForward) return;
     final isEnemy = boss.teamSide == 1;
     // 破界题字抢占中央焦点:最后一击击杀护法的「斩」字形与「结界破!」同 tick 触发,
     // 两套居中题字会叠字(2026-07-02 目检 WARN)。先清掉 in-flight 击杀字形,
@@ -913,7 +915,7 @@ class BattlePlaybackController {
       }
     }
     if (!playSharedFeedback) return;
-    if (isUltimateCaptionSkill(action.skill)) {
+    if (!_isFastForward && isUltimateCaptionSkill(action.skill)) {
       final climax = hitClimaxFor(action);
       final isCrit = action.attackResult?.isCritical ?? false;
       _ultimateCaptionKey.currentState?.show(
@@ -927,7 +929,7 @@ class BattlePlaybackController {
     }
     // B3 破招:打断蓄力 → 弹「破！」题字(破招方暖金/敌方绛红,纯读 state)。
     // 首通首次破招(interruptFlourish)升峰值字号+辉光+闪白,强化教学仪式感。
-    if (action.interrupted) {
+    if (!_isFastForward && action.interrupted) {
       final flourish = showcaseBeat == ShowcaseBeat.interruptFlourish;
       _ultimateCaptionKey.currentState?.show(
         UiStrings.interruptCaption,
@@ -974,7 +976,7 @@ class BattlePlaybackController {
     //    优先级：本帧若同时有 profile 单字（斩/震/断）也只弹会心一字，避免两 glyph
     //    同帧叠播（会心更能传达「打中弱点」语义）；flash/shake 仍由下方 profile 路径
     //    照常触发。无 profile 的普攻弱点命中也能弹（下方块 no-op，此处兜底）。
-    final weaknessGlyphShown = action.weaknessHit;
+    final weaknessGlyphShown = !_isFastForward && action.weaknessHit;
     if (weaknessGlyphShown) {
       _impactGlyphKey.currentState?.show(
         UiStrings.weaknessHitGlyph,
@@ -989,10 +991,10 @@ class BattlePlaybackController {
       if (profile != null) {
         final isEnemy = actor?.teamSide == 1;
         // 会心已占用本帧 glyph 通道 → profile 单字跳过，不双弹（flash/shake 照常）。
-        if (profile.glyph != null && !weaknessGlyphShown) {
+        if (!_isFastForward && profile.glyph != null && !weaknessGlyphShown) {
           _impactGlyphKey.currentState?.show(profile.glyph!, isEnemy: isEnemy);
         }
-        if (!_reduceFlashing) {
+        if (!_isFastForward && !_reduceFlashing) {
           _screenFlashKey.currentState?.flash(
             profile.flashStrength,
             // profile 非空 ⇒ attackResult 非空（见 impactProfileFor 的 null 契约）。
