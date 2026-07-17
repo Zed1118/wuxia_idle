@@ -546,6 +546,30 @@ void main() {
     expect(c.debugActiveEffectCount, 2, reason: '同资源同落点应续播，不重复叠亮');
   });
 
+  testWidgets('同款同位贴片续播跨过旧截止点且在新截止点完整退场', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final action = BattleAction(
+      tick: 1,
+      actorId: 1,
+      targetId: 11,
+      attackResult: _hitResult(crit: true),
+      description: 'restart same effects',
+    );
+
+    c.playAction(action, state);
+    await tester.pump(const Duration(milliseconds: 400));
+    c.playAction(action, state);
+    // 建立续播 controller 的新 ticker 起点；后续时长才从此次 from: 0 计。
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 121));
+
+    expect(c.debugActiveEffectCount, 2, reason: '续播后跨过首次 520ms 截止点仍应保留同组贴片');
+
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(c.debugActiveEffectCount, 0, reason: '最后一次续播满 520ms 后应全部移除');
+  });
+
   testWidgets('同款异位暴击贴片各自保留', (tester) async {
     final c = (await _pump(tester)).controller;
     final state = c._noopState(tester);
