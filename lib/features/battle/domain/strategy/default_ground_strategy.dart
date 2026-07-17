@@ -174,12 +174,38 @@ class DefaultGroundStrategy implements BattleStrategy {
     if (skill.type == SkillType.normalAttack) {
       throw ArgumentError.value(skill, 'skill', '手动请求不接受 normalAttack');
     }
+    if (state.isFinished) return state;
+    final actor = _findById(state, characterId, 0);
+    if (actor == null || !actor.isAlive) return state;
+
+    // 只把角色当前战斗快照中已装备的规范技能写入 pending。调用方可按 id
+    // 重放操作，但不能用同 id 的伪造 SkillDef 篡改倍率、耗气或技能类型。
+    SkillDef? equippedSkill;
+    for (final candidate in actor.availableSkills) {
+      if (candidate.id == skill.id) {
+        equippedSkill = candidate;
+        break;
+      }
+    }
+    if (equippedSkill == null || equippedSkill.type == SkillType.normalAttack) {
+      return state;
+    }
+
+    // AOE 自行选择全部合法目标，不保留单体 targetId。单体指定则在请求当刻
+    // 复用即时干预的护法/存活口径；非法目标不消耗或覆盖已有 pending。
+    if (targetId != null && equippedSkill.targetType != TargetType.aoe) {
+      final target = _findById(state, targetId, 1);
+      if (target == null ||
+          !canManuallyTargetEnemy(target, state, equippedSkill)) {
+        return state;
+      }
+    }
     final newPending = Map<int, SkillDef>.from(state.pendingUltimates);
-    newPending[characterId] = skill;
+    newPending[characterId] = equippedSkill;
     // 半手动 P0 步骤3a:指定目标入 pendingTargets;未指定则确保清掉旧条目
     // (同一角色改请求无目标的技时,不残留上次目标)。
     final newTargets = Map<int, int>.from(state.pendingTargets);
-    if (targetId != null) {
+    if (targetId != null && equippedSkill.targetType != TargetType.aoe) {
       newTargets[characterId] = targetId;
     } else {
       newTargets.remove(characterId);
