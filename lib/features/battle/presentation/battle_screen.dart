@@ -685,15 +685,16 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     ref.listen<BattleState>(battleProvider, (prev, next) {
       // 同一个 BattleScreen 可能承接连续战斗（塔重试/扫荡队列/调试路由复用）。
       // 上一场结算弹窗出现后，下一场从 finished → running 时必须复位防重入标记。
-      if (prev?.result != null && next.result == null) {
+      final restartedBattle = prev?.result != null && next.result == null;
+      if (restartedBattle) {
         _resultDialogShown = false;
       }
 
-      // 1. 启动 Timer：team 从空 → 非空且未结束 → 自动连续播放(Phase 3:战斗
-      //    永远自动流转,advance() 驱动)。
+      // 1. 启动 Timer：team 从空 → 非空，或同屏连续战斗从 finished → running，
+      //    且未结束 → 自动连续播放(Phase 3:战斗永远自动流转)。
       final wasEmpty = prev == null || prev.leftTeam.isEmpty;
       if (widget.playback.autoStart &&
-          wasEmpty &&
+          (wasEmpty || restartedBattle) &&
           next.leftTeam.isNotEmpty &&
           !next.isFinished) {
         _playback.startTimer();

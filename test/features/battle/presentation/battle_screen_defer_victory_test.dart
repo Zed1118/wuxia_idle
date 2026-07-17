@@ -40,6 +40,13 @@ class _TestBattleNotifier extends BattleNotifier {
   @override
   void advance({int maxConsecutiveTicks = 100}) {}
 
+  int advanceOneActionCalls = 0;
+
+  @override
+  void advanceOneAction({int maxConsecutiveSteps = 300}) {
+    advanceOneActionCalls++;
+  }
+
   /// 直接推送一个新 state,触发 ref.listen 边沿。
   void push(BattleState s) => state = s;
 }
@@ -51,6 +58,7 @@ Future<_TestBattleNotifier> _pump(
   bool readablePacing = false,
   VoidCallback? onVictory,
   VoidCallback? onBattleEnd,
+  bool autoStart = false,
 }) async {
   late _TestBattleNotifier notifier;
   await tester.binding.setSurfaceSize(const Size(1280, 720));
@@ -71,7 +79,7 @@ Future<_TestBattleNotifier> _pump(
           animConfig: _testAnim,
           deferVictoryToCaller: deferVictoryToCaller,
           playback: BattleScreenPlaybackConfig(
-            autoStart: false,
+            autoStart: autoStart,
             readablePacing: readablePacing,
           ),
           onVictory: onVictory,
@@ -182,6 +190,51 @@ void main() {
 
     await _triggerLeftWin(tester, notifier);
     expect(find.byType(VictoryOverlay), findsOneWidget);
+  });
+
+  testWidgets('连续战斗 autoStart:第二场从 finished 回到 running 后重启拍钟', (tester) async {
+    final notifier = await _pump(
+      tester,
+      deferVictoryToCaller: true,
+      autoStart: true,
+    );
+    final running = notifier.state;
+
+    notifier.push(running.copyWith(result: BattleResult.leftWin));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 501));
+    notifier.push(
+      BattleState.initial(
+        leftTeam: running.leftTeam,
+        rightTeam: running.rightTeam,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 51));
+
+    expect(
+      notifier.advanceOneActionCalls,
+      greaterThan(0),
+      reason: '第二场 running 边沿应重启常速拍钟',
+    );
+  });
+
+  testWidgets('连续战斗 autoStart=false:第二场保持验收路由冻结', (tester) async {
+    final notifier = await _pump(tester, autoStart: false);
+    final running = notifier.state;
+
+    notifier.push(running.copyWith(result: BattleResult.leftWin));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 501));
+    notifier.push(
+      BattleState.initial(
+        leftTeam: running.leftTeam,
+        rightTeam: running.rightTeam,
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(notifier.advanceOneActionCalls, 0);
   });
 
   // ─── 回归测试 3: deferVictoryToCaller=true + rightWin → VictoryOverlay 仍显示 ─

@@ -455,6 +455,7 @@ void main() {
 
     c.pause();
     expect(c.isPaused, isTrue);
+    expect(c.hasTimer, isFalse, reason: '已取消的 Timer 不应继续报告为活跃');
     expect(c.debugBeatIsAnimating, isFalse, reason: '暂停冻结读秒环节拍');
 
     c.resume();

@@ -170,7 +170,7 @@ class BattlePlaybackController {
   Animation<double> get beat => _beatCtrl;
   bool get isPaused => _isPaused;
   bool get isFastForward => _isFastForward;
-  bool get hasTimer => _playTimer != null;
+  bool get hasTimer => _playTimer?.isActive ?? false;
 
   @visibleForTesting
   int get playbackIntervalMsForTest => _currentPlaybackIntervalMs;
