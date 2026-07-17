@@ -19,12 +19,15 @@
 
 - **#15 skills.yaml 无倍率 enforce=false positive**(enforce+双向守门测均在,系 yaml 头注过时)
 - **#19 慢测试拖慢全量=false positive**(JSON 计时:test/tools 并发墙钟贡献 ~4s,balance_simulator 1.2s;大头=622 suite 编译)——tags 剥离不做
+- **#5「拆 5 个 2000 行 screen」大部证伪**:character_panel/taohua/inventory/stage_list 实测均已良好拆分(21-30 私有 widget,最大 build 144-196 行),报告按文件行数点名未看方法粒度;唯一真怪物=main_menu 461 行 build(批D 已拆)。文件级再拆=为拆而拆+加剧 codex 分支冲突,不做
 - **#9 battle_demo 死代码=半错**(test harness 住错地方);#7 debug 迁出降级 backlog(kDebugMode+tree-shaking release 无残留)
 
 ## 已验证(本会话实测)
 
-- 全量 `flutter test --no-pub`:基线 4088/0(01:58)→ 批B 4088/0 → 批C 4088/0 → **批末终跑见 PROGRESS 顶段**
+- 全量 `flutter test --no-pub` **4088 pass / 0 fail × 4**(基线 01:58 / 批B / 批C / 批末 04:50)
 - `flutter analyze`(strict-casts on)0;dart format 归一;每批独立 commit 皆绿后入库
+- 本地 `flutter build macos --debug` ✓ Built wuxia_idle.app(05:20)
+- **PR #42 CI 双绿**(05:45):test pass 19m30s(含 coverage ratchet)+ macos-build pass 3m36s;首轮红=继承的 5 文件 format 漂移(07-17 记档预存,`e9ed647c` 收口)
 
 ## 已知风险 / 待用户
 

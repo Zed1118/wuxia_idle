@@ -26,3 +26,4 @@
 - #15 skills.yaml 倍率无 enforce → false positive(enforce+双向守门测均在,系 yaml 头注过时,已订正)
 - #19 慢模拟测试剥离提速 → false positive(JSON 计时实测 test/tools 全目录并发墙钟贡献 ~4s;balance_simulator 1.2s;耗时大头=622 suite 编译+feature 测试广布)
 - #9 battle_demo 死代码 → 半错(16 个测试文件消费的 test harness,批E 迁 test/support/)
+- #5 拆 5 个 2000 行 screen → 大部证伪(除 main_menu 外四屏实测均已 21-30 私有 widget 良好拆分,最大 build 144-196 行;报告按文件行数点名。唯一真 462 行 build=main_menu 已批D 拆;文件级再拆不做防 codex 冲突)
