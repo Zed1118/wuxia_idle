@@ -496,6 +496,28 @@ void main() {
     expect(c.isPaused, isFalse, reason: '战斗未结束 → 恢复解除暂停');
   });
 
+  testWidgets('hit-stop 期间播放拍钟与读秒环同步冻结，到期一起恢复', (tester) async {
+    final c = (await _pump(tester)).controller;
+
+    c.startTimer();
+    await tester.pump(const Duration(milliseconds: 10));
+    expect(c.hasTimer, isTrue);
+    expect(c.debugBeatIsAnimating, isTrue);
+
+    c.debugApplyHitStop(30);
+    final frozenBeat = c.beat.value;
+    expect(c.hasTimer, isFalse);
+    expect(c.debugBeatIsAnimating, isFalse);
+
+    await tester.pump(const Duration(milliseconds: 20));
+    expect(c.beat.value, frozenBeat);
+    expect(c.hasTimer, isFalse);
+
+    await tester.pump(const Duration(milliseconds: 11));
+    expect(c.hasTimer, isTrue);
+    expect(c.debugBeatIsAnimating, isTrue);
+  });
+
   testWidgets('toggleFastForward 翻转 isFastForward', (tester) async {
     final c = (await _pump(tester)).controller;
     expect(c.isFastForward, isFalse);

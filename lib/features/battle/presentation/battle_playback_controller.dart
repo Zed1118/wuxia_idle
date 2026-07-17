@@ -192,6 +192,9 @@ class BattlePlaybackController {
   bool get debugCloseupIsAnimating => _closeupCtrl.isAnimating;
 
   @visibleForTesting
+  void debugApplyHitStop(int ms) => _applyHitStop(ms);
+
+  @visibleForTesting
   BattleActionTemplate debugActionTemplateForSlot(int slotKey) =>
       _actionTemplates[slotKey];
 
@@ -655,6 +658,7 @@ class BattlePlaybackController {
   void _applyHitStop(int ms) {
     if (_isPaused) return;
     _playTimer?.cancel();
+    _beatCtrl.stop();
     _hitStopTimer?.cancel();
     _hitStopTimer = Timer(Duration(milliseconds: ms), () {
       if (!_disposed && !_ref.read(battleProvider).isFinished) startTimer();
