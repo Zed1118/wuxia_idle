@@ -16,7 +16,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 ///   5. 护法 HP 校准值钉死:2700 / 2550(当前发布重校结果),防止后续
 ///      改动静默漂移。
 ///   6. 招式倍率红线:floor30 相关招式 powerMultiplier <= 8000 —— 全仓已有
-///      `_enforceEncounterSkillRedLines`(在 loadAllDefs 内对全部 skillDefs
+///      `enforceEncounterSkillRedLines`(validation/,loadAllDefs 内对全部 skillDefs
 ///      强制校验)覆盖此红线,此处仅对 floor30 实际引用的招式做一次轻量
 ///      复核,不重复造轮子。
 void main() {
@@ -164,7 +164,7 @@ void main() {
     };
     expect(floor30SkillIds, isNotEmpty, reason: 'floor30 敌人应至少引用一个招式,遍历才有意义');
 
-    // 全局红线已由 GameRepository._enforceEncounterSkillRedLines 在
+    // 全局红线已由 enforceEncounterSkillRedLines(validation/) 在
     // loadAllDefs 内对全部 skillDefs 强制校验(见 lib/data/game_repository.dart
     // 附近 GDD §5.4 max_skill_multiplier=8000 注释);loadAllDefs 未抛异常即
     // 说明该红线已过。此处仅对 floor30 实际引用的招式做一次显式复核,

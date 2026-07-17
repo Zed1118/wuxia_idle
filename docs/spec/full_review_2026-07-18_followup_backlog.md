@@ -19,7 +19,7 @@
 |---|---|---|---|
 | 6 | `equipment_disposal.dart` 迁 data/defs(numbers_config 唯一残留 data→features 边) | #3 余项 | 依赖 `equipment_slot_occupancy` 同迁或解耦(含逻辑非纯 def),级联面待评估 |
 | 7 | isar community fork 供应链 / analyzer 三角解锁 | #13/#14 | 上游 isar_community 支持 analyzer ≥12 才能动(2026-06-30 维护轮结论);analyzer 已钉 9.0.0 止血 |
-| 8 | strict-casts / strict-inference 启用 | #17 | 若批E 试探报错 >30 则回退记此处,待专批清理 |
+| 8 | strict-inference 启用 | #17 | strict-casts 已于本批启用(仅 9 处 legacy dynamic,全修);strict-inference 未试探,待专批 |
 
 ## 已在本批证伪不做(留档防重提)
 

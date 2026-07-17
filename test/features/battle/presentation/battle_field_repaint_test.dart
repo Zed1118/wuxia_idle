@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
+import '../../../support/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_action_template.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_stage_geometry.dart';
 import 'package:wuxia_idle/features/battle/presentation/widgets/battle_field.dart';

@@ -88,7 +88,7 @@ Set<String> litSkillIds({
 /// active 角色学过的心法招并集(正向:由 techDef.skillIds 取,对称 1.0 武学库)。
 Set<String> learnedHeartArtSkillIds(
   List<Technique> techniques,
-  Map<String, dynamic> techDefsById,
+  Map<String, TechniqueDef> techDefsById,
 ) {
   final s = <String>{};
   for (final t in techniques) {
@@ -204,12 +204,12 @@ MartialCodexEntry _entryOf(
 }
 
 /// 分组:5 来源固定序,空段不产出。心法组按所属心法(正向 techDef.skillIds)分小节。
-/// techDefsById 传 GameRepository.instance.techniqueDefs(纯函数侧用 dynamic 接)。
+/// techDefsById 传 GameRepository.instance.techniqueDefs(2026-07-18 strict-casts 批改强类型)。
 List<MartialCodexGroup> groupMartialSkills({
   required Iterable<SkillDef> pool,
   required Set<String> litIds,
   required Map<String, SkillProficiencyStageConfig> stageById,
-  required Map<String, dynamic> techDefsById,
+  required Map<String, TechniqueDef> techDefsById,
 }) {
   final poolById = {for (final d in pool) d.id: d};
   final byKind = <MartialGroupKind, List<SkillDef>>{};
@@ -252,20 +252,18 @@ List<MartialCodexSubGroup> _heartArtSubGroups(
   Map<String, SkillDef> poolById,
   Set<String> litIds,
   Map<String, SkillProficiencyStageConfig> stageById,
-  Map<String, dynamic> techDefsById,
+  Map<String, TechniqueDef> techDefsById,
 ) {
   final claimed = <String>{};
   final subs = <MartialCodexSubGroup>[];
   final techDefs = techDefsById.values.toList()
     ..sort((a, b) {
-      final t = (a.tier.index as int).compareTo(b.tier.index as int);
-      return t != 0
-          ? t
-          : (a.school.index as int).compareTo(b.school.index as int);
+      final t = a.tier.index.compareTo(b.tier.index);
+      return t != 0 ? t : a.school.index.compareTo(b.school.index);
     });
   for (final td in techDefs) {
     final entries = <MartialCodexEntry>[];
-    for (final sid in (td.skillIds as List).cast<String>()) {
+    for (final sid in td.skillIds) {
       final d = poolById[sid];
       if (d == null || d.source != SkillSource.technique) continue;
       claimed.add(sid);

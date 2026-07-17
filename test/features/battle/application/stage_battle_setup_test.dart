@@ -797,7 +797,7 @@ void _expectRedLines(dynamic ch) {
   );
   expect(
     ch.currentHp,
-    lessThanOrEqualTo(ch.maxHp),
+    lessThanOrEqualTo(ch.maxHp as num),
     reason: '${ch.name} currentHp ≤ maxHp 派生不变式',
   );
   expect(
@@ -808,7 +808,7 @@ void _expectRedLines(dynamic ch) {
   );
   expect(
     ch.currentInternalForce,
-    lessThanOrEqualTo(ch.maxInternalForce),
+    lessThanOrEqualTo(ch.maxInternalForce as num),
     reason: '${ch.name} currentInternalForce ≤ maxInternalForce 派生不变式',
   );
   expect(

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../domain/battle_state.dart';
-import '../../../data/defs/skill_def.dart';
-import '../../../core/domain/enums.dart';
-import '../application/battle_providers.dart';
-import 'battle_screen.dart';
+import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/data/defs/skill_def.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 
 /// T14 / T15 / T16 视觉目测用的 mock 战斗数据（不依赖 GameRepository）。
 ///

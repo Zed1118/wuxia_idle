@@ -8,7 +8,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
-import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
+import '../../../support/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_atmosphere_overlay.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_effect_sprite.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
