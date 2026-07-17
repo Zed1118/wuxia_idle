@@ -606,6 +606,15 @@ class GauntletService {
   /// 关次稳定种子：会话 [baseSeed] 混当前 [stage]（§5.6·重打同关不重抽·跨关不同流）。
   static int _stageSeed(int baseSeed, int stage) => baseSeed * 31 + stage;
 
+  /// 当前存档的 active 断魂庄会话（provider/UI watch·总览断魂庄卡/整备屏据此路由）。
+  /// 无存档/无会话 → null。写路径（enter/fight/choose/settle/close）后由 caller
+  /// `ref.invalidate(activeGauntletProvider)` 统一失效。
+  Future<BossGauntletRun?> activeRun() async {
+    final save = await _isar.saveDatas.get(0);
+    if (save == null) return null;
+    return _activeRun(save.id);
+  }
+
   /// 当前存档的 active 断魂庄会话（每存档 ≤1，§8.3）；无则 null。
   Future<BossGauntletRun?> _activeRun(int saveId) async {
     final runs = await _isar.bossGauntletRuns.where().findAll();

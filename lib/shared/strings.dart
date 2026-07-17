@@ -3563,7 +3563,8 @@ class UiStrings {
   static const String expeditionRecapRewardSection = '主要奖获';
   static const String expeditionRecapNoReward = '未及采获，空手而归。';
   static String expeditionRecapExp(int amount) => '修为 +$amount';
-  static String expeditionRecapRewardItem(String name, int qty) => '$name ×$qty';
+  static String expeditionRecapRewardItem(String name, int qty) =>
+      '$name ×$qty';
   static String expeditionRecapTicket(int count) => '断魂帖 ×$count';
   static const String expeditionRecapInjurySection = '伤势';
   static String expeditionRecapDefeatedInjury(int downed) =>
@@ -3601,4 +3602,53 @@ class UiStrings {
   static const String expeditionRecallConfirmBody =
       '召回后本次远征结束：已踏平节点的奖励照常入账，当前未完成的节点作废。';
   static const String expeditionRecallConfirm = '召回';
+
+  // ── 断魂庄三关 · 装载 / 整备（§7.1/§7.2 · C2.5）──────────────────────
+  static const String gauntletName = '断魂庄';
+  static const String gauntletSubtitle = '三关连战，一气呵成；持帖入庄，生死自负。';
+  static const String gauntletLoadoutTitle = '断魂庄';
+  // 顶部信息
+  static String gauntletTicket(int n) => '断魂帖 · $n 张';
+  static const String gauntletNoTicketHint = '尚无断魂帖，暂不可入庄。';
+  static const String gauntletEnemiesSection = '庄中三关';
+  static String gauntletStageOrdinal(int stage) => '第 $stage 关';
+  static String gauntletRecommendedRealm(String realm) => '推荐境界 · $realm 上下';
+  // 择人
+  static const String gauntletTeamSection = '择人入庄';
+  static const String gauntletTeamHint = '选 1-3 名弟子闯庄；祖师坐镇门中，不亲入庄。';
+  static String gauntletSelectedCount(int n) => '已择 $n / 3 人';
+  static const String gauntletCandidateOccupiedTag = '在外';
+  static const String gauntletCandidateNoMainTag = '未修主修';
+  static const String gauntletNoCandidates = '暂无可入庄弟子。招收弟子、研习主修之后再来。';
+  // 补给装载
+  static const String gauntletSupplySection = '整备补给';
+  static String gauntletSupplyHint(int cap) => '至多携 $cap 份，庄内两次整备时用；未用者出庄原数奉还。';
+  static String gauntletSupplyOwned(int n) => '库存 $n';
+  static String gauntletSupplyBudget(int used, int cap) => '已装 $used / $cap 份';
+  // 入庄
+  static const String gauntletEnterButton = '持帖入庄';
+  static const String gauntletEnterFailed = '入庄受阻，请核对队伍与补给。';
+
+  // 庄内整备（§7.2）
+  static const String gauntletInterludeTitle = '庄内整备';
+  static String gauntletInterludeSection(int stage) => '第 $stage 关 · 整备待战';
+  static const String gauntletMemberSection = '当前队伍';
+  static String gauntletMemberHp(int cur, int max) => '气血 $cur / $max';
+  static String gauntletMemberQi(int cur, int max) => '真气 $cur / $max';
+  static const String gauntletMemberDownedTag = '倒下';
+  static String gauntletMemberCooldownTag(int n) => '$n 招冷却';
+  static const String gauntletSupplyRemainSection = '随身补给';
+  static String gauntletSupplyRemain(String name, int remaining) =>
+      '$name · 余 $remaining 份';
+  static const String gauntletSupplyUseButton = '使用';
+  static const String gauntletSupplyExhausted = '已用尽';
+  static const String gauntletNoInterludeSupply = '未携补给，径直闯关。';
+  static const String gauntletHealTargetTitle = '择疗伤目标';
+  static const String gauntletContinueButton = '继续闯关';
+  static const String gauntletConcedeButton = '认输离庄';
+  static const String gauntletConcedeConfirmTitle = '认输离庄';
+  static const String gauntletConcedeConfirmBody =
+      '认输即止步本次闯庄：已击败精英的经验照常入账，按实际战况结算轻重伤（不损永久内力）；'
+      '断魂帖与已用补给不退还。';
+  static const String gauntletConcedeConfirm = '认输离庄';
 }
