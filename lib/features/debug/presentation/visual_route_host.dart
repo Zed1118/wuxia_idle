@@ -95,6 +95,8 @@ import '../../zangjuange/presentation/zangjuange_screen.dart';
 import '../../taohua_island/domain/island_building_type.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
+import '../../boss_gauntlet/presentation/gauntlet_interlude_screen.dart';
+import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import '../../expedition/application/expedition_service.dart';
 import '../../expedition/presentation/expedition_overview_screen.dart';
 import '../../expedition/presentation/expedition_recap_screen.dart';
@@ -836,6 +838,16 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // (深度/完成/方针/下一节点剩余/召回)。
       await Phase2SeedService(isar: isar).seedExpeditionActive();
       return const ExpeditionOverviewScreen();
+    case VisualRoute.gauntletLoadout:
+      // 断魂庄装载屏(§7.1):team_lineup 种子 + 库存补帖/补给,无 active 会话 → 装载态
+      // (帖库存/三关 Boss/推荐境界/择人/补给装载/入庄)。
+      await Phase2SeedService(isar: isar).seedGauntletLoadout();
+      return const GauntletLoadoutScreen();
+    case VisualRoute.gauntletInterlude:
+      // 断魂庄庄内整备(§7.2):造 active 会话推进到 interlude(第 2 关·一存活带冷却/
+      // 一倒下 + 托管补给余量),显成员状态 + 补给 + 使用/继续/认输。
+      await Phase2SeedService(isar: isar).seedGauntletInterlude();
+      return const GauntletInterludeScreen();
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }

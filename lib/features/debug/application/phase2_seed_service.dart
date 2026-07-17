@@ -13,6 +13,8 @@ import '../../../core/domain/save_data.dart';
 import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../core/domain/technique.dart';
 import '../../../shared/utils/rng.dart';
+import '../../activity/domain/activity_member_snapshot.dart';
+import '../../boss_gauntlet/domain/boss_gauntlet_run.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../equipment/application/equipment_factory.dart';
 import '../../expedition/application/expedition_service.dart';
@@ -1329,6 +1331,10 @@ class Phase2SeedService {
       // 上次的 active ExpeditionRun 若不清会撞 ExpeditionService.dispatch 的
       // 「单 active」红线校验(2026-07-16 目检 1440x900 第二跑失败修)。无远征时 no-op。
       await isar.expeditionRuns.clear();
+      // 同理清断魂庄会话(C2.5·seedGauntletLoadout/Interlude 在此基础上建):多分辨率
+      // 复跑不清会撞「单 active」+ 旧 run 成员指向已删角色(feedback_visual_capture_
+      // seed_idempotency)。无会话时 no-op。
+      await isar.bossGauntletRuns.clear();
       final founder = mk(
         name: '祖师',
         tier: RealmTier.erLiu,
@@ -1425,8 +1431,7 @@ class Phase2SeedService {
         .findAll();
     final ids = chars
         .where(
-          (c) =>
-              c.mainTechniqueId != null && c.currentRetreatSessionId == null,
+          (c) => c.mainTechniqueId != null && c.currentRetreatSessionId == null,
         )
         .take(2)
         .map((c) => c.id)
@@ -1440,6 +1445,84 @@ class Phase2SeedService {
       final run = (await isar.expeditionRuns.where().findAll()).first;
       run.currentNode = 8;
       await isar.expeditionRuns.put(run);
+    });
+  }
+
+  /// gauntlet_loadout 视觉验收 seed（§7.1·C2.5）：team_lineup 种子（founder + 弟子）+
+  /// 库存补断魂帖 ×2 + 疗伤丹 ×3 + 行囊补给 ×2；无 active 会话 → 装载屏显候选三态 +
+  /// 庄中三关（苏无咎/石镇岳/闻九针 + 推荐境界）+ 补给装载步进 + 持帖入庄。
+  Future<void> seedGauntletLoadout() async {
+    await seedTeamLineup();
+    final now = DateTime.now();
+    await isar.writeTxn(() async {
+      // 设定（非累加）数量：seedTeamLineup 不清 inventory，多分辨率复跑用累加会漂移，
+      // 设定保幂等（每跑相同库存·feedback_visual_capture_seed_idempotency）。
+      Future<void> put(String defId, ItemType type, int qty) async {
+        final existing = await isar.inventoryItems.getByDefId(defId);
+        if (existing != null) {
+          existing.quantity = qty;
+          await isar.inventoryItems.put(existing);
+        } else {
+          await isar.inventoryItems.put(
+            InventoryItem()
+              ..defId = defId
+              ..itemType = type
+              ..quantity = qty
+              ..firstObtainedAt = now
+              ..lastObtainedAt = now,
+          );
+        }
+      }
+
+      await put('item_duanhuntie', ItemType.ticket, 2);
+      await put('item_liaoshangdan', ItemType.miscMaterial, 3);
+      await put('item_xingnang_buji', ItemType.miscMaterial, 2);
+    });
+  }
+
+  /// gauntlet_interlude 视觉验收 seed（§7.2·C2.5）：team_lineup 种子 + 造 active 会话推进
+  /// 到 interlude（第 2 关整备）——两成员（一存活带 1 招冷却 / 一倒下）+ 托管补给（疗伤丹
+  /// 装 2 用 1 → 余 1 / 行囊补给 装 1 用 0 → 余 1）。整备屏显成员状态 + 补给余量 + 三动作。
+  Future<void> seedGauntletInterlude() async {
+    await seedTeamLineup();
+    final chars = await isar.characters
+        .filter()
+        .isFounderEqualTo(false)
+        .findAll();
+    final ids = chars
+        .where(
+          (c) => c.mainTechniqueId != null && c.currentRetreatSessionId == null,
+        )
+        .take(2)
+        .map((c) => c.id)
+        .toList();
+    await isar.writeTxn(() async {
+      final members = <ActivityMemberSnapshot>[];
+      for (var i = 0; i < ids.length; i++) {
+        final downed = i == 1; // 第二人倒下（演示阵亡态 + 疗伤须择存活目标）
+        members.add(
+          ActivityMemberSnapshot()
+            ..characterId = ids[i]
+            ..maxHp = 5000
+            ..currentHp = downed ? 0 : 3200
+            ..maxQi = 100
+            ..currentQi = downed ? 0 : 55
+            ..isDowned = downed
+            ..skillCooldownKeys = downed ? [] : ['skill_gangmeng_jichu_skill']
+            ..skillCooldownTurns = downed ? [] : [2],
+        );
+      }
+      await isar.bossGauntletRuns.put(
+        BossGauntletRun()
+          ..saveDataId = 0
+          ..seed = 0
+          ..currentStage = 2
+          ..sessionPhase = GauntletPhase.interlude
+          ..members = members
+          ..escrowItemDefIds = ['item_liaoshangdan', 'item_xingnang_buji']
+          ..escrowLoadedQty = [2, 1]
+          ..escrowUsedQty = [1, 0],
+      );
     });
   }
 

@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/mainline/application/mainline_progress_servi
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
@@ -1137,4 +1138,65 @@ void main() {
     expect(runs2.length, 1, reason: 'reseed 后仍恰 1 支 active 远征(旧残留已清)');
     expect(runs2.single.currentNode, 8, reason: 'reseed 后仍在第 8 节点');
   });
+
+  // C2.5 断魂庄装载/整备 visual_route seed（§7.1/§7.2）。
+  test('seedGauntletLoadout → 帖库存+补给+候选·无 active 会话（幂等复跑计数不漂移）', () async {
+    final isar = IsarSetup.instance;
+    final svc = Phase2SeedService(isar: isar);
+    Future<int> qty(String defId) async =>
+        (await isar.inventoryItems.getByDefId(defId))?.quantity ?? 0;
+
+    await svc.seedGauntletLoadout();
+    expect(await qty('item_duanhuntie'), 2, reason: '断魂帖 ×2');
+    expect(await qty('item_liaoshangdan'), 3, reason: '疗伤丹 ×3');
+    expect(await qty('item_xingnang_buji'), 2, reason: '行囊补给 ×2');
+    expect(
+      await isar.characters.filter().isFounderEqualTo(false).count(),
+      greaterThan(0),
+      reason: '有非祖师候选',
+    );
+    expect(await isar.bossGauntletRuns.count(), 0, reason: '装载态无 active 会话');
+
+    // reseed（多分辨率复跑）：库存设定不累加漂移，仍无 active 会话。
+    await svc.seedGauntletLoadout();
+    expect(await qty('item_duanhuntie'), 2, reason: 'reseed 帖仍 2（非累加成 4）');
+    expect(await isar.bossGauntletRuns.count(), 0);
+  });
+
+  test(
+    'seedGauntletInterlude → interlude 会话(一存活/一倒下+托管补给)·幂等恰 1 支不悬空',
+    () async {
+      final isar = IsarSetup.instance;
+      final svc = Phase2SeedService(isar: isar);
+
+      await svc.seedGauntletInterlude();
+      var runs = await isar.bossGauntletRuns.where().findAll();
+      expect(runs.length, 1, reason: '恰 1 支断魂庄会话');
+      final run = runs.single;
+      expect(run.sessionPhase, GauntletPhase.interlude);
+      expect(run.currentStage, 2);
+      expect(run.members.length, 2, reason: '两成员');
+      expect(run.members.where((m) => m.isDowned).length, 1, reason: '一倒下');
+      expect(run.escrowItemDefIds, ['item_liaoshangdan', 'item_xingnang_buji']);
+      for (final m in run.members) {
+        expect(
+          await isar.characters.get(m.characterId),
+          isNotNull,
+          reason: '成员指向真角色（名可解析·非悬空）',
+        );
+      }
+
+      // reseed：bossGauntletRuns.clear 生效 → 仍恰 1 支，成员指向新角色非旧悬空。
+      await svc.seedGauntletInterlude();
+      runs = await isar.bossGauntletRuns.where().findAll();
+      expect(runs.length, 1, reason: 'reseed 仍恰 1 支（旧残留已清）');
+      for (final m in runs.single.members) {
+        expect(
+          await isar.characters.get(m.characterId),
+          isNotNull,
+          reason: 'reseed 后成员指向新角色（非已删旧角色）',
+        );
+      }
+    },
+  );
 }

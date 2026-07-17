@@ -254,6 +254,14 @@ enum VisualRoute {
     'expedition_active',
     '江湖远行·派遣中目检(在途态·当前深入第8处/已踏平节点/本次方针/下一节点剩余/召回队伍),§7.1',
   ),
+  gauntletLoadout(
+    'gauntlet_loadout',
+    '断魂庄装载屏目检·帖库存×2 + 庄中三关(苏无咎/石镇岳/闻九针 + 推荐境界) + 择人1-3(占用/未修主修标) + 补给装载步进 + 持帖入庄,§7.1',
+  ),
+  gauntletInterlude(
+    'gauntlet_interlude',
+    '断魂庄庄内整备目检·第2关整备(三成员生命/真气/阵亡/冷却) + 托管补给余量(疗伤丹余1/行囊补给余1) + 使用/继续闯关/认输离庄,§7.2',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);
