@@ -302,7 +302,7 @@ void main() {
   });
 
   group('门控 allowPlayerIntervention', () {
-    testWidgets('false 时点 aoe 不出手', (tester) async {
+    testWidgets('false 时收起 aoe 按钮且不出手', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_aoe]);
       final notifier = await _pumpWith(
@@ -311,15 +311,15 @@ void main() {
         right,
         allowPlayerIntervention: false,
       );
-      await tester.tap(
-        find.byKey(const ValueKey('skill_cmd_1_aoe1')),
-        warnIfMissed: false,
+      expect(find.byKey(const ValueKey('skill_cmd_1_aoe1')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('battle_auto_rotation_desk')),
+        findsOneWidget,
       );
-      await tester.pump();
       expect(notifier.interveneCount, 0);
     });
 
-    testWidgets('false 时点 single 不进待发态、点敌不出手', (tester) async {
+    testWidgets('false 时收起 single 按钮、点敌不出手', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_single]);
       final notifier = await _pumpWith(
@@ -328,11 +328,7 @@ void main() {
         right,
         allowPlayerIntervention: false,
       );
-      await tester.tap(
-        find.byKey(const ValueKey('skill_cmd_1_single1')),
-        warnIfMissed: false,
-      );
-      await tester.pump();
+      expect(find.byKey(const ValueKey('skill_cmd_1_single1')), findsNothing);
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
       );

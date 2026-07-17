@@ -57,6 +57,13 @@ class UiStrings {
   static const String fastForward = '快进';
   static const String battleAutoMode = '自动战斗';
   static const String battleAutoIntervention = '可点选';
+  static const String battleAutoRotation = '招式轮转谱';
+  static const String battleAutoObserve = '托管推演';
+  static const String skillReady = '可用';
+  static const String skillGatheringQi = '蓄气';
+  static const String battleNoEquippedSkills = '只运周天';
+  static const String battleFallen = '力竭';
+  static String skillCooldownRemaining(int turns) => '息 $turns';
   static const String battleCommandDesk = '武学案台';
   static const String battlePouch = '战备行囊';
   static const String battlePouchReserved = '待装配';

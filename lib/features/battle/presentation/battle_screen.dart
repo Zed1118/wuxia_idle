@@ -760,22 +760,25 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                         ),
                         if (widget.playback.allowPlayerIntervention)
                           CoopBurstPromptBar(state: state),
-                        BottomBar(
-                          state: state,
-                          focusSlotIndex: _effectiveFocus(state),
-                          allowPlayerIntervention:
-                              widget.playback.allowPlayerIntervention,
-                          onSelectFocus: _onSelectFocus,
-                          onShowSkillInfo: _showSkillInfo,
-                          onSkillTap: _onSkillTap,
-                          pendingCharacterId:
-                              _pendingCharId ??
-                              widget.previewPendingCharacterId,
-                          pendingSkillId:
-                              _pendingSkill?.id ?? widget.previewPendingSkillId,
-                          beat: _playback.beat,
-                          skillTargetLink: _skillTargetLink,
-                        ),
+                        if (widget.playback.allowPlayerIntervention)
+                          BottomBar(
+                            state: state,
+                            focusSlotIndex: _effectiveFocus(state),
+                            allowPlayerIntervention: true,
+                            onSelectFocus: _onSelectFocus,
+                            onShowSkillInfo: _showSkillInfo,
+                            onSkillTap: _onSkillTap,
+                            pendingCharacterId:
+                                _pendingCharId ??
+                                widget.previewPendingCharacterId,
+                            pendingSkillId:
+                                _pendingSkill?.id ??
+                                widget.previewPendingSkillId,
+                            beat: _playback.beat,
+                            skillTargetLink: _skillTargetLink,
+                          )
+                        else
+                          AutoRotationBar(state: state),
                       ],
                     ),
                   ),

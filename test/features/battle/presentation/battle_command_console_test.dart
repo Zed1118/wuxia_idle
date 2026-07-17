@@ -8,6 +8,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_layout_tokens.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
@@ -195,12 +196,14 @@ Future<_TestBattleNotifier> _pumpWith(
   List<BattleCharacter> left,
   List<BattleCharacter> right, {
   Size size = const Size(1280, 720),
+  bool allowPlayerIntervention = true,
 }) async {
   late _TestBattleNotifier notifier;
   await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
   await tester.pumpWidget(
     ProviderScope(
+      key: UniqueKey(),
       overrides: [
         battleProvider.overrideWith(() {
           notifier = _TestBattleNotifier(
@@ -209,10 +212,12 @@ Future<_TestBattleNotifier> _pumpWith(
           return notifier;
         }),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         home: BattleScreen(
           animConfig: _testAnim,
-          playback: BattleScreenPlaybackConfig(allowPlayerIntervention: true),
+          playback: BattleScreenPlaybackConfig(
+            allowPlayerIntervention: allowPlayerIntervention,
+          ),
         ),
       ),
     ),
@@ -222,6 +227,74 @@ Future<_TestBattleNotifier> _pumpWith(
 }
 
 void main() {
+  group('自动观战轮转谱', () {
+    testWidgets('纯自动模式收起技能按钮并展示三人真气与招式状态', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final team = [
+        left[0].copyWith(
+          availableSkills: [_power, _ult],
+          skillCooldowns: const {'u1': 2},
+        ),
+        left[1].copyWith(availableSkills: [_powerB], currentQi: 0),
+        left[2].copyWith(availableSkills: [_powerC]),
+      ];
+      await _pumpWith(tester, team, right, allowPlayerIntervention: false);
+
+      final rotation = find.byKey(const ValueKey('battle_auto_rotation_desk'));
+      expect(rotation, findsOneWidget);
+      expect(find.byKey(const ValueKey('battle_command_desk')), findsNothing);
+      expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsNothing);
+      for (final actor in team) {
+        expect(
+          find.byKey(ValueKey('auto_rotation_actor_${actor.characterId}')),
+          findsOneWidget,
+        );
+        expect(find.text(actor.name), findsWidgets);
+      }
+      expect(find.text(UiStrings.battleAutoRotation), findsOneWidget);
+      expect(
+        find.textContaining('${team.first.currentQi}/${team.first.maxQi}'),
+        findsWidgets,
+      );
+      expect(find.text(UiStrings.skillReady), findsWidgets);
+      expect(find.text(UiStrings.skillCooldownRemaining(2)), findsOneWidget);
+      expect(find.text(UiStrings.skillGatheringQi), findsOneWidget);
+      for (var i = 0; i < 3; i++) {
+        expect(find.byKey(ValueKey('battle_pouch_slot_$i')), findsOneWidget);
+      }
+      expect(
+        tester.getSize(rotation).height,
+        lessThan(BattleLayoutTokens.commandDeskHeight),
+      );
+      expect(
+        find.descendant(of: rotation, matching: find.byType(ButtonStyleButton)),
+        findsNothing,
+        reason: '自动轮转谱是观察界面，不应伪装可操作按钮',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('轮转谱在单人、两人、三人队与双视口均不溢出', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      for (final size in const [Size(1280, 720), Size(1440, 900)]) {
+        for (var teamSize = 1; teamSize <= 3; teamSize++) {
+          await _pumpWith(
+            tester,
+            left.take(teamSize).toList(),
+            right,
+            size: size,
+            allowPlayerIntervention: false,
+          );
+          expect(
+            find.byKey(const ValueKey('battle_auto_rotation_desk')),
+            findsOneWidget,
+          );
+          expect(tester.takeException(), isNull);
+        }
+      }
+    });
+  });
+
   group('T2 蓄力危险条', () {
     testWidgets('敌人蓄力时顶部出现危险条，显示蓄力招名', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
