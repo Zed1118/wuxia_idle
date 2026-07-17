@@ -193,6 +193,10 @@ class BattlePlaybackController {
   bool get debugCloseupIsAnimating => _closeupCtrl.isAnimating;
 
   @visibleForTesting
+  int debugAttackDurationMsForSlot(int slotKey) =>
+      _attackControllers[slotKey].duration!.inMilliseconds;
+
+  @visibleForTesting
   void debugApplyHitStop(int ms) => _applyHitStop(ms);
 
   @visibleForTesting
@@ -605,6 +609,9 @@ class BattlePlaybackController {
           ..stop()
           ..value = 1.0;
       }
+      for (final controller in _attackControllers) {
+        controller.reset();
+      }
       _shakeCtrl.reset();
       _closeupCtrl.reset();
       _impactShakeAmplitude = 0.0;
@@ -907,7 +914,13 @@ class BattlePlaybackController {
     if (actor != null && playSharedFeedback) {
       final key = _visualSlotKey(actor);
       _actionTemplates[key] = actionTemplate;
-      _attackControllers[key].forward(from: 0.0);
+      _attackControllers[key]
+        ..duration = Duration(
+          milliseconds: _isFastForward
+              ? math.min(_animConfig.attackTotalMs, _currentPlaybackIntervalMs)
+              : _animConfig.attackTotalMs,
+        )
+        ..forward(from: 0.0);
     }
     if (action.attackResult != null && action.targetId != null) {
       final target = findCharacter(action.targetId!, s);

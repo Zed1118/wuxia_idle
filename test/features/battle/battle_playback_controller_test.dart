@@ -445,6 +445,22 @@ void main() {
     expect(backend.sfxPaths, hasLength(1), reason: '快进不应以逐动作频率叠播 SFX');
   });
 
+  testWidgets('角色动作常速用完整三段时长，快进不过拍，退出后恢复', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+
+    c.playAction(_attackAction(), state);
+    expect(c.debugAttackDurationMsForSlot(0), 30);
+
+    c.toggleFastForward();
+    c.playAction(_attackAction(), state);
+    expect(c.debugAttackDurationMsForSlot(0), 20);
+
+    c.toggleFastForward();
+    c.playAction(_attackAction(), state);
+    expect(c.debugAttackDurationMsForSlot(0), 30);
+  });
+
   testWidgets('近战动作前冲但不生成远程弹道', (tester) async {
     final c = (await _pump(tester)).controller;
 
