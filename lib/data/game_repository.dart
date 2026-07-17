@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'defs/codex_category.dart';
 import 'defs/codex_entry.dart';
 import 'defs/codex_index.dart';
 import 'defs/encounter_def.dart';
@@ -24,13 +23,16 @@ import 'defs/stage_def.dart';
 import 'defs/synergy_def.dart';
 import 'defs/technique_def.dart';
 import 'defs/tower_floor_def.dart';
-import 'defs/taohua_island_config.dart';
 import 'defs/expedition_config.dart';
 import 'defs/boss_gauntlet_config.dart';
 import 'lore_loader.dart';
 import '../core/domain/enums.dart';
 import 'numbers_config.dart';
 import 'validation/drop_table_reference_validator.dart';
+import 'validation/economy_codex_red_lines_validator.dart';
+import 'validation/encounter_red_lines_validator.dart';
+import 'validation/progression_red_lines_validator.dart';
+import 'validation/technique_equipment_red_lines_validator.dart';
 import 'yaml_loader.dart';
 
 /// 全局配置仓储（启动时一次性把 `data/*.yaml` 加载到内存）。
@@ -234,7 +236,7 @@ class GameRepository {
       rethrow;
     } catch (e) {
       // test fixture 不带 encounter_skills.yaml 时静默(空池)。P2-a 后:若 encounters
-      // 仍引用 unlockSkill skillId,_enforceEncounterSkillRedLines 会在空池上 fail-fast
+      // 仍引用 unlockSkill skillId,enforceEncounterSkillRedLines(validation/) 会在空池上 fail-fast
       // (不再被 isNotEmpty 闸门跳过),故生产损坏/缺失不会静默失效。
     }
     final stageDefs = _parseDefMap(
@@ -356,11 +358,11 @@ class GameRepository {
       );
     } catch (e) {
       // test fixture 不带 encounters.yaml 时静默,生产路径仍 fail-fast on
-      // 红线校验阶段(_enforceEncounterRedLines 检查非空与字段合法)。
+      // 红线校验阶段(enforceEncounterRedLines(validation/) 检查非空与字段合法)。
     }
 
     // W18-A1:心法相生 yaml(允许 test fixture 不带,空 list)。生产路径
-    // 红线校验在 _enforceSynergyRedLines 强制 ≥ 5 + multiplier 范围。
+    // 红线校验在 enforceSynergyRedLines(validation/) 强制 ≥ 5 + multiplier 范围。
     final synergies = await _loadOptionalAsset(load, 'data/synergies.yaml', (
       raw,
     ) {
@@ -408,7 +410,7 @@ class GameRepository {
     };
 
     // 材料经济 P1 shop.yaml(graceful;fixture 不带 yaml 时空 map)。
-    // 生产路径红线校验在 _enforceShopRedLines 拦标价越界。
+    // 生产路径红线校验在 enforceShopRedLines(validation/) 拦标价越界。
     final shopItemDefs = await _loadOptionalAsset(load, 'data/shop.yaml', (
       raw,
     ) {
@@ -719,11 +721,11 @@ class GameRepository {
       }
     }
     // Phase 3 Week 7 T63：装备 fixture 扩 35 件,校验单件红线 + 覆盖度
-    _enforceEquipmentRedLines();
+    enforceEquipmentRedLines(equipmentDefs: equipmentDefs, numbers: numbers);
 
     // Phase 3 Week 8 T64：心法 fixture 扩 21 本,7 阶 × 3 流派覆盖度
     //   + 每本 3 招 type 精确 normalAttack/powerSkill/ultimate
-    _enforceTechniqueRedLines();
+    enforceTechniqueRedLines(techniqueDefs: techniqueDefs, skillDefs: skillDefs);
     // Phase 3 T33：stage 链路校验。prevStageId 必须能找到，
     // 且与本关同 chapterIndex（防跨章引用 / 错字 id）。
     for (final s in stageDefs.values) {
@@ -753,7 +755,11 @@ class GameRepository {
     //   - bossKind 严格在 5/10/15/20/25/30
     //   - 普通层 narrativeOpeningId / narrativeVictoryId 必须为 null
     //   - Boss HP ≤ bossHpMax（§5.4 红线，config-driven，2026-06-14 调至 60000）
-    _enforceTowerRedLines();
+    enforceTowerRedLines(
+      towerFloors: towerFloors,
+      skillDefs: skillDefs,
+      numbers: numbers,
+    );
 
     // Phase 3 T47：闭关地图 5 张校验
     _enforceSeclusionRedLines();
@@ -825,552 +831,33 @@ class GameRepository {
     _enforceSkillTargetTypeRedLines();
 
     // Phase 4 W14-1 C-1:encounter fixture 校验(若加载到)
-    _enforceEncounterRedLines();
+    enforceEncounterRedLines(
+      encounterDefs: encounterDefs,
+      sectCandidates: sectCandidates,
+    );
 
     // Phase 4 W14-3-A:encounter_skills.yaml 校验 + unlock 引用一致性
-    _enforceEncounterSkillRedLines();
+    enforceEncounterSkillRedLines(
+      skillDefs: skillDefs,
+      encounterSkillIds: encounterSkillIds,
+      encounterDefs: encounterDefs,
+      numbers: numbers,
+    );
 
     // W18-A1:心法相生 yaml 校验(空 list 兼容 test fixture)
-    _enforceSynergyRedLines();
+    enforceSynergyRedLines(synergies: synergies, techniqueDefs: techniqueDefs);
 
     // P1.z 机制百科 md 校验(空 map 兼容 test fixture;graceful 缺档 8)
-    _enforceCodexRedLines();
+    enforceCodexRedLines(codexEntries: codexEntries);
 
     // 材料经济 P1：商店标价上限校验（空 map 兼容 test fixture）。
-    _enforceShopRedLines();
+    enforceShopRedLines(shopItemDefs: shopItemDefs, itemDefs: itemDefs);
 
     // 材料经济 P2：道具经验值红线（空 map 兼容 test fixture）。
-    _enforceItemRedLines();
+    enforceItemRedLines(itemDefs: itemDefs, numbers: numbers);
 
     // 桃花岛一期：建筑配置红线（itemDefs 为空时跳过，test fixture 兼容）。
-    _enforceTaohuaIslandRedLines();
-  }
-
-  /// P1.z 机制百科红线(GDD §10.2 第 3 方式):
-  /// - 加载到的 entry id 必须在 [CodexIndex.entries] 登记(graceful loader 已保证)
-  /// - 机制条目(isMechanic):step ∈ [1, 8]
-  /// - lore 条目(isLore):step == null
-  /// - paragraphs 总字数 ∈ [200, 550](放宽 +50,three_styles_detail 543)
-  /// - paragraphs 非空
-  ///
-  /// P2 扩段:A 组 4 篇补充阅读挂相同机制 category 与 P1.z 首批共存(同档可多条),
-  /// 故 step 唯一性已废除;id 唯一性由 [CodexIndex.byId] + Map 加载层保证。
-  void _enforceCodexRedLines() {
-    if (codexEntries.isEmpty) return; // test fixture 兼容
-    for (final e in codexEntries.values) {
-      if (CodexIndex.byId(e.id) == null) {
-        throw StateError('codex entry ${e.id} 不在 CodexIndex.entries 登记');
-      }
-      final step = e.step;
-      if (e.category.isMechanic) {
-        if (step == null || step < 1 || step > 8) {
-          throw StateError('codex entry ${e.id} 机制条目 step=$step 应 ∈ [1, 8]');
-        }
-      } else if (e.category.isLore && step != null) {
-        throw StateError('codex entry ${e.id} lore 条目 step=$step 应为 null');
-      }
-      if (e.paragraphs.isEmpty) {
-        throw StateError('codex entry ${e.id} paragraphs 为空');
-      }
-      final chars = e.totalChars;
-      if (chars < 200 || chars > 550) {
-        throw StateError(
-          'codex entry ${e.id} 字数=$chars,应 ∈ [200, 550](GDD §10.2)',
-        );
-      }
-    }
-  }
-
-  /// 材料经济 P1 商店标价红线（GDD §5.1）：
-  /// - 固定价商品：price ∈ [1, 100000]（test fixture 不带 yaml 时空 map，跳过）。
-  /// - 动态价商品（priceLayerFraction != null）：fraction > 0，跳过绝对价格校验。
-  void _enforceShopRedLines() {
-    if (shopItemDefs.isEmpty) return; // test fixture 兼容
-    for (final d in shopItemDefs.values) {
-      // F8（2026-06-23 掉落优化）：§5.7「仅掉落不上架」守门。
-      //   - 秘籍（techniqueScroll）：GDD §5.7 仅掉落，上架破"先感受问题再给答案"。
-      //   - 大还丹（大档经验丹）：仅掉落不上架。档位由稳定 defId 识别，
-      //     不与可调的 layerFraction 数值耦合。
-      if (d.itemType == ItemType.techniqueScroll) {
-        throw StateError('红线:商店 ${d.id} 上架秘籍 ${d.itemDefId}，违反 §5.7（秘籍仅掉落不上架）');
-      }
-      final item = itemDefs[d.itemDefId];
-      if (item != null &&
-          item.type == ItemType.jingYanDan &&
-          item.defId == 'item_jingyandan_large') {
-        throw StateError(
-          '红线:商店 ${d.id} 上架大还丹 ${d.itemDefId}，违反 §5.7（大档经验丹仅掉落不上架）',
-        );
-      }
-      if (d.isDynamicPrice) {
-        // 动态标价：校验 fraction > 0 即可，绝对价格由 etl 决定
-        if (d.priceLayerFraction! <= 0) {
-          throw StateError(
-            '红线:商店 ${d.id} price_layer_fraction ${d.priceLayerFraction} ≤ 0',
-          );
-        }
-      } else {
-        if (d.price! <= 0) {
-          throw StateError('红线:商店 ${d.id} 标价 ${d.price} ≤ 0');
-        }
-        if (d.price! > 100000) {
-          throw StateError('红线:商店 ${d.id} 标价 ${d.price} > 100000');
-        }
-      }
-    }
-  }
-
-  /// 材料经济 balance T1：经验丹 layer_fraction 红线（应 ∈ (0.0, 1.0]，防配 0 或超 1 破缩放）。
-  void _enforceItemRedLines() {
-    if (itemDefs.isEmpty) return; // test fixture 兼容
-    for (final d in itemDefs.values) {
-      final frac = d.layerFraction;
-      if (frac != null && (frac <= 0 || frac > 1.0)) {
-        throw StateError(
-          '红线:道具 ${d.defId} layer_fraction $frac 应 ∈ (0.0, 1.0]',
-        );
-      }
-      if (d.injuryHealHours < 0 || d.residueHealHours < 0) {
-        throw StateError(
-          '红线:道具 ${d.defId} recovery hours 不可为负 '
-          '(injury=${d.injuryHealHours}, residue=${d.residueHealHours})',
-        );
-      }
-    }
-    for (final map in numbers.retreat.maps) {
-      for (final itemId in map.itemOutputsPerHour.keys) {
-        if (!itemDefs.containsKey(itemId)) {
-          throw StateError(
-            '红线:闭关地图 ${map.mapType.name} item_outputs_per_hour 引用不存在道具 $itemId',
-          );
-        }
-      }
-    }
-  }
-
-  /// 桃花岛一期：建筑配置红线。
-  ///
-  /// itemDefs 为空（test fixture 不带 items.yaml）时跳过，避免误伤 fixture。
-  /// 非空时收集已知 item defId，调 [TaohuaIslandConfig.validate]。
-  void _enforceTaohuaIslandRedLines() {
-    if (itemDefs.isEmpty) return; // test fixture 兼容
-    final knownIds = itemDefs.keys.toSet();
-    TaohuaIslandConfig.validate(numbers.taohuaIsland, knownIds);
-  }
-
-  /// W18-A1 心法相生红线(GDD §4.5 + numbers 红线对齐):
-  /// - id 唯一(由 _parseDefMap 已保证,此处不重校)
-  /// - multiplier 各项 ≥ 0 ≤ 0.30(防数值膨胀)
-  /// - schoolPair 类型必须配 mainSchool + assistSchool 且两者不同
-  /// - sameSchool / sameTier 类型不应配 mainSchool / assistSchool
-  /// - synergies 非空时 ≥ 5(GDD §4.5 "5-8 个隐藏组合")— test fixture
-  ///   不带 yaml 时 list 为空,跳过下限校验
-  void _enforceSynergyRedLines() {
-    if (synergies.isEmpty) return;
-    if (synergies.length < 5) {
-      throw StateError(
-        'synergies.yaml 至少 5 组合(GDD §4.5),实际 ${synergies.length}',
-      );
-    }
-    final seen = <String>{};
-    for (final s in synergies) {
-      if (!seen.add(s.id)) {
-        throw StateError('synergy id 重复: ${s.id}');
-      }
-      if (!s.multipliers.isWithinRedLine) {
-        throw StateError('synergy ${s.id} multiplier 越界(应各项 ∈ [0, 0.30])');
-      }
-      switch (s.requirementType) {
-        case SynergyRequirementType.specificTechniques:
-          if (s.requiredMainTechniqueId == null ||
-              s.requiredAssistTechniqueId == null) {
-            throw StateError(
-              'synergy ${s.id} specificTechniques 必须配 '
-              'mainTechniqueId + assistTechniqueId',
-            );
-          }
-          if (s.mainSchool != null || s.assistSchool != null) {
-            throw StateError(
-              'synergy ${s.id} specificTechniques 不应配 mainSchool/assistSchool',
-            );
-          }
-          if (techniqueDefs.isNotEmpty &&
-              !techniqueDefs.containsKey(s.requiredMainTechniqueId)) {
-            throw StateError(
-              'synergy ${s.id} requiredMainTechniqueId='
-              '${s.requiredMainTechniqueId} 不存在于 techniques.yaml',
-            );
-          }
-          if (techniqueDefs.isNotEmpty &&
-              !techniqueDefs.containsKey(s.requiredAssistTechniqueId)) {
-            throw StateError(
-              'synergy ${s.id} requiredAssistTechniqueId='
-              '${s.requiredAssistTechniqueId} 不存在于 techniques.yaml',
-            );
-          }
-          break;
-        case SynergyRequirementType.schoolPair:
-          if (s.mainSchool == null || s.assistSchool == null) {
-            throw StateError(
-              'synergy ${s.id} schoolPair 必须配 mainSchool + assistSchool',
-            );
-          }
-          if (s.mainSchool == s.assistSchool) {
-            throw StateError(
-              'synergy ${s.id} schoolPair main/assist 不能相同(同流派走 sameSchool 类型)',
-            );
-          }
-          if (s.requiredMainTechniqueId != null ||
-              s.requiredAssistTechniqueId != null) {
-            throw StateError(
-              'synergy ${s.id} schoolPair 不应配 mainTechniqueId/assistTechniqueId',
-            );
-          }
-          break;
-        case SynergyRequirementType.sameSchool:
-        case SynergyRequirementType.sameTier:
-          if (s.mainSchool != null || s.assistSchool != null) {
-            throw StateError(
-              'synergy ${s.id} ${s.requirementType.name} 不应配 mainSchool/assistSchool',
-            );
-          }
-          if (s.requiredMainTechniqueId != null ||
-              s.requiredAssistTechniqueId != null) {
-            throw StateError(
-              'synergy ${s.id} ${s.requirementType.name} '
-              '不应配 mainTechniqueId/assistTechniqueId',
-            );
-          }
-          break;
-      }
-    }
-  }
-
-  /// 奇遇招式红线(C-W14-3-A):
-  /// - 每招 tier ∈ [1, 7]
-  /// - parentTechniqueDefId == null(必须独立于心法体系)
-  /// - powerMultiplier ≤ 对应 tier cap(沿用 numbers.yaml techniques.tiers
-  ///   max_skill_multiplier,1500/2000/2500/3000/4000/5500/8000)
-  /// - 所有 encounterDefs unlockSkill outcome 引用的 skillId **必须存在于
-  ///   encounter skill 池**(强校验,缺失抛 StateError,绑死 yaml 联结)
-  ///
-  /// 测试 fixture 不带 encounter_skills.yaml 时 encounterSkillIds 为空集,
-  /// 跳过 per-skill cap 校验;但 unlock 引用一致性始终校验(encounters.yaml 在场时),
-  /// P2-a 后空池 + 有 unlockSkill 引用 → fail-fast,不再静默跳过。
-  void _enforceEncounterSkillRedLines() {
-    final skillPowerMax = numbers.combat.redLines.skillPowerMultiplierMax;
-    final qiDeltaAbsCap = numbers.combat.qi.deltaAbsCap;
-    // GDD §5.4 红线:全游戏招式 powerMultiplier ≤ 配置上限。覆盖 skills.yaml +
-    // encounter_skills.yaml 全部 skillDefs——此前该上限只在下方 encounterSkillIds
-    // 循环内校验,普通心法招(skills.yaml)越界会静默 load(审计 C-F4 缺口)。
-    for (final s in skillDefs.values) {
-      if (s.powerMultiplier > skillPowerMax) {
-        throw StateError(
-          'skill ${s.id} powerMultiplier=${s.powerMultiplier} > '
-          '$skillPowerMax (GDD §5.4)',
-        );
-      }
-      if (s.qiDelta.abs() > qiDeltaAbsCap) {
-        throw StateError(
-          'skill ${s.id} qiDelta=${s.qiDelta} abs > '
-          '$qiDeltaAbsCap (numbers.combat.qi.deltaAbsCap)',
-        );
-      }
-    }
-    const tierCaps = [1500, 2000, 2500, 3000, 4000, 5500, 8000];
-    for (final id in encounterSkillIds) {
-      final s = skillDefs[id]!;
-      final tier = s.tier;
-      if (tier == null || tier < 1 || tier > 7) {
-        throw StateError('encounter skill $id tier=$tier,应 ∈ [1, 7]');
-      }
-      if (s.parentTechniqueDefId != null) {
-        throw StateError(
-          'encounter skill $id parentTechniqueDefId='
-          '${s.parentTechniqueDefId},应为空(独立于心法体系)',
-        );
-      }
-      final cap = tierCaps[tier - 1];
-      if (s.powerMultiplier > cap) {
-        throw StateError(
-          'encounter skill $id tier=$tier powerMultiplier='
-          '${s.powerMultiplier} 越界,应 ≤ $cap',
-        );
-      }
-      // 全局 ≤ 8000 上限已在方法开头对全部 skillDefs 统一校验,此处只保留
-      // encounter 专属的 per-tier 更严 cap。
-    }
-    // unlock 引用一致性:encounters.yaml 的所有 unlockSkill outcome
-    // 必须能在 encounter skill 池里找到 def(且必须是 encounter skill,
-    // 不许借用普通心法招式)。
-    //
-    // P2-a(外部 review):此处不再以 `encounterSkillIds.isNotEmpty` 为前置闸门。
-    // 否则 encounter_skills.yaml 在生产被 catch 静默吞掉(损坏/缺失)时招式池为空,
-    // 一致性校验整段被跳过 → 奇遇招式静默失效。改为:只要 encounters 有 unlockSkill
-    // 引用,招式池空也会在此 fail-fast(skillId 不在空池 → 抛 StateError)。无
-    // unlockSkill outcome 的 fixture 自然不触发,保持兼容。
-    if (encounterDefs.isNotEmpty) {
-      for (final def in encounterDefs.values) {
-        for (final outcome in def.outcomeMapping.values) {
-          if (outcome.skillId == null) continue;
-          final sid = outcome.skillId!;
-          if (!encounterSkillIds.contains(sid)) {
-            throw StateError(
-              'encounter ${def.id} unlockSkill 引用 $sid '
-              '不在 encounter skill 池(encounter_skills.yaml)',
-            );
-          }
-        }
-      }
-    }
-  }
-
-  /// 奇遇红线(Phase 4 W14-1):
-  /// - id 唯一(已由 _parseDefMap 保证)
-  /// - baseProbability ∈ [0, 1](已由 fromYaml 保证)
-  /// - schoolKillThreshold 各值 > 0
-  /// - fortuneRequired ∈ [1, 10] 或 null
-  /// - attributeBonus outcome 的 attributeKey 必须 != null(已由 fromYaml 保证)
-  /// - unlockSkill outcome 的 skillId 非空(已由 fromYaml 保证)
-  void _enforceEncounterRedLines() {
-    if (encounterDefs.isEmpty) return;
-    for (final def in encounterDefs.values) {
-      for (final entry in def.trigger.schoolKillThreshold.entries) {
-        if (entry.value <= 0) {
-          throw StateError(
-            'encounter ${def.id} school ${entry.key.name} '
-            'threshold=${entry.value} 必须 > 0',
-          );
-        }
-      }
-      // C-W14-2:biome/weather 分钟阈值 > 0
-      for (final entry in def.trigger.biomeMinutes.entries) {
-        if (entry.value <= 0) {
-          throw StateError(
-            'encounter ${def.id} biome ${entry.key.name} '
-            'minutes=${entry.value} 必须 > 0',
-          );
-        }
-      }
-      for (final entry in def.trigger.weatherMinutes.entries) {
-        if (entry.value <= 0) {
-          throw StateError(
-            'encounter ${def.id} weather ${entry.key.name} '
-            'minutes=${entry.value} 必须 > 0',
-          );
-        }
-      }
-      final fr = def.trigger.fortuneRequired;
-      if (fr != null && (fr < 1 || fr > 10)) {
-        throw StateError('encounter ${def.id} fortuneRequired=$fr 应 ∈ [1, 10]');
-      }
-      // P4.1 1.1 Q6A:affectsSectMembership 引用 + accept_recruit 约定校
-      final asm = def.affectsSectMembership;
-      if (asm != null) {
-        // candidateRef 必须在 sectCandidates 中(允许 fixture 空 map 跳过)
-        if (sectCandidates.isNotEmpty &&
-            sectCandidates[asm.candidateRef] == null) {
-          throw StateError(
-            'encounter ${def.id} affectsSectMembership.candidateRef='
-            '${asm.candidateRef} 未在 sect_candidates.yaml 中',
-          );
-        }
-        // outcomeMapping 必须含 accept_recruit(spec §3 强约定)
-        if (!def.outcomeMapping.containsKey('accept_recruit')) {
-          throw StateError(
-            'encounter ${def.id} 含 affectsSectMembership 但 outcomeMapping '
-            '缺 accept_recruit(spec §3 强约定 · 玩家招收意愿凭此 id 触发)',
-          );
-        }
-        // fallbackOutcomeId 必须在 outcomeMapping 中(若指定)
-        final fallback = asm.fallbackOutcomeId;
-        if (fallback != null && !def.outcomeMapping.containsKey(fallback)) {
-          throw StateError(
-            'encounter ${def.id} affectsSectMembership.fallbackOutcomeId='
-            '$fallback 未在 outcomeMapping 中(spec §3 cap 满/拒绝 fallback)',
-          );
-        }
-      }
-    }
-  }
-
-  /// 心法 + 招式红线（Phase 3 Week 8 T64）：
-  /// - 覆盖度：7 阶 × 3 流派 = 21 个 (tier,school) 组合每个 ≥ 1 本
-  /// - 每本：skillIds.length == 3
-  /// - 每本对应的 3 招 type 必须精确为 {normalAttack, powerSkill, ultimate}
-  /// - 每招 parentTechniqueDefId 必须指向自身所属 technique
-  ///
-  /// 允许测试 fixture 不带 techniqueDefs(为空时整体跳过)。
-  void _enforceTechniqueRedLines() {
-    if (techniqueDefs.isEmpty) return;
-    for (final tier in TechniqueTier.values) {
-      for (final school in TechniqueSchool.values) {
-        final hit = techniqueDefs.values.any(
-          (t) => t.tier == tier && t.school == school,
-        );
-        if (!hit) {
-          throw StateError('心法覆盖度不足：缺 ${tier.name}/${school.name} 组合');
-        }
-      }
-    }
-    for (final t in techniqueDefs.values) {
-      if (t.skillIds.length != 3) {
-        throw StateError(
-          '心法 ${t.id} skillIds.length=${t.skillIds.length},应 == 3',
-        );
-      }
-      final types = <SkillType>{};
-      for (final sid in t.skillIds) {
-        final s = skillDefs[sid];
-        if (s == null) {
-          throw StateError('心法 ${t.id} 引用不存在的 skill: $sid');
-        }
-        if (s.parentTechniqueDefId != t.id) {
-          throw StateError(
-            '心法 ${t.id} 招式 $sid parentTechniqueDefId='
-            '${s.parentTechniqueDefId},应指向自身',
-          );
-        }
-        types.add(s.type);
-      }
-      const required = {
-        SkillType.normalAttack,
-        SkillType.powerSkill,
-        SkillType.ultimate,
-      };
-      if (types.length != required.length || !types.containsAll(required)) {
-        throw StateError(
-          '心法 ${t.id} 招式 type 分布 $types,'
-          '应精确为 {normalAttack, powerSkill, ultimate}',
-        );
-      }
-    }
-  }
-
-  /// 装备红线（Phase 3 Week 7 T63）：
-  /// - 单件：baseAttackMax ≤ 2000（GDD §5.4 红线）/ baseAttackMin 区间合法
-  /// - 覆盖度：每阶（7 阶）≥ 5 件 / 每阶 weapon 三流派各 ≥ 1 / armor + accessory 各 ≥ 1
-  ///
-  /// 允许测试 fixture 缺装备段(equipmentDefs 为空时跳过覆盖度,仅放过 master/stage 等独立测试)。
-  void _enforceEquipmentRedLines() {
-    for (final e in equipmentDefs.values) {
-      if (e.baseAttackMax > 2000) {
-        throw StateError(
-          '红线越界：装备 ${e.id} baseAttackMax=${e.baseAttackMax} > 2000',
-        );
-      }
-      if (e.baseAttackMin < 0 || e.baseAttackMin > e.baseAttackMax) {
-        throw StateError(
-          '装备 ${e.id} baseAttackMin/Max 不合法：'
-          '${e.baseAttackMin}/${e.baseAttackMax}',
-        );
-      }
-      // 2026-06-12 爆品展示内容化：tier≥重器(treasureDrop.minTier)走印章展示，
-      // 必有 tagline 典故金句。红线守非空，防漏导致爆品展示缺典故句。
-      if (e.tier.index >= numbers.treasureDrop.minTier.index &&
-          (e.tagline == null || e.tagline!.trim().isEmpty)) {
-        throw StateError(
-          '装备 ${e.id} tier=${e.tier.name} ≥ 爆品门槛'
-          '(${numbers.treasureDrop.minTier.name}) 但 tagline 缺失，'
-          '爆品展示需典故金句',
-        );
-      }
-    }
-    if (equipmentDefs.isEmpty) return;
-    for (final tier in EquipmentTier.values) {
-      final tierItems = equipmentDefs.values.where((e) => e.tier == tier);
-      if (tierItems.length < 5) {
-        throw StateError('装备覆盖度不足：${tier.name} 阶共 ${tierItems.length} 件,应 ≥ 5');
-      }
-      final weapons = tierItems.where((e) => e.slot == EquipmentSlot.weapon);
-      final armors = tierItems.where((e) => e.slot == EquipmentSlot.armor);
-      final accessories = tierItems.where(
-        (e) => e.slot == EquipmentSlot.accessory,
-      );
-      if (armors.isEmpty) {
-        throw StateError('装备覆盖度不足：${tier.name} 阶缺 armor');
-      }
-      if (accessories.isEmpty) {
-        throw StateError('装备覆盖度不足：${tier.name} 阶缺 accessory');
-      }
-      for (final school in TechniqueSchool.values) {
-        final hit = weapons.any((w) => w.schoolBias == school);
-        if (!hit) {
-          throw StateError('装备覆盖度不足：${tier.name} 阶缺 ${school.name} 流派武器');
-        }
-      }
-    }
-  }
-
-  void _enforceTowerRedLines() {
-    if (towerFloors.isEmpty) return; // 允许测试 fixture 不带 towers
-    if (towerFloors.length != 30) {
-      throw StateError('爬塔层数应为 30，实际 ${towerFloors.length}');
-    }
-    const minorBossFloors = {5, 15, 25};
-    const majorBossFloors = {10, 20, 30};
-    final seen = <int>{};
-    for (var i = 0; i < towerFloors.length; i++) {
-      final f = towerFloors[i];
-      if (f.floorIndex != i + 1) {
-        throw StateError('爬塔层不连续：期望 floorIndex=${i + 1}，实际 ${f.floorIndex}');
-      }
-      if (!seen.add(f.floorIndex)) {
-        throw StateError('爬塔 floorIndex 重复：${f.floorIndex}');
-      }
-      // Boss 分布严格校验
-      final expectedKind = minorBossFloors.contains(f.floorIndex)
-          ? TowerBossKind.minor
-          : majorBossFloors.contains(f.floorIndex)
-          ? TowerBossKind.major
-          : null;
-      if (f.bossKind != expectedKind) {
-        throw StateError(
-          '爬塔 floor=${f.floorIndex} bossKind=${f.bossKind?.name ?? "null"}，'
-          '期望 ${expectedKind?.name ?? "null"}',
-        );
-      }
-      // 普通层不得带 narrative
-      if (f.bossKind == null &&
-          (f.narrativeOpeningId != null || f.narrativeVictoryId != null)) {
-        throw StateError('爬塔 floor=${f.floorIndex} 普通层不应配 narrative');
-      }
-      // 每层 1-3 个敌人
-      if (f.enemyTeam.isEmpty || f.enemyTeam.length > 3) {
-        throw StateError(
-          '爬塔 floor=${f.floorIndex} 敌人数 ${f.enemyTeam.length}，'
-          '应 ∈ [1, 3]',
-        );
-      }
-      // Boss 层至少有一个主 Boss；20/25/30 可带护法形成多目标压力。
-      if (f.bossKind != null && !f.enemyTeam.any((e) => e.isBoss)) {
-        throw StateError('爬塔 Boss floor=${f.floorIndex} 至少应有 1 个 isBoss 主敌');
-      }
-      // §5.4 红线：Boss baseHp ≤ bossHpMax（config-driven，2026-06-14 调至 60000）
-      final bossHpMax = numbers.combat.redLines.bossHpMax;
-      for (final e in f.enemyTeam) {
-        if (e.baseHp > bossHpMax) {
-          throw StateError(
-            '红线越界：爬塔 floor=${f.floorIndex} enemy=${e.id} '
-            'baseHp=${e.baseHp} > $bossHpMax',
-          );
-        }
-      }
-      // 可玩性 P1a：残页只能配在 Boss 层 + id 须在 skills.yaml。
-      final frag = f.dropSkillFragmentId;
-      if (frag != null) {
-        if (f.bossKind == null) {
-          throw StateError(
-            '爬塔 floor=${f.floorIndex} 配 dropSkillFragmentId 但非 Boss 层(P1a §二红线)',
-          );
-        }
-        if (skillDefs[frag] == null) {
-          throw StateError(
-            '爬塔 floor=${f.floorIndex} dropSkillFragmentId=$frag 未在 skills.yaml(P1a §二红线)',
-          );
-        }
-      }
-    }
+    enforceTaohuaIslandRedLines(itemDefs: itemDefs, numbers: numbers);
   }
 
   /// Phase 3 Week 4 T53 + T55：师徒 3 角色红线。
@@ -1750,7 +1237,7 @@ class GameRepository {
   /// P4.1 1.1 Q6B · Boss 招降 bossRecruit 红线(spec §6 三重校):
   /// - 仅 `isBossStage: true` 关卡可配 bossRecruit(非 Boss 关配置直接抛)
   /// - `bossRecruit.candidateRef` 必须在 [sectCandidates] 中(沿 Q6A
-  ///   `_enforceEncounterRedLines` affectsSectMembership 体例 · 允许 fixture
+  ///   `enforceEncounterRedLines`(validation/) affectsSectMembership 体例 · 允许 fixture
   ///   sectCandidates 空 map 跳过 ref 校,但仍校第 1/3 条)
   /// - `bossRecruit.baseProbability` ∈ [0.0, 1.0]
   void _enforceBossRecruitRedLines() {
