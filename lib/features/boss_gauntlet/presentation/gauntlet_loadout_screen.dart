@@ -10,13 +10,15 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/gauntlet_providers.dart';
 import '../domain/boss_gauntlet_config.dart';
+import 'gauntlet_entry_flow.dart';
 
 /// 断魂庄装载屏（§7.1 · C2.5）。断魂帖库存 / 庄中三关（三 Boss + 推荐境界）/ 择人
 /// 1-3（非祖师·已修主修）/ 补给装载（≤3 份托管）/ 持帖入庄。
 ///
 /// 入庄写路径经 [GauntletService.enter] 单事务（屏内零直接 Isar 写），成功后 invalidate
-/// active/candidates/loadoutInfo provider；config 经 [gauntletConfigProvider] watch（非
-/// 构造期读单例，避 async-config-race）。战斗驱动（enter→逐关战斗）wiring 属后续切片。
+/// active/candidates/loadoutInfo provider，随即 push [runGauntletFlow] 逐关战斗流
+/// （#1 wiring Task 5）；流程终局（选奖 / 离庄 / 认输）返回后 pop 本屏回主菜单。config
+/// 经 [gauntletConfigProvider] watch（非构造期读单例，避 async-config-race）。
 class GauntletLoadoutScreen extends ConsumerStatefulWidget {
   const GauntletLoadoutScreen({super.key});
 
@@ -52,6 +54,10 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
       ref.invalidate(activeGauntletProvider);
       ref.invalidate(gauntletCandidatesProvider);
       ref.invalidate(gauntletLoadoutInfoProvider);
+      // 入庄成功 → 逐关战斗流（#1 wiring Task 5）；终局（选奖 / 离庄 / 认输）返回后
+      // pop 本屏回主菜单（镜像 tower 花名册 → runTowerFlow）。
+      await runGauntletFlow(context: context, ref: ref);
+      if (!mounted) return;
       Navigator.of(context).maybePop();
     } on StateError {
       if (!mounted) return;
