@@ -1,6 +1,6 @@
 import '../../../core/domain/enums.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
-import '../../encounter/domain/encounter_def.dart' show AttributeKey;
+import '../../../data/defs/encounter_def.dart' show AttributeKey;
 import '../../../core/domain/island_building_type.dart';
 import '../../../shared/strings.dart';
 import 'battle_state.dart' show BattleResult;

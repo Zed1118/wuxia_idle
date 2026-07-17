@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yaml/yaml.dart';
-import 'package:wuxia_idle/features/taohua_island/domain/taohua_island_config.dart';
+import 'package:wuxia_idle/data/defs/taohua_island_config.dart';
 import 'package:wuxia_idle/core/domain/island_building_type.dart';
 
 /// 桃花岛升级成本「节奏 B」红线测（前低后高曲线 + 按等级分阶境界 gate）。

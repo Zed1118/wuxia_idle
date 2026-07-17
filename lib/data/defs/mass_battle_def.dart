@@ -1,4 +1,4 @@
-import '../../../core/domain/enums.dart';
+import '../../core/domain/enums.dart';
 
 /// 群战守城配置(1.0 P3.2 §12.3,GDD v1.13,data/numbers.yaml `mass_battle` 段强类型化)。
 ///

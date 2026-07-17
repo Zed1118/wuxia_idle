@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
-import 'package:wuxia_idle/features/equipment/domain/cycle_drop_bonus.dart';
+import 'package:wuxia_idle/data/defs/cycle_drop_bonus.dart';
 
 /// 周目平衡 2026-06-26：普通掉落材料加成纯逻辑 TDD。
 void main() {

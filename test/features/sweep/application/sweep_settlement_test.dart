@@ -10,7 +10,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/sweep/application/sweep_settlement.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
-import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
+import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 
 import '../../../support/isar_test_support.dart';
 import '../../../support/test_data.dart';

@@ -3,7 +3,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
-import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
+import 'package:wuxia_idle/data/defs/inner_demon_def.dart';
 
 /// Batch 2.2.A R1 单元:InnerDemonService.isLayerLocked 拦截判定。
 ///

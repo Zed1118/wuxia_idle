@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import '../../../core/domain/island_building_state.dart';
 import '../../../core/domain/island_building_type.dart';
-import '../domain/taohua_island_config.dart';
+import '../../../data/defs/taohua_island_config.dart';
 
 /// 桃花岛产出累积核心逻辑（纯函数 · 无 Isar/无副作用）。
 ///

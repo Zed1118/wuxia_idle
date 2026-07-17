@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/expedition/domain/expedition_config.dart';
-import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_config.dart';
+import 'package:wuxia_idle/data/defs/expedition_config.dart';
+import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 
 void main() {
   group('ExpeditionConfig.fromYaml', () {

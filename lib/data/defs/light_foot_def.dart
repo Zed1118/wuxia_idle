@@ -1,4 +1,4 @@
-import '../../../core/domain/enums.dart';
+import '../../core/domain/enums.dart';
 
 /// 轻功对决配置(1.0 P3.1 §12.3,GDD v1.11,data/numbers.yaml `light_foot` 段强类型化)。
 ///

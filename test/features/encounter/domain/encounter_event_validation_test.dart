@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/yaml_loader.dart';
-import 'package:wuxia_idle/features/encounter/domain/encounter_event_loader.dart';
+import 'package:wuxia_idle/data/encounter_event_loader.dart';
 
 /// C2 [审计 2026-06-24]:奇遇 events yaml 加载层强校验。
 ///

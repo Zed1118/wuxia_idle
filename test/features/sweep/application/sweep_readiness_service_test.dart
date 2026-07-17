@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/sweep/application/sweep_readiness_service.dart';
-import 'package:wuxia_idle/features/sweep/domain/sweep_readiness.dart';
+import 'package:wuxia_idle/data/defs/sweep_readiness.dart';
 
 void main() {
   late Directory tempDir;

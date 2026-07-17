@@ -1,8 +1,8 @@
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/realm_def.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
-import '../../inner_demon/domain/inner_demon_def.dart';
-import '../domain/progression_release_cap.dart';
+import '../../../data/defs/inner_demon_def.dart';
+import '../../../data/defs/progression_release_cap.dart';
 
 final class ProgressionGateService {
   ProgressionGateService._();

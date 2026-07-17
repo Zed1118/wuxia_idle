@@ -27,7 +27,7 @@ import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../battle/domain/strategy/light_foot_strategy.dart';
 import '../../battle/domain/strategy/mass_battle_strategy.dart';
 import '../../mass_battle/application/mass_battle_service.dart';
-import '../../mass_battle/domain/mass_battle_def.dart';
+import '../../../data/defs/mass_battle_def.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
 import '../../battle/presentation/battle_screen.dart';

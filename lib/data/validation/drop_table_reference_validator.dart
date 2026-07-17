@@ -1,5 +1,5 @@
 import '../../core/domain/enums.dart';
-import '../../features/tower/domain/tower_floor_def.dart';
+import '../defs/tower_floor_def.dart';
 import '../defs/drop_entry.dart';
 import '../defs/stage_def.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
+import 'package:wuxia_idle/data/defs/encounter_def.dart';
 import 'package:wuxia_idle/features/baike/application/encounter_codex_provider.dart';
 import 'package:wuxia_idle/features/baike/presentation/encounter_tab.dart';
 import 'package:wuxia_idle/features/baike/presentation/encounter_detail_screen.dart';

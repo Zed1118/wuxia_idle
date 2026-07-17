@@ -45,7 +45,7 @@ import '../../tower/application/tower_progress_service.dart';
 import '../../tower/domain/tower_progress.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
 import '../../seclusion/domain/retreat_session.dart';
-import '../../seclusion/domain/seclusion_map_def.dart';
+import '../../../data/defs/seclusion_map_def.dart';
 import '../../seclusion/presentation/active_retreat_screen.dart';
 import '../../seclusion/presentation/retreat_result_screen.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';

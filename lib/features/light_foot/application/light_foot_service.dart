@@ -1,4 +1,4 @@
-import '../domain/light_foot_def.dart';
+import '../../../data/defs/light_foot_def.dart';
 
 /// 轻功对决 application 层(1.0 P3.1 §12.3,Batch B.1)。
 ///

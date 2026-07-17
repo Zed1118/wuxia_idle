@@ -59,7 +59,7 @@ import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/utils/rng.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
-import '../domain/tower_floor_def.dart';
+import '../../../data/defs/tower_floor_def.dart';
 import '../../weapon_codex/application/equipment_catalog_hook.dart';
 
 /// Phase 3 T43 爬塔进入流程串联。

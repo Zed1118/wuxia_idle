@@ -16,7 +16,7 @@ import '../../../shared/utils/rng_provider.dart';
 import '../domain/sect.dart';
 import '../domain/sect_event.dart';
 import '../domain/sect_outcome.dart';
-import '../domain/territory_def.dart';
+import '../../../data/defs/territory_def.dart';
 import 'sect_event_service.dart';
 import 'sect_member_service.dart';
 import 'sect_monthly_tick_service.dart';

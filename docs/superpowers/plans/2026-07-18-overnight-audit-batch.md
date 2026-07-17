@@ -34,8 +34,8 @@
 
 ## 当前恢复点
 
-- **状态**:批A 完成待 commit → 批B 开工
-- **最后完成**:批A 两处编辑+pub solve 验证(lock 零变化);#15/#19 双证伪
-- **下一步**:git mv ×4(sect_rank/island_building_state/island_building_type/battle_providers)→ rewrite_imports.py → rm 旧 .g.dart → build_runner → analyze → grep 反向 import 归零 → targeted(sect/taohua/battle providers 相关)→ 全量 → commit
-- **已跑验证**:worktree analyze 0(01:49);全量 4088/0(01:58)
+- **状态**:批A ✅(19b9431e) 批B ✅(1aa21961·全量4088/0) C1 ✅def迁移(11+8=19 文件入 data,analyze 0+targeted 565 绿) → C2 校验抽取开工
+- **C1 追加发现**:numbers_config 还藏 9 个 feature 子配置模型,迁 8 个;equipment_disposal 跳过(依赖 feature 局部 occupancy+含逻辑,级联风险)→ backlog;isar_setup 15 个 feature import=Isar schema 注册表(composition root)豁免+注释
+- **下一步(C2)**:按组抽 22 个 private _enforce* → lib/data/validation/ 自由函数(参数名=字段名,方法体逐字不动):C2a economy_codex(:845-1047 codex/shop/item/taohua/synergy)→ C2b encounter(:1049-1203)→ C2c technique_equipment(:1204-1304)→ C2d progression(tower :1305-1387+bossCharge :1974-2007+seclusion :2159-2277+mainline :2278-2330)→ C2e lineage_recruit(:1388-1785)→ C2f skill(:1786-1973)。每组 analyze,C2c/C2f 后 commit,C 末全量。4 个 public static enforce* 与顶层 enforceLineageOnboardingRedLines 是公共 API/已在类外,不动
+- **已跑验证**:全量 4088/0(01:58 基线+02:25 批B);C1 analyze 0+targeted 565(02:44)
 - **阻塞项**:无

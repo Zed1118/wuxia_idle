@@ -7,7 +7,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 import '../../tutorial/application/tutorial_providers.dart';
 import '../application/codex_providers.dart';
-import '../domain/codex_category.dart';
+import '../../../data/defs/codex_category.dart';
 import 'codex_entry_detail.dart';
 
 /// P1 #42 Phase 2 §10 P1.z BaikeScreen 第 3 tab「机制」(GDD §10.2 第 3 方式)。

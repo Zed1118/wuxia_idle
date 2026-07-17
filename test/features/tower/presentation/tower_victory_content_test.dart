@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_stats.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
-import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
+import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_entry_flow.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';

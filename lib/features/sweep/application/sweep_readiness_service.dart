@@ -1,7 +1,7 @@
 import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/save_data.dart';
-import '../domain/sweep_readiness.dart';
+import '../../../data/defs/sweep_readiness.dart';
 
 class SweepReadinessService {
   const SweepReadinessService({required this.isar, required this.config});

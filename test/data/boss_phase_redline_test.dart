@@ -10,7 +10,7 @@ import 'package:wuxia_idle/data/defs/boss_phase_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
+import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 
 // ── fixture helpers ─────────────────────────────────────────────────────────
 

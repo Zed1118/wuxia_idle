@@ -2,7 +2,7 @@ import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../domain/retreat_session.dart';
-import '../domain/seclusion_map_def.dart';
+import '../../../data/defs/seclusion_map_def.dart';
 import 'seclusion_service.dart';
 import 'retreat_settlement_calculator.dart';
 

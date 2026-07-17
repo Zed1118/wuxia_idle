@@ -6,7 +6,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
+import 'package:wuxia_idle/data/defs/encounter_def.dart';
 import 'package:wuxia_idle/features/sect/application/sect_member_service.dart';
 import 'package:wuxia_idle/features/sect/domain/sect.dart';
 import 'package:wuxia_idle/core/domain/sect_rank.dart';

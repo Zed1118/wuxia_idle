@@ -1,4 +1,4 @@
-import '../domain/tower_floor_def.dart';
+import '../../../data/defs/tower_floor_def.dart';
 import '../domain/tower_progress.dart';
 import 'tower_progress_service.dart';
 

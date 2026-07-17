@@ -6,7 +6,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/island_building_state.dart';
 import '../../../core/domain/island_building_type.dart';
-import '../domain/taohua_island_config.dart';
+import '../../../data/defs/taohua_island_config.dart';
 import 'island_production_service.dart';
 
 /// 桃花岛一次收获的产出汇总。

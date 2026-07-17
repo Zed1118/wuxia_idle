@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
-import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
+import 'package:wuxia_idle/data/defs/inner_demon_def.dart';
 import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_progress.dart';
 
 void main() {

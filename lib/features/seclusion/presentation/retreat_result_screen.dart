@@ -11,7 +11,7 @@ import '../../cultivation/application/character_advancement_service.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
 import '../application/seclusion_service.dart';
-import '../domain/seclusion_map_def.dart';
+import '../../../data/defs/seclusion_map_def.dart';
 import 'seclusion_map_visuals.dart';
 
 /// 闭关收功结果屏幕（Phase 3 T49/T50 / W15 #30 P3 扩 EXP + 升层 banner）。

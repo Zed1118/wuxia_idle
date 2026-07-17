@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../support/image_test_helpers.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
-import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
+import 'package:wuxia_idle/data/defs/encounter_def.dart';
 import 'package:wuxia_idle/features/encounter/presentation/encounter_dialog.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';

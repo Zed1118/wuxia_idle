@@ -15,7 +15,7 @@ import '../../sweep/presentation/sweep_screen.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_progress_summary.dart';
 import '../application/tower_providers.dart';
-import '../domain/tower_floor_def.dart';
+import '../../../data/defs/tower_floor_def.dart';
 import '../domain/tower_progress.dart';
 import 'tower_entry_flow.dart';
 import 'tower_floor_card.dart';
