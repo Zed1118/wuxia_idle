@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yaml/yaml.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/taohua_island_config.dart';
-import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
+import 'package:wuxia_idle/core/domain/island_building_type.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -8,7 +8,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/sect/application/sect_member_service.dart';
 import 'package:wuxia_idle/features/sect/domain/sect.dart';
-import 'package:wuxia_idle/features/sect/domain/sect_rank.dart';
+import 'package:wuxia_idle/core/domain/sect_rank.dart';
 import "../../support/isar_test_support.dart";
 import "../../support/test_data.dart";
 

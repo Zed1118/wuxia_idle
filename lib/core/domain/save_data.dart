@@ -1,6 +1,6 @@
 import 'package:isar_community/isar.dart';
 import 'skill_unlock_entry.dart';
-import '../../features/taohua_island/domain/island_building_state.dart';
+import 'island_building_state.dart';
 
 part 'save_data.g.dart';
 

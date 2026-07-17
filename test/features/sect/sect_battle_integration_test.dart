@@ -6,7 +6,7 @@ import 'package:wuxia_idle/features/sect/application/sect_monthly_tick_service.d
 import 'package:wuxia_idle/features/sect/application/sect_providers.dart';
 import 'package:wuxia_idle/features/sect/application/sect_reputation_decay.dart';
 
-import 'package:wuxia_idle/core/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 
 /// P3.4 Batch 2.3 service provider wire 测族(spec §7 R1.8/R1.9)。
 ///

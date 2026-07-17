@@ -1,4 +1,4 @@
-import 'island_building_type.dart';
+import '../../../core/domain/island_building_type.dart';
 
 class BuildingConfig {
   final BuildingType type;

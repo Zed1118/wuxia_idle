@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';

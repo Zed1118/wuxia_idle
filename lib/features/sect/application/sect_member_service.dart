@@ -3,7 +3,7 @@ import 'package:isar_community/isar.dart';
 import '../../../core/domain/character.dart';
 import '../../../data/numbers_config.dart';
 import '../domain/sect.dart';
-import '../domain/sect_rank.dart';
+import '../../../core/domain/sect_rank.dart';
 
 /// 门派成员服务(P4.1 §12.2 Q2=C 双向 fk + Q3=A 复用 Character + Q5=A 三阶)。
 ///

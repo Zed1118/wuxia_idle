@@ -20,7 +20,7 @@ import '../../mainline/domain/mainline_progress.dart';
 import '../../onboarding/application/master_builder.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../sect/domain/sect.dart';
-import '../../sect/domain/sect_rank.dart';
+import '../../../core/domain/sect_rank.dart';
 import '../../tower/domain/tower_progress.dart';
 
 /// Phase 2 调试场景种子工厂（phase2_tasks.md T32 §492-509 子提交 3）。

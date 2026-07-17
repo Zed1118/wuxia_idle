@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/core/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';

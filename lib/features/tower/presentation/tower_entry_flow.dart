@@ -16,7 +16,7 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/narrative_loader.dart';
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../../data/isar_provider.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';

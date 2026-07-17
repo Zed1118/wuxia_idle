@@ -16,7 +16,7 @@ import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/narrative_loader.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../battle/application/battle_resolution.dart';
 import '../../battle/application/combat_progression_settlement_service.dart';
 import '../../battle/application/post_combat_invalidation.dart';

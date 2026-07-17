@@ -12,7 +12,7 @@ import 'package:wuxia_idle/features/debug/application/visual_route.dart';
 import 'package:wuxia_idle/features/debug/application/visual_acceptance_plan.dart';
 import 'package:wuxia_idle/features/debug/presentation/battle_test_menu.dart';
 import 'package:wuxia_idle/features/debug/presentation/visual_route_host.dart';
-import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
+import 'package:wuxia_idle/core/domain/island_building_type.dart';
 import 'package:wuxia_idle/features/taohua_island/presentation/taohua_island_screen.dart';
 import 'package:wuxia_idle/shared/audio/audio_assets.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';

@@ -9,7 +9,7 @@ import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../cultivation/application/skill_proficiency_formatter.dart';
 import '../../cultivation/application/character_advancement_service.dart';

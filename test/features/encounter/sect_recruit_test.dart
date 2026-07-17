@@ -9,7 +9,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
 import 'package:wuxia_idle/features/sect/application/sect_member_service.dart';
 import 'package:wuxia_idle/features/sect/domain/sect.dart';
-import 'package:wuxia_idle/features/sect/domain/sect_rank.dart';
+import 'package:wuxia_idle/core/domain/sect_rank.dart';
 import "../../support/isar_test_support.dart";
 
 /// P4.1 1.1 Q6A · sect_recruit encounter B3 R5 测族(spec §7)。

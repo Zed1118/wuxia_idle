@@ -6,7 +6,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
-import 'package:wuxia_idle/features/sect/domain/sect_rank.dart' show SectRank;
+import 'package:wuxia_idle/core/domain/sect_rank.dart' show SectRank;
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';

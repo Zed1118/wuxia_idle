@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/attribute_effect_policy.dart';

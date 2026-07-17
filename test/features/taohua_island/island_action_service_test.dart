@@ -9,7 +9,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/taohua_island/application/island_action_service.dart';
 import 'package:wuxia_idle/features/taohua_island/application/island_settle_service.dart';
-import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
+import 'package:wuxia_idle/core/domain/island_building_type.dart';
 import "../../support/isar_test_support.dart";
 import '../../support/test_data.dart';
 

@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../../core/domain/character.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -16,7 +16,7 @@ import '../application/sect_providers.dart';
 import '../application/territory_service.dart';
 import '../domain/sect.dart';
 import '../domain/sect_event.dart';
-import '../domain/sect_rank.dart';
+import '../../../core/domain/sect_rank.dart';
 import '../domain/territory_def.dart';
 import 'widgets/sect_event_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';

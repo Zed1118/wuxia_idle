@@ -13,8 +13,8 @@ import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
-import 'package:wuxia_idle/features/taohua_island/domain/island_building_state.dart';
-import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
+import 'package:wuxia_idle/core/domain/island_building_state.dart';
+import 'package:wuxia_idle/core/domain/island_building_type.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import '../../support/test_data.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
-import 'package:wuxia_idle/features/sect/domain/sect_rank.dart';
+import 'package:wuxia_idle/core/domain/sect_rank.dart';
 
 /// P4.1 §12.2 B4 R5.5 sectRank schema 不破七阶锁(spec p4_1_sect_management_spec §7)。
 ///

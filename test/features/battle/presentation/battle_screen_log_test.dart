@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../support/image_test_helpers.dart';
-import 'package:wuxia_idle/core/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';

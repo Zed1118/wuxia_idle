@@ -10,7 +10,7 @@ import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/game_repository.dart';
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../dispel/application/dispel_service.dart';
 import '../../dispel/application/dispel_service_providers.dart';

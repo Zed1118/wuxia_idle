@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart' show isTechniqueScrollDefId;
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';

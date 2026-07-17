@@ -4,8 +4,8 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
-import '../domain/island_building_state.dart';
-import '../domain/island_building_type.dart';
+import '../../../core/domain/island_building_state.dart';
+import '../../../core/domain/island_building_type.dart';
 import '../domain/taohua_island_config.dart';
 import 'island_production_service.dart';
 
