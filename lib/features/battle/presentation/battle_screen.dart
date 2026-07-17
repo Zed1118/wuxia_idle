@@ -720,49 +720,48 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
               ),
             ),
             SafeArea(
-              child: BattlePlaybackMotion(
-                controller: _playback,
-                child: Focus(
-                  autofocus: true,
-                  onKeyEvent: (node, event) {
-                    if (event is KeyDownEvent &&
-                        event.logicalKey == LogicalKeyboardKey.escape &&
-                        _pendingActive) {
-                      _clearPending();
-                      return KeyEventResult.handled;
-                    }
-                    return KeyEventResult.ignored;
+              child: Focus(
+                autofocus: true,
+                onKeyEvent: (node, event) {
+                  if (event is KeyDownEvent &&
+                      event.logicalKey == LogicalKeyboardKey.escape &&
+                      _pendingActive) {
+                    _clearPending();
+                    return KeyEventResult.handled;
+                  }
+                  return KeyEventResult.ignored;
+                },
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    if (_pendingActive) _clearPending();
                   },
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: () {
-                      if (_pendingActive) _clearPending();
-                    },
-                    child: Column(
-                      children: [
-                        if (widget.cycleHint != null)
-                          CycleHintBanner(hint: widget.cycleHint!),
-                        Header(
-                          state: state,
-                          sceneTitle: widget.hint,
-                          onToggleLog: () =>
-                              setState(() => _logOpen = !_logOpen),
-                          onPause: _togglePause,
-                          isPaused: _playback.isPaused,
-                          onFastForward: _playback.toggleFastForward,
-                          isFastForward: _playback.isFastForward,
-                          allowPlayerIntervention:
-                              widget.playback.allowPlayerIntervention,
-                          onSurrender: widget.onSurrender == null
-                              ? null
-                              : _confirmSurrender,
-                          // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
-                          onStepOnce: widget.playback.startPaused
-                              ? _stepOnce
-                              : null,
-                        ),
-                        DangerBar(state: state),
-                        Expanded(
+                  child: Column(
+                    children: [
+                      if (widget.cycleHint != null)
+                        CycleHintBanner(hint: widget.cycleHint!),
+                      Header(
+                        state: state,
+                        sceneTitle: widget.hint,
+                        onToggleLog: () => setState(() => _logOpen = !_logOpen),
+                        onPause: _togglePause,
+                        isPaused: _playback.isPaused,
+                        onFastForward: _playback.toggleFastForward,
+                        isFastForward: _playback.isFastForward,
+                        allowPlayerIntervention:
+                            widget.playback.allowPlayerIntervention,
+                        onSurrender: widget.onSurrender == null
+                            ? null
+                            : _confirmSurrender,
+                        // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
+                        onStepOnce: widget.playback.startPaused
+                            ? _stepOnce
+                            : null,
+                      ),
+                      DangerBar(state: state),
+                      Expanded(
+                        child: BattlePlaybackMotion(
+                          controller: _playback,
                           child: BattlePlaybackField(
                             controller: _playback,
                             state: state,
@@ -775,33 +774,32 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             onEnemyHover: _onPendingEnemyHover,
                           ),
                         ),
-                        BattleReportStrip(
+                      ),
+                      BattleReportStrip(
+                        state: state,
+                        onTap: () => setState(() => _logOpen = true),
+                      ),
+                      if (widget.playback.allowPlayerIntervention)
+                        CoopBurstPromptBar(state: state),
+                      if (widget.playback.allowPlayerIntervention)
+                        BottomBar(
                           state: state,
-                          onTap: () => setState(() => _logOpen = true),
-                        ),
-                        if (widget.playback.allowPlayerIntervention)
-                          CoopBurstPromptBar(state: state),
-                        if (widget.playback.allowPlayerIntervention)
-                          BottomBar(
-                            state: state,
-                            focusSlotIndex: _effectiveFocus(state),
-                            allowPlayerIntervention: true,
-                            onSelectFocus: _onSelectFocus,
-                            onShowSkillInfo: _showSkillInfo,
-                            onSkillTap: _onSkillTap,
-                            pendingCharacterId:
-                                _pendingCharId ??
-                                widget.previewPendingCharacterId,
-                            pendingSkillId:
-                                _pendingSkill?.id ??
-                                widget.previewPendingSkillId,
-                            beat: _playback.beat,
-                            skillTargetLink: _skillTargetLink,
-                          )
-                        else
-                          AutoRotationBar(state: state),
-                      ],
-                    ),
+                          focusSlotIndex: _effectiveFocus(state),
+                          allowPlayerIntervention: true,
+                          onSelectFocus: _onSelectFocus,
+                          onShowSkillInfo: _showSkillInfo,
+                          onSkillTap: _onSkillTap,
+                          pendingCharacterId:
+                              _pendingCharId ??
+                              widget.previewPendingCharacterId,
+                          pendingSkillId:
+                              _pendingSkill?.id ?? widget.previewPendingSkillId,
+                          beat: _playback.beat,
+                          skillTargetLink: _skillTargetLink,
+                        )
+                      else
+                        AutoRotationBar(state: state),
+                    ],
                   ),
                 ),
               ),
