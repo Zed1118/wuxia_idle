@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/battle/presentation/battle_layout_tokens.dar
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
+import 'package:wuxia_idle/features/battle/presentation/widgets/battle_bottom_bar.dart';
 
 /// 批三战斗指令台（T1/T2/T3）widget 测试。
 ///
@@ -777,6 +778,28 @@ void main() {
 
       expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsNothing);
       expect(find.byKey(const ValueKey('skill_cmd_2_pB')), findsOneWidget);
+    });
+
+    testWidgets('当前重点角色阵亡后自动回落首个存活队友', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final c0 = left[0].copyWith(availableSkills: [_power]);
+      final c1 = left[1].copyWith(availableSkills: [_powerB]);
+      final notifier = await _pumpWith(tester, [c0, c1, left[2]], right);
+
+      expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsOneWidget);
+      notifier.setState(
+        notifier.state.copyWith(
+          leftTeam: [c0.copyWith(currentHp: 0, isAlive: false), c1, left[2]],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsNothing);
+      expect(find.byKey(const ValueKey('skill_cmd_2_pB')), findsOneWidget);
+      final fallbackChip = tester.widget<FocusChip>(
+        find.byKey(const ValueKey('focus_chip_1')),
+      );
+      expect(fallbackChip.selected, isTrue);
     });
 
     testWidgets('敌人蓄力时重点角色自动切到可破招者', (tester) async {

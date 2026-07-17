@@ -451,6 +451,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         if (k != null && canInterveneWithSkill(c, k)) return i;
       }
     }
+    if (_focusSlotIndex >= 0 &&
+        _focusSlotIndex < s.leftTeam.length &&
+        s.leftTeam[_focusSlotIndex].isAlive) {
+      return _focusSlotIndex;
+    }
+    for (var i = 0; i < s.leftTeam.length; i++) {
+      if (s.leftTeam[i].isAlive) return i;
+    }
+    // 全队阵亡后的结算帧仍需一个安全索引；优先保留原手选槽。
     if (_focusSlotIndex >= 0 && _focusSlotIndex < s.leftTeam.length) {
       return _focusSlotIndex;
     }
