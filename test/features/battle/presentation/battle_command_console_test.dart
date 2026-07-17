@@ -678,6 +678,77 @@ void main() {
       expect(notifier.state.pendingUltimates[1], isNull);
     });
 
+    testWidgets('待发选目标期间敌人蓄力不抢走实际出手角色焦点', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final pendingActor = left[0].copyWith(
+        availableSkills: [_power],
+        actionPoint: 1,
+      );
+      final interrupter = left[1].copyWith(
+        availableSkills: [_break],
+        actionPoint: 1,
+      );
+      final notifier = await _pumpWith(tester, [
+        pendingActor,
+        interrupter,
+        left[2],
+      ], right);
+
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_p1')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('skill_pending_stamp_badge')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('target_chip_11')), findsOneWidget);
+
+      notifier.setState(
+        notifier.state.copyWith(
+          rightTeam: [
+            right.first.copyWith(
+              chargingSkill: _chargeSkill,
+              chargeTicksRemaining: 2,
+            ),
+            ...right.skip(1),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsOneWidget);
+      expect(find.byKey(const ValueKey('skill_cmd_2_b1')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('skill_pending_stamp_badge')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('待发期间主动切换队友会取消原待发再切换案台', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final c0 = left[0].copyWith(availableSkills: [_power], actionPoint: 1);
+      final c1 = left[1].copyWith(availableSkills: [_powerB], actionPoint: 1);
+      await _pumpWith(tester, [c0, c1, left[2]], right);
+
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_p1')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('skill_pending_stamp_badge')),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byKey(const ValueKey('focus_chip_1')));
+      // 取消待发会恢复自动播放；只推进当前交互帧，避免测试追逐常驻计时器。
+      await tester.pump();
+
+      expect(
+        find.byKey(const ValueKey('skill_pending_stamp_badge')),
+        findsNothing,
+      );
+      expect(find.byKey(const ValueKey('target_chip_11')), findsNothing);
+      expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsNothing);
+      expect(find.byKey(const ValueKey('skill_cmd_2_pB')), findsOneWidget);
+    });
+
     testWidgets('可用态技能签将招名、分类与耗气冷却收进完整卡面层级', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(

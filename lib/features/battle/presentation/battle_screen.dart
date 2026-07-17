@@ -434,13 +434,27 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   }
 
   void _onSelectFocus(int slotIndex) {
+    // 目标选择是短暂的角色内操作态。主动切换队友等同于放弃当前待发，
+    // 避免案台已经换人、目标栏却仍替原角色出手。
+    if (_pendingSkill != null) _clearPending();
     setState(() => _focusSlotIndex = slotIndex);
   }
 
-  /// 重点角色生效槽位：蓄力时优先可破招者；破绽时若手选角色不可操作，
-  /// 临时落到首个有可下发非普攻招式的队友。两种临时焦点都不改写手选基线。
+  /// 重点角色生效槽位：目标选择期间锁定实际待发者；其余时间蓄力时优先
+  /// 可破招者，破绽时若手选角色不可操作则临时落到首个有可下发非普攻
+  /// 招式的队友。状态驱动的临时焦点都不改写手选基线。
   int _effectiveFocus(BattleState s) {
     if (s.leftTeam.isEmpty) return 0;
+    final pendingCharacterId =
+        _pendingCharId ?? widget.previewPendingCharacterId;
+    if (pendingCharacterId != null) {
+      for (var i = 0; i < s.leftTeam.length; i++) {
+        final character = s.leftTeam[i];
+        if (character.characterId == pendingCharacterId && character.isAlive) {
+          return i;
+        }
+      }
+    }
     final selectedIsAlive =
         _focusSlotIndex >= 0 &&
         _focusSlotIndex < s.leftTeam.length &&
