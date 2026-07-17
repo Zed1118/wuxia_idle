@@ -5,8 +5,12 @@
 # + 波A/波B 等后续批新增真解/残页/破招技 18 招 + 开锋槽3装备专属技 21 招
 # + 终局机制型 Boss 批次3心魔蓄力技 1 招 = 206。
 #
-# 倍率约束（numbers.yaml `techniques.tiers.max_skill_multiplier`，软约定,
-# 当前仅 fixture 端遵守,代码暂无倍率 enforce;Phase 5 cleanup 时加强校验。
+# 倍率约束（numbers.yaml `techniques.tiers.max_skill_multiplier`）:全局线已有代码
+# enforce — GameRepository `_enforceEncounterSkillRedLines` 对全部 skillDefs(含本文件)
+# 加载期校验 powerMultiplier ≤ numbers.combat.red_lines.skill_power_multiplier_max
+# 与 |qiDelta| cap,守门测 test/data/skill_multiplier_redline_test.dart;per-tier cap
+# 仅对 encounter 招代码 enforce,本文件心法招的 per-tier 值为 fixture 约定
+# (2026-07-18 审查批订正:旧注「代码暂无倍率 enforce」为 v1.32 前的过时表述)。
 # 注:targetType 红线已有代码 enforce — GameRepository `_enforceSkillTargetTypeRedLines`
 # 校验普攻/合击必 single + production 至少一个 aoe）：
 #   ruMenGong cap=1500 / changLianGong cap=2000 / mingJiaGong cap=2500
