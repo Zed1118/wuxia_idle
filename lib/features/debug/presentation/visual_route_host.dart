@@ -95,8 +95,11 @@ import '../../zangjuange/presentation/zangjuange_screen.dart';
 import '../../taohua_island/domain/island_building_type.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
+import '../../boss_gauntlet/application/gauntlet_service.dart';
+import '../../boss_gauntlet/presentation/gauntlet_defeat_screen.dart';
 import '../../boss_gauntlet/presentation/gauntlet_interlude_screen.dart';
 import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
+import '../../boss_gauntlet/presentation/gauntlet_reward_screen.dart';
 import '../../expedition/application/expedition_service.dart';
 import '../../expedition/presentation/expedition_overview_screen.dart';
 import '../../expedition/presentation/expedition_recap_screen.dart';
@@ -848,6 +851,24 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // 一倒下 + 托管补给余量),显成员状态 + 补给 + 使用/继续/认输。
       await Phase2SeedService(isar: isar).seedGauntletInterlude();
       return const GauntletInterludeScreen();
+    case VisualRoute.gauntletReward:
+      // 断魂庄通关三选一(§6.2):造 active 会话推进到 awaitingRewardChoice(Boss 终关胜·
+      // 首通待领·三件好家伙候选),显三选一卡 + 首通标 + 择取。
+      await Phase2SeedService(isar: isar).seedGauntletReward();
+      return const GauntletRewardScreen();
+    case VisualRoute.gauntletDefeat:
+      // 断魂庄战败结算(§6.3):直传摘要 fixture(已破 1 关精英 + 一轻伤一重伤),
+      // 显精英经验 + 逐弟子伤势 + 离庄。屏纯只读摘要·无需 Isar 会话。
+      return const GauntletDefeatScreen(
+        summary: GauntletDefeatSummary(
+          elitesDefeated: 1,
+          eliteExpPerMember: 50,
+          members: [
+            GauntletDefeatMember(name: '沈青', downed: false),
+            GauntletDefeatMember(name: '楚河', downed: true),
+          ],
+        ),
+      );
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }

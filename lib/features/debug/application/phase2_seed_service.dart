@@ -1526,6 +1526,51 @@ class Phase2SeedService {
     });
   }
 
+  /// gauntlet_reward 视觉验收 seed（§6.2·#1 wiring Task 7）：team_lineup 种子 + 造 active
+  /// 会话推进到 awaitingRewardChoice（Boss 终关胜·首通待领）——三件好家伙命名装备候选 +
+  /// 首通标。奖励屏显三选一卡（名/阶/位/属性）+ 首通全奖标 + 择取。seedTeamLineup 已清
+  /// bossGauntletRuns，多分辨率复跑幂等（feedback_visual_capture_seed_idempotency）。
+  Future<void> seedGauntletReward() async {
+    await seedTeamLineup();
+    final chars = await isar.characters
+        .filter()
+        .isFounderEqualTo(false)
+        .findAll();
+    final ids = chars
+        .where(
+          (c) => c.mainTechniqueId != null && c.currentRetreatSessionId == null,
+        )
+        .take(2)
+        .map((c) => c.id)
+        .toList();
+    await isar.writeTxn(() async {
+      final members = [
+        for (final id in ids)
+          ActivityMemberSnapshot()
+            ..characterId = id
+            ..maxHp = 5000
+            ..currentHp = 2600
+            ..maxQi = 100
+            ..currentQi = 40
+            ..isDowned = false,
+      ];
+      await isar.bossGauntletRuns.put(
+        BossGauntletRun()
+          ..saveDataId = 0
+          ..seed = 0
+          ..currentStage = 3
+          ..sessionPhase = GauntletPhase.awaitingRewardChoice
+          ..members = members
+          ..rewardCandidateDefIds = const [
+            'weapon_haojiahuo_qing_feng_jian',
+            'armor_haojiahuo_jin_pao',
+            'accessory_haojiahuo_yu_pei_lao',
+          ]
+          ..isFirstClearPending = true,
+      );
+    });
+  }
+
   /// P0-4b 仓库格子化视觉验收 seed:在共鸣谱(6 武器·阶 1-7 + 强化谱 + 师承)
   /// 基础上补护甲/饰品各 2 件(阶 5-7),凑齐武器/护甲/饰品三段 → 验部位分组
   /// 网格 + tier 边框 + 强化徽章 + 师承标 + 境界锁(activeCharacter 境界基准)。

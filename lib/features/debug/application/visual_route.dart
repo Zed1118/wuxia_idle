@@ -262,6 +262,14 @@ enum VisualRoute {
     'gauntlet_interlude',
     '断魂庄庄内整备目检·第2关整备(三成员生命/真气/阵亡/冷却) + 托管补给余量(疗伤丹余1/行囊补给余1) + 使用/继续闯关/认输离庄,§7.2',
   ),
+  gauntletReward(
+    'gauntlet_reward',
+    '断魂庄通关三选一奖励目检·Boss 终关胜(awaitingRewardChoice) + 三件好家伙候选卡(名/阶/位/属性) + 首通全奖标 + 点选择取,§6.2',
+  ),
+  gauntletDefeat(
+    'gauntlet_defeat',
+    '断魂庄战败结算目检·已破 1 关精英经验 + 逐弟子轻重伤(沈青轻伤/楚河重伤) + 离庄,§6.3',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);
