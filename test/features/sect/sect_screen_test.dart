@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/sect/application/sect_providers.dart';
 import 'package:wuxia_idle/features/sect/domain/sect.dart';
 import 'package:wuxia_idle/features/sect/domain/sect_event.dart';
 import 'package:wuxia_idle/features/sect/presentation/sect_screen.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_image.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 
 /// P3.4 sect_event Batch 2.3 widget 测族(spec §7 R4 + R5)。
 ///
@@ -82,6 +85,49 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('尚无历史记录'), findsOneWidget);
     });
+
+    testWidgets('堂口外壳使用宣纸标题栏、厅堂背景与声望墨线', (tester) async {
+      await tester.pumpWidget(
+        withScope(
+          sect: defaultSect(),
+          child: const MaterialApp(home: SectScreen()),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byType(WuxiaTitleBar), findsOneWidget);
+      expect(find.byType(AppBar), findsNothing);
+      expect(find.byType(LinearProgressIndicator), findsNothing);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is WuxiaImage &&
+              widget.assetPath == 'assets/scenes/sect_hall_main_v1.png',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    for (final size in const [Size(1280, 720), Size(1440, 900)])
+      testWidgets('${size.width.toInt()}×${size.height.toInt()} 堂口无布局异常', (
+        tester,
+      ) async {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = size;
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(
+          withScope(
+            sect: defaultSect(),
+            child: const MaterialApp(home: SectScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('无名宗'), findsOneWidget);
+        expect(find.text('当前事件'), findsOneWidget);
+      });
   });
 
   group('P3.4 sect_screen widget · active 注入 + AsyncValue 三态', () {
@@ -107,6 +153,40 @@ void main() {
 
       expect(find.text('比武大会'), findsOneWidget);
       expect(find.byIcon(Icons.circle), findsWidgets);
+    });
+
+    testWidgets('木签 Tab 与事件短帖保留桌面激活语义', (tester) async {
+      final semantics = tester.ensureSemantics();
+      final pending = SectEvent()
+        ..id = 101
+        ..sectId = 1
+        ..type = SectEventType.tournament
+        ..status = SectEventStatus.pending
+        ..triggeredAt = DateTime(2026, 5, 24)
+        ..narrativeId = 'tournament_01';
+
+      await tester.pumpWidget(
+        withScope(
+          sect: defaultSect(),
+          active: [pending],
+          child: const MaterialApp(home: SectScreen()),
+        ),
+      );
+      await tester.pump();
+
+      final tabData = tester
+          .getSemantics(find.byType(Tab).first)
+          .getSemanticsData();
+      expect(tabData.hasAction(SemanticsAction.tap), isTrue);
+      final eventInkWell = find.ancestor(
+        of: find.text('比武大会'),
+        matching: find.byType(InkWell),
+      );
+      expect(
+        tester.getSemantics(eventInkWell.first),
+        isSemantics(isButton: true),
+      );
+      semantics.dispose();
     });
 
     testWidgets('R4.5 sect=null → 显「门派尚未创建」兜底文案', (tester) async {
