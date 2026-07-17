@@ -219,6 +219,25 @@ void main() {
     );
   });
 
+  testWidgets('Boss全身立绘不再绘制矩形金色黄底', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: _char(isBoss: true),
+            displayMode: CharacterDisplayMode.stageStandee,
+            standeeWidth: 160,
+            standeeHeight: 230,
+          ),
+        ),
+      ),
+    );
+
+    final frame = tester.widget(find.byKey(_bossFrameKey));
+    expect(frame, isA<KeyedSubtree>());
+    expect(frame, isNot(isA<Container>()));
+  });
+
   testWidgets('战场立绘按有效人物边界校准尺度与视觉重心', (tester) async {
     Future<(double scale, double shiftX, double shiftY)> opticalTransformFor(
       String iconPath,
@@ -280,17 +299,159 @@ void main() {
     const cases = [
       ('assets/characters/founder.png', WuxiaUi.battleFounderFallback),
       ('assets/enemies/thug_a.png', WuxiaUi.battleThugStandee),
-      ('assets/enemies/thug_b.png', WuxiaUi.battleBanditArcherStandee),
-      ('assets/enemies/thug_c.png', WuxiaUi.battleBanditBladeStandee),
-      ('assets/enemies/ruffian_a.png', WuxiaUi.battleThugStandee),
-      ('assets/enemies/bandit_head.png', WuxiaUi.battleBanditBladeStandee),
-      ('assets/enemies/qingshan.png', WuxiaUi.battleBanditBladeStandee),
+      ('assets/enemies/thug_b.png', WuxiaUi.battleYoungRuffianStandee),
+      ('assets/enemies/thug_c.png', WuxiaUi.battleGauntCutpurseStandee),
+      ('assets/enemies/ruffian_a.png', WuxiaUi.battleVillageRuffianStandee),
+      ('assets/enemies/bandit_b.png', WuxiaUi.battleLowRankSaberFighterStandee),
+      ('assets/enemies/bandit_c.png', WuxiaUi.battleBlackWindUnderlingStandee),
+      ('assets/enemies/bandit_head.png', WuxiaUi.battleBanditHeadStandee),
+      ('assets/enemies/qingshan.png', WuxiaUi.battleQingshanStandee),
       ('assets/enemies/qingshan_main.png', WuxiaUi.battleHiddenElderStandee),
+      ('assets/enemies/elder_grey.png', WuxiaUi.battleGreyElderStandee),
+      ('assets/enemies/shaonian.png', WuxiaUi.battleSpringHallYouthStandee),
+      ('assets/enemies/guntou.png', WuxiaUi.battleBaldStaffFighterStandee),
+      ('assets/enemies/guntou_zhu.png', WuxiaUi.battleArenaChampionStandee),
+      ('assets/enemies/seng_huiyi.png', WuxiaUi.battleGreyMonkStandee),
+      ('assets/enemies/balian.png', WuxiaUi.battleScarredBossStandee),
+      ('assets/enemies/huiyi.png', WuxiaUi.battleGreySwordsmanStandee),
+      (
+        'assets/enemies/lightfoot_shuikou_a.png',
+        WuxiaUi.battleFerryBanditStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_shuikou_b.png',
+        WuxiaUi.battleFerryBoatmanStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_shuikou_c.png',
+        WuxiaUi.battleFerrySaberStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_yexun_a.png',
+        WuxiaUi.battleNightPatrolStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_yexun_b.png',
+        WuxiaUi.battleRooftopConstableStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_yexun_c.png',
+        WuxiaUi.battleRooftopAssassinStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_zhuke_a.png',
+        WuxiaUi.battleJiangnanSwordsmanStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_zhuke_b.png',
+        WuxiaUi.battleBambooSaberStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_zhuke_c.png',
+        WuxiaUi.battleBambooWandererStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_pubu_a.png',
+        WuxiaUi.battleMountainStreamSwordStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_pubu_b.png',
+        WuxiaUi.battleWaterfallSaberStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_pubu_c.png',
+        WuxiaUi.battleCliffWandererStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_changfeng_a.png',
+        WuxiaUi.battleGateCommanderStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_changfeng_b.png',
+        WuxiaUi.battleLongWindSwordStandee,
+      ),
+      (
+        'assets/enemies/lightfoot_changfeng_c.png',
+        WuxiaUi.battleLongRoadSaberStandee,
+      ),
+      (
+        'assets/enemies/massbattle_cunfei_a.png',
+        WuxiaUi.battleVillageBanditLeaderStandee,
+      ),
+      (
+        'assets/enemies/massbattle_cunfei_b.png',
+        WuxiaUi.battleVillageBanditArcherStandee,
+      ),
+      (
+        'assets/enemies/massbattle_cunfei_c.png',
+        WuxiaUi.battleVillageBanditSaberStandee,
+      ),
+      (
+        'assets/enemies/massbattle_zhenkou_a.png',
+        WuxiaUi.battleTownBanditLeaderStandee,
+      ),
+      (
+        'assets/enemies/massbattle_zhenkou_b.png',
+        WuxiaUi.battleTownBanditWandererStandee,
+      ),
+      (
+        'assets/enemies/massbattle_zhenkou_c.png',
+        WuxiaUi.battleTownBanditAssassinStandee,
+      ),
+      (
+        'assets/enemies/massbattle_xianjie_a.png',
+        WuxiaUi.battleRivalSectMasterStandee,
+      ),
+      (
+        'assets/enemies/massbattle_xianjie_b.png',
+        WuxiaUi.battleRivalSectProtectorStandee,
+      ),
+      (
+        'assets/enemies/massbattle_xianjie_c.png',
+        WuxiaUi.battleRivalSectDiscipleStandee,
+      ),
+      (
+        'assets/enemies/massbattle_guanqi_a.png',
+        WuxiaUi.battleFrontierCommanderStandee,
+      ),
+      (
+        'assets/enemies/massbattle_guanqi_b.png',
+        WuxiaUi.battleFrontierOutriderStandee,
+      ),
+      (
+        'assets/enemies/massbattle_guanqi_c.png',
+        WuxiaUi.battleFrontierIronGuardStandee,
+      ),
+      (
+        'assets/enemies/massbattle_canbu_a.png',
+        WuxiaUi.battleWesternRemnantGeneralStandee,
+      ),
+      (
+        'assets/enemies/massbattle_canbu_b.png',
+        WuxiaUi.battleWesternFrenziedRiderStandee,
+      ),
+      (
+        'assets/enemies/massbattle_canbu_c.png',
+        WuxiaUi.battleWesternRemnantAssassinStandee,
+      ),
       ('assets/enemies/black_killer.png', WuxiaUi.battleBlackKillerStandee),
       ('assets/enemies/killer_a.png', WuxiaUi.battleBanditBladeStandee),
       ('assets/enemies/killer_b.png', WuxiaUi.battleBanditArcherStandee),
       ('assets/enemies/umbrella.png', WuxiaUi.battleUmbrellaStandee),
+      (
+        'assets/enemies/tower_boss_05.png',
+        WuxiaUi.battleSwordStoneElderStandee,
+      ),
+      ('assets/enemies/tower_boss_10.png', WuxiaUi.battleBlackWindChiefStandee),
+      (
+        'assets/enemies/tower_boss_15.png',
+        WuxiaUi.battleNightPavilionMasterStandee,
+      ),
       ('assets/enemies/tower_boss_20.png', WuxiaUi.battleTowerBoss20Standee),
+      (
+        'assets/enemies/tower_boss_25.png',
+        WuxiaUi.battleSummitSwordDemonStandee,
+      ),
       ('assets/enemies/zuo_hufa.png', WuxiaUi.battleLeftGuardianStandee),
       ('assets/enemies/you_hufa.png', WuxiaUi.battleRightGuardianStandee),
       ('assets/enemies/tower_boss_30.png', WuxiaUi.battleTowerBoss30Standee),
@@ -298,7 +459,67 @@ void main() {
         'assets/enemies/jianghu_qianbei.png',
         WuxiaUi.battleJianghuSeniorStandee,
       ),
+      (
+        'assets/enemies/jianghu_a.png',
+        WuxiaUi.battleWanderingPalmFighterStandee,
+      ),
+      (
+        'assets/enemies/jianghu_b.png',
+        WuxiaUi.battleIndependentWandererStandee,
+      ),
       ('assets/enemies/wulin_bazhu.png', WuxiaUi.battleWulinOverlordStandee),
+      (
+        'assets/enemies/mingmen_a.png',
+        WuxiaUi.battleEstablishedSectDiscipleStandee,
+      ),
+      ('assets/enemies/liukou_a.png', WuxiaUi.battleRaiderLeaderStandee),
+      ('assets/enemies/guard_a.png', WuxiaUi.battleYumenGarrisonOfficerStandee),
+      ('assets/enemies/shafei_a.png', WuxiaUi.battleDesertBanditLeaderStandee),
+      (
+        'assets/enemies/xiliangboss.png',
+        WuxiaUi.battleWesternMartialSeniorStandee,
+      ),
+      ('assets/enemies/xiliangbazhu.png', WuxiaUi.battleWesternOverlordStandee),
+      (
+        'assets/enemies/tongguan_shoujiang.png',
+        WuxiaUi.battleTongguanDefenderStandee,
+      ),
+      (
+        'assets/enemies/songshan_daozong_dizi.png',
+        WuxiaUi.battleSongshanDaoistDiscipleStandee,
+      ),
+      (
+        'assets/enemies/caobang_duozhu.png',
+        WuxiaUi.battleCanalGangHelmsmanStandee,
+      ),
+      (
+        'assets/enemies/zhongzhou_lunjian_xianfeng.png',
+        WuxiaUi.battleCentralPlainsVanguardStandee,
+      ),
+      (
+        'assets/enemies/xiliang_sandizi.png',
+        WuxiaUi.battleWesternThirdDiscipleStandee,
+      ),
+      (
+        'assets/enemies/lunjian_sanchang_xunluo.png',
+        WuxiaUi.battleArenaPatrolStandee,
+      ),
+      (
+        'assets/enemies/songshan_shouguan.png',
+        WuxiaUi.battleSongshanGatekeeperStandee,
+      ),
+      (
+        'assets/enemies/huanghe_yuantou_yufu.png',
+        WuxiaUi.battleYellowRiverFisherStandee,
+      ),
+      (
+        'assets/enemies/kunlun_waimen_shouguan.png',
+        WuxiaUi.battleKunlunGateGuardianStandee,
+      ),
+      (
+        'assets/enemies/xiliang_bazhu.png',
+        WuxiaUi.battleWesternOverlordSaintStandee,
+      ),
       ('assets/enemies/anye.png', WuxiaUi.battleNightSwordsmanStandee),
       ('assets/enemies/shiye.png', WuxiaUi.battleAdviserStandee),
       ('assets/enemies/fu_zhaizhu.png', WuxiaUi.battleFuChiefStandee),

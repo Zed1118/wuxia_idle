@@ -748,38 +748,92 @@ class BattleScenarioData {
   }
 
   static (List<BattleCharacter>, List<BattleCharacter>)
-  scenarioTowerFloor13() => _scenarioTowerFloorStandeeAudit(13);
+  scenarioTowerFloor13() => scenarioTowerFloorStandeeAudit(13);
 
   static (List<BattleCharacter>, List<BattleCharacter>)
-  scenarioTowerFloor14() => _scenarioTowerFloorStandeeAudit(14);
+  scenarioTowerFloor14() => scenarioTowerFloorStandeeAudit(14);
 
   static (List<BattleCharacter>, List<BattleCharacter>)
-  scenarioTowerFloor19() => _scenarioTowerFloorStandeeAudit(19);
+  scenarioTowerFloor19() => scenarioTowerFloorStandeeAudit(19);
 
   static (List<BattleCharacter>, List<BattleCharacter>)
-  scenarioTowerFloor22() => _scenarioTowerFloorStandeeAudit(22);
+  scenarioTowerFloor22() => scenarioTowerFloorStandeeAudit(22);
 
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0102() =>
-      _scenarioStageStandeeAudit('stage_01_02');
+      scenarioStageStandeeAudit('stage_01_02');
 
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0103() =>
-      _scenarioStageStandeeAudit('stage_01_03');
+      scenarioStageStandeeAudit('stage_01_03');
 
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0104() =>
-      _scenarioStageStandeeAudit('stage_01_04');
+      scenarioStageStandeeAudit('stage_01_04');
 
   static (List<BattleCharacter>, List<BattleCharacter>)
-  scenarioTowerFloor02() => _scenarioTowerFloorStandeeAudit(2);
+  scenarioTowerFloor02() => scenarioTowerFloorStandeeAudit(2);
 
   static (List<BattleCharacter>, List<BattleCharacter>)
-  scenarioTowerFloor03() => _scenarioTowerFloorStandeeAudit(3);
+  scenarioTowerFloor03() => scenarioTowerFloorStandeeAudit(3);
 
   static (List<BattleCharacter>, List<BattleCharacter>)
-  scenarioTowerFloor08() => _scenarioTowerFloorStandeeAudit(8);
+  scenarioTowerFloor08() => scenarioTowerFloorStandeeAudit(8);
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0401() =>
+      scenarioStageStandeeAudit('stage_04_01');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0402() =>
+      scenarioStageStandeeAudit('stage_04_02');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0403() =>
+      scenarioStageStandeeAudit('stage_04_03');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0404() =>
+      scenarioStageStandeeAudit('stage_04_04');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0405() =>
+      scenarioStageStandeeAudit('stage_04_05');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0501() =>
+      scenarioStageStandeeAudit('stage_05_01');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0502() =>
+      scenarioStageStandeeAudit('stage_05_02');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0503() =>
+      scenarioStageStandeeAudit('stage_05_03');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0504() =>
+      scenarioStageStandeeAudit('stage_05_04');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0505() =>
+      scenarioStageStandeeAudit('stage_05_05');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0601() =>
+      scenarioStageStandeeAudit('stage_06_01');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0602() =>
+      scenarioStageStandeeAudit('stage_06_02');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0603() =>
+      scenarioStageStandeeAudit('stage_06_03');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0604() =>
+      scenarioStageStandeeAudit('stage_06_04');
+
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioStage0605() =>
+      scenarioStageStandeeAudit('stage_06_05');
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor06() => scenarioTowerFloorStandeeAudit(6);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor07() => scenarioTowerFloorStandeeAudit(7);
+
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioTowerFloor12() => scenarioTowerFloorStandeeAudit(12);
 
   /// 敌人立绘逐关验收：右队读取真主线关卡，左队只提供稳定的三人尺度参照。
   static (List<BattleCharacter>, List<BattleCharacter>)
-  _scenarioStageStandeeAudit(String stageId) {
+  scenarioStageStandeeAudit(String stageId) {
     final stage = GameRepository.instance.getStage(stageId);
     final right = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
     final (left, _) = scenarioGuardianWard();
@@ -788,7 +842,7 @@ class BattleScenarioData {
 
   /// 敌人立绘逐层验收：右队读取真塔层，左队只提供稳定的三人尺度参照。
   static (List<BattleCharacter>, List<BattleCharacter>)
-  _scenarioTowerFloorStandeeAudit(int floorIndex) {
+  scenarioTowerFloorStandeeAudit(int floorIndex) {
     final floor = GameRepository.instance.towerFloors[floorIndex - 1];
     final right = StageBattleSetup.buildEnemyTeam(
       floor.enemyTeam,

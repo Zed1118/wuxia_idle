@@ -135,10 +135,142 @@ class WuxiaUi {
       'assets/enemies/battle_bandit_blade.png';
   static const String battleBanditArcherStandee =
       'assets/enemies/battle_bandit_archer.png';
+  static const String battleYoungRuffianStandee =
+      'assets/enemies/battle_thug_b.png';
+  static const String battleGauntCutpurseStandee =
+      'assets/enemies/battle_thug_c.png';
+  static const String battleVillageRuffianStandee =
+      'assets/enemies/battle_ruffian_a.png';
+  static const String battleBanditHeadStandee =
+      'assets/enemies/battle_bandit_head.png';
+  static const String battleQingshanStandee =
+      'assets/enemies/battle_qingshan.png';
+  static const String battleGreyElderStandee =
+      'assets/enemies/battle_elder_grey.png';
+  static const String battleSpringHallYouthStandee =
+      'assets/enemies/battle_shaonian.png';
+  static const String battleBaldStaffFighterStandee =
+      'assets/enemies/battle_guntou.png';
+  static const String battleArenaChampionStandee =
+      'assets/enemies/battle_guntou_zhu.png';
+  static const String battleGreyMonkStandee =
+      'assets/enemies/battle_seng_huiyi.png';
+  static const String battleScarredBossStandee =
+      'assets/enemies/battle_balian.png';
+  static const String battleGreySwordsmanStandee =
+      'assets/enemies/battle_huiyi.png';
+  static const String battleFerryBanditStandee =
+      'assets/enemies/battle_lightfoot_shuikou_a.png';
+  static const String battleFerryBoatmanStandee =
+      'assets/enemies/battle_lightfoot_shuikou_b.png';
+  static const String battleFerrySaberStandee =
+      'assets/enemies/battle_lightfoot_shuikou_c.png';
+  static const String battleNightPatrolStandee =
+      'assets/enemies/battle_lightfoot_yexun_a.png';
+  static const String battleRooftopConstableStandee =
+      'assets/enemies/battle_lightfoot_yexun_b.png';
+  static const String battleRooftopAssassinStandee =
+      'assets/enemies/battle_lightfoot_yexun_c.png';
+  static const String battleJiangnanSwordsmanStandee =
+      'assets/enemies/battle_lightfoot_zhuke_a.png';
+  static const String battleBambooSaberStandee =
+      'assets/enemies/battle_lightfoot_zhuke_b.png';
+  static const String battleBambooWandererStandee =
+      'assets/enemies/battle_lightfoot_zhuke_c.png';
+  static const String battleMountainStreamSwordStandee =
+      'assets/enemies/battle_lightfoot_pubu_a.png';
+  static const String battleWaterfallSaberStandee =
+      'assets/enemies/battle_lightfoot_pubu_b.png';
+  static const String battleCliffWandererStandee =
+      'assets/enemies/battle_lightfoot_pubu_c.png';
+  static const String battleGateCommanderStandee =
+      'assets/enemies/battle_lightfoot_changfeng_a.png';
+  static const String battleLongWindSwordStandee =
+      'assets/enemies/battle_lightfoot_changfeng_b.png';
+  static const String battleLongRoadSaberStandee =
+      'assets/enemies/battle_lightfoot_changfeng_c.png';
+  static const String battleVillageBanditLeaderStandee =
+      'assets/enemies/battle_massbattle_cunfei_a.png';
+  static const String battleVillageBanditArcherStandee =
+      'assets/enemies/battle_massbattle_cunfei_b.png';
+  static const String battleVillageBanditSaberStandee =
+      'assets/enemies/battle_massbattle_cunfei_c.png';
+  static const String battleTownBanditLeaderStandee =
+      'assets/enemies/battle_massbattle_zhenkou_a.png';
+  static const String battleTownBanditWandererStandee =
+      'assets/enemies/battle_massbattle_zhenkou_b.png';
+  static const String battleTownBanditAssassinStandee =
+      'assets/enemies/battle_massbattle_zhenkou_c.png';
+  static const String battleRivalSectMasterStandee =
+      'assets/enemies/battle_massbattle_xianjie_a.png';
+  static const String battleRivalSectProtectorStandee =
+      'assets/enemies/battle_massbattle_xianjie_b.png';
+  static const String battleRivalSectDiscipleStandee =
+      'assets/enemies/battle_massbattle_xianjie_c.png';
+  static const String battleFrontierCommanderStandee =
+      'assets/enemies/battle_massbattle_guanqi_a.png';
+  static const String battleFrontierOutriderStandee =
+      'assets/enemies/battle_massbattle_guanqi_b.png';
+  static const String battleFrontierIronGuardStandee =
+      'assets/enemies/battle_massbattle_guanqi_c.png';
+  static const String battleWesternRemnantGeneralStandee =
+      'assets/enemies/battle_massbattle_canbu_a.png';
+  static const String battleWesternFrenziedRiderStandee =
+      'assets/enemies/battle_massbattle_canbu_b.png';
+  static const String battleWesternRemnantAssassinStandee =
+      'assets/enemies/battle_massbattle_canbu_c.png';
   static const String battleUmbrellaStandee =
       'assets/enemies/battle_umbrella.png';
+  static const String battleSwordStoneElderStandee =
+      'assets/enemies/battle_tower_boss_05.png';
+  static const String battleBlackWindChiefStandee =
+      'assets/enemies/battle_tower_boss_10.png';
+  static const String battleNightPavilionMasterStandee =
+      'assets/enemies/battle_tower_boss_15.png';
   static const String battleTowerBoss20Standee =
       'assets/enemies/battle_tower_boss_20.png';
+  static const String battleSummitSwordDemonStandee =
+      'assets/enemies/battle_tower_boss_25.png';
+  static const String battleWesternMartialSeniorStandee =
+      'assets/enemies/battle_xiliangboss.png';
+  static const String battleWesternOverlordStandee =
+      'assets/enemies/battle_xiliangbazhu.png';
+  static const String battleCentralPlainsVanguardStandee =
+      'assets/enemies/battle_zhongzhou_lunjian_xianfeng.png';
+  static const String battleWesternThirdDiscipleStandee =
+      'assets/enemies/battle_xiliang_sandizi.png';
+  static const String battleKunlunGateGuardianStandee =
+      'assets/enemies/battle_kunlun_waimen_shouguan.png';
+  static const String battleWesternOverlordSaintStandee =
+      'assets/enemies/battle_xiliang_bazhu.png';
+  static const String battleWanderingPalmFighterStandee =
+      'assets/enemies/battle_jianghu_a.png';
+  static const String battleEstablishedSectDiscipleStandee =
+      'assets/enemies/battle_mingmen_a.png';
+  static const String battleLowRankSaberFighterStandee =
+      'assets/enemies/battle_bandit_b.png';
+  static const String battleBlackWindUnderlingStandee =
+      'assets/enemies/battle_bandit_c.png';
+  static const String battleIndependentWandererStandee =
+      'assets/enemies/battle_jianghu_b.png';
+  static const String battleRaiderLeaderStandee =
+      'assets/enemies/battle_liukou_a.png';
+  static const String battleYumenGarrisonOfficerStandee =
+      'assets/enemies/battle_guard_a.png';
+  static const String battleDesertBanditLeaderStandee =
+      'assets/enemies/battle_shafei_a.png';
+  static const String battleTongguanDefenderStandee =
+      'assets/enemies/battle_tongguan_shoujiang.png';
+  static const String battleSongshanDaoistDiscipleStandee =
+      'assets/enemies/battle_songshan_daozong_dizi.png';
+  static const String battleCanalGangHelmsmanStandee =
+      'assets/enemies/battle_caobang_duozhu.png';
+  static const String battleArenaPatrolStandee =
+      'assets/enemies/battle_lunjian_sanchang_xunluo.png';
+  static const String battleSongshanGatekeeperStandee =
+      'assets/enemies/battle_songshan_shouguan.png';
+  static const String battleYellowRiverFisherStandee =
+      'assets/enemies/battle_huanghe_yuantou_yufu.png';
   static const String battleLeftGuardianStandee =
       'assets/enemies/battle_zuo_hufa.png';
   static const String battleRightGuardianStandee =

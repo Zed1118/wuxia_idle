@@ -9,6 +9,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/presentation/hero_camera_overlay.dart';
 import 'package:wuxia_idle/features/debug/application/visual_route.dart';
+import 'package:wuxia_idle/features/debug/application/visual_acceptance_plan.dart';
 import 'package:wuxia_idle/features/debug/presentation/battle_test_menu.dart';
 import 'package:wuxia_idle/features/debug/presentation/visual_route_host.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
@@ -55,6 +56,32 @@ void main() {
 
     test('空串 → null', () {
       expect(parseVisualRoute(''), isNull);
+    });
+
+    test('动态全关卡战斗验收 id 可解析并还原真关卡参数', () {
+      expect(
+        parseVisualRoute('battle_audit_stage_03_05'),
+        VisualRoute.battleStageAudit,
+      );
+      expect(
+        battleAuditStageId('battle_audit_stage_light_foot_04'),
+        'stage_light_foot_04',
+      );
+      expect(
+        parseVisualRoute('battle_audit_tower_30'),
+        VisualRoute.battleTowerAudit,
+      );
+      expect(battleAuditTowerFloor('battle_audit_tower_30'), 30);
+    });
+
+    test('预构建验收包可从运行时参数读取动态 route id', () {
+      expect(
+        visualRouteIdFromInputs(const [
+          '--visual-route=battle_audit_stage_02_03',
+        ]),
+        'battle_audit_stage_02_03',
+      );
+      expect(visualRouteIdFromInputs(const []), isEmpty);
     });
 
     test('每个枚举 id 往返一致', () {
@@ -185,6 +212,7 @@ void main() {
   group('buildVisualTarget · 战斗静态验收路由透传', () {
     setUpAll(() async {
       await _initializeIsarCoreForFlutterTest();
+      await GameRepository.loadAllDefs();
     });
 
     late Directory tempDir;
@@ -238,6 +266,33 @@ void main() {
       );
     });
 
+    test('battle suite 70个动态路由全部可构造真敌队', () async {
+      final targets = visualAcceptanceRoutes(VisualAcceptanceSuite.battle);
+      for (final spec in targets) {
+        final target = await buildVisualTarget(
+          spec.route,
+          IsarSetup.instance,
+          routeId: spec.id,
+        );
+        expect(target, isA<ScenarioLauncher>(), reason: spec.id);
+        final launcher = target as ScenarioLauncher;
+        final (left, right) = launcher.teamsFactory();
+        expect(left, hasLength(3), reason: spec.id);
+        expect(right, isNotEmpty, reason: spec.id);
+        expect(right.length, lessThanOrEqualTo(3), reason: spec.id);
+        expect(launcher.startPaused, isTrue, reason: spec.id);
+        expect(launcher.sceneBackgroundPath, isNotNull, reason: spec.id);
+
+        if (spec.route == VisualRoute.battleTowerAudit) {
+          expect(launcher.bgmTrack, BgmTrack.tower, reason: spec.id);
+        } else if (spec.id.contains('_light_foot_')) {
+          expect(launcher.bgmTrack, BgmTrack.lightFoot, reason: spec.id);
+        } else if (spec.id.contains('_mass_battle_')) {
+          expect(launcher.bgmTrack, BgmTrack.massBattle, reason: spec.id);
+        }
+      }
+    });
+
     test('高复用敌人四个塔层路由 → 真塔境冻结帧', () async {
       for (final route in const [
         VisualRoute.battleTowerFloor13,
@@ -274,6 +329,9 @@ void main() {
         VisualRoute.battleTowerFloor02,
         VisualRoute.battleTowerFloor03,
         VisualRoute.battleTowerFloor08,
+        VisualRoute.battleTowerFloor06,
+        VisualRoute.battleTowerFloor07,
+        VisualRoute.battleTowerFloor12,
       ]) {
         final target = await buildVisualTarget(route, IsarSetup.instance);
         expect(target, isA<ScenarioLauncher>());
@@ -284,6 +342,42 @@ void main() {
           launcher.sceneBackgroundPath,
           'assets/scenes/battle_innerrealm.png',
         );
+      }
+
+      for (final (route, expectedBackground) in const [
+        (
+          VisualRoute.battleStage0401,
+          'assets/scenes/battle_mountainforest.png',
+        ),
+        (VisualRoute.battleStage0402, 'assets/scenes/battle_frontier.png'),
+        (VisualRoute.battleStage0403, 'assets/scenes/battle_desert.png'),
+        (VisualRoute.battleStage0404, 'assets/scenes/battle_drillground.png'),
+        (VisualRoute.battleStage0405, 'assets/scenes/battle_frontier.png'),
+        (
+          VisualRoute.battleStage0501,
+          'assets/scenes/battle_mountainforest.png',
+        ),
+        (VisualRoute.battleStage0502, 'assets/scenes/battle_temple.png'),
+        (VisualRoute.battleStage0503, 'assets/scenes/battle_dock.png'),
+        (VisualRoute.battleStage0504, 'assets/scenes/battle_drillground.png'),
+        (VisualRoute.battleStage0505, 'assets/scenes/battle_citywall.png'),
+        (VisualRoute.battleStage0601, 'assets/scenes/battle_citywall.png'),
+        (
+          VisualRoute.battleStage0602,
+          'assets/scenes/battle_mountainforest.png',
+        ),
+        (VisualRoute.battleStage0603, 'assets/scenes/battle_dock.png'),
+        (VisualRoute.battleStage0604, 'assets/scenes/battle_desert.png'),
+        (
+          VisualRoute.battleStage0605,
+          'assets/scenes/battle_mountainforest.png',
+        ),
+      ]) {
+        final target = await buildVisualTarget(route, IsarSetup.instance);
+        expect(target, isA<ScenarioLauncher>());
+        final launcher = target as ScenarioLauncher;
+        expect(launcher.startPaused, isTrue);
+        expect(launcher.sceneBackgroundPath, expectedBackground);
       }
     });
 
