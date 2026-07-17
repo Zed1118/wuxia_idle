@@ -808,7 +808,7 @@ class BattlePlaybackController {
     }
     if (!playSharedFeedback) return;
     if (isUltimateCaptionSkill(action.skill)) {
-      final climax = hitClimaxFor(action, s);
+      final climax = hitClimaxFor(action);
       final isCrit = action.attackResult?.isCritical ?? false;
       _ultimateCaptionKey.currentState?.show(
         action.skill!.name,
@@ -912,7 +912,7 @@ class BattlePlaybackController {
 
     // 命中特写：仅峰值（大招暴击/击杀），快进/扫荡抑制（守在线=离线）。
     // 独立于 profile != null 块：普攻击杀无 profile 也须触发特写。
-    if (!_isFastForward && hitClimaxFor(action, s) != HitClimax.none) {
+    if (!_isFastForward && hitClimaxFor(action) != HitClimax.none) {
       _closeupCtrl.forward(from: 0.0).then((_) {
         if (!_disposed) _closeupCtrl.reverse();
       });
