@@ -328,3 +328,15 @@ VisualRoute? visualRouteFromEnv() {
   const raw = String.fromEnvironment('VISUAL_ROUTE');
   return parseVisualRoute(raw);
 }
+
+/// 预构建 macOS 验收包可用运行时参数切 route，避免每张截图重编译。
+/// compile-time `VISUAL_ROUTE` 仍优先，保持既有 flutter run 用法不变。
+String visualRouteIdFromInputs(List<String> args) {
+  const compiled = String.fromEnvironment('VISUAL_ROUTE');
+  if (compiled.isNotEmpty) return compiled;
+  const prefix = '--visual-route=';
+  for (final arg in args) {
+    if (arg.startsWith(prefix)) return arg.substring(prefix.length);
+  }
+  return '';
+}

@@ -18,7 +18,7 @@ import 'shared/strings.dart';
 import 'shared/theme/wuxia_app_theme.dart';
 import 'shared/theme/wuxia_tokens.dart';
 
-Future<void> main() async {
+Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   SoundManager.instance = SoundManager(AudioPlayersBackend());
@@ -30,9 +30,10 @@ Future<void> main() async {
   // (profile 下 kDebugMode=false → 隐藏 debug chrome,出干净 Steam 截图);
   // release / 无参数 → 短路(kReleaseMode),走下方正常启动,零影响。
   if (!kReleaseMode) {
-    final route = visualRouteFromEnv();
+    final routeId = visualRouteIdFromInputs(args);
+    final route = parseVisualRoute(routeId);
     if (route != null) {
-      runApp(VisualRouteApp(route: route, routeId: visualRouteIdFromEnv()));
+      runApp(VisualRouteApp(route: route, routeId: routeId));
       return;
     }
   }

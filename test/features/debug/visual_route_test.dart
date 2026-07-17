@@ -74,6 +74,16 @@ void main() {
       expect(battleAuditTowerFloor('battle_audit_tower_30'), 30);
     });
 
+    test('预构建验收包可从运行时参数读取动态 route id', () {
+      expect(
+        visualRouteIdFromInputs(const [
+          '--visual-route=battle_audit_stage_02_03',
+        ]),
+        'battle_audit_stage_02_03',
+      );
+      expect(visualRouteIdFromInputs(const []), isEmpty);
+    });
+
     test('每个枚举 id 往返一致', () {
       for (final r in VisualRoute.values) {
         expect(parseVisualRoute(r.id), r);

@@ -4,6 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SWIFT_WINID="$REPO_ROOT/tools/visual_capture/window_id.swift"
 APP_PROCESS_NAME="wuxia_idle"
+APP_EXECUTABLE="$REPO_ROOT/build/macos/Build/Products/Debug/wuxia_idle.app/Contents/MacOS/wuxia_idle"
 
 SUITE="smoke"
 OUTPUT_DIR="build/visual_acceptance"
@@ -19,6 +20,7 @@ WAIT_SECONDS=12
 READY_TIMEOUT=90
 ALL_SPACES=0
 EXISTING_WINDOW=0
+PREBUILT=1
 
 usage() {
   cat <<'USAGE'
@@ -38,6 +40,8 @@ Options:
   --all-spaces              Find the app window across all macOS Spaces.
   --existing-window         Capture an already-running window; do not launch,
                             focus, resize, or terminate the app.
+  --no-prebuilt             Use legacy per-route flutter run instead of one
+                            prebuilt debug app with runtime route arguments.
   --dry-run                  Print planned commands only.
   -h, --help                 Show this help.
 
@@ -91,6 +95,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --existing-window)
       EXISTING_WINDOW=1
+      shift
+      ;;
+    --no-prebuilt)
+      PREBUILT=0
       shift
       ;;
     --dry-run)
@@ -271,11 +279,16 @@ run_capture() {
     return
   fi
 
-  local cmd=(
-    flutter run -d macos
-    --dart-define=VISUAL_ROUTE="$route"
-    --dart-define=HITBOX_DEBUG="$hitbox_define"
-  )
+  local cmd
+  if [[ "$PREBUILT" -eq 1 ]]; then
+    cmd=("$APP_EXECUTABLE" "--visual-route=$route")
+  else
+    cmd=(
+      flutter run -d macos
+      --dart-define=VISUAL_ROUTE="$route"
+      --dart-define=HITBOX_DEBUG="$hitbox_define"
+    )
+  fi
 
   if [[ "$DRY_RUN" -eq 1 ]]; then
     printf '[dry-run] %s\n' "${cmd[*]}"
@@ -309,6 +322,13 @@ run_capture() {
 }
 
 IFS=',' read -r -a resolution_list <<< "$RESOLUTIONS"
+if [[ "$EXISTING_WINDOW" -eq 0 && "$PREBUILT" -eq 1 && "$DRY_RUN" -eq 0 ]]; then
+  hitbox_define="false"
+  if [[ "$HITBOX" -eq 1 ]]; then
+    hitbox_define="true"
+  fi
+  flutter build macos --debug --dart-define=HITBOX_DEBUG="$hitbox_define"
+fi
 while IFS= read -r route; do
   [[ -z "$route" ]] && continue
   for resolution in "${resolution_list[@]}"; do
