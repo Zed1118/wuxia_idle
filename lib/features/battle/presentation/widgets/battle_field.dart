@@ -83,6 +83,9 @@ class BattleField extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          if (constraints.maxWidth <= 0 || constraints.maxHeight <= 0) {
+            return const SizedBox.shrink();
+          }
           final baseWidth =
               (constraints.maxWidth * BattleLayoutTokens.stageWidthFraction)
                   .clamp(132.0, BattleLayoutTokens.stageMaxStandeeWidth);
@@ -267,8 +270,8 @@ class _StageSlotLayout {
       maxWidth / rawWidth,
       maxHeight / rawHeight,
     ].reduce((a, b) => a < b ? a : b);
-    final width = rawWidth * fitScale;
-    final height = rawHeight * fitScale;
+    final width = (rawWidth * fitScale).clamp(0.0, maxWidth);
+    final height = (rawHeight * fitScale).clamp(0.0, maxHeight);
     final left = (slot.anchor.dx * maxWidth - width / 2).clamp(
       0.0,
       maxWidth - width,

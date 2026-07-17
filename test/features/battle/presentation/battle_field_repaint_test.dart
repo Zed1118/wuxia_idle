@@ -138,4 +138,60 @@ void main() {
     expect(find.byType(CharacterSlot), findsNWidgets(6));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('窗口重建的零高与浮点贴边约束不抛异常', (tester) async {
+    final (left, right) = BattleDemo.mockTeams();
+    final bossRight = List<BattleCharacter>.from(right);
+    bossRight[0] = bossRight[0].copyWith(isBoss: true);
+    final attackControllers = List.generate(
+      6,
+      (_) => AnimationController(vsync: tester),
+    );
+    final hitFlashControllers = List.generate(
+      6,
+      (_) => AnimationController(vsync: tester),
+    );
+    addTearDown(() {
+      for (final controller in [...attackControllers, ...hitFlashControllers]) {
+        controller.dispose();
+      }
+    });
+
+    for (final size in const [Size(1280, 0), Size(1420, 507)]) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: size.width,
+                height: size.height,
+                child: BattleField(
+                  state: BattleState.initial(
+                    leftTeam: left,
+                    rightTeam: bossRight,
+                  ),
+                  attackControllers: attackControllers,
+                  actionTemplates: List.filled(6, BattleActionTemplate.melee),
+                  popups: const {},
+                  animConfig: AnimationNumbers.defaults,
+                  chargeMaxTicks: 3,
+                  beat: const AlwaysStoppedAnimation<double>(0),
+                  staggerWindowTicks: 3,
+                  onPopupComplete: (_, _) {},
+                  hitFlashControllers: hitFlashControllers,
+                  hitFlashColors: const {},
+                  onEnemyTap: (_) {},
+                  pendingActive: false,
+                  hoveredEnemyId: null,
+                  onEnemyHover: (_, _) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull, reason: '$size 不应抛布局异常');
+    }
+  });
 }

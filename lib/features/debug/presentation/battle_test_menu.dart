@@ -372,7 +372,7 @@ class BattleScenarioData {
       skills: skills,
       teamSide: 0,
       slotIndex: slot,
-    );
+    ).copyWith(actionPoint: 1);
 
     final left = [
       player(1, '主控', 0, [
