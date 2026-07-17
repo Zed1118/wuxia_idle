@@ -449,10 +449,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       (e) => e.isAlive && e.chargingSkill != null,
     );
     if (enemyCharging) {
+      if (selectedIsAlive &&
+          _hasActionableInterrupt(s.leftTeam[_focusSlotIndex])) {
+        return _focusSlotIndex;
+      }
       for (var i = 0; i < s.leftTeam.length; i++) {
-        final c = s.leftTeam[i];
-        final k = _findKeySkillOf(c);
-        if (k != null && canInterveneWithSkill(c, k)) return i;
+        if (_hasActionableInterrupt(s.leftTeam[i])) return i;
       }
     }
     final enemyStaggered = s.rightTeam.any(
@@ -479,12 +481,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     return 0;
   }
 
-  static SkillDef? _findKeySkillOf(BattleCharacter c) {
-    for (final skill in c.availableSkills) {
-      if (skill.canInterrupt) return skill;
-    }
-    return null;
-  }
+  static bool _hasActionableInterrupt(BattleCharacter c) => c.availableSkills
+      .any((skill) => skill.canInterrupt && canInterveneWithSkill(c, skill));
 
   static bool _hasActionableBurst(BattleCharacter c) => c.availableSkills.any(
     (skill) =>

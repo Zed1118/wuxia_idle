@@ -134,6 +134,18 @@ const _break = SkillDef(
   canInterrupt: true,
   visualEffect: '',
 );
+const _breakB = SkillDef(
+  id: 'b2',
+  name: '断流指',
+  description: '',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1000,
+  internalForceCost: 120,
+  cooldownTurns: 2,
+  requiresManualTrigger: false,
+  canInterrupt: true,
+  visualEffect: '',
+);
 const _ult = SkillDef(
   id: 'u1',
   name: '龙吟九霄',
@@ -868,6 +880,55 @@ void main() {
 
       // 未手动切焦点，但敌人蓄力 → 焦点自动落到 1 号（有可破招技）。
       expect(find.byKey(const ValueKey('skill_cmd_2_b1')), findsOneWidget);
+      expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsNothing);
+    });
+
+    testWidgets('敌人蓄力时保留已可破招的玩家手选角色', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final c0 = left[0].copyWith(availableSkills: [_break], actionPoint: 1);
+      final c1 = left[1].copyWith(availableSkills: [_break], actionPoint: 1);
+      final notifier = await _pumpWith(tester, [c0, c1, left[2]], right);
+
+      await tester.tap(find.byKey(const ValueKey('focus_chip_1')));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('skill_cmd_2_b1')), findsOneWidget);
+
+      notifier.setState(
+        notifier.state.copyWith(
+          rightTeam: [
+            right.first.copyWith(
+              chargingSkill: _chargeSkill,
+              chargeTicksRemaining: 2,
+            ),
+            ...right.skip(1),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('skill_cmd_2_b1')), findsOneWidget);
+      final selected = tester.widget<FocusChip>(
+        find.byKey(const ValueKey('focus_chip_1')),
+      );
+      expect(selected.selected, isTrue);
+    });
+
+    testWidgets('蓄力焦点扫描角色全部破招技而非只看第一招', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final c0 = left[0].copyWith(availableSkills: [_power]);
+      final c1 = left[1].copyWith(
+        availableSkills: [_break, _breakB],
+        skillCooldowns: const {'b1': 2},
+        actionPoint: 1,
+      );
+      final charging = right.first.copyWith(
+        chargingSkill: _chargeSkill,
+        chargeTicksRemaining: 2,
+      );
+
+      await _pumpWith(tester, [c0, c1, left[2]], [charging, ...right.skip(1)]);
+
+      expect(find.byKey(const ValueKey('skill_cmd_2_b2')), findsOneWidget);
       expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsNothing);
     });
 
