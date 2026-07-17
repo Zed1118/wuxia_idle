@@ -603,10 +603,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     BattleState s,
     int presentationEpoch,
   ) async {
-    if (result == BattleResult.leftWin) {
-      await Future<void>.delayed(
-        Duration(milliseconds: widget.animConfig.victoryHandoffDelayMs),
-      );
+    final handoffDelayMs = result == BattleResult.leftWin
+        ? widget.animConfig.victoryHandoffDelayMs
+        : widget.animConfig.keyMomentHoldMs;
+    if (handoffDelayMs > 0) {
+      await Future<void>.delayed(Duration(milliseconds: handoffDelayMs));
     }
     if (!mounted || presentationEpoch != _resultPresentationEpoch) return;
     if (ref.read(battleProvider).result != result) return;

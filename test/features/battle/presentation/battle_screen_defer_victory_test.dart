@@ -274,11 +274,30 @@ void main() {
     expect(victoryCalled, 1, reason: '第二场自己的胜利交接仍应恰好执行一次');
   });
 
+  testWidgets('败北关键帧延迟内重开会废弃旧场结算 overlay', (tester) async {
+    final notifier = await _pump(tester, autoStart: true);
+    final firstRunning = notifier.state;
+
+    notifier.push(firstRunning.copyWith(result: BattleResult.rightWin));
+    await tester.pump();
+    await tester.pump();
+    notifier.push(
+      BattleState.initial(
+        leftTeam: firstRunning.leftTeam,
+        rightTeam: firstRunning.rightTeam,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 401));
+
+    expect(find.byType(VictoryOverlay), findsNothing);
+  });
+
   // ─── 回归测试 3: deferVictoryToCaller=true + rightWin → VictoryOverlay 仍显示 ─
   // defer 只 gate leftWin 分支,败北(rightWin)不受影响,仍走普通 overlay 路径。
 
   testWidgets(
-    'deferVictoryToCaller=true + rightWin: VictoryOverlay 仍弹出(defer 不 gate 败北)',
+    'deferVictoryToCaller=true + rightWin: 保留关键帧后仍弹出 VictoryOverlay',
     (tester) async {
       var victoryCalled = 0;
 
@@ -293,7 +312,14 @@ void main() {
       notifier.push(finished);
       await tester.pump();
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.pump(const Duration(milliseconds: 399));
+      expect(
+        find.byType(VictoryOverlay),
+        findsNothing,
+        reason: '致败一击应保留关键帧反应时间',
+      );
+      await tester.pump(const Duration(milliseconds: 1));
 
       // 败北走普通 overlay,不受 deferVictoryToCaller gate
       expect(find.byType(VictoryOverlay), findsOneWidget);
