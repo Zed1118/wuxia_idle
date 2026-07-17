@@ -3651,4 +3651,25 @@ class UiStrings {
       '认输即止步本次闯庄：已击败精英的经验照常入账，按实际战况结算轻重伤（不损永久内力）；'
       '断魂帖与已用补给不退还。';
   static const String gauntletConcedeConfirm = '认输离庄';
+
+  // 通关三选一奖励（§6.2 · #1 wiring Task 2）
+  static const String gauntletRewardTitle = '断魂庄 · 论功行赏';
+  static const String gauntletRewardSection = '通庄战利 · 三选一';
+  static const String gauntletRewardFirstClearBadge = '首通 · 全奖';
+  static const String gauntletRewardRepeatBadge = '再通 · 减半';
+  static const String gauntletRewardFirstClearHint =
+      '首克庄门：择一件命名兵刃随身，另赠庄门秘籍、参战弟子经验与领悟点。';
+  static const String gauntletRewardRepeatHint =
+      '再克庄门：择一件命名兵刃随身；经验与领悟减半奉送，秘籍不再重赠。';
+  static String gauntletRewardTierSlot(String tier, String slot) =>
+      '$tier · $slot';
+  static String gauntletRewardAtk(int min, int max) => '攻 $min–$max';
+  static String gauntletRewardHp(int min, int max) => '血 $min–$max';
+  static String gauntletRewardSpd(int min, int max) => '速 $min–$max';
+  static const String gauntletRewardSelectHint = '点选择取';
+  static const String gauntletRewardConfirmTitle = '择取战利';
+  static String gauntletRewardConfirmBody(String name) =>
+      '确认择取「$name」？三选一仅取其一，余者不留。';
+  static const String gauntletRewardConfirm = '确认择取';
+  static const String gauntletNoReward = '暂无待领战利，庄门未克。';
 }

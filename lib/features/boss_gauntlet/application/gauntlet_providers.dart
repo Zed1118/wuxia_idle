@@ -2,6 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
@@ -259,4 +260,86 @@ Future<List<GauntletCandidate>> gauntletCandidates(Ref ref) async {
         hasMainTechnique: c.mainTechniqueId != null,
       ),
   ];
+}
+
+/// 通关三选一奖励屏单个候选卡（§6.2 · #1 wiring Task 2）：命名装备 def 解析后的纯展示
+/// 数据（名/阶/位/攻血速区间）。presentation 层经 [EnumL10n] 本地化 tier/slot（DTO
+/// 只携原始枚举与数值，localization 归表现层）。
+class GauntletRewardCandidate {
+  const GauntletRewardCandidate({
+    required this.defId,
+    required this.name,
+    required this.tier,
+    required this.slot,
+    required this.attackMin,
+    required this.attackMax,
+    required this.healthMin,
+    required this.healthMax,
+    required this.speedMin,
+    required this.speedMax,
+  });
+
+  final String defId;
+  final String name;
+  final EquipmentTier tier;
+  final EquipmentSlot slot;
+  final int attackMin;
+  final int attackMax;
+  final int healthMin;
+  final int healthMax;
+  final int speedMin;
+  final int speedMax;
+}
+
+/// 通关三选一奖励屏组合视图（§6.2 · #1 wiring Task 2）：首通/重复标 + 三件候选卡。
+/// 仅 [GauntletPhase.awaitingRewardChoice] 相位有意义（非该相位/无会话 → null，UI 显
+/// 空态）。
+class GauntletRewardView {
+  const GauntletRewardView({
+    required this.isFirstClear,
+    required this.candidates,
+  });
+
+  final bool isFirstClear;
+  final List<GauntletRewardCandidate> candidates;
+}
+
+/// 通关三选一奖励屏视图 provider（§6.2 · #1 wiring Task 2）。active 会话且相位 =
+/// awaitingRewardChoice 时把 `run.rewardCandidateDefIds` 解析成三件装备卡（名/阶/位/
+/// 属性区间经 GameRepository 装备 def 查表）；否则 null（UI 不渲染奖励主体）。装备 def
+/// 缺失（防御·加载期红线⑥保证候选引用存在）则跳过该卡。choose 写路径后由 caller
+/// `ref.invalidate(gauntletRewardViewProvider)` 统一失效。
+@riverpod
+Future<GauntletRewardView?> gauntletRewardView(Ref ref) async {
+  final service = ref.watch(gauntletServiceProvider);
+  if (service == null) return null;
+  final run = await service.activeRun();
+  if (run == null || run.sessionPhase != GauntletPhase.awaitingRewardChoice) {
+    return null;
+  }
+  final repo = GameRepository.instanceOrNull;
+  if (repo == null) return null; // 无装备 def 无法展示卡（生产恒 loaded）
+  final candidates = <GauntletRewardCandidate>[];
+  for (final defId in run.rewardCandidateDefIds) {
+    final def = repo.equipmentDefs[defId];
+    if (def == null) continue; // 防御：红线⑥保证候选存在
+    candidates.add(
+      GauntletRewardCandidate(
+        defId: defId,
+        name: def.name,
+        tier: def.tier,
+        slot: def.slot,
+        attackMin: def.baseAttackMin,
+        attackMax: def.baseAttackMax,
+        healthMin: def.baseHealthMin,
+        healthMax: def.baseHealthMax,
+        speedMin: def.baseSpeedMin,
+        speedMax: def.baseSpeedMax,
+      ),
+    );
+  }
+  return GauntletRewardView(
+    isFirstClear: run.isFirstClearPending,
+    candidates: candidates,
+  );
 }
