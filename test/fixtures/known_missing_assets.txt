@@ -1,0 +1,19 @@
+# 已知缺图 allowlist(asset_audit guard 消费·运行期 Image.asset errorBuilder 兜底渲染)。
+# 格式:每行一个资产路径;# 开头为注释;空行忽略。
+# 补齐美术后从本表删除对应行(guard 2 检查已补齐残留,不删会红)。
+#
+# ── Ch7 二流首章「北望」待补美术(2026-07-17·美术素材另拍板)──
+# 敌人立绘(5)
+assets/enemies/beidi_shuzu.png
+assets/enemies/fengxue_shaoqi.png
+assets/enemies/beipai_youshao.png
+assets/enemies/huiyiren_beijing.png
+assets/enemies/beipai_zongjiang.png
+# 章节封面(1)
+assets/scenes/chapter_07_cover.png
+# 主线剧情阅读背景(5)
+assets/scenes/narrative_stage_07_01.png
+assets/scenes/narrative_stage_07_02.png
+assets/scenes/narrative_stage_07_03.png
+assets/scenes/narrative_stage_07_04.png
+assets/scenes/narrative_stage_07_05.png
