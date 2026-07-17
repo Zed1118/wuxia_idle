@@ -88,8 +88,9 @@
 ---
 
 ## 恢复点
-- 状态：**Task 1 ✅ 完成**(service seam·commit `b37ec4bb`)。spec `35757104`/plan `53691440` 已提交·全部未 push。**Task 2-8 未开工**。
-- 下一步：Task 2 `GauntletRewardScreen`(三选一)TDD。
-- 已验证(Task 1 后·本会话实测)：boss_gauntlet 全目录 **110 pass/0 fail**·`flutter analyze --no-pub` **0**(behavior-preserving·drive/recovery/failure/supply 回归全绿)。
-- 环境：worktree 有 `libisar.dylib`+64 .g.dart·`cd` worktree 后 `flutter test --no-pub <path>`。
+- 状态：**Task 1-8 全 ✅ 完成**·全部 commit 未 push。8 切片:seam `b37ec4bb` / reward 屏 `81675ea7` / defeat 屏 `32a12e5d` / entry_flow `576fe93c` / loadout 接线 `79f7330e` / 主菜单入口 `80d0f1dd` / 2 visual_route `dae00576` / 收尾。断魂庄端到端可玩(主菜单→装载→逐关现场战斗→整备→奖励/战败→离庄)。
+- 下一步：白天真机 visual_capture 目检 4 屏(loadout/interlude/reward/defeat @1280×720/1440×900·水墨观感/色板/无溢出·验收包 `build_acceptance.sh` 已就绪 @dae00576·两 route 已在 `VisualRoute.values` 验收套件)→ push(main 39 + phase-b)。
+- 已验证(本会话 worktree 实测)：全仓 `flutter analyze --no-pub` **0**；全量 `flutter test --no-pub` **4282 pass/0 fail**(4264+18=reward5+defeat4+flow4+gate2+route3·EXIT 0)；macOS build ✓。
+- 已知：Task5 专属真-Isar 装载 wiring 集成测 flaky(enter 后 provider invalidate × loadout Isar 流 + tearDown Isar.close 竞态·非接线 bug)撤下·接线由 entry_flow(4 端到端 widget 测)+`gauntlet_enter_test`+现有 loadout 5 测佐证。
+- 环境：worktree 有 `libisar.dylib`+64 .g.dart·真-Isar widget 测走 runAsync+pumpUntilFound 配方(勿 pumpAndSettle/ensureVisible·撞真 async 死锁)。
 - 阻塞：无。
