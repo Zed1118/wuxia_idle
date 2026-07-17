@@ -88,7 +88,8 @@
 ---
 
 ## 恢复点
-- 状态：plan 已出(2026-07-17)·spec `35757104` 已提交。**Task 1 未开工**。
-- 下一步：Task 1 service seam TDD。
-- 已验证：设计三拍(xhigh/全屏/gate)·环境就位(dylib/.g.dart/64)。
+- 状态：**Task 1 ✅ 完成**(service seam·commit `b37ec4bb`)。spec `35757104`/plan `53691440` 已提交·全部未 push。**Task 2-8 未开工**。
+- 下一步：Task 2 `GauntletRewardScreen`(三选一)TDD。
+- 已验证(Task 1 后·本会话实测)：boss_gauntlet 全目录 **110 pass/0 fail**·`flutter analyze --no-pub` **0**(behavior-preserving·drive/recovery/failure/supply 回归全绿)。
+- 环境：worktree 有 `libisar.dylib`+64 .g.dart·`cd` worktree 后 `flutter test --no-pub <path>`。
 - 阻塞：无。
