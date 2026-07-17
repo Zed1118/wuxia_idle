@@ -304,7 +304,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         break;
       }
     }
-    if (c == null || !canInterveneWithSkill(c, skill)) return;
+    if (c == null || !canInterveneNow(s, c, skill)) return;
     // 主线二 2.3:即放·真插队——立即出手(预支 AP 归零),不再标记 pending+C5 快进。
     ref
         .read(battleProvider.notifier)
@@ -343,7 +343,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         break;
       }
     }
-    if (c == null || !canInterveneWithSkill(c, skill)) return;
+    if (c == null || !canInterveneNow(s, c, skill)) return;
     // 待发态下再点同一技能 = 取消。
     if (skill.targetType != TargetType.aoe &&
         _pendingSkill?.id == skill.id &&
@@ -500,22 +500,23 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     );
     if (enemyCharging) {
       if (selectedIsAlive &&
-          _hasActionableInterrupt(s.leftTeam[_focusSlotIndex])) {
+          _hasActionableInterrupt(s, s.leftTeam[_focusSlotIndex])) {
         return _focusSlotIndex;
       }
       for (var i = 0; i < s.leftTeam.length; i++) {
-        if (_hasActionableInterrupt(s.leftTeam[i])) return i;
+        if (_hasActionableInterrupt(s, s.leftTeam[i])) return i;
       }
     }
     final enemyStaggered = s.rightTeam.any(
       (e) => e.isAlive && e.staggerTicksRemaining > 0,
     );
     if (enemyStaggered) {
-      if (selectedIsAlive && _hasActionableBurst(s.leftTeam[_focusSlotIndex])) {
+      if (selectedIsAlive &&
+          _hasActionableBurst(s, s.leftTeam[_focusSlotIndex])) {
         return _focusSlotIndex;
       }
       for (var i = 0; i < s.leftTeam.length; i++) {
-        if (_hasActionableBurst(s.leftTeam[i])) return i;
+        if (_hasActionableBurst(s, s.leftTeam[i])) return i;
       }
     }
     if (selectedIsAlive) {
@@ -531,13 +532,16 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     return 0;
   }
 
-  static bool _hasActionableInterrupt(BattleCharacter c) => c.availableSkills
-      .any((skill) => skill.canInterrupt && canInterveneWithSkill(c, skill));
+  static bool _hasActionableInterrupt(BattleState s, BattleCharacter c) => c
+      .availableSkills
+      .any((skill) => skill.canInterrupt && canInterveneNow(s, c, skill));
 
-  static bool _hasActionableBurst(BattleCharacter c) => c.availableSkills.any(
-    (skill) =>
-        skill.type != SkillType.normalAttack && canInterveneWithSkill(c, skill),
-  );
+  static bool _hasActionableBurst(BattleState s, BattleCharacter c) =>
+      c.availableSkills.any(
+        (skill) =>
+            skill.type != SkillType.normalAttack &&
+            canInterveneNow(s, c, skill),
+      );
 
   // ─── 结算 dialog ─────────────────────────────────────────────────────────
 

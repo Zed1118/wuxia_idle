@@ -65,7 +65,7 @@ class CoopBurstPromptBar extends StatelessWidget {
       (character) => character.availableSkills.any(
         (skill) =>
             skill.type != SkillType.normalAttack &&
-            canInterveneWithSkill(character, skill),
+            canInterveneNow(state, character, skill),
       ),
     );
     if (!hasBreakWindow || !hasActionableBurst) {

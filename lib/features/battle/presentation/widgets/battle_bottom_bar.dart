@@ -404,6 +404,9 @@ class BottomBar extends StatelessWidget {
                               final button = SkillCommandButton(
                                 character: focus,
                                 skill: skill,
+                                interventionWindowOpen:
+                                    state.actorQueue.isEmpty &&
+                                    !state.isFinished,
                                 isPending:
                                     localPendingThis || domainPendingThis,
                                 pendingTapEnabled: localPendingThis,
@@ -573,6 +576,7 @@ class FocusChip extends StatelessWidget {
 class SkillCommandButton extends StatelessWidget {
   final BattleCharacter character;
   final SkillDef skill;
+  final bool interventionWindowOpen;
   final bool isPending;
   final bool pendingTapEnabled;
   final bool queuedAnother;
@@ -588,6 +592,7 @@ class SkillCommandButton extends StatelessWidget {
     super.key,
     required this.character,
     required this.skill,
+    required this.interventionWindowOpen,
     required this.isPending,
     required this.pendingTapEnabled,
     required this.queuedAnother,
@@ -613,7 +618,8 @@ class SkillCommandButton extends StatelessWidget {
     final cd = character.skillCooldowns[skill.id] ?? 0;
     final effectiveCost = effectiveSkillQiCost(character, skill);
     final actionReady = character.actionPoint > 0;
-    final interventionReady = canInterveneWithSkill(character, skill);
+    final interventionReady =
+        interventionWindowOpen && canInterveneWithSkill(character, skill);
     final enabled =
         interventionReady &&
         (!isPending || pendingTapEnabled) &&
@@ -644,7 +650,7 @@ class SkillCommandButton extends StatelessWidget {
       blockingStatus = UiStrings.skillCharging;
     } else if (character.staggerTicksRemaining > 0) {
       blockingStatus = UiStrings.skillStaggered;
-    } else if (!actionReady) {
+    } else if (!actionReady || !interventionWindowOpen) {
       blockingStatus = UiStrings.skillAwaitingAction;
     } else {
       blockingStatus = '';

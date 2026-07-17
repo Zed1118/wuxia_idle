@@ -222,6 +222,7 @@ Future<_TestBattleNotifier> _pumpWith(
   List<BattleCharacter> right, {
   Size size = const Size(1280, 720),
   bool allowPlayerIntervention = true,
+  List<({int charId, int teamSide})> actorQueue = const [],
 }) async {
   late _TestBattleNotifier notifier;
   await tester.binding.setSurfaceSize(size);
@@ -232,7 +233,10 @@ Future<_TestBattleNotifier> _pumpWith(
       overrides: [
         battleProvider.overrideWith(() {
           notifier = _TestBattleNotifier(
-            BattleState.initial(leftTeam: left, rightTeam: right),
+            BattleState.initial(
+              leftTeam: left,
+              rightTeam: right,
+            ).copyWith(actorQueue: actorQueue),
           );
           return notifier;
         }),
@@ -1122,6 +1126,31 @@ void main() {
       expect(find.text(UiStrings.coopBurstPrompt), findsOneWidget);
       expect(find.byKey(const ValueKey('skill_cmd_2_pB')), findsOneWidget);
       expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsNothing);
+    });
+
+    testWidgets('拍内行动队列未结算完时不提示破绽爆发或切换焦点', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final selected = left[0].copyWith(
+        availableSkills: [_power],
+        actionPoint: 1,
+      );
+      final ally = left[1].copyWith(availableSkills: [_powerB], actionPoint: 1);
+      final staggered = right.first.copyWith(staggerTicksRemaining: 2);
+
+      await _pumpWith(
+        tester,
+        [selected, ally, left[2]],
+        [staggered, ...right.skip(1)],
+        actorQueue: const [(charId: 2, teamSide: 0)],
+      );
+
+      expect(find.text(UiStrings.coopBurstPrompt), findsNothing);
+      expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsOneWidget);
+      expect(find.byKey(const ValueKey('skill_cmd_2_pB')), findsNothing);
+      final semantics = tester.widget<Semantics>(
+        find.byKey(const ValueKey('skill_cmd_1_p1')),
+      );
+      expect(semantics.properties.enabled, isFalse);
     });
 
     testWidgets('指令台 + 危险条 + 战报条同屏 1280×720 不溢出', (tester) async {

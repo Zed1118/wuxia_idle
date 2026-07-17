@@ -112,6 +112,7 @@ Future<_TestBattleNotifier> _pumpWith(
   List<BattleCharacter> right, {
   bool allowPlayerIntervention = true,
   bool startPaused = false,
+  List<({int charId, int teamSide})> actorQueue = const [],
   Size size = const Size(1280, 720),
 }) async {
   late _TestBattleNotifier notifier;
@@ -122,7 +123,10 @@ Future<_TestBattleNotifier> _pumpWith(
       overrides: [
         battleProvider.overrideWith(() {
           notifier = _TestBattleNotifier(
-            BattleState.initial(leftTeam: left, rightTeam: right),
+            BattleState.initial(
+              leftTeam: left,
+              rightTeam: right,
+            ).copyWith(actorQueue: actorQueue),
           );
           return notifier;
         }),
@@ -170,6 +174,28 @@ void main() {
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
       expect(find.text(UiStrings.skillAwaitingAction), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.pump();
+      expect(notifier.interveneCount, 0);
+    });
+
+    testWidgets('拍内行动队列未结算完时技能按钮不可下发', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_aoe],
+        actionPoint: 300,
+      );
+      final notifier = await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        actorQueue: const [(charId: 2, teamSide: 0)],
+      );
+
+      final semantics = tester.widget<Semantics>(
+        find.byKey(const ValueKey('skill_cmd_1_aoe1')),
+      );
+      expect(semantics.properties.enabled, isFalse);
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
       await tester.pump();
       expect(notifier.interveneCount, 0);
@@ -284,9 +310,7 @@ void main() {
 
     testWidgets('手动暂停中切换另一单体技 → 出手后仍保持暂停且使用新招', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
-      final focus = left.first.copyWith(
-        availableSkills: [_single, _singleAlt],
-      );
+      final focus = left.first.copyWith(availableSkills: [_single, _singleAlt]);
       final notifier = await _pumpWith(
         tester,
         [focus, ...left.skip(1)],

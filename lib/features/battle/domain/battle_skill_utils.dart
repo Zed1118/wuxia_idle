@@ -28,6 +28,19 @@ bool canInterveneWithSkill(BattleCharacter c, SkillDef skill) =>
     c.staggerTicksRemaining <= 0 &&
     isSkillReady(c, skill);
 
+/// 当前战斗快照是否允许把技能作为即时干预下发。
+///
+/// 除角色资源/控制态外，还要求停在完整 tick 边界；单步模式留下的拍内
+/// [BattleState.actorQueue] 必须先结算完，避免同一角色在该拍二次行动。
+bool canInterveneNow(
+  BattleState state,
+  BattleCharacter character,
+  SkillDef skill,
+) =>
+    !state.isFinished &&
+    state.actorQueue.isEmpty &&
+    canInterveneWithSkill(character, skill);
+
 /// 手动单体技能否把 [enemy] 作为指定目标。
 ///
 /// 常规口径与自动选敌一致：护法存活时受保护 Boss 不进入目标池。唯一例外是
