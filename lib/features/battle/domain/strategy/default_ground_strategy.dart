@@ -193,8 +193,8 @@ class DefaultGroundStrategy implements BattleStrategy {
   /// 主线二 2.3:玩家拖招立即插队结算(预支语义)。
   ///
   /// 1. 该角色(player teamSide=0)不存活 / 战斗已结束 → noop 返原 state。
-  /// 2. 普攻 / AP 尚未重新积累 / 踉跄中 / 蓄力中 → noop(strategy 层防线,
-  ///    避免同角色归零后连发、静默 fizzle 或抛异常)。
+  /// 2. 未装备 / 普攻 / 资源未就绪 / AP 尚未重新积累 / 踉跄中 / 蓄力中 →
+  ///    noop(strategy 层防线,避免同角色归零后连发、静默变招或抛异常)。
   /// 3. 置 pending(复用 [requestUltimate]:`BattleAI` 优先消费拖的招 + 指定目标)。
   /// 4. 借 AP:把该角色 actionPoint 设为正好 1000 → [_resolveAction] 内
   ///    `actionPoint -= 1000` 出手后自然归零(预支这一拍,随后等满周期再动)。
@@ -217,13 +217,20 @@ class DefaultGroundStrategy implements BattleStrategy {
     if (state.actorQueue.isNotEmpty) return state;
     final actor0 = _findById(state, characterId, 0);
     if (actor0 == null || !actor0.isAlive) return state;
-    // I-2:普攻不走插队(拖招只发技能);strategy 层防线,避免 requestUltimate 抛异常。
-    if (skill.type == SkillType.normalAttack) return state;
-    // 预支后 AP 会归零；必须等后续 tick 重新积累为正才能再次借行动。
-    // 不做全队次数锁：不同角色仍可按最终设计 A→B→C 各自连续插队。
-    if (actor0.actionPoint <= 0) return state;
-    // I-1:踉跄/蓄力中的角色无法即时出手 → noop,避免拖的招静默 fizzle 又消耗交互。
-    if (actor0.staggerTicksRemaining > 0 || actor0.chargingSkill != null) {
+    // 只接受角色当前战斗快照中已装备的规范技能定义，避免调用方用同 id 之外
+    // 的任意 SkillDef 绕过装配或篡改倍率。
+    SkillDef? equippedSkill;
+    for (final candidate in actor0.availableSkills) {
+      if (candidate.id == skill.id) {
+        equippedSkill = candidate;
+        break;
+      }
+    }
+    if (equippedSkill == null) return state;
+    // 普攻不走插队；资源、CD、AP 与控制态统一复用 UI 同源门控，防止 pending
+    // 被 AI 判无效后静默回落成另一招并仍消耗本次预支行动。
+    if (equippedSkill.type == SkillType.normalAttack ||
+        !canInterveneWithSkill(actor0, equippedSkill)) {
       return state;
     }
     if (targetId != null) {
@@ -235,14 +242,15 @@ class DefaultGroundStrategy implements BattleStrategy {
           break;
         }
       }
-      if (target == null || !canManuallyTargetEnemy(target, state, skill)) {
+      if (target == null ||
+          !canManuallyTargetEnemy(target, state, equippedSkill)) {
         return state;
       }
     }
     final pended = requestUltimate(
       state,
       characterId,
-      skill,
+      equippedSkill,
       targetId: targetId,
     );
     final pendedActor = _findById(pended, characterId, 0);

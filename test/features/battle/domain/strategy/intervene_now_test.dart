@@ -58,6 +58,17 @@ void main() {
     canInterrupt: true,
     visualEffect: 'stub',
   );
+  const foreignSkill = SkillDef(
+    id: 'skill_iv_foreign',
+    name: '无名秘式',
+    description: '未装备技能守卫',
+    type: SkillType.powerSkill,
+    powerMultiplier: 1800,
+    internalForceCost: 100,
+    cooldownTurns: 2,
+    requiresManualTrigger: false,
+    visualEffect: 'stub',
+  );
 
   BattleCharacter unit({
     required int charId,
@@ -415,7 +426,12 @@ void main() {
   test('破招技仍可指定正在蓄力的受保护 Boss', () {
     const strat = DefaultGroundStrategy();
     final n = GameRepository.instance.numbers;
-    final actor = unit(charId: 1, teamSide: 0, slot: 0, ap: 300);
+    final actor = unit(
+      charId: 1,
+      teamSide: 0,
+      slot: 0,
+      ap: 300,
+    ).copyWith(availableSkills: const [power, powerB, normal, interrupt]);
     final boss = unit(charId: -1, teamSide: 1, slot: 0).copyWith(
       isBoss: true,
       enemyDefId: 'ward_boss',
@@ -445,5 +461,83 @@ void main() {
 
     expect(after.actionLog.last.targetId, boss.characterId);
     expect(after.actionLog.last.skill?.id, interrupt.id);
+  });
+
+  test('真气不足的指定技能 → noop 而非静默改打其他招', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final actor = unit(
+      charId: 1,
+      teamSide: 0,
+      slot: 0,
+      ap: 300,
+    ).copyWith(currentQi: 50);
+    final state = BattleState.initial(
+      leftTeam: [actor],
+      rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
+    );
+
+    final after = strat.interveneNow(
+      state,
+      actor.characterId,
+      power,
+      targetId: -1,
+      n: n,
+      rng: Random(7),
+    );
+
+    expect(after.actionLog, isEmpty);
+    expect(after.leftTeam.first.actionPoint, actor.actionPoint);
+    expect(after.leftTeam.first.currentQi, actor.currentQi);
+  });
+
+  test('冷却中的指定技能 → noop 而非静默改打其他招', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final actor = unit(
+      charId: 1,
+      teamSide: 0,
+      slot: 0,
+      ap: 300,
+    ).copyWith(skillCooldowns: const {'skill_iv_power': 2});
+    final state = BattleState.initial(
+      leftTeam: [actor],
+      rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
+    );
+
+    final after = strat.interveneNow(
+      state,
+      actor.characterId,
+      power,
+      targetId: -1,
+      n: n,
+      rng: Random(7),
+    );
+
+    expect(after.actionLog, isEmpty);
+    expect(after.leftTeam.first.actionPoint, actor.actionPoint);
+    expect(after.leftTeam.first.skillCooldowns[power.id], 2);
+  });
+
+  test('角色未装备的指定技能 → noop', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final actor = unit(charId: 1, teamSide: 0, slot: 0, ap: 300);
+    final state = BattleState.initial(
+      leftTeam: [actor],
+      rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
+    );
+
+    final after = strat.interveneNow(
+      state,
+      actor.characterId,
+      foreignSkill,
+      targetId: -1,
+      n: n,
+      rng: Random(7),
+    );
+
+    expect(after.actionLog, isEmpty);
+    expect(after.leftTeam.first.actionPoint, actor.actionPoint);
   });
 }
