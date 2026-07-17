@@ -167,6 +167,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   SkillDef? _pendingSkill;
   int? _pendingCharId;
   int? _hoveredPendingEnemyId;
+  // 待发软暂停只恢复自己暂停的播放；若玩家原本已手动暂停，清待发后仍暂停。
+  bool _resumePlaybackAfterPending = false;
 
   // 技能目标选择栏锚点:待发单体技的技能格 ↔ 其上方浮出的敌人快捷选择栏。
   final LayerLink _skillTargetLink = LayerLink();
@@ -369,6 +371,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       return;
     }
     // ≥2 敌:进待发态 + 软暂停(选择栏在技能格上方冒出,右侧头像亦可点)。
+    if (_pendingSkill == null) {
+      _resumePlaybackAfterPending = !_playback.isPaused;
+    }
     setState(() {
       _pendingSkill = skill;
       _pendingCharId = characterId;
@@ -387,12 +392,16 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   /// 解除待发态并恢复自动播放(取消 / 出手后共用)。
   void _clearPending() {
+    final shouldResume = _resumePlaybackAfterPending;
     setState(() {
       _pendingSkill = null;
       _pendingCharId = null;
       _hoveredPendingEnemyId = null;
+      _resumePlaybackAfterPending = false;
     });
-    _playback.resume(); // 解除软暂停 + 战斗未结束则重启自动播放。
+    if (shouldResume) {
+      _playback.resume(); // 仅解除待发自身施加的软暂停。
+    }
   }
 
   void _onPendingEnemyHover(int enemyId, bool hovering) {

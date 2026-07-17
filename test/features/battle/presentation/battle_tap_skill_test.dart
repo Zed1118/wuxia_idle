@@ -78,6 +78,18 @@ const _single = SkillDef(
   visualEffect: '',
 );
 
+const _singleAlt = SkillDef(
+  id: 'single2',
+  name: '断流掌',
+  description: '',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1200,
+  internalForceCost: 180,
+  cooldownTurns: 1,
+  requiresManualTrigger: false,
+  visualEffect: '',
+);
+
 /// 群体技(targetType.aoe)。
 const _aoe = SkillDef(
   id: 'aoe1',
@@ -97,6 +109,7 @@ Future<_TestBattleNotifier> _pumpWith(
   List<BattleCharacter> left,
   List<BattleCharacter> right, {
   bool allowPlayerIntervention = true,
+  bool startPaused = false,
   Size size = const Size(1280, 720),
 }) async {
   late _TestBattleNotifier notifier;
@@ -117,6 +130,7 @@ Future<_TestBattleNotifier> _pumpWith(
           animConfig: _testAnim,
           playback: BattleScreenPlaybackConfig(
             allowPlayerIntervention: allowPlayerIntervention,
+            startPaused: startPaused,
           ),
         ),
       ),
@@ -184,6 +198,79 @@ void main() {
       await tester.pump();
       expect(notifier.lastInterveneSkill?.id, 'single1');
       expect(notifier.lastInterveneTarget, 11);
+    });
+
+    testWidgets('手动暂停中选择单体目标 → 出手后仍保持暂停', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        startPaused: true,
+      );
+
+      expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      await tester.tap(
+        find.byKey(ValueKey('target_chip_${right.first.characterId}')),
+      );
+      await tester.pump();
+
+      expect(notifier.interveneCount, 1);
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+      expect(
+        find.byIcon(Icons.play_arrow),
+        findsOneWidget,
+        reason: '待发只拥有自己施加的软暂停，不能覆盖玩家已有暂停',
+      );
+    });
+
+    testWidgets('手动暂停中取消待发 → 仍保持暂停', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        startPaused: true,
+      );
+      final button = find.byKey(const ValueKey('skill_cmd_1_single1'));
+
+      await tester.tap(button);
+      await tester.pump();
+      await tester.tap(button);
+      await tester.pump();
+
+      expect(notifier.interveneCount, 0);
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+      expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+    });
+
+    testWidgets('手动暂停中切换另一单体技 → 出手后仍保持暂停且使用新招', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_single, _singleAlt],
+      );
+      final notifier = await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        startPaused: true,
+      );
+
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single2')));
+      await tester.pump();
+      await tester.tap(
+        find.byKey(ValueKey('target_chip_${right.first.characterId}')),
+      );
+      await tester.pump();
+
+      expect(notifier.lastInterveneSkill?.id, _singleAlt.id);
+      expect(find.byIcon(Icons.play_arrow), findsOneWidget);
     });
 
     testWidgets('点 single 技能按钮 → 按钮显示待发视觉但不写 domain pending', (tester) async {
