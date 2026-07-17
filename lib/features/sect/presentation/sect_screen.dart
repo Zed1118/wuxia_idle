@@ -6,7 +6,10 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/domain/character.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/portrait_frame.dart';
+import '../../../shared/widgets/wuxia_image.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/sect_member_service.dart';
 import '../application/sect_providers.dart';
@@ -18,12 +21,7 @@ import '../domain/territory_def.dart';
 import 'widgets/sect_event_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
-/// 门派事务屏(1.0 P3.4 §12.1,Batch 2.3 nightshift T16 · spec §5)。
-///
-/// 三段布局:
-/// - 顶部:`sect_name` / `sectLevel` 1-7 沿七阶 / `sectReputation` 0-100 LinearProgressIndicator
-/// - 中部:active SectEvent list(`status == pending` · 红点 + 「应战」CTA → 弹 [SectEventDialog])
-/// - 底部:history tab(`status == resolved | expired` · 灰色显示 + reputationDelta)
+/// 门派总堂：横匾总览 + 宗门告示 / 门派年表 / 堂上座次 / 山门地契。
 ///
 /// **数据源**:T19b 起切到 Isar 真持久化 — `currentSectProvider` StreamProvider
 /// 读 `isar.sects.watchObject(1)` + `activeSectEventsProvider` / `historicalSectEventsProvider`
@@ -42,38 +40,20 @@ class SectScreen extends ConsumerWidget {
     final historyAsync = ref.watch(historicalSectEventsProvider);
 
     return sectAsync.when(
-      loading: () => const Scaffold(
-        backgroundColor: WuxiaColors.background,
-        body: Center(child: InkLoadingIndicator()),
-      ),
-      error: (e, _) => Scaffold(
-        backgroundColor: WuxiaColors.background,
-        appBar: AppBar(
-          title: const Text(UiStrings.sectScreenTitle),
-          backgroundColor: WuxiaColors.sidebar,
-          foregroundColor: WuxiaColors.textPrimary,
-        ),
-        body: Center(
-          child: Text(
-            UiStrings.sectLoadFailed(e),
-            style: const TextStyle(color: WuxiaColors.textMuted),
-          ),
+      loading: () =>
+          const _SectStateScaffold(child: Center(child: InkLoadingIndicator())),
+      error: (e, _) => _SectStateScaffold(
+        child: _HallEmptyState(
+          icon: Icons.cloud_off_outlined,
+          message: UiStrings.sectLoadFailed(e),
         ),
       ),
       data: (sect) {
         if (sect == null) {
-          return Scaffold(
-            backgroundColor: WuxiaColors.background,
-            appBar: AppBar(
-              title: const Text(UiStrings.sectScreenTitle),
-              backgroundColor: WuxiaColors.sidebar,
-              foregroundColor: WuxiaColors.textPrimary,
-            ),
-            body: const Center(
-              child: Text(
-                UiStrings.sectNotCreated,
-                style: TextStyle(color: WuxiaColors.textMuted),
-              ),
+          return const _SectStateScaffold(
+            child: _HallEmptyState(
+              icon: Icons.account_balance_outlined,
+              message: UiStrings.sectNotCreated,
             ),
           );
         }
@@ -82,56 +62,48 @@ class SectScreen extends ConsumerWidget {
           initialIndex: initialTabIndex,
           child: Scaffold(
             backgroundColor: WuxiaColors.background,
-            appBar: AppBar(
-              title: const Text(UiStrings.sectScreenTitle),
-              backgroundColor: WuxiaColors.sidebar,
-              foregroundColor: WuxiaColors.textPrimary,
-              actions: [
-                // dev 调试:立即生成一个 pending 比武事件,验收 CTA → 结算下游
-                // (真实 30 天节奏下手动验收用 · release 不显)。
-                if (kDebugMode)
-                  IconButton(
-                    icon: const Icon(Icons.bolt),
-                    tooltip: UiStrings.sectDebugSpawnEventTooltip,
-                    onPressed: () => debugSpawnSectEvent(ref),
-                  ),
-              ],
-              bottom: const TabBar(
-                isScrollable: true,
-                tabs: [
-                  Tab(text: UiStrings.sectTabEventsActive),
-                  Tab(text: UiStrings.sectTabEventsHistory),
-                  Tab(text: UiStrings.sectTabMembers),
-                  Tab(text: UiStrings.sectTabTerritories),
-                ],
-                labelColor: WuxiaColors.textPrimary,
-                unselectedLabelColor: WuxiaColors.textMuted,
-                indicatorColor: WuxiaColors.hpHigh,
-              ),
+            appBar: WuxiaTitleBar(
+              title: UiStrings.sectScreenTitle,
+              onBack: Navigator.of(context).canPop()
+                  ? () => Navigator.of(context).maybePop()
+                  : null,
+              trailing: kDebugMode
+                  ? IconButton(
+                      icon: const Icon(Icons.bolt, color: WuxiaUi.jiang),
+                      tooltip: UiStrings.sectDebugSpawnEventTooltip,
+                      onPressed: () => debugSpawnSectEvent(ref),
+                    )
+                  : null,
             ),
             body: SafeArea(
-              child: Column(
+              child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  _SectHeader(sect: sect),
-                  const Divider(color: WuxiaColors.border, height: 1),
-                  Expanded(
-                    child: TabBarView(
-                      children: [
-                        _ActiveEventList(
-                          events:
-                              (activeAsync.asData?.value ??
-                              const <SectEvent>[]),
-                          sect: sect,
+                  const _SectHallBackdrop(),
+                  Column(
+                    children: [
+                      _SectHeader(sect: sect),
+                      const _HallTabBar(),
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            _ActiveEventList(
+                              events:
+                                  (activeAsync.asData?.value ??
+                                  const <SectEvent>[]),
+                              sect: sect,
+                            ),
+                            _HistoricalEventList(
+                              events:
+                                  (historyAsync.asData?.value ??
+                                  const <SectEvent>[]),
+                            ),
+                            _MemberList(sect: sect),
+                            _TerritoryGrid(sect: sect),
+                          ],
                         ),
-                        _HistoricalEventList(
-                          events:
-                              (historyAsync.asData?.value ??
-                              const <SectEvent>[]),
-                        ),
-                        _MemberList(sect: sect),
-                        _TerritoryGrid(sect: sect),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -143,80 +115,326 @@ class SectScreen extends ConsumerWidget {
   }
 }
 
+class _SectStateScaffold extends StatelessWidget {
+  const _SectStateScaffold({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: WuxiaColors.background,
+      appBar: WuxiaTitleBar(
+        title: UiStrings.sectScreenTitle,
+        onBack: Navigator.of(context).canPop()
+            ? () => Navigator.of(context).maybePop()
+            : null,
+      ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [const _SectHallBackdrop(), child],
+      ),
+    );
+  }
+}
+
+class _SectHallBackdrop extends StatelessWidget {
+  const _SectHallBackdrop();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        WuxiaImage(
+          'assets/scenes/sect_hall_main_v1.png',
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) =>
+              const ColoredBox(color: WuxiaColors.paperUnderlay),
+        ),
+        const ColoredBox(color: Color(0x990F1215)),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                const Color(0xCC11161A),
+                WuxiaColors.background.withValues(alpha: 0.76),
+                WuxiaColors.background.withValues(alpha: 0.94),
+              ],
+              stops: const [0, 0.42, 1],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HallTabBar extends StatelessWidget {
+  const _HallTabBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 980),
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: const Color(0xE63A2B1C),
+          border: Border.all(color: WuxiaUi.woodLight, width: 1.2),
+          borderRadius: BorderRadius.circular(5),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x88000000),
+              blurRadius: 12,
+              offset: Offset(0, 5),
+            ),
+          ],
+        ),
+        child: TabBar(
+          indicatorSize: TabBarIndicatorSize.tab,
+          dividerColor: Colors.transparent,
+          labelColor: WuxiaUi.ink,
+          unselectedLabelColor: const Color(0xFFD2C4A4),
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 2,
+          ),
+          indicator: BoxDecoration(
+            color: WuxiaUi.paper2,
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: WuxiaUi.gold),
+          ),
+          tabs: const [
+            Tab(
+              icon: Icon(Icons.campaign_outlined, size: 18),
+              text: UiStrings.sectTabEventsActive,
+            ),
+            Tab(
+              icon: Icon(Icons.history_edu_outlined, size: 18),
+              text: UiStrings.sectTabEventsHistory,
+            ),
+            Tab(
+              icon: Icon(Icons.groups_2_outlined, size: 18),
+              text: UiStrings.sectTabMembers,
+            ),
+            Tab(
+              icon: Icon(Icons.landscape_outlined, size: 18),
+              text: UiStrings.sectTabTerritories,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HallEmptyState extends StatelessWidget {
+  const _HallEmptyState({required this.icon, required this.message});
+
+  final IconData icon;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 420),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
+        decoration: BoxDecoration(
+          color: WuxiaUi.panelFill,
+          border: Border.all(color: WuxiaUi.woodLight),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: WuxiaUi.jiang, size: 34),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: WuxiaUi.ink, fontSize: 15),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SectHeader extends StatelessWidget {
   const _SectHeader({required this.sect});
   final Sect sect;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 980),
+        margin: const EdgeInsets.fromLTRB(20, 16, 20, 10),
+        padding: const EdgeInsets.fromLTRB(22, 13, 22, 14),
+        decoration: BoxDecoration(
+          color: const Color(0xD92B2118),
+          border: Border.all(color: WuxiaUi.woodLight, width: 1.2),
+          borderRadius: BorderRadius.circular(5),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x99000000),
+              blurRadius: 16,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 240,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B2A1B),
+                border: Border.all(color: WuxiaUi.gold),
+                boxShadow: const [
+                  BoxShadow(color: Color(0x66000000), blurRadius: 8),
+                ],
+              ),
+              child: Text(
                 sect.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 20,
+                  color: Color(0xFFE7D5AC),
+                  fontSize: 23,
                   fontWeight: FontWeight.bold,
+                  letterSpacing: 5,
                 ),
               ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: WuxiaColors.panel,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: WuxiaColors.border),
-                ),
-                child: Text(
-                  UiStrings.sectLevelLabel(sect.sectLevel),
-                  style: const TextStyle(
-                    color: WuxiaColors.textSecondary,
-                    fontSize: 12,
-                  ),
-                ),
+            ),
+            const SizedBox(width: 18),
+            _LevelSeal(level: sect.sectLevel),
+            const SizedBox(width: 22),
+            Expanded(child: _ReputationRuler(value: sect.sectReputation)),
+            const SizedBox(width: 18),
+            Text(
+              UiStrings.sectTotalWinsLabel(sect.totalWins),
+              style: const TextStyle(
+                color: Color(0xFFD7C7A8),
+                fontSize: 12,
+                letterSpacing: 1,
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Text(
-                UiStrings.sectReputationLabel,
-                style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: LinearProgressIndicator(
-                  value: (sect.sectReputation / 100).clamp(0.0, 1.0),
-                  minHeight: 8,
-                  backgroundColor: WuxiaColors.panel,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    WuxiaColors.hpHigh,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '${sect.sectReputation} / 100',
-                style: const TextStyle(
-                  color: WuxiaColors.textSecondary,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            UiStrings.sectTotalWinsLabel(sect.totalWins),
-            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _LevelSeal extends StatelessWidget {
+  const _LevelSeal({required this.level});
+
+  final int level;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: -0.035,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+        decoration: BoxDecoration(
+          color: WuxiaUi.jiang.withValues(alpha: 0.76),
+          border: Border.all(color: const Color(0xFFD9B39A), width: 1.2),
+          borderRadius: BorderRadius.circular(2),
+        ),
+        child: Text(
+          UiStrings.sectLevelLabel(level),
+          style: const TextStyle(
+            color: Color(0xFFF0DCC8),
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ReputationRuler extends StatelessWidget {
+  const _ReputationRuler({required this.value});
+
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    final ratio = (value / 100).clamp(0.0, 1.0);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            const Text(
+              UiStrings.sectReputationLabel,
+              style: TextStyle(color: Color(0xFFBFAF91), fontSize: 11),
+            ),
+            const Spacer(),
+            Text(
+              '$value / 100',
+              style: const TextStyle(
+                color: Color(0xFFE7D5AC),
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 7),
+        SizedBox(
+          height: 12,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final sealX = (constraints.maxWidth - 10) * ratio;
+              return Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.centerLeft,
+                children: [
+                  Container(height: 2, color: const Color(0xFF8F8067)),
+                  for (var i = 0; i <= 10; i++)
+                    Positioned(
+                      left: (constraints.maxWidth - 1) * i / 10,
+                      child: Container(
+                        width: 1,
+                        height: i.isEven ? 8 : 5,
+                        color: const Color(0xFFB3A385),
+                      ),
+                    ),
+                  Positioned(
+                    left: sealX,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: WuxiaUi.jiang,
+                        border: Border.all(color: const Color(0xFFE4C4A8)),
+                        borderRadius: BorderRadius.circular(1),
+                        boxShadow: const [
+                          BoxShadow(color: Color(0xAA000000), blurRadius: 3),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -229,23 +447,27 @@ class _ActiveEventList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (events.isEmpty) {
-      return const Center(
-        child: Text(
-          UiStrings.sectNoActiveEvent,
-          style: TextStyle(color: WuxiaColors.textMuted),
-        ),
+      return const _HallEmptyState(
+        icon: Icons.mark_email_read_outlined,
+        message: UiStrings.sectNoActiveEvent,
       );
     }
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      itemCount: events.length,
-      itemBuilder: (ctx, i) {
-        final e = events[i];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: _ActiveEventRow(event: e, sect: sect),
-        );
-      },
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 900),
+        child: ListView.builder(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+          itemCount: events.length,
+          itemBuilder: (ctx, i) {
+            final e = events[i];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _ActiveEventRow(event: e, sect: sect),
+            );
+          },
+        ),
+      ),
     );
   }
 }
@@ -257,55 +479,86 @@ class _ActiveEventRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: WuxiaColors.sidebar,
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        onTap: () => showDialog<void>(
-          context: context,
-          builder: (_) => SectEventDialog(event: event, sect: sect),
-        ),
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: WuxiaColors.border),
+    return Semantics(
+      button: true,
+      child: Material(
+        color: WuxiaUi.panelFill,
+        borderRadius: BorderRadius.circular(4),
+        child: InkWell(
+          onTap: () => showDialog<void>(
+            context: context,
+            builder: (_) => SectEventDialog(event: event, sect: sect),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              const Icon(Icons.circle, color: WuxiaColors.hpLow, size: 10),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _typeLabel(event.type),
-                      style: const TextStyle(
-                        color: WuxiaColors.textPrimary,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      UiStrings.sectEventTriggeredAt(
-                        _formatDate(event.triggeredAt),
-                      ),
-                      style: const TextStyle(
-                        color: WuxiaColors.textMuted,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+          mouseCursor: SystemMouseCursors.click,
+          borderRadius: BorderRadius.circular(4),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: WuxiaUi.woodLight, width: 1.2),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x66000000),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
                 ),
-              ),
-              const Icon(
-                Icons.chevron_right,
-                size: 20,
-                color: WuxiaColors.textMuted,
-              ),
-            ],
+              ],
+            ),
+            padding: const EdgeInsets.fromLTRB(18, 14, 16, 14),
+            child: Row(
+              children: [
+                Transform.rotate(
+                  angle: -0.08,
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: WuxiaUi.jiang.withValues(alpha: 0.10),
+                      border: Border.all(color: WuxiaUi.jiang, width: 1.4),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                    child: const Icon(
+                      Icons.circle,
+                      color: WuxiaUi.jiang,
+                      size: 9,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _typeLabel(event.type),
+                        style: const TextStyle(
+                          color: WuxiaUi.ink,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        UiStrings.sectEventTriggeredAt(
+                          _formatDate(event.triggeredAt),
+                        ),
+                        style: const TextStyle(
+                          color: WuxiaUi.muted,
+                          fontSize: 12,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 20,
+                  color: WuxiaUi.jiang,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -320,63 +573,120 @@ class _HistoricalEventList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (events.isEmpty) {
-      return const Center(
-        child: Text(
-          UiStrings.sectNoHistory,
-          style: TextStyle(color: WuxiaColors.textMuted),
-        ),
+      return const _HallEmptyState(
+        icon: Icons.history_edu_outlined,
+        message: UiStrings.sectNoHistory,
       );
     }
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      itemCount: events.length,
-      itemBuilder: (ctx, i) {
-        final e = events[i];
-        final delta = e.reputationDelta ?? 0;
-        final deltaStr = delta >= 0 ? '+$delta' : '$delta';
-        final color = delta >= 0 ? WuxiaColors.hpHigh : WuxiaColors.hpLow;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: WuxiaColors.sidebar,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: WuxiaColors.border),
-            ),
-            child: Row(
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 860),
+        child: ListView.builder(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 30),
+          itemCount: events.length,
+          itemBuilder: (ctx, i) =>
+              _HistoryEntry(event: events[i], isLast: i == events.length - 1),
+        ),
+      ),
+    );
+  }
+}
+
+class _HistoryEntry extends StatelessWidget {
+  const _HistoryEntry({required this.event, required this.isLast});
+
+  final SectEvent event;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final delta = event.reputationDelta ?? 0;
+    final deltaStr = delta >= 0 ? '+$delta' : '$delta';
+    final sealColor = delta >= 0 ? WuxiaUi.jiang : WuxiaUi.ink2;
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: 38,
+            child: Column(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${_typeLabel(e.type)} · ${_statusLabel(e.status)}',
-                        style: const TextStyle(
-                          color: WuxiaColors.textPrimary,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        _formatDate(e.resolvedAt ?? e.triggeredAt),
-                        style: const TextStyle(
-                          color: WuxiaColors.textMuted,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
+                Container(
+                  width: 13,
+                  height: 13,
+                  decoration: BoxDecoration(
+                    color: sealColor,
+                    border: Border.all(color: const Color(0xFFE3C9A0)),
+                    borderRadius: BorderRadius.circular(1),
                   ),
                 ),
-                Text(
-                  UiStrings.sectReputationDelta(deltaStr),
-                  style: TextStyle(color: color, fontSize: 13),
-                ),
+                if (!isLast)
+                  Expanded(
+                    child: Container(width: 1, color: const Color(0xFF8C7658)),
+                  ),
               ],
             ),
           ),
-        );
-      },
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: WuxiaUi.panelFill,
+                border: Border.all(color: WuxiaUi.woodLight),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${_typeLabel(event.type)} · ${_statusLabel(event.status)}',
+                          style: const TextStyle(
+                            color: WuxiaUi.ink,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _formatDate(event.resolvedAt ?? event.triggeredAt),
+                          style: const TextStyle(
+                            color: WuxiaUi.muted,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: sealColor),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                    child: Text(
+                      UiStrings.sectReputationDelta(deltaStr),
+                      style: TextStyle(
+                        color: sealColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -400,11 +710,9 @@ class _MemberList extends ConsumerWidget {
       ),
       data: (members) {
         if (members.isEmpty) {
-          return const Center(
-            child: Text(
-              UiStrings.sectMemberEmpty,
-              style: TextStyle(color: WuxiaColors.textMuted),
-            ),
+          return const _HallEmptyState(
+            icon: Icons.person_search_outlined,
+            message: UiStrings.sectMemberEmpty,
           );
         }
         final sorted = [...members]
@@ -414,57 +722,136 @@ class _MemberList extends ConsumerWidget {
             if (rankA != rankB) return rankB.compareTo(rankA);
             return b.realmTier.index.compareTo(a.realmTier.index);
           });
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  const Text(
-                    '${UiStrings.sectMemberCountLabel}:',
-                    style: TextStyle(
-                      color: WuxiaColors.textMuted,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    UiStrings.sectMemberCapDisplay(sect.memberCount, cap),
-                    style: const TextStyle(
-                      color: WuxiaColors.textSecondary,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 960),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: sorted.length,
-                    itemBuilder: (ctx, i) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _MemberRow(member: sorted[i], sect: sect),
-                    ),
-                  ),
+        final founders = sorted.where((m) => m.id == sect.founderId).toList();
+        final founder = founders.isEmpty ? null : founders.first;
+        final others = sorted.where((m) => m.id != sect.founderId).toList();
+        return Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 980),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+              children: [
+                _SeatCountStrip(
+                  value: UiStrings.sectMemberCapDisplay(sect.memberCount, cap),
                 ),
-              ),
+                if (founder != null) ...[
+                  const SizedBox(height: 12),
+                  _MemberRow(member: founder, sect: sect, featured: true),
+                ],
+                for (final rank in SectRank.values.reversed) ...[
+                  if (others.any((m) => m.sectRank == rank)) ...[
+                    const SizedBox(height: 14),
+                    _SeatSection(
+                      rank: rank,
+                      members: others.where((m) => m.sectRank == rank).toList(),
+                      sect: sect,
+                    ),
+                  ],
+                ],
+              ],
             ),
-          ],
+          ),
         );
       },
     );
   }
 }
 
+class _SeatCountStrip extends StatelessWidget {
+  const _SeatCountStrip({required this.value});
+
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(
+          Icons.people_alt_outlined,
+          color: Color(0xFFD7C7A8),
+          size: 17,
+        ),
+        const SizedBox(width: 8),
+        const Text(
+          '${UiStrings.sectMemberCountLabel}:',
+          style: TextStyle(color: Color(0xFFC4B69B), fontSize: 12),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Color(0xFFF0DFBC),
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(width: 12),
+        const Expanded(child: Divider(color: Color(0x667D6A4F), height: 1)),
+      ],
+    );
+  }
+}
+
+class _SeatSection extends StatelessWidget {
+  const _SeatSection({
+    required this.rank,
+    required this.members,
+    required this.sect,
+  });
+
+  final SectRank rank;
+  final List<Character> members;
+  final Sect sect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Container(width: 18, height: 2, color: WuxiaUi.jiang),
+            const SizedBox(width: 8),
+            Text(
+              _sectRankLabel(rank),
+              style: const TextStyle(
+                color: Color(0xFFE3D1AA),
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 3,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(child: Divider(color: Color(0x667D6A4F), height: 1)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (final member in members)
+              SizedBox(
+                width: 464,
+                child: _MemberRow(member: member, sect: sect),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 class _MemberRow extends ConsumerWidget {
-  const _MemberRow({required this.member, required this.sect});
+  const _MemberRow({
+    required this.member,
+    required this.sect,
+    this.featured = false,
+  });
   final Character member;
   final Sect sect;
+  final bool featured;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -484,19 +871,32 @@ class _MemberRow extends ConsumerWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: featured ? 16 : 12,
+        vertical: featured ? 12 : 9,
+      ),
       decoration: BoxDecoration(
-        color: WuxiaColors.sidebar,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: WuxiaColors.border),
+        color: featured ? const Color(0xF2E1CDA5) : WuxiaUi.panelFill,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: featured ? WuxiaUi.gold : WuxiaUi.woodLight,
+          width: featured ? 1.5 : 1,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           PortraitFrame(
             portraitPath: member.portraitPath,
-            size: 56,
+            size: featured ? 72 : 58,
             borderColor: member.school == null
-                ? WuxiaColors.border
+                ? WuxiaUi.woodLight
                 : WuxiaColors.schoolColor(member.school!),
             placeholderText: member.name,
           ),
@@ -513,29 +913,28 @@ class _MemberRow extends ConsumerWidget {
                     Text(
                       member.name,
                       style: const TextStyle(
-                        color: WuxiaColors.textPrimary,
-                        fontSize: 15,
+                        color: WuxiaUi.ink,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
                       ),
                     ),
                     if (isFounder)
                       const _SmallChip(
                         label: UiStrings.sectMemberFounderTag,
-                        color: WuxiaColors.hpHigh,
+                        color: WuxiaUi.jiang,
                       ),
                     if (rank != null)
                       _SmallChip(
                         label: _sectRankLabel(rank),
-                        color: WuxiaColors.textSecondary,
+                        color: WuxiaUi.ink2,
                       ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   EnumL10n.realmTier(member.realmTier),
-                  style: const TextStyle(
-                    color: WuxiaColors.textMuted,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
                 ),
                 if (rank != null && rank != SectRank.elder && !canPromote)
                   Padding(
@@ -543,7 +942,7 @@ class _MemberRow extends ConsumerWidget {
                     child: Text(
                       UiStrings.sectPromoteRequire(requiredForNext),
                       style: const TextStyle(
-                        color: WuxiaColors.textMuted,
+                        color: WuxiaUi.muted,
                         fontSize: 11,
                       ),
                     ),
@@ -555,7 +954,8 @@ class _MemberRow extends ConsumerWidget {
             TextButton(
               onPressed: () => _promote(context, ref),
               style: TextButton.styleFrom(
-                foregroundColor: WuxiaColors.hpHigh,
+                foregroundColor: WuxiaUi.qing,
+                backgroundColor: WuxiaUi.qing.withValues(alpha: 0.08),
                 visualDensity: VisualDensity.compact,
               ),
               child: const Text(UiStrings.sectMemberPromote),
@@ -564,7 +964,7 @@ class _MemberRow extends ConsumerWidget {
             TextButton(
               onPressed: () => _dismiss(context, ref),
               style: TextButton.styleFrom(
-                foregroundColor: WuxiaColors.hpLow,
+                foregroundColor: WuxiaUi.jiang,
                 visualDensity: VisualDensity.compact,
               ),
               child: const Text(UiStrings.sectMemberDismiss),
@@ -618,43 +1018,52 @@ class _TerritoryGrid extends ConsumerWidget {
     final all = [...ownedDefs, ...available];
 
     if (all.isEmpty) {
-      return const Center(
-        child: Text(
-          UiStrings.sectTerritoryEmpty,
-          style: TextStyle(color: WuxiaColors.textMuted),
-        ),
+      return const _HallEmptyState(
+        icon: Icons.map_outlined,
+        message: UiStrings.sectTerritoryEmpty,
       );
     }
 
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
           child: Row(
             children: [
+              const Icon(
+                Icons.landscape_outlined,
+                color: Color(0xFFD7C7A8),
+                size: 17,
+              ),
+              const SizedBox(width: 8),
               const Text(
                 '${UiStrings.sectTerritoryCountLabel}:',
-                style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+                style: TextStyle(color: Color(0xFFC4B69B), fontSize: 12),
               ),
               const SizedBox(width: 6),
               Text(
                 UiStrings.sectMemberCapDisplay(ownedDefs.length, cap),
                 style: const TextStyle(
-                  color: WuxiaColors.textSecondary,
+                  color: Color(0xFFF0DFBC),
                   fontSize: 12,
+                  fontWeight: FontWeight.bold,
                 ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Divider(color: Color(0x667D6A4F), height: 1),
               ),
             ],
           ),
         ),
         Expanded(
           child: GridView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.6,
+            padding: const EdgeInsets.fromLTRB(24, 4, 24, 30),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 620,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              childAspectRatio: 2.15,
             ),
             itemCount: all.length,
             itemBuilder: (ctx, i) {
@@ -683,13 +1092,21 @@ class _TerritoryCell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(15, 13, 13, 10),
       decoration: BoxDecoration(
-        color: WuxiaColors.sidebar,
-        borderRadius: BorderRadius.circular(8),
+        color: isOwned ? const Color(0xF2E1CDA5) : WuxiaUi.panelFill,
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(
-          color: isOwned ? WuxiaColors.hpHigh : WuxiaColors.border,
+          color: isOwned ? WuxiaUi.jiang : WuxiaUi.woodLight,
+          width: isOwned ? 1.5 : 1,
         ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -697,9 +1114,10 @@ class _TerritoryCell extends ConsumerWidget {
           Text(
             def.name,
             style: const TextStyle(
-              color: WuxiaColors.textPrimary,
+              color: WuxiaUi.ink,
               fontSize: 15,
               fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
             ),
           ),
           const SizedBox(height: 4),
@@ -710,13 +1128,13 @@ class _TerritoryCell extends ConsumerWidget {
               _SmallChip(
                 label:
                     '${UiStrings.sectTerritoryDefenseLabel} ${def.baseDefenseLevel}',
-                color: WuxiaColors.textSecondary,
+                color: WuxiaUi.ink2,
               ),
               _SmallChip(
                 label: isOwned
                     ? UiStrings.sectTerritoryOwnedSelf
                     : UiStrings.sectTerritoryNeutral,
-                color: isOwned ? WuxiaColors.hpHigh : WuxiaColors.textMuted,
+                color: isOwned ? WuxiaUi.jiang : WuxiaUi.muted,
               ),
             ],
           ),
@@ -724,10 +1142,7 @@ class _TerritoryCell extends ConsumerWidget {
           Expanded(
             child: Text(
               def.description,
-              style: const TextStyle(
-                color: WuxiaColors.textMuted,
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -738,9 +1153,7 @@ class _TerritoryCell extends ConsumerWidget {
               onPressed: () =>
                   isOwned ? _release(context, ref) : _claim(context, ref),
               style: TextButton.styleFrom(
-                foregroundColor: isOwned
-                    ? WuxiaColors.hpLow
-                    : WuxiaColors.hpHigh,
+                foregroundColor: isOwned ? WuxiaUi.jiang : WuxiaUi.qing,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 visualDensity: VisualDensity.compact,
               ),
@@ -794,8 +1207,8 @@ class _SmallChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: WuxiaColors.panel,
-        borderRadius: BorderRadius.circular(4),
+        color: color.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(2),
         border: Border.all(color: color, width: 0.8),
       ),
       child: Text(label, style: TextStyle(color: color, fontSize: 11)),
