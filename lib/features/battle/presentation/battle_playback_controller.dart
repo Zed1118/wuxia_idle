@@ -318,9 +318,15 @@ class BattlePlaybackController {
     final effectFrac = actionTemplate == BattleActionTemplate.area
         ? Offset(target.teamSide == 0 ? 0.28 : 0.72, 0.5)
         : targetFrac;
+    final coalesceGroup = (
+      tick: action.tick,
+      actorId: action.actorId,
+      skillId: action.skill?.id,
+    );
 
     if (result.isDodged) {
       _spawnEffect(
+        coalesceGroup: coalesceGroup,
         assetPath: WuxiaUi.fxDodgeShadow,
         centerFrac: effectFrac,
         size: 230,
@@ -333,6 +339,7 @@ class BattlePlaybackController {
     if (actor != null && includeSchoolEffect) {
       final isUltimate = isUltimateCaptionSkill(action.skill);
       _spawnEffect(
+        coalesceGroup: coalesceGroup,
         assetPath: _schoolFx(actor.school, isUltimate: isUltimate),
         centerFrac: effectFrac,
         size: isUltimate ? 330 : 220,
@@ -344,6 +351,7 @@ class BattlePlaybackController {
 
     if (result.isCritical) {
       _spawnEffect(
+        coalesceGroup: coalesceGroup,
         assetPath: WuxiaUi.fxCriticalHit,
         centerFrac: targetFrac,
         size: 220,
@@ -352,6 +360,7 @@ class BattlePlaybackController {
     }
     if (result.defenseRate >= 0.22) {
       _spawnEffect(
+        coalesceGroup: coalesceGroup,
         assetPath: WuxiaUi.fxArmorBreak,
         centerFrac: targetFrac,
         size: 210,
@@ -360,6 +369,7 @@ class BattlePlaybackController {
     }
     if (result.appliedEffects.contains('internal_injury')) {
       _spawnEffect(
+        coalesceGroup: coalesceGroup,
         assetPath: WuxiaUi.fxInternalInjury,
         centerFrac: targetFrac,
         size: 230,
@@ -380,6 +390,7 @@ class BattlePlaybackController {
   }
 
   void _spawnEffect({
+    required Object coalesceGroup,
     required String assetPath,
     required Offset centerFrac,
     required double size,
@@ -387,6 +398,19 @@ class BattlePlaybackController {
     double rotation = 0,
     bool mirrored = false,
   }) {
+    for (final active in _activeEffects) {
+      if (!active.disposed &&
+          active.coalesceGroup == coalesceGroup &&
+          active.assetPath == assetPath &&
+          active.centerFrac == centerFrac &&
+          active.size == size &&
+          active.opacity == opacity &&
+          active.rotation == rotation &&
+          active.mirrored == mirrored) {
+        active.ctrl.forward(from: 0.0);
+        return;
+      }
+    }
     final ctrl = AnimationController(
       vsync: _vsync,
       duration: const Duration(milliseconds: 520),
@@ -394,6 +418,7 @@ class BattlePlaybackController {
     final entry = EffectEntry(
       id: _nextEffectId++,
       ctrl: ctrl,
+      coalesceGroup: coalesceGroup,
       centerFrac: centerFrac,
       assetPath: assetPath,
       size: size,
