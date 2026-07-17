@@ -29,6 +29,7 @@ import '../../inner_demon/presentation/inner_demon_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../expedition/presentation/expedition_overview_screen.dart';
+import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import '../../mass_battle/presentation/mass_battle_screen.dart';
 import '../../resource_overview/presentation/resource_overview_screen.dart';
 import '../../mainline/application/mainline_progress_service.dart';
@@ -299,6 +300,15 @@ class MainMenu extends ConsumerWidget {
           icon: Icons.travel_explore_outlined,
           thumbnailPath: WuxiaUi.entryJianghu,
           onTap: () => _push(context, const ExpeditionOverviewScreen()),
+        ),
+      // 断魂庄（江湖远行 Phase C·同 jianghuJourneyUnlocked gate·§5.7 未解锁隐藏）。
+      if (jianghuJourneyUnlocked)
+        WuxiaInkButton(
+          label: UiStrings.gauntletName,
+          hint: UiStrings.gauntletSubtitle,
+          icon: Icons.whatshot_outlined,
+          thumbnailPath: WuxiaUi.entryJianghu,
+          onTap: () => _push(context, const GauntletLoadoutScreen()),
         ),
     ];
 
