@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
@@ -7,6 +9,29 @@ import 'package:wuxia_idle/features/battle/domain/strategy/light_foot_strategy.d
 import 'package:wuxia_idle/features/light_foot/domain/light_foot_def.dart';
 
 import '../../../../support/test_data.dart';
+
+const _manualPower = SkillDef(
+  id: 'variant_manual_power',
+  name: '试锋式',
+  description: '特殊战斗形态即时干预测试',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1200,
+  internalForceCost: 100,
+  cooldownTurns: 2,
+  requiresManualTrigger: false,
+  visualEffect: 'stub',
+);
+const _normalAttack = SkillDef(
+  id: 'variant_normal',
+  name: '直拳',
+  description: '特殊战斗形态普攻兜底',
+  type: SkillType.normalAttack,
+  powerMultiplier: 500,
+  internalForceCost: 0,
+  cooldownTurns: 0,
+  requiresManualTrigger: false,
+  visualEffect: 'stub',
+);
 
 /// LightFootStrategy 单测(1.0 P3.1 §12.3 Batch B.1):
 ///   - terrain bake water/rooftop/bamboo 3 terrain × {crit/evasion/defense} delta
@@ -247,6 +272,70 @@ void main() {
         reason: 'terrain bake 应只进一次,不能每个 stepOne 叠加',
       );
       expect(s.rightTeam.first.criticalRate, closeTo(0.25, 1e-9));
+    });
+
+    test('点选技能立即插队并保留地形烘焙', () {
+      final strategy = LightFootStrategy(
+        terrainBiome: TerrainBiome.rooftop,
+        config: _testConfig(),
+      );
+      final n = GameRepository.instance.numbers;
+      final base = _makeState(withRight: true);
+      final state = base.copyWith(
+        leftTeam: [
+          base.leftTeam.single.copyWith(
+            availableSkills: const [_manualPower, _normalAttack],
+            actionPoint: 300,
+          ),
+        ],
+      );
+
+      final after = strategy.interveneNow(
+        state,
+        1,
+        _manualPower,
+        targetId: -1,
+        n: n,
+        rng: Random(7),
+      );
+
+      expect(after.actionLog, hasLength(1));
+      expect(after.actionLog.single.skill?.id, _manualPower.id);
+      expect(after.actionLog.single.targetId, -1);
+      expect(after.leftTeam.single.actionPoint, 0);
+      expect(after.pendingUltimates, isEmpty);
+      expect(after.leftTeam.single.attackPowerMultiplier, closeTo(1.15, 1e-9));
+      expect(after.rightTeam.single.attackPowerMultiplier, closeTo(1.15, 1e-9));
+    });
+
+    test('非法普攻输入不产生动作或 pending', () {
+      final strategy = LightFootStrategy(
+        terrainBiome: TerrainBiome.rooftop,
+        config: _testConfig(),
+      );
+      final n = GameRepository.instance.numbers;
+      final base = _makeState(withRight: true);
+      final state = base.copyWith(
+        leftTeam: [
+          base.leftTeam.single.copyWith(
+            availableSkills: const [_manualPower, _normalAttack],
+            actionPoint: 300,
+          ),
+        ],
+      );
+
+      final after = strategy.interveneNow(
+        state,
+        1,
+        _normalAttack,
+        targetId: -1,
+        n: n,
+        rng: Random(7),
+      );
+
+      expect(after.actionLog, isEmpty);
+      expect(after.pendingUltimates, isEmpty);
+      expect(after.pendingTargets, isEmpty);
     });
   });
 }
