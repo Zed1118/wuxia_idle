@@ -3,7 +3,7 @@
 > 设计依据：`GDD.md` §1.2（水墨克制）与 `CLAUDE.md` §5、§7、§8.0–8.3  
 > 分支：`codex/ui-sect-hall`（执行时创建，本次仅规划）  
 > worktree：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/ui-sect-hall`（执行时创建）  
-> 当前状态：**仅计划，未创建分支、未改生产代码**
+> 当前状态：**实现与验证完成，等待 `[READY]` 冻结交付**
 
 ## 1. 目标
 
@@ -206,13 +206,13 @@
 
 ### Slice 6：交付冻结
 
-- [ ] 运行门派相关 targeted tests。
-- [ ] 运行 `flutter analyze --no-pub`。
-- [ ] 运行 `dart format --output=none --set-exit-if-changed` 覆盖本任务 Dart 文件。
-- [ ] 运行 `git diff --check`。
-- [ ] 更新本计划恢复点与 §8.2 交付证据。
-- [ ] 清理临时截图、日志和构建产物；验收图只留 ignored capture 目录，不提交。
-- [ ] 工作区全 commit、状态干净，tip 以 `[READY]` 开头；不主动合并、push 或修改 `PROGRESS.md`。
+- [x] 运行门派相关 targeted tests。
+- [x] 运行 `flutter analyze --no-pub`。
+- [x] 运行 `dart format --output=none --set-exit-if-changed` 覆盖本任务 Dart 文件。
+- [x] 运行 `git diff --check`。
+- [x] 更新本计划恢复点与 §8.2 交付证据。
+- [x] 清理临时截图、日志和构建产物；验收图只留 ignored capture 目录，不提交。
+- [x] 工作区全 commit、状态干净，tip 以 `[READY]` 开头；不主动合并、push 或修改 `PROGRESS.md`。
 
 **提交建议**：`[READY] 完成门派堂口视觉重构`
 
@@ -251,14 +251,14 @@
 
 ## 8. CLAUDE §8.2 交付清单
 
-- [ ] **生产接线证据**：列出生产入口、`SectScreen` 新组件树、各 provider/service 消费方和写入回调。
-- [ ] **targeted test 结果**：记录命令、通过数和失败数；不能只提供 analyze。
-- [ ] **红线影响说明**：确认零数值、零 schema/saveVersion、零三系锁死、零在线/离线、零反主流机制；中文不散写，未新增数值常量到领域逻辑。
-- [ ] **视觉证据**：提供 1280×720、1440×900 常规桌面截图及代表状态；说明与改造前基线的具体差异。
-- [ ] **桌面语义**：记录 focus、键盘激活、semantics、tooltip、mouse cursor 的覆盖方式和测试。
-- [ ] **残留风险**：列出未目检状态、资产体积、长列表性能、Windows 差异和未覆盖交互。
-- [ ] **清洁度**：无误提交 `.g.dart`、capture、日志、临时文档和构建产物；提交信息为中文动宾结构。
-- [ ] **就绪信号**：worktree 干净，分支 tip 为 `[READY]`；Claude 只按 §8.2 Gate 审核，不直接接触 WIP。
+- [x] **生产接线证据**：生产入口仍为既有 `SectScreen`；新组件树只替换 presentation，读取继续走 `currentSectProvider` / 事件 providers / `sectMembersProvider` / `availableTerritoriesProvider`，事件、晋升、逐出、占领和释放继续调用既有 dialog/notifier/service。
+- [x] **targeted test 结果**：`flutter test --no-pub test/features/sect` = **91 pass / 0 fail**；门派 widget + 视觉路由组合 = **12 pass / 0 fail**；宣纸文字对比审计 = **4 pass / 0 fail**。
+- [x] **红线影响说明**：零数值、零 schema/saveVersion、零三系锁死、零在线/离线、零反主流机制；复用既有 `UiStrings`，未改 `strings.dart`，未新增领域数值常量。
+- [x] **视觉证据**：`build/visual_acceptance/ui_sect_hall_final/sect_screen_npc/{1280x720,1440x900}/`；相对 baseline 从深灰管理列表升级为厅堂背景、横匾/声望尺、木签、祖师主位与双列座次，两视口日志无 overflow/exception/error。
+- [x] **桌面语义**：Tab 继续使用原生 `TabBar`（focus/tap/键盘语义）；事件短帖 `InkWell` 显式 mouse cursor 并补 `Semantics(button: true)`；晋升/逐出/领地操作继续使用原生 `TextButton`；widget 测锁定 Tab tap action 与事件 button role。
+- [x] **残留风险**：Windows 实机未验；原生视觉路由固定展示成员页，告示/年表/地契由 widget 与生产接线覆盖但未逐页原生截图；厅堂背景为 1672×941 WebP 内容、约 120 KiB，已由最终真机截图证实可解码。
+- [x] **清洁度**：未提交 `.g.dart`、capture、日志或构建产物；未改 GDD/CLAUDE/PROGRESS、共享 strings/视觉路由/主菜单；提交信息为中文动宾结构。
+- [x] **就绪信号**：最终恢复点提交使用 `[READY]`，提交后检查 worktree 干净；Claude 按 §8.2 Gate 审核，不直接接触 WIP。
 
 ## 9. 建议验证命令
 
@@ -279,8 +279,8 @@ git diff --check
 
 ## 10. 当前恢复点
 
-- **状态**：`codex/ui-sect-hall` 独立 worktree 已建立；Slice 0–4 主体完成，Slice 5 桌面语义与视觉纠偏进行中，尚未冻结 READY。
+- **状态**：实现与验证完成；本次恢复点提交后冻结为 `[READY]`，等待 Claude 按 §8.2 Gate 审核/合并。
 - **最后完成**：生产 `SectScreen` 已接入宗门厅堂背景、宣纸标题栏、门派横匾、等级印、声望墨线、四枚木签 Tab、宗门告示、门派年表、祖师主位/三阶座次谱和山门地契；所有读取与写入继续走既有 provider/service。新增 `assets/scenes/sect_hall_main_v1.png`，由内置 imagegen 生成 1672×941 无人物厅堂图后转 WebP 内容、保留项目既有 `.png` 引用惯例，体积约 120 KiB。
-- **下一步**：完成 Slice 5–6：补充门派全目录 targeted tests、全项目 analyze、最终双视口复截与日志审计；更新交付证据后提交 `[READY]` tip。
-- **已跑验证**：fresh worktree 先经 build_runner 重生 124 outputs；基线门派+视觉路由 8/8；改造后门派 widget+视觉路由 12/12；`sect_screen_npc` 1280×720、1440×900 基线与 V1 均已截图，V1 两视口无 overflow/exception/error。定向 analyze（页面+测试）0 issue，`git diff --check` 通过。
-- **阻塞项**：无。Claude `feat/baicao-duanhun-phase-b` 与本任务允许修改文件零重叠；本分支未碰 `shared/strings.dart`、视觉路由注册、`main_menu.dart`、数值、schema/saveVersion、GDD/CLAUDE/PROGRESS。
+- **下一步**：Claude 审核此 `[READY]` 分支；通过后由主窗口合并并在 UI 批末统一跑全量测试。本分支不主动 push、开 PR、合并或修改 `PROGRESS.md`。
+- **已跑验证**：fresh worktree 经 build_runner 重生 124 outputs；最终组合验证 **98/98**（门派全目录 + 视觉路由 + 宣纸文字对比审计）；门派 widget + 视觉路由单独验证 **12/12**；`flutter analyze --no-pub` **0 issue**；`git diff --check` 通过。最终 `sect_screen_npc` 1280×720、1440×900 双视口截图位于 `build/visual_acceptance/ui_sect_hall_final/`，两份日志均无 overflow/exception/error。
+- **阻塞项**：无。已知残留仅为 Windows 未实机、告示/年表/地契未逐页做原生截图；功能路径与响应式由 widget/业务测试覆盖。Claude `feat/baicao-duanhun-phase-b` 与本任务文件零重叠；本分支未碰 `shared/strings.dart`、视觉路由注册、`main_menu.dart`、数值、schema/saveVersion、GDD/CLAUDE/PROGRESS。

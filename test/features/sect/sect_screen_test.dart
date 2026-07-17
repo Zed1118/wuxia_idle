@@ -108,7 +108,7 @@ void main() {
       );
     });
 
-    for (final size in const [Size(1280, 720), Size(1440, 900)])
+    for (final size in const [Size(1280, 720), Size(1440, 900)]) {
       testWidgets('${size.width.toInt()}×${size.height.toInt()} 堂口无布局异常', (
         tester,
       ) async {
@@ -128,6 +128,7 @@ void main() {
         expect(find.text('无名宗'), findsOneWidget);
         expect(find.text('当前事件'), findsOneWidget);
       });
+    }
   });
 
   group('P3.4 sect_screen widget · active 注入 + AsyncValue 三态', () {
