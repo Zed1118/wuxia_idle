@@ -2918,7 +2918,8 @@ skills:
     source: mainline_drop
     style: gangMeng
     tier: 3
-    # 二流孤儿:正式挂载留 batch3 远征掉落 / Phase C 断魂庄(挂载时删下行 = 发布)
+    # 二流孤儿·依赖未解除(2026-07-17 复核):全游戏暂无二流 Boss 内容(主线/塔封顶三流·唯断魂庄二流),
+    # 需二流章末 Boss 真解掉落槽;在真解 2/2/2 配平内,gauntlet 化会破配平故必走主线,待二流主线内容批。挂载时删下行 = 发布。
     mount_deferred: true
     proficiency:        # 真解手工高半档(刚猛向,沿青锋绝锚)
       effects:
@@ -3040,7 +3041,8 @@ skills:
     source: fragment
     style: yinRou
     tier: 3
-    # 二流孤儿:正式挂载留 batch3 远征掉落 / Phase C 断魂庄(挂载时删下行 = 发布)
+    # 二流孤儿·依赖未解除(2026-07-17 复核):全游戏暂无二流 Boss 内容(主线/塔封顶三流·唯断魂庄二流),
+    # 需二流塔 Boss 层残页掉落槽;在残页 3/3/3 配平内,走塔/章末 fragment 挂载,待二流塔段内容批。挂载时删下行 = 发布。
     mount_deferred: true
     proficiency:        # 波A 流派模板(阴柔)
       effects:

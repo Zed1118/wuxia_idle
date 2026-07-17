@@ -50,6 +50,14 @@ proficiency.effects：模板招沿波A 流派模板;真解 6 手工高半档（�
 文案：4 字主体（content_guide §5.2）,描述金庸机理+古龙意象各半,Boss 身份 tie-in（Ch4-6 沿
 「西出阳关」文化弧:流沙/关山/夜雨十年灯）。
 
+> **现状订正(2026-07-17 复核·wave_b 配平红线 + 孤儿招)**:上表为 2026-06-11 原始设计(tier=章 1-6)。
+> 2026-07-16 Lv100 批把主线/塔重压进 学徒~三流(发布上限=二流/tier3),但**主线章末 Boss 封顶三流(Ch4-6)、
+> 塔封顶三流,全游戏唯一二流 Boss = 断魂庄闻九针**。故 tier3(二流)的 `千钧坠岳`(Ch3 灰衣人已降学徒)与
+> `烛影摇红`(f15)**无二流 Boss 掉落槽**,现 `mount_deferred: true` 挂账为「依赖未解除」,待二流主线/塔内容批;
+> 二者已分别在真解 2/2/2、残页 3/3/3 配平池内,挂载零 rebalancing。Ch4-6 高阶真解(tier4-6)本就超发布上限=未来内容。
+> 断魂庄奖励招 `锁脉针`(skill_suo_mai_zhen)属独立奖励流,按 gauntlet skillIds 排除出主线真解配平(2/2/2 守住·测绿)。
+> 详 `data/skills.yaml` 两招注释 + `test/data/wave_b_content_redline_test.dart` + PROGRESS。
+
 ## 2 · B2 装配池 wiring（内容批前置,不修白铺）
 
 1. `SkillSource.towerFragment` → **`fragment`**（yaml `tower_fragment` → `fragment`,2 处）：
