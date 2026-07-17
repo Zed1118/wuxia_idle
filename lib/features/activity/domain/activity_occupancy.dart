@@ -28,18 +28,22 @@ class ActivityOccupancy {
 
   final List<ActivityOccupancyEntry> entries;
 
-  static const ActivityOccupancy empty =
-      ActivityOccupancy(<ActivityOccupancyEntry>[]);
+  static const ActivityOccupancy empty = ActivityOccupancy(
+    <ActivityOccupancyEntry>[],
+  );
 
-  Set<int> get occupiedCharacterIds =>
-      {for (final e in entries) ...e.characterIds};
+  Set<int> get occupiedCharacterIds => {
+    for (final e in entries) ...e.characterIds,
+  };
 
   /// 装备批 `EquipmentAidService.isCandidateEligible(reservedEquipmentIds:)` 直接消费。
-  Set<int> get reservedEquipmentIds =>
-      {for (final e in entries) ...e.equipmentIds};
+  Set<int> get reservedEquipmentIds => {
+    for (final e in entries) ...e.equipmentIds,
+  };
 
-  Set<int> get reservedTechniqueIds =>
-      {for (final e in entries) ...e.techniqueIds};
+  Set<int> get reservedTechniqueIds => {
+    for (final e in entries) ...e.techniqueIds,
+  };
 
   bool isCharacterOccupied(int id) => occupiedCharacterIds.contains(id);
 

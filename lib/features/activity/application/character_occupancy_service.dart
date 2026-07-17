@@ -23,13 +23,15 @@ class CharacterOccupancyService {
         .currentRetreatSessionIdIsNotNull()
         .findAll();
     if (retreating.isNotEmpty) {
-      entries.add(ActivityOccupancyEntry(
-        kind: ActivityKind.retreat,
-        runId: null,
-        characterIds: {for (final c in retreating) c.id},
-        equipmentIds: const <int>{},
-        techniqueIds: const <int>{},
-      ));
+      entries.add(
+        ActivityOccupancyEntry(
+          kind: ActivityKind.retreat,
+          runId: null,
+          characterIds: {for (final c in retreating) c.id},
+          equipmentIds: const <int>{},
+          techniqueIds: const <int>{},
+        ),
+      );
     }
 
     for (final run in await _isar.expeditionRuns.where().findAll()) {
