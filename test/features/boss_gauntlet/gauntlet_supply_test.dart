@@ -58,14 +58,13 @@ void main() {
     int maxQi = 100,
     int currentQi = 0,
     bool downed = false,
-  }) =>
-      ActivityMemberSnapshot()
-        ..characterId = id
-        ..maxHp = maxHp
-        ..currentHp = currentHp
-        ..maxQi = maxQi
-        ..currentQi = currentQi
-        ..isDowned = downed;
+  }) => ActivityMemberSnapshot()
+    ..characterId = id
+    ..maxHp = maxHp
+    ..currentHp = currentHp
+    ..maxQi = maxQi
+    ..currentQi = currentQi
+    ..isDowned = downed;
 
   Future<int> putRun({
     GauntletPhase phase = GauntletPhase.interlude,
@@ -110,7 +109,8 @@ void main() {
   Future<BossGauntletRun> reloadRun() async =>
       (await IsarSetup.instance.bossGauntletRuns.where().findAll()).single;
 
-  GauntletService svc() => GauntletService(IsarSetup.instance, itemDefs: itemDefs);
+  GauntletService svc() =>
+      GauntletService(IsarSetup.instance, itemDefs: itemDefs);
 
   test('疗伤丹恢复目标 30% maxHp（只减托管 UsedQty·不碰普通库存）', () async {
     await putRun(
@@ -138,14 +138,24 @@ void main() {
       escrowUsed: [0],
     );
     await svc().useSupply(index: 0, targetCharacterId: 1);
-    expect((await reloadRun()).members.single.currentHp, 1000); // 900+300 钳 1000
+    expect(
+      (await reloadRun()).members.single.currentHp,
+      1000,
+    ); // 900+300 钳 1000
   });
 
   test('行囊补给恢复全体存活 20% maxQi（跳过倒下者·钳 maxQi）', () async {
     await putRun(
       members: [
         member(1, maxHp: 1000, currentHp: 500, maxQi: 140, currentQi: 40),
-        member(2, maxHp: 1000, currentHp: 0, maxQi: 100, currentQi: 10, downed: true),
+        member(
+          2,
+          maxHp: 1000,
+          currentHp: 0,
+          maxQi: 100,
+          currentQi: 10,
+          downed: true,
+        ),
         member(3, maxHp: 1000, currentHp: 800, maxQi: 140, currentQi: 140),
       ],
       escrowDefIds: ['item_xingnang_buji'],
@@ -169,7 +179,9 @@ void main() {
       escrowUsed: [1],
     );
     await expectLater(
-        svc().useSupply(index: 0, targetCharacterId: 1), throwsStateError);
+      svc().useSupply(index: 0, targetCharacterId: 1),
+      throwsStateError,
+    );
   });
 
   test('非整备页（inBattle）用药 → 抛错', () async {
@@ -181,7 +193,9 @@ void main() {
       escrowUsed: [0],
     );
     await expectLater(
-        svc().useSupply(index: 0, targetCharacterId: 1), throwsStateError);
+      svc().useSupply(index: 0, targetCharacterId: 1),
+      throwsStateError,
+    );
   });
 
   test('疗伤丹对倒下者用药 → 抛错', () async {
@@ -192,7 +206,9 @@ void main() {
       escrowUsed: [0],
     );
     await expectLater(
-        svc().useSupply(index: 0, targetCharacterId: 1), throwsStateError);
+      svc().useSupply(index: 0, targetCharacterId: 1),
+      throwsStateError,
+    );
   });
 
   test('疗伤丹无目标 → 抛错', () async {
@@ -213,7 +229,9 @@ void main() {
       escrowUsed: [0],
     );
     await expectLater(
-        svc().useSupply(index: 3, targetCharacterId: 1), throwsStateError);
+      svc().useSupply(index: 3, targetCharacterId: 1),
+      throwsStateError,
+    );
   });
 
   test('close 返还 Loaded-Used 到普通库存 + 删 run', () async {
@@ -277,8 +295,9 @@ void main() {
     );
     // 无 item_liaoshangdan 库存行
     await svc().close();
-    final item = await IsarSetup.instance.inventoryItems
-        .getByDefId('item_liaoshangdan');
+    final item = await IsarSetup.instance.inventoryItems.getByDefId(
+      'item_liaoshangdan',
+    );
     expect(item, isNotNull);
     expect(item!.quantity, 2);
     expect(item.itemType, ItemType.miscMaterial);

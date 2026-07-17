@@ -47,7 +47,8 @@ ActivityMemberSnapshot _before(int id) => ActivityMemberSnapshot()
   ..characterId = id
   ..reservedEquipmentIds = []
   ..reservedTechniqueIds = []
-  ..currentHp = 99999 // 哨兵：应被 finalState 覆盖
+  ..currentHp =
+      99999 // 哨兵：应被 finalState 覆盖
   ..currentQi = 99999
   ..isDowned = false;
 
@@ -91,10 +92,9 @@ void main() {
 
   test('胜利终关(boss) → awaitingRewardChoice，currentStage 不变', () {
     final run = _run(stage: 3, members: [_before(1)]);
-    final finalState = _final(
-      [_combatant(1, hp: 200, qi: 40, alive: true)],
-      BattleResult.leftWin,
-    );
+    final finalState = _final([
+      _combatant(1, hp: 200, qi: 40, alive: true),
+    ], BattleResult.leftWin);
 
     GauntletController.advance(
       run: run,
@@ -108,10 +108,9 @@ void main() {
 
   test('战败 → 不推进(停当前关)，但快照记战末态供 C2.5 失败结算', () {
     final run = _run(stage: 2, members: [_before(1)]);
-    final finalState = _final(
-      [_combatant(1, hp: 0, qi: 0, alive: false)],
-      BattleResult.rightWin,
-    );
+    final finalState = _final([
+      _combatant(1, hp: 0, qi: 0, alive: false),
+    ], BattleResult.rightWin);
 
     GauntletController.advance(
       run: run,
@@ -126,10 +125,9 @@ void main() {
 
   test('平局 → 同战败不推进', () {
     final run = _run(stage: 1, members: [_before(1)]);
-    final finalState = _final(
-      [_combatant(1, hp: 500, qi: 30, alive: true)],
-      BattleResult.draw,
-    );
+    final finalState = _final([
+      _combatant(1, hp: 500, qi: 30, alive: true),
+    ], BattleResult.draw);
 
     GauntletController.advance(
       run: run,

@@ -81,17 +81,28 @@ void main() {
   test('首关（member.maxHp==0 占位）→ 满血基准全员进队·不覆盖', () {
     final base = [_bc(1), _bc(2), _bc(3)];
     final members = [_snap(1), _snap(2), _snap(3)]; // maxHp=0 = enter 占位
-    final team = GauntletController.stagePlayerTeam(baseTeam: base, members: members);
+    final team = GauntletController.stagePlayerTeam(
+      baseTeam: base,
+      members: members,
+    );
     expect(team.map((c) => c.characterId), [1, 2, 3]);
-    expect(team.every((c) => c.currentHp == 18000), isTrue,
-        reason: '首关无检查点·应保满血基准');
+    expect(
+      team.every((c) => c.currentHp == 18000),
+      isTrue,
+      reason: '首关无检查点·应保满血基准',
+    );
     expect(team.every((c) => c.currentQi == 80), isTrue);
   });
 
   test('关次间（maxHp>0 检查点）→ 覆盖当前生命/真气', () {
     final base = [_bc(1)];
-    final members = [_snap(1, maxHp: 18000, currentHp: 5000, maxQi: 140, currentQi: 30)];
-    final team = GauntletController.stagePlayerTeam(baseTeam: base, members: members);
+    final members = [
+      _snap(1, maxHp: 18000, currentHp: 5000, maxQi: 140, currentQi: 30),
+    ];
+    final team = GauntletController.stagePlayerTeam(
+      baseTeam: base,
+      members: members,
+    );
     expect(team.single.currentHp, 5000);
     expect(team.single.currentQi, 30);
     expect(team.single.maxHp, 18000, reason: '满血上界不变');
@@ -100,13 +111,18 @@ void main() {
   test('检查点技能冷却重建进 skillCooldowns', () {
     final base = [_bc(1)];
     final members = [
-      _snap(1,
-          maxHp: 18000,
-          currentHp: 9000,
-          cdKeys: ['skill_a', 'skill_b'],
-          cdTurns: [2, 4]),
+      _snap(
+        1,
+        maxHp: 18000,
+        currentHp: 9000,
+        cdKeys: ['skill_a', 'skill_b'],
+        cdTurns: [2, 4],
+      ),
     ];
-    final team = GauntletController.stagePlayerTeam(baseTeam: base, members: members);
+    final team = GauntletController.stagePlayerTeam(
+      baseTeam: base,
+      members: members,
+    );
     expect(team.single.skillCooldowns, {'skill_a': 2, 'skill_b': 4});
   });
 
@@ -116,7 +132,10 @@ void main() {
       _snap(1, maxHp: 18000, currentHp: 6000),
       _snap(2, maxHp: 18000, currentHp: 0, downed: true),
     ];
-    final team = GauntletController.stagePlayerTeam(baseTeam: base, members: members);
+    final team = GauntletController.stagePlayerTeam(
+      baseTeam: base,
+      members: members,
+    );
     expect(team.map((c) => c.characterId), [1], reason: '倒下者不带入下一关');
   });
 
@@ -126,14 +145,20 @@ void main() {
       _snap(1, maxHp: 18000, currentHp: 6000),
       _snap(2, maxHp: 18000, currentHp: 0),
     ];
-    final team = GauntletController.stagePlayerTeam(baseTeam: base, members: members);
+    final team = GauntletController.stagePlayerTeam(
+      baseTeam: base,
+      members: members,
+    );
     expect(team.map((c) => c.characterId), [1]);
   });
 
   test('baseTeam 中非会话成员（无对应 member）跳过', () {
     final base = [_bc(1), _bc(9)];
     final members = [_snap(1)]; // 只 1 是会话成员
-    final team = GauntletController.stagePlayerTeam(baseTeam: base, members: members);
+    final team = GauntletController.stagePlayerTeam(
+      baseTeam: base,
+      members: members,
+    );
     expect(team.map((c) => c.characterId), [1]);
   });
 }

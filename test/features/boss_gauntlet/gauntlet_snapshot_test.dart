@@ -50,7 +50,8 @@ ActivityMemberSnapshot _before(
   ..characterId = id
   ..reservedEquipmentIds = eq
   ..reservedTechniqueIds = tech
-  ..currentHp = 12345 // 哨兵：应被 finalState 覆盖
+  ..currentHp =
+      12345 // 哨兵：应被 finalState 覆盖
   ..currentQi = 12345
   ..isDowned = false;
 
@@ -65,10 +66,16 @@ void main() {
         _before(2, eq: [12]),
       ];
       final finalState = _stateOf([
-        _pc(id: 1, hp: 300, qi: 58, alive: true, cooldowns: {
-          'skill_a': 3,
-          'skill_b': 0, // CD=0 不入快照
-        }),
+        _pc(
+          id: 1,
+          hp: 300,
+          qi: 58,
+          alive: true,
+          cooldowns: {
+            'skill_a': 3,
+            'skill_b': 0, // CD=0 不入快照
+          },
+        ),
         _pc(id: 2, hp: 0, qi: 0, alive: false),
       ]);
 

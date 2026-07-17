@@ -24,16 +24,8 @@ void main() {
       expect(skill!.qiDrainPct, 0.30, reason: '§5.2 未破招夺 30% 最大真气');
       expect(skill.style, TechniqueSchool.yinRou, reason: '§6.2 锁脉针法=阴柔招');
       expect(skill.tier, 2, reason: '§6.2 三流阶（tier2）');
-      expect(
-        skill.source,
-        SkillSource.mainlineDrop,
-        reason: '首通真解体例（同青锋绝）',
-      );
-      expect(
-        skill.mountDeferred,
-        isTrue,
-        reason: '正式奖励挂载在 C2.4，暂豁免红线⑦',
-      );
+      expect(skill.source, SkillSource.mainlineDrop, reason: '首通真解体例（同青锋绝）');
+      expect(skill.mountDeferred, isTrue, reason: '正式奖励挂载在 C2.4，暂豁免红线⑦');
       expect(skill.type, SkillType.powerSkill);
       expect(
         skill.powerMultiplier,
@@ -63,11 +55,7 @@ void main() {
       final leader = team.first;
       expect(leader.school, TechniqueSchool.lingQiao, reason: '苏无咎 灵巧暗器');
       expect(leader.isBoss, isTrue);
-      expect(
-        leader.chargeSkillId,
-        'skill_suo_mai_zhen',
-        reason: '招牌蓄力技锁脉针',
-      );
+      expect(leader.chargeSkillId, 'skill_suo_mai_zhen', reason: '招牌蓄力技锁脉针');
       expect(
         leader.skillIds,
         contains('skill_suo_mai_zhen'),

@@ -106,7 +106,8 @@ void main() {
     );
     expect(
       s1.finalState.rightTeam.any(
-        (e) => e.vulnerabilityMult != null &&
+        (e) =>
+            e.vulnerabilityMult != null &&
             (e.vulnerabilityMult! - 0.65).abs() < 1e-9,
       ),
       isTrue,
@@ -122,7 +123,8 @@ void main() {
     );
     expect(
       s2.finalState.rightTeam.any(
-        (e) => e.guardianWardMult != null &&
+        (e) =>
+            e.guardianWardMult != null &&
             (e.guardianWardMult! - 0.25).abs() < 1e-9,
       ),
       isTrue,
@@ -147,11 +149,7 @@ void main() {
     final config = GameRepository.instance.bossGauntletConfig!;
     final numbers = GameRepository.instance.numbers;
     // 关1 苏无咎队为三流；玩家二流（高一阶）+ 高攻，应可清场。
-    final strong = [
-      _pc(1, atk: 1900),
-      _pc(2, atk: 1900),
-      _pc(3, atk: 1900),
-    ];
+    final strong = [_pc(1, atk: 1900), _pc(2, atk: 1900), _pc(3, atk: 1900)];
     final r = GauntletBattleRunner.runStage(
       playerTeam: strong,
       enemyDefs: config.enemiesForTeam(config.stages[0].enemyTeamId),

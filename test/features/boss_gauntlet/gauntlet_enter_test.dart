@@ -78,8 +78,7 @@ void main() {
   Future<int?> qtyOf(String defId) async =>
       (await IsarSetup.instance.inventoryItems.getByDefId(defId))?.quantity;
 
-  test(
-      '成功入场：BossGauntletRun 落库 + 成员保留 id 快照 + escrow 托管 + '
+  test('成功入场：BossGauntletRun 落库 + 成员保留 id 快照 + escrow 托管 + '
       '扣一张断魂帖 + 普通库存守恒', () async {
     final cid = await putDisciple(weaponId: 100, mainTech: 5, assist: [6]);
     await putInventory('item_duanhuntie', ItemType.ticket, 1);
@@ -125,7 +124,10 @@ void main() {
   test('队伍为空 → 抛错', () async {
     await putInventory('item_duanhuntie', ItemType.ticket, 1);
     final svc = GauntletService(IsarSetup.instance);
-    await expectLater(svc.enter(characterIds: [], supplyCap: 3), throwsStateError);
+    await expectLater(
+      svc.enter(characterIds: [], supplyCap: 3),
+      throwsStateError,
+    );
   });
 
   test('队伍超 3 人 → 抛错', () async {
@@ -133,7 +135,9 @@ void main() {
     await putInventory('item_duanhuntie', ItemType.ticket, 1);
     final svc = GauntletService(IsarSetup.instance);
     await expectLater(
-        svc.enter(characterIds: ids, supplyCap: 3), throwsStateError);
+      svc.enter(characterIds: ids, supplyCap: 3),
+      throwsStateError,
+    );
   });
 
   test('队伍含重复角色 → 抛错', () async {
@@ -141,7 +145,9 @@ void main() {
     await putInventory('item_duanhuntie', ItemType.ticket, 1);
     final svc = GauntletService(IsarSetup.instance);
     await expectLater(
-        svc.enter(characterIds: [cid, cid], supplyCap: 3), throwsStateError);
+      svc.enter(characterIds: [cid, cid], supplyCap: 3),
+      throwsStateError,
+    );
   });
 
   test('祖师入队 → 抛错', () async {
@@ -149,7 +155,9 @@ void main() {
     await putInventory('item_duanhuntie', ItemType.ticket, 1);
     final svc = GauntletService(IsarSetup.instance);
     await expectLater(
-        svc.enter(characterIds: [founder], supplyCap: 3), throwsStateError);
+      svc.enter(characterIds: [founder], supplyCap: 3),
+      throwsStateError,
+    );
   });
 
   test('已被占用角色（闭关中）→ 抛错', () async {
@@ -157,7 +165,9 @@ void main() {
     await putInventory('item_duanhuntie', ItemType.ticket, 1);
     final svc = GauntletService(IsarSetup.instance);
     await expectLater(
-        svc.enter(characterIds: [cid], supplyCap: 3), throwsStateError);
+      svc.enter(characterIds: [cid], supplyCap: 3),
+      throwsStateError,
+    );
   });
 
   test('未修主修 → 抛错', () async {
@@ -165,7 +175,9 @@ void main() {
     await putInventory('item_duanhuntie', ItemType.ticket, 1);
     final svc = GauntletService(IsarSetup.instance);
     await expectLater(
-        svc.enter(characterIds: [cid], supplyCap: 3), throwsStateError);
+      svc.enter(characterIds: [cid], supplyCap: 3),
+      throwsStateError,
+    );
   });
 
   test('每存档最多一条 active：二次入场 → 抛错', () async {
@@ -175,7 +187,9 @@ void main() {
     final svc = GauntletService(IsarSetup.instance);
     await svc.enter(characterIds: [a], supplyCap: 3);
     await expectLater(
-        svc.enter(characterIds: [b], supplyCap: 3), throwsStateError);
+      svc.enter(characterIds: [b], supplyCap: 3),
+      throwsStateError,
+    );
   });
 
   test('无断魂帖 → 抛错且事务回滚（补给不扣·无 run）', () async {
@@ -185,9 +199,10 @@ void main() {
     final svc = GauntletService(IsarSetup.instance);
     await expectLater(
       svc.enter(
-          characterIds: [cid],
-          supplies: {'item_liaoshangdan': 1},
-          supplyCap: 3),
+        characterIds: [cid],
+        supplies: {'item_liaoshangdan': 1},
+        supplyCap: 3,
+      ),
       throwsStateError,
     );
     expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
@@ -199,7 +214,9 @@ void main() {
     await putInventory('item_duanhuntie', ItemType.ticket, 0);
     final svc = GauntletService(IsarSetup.instance);
     await expectLater(
-        svc.enter(characterIds: [cid], supplyCap: 3), throwsStateError);
+      svc.enter(characterIds: [cid], supplyCap: 3),
+      throwsStateError,
+    );
     expect(await qtyOf('item_duanhuntie'), 0);
     expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
   });
@@ -211,9 +228,10 @@ void main() {
     final svc = GauntletService(IsarSetup.instance);
     await expectLater(
       svc.enter(
-          characterIds: [cid],
-          supplies: {'item_liaoshangdan': 4},
-          supplyCap: 3),
+        characterIds: [cid],
+        supplies: {'item_liaoshangdan': 4},
+        supplyCap: 3,
+      ),
       throwsStateError,
     );
   });
@@ -225,9 +243,10 @@ void main() {
     final svc = GauntletService(IsarSetup.instance);
     await expectLater(
       svc.enter(
-          characterIds: [cid],
-          supplies: {'item_liaoshangdan': 2},
-          supplyCap: 3),
+        characterIds: [cid],
+        supplies: {'item_liaoshangdan': 2},
+        supplyCap: 3,
+      ),
       throwsStateError,
     );
     expect(await qtyOf('item_duanhuntie'), 1); // 事务回滚，帖未扣
