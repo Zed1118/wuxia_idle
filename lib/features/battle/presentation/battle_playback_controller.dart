@@ -189,6 +189,9 @@ class BattlePlaybackController {
   bool get debugBeatIsAnimating => _beatCtrl.isAnimating;
 
   @visibleForTesting
+  bool get debugCloseupIsAnimating => _closeupCtrl.isAnimating;
+
+  @visibleForTesting
   BattleActionTemplate debugActionTemplateForSlot(int slotKey) =>
       _actionTemplates[slotKey];
 
@@ -721,11 +724,14 @@ class BattlePlaybackController {
       }
       final cast = actions.sublist(index, end);
       final representative = _representativeAoeAction(cast);
+      final castDefeatedTarget = cast.any((action) => action.defeatedTarget);
       for (final action in cast) {
+        final isRepresentative = identical(action, representative);
         _playAction(
           action,
           s,
-          playSharedFeedback: identical(action, representative),
+          playSharedFeedback: isRepresentative,
+          sharedCastDefeatedTarget: isRepresentative && castDefeatedTarget,
         );
       }
       index = end;
@@ -772,6 +778,7 @@ class BattlePlaybackController {
     BattleAction action,
     BattleState s, {
     required bool playSharedFeedback,
+    bool sharedCastDefeatedTarget = false,
   }) {
     final actor = findCharacter(action.actorId, s);
     final actionTemplate = battleActionTemplateFor(action.skill);
@@ -901,7 +908,8 @@ class BattlePlaybackController {
           _shakeCtrl.forward(from: 0.0);
           _applyHitStop(
             playbackHoldMs(
-              isKey: BattleLog.isKeyAction(action, s),
+              isKey:
+                  sharedCastDefeatedTarget || BattleLog.isKeyAction(action, s),
               profileHitStopMs: profile.hitStopMs,
               keyMomentHoldMs: _animConfig.keyMomentHoldMs,
             ),
@@ -912,7 +920,8 @@ class BattlePlaybackController {
 
     // 命中特写：仅峰值（大招暴击/击杀），快进/扫荡抑制（守在线=离线）。
     // 独立于 profile != null 块：普攻击杀无 profile 也须触发特写。
-    if (!_isFastForward && hitClimaxFor(action) != HitClimax.none) {
+    if (!_isFastForward &&
+        (sharedCastDefeatedTarget || hitClimaxFor(action) != HitClimax.none)) {
       _closeupCtrl.forward(from: 0.0).then((_) {
         if (!_disposed) _closeupCtrl.reverse();
       });

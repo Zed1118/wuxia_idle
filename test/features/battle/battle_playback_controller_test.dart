@@ -253,6 +253,48 @@ void main() {
     );
   });
 
+  testWidgets('playActions 群攻非代表目标被击杀仍触发一次施放级特写', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final targets = state.rightTeam.take(3).toList();
+
+    c.playActions([
+      for (var i = 0; i < targets.length; i++)
+        BattleAction(
+          tick: 1,
+          actorId: state.leftTeam.first.characterId,
+          targetId: targets[i].characterId,
+          skill: _aoeSkill,
+          attackResult: _hitResult(),
+          description: 'aoe hit',
+          defeatedTarget: i == targets.length - 1,
+        ),
+    ], state);
+
+    expect(c.debugCloseupIsAnimating, isTrue);
+    expect(c.debugActiveEffectCount, 1, reason: '击杀只提升共享反馈，不重复中央流派特效');
+  });
+
+  testWidgets('playActions 无击杀群攻不误触发特写', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final targets = state.rightTeam.take(2).toList();
+
+    c.playActions([
+      for (final target in targets)
+        BattleAction(
+          tick: 1,
+          actorId: state.leftTeam.first.characterId,
+          targetId: target.characterId,
+          skill: _aoeSkill,
+          attackResult: _hitResult(),
+          description: 'aoe hit',
+        ),
+    ], state);
+
+    expect(c.debugCloseupIsAnimating, isFalse);
+  });
+
   testWidgets('playActions 不同 tick 的连续群攻各播放一次共享演出', (tester) async {
     final c = (await _pump(tester)).controller;
     final state = c._noopState(tester);
