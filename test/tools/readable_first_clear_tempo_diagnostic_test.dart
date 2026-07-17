@@ -35,7 +35,7 @@ void main() {
   });
 
   test(
-    '首通可读节奏诊断:30 mainline × undergeared/nearMax × $_seedsPerStage seed',
+    '首通可读节奏诊断:35 mainline × undergeared/nearMax × $_seedsPerStage seed',
     () {
       final stages =
           repo.stageDefs.values
@@ -88,7 +88,7 @@ void _assertExperienceRatchet(List<StageDef> stages, List<_TempoRun> rows) {
         samples.length;
   }
 
-  for (var chapter = 1; chapter <= 6; chapter++) {
+  for (var chapter = 1; chapter <= 7; chapter++) {
     final stageId = 'stage_${chapter.toString().padLeft(2, '0')}_05';
     final undergeared = averageActions(
       stageId,
@@ -107,15 +107,16 @@ void _assertExperienceRatchet(List<StageDef> stages, List<_TempoRun> rows) {
     );
   }
 
+  // 终章门槛(2026-07-17):终章 = 当前最末主线章 = Ch7(stage_07_05·北派重手宗匠)。
   final finalChapterUndergeared = averageActions(
-    'stage_06_05',
+    'stage_07_05',
     ProgressionBuildProfile.undergeared,
   );
   expect(
     finalChapterUndergeared,
     greaterThanOrEqualTo(8),
     reason:
-        'stage_06_05 undergeared 平均动作行 '
+        'stage_07_05 undergeared 平均动作行 '
         '$finalChapterUndergeared 低于终章门槛 8',
   );
 

@@ -53,7 +53,7 @@ void main() {
     );
   });
 
-  test('塔残页只投放当前发布上限内招式;普通层不配', () {
+  test('残页只投放当前发布上限内招式(塔 Boss 层 / 主线 Boss 关);普通层不配', () {
     final repo = GameRepository.instance;
     final releaseTier = _releaseCapTier(repo);
     final mountedFragments = <String>{};
@@ -71,6 +71,18 @@ void main() {
         expect(fragmentId, isNull, reason: 'floor ${f.floorIndex} 普通层不应配残页');
       }
     }
+    // Ch7 起残页亦可挂主线 Boss 关(stage dropSkillFragmentId·灰衣人 stage_07_04·channel 泛化)。
+    for (final s in repo.stageDefs.values) {
+      final fragmentId = s.dropSkillFragmentId;
+      if (fragmentId == null) continue;
+      expect(s.isBossStage, isTrue, reason: '${s.id} 残页只能挂 Boss 关');
+      expect(
+        repo.skillDefs[fragmentId]!.canEquipAtRealm(releaseTier),
+        isTrue,
+        reason: '${s.id} 不应提前投放高阶残页',
+      );
+      expect(mountedFragments.add(fragmentId), isTrue, reason: '残页不可重复挂载');
+    }
     final releaseFragments = repo.skillDefs.values
         .where(
           (s) =>
@@ -83,7 +95,7 @@ void main() {
     expect(
       mountedFragments,
       releaseFragments,
-      reason: '当前发布上限内的塔残页应全部挂载，高阶残页留给未来内容',
+      reason: '当前发布上限内的残页应全部挂载(塔 Boss 层或主线 Boss 关)，高阶残页留给未来内容',
     );
   });
 

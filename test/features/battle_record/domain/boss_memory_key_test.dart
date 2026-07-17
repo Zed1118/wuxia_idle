@@ -37,6 +37,10 @@ void main() {
       'mass_battle → 9',
       () => expect(mainlineGroupIndex('stage_mass_battle_05'), 9),
     );
+    test(
+      'Ch7 → 10（二流主线·偏移 +3 避开心魔/轻功/群战 7/8/9）',
+      () => expect(mainlineGroupIndex('stage_07_05'), 10),
+    );
     test('未知前缀 → 99', () => expect(mainlineGroupIndex('unknown_stage'), 99));
   });
 }

@@ -273,24 +273,18 @@ void main() {
       );
     });
 
-    // 集成:豁免按招粒度且确被消费 — 保留千钧坠岳(mainlineDrop)豁免、只抹掉
-    // 烛影摇红(fragment)的 mount_deferred。孤儿应只报烛影摇红、不报千钧坠岳:
-    // ① 证明烛影摇红的豁免确被消费(抹掉即重新成孤儿);② 证明千钧坠岳的豁免仍
-    // 生效(否则 mainlineDrop 检查会先抛出它,孤儿里就会出现千钧坠岳)。
-    test('cap=17 下只抹掉 fragment 招 mount_deferred → 只该招触发孤儿(按招豁免)', () async {
+    // 集成:mount_deferred 豁免按招粒度且确被消费 — 抹掉当前唯一 deferred 招
+    // (断魂庄 suo_mai_zhen·mainlineDrop·正式挂载为 gauntlet 首通奖励,无 stage/tower
+    // 掉落槽故 deferred)的 mount_deferred → 该招重新触发红线⑦孤儿,证明豁免确被消费。
+    // (Ch7 二流首章批 2026-07-17 已把千钧坠岳/烛影摇红正式挂载到 stage_07_05/07_04,不再 deferred。)
+    test('抹掉 deferred 招 mount_deferred → 该招触发孤儿(豁免按招消费)', () async {
       Future<String> loader(String path) async {
         final original = await File(path).readAsString();
-        if (path == 'data/numbers.yaml') {
-          return original.replaceFirst(
-            'max_absolute_realm_level: 10',
-            'max_absolute_realm_level: 17',
-          );
-        }
         if (path == 'data/skills.yaml') {
-          // 抹掉烛影摇红块内的 mount_deferred 行(非贪婪定位到本招首个)。
+          // 抹掉 suo_mai_zhen 块内的 mount_deferred 行(非贪婪定位到本招首个)。
           return original.replaceFirstMapped(
             RegExp(
-              r'(  - id: skill_zhu_ying_yao_hong\n(?:.*\n)*?)    mount_deferred: true\n',
+              r'(  - id: skill_suo_mai_zhen\n(?:.*\n)*?)    mount_deferred: true\n',
             ),
             (m) => m.group(1)!,
           );
@@ -305,13 +299,8 @@ void main() {
               .having((e) => e.message, 'message', contains('波B 红线 ⑦'))
               .having(
                 (e) => e.message,
-                'orphan 含被抹的 fragment 招',
-                contains('skill_zhu_ying_yao_hong'),
-              )
-              .having(
-                (e) => e.message,
-                'orphan 不含仍豁免的 mainline 招',
-                isNot(contains('skill_qian_jun_zhui_yue')),
+                'orphan 含被抹的 deferred 招',
+                contains('skill_suo_mai_zhen'),
               ),
         ),
       );

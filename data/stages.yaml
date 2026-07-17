@@ -1575,6 +1575,243 @@ stages:
     weather: snow
 
   # ============================================================================
+  # 第七章「西出阳关」后传 · 二流首章（真传位新弧 · 北派/灰衣人线 · 2026-07-17）
+  # ----------------------------------------------------------------------------
+  # 二流内容周期第 1 章:李寒飞升为太祖,继位大弟子(新任掌门)首次独当一面。
+  # 承 Ch3 灰衣人线:十年前灰衣人夺北派重手(千钧坠岳)后隐去,今北派上门讨艺。
+  # tier 锁(§5.3 三系锁死):requiredRealm erLiu / 敌 realmTier erLiu(层 ≤ shuLian=abs17
+  #   守发布上限)/ 掉落 ≤ 好家伙(haoJiaHuo)/ 招式 ≤ 名家功(tier3)。
+  # 07_04 灰衣人(阴柔章中 Boss)掉烛影摇红残页;07_05 北派重手宗匠(刚猛末 Boss)
+  #   破招掉千钧坠岳真解(chargeSkillId 双用,沿西凉霸主 canon)。
+  # 敌队数值经 balance_simulator 校准(anchor:断魂庄二流闻九针 32000/850·Ch6 三流末 Boss 12000/450)。
+  # ============================================================================
+
+  # === stage_07_01 · 北地关隘·前哨(二流杂兵)===
+  - id: stage_07_01
+    name: 北地风寒
+    stageType: mainline
+    chapterIndex: 7
+    narrativeOpeningId: stage_07_01_opening
+    narrativeVictoryId: stage_07_01_victory
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_beidi_shuzu
+        name: 北地戍卒
+        realmTier: erLiu
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 5200
+        baseAttack: 360
+        baseSpeed: 230
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+        iconPath: assets/enemies/beidi_shuzu.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_xuan_hua_fu
+        dropChance: 1.0
+      - equipmentDefId: armor_haojiahuo_suo_zi_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [16, 20]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [90, 130]
+        dropChance: 1.0  # 银两(二流阶 · 高于 Ch6 三流)
+    baseExpReward: 24
+    difficultyMultiplier: 6.4
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: snow
+
+  # === stage_07_02 · 关隘·风雪游骑(二流杂兵)===
+  - id: stage_07_02
+    name: 雪压关城
+    stageType: mainline
+    chapterIndex: 7
+    prevStageId: stage_07_01
+    narrativeOpeningId: stage_07_02_opening
+    narrativeVictoryId: stage_07_02_victory
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_fengxue_shaoqi
+        name: 风雪哨骑
+        realmTier: erLiu
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 5800
+        baseAttack: 390
+        baseSpeed: 240
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+        iconPath: assets/enemies/fengxue_shaoqi.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_qing_feng_jian
+        dropChance: 1.0
+      - equipmentDefId: armor_haojiahuo_chou_shan
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [16, 22]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [95, 140]
+        dropChance: 1.0  # 银两(二流阶)
+    baseExpReward: 24
+    difficultyMultiplier: 6.7
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: snow
+
+  # === stage_07_03 · 北山道·伏击游哨(二流杂兵 · 灵巧)===
+  - id: stage_07_03
+    name: 山道伏影
+    stageType: mainline
+    chapterIndex: 7
+    prevStageId: stage_07_02
+    narrativeOpeningId: stage_07_03_opening
+    narrativeVictoryId: stage_07_03_victory
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_beipai_youshao
+        name: 北派游哨
+        realmTier: erLiu
+        realmLayer: ruMen
+        school: lingQiao
+        baseHp: 6600
+        baseAttack: 420
+        baseSpeed: 260
+        skillIds:
+          - skill_lingqiao_mingjia_basic
+          - skill_lingqiao_mingjia_skill
+        iconPath: assets/enemies/beipai_youshao.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_mei_hua_biao
+        dropChance: 1.0
+      - equipmentDefId: accessory_haojiahuo_ping_an_kou
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [18, 24]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [100, 150]
+        dropChance: 1.0  # 银两(二流阶)
+    baseExpReward: 16
+    difficultyMultiplier: 7.0
+    biome: mountainPath
+    sceneBackgroundPath: assets/scenes/battle_mountainpath.png
+    weather: snow
+
+  # === stage_07_04 · 灰衣人·阴柔章中 Boss(掉烛影摇红残页)===
+  - id: stage_07_04
+    name: 灰衣重现
+    stageType: mainline
+    chapterIndex: 7
+    prevStageId: stage_07_03
+    narrativeOpeningId: stage_07_04_opening
+    narrativeVictoryId: stage_07_04_victory
+    narrativeDefeatId: stage_07_04_defeat
+    requiredRealm: erLiu
+    dropSkillFragmentId: skill_zhu_ying_yao_hong  # 残页(烛影摇红·灰衣人阴柔本命·重打累加达阈解锁)
+    enemyTeam:
+      - id: enemy_erLiu_huiyi_beijing
+        name: 灰衣人
+        realmTier: erLiu
+        realmLayer: ruMen
+        school: yinRou
+        baseHp: 9600
+        baseAttack: 540
+        baseSpeed: 255
+        skillIds:
+          - skill_yinrou_mingjia_basic
+          - skill_yinrou_mingjia_skill
+          - skill_zhu_ying_yao_hong
+        iconPath: assets/enemies/huiyiren_beijing.png
+        isBoss: true
+        chargeSkillId: skill_zhu_ying_yao_hong   # 破招:灰衣人本命阴柔蓄力技(玩家拦截·重打累加残页)
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.45
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_chan_si_suo
+        dropChance: 1.0
+      - equipmentDefId: accessory_haojiahuo_she_dan_wan
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [20, 26]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [150, 210]
+        dropChance: 1.0  # 银两(二流章中 Boss)
+    baseExpReward: 45
+    difficultyMultiplier: 7.3
+    biome: mountainForest
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
+    weather: mist
+
+  # === stage_07_05 · 北派重手宗匠·刚猛章末 Boss(破招掉千钧坠岳真解)===
+  - id: stage_07_05
+    name: 千钧压顶
+    stageType: mainline
+    chapterIndex: 7
+    prevStageId: stage_07_04
+    narrativeOpeningId: stage_07_05_opening
+    narrativeVictoryId: stage_07_05_victory
+    narrativeDefeatId: stage_07_05_defeat
+    requiredRealm: erLiu
+    dropSkillManualId: skill_qian_jun_zhui_yue  # 真解(千钧坠岳·北派重手·同招为 boss chargeSkillId 双用)
+    enemyTeam:
+      - id: enemy_erLiu_beipai_zongjiang
+        name: 北派重手宗匠
+        realmTier: erLiu
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 16000
+        baseAttack: 560
+        baseSpeed: 245
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+          - skill_qian_jun_zhui_yue        # boss 招牌蓄力技 = 章末真解(双用 canon)
+        iconPath: assets/enemies/beipai_zongjiang.png
+        isBoss: true
+        chargeSkillId: skill_qian_jun_zhui_yue   # 破招:玩家拦截,首通掉同招真解
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_xuan_hua_fu
+        dropChance: 1.0
+      - equipmentDefId: armor_haojiahuo_jin_pao
+        dropChance: 0.50
+      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [22, 30]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [240, 320]
+        dropChance: 1.0  # 银两(二流章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(二流章末)
+    baseExpReward: 60
+    difficultyMultiplier: 7.6
+    biome: mountainForest
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
+    weather: snow
+
+  # ============================================================================
   # 心魔境 7 关（1.0 P2.2 §12.1 · stageType: innerDemon）
   # ----------------------------------------------------------------------------
   # spec doc: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md
