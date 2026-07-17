@@ -420,8 +420,8 @@ class BattlePlaybackController {
       vsync: _vsync,
       duration: Duration(
         milliseconds: _isFastForward
-            ? math.min(520, _currentPlaybackIntervalMs)
-            : 520,
+            ? math.min(_animConfig.battleEffectMs, _currentPlaybackIntervalMs)
+            : _animConfig.battleEffectMs,
       ),
     );
     final entry = EffectEntry(

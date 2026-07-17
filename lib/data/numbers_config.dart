@@ -1849,6 +1849,7 @@ class AnimationNumbers {
   final int shakeDurationMs;
   final double criticalFontScale;
   final int projectileMs;
+  final int battleEffectMs;
   final int hitFlashMs;
 
   /// 关键帧（暴击/大招/合一/破招/击杀）命中后的额外顿帧时长（ms）。常速播放
@@ -1885,6 +1886,7 @@ class AnimationNumbers {
     required this.shakeDurationMs,
     required this.criticalFontScale,
     required this.projectileMs,
+    this.battleEffectMs = 520,
     required this.hitFlashMs,
     this.keyMomentHoldMs = 400,
     this.firstClearOpeningHoldMs = 900,
@@ -1911,6 +1913,7 @@ class AnimationNumbers {
     shakeDurationMs: 100,
     criticalFontScale: 1.5,
     projectileMs: 260,
+    battleEffectMs: 520,
     hitFlashMs: 150,
     keyMomentHoldMs: 400,
     firstClearOpeningHoldMs: 900,
@@ -1948,6 +1951,7 @@ class AnimationNumbers {
       shakeDurationMs: (y['shake_duration_ms'] as num).toInt(),
       criticalFontScale: (y['critical_font_scale'] as num).toDouble(),
       projectileMs: (y['projectile_ms'] as num?)?.toInt() ?? 260,
+      battleEffectMs: (y['battle_effect_ms'] as num?)?.toInt() ?? 520,
       hitFlashMs: (y['hit_flash_ms'] as num?)?.toInt() ?? 150,
       keyMomentHoldMs: (y['key_moment_hold_ms'] as num?)?.toInt() ?? 400,
       firstClearOpeningHoldMs:
