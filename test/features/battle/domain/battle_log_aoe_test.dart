@@ -17,6 +17,17 @@ const _aoe = SkillDef(
   targetType: TargetType.aoe,
   visualEffect: '',
 );
+const _normal = SkillDef(
+  id: 'report_normal',
+  name: '直拳',
+  description: '',
+  type: SkillType.normalAttack,
+  powerMultiplier: 500,
+  internalForceCost: 0,
+  cooldownTurns: 0,
+  requiresManualTrigger: false,
+  visualEffect: '',
+);
 
 const _hit = AttackResult(
   finalDamage: 800,
@@ -119,5 +130,50 @@ void main() {
 
     expect(recent, hasLength(2));
     expect(recent.map((action) => action.tick), [2, 1]);
+  });
+
+  test('目标后来阵亡不会把早先普通命中追溯成击杀', () {
+    const earlierHit = BattleAction(
+      tick: 1,
+      actorId: 1,
+      targetId: 11,
+      skill: _normal,
+      attackResult: _hit,
+      description: 'earlier hit',
+    );
+    final base = _state(const [earlierHit]);
+    final state = base.copyWith(
+      rightTeam: [
+        base.rightTeam[0].copyWith(currentHp: 0, isAlive: false),
+        ...base.rightTeam.skip(1),
+      ],
+    );
+
+    expect(BattleLog.isKeyAction(earlierHit, state), isFalse);
+    expect(BattleLog.recentKeyActions(state), isEmpty);
+    expect(BattleLog.formatAction(earlierHit, state), isNot(contains('击杀')));
+    expect(
+      BattleLog.formatActionCompact(earlierHit, state),
+      isNot(contains('击杀')),
+    );
+  });
+
+  test('致死动作仅凭动作快照进入关键战报并显示击杀', () {
+    const killingHit = BattleAction(
+      tick: 2,
+      actorId: 1,
+      targetId: 11,
+      skill: _normal,
+      attackResult: _hit,
+      description: 'killing hit',
+      defeatedTarget: true,
+    );
+    // 保持目标当前仍为存活，证明展示只读动作发生当刻的事实快照。
+    final state = _state(const [killingHit]);
+
+    expect(BattleLog.isKeyAction(killingHit, state), isTrue);
+    expect(BattleLog.recentKeyActions(state), const [killingHit]);
+    expect(BattleLog.formatAction(killingHit, state), contains('击杀'));
+    expect(BattleLog.formatActionCompact(killingHit, state), contains('击杀'));
   });
 }

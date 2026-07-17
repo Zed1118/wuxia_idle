@@ -89,9 +89,7 @@ class BattleLog {
       );
     }
 
-    final target = _findChar(state, action.targetId!);
-    final killed = target != null && !target.isAlive;
-    if (killed) markers.add('击杀');
+    if (action.defeatedTarget) markers.add('击杀');
 
     final markerStr = markers.isEmpty ? '' : '（${markers.join(' / ')}）';
     return '$tickStr $actorName 对 $targetName 使用「$skillName」，'
@@ -166,10 +164,7 @@ class BattleLog {
             skill.canInterrupt)) {
       return true;
     }
-    if (a.targetId != null) {
-      final target = _findChar(state, a.targetId!);
-      if (target != null && !target.isAlive) return true; // 击杀
-    }
+    if (a.defeatedTarget) return true;
     return false;
   }
 
@@ -200,7 +195,7 @@ class BattleLog {
       for (var j = i; j >= start; j--) {
         final candidate = state.actionLog[j];
         if (!isKeyAction(candidate, state)) continue;
-        final score = _reportRepresentativeScore(candidate, state);
+        final score = _reportRepresentativeScore(candidate);
         if (score > bestScore) {
           representative = candidate;
           bestScore = score;
@@ -223,19 +218,13 @@ class BattleLog {
       candidate.actorId == first.actorId &&
       candidate.skill?.id == first.skill?.id;
 
-  static int _reportRepresentativeScore(
-    BattleAction action,
-    BattleState state,
-  ) {
+  static int _reportRepresentativeScore(BattleAction action) {
     var score = 0;
     if (action.interrupted) score += 80;
     if (action.weaknessHit) score += 60;
     if (action.openedBreakWindow) score += 40;
     if (action.attackResult?.isCritical ?? false) score += 20;
-    if (action.targetId != null) {
-      final target = _findChar(state, action.targetId!);
-      if (target != null && !target.isAlive) score += 10;
-    }
+    if (action.defeatedTarget) score += 10;
     return score;
   }
 
@@ -249,10 +238,7 @@ class BattleLog {
     if (r.isDodged) return '$actorName 「$skillName」被闪避';
     final tags = <String>[];
     if (r.isCritical) tags.add('暴击');
-    if (a.targetId != null) {
-      final target = _findChar(state, a.targetId!);
-      if (target != null && !target.isAlive) tags.add('击杀');
-    }
+    if (a.defeatedTarget) tags.add('击杀');
     final tagStr = tags.isEmpty ? '' : '（${tags.join('·')}）';
     return '$actorName 「$skillName」${r.finalDamage} 伤$tagStr';
   }

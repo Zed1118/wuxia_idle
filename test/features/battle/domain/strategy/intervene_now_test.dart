@@ -129,6 +129,32 @@ void main() {
     expect(after.pendingTargets.containsKey(1), isFalse);
   });
 
+  test('立即出手击倒目标时把击杀事实写入动作快照', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final fragileEnemy = unit(
+      charId: -1,
+      teamSide: 1,
+      slot: 0,
+    ).copyWith(currentHp: 1);
+    final state = BattleState.initial(
+      leftTeam: [unit(charId: 1, teamSide: 0, slot: 0, ap: 300)],
+      rightTeam: [fragileEnemy],
+    );
+
+    final after = strat.interveneNow(
+      state,
+      1,
+      power,
+      targetId: -1,
+      n: n,
+      rng: Random(7),
+    );
+
+    expect(after.actionLog.last.defeatedTarget, isTrue);
+    expect(after.rightTeam.single.isAlive, isFalse);
+  });
+
   test('同角色插队后 AP 归零 → 第二招被拒且不消耗资源', () {
     const strat = DefaultGroundStrategy();
     final n = GameRepository.instance.numbers;

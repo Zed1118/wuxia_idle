@@ -904,6 +904,7 @@ class DefaultGroundStrategy implements BattleStrategy {
           : '',
       interrupted: brokeCharging,
       openedBreakWindow: opensBreak && !brokeCharging,
+      defeatedTarget: target.isAlive && !result.isDodged && newTargetHp <= 0,
       // 批二②会心:仅「真弱点」(mult>1.0)且命中(非闪避)才打 flag → 表现层弹会心
       // 题字;抗性(mult<1.0)不算会心。与伤害结算同 weaknessMultOf 查表口径。
       weaknessHit: !result.isDodged && weaknessMultOf(preActor, target) > 1.0,
