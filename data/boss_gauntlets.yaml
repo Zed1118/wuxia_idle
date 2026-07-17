@@ -25,6 +25,10 @@ reward_candidate_equipment_ids:
 # 参战全员经验/领悟点（§6.2·首通全额，重复通关取半）。TODO(batch3-probe) 占位。
 first_clear_reward_exp: 300
 first_clear_reward_insight: 20
+# 每名精英提供的经验（§6.2「两名精英各 5%」）。§6.3 失败结算发「已击败精英经验」=
+# 已击败精英数 × 本值。占位 50 ≈ first_clear_reward_exp(30% 整包) 的 1/6（5/30）。
+# TODO(batch3-probe)：真·百分比拆分（每精英 5% 当前层经验需求）随联合探针统一定案。
+elite_reward_exp: 50
 
 enemy_teams:
   # ── 第一关：飞针使·苏无咎（灵巧 + 锁脉针 charge 夺真气 + 破招脆弱窗外 0.65）──

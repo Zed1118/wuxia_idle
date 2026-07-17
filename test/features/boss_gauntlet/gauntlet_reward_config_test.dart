@@ -35,4 +35,16 @@ void main() {
       ..['reward_candidate_equipment_ids'] = ['eq1', '', 'eq3'];
     expect(() => BossGauntletConfig.fromYaml(y), throwsStateError);
   });
+
+  test('解析每精英经验（elite_reward_exp·§6.3 失败结算据此发已击败精英经验）', () {
+    final c = BossGauntletConfig.fromYaml(
+      baseYaml()..['elite_reward_exp'] = 50,
+    );
+    expect(c.eliteRewardExp, 50);
+  });
+
+  test('elite_reward_exp 缺省为 0（可加性占位·mirror first_clear_reward_exp）', () {
+    final c = BossGauntletConfig.fromYaml(baseYaml());
+    expect(c.eliteRewardExp, 0);
+  });
 }

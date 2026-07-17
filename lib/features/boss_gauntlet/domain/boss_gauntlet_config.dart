@@ -23,6 +23,7 @@ class BossGauntletConfig {
     this.rewardCandidateEquipmentIds = const [],
     this.firstClearRewardExp = 0,
     this.firstClearRewardInsight = 0,
+    this.eliteRewardExp = 0,
   });
 
   final List<GauntletStageConfig> stages;
@@ -41,6 +42,11 @@ class BossGauntletConfig {
   /// 首通经验/领悟点奖励（§6.2·重复通关取半）。TODO(batch3-probe) 占位。
   final int firstClearRewardExp;
   final int firstClearRewardInsight;
+
+  /// 每名精英提供的经验（§6.2「两名精英各提供 5%」·首通/重复同额）。
+  /// §6.3 失败结算据此发「已击败精英经验」= 已击败精英数 × 本值。首通全额亦含此项
+  /// （现 `firstClearRewardExp` 为整包占位·真·百分比拆分随 batch3-probe）。TODO(batch3-probe)。
+  final int eliteRewardExp;
 
   /// 解析关次敌队；未知 teamId 返回空列表（引用完整性由加载期红线守）。
   List<EnemyDef> enemiesForTeam(String teamId) =>
@@ -110,6 +116,7 @@ class BossGauntletConfig {
       firstClearRewardExp: (y['first_clear_reward_exp'] as num?)?.toInt() ?? 0,
       firstClearRewardInsight:
           (y['first_clear_reward_insight'] as num?)?.toInt() ?? 0,
+      eliteRewardExp: (y['elite_reward_exp'] as num?)?.toInt() ?? 0,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:isar_community/isar.dart';
 
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
@@ -18,6 +19,7 @@ import '../../battle/application/stage_battle_setup.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../equipment/application/equipment_factory.dart';
+import '../../injury/application/injury_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../domain/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
@@ -438,6 +440,102 @@ class GauntletService {
       await _isar.saveDatas.put(save);
 
       // ⑤ 返还托管补给 + 关会话。
+      await _returnEscrow(run);
+      await _isar.bossGauntletRuns.delete(run.id);
+    });
+  }
+
+  /// 断魂庄失败结算（§6.3）：战败 / 认输离庄统一入口。单 `writeTxn`——只发「已击败
+  /// 精英经验」给全体参战角色（含途中倒下者·层锁受发布上限·同远征/闭关口径）+ 按战末
+  /// 快照结算轻/重伤（倒下者重伤·存活者轻伤·不扣永久内力）+ 返还托管补给
+  /// （`Loaded-Used`·已用不返）+ 关会话。**不发**装备/秘籍/领悟点/最终奖励、不记
+  /// `clearedGauntletIds`、不设保底/每日首胜/登录补偿（§6.3）。幂等：无 active 会话
+  /// （已结算）→ no-op。仅 [GauntletPhase.inBattle]（战败）/ [GauntletPhase.interlude]
+  /// （认输）可结算；[GauntletPhase.awaitingRewardChoice]（Boss 已胜）应走 [chooseReward]。
+  /// [config]/[numbers] 由 caller 从 `GameRepository` 注入。
+  Future<void> settleDefeat({
+    required BossGauntletConfig config,
+    required NumbersConfig numbers,
+    DateTime? now,
+  }) async {
+    final save0 = await _isar.saveDatas.get(0);
+    if (save0 == null) return; // 幂等：无存档
+    final run0 = await _activeRun(save0.id);
+    if (run0 == null) return; // 幂等：会话已结算关闭·重入 no-op
+    if (run0.sessionPhase == GauntletPhase.awaitingRewardChoice) {
+      throw StateError(
+        '断魂庄失败结算：Boss 已胜（应走 chooseReward·当前 awaitingRewardChoice）',
+      );
+    }
+
+    // 已击败精英数 = 当前关之前已通关次中 role==elite 计数。inBattle（战败当前关，未
+    // 推进·currentStage 指向失败关）与 interlude（认输·currentStage 已指向下一未战关）
+    // 两态统一 = `stages.take(currentStage-1)` 中的精英数（§6.2 每精英一份）。
+    final elitesDefeated = config.stages
+        .take(run0.currentStage - 1)
+        .where((s) => s.role == 'elite')
+        .length;
+    final eliteExp = elitesDefeated * config.eliteRewardExp;
+    final memberIds = run0.members.map((m) => m.characterId).toList();
+    // 战末快照倒下判定（伤势按此结：倒下者重伤·存活者轻伤·§6.3）。
+    final downedById = {
+      for (final m in run0.members) m.characterId: m.isDowned,
+    };
+    final repo = GameRepository.instance;
+    final injuryPolicy = AttributeEffectPolicy(numbers.attributeEffects);
+
+    await _isar.writeTxn(() async {
+      final run = await _activeRun(save0.id);
+      if (run == null) return; // 幂等
+      final save = (await _isar.saveDatas.get(0))!;
+
+      // 精英经验层锁需 cleared 集（仅 eliteExp>0 时查）。
+      var clearedSet = const <String>{};
+      if (eliteExp > 0) {
+        final progress = await _isar.mainlineProgress
+            .filter()
+            .saveDataIdEqualTo(save.id)
+            .findFirst();
+        clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
+      }
+
+      for (final id in memberIds) {
+        final ch = await _isar.characters.get(id);
+        if (ch == null) continue; // §10：找不到角色仍安全结算
+        // ① 已击败精英经验（含倒下者·层锁·同远征口径）。领悟点/装备/秘籍/最终奖励全失。
+        if (eliteExp > 0) {
+          CharacterAdvancementService.applyExperience(
+            ch,
+            eliteExp,
+            realmLookup: repo.getRealm,
+            isLayerLocked: (tier, layer) =>
+                ProgressionGateService.isLayerLocked(
+                  nextTier: tier,
+                  nextLayer: layer,
+                  releaseCap: numbers.progressionReleaseCap,
+                  realmLookup: repo.getRealm,
+                  innerDemonDef: numbers.innerDemon,
+                  clearedStageIds: clearedSet,
+                ),
+          );
+        }
+        // ② 按战末快照结算伤势：倒下者重伤·存活者轻伤（§6.3·不扣永久内力）。
+        if (downedById[id] == true) {
+          final hours = injuryPolicy.heavyInjuryHours(
+            baseHours: numbers.injury.heavyRecoveryHours,
+            constitution: ch.attributes.constitution,
+          );
+          InjuryService.applyHeavyInjury(ch, recoveryHours: hours);
+        } else {
+          InjuryService.accumulateLightInjury(
+            ch,
+            maxStacks: numbers.injury.lightMaxStacks,
+          );
+        }
+        await _isar.characters.put(ch);
+      }
+
+      // ③ 返还托管补给（已用不返·§6.3）+ 关会话。
       await _returnEscrow(run);
       await _isar.bossGauntletRuns.delete(run.id);
     });
