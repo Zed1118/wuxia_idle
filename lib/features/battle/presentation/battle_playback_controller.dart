@@ -299,8 +299,9 @@ class BattlePlaybackController {
     BattleCharacter? actor,
     BattleCharacter target,
     BattleAction action,
-    BattleActionTemplate actionTemplate,
-  ) {
+    BattleActionTemplate actionTemplate, {
+    bool includeSchoolEffect = true,
+  }) {
     final result = action.attackResult;
     if (result == null) return;
     final targetFrac = _slotFrac(
@@ -323,7 +324,7 @@ class BattlePlaybackController {
       return;
     }
 
-    if (actor != null) {
+    if (actor != null && includeSchoolEffect) {
       final isUltimate = isUltimateCaptionSkill(action.skill);
       _spawnEffect(
         assetPath: _schoolFx(actor.school, isUltimate: isUltimate),
@@ -700,17 +701,86 @@ class BattlePlaybackController {
     );
   }
 
-  /// actionLog 新增边沿:据单条 [action] 触发本屏所有表现层反应(攻击动画/飘字/
-  /// 弹道/特效/受击闪/大招题字/破招/SFX/Boss 转阶段/会心/打击感分级/命中特写)。
-  /// 纯读 [action] + [s] 元数据,不写 BattleState(守 §5.4)。State 侧 build 内
-  /// `ref.listen` 逐条转发。
-  void playAction(BattleAction action, BattleState s) {
+  /// actionLog 新增边沿:批量触发本屏表现层反应。同 tick/施放者/
+  /// 招式的连续 AOE 动作共享一次人物动画、流派特效、题字与 SFX；伤害飘字、
+  /// 受击闪及目标状态特效仍逐条保留。纯读 [actions] + [s] 元数据，不写
+  /// BattleState（守 §5.4）。State 侧 build 内 `ref.listen` 批量转发。
+  void playActions(List<BattleAction> actions, BattleState s) {
+    var index = 0;
+    while (index < actions.length) {
+      final first = actions[index];
+      if (!_isAoeHit(first)) {
+        playAction(first, s);
+        index++;
+        continue;
+      }
+
+      var end = index + 1;
+      while (end < actions.length && _sameAoeCast(first, actions[end])) {
+        end++;
+      }
+      final cast = actions.sublist(index, end);
+      final representative = _representativeAoeAction(cast);
+      for (final action in cast) {
+        _playAction(
+          action,
+          s,
+          playSharedFeedback: identical(action, representative),
+        );
+      }
+      index = end;
+    }
+  }
+
+  bool _isAoeHit(BattleAction action) =>
+      action.skill?.targetType == TargetType.aoe &&
+      action.attackResult != null &&
+      action.targetId != null;
+
+  bool _sameAoeCast(BattleAction first, BattleAction candidate) =>
+      _isAoeHit(candidate) &&
+      candidate.tick == first.tick &&
+      candidate.actorId == first.actorId &&
+      candidate.skill?.id == first.skill?.id;
+
+  BattleAction _representativeAoeAction(List<BattleAction> cast) {
+    var representative = cast.first;
+    var bestScore = _sharedFeedbackScore(representative);
+    for (final action in cast.skip(1)) {
+      final score = _sharedFeedbackScore(action);
+      if (score > bestScore) {
+        representative = action;
+        bestScore = score;
+      }
+    }
+    return representative;
+  }
+
+  int _sharedFeedbackScore(BattleAction action) {
+    var score = action.attackResult?.isDodged == false ? 10 : 0;
+    if (action.attackResult?.isCritical ?? false) score += 20;
+    if (action.openedBreakWindow) score += 40;
+    if (action.weaknessHit) score += 60;
+    if (action.interrupted) score += 80;
+    return score;
+  }
+
+  void playAction(BattleAction action, BattleState s) =>
+      _playAction(action, s, playSharedFeedback: true);
+
+  void _playAction(
+    BattleAction action,
+    BattleState s, {
+    required bool playSharedFeedback,
+  }) {
     final actor = findCharacter(action.actorId, s);
     final actionTemplate = battleActionTemplateFor(action.skill);
     // 首通展示帧:本动作触发的节拍(null=无);「首次」判定在 director 内消费,
     // 快进态消费不呈现(下方各触发点带 !_isFastForward gate)。
-    final showcaseBeat = _showcase?.onAction(action, s);
-    if (actor != null) {
+    final showcaseBeat = playSharedFeedback
+        ? _showcase?.onAction(action, s)
+        : null;
+    if (actor != null && playSharedFeedback) {
       final key = _visualSlotKey(actor);
       _actionTemplates[key] = actionTemplate;
       _attackControllers[key].forward(from: 0.0);
@@ -719,15 +789,24 @@ class BattlePlaybackController {
       final target = findCharacter(action.targetId!, s);
       if (target != null) {
         _spawnPopup(target, action.attackResult!, actor);
-        if (actor != null && templateUsesProjectile(actionTemplate)) {
+        if (playSharedFeedback &&
+            actor != null &&
+            templateUsesProjectile(actionTemplate)) {
           _spawnTrail(actor, target, action);
         }
-        _spawnBattleEffects(actor, target, action, actionTemplate);
+        _spawnBattleEffects(
+          actor,
+          target,
+          action,
+          actionTemplate,
+          includeSchoolEffect: playSharedFeedback,
+        );
         if (!action.attackResult!.isDodged) {
           _triggerHitFlash(target, action.attackResult!.isCritical);
         }
       }
     }
+    if (!playSharedFeedback) return;
     if (isUltimateCaptionSkill(action.skill)) {
       final climax = hitClimaxFor(action, s);
       final isCrit = action.attackResult?.isCritical ?? false;

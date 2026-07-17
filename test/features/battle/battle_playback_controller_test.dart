@@ -140,6 +140,19 @@ const _projectileUltimate = SkillDef(
   visualEffect: 'flying_sword_art',
 );
 
+const _aoeSkill = SkillDef(
+  id: 'test_aoe_skill',
+  name: '落英掌',
+  description: '',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1800,
+  qiDelta: -180,
+  cooldownTurns: 3,
+  requiresManualTrigger: false,
+  visualEffect: 'falling_petals',
+  targetType: TargetType.aoe,
+);
+
 /// 左首(actorId=1) 攻 右首(targetId=11) 的动作。target 位于 teamSide=1
 /// slotIndex=0 → slotKey = 1*3+0 = 3。
 BattleAction _attackAction({bool crit = false, SkillDef? skill}) =>
@@ -180,6 +193,88 @@ Future<_HarnessState> _pump(
 const _targetSlotKey = 3;
 
 void main() {
+  testWidgets('playActions 三目标群攻共享演出一次且保留逐目标反馈', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final targets = state.rightTeam.take(3).toList();
+
+    c.playActions([
+      for (final target in targets)
+        BattleAction(
+          tick: 1,
+          actorId: state.leftTeam.first.characterId,
+          targetId: target.characterId,
+          skill: _aoeSkill,
+          attackResult: _hitResult(),
+          description: 'aoe hit',
+        ),
+    ], state);
+    await tester.pump();
+
+    expect(c.debugActiveEffectCount, 1, reason: '同拍群攻的中央流派特效应只生成一次');
+    for (final target in targets) {
+      expect(
+        c.debugPopupsForSlot(target.teamSide * 3 + target.slotIndex),
+        hasLength(1),
+        reason: '每个命中目标都应保留独立伤害飘字',
+      );
+    }
+    expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.area);
+  });
+
+  testWidgets('playActions 群攻代表动作优先保留暴击特效', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final targets = state.rightTeam.take(3).toList();
+
+    c.playActions([
+      for (var i = 0; i < targets.length; i++)
+        BattleAction(
+          tick: 1,
+          actorId: state.leftTeam.first.characterId,
+          targetId: targets[i].characterId,
+          skill: _aoeSkill,
+          attackResult: _hitResult(crit: i == 2),
+          description: 'aoe hit',
+        ),
+    ], state);
+    await tester.pump();
+
+    expect(c.debugActiveEffectCount, 2, reason: '一个共享流派特效 + 一个末位目标暴击特效');
+    expect(
+      c
+          .debugPopupsForSlot(
+            targets.last.teamSide * 3 + targets.last.slotIndex,
+          )
+          .single
+          .data
+          .text,
+      UiStrings.criticalDamagePopup(240),
+    );
+  });
+
+  testWidgets('playActions 不同 tick 的连续群攻各播放一次共享演出', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final targets = state.rightTeam.take(2).toList();
+
+    c.playActions([
+      for (final tick in [1, 2])
+        for (final target in targets)
+          BattleAction(
+            tick: tick,
+            actorId: state.leftTeam.first.characterId,
+            targetId: target.characterId,
+            skill: _aoeSkill,
+            attackResult: _hitResult(),
+            description: 'aoe hit',
+          ),
+    ], state);
+    await tester.pump();
+
+    expect(c.debugActiveEffectCount, 2, reason: '两次施放不得被跨 tick 合并');
+  });
+
   testWidgets('playAction 命中 → 飘字入队 popups[slotKey] 且 id 递增', (tester) async {
     final c = (await _pump(tester)).controller;
 

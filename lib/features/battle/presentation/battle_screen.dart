@@ -629,9 +629,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       //    无需本地解除置灰）。
       if (prev != null && next.actionLog.length > prev.actionLog.length) {
         final newActions = next.actionLog.sublist(prev.actionLog.length);
-        for (final a in newActions) {
-          _playback.playAction(a, next);
-        }
+        _playback.playActions(newActions, next);
       }
 
       // 4. 破招机制 SFX：状态边沿触发（表现层纯读 state，不入 domain）。
