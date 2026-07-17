@@ -124,6 +124,118 @@ class GauntletCandidate {
   bool get selectable => !occupied && hasMainTechnique;
 }
 
+/// 整备屏单成员展示（§7.2）：角色名 + 生命/真气/阵亡/冷却招数。
+class GauntletMemberView {
+  const GauntletMemberView({
+    required this.characterId,
+    required this.name,
+    required this.currentHp,
+    required this.maxHp,
+    required this.currentQi,
+    required this.maxQi,
+    required this.downed,
+    required this.cooldownCount,
+  });
+
+  final int characterId;
+  final String name;
+  final int currentHp;
+  final int maxHp;
+  final int currentQi;
+  final int maxQi;
+  final bool downed;
+
+  /// 冷却中招数（快照 `skillCooldownKeys` 长度）。
+  final int cooldownCount;
+}
+
+/// 整备屏单条托管补给展示（§7.2）：栏位下标 + 名 + 剩余份数 + 是否疗伤（须择目标）。
+class GauntletSupplyRemainView {
+  const GauntletSupplyRemainView({
+    required this.index,
+    required this.defId,
+    required this.name,
+    required this.remaining,
+    required this.isHeal,
+  });
+
+  final int index;
+  final String defId;
+  final String name;
+
+  /// 剩余可用 = 装入 − 已用。
+  final int remaining;
+
+  /// 疗伤类（`gauntletHpHealPct>0`）→ 使用须择存活目标；行囊补给恢复全体不择目标。
+  final bool isHeal;
+}
+
+/// 整备屏组合视图（§7.2）：当前关次 + 三成员状态（含角色名·Character 查表）+ 托管补给
+/// 剩余。仅 interlude 相位有意义（非 interlude 返 null，UI 不渲染整备）。
+class GauntletInterludeView {
+  const GauntletInterludeView({
+    required this.stage,
+    required this.members,
+    required this.supplies,
+  });
+
+  final int stage;
+  final List<GauntletMemberView> members;
+  final List<GauntletSupplyRemainView> supplies;
+}
+
+/// 整备屏视图 provider（§7.2）。active 会话且相位 = interlude 时组合成员名/状态 +
+/// 托管补给剩余；否则 null（UI 不渲染整备主体）。角色名经 Character 查表（快照只存
+/// characterId）；补给名/疗伤判定经 itemDefs。
+@riverpod
+Future<GauntletInterludeView?> gauntletInterludeView(Ref ref) async {
+  final isar = ref.watch(isarProvider);
+  if (isar == null) return null;
+  final service = ref.watch(gauntletServiceProvider);
+  if (service == null) return null;
+  final run = await service.activeRun();
+  if (run == null || run.sessionPhase != GauntletPhase.interlude) return null;
+
+  final members = <GauntletMemberView>[];
+  for (final m in run.members) {
+    final ch = await isar.characters.get(m.characterId);
+    members.add(
+      GauntletMemberView(
+        characterId: m.characterId,
+        name: ch?.name ?? '门人',
+        currentHp: m.currentHp,
+        maxHp: m.maxHp,
+        currentQi: m.currentQi,
+        maxQi: m.maxQi,
+        downed: m.isDowned,
+        cooldownCount: m.skillCooldownKeys.length,
+      ),
+    );
+  }
+
+  final defs = GameRepository.instanceOrNull?.itemDefs ?? const {};
+  final supplies = <GauntletSupplyRemainView>[];
+  for (var i = 0; i < run.escrowItemDefIds.length; i++) {
+    final defId = run.escrowItemDefIds[i];
+    final def = defs[defId];
+    supplies.add(
+      GauntletSupplyRemainView(
+        index: i,
+        defId: defId,
+        name: def?.name ?? defId,
+        remaining: run.escrowLoadedQty[i] - run.escrowUsedQty[i],
+        isHeal: (def?.gauntletHpHealPct ?? 0) > 0,
+      ),
+    );
+  }
+
+  return GauntletInterludeView(
+    stage: run.currentStage,
+    members: members,
+    supplies: supplies,
+  );
+}
+
 /// 入场候选池（装载屏）：全部可上场非祖师角色（`isFounder==false && isAlive` 一条
 /// Isar 查询覆盖 active 门人 + inactive 替补），各标占用/主修态。祖师坐镇不入场
 /// （`enter` 硬拦）、亡者排除（§5.1）；已被占用者仍列出但标灰。不做 GameRepository
