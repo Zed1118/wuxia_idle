@@ -64,6 +64,8 @@ void main() {
         {'role': 'elite', 'enemy_team_id': 'gauntlet_shi_zhenyue'},
         {'role': 'boss', 'enemy_team_id': 'gauntlet_wen_jiuzhen'},
       ],
+      'first_clear_reward_skill_id': 'skill_suo_mai_zhen',
+      'reward_candidate_equipment_ids': ['eq1', 'eq2', 'eq3'],
     };
     test('恰好两精英+一 Boss 且补给上限 3 合法', () {
       final c = BossGauntletConfig.fromYaml(base());
