@@ -43,6 +43,16 @@ void main() {
       }
     });
 
+    test('明确远程的大招保留远程交付，不被 cinematic 提前截断', () {
+      final template = battleActionTemplateFor(
+        _skill(visualEffect: 'flying_sword_art', type: SkillType.ultimate),
+      );
+
+      expect(template, BattleActionTemplate.projectile);
+      expect(templateUsesProjectile(template), isTrue);
+      expect(templateMovesToClash(template), isFalse);
+    });
+
     test('群体/破招/单体大招分别走 area/control/cinematic', () {
       expect(
         battleActionTemplateFor(

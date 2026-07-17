@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_action_template.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_playback_controller.dart';
+import 'package:wuxia_idle/features/battle/presentation/ultimate_caption_overlay.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 /// [BattlePlaybackController] 单元测试 —— Task 4 抽离的收益：`playAction` 本体 +
@@ -127,6 +128,18 @@ const _projectileSkill = SkillDef(
   visualEffect: 'hidden_weapon',
 );
 
+const _projectileUltimate = SkillDef(
+  id: 'test_flying_sword_ultimate',
+  name: '御剑诀',
+  description: '',
+  type: SkillType.ultimate,
+  powerMultiplier: 5000,
+  qiDelta: -300,
+  cooldownTurns: 5,
+  requiresManualTrigger: true,
+  visualEffect: 'flying_sword_art',
+);
+
 /// 左首(actorId=1) 攻 右首(targetId=11) 的动作。target 位于 teamSide=1
 /// slotIndex=0 → slotKey = 1*3+0 = 3。
 BattleAction _attackAction({bool crit = false, SkillDef? skill}) =>
@@ -220,6 +233,11 @@ void main() {
       reason: '流派命中特效 + 暴击特效 spawn（spawnBattleEffects）',
     );
     expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.projectile);
+    expect(
+      isUltimateCaptionSkill(_projectileUltimate),
+      isTrue,
+      reason: '远程交付不得降级技能类型或丢失大招题字入口',
+    );
   });
 
   testWidgets('近战动作前冲但不生成远程弹道', (tester) async {
@@ -231,6 +249,24 @@ void main() {
     expect(c.debugActiveTrailCount, 0);
     expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.melee);
     expect(c.debugActiveEffectCount, greaterThan(0));
+  });
+
+  testWidgets('远程大招保留大招表现并生成施术者到目标的弹道', (tester) async {
+    final c = (await _pump(tester)).controller;
+
+    c.playAction(
+      _attackAction(crit: true, skill: _projectileUltimate),
+      c._noopState(tester),
+    );
+    await tester.pump();
+
+    expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.projectile);
+    expect(
+      c.debugActiveTrailCount,
+      greaterThan(0),
+      reason: '远程大招应补回施术者到目标的视觉联系',
+    );
+    expect(c.debugActiveEffectCount, greaterThan(0), reason: '大招既有流派命中特效仍应保留');
   });
 
   testWidgets('群战第 4–7 敌人的动作与受击安全归并到敌方后景表现槽', (tester) async {

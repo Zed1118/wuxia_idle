@@ -37,11 +37,14 @@ BattleActionTemplate battleActionTemplateFor(SkillDef? skill) {
   if (skill.canInterrupt || _controlMarkers.any(effect.contains)) {
     return BattleActionTemplate.control;
   }
-  if (skill.type == SkillType.ultimate || skill.type == SkillType.jointSkill) {
-    return BattleActionTemplate.cinematic;
-  }
+  // 动作模板只决定人物位移与招式交付方式；大招题字、重击、SFX 与命中特效
+  // 由播放控制器按 skill.type 独立触发。明确带飞剑/气劲等标记的远程大招
+  // 必须先走 projectile，不能被 cinematic 提前截断成“原地题字 + 目标受击”。
   if (_projectileMarkers.any(effect.contains)) {
     return BattleActionTemplate.projectile;
+  }
+  if (skill.type == SkillType.ultimate || skill.type == SkillType.jointSkill) {
+    return BattleActionTemplate.cinematic;
   }
   return BattleActionTemplate.melee;
 }
