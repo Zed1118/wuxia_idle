@@ -21,6 +21,7 @@ READY_TIMEOUT=90
 ALL_SPACES=0
 EXISTING_WINDOW=0
 PREBUILT=1
+BACKGROUND=0
 
 usage() {
   cat <<'USAGE'
@@ -42,6 +43,8 @@ Options:
                             focus, resize, or terminate the app.
   --no-prebuilt             Use legacy per-route flutter run instead of one
                             prebuilt debug app with runtime route arguments.
+  --background              Do not focus or resize the app; capture its window
+                            by CGWindowID across Spaces (window env locks size).
   --dry-run                  Print planned commands only.
   -h, --help                 Show this help.
 
@@ -99,6 +102,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     --no-prebuilt)
       PREBUILT=0
+      shift
+      ;;
+    --background)
+      BACKGROUND=1
+      ALL_SPACES=1
       shift
       ;;
     --dry-run)
@@ -308,12 +316,14 @@ run_capture() {
     return 1
   fi
   sleep "$WAIT_SECONDS"
-  focus_visual_app >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: focus_failed\n' >>"$log"
-  sleep 1
-  resize_visual_window "$width" "$height" >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: resize_failed\n' >>"$log"
-  sleep 1
-  focus_visual_app >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: focus_failed\n' >>"$log"
-  sleep 1
+  if [[ "$BACKGROUND" -eq 0 ]]; then
+    focus_visual_app >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: focus_failed\n' >>"$log"
+    sleep 1
+    resize_visual_window "$width" "$height" >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: resize_failed\n' >>"$log"
+    sleep 1
+    focus_visual_app >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: focus_failed\n' >>"$log"
+    sleep 1
+  fi
   local capture_status
   capture_status="$(capture_visual_window "$width" "$height" "$png")"
   kill "$pid" >/dev/null 2>&1 || true
