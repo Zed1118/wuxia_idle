@@ -440,15 +440,23 @@ class BattlePlaybackController {
   }
 
   DamagePopupAnchor _nextPopupAnchor(int slotKey, PopupType type) {
-    if (type == PopupType.critical) return DamagePopupAnchor.centerBurst;
-    final existing = _popups[slotKey]?.length ?? 0;
+    final existing = _popups[slotKey] ?? const <PopupEntry>[];
+    if (type == PopupType.critical &&
+        !existing.any(
+          (entry) => entry.anchor == DamagePopupAnchor.centerBurst,
+        )) {
+      return DamagePopupAnchor.centerBurst;
+    }
     const spread = [
       DamagePopupAnchor.upperRight,
       DamagePopupAnchor.upperLeft,
       DamagePopupAnchor.lowerRight,
       DamagePopupAnchor.lowerLeft,
     ];
-    return spread[(_nextPopupId + existing) % spread.length];
+    final spreadCount = existing
+        .where((entry) => entry.anchor != DamagePopupAnchor.centerBurst)
+        .length;
+    return spread[spreadCount % spread.length];
   }
 
   DamagePopupData _buildPopupData(

@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_action_template.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_playback_controller.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_vfx_entries.dart';
 import 'package:wuxia_idle/features/battle/presentation/ultimate_caption_overlay.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
@@ -478,6 +479,53 @@ void main() {
     expect(c.debugActionTemplateForSlot(5), BattleActionTemplate.melee);
     expect(c.debugPopupsForSlot(5), hasLength(1));
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('同槽四条普通伤害飘字稳定散到四角', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+
+    for (var tick = 1; tick <= 4; tick++) {
+      c.playAction(
+        BattleAction(
+          tick: tick,
+          actorId: 1,
+          targetId: 11,
+          attackResult: _hitResult(),
+          description: 'multi hit',
+        ),
+        state,
+      );
+    }
+
+    final anchors = c
+        .debugPopupsForSlot(_targetSlotKey)
+        .map((entry) => entry.anchor)
+        .toSet();
+    expect(anchors, hasLength(4));
+    expect(anchors, isNot(contains(DamagePopupAnchor.centerBurst)));
+  });
+
+  testWidgets('同槽多条暴击仅首条占中央，其余散到四角', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+
+    for (var tick = 1; tick <= 5; tick++) {
+      c.playAction(
+        BattleAction(
+          tick: tick,
+          actorId: 1,
+          targetId: 11,
+          attackResult: _hitResult(crit: true),
+          description: 'multi critical',
+        ),
+        state,
+      );
+    }
+
+    final entries = c.debugPopupsForSlot(_targetSlotKey);
+    expect(entries.first.anchor, DamagePopupAnchor.centerBurst);
+    expect(entries.map((entry) => entry.anchor).toSet(), hasLength(5));
   });
 
   testWidgets('pause / resume 调度标志', (tester) async {
