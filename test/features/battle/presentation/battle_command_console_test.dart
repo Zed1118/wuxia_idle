@@ -871,6 +871,66 @@ void main() {
       expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsNothing);
     });
 
+    testWidgets('破绽窗口时当前角色不可操作则临时切到可爆发队友', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final blocked = left[0].copyWith(
+        availableSkills: [_power],
+        actionPoint: 0,
+      );
+      final actionable = left[1].copyWith(
+        availableSkills: [_powerB],
+        actionPoint: 1,
+      );
+      final staggered = right.first.copyWith(staggerTicksRemaining: 2);
+
+      for (final size in const [Size(1280, 720), Size(1440, 900)]) {
+        final notifier = await _pumpWith(
+          tester,
+          [blocked, actionable, left[2]],
+          [staggered, ...right.skip(1)],
+          size: size,
+        );
+
+        expect(find.text(UiStrings.coopBurstPrompt), findsOneWidget);
+        expect(find.byKey(const ValueKey('skill_cmd_2_pB')), findsOneWidget);
+        expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsNothing);
+        expect(tester.takeException(), isNull, reason: '$size 不应溢出');
+
+        notifier.setState(
+          notifier.state.copyWith(rightTeam: [right.first, ...right.skip(1)]),
+        );
+        await tester.pump();
+
+        expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsOneWidget);
+        expect(find.byKey(const ValueKey('skill_cmd_2_pB')), findsNothing);
+      }
+    });
+
+    testWidgets('破绽窗口保留已可操作的玩家手选角色', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final c0 = left[0].copyWith(availableSkills: [_power], actionPoint: 1);
+      final c1 = left[1].copyWith(availableSkills: [_powerB], actionPoint: 1);
+      final notifier = await _pumpWith(tester, [c0, c1, left[2]], right);
+
+      await tester.tap(find.byKey(const ValueKey('focus_chip_1')));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('skill_cmd_2_pB')), findsOneWidget);
+
+      notifier.setState(
+        notifier.state.copyWith(
+          rightTeam: [
+            right.first.copyWith(staggerTicksRemaining: 2),
+            ...right.skip(1),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text(UiStrings.coopBurstPrompt), findsOneWidget);
+      expect(find.byKey(const ValueKey('skill_cmd_2_pB')), findsOneWidget);
+      expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsNothing);
+    });
+
     testWidgets('指令台 + 危险条 + 战报条同屏 1280×720 不溢出', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(

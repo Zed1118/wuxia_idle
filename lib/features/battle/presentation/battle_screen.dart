@@ -149,8 +149,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // rebuild 用 setState 保持重绘粒度不变。
   late final BattlePlaybackController _playback;
 
-  // T1 指令台：当前"重点角色"槽位（玩家手动选定的基线）。敌人蓄力时由
-  // [_effectiveFocus] 临时覆盖到可破招者，但不改写这个手动基线。
+  // T1 指令台：当前"重点角色"槽位（玩家手动选定的基线）。敌人蓄力或破绽开窗时由
+  // [_effectiveFocus] 临时覆盖到可操作角色，但不改写这个手动基线。
   // 技能"待发"态直接读 [BattleState.pendingUltimates]（domain 单一真相源），
   // 不再维护本地置灰 set——引擎消费后自动清，按钮印随之消失。
   int _focusSlotIndex = 0;
@@ -437,10 +437,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     setState(() => _focusSlotIndex = slotIndex);
   }
 
-  /// 重点角色生效槽位：敌人蓄力时自动落到首个"有 ready 破招技"的我方角色，
-  /// 否则用玩家手动选的 [_focusSlotIndex]（越界 / 死亡时回退到 0）。
+  /// 重点角色生效槽位：蓄力时优先可破招者；破绽时若手选角色不可操作，
+  /// 临时落到首个有可下发非普攻招式的队友。两种临时焦点都不改写手选基线。
   int _effectiveFocus(BattleState s) {
     if (s.leftTeam.isEmpty) return 0;
+    final selectedIsAlive =
+        _focusSlotIndex >= 0 &&
+        _focusSlotIndex < s.leftTeam.length &&
+        s.leftTeam[_focusSlotIndex].isAlive;
     final enemyCharging = s.rightTeam.any(
       (e) => e.isAlive && e.chargingSkill != null,
     );
@@ -451,9 +455,18 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         if (k != null && canInterveneWithSkill(c, k)) return i;
       }
     }
-    if (_focusSlotIndex >= 0 &&
-        _focusSlotIndex < s.leftTeam.length &&
-        s.leftTeam[_focusSlotIndex].isAlive) {
+    final enemyStaggered = s.rightTeam.any(
+      (e) => e.isAlive && e.staggerTicksRemaining > 0,
+    );
+    if (enemyStaggered) {
+      if (selectedIsAlive && _hasActionableBurst(s.leftTeam[_focusSlotIndex])) {
+        return _focusSlotIndex;
+      }
+      for (var i = 0; i < s.leftTeam.length; i++) {
+        if (_hasActionableBurst(s.leftTeam[i])) return i;
+      }
+    }
+    if (selectedIsAlive) {
       return _focusSlotIndex;
     }
     for (var i = 0; i < s.leftTeam.length; i++) {
@@ -472,6 +485,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     }
     return null;
   }
+
+  static bool _hasActionableBurst(BattleCharacter c) => c.availableSkills.any(
+    (skill) =>
+        skill.type != SkillType.normalAttack && canInterveneWithSkill(c, skill),
+  );
 
   // ─── 结算 dialog ─────────────────────────────────────────────────────────
 
