@@ -627,6 +627,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
       // 2. 战斗结束：停 timer + 弹结算 dialog（postFrame 避免 build 期 setState）
       if ((prev?.result == null) && next.result != null) {
+        // 宿主/调试可在待发软暂停期间直接推进到结束；本地待发态不能穿透
+        // 结算或残留到连续战斗。复用暂停归属规则，只归还待发自己施加的暂停。
+        if (_pendingSkill != null) _clearPending();
         _playback.onBattleFinished(); // 停 timer + 冻结读秒环节拍。
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
@@ -635,8 +638,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         });
       }
 
-      // 3. actionLog 新增：触发动画（待发态自动随 pendingUltimates 消费而清，
-      //    无需本地解除置灰）。
+      // 3. actionLog 新增：触发动画。
       if (prev != null && next.actionLog.length > prev.actionLog.length) {
         final newActions = next.actionLog.sublist(prev.actionLog.length);
         _playback.playActions(newActions, next);

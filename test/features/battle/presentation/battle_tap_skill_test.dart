@@ -63,6 +63,8 @@ class _TestBattleNotifier extends BattleNotifier {
     lastInterveneTarget = targetId;
     interveneCount++;
   }
+
+  void push(BattleState next) => state = next;
 }
 
 /// 单体技(默认 targetType.single)。
@@ -271,6 +273,25 @@ void main() {
 
       expect(notifier.lastInterveneSkill?.id, _singleAlt.id);
       expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+    });
+
+    testWidgets('待发中战斗被外部结束 → 清除待发印与目标可选提示', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      expect(find.text(UiStrings.skillPendingStamp), findsWidgets);
+      expect(find.text(UiStrings.skillTargetable), findsWidgets);
+
+      notifier.push(notifier.state.copyWith(result: BattleResult.leftWin));
+      await tester.pump();
+
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+      expect(find.text(UiStrings.skillTargetable), findsNothing);
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpAndSettle();
     });
 
     testWidgets('点 single 技能按钮 → 按钮显示待发视觉但不写 domain pending', (tester) async {
