@@ -7,24 +7,27 @@ import 'visual_route.dart';
 /// `VISUAL_ROUTE_READY`。
 enum VisualAcceptanceSuite {
   smoke,
+  battle,
   full;
 
   static VisualAcceptanceSuite parse(String raw) {
     for (final suite in values) {
       if (suite.name == raw) return suite;
     }
-    throw ArgumentError.value(raw, 'suite', 'expected: smoke|full');
+    throw ArgumentError.value(raw, 'suite', 'expected: smoke|battle|full');
   }
 }
 
 class VisualAcceptanceRoute {
   const VisualAcceptanceRoute({
     required this.route,
+    required this.id,
     required this.seed,
     required this.checks,
   });
 
   final VisualRoute route;
+  final String id;
   final String seed;
   final List<String> checks;
 }
@@ -48,18 +51,50 @@ const List<VisualRoute> _smokeRoutes = [
   VisualRoute.battleChargeBreak,
 ];
 
+final List<VisualAcceptanceRoute> _battleRoutes = [
+  for (var chapter = 1; chapter <= 6; chapter++)
+    for (var stage = 1; stage <= 5; stage++)
+      _battleStageRoute(
+        'battle_audit_stage_${_twoDigits(chapter)}_${_twoDigits(stage)}',
+      ),
+  for (var floor = 1; floor <= 30; floor++) _battleTowerRoute(floor),
+  for (var stage = 1; stage <= 5; stage++)
+    _battleStageRoute('battle_audit_stage_light_foot_${_twoDigits(stage)}'),
+  for (var stage = 1; stage <= 5; stage++)
+    _battleStageRoute('battle_audit_stage_mass_battle_${_twoDigits(stage)}'),
+];
+
+VisualAcceptanceRoute _battleStageRoute(String id) => VisualAcceptanceRoute(
+  route: VisualRoute.battleStageAudit,
+  id: id,
+  seed: visualAcceptanceSeed,
+  checks: _checksFor(VisualRoute.battleStageAudit),
+);
+
+VisualAcceptanceRoute _battleTowerRoute(int floor) => VisualAcceptanceRoute(
+  route: VisualRoute.battleTowerAudit,
+  id: 'battle_audit_tower_${_twoDigits(floor)}',
+  seed: visualAcceptanceSeed,
+  checks: _checksFor(VisualRoute.battleTowerAudit),
+);
+
+String _twoDigits(int value) => value.toString().padLeft(2, '0');
+
 List<VisualAcceptanceRoute> visualAcceptanceRoutes(
   VisualAcceptanceSuite suite,
 ) {
   final routes = switch (suite) {
     VisualAcceptanceSuite.smoke => _smokeRoutes,
+    VisualAcceptanceSuite.battle => const <VisualRoute>[],
     VisualAcceptanceSuite.full =>
       VisualRoute.values.where((r) => r != VisualRoute.hub).toList(),
   };
+  if (suite == VisualAcceptanceSuite.battle) return _battleRoutes;
   return [
     for (final route in routes)
       VisualAcceptanceRoute(
         route: route,
+        id: route.id,
         seed: visualAcceptanceSeed,
         checks: _checksFor(route),
       ),
@@ -67,7 +102,7 @@ List<VisualAcceptanceRoute> visualAcceptanceRoutes(
 }
 
 List<String> visualAcceptanceRouteIds(VisualAcceptanceSuite suite) {
-  return visualAcceptanceRoutes(suite).map((r) => r.route.id).toList();
+  return visualAcceptanceRoutes(suite).map((r) => r.id).toList();
 }
 
 String visualAcceptanceChecklistMarkdown(
@@ -94,7 +129,7 @@ String visualAcceptanceChecklistMarkdown(
 
   for (final target in visualAcceptanceRoutes(suite)) {
     buffer.writeln(
-      '| `${target.route.id}` | `${target.seed}` | '
+      '| `${target.id}` | `${target.seed}` | '
       '${target.checks.join('<br>')} |',
     );
   }
@@ -109,6 +144,16 @@ List<String> _checksFor(VisualRoute route) {
       '战斗深色底文字可读',
       'HUD 不遮挡角色',
       '无明显 repaint 闪烁',
+    ],
+    VisualRoute.battleStageAudit => const [
+      '真关卡背景与敌队配置接线',
+      '三人站位/立绘脚底/血条无遮挡',
+      '技能栏无溢出且文字完整',
+    ],
+    VisualRoute.battleTowerAudit => const [
+      '真塔层敌队配置接线',
+      '敌我站位对称且全身立绘清晰',
+      'HUD/血条/技能栏无溢出',
     ],
     VisualRoute.mainlineFirstClearBattle => const [
       '真主线 stage 首通起手暂停可见',

@@ -187,6 +187,14 @@ enum VisualRoute {
     'battle_tower_floor_12',
     '敌人立绘验收·真塔12层（jianghu_a + jianghu_b）',
   ),
+  battleStageAudit(
+    'battle_audit_stage',
+    '敌人立绘全关卡验收·动态真 stage（实际 id 形如 battle_audit_stage_01_01）',
+  ),
+  battleTowerAudit(
+    'battle_audit_tower',
+    '敌人立绘全塔层验收·动态真 floor（实际 id 形如 battle_audit_tower_01）',
+  ),
   discipleJoinCeremony(
     'disciple_join_ceremony',
     '第七阶段批三目检·拜入立绘题字 overlay 动效(读真 lineage_onboarding 配置:大弟子/二弟子真立绘交替循环滑入+放大+「XX 拜入门下」题字,自动重播;单帧截不出须真机看动效)',
@@ -288,7 +296,31 @@ VisualRoute? parseVisualRoute(String raw) {
   for (final r in VisualRoute.values) {
     if (r.id == raw) return r;
   }
+  if (battleAuditStageId(raw) != null) return VisualRoute.battleStageAudit;
+  if (battleAuditTowerFloor(raw) != null) return VisualRoute.battleTowerAudit;
   return null;
+}
+
+const String battleAuditStagePrefix = 'battle_audit_stage_';
+const String battleAuditTowerPrefix = 'battle_audit_tower_';
+
+/// 动态主线/轻功/群战验收 route → 真 stage id。
+String? battleAuditStageId(String routeId) {
+  if (!routeId.startsWith(battleAuditStagePrefix)) return null;
+  final suffix = routeId.substring(battleAuditStagePrefix.length);
+  return suffix.isEmpty ? null : 'stage_$suffix';
+}
+
+/// 动态爬塔验收 route → 1-based floor。
+int? battleAuditTowerFloor(String routeId) {
+  if (!routeId.startsWith(battleAuditTowerPrefix)) return null;
+  return int.tryParse(routeId.substring(battleAuditTowerPrefix.length));
+}
+
+/// 保留动态 route 的完整 id，供 host 取 stage/floor 参数并回报 READY。
+String visualRouteIdFromEnv() {
+  const raw = String.fromEnvironment('VISUAL_ROUTE');
+  return raw;
 }
 
 /// 读 `--dart-define=VISUAL_ROUTE=<id>`。未传/未知 → null。

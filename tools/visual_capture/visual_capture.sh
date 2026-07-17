@@ -28,7 +28,7 @@ Usage:
   tools/visual_capture/visual_capture.sh [options]
 
 Options:
-  --suite smoke|full         Route suite from tool/visual_acceptance.dart.
+  --suite smoke|battle|full  Route suite from tool/visual_acceptance.dart.
   --route <id>               Capture one route instead of the suite.
   --resolutions <csv>        Window sizes, e.g. 1280x720,1920x1080.
   --output <dir>             Output directory. Default: build/visual_acceptance.

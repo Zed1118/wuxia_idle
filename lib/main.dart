@@ -32,7 +32,7 @@ Future<void> main() async {
   if (!kReleaseMode) {
     final route = visualRouteFromEnv();
     if (route != null) {
-      runApp(VisualRouteApp(route: route));
+      runApp(VisualRouteApp(route: route, routeId: visualRouteIdFromEnv()));
       return;
     }
   }

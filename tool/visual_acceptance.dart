@@ -50,12 +50,13 @@ void _printUsage() {
 视觉验收计划生成器
 
 Usage:
-  flutter pub run tool/visual_acceptance.dart routes [--suite smoke|full] [--format ids|json|markdown]
-  flutter pub run tool/visual_acceptance.dart checklist [--suite smoke|full]
-  flutter pub run tool/visual_acceptance.dart dry-run [--suite smoke|full]
+  flutter pub run tool/visual_acceptance.dart routes [--suite smoke|battle|full] [--format ids|json|markdown]
+  flutter pub run tool/visual_acceptance.dart checklist [--suite smoke|battle|full]
+  flutter pub run tool/visual_acceptance.dart dry-run [--suite smoke|battle|full]
 
 Examples:
   flutter pub run tool/visual_acceptance.dart routes --suite smoke
+  flutter pub run tool/visual_acceptance.dart routes --suite battle
   flutter pub run tool/visual_acceptance.dart checklist --suite full
   tools/visual_capture/visual_capture.sh --dry-run --suite smoke
 ''');
@@ -76,7 +77,7 @@ class _Options {
         case '--suite':
           i++;
           if (i >= args.length) {
-            throw ArgumentError('--suite requires smoke|full');
+            throw ArgumentError('--suite requires smoke|battle|full');
           }
           suite = VisualAcceptanceSuite.parse(args[i]);
         case '--format':

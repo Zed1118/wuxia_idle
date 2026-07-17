@@ -37,6 +37,22 @@ void main() {
     expect(ids, contains(VisualRoute.recruitmentDialog.id));
   });
 
+  test('battle suite 覆盖30主线+30塔层+5轻功+5群战', () {
+    final ids = visualAcceptanceRouteIds(VisualAcceptanceSuite.battle);
+
+    expect(ids, hasLength(70));
+    expect(ids.toSet(), hasLength(70));
+    expect(ids.first, 'battle_audit_stage_01_01');
+    expect(ids, contains('battle_audit_stage_06_05'));
+    expect(ids, contains('battle_audit_tower_01'));
+    expect(ids, contains('battle_audit_tower_30'));
+    expect(ids, contains('battle_audit_stage_light_foot_05'));
+    expect(ids.last, 'battle_audit_stage_mass_battle_05');
+    for (final id in ids) {
+      expect(parseVisualRoute(id), isNotNull, reason: id);
+    }
+  });
+
   test('checklist 输出 route、seed、截图命令', () {
     final markdown = visualAcceptanceChecklistMarkdown(
       VisualAcceptanceSuite.smoke,

@@ -100,9 +100,10 @@ import 'hitbox_debug_overlay.dart';
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
 class VisualRouteApp extends StatelessWidget {
-  const VisualRouteApp({super.key, required this.route});
+  const VisualRouteApp({super.key, required this.route, this.routeId});
 
   final VisualRoute route;
+  final String? routeId;
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +113,9 @@ class VisualRouteApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: wuxiaAppTheme(),
         builder: _wuxiaTextScaleBuilder,
-        home: HitboxDebugOverlay.maybeWrap(VisualRouteHost(route: route)),
+        home: HitboxDebugOverlay.maybeWrap(
+          VisualRouteHost(route: route, routeId: routeId),
+        ),
       ),
     );
   }
@@ -131,9 +134,10 @@ Widget _wuxiaTextScaleBuilder(BuildContext context, Widget? child) {
 /// 按 [VisualRoute] 做 seed + 导航到目标验收屏。
 /// 首帧就绪后打印 `VISUAL_ROUTE_READY: <id>` 供截图脚本 grep。
 class VisualRouteHost extends ConsumerStatefulWidget {
-  const VisualRouteHost({super.key, required this.route});
+  const VisualRouteHost({super.key, required this.route, this.routeId});
 
   final VisualRoute route;
+  final String? routeId;
 
   @override
   ConsumerState<VisualRouteHost> createState() => _VisualRouteHostState();
@@ -157,7 +161,11 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
       final isar = IsarSetup.instance;
 
       // 2. 按 route 构造目标屏(逻辑抽到顶层 buildVisualTarget,供 hub 运行时复用)
-      final target = await buildVisualTarget(widget.route, isar);
+      final target = await buildVisualTarget(
+        widget.route,
+        isar,
+        routeId: widget.routeId,
+      );
 
       // 3. 挂载目标屏
       if (!mounted) return;
@@ -165,12 +173,14 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
 
       // 4. 目标屏首帧后打就绪信号
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        debugPrint('VISUAL_ROUTE_READY: ${widget.route.id}');
+        debugPrint('VISUAL_ROUTE_READY: ${widget.routeId ?? widget.route.id}');
       });
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);
-      debugPrint('VISUAL_ROUTE_ERROR: ${widget.route.id} :: $e');
+      debugPrint(
+        'VISUAL_ROUTE_ERROR: ${widget.routeId ?? widget.route.id} :: $e',
+      );
     }
   }
 
@@ -187,7 +197,11 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
 /// 单一职责:route → (seed + 目标屏)。供 [VisualRouteHost] 单路由直达与
 /// [_AcceptanceHub] 运行时点选复用——后者 build 一次即可点遍全部路由,
 /// 免 dart-define VISUAL_ROUTE 每路由重 flutter run(Codex 验收加速)。
-Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
+Future<Widget> buildVisualTarget(
+  VisualRoute route,
+  Isar isar, {
+  String? routeId,
+}) async {
   switch (route) {
     case VisualRoute.mainMenu:
       await OnboardingService(
@@ -690,6 +704,33 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioTowerFloor12,
         hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleStageAudit:
+      final stageId = battleAuditStageId(routeId ?? '') ?? 'stage_01_01';
+      final stage = GameRepository.instance.getStage(stageId);
+      final bgmTrack = switch (stage.stageType) {
+        StageType.lightFoot => BgmTrack.lightFoot,
+        StageType.massBattle => BgmTrack.massBattle,
+        _ => BgmTrack.battle,
+      };
+      return ScenarioLauncher(
+        teamsFactory: () =>
+            BattleScenarioData.scenarioStageStandeeAudit(stageId),
+        hint: stage.name,
+        sceneBackgroundPath:
+            stage.sceneBackgroundPath ?? WuxiaUi.battleMountainPassStage,
+        bgmTrack: bgmTrack,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerAudit:
+      final floor = battleAuditTowerFloor(routeId ?? '') ?? 1;
+      return ScenarioLauncher(
+        teamsFactory: () =>
+            BattleScenarioData.scenarioTowerFloorStandeeAudit(floor),
+        hint: '问鼎塔 · 第 $floor 层',
         sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
         bgmTrack: BgmTrack.tower,
         startPaused: true,
