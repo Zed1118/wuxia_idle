@@ -199,7 +199,7 @@ void main() {
       );
     });
 
-    testWidgets('护法存活时普通单体技目标栏排除受保护 Boss', (tester) async {
+    testWidgets('护法门控后仅一合法目标时普通单体技直接命中护法', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_single]);
       final boss = right[0].copyWith(
@@ -209,7 +209,7 @@ void main() {
         guardianDefIds: const ['ward_guardian'],
       );
       final guardian = right[1].copyWith(enemyDefId: 'ward_guardian');
-      await _pumpWith(
+      final notifier = await _pumpWith(
         tester,
         [focus, ...left.skip(1)],
         [boss, guardian, right[2]],
@@ -219,13 +219,15 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
       await tester.pump();
 
+      expect(notifier.interveneCount, 1);
+      expect(notifier.lastInterveneTarget, guardian.characterId);
       expect(
         find.byKey(ValueKey('target_chip_${boss.characterId}')),
         findsNothing,
       );
       expect(
         find.byKey(ValueKey('target_chip_${guardian.characterId}')),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.byKey(ValueKey('enemy_target_hint_${boss.characterId}')),
@@ -233,7 +235,44 @@ void main() {
       );
       expect(
         find.byKey(ValueKey('enemy_target_hint_${guardian.characterId}')),
-        findsOneWidget,
+        findsNothing,
+      );
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+    });
+
+    testWidgets('没有合法目标时不下发也不进入待发', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final enemyA = right[0].copyWith(
+        isBoss: true,
+        enemyDefId: 'mutual_a',
+        guardianWardMult: 0.15,
+        guardianDefIds: const ['mutual_b'],
+      );
+      final enemyB = right[1].copyWith(
+        isBoss: true,
+        enemyDefId: 'mutual_b',
+        guardianWardMult: 0.15,
+        guardianDefIds: const ['mutual_a'],
+      );
+      final notifier = await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        [enemyA, enemyB],
+      );
+
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+
+      expect(notifier.interveneCount, 0);
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+      expect(
+        find.byKey(ValueKey('target_chip_${enemyA.characterId}')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(ValueKey('target_chip_${enemyB.characterId}')),
+        findsNothing,
       );
     });
 

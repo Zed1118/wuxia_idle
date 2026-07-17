@@ -355,18 +355,19 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       _onSkillCommand(characterId, skill); // 一键即放,AI 选目标
       return;
     }
-    // single:按存活敌人数分流。
-    final aliveEnemies = s.rightTeam
-        .where((e) => e.isAlive)
+    // single:按当前技能的合法目标数分流。护法等机制可能让“存活敌人 2 名”
+    // 实际只剩 1 名可选；此时直接出手，避免弹出只有一个选项的冗余目标栏。
+    final targetableEnemies = s.rightTeam
+        .where((e) => canManuallyTargetEnemy(e, s, skill))
         .toList(growable: false);
-    if (aliveEnemies.isEmpty) return; // 战斗已结束,守卫。
-    if (aliveEnemies.length == 1) {
-      // 唯一敌人 → 点击即放:不进待发/不暂停/不选目标。
+    if (targetableEnemies.isEmpty) return;
+    if (targetableEnemies.length == 1) {
+      // 唯一合法目标 → 点击即放:不进待发/不暂停/不选目标。
       if (_pendingSkill != null) _clearPending();
       _onSkillCommand(
         characterId,
         skill,
-        targetId: aliveEnemies.first.characterId,
+        targetId: targetableEnemies.first.characterId,
       );
       return;
     }
@@ -420,8 +421,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     });
   }
 
-  /// 待发单体技的技能格上方浮出可选敌人快捷栏。常规由 ≥2 存活敌人进入
-  /// 待发；护法门控后可选数可能只剩 1。锚定被点技能格,右侧头像选目标通道并存。
+  /// 待发单体技的技能格上方浮出可选敌人快捷栏。仅在 ≥2 个合法目标时进入
+  /// 待发；锚定被点技能格,右侧头像选目标通道并存。
   Widget _buildTargetChipOverlay(BattleState state) {
     final skill = _pendingSkillFor(state);
     if (skill == null) return const SizedBox.shrink();
