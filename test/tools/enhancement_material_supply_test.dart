@@ -27,7 +27,7 @@ void main() {
     _writeSummary(supply: supply, demands: [to15, to30, to49]);
 
     expect(supply.mojianshi, closeTo(56.5, 0.01));
-    expect(supply.xinxueJiejing, closeTo(408.0, 0.01));
+    expect(supply.xinxueJiejing, closeTo(515.0, 0.01));
 
     expect(to15.guaranteeCrystalCost, 6);
     expect(to30.guaranteeCrystalCost, 112);

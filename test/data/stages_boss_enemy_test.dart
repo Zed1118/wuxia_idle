@@ -32,12 +32,12 @@ void main() {
     }
   });
 
-  test('恰好标注 14 个 boss 敌人(production 红线)', () {
+  test('恰好标注 16 个 boss 敌人(production 红线)', () {
     final stages = GameRepository.instance.stageDefs.values;
     final total = stages.fold<int>(
       0,
       (n, s) => n + s.enemyTeam.where((e) => e.isBoss).length,
     );
-    expect(total, 14);
+    expect(total, 16);
   });
 }
