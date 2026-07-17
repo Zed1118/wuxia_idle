@@ -3672,4 +3672,18 @@ class UiStrings {
       '确认择取「$name」？三选一仅取其一，余者不留。';
   static const String gauntletRewardConfirm = '确认择取';
   static const String gauntletNoReward = '暂无待领战利，庄门未克。';
+
+  // 战败结算（§6.3 · #1 wiring Task 3）
+  static const String gauntletDefeatTitle = '断魂庄 · 铩羽';
+  static const String gauntletDefeatSection = '闯庄失利';
+  static const String gauntletDefeatHint =
+      '止步于此。已破精英的经验照常入账，按战况结算轻重伤（不损永久内力）；'
+      '断魂帖与已用补给不退。';
+  static String gauntletDefeatEliteLine(int count, int exp) =>
+      '已破 $count 关精英 · 各得经验 $exp';
+  static const String gauntletDefeatNoElite = '未破一关精英，无经验入账。';
+  static const String gauntletDefeatMemberSection = '弟子伤势';
+  static const String gauntletDefeatHeavyTag = '重伤';
+  static const String gauntletDefeatLightTag = '轻伤';
+  static const String gauntletLeaveButton = '离庄';
 }

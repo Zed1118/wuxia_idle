@@ -53,6 +53,36 @@ enum GauntletRecoveryOutcome {
   concedeRequired,
 }
 
+/// 断魂庄失败结算摘要（§6.3 · #1 wiring Task 3）：[GauntletService.settleDefeat] 产出，
+/// 供战败屏只读展示（结算即删会话·摘要须随结算带出，不能事后读 run）。含已击败精英经验
+/// （各参战成员同额名义值）+ 逐成员战末伤势（倒下→重伤 / 存活→轻伤）。
+class GauntletDefeatSummary {
+  const GauntletDefeatSummary({
+    required this.elitesDefeated,
+    required this.eliteExpPerMember,
+    required this.members,
+  });
+
+  /// 已击败精英关数（战败关之前 role==elite 计数·§6.2 每精英一份）。
+  final int elitesDefeated;
+
+  /// 每名参战成员所得精英经验名义值（= elitesDefeated × eliteRewardExp·层锁封顶前）。
+  final int eliteExpPerMember;
+
+  /// 逐成员伤势（倒下者重伤·存活者轻伤·§6.3）。
+  final List<GauntletDefeatMember> members;
+}
+
+/// 断魂庄战败单成员伤势（§6.3 · #1 wiring Task 3）。
+class GauntletDefeatMember {
+  const GauntletDefeatMember({required this.name, required this.downed});
+
+  final String name;
+
+  /// 战末倒下 → 重伤；存活 → 轻伤。
+  final bool downed;
+}
+
 /// 断魂庄应用服务（spec §5.1/§9.2）。
 ///
 /// C2.1 入场扣帖 + 补给会话托管；C2.2 整备页用药 + 关闭返还（守恒）。均单 `writeTxn`。
