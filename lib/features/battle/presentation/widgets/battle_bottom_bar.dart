@@ -166,6 +166,10 @@ class _AutoRotationActor extends StatelessWidget {
               const SizedBox(height: 8),
               if (!character.isAlive)
                 const _AutoSkillStateText(text: UiStrings.battleFallen)
+              else if (character.chargingSkill != null)
+                const _AutoSkillStateText(text: UiStrings.skillCharging)
+              else if (character.staggerTicksRemaining > 0)
+                const _AutoSkillStateText(text: UiStrings.skillStaggered)
               else if (visibleSkills.isEmpty)
                 const _AutoSkillStateText(
                   text: UiStrings.battleNoEquippedSkills,

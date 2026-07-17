@@ -289,6 +289,60 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('蓄力与踉跄角色显示行动状态而非招式可用', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final charging = left[0].copyWith(
+        availableSkills: [_power],
+        chargingSkill: _power,
+        chargeTicksRemaining: 2,
+      );
+      final staggered = left[1].copyWith(
+        availableSkills: [_powerB],
+        staggerTicksRemaining: 2,
+      );
+      await _pumpWith(
+        tester,
+        [charging, staggered],
+        right,
+        allowPlayerIntervention: false,
+      );
+
+      final chargingCard = find.byKey(
+        ValueKey('auto_rotation_actor_${charging.characterId}'),
+      );
+      final staggeredCard = find.byKey(
+        ValueKey('auto_rotation_actor_${staggered.characterId}'),
+      );
+      expect(
+        find.descendant(
+          of: chargingCard,
+          matching: find.text(UiStrings.skillCharging),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: staggeredCard,
+          matching: find.text(UiStrings.skillStaggered),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: chargingCard,
+          matching: find.text(UiStrings.skillReady),
+        ),
+        findsNothing,
+      );
+      expect(
+        find.descendant(
+          of: staggeredCard,
+          matching: find.text(UiStrings.skillReady),
+        ),
+        findsNothing,
+      );
+    });
+
     testWidgets('轮转谱在单人、两人、三人队与双视口均不溢出', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       for (final size in const [Size(1280, 720), Size(1440, 900)]) {
