@@ -9,8 +9,8 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
+import 'package:wuxia_idle/features/battle/domain/battle_skill_utils.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/domain/qi_cycle.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 
 import '../support/progression_battle_probe.dart';
@@ -88,6 +88,38 @@ void main() {
         expect(row.playerCasts, row.playerNormalCasts + row.playerSkillCasts);
       }
 
+      for (final stage in stages.where((stage) => stage.isBossStage)) {
+        final auto = rows
+            .where(
+              (row) =>
+                  row.stageId == stage.id &&
+                  row.profile == ProgressionBuildProfile.standard &&
+                  row.policy == _Policy.auto,
+            )
+            .toList();
+        final manual = rows
+            .where(
+              (row) =>
+                  row.stageId == stage.id &&
+                  row.profile == ProgressionBuildProfile.standard &&
+                  row.policy == _Policy.windowIntervention,
+            )
+            .toList();
+        final autoWins = auto
+            .where((row) => row.result == BattleResult.leftWin.name)
+            .length;
+        final manualWins = manual
+            .where((row) => row.result == BattleResult.leftWin.name)
+            .length;
+        expect(manualWins, greaterThanOrEqualTo(autoWins));
+        expect(
+          _average(manual.map((row) => row.ticks)),
+          lessThanOrEqualTo(_average(auto.map((row) => row.ticks)) * 0.85),
+          reason: '${stage.id} 的机制窗口点选应至少缩短 15% 平均 tick',
+        );
+        expect(manual.any((row) => row.manualCasts > 0), isTrue);
+      }
+
       final csvPath = '$_outputDir/battle_intervention_value_$_reportDate.csv';
       final summaryPath =
           '$_outputDir/battle_intervention_value_$_reportDate.md';
@@ -139,9 +171,9 @@ _RunMetric _run({
     if (state.actorQueue.isNotEmpty) {
       throw StateError('diagnostic must sample at tick boundary');
     }
-    metric.sampleBoundary(state, repository);
+    metric.sampleBoundary(state);
     if (policy == _Policy.windowIntervention) {
-      final choice = _pickWindowIntervention(state, repository);
+      final choice = _pickWindowIntervention(state);
       if (choice != null) {
         final beforeRows = state.actionLog.length;
         state = defaultGroundStrategy.interveneNow(
@@ -164,22 +196,19 @@ _RunMetric _run({
   return metric;
 }
 
-_ManualChoice? _pickWindowIntervention(
-  BattleState state,
-  GameRepository repository,
-) {
+_ManualChoice? _pickWindowIntervention(BattleState state) {
   final charging = state.rightTeam
       .where((enemy) => enemy.isAlive && enemy.chargingSkill != null)
       .toList();
   if (charging.isNotEmpty) {
-    for (final actor in state.leftTeam.where(_canInterveneActor)) {
+    for (final actor in state.leftTeam) {
       final interruptSkills =
           actor.availableSkills
               .where(
                 (skill) =>
                     skill.type != SkillType.normalAttack &&
                     skill.canInterrupt &&
-                    _isUsable(actor, skill, repository),
+                    canInterveneWithSkill(actor, skill),
               )
               .toList()
             ..sort((a, b) => b.powerMultiplier.compareTo(a.powerMultiplier));
@@ -198,10 +227,10 @@ _ManualChoice? _pickWindowIntervention(
       .toList();
   if (staggered.isEmpty) return null;
   _ManualChoice? best;
-  for (final actor in state.leftTeam.where(_canInterveneActor)) {
+  for (final actor in state.leftTeam) {
     for (final skill in actor.availableSkills) {
       if (skill.type == SkillType.normalAttack) continue;
-      if (!_isUsable(actor, skill, repository)) continue;
+      if (!canInterveneWithSkill(actor, skill)) continue;
       final choice = _ManualChoice(actor, skill, staggered.first.characterId);
       if (best == null || skill.powerMultiplier > best.skill.powerMultiplier) {
         best = choice;
@@ -210,34 +239,6 @@ _ManualChoice? _pickWindowIntervention(
   }
   return best;
 }
-
-bool _canInterveneActor(BattleCharacter actor) =>
-    actor.isAlive &&
-    actor.actionPoint > 0 &&
-    actor.staggerTicksRemaining <= 0 &&
-    actor.chargingSkill == null;
-
-bool _isUsable(
-  BattleCharacter actor,
-  SkillDef skill,
-  GameRepository repository,
-) {
-  if (!_canInterveneActor(actor)) return false;
-  if ((actor.skillCooldowns[skill.id] ?? 0) > 0) return false;
-  return actor.currentQi >= _effectiveCost(actor, skill, repository);
-}
-
-int _effectiveCost(
-  BattleCharacter actor,
-  SkillDef skill,
-  GameRepository repository,
-) => -QiCycle.effectiveSkillDelta(
-  baseDelta: -skill.qiCost,
-  gainMultiplier: actor.qiGainMultiplier,
-  gainMultiplierCap: repository.numbers.combat.qi.gainMultiplierCap,
-  costReductionPct: actor.qiCostReductionPct,
-  costReductionCap: repository.numbers.combat.qi.costReductionCap,
-);
 
 class _ManualChoice {
   const _ManualChoice(this.actor, this.skill, this.targetId);
@@ -297,7 +298,7 @@ class _RunMetric {
     slotCasts[2],
   ].join('/');
 
-  void sampleBoundary(BattleState state, GameRepository repository) {
+  void sampleBoundary(BattleState state) {
     final enemies = state.rightTeam.where((enemy) => enemy.isAlive).toList();
     final hasCharge = enemies.any((enemy) => enemy.chargingSkill != null);
     final hasStagger = enemies.any((enemy) => enemy.staggerTicksRemaining > 0);
@@ -314,13 +315,13 @@ class _RunMetric {
           .toList();
       final usable = [
         for (final skill in skills)
-          if (_isUsable(actor, skill, repository)) skill,
+          if (canInterveneWithSkill(actor, skill)) skill,
       ];
       if (usable.isNotEmpty) interventionReadyUnitTicks++;
       if (skills.any(
         (skill) =>
             (actor.skillCooldowns[skill.id] ?? 0) <= 0 &&
-            actor.currentQi < _effectiveCost(actor, skill, repository),
+            actor.currentQi < effectiveSkillQiCost(actor, skill),
       )) {
         qiShortageUnitTicks++;
       }
@@ -357,6 +358,13 @@ class _RunMetric {
       }
     }
   }
+}
+
+double _average(Iterable<num> values) {
+  final list = values.toList();
+  return list.isEmpty
+      ? 0
+      : list.fold<double>(0, (sum, value) => sum + value) / list.length;
 }
 
 String _toCsv(List<_RunMetric> rows) {
