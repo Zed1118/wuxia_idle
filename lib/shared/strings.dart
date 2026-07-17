@@ -57,6 +57,9 @@ class UiStrings {
   static const String fastForward = '快进';
   static const String battleAutoMode = '自动战斗';
   static const String battleAutoIntervention = '可点选';
+  static const String battleAutoModeHint = '全程托管，角色按招式轮转谱自行出手。';
+  static const String battleAutoInterventionHint =
+      '战斗持续自动；点武学签可预支该角色下一次行动，出手后重新回势。';
   static const String battleAutoRotation = '招式轮转谱';
   static const String battleAutoObserve = '托管推演';
   static const String skillReady = '可用';

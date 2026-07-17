@@ -224,29 +224,37 @@ class BattleModePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      label: UiStrings.battleAutoMode,
-      value: allowPlayerIntervention
-          ? UiStrings.battleAutoIntervention
-          : UiStrings.battleAutoMode,
-      child: Container(
-        key: const ValueKey('battle_auto_mode'),
-        height: 30,
-        padding: const EdgeInsets.symmetric(horizontal: 9),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.28),
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: const Color(0xFF6D5940)),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          allowPlayerIntervention
-              ? '${UiStrings.battleAutoMode}·${UiStrings.battleAutoIntervention}'
-              : UiStrings.battleAutoMode,
-          style: const TextStyle(
-            color: WuxiaColors.textSecondary,
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
+    final hint = allowPlayerIntervention
+        ? UiStrings.battleAutoInterventionHint
+        : UiStrings.battleAutoModeHint;
+    return Tooltip(
+      message: hint,
+      child: Semantics(
+        excludeSemantics: true,
+        label: UiStrings.battleAutoMode,
+        value: allowPlayerIntervention
+            ? UiStrings.battleAutoIntervention
+            : UiStrings.battleAutoMode,
+        hint: hint,
+        child: Container(
+          key: const ValueKey('battle_auto_mode'),
+          height: 30,
+          padding: const EdgeInsets.symmetric(horizontal: 9),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.28),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: const Color(0xFF6D5940)),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            allowPlayerIntervention
+                ? '${UiStrings.battleAutoMode}·${UiStrings.battleAutoIntervention}'
+                : UiStrings.battleAutoMode,
+            style: const TextStyle(
+              color: WuxiaColors.textSecondary,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
