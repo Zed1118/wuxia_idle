@@ -608,17 +608,16 @@ class SkillCommandButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final cd = character.skillCooldowns[skill.id] ?? 0;
     final effectiveCost = effectiveSkillQiCost(character, skill);
-    final ready = isSkillReady(character, skill);
     final actionReady = character.actionPoint > 0;
+    final interventionReady = canInterveneWithSkill(character, skill);
     final enabled =
-        ready &&
-        actionReady &&
+        interventionReady &&
         (!isPending || pendingTapEnabled) &&
         !queuedAnother &&
         allowPlayerIntervention;
 
     Color bgColor;
-    if (!ready || !actionReady) {
+    if (!interventionReady) {
       bgColor = const Color(0xFF8F8675);
     } else if (highlight) {
       // 破招提示醒目金:原 0.72 上白字仅 ~2.9:1,压暗一档(0.52)让白字可读(~4.6:1)。
@@ -637,6 +636,10 @@ class SkillCommandButton extends StatelessWidget {
       blockingStatus = ''; // CD 态由读秒环示数。
     } else if (character.currentQi < effectiveCost) {
       blockingStatus = UiStrings.skillInsufficientForce;
+    } else if (character.chargingSkill != null) {
+      blockingStatus = UiStrings.skillCharging;
+    } else if (character.staggerTicksRemaining > 0) {
+      blockingStatus = UiStrings.skillStaggered;
     } else if (!actionReady) {
       blockingStatus = UiStrings.skillAwaitingAction;
     } else {
@@ -658,7 +661,7 @@ class SkillCommandButton extends StatelessWidget {
         onPressed: enabled ? onTap : null,
         onLongPress: onShowInfo,
         style: ElevatedButton.styleFrom(
-          // 背景已由 bgColor(!ready→buttonDisabled)表达,
+          // 背景已由 bgColor(!interventionReady→buttonDisabled)表达,
           // 前景按 enabled 手动切 muted/primary 保留「不可下发」灰态观感。
           backgroundColor: bgColor,
           disabledBackgroundColor: bgColor,

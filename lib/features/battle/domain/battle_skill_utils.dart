@@ -19,9 +19,13 @@ bool isSkillReady(BattleCharacter c, SkillDef skill) {
 /// 技能当前能否作为玩家即时干预下发。
 ///
 /// [isSkillReady] 只描述角色与技能资源；即时干预还要求行动条在上次预支归零后
-/// 已重新积累为正。不同角色各自判断，不形成全队插队次数锁。
+/// 已重新积累为正，且角色未处于蓄力或踉跄。不同角色各自判断，不形成全队
+/// 插队次数锁。
 bool canInterveneWithSkill(BattleCharacter c, SkillDef skill) =>
-    c.actionPoint > 0 && isSkillReady(c, skill);
+    c.actionPoint > 0 &&
+    c.chargingSkill == null &&
+    c.staggerTicksRemaining <= 0 &&
+    isSkillReady(c, skill);
 
 int slotKey(int teamSide, int slotIndex) => teamSide * 3 + slotIndex;
 

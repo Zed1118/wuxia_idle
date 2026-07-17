@@ -175,6 +175,38 @@ void main() {
       expect(notifier.interveneCount, 0);
     });
 
+    testWidgets('蓄力中点单体技能不进入待发也不下发', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_single],
+        actionPoint: 300,
+        chargingSkill: _single,
+        chargeTicksRemaining: 2,
+      );
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      expect(find.text(UiStrings.skillCharging), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+      expect(notifier.interveneCount, 0);
+    });
+
+    testWidgets('踉跄中点群体技能不下发', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_aoe],
+        actionPoint: 300,
+        staggerTicksRemaining: 2,
+      );
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      expect(find.text(UiStrings.skillStaggered), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.pump();
+      expect(notifier.interveneCount, 0);
+    });
+
     testWidgets('点 aoe 技能按钮 → 立即出手(targetId 空走 AI)', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_aoe]);
