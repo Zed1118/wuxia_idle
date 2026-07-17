@@ -592,7 +592,23 @@ class BattlePlaybackController {
   }
 
   void toggleFastForward() {
-    _rebuild(() => _isFastForward = !_isFastForward);
+    final enteringFastForward = !_isFastForward;
+    _rebuild(() => _isFastForward = enteringFastForward);
+    if (enteringFastForward) {
+      _hitStopTimer?.cancel();
+      _hitStopTimer = null;
+      _impactGlyphKey.currentState?.clear();
+      _ultimateCaptionKey.currentState?.clear();
+      _screenFlashKey.currentState?.clear();
+      for (final controller in _hitFlashControllers) {
+        controller
+          ..stop()
+          ..value = 1.0;
+      }
+      _shakeCtrl.reset();
+      _closeupCtrl.reset();
+      _impactShakeAmplitude = 0.0;
+    }
     if (_playTimer != null) startTimer();
   }
 

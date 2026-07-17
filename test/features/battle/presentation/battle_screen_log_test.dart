@@ -235,6 +235,31 @@ void main() {
     expect(find.text(UiStrings.weaknessHitGlyph), findsNothing);
   });
 
+  testWidgets('常速强反馈在进入快进时同帧清退', (tester) async {
+    final notifier = await _pumpBattle(tester);
+    notifier.appendActions(const [
+      BattleAction(
+        tick: 1,
+        actorId: 1,
+        targetId: 11,
+        skill: _ultSkill,
+        attackResult: _criticalResult,
+        description: '切快进前的强反馈',
+        weaknessHit: true,
+      ),
+    ]);
+    await tester.pump();
+    await tester.pump();
+    expect(find.text(_ultSkill.name), findsWidgets);
+    expect(find.text(UiStrings.weaknessHitGlyph), findsWidgets);
+
+    await tester.tap(find.byKey(const ValueKey('battle_fast_forward_toggle')));
+    await tester.pump();
+
+    expect(find.text(_ultSkill.name), findsNothing);
+    expect(find.text(UiStrings.weaknessHitGlyph), findsNothing);
+  });
+
   testWidgets('日志默认收起，点开显历史，再点收起（P0-2 Task6）', (tester) async {
     await _pumpBattle(tester);
 
