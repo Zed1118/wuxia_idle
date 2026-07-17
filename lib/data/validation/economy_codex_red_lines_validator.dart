@@ -101,9 +101,7 @@ void enforceItemRedLines({
   for (final d in itemDefs.values) {
     final frac = d.layerFraction;
     if (frac != null && (frac <= 0 || frac > 1.0)) {
-      throw StateError(
-        '红线:道具 ${d.defId} layer_fraction $frac 应 ∈ (0.0, 1.0]',
-      );
+      throw StateError('红线:道具 ${d.defId} layer_fraction $frac 应 ∈ (0.0, 1.0]');
     }
     if (d.injuryHealHours < 0 || d.residueHealHours < 0) {
       throw StateError(
@@ -149,9 +147,7 @@ void enforceSynergyRedLines({
 }) {
   if (synergies.isEmpty) return;
   if (synergies.length < 5) {
-    throw StateError(
-      'synergies.yaml 至少 5 组合(GDD §4.5),实际 ${synergies.length}',
-    );
+    throw StateError('synergies.yaml 至少 5 组合(GDD §4.5),实际 ${synergies.length}');
   }
   final seen = <String>{};
   for (final s in synergies) {

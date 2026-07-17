@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/founder_creation_def.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/validation/lineage_recruit_red_lines_validator.dart';
 
 /// 祖师塑形 schools 唯一性红线：id 与 school 各自唯一，
 /// 防同一流派配多条 schools 项致创建页选项漂移（覆盖度红线兜不住）。

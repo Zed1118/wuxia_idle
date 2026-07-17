@@ -34,8 +34,9 @@
 
 ## 当前恢复点
 
-- **状态**:批A ✅(19b9431e) 批B ✅(1aa21961·全量4088/0) C1 ✅def迁移(11+8=19 文件入 data,analyze 0+targeted 565 绿) → C2 校验抽取开工
-- **C1 追加发现**:numbers_config 还藏 9 个 feature 子配置模型,迁 8 个;equipment_disposal 跳过(依赖 feature 局部 occupancy+含逻辑,级联风险)→ backlog;isar_setup 15 个 feature import=Isar schema 注册表(composition root)豁免+注释
-- **下一步(C2)**:按组抽 22 个 private _enforce* → lib/data/validation/ 自由函数(参数名=字段名,方法体逐字不动):C2a economy_codex(:845-1047 codex/shop/item/taohua/synergy)→ C2b encounter(:1049-1203)→ C2c technique_equipment(:1204-1304)→ C2d progression(tower :1305-1387+bossCharge :1974-2007+seclusion :2159-2277+mainline :2278-2330)→ C2e lineage_recruit(:1388-1785)→ C2f skill(:1786-1973)。每组 analyze,C2c/C2f 后 commit,C 末全量。4 个 public static enforce* 与顶层 enforceLineageOnboardingRedLines 是公共 API/已在类外,不动
-- **已跑验证**:全量 4088/0(01:58 基线+02:25 批B);C1 analyze 0+targeted 565(02:44)
-- **阻塞项**:无
+- **状态**:批A ✅(19b9431e) 批B ✅(1aa21961·全量4088/0) C1 ✅(905cbe7a·19 def 迁移) C2a-c ✅(f2fbcae0) **C2d-f ✅编辑完成,全量验证跑批中→绿了就 commit** → 批D
+- **C2 终态**:GameRepository **2402→1137 行**;22 个 private _enforce* + 2 个类外自由函数(lineage_onboarding/founder_school_uniqueness,连带 2 个测试文件 import 迁移)→ 6 个域校验文件(economy_codex/encounter/technique_equipment/progression/lineage_recruit/skill);唯一体改=enforceSkillSourceRedLines 的 releaseRealm 改调用方传参(原实例方法内查);4 个 public static enforce* 是公共 API 不动;dart format 已归一
+- **C1 追加发现**:numbers_config 8 个 feature 子配置模型一并迁 defs;equipment_disposal 跳过(级联)→ backlog;isar_setup=composition root 豁免+注释
+- **下一步**:全量绿 → commit C2d-f → 批D(main_menu 1137 行/462 行 build 同文件私有 widget 拆)→ 批E(tower_entry_flow 空catch/battle_demo 迁 test/support/README 计数/tool README/strict-casts 试探/backlog 文件)→ 收尾(push 分支+draft PR+handoff+PROGRESS)
+- **已跑验证**:全量 4088/0(01:58 基线+02:25 批B);C1 targeted 565(02:44);C2 analyze 0+format 归一(04:15)
+- **阻塞项**:无;handoff 需记:CLAUDE §5.4「schema 真 sink=game_repository._enforceEncounterSkillRedLines」表述过时待 v1.40(新位置 validation/encounter_red_lines_validator.enforceEncounterSkillRedLines)
