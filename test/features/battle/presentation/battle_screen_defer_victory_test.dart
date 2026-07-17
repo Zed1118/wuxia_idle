@@ -237,6 +237,43 @@ void main() {
     expect(notifier.advanceOneActionCalls, 0);
   });
 
+  testWidgets('胜利延迟内重开会废弃旧场交接，第二场结束只回调一次', (tester) async {
+    var victoryCalled = 0;
+    final notifier = await _pump(
+      tester,
+      deferVictoryToCaller: true,
+      autoStart: true,
+      onVictory: () => victoryCalled++,
+    );
+    final firstRunning = notifier.state;
+
+    notifier.push(firstRunning.copyWith(result: BattleResult.leftWin));
+    await tester.pump();
+    await tester.pump();
+    notifier.push(
+      BattleState.initial(
+        leftTeam: firstRunning.leftTeam,
+        rightTeam: firstRunning.rightTeam,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 501));
+
+    expect(victoryCalled, 0, reason: '重开后上一场延迟胜利交接必须失效');
+    expect(
+      notifier.advanceOneActionCalls,
+      greaterThan(0),
+      reason: '旧交接不能打断第二场拍钟',
+    );
+
+    notifier.push(notifier.state.copyWith(result: BattleResult.leftWin));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(victoryCalled, 1, reason: '第二场自己的胜利交接仍应恰好执行一次');
+  });
+
   // ─── 回归测试 3: deferVictoryToCaller=true + rightWin → VictoryOverlay 仍显示 ─
   // defer 只 gate leftWin 分支,败北(rightWin)不受影响,仍走普通 overlay 路径。
 

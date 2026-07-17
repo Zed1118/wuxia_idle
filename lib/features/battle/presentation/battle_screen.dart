@@ -160,6 +160,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   // 战斗结算 dialog 已显示标志，避免 result 字段连续触发多次弹窗
   bool _resultDialogShown = false;
+  int _resultPresentationEpoch = 0;
 
   // ─── 两段点选 tap 释放 ───────────────────────────────────────────────────
   // 待发态(纯 UI,不写 BattleState):已点选待发的单体技与其角色 charId。
@@ -596,13 +597,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   Future<void> _showResultDialogAfterPacing(
     BattleResult result,
     BattleState s,
+    int presentationEpoch,
   ) async {
     if (result == BattleResult.leftWin) {
       await Future<void>.delayed(
         Duration(milliseconds: widget.animConfig.victoryHandoffDelayMs),
       );
     }
-    if (!mounted) return;
+    if (!mounted || presentationEpoch != _resultPresentationEpoch) return;
+    if (ref.read(battleProvider).result != result) return;
     _showResultDialog(result, s);
   }
 
@@ -687,6 +690,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       // 上一场结算弹窗出现后，下一场从 finished → running 时必须复位防重入标记。
       final restartedBattle = prev?.result != null && next.result == null;
       if (restartedBattle) {
+        // 废弃上一场仍在 victoryHandoffDelay 中等待的异步结算呈现。
+        _resultPresentationEpoch++;
         _resultDialogShown = false;
       }
 
@@ -702,13 +707,20 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
       // 2. 战斗结束：停 timer + 弹结算 dialog（postFrame 避免 build 期 setState）
       if ((prev?.result == null) && next.result != null) {
+        final presentationEpoch = ++_resultPresentationEpoch;
         // 宿主/调试可在待发软暂停期间直接推进到结束；本地待发态不能穿透
         // 结算或残留到连续战斗。复用暂停归属规则，只归还待发自己施加的暂停。
         if (_pendingSkill != null) _clearPending();
         _playback.onBattleFinished(); // 停 timer + 冻结读秒环节拍。
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            unawaited(_showResultDialogAfterPacing(next.result!, next));
+            unawaited(
+              _showResultDialogAfterPacing(
+                next.result!,
+                next,
+                presentationEpoch,
+              ),
+            );
           }
         });
       }
