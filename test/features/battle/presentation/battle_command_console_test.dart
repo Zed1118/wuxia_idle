@@ -412,6 +412,26 @@ void main() {
 
       expect(find.byKey(const ValueKey('battle_danger_bar')), findsNothing);
     });
+
+    testWidgets('胜负已定后立即清退残留蓄力危险条', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final charging = right.first.copyWith(
+        chargingSkill: _chargeSkill,
+        chargeTicksRemaining: 3,
+      );
+      final notifier = await _pumpWith(tester, left, [
+        charging,
+        ...right.skip(1),
+      ]);
+      expect(find.byKey(const ValueKey('battle_danger_bar')), findsOneWidget);
+
+      notifier.setState(notifier.state.copyWith(result: BattleResult.rightWin));
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('battle_danger_bar')), findsNothing);
+      await tester.pump(const Duration(milliseconds: 401));
+      await tester.pumpAndSettle();
+    });
   });
 
   group('T3 最近战报3条', () {

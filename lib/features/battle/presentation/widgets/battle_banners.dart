@@ -114,6 +114,7 @@ class DangerBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (state.isFinished) return const SizedBox.shrink();
     BattleCharacter? imminent;
     for (final e in state.rightTeam) {
       if (!e.isAlive || e.chargingSkill == null) continue;
