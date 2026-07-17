@@ -589,6 +589,59 @@ class BattlePlaybackController {
     _beatCtrl.stop();
   }
 
+  /// 同一个 BattleScreen 承接下一场时清理上一场全部瞬时表现。
+  /// 保留暂停/快进/可读节奏等玩家偏好，不触碰 BattleState。
+  void onBattleRestarted() {
+    _playTimer?.cancel();
+    _hitStopTimer?.cancel();
+    _beatCtrl.stop();
+
+    for (final entry in _activeTrails) {
+      if (!entry.disposed) {
+        entry.disposed = true;
+        entry.ctrl.stop();
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => entry.ctrl.dispose(),
+        );
+      }
+    }
+    for (final entry in _activeEffects) {
+      if (!entry.disposed) {
+        entry.disposed = true;
+        entry.ctrl.stop();
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => entry.ctrl.dispose(),
+        );
+      }
+    }
+    _rebuild(() {
+      _activeTrails.clear();
+      _activeEffects.clear();
+      _popups.clear();
+      for (var i = 0; i < _actionTemplates.length; i++) {
+        _actionTemplates[i] = BattleActionTemplate.melee;
+      }
+      _impactShakeAmplitude = 0.0;
+    });
+    _nextTrailId = 0;
+    _nextEffectId = 0;
+    _nextPopupId = 0;
+
+    for (final controller in _attackControllers) {
+      controller.reset();
+    }
+    for (final controller in _hitFlashControllers) {
+      controller.value = 1.0;
+    }
+    _shakeCtrl.reset();
+    _closeupCtrl.reset();
+    _impactGlyphKey.currentState?.clear();
+    _ultimateCaptionKey.currentState?.clear();
+    _screenFlashKey.currentState?.clear();
+
+    if (_showcase != null) _showcase = FirstClearShowcaseDirector();
+  }
+
   /// 玩法设置变更边沿:若 timer 在跑且战斗未结束 → 重启以应用新速度。
   void onGameplaySettingsChanged() {
     if (_playTimer != null && !_ref.read(battleProvider).isFinished) {

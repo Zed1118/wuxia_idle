@@ -388,6 +388,40 @@ void main() {
     expect(c.debugActiveEffectCount, greaterThan(0));
   });
 
+  testWidgets('onBattleRestarted 清空上一场瞬时反馈并复位动作模板与特写', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    c.playAction(
+      BattleAction(
+        tick: 1,
+        actorId: 1,
+        targetId: 11,
+        skill: _projectileSkill,
+        attackResult: _hitResult(),
+        description: 'last battle kill',
+        defeatedTarget: true,
+      ),
+      state,
+    );
+
+    expect(c.debugPopupsForSlot(_targetSlotKey), isNotEmpty);
+    expect(c.debugActiveTrailCount, greaterThan(0));
+    expect(c.debugActiveEffectCount, greaterThan(0));
+    expect(c.debugCloseupIsAnimating, isTrue);
+
+    c.onBattleRestarted();
+
+    expect(c.debugPopupsForSlot(_targetSlotKey), isEmpty);
+    expect(c.debugActiveTrailCount, 0);
+    expect(c.debugActiveEffectCount, 0);
+    expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.melee);
+    expect(c.debugCloseupIsAnimating, isFalse);
+
+    // 执行旧演出控制器的 post-frame 释放，并排空 Riverpod 自动释放任务。
+    await tester.pump();
+    await tester.pump();
+  });
+
   testWidgets('远程大招保留大招表现并生成施术者到目标的弹道', (tester) async {
     final c = (await _pump(tester)).controller;
 

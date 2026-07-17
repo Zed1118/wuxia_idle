@@ -693,6 +693,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         // 废弃上一场仍在 victoryHandoffDelay 中等待的异步结算呈现。
         _resultPresentationEpoch++;
         _resultDialogShown = false;
+        _playback.onBattleRestarted();
       }
 
       // 1. 启动 Timer：team 从空 → 非空，或同屏连续战斗从 finished → running，

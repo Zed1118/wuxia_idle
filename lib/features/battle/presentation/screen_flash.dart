@@ -44,6 +44,12 @@ class ScreenFlashOverlayState extends State<ScreenFlashOverlay>
     _ctrl.forward(from: 0.0);
   }
 
+  /// 连续战斗重开时立即清掉上一场尚未淡尽的闪白。
+  void clear() {
+    _ctrl.stop();
+    if (_strength > 0.0) setState(() => _strength = 0.0);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_strength <= 0.0) return const SizedBox.shrink();

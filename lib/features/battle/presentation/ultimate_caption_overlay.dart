@@ -150,6 +150,12 @@ class UltimateCaptionOverlayState extends State<UltimateCaptionOverlay>
     _ctrl.forward(from: 0.0);
   }
 
+  /// 连续战斗重开时立即清除上一场仍在停留/淡出的题字。
+  void clear() {
+    _ctrl.stop();
+    if (_name != null) setState(() => _name = null);
+  }
+
   // 淡入(0→_fadeInEnd:opacity 0→1) / 停留(_fadeInEnd→_fadeOutStart:1) /
   // 淡出(_fadeOutStart→1:1→0)。断点全由 ms 派生。
   double get _opacity {
