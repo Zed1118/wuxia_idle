@@ -607,14 +607,16 @@ class SkillCommandButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final cd = character.skillCooldowns[skill.id] ?? 0;
     final ready = isSkillReady(character, skill);
+    final actionReady = character.actionPoint > 0;
     final enabled =
         ready &&
+        actionReady &&
         (!isPending || pendingTapEnabled) &&
         !queuedAnother &&
         allowPlayerIntervention;
 
     Color bgColor;
-    if (!ready) {
+    if (!ready || !actionReady) {
       bgColor = const Color(0xFF8F8675);
     } else if (highlight) {
       // 破招提示醒目金:原 0.72 上白字仅 ~2.9:1,压暗一档(0.52)让白字可读(~4.6:1)。
@@ -633,6 +635,8 @@ class SkillCommandButton extends StatelessWidget {
       blockingStatus = ''; // CD 态由读秒环示数。
     } else if (character.currentQi < skill.qiCost) {
       blockingStatus = UiStrings.skillInsufficientForce;
+    } else if (!actionReady) {
+      blockingStatus = UiStrings.skillAwaitingAction;
     } else {
       blockingStatus = '';
     }

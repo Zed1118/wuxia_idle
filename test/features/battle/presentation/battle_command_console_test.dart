@@ -649,6 +649,24 @@ void main() {
       expect(find.textContaining('耗气'), findsNothing);
     });
 
+    testWidgets('AP 归零态技能按钮显示「回势中」并保持禁用', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_power],
+        currentInternalForce: 1000,
+        maxInternalForce: 1000,
+        skillCooldowns: const {},
+        actionPoint: 0,
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      expect(find.text(UiStrings.skillAwaitingAction), findsOneWidget);
+      final semantics = tester.widget<Semantics>(
+        find.byKey(const ValueKey('skill_cmd_1_p1')),
+      );
+      expect(semantics.properties.enabled, isFalse);
+    });
+
     testWidgets('冷却态技能按钮显读秒环 + 中心剩余拍数（不再显文字「冷却N」）', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(

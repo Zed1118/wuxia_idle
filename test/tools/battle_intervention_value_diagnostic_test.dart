@@ -213,6 +213,7 @@ _ManualChoice? _pickWindowIntervention(
 
 bool _canInterveneActor(BattleCharacter actor) =>
     actor.isAlive &&
+    actor.actionPoint > 0 &&
     actor.staggerTicksRemaining <= 0 &&
     actor.chargingSkill == null;
 
@@ -485,7 +486,10 @@ String _summarize(List<StageDef> stages, List<_RunMetric> rows) {
     ..writeln('## 口径')
     ..writeln()
     ..writeln('- `skill cast`：纯自动中非普攻施放数 / 玩家总施放数；AOE 多目标只计一次。')
-    ..writeln('- `ready/max qi/qi short`：纯自动每个存活玩家单位每 tick 边界的采样比例。')
+    ..writeln(
+      '- `ready/max qi/qi short`：纯自动每个存活玩家单位每 tick 边界的采样比例；'
+      '`ready` 另要求 AP 已重新积累为正。',
+    )
     ..writeln('- `charge cover`：敌方蓄力 tick 中至少一个破招技可立即下发的比例。')
     ..writeln('- `break cover`：敌方处于破绽 tick 中至少一个非普攻技可立即下发的比例。')
     ..writeln('- `windowIntervention`：每 tick 最多一次，只在破招/破绽窗口插队；不代表真人最优操作。');

@@ -287,7 +287,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // ─── 指令台（T1） ──────────────────────────────────────────────────────────
 
   /// 玩家点选技能 → 调 [BattleNotifier.interveneNow] 立即插队出手(预支 AP 归零)。
-  /// 仅当该技能 ready（存活 + 内力够 + CD 0）才下发，targetId=null 走 AI 默认选目标。
+  /// 仅当该技能 ready（存活 + 内力够 + CD 0）且角色 AP 已重新积累为正才下发，
+  /// targetId=null 走 AI 默认选目标。
   ///
   /// 主线二 2.3:即放·真插队——立即出手(预支 AP 归零),不再走 pending+C5 快进路径。
   void _onSkillCommand(int characterId, SkillDef skill, {int? targetId}) {
@@ -300,7 +301,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         break;
       }
     }
-    if (c == null || !isSkillReady(c, skill)) return;
+    if (c == null || !canInterveneWithSkill(c, skill)) return;
     // 主线二 2.3:即放·真插队——立即出手(预支 AP 归零),不再标记 pending+C5 快进。
     ref
         .read(battleProvider.notifier)
@@ -339,7 +340,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         break;
       }
     }
-    if (c == null || !isSkillReady(c, skill)) return;
+    if (c == null || !canInterveneWithSkill(c, skill)) return;
     // 待发态下再点同一技能 = 取消。
     if (skill.targetType != TargetType.aoe &&
         _pendingSkill?.id == skill.id &&
@@ -438,7 +439,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       for (var i = 0; i < s.leftTeam.length; i++) {
         final c = s.leftTeam[i];
         final k = _findKeySkillOf(c);
-        if (k != null && isSkillReady(c, k)) return i;
+        if (k != null && canInterveneWithSkill(c, k)) return i;
       }
     }
     if (_focusSlotIndex >= 0 && _focusSlotIndex < s.leftTeam.length) {

@@ -113,6 +113,7 @@ class UiStrings {
   static const String skillGroupJoint = '共鸣';
   // 破招用 [battleInterruptSkill]='破招'、大招用 [ultimate]='大招'。
   static const String skillPendingStamp = '待发';
+  static const String skillAwaitingAction = '回势中';
   static const String skillTargetable = '可选';
   static const String skillTargetLocked = '锁定';
   // 可用态：耗气 N · CD M。

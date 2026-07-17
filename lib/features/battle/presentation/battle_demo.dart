@@ -67,7 +67,7 @@ class BattleDemo {
           : const [],
       skillCooldowns: const {},
       activeBuffs: const [],
-      actionPoint: 0,
+      actionPoint: 300,
       isAlive: isAlive,
       teamSide: teamSide,
       slotIndex: slotIndex,

@@ -35,6 +35,17 @@ void main() {
     requiresManualTrigger: false,
     visualEffect: 'stub',
   );
+  const powerB = SkillDef(
+    id: 'skill_iv_power_b',
+    name: '穿云手',
+    description: '插队测第二强力技',
+    type: SkillType.powerSkill,
+    powerMultiplier: 1400,
+    internalForceCost: 100,
+    cooldownTurns: 2,
+    requiresManualTrigger: false,
+    visualEffect: 'stub',
+  );
 
   BattleCharacter unit({
     required int charId,
@@ -57,7 +68,7 @@ void main() {
     defenseRate: 0.1,
     totalEquipmentAttack: 700,
     mainCultivationLayer: CultivationLayer.daCheng,
-    availableSkills: const <SkillDef>[power, normal],
+    availableSkills: const <SkillDef>[power, powerB, normal],
     skillCooldowns: const {},
     activeBuffs: const [],
     actionPoint: ap,
@@ -93,6 +104,110 @@ void main() {
 
     expect(after.pendingUltimates.containsKey(1), isFalse);
     expect(after.pendingTargets.containsKey(1), isFalse);
+  });
+
+  test('同角色插队后 AP 归零 → 第二招被拒且不消耗资源', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final state = BattleState.initial(
+      leftTeam: [unit(charId: 1, teamSide: 0, slot: 0, ap: 300)],
+      rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
+    );
+
+    final first = strat.interveneNow(
+      state,
+      1,
+      power,
+      targetId: -1,
+      n: n,
+      rng: Random(7),
+    );
+    final beforeActor = first.leftTeam.first;
+    final second = strat.interveneNow(
+      first,
+      1,
+      powerB,
+      targetId: -1,
+      n: n,
+      rng: Random(8),
+    );
+
+    expect(second.actionLog, hasLength(first.actionLog.length));
+    expect(
+      second.leftTeam.first.currentInternalForce,
+      beforeActor.currentInternalForce,
+    );
+    expect(second.leftTeam.first.skillCooldowns, beforeActor.skillCooldowns);
+    expect(second.leftTeam.first.actionPoint, 0);
+  });
+
+  test('同角色 AP 重新积累为正后 → 可再次预支插队', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final state = BattleState.initial(
+      leftTeam: [unit(charId: 1, teamSide: 0, slot: 0, ap: 300)],
+      rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
+    );
+    final first = strat.interveneNow(
+      state,
+      1,
+      power,
+      targetId: -1,
+      n: n,
+      rng: Random(7),
+    );
+    final advanced = strat.stepOne(first, n, rng: Random(8));
+    expect(advanced.actorQueue, isEmpty);
+    expect(advanced.leftTeam.first.actionPoint, greaterThan(0));
+
+    final second = strat.interveneNow(
+      advanced,
+      1,
+      powerB,
+      targetId: -1,
+      n: n,
+      rng: Random(9),
+    );
+
+    expect(second.actionLog, hasLength(first.actionLog.length + 1));
+    expect(second.actionLog.last.skill?.id, powerB.id);
+    expect(second.leftTeam.first.actionPoint, 0);
+  });
+
+  test('不同角色在同一 tick 边界仍可各自连续插队', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final state = BattleState.initial(
+      leftTeam: [
+        unit(charId: 1, teamSide: 0, slot: 0, ap: 300),
+        unit(charId: 2, teamSide: 0, slot: 1, ap: 250),
+      ],
+      rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
+    );
+
+    final first = strat.interveneNow(
+      state,
+      1,
+      power,
+      targetId: -1,
+      n: n,
+      rng: Random(7),
+    );
+    final second = strat.interveneNow(
+      first,
+      2,
+      powerB,
+      targetId: -1,
+      n: n,
+      rng: Random(8),
+    );
+
+    expect(
+      second.actionLog.map((action) => action.actorId),
+      containsAll([1, 2]),
+    );
+    expect(second.leftTeam[0].actionPoint, 0);
+    expect(second.leftTeam[1].actionPoint, 0);
   });
 
   test('已死角色拖招 → noop（state 不变）', () {

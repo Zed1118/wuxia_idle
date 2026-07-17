@@ -128,6 +128,20 @@ Future<_TestBattleNotifier> _pumpWith(
 
 void main() {
   group('两段点选 · tap 释放', () {
+    testWidgets('AP 归零时技能按钮不可下发', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_aoe],
+        actionPoint: 0,
+      );
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      expect(find.text(UiStrings.skillAwaitingAction), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.pump();
+      expect(notifier.interveneCount, 0);
+    });
+
     testWidgets('点 aoe 技能按钮 → 立即出手(targetId 空走 AI)', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_aoe]);
