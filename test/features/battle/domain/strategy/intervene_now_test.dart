@@ -46,6 +46,18 @@ void main() {
     requiresManualTrigger: false,
     visualEffect: 'stub',
   );
+  const interrupt = SkillDef(
+    id: 'skill_iv_interrupt',
+    name: '截气式',
+    description: '插队测破招技',
+    type: SkillType.powerSkill,
+    powerMultiplier: 1200,
+    internalForceCost: 100,
+    cooldownTurns: 2,
+    requiresManualTrigger: false,
+    canInterrupt: true,
+    visualEffect: 'stub',
+  );
 
   BattleCharacter unit({
     required int charId,
@@ -331,5 +343,107 @@ void main() {
       rng: Random(7),
     );
     expect(after.actionLog, isEmpty, reason: '蓄力中不接受插队');
+  });
+
+  test('普通单体技指定受护法保护 Boss → noop 且不消耗资源', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final actor = unit(charId: 1, teamSide: 0, slot: 0, ap: 300);
+    final boss = unit(charId: -1, teamSide: 1, slot: 0).copyWith(
+      isBoss: true,
+      enemyDefId: 'ward_boss',
+      guardianWardMult: 0.15,
+      guardianDefIds: const ['ward_guardian'],
+    );
+    final guardian = unit(
+      charId: -2,
+      teamSide: 1,
+      slot: 1,
+    ).copyWith(enemyDefId: 'ward_guardian');
+    final state = BattleState.initial(
+      leftTeam: [actor],
+      rightTeam: [boss, guardian],
+    );
+
+    final after = strat.interveneNow(
+      state,
+      actor.characterId,
+      power,
+      targetId: boss.characterId,
+      n: n,
+      rng: Random(7),
+    );
+
+    expect(after.actionLog, isEmpty);
+    expect(after.leftTeam.first.actionPoint, actor.actionPoint);
+    expect(after.leftTeam.first.currentQi, actor.currentQi);
+  });
+
+  test('护法阵亡后普通单体技可重新指定 Boss', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final actor = unit(charId: 1, teamSide: 0, slot: 0, ap: 300);
+    final boss = unit(charId: -1, teamSide: 1, slot: 0).copyWith(
+      isBoss: true,
+      enemyDefId: 'ward_boss',
+      guardianWardMult: 0.15,
+      guardianDefIds: const ['ward_guardian'],
+    );
+    final deadGuardian = unit(
+      charId: -2,
+      teamSide: 1,
+      slot: 1,
+    ).copyWith(enemyDefId: 'ward_guardian', currentHp: 0, isAlive: false);
+    final state = BattleState.initial(
+      leftTeam: [actor],
+      rightTeam: [boss, deadGuardian],
+    );
+
+    final after = strat.interveneNow(
+      state,
+      actor.characterId,
+      power,
+      targetId: boss.characterId,
+      n: n,
+      rng: Random(7),
+    );
+
+    expect(after.actionLog.last.targetId, boss.characterId);
+    expect(after.actionLog.last.skill?.id, power.id);
+  });
+
+  test('破招技仍可指定正在蓄力的受保护 Boss', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final actor = unit(charId: 1, teamSide: 0, slot: 0, ap: 300);
+    final boss = unit(charId: -1, teamSide: 1, slot: 0).copyWith(
+      isBoss: true,
+      enemyDefId: 'ward_boss',
+      guardianWardMult: 0.15,
+      guardianDefIds: const ['ward_guardian'],
+      chargingSkill: powerB,
+      chargeTicksRemaining: 2,
+    );
+    final guardian = unit(
+      charId: -2,
+      teamSide: 1,
+      slot: 1,
+    ).copyWith(enemyDefId: 'ward_guardian');
+    final state = BattleState.initial(
+      leftTeam: [actor],
+      rightTeam: [boss, guardian],
+    );
+
+    final after = strat.interveneNow(
+      state,
+      actor.characterId,
+      interrupt,
+      targetId: boss.characterId,
+      n: n,
+      rng: Random(7),
+    );
+
+    expect(after.actionLog.last.targetId, boss.characterId);
+    expect(after.actionLog.last.skill?.id, interrupt.id);
   });
 }

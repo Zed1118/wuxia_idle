@@ -386,6 +386,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     final skill = _pendingSkill;
     final charId = _pendingCharId;
     if (skill == null || charId == null) return;
+    final state = ref.read(battleProvider);
+    BattleCharacter? enemy;
+    for (final candidate in state.rightTeam) {
+      if (candidate.characterId == enemyId) {
+        enemy = candidate;
+        break;
+      }
+    }
+    if (enemy == null || !canManuallyTargetEnemy(enemy, state, skill)) return;
     _clearPending();
     _onSkillCommand(charId, skill, targetId: enemyId);
   }
@@ -411,13 +420,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     });
   }
 
-  /// 待发单体技的技能格上方浮出敌人快捷选择栏(仅 ≥2 存活敌人;1 敌走点击即放
-  /// 不进待发,不会到这里)。锚定被点技能格,右侧头像选目标通道并存。
+  /// 待发单体技的技能格上方浮出可选敌人快捷栏。常规由 ≥2 存活敌人进入
+  /// 待发；护法门控后可选数可能只剩 1。锚定被点技能格,右侧头像选目标通道并存。
   Widget _buildTargetChipOverlay(BattleState state) {
+    final skill = _pendingSkillFor(state);
+    if (skill == null) return const SizedBox.shrink();
     final aliveEnemies = state.rightTeam
-        .where((e) => e.isAlive)
+        .where((e) => canManuallyTargetEnemy(e, state, skill))
         .toList(growable: false);
-    if (aliveEnemies.length < 2) return const SizedBox.shrink();
+    if (aliveEnemies.isEmpty) return const SizedBox.shrink();
     return CompositedTransformFollower(
       link: _skillTargetLink,
       showWhenUnlinked: false,
@@ -431,6 +442,29 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         onHover: _onPendingEnemyHover,
       ),
     );
+  }
+
+  SkillDef? _pendingSkillFor(BattleState state) {
+    if (_pendingSkill != null) return _pendingSkill;
+    final characterId = widget.previewPendingCharacterId;
+    final skillId = widget.previewPendingSkillId;
+    if (characterId == null || skillId == null) return null;
+    for (final character in state.leftTeam) {
+      if (character.characterId != characterId) continue;
+      for (final skill in character.availableSkills) {
+        if (skill.id == skillId) return skill;
+      }
+    }
+    return null;
+  }
+
+  Set<int> _targetableEnemyIds(BattleState state) {
+    final skill = _pendingSkillFor(state);
+    if (skill == null) return const <int>{};
+    return {
+      for (final enemy in state.rightTeam)
+        if (canManuallyTargetEnemy(enemy, state, skill)) enemy.characterId,
+    };
   }
 
   void _onSelectFocus(int slotIndex) {
@@ -799,7 +833,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             chargeMaxTicks: chargeMaxTicks,
                             staggerWindowTicks: staggerWindowTicks,
                             onEnemyTap: _onEnemyTap,
-                            pendingActive: _pendingActive,
+                            targetableEnemyIds: _pendingActive
+                                ? _targetableEnemyIds(state)
+                                : const <int>{},
                             hoveredEnemyId: _hoveredPendingEnemyId,
                             onEnemyHover: _onPendingEnemyHover,
                           ),

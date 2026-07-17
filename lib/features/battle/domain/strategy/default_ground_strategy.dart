@@ -6,6 +6,7 @@ import '../../../../data/defs/stage_win_condition.dart';
 import '../../../../core/domain/enums.dart';
 import '../../../../data/numbers_config.dart';
 import '../battle_ai.dart';
+import '../battle_skill_utils.dart';
 import '../enum_localizations.dart';
 import '../battle_state.dart';
 import '../damage_calculator.dart';
@@ -224,6 +225,19 @@ class DefaultGroundStrategy implements BattleStrategy {
     // I-1:踉跄/蓄力中的角色无法即时出手 → noop,避免拖的招静默 fizzle 又消耗交互。
     if (actor0.staggerTicksRemaining > 0 || actor0.chargingSkill != null) {
       return state;
+    }
+    if (targetId != null) {
+      final enemyTeam = actor0.teamSide == 0 ? state.rightTeam : state.leftTeam;
+      BattleCharacter? target;
+      for (final candidate in enemyTeam) {
+        if (candidate.characterId == targetId) {
+          target = candidate;
+          break;
+        }
+      }
+      if (target == null || !canManuallyTargetEnemy(target, state, skill)) {
+        return state;
+      }
     }
     final pended = requestUltimate(
       state,

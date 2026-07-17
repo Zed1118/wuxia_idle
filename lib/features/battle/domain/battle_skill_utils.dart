@@ -1,4 +1,5 @@
 import 'battle_state.dart';
+import 'battle_ai.dart';
 import 'qi_cycle.dart';
 import '../../../data/defs/skill_def.dart';
 
@@ -26,6 +27,20 @@ bool canInterveneWithSkill(BattleCharacter c, SkillDef skill) =>
     c.chargingSkill == null &&
     c.staggerTicksRemaining <= 0 &&
     isSkillReady(c, skill);
+
+/// 手动单体技能否把 [enemy] 作为指定目标。
+///
+/// 常规口径与自动选敌一致：护法存活时受保护 Boss 不进入目标池。唯一例外是
+/// 破招技面对正在蓄力的 Boss，保持自动破招路径既有的防御优先级。
+bool canManuallyTargetEnemy(
+  BattleCharacter enemy,
+  BattleState state,
+  SkillDef skill,
+) {
+  if (!enemy.isAlive) return false;
+  if (!BattleAI.isGuardedBoss(enemy, state)) return true;
+  return skill.canInterrupt && enemy.chargingSkill != null;
+}
 
 int slotKey(int teamSide, int slotIndex) => teamSide * 3 + slotIndex;
 

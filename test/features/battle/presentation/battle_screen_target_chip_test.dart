@@ -199,6 +199,44 @@ void main() {
       );
     });
 
+    testWidgets('护法存活时普通单体技目标栏排除受保护 Boss', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final boss = right[0].copyWith(
+        isBoss: true,
+        enemyDefId: 'ward_boss',
+        guardianWardMult: 0.15,
+        guardianDefIds: const ['ward_guardian'],
+      );
+      final guardian = right[1].copyWith(enemyDefId: 'ward_guardian');
+      await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        [boss, guardian, right[2]],
+        size: const Size(1440, 900),
+      );
+
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+
+      expect(
+        find.byKey(ValueKey('target_chip_${boss.characterId}')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(ValueKey('target_chip_${guardian.characterId}')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(ValueKey('enemy_target_hint_${boss.characterId}')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(ValueKey('enemy_target_hint_${guardian.characterId}')),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('aoe 多敌 → 不显选择栏（立即放）', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_aoe]);
