@@ -98,6 +98,18 @@ const _playerUlt = SkillDef(
   requiresManualTrigger: true,
   visualEffect: '',
 );
+const _playerAoe = SkillDef(
+  id: 'player_aoe',
+  name: '万钧裂空',
+  description: '',
+  type: SkillType.ultimate,
+  powerMultiplier: 4800,
+  internalForceCost: 900,
+  cooldownTurns: 5,
+  requiresManualTrigger: true,
+  targetType: TargetType.aoe,
+  visualEffect: '',
+);
 
 // ── T1 指令台测试技能 ──────────────────────────────────────────────────────
 const _power = SkillDef(
@@ -529,6 +541,55 @@ void main() {
         findsOneWidget,
       );
       expect(find.byKey(const ValueKey('battle_report_line_3')), findsNothing);
+    });
+
+    testWidgets('同拍三目标群攻在战报条只占一行且保留暴击代表', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final notifier = await _pumpWith(
+        tester,
+        left,
+        right,
+        size: const Size(1440, 900),
+      );
+
+      notifier.appendActions(const [
+        BattleAction(
+          tick: 6,
+          actorId: 1,
+          targetId: 11,
+          skill: _playerAoe,
+          attackResult: _normalResult,
+          description: '群攻一',
+        ),
+        BattleAction(
+          tick: 6,
+          actorId: 1,
+          targetId: 12,
+          skill: _playerAoe,
+          attackResult: _critResult,
+          description: '群攻二暴击',
+        ),
+        BattleAction(
+          tick: 6,
+          actorId: 1,
+          targetId: 13,
+          skill: _playerAoe,
+          attackResult: _normalResult,
+          description: '群攻三',
+        ),
+      ]);
+      await tester.pump();
+
+      expect(
+        find.byKey(const ValueKey('battle_report_line_0')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('battle_report_line_1')), findsNothing);
+      final reportLine = tester.widget<Text>(
+        find.byKey(const ValueKey('battle_report_line_0')),
+      );
+      expect(reportLine.data, contains('暴击'));
+      expect(tester.takeException(), isNull);
     });
   });
 
