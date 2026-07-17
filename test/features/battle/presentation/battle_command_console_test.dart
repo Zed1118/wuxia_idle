@@ -228,6 +228,20 @@ Future<_TestBattleNotifier> _pumpWith(
 
 void main() {
   group('自动观战轮转谱', () {
+    testWidgets('轮转谱按角色减耗后的有效耗气判断就绪', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final reduced = left.first.copyWith(
+        availableSkills: [_power],
+        currentQi: 160,
+        maxQi: 1000,
+        qiCostReductionPct: 0.20,
+      );
+      await _pumpWith(tester, [reduced], right, allowPlayerIntervention: false);
+
+      expect(find.text(UiStrings.skillReady), findsOneWidget);
+      expect(find.text(UiStrings.skillGatheringQi), findsNothing);
+    });
+
     testWidgets('纯自动模式收起技能按钮并展示三人真气与招式状态', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final team = [
@@ -647,6 +661,25 @@ void main() {
       expect(find.text('真气不足'), findsOneWidget);
       // 内力不足态不显示可用态的耗内文案。
       expect(find.textContaining('耗气'), findsNothing);
+    });
+
+    testWidgets('减耗角色按有效耗气解锁按钮并显示实付值', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_power],
+        currentQi: 160,
+        maxQi: 1000,
+        qiCostReductionPct: 0.20,
+        skillCooldowns: const {},
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      expect(find.text(UiStrings.skillQiCostChip(160)), findsOneWidget);
+      expect(find.text(UiStrings.skillInsufficientForce), findsNothing);
+      final semantics = tester.widget<Semantics>(
+        find.byKey(const ValueKey('skill_cmd_1_p1')),
+      );
+      expect(semantics.properties.enabled, isTrue);
     });
 
     testWidgets('AP 归零态技能按钮显示「回势中」并保持禁用', (tester) async {

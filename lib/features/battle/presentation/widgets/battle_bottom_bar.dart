@@ -196,9 +196,10 @@ class _AutoRotationActor extends StatelessWidget {
 
   int _statusRank(SkillDef skill) {
     final cd = character.skillCooldowns[skill.id] ?? 0;
-    if (cd <= 0 && character.currentQi >= skill.qiCost) return 0;
+    final effectiveCost = effectiveSkillQiCost(character, skill);
+    if (cd <= 0 && character.currentQi >= effectiveCost) return 0;
     if (cd > 0) return 100 + cd;
-    return 200 + skill.qiCost;
+    return 200 + effectiveCost;
   }
 }
 
@@ -211,7 +212,7 @@ class _AutoSkillState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cd = character.skillCooldowns[skill.id] ?? 0;
-    final ready = cd <= 0 && character.currentQi >= skill.qiCost;
+    final ready = isSkillReady(character, skill);
     final status = cd > 0
         ? UiStrings.skillCooldownRemaining(cd)
         : ready
@@ -606,6 +607,7 @@ class SkillCommandButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cd = character.skillCooldowns[skill.id] ?? 0;
+    final effectiveCost = effectiveSkillQiCost(character, skill);
     final ready = isSkillReady(character, skill);
     final actionReady = character.actionPoint > 0;
     final enabled =
@@ -633,7 +635,7 @@ class SkillCommandButton extends StatelessWidget {
       blockingStatus = UiStrings.skillPendingStamp; // 待发
     } else if (cd > 0) {
       blockingStatus = ''; // CD 态由读秒环示数。
-    } else if (character.currentQi < skill.qiCost) {
+    } else if (character.currentQi < effectiveCost) {
       blockingStatus = UiStrings.skillInsufficientForce;
     } else if (!actionReady) {
       blockingStatus = UiStrings.skillAwaitingAction;
@@ -791,7 +793,9 @@ class SkillCommandButton extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: _SkillMetric(
-                                  text: UiStrings.skillQiCostChip(skill.qiCost),
+                                  text: UiStrings.skillQiCostChip(
+                                    effectiveCost,
+                                  ),
                                   color: WuxiaUi.qing,
                                 ),
                               ),

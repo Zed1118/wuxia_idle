@@ -210,6 +210,38 @@ void main() {
     expect(second.leftTeam[1].actionPoint, 0);
   });
 
+  test('减耗后真气仅够有效耗气时仍可插队，扣气与同源公式一致', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final reduced = unit(
+      charId: 1,
+      teamSide: 0,
+      slot: 0,
+      ap: 300,
+    ).copyWith(currentQi: 80, qiCostReductionPct: 0.20);
+    final state = BattleState.initial(
+      leftTeam: [reduced],
+      rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
+    );
+
+    final after = strat.interveneNow(
+      state,
+      1,
+      power,
+      targetId: -1,
+      n: n,
+      rng: Random(7),
+    );
+
+    expect(after.actionLog, isNotEmpty);
+    expect(after.actionLog.last.skill?.id, power.id);
+    expect(
+      after.leftTeam.first.currentQi,
+      n.combat.qi.schoolBonus,
+      reason: '80 有效耗气扣清后，刚猛命中只回本次流派产气',
+    );
+  });
+
   test('已死角色拖招 → noop（state 不变）', () {
     const strat = DefaultGroundStrategy();
     final n = GameRepository.instance.numbers;

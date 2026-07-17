@@ -128,6 +128,23 @@ Future<_TestBattleNotifier> _pumpWith(
 
 void main() {
   group('两段点选 · tap 释放', () {
+    testWidgets('减耗后真气低于原价但达到实付值时可下发', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_aoe],
+        currentQi: 640,
+        maxQi: 1000,
+        qiCostReductionPct: 0.20,
+      );
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      expect(find.text(UiStrings.skillQiCostChip(640)), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.pump();
+      expect(notifier.interveneCount, 1);
+      expect(notifier.lastInterveneSkill?.id, _aoe.id);
+    });
+
     testWidgets('AP 归零时技能按钮不可下发', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(

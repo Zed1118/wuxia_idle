@@ -1,11 +1,19 @@
 import 'battle_state.dart';
+import 'qi_cycle.dart';
 import '../../../data/defs/skill_def.dart';
+
+/// 角色在当前战斗快照中施放招式的实际耗气。
+int effectiveSkillQiCost(BattleCharacter c, SkillDef skill) =>
+    QiCycle.effectiveCostFromSnapshot(
+      baseCost: skill.qiCost,
+      costReductionPct: c.qiCostReductionPct,
+    );
 
 /// 技能是否可下发：角色存活 + 真气足够 + 无冷却。
 bool isSkillReady(BattleCharacter c, SkillDef skill) {
   if (!c.isAlive) return false;
   final cd = c.skillCooldowns[skill.id] ?? 0;
-  return c.currentQi >= skill.qiCost && cd <= 0;
+  return c.currentQi >= effectiveSkillQiCost(c, skill) && cd <= 0;
 }
 
 /// 技能当前能否作为玩家即时干预下发。
