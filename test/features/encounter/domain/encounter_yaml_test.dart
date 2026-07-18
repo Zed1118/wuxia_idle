@@ -204,9 +204,9 @@ void main() {
         () => EncounterDef.fromYaml({
           'id': 'enc_bad',
           'type': 'fortuneEvent',
-          'trigger': {},
+          'trigger': <String, Object>{},
           'baseProbability': 1.5,
-          'outcomeMapping': {},
+          'outcomeMapping': <String, Object>{},
         }),
         throwsA(isA<StateError>()),
       );

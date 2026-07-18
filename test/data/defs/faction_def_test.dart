@@ -22,7 +22,7 @@ void main() {
         'id': '',
         'name': '无名',
         'alignment': 'neutral',
-        'npc_ids': const [],
+        'npc_ids': const <String>[],
       }),
       throwsStateError,
     );
@@ -31,7 +31,7 @@ void main() {
         'id': 'unknown',
         'name': '   ',
         'alignment': 'neutral',
-        'npc_ids': const [],
+        'npc_ids': const <String>[],
       }),
       throwsStateError,
     );

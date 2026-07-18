@@ -81,7 +81,7 @@ class _Launcher extends StatelessWidget {
       body: Center(
         child: Builder(
           builder: (ctx) => TextButton(
-            onPressed: () => PaperDialog.show(
+            onPressed: () => PaperDialog.show<void>(
               ctx,
               title: '掉落',
               body: const Text('青锋剑'),

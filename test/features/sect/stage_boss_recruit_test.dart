@@ -7,6 +7,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/sect_rank.dart' show SectRank;
+import 'package:wuxia_idle/data/defs/sect_candidate_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
@@ -185,16 +186,16 @@ void main() {
           required context,
           required ref,
           required isar,
-          required candidate,
-          required onMarkTriggered,
+          required SectCandidateDef candidate,
+          required Future<void> Function() onMarkTriggered,
           required onFallback,
           required successSnackBar,
           required capFullSnackBar,
           required noSectSnackBar,
         }) async {
           flowCalls += 1;
-          candidateId = candidate.id as String;
-          markTriggered = onMarkTriggered as Future<void> Function()?;
+          candidateId = candidate.id;
+          markTriggered = onMarkTriggered;
         }
 
         await runStageBossRecruitHookAfterVictory(

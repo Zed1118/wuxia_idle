@@ -65,7 +65,7 @@ void main() {
       enabled: true,
       tiers: [RareBonusTier(offset: 1, chance: 0.0, chanceNgPlus: 1.0)],
     );
-    pool(tier) => GameRepository.instance.equipmentDefs.values
+    pool(EquipmentTier tier) => GameRepository.instance.equipmentDefs.values
         .where((e) => e.tier == tier)
         .toList(growable: false);
     expect(

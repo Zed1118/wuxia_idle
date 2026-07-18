@@ -97,7 +97,9 @@ void main() {
           builder: (ctx) => TextButton(
             onPressed: () => Navigator.push(
               ctx,
-              MaterialPageRoute(builder: (_) => CodexEntryDetail(entry: entry)),
+              MaterialPageRoute<void>(
+                builder: (_) => CodexEntryDetail(entry: entry),
+              ),
             ),
             child: const Text('open'),
           ),

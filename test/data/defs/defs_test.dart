@@ -126,8 +126,8 @@ void main() {
         'baseHealthMax': 0,
         'baseSpeedMin': 10,
         'baseSpeedMax': 20.0,
-        'presetLoreIds': const [],
-        'dropSourceTags': const [],
+        'presetLoreIds': const <String>[],
+        'dropSourceTags': const <String>[],
         'iconPath': 'x.png',
       });
 
@@ -172,10 +172,10 @@ void main() {
         'tier': 'ruMenGong',
         'school': 'yinRou',
         'description': '入门级心法。',
-        'skillIds': const [],
+        'skillIds': const <String>[],
         'internalForceGrowthBonus': 1, // 写成 int
         'speedBonus': 5,
-        'acquireSourceTags': const [],
+        'acquireSourceTags': const <String>[],
       });
 
       expect(def.internalForceGrowthBonus, 1.0);
@@ -311,7 +311,7 @@ void main() {
         'stageType': 'mainline',
         'chapterIndex': 1,
         'requiredRealm': 'xueTu',
-        'enemyTeam': const [],
+        'enemyTeam': const <Map<String, Object>>[],
         'baseExpReward': 0,
         'difficultyMultiplier': 1.0,
       });
@@ -340,7 +340,7 @@ void main() {
             'baseHp': 800,
             'baseAttack': 100,
             'baseSpeed': 60,
-            'skillIds': const [],
+            'skillIds': const <String>[],
             'iconPath': 'assets/enemies/thief.png',
           },
         ),
@@ -365,7 +365,7 @@ void main() {
         'narrativeOpeningId': 'stage_01_02_opening',
         'narrativeVictoryId': 'stage_01_02_victory',
         'requiredRealm': 'xueTu',
-        'enemyTeam': const [],
+        'enemyTeam': const <Map<String, Object>>[],
         'baseExpReward': 0,
         'difficultyMultiplier': 1.0,
       });
@@ -382,7 +382,7 @@ void main() {
         'stageType': 'mainline',
         'chapterIndex': 1,
         'requiredRealm': 'xueTu',
-        'enemyTeam': const [],
+        'enemyTeam': const <Map<String, Object>>[],
         'baseExpReward': 0,
         'difficultyMultiplier': 1.0,
       });

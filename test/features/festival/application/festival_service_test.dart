@@ -100,7 +100,7 @@ void main() {
 
     test('festivalOn() 不传参 → DateTime.now()（行为校验：与同时点 now() 等价）', () {
       final cfg = FestivalConfig.fromYaml({
-        'days_2026': [
+        'days_2026': <Map<String, String>>[
           // 用一个绝对不会命中今天的 sentinel：2 月 30 日不存在，
           // DateTime(2026,2,30) 会归一化为 3 月 2 日；用 13 月也同理报错。
           // 简单策略：用 9999 年的某天，2026 年配 month=9999 不存在...
