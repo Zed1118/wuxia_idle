@@ -8,6 +8,7 @@ enum SkillSource {
   encounter, // 奇遇解锁(encounter_skills.yaml 全池)
   mainlineDrop, // 主线 Boss 首通真解(stages.yaml dropSkillManualId)
   fragment, // 残页集齐解锁(波B 泛化:塔 Boss 层 towers.yaml + 章末重打 stages.yaml dropSkillFragmentId)
+  gauntlet, // 断魂庄首通奖励真解(boss_gauntlets.yaml first_clear_reward_skill_id)
   special, // 系统特殊(破招技/joint 共鸣/轻功对决)
 }
 
@@ -16,6 +17,7 @@ SkillSource _parseSkillSource(String raw) => switch (raw) {
   'encounter' => SkillSource.encounter,
   'mainline_drop' => SkillSource.mainlineDrop,
   'fragment' => SkillSource.fragment,
+  'gauntlet' => SkillSource.gauntlet,
   'special' => SkillSource.special,
   _ => throw StateError('未知 skill source: $raw(波A A4 红线)'),
 };
@@ -65,9 +67,11 @@ class SkillDef {
   final SkillSource? source;
 
   /// 里程碑批(2026-07-16):正式挂载延后标记。true = 此 drop 招(真解/残页)
-  /// 定义合法但当前发布阶段暂无 stage/tower 挂载点,豁免红线⑦「每招恰 1 挂载点」
+  /// 定义合法但当前发布阶段暂无 stage/tower/gauntlet 挂载点,豁免红线⑦「每招恰 1 挂载点」
   /// (仅豁免挂载完备性;style+tier 红线⑥仍必守,定义仍需自洽)。正式挂载
-  /// (batch3 远征掉落 / Phase C 断魂庄)时删本标记 = 发布。默认 false。
+  /// (batch3 远征掉落等)时删本标记 = 发布。默认 false。
+  /// (Phase C 断魂庄首通奖励 2026-07-19 已转正:锁脉针 source=gauntlet 挂载
+  /// 落地,本标记随之删除。)
   final bool mountDeferred;
 
   /// 招式 per-skill 熟练度效果(可玩性 P1a · 只配真解/招牌/破招技)。null=不配。

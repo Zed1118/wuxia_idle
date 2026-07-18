@@ -3217,8 +3217,9 @@ skills:
   # design §5.2:苏无咎周期性蓄力锁脉针,未破招 → 每名存活角色损失 30% 最大真气
   #   (qiDrainPct 0.30,C1.3.1 引擎新维度,QiDrainEffect 消费;§5.4 资源剥夺不膨胀伤害)。
   # design §6.2:首通秘籍「锁脉针法」= 三流阶(tier2)阴柔招,同招 = 苏无咎 chargeSkillId
-  #   (沿青锋绝 canon「破他的招、学他的招」)。正式奖励挂载 = C2.4 gauntlet 首通三选一
-  #   额外发放(挂载时删 mount_deferred = 发布,暂豁免红线⑦「每招恰 1 挂载点」)。
+  #   (沿青锋绝 canon「破他的招、学他的招」)。正式奖励挂载 = C2.4 gauntlet 首通
+  #   额外发放(2026-07-19 来源语义转正:source=gauntlet,挂载点 = boss_gauntlets.yaml
+  #   first_clear_reward_skill_id,红线⑦按 gauntlet 分支守「每招恰 1 挂载点」)。
   #   powerMultiplier TODO(batch3-probe):随三档探针校准放招威胁,守全局 ≤8000。
   - id: skill_suo_mai_zhen
     name: 锁脉针
@@ -3232,11 +3233,9 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lock_meridian
-    source: mainline_drop
+    source: gauntlet
     style: yinRou
     tier: 2
-    # 三流孤儿:正式挂载 = C2.4 断魂庄首通奖励(挂载时删下行 = 发布)
-    mount_deferred: true
     proficiency:        # 真解手工高半档(阴柔向:伤害温和 + CD,沿斜雨穿帘锚)
       effects:
         shuLian: { damage_pct: 0.08 }

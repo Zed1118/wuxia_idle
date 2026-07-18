@@ -84,22 +84,27 @@ void enforceInterruptSkillRedLines({
 /// ③ canInterrupt 破招技 = special;
 /// ④ stages dropSkillManualId 指向的招 = mainlineDrop;
 /// ⑤ 任何 dropSkillFragmentId(塔层/章末重打)指向的招 = fragment(波B 泛化);
-/// ⑥ drop 招(mainlineDrop|fragment)必有 style + tier(缺 style 永不可装配,
+/// ⑤+ boss_gauntlets first_clear_reward_skill_id 指向的招 = gauntlet
+///    (Phase C 断魂庄首通奖励·2026-07-19 转正,新增识别分支);
+/// ⑥ drop 招(mainlineDrop|fragment|gauntlet)必有 style + tier(缺 style 永不可装配,
 ///    缺 tier canEquipAtRealm 恒 true 破 §5.3,均属配置错误);
 /// ⑦ 当前发布阶 drop 招挂载完备:每招恰 1 个挂载点。高于发布
 /// 上限的招式定义允许暂无挂载，留给后续副本与玩法;发布阶内但标记
 /// mountDeferred 的招同样豁免挂载完备性(正式挂载点尚未做,留 batch3
-/// 远征掉落 / Phase C 断魂庄,挂载时删标记 = 发布)。
+/// 远征掉落等,挂载时删标记 = 发布)。
 ///
 /// [releaseRealm] 为当前发布上限对应境界(调用方经
 /// GameRepository.getRealmByAbsoluteLevel(numbers.progressionReleaseCap
 /// .maxAbsoluteRealmLevel) 解出后传入)。
+/// [gauntletRewardSkillIds] 为断魂庄首通奖励挂载点(调用方自
+/// BossGauntletConfig.firstClearRewardSkillId 收集,空 = 未加载 gauntlet 配置)。
 void enforceSkillSourceRedLines({
   required Map<String, SkillDef> skillDefs,
   required Map<String, StageDef> stageDefs,
   required List<TowerFloorDef> towerFloors,
   required Set<String> encounterSkillIds,
   required RealmDef releaseRealm,
+  List<String> gauntletRewardSkillIds = const [],
 }) {
   final releaseSkillTierCap = releaseRealm.tier.index + 1;
   bool isCurrentReleaseSkill(String id) =>
@@ -120,7 +125,8 @@ void enforceSkillSourceRedLines({
       );
     }
     if ((s.source == SkillSource.mainlineDrop ||
-            s.source == SkillSource.fragment) &&
+            s.source == SkillSource.fragment ||
+            s.source == SkillSource.gauntlet) &&
         (s.style == null || s.tier == null)) {
       throw StateError(
         'skill ${s.id} source=${s.source!.name} 缺 style/tier(波B 红线 ⑥)',
@@ -129,6 +135,7 @@ void enforceSkillSourceRedLines({
   }
   final manualMounts = <String>[];
   final fragmentMounts = <String>[];
+  final gauntletMounts = <String>[];
   for (final st in stageDefs.values) {
     final m = st.dropSkillManualId;
     if (m != null) {
@@ -161,6 +168,15 @@ void enforceSkillSourceRedLines({
       if (isCurrentReleaseSkill(fr)) fragmentMounts.add(fr);
     }
   }
+  for (final g in gauntletRewardSkillIds) {
+    if (skillDefs[g]?.source != SkillSource.gauntlet) {
+      throw StateError(
+        'boss_gauntlets first_clear_reward_skill_id=$g '
+        'source 应为 gauntlet(Phase C 断魂庄红线 ⑤+)',
+      );
+    }
+    if (isCurrentReleaseSkill(g)) gauntletMounts.add(g);
+  }
   // ⑦ 挂载完备性(test fixture 无 stage/tower defs 时跳过:挂载列表空 +
   // production 加载两者必在,fixture 只载 skills 不应误杀)。
   if (stageDefs.isNotEmpty || towerFloors.isNotEmpty) {
@@ -182,6 +198,15 @@ void enforceSkillSourceRedLines({
         )
         .map((s) => s.id)
         .toSet();
+    final gauntletSkills = skillDefs.values
+        .where(
+          (s) =>
+              s.source == SkillSource.gauntlet &&
+              !s.mountDeferred &&
+              (s.tier ?? releaseSkillTierCap + 1) <= releaseSkillTierCap,
+        )
+        .map((s) => s.id)
+        .toSet();
     void check(String kind, List<String> mounts, Set<String> skills) {
       if (mounts.length != mounts.toSet().length) {
         throw StateError('$kind 招存在重复挂载(波B 红线 ⑦):$mounts');
@@ -195,6 +220,11 @@ void enforceSkillSourceRedLines({
 
     check('mainlineDrop', manualMounts, manualSkills);
     check('fragment', fragmentMounts, fragmentSkills);
+    // gauntlet 挂载点未加载(空)且无 gauntlet 来源招时跳过(fixture 兼容);
+    // 任一非空即校验——挂载引用缺失(招在、挂载空)即孤儿,错挂/重复同逮。
+    if (gauntletMounts.isNotEmpty || gauntletSkills.isNotEmpty) {
+      check('gauntlet', gauntletMounts, gauntletSkills);
+    }
   }
 }
 

@@ -77,9 +77,10 @@ class SkillLoadoutService {
         result = const SlotEquipStyleLocked();
         return;
       }
-      // 波B drop 招 gate:真解/残页只能装主修/大招槽 + 流派一致 + 已解锁。
+      // 波B drop 招 gate:真解/残页/断魂庄首通只能装主修/大招槽 + 流派一致 + 已解锁。
       if (def.source == SkillSource.mainlineDrop ||
-          def.source == SkillSource.fragment) {
+          def.source == SkillSource.fragment ||
+          def.source == SkillSource.gauntlet) {
         const allowed = {SkillSlot.main1, SkillSlot.main2, SkillSlot.ultimate};
         if (!allowed.contains(slot) || def.style != c.school) {
           result = const SlotEquipStyleLocked();

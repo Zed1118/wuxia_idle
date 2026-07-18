@@ -41,7 +41,7 @@ class SkillLoadoutResolver {
     );
   }
 
-  /// 波B:已解锁的真解/残页招(source ∈ {mainlineDrop, fragment} &&
+  /// 波B:已解锁的真解/残页/断魂庄首通招(source ∈ {mainlineDrop, fragment, gauntlet} &&
   /// SaveData.skillUnlockProgress.isUnlocked && style == 角色流派)。
   /// 流派 gate 与破招槽先例一致(build 流派一致性);境界 gate 在
   /// picker/service 按 canEquipAtRealm 做,此处不过滤。
@@ -60,7 +60,8 @@ class SkillLoadoutResolver {
             .where(
               (s) =>
                   (s.source == SkillSource.mainlineDrop ||
-                      s.source == SkillSource.fragment) &&
+                      s.source == SkillSource.fragment ||
+                      s.source == SkillSource.gauntlet) &&
                   s.style == school &&
                   unlocked.isUnlocked(s.id),
             )
