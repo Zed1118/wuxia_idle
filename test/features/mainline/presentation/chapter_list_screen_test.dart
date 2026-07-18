@@ -48,6 +48,18 @@ void main() {
 
     expect(find.text(UiStrings.mainlineRouteMapTitle), findsOneWidget);
     expect(find.text(UiStrings.mainlineRouteMapSubtitle), findsOneWidget);
+    expect(
+      find.ancestor(
+        of: find.text(UiStrings.mainlineRouteMapSubtitle),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is SingleChildScrollView &&
+              widget.scrollDirection == Axis.horizontal,
+        ),
+      ),
+      findsNothing,
+      reason: '副标题必须固定在章节横滚区之外',
+    );
     expect(find.text(UiStrings.chapter1Title), findsNWidgets(2));
     expect(find.text(UiStrings.chapter2Title), findsNWidgets(2));
     expect(find.text(UiStrings.chapter3Title), findsNWidgets(2));
