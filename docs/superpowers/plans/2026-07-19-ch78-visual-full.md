@@ -15,18 +15,18 @@
 
 ## 验收标准
 
-- [ ] 21 个呈现点 × 2 个视口全部有截图与判定，无遗漏。
-- [ ] 判定只使用 `PASS` / `FAIL（附异常）` / `存疑待拍（附一句话疑点）`。
-- [ ] 战斗逐图检查立绘落位、脚底锚点、透明边缘、HUD/背景对比度与文字可读性。
-- [ ] 剧情逐图检查背景题材呈现、scrim/正文浮层对比度与文字可读性。
-- [ ] 章节列表检查 Ch7 冷灰到 Ch8 暖沙的封面梯度连续性。
-- [ ] 灰衣人递进检查：`stage_07_04` 北京遮脸 → `stage_08_03` 塞北遮脸 → `stage_08_05` 露真容。
-- [ ] 逐 route 日志无 overflow / exception / error；若有则保留日志、截图并判 FAIL。
-- [ ] 生产接线证据：battle 使用动态真实 `stage` route；narrative 使用生产 `NarrativeReaderScreen`、真实 opening YAML 与 `stageNarrativePath`；章节列表使用生产 `ChapterListScreen`。
-- [ ] targeted test / 基线：按纯验收单仅执行用户指定 `build_runner` + `flutter analyze --no-pub`；不重复全量 4417 基线。
-- [ ] 红线影响：零触及数值硬红线、三系锁死、在线=离线、反主流清单与文案/数值硬编码。
-- [ ] 残留风险：未能驱动到的态、日志噪声、截图驱动限制与风格待拍项列清。
-- [ ] Git 最终除本 plan 外零变化；截图不入库；plan 提交后 tip 为 `[READY]` 且树干净。
+- [x] 21 个呈现点 × 2 个视口全部有截图与判定，无遗漏。
+- [x] 判定只使用 `PASS` / `FAIL（附异常）` / `存疑待拍（附一句话疑点）`。
+- [x] 战斗逐图检查立绘落位、脚底锚点、透明边缘、HUD/背景对比度与文字可读性。
+- [x] 剧情逐图检查背景题材呈现、scrim/正文浮层对比度与文字可读性。
+- [x] 章节列表检查 Ch7 冷灰到 Ch8 暖沙的封面梯度连续性。
+- [x] 灰衣人递进检查：`stage_07_04` 北京遮脸 → `stage_08_03` 塞北遮脸 → `stage_08_05` 露真容。
+- [x] 逐 route 日志无 overflow / exception / error；若有则保留日志、截图并判 FAIL。
+- [x] 生产接线证据：battle 使用动态真实 `stage` route；narrative 使用生产 `NarrativeReaderScreen`、真实 opening YAML 与 `stageNarrativePath`；章节列表使用生产 `ChapterListScreen`。
+- [x] targeted test / 基线：按纯验收单仅执行用户指定 `build_runner` + `flutter analyze --no-pub`；不重复全量 4417 基线。
+- [x] 红线影响：零触及数值硬红线、三系锁死、在线=离线、反主流清单与文案/数值硬编码。
+- [x] 残留风险：未能驱动到的态、日志噪声、截图驱动限制与风格待拍项列清。
+- [x] Git 最终除本 plan 外零变化；截图不入库；plan 提交后 tip 为 `[READY]` 且树干净。
 
 ## 任务切片
 
@@ -102,9 +102,9 @@
 
 ## 当前恢复点
 
-- 状态：Ch7/Ch8 原单验收完成，42/42 全部 PASS；待执行精确文件/日志/Git 对账并提交第一次 `[READY]`，随后按用户追加目标接续动态长战与特殊模式观察。
+- 状态：Ch7/Ch8 原单验收完成，42/42 全部 PASS；已于 `230952cb` 提交第一次 `[READY]`，后续追加观察不改变原单判定。
 - 最后完成：10 个 battle、10 个 narrative 与 chapter list Ch7/Ch8 大封面态均完成双视口截图；灰衣人三段递进与章节封面冷灰→暖沙梯度均可辨；未见硬呈现缺陷。
-- 下一步：运行第一次 completion verification（42 张精确存在、日志无异常、Git 只含 plan），提交中文动宾并追加 `[READY]`；之后把追加观察目标写入本 plan 并续跑。
+- 下一步：无；原单已冻结，详见下方追加观察单。
 - 已跑验证：`flutter analyze --no-pub`（0 issues，2026-07-19）；battle 20/20 与 narrative 20/20 文件计数；battle/narrative route log 关键词扫描 0 命中；narrative build log 关键词扫描 0 命中；四张联络图与两张 chapter list 最终图人工目检。
 - 阻塞项：无。
 
@@ -153,8 +153,8 @@
 
 ### 追加单当前恢复点
 
-- 状态：追加单观察完成；待执行最终证据/Git 对账、提交观察总结并重新打 `[READY]` tip。
+- 状态：追加单观察与最终证据/Git 对账均完成；待提交本结论并重新打 `[READY]` tip。
 - 最后完成：群战守城、轻功对决、心魔镜像均完整打到结算；轻功错层与心魔镜像墨化判正常，群战因右队队列未轮换完而对「全量墨影递补」判无法确认。
-- 下一步：精确检查原单 42 图与追加单证据存在/可解码，扫描全部正式 route log，核对 Git 只有本 plan；提交后追加 `[READY]` 冻结提交。
-- 已跑验证：原单 42/42 已冻结；主线 20m14s + 爬塔 20m07s + 快进 10m11s；三个特殊模式 3/3 完整结算；特殊模式排除 Flutter runner 启动聚焦噪声后 overflow/exception/error 0 命中。
+- 下一步：提交本结论，然后追加 `[READY]` 冻结提交并确认树干净。
+- 已跑验证：原单 42/42 存在且可解码；正式动态证据 231 张 PNG 全部可解码、15 段 MOV 全部可读；主线 20m14s + 爬塔 20m07s + 快进 10m11s；特殊模式 3/3 完整结算；排除 Flutter runner 启动聚焦噪声后 overflow/exception/error 0 命中；`flutter analyze --no-pub` 0 issues；`main...HEAD` 跟踪文件仅本 plan，Git 工作树干净。
 - 阻塞项：无。
