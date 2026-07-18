@@ -161,16 +161,27 @@ void main() {
     });
 
     test('R2: 心跳持续推进基准(双吃上界≤间隔)', () async {
-      await IsarSetup.touchOnlineNow(now: DateTime(2026, 7, 7, 10));
+      final t0 = DateTime(2026, 7, 7, 10);
+      await IsarSetup.touchOnlineNow(now: t0);
       final ctl = shortBeat(); // clock 默认 DateTime.now
       ctl.markStartupSettleDone();
       expect(ctl.isHeartbeatActive, isTrue);
-      await Future<void>.delayed(const Duration(milliseconds: 150));
-      final save = (await IsarSetup.currentSaveData())!;
-      // 基准已被心跳刷到「现在」附近 → 模拟 kill 后重启,窗口≈0
+      // 轮询等心跳首次落地(基准被推离 t0):断言语义是「心跳在跑」,
+      // 不锚「40ms 间隔必触发」的墙钟时点——coverage 插桩拖慢事件循环时,
+      // 固定 150ms 等待会抢在首个 40ms Timer 回调前(2026-07-15 CI 红 /
+      // 2026-07-19 coverage flaky 两轮同根因);5s 轮询上限对减速不敏感。
+      var advanced = t0;
+      final deadline = DateTime.now().add(const Duration(seconds: 5));
+      while (!advanced.isAfter(t0) && DateTime.now().isBefore(deadline)) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        advanced = (await IsarSetup.currentSaveData())!.lastOnlineAt;
+      }
+      expect(advanced.isAfter(t0), isTrue, reason: '心跳应把基准刷离 t0');
+      // 基准被刷到「现在」附近(心跳写的就是触发时刻 now):语义 = kill 重启后
+      // 窗口≈0。宽限 2s 覆盖轮询检出 + Isar 读回的减速间隙,不锚原 500ms。
       expect(
-        DateTime.now().difference(save.lastOnlineAt).inMilliseconds,
-        lessThan(500),
+        DateTime.now().difference(advanced).inMilliseconds,
+        lessThan(2000),
       );
     });
 
@@ -183,8 +194,15 @@ void main() {
       ctl.markStartupSettleDone();
       ctl.onAppBlurred();
       expect(ctl.isHeartbeatActive, isFalse);
-      await Future<void>.delayed(const Duration(milliseconds: 60));
-      expect((await IsarSetup.currentSaveData())!.lastOnlineAt, tBlur);
+      // 失焦 touch 是 unawaited 异步入库:轮询等落地(上限 5s),不锚 60ms 墙钟
+      // ——coverage 插桩下 Isar 写事务可能慢于固定等待(与 R2 同法)。
+      var touched = t0;
+      final blurDeadline = DateTime.now().add(const Duration(seconds: 5));
+      while (touched != tBlur && DateTime.now().isBefore(blurDeadline)) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        touched = (await IsarSetup.currentSaveData())!.lastOnlineAt;
+      }
+      expect(touched, tBlur);
 
       // 8h 后聚焦:先直接调 settlePassiveWindow 验证窗口(focused 的 unawaited
       // 路径不可注入 now),再验 onAppFocused 恢复心跳 + 幂等不双结。
