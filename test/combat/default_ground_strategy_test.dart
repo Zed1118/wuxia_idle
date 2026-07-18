@@ -309,7 +309,9 @@ void main() {
         internalForce: 5000,
       ).copyWith(currentQi: 100);
       final defender = _mkBC(charId: 11, teamSide: 1);
-      final ult = GameRepository.instance.getSkill('skill_gangmeng_mingjia_ult');
+      final ult = GameRepository.instance.getSkill(
+        'skill_gangmeng_mingjia_ult',
+      );
       var s = BattleState.initial(leftTeam: [actor], rightTeam: [defender]);
 
       // 1) 无 pending → 应选 powerSkill（内力够、CD 0）
