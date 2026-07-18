@@ -158,6 +158,19 @@ const _breakB = SkillDef(
   canInterrupt: true,
   visualEffect: '',
 );
+const _reservedBreak = SkillDef(
+  id: 'reserved_break',
+  name: '守隙截脉',
+  description: '',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1200,
+  internalForceCost: 150,
+  cooldownTurns: 3,
+  requiresManualTrigger: false,
+  canInterrupt: true,
+  aiUsePolicy: AiUsePolicy.saveForInterrupt,
+  visualEffect: '',
+);
 const _ult = SkillDef(
   id: 'u1',
   name: '龙吟九霄',
@@ -257,6 +270,36 @@ Future<_TestBattleNotifier> _pumpWith(
 
 void main() {
   group('自动观战轮转谱', () {
+    testWidgets('保留破招平时显示候破且敌方蓄力后切为可用', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final actor = left.first.copyWith(availableSkills: [_reservedBreak]);
+      final notifier = await _pumpWith(
+        tester,
+        [actor],
+        right,
+        allowPlayerIntervention: false,
+      );
+
+      expect(find.text(UiStrings.skillReservedForInterrupt), findsOneWidget);
+      expect(find.text(UiStrings.skillReady), findsNothing);
+
+      notifier.setState(
+        notifier.state.copyWith(
+          rightTeam: [
+            right.first.copyWith(
+              chargingSkill: _chargeSkill,
+              chargeTicksRemaining: 2,
+            ),
+            ...right.skip(1),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text(UiStrings.skillReservedForInterrupt), findsNothing);
+      expect(find.text(UiStrings.skillReady), findsOneWidget);
+    });
+
     testWidgets('轮转谱排除仅限点选招式并在无自动技时回落周天', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final mixed = left.first.copyWith(availableSkills: [_power, _ult]);

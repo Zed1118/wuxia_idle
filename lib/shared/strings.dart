@@ -63,6 +63,7 @@ class UiStrings {
   static const String battleAutoRotation = '招式轮转谱';
   static const String battleAutoObserve = '托管推演';
   static const String skillReady = '可用';
+  static const String skillReservedForInterrupt = '候破';
   static const String skillGatheringQi = '蓄气';
   static const String battleNoEquippedSkills = '只运周天';
   static const String battleFallen = '力竭';

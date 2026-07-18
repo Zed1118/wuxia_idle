@@ -22,6 +22,9 @@ class AutoRotationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final enemyCharging = state.rightTeam.any(
+      (character) => character.isAlive && character.chargingSkill != null,
+    );
     return Container(
       key: const ValueKey('battle_auto_rotation_desk'),
       height: BattleLayoutTokens.autoRotationDeskHeight,
@@ -74,7 +77,10 @@ class AutoRotationBar extends StatelessWidget {
               children: [
                 for (var i = 0; i < state.leftTeam.length; i++) ...[
                   Expanded(
-                    child: _AutoRotationActor(character: state.leftTeam[i]),
+                    child: _AutoRotationActor(
+                      character: state.leftTeam[i],
+                      enemyCharging: enemyCharging,
+                    ),
                   ),
                   if (i < state.leftTeam.length - 1) const SizedBox(width: 8),
                 ],
@@ -90,9 +96,13 @@ class AutoRotationBar extends StatelessWidget {
 }
 
 class _AutoRotationActor extends StatelessWidget {
-  const _AutoRotationActor({required this.character});
+  const _AutoRotationActor({
+    required this.character,
+    required this.enemyCharging,
+  });
 
   final BattleCharacter character;
+  final bool enemyCharging;
 
   @override
   Widget build(BuildContext context) {
@@ -187,6 +197,7 @@ class _AutoRotationActor extends StatelessWidget {
                           child: _AutoSkillState(
                             character: character,
                             skill: visibleSkills[i],
+                            enemyCharging: enemyCharging,
                           ),
                         ),
                         if (i < visibleSkills.length - 1)
@@ -205,28 +216,46 @@ class _AutoRotationActor extends StatelessWidget {
   int _statusRank(SkillDef skill) {
     final cd = character.skillCooldowns[skill.id] ?? 0;
     final effectiveCost = effectiveSkillQiCost(character, skill);
-    if (cd <= 0 && character.currentQi >= effectiveCost) return 0;
+    if (cd <= 0 && character.currentQi >= effectiveCost) {
+      if (skill.aiUsePolicy == AiUsePolicy.saveForInterrupt) {
+        return enemyCharging ? -10 : 50;
+      }
+      return 0;
+    }
     if (cd > 0) return 100 + cd;
     return 200 + effectiveCost;
   }
 }
 
 class _AutoSkillState extends StatelessWidget {
-  const _AutoSkillState({required this.character, required this.skill});
+  const _AutoSkillState({
+    required this.character,
+    required this.skill,
+    required this.enemyCharging,
+  });
 
   final BattleCharacter character;
   final SkillDef skill;
+  final bool enemyCharging;
 
   @override
   Widget build(BuildContext context) {
     final cd = character.skillCooldowns[skill.id] ?? 0;
     final ready = isSkillReady(character, skill);
+    final reserved =
+        ready &&
+        skill.aiUsePolicy == AiUsePolicy.saveForInterrupt &&
+        !enemyCharging;
     final status = cd > 0
         ? UiStrings.skillCooldownRemaining(cd)
         : ready
-        ? UiStrings.skillReady
+        ? reserved
+              ? UiStrings.skillReservedForInterrupt
+              : UiStrings.skillReady
         : UiStrings.skillGatheringQi;
-    final accent = ready ? const Color(0xFFC3A46A) : const Color(0xFF776C5C);
+    final accent = ready && !reserved
+        ? const Color(0xFFC3A46A)
+        : const Color(0xFF776C5C);
 
     return Semantics(
       label: skill.name,
@@ -255,7 +284,9 @@ class _AutoSkillState extends StatelessWidget {
             Text(
               status,
               style: TextStyle(
-                color: ready ? const Color(0xFFD7B879) : WuxiaColors.textMuted,
+                color: ready && !reserved
+                    ? const Color(0xFFD7B879)
+                    : WuxiaColors.textMuted,
                 fontSize: 8,
                 fontWeight: FontWeight.w700,
               ),
