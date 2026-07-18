@@ -11,6 +11,7 @@ import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/features/expedition/presentation/expedition_overview_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
 
 class _FixedClock extends SystemClock {
   _FixedClock(this._now);
@@ -118,6 +119,13 @@ void main() {
     );
     expect(find.text(UiStrings.expeditionDispatchButton), findsOneWidget);
     expect(find.text(UiStrings.expeditionSelectedCount(0)), findsOneWidget);
+    expect(
+      tester
+          .widgetList<PortraitFrame>(find.byType(PortraitFrame))
+          .map((frame) => frame.placeholderText),
+      containsAll(<String>['沈青', '楚河', '柳絮']),
+      reason: '无立绘候选行必须有首字占位文本',
+    );
     expect(tester.takeException(), isNull);
   });
 

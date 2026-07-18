@@ -45,7 +45,11 @@ class PortraitFrame extends StatelessWidget {
               portraitPath!,
               fit: fit,
               errorBuilder: wuxiaAssetErrorBuilder(
-                () => Container(color: WuxiaColors.avatarFill),
+                () => Container(
+                  color: WuxiaColors.avatarFill,
+                  alignment: Alignment.center,
+                  child: _placeholder(),
+                ),
               ),
             ),
     );

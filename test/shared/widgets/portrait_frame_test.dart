@@ -66,4 +66,21 @@ void main() {
     expect(find.byType(Image), findsOneWidget);
     expect(find.text('云'), findsNothing);
   });
+
+  testWidgets('立绘加载失败时回退到 placeholderText 首字', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: PortraitFrame(
+          portraitPath: 'assets/characters/not_found.png',
+          size: 48,
+          borderColor: WuxiaColors.border,
+          placeholderText: '云寒青',
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('云'), findsOneWidget);
+    expect(find.text('云寒青'), findsNothing);
+  });
 }

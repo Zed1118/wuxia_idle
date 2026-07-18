@@ -8,6 +8,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 import '../../support/test_data.dart';
@@ -109,6 +110,13 @@ void main() {
     expect(find.text('行囊补给'), findsOneWidget);
     expect(find.text(UiStrings.gauntletEnterButton), findsOneWidget);
     expect(find.text(UiStrings.gauntletSelectedCount(0)), findsOneWidget);
+    expect(
+      tester
+          .widgetList<PortraitFrame>(find.byType(PortraitFrame))
+          .map((frame) => frame.placeholderText),
+      containsAll(<String>['沈青', '楚河', '柳絮']),
+      reason: '无立绘候选行必须有首字占位文本',
+    );
     expect(tester.takeException(), isNull);
   });
 
