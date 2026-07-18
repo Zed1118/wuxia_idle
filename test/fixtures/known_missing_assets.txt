@@ -17,3 +17,19 @@ assets/scenes/narrative_stage_07_02.png
 assets/scenes/narrative_stage_07_03.png
 assets/scenes/narrative_stage_07_04.png
 assets/scenes/narrative_stage_07_05.png
+#
+# ── Ch8 二流第 2 章「出塞」待补美术(2026-07-18·美术素材另拍板)──
+# 敌人立绘(5)
+assets/enemies/monan_mazei.png
+assets/enemies/hanhai_shadao.png
+assets/enemies/huiyiren_saibei.png
+assets/enemies/gucheng_shuwei.png
+assets/enemies/huiyiren_final.png
+# 章节封面(1)
+assets/scenes/chapter_08_cover.png
+# 主线剧情阅读背景(5)
+assets/scenes/narrative_stage_08_01.png
+assets/scenes/narrative_stage_08_02.png
+assets/scenes/narrative_stage_08_03.png
+assets/scenes/narrative_stage_08_04.png
+assets/scenes/narrative_stage_08_05.png
