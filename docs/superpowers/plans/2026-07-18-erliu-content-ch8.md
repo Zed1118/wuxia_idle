@@ -371,3 +371,12 @@ git commit -m "Ch8 二流第2章批 closeout（全量绿 + 进度四态）"
 **依赖顺序**：T1 → T2（末Boss chargeSkill 依赖 T2 新招·见 T1 Step 6 注）→（T3 ∥ T4）→ T5。T3/T4 均依赖 T1+T2 的 stage/skill 骨架，之后可并行；T4 count 断言依赖 T1 五关落地。
 
 **已知取舍**：新招 id `skill_hui_xiu_hui_feng`（暂名「灰袖回风」）——T3 narrative 批若改名，同步 skills.yaml + stages.yaml（chargeSkillId + dropSkillManualId）3 处引用。章名/逐关关名/biome 由 T3 narrative 批定（沿 Ch7 章名后定例）。
+
+---
+
+## 恢复点（终态 2026-07-18）
+
+- **状态**：T1-T5 全部完成，PR #43 draft 已开（https://github.com/Zed1118/wuxia_idle/pull/43）
+- **最后完成**：全量 4383/0 + build macos ✓ + GDD/PROGRESS 同步 + push 分支
+- **计划偏差实录**：① defeat 位随 Boss 位挪 08_03（validator defeat⟹Boss 逮出 plan 笔误）；② `stage_win_condition_test.dart` 不存在（plan 臆造文件名·等价覆盖=curve/drop 红线+load 链）；③ T1+T2 合一 commit（yaml 联结红线要求招定义与挂载原子到位）；④ 追加站点：skill_count 契约(208/248+GDD 表双向 lock)/skill_qi/chapter_list UI 测/supply 语义线 2→3 件
+- **下一步**：用户审 PR #43 → 合并 → Ch9 或塔二流段
