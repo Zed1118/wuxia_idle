@@ -140,6 +140,23 @@ AttackResult _hitResult({bool crit = false}) => AttackResult(
   formulaBreakdown: '',
 );
 
+const _dodgeResult = AttackResult(
+  finalDamage: 0,
+  mainDamage: 0,
+  quakeDamage: 0,
+  isCritical: false,
+  isDodged: true,
+  schoolCounterMultiplier: 1.0,
+  realmDiffAttackerMod: 1.0,
+  realmDiffDefenderMod: 1.0,
+  cultivationMultiplier: 1.0,
+  criticalMultiplier: 1.0,
+  defenseRate: 0.1,
+  evasionRate: 0.2,
+  appliedEffects: [],
+  formulaBreakdown: '',
+);
+
 const _projectileSkill = SkillDef(
   id: 'test_hidden_weapon',
   name: '飞针',
@@ -244,6 +261,27 @@ void main() {
       );
     }
     expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.area);
+  });
+
+  testWidgets('playActions 三目标群攻闪避贴片各自落在目标槽位', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final targets = state.rightTeam.take(3).toList();
+
+    c.playActions([
+      for (final target in targets)
+        BattleAction(
+          tick: 1,
+          actorId: state.leftTeam.first.characterId,
+          targetId: target.characterId,
+          skill: _aoeSkill,
+          attackResult: _dodgeResult,
+          description: 'aoe dodge',
+        ),
+    ], state);
+    await tester.pump();
+
+    expect(c.debugActiveEffectCount, 3, reason: '群攻闪避属于逐目标反馈，不应在阵列中央合流成一张贴片');
   });
 
   testWidgets('playActions 群攻代表动作优先保留暴击特效', (tester) async {

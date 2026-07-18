@@ -337,7 +337,7 @@ class BattlePlaybackController {
       _spawnEffect(
         coalesceGroup: coalesceGroup,
         assetPath: WuxiaUi.fxDodgeShadow,
-        centerFrac: effectFrac,
+        centerFrac: targetFrac,
         size: 230,
         opacity: 0.64,
         mirrored: target.teamSide == 1,
