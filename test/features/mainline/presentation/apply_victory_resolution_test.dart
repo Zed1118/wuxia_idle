@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -80,7 +79,7 @@ void main() {
     dropTable: dropTable,
   );
 
-  StageDef bossStage() => StageDef(
+  StageDef bossStage() => const StageDef(
     id: 'stage_avr_boss',
     name: '测试 Boss 关',
     stageType: StageType.mainline,
