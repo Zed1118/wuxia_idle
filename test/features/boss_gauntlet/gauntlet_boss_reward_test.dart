@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_controller.dart';
-import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_config.dart';
+import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 
 /// C2.4b：Boss 胜利固化奖励候选 + 首通判定（`GauntletController.stageBossReward`）。

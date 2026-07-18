@@ -14,7 +14,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.dart';
-import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_config.dart';
+import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 

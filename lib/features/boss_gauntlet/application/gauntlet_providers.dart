@@ -7,7 +7,7 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
 import '../../activity/application/character_occupancy_service.dart';
-import '../domain/boss_gauntlet_config.dart';
+import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
 import 'gauntlet_service.dart';
 

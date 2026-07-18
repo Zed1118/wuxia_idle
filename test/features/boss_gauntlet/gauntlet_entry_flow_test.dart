@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:wuxia_idle/core/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -14,7 +14,7 @@ import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dar
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
-import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_config.dart';
+import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/presentation/gauntlet_entry_flow.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';

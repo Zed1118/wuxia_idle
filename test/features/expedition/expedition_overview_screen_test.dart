@@ -7,7 +7,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
-import 'package:wuxia_idle/features/expedition/domain/expedition_config.dart';
+import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/features/expedition/presentation/expedition_overview_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -80,9 +80,7 @@ void main() {
     _cand(_char(3, '柳絮', school: TechniqueSchool.yinRou), hasMain: false),
   ];
 
-  testWidgets('派遣态：候选/占用标/未修主修标/三方针/派遣按钮，1280×720 无溢出', (
-    tester,
-  ) async {
+  testWidgets('派遣态：候选/占用标/未修主修标/三方针/派遣按钮，1280×720 无溢出', (tester) async {
     await _pump(
       tester,
       const Size(1280, 720),

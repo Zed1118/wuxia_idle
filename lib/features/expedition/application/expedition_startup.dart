@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/system_clock_provider.dart';
 import '../../../data/isar_provider.dart';
-import '../domain/expedition_config.dart';
+import '../../../data/defs/expedition_config.dart';
 import 'expedition_combat.dart';
 import 'expedition_combat_runner.dart';
 import 'expedition_providers.dart';

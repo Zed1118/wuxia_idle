@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_config.dart';
+import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 
 /// C2.4a：断魂庄奖励配置解析（首通秘籍 + Boss 胜利三选一命名装备候选·§6.2）。
 void main() {

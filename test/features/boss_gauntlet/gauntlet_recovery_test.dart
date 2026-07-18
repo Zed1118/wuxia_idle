@@ -9,7 +9,7 @@ import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.dart';
-import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_config.dart';
+import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 
 /// C2.3b 崩溃恢复关次边界（§5.6/§10）。恢复本质 = 会话持久 + 驱动原子（已由 C2.3a

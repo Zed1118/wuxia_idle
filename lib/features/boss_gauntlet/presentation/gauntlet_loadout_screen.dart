@@ -9,7 +9,7 @@ import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/gauntlet_providers.dart';
-import '../domain/boss_gauntlet_config.dart';
+import '../../../data/defs/boss_gauntlet_config.dart';
 import 'gauntlet_entry_flow.dart';
 
 /// 断魂庄装载屏（§7.1 · C2.5）。断魂帖库存 / 庄中三关（三 Boss + 推荐境界）/ 择人

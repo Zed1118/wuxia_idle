@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
@@ -11,7 +11,7 @@ import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../application/gauntlet_providers.dart';
 import '../application/gauntlet_service.dart';
-import '../domain/boss_gauntlet_config.dart';
+import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
 import 'gauntlet_defeat_screen.dart';
 import 'gauntlet_interlude_screen.dart';

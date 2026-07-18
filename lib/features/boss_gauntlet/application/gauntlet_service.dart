@@ -23,7 +23,7 @@ import '../../cultivation/application/progression_gate_service.dart';
 import '../../equipment/application/equipment_factory.dart';
 import '../../injury/application/injury_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
-import '../domain/boss_gauntlet_config.dart';
+import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
 import 'gauntlet_battle_runner.dart';
 import 'gauntlet_controller.dart';

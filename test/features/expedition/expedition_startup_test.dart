@@ -9,7 +9,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_combat.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_startup.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
-import 'package:wuxia_idle/features/expedition/domain/expedition_config.dart';
+import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_node.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 
@@ -63,7 +63,9 @@ void main() {
   final departedAt = DateTime(2026, 7, 16, 10);
 
   setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('wuxia_expedition_startup_');
+    tempDir = await Directory.systemTemp.createTemp(
+      'wuxia_expedition_startup_',
+    );
     await IsarSetup.init(directory: tempDir, inspector: false);
     await IsarSetup.instance.writeTxn(() async {
       await IsarSetup.instance.saveDatas.put(

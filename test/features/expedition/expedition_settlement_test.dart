@@ -8,7 +8,7 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_combat.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
-import 'package:wuxia_idle/features/expedition/domain/expedition_config.dart';
+import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_node.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 
@@ -24,9 +24,8 @@ class _FakeCombat implements ExpeditionCombat {
 
   @override
   Future<Map<int, ExpeditionMemberCaps>> memberCaps(List<int> ids) async => {
-        for (final id in ids)
-          id: ExpeditionMemberCaps(maxHp: maxHp, maxQi: maxQi),
-      };
+    for (final id in ids) id: ExpeditionMemberCaps(maxHp: maxHp, maxQi: maxQi),
+  };
 
   @override
   Future<ExpeditionNodeOutcome> fight({
@@ -47,13 +46,13 @@ class _FakeCombat implements ExpeditionCombat {
 }
 
 ExpeditionConfig _config({int baseExp = 170}) => ExpeditionConfig(
-      normalNodeMinutes: 90,
-      eliteNodeMinutes: 180,
-      hpRecoverPctPerNode: 0.10,
-      qiRecoverPctPerNode: 0.25,
-      zhangshiPctPerLayer: 0.05,
-      baseExpPerBattle: baseExp,
-    );
+  normalNodeMinutes: 90,
+  eliteNodeMinutes: 180,
+  hpRecoverPctPerNode: 0.10,
+  qiRecoverPctPerNode: 0.25,
+  zhangshiPctPerLayer: 0.05,
+  baseExpPerBattle: baseExp,
+);
 
 void main() {
   late Directory tempDir;
@@ -99,21 +98,23 @@ void main() {
 
   Future<int> dispatch(ExpeditionPolicy policy) async {
     final cid = await putDisciple();
-    return ExpeditionService(IsarSetup.instance)
-        .dispatch(characterIds: [cid], policy: policy, now: departedAt);
+    return ExpeditionService(
+      IsarSetup.instance,
+    ).dispatch(characterIds: [cid], policy: policy, now: departedAt);
   }
 
   Future<ExpeditionRun> readRun(int runId) async =>
       (await IsarSetup.instance.expeditionRuns.get(runId))!;
 
   String digest(ExpeditionRun r) => [
-        'node=${r.currentNode}',
-        for (final m in r.members)
-          '${m.characterId}:${m.currentHp}/${m.currentQi}/${m.isDowned}',
-        for (final e in (r.stagedRewards.toList()
-              ..sort((a, b) => a.rewardKey.compareTo(b.rewardKey))))
-          '${e.rewardKey}=${e.quantity}',
-      ].join('|');
+    'node=${r.currentNode}',
+    for (final m in r.members)
+      '${m.characterId}:${m.currentHp}/${m.currentQi}/${m.isDowned}',
+    for (final e
+        in (r.stagedRewards.toList()
+          ..sort((a, b) => a.rewardKey.compareTo(b.rewardKey))))
+      '${e.rewardKey}=${e.quantity}',
+  ].join('|');
 
   Future<void> resetRun(int runId) async {
     await IsarSetup.instance.writeTxn(() async {
@@ -157,11 +158,19 @@ void main() {
         .fold(0, (s, e) => s + e.quantity);
     final now = departedAt.add(const Duration(minutes: 540));
 
-    await svc.settle(combat: _FakeCombat(), config: _config(baseExp: 100), now: now);
+    await svc.settle(
+      combat: _FakeCombat(),
+      config: _config(baseExp: 100),
+      now: now,
+    );
     final lowExp = expOf(await readRun(runId));
 
     await resetRun(runId);
-    await svc.settle(combat: _FakeCombat(), config: _config(baseExp: 300), now: now);
+    await svc.settle(
+      combat: _FakeCombat(),
+      config: _config(baseExp: 300),
+      now: now,
+    );
     final highExp = expOf(await readRun(runId));
 
     expect(lowExp, greaterThan(0));

@@ -5,7 +5,7 @@ import '../../../core/domain/character.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
 import '../../activity/application/character_occupancy_service.dart';
-import '../domain/expedition_config.dart';
+import '../../../data/defs/expedition_config.dart';
 import '../domain/expedition_run.dart';
 import 'expedition_service.dart';
 

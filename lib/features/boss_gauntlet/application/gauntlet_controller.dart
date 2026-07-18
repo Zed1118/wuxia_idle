@@ -1,6 +1,6 @@
 import '../../activity/domain/activity_member_snapshot.dart';
 import '../../battle/domain/battle_state.dart';
-import '../domain/boss_gauntlet_config.dart';
+import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
 
 /// 断魂庄三关编排控制器（design §5.2-5.5）。

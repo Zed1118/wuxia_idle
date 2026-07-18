@@ -14,7 +14,7 @@ import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../injury/application/injury_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
-import '../domain/expedition_config.dart';
+import '../../../data/defs/expedition_config.dart';
 import '../domain/expedition_rules.dart';
 import '../domain/expedition_seed.dart';
 import '../domain/expedition_run.dart';
@@ -366,14 +366,15 @@ class ExpeditionService {
             ch,
             stagedExp,
             realmLookup: GameRepository.instance.getRealm,
-            isLayerLocked: (tier, layer) => ProgressionGateService.isLayerLocked(
-              nextTier: tier,
-              nextLayer: layer,
-              releaseCap: numbers.progressionReleaseCap,
-              realmLookup: GameRepository.instance.getRealm,
-              innerDemonDef: numbers.innerDemon,
-              clearedStageIds: clearedSet,
-            ),
+            isLayerLocked: (tier, layer) =>
+                ProgressionGateService.isLayerLocked(
+                  nextTier: tier,
+                  nextLayer: layer,
+                  releaseCap: numbers.progressionReleaseCap,
+                  realmLookup: GameRepository.instance.getRealm,
+                  innerDemonDef: numbers.innerDemon,
+                  clearedStageIds: clearedSet,
+                ),
           );
         }
         if (defeated) {
