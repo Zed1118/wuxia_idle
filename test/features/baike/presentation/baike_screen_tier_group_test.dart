@@ -32,6 +32,11 @@ Future<String> _fixtureLoader(String path) async {
   if (path == 'data/skills.yaml') return 'skills: []\n';
   if (path == 'data/stages.yaml') return 'stages: []\n';
   if (path == 'data/towers.yaml') return 'floors: []\n';
+  if (path == 'data/boss_gauntlets.yaml') {
+    // 本 fixture skills 为空 → 不载断魂庄敌队（其 skillIds/相位招引用会对空
+    // skillDefs 悬空触发 C1.3.2 加载期红线）。可选 asset 抛 → fallback null 跳过。
+    throw const FileSystemException('fixture: 跳过断魂庄配置');
+  }
   if (path.startsWith('data/lore/')) {
     final loreId = path
         .replaceFirst('data/lore/', '')

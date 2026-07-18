@@ -47,13 +47,16 @@ void main() {
       // + 波B 24 招内容批: 真解 5 + 塔残页 6 + 章末重打残页 3 = 184
       // + 开锋槽 3 装备专属技 21 = 205
       // + 终局机制型 Boss 批次3:心魔蓄力技 skill_inner_demon_charge = 206
-      // + 40 encounter_skills.yaml = 246 total
+      // + 断魂庄 Phase C C1.3.2:苏无咎锁脉针 skill_suo_mai_zhen = 207
+      // + Ch8 灰衣人本命真解 skill_hui_xiu_hui_feng = 208
+      // + 40 encounter_skills.yaml = 248 total
       expect(
         repo.skillDefs.length,
-        246,
+        248,
         reason:
-            '206 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
-            ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技) + 40 奇遇招',
+            '208 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+            ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技 + 1 断魂庄锁脉针'
+            ' + 1 Ch8 灰袖回风) + 40 奇遇招',
       );
       expect(
         repo.encounterSkillIds.length,
@@ -74,8 +77,8 @@ void main() {
           .length;
       expect(
         mainlineCount,
-        30,
-        reason: '主线 30 关(2026-05-22 P2 Ch6 扩,6 章 × 5 关)',
+        40,
+        reason: '主线 40 关(2026-07-18 Ch8 二流第 2 章扩,8 章 × 5 关)',
       );
       expect(
         innerDemonCount,
@@ -126,7 +129,7 @@ void main() {
         expect(
           repo.getStage(id).requiredRealm,
           i <= 5 ? RealmTier.xueTu : RealmTier.sanLiu,
-          reason: '$id 必须在 Lv100 发布上限内',
+          reason: '$id 必须在发布上限内',
         );
       }
       expect(
@@ -224,7 +227,7 @@ void main() {
       );
     });
 
-    test('当前塔与支线全部收口在 Lv100 发布上限内', () async {
+    test('当前塔与支线全部收口在发布上限内', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       const groupTiers = [
         RealmTier.xueTu,
@@ -664,23 +667,35 @@ void main() {
     );
 
     test(
-      '主线 30 关红线:6 章 × 5 关 + 4/5 关 isBossStage(2026-05-22 P2 Ch6 扩)',
+      '主线 40 关红线:8 章 × 5 关 + 每章双 Boss 关(2026-07-18 Ch8 起 Boss 位随叙事定)',
       () async {
         final repo = await GameRepository.loadAllDefs(loader: fileLoader);
         final mainlines = repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
             .toList();
-        expect(mainlines.length, 30);
-        for (final ch in [1, 2, 3, 4, 5, 6]) {
+        expect(mainlines.length, 40);
+        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8]) {
           final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();
           expect(inCh.length, 5, reason: 'Ch$ch 应有 5 关');
         }
-        // 章末两关 4/5 是 Boss + 配 narrativeDefeatId;1/2/3 关非 Boss + 无 defeat
-        for (final ch in [1, 2, 3, 4, 5, 6]) {
+        // 每章恰 2 个 Boss 关(章中 + 章末)+ 配 narrativeDefeatId;其余非 Boss
+        // 无 defeat。Boss 位显式白名单:Ch1-7 = {4,5};Ch8 = {3,5}(章中 Boss
+        // 挪 3·灰衣人沙夜袭影·叙事驱动,validator 只约束 defeat⟹Boss 不钉位置)。
+        const bossIdxByChapter = {
+          1: {4, 5},
+          2: {4, 5},
+          3: {4, 5},
+          4: {4, 5},
+          5: {4, 5},
+          6: {4, 5},
+          7: {4, 5},
+          8: {3, 5},
+        };
+        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8]) {
           for (final idx in [1, 2, 3, 4, 5]) {
             final id = 'stage_0${ch}_0$idx';
             final s = repo.getStage(id);
-            if (idx >= 4) {
+            if (bossIdxByChapter[ch]!.contains(idx)) {
               expect(s.isBossStage, isTrue, reason: '$id 应为 Boss 关');
               expect(
                 s.narrativeDefeatId,
@@ -1150,9 +1165,9 @@ stages:
     /// Ch5/Ch6 spec 起草前若 stages.yaml prevStageId 写错(打字 / 跨章 / 形成环)
     /// 此 test 拦截。现有 `_enforceRedLines` 只验「引用存在 + 同章」,本 test 补
     /// 「严格单链 N-1」语义。
-    test('R3 主线 6 章 30 关 prevStageId 严格 N→N-1 单链(每章首关 null)', () async {
+    test('R3 主线 7 章 35 关 prevStageId 严格 N→N-1 单链(每章首关 null)', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
-      for (final ch in [1, 2, 3, 4, 5, 6]) {
+      for (final ch in [1, 2, 3, 4, 5, 6, 7]) {
         for (final idx in [1, 2, 3, 4, 5]) {
           final id = 'stage_0${ch}_0$idx';
           final s = repo.getStage(id);

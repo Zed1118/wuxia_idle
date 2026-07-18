@@ -203,7 +203,7 @@ combat:
 
 progression:
   release_cap:
-    max_absolute_realm_level: 10
+    max_absolute_realm_level: 17
 
 # =============================================================================
 # 2. 49 级境界系统

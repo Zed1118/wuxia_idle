@@ -34,14 +34,20 @@ void main() {
 
   tearDownAll(GameRepository.resetForTest);
 
-  test('Ch1–3 全为学徒，Ch4–6 全为三流，敌人不超过 Lv100', () {
+  test('Ch1–3 学徒 / Ch4–6 三流 / Ch7 二流，敌人不超过发布上限', () {
+    // 章 → 境界阶(内容映射·2026-07-17 Ch7 二流首章扩):
+    //   Ch1-3 学徒 / Ch4-6 三流 / Ch7+ 二流(真传位新弧)。
+    RealmTier expectedTierOf(int chapterIndex) {
+      if (chapterIndex <= 3) return RealmTier.xueTu;
+      if (chapterIndex <= 6) return RealmTier.sanLiu;
+      return RealmTier.erLiu;
+    }
+
     final mainline = repo.stageDefs.values.where(
       (stage) => stage.stageType == StageType.mainline,
     );
     for (final stage in mainline) {
-      final expectedTier = stage.chapterIndex! <= 3
-          ? RealmTier.xueTu
-          : RealmTier.sanLiu;
+      final expectedTier = expectedTierOf(stage.chapterIndex!);
       expect(stage.requiredRealm, expectedTier, reason: stage.id);
       for (final enemy in stage.enemyTeam) {
         expect(
@@ -94,7 +100,15 @@ void main() {
     }
   });
 
-  test('当前主线常规掉落不高于像样货，掉落招式不高于 2 阶', () {
+  test('主线掉落装备/招式不超过当前发布上限对应阶', () {
+    // 掉落上限 = 当前发布上限(maxAbsoluteRealmLevel → 境界阶)对应的装备/招式阶。
+    //   掉落可高于本关境界(§5.3:高阶物可获得/携带/观摩,装备门槛只管"上身"不管"掉落"),
+    //   但不得超过发布上限(否则掉落玩家本发布版永不可用的招/装)。
+    //   装备阶 index 同序境界阶 index;招式阶 = 境界 index + 1(沿 releaseSkillTierCap 口径)。
+    // cap-agnostic:Ch7 二流首章扩后发布上限=二流,自动允许好家伙/tier3,不需改本测数字。
+    final releaseCapIndex = _releaseCapTier(repo).index;
+    final equipTierCap = releaseCapIndex;
+    final skillTierCap = releaseCapIndex + 1;
     final mainline = repo.stageDefs.values.where(
       (stage) => stage.stageType == StageType.mainline,
     );
@@ -102,7 +116,7 @@ void main() {
       for (final entry in stage.dropTable.whereType<EquipmentDrop>()) {
         expect(
           repo.getEquipment(entry.equipmentDefId).tier.index,
-          lessThanOrEqualTo(EquipmentTier.xiangYang.index),
+          lessThanOrEqualTo(equipTierCap),
           reason: '${stage.id}/${entry.equipmentDefId}',
         );
       }
@@ -112,7 +126,7 @@ void main() {
         if (unlockSkillId == null) continue;
         expect(
           repo.getSkill(unlockSkillId).tier,
-          lessThanOrEqualTo(2),
+          lessThanOrEqualTo(skillTierCap),
           reason: '${stage.id}/${entry.inventoryItemDefId}/$unlockSkillId',
         );
       }
@@ -122,7 +136,7 @@ void main() {
       ].whereType<String>()) {
         expect(
           repo.getSkill(skillId).tier,
-          lessThanOrEqualTo(2),
+          lessThanOrEqualTo(skillTierCap),
           reason: '${stage.id}/$skillId',
         );
       }
@@ -229,4 +243,11 @@ void main() {
       expect(attackCurve[i], greaterThanOrEqualTo(attackCurve[i - 1]));
     }
   });
+}
+
+/// 当前发布上限对应的境界阶(maxAbsoluteRealmLevel → RealmTier)。
+RealmTier _releaseCapTier(GameRepository repo) {
+  final absoluteLevel =
+      repo.numbers.progressionReleaseCap.maxAbsoluteRealmLevel;
+  return RealmTier.values[(absoluteLevel - 1) ~/ RealmLayer.values.length];
 }

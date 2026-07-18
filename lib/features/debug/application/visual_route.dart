@@ -280,6 +280,34 @@ enum VisualRoute {
     '普通关战败重试弹框·非教学化短诊断验收(S3·浅纸底 muted 提示行)',
   ),
   teamLineup('team_lineup', '出战编成屏目检·三席(前排标+梯度境界)+替补池三态(无标/境界偏低/闭关中),§十三 #4'),
+  expeditionRecap(
+    'expedition_recap',
+    '百草岭远征返程行记目检·主动召回态(最深14处+奖获修为/药草/灵泉/银两+断魂帖×1里程碑高亮+1人负伤调息),§4.7',
+  ),
+  expeditionOverview(
+    'expedition_overview',
+    '江湖远行总览·派遣态目检(百草岭卡·候选多选[可派遣/在外/未修主修三态]+三方针择一+拔营出发),§7.1',
+  ),
+  expeditionActive(
+    'expedition_active',
+    '江湖远行·派遣中目检(在途态·当前深入第8处/已踏平节点/本次方针/下一节点剩余/召回队伍),§7.1',
+  ),
+  gauntletLoadout(
+    'gauntlet_loadout',
+    '断魂庄装载屏目检·帖库存×2 + 庄中三关(苏无咎/石镇岳/闻九针 + 推荐境界) + 择人1-3(占用/未修主修标) + 补给装载步进 + 持帖入庄,§7.1',
+  ),
+  gauntletInterlude(
+    'gauntlet_interlude',
+    '断魂庄庄内整备目检·第2关整备(三成员生命/真气/阵亡/冷却) + 托管补给余量(疗伤丹余1/行囊补给余1) + 使用/继续闯关/认输离庄,§7.2',
+  ),
+  gauntletReward(
+    'gauntlet_reward',
+    '断魂庄通关三选一奖励目检·Boss 终关胜(awaitingRewardChoice) + 三件好家伙候选卡(名/阶/位/属性) + 首通全奖标 + 点选择取,§6.2',
+  ),
+  gauntletDefeat(
+    'gauntlet_defeat',
+    '断魂庄战败结算目检·已破 1 关精英经验 + 逐弟子轻重伤(沈青轻伤/楚河重伤) + 离庄,§6.3',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);

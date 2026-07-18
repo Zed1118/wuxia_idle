@@ -54,7 +54,7 @@ void main() {
     );
     final cap = repo.numbers.combat.qi.deltaAbsCap;
 
-    expect(repo.skillDefs, hasLength(246));
+    expect(repo.skillDefs, hasLength(248));
     for (final skill in repo.skillDefs.values) {
       expect(skill.qiDelta.abs(), lessThanOrEqualTo(cap), reason: skill.id);
       switch (skill.type) {
@@ -84,6 +84,33 @@ void main() {
             (error) => error.message,
             'message',
             allOf(contains('qiDelta=101'), contains('> 100')),
+          ),
+        ),
+      );
+    },
+  );
+
+  test(
+    'loadAllDefs rejects a skill whose qiDrainPct exceeds the [0, 0.5] bound',
+    () {
+      Future<String> brokenLoader(String path) async {
+        final original = await File(path).readAsString();
+        if (path != 'data/skills.yaml') return original;
+        // 给首个招式注入越界 qiDrainPct(4 空格缩进对齐字段层)。C1.3.1 断魂庄
+        // qi_drain schema 硬界:配置越界应启动 fail-fast,而非战斗中 QiDrainEffect 崩。
+        return original.replaceFirst(
+          'qiDelta: 20',
+          'qiDelta: 20\n    qiDrainPct: 0.6',
+        );
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            allOf(contains('qiDrainPct'), contains('0.6')),
           ),
         ),
       );

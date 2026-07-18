@@ -2,6 +2,7 @@ import '../../../core/domain/enums.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
 import '../../../data/defs/encounter_def.dart' show AttributeKey;
 import '../../../core/domain/island_building_type.dart';
+import '../../expedition/domain/expedition_run.dart' show ExpeditionPolicy;
 import '../../../shared/strings.dart';
 import 'battle_state.dart' show BattleResult;
 
@@ -28,6 +29,20 @@ class EnumL10n {
       TechniqueSchool.yinRou => '阴柔',
     };
   }
+
+  /// 百草岭出发方针名（baicao design §4.3）。switch 穷尽，增删 enum 值编译期报漏。
+  static String expeditionPolicy(ExpeditionPolicy p) => switch (p) {
+    ExpeditionPolicy.yanJingCaiYao => '沿径采药',
+    ExpeditionPolicy.xunJiFangYou => '寻迹访幽',
+    ExpeditionPolicy.yiZhanLiXing => '以战砺行',
+  };
+
+  /// 出发方针一句话侧重（design §4.3；只述节点权重侧重，不承诺掉落倍率/战斗属性）。
+  static String expeditionPolicyHint(ExpeditionPolicy p) => switch (p) {
+    ExpeditionPolicy.yanJingCaiYao => '偏采药节点，多得药草灵泉',
+    ExpeditionPolicy.xunJiFangYou => '偏遗迹节点，多遇断魂帖奇缘',
+    ExpeditionPolicy.yiZhanLiXing => '偏遭遇战，多历练修为',
+  };
 
   /// 师徒身份（GDD §7.1）。switch 穷尽，增删 enum 值编译期报漏。
   static String lineageRole(LineageRole r) {
@@ -119,6 +134,9 @@ class EnumL10n {
 
   /// P0 破招:踉跄跳过本次行动日志。
   static String staggered(String name) => '$name 踉跄难稳。';
+
+  /// C1.3.1 断魂庄:敌方蓄力技完成夺取真气(锁脉针·§5.2)日志。
+  static String qiDrained(String name, int amount) => '$name 经脉被封,真气散去 $amount';
 
   /// 第七阶段批二 ①:Boss 转阶段日志(血量跌破阈值进入下一阶段)。
   static String bossPhaseTransition(String name, int phaseIndex) =>

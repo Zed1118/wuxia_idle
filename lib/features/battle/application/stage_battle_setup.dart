@@ -163,10 +163,19 @@ class StageBattleSetup {
     ];
   }
 
-  /// 从 Isar 拉玩家方（左队）：优先 activeCharacterIds，空则兜底 findFirst。
-  Future<List<BattleCharacter>> _buildPlayerTeam() async {
+  /// 从指定角色 id 列表装配玩家队（非 `activeCharacterIds`）。远征按派遣成员
+  /// 装配（B2.2b），复用同一 autoFill/相生/祖师 buff/伤势路径，避免与主线分叉。
+  Future<List<BattleCharacter>> buildPlayerTeamForCharacters(
+    List<int> characterIds,
+  ) => _buildPlayerTeam(characterIds: characterIds);
+
+  /// 从 Isar 拉玩家方（左队）：[characterIds] 显式指定则用之，否则优先
+  /// activeCharacterIds，空则兜底 findFirst。
+  Future<List<BattleCharacter>> _buildPlayerTeam({
+    List<int>? characterIds,
+  }) async {
     final save = await isar.saveDatas.get(0);
-    final ids = save?.activeCharacterIds ?? const [];
+    final ids = characterIds ?? save?.activeCharacterIds ?? const [];
     final players = <Character>[];
     for (final cid in ids) {
       final c = await isar.characters.get(cid);

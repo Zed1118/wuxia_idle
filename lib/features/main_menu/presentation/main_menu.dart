@@ -28,6 +28,8 @@ import '../../inventory/presentation/inventory_screen.dart';
 import '../../inner_demon/presentation/inner_demon_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
+import '../../expedition/presentation/expedition_overview_screen.dart';
+import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import '../../mass_battle/presentation/mass_battle_screen.dart';
 import '../../resource_overview/presentation/resource_overview_screen.dart';
 import '../../mainline/application/mainline_progress_service.dart';
@@ -196,6 +198,16 @@ class MainMenu extends ConsumerWidget {
         .watch(mainMenuSaveSnapshotProvider)
         .maybeWhen(data: (s) => s?.sectName, orElse: () => null);
 
+    // 江湖远行入口门控（§7.1 · §5.7 隐藏式）：任一角色首达 Lv100 后
+    // SaveData.jianghuJourneyUnlocked 永久置真。**Lv100→解锁触发**归耦合里程碑批
+    // （随发布上限 10→17 一并拍板，见 design §3.1/§9），本批只消费标志、不写触发。
+    final jianghuJourneyUnlocked = ref
+        .watch(mainMenuSaveSnapshotProvider)
+        .maybeWhen(
+          data: (s) => s?.jianghuJourneyUnlocked ?? false,
+          orElse: () => false,
+        );
+
     // P4 战绩册入口门控：首次击败任一 Boss 后解锁（§5.7 隐藏式）。
     final bossCount = ref
         .watch(bossMemoryCountProvider)
@@ -220,6 +232,7 @@ class MainMenu extends ConsumerWidget {
       mainlineGoal: mainlineGoal,
       towerStatus: towerStatus,
       lateLocked: lateLocked,
+      jianghuJourneyUnlocked: jianghuJourneyUnlocked,
     );
     final growthItems = _growthItems(
       context,
@@ -357,6 +370,7 @@ class MainMenu extends ConsumerWidget {
     required NewSaveGoalGuidance? mainlineGoal,
     required String? towerStatus,
     required bool lateLocked,
+    required bool jianghuJourneyUnlocked,
   }) {
     return <Widget>[
       WuxiaInkButton(
@@ -426,6 +440,23 @@ class MainMenu extends ConsumerWidget {
           onAllowed: () => _push(context, const MassBattleScreen()),
         ),
       ),
+      if (jianghuJourneyUnlocked)
+        WuxiaInkButton(
+          label: UiStrings.mainMenuExpedition,
+          hint: UiStrings.mainMenuExpeditionHint,
+          icon: Icons.travel_explore_outlined,
+          thumbnailPath: WuxiaUi.entryJianghu,
+          onTap: () => _push(context, const ExpeditionOverviewScreen()),
+        ),
+      // 断魂庄（江湖远行 Phase C·同 jianghuJourneyUnlocked gate·§5.7 未解锁隐藏）。
+      if (jianghuJourneyUnlocked)
+        WuxiaInkButton(
+          label: UiStrings.gauntletName,
+          hint: UiStrings.gauntletSubtitle,
+          icon: Icons.whatshot_outlined,
+          thumbnailPath: WuxiaUi.entryJianghu,
+          onTap: () => _push(context, const GauntletLoadoutScreen()),
+        ),
     ];
   }
 
@@ -639,7 +670,7 @@ class MainMenu extends ConsumerWidget {
 
   static String? _mainlineMenuStatus(MainlineProgress? progress) {
     if (progress == null || !GameRepository.isLoaded) return null;
-    for (var chapterIndex = 1; chapterIndex <= 6; chapterIndex++) {
+    for (var chapterIndex = 1; chapterIndex <= 8; chapterIndex++) {
       final stages = MainlineProgressService.availableStages(
         progress: progress,
         chapterIndex: chapterIndex,
@@ -657,7 +688,7 @@ class MainMenu extends ConsumerWidget {
     MainlineProgress? progress,
   ) {
     if (progress == null || !GameRepository.isLoaded) return null;
-    for (var chapterIndex = 1; chapterIndex <= 6; chapterIndex++) {
+    for (var chapterIndex = 1; chapterIndex <= 8; chapterIndex++) {
       final entries = MainlineProgressService.availableStages(
         progress: progress,
         chapterIndex: chapterIndex,

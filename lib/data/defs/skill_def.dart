@@ -64,6 +64,12 @@ class SkillDef {
   /// 波A A4:获取来源。yaml 必填(红线 not-null);直接构造的测试 fixture 可空。
   final SkillSource? source;
 
+  /// 里程碑批(2026-07-16):正式挂载延后标记。true = 此 drop 招(真解/残页)
+  /// 定义合法但当前发布阶段暂无 stage/tower 挂载点,豁免红线⑦「每招恰 1 挂载点」
+  /// (仅豁免挂载完备性;style+tier 红线⑥仍必守,定义仍需自洽)。正式挂载
+  /// (batch3 远征掉落 / Phase C 断魂庄)时删本标记 = 发布。默认 false。
+  final bool mountDeferred;
+
   /// 招式 per-skill 熟练度效果(可玩性 P1a · 只配真解/招牌/破招技)。null=不配。
   final SkillProficiencyEffects? proficiency;
 
@@ -79,6 +85,14 @@ class SkillDef {
   /// 字段,刷新不叠加。减防幅度经 boss_charge.interrupt_power_cap 上限 clamp
   /// （封顶减防 = 有效防御有地板，红线 §5.4）。
   final double defenseBreakPct;
+
+  /// C1.3.1 断魂庄:此招蓄力完成且未破招时,对存活对方队每人扣
+  /// `qiDrainPct × 最大真气` 的真气(§5.2 苏无咎锁脉针,消费 `QiDrainEffect`)。
+  /// 0 = 无剥夺(默认)。schema 硬界 [0, 0.5](>0 段再由 `QiDrainEffect` 兜死
+  /// (0, 0.5];load 期 `game_repository._enforceEncounterSkillRedLines` fail-fast,
+  /// 越界配置启动即抛而非战斗中崩)。属资源剥夺方向机制,不膨胀伤害(守 §5.4)。
+  /// skills.yaml camelCase 例外(§4)。
+  final double qiDrainPct;
 
   const SkillDef({
     required this.id,
@@ -99,9 +113,11 @@ class SkillDef {
     this.aiUsePolicy = AiUsePolicy.normal,
     this.style,
     this.source,
+    this.mountDeferred = false,
     this.proficiency,
     this.targetType = TargetType.single,
     this.defenseBreakPct = 0.0,
+    this.qiDrainPct = 0.0,
   }) : assert(qiDelta != null || internalForceCost != null),
        qiDelta = qiDelta ?? -(internalForceCost ?? 0);
 
@@ -151,6 +167,7 @@ class SkillDef {
       source: y['source'] != null
           ? _parseSkillSource(y['source'] as String)
           : null,
+      mountDeferred: y['mount_deferred'] as bool? ?? false,
       proficiency: y['proficiency'] != null
           ? SkillProficiencyEffects.fromYaml(
               Map<String, dynamic>.from(y['proficiency'] as Map),
@@ -160,6 +177,7 @@ class SkillDef {
           ? TargetType.values.byName(y['targetType'] as String)
           : TargetType.single,
       defenseBreakPct: (y['defenseBreakPct'] as num?)?.toDouble() ?? 0.0,
+      qiDrainPct: (y['qiDrainPct'] as num?)?.toDouble() ?? 0.0,
     );
   }
 

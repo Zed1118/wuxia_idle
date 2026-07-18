@@ -1,6 +1,8 @@
 # 百草岭远征配置（§8.2）。A2 最小合法骨架；Phase B 填节点权重/深度曲线/奖励表。
 normal_node_minutes: 90
 elite_node_minutes: 180
+# batch3 联合经济探针拍板中档(Lv100→170 ~18天专挂)·rewardsForNode 消费·探针留 ratchet
+base_exp_per_battle: 170
 hp_recover_pct_per_node: 0.10
 qi_recover_pct_per_node: 0.25
 zhangshi_pct_per_layer: 0.05

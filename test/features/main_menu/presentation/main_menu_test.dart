@@ -10,6 +10,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
@@ -17,6 +18,7 @@ import 'package:wuxia_idle/core/game_loop/monthly_tick.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_providers.dart';
 import 'package:wuxia_idle/features/festival/application/festival_service_providers.dart';
+import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
@@ -1170,6 +1172,52 @@ void main() {
 
       expect(observer.pushedRoutes.length, 2);
       expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());
+    });
+  });
+
+  // ── 江湖远行入口门控（Phase B2.4 · §7.1 Lv100 解锁 · §5.7 隐藏式）──────────
+  group('§5.7 江湖远行入口门控', () {
+    SaveData save({required bool unlocked}) {
+      final now = DateTime(2026, 7, 16);
+      return SaveData()
+        ..id = 0
+        ..saveVersion = '0.37.0'
+        ..createdAt = now
+        ..lastSavedAt = now
+        ..lastOnlineAt = now
+        ..jianghuJourneyUnlocked = unlocked;
+    }
+
+    testWidgets('jianghuJourneyUnlocked=false → 无江湖远行入口（隐藏）', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            mainMenuSaveSnapshotProvider.overrideWith(
+              (ref) async => save(unlocked: false),
+            ),
+          ],
+          child: const MaterialApp(home: MainMenu()),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      expect(find.text(UiStrings.mainMenuExpedition), findsNothing);
+    });
+
+    testWidgets('jianghuJourneyUnlocked=true → 有江湖远行入口', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            mainMenuSaveSnapshotProvider.overrideWith(
+              (ref) async => save(unlocked: true),
+            ),
+          ],
+          child: const MaterialApp(home: MainMenu()),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      expect(find.text(UiStrings.mainMenuExpedition), findsOneWidget);
     });
   });
 }

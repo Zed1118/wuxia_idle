@@ -55,16 +55,16 @@ void main() {
       }
     }
 
-    expect(mainlineStages.length, 30, reason: '当前主线应覆盖 Ch1-6 共 30 关');
+    expect(mainlineStages.length, 40, reason: '当前主线应覆盖 Ch1-8 共 40 关');
     expect(
       checked.length,
-      greaterThanOrEqualTo(72),
-      reason: '至少覆盖 30 关开场/胜利 + Boss 战败/招降扩展文本',
+      greaterThanOrEqualTo(84),
+      reason: '至少覆盖 40 关开场/胜利 + Boss 战败/招降扩展文本',
     );
   });
 
-  test('主线 chapter_01..06 卷首卷尾全为真内容', () async {
-    for (var i = 1; i <= 6; i++) {
+  test('主线 chapter_01..08 卷首卷尾全为真内容', () async {
+    for (var i = 1; i <= 8; i++) {
       final id = 'chapter_${i.toString().padLeft(2, '0')}';
       final chapter = await NarrativeLoader.loadChapter(id, loader: fileLoader);
 

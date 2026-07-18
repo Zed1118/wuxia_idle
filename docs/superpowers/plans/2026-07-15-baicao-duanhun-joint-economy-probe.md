@@ -66,10 +66,11 @@
 ---
 
 ## 当前恢复点
-- **状态：** 未开工（Phase A 完成后、B/C 填表前执行）。
-- **下一步：** Task 1 经济模型纯函数。
-- **已跑验证：** 接口锚点核（`ExpeditionRules.rewardsForNode`（Phase B）/`CharacterAdvancementService.applyExperience`（A2 核）/装备 `success_curve`（装备 plan §3 决议））。
-- **阻塞项：** `gauntletWinRate` 三档需 C1.3 战斗探针数据对齐（可先占位跑，C 完成后校准）。
+- **状态：** 三 Task 全完成（commit `f2611f29`/`cfa45823`/`5cf1acec`·未 push）。
+- **拍板：** 用户拍**中档** `base_exp_per_battle=170`（Lv100→170 ~18天专挂·totalExp=15000），已完整 wire 到 `expeditions.yaml` + `ExpeditionConfig` + `settle`。
+- **下一步：** Phase C 断魂庄——`gauntletWinRate` C1.3 战斗探针校准 + 命名装备助炼/结晶日流入/herb→补给转化 Phase C 定案后补不变式③（三路径取舍）硬 ratchet。
+- **已跑验证：** analyze `lib test` 0；全量 `flutter test --no-pub` **4120 pass/0 fail**（+16 新测）；config 解析 + settle wiring 红绿双验。
+- **阻塞项：** 无（占位段均标注 Phase C 校准，非阻塞；探针留作 ratchet 守曲线）。
 
 ## 自检
 - **Spec 覆盖：** §4.5 五段链全建模 + 四重点检查全 ratchet；§3.1 溢出分布纳入；§12.4 三档 YAML 候选 + ratchet。

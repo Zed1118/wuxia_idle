@@ -13,8 +13,12 @@ import '../../../core/domain/save_data.dart';
 import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../core/domain/technique.dart';
 import '../../../shared/utils/rng.dart';
+import '../../activity/domain/activity_member_snapshot.dart';
+import '../../boss_gauntlet/domain/boss_gauntlet_run.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../equipment/application/equipment_factory.dart';
+import '../../expedition/application/expedition_service.dart';
+import '../../expedition/domain/expedition_run.dart';
 import '../../mainline/application/mainline_progress_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../onboarding/application/master_builder.dart';
@@ -1322,6 +1326,15 @@ class Phase2SeedService {
 
     await isar.writeTxn(() async {
       await isar.characters.clear();
+      // 清在途远征残留:seedTeamLineup 声称重置到确定编成态,seedExpeditionActive
+      // 在此基础上 dispatch 远征。visual_capture 多分辨率复用同一磁盘 Isar 库时,
+      // 上次的 active ExpeditionRun 若不清会撞 ExpeditionService.dispatch 的
+      // 「单 active」红线校验(2026-07-16 目检 1440x900 第二跑失败修)。无远征时 no-op。
+      await isar.expeditionRuns.clear();
+      // 同理清断魂庄会话(C2.5·seedGauntletLoadout/Interlude 在此基础上建):多分辨率
+      // 复跑不清会撞「单 active」+ 旧 run 成员指向已删角色(feedback_visual_capture_
+      // seed_idempotency)。无会话时 no-op。
+      await isar.bossGauntletRuns.clear();
       final founder = mk(
         name: '祖师',
         tier: RealmTier.erLiu,
@@ -1402,6 +1415,159 @@ class Phase2SeedService {
       save.founderCharacterId = founder.id;
       save.activeCharacterIds = [founder.id, senior.id, junior.id];
       await isar.saveDatas.put(save);
+    });
+  }
+
+  /// 江湖远行·派遣中 seed(§7.1):在 [seedTeamLineup] 基础上派遣两名带主修弟子,
+  /// 并把远征推进到第 8 节点,供总览屏「在途态」目检(深度/完成/方针/下一节点
+  /// 剩余/召回)。departedAt 取 now-810min(=完成 8 节点累计时长),使「下一节点
+  /// 剩余」≈90min 稳定可读,与 currentNode=8 自洽。
+  Future<void> seedExpeditionActive() async {
+    await seedTeamLineup();
+    final service = ExpeditionService(isar);
+    final chars = await isar.characters
+        .filter()
+        .isFounderEqualTo(false)
+        .findAll();
+    final ids = chars
+        .where(
+          (c) => c.mainTechniqueId != null && c.currentRetreatSessionId == null,
+        )
+        .take(2)
+        .map((c) => c.id)
+        .toList();
+    await service.dispatch(
+      characterIds: ids,
+      policy: ExpeditionPolicy.yiZhanLiXing,
+      now: DateTime.now().subtract(const Duration(minutes: 810)),
+    );
+    await isar.writeTxn(() async {
+      final run = (await isar.expeditionRuns.where().findAll()).first;
+      run.currentNode = 8;
+      await isar.expeditionRuns.put(run);
+    });
+  }
+
+  /// gauntlet_loadout 视觉验收 seed（§7.1·C2.5）：team_lineup 种子（founder + 弟子）+
+  /// 库存补断魂帖 ×2 + 疗伤丹 ×3 + 行囊补给 ×2；无 active 会话 → 装载屏显候选三态 +
+  /// 庄中三关（苏无咎/石镇岳/闻九针 + 推荐境界）+ 补给装载步进 + 持帖入庄。
+  Future<void> seedGauntletLoadout() async {
+    await seedTeamLineup();
+    final now = DateTime.now();
+    await isar.writeTxn(() async {
+      // 设定（非累加）数量：seedTeamLineup 不清 inventory，多分辨率复跑用累加会漂移，
+      // 设定保幂等（每跑相同库存·feedback_visual_capture_seed_idempotency）。
+      Future<void> put(String defId, ItemType type, int qty) async {
+        final existing = await isar.inventoryItems.getByDefId(defId);
+        if (existing != null) {
+          existing.quantity = qty;
+          await isar.inventoryItems.put(existing);
+        } else {
+          await isar.inventoryItems.put(
+            InventoryItem()
+              ..defId = defId
+              ..itemType = type
+              ..quantity = qty
+              ..firstObtainedAt = now
+              ..lastObtainedAt = now,
+          );
+        }
+      }
+
+      await put('item_duanhuntie', ItemType.ticket, 2);
+      await put('item_liaoshangdan', ItemType.miscMaterial, 3);
+      await put('item_xingnang_buji', ItemType.miscMaterial, 2);
+    });
+  }
+
+  /// gauntlet_interlude 视觉验收 seed（§7.2·C2.5）：team_lineup 种子 + 造 active 会话推进
+  /// 到 interlude（第 2 关整备）——两成员（一存活带 1 招冷却 / 一倒下）+ 托管补给（疗伤丹
+  /// 装 2 用 1 → 余 1 / 行囊补给 装 1 用 0 → 余 1）。整备屏显成员状态 + 补给余量 + 三动作。
+  Future<void> seedGauntletInterlude() async {
+    await seedTeamLineup();
+    final chars = await isar.characters
+        .filter()
+        .isFounderEqualTo(false)
+        .findAll();
+    final ids = chars
+        .where(
+          (c) => c.mainTechniqueId != null && c.currentRetreatSessionId == null,
+        )
+        .take(2)
+        .map((c) => c.id)
+        .toList();
+    await isar.writeTxn(() async {
+      final members = <ActivityMemberSnapshot>[];
+      for (var i = 0; i < ids.length; i++) {
+        final downed = i == 1; // 第二人倒下（演示阵亡态 + 疗伤须择存活目标）
+        members.add(
+          ActivityMemberSnapshot()
+            ..characterId = ids[i]
+            ..maxHp = 5000
+            ..currentHp = downed ? 0 : 3200
+            ..maxQi = 100
+            ..currentQi = downed ? 0 : 55
+            ..isDowned = downed
+            ..skillCooldownKeys = downed ? [] : ['skill_gangmeng_jichu_skill']
+            ..skillCooldownTurns = downed ? [] : [2],
+        );
+      }
+      await isar.bossGauntletRuns.put(
+        BossGauntletRun()
+          ..saveDataId = 0
+          ..seed = 0
+          ..currentStage = 2
+          ..sessionPhase = GauntletPhase.interlude
+          ..members = members
+          ..escrowItemDefIds = ['item_liaoshangdan', 'item_xingnang_buji']
+          ..escrowLoadedQty = [2, 1]
+          ..escrowUsedQty = [1, 0],
+      );
+    });
+  }
+
+  /// gauntlet_reward 视觉验收 seed（§6.2·#1 wiring Task 7）：team_lineup 种子 + 造 active
+  /// 会话推进到 awaitingRewardChoice（Boss 终关胜·首通待领）——三件好家伙命名装备候选 +
+  /// 首通标。奖励屏显三选一卡（名/阶/位/属性）+ 首通全奖标 + 择取。seedTeamLineup 已清
+  /// bossGauntletRuns，多分辨率复跑幂等（feedback_visual_capture_seed_idempotency）。
+  Future<void> seedGauntletReward() async {
+    await seedTeamLineup();
+    final chars = await isar.characters
+        .filter()
+        .isFounderEqualTo(false)
+        .findAll();
+    final ids = chars
+        .where(
+          (c) => c.mainTechniqueId != null && c.currentRetreatSessionId == null,
+        )
+        .take(2)
+        .map((c) => c.id)
+        .toList();
+    await isar.writeTxn(() async {
+      final members = [
+        for (final id in ids)
+          ActivityMemberSnapshot()
+            ..characterId = id
+            ..maxHp = 5000
+            ..currentHp = 2600
+            ..maxQi = 100
+            ..currentQi = 40
+            ..isDowned = false,
+      ];
+      await isar.bossGauntletRuns.put(
+        BossGauntletRun()
+          ..saveDataId = 0
+          ..seed = 0
+          ..currentStage = 3
+          ..sessionPhase = GauntletPhase.awaitingRewardChoice
+          ..members = members
+          ..rewardCandidateDefIds = const [
+            'weapon_haojiahuo_qing_feng_jian',
+            'armor_haojiahuo_jin_pao',
+            'accessory_haojiahuo_yu_pei_lao',
+          ]
+          ..isFirstClearPending = true,
+      );
     });
   }
 

@@ -1,6 +1,157 @@
-# 断魂庄三关配置（§8.2）。A2 最小合法骨架；Phase C 填敌队机制/奖励。
+# 断魂庄三关配置（§8.2）。Phase C C1.3.2 填敌队机制（design §5.2-5.4）。
+# 敌队机制走 EnemyDef 既有字段：chargeSkillId + vulnerability（苏无咎锁脉针破招脆弱）、
+# guardianWard（石镇岳铁衣护阵·软门槛=护法血墙 taunt 非减伤·见 memory
+#   feedback_wuxia_boss_ward_noop_under_lowhp_ai）、bossPhases（闻九针三阶段血线）。
+# 数值（baseHp/baseAttack/baseSpeed）为占位 TODO(batch3-probe)，由联合经济探针三档校准；
+# realm 锚 design §1「承接 Lv100~170 = 三流后段至二流·熟练」。
+# skillIds 引用现有 skills.yaml（§8.2 不复制招式定义）；立绘 iconPath 留空占位，
+# art 随 Phase C UI 批（MJ）补。敌队引用完整性校验在 GameRepository 加载期跑
+# （_enforceGauntletEnemyRedLines：chargeSkillId∈skillIds / guardianIds 队内 / 相位招存在）。
 supply_cap: 3
 stages:
   - { role: elite, enemy_team_id: gauntlet_su_wujiu }
   - { role: elite, enemy_team_id: gauntlet_shi_zhenyue }
   - { role: boss,  enemy_team_id: gauntlet_wen_jiuzhen }
+
+# ── 通关奖励（§6.2·数值/命名装备 TODO(batch3-probe)）──
+# 首通解锁「锁脉针法」秘籍（= 苏无咎所用锁脉针·skill_suo_mai_zhen，击败后习得）。
+first_clear_reward_skill_id: skill_suo_mai_zhen
+# Boss 胜利三选一命名装备候选（恰 3 件·一槽一件）。TODO(batch3-probe)：现引用现有
+# 好家伙(二流)装备占位，后续替换为断魂庄专属命名奖励（名/数值/典故随美术批）。
+reward_candidate_equipment_ids:
+  - weapon_haojiahuo_qing_feng_jian
+  - armor_haojiahuo_jin_pao
+  - accessory_haojiahuo_yu_pei_lao
+# 参战全员经验/领悟点（§6.2·首通全额，重复通关取半）。TODO(batch3-probe) 占位。
+first_clear_reward_exp: 300
+first_clear_reward_insight: 20
+# 每名精英提供的经验（§6.2「两名精英各 5%」）。§6.3 失败结算发「已击败精英经验」=
+# 已击败精英数 × 本值。占位 50 ≈ first_clear_reward_exp(30% 整包) 的 1/6（5/30）。
+# TODO(batch3-probe)：真·百分比拆分（每精英 5% 当前层经验需求）随联合探针统一定案。
+elite_reward_exp: 50
+
+enemy_teams:
+  # ── 第一关：飞针使·苏无咎（灵巧 + 锁脉针 charge 夺真气 + 破招脆弱窗外 0.65）──
+  gauntlet_su_wujiu:
+    - id: enemy_gauntlet_su_wujiu
+      name: 苏无咎
+      realmTier: sanLiu
+      realmLayer: jingTong
+      school: lingQiao
+      baseHp: 9000            # TODO(batch3-probe)
+      baseAttack: 700         # TODO(batch3-probe)
+      baseSpeed: 150          # TODO(batch3-probe)·灵巧偏快
+      skillIds:
+        - skill_lingqiao_jichu_basic
+        - skill_lingqiao_jichu_skill
+        - skill_lingqiao_jichu_ult
+        - skill_suo_mai_zhen              # 招牌蓄力技（阴柔·qiDrainPct 0.30）
+      iconPath: ''
+      isBoss: true
+      chargeSkillId: skill_suo_mai_zhen   # §5.2 未破招夺 30% 最大真气
+      vulnerability:
+        outOfWindowDamageMult: 0.65       # §5.2 破招后两拍窗口，窗外承伤 0.65
+    - id: enemy_gauntlet_qingyi_hu_a
+      name: 青衣护院
+      realmTier: sanLiu
+      realmLayer: ruMen
+      school: lingQiao
+      baseHp: 4500            # TODO(batch3-probe)
+      baseAttack: 450         # TODO(batch3-probe)
+      baseSpeed: 140          # TODO(batch3-probe)
+      skillIds:
+        - skill_lingqiao_jichu_basic
+        - skill_lingqiao_jichu_skill
+      iconPath: ''
+    - id: enemy_gauntlet_qingyi_hu_b
+      name: 青衣护院
+      realmTier: sanLiu
+      realmLayer: ruMen
+      school: lingQiao
+      baseHp: 4500            # TODO(batch3-probe)
+      baseAttack: 450         # TODO(batch3-probe)
+      baseSpeed: 140          # TODO(batch3-probe)
+      skillIds:
+        - skill_lingqiao_jichu_basic
+        - skill_lingqiao_jichu_skill
+      iconPath: ''
+
+  # ── 第二关：铁衣客·石镇岳（刚猛慢速高伤 + 铁衣护阵 0.25·双庄客护法墙 taunt）──
+  gauntlet_shi_zhenyue:
+    - id: enemy_gauntlet_shi_zhenyue
+      name: 石镇岳
+      realmTier: sanLiu
+      realmLayer: dengFeng
+      school: gangMeng
+      baseHp: 14000          # TODO(batch3-probe)·§5.3 慢速高伤
+      baseAttack: 950         # TODO(batch3-probe)
+      baseSpeed: 80           # TODO(batch3-probe)·刚猛偏慢
+      skillIds:
+        - skill_gangmeng_jichu_basic
+        - skill_gangmeng_jichu_skill
+        - skill_gangmeng_jichu_ult
+      iconPath: ''
+      isBoss: true
+      guardianWard:
+        damageTakenMult: 0.25             # §5.3 庄客存活时护阵承伤 0.25
+        guardianIds:                      # 软门槛=护法血墙 taunt（清完护法方破阵）
+          - enemy_gauntlet_zhizhang_a
+          - enemy_gauntlet_zhizhang_b
+    - id: enemy_gauntlet_zhizhang_a
+      name: 执杖庄客
+      realmTier: sanLiu
+      realmLayer: shuLian
+      school: gangMeng
+      baseHp: 8000           # TODO(batch3-probe)·护法血墙（拉长清关窗口）
+      baseAttack: 500         # TODO(batch3-probe)
+      baseSpeed: 100          # TODO(batch3-probe)
+      skillIds:
+        - skill_gangmeng_jichu_basic
+        - skill_gangmeng_jichu_skill
+      iconPath: ''
+    - id: enemy_gauntlet_zhizhang_b
+      name: 执杖庄客
+      realmTier: sanLiu
+      realmLayer: shuLian
+      school: gangMeng
+      baseHp: 8000           # TODO(batch3-probe)·护法血墙
+      baseAttack: 500         # TODO(batch3-probe)
+      baseSpeed: 100          # TODO(batch3-probe)
+      skillIds:
+        - skill_gangmeng_jichu_basic
+        - skill_gangmeng_jichu_skill
+      iconPath: ''
+
+  # ── 最终关：断魂庄主·闻九针（阴柔单人 + 高血三阶段 + 逆行封脉脆弱 0.35）──
+  gauntlet_wen_jiuzhen:
+    - id: enemy_gauntlet_wen_jiuzhen
+      name: 闻九针
+      realmTier: erLiu
+      realmLayer: shuLian
+      school: yinRou
+      baseHp: 32000          # TODO(batch3-probe)·高血扛首击方触相位（memory boss_phase_needs_hp）·守 <60000
+      baseAttack: 850         # TODO(batch3-probe)
+      baseSpeed: 120          # TODO(batch3-probe)
+      skillIds:
+        - skill_yinrou_jichu_basic
+        - skill_yinrou_jichu_skill
+        - skill_yinrou_jichu_ult
+      iconPath: ''
+      isBoss: true
+      vulnerability:
+        outOfWindowDamageMult: 0.35       # §5.4 逆行封脉窗外承伤 0.35
+      bossPhases:
+        - hpThresholdPct: 1.0             # 100-70%：集中，优先攻最低血
+          aiMode: focus
+        - hpThresholdPct: 0.70            # 70-35%：逆行封脉（蓄力开脆弱窗口）
+          unlockSkillIds:
+            - skill_yinrou_changlian_fang_skill
+          aiMode: focus
+          onEnterMechanic: chargeCounter
+          titleKey: bossPhase_desperate   # 逆行封脉 flavor 题字留 C2.5 UI
+        - hpThresholdPct: 0.35            # <35%：断魂九针，进攻模式解锁绝招
+          unlockSkillIds:
+            - skill_yinrou_changlian_fang_ult
+          aiMode: aggressive
+          onEnterMechanic: chargeCounter
+          titleKey: bossPhase_desperate   # 断魂九针 flavor 题字留 C2.5 UI

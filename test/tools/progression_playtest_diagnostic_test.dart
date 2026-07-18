@@ -12,6 +12,8 @@ import '../support/progression_battle_probe.dart';
 import '../support/test_data.dart';
 
 const _seedCount = 50;
+// 主线关总数(Ch1-7 各 5 关 = 35·2026-07-17 Ch7 二流首章扩;Ch8+ 时改此一处)。
+const _mainlineStageCount = 40;
 const _csvPath =
     'test/tools/output/progression_attribute_playtest_2026-07-13.csv';
 const _updateEvidenceEnvironment = 'UPDATE_PROGRESSION_PLAYTEST_EVIDENCE';
@@ -24,7 +26,7 @@ void main() {
   });
 
   test(
-    'progression playtest: 30 mainline × 3 profiles × $_seedCount seeds',
+    'progression playtest: $_mainlineStageCount mainline × 3 profiles × $_seedCount seeds',
     () {
       final evidenceFile = File(_csvPath);
       expect(evidenceFile.existsSync(), isTrue);
@@ -39,7 +41,7 @@ void main() {
               )
               .toList()
             ..sort((a, b) => a.id.compareTo(b.id));
-      expect(stages.length, 30);
+      expect(stages.length, _mainlineStageCount);
 
       final rows = <ProgressionBattleObservation>[];
       for (final stage in stages) {
@@ -57,7 +59,7 @@ void main() {
         }
       }
 
-      expect(rows.length, 30 * 3 * _seedCount);
+      expect(rows.length, _mainlineStageCount * 3 * _seedCount);
       final csv = _encodeCsv(rows);
       _validateCsvStructure(csv);
       final maxTick = rows
@@ -143,7 +145,12 @@ void _validateCsvStructure(String csv) {
   final lines = const LineSplitter().convert(csv);
   expect(
     lines,
-    hasLength(1 + 30 * ProgressionBuildProfile.values.length * _seedCount),
+    hasLength(
+      1 +
+          _mainlineStageCount *
+              ProgressionBuildProfile.values.length *
+              _seedCount,
+    ),
   );
   expect(lines.first, header);
 
@@ -164,15 +171,17 @@ void _validateCsvStructure(String csv) {
       int.parse(fields[index]);
     }
   }
-  expect(stages, hasLength(30));
+  expect(stages, hasLength(_mainlineStageCount));
   expect(profileCounts, {
     for (final profile in ProgressionBuildProfile.values)
-      profile.name: 30 * _seedCount,
+      profile.name: _mainlineStageCount * _seedCount,
   });
   expect(seeds, Set<int>.from(List<int>.generate(_seedCount, (seed) => seed)));
   expect(
     combinations,
-    hasLength(30 * ProgressionBuildProfile.values.length * _seedCount),
+    hasLength(
+      _mainlineStageCount * ProgressionBuildProfile.values.length * _seedCount,
+    ),
   );
 }
 

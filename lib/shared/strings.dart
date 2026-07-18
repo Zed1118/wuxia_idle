@@ -1351,7 +1351,7 @@ class UiStrings {
   // ── Phase 3 主线（T35）──
 
   static const String mainMenuMainline = '主线';
-  static const String mainMenuMainlineHint = '6 章 30 关,按章节顺序解锁';
+  static const String mainMenuMainlineHint = '8 章 40 关,按章节顺序解锁';
   static String mainMenuMainlineGoalHint(
     String target,
     String reward,
@@ -1363,7 +1363,7 @@ class UiStrings {
 
   static const String chapterListTitle = '主线 · 章节';
   static const String mainlineRouteMapTitle = '江湖路引';
-  static const String mainlineRouteMapSubtitle = '六章江湖路 · 每章五关，朱印为 Boss';
+  static const String mainlineRouteMapSubtitle = '八章江湖路 · 每章五关，朱印为 Boss';
   static const String mainlineRouteCurrent = '当前';
   static const String mainlineRouteCleared = '已通';
   static const String mainlineRouteLocked = '未至';
@@ -1374,12 +1374,16 @@ class UiStrings {
   static const String chapter4Title = '第四章 · 西出阳关';
   static const String chapter5Title = '第五章 · 征东';
   static const String chapter6Title = '第六章 · 飞升';
+  static const String chapter7Title = '第七章 · 北望';
+  static const String chapter8Title = '第八章 · 出塞';
   static const String chapter1Hint = '初出茅庐，山道试剑、林间伏击';
   static const String chapter2Hint = '镖局护送、黑风寨剿匪';
   static const String chapter3Hint = '武林会、一战封王';
   static const String chapter4Hint = '潼关西行,玉门古道、大漠迷踪、嘉峪关一决';
   static const String chapter5Hint = '东归长安、嵩山道观、中州论剑大会';
   static const String chapter6Hint = '论剑散场、嵩山再访、黄河之源、昆仑山顶';
+  static const String chapter7Hint = '北地风寒、雪压关城、山道伏影、灰衣重现、千钧压顶';
+  static const String chapter8Hint = '塞外风急、瀚海孤烟、沙夜袭影、孤城闭雪、残照回风';
 
   static const String chapterStatusLocked = '未解锁';
   static const String chapterStatusInProgress = '进行中';
@@ -1438,6 +1442,8 @@ class UiStrings {
       4 => chapter4Title,
       5 => chapter5Title,
       6 => chapter6Title,
+      7 => chapter7Title,
+      8 => chapter8Title,
       _ => '第 $chapterIndex 章',
     };
   }
@@ -1451,6 +1457,8 @@ class UiStrings {
       4 => chapter4Hint,
       5 => chapter5Hint,
       6 => chapter6Hint,
+      7 => chapter7Hint,
+      8 => chapter8Hint,
       _ => '',
     };
   }
@@ -1755,6 +1763,10 @@ class UiStrings {
   // ─── 群战守城（1.0 P3.2 §12.3,Batch 2.4 入口）────────────────────────────
   static const String mainMenuMassBattle = '守城试炼';
   static const String mainMenuMassBattleHint = '5 关守城 · 以少胜多';
+
+  // ─── 江湖远行（百草岭远征 · Phase B2.4 入口，§7.1 Lv100 解锁）─────────────
+  static const String mainMenuExpedition = '江湖远行';
+  static const String mainMenuExpeditionHint = '整队远征百草岭 · 挂机采药历练';
   static const String massBattleFormationTitle = '选择阵型';
   static const String massBattleFormationYanXing = '雁行阵';
   static const String massBattleFormationYanXingHint = '暴击 +10% · 防御 -5%';
@@ -3562,4 +3574,141 @@ class UiStrings {
 
   /// 分解确认弹窗返还材料旁的小来源按钮：`磨剑石来源`。
   static String materialSourceLinkNamed(String name) => '$name来源';
+
+  // ── 百草岭远征 · 返程行记（§4.7 · Phase B2.4）────────────────────────
+  static const String expeditionRecapTitle = '返程行记';
+  static const String expeditionRecapReturnedTitle = '百草岭远征 · 归';
+  static const String expeditionRecapDefeatedTitle = '败走百草岭';
+  static String expeditionRecapDeepest(int node) => '最深抵达第 $node 处险境';
+  static const String expeditionRecapResultSection = '此行战果';
+  static String expeditionRecapCompletedNodes(int node) => '踏平节点 $node 处';
+  static const String expeditionRecapRewardSection = '主要奖获';
+  static const String expeditionRecapNoReward = '未及采获，空手而归。';
+  static String expeditionRecapExp(int amount) => '修为 +$amount';
+  static String expeditionRecapRewardItem(String name, int qty) =>
+      '$name ×$qty';
+  static String expeditionRecapTicket(int count) => '断魂帖 ×$count';
+  static const String expeditionRecapInjurySection = '伤势';
+  static String expeditionRecapDefeatedInjury(int downed) =>
+      '力战不敌，$downed 人重伤而返，需静养多时。';
+  static String expeditionRecapDownedInjury(int downed) =>
+      '$downed 人力竭负伤，回山调息即可。';
+  static const String expeditionRecapSafeReturn = '全员安然归返，毫发无伤。';
+  static const String expeditionRecapBack = '返回';
+
+  // ── 百草岭远征 · 江湖远行总览（§7.1 · Phase B2.4）────────────────────
+  static const String expeditionOverviewTitle = '江湖远行';
+  static const String expeditionBaicaoName = '百草岭';
+  static const String expeditionBaicaoSubtitle = '整队远征，深入无尽药径';
+  // 派遣态
+  static const String expeditionDispatchTeamSection = '择人出征';
+  static const String expeditionDispatchTeamHint = '选 1-3 名门人同行；祖师坐镇门中，不亲赴远征。';
+  static const String expeditionDispatchPolicySection = '出发方针';
+  static const String expeditionDispatchButton = '拔营出发';
+  static String expeditionSelectedCount(int n) => '已择 $n / 3 人';
+  static const String expeditionCandidateOccupiedTag = '在外';
+  static const String expeditionCandidateNoMainTag = '未修主修';
+  static const String expeditionNoCandidates = '暂无可出征门人。招收弟子、研习主修之后再来。';
+  static const String expeditionDispatchFailed = '出征受阻，稍后再试。';
+  // active 态
+  static const String expeditionActiveSection = '远征在途';
+  static String expeditionActiveDepth(int node) => '当前深入第 $node 处险境';
+  static String expeditionActiveCompleted(int node) => '已踏平 $node 处节点';
+  static const String expeditionActivePolicyLabel = '本次方针';
+  static String expeditionNextNodeIn(String remaining) => '下一处约 $remaining 后抵达';
+  static const String expeditionNextNodeReady = '下一处将至……';
+  static String expeditionRemainingText(int hours, int minutes) =>
+      hours > 0 ? '$hours 时 $minutes 分' : '$minutes 分';
+  static const String expeditionRecallButton = '召回队伍';
+  static const String expeditionRecallConfirmTitle = '召回远征队伍';
+  static const String expeditionRecallConfirmBody =
+      '召回后本次远征结束：已踏平节点的奖励照常入账，当前未完成的节点作废。';
+  static const String expeditionRecallConfirm = '召回';
+
+  // ── 断魂庄三关 · 装载 / 整备（§7.1/§7.2 · C2.5）──────────────────────
+  static const String gauntletName = '断魂庄';
+  static const String gauntletSubtitle = '三关连战，一气呵成；持帖入庄，生死自负。';
+  static const String gauntletLoadoutTitle = '断魂庄';
+  // 顶部信息
+  static String gauntletTicket(int n) => '断魂帖 · $n 张';
+  static const String gauntletNoTicketHint = '尚无断魂帖，暂不可入庄。';
+  static const String gauntletEnemiesSection = '庄中三关';
+  static String gauntletStageOrdinal(int stage) => '第 $stage 关';
+  static String gauntletRecommendedRealm(String realm) => '推荐境界 · $realm 上下';
+  // 择人
+  static const String gauntletTeamSection = '择人入庄';
+  static const String gauntletTeamHint = '选 1-3 名弟子闯庄；祖师坐镇门中，不亲入庄。';
+  static String gauntletSelectedCount(int n) => '已择 $n / 3 人';
+  static const String gauntletCandidateOccupiedTag = '在外';
+  static const String gauntletCandidateNoMainTag = '未修主修';
+  static const String gauntletNoCandidates = '暂无可入庄弟子。招收弟子、研习主修之后再来。';
+  // 补给装载
+  static const String gauntletSupplySection = '整备补给';
+  static String gauntletSupplyHint(int cap) => '至多携 $cap 份，庄内两次整备时用；未用者出庄原数奉还。';
+  static String gauntletSupplyOwned(int n) => '库存 $n';
+  static String gauntletSupplyBudget(int used, int cap) => '已装 $used / $cap 份';
+  // 入庄
+  static const String gauntletEnterButton = '持帖入庄';
+  static const String gauntletEnterFailed = '入庄受阻，请核对队伍与补给。';
+
+  // 庄内整备（§7.2）
+  static const String gauntletInterludeTitle = '庄内整备';
+  static String gauntletInterludeSection(int stage) => '第 $stage 关 · 整备待战';
+  static const String gauntletMemberSection = '当前队伍';
+  static String gauntletMemberHp(int cur, int max) => '气血 $cur / $max';
+  static String gauntletMemberQi(int cur, int max) => '真气 $cur / $max';
+  static const String gauntletMemberDownedTag = '倒下';
+  static String gauntletMemberCooldownTag(int n) => '$n 招冷却';
+  static const String gauntletSupplyRemainSection = '随身补给';
+  static String gauntletSupplyRemain(String name, int remaining) =>
+      '$name · 余 $remaining 份';
+  static const String gauntletSupplyUseButton = '使用';
+  static const String gauntletSupplyExhausted = '已用尽';
+  static const String gauntletNoInterludeSupply = '未携补给，径直闯关。';
+  static const String gauntletHealTargetTitle = '择疗伤目标';
+  static const String gauntletContinueButton = '继续闯关';
+  static const String gauntletConcedeButton = '认输离庄';
+  static const String gauntletConcedeConfirmTitle = '认输离庄';
+  static const String gauntletConcedeConfirmBody =
+      '认输即止步本次闯庄：已击败精英的经验照常入账，按实际战况结算轻重伤（不损永久内力）；'
+      '断魂帖与已用补给不退还。';
+  static const String gauntletConcedeConfirm = '认输离庄';
+
+  // 通关三选一奖励（§6.2 · #1 wiring Task 2）
+  static const String gauntletRewardTitle = '断魂庄 · 论功行赏';
+  static const String gauntletRewardSection = '通庄战利 · 三选一';
+  static const String gauntletRewardFirstClearBadge = '首通 · 全奖';
+  static const String gauntletRewardRepeatBadge = '再通 · 减半';
+  static const String gauntletRewardFirstClearHint =
+      '首克庄门：择一件命名兵刃随身，另赠庄门秘籍、参战弟子经验与领悟点。';
+  static const String gauntletRewardRepeatHint =
+      '再克庄门：择一件命名兵刃随身；经验与领悟减半奉送，秘籍不再重赠。';
+  static String gauntletRewardTierSlot(String tier, String slot) =>
+      '$tier · $slot';
+  static String gauntletRewardAtk(int min, int max) => '攻 $min–$max';
+  static String gauntletRewardHp(int min, int max) => '血 $min–$max';
+  static String gauntletRewardSpd(int min, int max) => '速 $min–$max';
+  static const String gauntletRewardSelectHint = '点选择取';
+  static const String gauntletRewardConfirmTitle = '择取战利';
+  static String gauntletRewardConfirmBody(String name) =>
+      '确认择取「$name」？三选一仅取其一，余者不留。';
+  static const String gauntletRewardConfirm = '确认择取';
+  static const String gauntletNoReward = '暂无待领战利，庄门未克。';
+
+  // 战败结算（§6.3 · #1 wiring Task 3）
+  static const String gauntletDefeatTitle = '断魂庄 · 铩羽';
+  static const String gauntletDefeatSection = '闯庄失利';
+  static const String gauntletDefeatHint =
+      '止步于此。已破精英的经验照常入账，按战况结算轻重伤（不损永久内力）；'
+      '断魂帖与已用补给不退。';
+  static String gauntletDefeatEliteLine(int count, int exp) =>
+      '已破 $count 关精英 · 各得经验 $exp';
+  static const String gauntletDefeatNoElite = '未破一关精英，无经验入账。';
+  static const String gauntletDefeatMemberSection = '弟子伤势';
+  static const String gauntletDefeatHeavyTag = '重伤';
+  static const String gauntletDefeatLightTag = '轻伤';
+  static const String gauntletLeaveButton = '离庄';
+
+  // 战斗驱动编排（#1 wiring Task 4）
+  static const String gauntletSessionNotReady = '断魂庄会话未就绪';
 }

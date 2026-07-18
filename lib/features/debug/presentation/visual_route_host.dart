@@ -95,6 +95,15 @@ import '../../zangjuange/presentation/zangjuange_screen.dart';
 import '../../../core/domain/island_building_type.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
+import '../../boss_gauntlet/application/gauntlet_service.dart';
+import '../../boss_gauntlet/presentation/gauntlet_defeat_screen.dart';
+import '../../boss_gauntlet/presentation/gauntlet_interlude_screen.dart';
+import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
+import '../../boss_gauntlet/presentation/gauntlet_reward_screen.dart';
+import '../../expedition/application/expedition_service.dart';
+import '../../expedition/presentation/expedition_overview_screen.dart';
+import '../../expedition/presentation/expedition_recap_screen.dart';
+import '../../../core/domain/reward_entry.dart';
 import 'hitbox_debug_overlay.dart';
 
 /// 出版美术验收入口 App。
@@ -989,9 +998,74 @@ Future<Widget> buildVisualTarget(
       // (无标/境界偏低/闭关中),屏走真 provider 链验点选交换入口与标签。
       await Phase2SeedService(isar: isar).seedTeamLineup();
       return const TeamLineupScreen();
+    case VisualRoute.expeditionRecap:
+      // 百草岭远征返程行记目检(§4.7):纯只读屏,直接注入一份丰奖获 + 1 人负伤的
+      // 主动召回结果(GameRepository 已在 _prepare 加载 → 物料名正常渲染)。
+      return _buildExpeditionRecapVisual();
+    case VisualRoute.expeditionOverview:
+      // 江湖远行总览·派遣态(§7.1):复用 team_lineup 种子(founder + 带主修弟子 +
+      // 降将无主修 + 闭关行者占用),无 active run → 派遣态显候选三态 + 三方针 + 拔营。
+      await Phase2SeedService(isar: isar).seedTeamLineup();
+      return const ExpeditionOverviewScreen();
+    case VisualRoute.expeditionActive:
+      // 江湖远行·派遣中(§7.1):种子 + 派遣两人 + 推进到第 8 节点,显在途态
+      // (深度/完成/方针/下一节点剩余/召回)。
+      await Phase2SeedService(isar: isar).seedExpeditionActive();
+      return const ExpeditionOverviewScreen();
+    case VisualRoute.gauntletLoadout:
+      // 断魂庄装载屏(§7.1):team_lineup 种子 + 库存补帖/补给,无 active 会话 → 装载态
+      // (帖库存/三关 Boss/推荐境界/择人/补给装载/入庄)。
+      await Phase2SeedService(isar: isar).seedGauntletLoadout();
+      return const GauntletLoadoutScreen();
+    case VisualRoute.gauntletInterlude:
+      // 断魂庄庄内整备(§7.2):造 active 会话推进到 interlude(第 2 关·一存活带冷却/
+      // 一倒下 + 托管补给余量),显成员状态 + 补给 + 使用/继续/认输。
+      await Phase2SeedService(isar: isar).seedGauntletInterlude();
+      return const GauntletInterludeScreen();
+    case VisualRoute.gauntletReward:
+      // 断魂庄通关三选一(§6.2):造 active 会话推进到 awaitingRewardChoice(Boss 终关胜·
+      // 首通待领·三件好家伙候选),显三选一卡 + 首通标 + 择取。
+      await Phase2SeedService(isar: isar).seedGauntletReward();
+      return const GauntletRewardScreen();
+    case VisualRoute.gauntletDefeat:
+      // 断魂庄战败结算(§6.3):直传摘要 fixture(已破 1 关精英 + 一轻伤一重伤),
+      // 显精英经验 + 逐弟子伤势 + 离庄。屏纯只读摘要·无需 Isar 会话。
+      return const GauntletDefeatScreen(
+        summary: GauntletDefeatSummary(
+          elitesDefeated: 1,
+          eliteExpPerMember: 50,
+          members: [
+            GauntletDefeatMember(name: '沈青', downed: false),
+            GauntletDefeatMember(name: '楚河', downed: true),
+          ],
+        ),
+      );
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }
+}
+
+/// 百草岭远征返程行记验收 fixture:构造一份主动召回结果(最深 14 处·奖获修为/
+/// 药草/灵泉/银两·断魂帖 ×1 里程碑·1 人负伤),直传只读 [ExpeditionRecapScreen]。
+Widget _buildExpeditionRecapVisual() {
+  RewardEntry r(String key, int qty) => RewardEntry()
+    ..rewardKey = key
+    ..quantity = qty;
+  return ExpeditionRecapScreen(
+    result: ExpeditionReturnResult(
+      returned: true,
+      deepestNode: 14,
+      grantedRewards: [
+        r('exp', 1200),
+        r('item_yaocao', 4),
+        r('item_lingquanshui', 2),
+        r('item_silver', 180),
+        r('item_duanhuntie', 1),
+      ],
+      downedCount: 1,
+      defeated: false,
+    ),
+  );
 }
 
 class _MainlineFirstClearBattlePreview extends ConsumerStatefulWidget {

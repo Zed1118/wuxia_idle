@@ -2,7 +2,7 @@
 //
 // M15-16 D4 数值再平衡 PoC · balance_simulator
 //
-// 跑 30 关 mainline × N seed × 2 build profile = 模拟,统计 floor/ceiling 通关率
+// 跑全部 mainline 关(40 关·Ch8 扩) × N seed × 2 build profile = 模拟,统计 floor/ceiling 通关率
 // bracket + 难度诊断。输出 csv 到 test/tools/output/balance_simulation_*.csv。
 //
 // 与生产战斗体例镜像:
@@ -60,7 +60,7 @@ void main() {
     Directory(_outputDir).createSync(recursive: true);
   });
 
-  test('balance simulation · 30 mainline × $_seedsPerStage seeds', () async {
+  test('balance simulation · 40 mainline × $_seedsPerStage seeds', () async {
     final mainlines =
         repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
@@ -69,7 +69,7 @@ void main() {
     expect(
       mainlines.length,
       greaterThanOrEqualTo(25),
-      reason: 'Demo §8.4 15-20 主线 + Ch4-6 P2 扩 = 30 关',
+      reason: 'Demo §8.4 15-20 主线 + Ch4-6 P2 扩 + Ch7-8 二流两章 = 40 关',
     );
 
     final results = <_SimResult>[];
@@ -143,7 +143,7 @@ void main() {
     }
   });
 
-  // 波B:30 关高熟练度全表 sweep(backlog §六「扩到 _summarize 全表」销账)。
+  // 波B:全主线高熟练度全表 sweep(backlog §六「扩到 _summarize 全表」销账)。
   // 维度:30 mainline × {floor,ceiling} × uses {0,800} × 25 seed(同 seed A/B
   // 隔离熟练度)。输出对照表 + 过易诊断到 output;断言写约束语义:
   //   - per stage/profile:maxed ≥ fresh − 10pt(CD delta 改变战斗流,容噪)

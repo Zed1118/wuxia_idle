@@ -9,18 +9,19 @@ import '../support/test_data.dart';
 
 /// 存量溢出连跳分布探针（baicao §3.1）。
 ///
-/// 目的：实测「封顶期继续累加的存量经验」在发布上限 10→17 时的连跳层数分布，
-/// 为「一次性兑现（默认）vs 分段抬升（10→13→17）」提供数据。诊断测，非玩法代码。
+/// 背景：发布上限已从 10 抬到 17（里程碑批·一次性兑现）。旧档在 Lv100 封顶期
+/// 继续累加的存量经验，升级到 cap=17 后一次性兑现、连跳数层。本测实测该连跳层数
+/// 分布，并以 ratchet 守住「一次性兑现连跳上界」不因经济改动失控。诊断测，非玩法代码。
 ///
-/// 本探针**不改生产发布上限**（仍 10）：`isLayerLocked` 传入自建的 cap=17 锁，
-/// 假想上限已抬到 17，测存量经验一次性兑现的连跳量级。
+/// `isLayerLocked` 用 cap=17 锁（现与生产发布上限一致），从绝对层 10 顶起测
+/// 存量经验一次性兑现的连跳量级。
 
 /// 沿 progression_gate 体例：越过 [cap] 绝对层视为锁定。
 bool Function(RealmTier, RealmLayer) _lockAtCap(int cap, GameRepository repo) {
   return (t, l) => repo.getRealm(t, l).absoluteLevel > cap;
 }
 
-/// 停在绝对层 10 顶（三流·熟练 / Lv100，即当前发布上限）、经验清零的祖师。
+/// 停在绝对层 10 顶（三流·熟练 / Lv100，旧发布上限=存量封顶点）、经验清零的祖师。
 /// 属性取中性占位（不影响层级推进，纯诊断）。
 Character _buildCappedFounderAtLv100() {
   final attrs = Attributes()

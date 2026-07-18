@@ -30,12 +30,15 @@ int mainlineGroupIndex(String stageId) {
   if (stageId.startsWith('stage_light_foot_')) return 8;
   if (stageId.startsWith('stage_mass_battle_')) return 9;
   // Ch1-6 格式：stage_0{ch}_{seq}，例如 stage_01_05、stage_06_04。
-  // 取下划线分割第二段（'01'…'06'），转为数字。
+  // 取下划线分割第二段（'01'…'07'），转为数字。
   final parts = stageId.split('_');
-  // 期望格式 ['stage', '01'…'06', '<seq>']，长度 >= 3
+  // 期望格式 ['stage', '01'…'07', '<seq>']，长度 >= 3
   if (parts.length >= 3) {
     final chNum = int.tryParse(parts[1]);
     if (chNum != null && chNum >= 1 && chNum <= 6) return chNum;
+    // Ch7+ 二流主线(2026-07-17)：心魔/轻功/群战 早已占 7/8/9（历史持久化值不重排），
+    // 故 Ch7 起偏移 +3 从 10 排（Ch7→10 / Ch8→11 …），仅图鉴分组排序用，不与前三者冲突。
+    if (chNum != null && chNum >= 7) return chNum + 3;
   }
   return 99; // 未识别前缀兜底
 }

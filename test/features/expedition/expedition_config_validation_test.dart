@@ -31,6 +31,29 @@ void main() {
         throwsStateError,
       );
     });
+    test('解析 base_exp_per_battle（缺省默认 170·batch3 探针拍板中档）', () {
+      final c = ExpeditionConfig.fromYaml(const {
+        'normal_node_minutes': 90,
+        'elite_node_minutes': 180,
+        'base_exp_per_battle': 250,
+      });
+      expect(c.baseExpPerBattle, 250);
+      final d = ExpeditionConfig.fromYaml(const {
+        'normal_node_minutes': 90,
+        'elite_node_minutes': 180,
+      });
+      expect(d.baseExpPerBattle, 170);
+    });
+    test('base_exp_per_battle 非正 → StateError', () {
+      expect(
+        () => ExpeditionConfig.fromYaml(const {
+          'normal_node_minutes': 90,
+          'elite_node_minutes': 180,
+          'base_exp_per_battle': 0,
+        }),
+        throwsStateError,
+      );
+    });
   });
 
   group('BossGauntletConfig.fromYaml', () {
@@ -41,6 +64,8 @@ void main() {
         {'role': 'elite', 'enemy_team_id': 'gauntlet_shi_zhenyue'},
         {'role': 'boss', 'enemy_team_id': 'gauntlet_wen_jiuzhen'},
       ],
+      'first_clear_reward_skill_id': 'skill_suo_mai_zhen',
+      'reward_candidate_equipment_ids': ['eq1', 'eq2', 'eq3'],
     };
     test('恰好两精英+一 Boss 且补给上限 3 合法', () {
       final c = BossGauntletConfig.fromYaml(base());

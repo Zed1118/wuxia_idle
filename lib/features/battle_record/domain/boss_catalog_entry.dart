@@ -7,7 +7,7 @@ import 'boss_memory_source.dart';
 ///   - 无对应 Memory → 显「未会之敌」占位卡。
 ///
 /// groupIndex 含义：
-///   - mainline：同 mainlineGroupIndex(stageId)（Ch1-6 → 1-6 / 心魔→7 / 轻功→8 / 群战→9）。
+///   - mainline：同 mainlineGroupIndex(stageId)（Ch1-6 → 1-6 / 心魔→7 / 轻功→8 / 群战→9 / Ch7→10）。
 ///   - tower：层号（5 / 10 / 15 / 20 / 25 / 30）。
 class BossCatalogEntry {
   final String bossKey;

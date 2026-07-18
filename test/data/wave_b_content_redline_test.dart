@@ -36,10 +36,12 @@ void main() {
       expect(chapters.add(st.chapterIndex!), isTrue, reason: '每章至多 1 本真解');
     }
     final releaseTier = _releaseCapTier(repo);
+    // mountDeferred 招豁免挂载完备性(发布阶内但正式挂载点留 batch3/Phase C)。
     final releaseManualSkills = repo.skillDefs.values
         .where(
           (s) =>
               s.source == SkillSource.mainlineDrop &&
+              !s.mountDeferred &&
               s.canEquipAtRealm(releaseTier),
         )
         .map((s) => s.id)
@@ -51,7 +53,7 @@ void main() {
     );
   });
 
-  test('塔残页只投放当前发布上限内招式;普通层不配', () {
+  test('残页只投放当前发布上限内招式(塔 Boss 层 / 主线 Boss 关);普通层不配', () {
     final repo = GameRepository.instance;
     final releaseTier = _releaseCapTier(repo);
     final mountedFragments = <String>{};
@@ -69,10 +71,23 @@ void main() {
         expect(fragmentId, isNull, reason: 'floor ${f.floorIndex} 普通层不应配残页');
       }
     }
+    // Ch7 起残页亦可挂主线 Boss 关(stage dropSkillFragmentId·灰衣人 stage_07_04·channel 泛化)。
+    for (final s in repo.stageDefs.values) {
+      final fragmentId = s.dropSkillFragmentId;
+      if (fragmentId == null) continue;
+      expect(s.isBossStage, isTrue, reason: '${s.id} 残页只能挂 Boss 关');
+      expect(
+        repo.skillDefs[fragmentId]!.canEquipAtRealm(releaseTier),
+        isTrue,
+        reason: '${s.id} 不应提前投放高阶残页',
+      );
+      expect(mountedFragments.add(fragmentId), isTrue, reason: '残页不可重复挂载');
+    }
     final releaseFragments = repo.skillDefs.values
         .where(
           (s) =>
               s.source == SkillSource.fragment &&
+              !s.mountDeferred &&
               s.canEquipAtRealm(releaseTier),
         )
         .map((s) => s.id)
@@ -80,7 +95,7 @@ void main() {
     expect(
       mountedFragments,
       releaseFragments,
-      reason: '当前发布上限内的塔残页应全部挂载，高阶残页留给未来内容',
+      reason: '当前发布上限内的残页应全部挂载(塔 Boss 层或主线 Boss 关)，高阶残页留给未来内容',
     );
   });
 
@@ -104,7 +119,31 @@ void main() {
       expect(m.values.toSet().length, 1, reason: '$kind 各流派数量应相等(配平),实际 $m');
     }
 
-    assertBalanced('真解', countBy((s) => s.source == SkillSource.mainlineDrop));
+    // 断魂庄等副本奖励招（锁脉针法）属独立奖励流，不并入 wave_b 主线章末 build 配平池
+    // （design §6.2 首通仅一枚阴柔奖励招，非配平三件套）。以 gauntlet 敌队 skillIds 界定
+    // 排除，排除后主线 6 真解仍守 2/2/2 配平不变式。
+    final gauntletConfig = repo.bossGauntletConfig;
+    final gauntletSkillIds = <String>{
+      if (gauntletConfig != null)
+        for (final team in gauntletConfig.enemyTeams.values)
+          for (final e in team) ...e.skillIds,
+    };
+
+    // Ch8+ 独立末Boss真解（灰袖回风等）同属独立奖励流:每章一门、流派随末Boss
+    // 叙事定,不进 wave_b 2/2/2 配平池(spec 2026-07-18-erliu-content-ch8-design
+    // §4·池不变零 rebalancing)。新增独立真解时在此白名单登记——配平池语义
+    // = wave_b 六章 build 池不变式,非「所有 mainlineDrop 招」。
+    const standaloneBossManualIds = {'skill_hui_xiu_hui_feng'};
+
+    assertBalanced(
+      '真解',
+      countBy(
+        (s) =>
+            s.source == SkillSource.mainlineDrop &&
+            !gauntletSkillIds.contains(s.id) &&
+            !standaloneBossManualIds.contains(s.id),
+      ),
+    );
     assertBalanced('残页', countBy((s) => s.source == SkillSource.fragment));
     assertBalanced('破招', countBy((s) => s.canInterrupt));
   });
