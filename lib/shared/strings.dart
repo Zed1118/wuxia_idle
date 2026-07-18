@@ -1351,7 +1351,7 @@ class UiStrings {
   // ── Phase 3 主线（T35）──
 
   static const String mainMenuMainline = '主线';
-  static const String mainMenuMainlineHint = '7 章 35 关,按章节顺序解锁';
+  static const String mainMenuMainlineHint = '8 章 40 关,按章节顺序解锁';
   static String mainMenuMainlineGoalHint(
     String target,
     String reward,
@@ -1363,7 +1363,7 @@ class UiStrings {
 
   static const String chapterListTitle = '主线 · 章节';
   static const String mainlineRouteMapTitle = '江湖路引';
-  static const String mainlineRouteMapSubtitle = '六章江湖路 · 每章五关，朱印为 Boss';
+  static const String mainlineRouteMapSubtitle = '八章江湖路 · 每章五关，朱印为 Boss';
   static const String mainlineRouteCurrent = '当前';
   static const String mainlineRouteCleared = '已通';
   static const String mainlineRouteLocked = '未至';
@@ -1375,6 +1375,7 @@ class UiStrings {
   static const String chapter5Title = '第五章 · 征东';
   static const String chapter6Title = '第六章 · 飞升';
   static const String chapter7Title = '第七章 · 北望';
+  static const String chapter8Title = '第八章 · 出塞';
   static const String chapter1Hint = '初出茅庐，山道试剑、林间伏击';
   static const String chapter2Hint = '镖局护送、黑风寨剿匪';
   static const String chapter3Hint = '武林会、一战封王';
@@ -1382,6 +1383,7 @@ class UiStrings {
   static const String chapter5Hint = '东归长安、嵩山道观、中州论剑大会';
   static const String chapter6Hint = '论剑散场、嵩山再访、黄河之源、昆仑山顶';
   static const String chapter7Hint = '北地风寒、雪压关城、山道伏影、灰衣重现、千钧压顶';
+  static const String chapter8Hint = '塞外风急、瀚海孤烟、沙夜袭影、孤城闭雪、残照回风';
 
   static const String chapterStatusLocked = '未解锁';
   static const String chapterStatusInProgress = '进行中';
@@ -1441,6 +1443,7 @@ class UiStrings {
       5 => chapter5Title,
       6 => chapter6Title,
       7 => chapter7Title,
+      8 => chapter8Title,
       _ => '第 $chapterIndex 章',
     };
   }
@@ -1455,6 +1458,7 @@ class UiStrings {
       5 => chapter5Hint,
       6 => chapter6Hint,
       7 => chapter7Hint,
+      8 => chapter8Hint,
       _ => '',
     };
   }

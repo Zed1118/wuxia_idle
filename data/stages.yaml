@@ -1943,7 +1943,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [170, 230]
         dropChance: 1.0  # 银两(二流章中 Boss)
-    baseExpReward: 18
+    baseExpReward: 48
     difficultyMultiplier: 8.5
     biome: desert
     sceneBackgroundPath: assets/scenes/battle_desert.png
@@ -1983,7 +1983,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [120, 170]
         dropChance: 1.0  # 银两(二流阶)
-    baseExpReward: 26
+    baseExpReward: 18
     difficultyMultiplier: 8.8
     biome: cityWall
     sceneBackgroundPath: assets/scenes/battle_citywall.png

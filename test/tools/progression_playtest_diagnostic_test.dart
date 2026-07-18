@@ -13,7 +13,7 @@ import '../support/test_data.dart';
 
 const _seedCount = 50;
 // 主线关总数(Ch1-7 各 5 关 = 35·2026-07-17 Ch7 二流首章扩;Ch8+ 时改此一处)。
-const _mainlineStageCount = 35;
+const _mainlineStageCount = 40;
 const _csvPath =
     'test/tools/output/progression_attribute_playtest_2026-07-13.csv';
 const _updateEvidenceEnvironment = 'UPDATE_PROGRESSION_PLAYTEST_EVIDENCE';
@@ -146,7 +146,10 @@ void _validateCsvStructure(String csv) {
   expect(
     lines,
     hasLength(
-      1 + _mainlineStageCount * ProgressionBuildProfile.values.length * _seedCount,
+      1 +
+          _mainlineStageCount *
+              ProgressionBuildProfile.values.length *
+              _seedCount,
     ),
   );
   expect(lines.first, header);
@@ -176,7 +179,9 @@ void _validateCsvStructure(String csv) {
   expect(seeds, Set<int>.from(List<int>.generate(_seedCount, (seed) => seed)));
   expect(
     combinations,
-    hasLength(_mainlineStageCount * ProgressionBuildProfile.values.length * _seedCount),
+    hasLength(
+      _mainlineStageCount * ProgressionBuildProfile.values.length * _seedCount,
+    ),
   );
 }
 

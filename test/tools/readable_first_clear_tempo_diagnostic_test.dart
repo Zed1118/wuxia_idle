@@ -88,7 +88,7 @@ void _assertExperienceRatchet(List<StageDef> stages, List<_TempoRun> rows) {
         samples.length;
   }
 
-  for (var chapter = 1; chapter <= 7; chapter++) {
+  for (var chapter = 1; chapter <= 8; chapter++) {
     final stageId = 'stage_${chapter.toString().padLeft(2, '0')}_05';
     final undergeared = averageActions(
       stageId,
