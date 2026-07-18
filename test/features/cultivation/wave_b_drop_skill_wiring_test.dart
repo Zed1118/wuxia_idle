@@ -6,6 +6,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
@@ -181,6 +182,47 @@ void main() {
       expect(result, isA<SlotEquipSucceeded>());
       final c = (await isar.characters.get(charId))!;
       expect(c.mainSkillId1, 'skill_kai_bei_shou');
+    });
+
+    // 断魂庄来源语义转正(2026-07-19):锁脉针 source=gauntlet,挂载 =
+    // boss_gauntlets.yaml first_clear_reward_skill_id;装配/池语义与真解/残页同口径。
+    test('gauntlet 首通招(锁脉针)走同一 drop gate:未解锁拦 → 解锁可装 → 入装配池', () async {
+      final isar = IsarSetup.instance;
+      final repo = GameRepository.instance;
+      expect(
+        repo.skillDefs['skill_suo_mai_zhen']!.source,
+        SkillSource.gauntlet,
+        reason: '锁脉针来源应已转正 gauntlet',
+      );
+      expect(repo.skillDefs['skill_suo_mai_zhen']!.mountDeferred, isFalse);
+
+      final svc = SkillLoadoutService(isar);
+      final charId = await seedCharacter(
+        realmTier: RealmTier.sanLiu, // 锁脉针 tier 2 → 三流可装
+        school: TechniqueSchool.yinRou,
+      );
+      final locked = await svc.equipSkill(
+        characterId: charId,
+        slot: SkillSlot.main1,
+        skillId: 'skill_suo_mai_zhen',
+      );
+      expect(locked, isA<SlotEquipNotUnlocked>(), reason: '未解锁与真解同口径拦');
+
+      // 首通奖励发放路径(gauntlet_service markUnlocked,此处经 grantManual 同语义)。
+      await SkillUnlockService(isar).grantManual('skill_suo_mai_zhen');
+      final ok = await svc.equipSkill(
+        characterId: charId,
+        slot: SkillSlot.main1,
+        skillId: 'skill_suo_mai_zhen',
+      );
+      expect(ok, isA<SlotEquipSucceeded>());
+      final c = (await isar.characters.get(charId))!;
+      expect(c.mainSkillId1, 'skill_suo_mai_zhen');
+
+      final drops = await SkillLoadoutResolver(
+        isar: isar,
+      ).resolveUnlockedDropSkills(c, repo);
+      expect(drops.map((s) => s.id), contains('skill_suo_mai_zhen'));
     });
   });
 

@@ -18,14 +18,22 @@ void main() {
   });
 
   group('锁脉针招 skill_suo_mai_zhen（§5.2 苏无咎 charge / §6.2 首通奖励）', () {
-    test('存在且携 qiDrainPct 0.30、阴柔 tier2、mainline_drop 且 mount_deferred', () {
+    test('存在且携 qiDrainPct 0.30、阴柔 tier2、gauntlet 且已正式挂载', () {
       final skill = GameRepository.instance.skillDefs['skill_suo_mai_zhen'];
       expect(skill, isNotNull, reason: '锁脉针招须在 skills.yaml 定义');
       expect(skill!.qiDrainPct, 0.30, reason: '§5.2 未破招夺 30% 最大真气');
       expect(skill.style, TechniqueSchool.yinRou, reason: '§6.2 锁脉针法=阴柔招');
       expect(skill.tier, 2, reason: '§6.2 三流阶（tier2）');
-      expect(skill.source, SkillSource.mainlineDrop, reason: '首通真解体例（同青锋绝）');
-      expect(skill.mountDeferred, isTrue, reason: '正式奖励挂载在 C2.4，暂豁免红线⑦');
+      expect(
+        skill.source,
+        SkillSource.gauntlet,
+        reason: '2026-07-19 来源语义转正:断魂庄首通奖励=gauntlet',
+      );
+      expect(
+        skill.mountDeferred,
+        isFalse,
+        reason: 'C2.4 首通奖励挂载已落地,豁免标记已删=发布',
+      );
       expect(skill.type, SkillType.powerSkill);
       expect(
         skill.powerMultiplier,
