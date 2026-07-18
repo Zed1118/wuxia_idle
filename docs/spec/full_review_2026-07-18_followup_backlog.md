@@ -8,10 +8,10 @@
 | # | 项 | 报告# | 现状与拍板点 |
 |---|---|---|---|
 | 1 | CLAUDE §5.4「schema 真 sink」表述订正(v1.40) | — | 批C 把 `_enforceEncounterSkillRedLines` 迁至 `lib/data/validation/encounter_red_lines_validator.dart`(公名 `enforceEncounterSkillRedLines`),CLAUDE §5.4/§8.1 相关行需同步;CLAUDE 是 no-touch 文件,待用户过目后我来改 → **✅ v1.40 已落(2026-07-18 用户拍板)** |
-| 2 | 存档(Isar)载入关键字段 clamp | #11 | clamp 边界=数值设计决策(clamp 到硬红线?软线?哪些字段?),与红线测试语义耦合,不宜代拍 |
-| 3 | GameRepository 去单例化(provider 注入) | #2 后半 | 用户已拍「今晚不做」;若未来要做,建议先 grep `GameRepository.instance` callsite 量再定 facade 策略 |
-| 4 | `设计文档/`、`审查报告/` 两个未入库中文目录去留 | #23 | 入库 or .gitignore,用户定 |
-| 5 | debug feature(~7000 行)迁出 lib 树 | #7 | 已证伪其安全/体积危害(kDebugMode const+tree-shaking,release 无残留),纯目录整洁问题;若仍想做,是大迁移需专批 |
+| 2 | 存档(Isar)载入关键字段 clamp | #11 | clamp 边界=数值设计决策(clamp 到硬红线?软线?哪些字段?),与红线测试语义耦合,不宜代拍 → **✅ 2026-07-18 拍板不做,进 rejected registry**(理由见 registry 条目) |
+| 3 | GameRepository 去单例化(provider 注入) | #2 后半 | 用户已拍「今晚不做」;若未来要做,建议先 grep `GameRepository.instance` callsite 量再定 facade 策略 → **✅ 2026-07-18 实测 1269 callsite,拍死不做,进 rejected registry** |
+| 4 | `设计文档/`、`审查报告/` 两个未入库中文目录去留 | #23 | 入库 or .gitignore,用户定 → **✅ 2026-07-18 拍板:排除规则入库 .gitignore(本地 exclude 转正,目录留作用户草稿区)** |
+| 5 | debug feature(~7000 行)迁出 lib 树 | #7 | 已证伪其安全/体积危害(kDebugMode const+tree-shaking,release 无残留),纯目录整洁问题;若仍想做,是大迁移需专批 → **✅ 2026-07-18 拍板不做,进 rejected registry** |
 
 ## 依赖未解除
 
