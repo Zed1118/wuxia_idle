@@ -59,3 +59,19 @@ build/visual_acceptance/kimi_battle_smoke_20260718/battle_ultimate_caption/1280x
 build/visual_acceptance/kimi_battle_smoke_20260718/battle_ultimate_caption/1440x900/battle_ultimate_caption.log
 build/visual_acceptance/kimi_battle_smoke_20260718/battle_ultimate_caption/1440x900/battle_ultimate_caption.png
 ```
+
+## Claude 终判(2026-07-18 逐图复核 + 补帧)
+
+- **终判:全 PASS(16/16 静态 + 6 推进帧),无需修复项**。9 张关键图逐一复核与 Kimi 初判一致;
+  battle_scene 720p 实拍到本批「击杀」战报标记(战报行「刚猛乙「重击」3467 伤(击杀)」=
+  battle-log-kill-snapshot 真机证据)。小订正:tap_live 技能签状态实为「回势中」(初检笔误「回气中」)。
+- **mass_battle WARN 销案**:①「3v7 仅见 3 敌」=群战守城波次制设计(总 7 敌分波),补帧 live_t7
+  实拍到第 4 敌(弓手)走入战场=波次增援证据;②「飘字未验」——初检提议的更长 --wait 不可行
+  (该路由 `autoStart: false`,等再久也停节拍 0),Claude 改 CGEvent 驱动(点 ⏸ 显式暂停 →
+  点「继续」开跑,顺带验证暂停 overlay 正常),live_t4/t7/t11(节拍 10-12)实拍:飘字 779/2693
+  渲染清晰、受击红痕特效正常、敌方掉血推进(40K→30.6K)。
+- **残留盲区(测试托底,不阻塞)**:同拍同槽多发飘字的 spread 偏移与快进态特效密度收束,
+  三帧抽样均为单发未逐像素确认;spread/门控逻辑由链上 91 新测覆盖,真机留日常游玩兜底。
+- 补帧文件:`battle_mass_battle_stage/1280x720/{running_t4,live_t4,live_t7,live_t11}.png`。
+- 环境备注:初检 `flutter pub get` 把 pubspec.lock 镜像源翻成 pub.dev(工作树级,未入库,已还原);
+  后续外部代理派单须先 `export PUB_HOSTED_URL=https://pub.flutter-io.cn` 或声明勿跑 pub get。
