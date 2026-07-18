@@ -28,7 +28,11 @@ void main() {
     final result = ExpeditionReturnResult(
       returned: true,
       deepestNode: 12,
-      grantedRewards: [_r('exp', 800), _r('item_yaocao', 3), _r('item_duanhuntie', 1)],
+      grantedRewards: [
+        _r('exp', 800),
+        _r('item_yaocao', 3),
+        _r('item_duanhuntie', 1),
+      ],
       downedCount: 0,
       defeated: false,
     );
@@ -37,7 +41,10 @@ void main() {
     expect(find.text(UiStrings.expeditionRecapTitle), findsOneWidget);
     expect(find.text(UiStrings.expeditionRecapReturnedTitle), findsOneWidget);
     expect(find.text(UiStrings.expeditionRecapDeepest(12)), findsOneWidget);
-    expect(find.text(UiStrings.expeditionRecapCompletedNodes(12)), findsOneWidget);
+    expect(
+      find.text(UiStrings.expeditionRecapCompletedNodes(12)),
+      findsOneWidget,
+    );
     expect(find.text(UiStrings.expeditionRecapExp(800)), findsOneWidget);
     expect(find.text(UiStrings.expeditionRecapTicket(1)), findsOneWidget);
     expect(find.text(UiStrings.expeditionRecapSafeReturn), findsOneWidget);
@@ -57,7 +64,10 @@ void main() {
 
     expect(find.text(UiStrings.expeditionRecapDefeatedTitle), findsOneWidget);
     expect(find.text(UiStrings.expeditionRecapNoReward), findsOneWidget);
-    expect(find.text(UiStrings.expeditionRecapDefeatedInjury(2)), findsOneWidget);
+    expect(
+      find.text(UiStrings.expeditionRecapDefeatedInjury(2)),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 

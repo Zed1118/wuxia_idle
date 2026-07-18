@@ -13,7 +13,9 @@ void main() {
   late Directory tempDir;
 
   setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('wuxia_expedition_dispatch_');
+    tempDir = await Directory.systemTemp.createTemp(
+      'wuxia_expedition_dispatch_',
+    );
     await IsarSetup.init(directory: tempDir, inspector: false);
     await IsarSetup.instance.writeTxn(() async {
       await IsarSetup.instance.saveDatas.put(
@@ -59,31 +61,33 @@ void main() {
     return id;
   }
 
-  test('成功派遣：ExpeditionRun 落库 + 保留 id 快照 + serial++ + departedAt + seed',
-      () async {
-    final cid = await putDisciple(weaponId: 100, mainTech: 5, assist: [6]);
-    final svc = ExpeditionService(IsarSetup.instance);
+  test(
+    '成功派遣：ExpeditionRun 落库 + 保留 id 快照 + serial++ + departedAt + seed',
+    () async {
+      final cid = await putDisciple(weaponId: 100, mainTech: 5, assist: [6]);
+      final svc = ExpeditionService(IsarSetup.instance);
 
-    final runId = await svc.dispatch(
-      characterIds: [cid],
-      policy: ExpeditionPolicy.yanJingCaiYao,
-      now: DateTime(2026, 7, 16, 10),
-    );
+      final runId = await svc.dispatch(
+        characterIds: [cid],
+        policy: ExpeditionPolicy.yanJingCaiYao,
+        now: DateTime(2026, 7, 16, 10),
+      );
 
-    final run = await IsarSetup.instance.expeditionRuns.get(runId);
-    expect(run, isNotNull);
-    final member = run!.members.single;
-    expect(member.characterId, cid);
-    expect(member.reservedEquipmentIds, [100]);
-    expect(member.reservedTechniqueIds, [5, 6]);
-    expect(run.departedAt, DateTime(2026, 7, 16, 10));
-    expect(run.policy, ExpeditionPolicy.yanJingCaiYao);
-    expect(run.currentNode, 0);
+      final run = await IsarSetup.instance.expeditionRuns.get(runId);
+      expect(run, isNotNull);
+      final member = run!.members.single;
+      expect(member.characterId, cid);
+      expect(member.reservedEquipmentIds, [100]);
+      expect(member.reservedTechniqueIds, [5, 6]);
+      expect(run.departedAt, DateTime(2026, 7, 16, 10));
+      expect(run.policy, ExpeditionPolicy.yanJingCaiYao);
+      expect(run.currentNode, 0);
 
-    final save = await IsarSetup.instance.saveDatas.get(0);
-    expect(save!.expeditionRunSerial, 1);
-    expect(run.seed, 1); // seed = 新 serial（B2.2 用作 generateNode runSerial）
-  });
+      final save = await IsarSetup.instance.saveDatas.get(0);
+      expect(save!.expeditionRunSerial, 1);
+      expect(run.seed, 1); // seed = 新 serial（B2.2 用作 generateNode runSerial）
+    },
+  );
 
   test('祖师入队 → 抛错', () async {
     final founder = await putDisciple(isFounder: true, mainTech: 5);
@@ -101,10 +105,7 @@ void main() {
     final cid = await putDisciple(mainTech: 5, retreatSessionId: 9);
     final svc = ExpeditionService(IsarSetup.instance);
     await expectLater(
-      svc.dispatch(
-        characterIds: [cid],
-        policy: ExpeditionPolicy.yanJingCaiYao,
-      ),
+      svc.dispatch(characterIds: [cid], policy: ExpeditionPolicy.yanJingCaiYao),
       throwsStateError,
     );
   });
@@ -118,10 +119,7 @@ void main() {
       policy: ExpeditionPolicy.yanJingCaiYao,
     );
     await expectLater(
-      svc.dispatch(
-        characterIds: [b],
-        policy: ExpeditionPolicy.xunJiFangYou,
-      ),
+      svc.dispatch(characterIds: [b], policy: ExpeditionPolicy.xunJiFangYou),
       throwsStateError,
     );
   });

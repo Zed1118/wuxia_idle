@@ -10,18 +10,27 @@ void main() {
   group('nodeDurationMinutes', () {
     test('普通节点取 normalMinutes，险关(5 的倍数)取 eliteMinutes', () {
       expect(
-        ExpeditionRules.nodeDurationMinutes(3,
-            normalMinutes: normal, eliteMinutes: elite),
+        ExpeditionRules.nodeDurationMinutes(
+          3,
+          normalMinutes: normal,
+          eliteMinutes: elite,
+        ),
         normal,
       );
       expect(
-        ExpeditionRules.nodeDurationMinutes(5,
-            normalMinutes: normal, eliteMinutes: elite),
+        ExpeditionRules.nodeDurationMinutes(
+          5,
+          normalMinutes: normal,
+          eliteMinutes: elite,
+        ),
         elite,
       );
       expect(
-        ExpeditionRules.nodeDurationMinutes(10,
-            normalMinutes: normal, eliteMinutes: elite),
+        ExpeditionRules.nodeDurationMinutes(
+          10,
+          normalMinutes: normal,
+          eliteMinutes: elite,
+        ),
         elite,
       );
     });
@@ -29,10 +38,10 @@ void main() {
 
   group('cumulativeMinutesToCompleteNode', () {
     int cum(int node) => ExpeditionRules.cumulativeMinutesToCompleteNode(
-          node,
-          normalMinutes: normal,
-          eliteMinutes: elite,
-        );
+      node,
+      normalMinutes: normal,
+      eliteMinutes: elite,
+    );
 
     test('node ≤ 0 → 0', () {
       expect(cum(0), 0);

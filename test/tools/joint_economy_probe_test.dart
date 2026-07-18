@@ -82,15 +82,19 @@ void main() {
     final buf = StringBuffer()
       ..writeln('# 百草岭×断魂庄×装备强化 联合经济探针')
       ..writeln()
-      ..writeln('> 诊断探针（plan Task 2）。代表深度=$_representativeDepth，'
-          '挂机=离线按 ${_idleHoursPerDay}h/天。占位段（胜率/助炼/结晶日流入/'
-          'herb→补给转化）待 Phase C 校准。')
+      ..writeln(
+        '> 诊断探针（plan Task 2）。代表深度=$_representativeDepth，'
+        '挂机=离线按 ${_idleHoursPerDay}h/天。占位段（胜率/助炼/结晶日流入/'
+        'herb→补给转化）待 Phase C 校准。',
+      )
       ..writeln()
       ..writeln('Lv100→170 (abs层10→17) 总经验 = **$totalExp**')
       ..writeln()
       ..writeln('## Lv100→170 节奏三档（供拍板目标天数）')
       ..writeln()
-      ..writeln('| 档 | base_exp_per_battle | exp/小时 | Lv100→170 天数 | 断魂帖/天 | 断魂庄入场/天(稳态) |')
+      ..writeln(
+        '| 档 | base_exp_per_battle | exp/小时 | Lv100→170 天数 | 断魂帖/天 | 断魂庄入场/天(稳态) |',
+      )
       ..writeln('|---|---:|---:|---:|---:|---:|');
 
     for (final t in _tiers) {
@@ -114,8 +118,10 @@ void main() {
 
     buf
       ..writeln()
-      ..writeln('## 装备强化到达时间（结晶净流入占位 '
-          '$_assumedCrystalPerDay 颗/天）')
+      ..writeln(
+        '## 装备强化到达时间（结晶净流入占位 '
+        '$_assumedCrystalPerDay 颗/天）',
+      )
       ..writeln()
       ..writeln('| 目标 | 保底结晶消耗 | 预期天数 |')
       ..writeln('|---|---:|---:|')
@@ -125,9 +131,11 @@ void main() {
       ..writeln()
       ..writeln('## 断魂庄三档阵容胜率（占位·C1.3 对齐）')
       ..writeln()
-      ..writeln('- 入门 ${gauntletWinRate(GauntletLoadout.ruMen)} / '
-          '推荐 ${gauntletWinRate(GauntletLoadout.tuiJian)} / '
-          '满配 ${gauntletWinRate(GauntletLoadout.manPei)}')
+      ..writeln(
+        '- 入门 ${gauntletWinRate(GauntletLoadout.ruMen)} / '
+        '推荐 ${gauntletWinRate(GauntletLoadout.tuiJian)} / '
+        '满配 ${gauntletWinRate(GauntletLoadout.manPei)}',
+      )
       ..writeln()
       ..writeln('## 三档 YAML 候选（回填 expeditions.yaml）')
       ..writeln();
@@ -158,8 +166,10 @@ void main() {
     );
 
     // ② 结晶无自反馈失控（软断言，日流入不应 <10 天攒够单件 +49）。
-    buf.writeln('② 结晶日流入 $_assumedCrystalPerDay ≤ ${(g49 / 10).toStringAsFixed(1)}'
-        '(+49需求÷10天下界·占位待Phase C)');
+    buf.writeln(
+      '② 结晶日流入 $_assumedCrystalPerDay ≤ ${(g49 / 10).toStringAsFixed(1)}'
+      '(+49需求÷10天下界·占位待Phase C)',
+    );
     expect(
       _assumedCrystalPerDay,
       lessThanOrEqualTo(g49 / 10),
@@ -173,33 +183,43 @@ void main() {
     );
     final herbPerDay = caiyao.herbPerHour * _idleHoursPerDay;
     final gauntletEntriesPerDay = caiyao.ticketPerHour * _idleHoursPerDay;
-    final supplyDemandPerDay = gauntletEntriesPerDay * _gauntletSupplyCapPerEntry;
-    buf.writeln('④ 采药方针补给产能 ${herbPerDay.toStringAsFixed(1)}/天 ≥ '
-        '断魂庄消耗 ${supplyDemandPerDay.toStringAsFixed(1)}/天'
-        '(入场${gauntletEntriesPerDay.toStringAsFixed(2)}×$_gauntletSupplyCapPerEntry份·1:1转化占位)');
+    final supplyDemandPerDay =
+        gauntletEntriesPerDay * _gauntletSupplyCapPerEntry;
+    buf.writeln(
+      '④ 采药方针补给产能 ${herbPerDay.toStringAsFixed(1)}/天 ≥ '
+      '断魂庄消耗 ${supplyDemandPerDay.toStringAsFixed(1)}/天'
+      '(入场${gauntletEntriesPerDay.toStringAsFixed(2)}×$_gauntletSupplyCapPerEntry份·1:1转化占位)',
+    );
     expect(
       herbPerDay,
       greaterThanOrEqualTo(supplyDemandPerDay),
-      reason: '采药补给产能 < 断魂庄消耗 → 形成强制日课型等待(违 §5.5/§7)；'
+      reason:
+          '采药补给产能 < 断魂庄消耗 → 形成强制日课型等待(违 §5.5/§7)；'
           'herb→补给转化率待 Phase C 校准',
     );
 
     // ③ 三路径真实取舍：助炼/分解/收藏收益未在 Phase C 前实装，仅记录待校准，
     //    不硬断言（避免占位假绿）。
-    buf.writeln('③ 助炼/分解/收藏三路径取舍：待 Phase C 断魂庄产出 + 助炼机制'
-        '定案后补硬 ratchet（本批不硬断言，防占位假绿）');
+    buf.writeln(
+      '③ 助炼/分解/收藏三路径取舍：待 Phase C 断魂庄产出 + 助炼机制'
+      '定案后补硬 ratchet（本批不硬断言，防占位假绿）',
+    );
 
     // 存量溢出连跳分布（A2 同源探针结论纳入本报告，§3.1）。
     buf
       ..writeln()
       ..writeln('## 存量溢出连跳分布（§3.1·A2 同源 overflow_layer_jump_probe）')
       ..writeln()
-      ..writeln('cap 10→17 一次性兑现：停在 Lv100 封顶的存量经验按层均单位 '
-          '1×~12× 实测连跳 1-6 层（worstJump ≤7 ratchet 守），判定**一次性兑现**'
-          '（非分段抬升 10→13→17）。详 `test/tools/overflow_layer_jump_probe_test.dart`。')
+      ..writeln(
+        'cap 10→17 一次性兑现：停在 Lv100 封顶的存量经验按层均单位 '
+        '1×~12× 实测连跳 1-6 层（worstJump ≤7 ratchet 守），判定**一次性兑现**'
+        '（非分段抬升 10→13→17）。详 `test/tools/overflow_layer_jump_probe_test.dart`。',
+      )
       ..writeln()
-      ..writeln('> 探针留作 ratchet：本探针四不变式 + overflow worstJump ≤7 '
-          '一并守后续经济数值改动不破坏 Lv100→170 曲线。');
+      ..writeln(
+        '> 探针留作 ratchet：本探针四不变式 + overflow worstJump ≤7 '
+        '一并守后续经济数值改动不破坏 Lv100→170 曲线。',
+      );
 
     Directory(_outputDir).createSync(recursive: true);
     final out = '$_outputDir/joint_economy_probe_2026-07-16.md';

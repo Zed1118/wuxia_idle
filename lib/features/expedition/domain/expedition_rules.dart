@@ -91,27 +91,36 @@ class ExpeditionRules {
   }) {
     if (isEliteNode(node)) {
       return ExpeditionNode(
-          index: node,
-          type: ExpeditionNodeType.xianGuan,
-          durationMinutes: eliteMinutes);
+        index: node,
+        type: ExpeditionNodeType.xianGuan,
+        durationMinutes: eliteMinutes,
+      );
     }
     final rng = DefaultRng(
-        seed: ExpeditionSeed.forNode(
-            saveId: saveId, runSerial: runSerial, node: node));
+      seed: ExpeditionSeed.forNode(
+        saveId: saveId,
+        runSerial: runSerial,
+        node: node,
+      ),
+    );
     final weights = _normalWeights(policy);
     final total = weights.values.fold(0, (a, b) => a + b);
     var roll = rng.nextInt(total);
     for (final e in weights.entries) {
       if (roll < e.value) {
         return ExpeditionNode(
-            index: node, type: e.key, durationMinutes: normalMinutes);
+          index: node,
+          type: e.key,
+          durationMinutes: normalMinutes,
+        );
       }
       roll -= e.value;
     }
     return ExpeditionNode(
-        index: node,
-        type: ExpeditionNodeType.caiYao,
-        durationMinutes: normalMinutes);
+      index: node,
+      type: ExpeditionNodeType.caiYao,
+      durationMinutes: normalMinutes,
+    );
   }
 
   /// 瘴蚀层数（§4.5）：第 31 节点起每 5 节点 +1 层，恢复减益 5%/层封顶 100%。
@@ -136,7 +145,8 @@ class ExpeditionRules {
     required ExpeditionNode node,
     required int saveId,
     required int runSerial,
-    int baseExpPerBattle = 170, // batch3 探针拍板中档;生产走 expeditions.yaml base_exp_per_battle
+    int baseExpPerBattle =
+        170, // batch3 探针拍板中档;生产走 expeditions.yaml base_exp_per_battle
     int baseExpCapNode = 30,
   }) {
     final rewards = <RewardEntry>[];
@@ -144,31 +154,43 @@ class ExpeditionRules {
 
     switch (node.type) {
       case ExpeditionNodeType.caiYao:
-        rewards.add(RewardEntry()
-          ..rewardKey = 'item_yaocao'
-          ..quantity = 1);
-        rewards.add(RewardEntry()
-          ..rewardKey = 'item_lingquanshui'
-          ..quantity = 1);
+        rewards.add(
+          RewardEntry()
+            ..rewardKey = 'item_yaocao'
+            ..quantity = 1,
+        );
+        rewards.add(
+          RewardEntry()
+            ..rewardKey = 'item_lingquanshui'
+            ..quantity = 1,
+        );
       case ExpeditionNodeType.feiYi:
-        rewards.add(RewardEntry()
-          ..rewardKey = 'item_silver'
-          ..quantity = 50);
+        rewards.add(
+          RewardEntry()
+            ..rewardKey = 'item_silver'
+            ..quantity = 50,
+        );
       case ExpeditionNodeType.zaoYu:
       case ExpeditionNodeType.xianGuan:
         final mult = node.type == ExpeditionNodeType.xianGuan ? 3 : 1;
-        rewards.add(RewardEntry()
-          ..rewardKey = 'exp'
-          ..quantity = baseExpPerBattle * mult * (capNode ~/ 5 + 1) ~/ 7);
+        rewards.add(
+          RewardEntry()
+            ..rewardKey = 'exp'
+            ..quantity = baseExpPerBattle * mult * (capNode ~/ 5 + 1) ~/ 7,
+        );
       case ExpeditionNodeType.yiJi:
-        rewards.add(RewardEntry()
-          ..rewardKey = 'item_silver'
-          ..quantity = 30);
+        rewards.add(
+          RewardEntry()
+            ..rewardKey = 'item_silver'
+            ..quantity = 30,
+        );
     }
     if (isTicketMilestone(node.index)) {
-      rewards.add(RewardEntry()
-        ..rewardKey = 'item_duanhuntie'
-        ..quantity = 1);
+      rewards.add(
+        RewardEntry()
+          ..rewardKey = 'item_duanhuntie'
+          ..quantity = 1,
+      );
     }
     return rewards;
   }

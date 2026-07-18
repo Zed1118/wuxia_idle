@@ -62,7 +62,9 @@ class ExpeditionRecapScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     _RecapRow(
                       icon: Icons.terrain,
-                      label: UiStrings.expeditionRecapDeepest(result.deepestNode),
+                      label: UiStrings.expeditionRecapDeepest(
+                        result.deepestNode,
+                      ),
                     ),
                     _RecapRow(
                       icon: Icons.flag_outlined,

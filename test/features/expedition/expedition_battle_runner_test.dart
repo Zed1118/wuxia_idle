@@ -15,15 +15,15 @@ void main() {
     final repo = GameRepository.instance;
     final stage = repo.stageDefs['stage_01_01']!;
     List<BattleCharacter> players() => [
-          for (var s = 0; s < 3; s++)
-            buildProgressionPlayer(
-              repository: repo,
-              tier: stage.requiredRealm,
-              slot: s,
-              isFounder: s == 0,
-              profile: ProgressionBuildProfile.standard,
-            ),
-        ];
+      for (var s = 0; s < 3; s++)
+        buildProgressionPlayer(
+          repository: repo,
+          tier: stage.requiredRealm,
+          slot: s,
+          isFounder: s == 0,
+          profile: ProgressionBuildProfile.standard,
+        ),
+    ];
     final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
 
     final r1 = ExpeditionBattleRunner.runNodeBattle(
@@ -55,7 +55,9 @@ void main() {
         profile: ProgressionBuildProfile.undergeared,
       ),
     ];
-    final strongEnemies = StageBattleSetup.buildEnemyTeam(strongStage.enemyTeam);
+    final strongEnemies = StageBattleSetup.buildEnemyTeam(
+      strongStage.enemyTeam,
+    );
 
     final r = ExpeditionBattleRunner.runNodeBattle(
       playerTeam: weakPlayers,

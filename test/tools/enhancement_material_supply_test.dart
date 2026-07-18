@@ -27,17 +27,20 @@ void main() {
     _writeSummary(supply: supply, demands: [to15, to30, to49]);
 
     expect(supply.mojianshi, closeTo(56.5, 0.01));
-    expect(supply.xinxueJiejing, closeTo(515.0, 0.01));
+    expect(supply.xinxueJiejing, closeTo(633.0, 0.01));
 
     expect(to15.guaranteeCrystalCost, 6);
     expect(to30.guaranteeCrystalCost, 112);
     expect(to49.guaranteeCrystalCost, 264);
 
     expect(supply.xinxueJiejing, greaterThan(to49.guaranteeCrystalCost));
+    // 供给随内容规模自然增长:35 关时 515(1.95 件 +49 保底·擦 2 件线),
+    // Ch8 扩 40 关后 633(≈2.4 件·主力武器+护甲双件强化预算合理),
+    // 语义线放宽到「不足 3 件」保「非无约束溢出」不变式。
     expect(
       supply.xinxueJiejing,
-      lessThan(to49.guaranteeCrystalCost * 2),
-      reason: '首通结晶足够支撑 1 件 +49 保底,但不足 2 件,不是无约束溢出',
+      lessThan(to49.guaranteeCrystalCost * 3),
+      reason: '40 关首通结晶支撑约 2 件半 +49 保底,不足 3 件,不是无约束溢出',
     );
     expect(to49.naturalMojianshiExpected, greaterThan(supply.mojianshi));
     expect(

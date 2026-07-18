@@ -28,9 +28,8 @@ class ExpeditionCombatRunner implements ExpeditionCombat {
 
   List<BattleCharacter>? _baseTeam;
 
-  Future<List<BattleCharacter>> _base(List<int> ids) async =>
-      _baseTeam ??=
-          await StageBattleSetup(isar: _isar).buildPlayerTeamForCharacters(ids);
+  Future<List<BattleCharacter>> _base(List<int> ids) async => _baseTeam ??=
+      await StageBattleSetup(isar: _isar).buildPlayerTeamForCharacters(ids);
 
   @override
   Future<Map<int, ExpeditionMemberCaps>> memberCaps(List<int> ids) async {

@@ -31,7 +31,9 @@ void main() {
   late Directory tempDir;
 
   setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('wuxia_expedition_provider_');
+    tempDir = await Directory.systemTemp.createTemp(
+      'wuxia_expedition_provider_',
+    );
     await IsarSetup.init(directory: tempDir, inspector: false);
     await IsarSetup.instance.writeTxn(() async {
       await IsarSetup.instance.saveDatas.put(
@@ -85,49 +87,57 @@ void main() {
     expect(run!.members.single.characterId, cid);
   });
 
-  test('expeditionCandidates：active非祖师∪reserve，排除祖师，标 hasMain/occupied', () async {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
+  test(
+    'expeditionCandidates：active非祖师∪reserve，排除祖师，标 hasMain/occupied',
+    () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
 
-    late int founderId, aId, bId, cId;
-    await IsarSetup.instance.writeTxn(() async {
-      founderId = await IsarSetup.instance.characters.put(
-        _char(name: '祖师', isFounder: true, isActive: true, mainTechniqueId: 1),
-      );
-      aId = await IsarSetup.instance.characters.put(
-        _char(name: '甲', isActive: true, mainTechniqueId: 5),
-      );
-      bId = await IsarSetup.instance.characters.put(
-        _char(name: '乙', mainTechniqueId: 6),
-      );
-      cId = await IsarSetup.instance.characters.put(_char(name: '丙'));
-      final save = await IsarSetup.instance.saveDatas.get(0);
-      save!.activeCharacterIds = [founderId, aId];
-      await IsarSetup.instance.saveDatas.put(save);
-    });
+      late int founderId, aId, bId, cId;
+      await IsarSetup.instance.writeTxn(() async {
+        founderId = await IsarSetup.instance.characters.put(
+          _char(
+            name: '祖师',
+            isFounder: true,
+            isActive: true,
+            mainTechniqueId: 1,
+          ),
+        );
+        aId = await IsarSetup.instance.characters.put(
+          _char(name: '甲', isActive: true, mainTechniqueId: 5),
+        );
+        bId = await IsarSetup.instance.characters.put(
+          _char(name: '乙', mainTechniqueId: 6),
+        );
+        cId = await IsarSetup.instance.characters.put(_char(name: '丙'));
+        final save = await IsarSetup.instance.saveDatas.get(0);
+        save!.activeCharacterIds = [founderId, aId];
+        await IsarSetup.instance.saveDatas.put(save);
+      });
 
-    final candidates = await container.read(
-      expeditionCandidatesProvider.future,
-    );
-    final byId = {for (final c in candidates) c.character.id: c};
-    expect(byId.containsKey(founderId), isFalse, reason: '祖师不入候选池');
-    expect(byId.keys, containsAll([aId, bId, cId]));
-    expect(byId[aId]!.hasMainTechnique, isTrue);
-    expect(byId[cId]!.hasMainTechnique, isFalse, reason: '丙未修主修');
-    expect(byId[cId]!.dispatchable, isFalse);
-    expect(candidates.every((c) => !c.occupied), isTrue, reason: '尚无远征占用');
+      final candidates = await container.read(
+        expeditionCandidatesProvider.future,
+      );
+      final byId = {for (final c in candidates) c.character.id: c};
+      expect(byId.containsKey(founderId), isFalse, reason: '祖师不入候选池');
+      expect(byId.keys, containsAll([aId, bId, cId]));
+      expect(byId[aId]!.hasMainTechnique, isTrue);
+      expect(byId[cId]!.hasMainTechnique, isFalse, reason: '丙未修主修');
+      expect(byId[cId]!.dispatchable, isFalse);
+      expect(candidates.every((c) => !c.occupied), isTrue, reason: '尚无远征占用');
 
-    // 派遣甲 → 甲被占用、不可再派。
-    final svc = container.read(expeditionServiceProvider)!;
-    await svc.dispatch(
-      characterIds: [aId],
-      policy: ExpeditionPolicy.yanJingCaiYao,
-      now: DateTime(2026, 7, 16, 10),
-    );
-    container.invalidate(expeditionCandidatesProvider);
-    final after = await container.read(expeditionCandidatesProvider.future);
-    final a2 = after.firstWhere((c) => c.character.id == aId);
-    expect(a2.occupied, isTrue);
-    expect(a2.dispatchable, isFalse);
-  });
+      // 派遣甲 → 甲被占用、不可再派。
+      final svc = container.read(expeditionServiceProvider)!;
+      await svc.dispatch(
+        characterIds: [aId],
+        policy: ExpeditionPolicy.yanJingCaiYao,
+        now: DateTime(2026, 7, 16, 10),
+      );
+      container.invalidate(expeditionCandidatesProvider);
+      final after = await container.read(expeditionCandidatesProvider.future);
+      final a2 = after.firstWhere((c) => c.character.id == aId);
+      expect(a2.occupied, isTrue);
+      expect(a2.dispatchable, isFalse);
+    },
+  );
 }

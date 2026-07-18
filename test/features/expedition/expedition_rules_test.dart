@@ -16,7 +16,11 @@ void main() {
 
   test('相同 saveId/runSerial/node 生成相同节点类型（稳定）', () {
     ExpeditionNode gen(int n) => ExpeditionRules.generateNode(
-        saveId: 1, runSerial: 2, node: n, policy: ExpeditionPolicy.yanJingCaiYao);
+      saveId: 1,
+      runSerial: 2,
+      node: n,
+      policy: ExpeditionPolicy.yanJingCaiYao,
+    );
     expect(gen(7).type, gen(7).type);
     // 险关恒为遭遇型险关
     expect(gen(10).type, ExpeditionNodeType.xianGuan);
@@ -27,11 +31,11 @@ void main() {
     for (var n = 1; n <= 200; n++) {
       if (n % 5 == 0) continue; // 排除险关
       if (ExpeditionRules.generateNode(
-                  saveId: 1,
-                  runSerial: 1,
-                  node: n,
-                  policy: ExpeditionPolicy.yanJingCaiYao)
-              .type ==
+            saveId: 1,
+            runSerial: 1,
+            node: n,
+            policy: ExpeditionPolicy.yanJingCaiYao,
+          ).type ==
           ExpeditionNodeType.caiYao) {
         caiYao++;
       }
