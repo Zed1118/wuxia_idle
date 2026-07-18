@@ -140,14 +140,21 @@
 
 | 模式 / route | 是否完整一场 | 特殊立绘与特效动态 | 贴片/飘字/卡顿 | 判定 | 证据或跳过原因 |
 |---|---|---|---|---|---|
-| 群战守城 `battle_mass_battle_stage` | 待执行 | 待观察墨影队列与增援 | 待观察 | 待判 | 待填 |
-| 轻功对决 `battle_light_foot_stage` | 待执行 | 待观察上下错层与位移 | 待观察 | 待判 | 待填 |
-| 心魔镜像 `battle_inner_demon_stage` | 待执行 | 待观察镜像墨化与轮廓 | 待观察 | 待判 | 待填 |
+| 群战守城 `battle_mass_battle_stage` | 是，64 拍右队胜（右队 6 人存活） | 3v7 开场、受击、击杀 1 名右队角色与战败结算均正常；但左队过早全灭，后续四名队列未轮换入场，墨影队列的完整递补动态无法确认 | 在场贴片/飘字退场正常，未见卡顿 | **无法确认** | `build/visual_acceptance/ch78_dynamic_smoke/special/mass_battle/formal_v2/normal_8s.mov`；`fast_35s.mov`；`frame_fast_t50.png`；`contact_fast_05fps.png`；原因：本场已完整结束，但队列未轮换完 |
+| 轻功对决 `battle_light_foot_stage` | 是，156 拍左队胜 | 双方三人上/中/下错层持续可辨，高位角色与底部血条归属清楚；死亡透明态正常 | 贴片/飘字正常退场，未见卡顿 | **正常** | `build/visual_acceptance/ch78_dynamic_smoke/special/light_foot/formal/normal_8s.mov`；`fast_25s.mov`；`frame_normal_t08.png`；`frame_fast_t35.png` |
+| 心魔镜像 `battle_inner_demon_stage` | 是，134 拍左队胜 | 右队紫墨镜像、重影与轮廓光在动态受击中保持，未与血条/战报错位 | 贴片/飘字正常退场，未见卡顿 | **正常** | `build/visual_acceptance/ch78_dynamic_smoke/special/inner_demon/formal/normal_8s.mov`；`fast_25s.mov`；`frame_normal_t08.png`；`frame_fast_t35.png` |
+
+### 追加单交付四证据
+
+- 覆盖清单：普通主线 20m14s、爬塔 20m07s、快进 10m11s，三个长战段 `3/3`；群战守城、轻功对决、心魔镜像完整战斗 `3/3`。六项判定：正常 `4` / 异常 `1` / 无法确认 `1`。
+- 截图路径索引：三个长战段的代表帧/视频、RSS 与 route log 已在上方动态长战表逐行列出；三个特殊模式的前后帧/视频已在特殊模式表逐行列出。全部位于 `build/visual_acceptance/ch78_dynamic_smoke/`，不入库。
+- 红线影响声明：追加单仍为纯验收，零修改 Dart、资产、YAML、数值、schema、saveVersion、GDD 或其他生产文档；快进飘字重叠异常只记录不修复。
+- 残留风险：群战虽完整结束，但左队在第 64 拍全灭、右队仍存活 6 人，未能看完后续四名墨影队列的全量轮换；RSS 是 debug runner 的单进程前后点采样，可用于本轮趋势初判，不等价于 release 长时间泄漏证明；两次窗口/按钮槽位校准目录不计入正式证据。
 
 ### 追加单当前恢复点
 
-- 状态：进行中——Ch7/Ch8 原单已于 `230952cb` 第一次 `[READY]` 冻结；三个长战正式段已完成，开始弹性特殊模式。
-- 最后完成：`battle_tap_live` 从 02:16:24 至 02:26:35 连续观察 10m11s；快进密度门控、贴片寿命、击杀一致性与卡顿初判正常，但捕获到同槽同拍 `2693` + `316` 伤害数字相交的硬证据，本段判「异常」，不修复。
-- 下一步：依次驱动群战守城、轻功对决、心魔镜像各一场；尽量完整打完，否则记录驱动/时长限制。
-- 已跑验证：原单 42/42 已冻结；主线 20m14s + 爬塔 20m07s + 快进 10m11s；快进 22 次续跑 / 44 帧 / 3 视频 / 44 份 RSS 采样，排除 Flutter runner 启动聚焦噪声后 overflow/exception/error 0 命中。
+- 状态：追加单观察完成；待执行最终证据/Git 对账、提交观察总结并重新打 `[READY]` tip。
+- 最后完成：群战守城、轻功对决、心魔镜像均完整打到结算；轻功错层与心魔镜像墨化判正常，群战因右队队列未轮换完而对「全量墨影递补」判无法确认。
+- 下一步：精确检查原单 42 图与追加单证据存在/可解码，扫描全部正式 route log，核对 Git 只有本 plan；提交后追加 `[READY]` 冻结提交。
+- 已跑验证：原单 42/42 已冻结；主线 20m14s + 爬塔 20m07s + 快进 10m11s；三个特殊模式 3/3 完整结算；特殊模式排除 Flutter runner 启动聚焦噪声后 overflow/exception/error 0 命中。
 - 阻塞项：无。
