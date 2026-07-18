@@ -75,6 +75,27 @@ void main() {
       );
     });
 
+    test(
+      'snapshot cost reuses the same rounding after setup has capped reduction',
+      () {
+        expect(
+          QiCycle.effectiveCostFromSnapshot(
+            baseCost: 61,
+            costReductionPct: 0.20,
+          ),
+          49,
+        );
+        expect(
+          QiCycle.effectiveCost(
+            baseCost: 61,
+            reductionPct: 0.20,
+            reductionCap: 0.20,
+          ),
+          49,
+        );
+      },
+    );
+
     test('chain recovery is based on max qi and clamps at max', () {
       expect(
         QiCycle.recoverBetweenWaves(

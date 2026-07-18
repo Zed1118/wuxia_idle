@@ -61,6 +61,22 @@ void main() {
     await tester.pumpAndSettle(const Duration(seconds: 3));
   });
 
+  testWidgets('overlay clear() 立即撤下上一场题字并停止动画', (tester) async {
+    final key = GlobalKey<UltimateCaptionOverlayState>();
+    await tester.pumpWidget(
+      MaterialApp(home: UltimateCaptionOverlay(key: key)),
+    );
+
+    key.currentState!.show('旧战余韵', isEnemy: false);
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('旧战余韵'), findsNWidgets(2));
+
+    key.currentState!.clear();
+    await tester.pump();
+    expect(find.text('旧战余韵'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('敌方绛红态 + asset 缺失走 errorBuilder 不崩', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(

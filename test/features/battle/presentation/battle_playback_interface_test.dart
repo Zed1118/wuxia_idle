@@ -9,6 +9,8 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import '../../../support/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_playback_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
+import 'package:wuxia_idle/features/battle/presentation/widgets/battle_bottom_bar.dart';
+import 'package:wuxia_idle/features/battle/presentation/widgets/battle_header.dart';
 
 const _testAnim = AnimationNumbers(
   attackRushMs: 10,
@@ -96,6 +98,21 @@ void main() {
       expect(find.byType(BattlePlaybackMotion), findsOneWidget);
       expect(find.byType(BattlePlaybackField), findsOneWidget);
       expect(find.byType(BattlePlaybackOverlays), findsOneWidget);
+      final motion = find.byType(BattlePlaybackMotion);
+      expect(
+        find.descendant(of: motion, matching: find.byType(BattlePlaybackField)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: motion, matching: find.byType(Header)),
+        findsNothing,
+        reason: '顶栏不能随命中特写缩放或屏震',
+      );
+      expect(
+        find.descendant(of: motion, matching: find.byType(AutoRotationBar)),
+        findsNothing,
+        reason: '自动轮转谱不能随命中特写缩放或屏震',
+      );
       expect(tester.takeException(), isNull, reason: '$size 不应 overflow/抛异常');
 
       await tester.pumpWidget(const SizedBox());

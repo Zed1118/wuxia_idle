@@ -11,6 +11,310 @@ import '../../../../shared/theme/wuxia_tokens.dart';
 import '../battle_layout_tokens.dart';
 import '../countdown_ring.dart';
 
+/// 纯自动战斗的只读招式轮转谱。
+///
+/// 不复制 [BattleAI] 或声称精确预测下一招；只把当前真气、冷却与可用门槛
+/// 收敛成观察界面。全树无 button/focus 语义，避免自动模式伪装可交互案台。
+class AutoRotationBar extends StatelessWidget {
+  const AutoRotationBar({super.key, required this.state});
+
+  final BattleState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final enemyCharging = state.rightTeam.any(
+      (character) => character.isAlive && character.chargingSkill != null,
+    );
+    return Container(
+      key: const ValueKey('battle_auto_rotation_desk'),
+      height: BattleLayoutTokens.autoRotationDeskHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+      decoration: const BoxDecoration(
+        color: Color(0xFF211D18),
+        image: DecorationImage(
+          image: AssetImage(WuxiaUi.paperBg),
+          fit: BoxFit.cover,
+          opacity: 0.10,
+          colorFilter: ColorFilter.mode(Color(0xFF33291F), BlendMode.multiply),
+        ),
+        border: Border(top: BorderSide(color: Color(0xFF756047), width: 1.2)),
+        boxShadow: [
+          BoxShadow(color: Colors.black54, blurRadius: 18, spreadRadius: 3),
+        ],
+      ),
+      child: Row(
+        children: [
+          const SizedBox(
+            width: 166,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  UiStrings.battleAutoRotation,
+                  style: TextStyle(
+                    color: Color(0xFFCBB58C),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2,
+                  ),
+                ),
+                SizedBox(height: 7),
+                Text(
+                  UiStrings.battleAutoObserve,
+                  style: TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 10,
+                    letterSpacing: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Row(
+              children: [
+                for (var i = 0; i < state.leftTeam.length; i++) ...[
+                  Expanded(
+                    child: _AutoRotationActor(
+                      character: state.leftTeam[i],
+                      enemyCharging: enemyCharging,
+                    ),
+                  ),
+                  if (i < state.leftTeam.length - 1) const SizedBox(width: 8),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          const BattlePouchRail(compact: true),
+        ],
+      ),
+    );
+  }
+}
+
+class _AutoRotationActor extends StatelessWidget {
+  const _AutoRotationActor({
+    required this.character,
+    required this.enemyCharging,
+  });
+
+  final BattleCharacter character;
+  final bool enemyCharging;
+
+  @override
+  Widget build(BuildContext context) {
+    final skills =
+        character.availableSkills
+            .where(
+              (skill) =>
+                  skill.type != SkillType.normalAttack &&
+                  !skill.requiresManualTrigger,
+            )
+            .toList()
+          ..sort((a, b) => _statusRank(a).compareTo(_statusRank(b)));
+    final visibleSkills = skills.take(3).toList();
+    final qiFraction = character.maxQi <= 0
+        ? 0.0
+        : (character.currentQi / character.maxQi).clamp(0.0, 1.0);
+
+    return Semantics(
+      container: true,
+      label: character.name,
+      value: '${character.currentQi}/${character.maxQi}',
+      child: Container(
+        key: ValueKey('auto_rotation_actor_${character.characterId}'),
+        height: 92,
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+        decoration: BoxDecoration(
+          color: const Color(0xB3131210),
+          border: Border.all(
+            color: WuxiaColors.schoolColor(
+              character.school,
+            ).withValues(alpha: character.isAlive ? 0.72 : 0.28),
+          ),
+        ),
+        child: Opacity(
+          opacity: character.isAlive ? 1 : 0.48,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      character.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFFD8C9AC),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${character.currentQi}/${character.maxQi}',
+                    style: const TextStyle(
+                      color: WuxiaUi.qing,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 5),
+              ExcludeSemantics(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(2),
+                  child: LinearProgressIndicator(
+                    minHeight: 4,
+                    value: qiFraction,
+                    color: WuxiaUi.qing,
+                    backgroundColor: const Color(0xFF40382E),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (!character.isAlive)
+                const _AutoSkillStateText(text: UiStrings.battleFallen)
+              else if (character.chargingSkill != null)
+                const _AutoSkillStateText(text: UiStrings.skillCharging)
+              else if (character.staggerTicksRemaining > 0)
+                const _AutoSkillStateText(text: UiStrings.skillStaggered)
+              else if (visibleSkills.isEmpty)
+                const _AutoSkillStateText(
+                  text: UiStrings.battleNoEquippedSkills,
+                )
+              else
+                Expanded(
+                  child: Row(
+                    children: [
+                      for (var i = 0; i < visibleSkills.length; i++) ...[
+                        Expanded(
+                          child: _AutoSkillState(
+                            character: character,
+                            skill: visibleSkills[i],
+                            enemyCharging: enemyCharging,
+                          ),
+                        ),
+                        if (i < visibleSkills.length - 1)
+                          const SizedBox(width: 4),
+                      ],
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  int _statusRank(SkillDef skill) {
+    final cd = character.skillCooldowns[skill.id] ?? 0;
+    final effectiveCost = effectiveSkillQiCost(character, skill);
+    if (cd <= 0 && character.currentQi >= effectiveCost) {
+      if (skill.aiUsePolicy == AiUsePolicy.saveForInterrupt) {
+        return enemyCharging ? -10 : 50;
+      }
+      return 0;
+    }
+    if (cd > 0) return 100 + cd;
+    return 200 + effectiveCost;
+  }
+}
+
+class _AutoSkillState extends StatelessWidget {
+  const _AutoSkillState({
+    required this.character,
+    required this.skill,
+    required this.enemyCharging,
+  });
+
+  final BattleCharacter character;
+  final SkillDef skill;
+  final bool enemyCharging;
+
+  @override
+  Widget build(BuildContext context) {
+    final cd = character.skillCooldowns[skill.id] ?? 0;
+    final ready = isSkillReady(character, skill);
+    final reserved =
+        ready &&
+        skill.aiUsePolicy == AiUsePolicy.saveForInterrupt &&
+        !enemyCharging;
+    final status = cd > 0
+        ? UiStrings.skillCooldownRemaining(cd)
+        : ready
+        ? reserved
+              ? UiStrings.skillReservedForInterrupt
+              : UiStrings.skillReady
+        : UiStrings.skillGatheringQi;
+    final accent = ready && !reserved
+        ? const Color(0xFFC3A46A)
+        : const Color(0xFF776C5C);
+
+    return Semantics(
+      label: skill.name,
+      value: status,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFF322C24),
+          border: Border.all(color: accent.withValues(alpha: 0.72)),
+          borderRadius: BorderRadius.circular(2),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              skill.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFFD4C5A7),
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              status,
+              style: TextStyle(
+                color: ready && !reserved
+                    ? const Color(0xFFD7B879)
+                    : WuxiaColors.textMuted,
+                fontSize: 8,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AutoSkillStateText extends StatelessWidget {
+  const _AutoSkillStateText({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        text,
+        style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 10),
+      ),
+    ),
+  );
+}
+
 /// T1 武学案台：左侧执招者 + 中部 7 个稳定技能签 + 右侧 3 个战备行囊位。
 ///
 /// 旧版每角色只暴露大招/破招两按钮；新版聚焦单个"重点角色"，把它的
@@ -135,6 +439,9 @@ class BottomBar extends StatelessWidget {
                               final button = SkillCommandButton(
                                 character: focus,
                                 skill: skill,
+                                interventionWindowOpen:
+                                    state.actorQueue.isEmpty &&
+                                    !state.isFinished,
                                 isPending:
                                     localPendingThis || domainPendingThis,
                                 pendingTapEnabled: localPendingThis,
@@ -304,6 +611,7 @@ class FocusChip extends StatelessWidget {
 class SkillCommandButton extends StatelessWidget {
   final BattleCharacter character;
   final SkillDef skill;
+  final bool interventionWindowOpen;
   final bool isPending;
   final bool pendingTapEnabled;
   final bool queuedAnother;
@@ -319,6 +627,7 @@ class SkillCommandButton extends StatelessWidget {
     super.key,
     required this.character,
     required this.skill,
+    required this.interventionWindowOpen,
     required this.isPending,
     required this.pendingTapEnabled,
     required this.queuedAnother,
@@ -342,15 +651,18 @@ class SkillCommandButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cd = character.skillCooldowns[skill.id] ?? 0;
-    final ready = isSkillReady(character, skill);
+    final effectiveCost = effectiveSkillQiCost(character, skill);
+    final actionReady = character.actionPoint > 0;
+    final interventionReady =
+        interventionWindowOpen && canInterveneWithSkill(character, skill);
     final enabled =
-        ready &&
+        interventionReady &&
         (!isPending || pendingTapEnabled) &&
         !queuedAnother &&
         allowPlayerIntervention;
 
     Color bgColor;
-    if (!ready) {
+    if (!interventionReady) {
       bgColor = const Color(0xFF8F8675);
     } else if (highlight) {
       // 破招提示醒目金:原 0.72 上白字仅 ~2.9:1,压暗一档(0.52)让白字可读(~4.6:1)。
@@ -367,8 +679,14 @@ class SkillCommandButton extends StatelessWidget {
       blockingStatus = UiStrings.skillPendingStamp; // 待发
     } else if (cd > 0) {
       blockingStatus = ''; // CD 态由读秒环示数。
-    } else if (character.currentQi < skill.qiCost) {
+    } else if (character.currentQi < effectiveCost) {
       blockingStatus = UiStrings.skillInsufficientForce;
+    } else if (character.chargingSkill != null) {
+      blockingStatus = UiStrings.skillCharging;
+    } else if (character.staggerTicksRemaining > 0) {
+      blockingStatus = UiStrings.skillStaggered;
+    } else if (!actionReady || !interventionWindowOpen) {
+      blockingStatus = UiStrings.skillAwaitingAction;
     } else {
       blockingStatus = '';
     }
@@ -388,7 +706,7 @@ class SkillCommandButton extends StatelessWidget {
         onPressed: enabled ? onTap : null,
         onLongPress: onShowInfo,
         style: ElevatedButton.styleFrom(
-          // 背景已由 bgColor(!ready→buttonDisabled)表达,
+          // 背景已由 bgColor(!interventionReady→buttonDisabled)表达,
           // 前景按 enabled 手动切 muted/primary 保留「不可下发」灰态观感。
           backgroundColor: bgColor,
           disabledBackgroundColor: bgColor,
@@ -523,7 +841,9 @@ class SkillCommandButton extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: _SkillMetric(
-                                  text: UiStrings.skillQiCostChip(skill.qiCost),
+                                  text: UiStrings.skillQiCostChip(
+                                    effectiveCost,
+                                  ),
                                   color: WuxiaUi.qing,
                                 ),
                               ),
@@ -714,13 +1034,17 @@ class EmptySkillSlot extends StatelessWidget {
 }
 
 class BattlePouchRail extends StatelessWidget {
-  const BattlePouchRail({super.key});
+  const BattlePouchRail({super.key, this.compact = false});
+
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: BattleLayoutTokens.pouchWidth,
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+      padding: compact
+          ? const EdgeInsets.fromLTRB(14, 6, 14, 6)
+          : const EdgeInsets.fromLTRB(14, 10, 14, 10),
       decoration: BoxDecoration(
         color: const Color(0xB3131210),
         border: Border.all(color: const Color(0xFF6D5940)),
@@ -747,7 +1071,7 @@ class BattlePouchRail extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: compact ? 4 : 8),
           Row(
             children: [
               for (var i = 0; i < 3; i++) ...[
@@ -756,8 +1080,8 @@ class BattlePouchRail extends StatelessWidget {
                   value: UiStrings.battlePouchReserved,
                   child: Container(
                     key: ValueKey('battle_pouch_slot_$i'),
-                    width: BattleLayoutTokens.pouchSlotSize,
-                    height: BattleLayoutTokens.pouchSlotSize,
+                    width: compact ? 34 : BattleLayoutTokens.pouchSlotSize,
+                    height: compact ? 34 : BattleLayoutTokens.pouchSlotSize,
                     decoration: BoxDecoration(
                       color: const Color(0xFF3A3229),
                       image: const DecorationImage(
@@ -775,8 +1099,8 @@ class BattlePouchRail extends StatelessWidget {
                               i == 0
                                   ? 'assets/equipment/accessory_baowu_zi_jin_hu_lu.png'
                                   : 'assets/equipment/accessory_xunchang_yao_nang.png',
-                              width: 46,
-                              height: 46,
+                              width: compact ? 30 : 46,
+                              height: compact ? 30 : 46,
                               fit: BoxFit.contain,
                               errorBuilder: (_, _, _) => const Icon(
                                 Icons.inventory_2_outlined,
@@ -793,7 +1117,9 @@ class BattlePouchRail extends StatelessWidget {
                   ),
                 ),
                 if (i < 2)
-                  const SizedBox(width: BattleLayoutTokens.pouchSlotGap),
+                  SizedBox(
+                    width: compact ? 6 : BattleLayoutTokens.pouchSlotGap,
+                  ),
               ],
             ],
           ),

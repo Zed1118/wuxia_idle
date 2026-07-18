@@ -27,9 +27,9 @@ class BattleField extends StatelessWidget {
   final void Function(int slotKey, int popupId) onPopupComplete;
   final List<AnimationController> hitFlashControllers;
   final Map<int, Color> hitFlashColors;
-  // 两段点选:点敌头像出手回调(仅右队/敌方非空);待发态(敌头像可点 + 高亮)。
+  // 两段点选:点敌头像出手回调；仅 [targetableEnemyIds] 中的敌人可点 + 高亮。
   final void Function(int enemyId) onEnemyTap;
-  final bool pendingActive;
+  final Set<int> targetableEnemyIds;
   final int? hoveredEnemyId;
   final void Function(int enemyId, bool hovering) onEnemyHover;
 
@@ -48,7 +48,7 @@ class BattleField extends StatelessWidget {
     required this.hitFlashControllers,
     required this.hitFlashColors,
     required this.onEnemyTap,
-    required this.pendingActive,
+    this.targetableEnemyIds = const <int>{},
     required this.hoveredEnemyId,
     required this.onEnemyHover,
   });
@@ -83,6 +83,9 @@ class BattleField extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          if (constraints.maxWidth <= 0 || constraints.maxHeight <= 0) {
+            return const SizedBox.shrink();
+          }
           final baseWidth =
               (constraints.maxWidth * BattleLayoutTokens.stageWidthFraction)
                   .clamp(132.0, BattleLayoutTokens.stageMaxStandeeWidth);
@@ -177,20 +180,23 @@ class BattleField extends StatelessWidget {
                                 : 0,
                             onTap:
                                 (!isLeftTeam &&
-                                    pendingActive &&
-                                    slot.character.isAlive)
+                                    targetableEnemyIds.contains(
+                                      slot.character.characterId,
+                                    ))
                                 ? () => onEnemyTap(slot.character.characterId)
                                 : null,
                             hovered:
                                 hoveredEnemyId == slot.character.characterId,
                             targetable:
                                 !isLeftTeam &&
-                                pendingActive &&
-                                slot.character.isAlive,
+                                targetableEnemyIds.contains(
+                                  slot.character.characterId,
+                                ),
                             onHoverChanged:
                                 (!isLeftTeam &&
-                                    pendingActive &&
-                                    slot.character.isAlive)
+                                    targetableEnemyIds.contains(
+                                      slot.character.characterId,
+                                    ))
                                 ? (hovering) => onEnemyHover(
                                     slot.character.characterId,
                                     hovering,
@@ -267,8 +273,8 @@ class _StageSlotLayout {
       maxWidth / rawWidth,
       maxHeight / rawHeight,
     ].reduce((a, b) => a < b ? a : b);
-    final width = rawWidth * fitScale;
-    final height = rawHeight * fitScale;
+    final width = (rawWidth * fitScale).clamp(0.0, maxWidth);
+    final height = (rawHeight * fitScale).clamp(0.0, maxHeight);
     final left = (slot.anchor.dx * maxWidth - width / 2).clamp(
       0.0,
       maxWidth - width,

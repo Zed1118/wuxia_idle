@@ -148,6 +148,30 @@ class MassBattleStrategy extends BattleStrategy {
     targetId: targetId,
   );
 
+  /// 与地面战保持同一“点选即放”语义。首拍前先装入 wave0 并烘焙阵型；若本次
+  /// 干预清掉当前 wave，则沿 tick 同源规则立即进入下一波。
+  @override
+  BattleState interveneNow(
+    BattleState state,
+    int characterId,
+    SkillDef skill, {
+    int? targetId,
+    required NumbersConfig n,
+    required Random rng,
+  }) {
+    final prepared = _advanceWaveIfNeeded(_ensureStarted(state, n));
+    if (prepared.isFinished) return prepared;
+    final after = _delegate.interveneNow(
+      prepared,
+      characterId,
+      skill,
+      targetId: targetId,
+      n: n,
+      rng: rng,
+    );
+    return _advanceWaveIfNeeded(after);
+  }
+
   BattleState _applyFormation(BattleState s, double rateCap) =>
       applyFormationTo(
         s,

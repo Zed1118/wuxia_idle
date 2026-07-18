@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/domain/enums.dart';
 import '../../domain/battle_log.dart';
+import '../../domain/battle_skill_utils.dart';
 import '../../domain/battle_state.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
@@ -45,8 +47,8 @@ class CycleHintBanner extends StatelessWidget {
 
 // ─── 破绽窗口指令栏提示（第六阶段 Task 5）─────────────────────────────────
 
-/// 指令栏上方薄提示条：右队（敌方）有存活角色处于破绽窗口（staggerTicksRemaining > 0）
-/// 时显示「破绽 · 该爆发了」，引导玩家拖招释放爆发技。
+/// 指令栏上方薄提示条：右队（敌方）有存活角色处于破绽窗口，
+/// 且我方至少有一个非普攻招式当前可立即下发时，显示「破绽 · 该爆发了」。
 ///
 /// **只读 state**：不触碰 interveneNow / AP / 逻辑速度（红线 §5.5）。
 /// 窗口关闭（所有敌方 stagger=0）后自然消失（SizedBox.shrink）。
@@ -59,7 +61,16 @@ class CoopBurstPromptBar extends StatelessWidget {
     final hasBreakWindow = state.rightTeam.any(
       (e) => e.isAlive && e.staggerTicksRemaining > 0,
     );
-    if (!hasBreakWindow) return const SizedBox.shrink();
+    final hasActionableBurst = state.leftTeam.any(
+      (character) => character.availableSkills.any(
+        (skill) =>
+            skill.type != SkillType.normalAttack &&
+            canInterveneNow(state, character, skill),
+      ),
+    );
+    if (!hasBreakWindow || !hasActionableBurst) {
+      return const SizedBox.shrink();
+    }
 
     return Container(
       key: const ValueKey('coop_burst_prompt_bar'),
@@ -103,6 +114,7 @@ class DangerBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (state.isFinished) return const SizedBox.shrink();
     BattleCharacter? imminent;
     for (final e in state.rightTeam) {
       if (!e.isAlive || e.chargingSkill == null) continue;

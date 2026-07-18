@@ -89,9 +89,7 @@ class BattleLog {
       );
     }
 
-    final target = _findChar(state, action.targetId!);
-    final killed = target != null && !target.isAlive;
-    if (killed) markers.add('击杀');
+    if (action.defeatedTarget) markers.add('击杀');
 
     final markerStr = markers.isEmpty ? '' : '（${markers.join(' / ')}）';
     return '$tickStr $actorName 对 $targetName 使用「$skillName」，'
@@ -166,10 +164,7 @@ class BattleLog {
             skill.canInterrupt)) {
       return true;
     }
-    if (a.targetId != null) {
-      final target = _findChar(state, a.targetId!);
-      if (target != null && !target.isAlive) return true; // 击杀
-    }
+    if (a.defeatedTarget) return true;
     return false;
   }
 
@@ -179,14 +174,58 @@ class BattleLog {
     int limit = 3,
   }) {
     final out = <BattleAction>[];
-    for (
-      var i = state.actionLog.length - 1;
-      i >= 0 && out.length < limit;
-      i--
-    ) {
-      if (isKeyAction(state.actionLog[i], state)) out.add(state.actionLog[i]);
+    var i = state.actionLog.length - 1;
+    while (i >= 0 && out.length < limit) {
+      final action = state.actionLog[i];
+      if (!_isAoeHit(action)) {
+        if (isKeyAction(action, state)) out.add(action);
+        i--;
+        continue;
+      }
+
+      // 一次 AOE 在 actionLog 中按目标写多条连续动作；最近战报按“施放”占
+      // 一行，完整日志与逐目标表现仍保留原始动作。反向扫描时以本组最新目标
+      // 为默认代表，再让破招/会心/开窗/暴击/击杀等更高信息动作抢占。
+      var start = i;
+      while (start > 0 && _sameAoeCast(action, state.actionLog[start - 1])) {
+        start--;
+      }
+      BattleAction? representative;
+      var bestScore = -1;
+      for (var j = i; j >= start; j--) {
+        final candidate = state.actionLog[j];
+        if (!isKeyAction(candidate, state)) continue;
+        final score = _reportRepresentativeScore(candidate);
+        if (score > bestScore) {
+          representative = candidate;
+          bestScore = score;
+        }
+      }
+      if (representative != null) out.add(representative);
+      i = start - 1;
     }
     return out;
+  }
+
+  static bool _isAoeHit(BattleAction action) =>
+      action.skill?.targetType == TargetType.aoe &&
+      action.attackResult != null &&
+      action.targetId != null;
+
+  static bool _sameAoeCast(BattleAction first, BattleAction candidate) =>
+      _isAoeHit(candidate) &&
+      candidate.tick == first.tick &&
+      candidate.actorId == first.actorId &&
+      candidate.skill?.id == first.skill?.id;
+
+  static int _reportRepresentativeScore(BattleAction action) {
+    var score = 0;
+    if (action.interrupted) score += 80;
+    if (action.weaknessHit) score += 60;
+    if (action.openedBreakWindow) score += 40;
+    if (action.attackResult?.isCritical ?? false) score += 20;
+    if (action.defeatedTarget) score += 10;
+    return score;
   }
 
   /// 紧凑单行（无"[第 N 拍]"前缀，给底部战报条用）。
@@ -199,10 +238,7 @@ class BattleLog {
     if (r.isDodged) return '$actorName 「$skillName」被闪避';
     final tags = <String>[];
     if (r.isCritical) tags.add('暴击');
-    if (a.targetId != null) {
-      final target = _findChar(state, a.targetId!);
-      if (target != null && !target.isAlive) tags.add('击杀');
-    }
+    if (a.defeatedTarget) tags.add('击杀');
     final tagStr = tags.isEmpty ? '' : '（${tags.join('·')}）';
     return '$actorName 「$skillName」${r.finalDamage} 伤$tagStr';
   }

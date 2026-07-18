@@ -387,6 +387,7 @@ Future<Widget> buildVisualTarget(
         hint: null,
         sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         autoStart: false,
+        allowPlayerIntervention: true,
       );
     case VisualRoute.battleInnerDemonStage:
       return const ScenarioLauncher(

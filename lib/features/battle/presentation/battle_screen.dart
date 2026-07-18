@@ -149,8 +149,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // rebuild 用 setState 保持重绘粒度不变。
   late final BattlePlaybackController _playback;
 
-  // T1 指令台：当前"重点角色"槽位（玩家手动选定的基线）。敌人蓄力时由
-  // [_effectiveFocus] 临时覆盖到可破招者，但不改写这个手动基线。
+  // T1 指令台：当前"重点角色"槽位（玩家手动选定的基线）。敌人蓄力或破绽开窗时由
+  // [_effectiveFocus] 临时覆盖到可操作角色，但不改写这个手动基线。
   // 技能"待发"态直接读 [BattleState.pendingUltimates]（domain 单一真相源），
   // 不再维护本地置灰 set——引擎消费后自动清，按钮印随之消失。
   int _focusSlotIndex = 0;
@@ -160,6 +160,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   // 战斗结算 dialog 已显示标志，避免 result 字段连续触发多次弹窗
   bool _resultDialogShown = false;
+  int _resultPresentationEpoch = 0;
 
   // ─── 两段点选 tap 释放 ───────────────────────────────────────────────────
   // 待发态(纯 UI,不写 BattleState):已点选待发的单体技与其角色 charId。
@@ -167,6 +168,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   SkillDef? _pendingSkill;
   int? _pendingCharId;
   int? _hoveredPendingEnemyId;
+  // 待发软暂停只恢复自己暂停的播放；若玩家原本已手动暂停，清待发后仍暂停。
+  bool _resumePlaybackAfterPending = false;
 
   // 技能目标选择栏锚点:待发单体技的技能格 ↔ 其上方浮出的敌人快捷选择栏。
   final LayerLink _skillTargetLink = LayerLink();
@@ -287,7 +290,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // ─── 指令台（T1） ──────────────────────────────────────────────────────────
 
   /// 玩家点选技能 → 调 [BattleNotifier.interveneNow] 立即插队出手(预支 AP 归零)。
-  /// 仅当该技能 ready（存活 + 内力够 + CD 0）才下发，targetId=null 走 AI 默认选目标。
+  /// 仅当该技能 ready（存活 + 内力够 + CD 0）且角色 AP 已重新积累为正才下发，
+  /// targetId=null 走 AI 默认选目标。
   ///
   /// 主线二 2.3:即放·真插队——立即出手(预支 AP 归零),不再走 pending+C5 快进路径。
   void _onSkillCommand(int characterId, SkillDef skill, {int? targetId}) {
@@ -300,7 +304,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         break;
       }
     }
-    if (c == null || !isSkillReady(c, skill)) return;
+    if (c == null || !canInterveneNow(s, c, skill)) return;
     // 主线二 2.3:即放·真插队——立即出手(预支 AP 归零),不再标记 pending+C5 快进。
     ref
         .read(battleProvider.notifier)
@@ -339,7 +343,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         break;
       }
     }
-    if (c == null || !isSkillReady(c, skill)) return;
+    if (c == null || !canInterveneNow(s, c, skill)) return;
     // 待发态下再点同一技能 = 取消。
     if (skill.targetType != TargetType.aoe &&
         _pendingSkill?.id == skill.id &&
@@ -352,22 +356,26 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       _onSkillCommand(characterId, skill); // 一键即放,AI 选目标
       return;
     }
-    // single:按存活敌人数分流。
-    final aliveEnemies = s.rightTeam
-        .where((e) => e.isAlive)
+    // single:按当前技能的合法目标数分流。护法等机制可能让“存活敌人 2 名”
+    // 实际只剩 1 名可选；此时直接出手，避免弹出只有一个选项的冗余目标栏。
+    final targetableEnemies = s.rightTeam
+        .where((e) => canManuallyTargetEnemy(e, s, skill))
         .toList(growable: false);
-    if (aliveEnemies.isEmpty) return; // 战斗已结束,守卫。
-    if (aliveEnemies.length == 1) {
-      // 唯一敌人 → 点击即放:不进待发/不暂停/不选目标。
+    if (targetableEnemies.isEmpty) return;
+    if (targetableEnemies.length == 1) {
+      // 唯一合法目标 → 点击即放:不进待发/不暂停/不选目标。
       if (_pendingSkill != null) _clearPending();
       _onSkillCommand(
         characterId,
         skill,
-        targetId: aliveEnemies.first.characterId,
+        targetId: targetableEnemies.first.characterId,
       );
       return;
     }
     // ≥2 敌:进待发态 + 软暂停(选择栏在技能格上方冒出,右侧头像亦可点)。
+    if (_pendingSkill == null) {
+      _resumePlaybackAfterPending = !_playback.isPaused;
+    }
     setState(() {
       _pendingSkill = skill;
       _pendingCharId = characterId;
@@ -380,18 +388,31 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     final skill = _pendingSkill;
     final charId = _pendingCharId;
     if (skill == null || charId == null) return;
+    final state = ref.read(battleProvider);
+    BattleCharacter? enemy;
+    for (final candidate in state.rightTeam) {
+      if (candidate.characterId == enemyId) {
+        enemy = candidate;
+        break;
+      }
+    }
+    if (enemy == null || !canManuallyTargetEnemy(enemy, state, skill)) return;
     _clearPending();
     _onSkillCommand(charId, skill, targetId: enemyId);
   }
 
   /// 解除待发态并恢复自动播放(取消 / 出手后共用)。
   void _clearPending() {
+    final shouldResume = _resumePlaybackAfterPending;
     setState(() {
       _pendingSkill = null;
       _pendingCharId = null;
       _hoveredPendingEnemyId = null;
+      _resumePlaybackAfterPending = false;
     });
-    _playback.resume(); // 解除软暂停 + 战斗未结束则重启自动播放。
+    if (shouldResume) {
+      _playback.resume(); // 仅解除待发自身施加的软暂停。
+    }
   }
 
   void _onPendingEnemyHover(int enemyId, bool hovering) {
@@ -401,13 +422,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     });
   }
 
-  /// 待发单体技的技能格上方浮出敌人快捷选择栏(仅 ≥2 存活敌人;1 敌走点击即放
-  /// 不进待发,不会到这里)。锚定被点技能格,右侧头像选目标通道并存。
+  /// 待发单体技的技能格上方浮出可选敌人快捷栏。仅在 ≥2 个合法目标时进入
+  /// 待发；锚定被点技能格,右侧头像选目标通道并存。
   Widget _buildTargetChipOverlay(BattleState state) {
+    final skill = _pendingSkillFor(state);
+    if (skill == null) return const SizedBox.shrink();
     final aliveEnemies = state.rightTeam
-        .where((e) => e.isAlive)
+        .where((e) => canManuallyTargetEnemy(e, state, skill))
         .toList(growable: false);
-    if (aliveEnemies.length < 2) return const SizedBox.shrink();
+    if (aliveEnemies.isEmpty) return const SizedBox.shrink();
     return CompositedTransformFollower(
       link: _skillTargetLink,
       showWhenUnlinked: false,
@@ -423,36 +446,102 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     );
   }
 
+  SkillDef? _pendingSkillFor(BattleState state) {
+    if (_pendingSkill != null) return _pendingSkill;
+    final characterId = widget.previewPendingCharacterId;
+    final skillId = widget.previewPendingSkillId;
+    if (characterId == null || skillId == null) return null;
+    for (final character in state.leftTeam) {
+      if (character.characterId != characterId) continue;
+      for (final skill in character.availableSkills) {
+        if (skill.id == skillId) return skill;
+      }
+    }
+    return null;
+  }
+
+  Set<int> _targetableEnemyIds(BattleState state) {
+    final skill = _pendingSkillFor(state);
+    if (skill == null) return const <int>{};
+    return {
+      for (final enemy in state.rightTeam)
+        if (canManuallyTargetEnemy(enemy, state, skill)) enemy.characterId,
+    };
+  }
+
   void _onSelectFocus(int slotIndex) {
+    // 目标选择是短暂的角色内操作态。主动切换队友等同于放弃当前待发，
+    // 避免案台已经换人、目标栏却仍替原角色出手。
+    if (_pendingSkill != null) _clearPending();
     setState(() => _focusSlotIndex = slotIndex);
   }
 
-  /// 重点角色生效槽位：敌人蓄力时自动落到首个"有 ready 破招技"的我方角色，
-  /// 否则用玩家手动选的 [_focusSlotIndex]（越界 / 死亡时回退到 0）。
+  /// 重点角色生效槽位：目标选择期间锁定实际待发者；其余时间蓄力时优先
+  /// 可破招者，破绽时若手选角色不可操作则临时落到首个有可下发非普攻
+  /// 招式的队友。状态驱动的临时焦点都不改写手选基线。
   int _effectiveFocus(BattleState s) {
     if (s.leftTeam.isEmpty) return 0;
+    final pendingCharacterId =
+        _pendingCharId ?? widget.previewPendingCharacterId;
+    if (pendingCharacterId != null) {
+      for (var i = 0; i < s.leftTeam.length; i++) {
+        final character = s.leftTeam[i];
+        if (character.characterId == pendingCharacterId && character.isAlive) {
+          return i;
+        }
+      }
+    }
+    final selectedIsAlive =
+        _focusSlotIndex >= 0 &&
+        _focusSlotIndex < s.leftTeam.length &&
+        s.leftTeam[_focusSlotIndex].isAlive;
     final enemyCharging = s.rightTeam.any(
       (e) => e.isAlive && e.chargingSkill != null,
     );
     if (enemyCharging) {
+      if (selectedIsAlive &&
+          _hasActionableInterrupt(s, s.leftTeam[_focusSlotIndex])) {
+        return _focusSlotIndex;
+      }
       for (var i = 0; i < s.leftTeam.length; i++) {
-        final c = s.leftTeam[i];
-        final k = _findKeySkillOf(c);
-        if (k != null && isSkillReady(c, k)) return i;
+        if (_hasActionableInterrupt(s, s.leftTeam[i])) return i;
       }
     }
+    final enemyStaggered = s.rightTeam.any(
+      (e) => e.isAlive && e.staggerTicksRemaining > 0,
+    );
+    if (enemyStaggered) {
+      if (selectedIsAlive &&
+          _hasActionableBurst(s, s.leftTeam[_focusSlotIndex])) {
+        return _focusSlotIndex;
+      }
+      for (var i = 0; i < s.leftTeam.length; i++) {
+        if (_hasActionableBurst(s, s.leftTeam[i])) return i;
+      }
+    }
+    if (selectedIsAlive) {
+      return _focusSlotIndex;
+    }
+    for (var i = 0; i < s.leftTeam.length; i++) {
+      if (s.leftTeam[i].isAlive) return i;
+    }
+    // 全队阵亡后的结算帧仍需一个安全索引；优先保留原手选槽。
     if (_focusSlotIndex >= 0 && _focusSlotIndex < s.leftTeam.length) {
       return _focusSlotIndex;
     }
     return 0;
   }
 
-  static SkillDef? _findKeySkillOf(BattleCharacter c) {
-    for (final skill in c.availableSkills) {
-      if (skill.canInterrupt) return skill;
-    }
-    return null;
-  }
+  static bool _hasActionableInterrupt(BattleState s, BattleCharacter c) => c
+      .availableSkills
+      .any((skill) => skill.canInterrupt && canInterveneNow(s, c, skill));
+
+  static bool _hasActionableBurst(BattleState s, BattleCharacter c) =>
+      c.availableSkills.any(
+        (skill) =>
+            skill.type != SkillType.normalAttack &&
+            canInterveneNow(s, c, skill),
+      );
 
   // ─── 结算 dialog ─────────────────────────────────────────────────────────
 
@@ -512,13 +601,16 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   Future<void> _showResultDialogAfterPacing(
     BattleResult result,
     BattleState s,
+    int presentationEpoch,
   ) async {
-    if (result == BattleResult.leftWin) {
-      await Future<void>.delayed(
-        Duration(milliseconds: widget.animConfig.victoryHandoffDelayMs),
-      );
+    final handoffDelayMs = result == BattleResult.leftWin
+        ? widget.animConfig.victoryHandoffDelayMs
+        : widget.animConfig.keyMomentHoldMs;
+    if (handoffDelayMs > 0) {
+      await Future<void>.delayed(Duration(milliseconds: handoffDelayMs));
     }
-    if (!mounted) return;
+    if (!mounted || presentationEpoch != _resultPresentationEpoch) return;
+    if (ref.read(battleProvider).result != result) return;
     _showResultDialog(result, s);
   }
 
@@ -601,15 +693,19 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     ref.listen<BattleState>(battleProvider, (prev, next) {
       // 同一个 BattleScreen 可能承接连续战斗（塔重试/扫荡队列/调试路由复用）。
       // 上一场结算弹窗出现后，下一场从 finished → running 时必须复位防重入标记。
-      if (prev?.result != null && next.result == null) {
+      final restartedBattle = prev?.result != null && next.result == null;
+      if (restartedBattle) {
+        // 废弃上一场仍在 victoryHandoffDelay 中等待的异步结算呈现。
+        _resultPresentationEpoch++;
         _resultDialogShown = false;
+        _playback.onBattleRestarted();
       }
 
-      // 1. 启动 Timer：team 从空 → 非空且未结束 → 自动连续播放(Phase 3:战斗
-      //    永远自动流转,advance() 驱动)。
+      // 1. 启动 Timer：team 从空 → 非空，或同屏连续战斗从 finished → running，
+      //    且未结束 → 自动连续播放(Phase 3:战斗永远自动流转)。
       final wasEmpty = prev == null || prev.leftTeam.isEmpty;
       if (widget.playback.autoStart &&
-          wasEmpty &&
+          (wasEmpty || restartedBattle) &&
           next.leftTeam.isNotEmpty &&
           !next.isFinished) {
         _playback.startTimer();
@@ -617,21 +713,28 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
       // 2. 战斗结束：停 timer + 弹结算 dialog（postFrame 避免 build 期 setState）
       if ((prev?.result == null) && next.result != null) {
+        final presentationEpoch = ++_resultPresentationEpoch;
+        // 宿主/调试可在待发软暂停期间直接推进到结束；本地待发态不能穿透
+        // 结算或残留到连续战斗。复用暂停归属规则，只归还待发自己施加的暂停。
+        if (_pendingSkill != null) _clearPending();
         _playback.onBattleFinished(); // 停 timer + 冻结读秒环节拍。
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            unawaited(_showResultDialogAfterPacing(next.result!, next));
+            unawaited(
+              _showResultDialogAfterPacing(
+                next.result!,
+                next,
+                presentationEpoch,
+              ),
+            );
           }
         });
       }
 
-      // 3. actionLog 新增：触发动画（待发态自动随 pendingUltimates 消费而清，
-      //    无需本地解除置灰）。
+      // 3. actionLog 新增：触发动画。
       if (prev != null && next.actionLog.length > prev.actionLog.length) {
         final newActions = next.actionLog.sublist(prev.actionLog.length);
-        for (final a in newActions) {
-          _playback.playAction(a, next);
-        }
+        _playback.playActions(newActions, next);
       }
 
       // 4. 破招机制 SFX：状态边沿触发（表现层纯读 state，不入 domain）。
@@ -701,49 +804,48 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
               ),
             ),
             SafeArea(
-              child: BattlePlaybackMotion(
-                controller: _playback,
-                child: Focus(
-                  autofocus: true,
-                  onKeyEvent: (node, event) {
-                    if (event is KeyDownEvent &&
-                        event.logicalKey == LogicalKeyboardKey.escape &&
-                        _pendingActive) {
-                      _clearPending();
-                      return KeyEventResult.handled;
-                    }
-                    return KeyEventResult.ignored;
+              child: Focus(
+                autofocus: true,
+                onKeyEvent: (node, event) {
+                  if (event is KeyDownEvent &&
+                      event.logicalKey == LogicalKeyboardKey.escape &&
+                      _pendingActive) {
+                    _clearPending();
+                    return KeyEventResult.handled;
+                  }
+                  return KeyEventResult.ignored;
+                },
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    if (_pendingActive) _clearPending();
                   },
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: () {
-                      if (_pendingActive) _clearPending();
-                    },
-                    child: Column(
-                      children: [
-                        if (widget.cycleHint != null)
-                          CycleHintBanner(hint: widget.cycleHint!),
-                        Header(
-                          state: state,
-                          sceneTitle: widget.hint,
-                          onToggleLog: () =>
-                              setState(() => _logOpen = !_logOpen),
-                          onPause: _togglePause,
-                          isPaused: _playback.isPaused,
-                          onFastForward: _playback.toggleFastForward,
-                          isFastForward: _playback.isFastForward,
-                          allowPlayerIntervention:
-                              widget.playback.allowPlayerIntervention,
-                          onSurrender: widget.onSurrender == null
-                              ? null
-                              : _confirmSurrender,
-                          // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
-                          onStepOnce: widget.playback.startPaused
-                              ? _stepOnce
-                              : null,
-                        ),
-                        DangerBar(state: state),
-                        Expanded(
+                  child: Column(
+                    children: [
+                      if (widget.cycleHint != null)
+                        CycleHintBanner(hint: widget.cycleHint!),
+                      Header(
+                        state: state,
+                        sceneTitle: widget.hint,
+                        onToggleLog: () => setState(() => _logOpen = !_logOpen),
+                        onPause: _togglePause,
+                        isPaused: _playback.isPaused,
+                        onFastForward: _playback.toggleFastForward,
+                        isFastForward: _playback.isFastForward,
+                        allowPlayerIntervention:
+                            widget.playback.allowPlayerIntervention,
+                        onSurrender: widget.onSurrender == null
+                            ? null
+                            : _confirmSurrender,
+                        // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
+                        onStepOnce: widget.playback.startPaused
+                            ? _stepOnce
+                            : null,
+                      ),
+                      DangerBar(state: state),
+                      Expanded(
+                        child: BattlePlaybackMotion(
+                          controller: _playback,
                           child: BattlePlaybackField(
                             controller: _playback,
                             state: state,
@@ -751,22 +853,25 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             chargeMaxTicks: chargeMaxTicks,
                             staggerWindowTicks: staggerWindowTicks,
                             onEnemyTap: _onEnemyTap,
-                            pendingActive: _pendingActive,
+                            targetableEnemyIds: _pendingActive
+                                ? _targetableEnemyIds(state)
+                                : const <int>{},
                             hoveredEnemyId: _hoveredPendingEnemyId,
                             onEnemyHover: _onPendingEnemyHover,
                           ),
                         ),
-                        BattleReportStrip(
-                          state: state,
-                          onTap: () => setState(() => _logOpen = true),
-                        ),
-                        if (widget.playback.allowPlayerIntervention)
-                          CoopBurstPromptBar(state: state),
+                      ),
+                      BattleReportStrip(
+                        state: state,
+                        onTap: () => setState(() => _logOpen = true),
+                      ),
+                      if (widget.playback.allowPlayerIntervention)
+                        CoopBurstPromptBar(state: state),
+                      if (widget.playback.allowPlayerIntervention)
                         BottomBar(
                           state: state,
                           focusSlotIndex: _effectiveFocus(state),
-                          allowPlayerIntervention:
-                              widget.playback.allowPlayerIntervention,
+                          allowPlayerIntervention: true,
                           onSelectFocus: _onSelectFocus,
                           onShowSkillInfo: _showSkillInfo,
                           onSkillTap: _onSkillTap,
@@ -777,9 +882,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                               _pendingSkill?.id ?? widget.previewPendingSkillId,
                           beat: _playback.beat,
                           skillTargetLink: _skillTargetLink,
-                        ),
-                      ],
-                    ),
+                        )
+                      else
+                        AutoRotationBar(state: state),
+                    ],
                   ),
                 ),
               ),

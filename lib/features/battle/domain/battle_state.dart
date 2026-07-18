@@ -77,6 +77,12 @@ class BattleAction {
   /// Task 7 由 caller 据守方 schoolDamageTakenMult 设置,本批仅加字段。
   final bool weaknessHit;
 
+  /// 本动作结算当刻是否令目标由存活变为阵亡。
+  ///
+  /// 必须随动作写入快照，不能由战报回查目标的最终状态，否则目标在后续动作中
+  /// 阵亡时，早先的普通命中也会被追溯误标为“击杀”。
+  final bool defeatedTarget;
+
   const BattleAction({
     required this.tick,
     required this.actorId,
@@ -89,6 +95,7 @@ class BattleAction {
     this.bossPhaseTransitionTo,
     this.bossPhaseTitleKey,
     this.weaknessHit = false,
+    this.defeatedTarget = false,
   });
 
   @override

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -170,7 +171,7 @@ class BattlePlaybackController {
   Animation<double> get beat => _beatCtrl;
   bool get isPaused => _isPaused;
   bool get isFastForward => _isFastForward;
-  bool get hasTimer => _playTimer != null;
+  bool get hasTimer => _playTimer?.isActive ?? false;
 
   @visibleForTesting
   int get playbackIntervalMsForTest => _currentPlaybackIntervalMs;
@@ -187,6 +188,16 @@ class BattlePlaybackController {
 
   @visibleForTesting
   bool get debugBeatIsAnimating => _beatCtrl.isAnimating;
+
+  @visibleForTesting
+  bool get debugCloseupIsAnimating => _closeupCtrl.isAnimating;
+
+  @visibleForTesting
+  int debugAttackDurationMsForSlot(int slotKey) =>
+      _attackControllers[slotKey].duration!.inMilliseconds;
+
+  @visibleForTesting
+  void debugApplyHitStop(int ms) => _applyHitStop(ms);
 
   @visibleForTesting
   BattleActionTemplate debugActionTemplateForSlot(int slotKey) =>
@@ -231,7 +242,7 @@ class BattlePlaybackController {
 
   /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
   void _triggerHitFlash(BattleCharacter target, bool isCritical) {
-    if (_reduceFlashing) return;
+    if (_isFastForward || _reduceFlashing) return;
     final key = _visualSlotKey(target);
     _rebuild(() {
       _hitFlashColors[key] = isCritical ? WuxiaColors.gangMeng : Colors.white;
@@ -247,7 +258,11 @@ class BattlePlaybackController {
   ) {
     final ctrl = AnimationController(
       vsync: _vsync,
-      duration: Duration(milliseconds: _animConfig.projectileMs),
+      duration: Duration(
+        milliseconds: _isFastForward
+            ? math.min(_animConfig.projectileMs, _currentPlaybackIntervalMs)
+            : _animConfig.projectileMs,
+      ),
     );
     final entry = TrailEntry(
       id: _nextTrailId++,
@@ -299,8 +314,9 @@ class BattlePlaybackController {
     BattleCharacter? actor,
     BattleCharacter target,
     BattleAction action,
-    BattleActionTemplate actionTemplate,
-  ) {
+    BattleActionTemplate actionTemplate, {
+    bool includeSchoolEffect = true,
+  }) {
     final result = action.attackResult;
     if (result == null) return;
     final targetFrac = _slotFrac(
@@ -311,11 +327,17 @@ class BattlePlaybackController {
     final effectFrac = actionTemplate == BattleActionTemplate.area
         ? Offset(target.teamSide == 0 ? 0.28 : 0.72, 0.5)
         : targetFrac;
+    final coalesceGroup = (
+      tick: action.tick,
+      actorId: action.actorId,
+      skillId: action.skill?.id,
+    );
 
     if (result.isDodged) {
       _spawnEffect(
+        coalesceGroup: coalesceGroup,
         assetPath: WuxiaUi.fxDodgeShadow,
-        centerFrac: effectFrac,
+        centerFrac: targetFrac,
         size: 230,
         opacity: 0.64,
         mirrored: target.teamSide == 1,
@@ -323,9 +345,10 @@ class BattlePlaybackController {
       return;
     }
 
-    if (actor != null) {
+    if (actor != null && includeSchoolEffect) {
       final isUltimate = isUltimateCaptionSkill(action.skill);
       _spawnEffect(
+        coalesceGroup: coalesceGroup,
         assetPath: _schoolFx(actor.school, isUltimate: isUltimate),
         centerFrac: effectFrac,
         size: isUltimate ? 330 : 220,
@@ -337,6 +360,7 @@ class BattlePlaybackController {
 
     if (result.isCritical) {
       _spawnEffect(
+        coalesceGroup: coalesceGroup,
         assetPath: WuxiaUi.fxCriticalHit,
         centerFrac: targetFrac,
         size: 220,
@@ -345,6 +369,7 @@ class BattlePlaybackController {
     }
     if (result.defenseRate >= 0.22) {
       _spawnEffect(
+        coalesceGroup: coalesceGroup,
         assetPath: WuxiaUi.fxArmorBreak,
         centerFrac: targetFrac,
         size: 210,
@@ -353,6 +378,7 @@ class BattlePlaybackController {
     }
     if (result.appliedEffects.contains('internal_injury')) {
       _spawnEffect(
+        coalesceGroup: coalesceGroup,
         assetPath: WuxiaUi.fxInternalInjury,
         centerFrac: targetFrac,
         size: 230,
@@ -373,6 +399,7 @@ class BattlePlaybackController {
   }
 
   void _spawnEffect({
+    required Object coalesceGroup,
     required String assetPath,
     required Offset centerFrac,
     required double size,
@@ -380,13 +407,31 @@ class BattlePlaybackController {
     double rotation = 0,
     bool mirrored = false,
   }) {
+    for (final active in _activeEffects) {
+      if (!active.disposed &&
+          active.coalesceGroup == coalesceGroup &&
+          active.assetPath == assetPath &&
+          active.centerFrac == centerFrac &&
+          active.size == size &&
+          active.opacity == opacity &&
+          active.rotation == rotation &&
+          active.mirrored == mirrored) {
+        active.ctrl.forward(from: 0.0);
+        return;
+      }
+    }
     final ctrl = AnimationController(
       vsync: _vsync,
-      duration: const Duration(milliseconds: 520),
+      duration: Duration(
+        milliseconds: _isFastForward
+            ? math.min(_animConfig.battleEffectMs, _currentPlaybackIntervalMs)
+            : _animConfig.battleEffectMs,
+      ),
     );
     final entry = EffectEntry(
       id: _nextEffectId++,
       ctrl: ctrl,
+      coalesceGroup: coalesceGroup,
       centerFrac: centerFrac,
       assetPath: assetPath,
       size: size,
@@ -433,15 +478,23 @@ class BattlePlaybackController {
   }
 
   DamagePopupAnchor _nextPopupAnchor(int slotKey, PopupType type) {
-    if (type == PopupType.critical) return DamagePopupAnchor.centerBurst;
-    final existing = _popups[slotKey]?.length ?? 0;
+    final existing = _popups[slotKey] ?? const <PopupEntry>[];
+    if (type == PopupType.critical &&
+        !existing.any(
+          (entry) => entry.anchor == DamagePopupAnchor.centerBurst,
+        )) {
+      return DamagePopupAnchor.centerBurst;
+    }
     const spread = [
       DamagePopupAnchor.upperRight,
       DamagePopupAnchor.upperLeft,
       DamagePopupAnchor.lowerRight,
       DamagePopupAnchor.lowerLeft,
     ];
-    return spread[(_nextPopupId + existing) % spread.length];
+    final spreadCount = existing
+        .where((entry) => entry.anchor != DamagePopupAnchor.centerBurst)
+        .length;
+    return spread[spreadCount % spread.length];
   }
 
   DamagePopupData _buildPopupData(
@@ -543,7 +596,26 @@ class BattlePlaybackController {
   }
 
   void toggleFastForward() {
-    _rebuild(() => _isFastForward = !_isFastForward);
+    final enteringFastForward = !_isFastForward;
+    _rebuild(() => _isFastForward = enteringFastForward);
+    if (enteringFastForward) {
+      _hitStopTimer?.cancel();
+      _hitStopTimer = null;
+      _impactGlyphKey.currentState?.clear();
+      _ultimateCaptionKey.currentState?.clear();
+      _screenFlashKey.currentState?.clear();
+      for (final controller in _hitFlashControllers) {
+        controller
+          ..stop()
+          ..value = 1.0;
+      }
+      for (final controller in _attackControllers) {
+        controller.reset();
+      }
+      _shakeCtrl.reset();
+      _closeupCtrl.reset();
+      _impactShakeAmplitude = 0.0;
+    }
     if (_playTimer != null) startTimer();
   }
 
@@ -585,6 +657,59 @@ class BattlePlaybackController {
     _beatCtrl.stop();
   }
 
+  /// 同一个 BattleScreen 承接下一场时清理上一场全部瞬时表现。
+  /// 保留暂停/快进/可读节奏等玩家偏好，不触碰 BattleState。
+  void onBattleRestarted() {
+    _playTimer?.cancel();
+    _hitStopTimer?.cancel();
+    _beatCtrl.stop();
+
+    for (final entry in _activeTrails) {
+      if (!entry.disposed) {
+        entry.disposed = true;
+        entry.ctrl.stop();
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => entry.ctrl.dispose(),
+        );
+      }
+    }
+    for (final entry in _activeEffects) {
+      if (!entry.disposed) {
+        entry.disposed = true;
+        entry.ctrl.stop();
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => entry.ctrl.dispose(),
+        );
+      }
+    }
+    _rebuild(() {
+      _activeTrails.clear();
+      _activeEffects.clear();
+      _popups.clear();
+      for (var i = 0; i < _actionTemplates.length; i++) {
+        _actionTemplates[i] = BattleActionTemplate.melee;
+      }
+      _impactShakeAmplitude = 0.0;
+    });
+    _nextTrailId = 0;
+    _nextEffectId = 0;
+    _nextPopupId = 0;
+
+    for (final controller in _attackControllers) {
+      controller.reset();
+    }
+    for (final controller in _hitFlashControllers) {
+      controller.value = 1.0;
+    }
+    _shakeCtrl.reset();
+    _closeupCtrl.reset();
+    _impactGlyphKey.currentState?.clear();
+    _ultimateCaptionKey.currentState?.clear();
+    _screenFlashKey.currentState?.clear();
+
+    if (_showcase != null) _showcase = FirstClearShowcaseDirector();
+  }
+
   /// 玩法设置变更边沿:若 timer 在跑且战斗未结束 → 重启以应用新速度。
   void onGameplaySettingsChanged() {
     if (_playTimer != null && !_ref.read(battleProvider).isFinished) {
@@ -598,6 +723,7 @@ class BattlePlaybackController {
   void _applyHitStop(int ms) {
     if (_isPaused) return;
     _playTimer?.cancel();
+    _beatCtrl.stop();
     _hitStopTimer?.cancel();
     _hitStopTimer = Timer(Duration(milliseconds: ms), () {
       if (!_disposed && !_ref.read(battleProvider).isFinished) startTimer();
@@ -611,6 +737,7 @@ class BattlePlaybackController {
   ///
   void _playBossPhaseTransition(BattleAction action, BattleCharacter? actor) {
     if (action.bossPhaseTransitionTo == null) return;
+    if (_isFastForward) return;
     final bossName = actor?.name ?? '';
     final title = bossPhaseTitleFor(action, bossName);
     if (title == null) return;
@@ -682,6 +809,7 @@ class BattlePlaybackController {
   ///
   /// PUBLIC：由 build 内 `ref.listen` 的护法结界破界边沿调用。
   void playGuardianWardBreak(BattleCharacter boss) {
+    if (_isFastForward) return;
     final isEnemy = boss.teamSide == 1;
     // 破界题字抢占中央焦点:最后一击击杀护法的「斩」字形与「结界破!」同 tick 触发,
     // 两套居中题字会叠字(2026-07-02 目检 WARN)。先清掉 in-flight 击杀字形,
@@ -700,36 +828,124 @@ class BattlePlaybackController {
     );
   }
 
-  /// actionLog 新增边沿:据单条 [action] 触发本屏所有表现层反应(攻击动画/飘字/
-  /// 弹道/特效/受击闪/大招题字/破招/SFX/Boss 转阶段/会心/打击感分级/命中特写)。
-  /// 纯读 [action] + [s] 元数据,不写 BattleState(守 §5.4)。State 侧 build 内
-  /// `ref.listen` 逐条转发。
-  void playAction(BattleAction action, BattleState s) {
+  /// actionLog 新增边沿:批量触发本屏表现层反应。同 tick/施放者/
+  /// 招式的连续 AOE 动作共享一次人物动画、流派特效、题字与 SFX；伤害飘字、
+  /// 受击闪及目标状态特效仍逐条保留。纯读 [actions] + [s] 元数据，不写
+  /// BattleState（守 §5.4）。State 侧 build 内 `ref.listen` 批量转发。
+  void playActions(List<BattleAction> actions, BattleState s) {
+    var index = 0;
+    while (index < actions.length) {
+      final first = actions[index];
+      if (!_isAoeHit(first)) {
+        playAction(first, s);
+        index++;
+        continue;
+      }
+
+      var end = index + 1;
+      while (end < actions.length && _sameAoeCast(first, actions[end])) {
+        end++;
+      }
+      final cast = actions.sublist(index, end);
+      final representative = _representativeAoeAction(cast);
+      final castDefeatedTarget = cast.any((action) => action.defeatedTarget);
+      for (final action in cast) {
+        final isRepresentative = identical(action, representative);
+        _playAction(
+          action,
+          s,
+          playSharedFeedback: isRepresentative,
+          sharedCastDefeatedTarget: isRepresentative && castDefeatedTarget,
+        );
+      }
+      index = end;
+    }
+  }
+
+  bool _isAoeHit(BattleAction action) =>
+      action.skill?.targetType == TargetType.aoe &&
+      action.attackResult != null &&
+      action.targetId != null;
+
+  bool _sameAoeCast(BattleAction first, BattleAction candidate) =>
+      _isAoeHit(candidate) &&
+      candidate.tick == first.tick &&
+      candidate.actorId == first.actorId &&
+      candidate.skill?.id == first.skill?.id;
+
+  BattleAction _representativeAoeAction(List<BattleAction> cast) {
+    var representative = cast.first;
+    var bestScore = _sharedFeedbackScore(representative);
+    for (final action in cast.skip(1)) {
+      final score = _sharedFeedbackScore(action);
+      if (score > bestScore) {
+        representative = action;
+        bestScore = score;
+      }
+    }
+    return representative;
+  }
+
+  int _sharedFeedbackScore(BattleAction action) {
+    var score = action.attackResult?.isDodged == false ? 10 : 0;
+    if (action.attackResult?.isCritical ?? false) score += 20;
+    if (action.openedBreakWindow) score += 40;
+    if (action.weaknessHit) score += 60;
+    if (action.interrupted) score += 80;
+    return score;
+  }
+
+  void playAction(BattleAction action, BattleState s) =>
+      _playAction(action, s, playSharedFeedback: true);
+
+  void _playAction(
+    BattleAction action,
+    BattleState s, {
+    required bool playSharedFeedback,
+    bool sharedCastDefeatedTarget = false,
+  }) {
     final actor = findCharacter(action.actorId, s);
     final actionTemplate = battleActionTemplateFor(action.skill);
     // 首通展示帧:本动作触发的节拍(null=无);「首次」判定在 director 内消费,
     // 快进态消费不呈现(下方各触发点带 !_isFastForward gate)。
-    final showcaseBeat = _showcase?.onAction(action, s);
-    if (actor != null) {
+    final showcaseBeat = playSharedFeedback
+        ? _showcase?.onAction(action, s)
+        : null;
+    if (actor != null && playSharedFeedback) {
       final key = _visualSlotKey(actor);
       _actionTemplates[key] = actionTemplate;
-      _attackControllers[key].forward(from: 0.0);
+      _attackControllers[key]
+        ..duration = Duration(
+          milliseconds: _isFastForward
+              ? math.min(_animConfig.attackTotalMs, _currentPlaybackIntervalMs)
+              : _animConfig.attackTotalMs,
+        )
+        ..forward(from: 0.0);
     }
     if (action.attackResult != null && action.targetId != null) {
       final target = findCharacter(action.targetId!, s);
       if (target != null) {
         _spawnPopup(target, action.attackResult!, actor);
-        if (actor != null && templateUsesProjectile(actionTemplate)) {
+        if (playSharedFeedback &&
+            actor != null &&
+            templateUsesProjectile(actionTemplate)) {
           _spawnTrail(actor, target, action);
         }
-        _spawnBattleEffects(actor, target, action, actionTemplate);
+        _spawnBattleEffects(
+          actor,
+          target,
+          action,
+          actionTemplate,
+          includeSchoolEffect: playSharedFeedback,
+        );
         if (!action.attackResult!.isDodged) {
           _triggerHitFlash(target, action.attackResult!.isCritical);
         }
       }
     }
-    if (isUltimateCaptionSkill(action.skill)) {
-      final climax = hitClimaxFor(action, s);
+    if (!playSharedFeedback) return;
+    if (!_isFastForward && isUltimateCaptionSkill(action.skill)) {
+      final climax = hitClimaxFor(action);
       final isCrit = action.attackResult?.isCritical ?? false;
       _ultimateCaptionKey.currentState?.show(
         action.skill!.name,
@@ -742,7 +958,7 @@ class BattlePlaybackController {
     }
     // B3 破招:打断蓄力 → 弹「破！」题字(破招方暖金/敌方绛红,纯读 state)。
     // 首通首次破招(interruptFlourish)升峰值字号+辉光+闪白,强化教学仪式感。
-    if (action.interrupted) {
+    if (!_isFastForward && action.interrupted) {
       final flourish = showcaseBeat == ShowcaseBeat.interruptFlourish;
       _ultimateCaptionKey.currentState?.show(
         UiStrings.interruptCaption,
@@ -766,7 +982,7 @@ class BattlePlaybackController {
       action: action,
       isUltimate: isUltimateCaptionSkill(action.skill),
     );
-    if (sfx != null) {
+    if (sfx != null && !_isFastForward) {
       // 平A 按出手单位放固定变体音色（我方轻击系/敌方重击系）；其余槽位单文件。
       if (sfx == SfxId.battleHit && actor != null) {
         SoundManager.instance.playSfxPath(
@@ -789,7 +1005,7 @@ class BattlePlaybackController {
     //    优先级：本帧若同时有 profile 单字（斩/震/断）也只弹会心一字，避免两 glyph
     //    同帧叠播（会心更能传达「打中弱点」语义）；flash/shake 仍由下方 profile 路径
     //    照常触发。无 profile 的普攻弱点命中也能弹（下方块 no-op，此处兜底）。
-    final weaknessGlyphShown = action.weaknessHit;
+    final weaknessGlyphShown = !_isFastForward && action.weaknessHit;
     if (weaknessGlyphShown) {
       _impactGlyphKey.currentState?.show(
         UiStrings.weaknessHitGlyph,
@@ -804,10 +1020,10 @@ class BattlePlaybackController {
       if (profile != null) {
         final isEnemy = actor?.teamSide == 1;
         // 会心已占用本帧 glyph 通道 → profile 单字跳过，不双弹（flash/shake 照常）。
-        if (profile.glyph != null && !weaknessGlyphShown) {
+        if (!_isFastForward && profile.glyph != null && !weaknessGlyphShown) {
           _impactGlyphKey.currentState?.show(profile.glyph!, isEnemy: isEnemy);
         }
-        if (!_reduceFlashing) {
+        if (!_isFastForward && !_reduceFlashing) {
           _screenFlashKey.currentState?.flash(
             profile.flashStrength,
             // profile 非空 ⇒ attackResult 非空（见 impactProfileFor 的 null 契约）。
@@ -822,7 +1038,8 @@ class BattlePlaybackController {
           _shakeCtrl.forward(from: 0.0);
           _applyHitStop(
             playbackHoldMs(
-              isKey: BattleLog.isKeyAction(action, s),
+              isKey:
+                  sharedCastDefeatedTarget || BattleLog.isKeyAction(action, s),
               profileHitStopMs: profile.hitStopMs,
               keyMomentHoldMs: _animConfig.keyMomentHoldMs,
             ),
@@ -833,7 +1050,8 @@ class BattlePlaybackController {
 
     // 命中特写：仅峰值（大招暴击/击杀），快进/扫荡抑制（守在线=离线）。
     // 独立于 profile != null 块：普攻击杀无 profile 也须触发特写。
-    if (!_isFastForward && hitClimaxFor(action, s) != HitClimax.none) {
+    if (!_isFastForward &&
+        (sharedCastDefeatedTarget || hitClimaxFor(action) != HitClimax.none)) {
       _closeupCtrl.forward(from: 0.0).then((_) {
         if (!_disposed) _closeupCtrl.reverse();
       });

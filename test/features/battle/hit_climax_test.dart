@@ -1,4 +1,4 @@
-// 断言 hitClimaxFor 对 action+state 派生命中峰值类型（特写触发源）。
+// 断言 hitClimaxFor 对 action 结算快照派生命中峰值类型（特写触发源）。
 // 沿 impact_profile_test.dart 体例，复用相同 fixture 构造器。
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -38,74 +38,19 @@ AttackResult _result({bool crit = false, bool dodge = false}) => AttackResult(
   formulaBreakdown: '',
 );
 
-BattleAction _action({required SkillDef? skill, AttackResult? result}) =>
-    BattleAction(
-      tick: 1,
-      actorId: 1,
-      targetId: 2,
-      skill: skill,
-      attackResult: result,
-      description: 'test',
-    );
-
-/// targetAlive=true → 目标还活着；false → 已死亡（击杀检测）。
-BattleState _state({bool targetAlive = true}) {
-  const actor = BattleCharacter(
-    characterId: 1,
-    name: 'actor',
-    realmTier: RealmTier.sanLiu,
-    realmLayer: RealmLayer.yuanShu,
-    school: TechniqueSchool.gangMeng,
-    maxHp: 1000,
-    currentHp: 1000,
-    maxInternalForce: 500,
-    currentInternalForce: 500,
-    speed: 100,
-    criticalRate: 0.0,
-    evasionRate: 0.0,
-    defenseRate: 0.1,
-    totalEquipmentAttack: 0,
-    mainCultivationLayer: CultivationLayer.daCheng,
-    availableSkills: [],
-    skillCooldowns: {},
-    activeBuffs: [],
-    actionPoint: 0,
-    isAlive: true,
-    teamSide: 0,
-    slotIndex: 0,
-  );
-  final target = BattleCharacter(
-    characterId: 2,
-    name: 'target',
-    realmTier: RealmTier.sanLiu,
-    realmLayer: RealmLayer.yuanShu,
-    school: TechniqueSchool.gangMeng,
-    maxHp: 1000,
-    currentHp: targetAlive ? 100 : 0,
-    maxInternalForce: 500,
-    currentInternalForce: 500,
-    speed: 100,
-    criticalRate: 0.0,
-    evasionRate: 0.0,
-    defenseRate: 0.1,
-    totalEquipmentAttack: 0,
-    mainCultivationLayer: CultivationLayer.daCheng,
-    availableSkills: const [],
-    skillCooldowns: const {},
-    activeBuffs: const [],
-    actionPoint: 0,
-    isAlive: targetAlive,
-    teamSide: 1,
-    slotIndex: 0,
-  );
-  return BattleState(
-    leftTeam: [actor],
-    rightTeam: [target],
-    tick: 1,
-    result: null,
-    actionLog: const [],
-  );
-}
+BattleAction _action({
+  required SkillDef? skill,
+  AttackResult? result,
+  bool defeatedTarget = false,
+}) => BattleAction(
+  tick: 1,
+  actorId: 1,
+  targetId: 2,
+  skill: skill,
+  attackResult: result,
+  description: 'test',
+  defeatedTarget: defeatedTarget,
+);
 
 // ── Tests ──────────────────────────────────────────────────────────────────────
 
@@ -118,22 +63,33 @@ void main() {
             skill: _skill(type: SkillType.ultimate),
             result: _result(crit: true),
           ),
-          _state(),
         ),
         HitClimax.ultimateCrit,
       );
     });
 
-    test('2. 普攻命中使目标 isAlive=false → kill', () {
+    test('2. 致死动作快照在目标当前存活时仍 → kill', () {
+      expect(
+        hitClimaxFor(
+          _action(
+            skill: _skill(type: SkillType.normalAttack),
+            result: _result(),
+            defeatedTarget: true,
+          ),
+        ),
+        HitClimax.kill,
+      );
+    });
+
+    test('目标后来阵亡不会把早先普通命中追溯成击杀特写', () {
       expect(
         hitClimaxFor(
           _action(
             skill: _skill(type: SkillType.normalAttack),
             result: _result(),
           ),
-          _state(targetAlive: false),
         ),
-        HitClimax.kill,
+        HitClimax.none,
       );
     });
 
@@ -143,8 +99,8 @@ void main() {
           _action(
             skill: _skill(type: SkillType.ultimate),
             result: _result(crit: true),
+            defeatedTarget: true,
           ),
-          _state(targetAlive: false),
         ),
         HitClimax.ultimateCrit,
       );
@@ -157,7 +113,6 @@ void main() {
             skill: _skill(type: SkillType.normalAttack),
             result: _result(),
           ),
-          _state(),
         ),
         HitClimax.none,
       );
@@ -170,7 +125,6 @@ void main() {
             skill: _skill(type: SkillType.ultimate),
             result: _result(),
           ),
-          _state(),
         ),
         HitClimax.none,
       );
@@ -183,7 +137,6 @@ void main() {
             skill: _skill(type: SkillType.ultimate),
             result: _result(dodge: true),
           ),
-          _state(),
         ),
         HitClimax.none,
       );
