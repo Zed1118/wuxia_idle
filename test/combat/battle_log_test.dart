@@ -238,6 +238,9 @@ void main() {
         targetId: 11,
         skill: GameRepository.instance.getSkill('skill_gangmeng_jichu_basic'),
         attackResult: _normalHit(damage: 980),
+        // 击杀标记读 action 快照(battle-log-kill-snapshot 批),不再回查
+        // format 时目标存活态。
+        defeatedTarget: true,
         description: '',
       );
       final str = BattleLog.formatAction(action, s);

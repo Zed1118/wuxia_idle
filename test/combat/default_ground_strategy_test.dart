@@ -123,7 +123,7 @@ void main() {
     final left = leftBase.copyWith(actionPoint: 999, currentQi: 100);
     final right = rightBase.copyWith(actionPoint: 0, speed: 1); // 慢得几乎不行动
 
-    final ult = GameRepository.instance.getSkill('skill_gangmeng_jichu_ult');
+    final ult = GameRepository.instance.getSkill('skill_gangmeng_mingjia_ult');
     expect(ult.type, SkillType.ultimate);
 
     final s0 = BattleState.initial(leftTeam: [left], rightTeam: [right]);
@@ -309,7 +309,7 @@ void main() {
         internalForce: 5000,
       ).copyWith(currentQi: 100);
       final defender = _mkBC(charId: 11, teamSide: 1);
-      final ult = GameRepository.instance.getSkill('skill_gangmeng_jichu_ult');
+      final ult = GameRepository.instance.getSkill('skill_gangmeng_mingjia_ult');
       var s = BattleState.initial(leftTeam: [actor], rightTeam: [defender]);
 
       // 1) 无 pending → 应选 powerSkill（内力够、CD 0）
