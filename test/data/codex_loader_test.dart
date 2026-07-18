@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:wuxia_idle/data/codex_loader.dart';
-import 'package:wuxia_idle/features/codex/domain/codex_index.dart';
+import 'package:wuxia_idle/data/defs/codex_index.dart';
 
 void main() {
   // P2 扩段后 CodexIndex.entries = 8 机制 + 4 A 组补充阅读 + 7 lore = 19 条。

@@ -11,9 +11,16 @@ void main() {
 
   test('生产远征/断魂庄配置经 loadAllDefs 接线非空', () {
     final repo = GameRepository.instance;
-    expect(repo.expeditionConfig, isNotNull, reason: 'data/expeditions.yaml 应被加载');
-    expect(repo.bossGauntletConfig, isNotNull,
-        reason: 'data/boss_gauntlets.yaml 应被加载');
+    expect(
+      repo.expeditionConfig,
+      isNotNull,
+      reason: 'data/expeditions.yaml 应被加载',
+    );
+    expect(
+      repo.bossGauntletConfig,
+      isNotNull,
+      reason: 'data/boss_gauntlets.yaml 应被加载',
+    );
   });
 
   test('远征节点时长为正、断魂庄守两精英一Boss+补给上限3不变式', () {

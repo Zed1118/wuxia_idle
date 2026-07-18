@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
-import 'package:wuxia_idle/features/equipment/domain/rare_bonus_drop.dart';
+import 'package:wuxia_idle/data/defs/rare_bonus_drop.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 import '../../support/test_data.dart';
 

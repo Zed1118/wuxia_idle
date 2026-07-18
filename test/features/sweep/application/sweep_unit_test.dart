@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/features/sweep/application/sweep_unit.dart';
-import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
+import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 import 'package:wuxia_idle/shared/audio/audio_assets.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 

@@ -1,4 +1,4 @@
-import 'inner_demon_def.dart';
+import '../../../data/defs/inner_demon_def.dart';
 
 /// 心魔通关全局进度(P0-3 ③)。数据单一真相源 = MainlineProgress.clearedStageIds,
 /// 本类只做派生计算,不另存状态。

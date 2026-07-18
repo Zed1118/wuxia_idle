@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/sweep/application/sweep_readiness_providers.dart';
-import 'package:wuxia_idle/features/sweep/domain/sweep_readiness.dart';
+import 'package:wuxia_idle/data/defs/sweep_readiness.dart';
 import 'package:wuxia_idle/features/sweep/presentation/sweep_readiness_status.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 

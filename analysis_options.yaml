@@ -18,6 +18,8 @@ include: package:flutter_lints/flutter.yaml
 # Phase 5+ 引入 family/scoped override 时按本套路继续标注。
 
 analyzer:
+  language:
+    strict-casts: true # 审查批E 试探(2026-07-18)
   plugins:
     - riverpod_lint
   exclude:

@@ -4,19 +4,6 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/features/baike/application/martial_codex_provider.dart';
 
-class _FakeTechDef {
-  _FakeTechDef({
-    required this.name,
-    required this.tier,
-    required this.school,
-    required this.skillIds,
-  });
-  final String name;
-  final TechniqueTier tier;
-  final TechniqueSchool school;
-  final List<String> skillIds;
-}
-
 SkillDef _skill(
   String id,
   SkillSource? source, {
@@ -215,11 +202,18 @@ void main() {
         _skill('s1', SkillSource.technique),
         _skill('s2', SkillSource.technique),
       ];
-      final fake = _FakeTechDef(
+      // strict-casts 批(2026-07-18):groupMartialSkills 参数改强类型后,
+      // 假件换真 TechniqueDef(仅 name/tier/school/skillIds 被消费,余为哑值)。
+      const fake = TechniqueDef(
+        id: 't1',
         name: '太祖长拳',
         tier: TechniqueTier.ruMenGong,
         school: TechniqueSchool.gangMeng,
-        skillIds: const ['s1', 's2'],
+        description: '',
+        skillIds: ['s1', 's2'],
+        internalForceGrowthBonus: 0,
+        speedBonus: 0,
+        acquireSourceTags: [],
       );
       final groups = groupMartialSkills(
         pool: pool,

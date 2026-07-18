@@ -16,7 +16,7 @@ import 'package:wuxia_idle/features/encounter/application/encounter_service.dart
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
-import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
+import 'package:wuxia_idle/data/defs/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
 
 import '../../../support/isar_test_support.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:wuxia_idle/features/codex/domain/codex_category.dart';
-import 'package:wuxia_idle/features/codex/domain/codex_entry.dart';
-import 'package:wuxia_idle/features/codex/domain/codex_index.dart';
+import 'package:wuxia_idle/data/defs/codex_category.dart';
+import 'package:wuxia_idle/data/defs/codex_entry.dart';
+import 'package:wuxia_idle/data/defs/codex_index.dart';
 
 void main() {
   group('CodexEntry.fromMd', () {

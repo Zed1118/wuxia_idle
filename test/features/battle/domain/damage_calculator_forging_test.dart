@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 
 import '../../../support/test_data.dart';
@@ -21,7 +22,7 @@ const _skill = SkillDef(
 );
 
 void main() {
-  late dynamic n;
+  late NumbersConfig n;
   setUpAll(() async {
     await loadTestGameRepository();
     n = GameRepository.instance.numbers;

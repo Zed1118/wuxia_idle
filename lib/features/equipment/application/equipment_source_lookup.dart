@@ -4,8 +4,8 @@ import '../../../data/defs/equipment_def.dart';
 import '../../../data/defs/shop_item_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
-import '../../seclusion/domain/seclusion_map_def.dart';
-import '../../tower/domain/tower_floor_def.dart';
+import '../../../data/defs/seclusion_map_def.dart';
+import '../../../data/defs/tower_floor_def.dart';
 import '../domain/equipment_source.dart';
 
 class EquipmentSourceLookup {

@@ -1,12 +1,37 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/mass_battle_strategy.dart';
-import 'package:wuxia_idle/features/mass_battle/domain/mass_battle_def.dart';
+import 'package:wuxia_idle/data/defs/mass_battle_def.dart';
 
 import '../../../../support/test_data.dart';
+
+const _manualPower = SkillDef(
+  id: 'variant_manual_power',
+  name: '试锋式',
+  description: '特殊战斗形态即时干预测试',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1200,
+  internalForceCost: 100,
+  cooldownTurns: 2,
+  requiresManualTrigger: false,
+  visualEffect: 'stub',
+);
+const _normalAttack = SkillDef(
+  id: 'variant_normal',
+  name: '直拳',
+  description: '特殊战斗形态普攻兜底',
+  type: SkillType.normalAttack,
+  powerMultiplier: 500,
+  internalForceCost: 0,
+  cooldownTurns: 0,
+  requiresManualTrigger: false,
+  visualEffect: 'stub',
+);
 
 /// MassBattleStrategy 单测(1.0 P3.2 §12.3 Batch 2.2):
 ///   - R6.1 formation bake yanXing/baGua/fengShi 3 阵型 × {crit/evasion/defense/damage} delta
@@ -324,6 +349,67 @@ void main() {
       expect(next.rightTeam.single.characterId, -20);
       expect(next.actorQueue, isEmpty);
       expect(next.pendingTargets, isEmpty);
+    });
+
+    test('点选技能立即插队、装入当前 wave 并保留阵型烘焙', () {
+      final wave0 = [_makeEnemyWaveChar(-10, 0)];
+      final strategy = MassBattleStrategy(
+        formation: Formation.fengShi,
+        enemyTeamsPerWave: [wave0],
+        config: _testConfig(),
+      );
+      final n = GameRepository.instance.numbers;
+      final base = _makeState();
+      final state = base.copyWith(
+        leftTeam: [
+          base.leftTeam.single.copyWith(
+            availableSkills: const [_manualPower, _normalAttack],
+            actionPoint: 300,
+          ),
+        ],
+      );
+
+      final after = strategy.interveneNow(
+        state,
+        1,
+        _manualPower,
+        targetId: -10,
+        n: n,
+        rng: Random(7),
+      );
+
+      expect(after.rightTeam.single.characterId, -10);
+      expect(after.actionLog, hasLength(1));
+      expect(after.actionLog.single.skill?.id, _manualPower.id);
+      expect(after.actionLog.single.targetId, -10);
+      expect(after.leftTeam.single.actionPoint, 0);
+      expect(after.pendingUltimates, isEmpty);
+      expect(after.leftTeam.single.attackPowerMultiplier, closeTo(1.10, 1e-9));
+    });
+
+    test('未装备技能输入不产生动作或 pending', () {
+      final strategy = MassBattleStrategy(
+        formation: Formation.fengShi,
+        enemyTeamsPerWave: [
+          [_makeEnemyWaveChar(-10, 0)],
+        ],
+        config: _testConfig(),
+      );
+      final n = GameRepository.instance.numbers;
+      final state = _makeState();
+
+      final after = strategy.interveneNow(
+        state,
+        1,
+        _manualPower,
+        targetId: -10,
+        n: n,
+        rng: Random(7),
+      );
+
+      expect(after.actionLog, isEmpty);
+      expect(after.pendingUltimates, isEmpty);
+      expect(after.pendingTargets, isEmpty);
     });
   });
 }

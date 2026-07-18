@@ -10,7 +10,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../battle/domain/enum_localizations.dart';
-import '../../taohua_island/domain/island_building_type.dart';
+import '../../../core/domain/island_building_type.dart';
 import '../application/item_usage_lookup_service.dart';
 import '../application/material_source_lookup_service.dart';
 

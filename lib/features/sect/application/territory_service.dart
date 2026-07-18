@@ -3,7 +3,7 @@ import 'package:isar_community/isar.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../domain/sect.dart';
-import '../domain/territory_def.dart';
+import '../../../data/defs/territory_def.dart';
 
 /// 山头领地服务(P4.1 §12.2 Q4=A 静态 yaml + dynamic owner)。
 ///

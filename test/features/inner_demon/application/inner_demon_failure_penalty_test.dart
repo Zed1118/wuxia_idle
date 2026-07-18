@@ -4,7 +4,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
-import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
+import 'package:wuxia_idle/data/defs/inner_demon_def.dart';
 
 /// M6 心魔关战败惩罚纯逻辑（applyFailurePenalty）TDD 验收。
 ///

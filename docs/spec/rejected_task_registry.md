@@ -26,6 +26,9 @@
 - 心魔余毒恢复入口增强
 - 弟子入队后的追赶补助
 - 高阶装备暂存柜
+- 存档(Isar)载入关键字段 clamp(2026-07-18 外审 #11 否:单机信任边界内,clamp 静默吞 bug 信号;且派生值合法超配置线,clamp 边界画不出。防线维持 saveVer 迁移+红线测试)
+- GameRepository 去单例化 / provider 注入(2026-07-18 外审 #2 反复重提后拍死:实测 1269 callsite[lib 338+test 931]无真痛点、4179 测全绿,纯架构美学,大迁移+codex 冲突面不值)
+- debug feature ~7000 行迁出 lib 树(2026-07-18 外审 #7 否:release 危害已证伪[kDebugMode const+tree-shaking 零残留],纯目录美学;battle_test_menu/visual_route_host 是视觉验收基建,迁移动全链)
 
 ## 本轮暂不做 / 不要
 

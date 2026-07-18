@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/core/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
+import '../../../support/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
@@ -63,6 +63,8 @@ class _TestBattleNotifier extends BattleNotifier {
     lastInterveneTarget = targetId;
     interveneCount++;
   }
+
+  void push(BattleState next) => state = next;
 }
 
 /// 单体技(默认 targetType.single)。
@@ -74,6 +76,18 @@ const _single = SkillDef(
   powerMultiplier: 1500,
   internalForceCost: 200,
   cooldownTurns: 2,
+  requiresManualTrigger: false,
+  visualEffect: '',
+);
+
+const _singleAlt = SkillDef(
+  id: 'single2',
+  name: '断流掌',
+  description: '',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1200,
+  internalForceCost: 180,
+  cooldownTurns: 1,
   requiresManualTrigger: false,
   visualEffect: '',
 );
@@ -97,6 +111,8 @@ Future<_TestBattleNotifier> _pumpWith(
   List<BattleCharacter> left,
   List<BattleCharacter> right, {
   bool allowPlayerIntervention = true,
+  bool startPaused = false,
+  List<({int charId, int teamSide})> actorQueue = const [],
   Size size = const Size(1280, 720),
 }) async {
   late _TestBattleNotifier notifier;
@@ -107,7 +123,10 @@ Future<_TestBattleNotifier> _pumpWith(
       overrides: [
         battleProvider.overrideWith(() {
           notifier = _TestBattleNotifier(
-            BattleState.initial(leftTeam: left, rightTeam: right),
+            BattleState.initial(
+              leftTeam: left,
+              rightTeam: right,
+            ).copyWith(actorQueue: actorQueue),
           );
           return notifier;
         }),
@@ -117,6 +136,7 @@ Future<_TestBattleNotifier> _pumpWith(
           animConfig: _testAnim,
           playback: BattleScreenPlaybackConfig(
             allowPlayerIntervention: allowPlayerIntervention,
+            startPaused: startPaused,
           ),
         ),
       ),
@@ -128,6 +148,91 @@ Future<_TestBattleNotifier> _pumpWith(
 
 void main() {
   group('两段点选 · tap 释放', () {
+    testWidgets('减耗后真气低于原价但达到实付值时可下发', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_aoe],
+        currentQi: 640,
+        maxQi: 1000,
+        qiCostReductionPct: 0.20,
+      );
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      expect(find.text(UiStrings.skillQiCostChip(640)), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.pump();
+      expect(notifier.interveneCount, 1);
+      expect(notifier.lastInterveneSkill?.id, _aoe.id);
+    });
+
+    testWidgets('AP 归零时技能按钮不可下发', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_aoe],
+        actionPoint: 0,
+      );
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      expect(find.text(UiStrings.skillAwaitingAction), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.pump();
+      expect(notifier.interveneCount, 0);
+    });
+
+    testWidgets('拍内行动队列未结算完时技能按钮不可下发', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_aoe],
+        actionPoint: 300,
+      );
+      final notifier = await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        actorQueue: const [(charId: 2, teamSide: 0)],
+      );
+
+      final semantics = tester.widget<Semantics>(
+        find.byKey(const ValueKey('skill_cmd_1_aoe1')),
+      );
+      expect(semantics.properties.enabled, isFalse);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.pump();
+      expect(notifier.interveneCount, 0);
+    });
+
+    testWidgets('蓄力中点单体技能不进入待发也不下发', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_single],
+        actionPoint: 300,
+        chargingSkill: _single,
+        chargeTicksRemaining: 2,
+      );
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      expect(find.text(UiStrings.skillCharging), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+      expect(notifier.interveneCount, 0);
+    });
+
+    testWidgets('踉跄中点群体技能不下发', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_aoe],
+        actionPoint: 300,
+        staggerTicksRemaining: 2,
+      );
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      expect(find.text(UiStrings.skillStaggered), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.pump();
+      expect(notifier.interveneCount, 0);
+    });
+
     testWidgets('点 aoe 技能按钮 → 立即出手(targetId 空走 AI)', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_aoe]);
@@ -153,6 +258,96 @@ void main() {
       await tester.pump();
       expect(notifier.lastInterveneSkill?.id, 'single1');
       expect(notifier.lastInterveneTarget, 11);
+    });
+
+    testWidgets('手动暂停中选择单体目标 → 出手后仍保持暂停', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        startPaused: true,
+      );
+
+      expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      await tester.tap(
+        find.byKey(ValueKey('target_chip_${right.first.characterId}')),
+      );
+      await tester.pump();
+
+      expect(notifier.interveneCount, 1);
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+      expect(
+        find.byIcon(Icons.play_arrow),
+        findsOneWidget,
+        reason: '待发只拥有自己施加的软暂停，不能覆盖玩家已有暂停',
+      );
+    });
+
+    testWidgets('手动暂停中取消待发 → 仍保持暂停', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        startPaused: true,
+      );
+      final button = find.byKey(const ValueKey('skill_cmd_1_single1'));
+
+      await tester.tap(button);
+      await tester.pump();
+      await tester.tap(button);
+      await tester.pump();
+
+      expect(notifier.interveneCount, 0);
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+      expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+    });
+
+    testWidgets('手动暂停中切换另一单体技 → 出手后仍保持暂停且使用新招', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single, _singleAlt]);
+      final notifier = await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        startPaused: true,
+      );
+
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single2')));
+      await tester.pump();
+      await tester.tap(
+        find.byKey(ValueKey('target_chip_${right.first.characterId}')),
+      );
+      await tester.pump();
+
+      expect(notifier.lastInterveneSkill?.id, _singleAlt.id);
+      expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+    });
+
+    testWidgets('待发中战斗被外部结束 → 清除待发印与目标可选提示', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      expect(find.text(UiStrings.skillPendingStamp), findsWidgets);
+      expect(find.text(UiStrings.skillTargetable), findsWidgets);
+
+      notifier.push(notifier.state.copyWith(result: BattleResult.leftWin));
+      await tester.pump();
+
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+      expect(find.text(UiStrings.skillTargetable), findsNothing);
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpAndSettle();
     });
 
     testWidgets('点 single 技能按钮 → 按钮显示待发视觉但不写 domain pending', (tester) async {
@@ -302,7 +497,7 @@ void main() {
   });
 
   group('门控 allowPlayerIntervention', () {
-    testWidgets('false 时点 aoe 不出手', (tester) async {
+    testWidgets('false 时收起 aoe 按钮且不出手', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_aoe]);
       final notifier = await _pumpWith(
@@ -311,15 +506,15 @@ void main() {
         right,
         allowPlayerIntervention: false,
       );
-      await tester.tap(
-        find.byKey(const ValueKey('skill_cmd_1_aoe1')),
-        warnIfMissed: false,
+      expect(find.byKey(const ValueKey('skill_cmd_1_aoe1')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('battle_auto_rotation_desk')),
+        findsOneWidget,
       );
-      await tester.pump();
       expect(notifier.interveneCount, 0);
     });
 
-    testWidgets('false 时点 single 不进待发态、点敌不出手', (tester) async {
+    testWidgets('false 时收起 single 按钮、点敌不出手', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_single]);
       final notifier = await _pumpWith(
@@ -328,11 +523,7 @@ void main() {
         right,
         allowPlayerIntervention: false,
       );
-      await tester.tap(
-        find.byKey(const ValueKey('skill_cmd_1_single1')),
-        warnIfMissed: false,
-      );
-      await tester.pump();
+      expect(find.byKey(const ValueKey('skill_cmd_1_single1')), findsNothing);
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
       );

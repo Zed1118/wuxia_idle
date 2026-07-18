@@ -8,8 +8,8 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../application/encounter_service.dart';
-import '../domain/encounter_def.dart';
-import '../domain/encounter_event_loader.dart';
+import '../../../data/defs/encounter_def.dart';
+import '../../../data/encounter_event_loader.dart';
 
 /// 奇遇 / 武学领悟弹窗(Phase 4 W14-1)。
 ///

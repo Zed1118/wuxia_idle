@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/light_foot/application/light_foot_service.dart';
-import 'package:wuxia_idle/features/light_foot/domain/light_foot_def.dart';
+import 'package:wuxia_idle/data/defs/light_foot_def.dart';
 
 /// LightFootService 单测(1.0 P3.1 §12.3 Batch B.1):
 ///   - statusOf 三态 cleared/available/locked

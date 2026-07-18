@@ -157,6 +157,44 @@ enum VisualRoute {
   battleTowerFloor02('battle_tower_floor_02', '敌人立绘验收·真塔2层（thug_b）'),
   battleTowerFloor03('battle_tower_floor_03', '敌人立绘验收·真塔3层（thug_c）'),
   battleTowerFloor08('battle_tower_floor_08', '敌人立绘验收·真塔8层（bandit_head）'),
+  battleStage0401('battle_stage_04_01', '敌人立绘验收·真主线4-1（liukou_a）'),
+  battleStage0402('battle_stage_04_02', '敌人立绘验收·真主线4-2（guard_a）'),
+  battleStage0403('battle_stage_04_03', '敌人立绘验收·真主线4-3（shafei_a）'),
+  battleStage0404('battle_stage_04_04', '敌人立绘验收·真主线4-4（xiliangboss）'),
+  battleStage0405('battle_stage_04_05', '敌人立绘验收·真主线4-5（xiliangbazhu）'),
+  battleStage0501('battle_stage_05_01', '敌人立绘验收·真主线5-1（tongguan_shoujiang）'),
+  battleStage0502('battle_stage_05_02', '敌人立绘验收·真主线5-2（songshan_daozong_dizi）'),
+  battleStage0503('battle_stage_05_03', '敌人立绘验收·真主线5-3（caobang_duozhu）'),
+  battleStage0504(
+    'battle_stage_05_04',
+    '敌人立绘验收·真主线5-4（zhongzhou_lunjian_xianfeng）',
+  ),
+  battleStage0505('battle_stage_05_05', '敌人立绘验收·真主线5-5（xiliang_sandizi）'),
+  battleStage0601(
+    'battle_stage_06_01',
+    '敌人立绘验收·真主线6-1（lunjian_sanchang_xunluo）',
+  ),
+  battleStage0602('battle_stage_06_02', '敌人立绘验收·真主线6-2（songshan_shouguan）'),
+  battleStage0603('battle_stage_06_03', '敌人立绘验收·真主线6-3（huanghe_yuantou_yufu）'),
+  battleStage0604(
+    'battle_stage_06_04',
+    '敌人立绘验收·真主线6-4（kunlun_waimen_shouguan）',
+  ),
+  battleStage0605('battle_stage_06_05', '敌人立绘验收·真主线6-5（xiliang_bazhu）'),
+  battleTowerFloor06('battle_tower_floor_06', '敌人立绘验收·真塔6层（bandit_b）'),
+  battleTowerFloor07('battle_tower_floor_07', '敌人立绘验收·真塔7层（bandit_c）'),
+  battleTowerFloor12(
+    'battle_tower_floor_12',
+    '敌人立绘验收·真塔12层（jianghu_a + jianghu_b）',
+  ),
+  battleStageAudit(
+    'battle_audit_stage',
+    '敌人立绘全关卡验收·动态真 stage（实际 id 形如 battle_audit_stage_01_01）',
+  ),
+  battleTowerAudit(
+    'battle_audit_tower',
+    '敌人立绘全塔层验收·动态真 floor（实际 id 形如 battle_audit_tower_01）',
+  ),
   discipleJoinCeremony(
     'disciple_join_ceremony',
     '第七阶段批三目检·拜入立绘题字 overlay 动效(读真 lineage_onboarding 配置:大弟子/二弟子真立绘交替循环滑入+放大+「XX 拜入门下」题字,自动重播;单帧截不出须真机看动效)',
@@ -286,11 +324,47 @@ VisualRoute? parseVisualRoute(String raw) {
   for (final r in VisualRoute.values) {
     if (r.id == raw) return r;
   }
+  if (battleAuditStageId(raw) != null) return VisualRoute.battleStageAudit;
+  if (battleAuditTowerFloor(raw) != null) return VisualRoute.battleTowerAudit;
   return null;
+}
+
+const String battleAuditStagePrefix = 'battle_audit_stage_';
+const String battleAuditTowerPrefix = 'battle_audit_tower_';
+
+/// 动态主线/轻功/群战验收 route → 真 stage id。
+String? battleAuditStageId(String routeId) {
+  if (!routeId.startsWith(battleAuditStagePrefix)) return null;
+  final suffix = routeId.substring(battleAuditStagePrefix.length);
+  return suffix.isEmpty ? null : 'stage_$suffix';
+}
+
+/// 动态爬塔验收 route → 1-based floor。
+int? battleAuditTowerFloor(String routeId) {
+  if (!routeId.startsWith(battleAuditTowerPrefix)) return null;
+  return int.tryParse(routeId.substring(battleAuditTowerPrefix.length));
+}
+
+/// 保留动态 route 的完整 id，供 host 取 stage/floor 参数并回报 READY。
+String visualRouteIdFromEnv() {
+  const raw = String.fromEnvironment('VISUAL_ROUTE');
+  return raw;
 }
 
 /// 读 `--dart-define=VISUAL_ROUTE=<id>`。未传/未知 → null。
 VisualRoute? visualRouteFromEnv() {
   const raw = String.fromEnvironment('VISUAL_ROUTE');
   return parseVisualRoute(raw);
+}
+
+/// 预构建 macOS 验收包可用运行时参数切 route，避免每张截图重编译。
+/// compile-time `VISUAL_ROUTE` 仍优先，保持既有 flutter run 用法不变。
+String visualRouteIdFromInputs(List<String> args) {
+  const compiled = String.fromEnvironment('VISUAL_ROUTE');
+  if (compiled.isNotEmpty) return compiled;
+  const prefix = '--visual-route=';
+  for (final arg in args) {
+    if (arg.startsWith(prefix)) return arg.substring(prefix.length);
+  }
+  return '';
 }

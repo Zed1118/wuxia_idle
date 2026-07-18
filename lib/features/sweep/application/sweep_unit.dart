@@ -2,11 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/defs/stage_def.dart';
 import '../../../data/isar_setup.dart';
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
 import '../../battle/application/stage_battle_setup.dart';
-import '../../tower/domain/tower_floor_def.dart';
+import '../../../data/defs/tower_floor_def.dart';
 import '../domain/sweep_recap.dart';
 import 'sweep_settlement.dart';
 

@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'loader_fallback_log.dart';
-import '../features/codex/domain/codex_entry.dart';
-import '../features/codex/domain/codex_index.dart';
+import 'defs/codex_entry.dart';
+import 'defs/codex_index.dart';
 
 /// P1 #42 Phase 2 §10 P1.z 机制百科加载器(沿 NarrativeLoader graceful 体例)。
 ///

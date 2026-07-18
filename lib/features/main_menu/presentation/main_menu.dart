@@ -225,278 +225,33 @@ class MainMenu extends ConsumerWidget {
         .watch(shopUnlockedProvider)
         .maybeWhen(data: (b) => b, orElse: () => false);
 
-    final journeyItems = <Widget>[
-      WuxiaInkButton(
-        label: UiStrings.mainMenuMainline,
-        hint: mainlineGoal == null
-            ? UiStrings.mainMenuMainlineHint
-            : NewSaveGoalText.mainMenuHint(mainlineGoal),
-        icon: Icons.map_outlined,
-        thumbnailPath: WuxiaUi.entryMainline,
-        status: mainlineStatus,
-        onTap: () => guardBattleEntry(
-          context: context,
-          ref: ref,
-          onAllowed: () => _push(context, const ChapterListScreen()),
-        ),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuTower,
-        hint: UiStrings.mainMenuTowerHint,
-        icon: Icons.filter_hdr_outlined,
-        thumbnailPath: WuxiaUi.entryTower,
-        status: towerStatus,
-        onTap: () => guardBattleEntry(
-          context: context,
-          ref: ref,
-          onAllowed: () => _push(context, const TowerFloorListScreen()),
-        ),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuInnerDemon,
-        hint: lateLocked
-            ? UiStrings.mainMenuLateGameLockedHint
-            : UiStrings.mainMenuInnerDemonHint,
-        icon: Icons.psychology_alt_outlined,
-        thumbnailPath: WuxiaUi.entryTechnique,
-        disabled: lateLocked,
-        locked: lateLocked,
-        onTap: () => _push(context, const InnerDemonScreen()),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuLightFoot,
-        hint: lateLocked
-            ? UiStrings.mainMenuLateGameLockedHint
-            : UiStrings.mainMenuLightFootHint,
-        icon: Icons.directions_run,
-        thumbnailPath: WuxiaUi.entryLightFoot,
-        disabled: lateLocked,
-        locked: lateLocked,
-        onTap: () => guardBattleEntry(
-          context: context,
-          ref: ref,
-          onAllowed: () => _push(context, const LightFootScreen()),
-        ),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuMassBattle,
-        hint: lateLocked
-            ? UiStrings.mainMenuLateGameLockedHint
-            : UiStrings.mainMenuMassBattleHint,
-        icon: Icons.groups_2_outlined,
-        thumbnailPath: WuxiaUi.entryJianghu,
-        disabled: lateLocked,
-        locked: lateLocked,
-        onTap: () => guardBattleEntry(
-          context: context,
-          ref: ref,
-          onAllowed: () => _push(context, const MassBattleScreen()),
-        ),
-      ),
-      if (jianghuJourneyUnlocked)
-        WuxiaInkButton(
-          label: UiStrings.mainMenuExpedition,
-          hint: UiStrings.mainMenuExpeditionHint,
-          icon: Icons.travel_explore_outlined,
-          thumbnailPath: WuxiaUi.entryJianghu,
-          onTap: () => _push(context, const ExpeditionOverviewScreen()),
-        ),
-      // 断魂庄（江湖远行 Phase C·同 jianghuJourneyUnlocked gate·§5.7 未解锁隐藏）。
-      if (jianghuJourneyUnlocked)
-        WuxiaInkButton(
-          label: UiStrings.gauntletName,
-          hint: UiStrings.gauntletSubtitle,
-          icon: Icons.whatshot_outlined,
-          thumbnailPath: WuxiaUi.entryJianghu,
-          onTap: () => _push(context, const GauntletLoadoutScreen()),
-        ),
-    ];
-
-    final growthItems = <Widget>[
-      WuxiaInkButton(
-        label: UiStrings.mainMenuCharacterPanel,
-        hint: UiStrings.mainMenuCharacterPanelHint,
-        icon: Icons.person_outline,
-        thumbnailPath: WuxiaUi.entryCharacter,
-        onTap: () => _push(
-          context,
-          const CharacterPanelScreen(characterId: _defaultCharacterId),
-        ),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuInventory,
-        hint: UiStrings.mainMenuInventoryHint,
-        icon: Icons.inventory_2_outlined,
-        thumbnailPath: WuxiaUi.entryInventory,
-        status: inventoryStatus,
-        onTap: () => _push(context, const InventoryScreen()),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuResourceOverview,
-        hint: UiStrings.mainMenuResourceOverviewHint,
-        icon: Icons.account_balance_wallet_outlined,
-        thumbnailPath: WuxiaUi.entryInventory,
-        onTap: () => _push(context, const ResourceOverviewScreen()),
-      ),
-      _TechniqueMenuButton(
-        characterId: _defaultCharacterId,
-        tutorialLocked: techLocked,
-        onPush: (screen) => _push(context, screen),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuSkillLibrary,
-        hint: skillLibLocked
-            ? UiStrings.mainMenuSkillLibraryLockedHint
-            : UiStrings.mainMenuSkillLibraryHint,
-        icon: Icons.menu_book_outlined,
-        thumbnailPath: WuxiaUi.entryTechnique,
-        disabled: skillLibLocked,
-        locked: skillLibLocked,
-        onTap: skillLibLocked
-            ? null
-            : () => _push(
-                context,
-                const CangJingGeScreen(characterId: _defaultCharacterId),
-              ),
-      ),
-      _SeclusionMenuButton(
-        defaultCharacterId: _defaultCharacterId,
-        defaultRealmTier: _defaultRealmTier,
-        onPush: (screen) => _push(context, screen),
-        tutorialLocked: step < _seclusionUnlockStep,
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuTaohuaIsland,
-        hint: taohuaLocked
-            ? UiStrings.mainMenuTaohuaIslandLockedHint
-            : UiStrings.mainMenuTaohuaIslandHint,
-        icon: Icons.cottage_outlined,
-        thumbnailPath: WuxiaUi.entryJianghu,
-        disabled: taohuaLocked,
-        locked: taohuaLocked,
-        onTap: () => _push(context, const TaohuaIslandScreen()),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuSect,
-        hint: socialLocked
-            ? UiStrings.mainMenuSocialLockedHint
-            : UiStrings.mainMenuSectHint,
-        icon: Icons.home_work_outlined,
-        thumbnailPath: WuxiaUi.entryJianghu,
-        disabled: socialLocked,
-        locked: socialLocked,
-        onTap: () => _push(context, const SectScreen()),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuJianghu,
-        hint: socialLocked
-            ? UiStrings.mainMenuSocialLockedHint
-            : UiStrings.mainMenuJianghuHint,
-        icon: Icons.handshake_outlined,
-        thumbnailPath: WuxiaUi.entryJianghu,
-        disabled: socialLocked,
-        locked: socialLocked,
-        onTap: () => _push(context, const ReputationPanelScreen()),
-      ),
-      if (shopUnlocked)
-        WuxiaInkButton(
-          label: UiStrings.mainMenuShop,
-          hint: UiStrings.mainMenuShopHint,
-          icon: Icons.storefront_outlined,
-          onTap: () => _push(context, const ShopScreen()),
-        ),
-    ];
-
-    final archiveItems = <Widget>[
-      WuxiaInkButton(
-        label: UiStrings.mainMenuLineage,
-        hint: UiStrings.mainMenuLineageHint,
-        icon: Icons.account_tree_outlined,
-        thumbnailPath: WuxiaUi.entryCharacter,
-        onTap: () => _push(context, const LineagePanelScreen()),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuLeaderboard,
-        hint: socialLocked
-            ? UiStrings.mainMenuSocialLockedHint
-            : UiStrings.mainMenuLeaderboardHint,
-        icon: Icons.emoji_events_outlined,
-        thumbnailPath: WuxiaUi.entryTower,
-        disabled: socialLocked,
-        locked: socialLocked,
-        onTap: () => _push(context, const LeaderboardScreen()),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuZangjuange,
-        hint: socialLocked
-            ? UiStrings.mainMenuSocialLockedHint
-            : UiStrings.mainMenuZangjuangeHint,
-        icon: Icons.library_books_outlined,
-        thumbnailPath: WuxiaUi.entryCodex,
-        disabled: socialLocked,
-        locked: socialLocked,
-        onTap: () => _push(context, const ZangjuangeScreen()),
-      ),
-      if (battleRecordUnlocked)
-        WuxiaInkButton(
-          label: UiStrings.mainMenuBattleRecord,
-          hint: UiStrings.mainMenuBattleRecordHint,
-          icon: Icons.history_edu_outlined, // 美术待补专属 thumbnail
-          onTap: () => _push(context, const BattleRecordScreen()),
-        ),
-      if (weaponCodexUnlocked)
-        WuxiaInkButton(
-          label: UiStrings.mainMenuWeaponCodex,
-          hint: UiStrings.mainMenuWeaponCodexHint,
-          icon: Icons.auto_stories_outlined,
-          onTap: () => _push(context, const WeaponCodexScreen()),
-        ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuBaike,
-        hint: UiStrings.mainMenuBaikeHint,
-        icon: Icons.menu_book_outlined,
-        thumbnailPath: WuxiaUi.entryCodex,
-        onTap: () => _push(context, const BaikeScreen()),
-      ),
-    ];
-
-    final settingsItems = <Widget>[
-      WuxiaInkButton(
-        label: UiStrings.mainMenuSettings,
-        hint: UiStrings.mainMenuSettingsHint,
-        icon: Icons.settings_outlined,
-        onTap: () => SettingsPanel.show(context),
-      ),
-    ];
-
-    final debugItems = kDebugMode
-        ? <Widget>[
-            WuxiaInkButton(
-              label: UiStrings.mainMenuPhase1,
-              hint: UiStrings.mainMenuPhase1Hint,
-              icon: Icons.bug_report_outlined,
-              onTap: () => _push(context, const BattleTestMenu()),
-            ),
-            WuxiaInkButton(
-              label: UiStrings.mainMenuPhase2,
-              hint: UiStrings.mainMenuPhase2Hint,
-              icon: Icons.construction_outlined,
-              onTap: () => _push(context, const Phase2TestMenu()),
-            ),
-            WuxiaInkButton(
-              label: UiStrings.mainMenuSectRecruit,
-              hint: UiStrings.mainMenuSectRecruitHint,
-              icon: Icons.person_add_alt_1_outlined,
-              onTap: () => _push(context, const SectRecruitDebugScreen()),
-            ),
-            WuxiaInkButton(
-              label: UiStrings.mainMenuRedlineAudit,
-              hint: UiStrings.mainMenuRedlineAuditHint,
-              icon: Icons.rule_outlined,
-              onTap: () => _push(context, const RedlineAuditScreen()),
-            ),
-          ]
-        : const <Widget>[];
+    final journeyItems = _journeyItems(
+      context,
+      ref,
+      mainlineStatus: mainlineStatus,
+      mainlineGoal: mainlineGoal,
+      towerStatus: towerStatus,
+      lateLocked: lateLocked,
+      jianghuJourneyUnlocked: jianghuJourneyUnlocked,
+    );
+    final growthItems = _growthItems(
+      context,
+      inventoryStatus: inventoryStatus,
+      techLocked: techLocked,
+      skillLibLocked: skillLibLocked,
+      seclusionLocked: step < _seclusionUnlockStep,
+      taohuaLocked: taohuaLocked,
+      socialLocked: socialLocked,
+      shopUnlocked: shopUnlocked,
+    );
+    final archiveItems = _archiveItems(
+      context,
+      socialLocked: socialLocked,
+      battleRecordUnlocked: battleRecordUnlocked,
+      weaponCodexUnlocked: weaponCodexUnlocked,
+    );
+    final settingsItems = _settingsItems(context);
+    final debugItems = _debugItems(context);
 
     return MainMenuStartupGate(
       key: const ValueKey('main-menu-startup-gate'),
@@ -600,40 +355,317 @@ class MainMenu extends ConsumerWidget {
                 ),
               ),
               // 退出游戏:右上角常驻入口(桌面标配)。置于最上层确保可点。
-              SafeArea(
-                child: Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SweepReadinessPill(
-                          tone: CurrencyPillTone.dark,
-                          compact: true,
-                        ),
-                        const SizedBox(width: 8),
-                        const SilverBalancePill(
-                          tone: CurrencyPillTone.dark,
-                          compact: true,
-                        ),
-                        const SizedBox(width: 8),
-                        WuxiaIconButton(
-                          tooltip: UiStrings.mainMenuQuitTooltip,
-                          icon: Icons.power_settings_new,
-                          destructive: true,
-                          onPressed: () => AppExit.confirmAndQuit(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              const _TopRightActions(),
             ],
           ),
         ),
       ),
     );
+  }
+
+  List<Widget> _journeyItems(
+    BuildContext context,
+    WidgetRef ref, {
+    required String? mainlineStatus,
+    required NewSaveGoalGuidance? mainlineGoal,
+    required String? towerStatus,
+    required bool lateLocked,
+    required bool jianghuJourneyUnlocked,
+  }) {
+    return <Widget>[
+      WuxiaInkButton(
+        label: UiStrings.mainMenuMainline,
+        hint: mainlineGoal == null
+            ? UiStrings.mainMenuMainlineHint
+            : NewSaveGoalText.mainMenuHint(mainlineGoal),
+        icon: Icons.map_outlined,
+        thumbnailPath: WuxiaUi.entryMainline,
+        status: mainlineStatus,
+        onTap: () => guardBattleEntry(
+          context: context,
+          ref: ref,
+          onAllowed: () => _push(context, const ChapterListScreen()),
+        ),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuTower,
+        hint: UiStrings.mainMenuTowerHint,
+        icon: Icons.filter_hdr_outlined,
+        thumbnailPath: WuxiaUi.entryTower,
+        status: towerStatus,
+        onTap: () => guardBattleEntry(
+          context: context,
+          ref: ref,
+          onAllowed: () => _push(context, const TowerFloorListScreen()),
+        ),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuInnerDemon,
+        hint: lateLocked
+            ? UiStrings.mainMenuLateGameLockedHint
+            : UiStrings.mainMenuInnerDemonHint,
+        icon: Icons.psychology_alt_outlined,
+        thumbnailPath: WuxiaUi.entryTechnique,
+        disabled: lateLocked,
+        locked: lateLocked,
+        onTap: () => _push(context, const InnerDemonScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuLightFoot,
+        hint: lateLocked
+            ? UiStrings.mainMenuLateGameLockedHint
+            : UiStrings.mainMenuLightFootHint,
+        icon: Icons.directions_run,
+        thumbnailPath: WuxiaUi.entryLightFoot,
+        disabled: lateLocked,
+        locked: lateLocked,
+        onTap: () => guardBattleEntry(
+          context: context,
+          ref: ref,
+          onAllowed: () => _push(context, const LightFootScreen()),
+        ),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuMassBattle,
+        hint: lateLocked
+            ? UiStrings.mainMenuLateGameLockedHint
+            : UiStrings.mainMenuMassBattleHint,
+        icon: Icons.groups_2_outlined,
+        thumbnailPath: WuxiaUi.entryJianghu,
+        disabled: lateLocked,
+        locked: lateLocked,
+        onTap: () => guardBattleEntry(
+          context: context,
+          ref: ref,
+          onAllowed: () => _push(context, const MassBattleScreen()),
+        ),
+      ),
+      if (jianghuJourneyUnlocked)
+        WuxiaInkButton(
+          label: UiStrings.mainMenuExpedition,
+          hint: UiStrings.mainMenuExpeditionHint,
+          icon: Icons.travel_explore_outlined,
+          thumbnailPath: WuxiaUi.entryJianghu,
+          onTap: () => _push(context, const ExpeditionOverviewScreen()),
+        ),
+      // 断魂庄（江湖远行 Phase C·同 jianghuJourneyUnlocked gate·§5.7 未解锁隐藏）。
+      if (jianghuJourneyUnlocked)
+        WuxiaInkButton(
+          label: UiStrings.gauntletName,
+          hint: UiStrings.gauntletSubtitle,
+          icon: Icons.whatshot_outlined,
+          thumbnailPath: WuxiaUi.entryJianghu,
+          onTap: () => _push(context, const GauntletLoadoutScreen()),
+        ),
+    ];
+  }
+
+  List<Widget> _growthItems(
+    BuildContext context, {
+    required String? inventoryStatus,
+    required bool techLocked,
+    required bool skillLibLocked,
+    required bool seclusionLocked,
+    required bool taohuaLocked,
+    required bool socialLocked,
+    required bool shopUnlocked,
+  }) {
+    return <Widget>[
+      WuxiaInkButton(
+        label: UiStrings.mainMenuCharacterPanel,
+        hint: UiStrings.mainMenuCharacterPanelHint,
+        icon: Icons.person_outline,
+        thumbnailPath: WuxiaUi.entryCharacter,
+        onTap: () => _push(
+          context,
+          const CharacterPanelScreen(characterId: _defaultCharacterId),
+        ),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuInventory,
+        hint: UiStrings.mainMenuInventoryHint,
+        icon: Icons.inventory_2_outlined,
+        thumbnailPath: WuxiaUi.entryInventory,
+        status: inventoryStatus,
+        onTap: () => _push(context, const InventoryScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuResourceOverview,
+        hint: UiStrings.mainMenuResourceOverviewHint,
+        icon: Icons.account_balance_wallet_outlined,
+        thumbnailPath: WuxiaUi.entryInventory,
+        onTap: () => _push(context, const ResourceOverviewScreen()),
+      ),
+      _TechniqueMenuButton(
+        characterId: _defaultCharacterId,
+        tutorialLocked: techLocked,
+        onPush: (screen) => _push(context, screen),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuSkillLibrary,
+        hint: skillLibLocked
+            ? UiStrings.mainMenuSkillLibraryLockedHint
+            : UiStrings.mainMenuSkillLibraryHint,
+        icon: Icons.menu_book_outlined,
+        thumbnailPath: WuxiaUi.entryTechnique,
+        disabled: skillLibLocked,
+        locked: skillLibLocked,
+        onTap: skillLibLocked
+            ? null
+            : () => _push(
+                context,
+                const CangJingGeScreen(characterId: _defaultCharacterId),
+              ),
+      ),
+      _SeclusionMenuButton(
+        defaultCharacterId: _defaultCharacterId,
+        defaultRealmTier: _defaultRealmTier,
+        onPush: (screen) => _push(context, screen),
+        tutorialLocked: seclusionLocked,
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuTaohuaIsland,
+        hint: taohuaLocked
+            ? UiStrings.mainMenuTaohuaIslandLockedHint
+            : UiStrings.mainMenuTaohuaIslandHint,
+        icon: Icons.cottage_outlined,
+        thumbnailPath: WuxiaUi.entryJianghu,
+        disabled: taohuaLocked,
+        locked: taohuaLocked,
+        onTap: () => _push(context, const TaohuaIslandScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuSect,
+        hint: socialLocked
+            ? UiStrings.mainMenuSocialLockedHint
+            : UiStrings.mainMenuSectHint,
+        icon: Icons.home_work_outlined,
+        thumbnailPath: WuxiaUi.entryJianghu,
+        disabled: socialLocked,
+        locked: socialLocked,
+        onTap: () => _push(context, const SectScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuJianghu,
+        hint: socialLocked
+            ? UiStrings.mainMenuSocialLockedHint
+            : UiStrings.mainMenuJianghuHint,
+        icon: Icons.handshake_outlined,
+        thumbnailPath: WuxiaUi.entryJianghu,
+        disabled: socialLocked,
+        locked: socialLocked,
+        onTap: () => _push(context, const ReputationPanelScreen()),
+      ),
+      if (shopUnlocked)
+        WuxiaInkButton(
+          label: UiStrings.mainMenuShop,
+          hint: UiStrings.mainMenuShopHint,
+          icon: Icons.storefront_outlined,
+          onTap: () => _push(context, const ShopScreen()),
+        ),
+    ];
+  }
+
+  List<Widget> _archiveItems(
+    BuildContext context, {
+    required bool socialLocked,
+    required bool battleRecordUnlocked,
+    required bool weaponCodexUnlocked,
+  }) {
+    return <Widget>[
+      WuxiaInkButton(
+        label: UiStrings.mainMenuLineage,
+        hint: UiStrings.mainMenuLineageHint,
+        icon: Icons.account_tree_outlined,
+        thumbnailPath: WuxiaUi.entryCharacter,
+        onTap: () => _push(context, const LineagePanelScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuLeaderboard,
+        hint: socialLocked
+            ? UiStrings.mainMenuSocialLockedHint
+            : UiStrings.mainMenuLeaderboardHint,
+        icon: Icons.emoji_events_outlined,
+        thumbnailPath: WuxiaUi.entryTower,
+        disabled: socialLocked,
+        locked: socialLocked,
+        onTap: () => _push(context, const LeaderboardScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuZangjuange,
+        hint: socialLocked
+            ? UiStrings.mainMenuSocialLockedHint
+            : UiStrings.mainMenuZangjuangeHint,
+        icon: Icons.library_books_outlined,
+        thumbnailPath: WuxiaUi.entryCodex,
+        disabled: socialLocked,
+        locked: socialLocked,
+        onTap: () => _push(context, const ZangjuangeScreen()),
+      ),
+      if (battleRecordUnlocked)
+        WuxiaInkButton(
+          label: UiStrings.mainMenuBattleRecord,
+          hint: UiStrings.mainMenuBattleRecordHint,
+          icon: Icons.history_edu_outlined, // 美术待补专属 thumbnail
+          onTap: () => _push(context, const BattleRecordScreen()),
+        ),
+      if (weaponCodexUnlocked)
+        WuxiaInkButton(
+          label: UiStrings.mainMenuWeaponCodex,
+          hint: UiStrings.mainMenuWeaponCodexHint,
+          icon: Icons.auto_stories_outlined,
+          onTap: () => _push(context, const WeaponCodexScreen()),
+        ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuBaike,
+        hint: UiStrings.mainMenuBaikeHint,
+        icon: Icons.menu_book_outlined,
+        thumbnailPath: WuxiaUi.entryCodex,
+        onTap: () => _push(context, const BaikeScreen()),
+      ),
+    ];
+  }
+
+  List<Widget> _settingsItems(BuildContext context) {
+    return <Widget>[
+      WuxiaInkButton(
+        label: UiStrings.mainMenuSettings,
+        hint: UiStrings.mainMenuSettingsHint,
+        icon: Icons.settings_outlined,
+        onTap: () => SettingsPanel.show(context),
+      ),
+    ];
+  }
+
+  List<Widget> _debugItems(BuildContext context) {
+    return kDebugMode
+        ? <Widget>[
+            WuxiaInkButton(
+              label: UiStrings.mainMenuPhase1,
+              hint: UiStrings.mainMenuPhase1Hint,
+              icon: Icons.bug_report_outlined,
+              onTap: () => _push(context, const BattleTestMenu()),
+            ),
+            WuxiaInkButton(
+              label: UiStrings.mainMenuPhase2,
+              hint: UiStrings.mainMenuPhase2Hint,
+              icon: Icons.construction_outlined,
+              onTap: () => _push(context, const Phase2TestMenu()),
+            ),
+            WuxiaInkButton(
+              label: UiStrings.mainMenuSectRecruit,
+              hint: UiStrings.mainMenuSectRecruitHint,
+              icon: Icons.person_add_alt_1_outlined,
+              onTap: () => _push(context, const SectRecruitDebugScreen()),
+            ),
+            WuxiaInkButton(
+              label: UiStrings.mainMenuRedlineAudit,
+              hint: UiStrings.mainMenuRedlineAuditHint,
+              icon: Icons.rule_outlined,
+              onTap: () => _push(context, const RedlineAuditScreen()),
+            ),
+          ]
+        : const <Widget>[];
   }
 
   static String? _mainlineMenuStatus(MainlineProgress? progress) {
@@ -1158,6 +1190,44 @@ class _TodayFestivalChip extends ConsumerWidget {
               color: WuxiaColors.textSecondary,
               fontSize: 12,
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 右上角常驻操作排:扫荡战备/银两 pill + 退出按钮(桌面标配,置最上层确保可点)。
+class _TopRightActions extends StatelessWidget {
+  const _TopRightActions();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.topRight,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SweepReadinessPill(
+                tone: CurrencyPillTone.dark,
+                compact: true,
+              ),
+              const SizedBox(width: 8),
+              const SilverBalancePill(
+                tone: CurrencyPillTone.dark,
+                compact: true,
+              ),
+              const SizedBox(width: 8),
+              WuxiaIconButton(
+                tooltip: UiStrings.mainMenuQuitTooltip,
+                icon: Icons.power_settings_new,
+                destructive: true,
+                onPressed: () => AppExit.confirmAndQuit(context),
+              ),
+            ],
           ),
         ),
       ),

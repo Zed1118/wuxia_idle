@@ -12,7 +12,7 @@ import 'package:wuxia_idle/features/encounter/application/encounter_service.dart
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service_providers.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
-import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
+import 'package:wuxia_idle/data/defs/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';

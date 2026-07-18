@@ -11,10 +11,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/core/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
+import '../../../support/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
@@ -50,8 +50,9 @@ Future<void> _pumpBattle(
   WidgetTester tester,
   BattleState state, {
   bool allowPlayerIntervention = true,
+  Size size = const Size(1280, 720),
 }) async {
-  await tester.binding.setSurfaceSize(const Size(1280, 720));
+  await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
   await tester.pumpWidget(
     ProviderScope(
@@ -86,13 +87,15 @@ void main() {
         leftTeam: left,
         rightTeam: staggeredRight,
       );
-      await _pumpBattle(tester, state);
-
-      expect(
-        find.text(UiStrings.coopBurstPrompt),
-        findsOneWidget,
-        reason: '敌方踉跄窗口开时，指令栏附近应显示「破绽 · 该爆发了」提示',
-      );
+      for (final size in const [Size(1280, 720), Size(1440, 900)]) {
+        await _pumpBattle(tester, state, size: size);
+        expect(
+          find.text(UiStrings.coopBurstPrompt),
+          findsOneWidget,
+          reason: '$size 敌方踉跄窗口开时，指令栏附近应显示爆发提示',
+        );
+        expect(tester.takeException(), isNull, reason: '$size 不应溢出或抛异常');
+      }
     });
 
     testWidgets('敌方无 staggerTicksRemaining>0 时不显示提示', (tester) async {
@@ -105,6 +108,30 @@ void main() {
         find.text(UiStrings.coopBurstPrompt),
         findsNothing,
         reason: '无敌方踉跄时，不应出现「破绽 · 该爆发了」提示',
+      );
+    });
+
+    testWidgets('敌方有破绽但全队无可立即下发招式时不显示提示', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final blockedLeft = [
+        for (final character in left)
+          character.copyWith(currentQi: 0, actionPoint: 0),
+      ];
+      final staggeredRight = List<BattleCharacter>.from(right);
+      staggeredRight[0] = staggeredRight[0].copyWith(
+        staggerTicksRemaining: 3,
+        isAlive: true,
+      );
+      final state = BattleState.initial(
+        leftTeam: blockedLeft,
+        rightTeam: staggeredRight,
+      );
+      await _pumpBattle(tester, state);
+
+      expect(
+        find.text(UiStrings.coopBurstPrompt),
+        findsNothing,
+        reason: '破绽提示应是可执行号召，全队无可下发招式时不应误导',
       );
     });
 

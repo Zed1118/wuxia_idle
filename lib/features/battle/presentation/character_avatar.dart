@@ -397,17 +397,11 @@ class _StageCharacterStandee extends StatelessWidget {
       child: portraitImage,
     );
     if (character.isBoss) {
-      portrait = Container(
+      // Boss 的旧金色 BoxShadow 画在矩形 Container 外轮廓上，会在浅色水墨
+      // 场景里形成明显黄底方块。Boss 已由放大尺度、Boss HUD 金框与战场墨云
+      // 建立层级，此处只保留稳定验收 key，不再给透明立绘垫矩形光晕。
+      portrait = KeyedSubtree(
         key: const ValueKey<String>('battle.bossAvatarFrame'),
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: WuxiaColors.bossFrame.withValues(alpha: 0.20),
-              blurRadius: 28,
-              spreadRadius: 4,
-            ),
-          ],
-        ),
         child: portrait,
       );
     }
@@ -642,22 +636,111 @@ const _battleStandeeOverrides = <String, String>{
   'assets/characters/first_disciple.png': WuxiaUi.battleFirstDiscipleFallback,
   'assets/characters/second_disciple.png': WuxiaUi.battleSecondDiscipleFallback,
   'assets/enemies/thug_a.png': WuxiaUi.battleThugStandee,
-  'assets/enemies/thug_b.png': WuxiaUi.battleBanditArcherStandee,
-  'assets/enemies/thug_c.png': WuxiaUi.battleBanditBladeStandee,
-  'assets/enemies/ruffian_a.png': WuxiaUi.battleThugStandee,
-  'assets/enemies/bandit_head.png': WuxiaUi.battleBanditBladeStandee,
-  'assets/enemies/qingshan.png': WuxiaUi.battleBanditBladeStandee,
+  'assets/enemies/thug_b.png': WuxiaUi.battleYoungRuffianStandee,
+  'assets/enemies/thug_c.png': WuxiaUi.battleGauntCutpurseStandee,
+  'assets/enemies/ruffian_a.png': WuxiaUi.battleVillageRuffianStandee,
+  'assets/enemies/bandit_b.png': WuxiaUi.battleLowRankSaberFighterStandee,
+  'assets/enemies/bandit_c.png': WuxiaUi.battleBlackWindUnderlingStandee,
+  'assets/enemies/bandit_head.png': WuxiaUi.battleBanditHeadStandee,
+  'assets/enemies/qingshan.png': WuxiaUi.battleQingshanStandee,
   'assets/enemies/qingshan_main.png': WuxiaUi.battleHiddenElderStandee,
+  'assets/enemies/elder_grey.png': WuxiaUi.battleGreyElderStandee,
+  'assets/enemies/shaonian.png': WuxiaUi.battleSpringHallYouthStandee,
+  'assets/enemies/guntou.png': WuxiaUi.battleBaldStaffFighterStandee,
+  'assets/enemies/guntou_zhu.png': WuxiaUi.battleArenaChampionStandee,
+  'assets/enemies/seng_huiyi.png': WuxiaUi.battleGreyMonkStandee,
+  'assets/enemies/balian.png': WuxiaUi.battleScarredBossStandee,
+  'assets/enemies/huiyi.png': WuxiaUi.battleGreySwordsmanStandee,
+  'assets/enemies/lightfoot_shuikou_a.png': WuxiaUi.battleFerryBanditStandee,
+  'assets/enemies/lightfoot_shuikou_b.png': WuxiaUi.battleFerryBoatmanStandee,
+  'assets/enemies/lightfoot_shuikou_c.png': WuxiaUi.battleFerrySaberStandee,
+  'assets/enemies/lightfoot_yexun_a.png': WuxiaUi.battleNightPatrolStandee,
+  'assets/enemies/lightfoot_yexun_b.png': WuxiaUi.battleRooftopConstableStandee,
+  'assets/enemies/lightfoot_yexun_c.png': WuxiaUi.battleRooftopAssassinStandee,
+  'assets/enemies/lightfoot_zhuke_a.png':
+      WuxiaUi.battleJiangnanSwordsmanStandee,
+  'assets/enemies/lightfoot_zhuke_b.png': WuxiaUi.battleBambooSaberStandee,
+  'assets/enemies/lightfoot_zhuke_c.png': WuxiaUi.battleBambooWandererStandee,
+  'assets/enemies/lightfoot_pubu_a.png':
+      WuxiaUi.battleMountainStreamSwordStandee,
+  'assets/enemies/lightfoot_pubu_b.png': WuxiaUi.battleWaterfallSaberStandee,
+  'assets/enemies/lightfoot_pubu_c.png': WuxiaUi.battleCliffWandererStandee,
+  'assets/enemies/lightfoot_changfeng_a.png':
+      WuxiaUi.battleGateCommanderStandee,
+  'assets/enemies/lightfoot_changfeng_b.png':
+      WuxiaUi.battleLongWindSwordStandee,
+  'assets/enemies/lightfoot_changfeng_c.png':
+      WuxiaUi.battleLongRoadSaberStandee,
+  'assets/enemies/massbattle_cunfei_a.png':
+      WuxiaUi.battleVillageBanditLeaderStandee,
+  'assets/enemies/massbattle_cunfei_b.png':
+      WuxiaUi.battleVillageBanditArcherStandee,
+  'assets/enemies/massbattle_cunfei_c.png':
+      WuxiaUi.battleVillageBanditSaberStandee,
+  'assets/enemies/massbattle_zhenkou_a.png':
+      WuxiaUi.battleTownBanditLeaderStandee,
+  'assets/enemies/massbattle_zhenkou_b.png':
+      WuxiaUi.battleTownBanditWandererStandee,
+  'assets/enemies/massbattle_zhenkou_c.png':
+      WuxiaUi.battleTownBanditAssassinStandee,
+  'assets/enemies/massbattle_xianjie_a.png':
+      WuxiaUi.battleRivalSectMasterStandee,
+  'assets/enemies/massbattle_xianjie_b.png':
+      WuxiaUi.battleRivalSectProtectorStandee,
+  'assets/enemies/massbattle_xianjie_c.png':
+      WuxiaUi.battleRivalSectDiscipleStandee,
+  'assets/enemies/massbattle_guanqi_a.png':
+      WuxiaUi.battleFrontierCommanderStandee,
+  'assets/enemies/massbattle_guanqi_b.png':
+      WuxiaUi.battleFrontierOutriderStandee,
+  'assets/enemies/massbattle_guanqi_c.png':
+      WuxiaUi.battleFrontierIronGuardStandee,
+  'assets/enemies/massbattle_canbu_a.png':
+      WuxiaUi.battleWesternRemnantGeneralStandee,
+  'assets/enemies/massbattle_canbu_b.png':
+      WuxiaUi.battleWesternFrenziedRiderStandee,
+  'assets/enemies/massbattle_canbu_c.png':
+      WuxiaUi.battleWesternRemnantAssassinStandee,
   'assets/enemies/black_killer.png': WuxiaUi.battleBlackKillerStandee,
   'assets/enemies/killer_a.png': WuxiaUi.battleBanditBladeStandee,
   'assets/enemies/killer_b.png': WuxiaUi.battleBanditArcherStandee,
   'assets/enemies/umbrella.png': WuxiaUi.battleUmbrellaStandee,
+  'assets/enemies/tower_boss_05.png': WuxiaUi.battleSwordStoneElderStandee,
+  'assets/enemies/tower_boss_10.png': WuxiaUi.battleBlackWindChiefStandee,
+  'assets/enemies/tower_boss_15.png': WuxiaUi.battleNightPavilionMasterStandee,
   'assets/enemies/tower_boss_20.png': WuxiaUi.battleTowerBoss20Standee,
+  'assets/enemies/tower_boss_25.png': WuxiaUi.battleSummitSwordDemonStandee,
   'assets/enemies/zuo_hufa.png': WuxiaUi.battleLeftGuardianStandee,
   'assets/enemies/you_hufa.png': WuxiaUi.battleRightGuardianStandee,
   'assets/enemies/tower_boss_30.png': WuxiaUi.battleTowerBoss30Standee,
   'assets/enemies/jianghu_qianbei.png': WuxiaUi.battleJianghuSeniorStandee,
+  'assets/enemies/jianghu_a.png': WuxiaUi.battleWanderingPalmFighterStandee,
+  'assets/enemies/jianghu_b.png': WuxiaUi.battleIndependentWandererStandee,
   'assets/enemies/wulin_bazhu.png': WuxiaUi.battleWulinOverlordStandee,
+  'assets/enemies/mingmen_a.png': WuxiaUi.battleEstablishedSectDiscipleStandee,
+  'assets/enemies/liukou_a.png': WuxiaUi.battleRaiderLeaderStandee,
+  'assets/enemies/guard_a.png': WuxiaUi.battleYumenGarrisonOfficerStandee,
+  'assets/enemies/shafei_a.png': WuxiaUi.battleDesertBanditLeaderStandee,
+  'assets/enemies/xiliangboss.png': WuxiaUi.battleWesternMartialSeniorStandee,
+  'assets/enemies/xiliangbazhu.png': WuxiaUi.battleWesternOverlordStandee,
+  'assets/enemies/tongguan_shoujiang.png':
+      WuxiaUi.battleTongguanDefenderStandee,
+  'assets/enemies/songshan_daozong_dizi.png':
+      WuxiaUi.battleSongshanDaoistDiscipleStandee,
+  'assets/enemies/caobang_duozhu.png': WuxiaUi.battleCanalGangHelmsmanStandee,
+  'assets/enemies/zhongzhou_lunjian_xianfeng.png':
+      WuxiaUi.battleCentralPlainsVanguardStandee,
+  'assets/enemies/xiliang_sandizi.png':
+      WuxiaUi.battleWesternThirdDiscipleStandee,
+  'assets/enemies/lunjian_sanchang_xunluo.png':
+      WuxiaUi.battleArenaPatrolStandee,
+  'assets/enemies/songshan_shouguan.png':
+      WuxiaUi.battleSongshanGatekeeperStandee,
+  'assets/enemies/huanghe_yuantou_yufu.png':
+      WuxiaUi.battleYellowRiverFisherStandee,
+  'assets/enemies/kunlun_waimen_shouguan.png':
+      WuxiaUi.battleKunlunGateGuardianStandee,
+  'assets/enemies/xiliang_bazhu.png': WuxiaUi.battleWesternOverlordSaintStandee,
   'assets/enemies/anye.png': WuxiaUi.battleNightSwordsmanStandee,
   'assets/enemies/shiye.png': WuxiaUi.battleAdviserStandee,
   'assets/enemies/fu_zhaizhu.png': WuxiaUi.battleFuChiefStandee,
@@ -678,6 +761,72 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleHiddenElderStandee => 0.952,
   WuxiaUi.battleBanditBladeStandee => 0.823,
   WuxiaUi.battleBanditArcherStandee => 0.939,
+  WuxiaUi.battleYoungRuffianStandee => 0.928,
+  WuxiaUi.battleGauntCutpurseStandee => 0.943,
+  WuxiaUi.battleVillageRuffianStandee => 0.957,
+  WuxiaUi.battleBanditHeadStandee => 0.968,
+  WuxiaUi.battleQingshanStandee => 0.958,
+  WuxiaUi.battleGreyElderStandee => 0.943,
+  WuxiaUi.battleSpringHallYouthStandee => 0.962,
+  WuxiaUi.battleBaldStaffFighterStandee => 0.911,
+  WuxiaUi.battleArenaChampionStandee => 0.969,
+  WuxiaUi.battleGreyMonkStandee => 0.943,
+  WuxiaUi.battleScarredBossStandee => 0.969,
+  WuxiaUi.battleGreySwordsmanStandee => 0.971,
+  WuxiaUi.battleFerryBanditStandee => 0.961,
+  WuxiaUi.battleFerryBoatmanStandee => 0.870,
+  WuxiaUi.battleFerrySaberStandee => 0.892,
+  WuxiaUi.battleNightPatrolStandee => 0.936,
+  WuxiaUi.battleRooftopConstableStandee => 0.961,
+  WuxiaUi.battleRooftopAssassinStandee => 0.951,
+  WuxiaUi.battleJiangnanSwordsmanStandee => 0.960,
+  WuxiaUi.battleBambooSaberStandee => 0.974,
+  WuxiaUi.battleBambooWandererStandee => 0.968,
+  WuxiaUi.battleMountainStreamSwordStandee => 0.933,
+  WuxiaUi.battleWaterfallSaberStandee => 0.961,
+  WuxiaUi.battleCliffWandererStandee => 0.846,
+  WuxiaUi.battleGateCommanderStandee => 0.821,
+  WuxiaUi.battleLongWindSwordStandee => 0.832,
+  WuxiaUi.battleLongRoadSaberStandee => 0.859,
+  WuxiaUi.battleVillageBanditLeaderStandee => 0.935,
+  WuxiaUi.battleVillageBanditArcherStandee => 0.926,
+  WuxiaUi.battleVillageBanditSaberStandee => 0.919,
+  WuxiaUi.battleTownBanditLeaderStandee => 0.772,
+  WuxiaUi.battleTownBanditWandererStandee => 0.813,
+  WuxiaUi.battleTownBanditAssassinStandee => 0.921,
+  WuxiaUi.battleRivalSectMasterStandee => 0.936,
+  WuxiaUi.battleRivalSectProtectorStandee => 0.926,
+  WuxiaUi.battleRivalSectDiscipleStandee => 0.882,
+  WuxiaUi.battleFrontierCommanderStandee => 0.910,
+  WuxiaUi.battleFrontierOutriderStandee => 0.855,
+  WuxiaUi.battleFrontierIronGuardStandee => 0.840,
+  WuxiaUi.battleWesternRemnantGeneralStandee => 0.907,
+  WuxiaUi.battleWesternFrenziedRiderStandee => 0.766,
+  WuxiaUi.battleWesternRemnantAssassinStandee => 0.814,
+  WuxiaUi.battleSwordStoneElderStandee => 0.880,
+  WuxiaUi.battleBlackWindChiefStandee => 0.956,
+  WuxiaUi.battleNightPavilionMasterStandee => 0.963,
+  WuxiaUi.battleSummitSwordDemonStandee => 0.900,
+  WuxiaUi.battleWesternMartialSeniorStandee => 0.928,
+  WuxiaUi.battleWesternOverlordStandee => 0.925,
+  WuxiaUi.battleCentralPlainsVanguardStandee => 0.936,
+  WuxiaUi.battleWesternThirdDiscipleStandee => 0.932,
+  WuxiaUi.battleKunlunGateGuardianStandee => 0.950,
+  WuxiaUi.battleWesternOverlordSaintStandee => 0.950,
+  WuxiaUi.battleWanderingPalmFighterStandee => 0.923,
+  WuxiaUi.battleEstablishedSectDiscipleStandee => 0.924,
+  WuxiaUi.battleLowRankSaberFighterStandee => 0.886,
+  WuxiaUi.battleBlackWindUnderlingStandee => 0.888,
+  WuxiaUi.battleIndependentWandererStandee => 0.907,
+  WuxiaUi.battleRaiderLeaderStandee => 0.934,
+  WuxiaUi.battleYumenGarrisonOfficerStandee => 0.947,
+  WuxiaUi.battleDesertBanditLeaderStandee => 0.944,
+  WuxiaUi.battleTongguanDefenderStandee => 0.953,
+  WuxiaUi.battleSongshanDaoistDiscipleStandee => 0.921,
+  WuxiaUi.battleCanalGangHelmsmanStandee => 0.934,
+  WuxiaUi.battleArenaPatrolStandee => 0.936,
+  WuxiaUi.battleSongshanGatekeeperStandee => 0.942,
+  WuxiaUi.battleYellowRiverFisherStandee => 0.926,
   WuxiaUi.battleLeftGuardianStandee => 0.940,
   WuxiaUi.battleRightGuardianStandee => 0.956,
   WuxiaUi.battleTowerBoss30Standee => 0.972,
@@ -696,26 +845,151 @@ typedef _StageStandeeOpticalProfile = ({
 
 /// 以透明像素的有效包围盒为基准的光学校准。
 /// 数值只补偿原图画布留白，不表示战斗单位的体型或阵型位置。
-_StageStandeeOpticalProfile _stageStandeeOpticalProfile(String? path) =>
-    switch (path) {
-      WuxiaUi.battleFounderFallback => (
-        scale: 1.055,
-        horizontalShiftFraction: 0,
-      ),
-      WuxiaUi.battleFirstDiscipleFallback => (
-        scale: 1,
-        horizontalShiftFraction: 0.04,
-      ),
-      WuxiaUi.battleBanditBladeStandee => (
-        scale: 1.18,
-        horizontalShiftFraction: 0.015,
-      ),
-      WuxiaUi.battleBanditArcherStandee => (
-        scale: 1.045,
-        horizontalShiftFraction: 0,
-      ),
-      _ => (scale: 1, horizontalShiftFraction: 0),
-    };
+_StageStandeeOpticalProfile _stageStandeeOpticalProfile(
+  String? path,
+) => switch (path) {
+  WuxiaUi.battleFounderFallback => (scale: 1.055, horizontalShiftFraction: 0),
+  WuxiaUi.battleFirstDiscipleFallback => (
+    scale: 1,
+    horizontalShiftFraction: 0.04,
+  ),
+  WuxiaUi.battleBanditBladeStandee => (
+    scale: 1.18,
+    horizontalShiftFraction: 0.015,
+  ),
+  WuxiaUi.battleBanditArcherStandee => (
+    scale: 1.045,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleYoungRuffianStandee => (
+    scale: 1.06,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleGauntCutpurseStandee => (
+    scale: 1.07,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleVillageRuffianStandee => (
+    scale: 1.1,
+    horizontalShiftFraction: 0.03,
+  ),
+  WuxiaUi.battleBanditHeadStandee => (scale: 1, horizontalShiftFraction: 0.02),
+  WuxiaUi.battleQingshanStandee => (scale: 1, horizontalShiftFraction: 0.02),
+  WuxiaUi.battleGreyElderStandee => (scale: 1.07, horizontalShiftFraction: 0),
+  WuxiaUi.battleBaldStaffFighterStandee => (
+    scale: 1.04,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleGreyMonkStandee => (scale: 1.04, horizontalShiftFraction: 0),
+  WuxiaUi.battleScarredBossStandee => (
+    scale: 0.96,
+    horizontalShiftFraction: 0.015,
+  ),
+  WuxiaUi.battleGreySwordsmanStandee => (
+    scale: 0.95,
+    horizontalShiftFraction: 0.02,
+  ),
+  WuxiaUi.battleFerryBoatmanStandee => (
+    scale: 1.08,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleFerrySaberStandee => (scale: 1.06, horizontalShiftFraction: 0),
+  WuxiaUi.battleNightPatrolStandee => (scale: 1.03, horizontalShiftFraction: 0),
+  WuxiaUi.battleJiangnanSwordsmanStandee => (
+    scale: 0.95,
+    horizontalShiftFraction: 0.02,
+  ),
+  WuxiaUi.battleBambooSaberStandee => (
+    scale: 0.96,
+    horizontalShiftFraction: 0.01,
+  ),
+  WuxiaUi.battleMountainStreamSwordStandee => (
+    scale: 0.96,
+    horizontalShiftFraction: 0.01,
+  ),
+  WuxiaUi.battleCliffWandererStandee => (
+    scale: 1.12,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleGateCommanderStandee => (
+    scale: 1.15,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleLongWindSwordStandee => (
+    scale: 1.13,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleLongRoadSaberStandee => (
+    scale: 1.1,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleVillageBanditLeaderStandee => (
+    scale: 1.03,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleVillageBanditArcherStandee => (
+    scale: 1.02,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleVillageBanditSaberStandee => (
+    scale: 0.98,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleTownBanditLeaderStandee => (
+    scale: 1.2,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleTownBanditWandererStandee => (
+    scale: 1.15,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleTownBanditAssassinStandee => (
+    scale: 1.02,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleRivalSectProtectorStandee => (
+    scale: 1.02,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleRivalSectDiscipleStandee => (
+    scale: 1.08,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleFrontierOutriderStandee => (
+    scale: 1.06,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleFrontierIronGuardStandee => (
+    scale: 1.08,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleWesternFrenziedRiderStandee => (
+    scale: 1.18,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleWesternRemnantAssassinStandee => (
+    scale: 1.12,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleSwordStoneElderStandee => (
+    scale: 1.05,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleLowRankSaberFighterStandee => (
+    scale: 1.05,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleBlackWindUnderlingStandee => (
+    scale: 1.05,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleTongguanDefenderStandee => (
+    scale: 1.05,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleArenaPatrolStandee => (scale: 1.08, horizontalShiftFraction: 0),
+  _ => (scale: 1, horizontalShiftFraction: 0),
+};
 
 class _FirstGlyphStandee extends StatelessWidget {
   const _FirstGlyphStandee({

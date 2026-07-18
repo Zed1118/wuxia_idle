@@ -11,7 +11,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/skill_unlock_entry.dart';
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
-import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
+import 'package:wuxia_idle/data/defs/encounter_def.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';

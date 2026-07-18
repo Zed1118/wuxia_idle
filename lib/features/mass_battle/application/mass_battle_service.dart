@@ -1,5 +1,5 @@
 import '../../../core/domain/enums.dart';
-import '../domain/mass_battle_def.dart';
+import '../../../data/defs/mass_battle_def.dart';
 
 /// 群战守城 application 层(1.0 P3.2 §12.3,GDD v1.13,Batch 2.3)。
 ///

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/injury/domain/injury_config.dart';
+import 'package:wuxia_idle/data/defs/injury_config.dart';
 
 void main() {
   test('InjuryConfig.fromYaml 解析全字段 + 缺省默认', () {

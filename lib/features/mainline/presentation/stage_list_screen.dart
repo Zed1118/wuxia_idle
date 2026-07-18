@@ -24,7 +24,7 @@ import '../../loot_preview/presentation/weakness_hint_line.dart';
 import '../../sweep/application/sweep_unit.dart';
 import '../../sweep/application/sweep_readiness_providers.dart';
 import '../../sweep/domain/sweep_eligibility.dart';
-import '../../sweep/domain/sweep_readiness.dart';
+import '../../../data/defs/sweep_readiness.dart';
 import '../../sweep/domain/sweep_reward_preview.dart';
 import '../../sweep/presentation/sweep_screen.dart';
 import '../application/mainline_progress_service.dart';

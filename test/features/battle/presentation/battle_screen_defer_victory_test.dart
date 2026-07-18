@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/core/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
+import '../../../support/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/victory_overlay.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
@@ -40,6 +40,13 @@ class _TestBattleNotifier extends BattleNotifier {
   @override
   void advance({int maxConsecutiveTicks = 100}) {}
 
+  int advanceOneActionCalls = 0;
+
+  @override
+  void advanceOneAction({int maxConsecutiveSteps = 300}) {
+    advanceOneActionCalls++;
+  }
+
   /// 直接推送一个新 state,触发 ref.listen 边沿。
   void push(BattleState s) => state = s;
 }
@@ -51,6 +58,7 @@ Future<_TestBattleNotifier> _pump(
   bool readablePacing = false,
   VoidCallback? onVictory,
   VoidCallback? onBattleEnd,
+  bool autoStart = false,
 }) async {
   late _TestBattleNotifier notifier;
   await tester.binding.setSurfaceSize(const Size(1280, 720));
@@ -71,7 +79,7 @@ Future<_TestBattleNotifier> _pump(
           animConfig: _testAnim,
           deferVictoryToCaller: deferVictoryToCaller,
           playback: BattleScreenPlaybackConfig(
-            autoStart: false,
+            autoStart: autoStart,
             readablePacing: readablePacing,
           ),
           onVictory: onVictory,
@@ -184,11 +192,112 @@ void main() {
     expect(find.byType(VictoryOverlay), findsOneWidget);
   });
 
+  testWidgets('连续战斗 autoStart:第二场从 finished 回到 running 后重启拍钟', (tester) async {
+    final notifier = await _pump(
+      tester,
+      deferVictoryToCaller: true,
+      autoStart: true,
+    );
+    final running = notifier.state;
+
+    notifier.push(running.copyWith(result: BattleResult.leftWin));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 501));
+    notifier.push(
+      BattleState.initial(
+        leftTeam: running.leftTeam,
+        rightTeam: running.rightTeam,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 51));
+
+    expect(
+      notifier.advanceOneActionCalls,
+      greaterThan(0),
+      reason: '第二场 running 边沿应重启常速拍钟',
+    );
+  });
+
+  testWidgets('连续战斗 autoStart=false:第二场保持验收路由冻结', (tester) async {
+    final notifier = await _pump(tester, autoStart: false);
+    final running = notifier.state;
+
+    notifier.push(running.copyWith(result: BattleResult.leftWin));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 501));
+    notifier.push(
+      BattleState.initial(
+        leftTeam: running.leftTeam,
+        rightTeam: running.rightTeam,
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(notifier.advanceOneActionCalls, 0);
+  });
+
+  testWidgets('胜利延迟内重开会废弃旧场交接，第二场结束只回调一次', (tester) async {
+    var victoryCalled = 0;
+    final notifier = await _pump(
+      tester,
+      deferVictoryToCaller: true,
+      autoStart: true,
+      onVictory: () => victoryCalled++,
+    );
+    final firstRunning = notifier.state;
+
+    notifier.push(firstRunning.copyWith(result: BattleResult.leftWin));
+    await tester.pump();
+    await tester.pump();
+    notifier.push(
+      BattleState.initial(
+        leftTeam: firstRunning.leftTeam,
+        rightTeam: firstRunning.rightTeam,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 501));
+
+    expect(victoryCalled, 0, reason: '重开后上一场延迟胜利交接必须失效');
+    expect(
+      notifier.advanceOneActionCalls,
+      greaterThan(0),
+      reason: '旧交接不能打断第二场拍钟',
+    );
+
+    notifier.push(notifier.state.copyWith(result: BattleResult.leftWin));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(victoryCalled, 1, reason: '第二场自己的胜利交接仍应恰好执行一次');
+  });
+
+  testWidgets('败北关键帧延迟内重开会废弃旧场结算 overlay', (tester) async {
+    final notifier = await _pump(tester, autoStart: true);
+    final firstRunning = notifier.state;
+
+    notifier.push(firstRunning.copyWith(result: BattleResult.rightWin));
+    await tester.pump();
+    await tester.pump();
+    notifier.push(
+      BattleState.initial(
+        leftTeam: firstRunning.leftTeam,
+        rightTeam: firstRunning.rightTeam,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 401));
+
+    expect(find.byType(VictoryOverlay), findsNothing);
+  });
+
   // ─── 回归测试 3: deferVictoryToCaller=true + rightWin → VictoryOverlay 仍显示 ─
   // defer 只 gate leftWin 分支,败北(rightWin)不受影响,仍走普通 overlay 路径。
 
   testWidgets(
-    'deferVictoryToCaller=true + rightWin: VictoryOverlay 仍弹出(defer 不 gate 败北)',
+    'deferVictoryToCaller=true + rightWin: 保留关键帧后仍弹出 VictoryOverlay',
     (tester) async {
       var victoryCalled = 0;
 
@@ -203,7 +312,14 @@ void main() {
       notifier.push(finished);
       await tester.pump();
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.pump(const Duration(milliseconds: 399));
+      expect(
+        find.byType(VictoryOverlay),
+        findsNothing,
+        reason: '致败一击应保留关键帧反应时间',
+      );
+      await tester.pump(const Duration(milliseconds: 1));
 
       // 败北走普通 overlay,不受 deferVictoryToCaller gate
       expect(find.byType(VictoryOverlay), findsOneWidget);

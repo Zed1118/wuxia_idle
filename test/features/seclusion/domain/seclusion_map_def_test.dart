@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
+import 'package:wuxia_idle/data/defs/seclusion_map_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
@@ -299,7 +299,7 @@ void main() {
   // 红线 fail-fast
   // ─────────────────────────────────────────────────────────────────────────
 
-  group('_enforceSeclusionRedLines fail-fast', () {
+  group('enforceSeclusionRedLines fail-fast', () {
     test('getSeclusionMap 未知类型抛 StateError', () async {
       await GameRepository.loadAllDefs(loader: fileLoader);
       // 所有 5 种 enum 值在 numbers.yaml 都已配置；此处用一个无效场景测 error path
@@ -308,7 +308,7 @@ void main() {
     });
 
     test('mojianshiPerHour 必须 > 0 — 直接构造验证', () {
-      // _enforceSeclusionRedLines 在 GameRepository 内部调用，
+      // enforceSeclusionRedLines(validation/) 由 GameRepository 编排调用，
       // 此处通过直接校验逻辑用 SeclusionMapDef 构造验证语义正确
       const def = SeclusionMapDef(
         mapType: RetreatMapType.shanLin,
@@ -330,7 +330,7 @@ void main() {
         () => const RetreatConfig(
           maps: [],
           realmScalePerTier: 1.3,
-          capHours: -1, // 构造层不校验，校验在 GameRepository._enforceSeclusionRedLines
+          capHours: -1, // 构造层不校验，校验在 enforceSeclusionRedLines(validation/)
           baseEquipDropProbability: 0.1,
           equipmentRollIntervalHours: 12,
           equipmentRollMaxCount: 1,

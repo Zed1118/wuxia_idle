@@ -12,7 +12,7 @@ import '../../../core/domain/enums.dart';
 import '../../../shared/utils/rng.dart';
 import '../../event/application/game_event_service.dart';
 import '../../tutorial/application/tutorial_service.dart';
-import '../domain/encounter_def.dart';
+import '../../../data/defs/encounter_def.dart';
 import '../domain/encounter_progress.dart';
 
 /// 单条 trigger 候选(internal,evaluateTriggers 返回)。

@@ -83,7 +83,7 @@ project_root/
 │   │   └── <feature>/{domain,application,presentation}/
 │   ├── shared/        # 跨 feature 复用（主题、组件、UiStrings）
 │   └── main.dart
-├── data/              # 全部配置与文案（452 个 yaml，数值 + narratives/lore/events）
+├── data/              # 全部配置与文案（450+ 个 yaml，数值 + narratives/lore/events）
 ├── assets/            # 图片、字体、音频（AI 产出）
 ├── test/              # 单元 + widget/视觉路由 + 平衡红线测试
 └── docs/             # 设计 spec、审查报告、交接记录、归档

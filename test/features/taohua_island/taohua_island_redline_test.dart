@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yaml/yaml.dart';
-import 'package:wuxia_idle/features/taohua_island/domain/taohua_island_config.dart';
+import 'package:wuxia_idle/data/defs/taohua_island_config.dart';
 
 /// 桃花岛一期红线测试（Task 3 RED→GREEN 闭环）。
 ///

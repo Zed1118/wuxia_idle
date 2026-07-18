@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/cultivation/domain/progression_release_cap.dart';
+import 'package:wuxia_idle/data/defs/progression_release_cap.dart';
 
 import '../support/test_data.dart';
 

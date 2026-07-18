@@ -1,16 +1,18 @@
 import 'dart:math' as math;
 
-import '../features/cultivation/domain/progression_release_cap.dart';
-import '../features/equipment/domain/cycle_drop_bonus.dart';
+import 'defs/progression_release_cap.dart';
+import 'defs/cycle_drop_bonus.dart';
+// 唯一残留 data→features(2026-07-18 审查批):equipment_disposal 含处置逻辑且
+// 依赖 feature 局部 equipment_slot_occupancy,迁 defs 会级联;登记 followup backlog。
 import '../features/equipment/domain/equipment_disposal.dart';
-import '../features/equipment/domain/rare_bonus_drop.dart';
-import '../features/injury/domain/injury_config.dart';
-import '../features/inner_demon/domain/inner_demon_def.dart';
-import '../features/light_foot/domain/light_foot_def.dart';
-import '../features/mass_battle/domain/mass_battle_def.dart';
-import '../features/seclusion/domain/seclusion_map_def.dart';
-import '../features/sweep/domain/sweep_readiness.dart';
-import '../features/taohua_island/domain/taohua_island_config.dart';
+import 'defs/rare_bonus_drop.dart';
+import 'defs/injury_config.dart';
+import 'defs/inner_demon_def.dart';
+import 'defs/light_foot_def.dart';
+import 'defs/mass_battle_def.dart';
+import 'defs/seclusion_map_def.dart';
+import 'defs/sweep_readiness.dart';
+import 'defs/taohua_island_config.dart';
 import '../core/domain/attribute_effect_policy.dart';
 import '../core/domain/enums.dart';
 
@@ -1849,6 +1851,7 @@ class AnimationNumbers {
   final int shakeDurationMs;
   final double criticalFontScale;
   final int projectileMs;
+  final int battleEffectMs;
   final int hitFlashMs;
 
   /// 关键帧（暴击/大招/合一/破招/击杀）命中后的额外顿帧时长（ms）。常速播放
@@ -1885,6 +1888,7 @@ class AnimationNumbers {
     required this.shakeDurationMs,
     required this.criticalFontScale,
     required this.projectileMs,
+    this.battleEffectMs = 520,
     required this.hitFlashMs,
     this.keyMomentHoldMs = 400,
     this.firstClearOpeningHoldMs = 900,
@@ -1911,6 +1915,7 @@ class AnimationNumbers {
     shakeDurationMs: 100,
     criticalFontScale: 1.5,
     projectileMs: 260,
+    battleEffectMs: 520,
     hitFlashMs: 150,
     keyMomentHoldMs: 400,
     firstClearOpeningHoldMs: 900,
@@ -1948,6 +1953,7 @@ class AnimationNumbers {
       shakeDurationMs: (y['shake_duration_ms'] as num).toInt(),
       criticalFontScale: (y['critical_font_scale'] as num).toDouble(),
       projectileMs: (y['projectile_ms'] as num?)?.toInt() ?? 260,
+      battleEffectMs: (y['battle_effect_ms'] as num?)?.toInt() ?? 520,
       hitFlashMs: (y['hit_flash_ms'] as num?)?.toInt() ?? 150,
       keyMomentHoldMs: (y['key_moment_hold_ms'] as num?)?.toInt() ?? 400,
       firstClearOpeningHoldMs:

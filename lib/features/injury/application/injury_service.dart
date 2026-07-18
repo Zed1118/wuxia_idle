@@ -1,7 +1,7 @@
 import '../../../core/domain/character.dart';
 import '../../../core/domain/attribute_effect_policy.dart';
 import '../../battle/domain/battle_state.dart';
-import '../domain/injury_config.dart';
+import '../../../data/defs/injury_config.dart';
 
 /// 双层伤势设值纯函数（全静态，仿 InnerDemonService 体例）。
 ///

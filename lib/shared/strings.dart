@@ -57,6 +57,17 @@ class UiStrings {
   static const String fastForward = '快进';
   static const String battleAutoMode = '自动战斗';
   static const String battleAutoIntervention = '可点选';
+  static const String battleAutoModeHint = '全程托管，角色按招式轮转谱自行出手。';
+  static const String battleAutoInterventionHint =
+      '战斗持续自动；点武学签可预支该角色下一次行动，出手后重新回势。';
+  static const String battleAutoRotation = '招式轮转谱';
+  static const String battleAutoObserve = '托管推演';
+  static const String skillReady = '可用';
+  static const String skillReservedForInterrupt = '候破';
+  static const String skillGatheringQi = '蓄气';
+  static const String battleNoEquippedSkills = '只运周天';
+  static const String battleFallen = '力竭';
+  static String skillCooldownRemaining(int turns) => '息 $turns';
   static const String battleCommandDesk = '武学案台';
   static const String battlePouch = '战备行囊';
   static const String battlePouchReserved = '待装配';
@@ -106,6 +117,9 @@ class UiStrings {
   static const String skillGroupJoint = '共鸣';
   // 破招用 [battleInterruptSkill]='破招'、大招用 [ultimate]='大招'。
   static const String skillPendingStamp = '待发';
+  static const String skillAwaitingAction = '回势中';
+  static const String skillCharging = '蓄力中';
+  static const String skillStaggered = '踉跄中';
   static const String skillTargetable = '可选';
   static const String skillTargetLocked = '锁定';
   // 可用态：耗气 N · CD M。

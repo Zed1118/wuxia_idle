@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/system_clock_provider.dart';
 import '../../../core/domain/character.dart';
@@ -16,7 +16,7 @@ import '../../../shared/utils/rng_provider.dart';
 import '../domain/sect.dart';
 import '../domain/sect_event.dart';
 import '../domain/sect_outcome.dart';
-import '../domain/territory_def.dart';
+import '../../../data/defs/territory_def.dart';
 import 'sect_event_service.dart';
 import 'sect_member_service.dart';
 import 'sect_monthly_tick_service.dart';

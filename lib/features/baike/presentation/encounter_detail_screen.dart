@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../encounter/domain/encounter_def.dart';
-import '../../encounter/domain/encounter_event_loader.dart';
+import '../../../data/defs/encounter_def.dart';
+import '../../../data/encounter_event_loader.dart';
 import '../application/encounter_codex_provider.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';

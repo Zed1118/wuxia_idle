@@ -6,6 +6,7 @@ import '../../../../data/defs/stage_win_condition.dart';
 import '../../../../core/domain/enums.dart';
 import '../../../../data/numbers_config.dart';
 import '../battle_ai.dart';
+import '../battle_skill_utils.dart';
 import '../enum_localizations.dart';
 import '../battle_state.dart';
 import '../damage_calculator.dart';
@@ -174,12 +175,38 @@ class DefaultGroundStrategy implements BattleStrategy {
     if (skill.type == SkillType.normalAttack) {
       throw ArgumentError.value(skill, 'skill', '手动请求不接受 normalAttack');
     }
+    if (state.isFinished) return state;
+    final actor = _findById(state, characterId, 0);
+    if (actor == null || !actor.isAlive) return state;
+
+    // 只把角色当前战斗快照中已装备的规范技能写入 pending。调用方可按 id
+    // 重放操作，但不能用同 id 的伪造 SkillDef 篡改倍率、耗气或技能类型。
+    SkillDef? equippedSkill;
+    for (final candidate in actor.availableSkills) {
+      if (candidate.id == skill.id) {
+        equippedSkill = candidate;
+        break;
+      }
+    }
+    if (equippedSkill == null || equippedSkill.type == SkillType.normalAttack) {
+      return state;
+    }
+
+    // AOE 自行选择全部合法目标，不保留单体 targetId。单体指定则在请求当刻
+    // 复用即时干预的护法/存活口径；非法目标不消耗或覆盖已有 pending。
+    if (targetId != null && equippedSkill.targetType != TargetType.aoe) {
+      final target = _findById(state, targetId, 1);
+      if (target == null ||
+          !canManuallyTargetEnemy(target, state, equippedSkill)) {
+        return state;
+      }
+    }
     final newPending = Map<int, SkillDef>.from(state.pendingUltimates);
-    newPending[characterId] = skill;
+    newPending[characterId] = equippedSkill;
     // 半手动 P0 步骤3a:指定目标入 pendingTargets;未指定则确保清掉旧条目
     // (同一角色改请求无目标的技时,不残留上次目标)。
     final newTargets = Map<int, int>.from(state.pendingTargets);
-    if (targetId != null) {
+    if (targetId != null && equippedSkill.targetType != TargetType.aoe) {
       newTargets[characterId] = targetId;
     } else {
       newTargets.remove(characterId);
@@ -193,7 +220,8 @@ class DefaultGroundStrategy implements BattleStrategy {
   /// 主线二 2.3:玩家拖招立即插队结算(预支语义)。
   ///
   /// 1. 该角色(player teamSide=0)不存活 / 战斗已结束 → noop 返原 state。
-  /// 2. 普攻 / 踉跄中 / 蓄力中 → noop(strategy 层防线,避免静默 fizzle 或抛异常)。
+  /// 2. 未装备 / 普攻 / 资源未就绪 / AP 尚未重新积累 / 踉跄中 / 蓄力中 →
+  ///    noop(strategy 层防线,避免同角色归零后连发、静默变招或抛异常)。
   /// 3. 置 pending(复用 [requestUltimate]:`BattleAI` 优先消费拖的招 + 指定目标)。
   /// 4. 借 AP:把该角色 actionPoint 设为正好 1000 → [_resolveAction] 内
   ///    `actionPoint -= 1000` 出手后自然归零(预支这一拍,随后等满周期再动)。
@@ -216,16 +244,40 @@ class DefaultGroundStrategy implements BattleStrategy {
     if (state.actorQueue.isNotEmpty) return state;
     final actor0 = _findById(state, characterId, 0);
     if (actor0 == null || !actor0.isAlive) return state;
-    // I-2:普攻不走插队(拖招只发技能);strategy 层防线,避免 requestUltimate 抛异常。
-    if (skill.type == SkillType.normalAttack) return state;
-    // I-1:踉跄/蓄力中的角色无法即时出手 → noop,避免拖的招静默 fizzle 又消耗交互。
-    if (actor0.staggerTicksRemaining > 0 || actor0.chargingSkill != null) {
+    // 只接受角色当前战斗快照中已装备的规范技能定义，避免调用方用同 id 之外
+    // 的任意 SkillDef 绕过装配或篡改倍率。
+    SkillDef? equippedSkill;
+    for (final candidate in actor0.availableSkills) {
+      if (candidate.id == skill.id) {
+        equippedSkill = candidate;
+        break;
+      }
+    }
+    if (equippedSkill == null) return state;
+    // 普攻不走插队；资源、CD、AP 与控制态统一复用 UI 同源门控，防止 pending
+    // 被 AI 判无效后静默回落成另一招并仍消耗本次预支行动。
+    if (equippedSkill.type == SkillType.normalAttack ||
+        !canInterveneWithSkill(actor0, equippedSkill)) {
       return state;
+    }
+    if (targetId != null) {
+      final enemyTeam = actor0.teamSide == 0 ? state.rightTeam : state.leftTeam;
+      BattleCharacter? target;
+      for (final candidate in enemyTeam) {
+        if (candidate.characterId == targetId) {
+          target = candidate;
+          break;
+        }
+      }
+      if (target == null ||
+          !canManuallyTargetEnemy(target, state, equippedSkill)) {
+        return state;
+      }
     }
     final pended = requestUltimate(
       state,
       characterId,
-      skill,
+      equippedSkill,
       targetId: targetId,
     );
     final pendedActor = _findById(pended, characterId, 0);
@@ -905,6 +957,7 @@ class DefaultGroundStrategy implements BattleStrategy {
           : '',
       interrupted: brokeCharging,
       openedBreakWindow: opensBreak && !brokeCharging,
+      defeatedTarget: target.isAlive && !result.isDodged && newTargetHp <= 0,
       // 批二②会心:仅「真弱点」(mult>1.0)且命中(非闪避)才打 flag → 表现层弹会心
       // 题字;抗性(mult<1.0)不算会心。与伤害结算同 weaknessMultOf 查表口径。
       weaknessHit: !result.isDodged && weaknessMultOf(preActor, target) > 1.0,

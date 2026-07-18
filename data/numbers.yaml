@@ -1608,6 +1608,7 @@ animation:
 
   # 弹道/受击表现（P0-2 战斗可见化）
   projectile_ms: 260          # 攻击者→目标弹道笔触线时长
+  battle_effect_ms: 520       # 流派/暴击/状态贴片基础寿命；快进态仍 clamp 到单拍
   hit_flash_ms: 150           # 受击闪一层半透明色块淡出时长
   key_moment_hold_ms: 400     # 关键帧(暴击/大招/合一/破招/击杀)额外顿帧
 

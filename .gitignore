@@ -110,3 +110,7 @@ docs/reviews/**/*.jpeg
 docs/art_ref/**/*.png
 docs/art_ref/**/*.jpg
 docs/art_ref/**/*.jpeg
+
+# 用户本机中文草稿目录不入库(2026-07-18 拍板 · 自本地 .git/info/exclude 转正)
+/设计文档/
+/审查报告/

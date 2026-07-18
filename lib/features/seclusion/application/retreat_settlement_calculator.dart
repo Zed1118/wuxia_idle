@@ -8,7 +8,7 @@ import '../../../data/numbers_config.dart';
 import '../../../shared/utils/rng.dart';
 import '../../equipment/application/equipment_factory.dart';
 import '../domain/retreat_session.dart';
-import '../domain/seclusion_map_def.dart';
+import '../../../data/defs/seclusion_map_def.dart';
 
 typedef RetreatTimeSplit = ({double retreatHours, double passiveHours});
 

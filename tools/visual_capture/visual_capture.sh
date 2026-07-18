@@ -4,6 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SWIFT_WINID="$REPO_ROOT/tools/visual_capture/window_id.swift"
 APP_PROCESS_NAME="wuxia_idle"
+APP_EXECUTABLE="$REPO_ROOT/build/macos/Build/Products/Debug/wuxia_idle.app/Contents/MacOS/wuxia_idle"
 
 SUITE="smoke"
 OUTPUT_DIR="build/visual_acceptance"
@@ -19,6 +20,8 @@ WAIT_SECONDS=12
 READY_TIMEOUT=90
 ALL_SPACES=0
 EXISTING_WINDOW=0
+PREBUILT=1
+BACKGROUND=0
 
 usage() {
   cat <<'USAGE'
@@ -28,7 +31,7 @@ Usage:
   tools/visual_capture/visual_capture.sh [options]
 
 Options:
-  --suite smoke|full         Route suite from tool/visual_acceptance.dart.
+  --suite smoke|battle|full  Route suite from tool/visual_acceptance.dart.
   --route <id>               Capture one route instead of the suite.
   --resolutions <csv>        Window sizes, e.g. 1280x720,1920x1080.
   --output <dir>             Output directory. Default: build/visual_acceptance.
@@ -38,6 +41,10 @@ Options:
   --all-spaces              Find the app window across all macOS Spaces.
   --existing-window         Capture an already-running window; do not launch,
                             focus, resize, or terminate the app.
+  --no-prebuilt             Use legacy per-route flutter run instead of one
+                            prebuilt debug app with runtime route arguments.
+  --background              Do not focus or resize the app; capture its window
+                            by CGWindowID across Spaces (window env locks size).
   --dry-run                  Print planned commands only.
   -h, --help                 Show this help.
 
@@ -91,6 +98,15 @@ while [[ $# -gt 0 ]]; do
       ;;
     --existing-window)
       EXISTING_WINDOW=1
+      shift
+      ;;
+    --no-prebuilt)
+      PREBUILT=0
+      shift
+      ;;
+    --background)
+      BACKGROUND=1
+      ALL_SPACES=1
       shift
       ;;
     --dry-run)
@@ -271,11 +287,16 @@ run_capture() {
     return
   fi
 
-  local cmd=(
-    flutter run -d macos
-    --dart-define=VISUAL_ROUTE="$route"
-    --dart-define=HITBOX_DEBUG="$hitbox_define"
-  )
+  local cmd
+  if [[ "$PREBUILT" -eq 1 ]]; then
+    cmd=("$APP_EXECUTABLE" "--visual-route=$route")
+  else
+    cmd=(
+      flutter run -d macos
+      --dart-define=VISUAL_ROUTE="$route"
+      --dart-define=HITBOX_DEBUG="$hitbox_define"
+    )
+  fi
 
   if [[ "$DRY_RUN" -eq 1 ]]; then
     printf '[dry-run] %s\n' "${cmd[*]}"
@@ -295,12 +316,14 @@ run_capture() {
     return 1
   fi
   sleep "$WAIT_SECONDS"
-  focus_visual_app >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: focus_failed\n' >>"$log"
-  sleep 1
-  resize_visual_window "$width" "$height" >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: resize_failed\n' >>"$log"
-  sleep 1
-  focus_visual_app >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: focus_failed\n' >>"$log"
-  sleep 1
+  if [[ "$BACKGROUND" -eq 0 ]]; then
+    focus_visual_app >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: focus_failed\n' >>"$log"
+    sleep 1
+    resize_visual_window "$width" "$height" >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: resize_failed\n' >>"$log"
+    sleep 1
+    focus_visual_app >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: focus_failed\n' >>"$log"
+    sleep 1
+  fi
   local capture_status
   capture_status="$(capture_visual_window "$width" "$height" "$png")"
   kill "$pid" >/dev/null 2>&1 || true
@@ -309,6 +332,13 @@ run_capture() {
 }
 
 IFS=',' read -r -a resolution_list <<< "$RESOLUTIONS"
+if [[ "$EXISTING_WINDOW" -eq 0 && "$PREBUILT" -eq 1 && "$DRY_RUN" -eq 0 ]]; then
+  hitbox_define="false"
+  if [[ "$HITBOX" -eq 1 ]]; then
+    hitbox_define="true"
+  fi
+  flutter build macos --debug --dart-define=HITBOX_DEBUG="$hitbox_define"
+fi
 while IFS= read -r route; do
   [[ -z "$route" ]] && continue
   for resolution in "${resolution_list[@]}"; do

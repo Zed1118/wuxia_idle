@@ -10,7 +10,7 @@ import '../../../core/domain/attributes.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../../data/isar_setup.dart';
 import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
@@ -45,7 +45,7 @@ import '../../tower/application/tower_progress_service.dart';
 import '../../tower/domain/tower_progress.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
 import '../../seclusion/domain/retreat_session.dart';
-import '../../seclusion/domain/seclusion_map_def.dart';
+import '../../../data/defs/seclusion_map_def.dart';
 import '../../seclusion/presentation/active_retreat_screen.dart';
 import '../../seclusion/presentation/retreat_result_screen.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
@@ -92,7 +92,7 @@ import '../../baike/application/martial_codex_provider.dart';
 import '../../baike/presentation/skill_codex_detail_screen.dart';
 import '../../character_panel/presentation/lineage_character_detail_screen.dart';
 import '../../zangjuange/presentation/zangjuange_screen.dart';
-import '../../taohua_island/domain/island_building_type.dart';
+import '../../../core/domain/island_building_type.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../boss_gauntlet/application/gauntlet_service.dart';
@@ -109,9 +109,10 @@ import 'hitbox_debug_overlay.dart';
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
 class VisualRouteApp extends StatelessWidget {
-  const VisualRouteApp({super.key, required this.route});
+  const VisualRouteApp({super.key, required this.route, this.routeId});
 
   final VisualRoute route;
+  final String? routeId;
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +122,9 @@ class VisualRouteApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: wuxiaAppTheme(),
         builder: _wuxiaTextScaleBuilder,
-        home: HitboxDebugOverlay.maybeWrap(VisualRouteHost(route: route)),
+        home: HitboxDebugOverlay.maybeWrap(
+          VisualRouteHost(route: route, routeId: routeId),
+        ),
       ),
     );
   }
@@ -140,9 +143,10 @@ Widget _wuxiaTextScaleBuilder(BuildContext context, Widget? child) {
 /// 按 [VisualRoute] 做 seed + 导航到目标验收屏。
 /// 首帧就绪后打印 `VISUAL_ROUTE_READY: <id>` 供截图脚本 grep。
 class VisualRouteHost extends ConsumerStatefulWidget {
-  const VisualRouteHost({super.key, required this.route});
+  const VisualRouteHost({super.key, required this.route, this.routeId});
 
   final VisualRoute route;
+  final String? routeId;
 
   @override
   ConsumerState<VisualRouteHost> createState() => _VisualRouteHostState();
@@ -166,7 +170,11 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
       final isar = IsarSetup.instance;
 
       // 2. 按 route 构造目标屏(逻辑抽到顶层 buildVisualTarget,供 hub 运行时复用)
-      final target = await buildVisualTarget(widget.route, isar);
+      final target = await buildVisualTarget(
+        widget.route,
+        isar,
+        routeId: widget.routeId,
+      );
 
       // 3. 挂载目标屏
       if (!mounted) return;
@@ -174,12 +182,14 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
 
       // 4. 目标屏首帧后打就绪信号
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        debugPrint('VISUAL_ROUTE_READY: ${widget.route.id}');
+        debugPrint('VISUAL_ROUTE_READY: ${widget.routeId ?? widget.route.id}');
       });
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e);
-      debugPrint('VISUAL_ROUTE_ERROR: ${widget.route.id} :: $e');
+      debugPrint(
+        'VISUAL_ROUTE_ERROR: ${widget.routeId ?? widget.route.id} :: $e',
+      );
     }
   }
 
@@ -196,7 +206,11 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
 /// 单一职责:route → (seed + 目标屏)。供 [VisualRouteHost] 单路由直达与
 /// [_AcceptanceHub] 运行时点选复用——后者 build 一次即可点遍全部路由,
 /// 免 dart-define VISUAL_ROUTE 每路由重 flutter run(Codex 验收加速)。
-Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
+Future<Widget> buildVisualTarget(
+  VisualRoute route,
+  Isar isar, {
+  String? routeId,
+}) async {
   switch (route) {
     case VisualRoute.mainMenu:
       await OnboardingService(
@@ -382,6 +396,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         hint: null,
         sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         autoStart: false,
+        allowPlayerIntervention: true,
       );
     case VisualRoute.battleInnerDemonStage:
       return const ScenarioLauncher(
@@ -570,6 +585,162 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioTowerFloor08,
         hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0401:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0401,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_mountainforest.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0402:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0402,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_frontier.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0403:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0403,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_desert.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0404:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0404,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_drillground.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0405:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0405,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_frontier.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0501:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0501,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_mountainforest.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0502:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0502,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_temple.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0503:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0503,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_dock.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0504:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0504,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_drillground.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0505:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0505,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0601:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0601,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0602:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0602,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_mountainforest.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0603:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0603,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_dock.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0604:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0604,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_desert.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleStage0605:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioStage0605,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_mountainforest.png',
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor06:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor06,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor07:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor07,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerFloor12:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioTowerFloor12,
+        hint: null,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        bgmTrack: BgmTrack.tower,
+        startPaused: true,
+      );
+    case VisualRoute.battleStageAudit:
+      final stageId = battleAuditStageId(routeId ?? '') ?? 'stage_01_01';
+      final stage = GameRepository.instance.getStage(stageId);
+      final bgmTrack = switch (stage.stageType) {
+        StageType.lightFoot => BgmTrack.lightFoot,
+        StageType.massBattle => BgmTrack.massBattle,
+        _ => BgmTrack.battle,
+      };
+      return ScenarioLauncher(
+        teamsFactory: () =>
+            BattleScenarioData.scenarioStageStandeeAudit(stageId),
+        hint: stage.name,
+        sceneBackgroundPath:
+            stage.sceneBackgroundPath ?? WuxiaUi.battleMountainPassStage,
+        bgmTrack: bgmTrack,
+        startPaused: true,
+      );
+    case VisualRoute.battleTowerAudit:
+      final floor = battleAuditTowerFloor(routeId ?? '') ?? 1;
+      return ScenarioLauncher(
+        teamsFactory: () =>
+            BattleScenarioData.scenarioTowerFloorStandeeAudit(floor),
+        hint: '问鼎塔 · 第 $floor 层',
         sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
         bgmTrack: BgmTrack.tower,
         startPaused: true,

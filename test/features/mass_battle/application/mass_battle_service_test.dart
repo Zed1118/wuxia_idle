@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/mass_battle/application/mass_battle_service.dart';
-import 'package:wuxia_idle/features/mass_battle/domain/mass_battle_def.dart';
+import 'package:wuxia_idle/data/defs/mass_battle_def.dart';
 
 /// MassBattleService 单测(1.0 P3.2 §12.3 Batch 2.3):
 ///   - statusOf 三态 cleared/available/locked(沿 LightFootService 体例)

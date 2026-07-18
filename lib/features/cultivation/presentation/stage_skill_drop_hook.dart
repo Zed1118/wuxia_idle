@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_drop_result.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_unlock_service.dart';
-import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
+import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 
 /// 技能书掉落核心(可玩性 P1a · spec §二 · 第七阶段批二④ 回传掉落结果)。
 ///

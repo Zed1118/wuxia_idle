@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/sweep/domain/sweep_readiness.dart';
+import 'package:wuxia_idle/data/defs/sweep_readiness.dart';
 
 void main() {
   const config = SweepReadinessConfig(

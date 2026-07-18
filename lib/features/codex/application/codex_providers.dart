@@ -2,8 +2,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../data/game_repository.dart';
 import '../../tutorial/application/tutorial_providers.dart';
-import '../domain/codex_entry.dart';
-import '../domain/codex_index.dart';
+import '../../../data/defs/codex_entry.dart';
+import '../../../data/defs/codex_index.dart';
 
 part 'codex_providers.g.dart';
 

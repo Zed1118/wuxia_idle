@@ -5,7 +5,7 @@ import '../../../core/domain/technique.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../shared/strings.dart';
 import '../../battle/domain/battle_state.dart';
-import '../domain/inner_demon_def.dart';
+import '../../../data/defs/inner_demon_def.dart';
 
 /// 心魔关战败惩罚结果（in-place 改 ch.internalForce + mainTech.cultivationProgress
 /// 已发生，此处汇总供 UI 展示 / 测试断言）。与 DispelService.DefeatPenaltyResult

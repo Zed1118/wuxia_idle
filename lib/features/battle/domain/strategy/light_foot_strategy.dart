@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/numbers_config.dart';
 import '../../../../core/domain/enums.dart';
-import '../../../light_foot/domain/light_foot_def.dart';
+import '../../../../data/defs/light_foot_def.dart';
 import '../battle_state.dart';
 import 'battle_strategy.dart';
 import 'default_ground_strategy.dart';
@@ -80,6 +80,25 @@ class LightFootStrategy extends BattleStrategy {
     characterId,
     ultimate,
     targetId: targetId,
+  );
+
+  /// 与地面战保持同一“点选即放”语义；先幂等烘焙地形，确保玩家在首拍前
+  /// 干预时，本次伤害与后续自动战斗使用完全相同的地形快照。
+  @override
+  BattleState interveneNow(
+    BattleState state,
+    int characterId,
+    SkillDef skill, {
+    int? targetId,
+    required NumbersConfig n,
+    required Random rng,
+  }) => _delegate.interveneNow(
+    _ensureTerrain(state, n),
+    characterId,
+    skill,
+    targetId: targetId,
+    n: n,
+    rng: rng,
   );
 
   BattleState _applyTerrain(BattleState s, double rateCap) => applyTerrainTo(
