@@ -421,6 +421,7 @@ class _CandidateTile extends StatelessWidget {
               portraitPath: c.portraitPath,
               size: 40,
               borderColor: _schoolColor(c.school),
+              placeholderText: c.name,
             ),
             const SizedBox(width: 10),
             Expanded(

@@ -37,6 +37,14 @@ class MainFlutterWindow: NSWindow {
 
     super.awakeFromNib()
 
-    if let f = forced { self.setFrame(f, display: true) }
+    if let f = forced {
+      self.setFrame(f, display: true)
+      // Flutter 在 awakeFromNib 返回后的首个 run loop 会恢复 XIB 原点，
+      // 尺寸因 min/max 仍被锁定，但窗口可被整体推出当前屏幕。
+      // 在该恢复之后重申同一个居中 frame，仅影响视觉验收模式。
+      DispatchQueue.main.async { [weak self] in
+        self?.setFrame(f, display: true)
+      }
+    }
   }
 }
