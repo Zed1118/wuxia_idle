@@ -7,7 +7,7 @@
 
 | # | 项 | 报告# | 现状与拍板点 |
 |---|---|---|---|
-| 1 | CLAUDE §5.4「schema 真 sink」表述订正(v1.40) | — | 批C 把 `_enforceEncounterSkillRedLines` 迁至 `lib/data/validation/encounter_red_lines_validator.dart`(公名 `enforceEncounterSkillRedLines`),CLAUDE §5.4/§8.1 相关行需同步;CLAUDE 是 no-touch 文件,待用户过目后我来改 |
+| 1 | CLAUDE §5.4「schema 真 sink」表述订正(v1.40) | — | 批C 把 `_enforceEncounterSkillRedLines` 迁至 `lib/data/validation/encounter_red_lines_validator.dart`(公名 `enforceEncounterSkillRedLines`),CLAUDE §5.4/§8.1 相关行需同步;CLAUDE 是 no-touch 文件,待用户过目后我来改 → **✅ v1.40 已落(2026-07-18 用户拍板)** |
 | 2 | 存档(Isar)载入关键字段 clamp | #11 | clamp 边界=数值设计决策(clamp 到硬红线?软线?哪些字段?),与红线测试语义耦合,不宜代拍 |
 | 3 | GameRepository 去单例化(provider 注入) | #2 后半 | 用户已拍「今晚不做」;若未来要做,建议先 grep `GameRepository.instance` callsite 量再定 facade 策略 |
 | 4 | `设计文档/`、`审查报告/` 两个未入库中文目录去留 | #23 | 入库 or .gitignore,用户定 |

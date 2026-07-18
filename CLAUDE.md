@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.40**
+> v1.40 变更摘要(2026-07-18 校验符号迁位订正 · 0 改代码):GameRepository 拆分批(overnight 审查落地批·2402→1137 行)后符号位置同步——① §5.4 招式倍率 schema 真 sink:`game_repository.dart` `_enforceEncounterSkillRedLines` → `lib/data/validation/encounter_red_lines_validator.dart` 公名 `enforceEncounterSkillRedLines`(仍由 `GameRepository.loadAllDefs` 消费,enforce 语义零变);② §5.3 种子/收徒 yaml 层兜底两符号:`_enforceMasterRedLines`/`_enforceRecruitCandidateRedLines` → 同名公函数(`lib/data/validation/lineage_recruit_red_lines_validator.dart`);③ §8.1 现查无 drift:lore/events 联结校验 `_validatePresetLoreReferences`/`_validateEncounterEventReferences` 仍在 `game_repository.dart` 未迁,引用不动(handoff 待办原列 §8.1,实测证伪)。源:`docs/handoff/overnight_audit_batch_closeout_2026-07-18.md` 已知风险#1 + followup backlog #1。
 > **版本:v1.39**
 > v1.39 变更摘要(2026-07-15 出战编成屏 · 0 改数值):玩法评估 §十三 #4 实装——门派谱「出战编成」入口→编成屏(3 席+替补池,点选交换);`LineupService` 单事务唯一编成写入口(`activeCharacterIds` 唯一真相源=列表序即站位序,`Character.isActive` 镜像),校验=祖师必在/1-3 人/闭关锁(增删拦、纯重排放行)/已飞升太祖禁回场/**加入者须已修主修**(镜像 `stage_battle_setup._playerToBattle` 硬前置);替补池口径=`isActive==false` 索引查询(覆盖四条 inactive 进入管线,recruitedDiscipleIds 只覆盖 E.1 不可用)。研习首门心法弹「立为主修/纳为辅修」择路(PR #36 观察① 收窄版,有主修维持仅辅修零新散功),零心法态保留研习入口。无 schema/saveVersion 变更。源:spec `docs/spec/2026-07-14-team-lineup-screen-design.md`(含 §2 实装订正块)。
 > **版本:v1.37**
@@ -148,7 +150,7 @@ project_root/
 新增任何"阶/品/级"概念前先问：能否复用 7 阶？不能 → 找人类讨论。
 
 ### 5.3 三系锁死同步（不可破，无例外）
-境界 ↔ 装备阶 ↔ 心法阶 一一对应。例：二流境界 → 最多装备「好家伙」、最多修「名家功」。**任何允许低境界使用更高阶装备/心法的设计都是错的**。校验点实符号(v1.28 订正,旧文引用的 `EquipmentRepository.canEquip()`/`TechniqueRepository.canPractice()` 不存在):装备侧 `Equipment.isEquippableAtRealm()`(`lib/core/domain/equipment.dart`,唯一换装路径 `EquipmentService.equip` 消费,战斗入场/飞升 auto-swap 再校验);心法侧 `TechniqueLearningService.learn`(`RealmUtils.techniqueTierCapOf` 硬拦;2026-07-14 起技能面板「研习新心法」入口经 `TechniqueLearnFlowService` 消费此校验,超阶心法 UI 灰显不可学;种子/收徒来源另由 yaml 层 `_enforceMasterRedLines`/`_enforceRecruitCandidateRedLines` 兜底);奇遇招式侧 `EncounterService.canEquipEncounterSkillByTier`。在这些校验点上保持硬约束。
+境界 ↔ 装备阶 ↔ 心法阶 一一对应。例：二流境界 → 最多装备「好家伙」、最多修「名家功」。**任何允许低境界使用更高阶装备/心法的设计都是错的**。校验点实符号(v1.28 订正,旧文引用的 `EquipmentRepository.canEquip()`/`TechniqueRepository.canPractice()` 不存在):装备侧 `Equipment.isEquippableAtRealm()`(`lib/core/domain/equipment.dart`,唯一换装路径 `EquipmentService.equip` 消费,战斗入场/飞升 auto-swap 再校验);心法侧 `TechniqueLearningService.learn`(`RealmUtils.techniqueTierCapOf` 硬拦;2026-07-14 起技能面板「研习新心法」入口经 `TechniqueLearnFlowService` 消费此校验,超阶心法 UI 灰显不可学;种子/收徒来源另由 yaml 层 `enforceMasterRedLines`/`enforceRecruitCandidateRedLines`(`lib/data/validation/lineage_recruit_red_lines_validator.dart`·v1.40 迁位订正)兜底);奇遇招式侧 `EncounterService.canEquipEncounterSkillByTier`。在这些校验点上保持硬约束。
 
 **例外说明（v1.1 明确）**：
 - **师承遗物同样受锁死约束**：虽自带传承 buff（内力上限 +5%），但徒弟境界未达对应阶时不可装备，只能存放在背包等到达阶时才可装备。规则统一，无网开一面。
@@ -166,7 +168,7 @@ project_root/
 | 玩家血量 | 20,000 |
 | 内力 | 15,000 |
 | Boss 血量 | 60,000+（不许进 1M；2026-06-14 终局周目膨胀调 50000→60000） |
-| 招式倍率 | **全局 ≤8,000 单线**（schema 唯一真 sink = `game_repository.dart` `_enforceEncounterSkillRedLines` 全局 enforce ≤8000）。per-type 数值按 §5.2 七阶缩放（普攻~500 基准；强力/大招随阶 1,500→6,400，低阶大招＜高阶强力是 7 阶曲线必然），**不按招式类型钉固定区间**——旧「强力 1,000–3,000 / 大招 5,000+」per-type 分档是 7 阶系统铺开前的早期参考值，与锁死的七阶哲学矛盾，2026-06-24 拍板改全局单线消除 drift |
+| 招式倍率 | **全局 ≤8,000 单线**（schema 唯一真 sink = `lib/data/validation/encounter_red_lines_validator.dart` 公名 `enforceEncounterSkillRedLines`(由 `GameRepository.loadAllDefs` 消费·v1.40 迁位订正)全局 enforce ≤8000）。per-type 数值按 §5.2 七阶缩放（普攻~500 基准；强力/大招随阶 1,500→6,400，低阶大招＜高阶强力是 7 阶曲线必然），**不按招式类型钉固定区间**——旧「强力 1,000–3,000 / 大招 5,000+」per-type 分档是 7 阶系统铺开前的早期参考值，与锁死的七阶哲学矛盾，2026-06-24 拍板改全局单线消除 drift |
 
 **软红线（极值满 build 实战可见值 · 保可读 · 不进百万膨胀）**：
 
