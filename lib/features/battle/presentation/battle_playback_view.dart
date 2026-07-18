@@ -49,7 +49,7 @@ class BattlePlaybackField extends StatelessWidget {
     required this.chargeMaxTicks,
     required this.staggerWindowTicks,
     required this.onEnemyTap,
-    required this.pendingActive,
+    required this.targetableEnemyIds,
     required this.hoveredEnemyId,
     required this.onEnemyHover,
   });
@@ -60,7 +60,7 @@ class BattlePlaybackField extends StatelessWidget {
   final int chargeMaxTicks;
   final int staggerWindowTicks;
   final void Function(int enemyId) onEnemyTap;
-  final bool pendingActive;
+  final Set<int> targetableEnemyIds;
   final int? hoveredEnemyId;
   final void Function(int enemyId, bool hovering) onEnemyHover;
 
@@ -82,7 +82,7 @@ class BattlePlaybackField extends StatelessWidget {
           hitFlashControllers: controller._hitFlashControllers,
           hitFlashColors: controller._hitFlashColors,
           onEnemyTap: onEnemyTap,
-          pendingActive: pendingActive,
+          targetableEnemyIds: targetableEnemyIds,
           hoveredEnemyId: hoveredEnemyId,
           onEnemyHover: onEnemyHover,
         ),

@@ -10,6 +10,10 @@ import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import '../../support/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_action_template.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_playback_controller.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_vfx_entries.dart';
+import 'package:wuxia_idle/features/battle/presentation/ultimate_caption_overlay.dart';
+import 'package:wuxia_idle/shared/audio/audio_backend.dart';
+import 'package:wuxia_idle/shared/audio/sound_manager.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 /// [BattlePlaybackController] 单元测试 —— Task 4 抽离的收益：`playAction` 本体 +
@@ -58,6 +62,27 @@ class _NoopBattleNotifier extends BattleNotifier {
 
   @override
   void step() {}
+}
+
+class _RecordingAudioBackend implements AudioBackend {
+  final List<String> sfxPaths = [];
+
+  @override
+  Future<void> playSfx(String assetPath, double volume) async {
+    sfxPaths.add(assetPath);
+  }
+
+  @override
+  Future<void> playBgm(String assetPath, double volume) async {}
+
+  @override
+  Future<void> stopBgm() async {}
+
+  @override
+  void setBgmVolume(double volume) {}
+
+  @override
+  Future<void> dispose() async {}
 }
 
 class _Harness extends ConsumerStatefulWidget {
@@ -115,6 +140,23 @@ AttackResult _hitResult({bool crit = false}) => AttackResult(
   formulaBreakdown: '',
 );
 
+const _dodgeResult = AttackResult(
+  finalDamage: 0,
+  mainDamage: 0,
+  quakeDamage: 0,
+  isCritical: false,
+  isDodged: true,
+  schoolCounterMultiplier: 1.0,
+  realmDiffAttackerMod: 1.0,
+  realmDiffDefenderMod: 1.0,
+  cultivationMultiplier: 1.0,
+  criticalMultiplier: 1.0,
+  defenseRate: 0.1,
+  evasionRate: 0.2,
+  appliedEffects: [],
+  formulaBreakdown: '',
+);
+
 const _projectileSkill = SkillDef(
   id: 'test_hidden_weapon',
   name: '飞针',
@@ -125,6 +167,31 @@ const _projectileSkill = SkillDef(
   cooldownTurns: 2,
   requiresManualTrigger: false,
   visualEffect: 'hidden_weapon',
+);
+
+const _projectileUltimate = SkillDef(
+  id: 'test_flying_sword_ultimate',
+  name: '御剑诀',
+  description: '',
+  type: SkillType.ultimate,
+  powerMultiplier: 5000,
+  qiDelta: -300,
+  cooldownTurns: 5,
+  requiresManualTrigger: true,
+  visualEffect: 'flying_sword_art',
+);
+
+const _aoeSkill = SkillDef(
+  id: 'test_aoe_skill',
+  name: '落英掌',
+  description: '',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1800,
+  qiDelta: -180,
+  cooldownTurns: 3,
+  requiresManualTrigger: false,
+  visualEffect: 'falling_petals',
+  targetType: TargetType.aoe,
 );
 
 /// 左首(actorId=1) 攻 右首(targetId=11) 的动作。target 位于 teamSide=1
@@ -167,6 +234,151 @@ Future<_HarnessState> _pump(
 const _targetSlotKey = 3;
 
 void main() {
+  testWidgets('playActions 三目标群攻共享演出一次且保留逐目标反馈', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final targets = state.rightTeam.take(3).toList();
+
+    c.playActions([
+      for (final target in targets)
+        BattleAction(
+          tick: 1,
+          actorId: state.leftTeam.first.characterId,
+          targetId: target.characterId,
+          skill: _aoeSkill,
+          attackResult: _hitResult(),
+          description: 'aoe hit',
+        ),
+    ], state);
+    await tester.pump();
+
+    expect(c.debugActiveEffectCount, 1, reason: '同拍群攻的中央流派特效应只生成一次');
+    for (final target in targets) {
+      expect(
+        c.debugPopupsForSlot(target.teamSide * 3 + target.slotIndex),
+        hasLength(1),
+        reason: '每个命中目标都应保留独立伤害飘字',
+      );
+    }
+    expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.area);
+  });
+
+  testWidgets('playActions 三目标群攻闪避贴片各自落在目标槽位', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final targets = state.rightTeam.take(3).toList();
+
+    c.playActions([
+      for (final target in targets)
+        BattleAction(
+          tick: 1,
+          actorId: state.leftTeam.first.characterId,
+          targetId: target.characterId,
+          skill: _aoeSkill,
+          attackResult: _dodgeResult,
+          description: 'aoe dodge',
+        ),
+    ], state);
+    await tester.pump();
+
+    expect(c.debugActiveEffectCount, 3, reason: '群攻闪避属于逐目标反馈，不应在阵列中央合流成一张贴片');
+  });
+
+  testWidgets('playActions 群攻代表动作优先保留暴击特效', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final targets = state.rightTeam.take(3).toList();
+
+    c.playActions([
+      for (var i = 0; i < targets.length; i++)
+        BattleAction(
+          tick: 1,
+          actorId: state.leftTeam.first.characterId,
+          targetId: targets[i].characterId,
+          skill: _aoeSkill,
+          attackResult: _hitResult(crit: i == 2),
+          description: 'aoe hit',
+        ),
+    ], state);
+    await tester.pump();
+
+    expect(c.debugActiveEffectCount, 2, reason: '一个共享流派特效 + 一个末位目标暴击特效');
+    expect(
+      c
+          .debugPopupsForSlot(
+            targets.last.teamSide * 3 + targets.last.slotIndex,
+          )
+          .single
+          .data
+          .text,
+      UiStrings.criticalDamagePopup(240),
+    );
+  });
+
+  testWidgets('playActions 群攻非代表目标被击杀仍触发一次施放级特写', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final targets = state.rightTeam.take(3).toList();
+
+    c.playActions([
+      for (var i = 0; i < targets.length; i++)
+        BattleAction(
+          tick: 1,
+          actorId: state.leftTeam.first.characterId,
+          targetId: targets[i].characterId,
+          skill: _aoeSkill,
+          attackResult: _hitResult(),
+          description: 'aoe hit',
+          defeatedTarget: i == targets.length - 1,
+        ),
+    ], state);
+
+    expect(c.debugCloseupIsAnimating, isTrue);
+    expect(c.debugActiveEffectCount, 1, reason: '击杀只提升共享反馈，不重复中央流派特效');
+  });
+
+  testWidgets('playActions 无击杀群攻不误触发特写', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final targets = state.rightTeam.take(2).toList();
+
+    c.playActions([
+      for (final target in targets)
+        BattleAction(
+          tick: 1,
+          actorId: state.leftTeam.first.characterId,
+          targetId: target.characterId,
+          skill: _aoeSkill,
+          attackResult: _hitResult(),
+          description: 'aoe hit',
+        ),
+    ], state);
+
+    expect(c.debugCloseupIsAnimating, isFalse);
+  });
+
+  testWidgets('playActions 不同 tick 的连续群攻各播放一次共享演出', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final targets = state.rightTeam.take(2).toList();
+
+    c.playActions([
+      for (final tick in [1, 2])
+        for (final target in targets)
+          BattleAction(
+            tick: tick,
+            actorId: state.leftTeam.first.characterId,
+            targetId: target.characterId,
+            skill: _aoeSkill,
+            attackResult: _hitResult(),
+            description: 'aoe hit',
+          ),
+    ], state);
+    await tester.pump();
+
+    expect(c.debugActiveEffectCount, 2, reason: '两次施放不得被跨 tick 合并');
+  });
+
   testWidgets('playAction 命中 → 飘字入队 popups[slotKey] 且 id 递增', (tester) async {
     final c = (await _pump(tester)).controller;
 
@@ -220,6 +432,71 @@ void main() {
       reason: '流派命中特效 + 暴击特效 spawn（spawnBattleEffects）',
     );
     expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.projectile);
+    expect(
+      isUltimateCaptionSkill(_projectileUltimate),
+      isTrue,
+      reason: '远程交付不得降级技能类型或丢失大招题字入口',
+    );
+  });
+
+  testWidgets('快进态连续动作的弹道与贴片不过拍堆积', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    c.toggleFastForward();
+
+    for (var tick = 1; tick <= 6; tick++) {
+      c.playAction(
+        BattleAction(
+          tick: tick,
+          actorId: 1,
+          targetId: 11,
+          skill: _projectileSkill,
+          attackResult: _hitResult(crit: true),
+          description: 'fast hit',
+        ),
+        state,
+      );
+    }
+    expect(c.debugActiveTrailCount, 6);
+    expect(c.debugActiveEffectCount, 12);
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 21));
+    expect(c.debugActiveTrailCount, 0, reason: '快进弹道应在一个 20ms 拍长后退场');
+    expect(c.debugActiveEffectCount, 0, reason: '快进贴片应在一个 20ms 拍长后退场');
+  });
+
+  testWidgets('常速保留逐击音效而快进态抑制音频叠播', (tester) async {
+    final backend = _RecordingAudioBackend();
+    SoundManager.instance = SoundManager(backend);
+    addTearDown(
+      () => SoundManager.instance = SoundManager(const SilentAudioBackend()),
+    );
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+
+    c.playAction(_attackAction(), state);
+    expect(backend.sfxPaths, hasLength(1));
+
+    c.toggleFastForward();
+    c.playAction(_attackAction(), state);
+    expect(backend.sfxPaths, hasLength(1), reason: '快进不应以逐动作频率叠播 SFX');
+  });
+
+  testWidgets('角色动作常速用完整三段时长，快进不过拍，退出后恢复', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+
+    c.playAction(_attackAction(), state);
+    expect(c.debugAttackDurationMsForSlot(0), 30);
+
+    c.toggleFastForward();
+    c.playAction(_attackAction(), state);
+    expect(c.debugAttackDurationMsForSlot(0), 20);
+
+    c.toggleFastForward();
+    c.playAction(_attackAction(), state);
+    expect(c.debugAttackDurationMsForSlot(0), 30);
   });
 
   testWidgets('近战动作前冲但不生成远程弹道', (tester) async {
@@ -231,6 +508,58 @@ void main() {
     expect(c.debugActiveTrailCount, 0);
     expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.melee);
     expect(c.debugActiveEffectCount, greaterThan(0));
+  });
+
+  testWidgets('onBattleRestarted 清空上一场瞬时反馈并复位动作模板与特写', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    c.playAction(
+      BattleAction(
+        tick: 1,
+        actorId: 1,
+        targetId: 11,
+        skill: _projectileSkill,
+        attackResult: _hitResult(),
+        description: 'last battle kill',
+        defeatedTarget: true,
+      ),
+      state,
+    );
+
+    expect(c.debugPopupsForSlot(_targetSlotKey), isNotEmpty);
+    expect(c.debugActiveTrailCount, greaterThan(0));
+    expect(c.debugActiveEffectCount, greaterThan(0));
+    expect(c.debugCloseupIsAnimating, isTrue);
+
+    c.onBattleRestarted();
+
+    expect(c.debugPopupsForSlot(_targetSlotKey), isEmpty);
+    expect(c.debugActiveTrailCount, 0);
+    expect(c.debugActiveEffectCount, 0);
+    expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.melee);
+    expect(c.debugCloseupIsAnimating, isFalse);
+
+    // 执行旧演出控制器的 post-frame 释放，并排空 Riverpod 自动释放任务。
+    await tester.pump();
+    await tester.pump();
+  });
+
+  testWidgets('远程大招保留大招表现并生成施术者到目标的弹道', (tester) async {
+    final c = (await _pump(tester)).controller;
+
+    c.playAction(
+      _attackAction(crit: true, skill: _projectileUltimate),
+      c._noopState(tester),
+    );
+    await tester.pump();
+
+    expect(c.debugActionTemplateForSlot(0), BattleActionTemplate.projectile);
+    expect(
+      c.debugActiveTrailCount,
+      greaterThan(0),
+      reason: '远程大招应补回施术者到目标的视觉联系',
+    );
+    expect(c.debugActiveEffectCount, greaterThan(0), reason: '大招既有流派命中特效仍应保留');
   });
 
   testWidgets('群战第 4–7 敌人的动作与受击安全归并到敌方后景表现槽', (tester) async {
@@ -273,6 +602,115 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('同槽四条普通伤害飘字稳定散到四角', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+
+    for (var tick = 1; tick <= 4; tick++) {
+      c.playAction(
+        BattleAction(
+          tick: tick,
+          actorId: 1,
+          targetId: 11,
+          attackResult: _hitResult(),
+          description: 'multi hit',
+        ),
+        state,
+      );
+    }
+
+    final anchors = c
+        .debugPopupsForSlot(_targetSlotKey)
+        .map((entry) => entry.anchor)
+        .toSet();
+    expect(anchors, hasLength(4));
+    expect(anchors, isNot(contains(DamagePopupAnchor.centerBurst)));
+  });
+
+  testWidgets('同槽多条暴击仅首条占中央，其余散到四角', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+
+    for (var tick = 1; tick <= 5; tick++) {
+      c.playAction(
+        BattleAction(
+          tick: tick,
+          actorId: 1,
+          targetId: 11,
+          attackResult: _hitResult(crit: true),
+          description: 'multi critical',
+        ),
+        state,
+      );
+    }
+
+    final entries = c.debugPopupsForSlot(_targetSlotKey);
+    expect(entries.first.anchor, DamagePopupAnchor.centerBurst);
+    expect(entries.map((entry) => entry.anchor).toSet(), hasLength(5));
+  });
+
+  testWidgets('同款同位暴击贴片合流为单组实例', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final action = BattleAction(
+      tick: 1,
+      actorId: 1,
+      targetId: 11,
+      attackResult: _hitResult(crit: true),
+      description: 'same critical',
+    );
+
+    c.playAction(action, state);
+    expect(c.debugActiveEffectCount, 2, reason: '流派命中特效 + 暴击特效');
+    c.playAction(action, state);
+
+    expect(c.debugActiveEffectCount, 2, reason: '同资源同落点应续播，不重复叠亮');
+  });
+
+  testWidgets('同款同位贴片续播跨过旧截止点且在新截止点完整退场', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+    final action = BattleAction(
+      tick: 1,
+      actorId: 1,
+      targetId: 11,
+      attackResult: _hitResult(crit: true),
+      description: 'restart same effects',
+    );
+
+    c.playAction(action, state);
+    await tester.pump(const Duration(milliseconds: 400));
+    c.playAction(action, state);
+    // 建立续播 controller 的新 ticker 起点；后续时长才从此次 from: 0 计。
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 121));
+
+    expect(c.debugActiveEffectCount, 2, reason: '续播后跨过首次 520ms 截止点仍应保留同组贴片');
+
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(c.debugActiveEffectCount, 0, reason: '最后一次续播满 520ms 后应全部移除');
+  });
+
+  testWidgets('同款异位暴击贴片各自保留', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+
+    for (final targetId in const [11, 12]) {
+      c.playAction(
+        BattleAction(
+          tick: targetId,
+          actorId: 1,
+          targetId: targetId,
+          attackResult: _hitResult(crit: true),
+          description: 'different target critical',
+        ),
+        state,
+      );
+    }
+
+    expect(c.debugActiveEffectCount, 4, reason: '两个落点各保留流派 + 暴击特效');
+  });
+
   testWidgets('pause / resume 调度标志', (tester) async {
     final c = (await _pump(tester)).controller;
 
@@ -282,10 +720,33 @@ void main() {
 
     c.pause();
     expect(c.isPaused, isTrue);
+    expect(c.hasTimer, isFalse, reason: '已取消的 Timer 不应继续报告为活跃');
     expect(c.debugBeatIsAnimating, isFalse, reason: '暂停冻结读秒环节拍');
 
     c.resume();
     expect(c.isPaused, isFalse, reason: '战斗未结束 → 恢复解除暂停');
+  });
+
+  testWidgets('hit-stop 期间播放拍钟与读秒环同步冻结，到期一起恢复', (tester) async {
+    final c = (await _pump(tester)).controller;
+
+    c.startTimer();
+    await tester.pump(const Duration(milliseconds: 10));
+    expect(c.hasTimer, isTrue);
+    expect(c.debugBeatIsAnimating, isTrue);
+
+    c.debugApplyHitStop(30);
+    final frozenBeat = c.beat.value;
+    expect(c.hasTimer, isFalse);
+    expect(c.debugBeatIsAnimating, isFalse);
+
+    await tester.pump(const Duration(milliseconds: 20));
+    expect(c.beat.value, frozenBeat);
+    expect(c.hasTimer, isFalse);
+
+    await tester.pump(const Duration(milliseconds: 11));
+    expect(c.hasTimer, isTrue);
+    expect(c.debugBeatIsAnimating, isTrue);
   });
 
   testWidgets('toggleFastForward 翻转 isFastForward', (tester) async {

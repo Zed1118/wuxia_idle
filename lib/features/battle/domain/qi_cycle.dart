@@ -40,8 +40,22 @@ abstract final class QiCycle {
     required double reductionPct,
     required double reductionCap,
   }) {
-    if (baseCost <= 0) return 0;
     final safeReduction = reductionPct.clamp(0.0, reductionCap);
+    return effectiveCostFromSnapshot(
+      baseCost: baseCost,
+      costReductionPct: safeReduction,
+    );
+  }
+
+  /// Uses a character snapshot whose reduction has already been clamped by
+  /// battle setup. Presentation and command gates use this to stay aligned
+  /// with [effectiveCost] without needing the repository config again.
+  static int effectiveCostFromSnapshot({
+    required int baseCost,
+    required double costReductionPct,
+  }) {
+    if (baseCost <= 0) return 0;
+    final safeReduction = costReductionPct.clamp(0.0, 1.0);
     return (baseCost * (1 - safeReduction)).round().clamp(0, baseCost);
   }
 

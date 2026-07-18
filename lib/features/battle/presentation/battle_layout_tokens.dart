@@ -5,6 +5,7 @@
 abstract final class BattleLayoutTokens {
   static const double headerHeight = 58;
   static const double commandDeskHeight = 188;
+  static const double autoRotationDeskHeight = 116;
   static const double commandDeskHorizontalPadding = 28;
   static const double commandDeskVerticalPadding = 12;
   static const double actorRailWidth = 222;

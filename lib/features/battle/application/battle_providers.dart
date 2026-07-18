@@ -113,8 +113,8 @@ class BattleNotifier extends _$BattleNotifier {
   /// 主线二 2.3:玩家拖招立即插队出手(委托 strategy,消费本场同一 [_rng])。
   ///
   /// 仅玩家 interactive 路径(`_onSkillCommand` gate 后)调用。委托
-  /// [BattleStrategy.interveneNow]:[DefaultGroundStrategy] 立即结算 + 预支归零,
-  /// 其它形态降级 pending。战斗已结束则 noop。
+  /// [BattleStrategy.interveneNow]:各战斗形态都保持立即结算 + 预支归零；轻功战
+  /// 先烘焙地形，群战先装入当前 wave/阵型并在清场后衔接下一波。战斗已结束则 noop。
   void interveneNow(int characterId, SkillDef skill, {int? targetId}) {
     if (state.isFinished) return;
     state = _strategy.interveneNow(

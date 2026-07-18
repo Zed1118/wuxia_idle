@@ -1,14 +1,27 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/settings/domain/gameplay_settings.dart';
 
+import '../support/test_data.dart';
+
 void main() {
-  test('AnimationNumbers.defaults 含 projectileMs/hitFlashMs', () {
-    expect(AnimationNumbers.defaults.projectileMs, 260);
-    expect(AnimationNumbers.defaults.hitFlashMs, 150);
+  late GameRepository repository;
+
+  setUpAll(() async {
+    repository = await loadTestGameRepository();
   });
 
-  test('fromYaml 解析 projectile_ms/hit_flash_ms', () {
+  test(
+    'AnimationNumbers.defaults 含 projectileMs/battleEffectMs/hitFlashMs',
+    () {
+      expect(AnimationNumbers.defaults.projectileMs, 260);
+      expect(AnimationNumbers.defaults.battleEffectMs, 520);
+      expect(AnimationNumbers.defaults.hitFlashMs, 150);
+    },
+  );
+
+  test('fromYaml 解析 projectile_ms/battle_effect_ms/hit_flash_ms', () {
     final n = AnimationNumbers.fromYaml(<String, dynamic>{
       'attack_rush_ms': 1,
       'attack_hold_ms': 1,
@@ -22,13 +35,15 @@ void main() {
       'shake_duration_ms': 1,
       'critical_font_scale': 1,
       'projectile_ms': 300,
+      'battle_effect_ms': 640,
       'hit_flash_ms': 120,
     });
     expect(n.projectileMs, 300);
+    expect(n.battleEffectMs, 640);
     expect(n.hitFlashMs, 120);
   });
 
-  test('fromYaml 缺 projectile_ms/hit_flash_ms 走默认', () {
+  test('fromYaml 缺 projectile_ms/battle_effect_ms/hit_flash_ms 走默认', () {
     final n = AnimationNumbers.fromYaml(<String, dynamic>{
       'attack_rush_ms': 1,
       'attack_hold_ms': 1,
@@ -43,7 +58,15 @@ void main() {
       'critical_font_scale': 1,
     });
     expect(n.projectileMs, 260);
+    expect(n.battleEffectMs, 520);
     expect(n.hitFlashMs, 150);
+  });
+
+  test('生产 numbers.yaml 的 battle_effect_ms 与默认值一致', () {
+    expect(
+      repository.numbers.animation.battleEffectMs,
+      AnimationNumbers.defaults.battleEffectMs,
+    );
   });
 
   test('AnimationNumbers.defaults 含 keyMomentHoldMs', () {

@@ -84,4 +84,30 @@ void main() {
       );
     },
   );
+
+  testWidgets('ScreenFlashOverlay clear() 立即撤下上一场闪白', (tester) async {
+    final key = GlobalKey<ScreenFlashOverlayState>();
+    await tester.pumpWidget(MaterialApp(home: ScreenFlashOverlay(key: key)));
+
+    key.currentState!.flash(0.3);
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(
+      find.descendant(
+        of: find.byType(ScreenFlashOverlay),
+        matching: find.byType(ColoredBox),
+      ),
+      findsOneWidget,
+    );
+
+    key.currentState!.clear();
+    await tester.pump();
+    expect(
+      find.descendant(
+        of: find.byType(ScreenFlashOverlay),
+        matching: find.byType(ColoredBox),
+      ),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }

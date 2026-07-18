@@ -239,6 +239,18 @@ void main() {
       expect(target, isA<ScenarioLauncher>());
       final launcher = target as ScenarioLauncher;
       expect(launcher.autoStart, isFalse);
+      expect(
+        launcher.allowPlayerIntervention,
+        isTrue,
+        reason: '破招高亮验收路由必须挂载点选干预案台',
+      );
+      final (left, right) = launcher.teamsFactory();
+      expect(left.first.actionPoint, greaterThan(0), reason: '主控必须真正可下发破招技');
+      expect(
+        right.any((enemy) => enemy.staggerTicksRemaining > 0),
+        isTrue,
+        reason: '路由必须能同帧验收破绽爆发提示',
+      );
       expect(launcher.sceneBackgroundPath, WuxiaUi.battleMountainPassStage);
     });
 

@@ -82,6 +82,25 @@ class LightFootStrategy extends BattleStrategy {
     targetId: targetId,
   );
 
+  /// 与地面战保持同一“点选即放”语义；先幂等烘焙地形，确保玩家在首拍前
+  /// 干预时，本次伤害与后续自动战斗使用完全相同的地形快照。
+  @override
+  BattleState interveneNow(
+    BattleState state,
+    int characterId,
+    SkillDef skill, {
+    int? targetId,
+    required NumbersConfig n,
+    required Random rng,
+  }) => _delegate.interveneNow(
+    _ensureTerrain(state, n),
+    characterId,
+    skill,
+    targetId: targetId,
+    n: n,
+    rng: rng,
+  );
+
   BattleState _applyTerrain(BattleState s, double rateCap) => applyTerrainTo(
     s,
     terrainBiome: terrainBiome,

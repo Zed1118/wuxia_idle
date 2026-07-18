@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/projectile_trail.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/shared/audio/audio_assets.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 const _testAnim = AnimationNumbers(
@@ -49,7 +50,10 @@ class _TestBattleNotifier extends BattleNotifier {
   }
 }
 
-Future<_TestBattleNotifier> _pumpBattle(WidgetTester tester) async {
+Future<_TestBattleNotifier> _pumpBattle(
+  WidgetTester tester, {
+  BattleScreenPlaybackConfig playback = const BattleScreenPlaybackConfig(),
+}) async {
   late _TestBattleNotifier notifier;
   await tester.binding.setSurfaceSize(const Size(1280, 720));
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -64,7 +68,9 @@ Future<_TestBattleNotifier> _pumpBattle(WidgetTester tester) async {
           return notifier;
         }),
       ],
-      child: const MaterialApp(home: BattleScreen(animConfig: _testAnim)),
+      child: MaterialApp(
+        home: BattleScreen(animConfig: _testAnim, playback: playback),
+      ),
     ),
   );
   await tester.pump();
@@ -184,6 +190,76 @@ Finder _assetImage(String path) =>
     find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
 
 void main() {
+  testWidgets('常速大招弱点命中保留中央题字', (tester) async {
+    final notifier = await _pumpBattle(tester);
+
+    notifier.appendActions(const [
+      BattleAction(
+        tick: 1,
+        actorId: 1,
+        targetId: 11,
+        skill: _ultSkill,
+        attackResult: _criticalResult,
+        description: '常速大招弱点命中',
+        weaknessHit: true,
+      ),
+    ]);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(_ultSkill.name), findsWidgets);
+    expect(find.text(UiStrings.weaknessHitGlyph), findsWidgets);
+  });
+
+  testWidgets('快进态大招弱点命中不挂长时中央题字', (tester) async {
+    final notifier = await _pumpBattle(
+      tester,
+      playback: const BattleScreenPlaybackConfig(startFastForward: true),
+    );
+
+    notifier.appendActions(const [
+      BattleAction(
+        tick: 1,
+        actorId: 1,
+        targetId: 11,
+        skill: _ultSkill,
+        attackResult: _criticalResult,
+        description: '快进大招弱点命中',
+        weaknessHit: true,
+      ),
+    ]);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(_ultSkill.name), findsNothing);
+    expect(find.text(UiStrings.weaknessHitGlyph), findsNothing);
+  });
+
+  testWidgets('常速强反馈在进入快进时同帧清退', (tester) async {
+    final notifier = await _pumpBattle(tester);
+    notifier.appendActions(const [
+      BattleAction(
+        tick: 1,
+        actorId: 1,
+        targetId: 11,
+        skill: _ultSkill,
+        attackResult: _criticalResult,
+        description: '切快进前的强反馈',
+        weaknessHit: true,
+      ),
+    ]);
+    await tester.pump();
+    await tester.pump();
+    expect(find.text(_ultSkill.name), findsWidgets);
+    expect(find.text(UiStrings.weaknessHitGlyph), findsWidgets);
+
+    await tester.tap(find.byKey(const ValueKey('battle_fast_forward_toggle')));
+    await tester.pump();
+
+    expect(find.text(_ultSkill.name), findsNothing);
+    expect(find.text(UiStrings.weaknessHitGlyph), findsNothing);
+  });
+
   testWidgets('日志默认收起，点开显历史，再点收起（P0-2 Task6）', (tester) async {
     await _pumpBattle(tester);
 

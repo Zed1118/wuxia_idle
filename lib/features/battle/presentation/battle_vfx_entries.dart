@@ -53,6 +53,7 @@ class TrailEntry {
 class EffectEntry {
   final int id;
   final AnimationController ctrl;
+  final Object coalesceGroup;
   final Offset centerFrac;
   final String assetPath;
   final double size;
@@ -64,6 +65,7 @@ class EffectEntry {
   EffectEntry({
     required this.id,
     required this.ctrl,
+    required this.coalesceGroup,
     required this.centerFrac,
     required this.assetPath,
     required this.size,
