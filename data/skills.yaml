@@ -3050,6 +3050,32 @@ skills:
         shuLian: { damage_pct: 0.05 }
         huaJing: { cooldown_delta: -1 }
 
+  # ───────────────────────────────────────────
+  # Ch8 灰衣人本命真解「灰袖回风」(2026-07-18)
+  # ───────────────────────────────────────────
+  # Ch7 灰衣人只露烛影摇红(残页)一手,Ch8 追索终局逼出真正本命阴柔绝艺。
+  # 末Boss stage_08_05 chargeSkillId 双用 = dropSkillManualId(破招首通掉·沿「破他的招、学他的招」canon)。
+  # 独立末Boss真解,非 wave_b 真解 2/2/2 配平池成员;mult 2900 > 烛影摇红 2600(AI 蓄力自动选中)·守全局 ≤8000。
+  - id: skill_hui_xiu_hui_feng
+    name: 灰袖回风
+    description: 灰衣人袖底藏锋,回风一卷,残照沉魄。看似退步收招,杀意已在袖中折返。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 2900
+    qiDelta: -35
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: sleeve_return_wind
+    source: mainline_drop
+    style: yinRou
+    tier: 3
+    proficiency:        # 真解手工高半档(阴柔向:伤害温和 + CD·沿烛影摇红锚)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
+
   - id: skill_jin_gang_fu_mo
     name: 金刚伏魔
     description: 出自禅门的伏魔杵法,杵杵生风,直取中宫,邪魔辟易。

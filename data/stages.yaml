@@ -1812,6 +1812,241 @@ stages:
     weather: snow
 
   # ============================================================================
+  # Ch8「出塞」二流第 2 章(2026-07-18 · 追灰衣人·铜符引路北上)
+  # ----------------------------------------------------------------------------
+  # spec: docs/superpowers/specs/2026-07-18-erliu-content-ch8-design.md
+  # 地理弧:漠南草原 → 瀚海大漠 → 关外孤城 → 北派祖庭(更北·师父没去过)。
+  # 灰衣人章中 08_03 再遇(不掉招·蓄力仍烛影摇红),末关 08_05 逼出真正本命
+  # 「灰袖回风」(chargeSkillId = dropSkillManualId 双用·破招首通掉真解)。
+  # ============================================================================
+
+  # === stage_08_01 · 出关·漠南马贼(二流杂兵)===
+  - id: stage_08_01
+    name: 塞外风急
+    stageType: mainline
+    chapterIndex: 8
+    narrativeOpeningId: stage_08_01_opening
+    narrativeVictoryId: stage_08_01_victory
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_monan_mazei
+        name: 漠南马贼
+        realmTier: erLiu
+        realmLayer: ruMen
+        school: gangMeng
+        baseHp: 6200
+        baseAttack: 410
+        baseSpeed: 240
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+        iconPath: assets/enemies/monan_mazei.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_yuan_yang_yue
+        dropChance: 1.0
+      - equipmentDefId: armor_haojiahuo_chou_shan
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [18, 24]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [110, 160]
+        dropChance: 1.0  # 银两(二流阶 · 承 Ch7 曲线续进)
+    baseExpReward: 26
+    difficultyMultiplier: 7.9
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: clear
+
+  # === stage_08_02 · 瀚海·沙盗(二流杂兵 · 灵巧)===
+  - id: stage_08_02
+    name: 瀚海孤烟
+    stageType: mainline
+    chapterIndex: 8
+    prevStageId: stage_08_01
+    narrativeOpeningId: stage_08_02_opening
+    narrativeVictoryId: stage_08_02_victory
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_hanhai_shadao
+        name: 瀚海沙盗
+        realmTier: erLiu
+        realmLayer: ruMen
+        school: lingQiao
+        baseHp: 7000
+        baseAttack: 440
+        baseSpeed: 270
+        skillIds:
+          - skill_lingqiao_mingjia_basic
+          - skill_lingqiao_mingjia_skill
+        iconPath: assets/enemies/hanhai_shadao.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_mei_hua_biao
+        dropChance: 1.0
+      - equipmentDefId: accessory_haojiahuo_she_dan_wan
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [18, 24]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [115, 165]
+        dropChance: 1.0  # 银两(二流阶)
+    baseExpReward: 26
+    difficultyMultiplier: 8.2
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: clear
+
+  # === stage_08_03 · 灰衣人·塞北再遇(阴柔章中 Boss · 不掉招)===
+  - id: stage_08_03
+    name: 沙夜袭影
+    stageType: mainline
+    chapterIndex: 8
+    prevStageId: stage_08_02
+    narrativeOpeningId: stage_08_03_opening
+    narrativeVictoryId: stage_08_03_victory
+    narrativeDefeatId: stage_08_03_defeat
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_huiyi_saibei
+        name: 灰衣人
+        realmTier: erLiu
+        realmLayer: shuLian
+        school: yinRou
+        baseHp: 11000
+        baseAttack: 570
+        baseSpeed: 265
+        skillIds:
+          - skill_yinrou_mingjia_basic
+          - skill_yinrou_mingjia_skill
+          - skill_zhu_ying_yao_hong
+        iconPath: assets/enemies/huiyiren_saibei.png
+        isBoss: true
+        chargeSkillId: skill_zhu_ying_yao_hong   # 破招:仍是烛影摇红(Ch7 已挂残页·本关不配 drop 字段不掉招)
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.45
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_chan_si_suo
+        dropChance: 1.0
+      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [22, 28]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [170, 230]
+        dropChance: 1.0  # 银两(二流章中 Boss)
+    baseExpReward: 18
+    difficultyMultiplier: 8.5
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: night
+
+  # === stage_08_04 · 关外孤城·戍卫(二流杂兵 · 配 defeat 文案)===
+  - id: stage_08_04
+    name: 孤城闭雪
+    stageType: mainline
+    chapterIndex: 8
+    prevStageId: stage_08_03
+    narrativeOpeningId: stage_08_04_opening
+    narrativeVictoryId: stage_08_04_victory
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_gucheng_shuwei
+        name: 孤城戍卫
+        realmTier: erLiu
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 8200
+        baseAttack: 470
+        baseSpeed: 250
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+        iconPath: assets/enemies/gucheng_shuwei.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_qing_feng_jian
+        dropChance: 1.0
+      - equipmentDefId: armor_haojiahuo_suo_zi_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [20, 26]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [120, 170]
+        dropChance: 1.0  # 银两(二流阶)
+    baseExpReward: 26
+    difficultyMultiplier: 8.8
+    biome: cityWall
+    sceneBackgroundPath: assets/scenes/battle_citywall.png
+    weather: snow
+
+  # === stage_08_05 · 北派祖庭·灰衣人本人(阴柔章末 Boss · 破招掉灰袖回风真解)===
+  - id: stage_08_05
+    name: 残照回风
+    stageType: mainline
+    chapterIndex: 8
+    prevStageId: stage_08_04
+    narrativeOpeningId: stage_08_05_opening
+    narrativeVictoryId: stage_08_05_victory
+    narrativeDefeatId: stage_08_05_defeat
+    requiredRealm: erLiu
+    dropSkillManualId: skill_hui_xiu_hui_feng  # 真解(灰袖回风·灰衣人本命·同招为 boss chargeSkillId 双用·破招首通 markUnlocked)
+    enemyTeam:
+      - id: enemy_erLiu_huiyi_final
+        name: 灰衣人
+        realmTier: erLiu
+        realmLayer: shuLian
+        school: yinRou
+        baseHp: 14500
+        baseAttack: 540
+        baseSpeed: 300
+        skillIds:
+          - skill_yinrou_mingjia_basic
+          - skill_yinrou_mingjia_skill
+          - skill_zhu_ying_yao_hong
+          - skill_hui_xiu_hui_feng        # 本命真解 = 末Boss chargeSkill(双用 canon)
+        iconPath: assets/enemies/huiyiren_final.png
+        isBoss: true
+        chargeSkillId: skill_hui_xiu_hui_feng   # 破招:玩家拦截,首通掉同招真解
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_xuan_hua_fu
+        dropChance: 1.0
+      - equipmentDefId: armor_haojiahuo_jin_pao
+        dropChance: 0.50
+      - equipmentDefId: accessory_haojiahuo_ping_an_kou
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [24, 32]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [260, 340]
+        dropChance: 1.0  # 银两(二流章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(二流章末)
+    baseExpReward: 64
+    difficultyMultiplier: 9.1
+    biome: temple
+    sceneBackgroundPath: assets/scenes/battle_temple.png
+    weather: snow
+
+  # ============================================================================
   # 心魔境 7 关（1.0 P2.2 §12.1 · stageType: innerDemon）
   # ----------------------------------------------------------------------------
   # spec doc: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md

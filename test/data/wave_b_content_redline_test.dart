@@ -129,12 +129,19 @@ void main() {
           for (final e in team) ...e.skillIds,
     };
 
+    // Ch8+ 独立末Boss真解（灰袖回风等）同属独立奖励流:每章一门、流派随末Boss
+    // 叙事定,不进 wave_b 2/2/2 配平池(spec 2026-07-18-erliu-content-ch8-design
+    // §4·池不变零 rebalancing)。新增独立真解时在此白名单登记——配平池语义
+    // = wave_b 六章 build 池不变式,非「所有 mainlineDrop 招」。
+    const standaloneBossManualIds = {'skill_hui_xiu_hui_feng'};
+
     assertBalanced(
       '真解',
       countBy(
         (s) =>
             s.source == SkillSource.mainlineDrop &&
-            !gauntletSkillIds.contains(s.id),
+            !gauntletSkillIds.contains(s.id) &&
+            !standaloneBossManualIds.contains(s.id),
       ),
     );
     assertBalanced('残页', countBy((s) => s.source == SkillSource.fragment));
