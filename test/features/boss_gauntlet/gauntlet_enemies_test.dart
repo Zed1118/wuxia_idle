@@ -29,11 +29,7 @@ void main() {
         SkillSource.gauntlet,
         reason: '2026-07-19 来源语义转正:断魂庄首通奖励=gauntlet',
       );
-      expect(
-        skill.mountDeferred,
-        isFalse,
-        reason: 'C2.4 首通奖励挂载已落地,豁免标记已删=发布',
-      );
+      expect(skill.mountDeferred, isFalse, reason: 'C2.4 首通奖励挂载已落地,豁免标记已删=发布');
       expect(skill.type, SkillType.powerSkill);
       expect(
         skill.powerMultiplier,

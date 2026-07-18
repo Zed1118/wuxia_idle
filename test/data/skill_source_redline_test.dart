@@ -298,7 +298,9 @@ void main() {
       '断魂庄首通招被标 mount_deferred → 挂载点错挂抛 StateError(红线⑦ gauntlet 分支)',
       () async {
         String inject(String s) => s.replaceFirstMapped(
-          RegExp(r'(  - id: skill_suo_mai_zhen\n(?:.*\n)*?    tier: \d+[^\n]*\n)'),
+          RegExp(
+            r'(  - id: skill_suo_mai_zhen\n(?:.*\n)*?    tier: \d+[^\n]*\n)',
+          ),
           (m) => '${m.group(1)!}    mount_deferred: true\n',
         );
         expect(
