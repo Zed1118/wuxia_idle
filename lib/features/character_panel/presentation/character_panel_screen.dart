@@ -1018,7 +1018,9 @@ class _BreakthroughBlockerSection extends ConsumerWidget {
         onNavigate: data.state == InnerDemonPanelState.cleared
             ? null
             : () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const InnerDemonScreen()),
+                MaterialPageRoute<void>(
+                  builder: (_) => const InnerDemonScreen(),
+                ),
               ),
       ),
     );
