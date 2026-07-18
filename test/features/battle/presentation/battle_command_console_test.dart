@@ -257,6 +257,38 @@ Future<_TestBattleNotifier> _pumpWith(
 
 void main() {
   group('自动观战轮转谱', () {
+    testWidgets('轮转谱排除仅限点选招式并在无自动技时回落周天', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final mixed = left.first.copyWith(availableSkills: [_power, _ult]);
+      final manualOnly = left[1].copyWith(availableSkills: [_ultB]);
+      await _pumpWith(
+        tester,
+        [mixed, manualOnly],
+        right,
+        allowPlayerIntervention: false,
+      );
+
+      final mixedCard = find.byKey(
+        ValueKey('auto_rotation_actor_${mixed.characterId}'),
+      );
+      final manualOnlyCard = find.byKey(
+        ValueKey('auto_rotation_actor_${manualOnly.characterId}'),
+      );
+      expect(
+        find.descendant(of: mixedCard, matching: find.text(_power.name)),
+        findsOneWidget,
+      );
+      expect(find.text(_ult.name), findsNothing);
+      expect(find.text(_ultB.name), findsNothing);
+      expect(
+        find.descendant(
+          of: manualOnlyCard,
+          matching: find.text(UiStrings.battleNoEquippedSkills),
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('轮转谱按角色减耗后的有效耗气判断就绪', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final reduced = left.first.copyWith(
@@ -276,7 +308,7 @@ void main() {
       final team = [
         left[0].copyWith(
           availableSkills: [_power, _ult],
-          skillCooldowns: const {'u1': 2},
+          skillCooldowns: const {'p1': 2},
         ),
         left[1].copyWith(availableSkills: [_powerB], currentQi: 0),
         left[2].copyWith(availableSkills: [_powerC]),

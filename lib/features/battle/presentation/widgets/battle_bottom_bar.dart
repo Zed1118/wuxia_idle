@@ -98,7 +98,11 @@ class _AutoRotationActor extends StatelessWidget {
   Widget build(BuildContext context) {
     final skills =
         character.availableSkills
-            .where((skill) => skill.type != SkillType.normalAttack)
+            .where(
+              (skill) =>
+                  skill.type != SkillType.normalAttack &&
+                  !skill.requiresManualTrigger,
+            )
             .toList()
           ..sort((a, b) => _statusRank(a).compareTo(_statusRank(b)));
     final visibleSkills = skills.take(3).toList();
