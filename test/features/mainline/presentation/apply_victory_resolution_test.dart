@@ -84,7 +84,7 @@ void main() {
     name: '测试 Boss 关',
     stageType: StageType.mainline,
     requiredRealm: RealmTier.xueTu,
-    enemyTeam: const [],
+    enemyTeam: [],
     isBossStage: true,
     baseExpReward: 0,
     difficultyMultiplier: 1.0,
