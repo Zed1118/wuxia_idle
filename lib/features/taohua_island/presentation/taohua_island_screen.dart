@@ -19,10 +19,10 @@ import '../application/island_production_readability.dart';
 import '../application/island_production_service.dart';
 import '../application/island_providers.dart';
 import '../application/island_settle_service.dart';
-import '../domain/island_building_state.dart';
-import '../domain/island_building_type.dart';
+import '../../../core/domain/island_building_state.dart';
+import '../../../core/domain/island_building_type.dart';
 import '../domain/island_prep_advice.dart';
-import '../domain/taohua_island_config.dart';
+import '../../../data/defs/taohua_island_config.dart';
 import 'island_recap_card.dart';
 
 /// 桃花岛主屏：据点分区 + 升级 / 选配方 / 一并收取。

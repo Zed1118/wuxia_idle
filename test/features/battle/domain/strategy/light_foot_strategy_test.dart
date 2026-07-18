@@ -4,7 +4,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/light_foot_strategy.dart';
-import 'package:wuxia_idle/features/light_foot/domain/light_foot_def.dart';
+import 'package:wuxia_idle/data/defs/light_foot_def.dart';
 
 import '../../../../support/test_data.dart';
 

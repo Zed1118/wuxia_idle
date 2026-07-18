@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/numbers_config.dart';
 import '../../../../core/domain/enums.dart';
-import '../../../mass_battle/domain/mass_battle_def.dart';
+import '../../../../data/defs/mass_battle_def.dart';
 import '../battle_state.dart';
 import '../qi_cycle.dart';
 import 'battle_strategy.dart';

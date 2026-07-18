@@ -1,6 +1,6 @@
 import 'package:isar_community/isar.dart';
 
-import '../../features/sect/domain/sect_rank.dart';
+import 'sect_rank.dart';
 import 'attributes.dart';
 import 'enums.dart';
 

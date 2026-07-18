@@ -8,7 +8,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
-import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
+import 'package:wuxia_idle/data/defs/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/active_retreat_screen.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/retreat_result_screen.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_map_list_screen.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
-import 'package:wuxia_idle/features/encounter/domain/encounter_event_loader.dart';
+import 'package:wuxia_idle/data/defs/encounter_def.dart';
+import 'package:wuxia_idle/data/encounter_event_loader.dart';
 import 'package:wuxia_idle/features/encounter/presentation/encounter_dialog.dart';
 
 void main() {

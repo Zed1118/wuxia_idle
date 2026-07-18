@@ -2,7 +2,7 @@ import 'package:isar_community/isar.dart';
 
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/enums.dart';
-import '../domain/tower_floor_def.dart';
+import '../../../data/defs/tower_floor_def.dart';
 import '../domain/tower_progress.dart';
 
 /// 单层 + 解锁状态（[TowerProgressService.floorList] 返回值）。

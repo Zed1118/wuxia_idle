@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/colors.dart';
-import '../domain/codex_entry.dart';
+import '../../../data/defs/codex_entry.dart';
 
 /// P1 #42 Phase 2 §10 P1.z 机制百科条目详情(沿 NarrativeReaderScreen 文字风格)。
 class CodexEntryDetail extends StatelessWidget {

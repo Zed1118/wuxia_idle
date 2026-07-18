@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
-import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
+import 'package:wuxia_idle/data/defs/encounter_def.dart';
 import 'package:wuxia_idle/features/baike/application/encounter_codex_provider.dart';
 
 EncounterDef _def(String id, EncounterType type, {Festival? festival}) =>

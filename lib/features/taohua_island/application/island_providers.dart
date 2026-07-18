@@ -7,8 +7,8 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../zangjuange/application/zangjuange_providers.dart';
 import '../domain/island_prep_advice.dart';
-import '../domain/island_building_state.dart';
-import '../domain/island_building_type.dart';
+import '../../../core/domain/island_building_state.dart';
+import '../../../core/domain/island_building_type.dart';
 import 'island_prep_advice_service.dart';
 import 'island_settle_service.dart';
 

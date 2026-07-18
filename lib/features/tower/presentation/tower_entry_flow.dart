@@ -16,7 +16,7 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/narrative_loader.dart';
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../../data/isar_provider.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
@@ -59,7 +59,7 @@ import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/utils/rng.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
-import '../domain/tower_floor_def.dart';
+import '../../../data/defs/tower_floor_def.dart';
 import '../../weapon_codex/application/equipment_catalog_hook.dart';
 
 /// Phase 3 T43 爬塔进入流程串联。
@@ -131,7 +131,13 @@ Future<void> runTowerFlow({
   if (!won) {
     // 不退层，只增统计；unawaited 不阻 UI
     if (defeatRecorderForTest != null) {
-      unawaited(defeatRecorderForTest().catchError((_) {}));
+      // 审查批E(2026-07-18):test hook 路径原裸吞错误,补与下方生产路径同款日志,
+      // 保留「不阻 UI / 不抛出」语义。
+      unawaited(
+        defeatRecorderForTest().catchError((Object e, StackTrace st) {
+          debugPrint('runTowerFlow defeatRecorderForTest failed: $e\n$st');
+        }),
+      );
     } else {
       // W12 fix: provider 副作用 getOrCreate 与 record* 存在 race（W6 重构遗留），
       // 主动 ensure 避免 recordDefeat 抛 StateError 后被 catchError 静默吞掉

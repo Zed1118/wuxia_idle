@@ -8,7 +8,7 @@ import '../../../data/defs/boss_phase_def.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/synergy_def.dart';
-import '../../tower/domain/tower_floor_def.dart';
+import '../../../data/defs/tower_floor_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../core/domain/character.dart';

@@ -22,7 +22,7 @@ import '../../encounter/application/encounter_service.dart';
 import '../../event/application/game_event_service.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../domain/retreat_session.dart';
-import '../domain/seclusion_map_def.dart';
+import '../../../data/defs/seclusion_map_def.dart';
 import 'offline_passive_service.dart';
 import 'retreat_settlement_calculator.dart';
 

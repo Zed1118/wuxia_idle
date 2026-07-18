@@ -4,7 +4,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/mass_battle_strategy.dart';
-import 'package:wuxia_idle/features/mass_battle/domain/mass_battle_def.dart';
+import 'package:wuxia_idle/data/defs/mass_battle_def.dart';
 
 import '../../../../support/test_data.dart';
 

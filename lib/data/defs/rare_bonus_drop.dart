@@ -1,5 +1,5 @@
-import '../../../core/domain/enums.dart';
-import '../../../shared/utils/rng.dart';
+import '../../core/domain/enums.dart';
+import '../../shared/utils/rng.dart';
 
 /// 第八阶段 E·稀有彩头掉落配置(numbers.yaml `rare_bonus_drop`)。
 ///

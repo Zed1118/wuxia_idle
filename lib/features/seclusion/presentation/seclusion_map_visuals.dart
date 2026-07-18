@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
-import '../domain/seclusion_map_def.dart';
+import '../../../data/defs/seclusion_map_def.dart';
 
 class SeclusionMapTrait {
   const SeclusionMapTrait({

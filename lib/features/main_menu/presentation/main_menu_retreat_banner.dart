@@ -8,7 +8,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../seclusion/application/retreat_settlement_calculator.dart';
 import '../../seclusion/domain/retreat_session.dart';
-import '../../seclusion/domain/seclusion_map_def.dart';
+import '../../../data/defs/seclusion_map_def.dart';
 import '../../seclusion/presentation/active_retreat_screen.dart';
 import '../../seclusion/presentation/seclusion_gate.dart';
 

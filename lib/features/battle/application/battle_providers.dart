@@ -2,22 +2,22 @@ import 'dart:math';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../features/battle/domain/battle_state.dart';
-import '../../features/battle/domain/strategy/battle_strategy.dart';
-import '../../features/battle/domain/strategy/default_ground_strategy.dart';
-import '../../data/defs/skill_def.dart';
-import '../../data/defs/stage_def.dart';
-import '../../data/defs/stage_win_condition.dart';
-import '../../data/game_repository.dart';
-import '../domain/character.dart';
-import '../domain/equipment.dart';
-import '../domain/technique.dart';
-import '../../data/numbers_config.dart';
-import '../../features/battle/application/battle_resolution.dart';
-import '../../features/equipment/application/drop_service.dart';
-import '../../features/jianghu/application/enmity_battle_modifier.dart';
-import '../../features/jianghu/application/npc_relation_service.dart';
-import '../../shared/utils/rng.dart';
+import '../domain/battle_state.dart';
+import '../domain/strategy/battle_strategy.dart';
+import '../domain/strategy/default_ground_strategy.dart';
+import '../../../data/defs/skill_def.dart';
+import '../../../data/defs/stage_def.dart';
+import '../../../data/defs/stage_win_condition.dart';
+import '../../../data/game_repository.dart';
+import '../../../core/domain/character.dart';
+import '../../../core/domain/equipment.dart';
+import '../../../core/domain/technique.dart';
+import '../../../data/numbers_config.dart';
+import 'battle_resolution.dart';
+import '../../equipment/application/drop_service.dart';
+import '../../jianghu/application/enmity_battle_modifier.dart';
+import '../../jianghu/application/npc_relation_service.dart';
+import '../../../shared/utils/rng.dart';
 
 part 'battle_providers.g.dart';
 

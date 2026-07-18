@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/codex/domain/codex_index.dart';
+import 'package:wuxia_idle/data/defs/codex_index.dart';
 import 'package:wuxia_idle/features/help/domain/help_topic.dart';
 
 /// 上下文帮助系统 · HelpCatalog 红线契约（2026-06-16）。

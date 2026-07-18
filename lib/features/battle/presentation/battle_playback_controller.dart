@@ -10,7 +10,7 @@ import '../domain/damage_calculator.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
-import '../../../core/application/battle_providers.dart';
+import '../application/battle_providers.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
 import '../../../shared/effects/screen_shake.dart';

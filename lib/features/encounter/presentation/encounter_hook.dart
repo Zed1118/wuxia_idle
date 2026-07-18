@@ -12,8 +12,8 @@ import '../../festival/application/festival_service_providers.dart';
 import '../../jianghu/application/jianghu_providers.dart';
 import '../../sect/presentation/sect_recruit_handler.dart';
 import '../application/encounter_service.dart';
-import '../domain/encounter_def.dart';
-import '../domain/encounter_event_loader.dart';
+import '../../../data/defs/encounter_def.dart';
+import '../../../data/encounter_event_loader.dart';
 import 'encounter_dialog.dart';
 
 /// 战斗 victory 后的奇遇触发统一 hook(Phase 4 W14-2)。

@@ -1,5 +1,5 @@
-import '../../../core/domain/enums.dart';
-import '../../../data/defs/boss_vulnerability_def.dart';
+import '../../core/domain/enums.dart';
+import 'boss_vulnerability_def.dart';
 
 /// 心魔系统配置（1.0 P2.2 §12.1，data/numbers.yaml `inner_demon` 段强类型化）。
 ///

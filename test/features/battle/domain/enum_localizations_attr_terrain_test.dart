@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
-import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
+import 'package:wuxia_idle/data/defs/encounter_def.dart';
 
 /// Batch4 #6 · enum 映射归 EnumL10n：attributeKey + terrainBiome 映射单测。
 void main() {

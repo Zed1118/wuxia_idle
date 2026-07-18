@@ -1,6 +1,6 @@
 import '../../../data/defs/stage_def.dart';
 import '../../../shared/strings.dart';
-import '../../tower/domain/tower_floor_def.dart';
+import '../../../data/defs/tower_floor_def.dart';
 
 /// 残页来源派生（T7）：从塔层 / 主线章末重打的 `dropSkillFragmentId` 反查。
 ///

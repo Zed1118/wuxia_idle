@@ -49,8 +49,10 @@ void main() {
     realmLookup(RealmTier t, RealmLayer l) => repo.getRealm(t, l);
 
     // 层均经验取当前层 experienceToNext 作单位，扫 1×~12× 覆盖短挂机到长挂机。
-    final unit = realmLookup(RealmTier.sanLiu, RealmLayer.shuLian)
-        .experienceToNext;
+    final unit = realmLookup(
+      RealmTier.sanLiu,
+      RealmLayer.shuLian,
+    ).experienceToNext;
     final buffer = StringBuffer('overflow× | 连跳层数(cap17)\n');
     var worstJump = 0;
     for (final mult in const [1, 2, 4, 6, 8, 12]) {
@@ -70,10 +72,6 @@ void main() {
 
     // Ratchet：典型档一次性兑现连跳应可接受（§3.1 约 ≤4 层量级）。若此断言未来
     // 因经济改动被顶破，说明溢出直逼 Lv170，需按 §3.1 降级为分段抬升 10→13→17。
-    expect(
-      worstJump,
-      lessThanOrEqualTo(7),
-      reason: '存量溢出连跳过大→改分段抬升，勿直接放宽此阈值',
-    );
+    expect(worstJump, lessThanOrEqualTo(7), reason: '存量溢出连跳过大→改分段抬升，勿直接放宽此阈值');
   });
 }

@@ -1,7 +1,7 @@
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../application/inner_demon_service.dart';
-import 'inner_demon_def.dart';
+import '../../../data/defs/inner_demon_def.dart';
 import 'inner_demon_progress.dart';
 
 /// 心魔面板渲染态(P0-3 ③)。

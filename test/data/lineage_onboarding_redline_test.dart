@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/master_def.dart';
-import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/validation/lineage_recruit_red_lines_validator.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 
 /// 第七阶段批三 P2 红线：lineage_onboarding 配置漂移 fail-fast。

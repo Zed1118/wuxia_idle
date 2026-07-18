@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/taohua_island/application/island_production_service.dart';
-import 'package:wuxia_idle/features/taohua_island/domain/island_building_state.dart';
-import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
-import 'package:wuxia_idle/features/taohua_island/domain/taohua_island_config.dart';
+import 'package:wuxia_idle/core/domain/island_building_state.dart';
+import 'package:wuxia_idle/core/domain/island_building_type.dart';
+import 'package:wuxia_idle/data/defs/taohua_island_config.dart';
 import '../../support/test_data.dart';
 
 /// 测试用配置工厂。允许调参以隔离各场景（cap、产速、境界门槛）。

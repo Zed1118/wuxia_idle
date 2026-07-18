@@ -6,7 +6,7 @@ import '../../battle/domain/battle_state.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
-import '../../../core/application/battle_providers.dart';
+import '../../battle/application/battle_providers.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';

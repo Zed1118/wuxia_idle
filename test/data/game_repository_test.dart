@@ -7,7 +7,7 @@ import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
-import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
+import 'package:wuxia_idle/data/defs/inner_demon_def.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 /// GameRepository + yaml 加载器 + NumbersConfig 集成测试。

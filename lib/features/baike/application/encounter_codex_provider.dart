@@ -2,8 +2,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
-import '../../encounter/domain/encounter_def.dart';
-import '../../encounter/domain/encounter_event_loader.dart';
+import '../../../data/defs/encounter_def.dart';
+import '../../../data/encounter_event_loader.dart';
 import '../../encounter/application/encounter_service_providers.dart';
 
 part 'encounter_codex_provider.g.dart';

@@ -5,6 +5,7 @@ import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
+import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/item_usage.dart';
 import '../../../data/defs/shop_item_def.dart';
 import '../../../data/game_repository.dart';
@@ -81,7 +82,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               founderEtl,
               _readActiveCharacters(),
               {
-                for (final item in inventoryAsync.asData?.value ?? const [])
+                for (final item
+                    in inventoryAsync.asData?.value ?? const <InventoryItem>[])
                   item.defId: item.quantity,
               },
             );

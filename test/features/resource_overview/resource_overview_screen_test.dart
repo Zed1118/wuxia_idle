@@ -8,7 +8,7 @@ import 'package:wuxia_idle/features/resource_overview/application/resource_overv
 import 'package:wuxia_idle/features/resource_overview/domain/resource_overview_item.dart';
 import 'package:wuxia_idle/features/resource_overview/presentation/resource_overview_screen.dart';
 import 'package:wuxia_idle/features/sweep/application/sweep_readiness_providers.dart';
-import 'package:wuxia_idle/features/sweep/domain/sweep_readiness.dart';
+import 'package:wuxia_idle/data/defs/sweep_readiness.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 void main() {

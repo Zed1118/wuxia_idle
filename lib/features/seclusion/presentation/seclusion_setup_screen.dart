@@ -12,7 +12,7 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
 import '../domain/retreat_session.dart';
-import '../domain/seclusion_map_def.dart';
+import '../../../data/defs/seclusion_map_def.dart';
 import 'active_retreat_screen.dart';
 import 'seclusion_enter_caption.dart';
 import 'seclusion_gate.dart';

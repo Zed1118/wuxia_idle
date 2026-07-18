@@ -1,5 +1,5 @@
-import '../../../core/domain/enums.dart';
-import '../../../data/defs/drop_entry.dart';
+import '../../core/domain/enums.dart';
+import 'drop_entry.dart';
 
 /// 闭关地图定义（numbers.yaml `retreat.maps[]`，Phase 3 T47）。
 ///

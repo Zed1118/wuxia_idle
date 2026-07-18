@@ -1,7 +1,7 @@
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/item_usage.dart';
 import '../../../data/game_repository.dart';
-import '../../taohua_island/domain/island_building_type.dart';
+import '../../../core/domain/island_building_type.dart';
 
 /// 背包资源用途反查。
 ///

@@ -18,7 +18,7 @@ import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
 import 'package:wuxia_idle/features/battle/domain/strategy/mass_battle_strategy.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/mass_battle/application/mass_battle_service.dart';
-import 'package:wuxia_idle/features/mass_battle/domain/mass_battle_def.dart';
+import 'package:wuxia_idle/data/defs/mass_battle_def.dart';
 import "../support/isar_test_support.dart";
 import '../support/test_data.dart';
 

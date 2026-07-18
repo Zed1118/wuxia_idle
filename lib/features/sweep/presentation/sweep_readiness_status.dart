@@ -6,7 +6,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/currency_pill.dart';
 import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../application/sweep_readiness_providers.dart';
-import '../domain/sweep_readiness.dart';
+import '../../../data/defs/sweep_readiness.dart';
 
 class SweepReadinessPill extends ConsumerWidget {
   const SweepReadinessPill({

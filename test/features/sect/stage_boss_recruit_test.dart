@@ -6,7 +6,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
-import 'package:wuxia_idle/features/sect/domain/sect_rank.dart' show SectRank;
+import 'package:wuxia_idle/core/domain/sect_rank.dart' show SectRank;
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
@@ -117,7 +117,7 @@ void main() {
         expect(stage.bossRecruit!.candidateRef, entry.value);
         // baseProbability 省略 → 默认 0.40
         expect(stage.bossRecruit!.baseProbability, 0.40);
-        // candidateRef 必在 sectCandidates(_enforceBossRecruitRedLines 已校)
+        // candidateRef 必在 sectCandidates(enforceBossRecruitRedLines(validation/) 已校)
         expect(repo.sectCandidates[entry.value], isNotNull);
       }
     });
@@ -193,8 +193,8 @@ void main() {
           required noSectSnackBar,
         }) async {
           flowCalls += 1;
-          candidateId = candidate.id;
-          markTriggered = onMarkTriggered;
+          candidateId = candidate.id as String;
+          markTriggered = onMarkTriggered as Future<void> Function()?;
         }
 
         await runStageBossRecruitHookAfterVictory(
@@ -281,7 +281,7 @@ void main() {
 
   group('R5.schema 红线 · broken loader transform(沿 production yaml + replace)', () {
     /// transform 模式:读 production stages.yaml 后字符串改 1 处 inject 触发红线,
-    /// 不破其他 production 红线(`_enforceMainlineRedLines` 15 关 / chapterIndex 连续)。
+    /// 不破其他 production 红线(`enforceMainlineRedLines`(validation/) 15 关 / chapterIndex 连续)。
     Future<String> Function(String) makeStagesLoader(
       String Function(String original) transform,
     ) {

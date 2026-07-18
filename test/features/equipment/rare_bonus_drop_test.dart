@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
-import 'package:wuxia_idle/features/equipment/domain/rare_bonus_drop.dart';
+import 'package:wuxia_idle/data/defs/rare_bonus_drop.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 /// 第八阶段 E·稀有彩头阶选择纯逻辑 TDD。

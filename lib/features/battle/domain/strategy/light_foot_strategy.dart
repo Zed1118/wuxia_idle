@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/numbers_config.dart';
 import '../../../../core/domain/enums.dart';
-import '../../../light_foot/domain/light_foot_def.dart';
+import '../../../../data/defs/light_foot_def.dart';
 import '../battle_state.dart';
 import 'battle_strategy.dart';
 import 'default_ground_strategy.dart';

@@ -2,7 +2,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/item_source.dart';
 import '../../../data/defs/drop_entry.dart';
 import '../../../data/game_repository.dart';
-import '../../taohua_island/domain/island_building_type.dart';
+import '../../../core/domain/island_building_type.dart';
 
 /// 背包材料来源反查。
 ///

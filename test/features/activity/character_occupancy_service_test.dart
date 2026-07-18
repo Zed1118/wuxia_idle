@@ -66,7 +66,10 @@ void main() {
     });
     final occ = await CharacterOccupancyService(IsarSetup.instance).snapshot();
     expect(occ.occupiedCharacterIds.length, 1);
-    expect(occ.activityOf(occ.occupiedCharacterIds.first), ActivityKind.retreat);
+    expect(
+      occ.activityOf(occ.occupiedCharacterIds.first),
+      ActivityKind.retreat,
+    );
     // 闭关只锁角色，不保留装备
     expect(occ.reservedEquipmentIds, isEmpty);
   });

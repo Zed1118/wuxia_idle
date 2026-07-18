@@ -9,7 +9,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_factory.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
-import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
+import 'package:wuxia_idle/data/defs/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/retreat_result_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';

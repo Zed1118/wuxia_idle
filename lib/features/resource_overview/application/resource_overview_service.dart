@@ -5,7 +5,7 @@ import '../../../core/domain/resource_overview_display.dart';
 import '../../../data/game_repository.dart';
 import '../../inventory/application/item_usage_lookup_service.dart';
 import '../../inventory/application/material_source_lookup_service.dart';
-import '../../taohua_island/domain/island_building_type.dart';
+import '../../../core/domain/island_building_type.dart';
 import '../domain/resource_overview_item.dart';
 
 class ResourceOverviewService {
