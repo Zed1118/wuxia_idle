@@ -1,7 +1,7 @@
 # 战斗界面 V2 ≥85% 风格还原实施计划
 
 > 日期：2026-07-19  
-> 状态：实施中（Task 0.2 已完成）
+> 状态：实施中（Task 0.3 已完成）
 > 阶段：1.0 长线打磨期  
 > 基准分支：`main@ad94a2bb`  
 > 推荐实施分支：`codex/battle-ui-v2-fidelity-85`  
@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：Task 0.2 已完成；五个 V2 确定性视觉 route 与 READY 状态门已接线，尚未改生产战斗规则。
+- **状态**：Task 0.3 已完成；结构量测配置、只读分析脚本与固定 fixture 测试已建立，尚未改生产战斗规则。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：新增 `battle_v2_casualty_replacement`、`battle_v2_fast_forward_peak`、`battle_v2_pre_result`、`battle_v2_neutral_3v3`、`battle_v2_resource_pressure`；普通 route 仍首帧 READY，五个状态 route 仅在固定 seed 回放/初态谓词成立后 READY；`full` 与 `battle` 清单均已列出五条 route。
-- **下一步**：执行 Task 0.3；先为结构量测配置、内容区/DPR、比例、人物 alpha 包围盒、Boss 面积比、语义色 mask 与评分骨架写失败测试，再实现只读分析脚本。
-- **已跑验证**：红态：首次运行两项 targeted tests 为 3 pass / 2 fail（缺五 route、READY gate、目标配置）；绿态：同两文件 47 pass / 0 fail；阶段验证：`flutter test --no-pub test/features/debug` 138 pass / 0 fail，`flutter analyze --no-pub` 0 issue（3.4s），`flutter pub run tool/visual_acceptance.dart routes --suite full --format ids` 成功列出五条 V2 route。
+- **最后完成**：新增单一阈值配置 `battle_v2_fidelity_config.json` 与 `analyze_battle_v2_fidelity.py`；脚本从 manifest 输出内容区/逻辑与像素尺寸/DPR、区域比例、人物 alpha 包围盒、Boss 面积比、语义色 mask、黑位漂移、`metrics.json` 和 `score.md`，缺诊断层时明确标记 approximate/unavailable。
+- **下一步**：执行 Task 0.4；用固定核心 route 在 1280×720、1440×900 抓取改前基线，补 manifest、主三联图与初始 A～F 逐项评分。
+- **已跑验证**：Task 0.2 红/绿证据保持不变；Task 0.3 红态：unittest 因分析模块尚不存在报 `ModuleNotFoundError`；绿态：`python3 -m unittest discover tools/visual_capture -p '*battle_v2_fidelity*test*.py'` 4 pass / 0 fail，`--help` 成功，`bash -n tools/visual_capture/visual_capture.sh` 成功，`flutter analyze --no-pub` 0 issue（11.1s）。
 - **当前评分**：A 15/20、B 14/25、C 12/25、D 10/15、E 6/10、F 3/5，合计 60/100（报告估分，待 Task 0.4 重测）。
-- **证据目录**：尚未抓图；计划为 `build/visual_acceptance/battle_ui_v2_85/`。确定性摘要已由测试证明相同 seed 两次得到一致 tick/状态。
-- **阻塞项**：无。残留风险：五条 route 尚未经过 macOS 真机截图驱动；动态峰值的定格视觉效果待 Task 0.4 目检。
-- **§8.2 四证据**：①生产接线：改动仅扩展 debug/profile 验收入口，正式 `BattleScreen` 仍由同一 `ScenarioLauncher` 消费且战斗实现未分叉；② targeted：debug 族 138/138；③红线：零改 `data/`、伤害/真气/冷却/AI/tick/胜负/掉落、三系/在线离线/反主流项，新增数值仅为隔离视觉 fixture；④残留风险：未抓双视口、未验证 capture manifest、Windows 字体不在本阶段范围。
-- **Git 状态口径**：Task 0.2 源码、测试与本恢复点待提交，tip 为 WIP；主 checkout 保持只读。
+- **证据目录**：尚未抓图；计划为 `build/visual_acceptance/battle_ui_v2_85/`。量测 fixture 已验证 mask/JSON/Markdown 可重复生成。
+- **阻塞项**：无。残留风险：截图工具尚未自动生成本任务 manifest，Task 0.4 需据日志补齐；人物/Boss 精确量测依赖诊断 alpha 层，缺层时脚本不会伪造结论。
+- **§8.2 四证据**：①生产接线：量测工具只读 build 截图，不进入生产包；正式 `BattleScreen` 接线不变；② targeted：Python 4/4 + debug 族上一切片 138/138；③红线：零改 `data/`、玩法数值/schema/saveVersion/持久化，阈值集中于工具 JSON；④残留风险：真实 capture manifest、三联图、双视口与动态峰值尚待 Task 0.4。
+- **Git 状态口径**：Task 0.3 工具、测试与本恢复点待提交，tip 为 WIP；主 checkout 保持只读。

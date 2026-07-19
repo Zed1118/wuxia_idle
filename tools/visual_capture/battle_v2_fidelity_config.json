@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "reference": {
+    "path": "docs/spec/battle_ui_stage_command_desk_v2_2026-07-15.png",
+    "sha256": "fe5c8e8d1696c8136db140ae31ccb7e096b34e385bb21b442340e90b582f5957",
+    "fit": "cover_center"
+  },
+  "layout": {
+    "vertical": {
+      "header": [0.06, 0.07],
+      "battlefield": [0.67, 0.69],
+      "command_desk": [0.24, 0.26]
+    },
+    "command_desk_horizontal": {
+      "focus": [0.18, 0.20],
+      "skills": [0.58, 0.62],
+      "pouch": [0.20, 0.22]
+    },
+    "central_engagement": [0.20, 0.28]
+  },
+  "characters": {
+    "alpha_threshold": 16,
+    "boss_area_ratio": [1.25, 1.45],
+    "grounding_error_max": 0.02,
+    "black_point_drift_max": 0.05
+  },
+  "semantic_color": {
+    "saturation_min": 0.55,
+    "value_min": 0.45,
+    "non_ultimate_area_max": 0.08
+  },
+  "contrast": {
+    "body_min": 4.5,
+    "large_or_bold_min": 3.0
+  }
+}
