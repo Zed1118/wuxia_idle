@@ -1,5 +1,94 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/theme/wuxia_tokens.dart';
+
+double battleSkillSlipTilt(String skillId) {
+  final signature = skillId.codeUnits.fold<int>(0, (sum, unit) => sum + unit);
+  return switch (signature % 3) {
+    0 => -0.010,
+    1 => 0.0,
+    _ => 0.010,
+  };
+}
+
+/// 保留原生按钮的桌面交互语义，同时把外观收束成旧纸武学签。
+class BattleSkillSlipSurface extends StatelessWidget {
+  const BattleSkillSlipSurface({
+    super.key,
+    required this.height,
+    required this.tiltAngle,
+    required this.backgroundColor,
+    required this.foregroundColor,
+    required this.border,
+    required this.accent,
+    required this.onPressed,
+    required this.onLongPress,
+    required this.child,
+  });
+
+  final double height;
+  final double tiltAngle;
+  final Color backgroundColor;
+  final Color foregroundColor;
+  final BorderSide border;
+  final Color accent;
+  final VoidCallback? onPressed;
+  final VoidCallback onLongPress;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      key: const ValueKey('battle.skillSlipNaturalTilt'),
+      angle: tiltAngle,
+      child: SizedBox(
+        height: height,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          onLongPress: onLongPress,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor,
+            disabledBackgroundColor: backgroundColor,
+            foregroundColor: foregroundColor,
+            padding: EdgeInsets.zero,
+            side: border,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            shape: const BeveledRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(3)),
+            ),
+          ),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Opacity(
+                  opacity: 0.20,
+                  child: Image.asset(
+                    WuxiaUi.paperBg,
+                    fit: BoxFit.cover,
+                    color: const Color(0xFF806C50),
+                    colorBlendMode: BlendMode.multiply,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(
+                    key: const ValueKey('battle.skillSlipRoughPaper'),
+                    painter: _BattleSkillSlipFramePainter(accent: accent),
+                  ),
+                ),
+              ),
+              child,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// 技能签内墨线；基础纸签形态与后续五态在此单点演进。
 class BattleSkillSlipInkFrame extends StatelessWidget {
   const BattleSkillSlipInkFrame({super.key, required this.accent});
@@ -19,6 +108,22 @@ class _BattleSkillSlipFramePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final roughEdge = Path()
+      ..moveTo(3, 5)
+      ..lineTo(size.width - 5, 2)
+      ..lineTo(size.width - 2, size.height - 6)
+      ..lineTo(size.width - 7, size.height - 2)
+      ..lineTo(4, size.height - 4)
+      ..lineTo(1.5, 8)
+      ..close();
+    canvas.drawPath(
+      roughEdge,
+      Paint()
+        ..color = const Color(0xFF4B3B2B).withValues(alpha: 0.48)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.1,
+    );
+
     final ink = Paint()
       ..color = const Color(0xFF5B4934).withValues(alpha: 0.42)
       ..style = PaintingStyle.stroke

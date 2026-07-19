@@ -969,6 +969,35 @@ void main() {
         ),
         findsOneWidget,
       );
+      expect(
+        find.descendant(
+          of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipNaturalTilt')),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipRoughPaper')),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipNatureSeal')),
+        ),
+        findsOneWidget,
+      );
+      final nativeButton = tester.widget<ElevatedButton>(
+        find.descendant(of: skill, matching: find.byType(ElevatedButton)),
+      );
+      expect(nativeButton.style?.elevation?.resolve({}), 0);
+      expect(
+        nativeButton.style?.shape?.resolve({}),
+        isA<BeveledRectangleBorder>(),
+      );
       expect(find.text(UiStrings.skillQiCostChip(200)), findsOneWidget);
       expect(find.text(UiStrings.skillCooldownChip(2)), findsOneWidget);
     });
