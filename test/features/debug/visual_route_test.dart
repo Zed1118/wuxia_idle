@@ -231,6 +231,14 @@ void main() {
         parseVisualRoute('battle_v2_resource_pressure'),
         VisualRoute.battleV2ResourcePressure,
       );
+      expect(
+        parseVisualRoute('battle_v2_auto_rotation_first'),
+        VisualRoute.battleV2AutoRotationFirst,
+      );
+      expect(
+        parseVisualRoute('battle_v2_auto_rotation_second'),
+        VisualRoute.battleV2AutoRotationSecond,
+      );
     });
   });
 
@@ -548,6 +556,14 @@ void main() {
           VisualBattleReadyTarget.fastForwardPeak,
         ),
         (VisualRoute.battleV2PreResult, VisualBattleReadyTarget.preResult),
+        (
+          VisualRoute.battleV2AutoRotationFirst,
+          VisualBattleReadyTarget.autoRotationFirst,
+        ),
+        (
+          VisualRoute.battleV2AutoRotationSecond,
+          VisualBattleReadyTarget.autoRotationSecond,
+        ),
       ]) {
         final target = await buildVisualTarget(route, IsarSetup.instance);
         expect(target, isA<ScenarioLauncher>());
@@ -555,6 +571,15 @@ void main() {
         expect(launcher.seed, battleV2VisualSeed, reason: route.id);
         expect(launcher.startPaused, isTrue, reason: route.id);
         expect(launcher.readyTarget, readyTarget, reason: route.id);
+        expect(route.controlsReadiness, isTrue, reason: route.id);
+        if (route == VisualRoute.battleV2AutoRotationFirst ||
+            route == VisualRoute.battleV2AutoRotationSecond) {
+          expect(
+            launcher.teamsFactory,
+            same(BattleScenarioData.scenarioV2AutoRotation),
+            reason: route.id,
+          );
+        }
       }
     });
 
@@ -592,6 +617,14 @@ void main() {
             (
               VisualBattleReadyTarget.preResult,
               BattleScenarioData.scenarioV2PreResult,
+            ),
+            (
+              VisualBattleReadyTarget.autoRotationFirst,
+              BattleScenarioData.scenarioV2AutoRotation,
+            ),
+            (
+              VisualBattleReadyTarget.autoRotationSecond,
+              BattleScenarioData.scenarioV2AutoRotation,
             ),
           ]) {
         final first = replay(target, factory);

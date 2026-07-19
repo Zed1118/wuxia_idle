@@ -529,6 +529,28 @@ Future<Widget> buildVisualTarget(
         readyTarget: VisualBattleReadyTarget.resourcePressure,
         onTargetReady: onTargetReady,
       );
+    case VisualRoute.battleV2AutoRotationFirst:
+      return ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioV2AutoRotation,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        autoStart: false,
+        startPaused: true,
+        seed: battleV2VisualSeed,
+        readyTarget: VisualBattleReadyTarget.autoRotationFirst,
+        onTargetReady: onTargetReady,
+      );
+    case VisualRoute.battleV2AutoRotationSecond:
+      return ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioV2AutoRotation,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        autoStart: false,
+        startPaused: true,
+        seed: battleV2VisualSeed,
+        readyTarget: VisualBattleReadyTarget.autoRotationSecond,
+        onTargetReady: onTargetReady,
+      );
     case VisualRoute.battleTapLive:
       // 两段点选真玩/验收:真战斗 + 干预层挂上 + 高血耐久敌久撑。
       return const ScenarioLauncher(

@@ -90,6 +90,14 @@ enum VisualRoute {
     'battle_v2_resource_pressure',
     '战斗界面 V2·冷却签与真气不足签同帧静态验收',
   ),
+  battleV2AutoRotationFirst(
+    'battle_v2_auto_rotation_first',
+    '战斗界面 V2·自动案台第一名执招者与招式签亮起',
+  ),
+  battleV2AutoRotationSecond(
+    'battle_v2_auto_rotation_second',
+    '战斗界面 V2·自动案台第二名执招者与招式签轮转亮起',
+  ),
   battleVictoryFirstClear(
     'battle_victory_first_clear',
     '胜利弹窗·Boss 首胜封签 + 掉落/升层/共鸣三段验收',
@@ -341,7 +349,9 @@ enum VisualRoute {
     battleV2FastForwardPeak ||
     battleV2PreResult ||
     battleV2Neutral3v3 ||
-    battleV2ResourcePressure => true,
+    battleV2ResourcePressure ||
+    battleV2AutoRotationFirst ||
+    battleV2AutoRotationSecond => true,
     _ => false,
   };
 }

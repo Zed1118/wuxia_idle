@@ -690,6 +690,47 @@ class BattleScenarioData {
     return ([first, ...leftTemplates.skip(1)], right);
   }
 
+  /// A 案动态证据：前两名我方角色各带一枚 AI 可自动使用的签。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioV2AutoRotation() {
+    final (leftTemplates, right) = scenarioDragLive();
+    const firstSkill = SkillDef(
+      id: 'v2_auto_rotation_first',
+      name: '崩山式',
+      description: '',
+      type: SkillType.powerSkill,
+      powerMultiplier: 900,
+      internalForceCost: 100,
+      cooldownTurns: 2,
+      requiresManualTrigger: false,
+      visualEffect: '',
+    );
+    const secondSkill = SkillDef(
+      id: 'v2_auto_rotation_second',
+      name: '穿云式',
+      description: '',
+      type: SkillType.powerSkill,
+      powerMultiplier: 850,
+      internalForceCost: 100,
+      cooldownTurns: 2,
+      requiresManualTrigger: false,
+      visualEffect: '',
+    );
+    final first = leftTemplates[0].copyWith(
+      availableSkills: [leftTemplates[0].availableSkills.first, firstSkill],
+      currentQi: 500,
+      actionPoint: 1000,
+      speed: 1000,
+    );
+    final second = leftTemplates[1].copyWith(
+      availableSkills: [leftTemplates[1].availableSkills.first, secondSkill],
+      currentQi: 500,
+      actionPoint: 1000,
+      speed: 900,
+    );
+    return ([first, second, leftTemplates[2]], right);
+  }
+
   /// 群战舞台静态验收：当前三名主战敌 + 四名后续敌军墨影。
   static (List<BattleCharacter>, List<BattleCharacter>)
   scenarioMassBattleStage() {
@@ -1059,6 +1100,8 @@ enum VisualBattleReadyTarget {
   fastForwardPeak,
   preResult,
   resourcePressure,
+  autoRotationFirst,
+  autoRotationSecond,
 }
 
 class VisualBattleReplayResult {
@@ -1123,7 +1166,28 @@ class VisualBattleReplay {
               state.rightTeam.where((c) => c.isAlive).length == 1 &&
               state.rightTeam.where((c) => c.isAlive).single.currentHp == 1,
         VisualBattleReadyTarget.resourcePressure => _hasResourcePressure(state),
+        VisualBattleReadyTarget.autoRotationFirst => _autoRotationActors(
+          state,
+        ).isNotEmpty,
+        VisualBattleReadyTarget.autoRotationSecond =>
+          _autoRotationActors(state).length >= 2,
       };
+
+  static List<int> _autoRotationActors(BattleState state) {
+    final playerIds = state.leftTeam.map((actor) => actor.characterId).toSet();
+    final actors = <int>[];
+    for (final action in state.actionLog) {
+      final skill = action.skill;
+      if (!playerIds.contains(action.actorId) ||
+          skill == null ||
+          skill.type == SkillType.normalAttack ||
+          skill.requiresManualTrigger) {
+        continue;
+      }
+      if (!actors.contains(action.actorId)) actors.add(action.actorId);
+    }
+    return actors;
+  }
 
   static bool _hasCasualtyReplacement(BattleState state) {
     if (state.rightTeam.length <= 3) return false;
@@ -1180,6 +1244,11 @@ class VisualBattleReplay {
         ' slots=${BattleVisualRoster.fromState(state).rightSlots.join(',')}',
       VisualBattleReadyTarget.fastForwardPeak =>
         ' peakActions=${_peakActionCount(state)}',
+      VisualBattleReadyTarget.autoRotationFirst ||
+      VisualBattleReadyTarget.autoRotationSecond =>
+        ' rotationActors=${_autoRotationActors(state).join(',')}'
+            ' activeActor=${state.actionLog.last.actorId}'
+            ' activeSkill=${state.actionLog.last.skill?.id}',
       _ => '',
     };
     return 'seed=$seed tick=${state.tick} steps=$steps '
