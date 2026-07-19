@@ -2,39 +2,10 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import 'equipment_slot_occupancy.dart';
 
-/// 装备出售/分解配置（numbers.yaml `equipment.disposal`，2026-06-26 红线推翻）。
-/// 7 元数组按 [EquipmentTier] index（寻常货=0 … 神物=6）。**初值待真机校**。
-class EquipmentDisposalConfig {
-  final List<int> sellPrice;
-  final double sellEnhanceFactor;
-  final List<int> disassembleMojianshi;
-  final List<int> disassembleXinxuejiejing;
-  final int disassembleEnhanceMojianshiPerLevel;
-
-  const EquipmentDisposalConfig({
-    required this.sellPrice,
-    required this.sellEnhanceFactor,
-    required this.disassembleMojianshi,
-    required this.disassembleXinxuejiejing,
-    required this.disassembleEnhanceMojianshiPerLevel,
-  });
-
-  factory EquipmentDisposalConfig.fromYaml(Map<String, dynamic> y) =>
-      EquipmentDisposalConfig(
-        sellPrice: (y['sell_price'] as List)
-            .map((e) => (e as num).toInt())
-            .toList(),
-        sellEnhanceFactor: (y['sell_enhance_factor'] as num).toDouble(),
-        disassembleMojianshi: (y['disassemble_mojianshi'] as List)
-            .map((e) => (e as num).toInt())
-            .toList(),
-        disassembleXinxuejiejing: (y['disassemble_xinxuejiejing'] as List)
-            .map((e) => (e as num).toInt())
-            .toList(),
-        disassembleEnhanceMojianshiPerLevel:
-            (y['disassemble_enhance_mojianshi_per_level'] as num).toInt(),
-      );
-}
+// 纯配置 2026-07-19 迁 data/defs(backlog #6 收敛 data→features 反向边);
+// export 保持既有 7 生产 + 3 测试 import 点零改动;import 供本文件 calc 函数签名用。
+import '../../../data/defs/equipment_disposal_def.dart';
+export '../../../data/defs/equipment_disposal_def.dart';
 
 /// 分解产出（强化材料）。
 class DisassembleRewards {
