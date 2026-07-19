@@ -14,6 +14,18 @@ enum BattleSceneBackgroundStyle {
   massBattle,
 }
 
+BattleSceneBackgroundStyle battleSceneStyleForEncounter(
+  BattleSceneBackgroundStyle requested, {
+  required bool hasBoss,
+}) {
+  if (hasBoss &&
+      (requested == BattleSceneBackgroundStyle.generic ||
+          requested == BattleSceneBackgroundStyle.mainline)) {
+    return BattleSceneBackgroundStyle.boss;
+  }
+  return requested;
+}
+
 /// 战斗场景背景层(出版美术 B1):背景图 + scrim 压暗遮罩 + 水墨层次兜底。
 /// path 空时仍渲染远山、雾气、地面纹理和暗角,避免露出纯黑/纯白空底。
 /// Image.asset 挂 errorBuilder(widget 测不加载 assets,守测不破)。
@@ -31,15 +43,20 @@ class BattleSceneBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = path;
     final hasImage = p != null && p.isNotEmpty;
+    final resolvedStyle = style == BattleSceneBackgroundStyle.generic
+        ? _SceneDepthProfile.styleFromPath(p)
+        : style;
     final isTowerScene =
-        style == BattleSceneBackgroundStyle.tower ||
-        (style == BattleSceneBackgroundStyle.generic &&
-            p?.contains('innerrealm') == true);
+        resolvedStyle == BattleSceneBackgroundStyle.tower ||
+        p?.contains('innerrealm') == true;
     final isMountainPassScene =
-        style == BattleSceneBackgroundStyle.mainline ||
-        (style == BattleSceneBackgroundStyle.generic &&
-            p?.contains('battle_mountain_pass_stage') == true);
-    final profile = _SceneDepthProfile.resolve(path: p, style: style);
+        resolvedStyle == BattleSceneBackgroundStyle.mainline ||
+        resolvedStyle == BattleSceneBackgroundStyle.boss ||
+        p?.contains('battle_mountain_pass_stage') == true;
+    final profile = _SceneDepthProfile.resolve(path: p, style: resolvedStyle);
+    final vignetteAlpha = hasImage
+        ? profile.vignetteAlpha * profile.imageVignetteFactor
+        : profile.vignetteAlpha;
     final scene = Stack(
       fit: StackFit.expand,
       children: [
@@ -77,7 +94,7 @@ class BattleSceneBackground extends StatelessWidget {
           key: const ValueKey('battle_scene_mist_layers'),
           painter: _MistLayerPainter(
             profile,
-            intensity: hasImage ? 0.12 : 1,
+            intensity: hasImage ? profile.imageMistIntensity : 1,
             blurSigma: hasImage ? 32 : 0,
           ),
         ),
@@ -85,7 +102,7 @@ class BattleSceneBackground extends StatelessWidget {
           key: const ValueKey('battle_scene_ground_texture'),
           painter: _GroundTexturePainter(
             profile,
-            intensity: hasImage ? 0.28 : 1,
+            intensity: hasImage ? profile.imageGroundIntensity : 1,
           ),
         ),
         DecoratedBox(
@@ -97,27 +114,38 @@ class BattleSceneBackground extends StatelessWidget {
               colors: [
                 profile.glowColor.withValues(alpha: profile.glowAlpha),
                 WuxiaColors.background.withValues(alpha: 0.0),
-                WuxiaColors.background.withValues(alpha: profile.vignetteAlpha),
+                WuxiaColors.background.withValues(alpha: vignetteAlpha),
               ],
               stops: const [0.0, 0.48, 1.0],
             ),
           ),
         ),
-        if (hasImage) const ColoredBox(color: WuxiaColors.battleSceneScrim),
+        if (hasImage)
+          ColoredBox(
+            key: const ValueKey('battle_scene_image_scrim'),
+            color: profile.imageScrim,
+          ),
       ],
     );
+    Widget gradedScene;
     if (isMountainPassScene) {
-      return ColorFiltered(
+      gradedScene = ColorFiltered(
         key: const ValueKey('battle_scene_mainline_color_grade'),
         colorFilter: _mainlineSceneColorGrade,
         child: scene,
       );
+    } else if (isTowerScene) {
+      gradedScene = ColorFiltered(
+        key: const ValueKey('battle_scene_tower_color_grade'),
+        colorFilter: _towerSceneColorGrade,
+        child: scene,
+      );
+    } else {
+      gradedScene = scene;
     }
-    if (!isTowerScene) return scene;
-    return ColorFiltered(
-      key: const ValueKey('battle_scene_tower_color_grade'),
-      colorFilter: _towerSceneColorGrade,
-      child: scene,
+    return KeyedSubtree(
+      key: ValueKey('battle_scene_profile_${resolvedStyle.name}'),
+      child: gradedScene,
     );
   }
 }
@@ -125,21 +153,21 @@ class BattleSceneBackground extends StatelessWidget {
 /// 塔境整张背景（原画 + 景深 + 地面 + 暗角）统一为冷灰低彩。
 /// 仅包背景组件，不影响人物肤色、流派色、状态牌与技能案台。
 const _towerSceneColorGrade = ColorFilter.matrix(<double>[
-  0.299,
-  0.587,
-  0.114,
+  0.233,
+  0.458,
+  0.089,
   0,
-  -8,
-  0.299,
-  0.587,
-  0.114,
-  0,
-  0,
-  0.299,
-  0.587,
-  0.114,
+  10,
+  0.233,
+  0.458,
+  0.089,
   0,
   12,
+  0.233,
+  0.458,
+  0.089,
+  0,
+  15,
   0,
   0,
   0,
@@ -164,21 +192,21 @@ String _resolvedBackgroundAsset(
 /// 主线山道背景轻微冷灰化，压掉径向 glow 与原图叠加后的暖黄块。
 /// 只作用于背景组件，人物、状态牌和技能案台不参与滤镜。
 const _mainlineSceneColorGrade = ColorFilter.matrix(<double>[
-  0.84,
-  0.08,
-  0.08,
-  0,
-  -8,
+  0.82,
+  0.12,
   0.06,
-  0.90,
-  0.04,
   0,
-  -2,
-  0.06,
+  14,
   0.10,
-  0.96,
+  0.84,
+  0.06,
   0,
-  8,
+  10,
+  0.08,
+  0.18,
+  0.74,
+  0,
+  4,
   0,
   0,
   0,
@@ -201,6 +229,10 @@ class _SceneDepthProfile {
     required this.groundAlpha,
     required this.glowAlpha,
     required this.vignetteAlpha,
+    required this.imageScrim,
+    required this.imageMistIntensity,
+    required this.imageGroundIntensity,
+    required this.imageVignetteFactor,
   });
 
   final Color skyTop;
@@ -216,13 +248,17 @@ class _SceneDepthProfile {
   final double groundAlpha;
   final double glowAlpha;
   final double vignetteAlpha;
+  final Color imageScrim;
+  final double imageMistIntensity;
+  final double imageGroundIntensity;
+  final double imageVignetteFactor;
 
   static _SceneDepthProfile resolve({
     required String? path,
     required BattleSceneBackgroundStyle style,
   }) {
     final resolvedStyle = style == BattleSceneBackgroundStyle.generic
-        ? _styleFromPath(path)
+        ? styleFromPath(path)
         : style;
     switch (resolvedStyle) {
       case BattleSceneBackgroundStyle.tower:
@@ -240,22 +276,30 @@ class _SceneDepthProfile {
           groundAlpha: 0.22,
           glowAlpha: 0.12,
           vignetteAlpha: 0.36,
+          imageScrim: Color(0x2D2E3440),
+          imageMistIntensity: 0.16,
+          imageGroundIntensity: 0.3,
+          imageVignetteFactor: 0.55,
         );
       case BattleSceneBackgroundStyle.innerDemon:
         return const _SceneDepthProfile(
-          skyTop: Color(0xFF120F18),
-          skyMid: Color(0xFF1D1A25),
-          mountainColor: WuxiaColors.yinRou,
+          skyTop: Color(0xFF222129),
+          skyMid: Color(0xFF302E38),
+          mountainColor: Color(0xFF6B6472),
           mistColor: WuxiaColors.textMuted,
           groundColor: WuxiaColors.sidebar,
-          glowColor: WuxiaColors.yinRou,
+          glowColor: Color(0xFF75687E),
           glowCenter: Alignment(0.15, -0.18),
           glowRadius: 1.08,
           mountainAlpha: 0.12,
           mistAlpha: 0.3,
           groundAlpha: 0.18,
-          glowAlpha: 0.16,
-          vignetteAlpha: 0.44,
+          glowAlpha: 0.08,
+          vignetteAlpha: 0.38,
+          imageScrim: Color(0x2D241F2B),
+          imageMistIntensity: 0.18,
+          imageGroundIntensity: 0.3,
+          imageVignetteFactor: 0.42,
         );
       case BattleSceneBackgroundStyle.lightFoot:
         return const _SceneDepthProfile(
@@ -272,6 +316,10 @@ class _SceneDepthProfile {
           groundAlpha: 0.2,
           glowAlpha: 0.14,
           vignetteAlpha: 0.3,
+          imageScrim: Color(0x14293234),
+          imageMistIntensity: 0.14,
+          imageGroundIntensity: 0.24,
+          imageVignetteFactor: 0.46,
         );
       case BattleSceneBackgroundStyle.massBattle:
         return const _SceneDepthProfile(
@@ -288,6 +336,10 @@ class _SceneDepthProfile {
           groundAlpha: 0.22,
           glowAlpha: 0.11,
           vignetteAlpha: 0.38,
+          imageScrim: Color(0x242F2921),
+          imageMistIntensity: 0.12,
+          imageGroundIntensity: 0.34,
+          imageVignetteFactor: 0.48,
         );
       case BattleSceneBackgroundStyle.boss:
         return const _SceneDepthProfile(
@@ -304,6 +356,10 @@ class _SceneDepthProfile {
           groundAlpha: 0.22,
           glowAlpha: 0.13,
           vignetteAlpha: 0.42,
+          imageScrim: Color(0x212D2420),
+          imageMistIntensity: 0.16,
+          imageGroundIntensity: 0.32,
+          imageVignetteFactor: 0.42,
         );
       case BattleSceneBackgroundStyle.mainline:
       case BattleSceneBackgroundStyle.generic:
@@ -321,11 +377,15 @@ class _SceneDepthProfile {
           groundAlpha: 0.2,
           glowAlpha: 0.035,
           vignetteAlpha: 0.34,
+          imageScrim: Color(0x1A2A2218),
+          imageMistIntensity: 0.15,
+          imageGroundIntensity: 0.28,
+          imageVignetteFactor: 0.46,
         );
     }
   }
 
-  static BattleSceneBackgroundStyle _styleFromPath(String? path) {
+  static BattleSceneBackgroundStyle styleFromPath(String? path) {
     final p = path ?? '';
     if (p.contains('innerrealm')) return BattleSceneBackgroundStyle.tower;
     if (p.contains('dock') || p.contains('waterfall') || p.contains('bamboo')) {

@@ -18,6 +18,9 @@ class WuxiaUi {
   static const Color paper2 = Color(0xFFDDCAA3);
   static const Color qing = Color(0xFF566B63); // 青灰（内息/辅）
   static const Color jiang = Color(0xFF8A2B21); // 绛红（点缀/主行动）
+  static const Color battleStatusPaperTop = Color(0xB85A4B3D);
+  static const Color battleStatusPaperBottom = Color(0xCC2E2821);
+  static const Color battleStatusTrack = Color(0xA62A241D);
   static const Color gold = Color(0xFFB08A47); // 金线（仅高阶装帧）
   static const Color muted = Color(
     0xFF6A5E4C,

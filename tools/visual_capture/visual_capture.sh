@@ -3,6 +3,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SWIFT_WINID="$REPO_ROOT/tools/visual_capture/window_id.swift"
+CROP_CONTENT="$REPO_ROOT/tools/visual_capture/crop_window_content.py"
 APP_PROCESS_NAME="wuxia_idle"
 APP_EXECUTABLE="$REPO_ROOT/build/macos/Build/Products/Debug/wuxia_idle.app/Contents/MacOS/wuxia_idle"
 
@@ -326,6 +327,9 @@ run_capture() {
   fi
   local capture_status
   capture_status="$(capture_visual_window "$width" "$height" "$png")"
+  python3 "$CROP_CONTENT" "$png" \
+    --logical-width "$width" \
+    --logical-height "$height" >>"$log"
   kill "$pid" >/dev/null 2>&1 || true
   wait "$pid" >/dev/null 2>&1 || true
   printf 'VISUAL_CAPTURE: %s\n' "$capture_status" >>"$log"

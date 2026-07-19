@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/colors.dart';
+import 'battle_typography_tokens.dart';
 
 /// 通用比例条（phase1_tasks.md T14 §785-786）。
 ///
@@ -15,6 +16,7 @@ class HpBar extends StatelessWidget {
   final bool isInternalForce;
   final bool showLabel;
   final Color? fillColorOverride;
+  final Color? trackColorOverride;
   final double? labelFontSize;
   final bool compactLabel;
 
@@ -31,6 +33,7 @@ class HpBar extends StatelessWidget {
     this.showLabel = true,
     this.labelPrefix = '',
     this.fillColorOverride,
+    this.trackColorOverride,
     this.labelFontSize,
     this.compactLabel = false,
   });
@@ -47,40 +50,47 @@ class HpBar extends StatelessWidget {
 
     return SizedBox(
       height: height,
-      child: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: WuxiaColors.barTrack,
-              borderRadius: borderRadius,
-            ),
-          ),
-          FractionallySizedBox(
-            widthFactor: ratio,
-            child: Container(
-              decoration: BoxDecoration(
-                color: fillColor,
-                borderRadius: borderRadius,
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ColoredBox(
+                key: const ValueKey('battle.hpBarTrack'),
+                color: trackColorOverride ?? WuxiaColors.barTrack,
               ),
             ),
-          ),
-          if (showLabel)
-            Center(
-              child: Text(
-                compactLabel
-                    ? '$labelPrefix${_compactBattleValue(current)}/${_compactBattleValue(max)}'
-                    : '$labelPrefix$current / $max',
-                style: TextStyle(
-                  // 内力条 height 小(9)时 height*0.72≈6.5px 近不可读，设 10px 下限。
-                  fontSize: labelFontSize ?? math.max(height * 0.72, 10.0),
-                  color: WuxiaColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                  height: 1,
-                  shadows: const [Shadow(color: Colors.black54, blurRadius: 2)],
+            FractionallySizedBox(
+              widthFactor: ratio,
+              child: SizedBox.expand(
+                child: ColoredBox(
+                  key: const ValueKey('battle.hpBarFill'),
+                  color: fillColor,
                 ),
               ),
             ),
-        ],
+            if (showLabel)
+              Center(
+                child: Text(
+                  compactLabel
+                      ? '$labelPrefix${_compactBattleValue(current)}/${_compactBattleValue(max)}'
+                      : '$labelPrefix$current / $max',
+                  style: TextStyle(
+                    // 内力条 height 小(9)时 height*0.72≈6.5px 近不可读，设 10px 下限。
+                    fontSize: labelFontSize ?? math.max(height * 0.72, 10.0),
+                    color: WuxiaColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    fontFamilyFallback: BattleTypography.uiFallback,
+                    fontFeatures: BattleTypography.tabularFigures,
+                    height: 1,
+                    shadows: const [
+                      Shadow(color: Colors.black54, blurRadius: 2),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

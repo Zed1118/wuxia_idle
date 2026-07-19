@@ -8,6 +8,7 @@ import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
 import '../../battle/application/battle_providers.dart';
 import '../../battle/presentation/battle_screen.dart';
+import '../../battle/presentation/battle_visual_roster.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -621,6 +622,115 @@ class BattleScenarioData {
     return (left, right);
   }
 
+  /// V2 S10：首发敌人一击阵亡，第四人按击杀日志递补进同一视觉槽。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioV2CasualtyReplacement() {
+    final (leftTemplates, rightTemplates) = scenarioDragLive();
+    final left = [
+      leftTemplates.first.copyWith(actionPoint: 1000, speed: 1000),
+      ...leftTemplates.skip(1),
+    ];
+    final right = <BattleCharacter>[
+      rightTemplates[0].copyWith(currentHp: 1, characterId: 310),
+      rightTemplates[1].copyWith(characterId: 311),
+      rightTemplates[2].copyWith(characterId: 312),
+      rightTemplates[0].copyWith(
+        characterId: 313,
+        slotIndex: 3,
+        currentHp: rightTemplates[0].maxHp,
+      ),
+    ];
+    return (left, right);
+  }
+
+  /// V2 S11：AI 首动释放群体强力技，同 tick 生成至少两条伤害动作。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioV2FastForwardPeak() {
+    final (leftTemplates, right) = scenarioDragLive();
+    const aoe = SkillDef(
+      id: 'v2_fast_forward_aoe',
+      name: '横江式',
+      description: '',
+      type: SkillType.powerSkill,
+      powerMultiplier: 1200,
+      internalForceCost: 100,
+      cooldownTurns: 3,
+      requiresManualTrigger: false,
+      visualEffect: '',
+      targetType: TargetType.aoe,
+    );
+    final first = leftTemplates.first.copyWith(
+      availableSkills: [leftTemplates.first.availableSkills.first, aoe],
+      currentQi: 500,
+      actionPoint: 1000,
+      speed: 1000,
+    );
+    return ([first, ...leftTemplates.skip(1)], right);
+  }
+
+  /// V2 S12：固定在一名残血敌人、玩家下一 action 即可取胜的前一拍。
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioV2PreResult() {
+    final (leftTemplates, rightTemplates) = scenarioDragLive();
+    final left = [
+      leftTemplates.first.copyWith(actionPoint: 1000, speed: 1000),
+      ...leftTemplates.skip(1),
+    ];
+    final right = [rightTemplates.first.copyWith(currentHp: 1, maxHp: 1)];
+    return (left, right);
+  }
+
+  /// V2 S7：同一执招者一签冷却，另一签因真气不足不可用。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioV2ResourcePressure() {
+    final (leftTemplates, right) = scenarioDragLive();
+    final first = leftTemplates.first.copyWith(
+      currentQi: 200,
+      skillCooldowns: const {'dl_single_1': 2},
+    );
+    return ([first, ...leftTemplates.skip(1)], right);
+  }
+
+  /// A 案动态证据：前两名我方角色各带一枚 AI 可自动使用的签。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioV2AutoRotation() {
+    final (leftTemplates, right) = scenarioDragLive();
+    const firstSkill = SkillDef(
+      id: 'v2_auto_rotation_first',
+      name: '崩山式',
+      description: '',
+      type: SkillType.powerSkill,
+      powerMultiplier: 900,
+      internalForceCost: 100,
+      cooldownTurns: 2,
+      requiresManualTrigger: false,
+      visualEffect: '',
+    );
+    const secondSkill = SkillDef(
+      id: 'v2_auto_rotation_second',
+      name: '穿云式',
+      description: '',
+      type: SkillType.powerSkill,
+      powerMultiplier: 850,
+      internalForceCost: 100,
+      cooldownTurns: 2,
+      requiresManualTrigger: false,
+      visualEffect: '',
+    );
+    final first = leftTemplates[0].copyWith(
+      availableSkills: [leftTemplates[0].availableSkills.first, firstSkill],
+      currentQi: 500,
+      actionPoint: 1000,
+      speed: 1000,
+    );
+    final second = leftTemplates[1].copyWith(
+      availableSkills: [leftTemplates[1].availableSkills.first, secondSkill],
+      currentQi: 500,
+      actionPoint: 1000,
+      speed: 900,
+    );
+    return ([first, second, leftTemplates[2]], right);
+  }
+
   /// 群战舞台静态验收：当前三名主战敌 + 四名后续敌军墨影。
   static (List<BattleCharacter>, List<BattleCharacter>)
   scenarioMassBattleStage() {
@@ -982,6 +1092,171 @@ class BattleScenarioData {
 
 // ─── 场景启动器 ────────────────────────────────────────────────────────────────
 
+const int battleV2VisualSeed = 20260719;
+
+enum VisualBattleReadyTarget {
+  initialized,
+  casualtyReplacement,
+  fastForwardPeak,
+  preResult,
+  resourcePressure,
+  autoRotationFirst,
+  autoRotationSecond,
+}
+
+class VisualBattleReplayResult {
+  const VisualBattleReplayResult({
+    required this.state,
+    required this.steps,
+    required this.summary,
+  });
+
+  final BattleState state;
+  final int steps;
+  final String summary;
+}
+
+/// 固定 seed 推进到视觉目标；只调用既有 [BattleNotifier]，不改规则或持久化。
+class VisualBattleReplay {
+  const VisualBattleReplay._();
+
+  static VisualBattleReplayResult run({
+    required BattleNotifier notifier,
+    required BattleState Function() readState,
+    required (List<BattleCharacter>, List<BattleCharacter>) teams,
+    required int seed,
+    required VisualBattleReadyTarget target,
+  }) {
+    final (left, right) = teams;
+    notifier.startBattle(left, right, seed: seed);
+    var state = readState();
+    var steps = 0;
+    while (!matches(target, state) && !state.isFinished && steps < 2000) {
+      notifier.advanceOneAction();
+      state = readState();
+      steps++;
+    }
+    if (!matches(target, state)) {
+      throw StateError(
+        'V2 visual target ${target.name} not reached '
+        '(seed=$seed, tick=${state.tick}, steps=$steps, '
+        'result=${state.result?.name})',
+      );
+    }
+    return VisualBattleReplayResult(
+      state: state,
+      steps: steps,
+      summary: summary(target, state, steps: steps, seed: seed),
+    );
+  }
+
+  static bool matches(VisualBattleReadyTarget target, BattleState state) =>
+      switch (target) {
+        VisualBattleReadyTarget.initialized =>
+          state.leftTeam.length == 3 &&
+              state.rightTeam.length == 3 &&
+              state.actionLog.isEmpty &&
+              !state.isFinished,
+        VisualBattleReadyTarget.casualtyReplacement => _hasCasualtyReplacement(
+          state,
+        ),
+        VisualBattleReadyTarget.fastForwardPeak => _peakActionCount(state) >= 2,
+        VisualBattleReadyTarget.preResult =>
+          !state.isFinished &&
+              state.rightTeam.where((c) => c.isAlive).length == 1 &&
+              state.rightTeam.where((c) => c.isAlive).single.currentHp == 1,
+        VisualBattleReadyTarget.resourcePressure => _hasResourcePressure(state),
+        VisualBattleReadyTarget.autoRotationFirst => _autoRotationActors(
+          state,
+        ).isNotEmpty,
+        VisualBattleReadyTarget.autoRotationSecond =>
+          _autoRotationActors(state).length >= 2,
+      };
+
+  static List<int> _autoRotationActors(BattleState state) {
+    final playerIds = state.leftTeam.map((actor) => actor.characterId).toSet();
+    final actors = <int>[];
+    for (final action in state.actionLog) {
+      final skill = action.skill;
+      if (!playerIds.contains(action.actorId) ||
+          skill == null ||
+          skill.type == SkillType.normalAttack ||
+          skill.requiresManualTrigger) {
+        continue;
+      }
+      if (!actors.contains(action.actorId)) actors.add(action.actorId);
+    }
+    return actors;
+  }
+
+  static bool _hasCasualtyReplacement(BattleState state) {
+    if (state.rightTeam.length <= 3) return false;
+    final openingIds = state.rightTeam
+        .take(3)
+        .map((c) => c.characterId)
+        .toSet();
+    final roster = BattleVisualRoster.fromState(state);
+    return state.actionLog.any(
+          (action) =>
+              action.defeatedTarget && openingIds.contains(action.targetId),
+        ) &&
+        roster.rightSlots.whereType<int>().any(
+          (characterId) => !openingIds.contains(characterId),
+        );
+  }
+
+  static int _peakActionCount(BattleState state) {
+    if (state.actionLog.isEmpty) return 0;
+    final last = state.actionLog.last;
+    return state.actionLog
+        .where(
+          (action) =>
+              action.tick == last.tick &&
+              action.actorId == last.actorId &&
+              action.skill?.id == last.skill?.id &&
+              action.attackResult != null,
+        )
+        .length;
+  }
+
+  static bool _hasResourcePressure(BattleState state) {
+    if (state.leftTeam.isEmpty) return false;
+    final focus = state.leftTeam.first;
+    final hasCooldown = focus.skillCooldowns.values.any((turns) => turns > 0);
+    final hasQiShortage = focus.availableSkills.any(
+      (skill) =>
+          skill.qiCost > focus.currentQi &&
+          (focus.skillCooldowns[skill.id] ?? 0) == 0,
+    );
+    return hasCooldown && hasQiShortage;
+  }
+
+  static String summary(
+    VisualBattleReadyTarget target,
+    BattleState state, {
+    required int steps,
+    required int seed,
+  }) {
+    final leftAlive = state.leftTeam.where((c) => c.isAlive).length;
+    final rightAlive = state.rightTeam.where((c) => c.isAlive).length;
+    final extras = switch (target) {
+      VisualBattleReadyTarget.casualtyReplacement =>
+        ' slots=${BattleVisualRoster.fromState(state).rightSlots.join(',')}',
+      VisualBattleReadyTarget.fastForwardPeak =>
+        ' peakActions=${_peakActionCount(state)}',
+      VisualBattleReadyTarget.autoRotationFirst ||
+      VisualBattleReadyTarget.autoRotationSecond =>
+        ' rotationActors=${_autoRotationActors(state).join(',')}'
+            ' activeActor=${state.actionLog.last.actorId}'
+            ' activeSkill=${state.actionLog.last.skill?.id}',
+      _ => '',
+    };
+    return 'seed=$seed tick=${state.tick} steps=$steps '
+        'leftAlive=$leftAlive rightAlive=$rightAlive '
+        'target=${target.name} actions=${state.actionLog.length}$extras';
+  }
+}
+
 /// 将指定场景的 teams 推入 [BattleNotifier] 并渲染 [BattleScreen]。
 ///
 /// 结束后通过 [BattleScreen.onBattleEnd] 回 pop 到 [BattleTestMenu]。
@@ -1014,6 +1289,10 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   /// 战斗冻结 seed 初态 + 顶栏出「单步」键供验收者逐步推进操作点选。
   final bool startPaused;
 
+  /// V2 验收 route 专用：由固定 seed 回放控制器命中目标状态后才允许 READY。
+  final VisualBattleReadyTarget? readyTarget;
+  final ValueChanged<String>? onTargetReady;
+
   const ScenarioLauncher({
     required this.teamsFactory,
     required this.hint,
@@ -1025,6 +1304,8 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
     this.previewPendingCharacterId,
     this.previewPendingSkillId,
     this.startPaused = false,
+    this.readyTarget,
+    this.onTargetReady,
     super.key,
   });
 
@@ -1038,10 +1319,26 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final (left, right) = widget.teamsFactory();
-      ref
-          .read(battleProvider.notifier)
-          .startBattle(left, right, seed: widget.seed);
+      final teams = widget.teamsFactory();
+      final target = widget.readyTarget;
+      if (target == null) {
+        final (left, right) = teams;
+        ref
+            .read(battleProvider.notifier)
+            .startBattle(left, right, seed: widget.seed);
+        return;
+      }
+      final result = VisualBattleReplay.run(
+        notifier: ref.read(battleProvider.notifier),
+        readState: () => ref.read(battleProvider),
+        teams: teams,
+        seed: widget.seed ?? battleV2VisualSeed,
+        target: target,
+      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        widget.onTargetReady?.call(result.summary);
+      });
     });
   }
 

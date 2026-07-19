@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 
 import '../domain/battle_state.dart';
@@ -6,6 +8,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'avatar_status_tags.dart';
+import 'battle_typography_tokens.dart';
 import 'countdown_ring.dart';
 import 'guardian_ward_presentation.dart';
 import 'hp_bar.dart';
@@ -13,6 +16,36 @@ import '../../../shared/widgets/asset_fallback.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 
 enum CharacterDisplayMode { avatar, stageStandee }
+
+/// 战斗立绘统一色级：轻抬暖灰黑位、压高光并降低色彩通道分离。
+/// 只包人物位图，不影响 HP/真气、状态标签与战场背景。
+const battleStandeeFusionMatrix = <double>[
+  0.74,
+  0.10,
+  0.06,
+  0,
+  12,
+  0.08,
+  0.75,
+  0.07,
+  0,
+  10,
+  0.06,
+  0.14,
+  0.67,
+  0,
+  8,
+  0,
+  0,
+  0,
+  0.96,
+  0,
+];
+
+const battleStandeeFusionOpacity = 0.96;
+const battleStandeeEdgeSofteningSigma = 0.38;
+const battleStandeeGroundingOpacity = 0.30;
+const battleStandeeGroundingWashOpacity = 0.16;
 
 /// 战斗角色头像（phase1_tasks.md T14 §784;M4 Stage 3 2026-05-21 美术接入)。
 ///
@@ -334,6 +367,23 @@ class _StageCharacterStandee extends StatelessWidget {
             ).createShader(rect),
             child: image,
           );
+    portraitImage = ImageFiltered(
+      key: const ValueKey('battle.stageStandeeEdgeSoftening'),
+      imageFilter: ui.ImageFilter.blur(
+        sigmaX: battleStandeeEdgeSofteningSigma,
+        sigmaY: battleStandeeEdgeSofteningSigma,
+        tileMode: ui.TileMode.decal,
+      ),
+      child: ColorFiltered(
+        key: const ValueKey('battle.stageStandeeFusionGrade'),
+        colorFilter: const ColorFilter.matrix(battleStandeeFusionMatrix),
+        child: Opacity(
+          key: const ValueKey('battle.stageStandeeFusionOpacity'),
+          opacity: battleStandeeFusionOpacity,
+          child: portraitImage,
+        ),
+      ),
+    );
     if (inkMirror) {
       portraitImage = ColorFiltered(
         key: const ValueKey('battle.innerDemonInkMirror'),
@@ -463,12 +513,19 @@ class _StageCharacterStandee extends StatelessWidget {
       ),
     );
 
-    final dimmed = Opacity(
-      opacity: character.isAlive ? 1 : 0.45,
-      child: content,
+    if (character.isAlive) return content;
+    return Transform.translate(
+      key: const ValueKey('battle.stageStandeeDefeatedSink'),
+      offset: Offset(0, height * 0.018),
+      child: ColorFiltered(
+        colorFilter: _grayscaleFilter,
+        child: Opacity(
+          key: const ValueKey('battle.stageStandeeDefeatedFade'),
+          opacity: 0.45,
+          child: content,
+        ),
+      ),
     );
-    if (character.isAlive) return dimmed;
-    return ColorFiltered(colorFilter: _grayscaleFilter, child: dimmed);
   }
 }
 
@@ -508,21 +565,27 @@ class StageCharacterStatusOverlay extends StatelessWidget {
       child: Opacity(
         opacity: character.isAlive ? 1 : 0.45,
         child: Container(
+          key: const ValueKey('battle.stageStatusInkRubbing'),
           padding: const EdgeInsets.fromLTRB(5, 2, 5, 3),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withValues(alpha: 0.28),
-                Colors.black.withValues(alpha: 0.90),
+                WuxiaUi.battleStatusPaperTop,
+                WuxiaUi.battleStatusPaperBottom,
               ],
             ),
             border: Border(
-              bottom: BorderSide(color: borderColor.withValues(alpha: 0.78)),
+              top: BorderSide(color: WuxiaUi.paper.withValues(alpha: 0.22)),
+              bottom: BorderSide(color: borderColor.withValues(alpha: 0.62)),
             ),
-            boxShadow: const [
-              BoxShadow(color: Colors.black54, blurRadius: 8, spreadRadius: 1),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2B251E).withValues(alpha: 0.24),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
             ],
           ),
           child: Column(
@@ -533,7 +596,7 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: WuxiaColors.textPrimary,
+                  color: WuxiaUi.ink,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                   shadows: [Shadow(color: Colors.black, blurRadius: 4)],
@@ -545,7 +608,8 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                 max: character.maxHp,
                 height: 11,
                 fillColorOverride: WuxiaUi.jiang,
-                labelFontSize: 8,
+                trackColorOverride: WuxiaUi.battleStatusTrack,
+                labelFontSize: BattleTypography.t5,
                 compactLabel: true,
               ),
               const SizedBox(height: 1),
@@ -556,7 +620,8 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                 isInternalForce: true,
                 labelPrefix: UiStrings.internalForceShortLabel,
                 fillColorOverride: WuxiaUi.qing,
-                labelFontSize: 7.5,
+                trackColorOverride: WuxiaUi.battleStatusTrack,
+                labelFontSize: BattleTypography.t5,
                 compactLabel: true,
               ),
             ],
@@ -576,7 +641,9 @@ class _StandeeGroundingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width * 0.5, size.height * 0.58);
     final contact = Paint()
-      ..color = const Color(0xFF17130F).withValues(alpha: 0.46)
+      ..color = const Color(
+        0xFF2B251E,
+      ).withValues(alpha: battleStandeeGroundingOpacity)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
     canvas.drawOval(
       Rect.fromCenter(
@@ -588,7 +655,9 @@ class _StandeeGroundingPainter extends CustomPainter {
     );
 
     final wash = Paint()
-      ..color = const Color(0xFF29231D).withValues(alpha: 0.24)
+      ..color = const Color(
+        0xFF4A4034,
+      ).withValues(alpha: battleStandeeGroundingWashOpacity)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 1.4
@@ -908,6 +977,10 @@ _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
     scale: 0.96,
     horizontalShiftFraction: 0.015,
   ),
+  // stage_01_05 为 3v1；撑伞图的有效 alpha 面积较宽，若沿用 1v1 画布
+  // 放大，会达到我方三人中位面积的约 2.07 倍。0.81 将 §3.5 唯一口径
+  // 收进约 1.36，同时不改变阵列锚点或案台比例。
+  WuxiaUi.battleUmbrellaStandee => (scale: 0.81, horizontalShiftFraction: 0),
   WuxiaUi.battleGreySwordsmanStandee => (
     scale: 0.95,
     horizontalShiftFraction: 0.02,

@@ -8,6 +8,23 @@ import 'package:wuxia_idle/shared/widgets/wuxia_image.dart';
 Widget _wrap(Widget c) => MaterialApp(home: Scaffold(body: c));
 
 void main() {
+  test('普通主线遇到 Boss 时升级为 Boss 场景 profile', () {
+    expect(
+      battleSceneStyleForEncounter(
+        BattleSceneBackgroundStyle.mainline,
+        hasBoss: true,
+      ),
+      BattleSceneBackgroundStyle.boss,
+    );
+    expect(
+      battleSceneStyleForEncounter(
+        BattleSceneBackgroundStyle.tower,
+        hasBoss: true,
+      ),
+      BattleSceneBackgroundStyle.tower,
+    );
+  });
+
   testWidgets('path 非空保留背景 Image + scrim,并叠加水墨层次', (tester) async {
     await tester.pumpWidget(
       _wrap(
@@ -32,10 +49,37 @@ void main() {
       find.byKey(const ValueKey('battle_scene_ground_texture')),
       findsOneWidget,
     );
-    final scrim = find.byWidgetPredicate(
-      (w) => w is ColoredBox && w.color == WuxiaColors.battleSceneScrim,
+    expect(
+      find.byKey(const ValueKey('battle_scene_image_scrim')),
+      findsOneWidget,
     );
-    expect(scrim, findsOneWidget);
+  });
+
+  testWidgets('有图山道使用浅暖 scrim 且收束外缘压暗', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        const BattleSceneBackground(
+          path: WuxiaUi.battleMountainPassStage,
+          style: BattleSceneBackgroundStyle.mainline,
+        ),
+      ),
+    );
+
+    final scrim = tester.widget<ColoredBox>(
+      find.byKey(const ValueKey('battle_scene_image_scrim')),
+    );
+    expect(scrim.color.a, lessThanOrEqualTo(0.18));
+    expect(scrim.color.r, greaterThan(scrim.color.b));
+
+    final vignette =
+        tester
+                .widget<DecoratedBox>(
+                  find.byKey(const ValueKey('battle_scene_glow_vignette')),
+                )
+                .decoration
+            as BoxDecoration;
+    final gradient = vignette.gradient! as RadialGradient;
+    expect(gradient.colors.last.a, lessThanOrEqualTo(0.20));
   });
 
   testWidgets('path null 仍有非空水墨兜底,且不创建背景 Image', (tester) async {
@@ -103,6 +147,37 @@ void main() {
       innerDemonGradient.colors.first,
       isNot(lightFootGradient.colors.first),
     );
+  });
+
+  testWidgets('六类有图场景使用受控且不过暗的独立 scrim profile', (tester) async {
+    final colors = <Color>{};
+    for (final style in const [
+      BattleSceneBackgroundStyle.mainline,
+      BattleSceneBackgroundStyle.tower,
+      BattleSceneBackgroundStyle.boss,
+      BattleSceneBackgroundStyle.innerDemon,
+      BattleSceneBackgroundStyle.lightFoot,
+      BattleSceneBackgroundStyle.massBattle,
+    ]) {
+      await tester.pumpWidget(
+        _wrap(
+          BattleSceneBackground(
+            path: 'assets/scenes/profile_${style.name}.png',
+            style: style,
+          ),
+        ),
+      );
+      final scrim = tester.widget<ColoredBox>(
+        find.byKey(const ValueKey('battle_scene_image_scrim')),
+      );
+      colors.add(scrim.color);
+      expect(scrim.color.a, lessThanOrEqualTo(0.18), reason: style.name);
+      expect(
+        find.byKey(ValueKey('battle_scene_profile_${style.name}')),
+        findsOneWidget,
+      );
+    }
+    expect(colors, hasLength(6));
   });
 
   testWidgets('爬塔背景图单独进入冷灰色分级，不染色其他战斗层', (tester) async {

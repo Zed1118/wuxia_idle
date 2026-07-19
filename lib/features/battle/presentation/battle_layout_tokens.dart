@@ -1,20 +1,25 @@
+import 'dart:ui';
+
 /// 战斗舞台与武学案台的布局尺寸。
 ///
 /// 视觉数值集中在此，避免案台后续换立绘/动作模板时在多个
 /// widget 中散改魔法数。
 abstract final class BattleLayoutTokens {
-  static const double headerHeight = 58;
-  static const double commandDeskHeight = 188;
-  static const double autoRotationDeskHeight = 116;
-  static const double commandDeskHorizontalPadding = 28;
-  static const double commandDeskVerticalPadding = 12;
-  static const double actorRailWidth = 222;
+  static const double headerFraction = 0.065;
+  static const double commandDeskFraction = 0.25;
+  static const double headerMinHeight = 44;
+  static const double headerMaxHeight = 60;
+  static const double commandDeskMinHeight = 172;
+  static const double commandDeskMaxHeight = 230;
+  static const double commandDeskHorizontalPadding = 4;
+  static const double commandDeskVerticalPadding = 5;
+  static const double focusRailFraction = 0.19;
+  static const double pouchRailFraction = 0.21;
   static const double actorChipHeight = 36;
   static const double skillSlotHeight = 150;
   static const double skillSlotGap = 8;
-  static const double sectionGap = 16;
+  static const double sectionGap = 4;
   static const double sectionDividerHeight = 148;
-  static const double pouchWidth = 222;
   static const double pouchSlotSize = 54;
   static const double pouchSlotGap = 8;
   static const double stageHorizontalPadding = 10;
@@ -23,5 +28,58 @@ abstract final class BattleLayoutTokens {
   static const double stageMaxStandeeHeight = 392;
   static const double stageWidthFraction = 0.19;
   static const double stageHeightFraction = 0.78;
-  static const double bossStageScale = 1.22;
+  static const double bossStageScale = 1.16;
+}
+
+/// 同一视口下的战斗三段式布局量测。
+///
+/// 顶栏与案台以比例为主，极端窗口再由上下限守住点击区；战场吃掉精确余量，
+/// 因而三段永远闭合，不由自动/点选模式各自决定高度。
+final class BattleLayoutMetrics {
+  const BattleLayoutMetrics._({
+    required this.viewport,
+    required this.headerHeight,
+    required this.battlefieldHeight,
+    required this.commandDeskHeight,
+  });
+
+  final Size viewport;
+  final double headerHeight;
+  final double battlefieldHeight;
+  final double commandDeskHeight;
+
+  double get autoRotationDeskHeight => commandDeskHeight;
+  double get focusRailWidth =>
+      viewport.width * BattleLayoutTokens.focusRailFraction;
+  double get pouchRailWidth =>
+      viewport.width * BattleLayoutTokens.pouchRailFraction;
+  double get skillRailWidth =>
+      viewport.width -
+      BattleLayoutTokens.commandDeskHorizontalPadding * 2 -
+      BattleLayoutTokens.sectionGap * 3 -
+      1 -
+      focusRailWidth -
+      pouchRailWidth;
+
+  static BattleLayoutMetrics resolve(Size viewport) {
+    final headerHeight = (viewport.height * BattleLayoutTokens.headerFraction)
+        .clamp(
+          BattleLayoutTokens.headerMinHeight,
+          BattleLayoutTokens.headerMaxHeight,
+        )
+        .toDouble();
+    final commandDeskHeight =
+        (viewport.height * BattleLayoutTokens.commandDeskFraction)
+            .clamp(
+              BattleLayoutTokens.commandDeskMinHeight,
+              BattleLayoutTokens.commandDeskMaxHeight,
+            )
+            .toDouble();
+    return BattleLayoutMetrics._(
+      viewport: viewport,
+      headerHeight: headerHeight,
+      battlefieldHeight: viewport.height - headerHeight - commandDeskHeight,
+      commandDeskHeight: commandDeskHeight,
+    );
+  }
 }

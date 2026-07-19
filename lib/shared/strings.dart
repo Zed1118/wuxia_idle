@@ -33,6 +33,7 @@ class UiStrings {
 
   static const String tickPrefix = '节拍';
   static const String battleLog = '战斗日志';
+  static const String battleLogShort = '日志';
   // H3:战斗暂停(停 tick + 遮罩 + 继续)。
   static const String battlePause = '暂停';
   static const String battleResume = '继续';
@@ -57,6 +58,8 @@ class UiStrings {
   static const String fastForward = '快进';
   static const String battleAutoMode = '自动战斗';
   static const String battleAutoIntervention = '可点选';
+  static const String battleAutoModeShort = '自动';
+  static const String battleAutoInterventionShort = '点选';
   static const String battleAutoModeHint = '全程托管，角色按招式轮转谱自行出手。';
   static const String battleAutoInterventionHint =
       '战斗持续自动；点武学签可预支该角色下一次行动，出手后重新回势。';

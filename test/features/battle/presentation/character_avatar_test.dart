@@ -219,6 +219,89 @@ void main() {
     );
   });
 
+  testWidgets('战场人物信息板使用半透明窄墨拓而非纯黑矩形', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 180,
+            height: 260,
+            child: Stack(
+              children: [
+                StageCharacterStatusOverlay(
+                  character: _char(isBoss: false),
+                  battleState: null,
+                  width: 180,
+                  height: 260,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final rubbing = tester.widget<Container>(
+      find.byKey(const ValueKey('battle.stageStatusInkRubbing')),
+    );
+    final decoration = rubbing.decoration! as BoxDecoration;
+    final colors = (decoration.gradient! as LinearGradient).colors;
+    expect(colors, everyElement(isNot(Colors.black)));
+    expect(colors, everyElement(predicate<Color>((color) => color.a < 0.86)));
+  });
+
+  testWidgets('战场立绘使用固定暖灰色级与亚像素边缘柔化层', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: _char(isBoss: false),
+            displayMode: CharacterDisplayMode.stageStandee,
+            standeeWidth: 160,
+            standeeHeight: 230,
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(const ValueKey('battle.stageStandeeFusionGrade')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('battle.stageStandeeEdgeSoftening')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('battle.stageStandeeFusionOpacity')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('阵亡站姿灰化下沉并遵守 P0-2 opacity 0.45', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: _char(isBoss: false).copyWith(isAlive: false),
+            displayMode: CharacterDisplayMode.stageStandee,
+            standeeWidth: 160,
+            standeeHeight: 230,
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(const ValueKey('battle.stageStandeeDefeatedSink')),
+      findsOneWidget,
+    );
+    final fade = tester.widget<Opacity>(
+      find.byKey(const ValueKey('battle.stageStandeeDefeatedFade')),
+    );
+    expect(fade.opacity, 0.45);
+  });
+
   testWidgets('Boss全身立绘不再绘制矩形金色黄底', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -278,12 +361,16 @@ void main() {
     final banditArcher = await opticalTransformFor(
       'assets/enemies/killer_b.png',
     );
+    final umbrellaBoss = await opticalTransformFor(
+      'assets/enemies/umbrella.png',
+    );
 
     expect(founder.$1, closeTo(1.055, 0.001));
     expect(firstDisciple.$2, greaterThan(0));
     expect(banditBlade.$1, closeTo(1.18, 0.001));
     expect(banditBlade.$3, greaterThan(0));
     expect(banditArcher.$1, closeTo(1.045, 0.001));
+    expect(umbrellaBoss.$1, closeTo(0.81, 0.001));
   });
 
   testWidgets('战场将已配套的旧原画映射到对应透明立绘', (tester) async {

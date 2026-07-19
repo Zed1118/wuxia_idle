@@ -73,6 +73,31 @@ enum VisualRoute {
     'battle_mass_battle_stage',
     '战斗屏·群战三名主战立绘 + 余敌墨影队列静态验收',
   ),
+  battleV2CasualtyReplacement(
+    'battle_v2_casualty_replacement',
+    '战斗界面 V2·固定 seed 回放至首次阵亡递补完成后暂停',
+  ),
+  battleV2FastForwardPeak(
+    'battle_v2_fast_forward_peak',
+    '战斗界面 V2·固定 seed 回放至同槽同拍双伤害峰值后暂停',
+  ),
+  battleV2PreResult(
+    'battle_v2_pre_result',
+    '战斗界面 V2·固定 seed 冻结在最后一次致胜 action 之前',
+  ),
+  battleV2Neutral3v3('battle_v2_neutral_3v3', '战斗界面 V2·中性标准 3v3 静态帧'),
+  battleV2ResourcePressure(
+    'battle_v2_resource_pressure',
+    '战斗界面 V2·冷却签与真气不足签同帧静态验收',
+  ),
+  battleV2AutoRotationFirst(
+    'battle_v2_auto_rotation_first',
+    '战斗界面 V2·自动案台第一名执招者与招式签亮起',
+  ),
+  battleV2AutoRotationSecond(
+    'battle_v2_auto_rotation_second',
+    '战斗界面 V2·自动案台第二名执招者与招式签轮转亮起',
+  ),
   battleVictoryFirstClear(
     'battle_victory_first_clear',
     '胜利弹窗·Boss 首胜封签 + 掉落/升层/共鸣三段验收',
@@ -317,6 +342,18 @@ enum VisualRoute {
 
   /// 人读说明,进 manifest 供读图对照。
   final String label;
+
+  /// 需要由目标战斗状态控制 READY 的 V2 验收路由。
+  bool get controlsReadiness => switch (this) {
+    battleV2CasualtyReplacement ||
+    battleV2FastForwardPeak ||
+    battleV2PreResult ||
+    battleV2Neutral3v3 ||
+    battleV2ResourcePressure ||
+    battleV2AutoRotationFirst ||
+    battleV2AutoRotationSecond => true,
+    _ => false,
+  };
 }
 
 /// 纯函数:id 字符串 → 枚举,未知/空 → null。便于单测。

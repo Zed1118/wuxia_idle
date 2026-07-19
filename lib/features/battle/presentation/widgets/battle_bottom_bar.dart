@@ -9,7 +9,12 @@ import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../battle_layout_tokens.dart';
+import '../battle_typography_tokens.dart';
 import '../countdown_ring.dart';
+import 'battle_command_desk.dart';
+import 'battle_focus_rail.dart';
+import 'battle_pouch_rail.dart';
+import 'battle_skill_slip.dart';
 
 /// 纯自动战斗的只读招式轮转谱。
 ///
@@ -22,12 +27,13 @@ class AutoRotationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final metrics = BattleLayoutMetrics.resolve(MediaQuery.sizeOf(context));
     final enemyCharging = state.rightTeam.any(
       (character) => character.isAlive && character.chargingSkill != null,
     );
     return Container(
       key: const ValueKey('battle_auto_rotation_desk'),
-      height: BattleLayoutTokens.autoRotationDeskHeight,
+      height: metrics.autoRotationDeskHeight,
       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
       decoration: const BoxDecoration(
         color: Color(0xFF211D18),
@@ -265,7 +271,6 @@ class _AutoSkillState extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF322C24),
           border: Border.all(color: accent.withValues(alpha: 0.72)),
-          borderRadius: BorderRadius.circular(2),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -287,7 +292,7 @@ class _AutoSkillState extends StatelessWidget {
                 color: ready && !reserved
                     ? const Color(0xFFD7B879)
                     : WuxiaColors.textMuted,
-                fontSize: 8,
+                fontSize: BattleTypography.t5,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -313,6 +318,116 @@ class _AutoSkillStateText extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// A 案：自动观战复用可点选模式的名帖、七签、行囊三分区。
+///
+/// 最近一次我方动作只驱动签面亮起，不预测 AI 的下一步决策。
+/// 子树不创建按钮、焦点、长按或拖放入口。
+class AutoCommandDesk extends StatelessWidget {
+  const AutoCommandDesk({super.key, required this.state, required this.beat});
+
+  final BattleState state;
+  final Animation<double> beat;
+
+  @override
+  Widget build(BuildContext context) {
+    BattleAction? lastPlayerAction;
+    for (final action in state.actionLog.reversed) {
+      if (state.leftTeam.any((actor) => actor.characterId == action.actorId)) {
+        lastPlayerAction = action;
+        break;
+      }
+    }
+    final fallbackIndex = state.leftTeam.indexWhere((actor) => actor.isAlive);
+    final activeIndex = lastPlayerAction == null
+        ? (fallbackIndex < 0 ? 0 : fallbackIndex)
+        : state.leftTeam.indexWhere(
+            (actor) => actor.characterId == lastPlayerAction!.actorId,
+          );
+    final activeActor = activeIndex >= 0 && activeIndex < state.leftTeam.length
+        ? state.leftTeam[activeIndex]
+        : null;
+    final skills =
+        <SkillDef>[
+          if (activeActor != null)
+            for (final skill in activeActor.availableSkills)
+              if (skill.type != SkillType.normalAttack &&
+                  !skill.requiresManualTrigger)
+                skill,
+        ]..sort(
+          (a, b) => BottomBar._groupRank(a).compareTo(BottomBar._groupRank(b)),
+        );
+
+    return BattleCommandDeskSurface(
+      builder: (context, metrics) => KeyedSubtree(
+        key: const ValueKey('battle_auto_rotation_desk'),
+        child: Opacity(
+          opacity: 0.78,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              FocusSelector(
+                team: state.leftTeam,
+                focusSlotIndex: activeIndex,
+                onSelectFocus: (_) {},
+                width: metrics.focusRailWidth,
+                interactive: false,
+                title: UiStrings.battleAutoRotation,
+                activeCharacterId: activeActor?.characterId,
+              ),
+              const SizedBox(width: BattleLayoutTokens.sectionGap),
+              Container(
+                width: 1,
+                height: BattleLayoutTokens.sectionDividerHeight,
+                color: const Color(0xFF6D5940),
+              ),
+              const SizedBox(width: BattleLayoutTokens.sectionGap),
+              SizedBox(
+                key: const ValueKey('battle_desk_skills_region'),
+                width: metrics.skillRailWidth,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var index = 0; index < 7; index++) ...[
+                      Expanded(
+                        key: ValueKey('battle_skill_slot_$index'),
+                        child: index < skills.length && activeActor != null
+                            ? SkillCommandButton(
+                                character: activeActor,
+                                skill: skills[index],
+                                interventionWindowOpen: true,
+                                isPending: false,
+                                pendingTapEnabled: false,
+                                queuedAnother: false,
+                                highlight:
+                                    lastPlayerAction?.skill?.id ==
+                                    skills[index].id,
+                                allowPlayerIntervention: false,
+                                readOnly: true,
+                                autoActive:
+                                    lastPlayerAction?.skill?.id ==
+                                    skills[index].id,
+                                beat: beat,
+                                onTap: () {},
+                                onShowInfo: () {},
+                              )
+                            : EmptySkillSlot(index: index),
+                      ),
+                      if (index < 6)
+                        const SizedBox(width: BattleLayoutTokens.skillSlotGap),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: BattleLayoutTokens.sectionGap),
+              BattlePouchRail(width: metrics.pouchRailWidth),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// T1 武学案台：左侧执招者 + 中部 7 个稳定技能签 + 右侧 3 个战备行囊位。
@@ -366,116 +481,103 @@ class BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final enemyCharging = state.rightTeam.any(
-      (e) => e.isAlive && e.chargingSkill != null,
-    );
-    final hasFocus =
-        focusSlotIndex >= 0 && focusSlotIndex < state.leftTeam.length;
-    final focus = hasFocus ? state.leftTeam[focusSlotIndex] : null;
-    final domainPending = focus == null
-        ? null
-        : state.pendingUltimates[focus.characterId];
-    final localPendingForFocus =
-        focus != null && pendingCharacterId == focus.characterId
-        ? pendingSkillId
-        : null;
+    return BattleCommandDeskSurface(
+      builder: (context, metrics) {
+        final enemyCharging = state.rightTeam.any(
+          (e) => e.isAlive && e.chargingSkill != null,
+        );
+        final hasFocus =
+            focusSlotIndex >= 0 && focusSlotIndex < state.leftTeam.length;
+        final focus = hasFocus ? state.leftTeam[focusSlotIndex] : null;
+        final domainPending = focus == null
+            ? null
+            : state.pendingUltimates[focus.characterId];
+        final localPendingForFocus =
+            focus != null && pendingCharacterId == focus.characterId
+            ? pendingSkillId
+            : null;
 
-    final skills = <SkillDef>[
-      if (focus != null)
-        for (final s in focus.availableSkills)
-          if (s.type != SkillType.normalAttack) s,
-    ]..sort((a, b) => _groupRank(a).compareTo(_groupRank(b)));
+        final skills = <SkillDef>[
+          if (focus != null)
+            for (final s in focus.availableSkills)
+              if (s.type != SkillType.normalAttack) s,
+        ]..sort((a, b) => _groupRank(a).compareTo(_groupRank(b)));
 
-    return Container(
-      key: const ValueKey('battle_command_desk'),
-      height: BattleLayoutTokens.commandDeskHeight,
-      padding: const EdgeInsets.symmetric(
-        horizontal: BattleLayoutTokens.commandDeskHorizontalPadding,
-        vertical: BattleLayoutTokens.commandDeskVerticalPadding,
-      ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF211D18),
-        image: DecorationImage(
-          image: AssetImage(WuxiaUi.paperBg),
-          fit: BoxFit.cover,
-          opacity: 0.12,
-          colorFilter: ColorFilter.mode(Color(0xFF33291F), BlendMode.multiply),
-        ),
-        border: Border(top: BorderSide(color: Color(0xFF756047), width: 1.2)),
-        boxShadow: [
-          BoxShadow(color: Colors.black54, blurRadius: 18, spreadRadius: 3),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          FocusSelector(
-            team: state.leftTeam,
-            focusSlotIndex: focusSlotIndex,
-            onSelectFocus: onSelectFocus,
-          ),
-          const SizedBox(width: BattleLayoutTokens.sectionGap),
-          Container(
-            width: 1,
-            height: BattleLayoutTokens.sectionDividerHeight,
-            color: const Color(0xFF6D5940),
-          ),
-          const SizedBox(width: BattleLayoutTokens.sectionGap),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (var index = 0; index < 7; index++) ...[
-                  Expanded(
-                    key: ValueKey('battle_skill_slot_$index'),
-                    child: index < skills.length && focus != null
-                        ? Builder(
-                            builder: (context) {
-                              final skill = skills[index];
-                              final localPendingThis =
-                                  localPendingForFocus == skill.id;
-                              final domainPendingThis =
-                                  domainPending?.id == skill.id;
-                              final button = SkillCommandButton(
-                                character: focus,
-                                skill: skill,
-                                interventionWindowOpen:
-                                    state.actorQueue.isEmpty &&
-                                    !state.isFinished,
-                                isPending:
-                                    localPendingThis || domainPendingThis,
-                                pendingTapEnabled: localPendingThis,
-                                queuedAnother:
-                                    domainPending != null &&
-                                    domainPending.id != skill.id,
-                                highlight: enemyCharging && skill.canInterrupt,
-                                allowPlayerIntervention:
-                                    allowPlayerIntervention,
-                                beat: beat,
-                                onTap: () =>
-                                    onSkillTap(focus.characterId, skill),
-                                onShowInfo: () => onShowSkillInfo(skill),
-                              );
-                              return localPendingThis
-                                  ? CompositedTransformTarget(
-                                      link: skillTargetLink,
-                                      child: button,
-                                    )
-                                  : button;
-                            },
-                          )
-                        : EmptySkillSlot(index: index),
-                  ),
-                  if (index < 6)
-                    const SizedBox(width: BattleLayoutTokens.skillSlotGap),
-                ],
-              ],
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            FocusSelector(
+              team: state.leftTeam,
+              focusSlotIndex: focusSlotIndex,
+              onSelectFocus: onSelectFocus,
+              width: metrics.focusRailWidth,
             ),
-          ),
-          const SizedBox(width: BattleLayoutTokens.sectionGap),
-          const BattlePouchRail(),
-        ],
-      ),
+            const SizedBox(width: BattleLayoutTokens.sectionGap),
+            Container(
+              width: 1,
+              height: BattleLayoutTokens.sectionDividerHeight,
+              color: const Color(0xFF6D5940),
+            ),
+            const SizedBox(width: BattleLayoutTokens.sectionGap),
+            SizedBox(
+              key: const ValueKey('battle_desk_skills_region'),
+              width: metrics.skillRailWidth,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var index = 0; index < 7; index++) ...[
+                    Expanded(
+                      key: ValueKey('battle_skill_slot_$index'),
+                      child: index < skills.length && focus != null
+                          ? Builder(
+                              builder: (context) {
+                                final skill = skills[index];
+                                final localPendingThis =
+                                    localPendingForFocus == skill.id;
+                                final domainPendingThis =
+                                    domainPending?.id == skill.id;
+                                final button = SkillCommandButton(
+                                  character: focus,
+                                  skill: skill,
+                                  interventionWindowOpen:
+                                      state.actorQueue.isEmpty &&
+                                      !state.isFinished,
+                                  isPending:
+                                      localPendingThis || domainPendingThis,
+                                  pendingTapEnabled: localPendingThis,
+                                  queuedAnother:
+                                      domainPending != null &&
+                                      domainPending.id != skill.id,
+                                  highlight:
+                                      enemyCharging && skill.canInterrupt,
+                                  allowPlayerIntervention:
+                                      allowPlayerIntervention,
+                                  beat: beat,
+                                  onTap: () =>
+                                      onSkillTap(focus.characterId, skill),
+                                  onShowInfo: () => onShowSkillInfo(skill),
+                                );
+                                return localPendingThis
+                                    ? CompositedTransformTarget(
+                                        link: skillTargetLink,
+                                        child: button,
+                                      )
+                                    : button;
+                              },
+                            )
+                          : EmptySkillSlot(index: index),
+                    ),
+                    if (index < 6)
+                      const SizedBox(width: BattleLayoutTokens.skillSlotGap),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: BattleLayoutTokens.sectionGap),
+            BattlePouchRail(width: metrics.pouchRailWidth),
+          ],
+        );
+      },
     );
   }
 }
@@ -485,31 +587,33 @@ class FocusSelector extends StatelessWidget {
   final List<BattleCharacter> team;
   final int focusSlotIndex;
   final void Function(int slotIndex) onSelectFocus;
+  final double width;
+  final bool interactive;
+  final String title;
+  final int? activeCharacterId;
 
   const FocusSelector({
     super.key,
     required this.team,
     required this.focusSlotIndex,
     required this.onSelectFocus,
+    required this.width,
+    this.interactive = true,
+    this.title = UiStrings.battleCommandDesk,
+    this.activeCharacterId,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: BattleLayoutTokens.actorRailWidth,
-      padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
-      decoration: BoxDecoration(
-        color: const Color(0xB3131210),
-        border: Border.all(color: const Color(0xFF6D5940)),
-        boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 8)],
-      ),
+    return BattleFocusRailSurface(
+      width: width,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            UiStrings.battleCommandDesk,
-            style: TextStyle(
+          Text(
+            title,
+            style: const TextStyle(
               color: Color(0xFFCBB58C),
               fontSize: 11,
               letterSpacing: 3,
@@ -521,7 +625,8 @@ class FocusSelector extends StatelessWidget {
               key: ValueKey('focus_chip_$i'),
               character: team[i],
               selected: i == focusSlotIndex,
-              onTap: () => onSelectFocus(i),
+              onTap: interactive ? () => onSelectFocus(i) : null,
+              autoActive: team[i].characterId == activeCharacterId,
             ),
             if (i < team.length - 1) const SizedBox(height: 4),
           ],
@@ -534,74 +639,150 @@ class FocusSelector extends StatelessWidget {
 class FocusChip extends StatelessWidget {
   final BattleCharacter character;
   final bool selected;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final bool autoActive;
 
   const FocusChip({
     super.key,
     required this.character,
     required this.selected,
     required this.onTap,
+    this.autoActive = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final color = WuxiaColors.schoolColor(character.school);
     final dim = !character.isAlive;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(2),
-      child: Container(
-        height: BattleLayoutTokens.actorChipHeight,
-        decoration: BoxDecoration(
-          color: selected
-              ? WuxiaUi.paper.withValues(alpha: 0.92)
-              : Colors.black.withValues(alpha: 0.16),
-          border: Border.all(
-            color: selected ? const Color(0xFFC3A46A) : const Color(0xFF4C4439),
-            width: selected ? 1.5 : 1,
+    final plate = Container(
+      key: ValueKey(
+        'battle.focusNameplate.${selected ? 'expanded' : 'compact'}.${character.characterId}',
+      ),
+      height: BattleLayoutTokens.actorChipHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 9),
+      decoration: BoxDecoration(
+        color: selected
+            ? WuxiaUi.paper.withValues(alpha: 0.92)
+            : Colors.black.withValues(alpha: 0.16),
+        image: selected
+            ? const DecorationImage(
+                image: AssetImage(WuxiaUi.paperBg),
+                fit: BoxFit.cover,
+                opacity: 0.09,
+              )
+            : null,
+        border: Border(
+          left: BorderSide(
+            color: selected ? WuxiaUi.jiang : const Color(0xFF4C4439),
+            width: selected ? 3 : 1,
           ),
-          borderRadius: BorderRadius.circular(2),
-        ),
-        child: Center(
-          child: Row(
-            children: [
-              const SizedBox(width: 9),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: dim
-                      ? const Color(0xFF8F8574)
-                      : (selected ? WuxiaUi.jiang : color),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 7),
-              Expanded(
-                child: Text(
-                  character.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: selected ? FontWeight.bold : FontWeight.w500,
-                    color: dim
-                        ? const Color(0xFF8F8574)
-                        : (selected ? WuxiaUi.ink : const Color(0xFFD4C5A7)),
-                  ),
-                ),
-              ),
-              if (selected)
-                Text(
-                  '${character.currentQi}/${character.maxQi}',
-                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 9),
-                ),
-              const SizedBox(width: 8),
-            ],
+          top: BorderSide(
+            color: selected ? const Color(0xFFC3A46A) : const Color(0xFF4C4439),
+          ),
+          right: BorderSide(
+            color: selected ? const Color(0xFFC3A46A) : const Color(0xFF4C4439),
+          ),
+          bottom: BorderSide(
+            color: selected ? const Color(0xFFC3A46A) : const Color(0xFF4C4439),
           ),
         ),
       ),
+      child: Row(
+        children: [
+          Container(
+            width: selected ? 7 : 6,
+            height: selected ? 7 : 6,
+            decoration: BoxDecoration(
+              color: dim
+                  ? const Color(0xFF8F8574)
+                  : (selected ? WuxiaUi.jiang : color),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 7),
+          Expanded(
+            child: selected
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        character.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: WuxiaUi.ink,
+                          height: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              EnumL10n.school(character.school),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFF796B57),
+                                fontSize: BattleTypography.t5,
+                                height: 1,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '${character.currentQi}/${character.maxQi}',
+                            style: const TextStyle(
+                              color: WuxiaUi.muted,
+                              fontSize: BattleTypography.t5,
+                              height: 1,
+                              fontFeatures: BattleTypography.tabularFigures,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )
+                : Text(
+                    character.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      color: dim
+                          ? const Color(0xFF8F8574)
+                          : const Color(0xFFD4C5A7),
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
+    final nameplate = onTap == null
+        ? plate
+        : InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(2),
+            child: plate,
+          );
+    final keyedNameplate = autoActive
+        ? KeyedSubtree(
+            key: ValueKey('battle_auto_actor_active_${character.characterId}'),
+            child: nameplate,
+          )
+        : nameplate;
+    return dim
+        ? Opacity(
+            key: ValueKey(
+              'battle.focusNameplate.faded.${character.characterId}',
+            ),
+            opacity: 0.48,
+            child: keyedNameplate,
+          )
+        : keyedNameplate;
   }
 }
 
@@ -617,6 +798,8 @@ class SkillCommandButton extends StatelessWidget {
   final bool queuedAnother;
   final bool highlight;
   final bool allowPlayerIntervention;
+  final bool readOnly;
+  final bool autoActive;
   // 读秒环节拍(供 CD 环平滑插值)。
   final Animation<double> beat;
   // 两段点选:点击 = 释放(single 进待发态 / aoe 一键出手);长按 = 弹简介浮层。
@@ -633,6 +816,8 @@ class SkillCommandButton extends StatelessWidget {
     required this.queuedAnother,
     required this.highlight,
     required this.allowPlayerIntervention,
+    this.readOnly = false,
+    this.autoActive = false,
     required this.beat,
     required this.onTap,
     required this.onShowInfo,
@@ -661,18 +846,28 @@ class SkillCommandButton extends StatelessWidget {
         !queuedAnother &&
         allowPlayerIntervention;
 
+    final onCd = cd > 0 && !isPending;
+    final insufficientQi = character.currentQi < effectiveCost;
+    final visualState = isPending
+        ? BattleSkillSlipVisualState.pending
+        : onCd
+        ? BattleSkillSlipVisualState.cooldown
+        : insufficientQi
+        ? BattleSkillSlipVisualState.insufficientQi
+        : highlight
+        ? BattleSkillSlipVisualState.interrupt
+        : BattleSkillSlipVisualState.available;
+
     Color bgColor;
-    if (!interventionReady) {
-      bgColor = const Color(0xFF8F8675);
-    } else if (highlight) {
-      // 破招提示醒目金:原 0.72 上白字仅 ~2.9:1,压暗一档(0.52)让白字可读(~4.6:1)。
+    if (visualState == BattleSkillSlipVisualState.insufficientQi) {
+      bgColor = const Color(0xFFC4B596);
+    } else if (visualState == BattleSkillSlipVisualState.interrupt) {
       bgColor = const Color(0xFFF2DFB4);
+    } else if (!interventionReady) {
+      bgColor = const Color(0xFFB0A58E);
     } else {
       bgColor = WuxiaUi.paper;
     }
-
-    // CD 态(非待发):招名让位,中心浮现读秒环示剩余拍数。
-    final onCd = cd > 0 && !isPending;
 
     final String blockingStatus;
     if (isPending) {
@@ -698,202 +893,198 @@ class SkillCommandButton extends StatelessWidget {
         ? WuxiaUi.jiang
         : const Color(0xFF5E5548);
 
-    final button = SizedBox(
+    final accent = highlight ? WuxiaUi.gold : WuxiaUi.jiang;
+    final button = BattleSkillSlipSurface(
       height: BattleLayoutTokens.skillSlotHeight,
-      child: ElevatedButton(
-        // 使用原生按钮同时承接点击释放与长按简介，保留桌面端
-        // focus / 键盘激活 / mouse cursor / semantics，不用裸手势容器。
-        onPressed: enabled ? onTap : null,
-        onLongPress: onShowInfo,
-        style: ElevatedButton.styleFrom(
-          // 背景已由 bgColor(!interventionReady→buttonDisabled)表达,
-          // 前景按 enabled 手动切 muted/primary 保留「不可下发」灰态观感。
-          backgroundColor: bgColor,
-          disabledBackgroundColor: bgColor,
-          foregroundColor: enabled ? WuxiaUi.ink : const Color(0xFF514B42),
-          padding: EdgeInsets.zero,
-          side: highlight && enabled
-              ? const BorderSide(color: WuxiaUi.gold, width: 2)
-              : BorderSide(
-                  color: const Color(0xFF6C5A43).withValues(alpha: 0.78),
-                  width: 1,
-                ),
-          elevation: highlight ? 8 : 3,
-          shadowColor: highlight
-              ? WuxiaUi.gold.withValues(alpha: 0.65)
-              : Colors.black54,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.16,
-                child: Image.asset(
-                  WuxiaUi.paperBg,
-                  fit: BoxFit.cover,
-                  color: const Color(0xFF8C785B),
-                  colorBlendMode: BlendMode.multiply,
-                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                ),
-              ),
+      tiltAngle: battleSkillSlipTilt(skill.id),
+      backgroundColor: bgColor,
+      foregroundColor: enabled ? WuxiaUi.ink : const Color(0xFF514B42),
+      border: highlight && enabled
+          ? const BorderSide(color: WuxiaUi.gold, width: 2)
+          : BorderSide(
+              color: const Color(0xFF6C5A43).withValues(alpha: 0.78),
+              width: 1,
             ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(
-                  painter: _SkillSlipFramePainter(
-                    accent: highlight ? WuxiaUi.gold : WuxiaUi.jiang,
-                  ),
-                ),
-              ),
-            ),
-            Opacity(
-              opacity: onCd ? 0.32 : 1.0, // CD 态招名让位给读秒环。
-              child: Column(
-                children: [
-                  Container(
-                    key: const ValueKey('battle.skillSlipHeader'),
-                    height: 25,
-                    padding: const EdgeInsets.fromLTRB(9, 4, 7, 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF5B4934).withValues(alpha: 0.10),
-                      border: Border(
-                        bottom: BorderSide(
-                          color: const Color(
-                            0xFF6C5A43,
-                          ).withValues(alpha: 0.42),
-                        ),
+      accent: accent,
+      visualState: visualState,
+      // 原生按钮在 surface 内承接 focus / keyboard / cursor / semantics。
+      onPressed: enabled ? onTap : null,
+      onLongPress: readOnly ? null : onShowInfo,
+      interactive: !readOnly,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Opacity(
+            opacity: onCd ? 0.32 : 1.0, // CD 态招名让位给读秒环。
+            child: Column(
+              children: [
+                Container(
+                  key: const ValueKey('battle.skillSlipHeader'),
+                  height: 25,
+                  padding: const EdgeInsets.fromLTRB(9, 4, 7, 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5B4934).withValues(alpha: 0.10),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: const Color(0xFF6C5A43).withValues(alpha: 0.42),
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Transform.rotate(
+                            angle: -0.035,
+                            child: Container(
+                              key: const ValueKey('battle.skillSlipNatureSeal'),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: WuxiaUi.jiang.withValues(alpha: 0.06),
+                                border: Border.all(
+                                  color: WuxiaUi.jiang.withValues(alpha: 0.72),
+                                ),
+                              ),
+                              child: Text(
+                                _groupLabel(skill),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: WuxiaUi.jiang,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.1,
+                                  height: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: badgeColor,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                        child: Text(
+                          badgeText,
+                          style: const TextStyle(
+                            fontSize: BattleTypography.t5,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFFF0DFC2),
+                            height: 1.2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Center(
+                    child: _VerticalSkillTitle(
+                      key: const ValueKey('battle.skillSlipTitle'),
+                      name: skill.name,
+                    ),
+                  ),
+                ),
+                Container(
+                  key: const ValueKey('battle.skillSlipFooter'),
+                  height: 33,
+                  margin: const EdgeInsets.fromLTRB(5, 0, 5, 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF342B22).withValues(alpha: 0.10),
+                    border: Border.all(
+                      color: const Color(0xFF79674D).withValues(alpha: 0.36),
+                    ),
+                  ),
+                  child: blockingStatus.isNotEmpty
+                      ? Center(
                           child: Text(
-                            _groupLabel(skill),
+                            blockingStatus,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: WuxiaUi.muted,
+                            style: TextStyle(
+                              color: isPending
+                                  ? WuxiaUi.jiang
+                                  : const Color(0xFF514B42),
                               fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.2,
-                              height: 1,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: badgeColor,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                          child: Text(
-                            badgeText,
-                            style: const TextStyle(
-                              fontSize: 8,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFFF0DFC2),
-                              height: 1.2,
                             ),
                           ),
+                        )
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: _SkillMetric(
+                                text: UiStrings.skillQiCostChip(effectiveCost),
+                                color: WuxiaUi.qing,
+                              ),
+                            ),
+                            Container(
+                              width: 1,
+                              height: 16,
+                              color: const Color(
+                                0xFF79674D,
+                              ).withValues(alpha: 0.35),
+                            ),
+                            Expanded(
+                              child: _SkillMetric(
+                                text: UiStrings.skillCooldownChip(
+                                  skill.cooldownTurns,
+                                ),
+                                color: WuxiaUi.muted,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: _VerticalSkillTitle(
-                        key: const ValueKey('battle.skillSlipTitle'),
-                        name: skill.name,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    key: const ValueKey('battle.skillSlipFooter'),
-                    height: 33,
-                    margin: const EdgeInsets.fromLTRB(5, 0, 5, 5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF342B22).withValues(alpha: 0.10),
-                      border: Border.all(
-                        color: const Color(0xFF79674D).withValues(alpha: 0.36),
-                      ),
-                    ),
-                    child: blockingStatus.isNotEmpty
-                        ? Center(
-                            child: Text(
-                              blockingStatus,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: isPending
-                                    ? WuxiaUi.jiang
-                                    : const Color(0xFF514B42),
-                                fontSize: 9,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          )
-                        : Row(
-                            children: [
-                              Expanded(
-                                child: _SkillMetric(
-                                  text: UiStrings.skillQiCostChip(
-                                    effectiveCost,
-                                  ),
-                                  color: WuxiaUi.qing,
-                                ),
-                              ),
-                              Container(
-                                width: 1,
-                                height: 16,
-                                color: const Color(
-                                  0xFF79674D,
-                                ).withValues(alpha: 0.35),
-                              ),
-                              Expanded(
-                                child: _SkillMetric(
-                                  text: UiStrings.skillCooldownChip(
-                                    skill.cooldownTurns,
-                                  ),
-                                  color: WuxiaUi.muted,
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            if (onCd)
-              Positioned.fill(
-                child: Center(
-                  child: BeatCountdownRing(
-                    remaining: cd,
-                    total: skill.cooldownTurns,
-                    beat: beat,
-                    color: WuxiaColors.lingQiao,
-                    size: 44,
-                  ),
+          ),
+          if (onCd)
+            Positioned.fill(
+              child: Center(
+                child: BeatCountdownRing(
+                  remaining: cd,
+                  total: skill.cooldownTurns,
+                  beat: beat,
+                  color: WuxiaColors.lingQiao,
+                  size: 44,
                 ),
               ),
-            if (isPending)
-              const Positioned(top: -7, right: -7, child: PendingStamp()),
-          ],
-        ),
+            ),
+          if (isPending)
+            const Positioned(top: -7, right: -7, child: PendingStamp()),
+        ],
       ),
     );
 
-    return Semantics(
-      key: ValueKey('skill_cmd_${character.characterId}_${skill.id}'),
-      button: true,
-      enabled: enabled,
+    final semantics = Semantics(
+      key: ValueKey(
+        readOnly
+            ? 'battle_auto_skill_${character.characterId}_${skill.id}'
+            : 'skill_cmd_${character.characterId}_${skill.id}',
+      ),
+      button: !readOnly,
+      enabled: readOnly ? null : enabled,
+      readOnly: readOnly,
       label: '${_groupLabel(skill)} ${skill.name}',
       child: button,
     );
+    return autoActive
+        ? KeyedSubtree(
+            key: ValueKey('battle_auto_skill_active_${skill.id}'),
+            child: semantics,
+          )
+        : semantics;
   }
 }
 
@@ -911,9 +1102,9 @@ class _VerticalSkillTitle extends StatelessWidget {
       textAlign: TextAlign.center,
       style: const TextStyle(
         color: WuxiaUi.ink,
-        fontFamily: 'Songti SC',
-        fontFamilyFallback: ['KaiTi', 'SimSun', 'serif'],
-        fontSize: 15.5,
+        fontFamily: BattleTypography.displayFamily,
+        fontFamilyFallback: BattleTypography.displayFallback,
+        fontSize: BattleTypography.t2,
         fontWeight: FontWeight.w700,
         height: 0.92,
         letterSpacing: 0,
@@ -937,61 +1128,13 @@ class _SkillMetric extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: color,
-          fontSize: 8.5,
+          fontSize: BattleTypography.t5,
           fontWeight: FontWeight.w800,
           height: 1,
         ),
       ),
     );
   }
-}
-
-class _SkillSlipFramePainter extends CustomPainter {
-  const _SkillSlipFramePainter({required this.accent});
-
-  final Color accent;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final ink = Paint()
-      ..color = const Color(0xFF5B4934).withValues(alpha: 0.42)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
-    canvas.drawRect(
-      Rect.fromLTWH(4.5, 4.5, size.width - 9, size.height - 9),
-      ink,
-    );
-
-    final accentPaint = Paint()
-      ..color = accent.withValues(alpha: 0.82)
-      ..strokeWidth = 2.2
-      ..strokeCap = StrokeCap.square;
-    canvas.drawLine(
-      const Offset(4.5, 7),
-      Offset(4.5, size.height - 7),
-      accentPaint,
-    );
-
-    final corner = Paint()
-      ..color = const Color(0xFF382E24).withValues(alpha: 0.54)
-      ..strokeWidth = 1.1;
-    canvas.drawLine(const Offset(9, 9), const Offset(20, 9), corner);
-    canvas.drawLine(const Offset(9, 9), const Offset(9, 18), corner);
-    canvas.drawLine(
-      Offset(size.width - 9, size.height - 9),
-      Offset(size.width - 20, size.height - 9),
-      corner,
-    );
-    canvas.drawLine(
-      Offset(size.width - 9, size.height - 9),
-      Offset(size.width - 9, size.height - 18),
-      corner,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _SkillSlipFramePainter oldDelegate) =>
-      oldDelegate.accent != accent;
 }
 
 class EmptySkillSlot extends StatelessWidget {
@@ -1003,28 +1146,42 @@ class EmptySkillSlot extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label: UiStrings.battleEmptySkillSlot,
-      child: Container(
+      child: SizedBox(
         key: ValueKey('battle_skill_empty_$index'),
         height: BattleLayoutTokens.skillSlotHeight,
-        decoration: BoxDecoration(
-          color: WuxiaUi.paper.withValues(alpha: 0.42),
-          image: const DecorationImage(
-            image: AssetImage(WuxiaUi.paperBg),
-            fit: BoxFit.cover,
-            opacity: 0.10,
+        child: DecoratedBox(
+          key: ValueKey('battle.emptySkillSlot.blankPaper.$index'),
+          decoration: BoxDecoration(
+            color: WuxiaUi.paper.withValues(alpha: 0.38),
+            image: const DecorationImage(
+              image: AssetImage(WuxiaUi.paperBg),
+              fit: BoxFit.cover,
+              opacity: 0.08,
+            ),
+            border: Border.all(color: const Color(0x667A6A55)),
+            borderRadius: BorderRadius.circular(2),
           ),
-          border: Border.all(color: const Color(0xFF8A7251)),
-          borderRadius: BorderRadius.circular(2),
-        ),
-        child: Center(
-          child: Text(
-            UiStrings.battleEmptySkillSlot.characters.join('\n'),
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xB36A5E4C),
-              fontSize: 11,
-              height: 1.15,
-              letterSpacing: 1,
+          child: Center(
+            child: Transform.rotate(
+              angle: -0.08,
+              child: Container(
+                key: ValueKey('battle.emptySkillSlot.emptySeal.$index'),
+                width: 22,
+                height: 22,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: const Color(0x0F6E6252),
+                  border: Border.all(color: const Color(0x596E6252)),
+                ),
+                child: Text(
+                  UiStrings.battleEmptySkillSlot.characters.first,
+                  style: const TextStyle(
+                    color: Color(0x756A5E4C),
+                    fontSize: 9,
+                    height: 1,
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -1034,21 +1191,17 @@ class EmptySkillSlot extends StatelessWidget {
 }
 
 class BattlePouchRail extends StatelessWidget {
-  const BattlePouchRail({super.key, this.compact = false});
+  const BattlePouchRail({super.key, this.compact = false, this.width});
 
   final bool compact;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: BattleLayoutTokens.pouchWidth,
-      padding: compact
-          ? const EdgeInsets.fromLTRB(14, 6, 14, 6)
-          : const EdgeInsets.fromLTRB(14, 10, 14, 10),
-      decoration: BoxDecoration(
-        color: const Color(0xB3131210),
-        border: Border.all(color: const Color(0xFF6D5940)),
-      ),
+    final metrics = BattleLayoutMetrics.resolve(MediaQuery.sizeOf(context));
+    return BattlePouchRailSurface(
+      width: width ?? metrics.pouchRailWidth,
+      compact: compact,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1082,38 +1235,45 @@ class BattlePouchRail extends StatelessWidget {
                     key: ValueKey('battle_pouch_slot_$i'),
                     width: compact ? 34 : BattleLayoutTokens.pouchSlotSize,
                     height: compact ? 34 : BattleLayoutTokens.pouchSlotSize,
+                    padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3A3229),
-                      image: const DecorationImage(
-                        image: AssetImage(WuxiaUi.paperBg),
-                        fit: BoxFit.cover,
-                        opacity: 0.10,
-                      ),
-                      border: Border.all(color: const Color(0xFF756047)),
-                      borderRadius: BorderRadius.circular(2),
+                      color: const Color(0xFF32261C),
+                      border: Border.all(color: const Color(0xFF8B6B43)),
                     ),
-                    child: i < 2
-                        ? Opacity(
-                            opacity: 0.96,
-                            child: Image.asset(
-                              i == 0
-                                  ? 'assets/equipment/accessory_baowu_zi_jin_hu_lu.png'
-                                  : 'assets/equipment/accessory_xunchang_yao_nang.png',
-                              width: compact ? 30 : 46,
-                              height: compact ? 30 : 46,
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, _, _) => const Icon(
-                                Icons.inventory_2_outlined,
-                                size: 17,
-                                color: Color(0xFF8C7A5D),
+                    child: DecoratedBox(
+                      key: ValueKey('battle.pouch.brocadeSlot.$i'),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF4A3A31), Color(0xFF2D2722)],
+                        ),
+                        border: Border.all(color: const Color(0xFF654F3D)),
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                      child: i < 2
+                          ? Opacity(
+                              opacity: 0.90,
+                              child: Image.asset(
+                                i == 0
+                                    ? 'assets/equipment/accessory_baowu_zi_jin_hu_lu.png'
+                                    : 'assets/equipment/accessory_xunchang_yao_nang.png',
+                                width: compact ? 28 : 42,
+                                height: compact ? 28 : 42,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, _, _) => const Icon(
+                                  Icons.inventory_2_outlined,
+                                  size: 17,
+                                  color: Color(0xFF8C7A5D),
+                                ),
                               ),
+                            )
+                          : const Icon(
+                              Icons.inventory_2_outlined,
+                              size: 17,
+                              color: Color(0xFF8C7A5D),
                             ),
-                          )
-                        : const Icon(
-                            Icons.inventory_2_outlined,
-                            size: 17,
-                            color: Color(0xFF8C7A5D),
-                          ),
+                    ),
                   ),
                 ),
                 if (i < 2)

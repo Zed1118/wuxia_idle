@@ -3,10 +3,13 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/hero_camera_overlay.dart';
 import 'package:wuxia_idle/features/debug/application/visual_route.dart';
 import 'package:wuxia_idle/features/debug/application/visual_acceptance_plan.dart';
@@ -206,6 +209,66 @@ void main() {
         VisualRoute.mainlineFirstClearBattleAuto,
       );
     });
+
+    test('V2 五个确定性战斗验收 route parse', () {
+      expect(
+        parseVisualRoute('battle_v2_casualty_replacement'),
+        VisualRoute.battleV2CasualtyReplacement,
+      );
+      expect(
+        parseVisualRoute('battle_v2_fast_forward_peak'),
+        VisualRoute.battleV2FastForwardPeak,
+      );
+      expect(
+        parseVisualRoute('battle_v2_pre_result'),
+        VisualRoute.battleV2PreResult,
+      );
+      expect(
+        parseVisualRoute('battle_v2_neutral_3v3'),
+        VisualRoute.battleV2Neutral3v3,
+      );
+      expect(
+        parseVisualRoute('battle_v2_resource_pressure'),
+        VisualRoute.battleV2ResourcePressure,
+      );
+      expect(
+        parseVisualRoute('battle_v2_auto_rotation_first'),
+        VisualRoute.battleV2AutoRotationFirst,
+      );
+      expect(
+        parseVisualRoute('battle_v2_auto_rotation_second'),
+        VisualRoute.battleV2AutoRotationSecond,
+      );
+    });
+  });
+
+  group('VisualRouteReadyGate', () {
+    test('普通 route 挂载后首帧即可 READY', () {
+      final emitted = <String>[];
+      final gate = VisualRouteReadyGate(
+        controlled: false,
+        onReady: emitted.add,
+      );
+
+      gate.markMounted();
+
+      expect(emitted, <String>['mounted']);
+    });
+
+    test('状态 route 在目标成立前不得 READY,成立后只发一次摘要', () {
+      final emitted = <String>[];
+      final gate = VisualRouteReadyGate(controlled: true, onReady: emitted.add);
+
+      gate.markMounted();
+      expect(emitted, isEmpty);
+
+      gate.markTarget('seed=20260719 tick=12 left=3 right=5 casualty=1');
+      gate.markTarget('duplicate');
+
+      expect(emitted, <String>[
+        'seed=20260719 tick=12 left=3 right=5 casualty=1',
+      ]);
+    });
   });
 
   // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。
@@ -252,6 +315,7 @@ void main() {
         reason: '路由必须能同帧验收破绽爆发提示',
       );
       expect(launcher.sceneBackgroundPath, WuxiaUi.battleMountainPassStage);
+      expect(launcher.seed, battleV2VisualSeed);
     });
 
     test('battle_boss_frame → 统一全人物山口舞台', () async {
@@ -278,7 +342,7 @@ void main() {
       );
     });
 
-    test('battle suite 70个动态路由全部可构造真敌队', () async {
+    test('battle suite 70个动态路由与5个V2状态全部可构造', () async {
       final targets = visualAcceptanceRoutes(VisualAcceptanceSuite.battle);
       for (final spec in targets) {
         final target = await buildVisualTarget(
@@ -291,7 +355,7 @@ void main() {
         final (left, right) = launcher.teamsFactory();
         expect(left, hasLength(3), reason: spec.id);
         expect(right, isNotEmpty, reason: spec.id);
-        expect(right.length, lessThanOrEqualTo(3), reason: spec.id);
+        expect(right.length, lessThanOrEqualTo(4), reason: spec.id);
         expect(launcher.startPaused, isTrue, reason: spec.id);
         expect(launcher.sceneBackgroundPath, isNotNull, reason: spec.id);
 
@@ -407,6 +471,7 @@ void main() {
         reason: '两段点选验收路由必须开干预,否则技能按钮不接收点选',
       );
       expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,点选随时干预');
+      expect(launcher.seed, battleV2VisualSeed);
     });
 
     test('battle_tap_preview → 冻结态 + 纯 presentation 待发预览', () async {
@@ -422,6 +487,7 @@ void main() {
       expect(launcher.previewPendingCharacterId, 1);
       expect(launcher.previewPendingSkillId, 'dl_single_1');
       expect(launcher.sceneBackgroundPath, WuxiaUi.battleMountainPassStage);
+      expect(launcher.seed, battleV2VisualSeed);
     });
 
     test('battle_tap_preview → 复用点选冻结预置态', () async {
@@ -436,6 +502,138 @@ void main() {
       expect(launcher.startPaused, isTrue);
       expect(launcher.previewPendingCharacterId, 1);
       expect(launcher.previewPendingSkillId, 'dl_single_1');
+    });
+
+    test('V2 中性 3v3 → 静态冻结且无待发/自动/结算遮挡', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.battleV2Neutral3v3,
+        IsarSetup.instance,
+      );
+      expect(target, isA<ScenarioLauncher>());
+      final launcher = target as ScenarioLauncher;
+      expect(launcher.autoStart, isFalse);
+      expect(launcher.startPaused, isTrue);
+      expect(launcher.previewPendingCharacterId, isNull);
+      expect(launcher.previewPendingSkillId, isNull);
+      expect(launcher.readyTarget, VisualBattleReadyTarget.initialized);
+      final (left, right) = launcher.teamsFactory();
+      expect(left, hasLength(3));
+      expect(right, hasLength(3));
+    });
+
+    test('V2 资源压力 → 同帧含冷却签与真气不足签', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.battleV2ResourcePressure,
+        IsarSetup.instance,
+      );
+      expect(target, isA<ScenarioLauncher>());
+      final launcher = target as ScenarioLauncher;
+      expect(launcher.autoStart, isFalse);
+      expect(launcher.startPaused, isTrue);
+      expect(launcher.allowPlayerIntervention, isTrue);
+      expect(launcher.readyTarget, VisualBattleReadyTarget.resourcePressure);
+      final (left, _) = launcher.teamsFactory();
+      final focus = left.first;
+      expect(focus.skillCooldowns.values.any((turns) => turns > 0), isTrue);
+      expect(
+        focus.availableSkills.any(
+          (skill) =>
+              skill.internalForceCost > focus.currentQi &&
+              (focus.skillCooldowns[skill.id] ?? 0) == 0,
+        ),
+        isTrue,
+      );
+    });
+
+    test('V2 动态 route 固定 seed、目标谓词与暂停接线', () async {
+      for (final (route, readyTarget) in const [
+        (
+          VisualRoute.battleV2CasualtyReplacement,
+          VisualBattleReadyTarget.casualtyReplacement,
+        ),
+        (
+          VisualRoute.battleV2FastForwardPeak,
+          VisualBattleReadyTarget.fastForwardPeak,
+        ),
+        (VisualRoute.battleV2PreResult, VisualBattleReadyTarget.preResult),
+        (
+          VisualRoute.battleV2AutoRotationFirst,
+          VisualBattleReadyTarget.autoRotationFirst,
+        ),
+        (
+          VisualRoute.battleV2AutoRotationSecond,
+          VisualBattleReadyTarget.autoRotationSecond,
+        ),
+      ]) {
+        final target = await buildVisualTarget(route, IsarSetup.instance);
+        expect(target, isA<ScenarioLauncher>());
+        final launcher = target as ScenarioLauncher;
+        expect(launcher.seed, battleV2VisualSeed, reason: route.id);
+        expect(launcher.startPaused, isTrue, reason: route.id);
+        expect(launcher.readyTarget, readyTarget, reason: route.id);
+        expect(route.controlsReadiness, isTrue, reason: route.id);
+        if (route == VisualRoute.battleV2AutoRotationFirst ||
+            route == VisualRoute.battleV2AutoRotationSecond) {
+          expect(
+            launcher.teamsFactory,
+            same(BattleScenarioData.scenarioV2AutoRotation),
+            reason: route.id,
+          );
+        }
+      }
+    });
+
+    test('V2 动态 route 两次回放得到一致 tick、状态摘要且未越过目标', () {
+      VisualBattleReplayResult replay(
+        VisualBattleReadyTarget target,
+        (List<BattleCharacter>, List<BattleCharacter>) Function() factory,
+      ) {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+        return VisualBattleReplay.run(
+          notifier: container.read(battleProvider.notifier),
+          readState: () => container.read(battleProvider),
+          teams: factory(),
+          seed: battleV2VisualSeed,
+          target: target,
+        );
+      }
+
+      for (final (target, factory)
+          in <
+            (
+              VisualBattleReadyTarget,
+              (List<BattleCharacter>, List<BattleCharacter>) Function(),
+            )
+          >[
+            (
+              VisualBattleReadyTarget.casualtyReplacement,
+              BattleScenarioData.scenarioV2CasualtyReplacement,
+            ),
+            (
+              VisualBattleReadyTarget.fastForwardPeak,
+              BattleScenarioData.scenarioV2FastForwardPeak,
+            ),
+            (
+              VisualBattleReadyTarget.preResult,
+              BattleScenarioData.scenarioV2PreResult,
+            ),
+            (
+              VisualBattleReadyTarget.autoRotationFirst,
+              BattleScenarioData.scenarioV2AutoRotation,
+            ),
+            (
+              VisualBattleReadyTarget.autoRotationSecond,
+              BattleScenarioData.scenarioV2AutoRotation,
+            ),
+          ]) {
+        final first = replay(target, factory);
+        final second = replay(target, factory);
+        expect(first.summary, second.summary, reason: target.name);
+        expect(first.state.tick, second.state.tick, reason: target.name);
+        expect(VisualBattleReplay.matches(target, first.state), isTrue);
+        expect(first.state.isFinished, isFalse, reason: target.name);
+      }
     });
 
     test('mainline_first_clear_battle → 主线首通 preview 接线', () async {
@@ -462,6 +660,7 @@ void main() {
         IsarSetup.instance,
       );
       expect(target.runtimeType.toString(), '_MainlineFirstClearBattlePreview');
+      expect((target as dynamic).allowPlayerIntervention, isFalse);
     });
 
     test('taohua_building_popup → 桃花岛自动打开打造台菜单', () async {

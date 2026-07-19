@@ -237,7 +237,7 @@ class _CriticalDamageText extends StatelessWidget {
           child: Text(
             UiStrings.criticalLabel,
             style: TextStyle(
-              color: const Color(0xFF7E1610),
+              color: WuxiaColors.battleCrimson,
               fontSize: fontSize * 0.43,
               fontWeight: FontWeight.w900,
               height: 1,
@@ -283,7 +283,7 @@ class _CriticalDamageText extends StatelessWidget {
   }
 
   static TextStyle _numberStyle(double fontSize) => TextStyle(
-    color: const Color(0xFFC21F17),
+    color: WuxiaColors.battleCrimson,
     fontSize: fontSize * 1.1,
     fontWeight: FontWeight.w900,
     height: 0.92,
@@ -323,12 +323,12 @@ class _CriticalBrushPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
     final brush = Paint()
-      ..color = const Color(0xFFC12D22).withValues(alpha: 0.34)
+      ..color = WuxiaColors.battleCrimson.withValues(alpha: 0.28)
       ..style = PaintingStyle.stroke
       ..strokeWidth = size.height * 0.34
       ..strokeCap = StrokeCap.round;
     final slash = Paint()
-      ..color = const Color(0xFF7E1610).withValues(alpha: 0.28)
+      ..color = WuxiaColors.battleCrimson.withValues(alpha: 0.24)
       ..style = PaintingStyle.stroke
       ..strokeWidth = size.height * 0.13
       ..strokeCap = StrokeCap.round;

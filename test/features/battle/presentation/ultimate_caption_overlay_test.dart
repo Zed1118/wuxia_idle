@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/presentation/ultimate_caption_overlay.dart';
+import 'package:wuxia_idle/shared/theme/colors.dart';
 
 SkillDef _skill(SkillType type) => SkillDef(
   id: 't',
@@ -18,6 +19,11 @@ SkillDef _skill(SkillType type) => SkillDef(
 );
 
 void main() {
+  test('玩家与敌方题字分别收入旧金与绛红色域', () {
+    expect(battleCaptionAccent(isEnemy: false), WuxiaColors.battleOldGold);
+    expect(battleCaptionAccent(isEnemy: true), WuxiaColors.battleCrimson);
+  });
+
   test('ultimate / jointSkill → true', () {
     expect(isUltimateCaptionSkill(_skill(SkillType.ultimate)), true);
     expect(isUltimateCaptionSkill(_skill(SkillType.jointSkill)), true);
@@ -75,6 +81,26 @@ void main() {
     await tester.pump();
     expect(find.text('旧战余韵'), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('大招题字峰值后500ms内回到低彩墨色', (tester) async {
+    final key = GlobalKey<UltimateCaptionOverlayState>();
+    await tester.pumpWidget(
+      MaterialApp(home: UltimateCaptionOverlay(key: key)),
+    );
+
+    key.currentState!.show('惊雷', isEnemy: false);
+    await tester.pump();
+    var content = tester.widget<UltimateCaptionContent>(
+      find.byType(UltimateCaptionContent),
+    );
+    expect(content.accentStrength, 1);
+
+    await tester.pump(const Duration(milliseconds: 500));
+    content = tester.widget<UltimateCaptionContent>(
+      find.byType(UltimateCaptionContent),
+    );
+    expect(content.accentStrength, lessThanOrEqualTo(0.35));
   });
 
   testWidgets('敌方绛红态 + asset 缺失走 errorBuilder 不崩', (tester) async {

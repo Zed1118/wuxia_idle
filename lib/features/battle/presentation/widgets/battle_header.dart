@@ -9,6 +9,7 @@ import '../../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import '../../../help/domain/help_topic.dart';
 import '../../../help/presentation/context_help_button.dart';
 import '../battle_layout_tokens.dart';
+import '../battle_typography_tokens.dart';
 
 class Header extends StatelessWidget {
   final BattleState state;
@@ -39,11 +40,12 @@ class Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final metrics = BattleLayoutMetrics.resolve(MediaQuery.sizeOf(context));
     final aliveLeft = state.leftTeam.where((c) => c.isAlive).length;
     final aliveRight = state.rightTeam.where((c) => c.isAlive).length;
 
     return Container(
-      height: BattleLayoutTokens.headerHeight,
+      height: metrics.headerHeight,
       padding: const EdgeInsets.symmetric(horizontal: 28),
       decoration: const BoxDecoration(
         color: Color(0xF2191816),
@@ -54,14 +56,28 @@ class Header extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           Center(
-            child: Text(
-              UiStrings.battleTitle(aliveLeft, aliveRight),
-              style: const TextStyle(
-                color: Color(0xFFE2CFAB),
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 4,
-                shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+            child: Container(
+              key: const ValueKey('battle_header_title_slip'),
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 4),
+              decoration: const BoxDecoration(
+                border: Border(
+                  left: BorderSide(color: Color(0xFF8A2B21), width: 2),
+                  right: BorderSide(color: Color(0xFF8A2B21), width: 2),
+                  bottom: BorderSide(color: Color(0xFF6D5940)),
+                ),
+              ),
+              child: Text(
+                UiStrings.battleTitle(aliveLeft, aliveRight),
+                style: const TextStyle(
+                  color: Color(0xFFE2CFAB),
+                  fontFamily: BattleTypography.displayFamily,
+                  fontFamilyFallback: BattleTypography.displayFallback,
+                  fontSize: BattleTypography.t1,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 4,
+                  fontFeatures: BattleTypography.tabularFigures,
+                  shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+                ),
               ),
             ),
           ),
@@ -80,7 +96,8 @@ class Header extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Color(0xFFD8C29A),
-                        fontSize: 16,
+                        fontFamilyFallback: BattleTypography.uiFallback,
+                        fontSize: BattleTypography.t2,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 1.5,
                       ),
@@ -89,8 +106,12 @@ class Header extends StatelessWidget {
                     '${UiStrings.tickPrefix} ${state.tick}',
                     style: TextStyle(
                       color: const Color(0xFFBFAE8D),
-                      fontSize: sceneTitle == null ? 13 : 9,
+                      fontFamilyFallback: BattleTypography.uiFallback,
+                      fontSize: sceneTitle == null
+                          ? BattleTypography.t3
+                          : BattleTypography.t5,
                       letterSpacing: 1,
+                      fontFeatures: BattleTypography.tabularFigures,
                     ),
                   ),
                 ],
@@ -121,6 +142,7 @@ class Header extends StatelessWidget {
                   BattleHeaderIconButton(
                     key: const ValueKey('battle_fast_forward_toggle'),
                     icon: Icons.fast_forward,
+                    label: UiStrings.fastForward,
                     tooltip: UiStrings.fastForward,
                     onPressed: onFastForward,
                     isActive: isFastForward,
@@ -129,6 +151,9 @@ class Header extends StatelessWidget {
                   BattleHeaderIconButton(
                     key: const ValueKey('battle_pause_toggle'),
                     icon: isPaused ? Icons.play_arrow : Icons.pause,
+                    label: isPaused
+                        ? UiStrings.battleResume
+                        : UiStrings.battlePause,
                     tooltip: isPaused
                         ? UiStrings.battleResume
                         : UiStrings.battlePause,
@@ -138,6 +163,7 @@ class Header extends StatelessWidget {
                   BattleHeaderIconButton(
                     key: const ValueKey('battle_step_once'),
                     icon: Icons.skip_next,
+                    label: UiStrings.battleStepOnce,
                     tooltip: UiStrings.battleStepOnce,
                     onPressed: onStepOnce,
                   ),
@@ -145,12 +171,14 @@ class Header extends StatelessWidget {
                   BattleHeaderIconButton(
                     key: const ValueKey('battle_surrender'),
                     icon: Icons.flag_outlined,
+                    label: UiStrings.battleSurrender,
                     tooltip: UiStrings.battleSurrender,
                     onPressed: onSurrender,
                   ),
                 BattleHeaderIconButton(
                   key: const ValueKey('battle_log_toggle'),
                   icon: Icons.list_alt,
+                  label: UiStrings.battleLogShort,
                   tooltip: UiStrings.battleLog,
                   onPressed: onToggleLog,
                 ),
@@ -172,12 +200,14 @@ class BattleHeaderIconButton extends StatelessWidget {
   const BattleHeaderIconButton({
     super.key,
     required this.icon,
+    required this.label,
     required this.tooltip,
     required this.onPressed,
     this.isActive = false,
   });
 
   final IconData icon;
+  final String label;
   final String tooltip;
   final VoidCallback? onPressed;
   final bool isActive;
@@ -189,12 +219,27 @@ class BattleHeaderIconButton extends StatelessWidget {
       child: IconButton(
         tooltip: tooltip,
         onPressed: onPressed,
-        icon: Icon(icon, size: 19),
+        icon: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 14),
+            const SizedBox(width: 3),
+            Text(
+              label,
+              style: const TextStyle(
+                fontFamilyFallback: BattleTypography.uiFallback,
+                fontSize: BattleTypography.t5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
         color: isActive
             ? WuxiaColors.resultHighlight
             : WuxiaColors.textSecondary,
         disabledColor: WuxiaColors.textMuted,
-        constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+        constraints: const BoxConstraints(minWidth: 50, minHeight: 36),
         padding: EdgeInsets.zero,
         splashRadius: 18,
         style: IconButton.styleFrom(
@@ -203,8 +248,8 @@ class BattleHeaderIconButton extends StatelessWidget {
               : Colors.black.withValues(alpha: 0.28),
           hoverColor: WuxiaColors.resultHighlight.withValues(alpha: 0.10),
           highlightColor: WuxiaColors.resultHighlight.withValues(alpha: 0.14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+          shape: BeveledRectangleBorder(
+            borderRadius: const BorderRadius.all(Radius.circular(3)),
             side: BorderSide(
               color: isActive
                   ? WuxiaColors.resultHighlight
@@ -248,11 +293,12 @@ class BattleModePill extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             allowPlayerIntervention
-                ? '${UiStrings.battleAutoMode}·${UiStrings.battleAutoIntervention}'
-                : UiStrings.battleAutoMode,
+                ? '${UiStrings.battleAutoModeShort}·${UiStrings.battleAutoInterventionShort}'
+                : UiStrings.battleAutoModeShort,
             style: const TextStyle(
               color: WuxiaColors.textSecondary,
-              fontSize: 11,
+              fontFamilyFallback: BattleTypography.uiFallback,
+              fontSize: BattleTypography.t4,
               fontWeight: FontWeight.w600,
             ),
           ),
