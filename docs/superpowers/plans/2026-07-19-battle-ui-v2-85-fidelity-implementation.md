@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：`[BLOCKED]` 阶段 3 Gate 已完成并冻结，人物融合改前/改后对照待用户拍板。
+- **状态**：`WIP` 阶段 3 已获用户通过；A 案自动观战七签骨架生产接线完成，正进入阶段 4。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：S1/S2/S10 在 1280×720 与 1440×900 共 6 图完成目检，6/6 READY、日志 0 overflow/error。标准 3v3 与 Boss 同机位改前/改后四图已归档；最终 profile 在当前代码重跑，后 55 秒采 5463 帧，build max=1.307ms、raster max=3.741ms，连续超 16.7ms 均为 0。
-- **下一步**：等待用户审阅 `stage3_gate/before_after/`、双视口 Gate 图与 `stage3_black_point/same_person_samples.png`；获准后再进入阶段 4，不在拍板前继续改 HUD 或动态效果。
-- **已跑验证**：阶段 3 六个 targeted 文件 48/48；Python alpha 量测 5/5、黑位量测 1/1；`flutter analyze --no-pub` 0 issue；alpha ratio=1.355、黑位漂移=0.0221、最终 60 秒 profile PASS；6/6 Gate READY 且日志扫描 `overflow|exception|error|failed` 0 命中。各 Task 先红证据已逐项记录。
+- **最后完成**：纯自动分支已从三张宽卡切换为与可点选模式同几何的左名帖 + 七签 + 行囊案台；整体压暗，最近一次我方 `actionLog` 驱动执招者与招式签轮转亮起，自动子树无按钮/焦点/长按/拖放入口。
+- **下一步**：执行 Task 4.1 标题签化与 Task 4.2 T1～T5 字体层级单一真相源，然后进入 Task 4.3 题字饱和度。
+- **已跑验证**：A 案新行为先红 4 例；`battle_command_console_test.dart` 44/44 PASS；`flutter analyze --no-pub` 0 issue。阶段 3 原有 48/48 + Python 6/6 + alpha/黑位/profile/Gate 证据保持有效。
 - **当前评分**：B=22.5/25（≥21，PASS）、D=12.5/15（≥11，PASS），C 保持 23/25。按“部分满足只能半分”保守计分：撑伞源图代际差与跨模块纸墨一致性各记半分，不用其他项超额抵扣。
-- **证据目录**：主证据 `build/visual_acceptance/battle_ui_v2_85/stage3_gate/`（6 PNG、6 log、`manifest.md`、`score.md`、四张改前/改后图）；alpha 在 `stage3_task31_after/`；三背景抽样在 `stage3_black_point/`；性能在 `stage3_profile/`；过程图保留于 `stage3_task32_after/`～`stage3_task34_tuned/`。
-- **阻塞项**：`[BLOCKED] 阶段3 人物融合对照待用户拍板`。残留风险：撑伞高人线描源图与玩家终拍立绘存在代际差，表现层已统一色级与面积但未改源图；塔境高键背景仍比主线明亮，已用冷灰 profile 收束；Windows 100%/125%/150% 缩放留最终阶段。
-- **§8.2 四证据**：①生产接线：人物融合、光学校准、墨拓板、双资源条、状态上限与六场景 profile 均由正式 `BattleScreen` 消费，debug 只提供隔离路由和可关闭采样；② targeted：Task 3.1～3.4 先红证据齐，48/48 + Python 6/6 + analyze 0 issue + alpha 1.355 + 黑位 0.0221 + 60 秒 profile + 6/6 双视口 PASS；③红线：相对基点 `data/` 与四个禁改文件变化均为 0，零改战斗规则/schema/saveVersion/真实存档，零新增/重导立绘；④残留风险：撑伞源图代际差、塔境高键观感、Windows 缩放及阶段 4～5 尚待用户拍板后继续。
-- **Git 状态口径**：阶段 3 生产视觉代码点为 `1ab793b9`；tip 使用用户指定 `[BLOCKED] 阶段3 人物融合对照待用户拍板`，不打 `[READY]`，提交后 tracked worktree 干净、主 checkout 保持只读。
+- **证据目录**：阶段 3 主证据保留于 `build/visual_acceptance/battle_ui_v2_85/stage3_gate/`；A 案的自动/可点选双视口与动态轮转证据待与阶段 4 Gate 一并抓取。
+- **阻塞项**：无。残留风险：`BattleAction` 未携带 teamSide，亮起时只能按 actorId 匹配已有日志口径；证据截图、阶段 4 与 Windows 缩放尚待。
+- **§8.2 四证据**：①生产接线：正式 `BattleScreen` 的自动分支已消费 `AutoCommandDesk`，共用案台底座、名帖、技能签面和行囊组件；② targeted：先红 4 例，绿后 44/44 + analyze 0 issue；③红线：本切片 `data/`、战斗域、schema/saveVersion、真实存档、禁改文件变化均为 0；④残留风险：跨队伍 actorId 理论重号时的日志歧义与尚未抓取的视觉证据。
+- **Git 状态口径**：A 案生产接线切片待以中文动宾提交；本轮最终 tip 仍必须使用 `[READY] 阶段4+A案交付`，期间提交不使用 READY/BLOCKED。

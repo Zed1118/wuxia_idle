@@ -164,19 +164,6 @@ const _breakB = SkillDef(
   canInterrupt: true,
   visualEffect: '',
 );
-const _reservedBreak = SkillDef(
-  id: 'reserved_break',
-  name: '守隙截脉',
-  description: '',
-  type: SkillType.powerSkill,
-  powerMultiplier: 1200,
-  internalForceCost: 150,
-  cooldownTurns: 3,
-  requiresManualTrigger: false,
-  canInterrupt: true,
-  aiUsePolicy: AiUsePolicy.saveForInterrupt,
-  visualEffect: '',
-);
 const _ult = SkillDef(
   id: 'u1',
   name: '龙吟九霄',
@@ -276,83 +263,31 @@ Future<_TestBattleNotifier> _pumpWith(
 
 void main() {
   group('自动观战轮转谱', () {
-    testWidgets('保留破招平时显示候破且敌方蓄力后切为可用', (tester) async {
+    testWidgets('自动案台整体压暗且仅陈列AI可轮转招式', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
-      final actor = left.first.copyWith(availableSkills: [_reservedBreak]);
-      final notifier = await _pumpWith(
-        tester,
-        [actor],
-        right,
-        allowPlayerIntervention: false,
-      );
+      final actor = left.first.copyWith(availableSkills: [_power, _ult]);
+      await _pumpWith(tester, [actor], right, allowPlayerIntervention: false);
 
-      expect(find.text(UiStrings.skillReservedForInterrupt), findsOneWidget);
-      expect(find.text(UiStrings.skillReady), findsNothing);
-
-      notifier.setState(
-        notifier.state.copyWith(
-          rightTeam: [
-            right.first.copyWith(
-              chargingSkill: _chargeSkill,
-              chargeTicksRemaining: 2,
-            ),
-            ...right.skip(1),
-          ],
-        ),
+      final opacity = tester.widget<Opacity>(
+        find
+            .descendant(
+              of: find.byKey(const ValueKey('battle_auto_command_desk')),
+              matching: find.byType(Opacity),
+            )
+            .first,
       );
-      await tester.pump();
-
-      expect(find.text(UiStrings.skillReservedForInterrupt), findsNothing);
-      expect(find.text(UiStrings.skillReady), findsOneWidget);
-    });
-
-    testWidgets('轮转谱排除仅限点选招式并在无自动技时回落周天', (tester) async {
-      final (left, right) = BattleDemo.mockTeams();
-      final mixed = left.first.copyWith(availableSkills: [_power, _ult]);
-      final manualOnly = left[1].copyWith(availableSkills: [_ultB]);
-      await _pumpWith(
-        tester,
-        [mixed, manualOnly],
-        right,
-        allowPlayerIntervention: false,
-      );
-
-      final mixedCard = find.byKey(
-        ValueKey('auto_rotation_actor_${mixed.characterId}'),
-      );
-      final manualOnlyCard = find.byKey(
-        ValueKey('auto_rotation_actor_${manualOnly.characterId}'),
-      );
+      expect(opacity.opacity, 0.78);
       expect(
-        find.descendant(of: mixedCard, matching: find.text(_power.name)),
+        find.byKey(ValueKey('skill_cmd_${actor.characterId}_${_power.id}')),
         findsOneWidget,
       );
-      expect(find.text(_ult.name), findsNothing);
-      expect(find.text(_ultB.name), findsNothing);
       expect(
-        find.descendant(
-          of: manualOnlyCard,
-          matching: find.text(UiStrings.battleNoEquippedSkills),
-        ),
-        findsOneWidget,
+        find.byKey(ValueKey('skill_cmd_${actor.characterId}_${_ult.id}')),
+        findsNothing,
       );
     });
 
-    testWidgets('轮转谱按角色减耗后的有效耗气判断就绪', (tester) async {
-      final (left, right) = BattleDemo.mockTeams();
-      final reduced = left.first.copyWith(
-        availableSkills: [_power],
-        currentQi: 160,
-        maxQi: 1000,
-        qiCostReductionPct: 0.20,
-      );
-      await _pumpWith(tester, [reduced], right, allowPlayerIntervention: false);
-
-      expect(find.text(UiStrings.skillReady), findsOneWidget);
-      expect(find.text(UiStrings.skillGatheringQi), findsNothing);
-    });
-
-    testWidgets('纯自动模式收起技能按钮并展示三人真气与招式状态', (tester) async {
+    testWidgets('纯自动模式复用名帖七签与行囊的案台骨架', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final team = [
         left[0].copyWith(
@@ -364,92 +299,120 @@ void main() {
       ];
       await _pumpWith(tester, team, right, allowPlayerIntervention: false);
 
-      final rotation = find.byKey(const ValueKey('battle_auto_rotation_desk'));
-      expect(rotation, findsOneWidget);
-      expect(find.byKey(const ValueKey('battle_command_desk')), findsNothing);
-      expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsNothing);
+      final desk = find.byKey(const ValueKey('battle_command_desk'));
+      expect(desk, findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('battle_auto_command_desk')),
+        findsOneWidget,
+      );
       for (final actor in team) {
         expect(
-          find.byKey(ValueKey('auto_rotation_actor_${actor.characterId}')),
+          find.byKey(ValueKey('focus_chip_${team.indexOf(actor)}')),
           findsOneWidget,
         );
         expect(find.text(actor.name), findsWidgets);
       }
       expect(find.text(UiStrings.battleAutoRotation), findsOneWidget);
-      expect(
-        find.textContaining('${team.first.currentQi}/${team.first.maxQi}'),
-        findsWidgets,
-      );
-      expect(find.text(UiStrings.skillReady), findsWidgets);
-      expect(find.text(UiStrings.skillCooldownRemaining(2)), findsOneWidget);
-      expect(find.text(UiStrings.skillGatheringQi), findsOneWidget);
+      for (var i = 0; i < 7; i++) {
+        expect(find.byKey(ValueKey('battle_skill_slot_$i')), findsOneWidget);
+      }
       for (var i = 0; i < 3; i++) {
         expect(find.byKey(ValueKey('battle_pouch_slot_$i')), findsOneWidget);
       }
       expect(
-        tester.getSize(rotation).height,
+        tester.getSize(desk).height,
         BattleLayoutMetrics.resolve(
           tester.view.physicalSize / tester.view.devicePixelRatio,
         ).commandDeskHeight,
       );
       expect(
-        find.descendant(of: rotation, matching: find.byType(ButtonStyleButton)),
+        find.descendant(of: desk, matching: find.byType(ButtonStyleButton)),
         findsNothing,
-        reason: '自动轮转谱是观察界面，不应伪装可操作按钮',
+        reason: '自动案台与可点选案台同形，但不接受按钮、焦点或拖放输入',
       );
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('蓄力与踉跄角色显示行动状态而非招式可用', (tester) async {
+    testWidgets('自动与可点选模式的案台三分区几何同构', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
-      final charging = left[0].copyWith(
-        availableSkills: [_power],
-        chargingSkill: _power,
-        chargeTicksRemaining: 2,
+      final team = [
+        left[0].copyWith(availableSkills: [_power, _ult]),
+        left[1].copyWith(availableSkills: [_powerB]),
+        left[2].copyWith(availableSkills: [_powerC]),
+      ];
+
+      await _pumpWith(tester, team, right, allowPlayerIntervention: false);
+      final autoFocus = tester.getRect(
+        find.byKey(const ValueKey('battle_desk_focus_region')),
       );
-      final staggered = left[1].copyWith(
-        availableSkills: [_powerB],
-        staggerTicksRemaining: 2,
+      final autoSkills = tester.getRect(
+        find.byKey(const ValueKey('battle_desk_skills_region')),
       );
-      await _pumpWith(
+
+      await _pumpWith(tester, team, right, allowPlayerIntervention: true);
+      expect(
+        tester.getRect(find.byKey(const ValueKey('battle_desk_focus_region'))),
+        autoFocus,
+      );
+      expect(
+        tester.getRect(find.byKey(const ValueKey('battle_desk_skills_region'))),
+        autoSkills,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('最近一次我方动作驱动执招者与招式签轮转亮起', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final first = left[0].copyWith(availableSkills: [_power]);
+      final second = left[1].copyWith(availableSkills: [_powerB]);
+      final notifier = await _pumpWith(
         tester,
-        [charging, staggered],
+        [first, second],
         right,
         allowPlayerIntervention: false,
       );
 
-      final chargingCard = find.byKey(
-        ValueKey('auto_rotation_actor_${charging.characterId}'),
-      );
-      final staggeredCard = find.byKey(
-        ValueKey('auto_rotation_actor_${staggered.characterId}'),
-      );
-      expect(
-        find.descendant(
-          of: chargingCard,
-          matching: find.text(UiStrings.skillCharging),
+      notifier.appendActions([
+        BattleAction(
+          tick: 1,
+          actorId: first.characterId,
+          targetId: right.first.characterId,
+          skill: _power,
+          attackResult: _normalResult,
+          description: '崩山拳命中',
         ),
+      ]);
+      await tester.pump();
+      expect(
+        find.byKey(ValueKey('battle_auto_actor_active_${first.characterId}')),
         findsOneWidget,
       );
       expect(
-        find.descendant(
-          of: staggeredCard,
-          matching: find.text(UiStrings.skillStaggered),
+        find.byKey(const ValueKey('battle_auto_skill_active_p1')),
+        findsOneWidget,
+      );
+
+      notifier.appendActions([
+        BattleAction(
+          tick: 2,
+          actorId: second.characterId,
+          targetId: right.last.characterId,
+          skill: _powerB,
+          attackResult: _normalResult,
+          description: '穿云腿命中',
         ),
+      ]);
+      await tester.pump();
+      expect(
+        find.byKey(ValueKey('battle_auto_actor_active_${second.characterId}')),
         findsOneWidget,
       );
       expect(
-        find.descendant(
-          of: chargingCard,
-          matching: find.text(UiStrings.skillReady),
-        ),
-        findsNothing,
+        find.byKey(const ValueKey('battle_auto_skill_active_pB')),
+        findsOneWidget,
       );
       expect(
-        find.descendant(
-          of: staggeredCard,
-          matching: find.text(UiStrings.skillReady),
-        ),
+        find.byKey(ValueKey('battle_auto_actor_active_${first.characterId}')),
         findsNothing,
       );
     });
@@ -466,7 +429,7 @@ void main() {
             allowPlayerIntervention: false,
           );
           expect(
-            find.byKey(const ValueKey('battle_auto_rotation_desk')),
+            find.byKey(const ValueKey('battle_auto_command_desk')),
             findsOneWidget,
           );
           expect(tester.takeException(), isNull);

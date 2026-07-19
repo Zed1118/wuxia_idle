@@ -887,7 +887,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                           skillTargetLink: _skillTargetLink,
                         )
                       else
-                        AutoRotationBar(state: state),
+                        AutoCommandDesk(state: state, beat: _playback.beat),
                     ],
                   ),
                 ),

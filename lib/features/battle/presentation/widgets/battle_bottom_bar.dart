@@ -319,6 +319,116 @@ class _AutoSkillStateText extends StatelessWidget {
   );
 }
 
+/// A 案：自动观战复用可点选模式的名帖、七签、行囊三分区。
+///
+/// 最近一次我方动作只驱动签面亮起，不预测 AI 的下一步决策。
+/// 子树不创建按钮、焦点、长按或拖放入口。
+class AutoCommandDesk extends StatelessWidget {
+  const AutoCommandDesk({super.key, required this.state, required this.beat});
+
+  final BattleState state;
+  final Animation<double> beat;
+
+  @override
+  Widget build(BuildContext context) {
+    BattleAction? lastPlayerAction;
+    for (final action in state.actionLog.reversed) {
+      if (state.leftTeam.any((actor) => actor.characterId == action.actorId)) {
+        lastPlayerAction = action;
+        break;
+      }
+    }
+    final fallbackIndex = state.leftTeam.indexWhere((actor) => actor.isAlive);
+    final activeIndex = lastPlayerAction == null
+        ? (fallbackIndex < 0 ? 0 : fallbackIndex)
+        : state.leftTeam.indexWhere(
+            (actor) => actor.characterId == lastPlayerAction!.actorId,
+          );
+    final activeActor = activeIndex >= 0 && activeIndex < state.leftTeam.length
+        ? state.leftTeam[activeIndex]
+        : null;
+    final skills =
+        <SkillDef>[
+          if (activeActor != null)
+            for (final skill in activeActor.availableSkills)
+              if (skill.type != SkillType.normalAttack &&
+                  !skill.requiresManualTrigger)
+                skill,
+        ]..sort(
+          (a, b) => BottomBar._groupRank(a).compareTo(BottomBar._groupRank(b)),
+        );
+
+    return BattleCommandDeskSurface(
+      builder: (context, metrics) => KeyedSubtree(
+        key: const ValueKey('battle_auto_command_desk'),
+        child: Opacity(
+          opacity: 0.78,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              FocusSelector(
+                team: state.leftTeam,
+                focusSlotIndex: activeIndex,
+                onSelectFocus: (_) {},
+                width: metrics.focusRailWidth,
+                interactive: false,
+                title: UiStrings.battleAutoRotation,
+                activeCharacterId: activeActor?.characterId,
+              ),
+              const SizedBox(width: BattleLayoutTokens.sectionGap),
+              Container(
+                width: 1,
+                height: BattleLayoutTokens.sectionDividerHeight,
+                color: const Color(0xFF6D5940),
+              ),
+              const SizedBox(width: BattleLayoutTokens.sectionGap),
+              SizedBox(
+                key: const ValueKey('battle_desk_skills_region'),
+                width: metrics.skillRailWidth,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var index = 0; index < 7; index++) ...[
+                      Expanded(
+                        key: ValueKey('battle_skill_slot_$index'),
+                        child: index < skills.length && activeActor != null
+                            ? SkillCommandButton(
+                                character: activeActor,
+                                skill: skills[index],
+                                interventionWindowOpen: true,
+                                isPending: false,
+                                pendingTapEnabled: false,
+                                queuedAnother: false,
+                                highlight:
+                                    lastPlayerAction?.skill?.id ==
+                                    skills[index].id,
+                                allowPlayerIntervention: false,
+                                readOnly: true,
+                                autoActive:
+                                    lastPlayerAction?.skill?.id ==
+                                    skills[index].id,
+                                beat: beat,
+                                onTap: () {},
+                                onShowInfo: () {},
+                              )
+                            : EmptySkillSlot(index: index),
+                      ),
+                      if (index < 6)
+                        const SizedBox(width: BattleLayoutTokens.skillSlotGap),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: BattleLayoutTokens.sectionGap),
+              BattlePouchRail(width: metrics.pouchRailWidth),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// T1 武学案台：左侧执招者 + 中部 7 个稳定技能签 + 右侧 3 个战备行囊位。
 ///
 /// 旧版每角色只暴露大招/破招两按钮；新版聚焦单个"重点角色"，把它的
@@ -477,6 +587,9 @@ class FocusSelector extends StatelessWidget {
   final int focusSlotIndex;
   final void Function(int slotIndex) onSelectFocus;
   final double width;
+  final bool interactive;
+  final String title;
+  final int? activeCharacterId;
 
   const FocusSelector({
     super.key,
@@ -484,6 +597,9 @@ class FocusSelector extends StatelessWidget {
     required this.focusSlotIndex,
     required this.onSelectFocus,
     required this.width,
+    this.interactive = true,
+    this.title = UiStrings.battleCommandDesk,
+    this.activeCharacterId,
   });
 
   @override
@@ -494,9 +610,9 @@ class FocusSelector extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            UiStrings.battleCommandDesk,
-            style: TextStyle(
+          Text(
+            title,
+            style: const TextStyle(
               color: Color(0xFFCBB58C),
               fontSize: 11,
               letterSpacing: 3,
@@ -508,7 +624,8 @@ class FocusSelector extends StatelessWidget {
               key: ValueKey('focus_chip_$i'),
               character: team[i],
               selected: i == focusSlotIndex,
-              onTap: () => onSelectFocus(i),
+              onTap: interactive ? () => onSelectFocus(i) : null,
+              autoActive: team[i].characterId == activeCharacterId,
             ),
             if (i < team.length - 1) const SizedBox(height: 4),
           ],
@@ -521,144 +638,149 @@ class FocusSelector extends StatelessWidget {
 class FocusChip extends StatelessWidget {
   final BattleCharacter character;
   final bool selected;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final bool autoActive;
 
   const FocusChip({
     super.key,
     required this.character,
     required this.selected,
     required this.onTap,
+    this.autoActive = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final color = WuxiaColors.schoolColor(character.school);
     final dim = !character.isAlive;
-    final nameplate = InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(2),
-      child: Container(
-        key: ValueKey(
-          'battle.focusNameplate.${selected ? 'expanded' : 'compact'}.${character.characterId}',
-        ),
-        height: BattleLayoutTokens.actorChipHeight,
-        padding: const EdgeInsets.symmetric(horizontal: 9),
-        decoration: BoxDecoration(
-          color: selected
-              ? WuxiaUi.paper.withValues(alpha: 0.92)
-              : Colors.black.withValues(alpha: 0.16),
-          image: selected
-              ? const DecorationImage(
-                  image: AssetImage(WuxiaUi.paperBg),
-                  fit: BoxFit.cover,
-                  opacity: 0.09,
-                )
-              : null,
-          border: Border(
-            left: BorderSide(
-              color: selected ? WuxiaUi.jiang : const Color(0xFF4C4439),
-              width: selected ? 3 : 1,
-            ),
-            top: BorderSide(
-              color: selected
-                  ? const Color(0xFFC3A46A)
-                  : const Color(0xFF4C4439),
-            ),
-            right: BorderSide(
-              color: selected
-                  ? const Color(0xFFC3A46A)
-                  : const Color(0xFF4C4439),
-            ),
-            bottom: BorderSide(
-              color: selected
-                  ? const Color(0xFFC3A46A)
-                  : const Color(0xFF4C4439),
-            ),
+    final plate = Container(
+      key: ValueKey(
+        'battle.focusNameplate.${selected ? 'expanded' : 'compact'}.${character.characterId}',
+      ),
+      height: BattleLayoutTokens.actorChipHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 9),
+      decoration: BoxDecoration(
+        color: selected
+            ? WuxiaUi.paper.withValues(alpha: 0.92)
+            : Colors.black.withValues(alpha: 0.16),
+        image: selected
+            ? const DecorationImage(
+                image: AssetImage(WuxiaUi.paperBg),
+                fit: BoxFit.cover,
+                opacity: 0.09,
+              )
+            : null,
+        border: Border(
+          left: BorderSide(
+            color: selected ? WuxiaUi.jiang : const Color(0xFF4C4439),
+            width: selected ? 3 : 1,
+          ),
+          top: BorderSide(
+            color: selected ? const Color(0xFFC3A46A) : const Color(0xFF4C4439),
+          ),
+          right: BorderSide(
+            color: selected ? const Color(0xFFC3A46A) : const Color(0xFF4C4439),
+          ),
+          bottom: BorderSide(
+            color: selected ? const Color(0xFFC3A46A) : const Color(0xFF4C4439),
           ),
         ),
-        child: Row(
-          children: [
-            Container(
-              width: selected ? 7 : 6,
-              height: selected ? 7 : 6,
-              decoration: BoxDecoration(
-                color: dim
-                    ? const Color(0xFF8F8574)
-                    : (selected ? WuxiaUi.jiang : color),
-                shape: BoxShape.circle,
-              ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: selected ? 7 : 6,
+            height: selected ? 7 : 6,
+            decoration: BoxDecoration(
+              color: dim
+                  ? const Color(0xFF8F8574)
+                  : (selected ? WuxiaUi.jiang : color),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(width: 7),
-            Expanded(
-              child: selected
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          character.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w800,
-                            color: WuxiaUi.ink,
-                            height: 1,
-                          ),
+          ),
+          const SizedBox(width: 7),
+          Expanded(
+            child: selected
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        character.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: WuxiaUi.ink,
+                          height: 1,
                         ),
-                        const SizedBox(height: 3),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                EnumL10n.school(character.school),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Color(0xFF796B57),
-                                  fontSize: 8,
-                                  height: 1,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '${character.currentQi}/${character.maxQi}',
+                      ),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              EnumL10n.school(character.school),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                color: WuxiaUi.muted,
+                                color: Color(0xFF796B57),
                                 fontSize: 8,
                                 height: 1,
                               ),
                             ),
-                          ],
-                        ),
-                      ],
-                    )
-                  : Text(
-                      character.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w500,
-                        color: dim
-                            ? const Color(0xFF8F8574)
-                            : const Color(0xFFD4C5A7),
+                          ),
+                          Text(
+                            '${character.currentQi}/${character.maxQi}',
+                            style: const TextStyle(
+                              color: WuxiaUi.muted,
+                              fontSize: 8,
+                              height: 1,
+                            ),
+                          ),
+                        ],
                       ),
+                    ],
+                  )
+                : Text(
+                    character.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      color: dim
+                          ? const Color(0xFF8F8574)
+                          : const Color(0xFFD4C5A7),
                     ),
-            ),
-          ],
-        ),
+                  ),
+          ),
+        ],
       ),
     );
+    final nameplate = onTap == null
+        ? plate
+        : InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(2),
+            child: plate,
+          );
+    final keyedNameplate = autoActive
+        ? KeyedSubtree(
+            key: ValueKey('battle_auto_actor_active_${character.characterId}'),
+            child: nameplate,
+          )
+        : nameplate;
     return dim
         ? Opacity(
             key: ValueKey(
               'battle.focusNameplate.faded.${character.characterId}',
             ),
             opacity: 0.48,
-            child: nameplate,
+            child: keyedNameplate,
           )
-        : nameplate;
+        : keyedNameplate;
   }
 }
 
@@ -674,6 +796,8 @@ class SkillCommandButton extends StatelessWidget {
   final bool queuedAnother;
   final bool highlight;
   final bool allowPlayerIntervention;
+  final bool readOnly;
+  final bool autoActive;
   // 读秒环节拍(供 CD 环平滑插值)。
   final Animation<double> beat;
   // 两段点选:点击 = 释放(single 进待发态 / aoe 一键出手);长按 = 弹简介浮层。
@@ -690,6 +814,8 @@ class SkillCommandButton extends StatelessWidget {
     required this.queuedAnother,
     required this.highlight,
     required this.allowPlayerIntervention,
+    this.readOnly = false,
+    this.autoActive = false,
     required this.beat,
     required this.onTap,
     required this.onShowInfo,
@@ -781,7 +907,8 @@ class SkillCommandButton extends StatelessWidget {
       visualState: visualState,
       // 原生按钮在 surface 内承接 focus / keyboard / cursor / semantics。
       onPressed: enabled ? onTap : null,
-      onLongPress: onShowInfo,
+      onLongPress: readOnly ? null : onShowInfo,
+      interactive: !readOnly,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -938,13 +1065,20 @@ class SkillCommandButton extends StatelessWidget {
       ),
     );
 
-    return Semantics(
+    final semantics = Semantics(
       key: ValueKey('skill_cmd_${character.characterId}_${skill.id}'),
-      button: true,
-      enabled: enabled,
+      button: !readOnly,
+      enabled: readOnly ? null : enabled,
+      readOnly: readOnly,
       label: '${_groupLabel(skill)} ${skill.name}',
       child: button,
     );
+    return autoActive
+        ? KeyedSubtree(
+            key: ValueKey('battle_auto_skill_active_${skill.id}'),
+            child: semantics,
+          )
+        : semantics;
   }
 }
 

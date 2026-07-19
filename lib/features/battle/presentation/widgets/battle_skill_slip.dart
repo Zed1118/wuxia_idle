@@ -33,6 +33,7 @@ class BattleSkillSlipSurface extends StatelessWidget {
     required this.onPressed,
     required this.onLongPress,
     required this.child,
+    this.interactive = true,
   });
 
   final double height;
@@ -43,89 +44,99 @@ class BattleSkillSlipSurface extends StatelessWidget {
   final Color accent;
   final BattleSkillSlipVisualState visualState;
   final VoidCallback? onPressed;
-  final VoidCallback onLongPress;
+  final VoidCallback? onLongPress;
   final Widget child;
+  final bool interactive;
 
   @override
   Widget build(BuildContext context) {
+    final contents = Stack(
+      children: [
+        Positioned.fill(
+          child: Opacity(
+            opacity: 0.20,
+            child: Image.asset(
+              WuxiaUi.paperBg,
+              fit: BoxFit.cover,
+              color: const Color(0xFF806C50),
+              colorBlendMode: BlendMode.multiply,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(
+              key: const ValueKey('battle.skillSlipRoughPaper'),
+              painter: _BattleSkillSlipFramePainter(accent: accent),
+            ),
+          ),
+        ),
+        if (visualState == BattleSkillSlipVisualState.cooldown)
+          const Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                key: ValueKey('battle.skillSlip.inkCooldown'),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0x8A211D18),
+                      Color(0x401B1814),
+                      Colors.transparent,
+                    ],
+                    stops: [0, 0.58, 1],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        if (visualState == BattleSkillSlipVisualState.insufficientQi)
+          const Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                key: ValueKey('battle.skillSlip.qiGap'),
+                painter: _BattleSkillQiGapPainter(),
+              ),
+            ),
+          ),
+        child,
+      ],
+    );
+    final surface = interactive
+        ? ElevatedButton(
+            onPressed: onPressed,
+            onLongPress: onLongPress,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: backgroundColor,
+              disabledBackgroundColor: backgroundColor,
+              foregroundColor: foregroundColor,
+              padding: EdgeInsets.zero,
+              side: border,
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              enabledMouseCursor: SystemMouseCursors.click,
+              disabledMouseCursor: SystemMouseCursors.basic,
+              shape: const BeveledRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(3)),
+              ),
+            ),
+            child: contents,
+          )
+        : Material(
+            color: backgroundColor,
+            shape: BeveledRectangleBorder(
+              borderRadius: const BorderRadius.all(Radius.circular(3)),
+              side: border,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: contents,
+          );
     final slip = Transform.rotate(
       key: const ValueKey('battle.skillSlipNaturalTilt'),
       angle: tiltAngle,
-      child: SizedBox(
-        height: height,
-        child: ElevatedButton(
-          onPressed: onPressed,
-          onLongPress: onLongPress,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: backgroundColor,
-            disabledBackgroundColor: backgroundColor,
-            foregroundColor: foregroundColor,
-            padding: EdgeInsets.zero,
-            side: border,
-            elevation: 0,
-            shadowColor: Colors.transparent,
-            enabledMouseCursor: SystemMouseCursors.click,
-            disabledMouseCursor: SystemMouseCursors.basic,
-            shape: const BeveledRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(3)),
-            ),
-          ),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Opacity(
-                  opacity: 0.20,
-                  child: Image.asset(
-                    WuxiaUi.paperBg,
-                    fit: BoxFit.cover,
-                    color: const Color(0xFF806C50),
-                    colorBlendMode: BlendMode.multiply,
-                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: CustomPaint(
-                    key: const ValueKey('battle.skillSlipRoughPaper'),
-                    painter: _BattleSkillSlipFramePainter(accent: accent),
-                  ),
-                ),
-              ),
-              if (visualState == BattleSkillSlipVisualState.cooldown)
-                const Positioned.fill(
-                  child: IgnorePointer(
-                    child: DecoratedBox(
-                      key: ValueKey('battle.skillSlip.inkCooldown'),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Color(0x8A211D18),
-                            Color(0x401B1814),
-                            Colors.transparent,
-                          ],
-                          stops: [0, 0.58, 1],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              if (visualState == BattleSkillSlipVisualState.insufficientQi)
-                const Positioned.fill(
-                  child: IgnorePointer(
-                    child: CustomPaint(
-                      key: ValueKey('battle.skillSlip.qiGap'),
-                      painter: _BattleSkillQiGapPainter(),
-                    ),
-                  ),
-                ),
-              child,
-            ],
-          ),
-        ),
-      ),
+      child: SizedBox(height: height, child: surface),
     );
     final staged = visualState == BattleSkillSlipVisualState.interrupt
         ? Transform.translate(
