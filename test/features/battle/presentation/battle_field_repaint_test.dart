@@ -137,6 +137,230 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('群战首发阵亡后按队列递补空位并递减墨影', (tester) async {
+    final (left, rightBase) = BattleDemo.mockTeams();
+    final right = [
+      for (var i = 0; i < 7; i++)
+        rightBase[i % rightBase.length].copyWith(
+          characterId: 100 + i,
+          slotIndex: i,
+          isAlive: true,
+        ),
+    ];
+    final attackControllers = List.generate(
+      6,
+      (_) => AnimationController(vsync: tester),
+    );
+    final hitFlashControllers = List.generate(
+      6,
+      (_) => AnimationController(vsync: tester),
+    );
+    addTearDown(() {
+      for (final controller in [...attackControllers, ...hitFlashControllers]) {
+        controller.dispose();
+      }
+    });
+
+    Widget field(BattleState state) => MaterialApp(
+      home: Scaffold(
+        body: BattleField(
+          state: state,
+          stageLayout: BattleStageLayoutMode.massBattle,
+          attackControllers: attackControllers,
+          actionTemplates: List.filled(6, BattleActionTemplate.melee),
+          popups: const {},
+          animConfig: AnimationNumbers.defaults,
+          chargeMaxTicks: 3,
+          beat: const AlwaysStoppedAnimation<double>(0),
+          staggerWindowTicks: 3,
+          onPopupComplete: (_, _) {},
+          hitFlashControllers: hitFlashControllers,
+          hitFlashColors: const {},
+          onEnemyTap: (_) {},
+          hoveredEnemyId: null,
+          onEnemyHover: (_, _) {},
+        ),
+      ),
+    );
+
+    final initial = BattleState.initial(leftTeam: left, rightTeam: right);
+    await tester.pumpWidget(field(initial));
+    for (final id in [100, 101, 102]) {
+      expect(find.byKey(ValueKey('battle.stageCharacterId.$id')), findsOne);
+    }
+    expect(
+      find.byKey(const ValueKey('battle.massBattleInkQueue.count.4')),
+      findsOne,
+    );
+
+    final firstWaveDead = initial.copyWith(
+      rightTeam: [
+        for (var i = 0; i < right.length; i++)
+          i < 3 ? right[i].copyWith(currentHp: 0, isAlive: false) : right[i],
+      ],
+      actionLog: [
+        for (var i = 0; i < 3; i++)
+          BattleAction(
+            tick: i + 1,
+            actorId: left.first.characterId,
+            targetId: 100 + i,
+            description: 'defeat',
+            defeatedTarget: true,
+          ),
+      ],
+    );
+    await tester.pumpWidget(field(firstWaveDead));
+
+    // 阵亡帧先保留原战位，让灰化与血条归零完整呈现。
+    for (final id in [100, 101, 102]) {
+      final slot = tester.widget<CharacterSlot>(
+        find.byKey(ValueKey('battle.stageCharacterId.$id')),
+      );
+      expect(slot.character.isAlive, isFalse);
+      expect(slot.character.currentHp, 0);
+    }
+
+    await tester.pump(
+      Duration(milliseconds: AnimationNumbers.defaults.damagePopupMs + 1),
+    );
+    for (final id in [103, 104, 105]) {
+      expect(find.byKey(ValueKey('battle.stageCharacterId.$id')), findsOne);
+    }
+    expect(
+      find.byKey(const ValueKey('battle.massBattleInkQueue.count.1')),
+      findsOne,
+    );
+
+    final secondWaveDead = firstWaveDead.copyWith(
+      rightTeam: [
+        for (var i = 0; i < right.length; i++)
+          i < 6 ? right[i].copyWith(currentHp: 0, isAlive: false) : right[i],
+      ],
+      actionLog: [
+        ...firstWaveDead.actionLog,
+        for (var i = 3; i < 6; i++)
+          BattleAction(
+            tick: i + 1,
+            actorId: left.first.characterId,
+            targetId: 100 + i,
+            description: 'defeat',
+            defeatedTarget: true,
+          ),
+      ],
+    );
+    await tester.pumpWidget(field(secondWaveDead));
+    for (final id in [103, 104, 105]) {
+      expect(
+        tester
+            .widget<CharacterSlot>(
+              find.byKey(ValueKey('battle.stageCharacterId.$id')),
+            )
+            .character
+            .isAlive,
+        isFalse,
+      );
+    }
+    await tester.pump(
+      Duration(milliseconds: AnimationNumbers.defaults.damagePopupMs + 1),
+    );
+    expect(find.byKey(const ValueKey('battle.stageCharacterId.106')), findsOne);
+    expect(
+      find.byKey(const ValueKey('battle.massBattleInkQueue')),
+      findsNothing,
+    );
+
+    final allDead = secondWaveDead.copyWith(
+      rightTeam: [
+        for (final character in right)
+          character.copyWith(currentHp: 0, isAlive: false),
+      ],
+      actionLog: [
+        ...secondWaveDead.actionLog,
+        BattleAction(
+          tick: 7,
+          actorId: left.first.characterId,
+          targetId: 106,
+          description: 'defeat',
+          defeatedTarget: true,
+        ),
+      ],
+    );
+    await tester.pumpWidget(field(allDead));
+    expect(
+      tester
+          .widget<CharacterSlot>(
+            find.byKey(const ValueKey('battle.stageCharacterId.106')),
+          )
+          .character
+          .isAlive,
+      isFalse,
+    );
+    await tester.pump(
+      Duration(milliseconds: AnimationNumbers.defaults.damagePopupMs + 1),
+    );
+    expect(find.byType(CharacterSlot), findsNWidgets(3));
+    expect(
+      find.byKey(const ValueKey('battle.massBattleInkQueue')),
+      findsNothing,
+    );
+  });
+
+  testWidgets('轻功与心魔共用战位路径保持 3v3 人物映射', (tester) async {
+    final (left, right) = BattleDemo.mockTeams();
+    final attackControllers = List.generate(
+      6,
+      (_) => AnimationController(vsync: tester),
+    );
+    final hitFlashControllers = List.generate(
+      6,
+      (_) => AnimationController(vsync: tester),
+    );
+    addTearDown(() {
+      for (final controller in [...attackControllers, ...hitFlashControllers]) {
+        controller.dispose();
+      }
+    });
+
+    for (final mode in const [
+      BattleStageLayoutMode.lightFoot,
+      BattleStageLayoutMode.innerDemon,
+    ]) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: BattleField(
+              state: BattleState.initial(leftTeam: left, rightTeam: right),
+              stageLayout: mode,
+              attackControllers: attackControllers,
+              actionTemplates: List.filled(6, BattleActionTemplate.melee),
+              popups: const {},
+              animConfig: AnimationNumbers.defaults,
+              chargeMaxTicks: 3,
+              beat: const AlwaysStoppedAnimation<double>(0),
+              staggerWindowTicks: 3,
+              onPopupComplete: (_, _) {},
+              hitFlashControllers: hitFlashControllers,
+              hitFlashColors: const {},
+              onEnemyTap: (_) {},
+              hoveredEnemyId: null,
+              onEnemyHover: (_, _) {},
+            ),
+          ),
+        ),
+      );
+      expect(find.byType(CharacterSlot), findsNWidgets(6), reason: mode.name);
+      for (final character in [...left, ...right]) {
+        expect(
+          find.byKey(
+            ValueKey('battle.stageCharacterId.${character.characterId}'),
+          ),
+          findsOne,
+          reason: mode.name,
+        );
+      }
+    }
+  });
+
   testWidgets('窗口重建的零高与浮点贴边约束不抛异常', (tester) async {
     final (left, right) = BattleDemo.mockTeams();
     final bossRight = List<BattleCharacter>.from(right);

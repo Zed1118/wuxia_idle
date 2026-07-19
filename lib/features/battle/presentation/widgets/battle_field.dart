@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../domain/battle_state.dart';
@@ -8,12 +10,13 @@ import '../attack_animation.dart';
 import '../battle_action_template.dart';
 import '../battle_layout_tokens.dart';
 import '../battle_stage_geometry.dart';
+import '../battle_visual_roster.dart';
 import '../battle_vfx_entries.dart';
 import '../character_avatar.dart';
 import '../damage_popup.dart';
 import '../hit_flash.dart';
 
-class BattleField extends StatelessWidget {
+class BattleField extends StatefulWidget {
   final BattleState state;
   final BattleStageLayoutMode stageLayout;
   final List<AnimationController> attackControllers;
@@ -54,26 +57,142 @@ class BattleField extends StatelessWidget {
   });
 
   @override
+  State<BattleField> createState() => _BattleFieldState();
+}
+
+class _BattleFieldState extends State<BattleField> {
+  Timer? _rotationTimer;
+  late List<int?> _leftCharacterIds;
+  late List<int?> _rightCharacterIds;
+
+  @override
+  void initState() {
+    super.initState();
+    _applyRoster(BattleVisualRoster.fromState(widget.state));
+  }
+
+  @override
+  void didUpdateWidget(BattleField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final desired = BattleVisualRoster.fromState(widget.state);
+    _leftCharacterIds = desired.leftSlots;
+
+    final currentTeamIds = {
+      for (final character in widget.state.rightTeam) character.characterId,
+    };
+    final isNewWave = _rightCharacterIds.whereType<int>().any(
+      (characterId) => !currentTeamIds.contains(characterId),
+    );
+    final needsDefeatBeat =
+        !isNewWave &&
+        _hasDefeatedOutgoingCharacter(
+          current: _rightCharacterIds,
+          desired: desired.rightSlots,
+        );
+
+    if (!needsDefeatBeat) {
+      _rotationTimer?.cancel();
+      _rotationTimer = null;
+      _rightCharacterIds = desired.rightSlots;
+      return;
+    }
+    _rotationTimer ??= Timer(
+      Duration(milliseconds: widget.animConfig.damagePopupMs),
+      () {
+        if (!mounted) return;
+        setState(() {
+          _rightCharacterIds = BattleVisualRoster.fromState(
+            widget.state,
+          ).rightSlots;
+          _rotationTimer = null;
+        });
+      },
+    );
+  }
+
+  bool _hasDefeatedOutgoingCharacter({
+    required List<int?> current,
+    required List<int?> desired,
+  }) {
+    final rightById = {
+      for (final character in widget.state.rightTeam)
+        character.characterId: character,
+    };
+    for (var slotIndex = 0; slotIndex < current.length; slotIndex++) {
+      final currentId = current[slotIndex];
+      final desiredId = slotIndex < desired.length ? desired[slotIndex] : null;
+      if (currentId == null || currentId == desiredId) {
+        continue;
+      }
+      if (rightById[currentId]?.isAlive == false) return true;
+    }
+    return false;
+  }
+
+  void _applyRoster(BattleVisualRoster roster) {
+    _leftCharacterIds = roster.leftSlots;
+    _rightCharacterIds = roster.rightSlots;
+  }
+
+  @override
+  void dispose() {
+    _rotationTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final leftTeamSize = state.leftTeam.length.clamp(1, 3);
-    final rightTeamSize = state.rightTeam.length.clamp(1, 3);
+    final state = widget.state;
+    final stageLayout = widget.stageLayout;
+    final attackControllers = widget.attackControllers;
+    final actionTemplates = widget.actionTemplates;
+    final popups = widget.popups;
+    final animConfig = widget.animConfig;
+    final chargeMaxTicks = widget.chargeMaxTicks;
+    final beat = widget.beat;
+    final staggerWindowTicks = widget.staggerWindowTicks;
+    final onPopupComplete = widget.onPopupComplete;
+    final hitFlashControllers = widget.hitFlashControllers;
+    final hitFlashColors = widget.hitFlashColors;
+    final onEnemyTap = widget.onEnemyTap;
+    final targetableEnemyIds = widget.targetableEnemyIds;
+    final hoveredEnemyId = widget.hoveredEnemyId;
+    final onEnemyHover = widget.onEnemyHover;
+    final leftById = {
+      for (final character in state.leftTeam) character.characterId: character,
+    };
+    final rightById = {
+      for (final character in state.rightTeam) character.characterId: character,
+    };
+    final leftTeamSize = _leftCharacterIds.length.clamp(1, 3);
+    final rightTeamSize = _rightCharacterIds.length.clamp(1, 3);
+    final visibleRightIds = _rightCharacterIds.whereType<int>().toSet();
+    final queuedAliveEnemyCount = state.rightTeam
+        .where(
+          (character) =>
+              character.isAlive &&
+              !visibleRightIds.contains(character.characterId),
+        )
+        .length;
     final slots = <_StageSlotData>[
-      for (var i = 0; i < state.leftTeam.length && i < 3; i++)
-        _StageSlotData(
-          teamSide: 0,
-          slotIndex: i,
-          teamSize: leftTeamSize,
-          character: state.leftTeam[i],
-          stageLayout: stageLayout,
-        ),
-      for (var i = 0; i < state.rightTeam.length && i < 3; i++)
-        _StageSlotData(
-          teamSide: 1,
-          slotIndex: i,
-          teamSize: rightTeamSize,
-          character: state.rightTeam[i],
-          stageLayout: stageLayout,
-        ),
+      for (var i = 0; i < _leftCharacterIds.length; i++)
+        if (leftById[_leftCharacterIds[i]] != null)
+          _StageSlotData(
+            teamSide: 0,
+            slotIndex: i,
+            teamSize: leftTeamSize,
+            character: leftById[_leftCharacterIds[i]]!,
+            stageLayout: stageLayout,
+          ),
+      for (var i = 0; i < _rightCharacterIds.length; i++)
+        if (rightById[_rightCharacterIds[i]] != null)
+          _StageSlotData(
+            teamSide: 1,
+            slotIndex: i,
+            teamSize: rightTeamSize,
+            character: rightById[_rightCharacterIds[i]]!,
+            stageLayout: stageLayout,
+          ),
     ]..sort((a, b) => a.anchor.dy.compareTo(b.anchor.dy));
 
     return Padding(
@@ -108,7 +227,7 @@ class BattleField extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               if (stageLayout == BattleStageLayoutMode.massBattle &&
-                  state.rightTeam.length > 3)
+                  queuedAliveEnemyCount > 0)
                 Positioned(
                   key: const ValueKey('battle.massBattleInkQueue'),
                   right: constraints.maxWidth * 0.02,
@@ -118,7 +237,10 @@ class BattleField extends StatelessWidget {
                   child: IgnorePointer(
                     child: CustomPaint(
                       painter: _MassBattleInkQueuePainter(
-                        count: state.rightTeam.length - 3,
+                        count: queuedAliveEnemyCount,
+                      ),
+                      key: ValueKey(
+                        'battle.massBattleInkQueue.count.$queuedAliveEnemyCount',
                       ),
                     ),
                   ),
@@ -150,6 +272,9 @@ class BattleField extends StatelessWidget {
                             'battle.stageCharacter.${slot.teamSide}.${slot.slotIndex}',
                           ),
                           child: CharacterSlot(
+                            key: ValueKey(
+                              'battle.stageCharacterId.${slot.character.characterId}',
+                            ),
                             character: slot.character,
                             battleState: state,
                             isLeftTeam: isLeftTeam,

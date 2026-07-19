@@ -734,7 +734,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       // 3. actionLog 新增：触发动画。
       if (prev != null && next.actionLog.length > prev.actionLog.length) {
         final newActions = next.actionLog.sublist(prev.actionLog.length);
-        _playback.playActions(newActions, next);
+        _playback.playActions(newActions, next, previousState: prev);
       }
 
       // 4. 破招机制 SFX：状态边沿触发（表现层纯读 state，不入 domain）。

@@ -169,3 +169,34 @@
 - 下一步：停在目标 2，等待是否授权另开生产表现层修复单。未获拍板前不开始目标 3。
 - 已跑验证：目标 1 的 15/15、289/289、analyze 0 与 20/20 双视口仍见上；目标 2 targeted 39/39、`flutter analyze` 0、macOS Debug build exit 0、动态 100 帧/30 秒并完成逐段判定。
 - 阻塞项：`BattleField` 固定渲染右队前三项且墨影数固定为总长度减三，导致存活后备不进入战位；需生产层修改授权。
+
+## C3 · 群战墨影队列递补修复（2026-07-19）
+
+### 目标与边界
+
+- 在纯表现层回放右队击杀顺序，把三个可见战位从“固定队列前三项”改为“首发占位，阵亡后后备补同一空位”。
+- 战斗引擎全员同时参战语义不变；禁止修改 `battle_state` / strategy / 结算 / `damage_calculator` / `numbers.yaml` / schema。
+- 保留 `battle_field.dart` 已有 `stackShift` 错层逻辑原样；无新音效、无大特效。
+
+### 实施切片
+
+1. [x] 合入 `main`；`ort` 零冲突，merge commit 保留主线 K1/C2/spread 等变更。
+2. [x] 新增递补契约红测：首发三人阵亡→后备入场、墨影 4→1→0、全队 7→0；场外目标不借 slot 5。
+3. [x] 新增 `BattleVisualRoster`，只读 `BattleState.actionLog` 回放击杀顺序，为人物、漂字、受击闪、弹道与特效提供同一战位映射。
+4. [x] `BattleField` 以 characterId 持有可见人物；用既有 `damagePopupMs` 留出阵亡灰化/归零拍，拍后才递补；widget key 按 characterId。
+5. [x] 共用路径契约：标准 3v3、轻功、心魔均保持原三战位映射。
+6. [ ] 固定 seed 20260719 真机重跑 7→0，录制动态帧/视频并复制到主 checkout 防蒸发目录。
+7. [ ] 回填 §8.2 四证据、五项恢复点，新鲜 analyze/targeted 后冻结 `[READY]`。
+
+### 破坏证红留档
+
+- 命令：`flutter test --no-pub test/features/battle/presentation/battle_field_repaint_test.dart test/features/battle/battle_playback_controller_test.dart`
+- 修复前结果：**29 pass / 2 fail**。失败均命中旧缺陷：①场外第四敌受击后 `popups[5]` 实际非空；②无 `battle.stageCharacterId.100` key。无编译/fixture 错误。
+
+### 当前恢复点（C3 实施切片）
+
+- 状态：生产表现层修复与契约测已落地；真机动态验收与最终冻结待做。
+- 最后完成：可见队列回放、阵亡延时递补、characterId key，以及漂字/受击闪/弹道/特效 slot 映射收口。
+- 下一步：跑 macOS Debug 固定 seed 20260719，采样 7→0 全程并逐帧判定标题与战位。
+- 已跑验证：破坏证 29/31（红）；修复后核心两文件 31/31；扩展 targeted（含双视口、轻功/心魔、visual route）**89/89 pass**。
+- 阻塞项：无。当前未完成项仅真机动态证据、最终 analyze 与交付恢复点。
