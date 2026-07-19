@@ -11,6 +11,8 @@ import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dar
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 
+import '../../support/isar_test_support.dart';
+
 /// C2.2 整备页用药 + 关闭返还（守恒·spec §5.1/§9.2）。
 /// 直接构造 interlude 会话 + 注入 itemDefs（轻量·不载 GameRepository）。
 void main() {
@@ -30,6 +32,8 @@ void main() {
       gauntletQiRestorePct: 0.20,
     ),
   };
+
+  setUpAll(() => initializeTestIsarCore());
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_gauntlet_supply_');

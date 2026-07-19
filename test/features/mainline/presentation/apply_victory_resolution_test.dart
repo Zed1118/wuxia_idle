@@ -361,9 +361,18 @@ void main() {
 
       // equipmentObtained 事件已写
       final events = await isar.gameEvents.where().findAll();
+      final obtained = events
+          .where((e) => e.eventType == GameEventType.equipmentObtained)
+          .toList();
       expect(
-        events.where((e) => e.eventType == GameEventType.equipmentObtained),
+        obtained,
         hasLength(1),
+        // 2026-07-19 全量并发曾见 2 条(未复现):失败时打印全部命中事件,
+        // 便于定位第二条来源(title/summary/relatedEntityIds/occurredAt)。
+        reason:
+            '命中 ${obtained.length} 条: '
+            '${obtained.map((e) => '${e.title}|${e.summary}|'
+                '${e.relatedEntityIds}|${e.occurredAt}').toList()}',
       );
 
       // 心法已拉取入库可查(skillUsageCount growable 转换未抛 UnsupportedError)

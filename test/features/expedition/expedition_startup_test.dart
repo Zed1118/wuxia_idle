@@ -13,6 +13,8 @@ import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_node.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 
+import '../../support/isar_test_support.dart';
+
 /// 确定性 fake combat（同结算测体例）：全胜、成员满值上限固定。
 class _FakeCombat implements ExpeditionCombat {
   final int maxHp = 1000;
@@ -61,6 +63,8 @@ Character _disciple() => Character()
 void main() {
   late Directory tempDir;
   final departedAt = DateTime(2026, 7, 16, 10);
+
+  setUpAll(() => initializeTestIsarCore());
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp(

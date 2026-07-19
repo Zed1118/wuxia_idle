@@ -10,10 +10,14 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 
+import '../../support/isar_test_support.dart';
+
 /// C2.1 入场扣帖 + 补给会话托管（单 `writeTxn`·spec §5.1/§9.2）。
 /// 模板镜像 `expedition_dispatch_test.dart`；Isar-only 轻量环境（不载 GameRepository）。
 void main() {
   late Directory tempDir;
+
+  setUpAll(() => initializeTestIsarCore());
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_gauntlet_enter_');
