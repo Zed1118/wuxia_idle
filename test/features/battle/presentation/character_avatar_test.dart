@@ -278,7 +278,7 @@ void main() {
     );
   });
 
-  testWidgets('阵亡站姿褪墨并下沉而非保留完整灰色剪纸', (tester) async {
+  testWidgets('阵亡站姿灰化下沉并遵守 P0-2 opacity 0.45', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -299,7 +299,7 @@ void main() {
     final fade = tester.widget<Opacity>(
       find.byKey(const ValueKey('battle.stageStandeeDefeatedFade')),
     );
-    expect(fade.opacity, lessThanOrEqualTo(0.34));
+    expect(fade.opacity, 0.45);
   });
 
   testWidgets('Boss全身立绘不再绘制矩形金色黄底', (tester) async {
