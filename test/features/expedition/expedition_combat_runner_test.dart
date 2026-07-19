@@ -18,7 +18,7 @@ import '../../support/test_data.dart';
 ///
 /// 真 Isar 角色（`Phase2SeedService.seedP3`）→ 派遣 → 用**生产**
 /// [ExpeditionCombatRunner] 结算，证明「派遣成员装配真实战斗队（含装备/心法/
-/// autoFill）+ 占位敌 + [ExpeditionBattleRunner] + settle」端到端跑通、真打真赢。
+/// autoFill）+ YAML 敌池 + [ExpeditionBattleRunner] + settle」端到端跑通、真打真赢。
 void main() {
   late Directory tempDir;
   final departedAt = DateTime(2026, 7, 16, 10);
@@ -44,7 +44,17 @@ void main() {
     }
   });
 
-  test('生产 ExpeditionCombatRunner + settle：真角色端到端推进并打赢占位敌', () async {
+  test('runner 不含中文文案或 Dart 数值常量，敌队只从配置取得', () {
+    final source = File(
+      'lib/features/expedition/application/expedition_combat_runner.dart',
+    ).readAsStringSync();
+    expect(source, isNot(contains(RegExp(r'[\u4e00-\u9fff]'))));
+    expect(source, isNot(contains(RegExp(r'(?<![A-Za-z_])\d+(?:\.\d+)?'))));
+    expect(source, isNot(contains('EnemyDef(')));
+    expect(source, contains('expeditionConfig'));
+  });
+
+  test('生产 ExpeditionCombatRunner + settle：真角色端到端推进并打赢配置敌队', () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();
     // 使 id=1 角色可派遣：非祖师、未占用。
     await IsarSetup.instance.writeTxn(() async {
@@ -77,7 +87,7 @@ void main() {
       now: departedAt.add(const Duration(minutes: 540)),
     );
 
-    expect(result.defeated, isFalse, reason: '真角色应胜占位弱敌');
+    expect(result.defeated, isFalse, reason: '真角色应胜前五节点配置敌队');
     expect(result.currentNode, 5, reason: '含险关战斗节点全推进 → 真打真赢');
     final run = (await IsarSetup.instance.expeditionRuns.get(runId))!;
     expect(run.currentNode, 5);

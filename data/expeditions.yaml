@@ -1,4 +1,4 @@
-# 百草岭远征配置（§8.2）。A2 最小合法骨架；Phase B 填节点权重/深度曲线/奖励表。
+# 百草岭远征配置（§8.2）。战斗敌池与深度曲线均为生产单一真相源。
 normal_node_minutes: 90
 elite_node_minutes: 180
 # batch3 联合经济探针拍板中档(Lv100→170 ~18天专挂)·rewardsForNode 消费·探针留 ratchet
@@ -6,3 +6,142 @@ base_exp_per_battle: 170
 hp_recover_pct_per_node: 0.10
 qi_recover_pct_per_node: 0.25
 zhangshi_pct_per_layer: 0.05
+
+combat:
+  # 第 1 节点以模板基础值开局，随后逐节点线性增长并 clamp。封顶后由第 31 节点起
+  # 的瘴蚀（恢复逐层归零）继续形成有限远征压力，不无限膨胀 HP/攻击。
+  depth_curve:
+    first_node: 1
+    base_multiplier: 1.0
+    hp_growth_per_node: 0.04
+    attack_growth_per_node: 0.02
+    hp_multiplier_cap: 4.0
+    attack_multiplier_cap: 2.5
+    hp_value_cap: 60000
+    attack_value_cap: 2000
+
+  # 非险关战斗为单敌遭遇。稳定 nodeSeed 在三支队伍间选择，覆盖三流派。
+  normal_enemy_teams:
+    - id: baicao_normal_gangmeng
+      enemies:
+        - id: enemy_baicao_shanjia
+          name: 山甲悍匪
+          realmTier: sanLiu
+          realmLayer: shuLian
+          school: gangMeng
+          baseHp: 3200
+          baseAttack: 300
+          baseSpeed: 95
+          skillIds:
+            - skill_gangmeng_changlian_basic
+            - skill_gangmeng_changlian_skill
+          iconPath: ''
+    - id: baicao_normal_lingqiao
+      enemies:
+        - id: enemy_baicao_fenghou
+          name: 风猴岭客
+          realmTier: sanLiu
+          realmLayer: shuLian
+          school: lingQiao
+          baseHp: 2800
+          baseAttack: 270
+          baseSpeed: 130
+          skillIds:
+            - skill_lingqiao_changlian_basic
+            - skill_lingqiao_changlian_skill
+          iconPath: ''
+    - id: baicao_normal_yinrou
+      enemies:
+        - id: enemy_baicao_duwu
+          name: 毒雾药客
+          realmTier: sanLiu
+          realmLayer: shuLian
+          school: yinRou
+          baseHp: 3500
+          baseAttack: 260
+          baseSpeed: 110
+          skillIds:
+            - skill_yinrou_changlian_basic
+            - skill_yinrou_changlian_skill
+          iconPath: ''
+
+  # 每 5 节点险关为三敌混编；两套模板改变主流派与行动节奏，不新增招式。
+  elite_enemy_teams:
+    - id: baicao_elite_fog_pass
+      enemies:
+        - id: enemy_baicao_fog_leader
+          name: 瘴关头目
+          realmTier: sanLiu
+          realmLayer: jingTong
+          school: yinRou
+          baseHp: 5200
+          baseAttack: 430
+          baseSpeed: 105
+          skillIds:
+            - skill_yinrou_changlian_basic
+            - skill_yinrou_changlian_skill
+            - skill_yinrou_changlian_ult
+          iconPath: ''
+        - id: enemy_baicao_fog_guard
+          name: 护关悍匪
+          realmTier: sanLiu
+          realmLayer: shuLian
+          school: gangMeng
+          baseHp: 3600
+          baseAttack: 310
+          baseSpeed: 90
+          skillIds:
+            - skill_gangmeng_changlian_basic
+            - skill_gangmeng_changlian_skill
+          iconPath: ''
+        - id: enemy_baicao_fog_scout
+          name: 林梢斥候
+          realmTier: sanLiu
+          realmLayer: shuLian
+          school: lingQiao
+          baseHp: 3000
+          baseAttack: 290
+          baseSpeed: 135
+          skillIds:
+            - skill_lingqiao_changlian_basic
+            - skill_lingqiao_changlian_skill
+          iconPath: ''
+    - id: baicao_elite_ridge_pass
+      enemies:
+        - id: enemy_baicao_ridge_leader
+          name: 黑岭寨主
+          realmTier: sanLiu
+          realmLayer: jingTong
+          school: gangMeng
+          baseHp: 5800
+          baseAttack: 460
+          baseSpeed: 85
+          skillIds:
+            - skill_gangmeng_changlian_basic
+            - skill_gangmeng_changlian_skill
+            - skill_gangmeng_changlian_ult
+          iconPath: ''
+        - id: enemy_baicao_ridge_needler
+          name: 飞针药徒
+          realmTier: sanLiu
+          realmLayer: shuLian
+          school: yinRou
+          baseHp: 3200
+          baseAttack: 300
+          baseSpeed: 115
+          skillIds:
+            - skill_yinrou_changlian_basic
+            - skill_yinrou_changlian_skill
+          iconPath: ''
+        - id: enemy_baicao_ridge_runner
+          name: 巡山快手
+          realmTier: sanLiu
+          realmLayer: shuLian
+          school: lingQiao
+          baseHp: 3000
+          baseAttack: 300
+          baseSpeed: 140
+          skillIds:
+            - skill_lingqiao_changlian_basic
+            - skill_lingqiao_changlian_skill
+          iconPath: ''

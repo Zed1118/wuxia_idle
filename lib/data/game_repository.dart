@@ -845,6 +845,9 @@ class GameRepository {
       );
     }
 
+    // C2 目标3:百草岭敌池独立于 stageDefs，加载期守招式引用/三流派/数值 cap。
+    _enforceExpeditionEnemyRedLines();
+
     // C1.3.2 断魂庄:敌队随 BossGauntletConfig 独立解析(非 stageDefs/towerFloors),
     // 单独跑同口径引用完整性红线(design §8.2 引用不得悬空)。
     _enforceGauntletEnemyRedLines();
@@ -1134,6 +1137,61 @@ class GameRepository {
           'boss_gauntlets: reward_candidate_equipment_id=$eqId '
           '未在 equipment.yaml 存在（§8.2 引用悬空）',
         );
+      }
+    }
+  }
+
+  /// 百草岭敌池引用与配置红线（`data/expeditions.yaml`）。
+  void _enforceExpeditionEnemyRedLines() {
+    final config = expeditionConfig;
+    if (config == null) return;
+    final curve = config.depthCurve;
+    if (curve == null) {
+      throw StateError('expeditions: combat.depth_curve 未配置');
+    }
+    final redLines = numbers.combat.redLines;
+    if (curve.hpValueCap > redLines.bossHpMax ||
+        curve.attackValueCap > redLines.equipmentBaseAttackMax) {
+      throw StateError(
+        'expeditions: 深度曲线 cap 越界 '
+        'hp=${curve.hpValueCap}/${redLines.bossHpMax} '
+        'attack=${curve.attackValueCap}/${redLines.equipmentBaseAttackMax}',
+      );
+    }
+
+    final allEnemies = <EnemyDef>[
+      for (final team in config.normalEnemyTeams) ...team.enemies,
+      for (final team in config.eliteEnemyTeams) ...team.enemies,
+    ];
+    final schools = allEnemies.map((enemy) => enemy.school).toSet();
+    if (!schools.containsAll(TechniqueSchool.values)) {
+      throw StateError('expeditions: 敌池须覆盖刚猛/灵巧/阴柔三流派');
+    }
+    for (final enemy in allEnemies) {
+      if (enemy.baseHp <= 0 || enemy.baseHp > curve.hpValueCap) {
+        throw StateError('expeditions: ${enemy.id} baseHp 越界 ${enemy.baseHp}');
+      }
+      if (enemy.baseAttack <= 0 || enemy.baseAttack > curve.attackValueCap) {
+        throw StateError(
+          'expeditions: ${enemy.id} baseAttack 越界 ${enemy.baseAttack}',
+        );
+      }
+      if (enemy.skillIds.isEmpty) {
+        throw StateError('expeditions: ${enemy.id} skillIds 不得为空');
+      }
+      for (final skillId in enemy.skillIds) {
+        final skill = skillDefs[skillId];
+        if (skill == null) {
+          throw StateError(
+            'expeditions: ${enemy.id} skillId=$skillId 未在 skills.yaml 存在',
+          );
+        }
+        if (skill.style != null && skill.style != enemy.school) {
+          throw StateError(
+            'expeditions: ${enemy.id} school=${enemy.school.name} '
+            '与 skillId=$skillId style=${skill.style?.name} 不一致',
+          );
+        }
       }
     }
   }
