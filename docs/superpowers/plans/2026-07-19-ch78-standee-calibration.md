@@ -185,8 +185,8 @@
 3. [x] 新增 `BattleVisualRoster`，只读 `BattleState.actionLog` 回放击杀顺序，为人物、漂字、受击闪、弹道与特效提供同一战位映射。
 4. [x] `BattleField` 以 characterId 持有可见人物；用既有 `damagePopupMs` 留出阵亡灰化/归零拍，拍后才递补；widget key 按 characterId。
 5. [x] 共用路径契约：标准 3v3、轻功、心魔均保持原三战位映射。
-6. [ ] 固定 seed 20260719 真机重跑 7→0，录制动态帧/视频并复制到主 checkout 防蒸发目录。
-7. [ ] 回填 §8.2 四证据、五项恢复点，新鲜 analyze/targeted 后冻结 `[READY]`。
+6. [x] 固定 seed 20260719 真机重跑 7→0，录制动态帧/视频并复制到主 checkout 防蒸发目录。
+7. [x] 回填 §8.2 四证据、五项恢复点，新鲜 analyze/targeted 后冻结 `[READY]`。
 
 ### 破坏证红留档
 
@@ -198,5 +198,122 @@
 - 状态：生产表现层修复与契约测已落地；真机动态验收与最终冻结待做。
 - 最后完成：可见队列回放、阵亡延时递补、characterId key，以及漂字/受击闪/弹道/特效 slot 映射收口。
 - 下一步：跑 macOS Debug 固定 seed 20260719，采样 7→0 全程并逐帧判定标题与战位。
-- 已跑验证：破坏证 29/31（红）；修复后核心两文件 31/31；扩展 targeted（含双视口、轻功/心魔、visual route）**89/89 pass**。
+- 已跑验证：破坏证 29/31（红）；修复后核心两文件 31/31；扩展 targeted（含双视口、轻功/心魔、visual route）**90/90 pass**。
 - 阻塞项：无。当前未完成项仅真机动态证据、最终 analyze 与交付恢复点。
+
+### C3 目标 1 · 真机动态验收
+
+| 证据 | 可观测状态 | 判定 |
+|---|---|---|
+| `count_7.png` | 标题 `3 v 7`，首发三敌 + 四名墨影 | PASS |
+| `count_6.png` / `count_5.png` / `count_4.png` | 标题依次递减，死者灰化拍后后备补回同一空位，画面仍为三名存活敌人 | PASS |
+| `count_3.png` / `count_2.png` / `count_1.png` | 标题与战位人数一致；队列用尽后按 3→2→1 收缩 | PASS |
+| `count_0.png` / `04_result.png` | 标题 `3 v 0`，右队战位与墨影均清空，左胜结果一致 | PASS |
+| `rotation_slow.mp4` / `contact_slow.png` / `rotation_key_counts.png` | 100 帧、0.3 秒间隔、30 秒全程；标题 7→6→5→4→3→2→1→0，四名后备全部轮换进场 | PASS |
+
+工作树证据位于 `build/visual_acceptance/ch78_mass_battle_rotation_fixed/`；共 116 个文件（100 原始帧 + 视频 + contact sheet + 关键帧 + log），PNG 为 1280×720。`route_slow.log` 含 `VISUAL_ROUTE_READY: battle_mass_battle_stage` 与 `VISUAL_CAPTURE: window_id=25705`。同名 116 文件已复制到主 checkout `/Users/a10506/Desktop/Projects/挂机武侠/build/visual_acceptance/ch78_mass_battle_rotation_fixed/`，防蒸发对账通过。
+
+### C3 目标 1 · §8.2 四证据
+
+- **生产接线**：`BattleScreen` 生产 `ref.listen(battleProvider)` 把 prev/next 交给 `BattlePlaybackController.playActions`；controller 与 `BattleField` 共用 `BattleVisualRoster`。它只读真实 `BattleState.actionLog` 回放可见队列，人物、漂字、受击闪、弹道、效果坐标同源；场外人物不伪造 slot 反馈。非 fixture/孤立组件。
+- **Targeted**：①破坏证旧实现 **29 pass / 2 fail**；②修复后核心两文件 **31/31 pass**；③ `flutter test --no-pub test/features/battle/presentation/battle_field_repaint_test.dart test/features/battle/battle_playback_controller_test.dart test/features/battle/presentation/battle_playback_interface_test.dart test/features/battle/presentation/battle_stage_geometry_test.dart test/features/battle/presentation/character_avatar_test.dart test/features/debug/visual_route_test.dart` → **90/90 pass**，含 1280×720 / 1440×900、标准 3v3、轻功、心魔与 visual route。④ `flutter analyze --no-pub` → **No issues found**。⑤ `flutter build macos --debug --dart-define=VISUAL_ROUTE=battle_mass_battle_stage` 产出可运行 Debug app，真机路由 READY。
+- **红线影响**：零修改战斗引擎、结算、`BattleState`、strategy、`damage_calculator`、`data/*.yaml`、schema/saveVersion；零新数值、音效或玩家文案。数值硬红线、三系锁死、在线=离线、§5.1 反主流项均零影响；`stackShift` spread 逻辑未改。
+- **残留风险**：可见队列每次 state 边沿回放本场 actionLog，群战队伍仅 5–7 人，本批未做独立性能 profile；原始帧为 ignored `build/`，已按防蒸发条款双份留存。无数据迁移风险。
+
+## C3 目标 2（弹性尾）· 74 张转码敌人立绘逐张静态目检
+
+方法：从 `2026-07-19-assets-webp-batch2.md` 的 82 张转码 enemies 清单中排除已抽验 8 张，得 74 张。每张统一合成到生产 `battle_mountain_pass_stage_v2` 压暗战斗底图，保留 74 张独立读图与 8 张高分辨率 contact sheet；专检块状/色带伪影、白边、透明边破口、细线断裂与暗部糊损。对观感最易误判的 12 张低 PSNR 样本另做转码前/后并排读图；74/74 alpha 通道与 Git 转码前基线逐像素完全一致。
+
+| # | 资产 | 判定 | 备注 |
+|---:|---|---|---|
+| 01 | `battle_anye.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 02 | `battle_balian.png` | PASS | 同上 |
+| 03 | `battle_bandit_b.png` | PASS | 同上 |
+| 04 | `battle_bandit_blade.png` | PASS | 低 PSNR 并排复核无可见退化 |
+| 05 | `battle_bandit_c.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 06 | `battle_black_killer.png` | PASS | 同上 |
+| 07 | `battle_caobang_duozhu.png` | PASS | 同上 |
+| 08 | `battle_elder_grey.png` | PASS | 同上 |
+| 09 | `battle_fu_zhaizhu.png` | PASS | 同上 |
+| 10 | `battle_guard_a.png` | PASS | 同上 |
+| 11 | `battle_guntou.png` | PASS | 同上 |
+| 12 | `battle_guntou_zhu.png` | PASS | 同上 |
+| 13 | `battle_huiyi.png` | PASS | 同上 |
+| 14 | `battle_jianghu_a.png` | PASS | 同上 |
+| 15 | `battle_jianghu_b.png` | PASS | 同上 |
+| 16 | `battle_jianghu_qianbei.png` | PASS | 同上 |
+| 17 | `battle_kunlun_waimen_shouguan.png` | PASS | 同上 |
+| 18 | `battle_lightfoot_changfeng_a.png` | PASS | 同上 |
+| 19 | `battle_lightfoot_changfeng_b.png` | PASS | 低 PSNR 并排复核无可见退化 |
+| 20 | `battle_lightfoot_changfeng_c.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 21 | `battle_lightfoot_pubu_a.png` | PASS | 同上 |
+| 22 | `battle_lightfoot_pubu_b.png` | PASS | 同上 |
+| 23 | `battle_lightfoot_pubu_c.png` | PASS | 同上 |
+| 24 | `battle_lightfoot_shuikou_a.png` | PASS | 同上 |
+| 25 | `battle_lightfoot_shuikou_b.png` | PASS | 同上 |
+| 26 | `battle_lightfoot_shuikou_c.png` | PASS | 同上 |
+| 27 | `battle_lightfoot_yexun_a.png` | PASS | 同上 |
+| 28 | `battle_lightfoot_yexun_b.png` | PASS | 同上 |
+| 29 | `battle_lightfoot_yexun_c.png` | PASS | 同上 |
+| 30 | `battle_lightfoot_zhuke_a.png` | PASS | 最低 PSNR 并排复核无可见退化 |
+| 31 | `battle_lightfoot_zhuke_b.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 32 | `battle_liukou_a.png` | PASS | 同上 |
+| 33 | `battle_lunjian_sanchang_xunluo.png` | PASS | 同上 |
+| 34 | `battle_massbattle_canbu_a.png` | PASS | 同上 |
+| 35 | `battle_massbattle_canbu_b.png` | PASS | 同上 |
+| 36 | `battle_massbattle_canbu_c.png` | PASS | 较小有效边界为原图构图，非转码损伤 |
+| 37 | `battle_massbattle_cunfei_b.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 38 | `battle_massbattle_cunfei_c.png` | PASS | 同上 |
+| 39 | `battle_massbattle_guanqi_a.png` | PASS | 同上 |
+| 40 | `battle_massbattle_guanqi_b.png` | PASS | 同上 |
+| 41 | `battle_massbattle_guanqi_c.png` | PASS | 同上 |
+| 42 | `battle_massbattle_xianjie_a.png` | PASS | 低 PSNR 并排复核无可见退化 |
+| 43 | `battle_massbattle_xianjie_b.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 44 | `battle_massbattle_xianjie_c.png` | PASS | 同上 |
+| 45 | `battle_massbattle_zhenkou_a.png` | PASS | 同上 |
+| 46 | `battle_massbattle_zhenkou_b.png` | PASS | 较小有效边界为原图构图，非转码损伤 |
+| 47 | `battle_massbattle_zhenkou_c.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 48 | `battle_mingmen_a.png` | PASS | 低 PSNR 并排复核无可见退化 |
+| 49 | `battle_qingshan.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 50 | `battle_ruffian_a.png` | PASS | 同上 |
+| 51 | `battle_seng_huiyi.png` | PASS | 低 PSNR 并排复核无可见退化 |
+| 52 | `battle_shafei_a.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 53 | `battle_shaonian.png` | PASS | 同上 |
+| 54 | `battle_shiye.png` | PASS | 同上 |
+| 55 | `battle_songshan_daozong_dizi.png` | PASS | 同上 |
+| 56 | `battle_songshan_shouguan.png` | PASS | 同上 |
+| 57 | `battle_thug_a.png` | PASS | 低 PSNR 并排复核无可见退化 |
+| 58 | `battle_thug_b.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 59 | `battle_thug_c.png` | PASS | 同上 |
+| 60 | `battle_tongguan_shoujiang.png` | PASS | 同上 |
+| 61 | `battle_tower_boss_05.png` | PASS | 同上 |
+| 62 | `battle_tower_boss_10.png` | PASS | 同上 |
+| 63 | `battle_tower_boss_15.png` | PASS | 低 PSNR 并排复核无可见退化 |
+| 64 | `battle_tower_boss_20.png` | PASS | 低 PSNR 并排复核无可见退化 |
+| 65 | `battle_tower_boss_25.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 66 | `battle_tower_boss_30_v2.png` | PASS | 同上 |
+| 67 | `battle_umbrella.png` | PASS | 原图即为低饱和半透观感；并排确认非转码泛白 |
+| 68 | `battle_wulin_bazhu.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 69 | `battle_xiliang_bazhu.png` | PASS | 同上 |
+| 70 | `battle_xiliang_sandizi.png` | PASS | 同上 |
+| 71 | `battle_xiliangbazhu.png` | PASS | 低 PSNR 并排复核无可见退化 |
+| 72 | `battle_xiliangboss.png` | PASS | 无伪影/白边/alpha 损伤 |
+| 73 | `battle_zhongzhou_lunjian_xianfeng.png` | PASS | 低 PSNR 并排复核无可见退化 |
+| 74 | `battle_zuo_hufa.png` | PASS | 无伪影/白边/alpha 损伤 |
+
+证据位于 ignored `build/visual_acceptance/ch78_assets_webp_74_inspection/`：74 张独立合成图、8 张 contact sheet、2 张低 PSNR before/after 对照、manifest。结论：**74/74 PASS，0 WARN，0 FAIL**；未发现压缩伪影、白边或透明边损伤。本目标纯只读 `assets/`，零生产资产改动。
+
+### C3 目标 2 · §8.2 四证据
+
+- **生产接线**：目检对象是 `assets/enemies/` 下被真实 `EnemyDef.iconPath` → `CharacterAvatar` 生产战场路径消费的同路径资产；合成底图为生产山口战场资产，不是重画 fixture。本目标只读，因而生产接线不发生新改动。
+- **Targeted**：`flutter test --no-pub test/data/webp_in_png_decode_test.dart test/tools/asset_audit_test.dart test/data/pubspec_asset_declaration_test.dart` → **9/9 pass**；清单对账 82-8=74，独立合成图 74/74，alpha 逐像素对账 74/74 完全相同。
+- **红线影响**：纯只读检查，`assets/` 与一切生产文件零 diff；数值硬红线、三系锁死、在线=离线、§5.1、schema/saveVersion 均零影响。
+- **残留风险**：判定针对战斗实际显示尺度与深底；未做像素级放大印刷用途评估（超出游戏战场资产口径）。目检证据位于 ignored `build/`，不入库。
+
+## C3 最终恢复点
+
+- **状态**：目标 1 生产表现层递补修复完成；目标 2 弹性尾 74 张逐张目检完成；待本 plan commit 与 `[READY]` tip 冻结。
+- **最后完成**：固定 seed 20260719 真机 7→0 全程通过且证据已复制主 checkout；74/74 转码立绘 PASS、0 WARN、0 FAIL。
+- **下一步**：Claude 按 §8.2 合并 Gate 审核 `codex/ch78-standee-calibration` tip；本分支冻结后不再写入。
+- **已跑验证**：破坏证 29 pass / 2 fail；最终 battle/visual targeted 90/90 pass；资产 targeted 9/9 pass；`flutter analyze --no-pub` 0 issue；macOS 真机 100 帧/30 秒动态验收 PASS；74/74 静态目检 PASS。
+- **阻塞项**：无。残留风险已分别写入两目标 §8.2，无需人类拍板点。
