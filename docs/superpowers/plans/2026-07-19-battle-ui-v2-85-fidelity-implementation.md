@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：`[WIP]` 阶段 3 Task 3.1～3.4 已完成，正在生成阶段 Gate 双视口证据。
+- **状态**：`[BLOCKED]` 阶段 3 Gate 已完成并冻结，人物融合改前/改后对照待用户拍板。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：Task 3.4 将主线/塔/Boss/心魔/轻功/群战六类有图背景改为独立浅色 scrim、雾、地面与压边 profile；普通主线遭遇 Boss 会进入 Boss profile。塔境降为中亮冷灰，心魔紫由高饱和收为灰紫。三背景同一祖师稳定暗部 p05 漂移=0.0221（≤0.05，PASS），三联裁图、mask 与 JSON 已生成。
-- **下一步**：抓 S1/S2/S10 1280×720 + 1440×900、生成 manifest/评分与同机位改前改后对照；复跑阶段 Gate 后以用户指定 `[BLOCKED] 阶段3 人物融合对照待用户拍板` 冻结。
-- **已跑验证**：Task 3.4 先红：缺 Boss 遭遇升级函数与六 profile key，所有有图场景共用 scrim。转绿后阶段 3 六个 targeted 文件 48/48，Python alpha 量测 5/5、黑位量测 1/1，`flutter analyze --no-pub` 0 issue，`git diff --check` 通过；alpha ratio=1.355、黑位漂移=0.0221、60 秒 profile 均 PASS。
-- **当前评分**：阶段暂评 B=22/25、D=13/15（待双视口 Gate 图确认）；C 保持 23/25。人物有效尺度/接地/融合/Boss 层级、旧纸信息板及六场景稳定性均已进入目标带。
-- **证据目录**：同机位改前 `stage3_before/`，融合改后 `stage3_task32_after/`；alpha 在 `stage3_task31_after/`；信息板在 `stage3_task33_after/`；六场景过程图在 `stage3_task34_after/`/`stage3_task34_tuned/`；三背景抽样在 `stage3_black_point/`；性能在 `stage3_profile/`。
-- **阻塞项**：无当前实现阻塞，仅待阶段 Gate 证据生成。残留风险：撑伞高人源图线描细节与玩家立绘存在代际差，表现层已统一色级与面积，但不批量重导源图；Windows 100%/125%/150% 缩放仍留最终阶段。
-- **§8.2 四证据**：①生产接线：人物融合、光学校准、墨拓板、双资源条、状态上限与六场景 profile 均由正式 `BattleScreen` 消费，debug 只提供隔离路由和可关闭采样；② targeted：Task 3.1～3.4 先红证据已记录，48/48 + Python 6/6 + analyze 0 issue + alpha 1.355 + 黑位漂移 0.0221 + profile PASS；③红线：零改 `data/`、战斗规则、schema/saveVersion/真实存档，零新增/重导立绘资产；④残留风险：阶段 Gate 双视口、最终 Windows 缩放与撑伞源图代际差待后续拍板。
-- **Git 状态口径**：阶段 2 冻结点为 `4041dfb1`；本轮持续使用中文动宾小切片提交，全程不打 `[READY]`，仅阶段 3 Gate 达成后使用用户指定 `[BLOCKED]` tip。
+- **最后完成**：S1/S2/S10 在 1280×720 与 1440×900 共 6 图完成目检，6/6 READY、日志 0 overflow/error。标准 3v3 与 Boss 同机位改前/改后四图已归档；最终 profile 在当前代码重跑，后 55 秒采 5463 帧，build max=1.307ms、raster max=3.741ms，连续超 16.7ms 均为 0。
+- **下一步**：等待用户审阅 `stage3_gate/before_after/`、双视口 Gate 图与 `stage3_black_point/same_person_samples.png`；获准后再进入阶段 4，不在拍板前继续改 HUD 或动态效果。
+- **已跑验证**：阶段 3 六个 targeted 文件 48/48；Python alpha 量测 5/5、黑位量测 1/1；`flutter analyze --no-pub` 0 issue；alpha ratio=1.355、黑位漂移=0.0221、最终 60 秒 profile PASS；6/6 Gate READY 且日志扫描 `overflow|exception|error|failed` 0 命中。各 Task 先红证据已逐项记录。
+- **当前评分**：B=22.5/25（≥21，PASS）、D=12.5/15（≥11，PASS），C 保持 23/25。按“部分满足只能半分”保守计分：撑伞源图代际差与跨模块纸墨一致性各记半分，不用其他项超额抵扣。
+- **证据目录**：主证据 `build/visual_acceptance/battle_ui_v2_85/stage3_gate/`（6 PNG、6 log、`manifest.md`、`score.md`、四张改前/改后图）；alpha 在 `stage3_task31_after/`；三背景抽样在 `stage3_black_point/`；性能在 `stage3_profile/`；过程图保留于 `stage3_task32_after/`～`stage3_task34_tuned/`。
+- **阻塞项**：`[BLOCKED] 阶段3 人物融合对照待用户拍板`。残留风险：撑伞高人线描源图与玩家终拍立绘存在代际差，表现层已统一色级与面积但未改源图；塔境高键背景仍比主线明亮，已用冷灰 profile 收束；Windows 100%/125%/150% 缩放留最终阶段。
+- **§8.2 四证据**：①生产接线：人物融合、光学校准、墨拓板、双资源条、状态上限与六场景 profile 均由正式 `BattleScreen` 消费，debug 只提供隔离路由和可关闭采样；② targeted：Task 3.1～3.4 先红证据齐，48/48 + Python 6/6 + analyze 0 issue + alpha 1.355 + 黑位 0.0221 + 60 秒 profile + 6/6 双视口 PASS；③红线：相对基点 `data/` 与四个禁改文件变化均为 0，零改战斗规则/schema/saveVersion/真实存档，零新增/重导立绘；④残留风险：撑伞源图代际差、塔境高键观感、Windows 缩放及阶段 4～5 尚待用户拍板后继续。
+- **Git 状态口径**：阶段 3 生产视觉代码点为 `1ab793b9`；tip 使用用户指定 `[BLOCKED] 阶段3 人物融合对照待用户拍板`，不打 `[READY]`，提交后 tracked worktree 干净、主 checkout 保持只读。
