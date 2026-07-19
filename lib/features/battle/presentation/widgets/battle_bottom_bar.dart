@@ -10,6 +10,10 @@ import '../../../../shared/theme/colors.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../battle_layout_tokens.dart';
 import '../countdown_ring.dart';
+import 'battle_command_desk.dart';
+import 'battle_focus_rail.dart';
+import 'battle_pouch_rail.dart';
+import 'battle_skill_slip.dart';
 
 /// 纯自动战斗的只读招式轮转谱。
 ///
@@ -367,12 +371,8 @@ class BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final mediaSize = MediaQuery.sizeOf(context);
-        final metrics = BattleLayoutMetrics.resolve(
-          Size(constraints.maxWidth, mediaSize.height),
-        );
+    return BattleCommandDeskSurface(
+      builder: (context, metrics) {
         final enemyCharging = state.rightTeam.any(
           (e) => e.isAlive && e.chargingSkill != null,
         );
@@ -393,105 +393,79 @@ class BottomBar extends StatelessWidget {
               if (s.type != SkillType.normalAttack) s,
         ]..sort((a, b) => _groupRank(a).compareTo(_groupRank(b)));
 
-        return Container(
-          key: const ValueKey('battle_command_desk'),
-          height: metrics.commandDeskHeight,
-          padding: const EdgeInsets.symmetric(
-            horizontal: BattleLayoutTokens.commandDeskHorizontalPadding,
-            vertical: BattleLayoutTokens.commandDeskVerticalPadding,
-          ),
-          decoration: const BoxDecoration(
-            color: Color(0xFF211D18),
-            image: DecorationImage(
-              image: AssetImage(WuxiaUi.paperBg),
-              fit: BoxFit.cover,
-              opacity: 0.12,
-              colorFilter: ColorFilter.mode(
-                Color(0xFF33291F),
-                BlendMode.multiply,
-              ),
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            FocusSelector(
+              team: state.leftTeam,
+              focusSlotIndex: focusSlotIndex,
+              onSelectFocus: onSelectFocus,
+              width: metrics.focusRailWidth,
             ),
-            border: Border(
-              top: BorderSide(color: Color(0xFF756047), width: 1.2),
+            const SizedBox(width: BattleLayoutTokens.sectionGap),
+            Container(
+              width: 1,
+              height: BattleLayoutTokens.sectionDividerHeight,
+              color: const Color(0xFF6D5940),
             ),
-            boxShadow: [
-              BoxShadow(color: Colors.black54, blurRadius: 18, spreadRadius: 3),
-            ],
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              FocusSelector(
-                team: state.leftTeam,
-                focusSlotIndex: focusSlotIndex,
-                onSelectFocus: onSelectFocus,
-                width: metrics.focusRailWidth,
-              ),
-              const SizedBox(width: BattleLayoutTokens.sectionGap),
-              Container(
-                width: 1,
-                height: BattleLayoutTokens.sectionDividerHeight,
-                color: const Color(0xFF6D5940),
-              ),
-              const SizedBox(width: BattleLayoutTokens.sectionGap),
-              SizedBox(
-                key: const ValueKey('battle_desk_skills_region'),
-                width: metrics.skillRailWidth,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (var index = 0; index < 7; index++) ...[
-                      Expanded(
-                        key: ValueKey('battle_skill_slot_$index'),
-                        child: index < skills.length && focus != null
-                            ? Builder(
-                                builder: (context) {
-                                  final skill = skills[index];
-                                  final localPendingThis =
-                                      localPendingForFocus == skill.id;
-                                  final domainPendingThis =
-                                      domainPending?.id == skill.id;
-                                  final button = SkillCommandButton(
-                                    character: focus,
-                                    skill: skill,
-                                    interventionWindowOpen:
-                                        state.actorQueue.isEmpty &&
-                                        !state.isFinished,
-                                    isPending:
-                                        localPendingThis || domainPendingThis,
-                                    pendingTapEnabled: localPendingThis,
-                                    queuedAnother:
-                                        domainPending != null &&
-                                        domainPending.id != skill.id,
-                                    highlight:
-                                        enemyCharging && skill.canInterrupt,
-                                    allowPlayerIntervention:
-                                        allowPlayerIntervention,
-                                    beat: beat,
-                                    onTap: () =>
-                                        onSkillTap(focus.characterId, skill),
-                                    onShowInfo: () => onShowSkillInfo(skill),
-                                  );
-                                  return localPendingThis
-                                      ? CompositedTransformTarget(
-                                          link: skillTargetLink,
-                                          child: button,
-                                        )
-                                      : button;
-                                },
-                              )
-                            : EmptySkillSlot(index: index),
-                      ),
-                      if (index < 6)
-                        const SizedBox(width: BattleLayoutTokens.skillSlotGap),
-                    ],
+            const SizedBox(width: BattleLayoutTokens.sectionGap),
+            SizedBox(
+              key: const ValueKey('battle_desk_skills_region'),
+              width: metrics.skillRailWidth,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var index = 0; index < 7; index++) ...[
+                    Expanded(
+                      key: ValueKey('battle_skill_slot_$index'),
+                      child: index < skills.length && focus != null
+                          ? Builder(
+                              builder: (context) {
+                                final skill = skills[index];
+                                final localPendingThis =
+                                    localPendingForFocus == skill.id;
+                                final domainPendingThis =
+                                    domainPending?.id == skill.id;
+                                final button = SkillCommandButton(
+                                  character: focus,
+                                  skill: skill,
+                                  interventionWindowOpen:
+                                      state.actorQueue.isEmpty &&
+                                      !state.isFinished,
+                                  isPending:
+                                      localPendingThis || domainPendingThis,
+                                  pendingTapEnabled: localPendingThis,
+                                  queuedAnother:
+                                      domainPending != null &&
+                                      domainPending.id != skill.id,
+                                  highlight:
+                                      enemyCharging && skill.canInterrupt,
+                                  allowPlayerIntervention:
+                                      allowPlayerIntervention,
+                                  beat: beat,
+                                  onTap: () =>
+                                      onSkillTap(focus.characterId, skill),
+                                  onShowInfo: () => onShowSkillInfo(skill),
+                                );
+                                return localPendingThis
+                                    ? CompositedTransformTarget(
+                                        link: skillTargetLink,
+                                        child: button,
+                                      )
+                                    : button;
+                              },
+                            )
+                          : EmptySkillSlot(index: index),
+                    ),
+                    if (index < 6)
+                      const SizedBox(width: BattleLayoutTokens.skillSlotGap),
                   ],
-                ),
+                ],
               ),
-              const SizedBox(width: BattleLayoutTokens.sectionGap),
-              BattlePouchRail(width: metrics.pouchRailWidth),
-            ],
-          ),
+            ),
+            const SizedBox(width: BattleLayoutTokens.sectionGap),
+            BattlePouchRail(width: metrics.pouchRailWidth),
+          ],
         );
       },
     );
@@ -515,15 +489,8 @@ class FocusSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      key: const ValueKey('battle_desk_focus_region'),
+    return BattleFocusRailSurface(
       width: width,
-      padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
-      decoration: BoxDecoration(
-        color: const Color(0xB3131210),
-        border: Border.all(color: const Color(0xFF6D5940)),
-        boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 8)],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -762,10 +729,8 @@ class SkillCommandButton extends StatelessWidget {
             ),
             Positioned.fill(
               child: IgnorePointer(
-                child: CustomPaint(
-                  painter: _SkillSlipFramePainter(
-                    accent: highlight ? WuxiaUi.gold : WuxiaUi.jiang,
-                  ),
+                child: BattleSkillSlipInkFrame(
+                  accent: highlight ? WuxiaUi.gold : WuxiaUi.jiang,
                 ),
               ),
             ),
@@ -967,54 +932,6 @@ class _SkillMetric extends StatelessWidget {
   }
 }
 
-class _SkillSlipFramePainter extends CustomPainter {
-  const _SkillSlipFramePainter({required this.accent});
-
-  final Color accent;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final ink = Paint()
-      ..color = const Color(0xFF5B4934).withValues(alpha: 0.42)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
-    canvas.drawRect(
-      Rect.fromLTWH(4.5, 4.5, size.width - 9, size.height - 9),
-      ink,
-    );
-
-    final accentPaint = Paint()
-      ..color = accent.withValues(alpha: 0.82)
-      ..strokeWidth = 2.2
-      ..strokeCap = StrokeCap.square;
-    canvas.drawLine(
-      const Offset(4.5, 7),
-      Offset(4.5, size.height - 7),
-      accentPaint,
-    );
-
-    final corner = Paint()
-      ..color = const Color(0xFF382E24).withValues(alpha: 0.54)
-      ..strokeWidth = 1.1;
-    canvas.drawLine(const Offset(9, 9), const Offset(20, 9), corner);
-    canvas.drawLine(const Offset(9, 9), const Offset(9, 18), corner);
-    canvas.drawLine(
-      Offset(size.width - 9, size.height - 9),
-      Offset(size.width - 20, size.height - 9),
-      corner,
-    );
-    canvas.drawLine(
-      Offset(size.width - 9, size.height - 9),
-      Offset(size.width - 9, size.height - 18),
-      corner,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _SkillSlipFramePainter oldDelegate) =>
-      oldDelegate.accent != accent;
-}
-
 class EmptySkillSlot extends StatelessWidget {
   const EmptySkillSlot({super.key, required this.index});
 
@@ -1063,16 +980,9 @@ class BattlePouchRail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final metrics = BattleLayoutMetrics.resolve(MediaQuery.sizeOf(context));
-    return Container(
-      key: const ValueKey('battle_desk_pouch_region'),
+    return BattlePouchRailSurface(
       width: width ?? metrics.pouchRailWidth,
-      padding: compact
-          ? const EdgeInsets.fromLTRB(14, 6, 14, 6)
-          : const EdgeInsets.fromLTRB(14, 10, 14, 10),
-      decoration: BoxDecoration(
-        color: const Color(0xB3131210),
-        border: Border.all(color: const Color(0xFF6D5940)),
-      ),
+      compact: compact,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
