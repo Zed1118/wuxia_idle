@@ -2,8 +2,8 @@
 # 敌队机制走 EnemyDef 既有字段：chargeSkillId + vulnerability（苏无咎锁脉针破招脆弱）、
 # guardianWard（石镇岳铁衣护阵·软门槛=护法血墙 taunt 非减伤·见 memory
 #   feedback_wuxia_boss_ward_noop_under_lowhp_ai）、bossPhases（闻九针三阶段血线）。
-# 数值（baseHp/baseAttack/baseSpeed）为占位 TODO(batch3-probe)，由联合经济探针三档校准；
-# realm 锚 design §1「承接 Lv100~170 = 三流后段至二流·熟练」。
+# 数值（baseHp/baseAttack/baseSpeed）经三档真实连战探针校准；realm 锚 design §1
+# 「承接 Lv100~170 = 三流后段至二流·熟练」。
 # skillIds 引用现有 skills.yaml（§8.2 不复制招式定义）；立绘 iconPath 留空占位，
 # art 随 Phase C UI 批（MJ）补。敌队引用完整性校验在 GameRepository 加载期跑
 # （_enforceGauntletEnemyRedLines：chargeSkillId∈skillIds / guardianIds 队内 / 相位招存在）。
@@ -38,9 +38,9 @@ enemy_teams:
       realmTier: sanLiu
       realmLayer: jingTong
       school: lingQiao
-      baseHp: 9000            # TODO(batch3-probe)
-      baseAttack: 700         # TODO(batch3-probe)
-      baseSpeed: 150          # TODO(batch3-probe)·灵巧偏快
+      baseHp: 18000
+      baseAttack: 1100
+      baseSpeed: 160          # 灵巧偏快
       skillIds:
         - skill_lingqiao_jichu_basic
         - skill_lingqiao_jichu_skill
@@ -56,9 +56,9 @@ enemy_teams:
       realmTier: sanLiu
       realmLayer: ruMen
       school: lingQiao
-      baseHp: 4500            # TODO(batch3-probe)
-      baseAttack: 450         # TODO(batch3-probe)
-      baseSpeed: 140          # TODO(batch3-probe)
+      baseHp: 9000
+      baseAttack: 700
+      baseSpeed: 145
       skillIds:
         - skill_lingqiao_jichu_basic
         - skill_lingqiao_jichu_skill
@@ -68,9 +68,9 @@ enemy_teams:
       realmTier: sanLiu
       realmLayer: ruMen
       school: lingQiao
-      baseHp: 4500            # TODO(batch3-probe)
-      baseAttack: 450         # TODO(batch3-probe)
-      baseSpeed: 140          # TODO(batch3-probe)
+      baseHp: 9000
+      baseAttack: 700
+      baseSpeed: 145
       skillIds:
         - skill_lingqiao_jichu_basic
         - skill_lingqiao_jichu_skill
@@ -83,9 +83,9 @@ enemy_teams:
       realmTier: sanLiu
       realmLayer: dengFeng
       school: gangMeng
-      baseHp: 14000          # TODO(batch3-probe)·§5.3 慢速高伤
-      baseAttack: 950         # TODO(batch3-probe)
-      baseSpeed: 80           # TODO(batch3-probe)·刚猛偏慢
+      baseHp: 22000          # §5.3 慢速高伤
+      baseAttack: 1100
+      baseSpeed: 85          # 刚猛偏慢
       skillIds:
         - skill_gangmeng_jichu_basic
         - skill_gangmeng_jichu_skill
@@ -102,9 +102,9 @@ enemy_teams:
       realmTier: sanLiu
       realmLayer: shuLian
       school: gangMeng
-      baseHp: 8000           # TODO(batch3-probe)·护法血墙（拉长清关窗口）
-      baseAttack: 500         # TODO(batch3-probe)
-      baseSpeed: 100          # TODO(batch3-probe)
+      baseHp: 12000          # 护法血墙（拉长清关窗口）
+      baseAttack: 650
+      baseSpeed: 105
       skillIds:
         - skill_gangmeng_jichu_basic
         - skill_gangmeng_jichu_skill
@@ -114,9 +114,9 @@ enemy_teams:
       realmTier: sanLiu
       realmLayer: shuLian
       school: gangMeng
-      baseHp: 8000           # TODO(batch3-probe)·护法血墙
-      baseAttack: 500         # TODO(batch3-probe)
-      baseSpeed: 100          # TODO(batch3-probe)
+      baseHp: 12000          # 护法血墙
+      baseAttack: 650
+      baseSpeed: 105
       skillIds:
         - skill_gangmeng_jichu_basic
         - skill_gangmeng_jichu_skill
@@ -129,9 +129,9 @@ enemy_teams:
       realmTier: erLiu
       realmLayer: shuLian
       school: yinRou
-      baseHp: 32000          # TODO(batch3-probe)·高血扛首击方触相位（memory boss_phase_needs_hp）·守 <60000
-      baseAttack: 850         # TODO(batch3-probe)
-      baseSpeed: 120          # TODO(batch3-probe)
+      baseHp: 42000          # 高血扛首击方触相位（memory boss_phase_needs_hp）·守 <60000
+      baseAttack: 1050
+      baseSpeed: 125
       skillIds:
         - skill_yinrou_jichu_basic
         - skill_yinrou_jichu_skill

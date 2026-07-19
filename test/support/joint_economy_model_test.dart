@@ -35,7 +35,7 @@ void main() {
     });
   });
 
-  group('gauntletWinRate (占位表·C1.3 对齐)', () {
+  group('gauntletWinRate (三档真实连战探针对齐)', () {
     test('单调: 满配>推荐>入门, 均∈[0,1]', () {
       final entry = gauntletWinRate(GauntletLoadout.ruMen);
       final rec = gauntletWinRate(GauntletLoadout.tuiJian);

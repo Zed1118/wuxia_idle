@@ -7,8 +7,8 @@ import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart'
 /// 百草岭×断魂庄×装备强化 联合经济模型（纯函数，诊断探针用）。
 ///
 /// plan `docs/superpowers/plans/2026-07-15-baicao-duanhun-joint-economy-probe.md`
-/// 五段吞吐链纯函数建模。无 Isar/无副作用，可单测。占位段（`gauntletWinRate`/
-/// `namedEquipAidContribution`）显式标注 Phase C / C1.3 对齐，非隐藏 TODO。
+/// 五段吞吐链纯函数建模。无 Isar/无副作用，可单测。命名装备助炼仍是显式占位段；
+/// `gauntletWinRate` 已由断魂庄三档生产战斗探针回填。
 
 /// 百草岭远征每小时期望产出（沿一条确定 seed 路径 node 1..avgDepth 累加
 /// `ExpeditionRules.rewardsForNode`，按累计节点时长换算每小时）。
@@ -120,13 +120,12 @@ GauntletEntryRate gauntletEntryRate({
 /// 断魂庄阵容档位（入门 / 推荐 / 满配）。
 enum GauntletLoadout { ruMen, tuiJian, manPei }
 
-/// 断魂庄三档阵容胜率。**占位表**——真值待 Phase C1.3 战斗探针（headless 端到端
-/// 打真敌队）校准回填；此处仅保证单调（满配>推荐>入门）与 [0,1] 有界，供联合经济
-/// 模型跑通吞吐链。改占位值须维持单调。
+/// 断魂庄三档阵容胜率。固定 50 seeds、三流派真实队伍、三关继承 HP/真气/冷却，
+/// 不使用补给；由 `test/tools/gauntlet_balance_probe_test.dart` 同源守卫。
 double gauntletWinRate(GauntletLoadout loadout) => switch (loadout) {
-  GauntletLoadout.ruMen => 0.50, // TODO(phase-c-C1.3): 战斗探针对齐
-  GauntletLoadout.tuiJian => 0.80, // TODO(phase-c-C1.3): 战斗探针对齐
-  GauntletLoadout.manPei => 0.95, // TODO(phase-c-C1.3): 战斗探针对齐
+  GauntletLoadout.ruMen => 0.02,
+  GauntletLoadout.tuiJian => 0.50,
+  GauntletLoadout.manPei => 1.00,
 };
 
 /// 单件装备强化到达 +30/+40/+49 的预期天数：保底策略结晶消耗 ÷ 每日结晶净流入。
