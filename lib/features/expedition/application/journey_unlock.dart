@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
@@ -41,7 +42,7 @@ bool unlockJianghuJourneyIfReached({
 /// save 缺失 / 已解锁 / 无人达标 → 零写返 false。
 Future<bool> unlockJianghuJourneyOnOpen(
   Isar isar, {
-  Future<void> Function()? beforeWriteTxn,
+  @visibleForTesting Future<void> Function()? beforeWriteTxn,
 }) async {
   final save = await isar.saveDatas.get(0);
   if (save == null || save.jianghuJourneyUnlocked) return false;
