@@ -564,21 +564,27 @@ class StageCharacterStatusOverlay extends StatelessWidget {
       child: Opacity(
         opacity: character.isAlive ? 1 : 0.45,
         child: Container(
+          key: const ValueKey('battle.stageStatusInkRubbing'),
           padding: const EdgeInsets.fromLTRB(5, 2, 5, 3),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withValues(alpha: 0.28),
-                Colors.black.withValues(alpha: 0.90),
+                WuxiaUi.battleStatusPaperTop,
+                WuxiaUi.battleStatusPaperBottom,
               ],
             ),
             border: Border(
-              bottom: BorderSide(color: borderColor.withValues(alpha: 0.78)),
+              top: BorderSide(color: WuxiaUi.paper.withValues(alpha: 0.22)),
+              bottom: BorderSide(color: borderColor.withValues(alpha: 0.62)),
             ),
-            boxShadow: const [
-              BoxShadow(color: Colors.black54, blurRadius: 8, spreadRadius: 1),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2B251E).withValues(alpha: 0.24),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
             ],
           ),
           child: Column(
@@ -601,6 +607,7 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                 max: character.maxHp,
                 height: 11,
                 fillColorOverride: WuxiaUi.jiang,
+                trackColorOverride: WuxiaUi.battleStatusTrack,
                 labelFontSize: 8,
                 compactLabel: true,
               ),
@@ -612,6 +619,7 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                 isInternalForce: true,
                 labelPrefix: UiStrings.internalForceShortLabel,
                 fillColorOverride: WuxiaUi.qing,
+                trackColorOverride: WuxiaUi.battleStatusTrack,
                 labelFontSize: 7.5,
                 compactLabel: true,
               ),

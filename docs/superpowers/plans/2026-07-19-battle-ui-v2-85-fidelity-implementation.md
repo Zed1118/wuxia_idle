@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：`[WIP]` 用户已拍板阶段 2「布局ok」，阶段 3 Task 3.2 与 Task 3.1 已完成，继续推进 Task 3.3。
+- **状态**：`[WIP]` 用户已拍板阶段 2「布局ok」，阶段 3 Task 3.1～3.3 已完成，继续推进 Task 3.4。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：Task 3.1 延续 `_stageStandeeOpticalProfile` 单一真相源，以 alpha>16/255 校准 `battle_umbrella.png`；撑伞 Boss 面积比由约 2.07 收进 1.355。三名我方同槽高的有效人物高度差约 1.5%，脚底源 alpha 与既有锚点误差均小于 2%。量测工具支持记录实际 `render_scale`，不再用源画布面积冒充实机面积。
-- **下一步**：执行 Task 3.3：把六块纯黑人物信息板改为窄墨拓/暗纸条，HP 深绛红、真气低饱和青灰，保持脚、兵器和邻位无遮挡；随后进入六类场景 profile。
-- **已跑验证**：Task 3.1 先红：撑伞 profile 实际 1.0、不满足预期 0.81；量测工具忽略 `render_scale`，测试面积比 1.3 而非预期 0.325。转绿后人物/几何/RepaintBoundary 28/28、Python 量测 5/5、`flutter analyze --no-pub` 0 issue；实测 Boss area ratio=1.355、Gate=true。Task 3.2 的 24/24、analyze 与 60 秒 profile PASS 保持有效。
+- **最后完成**：Task 3.3 将正式战场人物板从纯黑矩形改为半透明暖褐窄墨拓；HP/真气分别固定深绛红与低饱和青灰，墨轨可按战场覆盖；常驻状态按既有优先级最多保留两个。1280×720 目检六板不再形成黑砖，脚、兵器与邻位未被新增遮挡。
+- **下一步**：执行 Task 3.4：建立主线/塔/Boss/心魔/轻功/群战六类受控场景 profile，保持已拍板明度带，完成同一人物三背景黑位漂移≤0.05；然后抓阶段 Gate 全证据。
+- **已跑验证**：Task 3.3 先红：缺 `trackColorOverride`/墨拓 key，第三优先级状态仍显示。转绿后人物/HpBar/状态/RepaintBoundary 33/33，`flutter analyze --no-pub` 0 issue。Task 3.1 的 28/28、Python 5/5、alpha ratio=1.355 与 Task 3.2 的 60 秒 profile PASS 保持有效。
 - **当前评分**：阶段中间值 B=21/25、D=11/15（尚未宣告阶段 Gate）；C 保持 23/25。人物尺度、接地、黑位/锐度与 Boss 层级已入目标带，仍需 Task 3.3 信息板及 Task 3.4 多场景黑位漂移后正式评分。
-- **证据目录**：同机位改前 `stage3_before/`，融合改后 `stage3_task32_after/`；Task 3.1 Boss 图、alpha manifest/metrics/masks 在 `stage3_task31_after/`；性能日志与 JSON 在 `stage3_profile/`。
+- **证据目录**：同机位改前 `stage3_before/`，融合改后 `stage3_task32_after/`；Task 3.1 Boss 图、alpha manifest/metrics/masks 在 `stage3_task31_after/`；Task 3.3 信息板目检在 `stage3_task33_after/`；性能日志与 JSON 在 `stage3_profile/`。
 - **阻塞项**：无当前阻塞。残留风险：Boss 撑伞高人源图细节与玩家终拍立绘存在代际差，先由表现层与光学框处理，若仍不合格只报告、不批量重导源图；Windows 100%/125%/150% 缩放仍留最终阶段。
-- **§8.2 四证据**：①生产接线：融合滤镜、边缘层、阵亡态、接地影与撑伞光学校准均在正式 `BattleScreen` 消费的 `CharacterAvatar` 内，debug 只包可关闭的 profile 采样；② targeted：Task 3.1/3.2 先红证据已记录，28/28 + Python 5/5 + analyze 0 issue + alpha ratio 1.355 + 60 秒 profile PASS；③红线：零改 `data/`、战斗规则、schema/saveVersion/真实存档，零新增/重导立绘资产；④残留风险：Task 3.3/3.4、正式阶段 Gate 双视口、三背景黑位抽样及 Windows 缩放尚待完成。
+- **§8.2 四证据**：①生产接线：人物融合、光学校准、墨拓板、双资源条与状态上限均由正式 `BattleScreen` 消费，debug 只包可关闭的 profile 采样；② targeted：Task 3.1～3.3 先红证据已记录，最新 33/33 + Python 5/5 + analyze 0 issue + alpha ratio 1.355 + 60 秒 profile PASS；③红线：零改 `data/`、战斗规则、schema/saveVersion/真实存档，零新增/重导立绘资产；④残留风险：Task 3.4、正式阶段 Gate 双视口、三背景黑位抽样及 Windows 缩放尚待完成。
 - **Git 状态口径**：阶段 2 冻结点为 `4041dfb1`；本轮持续使用中文动宾小切片提交，全程不打 `[READY]`，仅阶段 3 Gate 达成后使用用户指定 `[BLOCKED]` tip。

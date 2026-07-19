@@ -119,7 +119,7 @@ class AvatarStatusTags extends StatelessWidget {
       spacing: 4,
       runSpacing: 3,
       alignment: WrapAlignment.center,
-      children: items,
+      children: items.take(2).toList(growable: false),
     );
   }
 }

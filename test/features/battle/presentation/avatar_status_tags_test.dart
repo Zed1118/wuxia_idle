@@ -117,7 +117,7 @@ void main() {
     expect(find.text(UiStrings.statusSwordSongLabel), findsOneWidget);
   });
 
-  testWidgets('多状态按优先级排序:生死(内伤环) > 操作(破绽环) > 纯数值(剑鸣药丸)', (tester) async {
+  testWidgets('常驻状态最多保留两个关键态并按生死 > 操作优先', (tester) async {
     await pump(
       tester,
       _char(
@@ -131,12 +131,10 @@ void main() {
     );
     final injuryX = tester.getTopLeft(find.byType(SteppedCountdownRing)).dx;
     final staggerX = tester.getTopLeft(find.byType(BeatCountdownRing)).dx;
-    final swordX = tester
-        .getTopLeft(find.text(UiStrings.statusSwordSongLabel))
-        .dx;
-    // 同一水平排（Wrap）按 x 升序即视觉优先级顺序。
+    // 同一水平排（Wrap）按 x 升序即视觉优先级顺序；第三优先级不再
+    // 与人物信息板争抢腿部和兵器空间。
     expect(injuryX, lessThan(staggerX));
-    expect(staggerX, lessThan(swordX));
+    expect(find.text(UiStrings.statusSwordSongLabel), findsNothing);
   });
 
   testWidgets('内伤读秒环挂 Tooltip 释义(hover/长按可触发)', (tester) async {

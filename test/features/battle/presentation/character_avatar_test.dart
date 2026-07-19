@@ -219,6 +219,37 @@ void main() {
     );
   });
 
+  testWidgets('战场人物信息板使用半透明窄墨拓而非纯黑矩形', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 180,
+            height: 260,
+            child: Stack(
+              children: [
+                StageCharacterStatusOverlay(
+                  character: _char(isBoss: false),
+                  battleState: null,
+                  width: 180,
+                  height: 260,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final rubbing = tester.widget<Container>(
+      find.byKey(const ValueKey('battle.stageStatusInkRubbing')),
+    );
+    final decoration = rubbing.decoration! as BoxDecoration;
+    final colors = (decoration.gradient! as LinearGradient).colors;
+    expect(colors, everyElement(isNot(Colors.black)));
+    expect(colors, everyElement(predicate<Color>((color) => color.a < 0.86)));
+  });
+
   testWidgets('战场立绘使用固定暖灰色级与亚像素边缘柔化层', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
