@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：用户已通过技能签样板，阶段 2 恢复推进；新增优先项“背景过深”已完成最小前置修正，Task 2.3 待开始。
+- **状态**：Task 2.3 已完成，技能签样板已铺开为可用、冷却、真气不足、待发、破招五态；进入 Task 2.4。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：用户通过首签方向后，先将有图场景的全局黑色 scrim 从 40% 改为 16% 浅暖墨色，将有图 vignette 收至原强度 55%，并把主线山道色级由偏蓝压暗调整为浅暖低彩；完整场景 profile 仍留阶段 3。固定 `battle_boss_phase` 1280×720 战场区平均亮度由 81.96 提至 110.39（+34.7%）。
-- **下一步**：执行 Task 2.3；以现有首签 surface 铺开可用、冷却、真气不足、待发、破招五态，并用 `battle_v2_resource_pressure` / `battle_charge_break` 固定 route 取证。
-- **已跑验证**：背景修正红态：新增测试找不到 `battle_scene_image_scrim`；绿态：`battle_scene_background_test.dart` 7/7，锁定有图暖色 scrim ≤18%、vignette ≤20%；`flutter analyze --no-pub` 0 issue（3.5s）。改后截图内容区 1280×720，日志无 overflow/exception/error。
-- **当前评分**：沿用阶段 1 的客观 Gate 分 64/100；首签方向虽已获批，但七签/空槽/名帖/行囊/五态未齐，不提前宣称阶段 2 Gate 达成。
-- **证据目录**：新增 `build/visual_acceptance/battle_ui_v2_85/background_brightness_before_after/`，含同 route 改前/改后原图、日志和并排图；既有 baseline/stage1/stage2 sample 保持。
-- **阻塞项**：无。残留风险：本切片只修“过深”口径，Boss/塔/轻功等完整 profile、人物 alpha 精测与 Windows 缩放仍留后续；空槽、行囊和五态尚待 Task 2.3/2.4。
-- **§8.2 四证据**：①生产接线：正式 `BattleScreen` 的 `BattleSceneBackground` 直接消费新 scrim/vignette/色级，debug route 只负责同状态取证；② targeted：背景测试 7/7 + analyze 0 issue，改后日志 0 overflow；③红线：零改 `data/`、战斗规则、AI/tick/伤害/胜负/掉落、schema/saveVersion/持久化，纯表现层色彩调整；④残留风险：完整场景 profile、七签/行囊/五态、Windows 缩放、人物 alpha 精测和 build 证据长期保全均待后续。
-- **Git 状态口径**：技能签拍板点为 `2ea6b377`；背景明度修正与本恢复点待提交，tip 继续为 WIP，build 证据默认忽略，主 checkout 保持只读。
+- **最后完成**：五态 surface 已接入全部生产技能签：冷却为墨浸染+数字环，真气不足为降墨+青灰气脉缺口，待发保留绛红印，可破招以暗金抬签区分，可用态保持旧纸本色；状态判断不改释放、冷却、真气或破招规则。并将 `battle_v2_resource_pressure` 的验收入口前置为允许干预，使固定帧真正露出七签且同屏显示冷却/气不足。
+- **下一步**：执行 Task 2.4；将空槽改为淡墨留白签+小空印，当前执招者展开为姓名/流派/真气名帖、其余收束且阵亡褪墨，行囊改为三格木匣/旧锦格。
+- **已跑验证**：五态红态为真气不足视觉 key 缺失；绿态：Task 2 targeted 四文件 71/71；资源压力 route 接线红态 `allowPlayerIntervention=false`、绿态定向 1/1；`flutter analyze --no-pub` 0 issue。`battle_v2_resource_pressure` 与 `battle_charge_break` 1280×720 日志均无 overflow/exception/error。
+- **当前评分**：阶段 2 中间自评 C=20/25（墨案 5/5、七签 7/7、五态 5/5、名帖 2/4、行囊/空态 1/4）；Task 2.4 未完成，尚未宣称 Gate 达成。
+- **证据目录**：新增 `build/visual_acceptance/battle_ui_v2_85/stage2_states/`，含资源压力与蓄力可破两张 1280×720 固定帧及日志；背景改前/改后证据仍在 `background_brightness_before_after/`。
+- **阻塞项**：无。残留风险：Task 2.4、阶段 2 双视口 Gate 与桌面语义验证尚待；完整场景 profile、人物 alpha 精测与 Windows 缩放仍留后续。
+- **§8.2 四证据**：①生产接线：`BattleBottomBar` 为全部 `SkillCommandButton` 计算五态并传入生产 `BattleSkillSlipSurface`，debug route 仅提供固定验收状态；② targeted：四文件 71/71 + route 接线 1/1 + analyze 0 issue，两 route 日志 0 overflow；③红线：零改 `data/`、伤害/真气/冷却/AI/tick/胜负/掉落、schema/saveVersion/存档，纯表现层；④残留风险：空槽/名帖/行囊与阶段 Gate 未完，完整 profile、Windows 缩放和证据长期保全待后续。
+- **Git 状态口径**：背景修正点为 `5a0f65c5`；本切片提交后 tip 继续为 WIP，不打 `[READY]`/`[BLOCKED]`，build 证据默认忽略，主 checkout 保持只读。

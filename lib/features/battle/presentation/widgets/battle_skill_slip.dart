@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/wuxia_tokens.dart';
 
+enum BattleSkillSlipVisualState {
+  available,
+  cooldown,
+  insufficientQi,
+  pending,
+  interrupt,
+}
+
 double battleSkillSlipTilt(String skillId) {
   final signature = skillId.codeUnits.fold<int>(0, (sum, unit) => sum + unit);
   return switch (signature % 3) {
@@ -21,6 +29,7 @@ class BattleSkillSlipSurface extends StatelessWidget {
     required this.foregroundColor,
     required this.border,
     required this.accent,
+    required this.visualState,
     required this.onPressed,
     required this.onLongPress,
     required this.child,
@@ -32,13 +41,14 @@ class BattleSkillSlipSurface extends StatelessWidget {
   final Color foregroundColor;
   final BorderSide border;
   final Color accent;
+  final BattleSkillSlipVisualState visualState;
   final VoidCallback? onPressed;
   final VoidCallback onLongPress;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Transform.rotate(
+    final slip = Transform.rotate(
       key: const ValueKey('battle.skillSlipNaturalTilt'),
       angle: tiltAngle,
       child: SizedBox(
@@ -80,13 +90,80 @@ class BattleSkillSlipSurface extends StatelessWidget {
                   ),
                 ),
               ),
+              if (visualState == BattleSkillSlipVisualState.cooldown)
+                const Positioned.fill(
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      key: ValueKey('battle.skillSlip.inkCooldown'),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0x8A211D18),
+                            Color(0x401B1814),
+                            Colors.transparent,
+                          ],
+                          stops: [0, 0.58, 1],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              if (visualState == BattleSkillSlipVisualState.insufficientQi)
+                const Positioned.fill(
+                  child: IgnorePointer(
+                    child: CustomPaint(
+                      key: ValueKey('battle.skillSlip.qiGap'),
+                      painter: _BattleSkillQiGapPainter(),
+                    ),
+                  ),
+                ),
               child,
             ],
           ),
         ),
       ),
     );
+    final staged = visualState == BattleSkillSlipVisualState.interrupt
+        ? Transform.translate(
+            key: const ValueKey('battle.skillSlip.interruptLift'),
+            offset: const Offset(0, -3),
+            child: slip,
+          )
+        : slip;
+    return KeyedSubtree(
+      key: ValueKey('battle.skillSlip.state.${visualState.name}'),
+      child: staged,
+    );
   }
+}
+
+class _BattleSkillQiGapPainter extends CustomPainter {
+  const _BattleSkillQiGapPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF486B68).withValues(alpha: 0.78)
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.square;
+    final y = size.height - 9;
+    canvas.drawLine(Offset(8, y), Offset(size.width * 0.38, y), paint);
+    canvas.drawLine(
+      Offset(size.width * 0.56, y),
+      Offset(size.width - 8, y),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.42, y - 3),
+      Offset(size.width * 0.52, y + 3),
+      paint..color = paint.color.withValues(alpha: 0.44),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _BattleSkillQiGapPainter oldDelegate) => false;
 }
 
 /// 技能签内墨线；基础纸签形态与后续五态在此单点演进。

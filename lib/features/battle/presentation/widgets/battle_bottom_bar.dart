@@ -649,18 +649,28 @@ class SkillCommandButton extends StatelessWidget {
         !queuedAnother &&
         allowPlayerIntervention;
 
+    final onCd = cd > 0 && !isPending;
+    final insufficientQi = character.currentQi < effectiveCost;
+    final visualState = isPending
+        ? BattleSkillSlipVisualState.pending
+        : onCd
+        ? BattleSkillSlipVisualState.cooldown
+        : insufficientQi
+        ? BattleSkillSlipVisualState.insufficientQi
+        : highlight
+        ? BattleSkillSlipVisualState.interrupt
+        : BattleSkillSlipVisualState.available;
+
     Color bgColor;
-    if (!interventionReady) {
-      bgColor = const Color(0xFF8F8675);
-    } else if (highlight) {
-      // 破招提示醒目金:原 0.72 上白字仅 ~2.9:1,压暗一档(0.52)让白字可读(~4.6:1)。
+    if (visualState == BattleSkillSlipVisualState.insufficientQi) {
+      bgColor = const Color(0xFFC4B596);
+    } else if (visualState == BattleSkillSlipVisualState.interrupt) {
       bgColor = const Color(0xFFF2DFB4);
+    } else if (!interventionReady) {
+      bgColor = const Color(0xFFB0A58E);
     } else {
       bgColor = WuxiaUi.paper;
     }
-
-    // CD 态(非待发):招名让位,中心浮现读秒环示剩余拍数。
-    final onCd = cd > 0 && !isPending;
 
     final String blockingStatus;
     if (isPending) {
@@ -699,6 +709,7 @@ class SkillCommandButton extends StatelessWidget {
               width: 1,
             ),
       accent: accent,
+      visualState: visualState,
       // 原生按钮在 surface 内承接 focus / keyboard / cursor / semantics。
       onPressed: enabled ? onTap : null,
       onLongPress: onShowInfo,

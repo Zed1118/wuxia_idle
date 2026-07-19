@@ -518,6 +518,7 @@ Future<Widget> buildVisualTarget(
         sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         autoStart: false,
         startPaused: true,
+        allowPlayerIntervention: true,
         seed: battleV2VisualSeed,
         readyTarget: VisualBattleReadyTarget.resourcePressure,
         onTargetReady: onTargetReady,

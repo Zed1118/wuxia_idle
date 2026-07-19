@@ -863,6 +863,10 @@ void main() {
         find.byKey(const ValueKey('skill_pending_stamp_badge')),
         findsOneWidget,
       );
+      expect(
+        find.byKey(const ValueKey('battle.skillSlip.state.pending')),
+        findsOneWidget,
+      );
       expect(notifier.state.pendingUltimates[1], isNull);
     });
 
@@ -998,6 +1002,10 @@ void main() {
         nativeButton.style?.shape?.resolve({}),
         isA<BeveledRectangleBorder>(),
       );
+      expect(
+        find.byKey(const ValueKey('battle.skillSlip.state.available')),
+        findsOneWidget,
+      );
       expect(find.text(UiStrings.skillQiCostChip(200)), findsOneWidget);
       expect(find.text(UiStrings.skillCooldownChip(2)), findsOneWidget);
     });
@@ -1014,6 +1022,14 @@ void main() {
 
       expect(find.text(UiStrings.skillInsufficientForce), findsOneWidget);
       expect(find.text('真气不足'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('battle.skillSlip.state.insufficientQi')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('battle.skillSlip.qiGap')),
+        findsOneWidget,
+      );
       // 内力不足态不显示可用态的耗内文案。
       expect(find.textContaining('耗气'), findsNothing);
     });
@@ -1116,6 +1132,14 @@ void main() {
         _power.cooldownTurns,
       );
       expect(find.text('冷却3'), findsNothing);
+      expect(
+        find.byKey(const ValueKey('battle.skillSlip.state.cooldown')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('battle.skillSlip.inkCooldown')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('点头像切换重点角色，露出另一角色的技能', (tester) async {
@@ -1169,6 +1193,14 @@ void main() {
       // 未手动切焦点，但敌人蓄力 → 焦点自动落到 1 号（有可破招技）。
       expect(find.byKey(const ValueKey('skill_cmd_2_b1')), findsOneWidget);
       expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsNothing);
+      expect(
+        find.byKey(const ValueKey('battle.skillSlip.state.interrupt')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('battle.skillSlip.interruptLift')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('敌人蓄力时保留已可破招的玩家手选角色', (tester) async {

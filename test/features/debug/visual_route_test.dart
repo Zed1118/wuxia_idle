@@ -519,6 +519,7 @@ void main() {
       final launcher = target as ScenarioLauncher;
       expect(launcher.autoStart, isFalse);
       expect(launcher.startPaused, isTrue);
+      expect(launcher.allowPlayerIntervention, isTrue);
       expect(launcher.readyTarget, VisualBattleReadyTarget.resourcePressure);
       final (left, _) = launcher.teamsFactory();
       final focus = left.first;
