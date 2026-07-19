@@ -15,7 +15,7 @@ import 'package:wuxia_idle/features/taohua_island/presentation/taohua_island_scr
 import 'package:wuxia_idle/shared/audio/audio_assets.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
-import '../../../support/isar_test_support.dart';
+import '../../support/isar_test_support.dart';
 
 void main() {
   group('parseVisualRoute', () {
