@@ -1887,8 +1887,9 @@ class UiStrings {
     int intervalHours,
     int maxRolls,
   ) => '之后的时间继续累积普通挂机收益，不设上限。每满 $intervalHours 小时获得一次装备判定，最多 $maxRolls 次。';
-  static String seclusionHourlyPreview(double scale) =>
-      '每小时预估产出（境界加成 ×${scale.toStringAsFixed(2)}）';
+  static String seclusionHourlyPreview(double materialScale, double expScale) =>
+      '每小时预估产出（材料境界加成 ×${materialScale.toStringAsFixed(2)} · '
+      '经验 ×${expScale.toStringAsFixed(2)}）';
   static String seclusionEstimatedMojianshi(int amount) => '预估磨剑石 ×$amount';
   static String seclusionStayCardTitle(int hours) => hours == 1
       ? '驻留片刻'

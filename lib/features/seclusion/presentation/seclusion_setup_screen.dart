@@ -47,6 +47,11 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
   double get _realmScale => GameRepository.instance.numbers.retreat
       .realmScaleFor(widget.charRealmTier);
 
+  // 经验维度专用倍率(2026-07-19 1A):预估须与 SeclusionService 结算同源,
+  // 否则显示 1.3 实结 1.65 预估偏低 21%。
+  double get _expRealmScale => GameRepository.instance.numbers.retreat
+      .experienceRealmScaleFor(widget.charRealmTier);
+
   Future<void> _startRetreat() async {
     if (_isStarting) return;
     setState(() => _isStarting = true);
@@ -96,6 +101,7 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
   Widget build(BuildContext context) {
     final def = widget.mapDef;
     final scale = _realmScale;
+    final expScale = _expRealmScale;
     final compact = MediaQuery.sizeOf(context).height <= 760;
 
     return Scaffold(
@@ -121,7 +127,11 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
                   16,
                   compact ? 10 : 14,
                 ),
-                child: _OutputPreview(def: def, scale: scale),
+                child: _OutputPreview(
+                  def: def,
+                  scale: scale,
+                  expScale: expScale,
+                ),
               ),
               SizedBox(height: compact ? 10 : 18),
               LightPaperPanel(
@@ -286,17 +296,22 @@ class _MapImage extends StatelessWidget {
 }
 
 class _OutputPreview extends StatelessWidget {
-  const _OutputPreview({required this.def, required this.scale});
+  const _OutputPreview({
+    required this.def,
+    required this.scale,
+    required this.expScale,
+  });
 
   final SeclusionMapDef def;
   final double scale;
+  final double expScale;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SectionHeader(UiStrings.seclusionHourlyPreview(scale)),
+        SectionHeader(UiStrings.seclusionHourlyPreview(scale, expScale)),
         const SizedBox(height: 6),
         _OutputRow(
           icon: Icons.construction,
@@ -308,7 +323,7 @@ class _OutputPreview extends StatelessWidget {
           icon: Icons.trending_up,
           color: WuxiaUi.qing,
           label: UiStrings.seclusionOutputExperience,
-          value: (def.experiencePerHour * scale).toStringAsFixed(1),
+          value: (def.experiencePerHour * expScale).toStringAsFixed(1),
         ),
         if (def.equipmentDropRate > 1.0)
           const _OutputRow(
