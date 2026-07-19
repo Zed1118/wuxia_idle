@@ -116,6 +116,50 @@ class BattleV2FidelityTest(unittest.TestCase):
         self.assertIsNone(capture["boss_area_ratio"])
         self.assertIn("missing regions", capture["warnings"])
 
+    def test_build_manifest_records_route_state_viewport_and_dpr(self):
+        capture_root = self.root / "baseline"
+        dynamic_dir = capture_root / "battle_v2_fast_forward_peak" / "1280x720"
+        dynamic_dir.mkdir(parents=True)
+        self._rgba(
+            "baseline/battle_v2_fast_forward_peak/1280x720/battle_v2_fast_forward_peak.png",
+            (2560, 1440),
+        )
+        (dynamic_dir / "battle_v2_fast_forward_peak.log").write_text(
+            "flutter: VISUAL_ROUTE_STATE: route=battle_v2_fast_forward_peak "
+            "seed=20260719 tick=1 steps=1 leftAlive=3 rightAlive=3 "
+            "target=fastForwardPeak actions=3 peakActions=3\n",
+            encoding="utf-8",
+        )
+        static_dir = capture_root / "battle_tap_preview" / "1440x900"
+        static_dir.mkdir(parents=True)
+        self._rgba(
+            "baseline/battle_tap_preview/1440x900/battle_tap_preview.png",
+            (2880, 1800),
+        )
+        (static_dir / "battle_tap_preview.log").write_text(
+            "flutter: VISUAL_ROUTE_READY: battle_tap_preview\n",
+            encoding="utf-8",
+        )
+
+        manifest = fidelity.build_manifest(capture_root, commit="abc123")
+
+        self.assertEqual(manifest["commit"], "abc123")
+        self.assertEqual(len(manifest["captures"]), 2)
+        dynamic = next(
+            item
+            for item in manifest["captures"]
+            if item["route"] == "battle_v2_fast_forward_peak"
+        )
+        self.assertEqual(dynamic["seed"], 20260719)
+        self.assertEqual(dynamic["tick"], 1)
+        self.assertEqual(dynamic["dpr"], 2.0)
+        self.assertEqual(dynamic["viewport"], {"width": 1280, "height": 720})
+        static = next(
+            item for item in manifest["captures"] if item["route"] == "battle_tap_preview"
+        )
+        self.assertEqual(static["seed"], "visual-route-host-fixture-20260627")
+        self.assertIsNone(static["tick"])
+
 
 if __name__ == "__main__":
     unittest.main()

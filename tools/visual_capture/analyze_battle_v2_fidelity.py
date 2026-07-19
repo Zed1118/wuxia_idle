@@ -19,6 +19,12 @@ from PIL import Image
 
 
 DEFAULT_CONFIG = Path(__file__).with_name("battle_v2_fidelity_config.json")
+DEFAULT_STATIC_SEED = "visual-route-host-fixture-20260627"
+VIEWPORT_PATTERN = re.compile(r"^(?P<width>\d+)x(?P<height>\d+)$")
+ROUTE_STATE_PATTERN = re.compile(
+    r"VISUAL_ROUTE_STATE:\s+route=(?P<route>\S+)\s+"
+    r"seed=(?P<seed>\S+)\s+tick=(?P<tick>\d+)"
+)
 
 
 def load_config(path: Path) -> Dict[str, Any]:
@@ -28,6 +34,57 @@ def load_config(path: Path) -> Dict[str, Any]:
     if missing:
         raise ValueError("config missing keys: " + ", ".join(missing))
     return config
+
+
+def build_manifest(capture_root: Path, commit: str) -> Dict[str, Any]:
+    """Discover visual captures and bind each image to its deterministic state."""
+    captures: List[Dict[str, Any]] = []
+    for png_path in sorted(capture_root.glob("*/*/*.png")):
+        viewport_match = VIEWPORT_PATTERN.fullmatch(png_path.parent.name)
+        if viewport_match is None:
+            continue
+        route = png_path.parent.parent.name
+        width = int(viewport_match.group("width"))
+        height = int(viewport_match.group("height"))
+        with Image.open(png_path) as image:
+            pixel_width, pixel_height = image.size
+        dpr_x = pixel_width / width
+        dpr_y = pixel_height / height
+        if abs(dpr_x - dpr_y) > 0.01:
+            raise ValueError(
+                "%s has inconsistent inferred DPR: %.4f vs %.4f"
+                % (png_path, dpr_x, dpr_y)
+            )
+
+        log_path = png_path.with_suffix(".log")
+        log_text = (
+            log_path.read_text(encoding="utf-8", errors="replace")
+            if log_path.exists()
+            else ""
+        )
+        state_match = ROUTE_STATE_PATTERN.search(log_text)
+        seed: Any = DEFAULT_STATIC_SEED
+        tick: Optional[int] = None
+        if state_match is not None:
+            raw_seed = state_match.group("seed")
+            seed = int(raw_seed) if raw_seed.isdigit() else raw_seed
+            tick = int(state_match.group("tick"))
+        captures.append(
+            {
+                "id": "%s_%s" % (route, png_path.parent.name),
+                "route": route,
+                "seed": seed,
+                "tick": tick,
+                "viewport": {"width": width, "height": height},
+                "dpr": (dpr_x + dpr_y) / 2.0,
+                "content_rect": {"x": 0, "y": 0, "width": width, "height": height},
+                "png": str(png_path.relative_to(capture_root)),
+                "log": str(log_path.relative_to(capture_root)),
+            }
+        )
+    if not captures:
+        raise ValueError("capture root contains no <route>/<WxH>/*.png captures")
+    return {"schema_version": 1, "commit": commit, "captures": captures}
 
 
 def alpha_bbox(rgba: np.ndarray, threshold: int) -> Optional[List[int]]:
@@ -403,6 +460,9 @@ def _parser() -> argparse.ArgumentParser:
         description="Measure Battle UI V2 layout, alpha boxes, boss scale and semantic color evidence."
     )
     parser.add_argument("--manifest", type=Path, help="Capture manifest JSON.")
+    parser.add_argument("--capture-root", type=Path, help="Capture root used to generate a manifest.")
+    parser.add_argument("--commit", help="Commit recorded in a generated manifest.")
+    parser.add_argument("--write-manifest", type=Path, help="Destination for a generated manifest.")
     parser.add_argument(
         "--config", type=Path, default=DEFAULT_CONFIG, help="Single threshold config JSON."
     )
@@ -413,11 +473,21 @@ def _parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = _parser()
     args = parser.parse_args()
-    if args.manifest is None:
-        parser.error("--manifest is required")
-    if args.output is None:
-        parser.error("--output is required")
-    analyze_manifest(args.manifest, load_config(args.config), args.output)
+    if args.capture_root is not None:
+        if args.write_manifest is None:
+            parser.error("--write-manifest is required with --capture-root")
+        manifest = build_manifest(args.capture_root, args.commit or "unknown")
+        args.write_manifest.parent.mkdir(parents=True, exist_ok=True)
+        args.write_manifest.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    if args.manifest is not None:
+        if args.output is None:
+            parser.error("--output is required with --manifest")
+        analyze_manifest(args.manifest, load_config(args.config), args.output)
+    elif args.capture_root is None:
+        parser.error("--manifest or --capture-root is required")
     return 0
 
 

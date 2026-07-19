@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：Task 0.3 已完成；结构量测配置、只读分析脚本与固定 fixture 测试已建立，尚未改生产战斗规则。
+- **状态**：阶段 0 已完成并通过 Gate；Task 0.4 已抓取、裁准并量测 12 routes × 2 viewports，尚未改生产战斗规则。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：新增单一阈值配置 `battle_v2_fidelity_config.json` 与 `analyze_battle_v2_fidelity.py`；脚本从 manifest 输出内容区/逻辑与像素尺寸/DPR、区域比例、人物 alpha 包围盒、Boss 面积比、语义色 mask、黑位漂移、`metrics.json` 和 `score.md`，缺诊断层时明确标记 approximate/unavailable。
-- **下一步**：执行 Task 0.4；用固定核心 route 在 1280×720、1440×900 抓取改前基线，补 manifest、主三联图与初始 A～F 逐项评分。
-- **已跑验证**：Task 0.2 红/绿证据保持不变；Task 0.3 红态：unittest 因分析模块尚不存在报 `ModuleNotFoundError`；绿态：`python3 -m unittest discover tools/visual_capture -p '*battle_v2_fidelity*test*.py'` 4 pass / 0 fail，`--help` 成功，`bash -n tools/visual_capture/visual_capture.sh` 成功，`flutter analyze --no-pub` 0 issue（11.1s）。
-- **当前评分**：A 15/20、B 14/25、C 12/25、D 10/15、E 6/10、F 3/5，合计 60/100（报告估分，待 Task 0.4 重测）。
-- **证据目录**：尚未抓图；计划为 `build/visual_acceptance/battle_ui_v2_85/`。量测 fixture 已验证 mask/JSON/Markdown 可重复生成。
-- **阻塞项**：无。残留风险：截图工具尚未自动生成本任务 manifest，Task 0.4 需据日志补齐；人物/Boss 精确量测依赖诊断 alpha 层，缺层时脚本不会伪造结论。
-- **§8.2 四证据**：①生产接线：量测工具只读 build 截图，不进入生产包；正式 `BattleScreen` 接线不变；② targeted：Python 4/4 + debug 族上一切片 138/138；③红线：零改 `data/`、玩法数值/schema/saveVersion/持久化，阈值集中于工具 JSON；④残留风险：真实 capture manifest、三联图、双视口与动态峰值尚待 Task 0.4。
-- **Git 状态口径**：Task 0.3 工具、测试与本恢复点待提交，tip 为 WIP；主 checkout 保持只读。
+- **最后完成**：为 macOS visual 环境锁定逻辑内容区尺寸，并在截图链末端裁除标题栏；自动发现截图生成 manifest，记录 commit/route/seed/tick/viewport/DPR；24 张截图、两张 1280×720 主三联图、原始 masks、`metrics.json`、评分骨架和 `initial_score.md` 已落 `build/visual_acceptance/battle_ui_v2_85/baseline/`（默认不入 Git）。
+- **下一步**：执行 Task 1.1；先为 1280×720、1440×900 三段比例及自动/点选案台同权重写失败测试，再实现集中式响应布局。
+- **已跑验证**：Task 0.4 红态：新增 manifest 测试因 `build_manifest` 不存在报 `AttributeError`；裁窗测试因模块不存在报 `ModuleNotFoundError`。绿态：fidelity Python 5/5、crop Python 2/2；24/24 PNG 像素尺寸等于 viewport × DPR；24/24 日志无 overflow/exception/error；`bash -n tools/visual_capture/visual_capture.sh` 成功；五个确定性 route 的固定 seed/tick 状态在双视口一致；阶段末 `flutter analyze --no-pub` 0 issue（3.1s）。
+- **当前评分**：A 15/20、B 14/25、C 12/25、D 10/15、E 6/10、F 3/5，合计 60/100；Task 0.4 双主三联图复核与报告无重大矛盾。
+- **证据目录**：`build/visual_acceptance/battle_ui_v2_85/baseline/`；含 24 screenshots/logs、`manifest.json`、`analysis/`、`triptychs/neutral_3v3_1280x720.png`、`triptychs/single_boss_1280x720.png`、`initial_score.md`。
+- **阻塞项**：无。残留风险：截图尚无 regions/人物 alpha 诊断层，脚本将精确比例、人物包围盒和 Boss 面积比标为 unavailable；Windows 字体/缩放尚未验证；build 证据未入 Git，worktree 清理前必须保全。
+- **§8.2 四证据**：①生产接线：正式 `BattleScreen` 接线未被 debug route 替代，截图使用隔离 fixture/固定 replay，不读写真实存档；② targeted：Python 7/7、debug 族上一切片 138/138、24 图与日志校验、analyze 0 issue；③红线：零改 `data/`、玩法数值/schema/saveVersion/持久化，visual-only Swift 路径仅在验收环境变量存在时启用；④残留风险：人物/Boss 精确量测待诊断 alpha 层，Windows 缩放和最终证据保全待后续阶段。
+- **Git 状态口径**：Task 0.4 截图驱动/裁窗/manifest 工具、测试与本恢复点待提交，tip 仍为 WIP；build 证据默认忽略，主 checkout 保持只读。

@@ -10,18 +10,26 @@ class MainFlutterWindow: NSWindow {
     // 仅两者都设时生效;production 不带 → 行为与原先完全一致。
     let env = ProcessInfo.processInfo.environment
     var forced: NSRect? = nil
+    var forcedContentSize: NSSize? = nil
     if let ws = env["VISUAL_WINDOW_W"], let hs = env["VISUAL_WINDOW_H"],
        let w = Double(ws), let h = Double(hs), w > 0, h > 0 {
       self.setFrameAutosaveName("")
+      let contentSize = NSSize(width: w, height: h)
+      let outerSize = self.frameRect(
+        forContentRect: NSRect(origin: .zero, size: contentSize)
+      ).size
       var frame = windowFrame
-      frame.size = NSSize(width: w, height: h)
+      frame.size = outerSize
       if let screen = self.screen ?? NSScreen.main {
         let vis = screen.visibleFrame
-        frame.origin = NSPoint(x: vis.origin.x + (vis.size.width - w) / 2,
-                               y: vis.origin.y + (vis.size.height - h) / 2)
+        frame.origin = NSPoint(
+          x: vis.origin.x + (vis.size.width - outerSize.width) / 2,
+          y: vis.origin.y + (vis.size.height - outerSize.height) / 2
+        )
       }
       windowFrame = frame
       forced = frame
+      forcedContentSize = contentSize
     }
 
     self.contentViewController = flutterViewController
@@ -33,6 +41,10 @@ class MainFlutterWindow: NSWindow {
     if let f = forced {
       self.minSize = f.size
       self.maxSize = f.size
+    }
+    if let contentSize = forcedContentSize {
+      self.contentMinSize = contentSize
+      self.contentMaxSize = contentSize
     }
 
     super.awakeFromNib()
