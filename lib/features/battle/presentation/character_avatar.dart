@@ -8,6 +8,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'avatar_status_tags.dart';
+import 'battle_typography_tokens.dart';
 import 'countdown_ring.dart';
 import 'guardian_ward_presentation.dart';
 import 'hp_bar.dart';
@@ -608,7 +609,7 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                 height: 11,
                 fillColorOverride: WuxiaUi.jiang,
                 trackColorOverride: WuxiaUi.battleStatusTrack,
-                labelFontSize: 8,
+                labelFontSize: BattleTypography.t5,
                 compactLabel: true,
               ),
               const SizedBox(height: 1),
@@ -620,7 +621,7 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                 labelPrefix: UiStrings.internalForceShortLabel,
                 fillColorOverride: WuxiaUi.qing,
                 trackColorOverride: WuxiaUi.battleStatusTrack,
-                labelFontSize: 7.5,
+                labelFontSize: BattleTypography.t5,
                 compactLabel: true,
               ),
             ],

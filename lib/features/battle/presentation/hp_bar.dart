@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/colors.dart';
+import 'battle_typography_tokens.dart';
 
 /// 通用比例条（phase1_tasks.md T14 §785-786）。
 ///
@@ -79,6 +80,8 @@ class HpBar extends StatelessWidget {
                     fontSize: labelFontSize ?? math.max(height * 0.72, 10.0),
                     color: WuxiaColors.textPrimary,
                     fontWeight: FontWeight.w600,
+                    fontFamilyFallback: BattleTypography.uiFallback,
+                    fontFeatures: BattleTypography.tabularFigures,
                     height: 1,
                     shadows: const [
                       Shadow(color: Colors.black54, blurRadius: 2),

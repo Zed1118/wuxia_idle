@@ -9,6 +9,7 @@ import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../battle_layout_tokens.dart';
+import '../battle_typography_tokens.dart';
 import '../countdown_ring.dart';
 import 'battle_command_desk.dart';
 import 'battle_focus_rail.dart';
@@ -291,7 +292,7 @@ class _AutoSkillState extends StatelessWidget {
                 color: ready && !reserved
                     ? const Color(0xFFD7B879)
                     : WuxiaColors.textMuted,
-                fontSize: 8,
+                fontSize: BattleTypography.t5,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -726,7 +727,7 @@ class FocusChip extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Color(0xFF796B57),
-                                fontSize: 8,
+                                fontSize: BattleTypography.t5,
                                 height: 1,
                               ),
                             ),
@@ -735,8 +736,9 @@ class FocusChip extends StatelessWidget {
                             '${character.currentQi}/${character.maxQi}',
                             style: const TextStyle(
                               color: WuxiaUi.muted,
-                              fontSize: 8,
+                              fontSize: BattleTypography.t5,
                               height: 1,
+                              fontFeatures: BattleTypography.tabularFigures,
                             ),
                           ),
                         ],
@@ -975,7 +977,7 @@ class SkillCommandButton extends StatelessWidget {
                         child: Text(
                           badgeText,
                           style: const TextStyle(
-                            fontSize: 8,
+                            fontSize: BattleTypography.t5,
                             fontWeight: FontWeight.w800,
                             color: Color(0xFFF0DFC2),
                             height: 1.2,
@@ -1096,9 +1098,9 @@ class _VerticalSkillTitle extends StatelessWidget {
       textAlign: TextAlign.center,
       style: const TextStyle(
         color: WuxiaUi.ink,
-        fontFamily: 'Songti SC',
-        fontFamilyFallback: ['KaiTi', 'SimSun', 'serif'],
-        fontSize: 17,
+        fontFamily: BattleTypography.displayFamily,
+        fontFamilyFallback: BattleTypography.displayFallback,
+        fontSize: BattleTypography.t2,
         fontWeight: FontWeight.w700,
         height: 0.92,
         letterSpacing: 0,
@@ -1122,7 +1124,7 @@ class _SkillMetric extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: color,
-          fontSize: 8.5,
+          fontSize: BattleTypography.t5,
           fontWeight: FontWeight.w800,
           height: 1,
         ),
