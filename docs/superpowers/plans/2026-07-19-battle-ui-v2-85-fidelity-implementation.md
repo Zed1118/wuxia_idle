@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：`[BLOCKED]` 阶段 2 Gate 已完成并冻结，等待用户拍板证据后才可进入阶段 3。
+- **状态**：`[WIP]` 用户已拍板阶段 2「布局ok」，阶段 3 Task 3.2 人物融合表现层与性能采样已完成，继续推进 Task 3.1。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：用户通过的技能签样板已铺开为五态，空槽/执招名帖/行囊木匣完成；背景山道已提亮。S3 修正为真正只读自动轮转谱，S4/S5/S6 固定 seed；S1/S3/S4/S5/S6/S7 双视口 12 图完成目检，S5 待发与敌方可选、S7 冷却+气不足均满足状态定义。
-- **下一步**：等待用户审阅 `stage2_gate/` 证据并拍板；获准后由恢复任务进入阶段 3，禁止在拍板前自行推进完整背景 profile、人物融合或 HUD。
-- **已跑验证**：最终 Task 2 targeted 四文件 74/74；`visual_route_test.dart` 43/43；`flutter analyze --no-pub` 0 issue。证据 12 PNG + 12 log，12/12 READY，日志扫描 `overflow|exception|error|failed` 0 命中；manifest 记录 commit/route/seed/tick/viewport/DPR。
-- **当前评分**：C=23/25（墨案 5/5、七签 7/7、五态 5/5、名帖 3/4、行囊/空态 3/4），通过阶段 2 Gate C≥22；桌面 semantics/focus/Enter 激活/cursor 通过，双视口 0 overflow，案台语义未回退为普通按钮阵列。
-- **证据目录**：主证据 `build/visual_acceptance/battle_ui_v2_85/stage2_gate/`（12 图、12 日志、`manifest.md`、`score.md`）；背景同 route 改前/改后在 `background_brightness_before_after/`；过程态在 `stage2_states/`、`stage2_task24/`。
-- **阻塞项**：`[BLOCKED] 阶段2 Gate 证据待用户拍板`。残留风险：完整场景 profile、人物 alpha 精测、HUD 后续态、Windows 100%/125%/150% 缩放与 build 证据长期保全均属于后续阶段，不在本轮越界处理。
-- **§8.2 四证据**：①生产接线：五态、名帖、留白签、木匣与 cursor 均由正式 `BattleScreen` 的生产案台组件消费，debug 仅提供隔离固定状态；② targeted：74/74 + route 43/43 + analyze 0 issue + 12/12 READY/零错误日志；③红线：零改 `data/`、伤害/真气/冷却/AI/tick/胜负/掉落/敌配、schema/saveVersion/真实存档，未新增资产；④残留风险：阶段 3～5 的完整 profile、人物融合、HUD、正式关卡终拍、Windows 缩放和证据保全待用户拍板后继续。
-- **Git 状态口径**：验收 route 固定点为 `f8ffadc3`；下一提交严格使用 `[BLOCKED] 阶段2 Gate 证据待用户拍板`，不打 `[READY]`，提交后 tracked worktree 干净、主 checkout 保持只读。
+- **最后完成**：Task 3.2 在正式 `CharacterAvatar` 站姿路径增加固定暖灰色级、轻量亚像素边缘柔化、统一透明度与淡墨接地影；阵亡态同步褪墨下沉。外层人物槽 `RepaintBoundary` 保持不变。补 `profile_battle_v2.sh` 与帧统计器，严格忽略前 5 秒。
+- **下一步**：执行 Task 3.1：以 `_stageStandeeOpticalProfile` 为单一真相源量测透明 alpha 包围盒，校准人物光学站位与 Boss 面积比 1.25～1.45；随后才进入旧纸信息板与场景 profile。
+- **已跑验证**：新行为先红：`character_avatar_test.dart` 因缺 `battle.stageStandeeFusionGrade` 失败；性能统计测试因实现文件缺失失败。转绿后 `battle_frame_profile_test.dart` + `character_avatar_test.dart` + `battle_field_repaint_test.dart` 共 24/24；`flutter analyze --no-pub` 0 issue；`git diff --check` 通过。profile 真机 60 秒采到后 55 秒 5475 帧，max build=0.827ms、max raster=3.151ms、连续超 16.7ms 峰值均 0，PASS。
+- **当前评分**：阶段中间值 B=18/25、D=11/15（未宣告 Gate）；C 保持 23/25。人物已明显退入雾层，仍需 Task 3.1 包围盒、Task 3.3 信息板与 Task 3.4 多场景黑位漂移闭环后再正式评分。
+- **证据目录**：同机位改前 `build/visual_acceptance/battle_ui_v2_85/stage3_before/`，Task 3.2 改后 `stage3_task32_after/`；性能日志与 JSON 在 `stage3_profile/`。
+- **阻塞项**：无当前阻塞。残留风险：Boss 撑伞高人源图细节与玩家终拍立绘存在代际差，先由表现层与光学框处理，若仍不合格只报告、不批量重导源图；Windows 100%/125%/150% 缩放仍留最终阶段。
+- **§8.2 四证据**：①生产接线：融合滤镜、边缘层、阵亡态与接地影均在正式 `BattleScreen` 消费的 `CharacterAvatar` 内，debug 只包可关闭的 profile 采样；② targeted：两项先红证据已记录，24/24 + analyze 0 issue + 60 秒 profile PASS；③红线：零改 `data/`、战斗规则、schema/saveVersion/真实存档，零新增/重导立绘资产；④残留风险：Task 3.1/3.3/3.4、正式阶段 Gate 双视口、三背景黑位抽样及 Windows 缩放尚待完成。
+- **Git 状态口径**：阶段 2 冻结点为 `4041dfb1`；本轮持续使用中文动宾小切片提交，全程不打 `[READY]`，仅阶段 3 Gate 达成后使用用户指定 `[BLOCKED]` tip。

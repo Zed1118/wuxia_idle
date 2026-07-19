@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 
 import '../domain/battle_state.dart';
@@ -13,6 +15,36 @@ import '../../../shared/widgets/asset_fallback.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 
 enum CharacterDisplayMode { avatar, stageStandee }
+
+/// 战斗立绘统一色级：轻抬暖灰黑位、压高光并降低色彩通道分离。
+/// 只包人物位图，不影响 HP/真气、状态标签与战场背景。
+const battleStandeeFusionMatrix = <double>[
+  0.74,
+  0.10,
+  0.06,
+  0,
+  12,
+  0.08,
+  0.75,
+  0.07,
+  0,
+  10,
+  0.06,
+  0.14,
+  0.67,
+  0,
+  8,
+  0,
+  0,
+  0,
+  0.96,
+  0,
+];
+
+const battleStandeeFusionOpacity = 0.96;
+const battleStandeeEdgeSofteningSigma = 0.38;
+const battleStandeeGroundingOpacity = 0.30;
+const battleStandeeGroundingWashOpacity = 0.16;
 
 /// 战斗角色头像（phase1_tasks.md T14 §784;M4 Stage 3 2026-05-21 美术接入)。
 ///
@@ -334,6 +366,23 @@ class _StageCharacterStandee extends StatelessWidget {
             ).createShader(rect),
             child: image,
           );
+    portraitImage = ImageFiltered(
+      key: const ValueKey('battle.stageStandeeEdgeSoftening'),
+      imageFilter: ui.ImageFilter.blur(
+        sigmaX: battleStandeeEdgeSofteningSigma,
+        sigmaY: battleStandeeEdgeSofteningSigma,
+        tileMode: ui.TileMode.decal,
+      ),
+      child: ColorFiltered(
+        key: const ValueKey('battle.stageStandeeFusionGrade'),
+        colorFilter: const ColorFilter.matrix(battleStandeeFusionMatrix),
+        child: Opacity(
+          key: const ValueKey('battle.stageStandeeFusionOpacity'),
+          opacity: battleStandeeFusionOpacity,
+          child: portraitImage,
+        ),
+      ),
+    );
     if (inkMirror) {
       portraitImage = ColorFiltered(
         key: const ValueKey('battle.innerDemonInkMirror'),
@@ -463,12 +512,19 @@ class _StageCharacterStandee extends StatelessWidget {
       ),
     );
 
-    final dimmed = Opacity(
-      opacity: character.isAlive ? 1 : 0.45,
-      child: content,
+    if (character.isAlive) return content;
+    return Transform.translate(
+      key: const ValueKey('battle.stageStandeeDefeatedSink'),
+      offset: Offset(0, height * 0.018),
+      child: ColorFiltered(
+        colorFilter: _grayscaleFilter,
+        child: Opacity(
+          key: const ValueKey('battle.stageStandeeDefeatedFade'),
+          opacity: 0.30,
+          child: content,
+        ),
+      ),
     );
-    if (character.isAlive) return dimmed;
-    return ColorFiltered(colorFilter: _grayscaleFilter, child: dimmed);
   }
 }
 
@@ -576,7 +632,9 @@ class _StandeeGroundingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width * 0.5, size.height * 0.58);
     final contact = Paint()
-      ..color = const Color(0xFF17130F).withValues(alpha: 0.46)
+      ..color = const Color(
+        0xFF2B251E,
+      ).withValues(alpha: battleStandeeGroundingOpacity)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
     canvas.drawOval(
       Rect.fromCenter(
@@ -588,7 +646,9 @@ class _StandeeGroundingPainter extends CustomPainter {
     );
 
     final wash = Paint()
-      ..color = const Color(0xFF29231D).withValues(alpha: 0.24)
+      ..color = const Color(
+        0xFF4A4034,
+      ).withValues(alpha: battleStandeeGroundingWashOpacity)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 1.4

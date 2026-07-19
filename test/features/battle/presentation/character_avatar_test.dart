@@ -219,6 +219,58 @@ void main() {
     );
   });
 
+  testWidgets('战场立绘使用固定暖灰色级与亚像素边缘柔化层', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: _char(isBoss: false),
+            displayMode: CharacterDisplayMode.stageStandee,
+            standeeWidth: 160,
+            standeeHeight: 230,
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(const ValueKey('battle.stageStandeeFusionGrade')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('battle.stageStandeeEdgeSoftening')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('battle.stageStandeeFusionOpacity')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('阵亡站姿褪墨并下沉而非保留完整灰色剪纸', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: _char(isBoss: false).copyWith(isAlive: false),
+            displayMode: CharacterDisplayMode.stageStandee,
+            standeeWidth: 160,
+            standeeHeight: 230,
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(const ValueKey('battle.stageStandeeDefeatedSink')),
+      findsOneWidget,
+    );
+    final fade = tester.widget<Opacity>(
+      find.byKey(const ValueKey('battle.stageStandeeDefeatedFade')),
+    );
+    expect(fade.opacity, lessThanOrEqualTo(0.34));
+  });
+
   testWidgets('Boss全身立绘不再绘制矩形金色黄底', (tester) async {
     await tester.pumpWidget(
       MaterialApp(

@@ -55,6 +55,7 @@ import '../../inventory/presentation/inventory_screen.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../../resource_overview/presentation/resource_overview_screen.dart';
 import '../application/phase2_seed_service.dart';
+import '../application/battle_frame_profile.dart';
 import '../../battle/presentation/ultimate_caption_overlay.dart';
 import '../../../data/numbers_config.dart' show AnimationNumbers;
 import '../../battle/presentation/battle_scene_background.dart';
@@ -122,8 +123,10 @@ class VisualRouteApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: wuxiaAppTheme(),
         builder: _wuxiaTextScaleBuilder,
-        home: HitboxDebugOverlay.maybeWrap(
-          VisualRouteHost(route: route, routeId: routeId),
+        home: BattleFrameProfileProbe.maybeWrap(
+          HitboxDebugOverlay.maybeWrap(
+            VisualRouteHost(route: route, routeId: routeId),
+          ),
         ),
       ),
     );
