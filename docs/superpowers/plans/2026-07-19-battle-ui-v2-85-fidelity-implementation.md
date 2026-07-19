@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：`WIP` 阶段 3 已获用户通过；A 案自动观战七签骨架生产接线完成，正进入阶段 4。
+- **状态**：`READY` 阶段 4 + A 案已完成，等待主窗口审阅与合并；用户已经拍板的阶段 2/3 构图比例未再改动。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：Task 4.3 已将大招、首通开场、破招字形、首胜英雄镜头和暴击辅标收入共用旧金/绛红色域；中央大题字前 300ms 保留峰值，500ms 内降到 30% 语义色，墨团占地同步降低；无修改任何伤害、播放结算时点或战斗规则。Task 4.1/4.2 保持完成。
-- **下一步**：抓取 A 案自动/可点选双视口与轮转拍证据，抓 S6/S8/S9/S11/S12 双视口，组装 S1～S12 manifest 运行饱和度/字体对比度/综合量测。
-- **已跑验证**：Task 4.3 新行为先红 2 文件；计划指定的阶段 4 五个 targeted 文件 38/38 PASS；`flutter analyze --no-pub` 0 issue。Task 4.1/4.2 为 69/69 + analyze 0 issue，A 案 44/44。
-- **当前评分**：B=22.5/25（≥21，PASS）、D=12.5/15（≥11，PASS），C 保持 23/25。按“部分满足只能半分”保守计分：撑伞源图代际差与跨模块纸墨一致性各记半分，不用其他项超额抵扣。
-- **证据目录**：阶段 3 主证据保留于 `build/visual_acceptance/battle_ui_v2_85/stage3_gate/`；A 案的自动/可点选双视口与动态轮转证据待与阶段 4 Gate 一并抓取。
-- **阻塞项**：无。残留风险：`BattleAction` 未携带 teamSide，亮起时只能按 actorId 匹配已有日志口径；证据截图、阶段 4 与 Windows 缩放尚待。
-- **§8.2 四证据**：①生产接线：正式 `BattleScreen` 的自动分支已消费 `AutoCommandDesk`，共用案台底座、名帖、技能签面和行囊组件；② targeted：先红 4 例，绿后 44/44 + analyze 0 issue；③红线：本切片 `data/`、战斗域、schema/saveVersion、真实存档、禁改文件变化均为 0；④残留风险：跨队伍 actorId 理论重号时的日志歧义与尚未抓取的视觉证据。
-- **Git 状态口径**：A 案为 `17cc9902`，Task 4.1/4.2 为 `c440ae88`；Task 4.3 切片待提交；本轮最终 tip 必须使用 `[READY] 阶段4+A案交付`，期间提交不使用 READY/BLOCKED。
+- **最后完成**：A 案将正式 `BattleScreen` 自动分支改为与可点选模式同构的角色名帖 + 七技能签 + 行囊木匣，整体压暗、禁用点击/焦点/拖放，并按最新玩家动作日志轮转亮起执招者与招式；Task 4.1～4.3 完成题签化顶栏、T1～T5 单一字阶/Windows 安全回退、稳定数字字宽及旧金/绛红题字降彩。另增两条隔离验收 route，在目标谓词成立后分别冻结第一、第二执招拍点，不承载生产实现。
+- **下一步**：主窗口审阅 `final/` 与 `a_case_rotation/` 证据后合并；本 worktree 无后续实现任务。
+- **已跑验证**：新行为保留先红后绿证据；最终合并定向 7 文件 125/125 PASS；`flutter analyze --no-pub` 0 issue；`analyze_battle_v2_fidelity.py` 对 S1～S12 双视口返回 0；24 份 capture 日志无 overflow/exception/error/failed。A 案独立切片 44/44，轮转 route 43/43。
+- **当前评分**：A 17/20、B 22.5/25、C 23/25、D 13.5/15、E 8.5/10、F 4/5，合计 88.5/100；总分 ≥85 且 A～E 各自 ≥80%。非大招帧高饱和语义色面积 0.000～0.011（Gate ≤0.08）；T1～T5 实际背景对比度分别 11.61、10.23、11.05、12.02、4.66，均达标。
+- **证据目录**：S1～S12 双视口、manifest、自动分析、对比度与评分归档于 `build/visual_acceptance/battle_ui_v2_85/final/`；自动/可点双模式对照及两拍轮转证据归档于 `build/visual_acceptance/battle_ui_v2_85/a_case_rotation/`。自动分析 manifest 不含 region/character/semantic diagnostic layer 元数据，相关列会明确报 missing，结构与人物诊断沿用已通过的阶段 3 Gate，不将缺失列误报为自动通过。
+- **阻塞项**：无。残留风险：`BattleAction` 未携带 teamSide，若未来跨队伍出现 actorId 理论重号，自动亮签的日志匹配存在歧义；Windows 字体回退已配置但本轮仅在 macOS 双视口目检；未新增资产，既有 RepaintBoundary 与性能条款保持不变。
+- **§8.2 四证据**：①生产接线：正式 `BattleScreen` 消费 `AutoCommandDesk`、共用案台底座/名帖/签面/行囊，HUD/题字改动也均位于正式组件；主线自动与 Boss 真 route 双视口存在，debug route 只稳定拍点；② targeted：最终 125/125 + analyze 0 issue，A 案与阶段 4 均保留先红后绿；③红线：相对基点 `data/`、战斗规则、schema/saveVersion、真实存档与禁改文件变化均为 0，未新增玩法或资产；④残留风险：actorId 理论重号、Windows 实机字体/缩放尚未目检、自动分析诊断元数据缺失已如实列明。
+- **Git 状态口径**：A 案 `17cc9902`，Task 4.1/4.2 `c440ae88`，Task 4.3 `14bbd02e`，轮转证据 `1f33dcd9`；恢复点提交后使用精确空提交 `[READY] 阶段4+A案交付`，最终 worktree 必须干净。
