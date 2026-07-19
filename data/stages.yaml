@@ -1,7 +1,7 @@
 # =============================================================================
-# stages.yaml · 全关卡表（主线 + 副本 · 共 47 关，2026-06 实测）
+# stages.yaml · 全关卡表（主线 + 副本 · 共 57 关，2026-07 实测）
 # =============================================================================
-# 共 47 关：mainline 30（6 章 × 5，含第二主线 Ch4-6）+ innerDemon 8 +
+# 共 57 关：mainline 40（8 章 × 5）+ innerDemon 7 +
 # lightFoot 5 + massBattle 5。stageType 按关分填（非全 mainline）。
 # 常规关尽量 3 敌人（StageDef.enemyTeam 上限 3）；三流派分布尽量覆盖
 # gangMeng / lingQiao / yinRou。stage_01_01 是 production 单人空手开局的

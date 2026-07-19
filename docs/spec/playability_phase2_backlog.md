@@ -65,7 +65,7 @@
 ## 八 · 阶段性审查发现技术债(2026-06-22)
 
 - [x] **战报 `_formatAction` 死字段 + 双轨战报架构梳理(T13)**:已清(`15d4235b`)。实测攻击行动(attackResult!=null)的 description 从不显示——`BattleLog.formatAction` 从 attackResult 重格式化(闪避率/克制/效果/击杀全覆盖)才是 live 路径,description 仅 `battle_log.dart:37` 非攻击兜底(attackResult==null) + toString debug 读,无回放读(replay 按 seed 重跑)。故删 `_formatAction`(连带消其 5 处 §5.6 散写中文),攻击 description 留空 · 破招仍记 EnumL10n(合法 sink) · 非攻击 description(staggered/charging/phase 转换·EnumL10n)不动。无测试依赖其产出。
-- [ ] **audioplayers 升级(6.7.1→上游支持 VS2026 的版本)**(2026-07-14 全量审查 P1 根因):`audioplayers_windows` 6.x 在 Windows Server 2025 + VS2026(MSVC 14.51)下 `<experimental/coroutine>` STL1011 硬错,Windows Release Evidence workflow 已临时 pin `windows-2022` 止血;升级后解除 pin 恢复 `windows-latest`,需查上游 changelog + Windows 真机回归音频(bgm/sfx 全轨)。
+- [ ] **audioplayers 升级(6.7.1→上游支持 VS2026 的版本)**(2026-07-14 全量审查 P1 根因):`audioplayers_windows` 6.x 在 Windows Server 2025 + VS2026(MSVC 14.51)下 `<experimental/coroutine>` STL1011 硬错,Windows Release Evidence workflow 已临时 pin `windows-2022` 止血;升级后解除 pin 恢复 `windows-latest`,需查上游 changelog + Windows 真机回归音频(bgm/sfx 全轨)。**2026-07-19 K2 评估+拍板暂缓**:VS2026 修复版=audioplayers 6.8.1+/windows 4.4.1+(changelog #2011),硬性要求 Flutter SDK ≥3.44.0(本地 3.41.5·pub get 实测解析失败·无绕行),连带 SDK 升级属共享环境大动作,用户拍板暂缓待依赖维护轮(与 isar/analyzer 三角同轮);解除 pin 四步前置清单详 `docs/superpowers/plans/2026-07-19-audioplayers-upgrade.md`。
 
 ## 九 · 战斗体验打磨(第五阶段 · 2026-06-23)
 

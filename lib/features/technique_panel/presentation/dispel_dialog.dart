@@ -12,9 +12,12 @@ import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 
 /// 散功二次确认 dialog（phase2_tasks.md T31 §477-479）。
 ///
-/// 显示双重代价（GDD §6 散功代价底线）：
-///   - 内力 X → X×0.5（[NumbersConfig.dispersionInternalForcePenalty]）
-///   - 旧主修修炼度 Y → Y×0.5（[dispersionCultivationPenalty]）
+/// 显示 [DispelService.dispel] 的真实代价（v1.34）：
+///   - 永久内力不变
+///   - 内息紊乱增加 [InnerBreathDisorderConfig.dispelHours]，累计不超过
+///     [InnerBreathDisorderConfig.maxHours]
+///   - 旧主修修炼度 Y → Y×0.5（[NumbersConfig.dispersionCultivationPenalty]）
+///   - 换入主修原为辅修，修炼度不变
 ///   - cultivationLayer 可能回退（仅 warning，实际回退量散功后由
 ///     [DispelService.dispel] 内的 _recalcLayerByRollback 算）
 ///
@@ -35,7 +38,11 @@ class DispelConfirmDialog extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final n = ref.watch(numbersConfigProvider);
     final ifBefore = character.internalForce;
-    final ifAfter = (ifBefore * (1 - n.dispersionInternalForcePenalty)).toInt();
+    final disorder = n.innerBreathDisorder;
+    final disorderBefore = character.innerBreathDisorderHoursRemaining;
+    final disorderAfter = (disorderBefore + disorder.dispelHours)
+        .clamp(0.0, disorder.maxHours)
+        .toDouble();
     final cultBefore = mainTech.cultivationProgress;
     final cultAfter = (cultBefore * (1 - n.dispersionCultivationPenalty))
         .toInt();
@@ -47,13 +54,27 @@ class DispelConfirmDialog extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            UiStrings.dispelCostInternalForce(ifBefore, ifAfter),
+            UiStrings.dispelCostInternalForce(ifBefore, ifBefore),
+            style: const TextStyle(color: WuxiaUi.muted),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            UiStrings.dispelCostInnerBreathDisorder(
+              disorderBefore,
+              disorderAfter,
+              disorder.maxHours,
+            ),
             style: const TextStyle(color: WuxiaUi.muted),
           ),
           const SizedBox(height: 6),
           Text(
             UiStrings.dispelCostCultivation(cultBefore, cultAfter),
             style: const TextStyle(color: WuxiaUi.muted),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            UiStrings.dispelIncomingCultivationUnchanged,
+            style: TextStyle(color: WuxiaUi.muted),
           ),
           const SizedBox(height: 6),
           const Text(

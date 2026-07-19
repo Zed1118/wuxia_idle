@@ -777,7 +777,7 @@ class UiStrings {
       '主修：当前主修心法，定招式、流派根基与真气倾向。换主修会损失修炼度并引发临时内息紊乱。';
   static const String glossaryAssistTechnique =
       '辅修：旁修的心法，添额外加成而不动根基。换辅修无散功之痛，可放手尝试。';
-  static const String glossarySchool = '流派：刚猛克灵巧、灵巧克阴柔、阴柔克刚猛，循环相克。顺克加伤，逆克减伤。';
+  static const String glossarySchool = '流派：刚猛克阴柔、阴柔克灵巧、灵巧克刚猛，循环相克。顺克加伤，逆克减伤。';
   static const String glossarySynergy = '相生：特定心法搭配可生额外威能，相辅相成。配伍得当，事半功倍。';
   static const String glossaryCombatAdvanced =
       '战斗机制：蓄力、破招、内伤、克制环环相扣。看准敌招蓄力时破招，可截下大招、反客为主。';
@@ -1340,13 +1340,23 @@ class UiStrings {
   static const String lineupFounderMustStay = '祖师须坐镇出战席';
   static const String lineupApplyFailed = '编成未成，条件未满足';
 
-  /// 散功代价 · 内力：`内力 X → Y`。
+  /// 散功代价 · 永久内力不变。
   static String dispelCostInternalForce(int before, int after) =>
-      '内力 $before → $after';
+      before == after ? '永久内力 $before（不变）' : '永久内力 $before → $after';
 
-  /// 散功代价 · 修炼度:`修炼度 X → Y`。
+  /// 散功代价 · 内息紊乱累计时长（受配置上限约束）。
+  static String dispelCostInnerBreathDisorder(
+    double before,
+    double after,
+    double max,
+  ) =>
+      '内息紊乱 ${before.toStringAsFixed(1)} → ${after.toStringAsFixed(1)} 小时'
+      '（累计上限 ${max.toStringAsFixed(1)} 小时）';
+
+  /// 散功代价 · 原主修修炼度：`原主修修炼度 X → Y`。
   static String dispelCostCultivation(int before, int after) =>
-      '修炼度 $before → $after';
+      '原主修修炼度 $before → $after';
+  static const String dispelIncomingCultivationUnchanged = '换入主修原修炼度不变';
 
   // ── Phase 3 主线（T35）──
 
