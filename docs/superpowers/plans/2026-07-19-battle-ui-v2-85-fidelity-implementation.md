@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：阶段 1 已完成并通过 Gate；集中式响应比例、案台横向分区与人物通用阵列已接入正式战斗屏，尚未改生产战斗规则。
+- **状态**：`[BLOCKED]` Task 2.1 已完成，Task 2.2 已到首张技能签 + 一套 1280×720 案台样板点；依派单冻结，等待用户拍板，禁止扩展七签/行囊/五态。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：`BattleLayoutMetrics` 在 1280×720 / 1440×900 将顶栏、战场、案台闭合为 6.5% / 68.5% / 25%，自动与点选案台等高；点选案台三段实测均落 18%～20% / 58%～62% / 20%～22%，七签同屏无滚动；通用阵列改为非对称纵深，1v1/2v2 主体自动放大，主位交锋区 20%～28%，Boss 通用面积倍率进入 1.25～1.45。
-- **下一步**：执行 Task 2.1；在保持 `BottomBar` / `AutoRotationBar` 外部 API 与原交互语义稳定的前提下拆出可维护案台组件，然后只制作 Task 2.2 的第一张技能签与一套 1280×720 案台样板。
-- **已跑验证**：Task 1.1 红态：`BattleLayoutMetrics` / `Size` 不存在；初绿暴露 600p 执招栏 12px、继而 0.2px overflow，收装饰 padding 后转绿。Task 1.2 红态：三段 getters / keys 不存在；绿态双视口比例与七签无滚动通过。Task 1.3 红态：非对称、交锋区、1v1/2v2 放大、Boss 面积比 4 项失败；绿态通过。阶段 targeted 共 76/76，`flutter analyze --no-pub` 0 issue（3.9s）；四张 Gate 图 DPR=2 尺寸准确、日志 0 overflow/exception/error。
-- **当前评分**：A 17/20、B 15/25、C 13/25、D 10/15、E 6/10、F 3/5，合计 64/100；阶段 1 Gate 的 A ≥17/20 达成。B/C 的主要增量留待阶段 2 样板与后续人物融合阶段。
-- **证据目录**：基线保持在 `build/visual_acceptance/battle_ui_v2_85/baseline/`；阶段 1 四图、日志与 manifest 在 `build/visual_acceptance/battle_ui_v2_85/stage1/`，覆盖标准 3v3 / 单 Boss × 1280×720 / 1440×900。
-- **阻塞项**：无。残留风险：Boss fixture 的视觉资产本身偏素，通用几何已达面积倍率但精确 alpha 面积仍待诊断层；Windows 字体/缩放未验证；案台当前仍是现代按钮阵列，正是阶段 2 样板范围。
-- **§8.2 四证据**：①生产接线：正式 `BattleScreen` 的 `Header`、`BottomBar`、`AutoRotationBar`、`BattleField` 直接消费新 metrics/geometry，debug route 仅稳定取证；② targeted：76/76 + analyze 0 issue，四图双视口 0 overflow；③红线：零改 `data/`、战斗规则、数值/schema/saveVersion/持久化，新增值均为集中视觉 token；④残留风险：人物 alpha 精测、Windows 缩放、build 证据保全及阶段 2 样板用户终拍仍待后续。
-- **Git 状态口径**：阶段 1 代码已提交 `e16005bb`；本恢复点待提交，tip 仍为 WIP；build 证据默认忽略，主 checkout 保持只读。
+- **最后完成**：拆出 `battle_command_desk.dart`、`battle_focus_rail.dart`、`battle_pouch_rail.dart`、`battle_skill_slip.dart` 四个表现组件，`BottomBar` / `AutoRotationBar` 外部 API 与原生按钮语义保持；首张实体技能签使用现有 `paper_bg.png` + CustomPainter，形成旧纸毛边、内墨线、绛红性质印、招式名主字阶、签底状态区和确定性轻微错落。样板 route 只呈现一张实体签，其余六位仍为空槽。
+- **下一步**：等待用户对 `stage2_skill_slip_sample/battle_boss_phase/1280x720/battle_boss_phase.png` 拍板；获批后才可继续 Task 2.2 扩展七签，并另行进入行囊与五态任务。若否决，只回调这一张签与案台底座，不扩散改动。
+- **已跑验证**：Task 2.1 纯重构由既有 targeted 71/71 守护，`flutter analyze --no-pub` 0 issue（3.5s）。Task 2.2 红态：可用技能签测试找不到 `battle.skillSlipNaturalTilt`（0 widget）；绿态补齐 natural tilt / rough paper / nature seal，原生 `ElevatedButton` elevation=0 且为 `BeveledRectangleBorder`。阶段 2 当前 targeted 71/71，`flutter analyze --no-pub` 0 issue（3.9s）；样板 PNG 内容区 1280×720、DPR=2（2560×1440），日志 0 overflow/exception/error。
+- **当前评分**：冻结沿用阶段 1 总分 64/100；样板未经用户拍板，不把单签观感增量提前计入 C/D，也不宣称阶段 2 Gate 达成。
+- **证据目录**：基线 `build/visual_acceptance/battle_ui_v2_85/baseline/`；阶段 1 `build/visual_acceptance/battle_ui_v2_85/stage1/`；待拍板样板 `build/visual_acceptance/battle_ui_v2_85/stage2_skill_slip_sample/`，含 1280×720 screenshot/log/manifest。
+- **阻塞项**：`[BLOCKED] 技能签样板待用户拍板`。残留风险：毛边与 0.01rad 错落在不同 DPR 下的细线观感待后续验证；空槽、行囊和五态仍是旧实现且有意未扩做；Boss fixture 资产偏素、人物 alpha 精测与 Windows 缩放均未进入本样板点。
+- **§8.2 四证据**：①生产接线：正式 `BattleScreen` → `BottomBar` 直接消费拆分后的案台/技能签组件，debug route 不承载唯一实现，真实技能/真气/CD 数据未伪造；② targeted：Task 2.2 先红后绿，阶段当前 71/71 + analyze 0 issue，样板 0 overflow；③红线：零改 `data/`、战斗规则、AI/tick/伤害/胜负/掉落、schema/saveVersion/持久化，零新增资产与中文 Dart 文案；④残留风险：用户尚未拍板，七签/行囊/五态、Windows 缩放、人物 alpha 精测和 build 证据长期保全均待后续。
+- **Git 状态口径**：Task 2.1 已提交 `273bb0b5`，首张技能签代码已提交 `4964d77d`；本恢复点将以 `[BLOCKED] 技能签样板待用户拍板` 提交，build 证据默认忽略，主 checkout 保持只读。
