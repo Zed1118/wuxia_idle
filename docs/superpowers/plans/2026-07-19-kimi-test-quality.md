@@ -102,16 +102,51 @@ dylib 截断需从主仓手动 cp」（5/28、6/01 等多篇 session 记录 + di
 boss_gauntlet/activity/sweep/data/journey_migration + attribute_role_sensitivity）
 → 252/252 全绿，且包根**不再生成** libisar.dylib。
 
+## 目标 2 · coverage 补强记录（切片 4）
+
+**选文件依据（实测）**：全量 B（--coverage，4457 全绿）产 lcov，分文件行覆盖
+升序排名（排除 `lib/features/debug/**`、`lib/features/battle/**`、`.g.dart`、
+纯 def），在「有真实行为逻辑」的文件中取 3 个：
+
+| 生产文件 | 改前（全量 B lcov） | 改后（4 目录 lcov） |
+|---|---|---|
+| `lib/features/sect/presentation/sect_recruit_handler.dart` | 0/58 = 0.0% | **54/58 = 93.1%** |
+| `lib/features/sect/presentation/stage_boss_recruit_hook.dart` | 28/92 = 30.4% | **60/92 = 65.2%** |
+| `lib/features/expedition/application/expedition_startup.dart` | 5/13 = 38.5% | **13/13 = 100%** |
+
+改后口径：`flutter test --coverage --no-pub test/features/sect/ test/features/expedition/
+test/features/encounter/ test/features/mainline/`（424 全绿）；覆盖这三文件的测全在
+该四目录内，与全量同口径可比（expedition_startup 全量 B 的 5/13 来自本目录套件，
+改后 13/13 为严格超集）。
+
+**新增行为测试**（只加测试，零生产改动）：
+- `test/features/sect/sect_recruit_handler_test.dart`（3 用例）：真 Isar + 真确认
+  弹窗驱动——婉拒（declined + fallback + 不 markTriggered + 不建角色 + lazy-init
+  默认派已先落库）/ 确认（success + markTriggered + 角色入派 initiate + 门派
+  memberCount=1 + 成功 SnackBar）/ 满员（fullCap + 孤儿角色回滚删除 + fallback +
+  memberCount 不变，cap 读 numbers 真值不写死）。
+- `test/features/sect/stage_boss_recruit_hook_branch_test.dart`（8 用例）：守卫矩阵
+  （非 Boss / bossRecruit=null / 已触发防刷 / rng 不命中 / candidateRef 未加载 /
+  命中但 flow=ref 皆 null 静默）+ defeat hook 命中链（flow 调用 + onMarkTriggered
+  写防刷表）+ 叙事非 placeholder 顺序语义（先推阅读屏，关闭后才进招收 flow）。
+- `test/features/expedition/expedition_startup_core_test.dart`（6 用例）：纯核心
+  （无 active → no-op 不触 settleToNow / 有 active → 转调透传 combat/config/now 与
+  结果）+ 生产入口 maybeSettleExpedition provider 守卫（isar/service/config 任一
+  null → no-op；全就绪 → 注入真 ExpeditionCombatRunner + systemClock 取时）。
+- 副产：`sect_recruit_confirm_dialog.dart` 同批被真驱动，0/71 → 69/71 = 97.2%。
+
 ## 当前恢复点
 
-- **状态**：切片 1-3 完成（计划/复现/根治），目标 3 完成；进入切片 4（coverage）。
-- **最后完成**：Isar 初始化换 bundled 二进制 + 11 文件显式初始化 + avr 诊断加强；
-  冷态 targeted 252/252 绿。
-- **下一步**：全量 B（--coverage，兼产 lcov 供目标 2 选文件）→ 全量 C（第二连绿）
-  → 目标 2 补测。
+- **状态**：切片 1-5 完成（计划/复现/根治/coverage/注释），进入切片 6（两连绿 +
+  交付收尾）。
+- **最后完成**：目标 2 三文件行为测试（commit `44a366df`）；targeted 424/424 绿；
+  analyze 0。
+- **下一步**：全量 C（第二连绿，冷态在跑）→ 两个点名文件单跑绿 → 四证据收尾 +
+  [READY] 冻结。
 - **已跑验证**：目录并发 8+6 轮（RED 取证）；风暴重建 2 轮（RED）；全量 A（RED，
-  4440/3）；修后冷态 targeted 252/252 绿；`expedition_combat_runner_test` 守卫口径
-  对齐后随 expedition 目录复跑绿。
+  4440/3）；修后冷态 targeted 252/252 绿；全量 B（修后·冷态·--coverage）
+  **4457 pass / 0 fail / EXIT=0**；目标 2 三新文件 targeted 19/19 + 四目录 424/424；
+  `flutter analyze --no-pub` 0 issue。
 - **阻塞项**：无。
 
 ## 发现项（疑似生产 bug，只记录不修）
