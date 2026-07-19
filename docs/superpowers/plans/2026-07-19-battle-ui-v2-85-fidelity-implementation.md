@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：Task 2.4 与阶段 2 桌面交互 Gate 已完成；正在抓取 S1/S3/S4/S5/S6/S7 双视口终拍证据。
+- **状态**：`[BLOCKED]` 阶段 2 Gate 已完成并冻结，等待用户拍板证据后才可进入阶段 3。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：桌面 Gate 新增独立验收，验证技能签保留 button/enabled/tap semantics、Tab focus 与 Enter 激活；红态发现默认光标仍为 basic 后，在公共技能签 surface 补齐 enabled click / disabled basic cursor，绿态全部通过。
-- **下一步**：抓 S1/S3/S4/S5/S6/S7 的 1280×720、1440×900 证据，逐日志核对零 overflow/exception/error，生成 manifest；复跑 targeted+analyze 后更新最终恢复点并打指定 `[BLOCKED]` 提交冻结。
-- **已跑验证**：Task 2 targeted 四文件 73/73；桌面 Gate 红态为 click cursor 缺失、绿态独立用例 1/1；`flutter analyze --no-pub` 0 issue。`battle_charge_break` 1280×720 目检中名帖/小空印/木匣均清晰，日志无 overflow/exception/error。
-- **当前评分**：阶段 2 切片完成后自评 C=23/25（墨案 5/5、七签 7/7、五态 5/5、名帖 3/4、行囊/空态 3/4），已超过 C≥22 门槛；最终 Gate 仍待双视口与桌面交互证据闭环。
-- **证据目录**：新增 `build/visual_acceptance/battle_ui_v2_85/stage2_task24/` 的蓄力可破 1280×720 目检图及日志；五态证据在 `stage2_states/`，背景对照在 `background_brightness_before_after/`。
-- **阻塞项**：无。残留风险：阶段 2 双视口截图与日志尚待；完整场景 profile、人物 alpha 精测与 Windows 缩放仍留后续。
-- **§8.2 四证据**：①生产接线：生产 `FocusSelector`、`EmptySkillSlot`、`BattlePouchRail` 直接使用新装帧，生产 `BattleSkillSlipSurface` 承载原生按钮与明确 cursor；② targeted：四文件 73/73 + 桌面 Gate 1/1 + analyze 0 issue；③红线：零改 `data/`、伤害/真气/冷却/AI/tick/胜负/掉落、schema/saveVersion/存档；④残留风险：Gate 双视口、完整 profile、Windows 缩放和证据长期保全待后续。
-- **Git 状态口径**：技能签五态点为 `376fe015`；本切片提交后 tip 继续为 WIP，不打 `[READY]`/`[BLOCKED]`，build 证据默认忽略，主 checkout 保持只读。
+- **最后完成**：用户通过的技能签样板已铺开为五态，空槽/执招名帖/行囊木匣完成；背景山道已提亮。S3 修正为真正只读自动轮转谱，S4/S5/S6 固定 seed；S1/S3/S4/S5/S6/S7 双视口 12 图完成目检，S5 待发与敌方可选、S7 冷却+气不足均满足状态定义。
+- **下一步**：等待用户审阅 `stage2_gate/` 证据并拍板；获准后由恢复任务进入阶段 3，禁止在拍板前自行推进完整背景 profile、人物融合或 HUD。
+- **已跑验证**：最终 Task 2 targeted 四文件 74/74；`visual_route_test.dart` 43/43；`flutter analyze --no-pub` 0 issue。证据 12 PNG + 12 log，12/12 READY，日志扫描 `overflow|exception|error|failed` 0 命中；manifest 记录 commit/route/seed/tick/viewport/DPR。
+- **当前评分**：C=23/25（墨案 5/5、七签 7/7、五态 5/5、名帖 3/4、行囊/空态 3/4），通过阶段 2 Gate C≥22；桌面 semantics/focus/Enter 激活/cursor 通过，双视口 0 overflow，案台语义未回退为普通按钮阵列。
+- **证据目录**：主证据 `build/visual_acceptance/battle_ui_v2_85/stage2_gate/`（12 图、12 日志、`manifest.md`、`score.md`）；背景同 route 改前/改后在 `background_brightness_before_after/`；过程态在 `stage2_states/`、`stage2_task24/`。
+- **阻塞项**：`[BLOCKED] 阶段2 Gate 证据待用户拍板`。残留风险：完整场景 profile、人物 alpha 精测、HUD 后续态、Windows 100%/125%/150% 缩放与 build 证据长期保全均属于后续阶段，不在本轮越界处理。
+- **§8.2 四证据**：①生产接线：五态、名帖、留白签、木匣与 cursor 均由正式 `BattleScreen` 的生产案台组件消费，debug 仅提供隔离固定状态；② targeted：74/74 + route 43/43 + analyze 0 issue + 12/12 READY/零错误日志；③红线：零改 `data/`、伤害/真气/冷却/AI/tick/胜负/掉落/敌配、schema/saveVersion/真实存档，未新增资产；④残留风险：阶段 3～5 的完整 profile、人物融合、HUD、正式关卡终拍、Windows 缩放和证据保全待用户拍板后继续。
+- **Git 状态口径**：验收 route 固定点为 `f8ffadc3`；下一提交严格使用 `[BLOCKED] 阶段2 Gate 证据待用户拍板`，不打 `[READY]`，提交后 tracked worktree 干净、主 checkout 保持只读。
