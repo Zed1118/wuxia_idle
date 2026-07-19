@@ -492,10 +492,12 @@ class CharacterSlot extends StatelessWidget {
     void Function(int, int) onComplete,
   ) {
     final placement = _popupPlacement(entry.anchor, isLeftTeam);
+    // 同带错层:top 定位向上、bottom 定位也向上(加 bottom),不侵占邻槽横向空间。
+    final shift = entry.stackShift;
     return Positioned(
-      top: placement.top,
+      top: placement.top == null ? null : placement.top! - shift,
       right: placement.right,
-      bottom: placement.bottom,
+      bottom: placement.bottom == null ? null : placement.bottom! + shift,
       left: placement.left,
       child: Align(
         alignment: placement.alignment,

@@ -649,6 +649,64 @@ void main() {
     expect(entries.map((entry) => entry.anchor).toSet(), hasLength(5));
   });
 
+  testWidgets('同槽同带飘字纵向错层递增防字形相交', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+
+    for (var tick = 1; tick <= 6; tick++) {
+      c.playAction(
+        BattleAction(
+          tick: tick,
+          actorId: 1,
+          targetId: 11,
+          attackResult: _hitResult(),
+          description: 'multi hit',
+        ),
+        state,
+      );
+    }
+
+    final shifts = c
+        .debugPopupsForSlot(_targetSlotKey)
+        .map((entry) => entry.stackShift)
+        .toList();
+    // 轮转 [upperRight, upperLeft, lowerRight, lowerLeft]:
+    // 同带(upper/lower)第 n 个既存飘字 → 新飘字上移 n×40。
+    expect(shifts, [0, 40, 0, 40, 80, 120]);
+  });
+
+  testWidgets('中央暴击不参与错层，后续散点计数不含中央', (tester) async {
+    final c = (await _pump(tester)).controller;
+    final state = c._noopState(tester);
+
+    c.playAction(
+      BattleAction(
+        tick: 1,
+        actorId: 1,
+        targetId: 11,
+        attackResult: _hitResult(crit: true),
+        description: 'critical first',
+      ),
+      state,
+    );
+    for (var tick = 2; tick <= 3; tick++) {
+      c.playAction(
+        BattleAction(
+          tick: tick,
+          actorId: 1,
+          targetId: 11,
+          attackResult: _hitResult(),
+          description: 'follow-up',
+        ),
+        state,
+      );
+    }
+
+    final entries = c.debugPopupsForSlot(_targetSlotKey);
+    expect(entries.first.anchor, DamagePopupAnchor.centerBurst);
+    expect(entries.map((entry) => entry.stackShift).toList(), [0, 0, 40]);
+  });
+
   testWidgets('同款同位暴击贴片合流为单组实例', (tester) async {
     final c = (await _pump(tester)).controller;
     final state = c._noopState(tester);

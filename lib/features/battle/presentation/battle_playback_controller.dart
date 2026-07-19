@@ -470,6 +470,7 @@ class BattlePlaybackController {
       data: data,
       anchor: anchor,
       popupDurationMs: _animConfig.effectivePopupMs(_currentPlaybackIntervalMs),
+      stackShift: _popupStackShift(key, anchor),
     );
     _rebuild(() {
       (_popups[key] ??= []).add(entry);
@@ -495,6 +496,37 @@ class BattlePlaybackController {
         .where((entry) => entry.anchor != DamagePopupAnchor.centerBurst)
         .length;
     return spread[spreadCount % spread.length];
+  }
+
+  // 同带错层步长/上限(布局像素,与 battle_field._popupPlacement 锚点表同类)。
+  // 40 = 数字字高 30 + 同带锚点自身 top 差 8 + 余量:保证错层后字形完全分离。
+  static const _popupStackStepPx = 40.0;
+  static const _popupStackMaxPx = 160.0;
+
+  /// 同带(upper/lower)纵向错层:锚点表 upperLeft/upperRight 水平仅差 44px,
+  /// 小于 4 位伤害数字渲染宽(~70px),同拍双发必字形相交——按同带既存飘字数
+  /// 逐层上移根治;centerBurst(中央暴击框)独占中央不参与。
+  double _popupStackShift(int slotKey, DamagePopupAnchor anchor) {
+    const upperBand = {
+      DamagePopupAnchor.upperLeft,
+      DamagePopupAnchor.upperRight,
+    };
+    const lowerBand = {
+      DamagePopupAnchor.lowerLeft,
+      DamagePopupAnchor.lowerRight,
+    };
+    final Set<DamagePopupAnchor> band;
+    if (upperBand.contains(anchor)) {
+      band = upperBand;
+    } else if (lowerBand.contains(anchor)) {
+      band = lowerBand;
+    } else {
+      return 0;
+    }
+    final existing = _popups[slotKey] ?? const <PopupEntry>[];
+    final sameBand = existing.where((e) => band.contains(e.anchor)).length;
+    final shift = sameBand * _popupStackStepPx;
+    return shift > _popupStackMaxPx ? _popupStackMaxPx : shift;
   }
 
   DamagePopupData _buildPopupData(

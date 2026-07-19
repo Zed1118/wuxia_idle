@@ -19,11 +19,15 @@ class PopupEntry {
   final DamagePopupAnchor anchor;
   // 飘字有效时长:spawn 时按当前播放速度 clamp(≤ 拍间隔),防快档跨拍重叠。
   final int popupDurationMs;
+  // 同带(upper/lower)纵向错层位移(px):同槽已有同带飘字时逐层上移,
+  // 防同拍多发伤害数字字形相交(快进态高频)。centerBurst 恒 0。
+  final double stackShift;
   const PopupEntry({
     required this.id,
     required this.data,
     required this.anchor,
     required this.popupDurationMs,
+    this.stackShift = 0,
   });
 }
 
