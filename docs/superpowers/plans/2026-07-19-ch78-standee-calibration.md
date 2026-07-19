@@ -32,11 +32,11 @@
 
 ### 目标 2（目标 1 `[READY]` 后）
 
-- [ ] 只修改 `!kReleaseMode` gate 内群战验收 route/seed，不改生产战斗逻辑。
-- [ ] 墨影队列全部轮换入场，动态帧/短视频观察结论与复现证据写入本计划；用户留置证据复制到主 checkout `build/visual_acceptance/`。
-- [ ] targeted + `flutter analyze`，记录命令与通过数。
-- [ ] §8.2 四证据、红线说明、残留风险齐全；生产 bug 只登记不修。
-- [ ] 工作区干净，tip commit 前缀为 `[READY]` 或 `[BLOCKED]`。
+- [x] 只修改 `!kReleaseMode` gate 内群战验收 route/seed，不改生产战斗逻辑。
+- [x] 已取得完整动态帧/短视频并判定 **异常**：首发三敌阵亡后，四名存活后备未递补至三个战位；用户留置证据已复制到主 checkout `build/visual_acceptance/ch78_mass_battle_rotation/`。
+- [x] targeted 39/39 + `flutter analyze` 0 issue，命令与通过数见下。
+- [x] §8.2 四证据、红线说明、残留风险齐全；生产 bug 仅登记，未越界修复。
+- [x] 工作区干净，tip commit 前缀为 `[BLOCKED]`。
 
 ### 目标 3（弹性尾，未开始）
 
@@ -48,9 +48,9 @@
 1. [完成] 预热并建立计划、盘点校准映射与可复用验收驱动。
 2. [完成] 目标 1：取得校准前双视口证据，测量并写入 10 敌 override。
 3. [完成] 目标 1：双视口复验、targeted、analyze、四证据与 `[READY]` 冻结。
-4. [待办] 目标 2：定位 debug-only 群战 seed，调整并验证全量轮换。
-5. [待办] 目标 2：targeted、analyze、四证据与 `[READY]` 冻结。
-6. [待办] 目标 3：若时间富余，完成 74 图逐张静态清单并冻结。
+4. [完成] 目标 2：固定 debug-only seed、构造耐打左队与低输出七敌，自动播放并捕获完整轮换窗口。
+5. [完成] 目标 2：确认生产表现层未递补，登记复现、targeted、analyze 与四证据，以 `[BLOCKED]` 冻结。
+6. [未开始] 目标 3：因目标 2 未达 `[READY]`，按序列纪律停止；74 图目检不算欠账。
 
 ## 目标 1 · 10 敌校准记录
 
@@ -110,10 +110,62 @@
 - 截图与 route log 按要求留在主 checkout 的 ignored `build/visual_acceptance/ch78_standee_calibration/`，不进入 git；若主 checkout 的 `build/` 被人工清理，需按表中 route 重采。
 - 10 图均为 1024×1536 RGBA，当前 identity override 是有意接入而非资产复制；未来若改名或替换画布，需同步重新测 alpha 包围盒。
 
+## 目标 2 · 群战墨影队列动态判定
+
+### 验收驱动调整
+
+- `battle_mass_battle_stage` 固定 `seed: 20260719` 并设 `autoStart: true`，避免人工点击时序污染。
+- 左队三人 `HP=20,000 / 内力=3,000 / 装备攻击=500`；右队七人 `HP=12,000 / attackPowerMultiplier=0.05`。左队足够耐打且输出留有观察窗口，右队七人能被逐个清完；所有字段均在正式红线内。
+- 该路由由 `main.dart:32` 的 `if (!kReleaseMode)` 短路进入，release 不可达；未改任何生产策略、公式或队伍配置。
+
+### 动态观察表
+
+| 证据 | 画面状态 | 判定 |
+|---|---|---|
+| `01_initial_3v7.png` | 节拍 10，标题 `战斗 3 v 7`；首发三敌可见，右侧四名墨影排队 | PASS：验收初态正确 |
+| `02_blocked_3v4.png` | 节拍 28，标题 `战斗 3 v 4`；画面中的三名首发敌均为 `0/12K` 灰态，四名存活后备无一进入战位 | **FAIL：递补未发生** |
+| `03_offscreen_3v2.png` | 标题已降为 `战斗 3 v 2`，画面仍只显示三名死亡首发；战斗继续结算不可见后备 | **FAIL：后备在场外参与/被结算** |
+| `04_result.png` | 标题 `战斗 3 v 0`，56 拍左胜 | PASS：七敌均被战斗层结算；不能证明表现层轮换 |
+| `rotation_slow.mp4` / `contact_slow.png` | 约 30 秒全程；标题按 7→6→5→4→3→2→1→0 递减 | **异常**：全量结算正常，但四名后备从未替换死亡首发立绘 |
+
+表中证据根目录 = 主 checkout `build/visual_acceptance/ch78_mass_battle_rotation/`；`route_slow.log` 含 `VISUAL_ROUTE_READY` 与 `VISUAL_CAPTURE: window_id=25480`。原始采样为 100 帧、0.3 秒间隔、Retina 实物 2560×1440（逻辑视口 1280×720）；留置四张关键帧、contact sheet、MP4 与 route log。
+
+### 异常复现与定位
+
+1. 启动 Debug app：`wuxia_idle --visual-route=battle_mass_battle_stage`。
+2. 无需点击，固定 seed 自动开战；观察标题由 `3 v 7` 降至 `3 v 4`。
+3. 此时三个可见敌均已死亡变灰，但四个存活后备没有进入战位；继续观察可见标题降至 `3 v 0` 并正常左胜。
+
+生产表现层 `BattleField` 固定遍历 `state.rightTeam[0..2]`（`battle_field.dart:69-75`），没有按存活者筛选或重排；墨影数又固定取 `state.rightTeam.length - 3`（`:110-122`），不会随已阵亡人数减少。动态证据与这两处接线一致。按本单边界，本次只记录、不修改生产层。
+
+## 目标 2 · §8.2 四证据
+
+### 生产接线证据
+
+运行入口为 `main.dart:32-38` 的 `!kReleaseMode` visual route gate，随后 `visual_route_host.dart:417-425` 以固定 seed / 自动开战调用 `BattleScenarioData.scenarioMassBattleStage`；该 fixture 进入真实 `ScenarioLauncher`、`BattleScreen` 和 `BattleField`。异常落点是生产 `BattleField` 对右队前三项的固定渲染，不是 gallery 假图或截图脚本误差。
+
+### Targeted 验证
+
+- `flutter test --no-pub test/features/debug/visual_route_test.dart test/features/battle/presentation/battle_field_repaint_test.dart` → **39/39 pass**。覆盖 visual route 构造以及群战 3v7 “六个完整人物 + 墨影队列”静态结构。
+- `flutter analyze` → **No issues found**（19.6s）。
+- `flutter build macos --debug` → exit 0，供动态验收使用。
+- `dart format lib/features/debug/presentation/battle_test_menu.dart lib/features/debug/presentation/visual_route_host.dart` → 2 files，0 additional changes。
+
+### 红线影响说明
+
+目标 2 仅改 debug visual route fixture 与启动参数：未改 `numbers.yaml`、`data/*.yaml`、schema/saveVersion、生产结算或伤害公式。fixture 的 `HP=20,000`、内力 `3,000`、装备攻击 `500` 均不超过玩家红线；敌 HP `12,000` 低于 Boss 现行红线。`attackPowerMultiplier=0.05` 只用于不可由 release 到达的验收队伍，不改变正式数值。
+
+### 残留风险 / 拍板点
+
+- **阻塞结论**：目标要求“墨影队列全部轮换入场”，实测生产表现层没有递补语义，无法在只动 debug seed/route 的边界内达成，目标 2 冻结为 `[BLOCKED]`。
+- **拍板点**：是否另开生产修复单，授权调整 `BattleField` 的可见存活者选择、战位索引/动效 key 与墨影剩余数；修复后应复用本固定 seed 重新跑 7→0 全程。
+- 当前 targeted 只守静态 3v7 初态，未表达“首发阵亡后递补”契约；这是后续生产修复应补的回归测试。
+- 用户证据位于 ignored `build/`，如被人工清理，需用上述固定 route 复采。
+
 ## 当前恢复点
 
-- 状态：目标 1 已完成，待本次 `[READY]` commit 后冻结；目标 2 尚未开始。
-- 最后完成：10 敌 identity override、透明立绘识别、脚底 fraction、光学 scale/shift 全部接入；20 张校准后真机图逐图 PASS 并留置主 checkout；targeted 289/289、analyze 0。
-- 下一步：提交目标 1 `[READY]`、确认工作区干净；随后按序开始目标 2，定位 `!kReleaseMode` 群战验收 seed 并使四名后备墨影全量轮换。
-- 已跑验证：`flutter pub get`（exit 0，lock 无漂移）；`dart run build_runner build --delete-conflicting-outputs`（exit 0，参数被当前 build_runner 忽略）；`dart format`；单文件 15/15；battle/route targeted 289/289；`flutter analyze` 0；macOS Debug build exit 0；20/20 route screenshot READY + CGWindowID。
-- 阻塞项：无。
+- 状态：目标 1 已由 `f103acd5 [READY]` 冻结；目标 2 动态判定异常并由本次 `[BLOCKED]` commit 冻结；目标 3 未开始且不算欠账。
+- 最后完成：debug-only 固定 seed / 耐打 seed / 自动开战接线；100 帧全程动态采样确认七敌均结算，但四名后备不递补；关键证据已复制到主 checkout。
+- 下一步：停在目标 2，等待是否授权另开生产表现层修复单。未获拍板前不开始目标 3。
+- 已跑验证：目标 1 的 15/15、289/289、analyze 0 与 20/20 双视口仍见上；目标 2 targeted 39/39、`flutter analyze` 0、macOS Debug build exit 0、动态 100 帧/30 秒并完成逐段判定。
+- 阻塞项：`BattleField` 固定渲染右队前三项且墨影数固定为总长度减三，导致存活后备不进入战位；需生产层修改授权。
