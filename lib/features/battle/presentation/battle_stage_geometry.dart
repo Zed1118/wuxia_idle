@@ -28,12 +28,12 @@ Offset battleStageAnchor(
           ],
         }
       : switch (normalizedSize) {
-          1 => const [Offset(0.27, 0.53)],
-          2 => const [Offset(0.19, 0.58), Offset(0.36, 0.38)],
+          1 => const [Offset(0.36, 0.55)],
+          2 => const [Offset(0.36, 0.58), Offset(0.14, 0.34)],
           _ => const [
-            Offset(0.36, 0.50),
-            Offset(0.21, 0.62),
-            Offset(0.06, 0.36),
+            Offset(0.38, 0.51),
+            Offset(0.20, 0.64),
+            Offset(0.07, 0.33),
           ],
         };
   final anchor = left[normalizedSlot];
@@ -42,12 +42,14 @@ Offset battleStageAnchor(
 
 /// 后位略缩小，形成前后景深度；1v1/2v2 时两人都保持主体尺寸。
 double battleStageScale(int slotIndex, int teamSize, {bool isBoss = false}) {
-  final depthScale = teamSize < 3
-      ? 1.0
-      : switch (slotIndex) {
-          0 => 1.18,
-          1 => 0.98,
-          _ => 0.86,
-        };
+  final depthScale = switch (teamSize.clamp(1, 3)) {
+    1 => 1.28,
+    2 => slotIndex == 0 ? 1.18 : 1.04,
+    _ => switch (slotIndex) {
+      0 => 1.16,
+      1 => 0.96,
+      _ => 0.84,
+    },
+  };
   return depthScale * (isBoss ? BattleLayoutTokens.bossStageScale : 1);
 }

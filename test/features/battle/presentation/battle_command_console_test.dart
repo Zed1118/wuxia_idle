@@ -382,7 +382,9 @@ void main() {
       }
       expect(
         tester.getSize(rotation).height,
-        lessThan(BattleLayoutTokens.commandDeskHeight),
+        BattleLayoutMetrics.resolve(
+          tester.view.physicalSize / tester.view.devicePixelRatio,
+        ).commandDeskHeight,
       );
       expect(
         find.descendant(of: rotation, matching: find.byType(ButtonStyleButton)),
@@ -693,6 +695,32 @@ void main() {
   });
 
   group('T1 战斗指令台', () {
+    testWidgets('案台三段在双视口保持比例且七签无横向滚动', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      for (final size in const [Size(1280, 720), Size(1440, 900)]) {
+        await _pumpWith(tester, left, right, size: size);
+
+        final focus = tester.getSize(
+          find.byKey(const ValueKey('battle_desk_focus_region')),
+        );
+        final skills = tester.getSize(
+          find.byKey(const ValueKey('battle_desk_skills_region')),
+        );
+        final pouch = tester.getSize(
+          find.byKey(const ValueKey('battle_desk_pouch_region')),
+        );
+        expect(focus.width / size.width, inInclusiveRange(0.18, 0.20));
+        expect(skills.width / size.width, inInclusiveRange(0.58, 0.62));
+        expect(pouch.width / size.width, inInclusiveRange(0.20, 0.22));
+        expect(
+          find.byKey(const ValueKey('battle_skill_slot_6')),
+          findsOneWidget,
+        );
+        expect(find.byType(SingleChildScrollView), findsNothing);
+        expect(tester.takeException(), isNull, reason: '$size 不应溢出');
+      }
+    });
+
     testWidgets('1280宽案台固定展示7个技能位与3个战备行囊位', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(

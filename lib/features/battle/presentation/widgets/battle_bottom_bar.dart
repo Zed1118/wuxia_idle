@@ -22,12 +22,13 @@ class AutoRotationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final metrics = BattleLayoutMetrics.resolve(MediaQuery.sizeOf(context));
     final enemyCharging = state.rightTeam.any(
       (character) => character.isAlive && character.chargingSkill != null,
     );
     return Container(
       key: const ValueKey('battle_auto_rotation_desk'),
-      height: BattleLayoutTokens.autoRotationDeskHeight,
+      height: metrics.autoRotationDeskHeight,
       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
       decoration: const BoxDecoration(
         color: Color(0xFF211D18),
@@ -366,116 +367,133 @@ class BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final enemyCharging = state.rightTeam.any(
-      (e) => e.isAlive && e.chargingSkill != null,
-    );
-    final hasFocus =
-        focusSlotIndex >= 0 && focusSlotIndex < state.leftTeam.length;
-    final focus = hasFocus ? state.leftTeam[focusSlotIndex] : null;
-    final domainPending = focus == null
-        ? null
-        : state.pendingUltimates[focus.characterId];
-    final localPendingForFocus =
-        focus != null && pendingCharacterId == focus.characterId
-        ? pendingSkillId
-        : null;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final mediaSize = MediaQuery.sizeOf(context);
+        final metrics = BattleLayoutMetrics.resolve(
+          Size(constraints.maxWidth, mediaSize.height),
+        );
+        final enemyCharging = state.rightTeam.any(
+          (e) => e.isAlive && e.chargingSkill != null,
+        );
+        final hasFocus =
+            focusSlotIndex >= 0 && focusSlotIndex < state.leftTeam.length;
+        final focus = hasFocus ? state.leftTeam[focusSlotIndex] : null;
+        final domainPending = focus == null
+            ? null
+            : state.pendingUltimates[focus.characterId];
+        final localPendingForFocus =
+            focus != null && pendingCharacterId == focus.characterId
+            ? pendingSkillId
+            : null;
 
-    final skills = <SkillDef>[
-      if (focus != null)
-        for (final s in focus.availableSkills)
-          if (s.type != SkillType.normalAttack) s,
-    ]..sort((a, b) => _groupRank(a).compareTo(_groupRank(b)));
+        final skills = <SkillDef>[
+          if (focus != null)
+            for (final s in focus.availableSkills)
+              if (s.type != SkillType.normalAttack) s,
+        ]..sort((a, b) => _groupRank(a).compareTo(_groupRank(b)));
 
-    return Container(
-      key: const ValueKey('battle_command_desk'),
-      height: BattleLayoutTokens.commandDeskHeight,
-      padding: const EdgeInsets.symmetric(
-        horizontal: BattleLayoutTokens.commandDeskHorizontalPadding,
-        vertical: BattleLayoutTokens.commandDeskVerticalPadding,
-      ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF211D18),
-        image: DecorationImage(
-          image: AssetImage(WuxiaUi.paperBg),
-          fit: BoxFit.cover,
-          opacity: 0.12,
-          colorFilter: ColorFilter.mode(Color(0xFF33291F), BlendMode.multiply),
-        ),
-        border: Border(top: BorderSide(color: Color(0xFF756047), width: 1.2)),
-        boxShadow: [
-          BoxShadow(color: Colors.black54, blurRadius: 18, spreadRadius: 3),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          FocusSelector(
-            team: state.leftTeam,
-            focusSlotIndex: focusSlotIndex,
-            onSelectFocus: onSelectFocus,
+        return Container(
+          key: const ValueKey('battle_command_desk'),
+          height: metrics.commandDeskHeight,
+          padding: const EdgeInsets.symmetric(
+            horizontal: BattleLayoutTokens.commandDeskHorizontalPadding,
+            vertical: BattleLayoutTokens.commandDeskVerticalPadding,
           ),
-          const SizedBox(width: BattleLayoutTokens.sectionGap),
-          Container(
-            width: 1,
-            height: BattleLayoutTokens.sectionDividerHeight,
-            color: const Color(0xFF6D5940),
-          ),
-          const SizedBox(width: BattleLayoutTokens.sectionGap),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (var index = 0; index < 7; index++) ...[
-                  Expanded(
-                    key: ValueKey('battle_skill_slot_$index'),
-                    child: index < skills.length && focus != null
-                        ? Builder(
-                            builder: (context) {
-                              final skill = skills[index];
-                              final localPendingThis =
-                                  localPendingForFocus == skill.id;
-                              final domainPendingThis =
-                                  domainPending?.id == skill.id;
-                              final button = SkillCommandButton(
-                                character: focus,
-                                skill: skill,
-                                interventionWindowOpen:
-                                    state.actorQueue.isEmpty &&
-                                    !state.isFinished,
-                                isPending:
-                                    localPendingThis || domainPendingThis,
-                                pendingTapEnabled: localPendingThis,
-                                queuedAnother:
-                                    domainPending != null &&
-                                    domainPending.id != skill.id,
-                                highlight: enemyCharging && skill.canInterrupt,
-                                allowPlayerIntervention:
-                                    allowPlayerIntervention,
-                                beat: beat,
-                                onTap: () =>
-                                    onSkillTap(focus.characterId, skill),
-                                onShowInfo: () => onShowSkillInfo(skill),
-                              );
-                              return localPendingThis
-                                  ? CompositedTransformTarget(
-                                      link: skillTargetLink,
-                                      child: button,
-                                    )
-                                  : button;
-                            },
-                          )
-                        : EmptySkillSlot(index: index),
-                  ),
-                  if (index < 6)
-                    const SizedBox(width: BattleLayoutTokens.skillSlotGap),
-                ],
-              ],
+          decoration: const BoxDecoration(
+            color: Color(0xFF211D18),
+            image: DecorationImage(
+              image: AssetImage(WuxiaUi.paperBg),
+              fit: BoxFit.cover,
+              opacity: 0.12,
+              colorFilter: ColorFilter.mode(
+                Color(0xFF33291F),
+                BlendMode.multiply,
+              ),
             ),
+            border: Border(
+              top: BorderSide(color: Color(0xFF756047), width: 1.2),
+            ),
+            boxShadow: [
+              BoxShadow(color: Colors.black54, blurRadius: 18, spreadRadius: 3),
+            ],
           ),
-          const SizedBox(width: BattleLayoutTokens.sectionGap),
-          const BattlePouchRail(),
-        ],
-      ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              FocusSelector(
+                team: state.leftTeam,
+                focusSlotIndex: focusSlotIndex,
+                onSelectFocus: onSelectFocus,
+                width: metrics.focusRailWidth,
+              ),
+              const SizedBox(width: BattleLayoutTokens.sectionGap),
+              Container(
+                width: 1,
+                height: BattleLayoutTokens.sectionDividerHeight,
+                color: const Color(0xFF6D5940),
+              ),
+              const SizedBox(width: BattleLayoutTokens.sectionGap),
+              SizedBox(
+                key: const ValueKey('battle_desk_skills_region'),
+                width: metrics.skillRailWidth,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var index = 0; index < 7; index++) ...[
+                      Expanded(
+                        key: ValueKey('battle_skill_slot_$index'),
+                        child: index < skills.length && focus != null
+                            ? Builder(
+                                builder: (context) {
+                                  final skill = skills[index];
+                                  final localPendingThis =
+                                      localPendingForFocus == skill.id;
+                                  final domainPendingThis =
+                                      domainPending?.id == skill.id;
+                                  final button = SkillCommandButton(
+                                    character: focus,
+                                    skill: skill,
+                                    interventionWindowOpen:
+                                        state.actorQueue.isEmpty &&
+                                        !state.isFinished,
+                                    isPending:
+                                        localPendingThis || domainPendingThis,
+                                    pendingTapEnabled: localPendingThis,
+                                    queuedAnother:
+                                        domainPending != null &&
+                                        domainPending.id != skill.id,
+                                    highlight:
+                                        enemyCharging && skill.canInterrupt,
+                                    allowPlayerIntervention:
+                                        allowPlayerIntervention,
+                                    beat: beat,
+                                    onTap: () =>
+                                        onSkillTap(focus.characterId, skill),
+                                    onShowInfo: () => onShowSkillInfo(skill),
+                                  );
+                                  return localPendingThis
+                                      ? CompositedTransformTarget(
+                                          link: skillTargetLink,
+                                          child: button,
+                                        )
+                                      : button;
+                                },
+                              )
+                            : EmptySkillSlot(index: index),
+                      ),
+                      if (index < 6)
+                        const SizedBox(width: BattleLayoutTokens.skillSlotGap),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: BattleLayoutTokens.sectionGap),
+              BattlePouchRail(width: metrics.pouchRailWidth),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -485,18 +503,21 @@ class FocusSelector extends StatelessWidget {
   final List<BattleCharacter> team;
   final int focusSlotIndex;
   final void Function(int slotIndex) onSelectFocus;
+  final double width;
 
   const FocusSelector({
     super.key,
     required this.team,
     required this.focusSlotIndex,
     required this.onSelectFocus,
+    required this.width,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: BattleLayoutTokens.actorRailWidth,
+      key: const ValueKey('battle_desk_focus_region'),
+      width: width,
       padding: const EdgeInsets.fromLTRB(12, 9, 12, 9),
       decoration: BoxDecoration(
         color: const Color(0xB3131210),
@@ -1034,14 +1055,17 @@ class EmptySkillSlot extends StatelessWidget {
 }
 
 class BattlePouchRail extends StatelessWidget {
-  const BattlePouchRail({super.key, this.compact = false});
+  const BattlePouchRail({super.key, this.compact = false, this.width});
 
   final bool compact;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
+    final metrics = BattleLayoutMetrics.resolve(MediaQuery.sizeOf(context));
     return Container(
-      width: BattleLayoutTokens.pouchWidth,
+      key: const ValueKey('battle_desk_pouch_region'),
+      width: width ?? metrics.pouchRailWidth,
       padding: compact
           ? const EdgeInsets.fromLTRB(14, 6, 14, 6)
           : const EdgeInsets.fromLTRB(14, 10, 14, 10),

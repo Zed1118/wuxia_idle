@@ -39,11 +39,12 @@ class Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final metrics = BattleLayoutMetrics.resolve(MediaQuery.sizeOf(context));
     final aliveLeft = state.leftTeam.where((c) => c.isAlive).length;
     final aliveRight = state.rightTeam.where((c) => c.isAlive).length;
 
     return Container(
-      height: BattleLayoutTokens.headerHeight,
+      height: metrics.headerHeight,
       padding: const EdgeInsets.symmetric(horizontal: 28),
       decoration: const BoxDecoration(
         color: Color(0xF2191816),
