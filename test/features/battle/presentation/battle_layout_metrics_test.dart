@@ -65,5 +65,41 @@ void main() {
         },
       );
     }
+
+    test('Windows 1080p 三档显示缩放保持三段闭合与案台横向可用', () {
+      for (final scale in const [1.0, 1.25, 1.5]) {
+        final viewport = const Size(1920, 1080) / scale;
+        final metrics = BattleLayoutMetrics.resolve(viewport);
+
+        expect(
+          metrics.headerHeight,
+          inInclusiveRange(
+            BattleLayoutTokens.headerMinHeight,
+            BattleLayoutTokens.headerMaxHeight,
+          ),
+        );
+        expect(
+          metrics.commandDeskHeight,
+          inInclusiveRange(
+            BattleLayoutTokens.commandDeskMinHeight,
+            BattleLayoutTokens.commandDeskMaxHeight,
+          ),
+        );
+        expect(metrics.battlefieldHeight, greaterThan(0));
+        expect(
+          metrics.headerHeight +
+              metrics.battlefieldHeight +
+              metrics.commandDeskHeight,
+          closeTo(viewport.height, 0.01),
+        );
+        expect(metrics.skillRailWidth, greaterThan(0));
+        expect(
+          metrics.focusRailWidth +
+              metrics.skillRailWidth +
+              metrics.pouchRailWidth,
+          lessThan(viewport.width),
+        );
+      }
+    });
   });
 }

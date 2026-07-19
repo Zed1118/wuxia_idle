@@ -118,4 +118,74 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     }
   });
+
+  testWidgets('Windows 1080p 在 100% 125% 150% 显示缩放下完整渲染', (tester) async {
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    for (final scale in const [1.0, 1.25, 1.5]) {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = scale;
+      final logicalSize = tester.view.physicalSize / scale;
+      for (final allowPlayerIntervention in const [false, true]) {
+        final (left, right) = BattleDemo.mockTeams();
+
+        await tester.pumpWidget(
+          ProviderScope(
+            key: UniqueKey(),
+            overrides: [
+              battleProvider.overrideWith(
+                () => _StaticBattleNotifier(
+                  BattleState.initial(leftTeam: left, rightTeam: right),
+                ),
+              ),
+            ],
+            child: MaterialApp(
+              home: BattleScreen(
+                animConfig: _testAnim,
+                playback: BattleScreenPlaybackConfig(
+                  startPaused: true,
+                  allowPlayerIntervention: allowPlayerIntervention,
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        expect(
+          MediaQuery.sizeOf(tester.element(find.byType(BattleScreen))),
+          logicalSize,
+          reason: 'Windows ${scale * 100}% 应按逻辑像素布局',
+        );
+        expect(find.byType(Header), findsOneWidget);
+        expect(find.byType(BattlePlaybackField), findsOneWidget);
+        expect(
+          find.byType(allowPlayerIntervention ? BottomBar : AutoCommandDesk),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('battle_command_desk')),
+          findsOneWidget,
+        );
+        for (var i = 0; i < 7; i++) {
+          expect(find.byKey(ValueKey('battle_skill_slot_$i')), findsOneWidget);
+        }
+        for (var i = 0; i < 3; i++) {
+          expect(find.byKey(ValueKey('battle_pouch_slot_$i')), findsOneWidget);
+        }
+        expect(
+          tester.takeException(),
+          isNull,
+          reason:
+              'Windows ${scale * 100}%（${logicalSize.width}×${logicalSize.height}）'
+              '${allowPlayerIntervention ? '点选' : '自动'}模式不应 overflow/抛异常',
+        );
+
+        await tester.pumpWidget(const SizedBox());
+      }
+    }
+  });
 }
