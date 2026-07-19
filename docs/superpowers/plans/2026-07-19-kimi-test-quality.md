@@ -137,23 +137,71 @@ test/features/encounter/ test/features/mainline/`（424 全绿）；覆盖这三
 
 ## 当前恢复点
 
-- **状态**：切片 1-5 完成（计划/复现/根治/coverage/注释），进入切片 6（两连绿 +
-  交付收尾）。
-- **最后完成**：目标 2 三文件行为测试（commit `44a366df`）；targeted 424/424 绿；
-  analyze 0。
-- **下一步**：全量 C（第二连绿，冷态在跑）→ 两个点名文件单跑绿 → 四证据收尾 +
-  [READY] 冻结。
-- **已跑验证**：目录并发 8+6 轮（RED 取证）；风暴重建 2 轮（RED）；全量 A（RED，
-  4440/3）；修后冷态 targeted 252/252 绿；全量 B（修后·冷态·--coverage）
-  **4457 pass / 0 fail / EXIT=0**；目标 2 三新文件 targeted 19/19 + 四目录 424/424；
-  `flutter analyze --no-pub` 0 issue。
+- **状态**：全部切片完成，四证据齐，待 [READY] 冻结。
+- **最后完成**：全量 C **4474 pass / 0 fail / EXIT=0**（冷态）——与全量 B 构成
+  两连绿；两个点名文件单跑绿（5/5 + 4/4）；format/analyze 0；树净。
+- **下一步**：无（tip 打 [READY] 后等主会话合并 Gate 评审）。
+- **已跑验证**（全部 worktree 内实测，命令可独立复跑）：
+  - RED 取证：目录并发 8+6 轮 + 风暴重建 2 轮（dylib 竞逐 [E] 复现）；
+    全量 A（修前·冷态）4440 pass / 3 fail（①dylib 竞逐 ②目标 3 守卫碰撞
+    ③avr 偶发，详「发现项」）。
+  - 修后冷态 targeted：11 修文件所在目录 + 先前失败套件 252/252 绿。
+  - **全量两连绿**：B（--coverage·冷态）`flutter test --coverage --no-pub`
+    **4457 pass / 0 fail / EXIT=0**；C（冷态）`flutter test --no-pub`
+    **4474 pass / 0 fail / EXIT=0**。
+  - 点名文件单跑：`flutter test --no-pub test/features/equipment/presentation/
+    equipment_detail_screen_test.dart` **5/5 绿**；`test/data/
+    drop_table_reference_redline_test.dart` **4/4 绿**。
+  - 目标 2 targeted：三新文件 19/19 + 四目录 coverage 424/424 绿。
+  - `flutter analyze --no-pub` 0 issue；`dart format --set-exit-if-changed
+    lib test docs` 0 changed。
 - **阻塞项**：无。
+
+## §8.2 四证据
+
+1. **生产接线/根因证据**：
+   - flaky 根因一句话：`Isar.initializeIsarCore(download: true)` 把原生库
+     **非原子流写**进所有套件共享的包根 `libisar.dylib`，fresh checkout/CI 并发
+     首跑时后进进程 dlopen 到半截文件（slice extends beyond end of file）→
+     setUpAll [E] 偶红；包内 exists 检查不重下，截断文件还留毒后续跑次（项目史上
+     「fresh worktree dylib 截断需手动 cp」即同根因 workaround）。两个点名文件
+     本体无隔离缺陷（纯静态/假异步路径，风暴复跑全程绿），其历史偶红与该类同
+     环境（fresh worktree/全量并发首跑窗口），判定风暴窗口受害者/误归因（本项目
+     有 leaderboardSync 错诊断先例）。
+   - 修法（零生产改动）：测试唯一初始化入口 `test/support/isar_test_support.dart`
+     改用 `isar_community_flutter_libs` 随版本发布的本地二进制（`libraries:` 显式
+     路径），无下载/无共享可写文件/无网络依赖；11 个隐式依赖残留 dylib 的测试
+     文件补显式 `setUpAll(() => initializeTestIsarCore())`；`visual_route_test`
+     私有解析器上移共享去重。
+   - coverage 选择依据：全量 B lcov 实测升序排名（排除 debug/battle/.g/def），
+     取 3 个行为逻辑文件，改前→改后见「目标 2 · coverage 补强记录」表
+     （0.0%→93.1% / 30.4%→65.2% / 38.5%→100%）。
+2. **targeted 结果**：命令与通过数见「当前恢复点 · 已跑验证」——含全量两连绿
+   （4457/4474，EXIT 均 0）、点名文件单跑 5/5+4/4、目标 2 targeted 19/19+424/424。
+3. **红线影响**：**零触及**。未碰 `data/` 全目录、数值常量、结算公式、schema/
+   saveVersion、三系锁死、在线=离线、§5.1 反主流清单、`lib/shared/strings.dart`、
+   `lib/features/battle/**`（含测试）；lib/ 生产代码唯一改动 =
+   `expedition_combat_runner.dart` 注释英译中（零逻辑，目标 3 明文授权）。
+   新测试断言均读 numbers 真值（如 memberCap 不写死）。
+4. **残留风险**：
+   - 两个点名 flaky 修后形态是「根因类根治 + 本体无缺陷取证」，非「本体重现后
+     修复」——其单次历史失败（detail 锁定用例无错误文本 / drop_table 全量超时）
+     未能在本机直接复现，推断依据已写明；若主会话全量再见二者单独红，需带错误
+     文本重新立案。
+   - `apply_victory_resolution_test` 偶发 2 条 equipmentObtained（全量 A 一次，
+     循环 16 轮未复现，双写机制未明）——已在断言加诊断 reason（命中事件全量
+     打印），B/C 两连绿中未再现，留观察。
+   - `isar_community` × `isar_community_flutter_libs` 版本须同升（lock 同 3.3.2），
+     bundled 解析遇版本不符会响亮报错（非静默 flaky）。
+   - 招降 hook 剩余未覆盖分支（32/92）：ref!=null && flow==null 直走真 dialog 的
+     集成路径（已被 handler 测间接覆盖主体）、isar-null 早返；择期可补。
+   - 未做 UI 视口 smoke（无 UI 改动）;未跑 Windows 实机（非本单范围）。
 
 ## 发现项（疑似生产 bug，只记录不修）
 
 1. **apply_victory_resolution 胜利全量偶见 2 条 equipmentObtained**（全量 A 一次，
    单文件×10 + 目录×6 循环未复现）：静态排查唯一写点 `stage_entry_flow.dart:910`
    （每掉落一条一次），双写机制未明；已在断言加诊断 reason，若全量 B/C 再现可凭
-   事件内容定位。非本单点名范围，暂列观察。
+   事件内容定位（B/C 未再现）。非本单点名范围，暂列观察。
 2. `isar_community` 与 `isar_community_flutter_libs` 版本须同步升级（lock 现同
    3.3.2）：bundled 解析遇版本不符会**响亮报错**（非静默 flaky），升级时两包同升即可。
