@@ -10,8 +10,12 @@ import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dar
 import 'package:wuxia_idle/features/activity/domain/activity_occupancy.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 
+import '../../support/isar_test_support.dart';
+
 void main() {
   late Directory tempDir;
+  setUpAll(() => initializeTestIsarCore());
+
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_occupancy_');
     await IsarSetup.init(directory: tempDir, inspector: false);

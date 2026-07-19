@@ -48,9 +48,16 @@ void main() {
     final source = File(
       'lib/features/expedition/application/expedition_combat_runner.dart',
     ).readAsStringSync();
-    expect(source, isNot(contains(RegExp(r'[\u4e00-\u9fff]'))));
-    expect(source, isNot(contains(RegExp(r'(?<![A-Za-z_])\d+(?:\.\d+)?'))));
-    expect(source, isNot(contains('EnemyDef(')));
+    // 2026-07-19 注释回中文后口径对齐 §5.6:拦的是代码里的中文文案/数值
+    // 常量,中文「注释」是项目惯例(接口文件 expedition_combat.dart 同)。
+    // 先剥行注释再扫,守卫语义不变。
+    final code = source
+        .split('\n')
+        .map((line) => line.replaceFirst(RegExp(r'//.*$'), ''))
+        .join('\n');
+    expect(code, isNot(contains(RegExp(r'[\u4e00-\u9fff]'))));
+    expect(code, isNot(contains(RegExp(r'(?<![A-Za-z_])\d+(?:\.\d+)?'))));
+    expect(code, isNot(contains('EnemyDef(')));
     expect(source, contains('expeditionConfig'));
   });
 

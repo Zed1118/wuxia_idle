@@ -6,8 +6,12 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 
+import '../support/isar_test_support.dart';
+
 void main() {
   late Directory tempDir;
+  setUpAll(() => initializeTestIsarCore());
+
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_journey_migration_');
     await IsarSetup.init(directory: tempDir, inspector: false);

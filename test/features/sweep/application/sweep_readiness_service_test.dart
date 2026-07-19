@@ -6,6 +6,8 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/sweep/application/sweep_readiness_service.dart';
 import 'package:wuxia_idle/data/defs/sweep_readiness.dart';
 
+import '../../../support/isar_test_support.dart';
+
 void main() {
   late Directory tempDir;
 
@@ -15,6 +17,8 @@ void main() {
     recoverMinutesPerPoint: 60,
     mainlineStageCost: 1,
   );
+
+  setUpAll(() => initializeTestIsarCore());
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_sweep_ready_');

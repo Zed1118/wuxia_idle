@@ -12,6 +12,8 @@ import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_node.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 
+import '../../support/isar_test_support.dart';
+
 /// 确定性 fake：可控哪个节点战败、成员满值上限。隔离 Isar/真实战斗/敌队构建，
 /// 专测结算状态机 6 不变式。
 class _FakeCombat implements ExpeditionCombat {
@@ -57,6 +59,8 @@ ExpeditionConfig _config({int baseExp = 170}) => ExpeditionConfig(
 void main() {
   late Directory tempDir;
   final departedAt = DateTime(2026, 7, 16, 10);
+
+  setUpAll(() => initializeTestIsarCore());
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_expedition_settle_');

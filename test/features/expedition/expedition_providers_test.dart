@@ -10,6 +10,8 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 
+import '../../support/isar_test_support.dart';
+
 Character _char({
   required String name,
   bool isFounder = false,
@@ -29,6 +31,8 @@ Character _char({
 
 void main() {
   late Directory tempDir;
+
+  setUpAll(() => initializeTestIsarCore());
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp(

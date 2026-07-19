@@ -7,15 +7,13 @@ import '../domain/expedition_node.dart';
 import 'expedition_battle_runner.dart';
 import 'expedition_combat.dart';
 
-/// Production [ExpeditionCombat] implementation.
+/// [ExpeditionCombat] 的生产实装。
 ///
-/// The player baseline reuses the mainline setup path and current expedition
-/// vitals are injected for each node. Enemy teams and depth scaling come only
-/// from the loaded expedition configuration. Combat resolution remains owned
-/// by the expedition settlement boundary.
+/// 玩家基线复用主线出战装配路径，逐节点注入当前远征生命/真气；敌方队伍
+/// 与深度缩放只来自已加载的远行配置；战斗结算仍归远征结算边界所有。
 ///
-/// [memberCaps] must be called before [fight] so the cached baseline contains
-/// every dispatched member before later fights use the surviving subset.
+/// 必须先调 [memberCaps] 再调 [fight]：缓存基线须先收录全部出战成员，
+/// 后续战斗才按存活子集取用。
 class ExpeditionCombatRunner implements ExpeditionCombat {
   ExpeditionCombatRunner(this._isar);
 

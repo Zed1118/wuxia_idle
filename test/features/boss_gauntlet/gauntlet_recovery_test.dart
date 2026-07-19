@@ -12,6 +12,8 @@ import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.d
 import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 
+import '../../support/isar_test_support.dart';
+
 /// C2.3b 崩溃恢复关次边界（§5.6/§10）。恢复本质 = 会话持久 + 驱动原子（已由 C2.3a
 /// 保证），本切片补「配置损坏」边界：第一关前不可恢复 → 退帖关会话；已开战 → 认输
 /// 关闭（信号交 C2.5 结算·不复制补给）。Isar-only 轻量环境（不载 GameRepository）。
@@ -62,6 +64,8 @@ void main() {
     ],
     supplyCap: 3,
   );
+
+  setUpAll(() => initializeTestIsarCore());
 
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_gauntlet_recovery_');

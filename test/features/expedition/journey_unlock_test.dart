@@ -9,6 +9,8 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/expedition/application/journey_unlock.dart';
 
+import '../../support/isar_test_support.dart';
+
 /// 里程碑批切片3:任一角色首达 Lv100(三流·熟练=绝对层10)永久解锁「江湖远行」
 /// (companion §L53/§Q3;发布上限 10→17 后仍以 Lv100 为解锁线,不随 cap 走)。
 
@@ -87,6 +89,8 @@ void main() {
 
   group('unlockJianghuJourneyOnOpen（Isar 落库核心·同 settle-on-open 体例）', () {
     late Directory tempDir;
+
+    setUpAll(() => initializeTestIsarCore());
 
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp('wuxia_journey_unlock_');
