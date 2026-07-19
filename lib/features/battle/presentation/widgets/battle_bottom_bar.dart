@@ -270,7 +270,6 @@ class _AutoSkillState extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF322C24),
           border: Border.all(color: accent.withValues(alpha: 0.72)),
-          borderRadius: BorderRadius.circular(2),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -535,61 +534,131 @@ class FocusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = WuxiaColors.schoolColor(character.school);
     final dim = !character.isAlive;
-    return InkWell(
+    final nameplate = InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(2),
       child: Container(
+        key: ValueKey(
+          'battle.focusNameplate.${selected ? 'expanded' : 'compact'}.${character.characterId}',
+        ),
         height: BattleLayoutTokens.actorChipHeight,
+        padding: const EdgeInsets.symmetric(horizontal: 9),
         decoration: BoxDecoration(
           color: selected
               ? WuxiaUi.paper.withValues(alpha: 0.92)
               : Colors.black.withValues(alpha: 0.16),
-          border: Border.all(
-            color: selected ? const Color(0xFFC3A46A) : const Color(0xFF4C4439),
-            width: selected ? 1.5 : 1,
+          image: selected
+              ? const DecorationImage(
+                  image: AssetImage(WuxiaUi.paperBg),
+                  fit: BoxFit.cover,
+                  opacity: 0.09,
+                )
+              : null,
+          border: Border(
+            left: BorderSide(
+              color: selected ? WuxiaUi.jiang : const Color(0xFF4C4439),
+              width: selected ? 3 : 1,
+            ),
+            top: BorderSide(
+              color: selected
+                  ? const Color(0xFFC3A46A)
+                  : const Color(0xFF4C4439),
+            ),
+            right: BorderSide(
+              color: selected
+                  ? const Color(0xFFC3A46A)
+                  : const Color(0xFF4C4439),
+            ),
+            bottom: BorderSide(
+              color: selected
+                  ? const Color(0xFFC3A46A)
+                  : const Color(0xFF4C4439),
+            ),
           ),
-          borderRadius: BorderRadius.circular(2),
         ),
-        child: Center(
-          child: Row(
-            children: [
-              const SizedBox(width: 9),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: dim
-                      ? const Color(0xFF8F8574)
-                      : (selected ? WuxiaUi.jiang : color),
-                  shape: BoxShape.circle,
-                ),
+        child: Row(
+          children: [
+            Container(
+              width: selected ? 7 : 6,
+              height: selected ? 7 : 6,
+              decoration: BoxDecoration(
+                color: dim
+                    ? const Color(0xFF8F8574)
+                    : (selected ? WuxiaUi.jiang : color),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(width: 7),
-              Expanded(
-                child: Text(
-                  character.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: selected ? FontWeight.bold : FontWeight.w500,
-                    color: dim
-                        ? const Color(0xFF8F8574)
-                        : (selected ? WuxiaUi.ink : const Color(0xFFD4C5A7)),
-                  ),
-                ),
-              ),
-              if (selected)
-                Text(
-                  '${character.currentQi}/${character.maxQi}',
-                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 9),
-                ),
-              const SizedBox(width: 8),
-            ],
-          ),
+            ),
+            const SizedBox(width: 7),
+            Expanded(
+              child: selected
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          character.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            color: WuxiaUi.ink,
+                            height: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                EnumL10n.school(character.school),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Color(0xFF796B57),
+                                  fontSize: 8,
+                                  height: 1,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              '${character.currentQi}/${character.maxQi}',
+                              style: const TextStyle(
+                                color: WuxiaUi.muted,
+                                fontSize: 8,
+                                height: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  : Text(
+                      character.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
+                        color: dim
+                            ? const Color(0xFF8F8574)
+                            : const Color(0xFFD4C5A7),
+                      ),
+                    ),
+            ),
+          ],
         ),
       ),
     );
+    return dim
+        ? Opacity(
+            key: ValueKey(
+              'battle.focusNameplate.faded.${character.characterId}',
+            ),
+            opacity: 0.48,
+            child: nameplate,
+          )
+        : nameplate;
   }
 }
 
@@ -937,28 +1006,42 @@ class EmptySkillSlot extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label: UiStrings.battleEmptySkillSlot,
-      child: Container(
+      child: SizedBox(
         key: ValueKey('battle_skill_empty_$index'),
         height: BattleLayoutTokens.skillSlotHeight,
-        decoration: BoxDecoration(
-          color: WuxiaUi.paper.withValues(alpha: 0.42),
-          image: const DecorationImage(
-            image: AssetImage(WuxiaUi.paperBg),
-            fit: BoxFit.cover,
-            opacity: 0.10,
+        child: DecoratedBox(
+          key: ValueKey('battle.emptySkillSlot.blankPaper.$index'),
+          decoration: BoxDecoration(
+            color: WuxiaUi.paper.withValues(alpha: 0.38),
+            image: const DecorationImage(
+              image: AssetImage(WuxiaUi.paperBg),
+              fit: BoxFit.cover,
+              opacity: 0.08,
+            ),
+            border: Border.all(color: const Color(0x667A6A55)),
+            borderRadius: BorderRadius.circular(2),
           ),
-          border: Border.all(color: const Color(0xFF8A7251)),
-          borderRadius: BorderRadius.circular(2),
-        ),
-        child: Center(
-          child: Text(
-            UiStrings.battleEmptySkillSlot.characters.join('\n'),
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xB36A5E4C),
-              fontSize: 11,
-              height: 1.15,
-              letterSpacing: 1,
+          child: Center(
+            child: Transform.rotate(
+              angle: -0.08,
+              child: Container(
+                key: ValueKey('battle.emptySkillSlot.emptySeal.$index'),
+                width: 22,
+                height: 22,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: const Color(0x0F6E6252),
+                  border: Border.all(color: const Color(0x596E6252)),
+                ),
+                child: Text(
+                  UiStrings.battleEmptySkillSlot.characters.first,
+                  style: const TextStyle(
+                    color: Color(0x756A5E4C),
+                    fontSize: 9,
+                    height: 1,
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -1012,38 +1095,45 @@ class BattlePouchRail extends StatelessWidget {
                     key: ValueKey('battle_pouch_slot_$i'),
                     width: compact ? 34 : BattleLayoutTokens.pouchSlotSize,
                     height: compact ? 34 : BattleLayoutTokens.pouchSlotSize,
+                    padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3A3229),
-                      image: const DecorationImage(
-                        image: AssetImage(WuxiaUi.paperBg),
-                        fit: BoxFit.cover,
-                        opacity: 0.10,
-                      ),
-                      border: Border.all(color: const Color(0xFF756047)),
-                      borderRadius: BorderRadius.circular(2),
+                      color: const Color(0xFF32261C),
+                      border: Border.all(color: const Color(0xFF8B6B43)),
                     ),
-                    child: i < 2
-                        ? Opacity(
-                            opacity: 0.96,
-                            child: Image.asset(
-                              i == 0
-                                  ? 'assets/equipment/accessory_baowu_zi_jin_hu_lu.png'
-                                  : 'assets/equipment/accessory_xunchang_yao_nang.png',
-                              width: compact ? 30 : 46,
-                              height: compact ? 30 : 46,
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, _, _) => const Icon(
-                                Icons.inventory_2_outlined,
-                                size: 17,
-                                color: Color(0xFF8C7A5D),
+                    child: DecoratedBox(
+                      key: ValueKey('battle.pouch.brocadeSlot.$i'),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF4A3A31), Color(0xFF2D2722)],
+                        ),
+                        border: Border.all(color: const Color(0xFF654F3D)),
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                      child: i < 2
+                          ? Opacity(
+                              opacity: 0.90,
+                              child: Image.asset(
+                                i == 0
+                                    ? 'assets/equipment/accessory_baowu_zi_jin_hu_lu.png'
+                                    : 'assets/equipment/accessory_xunchang_yao_nang.png',
+                                width: compact ? 28 : 42,
+                                height: compact ? 28 : 42,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, _, _) => const Icon(
+                                  Icons.inventory_2_outlined,
+                                  size: 17,
+                                  color: Color(0xFF8C7A5D),
+                                ),
                               ),
+                            )
+                          : const Icon(
+                              Icons.inventory_2_outlined,
+                              size: 17,
+                              color: Color(0xFF8C7A5D),
                             ),
-                          )
-                        : const Icon(
-                            Icons.inventory_2_outlined,
-                            size: 17,
-                            color: Color(0xFF8C7A5D),
-                          ),
+                    ),
                   ),
                 ),
                 if (i < 2)

@@ -6,6 +6,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import '../../../support/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_layout_tokens.dart';
@@ -800,6 +801,72 @@ void main() {
       }
       for (var i = 3; i < 7; i++) {
         expect(find.byKey(ValueKey('battle_skill_empty_$i')), findsOneWidget);
+        expect(
+          find.byKey(ValueKey('battle.emptySkillSlot.blankPaper.$i')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(ValueKey('battle.emptySkillSlot.emptySeal.$i')),
+          findsOneWidget,
+        );
+      }
+      expect(find.text(UiStrings.battleEmptySkillSlot), findsNothing);
+    });
+
+    testWidgets('当前执招者展开姓名流派真气名帖，其余收束且阵亡褪墨', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final team = [
+        left[0],
+        left[1].copyWith(currentHp: 0, isAlive: false),
+        left[2],
+      ];
+      await _pumpWith(tester, team, right);
+
+      final expanded = find.byKey(
+        ValueKey('battle.focusNameplate.expanded.${team.first.characterId}'),
+      );
+      expect(expanded, findsOneWidget);
+      expect(
+        find.descendant(
+          of: expanded,
+          matching: find.text(EnumL10n.school(team.first.school)),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: expanded,
+          matching: find.text('${team.first.currentQi}/${team.first.maxQi}'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          ValueKey('battle.focusNameplate.compact.${team[2].characterId}'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(
+          ValueKey('battle.focusNameplate.faded.${team[1].characterId}'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('战备行囊使用木匣与三格旧锦而非技能签外形', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      await _pumpWith(tester, left, right);
+
+      expect(
+        find.byKey(const ValueKey('battle.pouch.woodCase')),
+        findsOneWidget,
+      );
+      for (var i = 0; i < 3; i++) {
+        expect(
+          find.byKey(ValueKey('battle.pouch.brocadeSlot.$i')),
+          findsOneWidget,
+        );
       }
     });
 

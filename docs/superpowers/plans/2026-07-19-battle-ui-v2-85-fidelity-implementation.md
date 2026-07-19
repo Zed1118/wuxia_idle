@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：Task 2.3 已完成，技能签样板已铺开为可用、冷却、真气不足、待发、破招五态；进入 Task 2.4。
+- **状态**：Task 2.4 已完成，阶段 2 功能切片齐备；进入阶段 2 Gate 评分、桌面交互核验与双视口取证。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：五态 surface 已接入全部生产技能签：冷却为墨浸染+数字环，真气不足为降墨+青灰气脉缺口，待发保留绛红印，可破招以暗金抬签区分，可用态保持旧纸本色；状态判断不改释放、冷却、真气或破招规则。并将 `battle_v2_resource_pressure` 的验收入口前置为允许干预，使固定帧真正露出七签且同屏显示冷却/气不足。
-- **下一步**：执行 Task 2.4；将空槽改为淡墨留白签+小空印，当前执招者展开为姓名/流派/真气名帖、其余收束且阵亡褪墨，行囊改为三格木匣/旧锦格。
-- **已跑验证**：五态红态为真气不足视觉 key 缺失；绿态：Task 2 targeted 四文件 71/71；资源压力 route 接线红态 `allowPlayerIntervention=false`、绿态定向 1/1；`flutter analyze --no-pub` 0 issue。`battle_v2_resource_pressure` 与 `battle_charge_break` 1280×720 日志均无 overflow/exception/error。
-- **当前评分**：阶段 2 中间自评 C=20/25（墨案 5/5、七签 7/7、五态 5/5、名帖 2/4、行囊/空态 1/4）；Task 2.4 未完成，尚未宣称 Gate 达成。
-- **证据目录**：新增 `build/visual_acceptance/battle_ui_v2_85/stage2_states/`，含资源压力与蓄力可破两张 1280×720 固定帧及日志；背景改前/改后证据仍在 `background_brightness_before_after/`。
-- **阻塞项**：无。残留风险：Task 2.4、阶段 2 双视口 Gate 与桌面语义验证尚待；完整场景 profile、人物 alpha 精测与 Windows 缩放仍留后续。
-- **§8.2 四证据**：①生产接线：`BattleBottomBar` 为全部 `SkillCommandButton` 计算五态并传入生产 `BattleSkillSlipSurface`，debug route 仅提供固定验收状态；② targeted：四文件 71/71 + route 接线 1/1 + analyze 0 issue，两 route 日志 0 overflow；③红线：零改 `data/`、伤害/真气/冷却/AI/tick/胜负/掉落、schema/saveVersion/存档，纯表现层；④残留风险：空槽/名帖/行囊与阶段 Gate 未完，完整 profile、Windows 缩放和证据长期保全待后续。
-- **Git 状态口径**：背景修正点为 `5a0f65c5`；本切片提交后 tip 继续为 WIP，不打 `[READY]`/`[BLOCKED]`，build 证据默认忽略，主 checkout 保持只读。
+- **最后完成**：空槽已改为低对比留白纸签与 22px 小空印，移除大字竖排；当前执招者改为展开纸名帖，双字阶显示姓名、流派、真气，其他角色收束、阵亡角色整体褪墨；行囊改为带木纹/榫钉的深木匣与三格旧锦内衬，继续保留三格预留语义且不增加药品规则。
+- **下一步**：按阶段 2 Gate 评分 C，并验证桌面 semantics/focus/cursor 与双视口零 overflow；随后抓 S1/S3/S4/S5/S6/S7 的 1280×720、1440×900 证据和 manifest，更新恢复点后打指定 `[BLOCKED]` 提交冻结。
+- **已跑验证**：Task 2.4 红态为留白签视觉 key 缺失；绿态新增空槽/名帖/行囊三用例 3/3，Task 2 targeted 四文件 73/73；`flutter analyze --no-pub` 0 issue。`battle_charge_break` 1280×720 目检中名帖/小空印/木匣均清晰，日志无 overflow/exception/error。
+- **当前评分**：阶段 2 切片完成后自评 C=23/25（墨案 5/5、七签 7/7、五态 5/5、名帖 3/4、行囊/空态 3/4），已超过 C≥22 门槛；最终 Gate 仍待双视口与桌面交互证据闭环。
+- **证据目录**：新增 `build/visual_acceptance/battle_ui_v2_85/stage2_task24/` 的蓄力可破 1280×720 目检图及日志；五态证据在 `stage2_states/`，背景对照在 `background_brightness_before_after/`。
+- **阻塞项**：无。残留风险：阶段 2 双视口 Gate 与桌面语义验证尚待；完整场景 profile、人物 alpha 精测与 Windows 缩放仍留后续。
+- **§8.2 四证据**：①生产接线：生产 `FocusSelector`、`EmptySkillSlot`、`BattlePouchRail` 直接使用新名帖/留白签/木匣装帧，按钮与 Semantics 节点保留；② targeted：四文件 73/73 + analyze 0 issue，Task 2.4 route 日志 0 overflow；③红线：零改 `data/`、伤害/真气/冷却/AI/tick/胜负/掉落、schema/saveVersion/存档，行囊只改空态表现；④残留风险：Gate 双视口、桌面焦点/光标、完整 profile、Windows 缩放和证据长期保全待后续。
+- **Git 状态口径**：技能签五态点为 `376fe015`；本切片提交后 tip 继续为 WIP，不打 `[READY]`/`[BLOCKED]`，build 证据默认忽略，主 checkout 保持只读。
