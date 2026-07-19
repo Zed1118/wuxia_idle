@@ -1355,3 +1355,53 @@ equipment:
     iconPath: assets/equipment/armor_special_bai_zhan_jia.png
     detailPath: assets/equipment/armor_special_bai_zhan_jia_detail.png
 
+  # ── 断魂庄三选一命名奖励（好家伙/二流阶 · gauntlet_duanhun 三选一 · 各偏一流派）──
+  - id: weapon_haojiahuo_suo_mai_nang
+    name: 锁脉囊
+    tier: haoJiaHuo
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 360
+    baseAttackMax: 490
+    baseHealthMin: 0
+    baseHealthMax: 100
+    baseSpeedMin: 25
+    baseSpeedMax: 40
+    presetLoreIds: [weapon_haojiahuo_suo_mai_nang]
+    dropSourceTags: ["gauntlet_duanhun"]
+    iconPath: assets/equipment/weapon_haojiahuo_suo_mai_nang.png
+    detailPath: assets/equipment/weapon_haojiahuo_suo_mai_nang_detail.png
+    specialSkillCandidates: [skill_edge_haojiahuo_lingqiao]
+
+  - id: armor_haojiahuo_zhen_yue_tie_yi
+    name: 镇岳铁衣
+    tier: haoJiaHuo
+    slot: armor
+    schoolBias: gangMeng
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 640
+    baseHealthMax: 800
+    baseSpeedMin: 5
+    baseSpeedMax: 10
+    presetLoreIds: [armor_haojiahuo_zhen_yue_tie_yi]
+    dropSourceTags: ["gauntlet_duanhun"]
+    iconPath: assets/equipment/armor_haojiahuo_zhen_yue_tie_yi.png
+    detailPath: assets/equipment/armor_haojiahuo_zhen_yue_tie_yi_detail.png
+
+  - id: accessory_haojiahuo_she_hun_ling
+    name: 摄魂铃
+    tier: haoJiaHuo
+    slot: accessory
+    schoolBias: yinRou
+    baseAttackMin: 130
+    baseAttackMax: 190
+    baseHealthMin: 280
+    baseHealthMax: 400
+    baseSpeedMin: 18
+    baseSpeedMax: 30
+    presetLoreIds: [accessory_haojiahuo_she_hun_ling]
+    dropSourceTags: ["gauntlet_duanhun"]
+    iconPath: assets/equipment/accessory_haojiahuo_she_hun_ling.png
+    detailPath: assets/equipment/accessory_haojiahuo_she_hun_ling_detail.png
+

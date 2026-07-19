@@ -34,8 +34,8 @@ void main() {
       expect(repo.realms.length, 49, reason: '49 级境界');
       expect(
         repo.equipmentDefs.length,
-        80,
-        reason: '80 件装备（P2.1 Batch 1 扩 7 阶 × 11 + 3 跨阶特殊）',
+        83,
+        reason: '83 件装备（80 + 断魂庄三选一命名装备 3 件）',
       );
       expect(
         repo.techniqueDefs.length,
@@ -167,11 +167,11 @@ void main() {
           .where((e) => e.slot != EquipmentSlot.weapon)
           .toList();
 
-      expect(weapons.length, 36, reason: '7 阶 × 5 + 1 特殊');
+      expect(weapons.length, 37, reason: '7 阶 × 5 + 1 特殊 + 断魂庄锁脉囊');
       expect(
         nonWeapons.length,
-        44,
-        reason: '7 阶 × (armor 3 + accessory 3) + 2 特殊',
+        46,
+        reason: '7 阶 × (armor 3 + accessory 3) + 2 特殊 + 断魂庄镇岳铁衣/摄魂铃',
       );
 
       for (final w in weapons) {

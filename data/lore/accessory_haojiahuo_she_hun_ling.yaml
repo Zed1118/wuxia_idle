@@ -1,0 +1,35 @@
+id: accessory_haojiahuo_she_hun_ling
+name: 摄魂铃
+default_lore:
+  - text: |
+      断魂庄后堂悬一枚古铜小铃，无风自鸣，其声幽咽如泣。
+      相传铃中封着历代庄主未竟的执念，
+      习阴柔心法者持之，可借铃音扰乱敌手心脉，使招式迟滞、气息紊乱。
+
+  - text: |
+      庄门中人却讳言此物——
+      凡佩铃日久者，夜夜梦魇，
+      终至分不清庄内庄外、人心鬼心。
+
+continued_lore_obtained:
+  - text: |
+      于「{source}」得此小铃。你尚未摇动，它已自鸣一声，
+      像认得你，又像在唤谁——你没敢细想是谁。
+  - text: |
+      {source}一遭，摄魂铃归你。铃舌上缠着一缕褪色红线，
+      不知是哪一代庄主系的，也不知系的是谁。
+  - text: |
+      在 {source} 拿到摄魂铃。夜里它响了一次，极轻，
+      你睁眼时堂中无风——断魂庄的人说过，别应它。
+
+continued_lore_boss_defeated:
+  - text: |
+      于「{stage_name}」一战胜 {boss_name}。
+      交手时铃音一起，{boss_name} 的招式忽然乱了半拍——
+      那半拍，够了。
+  - text: |
+      胜 {boss_name} 于 {stage_name}。收铃入袖，余音仍在耳底绕，
+      你分不清是它在响，还是自己心口在响。
+  - text: |
+      {stage_name}一战，{boss_name} 气息一滞。
+      你没有再摇第二下——摄魂铃响两次，乱的就不止是敌手了。
