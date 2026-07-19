@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：`READY` 阶段 4 + A 案已完成，等待主窗口审阅与合并；用户已经拍板的阶段 2/3 构图比例未再改动。
+- **状态**：`READY` 阶段 4 + A 案门控回归已修，等待主窗口重新执行 §8.2 Gate；旧 tip `18b72e24` 的 READY 已撤销，用户已经拍板的阶段 2/3 构图比例未再改动。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：A 案将正式 `BattleScreen` 自动分支改为与可点选模式同构的角色名帖 + 七技能签 + 行囊木匣，整体压暗、禁用点击/焦点/拖放，并按最新玩家动作日志轮转亮起执招者与招式；Task 4.1～4.3 完成题签化顶栏、T1～T5 单一字阶/Windows 安全回退、稳定数字字宽及旧金/绛红题字降彩。另增两条隔离验收 route，在目标谓词成立后分别冻结第一、第二执招拍点，不承载生产实现。
-- **下一步**：主窗口审阅 `final/` 与 `a_case_rotation/` 证据后合并；本 worktree 无后续实现任务。
-- **已跑验证**：新行为保留先红后绿证据；最终合并定向 7 文件 125/125 PASS；`flutter analyze --no-pub` 0 issue；`analyze_battle_v2_fidelity.py` 对 S1～S12 双视口返回 0；24 份 capture 日志无 overflow/exception/error/failed。A 案独立切片 44/44，轮转 route 43/43。
+- **最后完成**：收账复现的 3 个失败均已甄别并修复。①② `BattleScreen` 原本已互斥渲染自动/可点分支，但自动案台内部只读签仍复用了 `skill_cmd_*` Semantics key，使门控测试和自动化把只读陈列误认作可点命令；现已改用独立 `battle_auto_skill_*` key，自动模式中 `skill_cmd_*` 为 0，签面仍无 button/focus/长按/拖放入口。③暂停测试默认 `BattleScreenPlaybackConfig.allowPlayerIntervention=false`，确属自动观战场景，测试期望正确；缺失源于 A 案误换稳定 key，现恢复 `battle_auto_rotation_desk`。Task 4 顶栏让暂停后的顶栏与遮罩各有一个“继续”，属于两个均可恢复的合法入口；测试改用 `FilledButton` 精确点击遮罩，不删除任一入口。
+- **下一步**：主窗口按相同全目录命令重新执行 §8.2 Gate 后合并；本 worktree 无后续实现任务。
+- **已跑验证**：退回时聚焦复现为 27 项 `+24 -3`；修复后受影响三文件 74/74 PASS；用户指定的 `flutter test --no-pub test/features/battle/presentation test/features/debug` 全目录 412/412 PASS；`flutter analyze --no-pub` 0 issue。此前 S1～S12 自动分析返回 0，24 份 capture 日志无 overflow/exception/error/failed。
 - **当前评分**：A 17/20、B 22.5/25、C 23/25、D 13.5/15、E 8.5/10、F 4/5，合计 88.5/100；总分 ≥85 且 A～E 各自 ≥80%。非大招帧高饱和语义色面积 0.000～0.011（Gate ≤0.08）；T1～T5 实际背景对比度分别 11.61、10.23、11.05、12.02、4.66，均达标。
 - **证据目录**：S1～S12 双视口、manifest、自动分析、对比度与评分归档于 `build/visual_acceptance/battle_ui_v2_85/final/`；自动/可点双模式对照及两拍轮转证据归档于 `build/visual_acceptance/battle_ui_v2_85/a_case_rotation/`。自动分析 manifest 不含 region/character/semantic diagnostic layer 元数据，相关列会明确报 missing，结构与人物诊断沿用已通过的阶段 3 Gate，不将缺失列误报为自动通过。
 - **阻塞项**：无。残留风险：`BattleAction` 未携带 teamSide，若未来跨队伍出现 actorId 理论重号，自动亮签的日志匹配存在歧义；Windows 字体回退已配置但本轮仅在 macOS 双视口目检；未新增资产，既有 RepaintBoundary 与性能条款保持不变。
-- **§8.2 四证据**：①生产接线：正式 `BattleScreen` 消费 `AutoCommandDesk`、共用案台底座/名帖/签面/行囊，HUD/题字改动也均位于正式组件；主线自动与 Boss 真 route 双视口存在，debug route 只稳定拍点；② targeted：最终 125/125 + analyze 0 issue，A 案与阶段 4 均保留先红后绿；③红线：相对基点 `data/`、战斗规则、schema/saveVersion、真实存档与禁改文件变化均为 0，未新增玩法或资产；④残留风险：actorId 理论重号、Windows 实机字体/缩放尚未目检、自动分析诊断元数据缺失已如实列明。
-- **Git 状态口径**：A 案 `17cc9902`，Task 4.1/4.2 `c440ae88`，Task 4.3 `14bbd02e`，轮转证据 `1f33dcd9`；恢复点提交后使用精确空提交 `[READY] 阶段4+A案交付`，最终 worktree 必须干净。
+- **§8.2 四证据**：①生产接线：正式 `BattleScreen` 以 `allowPlayerIntervention` 互斥消费可点 `BottomBar` 或只读 `AutoCommandDesk`；自动签已移出 `skill_cmd_*` 命令命名空间，主线自动与 Boss 真 route 双视口存在，debug route 只稳定拍点；② targeted：退回 3 失败已逐项复现，修复后聚焦 74/74、要求的全目录 412/412、analyze 0 issue；③红线：相对基点 `data/`、战斗规则、schema/saveVersion、真实存档与禁改文件变化均为 0，未新增玩法或资产；④残留风险：actorId 理论重号、Windows 实机字体/缩放尚未目检、自动分析诊断元数据缺失已如实列明。
+- **Git 状态口径**：A 案 `17cc9902`，Task 4.1/4.2 `c440ae88`，Task 4.3 `14bbd02e`，轮转证据 `1f33dcd9`，门控修复 `44a63dff`；恢复点提交后使用精确空提交 `[READY] 阶段4+A案交付(门控回归已修)`，最终 worktree 必须干净。
