@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：`[WIP]` 用户已拍板阶段 2「布局ok」，阶段 3 Task 3.2 人物融合表现层与性能采样已完成，继续推进 Task 3.1。
+- **状态**：`[WIP]` 用户已拍板阶段 2「布局ok」，阶段 3 Task 3.2 与 Task 3.1 已完成，继续推进 Task 3.3。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：Task 3.2 在正式 `CharacterAvatar` 站姿路径增加固定暖灰色级、轻量亚像素边缘柔化、统一透明度与淡墨接地影；阵亡态同步褪墨下沉。外层人物槽 `RepaintBoundary` 保持不变。补 `profile_battle_v2.sh` 与帧统计器，严格忽略前 5 秒。
-- **下一步**：执行 Task 3.1：以 `_stageStandeeOpticalProfile` 为单一真相源量测透明 alpha 包围盒，校准人物光学站位与 Boss 面积比 1.25～1.45；随后才进入旧纸信息板与场景 profile。
-- **已跑验证**：新行为先红：`character_avatar_test.dart` 因缺 `battle.stageStandeeFusionGrade` 失败；性能统计测试因实现文件缺失失败。转绿后 `battle_frame_profile_test.dart` + `character_avatar_test.dart` + `battle_field_repaint_test.dart` 共 24/24；`flutter analyze --no-pub` 0 issue；`git diff --check` 通过。profile 真机 60 秒采到后 55 秒 5475 帧，max build=0.827ms、max raster=3.151ms、连续超 16.7ms 峰值均 0，PASS。
-- **当前评分**：阶段中间值 B=18/25、D=11/15（未宣告 Gate）；C 保持 23/25。人物已明显退入雾层，仍需 Task 3.1 包围盒、Task 3.3 信息板与 Task 3.4 多场景黑位漂移闭环后再正式评分。
-- **证据目录**：同机位改前 `build/visual_acceptance/battle_ui_v2_85/stage3_before/`，Task 3.2 改后 `stage3_task32_after/`；性能日志与 JSON 在 `stage3_profile/`。
+- **最后完成**：Task 3.1 延续 `_stageStandeeOpticalProfile` 单一真相源，以 alpha>16/255 校准 `battle_umbrella.png`；撑伞 Boss 面积比由约 2.07 收进 1.355。三名我方同槽高的有效人物高度差约 1.5%，脚底源 alpha 与既有锚点误差均小于 2%。量测工具支持记录实际 `render_scale`，不再用源画布面积冒充实机面积。
+- **下一步**：执行 Task 3.3：把六块纯黑人物信息板改为窄墨拓/暗纸条，HP 深绛红、真气低饱和青灰，保持脚、兵器和邻位无遮挡；随后进入六类场景 profile。
+- **已跑验证**：Task 3.1 先红：撑伞 profile 实际 1.0、不满足预期 0.81；量测工具忽略 `render_scale`，测试面积比 1.3 而非预期 0.325。转绿后人物/几何/RepaintBoundary 28/28、Python 量测 5/5、`flutter analyze --no-pub` 0 issue；实测 Boss area ratio=1.355、Gate=true。Task 3.2 的 24/24、analyze 与 60 秒 profile PASS 保持有效。
+- **当前评分**：阶段中间值 B=21/25、D=11/15（尚未宣告阶段 Gate）；C 保持 23/25。人物尺度、接地、黑位/锐度与 Boss 层级已入目标带，仍需 Task 3.3 信息板及 Task 3.4 多场景黑位漂移后正式评分。
+- **证据目录**：同机位改前 `stage3_before/`，融合改后 `stage3_task32_after/`；Task 3.1 Boss 图、alpha manifest/metrics/masks 在 `stage3_task31_after/`；性能日志与 JSON 在 `stage3_profile/`。
 - **阻塞项**：无当前阻塞。残留风险：Boss 撑伞高人源图细节与玩家终拍立绘存在代际差，先由表现层与光学框处理，若仍不合格只报告、不批量重导源图；Windows 100%/125%/150% 缩放仍留最终阶段。
-- **§8.2 四证据**：①生产接线：融合滤镜、边缘层、阵亡态与接地影均在正式 `BattleScreen` 消费的 `CharacterAvatar` 内，debug 只包可关闭的 profile 采样；② targeted：两项先红证据已记录，24/24 + analyze 0 issue + 60 秒 profile PASS；③红线：零改 `data/`、战斗规则、schema/saveVersion/真实存档，零新增/重导立绘资产；④残留风险：Task 3.1/3.3/3.4、正式阶段 Gate 双视口、三背景黑位抽样及 Windows 缩放尚待完成。
+- **§8.2 四证据**：①生产接线：融合滤镜、边缘层、阵亡态、接地影与撑伞光学校准均在正式 `BattleScreen` 消费的 `CharacterAvatar` 内，debug 只包可关闭的 profile 采样；② targeted：Task 3.1/3.2 先红证据已记录，28/28 + Python 5/5 + analyze 0 issue + alpha ratio 1.355 + 60 秒 profile PASS；③红线：零改 `data/`、战斗规则、schema/saveVersion/真实存档，零新增/重导立绘资产；④残留风险：Task 3.3/3.4、正式阶段 Gate 双视口、三背景黑位抽样及 Windows 缩放尚待完成。
 - **Git 状态口径**：阶段 2 冻结点为 `4041dfb1`；本轮持续使用中文动宾小切片提交，全程不打 `[READY]`，仅阶段 3 Gate 达成后使用用户指定 `[BLOCKED]` tip。

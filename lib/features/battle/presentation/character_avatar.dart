@@ -968,6 +968,10 @@ _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
     scale: 0.96,
     horizontalShiftFraction: 0.015,
   ),
+  // stage_01_05 为 3v1；撑伞图的有效 alpha 面积较宽，若沿用 1v1 画布
+  // 放大，会达到我方三人中位面积的约 2.07 倍。0.81 将 §3.5 唯一口径
+  // 收进约 1.36，同时不改变阵列锚点或案台比例。
+  WuxiaUi.battleUmbrellaStandee => (scale: 0.81, horizontalShiftFraction: 0),
   WuxiaUi.battleGreySwordsmanStandee => (
     scale: 0.95,
     horizontalShiftFraction: 0.02,

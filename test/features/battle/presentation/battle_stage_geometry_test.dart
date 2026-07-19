@@ -1,6 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_stage_geometry.dart';
 
+double _renderedAlphaArea({
+  required int alphaBboxArea,
+  required int sourceHeight,
+  required double stageScale,
+  required double opticalScale,
+}) {
+  // 当前战场 BoxFit.contain 在四张验收立绘上均由高度约束；公共的
+  // portraitHeight 系数会在 Boss/玩家比值中约掉。
+  return alphaBboxArea /
+      (sourceHeight * sourceHeight) *
+      stageScale *
+      stageScale *
+      opticalScale *
+      opticalScale;
+}
+
 void main() {
   group('battleStageAnchor', () {
     test('3v3 首席靠近中场，其余两席以非对称纵深展开', () {
@@ -68,12 +84,36 @@ void main() {
     expect(battleStageScale(1, 3), greaterThan(battleStageScale(2, 3)));
   });
 
-  test('Boss 在相同站位面积比进入 1.25～1.45 目标带', () {
-    final normal = battleStageScale(0, 3);
-    final boss = battleStageScale(0, 3, isBoss: true);
-
-    expect(boss, greaterThan(normal));
-    final areaRatio = (boss / normal) * (boss / normal);
+  test('撑伞 Boss alpha 包围盒面积比进入 1.25～1.45 目标带', () {
+    // alpha >16/255 的源图实测值：[bbox area, source height, optical scale]。
+    // 三名我方按实际 3v3 景深；Boss 按 battle_boss_phase 的 1 人右队。
+    final playerAreas = <double>[
+      _renderedAlphaArea(
+        alphaBboxArea: 1332687,
+        sourceHeight: 1672,
+        stageScale: battleStageScale(0, 3),
+        opticalScale: 1.055,
+      ),
+      _renderedAlphaArea(
+        alphaBboxArea: 255960,
+        sourceHeight: 768,
+        stageScale: battleStageScale(1, 3),
+        opticalScale: 1,
+      ),
+      _renderedAlphaArea(
+        alphaBboxArea: 178210,
+        sourceHeight: 768,
+        stageScale: battleStageScale(2, 3),
+        opticalScale: 1,
+      ),
+    ]..sort();
+    final bossArea = _renderedAlphaArea(
+      alphaBboxArea: 221010,
+      sourceHeight: 768,
+      stageScale: battleStageScale(0, 1, isBoss: true),
+      opticalScale: 0.81,
+    );
+    final areaRatio = bossArea / playerAreas[1];
     expect(areaRatio, inInclusiveRange(1.25, 1.45));
   });
 }

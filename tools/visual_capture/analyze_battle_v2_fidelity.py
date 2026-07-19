@@ -200,7 +200,13 @@ def _character_metrics(
         rgba = _rgba(path)
         mask = rgba[:, :, 3] > threshold
         bbox = alpha_bbox(rgba, threshold)
-        area = None if bbox is None else bbox[2] * bbox[3]
+        source_area = None if bbox is None else bbox[2] * bbox[3]
+        render_scale = float(item.get("render_scale", 1.0))
+        area = (
+            None
+            if source_area is None
+            else source_area * render_scale * render_scale
+        )
         item_id = str(item["id"])
         mask_path = mask_dir / (
             _safe_id(capture_id) + "_character_" + _safe_id(item_id) + ".png"
@@ -212,6 +218,8 @@ def _character_metrics(
                 "boss": bool(item.get("boss", False)),
                 "side": item.get("side"),
                 "bbox": bbox,
+                "source_bbox_area": source_area,
+                "render_scale": render_scale,
                 "bbox_area": area,
                 "dark_p05": _dark_percentile(rgba, mask),
                 "mask": str(mask_path),

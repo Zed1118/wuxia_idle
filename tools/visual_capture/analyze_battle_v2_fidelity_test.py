@@ -70,7 +70,13 @@ class BattleV2FidelityTest(unittest.TestCase):
                         "semantic_ui": str(semantic_path),
                         "characters": [
                             {"id": "player", "path": str(player), "boss": False, "side": "left"},
-                            {"id": "boss", "path": str(boss), "boss": True, "side": "right"}
+                            {
+                                "id": "boss",
+                                "path": str(boss),
+                                "boss": True,
+                                "side": "right",
+                                "render_scale": 0.5,
+                            }
                         ]
                     }
                 }
@@ -87,7 +93,7 @@ class BattleV2FidelityTest(unittest.TestCase):
         self.assertEqual(capture["dpr"], 2.0)
         self.assertAlmostEqual(capture["layout"]["header"], 0.065)
         self.assertAlmostEqual(capture["layout"]["skills"], 0.60)
-        self.assertAlmostEqual(capture["boss_area_ratio"], 1.3)
+        self.assertAlmostEqual(capture["boss_area_ratio"], 0.325)
         self.assertAlmostEqual(capture["semantic_color_area"], 0.01)
         self.assertEqual(capture["semantic_color_method"], "diagnostic_layer")
         self.assertTrue((output / "masks" / "s1_100x50_semantic.png").exists())
