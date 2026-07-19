@@ -1091,6 +1091,23 @@ class GameRepository {
       final team = teamEntry.value;
       final loc = 'boss_gauntlets 敌队 $teamId ';
       for (final e in team) {
+        final redLines = numbers.combat.redLines;
+        if (e.baseHp <= 0 || e.baseHp > redLines.bossHpMax) {
+          throw StateError(
+            '$loc敌人 ${e.id} baseHp=${e.baseHp} 越界 '
+            '(cap=${redLines.bossHpMax})',
+          );
+        }
+        if (e.baseAttack <= 0 ||
+            e.baseAttack > redLines.equipmentBaseAttackMax) {
+          throw StateError(
+            '$loc敌人 ${e.id} baseAttack=${e.baseAttack} 越界 '
+            '(cap=${redLines.equipmentBaseAttackMax})',
+          );
+        }
+        if (e.baseSpeed <= 0) {
+          throw StateError('$loc敌人 ${e.id} baseSpeed 必须为正');
+        }
         // ② skillIds 引用不悬空。
         for (final sid in e.skillIds) {
           if (!skillIdSet.contains(sid)) {

@@ -77,4 +77,18 @@ void main() {
       throwsA(isA<StateError>()),
     );
   });
+
+  test('敌人 baseHp 超过生产 Boss HP cap → fail-fast', () {
+    expect(
+      load(mutateGauntlet('baseHp: 42000', 'baseHp: 60001')),
+      throwsA(isA<StateError>()),
+    );
+  });
+
+  test('敌人 baseAttack 超过保守攻击 cap → fail-fast', () {
+    expect(
+      load(mutateGauntlet('baseAttack: 1100', 'baseAttack: 2001')),
+      throwsA(isA<StateError>()),
+    );
+  });
 }

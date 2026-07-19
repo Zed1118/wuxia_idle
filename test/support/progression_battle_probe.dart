@@ -146,12 +146,16 @@ ProgressionBattleRun runProgressionMainlineStage({
 BattleCharacter buildProgressionPlayer({
   required GameRepository repository,
   required RealmTier tier,
+  RealmLayer layer = RealmLayer.huaJing,
+  TechniqueSchool school = TechniqueSchool.gangMeng,
   required int slot,
   required bool isFounder,
   required ProgressionBuildProfile profile,
 }) => buildProgressionPlayerBuild(
   repository: repository,
   tier: tier,
+  layer: layer,
+  school: school,
   slot: slot,
   isFounder: isFounder,
   profile: profile,
@@ -160,13 +164,14 @@ BattleCharacter buildProgressionPlayer({
 ProgressionPlayerBuild buildProgressionPlayerBuild({
   required GameRepository repository,
   required RealmTier tier,
+  RealmLayer layer = RealmLayer.huaJing,
+  TechniqueSchool school = TechniqueSchool.gangMeng,
   required int slot,
   required bool isFounder,
   required ProgressionBuildProfile profile,
 }) {
-  const school = TechniqueSchool.gangMeng;
   final numbers = repository.numbers;
-  final realm = repository.getRealm(tier, RealmLayer.huaJing);
+  final realm = repository.getRealm(tier, layer);
   final (
     enhanceRatio,
     battleCount,
@@ -256,7 +261,7 @@ ProgressionPlayerBuild buildProgressionPlayerBuild({
   final character = Character.create(
     name: isFounder ? '成长体检祖师' : '成长体检弟子$slot',
     realmTier: tier,
-    realmLayer: RealmLayer.huaJing,
+    realmLayer: layer,
     attributes: attributes,
     rarity: profile == ProgressionBuildProfile.nearMax
         ? RarityTier.ziYou

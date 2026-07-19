@@ -10,8 +10,8 @@ import '../../support/test_data.dart';
 /// C1.3.2 断魂庄三敌队 `EnemyDef` + 苏无咎「锁脉针」招（qi_drain 首个实例）。
 ///
 /// 源规格：design §5.2-5.4（三关机制）/ §6.2（锁脉针法=三流阶阴柔）/ §8.2
-/// （敌队进 `boss_gauntlets.yaml`、引用现有招式表）。数值占位 `TODO(batch3-probe)`，
-/// 本批只验机制字段接线正确 + 引用校验，不验战斗胜负（属 C1.3.3 runner）。
+/// （敌队进 `boss_gauntlets.yaml`、引用现有招式表）。机制字段接线与引用校验在此守卫；
+/// 三档战斗胜率由 `test/tools/gauntlet_balance_probe_test.dart` 守卫。
 void main() {
   setUpAll(() async {
     await loadTestGameRepository();

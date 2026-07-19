@@ -18,9 +18,9 @@ import '../support/test_data.dart';
 /// 守经济健康：①命名装备助炼不压倒 ②结晶无自反馈失控 ③三路径真实取舍
 /// ④无强制等待。诊断测，非玩法代码。
 ///
-/// **占位口径（Phase C 前）**：`gauntletWinRate` / `namedEquipAidContribution`
-/// 见 model 头注；`_assumedCrystalPerDay`（断魂庄命名装备分解产结晶日流入）与
-/// herb→补给转化率取保守占位，真值待 Phase C1.3 战斗探针 + 断魂庄产出校准。
+/// **剩余占位口径**：`namedEquipAidContribution` 见 model 头注；
+/// `_assumedCrystalPerDay`（断魂庄命名装备分解产结晶日流入）与 herb→补给转化率
+/// 取保守占位。`gauntletWinRate` 已由三档真实连战探针回填。
 
 const String _outputDir = 'test/tools/output';
 
@@ -84,8 +84,8 @@ void main() {
       ..writeln()
       ..writeln(
         '> 诊断探针（plan Task 2）。代表深度=$_representativeDepth，'
-        '挂机=离线按 ${_idleHoursPerDay}h/天。占位段（胜率/助炼/结晶日流入/'
-        'herb→补给转化）待 Phase C 校准。',
+        '挂机=离线按 ${_idleHoursPerDay}h/天。胜率已由真实连战探针回填；'
+        '助炼/结晶日流入/herb→补给转化仍待内容批校准。',
       )
       ..writeln()
       ..writeln('Lv100→170 (abs层10→17) 总经验 = **$totalExp**')
@@ -129,7 +129,7 @@ void main() {
       ..writeln('| +40 | $g40 | ${enhance40Days.toStringAsFixed(1)} |')
       ..writeln('| +49 | $g49 | ${enhance49Days.toStringAsFixed(1)} |')
       ..writeln()
-      ..writeln('## 断魂庄三档阵容胜率（占位·C1.3 对齐）')
+      ..writeln('## 断魂庄三档阵容胜率（真实连战探针对齐）')
       ..writeln()
       ..writeln(
         '- 入门 ${gauntletWinRate(GauntletLoadout.ruMen)} / '
