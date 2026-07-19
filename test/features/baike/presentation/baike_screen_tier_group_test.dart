@@ -37,6 +37,10 @@ Future<String> _fixtureLoader(String path) async {
     // skillDefs 悬空触发 C1.3.2 加载期红线）。可选 asset 抛 → fallback null 跳过。
     throw const FileSystemException('fixture: 跳过断魂庄配置');
   }
+  if (path == 'data/expeditions.yaml') {
+    // 同上：skills 为空时远行敌池 skillIds 会悬空触发 C2 目标3 加载期红线。
+    throw const FileSystemException('fixture: 跳过远行配置');
+  }
   if (path.startsWith('data/lore/')) {
     final loreId = path
         .replaceFirst('data/lore/', '')
