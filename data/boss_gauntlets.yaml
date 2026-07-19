@@ -16,12 +16,12 @@ stages:
 # ── 通关奖励（§6.2·数值/命名装备 TODO(batch3-probe)）──
 # 首通解锁「锁脉针法」秘籍（= 苏无咎所用锁脉针·skill_suo_mai_zhen，击败后习得）。
 first_clear_reward_skill_id: skill_suo_mai_zhen
-# Boss 胜利三选一命名装备候选（恰 3 件·一槽一件）。TODO(batch3-probe)：现引用现有
-# 好家伙(二流)装备占位，后续替换为断魂庄专属命名奖励（名/数值/典故随美术批）。
+# Boss 胜利三选一命名装备候选（恰 3 件·一槽一件·各偏一流派）。断魂庄专属命名奖励：
+# 锁脉囊(苏无咎飞针·灵巧) / 镇岳铁衣(石镇岳护阵·刚猛) / 摄魂铃(镇庄物·阴柔)。
 reward_candidate_equipment_ids:
-  - weapon_haojiahuo_qing_feng_jian
-  - armor_haojiahuo_jin_pao
-  - accessory_haojiahuo_yu_pei_lao
+  - weapon_haojiahuo_suo_mai_nang
+  - armor_haojiahuo_zhen_yue_tie_yi
+  - accessory_haojiahuo_she_hun_ling
 # 参战全员经验/领悟点（§6.2·首通全额，重复通关取半）。TODO(batch3-probe) 占位。
 first_clear_reward_exp: 300
 first_clear_reward_insight: 20

@@ -28,7 +28,7 @@ void main() {
     expect(
       load(
         mutateGauntlet(
-          'weapon_haojiahuo_qing_feng_jian',
+          'weapon_haojiahuo_suo_mai_nang',
           'weapon_ghost_reward_xxx',
         ),
       ),

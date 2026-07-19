@@ -11,3 +11,11 @@
 # 敌人立绘(5)
 # 章节封面(1)
 # 主线剧情阅读背景(5)
+#
+# ── 断魂庄三选一命名装备待补美术(2026-07-19·美术批另出图)──
+assets/equipment/weapon_haojiahuo_suo_mai_nang.png
+assets/equipment/weapon_haojiahuo_suo_mai_nang_detail.png
+assets/equipment/armor_haojiahuo_zhen_yue_tie_yi.png
+assets/equipment/armor_haojiahuo_zhen_yue_tie_yi_detail.png
+assets/equipment/accessory_haojiahuo_she_hun_ling.png
+assets/equipment/accessory_haojiahuo_she_hun_ling_detail.png
