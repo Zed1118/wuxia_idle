@@ -56,7 +56,7 @@ void main() {
     repo = await loadTestGameRepository();
   });
 
-  test('锚点对账：参考路线终态 Lv91/abs10/余量15，缺口 8285 EXP', () {
+  test('锚点对账：参考路线终态 Lv91/abs10/余量91，缺口 8209 EXP', () {
     final ch = _referenceRouteEnd(repo);
     expect(
       _displayLevel(repo, ch),
@@ -65,12 +65,12 @@ void main() {
     );
     final realm = repo.getRealm(ch.realmTier, ch.realmLayer);
     expect(realm.absoluteLevel, 10, reason: 'Lv91 = 三流·熟练(abs10) 层内第 1 段');
-    expect(ch.experience, 15, reason: '参考路线三丹后层内余量');
-    expect(_expToDisplayLevel(repo, ch, 100), 840);
-    expect(_expToDisplayLevel(repo, ch, 120), 3625);
+    expect(ch.experience, 91, reason: '参考路线三丹后层内余量');
+    expect(_expToDisplayLevel(repo, ch, 100), 764);
+    expect(_expToDisplayLevel(repo, ch, 120), 3549);
     expect(
       _expToDisplayLevel(repo, ch, _targetLevel),
-      8285,
+      8209,
       reason: 'Lv91→Lv141 纯挂机经验缺口',
     );
   });
@@ -80,6 +80,10 @@ void main() {
     final passive = repo.numbers.passiveIdle;
     expect(retreat.capHours, 72, reason: '72h cap 后转 passive_idle 溢出');
     expect(retreat.realmScaleFor(RealmTier.sanLiu), closeTo(1.3, 1e-9));
+    expect(
+      retreat.experienceRealmScaleFor(RealmTier.sanLiu),
+      closeTo(1.65, 1e-9),
+    );
     expect(passive.baseExpPerHour, 3.0);
     expect(passive.realmScaleFor(RealmTier.sanLiu), closeTo(1.6, 1e-9));
 
@@ -104,9 +108,9 @@ void main() {
     expect(puBu.experiencePerHour, 175.0);
     expect(puBu.requiredRealm, RealmTier.erLiu, reason: '瀑布图要二流——缺口段内不可用');
 
-    // 与 budget 测试同源锚点：三流 72h 藏经阁 = 280 EXP；24h 离线 = 115 EXP。
+    // 与 budget 测试同源锚点：三流 72h 藏经阁 = 356 EXP；24h 离线 = 115 EXP。
     final ch = _newSanLiuCharacter(repo);
-    expect(_retreatExp(repo, ch, RetreatMapType.cangJingGe, 72), 280);
+    expect(_retreatExp(repo, ch, RetreatMapType.cangJingGe, 72), 356);
     expect(_passiveExp(repo, ch.realmTier, 24), 115);
 
     // 关卡门槛与发布上限：目标可达。
@@ -195,9 +199,13 @@ void main() {
       _assertConservation(repo, s);
     }
     // 关键发现：三流段 passive(4.8/h) > 最优闭关图(3.9/h) → 纯离线反快于挂闭关。
-    expect(s2.totalHours, lessThan(s1.totalHours), reason: '三流段离线速率高于最优闭关图');
-    expect(s3.totalHours, lessThan(s1.totalHours));
-    expect(s2.totalHours, lessThan(s3.totalHours));
+    expect(
+      s1.totalHours,
+      lessThan(s2.totalHours),
+      reason: '1A 修复后最优闭关图快于纯离线(2026-07-19)',
+    );
+    expect(s1.totalHours, lessThan(s3.totalHours));
+    expect(s3.totalHours, lessThan(s2.totalHours));
     expect(s1.days, inInclusiveRange(60.0, 120.0));
     expect(s2.days, inInclusiveRange(50.0, 100.0));
     expect(s3.days, inInclusiveRange(55.0, 110.0));
@@ -211,7 +219,7 @@ void main() {
       avgDepth: 20,
       baseExpPerBattle: baseExp,
     );
-    final gap = 8285; // 锚点测已钉
+    final gap = 8209; // 锚点测已钉
     final s4Days = daysToTraverse(totalExp: gap, expPerHour: y.expPerHour);
     // 交叉对账：同口径 abs10→17 应 ≈ 18 天（expeditions.yaml 注释锚点）。
     final fullRangeDays = daysToTraverse(
@@ -605,8 +613,8 @@ void _assertConservation(GameRepository repo, _HorizonResult r) {
   );
   expect(
     r.appliedExp,
-    8285 + ch.experience,
-    reason: '${r.name}: 经验守恒 = 缺口 8285 + 终点层内余量',
+    8209 + ch.experience,
+    reason: '${r.name}: 经验守恒 = 缺口 8209 + 终点层内余量',
   );
 }
 

@@ -222,6 +222,8 @@ class SeclusionService {
     final actualHours = _clamp(elapsed, 0, cap);
 
     final scale = config.realmScaleFor(charRealmTier);
+    // 经验维度专用倍率(2026-07-19):1.65/阶 ≥ passive 1.6,修闭关/离线速率倒挂。
+    final expScale = config.experienceRealmScaleFor(charRealmTier);
     final solarBonus = config.isSolarTermDay(session.startedAt)
         ? config.solarTermMultiplier
         : 1.0;
@@ -254,7 +256,7 @@ class SeclusionService {
     }
 
     final experiencePoints =
-        (def.experiencePerHour * actualHours * scale * solarBonus)
+        (def.experiencePerHour * actualHours * expScale * solarBonus)
             .floor()
             .clamp(0, 999999);
 

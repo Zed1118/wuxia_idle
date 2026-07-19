@@ -2017,8 +2017,12 @@ class LearningCostConfig {
 class RetreatConfig {
   final List<SeclusionMapDef> maps;
 
-  /// 每升一大境界，产出倍率乘以此系数（默认 1.3）。
+  /// 每升一大境界，产出倍率乘以此系数（默认 1.3）——银两/材料/心法/内力维度。
   final double realmScalePerTier;
+
+  /// 经验维度专用境界倍率(2026-07-19)：须逐阶 ≥ passive_idle 的 1.6，
+  /// 否则闭关经验严格劣于纯离线（速率倒挂）。
+  final double experienceRealmScalePerTier;
 
   /// 离线结算封顶小时数（超出部分不累积）。
   final int capHours;
@@ -2063,6 +2067,7 @@ class RetreatConfig {
   const RetreatConfig({
     required this.maps,
     required this.realmScalePerTier,
+    required this.experienceRealmScalePerTier,
     required this.capHours,
     required this.baseEquipDropProbability,
     required this.equipmentRollIntervalHours,
@@ -2129,6 +2134,8 @@ class RetreatConfig {
           SeclusionMapDef.fromYaml(m as Map<String, dynamic>),
       ],
       realmScalePerTier: (y['realm_scale_per_tier'] as num).toDouble(),
+      experienceRealmScalePerTier: (y['experience_realm_scale_per_tier'] as num)
+          .toDouble(),
       capHours: (y['cap_hours'] as num).toInt(),
       baseEquipDropProbability: (y['base_equip_drop_probability'] as num)
           .toDouble(),
@@ -2187,6 +2194,17 @@ class RetreatConfig {
     var scale = 1.0;
     for (var i = 0; i < tier.index; i++) {
       scale *= realmScalePerTier;
+    }
+    return scale;
+  }
+
+  /// 经验维度专用境界倍率（`experienceRealmScalePerTier ^ tier.index`）。
+  /// 仅闭关经验产出用；银两/材料/心法/内力仍走 [realmScaleFor]。
+  double experienceRealmScaleFor(RealmTier tier) {
+    if (tier.index == 0) return 1.0;
+    var scale = 1.0;
+    for (var i = 0; i < tier.index; i++) {
+      scale *= experienceRealmScalePerTier;
     }
     return scale;
   }

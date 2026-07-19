@@ -200,6 +200,7 @@ void main() {
       config = const RetreatConfig(
         maps: [],
         realmScalePerTier: 1.3,
+        experienceRealmScalePerTier: 1.65,
         capHours: 72,
         baseEquipDropProbability: 0.1,
         equipmentRollIntervalHours: 12,
@@ -330,6 +331,7 @@ void main() {
         () => const RetreatConfig(
           maps: [],
           realmScalePerTier: 1.3,
+          experienceRealmScalePerTier: 1.65,
           capHours: -1, // 构造层不校验，校验在 enforceSeclusionRedLines(validation/)
           baseEquipDropProbability: 0.1,
           equipmentRollIntervalHours: 12,

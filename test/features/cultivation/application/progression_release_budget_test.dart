@@ -71,8 +71,8 @@ void main() {
       72,
     );
     _applyExperience(repo, character, retreatExperience);
-    expect(retreatExperience, 280);
-    expect(_displayLevel(repo, character), 83);
+    expect(retreatExperience, 356);
+    expect(_displayLevel(repo, character), 84);
 
     final passive = OfflinePassiveService.compute(
       awayHours: 24,
@@ -81,7 +81,7 @@ void main() {
     );
     _applyExperience(repo, character, passive.experience);
     expect(passive.experience, 115);
-    expect(_displayLevel(repo, character), 85);
+    expect(_displayLevel(repo, character), 86);
 
     for (final id in const [
       'item_jingyandan_small',
