@@ -645,7 +645,7 @@ class _LibrarySection extends ConsumerWidget {
       );
     }
 
-    // 波B 秘传组:已解锁 + 本流派的真解/残页招(与装配池同一过滤语义)。
+    // 波B 秘传组:已解锁 + 本流派的真解/残页/断魂庄首通招(与装配池同一过滤语义)。
     // uses 计入主修 skillUsageCount(battle_resolution standalone 落账)。
     final school = character.school;
     if (school != null) {
@@ -658,7 +658,8 @@ class _LibrarySection extends ConsumerWidget {
               .where(
                 (s) =>
                     (s.source == SkillSource.mainlineDrop ||
-                        s.source == SkillSource.fragment) &&
+                        s.source == SkillSource.fragment ||
+                        s.source == SkillSource.gauntlet) &&
                     s.style == school &&
                     unlockedIds.contains(s.id),
               )

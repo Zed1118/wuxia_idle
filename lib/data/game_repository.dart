@@ -853,6 +853,7 @@ class GameRepository {
     enforceInterruptSkillRedLines(skillDefs: skillDefs, numbers: numbers);
 
     // 波A A4:全招必有合法 source 来源 tag + 池/字段一致性
+    final bgc = bossGauntletConfig;
     enforceSkillSourceRedLines(
       skillDefs: skillDefs,
       stageDefs: stageDefs,
@@ -861,6 +862,10 @@ class GameRepository {
       releaseRealm: getRealmByAbsoluteLevel(
         numbers.progressionReleaseCap.maxAbsoluteRealmLevel,
       ),
+      gauntletRewardSkillIds: [
+        if (bgc != null && bgc.firstClearRewardSkillId.isNotEmpty)
+          bgc.firstClearRewardSkillId,
+      ],
     );
 
     // 2026-06-14 拖招:targetType 语义红线(普攻/合击不可群体 + 群体技集合非空)

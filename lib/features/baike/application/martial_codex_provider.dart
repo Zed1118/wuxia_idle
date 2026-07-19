@@ -22,13 +22,14 @@ part 'martial_codex_provider.g.dart';
 enum MartialGroupKind { heartArt, trueSolution, fragment, interrupt, encounter }
 
 /// 是否纳入武学典籍收录池(205招)。
-/// source∈{technique,mainlineDrop,fragment,encounter} 或 破招(special∩canInterrupt)。
+/// source∈{technique,mainlineDrop,fragment,gauntlet,encounter} 或 破招(special∩canInterrupt)。
 /// 排除 special 非破招(轻功对决18 + joint共鸣1)。
 bool isMartialCodexSkill(SkillDef d) {
   switch (d.source) {
     case SkillSource.technique:
     case SkillSource.mainlineDrop:
     case SkillSource.fragment:
+    case SkillSource.gauntlet:
     case SkillSource.encounter:
       return true;
     case SkillSource.special:
@@ -40,6 +41,7 @@ bool isMartialCodexSkill(SkillDef d) {
 
 /// 来源归类(破招优先于 special 兜底)。归类与段标共用,防双份漂移。
 /// 前置:仅对收录池(isMartialCodexSkill==true)调用。
+/// gauntlet(断魂庄首通)归真解组——同为首通秘籍语义(2026-07-19 转正)。
 MartialGroupKind martialSourceKindOf(SkillDef d) {
   if (d.source == SkillSource.special && d.canInterrupt) {
     return MartialGroupKind.interrupt;
@@ -48,6 +50,7 @@ MartialGroupKind martialSourceKindOf(SkillDef d) {
     case SkillSource.technique:
       return MartialGroupKind.heartArt;
     case SkillSource.mainlineDrop:
+    case SkillSource.gauntlet:
       return MartialGroupKind.trueSolution;
     case SkillSource.fragment:
       return MartialGroupKind.fragment;
