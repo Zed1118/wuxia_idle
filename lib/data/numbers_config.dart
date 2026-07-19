@@ -2,9 +2,7 @@ import 'dart:math' as math;
 
 import 'defs/progression_release_cap.dart';
 import 'defs/cycle_drop_bonus.dart';
-// 唯一残留 data→features(2026-07-18 审查批):equipment_disposal 含处置逻辑且
-// 依赖 feature 局部 equipment_slot_occupancy,迁 defs 会级联;登记 followup backlog。
-import '../features/equipment/domain/equipment_disposal.dart';
+import 'defs/equipment_disposal_def.dart';
 import 'defs/rare_bonus_drop.dart';
 import 'defs/injury_config.dart';
 import 'defs/inner_demon_def.dart';
