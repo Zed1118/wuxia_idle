@@ -107,7 +107,8 @@ void main() {
         Reputation()
           ..playerId = 1
           ..factionId = 'shaoLin'
-          ..value = 42,
+          ..value = 42
+          ..updatedAt = DateTime(2026, 7, 19),
       );
     });
     container.invalidate(reputationsForCurrentPlayerProvider);
