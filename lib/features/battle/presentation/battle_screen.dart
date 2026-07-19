@@ -779,7 +779,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       (c) => c.isAlive && c.maxHp > 0 && c.currentHp / c.maxHp <= 0.3,
     );
     final showBossInkCloud = state.rightTeam.any((c) => c.isBoss);
-    final backgroundStyle = _backgroundStyleForTrack(widget.bgmTrack);
+    final backgroundStyle = battleSceneStyleForEncounter(
+      _backgroundStyleForTrack(widget.bgmTrack),
+      hasBoss: showBossInkCloud,
+    );
     final stageLayout = _stageLayoutForTrack(widget.bgmTrack);
 
     return BgmScope(
