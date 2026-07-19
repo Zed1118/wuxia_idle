@@ -1,10 +1,22 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
+import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/sweep/application/sweep_unit.dart';
 import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 import 'package:wuxia_idle/shared/audio/audio_assets.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+
+import '../../../support/isar_test_support.dart';
+import '../../../support/test_data.dart';
 
 void main() {
   test('主线扫荡单位透传关卡展示信息并按 Boss 路由 BGM', () {
@@ -30,6 +42,124 @@ void main() {
     expect(unit.bgmTrack, BgmTrack.tower);
     expect(unit.cycleIndex, 4);
   });
+
+  // ── startBattle / settle 行为测(2026-07-19 夜批 coverage 补强,文件基线
+  // 17/31):真 Isar + 真 StageBattleSetup + 真 battleProvider,钉装配起手与
+  // 结算委托两段生产路径。全部 Isar 交互收 tester.runAsync。 ──────────────
+  group('startBattle/settle(真 Isar)', () {
+    late Directory tempDir;
+
+    setUpAll(() async {
+      await initializeTestIsarCore();
+      if (!GameRepository.isLoaded) {
+        await loadTestGameRepository();
+      }
+    });
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('wuxia_sweep_unit_');
+      await IsarSetup.init(directory: tempDir, inspector: false);
+    });
+
+    tearDown(() async {
+      await IsarSetup.close();
+      IsarSetup.resetForTest();
+      if (await tempDir.exists()) await tempDir.delete(recursive: true);
+    });
+
+    /// 泵最小宿主捕获 WidgetRef(runAsync 区内执行 body)。
+    /// **每测试只泵一次**:重泵 = 新 ProviderScope 容器,battleProvider 等
+    /// 容器内状态全丢(本文件 startBattle 测曾因此读到空队)。
+    Future<WidgetRef> pumpRef(WidgetTester tester) async {
+      WidgetRef? captured;
+      await tester.pumpWidget(
+        ProviderScope(child: _RefHarness(onReady: (ref) => captured = ref)),
+      );
+      return captured!;
+    }
+
+    testWidgets('主线单位 startBattle:装配 seed 队伍起手写入 battleProvider', (
+      tester,
+    ) async {
+      await tester.runAsync(
+        () => Phase2SeedService(isar: IsarSetup.instance).seedP3(),
+      );
+      final stage = GameRepository.instance.getStage('stage_01_01');
+      final unit = MainlineSweepUnit(stage: stage, cycle: 1);
+      final ref = await pumpRef(tester);
+
+      await tester.runAsync(() => unit.startBattle(ref));
+
+      final state = (await tester.runAsync(
+        () async => ref.read(battleProvider),
+      ))!;
+      expect(state.isFinished, isFalse, reason: '刚起手,战斗未终态');
+      expect(state.leftTeam, isNotEmpty, reason: 'P3 种子左队');
+      expect(state.rightTeam, isNotEmpty, reason: 'stage_01_01 敌人按 yaml 装配');
+    });
+
+    testWidgets('爬塔单位 startBattle:buildTeamsForTower 装配起手', (tester) async {
+      await tester.runAsync(
+        () => Phase2SeedService(isar: IsarSetup.instance).seedP3(),
+      );
+      final floor = GameRepository.instance.towerFloors.first;
+      final unit = TowerSweepUnit(floor: floor, cycleIndex: 1);
+      final ref = await pumpRef(tester);
+
+      await tester.runAsync(() => unit.startBattle(ref));
+
+      final state = (await tester.runAsync(
+        () async => ref.read(battleProvider),
+      ))!;
+      expect(state.isFinished, isFalse);
+      expect(state.leftTeam, isNotEmpty);
+      expect(state.rightTeam, isNotEmpty);
+    });
+
+    testWidgets('主线单位 settle 委托:战备不足走忽略项分支', (tester) async {
+      await tester.runAsync(() async {
+        final save = await IsarSetup.currentSaveData();
+        await IsarSetup.instance.writeTxn(() async {
+          save!
+            ..sweepReadinessPoints = 0
+            ..sweepReadinessLastRecoveredAt = DateTime.now();
+          await IsarSetup.instance.saveDatas.put(save);
+        });
+      });
+      final stage = GameRepository.instance.getStage('stage_01_01');
+      final unit = MainlineSweepUnit(stage: stage, cycle: 1);
+      final ref = await pumpRef(tester);
+
+      final outcome = await tester.runAsync(() => unit.settle(ref));
+
+      expect(outcome, isNotNull);
+      expect(outcome!.ignoredDrops, 1, reason: '委托 settleMainlineSweepVictory');
+    });
+
+    testWidgets('爬塔单位 settle 委托:重打发空账', (tester) async {
+      final floor = GameRepository.instance.towerFloors.first;
+      final unit = TowerSweepUnit(floor: floor, cycleIndex: 1);
+      final ref = await pumpRef(tester);
+
+      final outcome = await tester.runAsync(() => unit.settle(ref));
+
+      expect(outcome, isNotNull);
+      expect(outcome!.expGained, 0, reason: '委托 settleTowerSweepVictory');
+      expect(outcome.equipmentDrops, 0);
+    });
+  });
+}
+
+class _RefHarness extends ConsumerWidget {
+  const _RefHarness({required this.onReady});
+
+  final ValueChanged<WidgetRef> onReady;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    onReady(ref);
+    return const SizedBox.shrink();
+  }
 }
 
 const _normalStage = StageDef(
