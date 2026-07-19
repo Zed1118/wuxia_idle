@@ -82,7 +82,7 @@ void main() {
     await tester.pumpWidget(host(c));
     await tester.pumpAndSettle();
     // 默认选中态 = highest(=1),无显式选择 → provider 仍 null,resolve 时用 highest。
-    expect(c.read(selectedChallengeCycleProvider(chapterKey)), isNull);
+    expect(c.read(selectedChallengeCycleForCurrentSlot(chapterKey)), isNull);
     // 选中态在「回放」按钮上显勾标。
     expect(find.byIcon(Icons.check), findsOneWidget);
   });
@@ -94,7 +94,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.textContaining(UiStrings.cycleChallengeNextLabel(2)));
     await tester.pumpAndSettle();
-    expect(c.read(selectedChallengeCycleProvider(chapterKey)), 2);
+    expect(c.read(selectedChallengeCycleForCurrentSlot(chapterKey)), 2);
   });
 
   testWidgets('点「回放第1周目」→ 写 selectedChallengeCycleProvider=1', (tester) async {
@@ -104,7 +104,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text(UiStrings.cycleReplayCurrentSuffix));
     await tester.pumpAndSettle();
-    expect(c.read(selectedChallengeCycleProvider(chapterKey)), 1);
+    expect(c.read(selectedChallengeCycleForCurrentSlot(chapterKey)), 1);
   });
 
   testWidgets('第2周目已通，maxCycle=3 → 显示挑战第3周目', (tester) async {

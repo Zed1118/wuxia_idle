@@ -69,7 +69,7 @@ class LightFootScreen extends ConsumerWidget {
             // 周目按章(Phase 2):整个轻功副本视为一章,chapterKey=stageType.name。
             const chapterKey = 'lightFoot';
             int cycleFor() => resolveTargetCycle(
-              ref.read(selectedChallengeCycleProvider(chapterKey)),
+              ref.read(selectedChallengeCycleForCurrentSlot(chapterKey)),
               progress,
               chapterKey,
             );

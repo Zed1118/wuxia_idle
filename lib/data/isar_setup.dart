@@ -34,6 +34,22 @@ import '../features/weapon_codex/domain/equipment_catalog_entry.dart';
 import '../features/expedition/domain/expedition_run.dart';
 import '../features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 
+/// 存档由更高版本程序写入，当前程序不得迁移或打开继续游玩。
+class UnsupportedSaveVersionException implements Exception {
+  const UnsupportedSaveVersionException({
+    required this.actualVersion,
+    required this.supportedVersion,
+  });
+
+  final String actualVersion;
+  final String supportedVersion;
+
+  @override
+  String toString() =>
+      'UnsupportedSaveVersionException(actual: $actualVersion, '
+      'supported: $supportedVersion)';
+}
+
 /// Isar 初始化与生命周期（data_schema.md §7.1）。
 ///
 /// **多存档槽（1.0 spec B）**：固定 3 槽，多 db 方案——每槽一个独立
@@ -63,12 +79,18 @@ class IsarSetup {
   /// 由 app lifecycle（main.dart AppLifecycleListener onHide/onInactive/onDetach）
   /// 及 gate「旧档首启不回溯」分支调用；[now] 仅供测试注入。
   /// 未 init / 无存档时安全 no-op。
-  static Future<void> touchOnlineNow({DateTime? now}) async {
-    final save = await currentSaveData();
-    if (save == null) return;
-    await instance.writeTxn(() async {
+  static Future<void> touchOnlineNow({
+    DateTime? now,
+    @visibleForTesting Future<void> Function()? beforeWriteTxn,
+  }) async {
+    final isar = _instance;
+    if (isar == null) return;
+    await beforeWriteTxn?.call();
+    await isar.writeTxn(() async {
+      final save = await isar.saveDatas.get(0);
+      if (save == null) return;
       save.lastOnlineAt = now ?? DateTime.now();
-      await instance.saveDatas.put(save);
+      await isar.saveDatas.put(save);
     });
   }
 
@@ -106,6 +128,9 @@ class IsarSetup {
     ExpeditionRunSchema,
     BossGauntletRunSchema,
   ];
+
+  @visibleForTesting
+  static List<CollectionSchema> get schemasForTesting => _allSchemas;
 
   /// 当前 schema 对应的存档版本（写入新建 SaveData.saveVersion）。
   /// Phase 3 T34 schema 加 MainlineProgress collection → 升 0.2.0；
@@ -187,8 +212,12 @@ class IsarSetup {
       inspector: inspector,
     );
     currentSlotId = slotId;
-
-    await _ensureSaveData();
+    try {
+      await _ensureSaveData();
+    } catch (_) {
+      await close();
+      rethrow;
+    }
   }
 
   /// 启动时确保 SaveData 单例存在；不存在则建一行默认值。
@@ -197,7 +226,17 @@ class IsarSetup {
     final isar = instance;
     final existing = await isar.saveDatas.get(0);
     if (existing != null) {
-      if (existing.saveVersion != _currentSaveVersion) {
+      final comparison = _compareVersion(
+        existing.saveVersion,
+        _currentSaveVersion,
+      );
+      if (comparison > 0) {
+        throw UnsupportedSaveVersionException(
+          actualVersion: existing.saveVersion,
+          supportedVersion: _currentSaveVersion,
+        );
+      }
+      if (comparison < 0) {
         await _migrateSaveData(isar, existing);
       }
       return existing;
@@ -579,6 +618,13 @@ class IsarSetup {
 
   static Future<SlotSummary> _readSummary(Isar isar, int n) async {
     final save = await isar.saveDatas.get(0);
+    if (save != null &&
+        _compareVersion(save.saveVersion, _currentSaveVersion) > 0) {
+      throw UnsupportedSaveVersionException(
+        actualVersion: save.saveVersion,
+        supportedVersion: _currentSaveVersion,
+      );
+    }
     final founderId = save?.founderCharacterId;
     final founder = founderId == null
         ? null

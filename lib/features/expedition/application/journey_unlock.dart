@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
@@ -39,15 +40,26 @@ bool unlockJianghuJourneyIfReached({
 /// Isar 落库核心(同 `settleActiveExpeditionOnOpen` 体例:注入 [isar] 单测友好)。
 /// 读存档0 + 全角色 roster,任一 ≥Lv100 且未解锁 → 单 writeTxn 落库置真,返 true。
 /// save 缺失 / 已解锁 / 无人达标 → 零写返 false。
-Future<bool> unlockJianghuJourneyOnOpen(Isar isar) async {
+Future<bool> unlockJianghuJourneyOnOpen(
+  Isar isar, {
+  @visibleForTesting Future<void> Function()? beforeWriteTxn,
+}) async {
   final save = await isar.saveDatas.get(0);
-  if (save == null) return false;
+  if (save == null || save.jianghuJourneyUnlocked) return false;
   final characters = await isar.characters.where().findAll();
-  if (!unlockJianghuJourneyIfReached(save: save, characters: characters)) {
+  if (!anyCharacterReachedJourneyMilestone(characters)) {
     return false;
   }
-  await isar.writeTxn(() => isar.saveDatas.put(save));
-  return true;
+  await beforeWriteTxn?.call();
+  return isar.writeTxn(() async {
+    final current = await isar.saveDatas.get(0);
+    if (current == null ||
+        !unlockJianghuJourneyIfReached(save: current, characters: characters)) {
+      return false;
+    }
+    await isar.saveDatas.put(current);
+    return true;
+  });
 }
 
 /// 主菜单首帧调用(与 `maybeSettleExpedition` 并列,挂 `MainMenuStartupGate`

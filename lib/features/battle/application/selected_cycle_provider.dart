@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../data/isar_setup.dart';
 import '../../mainline/application/mainline_progress_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 
@@ -7,22 +8,27 @@ part 'selected_cycle_provider.g.dart';
 
 /// 章级「当前选定挑战周目」UI 状态(战斗交互重做 Phase 2 周目按章)。
 ///
-/// key = chapterKey(主线 `ch{N}` / 副本 `stageType.name`)。`null` = 玩家未显式
+/// key = slotId + chapterKey(主线 `ch{N}` / 副本 `stageType.name`)。`null` = 玩家未显式
 /// 选择,caller 用 [resolveTargetCycle] 兜底(已通章→回放最高周目;未通章→cycle 1)。
 /// 玩家在章头点「挑战第(N+1)周目」时设为 N+1,点「回放第N周目」设回 N。
 ///
 /// 会话级 UI 状态(不落盘)。keepAlive:选定周目须跨「进关卡战斗→打完返回」
 /// 的导航生命周期存活——否则选关屏 unmount 时 autoDispose 回收,选择重置回
 /// null,打完一关就跳回最高已通周目(非 Boss 关不写章周目 key 故退回第1周目)。
-/// 玩家显式改选或 App 重启才回默认。周目解锁的真相源仍是
+/// 玩家显式改选、切存档槽或 App 重启才回默认。周目解锁的真相源仍是
 /// [MainlineProgress.clearedChapterCycleKeys](service 层)。
 @Riverpod(keepAlive: true)
 class SelectedChallengeCycle extends _$SelectedChallengeCycle {
   @override
-  int? build(String chapterKey) => null;
+  int? build(int slotId, String chapterKey) => null;
 
   void select(int cycle) => state = cycle;
 }
+
+/// 生产调用统一绑定当前槽，避免 presentation 各处漏传 slotId。
+SelectedChallengeCycleProvider selectedChallengeCycleForCurrentSlot(
+  String chapterKey,
+) => selectedChallengeCycleProvider(IsarSetup.currentSlotId, chapterKey);
 
 /// 解析某章实际进入战斗用的周目:玩家显式选择优先,否则已通章回放最高周目,
 /// 未通章(highest==0)用 cycle 1(首通)。

@@ -48,10 +48,10 @@ class CycleSelectControl extends ConsumerWidget {
     final maxCycle = numbers.cycleEvolution.maxCycleMainline;
     final atMax = highest >= maxCycle;
     final selected =
-        ref.watch(selectedChallengeCycleProvider(chapterKey)) ?? highest;
+        ref.watch(selectedChallengeCycleForCurrentSlot(chapterKey)) ?? highest;
 
     void choose(int cycle) => ref
-        .read(selectedChallengeCycleProvider(chapterKey).notifier)
+        .read(selectedChallengeCycleForCurrentSlot(chapterKey).notifier)
         .select(cycle);
 
     return _CycleSelectLayout(

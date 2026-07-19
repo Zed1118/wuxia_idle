@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -149,6 +150,32 @@ void main() {
       await seedChar(RealmTier.sanLiu, RealmLayer.shuLian);
       final unlocked = await unlockJianghuJourneyOnOpen(IsarSetup.instance);
       expect(unlocked, isFalse);
+    });
+
+    test('首帧并发写入发生在解锁事务前时不被旧 SaveData 快照覆盖', () async {
+      await seedChar(RealmTier.sanLiu, RealmLayer.shuLian);
+      final reachedBarrier = Completer<void>();
+      final releaseBarrier = Completer<void>();
+      final unlock = unlockJianghuJourneyOnOpen(
+        IsarSetup.instance,
+        beforeWriteTxn: () async {
+          reachedBarrier.complete();
+          await releaseBarrier.future;
+        },
+      );
+
+      await reachedBarrier.future;
+      await IsarSetup.instance.writeTxn(() async {
+        final current = (await IsarSetup.currentSaveData())!;
+        current.totalPassiveExperience = 321;
+        await IsarSetup.instance.saveDatas.put(current);
+      });
+      releaseBarrier.complete();
+      expect(await unlock, isTrue);
+
+      final saved = (await IsarSetup.currentSaveData())!;
+      expect(saved.jianghuJourneyUnlocked, isTrue);
+      expect(saved.totalPassiveExperience, 321);
     });
   });
 }

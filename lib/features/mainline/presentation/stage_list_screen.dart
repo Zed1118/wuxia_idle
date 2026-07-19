@@ -120,7 +120,7 @@ class StageListScreen extends ConsumerWidget {
                 // watch(非 read):玩家在 CycleSelectControl 切周目时本屏须重建,
                 // 使扫荡按钮标签/门槛、各关卡按周目状态都随选定周目刷新。
                 final selectedCycle = ref.watch(
-                  selectedChallengeCycleProvider(chapterKey),
+                  selectedChallengeCycleForCurrentSlot(chapterKey),
                 );
                 int cycleFor() {
                   if (progress == null) return 1;
