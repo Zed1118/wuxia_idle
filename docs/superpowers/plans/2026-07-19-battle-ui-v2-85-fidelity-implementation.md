@@ -1,7 +1,7 @@
 # 战斗界面 V2 ≥85% 风格还原实施计划
 
 > 日期：2026-07-19  
-> 状态：计划完成，尚未开工  
+> 状态：实施中（Task 0.1 已完成）
 > 阶段：1.0 长线打磨期  
 > 基准分支：`main@ad94a2bb`  
 > 推荐实施分支：`codex/battle-ui-v2-fidelity-85`  
@@ -859,12 +859,12 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：Task 0.1 进行中；隔离 worktree 已创建，两份实施文档已复制到新分支，尚未改生产代码。
+- **状态**：Task 0.1 已完成；隔离 worktree 与 fresh checkout 环境已就绪，尚未改生产代码。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：创建 `/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-v2-fidelity-85`，分支为 `codex/battle-ui-v2-fidelity-85`；订正计划头部、Task 0.1 命令和恢复点中的旧基点。
-- **下一步**：提交“建立战斗风格实施基线”，随后执行 `flutter pub get`、`build_runner` 与 `flutter analyze --no-pub` 环境预热。
-- **已跑验证**：分支/HEAD 核对通过；基准图 SHA-256=`fe5c8e8d1696c8136db140ae31ccb7e096b34e385bb21b442340e90b582f5957`；代码测试尚未触发。
+- **最后完成**：提交文档基线 `2c394b15`；完成 `flutter pub get`、`dart run build_runner build --delete-conflicting-outputs` 与 fresh worktree analyze 预热。
+- **下一步**：执行 Task 0.2；先为五个确定性视觉 route 写失败测试，再实现 route、READY 所有权和验收清单接线。
+- **已跑验证**：分支/HEAD 与基准图 SHA 核对通过；`flutter pub get` 成功；`build_runner` 写出 128 个生成产物；`flutter analyze --no-pub` 0 issue（12.2s）。
 - **当前评分**：A 15/20、B 14/25、C 12/25、D 10/15、E 6/10、F 3/5，合计 60/100（报告估分，待 Task 0.4 重测）。
 - **证据目录**：尚未创建；计划为 `build/visual_acceptance/battle_ui_v2_85/`。
 - **阻塞项**：无。
-- **Git 状态口径**：worktree 正在建立文档基线，tip 尚为 WIP；主 checkout 保持只读。
+- **Git 状态口径**：worktree 仅有本恢复点待提交，tip 为 WIP；主 checkout 保持只读。
