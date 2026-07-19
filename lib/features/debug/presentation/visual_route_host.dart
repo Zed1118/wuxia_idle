@@ -413,6 +413,7 @@ Future<Widget> buildVisualTarget(
         stageId: 'stage_01_03',
         startPaused: true,
         autoStep: false,
+        allowPlayerIntervention: true,
       );
     case VisualRoute.mainlineFirstClearBattleAuto:
       await isar.writeTxn(() => isar.mainlineProgress.clear());
@@ -424,6 +425,7 @@ Future<Widget> buildVisualTarget(
         startPaused: true,
         autoStep: true,
         autoStepInitialDelay: Duration(seconds: 60),
+        allowPlayerIntervention: false,
       );
     case VisualRoute.battleUltimateCaption:
       return const _UltimateCaptionPreview();
@@ -440,6 +442,7 @@ Future<Widget> buildVisualTarget(
         sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         autoStart: false,
         allowPlayerIntervention: true,
+        seed: battleV2VisualSeed,
       );
     case VisualRoute.battleInnerDemonStage:
       return const ScenarioLauncher(
@@ -531,6 +534,7 @@ Future<Widget> buildVisualTarget(
         sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         allowPlayerIntervention: true,
         startPaused: true,
+        seed: battleV2VisualSeed,
       );
     case VisualRoute.battleTapPreview:
       // 两段点选静态验收:冻结画面(autoStart false)预置 single 技能待发,
@@ -542,6 +546,7 @@ Future<Widget> buildVisualTarget(
         autoStart: false,
         allowPlayerIntervention: true,
         startPaused: true,
+        seed: battleV2VisualSeed,
         previewPendingCharacterId: 1,
         previewPendingSkillId: 'dl_single_1',
       );
@@ -1174,12 +1179,14 @@ class _MainlineFirstClearBattlePreview extends ConsumerStatefulWidget {
     required this.stageId,
     required this.startPaused,
     required this.autoStep,
+    required this.allowPlayerIntervention,
     this.autoStepInitialDelay = Duration.zero,
   });
 
   final String stageId;
   final bool startPaused;
   final bool autoStep;
+  final bool allowPlayerIntervention;
   final Duration autoStepInitialDelay;
 
   @override
@@ -1251,7 +1258,7 @@ class _MainlineFirstClearBattlePreviewState
       hint: '${stage.name} · 首通节奏验收',
       sceneBackgroundPath: stage.sceneBackgroundPath,
       playback: BattleScreenPlaybackConfig(
-        allowPlayerIntervention: true,
+        allowPlayerIntervention: widget.allowPlayerIntervention,
         startPaused: widget.startPaused,
         readablePacing: true,
       ),

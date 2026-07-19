@@ -307,6 +307,7 @@ void main() {
         reason: '路由必须能同帧验收破绽爆发提示',
       );
       expect(launcher.sceneBackgroundPath, WuxiaUi.battleMountainPassStage);
+      expect(launcher.seed, battleV2VisualSeed);
     });
 
     test('battle_boss_frame → 统一全人物山口舞台', () async {
@@ -462,6 +463,7 @@ void main() {
         reason: '两段点选验收路由必须开干预,否则技能按钮不接收点选',
       );
       expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,点选随时干预');
+      expect(launcher.seed, battleV2VisualSeed);
     });
 
     test('battle_tap_preview → 冻结态 + 纯 presentation 待发预览', () async {
@@ -477,6 +479,7 @@ void main() {
       expect(launcher.previewPendingCharacterId, 1);
       expect(launcher.previewPendingSkillId, 'dl_single_1');
       expect(launcher.sceneBackgroundPath, WuxiaUi.battleMountainPassStage);
+      expect(launcher.seed, battleV2VisualSeed);
     });
 
     test('battle_tap_preview → 复用点选冻结预置态', () async {
@@ -624,6 +627,7 @@ void main() {
         IsarSetup.instance,
       );
       expect(target.runtimeType.toString(), '_MainlineFirstClearBattlePreview');
+      expect((target as dynamic).allowPlayerIntervention, isFalse);
     });
 
     test('taohua_building_popup → 桃花岛自动打开打造台菜单', () async {
