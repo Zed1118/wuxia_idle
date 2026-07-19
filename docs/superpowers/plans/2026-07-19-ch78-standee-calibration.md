@@ -312,7 +312,7 @@
 
 ## C3 最终恢复点
 
-- **状态**：目标 1 生产表现层递补修复完成；目标 2 弹性尾 74 张逐张目检完成；待本 plan commit 与 `[READY]` tip 冻结。
+- **状态**：目标 1 生产表现层递补修复完成；目标 2 弹性尾 74 张逐张目检完成；plan 与实现已全部提交，分支 tip 以 `[READY]` 冻结。
 - **最后完成**：固定 seed 20260719 真机 7→0 全程通过且证据已复制主 checkout；74/74 转码立绘 PASS、0 WARN、0 FAIL。
 - **下一步**：Claude 按 §8.2 合并 Gate 审核 `codex/ch78-standee-calibration` tip；本分支冻结后不再写入。
 - **已跑验证**：破坏证 29 pass / 2 fail；最终 battle/visual targeted 90/90 pass；资产 targeted 9/9 pass；`flutter analyze --no-pub` 0 issue；macOS 真机 100 帧/30 秒动态验收 PASS；74/74 静态目检 PASS。
