@@ -234,6 +234,54 @@ Future<_HarnessState> _pump(
 const _targetSlotKey = 3;
 
 void main() {
+  testWidgets('群战场外敌人不借用三号战位，递补后才接收漂字与弹道', (tester) async {
+    final (left, rightBase) = BattleDemo.mockTeams();
+    final right = [
+      for (var i = 0; i < 7; i++)
+        rightBase[i % rightBase.length].copyWith(
+          characterId: 100 + i,
+          slotIndex: i,
+          isAlive: true,
+        ),
+    ];
+    final initial = BattleState.initial(leftTeam: left, rightTeam: right);
+    final c = (await _pump(tester, state: initial)).controller;
+
+    BattleAction hitBackup() => BattleAction(
+      tick: 1,
+      actorId: left.first.characterId,
+      targetId: 103,
+      skill: _projectileSkill,
+      attackResult: _hitResult(),
+      description: 'offstage hit',
+    );
+
+    c.playAction(hitBackup(), initial);
+    await tester.pump();
+    expect(c.debugPopupsForSlot(5), isEmpty);
+    expect(c.debugActiveTrailCount, 0);
+
+    final afterRotation = initial.copyWith(
+      rightTeam: [
+        right.first.copyWith(currentHp: 0, isAlive: false),
+        ...right.skip(1),
+      ],
+      actionLog: [
+        BattleAction(
+          tick: 1,
+          actorId: left.first.characterId,
+          targetId: 100,
+          description: 'defeat',
+          defeatedTarget: true,
+        ),
+      ],
+    );
+    c.playAction(hitBackup(), afterRotation);
+    await tester.pump();
+    expect(c.debugPopupsForSlot(3), hasLength(1));
+    expect(c.debugActiveTrailCount, 1);
+  });
+
   testWidgets('playActions 三目标群攻共享演出一次且保留逐目标反馈', (tester) async {
     final c = (await _pump(tester)).controller;
     final state = c._noopState(tester);
@@ -562,7 +610,7 @@ void main() {
     expect(c.debugActiveEffectCount, greaterThan(0), reason: '大招既有流派命中特效仍应保留');
   });
 
-  testWidgets('群战第 4–7 敌人的动作与受击安全归并到敌方后景表现槽', (tester) async {
+  testWidgets('群战第 4–7 敌人在场外时不产生伪造战位反馈', (tester) async {
     final (left, rightBase) = BattleDemo.mockTeams();
     final right = [
       for (var i = 0; i < 7; i++)
@@ -597,8 +645,8 @@ void main() {
     );
     await tester.pump();
 
-    expect(c.debugActionTemplateForSlot(5), BattleActionTemplate.melee);
-    expect(c.debugPopupsForSlot(5), hasLength(1));
+    expect(c.debugPopupsForSlot(5), isEmpty);
+    expect(c.debugActiveTrailCount, 0);
     expect(tester.takeException(), isNull);
   });
 

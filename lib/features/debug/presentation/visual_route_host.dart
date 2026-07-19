@@ -420,7 +420,8 @@ Future<Widget> buildVisualTarget(
         hint: null,
         sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         bgmTrack: BgmTrack.massBattle,
-        autoStart: false,
+        autoStart: true,
+        seed: 20260719,
       );
     case VisualRoute.battleTapLive:
       // 两段点选真玩/验收:真战斗 + 干预层挂上 + 高血耐久敌久撑。

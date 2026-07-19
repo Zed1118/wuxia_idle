@@ -23,6 +23,7 @@ import '../../settings/domain/gameplay_settings.dart';
 import 'battle_vfx_entries.dart';
 import 'battle_action_template.dart';
 import 'battle_stage_geometry.dart';
+import 'battle_visual_roster.dart';
 import 'boss_phase_presentation.dart';
 import 'damage_popup.dart';
 import 'first_clear_showcase.dart';
@@ -241,9 +242,9 @@ class BattlePlaybackController {
   }
 
   /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
-  void _triggerHitFlash(BattleCharacter target, bool isCritical) {
+  void _triggerHitFlash(BattleVisualPosition targetPosition, bool isCritical) {
     if (_isFastForward || _reduceFlashing) return;
-    final key = _visualSlotKey(target);
+    final key = targetPosition.slotKey;
     _rebuild(() {
       _hitFlashColors[key] = isCritical ? WuxiaColors.gangMeng : Colors.white;
     });
@@ -255,6 +256,8 @@ class BattlePlaybackController {
     BattleCharacter actor,
     BattleCharacter target,
     BattleAction action,
+    BattleVisualPosition actorPosition,
+    BattleVisualPosition targetPosition,
   ) {
     final ctrl = AnimationController(
       vsync: _vsync,
@@ -267,16 +270,8 @@ class BattlePlaybackController {
     final entry = TrailEntry(
       id: _nextTrailId++,
       ctrl: ctrl,
-      startFrac: _slotFrac(
-        actor.teamSide,
-        actor.slotIndex,
-        _teamSizeOf(actor.teamSide),
-      ),
-      endFrac: _slotFrac(
-        target.teamSide,
-        target.slotIndex,
-        _teamSizeOf(target.teamSide),
-      ),
+      startFrac: _slotFrac(actorPosition),
+      endFrac: _slotFrac(targetPosition),
       color: WuxiaColors.schoolColor(actor.school),
       strokeWidth: _trailStrokeWidth(action),
       style: _trailStyle(action),
@@ -316,14 +311,11 @@ class BattlePlaybackController {
     BattleAction action,
     BattleActionTemplate actionTemplate, {
     bool includeSchoolEffect = true,
+    required BattleVisualPosition targetPosition,
   }) {
     final result = action.attackResult;
     if (result == null) return;
-    final targetFrac = _slotFrac(
-      target.teamSide,
-      target.slotIndex,
-      _teamSizeOf(target.teamSide),
-    );
+    final targetFrac = _slotFrac(targetPosition);
     final effectFrac = actionTemplate == BattleActionTemplate.area
         ? Offset(target.teamSide == 0 ? 0.28 : 0.72, 0.5)
         : targetFrac;
@@ -458,22 +450,21 @@ class BattlePlaybackController {
   /// [_currentPlaybackIntervalMs] clamp，防快档（rapid/快进）固定 damagePopupMs
   /// 超拍致跨拍重叠。
   void _spawnPopup(
-    BattleCharacter target,
+    int slotKey,
     AttackResult result,
     BattleCharacter? attacker,
   ) {
-    final key = _visualSlotKey(target);
     final data = _buildPopupData(result, attacker);
-    final anchor = _nextPopupAnchor(key, data.type);
+    final anchor = _nextPopupAnchor(slotKey, data.type);
     final entry = PopupEntry(
       id: _nextPopupId++,
       data: data,
       anchor: anchor,
       popupDurationMs: _animConfig.effectivePopupMs(_currentPlaybackIntervalMs),
-      stackShift: _popupStackShift(key, anchor),
+      stackShift: _popupStackShift(slotKey, anchor),
     );
     _rebuild(() {
-      (_popups[key] ??= []).add(entry);
+      (_popups[slotKey] ??= []).add(entry);
     });
     // 屏震触发已上移至 [playAction]（批次 2.4 分档屏震集中触发）。
   }
@@ -563,15 +554,11 @@ class BattlePlaybackController {
 
   /// 战场比例坐标（0..1）：与人物舞台共用斜向阵列锚点。
   /// 弹道层在 LayoutBuilder 内解析为像素，避免依赖 RenderBox（widget test 稳定）。
-  static Offset _slotFrac(int teamSide, int slotIndex, int teamSize) {
-    return battleStageAnchor(teamSide, slotIndex, teamSize);
-  }
-
-  /// 取某队当前人数(供 [_slotFrac] 竖直均分)。死亡单位保留在队列(灰显)故长度稳定。
-  int _teamSizeOf(int teamSide) {
-    final s = _ref.read(battleProvider);
-    return teamSide == 0 ? s.leftTeam.length : s.rightTeam.length;
-  }
+  static Offset _slotFrac(BattleVisualPosition position) => battleStageAnchor(
+    position.teamSide,
+    position.slotIndex,
+    position.teamSize,
+  );
 
   // ─── 拍钟调度 ───────────────────────────────────────────────────────────────
 
@@ -864,12 +851,26 @@ class BattlePlaybackController {
   /// 招式的连续 AOE 动作共享一次人物动画、流派特效、题字与 SFX；伤害飘字、
   /// 受击闪及目标状态特效仍逐条保留。纯读 [actions] + [s] 元数据，不写
   /// BattleState（守 §5.4）。State 侧 build 内 `ref.listen` 批量转发。
-  void playActions(List<BattleAction> actions, BattleState s) {
+  void playActions(
+    List<BattleAction> actions,
+    BattleState s, {
+    BattleState? previousState,
+  }) {
+    final currentRoster = BattleVisualRoster.fromState(s);
+    final previousRoster = previousState == null
+        ? null
+        : BattleVisualRoster.fromState(previousState);
     var index = 0;
     while (index < actions.length) {
       final first = actions[index];
       if (!_isAoeHit(first)) {
-        playAction(first, s);
+        _playAction(
+          first,
+          s,
+          currentRoster: currentRoster,
+          previousRoster: previousRoster,
+          playSharedFeedback: true,
+        );
         index++;
         continue;
       }
@@ -886,6 +887,8 @@ class BattlePlaybackController {
         _playAction(
           action,
           s,
+          currentRoster: currentRoster,
+          previousRoster: previousRoster,
           playSharedFeedback: isRepresentative,
           sharedCastDefeatedTarget: isRepresentative && castDefeatedTarget,
         );
@@ -927,24 +930,35 @@ class BattlePlaybackController {
     return score;
   }
 
-  void playAction(BattleAction action, BattleState s) =>
-      _playAction(action, s, playSharedFeedback: true);
+  void playAction(BattleAction action, BattleState s) => _playAction(
+    action,
+    s,
+    currentRoster: BattleVisualRoster.fromState(s),
+    previousRoster: null,
+    playSharedFeedback: true,
+  );
 
   void _playAction(
     BattleAction action,
     BattleState s, {
+    required BattleVisualRoster currentRoster,
+    required BattleVisualRoster? previousRoster,
     required bool playSharedFeedback,
     bool sharedCastDefeatedTarget = false,
   }) {
     final actor = findCharacter(action.actorId, s);
     final actionTemplate = battleActionTemplateFor(action.skill);
+    final actorPosition = actor == null
+        ? null
+        : currentRoster.positionOf(actor.characterId) ??
+              previousRoster?.positionOf(actor.characterId);
     // 首通展示帧:本动作触发的节拍(null=无);「首次」判定在 director 内消费,
     // 快进态消费不呈现(下方各触发点带 !_isFastForward gate)。
     final showcaseBeat = playSharedFeedback
         ? _showcase?.onAction(action, s)
         : null;
-    if (actor != null && playSharedFeedback) {
-      final key = _visualSlotKey(actor);
+    if (actor != null && actorPosition != null && playSharedFeedback) {
+      final key = actorPosition.slotKey;
       _actionTemplates[key] = actionTemplate;
       _attackControllers[key]
         ..duration = Duration(
@@ -957,21 +971,30 @@ class BattlePlaybackController {
     if (action.attackResult != null && action.targetId != null) {
       final target = findCharacter(action.targetId!, s);
       if (target != null) {
-        _spawnPopup(target, action.attackResult!, actor);
-        if (playSharedFeedback &&
-            actor != null &&
-            templateUsesProjectile(actionTemplate)) {
-          _spawnTrail(actor, target, action);
-        }
-        _spawnBattleEffects(
-          actor,
-          target,
-          action,
-          actionTemplate,
-          includeSchoolEffect: playSharedFeedback,
-        );
-        if (!action.attackResult!.isDodged) {
-          _triggerHitFlash(target, action.attackResult!.isCritical);
+        final targetPosition = action.defeatedTarget
+            ? previousRoster?.positionOf(target.characterId) ??
+                  currentRoster.positionOf(target.characterId)
+            : currentRoster.positionOf(target.characterId) ??
+                  previousRoster?.positionOf(target.characterId);
+        if (targetPosition != null) {
+          _spawnPopup(targetPosition.slotKey, action.attackResult!, actor);
+          if (playSharedFeedback &&
+              actor != null &&
+              actorPosition != null &&
+              templateUsesProjectile(actionTemplate)) {
+            _spawnTrail(actor, target, action, actorPosition, targetPosition);
+          }
+          _spawnBattleEffects(
+            actor,
+            target,
+            action,
+            actionTemplate,
+            includeSchoolEffect: playSharedFeedback,
+            targetPosition: targetPosition,
+          );
+          if (!action.attackResult!.isDodged) {
+            _triggerHitFlash(targetPosition, action.attackResult!.isCritical);
+          }
         }
       }
     }
@@ -1020,7 +1043,7 @@ class BattlePlaybackController {
         SoundManager.instance.playSfxPath(
           battleHitAssetPath(
             teamSide: actor.teamSide,
-            slotIndex: actor.slotIndex,
+            slotIndex: actorPosition?.slotIndex ?? actor.slotIndex.clamp(0, 2),
           ),
         );
       } else {
@@ -1098,9 +1121,6 @@ class BattlePlaybackController {
       _applyHitStop(_animConfig.firstClearFirstSkillHoldMs);
     }
   }
-
-  int _visualSlotKey(BattleCharacter character) =>
-      slotKey(character.teamSide, character.slotIndex.clamp(0, 2));
 
   void dispose() {
     _disposed = true;

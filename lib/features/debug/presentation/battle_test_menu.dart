@@ -624,12 +624,27 @@ class BattleScenarioData {
   /// 群战舞台静态验收：当前三名主战敌 + 四名后续敌军墨影。
   static (List<BattleCharacter>, List<BattleCharacter>)
   scenarioMassBattleStage() {
-    final (left, templates) = scenarioDragLive();
+    final (leftTemplates, templates) = scenarioDragLive();
+    // 只供 !kReleaseMode visual route 动态验收：所有字段仍守正式红线上限。
+    // 左队耐久拉满、右队压低输出以保证能打到队尾；左队输出保持中段，
+    // 给四名后备敌军是否实际递补留下可观察窗口。
+    final left = [
+      for (final c in leftTemplates)
+        c.copyWith(
+          maxHp: 20000,
+          currentHp: 20000,
+          internalForce: 3000,
+          totalEquipmentAttack: 500,
+        ),
+    ];
     final right = [
       for (var i = 0; i < 7; i++)
         templates[i % templates.length].copyWith(
           characterId: 200 + i,
           slotIndex: i,
+          maxHp: 12000,
+          currentHp: 12000,
+          attackPowerMultiplier: 0.05,
           isAlive: true,
         ),
     ];
