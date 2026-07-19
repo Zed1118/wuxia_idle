@@ -8,7 +8,6 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/tower/application/leaderboard_sync_service.dart';
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
-import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
