@@ -744,11 +744,24 @@ const _battleStandeeOverrides = <String, String>{
   'assets/enemies/anye.png': WuxiaUi.battleNightSwordsmanStandee,
   'assets/enemies/shiye.png': WuxiaUi.battleAdviserStandee,
   'assets/enemies/fu_zhaizhu.png': WuxiaUi.battleFuChiefStandee,
+  // Ch7/Ch8 立绘本身已是透明全身图；identity override 让直用资产与旧敌
+  // 共用同一套透明识别、脚底锚点和光学校准入口。
+  'assets/enemies/monan_mazei.png': 'assets/enemies/monan_mazei.png',
+  'assets/enemies/hanhai_shadao.png': 'assets/enemies/hanhai_shadao.png',
+  'assets/enemies/gucheng_shuwei.png': 'assets/enemies/gucheng_shuwei.png',
+  'assets/enemies/beidi_shuzu.png': 'assets/enemies/beidi_shuzu.png',
+  'assets/enemies/fengxue_shaoqi.png': 'assets/enemies/fengxue_shaoqi.png',
+  'assets/enemies/beipai_youshao.png': 'assets/enemies/beipai_youshao.png',
+  'assets/enemies/beipai_zongjiang.png': 'assets/enemies/beipai_zongjiang.png',
+  'assets/enemies/huiyiren_beijing.png': 'assets/enemies/huiyiren_beijing.png',
+  'assets/enemies/huiyiren_saibei.png': 'assets/enemies/huiyiren_saibei.png',
+  'assets/enemies/huiyiren_final.png': 'assets/enemies/huiyiren_final.png',
 };
 
 bool _isTransparentBattleStandee(String? path) =>
     path?.startsWith('assets/characters/battle_') == true ||
-    path?.startsWith('assets/enemies/battle_') == true;
+    path?.startsWith('assets/enemies/battle_') == true ||
+    _battleStandeeOverrides[path] == path;
 
 /// 透明图脚底在原图高度中的实际比例。生成立绘的透明画布留白不同，
 /// 不能用 Widget 容器底边冒充脚底；否则接触影和状态牌会漂在人物下方。
@@ -835,6 +848,16 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleNightSwordsmanStandee => 0.951,
   WuxiaUi.battleAdviserStandee => 0.951,
   WuxiaUi.battleFuChiefStandee => 0.927,
+  'assets/enemies/monan_mazei.png' => 0.988,
+  'assets/enemies/hanhai_shadao.png' => 0.974,
+  'assets/enemies/gucheng_shuwei.png' => 0.977,
+  'assets/enemies/beidi_shuzu.png' => 0.975,
+  'assets/enemies/fengxue_shaoqi.png' => 0.964,
+  'assets/enemies/beipai_youshao.png' => 0.965,
+  'assets/enemies/beipai_zongjiang.png' => 0.970,
+  'assets/enemies/huiyiren_beijing.png' => 0.981,
+  'assets/enemies/huiyiren_saibei.png' => 0.976,
+  'assets/enemies/huiyiren_final.png' => 0.991,
   _ => 0.95,
 };
 
@@ -988,6 +1011,40 @@ _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
     horizontalShiftFraction: 0,
   ),
   WuxiaUi.battleArenaPatrolStandee => (scale: 1.08, horizontalShiftFraction: 0),
+  'assets/enemies/monan_mazei.png' => (scale: 1, horizontalShiftFraction: 0.06),
+  'assets/enemies/hanhai_shadao.png' => (
+    scale: 1.02,
+    horizontalShiftFraction: -0.015,
+  ),
+  'assets/enemies/gucheng_shuwei.png' => (
+    scale: 0.98,
+    horizontalShiftFraction: 0.01,
+  ),
+  'assets/enemies/beidi_shuzu.png' => (scale: 0.98, horizontalShiftFraction: 0),
+  'assets/enemies/fengxue_shaoqi.png' => (
+    scale: 1.03,
+    horizontalShiftFraction: 0.02,
+  ),
+  'assets/enemies/beipai_youshao.png' => (
+    scale: 1.01,
+    horizontalShiftFraction: -0.04,
+  ),
+  'assets/enemies/beipai_zongjiang.png' => (
+    scale: 1,
+    horizontalShiftFraction: 0,
+  ),
+  'assets/enemies/huiyiren_beijing.png' => (
+    scale: 0.99,
+    horizontalShiftFraction: -0.03,
+  ),
+  'assets/enemies/huiyiren_saibei.png' => (
+    scale: 1,
+    horizontalShiftFraction: -0.05,
+  ),
+  'assets/enemies/huiyiren_final.png' => (
+    scale: 0.99,
+    horizontalShiftFraction: -0.035,
+  ),
   _ => (scale: 1, horizontalShiftFraction: 0),
 };
 
