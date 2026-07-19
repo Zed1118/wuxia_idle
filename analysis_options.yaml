@@ -20,6 +20,7 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   language:
     strict-casts: true # 审查批E 试探(2026-07-18)
+    strict-inference: true # 试点 B 单(2026-07-18)
   plugins:
     - riverpod_lint
   exclude:

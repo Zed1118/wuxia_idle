@@ -303,7 +303,7 @@ class _AcquiredTile extends StatelessWidget {
         width: _tileWidth,
         child: InkWell(
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
+            MaterialPageRoute<void>(
               builder: (_) =>
                   EquipmentCatalogDetailScreen(def: def, entry: entry),
             ),

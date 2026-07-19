@@ -298,7 +298,7 @@ void main() {
           'id': 'synergy_bad',
           'name': '坏',
           'description': '',
-          'multipliers': {},
+          'multipliers': <String, double>{},
         }),
         throwsStateError,
       );

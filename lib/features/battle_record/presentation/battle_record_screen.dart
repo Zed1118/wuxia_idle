@@ -177,7 +177,7 @@ class _VictoryTile extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
+        MaterialPageRoute<void>(
           builder: (_) => BossMemoryDetailScreen(memory: memory),
         ),
       ),

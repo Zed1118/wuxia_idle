@@ -196,7 +196,7 @@ class _TechniqueRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
+        MaterialPageRoute<void>(
           builder: (_) => TechniqueCodexDetailScreen(entry: entry),
         ),
       ),
@@ -312,7 +312,7 @@ class _LitRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: InkWell(
         onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
+          MaterialPageRoute<void>(
             builder: (_) => SkillCodexDetailScreen(
               def: entry.def,
               maxStage: entry.maxStage,

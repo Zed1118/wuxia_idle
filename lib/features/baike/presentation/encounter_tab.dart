@@ -131,7 +131,7 @@ class _TriggeredRow extends StatelessWidget {
     return _EncounterNoteCard(
       enabled: true,
       onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
+        MaterialPageRoute<void>(
           builder: (_) => EncounterDetailScreen(def: entry.def),
         ),
       ),

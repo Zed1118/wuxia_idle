@@ -146,7 +146,7 @@ Future<void> runTowerFlow({
           final svc = TowerProgressService(isar: IsarSetup.instance);
           await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
           await svc.recordDefeat(now: DateTime.now());
-        }().catchError((e, st) {
+        }().catchError((Object e, StackTrace st) {
           debugPrint('runTowerFlow recordDefeat failed: $e\n$st');
         }),
       );
@@ -291,7 +291,7 @@ Future<void> runTowerFlow({
               totalAttempts: progress.totalAttempts,
               clearedAt: progress.lastClearedAt ?? DateTime.now(),
             )
-            .catchError((e, st) {
+            .catchError((Object e, StackTrace st) {
               debugPrint(
                 'runTowerFlow leaderboardSync reportClear failed: $e\n$st',
               );

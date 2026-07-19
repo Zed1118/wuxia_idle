@@ -11,7 +11,7 @@ void main() {
     final f = TowerFloorDef.fromYaml({
       'floorIndex': 1,
       'requiredRealm': 'xueTu',
-      'enemyTeam': const [],
+      'enemyTeam': const <Map<String, Object>>[],
       'baseExpReward': 80,
     });
     expect(f.dropSkillFragmentId, isNull);
@@ -19,7 +19,7 @@ void main() {
     final f2 = TowerFloorDef.fromYaml({
       'floorIndex': 10,
       'requiredRealm': 'sanLiu',
-      'enemyTeam': const [],
+      'enemyTeam': const <Map<String, Object>>[],
       'bossKind': 'major',
       'dropSkillFragmentId': 'skill_frag_x',
     });
