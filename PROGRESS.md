@@ -58,7 +58,7 @@
 
 ## 已知偏差 / 挂账事项
 
-- **[开放·低severity·debug-only] Riverpod 3.x `pausedActiveSubscriptionCount` 断言**(2026-06-29 真机 `flutter run` 退出/导航时偶发):根因=`towerProgressProvider`(autoDispose `Future`·第4梯队 tower_progress_summary)被外部 Consumer(`main_menu.dart:151`/leaderboard)+ 依赖 `towerFloorListProvider`(`ref.watch(...future)`)同时 watch,TickerMode 切换 resume 时 flush→依赖自 invalidate→resume 中又 pause→计数错位(element.dart:1086 assert)。**整 stack 零用户帧=Riverpod 框架 bug,用户用法标准**;assert release 剥离·应用未崩·零数据损坏·3456 全量测试不触发。**处置=记录+延后**:不升版不改 provider(flutter_riverpod 当前 3.3.1·latest 3.3.2 但当前约束不可解·且无法确认恰修此条)。下次依赖维护轮试 3.3.2+ 真机验断言是否消失。**2026-06-30 维护轮已试=仍不可解**(analyzer 死锁:isar_community_generator 封 analyzer<11 vs riverpod codegen/lint 需 analyzer^12,互斥;再开条件=isar 支持 analyzer≥12)。详 memory `reference_riverpod_tickermode_pause_assert`。
+- **任务储备总账 → 根目录 `BACKLOG.md`**(2026-07-19 建账):待拍板/已解锁可派/依赖锁死/方向级四段,每批收账随 PROGRESS 同步更新;原开放挂账(Riverpod TickerMode 断言)已迁其 §三。
 > 已销账条目(#1-#45)详见末尾归档。**P1 阶段全销账 ✅** + **Demo §8.4 14/14 全达标 ✅** + **1.0 ~95% release ready ✅**(A+B+C 全 PASS · 剩 D-G 留 M15-16)。
 
 ## 关键约束(每次开局必读)

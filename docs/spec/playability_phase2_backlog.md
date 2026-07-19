@@ -1,5 +1,7 @@
 # 可玩性加强 · 二期 Backlog（P1a 之后的滚动任务清单）
 
+> **📦 2026-07-19 归档**:活性项(P2③ / 残页数量 / 难度微调候选)已迁根目录 `BACKLOG.md` 总账,本文件保留历史勾选记录,不再更新。
+
 > 滚动文档,不带日期。每推进一项就勾选/更新,不重复写。
 > **上游 master spec**:`docs/spec/playability_upgrade_master_spec_2026-06-09.md`(P0-P4 全规划 + §16 待确认)
 > **P1a 实施 spec**:`docs/spec/2026-06-09-playability-p1a-cultivation-core-design.md`(养成内核,待落)
@@ -33,7 +35,7 @@
 
 ## 四 · master spec 后续阶段(P2/P3/P4,仅指针,细案见 master spec)
 
-- [~] **P2 队伍成长与三人协同**(master spec §四 / §13 P2):**协同深度 + ①渐进解锁 + ④控制倾向已实装**(第六阶段破绽窗口 `2026-06-18-phase6-coop-break-window-*` · 第七阶段批三 `disciple_join_service` 开局单人→收徒扩队 · `LineageRole.senior/junior` + senior 破防倾向)。**续作待拍板(非漏做)**:② 出战编成/换人 UI(grep 零命中·挂机是否需手动换队=设计决策)③ Boss 协同窗口(「敌方协同」新概念·先讨论范围再动)。
+- [~] **P2 队伍成长与三人协同**(master spec §四 / §13 P2):**协同深度 + ①渐进解锁 + ④控制倾向已实装**(第六阶段破绽窗口 `2026-06-18-phase6-coop-break-window-*` · 第七阶段批三 `disciple_join_service` 开局单人→收徒扩队 · `LineageRole.senior/junior` + senior 破防倾向)。**续作待拍板(非漏做)**:② 出战编成/换人 UI(✅ v1.39 出战编成屏 2026-07-15 已实装,本条 stale 勾销)③ Boss 协同窗口(「敌方协同」新概念·先讨论范围再动)。
 - [x] **P3 Boss 标准与战后体验**(§六 / §七 / §13 P3):全部已实装(2026-06-18 批一战后体验:英雄镜头 `HeroCameraData`/珍稀掉落仪式/战后复盘三段式 `BattleDiagnosis` + jump_target · 2026-06-19 批二 Boss 机制:`bossPhases` 多阶段/`schoolDamageTakenMult` 弱点抗性 ×1.25·×0.75/会心 glyph/技能珍稀卷轴)。**仅余 Boss 协同窗口移交 P2③**(待讨论范围)。
 - [x] **P4 长期档案与探索联动**(§八 / §九 / §13 P4):**全 6 子项闭环**(续31-41:战绩册 `4669fbac` / 兵器谱 `2e4b7ed6` / 材料经济 `5f3899fb` / 门派谱1.1 `4cfc1565` / 奇遇录 `fe4c0751` / 藏经阁2.0 武学图鉴)。均纯展示层(材料经济含真消费:经验丹/秘籍/银两)。
 

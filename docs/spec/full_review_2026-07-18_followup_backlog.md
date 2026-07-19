@@ -1,5 +1,7 @@
 # 2026-07-18 外部审查报告 followup backlog
 
+> **📦 2026-07-19 归档**:剩余项(#7 isar 上游)已迁根目录 `BACKLOG.md` §三,本文件归档不再更新。
+
 > 源:`~/Desktop/挂机武侠_全量审查报告_2026-07-18.md` · overnight 落地批(分支 `fix/audit-batch-20260718`)triage 后的 deferred 项。
 > 体例沿 `full_review_2026-07-02_followup_backlog.md`。backlog 合法性:均为「需用户拍板」或「依赖未解除」项(CLAUDE §7 打磨期原则)。
 
