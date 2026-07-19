@@ -25,6 +25,9 @@ class _MainMenuStartupGateState extends ConsumerState<MainMenuStartupGate> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      // 四项保持并发，避免 offline recap dialog 阻塞其他启动维护；其中会写
+      // SaveData 的离线结算、远行解锁均在各自 writeTxn 内重读当前行，禁止
+      // 事务外旧快照 put 覆盖并发字段。
       unawaited(maybeShowOfflineRecap(context: context, ref: ref));
       unawaited(maybeRunSectMonthlyTick(ref));
       unawaited(maybeSettleExpedition(ref));

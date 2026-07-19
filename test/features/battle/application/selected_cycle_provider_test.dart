@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/selected_cycle_provider.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 
@@ -44,18 +45,37 @@ void main() {
 
     // 模拟选关屏挂载监听 + 玩家选第2周目。
     final sub = container.listen(
-      selectedChallengeCycleProvider('ch1'),
+      selectedChallengeCycleProvider(1, 'ch1'),
       (_, _) {},
     );
-    container.read(selectedChallengeCycleProvider('ch1').notifier).select(2);
-    expect(container.read(selectedChallengeCycleProvider('ch1')), 2);
+    container.read(selectedChallengeCycleProvider(1, 'ch1').notifier).select(2);
+    expect(container.read(selectedChallengeCycleProvider(1, 'ch1')), 2);
 
     // 模拟选关屏 unmount(移除监听)→ keepAlive 不回收。
     sub.close();
     expect(
-      container.read(selectedChallengeCycleProvider('ch1')),
+      container.read(selectedChallengeCycleProvider(1, 'ch1')),
       2,
       reason: 'keepAlive:导航离开选关屏后选定周目仍为2;autoDispose 会回 null',
+    );
+  });
+
+  test('SelectedChallengeCycle 同章选择不跨存档槽残留', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    addTearDown(IsarSetup.resetForTest);
+
+    IsarSetup.currentSlotId = 1;
+    container
+        .read(selectedChallengeCycleForCurrentSlot('ch1').notifier)
+        .select(2);
+    expect(container.read(selectedChallengeCycleForCurrentSlot('ch1')), 2);
+
+    IsarSetup.currentSlotId = 2;
+    expect(
+      container.read(selectedChallengeCycleForCurrentSlot('ch1')),
+      isNull,
+      reason: 'slot2 的 ch1 必须使用独立 keepAlive key，不能继承 slot1 的选择',
     );
   });
 }

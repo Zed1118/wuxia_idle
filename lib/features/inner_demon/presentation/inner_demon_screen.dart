@@ -66,7 +66,7 @@ class InnerDemonScreen extends ConsumerWidget {
             // 周目按章(Phase 2):整个心魔副本视为一章,chapterKey=stageType.name。
             const chapterKey = 'innerDemon';
             int cycleFor() => resolveTargetCycle(
-              ref.read(selectedChallengeCycleProvider(chapterKey)),
+              ref.read(selectedChallengeCycleForCurrentSlot(chapterKey)),
               progress,
               chapterKey,
             );

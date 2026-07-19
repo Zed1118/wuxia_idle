@@ -72,7 +72,7 @@ class MassBattleScreen extends ConsumerWidget {
             // 周目按章(Phase 2):整个群战副本视为一章,chapterKey=stageType.name。
             const chapterKey = 'massBattle';
             int cycleFor() => resolveTargetCycle(
-              ref.read(selectedChallengeCycleProvider(chapterKey)),
+              ref.read(selectedChallengeCycleForCurrentSlot(chapterKey)),
               progress,
               chapterKey,
             );
