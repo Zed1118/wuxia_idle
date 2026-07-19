@@ -204,9 +204,9 @@ void main() {
     expect(find.text(UiStrings.setAsMainButton), findsNWidgets(2));
   });
 
-  // ── 用例 3：散功 dialog 双重代价文案 ──────────────────────────────────
+  // ── 用例 3：散功 dialog 真实代价文案 ──────────────────────────────────
 
-  testWidgets('点击辅修「设为主修」→ dialog 显示内力/修炼度/层回退三行', (tester) async {
+  testWidgets('点击辅修「设为主修」→ dialog 显示永久内力/紊乱/修炼度真实结算', (tester) async {
     final character = mkCharacter(
       mainTechniqueId: 100,
       assistTechniqueIds: [101],
@@ -232,9 +232,13 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    // numbers.yaml dispersion 系数 = 0.5 → 1000→500, 800→400
-    expect(find.text('内力 1000 → 500'), findsOneWidget);
-    expect(find.text('修炼度 800 → 400'), findsOneWidget);
+    expect(find.text('永久内力 1000（不变）'), findsOneWidget);
+    expect(find.text('内息紊乱 0.0 → 6.0 小时（累计上限 12.0 小时）'), findsOneWidget);
+    expect(find.text('原主修修炼度 800 → 400'), findsOneWidget);
+    expect(
+      find.text(UiStrings.dispelIncomingCultivationUnchanged),
+      findsOneWidget,
+    );
     expect(find.text(UiStrings.dispelLayerWarning), findsOneWidget);
     expect(find.text(UiStrings.dispelDialogTitle), findsOneWidget);
     expect(find.byType(PaperDialog), findsOneWidget);
