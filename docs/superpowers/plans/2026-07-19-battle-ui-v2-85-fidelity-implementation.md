@@ -859,13 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：`[BLOCKED]` Task 2.1 已完成，Task 2.2 已到首张技能签 + 一套 1280×720 案台样板点；依派单冻结，等待用户拍板，禁止扩展七签/行囊/五态。
+- **状态**：用户已通过技能签样板，阶段 2 恢复推进；新增优先项“背景过深”已完成最小前置修正，Task 2.3 待开始。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：拆出 `battle_command_desk.dart`、`battle_focus_rail.dart`、`battle_pouch_rail.dart`、`battle_skill_slip.dart` 四个表现组件，`BottomBar` / `AutoRotationBar` 外部 API 与原生按钮语义保持；首张实体技能签使用现有 `paper_bg.png` + CustomPainter，形成旧纸毛边、内墨线、绛红性质印、招式名主字阶、签底状态区和确定性轻微错落。样板 route 只呈现一张实体签，其余六位仍为空槽。
-- **下一步**：等待用户对 `stage2_skill_slip_sample/battle_boss_phase/1280x720/battle_boss_phase.png` 拍板；获批后才可继续 Task 2.2 扩展七签，并另行进入行囊与五态任务。若否决，只回调这一张签与案台底座，不扩散改动。
-- **已跑验证**：Task 2.1 纯重构由既有 targeted 71/71 守护，`flutter analyze --no-pub` 0 issue（3.5s）。Task 2.2 红态：可用技能签测试找不到 `battle.skillSlipNaturalTilt`（0 widget）；绿态补齐 natural tilt / rough paper / nature seal，原生 `ElevatedButton` elevation=0 且为 `BeveledRectangleBorder`。阶段 2 当前 targeted 71/71，`flutter analyze --no-pub` 0 issue（3.9s）；样板 PNG 内容区 1280×720、DPR=2（2560×1440），日志 0 overflow/exception/error。
-- **当前评分**：冻结沿用阶段 1 总分 64/100；样板未经用户拍板，不把单签观感增量提前计入 C/D，也不宣称阶段 2 Gate 达成。
-- **证据目录**：基线 `build/visual_acceptance/battle_ui_v2_85/baseline/`；阶段 1 `build/visual_acceptance/battle_ui_v2_85/stage1/`；待拍板样板 `build/visual_acceptance/battle_ui_v2_85/stage2_skill_slip_sample/`，含 1280×720 screenshot/log/manifest。
-- **阻塞项**：`[BLOCKED] 技能签样板待用户拍板`。残留风险：毛边与 0.01rad 错落在不同 DPR 下的细线观感待后续验证；空槽、行囊和五态仍是旧实现且有意未扩做；Boss fixture 资产偏素、人物 alpha 精测与 Windows 缩放均未进入本样板点。
-- **§8.2 四证据**：①生产接线：正式 `BattleScreen` → `BottomBar` 直接消费拆分后的案台/技能签组件，debug route 不承载唯一实现，真实技能/真气/CD 数据未伪造；② targeted：Task 2.2 先红后绿，阶段当前 71/71 + analyze 0 issue，样板 0 overflow；③红线：零改 `data/`、战斗规则、AI/tick/伤害/胜负/掉落、schema/saveVersion/持久化，零新增资产与中文 Dart 文案；④残留风险：用户尚未拍板，七签/行囊/五态、Windows 缩放、人物 alpha 精测和 build 证据长期保全均待后续。
-- **Git 状态口径**：Task 2.1 已提交 `273bb0b5`，首张技能签代码已提交 `4964d77d`；本恢复点将以 `[BLOCKED] 技能签样板待用户拍板` 提交，build 证据默认忽略，主 checkout 保持只读。
+- **最后完成**：用户通过首签方向后，先将有图场景的全局黑色 scrim 从 40% 改为 16% 浅暖墨色，将有图 vignette 收至原强度 55%，并把主线山道色级由偏蓝压暗调整为浅暖低彩；完整场景 profile 仍留阶段 3。固定 `battle_boss_phase` 1280×720 战场区平均亮度由 81.96 提至 110.39（+34.7%）。
+- **下一步**：执行 Task 2.3；以现有首签 surface 铺开可用、冷却、真气不足、待发、破招五态，并用 `battle_v2_resource_pressure` / `battle_charge_break` 固定 route 取证。
+- **已跑验证**：背景修正红态：新增测试找不到 `battle_scene_image_scrim`；绿态：`battle_scene_background_test.dart` 7/7，锁定有图暖色 scrim ≤18%、vignette ≤20%；`flutter analyze --no-pub` 0 issue（3.5s）。改后截图内容区 1280×720，日志无 overflow/exception/error。
+- **当前评分**：沿用阶段 1 的客观 Gate 分 64/100；首签方向虽已获批，但七签/空槽/名帖/行囊/五态未齐，不提前宣称阶段 2 Gate 达成。
+- **证据目录**：新增 `build/visual_acceptance/battle_ui_v2_85/background_brightness_before_after/`，含同 route 改前/改后原图、日志和并排图；既有 baseline/stage1/stage2 sample 保持。
+- **阻塞项**：无。残留风险：本切片只修“过深”口径，Boss/塔/轻功等完整 profile、人物 alpha 精测与 Windows 缩放仍留后续；空槽、行囊和五态尚待 Task 2.3/2.4。
+- **§8.2 四证据**：①生产接线：正式 `BattleScreen` 的 `BattleSceneBackground` 直接消费新 scrim/vignette/色级，debug route 只负责同状态取证；② targeted：背景测试 7/7 + analyze 0 issue，改后日志 0 overflow；③红线：零改 `data/`、战斗规则、AI/tick/伤害/胜负/掉落、schema/saveVersion/持久化，纯表现层色彩调整；④残留风险：完整场景 profile、七签/行囊/五态、Windows 缩放、人物 alpha 精测和 build 证据长期保全均待后续。
+- **Git 状态口径**：技能签拍板点为 `2ea6b377`；背景明度修正与本恢复点待提交，tip 继续为 WIP，build 证据默认忽略，主 checkout 保持只读。

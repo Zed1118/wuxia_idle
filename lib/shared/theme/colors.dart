@@ -62,7 +62,7 @@ class WuxiaColors {
   static const Color sealCrimson = Color(0xFF9E2B25);
 
   /// 战斗背景图上的压暗遮罩(出版美术 B1):保证偏亮背景不抢前景。
-  static const Color battleSceneScrim = Color(0x66000000); // black 40%
+  static const Color battleSceneScrim = Color(0x292A2218); // warm ink 16%
   static const Color narrativeSceneScrim = Color(
     0x80000000,
   ); // black 50%(正文长文需更重压暗)

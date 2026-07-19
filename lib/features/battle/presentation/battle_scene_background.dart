@@ -40,6 +40,9 @@ class BattleSceneBackground extends StatelessWidget {
         (style == BattleSceneBackgroundStyle.generic &&
             p?.contains('battle_mountain_pass_stage') == true);
     final profile = _SceneDepthProfile.resolve(path: p, style: style);
+    final vignetteAlpha = hasImage
+        ? profile.vignetteAlpha * 0.55
+        : profile.vignetteAlpha;
     final scene = Stack(
       fit: StackFit.expand,
       children: [
@@ -97,13 +100,17 @@ class BattleSceneBackground extends StatelessWidget {
               colors: [
                 profile.glowColor.withValues(alpha: profile.glowAlpha),
                 WuxiaColors.background.withValues(alpha: 0.0),
-                WuxiaColors.background.withValues(alpha: profile.vignetteAlpha),
+                WuxiaColors.background.withValues(alpha: vignetteAlpha),
               ],
               stops: const [0.0, 0.48, 1.0],
             ),
           ),
         ),
-        if (hasImage) const ColoredBox(color: WuxiaColors.battleSceneScrim),
+        if (hasImage)
+          const ColoredBox(
+            key: ValueKey('battle_scene_image_scrim'),
+            color: WuxiaColors.battleSceneScrim,
+          ),
       ],
     );
     if (isMountainPassScene) {
@@ -164,21 +171,21 @@ String _resolvedBackgroundAsset(
 /// 主线山道背景轻微冷灰化，压掉径向 glow 与原图叠加后的暖黄块。
 /// 只作用于背景组件，人物、状态牌和技能案台不参与滤镜。
 const _mainlineSceneColorGrade = ColorFilter.matrix(<double>[
-  0.84,
-  0.08,
-  0.08,
-  0,
-  -8,
+  0.82,
+  0.12,
   0.06,
-  0.90,
-  0.04,
   0,
-  -2,
-  0.06,
+  14,
   0.10,
-  0.96,
+  0.84,
+  0.06,
   0,
-  8,
+  10,
+  0.08,
+  0.18,
+  0.74,
+  0,
+  4,
   0,
   0,
   0,

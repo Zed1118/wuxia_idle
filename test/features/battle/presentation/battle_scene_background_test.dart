@@ -38,6 +38,33 @@ void main() {
     expect(scrim, findsOneWidget);
   });
 
+  testWidgets('有图山道使用浅暖 scrim 且收束外缘压暗', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        const BattleSceneBackground(
+          path: WuxiaUi.battleMountainPassStage,
+          style: BattleSceneBackgroundStyle.mainline,
+        ),
+      ),
+    );
+
+    final scrim = tester.widget<ColoredBox>(
+      find.byKey(const ValueKey('battle_scene_image_scrim')),
+    );
+    expect(scrim.color.a, lessThanOrEqualTo(0.18));
+    expect(scrim.color.r, greaterThan(scrim.color.b));
+
+    final vignette =
+        tester
+                .widget<DecoratedBox>(
+                  find.byKey(const ValueKey('battle_scene_glow_vignette')),
+                )
+                .decoration
+            as BoxDecoration;
+    final gradient = vignette.gradient! as RadialGradient;
+    expect(gradient.colors.last.a, lessThanOrEqualTo(0.20));
+  });
+
   testWidgets('path null 仍有非空水墨兜底,且不创建背景 Image', (tester) async {
     await tester.pumpWidget(_wrap(const BattleSceneBackground(path: null)));
     await tester.pump();
