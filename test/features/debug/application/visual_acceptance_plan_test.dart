@@ -35,19 +35,36 @@ void main() {
     expect(ids, isNot(contains(VisualRoute.hub.id)));
     expect(ids, contains(VisualRoute.taohuaIsland.id));
     expect(ids, contains(VisualRoute.recruitmentDialog.id));
+    expect(
+      ids,
+      containsAll(<String>[
+        'battle_v2_casualty_replacement',
+        'battle_v2_fast_forward_peak',
+        'battle_v2_pre_result',
+        'battle_v2_neutral_3v3',
+        'battle_v2_resource_pressure',
+      ]),
+    );
   });
 
-  test('battle suite 覆盖30主线+30塔层+5轻功+5群战', () {
+  test('battle suite 覆盖70动态战斗与5个V2确定性状态', () {
     final ids = visualAcceptanceRouteIds(VisualAcceptanceSuite.battle);
 
-    expect(ids, hasLength(70));
-    expect(ids.toSet(), hasLength(70));
+    expect(ids, hasLength(75));
+    expect(ids.toSet(), hasLength(75));
     expect(ids.first, 'battle_audit_stage_01_01');
     expect(ids, contains('battle_audit_stage_06_05'));
     expect(ids, contains('battle_audit_tower_01'));
     expect(ids, contains('battle_audit_tower_30'));
     expect(ids, contains('battle_audit_stage_light_foot_05'));
-    expect(ids.last, 'battle_audit_stage_mass_battle_05');
+    expect(ids, contains('battle_audit_stage_mass_battle_05'));
+    expect(ids.sublist(ids.length - 5), <String>[
+      'battle_v2_casualty_replacement',
+      'battle_v2_fast_forward_peak',
+      'battle_v2_pre_result',
+      'battle_v2_neutral_3v3',
+      'battle_v2_resource_pressure',
+    ]);
     for (final id in ids) {
       expect(parseVisualRoute(id), isNotNull, reason: id);
     }

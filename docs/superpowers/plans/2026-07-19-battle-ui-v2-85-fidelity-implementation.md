@@ -1,7 +1,7 @@
 # 战斗界面 V2 ≥85% 风格还原实施计划
 
 > 日期：2026-07-19  
-> 状态：实施中（Task 0.1 已完成）
+> 状态：实施中（Task 0.2 已完成）
 > 阶段：1.0 长线打磨期  
 > 基准分支：`main@ad94a2bb`  
 > 推荐实施分支：`codex/battle-ui-v2-fidelity-85`  
@@ -859,12 +859,13 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：Task 0.1 已完成；隔离 worktree 与 fresh checkout 环境已就绪，尚未改生产代码。
+- **状态**：Task 0.2 已完成；五个 V2 确定性视觉 route 与 READY 状态门已接线，尚未改生产战斗规则。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：提交文档基线 `2c394b15`；完成 `flutter pub get`、`dart run build_runner build --delete-conflicting-outputs` 与 fresh worktree analyze 预热。
-- **下一步**：执行 Task 0.2；先为五个确定性视觉 route 写失败测试，再实现 route、READY 所有权和验收清单接线。
-- **已跑验证**：分支/HEAD 与基准图 SHA 核对通过；`flutter pub get` 成功；`build_runner` 写出 128 个生成产物；`flutter analyze --no-pub` 0 issue（12.2s）。
+- **最后完成**：新增 `battle_v2_casualty_replacement`、`battle_v2_fast_forward_peak`、`battle_v2_pre_result`、`battle_v2_neutral_3v3`、`battle_v2_resource_pressure`；普通 route 仍首帧 READY，五个状态 route 仅在固定 seed 回放/初态谓词成立后 READY；`full` 与 `battle` 清单均已列出五条 route。
+- **下一步**：执行 Task 0.3；先为结构量测配置、内容区/DPR、比例、人物 alpha 包围盒、Boss 面积比、语义色 mask 与评分骨架写失败测试，再实现只读分析脚本。
+- **已跑验证**：红态：首次运行两项 targeted tests 为 3 pass / 2 fail（缺五 route、READY gate、目标配置）；绿态：同两文件 47 pass / 0 fail；阶段验证：`flutter test --no-pub test/features/debug` 138 pass / 0 fail，`flutter analyze --no-pub` 0 issue（3.4s），`flutter pub run tool/visual_acceptance.dart routes --suite full --format ids` 成功列出五条 V2 route。
 - **当前评分**：A 15/20、B 14/25、C 12/25、D 10/15、E 6/10、F 3/5，合计 60/100（报告估分，待 Task 0.4 重测）。
-- **证据目录**：尚未创建；计划为 `build/visual_acceptance/battle_ui_v2_85/`。
-- **阻塞项**：无。
-- **Git 状态口径**：worktree 仅有本恢复点待提交，tip 为 WIP；主 checkout 保持只读。
+- **证据目录**：尚未抓图；计划为 `build/visual_acceptance/battle_ui_v2_85/`。确定性摘要已由测试证明相同 seed 两次得到一致 tick/状态。
+- **阻塞项**：无。残留风险：五条 route 尚未经过 macOS 真机截图驱动；动态峰值的定格视觉效果待 Task 0.4 目检。
+- **§8.2 四证据**：①生产接线：改动仅扩展 debug/profile 验收入口，正式 `BattleScreen` 仍由同一 `ScenarioLauncher` 消费且战斗实现未分叉；② targeted：debug 族 138/138；③红线：零改 `data/`、伤害/真气/冷却/AI/tick/胜负/掉落、三系/在线离线/反主流项，新增数值仅为隔离视觉 fixture；④残留风险：未抓双视口、未验证 capture manifest、Windows 字体不在本阶段范围。
+- **Git 状态口径**：Task 0.2 源码、测试与本恢复点待提交，tip 为 WIP；主 checkout 保持只读。

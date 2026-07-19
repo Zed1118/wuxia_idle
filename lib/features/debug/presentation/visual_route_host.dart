@@ -155,11 +155,24 @@ class VisualRouteHost extends ConsumerStatefulWidget {
 class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
   Widget? _target;
   Object? _error;
+  late final VisualRouteReadyGate _readyGate;
 
   @override
   void initState() {
     super.initState();
+    _readyGate = VisualRouteReadyGate(
+      controlled: widget.route.controlsReadiness,
+      onReady: _emitReady,
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) => _prepare());
+  }
+
+  void _emitReady(String summary) {
+    final routeId = widget.routeId ?? widget.route.id;
+    if (summary != 'mounted') {
+      debugPrint('VISUAL_ROUTE_STATE: route=$routeId $summary');
+    }
+    debugPrint('VISUAL_ROUTE_READY: $routeId');
   }
 
   Future<void> _prepare() async {
@@ -174,6 +187,7 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
         widget.route,
         isar,
         routeId: widget.routeId,
+        onTargetReady: _readyGate.markTarget,
       );
 
       // 3. 挂载目标屏
@@ -182,7 +196,7 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
 
       // 4. 目标屏首帧后打就绪信号
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        debugPrint('VISUAL_ROUTE_READY: ${widget.routeId ?? widget.route.id}');
+        _readyGate.markMounted();
       });
     } catch (e) {
       if (!mounted) return;
@@ -203,6 +217,34 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
   }
 }
 
+/// 普通 route 维持首帧 READY；状态 route 必须同时满足挂载和目标状态。
+class VisualRouteReadyGate {
+  VisualRouteReadyGate({required this.controlled, required this.onReady});
+
+  final bool controlled;
+  final ValueChanged<String> onReady;
+  bool _mounted = false;
+  bool _emitted = false;
+  String? _targetSummary;
+
+  void markMounted() {
+    _mounted = true;
+    _tryEmit();
+  }
+
+  void markTarget(String summary) {
+    _targetSummary ??= summary;
+    _tryEmit();
+  }
+
+  void _tryEmit() {
+    if (_emitted || !_mounted) return;
+    if (controlled && _targetSummary == null) return;
+    _emitted = true;
+    onReady(controlled ? _targetSummary! : 'mounted');
+  }
+}
+
 /// 单一职责:route → (seed + 目标屏)。供 [VisualRouteHost] 单路由直达与
 /// [_AcceptanceHub] 运行时点选复用——后者 build 一次即可点遍全部路由,
 /// 免 dart-define VISUAL_ROUTE 每路由重 flutter run(Codex 验收加速)。
@@ -210,6 +252,7 @@ Future<Widget> buildVisualTarget(
   VisualRoute route,
   Isar isar, {
   String? routeId,
+  ValueChanged<String>? onTargetReady,
 }) async {
   switch (route) {
     case VisualRoute.mainMenu:
@@ -422,6 +465,62 @@ Future<Widget> buildVisualTarget(
         bgmTrack: BgmTrack.massBattle,
         autoStart: true,
         seed: 20260719,
+      );
+    case VisualRoute.battleV2CasualtyReplacement:
+      return ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioV2CasualtyReplacement,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        bgmTrack: BgmTrack.massBattle,
+        autoStart: false,
+        startPaused: true,
+        seed: battleV2VisualSeed,
+        readyTarget: VisualBattleReadyTarget.casualtyReplacement,
+        onTargetReady: onTargetReady,
+      );
+    case VisualRoute.battleV2FastForwardPeak:
+      return ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioV2FastForwardPeak,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        autoStart: false,
+        startPaused: true,
+        seed: battleV2VisualSeed,
+        readyTarget: VisualBattleReadyTarget.fastForwardPeak,
+        onTargetReady: onTargetReady,
+      );
+    case VisualRoute.battleV2PreResult:
+      return ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioV2PreResult,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        autoStart: false,
+        startPaused: true,
+        seed: battleV2VisualSeed,
+        readyTarget: VisualBattleReadyTarget.preResult,
+        onTargetReady: onTargetReady,
+      );
+    case VisualRoute.battleV2Neutral3v3:
+      return ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioDragLive,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        autoStart: false,
+        startPaused: true,
+        seed: battleV2VisualSeed,
+        readyTarget: VisualBattleReadyTarget.initialized,
+        onTargetReady: onTargetReady,
+      );
+    case VisualRoute.battleV2ResourcePressure:
+      return ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioV2ResourcePressure,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        autoStart: false,
+        startPaused: true,
+        seed: battleV2VisualSeed,
+        readyTarget: VisualBattleReadyTarget.resourcePressure,
+        onTargetReady: onTargetReady,
       );
     case VisualRoute.battleTapLive:
       // 两段点选真玩/验收:真战斗 + 干预层挂上 + 高血耐久敌久撑。

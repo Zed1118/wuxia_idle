@@ -62,6 +62,19 @@ final List<VisualAcceptanceRoute> _battleRoutes = [
     _battleStageRoute('battle_audit_stage_light_foot_${_twoDigits(stage)}'),
   for (var stage = 1; stage <= 5; stage++)
     _battleStageRoute('battle_audit_stage_mass_battle_${_twoDigits(stage)}'),
+  for (final route in const [
+    VisualRoute.battleV2CasualtyReplacement,
+    VisualRoute.battleV2FastForwardPeak,
+    VisualRoute.battleV2PreResult,
+    VisualRoute.battleV2Neutral3v3,
+    VisualRoute.battleV2ResourcePressure,
+  ])
+    VisualAcceptanceRoute(
+      route: route,
+      id: route.id,
+      seed: visualAcceptanceSeed,
+      checks: _checksFor(route),
+    ),
 ];
 
 VisualAcceptanceRoute _battleStageRoute(String id) => VisualAcceptanceRoute(
@@ -215,6 +228,31 @@ List<String> _checksFor(VisualRoute route) {
       '「护法结界」护罩 pill 可辨(内力色·水墨克制不网游味)',
       'Boss 金边 + 护罩 pill + 流派克制标多 tag 同屏不挤压/不遮头像',
       '最低分辨率下多 tag 堆叠仍可读',
+    ],
+    VisualRoute.battleV2CasualtyReplacement => const [
+      '固定 seed 首次阵亡递补完成后暂停',
+      '阵亡者褪墨且替补进入同一视觉槽',
+      'READY 日志含实际 tick 与存活摘要',
+    ],
+    VisualRoute.battleV2FastForwardPeak => const [
+      '固定 seed 同拍双伤害峰值后暂停',
+      '飘字与命中特效不互撞',
+      'READY 日志含实际 tick 与峰值动作数',
+    ],
+    VisualRoute.battleV2PreResult => const [
+      '冻结在最后一次致胜 action 前',
+      '结算层尚未覆盖战场',
+      'READY 日志含实际 tick 与存活摘要',
+    ],
+    VisualRoute.battleV2Neutral3v3 => const [
+      '标准 3v3 无待发/大招/结算遮挡',
+      '三人阵列与完整案台同屏',
+      'READY 只在战斗初态挂载后发出',
+    ],
+    VisualRoute.battleV2ResourcePressure => const [
+      '同帧至少一张冷却签和一张真气不足签',
+      '两种不可用状态可独立识别',
+      'READY 只在资源压力初态成立后发出',
     ],
     _ => [route.label],
   };
