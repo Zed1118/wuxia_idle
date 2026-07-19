@@ -521,7 +521,7 @@ class _StageCharacterStandee extends StatelessWidget {
         colorFilter: _grayscaleFilter,
         child: Opacity(
           key: const ValueKey('battle.stageStandeeDefeatedFade'),
-          opacity: 0.30,
+          opacity: 0.45,
           child: content,
         ),
       ),
@@ -596,7 +596,7 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: WuxiaColors.textPrimary,
+                  color: WuxiaUi.ink,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                   shadows: [Shadow(color: Colors.black, blurRadius: 4)],
