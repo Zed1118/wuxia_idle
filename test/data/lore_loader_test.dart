@@ -136,7 +136,7 @@ default_lore:
               .where((f) => f.path.endsWith('.yaml'))
               .toList()
             ..sort((a, b) => a.path.compareTo(b.path));
-      expect(files.length, 80, reason: 'P2.1 Batch 1 扩充 35→80 件装备 lore');
+      expect(files.length, 83, reason: '80 + 断魂庄三选一命名装备 lore 3 篇');
 
       for (final f in files) {
         final basename = f.uri.pathSegments.last.replaceAll('.yaml', '');
@@ -169,7 +169,7 @@ default_lore:
               .where((f) => f.path.endsWith('.yaml'))
               .toList()
             ..sort((a, b) => a.path.compareTo(b.path));
-      expect(files.length, 80);
+      expect(files.length, 83);
 
       final placeholderPattern = RegExp(r'\{(\w+)\}');
       const allPlaceholders = {'source', 'boss_name', 'stage_name'};

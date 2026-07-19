@@ -1371,6 +1371,7 @@ equipment:
     dropSourceTags: ["gauntlet_duanhun"]
     iconPath: assets/equipment/weapon_haojiahuo_suo_mai_nang.png
     detailPath: assets/equipment/weapon_haojiahuo_suo_mai_nang_detail.png
+    specialSkillCandidates: [skill_edge_haojiahuo_lingqiao]
 
   - id: armor_haojiahuo_zhen_yue_tie_yi
     name: 镇岳铁衣
