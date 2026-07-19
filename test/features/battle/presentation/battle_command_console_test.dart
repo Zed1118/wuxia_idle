@@ -1,4 +1,7 @@
+import 'dart:ui' show SemanticsAction, Tristate;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
@@ -11,9 +14,11 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import '../../../support/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_layout_tokens.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
 import 'package:wuxia_idle/features/battle/presentation/widgets/battle_bottom_bar.dart';
+import 'package:wuxia_idle/features/battle/presentation/widgets/battle_skill_slip.dart';
 
 /// 批三战斗指令台（T1/T2/T3）widget 测试。
 ///
@@ -696,6 +701,63 @@ void main() {
   });
 
   group('T1 战斗指令台', () {
+    testWidgets('技能签保留桌面按钮语义、焦点、键盘激活与点击光标', (tester) async {
+      var activations = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 120,
+                child: BattleSkillSlipSurface(
+                  height: 150,
+                  tiltAngle: 0,
+                  backgroundColor: WuxiaUi.paper,
+                  foregroundColor: WuxiaUi.ink,
+                  border: const BorderSide(color: WuxiaUi.ink),
+                  accent: WuxiaUi.jiang,
+                  visualState: BattleSkillSlipVisualState.available,
+                  onPressed: () => activations++,
+                  onLongPress: () {},
+                  child: const Text('desktop-skill-slip'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final semantics = tester
+          .getSemantics(find.byType(ElevatedButton))
+          .getSemanticsData();
+      expect(semantics.flagsCollection.isButton, isTrue);
+      expect(semantics.flagsCollection.isEnabled, Tristate.isTrue);
+      expect(semantics.hasAction(SemanticsAction.tap), isTrue);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(FocusManager.instance.primaryFocus?.hasFocus, isTrue);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pump();
+      expect(activations, 1);
+
+      final mouseRegions = tester.widgetList<MouseRegion>(
+        find.descendant(
+          of: find.byType(ElevatedButton),
+          matching: find.byType(MouseRegion),
+        ),
+      );
+      expect(
+        mouseRegions.map((region) => region.cursor).any((cursor) {
+          final resolved = cursor is WidgetStateMouseCursor
+              ? cursor.resolve(const {WidgetState.hovered})
+              : cursor;
+          return resolved == SystemMouseCursors.click;
+        }),
+        isTrue,
+      );
+    });
+
     testWidgets('案台三段在双视口保持比例且七签无横向滚动', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       for (final size in const [Size(1280, 720), Size(1440, 900)]) {

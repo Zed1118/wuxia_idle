@@ -64,6 +64,8 @@ class BattleSkillSlipSurface extends StatelessWidget {
             side: border,
             elevation: 0,
             shadowColor: Colors.transparent,
+            enabledMouseCursor: SystemMouseCursors.click,
+            disabledMouseCursor: SystemMouseCursors.basic,
             shape: const BeveledRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(3)),
             ),
