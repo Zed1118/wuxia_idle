@@ -85,7 +85,9 @@ class ImpactGlyphOverlayState extends State<ImpactGlyphOverlay>
     if (_glyph == null) return const SizedBox.shrink();
     // 战场是低饱和水墨舞台，题字只做短促的印记，不应读成
     // 高饱和的手游爆炸贴纸。我方使用旧纸金，敌方使用深绛印泥。
-    final accent = _isEnemy ? WuxiaColors.sealCrimson : const Color(0xFF8B7046);
+    final accent = _isEnemy
+        ? WuxiaColors.battleCrimson
+        : WuxiaColors.battleOldGold;
     return IgnorePointer(
       child: AnimatedBuilder(
         animation: _ctrl,
@@ -100,19 +102,22 @@ class ImpactGlyphOverlayState extends State<ImpactGlyphOverlay>
                 alignment: Alignment.center,
                 children: [
                   Positioned.fill(
-                    child: ColorFiltered(
-                      colorFilter: ColorFilter.mode(accent, BlendMode.srcIn),
-                      child: WuxiaImage(
-                        _kInkBlobAsset,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: const Color(0x99000000),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: accent, width: 1.5),
+                    child: Opacity(
+                      opacity: 0.52,
+                      child: ColorFiltered(
+                        colorFilter: ColorFilter.mode(accent, BlendMode.srcIn),
+                        child: WuxiaImage(
+                          _kInkBlobAsset,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: const Color(0x99000000),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: accent, width: 1.5),
+                                ),
                               ),
-                            ),
+                        ),
                       ),
                     ),
                   ),

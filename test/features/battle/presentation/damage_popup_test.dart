@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/presentation/damage_popup.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/colors.dart';
 
 /// damage_popup widget 测试(P1.1 候选 3-c sword_song 浮字)。
 ///
@@ -55,6 +56,10 @@ void main() {
     expect(find.text(UiStrings.damageSuffix), findsOneWidget);
     expect(find.text(UiStrings.criticalDamagePopup(4500)), findsNothing);
     expect(find.text(UiStrings.swordSongHint), findsOneWidget);
+    final damage = tester.widget<Text>(find.text('4500'));
+    expect(damage.style?.color, WuxiaColors.battleCrimson);
+    final swordSong = tester.widget<Text>(find.text(UiStrings.swordSongHint));
+    expect(swordSong.style?.color, WuxiaColors.battleOldGold);
   });
 
   testWidgets('暴击 + hasSwordSong=false → 不显 ✦剑鸣', (tester) async {

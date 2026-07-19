@@ -13,6 +13,9 @@ bool isUltimateCaptionSkill(SkillDef? skill) =>
     skill != null &&
     (skill.type == SkillType.ultimate || skill.type == SkillType.jointSkill);
 
+Color battleCaptionAccent({required bool isEnemy}) =>
+    isEnemy ? WuxiaColors.battleCrimson : WuxiaColors.battleOldGold;
+
 /// 大招题字视觉(纯展示,无动画)。供动画 overlay 与视觉验收路由复用。
 /// 玩家方暖金、敌方绛红，水墨大字 + 墨色描边。
 /// [fontSize] 默认 56；暴击峰值时传 captionPeakSize(68)。
@@ -22,6 +25,7 @@ class UltimateCaptionContent extends StatelessWidget {
   final bool isEnemy;
   final double fontSize;
   final double glowBlur;
+  final double accentStrength;
 
   const UltimateCaptionContent({
     super.key,
@@ -29,11 +33,17 @@ class UltimateCaptionContent extends StatelessWidget {
     required this.isEnemy,
     this.fontSize = 56,
     this.glowBlur = 0,
+    this.accentStrength = 1,
   });
 
   @override
   Widget build(BuildContext context) {
-    final accent = isEnemy ? WuxiaColors.gangMeng : WuxiaColors.resultHighlight;
+    final semanticAccent = battleCaptionAccent(isEnemy: isEnemy);
+    final accent = Color.lerp(
+      const Color(0xFF554C3F),
+      semanticAccent,
+      accentStrength.clamp(0.0, 1.0),
+    )!;
     final glowShadows = glowBlur > 0
         ? [Shadow(color: accent, blurRadius: glowBlur)]
         : null;
@@ -46,16 +56,19 @@ class UltimateCaptionContent extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             Positioned.fill(
-              child: ColorFiltered(
-                colorFilter: ColorFilter.mode(accent, BlendMode.srcIn),
-                child: WuxiaImage(
-                  _kInkBlobAsset,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: const Color(0x99000000),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: accent, width: 1.5),
+              child: Opacity(
+                opacity: 0.24 + 0.34 * accentStrength.clamp(0.0, 1.0),
+                child: ColorFiltered(
+                  colorFilter: ColorFilter.mode(accent, BlendMode.srcIn),
+                  child: WuxiaImage(
+                    _kInkBlobAsset,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: const Color(0x99000000),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: accent, width: 1.5),
+                      ),
                     ),
                   ),
                 ),
@@ -165,6 +178,15 @@ class UltimateCaptionOverlayState extends State<UltimateCaptionOverlay>
     return 1.0;
   }
 
+  /// 前 300ms 保留语义色峰值，随后在 500ms 内回到低彩墨色。
+  double get _accentStrength {
+    final elapsedMs = _ctrl.value * _totalMs;
+    if (elapsedMs <= 300) return 1;
+    if (elapsedMs >= 500) return 0.30;
+    final t = (elapsedMs - 300) / 200;
+    return 1 - 0.70 * t;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_name == null) return const SizedBox.shrink();
@@ -178,6 +200,7 @@ class UltimateCaptionOverlayState extends State<UltimateCaptionOverlay>
             isEnemy: _isEnemy,
             fontSize: _fontSize,
             glowBlur: _glowBlur,
+            accentStrength: _accentStrength,
           ),
         ),
       ),

@@ -861,11 +861,11 @@ bash -n tools/visual_capture/visual_capture.sh
 
 - **状态**：`WIP` 阶段 3 已获用户通过；A 案自动观战七签骨架生产接线完成，正进入阶段 4。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
-- **最后完成**：Task 4.1 顶栏已收成中央双绛边题签和右侧字+极简图标窄签，控制点击区≥36px，tooltip/semantics/focus/cursor 保留；Task 4.2 已建立唯一 T1～T5 字阶、Windows 回退链与等宽数字 token，案台与人物双资源条最小字提到 9px。
-- **下一步**：执行 Task 4.3，统一首通/破招/大招/暴击的旧金绛红色域与 300～500ms 低彩回落。
-- **已跑验证**：Task 4.1 新行为先红 3 例；顶栏/案台/HP/人物四个 targeted 文件 69/69 PASS；`flutter analyze --no-pub` 0 issue。A 案 44/44 与阶段 3 证据保持有效。
+- **最后完成**：Task 4.3 已将大招、首通开场、破招字形、首胜英雄镜头和暴击辅标收入共用旧金/绛红色域；中央大题字前 300ms 保留峰值，500ms 内降到 30% 语义色，墨团占地同步降低；无修改任何伤害、播放结算时点或战斗规则。Task 4.1/4.2 保持完成。
+- **下一步**：抓取 A 案自动/可点选双视口与轮转拍证据，抓 S6/S8/S9/S11/S12 双视口，组装 S1～S12 manifest 运行饱和度/字体对比度/综合量测。
+- **已跑验证**：Task 4.3 新行为先红 2 文件；计划指定的阶段 4 五个 targeted 文件 38/38 PASS；`flutter analyze --no-pub` 0 issue。Task 4.1/4.2 为 69/69 + analyze 0 issue，A 案 44/44。
 - **当前评分**：B=22.5/25（≥21，PASS）、D=12.5/15（≥11，PASS），C 保持 23/25。按“部分满足只能半分”保守计分：撑伞源图代际差与跨模块纸墨一致性各记半分，不用其他项超额抵扣。
 - **证据目录**：阶段 3 主证据保留于 `build/visual_acceptance/battle_ui_v2_85/stage3_gate/`；A 案的自动/可点选双视口与动态轮转证据待与阶段 4 Gate 一并抓取。
 - **阻塞项**：无。残留风险：`BattleAction` 未携带 teamSide，亮起时只能按 actorId 匹配已有日志口径；证据截图、阶段 4 与 Windows 缩放尚待。
 - **§8.2 四证据**：①生产接线：正式 `BattleScreen` 的自动分支已消费 `AutoCommandDesk`，共用案台底座、名帖、技能签面和行囊组件；② targeted：先红 4 例，绿后 44/44 + analyze 0 issue；③红线：本切片 `data/`、战斗域、schema/saveVersion、真实存档、禁改文件变化均为 0；④残留风险：跨队伍 actorId 理论重号时的日志歧义与尚未抓取的视觉证据。
-- **Git 状态口径**：A 案生产接线已于 `17cc9902`提交；Task 4.1/4.2 切片待提交；本轮最终 tip 仍必须使用 `[READY] 阶段4+A案交付`，期间提交不使用 READY/BLOCKED。
+- **Git 状态口径**：A 案为 `17cc9902`，Task 4.1/4.2 为 `c440ae88`；Task 4.3 切片待提交；本轮最终 tip 必须使用 `[READY] 阶段4+A案交付`，期间提交不使用 READY/BLOCKED。

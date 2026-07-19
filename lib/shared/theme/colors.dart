@@ -38,6 +38,12 @@ class WuxiaColors {
   static const Color textSecondary = Color(0xFFCCCCCC);
   static const Color textMuted = Color(0xFF8A93A0);
   static const Color resultHighlight = Color(0xFFE8C547);
+
+  /// 战斗题字/暴击的低饱和旧金，不与奖励黄共用。
+  static const Color battleOldGold = Color(0xFFB08A47);
+
+  /// 战斗墨章绛红，用于敌方题字、暴击和警示落款。
+  static const Color battleCrimson = Color(0xFF8A2B21);
   static const Color cycleHintText = Color(0xFFD4A800);
   // P2-3(2026-06-29 审查修复):战斗提示横幅色收入 token,替 battle_screen 散写魔数。
   static const Color hintBannerBg = Color(0xFF2A3A2A); // 通用提示条墨绿底
@@ -78,7 +84,7 @@ class WuxiaColors {
 
   // 伤害飘字色（T15）
   static const Color popupNormal = Color(0xFFFFFFFF); // 普通伤害：白
-  static const Color popupCritical = Color(0xFFFFD700); // 暴击：金
+  static const Color popupCritical = battleOldGold; // 暴击辅标：旧金
   static const Color popupDodge = Color(0xFF9E9E9E); // 闪避：灰
 
   static Color schoolColor(TechniqueSchool s) => switch (s) {

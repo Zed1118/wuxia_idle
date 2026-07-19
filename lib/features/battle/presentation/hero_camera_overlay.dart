@@ -151,7 +151,7 @@ class _HeroCameraOverlayState extends State<HeroCameraOverlay>
                           fit: BoxFit.contain,
                           errorBuilder: (_, _, _) => DecoratedBox(
                             decoration: BoxDecoration(
-                              color: WuxiaColors.gangMeng,
+                              color: WuxiaColors.battleCrimson,
                               borderRadius: BorderRadius.circular(6),
                             ),
                           ),
@@ -185,18 +185,16 @@ class _HeroCameraOverlayState extends State<HeroCameraOverlay>
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: WuxiaColors.resultHighlight.withValues(alpha: 0.18),
+                    color: WuxiaColors.battleOldGold.withValues(alpha: 0.14),
                     border: Border.all(
-                      color: WuxiaColors.resultHighlight.withValues(
-                        alpha: 0.55,
-                      ),
+                      color: WuxiaColors.battleOldGold.withValues(alpha: 0.55),
                     ),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: const Text(
                     UiStrings.heroCameraTopOutput,
                     style: TextStyle(
-                      color: WuxiaColors.resultHighlight,
+                      color: WuxiaColors.battleOldGold,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -207,7 +205,7 @@ class _HeroCameraOverlayState extends State<HeroCameraOverlay>
                 Text(
                   widget.data.heroName,
                   style: const TextStyle(
-                    color: WuxiaColors.resultHighlight,
+                    color: WuxiaColors.battleOldGold,
                     fontSize: 42,
                     fontWeight: FontWeight.bold,
                     shadows: [
