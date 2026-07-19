@@ -361,7 +361,7 @@ class AutoCommandDesk extends StatelessWidget {
 
     return BattleCommandDeskSurface(
       builder: (context, metrics) => KeyedSubtree(
-        key: const ValueKey('battle_auto_command_desk'),
+        key: const ValueKey('battle_auto_rotation_desk'),
         child: Opacity(
           opacity: 0.78,
           child: Row(
@@ -1068,7 +1068,11 @@ class SkillCommandButton extends StatelessWidget {
     );
 
     final semantics = Semantics(
-      key: ValueKey('skill_cmd_${character.characterId}_${skill.id}'),
+      key: ValueKey(
+        readOnly
+            ? 'battle_auto_skill_${character.characterId}_${skill.id}'
+            : 'skill_cmd_${character.characterId}_${skill.id}',
+      ),
       button: !readOnly,
       enabled: readOnly ? null : enabled,
       readOnly: readOnly,

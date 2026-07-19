@@ -271,18 +271,24 @@ void main() {
       final opacity = tester.widget<Opacity>(
         find
             .descendant(
-              of: find.byKey(const ValueKey('battle_auto_command_desk')),
+              of: find.byKey(const ValueKey('battle_auto_rotation_desk')),
               matching: find.byType(Opacity),
             )
             .first,
       );
       expect(opacity.opacity, 0.78);
       expect(
-        find.byKey(ValueKey('skill_cmd_${actor.characterId}_${_power.id}')),
+        find.byKey(
+          ValueKey('battle_auto_skill_${actor.characterId}_${_power.id}'),
+        ),
         findsOneWidget,
       );
       expect(
         find.byKey(ValueKey('skill_cmd_${actor.characterId}_${_ult.id}')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(ValueKey('skill_cmd_${actor.characterId}_${_power.id}')),
         findsNothing,
       );
     });
@@ -302,7 +308,7 @@ void main() {
       final desk = find.byKey(const ValueKey('battle_command_desk'));
       expect(desk, findsOneWidget);
       expect(
-        find.byKey(const ValueKey('battle_auto_command_desk')),
+        find.byKey(const ValueKey('battle_auto_rotation_desk')),
         findsOneWidget,
       );
       for (final actor in team) {
@@ -429,7 +435,7 @@ void main() {
             allowPlayerIntervention: false,
           );
           expect(
-            find.byKey(const ValueKey('battle_auto_command_desk')),
+            find.byKey(const ValueKey('battle_auto_rotation_desk')),
             findsOneWidget,
           );
           expect(tester.takeException(), isNull);

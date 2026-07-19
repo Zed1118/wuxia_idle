@@ -69,13 +69,18 @@ void main() {
 
   testWidgets('点暂停 → 遮罩出现;点继续 → 遮罩消失', (tester) async {
     await _pumpBattle(tester);
+    expect(
+      find.byKey(const ValueKey('battle_auto_rotation_desk')),
+      findsOneWidget,
+      reason: '默认配置是纯自动观战，暂停前后都应保留只读七签案台',
+    );
 
     await tester.tap(find.byKey(const ValueKey('battle_pause_toggle')));
     await tester.pump();
     expect(find.text(UiStrings.battlePausedTitle), findsOneWidget);
 
-    // 遮罩上的「继续」按钮(唯一渲染的文本;顶栏 tooltip 不入树)。
-    await tester.tap(find.text(UiStrings.battleResume));
+    // 顶栏在暂停后也显示“继续”，按按钮类型精确命中遮罩操作。
+    await tester.tap(find.widgetWithText(FilledButton, UiStrings.battleResume));
     await tester.pump();
     expect(find.text(UiStrings.battlePausedTitle), findsNothing);
   });
