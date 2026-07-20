@@ -10,14 +10,14 @@
 
 ## 验收标准
 
-- [ ] 16 个敌人 `iconPath` 指向真实透明 RGBA PNG，生产消费方为 `boss_gauntlets.yaml` / `expeditions.yaml` → `GameRepository` → battle `CharacterAvatar`。
-- [ ] 每张敌立绘均记录风格锚，并通过透明角、alpha 包围盒、战斗灰雾底合成目检；发现白边时按连通背景、收边 1px、轻羽化重抠。
-- [ ] 立绘脚底 fraction 由 alpha 包围盒实测，并按现有 `_stageStandeeFootFraction` / `_stageStandeeOpticalProfile` 接入必要校准。
-- [ ] 断魂庄 3 件装备各有 icon/detail 两图，路径与 `data/equipment.yaml` 一致，`known_missing_assets.txt` 对应 6 行清账。
-- [ ] targeted：`flutter test --no-pub test/tools/asset_audit_test.dart test/data/pubspec_asset_declaration_test.dart` 通过，并运行相关 battle 视觉测试。
-- [ ] `flutter analyze` 0 issue；工作树仅含允许范围内改动且最终干净。
-- [ ] 红线影响：不改数值、三系、在线/离线、反主流机制、schema；不新增 Dart 中文文案或数值配置。
-- [ ] 残留风险：逐张记录未目检/风格漂移/透明边缘/可选撑伞图状态，不把未达标图接入生产。
+- [x] 16 个敌人 `iconPath` 指向真实透明 RGBA PNG，生产消费方为 `boss_gauntlets.yaml` / `expeditions.yaml` → `GameRepository` → battle `CharacterAvatar`。
+- [x] 每张敌立绘均记录风格锚，并通过透明角、alpha 包围盒、战斗灰雾底合成目检；全批采用连通背景、收边 1px、轻羽化抠图。
+- [x] 立绘脚底 fraction 由 alpha 包围盒实测，并按现有 `_stageStandeeFootFraction` / `_stageStandeeOpticalProfile` 接入校准。
+- [x] 断魂庄 3 件装备各有 icon/detail 两图，路径与 `data/equipment.yaml` 一致，`known_missing_assets.txt` 对应 6 行清账。
+- [x] targeted：资产/pubspec、battle 立绘/几何、断魂庄验证、远征配置共 52/52 通过。
+- [x] `flutter analyze` 0 issue；工作树仅含允许范围内改动且最终干净。
+- [x] 红线影响：不改数值、三系、在线/离线、反主流机制、schema；不新增 Dart 中文文案或数值配置。
+- [x] 残留风险：20/20 已目检达标、0 `[BLOCKED]`；无未覆盖生产资产。
 
 ## 任务切片
 
@@ -30,10 +30,10 @@
 
 ## 当前恢复点
 
-- 状态：进行中。
-- 最后完成：16 敌与 3 件装备三切片均已提交；撑伞高人已按原身份/年龄/服色/收伞站姿升级为高分辨率厚涂透明源，并按新 alpha 包围盒补脚底 fraction。
-- 下一步：提交撑伞升级切片；运行最终 analyze、全批 targeted、资产/工作树四证据核验并清理临时产物。
-- 已跑验证：断魂庄敌相关 33/33 通过；百草岭切片资产/pubspec、角色立绘与 `test/features/expedition` → 100/100 通过；装备切片指定资产/pubspec targeted → 7/7 通过；撑伞相关角色立绘/战场几何 → 24/24 通过。此前一次命令误写不存在的短路径导致 1 个加载错误，已用正确路径完整重跑转绿。
-- 阻塞项：无。
+- 状态：已完成，待 `[READY]` 冻结。
+- 最后完成：16 敌、3 件装备与撑伞升级均已提交；最终四证据与透明资产检查已转绿。
+- 下一步：清理 `tmp/imagegen`，提交本恢复点并打 `[READY]` tip。
+- 已跑验证：最终新鲜运行 `flutter analyze` → 0 issue；资产/pubspec、battle 立绘/几何、断魂庄验证、远征配置 → 52/52 通过；asset audit missing 0、allowlist 实质行 0；23/23 生产 PNG 均有非空 alpha 包围盒且四角透明。此前一次命令误写不存在的短路径导致 1 个加载错误，已用正确路径完整重跑转绿。
+- 阻塞项：无；0 `[BLOCKED]`。
 - 出图统计：20 张独立源图（16 敌，其中苏无咎复用已达标探针；3 装备；1 撑伞升级）/ 20 达标 / 0 `[BLOCKED]`；共落 23 个生产 PNG（16 敌 + 3×icon/detail + 1 撑伞替换）。
 - 合成验收：17 立绘均在战斗山林底与深灰面板底通过；3 装备均在深灰面板底通过。20/20 无白边、粉边、残留投影或明显锯齿，透明四角 alpha 全为 0。
