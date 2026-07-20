@@ -886,6 +886,7 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleArenaChampionStandee => 0.969,
   WuxiaUi.battleGreyMonkStandee => 0.943,
   WuxiaUi.battleScarredBossStandee => 0.969,
+  WuxiaUi.battleUmbrellaStandee => 0.9462,
   WuxiaUi.battleGreySwordsmanStandee => 0.971,
   WuxiaUi.battleFerryBanditStandee => 0.961,
   WuxiaUi.battleFerryBoatmanStandee => 0.870,
