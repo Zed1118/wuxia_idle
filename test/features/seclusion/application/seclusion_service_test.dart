@@ -866,7 +866,14 @@ void main() {
       final updated = await IsarSetup.instance.retreatSessions.get(session.id);
       expect(updated?.status, RetreatStatus.completed);
       expect(updated?.completedAt, completeAt);
-      expect(updated?.actualRewards.isNotEmpty, isTrue);
+      expect(
+        updated!.actualRewards
+            .where((r) => r.rewardKey == 'item_mojianshi')
+            .single
+            .quantity,
+        out.mojianshi,
+        reason: 'actualRewards 磨剑石条目数量 == 结算输出(记录与产出一致)',
+      );
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
       expect(ch?.currentRetreatSessionId, isNull);
@@ -928,21 +935,26 @@ void main() {
             maps: GameRepository.instance.seclusionMaps,
             now: start,
           );
-      await SeclusionService(isar: IsarSetup.instance).completeRetreat(
-        session: session,
-        characterId: kCharId,
-        charRealmTier: RealmTier.xueTu,
-        config: GameRepository.instance.numbers.retreat,
-        maps: GameRepository.instance.seclusionMaps,
-        now: start.add(const Duration(hours: 4)),
-      );
+      final out = await SeclusionService(isar: IsarSetup.instance)
+          .completeRetreat(
+            session: session,
+            characterId: kCharId,
+            charRealmTier: RealmTier.xueTu,
+            config: GameRepository.instance.numbers.retreat,
+            maps: GameRepository.instance.seclusionMaps,
+            now: start.add(const Duration(hours: 4)),
+          );
 
       final item = await IsarSetup.instance.inventoryItems
           .filter()
           .itemTypeEqualTo(ItemType.moJianShi)
           .findFirst();
       expect(item, isNotNull);
-      expect(item!.quantity, greaterThan(0));
+      expect(
+        item!.quantity,
+        out.mojianshi,
+        reason: '背包行数量 == 本次结算 mojianshi(出库入库一致)',
+      );
     });
 
     test('收功后地图特色产出入库并写入 actualRewards', () async {

@@ -375,14 +375,54 @@ void main() {
         await isar.writeTxn(() async {
           final save = await isar.saveDatas.get(0);
           expect(save, isNotNull);
-          save!.triggeredBossRecruitStageIds = ['stage_01_05'];
+          save!.triggeredBossRecruitStageIds = ['test_dedup_boss_stage'];
           await isar.saveDatas.put(save);
         });
-        final save = await isar.saveDatas.get(0);
+
+        // 已被 victory 侧 mark 的 stage:defeat hook 应在防刷守卫处早返,
+        // 不进招降 flow(原测仅写读回读,未驱动任何 hook,名实不符)。
+        const stage = StageDef(
+          id: 'test_dedup_boss_stage',
+          name: '测试互斥 Boss 关',
+          stageType: StageType.mainline,
+          requiredRealm: RealmTier.sanLiu,
+          enemyTeam: [],
+          isBossStage: true,
+          baseExpReward: 0,
+          difficultyMultiplier: 1,
+          bossRecruit: BossRecruitConfig(
+            candidateRef: 'bamboo_swordsman',
+            baseProbability: 1,
+          ),
+        );
+        var flowCalls = 0;
+        Future<void> recruitFlow({
+          required context,
+          required ref,
+          required isar,
+          required SectCandidateDef candidate,
+          required Future<void> Function() onMarkTriggered,
+          required onFallback,
+          required successSnackBar,
+          required capFullSnackBar,
+          required noSectSnackBar,
+        }) async {
+          flowCalls += 1;
+        }
+
+        await runStageBossFailRecoverHookAfterDefeat(
+          context: _MountedBuildContext(),
+          ref: null,
+          rng: _AlwaysHitRng(),
+          stage: stage,
+          recruitFlow: recruitFlow,
+          loadNarrative: (id) async => NarrativeContent.placeholder(id),
+        );
+
         expect(
-          save!.triggeredBossRecruitStageIds,
-          contains('stage_01_05'),
-          reason: 'victory mark 后 defeat 应 skip(共用 set)',
+          flowCalls,
+          0,
+          reason: 'victory 已 mark → defeat hook 守卫早返,不进招降 flow',
         );
       },
     );

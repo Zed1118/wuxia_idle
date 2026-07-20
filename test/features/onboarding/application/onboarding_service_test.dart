@@ -163,7 +163,12 @@ void main() {
     expect(founder!.equippedWeaponId, isNull);
     expect(founder.equippedArmorId, isNull);
     expect(founder.equippedAccessoryId, isNull);
-    expect(founder.mainTechniqueId, isNotNull); // 入门功心法仍在
+    // 入门功心法仍在:主修 id 可解析 + role=main + tier 0 入门功(学徒锁死合规)
+    expect(founder.mainTechniqueId, isNotNull);
+    final mainTech = await isar.techniques.get(founder.mainTechniqueId!);
+    expect(mainTech, isNotNull, reason: '主修 id 可解析(非悬空)');
+    expect(mainTech!.role, TechniqueRole.main, reason: '主修 role 须为 main');
+    expect(mainTech.tier, TechniqueTier.ruMenGong, reason: 'tier 0 入门功');
     expect(founder.assistTechniqueIds.length, 1);
   });
 
@@ -181,7 +186,11 @@ void main() {
       final (left, right) = await setup.buildTeams(stage);
 
       expect(left.length, 3); // 3 师徒入阵
-      expect(right.length, greaterThan(0));
+      expect(
+        right.length,
+        stage.enemyTeam.length,
+        reason: '右队逐一出装 stage.enemyTeam(P0-1 修复后不漏装)',
+      );
       // 不抛 StateError = audit P0-1 修复成功
     },
   );

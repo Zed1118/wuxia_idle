@@ -235,7 +235,11 @@ void main() {
       (b) => b.type == BuildingType.zhuZaoTai,
     );
     expect(zhuZaoTai.activeRecipeId, 'forge_kaifeng_fucai');
-    expect(zhuZaoTai.stored, greaterThan(0));
+    expect(
+      zhuZaoTai.stored,
+      closeTo(3.264, 1e-9),
+      reason: '0.8/h × synergy1.02(木工坊L1) × level1 × 4h = 3.264',
+    );
   });
 
   // ── T3: ensureInitialized：已全量初始化 → 不改动 ───────────────────────
@@ -283,14 +287,24 @@ void main() {
       await IslandSettleService.settle(save2, now);
 
       final updated = (await isar.saveDatas.get(0))!;
-      // 打造台（processor）4h × 1.5/h × level1 = 6 磨剑石（铁匠厂原料 24 精铁被消耗）
+      // 打造台（processor）：1.5/h × synergy1.02(铁匠厂L1) × level1 × 4h = 6.12
       final daZaoState = updated.islandBuildings.firstWhere(
         (b) => b.type == BuildingType.daZaoTai,
       );
       expect(
         daZaoState.stored,
-        greaterThan(0),
-        reason: '打造台 4h 应有成品 storage（消耗铁匠厂精铁产磨剑石）',
+        closeTo(6.12, 1e-9),
+        reason: '1.5×1.02×1×4 = 6.12(synergy 计入,非裸 6.0)',
+      );
+
+      // 铁匠厂:6/h × 4h = 24 精铁产出,被打造台全耗(6.12 × 4/1.02 = 24)
+      final tieState = updated.islandBuildings.firstWhere(
+        (b) => b.type == BuildingType.tieJiangChang,
+      );
+      expect(
+        tieState.stored,
+        closeTo(0.0, 1e-9),
+        reason: '产出 24 全耗 → stored≈0(浮点尾差容忍)',
       );
 
       // islandLastSettledAt 更新
@@ -323,9 +337,19 @@ void main() {
       // InventoryItem 有数量
       final items = await isar.inventoryItems.where().findAll();
       expect(items.isNotEmpty, isTrue, reason: 'harvest 后 inventory 应有条目');
+      expect(
+        harvest.gained.containsKey('item_mojianshi'),
+        isTrue,
+        reason: '打造台默认 forge_mojianshi,24h 必产磨剑石',
+      );
 
+      // 背包入账总量与 gained 汇总严格一致(同一 txn 快照,无竞态窗口)
       final totalQty = items.fold<int>(0, (sum, i) => sum + i.quantity);
-      expect(totalQty, greaterThan(0));
+      final gainedTotal = harvest.gained.values.fold<int>(
+        0,
+        (sum, q) => sum + q,
+      );
+      expect(totalQty, gainedTotal, reason: '背包入账总量 == gained 汇总(严格一致)');
 
       // stored 清到小数尾（floor 后余量 ∈ [0, 1)）
       final updated = (await isar.saveDatas.get(0))!;
@@ -365,9 +389,11 @@ void main() {
       reason: '丹房 72h 应产凝神丹',
     );
 
-    // 每种数量 > 0
-    expect(harvest.gained['item_mojianshi']!, greaterThan(0));
-    expect(harvest.gained['item_jingyandan_small']!, greaterThan(0));
+    // 72h 满窗口精确量(全 level 1 + synergy 1.02):
+    // 磨剑石 floor(1.5×1.02×72)=floor(110.16)=110
+    // 凝神丹 floor(1.0×1.02×72)=floor(73.44)=73
+    expect(harvest.gained['item_mojianshi'], 110, reason: '磨剑石 72h 精确量');
+    expect(harvest.gained['item_jingyandan_small'], 73, reason: '凝神丹 72h 精确量');
 
     // InventoryItem 有对应条目
     final mojianshi = await isar.inventoryItems.getByDefId('item_mojianshi');
@@ -450,4 +476,77 @@ void main() {
       expect(idx, 2, reason: '二流境界 index=2');
     },
   );
+
+  // ── T10: settle 时钟回拨 → elapsed<=0 守卫早返,不动建筑不动时间 ──────────
+  test('T10: settle 时钟回拨(elapsed<0) → stored/lastSettledAt 均不变', () async {
+    await seedFounder();
+    final isar = IsarSetup.instance;
+    final t0 = DateTime(2026, 6, 25, 10, 0);
+    final tBack = DateTime(2026, 6, 25, 6, 0); // 回拨 4h
+
+    final save = (await isar.saveDatas.get(0))!;
+    await IslandSettleService.ensureInitialized(save, t0);
+
+    final save2 = (await isar.saveDatas.get(0))!;
+    await IslandSettleService.settle(save2, tBack);
+
+    final updated = (await isar.saveDatas.get(0))!;
+    expect(
+      updated.islandLastSettledAt,
+      t0,
+      reason: 'elapsed<=0 → 守卫早返,结算时间不被回拨',
+    );
+    for (final b in updated.islandBuildings) {
+      expect(
+        b.stored,
+        closeTo(0.0, 1e-9),
+        reason: '${b.type} 回拨窗口不产,stored 保持 0',
+      );
+    }
+  });
+
+  // ── T11: settle 未初始化档 → 只初始化不结算(elapsed=0 不产)────────────────
+  test('T11: settle 未初始化档 → 建全量建筑但 stored 全 0', () async {
+    await seedFounder();
+    final isar = IsarSetup.instance;
+    final now = DateTime(2026, 6, 25, 10, 0);
+
+    final save = (await isar.saveDatas.get(0))!;
+    expect(save.islandBuildings, isEmpty);
+    await IslandSettleService.settle(save, now);
+
+    final updated = (await isar.saveDatas.get(0))!;
+    expect(
+      updated.islandBuildings.length,
+      7,
+      reason: 'settle 内部触发 ensureInitialized 建 7 建筑',
+    );
+    expect(updated.islandLastSettledAt, now);
+    final totalStored = updated.islandBuildings.fold<double>(
+      0,
+      (sum, b) => sum + b.stored,
+    );
+    expect(
+      totalStored,
+      closeTo(0.0, 1e-9),
+      reason: 'initialize 当刻 elapsed=0,不产任何源料/成品',
+    );
+  });
+
+  // ── T12: harvest 零时长 → gained 空 + 不写背包 ───────────────────────────
+  test('T12: harvest 零时长 → gained 空 + inventory 无写入', () async {
+    await seedFounder();
+    final isar = IsarSetup.instance;
+    final t0 = DateTime(2026, 6, 25, 10, 0);
+
+    final save = (await isar.saveDatas.get(0))!;
+    await IslandSettleService.ensureInitialized(save, t0);
+
+    final save2 = (await isar.saveDatas.get(0))!;
+    final harvest = await IslandSettleService.harvest(save2, t0);
+
+    expect(harvest.isEmpty, isTrue, reason: '零时长无成品,gained 应为空');
+    final items = await isar.inventoryItems.where().findAll();
+    expect(items, isEmpty, reason: '无成品不写背包');
+  });
 }

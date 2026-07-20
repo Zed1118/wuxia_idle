@@ -59,6 +59,7 @@ void main() {
           reason: '${id}_victory 应有真实 narrative',
         );
         expect(c.paragraphs, isNotEmpty);
+        expect(c.id, '${id}_victory', reason: 'yaml 内 id 与文件名联结一致(§8.1 体例)');
         expect(c.title, isNotNull);
       }
     });
@@ -71,6 +72,7 @@ void main() {
         );
         expect(c.isPlaceholder, isFalse, reason: '${id}_defeat 应有真实 narrative');
         expect(c.paragraphs, isNotEmpty);
+        expect(c.id, '${id}_defeat', reason: 'yaml 内 id 与文件名联结一致(§8.1 体例)');
         expect(c.title, isNotNull);
       }
     });

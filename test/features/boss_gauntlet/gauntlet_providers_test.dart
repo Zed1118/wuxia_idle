@@ -244,6 +244,20 @@ void main() {
     expect(noTech.selectable, isFalse, reason: '未修主修 UI 标灰');
   });
 
+  test('candidates:已在 active 会话的弟子 → occupied=true 不可再选(占用标注)', () async {
+    final (_, discipleId) = await enterRun();
+    final container = makeContainer();
+
+    final candidates = await container.read(gauntletCandidatesProvider.future);
+    final entered = candidates.firstWhere((c) => c.character.id == discipleId);
+    expect(
+      entered.occupied,
+      isTrue,
+      reason: 'active 断魂庄会话成员 → CharacterOccupancyService 标占用',
+    );
+    expect(entered.selectable, isFalse, reason: '占用 → 不可再入场(selectable=false)');
+  });
+
   test('interludeView:成员名查表 + 托管剩余 + 疗伤标;非 interlude → null', () async {
     final (runId, discipleId) = await enterRun();
     final container = makeContainer();

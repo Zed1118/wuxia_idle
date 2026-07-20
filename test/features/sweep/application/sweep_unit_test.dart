@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -94,8 +96,19 @@ void main() {
         () async => ref.read(battleProvider),
       ))!;
       expect(state.isFinished, isFalse, reason: '刚起手,战斗未终态');
-      expect(state.leftTeam, isNotEmpty, reason: 'P3 种子左队');
-      expect(state.rightTeam, isNotEmpty, reason: 'stage_01_01 敌人按 yaml 装配');
+      final chars = (await tester.runAsync(
+        () async => IsarSetup.instance.characters.where().findAll(),
+      ))!;
+      expect(
+        state.leftTeam.map((c) => c.characterId).toSet(),
+        chars.map((c) => c.id).toSet(),
+        reason: 'P3 种子无 active ids → 兜底装配库中唯一角色,不漏不增',
+      );
+      expect(
+        state.rightTeam.length,
+        stage.enemyTeam.length,
+        reason: '右队逐一出装 stage.enemyTeam,不漏不增',
+      );
     });
 
     testWidgets('爬塔单位 startBattle:buildTeamsForTower 装配起手', (tester) async {
@@ -112,8 +125,19 @@ void main() {
         () async => ref.read(battleProvider),
       ))!;
       expect(state.isFinished, isFalse);
-      expect(state.leftTeam, isNotEmpty);
-      expect(state.rightTeam, isNotEmpty);
+      final chars = (await tester.runAsync(
+        () async => IsarSetup.instance.characters.where().findAll(),
+      ))!;
+      expect(
+        state.leftTeam.map((c) => c.characterId).toSet(),
+        chars.map((c) => c.id).toSet(),
+        reason: 'P3 种子无 active ids → 兜底装配库中唯一角色,不漏不增',
+      );
+      expect(
+        state.rightTeam.length,
+        floor.enemyTeam.length,
+        reason: '右队逐一出装 floor.enemyTeam,不漏不增',
+      );
     });
 
     testWidgets('主线单位 settle 委托:战备不足走忽略项分支', (tester) async {

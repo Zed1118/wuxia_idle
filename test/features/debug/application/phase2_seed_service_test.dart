@@ -239,9 +239,22 @@ void main() {
       } else {
         expect(ch.assistTechniqueIds, isEmpty);
       }
-      expect(ch.equippedWeaponId, isNotNull);
-      expect(ch.equippedArmorId, isNotNull);
-      expect(ch.equippedAccessoryId, isNotNull);
+      // 语义断言:id 非空只是底线,必须可解析且槽位/归属正确(悬空 id 也过旧断言)
+      final main = await isar.techniques.get(ch.mainTechniqueId!);
+      expect(main, isNotNull, reason: '$id 主修 id 须可解析(非悬空)');
+      expect(main!.role, TechniqueRole.main, reason: '$id 主修 role 须为 main');
+      expect(main.ownerCharacterId, id, reason: '$id 主修归属须为本人');
+      for (final (equipId, slot) in [
+        (ch.equippedWeaponId, EquipmentSlot.weapon),
+        (ch.equippedArmorId, EquipmentSlot.armor),
+        (ch.equippedAccessoryId, EquipmentSlot.accessory),
+      ]) {
+        expect(equipId, isNotNull, reason: '$id $slot 槽须已装');
+        final eq = await isar.equipments.get(equipId!);
+        expect(eq, isNotNull, reason: '$id $slot 装备 id 须可解析(非悬空)');
+        expect(eq!.slot, slot, reason: '$id 装备槽位须匹配');
+        expect(eq.ownerCharacterId, id, reason: '$id 装备归属须为本人');
+      }
     }
 
     expect(await isar.equipments.count(), 9);
@@ -285,7 +298,16 @@ void main() {
         isar: IsarSetup.instance,
       ).buildTeams(stage);
       expect(left.length, 3, reason: '玩家左队 3 师徒入阵');
-      expect(right, isNotEmpty, reason: 'stage_01_01 enemyTeam 非空');
+      expect(
+        right.length,
+        stage.enemyTeam.length,
+        reason: '右队逐一出装 stage.enemyTeam(数量与 def 对齐,不漏不增)',
+      );
+      expect(
+        right.every((e) => e.characterId < 0),
+        isTrue,
+        reason: '敌队 negative id 约定(stage_battle_setup 头注),不与玩家 id 撞',
+      );
     },
   );
 
@@ -422,7 +444,12 @@ void main() {
       reason: '反复调用 → unlockedSkillIds 覆盖,不重复 append',
     );
     final disciple = await isar.characters.get(2);
-    expect(disciple!.equippedEncounterSkillId, isNotNull);
+    expect(disciple, isNotNull);
+    expect(
+      progress.unlockedSkillIds,
+      contains(disciple!.equippedEncounterSkillId),
+      reason: 'reseed 后大弟子预装技能仍在 unlock 池内(非悬空)',
+    );
   });
 
   // ── W15-r2 · seedVisualCheckW15R2 ────────────────────────────────────────────

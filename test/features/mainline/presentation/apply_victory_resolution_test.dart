@@ -67,14 +67,17 @@ void main() {
 
   // ── fixtures ─────────────────────────────────────────────────────────────
 
-  StageDef normalStage({List<DropEntry> dropTable = const []}) => StageDef(
+  StageDef normalStage({
+    List<DropEntry> dropTable = const [],
+    int baseExpReward = 0,
+  }) => StageDef(
     id: 'stage_avr_normal',
     name: '测试普通关',
     stageType: StageType.mainline,
     requiredRealm: RealmTier.xueTu,
     enemyTeam: const [],
     isBossStage: false,
-    baseExpReward: 0,
+    baseExpReward: baseExpReward,
     difficultyMultiplier: 1.0,
     dropTable: dropTable,
   );
@@ -358,6 +361,7 @@ void main() {
         'item_scroll_kai_bei_shou',
       );
       expect(scroll, isNotNull, reason: '首通必得:item_scroll_* 首通不跳过');
+      expect(scroll!.quantity, 1, reason: 'quantityMin=Max=1,数量语义锁死');
 
       // equipmentObtained 事件已写
       final events = await isar.gameEvents.where().findAll();
@@ -376,7 +380,13 @@ void main() {
       );
 
       // 心法已拉取入库可查(skillUsageCount growable 转换未抛 UnsupportedError)
-      expect(await isar.techniques.get(techId), isNotNull);
+      final techRow = await isar.techniques.get(techId);
+      expect(techRow, isNotNull);
+      expect(
+        techRow!.skillUsageCount,
+        isEmpty,
+        reason: '未放技能 → 计数仍空,growable 转换写回不丢数据',
+      );
     });
   });
 
@@ -554,6 +564,69 @@ void main() {
         isEmpty,
         reason: 'recordCommonEvents 要求 founderId 非空才记 boss 事件',
       );
+    });
+  });
+
+  // ── L785-788 per-id skip:部分悬空 activeIds 不拖垮整批结算 ────────────────
+  testWidgets('activeIds 部分悬空 → 跳过不存在角色,存活角色照常结算', (tester) async {
+    final charId = (await tester.runAsync(() async {
+      final cid = await insertCharacter(name: '祖师');
+      await writeSaveData(activeIds: [cid, 999]);
+      return cid;
+    }))!;
+
+    final outcome = await runWithRef(
+      tester,
+      (ref) => applyVictoryResolution(ref: ref, stage: normalStage()),
+      battleState: finishedBattle([charId]),
+    );
+
+    expect(outcome, isNotNull, reason: '部分悬空不清零,有效角色照常结算');
+    expect(outcome!.characters, hasLength(1), reason: '999 被 per-id skip');
+    expect(outcome.characters.single.id, charId, reason: '只有存活角色进入结算记录');
+  });
+
+  // ── L851-859 经验结算路径(既有用例全 baseExpReward=0,未覆盖)────────────────
+  testWidgets('baseExpReward>0 → advancements 非空 + EXP 全额落库未升层', (
+    tester,
+  ) async {
+    final charId = (await tester.runAsync(() async {
+      final cid = await insertCharacter(name: '祖师');
+      await writeSaveData(activeIds: [cid]);
+      return cid;
+    }))!;
+
+    final outcome = await runWithRef(
+      tester,
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: normalStage(baseExpReward: 30),
+      ),
+      battleState: finishedBattle([charId]),
+    );
+
+    expect(outcome, isNotNull);
+    expect(
+      outcome!.advancements,
+      hasLength(1),
+      reason: 'baseExpReward>0 → applyExperience 出结算记录',
+    );
+    expect(outcome.advancements.single.characterId, charId);
+    expect(
+      outcome.advancements.single.result.experienceGained,
+      30,
+      reason: '全额发放 baseExpReward',
+    );
+    expect(
+      outcome.advancements.single.result.layersGained,
+      0,
+      reason: '30 EXP 不足 xueTu.qiMeng 阈值(50) → 不升层',
+    );
+
+    await tester.runAsync(() async {
+      final ch = await IsarSetup.instance.characters.get(charId);
+      expect(ch!.experience, 30, reason: '未达阈值,EXP 全额落库');
+      expect(ch.realmLayer, RealmLayer.qiMeng, reason: '未升层,境界不变');
     });
   });
 }

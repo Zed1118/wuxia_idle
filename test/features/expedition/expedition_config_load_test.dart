@@ -63,4 +63,19 @@ void main() {
       }
     }
   });
+
+  test('远征敌队规模不超 3(3v3 装配截断守卫)', () {
+    final repo = GameRepository.instance;
+    final config = repo.expeditionConfig!;
+    for (final team in [
+      ...config.normalEnemyTeams,
+      ...config.eliteEnemyTeams,
+    ]) {
+      expect(
+        team.enemies.length,
+        lessThanOrEqualTo(3),
+        reason: '${team.id}: 3v3 装配最多取前 3(buildEnemyTeam 截断),超员即静默丢怪',
+      );
+    }
+  });
 }

@@ -50,6 +50,11 @@ void main() {
       for (final stage in config.stages) {
         final team = config.enemiesForTeam(stage.enemyTeamId);
         expect(team, isNotEmpty, reason: '关次 ${stage.enemyTeamId} 敌队须非空');
+        expect(
+          team.length,
+          lessThanOrEqualTo(3),
+          reason: '${stage.enemyTeamId}: 3v3 装配最多取前 3,超员即静默丢怪',
+        );
       }
     });
 

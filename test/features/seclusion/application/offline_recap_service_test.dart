@@ -56,6 +56,23 @@ void main() {
       expect(recap, isNull);
     });
 
+    test('恰好离开阈值（整 1h）→ 弹卡（边界含端点）', () {
+      final started = DateTime(2026, 5, 11, 10);
+      final recap = OfflineRecapService.buildRecap(
+        session: mkSession(startedAt: started),
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: started.add(const Duration(hours: 1)),
+      );
+      expect(
+        recap,
+        isNotNull,
+        reason: '守卫是 elapsed < minAwayHours 才返 null,端点 1.0h 不拦截',
+      );
+      expect(recap!.settledHours, 1.0, reason: '端点时长全额结算');
+    });
+
     test('挂 5h 仍在 72h 地图收益阶段', () {
       final started = DateTime(2026, 5, 11, 10);
       final recap = OfflineRecapService.buildRecap(

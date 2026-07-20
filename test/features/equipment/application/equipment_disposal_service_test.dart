@@ -243,6 +243,7 @@ void main() {
 
     final eq = await isar.equipments.get(id);
     expect(eq, isNotNull);
+    expect(eq!.ownerCharacterId, 1, reason: '拒绝路径不得改写归属');
 
     final silver = await isar.inventoryItems.getByDefId('item_silver');
     expect(silver, isNull); // 无写入
@@ -257,6 +258,7 @@ void main() {
 
     final eq = await isar.equipments.get(id);
     expect(eq, isNotNull);
+    expect(eq!.ownerCharacterId, 42, reason: '拒绝路径不得改写归属');
 
     final mj = await isar.inventoryItems.getByDefId('item_mojianshi');
     expect(mj, isNull);
@@ -295,6 +297,7 @@ void main() {
 
     final eq = await isar.equipments.get(id);
     expect(eq, isNotNull);
+    expect(eq!.isLineageHeritage, isTrue, reason: '拒绝路径不得改写遗物标记');
 
     final silver = await isar.inventoryItems.getByDefId('item_silver');
     expect(silver, isNull);
@@ -308,6 +311,7 @@ void main() {
 
     final eq = await isar.equipments.get(id);
     expect(eq, isNotNull);
+    expect(eq!.isLineageHeritage, isTrue, reason: '拒绝路径不得改写遗物标记');
 
     final mj = await isar.inventoryItems.getByDefId('item_mojianshi');
     expect(mj, isNull);
@@ -324,6 +328,7 @@ void main() {
 
     final eq = await isar.equipments.get(id);
     expect(eq, isNotNull);
+    expect(eq!.isLocked, isTrue, reason: '拒绝路径不得改写锁定标记');
 
     final silver = await isar.inventoryItems.getByDefId('item_silver');
     expect(silver, isNull);
@@ -337,6 +342,7 @@ void main() {
 
     final eq = await isar.equipments.get(id);
     expect(eq, isNotNull);
+    expect(eq!.isLocked, isTrue, reason: '拒绝路径不得改写锁定标记');
 
     final mj = await isar.inventoryItems.getByDefId('item_mojianshi');
     expect(mj, isNull);
@@ -543,6 +549,44 @@ void main() {
       expect(xx!.quantity, 2);
     },
   );
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // 3b-2. 批量带强化装备 → 强化加成逐件计入(缺边界补:既有批量测全 +0)
+  // ──────────────────────────────────────────────────────────────────────────
+  test('sellAllOfTier 带强化背包装备 → totalSilver 按强化加成逐件累加', () async {
+    // 利器(index=3, base=280) +3：单件 280*(1+0.3)=364，2 件背包 = 728
+    final ids = await seedBulkFixture(
+      tier: EquipmentTier.liQi,
+      enhanceLevel: 3,
+    );
+
+    final result = await makeService().sellAllOfTier(EquipmentTier.liQi);
+
+    expect(result.count, 2);
+    expect(result.totalSilver, 728, reason: '2 × 364(280×1.3),强化加成逐件计入');
+    expect(await isar.equipments.get(ids.backpack1), isNull);
+    expect(await isar.equipments.get(ids.backpack2), isNull);
+    expect(await isar.equipments.get(ids.equipped), isNotNull);
+    expect(await isar.equipments.get(ids.heritage), isNotNull);
+    expect(await isar.equipments.get(ids.locked), isNotNull);
+    final silver = await isar.inventoryItems.getByDefId('item_silver');
+    expect(silver!.quantity, 728);
+  });
+
+  test('disassembleAllOfTier 带强化背包装备 → 磨剑石逐件累加强化加成', () async {
+    // 利器(index=3, base mj=7/xx=1) +2：单件 mj 7+2=9，2 件背包 mj=18/xx=2
+    await seedBulkFixture(tier: EquipmentTier.liQi, enhanceLevel: 2);
+
+    final result = await makeService().disassembleAllOfTier(EquipmentTier.liQi);
+
+    expect(result.count, 2);
+    expect(result.totalMojianshi, 18, reason: '2 × (7+2),强化加成逐件计入');
+    expect(result.totalXinxuejiejing, 2);
+    final mj = await isar.inventoryItems.getByDefId('item_mojianshi');
+    expect(mj!.quantity, 18);
+    final xx = await isar.inventoryItems.getByDefId('item_xinxuejiejing');
+    expect(xx!.quantity, 2);
+  });
 
   // ──────────────────────────────────────────────────────────────────────────
   // 3c. 空 tier → count==0，无写入

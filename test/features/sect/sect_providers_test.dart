@@ -348,6 +348,44 @@ void main() {
       final disciple = (await IsarSetup.instance.characters.get(9))!;
       expect(disciple.isInSect, isFalse, reason: 'rng 0.99 ≥ prob 0.5 未命中,不入派');
     });
+
+    test('mission win + rng 恰等于 prob → 不招徒(边界含端点)', () async {
+      await initIsar();
+      await IsarSetup.instance.writeTxn(() async {
+        await IsarSetup.instance.sects.put(makeSect());
+        await IsarSetup.instance.sectEvents.put(
+          makeEvent(type: SectEventType.mission),
+        );
+        await IsarSetup.instance.characters.put(makeChar(id: 9));
+        final save = (await IsarSetup.instance.saveDatas.get(0))!
+          ..recruitedDiscipleIds = [9];
+        await IsarSetup.instance.saveDatas.put(save);
+      });
+      final prob = GameRepository
+          .instance
+          .numbers
+          .sectManagement
+          .recruit
+          .missionRecruitProb;
+      final container = makeRngContainer(prob);
+      container.invalidate(isarProvider);
+
+      final sect = (await IsarSetup.instance.sects.get(1))!;
+      final event = (await IsarSetup.instance.sectEvents
+          .filter()
+          .narrativeIdEqualTo('n1')
+          .findFirst())!;
+      await container
+          .read(resolveSectEventProvider.notifier)
+          .resolve(sect: sect, event: event, outcome: SectOutcome.win);
+
+      final disciple = (await IsarSetup.instance.characters.get(9))!;
+      expect(
+        disciple.isInSect,
+        isFalse,
+        reason: 'roll >= prob 即拒(roll==prob 端点不中招)',
+      );
+    });
   });
 
   group('E. member mutation', () {
@@ -559,7 +597,11 @@ void main() {
       await coord.tick(DateTime.now().add(const Duration(days: 40)));
 
       final sect = (await IsarSetup.instance.sects.get(1))!;
-      expect(sect.lastTickAt, isNotNull, reason: 'elapsedMonths≥1 → 锚点推进落库');
+      expect(
+        sect.lastTickAt,
+        sect.createdAt.add(const Duration(days: 30)),
+        reason: '40 天 → elapsedMonths=1 → 锚点推进 30 天(非简单 = tick 时刻)',
+      );
     });
   });
 }
