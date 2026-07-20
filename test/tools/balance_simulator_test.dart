@@ -60,7 +60,7 @@ void main() {
     Directory(_outputDir).createSync(recursive: true);
   });
 
-  test('balance simulation · 40 mainline × $_seedsPerStage seeds', () async {
+  test('balance simulation · 45 mainline × $_seedsPerStage seeds', () async {
     final mainlines =
         repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
@@ -69,7 +69,7 @@ void main() {
     expect(
       mainlines.length,
       greaterThanOrEqualTo(25),
-      reason: 'Demo §8.4 15-20 主线 + Ch4-6 P2 扩 + Ch7-8 二流两章 = 40 关',
+      reason: 'Demo §8.4 15-20 主线 + Ch4-6 P2 扩 + Ch7-9 二流三章 = 45 关',
     );
 
     final results = <_SimResult>[];

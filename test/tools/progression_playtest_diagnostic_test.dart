@@ -12,8 +12,8 @@ import '../support/progression_battle_probe.dart';
 import '../support/test_data.dart';
 
 const _seedCount = 50;
-// 主线关总数(Ch1-7 各 5 关 = 35·2026-07-17 Ch7 二流首章扩;Ch8+ 时改此一处)。
-const _mainlineStageCount = 40;
+// 主线关总数(9 章 × 5 关 = 45·2026-07-20 Ch9 碛北二流第 3 章扩;新增主线章时改此一处)。
+const _mainlineStageCount = 45;
 const _csvPath =
     'test/tools/output/progression_attribute_playtest_2026-07-13.csv';
 const _updateEvidenceEnvironment = 'UPDATE_PROGRESSION_PLAYTEST_EVIDENCE';

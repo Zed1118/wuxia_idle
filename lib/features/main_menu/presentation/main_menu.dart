@@ -670,7 +670,7 @@ class MainMenu extends ConsumerWidget {
 
   static String? _mainlineMenuStatus(MainlineProgress? progress) {
     if (progress == null || !GameRepository.isLoaded) return null;
-    for (var chapterIndex = 1; chapterIndex <= 8; chapterIndex++) {
+    for (var chapterIndex = 1; chapterIndex <= 9; chapterIndex++) {
       final stages = MainlineProgressService.availableStages(
         progress: progress,
         chapterIndex: chapterIndex,
@@ -688,7 +688,7 @@ class MainMenu extends ConsumerWidget {
     MainlineProgress? progress,
   ) {
     if (progress == null || !GameRepository.isLoaded) return null;
-    for (var chapterIndex = 1; chapterIndex <= 8; chapterIndex++) {
+    for (var chapterIndex = 1; chapterIndex <= 9; chapterIndex++) {
       final entries = MainlineProgressService.availableStages(
         progress: progress,
         chapterIndex: chapterIndex,

@@ -16,7 +16,7 @@ import '../../../shared/widgets/asset_fallback.dart';
 
 /// 主线章节列表（Phase 3 T35,2026-05-22 P2 Ch6 扩 6 章,2026-07-18 Ch8 二流次章扩 8 章）。
 ///
-/// 列 8 章(学武出山 / 武林初识 / 名扬江湖 / 西出阳关 / 征东 / 飞升 / 北望 / 出塞),状态:
+/// 列 9 章(学武出山 / 武林初识 / 名扬江湖 / 西出阳关 / 征东 / 飞升 / 北望 / 出塞 / 碛北),状态:
 ///   - cleared 已通过:右上 ✓ 标识,可重入
 ///   - inProgress 进行中:主色边框高亮(章节内仍有未通关卡)
 ///   - locked 未解锁:灰色 + 锁图标,点击无响应
@@ -27,7 +27,7 @@ import '../../../shared/widgets/asset_fallback.dart';
 class ChapterListScreen extends ConsumerWidget {
   const ChapterListScreen({super.key});
 
-  static const List<int> _chapters = [1, 2, 3, 4, 5, 6, 7, 8];
+  static const List<int> _chapters = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

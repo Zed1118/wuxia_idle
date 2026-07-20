@@ -2047,6 +2047,231 @@ stages:
     weather: snow
 
   # ============================================================================
+  # 第九章「碛北」二流第 3 章（A 案二流收束 · 边塞三章弧闭环 · stage_09_01..05）
+  # spec: docs/spec/2026-07-20-ch9-qibei-design.md（冻结）
+  # 循符入无路大漠，寻符尽头的「那一位」＝隐世二流绝顶老者/铜符本主。
+  # Boss 位 {4,5}：09_04 隘口守卫（章中 Boss）· 09_05 那一位（章末 Boss · 掉本命真解）。
+  # 09_03 蜃楼幻敌＝章中考验（非 Boss · 灰衣人同行 · "不追"母题镜像）。
+  # ============================================================================
+
+  # === stage_09_01 · 符引·出关(二流杂兵 · 刚猛)===
+  - id: stage_09_01
+    name: 符引出关
+    stageType: mainline
+    chapterIndex: 9
+    narrativeOpeningId: stage_09_01_opening
+    narrativeVictoryId: stage_09_01_victory
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_qibei_guanmazei
+        name: 关外马贼
+        realmTier: erLiu
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 9000
+        baseAttack: 480
+        baseSpeed: 245
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+        iconPath: assets/enemies/qibei_guanmazei.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_yuan_yang_yue
+        dropChance: 1.0
+      - equipmentDefId: armor_haojiahuo_chou_shan
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [20, 26]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [125, 175]
+        dropChance: 1.0  # 银两(二流阶 · 承 Ch8 曲线续进)
+    baseExpReward: 28
+    difficultyMultiplier: 9.0
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: clear
+
+  # === stage_09_02 · 瀚海无路·沙盗(二流杂兵 · 灵巧)===
+  - id: stage_09_02
+    name: 瀚海无路
+    stageType: mainline
+    chapterIndex: 9
+    prevStageId: stage_09_01
+    narrativeOpeningId: stage_09_02_opening
+    narrativeVictoryId: stage_09_02_victory
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_qibei_baiguo_shadao
+        name: 白骨滩沙盗
+        realmTier: erLiu
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 9600
+        baseAttack: 500
+        baseSpeed: 280
+        skillIds:
+          - skill_lingqiao_mingjia_basic
+          - skill_lingqiao_mingjia_skill
+        iconPath: assets/enemies/qibei_baiguo_shadao.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_mei_hua_biao
+        dropChance: 1.0
+      - equipmentDefId: accessory_haojiahuo_she_dan_wan
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [20, 26]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [130, 180]
+        dropChance: 1.0  # 银两(二流阶)
+    baseExpReward: 28
+    difficultyMultiplier: 9.2
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: clear
+
+  # === stage_09_03 · 蜃楼(章中考验 · 阴柔幻敌 · 非 Boss · "不追"镜像)===
+  - id: stage_09_03
+    name: 蜃楼幻影
+    stageType: mainline
+    chapterIndex: 9
+    prevStageId: stage_09_02
+    narrativeOpeningId: stage_09_03_opening
+    narrativeVictoryId: stage_09_03_victory
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_qibei_shenlou_huanjing
+        name: 蜃楼幻影
+        realmTier: erLiu
+        realmLayer: shuLian
+        school: yinRou
+        baseHp: 10500
+        baseAttack: 520
+        baseSpeed: 275
+        skillIds:
+          - skill_yinrou_mingjia_basic
+          - skill_yinrou_mingjia_skill
+        iconPath: assets/enemies/qibei_shenlou_huanjing.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_chan_si_suo
+        dropChance: 1.0
+      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [22, 28]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [135, 185]
+        dropChance: 1.0  # 银两(二流阶)
+    baseExpReward: 30
+    difficultyMultiplier: 9.4
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: night
+
+  # === stage_09_04 · 黑水绝壁·隘口守卫(刚猛章中 Boss · 配 defeat 文案)===
+  - id: stage_09_04
+    name: 黑水绝壁
+    stageType: mainline
+    chapterIndex: 9
+    prevStageId: stage_09_03
+    narrativeOpeningId: stage_09_04_opening
+    narrativeVictoryId: stage_09_04_victory
+    narrativeDefeatId: stage_09_04_defeat
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_qibei_aikou_shouwei
+        name: 隘口守卫
+        realmTier: erLiu
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 13500
+        baseAttack: 600
+        baseSpeed: 250
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+        iconPath: assets/enemies/qibei_aikou_shouwei.png
+        isBoss: true   # 章中 Boss = 隘口 stat 门槛(HP/攻墙 · 无充能相位,唯 09_05 那一位设充能破招)
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_qing_feng_jian
+        dropChance: 1.0
+      - equipmentDefId: armor_haojiahuo_suo_zi_jia
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [24, 30]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [180, 240]
+        dropChance: 1.0  # 银两(二流章中 Boss)
+    baseExpReward: 54
+    difficultyMultiplier: 9.6
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: clear
+
+  # === stage_09_05 · 那一位(阴柔？沉默出手即决·刚猛章末 Boss · 破招掉沉沙一诀真解)===
+  - id: stage_09_05
+    name: 符尽之处
+    stageType: mainline
+    chapterIndex: 9
+    prevStageId: stage_09_04
+    narrativeOpeningId: stage_09_05_opening
+    narrativeVictoryId: stage_09_05_victory
+    narrativeDefeatId: stage_09_05_defeat
+    requiredRealm: erLiu
+    dropSkillManualId: skill_chen_sha_yi_jue  # 真解(沉沙一诀·那一位本命·同招为 boss chargeSkillId 双用·破招首通 markUnlocked)
+    enemyTeam:
+      - id: enemy_erLiu_qibei_nayiwei
+        name: 那一位
+        realmTier: erLiu
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 16000
+        baseAttack: 620
+        baseSpeed: 300
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+          - skill_chen_sha_yi_jue        # 本命真解 = 末Boss chargeSkill(双用 canon)
+        iconPath: assets/enemies/qibei_nayiwei.png
+        isBoss: true
+        chargeSkillId: skill_chen_sha_yi_jue   # 破招:玩家拦截,首通掉同招真解
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_xuan_hua_fu
+        dropChance: 1.0
+      - equipmentDefId: armor_haojiahuo_jin_pao
+        dropChance: 0.50
+      - equipmentDefId: accessory_haojiahuo_ping_an_kou
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [26, 34]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [280, 360]
+        dropChance: 1.0  # 银两(二流章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(二流章末)
+    baseExpReward: 70
+    difficultyMultiplier: 10.0
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: clear
+
+  # ============================================================================
   # 心魔境 7 关（1.0 P2.2 §12.1 · stageType: innerDemon）
   # ----------------------------------------------------------------------------
   # spec doc: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md

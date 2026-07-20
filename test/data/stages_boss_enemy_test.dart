@@ -38,6 +38,6 @@ void main() {
       0,
       (n, s) => n + s.enemyTeam.where((e) => e.isBoss).length,
     );
-    expect(total, 18, reason: 'Ch8 +2(灰衣人塞北章中 + 灰衣人祖庭章末)');
+    expect(total, 20, reason: 'Ch9 +2(隘口守卫章中 + 那一位章末)');
   });
 }
