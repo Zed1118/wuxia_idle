@@ -49,14 +49,15 @@ void main() {
       // + 终局机制型 Boss 批次3:心魔蓄力技 skill_inner_demon_charge = 206
       // + 断魂庄 Phase C C1.3.2:苏无咎锁脉针 skill_suo_mai_zhen = 207
       // + Ch8 灰衣人本命真解 skill_hui_xiu_hui_feng = 208
-      // + 40 encounter_skills.yaml = 248 total
+      // + Ch9「那一位」本命真解 skill_chen_sha_yi_jue = 209
+      // + 40 encounter_skills.yaml = 249 total
       expect(
         repo.skillDefs.length,
-        248,
+        249,
         reason:
-            '208 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+            '209 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
             ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技 + 1 断魂庄锁脉针'
-            ' + 1 Ch8 灰袖回风) + 40 奇遇招',
+            ' + 1 Ch8 灰袖回风 + 1 Ch9 沉沙一诀) + 40 奇遇招',
       );
       expect(
         repo.encounterSkillIds.length,
@@ -77,8 +78,8 @@ void main() {
           .length;
       expect(
         mainlineCount,
-        40,
-        reason: '主线 40 关(2026-07-18 Ch8 二流第 2 章扩,8 章 × 5 关)',
+        45,
+        reason: '主线 45 关(2026-07-20 Ch9 碛北二流第 3 章扩,9 章 × 5 关)',
       );
       expect(
         innerDemonCount,
@@ -667,20 +668,21 @@ void main() {
     );
 
     test(
-      '主线 40 关红线:8 章 × 5 关 + 每章双 Boss 关(2026-07-18 Ch8 起 Boss 位随叙事定)',
+      '主线 45 关红线:9 章 × 5 关 + 每章双 Boss 关(2026-07-20 Ch9 起 Boss 位随叙事定)',
       () async {
         final repo = await GameRepository.loadAllDefs(loader: fileLoader);
         final mainlines = repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
             .toList();
-        expect(mainlines.length, 40);
-        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8]) {
+        expect(mainlines.length, 45);
+        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
           final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();
           expect(inCh.length, 5, reason: 'Ch$ch 应有 5 关');
         }
         // 每章恰 2 个 Boss 关(章中 + 章末)+ 配 narrativeDefeatId;其余非 Boss
         // 无 defeat。Boss 位显式白名单:Ch1-7 = {4,5};Ch8 = {3,5}(章中 Boss
-        // 挪 3·灰衣人沙夜袭影·叙事驱动,validator 只约束 defeat⟹Boss 不钉位置)。
+        // 挪 3·灰衣人沙夜袭影);Ch9 = {4,5}(隘口守卫章中·那一位章末)。
+        // validator 只约束 defeat⟹Boss 不钉位置。
         const bossIdxByChapter = {
           1: {4, 5},
           2: {4, 5},
@@ -690,8 +692,9 @@ void main() {
           6: {4, 5},
           7: {4, 5},
           8: {3, 5},
+          9: {4, 5},
         };
-        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8]) {
+        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
           for (final idx in [1, 2, 3, 4, 5]) {
             final id = 'stage_0${ch}_0$idx';
             final s = repo.getStage(id);

@@ -88,7 +88,7 @@ void _assertExperienceRatchet(List<StageDef> stages, List<_TempoRun> rows) {
         samples.length;
   }
 
-  for (var chapter = 1; chapter <= 8; chapter++) {
+  for (var chapter = 1; chapter <= 9; chapter++) {
     final stageId = 'stage_${chapter.toString().padLeft(2, '0')}_05';
     final undergeared = averageActions(
       stageId,
@@ -107,16 +107,16 @@ void _assertExperienceRatchet(List<StageDef> stages, List<_TempoRun> rows) {
     );
   }
 
-  // 终章门槛(2026-07-17):终章 = 当前最末主线章 = Ch7(stage_07_05·北派重手宗匠)。
+  // 终章门槛(2026-07-20):终章 = 当前最末主线章 = Ch9(stage_09_05·那一位/铜符本主)。
   final finalChapterUndergeared = averageActions(
-    'stage_07_05',
+    'stage_09_05',
     ProgressionBuildProfile.undergeared,
   );
   expect(
     finalChapterUndergeared,
     greaterThanOrEqualTo(8),
     reason:
-        'stage_07_05 undergeared 平均动作行 '
+        'stage_09_05 undergeared 平均动作行 '
         '$finalChapterUndergeared 低于终章门槛 8',
   );
 

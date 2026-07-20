@@ -31,5 +31,5 @@
 
 ## 四 · 方向级候选(大活·需专注会话+xhigh)
 
-- **Ch9 主线章 spec**(承 Ch8「碛北那一位」hook)——内容主线自然续
+- **Ch10+ 一流拐点主线章**(承 Ch9 末「符的那头是又一个开始」hook·B 案存档备参)——抬发布上限 reconcile 面大(memory `feedback_wuxia_release_cap_raise_reconcile` 4 站点),宜专章专议
 - **爬塔二流段 spec**——塔内容扩展另一轴

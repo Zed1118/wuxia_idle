@@ -133,7 +133,10 @@ void main() {
     // 叙事定,不进 wave_b 2/2/2 配平池(spec 2026-07-18-erliu-content-ch8-design
     // §4·池不变零 rebalancing)。新增独立真解时在此白名单登记——配平池语义
     // = wave_b 六章 build 池不变式,非「所有 mainlineDrop 招」。
-    const standaloneBossManualIds = {'skill_hui_xiu_hui_feng'};
+    const standaloneBossManualIds = {
+      'skill_hui_xiu_hui_feng', // Ch8 灰衣人·灰袖回风
+      'skill_chen_sha_yi_jue', // Ch9 那一位·沉沙一诀
+    };
 
     assertBalanced(
       '真解',

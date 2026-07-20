@@ -3241,3 +3241,27 @@ skills:
         shuLian: { damage_pct: 0.08 }
         jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
         huaJing: { cooldown_delta: -1 }
+
+  # ───────────────────────────────────────────
+  # Ch9「碛北」末Boss「那一位」本命真解(A 案二流收束)。
+  # 末Boss stage_09_05 chargeSkillId 双用 = dropSkillManualId(破招首通掉·沿「破他的招、学他的招」canon)。
+  # 独立末Boss真解,非 wave_b 配平池成员;沉默出手即决=刚猛单体高伤;mult 3000 > 灰袖回风 2900(一章之深·守全局 ≤8000·tier3≤skillTierCap)。
+  - id: skill_chen_sha_yi_jue
+    name: 沉沙一诀
+    description: 半生困守碛北,出手已无声息。一诀落定,黄沙未起而胜负先分,从不需要第二击。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 3000
+    qiDelta: -35
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: sinking_sand
+    source: mainline_drop
+    style: gangMeng
+    tier: 3
+    proficiency:        # 真解手工高半档(刚猛向:纯伤害·沿金刚伏魔锚)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
+        huaJing: { damage_pct: 0.08 }
