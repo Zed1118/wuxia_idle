@@ -83,13 +83,65 @@ expedition_combat_runner / gauntlet_providers / gauntlet_enemies —— 视进�
   （560/14）→ +19 -8 精准 8 红（Actual 728/18 证批量逐件计入强化加成），
   改回真值 → **27/27 绿**；analyze 0；format 0。
 
+### ③ test/features/mainline/presentation/apply_victory_resolution_test.dart（commit 84662515）
+- 审出：类别1 弱断言 2 处 + 类别3 缺边界 2 处；类别2/4 未见
+  （全套真 Isar + 显式 DateTime，既有 11 用例分支覆盖已好）。
+- 加固：
+  1. 首通秘籍只查非空 → 补 quantity=1 语义。
+  2. 心法只查存在 → 补 skillUsageCount 仍空（growable 转换写回不丢数据）。
+  3. 新测「activeIds 部分悬空」：per-id skip 语义（既有只测全悬空→null）。
+  4. 新测「baseExpReward>0 经验结算」：advancements 记录 + EXP 全额落库未升层
+     （既有全 0 EXP，L851-859 路径未覆盖）。
+- RED 证据：分两轮——轮一 scroll 999→Actual 1 / 悬空 id+1000→Actual 1 /
+  experienceGained 999→Actual 30；轮二 skillUsageCount isNotEmpty→Actual [] /
+  layersGained 1→Actual 0 / experience 999→Actual 30。改回真值 → **13/13 绿**；
+  analyze 0；format 0。
+
+### ④ test/features/taohua_island/island_settle_service_test.dart（commit 277f9d9d）
+- 审出：类别1 弱断言 5 处（greaterThan(0) 不验产出量）+ 类别3 缺边界 3 处
+  （回拨/未初始化 settle/零时长 harvest 守卫分支全无覆盖）。
+- 加固：
+  1. T4 daZaoTai.stored >0 → closeTo(6.12)=1.5×synergy1.02×1×4（RED 顺带证
+     旧注释「= 6」未计 synergy 之误）+ 新增 tieJiangChang.stored≈0（24 产 24 耗）。
+  2. T2b zhuZaoTai.stored >0 → closeTo(3.264)。
+  3. T5 totalQty>0 → 背包总量 == gained 汇总（175）+ 必含 item_mojianshi。
+  4. T6 两 >0 → 精确 floor 量（mojianshi 110 / jingyandan 73）。
+  5. 新测 T10 时钟回拨 elapsed<0 → stored/lastSettledAt 均不变（守卫早返）。
+  6. 新测 T11 settle 未初始化档 → 建 7 建筑但 stored 全 0。
+  7. 新测 T12 harvest 零时长 → gained 空 + 不写背包。
+- RED 证据：分两轮——轮一 7 首探针全红（9.9→3.264 / 6.0→6.12 / isFalse→true /
+  999→110 / tBack→t0 / 1.0→0.0 / isFalse→true）；轮二 5 次探针全红
+  （24.0→0.0 / 176→175 / 999→73 / 1.0→0.0 / non-empty→[]）。
+  改回真值 → **14/14 绿**；analyze 0；format 0。
+
+### ⑤ test/features/sect/stage_boss_recruit_test.dart（commit e3ecc94b）
+- 审出：类别1 名实不符 1 处——「victory/defeat 共用防刷」测只写库再读回
+  （测的是 Isar 读写，未驱动任何 hook）；类别2/3/4 未见（rng 固定 _AlwaysHitRng，
+  schema 红线/transform/compat 覆盖已好）。
+- 加固：改写为真驱动 `runStageBossFailRecoverHookAfterDefeat`——save 预标
+  triggered 后调 defeat hook，断言 recruitFlow 调用 0 次（守卫早返）。
+- RED 证据：flowCalls 期望 1 → Actual 0（守卫生效）；改回 0 → **12/12 绿**；
+  analyze 0；format 0。
+
+### ⑥ test/features/seclusion/application/seclusion_service_test.dart（commit 4f2757d2）
+- 审出：类别1 弱断言 2 处；其余命中均为「>0 守卫 + 相对精确」既有强模式
+  （如 100+points / before+points / quantity==out.silver），不重复加固；
+  类别2/3/4 未见（abandon/clamp/跨槽/空指针边界已全）。
+- 加固：
+  1. 「收功 actualRewards 有 mojianshi」isNotEmpty → 条目数量 == out.mojianshi
+     （session 记录与结算输出一致，沿文件内 kaifeng_fucai 既有模式）。
+  2. 「收功 moJianShi 数量增加」quantity>0 → 捕获 out 断言 == out.mojianshi
+     （出库入库一致，沿 item_silver 既有模式）。
+- RED 证据：两探针 out.mojianshi+1 → Actual 4 双双红；改回 → **55/55 绿**；
+  analyze 0；format 0。
+
 ## 当前恢复点
 
-- **状态**：文件 ①② 完成并已各自独立 commit，继续候选表文件 ③。
-- **最后完成**：② equipment_disposal_service_test 8 处加固（27/27 绿，5be31f19）。
-- **下一步**：③ apply_victory_resolution_test.dart（10 命中，上批留偶发观察项）。
-- **已跑验证**：① 39/39 绿 + analyze 0 + format 0；② 27/27 绿 + analyze 0 + format 0。
-  两文件 RED→GREEN 均有运行记录（见各节）。
+- **状态**：文件 ①-⑥ 完成并已各自独立 commit，继续候选表 5-7 命中档。
+- **最后完成**：⑥ seclusion_service_test 2 处一致性加固（55/55 绿，4f2757d2）。
+- **下一步**：⑦ offline_recap_service_test（7 命中）。
+- **已跑验证**：① 39/39 ② 27/27 ③ 13/13 ④ 14/14 ⑤ 12/12 ⑥ 55/55，全部
+  analyze 0 + format 0；各处 RED→GREEN 均有运行记录（见各节）。
 - **阻塞项**：无。
 
 ## 发现项（疑似生产 bug，只记录不修）
