@@ -19,8 +19,7 @@
 
 | # | 项 | 域 | 预估 | 依据 |
 |---|---|---|---|---|
-| 1 | 4A `dispersionInternalForcePenalty` 字段清理(砍/注释) | numbers_config(数值敏感留 Claude) | 20-30min | C2 目标1 实测零结算消费方,防撞已解除 |
-| 2 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(codex 在途分支自然续) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段 |
+| 1 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(codex 在途分支自然续) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段 |
 
 ## 三 · 依赖锁死(附再开条件)
 
