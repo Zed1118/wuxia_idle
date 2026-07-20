@@ -2312,7 +2312,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [300, 380]
         dropChance: 1.0  # 银两(一流阶 · 承 Ch9 曲线续进)
-    baseExpReward: 72
+    baseExpReward: 34
     difficultyMultiplier: 10.2
     biome: frontier
     sceneBackgroundPath: assets/scenes/battle_frontier.png
@@ -2352,7 +2352,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [310, 390]
         dropChance: 1.0  # 银两(一流阶)
-    baseExpReward: 72
+    baseExpReward: 34
     difficultyMultiplier: 10.4
     biome: mountainForest
     sceneBackgroundPath: assets/scenes/battle_mountain_forest.png
@@ -2392,7 +2392,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [320, 400]
         dropChance: 1.0  # 银两(一流阶)
-    baseExpReward: 76
+    baseExpReward: 36
     difficultyMultiplier: 10.6
     biome: mountainForest
     sceneBackgroundPath: assets/scenes/battle_mountain_forest.png
@@ -2434,7 +2434,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [380, 480]
         dropChance: 1.0  # 银两(一流章中 Boss)
-    baseExpReward: 108
+    baseExpReward: 58
     difficultyMultiplier: 10.8
     biome: mountainForest
     sceneBackgroundPath: assets/scenes/battle_mountain_forest.png
@@ -2490,7 +2490,7 @@ stages:
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
         dropChance: 0.30  # 经验丹大档(一流章末)
-    baseExpReward: 140
+    baseExpReward: 74
     difficultyMultiplier: 11.2
     biome: mountainForest
     sceneBackgroundPath: assets/scenes/battle_mountain_forest.png

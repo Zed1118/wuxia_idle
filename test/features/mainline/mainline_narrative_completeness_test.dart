@@ -55,11 +55,11 @@ void main() {
       }
     }
 
-    expect(mainlineStages.length, 45, reason: '当前主线应覆盖 Ch1-9 共 45 关');
+    expect(mainlineStages.length, 50, reason: '当前主线应覆盖 Ch1-10 共 50 关');
     expect(
       checked.length,
       greaterThanOrEqualTo(90),
-      reason: '至少覆盖 45 关开场/胜利(45×2) + Boss 战败/招降扩展文本',
+      reason: '至少覆盖 50 关开场/胜利(50×2) + Boss 战败/招降扩展文本',
     );
   });
 

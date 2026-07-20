@@ -40,7 +40,8 @@ void main() {
     RealmTier expectedTierOf(int chapterIndex) {
       if (chapterIndex <= 3) return RealmTier.xueTu;
       if (chapterIndex <= 6) return RealmTier.sanLiu;
-      return RealmTier.erLiu;
+      if (chapterIndex <= 9) return RealmTier.erLiu;
+      return RealmTier.yiLiu;
     }
 
     final mainline = repo.stageDefs.values.where(

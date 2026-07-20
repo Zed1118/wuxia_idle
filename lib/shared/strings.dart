@@ -1376,7 +1376,7 @@ class UiStrings {
 
   static const String chapterListTitle = '主线 · 章节';
   static const String mainlineRouteMapTitle = '江湖路引';
-  static const String mainlineRouteMapSubtitle = '九章江湖路 · 每章五关，朱印为 Boss';
+  static const String mainlineRouteMapSubtitle = '十章江湖路 · 每章五关，朱印为 Boss';
   static const String mainlineRouteCurrent = '当前';
   static const String mainlineRouteCleared = '已通';
   static const String mainlineRouteLocked = '未至';
@@ -1390,6 +1390,7 @@ class UiStrings {
   static const String chapter7Title = '第七章 · 北望';
   static const String chapter8Title = '第八章 · 出塞';
   static const String chapter9Title = '第九章 · 碛北';
+  static const String chapter10Title = '第十章 · 中州';
   static const String chapter1Hint = '初出茅庐，山道试剑、林间伏击';
   static const String chapter2Hint = '镖局护送、黑风寨剿匪';
   static const String chapter3Hint = '武林会、一战封王';
@@ -1399,6 +1400,7 @@ class UiStrings {
   static const String chapter7Hint = '北地风寒、雪压关城、山道伏影、灰衣重现、千钧压顶';
   static const String chapter8Hint = '塞外风急、瀚海孤烟、沙夜袭影、孤城闭雪、残照回风';
   static const String chapter9Hint = '符引出关、瀚海无路、蜃楼幻影、黑水绝壁、符尽之处';
+  static const String chapter10Hint = '河套渡口、雁门古道、洛水照影、嵩阳雄关、止水深潭';
 
   static const String chapterStatusLocked = '未解锁';
   static const String chapterStatusInProgress = '进行中';
@@ -1460,6 +1462,7 @@ class UiStrings {
       7 => chapter7Title,
       8 => chapter8Title,
       9 => chapter9Title,
+      10 => chapter10Title,
       _ => '第 $chapterIndex 章',
     };
   }
@@ -1476,6 +1479,7 @@ class UiStrings {
       7 => chapter7Hint,
       8 => chapter8Hint,
       9 => chapter9Hint,
+      10 => chapter10Hint,
       _ => '',
     };
   }

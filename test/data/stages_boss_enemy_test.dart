@@ -38,6 +38,6 @@ void main() {
       0,
       (n, s) => n + s.enemyTeam.where((e) => e.isBoss).length,
     );
-    expect(total, 20, reason: 'Ch9 +2(隘口守卫章中 + 那一位章末)');
+    expect(total, 22, reason: 'Ch10 +2(嵩阳关主章中 + 守拙翁章末)');
   });
 }
