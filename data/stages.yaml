@@ -2355,7 +2355,7 @@ stages:
     baseExpReward: 34
     difficultyMultiplier: 10.4
     biome: mountainForest
-    sceneBackgroundPath: assets/scenes/battle_mountain_forest.png
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
     weather: clear
 
   # === stage_10_03 · 洛水照影(章中考验 · 阴柔幻敌 · 非 Boss · "循路 vs 开路"镜像)===
@@ -2395,7 +2395,7 @@ stages:
     baseExpReward: 36
     difficultyMultiplier: 10.6
     biome: mountainForest
-    sceneBackgroundPath: assets/scenes/battle_mountain_forest.png
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
     weather: night
 
   # === stage_10_04 · 嵩阳关(刚猛章中 Boss · 守道关主 · stat 门槛无相位 · 配 defeat)===
@@ -2437,7 +2437,7 @@ stages:
     baseExpReward: 58
     difficultyMultiplier: 10.8
     biome: mountainForest
-    sceneBackgroundPath: assets/scenes/battle_mountain_forest.png
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
     weather: clear
 
   # === stage_10_05 · 止水潭(阴柔·守道名宿·沉默出手·刚末 Boss · 破招掉止水诀真解)===
@@ -2493,7 +2493,7 @@ stages:
     baseExpReward: 74
     difficultyMultiplier: 11.2
     biome: mountainForest
-    sceneBackgroundPath: assets/scenes/battle_mountain_forest.png
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
     weather: clear
 
   # ============================================================================
