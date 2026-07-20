@@ -207,16 +207,45 @@ expedition_combat_runner / gauntlet_providers / gauntlet_enemies —— 视进�
 
 ## 当前恢复点
 
-- **状态**：候选表 ≥4 命中档 15 文件全部审完并各自独立 commit；低命中档
-  （2-3）多为「守卫+字段断言」既有强模式，扫描未见同量级弱点，批收尾。
-- **最后完成**：⑮ gauntlet_providers occupied 边界（6/6 绿，6ae06332）+
-  expedition_combat_runner 审计记录（不加固）。
-- **下一步**：批末全量 `flutter test --no-pub` 绿 → 四证据 → [READY] 冻结。
+- **状态**：全部完成，四证据齐，tip 已打 [READY]，待主会话合并 Gate 评审。
+- **最后完成**：批末全量 `flutter test --no-pub`（并发·无超时重跑）
+  **4584 pass / 0 fail / EXIT=0**（8m21s；首跑因误设 300s 上限被截，复跑同口径绿）。
+- **下一步**：无（等合并 Gate）。
 - **已跑验证**：15 文件 targeted 全绿（39/27/13/14/12/55/10/19/7/6/10/4/4/5/6），
   每文件 `flutter analyze --no-pub` 0 + `dart format --set-exit-if-changed` 0；
-  全部 40+ 处加固均有 RED→GREEN 运行记录（见各节）。
+  全部 40+ 处加固均有 RED→GREEN 运行记录（见各节）；批末全量 4584/0/EXIT0。
 - **阻塞项**：无。
 
 ## 发现项（疑似生产 bug，只记录不修）
 
-（暂无）
+1. **无**。15 文件审计中未发现生产逻辑缺陷：所有 RED 探针的失败均与测试预期
+   一致（生产行为正确，错的是探针值）。两处「注释与实现偏差」仅测试注释层面：
+   island T4 旧注释「4h×1.5/h=6」未计 synergy（实际 6.12，已在加固注释中订正）；
+   sweep_unit 头注「P3 种子左队」未提兜底路径（实际走 findFirst 兜底，
+   生产行为正确，测试已按兜底语义断言）。
+
+## §8.2 四证据
+
+1. **生产接线/根因证据**：本批不改生产代码，全部加固基于生产源码逐处核对
+   （每文件记录内注明生产依据行/语义：stage_battle_setup 逐一出装与 negative id
+   约定、disposal 拒绝路径守卫先于 mutation、island settle elapsed≤0 守卫、
+   sect tick lastTickAt=anchor+elapsedMonths×30、hook 防刷守卫行 55/171、
+   occupancy 快照含 gauntlet run、buildEnemyTeam 3 人截断 L122 等）。
+   候选扫描方法：全 test/ 弱断言模式命中降序（见候选清单表），逐文件人工复核
+   区分「null 守卫+字段断言」强模式与真弱点，从命中最多者起。
+2. **targeted 结果**：15 文件 targeted 命令与通过数见「当前恢复点 · 已跑验证」；
+   批末全量 `flutter test --no-pub`（并发）：**4584 pass / 0 fail / EXIT=0**。
+3. **红线影响**：**零触及**。未碰 `lib/` 生产代码、`data/` 全目录、数值/schema/
+   红线测试（test/data、test/balance 红线类）、`test/features/battle/**`、
+   `test/combat/**`、`lib/shared/strings.dart`、GDD/PROGRESS/BACKLOG/NEXT/
+   pubspec/saveVersion/结算公式层。新增断言涉及 numbers 派生值处均读真值
+   （sect prob、realm 阈值未写死）或锁定文件自身注释已承诺的设计语义
+   （island 产出/synergy 率——该文件本就是配置消费行为的精确锚，数值调优
+   时同步更新属预期维护面）。
+4. **残留风险**：
+   - island_settle T4/T2b/T6 精确产出值耦合 numbers.yaml 现行速率
+     （1.5/0.8/1.0/h、synergy 0.02）——数值调优时这些断言会响亮失败，
+     需同步更新（语义锚特性，非缺陷）；rest of batch 无此类耦合。
+   - 低命中档（2-3）文件未逐个人工复核，仅抽样确认多为强模式；
+     如需全量复核可作下批候选。
+   - 未做 UI 视口 smoke（无 UI 改动）；未跑 Windows 实机（非本单范围）。
