@@ -35,7 +35,7 @@ combat:
           skillIds:
             - skill_gangmeng_changlian_basic
             - skill_gangmeng_changlian_skill
-          iconPath: ''
+          iconPath: assets/enemies/enemy_baicao_shanjia.png
     - id: baicao_normal_lingqiao
       enemies:
         - id: enemy_baicao_fenghou
@@ -49,7 +49,7 @@ combat:
           skillIds:
             - skill_lingqiao_changlian_basic
             - skill_lingqiao_changlian_skill
-          iconPath: ''
+          iconPath: assets/enemies/enemy_baicao_fenghou.png
     - id: baicao_normal_yinrou
       enemies:
         - id: enemy_baicao_duwu
@@ -63,7 +63,7 @@ combat:
           skillIds:
             - skill_yinrou_changlian_basic
             - skill_yinrou_changlian_skill
-          iconPath: ''
+          iconPath: assets/enemies/enemy_baicao_duwu.png
 
   # 每 5 节点险关为三敌混编；两套模板改变主流派与行动节奏，不新增招式。
   elite_enemy_teams:
@@ -81,7 +81,7 @@ combat:
             - skill_yinrou_changlian_basic
             - skill_yinrou_changlian_skill
             - skill_yinrou_changlian_ult
-          iconPath: ''
+          iconPath: assets/enemies/enemy_baicao_fog_leader.png
         - id: enemy_baicao_fog_guard
           name: 护关悍匪
           realmTier: sanLiu
@@ -93,7 +93,7 @@ combat:
           skillIds:
             - skill_gangmeng_changlian_basic
             - skill_gangmeng_changlian_skill
-          iconPath: ''
+          iconPath: assets/enemies/enemy_baicao_fog_guard.png
         - id: enemy_baicao_fog_scout
           name: 林梢斥候
           realmTier: sanLiu
@@ -105,7 +105,7 @@ combat:
           skillIds:
             - skill_lingqiao_changlian_basic
             - skill_lingqiao_changlian_skill
-          iconPath: ''
+          iconPath: assets/enemies/enemy_baicao_fog_scout.png
     - id: baicao_elite_ridge_pass
       enemies:
         - id: enemy_baicao_ridge_leader
@@ -120,7 +120,7 @@ combat:
             - skill_gangmeng_changlian_basic
             - skill_gangmeng_changlian_skill
             - skill_gangmeng_changlian_ult
-          iconPath: ''
+          iconPath: assets/enemies/enemy_baicao_ridge_leader.png
         - id: enemy_baicao_ridge_needler
           name: 飞针药徒
           realmTier: sanLiu
@@ -132,7 +132,7 @@ combat:
           skillIds:
             - skill_yinrou_changlian_basic
             - skill_yinrou_changlian_skill
-          iconPath: ''
+          iconPath: assets/enemies/enemy_baicao_ridge_needler.png
         - id: enemy_baicao_ridge_runner
           name: 巡山快手
           realmTier: sanLiu
@@ -144,4 +144,4 @@ combat:
           skillIds:
             - skill_lingqiao_changlian_basic
             - skill_lingqiao_changlian_skill
-          iconPath: ''
+          iconPath: assets/enemies/enemy_baicao_ridge_runner.png

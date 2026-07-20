@@ -31,9 +31,9 @@
 ## 当前恢复点
 
 - 状态：进行中。
-- 最后完成：断魂庄 7 敌已生成、抠透明、双底色合成目检、接入 `boss_gauntlets.yaml`，并按 alpha 包围盒补透明识别、脚底 fraction 与水平重心/尺度校准。
-- 下一步：提交断魂庄 7 敌切片；随后生成百草岭 9 敌。
-- 已跑验证：`flutter test --no-pub test/tools/asset_audit_test.dart test/data/pubspec_asset_declaration_test.dart test/features/battle/presentation/character_avatar_test.dart test/features/boss_gauntlet/gauntlet_enemy_validation_test.dart` → 33/33 通过。此前一次命令误写不存在的短路径导致 1 个加载错误，已用正确路径完整重跑转绿。
+- 最后完成：断魂庄 7 敌已提交；百草岭 9 敌已生成、抠透明、双底色合成目检、接入 `expeditions.yaml`，并按 alpha 包围盒补透明识别、脚底 fraction 与水平重心/尺度校准。
+- 下一步：提交百草岭 9 敌切片；随后生成断魂庄 3 件装备 icon/detail。
+- 已跑验证：断魂庄相关 33/33 通过；百草岭切片运行资产/pubspec、角色立绘与 `test/features/expedition` → 100/100 通过。此前一次命令误写不存在的短路径导致 1 个加载错误，已用正确路径完整重跑转绿。
 - 阻塞项：无。
-- 出图统计：7 生成（苏无咎复用已达标探针）/ 7 达标 / 0 `[BLOCKED]`。
-- 合成验收：7/7 均在战斗山林底与深灰面板底无白边、粉边、残留投影或明显锯齿；透明四角 alpha 全为 0。
+- 出图统计：16 生成（苏无咎复用已达标探针）/ 16 达标 / 0 `[BLOCKED]`。
+- 合成验收：16/16 均在战斗山林底与深灰面板底无白边、粉边、残留投影或明显锯齿；透明四角 alpha 全为 0。

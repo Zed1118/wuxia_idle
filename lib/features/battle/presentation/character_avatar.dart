@@ -839,6 +839,24 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/enemy_gauntlet_zhizhang_b.png',
   'assets/enemies/enemy_gauntlet_wen_jiuzhen.png':
       'assets/enemies/enemy_gauntlet_wen_jiuzhen.png',
+  'assets/enemies/enemy_baicao_shanjia.png':
+      'assets/enemies/enemy_baicao_shanjia.png',
+  'assets/enemies/enemy_baicao_fenghou.png':
+      'assets/enemies/enemy_baicao_fenghou.png',
+  'assets/enemies/enemy_baicao_duwu.png':
+      'assets/enemies/enemy_baicao_duwu.png',
+  'assets/enemies/enemy_baicao_fog_leader.png':
+      'assets/enemies/enemy_baicao_fog_leader.png',
+  'assets/enemies/enemy_baicao_fog_guard.png':
+      'assets/enemies/enemy_baicao_fog_guard.png',
+  'assets/enemies/enemy_baicao_fog_scout.png':
+      'assets/enemies/enemy_baicao_fog_scout.png',
+  'assets/enemies/enemy_baicao_ridge_leader.png':
+      'assets/enemies/enemy_baicao_ridge_leader.png',
+  'assets/enemies/enemy_baicao_ridge_needler.png':
+      'assets/enemies/enemy_baicao_ridge_needler.png',
+  'assets/enemies/enemy_baicao_ridge_runner.png':
+      'assets/enemies/enemy_baicao_ridge_runner.png',
 };
 
 bool _isTransparentBattleStandee(String? path) =>
@@ -948,6 +966,15 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/enemy_gauntlet_zhizhang_a.png' => 0.9733,
   'assets/enemies/enemy_gauntlet_zhizhang_b.png' => 0.9631,
   'assets/enemies/enemy_gauntlet_wen_jiuzhen.png' => 0.9811,
+  'assets/enemies/enemy_baicao_shanjia.png' => 0.9707,
+  'assets/enemies/enemy_baicao_fenghou.png' => 0.9538,
+  'assets/enemies/enemy_baicao_duwu.png' => 0.9733,
+  'assets/enemies/enemy_baicao_fog_leader.png' => 0.9629,
+  'assets/enemies/enemy_baicao_fog_guard.png' => 0.9727,
+  'assets/enemies/enemy_baicao_fog_scout.png' => 0.9407,
+  'assets/enemies/enemy_baicao_ridge_leader.png' => 0.9817,
+  'assets/enemies/enemy_baicao_ridge_needler.png' => 0.9564,
+  'assets/enemies/enemy_baicao_ridge_runner.png' => 0.9566,
   _ => 0.95,
 };
 
@@ -1166,6 +1193,42 @@ _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
   'assets/enemies/enemy_gauntlet_wen_jiuzhen.png' => (
     scale: 0.98,
     horizontalShiftFraction: -0.021,
+  ),
+  'assets/enemies/enemy_baicao_shanjia.png' => (
+    scale: 0.99,
+    horizontalShiftFraction: 0,
+  ),
+  'assets/enemies/enemy_baicao_fenghou.png' => (
+    scale: 1.03,
+    horizontalShiftFraction: 0.003,
+  ),
+  'assets/enemies/enemy_baicao_duwu.png' => (
+    scale: 1,
+    horizontalShiftFraction: -0.007,
+  ),
+  'assets/enemies/enemy_baicao_fog_leader.png' => (
+    scale: 1.02,
+    horizontalShiftFraction: -0.004,
+  ),
+  'assets/enemies/enemy_baicao_fog_guard.png' => (
+    scale: 1.01,
+    horizontalShiftFraction: 0.008,
+  ),
+  'assets/enemies/enemy_baicao_fog_scout.png' => (
+    scale: 1.06,
+    horizontalShiftFraction: -0.045,
+  ),
+  'assets/enemies/enemy_baicao_ridge_leader.png' => (
+    scale: 0.98,
+    horizontalShiftFraction: 0,
+  ),
+  'assets/enemies/enemy_baicao_ridge_needler.png' => (
+    scale: 1.02,
+    horizontalShiftFraction: -0.014,
+  ),
+  'assets/enemies/enemy_baicao_ridge_runner.png' => (
+    scale: 1.04,
+    horizontalShiftFraction: -0.012,
   ),
   _ => (scale: 1, horizontalShiftFraction: 0),
 };
