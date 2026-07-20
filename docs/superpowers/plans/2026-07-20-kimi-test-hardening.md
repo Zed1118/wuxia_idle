@@ -135,13 +135,86 @@ expedition_combat_runner / gauntlet_providers / gauntlet_enemies —— 视进�
 - RED 证据：两探针 out.mojianshi+1 → Actual 4 双双红；改回 → **55/55 绿**；
   analyze 0；format 0。
 
+### ⑦ test/features/seclusion/application/offline_recap_service_test.dart（commit 5cd7e322）
+- 审出：类别3 缺边界 1 处——弹卡阈值 1h 只测了 0.5h 侧，端点语义（`<` 才拦）未锁；
+  类别1/2/4 未见（>0 守卫与「与 computeOutputs 直接一致」对比测已覆盖数值语义）。
+- 加固：新测「恰好离开阈值（整 1h）→ 弹卡」+ settledHours 全额结算。
+- RED 证据：settledHours 999 → Actual 1.0；改回 → **10/10 绿**；analyze 0；format 0。
+
+### ⑧ test/features/sect/sect_providers_test.dart（commit 6b2ac904）
+- 审出：类别1 弱断言 1 处 + 类别3 缺边界 1 处。
+- 加固：
+  1. 月度 tick `lastTickAt isNotNull` → 精确锚 `createdAt + 30d`（elapsedMonths=1
+     推进语义，非「= tick 时刻」；RED 31d→Actual 30d 证锚语义）。
+  2. 新测「rng 恰等于 missionRecruitProb → 不招徒」（锁 `roll >= prob 即拒` 端点；
+     prob 读 numbers 真值不写死；RED isTrue→Actual false）。
+- RED 证据：两探针两轮全红；改回 → **19/19 绿**；analyze 0；format 0。
+
+### ⑨ test/features/weapon_codex/equipment_catalog_service_test.dart（commit 384c8096）
+- 审出：类别3 缺边界 3 处（既有 4 测语义已好）。
+- 加固：新测 空 defIds no-op+未建档查询 null / 同批重复 defId count 按件数（2）/
+  reconcile 混合（已入册跳过 + 同 def 重复持有 toSet 去重只回填 1 档）。
+- RED 证据：count 999→Actual 2、hasLength(99)→Actual 2；改回 → **7/7 绿**；
+  analyze 0；format 0。
+
+### ⑩ test/features/sweep/application/sweep_unit_test.dart（commit 60864d24）
+- 审出：类别1 弱断言 2 处（startBattle 左/右队只查 isNotEmpty）。
+- 加固：主线+爬塔两起手测 → 左队 characterId 集合 == 库中全部角色
+  （P3 无 active ids → 兜底装配唯一角色；首版锚 activeCharacterIds 会误伤
+  合法兜底路径，改锚 characters 全集）+ 右队 length == stage/floor enemyTeam length。
+- RED 证据：左队 {id+100}→Actual {1} 双红；右队 +1→Actual 1 双红；改回 →
+  **6/6 绿**；analyze 0；format 0。（期间补 character.dart/isar_community 两 import。）
+
+### ⑪ test/features/onboarding/application/onboarding_service_test.dart（commit ac5d2da2）
+- 审出：类别1 弱断言 2 处。
+- 加固：R5.4 主修只查非空 → id 可解析 + role=main + tier 0 入门功；
+  R5.5 敌队 `>0` → == stage.enemyTeam.length。
+- RED 证据：role assist→Actual main；enemyTeam+1→Actual 1；改回 → **10/10 绿**；
+  analyze 0；format 0。
+
+### ⑫ test/features/inner_demon/inner_demon_narrative_test.dart（commit 592ba997）
+- 审出：类别1 一致性缺口 2 处——opening 测已断 yaml 内 id 联结，victory/defeat 缺
+  （fromYaml 的 id 来自文件内部，联结非平凡）。文件头有「文案不写死」既定方针，
+  不违方针加字数/内容断言。
+- 加固：victory/defeat 补 `c.id == '${id}_victory/_defeat'` 联结断言。
+- RED 证据：_wrong 后缀双红（Actual 真 id）；改回 → **4/4 绿**；analyze 0；format 0。
+
+### ⑬ test/features/expedition/expedition_config_load_test.dart（commit c5349fec）
+- 审出：类别3 缺结构不变式 1 处——敌队规模无 3v3 上限守卫
+  （buildEnemyTeam 超员静默截断丢怪）。
+- 加固：新测「远征敌队规模 ≤3」（normal/elite 全量）。
+- RED 证据：≤2 探针 → Actual 3（elite 队 3 人）；改回 ≤3 → **4/4 绿**；
+  analyze 0；format 0。
+
+### ⑭ test/features/boss_gauntlet/gauntlet_enemies_test.dart（commit 1218d85d）
+- 审出：同 ⑬ 类别3——三关敌队解析只查非空，无规模上限守卫。
+- 加固：通用解析测补 team.length ≤3。
+- RED 证据：≤2 探针 → Actual 3（苏无咎/石镇岳队 3 人）；改回 → **5/5 绿**；
+  analyze 0；format 0。
+
+### ⑮ test/features/boss_gauntlet/gauntlet_providers_test.dart（commit 6ae06332）
+- 审出：类别3 缺边界 1 处——头注承诺「占用标注」但 occupied=true 路径无测
+  （occupied 由 CharacterOccupancyService 快照派生，含 active 断魂庄会话成员）。
+- 加固：新测「active 会话弟子 → occupied=true + selectable=false」（真 enter 入口驱动）。
+- RED 证据：occupied isFalse→Actual true、selectable isTrue→Actual false 两轮红；
+  改回 → **6/6 绿**；analyze 0；format 0。
+
+### 审计后无需加固（记录在案）
+- **test/features/expedition/expedition_combat_runner_test.dart**（4 命中档）：
+  caps >0 + currentHp ≤ maxHp 构成区间断言已合理；stagedRewards 按 rewardKey
+  合并累加，精确件数脆（节点奖励类型调优即漂移），isNotEmpty 为该层合适语义；
+  奖励口径由 expedition_settlement/recall 测族兜底。
+
 ## 当前恢复点
 
-- **状态**：文件 ①-⑥ 完成并已各自独立 commit，继续候选表 5-7 命中档。
-- **最后完成**：⑥ seclusion_service_test 2 处一致性加固（55/55 绿，4f2757d2）。
-- **下一步**：⑦ offline_recap_service_test（7 命中）。
-- **已跑验证**：① 39/39 ② 27/27 ③ 13/13 ④ 14/14 ⑤ 12/12 ⑥ 55/55，全部
-  analyze 0 + format 0；各处 RED→GREEN 均有运行记录（见各节）。
+- **状态**：候选表 ≥4 命中档 15 文件全部审完并各自独立 commit；低命中档
+  （2-3）多为「守卫+字段断言」既有强模式，扫描未见同量级弱点，批收尾。
+- **最后完成**：⑮ gauntlet_providers occupied 边界（6/6 绿，6ae06332）+
+  expedition_combat_runner 审计记录（不加固）。
+- **下一步**：批末全量 `flutter test --no-pub` 绿 → 四证据 → [READY] 冻结。
+- **已跑验证**：15 文件 targeted 全绿（39/27/13/14/12/55/10/19/7/6/10/4/4/5/6），
+  每文件 `flutter analyze --no-pub` 0 + `dart format --set-exit-if-changed` 0；
+  全部 40+ 处加固均有 RED→GREEN 运行记录（见各节）。
 - **阻塞项**：无。
 
 ## 发现项（疑似生产 bug，只记录不修）
