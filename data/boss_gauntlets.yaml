@@ -46,7 +46,7 @@ enemy_teams:
         - skill_lingqiao_jichu_skill
         - skill_lingqiao_jichu_ult
         - skill_suo_mai_zhen              # 招牌蓄力技（阴柔·qiDrainPct 0.30）
-      iconPath: ''
+      iconPath: assets/enemies/enemy_gauntlet_su_wujiu.png
       isBoss: true
       chargeSkillId: skill_suo_mai_zhen   # §5.2 未破招夺 30% 最大真气
       vulnerability:
@@ -62,7 +62,7 @@ enemy_teams:
       skillIds:
         - skill_lingqiao_jichu_basic
         - skill_lingqiao_jichu_skill
-      iconPath: ''
+      iconPath: assets/enemies/enemy_gauntlet_qingyi_hu_a.png
     - id: enemy_gauntlet_qingyi_hu_b
       name: 青衣护院
       realmTier: sanLiu
@@ -74,7 +74,7 @@ enemy_teams:
       skillIds:
         - skill_lingqiao_jichu_basic
         - skill_lingqiao_jichu_skill
-      iconPath: ''
+      iconPath: assets/enemies/enemy_gauntlet_qingyi_hu_b.png
 
   # ── 第二关：铁衣客·石镇岳（刚猛慢速高伤 + 铁衣护阵 0.25·双庄客护法墙 taunt）──
   gauntlet_shi_zhenyue:
@@ -90,7 +90,7 @@ enemy_teams:
         - skill_gangmeng_jichu_basic
         - skill_gangmeng_jichu_skill
         - skill_gangmeng_jichu_ult
-      iconPath: ''
+      iconPath: assets/enemies/enemy_gauntlet_shi_zhenyue.png
       isBoss: true
       guardianWard:
         damageTakenMult: 0.25             # §5.3 庄客存活时护阵承伤 0.25
@@ -108,7 +108,7 @@ enemy_teams:
       skillIds:
         - skill_gangmeng_jichu_basic
         - skill_gangmeng_jichu_skill
-      iconPath: ''
+      iconPath: assets/enemies/enemy_gauntlet_zhizhang_a.png
     - id: enemy_gauntlet_zhizhang_b
       name: 执杖庄客
       realmTier: sanLiu
@@ -120,7 +120,7 @@ enemy_teams:
       skillIds:
         - skill_gangmeng_jichu_basic
         - skill_gangmeng_jichu_skill
-      iconPath: ''
+      iconPath: assets/enemies/enemy_gauntlet_zhizhang_b.png
 
   # ── 最终关：断魂庄主·闻九针（阴柔单人 + 高血三阶段 + 逆行封脉脆弱 0.35）──
   gauntlet_wen_jiuzhen:
@@ -136,7 +136,7 @@ enemy_teams:
         - skill_yinrou_jichu_basic
         - skill_yinrou_jichu_skill
         - skill_yinrou_jichu_ult
-      iconPath: ''
+      iconPath: assets/enemies/enemy_gauntlet_wen_jiuzhen.png
       isBoss: true
       vulnerability:
         outOfWindowDamageMult: 0.35       # §5.4 逆行封脉窗外承伤 0.35

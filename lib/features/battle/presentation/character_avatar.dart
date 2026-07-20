@@ -825,6 +825,20 @@ const _battleStandeeOverrides = <String, String>{
   'assets/enemies/huiyiren_beijing.png': 'assets/enemies/huiyiren_beijing.png',
   'assets/enemies/huiyiren_saibei.png': 'assets/enemies/huiyiren_saibei.png',
   'assets/enemies/huiyiren_final.png': 'assets/enemies/huiyiren_final.png',
+  'assets/enemies/enemy_gauntlet_su_wujiu.png':
+      'assets/enemies/enemy_gauntlet_su_wujiu.png',
+  'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':
+      'assets/enemies/enemy_gauntlet_qingyi_hu_a.png',
+  'assets/enemies/enemy_gauntlet_qingyi_hu_b.png':
+      'assets/enemies/enemy_gauntlet_qingyi_hu_b.png',
+  'assets/enemies/enemy_gauntlet_shi_zhenyue.png':
+      'assets/enemies/enemy_gauntlet_shi_zhenyue.png',
+  'assets/enemies/enemy_gauntlet_zhizhang_a.png':
+      'assets/enemies/enemy_gauntlet_zhizhang_a.png',
+  'assets/enemies/enemy_gauntlet_zhizhang_b.png':
+      'assets/enemies/enemy_gauntlet_zhizhang_b.png',
+  'assets/enemies/enemy_gauntlet_wen_jiuzhen.png':
+      'assets/enemies/enemy_gauntlet_wen_jiuzhen.png',
 };
 
 bool _isTransparentBattleStandee(String? path) =>
@@ -927,6 +941,13 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/huiyiren_beijing.png' => 0.981,
   'assets/enemies/huiyiren_saibei.png' => 0.976,
   'assets/enemies/huiyiren_final.png' => 0.991,
+  'assets/enemies/enemy_gauntlet_su_wujiu.png' => 0.9674,
+  'assets/enemies/enemy_gauntlet_qingyi_hu_a.png' => 0.9571,
+  'assets/enemies/enemy_gauntlet_qingyi_hu_b.png' => 0.9642,
+  'assets/enemies/enemy_gauntlet_shi_zhenyue.png' => 0.9755,
+  'assets/enemies/enemy_gauntlet_zhizhang_a.png' => 0.9733,
+  'assets/enemies/enemy_gauntlet_zhizhang_b.png' => 0.9631,
+  'assets/enemies/enemy_gauntlet_wen_jiuzhen.png' => 0.9811,
   _ => 0.95,
 };
 
@@ -1117,6 +1138,34 @@ _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
   'assets/enemies/huiyiren_final.png' => (
     scale: 0.99,
     horizontalShiftFraction: -0.035,
+  ),
+  'assets/enemies/enemy_gauntlet_su_wujiu.png' => (
+    scale: 0.99,
+    horizontalShiftFraction: -0.013,
+  ),
+  'assets/enemies/enemy_gauntlet_qingyi_hu_a.png' => (
+    scale: 1.03,
+    horizontalShiftFraction: -0.031,
+  ),
+  'assets/enemies/enemy_gauntlet_qingyi_hu_b.png' => (
+    scale: 1.01,
+    horizontalShiftFraction: -0.079,
+  ),
+  'assets/enemies/enemy_gauntlet_shi_zhenyue.png' => (
+    scale: 1,
+    horizontalShiftFraction: 0.001,
+  ),
+  'assets/enemies/enemy_gauntlet_zhizhang_a.png' => (
+    scale: 1,
+    horizontalShiftFraction: 0.039,
+  ),
+  'assets/enemies/enemy_gauntlet_zhizhang_b.png' => (
+    scale: 1.01,
+    horizontalShiftFraction: -0.001,
+  ),
+  'assets/enemies/enemy_gauntlet_wen_jiuzhen.png' => (
+    scale: 0.98,
+    horizontalShiftFraction: -0.021,
   ),
   _ => (scale: 1, horizontalShiftFraction: 0),
 };
