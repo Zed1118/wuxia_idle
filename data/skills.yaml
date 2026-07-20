@@ -2944,6 +2944,7 @@ skills:
     source: mainline_drop
     style: lingQiao
     tier: 4
+    mount_deferred: true  # 2026-07-20 Ch10 取中原守道弧改用 skill_zhi_shui_jue(yinRou);本招(大漠·灵巧)属边塞主题,Ch9 已收束边塞,预留后续一流章挂载,cap24 后红线⑦按 !mountDeferred 豁免(yaml key=snake·skill_def.dart:174)
     proficiency:        # 真解手工高半档(灵巧向:CD 倾斜)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -3090,6 +3091,7 @@ skills:
     source: fragment
     style: gangMeng
     tier: 4
+    mount_deferred: true  # cap24 暴露·一流 fragment 秘籍 farm 招挂载属独立后续批·非 Ch10 主线章 scope·红线⑦按 !mountDeferred 豁免
     proficiency:        # 波A 流派模板(刚猛)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -3149,6 +3151,7 @@ skills:
     source: fragment
     style: gangMeng
     tier: 4
+    mount_deferred: true  # cap24 暴露·一流 fragment 秘籍 farm 招挂载属独立后续批·非 Ch10 主线章 scope·红线⑦按 !mountDeferred 豁免
     proficiency:        # 波A 流派模板(刚猛)
       effects:
         shuLian: { damage_pct: 0.08 }
