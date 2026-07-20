@@ -826,37 +826,35 @@ const _battleStandeeOverrides = <String, String>{
   'assets/enemies/huiyiren_saibei.png': 'assets/enemies/huiyiren_saibei.png',
   'assets/enemies/huiyiren_final.png': 'assets/enemies/huiyiren_final.png',
   'assets/enemies/enemy_gauntlet_su_wujiu.png':
-      'assets/enemies/enemy_gauntlet_su_wujiu.png',
+      WuxiaUi.battleGauntletSuWujiuStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':
-      'assets/enemies/enemy_gauntlet_qingyi_hu_a.png',
+      WuxiaUi.battleGauntletQingyiGuardAStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_b.png':
-      'assets/enemies/enemy_gauntlet_qingyi_hu_b.png',
+      WuxiaUi.battleGauntletQingyiGuardBStandee,
   'assets/enemies/enemy_gauntlet_shi_zhenyue.png':
-      'assets/enemies/enemy_gauntlet_shi_zhenyue.png',
+      WuxiaUi.battleGauntletShiZhenyueStandee,
   'assets/enemies/enemy_gauntlet_zhizhang_a.png':
-      'assets/enemies/enemy_gauntlet_zhizhang_a.png',
+      WuxiaUi.battleGauntletStaffRetainerAStandee,
   'assets/enemies/enemy_gauntlet_zhizhang_b.png':
-      'assets/enemies/enemy_gauntlet_zhizhang_b.png',
+      WuxiaUi.battleGauntletStaffRetainerBStandee,
   'assets/enemies/enemy_gauntlet_wen_jiuzhen.png':
-      'assets/enemies/enemy_gauntlet_wen_jiuzhen.png',
-  'assets/enemies/enemy_baicao_shanjia.png':
-      'assets/enemies/enemy_baicao_shanjia.png',
-  'assets/enemies/enemy_baicao_fenghou.png':
-      'assets/enemies/enemy_baicao_fenghou.png',
+      WuxiaUi.battleGauntletWenJiuzhenStandee,
+  'assets/enemies/enemy_baicao_shanjia.png': WuxiaUi.battleBaicaoShanjiaStandee,
+  'assets/enemies/enemy_baicao_fenghou.png': WuxiaUi.battleBaicaoFenghouStandee,
   'assets/enemies/enemy_baicao_duwu.png':
-      'assets/enemies/enemy_baicao_duwu.png',
+      WuxiaUi.battleBaicaoPoisonHerbalistStandee,
   'assets/enemies/enemy_baicao_fog_leader.png':
-      'assets/enemies/enemy_baicao_fog_leader.png',
+      WuxiaUi.battleBaicaoFogLeaderStandee,
   'assets/enemies/enemy_baicao_fog_guard.png':
-      'assets/enemies/enemy_baicao_fog_guard.png',
+      WuxiaUi.battleBaicaoFogGuardStandee,
   'assets/enemies/enemy_baicao_fog_scout.png':
-      'assets/enemies/enemy_baicao_fog_scout.png',
+      WuxiaUi.battleBaicaoFogScoutStandee,
   'assets/enemies/enemy_baicao_ridge_leader.png':
-      'assets/enemies/enemy_baicao_ridge_leader.png',
+      WuxiaUi.battleBaicaoRidgeLeaderStandee,
   'assets/enemies/enemy_baicao_ridge_needler.png':
-      'assets/enemies/enemy_baicao_ridge_needler.png',
+      WuxiaUi.battleBaicaoRidgeNeedlerStandee,
   'assets/enemies/enemy_baicao_ridge_runner.png':
-      'assets/enemies/enemy_baicao_ridge_runner.png',
+      WuxiaUi.battleBaicaoRidgeRunnerStandee,
 };
 
 bool _isTransparentBattleStandee(String? path) =>
@@ -960,22 +958,22 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/huiyiren_beijing.png' => 0.981,
   'assets/enemies/huiyiren_saibei.png' => 0.976,
   'assets/enemies/huiyiren_final.png' => 0.991,
-  'assets/enemies/enemy_gauntlet_su_wujiu.png' => 0.9674,
-  'assets/enemies/enemy_gauntlet_qingyi_hu_a.png' => 0.9571,
-  'assets/enemies/enemy_gauntlet_qingyi_hu_b.png' => 0.9642,
-  'assets/enemies/enemy_gauntlet_shi_zhenyue.png' => 0.9755,
-  'assets/enemies/enemy_gauntlet_zhizhang_a.png' => 0.9733,
-  'assets/enemies/enemy_gauntlet_zhizhang_b.png' => 0.9631,
-  'assets/enemies/enemy_gauntlet_wen_jiuzhen.png' => 0.9811,
-  'assets/enemies/enemy_baicao_shanjia.png' => 0.9707,
-  'assets/enemies/enemy_baicao_fenghou.png' => 0.9538,
-  'assets/enemies/enemy_baicao_duwu.png' => 0.9733,
-  'assets/enemies/enemy_baicao_fog_leader.png' => 0.9629,
-  'assets/enemies/enemy_baicao_fog_guard.png' => 0.9727,
-  'assets/enemies/enemy_baicao_fog_scout.png' => 0.9407,
-  'assets/enemies/enemy_baicao_ridge_leader.png' => 0.9817,
-  'assets/enemies/enemy_baicao_ridge_needler.png' => 0.9564,
-  'assets/enemies/enemy_baicao_ridge_runner.png' => 0.9566,
+  WuxiaUi.battleGauntletSuWujiuStandee => 0.9681,
+  WuxiaUi.battleGauntletQingyiGuardAStandee => 0.9571,
+  WuxiaUi.battleGauntletQingyiGuardBStandee => 0.9642,
+  WuxiaUi.battleGauntletShiZhenyueStandee => 0.9755,
+  WuxiaUi.battleGauntletStaffRetainerAStandee => 0.9740,
+  WuxiaUi.battleGauntletStaffRetainerBStandee => 0.9631,
+  WuxiaUi.battleGauntletWenJiuzhenStandee => 0.9818,
+  WuxiaUi.battleBaicaoShanjiaStandee => 0.9707,
+  WuxiaUi.battleBaicaoFenghouStandee => 0.9538,
+  WuxiaUi.battleBaicaoPoisonHerbalistStandee => 0.9733,
+  WuxiaUi.battleBaicaoFogLeaderStandee => 0.9629,
+  WuxiaUi.battleBaicaoFogGuardStandee => 0.9727,
+  WuxiaUi.battleBaicaoFogScoutStandee => 0.9407,
+  WuxiaUi.battleBaicaoRidgeLeaderStandee => 0.9817,
+  WuxiaUi.battleBaicaoRidgeNeedlerStandee => 0.9564,
+  WuxiaUi.battleBaicaoRidgeRunnerStandee => 0.9566,
   _ => 0.95,
 };
 
@@ -1167,67 +1165,67 @@ _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
     scale: 0.99,
     horizontalShiftFraction: -0.035,
   ),
-  'assets/enemies/enemy_gauntlet_su_wujiu.png' => (
+  WuxiaUi.battleGauntletSuWujiuStandee => (
     scale: 0.99,
     horizontalShiftFraction: -0.013,
   ),
-  'assets/enemies/enemy_gauntlet_qingyi_hu_a.png' => (
+  WuxiaUi.battleGauntletQingyiGuardAStandee => (
     scale: 1.03,
     horizontalShiftFraction: -0.031,
   ),
-  'assets/enemies/enemy_gauntlet_qingyi_hu_b.png' => (
+  WuxiaUi.battleGauntletQingyiGuardBStandee => (
     scale: 1.01,
     horizontalShiftFraction: -0.079,
   ),
-  'assets/enemies/enemy_gauntlet_shi_zhenyue.png' => (
+  WuxiaUi.battleGauntletShiZhenyueStandee => (
     scale: 1,
     horizontalShiftFraction: 0.001,
   ),
-  'assets/enemies/enemy_gauntlet_zhizhang_a.png' => (
+  WuxiaUi.battleGauntletStaffRetainerAStandee => (
     scale: 1,
     horizontalShiftFraction: 0.039,
   ),
-  'assets/enemies/enemy_gauntlet_zhizhang_b.png' => (
+  WuxiaUi.battleGauntletStaffRetainerBStandee => (
     scale: 1.01,
     horizontalShiftFraction: -0.001,
   ),
-  'assets/enemies/enemy_gauntlet_wen_jiuzhen.png' => (
+  WuxiaUi.battleGauntletWenJiuzhenStandee => (
     scale: 0.98,
     horizontalShiftFraction: -0.021,
   ),
-  'assets/enemies/enemy_baicao_shanjia.png' => (
+  WuxiaUi.battleBaicaoShanjiaStandee => (
     scale: 0.99,
     horizontalShiftFraction: 0,
   ),
-  'assets/enemies/enemy_baicao_fenghou.png' => (
+  WuxiaUi.battleBaicaoFenghouStandee => (
     scale: 1.03,
     horizontalShiftFraction: 0.003,
   ),
-  'assets/enemies/enemy_baicao_duwu.png' => (
+  WuxiaUi.battleBaicaoPoisonHerbalistStandee => (
     scale: 1,
     horizontalShiftFraction: -0.007,
   ),
-  'assets/enemies/enemy_baicao_fog_leader.png' => (
+  WuxiaUi.battleBaicaoFogLeaderStandee => (
     scale: 1.02,
     horizontalShiftFraction: -0.004,
   ),
-  'assets/enemies/enemy_baicao_fog_guard.png' => (
+  WuxiaUi.battleBaicaoFogGuardStandee => (
     scale: 1.01,
     horizontalShiftFraction: 0.008,
   ),
-  'assets/enemies/enemy_baicao_fog_scout.png' => (
+  WuxiaUi.battleBaicaoFogScoutStandee => (
     scale: 1.06,
     horizontalShiftFraction: -0.045,
   ),
-  'assets/enemies/enemy_baicao_ridge_leader.png' => (
+  WuxiaUi.battleBaicaoRidgeLeaderStandee => (
     scale: 0.98,
     horizontalShiftFraction: 0,
   ),
-  'assets/enemies/enemy_baicao_ridge_needler.png' => (
+  WuxiaUi.battleBaicaoRidgeNeedlerStandee => (
     scale: 1.02,
     horizontalShiftFraction: -0.014,
   ),
-  'assets/enemies/enemy_baicao_ridge_runner.png' => (
+  WuxiaUi.battleBaicaoRidgeRunnerStandee => (
     scale: 1.04,
     horizontalShiftFraction: -0.012,
   ),

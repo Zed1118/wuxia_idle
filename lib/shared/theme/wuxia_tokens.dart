@@ -289,6 +289,38 @@ class WuxiaUi {
   static const String battleAdviserStandee = 'assets/enemies/battle_shiye.png';
   static const String battleFuChiefStandee =
       'assets/enemies/battle_fu_zhaizhu.png';
+  static const String battleGauntletSuWujiuStandee =
+      'assets/enemies/enemy_gauntlet_su_wujiu.png';
+  static const String battleGauntletQingyiGuardAStandee =
+      'assets/enemies/enemy_gauntlet_qingyi_hu_a.png';
+  static const String battleGauntletQingyiGuardBStandee =
+      'assets/enemies/enemy_gauntlet_qingyi_hu_b.png';
+  static const String battleGauntletShiZhenyueStandee =
+      'assets/enemies/enemy_gauntlet_shi_zhenyue.png';
+  static const String battleGauntletStaffRetainerAStandee =
+      'assets/enemies/enemy_gauntlet_zhizhang_a.png';
+  static const String battleGauntletStaffRetainerBStandee =
+      'assets/enemies/enemy_gauntlet_zhizhang_b.png';
+  static const String battleGauntletWenJiuzhenStandee =
+      'assets/enemies/enemy_gauntlet_wen_jiuzhen.png';
+  static const String battleBaicaoShanjiaStandee =
+      'assets/enemies/enemy_baicao_shanjia.png';
+  static const String battleBaicaoFenghouStandee =
+      'assets/enemies/enemy_baicao_fenghou.png';
+  static const String battleBaicaoPoisonHerbalistStandee =
+      'assets/enemies/enemy_baicao_duwu.png';
+  static const String battleBaicaoFogLeaderStandee =
+      'assets/enemies/enemy_baicao_fog_leader.png';
+  static const String battleBaicaoFogGuardStandee =
+      'assets/enemies/enemy_baicao_fog_guard.png';
+  static const String battleBaicaoFogScoutStandee =
+      'assets/enemies/enemy_baicao_fog_scout.png';
+  static const String battleBaicaoRidgeLeaderStandee =
+      'assets/enemies/enemy_baicao_ridge_leader.png';
+  static const String battleBaicaoRidgeNeedlerStandee =
+      'assets/enemies/enemy_baicao_ridge_needler.png';
+  static const String battleBaicaoRidgeRunnerStandee =
+      'assets/enemies/enemy_baicao_ridge_runner.png';
   static const String battleBossEntranceBg =
       'assets/scenes/mj/battle_boss_entrance_bg_01.png';
 }
