@@ -73,7 +73,7 @@
 - Lv 快照、exp、boss 计数、catalog 数**逐值实测禁猜**。
 
 ## 当前恢复点
-- **状态:** Phase 0 完成(reconcile 全站点定位)。worktree 建好,环境预热中(dylib+pub get+build_runner)。
-- **下一步:** 环境就绪 → P1 GDD + P2.1 stages/skills/测试 reconcile。
-- **已跑验证:** 无(Phase 0 纯 grep)。
-- **阻塞:** 无(末 Boss 真解按默认加,用户可否决)。
+- **状态:** P2.1-2.5 全落地。stages/skills/13 叙事/~21 reconcile/GDD §8.1/allowlist 全改;Lv 快照实测(首通 Lv63/全内容 Lv94<100)。commit bddd5603(P2.1/2.4)+48a29d31(P2.3)+P2.5 待提交。批末全量运行中。
+- **下一步:** 全量绿→commit P2.5+PROGRESS/BACKLOG→push→draft PR;codex 出 Ch9 立绘(follow-up·11 图 allowlist 兜底)。
+- **已跑验证:** analyze 0;targeted 全绿(game_repo/boss_enemy/图鉴/tier曲线/chapter_list/tempo/narrative/progression_budget/playtest CSV);那一位 avgHpEndRatio 0.9394 命中 §6 血线带。
+- **阻塞:** 无(末 Boss 真解按 Ch7/8 先例默认加,用户可否决)。

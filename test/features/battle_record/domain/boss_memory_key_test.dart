@@ -41,6 +41,12 @@ void main() {
       'Ch7 → 10（二流主线·偏移 +3 避开心魔/轻功/群战 7/8/9）',
       () => expect(mainlineGroupIndex('stage_07_05'), 10),
     );
+    test('Ch8 → 11（二流·偏移 +3）', () {
+      expect(mainlineGroupIndex('stage_08_05'), 11);
+    });
+    test('Ch9 → 12（二流·偏移 +3·碛北）', () {
+      expect(mainlineGroupIndex('stage_09_05'), 12);
+    });
     test('未知前缀 → 99', () => expect(mainlineGroupIndex('unknown_stage'), 99));
   });
 }
