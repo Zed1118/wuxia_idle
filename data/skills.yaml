@@ -3265,3 +3265,28 @@ skills:
         shuLian: { damage_pct: 0.08 }
         jingTong: { damage_pct: 0.08 }
         huaJing: { damage_pct: 0.08 }
+
+  # ───────────────────────────────────────────
+  # Ch10「中州」末Boss 本命真解(一流拐点·守道名宿)。
+  # 末Boss stage_10_05 chargeSkillId 双用 = dropSkillManualId(破招首通掉·沿「破他的招、学他的招」canon)。
+  # 独立末Boss真解,非 wave_b 配平池成员(standaloneBossManualIds 白名单);阴柔守成=以静制动·来招皆化。
+  # mult 3600 > 沉沙一诀 3000(跨阶之深·守全局 ≤8000·真解 source=mainline_drop 不入 encounter per-tier cap)。
+  - id: skill_zhi_shui_jue
+    name: 止水诀
+    description: 守成一世,心静如止水。一诀既出,来招皆化,去路皆封,从不主动追击——守得住旧路的极致,便是踏不出新路的极致。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 3600
+    qiDelta: -35
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: still_water
+    source: mainline_drop
+    style: yinRou
+    tier: 4
+    proficiency:        # 真解手工高半档(阴柔向:伤害温和 + CD·沿斜雨穿帘锚)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
