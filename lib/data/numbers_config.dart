@@ -128,11 +128,6 @@ class NumbersConfig {
   /// GDD §4.3 = 0.5）。
   final double dispersionCultivationPenalty;
 
-  /// 散功代价：当前内力扣减比例（numbers.yaml `techniques.dispersion.internal_force_penalty`，
-  /// GDD §4.3 = 0.5，phase2_tasks T25 用）。
-  /// 散功后 ch.internalForce = (internalForce * (1 - 此值)).toInt()。
-  final double dispersionInternalForcePenalty;
-
   /// 战败代价：Boss 关战败时角色当前内力扣减比例（numbers.yaml
   /// `techniques.defeat.boss_internal_force_penalty`，Phase 4 W10 = 0.5）。
   /// 战败后 ch.internalForce = (internalForce * (1 - 此值)).toInt()。
@@ -287,7 +282,6 @@ class NumbersConfig {
     required this.heritageItems,
     required this.ascension,
     required this.dispersionCultivationPenalty,
-    required this.dispersionInternalForcePenalty,
     required this.defeatBossInternalForcePenalty,
     required this.defeatBossCultivationPenalty,
     required this.learningCost,
@@ -424,11 +418,6 @@ class NumbersConfig {
       dispersionCultivationPenalty:
           ((techniques['dispersion']
                       as Map<String, dynamic>)['cultivation_penalty']
-                  as num)
-              .toDouble(),
-      dispersionInternalForcePenalty:
-          ((techniques['dispersion']
-                      as Map<String, dynamic>)['internal_force_penalty']
                   as num)
               .toDouble(),
       defeatBossInternalForcePenalty:

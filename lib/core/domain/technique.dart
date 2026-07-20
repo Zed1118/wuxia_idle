@@ -74,8 +74,7 @@ class Technique {
 /// 散功扩展（data_schema.md §4.4 / GDD §6 散功代价）。
 ///
 /// 修炼度按 [NumbersConfig.dispersionCultivationPenalty] (=0.5) 衰减；
-/// 调用方还需把角色当前内力 ×0.5（在应用层做，对应 yaml
-/// `techniques.dispersion.internal_force_penalty`）。
+/// 其余代价（v1.34 起永久内力不扣，改由应用层 DispelService 施加有上限内息紊乱）。
 /// `cultivationLayer` 不在此处回退，由应用层根据新的 progress 重算。
 extension TechniqueDispersion on Technique {
   void disperse(NumbersConfig n) {

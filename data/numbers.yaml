@@ -829,9 +829,8 @@ techniques:
     insight_to_cultivation_ratio: 1.0
 
   # --- 散功代价（GDD §4.3，强制规则）---
-  # 换主修时的双重惩罚（不可调，是设计底线条款）
+  # 换主修惩罚：修炼度 ×0.5 + 内息紊乱 6h（v1.34 起永久内力不扣，散功不再扣内力，见 GDD §4.3）
   dispersion:
-    internal_force_penalty: 0.50      # 当前内力 -50%（不归零）
     cultivation_penalty: 0.50         # 原主修心法修炼度 -50%
 
   # --- 战败代价（Phase 4 W10，Boss 关战败被动触发）---
