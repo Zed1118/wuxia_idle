@@ -59,15 +59,37 @@ expedition_combat_runner / gauntlet_providers / gauntlet_enemies —— 视进�
 
 ## 逐文件记录
 
-（执行中追加：每文件记 审到的问题分类 / 加固点 / RED 证据 / targeted 结果 / commit）
+### ① test/features/debug/application/phase2_seed_service_test.dart（commit 44b73aaa）
+- 审出：类别1 弱断言 3 处；类别2/3/4 未见实弱（真 Isar 临时目录隔离、
+  集合比较用 Set/containsAll、已有 clear/reseed 幂等边界）。
+- 加固：
+  1. 「师徒装备齐」由 equippedXxxId 非空 → 每件 id 可解析 + slot 匹配 +
+     ownerCharacterId 归属本人 + 主修 role=main 归属本人（悬空 id 旧断言抓不到）。
+  2. 「buildTeams 不再 fail-fast」敌队 isNotEmpty → right.length ==
+     stage.enemyTeam.length（与 def 对齐）+ negative id 约定（characterId<0）。
+  3. 「W14_3 reseed」大弟子 equippedEncounterSkillId 非空 → 仍在 unlock 池内。
+- RED 证据：3 处填错值（owner+100 / enemyTeam.length+1 + id>0 / bogus skill id）
+  → +36 -3，仅目标 3 用例红，改回真值 → **39/39 绿**；analyze 0；format 0。
+
+### ② test/features/equipment/application/equipment_disposal_service_test.dart（commit 5be31f19）
+- 审出：类别1 弱断言 6 处（拒绝路径只查「装备仍在」不查「字段未被改写」）；
+  类别3 缺边界 2 处（批量处置测全 +0，强化加成在批量路径无覆盖）。
+- 加固：
+  1. 6 处拒绝测补字段不变量：rejectedEquipped×2（ownerCharacterId 1/42 不被改写）、
+     rejectedHeritage×2（isLineageHeritage 仍 true）、rejectedLocked×2（isLocked 仍 true）。
+  2. 新测 sellAllOfTier 带强化（liQi+3 ×2 → totalSilver 728=2×280×1.3）。
+  3. 新测 disassembleAllOfTier 带强化（liQi+2 ×2 → mj 18=2×(7+2)、xx 2）。
+- RED 证据：字段探针填错（999/isFalse）+ 新测填「批量忽略强化加成」错误值
+  （560/14）→ +19 -8 精准 8 红（Actual 728/18 证批量逐件计入强化加成），
+  改回真值 → **27/27 绿**；analyze 0；format 0。
 
 ## 当前恢复点
 
-- **状态**：切片 1 完成（候选已扫定），待逐文件开审。
-- **最后完成**：计划文件建立；候选清单按弱断言命中数降序（见上表）；
-  全仓无 mock 框架使用（类别 4 预计稀少）。
-- **下一步**：从 phase2_seed_service_test.dart 起逐文件审+加固。
-- **已跑验证**：无（尚未动测试）。
+- **状态**：文件 ①② 完成并已各自独立 commit，继续候选表文件 ③。
+- **最后完成**：② equipment_disposal_service_test 8 处加固（27/27 绿，5be31f19）。
+- **下一步**：③ apply_victory_resolution_test.dart（10 命中，上批留偶发观察项）。
+- **已跑验证**：① 39/39 绿 + analyze 0 + format 0；② 27/27 绿 + analyze 0 + format 0。
+  两文件 RED→GREEN 均有运行记录（见各节）。
 - **阻塞项**：无。
 
 ## 发现项（疑似生产 bug，只记录不修）
