@@ -173,10 +173,7 @@ void main() {
   test('角色不存在 → 抛错（事务回滚·serial 不增）', () async {
     final svc = ExpeditionService(IsarSetup.instance);
     await expectLater(
-      svc.dispatch(
-        characterIds: [999],
-        policy: ExpeditionPolicy.yanJingCaiYao,
-      ),
+      svc.dispatch(characterIds: [999], policy: ExpeditionPolicy.yanJingCaiYao),
       throwsStateError,
     );
     expect(await IsarSetup.instance.expeditionRuns.count(), 0);
