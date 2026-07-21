@@ -50,14 +50,16 @@ void main() {
       // + 断魂庄 Phase C C1.3.2:苏无咎锁脉针 skill_suo_mai_zhen = 207
       // + Ch8 灰衣人本命真解 skill_hui_xiu_hui_feng = 208
       // + Ch9「那一位」本命真解 skill_chen_sha_yi_jue = 209
-      // + 40 encounter_skills.yaml = 249 total
+      // + Ch10 守拙翁本命真解 skill_zhi_shui_jue = 210
+      // + Ch11 鎏金公本命真解 skill_liu_jin_jue = 211
+      // + 40 encounter_skills.yaml = 251 total
       expect(
         repo.skillDefs.length,
-        250,
+        251,
         reason:
-            '209 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+            '211 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
             ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技 + 1 断魂庄锁脉针'
-            ' + 1 Ch8 灰袖回风 + 1 Ch9 沉沙一诀) + 40 奇遇招',
+            ' + 1 Ch8 灰袖回风 + 1 Ch9 沉沙一诀 + 1 Ch10 止水诀 + 1 Ch11 鎏金诀) + 40 奇遇招',
       );
       expect(
         repo.encounterSkillIds.length,
@@ -78,8 +80,8 @@ void main() {
           .length;
       expect(
         mainlineCount,
-        50,
-        reason: '主线 50 关(2026-07-20 Ch9 碛北二流第 3 章扩,9 章 × 5 关)',
+        55,
+        reason: '主线 55 关(2026-07-21 Ch11 名门之虚一流第二章扩,11 章 × 5 关)',
       );
       expect(
         innerDemonCount,
@@ -668,21 +670,22 @@ void main() {
     );
 
     test(
-      '主线 45 关红线:9 章 × 5 关 + 每章双 Boss 关(2026-07-20 Ch9 起 Boss 位随叙事定)',
+      '主线 55 关红线:11 章 × 5 关 + 每章双 Boss 关(2026-07-21 Ch11 名门之虚扩·Boss 位随叙事定)',
       () async {
         final repo = await GameRepository.loadAllDefs(loader: fileLoader);
         final mainlines = repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
             .toList();
-        expect(mainlines.length, 50);
-        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+        expect(mainlines.length, 55);
+        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]) {
           final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();
           expect(inCh.length, 5, reason: 'Ch$ch 应有 5 关');
         }
         // 每章恰 2 个 Boss 关(章中 + 章末)+ 配 narrativeDefeatId;其余非 Boss
         // 无 defeat。Boss 位显式白名单:Ch1-7 = {4,5};Ch8 = {3,5}(章中 Boss
         // 挪 3·灰衣人沙夜袭影);Ch9 = {4,5}(隘口守卫章中·那一位章末);
-        // Ch10 = {4,5}(嵩阳关主章中·守拙翁章末)。
+        // Ch10 = {4,5}(嵩阳关主章中·守拙翁章末);
+        // Ch11 = {4,5}(玉京剑主章中·鎏金公章末)。
         // validator 只约束 defeat⟹Boss 不钉位置。
         const bossIdxByChapter = {
           1: {4, 5},
@@ -695,8 +698,9 @@ void main() {
           8: {3, 5},
           9: {4, 5},
           10: {4, 5},
+          11: {4, 5},
         };
-        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]) {
           for (final idx in [1, 2, 3, 4, 5]) {
             final id = 'stage_${ch.toString().padLeft(2, '0')}_0$idx';
             final s = repo.getStage(id);

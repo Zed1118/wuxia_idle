@@ -23,3 +23,19 @@
 # 敌人立绘(5)
 # 章节封面(1)
 # 主线剧情阅读背景(5)
+#
+# ── Ch11 一流第 2 章「名门之虚」待补美术(2026-07-21·codex image_gen 另出图)──
+# 敌人立绘(5)
+assets/enemies/zhongzhou_xudu_mingjia.png
+assets/enemies/zhongzhou_jinding_menren.png
+assets/enemies/zhongzhou_luoyang_haoke.png
+assets/enemies/zhongzhou_yujing_jianzhu.png
+assets/enemies/zhongzhou_liujin_gong.png
+# 章节封面(1)
+assets/scenes/chapter_11_cover.png
+# 主线剧情阅读背景(5)
+assets/scenes/narrative_stage_11_01.png
+assets/scenes/narrative_stage_11_02.png
+assets/scenes/narrative_stage_11_03.png
+assets/scenes/narrative_stage_11_04.png
+assets/scenes/narrative_stage_11_05.png

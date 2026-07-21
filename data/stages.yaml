@@ -2497,6 +2497,234 @@ stages:
     weather: clear
 
   # ============================================================================
+  # Ch11「名门之虚」一流第二章(5 关 · 承 Ch10 止水旧印 hook · 文化弧名门虚实之"虚")
+  # ----------------------------------------------------------------------------
+  # spec/plan: docs/spec/2026-07-21-ch11-mingmen-xu-design.md ·
+  #            docs/superpowers/plans/2026-07-21-ch11-mingmen-xu.md
+  # 敌招复用一流 menpai 系列 · 装备复用 liQi(零新增) · 唯一新增 = 末Boss 真解 skill_liu_jin_jue。
+  # 章内敌人层 shuLian→yuanShu 递进(承 Ch10 收 shuLian);cap 24→26(numbers.yaml)。
+  # Boss 位 {4,5}:11_04 章中 Boss(stat 门槛无相位·照嵩阳关主)·11_05 末 Boss(真解破招·照守拙翁)。
+  # 章首 stage_11_01 无 prevStageId(承 Ch10 走叙事/chapterIndex 解锁·跨章 prevStageId 会触加载期 StateError)。
+  # ============================================================================
+
+  # === stage_11_01 · 许都剑会(一流杂兵 · 灵巧 · 徒有架势的名家/排场唬人)===
+  - id: stage_11_01
+    name: 许都剑会
+    stageType: mainline
+    chapterIndex: 11
+    narrativeOpeningId: stage_11_01_opening
+    narrativeVictoryId: stage_11_01_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_xudu_mingjia
+        name: 剑会名家
+        realmTier: yiLiu
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 22000
+        baseAttack: 820
+        baseSpeed: 300
+        skillIds:
+          - skill_lingqiao_menpai_basic
+          - skill_lingqiao_menpai_skill
+        iconPath: assets/enemies/zhongzhou_xudu_mingjia.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_liqi_long_quan
+        dropChance: 1.0
+      - equipmentDefId: armor_liqi_xuan_tie_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [30, 38]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [340, 420]
+        dropChance: 1.0  # 银两(一流第二章 · 承 Ch10 曲线续进)
+    baseExpReward: 36
+    difficultyMultiplier: 11.4
+    biome: drillGround
+    sceneBackgroundPath: assets/scenes/battle_drillground.png
+    weather: clear
+
+  # === stage_11_02 · 金鼎山门(一流杂兵 · 刚猛 · 吃祖上老本的门户/后辈靠门第)===
+  - id: stage_11_02
+    name: 金鼎山门
+    stageType: mainline
+    chapterIndex: 11
+    prevStageId: stage_11_01
+    narrativeOpeningId: stage_11_02_opening
+    narrativeVictoryId: stage_11_02_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_jinding_menren
+        name: 金鼎门人
+        realmTier: yiLiu
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 23000
+        baseAttack: 845
+        baseSpeed: 262
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+        iconPath: assets/enemies/zhongzhou_jinding_menren.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_liqi_pan_long_dao
+        dropChance: 1.0
+      - equipmentDefId: accessory_liqi_fei_yu_pei
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [30, 38]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [350, 430]
+        dropChance: 1.0  # 银两(一流第二章)
+    baseExpReward: 38
+    difficultyMultiplier: 11.6
+    biome: temple
+    sceneBackgroundPath: assets/scenes/battle_temple.png
+    weather: clear
+
+  # === stage_11_03 · 洛阳榷场(章中考验 · 阴柔 · 买来的名声/钱与关系堆名头 · 非 Boss 保有敌队)===
+  - id: stage_11_03
+    name: 洛阳榷场
+    stageType: mainline
+    chapterIndex: 11
+    prevStageId: stage_11_02
+    narrativeOpeningId: stage_11_03_opening
+    narrativeVictoryId: stage_11_03_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_luoyang_haoke
+        name: 榷场豪客
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 25000
+        baseAttack: 880
+        baseSpeed: 288
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+        iconPath: assets/enemies/zhongzhou_luoyang_haoke.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_liqi_lian_zi_bian
+        dropChance: 1.0
+      - equipmentDefId: accessory_liqi_hu_xin_jing
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [32, 40]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [360, 440]
+        dropChance: 1.0  # 银两(一流第二章)
+    baseExpReward: 40
+    difficultyMultiplier: 11.8
+    biome: escortRoad
+    sceneBackgroundPath: assets/scenes/battle_escortroad.png
+    weather: clear
+
+  # === stage_11_04 · 玉京阁(刚猛章中 Boss · 华而不实的名门"绝学" · stat 门槛无相位 · 配 defeat)===
+  - id: stage_11_04
+    name: 玉京阁
+    stageType: mainline
+    chapterIndex: 11
+    prevStageId: stage_11_03
+    narrativeOpeningId: stage_11_04_opening
+    narrativeVictoryId: stage_11_04_victory
+    narrativeDefeatId: stage_11_04_defeat
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_yujing_jianzhu
+        name: 玉京剑主
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 30000
+        baseAttack: 1000
+        baseSpeed: 265
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+        iconPath: assets/enemies/zhongzhou_yujing_jianzhu.png
+        isBoss: true   # 章中 Boss = 名门内里 stat 门槛(HP/攻墙 · 无充能相位,唯 11_05 鎏金公设充能破招)
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_liqi_hu_tou_gou
+        dropChance: 1.0
+      - equipmentDefId: armor_liqi_qing_luo_shan
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [34, 42]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [420, 520]
+        dropChance: 1.0  # 银两(一流章中 Boss)
+    baseExpReward: 60
+    difficultyMultiplier: 12.2
+    biome: teaHouse
+    sceneBackgroundPath: assets/scenes/battle_teahouse.png
+    weather: clear
+
+  # === stage_11_05 · 问鼎台(刚猛·中州名宿鎏金公·名震中州却虚有其表·末 Boss·破招掉鎏金诀真解)===
+  - id: stage_11_05
+    name: 问鼎台
+    stageType: mainline
+    chapterIndex: 11
+    prevStageId: stage_11_04
+    narrativeOpeningId: stage_11_05_opening
+    narrativeVictoryId: stage_11_05_victory
+    narrativeDefeatId: stage_11_05_defeat
+    requiredRealm: yiLiu
+    dropSkillManualId: skill_liu_jin_jue  # 真解(鎏金诀·鎏金公本命·同招为 boss chargeSkillId 双用·破招首通 markUnlocked)
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_liujin_gong
+        name: 鎏金公
+        realmTier: yiLiu
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 37000
+        baseAttack: 1060
+        baseSpeed: 292
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+          - skill_liu_jin_jue        # 本命真解 = 末Boss chargeSkill(双用 canon)
+        iconPath: assets/enemies/zhongzhou_liujin_gong.png
+        isBoss: true
+        chargeSkillId: skill_liu_jin_jue   # 破招:玩家拦截,首通掉同招真解
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_liqi_li_hua_zhen
+        dropChance: 1.0
+      - equipmentDefId: armor_liqi_tie_ye_jia
+        dropChance: 0.50
+      - equipmentDefId: accessory_liqi_jin_chuang_gao
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [36, 46]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [520, 640]
+        dropChance: 1.0  # 银两(一流章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(一流章末)
+    baseExpReward: 78
+    difficultyMultiplier: 12.6
+    biome: cityWall
+    sceneBackgroundPath: assets/scenes/battle_citywall.png
+    weather: clear
+
+  # ============================================================================
   # 心魔境 7 关（1.0 P2.2 §12.1 · stageType: innerDemon）
   # ----------------------------------------------------------------------------
   # spec doc: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md

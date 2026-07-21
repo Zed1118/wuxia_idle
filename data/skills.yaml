@@ -3293,3 +3293,29 @@ skills:
         shuLian: { damage_pct: 0.08 }
         jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
         huaJing: { cooldown_delta: -1 }
+
+  # ───────────────────────────────────────────
+  # Ch11「名门之虚」末Boss「鎏金公」本命真解(一流第二章·中州名宿·名震中州却虚有其表)。
+  # 末Boss stage_11_05 chargeSkillId 双用 = dropSkillManualId(破招首通掉·沿「破他的招、学他的招」canon)。
+  # 独立末Boss真解,非 wave_b 配平池成员(standaloneBossManualIds 白名单);中州名门堂皇刚猛·华丽威势唬人。
+  # mult 3600 = 止水诀(同一流第二章之深·守全局 ≤8000·真解 source=mainline_drop 不入 encounter per-tier cap)。
+  # 名门之虚母题:名宿一世只练了那层"鎏金"的表象,真章要落在懂剑的人手里——玩家练成他没练透的招。
+  - id: skill_liu_jin_jue
+    name: 鎏金诀
+    description: 中州名门的成名绝学,一式挥出金光煌煌、威势迫人,满座喝彩。只是这鎏金终究镀在面上——名宿唬了一世的人,偏没唬过真正懂剑的那一个。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 3600
+    qiDelta: -30
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: gilded_glare
+    source: mainline_drop
+    style: gangMeng
+    tier: 4
+    proficiency:        # 真解手工高半档(刚猛向:纯伤害·照沉沙一诀锚)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
+        huaJing: { damage_pct: 0.08 }
