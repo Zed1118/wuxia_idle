@@ -127,4 +127,53 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('奖励屏：未择取时系统返回/maybePop 不出栈（PopScope 拦弃栈）', (tester) async {
+    tester.view.physicalSize = const Size(1280, 720);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    // 奖励屏压在 home 之上（弃栈即回落 home，可观测）。
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          gauntletRewardViewProvider.overrideWith(
+            (ref) async => _viewFirstClear,
+          ),
+        ],
+        child: MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: Center(
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(
+                      builder: (_) => const GauntletRewardScreen(),
+                    ),
+                  ),
+                  child: const Text('open-reward'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('open-reward'));
+    await tester.pumpAndSettle();
+    expect(find.text('玄铁重剑'), findsOneWidget);
+
+    // 系统返回（popRoute）→ PopScope(canPop:false) 拦，不出栈。
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('玄铁重剑'), findsOneWidget, reason: '未择取 → 系统返回不出栈');
+    expect(find.text('open-reward'), findsNothing);
+
+    // maybePop 同样被拦（doNotPop 视为已处理，路由不动）。
+    await tester.state<NavigatorState>(find.byType(Navigator)).maybePop();
+    await tester.pumpAndSettle();
+    expect(find.text('玄铁重剑'), findsOneWidget, reason: '未择取 → maybePop 不出栈');
+    expect(find.text('open-reward'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }
