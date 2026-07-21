@@ -845,6 +845,17 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/zhongzhou_songyang_guanzhu.png',
   'assets/enemies/zhongzhou_shouzhuo_weng.png':
       'assets/enemies/zhongzhou_shouzhuo_weng.png',
+  // Ch11「名门之虚」5 敌立绘(codex image_gen·透明全身图)
+  'assets/enemies/zhongzhou_xudu_mingjia.png':
+      'assets/enemies/zhongzhou_xudu_mingjia.png',
+  'assets/enemies/zhongzhou_jinding_menren.png':
+      'assets/enemies/zhongzhou_jinding_menren.png',
+  'assets/enemies/zhongzhou_luoyang_haoke.png':
+      'assets/enemies/zhongzhou_luoyang_haoke.png',
+  'assets/enemies/zhongzhou_yujing_jianzhu.png':
+      'assets/enemies/zhongzhou_yujing_jianzhu.png',
+  'assets/enemies/zhongzhou_liujin_gong.png':
+      'assets/enemies/zhongzhou_liujin_gong.png',
   'assets/enemies/enemy_gauntlet_su_wujiu.png':
       WuxiaUi.battleGauntletSuWujiuStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':
@@ -990,6 +1001,12 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/zhongzhou_luoshui_zhaoying.png' => 0.934,
   'assets/enemies/zhongzhou_songyang_guanzhu.png' => 0.964,
   'assets/enemies/zhongzhou_shouzhuo_weng.png' => 0.982,
+  // Ch11「名门之虚」5 敌脚底校准(alpha 包围盒实测·2026-07-21)
+  'assets/enemies/zhongzhou_xudu_mingjia.png' => 0.983,
+  'assets/enemies/zhongzhou_jinding_menren.png' => 0.953,
+  'assets/enemies/zhongzhou_luoyang_haoke.png' => 0.968,
+  'assets/enemies/zhongzhou_yujing_jianzhu.png' => 0.952,
+  'assets/enemies/zhongzhou_liujin_gong.png' => 0.962,
   WuxiaUi.battleGauntletSuWujiuStandee => 0.9681,
   WuxiaUi.battleGauntletQingyiGuardAStandee => 0.9571,
   WuxiaUi.battleGauntletQingyiGuardBStandee => 0.9642,
