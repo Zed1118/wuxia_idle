@@ -3,13 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
+import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/gauntlet_providers.dart';
+import '../application/gauntlet_service.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
+import '../domain/boss_gauntlet_run.dart';
+import 'gauntlet_defeat_screen.dart';
 import 'gauntlet_entry_flow.dart';
 
 /// 断魂庄装载屏（§7.1 · C2.5）。断魂帖库存 / 庄中三关（三 Boss + 推荐境界）/ 择人
@@ -19,6 +23,11 @@ import 'gauntlet_entry_flow.dart';
 /// active/candidates/loadoutInfo provider，随即 push [runGauntletFlow] 逐关战斗流
 /// （#1 wiring Task 5）；流程终局（选奖 / 离庄 / 认输）返回后 pop 本屏回主菜单。config
 /// 经 [gauntletConfigProvider] watch（非构造期读单例，避 async-config-race）。
+///
+/// 断线续战（§5.6/§10）：已有 active 会话时 [GauntletService.enter] 必抛，故顶部改显
+/// 恢复区（第几关 / 当前相位 + 「续战」）并禁用新建交互；续战经 [GauntletService.recover]
+/// 判界——resumed 续跑 [runGauntletFlow]（按相位路由）、refundedTicket 提示退帖闭局、
+/// concedeRequired 认输结算 + 战败屏（镜像 entry_flow 战败分支）。
 class GauntletLoadoutScreen extends ConsumerStatefulWidget {
   const GauntletLoadoutScreen({super.key});
 
@@ -69,10 +78,73 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
     }
   }
 
+  /// 断线续战（§5.6/§10）：[GauntletService.recover] 判界后按结果路由——resumed
+  /// 续跑战斗流（尾部完全镜像 [_enter]）、refundedTicket 提示退帖闭局、concedeRequired
+  /// 认输结算 + 战败屏（镜像 entry_flow 战败分支）、none 仅刷新 stale 会话态。
+  Future<void> _resume() async {
+    if (_submitting) return;
+    final service = ref.read(gauntletServiceProvider);
+    if (service == null) return; // 测试旁路：未 init Isar
+    setState(() => _submitting = true);
+    try {
+      final outcome = await service.recover(
+        config: ref.read(gauntletConfigProvider),
+      );
+      if (!mounted) return;
+      switch (outcome) {
+        case GauntletRecoveryOutcome.resumed:
+          ref.invalidate(activeGauntletProvider);
+          ref.invalidate(gauntletCandidatesProvider);
+          ref.invalidate(gauntletLoadoutInfoProvider);
+          // 会话原样可续 → 按相位路由续跑；终局返回后 pop 本屏回主菜单。
+          await runGauntletFlow(context: context, ref: ref);
+          if (!mounted) return;
+          Navigator.of(context).maybePop();
+        case GauntletRecoveryOutcome.refundedTicket:
+          // 配置损坏且未开战：服务侧已退帖 + 返还托管 + 删会话，刷新回新建态。
+          ref.invalidate(activeGauntletProvider);
+          ref.invalidate(gauntletCandidatesProvider);
+          ref.invalidate(gauntletLoadoutInfoProvider);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text(UiStrings.gauntletResumeRefunded)),
+          );
+        case GauntletRecoveryOutcome.concedeRequired:
+          // 配置损坏且已开战：认输结算 + 战败屏（镜像 entry_flow 战败分支）。
+          final config = ref.read(gauntletConfigProvider);
+          final numbers = GameRepository.instanceOrNull?.numbers;
+          if (config == null || numbers == null) return; // 配置未加载，不可结算
+          final summary = await service.settleDefeat(
+            config: config,
+            numbers: numbers,
+          );
+          ref.invalidate(activeGauntletProvider);
+          ref.invalidate(gauntletCandidatesProvider);
+          ref.invalidate(gauntletLoadoutInfoProvider);
+          if (!mounted) return;
+          await Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => GauntletDefeatScreen(summary: summary),
+            ),
+          );
+        case GauntletRecoveryOutcome.none:
+          // 观到时会话已被并发关闭：仅刷新 stale 态。
+          ref.invalidate(activeGauntletProvider);
+      }
+    } on StateError {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.gauntletResumeFailed)),
+      );
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final candidatesAsync = ref.watch(gauntletCandidatesProvider);
     final infoAsync = ref.watch(gauntletLoadoutInfoProvider);
+    final activeAsync = ref.watch(activeGauntletProvider);
     final config = ref.watch(gauntletConfigProvider);
 
     return Scaffold(
@@ -98,7 +170,8 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
               error: e,
               onRetry: () => ref.invalidate(gauntletLoadoutInfoProvider),
             ),
-            data: (info) => _buildBody(candidates, info, config),
+            data: (info) =>
+                _buildBody(candidates, info, config, activeAsync.asData?.value),
           ),
         ),
       ),
@@ -109,6 +182,7 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
     List<GauntletCandidate> candidates,
     GauntletLoadoutInfo info,
     BossGauntletConfig? config,
+    BossGauntletRun? activeRun,
   ) {
     // 防御：清掉已不可入庄的旧选择。
     final selectableIds = {
@@ -122,8 +196,11 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
       if (loaded > s.owned) _supplyLoad[s.defId] = s.owned;
     }
 
+    // 断线续战：有 active 会话时 enter 必抛，顶部改显恢复区并禁用新建交互。
+    final resuming = activeRun != null;
     final hasTicket = info.ticketCount >= 1;
-    final canEnter = _selected.isNotEmpty && hasTicket && !_submitting;
+    final canEnter =
+        !resuming && _selected.isNotEmpty && hasTicket && !_submitting;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -133,6 +210,14 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (resuming) ...[
+                _RecoveryBanner(
+                  run: activeRun,
+                  submitting: _submitting,
+                  onResume: _resume,
+                ),
+                const SizedBox(height: 14),
+              ],
               const _GauntletHeader(),
               const SizedBox(height: 14),
               _TicketBadge(count: info.ticketCount),
@@ -155,7 +240,7 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
                   _CandidateTile(
                     candidate: c,
                     selected: _selected.contains(c.character.id),
-                    onTap: c.selectable
+                    onTap: !resuming && c.selectable
                         ? () => setState(() {
                             final id = c.character.id;
                             if (_selected.contains(id)) {
@@ -194,18 +279,22 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
                   canAdd:
                       _loadedTotal < _supplyCap &&
                       (_supplyLoad[s.defId] ?? 0) < s.owned,
-                  onAdd: () => setState(
-                    () =>
-                        _supplyLoad[s.defId] = (_supplyLoad[s.defId] ?? 0) + 1,
-                  ),
-                  onRemove: () => setState(() {
-                    final v = (_supplyLoad[s.defId] ?? 0) - 1;
-                    if (v <= 0) {
-                      _supplyLoad.remove(s.defId);
-                    } else {
-                      _supplyLoad[s.defId] = v;
-                    }
-                  }),
+                  onAdd: resuming
+                      ? null
+                      : () => setState(
+                          () => _supplyLoad[s.defId] =
+                              (_supplyLoad[s.defId] ?? 0) + 1,
+                        ),
+                  onRemove: resuming
+                      ? null
+                      : () => setState(() {
+                          final v = (_supplyLoad[s.defId] ?? 0) - 1;
+                          if (v <= 0) {
+                            _supplyLoad.remove(s.defId);
+                          } else {
+                            _supplyLoad[s.defId] = v;
+                          }
+                        }),
                 ),
                 const SizedBox(height: 8),
               ],
@@ -217,7 +306,8 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
                 ),
               ),
               const SizedBox(height: 18),
-              if (!hasTicket)
+              // 续战态帖已耗，无帖提示无义，仅新建态显。
+              if (!hasTicket && !resuming)
                 const Padding(
                   padding: EdgeInsets.only(bottom: 10),
                   child: Text(
@@ -240,6 +330,74 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── 断线续战横幅（§5.6/§10 · 有 active 会话时置顶）──────────────────────────
+
+class _RecoveryBanner extends StatelessWidget {
+  const _RecoveryBanner({
+    required this.run,
+    required this.submitting,
+    required this.onResume,
+  });
+
+  final BossGauntletRun run;
+  final bool submitting;
+  final VoidCallback onResume;
+
+  @override
+  Widget build(BuildContext context) {
+    final phaseText = switch (run.sessionPhase) {
+      GauntletPhase.inBattle => UiStrings.gauntletPhaseInBattle,
+      GauntletPhase.interlude => UiStrings.gauntletPhaseInterlude,
+      GauntletPhase.awaitingRewardChoice =>
+        UiStrings.gauntletPhaseAwaitingReward,
+      GauntletPhase.settled => UiStrings.gauntletPhaseSettled,
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: WuxiaUi.gold.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: WuxiaUi.gold.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.history, color: WuxiaUi.gold, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  UiStrings.gauntletResumeTitle,
+                  style: TextStyle(
+                    color: WuxiaUi.gold,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  UiStrings.gauntletResumeHint(run.currentStage, phaseText),
+                  style: const TextStyle(
+                    color: WuxiaColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          PlaqueButton(
+            label: UiStrings.gauntletResumeButton,
+            primary: true,
+            onTap: submitting ? null : onResume,
+          ),
+        ],
       ),
     );
   }
@@ -492,8 +650,10 @@ class _SupplyStepper extends StatelessWidget {
   final GauntletSupplyOption option;
   final int loaded;
   final bool canAdd;
-  final VoidCallback onAdd;
-  final VoidCallback onRemove;
+
+  /// 续战态传 null → 步进禁用（新建装载交互整体关闭）。
+  final VoidCallback? onAdd;
+  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {

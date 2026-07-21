@@ -6,6 +6,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
@@ -63,6 +64,7 @@ Future<void> _pump(
   Size size, {
   required List<GauntletCandidate> candidates,
   GauntletLoadoutInfo info = _info,
+  BossGauntletRun? activeRun,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
@@ -72,12 +74,21 @@ Future<void> _pump(
       overrides: [
         gauntletCandidatesProvider.overrideWith((ref) async => candidates),
         gauntletLoadoutInfoProvider.overrideWith((ref) async => info),
+        activeGauntletProvider.overrideWith((ref) async => activeRun),
       ],
       child: const MaterialApp(home: GauntletLoadoutScreen()),
     ),
   );
   await tester.pumpAndSettle();
 }
+
+/// 纯 DTO 假会话（override activeGauntletProvider 用，不走 Isar）。
+BossGauntletRun _fakeRun({required GauntletPhase phase, int stage = 2}) =>
+    BossGauntletRun()
+      ..saveDataId = 0
+      ..seed = 0
+      ..currentStage = stage
+      ..sessionPhase = phase;
 
 void main() {
   setUpAll(() async {
@@ -172,6 +183,81 @@ void main() {
       ),
     );
     expect(button.onTap, isNull, reason: '无帖 → 入庄禁用');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('装载屏：无 active 会话 → 不显恢复区（新建 UI 原样）', (tester) async {
+    await _pump(tester, const Size(1280, 720), candidates: candidates);
+
+    expect(find.text(UiStrings.gauntletResumeTitle), findsNothing);
+    expect(find.text(UiStrings.gauntletResumeButton), findsNothing);
+    // 择人交互可用（点可入庄者计数 +1）。
+    await tester.tap(find.text('沈青'));
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.gauntletSelectedCount(1)), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('装载屏：有 active 会话（interlude）→ 恢复区显示 + 新建交互禁用', (tester) async {
+    await _pump(
+      tester,
+      const Size(1280, 720),
+      candidates: candidates,
+      activeRun: _fakeRun(phase: GauntletPhase.interlude, stage: 2),
+    );
+
+    // 恢复区：标题 + 第几关/相位 + 续战按钮。
+    expect(find.text(UiStrings.gauntletResumeTitle), findsOneWidget);
+    expect(
+      find.text(
+        UiStrings.gauntletResumeHint(2, UiStrings.gauntletPhaseInterlude),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.gauntletResumeButton), findsOneWidget);
+
+    // 择人禁用：点可入庄者不计数。
+    await tester.tap(find.text('沈青'));
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.gauntletSelectedCount(0)), findsOneWidget);
+
+    // 补给步进禁用：滚入点 + 号预算不动。
+    final addBtn = find.widgetWithIcon(InkWell, Icons.add).first;
+    await tester.ensureVisible(addBtn);
+    await tester.pumpAndSettle();
+    await tester.tap(addBtn, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.gauntletSupplyBudget(0, 3)), findsOneWidget);
+
+    // 新建入庄按钮禁用（P0 回归：不再走「入庄受阻」SnackBar 路径）。
+    final enterButton = tester.widget<PlaqueButton>(
+      find.byWidgetPredicate(
+        (w) => w is PlaqueButton && w.label == UiStrings.gauntletEnterButton,
+      ),
+    );
+    expect(enterButton.onTap, isNull, reason: '有 active 会话 → 新建入庄禁用');
+    await tester.ensureVisible(find.text(UiStrings.gauntletEnterButton));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.text(UiStrings.gauntletEnterButton),
+      warnIfMissed: false,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.gauntletEnterFailed), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('装载屏：续战态帖已耗 → 不显无帖提示', (tester) async {
+    await _pump(
+      tester,
+      const Size(1280, 720),
+      candidates: candidates,
+      info: _noTicketInfo,
+      activeRun: _fakeRun(phase: GauntletPhase.inBattle, stage: 1),
+    );
+
+    expect(find.text(UiStrings.gauntletResumeTitle), findsOneWidget);
+    expect(find.text(UiStrings.gauntletNoTicketHint), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

@@ -15,32 +15,37 @@ import '../application/gauntlet_providers.dart';
 /// 经验/领悟（首通另赠秘籍）→ 关会话回主菜单。屏内零直接 Isar 写（经服务）。深底
 /// lineup 体例（同整备屏），1280×720/1440×900 一屏无溢出。
 ///
-/// 奖励为闯庄终点、须择一而取，故不设返回（`automaticallyImplyLeading: false`）；
-/// 择取写路径经服务后 invalidate reward/active/candidates/loadout provider。
+/// 奖励为闯庄终点、须择一而取，故不设返回（`automaticallyImplyLeading: false`）且
+/// `PopScope(canPop: false)` 拦系统返回/手势——弃栈会把 awaitingRewardChoice 会话烂在
+/// 库里（重开仍回本屏）。择取写路径经服务后 invalidate reward/active/candidates/loadout
+/// provider，再显式 `Navigator.pop` 出栈（显式 pop 不受 canPop:false 拦）。
 class GauntletRewardScreen extends ConsumerWidget {
   const GauntletRewardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final viewAsync = ref.watch(gauntletRewardViewProvider);
-    return Scaffold(
-      backgroundColor: WuxiaColors.background,
-      appBar: AppBar(
-        backgroundColor: WuxiaColors.sidebar,
-        foregroundColor: WuxiaColors.textPrimary,
-        title: const Text(UiStrings.gauntletRewardTitle),
-        automaticallyImplyLeading: false,
-      ),
-      body: SafeArea(
-        child: viewAsync.when(
-          loading: () => const Center(child: InkLoadingIndicator()),
-          error: (e, _) => ErrorFallback(
-            error: e,
-            onRetry: () => ref.invalidate(gauntletRewardViewProvider),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: WuxiaColors.background,
+        appBar: AppBar(
+          backgroundColor: WuxiaColors.sidebar,
+          foregroundColor: WuxiaColors.textPrimary,
+          title: const Text(UiStrings.gauntletRewardTitle),
+          automaticallyImplyLeading: false,
+        ),
+        body: SafeArea(
+          child: viewAsync.when(
+            loading: () => const Center(child: InkLoadingIndicator()),
+            error: (e, _) => ErrorFallback(
+              error: e,
+              onRetry: () => ref.invalidate(gauntletRewardViewProvider),
+            ),
+            data: (view) => view == null || view.candidates.isEmpty
+                ? const _NoReward()
+                : _Body(view: view),
           ),
-          data: (view) => view == null || view.candidates.isEmpty
-              ? const _NoReward()
-              : _Body(view: view),
         ),
       ),
     );
@@ -120,7 +125,8 @@ class _Body extends ConsumerWidget {
     ref.invalidate(activeGauntletProvider);
     ref.invalidate(gauntletCandidatesProvider);
     ref.invalidate(gauntletLoadoutInfoProvider);
-    Navigator.of(context).maybePop();
+    // 显式 pop：PopScope(canPop:false) 只拦系统返回/maybePop，不拦显式出栈。
+    Navigator.of(context).pop();
   }
 
   @override

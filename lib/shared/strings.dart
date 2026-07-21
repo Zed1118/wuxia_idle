@@ -3680,6 +3680,17 @@ class UiStrings {
   // 入庄
   static const String gauntletEnterButton = '持帖入庄';
   static const String gauntletEnterFailed = '入庄受阻，请核对队伍与补给。';
+  // 断线续战（§5.6/§10 · C2.5 恢复分支）
+  static const String gauntletResumeTitle = '庄局未了';
+  static String gauntletResumeHint(int stage, String phase) =>
+      '残局停在第 $stage 关 · $phase';
+  static const String gauntletResumeButton = '续战';
+  static const String gauntletResumeFailed = '续战受阻，稍后再试。';
+  static const String gauntletResumeRefunded = '庄局配置有异，已退帖闭局。';
+  static const String gauntletPhaseInBattle = '战事未决';
+  static const String gauntletPhaseInterlude = '整备待战';
+  static const String gauntletPhaseAwaitingReward = '待择战利';
+  static const String gauntletPhaseSettled = '已了结';
 
   // 庄内整备（§7.2）
   static const String gauntletInterludeTitle = '庄内整备';
