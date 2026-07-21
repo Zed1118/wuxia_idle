@@ -8,9 +8,11 @@ import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/reward_entry.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
+import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
@@ -148,5 +150,82 @@ void main() {
     );
     expect(item!.quantity, 50);
     expect(await IsarSetup.instance.expeditionRuns.get(runId), isNull);
+  });
+
+  test('战败返程：未倒下成员结轻伤（§4.6 倒下者重伤·其余轻伤）', () async {
+    final runId = await dispatchSeeded();
+    await stageRun(
+      runId,
+      currentNode: 6,
+      rewards: [rw('exp', 60)],
+      downed: false, // 战末仍存活
+    );
+
+    final svc = ExpeditionService(IsarSetup.instance);
+    final result = await svc.recall(defeated: true);
+
+    expect(result.downedCount, 0);
+    final ch = (await IsarSetup.instance.characters.get(1))!;
+    expect(ch.lightInjuryStacks, greaterThan(0), reason: '存活者轻伤');
+    expect(ch.injuryHoursRemaining, 0, reason: '非倒下者不进重伤');
+  });
+
+  test('召回发奖：物品已有库存行 → 数量累加并刷新获得时间（不新建行）', () async {
+    final runId = await dispatchSeeded();
+    await stageRun(runId, currentNode: 4, rewards: [rw('item_yaocao', 3)]);
+    final at = DateTime(2026, 7, 17, 9);
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.inventoryItems.put(
+        InventoryItem()
+          ..defId = 'item_yaocao'
+          ..itemType = ItemType.miscMaterial
+          ..quantity = 5
+          ..firstObtainedAt = DateTime(2026, 7, 16)
+          ..lastObtainedAt = DateTime(2026, 7, 16),
+      );
+    });
+
+    final svc = ExpeditionService(IsarSetup.instance);
+    await svc.recall(now: at);
+
+    final item = await IsarSetup.instance.inventoryItems.getByDefId(
+      'item_yaocao',
+    );
+    expect(item, isNotNull);
+    expect(item!.quantity, 8, reason: '既有行 5 + 暂存 3 累加');
+    expect(item.lastObtainedAt, at, reason: '刷新 lastObtainedAt');
+  });
+
+  test('召回经验跨层：经层锁门禁判定后升层（有主线进度行·发布上限内）', () async {
+    final runId = await dispatchSeeded();
+    // 经验调到当前层阈值-1：暂存 100 经验 → 结算时跨层触发 isLayerLocked 判定。
+    final repo = GameRepository.instance;
+    final before = (await IsarSetup.instance.characters.get(1))!;
+    final threshold = repo
+        .getRealm(before.realmTier, before.realmLayer)
+        .experienceToNext;
+    await IsarSetup.instance.writeTxn(() async {
+      final ch = (await IsarSetup.instance.characters.get(1))!
+        ..experience = threshold - 1;
+      await IsarSetup.instance.characters.put(ch);
+      await IsarSetup.instance.mainlineProgress.put(
+        MainlineProgress()
+          ..saveDataId = 0
+          ..clearedStageIds = ['stage_01_01'],
+      );
+    });
+    await stageRun(runId, currentNode: 4, rewards: [rw('exp', 100)]);
+
+    final svc = ExpeditionService(IsarSetup.instance);
+    await svc.recall();
+
+    final after = (await IsarSetup.instance.characters.get(1))!;
+    final next = CharacterAdvancementService.nextLayer(
+      before.realmTier,
+      before.realmLayer,
+    )!;
+    expect(after.realmTier, next.tier);
+    expect(after.realmLayer, next.layer, reason: '发布上限内不被拦·升一层');
+    expect(after.experience, 99, reason: 'threshold-1 + 100 - threshold');
   });
 }

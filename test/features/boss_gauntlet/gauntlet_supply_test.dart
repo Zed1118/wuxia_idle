@@ -31,6 +31,12 @@ void main() {
       name: '行囊补给',
       gauntletQiRestorePct: 0.20,
     ),
+    // 双效果 pct 皆 0：触发「无断魂庄补给效果」错误路径。
+    'item_wuxiao_dan': const ItemDef(
+      defId: 'item_wuxiao_dan',
+      type: ItemType.miscMaterial,
+      name: '无效丹',
+    ),
   };
 
   setUpAll(() => initializeTestIsarCore());
@@ -305,5 +311,78 @@ void main() {
     expect(item, isNotNull);
     expect(item!.quantity, 2);
     expect(item.itemType, ItemType.miscMaterial);
+  });
+
+  test('无存档用药 → 抛错', () async {
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.saveDatas.delete(0);
+    });
+    await expectLater(
+      svc().useSupply(index: 0, targetCharacterId: 1),
+      throwsStateError,
+    );
+  });
+
+  test('无进行中会话用药 → 抛错', () async {
+    await expectLater(
+      svc().useSupply(index: 0, targetCharacterId: 1),
+      throwsStateError,
+    );
+  });
+
+  test('托管补给 defId 不在 itemDefs（未知道具）→ 抛错', () async {
+    await putRun(
+      members: [member(1, maxHp: 1000, currentHp: 400)],
+      escrowDefIds: ['item_weizhi_buji'], // itemDefs 无此 def
+      escrowLoaded: [1],
+      escrowUsed: [0],
+    );
+    await expectLater(
+      svc().useSupply(index: 0, targetCharacterId: 1),
+      throwsStateError,
+    );
+    final run = await reloadRun();
+    expect(run.escrowUsedQty, [0], reason: '抛错回滚·用量未增');
+  });
+
+  test('疗伤丹目标角色不在队伍 → 抛错', () async {
+    await putRun(
+      members: [member(1, maxHp: 1000, currentHp: 400)],
+      escrowDefIds: ['item_liaoshangdan'],
+      escrowLoaded: [1],
+      escrowUsed: [0],
+    );
+    await expectLater(
+      svc().useSupply(index: 0, targetCharacterId: 999),
+      throwsStateError,
+    );
+  });
+
+  test('补给无断魂庄效果（双 pct=0）→ 抛错', () async {
+    await putRun(
+      members: [member(1, maxHp: 1000, currentHp: 400)],
+      escrowDefIds: ['item_wuxiao_dan'],
+      escrowLoaded: [1],
+      escrowUsed: [0],
+    );
+    await expectLater(
+      svc().useSupply(index: 0, targetCharacterId: 1),
+      throwsStateError,
+    );
+  });
+
+  test('close 库存行缺失且无 ItemDef 可重建 → 抛错且会话保留（回滚）', () async {
+    await putRun(
+      members: [member(1, maxHp: 1000, currentHp: 100)],
+      escrowDefIds: ['item_weizhi_buji'], // 无库存行 + itemDefs 无此 def
+      escrowLoaded: [1],
+      escrowUsed: [0],
+    );
+    await expectLater(svc().close(), throwsStateError);
+    expect(
+      await IsarSetup.instance.bossGauntletRuns.count(),
+      1,
+      reason: '事务回滚·会话未删',
+    );
   });
 }

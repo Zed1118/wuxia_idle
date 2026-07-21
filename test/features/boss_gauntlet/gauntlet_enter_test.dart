@@ -257,4 +257,48 @@ void main() {
     expect(await qtyOf('item_liaoshangdan'), 1);
     expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
   });
+
+  test('补给份数非正（0）→ 抛错（前置校验·不进事务）', () async {
+    final cid = await putDisciple(mainTech: 5);
+    await putInventory('item_duanhuntie', ItemType.ticket, 1);
+    await putInventory('item_liaoshangdan', ItemType.miscMaterial, 2);
+    final svc = GauntletService(IsarSetup.instance);
+    await expectLater(
+      svc.enter(
+        characterIds: [cid],
+        supplies: {'item_liaoshangdan': 0},
+        supplyCap: 3,
+      ),
+      throwsStateError,
+    );
+    expect(await qtyOf('item_duanhuntie'), 1);
+    expect(await qtyOf('item_liaoshangdan'), 2);
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
+  });
+
+  test('无存档 → 抛错（事务回滚·无 run）', () async {
+    final cid = await putDisciple(mainTech: 5);
+    await putInventory('item_duanhuntie', ItemType.ticket, 1);
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.saveDatas.delete(0);
+    });
+    final svc = GauntletService(IsarSetup.instance);
+    await expectLater(
+      svc.enter(characterIds: [cid], supplyCap: 3),
+      throwsStateError,
+    );
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
+    expect(await qtyOf('item_duanhuntie'), 1, reason: '帖未扣');
+  });
+
+  test('角色不存在 → 抛错且回滚（帖未扣）', () async {
+    await putInventory('item_duanhuntie', ItemType.ticket, 1);
+    final svc = GauntletService(IsarSetup.instance);
+    await expectLater(
+      svc.enter(characterIds: [999], supplyCap: 3),
+      throwsStateError,
+    );
+    expect(await qtyOf('item_duanhuntie'), 1);
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
+  });
 }

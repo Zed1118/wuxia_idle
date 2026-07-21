@@ -208,4 +208,24 @@ void main() {
     expect(await qtyOf('item_duanhuntie'), 0, reason: '已开战不退帖');
     expect(await runCount(), 1, reason: '会话留待 C2.5 认输结算');
   });
+
+  test('配置损坏退帖：断魂帖库存行缺失 → 重建一张（防御）', () async {
+    await putRun(
+      phase: GauntletPhase.inBattle,
+      currentStage: 1,
+      members: [member(1)], // maxHp=0 未开战
+    );
+    // 无任何 item_duanhuntie 库存行（防御路径：重建而非 +=）。
+    expect(
+      await svc().recover(config: null),
+      GauntletRecoveryOutcome.refundedTicket,
+    );
+    final ticket = await IsarSetup.instance.inventoryItems.getByDefId(
+      'item_duanhuntie',
+    );
+    expect(ticket, isNotNull);
+    expect(ticket!.quantity, 1, reason: '重建一张断魂帖');
+    expect(ticket.itemType, ItemType.ticket);
+    expect(await runCount(), 0, reason: '关会话删除');
+  });
 }
