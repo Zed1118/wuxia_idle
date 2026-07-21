@@ -834,6 +834,17 @@ const _battleStandeeOverrides = <String, String>{
   'assets/enemies/qibei_aikou_shouwei.png':
       'assets/enemies/qibei_aikou_shouwei.png',
   'assets/enemies/qibei_nayiwei.png': 'assets/enemies/qibei_nayiwei.png',
+  // Ch10「中州」5 敌立绘(codex image_gen·透明全身图)
+  'assets/enemies/zhongzhou_hetao_jianke.png':
+      'assets/enemies/zhongzhou_hetao_jianke.png',
+  'assets/enemies/zhongzhou_yanmen_youxia.png':
+      'assets/enemies/zhongzhou_yanmen_youxia.png',
+  'assets/enemies/zhongzhou_luoshui_zhaoying.png':
+      'assets/enemies/zhongzhou_luoshui_zhaoying.png',
+  'assets/enemies/zhongzhou_songyang_guanzhu.png':
+      'assets/enemies/zhongzhou_songyang_guanzhu.png',
+  'assets/enemies/zhongzhou_shouzhuo_weng.png':
+      'assets/enemies/zhongzhou_shouzhuo_weng.png',
   'assets/enemies/enemy_gauntlet_su_wujiu.png':
       WuxiaUi.battleGauntletSuWujiuStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':
@@ -973,6 +984,12 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/qibei_shenlou_huanjing.png' => 0.986,
   'assets/enemies/qibei_aikou_shouwei.png' => 0.970,
   'assets/enemies/qibei_nayiwei.png' => 0.981,
+  // Ch10「中州」5 敌脚底校准(alpha 包围盒实测·2026-07-21)
+  'assets/enemies/zhongzhou_hetao_jianke.png' => 0.958,
+  'assets/enemies/zhongzhou_yanmen_youxia.png' => 0.960,
+  'assets/enemies/zhongzhou_luoshui_zhaoying.png' => 0.934,
+  'assets/enemies/zhongzhou_songyang_guanzhu.png' => 0.964,
+  'assets/enemies/zhongzhou_shouzhuo_weng.png' => 0.982,
   WuxiaUi.battleGauntletSuWujiuStandee => 0.9681,
   WuxiaUi.battleGauntletQingyiGuardAStandee => 0.9571,
   WuxiaUi.battleGauntletQingyiGuardBStandee => 0.9642,
