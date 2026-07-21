@@ -3319,3 +3319,29 @@ skills:
         shuLian: { damage_pct: 0.08 }
         jingTong: { damage_pct: 0.08 }
         huaJing: { damage_pct: 0.08 }
+
+  # ───────────────────────────────────────────
+  # Ch12「名下之实」末Boss「无名真高手」本命真解(一流第三章·一流三章收官·名下之实)。
+  # 末Boss stage_12_05 chargeSkillId 双用 = dropSkillManualId(破招首通掉·沿「破他的招、学他的招」canon)。
+  # 独立末Boss真解,非 wave_b 配平池成员(standaloneBossManualIds 白名单);绵里藏针=实藏于内·把招练进骨子里。
+  # mult 3600 = 止水诀/鎏金诀(一流深处之深·守全局 ≤8000·真解 source=mainline_drop 不入 encounter per-tier cap)。
+  # 名下之实母题:满江湖虚名门之后,终遇一个全无名头、把招练进骨子里的人——名≠本事,实至名归·收一流三章。
+  - id: skill_mian_li_cang_zhen
+    name: 绵里藏针
+    description: 一路见惯了金字招牌、堂皇架势,末了最狠的一招,出自一个全无名头的人手里。看似绵软无力,针却早藏在骨子里——不显于名,只成于实。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 3600
+    qiDelta: -30
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: hidden_needle
+    source: mainline_drop
+    style: yinRou
+    tier: 4
+    proficiency:        # 真解手工高半档(阴柔向:实藏于内·针出即伤·照鎏金诀三层 damage_pct 锚)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
+        huaJing: { damage_pct: 0.08 }

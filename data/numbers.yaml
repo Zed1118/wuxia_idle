@@ -203,7 +203,7 @@ combat:
 
 progression:
   release_cap:
-    max_absolute_realm_level: 26  # Ch11「名门之虚」抬 24→26(一流·圆熟 yuanShu):Ch11 敌人层升至 jingTong/yuanShu,沿 Ch10 按需抬先例(Ch12 dengFeng 时再抬 28)
+    max_absolute_realm_level: 28  # Ch12「名下之实」抬 26→28(一流·登峰 dengFeng = 一流封顶):Ch12 末Boss无名真高手层升至 dengFeng,一流三章收官(within-tier·releaseTier 仍 yiLiu·不触发新阶 mount_deferred)
 
 # =============================================================================
 # 2. 49 级境界系统

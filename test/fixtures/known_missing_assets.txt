@@ -24,3 +24,21 @@
 # 章节封面(1)
 # 主线剧情阅读背景(5)
 #
+# ── Ch11 一流第 2 章「名门之虚」立绘已补齐(2026-07-21·codex image_gen)──
+#
+# ── Ch12 一流第 3 章「名下之实」待补美术(2026-07-21·codex image_gen 另出图)──
+# 敌人立绘(5)
+assets/enemies/zhongzhou_hanjiang_chenggao.png
+assets/enemies/zhongzhou_huaixiang_quanshi.png
+assets/enemies/zhongzhou_qiushan_tiaoshan.png
+assets/enemies/zhongzhou_laotie_tiejiang.png
+assets/enemies/zhongzhou_huangcun_wuming.png
+# 章节封面(1)
+assets/scenes/chapter_12_cover.png
+# 主线剧情阅读背景(5)
+assets/scenes/narrative_stage_12_01.png
+assets/scenes/narrative_stage_12_02.png
+assets/scenes/narrative_stage_12_03.png
+assets/scenes/narrative_stage_12_04.png
+assets/scenes/narrative_stage_12_05.png
+#
