@@ -856,6 +856,17 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/zhongzhou_yujing_jianzhu.png',
   'assets/enemies/zhongzhou_liujin_gong.png':
       'assets/enemies/zhongzhou_liujin_gong.png',
+  // Ch12「名下之实」5 敌立绘(codex image_gen·透明全身图)
+  'assets/enemies/zhongzhou_hanjiang_chenggao.png':
+      'assets/enemies/zhongzhou_hanjiang_chenggao.png',
+  'assets/enemies/zhongzhou_huaixiang_quanshi.png':
+      'assets/enemies/zhongzhou_huaixiang_quanshi.png',
+  'assets/enemies/zhongzhou_qiushan_tiaoshan.png':
+      'assets/enemies/zhongzhou_qiushan_tiaoshan.png',
+  'assets/enemies/zhongzhou_laotie_tiejiang.png':
+      'assets/enemies/zhongzhou_laotie_tiejiang.png',
+  'assets/enemies/zhongzhou_huangcun_wuming.png':
+      'assets/enemies/zhongzhou_huangcun_wuming.png',
   'assets/enemies/enemy_gauntlet_su_wujiu.png':
       WuxiaUi.battleGauntletSuWujiuStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':
@@ -1007,6 +1018,12 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/zhongzhou_luoyang_haoke.png' => 0.968,
   'assets/enemies/zhongzhou_yujing_jianzhu.png' => 0.952,
   'assets/enemies/zhongzhou_liujin_gong.png' => 0.962,
+  // Ch12「名下之实」5 敌脚底校准(alpha 包围盒实测·2026-07-22)
+  'assets/enemies/zhongzhou_hanjiang_chenggao.png' => 0.965,
+  'assets/enemies/zhongzhou_huaixiang_quanshi.png' => 0.958,
+  'assets/enemies/zhongzhou_qiushan_tiaoshan.png' => 0.950,
+  'assets/enemies/zhongzhou_laotie_tiejiang.png' => 0.956,
+  'assets/enemies/zhongzhou_huangcun_wuming.png' => 0.951,
   WuxiaUi.battleGauntletSuWujiuStandee => 0.9681,
   WuxiaUi.battleGauntletQingyiGuardAStandee => 0.9571,
   WuxiaUi.battleGauntletQingyiGuardBStandee => 0.9642,
