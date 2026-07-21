@@ -56,21 +56,21 @@ void main() {
     repo = await loadTestGameRepository();
   });
 
-  test('锚点对账：参考路线终态 Lv94/abs10/余量376，缺口 7924 EXP', () {
+  test('锚点对账：参考路线终态 Lv98/abs10/余量687，缺口 7613 EXP', () {
     final ch = _referenceRouteEnd(repo);
     expect(
       _displayLevel(repo, ch),
-      94,
-      reason: '对账 progression_release_budget_test Lv94 锚点',
+      98,
+      reason: '对账 progression_release_budget_test Lv98 锚点',
     );
     final realm = repo.getRealm(ch.realmTier, ch.realmLayer);
     expect(realm.absoluteLevel, 10, reason: 'Lv94 = 三流·熟练(abs10) 层内第 4 段');
-    expect(ch.experience, 376, reason: '参考路线三丹后层内余量');
-    expect(_expToDisplayLevel(repo, ch, 100), 479);
-    expect(_expToDisplayLevel(repo, ch, 120), 3264);
+    expect(ch.experience, 687, reason: '参考路线三丹后层内余量');
+    expect(_expToDisplayLevel(repo, ch, 100), 168);
+    expect(_expToDisplayLevel(repo, ch, 120), 2953);
     expect(
       _expToDisplayLevel(repo, ch, _targetLevel),
-      7924,
+      7613,
       reason: 'Lv94→Lv141 纯挂机经验缺口',
     );
   });
@@ -219,7 +219,7 @@ void main() {
       avgDepth: 20,
       baseExpPerBattle: baseExp,
     );
-    final gap = 7924; // 锚点测已钉（2026-07-20 Ch9 扩后重校）
+    final gap = 7613; // 锚点测已钉（2026-07-20 Ch9 扩后重校）
     final s4Days = daysToTraverse(totalExp: gap, expPerHour: y.expPerHour);
     // 交叉对账：同口径 abs10→17 应 ≈ 18 天（expeditions.yaml 注释锚点）。
     final fullRangeDays = daysToTraverse(
@@ -613,8 +613,8 @@ void _assertConservation(GameRepository repo, _HorizonResult r) {
   );
   expect(
     r.appliedExp,
-    7924 + ch.experience,
-    reason: '${r.name}: 经验守恒 = 缺口 7924 + 终点层内余量',
+    7613 + ch.experience,
+    reason: '${r.name}: 经验守恒 = 缺口 7613 + 终点层内余量',
   );
 }
 

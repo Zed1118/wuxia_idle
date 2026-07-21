@@ -2272,6 +2272,231 @@ stages:
     weather: clear
 
   # ============================================================================
+  # Ch10「中州」一流拐点主线章（stage_10_01..05 · yiLiu · 循路→开路）
+  # 承 Ch9「边塞三程到此为止，江湖才刚往深处去」；碛北南下入中原武林腹地。
+  # 敌招复用一流门派绝学 skill_<school>_menpai_basic/skill；装备复用 liQi 12 件。
+  # realmLayer 沿 Ch7：01-02 qiMeng / 03-04 ruMen / 05 shuLian(=cap24)。
+  # Boss 位 {4,5}：10_04 章中 stat 门槛(无 bossPhases) / 10_05 末Boss 止水诀真解双用。
+  # ============================================================================
+
+  # === stage_10_01 · 河套渡口(一流杂兵 · 刚猛 · 出碛北南下过河)===
+  - id: stage_10_01
+    name: 河套渡口
+    stageType: mainline
+    chapterIndex: 10
+    narrativeOpeningId: stage_10_01_opening
+    narrativeVictoryId: stage_10_01_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_hetao_jianke
+        name: 河套剑客
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 18000
+        baseAttack: 720
+        baseSpeed: 250
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+        iconPath: assets/enemies/zhongzhou_hetao_jianke.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_liqi_long_quan
+        dropChance: 1.0
+      - equipmentDefId: armor_liqi_xuan_tie_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [28, 34]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [300, 380]
+        dropChance: 1.0  # 银两(一流阶 · 承 Ch9 曲线续进)
+    baseExpReward: 34
+    difficultyMultiplier: 10.2
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: clear
+
+  # === stage_10_02 · 雁门道(一流杂兵 · 灵巧 · 中原北门户)===
+  - id: stage_10_02
+    name: 雁门道
+    stageType: mainline
+    chapterIndex: 10
+    prevStageId: stage_10_01
+    narrativeOpeningId: stage_10_02_opening
+    narrativeVictoryId: stage_10_02_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_yanmen_youxia
+        name: 雁门游侠
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 19000
+        baseAttack: 750
+        baseSpeed: 285
+        skillIds:
+          - skill_lingqiao_menpai_basic
+          - skill_lingqiao_menpai_skill
+        iconPath: assets/enemies/zhongzhou_yanmen_youxia.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_liqi_pan_long_dao
+        dropChance: 1.0
+      - equipmentDefId: accessory_liqi_fei_yu_pei
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [28, 34]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [310, 390]
+        dropChance: 1.0  # 银两(一流阶)
+    baseExpReward: 34
+    difficultyMultiplier: 10.4
+    biome: mountainForest
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
+    weather: clear
+
+  # === stage_10_03 · 洛水照影(章中考验 · 阴柔幻敌 · 非 Boss · "循路 vs 开路"镜像)===
+  - id: stage_10_03
+    name: 洛水照影
+    stageType: mainline
+    chapterIndex: 10
+    prevStageId: stage_10_02
+    narrativeOpeningId: stage_10_03_opening
+    narrativeVictoryId: stage_10_03_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_luoshui_zhaoying
+        name: 洛水照影
+        realmTier: yiLiu
+        realmLayer: ruMen
+        school: yinRou
+        baseHp: 20500
+        baseAttack: 780
+        baseSpeed: 280
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+        iconPath: assets/enemies/zhongzhou_luoshui_zhaoying.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_liqi_lian_zi_bian
+        dropChance: 1.0
+      - equipmentDefId: accessory_liqi_hu_xin_jing
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [30, 38]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [320, 400]
+        dropChance: 1.0  # 银两(一流阶)
+    baseExpReward: 36
+    difficultyMultiplier: 10.6
+    biome: mountainForest
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
+    weather: night
+
+  # === stage_10_04 · 嵩阳关(刚猛章中 Boss · 守道关主 · stat 门槛无相位 · 配 defeat)===
+  - id: stage_10_04
+    name: 嵩阳关
+    stageType: mainline
+    chapterIndex: 10
+    prevStageId: stage_10_03
+    narrativeOpeningId: stage_10_04_opening
+    narrativeVictoryId: stage_10_04_victory
+    narrativeDefeatId: stage_10_04_defeat
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_songyang_guanzhu
+        name: 嵩阳关主
+        realmTier: yiLiu
+        realmLayer: ruMen
+        school: gangMeng
+        baseHp: 26000
+        baseAttack: 900
+        baseSpeed: 255
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+        iconPath: assets/enemies/zhongzhou_songyang_guanzhu.png
+        isBoss: true   # 章中 Boss = 关隘 stat 门槛(HP/攻墙 · 无充能相位,唯 10_05 守拙翁设充能破招)
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_liqi_hu_tou_gou
+        dropChance: 1.0
+      - equipmentDefId: armor_liqi_qing_luo_shan
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [32, 40]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [380, 480]
+        dropChance: 1.0  # 银两(一流章中 Boss)
+    baseExpReward: 58
+    difficultyMultiplier: 10.8
+    biome: mountainForest
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
+    weather: clear
+
+  # === stage_10_05 · 止水潭(阴柔·守道名宿·沉默出手·刚末 Boss · 破招掉止水诀真解)===
+  - id: stage_10_05
+    name: 止水潭
+    stageType: mainline
+    chapterIndex: 10
+    prevStageId: stage_10_04
+    narrativeOpeningId: stage_10_05_opening
+    narrativeVictoryId: stage_10_05_victory
+    narrativeDefeatId: stage_10_05_defeat
+    requiredRealm: yiLiu
+    dropSkillManualId: skill_zhi_shui_jue  # 真解(止水诀·守拙翁本命·同招为 boss chargeSkillId 双用·破招首通 markUnlocked)
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_shouzhuo_weng
+        name: 守拙翁
+        realmTier: yiLiu
+        realmLayer: shuLian
+        school: yinRou
+        baseHp: 32000
+        baseAttack: 950
+        baseSpeed: 305
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+          - skill_zhi_shui_jue        # 本命真解 = 末Boss chargeSkill(双用 canon)
+        iconPath: assets/enemies/zhongzhou_shouzhuo_weng.png
+        isBoss: true
+        chargeSkillId: skill_zhi_shui_jue   # 破招:玩家拦截,首通掉同招真解
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_liqi_li_hua_zhen
+        dropChance: 1.0
+      - equipmentDefId: armor_liqi_tie_ye_jia
+        dropChance: 0.50
+      - equipmentDefId: accessory_liqi_jin_chuang_gao
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [34, 44]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [480, 600]
+        dropChance: 1.0  # 银两(一流章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(一流章末)
+    baseExpReward: 74
+    difficultyMultiplier: 11.2
+    biome: mountainForest
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
+    weather: clear
+
+  # ============================================================================
   # 心魔境 7 关（1.0 P2.2 §12.1 · stageType: innerDemon）
   # ----------------------------------------------------------------------------
   # spec doc: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md

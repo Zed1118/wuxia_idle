@@ -136,6 +136,7 @@ void main() {
     const standaloneBossManualIds = {
       'skill_hui_xiu_hui_feng', // Ch8 灰衣人·灰袖回风
       'skill_chen_sha_yi_jue', // Ch9 那一位·沉沙一诀
+      'skill_zhi_shui_jue', // Ch10 守拙翁·止水诀
     };
 
     assertBalanced(

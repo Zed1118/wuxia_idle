@@ -43,7 +43,7 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('全新进度 → 9 章卡渲染,Ch1 进行中 + Ch2-9 锁', (tester) async {
+  testWidgets('全新进度 → 10 章卡渲染,Ch1 进行中 + Ch2-10 锁', (tester) async {
     await pumpScreen(tester, mkProgress());
 
     expect(find.text(UiStrings.mainlineRouteMapTitle), findsOneWidget);
@@ -69,19 +69,20 @@ void main() {
     expect(find.text(UiStrings.chapter7Title), findsNWidgets(2));
     expect(find.text(UiStrings.chapter8Title), findsNWidgets(2));
     expect(find.text(UiStrings.chapter9Title), findsNWidgets(2));
+    expect(find.text(UiStrings.chapter10Title), findsNWidgets(2));
     expect(find.text(UiStrings.mainlineRouteCurrent), findsOneWidget);
-    expect(find.text(UiStrings.mainlineRouteLocked), findsNWidgets(8));
+    expect(find.text(UiStrings.mainlineRouteLocked), findsNWidgets(9));
 
     expect(
       find.text(UiStrings.chapterStatusInProgress),
       findsOneWidget,
       reason: '只有 Ch1 进行中',
     );
-    expect(find.byIcon(Icons.lock), findsNWidgets(8), reason: 'Ch2–Ch9 都锁');
+    expect(find.byIcon(Icons.lock), findsNWidgets(9), reason: 'Ch2–Ch10 都锁');
     expect(find.byIcon(Icons.check_circle), findsNothing);
   });
 
-  testWidgets('Ch1 全通(5 关)→ Ch1 ✓ + Ch2 进行中 + Ch3-9 锁', (tester) async {
+  testWidgets('Ch1 全通(5 关)→ Ch1 ✓ + Ch2 进行中 + Ch3-10 锁', (tester) async {
     await pumpScreen(
       tester,
       mkProgress(
@@ -105,17 +106,18 @@ void main() {
       findsOneWidget,
       reason: 'Ch2 解锁进行中',
     );
-    expect(find.byIcon(Icons.lock), findsNWidgets(7), reason: 'Ch3–Ch9 仍锁');
+    expect(find.byIcon(Icons.lock), findsNWidgets(8), reason: 'Ch3–Ch10 仍锁');
   });
 
-  testWidgets('全 45 关通关 → 9 章都 ✓,无锁', (tester) async {
+  testWidgets('全 50 关通关 → 10 章都 ✓,无锁', (tester) async {
     final cleared = <String>[
-      for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9])
-        for (final idx in [1, 2, 3, 4, 5]) 'stage_0${ch}_0$idx',
+      for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        for (final idx in [1, 2, 3, 4, 5])
+          'stage_${ch.toString().padLeft(2, '0')}_0$idx',
     ];
     await pumpScreen(tester, mkProgress(cleared: cleared));
 
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(9));
+    expect(find.byIcon(Icons.check_circle), findsNWidgets(10));
     expect(find.byIcon(Icons.lock), findsNothing);
     expect(find.text(UiStrings.chapterStatusInProgress), findsNothing);
   });

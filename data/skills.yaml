@@ -2944,6 +2944,7 @@ skills:
     source: mainline_drop
     style: lingQiao
     tier: 4
+    mount_deferred: true  # 2026-07-20 Ch10 取中原守道弧改用 skill_zhi_shui_jue(yinRou);本招(大漠·灵巧)属边塞主题,Ch9 已收束边塞,预留后续一流章挂载,cap24 后红线⑦按 !mountDeferred 豁免(yaml key=snake·skill_def.dart:174)
     proficiency:        # 真解手工高半档(灵巧向:CD 倾斜)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -3090,6 +3091,7 @@ skills:
     source: fragment
     style: gangMeng
     tier: 4
+    mount_deferred: true  # cap24 暴露·一流 fragment 秘籍 farm 招挂载属独立后续批·非 Ch10 主线章 scope·红线⑦按 !mountDeferred 豁免
     proficiency:        # 波A 流派模板(刚猛)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -3149,6 +3151,7 @@ skills:
     source: fragment
     style: gangMeng
     tier: 4
+    mount_deferred: true  # cap24 暴露·一流 fragment 秘籍 farm 招挂载属独立后续批·非 Ch10 主线章 scope·红线⑦按 !mountDeferred 豁免
     proficiency:        # 波A 流派模板(刚猛)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -3265,3 +3268,28 @@ skills:
         shuLian: { damage_pct: 0.08 }
         jingTong: { damage_pct: 0.08 }
         huaJing: { damage_pct: 0.08 }
+
+  # ───────────────────────────────────────────
+  # Ch10「中州」末Boss 本命真解(一流拐点·守道名宿)。
+  # 末Boss stage_10_05 chargeSkillId 双用 = dropSkillManualId(破招首通掉·沿「破他的招、学他的招」canon)。
+  # 独立末Boss真解,非 wave_b 配平池成员(standaloneBossManualIds 白名单);阴柔守成=以静制动·来招皆化。
+  # mult 3600 > 沉沙一诀 3000(跨阶之深·守全局 ≤8000·真解 source=mainline_drop 不入 encounter per-tier cap)。
+  - id: skill_zhi_shui_jue
+    name: 止水诀
+    description: 守成一世,心静如止水。一诀既出,来招皆化,去路皆封,从不主动追击——守得住旧路的极致,便是踏不出新路的极致。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 3600
+    qiDelta: -35
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: still_water
+    source: mainline_drop
+    style: yinRou
+    tier: 4
+    proficiency:        # 真解手工高半档(阴柔向:伤害温和 + CD·沿斜雨穿帘锚)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
