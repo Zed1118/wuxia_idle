@@ -1,0 +1,39 @@
+# 任务：为《挂机武侠》Ch12「名下之实」出 11 张美术图（codex image_gen 全自主）
+
+你是驻扎在 git worktree 的美术执行端。用你内置的 image_gen 工具出图，写入下列确切路径。纪律：不运行 flutter/dart 命令、不碰 .git、不做任何 git 操作、不修改 assets/ 以外的文件（唯一的例外是文末要求的报告文件 ch12_art_report.md）。
+
+## 必读（先读再画）
+1. `docs/spec/2026-07-21-ch12-ming-xia-zhi-shi-design.md` —— Ch12 定位：一流三章收官 · 母题「名≠本事」收于「实至名归 · 本事在骨」· 5 关表（场景/敌人/气质/流派）。
+2. `data/stages.yaml` 中 `stage_12_01..05` 五关与敌人定义段 —— 敌名/气质以 yaml 为准。
+3. `data/narratives/stages/stage_12_01_opening.yaml` … `stage_12_05_opening.yaml` + `data/narratives/chapters/chapter_12.yaml` —— 每关场景氛围以叙事文本为准。
+4. `test/fixtures/known_missing_assets.txt` 第 29-43 行 —— 11 个目标文件路径，必须逐字一致。
+
+## 风格锚（-i 已喂参考图，严格对齐）
+- **敌立绘**：对齐参考图（Ch10/11 同域中州立绘）——厚涂游戏立绘终稿 · 高饱和青墨 · 肌理布料对齐参考 · 全身战斗站姿 · 透明 RGBA（四角 alpha=0，色键抠图）· 非速写非淡墨。
+- **章封面/剧情背景**：对齐参考图 chapter_11_cover / narrative_stage_11_01 —— 水墨克制基调 · 低饱和 · 宣纸/墨色质感 · 无文字无 UI 无 watermark。
+
+## 11 张清单（逐字路径）
+
+**敌立绘（5 张，透明全身战斗站姿）：**
+1. `assets/enemies/zhongzhou_hanjiang_chenggao.png` —— 撑篙翁：寒江渡口老摆渡人，精瘦老者，蓑衣竹篙，貌不惊人却下盘极稳（藏于平凡的真本事 · 灵巧）。
+2. `assets/enemies/zhongzhou_huaixiang_quanshi.png` —— 巷陌拳师：市井巷陌练拳的拳师，短打布衣，筋骨结实，神情木讷专注（不图名的真功夫 · 刚猛）。
+3. `assets/enemies/zhongzhou_qiushan_tiaoshan.png` —— 挑山客：秋山道上的挑夫，精瘦劳力，肩挑扁担，气息绵长（名实相副的低调行家 · 阴柔）。
+4. `assets/enemies/zhongzhou_laotie_tiejiang.png` —— 守炉铁匠：老铁铺匠人，赤膊围革裙，臂肌虬结，守炉持锤（真有本事的守成匠人 · 章中 Boss · 灵巧）。
+5. `assets/enemies/zhongzhou_huangcun_wuming.png` —— 无名客：荒村野店的无名老者，衣着坐姿至平凡，毫无名家气派，要把「绝世高手藏于至平凡」画出来（末 Boss · 扫地僧式 · 阴柔）。
+
+**章封面（1 张，横版 1456×816，对齐 Ch11 封面构图与质感）：**
+6. `assets/scenes/chapter_12_cover.png` —— 「名下之实」章封面：中州深处寒江渡→荒村的旅途意象，克制留白。
+
+**剧情背景（5 张，横版，与 narrative_stage_11_0X 同尺寸同质感，无人物特写、无文字）：**
+7. `assets/scenes/narrative_stage_12_01.png` —— 寒江渡口（dock）：晨雾江面，孤舟竹篙。
+8. `assets/scenes/narrative_stage_12_02.png` —— 市井巷陌（alley）：槐花巷，青砖窄巷，地摊酒旗。
+9. `assets/scenes/narrative_stage_12_03.png` —— 秋山道（mountainpath）：红叶山道，石阶蜿蜒。
+10. `assets/scenes/narrative_stage_12_04.png` —— 老铁铺（smithy）：炉火铁砧，暗室暖光。
+11. `assets/scenes/narrative_stage_12_05.png` —— 荒村野店（inn）：荒村小店，黄昏孤灯。
+
+## 自测与报告
+- 逐图确认：尺寸（立绘 1024×1536 级 · 封面 1456×816 级 · 背景与参考图同尺寸）、四角 alpha=0（仅立绘）、**脚底 alpha 包围盒 fraction 实测值**（立绘 5 张，仿 Ch11 报告格式，0.95 上下）。
+- 允许自我 QA 返修，但最终落盘必须是终版；「N 图落盘」≠ 完成。
+- 全部完成后在工作区根目录写 `ch12_art_report.md`：逐图 路径 / 尺寸 / 透明确认 / 脚底 fraction / 自评一句。
+- 全程若见 supports_reasoning_summaries / failed to renew cache TTL 报错刷屏 = 无害噪声，不要当中止信号。
+- **全部 11 图落盘 + 报告写完才算完成。**
