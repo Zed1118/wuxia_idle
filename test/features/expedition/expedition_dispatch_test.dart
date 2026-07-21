@@ -127,4 +127,69 @@ void main() {
       throwsStateError,
     );
   });
+
+  test('队伍为空 → 抛错', () async {
+    final svc = ExpeditionService(IsarSetup.instance);
+    await expectLater(
+      svc.dispatch(characterIds: [], policy: ExpeditionPolicy.yanJingCaiYao),
+      throwsStateError,
+    );
+  });
+
+  test('队伍超 3 人 → 抛错', () async {
+    final ids = [for (var i = 0; i < 4; i++) await putDisciple(mainTech: 5)];
+    final svc = ExpeditionService(IsarSetup.instance);
+    await expectLater(
+      svc.dispatch(characterIds: ids, policy: ExpeditionPolicy.yanJingCaiYao),
+      throwsStateError,
+    );
+  });
+
+  test('队伍含重复角色 → 抛错', () async {
+    final cid = await putDisciple(mainTech: 5);
+    final svc = ExpeditionService(IsarSetup.instance);
+    await expectLater(
+      svc.dispatch(
+        characterIds: [cid, cid],
+        policy: ExpeditionPolicy.yanJingCaiYao,
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('无存档 → 抛错（事务回滚·无 run）', () async {
+    final cid = await putDisciple(mainTech: 5);
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.saveDatas.delete(0);
+    });
+    final svc = ExpeditionService(IsarSetup.instance);
+    await expectLater(
+      svc.dispatch(characterIds: [cid], policy: ExpeditionPolicy.yanJingCaiYao),
+      throwsStateError,
+    );
+    expect(await IsarSetup.instance.expeditionRuns.count(), 0);
+  });
+
+  test('角色不存在 → 抛错（事务回滚·serial 不增）', () async {
+    final svc = ExpeditionService(IsarSetup.instance);
+    await expectLater(
+      svc.dispatch(
+        characterIds: [999],
+        policy: ExpeditionPolicy.yanJingCaiYao,
+      ),
+      throwsStateError,
+    );
+    expect(await IsarSetup.instance.expeditionRuns.count(), 0);
+    final save = await IsarSetup.instance.saveDatas.get(0);
+    expect(save!.expeditionRunSerial, 0, reason: '回滚·serial 未消费');
+  });
+
+  test('未修主修 → 抛错', () async {
+    final cid = await putDisciple(mainTech: null);
+    final svc = ExpeditionService(IsarSetup.instance);
+    await expectLater(
+      svc.dispatch(characterIds: [cid], policy: ExpeditionPolicy.yanJingCaiYao),
+      throwsStateError,
+    );
+  });
 }

@@ -16,7 +16,9 @@ import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dar
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.dart';
 import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
+import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
+import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
@@ -267,5 +269,52 @@ void main() {
   test('幂等：无 active 会话 → no-op 不抛', () async {
     await svc().settleDefeat(config: config(), numbers: numbers());
     expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
+  });
+
+  test('战败结算有主线进度行：精英经验照发（cleared 集参与层锁判定）', () async {
+    await zeroExp(1);
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.mainlineProgress.put(
+        MainlineProgress()
+          ..saveDataId = 0
+          ..clearedStageIds = ['stage_01_01'],
+      );
+    });
+    await putRun(members: [member()]);
+
+    await svc().settleDefeat(config: config(), numbers: numbers());
+
+    final expAfter = (await IsarSetup.instance.characters.get(1))!.experience;
+    expect(expAfter, 2 * config().eliteRewardExp, reason: '两精英经验照发');
+  });
+
+  test('战败精英经验跨层：经层锁门禁判定后升层（发布上限内）', () async {
+    // 经验调到当前层阈值-1：2 精英经验必触发一次跨层 → 走 isLayerLocked 判定。
+    final repo = GameRepository.instance;
+    final before = (await IsarSetup.instance.characters.get(1))!;
+    final threshold = repo
+        .getRealm(before.realmTier, before.realmLayer)
+        .experienceToNext;
+    await IsarSetup.instance.writeTxn(() async {
+      final ch = (await IsarSetup.instance.characters.get(1))!
+        ..experience = threshold - 1;
+      await IsarSetup.instance.characters.put(ch);
+    });
+    await putRun(members: [member()]);
+
+    await svc().settleDefeat(config: config(), numbers: numbers());
+
+    final after = (await IsarSetup.instance.characters.get(1))!;
+    final next = CharacterAdvancementService.nextLayer(
+      before.realmTier,
+      before.realmLayer,
+    )!;
+    expect(after.realmTier, next.tier);
+    expect(after.realmLayer, next.layer, reason: '发布上限内不被拦·升一层');
+    expect(
+      after.experience,
+      2 * config().eliteRewardExp - 1,
+      reason: 'threshold-1 + 2 精英经验 - threshold',
+    );
   });
 }

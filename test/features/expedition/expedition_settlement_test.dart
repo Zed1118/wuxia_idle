@@ -340,4 +340,18 @@ void main() {
     expect(result.caughtUp, isTrue);
     expect((await readRun(runId)).currentNode, 4);
   });
+
+  test('settle 省略 now：按系统时钟结算（出发即结算 → 0 节点追平）', () async {
+    final cid = await putDisciple();
+    final svc = ExpeditionService(IsarSetup.instance);
+    await svc.dispatch(
+      characterIds: [cid],
+      policy: ExpeditionPolicy.yiZhanLiXing,
+      now: DateTime.now(), // 出发时刻锚真实时钟
+    );
+    // 不传 now → 走 `?? DateTime.now()` 分支；elapsed≈0 → 无可结算节点。
+    final result = await svc.settle(combat: _FakeCombat(), config: _config());
+    expect(result.nodesSettled, 0);
+    expect(result.caughtUp, isTrue);
+  });
 }

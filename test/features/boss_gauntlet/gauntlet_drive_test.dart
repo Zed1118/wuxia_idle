@@ -232,4 +232,76 @@ void main() {
     expect(run.sessionPhase, GauntletPhase.awaitingRewardChoice);
     expect(run.isFirstClearPending, isFalse, reason: '已通关 → 非首通');
   });
+
+  test('prepareStage 无存档 → 抛错', () async {
+    // IsarSetup.init 自动建 SaveData id=0，须显式删除才是「无存档」。
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.saveDatas.delete(0);
+    });
+    final config = GameRepository.instance.bossGauntletConfig!;
+    await expectLater(
+      GauntletService(IsarSetup.instance).prepareStage(config: config),
+      throwsStateError,
+    );
+  });
+
+  test('prepareStage 无进行中会话 → 抛错', () async {
+    await seedSave();
+    final config = GameRepository.instance.bossGauntletConfig!;
+    await expectLater(
+      GauntletService(IsarSetup.instance).prepareStage(config: config),
+      throwsStateError,
+    );
+  });
+
+  test('prepareStage 关次越界（currentStage > 配置关数）→ 抛错', () async {
+    await seedSave();
+    await putRun(
+      phase: GauntletPhase.inBattle,
+      currentStage: 99, // 真配置仅 3 关
+      members: [snap(1)],
+    );
+    final config = GameRepository.instance.bossGauntletConfig!;
+    await expectLater(
+      GauntletService(IsarSetup.instance).prepareStage(config: config),
+      throwsStateError,
+    );
+  });
+
+  test('prepareStage 敌队解析为空（配置损坏）→ 抛错', () async {
+    await seedSave();
+    await putRun(
+      phase: GauntletPhase.inBattle,
+      currentStage: 1,
+      members: [snap(1)],
+    );
+    // enemyTeams 缺省空表 → enemyTeamId 解析为空队。
+    const brokenConfig = BossGauntletConfig(
+      stages: [GauntletStageConfig(role: 'elite', enemyTeamId: 'missing_team')],
+      supplyCap: 3,
+    );
+    await expectLater(
+      GauntletService(IsarSetup.instance).prepareStage(config: brokenConfig),
+      throwsStateError,
+    );
+  });
+
+  test('continueToNextStage 无存档 → 抛错', () async {
+    // IsarSetup.init 自动建 SaveData id=0，须显式删除才是「无存档」。
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.saveDatas.delete(0);
+    });
+    await expectLater(
+      GauntletService(IsarSetup.instance).continueToNextStage(),
+      throwsStateError,
+    );
+  });
+
+  test('continueToNextStage 无进行中会话 → 抛错', () async {
+    await seedSave();
+    await expectLater(
+      GauntletService(IsarSetup.instance).continueToNextStage(),
+      throwsStateError,
+    );
+  });
 }

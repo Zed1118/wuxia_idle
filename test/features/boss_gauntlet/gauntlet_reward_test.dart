@@ -14,7 +14,9 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
+import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
+import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 import '../../support/isar_test_support.dart';
@@ -210,6 +212,136 @@ void main() {
         rng: DefaultRng(seed: 7),
       ),
       throwsStateError,
+    );
+  });
+
+  test('无存档选奖 → 抛错（不发放）', () async {
+    final config = GameRepository.instance.bossGauntletConfig!;
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.saveDatas.delete(0);
+    });
+    await expectLater(
+      svc().chooseReward(
+        chosenEquipmentDefId: config.rewardCandidateEquipmentIds.first,
+        config: config,
+        numbers: GameRepository.instance.numbers,
+        rng: DefaultRng(seed: 7),
+      ),
+      throwsStateError,
+    );
+    expect(await IsarSetup.instance.equipments.count(), 0, reason: '未发装备');
+  });
+
+  test('重复通关 chooseReward：经验/领悟点取半（§6.2）·不重复记通关/首通', () async {
+    final config = GameRepository.instance.bossGauntletConfig!;
+    final chosen = config.rewardCandidateEquipmentIds.first;
+    // 已通关存档 + 非首通会话（重复通关态）。
+    await IsarSetup.instance.writeTxn(() async {
+      final save = (await IsarSetup.instance.saveDatas.get(0))!
+        ..clearedGauntletIds = [GauntletService.gauntletId];
+      await IsarSetup.instance.saveDatas.put(save);
+    });
+    await putAwaitingRun(
+      candidates: config.rewardCandidateEquipmentIds,
+      firstClearPending: false,
+    );
+    final before = (await IsarSetup.instance.characters.get(1))!;
+    final expBefore = before.experience;
+    final insightBefore = before.insightPoints;
+
+    await svc().chooseReward(
+      chosenEquipmentDefId: chosen,
+      config: config,
+      numbers: GameRepository.instance.numbers,
+      rng: DefaultRng(seed: 7),
+      now: DateTime(2026, 7, 17, 12),
+    );
+
+    final after = (await IsarSetup.instance.characters.get(1))!;
+    expect(
+      after.experience - expBefore,
+      config.firstClearRewardExp ~/ 2,
+      reason: '重复通关经验取半',
+    );
+    expect(
+      after.insightPoints - insightBefore,
+      config.firstClearRewardInsight ~/ 2,
+      reason: '重复通关领悟点取半',
+    );
+    expect(await ownedCount(chosen), 1, reason: '装备照发');
+    final save = (await IsarSetup.instance.saveDatas.get(0))!;
+    expect(save.clearedGauntletIds, hasLength(1), reason: '已通关不重复记');
+    expect(save.duanhunFirstClearedAt, isNull, reason: '非首通不重记首通时间');
+    expect(
+      save.skillUnlockProgress.isUnlocked(config.firstClearRewardSkillId),
+      isFalse,
+      reason: '非首通不走首通秘籍解锁',
+    );
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
+  });
+
+  test('chooseReward 有主线进度行：经验照发（cleared 集参与层锁判定）', () async {
+    final config = GameRepository.instance.bossGauntletConfig!;
+    final chosen = config.rewardCandidateEquipmentIds.first;
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.mainlineProgress.put(
+        MainlineProgress()
+          ..saveDataId = 0
+          ..clearedStageIds = ['stage_01_01'],
+      );
+    });
+    await putAwaitingRun(candidates: config.rewardCandidateEquipmentIds);
+    final expBefore = (await IsarSetup.instance.characters.get(1))!.experience;
+
+    await svc().chooseReward(
+      chosenEquipmentDefId: chosen,
+      config: config,
+      numbers: GameRepository.instance.numbers,
+      rng: DefaultRng(seed: 7),
+    );
+
+    final after = (await IsarSetup.instance.characters.get(1))!;
+    expect(
+      after.experience - expBefore,
+      config.firstClearRewardExp,
+      reason: '首通全额经验照发（进度行存在亦不影响发放）',
+    );
+  });
+
+  test('chooseReward 奖励经验跨层：经层锁门禁判定后升层（发布上限内）', () async {
+    final config = GameRepository.instance.bossGauntletConfig!;
+    final chosen = config.rewardCandidateEquipmentIds.first;
+    await putAwaitingRun(candidates: config.rewardCandidateEquipmentIds);
+    // 经验调到当前层阈值-1：首通经验必触发一次跨层 → 走 isLayerLocked 判定。
+    final repo = GameRepository.instance;
+    final before = (await IsarSetup.instance.characters.get(1))!;
+    final threshold = repo
+        .getRealm(before.realmTier, before.realmLayer)
+        .experienceToNext;
+    await IsarSetup.instance.writeTxn(() async {
+      final ch = (await IsarSetup.instance.characters.get(1))!
+        ..experience = threshold - 1;
+      await IsarSetup.instance.characters.put(ch);
+    });
+
+    await svc().chooseReward(
+      chosenEquipmentDefId: chosen,
+      config: config,
+      numbers: GameRepository.instance.numbers,
+      rng: DefaultRng(seed: 7),
+    );
+
+    final after = (await IsarSetup.instance.characters.get(1))!;
+    final next = CharacterAdvancementService.nextLayer(
+      before.realmTier,
+      before.realmLayer,
+    )!;
+    expect(after.realmTier, next.tier);
+    expect(after.realmLayer, next.layer, reason: '发布上限内不被拦·升一层');
+    expect(
+      after.experience,
+      config.firstClearRewardExp - 1,
+      reason: 'threshold-1 + 首通经验 - threshold',
     );
   });
 }
