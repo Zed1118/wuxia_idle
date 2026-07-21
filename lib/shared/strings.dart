@@ -1364,7 +1364,7 @@ class UiStrings {
   // ── Phase 3 主线（T35）──
 
   static const String mainMenuMainline = '主线';
-  static const String mainMenuMainlineHint = '8 章 40 关,按章节顺序解锁';
+  static const String mainMenuMainlineHint = '11 章 55 关,按章节顺序解锁';
   static String mainMenuMainlineGoalHint(
     String target,
     String reward,
@@ -1391,6 +1391,7 @@ class UiStrings {
   static const String chapter8Title = '第八章 · 出塞';
   static const String chapter9Title = '第九章 · 碛北';
   static const String chapter10Title = '第十章 · 中州';
+  static const String chapter11Title = '第十一章 · 名门之虚';
   static const String chapter1Hint = '初出茅庐，山道试剑、林间伏击';
   static const String chapter2Hint = '镖局护送、黑风寨剿匪';
   static const String chapter3Hint = '武林会、一战封王';
@@ -1401,6 +1402,7 @@ class UiStrings {
   static const String chapter8Hint = '塞外风急、瀚海孤烟、沙夜袭影、孤城闭雪、残照回风';
   static const String chapter9Hint = '符引出关、瀚海无路、蜃楼幻影、黑水绝壁、符尽之处';
   static const String chapter10Hint = '河套渡口、雁门古道、洛水照影、嵩阳雄关、止水深潭';
+  static const String chapter11Hint = '许都剑会、金鼎山门、洛阳榷场、玉京华阁、问鼎高台';
 
   static const String chapterStatusLocked = '未解锁';
   static const String chapterStatusInProgress = '进行中';
@@ -1463,6 +1465,7 @@ class UiStrings {
       8 => chapter8Title,
       9 => chapter9Title,
       10 => chapter10Title,
+      11 => chapter11Title,
       _ => '第 $chapterIndex 章',
     };
   }
@@ -1480,6 +1483,7 @@ class UiStrings {
       8 => chapter8Hint,
       9 => chapter9Hint,
       10 => chapter10Hint,
+      11 => chapter11Hint,
       _ => '',
     };
   }
