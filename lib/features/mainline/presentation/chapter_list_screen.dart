@@ -27,7 +27,7 @@ import '../../../shared/widgets/asset_fallback.dart';
 class ChapterListScreen extends ConsumerWidget {
   const ChapterListScreen({super.key});
 
-  static const List<int> _chapters = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+  static const List<int> _chapters = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
