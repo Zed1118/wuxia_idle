@@ -40,14 +40,14 @@ void main() {
   // ── bossCatalog 测试 ────────────────────────────────────────────────────
 
   group('bossCatalog', () {
-    test('含全 Boss：主线 isBossStage(31 条) + 塔 6 层，共 37 条', () {
+    test('含全 Boss：主线 isBossStage(33 条) + 塔 6 层，共 39 条', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
       final catalog = container.read(bossCatalogProvider);
 
       // 总数
-      expect(catalog, hasLength(37), reason: '主线 31 + 塔 6 = 37');
+      expect(catalog, hasLength(39), reason: '主线 33 + 塔 6 = 39');
 
       // 塔条目恰好 6 个
       final towerEntries = catalog
@@ -65,8 +65,8 @@ void main() {
           .toList();
       expect(
         mainlineEntries,
-        hasLength(31),
-        reason: '主线 isBossStage=true 共 31 关',
+        hasLength(33),
+        reason: '主线 isBossStage=true 共 33 关',
       );
 
       // 特定主线 Boss

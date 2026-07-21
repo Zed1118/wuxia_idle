@@ -56,22 +56,22 @@ void main() {
     repo = await loadTestGameRepository();
   });
 
-  test('锚点对账：参考路线终态 Lv100/abs10/余量939，缺口 7361 EXP', () {
+  test('锚点对账：参考路线终态 Lv103/abs11/余量261，缺口 7089 EXP', () {
     final ch = _referenceRouteEnd(repo);
     expect(
       _displayLevel(repo, ch),
-      100,
-      reason: '对账 progression_release_budget_test Lv100 锚点',
+      103,
+      reason: '对账 progression_release_budget_test Lv103 锚点',
     );
     final realm = repo.getRealm(ch.realmTier, ch.realmLayer);
-    expect(realm.absoluteLevel, 10, reason: 'Lv100 = 三流·熟练(abs10) 层内顶段');
-    expect(ch.experience, 939, reason: '参考路线三丹后层内余量');
+    expect(realm.absoluteLevel, 11, reason: 'Lv103 = 三流·圆熟(abs11) 层内段');
+    expect(ch.experience, 261, reason: '参考路线三丹后层内余量');
     expect(_expToDisplayLevel(repo, ch, 100), 0);
-    expect(_expToDisplayLevel(repo, ch, 120), 2701);
+    expect(_expToDisplayLevel(repo, ch, 120), 2429);
     expect(
       _expToDisplayLevel(repo, ch, _targetLevel),
-      7361,
-      reason: 'Lv100→Lv141 纯挂机经验缺口',
+      7089,
+      reason: 'Lv103→Lv141 纯挂机经验缺口',
     );
   });
 
@@ -206,9 +206,9 @@ void main() {
     );
     expect(s1.totalHours, lessThan(s3.totalHours));
     expect(s3.totalHours, lessThan(s2.totalHours));
-    expect(s1.days, inInclusiveRange(60.0, 120.0));
-    expect(s2.days, inInclusiveRange(50.0, 100.0));
-    expect(s3.days, inInclusiveRange(55.0, 110.0));
+    expect(s1.days, inInclusiveRange(55.0, 120.0));
+    expect(s2.days, inInclusiveRange(45.0, 100.0));
+    expect(s3.days, inInclusiveRange(50.0, 110.0));
   });
 
   test('加速通道：百草岭远征 / 桃花岛丹房 / 闭关+银两购丹', () {
@@ -219,7 +219,7 @@ void main() {
       avgDepth: 20,
       baseExpPerBattle: baseExp,
     );
-    final gap = 7361; // 锚点测已钉（2026-07-21 Ch11 扩后重校）
+    final gap = 7089; // 锚点测已钉（2026-07-21 Ch12 扩后重校·全内容终态 Lv100→103·缺口 -272）
     final s4Days = daysToTraverse(totalExp: gap, expPerHour: y.expPerHour);
     // 交叉对账：同口径 abs10→17 应 ≈ 18 天（expeditions.yaml 注释锚点）。
     final fullRangeDays = daysToTraverse(
@@ -613,8 +613,8 @@ void _assertConservation(GameRepository repo, _HorizonResult r) {
   );
   expect(
     r.appliedExp,
-    7361 + ch.experience,
-    reason: '${r.name}: 经验守恒 = 缺口 7361 + 终点层内余量',
+    7089 + ch.experience,
+    reason: '${r.name}: 经验守恒 = 缺口 7089 + 终点层内余量',
   );
 }
 

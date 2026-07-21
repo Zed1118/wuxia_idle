@@ -32,12 +32,12 @@ void main() {
     }
   });
 
-  test('恰好标注 24 个 boss 敌人(production 红线)', () {
+  test('恰好标注 26 个 boss 敌人(production 红线)', () {
     final stages = GameRepository.instance.stageDefs.values;
     final total = stages.fold<int>(
       0,
       (n, s) => n + s.enemyTeam.where((e) => e.isBoss).length,
     );
-    expect(total, 24, reason: 'Ch11 +2(玉京剑主章中 + 鎏金公章末)');
+    expect(total, 26, reason: 'Ch12 +2(守炉铁匠章中 + 无名客章末)');
   });
 }

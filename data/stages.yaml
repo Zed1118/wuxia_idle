@@ -2725,6 +2725,235 @@ stages:
     weather: clear
 
   # ============================================================================
+  # Ch12「中州·名下之实」一流第三章(一流三章 Ch10-12 收官 · 承 Ch11 名门之虚)
+  # ----------------------------------------------------------------------------
+  # 母题「名≠本事」终章落点=实至名归·本事在骨。承守拙翁托付「看江湖走到哪一步」,
+  # Ch11 看全「虚」的一半,Ch12 寻「实」的一半——满江湖虚名门之后,终遇一个不图名头、
+  # 把本事练到骨子里的无名真高手(扫地僧式·守拙翁正面镜像),破其真招得真传·收一流三章。
+  # 章内敌人层 yuanShu→dengFeng 递进(Ch11 收 yuanShu·Ch12 收 dengFeng=一流封顶);cap 26→28(numbers.yaml)。
+  # Boss 位 {4,5}:12_04 章中 Boss(守成铁匠·stat 门槛无相位·照玉京阁)·12_05 末 Boss(无名客·绵里藏针真解破招·照鎏金公)。
+  # 章首 stage_12_01 无 prevStageId(承 Ch11 走叙事/chapterIndex 解锁·跨章 prevStageId 会触加载期 StateError)。
+  # 敌招复用一流 menpai 系列 + 装备掉落复用 liQi(tier4)·唯一新增 = 末Boss真解 skill_mian_li_cang_zhen。
+  # ============================================================================
+
+  # === stage_12_01 · 寒江渡(一流杂兵 · 灵巧 · 藏于平凡的真本事:摆渡老翁身怀实功·不显山露水)===
+  - id: stage_12_01
+    name: 寒江渡
+    stageType: mainline
+    chapterIndex: 12
+    narrativeOpeningId: stage_12_01_opening
+    narrativeVictoryId: stage_12_01_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_hanjiang_chenggao
+        name: 撑篙翁
+        realmTier: yiLiu
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 26000
+        baseAttack: 900
+        baseSpeed: 305
+        skillIds:
+          - skill_lingqiao_menpai_basic
+          - skill_lingqiao_menpai_skill
+        iconPath: assets/enemies/zhongzhou_hanjiang_chenggao.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_liqi_long_quan
+        dropChance: 1.0
+      - equipmentDefId: armor_liqi_xuan_tie_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [32, 40]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [360, 440]
+        dropChance: 1.0  # 银两(一流第三章 · 承 Ch11 曲线续进)
+    baseExpReward: 40
+    difficultyMultiplier: 12.8
+    biome: dock
+    sceneBackgroundPath: assets/scenes/battle_dock.png
+    weather: clear
+
+  # === stage_12_02 · 槐花巷(一流杂兵 · 刚猛 · 不图名的真功夫:巷陌拳师默默练到骨子·无人识得)===
+  - id: stage_12_02
+    name: 槐花巷
+    stageType: mainline
+    chapterIndex: 12
+    prevStageId: stage_12_01
+    narrativeOpeningId: stage_12_02_opening
+    narrativeVictoryId: stage_12_02_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_huaixiang_quanshi
+        name: 巷陌拳师
+        realmTier: yiLiu
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 27000
+        baseAttack: 920
+        baseSpeed: 268
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+        iconPath: assets/enemies/zhongzhou_huaixiang_quanshi.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_liqi_pan_long_dao
+        dropChance: 1.0
+      - equipmentDefId: accessory_liqi_fei_yu_pei
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [32, 40]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [370, 450]
+        dropChance: 1.0  # 银两(一流第三章)
+    baseExpReward: 42
+    difficultyMultiplier: 13.0
+    biome: alley
+    sceneBackgroundPath: assets/scenes/battle_alley.png
+    weather: clear
+
+  # === stage_12_03 · 秋山道(章中考验 · 阴柔 · 名实相副的低调行家:挑山客身负实功·不与人争 · 非 Boss 保有敌队)===
+  - id: stage_12_03
+    name: 秋山道
+    stageType: mainline
+    chapterIndex: 12
+    prevStageId: stage_12_02
+    narrativeOpeningId: stage_12_03_opening
+    narrativeVictoryId: stage_12_03_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_qiushan_tiaoshan
+        name: 挑山客
+        realmTier: yiLiu
+        realmLayer: huaJing
+        school: yinRou
+        baseHp: 29000
+        baseAttack: 955
+        baseSpeed: 296
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+        iconPath: assets/enemies/zhongzhou_qiushan_tiaoshan.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_liqi_lian_zi_bian
+        dropChance: 1.0
+      - equipmentDefId: accessory_liqi_hu_xin_jing
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [34, 42]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [380, 460]
+        dropChance: 1.0  # 银两(一流第三章)
+    baseExpReward: 44
+    difficultyMultiplier: 13.2
+    biome: mountainPath
+    sceneBackgroundPath: assets/scenes/battle_mountainpath.png
+    weather: clear
+
+  # === stage_12_04 · 老铁铺(灵巧章中 Boss · 真有本事的守成匠人:守炉铁匠一手实功 · stat 门槛无相位 · 配 defeat)===
+  - id: stage_12_04
+    name: 老铁铺
+    stageType: mainline
+    chapterIndex: 12
+    prevStageId: stage_12_03
+    narrativeOpeningId: stage_12_04_opening
+    narrativeVictoryId: stage_12_04_victory
+    narrativeDefeatId: stage_12_04_defeat
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_laotie_tiejiang
+        name: 守炉铁匠
+        realmTier: yiLiu
+        realmLayer: huaJing
+        school: lingQiao
+        baseHp: 33000
+        baseAttack: 1080
+        baseSpeed: 300
+        skillIds:
+          - skill_lingqiao_menpai_basic
+          - skill_lingqiao_menpai_skill
+        iconPath: assets/enemies/zhongzhou_laotie_tiejiang.png
+        isBoss: true   # 章中 Boss = 守成匠人 stat 门槛(HP/攻墙 · 无充能相位,唯 12_05 无名客设充能破招)
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_liqi_hu_tou_gou
+        dropChance: 1.0
+      - equipmentDefId: armor_liqi_qing_luo_shan
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [36, 44]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [440, 540]
+        dropChance: 1.0  # 银两(一流章中 Boss)
+    baseExpReward: 64
+    difficultyMultiplier: 13.5
+    biome: smithy
+    sceneBackgroundPath: assets/scenes/battle_smithy.png
+    weather: clear
+
+  # === stage_12_05 · 荒村野店(阴柔·无名真高手·名下之实的化身·末 Boss·破招掉绵里藏针真解)===
+  - id: stage_12_05
+    name: 荒村野店
+    stageType: mainline
+    chapterIndex: 12
+    prevStageId: stage_12_04
+    narrativeOpeningId: stage_12_05_opening
+    narrativeVictoryId: stage_12_05_victory
+    narrativeDefeatId: stage_12_05_defeat
+    requiredRealm: yiLiu
+    dropSkillManualId: skill_mian_li_cang_zhen  # 真解(绵里藏针·无名客本命·同招为 boss chargeSkillId 双用·破招首通 markUnlocked)
+    enemyTeam:
+      - id: enemy_yiLiu_zhongzhou_huangcun_wuming
+        name: 无名客
+        realmTier: yiLiu
+        realmLayer: dengFeng
+        school: yinRou
+        baseHp: 40000
+        baseAttack: 1150
+        baseSpeed: 298
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+          - skill_mian_li_cang_zhen        # 本命真解 = 末Boss chargeSkill(双用 canon)
+        iconPath: assets/enemies/zhongzhou_huangcun_wuming.png
+        isBoss: true
+        chargeSkillId: skill_mian_li_cang_zhen   # 破招:玩家拦截,首通掉同招真解
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_liqi_li_hua_zhen
+        dropChance: 1.0
+      - equipmentDefId: armor_liqi_tie_ye_jia
+        dropChance: 0.50
+      - equipmentDefId: accessory_liqi_jin_chuang_gao
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [38, 48]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [540, 660]
+        dropChance: 1.0  # 银两(一流章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(一流章末)
+    baseExpReward: 82
+    difficultyMultiplier: 13.8
+    biome: inn
+    sceneBackgroundPath: assets/scenes/battle_inn.png
+    weather: clear
+
+  # ============================================================================
   # 心魔境 7 关（1.0 P2.2 §12.1 · stageType: innerDemon）
   # ----------------------------------------------------------------------------
   # spec doc: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md

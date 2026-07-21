@@ -19,7 +19,7 @@ void main() {
     repo = await loadTestGameRepository();
   });
 
-  test('55 主线首通从 Lv1 出发，累计 1541 经验结束于 Lv74(2026-07-21 Ch11 +252)', () {
+  test('60 主线首通从 Lv1 出发，累计 1813 经验结束于 Lv80(2026-07-21 Ch12 +272)', () {
     final character = _newCharacter(repo);
     final mainline =
         repo.stageDefs.values
@@ -27,7 +27,7 @@ void main() {
             .toList()
           ..sort((a, b) => a.id.compareTo(b.id));
 
-    expect(mainline, hasLength(55));
+    expect(mainline, hasLength(60));
     var cumulativeExperience = 0;
     var maximumJump = 0;
     for (final stage in mainline) {
@@ -44,60 +44,63 @@ void main() {
       );
     }
 
-    expect(cumulativeExperience, 1541); // Ch11 +252(55 关)
+    expect(cumulativeExperience, 1813); // Ch12 +272(60 关)
     expect(maximumJump, 3);
-    expect(_displayLevel(repo, character), 74);
+    expect(_displayLevel(repo, character), 80);
   });
 
-  test('当前全内容 + 72h 闭关 + 24h 离线 + 三枚丹药结束于 Lv100(2026-07-21 Ch11 扩·guard 放宽 ≤100)', () {
-    final character = _newCharacter(repo);
-    final combatRewards = <int>[
-      ..._stageRewards(repo, StageType.mainline),
-      ...repo.towerFloors.map((floor) => floor.baseExpReward),
-      ..._stageRewards(repo, StageType.lightFoot),
-      ..._stageRewards(repo, StageType.massBattle),
-      ..._stageRewards(repo, StageType.innerDemon),
-    ];
-    for (final reward in combatRewards) {
-      _applyExperience(repo, character, reward);
-    }
-    expect(combatRewards.fold<int>(0, (sum, reward) => sum + reward), 2448);
-    expect(_displayLevel(repo, character), 89);
+  test(
+    '当前全内容 + 72h 闭关 + 24h 离线 + 三枚丹药结束于 Lv103(2026-07-21 Ch12 扩·guard 放宽 ≤103·纯展示级不影响红线)',
+    () {
+      final character = _newCharacter(repo);
+      final combatRewards = <int>[
+        ..._stageRewards(repo, StageType.mainline),
+        ...repo.towerFloors.map((floor) => floor.baseExpReward),
+        ..._stageRewards(repo, StageType.lightFoot),
+        ..._stageRewards(repo, StageType.massBattle),
+        ..._stageRewards(repo, StageType.innerDemon),
+      ];
+      for (final reward in combatRewards) {
+        _applyExperience(repo, character, reward);
+      }
+      expect(combatRewards.fold<int>(0, (sum, reward) => sum + reward), 2720);
+      expect(_displayLevel(repo, character), 92);
 
-    final retreatExperience = _retreatExperience(
-      repo,
-      character,
-      RetreatMapType.cangJingGe,
-      72,
-    );
-    _applyExperience(repo, character, retreatExperience);
-    expect(retreatExperience, 356);
-    expect(_displayLevel(repo, character), 93);
+      final retreatExperience = _retreatExperience(
+        repo,
+        character,
+        RetreatMapType.cangJingGe,
+        72,
+      );
+      _applyExperience(repo, character, retreatExperience);
+      expect(retreatExperience, 356);
+      expect(_displayLevel(repo, character), 96);
 
-    final passive = OfflinePassiveService.compute(
-      awayHours: 24,
-      realmTier: character.realmTier,
-      config: repo.numbers.passiveIdle,
-    );
-    _applyExperience(repo, character, passive.experience);
-    expect(passive.experience, 115);
-    expect(_displayLevel(repo, character), 94);
+      final passive = OfflinePassiveService.compute(
+        awayHours: 24,
+        realmTier: character.realmTier,
+        config: repo.numbers.passiveIdle,
+      );
+      _applyExperience(repo, character, passive.experience);
+      expect(passive.experience, 115);
+      expect(_displayLevel(repo, character), 97);
 
-    for (final id in const [
-      'item_jingyandan_small',
-      'item_jingyandan_mid',
-      'item_jingyandan_large',
-    ]) {
-      final fraction = repo.itemDefs[id]!.layerFraction!;
-      final threshold = repo
-          .getRealm(character.realmTier, character.realmLayer)
-          .experienceToNext;
-      _applyExperience(repo, character, (threshold * fraction).round());
-    }
+      for (final id in const [
+        'item_jingyandan_small',
+        'item_jingyandan_mid',
+        'item_jingyandan_large',
+      ]) {
+        final fraction = repo.itemDefs[id]!.layerFraction!;
+        final threshold = repo
+            .getRealm(character.realmTier, character.realmLayer)
+            .experienceToNext;
+        _applyExperience(repo, character, (threshold * fraction).round());
+      }
 
-    final level = _displayLevel(repo, character);
-    expect(level, 100);
-  });
+      final level = _displayLevel(repo, character);
+      expect(level, 103);
+    },
+  );
 
   test('三流可达地图 72h 闭关仅提升 3–6 个显示级', () {
     final character = _newCharacter(
