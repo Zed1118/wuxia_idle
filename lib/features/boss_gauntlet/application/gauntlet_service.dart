@@ -12,6 +12,7 @@ import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../data/defs/item_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/utils/rng.dart';
 import '../../activity/application/character_occupancy_service.dart';
@@ -467,9 +468,11 @@ class GauntletService {
 
       // ② 参战全员经验（层锁受发布上限·同远征/闭关口径）+ 领悟点。
       if (rewardExp > 0 || rewardInsight > 0) {
+        // 主线进度行以槽号（IsarSetup.currentSlotId）为 saveDataId，
+        // SaveData 单例 id=0 永查不到（07-21 审查 P1-5.5）。
         final progress = await _isar.mainlineProgress
             .filter()
-            .saveDataIdEqualTo(save.id)
+            .saveDataIdEqualTo(IsarSetup.currentSlotId)
             .findFirst();
         final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
         for (final id in memberIds) {
@@ -570,14 +573,14 @@ class GauntletService {
     await _isar.writeTxn(() async {
       final run = await _activeRun(save0.id);
       if (run == null) return; // 幂等
-      final save = (await _isar.saveDatas.get(0))!;
 
       // 精英经验层锁需 cleared 集（仅 eliteExp>0 时查）。
+      // 主线进度行以槽号（IsarSetup.currentSlotId）为 saveDataId（P1-5.5）。
       var clearedSet = const <String>{};
       if (eliteExp > 0) {
         final progress = await _isar.mainlineProgress
             .filter()
-            .saveDataIdEqualTo(save.id)
+            .saveDataIdEqualTo(IsarSetup.currentSlotId)
             .findFirst();
         clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
       }

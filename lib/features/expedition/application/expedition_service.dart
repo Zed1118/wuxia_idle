@@ -8,6 +8,7 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/reward_entry.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
 import '../../cultivation/application/character_advancement_service.dart';
@@ -353,9 +354,14 @@ class ExpeditionService {
 
     await _isar.writeTxn(() async {
       // 1. 全员发经验（含途中倒下者）+ 战败伤势。
+      // 主线进度行以槽号（IsarSetup.currentSlotId，1-3）为 saveDataId
+      // （mainline_providers/stage_entry_flow 口径）；run.saveDataId 是
+      // SaveData 单例 id=0，仅作 run 归属与种子用，二者不可混查
+      // （07-21 审查 P1-5.5：误用 run.saveDataId 导致生产永远查空、
+      // 层锁门禁按未通关误判）。
       final progress = await _isar.mainlineProgress
           .filter()
-          .saveDataIdEqualTo(run.saveDataId)
+          .saveDataIdEqualTo(IsarSetup.currentSlotId)
           .findFirst();
       final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
       for (final id in memberIds) {
