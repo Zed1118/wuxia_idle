@@ -20,8 +20,11 @@
 - [x] ⑥ reconcile 全站点（targeted 908 全绿·analyze 0）
 - [x] ⑧ Lv guard 实测：首通 Lv80→84(cumExp 1813→2117)·全内容 Lv103→**106**(guard 放宽 ≤106·[balance] 待终拍)·
       idle horizon 缺口 7089→6635(abs11 余量 261→715·Lv120 gap 2429→1975)·material 结晶 1308→1545(≈5.85 件·软线放宽 <6 件·[balance])
-- [ ] 破坏证红（commit 后）
-- [ ] 全量测试 + push + draft PR
+- [x] 破坏证红（commit 后）：真解 mult 4800→9000 → skill_multiplier_redline_test setUpAll RED（加载期红线拦截）→ git 还原 → 2/2 复绿
+- [x] 切片 commit ×4（cfa47632 内容层 / 282de607 reconcile / a5ea7193 [GDD] / c3f5d404 恢复点）
+- [x] 全量 flutter test --no-pub：**4629/4629 全绿**（基线 4626 + 净 +3 fragment_source 断言；
+      首跑曾 1 例失败未捕获，连跑两次不复现，按 flaky 记录）·analyze 0
+- [ ] push + draft PR
 
 ## 关键实测值（2026-07-22 本批实测·非转抄）
 - 首通：65 关 cumExp 2117(Ch13 +304)·终态 Lv84·maxJump 3
