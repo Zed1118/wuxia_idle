@@ -2,6 +2,8 @@ import 'package:isar_community/isar.dart';
 
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/enums.dart';
+import '../../../core/domain/inventory_item.dart';
+import '../../../core/domain/save_data.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../domain/tower_progress.dart';
 
@@ -28,13 +30,36 @@ class TowerProgressService {
 
   final Isar isar;
 
+  /// 断魂帖里程碑层（design §6.4：问鼎江湖第 10/20/30 层一次性各一张，
+  /// `SaveData.grantedTicketMilestoneIds` 防重，沿 F1 里程碑一次性体例）。
+  static const List<int> ticketMilestoneFloors = [10, 20, 30];
+
+  static String _ticketMilestoneId(int floor) => 'tower_floor_$floor';
+
   /// 拿不到对应 saveDataId 的行就建一行（默认 highestClearedFloor=0）。
+  ///
+  /// 顺带懒补发（design §6.4「功能上线前已完成的旧档按现有通关记录一次性
+  /// 补发」）：既有行最高层已越过里程碑层但防重集合缺记录 → 补发断魂帖。
+  /// 防重集合保证只补一次；无需补时不开写事务。
   Future<TowerProgress> getOrCreate({required int saveDataId}) async {
     final existing = await isar.towerProgress
         .filter()
         .saveDataIdEqualTo(saveDataId)
         .findFirst();
-    if (existing != null) return existing;
+    if (existing != null) {
+      final save = await isar.saveDatas.get(0);
+      final needsBackfill =
+          save != null &&
+          ticketMilestoneFloors.any(
+            (f) =>
+                existing.highestClearedFloor >= f &&
+                !save.grantedTicketMilestoneIds.contains(_ticketMilestoneId(f)),
+          );
+      if (needsBackfill) {
+        await backfillTicketMilestones(saveDataId: saveDataId);
+      }
+      return existing;
+    }
 
     final now = DateTime.now();
     final fresh = TowerProgress()
@@ -154,6 +179,11 @@ class TowerProgressService {
             progress.maxClearedCycle = completed;
           }
         }
+
+        // 断魂帖里程碑（design §6.4）：第 10/20/30 层首通一次性各一张。
+        if (ticketMilestoneFloors.contains(floorIndex)) {
+          await _grantTicketMilestone(floorIndex, now);
+        }
       }
 
       // P0.2 #40 Phase 2:任何通关(首通/重打/跳层)都更新 lastClearedAt
@@ -166,6 +196,64 @@ class TowerProgressService {
       );
     });
     return result;
+  }
+
+  /// 旧档里程碑补发（design §6.4/§12.1「断魂帖旧塔里程碑补发只执行一次」）。
+  /// 按 [TowerProgress.highestClearedFloor] 逐里程碑层检查防重集合，缺则补发
+  /// 一张断魂帖并记录。幂等；返回本次补发的层号列表（多为空）。
+  Future<List<int>> backfillTicketMilestones({
+    int? saveDataId,
+    DateTime? now,
+  }) async {
+    final at = now ?? DateTime.now();
+    final slot = saveDataId ?? IsarSetup.currentSlotId;
+    final granted = <int>[];
+    await isar.writeTxn(() async {
+      final progress = await isar.towerProgress
+          .filter()
+          .saveDataIdEqualTo(slot)
+          .findFirst();
+      if (progress == null) return;
+      for (final floor in ticketMilestoneFloors) {
+        if (progress.highestClearedFloor >= floor &&
+            await _grantTicketMilestone(floor, at)) {
+          granted.add(floor);
+        }
+      }
+    });
+    return granted;
+  }
+
+  /// 发一张断魂帖并记防重（须在 writeTxn 内调）。已发过 → false 零副作用。
+  Future<bool> _grantTicketMilestone(int floor, DateTime at) async {
+    final milestoneId = _ticketMilestoneId(floor);
+    final save = await isar.saveDatas.get(0);
+    if (save == null || save.grantedTicketMilestoneIds.contains(milestoneId)) {
+      return false;
+    }
+    // Isar 读回 list 为 fixed-length，须 growable 副本回写。
+    save.grantedTicketMilestoneIds = [
+      ...save.grantedTicketMilestoneIds,
+      milestoneId,
+    ];
+    await isar.saveDatas.put(save);
+
+    final existing = await isar.inventoryItems.getByDefId('item_duanhuntie');
+    if (existing != null) {
+      existing.quantity += 1;
+      existing.lastObtainedAt = at;
+      await isar.inventoryItems.put(existing);
+    } else {
+      await isar.inventoryItems.put(
+        InventoryItem()
+          ..defId = 'item_duanhuntie'
+          ..itemType = ItemType.fromDefId('item_duanhuntie')
+          ..quantity = 1
+          ..firstObtainedAt = at
+          ..lastObtainedAt = at,
+      );
+    }
+    return true;
   }
 
   /// 战败：只增 totalAttempts + totalDefeats，不影响 highestClearedFloor。

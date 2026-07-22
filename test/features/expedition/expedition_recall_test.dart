@@ -6,6 +6,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/reward_entry.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
@@ -273,5 +274,33 @@ void main() {
     final run = (await IsarSetup.instance.expeditionRuns.get(runId))!;
     expect(run.currentNode, 5, reason: '并发推进结果不被覆盖');
     expect(run.stagedRewards.quantityOf('item_yaocao'), 2, reason: '新暂存不丢');
+  });
+
+  test('召回写百草岭历史最深节点：max 单调不回退（P1-5.7）', () async {
+    final runId = await dispatchSeeded();
+    await stageRun(runId, currentNode: 4, rewards: [rw('exp', 10)]);
+
+    final svc = ExpeditionService(IsarSetup.instance);
+    await svc.recall();
+
+    var save = (await IsarSetup.instance.saveDatas.get(0))!;
+    expect(save.baicaoMaxDepth, 4, reason: '返程最深节点落永久进度');
+
+    // 既有更深记录不被更低返程覆盖。
+    await IsarSetup.instance.writeTxn(() async {
+      final s = (await IsarSetup.instance.saveDatas.get(0))!
+        ..baicaoMaxDepth = 12;
+      await IsarSetup.instance.saveDatas.put(s);
+    });
+    final runId2 = await svc.dispatch(
+      characterIds: [1],
+      policy: ExpeditionPolicy.yanJingCaiYao,
+      now: departedAt,
+    );
+    await stageRun(runId2, currentNode: 2, rewards: [rw('exp', 10)]);
+    await svc.recall();
+
+    save = (await IsarSetup.instance.saveDatas.get(0))!;
+    expect(save.baicaoMaxDepth, 12, reason: 'max 单调，浅返程不回退');
   });
 }

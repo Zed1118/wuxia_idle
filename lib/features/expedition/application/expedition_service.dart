@@ -443,6 +443,14 @@ class ExpeditionService {
 
       // 3. 关闭会话：删 run → 占用自动解除（占用由 active run 派生）。
       await _isar.expeditionRuns.delete(run.id);
+
+      // 4. 永久进度：百草岭历史最深节点（展示用 §3.3，07-21 审查 P1-5.7；
+      // max 单调不回退）。
+      final save = await _isar.saveDatas.get(0);
+      if (save != null && deepest > save.baicaoMaxDepth) {
+        save.baicaoMaxDepth = deepest;
+        await _isar.saveDatas.put(save);
+      }
     });
 
     if (raced) {

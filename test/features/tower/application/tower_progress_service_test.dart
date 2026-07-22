@@ -5,6 +5,8 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/inventory_item.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
@@ -603,6 +605,101 @@ void main() {
         reason: 'TowerProgressService 不应隐式创建 MainlineProgress',
       );
       expect(await IsarSetup.instance.towerProgress.count(), 1);
+    });
+  });
+
+  group('断魂帖里程碑（design §6.4 · 07-21 审查 P1-5.7）', () {
+    Future<int> ticketQty() async =>
+        (await IsarSetup.instance.inventoryItems.getByDefId(
+          'item_duanhuntie',
+        ))?.quantity ??
+        0;
+
+    Future<List<String>> grantedIds() async =>
+        (await IsarSetup.instance.saveDatas.get(0))!.grantedTicketMilestoneIds;
+
+    test('第 10 层首通 → 断魂帖 +1 并记防重；重打不重复发', () async {
+      final svc = TowerProgressService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      for (var f = 1; f <= 10; f++) {
+        await svc.recordClear(
+          floorIndex: f,
+          now: DateTime(2026, 5, 11),
+          elapsedMs: 1000,
+        );
+      }
+
+      expect(await ticketQty(), 1, reason: '10 层里程碑一张');
+      expect(await grantedIds(), ['tower_floor_10']);
+
+      // 重打第 10 层（isFirstClear=false）不再发。
+      await svc.recordClear(
+        floorIndex: 10,
+        now: DateTime(2026, 5, 12),
+        elapsedMs: 900,
+      );
+      expect(await ticketQty(), 1);
+      expect(await grantedIds(), ['tower_floor_10']);
+    });
+
+    test('一路首通至 30 层 → 10/20/30 三里程碑各一张共三张', () async {
+      final svc = TowerProgressService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      for (var f = 1; f <= 30; f++) {
+        await svc.recordClear(
+          floorIndex: f,
+          now: DateTime(2026, 5, 11),
+          elapsedMs: 1000,
+        );
+      }
+
+      expect(await ticketQty(), 3);
+      expect(await grantedIds(), [
+        'tower_floor_10',
+        'tower_floor_20',
+        'tower_floor_30',
+      ]);
+    });
+
+    test('旧档补发：highest=25 无防重记录 → getOrCreate 懒补 10/20 两张，且只补一次', () async {
+      final svc = TowerProgressService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      // 模拟功能上线前的旧档：已通 25 层但无里程碑记录。
+      await IsarSetup.instance.writeTxn(() async {
+        final p = await IsarSetup.instance.towerProgress
+            .filter()
+            .saveDataIdEqualTo(1)
+            .findFirst();
+        p!.highestClearedFloor = 25;
+        await IsarSetup.instance.towerProgress.put(p);
+      });
+
+      await svc.getOrCreate(saveDataId: 1);
+      expect(await ticketQty(), 2, reason: '10/20 层各补一张');
+      expect(await grantedIds(), ['tower_floor_10', 'tower_floor_20']);
+
+      await svc.getOrCreate(saveDataId: 1);
+      expect(await ticketQty(), 2, reason: '防重集合守「只补一次」');
+    });
+
+    test('旧档补发：已有部分防重记录 → 只补缺失层', () async {
+      final svc = TowerProgressService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      await IsarSetup.instance.writeTxn(() async {
+        final p = await IsarSetup.instance.towerProgress
+            .filter()
+            .saveDataIdEqualTo(1)
+            .findFirst();
+        p!.highestClearedFloor = 30;
+        await IsarSetup.instance.towerProgress.put(p);
+        final save = (await IsarSetup.instance.saveDatas.get(0))!
+          ..grantedTicketMilestoneIds = ['tower_floor_10'];
+        await IsarSetup.instance.saveDatas.put(save);
+      });
+
+      final granted = await svc.backfillTicketMilestones(saveDataId: 1);
+      expect(granted, [20, 30], reason: '10 已发过只补 20/30');
+      expect(await ticketQty(), 2);
     });
   });
 }
