@@ -16,6 +16,8 @@ import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
+import 'package:wuxia_idle/data/yaml_loader.dart';
 import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
@@ -43,11 +45,26 @@ import '../../../support/test_data.dart';
 void main() {
   late Directory tempDir;
 
+  /// 摘掉 `rare_bonus_drop` 段的 NumbersConfig(其余段与生产同一份 yaml)。
+  ///
+  /// flaky 根治 2026-07-22:`applyVictoryResolution` 内 `rng: DefaultRng()`
+  /// 无种子(stage_entry_flow.dart L826),resolve 的稀有彩头 roll
+  /// (battle_resolution.dart L211-230)一周目 5%/1.5% 独立命中 → 额外掉一件
+  /// 高阶装备 → equipmentObtained 事件偶发 2 条(本文件实测 1/20 失败,
+  /// 第二条为 weapon_xiangyang_chang_jian)。改生产 RNG 接线超出测试修复面,
+  /// 故测试层把彩头关闸(RareBonusDropConfig.empty → enabled=false →
+  /// rollRareBonus 永不命中),断言语义(固定掉落 1 件 = 事件 1 条)保持不变。
+  late final NumbersConfig noRareBonusNumbers;
+
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await loadTestGameRepository();
     }
+    final numbersYaml = Map<String, dynamic>.from(
+      parseYamlMap(await loadTestAsset('data/numbers.yaml')),
+    )..remove('rare_bonus_drop');
+    noRareBonusNumbers = NumbersConfig.fromYaml(numbersYaml);
   });
 
   setUp(() async {
@@ -218,6 +235,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          // 全文件关稀有彩头 roll,消除 victory 结算的随机额外装备(见上方注释)。
+          numbersConfigProvider.overrideWithValue(noRareBonusNumbers),
           if (battleState != null)
             battleProvider.overrideWith(
               () => _StaticBattleNotifier(battleState),
@@ -371,8 +390,10 @@ void main() {
       expect(
         obtained,
         hasLength(1),
-        // 2026-07-19 全量并发曾见 2 条(未复现):失败时打印全部命中事件,
-        // 便于定位第二条来源(title/summary/relatedEntityIds/occurredAt)。
+        // 2026-07-19 全量并发曾见 2 条;2026-07-22 复现实锤为稀有彩头额外
+        // 掉落(根因见文件头 noRareBonusNumbers 注释),已通过 numbersConfig
+        // override 关闸。失败时仍打印全部命中事件便于定位。
+        // (title/summary/relatedEntityIds/occurredAt)。
         reason:
             '命中 ${obtained.length} 条: '
             '${obtained.map((e) => '${e.title}|${e.summary}|'
