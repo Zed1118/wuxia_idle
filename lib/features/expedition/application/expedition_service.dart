@@ -319,9 +319,16 @@ class ExpeditionService {
   /// 关闭会话（占用由 active run 派生 → 自动解除、角色释放）。失败节点不在
   /// `stagedRewards`（settle 战败即停未暂存），故「失败节点无奖励」自然成立。
   /// 经验受发布上限层锁门禁（同闭关口径），超阶留账不消费。
+  ///
+  /// 并发守卫（07-21 审查 P1-5.4）：事务内重读 run 并校验 cursor
+  /// （`currentNode`/`lastSettledAt` 与事务外快照一致）。run 已被并发召回删除
+  /// → 放弃本次调用（不重复发奖）；被并发 settle 推进 → 同样放弃（避免按过期
+  /// 快照发奖后把新暂存随 run 一并删掉）。放弃时返回 `returned:false`，
+  /// 调用方（UI 已防重）可安全重试。
   Future<ExpeditionReturnResult> recall({
     bool defeated = false,
     DateTime? now,
+    @visibleForTesting Future<void> Function()? beforeCommitForTest,
   }) async {
     final run = await _activeRun();
     if (run == null) {
@@ -352,7 +359,19 @@ class ExpeditionService {
     final numbers = GameRepository.instance.numbers;
     final stagedExp = granted.quantityOf('exp');
 
+    // 测试钩子：模拟事务提交前的并发召回/推进（生产恒 null）。
+    await beforeCommitForTest?.call();
+
+    var raced = false;
     await _isar.writeTxn(() async {
+      // 并发重读 + cursor 守卫：不一致即弃，事务回滚零副作用。
+      final row = await _isar.expeditionRuns.get(run.id);
+      if (row == null ||
+          row.currentNode != run.currentNode ||
+          row.lastSettledAt != run.lastSettledAt) {
+        raced = true;
+        return;
+      }
       // 1. 全员发经验（含途中倒下者）+ 战败伤势。
       // 主线进度行以槽号（IsarSetup.currentSlotId，1-3）为 saveDataId
       // （mainline_providers/stage_entry_flow 口径）；run.saveDataId 是
@@ -425,6 +444,17 @@ class ExpeditionService {
       // 3. 关闭会话：删 run → 占用自动解除（占用由 active run 派生）。
       await _isar.expeditionRuns.delete(run.id);
     });
+
+    if (raced) {
+      // 并发冲突：未发任何奖励、run 未动；调用方可重试。
+      return const ExpeditionReturnResult(
+        returned: false,
+        deepestNode: 0,
+        grantedRewards: [],
+        downedCount: 0,
+        defeated: false,
+      );
+    }
 
     return ExpeditionReturnResult(
       returned: true,

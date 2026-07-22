@@ -228,4 +228,50 @@ void main() {
     expect(after.realmLayer, next.layer, reason: '发布上限内不被拦·升一层');
     expect(after.experience, 99, reason: 'threshold-1 + 100 - threshold');
   });
+
+  test('并发守卫：事务前 run 被并发召回删除 → 放弃发奖不重复发放（P1-5.4）', () async {
+    final runId = await dispatchSeeded();
+    await stageRun(runId, currentNode: 4, rewards: [rw('exp', 100)]);
+    final expBefore = (await IsarSetup.instance.characters.get(1))!.experience;
+
+    final svc = ExpeditionService(IsarSetup.instance);
+    final result = await svc.recall(
+      beforeCommitForTest: () async {
+        // 模拟并发召回抢先删除 run。
+        await IsarSetup.instance.writeTxn(
+          () => IsarSetup.instance.expeditionRuns.delete(runId),
+        );
+      },
+    );
+
+    expect(result.returned, isFalse, reason: '并发冲突 → 放弃，调用方可重试');
+    final ch = (await IsarSetup.instance.characters.get(1))!;
+    expect(ch.experience, expBefore, reason: '零副作用：不重复发经验');
+  });
+
+  test('并发守卫：事务前 run 被并发 settle 推进 → 放弃发奖保留新暂存（P1-5.4）', () async {
+    final runId = await dispatchSeeded();
+    await stageRun(runId, currentNode: 4, rewards: [rw('exp', 100)]);
+    final expBefore = (await IsarSetup.instance.characters.get(1))!.experience;
+
+    final svc = ExpeditionService(IsarSetup.instance);
+    final result = await svc.recall(
+      beforeCommitForTest: () async {
+        // 模拟并发 settle 推进 cursor 并暂存新奖励。
+        await IsarSetup.instance.writeTxn(() async {
+          final r = (await IsarSetup.instance.expeditionRuns.get(runId))!
+            ..currentNode = 5
+            ..stagedRewards = [rw('exp', 100), rw('item_yaocao', 2)];
+          await IsarSetup.instance.expeditionRuns.put(r);
+        });
+      },
+    );
+
+    expect(result.returned, isFalse);
+    final ch = (await IsarSetup.instance.characters.get(1))!;
+    expect(ch.experience, expBefore, reason: '按过期快照发奖被拦');
+    final run = (await IsarSetup.instance.expeditionRuns.get(runId))!;
+    expect(run.currentNode, 5, reason: '并发推进结果不被覆盖');
+    expect(run.stagedRewards.quantityOf('item_yaocao'), 2, reason: '新暂存不丢');
+  });
 }

@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/system_clock_provider.dart';
 import '../../../core/domain/enums.dart';
+import '../../../data/isar_provider.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../application/expedition_combat_runner.dart';
 import '../application/expedition_providers.dart';
+import '../application/expedition_startup.dart';
 import '../domain/expedition_rules.dart';
 import '../domain/expedition_run.dart';
 import 'expedition_recap_screen.dart';
@@ -357,12 +360,24 @@ class _EmptyCandidates extends StatelessWidget {
 
 // ── 在途态 ────────────────────────────────────────────────────────────────
 
-class _ActiveView extends ConsumerWidget {
+class _ActiveView extends ConsumerStatefulWidget {
   const _ActiveView({required this.run});
 
   final ExpeditionRun run;
 
-  Future<void> _recall(BuildContext context, WidgetRef ref) async {
+  @override
+  ConsumerState<_ActiveView> createState() => _ActiveViewState();
+}
+
+class _ActiveViewState extends ConsumerState<_ActiveView> {
+  /// 召回防重（07-21 审查 P1-5.4）：连点只放行一次；service 侧另有
+  /// 事务内重读守卫兜底。
+  bool _recalling = false;
+
+  ExpeditionRun get run => widget.run;
+
+  Future<void> _recall() async {
+    if (_recalling) return;
     final service = ref.read(expeditionServiceProvider);
     if (service == null) return; // 测试旁路
     final confirmed = await PaperDialog.show<bool>(
@@ -388,20 +403,40 @@ class _ActiveView extends ConsumerWidget {
         ),
       ],
     );
-    if (confirmed != true || !context.mounted) return;
-    final result = await service.recall(defeated: false);
-    if (!context.mounted) return;
-    ref.invalidate(activeExpeditionProvider);
-    ref.invalidate(expeditionCandidatesProvider);
-    await Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(
-        builder: (_) => ExpeditionRecapScreen(result: result),
-      ),
-    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _recalling = true);
+    try {
+      // 召回前先追平结算（07-21 审查 P1-5.3，在线=离线 §9.1）：在线停留
+      // 期间已成熟但未启动追平的节点须先入暂存再返程，否则被直接丢弃；
+      // settle 报战败则按战败返程（兑现伤势，P1-5.2 召回路径缓解）。
+      var defeated = false;
+      final isar = ref.read(isarProvider);
+      final config = ref.read(expeditionConfigProvider);
+      if (isar != null && config != null) {
+        final settle = await settleActiveExpeditionOnOpen(
+          service: service,
+          combat: ExpeditionCombatRunner(isar),
+          config: config,
+          now: ref.read(systemClockProvider).now(),
+        );
+        defeated = settle.defeated;
+      }
+      final result = await service.recall(defeated: defeated);
+      if (!mounted) return;
+      ref.invalidate(activeExpeditionProvider);
+      ref.invalidate(expeditionCandidatesProvider);
+      await Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => ExpeditionRecapScreen(result: result),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _recalling = false);
+    }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final config = ref.watch(expeditionConfigProvider);
     final now = ref.watch(systemClockProvider).now();
 
@@ -474,7 +509,7 @@ class _ActiveView extends ConsumerWidget {
                 child: PlaqueButton(
                   label: UiStrings.expeditionRecallButton,
                   primary: true,
-                  onTap: () => _recall(context, ref),
+                  onTap: _recalling ? null : _recall,
                 ),
               ),
             ],
