@@ -301,7 +301,8 @@ void main() {
       final stage = repo.stageDefs['stage_04_05']!;
       expect(stage.dropSkillFragmentId, isNull);
 
-      // 即使重打并强制命中，未挂载的未来残页也不能产生解锁进度。
+      // 即使重打并强制命中，未挂载残页位的关也不能产生解锁进度
+      // (guan_shan 已于 2026-07-22 收编挂塔 15 层,但 stage_04_05 仍无残页位)。
       for (var i = 0; i < threshold; i++) {
         await runStageSkillDropHookAfterVictory(
           stage: stage,

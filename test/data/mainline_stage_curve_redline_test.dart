@@ -35,13 +35,14 @@ void main() {
   tearDownAll(GameRepository.resetForTest);
 
   test('Ch1–3 学徒 / Ch4–6 三流 / Ch7 二流，敌人不超过发布上限', () {
-    // 章 → 境界阶(内容映射·2026-07-17 Ch7 二流首章扩):
-    //   Ch1-3 学徒 / Ch4-6 三流 / Ch7+ 二流(真传位新弧)。
+    // 章 → 境界阶(内容映射·2026-07-22 Ch13 绝顶段首章扩):
+    //   Ch1-3 学徒 / Ch4-6 三流 / Ch7-9 二流 / Ch10-12 一流 / Ch13+ 绝顶。
     RealmTier expectedTierOf(int chapterIndex) {
       if (chapterIndex <= 3) return RealmTier.xueTu;
       if (chapterIndex <= 6) return RealmTier.sanLiu;
       if (chapterIndex <= 9) return RealmTier.erLiu;
-      return RealmTier.yiLiu;
+      if (chapterIndex <= 12) return RealmTier.yiLiu;
+      return RealmTier.jueDing;
     }
 
     final mainline = repo.stageDefs.values.where(

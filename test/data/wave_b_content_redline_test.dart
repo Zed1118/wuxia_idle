@@ -139,6 +139,7 @@ void main() {
       'skill_zhi_shui_jue', // Ch10 守拙翁·止水诀
       'skill_liu_jin_jue', // Ch11 鎏金公·鎏金诀(独立末Boss真解·wave_b 配平排除)
       'skill_mian_li_cang_zhen', // Ch12 无名客·绵里藏针(独立末Boss真解·wave_b 配平排除)
+      'skill_yi_lan_zhong_shan', // Ch13 候峰翁·一览众山(独立末Boss真解·wave_b 配平排除)
     };
 
     assertBalanced(

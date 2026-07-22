@@ -7,7 +7,7 @@ import '../../support/test_data.dart';
 /// 残页来源派生测试（T7）。
 ///
 /// 用真实 GameRepository defs（不构造 StageDef fixture，避免必填字段繁琐），
-/// 断言当前塔层残页能反查出来源，未投放的未来残页与未知残页返 null。
+/// 断言当前塔层/主线残页能反查出来源，未知残页返 null。
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
@@ -27,17 +27,59 @@ void main() {
     );
   });
 
-  test('未来主线残页 skill_guan_shan_ba_ji 当前未投放 → null', () {
+  test(
+    '塔层残页 skill_guan_shan_ba_ji → 爬塔·第15层(2026-07-22 Ch13 收编挂载·原「未投放→null」断言改写)',
+    () {
+      final repo = GameRepository.instance;
+      expect(
+        fragmentSourceLabel(
+          'skill_guan_shan_ba_ji',
+          floors: repo.towerFloors,
+          stages: repo.stageDefs.values,
+        ),
+        UiStrings.cangjingFragmentSourceTower(15),
+      );
+    },
+  );
+
+  test('塔层残页 skill_jin_gang_fu_mo → 爬塔·第20层(2026-07-22 Ch13 收编挂载)', () {
     final repo = GameRepository.instance;
     expect(
       fragmentSourceLabel(
-        'skill_guan_shan_ba_ji',
+        'skill_jin_gang_fu_mo',
         floors: repo.towerFloors,
         stages: repo.stageDefs.values,
       ),
-      isNull,
+      UiStrings.cangjingFragmentSourceTower(20),
     );
   });
+
+  test('塔层残页 skill_ma_ta_fei_yan → 爬塔·第25层(2026-07-22 Ch13 收编挂载)', () {
+    final repo = GameRepository.instance;
+    expect(
+      fragmentSourceLabel(
+        'skill_ma_ta_fei_yan',
+        floors: repo.towerFloors,
+        stages: repo.stageDefs.values,
+      ),
+      UiStrings.cangjingFragmentSourceTower(25),
+    );
+  });
+
+  test(
+    '主线残页 skill_jing_hong_zhao_ying → 主线·第13章重打(2026-07-22 Ch13 章末残页挂载)',
+    () {
+      final repo = GameRepository.instance;
+      expect(
+        fragmentSourceLabel(
+          'skill_jing_hong_zhao_ying',
+          floors: repo.towerFloors,
+          stages: repo.stageDefs.values,
+        ),
+        UiStrings.cangjingFragmentSourceMainline(13),
+      );
+    },
+  );
 
   test('未知残页 → null（来源未明，不臆造）', () {
     final repo = GameRepository.instance;
