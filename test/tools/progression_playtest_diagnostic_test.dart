@@ -12,8 +12,8 @@ import '../support/progression_battle_probe.dart';
 import '../support/test_data.dart';
 
 const _seedCount = 50;
-// 主线关总数(12 章 × 5 关 = 60·2026-07-21 Ch12 名下之实一流第三章扩;新增主线章时改此一处)。
-const _mainlineStageCount = 60;
+// 主线关总数(13 章 × 5 关 = 65·2026-07-22 Ch13 山外青山绝顶段首章扩;新增主线章时改此一处)。
+const _mainlineStageCount = 65;
 const _csvPath =
     'test/tools/output/progression_attribute_playtest_2026-07-13.csv';
 const _updateEvidenceEnvironment = 'UPDATE_PROGRESSION_PLAYTEST_EVIDENCE';

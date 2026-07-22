@@ -53,15 +53,16 @@ void main() {
       // + Ch10 守拙翁本命真解 skill_zhi_shui_jue = 210
       // + Ch11 鎏金公本命真解 skill_liu_jin_jue = 211
       // + Ch12 无名客本命真解 skill_mian_li_cang_zhen = 212
-      // + 40 encounter_skills.yaml = 252 total
+      // + Ch13 候峰翁本命真解 skill_yi_lan_zhong_shan = 213
+      // + 40 encounter_skills.yaml = 253 total
       expect(
         repo.skillDefs.length,
-        252,
+        253,
         reason:
-            '212 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+            '213 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
             ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技 + 1 断魂庄锁脉针'
             ' + 1 Ch8 灰袖回风 + 1 Ch9 沉沙一诀 + 1 Ch10 止水诀 + 1 Ch11 鎏金诀'
-            ' + 1 Ch12 绵里藏针) + 40 奇遇招',
+            ' + 1 Ch12 绵里藏针 + 1 Ch13 一览众山) + 40 奇遇招',
       );
       expect(
         repo.encounterSkillIds.length,
@@ -82,8 +83,8 @@ void main() {
           .length;
       expect(
         mainlineCount,
-        60,
-        reason: '主线 60 关(2026-07-21 Ch12 名下之实一流第三章扩,12 章 × 5 关)',
+        65,
+        reason: '主线 65 关(2026-07-22 Ch13 山外青山绝顶段首章扩,13 章 × 5 关)',
       );
       expect(
         innerDemonCount,
@@ -308,7 +309,17 @@ void main() {
         expectDropWithinReleaseCap(floor.dropTable, '塔 ${floor.floorIndex} 层');
         final fragmentId = floor.dropSkillFragmentId;
         if (fragmentId != null) {
-          expect(repo.getSkill(fragmentId).tier, lessThanOrEqualTo(2));
+          // 残页 tier 上限 = 发布上限阶 + 1(同 mainline_stage_curve 口径·
+          // cap-agnostic):2026-07-22 Ch13 cap 抬 31 后,塔 15/20/25 层收编
+          // tier4 guan_shan/jin_gang + tier5 ma_ta(原钉 ≤2 是仅有 tier1/2
+          // 残页时的旧值)。
+          final capIndex =
+              repo.numbers.progressionReleaseCap.maxAbsoluteRealmLevel;
+          final skillTierCap = ((capIndex - 1) ~/ 7) + 1;
+          expect(
+            repo.getSkill(fragmentId).tier,
+            lessThanOrEqualTo(skillTierCap),
+          );
         }
       }
       for (final stage in currentStages) {
@@ -672,14 +683,14 @@ void main() {
     );
 
     test(
-      '主线 60 关红线:12 章 × 5 关 + 每章双 Boss 关(2026-07-21 Ch12 名下之实扩·Boss 位随叙事定)',
+      '主线 65 关红线:13 章 × 5 关 + 每章双 Boss 关(2026-07-22 Ch13 山外青山绝顶段首章扩·Boss 位随叙事定)',
       () async {
         final repo = await GameRepository.loadAllDefs(loader: fileLoader);
         final mainlines = repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
             .toList();
-        expect(mainlines.length, 60);
-        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
+        expect(mainlines.length, 65);
+        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) {
           final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();
           expect(inCh.length, 5, reason: 'Ch$ch 应有 5 关');
         }
@@ -688,7 +699,8 @@ void main() {
         // 挪 3·灰衣人沙夜袭影);Ch9 = {4,5}(隘口守卫章中·那一位章末);
         // Ch10 = {4,5}(嵩阳关主章中·守拙翁章末);
         // Ch11 = {4,5}(玉京剑主章中·鎏金公章末);
-        // Ch12 = {4,5}(守炉铁匠章中·无名客章末·一流三章收官)。
+        // Ch12 = {4,5}(守炉铁匠章中·无名客章末·一流三章收官);
+        // Ch13 = {4,5}(断崖守关人章中·候峰翁章末·绝顶段首章)。
         // validator 只约束 defeat⟹Boss 不钉位置。
         const bossIdxByChapter = {
           1: {4, 5},
@@ -703,8 +715,9 @@ void main() {
           10: {4, 5},
           11: {4, 5},
           12: {4, 5},
+          13: {4, 5},
         };
-        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
+        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) {
           for (final idx in [1, 2, 3, 4, 5]) {
             final id = 'stage_${ch.toString().padLeft(2, '0')}_0$idx';
             final s = repo.getStage(id);

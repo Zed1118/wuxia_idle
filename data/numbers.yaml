@@ -203,7 +203,7 @@ combat:
 
 progression:
   release_cap:
-    max_absolute_realm_level: 28  # Ch12「名下之实」抬 26→28(一流·登峰 dengFeng = 一流封顶):Ch12 末Boss无名真高手层升至 dengFeng,一流三章收官(within-tier·releaseTier 仍 yiLiu·不触发新阶 mount_deferred)
+    max_absolute_realm_level: 31  # Ch13「山外青山」抬 28→31(绝顶·熟练 shuLian = 绝顶段首章封顶·照 Ch10 首章 qiMeng→shuLian 体例):cross-tier·releaseTier yiLiu→jueDing 随 cap 自动重算,触发红线⑦挂载完备(shi_dang 补标 mount_deferred/jing_hong 挂 13_05 残页/ma_ta 挂塔 25 层/jin_gang·guan_shan 塔 20/15 层收编·2026-07-22 拍定)
 
 # =============================================================================
 # 2. 49 级境界系统
