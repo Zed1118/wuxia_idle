@@ -223,6 +223,37 @@ void main() {
     expect(combat.foughtNodes.where((n) => n > 5), isEmpty);
   });
 
+  test('战败持久化：defeated 落库，再 settle 不推进不重战（P1-5.2）', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final svc = ExpeditionService(IsarSetup.instance);
+    final combat = _FakeCombat(loseAtNode: 5);
+    final r1 = await svc.settle(
+      combat: combat,
+      config: _config(),
+      now: departedAt.add(const Duration(minutes: 1080)),
+    );
+    expect(r1.defeated, isTrue);
+    expect((await readRun(runId)).defeated, isTrue, reason: '战败态须落库（跨启动不丢）');
+    final foughtAfterDefeat = combat.foughtNodes.length;
+
+    // 模拟重启后再开（更晚 now）：不再推进、不重打失败节点，直接报战败态。
+    final r2 = await svc.settle(
+      combat: combat,
+      config: _config(),
+      now: departedAt.add(const Duration(minutes: 1080 * 3)),
+    );
+    expect(r2.defeated, isTrue);
+    expect(r2.nodesSettled, 0);
+    expect(r2.caughtUp, isTrue);
+    expect(r2.currentNode, 4);
+    expect(
+      combat.foughtNodes.length,
+      foughtAfterDefeat,
+      reason: '已战败 run 不得重战任何节点',
+    );
+    expect((await readRun(runId)).currentNode, 4);
+  });
+
   test('cursor 守卫：提交前 run 被并发推进 → 本批弃写不覆盖', () async {
     final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
     final svc = ExpeditionService(IsarSetup.instance);

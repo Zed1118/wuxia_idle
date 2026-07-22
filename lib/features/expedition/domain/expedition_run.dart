@@ -33,4 +33,9 @@ class ExpeditionRun {
 
   /// 暂存奖励（返程/召回时一次性发放，§9.1）。
   List<RewardEntry> stagedRewards = [];
+
+  /// 战败持久态（§4.2 战败即停；07-22 审查 P1-5.2）：settle 战败时落库，
+  /// 此后 settle 不再推进/重战，recall 据此兑现战败伤势——跨启动不丢
+  /// （旧档无此字段读出默认 false，等价未战败）。
+  bool defeated = false;
 }

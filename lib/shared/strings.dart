@@ -3653,6 +3653,7 @@ class UiStrings {
   static const String expeditionActivePolicyLabel = '本次方针';
   static String expeditionNextNodeIn(String remaining) => '下一处约 $remaining 后抵达';
   static const String expeditionNextNodeReady = '下一处将至……';
+  static const String expeditionDefeatedBanner = '全队战败，滞留待归——召回后结算伤势返程。';
   static String expeditionRemainingText(int hours, int minutes) =>
       hours > 0 ? '$hours 时 $minutes 分' : '$minutes 分';
   static const String expeditionRecallButton = '召回队伍';

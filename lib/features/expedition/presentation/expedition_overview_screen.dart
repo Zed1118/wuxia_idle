@@ -441,7 +441,10 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
     final now = ref.watch(systemClockProvider).now();
 
     String? nextText;
-    if (config != null) {
+    // 战败持久态（P1-5.2）：战败即停，不再有「下一节点」，改显示待归提示。
+    if (run.defeated) {
+      nextText = UiStrings.expeditionDefeatedBanner;
+    } else if (config != null) {
       final remaining = ExpeditionRules.nextNodeRemaining(
         departedAt: run.departedAt,
         completedNodes: run.currentNode,
