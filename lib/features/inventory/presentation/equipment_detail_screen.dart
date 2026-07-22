@@ -292,6 +292,11 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
           const SnackBar(content: Text(UiStrings.equipProtectedCurrent)),
         );
         return;
+      case EquipOutcome.reservedByActivity:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(UiStrings.equipReservedByActivity)),
+        );
+        return;
       case EquipOutcome.notFound:
         return;
     }

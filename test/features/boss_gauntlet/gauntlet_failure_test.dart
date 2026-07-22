@@ -276,7 +276,7 @@ void main() {
     await IsarSetup.instance.writeTxn(() async {
       await IsarSetup.instance.mainlineProgress.put(
         MainlineProgress()
-          ..saveDataId = 0
+          ..saveDataId = IsarSetup.currentSlotId
           ..clearedStageIds = ['stage_01_01'],
       );
     });

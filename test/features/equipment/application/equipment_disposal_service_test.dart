@@ -10,7 +10,9 @@ import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/lore.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_disposal_service.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_service.dart';
 import 'package:wuxia_idle/features/equipment/domain/equipment_disposal.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -618,5 +620,65 @@ void main() {
 
     final mj = await isar.inventoryItems.getByDefId('item_mojianshi');
     expect(mj, isNull); // 无写入
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // 活动占用契约（07-21 审查 P1-5.1）：在途会话保留装备不可出售/分解
+  // ──────────────────────────────────────────────────────────────────────────
+  Future<void> seedExpeditionReserved(List<int> equipmentIds) async {
+    await isar.writeTxn(() async {
+      await isar.expeditionRuns.put(
+        ExpeditionRun()
+          ..saveDataId = 0
+          ..policy = ExpeditionPolicy.yiZhanLiXing
+          ..seed = 1
+          ..departedAt = DateTime(2026, 7, 16)
+          ..currentNode = 1
+          ..members = [
+            ActivityMemberSnapshot()
+              ..characterId = 999
+              ..reservedEquipmentIds = equipmentIds
+              ..reservedTechniqueIds = []
+              ..currentHp = 100
+              ..currentQi = 50
+              ..isDowned = false,
+          ]
+          ..stagedRewards = [],
+      );
+    });
+  }
+
+  test('sell 在途快照保留装备 → rejectedProtected；装备不删、银两不发', () async {
+    final id = await seedEquipment(tier: EquipmentTier.xunChang);
+    await seedExpeditionReserved([id]);
+
+    final result = await makeService().sell(id);
+
+    expect(result, DisposalOutcome.rejectedProtected);
+    expect(await isar.equipments.get(id), isNotNull, reason: '保留装备不删');
+    expect(await isar.inventoryItems.getByDefId('item_silver'), isNull);
+  });
+
+  test('disassemble 在途快照保留装备 → rejectedProtected；装备不删', () async {
+    final id = await seedEquipment(tier: EquipmentTier.liQi);
+    await seedExpeditionReserved([id]);
+
+    final result = await makeService().disassemble(id);
+
+    expect(result, DisposalOutcome.rejectedProtected);
+    expect(await isar.equipments.get(id), isNotNull);
+    expect(await isar.inventoryItems.getByDefId('item_mojianshi'), isNull);
+  });
+
+  test('sellAllOfTier 批量跳过保留装备（同 tier 自由装备照售）', () async {
+    final reserved = await seedEquipment(tier: EquipmentTier.xunChang);
+    final free = await seedEquipment(tier: EquipmentTier.xunChang);
+    await seedExpeditionReserved([reserved]);
+
+    final result = await makeService().sellAllOfTier(EquipmentTier.xunChang);
+
+    expect(result.count, 1, reason: '只售自由装备');
+    expect(await isar.equipments.get(reserved), isNotNull, reason: '保留装备跳过');
+    expect(await isar.equipments.get(free), isNull);
   });
 }

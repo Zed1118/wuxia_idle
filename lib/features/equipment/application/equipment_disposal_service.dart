@@ -6,6 +6,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../shared/strings.dart';
+import '../../activity/application/character_occupancy_service.dart';
 import '../domain/equipment_disposal.dart';
 import '../domain/equipment_slot_occupancy.dart';
 
@@ -161,14 +162,18 @@ class EquipmentDisposalService {
     final all = await isar.equipments.filter().tierEqualTo(tier).findAll();
     final equippedIds = await _equippedEquipmentIds();
     final activeEquippedIds = await _activeFormationEquipmentIds();
+    // 活动占用契约(P1-5.1):在途会话出发快照保留装备不可出售/分解。
+    final reservedIds = await _reservedEquipmentIds();
     return all
         .where(
-          (e) => isEquipmentDisposable(
-            e,
-            equippedIds,
-            activeFormationEquipmentIds: activeEquippedIds,
-            policy: protectionPolicy,
-          ),
+          (e) =>
+              !reservedIds.contains(e.id) &&
+              isEquipmentDisposable(
+                e,
+                equippedIds,
+                activeFormationEquipmentIds: activeEquippedIds,
+                policy: protectionPolicy,
+              ),
         )
         .toList();
   }
@@ -180,6 +185,10 @@ class EquipmentDisposalService {
   /// 前置守卫：null = 可处置；否则返回拒绝/未找到结果。
   Future<DisposalOutcome?> _guard(Equipment? eq) async {
     if (eq == null) return DisposalOutcome.notFound;
+    // 活动占用契约(P1-5.1):在途会话保留装备拒绝处置(归 rejectedProtected)。
+    if ((await _reservedEquipmentIds()).contains(eq.id)) {
+      return DisposalOutcome.rejectedProtected;
+    }
     final reason = equipmentProtectionReason(
       eq,
       equippedEquipmentIds: await _equippedEquipmentIds(),
@@ -214,6 +223,10 @@ class EquipmentDisposalService {
       characters.where((c) => activeIds.contains(c.id)),
     );
   }
+
+  /// 在途活动会话出发快照保留的装备集合（统一占用查询口）。
+  Future<Set<int>> _reservedEquipmentIds() async =>
+      (await CharacterOccupancyService(isar).snapshot()).reservedEquipmentIds;
 
   /// upsert（仿 ShopService 76-89 体例）：已有行累加，无则新建。须在 [writeTxn] 内调。
   Future<void> _addItem(String defId, ItemType type, int amount) async {

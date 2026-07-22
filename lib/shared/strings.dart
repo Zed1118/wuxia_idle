@@ -396,6 +396,7 @@ class UiStrings {
   static const String equipQuickViewLore = '查看典故';
   static const String equipLockedByRealm = '境界不足,无法装备(三系锁死)';
   static const String equipProtectedCurrent = '装备受保护，请先手动卸下后再更换';
+  static const String equipReservedByActivity = '该角色或装备远行/断魂庄在途保留，返程后方可操作';
   static const String equipDirectActionEquip = '装备';
   static const String equipDirectActionUnequip = '卸下';
   static const String inventoryEquipActionEquip = '装备';
@@ -1340,6 +1341,7 @@ class UiStrings {
   static const String lineupApplySuccess = '编成已定';
   static const String lineupRetreatLockedSnack = '闭关中门人不可调整';
   static const String lineupNoMainSnack = '未修主修心法，研习立为主修后方可上场';
+  static const String lineupActivityOccupiedSnack = '该门人远行/断魂庄在途，返程后方可上场';
   static const String lineupFounderMustStay = '祖师须坐镇出战席';
   static const String lineupApplyFailed = '编成未成，条件未满足';
 
