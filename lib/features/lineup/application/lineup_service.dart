@@ -3,6 +3,7 @@ import 'package:isar_community/isar.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
+import '../../activity/application/character_occupancy_service.dart';
 import '../../battle/domain/derived_stats.dart';
 
 /// 编成写入结果状态(spec `2026-07-14-team-lineup-screen-design.md` §2 校验矩阵)。
@@ -18,6 +19,7 @@ enum LineupApplyStatus {
   ascendedFounder, // 已飞升太祖(isFounder 且非当代祖师)不可回场
   retreatLocked, // 成员增删涉及闭关中角色(currentRetreatSessionId 非空)
   noMainTechnique, // 加入者未修主修(战斗组队硬前置,实装期补条)
+  activityOccupied, // 加入者被远征/断魂庄在途会话占用(companion §8.1 Q5 可换下禁换上)
 }
 
 /// 编成写入结果。失败态零副作用;[offendingCharacterId] 供 UI 指认拒因角色。
@@ -110,10 +112,22 @@ class LineupService {
     final newIds = newActiveIds.toSet();
     final added = newIds.difference(oldIds);
     final removed = oldIds.difference(newIds);
+    // 活动占用契约(companion §3.5/§8.1 Q5 · 07-21 审查 P1-5.1):远征/断魂庄
+    // 在途成员「可换下、禁换上」——加入者查统一占用快照(闭关走上面字段
+    // 路径先行拦截,此处兜底其余活动源)。
+    final occupancy = added.isEmpty
+        ? null
+        : await CharacterOccupancyService(isar).snapshot();
     for (final id in added) {
       if (members[id]!.currentRetreatSessionId != null) {
         return LineupApplyResult(
           LineupApplyStatus.retreatLocked,
+          offendingCharacterId: id,
+        );
+      }
+      if (occupancy != null && occupancy.isCharacterOccupied(id)) {
+        return LineupApplyResult(
+          LineupApplyStatus.activityOccupied,
           offendingCharacterId: id,
         );
       }

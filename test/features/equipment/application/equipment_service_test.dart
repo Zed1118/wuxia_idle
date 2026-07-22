@@ -9,7 +9,9 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_service.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 import '../../../support/isar_test_support.dart';
@@ -265,5 +267,81 @@ void main() {
     final ch2 = await IsarSetup.instance.characters.get(c2);
     expect(ch1!.equippedWeaponId, eid);
     expect(ch2!.equippedWeaponId, isNull);
+  });
+
+  group('活动占用契约(07-21 审查 P1-5.1)', () {
+    Future<void> seedExpeditionOccupancy({
+      required int characterId,
+      List<int> reservedEquipmentIds = const [],
+    }) async {
+      await IsarSetup.instance.writeTxn(() async {
+        await IsarSetup.instance.expeditionRuns.put(
+          ExpeditionRun()
+            ..saveDataId = 0
+            ..policy = ExpeditionPolicy.yiZhanLiXing
+            ..seed = 1
+            ..departedAt = DateTime(2026, 7, 16)
+            ..currentNode = 1
+            ..members = [
+              ActivityMemberSnapshot()
+                ..characterId = characterId
+                ..reservedEquipmentIds = reservedEquipmentIds
+                ..reservedTechniqueIds = []
+                ..currentHp = 100
+                ..currentQi = 50
+                ..isDowned = false,
+            ]
+            ..stagedRewards = [],
+        );
+      });
+    }
+
+    test('穿上在途成员 → reservedByActivity 零副作用(防顶掉保留装备)', () async {
+      final c1 = await seedCharacter();
+      final eid = await seedEquipment(slot: EquipmentSlot.weapon);
+      await seedExpeditionOccupancy(characterId: c1);
+
+      final outcome = await service.equip(characterId: c1, equipmentId: eid);
+
+      expect(outcome, EquipOutcome.reservedByActivity);
+      final ch = await IsarSetup.instance.characters.get(c1);
+      expect(ch!.equippedWeaponId, isNull, reason: '失败态零副作用');
+    });
+
+    test('移走在途快照保留装备 → reservedByActivity(防快照漂移)', () async {
+      final c1 = await seedCharacter();
+      final c2 = await seedCharacter();
+      final eid = await seedEquipment(slot: EquipmentSlot.weapon);
+      await service.equip(characterId: c1, equipmentId: eid);
+      await seedExpeditionOccupancy(
+        characterId: c1,
+        reservedEquipmentIds: [eid],
+      );
+
+      final outcome = await service.equip(characterId: c2, equipmentId: eid);
+
+      expect(outcome, EquipOutcome.reservedByActivity);
+      final ch1 = await IsarSetup.instance.characters.get(c1);
+      expect(ch1!.equippedWeaponId, eid, reason: '保留装备仍在在途成员身上');
+    });
+
+    test('在途成员卸装 → reservedByActivity 槽位不变', () async {
+      final c1 = await seedCharacter();
+      final eid = await seedEquipment(slot: EquipmentSlot.weapon);
+      await service.equip(characterId: c1, equipmentId: eid);
+      await seedExpeditionOccupancy(
+        characterId: c1,
+        reservedEquipmentIds: [eid],
+      );
+
+      final outcome = await service.unequip(
+        characterId: c1,
+        slot: EquipmentSlot.weapon,
+      );
+
+      expect(outcome, EquipOutcome.reservedByActivity);
+      final ch = await IsarSetup.instance.characters.get(c1);
+      expect(ch!.equippedWeaponId, eid);
+    });
   });
 }

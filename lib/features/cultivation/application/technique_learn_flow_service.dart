@@ -4,6 +4,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/game_repository.dart';
+import '../../activity/application/character_occupancy_service.dart';
 import '../../event/application/game_event_service.dart';
 import 'technique_learning.dart';
 
@@ -17,6 +18,7 @@ enum TechniqueLearnFlowStatus {
   mainTechniqueAlreadyExists, // 主修已存在（换主修走散功）
   assistSlotsFull, // 辅修槽满 3
   insufficientInsightPoints, // 领悟点不足
+  characterOccupied, // 角色被远征/断魂庄在途会话占用（活动占用契约 P1-5.1）
 }
 
 /// 研习结果。成功时 [learnedTechniqueId] 非 null、[pointsSpent] = 实际扣减、
@@ -68,6 +70,17 @@ class TechniqueLearnFlowService {
     if (ch == null) {
       return const TechniqueLearnFlowResult(
         status: TechniqueLearnFlowStatus.characterMissing,
+      );
+    }
+
+    // 活动占用契约（07-21 审查 P1-5.1）：远征/断魂庄在途成员不可研习/装配
+    // 新心法——活动战斗以出发快照（reservedTechniqueIds）为准，中途变更
+    // 主辅修会令会话快照与实时角色漂移。
+    final occupancy = await CharacterOccupancyService(isar).snapshot();
+    if (occupancy.isCharacterOccupied(characterId)) {
+      return TechniqueLearnFlowResult(
+        status: TechniqueLearnFlowStatus.characterOccupied,
+        remainingInsightPoints: ch.insightPoints,
       );
     }
 

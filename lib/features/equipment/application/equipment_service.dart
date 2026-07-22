@@ -4,6 +4,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/save_data.dart';
+import '../../activity/application/character_occupancy_service.dart';
 import '../domain/equipment_disposal.dart';
 import '../domain/equipment_slot_occupancy.dart';
 import 'equipment_disposal_service.dart';
@@ -20,6 +21,10 @@ enum EquipOutcome {
 
   /// 旧槽装备为传承遗物，或目标装备仍在出战角色身上，拒绝静默替换。
   protectedCurrentEquipment,
+
+  /// 角色或装备被远征/断魂庄在途会话保留(出发快照为准),拒绝穿/卸/移
+  /// (活动占用契约,07-21 审查 P1-5.1)。
+  reservedByActivity,
 }
 
 /// 玩家手动装备 service(H1 批2 · 修「掉落装备无穿戴入口」核心循环断裂)。
@@ -56,6 +61,14 @@ class EquipmentService {
       // §5.3 三系锁死:境界不达不上身。
       if (!eq.isEquippableAtRealm(character.realmTier)) {
         return EquipOutcome.lockedByRealm;
+      }
+
+      // 活动占用契约(P1-5.1):在途会话成员及其出发快照保留装备不可穿/移
+      // (穿上在途成员会顶掉其保留装备;移走保留装备会令快照漂移)。
+      final occupancy = await CharacterOccupancyService(isar).snapshot();
+      if (occupancy.isCharacterOccupied(characterId) ||
+          occupancy.reservedEquipmentIds.contains(eq.id)) {
+        return EquipOutcome.reservedByActivity;
       }
 
       final activeEquippedIds = await _activeFormationEquipmentIds();
@@ -125,14 +138,23 @@ class EquipmentService {
   }
 
   /// 卸下 [characterId] 的 [slot] 槽位装备(回自由池;装备实例 owner 清空)。
-  Future<void> unequip({
+  /// 在途会话成员/保留装备拒绝卸装(P1-5.1),返回 [EquipOutcome.reservedByActivity]。
+  Future<EquipOutcome> unequip({
     required int characterId,
     required EquipmentSlot slot,
   }) async {
-    await isar.writeTxn(() async {
+    return isar.writeTxn(() async {
       final character = await isar.characters.get(characterId);
-      if (character == null) return;
+      if (character == null) return EquipOutcome.notFound;
+      final occupancy = await CharacterOccupancyService(isar).snapshot();
+      if (occupancy.isCharacterOccupied(characterId)) {
+        return EquipOutcome.reservedByActivity;
+      }
       final equipmentId = equippedEquipmentIdForSlot(character, slot);
+      if (equipmentId != null &&
+          occupancy.reservedEquipmentIds.contains(equipmentId)) {
+        return EquipOutcome.reservedByActivity;
+      }
       setEquippedEquipmentIdForSlot(character, slot, null);
       if (equipmentId != null) {
         final eq = await isar.equipments.get(equipmentId);
@@ -142,6 +164,7 @@ class EquipmentService {
         }
       }
       await isar.characters.put(character);
+      return EquipOutcome.success;
     });
   }
 
