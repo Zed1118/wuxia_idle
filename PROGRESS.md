@@ -6,7 +6,9 @@
 
 ## 当前阶段
 
-> **2026-07-22 夜批六 PR 审合并收账(#49-#54 全合 main·kimi 夜间自主批质量复查全过·mount_deferred A2+B1 拍定)**:kimi 夜间 goal 模式五批(用户 23:20 授权·403 中断后 03:34 定时器续跑无产出损失)晨间收账,逐单 Gate 审后按序 --no-ff 合入。**已完成**:① #49 format 收口(CI format 门禁回绿·先合解其余 PR 依赖);② #53 P0 断魂庄恢复路由(装载屏续战横幅四出口路由 resumed/refundedTicket/concedeRequired/none+续战态禁新建交互+奖励屏 PopScope(canPop:false) 防弃栈并 maybePop→显式 pop 订正+9 UiStrings+8 用例·「玩家不可自救活锁」销账);③ #50 Ch12 11 立绘接线(5 敌 standee 注册+脚底 0.950-0.965+known_missing 清 11 行·Ch12 美术闭环 errorBuilder 兜底退役);④ #51 Ch13 绝顶段 spec 草稿+⑤ #52 mount_deferred 6 招分析+⑥ #54 夜批交接(纯文档);⑦ codex 派单书/交付报告自 ch12-art worktree 取回 `docs/handoff/ch12_art_*_2026-07-22.*`;⑧ 4 worktree+6 分支(本地+远端)清理。**已验证(本会话独立复查·非采信自报)**:#49 diff 亲验纯格式零语义;#53 recover/settleDefeat 确为 main 既有 service API 且此前 0 UI 消费者(P0 定性成立)+断魂庄 **161/161** worktree 独立复跑+生产代码逐行审(PopScope 与显式 pop 区分正确);#50 PIL 脚底 fraction 5/5 实测偏差 ≤0.52‰+四角 alpha 全 0+**Claude 视觉终判 11/11 图 PASS**(5 敌+封面+5 背景·无名客坐姿=扫地僧母题判有意设计);#51/#52 文档 file:line 证据链 6 点抽验全吻合(#52 证伪外审拂脉误判核实正确);合并态 build_runner 68+analyze **0**+format 1287 文件 0 changed+全量 **4626 pass/0 fail**(EXIT=0·基线 4618+8 新用例)·均已推 origin。**用户拍板 2**:① mount_deferred=**A2+B1** 组合(jin_gang/guan_shan 塔 15/20 残页 remount·shi_dang 收编绝顶段(先补标后挂)·yang_guan 补标留宗师段·fu_mai 只补注释·feng_juan 待 Ch13 主题定后再决;塔残页空位实测 4 个 15/20/25/30,实装期 Phase-0 钉层);② Ch13 §10 六项逐项拍(菜单已出待回)。**已知风险**:Ch10-12 33 图真 PNG 未转码(~30MB 可省·转码批候选);#53 concedeRequired 分支 invalidate 先于 mounted 复查(理论竞态·外层 catch+mounted 已兜·非阻塞);kimi 红线区考核第 2 数据点表现优秀(零虚报·续单积累)。**下批建议**:Ch13 拍板落定→实装批(升 xhigh·A2+B1 挂载子集并入同批一次收挂载完备面);资产转码批。
+> **2026-07-22 日批五 PR 收账(#55-#59 全合 main·批末终验 4647/4647·已 push)**:kimi 日批五单逐单 Gate 独立复验后按序 --no-ff 合入。**已完成**:① #55 Ch13「山外青山」绝顶段首章(5关+末Boss候峰翁真解一览众山 mult4800+13叙事+cap 28→31 cross-tier(releaseTier yiLiu→jueDing)+塔残页收编 A2+B1(jin_gang 20/guan_shan 15/ma_ta 25/jing_hong 挂 13_05)·`1d38e1ba`);② #58 审查 P1 五修(占用契约接 5 消费者/召回先 settle 传 defeated/recall 事务重读+cursor+UI 防重/saveDataId 层锁 3 处按 currentSlotId/百草岭最深节点+塔 10/20/30 断魂帖含旧档补发·rebase 零冲突·`21462867`);③ #56 webp 67 张 assets 185M→93M(`ba816383`);④ #57 flaky 根治(测试层关闸稀有彩头·`9c5084a5`);⑤ #59 日批交接(`21c75214`);5 worktree+10 分支(本地+远端)全清,PR #55/56/57/59 自动 MERGED,#58 rebase 致 CLOSED 已注明合并 commit。**已验证(本会话独立复跑·非采信自报)**:批末主 checkout build_runner 68+analyze 0+format 1284 文件 0 changed+全量 **4647 pass/0 fail**(EXIT=0);#55 红线抽核(hp56000<60000/攻1550≤2000/mult4800≤8000)+叙事黑名单 grep 0+两偏离点(cap-agnostic 残页 tier/idle_horizon 下沿 1.0)亲验;#58 七项自报 file:line 证据链全证实零越界;#56 守卫 12 绿;#57 20 连跑 0 败。**用户拍板 3+1 留议**:① 显示级 Lv guard ≤106(连 Ch12 ≤103)+结晶软线 <6 件**终拍接受**;② P1-5.2 战败持久化**拍加 schema 字段**(下批实装);③ 塔 10/20/30 断魂帖 **1 张/层确认**;④ DefaultRng 统一 rngProvider 留议(非阻塞)。**已知风险/挂账**:散功 dispel_service 漏接占用契约(Gate 新发现·中·排 P2 批);recall 并发冲突 UI 假 recap(低);#55 worktree 首跑 1 例失败未捕获用例名·二跑+合并态两连绿(PR body 同型 flaky 再现·待捕获)。**下批建议**:P1-5.2 schema 批实装(拍定);Ch13 美术 11 图 codex image_gen 派单(known_missing +11 已登记);Ch14 spec 起草;散功接契约 P2 批。
+
+> **2026-07-22 夜批六 PR 收账(#49-#54 全合 main·全量 4626/0)+ mount_deferred A2+B1 拍定 已压缩归档**:format 收口/P0 断魂庄恢复路由/Ch12 11 立绘接线/Ch13 spec/夜批交接·git log + PR #49-54 可溯。
 
 > **2026-07-21 Ch12「名下之实」一流第三章实装（一流三章 Ch10-12 收官·worktree `ch12-impl`·draft PR·未合 main）**：承 Ch11「见虚」→ Ch12「见实」·母题「名≠本事」收于「实至名归」·收束守拙翁托付。**已完成**：① 5 关 `stage_12_01..05`(寒江渡/槐花巷/秋山道/老铁铺/荒村野店·敌层 yuanShu→dengFeng 一流封顶·Boss 位{4,5}·12_04 守炉铁匠章中 stat 门槛/12_05 无名客末 Boss 真解破招·12_01 无 prevStageId·biome dock/alley/mountainpath/smithy/inn 全复用现有图)；② 末 Boss 真解 `skill_mian_li_cang_zhen` 绵里藏针(yinRou·tier4·mult3600·qiDelta-30·`chargeSkill=dropSkillManual` 双用·唯一新增·守≤8000)；③ 13 叙事 ~6300 字(chapter_12 卷首尾 + 10 stage + 2 defeat·承绝顶 hook·黑名单/现代词/网文腔 grep 0)；④ cap 26→28(dengFeng 封顶·within-tier·releaseTier 仍 yiLiu 不触发 mount_deferred)；⑤ ~30 reconcile(count 55→60/boss敌 24→26/catalog 37→39/skill 251→252/wave_b 白名单+绵里藏针/bossIdxByChapter +12:{4,5}/生产可见性 chapter_list·strings·main_menu·status_summary·widget viewport/GDD §8.1)+ 敌招 menpai/装备 liQi 复用零新增；⑥ **修 readable_tempo 终章 drift**(`stage_09_05→stage_12_05`·Ch10/11 漏更实证并补正)。**已验证(worktree 实测)**:analyze **0**·全量 `flutter test --no-pub` **4618 pass/0 fail**(EXIT=0)·破坏证红(真解 mult 9000>8000 RED→还原 3600 绿)·dart format 收口·结构 smoke loadAllDefs 无红线抛。**已知风险/balance 待拍**:① **全内容显示级 Lv100→103**(spec 原「守<Lv100」·加章 mainline 经验不可避免推高·纯展示级 GDD v1.36 不触红线·guard 放宽 ≤103·idle_horizon 缺口 7361→7089 同口径重校·**待用户拍板**接受/压回)；② 结晶 ≈4.95 件(1308<1320 仍<5 软线·沿 Ch10/11 放宽)；③ Ch12 11 图(5 敌+封面+5 背景)待 codex image_gen(errorBuilder 兜底)；④ 一流封顶 mount_deferred 招(feng_juan 真解/jin_gang·guan_shan fragment)遗留待拍。**下批建议**:合并 PR 后主 checkout 重跑 build_runner+全量复验；codex 出 Ch12 11 立绘→接线；绝顶段 spec(承止水印/铜符 motif)。
 
@@ -58,16 +60,9 @@
 
 > **2026-07-11..13 五批已压缩归档(角色四属性职责统一/成长结算单一真相源收敛/境界派生 Lv1-490/外部审查复核与分支收敛/二周目快速开局)**:git log + 各分支 commit 可溯,3800→3897 测,均已合 main。
 
-> **2026-07-12 Codex 内力/真气循环 + 开放式闭关实装 已压缩归档**(git log 可溯·3807→3849 测):内力/真气拆分(永久内力闭关成长·战斗不消耗决定伤害·有界真气气海显式产耗气·散功/失败改可恢复「内息紊乱」·saveVer 0.35→0.36 迁移补满内力+旧余毒·门禁 3849/0)+ 开放式闭关(取消预选改主动收功·前72h完整+溢出无上限同事务幂等·每12h 稳定装备判定最多6次无保底·saveVer→0.35 迁移 active 快照·门禁 3807/3807+macOS build)。详各分支 commit + docs/sessions。
+> **2026-07-11..12 两批已压缩归档(内力/真气循环+开放式闭关 3807→3849·saveVer 0.35→0.36 / 项目健康治理 7 批收口·CI format 门禁+lcov+macOS build job·3794/3794 覆盖 80.84%)**:git log + docs/sessions 可溯。
 
-> **2026-07-11 Codex 项目健康治理(`codex/project-health-hardening`)**:按 07-10 全量审查建议完成 7 批收口。① `lib/test/docs` 115 个历史格式文件统一,CI 加 formatter 门禁;② 新增扫荡结算/单位 4 测,CI 全量测试产 `lcov.info` artifact;③ 新增独立 macOS debug build job;④ README/CLAUDE/历史计划与 `.git` 体积误诊订正(`docs/handoff` tracked 仅 2.76MiB,本地 ignored 2.7G 不擅删);⑤ 存档恢复抽 `SaveRestoreDatabaseOps`,掉落引用校验移出 GameRepository,招募属性去 `dynamic`;⑥ 六个 BattleScreen 播放 bool 收进 `BattleScreenPlaybackConfig`,25 个测试/诊断调用迁 `defaultGroundStrategy` 后删除旧 `battle_engine.dart`;⑦ 锁文件兼容升级 21 项并删未使用 `intl`。**最终门禁**:build_runner 114 outputs;format 1080/0 changed;analyze 0;coverage 全量 **3794/3794**(约10m16s),已记录行覆盖 **80.84%**;macOS debug build 成功;diff/status 边界通过。**剩余非阻塞**:`stage_entry_flow` 21.51% 且仍混合多 hook;GameRepository/IsarSetup 全局单例继续分批降耦;`js 0.7.2` 为 `isar_community 3.3.2` 上游传递依赖;远端 CI 待分支推送后运行。
-
-> **2026-07-10 六批已压缩归档(CI checkout@v7 / save-restore 质量批 PR#33 / WebP 试点+桃花岛 .webp / 审查债务收口 loadAllDefs 230→25·Isar Core 直开 95→0 / 挂机批 A-O / 全量审查+质量补强 3789 绿)**:详当日 git log、PR #23-33 与 `docs/audit/runtime_onboarding_acceptance_2026-07-10.md`。
-> **2026-07-05..08 十六批已压缩归档**(git log + docs/sessions/docs/audit 可溯·3682→3753 测):07-07 全面体检(6 并行代理·P0×5 全数修复:离线结算闭环 OnlinePresenceController/invalidate 速修 helper/群战烘焙/拖招插队/门控解锁)· 通宵字体审查(色板混用清零+醒目金压暗)· codex 六任务批(仓库筛选分组/开局三件套/水墨弹道)· 技能目标快捷选择栏 · UX对比度+技能成长门控 · 夜批视觉收口(29 屏实拍)· Tier1/Tier2 配色结构根治(DarkParchment/LightPaper 重命名+PanelSurface 自带文字色)· 夜间挂机批 A-M(docs+4 候选分支全合)· BattleScreen C BattlePlaybackController 抽离(1433→836 行)· 07-08 三批遗留修复+风险收口续+桃花岛首屏一屏地图。详各日 handoff/closeout 与 git log。
-> **2026-07-02 四批已压缩归档(.git filter-repo 瘦身 2.5G→658M 合 `5bd36fc1` / 资产 webp q80 210M→64.7M 方案A 合 `2fe743ea` / 全项目六维审查+速修批 P0 资产声明修复 合 `3fb76a20` / floor30 护法结界终局战+视觉验收路由)**:git log + `docs/audit/full_project_review_2026-07-02.md` + `docs/spec/full_review_2026-07-02_followup_backlog.md` 可溯·3530→3586 测;webp 方案A(文件名保 .png 内容 webp·解码守卫测)沿用至今,backlog 项已由 07-10..19 各批消化。
-> **2026-07-01 六批已压缩归档(观察点拍板②修+PROGRESS瘦身 / 新手前30min S1-S4 / codex招降hook修 / 读秒圆环实装+目检+破绽暖金 / tap 两段点选 / 夜间 UI 打磨+纸底文字根治)**:git log 可溯·3466→3530 测·零碰 numbers/结算/saveVer/schema。
-> **2026-06-29 装备/角色 UI 专业化 + 页面性能 + 祖师塑形 + 5/4 梯队视觉批 + 13 任务批次 已压缩归档**(git log 可溯·3331→3466 测):装备对比/角色面板/仓库专业化 3 分支合;页面切换性能优化 `1c926f04`(WuxiaImage cacheWidth·57 处迁移);新档祖师塑形 `fa428eaa`(saveVer 0.33·命盘/出身/流派);浅宣纸文字对比根治 `d6c1eeee`(PaperPanel panelFill 55%→86%);第 5 梯队 9 分支全合 + 第 4 梯队多批 + 主菜单状态摘要 + 下一阶段 13 任务(12 合 1 缓)。
-> **2026-06-01..28 可玩性内核 + UI kit + P0 战斗可见化 + 装备出售/分解 + 桃花岛一二期 + 全系统审计 A-E + 材料经济 P4 + 弟子终局解锁 + 战前情报 opt-in 已压缩归档**(git log/spec/closeout 可溯·1661→3297 测,历史四条明细见更早 commit 中 PROGRESS.md)。
+> **2026-06-29..07-10 五段已压缩归档(07-10 六批 CI+webp+审查债务 3789 绿 / 07-05..08 十六批 3682→3753 / 07-02 filter-repo 2.5G→658M+webp 64.7M 3530→3586 / 07-01 六批 3466→3530 / 06-29 UI 专业化+性能+祖师塑形 3331→3466 / 06-01..28 可玩性内核+UI kit+桃花岛 1661→3297)**:git log + docs/audit + 各 closeout 可溯。
 ---
 
 ## 已知偏差 / 挂账事项
@@ -92,23 +87,4 @@
 ## 归档
 
 ### 已解决挂账(逆时序)
-- **Phase 1-2 + W1-W13 全销账**(2026-05-10..14):#1/5/12-16/19-29/32 + #18 伪挂账
-
-### Phase 1-4 早期详条已迁出
-
-- Phase 1-3 + W4-W11:`phase{1,2,3}_summary.md` + tags `v0.1.0-phase1` / `v0.3.0-w11`
-- W14-W15 + Phase 5 #2/#3 销账详条:git log + handoff/各 closeout
-
-### W17-W18 详条迁出 2026-05-19/20
-
-13 段销账(P1 #42-45 / Nightshift 9 task / P0 4 段 / 外部审查 6 项 / 路线图 launched / Codex 视觉)。详 `p1_4{2,3,4}_*` / `nightshift_20260519_handoff.md` / `p0_38_maxhp_rebalance_closeout_2026-05-17.md` 11 closeout。
-
-- **P1.1 候选 1-5**(2026-05-21):5 候选全收口(4 实装 + 1 doc)— 收徒池 E.1 / 祖师爷 sect_wide_buff / 共鸣度 4 子任务 + joint_skill / 开锋 build / CLAUDE.md §12 对齐 · `p1_1_*_closeout_2026-05-21.md`。
-
-### M4 #46 美术 + Ch4 Phase 2 详条迁出 2026-05-20/22
-
-- **M4 #46 美术** 5 段(2026-05-20/21):Stage 2 W1-W6 74/74 + assets 89 张 + stage_audit + #45 Demo §8.4 · 详 art_poc_* / art_assets_integration_* / p1_45_demo_polish_*
-- **Ch4 1.0 P2 第二条主线第 1 章**(2026-05-21/22):Phase 2.1-2.5 全收口 + 13 narrative ~5,880 字 · 详 p1_x_chapter4_phase2_*
-### 2026-05-22..28 详条归档
-
-- **Ch5+Ch6 飞升主线闭环 + 心魔 Batch 2.1-2.5 + P3.1 轻功 + v2.1 工具 + P1.2 江湖恩怨 + P3 三项 + P2.1 内容批 + drop 全覆盖**(1458→1519 测·详 `p2_x_chapter{5,6}_phase2_full_closeout_2026-05-22.md` / `p2_x_inner_demon_final_closeout_2026-05-23.md` + `p3_1_lightfoot_closeout_2026-05-23.md` / `session_closeout_2026-05-{25,28}_*` / `p1_2_jianghu_full.md` + git log 可溯)
+- **Phase 1-2 + W1-W13 全销账**(2026-05-10..14):#1/5/12-16/19-29/32 + #18 伪挂账;Phase 1-5/W4-W18/P1.1/M4 #46/Ch4-6 等 2026-05 详条全部迁出——`phase{1,2,3}_summary.md` + tags + `p1_*`/`p0_*`/`p2_x_*`/`art_*` 各 closeout + git log 可溯
