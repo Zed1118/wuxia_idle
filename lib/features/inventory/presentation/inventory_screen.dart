@@ -1222,9 +1222,18 @@ class _EquipmentGridTile extends ConsumerWidget {
   }) async {
     final service = EquipmentService(isar: IsarSetup.instance);
     if (equippedOnTarget) {
-      await service.unequip(characterId: target.id, slot: equipment.slot);
-      _invalidateAfterEquip(ref, target.id, previousEquipment?.id);
+      final outcome = await service.unequip(
+        characterId: target.id,
+        slot: equipment.slot,
+      );
       if (!context.mounted) return;
+      if (outcome == EquipOutcome.reservedByActivity) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(UiStrings.equipReservedByActivity)),
+        );
+        return;
+      }
+      _invalidateAfterEquip(ref, target.id, previousEquipment?.id);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(UiStrings.equipDirectUnequipSuccess)),
       );
@@ -1252,6 +1261,11 @@ class _EquipmentGridTile extends ConsumerWidget {
       case EquipOutcome.protectedCurrentEquipment:
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text(UiStrings.equipProtectedCurrent)),
+        );
+        return;
+      case EquipOutcome.reservedByActivity:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(UiStrings.equipReservedByActivity)),
         );
         return;
       case EquipOutcome.notFound:

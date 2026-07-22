@@ -8,6 +8,8 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/features/lineup/application/lineup_service.dart';
 
 import '../../../support/isar_test_support.dart';
@@ -390,6 +392,70 @@ void main() {
         4,
         5,
       ], reason: '一流精通 > 三流启蒙 > 学徒启蒙;同级按 id 升序');
+    });
+
+    group('活动占用契约(07-21 审查 P1-5.1)', () {
+      Future<void> seedExpeditionRun(List<int> memberIds) async {
+        final isar = IsarSetup.instance;
+        await isar.writeTxn(() async {
+          await isar.expeditionRuns.put(
+            ExpeditionRun()
+              ..saveDataId = 0
+              ..policy = ExpeditionPolicy.yiZhanLiXing
+              ..seed = 1
+              ..departedAt = DateTime(2026, 7, 16)
+              ..currentNode = 2
+              ..members = [
+                for (final id in memberIds)
+                  ActivityMemberSnapshot()
+                    ..characterId = id
+                    ..reservedEquipmentIds = []
+                    ..reservedTechniqueIds = []
+                    ..currentHp = 100
+                    ..currentQi = 50
+                    ..isDowned = false,
+              ]
+              ..stagedRewards = [],
+          );
+        });
+      }
+
+      test('在途远征成员禁换上:加入者拦 activityOccupied 且零副作用', () async {
+        await seedRoster();
+        await seedExpeditionRun([4]);
+        final service = LineupService(IsarSetup.instance);
+
+        final result = await service.apply(newActiveIds: [1, 2, 4]);
+
+        expect(result.status, LineupApplyStatus.activityOccupied);
+        expect(result.offendingCharacterId, 4);
+        expect((await readSave()).activeCharacterIds, [
+          1,
+          2,
+          3,
+        ], reason: '失败态零副作用');
+      });
+
+      test('在途远征成员可换下:移出不拦(companion §8.1 Q5)', () async {
+        await seedRoster();
+        await seedExpeditionRun([2]);
+        final service = LineupService(IsarSetup.instance);
+
+        final result = await service.apply(newActiveIds: [1, 3]);
+
+        expect(result.status, LineupApplyStatus.success);
+        expect((await readSave()).activeCharacterIds, [1, 3]);
+      });
+
+      test('在途远征成员留阵纯重排不拦(成员集不变)', () async {
+        await seedRoster();
+        await seedExpeditionRun([2]);
+        final service = LineupService(IsarSetup.instance);
+
+        final result = await service.apply(newActiveIds: [2, 1, 3]);
+
+        expect(result.status, LineupApplyStatus.success);
+      });
     });
 
     test('替补池空(全员出战)→ 空列表', () async {

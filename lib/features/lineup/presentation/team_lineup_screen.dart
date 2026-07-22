@@ -262,6 +262,7 @@ Future<void> _applyLineup(
   final message = switch (result.status) {
     LineupApplyStatus.retreatLocked => UiStrings.lineupRetreatLockedSnack,
     LineupApplyStatus.noMainTechnique => UiStrings.lineupNoMainSnack,
+    LineupApplyStatus.activityOccupied => UiStrings.lineupActivityOccupiedSnack,
     LineupApplyStatus.founderMissing ||
     LineupApplyStatus.ascendedFounder => UiStrings.lineupFounderMustStay,
     _ => UiStrings.lineupApplyFailed,

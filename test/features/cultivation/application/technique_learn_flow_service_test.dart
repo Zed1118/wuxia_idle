@@ -9,7 +9,9 @@ import 'package:wuxia_idle/core/domain/game_event.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/cultivation/application/technique_learn_flow_service.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 
 import '../../../support/test_data.dart';
 import '../../../support/isar_test_support.dart';
@@ -214,5 +216,42 @@ void main() {
     );
 
     expect(result.status, TechniqueLearnFlowStatus.techniqueDefMissing);
+  });
+
+  test('在途活动成员研习 → characterOccupied 零副作用（07-21 审查 P1-5.1）', () async {
+    final isar = IsarSetup.instance;
+    await seed(makeApprentice(insightPoints: 300));
+    await isar.writeTxn(() async {
+      await isar.expeditionRuns.put(
+        ExpeditionRun()
+          ..saveDataId = 0
+          ..policy = ExpeditionPolicy.yiZhanLiXing
+          ..seed = 1
+          ..departedAt = DateTime(2026, 7, 16)
+          ..currentNode = 1
+          ..members = [
+            ActivityMemberSnapshot()
+              ..characterId = 1
+              ..reservedEquipmentIds = []
+              ..reservedTechniqueIds = []
+              ..currentHp = 100
+              ..currentQi = 50
+              ..isDowned = false,
+          ]
+          ..stagedRewards = [],
+      );
+    });
+    final service = TechniqueLearnFlowService(isar);
+
+    final result = await service.learn(
+      characterId: 1,
+      techniqueDefId: 'tech_gangmeng_jichu',
+      role: TechniqueRole.assist,
+    );
+
+    expect(result.status, TechniqueLearnFlowStatus.characterOccupied);
+    final ch = await isar.characters.get(1);
+    expect(ch!.insightPoints, 300, reason: '失败态零副作用');
+    expect(ch.assistTechniqueIds, isEmpty);
   });
 }

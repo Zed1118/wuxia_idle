@@ -4,11 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
@@ -777,6 +780,57 @@ void main() {
           reason: '敌方 ${enemy.name} outputMultiplier 不受玩家伤势影响',
         );
       }
+    });
+  });
+
+  group('活动占用契约（07-21 审查 P1-5.1）', () {
+    test('在途远征成员从主线战斗阵容过滤：祖师 solo 出战', () async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      final isar = IsarSetup.instance;
+      await isar.writeTxn(() async {
+        // 弟子 2 号入出战阵容，但被派遣远征（在途）。
+        await isar.characters.put(
+          Character.create(
+            name: '远行弟子',
+            realmTier: RealmTier.sanLiu,
+            realmLayer: RealmLayer.qiMeng,
+            attributes: Attributes(),
+            rarity: RarityTier.biaoZhun,
+            lineageRole: LineageRole.disciple,
+            createdAt: DateTime(2026, 7, 16),
+          )..id = 2,
+        );
+        final save = (await isar.saveDatas.get(0))!
+          ..activeCharacterIds = [1, 2];
+        await isar.saveDatas.put(save);
+        await isar.expeditionRuns.put(
+          ExpeditionRun()
+            ..saveDataId = 0
+            ..policy = ExpeditionPolicy.yiZhanLiXing
+            ..seed = 1
+            ..departedAt = DateTime(2026, 7, 16)
+            ..currentNode = 1
+            ..members = [
+              ActivityMemberSnapshot()
+                ..characterId = 2
+                ..reservedEquipmentIds = []
+                ..reservedTechniqueIds = []
+                ..currentHp = 100
+                ..currentQi = 50
+                ..isDowned = false,
+            ]
+            ..stagedRewards = [],
+        );
+      });
+      final stage = GameRepository.instance.getStage('stage_01_01');
+
+      final (left, _) = await StageBattleSetup(isar: isar).buildTeams(stage);
+
+      expect(
+        left.map((c) => c.characterId).toList(),
+        [1],
+        reason: '在途成员 2 被过滤，未随行祖师 solo（companion §8.1 Q5）',
+      );
     });
   });
 }

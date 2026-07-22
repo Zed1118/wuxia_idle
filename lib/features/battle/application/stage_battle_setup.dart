@@ -16,6 +16,8 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
+import '../../activity/application/character_occupancy_service.dart';
+import '../../activity/domain/activity_occupancy.dart';
 import '../../cultivation/application/skill_loadout_resolver.dart';
 import '../../cultivation/application/skill_loadout_service.dart';
 import '../../cultivation/application/synergy_service.dart';
@@ -175,15 +177,43 @@ class StageBattleSetup {
     List<int>? characterIds,
   }) async {
     final save = await isar.saveDatas.get(0);
-    final ids = characterIds ?? save?.activeCharacterIds ?? const [];
+    var ids = characterIds ?? save?.activeCharacterIds ?? const <int>[];
+    var dispatched = const <int>{};
+    if (characterIds == null) {
+      // 活动占用契约（companion §3.5/§8.1 Q5 · 07-21 审查 P1-5.1）：远征/
+      // 断魂庄在途成员不随主线/塔/心魔等战斗上场——活动战斗以出发快照为准，
+      // 放行会读实时角色造成双轨漂移。祖师不可派遣，过滤后仍可 solo 出战；
+      // 闭关占用不走此过滤（闭关锁只管编成增删，留阵参战是既有语义）。
+      final occupancy = await CharacterOccupancyService(isar).snapshot();
+      dispatched = <int>{
+        for (final e in occupancy.entries)
+          if (e.kind == ActivityKind.expedition ||
+              e.kind == ActivityKind.bossGauntlet)
+            ...e.characterIds,
+      };
+      if (dispatched.isNotEmpty) {
+        ids = [
+          for (final id in ids)
+            if (!dispatched.contains(id)) id,
+        ];
+      }
+    }
     final players = <Character>[];
     for (final cid in ids) {
       final c = await isar.characters.get(cid);
       if (c != null) players.add(c);
     }
     if (players.isEmpty) {
-      // 兜底：Phase 2 P1 种子是 id=1 单人，没设 activeCharacterIds
-      final fallback = await isar.characters.where().findFirst();
+      // 兜底：Phase 2 P1 种子是 id=1 单人，没设 activeCharacterIds。
+      // 兜底同样避开在途成员（全员在途 → 无 eligible 按无角色报错）。
+      final all = await isar.characters.where().findAll();
+      Character? fallback;
+      for (final c in all) {
+        if (!dispatched.contains(c.id)) {
+          fallback = c;
+          break;
+        }
+      }
       if (fallback == null) {
         throw StateError('StageBattleSetup: Isar 没有任何 Character（先跑 P1 种子）');
       }

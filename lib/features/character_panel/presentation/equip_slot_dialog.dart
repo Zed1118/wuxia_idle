@@ -72,6 +72,12 @@ class _EquipSlotDialogState extends ConsumerState<EquipSlotDialog> {
       );
       return;
     }
+    if (outcome == EquipOutcome.reservedByActivity) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.equipReservedByActivity)),
+      );
+      return;
+    }
     if (outcome != EquipOutcome.success) return;
     _invalidate(touched: eq.id);
     Navigator.pop(context);
@@ -80,10 +86,16 @@ class _EquipSlotDialogState extends ConsumerState<EquipSlotDialog> {
   Future<void> _unequip() async {
     final isar = ref.read(isarProvider);
     if (isar == null) return;
-    await EquipmentService(
+    final outcome = await EquipmentService(
       isar: isar,
     ).unequip(characterId: widget.character.id, slot: widget.slot);
     if (!mounted) return;
+    if (outcome == EquipOutcome.reservedByActivity) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.equipReservedByActivity)),
+      );
+      return;
+    }
     _invalidate();
     Navigator.pop(context);
   }
