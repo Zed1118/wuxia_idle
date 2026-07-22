@@ -477,6 +477,7 @@ floors:
 
   # === Floor 15 · 小 Boss · 学徒·熟练 ===
   - floorIndex: 15
+    dropSkillFragmentId: skill_guan_shan_ba_ji  # 2026-07-22 拍定收编(A2):残页(刚猛「关山拔戟」· tier4· 每胜概率掉,集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 30
     requiredRealm: xueTu
@@ -661,6 +662,7 @@ floors:
 
   # === Floor 20 · 大 Boss · 三流·启蒙 ===
   - floorIndex: 20
+    dropSkillFragmentId: skill_jin_gang_fu_mo  # 2026-07-22 拍定收编(A2·恢复 5680ea2c 原设计):残页(刚猛「金刚伏魔」· tier4· 集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 35
     requiredRealm: sanLiu
@@ -950,6 +952,7 @@ floors:
 
   # === Floor 25 · 小 Boss · 三流·入门 ===
   - floorIndex: 25
+    dropSkillFragmentId: skill_ma_ta_fei_yan  # 2026-07-22 拍定收编:残页(灵巧「马踏飞燕」· tier5· 集齐 5 片解锁);挂 25 层=灵巧 Boss(绝顶剑魔)对灵巧残页流派相合,且顶原波B 同 tier 灵巧残页(jing_hong 改挂 Ch13 章末)空位
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 40
     requiredRealm: sanLiu

@@ -1518,7 +1518,7 @@ stages:
         skillIds:
           - skill_yinrou_changlian_basic
           - skill_yinrou_changlian_skill
-          - skill_xie_yu_chuan_lian                 # 波B 真解双用:Boss 招牌蓄力技「阳关无故人」
+          - skill_xie_yu_chuan_lian                 # 波B 真解双用:Boss 招牌蓄力技「斜雨穿帘」(2026-07-22 修腐注:6fb89640 重排后实挂本招,原注误写「阳关无故人」)
         iconPath: assets/enemies/xiliang_bazhu.png
         isBoss: true
         chargeSkillId: skill_xie_yu_chuan_lian      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
@@ -2951,6 +2951,238 @@ stages:
     difficultyMultiplier: 13.8
     biome: inn
     sceneBackgroundPath: assets/scenes/battle_inn.png
+    weather: clear
+
+  # ============================================================================
+  # Ch13「山外青山」(2026-07-22) 绝顶段首章 · 主线第 13 章
+  # ----------------------------------------------------------------------------
+  # 主题「从看江湖到成为江湖」传承弧:守拙翁托他看江湖,走到绝顶他自己成了别人要等的人。
+  # 承铜符/止水印 motif(保持象征·零 schema);守拙翁托付线已收束不复活,只作镜像底色。
+  # 章内敌人层 qiMeng→shuLian 递进(照 Ch10 一流首章模板:01-02 启蒙/03-04 入门/05 熟练);
+  # cap 28→31(numbers.yaml·绝顶·熟练·cross-tier·releaseTier yiLiu→jueDing 随 cap 自动重算)。
+  # Boss 位 {4,5}:13_04 章中 Boss(断崖守关人·stat 门槛无相位·照守炉铁匠)·13_05 末 Boss
+  # (候峰翁·绝顶之上等人数十年的老者·守拙翁镜像倒置·一览众山真解破招·两相位 chargeCounter)。
+  # 章首 stage_13_01 无 prevStageId(链首必缺·跨章 prevStageId 会触加载期 StateError)。
+  # 敌招复用绝顶 jianghu 江湖秘传系列(tier5·禁 menpai 降档)+ 装备掉落复用 zhongQi 重器(tier5)
+  # ·唯一新增 = 末Boss真解 skill_yi_lan_zhong_shan;13_05 章末重打残页挂 skill_jing_hong_zhao_ying。
+  # ============================================================================
+
+  # === stage_13_01 · 山脚茶棚(绝顶杂兵 · 刚猛 · 见过绝顶的人:退隐老把式只讲不出手的老话)===
+  - id: stage_13_01
+    name: 山脚茶棚
+    stageType: mainline
+    chapterIndex: 13
+    narrativeOpeningId: stage_13_01_opening
+    narrativeVictoryId: stage_13_01_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_shanwai_chapeng_bashi
+        name: 茶棚老把式
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 42000
+        baseAttack: 1200
+        baseSpeed: 300
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+        iconPath: assets/enemies/shanwai_chapeng_bashi.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_po_zhen_chui
+        dropChance: 1.0
+      - equipmentDefId: armor_zhongqi_yin_lin_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [40, 50]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [560, 680]
+        dropChance: 1.0  # 银两(绝顶段首章 · 承 Ch12 曲线续进)
+    baseExpReward: 46
+    difficultyMultiplier: 14.2
+    biome: teaHouse
+    sceneBackgroundPath: assets/scenes/battle_teahouse.png
+    weather: clear
+
+  # === stage_13_02 · 半山寺(绝顶杂兵 · 灵巧 · 半山即停的人:「半山也很好」的知足·考校主角的「再上」)===
+  - id: stage_13_02
+    name: 半山寺
+    stageType: mainline
+    chapterIndex: 13
+    prevStageId: stage_13_01
+    narrativeOpeningId: stage_13_02_opening
+    narrativeVictoryId: stage_13_02_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_shanwai_banshan_seng
+        name: 半山知客僧
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 44000
+        baseAttack: 1240
+        baseSpeed: 295
+        skillIds:
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
+        iconPath: assets/enemies/shanwai_banshan_seng.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_qing_xu_jian
+        dropChance: 1.0
+      - equipmentDefId: accessory_zhongqi_qing_yu_huan
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [40, 50]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [570, 690]
+        dropChance: 1.0  # 银两(绝顶段首章)
+    baseExpReward: 48
+    difficultyMultiplier: 14.4
+    biome: temple
+    sceneBackgroundPath: assets/scenes/battle_temple.png
+    weather: clear
+
+  # === stage_13_03 · 竹林(章中考验 · 阴柔 · 登到高处反收锋的人:竹隐客藏锋不露 · 非 Boss 保有敌队)===
+  - id: stage_13_03
+    name: 竹林
+    stageType: mainline
+    chapterIndex: 13
+    prevStageId: stage_13_02
+    narrativeOpeningId: stage_13_03_opening
+    narrativeVictoryId: stage_13_03_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_shanwai_zhulin_yinke
+        name: 竹隐客
+        realmTier: jueDing
+        realmLayer: ruMen
+        school: yinRou
+        baseHp: 47000
+        baseAttack: 1300
+        baseSpeed: 300
+        skillIds:
+          - skill_yinrou_jianghu_basic
+          - skill_yinrou_jianghu_skill
+        iconPath: assets/enemies/shanwai_zhulin_yinke.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_du_long_suo
+        dropChance: 1.0
+      - equipmentDefId: armor_zhongqi_yu_lin_qing_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [42, 52]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [580, 700]
+        dropChance: 1.0  # 银两(绝顶段首章)
+    baseExpReward: 50
+    difficultyMultiplier: 14.6
+    biome: bambooForest
+    sceneBackgroundPath: assets/scenes/battle_bambooforest.png
+    weather: clear
+
+  # === stage_13_04 · 断崖瀑布(刚猛章中 Boss · 登顶路最后的拦路考校者:断崖守关人 · stat 门槛无相位 · 配 defeat)===
+  - id: stage_13_04
+    name: 断崖瀑布
+    stageType: mainline
+    chapterIndex: 13
+    prevStageId: stage_13_03
+    narrativeOpeningId: stage_13_04_opening
+    narrativeVictoryId: stage_13_04_victory
+    narrativeDefeatId: stage_13_04_defeat
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_shanwai_duanya_shouguan
+        name: 断崖守关人
+        realmTier: jueDing
+        realmLayer: ruMen
+        school: gangMeng
+        baseHp: 52000
+        baseAttack: 1420
+        baseSpeed: 305
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+        iconPath: assets/enemies/shanwai_duanya_shouguan.png
+        isBoss: true   # 章中 Boss = 拦路考校者 stat 门槛(HP/攻墙 · 无充能相位,唯 13_05 候峰翁设充能破招)
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_ri_yue_lun
+        dropChance: 1.0
+      - equipmentDefId: armor_zhongqi_han_tie_zhong_jia
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [44, 54]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [640, 780]
+        dropChance: 1.0  # 银两(绝顶章中 Boss)
+    baseExpReward: 70
+    difficultyMultiplier: 14.8
+    biome: cliffWaterfall
+    sceneBackgroundPath: assets/scenes/battle_cliffwaterfall.png
+    weather: clear
+
+  # === stage_13_05 · 绝顶平台(灵巧·候峰翁·绝顶之上等人数十年的老者·守拙翁镜像倒置·末 Boss·破招掉一览众山真解)===
+  - id: stage_13_05
+    name: 绝顶平台
+    stageType: mainline
+    chapterIndex: 13
+    prevStageId: stage_13_04
+    narrativeOpeningId: stage_13_05_opening
+    narrativeVictoryId: stage_13_05_victory
+    narrativeDefeatId: stage_13_05_defeat
+    requiredRealm: jueDing
+    dropSkillManualId: skill_yi_lan_zhong_shan  # 真解(一览众山·候峰翁本命·同招为 boss chargeSkillId 双用·破招首通 markUnlocked)
+    dropSkillFragmentId: skill_jing_hong_zhao_ying  # 章末重打残页(惊鸿照影·tier5 灵巧·releaseTier 抬 jueDing 后挂载完备收编·2026-07-22 拍定)
+    enemyTeam:
+      - id: enemy_jueDing_shanwai_jueding_houfeng
+        name: 候峰翁
+        realmTier: jueDing
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 56000
+        baseAttack: 1550
+        baseSpeed: 300
+        skillIds:
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
+          - skill_yi_lan_zhong_shan        # 本命真解 = 末Boss chargeSkill(双用 canon)
+        iconPath: assets/enemies/shanwai_jueding_houfeng.png
+        isBoss: true
+        chargeSkillId: skill_yi_lan_zhong_shan   # 破招:玩家拦截,首通掉同招真解
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_zhui_hun_ding
+        dropChance: 1.0
+      - equipmentDefId: accessory_zhongqi_bi_xi_shou_chuan
+        dropChance: 0.50
+      - equipmentDefId: accessory_zhongqi_xuan_tie_zhi_huan
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [46, 56]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [740, 900]
+        dropChance: 1.0  # 银两(绝顶章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(绝顶章末)
+    baseExpReward: 90
+    difficultyMultiplier: 15.0
+    biome: mountainForest
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
     weather: clear
 
   # ============================================================================

@@ -2844,7 +2844,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: fu_mai_touch
-    source: special
+    source: special   # 破招技走破招槽免解锁(canInterrupt+流派匹配即自动装配·skill_loadout.dart autoFill),无需挂载,永不进红线⑦(2026-07-22 拍定补注)
     proficiency:        # 均衡型:中档减防 + CD 回转
       effects:
         shunShou: { cooldown_delta: -1 }
@@ -2944,7 +2944,7 @@ skills:
     source: mainline_drop
     style: lingQiao
     tier: 4
-    mount_deferred: true  # 2026-07-20 Ch10 取中原守道弧改用 skill_zhi_shui_jue(yinRou);本招(大漠·灵巧)属边塞主题,Ch9 已收束边塞,预留后续一流章挂载,cap24 后红线⑦按 !mountDeferred 豁免(yaml key=snake·skill_def.dart:174)
+    mount_deferred: true  # 2026-07-22 更新:Ch13 主题定「从看江湖到成为江湖」中州传承弧,本招(大漠·灵巧)仍不搭;继续 deferred,待边塞回访章收编或最终否决(2026-07-20 Ch10 弃用原注:改用 skill_zhi_shui_jue;红线⑦按 !mountDeferred 豁免)
     proficiency:        # 真解手工高半档(灵巧向:CD 倾斜)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -2965,6 +2965,7 @@ skills:
     source: mainline_drop
     style: gangMeng
     tier: 5
+    mount_deferred: true  # 2026-07-22 拍定:cap 抬 31 后 tier5 进发布阶,本招(西凉马战·刚猛)留 Ch14/15 绝顶压场章真解收编,红线⑦按 !mountDeferred 豁免
     proficiency:        # 真解手工高半档(刚猛向,沿青锋绝锚)
       effects:
         shuLian: { damage_pct: 0.10 }
@@ -2985,6 +2986,7 @@ skills:
     source: mainline_drop
     style: yinRou
     tier: 6
+    mount_deferred: true  # 2026-07-22 拍定:挂账显性化·本招(Ch4 西出阳关原生·tier6 宗师档)留宗师段阳关/西凉回访章收编;cap 到宗师前天然豁免⑦,补标零影响
     proficiency:        # 真解手工高半档(阴柔向:伤害温和 + CD)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -3091,7 +3093,7 @@ skills:
     source: fragment
     style: gangMeng
     tier: 4
-    mount_deferred: true  # cap24 暴露·一流 fragment 秘籍 farm 招挂载属独立后续批·非 Ch10 主线章 scope·红线⑦按 !mountDeferred 豁免
+    # 2026-07-22 拍定收编:挂塔 20 层残页(恢复 5680ea2c 原设计·A2 批),删 mount_deferred;scroll 道具不投放继续闲置
     proficiency:        # 波A 流派模板(刚猛)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -3151,7 +3153,7 @@ skills:
     source: fragment
     style: gangMeng
     tier: 4
-    mount_deferred: true  # cap24 暴露·一流 fragment 秘籍 farm 招挂载属独立后续批·非 Ch10 主线章 scope·红线⑦按 !mountDeferred 豁免
+    # 2026-07-22 拍定收编:挂塔 15 层残页(A2 批·塔层 farm 与主题解耦),删 mount_deferred;scroll 道具不投放继续闲置
     proficiency:        # 波A 流派模板(刚猛)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -3345,3 +3347,30 @@ skills:
         shuLian: { damage_pct: 0.08 }
         jingTong: { damage_pct: 0.08 }
         huaJing: { damage_pct: 0.08 }
+
+  # ───────────────────────────────────────────
+  # Ch13「山外青山」末Boss「候峰翁」本命真解(绝顶段首章·从看江湖到成为江湖·传承弧)。
+  # 末Boss stage_13_05 chargeSkillId 双用 = dropSkillManualId(破招首通掉·沿「破他的招、学他的招」canon)。
+  # 独立末Boss真解,非 wave_b 配平池成员(standaloneBossManualIds 白名单);一览众山=登高一览·
+  # 绝顶之上回望来路,守拙翁镜像倒置——老人等人数十年,把下一程交到走得上来的人手里。
+  # mult 4800 = tier4 真解锚 3600 上一档(绝顶 tier5 必对 jiangHuMiChuan 阶·守全局 ≤8000·
+  # 真解 source=mainline_drop 不入 encounter per-tier cap)。
+  - id: skill_yi_lan_zhong_shan
+    name: 一览众山
+    description: 登到最高处回望,来路群山尽低。这一招不求快、不求狠,只是把几十年的山,一眼看尽——看尽处,剑自然到了。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 4800
+    qiDelta: -30
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: mountain_vista
+    source: mainline_drop
+    style: lingQiao
+    tier: 5
+    proficiency:        # 真解手工高半档(灵巧向:CD 倾斜·照 skill_feng_juan_liu_sha 三层模板)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        jingTong: { damage_pct: 0.05, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
