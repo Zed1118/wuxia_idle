@@ -210,7 +210,7 @@ void main() {
       await IsarSetup.instance.characters.put(ch);
       await IsarSetup.instance.mainlineProgress.put(
         MainlineProgress()
-          ..saveDataId = 0
+          ..saveDataId = IsarSetup.currentSlotId
           ..clearedStageIds = ['stage_01_01'],
       );
     });
