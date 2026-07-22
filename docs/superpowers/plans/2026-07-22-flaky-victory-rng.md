@@ -52,5 +52,6 @@
 - [x] 修后 20 连跑全绿(20/20 EXIT=0)
 - [x] 相关域 targeted 绿(test/features/mainline 153 全绿)
 - [x] flutter analyze 0 issue(No issues found, 12.2s)
-- [ ] 批末全量 flutter test --no-pub 0 fail(基线 4626,记实测)
-- [ ] dart format + commit + draft PR(Zed1118/wuxia_idle)
+- [x] 批末全量 flutter test --no-pub 0 fail(实测 4626 全绿,基线 4626 持平,约 5 分钟)
+- [x] dart format + commit(4089fb3c)
+- [ ] push + draft PR(Zed1118/wuxia_idle)
