@@ -878,6 +878,15 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/shanwai_duanya_shouguan.png',
   'assets/enemies/shanwai_jueding_houfeng.png':
       'assets/enemies/shanwai_jueding_houfeng.png',
+  // Ch14「山外来客」5 敌立绘(codex image_gen·透明全身图)
+  'assets/enemies/xiliang_kaidao_xinshi.png':
+      'assets/enemies/xiliang_kaidao_xinshi.png',
+  'assets/enemies/xiliang_xianfeng.png': 'assets/enemies/xiliang_xianfeng.png',
+  'assets/enemies/xiliang_xiyu_jianke.png':
+      'assets/enemies/xiliang_xiyu_jianke.png',
+  'assets/enemies/xiliang_fujiang.png': 'assets/enemies/xiliang_fujiang.png',
+  'assets/enemies/xiliang_mazhan_zongshi.png':
+      'assets/enemies/xiliang_mazhan_zongshi.png',
   'assets/enemies/enemy_gauntlet_su_wujiu.png':
       WuxiaUi.battleGauntletSuWujiuStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':
@@ -1041,6 +1050,12 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/shanwai_zhulin_yinke.png' => 0.983,
   'assets/enemies/shanwai_duanya_shouguan.png' => 0.986,
   'assets/enemies/shanwai_jueding_houfeng.png' => 0.960,
+  // Ch14「山外来客」5 敌脚底校准(alpha 包围盒实测·2026-07-23)
+  'assets/enemies/xiliang_kaidao_xinshi.png' => 0.949,
+  'assets/enemies/xiliang_xianfeng.png' => 0.947,
+  'assets/enemies/xiliang_xiyu_jianke.png' => 0.982,
+  'assets/enemies/xiliang_fujiang.png' => 0.986,
+  'assets/enemies/xiliang_mazhan_zongshi.png' => 0.951,
   WuxiaUi.battleGauntletSuWujiuStandee => 0.9681,
   WuxiaUi.battleGauntletQingyiGuardAStandee => 0.9571,
   WuxiaUi.battleGauntletQingyiGuardBStandee => 0.9642,
