@@ -1,17 +1,25 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/application/system_clock_provider.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
 import 'package:wuxia_idle/data/defs/expedition_config.dart';
+import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/features/expedition/presentation/expedition_overview_screen.dart';
+import 'package:wuxia_idle/features/expedition/presentation/expedition_recap_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
+
+import '../../support/isar_test_support.dart';
 
 class _FixedClock extends SystemClock {
   _FixedClock(this._now);
@@ -75,6 +83,8 @@ ExpeditionRun _run({required int currentNode}) => ExpeditionRun()
   ..stagedRewards = [];
 
 void main() {
+  setUpAll(() => initializeTestIsarCore());
+
   final dispatchCandidates = [
     _cand(_char(1, '沈青', school: TechniqueSchool.lingQiao)),
     _cand(_char(2, '楚河', school: TechniqueSchool.gangMeng), occupied: true),
@@ -195,6 +205,72 @@ void main() {
       ),
       findsWidgets,
     );
+    expect(find.text(UiStrings.expeditionRecallButton), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('active 态：召回 returned:false（并发冲突/无 run）→ 提示重试，不跳假 recap', (
+    tester,
+  ) async {
+    // 07-22 收账挂账（低）：recall 被 cursor 守卫放弃时 UI 曾按空结果直跳
+    // recap = 假行记。修复后应 SnackBar 提示重试、停留本屏。
+    // 用真 service + 空 Isar（无持久化 run）走 returned:false 同一出口。
+    // dart:io / Isar 全收进 runAsync 真时钟区（fake 区直接 await 真 IO 会挂；
+    // 沿 gauntlet_entry_flow 体例）。
+    Directory? tempDir;
+    addTearDown(() async {
+      if (Isar.getInstance('wuxia_save_slot1') != null) {
+        await IsarSetup.close();
+      }
+      if (tempDir != null && tempDir!.existsSync()) {
+        tempDir!.deleteSync(recursive: true);
+      }
+    });
+    await tester.runAsync(() async {
+      tempDir = await Directory.systemTemp.createTemp(
+        'wuxia_expedition_overview_',
+      );
+      await IsarSetup.init(directory: tempDir!, inspector: false);
+    });
+
+    Future<void> pumpUntilFound(Finder finder) async {
+      for (var i = 0; i < 160; i++) {
+        if (finder.evaluate().isNotEmpty) return;
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 50)),
+        );
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      fail('未等到目标组件：$finder');
+    }
+
+    await _pump(
+      tester,
+      const Size(1440, 900),
+      ProviderScope(
+        overrides: [
+          activeExpeditionProvider.overrideWith(
+            (ref) async => _run(currentNode: 12),
+          ),
+          expeditionConfigProvider.overrideWithValue(_config),
+          systemClockProvider.overrideWithValue(_FixedClock(_fixedNow)),
+          expeditionServiceProvider.overrideWithValue(
+            ExpeditionService(IsarSetup.instance),
+          ),
+          // Isar 已 init 时 candidates provider 会真查库（fake 区会挂），一并覆写。
+          expeditionCandidatesProvider.overrideWith((ref) async => const []),
+        ],
+        child: const MaterialApp(home: ExpeditionOverviewScreen()),
+      ),
+    );
+
+    await tester.tap(find.text(UiStrings.expeditionRecallButton));
+    await tester.pump();
+    await pumpUntilFound(find.text(UiStrings.expeditionRecallConfirm));
+    await tester.tap(find.text(UiStrings.expeditionRecallConfirm));
+    await pumpUntilFound(find.text(UiStrings.expeditionRecallRacedSnack));
+
+    expect(find.byType(ExpeditionRecapScreen), findsNothing, reason: '不得跳假行记');
     expect(find.text(UiStrings.expeditionRecallButton), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

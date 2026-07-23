@@ -996,6 +996,19 @@ class _TechniqueTile extends ConsumerWidget {
   Future<void> _onSetAsMain(BuildContext context, WidgetRef ref) async {
     final mainId = character.mainTechniqueId;
     if (mainId == null) return;
+
+    // 活动占用契约（07-22 #58 Gate 发现补接）：在途成员禁散功换修，
+    // 归队后再来。测试旁路：未 init Isar 时 service 为 null，跳过守卫。
+    final dispelSvc = ref.read(dispelServiceProvider);
+    if (dispelSvc != null &&
+        await dispelSvc.isCharacterOccupied(character.id)) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.dispelOccupiedSnack)),
+      );
+      return;
+    }
+
     final mainTech = await ref.read(techniqueByIdProvider(mainId).future);
     if (mainTech == null) return;
     if (!context.mounted) return;
@@ -1019,7 +1032,6 @@ class _TechniqueTile extends ConsumerWidget {
 
     // T32 #22b（Phase 5 W6-S2 重构）：落地 Isar putAll ch/oldMain/newMain。
     // 测试旁路：未 init Isar 时 service 为 null,短路。
-    final dispelSvc = ref.read(dispelServiceProvider);
     if (dispelSvc != null) {
       await dispelSvc.persistResult(
         ch: character,

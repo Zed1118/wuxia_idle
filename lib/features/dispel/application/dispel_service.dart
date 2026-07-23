@@ -5,6 +5,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/numbers_config.dart';
+import '../../activity/application/character_occupancy_service.dart';
 
 /// 散功结果（phase2_tasks T25）。
 ///
@@ -109,6 +110,15 @@ class DispelService {
   const DispelService({required this.isar});
 
   final Isar isar;
+
+  /// 活动占用契约（07-22 #58 Gate 发现补接，同 P1-5.1 体例）：闭关/远征/
+  /// 断魂庄在途成员不可散功换修——活动战斗以出发快照
+  /// （reservedTechniqueIds）为准，中途换主辅修会令快照与实时角色漂移。
+  /// 归队（会话关闭）后自动解除。UI 在弹二确前调用本守卫。
+  Future<bool> isCharacterOccupied(int characterId) async {
+    final occupancy = await CharacterOccupancyService(isar).snapshot();
+    return occupancy.isCharacterOccupied(characterId);
+  }
 
   /// 纯函数：dispel 不用 Isar,保持 static（方便 caller 不需 service instance）。
   static DispelResult dispel({
