@@ -60,18 +60,18 @@ void main() {
     final ch = _referenceRouteEnd(repo);
     expect(
       _displayLevel(repo, ch),
-      106,
-      reason: '对账 progression_release_budget_test Lv106 锚点',
+      109,
+      reason: '对账 progression_release_budget_test Lv109 锚点',
     );
     final realm = repo.getRealm(ch.realmTier, ch.realmLayer);
-    expect(realm.absoluteLevel, 11, reason: 'Lv106 = 三流·圆熟(abs11) 层内段');
-    expect(ch.experience, 715, reason: '参考路线三丹后层内余量');
+    expect(realm.absoluteLevel, 11, reason: 'Lv109 = 三流·圆熟(abs11) 层内段');
+    expect(ch.experience, 1079, reason: '参考路线三丹后层内余量');
     expect(_expToDisplayLevel(repo, ch, 100), 0);
-    expect(_expToDisplayLevel(repo, ch, 120), 1975);
+    expect(_expToDisplayLevel(repo, ch, 120), 1611);
     expect(
       _expToDisplayLevel(repo, ch, _targetLevel),
-      6635,
-      reason: 'Lv106→Lv141 纯挂机经验缺口',
+      6271,
+      reason: 'Lv109→Lv141 纯挂机经验缺口',
     );
   });
 
@@ -206,7 +206,8 @@ void main() {
     );
     expect(s1.totalHours, lessThan(s3.totalHours));
     expect(s3.totalHours, lessThan(s2.totalHours));
-    expect(s1.days, inInclusiveRange(55.0, 120.0));
+    // Ch14 缺口 6635→6271 后 s1 实测 52.9 天,下沿 55→50 同步重校(节奏带随内容扩张单调收窄·2026-07-23)。
+    expect(s1.days, inInclusiveRange(50.0, 120.0));
     expect(s2.days, inInclusiveRange(45.0, 100.0));
     expect(s3.days, inInclusiveRange(50.0, 110.0));
   });
@@ -219,7 +220,7 @@ void main() {
       avgDepth: 20,
       baseExpPerBattle: baseExp,
     );
-    final gap = 6635; // 锚点测已钉（2026-07-22 Ch13 扩后重校·全内容终态 Lv103→106·缺口 -454）
+    final gap = 6271; // 锚点测已钉（2026-07-23 Ch14 扩后重校·全内容终态 Lv106→109·缺口 -364）
     final s4Days = daysToTraverse(totalExp: gap, expPerHour: y.expPerHour);
     // 交叉对账：同口径 abs10→17 应 ≈ 18 天（expeditions.yaml 注释锚点）。
     final fullRangeDays = daysToTraverse(
@@ -276,9 +277,10 @@ void main() {
     expect(
       e1.days,
       inInclusiveRange(1.0, 3.5),
-    ); // 2026-07-22 Ch13 扩后缺口 6635·E1 实测 1.46 天下沿微调
+    ); // 2026-07-23 Ch14 扩后缺口 6271·E1 下沿随缺口重校
     expect(s4Days, inInclusiveRange(7.0, 14.0));
-    expect(f.days, inInclusiveRange(35.0, 65.0));
+    // Ch14 缺口重校后 f 实测 33.5 天,下沿 35→30 同步(同 s1 口径·2026-07-23)。
+    expect(f.days, inInclusiveRange(30.0, 65.0));
   });
 }
 
@@ -616,8 +618,8 @@ void _assertConservation(GameRepository repo, _HorizonResult r) {
   );
   expect(
     r.appliedExp,
-    6635 + ch.experience,
-    reason: '${r.name}: 经验守恒 = 缺口 6635 + 终点层内余量',
+    6271 + ch.experience,
+    reason: '${r.name}: 经验守恒 = 缺口 6271 + 终点层内余量',
   );
 }
 

@@ -32,12 +32,12 @@ void main() {
     }
   });
 
-  test('恰好标注 28 个 boss 敌人(production 红线)', () {
+  test('恰好标注 30 个 boss 敌人(production 红线)', () {
     final stages = GameRepository.instance.stageDefs.values;
     final total = stages.fold<int>(
       0,
       (n, s) => n + s.enemyTeam.where((e) => e.isBoss).length,
     );
-    expect(total, 28, reason: 'Ch13 +2(断崖守关人章中 + 候峰翁章末)');
+    expect(total, 30, reason: 'Ch14 +2(马队副将章中 + 马战宗师章末)');
   });
 }
