@@ -20,10 +20,8 @@
 
 | # | 项 | 域 | 预估 | 依据 |
 |---|---|---|---|---|
-| 1 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(codex 在途分支自然续) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段 |
-| 2 | Ch14 spec 起草(承 Ch13 卷尾 hook·shi_dang 收编位) | 设计 | 专会话 | 2026-07-22 收账下批建议 |
-| 3 | Ch13 新增 11 张 PNG webp 转码(q80 保 .png 名·~18M→~9M) | 资产 | 小批 | 2026-07-23 三单收账遗留(#61 沿先例落真 PNG) |
-| 4 | recall returned:false 后补 invalidate(run 已删场景 UI stale) | expedition UX | 小单 | 2026-07-23 Gate 审查发现(低·主场景行为已正确) |
+| 1 | Ch14 spec 起草(承 Ch13 卷尾 hook·shi_dang 收编位) | 设计 | 专会话 | 2026-07-22 收账下批建议 |
+| 2 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(codex 在途分支自然续) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段 |
 
 ## 三 · 依赖锁死(附再开条件)
 
