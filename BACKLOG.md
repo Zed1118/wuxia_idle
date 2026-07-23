@@ -21,7 +21,8 @@
 | # | 项 | 域 | 预估 | 依据 |
 |---|---|---|---|---|
 | 1 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(codex 在途分支自然续) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段 |
-| 2 | Ch14「山外来客」实装批(spec 已拍板冻结·kimi 主执行+Claude Gate) | 主线章实装 | spec `2026-07-23-ch14-shanwai-laike-design.md`·2026-07-23 七项全按推荐拍定 |
+| 2 | Ch14 美术 11 图 codex image_gen 专批(xiliang_* 5 敌+cover+5 背景·known_missing 已登记) | 美术(codex) | 随批 | 2026-07-23 2A 拍定·沿 Ch11-13 配方 |
+| 3 | Ch15 spec 起草(绝顶段收官·承 Ch14「下山西行」hook·cap 33→35 dengFeng 封顶) | 设计 | 专会话 | 2026-07-23 收账下批建议 |
 
 ## 三 · 依赖锁死(附再开条件)
 
