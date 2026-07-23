@@ -2956,7 +2956,7 @@ skills:
     description: 西凉军中马战杀法,一往无前。十荡十决,有进无退。
     type: powerSkill
     targetType: single
-    powerMultiplier: 3600
+    powerMultiplier: 4800
     qiDelta: -30
     cooldownTurns: 5
     requiresManualTrigger: false
@@ -2965,7 +2965,9 @@ skills:
     source: mainline_drop
     style: gangMeng
     tier: 5
-    mount_deferred: true  # 2026-07-22 拍定:cap 抬 31 后 tier5 进发布阶,本招(西凉马战·刚猛)留 Ch14/15 绝顶压场章真解收编,红线⑦按 !mountDeferred 豁免
+    # 2026-07-23 收编:Ch14「山外来客」末 Boss 西凉马战宗师本命真解,挂 stage_14_05
+    # chargeSkillId=dropSkillManualId 双用(照候峰翁一览众山模板);[balance] mult 3600→4800
+    # 对齐绝顶真解档(原 3600 为 tier4 旧锚·低于 Ch13 一览众山 4800 爽感倒挂·CD 5 保留刚猛向差异化)。
     proficiency:        # 真解手工高半档(刚猛向,沿青锋绝锚)
       effects:
         shuLian: { damage_pct: 0.10 }

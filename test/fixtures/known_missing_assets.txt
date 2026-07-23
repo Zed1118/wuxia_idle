@@ -30,3 +30,18 @@
 #
 # ── Ch13 绝顶段首章「山外青山」立绘已补齐(2026-07-22·codex image_gen)──
 #
+# ── Ch14 绝顶段第 2 章「山外来客」待补美术(2026-07-23·合并后 codex image_gen 专批)──
+# 敌人立绘(5)
+assets/enemies/xiliang_kaidao_xinshi.png
+assets/enemies/xiliang_xianfeng.png
+assets/enemies/xiliang_xiyu_jianke.png
+assets/enemies/xiliang_fujiang.png
+assets/enemies/xiliang_mazhan_zongshi.png
+# 章节封面(1)
+assets/scenes/chapter_14_cover.png
+# 主线剧情阅读背景(5)
+assets/scenes/narrative_stage_14_01.png
+assets/scenes/narrative_stage_14_02.png
+assets/scenes/narrative_stage_14_03.png
+assets/scenes/narrative_stage_14_04.png
+assets/scenes/narrative_stage_14_05.png
