@@ -136,6 +136,17 @@ class ExpeditionService {
     }
 
     final startNode = run.currentNode;
+    // 战败持久态（§4.2 战败即停，07-22 审查 P1-5.2）：已战败 run 不再
+    // 推进/重战，停留待召回；recall 凭落库的 defeated 兑现战败伤势，
+    // 不依赖跨启动后确定性重战碰巧复现同一败局。
+    if (run.defeated) {
+      return ExpeditionSettlementResult(
+        nodesSettled: 0,
+        currentNode: startNode,
+        caughtUp: true,
+        defeated: true,
+      );
+    }
     final anchor = run.lastSettledAt ?? run.departedAt;
     final clampedNow = effectiveNow.isBefore(anchor) ? anchor : effectiveNow;
     final elapsed = clampedNow.difference(run.departedAt).inMinutes;
@@ -241,6 +252,7 @@ class ExpeditionService {
       }
       row.currentNode = node;
       row.lastSettledAt = clampedNow;
+      if (defeated) row.defeated = true; // 战败即停落库（P1-5.2）
       for (final m in row.members) {
         final v = vitals[m.characterId];
         if (v != null) {
@@ -315,10 +327,13 @@ class ExpeditionService {
   /// 召回 / 战败返程单事务（§4.6/§9.1）。
   ///
   /// 同一 `writeTxn`：发 `stagedRewards`（全员含途中倒下者得完成节点经验 §4.6）+
-  /// 结算伤势（[defeated] 时倒下者重伤、其余轻伤；召回不附伤）+ 删 `ExpeditionRun`
+  /// 结算伤势（战败时倒下者重伤、其余轻伤；召回不附伤）+ 删 `ExpeditionRun`
   /// 关闭会话（占用由 active run 派生 → 自动解除、角色释放）。失败节点不在
   /// `stagedRewards`（settle 战败即停未暂存），故「失败节点无奖励」自然成立。
   /// 经验受发布上限层锁门禁（同闭关口径），超阶留账不消费。
+  ///
+  /// 战败判定 = 传入 [defeated]（同会话 settle 刚报败）∨ run 落库的
+  /// `defeated`（P1-5.2 持久态，跨启动不丢）；二者任一即按战败返程。
   ///
   /// 并发守卫（07-21 审查 P1-5.4）：事务内重读 run 并校验 cursor
   /// （`currentNode`/`lastSettledAt` 与事务外快照一致）。run 已被并发召回删除
@@ -343,6 +358,9 @@ class ExpeditionService {
 
     final at = now ?? DateTime.now();
     final deepest = run.currentNode;
+    // 战败 = 调用方传入 ∨ 落库持久态（P1-5.2：settle 战败已写 run.defeated，
+    // 跨启动召回不再依赖调用方记得传参）。
+    final isDefeated = defeated || run.defeated;
     final memberIds = run.members.map((m) => m.characterId).toList();
     final downedIds = run.members
         .where((m) => m.isDowned)
@@ -402,7 +420,7 @@ class ExpeditionService {
                 ),
           );
         }
-        if (defeated) {
+        if (isDefeated) {
           // §4.6：倒下者重伤、其余轻伤；召回不进此分支（不附伤）。
           if (downedIds.contains(id)) {
             final hours = AttributeEffectPolicy(numbers.attributeEffects)
@@ -469,7 +487,7 @@ class ExpeditionService {
       deepestNode: deepest,
       grantedRewards: granted,
       downedCount: downedIds.length,
-      defeated: defeated,
+      defeated: isDefeated,
     );
   }
 

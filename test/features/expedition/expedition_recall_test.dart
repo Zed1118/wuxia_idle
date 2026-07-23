@@ -66,11 +66,13 @@ void main() {
     required int currentNode,
     required List<RewardEntry> rewards,
     bool downed = false,
+    bool defeated = false,
   }) async {
     await IsarSetup.instance.writeTxn(() async {
       final r = (await IsarSetup.instance.expeditionRuns.get(runId))!
         ..currentNode = currentNode
-        ..stagedRewards = rewards;
+        ..stagedRewards = rewards
+        ..defeated = defeated;
       for (final m in r.members) {
         m
           ..currentHp = downed ? 0 : 500
@@ -169,6 +171,26 @@ void main() {
     final ch = (await IsarSetup.instance.characters.get(1))!;
     expect(ch.lightInjuryStacks, greaterThan(0), reason: '存活者轻伤');
     expect(ch.injuryHoursRemaining, 0, reason: '非倒下者不进重伤');
+  });
+
+  test('战败持久化：recall 不传参仍按落库 defeated 兑现伤势（P1-5.2）', () async {
+    final runId = await dispatchSeeded();
+    // 模拟跨启动：settle 已把 defeated 落库，但本次调用方无战败上下文。
+    await stageRun(
+      runId,
+      currentNode: 6,
+      rewards: [rw('exp', 60)],
+      downed: true,
+      defeated: true,
+    );
+
+    final svc = ExpeditionService(IsarSetup.instance);
+    final result = await svc.recall(); // 故意不传 defeated
+
+    expect(result.returned, isTrue);
+    expect(result.defeated, isTrue, reason: '落库战败态须生效');
+    final ch = (await IsarSetup.instance.characters.get(1))!;
+    expect(ch.injuryHoursRemaining, greaterThan(0), reason: '倒下者重伤须兑现');
   });
 
   test('召回发奖：物品已有库存行 → 数量累加并刷新获得时间（不新建行）', () async {
