@@ -107,17 +107,17 @@ void _assertExperienceRatchet(List<StageDef> stages, List<_TempoRun> rows) {
     );
   }
 
-  // 终章门槛(2026-07-22):终章 = 当前最末主线章 = Ch13(stage_13_05·候峰翁/山外青山·绝顶段首章)。
+  // 终章门槛(2026-07-23):终章 = 当前最末主线章 = Ch14(stage_14_05·马战宗师/山外来客·绝顶段第二章)。
   // (2026-07-20 Ch9 起本处随「最末主线章」滚动更新·Ch10/11 曾漏更留 stage_09_05·Ch12 补正)
   final finalChapterUndergeared = averageActions(
-    'stage_13_05',
+    'stage_14_05',
     ProgressionBuildProfile.undergeared,
   );
   expect(
     finalChapterUndergeared,
     greaterThanOrEqualTo(8),
     reason:
-        'stage_13_05 undergeared 平均动作行 '
+        'stage_14_05 undergeared 平均动作行 '
         '$finalChapterUndergeared 低于终章门槛 8',
   );
 

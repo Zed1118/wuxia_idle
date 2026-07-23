@@ -3186,6 +3186,244 @@ stages:
     weather: clear
 
   # ============================================================================
+  # Ch14「山外来客」(2026-07-23) 绝顶段第二章 · 主线第 14 章
+  # ----------------------------------------------------------------------------
+  # 主题「成为江湖的第一课」:比山更远的东西,先骑着马来了——西凉马战宗师循名叩山,
+  # 马队上山五程(开道信使→先锋→西域剑客→副将前五荡→宗师借绝顶一战)。
+  # 承 Ch13 卷尾「绝顶之上没有更高的山了,可有比山更远的东西」题眼:不是更高,是更远。
+  # 章内敌人层 shuLian→yuanShu 递进(照 Ch11 一流第二章模板:01-02 熟练/03-05 圆熟);
+  # cap 31→33(numbers.yaml·绝顶·圆熟·within-tier·releaseTier 仍 jueDing 不触发新阶挂载)。
+  # Boss 位 {4,5}:14_04 章中 Boss(马队副将「前五荡」·stat 门槛无相位·照断崖守关人)·
+  # 14_05 末 Boss(西凉马战宗师·借绝顶一战·十荡十决真解破招·两相位 chargeCounter)。
+  # 章首 stage_14_01 无 prevStageId(链首必缺·跨章 prevStageId 会触加载期 StateError)。
+  # 敌招复用绝顶 jianghu 江湖秘传 ult 档(mult 4000·Ch13 刻意未用本章上)+ fang 变体余量
+  # (tier5·禁降档充数)·装备掉落复用 zhongQi 重器 11 件池——零新招:末 Boss 真解 =
+  # skill_shi_dang_shi_jue 收编(删 mount_deferred·mult 3600→4800 对齐绝顶真解档·
+  # 2026-07-23 拍定);胜后宗师临行一句埋 yang_guan(西凉更老人物)宗师段伏笔。
+  # ============================================================================
+
+  # === stage_14_01 · 山道(绝顶杂兵 · 刚猛 · 马蹄先声:开道信使「马队在山道上敲了三天」)===
+  - id: stage_14_01
+    name: 山道
+    stageType: mainline
+    chapterIndex: 14
+    narrativeOpeningId: stage_14_01_opening
+    narrativeVictoryId: stage_14_01_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_shanwailaike_kaidao_xinshi
+        name: 开道信使
+        realmTier: jueDing
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 48000
+        baseAttack: 1350
+        baseSpeed: 310
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+          - skill_gangmeng_jianghu_ult        # 敌招升 ult 档(mult 4000·难度杠杆①)
+        iconPath: assets/enemies/xiliang_kaidao_xinshi.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_qing_xu_jian
+        dropChance: 1.0
+      - equipmentDefId: armor_zhongqi_yu_lin_qing_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [48, 58]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [600, 730]
+        dropChance: 1.0  # 银两(绝顶段第二章 · 承 Ch13 曲线续进)
+    baseExpReward: 52
+    difficultyMultiplier: 15.2
+    biome: mountainPath
+    sceneBackgroundPath: assets/scenes/battle_mountainpath.png
+    weather: clear
+
+  # === stage_14_02 · 山脚驿馆(绝顶杂兵 · 灵巧 · 西凉人不空手拜山:先锋讨教)===
+  - id: stage_14_02
+    name: 山脚驿馆
+    stageType: mainline
+    chapterIndex: 14
+    prevStageId: stage_14_01
+    narrativeOpeningId: stage_14_02_opening
+    narrativeVictoryId: stage_14_02_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_shanwailaike_xiliang_xianfeng
+        name: 西凉先锋
+        realmTier: jueDing
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 50000
+        baseAttack: 1400
+        baseSpeed: 305
+        skillIds:
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
+          - skill_lingqiao_jianghu_ult        # 敌招升 ult 档(mult 4000)
+        iconPath: assets/enemies/xiliang_xianfeng.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_du_long_suo
+        dropChance: 1.0
+      - equipmentDefId: accessory_zhongqi_qing_yu_huan
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [48, 58]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [610, 740]
+        dropChance: 1.0  # 银两(绝顶段第二章)
+    baseExpReward: 54
+    difficultyMultiplier: 15.4
+    biome: inn
+    sceneBackgroundPath: assets/scenes/battle_inn.png
+    weather: clear
+
+  # === stage_14_03 · 山林(章中考验 · 阴柔 · 马队里的西域剑客:阴柔位拦路 · 非 Boss 保有敌队)===
+  - id: stage_14_03
+    name: 山林
+    stageType: mainline
+    chapterIndex: 14
+    prevStageId: stage_14_02
+    narrativeOpeningId: stage_14_03_opening
+    narrativeVictoryId: stage_14_03_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_shanwailaike_xiyu_jianke
+        name: 西域剑客
+        realmTier: jueDing
+        realmLayer: yuanShu
+        school: yinRou
+        baseHp: 53000
+        baseAttack: 1480
+        baseSpeed: 300
+        skillIds:
+          - skill_yinrou_jianghu_basic
+          - skill_yinrou_jianghu_skill
+          - skill_yinrou_jianghu_ult          # 敌招升 ult 档(mult 4000)
+        iconPath: assets/enemies/xiliang_xiyu_jianke.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_ri_yue_lun
+        dropChance: 1.0
+      - equipmentDefId: armor_zhongqi_yin_lin_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [50, 60]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [620, 750]
+        dropChance: 1.0  # 银两(绝顶段第二章)
+    baseExpReward: 56
+    difficultyMultiplier: 15.6
+    biome: mountainForest
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
+    weather: clear
+
+  # === stage_14_04 · 演武旧坪(刚猛章中 Boss · 马队副将「前五荡」· stat 门槛无相位 · 配 defeat)===
+  - id: stage_14_04
+    name: 演武旧坪
+    stageType: mainline
+    chapterIndex: 14
+    prevStageId: stage_14_03
+    narrativeOpeningId: stage_14_04_opening
+    narrativeVictoryId: stage_14_04_victory
+    narrativeDefeatId: stage_14_04_defeat
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_shanwailaike_xiliang_fujiang
+        name: 马队副将
+        realmTier: jueDing
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 55000
+        baseAttack: 1580
+        baseSpeed: 315
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_fang_skill
+          - skill_gangmeng_jianghu_fang_ult   # fang 变体余量(不动真身·tier5 jianghu 档不降档)
+        iconPath: assets/enemies/xiliang_fujiang.png
+        isBoss: true   # 章中 Boss = 「前五荡」stat 门槛(HP/攻墙 · 无充能相位,唯 14_05 宗师设充能破招)
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_po_zhen_chui
+        dropChance: 1.0
+      - equipmentDefId: armor_zhongqi_han_tie_zhong_jia
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [52, 62]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [680, 830]
+        dropChance: 1.0  # 银两(绝顶章中 Boss)
+    baseExpReward: 76
+    difficultyMultiplier: 15.8
+    biome: drillGround
+    sceneBackgroundPath: assets/scenes/battle_drillground.png
+    weather: clear
+
+  # === stage_14_05 · 绝顶峰台(刚猛·西凉马战宗师·万里叩山借绝顶一战·末 Boss·破招掉十荡十决真解)===
+  - id: stage_14_05
+    name: 绝顶峰台
+    stageType: mainline
+    chapterIndex: 14
+    prevStageId: stage_14_04
+    narrativeOpeningId: stage_14_05_opening
+    narrativeVictoryId: stage_14_05_victory
+    narrativeDefeatId: stage_14_05_defeat
+    requiredRealm: jueDing
+    dropSkillManualId: skill_shi_dang_shi_jue  # 真解(十荡十决·宗师本命·同招为 boss chargeSkillId 双用·破招首通 markUnlocked·2026-07-23 收编)
+    enemyTeam:
+      - id: enemy_jueDing_shanwailaike_mazhan_zongshi
+        name: 马战宗师
+        realmTier: jueDing
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 58000        # HP 压缩区硬顶 <60000(给 Ch15 收官留头寸·2026-07-23 拍定)
+        baseAttack: 1700
+        baseSpeed: 320
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+          - skill_shi_dang_shi_jue            # 本命真解 = 末Boss chargeSkill(双用 canon)
+        iconPath: assets/enemies/xiliang_mazhan_zongshi.png
+        isBoss: true
+        chargeSkillId: skill_shi_dang_shi_jue   # 破招:玩家拦截,首通掉同招真解
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_zhui_hun_ding
+        dropChance: 1.0
+      - equipmentDefId: accessory_zhongqi_bi_xi_shou_chuan
+        dropChance: 0.50
+      - equipmentDefId: accessory_zhongqi_xuan_tie_zhi_huan
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [54, 64]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [790, 960]
+        dropChance: 1.0  # 银两(绝顶章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(绝顶章末)
+    baseExpReward: 96
+    difficultyMultiplier: 16.0
+    biome: mountainForest   # 沿 13_05 绝顶平台同 biome(2026-07-23 spec §3 拍定)
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
+    weather: clear
+
+  # ============================================================================
   # 心魔境 7 关（1.0 P2.2 §12.1 · stageType: innerDemon）
   # ----------------------------------------------------------------------------
   # spec doc: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md

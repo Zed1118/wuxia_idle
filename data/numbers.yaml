@@ -203,7 +203,7 @@ combat:
 
 progression:
   release_cap:
-    max_absolute_realm_level: 31  # Ch13「山外青山」抬 28→31(绝顶·熟练 shuLian = 绝顶段首章封顶·照 Ch10 首章 qiMeng→shuLian 体例):cross-tier·releaseTier yiLiu→jueDing 随 cap 自动重算,触发红线⑦挂载完备(shi_dang 补标 mount_deferred/jing_hong 挂 13_05 残页/ma_ta 挂塔 25 层/jin_gang·guan_shan 塔 20/15 层收编·2026-07-22 拍定)
+    max_absolute_realm_level: 33  # Ch14「山外来客」抬 31→33(绝顶·圆熟 yuanShu = 绝顶段第二章封顶·照 Ch11 一流第二章 shuLian→yuanShu 体例):within-tier·releaseTier 仍 jueDing 不触发新阶挂载完备(shi_dang 删 mount_deferred 收编挂 14_05 真解·2026-07-23 拍定)
 
 # =============================================================================
 # 2. 49 级境界系统

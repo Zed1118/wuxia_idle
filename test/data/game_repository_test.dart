@@ -83,8 +83,8 @@ void main() {
           .length;
       expect(
         mainlineCount,
-        65,
-        reason: '主线 65 关(2026-07-22 Ch13 山外青山绝顶段首章扩,13 章 × 5 关)',
+        70,
+        reason: '主线 70 关(2026-07-23 Ch14 山外来客绝顶段第二章扩,14 章 × 5 关)',
       );
       expect(
         innerDemonCount,
@@ -683,14 +683,14 @@ void main() {
     );
 
     test(
-      '主线 65 关红线:13 章 × 5 关 + 每章双 Boss 关(2026-07-22 Ch13 山外青山绝顶段首章扩·Boss 位随叙事定)',
+      '主线 70 关红线:14 章 × 5 关 + 每章双 Boss 关(2026-07-23 Ch14 山外来客绝顶段第二章扩·Boss 位随叙事定)',
       () async {
         final repo = await GameRepository.loadAllDefs(loader: fileLoader);
         final mainlines = repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
             .toList();
-        expect(mainlines.length, 65);
-        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) {
+        expect(mainlines.length, 70);
+        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]) {
           final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();
           expect(inCh.length, 5, reason: 'Ch$ch 应有 5 关');
         }
@@ -700,7 +700,8 @@ void main() {
         // Ch10 = {4,5}(嵩阳关主章中·守拙翁章末);
         // Ch11 = {4,5}(玉京剑主章中·鎏金公章末);
         // Ch12 = {4,5}(守炉铁匠章中·无名客章末·一流三章收官);
-        // Ch13 = {4,5}(断崖守关人章中·候峰翁章末·绝顶段首章)。
+        // Ch13 = {4,5}(断崖守关人章中·候峰翁章末·绝顶段首章);
+        // Ch14 = {4,5}(马队副将章中·马战宗师章末·绝顶段第二章)。
         // validator 只约束 defeat⟹Boss 不钉位置。
         const bossIdxByChapter = {
           1: {4, 5},
@@ -716,8 +717,9 @@ void main() {
           11: {4, 5},
           12: {4, 5},
           13: {4, 5},
+          14: {4, 5},
         };
-        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) {
+        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]) {
           for (final idx in [1, 2, 3, 4, 5]) {
             final id = 'stage_${ch.toString().padLeft(2, '0')}_0$idx';
             final s = repo.getStage(id);

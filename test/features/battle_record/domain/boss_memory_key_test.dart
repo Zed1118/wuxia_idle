@@ -47,6 +47,9 @@ void main() {
     test('Ch9 → 12（二流·偏移 +3·碛北）', () {
       expect(mainlineGroupIndex('stage_09_05'), 12);
     });
+    test('Ch14 → 17（绝顶·偏移 +3·山外来客·2026-07-23 pin 防持久化 key 重排）', () {
+      expect(mainlineGroupIndex('stage_14_05'), 17);
+    });
     test('未知前缀 → 99', () => expect(mainlineGroupIndex('unknown_stage'), 99));
   });
 }
