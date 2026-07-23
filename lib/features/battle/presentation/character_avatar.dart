@@ -867,6 +867,17 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/zhongzhou_laotie_tiejiang.png',
   'assets/enemies/zhongzhou_huangcun_wuming.png':
       'assets/enemies/zhongzhou_huangcun_wuming.png',
+  // Ch13「山外青山」5 敌立绘(codex image_gen·透明全身图)
+  'assets/enemies/shanwai_chapeng_bashi.png':
+      'assets/enemies/shanwai_chapeng_bashi.png',
+  'assets/enemies/shanwai_banshan_seng.png':
+      'assets/enemies/shanwai_banshan_seng.png',
+  'assets/enemies/shanwai_zhulin_yinke.png':
+      'assets/enemies/shanwai_zhulin_yinke.png',
+  'assets/enemies/shanwai_duanya_shouguan.png':
+      'assets/enemies/shanwai_duanya_shouguan.png',
+  'assets/enemies/shanwai_jueding_houfeng.png':
+      'assets/enemies/shanwai_jueding_houfeng.png',
   'assets/enemies/enemy_gauntlet_su_wujiu.png':
       WuxiaUi.battleGauntletSuWujiuStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':
@@ -1024,6 +1035,12 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/zhongzhou_qiushan_tiaoshan.png' => 0.950,
   'assets/enemies/zhongzhou_laotie_tiejiang.png' => 0.956,
   'assets/enemies/zhongzhou_huangcun_wuming.png' => 0.951,
+  // Ch13「山外青山」5 敌脚底校准(alpha 包围盒实测·2026-07-22)
+  'assets/enemies/shanwai_chapeng_bashi.png' => 0.961,
+  'assets/enemies/shanwai_banshan_seng.png' => 0.954,
+  'assets/enemies/shanwai_zhulin_yinke.png' => 0.983,
+  'assets/enemies/shanwai_duanya_shouguan.png' => 0.986,
+  'assets/enemies/shanwai_jueding_houfeng.png' => 0.960,
   WuxiaUi.battleGauntletSuWujiuStandee => 0.9681,
   WuxiaUi.battleGauntletQingyiGuardAStandee => 0.9571,
   WuxiaUi.battleGauntletQingyiGuardBStandee => 0.9642,

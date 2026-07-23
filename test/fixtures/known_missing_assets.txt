@@ -28,19 +28,5 @@
 #
 # ── Ch12 一流第 3 章「名下之实」立绘已补齐(2026-07-22·codex image_gen)──
 #
-# ── Ch13 绝顶段首章「山外青山」待补美术(2026-07-22·codex image_gen 另出图)──
-# 敌人立绘(5)
-assets/enemies/shanwai_chapeng_bashi.png
-assets/enemies/shanwai_banshan_seng.png
-assets/enemies/shanwai_zhulin_yinke.png
-assets/enemies/shanwai_duanya_shouguan.png
-assets/enemies/shanwai_jueding_houfeng.png
-# 章节封面(1)
-assets/scenes/chapter_13_cover.png
-# 主线剧情阅读背景(5)
-assets/scenes/narrative_stage_13_01.png
-assets/scenes/narrative_stage_13_02.png
-assets/scenes/narrative_stage_13_03.png
-assets/scenes/narrative_stage_13_04.png
-assets/scenes/narrative_stage_13_05.png
+# ── Ch13 绝顶段首章「山外青山」立绘已补齐(2026-07-22·codex image_gen)──
 #
