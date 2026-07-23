@@ -21,10 +21,9 @@
 | # | 项 | 域 | 预估 | 依据 |
 |---|---|---|---|---|
 | 1 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(codex 在途分支自然续) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段 |
-| 2 | P1-5.2 战败持久化:ExpeditionRun 加 defeated schema 字段 | [schema] 实装批 | 半批 | 2026-07-22 用户拍定(#58 BLOCKED 项解锁·须 build_runner+全量) |
-| 3 | 散功 dispel_service 接占用契约(+顺手修 recall 并发冲突 UI 假 recap) | P2 审查批 | 小批 | #58 Gate 新发现(中/低·2026-07-22 收账挂账) |
-| 4 | Ch13 美术 11 图 codex image_gen 派单(5 敌+cover+5 背景) | 美术 | 随批 | known_missing_assets +11 已登记(#55 带入) |
-| 5 | Ch14 spec 起草(承 Ch13 卷尾 hook·shi_dang 收编位) | 设计 | 专会话 | 2026-07-22 收账下批建议 |
+| 2 | Ch14 spec 起草(承 Ch13 卷尾 hook·shi_dang 收编位) | 设计 | 专会话 | 2026-07-22 收账下批建议 |
+| 3 | Ch13 新增 11 张 PNG webp 转码(q80 保 .png 名·~18M→~9M) | 资产 | 小批 | 2026-07-23 三单收账遗留(#61 沿先例落真 PNG) |
+| 4 | recall returned:false 后补 invalidate(run 已删场景 UI stale) | expedition UX | 小单 | 2026-07-23 Gate 审查发现(低·主场景行为已正确) |
 
 ## 三 · 依赖锁死(附再开条件)
 
