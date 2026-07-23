@@ -1246,6 +1246,7 @@ class UiStrings {
   static const String dispelLayerWarning = '修炼度层可能回退';
   static const String dispelConfirm = '确认散功';
   static const String dispelSuccess = '散功完成';
+  static const String dispelOccupiedSnack = '该门人闭关/远行/断魂庄在途，归队后方可散功换修';
 
   // 凝练领悟（根因A 2026-05-29：insightPoints 兑换主修修炼度 sink）
   static const String refineInsightButton = '凝练领悟';
@@ -3661,6 +3662,7 @@ class UiStrings {
   static const String expeditionRecallConfirmBody =
       '召回后本次远征结束：已踏平节点的奖励照常入账，当前未完成的节点作废。';
   static const String expeditionRecallConfirm = '召回';
+  static const String expeditionRecallRacedSnack = '召回恰逢结算入账，队伍未动——请再试一次';
 
   // ── 断魂庄三关 · 装载 / 整备（§7.1/§7.2 · C2.5）──────────────────────
   static const String gauntletName = '断魂庄';

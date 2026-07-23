@@ -423,6 +423,14 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
       }
       final result = await service.recall(defeated: defeated);
       if (!mounted) return;
+      if (!result.returned) {
+        // 并发冲突（P1-5.4 cursor 守卫放弃）：未发奖未关会话。此前直接
+        // 按空结果跳 recap = 假行记（07-22 收账挂账·低）；改为提示重试。
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(UiStrings.expeditionRecallRacedSnack)),
+        );
+        return;
+      }
       ref.invalidate(activeExpeditionProvider);
       ref.invalidate(expeditionCandidatesProvider);
       await Navigator.of(context).pushReplacement(

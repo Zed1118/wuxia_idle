@@ -8,7 +8,9 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/dispel/application/dispel_service.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import "../../../support/isar_test_support.dart";
 import '../../../support/test_data.dart';
 
@@ -152,5 +154,60 @@ void main() {
     final newMainBack = await isar2.techniques.get(assistId);
     expect(newMainBack, isNotNull);
     expect(newMainBack!.role, TechniqueRole.main, reason: '新主修 role=main 应落盘');
+  });
+
+  group('活动占用契约守卫（07-22 #58 Gate 发现补接）', () {
+    Character occChar(int id, {int? retreatSessionId}) {
+      final c = Character.create(
+        name: '门人$id',
+        realmTier: RealmTier.xueTu,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: Attributes(),
+        rarity: RarityTier.biaoZhun,
+        lineageRole: LineageRole.disciple,
+        createdAt: DateTime(2026, 7, 16),
+      );
+      c.id = id;
+      c.currentRetreatSessionId = retreatSessionId;
+      return c;
+    }
+
+    test('闭关/远征/断魂庄在途 → 占用；无活动 → 不占用', () async {
+      final isar = IsarSetup.instance;
+      await isar.writeTxn(() async {
+        await isar.characters.put(occChar(1));
+        await isar.characters.put(occChar(2, retreatSessionId: 7));
+      });
+      final svc = DispelService(isar: isar);
+
+      expect(await svc.isCharacterOccupied(1), isFalse, reason: '无活动');
+      expect(await svc.isCharacterOccupied(2), isTrue, reason: '闭关在途');
+
+      // 闭关解除 → 改远征在途（run 成员快照占用）。
+      await isar.writeTxn(() async {
+        final ch = (await isar.characters.get(2))!
+          ..currentRetreatSessionId = null;
+        await isar.characters.put(ch);
+        await isar.expeditionRuns.put(
+          ExpeditionRun()
+            ..saveDataId = 0
+            ..policy = ExpeditionPolicy.yiZhanLiXing
+            ..seed = 1
+            ..departedAt = DateTime(2026, 7, 16)
+            ..members = [
+              ActivityMemberSnapshot()
+                ..characterId = 1
+                ..reservedEquipmentIds = []
+                ..reservedTechniqueIds = []
+                ..currentHp = 100
+                ..currentQi = 50
+                ..isDowned = false,
+            ]
+            ..stagedRewards = [],
+        );
+      });
+      expect(await svc.isCharacterOccupied(2), isFalse, reason: '闭关已解除');
+      expect(await svc.isCharacterOccupied(1), isTrue, reason: '远征在途');
+    });
   });
 }
