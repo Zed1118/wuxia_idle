@@ -244,14 +244,16 @@ void main() {
       fail('未等到目标组件：$finder');
     }
 
+    var activeReads = 0;
     await _pump(
       tester,
       const Size(1440, 900),
       ProviderScope(
         overrides: [
-          activeExpeditionProvider.overrideWith(
-            (ref) async => _run(currentNode: 12),
-          ),
+          activeExpeditionProvider.overrideWith((ref) async {
+            activeReads++;
+            return _run(currentNode: 12);
+          }),
           expeditionConfigProvider.overrideWithValue(_config),
           systemClockProvider.overrideWithValue(_FixedClock(_fixedNow)),
           expeditionServiceProvider.overrideWithValue(
@@ -272,6 +274,11 @@ void main() {
 
     expect(find.byType(ExpeditionRecapScreen), findsNothing, reason: '不得跳假行记');
     expect(find.text(UiStrings.expeditionRecallButton), findsOneWidget);
+    expect(
+      activeReads,
+      greaterThan(1),
+      reason: 'returned:false 后须 invalidate active provider 重读（防 stale 在途态）',
+    );
     expect(tester.takeException(), isNull);
   });
 }

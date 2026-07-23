@@ -426,6 +426,10 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
       if (!result.returned) {
         // 并发冲突（P1-5.4 cursor 守卫放弃）：未发奖未关会话。此前直接
         // 按空结果跳 recap = 假行记（07-22 收账挂账·低）；改为提示重试。
+        // 冲突源若是并发召回（run 已删），本屏 active 快照已 stale——
+        // 一并 invalidate 重读（07-23 Gate 发现），否则残留死在途态。
+        ref.invalidate(activeExpeditionProvider);
+        ref.invalidate(expeditionCandidatesProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text(UiStrings.expeditionRecallRacedSnack)),
         );
