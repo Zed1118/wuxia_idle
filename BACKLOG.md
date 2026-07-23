@@ -15,13 +15,13 @@
 | 6 | 高熟练度难度微调候选 | 数值微调 | 波B 全表 sweep 读数在案,待真玩拍板 |
 | 7 | CLAUDE §12.2 #5 归档行闭关单倍率表述 | no-touch 文档订正 | 1A 经验倍率拆分批后 stale,待版本订正窗口 |
 | 8 | 生产 DefaultRng 无种子统一走 rngProvider(#57 遗留) | 生产接线 | 2026-07-22 拍板留议(非阻塞·stage_entry_flow.dart:826 直 new) |
-| 9 | Ch14 实装批(spec §10 七项:章名/cap/shi_dang mult/feng_juan/伏笔/美术/Lv guard) | 主线章实装 | spec `2026-07-23-ch14-shanwai-laike-design.md` 2026-07-23 落盘·逐项附推荐待拍 |
 
 ## 二 · 已解锁可派
 
 | # | 项 | 域 | 预估 | 依据 |
 |---|---|---|---|---|
 | 1 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(codex 在途分支自然续) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段 |
+| 2 | Ch14「山外来客」实装批(spec 已拍板冻结·kimi 主执行+Claude Gate) | 主线章实装 | spec `2026-07-23-ch14-shanwai-laike-design.md`·2026-07-23 七项全按推荐拍定 |
 
 ## 三 · 依赖锁死(附再开条件)
 
