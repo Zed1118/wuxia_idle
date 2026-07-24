@@ -15,7 +15,6 @@
 | 6 | 高熟练度难度微调候选 | 数值微调 | 波B 全表 sweep 读数在案,待真玩拍板 |
 | 7 | CLAUDE §12.2 #5 归档行闭关单倍率表述 | no-touch 文档订正 | 1A 经验倍率拆分批后 stale,待版本订正窗口 |
 | 8 | 生产 DefaultRng 无种子统一走 rngProvider(#57 遗留) | 生产接线 | 2026-07-22 拍板留议(非阻塞·stage_entry_flow.dart:826/:1040 两处直 new,全生产约 10 位点:tower×2/gauntlet_reward/recruitment/disciple_join/milestone_equipment/onboarding×2 等·2026-07-24 外审 triage 补记) |
-| 9 | 宗师段 Boss 难度机制层方向(HP 硬线头寸 59500 后归零) | 设计拍板 | Ch15 spec §8 前瞻登记·倾向机制层扩难(§5.4 例外条款先例)·正式拍留宗师段 spec |
 | 10 | 中文散写自动门禁豁免口径(注释/StateError 诊断串/debug fixture 是否豁免) | 设计拍板 | 外审 07-24 P3·实锤仅 presentation 内联(stage_list「本章消耗」本批已修);拍定豁免口径后再实装 CI allowlist 门禁 |
 
 ## 二 · 已解锁可派
@@ -23,6 +22,7 @@
 | # | 项 | 域 | 预估 | 依据 |
 |---|---|---|---|---|
 | 1 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(原分支/worktree 已清,需新开载体) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段;阶段5证据须留 repo 内非 gitignored 目录(外审 07-24 教训) |
+| 2 | Ch16「凉州词」实装批(整章 coupled·失传神功敌招 9 招新写同批) | 主线内容 | xhigh 专会话 | spec `2026-07-24-zongshi-arc-ch16-18-design.md` 已冻结;kimi 07-26 10:10 前不可用→Claude 主执行或 codex+Gate |
 
 ## 三 · 依赖锁死(附再开条件)
 
@@ -33,5 +33,4 @@
 
 ## 四 · 方向级候选(大活·需专注会话+xhigh)
 
-- **宗师段主线 spec(Ch16+)**(承 Ch15「关山一程」出关西行·yang_guan 西凉霸主伏笔·feng_juan/yang_guan 两 mount_deferred 归宗师段收编·§一#9 机制层难度先拍)——宜专章专议
 - **爬塔二流段 spec**——塔内容扩展另一轴
