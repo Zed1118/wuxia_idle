@@ -887,6 +887,17 @@ const _battleStandeeOverrides = <String, String>{
   'assets/enemies/xiliang_fujiang.png': 'assets/enemies/xiliang_fujiang.png',
   'assets/enemies/xiliang_mazhan_zongshi.png':
       'assets/enemies/xiliang_mazhan_zongshi.png',
+  // Ch15「关山一程」5 敌立绘(codex image_gen·透明全身图)
+  'assets/enemies/guanshan_songxing_tongdao.png':
+      'assets/enemies/guanshan_songxing_tongdao.png',
+  'assets/enemies/guanshan_dukou_yeke.png':
+      'assets/enemies/guanshan_dukou_yeke.png',
+  'assets/enemies/guanshan_xingjiao_seng.png':
+      'assets/enemies/guanshan_xingjiao_seng.png',
+  'assets/enemies/guanshan_shahai_zongpiao.png':
+      'assets/enemies/guanshan_shahai_zongpiao.png',
+  'assets/enemies/guanshan_shouguan_laojiang.png':
+      'assets/enemies/guanshan_shouguan_laojiang.png',
   'assets/enemies/enemy_gauntlet_su_wujiu.png':
       WuxiaUi.battleGauntletSuWujiuStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':
@@ -1056,6 +1067,12 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/xiliang_xiyu_jianke.png' => 0.982,
   'assets/enemies/xiliang_fujiang.png' => 0.986,
   'assets/enemies/xiliang_mazhan_zongshi.png' => 0.951,
+  // Ch15「关山一程」5 敌脚底校准(alpha 包围盒实测·2026-07-24)
+  'assets/enemies/guanshan_songxing_tongdao.png' => 0.956,
+  'assets/enemies/guanshan_dukou_yeke.png' => 0.989,
+  'assets/enemies/guanshan_xingjiao_seng.png' => 0.962,
+  'assets/enemies/guanshan_shahai_zongpiao.png' => 0.990,
+  'assets/enemies/guanshan_shouguan_laojiang.png' => 0.959,
   WuxiaUi.battleGauntletSuWujiuStandee => 0.9681,
   WuxiaUi.battleGauntletQingyiGuardAStandee => 0.9571,
   WuxiaUi.battleGauntletQingyiGuardBStandee => 0.9642,
