@@ -203,7 +203,7 @@ combat:
 
 progression:
   release_cap:
-    max_absolute_realm_level: 35  # Ch15「关山一程」抬 33→35(绝顶·登峰 dengFeng = 绝顶段收官封顶·照 Ch12 一流收官 26→28 体例):within-tier·releaseTier 仍 jueDing 不触发新阶挂载完备(feng_juan/yang_guan 两 mount_deferred 均归宗师段仍豁免·真解孤城闭新写挂 15_05·2026-07-23 spec 八项拍板)
+    max_absolute_realm_level: 38  # Ch16「凉州词」抬 35→38(宗师·熟练 shuLian = 宗师段首章·2026-07-24 宗师段 spec 段级#2 拍板):cross-tier releaseTier jueDing→zongShi,三系连动宝物/失传神功入 in-range;挂载完备:月落无声挂 16_05 章末残页收编,夜雨十年灯补 mount_deferred 归 Ch17,feng_juan/yang_guan 仍 deferred 至 Ch17/18;段轨迹 38→40(Ch17)→42(Ch18 封顶)
 
 # =============================================================================
 # 2. 49 级境界系统

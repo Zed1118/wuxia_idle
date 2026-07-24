@@ -1,9 +1,9 @@
 # =============================================================================
 # skills.yaml · 招式 fixture（P2.1 Batch 2 扩 147 心法招 + 19 独立招）
 # =============================================================================
-# 共 206 招（2026-07-10 实测）：基线 166（49 心法 × 3 = 147 + 18 轻功 + 1 joint_skill）
-# + 波A/波B 等后续批新增真解/残页/破招技 18 招 + 开锋槽3装备专属技 21 招
-# + 终局机制型 Boss 批次3心魔蓄力技 1 招 = 206。
+# 共 215 招（2026-07-24 Ch16 铁马冰河后实测,skill_count_contract_test 钉值）：基线 166
+# （49 心法 × 3 = 147 + 18 轻功 + 1 joint_skill）+ 波A/波B 等后续批新增真解/残页/破招技
+# + 开锋槽3装备专属技 21 招 + 心魔蓄力技 + 断魂庄锁脉针 + Ch8-16 独立末Boss真解逐章累计。
 #
 # 倍率约束（numbers.yaml `techniques.tiers.max_skill_multiplier`）:全局线已有代码
 # enforce — `enforceEncounterSkillRedLines`(lib/data/validation/encounter_red_lines_
@@ -3194,6 +3194,7 @@ skills:
     source: fragment
     style: yinRou
     tier: 6
+    mount_deferred: true  # 2026-07-24 宗师段 spec §3 拍定:cap 抬 38(zongShi)后 tier6 残页入挂载完备 in-range,本招章末残页位归 Ch17 沙海纵深章(与月落无声 Ch16/夜雨 Ch17 双挂分置·红线⑦豁免),Ch17 批删标挂载
     proficiency:        # 波A 流派模板(阴柔)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -3404,3 +3405,24 @@ skills:
         shuLian: { damage_pct: 0.08 }
         jingTong: { damage_pct: 0.08 }
         huaJing: { damage_pct: 0.08 }
+
+  - id: skill_tie_ma_bing_he
+    name: 铁马冰河
+    description: 铁马渡冰河,一往无前。西凉军马的冲杀之法,蹄声即刀声——万骑同发的那股势,收进一人一刀里,当者披靡。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 6400
+    qiDelta: -30
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: iron_cavalry
+    source: mainline_drop
+    style: gangMeng
+    tier: 6
+    # 2026-07-24 Ch16「凉州词」末Boss接关人本命真解(宗师段 spec §5 拍板):tier6 真解档 6400≤8000
+    # (敌招 cap 5500 上浮档·同 yang_guan 4000→6400 对齐先例);CD 5 沿刚猛真解差异化(照十荡十决)。
+    proficiency:        # 真解手工高半档(刚猛向,沿青锋绝锚)
+      effects:
+        shuLian: { damage_pct: 0.10 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }

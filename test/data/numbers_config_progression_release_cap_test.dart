@@ -32,14 +32,14 @@ void main() {
   group('production progression release cap', () {
     setUpAll(loadTestGameRepository);
 
-    test('current release ends at absolute realm layer 35', () {
+    test('current release ends at absolute realm layer 38', () {
       expect(
         GameRepository
             .instance
             .numbers
             .progressionReleaseCap
             .maxAbsoluteRealmLevel,
-        35,
+        38,
       );
     });
   });
