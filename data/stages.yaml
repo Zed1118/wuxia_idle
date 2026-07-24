@@ -3652,6 +3652,238 @@ stages:
     weather: clear
 
   # ============================================================================
+  # Ch16「凉州词」宗师段首章(2026-07-24 宗师段 spec 段级六项+章级六项拍板冻结)
+  # ----------------------------------------------------------------------------
+  # · cross-tier:requiredRealm zongShi·敌层 qiMeng→shuLian(01-02 启蒙/03-04 入门/05 熟练=cap 38)
+  # · 敌招换档:失传神功心法招三件套(skill_*_shichuan_*·tier6 档 500/4400/5500),01-02 两招
+  #   段首喘息、03 起 ult 化(西凉侧上强度);无 vulnerability(spec 拍板 6:Ch16 常规·机制型留 Ch17/18)
+  # · 唯一新增 = 末Boss真解 skill_tie_ma_bing_he;16_05 章末重打残页挂 skill_yue_luo_wu_sheng。
+  # · HP 段首回落照 Ch13 体例(59500→53000);末 Boss 56500<60000·攻 ≤1920(红线参照 ≤2000)。
+  # ============================================================================
+
+  # === stage_16_01 · 阳关外驿道(出关头程 · 刚猛 · 中原侧最后相送:送关旧部讨教)===
+  - id: stage_16_01
+    name: 阳关外驿道
+    stageType: mainline
+    chapterIndex: 16
+    narrativeOpeningId: stage_16_01_opening
+    narrativeVictoryId: stage_16_01_victory
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_liangzhouci_songguan_jiubu
+        name: 送关旧部
+        realmTier: zongShi
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 53000
+        baseAttack: 1850
+        baseSpeed: 340
+        skillIds:
+          - skill_gangmeng_shichuan_basic
+          - skill_gangmeng_shichuan_skill   # 段首两招喘息(照 Ch13 体例·失传神功档换新)
+        iconPath: assets/enemies/liangzhou_songguan_jiubu.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_baowu_xuan_tian_fu
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_jin_si_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [58, 68]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [830, 960]
+        dropChance: 1.0  # 银两(宗师段首章 · 承 Ch15 曲线续进)
+    baseExpReward: 64
+    difficultyMultiplier: 17.0
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: clear
+
+  # === stage_16_02 · 黑石戈壁(铜镜黑石 Ch4 回旋·见镜不取 · 阴柔 · 守镜人夜战)===
+  - id: stage_16_02
+    name: 黑石戈壁
+    stageType: mainline
+    chapterIndex: 16
+    prevStageId: stage_16_01
+    narrativeOpeningId: stage_16_02_opening
+    narrativeVictoryId: stage_16_02_victory
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_liangzhouci_heishi_shoujing
+        name: 黑石守镜人
+        realmTier: zongShi
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 54000
+        baseAttack: 1880
+        baseSpeed: 343
+        skillIds:
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill     # 段首两招喘息
+        iconPath: assets/enemies/liangzhou_heishi_shoujing.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_baowu_yin_yang_ci
+        dropChance: 1.0
+      - equipmentDefId: accessory_baowu_yu_long_pei
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [59, 69]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [840, 970]
+        dropChance: 1.0  # 银两(宗师段首章)
+    baseExpReward: 66
+    difficultyMultiplier: 17.2
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: clear
+
+  # === stage_16_03 · 沙海孤驿(驿中西凉客·西凉侧第一面 · 灵巧 · ult 化上强度)===
+  - id: stage_16_03
+    name: 沙海孤驿
+    stageType: mainline
+    chapterIndex: 16
+    prevStageId: stage_16_02
+    narrativeOpeningId: stage_16_03_opening
+    narrativeVictoryId: stage_16_03_victory
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_liangzhouci_xiliang_xingke
+        name: 西凉行客
+        realmTier: zongShi
+        realmLayer: ruMen
+        school: lingQiao
+        baseHp: 55000
+        baseAttack: 1900
+        baseSpeed: 346
+        skillIds:
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill
+          - skill_lingqiao_shichuan_ult     # 西凉侧第一面起 ult 化(章内递进)
+        iconPath: assets/enemies/liangzhou_xiliang_xingke.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_baowu_bing_po_zhen
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_can_si_ruan_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [60, 70]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [850, 980]
+        dropChance: 1.0  # 银两(宗师段首章)
+    baseExpReward: 68
+    difficultyMultiplier: 17.4
+    biome: inn
+    sceneBackgroundPath: assets/scenes/battle_inn.png
+    weather: clear
+
+  # === stage_16_04 · 大漠游骑(西凉游骑将 · 灵巧章中 Boss · stat 门槛无相位 · 配 defeat)===
+  - id: stage_16_04
+    name: 大漠游骑
+    stageType: mainline
+    chapterIndex: 16
+    prevStageId: stage_16_03
+    narrativeOpeningId: stage_16_04_opening
+    narrativeVictoryId: stage_16_04_victory
+    narrativeDefeatId: stage_16_04_defeat
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_liangzhouci_xiliang_youqijiang
+        name: 西凉游骑将
+        realmTier: zongShi
+        realmLayer: ruMen
+        school: lingQiao
+        baseHp: 56000
+        baseAttack: 1910
+        baseSpeed: 348
+        skillIds:
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill
+          - skill_lingqiao_shichuan_ult
+        iconPath: assets/enemies/liangzhou_youqi_jiang.png
+        isBoss: true   # 章中 Boss = 游骑将 stat 门槛(HP/攻墙 · 无充能相位,唯 16_05 接关人设充能破招)
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_baowu_xue_lian_bian
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_wu_jin_zhan_jia
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [61, 71]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [900, 1050]
+        dropChance: 1.0  # 银两(宗师章中 Boss)
+    baseExpReward: 88
+    difficultyMultiplier: 17.6
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: clear
+
+  # === stage_16_05 · 西凉门户关城(刚猛·接关人「称关一战」·末 Boss·敌层 shuLian=cap 38 同层·破招掉铁马冰河真解)===
+  - id: stage_16_05
+    name: 西凉门户关城
+    stageType: mainline
+    chapterIndex: 16
+    prevStageId: stage_16_04
+    narrativeOpeningId: stage_16_05_opening
+    narrativeVictoryId: stage_16_05_victory
+    narrativeDefeatId: stage_16_05_defeat
+    requiredRealm: zongShi
+    dropSkillManualId: skill_tie_ma_bing_he  # 真解(铁马冰河·接关人本命·同招为 boss chargeSkillId 双用·破招首通 markUnlocked·2026-07-24 新写)
+    dropSkillFragmentId: skill_yue_luo_wu_sheng  # 章末重打残页(月落无声·tier6 阴柔·releaseTier 抬 zongShi 后挂载完备收编·2026-07-24 宗师段 spec §3 拍定)
+    enemyTeam:
+      - id: enemy_zongShi_liangzhouci_jieguan_ren
+        name: 接关人
+        realmTier: zongShi
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 56500        # 宗师段首章末 Boss(<60000 硬线·头寸 56500→58000→59500 三章分配=spec §2)
+        baseAttack: 1920
+        baseSpeed: 350
+        skillIds:
+          - skill_gangmeng_shichuan_basic
+          - skill_gangmeng_shichuan_skill
+          - skill_tie_ma_bing_he              # 本命真解 = 末Boss chargeSkill(双用 canon·红线① chargeSkillId∈skillIds)
+        iconPath: assets/enemies/liangzhou_jieguan_ren.png
+        isBoss: true
+        chargeSkillId: skill_tie_ma_bing_he     # 破招:玩家拦截,首通掉同招真解
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.9   # 2026-07-24 tempo ratchet 校准:cap38 nearMax 面板跳档速度碾压,Boss 首次行动前即被打穿→AI 自选蓄力路径 50 seeds 全程不可见;改塔机制型先例(floor10 背水一击)相位 unlockSkillIds 配法——受击进相位立即推蓄力(招牌反扑不依赖行动条),0.9 保 nearMax 首发即开窗;数值头寸零变动
+            unlockSkillIds:
+              - skill_tie_ma_bing_he            # 本命真解相位解锁(进相位即蓄力反扑=「接关一战」的那一刀)
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_baowu_chang_hong_jian
+        dropChance: 1.0
+      - equipmentDefId: accessory_baowu_long_gu_lian
+        dropChance: 0.50
+      - equipmentDefId: accessory_baowu_zi_jin_hu_lu
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [63, 73]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1020, 1200]
+        dropChance: 1.0  # 银两(宗师章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(宗师章末)
+    baseExpReward: 108
+    difficultyMultiplier: 17.8
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: clear
+
+  # ============================================================================
   # 心魔境 7 关（1.0 P2.2 §12.1 · stageType: innerDemon）
   # ----------------------------------------------------------------------------
   # spec doc: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md

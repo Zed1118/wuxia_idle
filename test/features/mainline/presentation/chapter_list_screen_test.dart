@@ -43,7 +43,7 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('全新进度 → 15 章卡渲染,Ch1 进行中 + Ch2-15 锁', (tester) async {
+  testWidgets('全新进度 → 16 章卡渲染,Ch1 进行中 + Ch2-16 锁', (tester) async {
     await pumpScreen(tester, mkProgress());
 
     expect(find.text(UiStrings.mainlineRouteMapTitle), findsOneWidget);
@@ -75,15 +75,16 @@ void main() {
     expect(find.text(UiStrings.chapter13Title), findsNWidgets(2));
     expect(find.text(UiStrings.chapter14Title), findsNWidgets(2));
     expect(find.text(UiStrings.chapter15Title), findsNWidgets(2));
+    expect(find.text(UiStrings.chapter16Title), findsNWidgets(2));
     expect(find.text(UiStrings.mainlineRouteCurrent), findsOneWidget);
-    expect(find.text(UiStrings.mainlineRouteLocked), findsNWidgets(14));
+    expect(find.text(UiStrings.mainlineRouteLocked), findsNWidgets(15));
 
     expect(
       find.text(UiStrings.chapterStatusInProgress),
       findsOneWidget,
       reason: '只有 Ch1 进行中',
     );
-    expect(find.byIcon(Icons.lock), findsNWidgets(14), reason: 'Ch2–Ch15 都锁');
+    expect(find.byIcon(Icons.lock), findsNWidgets(15), reason: 'Ch2–Ch16 都锁');
     expect(find.byIcon(Icons.check_circle), findsNothing);
   });
 
@@ -111,18 +112,18 @@ void main() {
       findsOneWidget,
       reason: 'Ch2 解锁进行中',
     );
-    expect(find.byIcon(Icons.lock), findsNWidgets(13), reason: 'Ch3–Ch15 仍锁');
+    expect(find.byIcon(Icons.lock), findsNWidgets(14), reason: 'Ch3–Ch16 仍锁');
   });
 
-  testWidgets('全 75 关通关 → 15 章都 ✓,无锁', (tester) async {
+  testWidgets('全 80 关通关 → 16 章都 ✓,无锁', (tester) async {
     final cleared = <String>[
-      for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
+      for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
         for (final idx in [1, 2, 3, 4, 5])
           'stage_${ch.toString().padLeft(2, '0')}_0$idx',
     ];
     await pumpScreen(tester, mkProgress(cleared: cleared));
 
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(15));
+    expect(find.byIcon(Icons.check_circle), findsNWidgets(16));
     expect(find.byIcon(Icons.lock), findsNothing);
     expect(find.text(UiStrings.chapterStatusInProgress), findsNothing);
   });

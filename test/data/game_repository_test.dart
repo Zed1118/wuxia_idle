@@ -54,15 +54,18 @@ void main() {
       // + Ch11 鎏金公本命真解 skill_liu_jin_jue = 211
       // + Ch12 无名客本命真解 skill_mian_li_cang_zhen = 212
       // + Ch13 候峰翁本命真解 skill_yi_lan_zhong_shan = 213
-      // + 40 encounter_skills.yaml = 254 total
+      // + Ch15 守关老将本命真解 skill_gu_cheng_bi = 214(Ch14 十荡十决为收编非新增)
+      // + Ch16 接关人本命真解 skill_tie_ma_bing_he = 215
+      // + 40 encounter_skills.yaml = 255 total
       expect(
         repo.skillDefs.length,
-        254,
+        255,
         reason:
-            '213 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+            '215 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
             ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技 + 1 断魂庄锁脉针'
             ' + 1 Ch8 灰袖回风 + 1 Ch9 沉沙一诀 + 1 Ch10 止水诀 + 1 Ch11 鎏金诀'
-            ' + 1 Ch12 绵里藏针 + 1 Ch13 一览众山) + 40 奇遇招',
+            ' + 1 Ch12 绵里藏针 + 1 Ch13 一览众山 + 1 Ch15 孤城闭'
+            ' + 1 Ch16 铁马冰河) + 40 奇遇招',
       );
       expect(
         repo.encounterSkillIds.length,
@@ -83,8 +86,8 @@ void main() {
           .length;
       expect(
         mainlineCount,
-        75,
-        reason: '主线 75 关(2026-07-24 Ch15 关山一程绝顶段收官章扩,15 章 × 5 关)',
+        80,
+        reason: '主线 80 关(2026-07-24 Ch16 凉州词宗师段首章扩,16 章 × 5 关)',
       );
       expect(
         innerDemonCount,
@@ -682,13 +685,13 @@ void main() {
     );
 
     test(
-      '主线 75 关红线:15 章 × 5 关 + 每章双 Boss 关(2026-07-24 Ch15 关山一程绝顶段收官章扩·Boss 位随叙事定)',
+      '主线 80 关红线:16 章 × 5 关 + 每章双 Boss 关(2026-07-24 Ch16 凉州词宗师段首章扩·Boss 位随叙事定)',
       () async {
         final repo = await GameRepository.loadAllDefs(loader: fileLoader);
         final mainlines = repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
             .toList();
-        expect(mainlines.length, 75);
+        expect(mainlines.length, 80);
         for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]) {
           final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();
           expect(inCh.length, 5, reason: 'Ch$ch 应有 5 关');

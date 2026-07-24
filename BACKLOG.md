@@ -22,7 +22,7 @@
 | # | 项 | 域 | 预估 | 依据 |
 |---|---|---|---|---|
 | 1 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(原分支/worktree 已清,需新开载体) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段;阶段5证据须留 repo 内非 gitignored 目录(外审 07-24 教训) |
-| 2 | Ch16「凉州词」实装批(整章 coupled·失传神功敌招 9 招新写同批) | 主线内容 | xhigh 专会话 | spec `2026-07-24-zongshi-arc-ch16-18-design.md` 已冻结;kimi 07-26 10:10 前不可用→Claude 主执行或 codex+Gate |
+| 2 | Ch17「沙海纵深」实装批(灵巧主题·末 Boss 单窗口 0.20 机制教学·feng_juan 收编+夜雨残页) | 主线内容 | xhigh 专会话 | spec `2026-07-24-zongshi-arc-ch16-18-design.md` §8 前瞻登记,章级细化随批终拍(Ch16 已于 2026-07-24 交付销账) |
 
 ## 三 · 依赖锁死(附再开条件)
 
