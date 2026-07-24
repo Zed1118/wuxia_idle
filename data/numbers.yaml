@@ -203,7 +203,7 @@ combat:
 
 progression:
   release_cap:
-    max_absolute_realm_level: 33  # Ch14「山外来客」抬 31→33(绝顶·圆熟 yuanShu = 绝顶段第二章封顶·照 Ch11 一流第二章 shuLian→yuanShu 体例):within-tier·releaseTier 仍 jueDing 不触发新阶挂载完备(shi_dang 删 mount_deferred 收编挂 14_05 真解·2026-07-23 拍定)
+    max_absolute_realm_level: 35  # Ch15「关山一程」抬 33→35(绝顶·登峰 dengFeng = 绝顶段收官封顶·照 Ch12 一流收官 26→28 体例):within-tier·releaseTier 仍 jueDing 不触发新阶挂载完备(feng_juan/yang_guan 两 mount_deferred 均归宗师段仍豁免·真解孤城闭新写挂 15_05·2026-07-23 spec 八项拍板)
 
 # =============================================================================
 # 2. 49 级境界系统

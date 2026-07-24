@@ -31,3 +31,19 @@
 # ── Ch13 绝顶段首章「山外青山」立绘已补齐(2026-07-22·codex image_gen)──
 #
 # ── Ch14 绝顶段第 2 章「山外来客」立绘已补齐(2026-07-23·codex image_gen)──
+#
+# ── Ch15 绝顶段收官章「关山一程」待补美术(2026-07-24·合并后 codex image_gen 专批·spec §6 拍定)──
+# 敌人立绘(5)
+assets/enemies/guanshan_songxing_tongdao.png
+assets/enemies/guanshan_dukou_yeke.png
+assets/enemies/guanshan_xingjiao_seng.png
+assets/enemies/guanshan_shahai_zongpiao.png
+assets/enemies/guanshan_shouguan_laojiang.png
+# 章节封面(1)
+assets/scenes/chapter_15_cover.png
+# 主线剧情阅读背景(5)
+assets/scenes/narrative_stage_15_01.png
+assets/scenes/narrative_stage_15_02.png
+assets/scenes/narrative_stage_15_03.png
+assets/scenes/narrative_stage_15_04.png
+assets/scenes/narrative_stage_15_05.png

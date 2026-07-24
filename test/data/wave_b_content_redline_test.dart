@@ -141,6 +141,7 @@ void main() {
       'skill_mian_li_cang_zhen', // Ch12 无名客·绵里藏针(独立末Boss真解·wave_b 配平排除)
       'skill_yi_lan_zhong_shan', // Ch13 候峰翁·一览众山(独立末Boss真解·wave_b 配平排除)
       'skill_shi_dang_shi_jue', // Ch14 马战宗师·十荡十决(2026-07-23 收编为独立末Boss真解·wave_b 配平排除)
+      'skill_gu_cheng_bi', // Ch15 守关老将·孤城闭(独立末Boss真解·wave_b 配平排除)
     };
 
     // mount_deferred 招不在发布内容内,不参与配平(2026-07-23 Ch14 收编 shi_dang

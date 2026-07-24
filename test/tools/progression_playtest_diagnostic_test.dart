@@ -13,7 +13,7 @@ import '../support/test_data.dart';
 
 const _seedCount = 50;
 // 主线关总数(14 章 × 5 关 = 70·2026-07-23 Ch14 山外来客绝顶段第二章扩;新增主线章时改此一处)。
-const _mainlineStageCount = 70;
+const _mainlineStageCount = 75;
 const _csvPath =
     'test/tools/output/progression_attribute_playtest_2026-07-13.csv';
 const _updateEvidenceEnvironment = 'UPDATE_PROGRESSION_PLAYTEST_EVIDENCE';
