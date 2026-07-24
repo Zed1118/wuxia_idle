@@ -241,7 +241,7 @@ class BattleResolutionService {
       if (numbersConfig == null) {
         throw ArgumentError(
           'BattleResolutionService.resolve: Boss 关战败必须传 numbersConfig '
-          '（用于 DispelService.applyDefeatPenalty 的 defeatBoss* 系数）',
+          '（用于 DispelService.applyDefeatPenalty 的 defeatBossCultivationPenalty 系数）',
         );
       }
       for (final ch in participatingCharacters) {

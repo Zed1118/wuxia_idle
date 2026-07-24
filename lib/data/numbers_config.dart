@@ -128,12 +128,6 @@ class NumbersConfig {
   /// GDD §4.3 = 0.5）。
   final double dispersionCultivationPenalty;
 
-  /// 战败代价：Boss 关战败时角色当前内力扣减比例（numbers.yaml
-  /// `techniques.defeat.boss_internal_force_penalty`，Phase 4 W10 = 0.5）。
-  /// 战败后 ch.internalForce = (internalForce * (1 - 此值)).toInt()。
-  /// 仅 stages.yaml isBossStage=true 的关卡战败时由 DispelService.applyDefeatPenalty 消费。
-  final double defeatBossInternalForcePenalty;
-
   /// 战败代价：Boss 关战败时主修 progress 扣减比例（numbers.yaml
   /// `techniques.defeat.boss_cultivation_penalty`，Phase 4 W10 = 0.5）。
   /// 战败后 mainTech.cultivationProgress = (progress * (1 - 此值)).toInt()，
@@ -282,7 +276,6 @@ class NumbersConfig {
     required this.heritageItems,
     required this.ascension,
     required this.dispersionCultivationPenalty,
-    required this.defeatBossInternalForcePenalty,
     required this.defeatBossCultivationPenalty,
     required this.learningCost,
     required this.animation,
@@ -418,11 +411,6 @@ class NumbersConfig {
       dispersionCultivationPenalty:
           ((techniques['dispersion']
                       as Map<String, dynamic>)['cultivation_penalty']
-                  as num)
-              .toDouble(),
-      defeatBossInternalForcePenalty:
-          ((techniques['defeat']
-                      as Map<String, dynamic>)['boss_internal_force_penalty']
                   as num)
               .toDouble(),
       defeatBossCultivationPenalty:

@@ -19,7 +19,7 @@ import '../../weapon_codex/application/equipment_catalog_providers.dart';
 ///
 /// 失效两类：
 /// 1. **角色 / 装备 / 心法 family**：结算改 battleCount / cultivationProgress /
-///    internalForce（Boss 战败 ×0.5），缓存旧 Character/Equipment/Technique
+///    内息紊乱（Boss 战败施加；v1.34 起内力不扣），缓存旧 Character/Equipment/Technique
 ///    会让角色面板 / 心法面板读到旧值（W13-v3 实测根因）。
 /// 2. **背包 / 资源派生缓存**：关卡 drop 入背包后,仓库列表、资源总览、
 ///    按 defId / type 查询的数量都必须刷新。

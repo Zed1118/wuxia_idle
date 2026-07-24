@@ -364,8 +364,7 @@ void main() {
         expect(repo.numbers.combat.maxHpFormula.constitutionFactor, 400);
         expect(repo.numbers.defenseRateByTier[RealmTier.xueTu], 0.05);
         expect(repo.numbers.defenseRateByTier[RealmTier.wuSheng], 0.35);
-        // Phase 4 W10 战败代价（与 dispersion 同 0.50 但字段独立）
-        expect(repo.numbers.defeatBossInternalForcePenalty, 0.50);
+        // Phase 4 W10 战败代价（修炼度；v1.34 起战败不扣内力，内力字段已退役删除）
         expect(repo.numbers.defeatBossCultivationPenalty, 0.50);
       },
     );

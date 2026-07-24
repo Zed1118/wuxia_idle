@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.41**
+> v1.41 变更摘要(2026-07-24 真相源收口批 · 外审 07-24 triage · 0 改数值):① §5.4 Boss 血量红线措辞「60,000+」→「上限 60,000」(消除字面歧义,与 schema/生产 ≤60,000 一致);② GDD v1.24 同批:头部「当前状态块」制(`test/data/truth_source_guard_test.dart` 自动校验 cap/章数/关数)+排行榜 Noop 口径订正+战败死配置 `boss_internal_force_penalty` 退役删除。
 > **版本:v1.40**
 > v1.40 变更摘要(2026-07-18 校验符号迁位订正 · 0 改代码):GameRepository 拆分批(overnight 审查落地批·2402→1137 行)后符号位置同步——① §5.4 招式倍率 schema 真 sink:`game_repository.dart` `_enforceEncounterSkillRedLines` → `lib/data/validation/encounter_red_lines_validator.dart` 公名 `enforceEncounterSkillRedLines`(仍由 `GameRepository.loadAllDefs` 消费,enforce 语义零变);② §5.3 种子/收徒 yaml 层兜底两符号:`_enforceMasterRedLines`/`_enforceRecruitCandidateRedLines` → 同名公函数(`lib/data/validation/lineage_recruit_red_lines_validator.dart`);③ §8.1 现查无 drift:lore/events 联结校验 `_validatePresetLoreReferences`/`_validateEncounterEventReferences` 仍在 `game_repository.dart` 未迁,引用不动(handoff 待办原列 §8.1,实测证伪)。源:`docs/handoff/overnight_audit_batch_closeout_2026-07-18.md` 已知风险#1 + followup backlog #1。
 > **版本:v1.39**
@@ -167,7 +169,7 @@ project_root/
 | 装备基础攻击 | 2,000 |
 | 玩家血量 | 20,000 |
 | 内力 | 15,000 |
-| Boss 血量 | 60,000+（不许进 1M；2026-06-14 终局周目膨胀调 50000→60000） |
+| Boss 血量 | 上限 60,000（不许进 1M；2026-06-14 由 50,000 上调） |
 | 招式倍率 | **全局 ≤8,000 单线**（schema 唯一真 sink = `lib/data/validation/encounter_red_lines_validator.dart` 公名 `enforceEncounterSkillRedLines`(由 `GameRepository.loadAllDefs` 消费·v1.40 迁位订正)全局 enforce ≤8000）。per-type 数值按 §5.2 七阶缩放（普攻~500 基准；强力/大招随阶 1,500→6,400，低阶大招＜高阶强力是 7 阶曲线必然），**不按招式类型钉固定区间**——旧「强力 1,000–3,000 / 大招 5,000+」per-type 分档是 7 阶系统铺开前的早期参考值，与锁死的七阶哲学矛盾，2026-06-24 拍板改全局单线消除 drift |
 
 **软红线（极值满 build 实战可见值 · 保可读 · 不进百万膨胀）**：

@@ -3430,6 +3430,8 @@ class UiStrings {
       '$sweepChapterButton · ${sweepCycleBadge(cycle)}';
 
   static const String sweepReadinessLoading = '战备校验中';
+  static String sweepReadinessLoadingWithCost(int cost) =>
+      '$sweepReadinessLoading · 本章消耗 $cost';
   static const String sweepReadinessUnavailable = '战备暂不可用';
   static const String sweepReadinessInsufficientButton = '战备不足，暂缓扫荡';
   static const String sweepReadinessPanelTitle = '扫荡战备';
