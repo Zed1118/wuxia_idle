@@ -15,14 +15,14 @@
 | 6 | 高熟练度难度微调候选 | 数值微调 | 波B 全表 sweep 读数在案,待真玩拍板 |
 | 7 | CLAUDE §12.2 #5 归档行闭关单倍率表述 | no-touch 文档订正 | 1A 经验倍率拆分批后 stale,待版本订正窗口 |
 | 8 | 生产 DefaultRng 无种子统一走 rngProvider(#57 遗留) | 生产接线 | 2026-07-22 拍板留议(非阻塞·stage_entry_flow.dart:826 直 new) |
+| 9 | 宗师段 Boss 难度机制层方向(HP 硬线头寸 59500 后归零) | 设计拍板 | Ch15 spec §8 前瞻登记·倾向机制层扩难(§5.4 例外条款先例)·正式拍留宗师段 spec |
 
 ## 二 · 已解锁可派
 
 | # | 项 | 域 | 预估 | 依据 |
 |---|---|---|---|---|
 | 1 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(codex 在途分支自然续) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段 |
-| 2 | Ch14 美术 11 图 codex image_gen 专批(xiliang_* 5 敌+cover+5 背景·known_missing 已登记) | 美术(codex) | 随批 | 2026-07-23 2A 拍定·沿 Ch11-13 配方 |
-| 3 | Ch15 spec 起草(绝顶段收官·承 Ch14「下山西行」hook·cap 33→35 dengFeng 封顶) | 设计 | 专会话 | 2026-07-23 收账下批建议 |
+| 2 | Ch15 美术 11 图 codex image_gen 专批(guanshan_* 5 敌+cover+5 背景·known_missing 已登记) | 美术(codex) | 随批 | 2026-07-24 Ch15 实装批产物·合并后派·沿 Ch11-14 配方 |
 
 ## 三 · 依赖锁死(附再开条件)
 
@@ -33,5 +33,5 @@
 
 ## 四 · 方向级候选(大活·需专注会话+xhigh)
 
-- **Ch10+ 一流拐点主线章**(承 Ch9 末「符的那头是又一个开始」hook·B 案存档备参)——抬发布上限 reconcile 面大(memory `feedback_wuxia_release_cap_raise_reconcile` 4 站点),宜专章专议
+- **宗师段主线 spec(Ch16+)**(承 Ch15「关山一程」出关西行·yang_guan 西凉霸主伏笔·feng_juan/yang_guan 两 mount_deferred 归宗师段收编·§一#9 机制层难度先拍)——宜专章专议
 - **爬塔二流段 spec**——塔内容扩展另一轴

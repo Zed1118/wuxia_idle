@@ -153,7 +153,7 @@ MainMenuStatusSummaryItem? _breakthroughItem(
 }
 
 MainMenuStatusSummaryItem? _mainlineItem(MainlineProgress progress) {
-  for (var chapterIndex = 1; chapterIndex <= 14; chapterIndex++) {
+  for (var chapterIndex = 1; chapterIndex <= 15; chapterIndex++) {
     final stages = MainlineProgressService.availableStages(
       progress: progress,
       chapterIndex: chapterIndex,

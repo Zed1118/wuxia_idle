@@ -3376,3 +3376,31 @@ skills:
         shuLian: { damage_pct: 0.05 }
         jingTong: { damage_pct: 0.05, cooldown_delta: -1 }
         huaJing: { cooldown_delta: -2 }
+
+  # ───────────────────────────────────────────
+  # Ch15「关山一程」末Boss「守关老将」本命真解(绝顶段收官章·西行头一程·旧路新走)。
+  # 末Boss stage_15_05 chargeSkillId 双用 = dropSkillManualId(破招首通掉·沿「破他的招、学他的招」canon)。
+  # 独立末Boss真解,非 wave_b 配平池成员(standaloneBossManualIds 白名单);孤城闭=「长烟落日孤城闭」
+  # 西北边塞意象——守关人以静制动、落闩锁关的本命杀法,关门一落,进退都由他定。
+  # mult 4800 = 绝顶真解档(一览众山/十荡十决同档·守全局 ≤8000·真解 source=mainline_drop 不入 encounter per-tier cap)。
+  # 绝顶三章三系各一:Ch13 lingQiao/Ch14 gangMeng/Ch15 yinRou(2026-07-23 spec 八项拍板);
+  # 命名避撞:候选「关山月」与塔 15 残页 skill_guan_shan_ba_ji 撞「关山」词根,弃(spec §4)。
+  - id: skill_gu_cheng_bi
+    name: 孤城闭
+    description: 长烟落日,孤城自闭。守关的人不追不赶,任你千般来势,只在旧势已尽的那一线落下门闩——静到极处的一招,门里门外,进退都由他定。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 4800
+    qiDelta: -30
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: gate_seal
+    source: mainline_drop
+    style: yinRou
+    tier: 5
+    proficiency:        # 真解手工高半档(阴柔向:实藏于内·照绵里藏针三层 damage_pct 锚)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
+        huaJing: { damage_pct: 0.08 }

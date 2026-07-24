@@ -3424,6 +3424,234 @@ stages:
     weather: clear
 
   # ============================================================================
+  # 第十五章 · 关山一程(绝顶段收官 · 主下山西行五程对称 Ch14 客上山五程)
+  # spec: docs/spec/2026-07-23-ch15-guanshan-yicheng-design.md(2026-07-23 八项拍板冻结)
+  # 敌层 yuanShu→dengFeng 封顶(cap 35)·全员 ult 化=收官难度语义·末 Boss 59500<60000 头寸收官用尽
+  # Ch4「西出阳关」旧路新走回旋:渡口/古道/沙海/关城逐程呼应,biome/战斗背景全复用零新增
+  # ============================================================================
+
+  # === stage_15_01 · 山门官道(辞山第一程 · 刚猛 · 中原同道沿路讨教:送行拳)===
+  - id: stage_15_01
+    name: 山门官道
+    stageType: mainline
+    chapterIndex: 15
+    narrativeOpeningId: stage_15_01_opening
+    narrativeVictoryId: stage_15_01_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_guanshanyicheng_songxing_tongdao
+        name: 送行同道
+        realmTier: jueDing
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 52000
+        baseAttack: 1450
+        baseSpeed: 322
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+          - skill_gangmeng_jianghu_ult        # 全员 ult 化(收官难度语义·spec §5 杠杆①)
+        iconPath: assets/enemies/guanshan_songxing_tongdao.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_qing_xu_jian
+        dropChance: 1.0
+      - equipmentDefId: armor_zhongqi_yu_lin_qing_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [54, 64]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [630, 760]
+        dropChance: 1.0  # 银两(绝顶段收官章 · 承 Ch14 曲线续进)
+    baseExpReward: 58
+    difficultyMultiplier: 16.2
+    biome: mountainPath
+    sceneBackgroundPath: assets/scenes/battle_mountainpath.png
+    weather: clear
+
+  # === stage_15_02 · 黄河渡(渡河辞中原 · 阴柔 · 渡口夜客讨教)===
+  - id: stage_15_02
+    name: 黄河渡
+    stageType: mainline
+    chapterIndex: 15
+    prevStageId: stage_15_01
+    narrativeOpeningId: stage_15_02_opening
+    narrativeVictoryId: stage_15_02_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_guanshanyicheng_dukou_yeke
+        name: 渡口夜客
+        realmTier: jueDing
+        realmLayer: yuanShu
+        school: yinRou
+        baseHp: 54000
+        baseAttack: 1520
+        baseSpeed: 325
+        skillIds:
+          - skill_yinrou_jianghu_basic
+          - skill_yinrou_jianghu_skill
+          - skill_yinrou_jianghu_ult          # 全员 ult 化
+        iconPath: assets/enemies/guanshan_dukou_yeke.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_ri_yue_lun
+        dropChance: 1.0
+      - equipmentDefId: accessory_zhongqi_qing_yu_huan
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [54, 64]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [640, 770]
+        dropChance: 1.0  # 银两(绝顶段收官章)
+    baseExpReward: 60
+    difficultyMultiplier: 16.4
+    biome: dock
+    sceneBackgroundPath: assets/scenes/battle_dock.png
+    weather: clear
+
+  # === stage_15_03 · 戈壁古窟(河西佛窟 · 灵巧 · 行脚僧论武:佛门 fang 系主线首用)===
+  - id: stage_15_03
+    name: 戈壁古窟
+    stageType: mainline
+    chapterIndex: 15
+    prevStageId: stage_15_02
+    narrativeOpeningId: stage_15_03_opening
+    narrativeVictoryId: stage_15_03_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_guanshanyicheng_xingjiao_seng
+        name: 行脚僧
+        realmTier: jueDing
+        realmLayer: huaJing
+        school: lingQiao
+        baseHp: 56000
+        baseAttack: 1600
+        baseSpeed: 328
+        skillIds:
+          - skill_lingqiao_jianghu_fang_basic
+          - skill_lingqiao_jianghu_fang_skill
+          - skill_lingqiao_jianghu_fang_ult   # 佛门明王拳三件套主线首用(spec §5 拍定·此前仅 Ch4/塔用)
+        iconPath: assets/enemies/guanshan_xingjiao_seng.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_du_long_suo
+        dropChance: 1.0
+      - equipmentDefId: armor_zhongqi_yin_lin_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [55, 65]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [650, 780]
+        dropChance: 1.0  # 银两(绝顶段收官章)
+    baseExpReward: 62
+    difficultyMultiplier: 16.6
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: clear
+
+  # === stage_15_04 · 沙海故道(刚猛章中 Boss · 沙海马贼总瓢把子 · stat 门槛无相位 · 配 defeat)===
+  - id: stage_15_04
+    name: 沙海故道
+    stageType: mainline
+    chapterIndex: 15
+    prevStageId: stage_15_03
+    narrativeOpeningId: stage_15_04_opening
+    narrativeVictoryId: stage_15_04_victory
+    narrativeDefeatId: stage_15_04_defeat
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_guanshanyicheng_shahai_zongpiao
+        name: 沙海总瓢把子
+        realmTier: jueDing
+        realmLayer: huaJing
+        school: gangMeng
+        baseHp: 58000
+        baseAttack: 1720
+        baseSpeed: 332
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+          - skill_gangmeng_jianghu_ult        # 全员 ult 化
+        iconPath: assets/enemies/guanshan_shahai_zongpiao.png
+        isBoss: true   # 章中 Boss = 沙海地头蛇 stat 门槛(HP/攻墙 · 无充能相位,唯 15_05 守关老将设充能破招)
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_qing_xu_jian
+        dropChance: 1.0
+      - equipmentDefId: armor_zhongqi_yin_lin_jia
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [56, 66]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [700, 850]
+        dropChance: 1.0  # 银两(绝顶章中 Boss)
+    baseExpReward: 82
+    difficultyMultiplier: 16.8
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: clear
+
+  # === stage_15_05 · 阳关城下(阴柔·守关老将「借关一战」·末 Boss·敌层 dengFeng 与满 cap 同层·破招掉孤城闭真解)===
+  - id: stage_15_05
+    name: 阳关城下
+    stageType: mainline
+    chapterIndex: 15
+    prevStageId: stage_15_04
+    narrativeOpeningId: stage_15_05_opening
+    narrativeVictoryId: stage_15_05_victory
+    narrativeDefeatId: stage_15_05_defeat
+    requiredRealm: jueDing
+    dropSkillManualId: skill_gu_cheng_bi  # 真解(孤城闭·守关老将本命·同招为 boss chargeSkillId 双用·破招首通 markUnlocked·2026-07-24 新写)
+    enemyTeam:
+      - id: enemy_jueDing_guanshanyicheng_shouguan_laojiang
+        name: 守关老将
+        realmTier: jueDing
+        realmLayer: dengFeng
+        school: yinRou
+        baseHp: 59500        # HP 压缩区收官(<60000 硬线·头寸用尽·宗师段起难度走机制层=spec §5 前瞻登记)
+        baseAttack: 1850
+        baseSpeed: 336
+        skillIds:
+          - skill_yinrou_jianghu_basic
+          - skill_yinrou_jianghu_skill
+          - skill_gu_cheng_bi                 # 本命真解 = 末Boss chargeSkill(双用 canon)
+        iconPath: assets/enemies/guanshan_shouguan_laojiang.png
+        isBoss: true
+        chargeSkillId: skill_gu_cheng_bi        # 破招:玩家拦截,首通掉同招真解
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_du_long_suo
+        dropChance: 1.0
+      - equipmentDefId: armor_zhongqi_yu_lin_qing_jia
+        dropChance: 0.50
+      - equipmentDefId: accessory_zhongqi_qing_yu_huan
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [58, 68]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [810, 980]
+        dropChance: 1.0  # 银两(绝顶章末 Boss·收官)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(绝顶章末)
+    baseExpReward: 102
+    difficultyMultiplier: 17.0
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: clear
+
+  # ============================================================================
   # 心魔境 7 关（1.0 P2.2 §12.1 · stageType: innerDemon）
   # ----------------------------------------------------------------------------
   # spec doc: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md
