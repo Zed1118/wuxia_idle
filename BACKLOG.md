@@ -22,7 +22,6 @@
 | # | 项 | 域 | 预估 | 依据 |
 |---|---|---|---|---|
 | 1 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(codex 在途分支自然续) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段 |
-| 2 | Ch15 美术 11 图 codex image_gen 专批(guanshan_* 5 敌+cover+5 背景·known_missing 已登记) | 美术(codex) | 随批 | 2026-07-24 Ch15 实装批产物·合并后派·沿 Ch11-14 配方 |
 
 ## 三 · 依赖锁死(附再开条件)
 
