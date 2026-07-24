@@ -838,8 +838,7 @@ techniques:
   # 普通关战败不触发（试错免费）。与 dispersion 数值同 0.50 但语义独立——
   # dispersion=玩家主动换主修，defeat=Boss 战败被动惩罚（不换主修，progress + layer 回退）。
   defeat:
-    boss_internal_force_penalty: 0.50 # 战败后角色当前内力 ×0.5（floor）
-    boss_cultivation_penalty: 0.50    # 战败后主修 progress ×0.5（再走 layer 反向重算）
+    boss_cultivation_penalty: 0.50    # 战败后主修 progress ×0.5（再走 layer 反向重算）；v1.34 起战败不扣内力（只施加内息紊乱），boss_internal_force_penalty 已退役删除
 
   # --- 学习成本（phase2_tasks T23，Pen 拍板）---
   # 统一固定值。领悟点来源 = 闭关挂机（SeclusionService.techniqueLearnPoints）；

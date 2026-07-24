@@ -1595,7 +1595,7 @@ class _SweepReadinessStatusLine extends StatelessWidget {
         }
         return parts.join(' · ');
       },
-      loading: () => '${UiStrings.sweepReadinessLoading} · 本章消耗 $chapterCost',
+      loading: () => UiStrings.sweepReadinessLoadingWithCost(chapterCost),
       error: (_, _) => UiStrings.sweepReadinessUnavailable,
     );
     return Container(

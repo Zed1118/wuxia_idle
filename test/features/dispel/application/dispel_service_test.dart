@@ -370,7 +370,7 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────────
 
   group('Phase 4 W10 · applyDefeatPenalty Boss 战败被动散功', () {
-    test('基本流程：内力 ×0.5 + progress ×0.5 + layer 回退 + role 不动', () {
+    test('基本流程：内力不扣+内息紊乱 + progress ×0.5 + layer 回退 + role 不动', () {
       // yuanMan/1500 → progress=750；prev(daCheng→yuanMan req)=900；
       // 750<900 → 回退 daCheng；prev(zhongCheng→daCheng req)=500；
       // 750>=500 → 停。期望：daCheng/750，progressToNext=900（daCheng→yuanMan）

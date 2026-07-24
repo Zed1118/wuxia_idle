@@ -205,10 +205,11 @@ class DispelService {
   ///   - **不换主修**：不动 mainTech.role / wasMainBeforeReset / ch.mainTechniqueId
   ///   - **不调 [TechniqueDispersion.disperse]**：disperse 会同时改 role=assist + wasMainBeforeReset=true，
   ///     这两步在战败被动场景**绝对不要**做（玩家本次没换主修，下次仍用同一本）
-  ///   - **使用独立 penalty 系数**：n.defeatBoss\* 系列（语义独立于 dispersion）
+  ///   - **使用独立 penalty 系数**：n.defeatBossCultivationPenalty（语义独立于 dispersion；
+  ///     v1.34 起战败不扣内力，只施加内息紊乱，boss_internal_force_penalty 已退役）
   ///
-  /// 副作用：in-place 写 ch.internalForce + mainTech.cultivationProgress + cultivationLayer +
-  /// cultivationProgressToNext。Isar 持久化由 caller 负责（同 dispel 的体例）。
+  /// 副作用：in-place 施加 ch 内息紊乱（内力不动）+ 写 mainTech.cultivationProgress +
+  /// cultivationLayer + cultivationProgressToNext。Isar 持久化由 caller 负责（同 dispel 的体例）。
   static DefeatPenaltyResult applyDefeatPenalty({
     required Character ch,
     required Technique mainTech,

@@ -1000,7 +1000,7 @@ void main() {
   // ──────────────────────────────────────────────────────────────────────────
 
   group('Phase 4 W10 · Boss 战败被动散功 hook', () {
-    test('Boss 战败：主修触发 applyDefeatPenalty + 内力 ×0.5 + progress ×0.5', () {
+    test('Boss 战败：主修触发 applyDefeatPenalty + 内力不扣（内息紊乱）+ progress ×0.5', () {
       final ch = buildCharacter(id: 1, mainTechId: 200);
       ch.internalForce = 8000;
       final w = buildEquipment(id: 100, slot: EquipmentSlot.weapon);
