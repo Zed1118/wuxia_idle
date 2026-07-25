@@ -334,7 +334,7 @@ Future<void> runTowerFlow({
       MaterialPageRoute(
         builder: (_) => NarrativeReaderScreen(
           content: victory,
-          fallbackTitle: '${UiStrings.towerFloorLabel(floor.floorIndex)} · 胜利',
+          fallbackTitle: UiStrings.towerFloorVictoryTitle(floor.floorIndex),
         ),
       ),
     );

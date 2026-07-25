@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/domain/enums.dart';
+import '../../strings.dart';
 import '../../theme/wuxia_tokens.dart';
 import '../equipment_art_image.dart';
 import '../equipment_glyph.dart';
@@ -22,7 +23,7 @@ class ItemSlot extends StatefulWidget {
     required this.equipmentSlot,
     this.enhanceLevel = 0,
     this.locked = false,
-    this.lockText = '未达境界',
+    this.lockText = UiStrings.itemSlotRealmLockedDefault,
     this.highTier = false,
     this.size = 96,
     this.leadingBadgeIcon,

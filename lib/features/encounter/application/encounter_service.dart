@@ -9,6 +9,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../core/domain/enums.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../../event/application/game_event_service.dart';
 import '../../tutorial/application/tutorial_service.dart';
@@ -434,15 +435,21 @@ class EncounterService {
     required int saveDataId,
   }) async {
     if (!skillDef.isEncounterSkill) {
-      return EquipNotFound('skill ${skillDef.id} 不是奇遇招式');
+      return EquipNotFound(
+        UiStrings.encounterSkillNotEncounterSkill(skillDef.id),
+      );
     }
     final tier = skillDef.tier!;
-    EquipEncounterSkillResult result = const EquipNotFound('未初始化');
+    EquipEncounterSkillResult result = const EquipNotFound(
+      UiStrings.encounterSkillEquipUninitialized,
+    );
     try {
       await isar.writeTxn(() async {
         final character = await isar.characters.get(characterId);
         if (character == null) {
-          result = EquipNotFound('character #$characterId 不存在');
+          result = EquipNotFound(
+            UiStrings.encounterSkillCharacterMissing(characterId),
+          );
           return;
         }
         // 波A A4 来源统一:解锁校验改读 SaveData.skillUnlockProgress。

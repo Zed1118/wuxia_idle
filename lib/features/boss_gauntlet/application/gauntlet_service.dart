@@ -14,6 +14,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../data/numbers_config.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
@@ -462,7 +463,7 @@ class GauntletService {
         eqDef,
         rng: rng,
         obtainedAt: at,
-        obtainedFrom: '断魂庄',
+        obtainedFrom: UiStrings.gauntletName,
       );
       await _isar.equipments.put(eq);
 
@@ -564,7 +565,10 @@ class GauntletService {
     for (final m in run0.members) {
       final ch = await _isar.characters.get(m.characterId);
       summaryMembers.add(
-        GauntletDefeatMember(name: ch?.name ?? '门人', downed: m.isDowned),
+        GauntletDefeatMember(
+          name: ch?.name ?? UiStrings.gauntletMemberFallbackName,
+          downed: m.isDowned,
+        ),
       );
     }
     final repo = GameRepository.instance;

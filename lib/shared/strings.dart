@@ -670,6 +670,10 @@ class UiStrings {
   static const String lineageRoleDisciple = '门下弟子';
   static const String lineageRoleSenior = '大弟子';
   static const String lineageRoleJunior = '二弟子';
+
+  /// 种子师徒的占位名(`defaultMasterName`;slot 1/2 复用上面的大弟子/二弟子)。
+  static const String masterDefaultNameFounder = '祖师';
+  static String masterDefaultNameFallback(String defId) => '师徒_$defId';
   static const String lineageRoleGrandDisciple = '再传弟子';
 
   // 师承段（T56）
@@ -868,6 +872,14 @@ class UiStrings {
 
   // W18-A1 心法相生(GDD §4.5,CharacterPanel chip 显示)
   static const String synergyActiveLabel = '相生';
+
+  /// 相生 buff 摘要的属性标签(`SynergyMultipliers.summary()` 拼装 → chip 显示)。
+  static const String synergyStatAttack = '攻';
+  static const String synergyStatDefense = '防';
+  static const String synergyStatSpeed = '速';
+  static const String synergyStatHp = '血';
+  static const String synergyStatInternalForceMax = '内力上限';
+  static const String synergyStatInternalForceGrowth = '内力增长';
 
   // 仓库 / 强化对话框（T29）
   static const String inventoryTitle = '装备仓库';
@@ -1119,6 +1131,13 @@ class UiStrings {
 
   /// T11:仓库格子境界锁封条显具体原因(需 X 境界),替泛化「未达境界」。
   static String inventoryRealmLockBanner(String realmName) => '需$realmName境界';
+
+  /// [ItemSlot.lockText] 的泛化默认值(调用方未给具体原因时兜底)。
+  static const String itemSlotRealmLockedDefault = '未达境界';
+
+  /// 资产缺失兜底:debug 角标 + 装备缺图占位的字形兜底。
+  static const String assetMissingBadge = '缺图';
+  static const String equipmentGlyphFallback = '器';
   static const String enhanceDialogTitle = '强化';
   static const String enhanceButton = '强化';
   static const String guaranteeButton = '保底成功';
@@ -1588,6 +1607,10 @@ class UiStrings {
   static const String towerSpineLegend = 'Boss 作节点，亮印为当前可挑战层，厚边为最高已通层';
 
   static String towerFloorLabel(int floorIndex) => '第 $floorIndex 层';
+
+  /// 爬塔战报 fallback 标题(胜利)。
+  static String towerFloorVictoryTitle(int floorIndex) =>
+      '${towerFloorLabel(floorIndex)} · 胜利';
   static String towerFloorEnemies(int count) => '$count 名敌人';
   static String towerRequiredRealm(String realmName) => '推荐 $realmName';
 
@@ -2646,6 +2669,14 @@ class UiStrings {
       '境界不足:需 tier $requiredTier,当前 $current';
   static String encounterSkillEquipFailedReason(String reason) =>
       '装备失败: $reason';
+
+  /// `equipEncounterSkill` 的失败原因(经上面的 [encounterSkillEquipFailedReason]
+  /// 呈现给玩家,故不是纯诊断串)。
+  static String encounterSkillNotEncounterSkill(String skillId) =>
+      'skill $skillId 不是奇遇招式';
+  static const String encounterSkillEquipUninitialized = '未初始化';
+  static String encounterSkillCharacterMissing(int characterId) =>
+      'character #$characterId 不存在';
   static String encounterSkillDefMissing(String id) => '招式定义缺失: $id';
 
   // sect_screen 空状态。
@@ -3680,6 +3711,9 @@ class UiStrings {
 
   // ── 断魂庄三关 · 装载 / 整备（§7.1/§7.2 · C2.5）──────────────────────
   static const String gauntletName = '断魂庄';
+
+  /// 战败结算里成员名缺失时的兜底称谓。
+  static const String gauntletMemberFallbackName = '门人';
   static const String gauntletSubtitle = '三关连战，一气呵成；持帖入庄，生死自负。';
   static const String gauntletLoadoutTitle = '断魂庄';
   // 顶部信息
