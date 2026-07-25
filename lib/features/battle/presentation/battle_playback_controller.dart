@@ -534,11 +534,12 @@ class BattlePlaybackController {
     // P1.1 候选 3-c:仅暴击 + attacker 主修武器 xinJianTongLing → 剑鸣浮字
     final hasSwordSong =
         result.isCritical && (attacker?.swordSongResonanceActive ?? false);
+    // 暴击/普通均只传伤害数字串:「暴击」标签与「伤害」后缀由飘字层按
+    // PopupType.critical 语义自行排版(见 damage_popup 的 _CriticalDamageText),
+    // 上游不拼文案模板、下游不反解析(BACKLOG §二#4)。
     return DamagePopupData(
       id: _nextPopupId,
-      text: result.isCritical
-          ? UiStrings.criticalDamagePopup(result.finalDamage)
-          : result.finalDamage.toString(),
+      text: result.finalDamage.toString(),
       type: result.isCritical ? PopupType.critical : PopupType.normal,
       hasCounterUp: result.schoolCounterMultiplier > 1.0,
       hasCounterDown: result.schoolCounterMultiplier < 1.0,

@@ -11,10 +11,10 @@ import '../../support/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_action_template.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_playback_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_vfx_entries.dart';
+import 'package:wuxia_idle/features/battle/presentation/damage_popup.dart';
 import 'package:wuxia_idle/features/battle/presentation/ultimate_caption_overlay.dart';
 import 'package:wuxia_idle/shared/audio/audio_backend.dart';
 import 'package:wuxia_idle/shared/audio/sound_manager.dart';
-import 'package:wuxia_idle/shared/strings.dart';
 
 /// [BattlePlaybackController] 单元测试 —— Task 4 抽离的收益：`playAction` 本体 +
 /// 播放调度（pause/resume/fast-forward）从 `_BattleScreenState` 抽出后可直接单测。
@@ -351,16 +351,14 @@ void main() {
     await tester.pump();
 
     expect(c.debugActiveEffectCount, 2, reason: '一个共享流派特效 + 一个末位目标暴击特效');
-    expect(
-      c
-          .debugPopupsForSlot(
-            targets.last.teamSide * 3 + targets.last.slotIndex,
-          )
-          .single
-          .data
-          .text,
-      UiStrings.criticalDamagePopup(240),
-    );
+    // 上游只传伤害数字串,「暴击」标签/「伤害」后缀由飘字层按 type 分段排版
+    // (BACKLOG §二#4 消除 parse-back),故此处断言结构化契约而非拼好的显示串。
+    final critPopup = c
+        .debugPopupsForSlot(targets.last.teamSide * 3 + targets.last.slotIndex)
+        .single
+        .data;
+    expect(critPopup.text, '240');
+    expect(critPopup.type, PopupType.critical);
   });
 
   testWidgets('playActions 群攻非代表目标被击杀仍触发一次施放级特写', (tester) async {
@@ -444,7 +442,8 @@ void main() {
     await tester.pump();
     final secondList = c.debugPopupsForSlot(_targetSlotKey);
     expect(secondList.length, 2, reason: '二次命中 → 队列增长');
-    expect(secondList.last.data.text, UiStrings.criticalDamagePopup(240));
+    expect(secondList.last.data.text, '240');
+    expect(secondList.last.data.type, PopupType.critical);
     expect(
       secondList.last.anchor,
       isNot(firstAnchor),

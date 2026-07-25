@@ -225,9 +225,11 @@ class UiStrings {
   static const String dodge = '闪';
   static const String counterUp = '⬆';
   static const String counterDown = '⬇';
+  // 暴击飘字由 damage_popup 按「标签 / 数字 / 后缀」三段各自排版(字号字色不同),
+  // 故此处只出标签与后缀两个常量,不再提供拼好整句的格式化函数——整句版本会与
+  // 飘字层的分段组合形成同一句文案的两处定义,曾诱发下游正则反解析(BACKLOG §二#4)。
   static const String criticalLabel = '暴击';
   static const String damageSuffix = '伤害';
-  static String criticalDamagePopup(int damage) => '暴击 $damage 伤害';
 
   // 战斗结算（T16）
   static const String close = '关闭';

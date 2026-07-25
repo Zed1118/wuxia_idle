@@ -21,13 +21,15 @@
 #     :193 真 return),不是纯诊断串——改 Error 构造只会让门禁闭嘴而玩家照看,
 #     故按 A 类迁 UiStrings。
 #
-# ── 余 3 条的处置 ──
+# 2026-07-25 damage_popup parse-back 解耦(BACKLOG §二#4)销 1 → **余 2**:
+#   飘字上游改传纯伤害数字串,分段排版由 PopupType.critical 语义驱动,
+#   `RegExp(r'^暴击 (\d+) 伤害$')` 连同拼整句的 UiStrings.criticalDamagePopup
+#   一并删除(整句模板与飘字层三段组合是同一句文案的两处定义=漂移源)。
+#
+# ── 余 2 条的处置 ──
 # C 占位兜底串(CLAUDE §5.6 允许开发期占位):narrative_loader「[剧情待补]」/
 #   encounter_event_loader「[文案待补]」→ 保留。
-# E damage_popup 的 r'^暴击 (\d+) 伤害$' = 对 UiStrings.criticalDamagePopup 输出的
-#   **反解析**,中文是模板复制品(改 strings.dart 会静默失配)。真修法是消除 parse-back
-#   让上游传结构化数据,已立 BACKLOG §二#4,不按散写迁 UiStrings。
+# 至此本表只余 C 类占位串,无玩家可见文案散写。
 
 lib/data/encounter_event_loader.dart :: '[文案待补:$id]'
 lib/data/narrative_loader.dart :: '[剧情待补：$id]'
-lib/features/battle/presentation/damage_popup.dart :: r'^暴击 (\d+) 伤害$'

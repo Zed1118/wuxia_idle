@@ -44,9 +44,9 @@ void main() {
   testWidgets('暴击 + hasSwordSong=true → 显 ✦剑鸣', (tester) async {
     await pumpPopup(
       tester,
-      DamagePopupData(
+      const DamagePopupData(
         id: 1,
-        text: UiStrings.criticalDamagePopup(4500),
+        text: '4500',
         type: PopupType.critical,
         hasSwordSong: true,
       ),
@@ -54,7 +54,6 @@ void main() {
     expect(find.text(UiStrings.criticalLabel), findsOneWidget);
     expect(find.text('4500'), findsOneWidget);
     expect(find.text(UiStrings.damageSuffix), findsOneWidget);
-    expect(find.text(UiStrings.criticalDamagePopup(4500)), findsNothing);
     expect(find.text(UiStrings.swordSongHint), findsOneWidget);
     final damage = tester.widget<Text>(find.text('4500'));
     expect(damage.style?.color, WuxiaColors.battleCrimson);
@@ -65,9 +64,9 @@ void main() {
   testWidgets('暴击 + hasSwordSong=false → 不显 ✦剑鸣', (tester) async {
     await pumpPopup(
       tester,
-      DamagePopupData(
+      const DamagePopupData(
         id: 1,
-        text: UiStrings.criticalDamagePopup(4500),
+        text: '4500',
         type: PopupType.critical,
         hasSwordSong: false,
       ),
@@ -75,16 +74,29 @@ void main() {
     expect(find.text(UiStrings.criticalLabel), findsOneWidget);
     expect(find.text('4500'), findsOneWidget);
     expect(find.text(UiStrings.damageSuffix), findsOneWidget);
-    expect(find.text(UiStrings.criticalDamagePopup(4500)), findsNothing);
     expect(find.text(UiStrings.swordSongHint), findsNothing);
+  });
+
+  // parse-back 解耦(BACKLOG §二#4):上游传纯数字串,分段排版由 PopupType.critical
+  // 语义驱动,不再从显示串正则反推伤害值——表现层不依赖 UiStrings 模板措辞。
+  testWidgets('暴击飘字:上游传纯数字串 → 仍分段渲染「暴击 / 数字 / 伤害」', (tester) async {
+    await pumpPopup(
+      tester,
+      const DamagePopupData(id: 1, text: '4500', type: PopupType.critical),
+    );
+    expect(find.text(UiStrings.criticalLabel), findsOneWidget);
+    expect(find.text('4500'), findsOneWidget);
+    expect(find.text(UiStrings.damageSuffix), findsOneWidget);
+    final damage = tester.widget<Text>(find.text('4500'));
+    expect(damage.style?.color, WuxiaColors.battleCrimson);
   });
 
   testWidgets('counter arrow 不显示, swordSong 仍显示', (tester) async {
     await pumpPopup(
       tester,
-      DamagePopupData(
+      const DamagePopupData(
         id: 1,
-        text: UiStrings.criticalDamagePopup(4500),
+        text: '4500',
         type: PopupType.critical,
         hasCounterUp: true,
         hasSwordSong: true,
