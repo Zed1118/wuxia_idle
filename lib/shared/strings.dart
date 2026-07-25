@@ -3240,6 +3240,7 @@ class UiStrings {
   static String taohuaIslandSceneHotspotMeta(int level, int stored) =>
       'Lv.$level · $stored';
   static const String taohuaIslandSceneProgressLabel = '产出进度';
+  static const String taohuaIslandSceneFullShort = '仓储已满';
   static const String taohuaIslandScenePausedShort = '暂停';
   static String taohuaIslandSelectedBuildingTitle(String buildingName) =>
       '$buildingName详情';

@@ -94,7 +94,7 @@
 
 ## 当前恢复点
 
-- **状态**：Slice 6 进行中；高频入口、角色/编成、主线/塔、仓库/装备/商店四簇已完成，下一簇为闭关/桃花岛。
+- **状态**：Slice 6 已完成；进入 Slice 7 长尾系统。
 - **最后完成**：
   - Slice 1 章节路引已提交：`c5e9afc7`；
   - 新增 `paperSurfaceTheme`，统一浅宣纸上的 ColorScheme、TextTheme、ListTile、Switch、Slider、Dropdown、Menu、输入框、禁用态与交互态；
@@ -142,9 +142,13 @@
   - `PlaqueButton` 继续保持禁用牌面 0.4 透明度、原木纹/朱漆、尺寸与鼠标/键盘行为，只把操作名移出牌面透明层并用墨色绘制；仓库“装备”和商店“购买”现在可读但仍明显弱于可用朱漆按钮；
   - 神物/宝物详情继续保留原题字尺寸、品阶色相、英雄图亮金框和左右栏结构，仅把浅宣纸顶栏标题改用已有 `paperTierColorForEquipment`，神物标题对宣纸对比约 4:1，不再近似亮黄隐形；
   - 仓库长名继续使用既有单行省略，商店名称/用途继续由左侧 `Expanded` 与 `IntrinsicHeight` 自适应；复查未发现需要改变网格、卡高或货架分组的溢出。
+  - 闭关地图、设置、进行中、结果四页与桃花岛继续保留原地图构图、卡片尺寸、信息顺序、结算/收取路径；双视口复核未发现需改结构的溢出；
+  - 新增 `goldOnPaper` 同色相纸面金文字 sink，对宣纸达到 4.5:1；亮金装帧边框、进度条和深底金色不变；
+  - 闭关活跃地图卡的纸面门槛/状态标签、圆满印与完成提示、结果路线编号、采集事件图标和跨境界徽记改用纸面金，不再把装帧亮金直接用作浅底小字；
+  - 桃花岛满载热区在原“产出进度”单行槽内改显“仓储已满”，金色满条、建筑热区位置、宽高与点击详情路径均不变；满载不再只靠颜色表达。
 - **下一步**：
-  1. 复查闭关/桃花岛的地图状态、生产卡、升级禁用态、长时间/满仓数字和 720p 首屏密度，不改地图、建筑或结算流程；
-  2. Slice 6 高频簇收口后进入门派/图鉴/档案等长尾系统；
+  1. 进入门派、门派谱、见闻录、技能库、兵器谱、战绩册等长尾档案页；
+  2. 再复查资源总览、江湖远行、断魂庄、藏卷阁和归来/奖励/失败/确认弹层；
   3. 先修明确的溢出、过密、低对比、disabled/hover/focus 和状态反馈瑕疵；
   4. 每个功能簇单独提交，并以 1280×720、1440×900 生产 route 验收。
 - **已跑验证**：
@@ -189,6 +193,9 @@
   - Slice 6D `PlaqueButton` 58-symbol 影响面扩展回归：197 pass / 0 fail（shared kit、存档、心法、角色、桃花岛、闭关 gate）；
   - Slice 6D `flutter analyze`：0 issue；
   - Slice 6D 真窗口截图：`inventory`、`equipment_detail_screen`、`shop` × 1280×720、1440×900，6/6 READY 且无 overflow/exception；人工确认仓库三栏网格、详情左右栏、货架分组与购买路径不变。
+  - Slice 6E seclusion/taohua/theme targeted tests：61 pass / 0 fail；
+  - Slice 6E `flutter analyze`：0 issue；
+  - Slice 6E 真窗口截图：`seclusion_map_list`、`seclusion_setup`、`seclusion_active`、`seclusion_result`、`taohua_island` × 1280×720、1440×900，10/10 READY 且无 overflow/exception；人工确认原地图构图、卡片几何、闭关流程与桃花岛点击路径不变。
 - **阻塞项**：无。
 - **残留风险**：
   - 伪文字规则和跨平台正式字体方案仍需后续设计拍板；

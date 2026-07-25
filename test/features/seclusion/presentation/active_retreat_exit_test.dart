@@ -7,6 +7,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/active_retreat_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import '../../../support/test_data.dart';
 
 void main() {
@@ -130,6 +131,10 @@ void main() {
       find.text(UiStrings.activeRetreatEquipmentRolls(6, 6)),
       findsWidgets,
     );
+    final completionLabels = tester
+        .widgetList<Text>(find.text(UiStrings.activeRetreatFullRateComplete))
+        .where((text) => text.style?.color == WuxiaUi.goldOnPaper);
+    expect(completionLabels, isNotEmpty);
     expect(tester.takeException(), isNull);
   });
 }

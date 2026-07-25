@@ -28,6 +28,10 @@ void main() {
       _contrastRatio(theme.colorScheme.onSurface, theme.colorScheme.surface),
       greaterThanOrEqualTo(4.5),
     );
+    expect(
+      _contrastRatio(WuxiaUi.goldOnPaper, WuxiaUi.paper),
+      greaterThanOrEqualTo(4.5),
+    );
   });
 
   test('深墨主题明确提供浅字组件语义与可辨交互态', () {

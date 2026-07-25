@@ -309,7 +309,7 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   color: fullRateComplete
-                                      ? WuxiaUi.gold
+                                      ? WuxiaUi.goldOnPaper
                                       : WuxiaUi.ink2,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -382,7 +382,7 @@ class _ProgressStamp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = done ? WuxiaUi.gold : WuxiaUi.qing;
+    final color = done ? WuxiaUi.goldOnPaper : WuxiaUi.qing;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.16),

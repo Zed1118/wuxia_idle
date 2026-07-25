@@ -355,6 +355,7 @@ class _MapCard extends StatelessWidget {
         : locked
         ? WuxiaUi.muted
         : WuxiaUi.qing;
+    final paperStatusColor = isActive ? WuxiaUi.goldOnPaper : statusColor;
     final traitColor = SeclusionMapVisuals.primaryColor(def);
     final gateText = locked
         ? UiStrings.seclusionRequiredRealmWithCurrent(
@@ -534,7 +535,7 @@ class _MapCard extends StatelessWidget {
                                   child: _MapInfoLine(
                                     label: UiStrings.seclusionMapRealmGateLabel,
                                     value: gateText,
-                                    accent: statusColor,
+                                    accent: paperStatusColor,
                                     locked: locked,
                                   ),
                                 ),
@@ -543,7 +544,7 @@ class _MapCard extends StatelessWidget {
                                   child: _MapInfoLine(
                                     label: UiStrings.seclusionMapStatusLabel,
                                     value: statusDetail,
-                                    accent: statusColor,
+                                    accent: paperStatusColor,
                                     locked: locked,
                                   ),
                                 ),
@@ -554,7 +555,9 @@ class _MapCard extends StatelessWidget {
                                       : locked
                                       ? Icons.lock
                                       : Icons.login,
-                                  color: locked ? WuxiaUi.muted : statusColor,
+                                  color: locked
+                                      ? WuxiaUi.muted
+                                      : paperStatusColor,
                                   size: 17,
                                 ),
                               ],

@@ -25,6 +25,9 @@ class WuxiaUi {
   static const Color battleStatusPaperBottom = Color(0xCC2E2821);
   static const Color battleStatusTrack = Color(0xA62A241D);
   static const Color gold = Color(0xFFB08A47); // 金线（仅高阶装帧）
+  // 金色语义落到浅宣纸上的文字 sink。保留旧金线色相，但压暗到小字
+  // 对 paper 仍有 4.5:1 以上对比；装帧边框与进度条继续使用 gold。
+  static const Color goldOnPaper = Color(0xFF755D34);
   static const Color muted = Color(
     0xFF6A5E4C,
   ); // 柔灰（浅底次要/副描述文字 sink · 2026-07-06 从 #7D7160 深一档，浅底小字对比 ~3:1→~4:1）

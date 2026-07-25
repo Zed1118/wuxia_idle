@@ -39,6 +39,7 @@ void main() {
     int silver = 100,
     Map<String, int>? materials,
     int founderRealmIndex = 0,
+    double tieStored = 50,
     List<IslandPrepAdvice> prepAdvice = const [],
     int injuredCharacterCount = 0,
     double maxInjuryHoursRemaining = 0,
@@ -46,7 +47,7 @@ void main() {
     final tieState = IslandBuildingState()
       ..type = BuildingType.tieJiangChang
       ..level = 2
-      ..stored = 50;
+      ..stored = tieStored;
 
     final caoState = IslandBuildingState()
       ..type = BuildingType.caoYaoYuan
@@ -177,6 +178,15 @@ void main() {
 
       expect(before.value, 0);
       expect(after.value, greaterThan(0));
+    });
+
+    testWidgets('仓储满载热区用文字标明状态', (tester) async {
+      await pump(
+        tester,
+        wrap(buildTestView(tieStored: 900, founderRealmIndex: 6)),
+      );
+
+      expect(find.text(UiStrings.taohuaIslandSceneFullShort), findsOneWidget);
     });
 
     testWidgets('场景标题与地图资产均渲染', (tester) async {
