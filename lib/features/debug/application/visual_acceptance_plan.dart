@@ -36,6 +36,7 @@ const String visualAcceptanceSeed = 'visual-route-host-fixture-20260627';
 
 const List<VisualRoute> _smokeRoutes = [
   VisualRoute.mainMenu,
+  VisualRoute.settingsPanel,
   VisualRoute.inventory,
   VisualRoute.battleScene,
   VisualRoute.mainlineFirstClearBattle,
@@ -152,6 +153,11 @@ String visualAcceptanceChecklistMarkdown(
 List<String> _checksFor(VisualRoute route) {
   return switch (route) {
     VisualRoute.mainMenu => const ['主菜单入口可见', '水墨克制基调', '按钮文字无溢出'],
+    VisualRoute.settingsPanel => const [
+      '真实设置弹窗已完全打开',
+      '浅宣纸上的标题、滑条、开关和下拉均为墨色可读态',
+      '720p 下底部操作区固定可见且正文可滚动',
+    ],
     VisualRoute.inventory => const ['背包分组清楚', '装备/材料标题无溢出', '操作按钮 hitbox 可见'],
     VisualRoute.battleScene => const [
       '战斗深色底文字可读',

@@ -2,6 +2,10 @@
 /// 由 `--dart-define=VISUAL_ROUTE=<id>` 在 debug 启动时选中。
 enum VisualRoute {
   mainMenu('main_menu', '主菜单(出版美术门面 bg + 题字 + 木牌)'),
+  settingsPanel(
+    'settings_panel',
+    '设置弹窗·真实 SettingsPanel.show 生产路径(浅宣纸组件对比 + 720p 滚动)',
+  ),
   techniquePanelTierAll(
     'technique_panel_tier_all',
     '心法面板·武圣满学 7 阶分组头同屏(水墨文字头梯度验收)',
@@ -345,6 +349,7 @@ enum VisualRoute {
 
   /// 需要由目标战斗状态控制 READY 的 V2 验收路由。
   bool get controlsReadiness => switch (this) {
+    settingsPanel ||
     battleV2CasualtyReplacement ||
     battleV2FastForwardPeak ||
     battleV2PreResult ||

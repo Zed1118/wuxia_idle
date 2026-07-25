@@ -18,6 +18,7 @@
 - 不在 `main` 或 Claude Code 的 worktree 写文件、切分支、提交或合并。
 - 截图与 capture 产物只留在 `/tmp` 或 gitignored 目录，不提交。
 - 视觉方向保持“写实、沉郁、水墨、宣纸、绛红点缀”，不做通用 Material 美化。
+- 已经确认的页面结构、信息顺序与交互路径不重做；仅修失效布局、可读性、反馈和资产误用。结构候选项只记录，不擅自落地。
 
 ## 总体验收标准
 
@@ -93,19 +94,21 @@
 
 ## 当前恢复点
 
-- **状态**：Slice 1 已完成，准备进入 Slice 2。
+- **状态**：Slice 2 已完成，准备进入 Slice 3。
 - **最后完成**：
-  - Slice 0 隔离与基线已提交：`7b63bf4d`；
-  - 章节路引不再按固定 1040 阈值挤压 16 章，改按真实最小内容宽度决定横滚；
-  - 横滚区加入可拖拽的水墨色滚动条、左右方向键操作和读屏提示；
-  - 首次进入及视口变化时自动将进行中章节（全通时为末章）置于视口中央；
-  - 清理章节列表代码注释与测试名称中的 11/15 章陈旧口径；
-  - 1280×720、1440×900 真窗口截图均确认卡宽、滚动暗示、首章状态与下方章卡无溢出。
+  - Slice 1 章节路引已提交：`c5e9afc7`；
+  - 新增 `paperSurfaceTheme`，统一浅宣纸上的 ColorScheme、TextTheme、ListTile、Switch、Slider、Dropdown、Menu、输入框、禁用态与交互态；
+  - `PaperDialog` 保持原 420 宽、标题/正文/动作结构，只将原局部输入框 Theme 替换为完整浅纸 Theme；
+  - 设置面板保持原 360 宽单栏、原分区顺序和原操作路径；撤销未提交的双栏尝试；
+  - 设置正文最大高度由全屏 80% 收至 68%，只让原滚动区提前滚动，为 720p 标题与固定动作区留足空间；
+  - 段标题从浅纸低对比亮金改为既有绛红 token，一处切档确认文案改用既有墨色 token；
+  - 新增 `settings_panel` 生产调用视觉 route，并纳入 smoke；READY 只在真实 `SettingsPanel.show` 弹窗完全打开后发出；
+  - 1280×720、1440×900 真窗口截图均确认原布局、控件对比、固定关闭按钮与无溢出。
 - **下一步**：
-  1. 通过 CodeGraph 读取 `PaperDialog`、`SettingsPanel` 的生产调用与主题影响面；
-  2. 为宣纸弹窗补完整浅色组件主题；
-  3. 将设置面板改为适合桌面的双栏/响应式布局并保留 720p 可滚动；
-  4. 补颜色、交互、1280/1440 视觉回归后提交 Slice 2。
+  1. 盘点现有启动、存档、主菜单和 transient overlay 的视觉 route 缺口；
+  2. 增加 splash、save select、clean main menu 和设置底部/禁用状态 route；
+  3. 为 route metadata 标注 production shell、component、gallery、transient overlay；
+  4. 将高风险隐藏页补入 smoke，双视口截图并提交 Slice 3。
 - **已跑验证**：
   - 建分支前主线视觉/资产 targeted tests：55 pass / 0 fail；
   - 建分支前 `flutter analyze`：0 issue；
@@ -113,10 +116,15 @@
   - 新 worktree章节/设置/视觉 route baseline：55 pass / 0 fail；
   - Slice 1 章节 widget tests：6 pass / 0 fail；
   - Slice 1 `flutter analyze`：0 issue；
-  - Slice 1 真窗口截图：`chapter_list` @ 1280×720、1440×900，日志含 READY 且无异常。
+  - Slice 1 真窗口截图：`chapter_list` @ 1280×720、1440×900，日志含 READY 且无异常；
+  - Slice 2 主题/设置/visual route 与高影响调用方回归：122 pass / 0 fail；
+  - Slice 2 真实 1280×720 设置弹窗几何回归：2 pass / 0 fail（含窄视口原回归）；
+  - Slice 2 `flutter analyze`：0 issue；
+  - Slice 2 真窗口截图：`settings_panel` @ 1280×720、1440×900，日志含受控 READY 且无 overflow/exception。
 - **阻塞项**：无。
 - **残留风险**：
   - 伪文字规则和跨平台正式字体方案仍需后续设计拍板；
   - 当前 macOS 可验证，Windows 缩放只能在 ship 前实机终验；
-  - Claude 后续可能推进 `main`，本分支每个大批次前需要以 `merge-tree` 评估冲突，不直接重写其改动。
-  - visual route 当前固定全新进度，后段当前章的画面定位由 1280/1440 widget 几何测试覆盖；Slice 3 补视觉 route 状态矩阵时再加入后段进度截图。
+  - Claude 后续可能推进 `main`，本分支每个大批次前需要以 `merge-tree` 评估冲突，不直接重写其改动；
+  - visual route 当前固定全新进度，后段当前章的画面定位由 1280/1440 widget 几何测试覆盖；Slice 3 补视觉 route 状态矩阵时再加入后段进度截图；
+  - 首次设置 route 尝试因本机存档自动叠加「归来」弹层，顺带发现该弹层在 1280×720 仍有 47px 底部溢出；已隔离 route 污染，问题列入 Slice 7，不在设置切片擅改其既定结构。

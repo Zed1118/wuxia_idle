@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wuxia_idle/features/settings/presentation/settings_panel.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_app_theme.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
 
 /// L1-2 回归:1280×720 下设置面板（含显示设置段后内容变高）底部 overflow
 /// （Codex 验收 `RenderFlex overflowed by 4.0 pixels`）。窄高度应可滚动不溢出。
@@ -26,4 +28,42 @@ void main() {
     // 完整内容仍在(显示设置段 + 末尾退出游戏均可达,经滚动)。
     expect(find.text(UiStrings.settingsFullscreen), findsOneWidget);
   });
+
+  testWidgets('1280×720 真实 PaperDialog 标题、正文与关闭动作同屏无 overflow', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: wuxiaAppTheme(),
+          home: const _SettingsLauncher(),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PaperDialog), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    final closeRect = tester.getRect(find.text(UiStrings.settingsClose));
+    expect(closeRect.bottom, lessThanOrEqualTo(720));
+  });
+}
+
+class _SettingsLauncher extends StatelessWidget {
+  const _SettingsLauncher();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: TextButton(
+          onPressed: () => SettingsPanel.show(context),
+          child: const Text('open'),
+        ),
+      ),
+    );
+  }
 }

@@ -34,6 +34,7 @@ import '../../mainline/presentation/stage_victory_dialog.dart';
 import '../../mainline/presentation/stage_list_screen.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../../main_menu/presentation/main_menu.dart';
+import '../../settings/presentation/settings_panel.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../onboarding/application/master_builder.dart';
 import '../../onboarding/presentation/founder_creation_screen.dart';
@@ -263,6 +264,11 @@ Future<Widget> buildVisualTarget(
         isar: isar,
       ).ensureFoundingMasters(soloStart: false);
       return const MainMenu();
+    case VisualRoute.settingsPanel:
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
+      return _SettingsPanelPreview(onReady: onTargetReady);
     case VisualRoute.techniquePanelTierAll:
       await Phase2SeedService(isar: isar).seedVisualMasterAllTiers();
       return const TechniquePanelScreen(characterId: 1);
@@ -1173,6 +1179,45 @@ Future<Widget> buildVisualTarget(
       );
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
+  }
+}
+
+/// 设置弹窗验收：以既有水墨门面为中性背景，并通过 [SettingsPanel.show] 打开
+/// 生产弹窗。避免主菜单根据本机存档自动叠加「归来」等一次性流程，污染验收帧。
+/// READY 延迟到弹窗过渡完成，避免截图命中半透明动画中间帧。
+class _SettingsPanelPreview extends StatefulWidget {
+  const _SettingsPanelPreview({this.onReady});
+
+  final ValueChanged<String>? onReady;
+
+  @override
+  State<_SettingsPanelPreview> createState() => _SettingsPanelPreviewState();
+}
+
+class _SettingsPanelPreviewState extends State<_SettingsPanelPreview> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      unawaited(SettingsPanel.show(context));
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+      if (mounted) widget.onReady?.call('dialog=settings_panel_open');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          WuxiaImage(WuxiaUi.mainMenuBg, fit: BoxFit.cover),
+          ColoredBox(color: Color(0x660F0D0B)),
+        ],
+      ),
+    );
   }
 }
 

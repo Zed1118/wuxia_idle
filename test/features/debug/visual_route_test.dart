@@ -45,6 +45,7 @@ void main() {
         VisualRoute.characterPanelProfile,
       );
       expect(parseVisualRoute('chapter_list'), VisualRoute.chapterList);
+      expect(parseVisualRoute('settings_panel'), VisualRoute.settingsPanel);
       expect(parseVisualRoute('battle_scene'), VisualRoute.battleScene);
       expect(
         parseVisualRoute('equipment_detail_screen'),

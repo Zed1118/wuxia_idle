@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../audio/sound_manager.dart';
 import '../../audio/audio_assets.dart';
+import '../../theme/paper_surface_theme.dart';
 import '../../theme/wuxia_tokens.dart';
 import '../wuxia_image.dart';
 import 'light_paper_panel.dart';
@@ -54,25 +55,7 @@ class PaperDialog extends StatelessWidget {
       backgroundColor: Colors.transparent,
       elevation: 0,
       child: Theme(
-        data: baseTheme.copyWith(
-          inputDecorationTheme: InputDecorationTheme(
-            filled: true,
-            fillColor: WuxiaUi.paper2.withValues(alpha: 0.42),
-            labelStyle: const TextStyle(color: WuxiaUi.ink2),
-            helperStyle: const TextStyle(color: WuxiaUi.ink2),
-            hintStyle: const TextStyle(color: WuxiaUi.muted),
-            prefixStyle: const TextStyle(color: WuxiaUi.ink),
-            suffixStyle: const TextStyle(color: WuxiaUi.ink),
-            enabledBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: WuxiaUi.woodDark),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: WuxiaUi.jiang, width: 1.6),
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-        ),
+        data: paperSurfaceTheme(baseTheme),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
           child: LightPaperPanel(

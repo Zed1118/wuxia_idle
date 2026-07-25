@@ -11,6 +11,7 @@ void main() {
       ids,
       containsAllInOrder([
         'main_menu',
+        'settings_panel',
         'inventory',
         'battle_scene',
         'technique_panel_tier_all',
@@ -82,5 +83,7 @@ void main() {
     expect(markdown, contains('2560x1080'));
     expect(markdown, contains('`main_menu`'));
     expect(markdown, contains('主菜单入口可见'));
+    expect(markdown, contains('`settings_panel`'));
+    expect(markdown, contains('浅宣纸上的标题'));
   });
 }
