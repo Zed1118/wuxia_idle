@@ -8,7 +8,7 @@ void main() {
   const diagnosis = BattleDiagnosis(
     ruleId: 'killed_by_charge',
     shortfall: DefeatShortfall.technique,
-    primaryCause: '被 Boss 蓄力大招击溃',
+    primaryCause: '被首领蓄力大招击溃',
     dataLines: ['致命一击：蓄力技 700', '内力余量：200/500'],
     suggestions: [
       DiagnosisSuggestion('保留内力、装配破招技。', DiagnosisJumpTarget.skills),
@@ -36,11 +36,11 @@ void main() {
       ),
     );
     expect(find.text('主要短板：心法 / 招式'), findsOneWidget);
-    expect(find.text('被 Boss 蓄力大招击溃'), findsOneWidget);
+    expect(find.text('被首领蓄力大招击溃'), findsOneWidget);
     expect(find.text('致命一击：蓄力技 700'), findsOneWidget);
     expect(find.text('内力余量：200/500'), findsOneWidget);
-    expect(find.text('查看技能装配'), findsOneWidget);
-    await t.tap(find.text('查看技能装配'));
+    expect(find.text('查看招式装配'), findsOneWidget);
+    await t.tap(find.text('查看招式装配'));
     expect(jumped, DiagnosisJumpTarget.skills);
   });
 
@@ -56,7 +56,7 @@ void main() {
         onContinue: () {},
       ),
     );
-    expect(find.text('被 Boss 蓄力大招击溃'), findsNothing);
+    expect(find.text('被首领蓄力大招击溃'), findsNothing);
   });
 
   testWidgets('jump==null 的建议只显文案不给按钮', (t) async {

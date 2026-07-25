@@ -1698,7 +1698,7 @@ class _VictoryFirstClearPreview extends StatelessWidget {
       GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian'),
       rng: DefaultRng(seed: 607),
       obtainedAt: DateTime(2026, 6, 7),
-      obtainedFrom: 'Boss 首胜',
+      obtainedFrom: '首领首胜',
     );
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -2322,7 +2322,7 @@ class _DefeatCeremonyPreview extends StatelessWidget {
             diagnosis: const BattleDiagnosis(
               ruleId: 'killed_by_charge',
               shortfall: DefeatShortfall.technique,
-              primaryCause: '被 Boss 蓄力大招击溃',
+              primaryCause: UiStrings.diagCauseCharge,
               dataLines: ['致命一击：摧心掌 720', '内力余量：180/500'],
               suggestions: [
                 DiagnosisSuggestion('保留内力、装配破招技。', DiagnosisJumpTarget.skills),

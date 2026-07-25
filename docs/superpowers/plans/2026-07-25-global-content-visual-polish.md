@@ -94,7 +94,7 @@
 
 ## 当前恢复点
 
-- **状态**：Slice 7 长尾系统已完成；下一阶段进入全局内容、术语、资源与无障碍检查。
+- **状态**：Slice 8 内容、术语、资源与无障碍检查进行中；内容资源和正式界面术语已收口，下一步为无障碍与全局终验。
 - **最后完成**：
   - Slice 1 章节路引已提交：`c5e9afc7`；
   - 新增 `paperSurfaceTheme`，统一浅宣纸上的 ColorScheme、TextTheme、ListTile、Switch、Slider、Dropdown、Menu、输入框、禁用态与交互态；
@@ -218,6 +218,12 @@
   - Slice 7B `offline_recap_active` × 1280×720、1440×900，2/2 READY 且无 overflow/exception；修改前后正常高度几何一致，800×520 长明细由 widget test 覆盖内部滚动和固定操作。
   - Slice 8 物品图透明/解码/声明/全资产审计回归：13 pass / 0 fail；
   - Slice 8 `inventory`、`item_use_confirm_dialog` × 1280×720、1440×900，4/4 READY 且无 overflow/exception；人工确认棋盘底消失、物品造型/色相/图格尺寸不变。
+  - Slice 8 内容数据扫描覆盖 369 份 narrative、145 份 lore、73 份 event，共 587 份；真实内容未发现占位符、调试词或内部 ID 泄漏，模板目录中的 `placeholders` 为合法 schema；
+  - 新增 `docs/UI_TERMINOLOGY.md`，正式界面统一“首领 / 招式 / LvN / 槽位 / 版本”，并明确“周目 / 轮回”“小时 / 时辰”“经验 / 修为 / 阅历”的系统边界；
+  - 正式界面不再暴露 `slot`、孤立 `v`、`tier`、`character #ID`、`skill ID` 或异常对象；奇遇招式错误统一为可理解的中文兜底；
+  - 术语与相关系统回归 315 pass / 0 fail，`flutter analyze` 0 issue；
+  - `settings_panel_bottom`、`character_panel`、`chapter_list`、`stage_list`、`tower_floor_list`、`battle_defeat`、`taohua_island`、`stage_retry_dialog` × 1280×720、1440×900，16/16 READY 且无 overflow/exception；人工确认标签加长未改变原卡宽、节点、信息顺序或操作路径。
+  - 真实时长统一为“小时 / 分”，`seclusion_active`、`seclusion_setup`、`expedition_active`、`taohua_island` × 1280×720、1440×900，8/8 READY 且无 overflow/exception；`seclusion_active` 追加 2/2 复验，整数时长不再显示多余小数或重复单位。
 - **阻塞项**：无。
 - **残留风险**：
   - 伪文字规则和跨平台正式字体方案仍需后续设计拍板；
