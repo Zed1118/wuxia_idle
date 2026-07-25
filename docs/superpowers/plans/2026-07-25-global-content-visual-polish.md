@@ -94,7 +94,7 @@
 
 ## 当前恢复点
 
-- **状态**：Slice 2 已完成，准备进入 Slice 3。
+- **状态**：Slice 3A（启动壳验收入口）已完成，Slice 3B（设置状态与 route metadata）进行中。
 - **最后完成**：
   - Slice 1 章节路引已提交：`c5e9afc7`；
   - 新增 `paperSurfaceTheme`，统一浅宣纸上的 ColorScheme、TextTheme、ListTile、Switch、Slider、Dropdown、Menu、输入框、禁用态与交互态；
@@ -104,11 +104,15 @@
   - 段标题从浅纸低对比亮金改为既有绛红 token，一处切档确认文案改用既有墨色 token；
   - 新增 `settings_panel` 生产调用视觉 route，并纳入 smoke；READY 只在真实 `SettingsPanel.show` 弹窗完全打开后发出；
   - 1280×720、1440×900 真窗口截图均确认原布局、控件对比、固定关闭按钮与无溢出。
+  - 新增真实 `SplashScreen` 加载态 route；
+  - 新增 `SaveSelectScreen` 三空槽与“最近存档 + 两空槽”两条确定性 route；
+  - 新增 `main_menu_clean`，并让原 `main_menu` 同样先清理视觉库中的 active retreat、刷新在线基准，避免本机存档自动弹出归来卡；
+  - 启动/存档/纯净主菜单 4 route × 2 视口共 8 张真窗口截图均 READY、无异常。
 - **下一步**：
-  1. 盘点现有启动、存档、主菜单和 transient overlay 的视觉 route 缺口；
-  2. 增加 splash、save select、clean main menu 和设置底部/禁用状态 route；
-  3. 为 route metadata 标注 production shell、component、gallery、transient overlay；
-  4. 将高风险隐藏页补入 smoke，双视口截图并提交 Slice 3。
+  1. 增加设置底部与禁用状态 route；
+  2. 为 route metadata 标注 production shell、component、gallery、transient overlay；
+  3. 更新 smoke/checklist 契约并补回归；
+  4. 双视口截图后提交 Slice 3B。
 - **已跑验证**：
   - 建分支前主线视觉/资产 targeted tests：55 pass / 0 fail；
   - 建分支前 `flutter analyze`：0 issue；
@@ -121,6 +125,9 @@
   - Slice 2 真实 1280×720 设置弹窗几何回归：2 pass / 0 fail（含窄视口原回归）；
   - Slice 2 `flutter analyze`：0 issue；
   - Slice 2 真窗口截图：`settings_panel` @ 1280×720、1440×900，日志含受控 READY 且无 overflow/exception。
+  - Slice 3A splash/save/main-menu/debug route targeted tests：57 pass / 0 fail；
+  - Slice 3A `flutter analyze`：0 issue；
+  - Slice 3A 真窗口截图：4 route × 1280×720、1440×900，8/8 READY 且无 overflow/exception。
 - **阻塞项**：无。
 - **残留风险**：
   - 伪文字规则和跨平台正式字体方案仍需后续设计拍板；

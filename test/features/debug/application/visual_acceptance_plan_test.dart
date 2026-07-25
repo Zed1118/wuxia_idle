@@ -6,10 +6,14 @@ void main() {
   test('smoke suite 固定覆盖核心视觉 route', () {
     final ids = visualAcceptanceRouteIds(VisualAcceptanceSuite.smoke);
 
-    expect(ids.first, 'main_menu');
+    expect(ids.first, 'splash');
     expect(
       ids,
       containsAllInOrder([
+        'splash',
+        'save_select_empty',
+        'save_select_filled',
+        'main_menu_clean',
         'main_menu',
         'settings_panel',
         'inventory',
@@ -83,6 +87,9 @@ void main() {
     expect(markdown, contains('2560x1080'));
     expect(markdown, contains('`main_menu`'));
     expect(markdown, contains('主菜单入口可见'));
+    expect(markdown, contains('`splash`'));
+    expect(markdown, contains('`save_select_filled`'));
+    expect(markdown, contains('`main_menu_clean`'));
     expect(markdown, contains('`settings_panel`'));
     expect(markdown, contains('浅宣纸上的标题'));
   });

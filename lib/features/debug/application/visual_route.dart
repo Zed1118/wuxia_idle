@@ -1,7 +1,11 @@
 /// 出版美术视觉验收的目标验收点。每个值对应一个 (seed + screen) 组合,
 /// 由 `--dart-define=VISUAL_ROUTE=<id>` 在 debug 启动时选中。
 enum VisualRoute {
+  splash('splash', '启动闪屏·真实 SplashScreen 加载态(水墨渔舟 + 标题 + 展卷状态)'),
+  saveSelectEmpty('save_select_empty', '存档选择·三槽皆空的首次启动生产屏'),
+  saveSelectFilled('save_select_filled', '存档选择·最近存档 + 首周目完成 + 两个空槽混合生产屏'),
   mainMenu('main_menu', '主菜单(出版美术门面 bg + 题字 + 木牌)'),
+  mainMenuClean('main_menu_clean', '主菜单·清洁首帧(无归来/闭关弹层污染的完整生产壳)'),
   settingsPanel(
     'settings_panel',
     '设置弹窗·真实 SettingsPanel.show 生产路径(浅宣纸组件对比 + 720p 滚动)',

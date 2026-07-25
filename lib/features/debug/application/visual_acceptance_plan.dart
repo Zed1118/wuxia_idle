@@ -35,6 +35,10 @@ class VisualAcceptanceRoute {
 const String visualAcceptanceSeed = 'visual-route-host-fixture-20260627';
 
 const List<VisualRoute> _smokeRoutes = [
+  VisualRoute.splash,
+  VisualRoute.saveSelectEmpty,
+  VisualRoute.saveSelectFilled,
+  VisualRoute.mainMenuClean,
   VisualRoute.mainMenu,
   VisualRoute.settingsPanel,
   VisualRoute.inventory,
@@ -152,7 +156,23 @@ String visualAcceptanceChecklistMarkdown(
 
 List<String> _checksFor(VisualRoute route) {
   return switch (route) {
+    VisualRoute.splash => const ['启动背景完整铺满', '标题与展卷状态可读', '无系统 loading 圈混入'],
+    VisualRoute.saveSelectEmpty => const [
+      '三空槽同屏',
+      '首次启动信息层级清楚',
+      '1280×720 不需要滚动即可理解入口',
+    ],
+    VisualRoute.saveSelectFilled => const [
+      '最近存档、祖师与进度摘要可扫读',
+      '重命名/删除与整卡进入层级分明',
+      '有档/空槽/快速开局三态区分',
+    ],
     VisualRoute.mainMenu => const ['主菜单入口可见', '水墨克制基调', '按钮文字无溢出'],
+    VisualRoute.mainMenuClean => const [
+      '无归来或一次性弹层遮挡',
+      '主菜单题字、状态区与首屏入口同时可见',
+      '水墨门面和锁定态保持生产样式',
+    ],
     VisualRoute.settingsPanel => const [
       '真实设置弹窗已完全打开',
       '浅宣纸上的标题、滑条、开关和下拉均为墨色可读态',

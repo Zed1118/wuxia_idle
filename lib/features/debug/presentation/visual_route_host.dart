@@ -8,6 +8,7 @@ import 'battle_test_menu.dart';
 import 'redline_audit_screen.dart';
 import '../../../core/domain/attributes.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/save_data.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../battle/application/battle_providers.dart';
@@ -34,7 +35,11 @@ import '../../mainline/presentation/stage_victory_dialog.dart';
 import '../../mainline/presentation/stage_list_screen.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../../main_menu/presentation/main_menu.dart';
+import '../../save_slot/application/slot_list_provider.dart';
+import '../../save_slot/presentation/save_select_screen.dart';
 import '../../settings/presentation/settings_panel.dart';
+import '../../splash/presentation/splash_screen.dart';
+import '../../../data/slot_summary.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../onboarding/application/master_builder.dart';
 import '../../onboarding/presentation/founder_creation_screen.dart';
@@ -259,10 +264,38 @@ Future<Widget> buildVisualTarget(
   ValueChanged<String>? onTargetReady,
 }) async {
   switch (route) {
+    case VisualRoute.splash:
+      return const SplashScreen(
+        minDisplay: Duration(days: 1),
+        loadDefinitions: _neverCompleteVisualSplashLoad,
+      );
+    case VisualRoute.saveSelectEmpty:
+      return ProviderScope(
+        overrides: [
+          slotListProvider.overrideWith(
+            (ref) async => [
+              SlotSummary.empty(1),
+              SlotSummary.empty(2),
+              SlotSummary.empty(3),
+            ],
+          ),
+        ],
+        child: const SaveSelectScreen(),
+      );
+    case VisualRoute.saveSelectFilled:
+      return ProviderScope(
+        overrides: [
+          slotListProvider.overrideWith(
+            (ref) async => _visualSaveSlotSummaries(),
+          ),
+        ],
+        child: const SaveSelectScreen(),
+      );
     case VisualRoute.mainMenu:
-      await OnboardingService(
-        isar: isar,
-      ).ensureFoundingMasters(soloStart: false);
+      await _seedCleanMainMenu(isar);
+      return const MainMenu();
+    case VisualRoute.mainMenuClean:
+      await _seedCleanMainMenu(isar);
       return const MainMenu();
     case VisualRoute.settingsPanel:
       await OnboardingService(
@@ -1180,6 +1213,38 @@ Future<Widget> buildVisualTarget(
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }
+}
+
+Future<void> _neverCompleteVisualSplashLoad() => Completer<void>().future;
+
+List<SlotSummary> _visualSaveSlotSummaries() => [
+  SlotSummary(
+    slotId: 1,
+    isEmpty: false,
+    slotName: '夜雨江湖',
+    founderName: '沈孤鸿',
+    realmDisplay: '武圣登峰',
+    chapterIndex: 16,
+    clearedStageCount: 80,
+    completedFirstCycle: true,
+    highestTowerFloor: 30,
+    lastPlayed: DateTime(2026, 7, 25, 18, 30),
+    isMostRecent: true,
+  ),
+  SlotSummary.empty(2),
+  SlotSummary.empty(3),
+];
+
+Future<void> _seedCleanMainMenu(Isar isar) async {
+  await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+  final now = DateTime.now();
+  await isar.writeTxn(() async {
+    await isar.retreatSessions.clear();
+    final save = await isar.saveDatas.get(0);
+    if (save == null) return;
+    save.lastOnlineAt = now;
+    await isar.saveDatas.put(save);
+  });
 }
 
 /// 设置弹窗验收：以既有水墨门面为中性背景，并通过 [SettingsPanel.show] 打开

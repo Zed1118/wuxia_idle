@@ -23,6 +23,16 @@ import '../../support/isar_test_support.dart';
 void main() {
   group('parseVisualRoute', () {
     test('已知 id → 对应枚举', () {
+      expect(parseVisualRoute('splash'), VisualRoute.splash);
+      expect(
+        parseVisualRoute('save_select_empty'),
+        VisualRoute.saveSelectEmpty,
+      );
+      expect(
+        parseVisualRoute('save_select_filled'),
+        VisualRoute.saveSelectFilled,
+      );
+      expect(parseVisualRoute('main_menu_clean'), VisualRoute.mainMenuClean);
       expect(parseVisualRoute('main_menu'), VisualRoute.mainMenu);
       expect(
         parseVisualRoute('technique_panel_tier_all'),
