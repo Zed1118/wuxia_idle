@@ -93,28 +93,30 @@
 
 ## 当前恢复点
 
-- **状态**：Slice 0 已完成，准备进入 Slice 1。
+- **状态**：Slice 1 已完成，准备进入 Slice 2。
 - **最后完成**：
-  - 已从 `main@fbd567df` 创建 `codex/global-visual-polish`；
-  - 已建立独立 worktree；
-  - 已把全局审查报告移入独立 worktree，主 checkout 恢复干净；
-  - 已确认 Claude Code worktree 为 `.claude/worktrees/damage-popup-parseback`，本任务不访问其文件；
-  - 已执行 `flutter pub get`；
-  - 新 worktree 首次 analyze 因 gitignored 的生成文件缺失而失败，已用 `dart run build_runner build --delete-conflicting-outputs` 重建 128 个输出；
-  - 重建后 `flutter analyze` 为 0 issue；
-  - 章节、设置和视觉 route 定向基线共 55 tests 全部通过。
+  - Slice 0 隔离与基线已提交：`7b63bf4d`；
+  - 章节路引不再按固定 1040 阈值挤压 16 章，改按真实最小内容宽度决定横滚；
+  - 横滚区加入可拖拽的水墨色滚动条、左右方向键操作和读屏提示；
+  - 首次进入及视口变化时自动将进行中章节（全通时为末章）置于视口中央；
+  - 清理章节列表代码注释与测试名称中的 11/15 章陈旧口径；
+  - 1280×720、1440×900 真窗口截图均确认卡宽、滚动暗示、首章状态与下方章卡无溢出。
 - **下一步**：
-  1. 通过 CodeGraph 读取章节路引及其调用关系；
-  2. 修复 16 章在 1280/1440 视口下的横向溢出；
-  3. 补当前章节自动定位、鼠标/键盘横向操作和回归测试；
-  4. 目检 1280×720、1440×900 后提交 Slice 1。
+  1. 通过 CodeGraph 读取 `PaperDialog`、`SettingsPanel` 的生产调用与主题影响面；
+  2. 为宣纸弹窗补完整浅色组件主题；
+  3. 将设置面板改为适合桌面的双栏/响应式布局并保留 720p 可滚动；
+  4. 补颜色、交互、1280/1440 视觉回归后提交 Slice 2。
 - **已跑验证**：
   - 建分支前主线视觉/资产 targeted tests：55 pass / 0 fail；
   - 建分支前 `flutter analyze`：0 issue；
   - 新 worktree `flutter analyze`：0 issue；
-  - 新 worktree章节/设置/视觉 route baseline：55 pass / 0 fail。
+  - 新 worktree章节/设置/视觉 route baseline：55 pass / 0 fail；
+  - Slice 1 章节 widget tests：6 pass / 0 fail；
+  - Slice 1 `flutter analyze`：0 issue；
+  - Slice 1 真窗口截图：`chapter_list` @ 1280×720、1440×900，日志含 READY 且无异常。
 - **阻塞项**：无。
 - **残留风险**：
   - 伪文字规则和跨平台正式字体方案仍需后续设计拍板；
   - 当前 macOS 可验证，Windows 缩放只能在 ship 前实机终验；
   - Claude 后续可能推进 `main`，本分支每个大批次前需要以 `merge-tree` 评估冲突，不直接重写其改动。
+  - visual route 当前固定全新进度，后段当前章的画面定位由 1280/1440 widget 几何测试覆盖；Slice 3 补视觉 route 状态矩阵时再加入后段进度截图。

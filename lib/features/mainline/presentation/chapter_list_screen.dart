@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
@@ -14,9 +15,9 @@ import 'chapter_transition_screen.dart';
 import 'stage_list_screen.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 
-/// 主线章节列表（Phase 3 T35,2026-05-22 P2 Ch6 扩 6 章,2026-07-18 Ch8 二流次章扩 8 章,2026-07-21 Ch11 一流次章扩 11 章）。
+/// 主线章节列表（Phase 3 T35，现为 16 章完整主线）。
 ///
-/// 列 11 章(学武出山 / 武林初识 / 名扬江湖 / 西出阳关 / 征东 / 飞升 / 北望 / 出塞 / 碛北 / 中州 / 名门之虚),状态:
+/// 列 16 章，状态:
 ///   - cleared 已通过:右上 ✓ 标识,可重入
 ///   - inProgress 进行中:主色边框高亮(章节内仍有未通关卡)
 ///   - locked 未解锁:灰色 + 锁图标,点击无响应
@@ -238,7 +239,7 @@ class _ChapterCardShell extends StatelessWidget {
   }
 }
 
-class _ChapterRouteMap extends StatelessWidget {
+class _ChapterRouteMap extends StatefulWidget {
   const _ChapterRouteMap({
     required this.statuses,
     required this.stagesByChapter,
@@ -246,6 +247,117 @@ class _ChapterRouteMap extends StatelessWidget {
 
   final Map<int, _ChapterStatus> statuses;
   final Map<int, List<StageEntry>> stagesByChapter;
+
+  @override
+  State<_ChapterRouteMap> createState() => _ChapterRouteMapState();
+}
+
+class _ChapterRouteMapState extends State<_ChapterRouteMap> {
+  static const double _panelWidth = 196;
+  static const double _connectorWidth = 18;
+
+  final ScrollController _scrollController = ScrollController();
+  final FocusNode _focusNode = FocusNode(
+    debugLabel: 'chapter-route-horizontal-scroll',
+  );
+  bool _positioningScheduled = false;
+  int? _positionedChapterIndex;
+  double? _positionedViewportWidth;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  int _focusChapterIndex(List<MapEntry<int, _ChapterStatus>> entries) {
+    final current = entries.indexWhere(
+      (entry) => entry.value == _ChapterStatus.inProgress,
+    );
+    if (current >= 0) return current;
+
+    final lastCleared = entries.lastIndexWhere(
+      (entry) => entry.value == _ChapterStatus.cleared,
+    );
+    return lastCleared >= 0 ? lastCleared : 0;
+  }
+
+  void _scheduleCurrentChapterPosition({
+    required List<MapEntry<int, _ChapterStatus>> entries,
+    required double viewportWidth,
+  }) {
+    if (entries.isEmpty || _positioningScheduled) return;
+
+    final focusIndex = _focusChapterIndex(entries);
+    final focusChapterIndex = entries[focusIndex].key;
+    final alreadyPositioned =
+        _positionedChapterIndex == focusChapterIndex &&
+        _positionedViewportWidth == viewportWidth;
+    if (alreadyPositioned) return;
+
+    _positioningScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _positioningScheduled = false;
+      if (!mounted || !_scrollController.hasClients) return;
+
+      final position = _scrollController.position;
+      final focusCenter =
+          focusIndex * (_panelWidth + _connectorWidth) + _panelWidth / 2;
+      final target = (focusCenter - position.viewportDimension / 2).clamp(
+        position.minScrollExtent,
+        position.maxScrollExtent,
+      );
+      _scrollController.jumpTo(target);
+      _positionedChapterIndex = focusChapterIndex;
+      _positionedViewportWidth = viewportWidth;
+    });
+  }
+
+  void _scrollBy(double direction) {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final target =
+        (_scrollController.offset +
+                position.viewportDimension * 0.72 * direction)
+            .clamp(position.minScrollExtent, position.maxScrollExtent);
+    _scrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  Widget _buildRoute({
+    required List<MapEntry<int, _ChapterStatus>> entries,
+    required bool useFixedPanelWidth,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        for (var i = 0; i < entries.length; i++) ...[
+          if (useFixedPanelWidth)
+            SizedBox(
+              width: _panelWidth,
+              child: _RouteChapterPanel(
+                chapterIndex: entries[i].key,
+                status: entries[i].value,
+                stages: widget.stagesByChapter[entries[i].key] ?? const [],
+              ),
+            )
+          else
+            Expanded(
+              child: _RouteChapterPanel(
+                chapterIndex: entries[i].key,
+                status: entries[i].value,
+                stages: widget.stagesByChapter[entries[i].key] ?? const [],
+              ),
+            ),
+          if (i != entries.length - 1) const _RouteConnector(),
+        ],
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -267,44 +379,80 @@ class _ChapterRouteMap extends StatelessWidget {
           const SizedBox(height: 14),
           LayoutBuilder(
             builder: (context, constraints) {
-              final compact = constraints.maxWidth < 1040;
-              final entries = statuses.entries.toList(growable: false);
-              final route = Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  for (var i = 0; i < entries.length; i++) ...[
-                    if (compact)
-                      SizedBox(
-                        width: 196,
-                        child: _RouteChapterPanel(
-                          chapterIndex: entries[i].key,
-                          status: entries[i].value,
-                          stages: stagesByChapter[entries[i].key] ?? const [],
+              final entries = widget.statuses.entries.toList(growable: false);
+              final requiredWidth =
+                  entries.length * _panelWidth +
+                  (entries.isEmpty ? 0 : entries.length - 1) * _connectorWidth;
+              final shouldScroll = requiredWidth > constraints.maxWidth;
+              if (!shouldScroll) {
+                return _buildRoute(entries: entries, useFixedPanelWidth: false);
+              }
+
+              _scheduleCurrentChapterPosition(
+                entries: entries,
+                viewportWidth: constraints.maxWidth,
+              );
+              return Semantics(
+                container: true,
+                label: UiStrings.mainlineRouteMapTitle,
+                hint: UiStrings.mainlineRouteMapA11yHint,
+                child: FocusableActionDetector(
+                  key: const ValueKey('chapter-route-focus'),
+                  focusNode: _focusNode,
+                  shortcuts: const {
+                    SingleActivator(LogicalKeyboardKey.arrowLeft):
+                        _ChapterRouteScrollIntent(-1),
+                    SingleActivator(LogicalKeyboardKey.arrowRight):
+                        _ChapterRouteScrollIntent(1),
+                  },
+                  actions: {
+                    _ChapterRouteScrollIntent:
+                        CallbackAction<_ChapterRouteScrollIntent>(
+                          onInvoke: (intent) {
+                            _scrollBy(intent.direction);
+                            return null;
+                          },
                         ),
-                      )
-                    else
-                      Expanded(
-                        child: _RouteChapterPanel(
-                          chapterIndex: entries[i].key,
-                          status: entries[i].value,
-                          stages: stagesByChapter[entries[i].key] ?? const [],
+                  },
+                  child: ScrollbarTheme(
+                    data: ScrollbarThemeData(
+                      thumbColor: WidgetStateProperty.resolveWith((states) {
+                        final alpha = states.contains(WidgetState.hovered)
+                            ? 0.58
+                            : 0.38;
+                        return WuxiaUi.ink.withValues(alpha: alpha);
+                      }),
+                      trackColor: WidgetStatePropertyAll(
+                        WuxiaUi.ink.withValues(alpha: 0.07),
+                      ),
+                      trackBorderColor: WidgetStatePropertyAll(
+                        WuxiaUi.ink.withValues(alpha: 0.10),
+                      ),
+                      thickness: WidgetStateProperty.resolveWith(
+                        (states) =>
+                            states.contains(WidgetState.hovered) ? 7 : 5,
+                      ),
+                      radius: const Radius.circular(3),
+                    ),
+                    child: Scrollbar(
+                      controller: _scrollController,
+                      thumbVisibility: true,
+                      trackVisibility: true,
+                      interactive: true,
+                      child: SingleChildScrollView(
+                        key: const ValueKey('chapter-route-scroll'),
+                        controller: _scrollController,
+                        primary: false,
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildRoute(
+                          entries: entries,
+                          useFixedPanelWidth: true,
                         ),
                       ),
-                    if (i != entries.length - 1) const _RouteConnector(),
-                  ],
-                ],
-              );
-              if (!compact) {
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1040),
-                    child: route,
+                    ),
                   ),
-                );
-              }
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: route,
+                ),
               );
             },
           ),
@@ -312,6 +460,12 @@ class _ChapterRouteMap extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ChapterRouteScrollIntent extends Intent {
+  const _ChapterRouteScrollIntent(this.direction);
+
+  final double direction;
 }
 
 class _RouteConnector extends StatelessWidget {
@@ -356,6 +510,7 @@ class _RouteChapterPanel extends StatelessWidget {
     };
 
     return AnimatedOpacity(
+      key: ValueKey('chapter-route-panel-$chapterIndex'),
       duration: const Duration(milliseconds: 160),
       opacity: locked ? 0.58 : 1,
       child: Container(

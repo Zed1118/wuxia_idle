@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
@@ -28,10 +29,14 @@ void main() {
       ..clearedAt = List.generate(cleared.length, (_) => DateTime(2026, 5, 11));
   }
 
-  Future<void> pumpScreen(WidgetTester tester, MainlineProgress p) async {
+  Future<void> pumpScreen(
+    WidgetTester tester,
+    MainlineProgress p, {
+    Size surfaceSize = const Size(1024, 4500),
+  }) async {
     // 章节卡加封面条后变高,扩 viewport 让 15 卡全 build(memory
     // feedback_listview_widget_test_viewport)。
-    await tester.binding.setSurfaceSize(const Size(1024, 4500));
+    await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
@@ -42,6 +47,12 @@ void main() {
     await tester.pump(); // 让 FutureProvider 翻转
     await tester.pump();
   }
+
+  List<String> clearedBeforeChapter(int chapterIndex) => [
+    for (var chapter = 1; chapter < chapterIndex; chapter++)
+      for (var stage = 1; stage <= 5; stage++)
+        'stage_${chapter.toString().padLeft(2, '0')}_${stage.toString().padLeft(2, '0')}',
+  ];
 
   testWidgets('全新进度 → 16 章卡渲染,Ch1 进行中 + Ch2-16 锁', (tester) async {
     await pumpScreen(tester, mkProgress());
@@ -88,7 +99,7 @@ void main() {
     expect(find.byIcon(Icons.check_circle), findsNothing);
   });
 
-  testWidgets('Ch1 全通(5 关)→ Ch1 ✓ + Ch2 进行中 + Ch3-15 锁', (tester) async {
+  testWidgets('Ch1 全通(5 关)→ Ch1 ✓ + Ch2 进行中 + Ch3-16 锁', (tester) async {
     await pumpScreen(
       tester,
       mkProgress(
@@ -126,5 +137,54 @@ void main() {
     expect(find.byIcon(Icons.check_circle), findsNWidgets(16));
     expect(find.byIcon(Icons.lock), findsNothing);
     expect(find.text(UiStrings.chapterStatusInProgress), findsNothing);
+  });
+
+  for (final surfaceSize in const [Size(1280, 720), Size(1440, 900)]) {
+    testWidgets('${surfaceSize.width.toInt()}宽度 → 路引横滚无溢出且当前章自动可见', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        mkProgress(cleared: clearedBeforeChapter(16)),
+        surfaceSize: surfaceSize,
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final scroll = find.byKey(const ValueKey('chapter-route-scroll'));
+      final currentPanel = find.byKey(const ValueKey('chapter-route-panel-16'));
+      expect(scroll, findsOneWidget);
+      expect(currentPanel, findsOneWidget);
+
+      final viewportRect = tester.getRect(scroll);
+      final currentPanelRect = tester.getRect(currentPanel);
+      expect(
+        currentPanelRect.left,
+        greaterThanOrEqualTo(viewportRect.left - 1),
+      );
+      expect(currentPanelRect.right, lessThanOrEqualTo(viewportRect.right + 1));
+    });
+  }
+
+  testWidgets('路引获得焦点后可用左右方向键横向浏览', (tester) async {
+    await pumpScreen(tester, mkProgress(), surfaceSize: const Size(1280, 720));
+    await tester.pumpAndSettle();
+
+    final focusable = tester.widget<FocusableActionDetector>(
+      find.byKey(const ValueKey('chapter-route-focus')),
+    );
+    focusable.focusNode!.requestFocus();
+    await tester.pump();
+
+    final scrollable = find.descendant(
+      of: find.byKey(const ValueKey('chapter-route-scroll')),
+      matching: find.byType(Scrollable),
+    );
+    final scrollableState = tester.state<ScrollableState>(scrollable);
+    expect(scrollableState.position.pixels, 0);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(scrollableState.position.pixels, greaterThan(0));
   });
 }
