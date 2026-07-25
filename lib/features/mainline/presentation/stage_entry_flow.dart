@@ -51,7 +51,7 @@ import '../../tutorial/application/tutorial_providers.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
-import '../../../shared/utils/rng.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import '../domain/chapter_assets.dart';
@@ -823,7 +823,9 @@ applyVictoryResolution({
     equipmentsByCharacter: equipsByCh,
     techniquesByCharacter: techsByCh,
     stageDef: stage,
-    rng: DefaultRng(),
+    // 随机源走 rngProvider(不 inline new):稀有彩头 roll 在此链路上,
+    // inline 的 DefaultRng 测试 override 不到,会把精确掉落数断言打成随机红。
+    rng: ref.read(rngProvider),
     progressToNextMap: numbers.cultivationProgressToNext,
     techniqueDefLookup: GameRepository.instance.getTechnique,
     dropService: dropSvc,
@@ -1037,7 +1039,8 @@ Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
     equipmentsByCharacter: equipsByCh,
     techniquesByCharacter: techsByCh,
     stageDef: stage,
-    rng: DefaultRng(),
+    // 同胜利路径:随机源走 rngProvider,保持可注入(战败结算亦有 rng 消费)。
+    rng: ref.read(rngProvider),
     progressToNextMap: numbers.cultivationProgressToNext,
     techniqueDefLookup: GameRepository.instance.getTechnique,
     dropService: dropSvc,
