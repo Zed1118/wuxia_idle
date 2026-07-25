@@ -23,7 +23,6 @@
 |---|---|---|---|---|
 | 1 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(原分支/worktree 已清,需新开载体) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段;阶段5证据须留 repo 内非 gitignored 目录(外审 07-24 教训) |
 | 2 | Ch17「沙海纵深」实装批(灵巧主题·末 Boss 单窗口 0.20 机制教学·feng_juan 收编+夜雨残页) | 主线内容 | xhigh 专会话 | spec `2026-07-24-zongshi-arc-ch16-18-design.md` §8 前瞻登记,章级细化随批终拍(Ch16 已于 2026-07-24 交付销账) |
-| 3 | 中文散写**存量 31 条**清理(allowlist 销账) | 文案归集 | ~1-1.5h | 门禁已于 2026-07-25 实装(`test/tools/chinese_literal_audit*`),存量冻结在 `test/fixtures/chinese_literal_allowlist.txt`,清一条删一条(guard 2 拦虚账)。按建表时的人工判读分五类:**A 玩家可见 UI 文案 → 迁 UiStrings**(synergy_def 相生描述 6 / asset_fallback「缺图」/ equipment_glyph「器」/ item_slot「未达境界」/ tower_entry_flow「· 胜利」);**B 种子角色名·副本名**(master_builder 祖师·大弟子·二弟子 / gauntlet_service 断魂庄·门人)→ 迁 UiStrings 或落 yaml;**C 占位兜底串**(narrative_loader/encounter_event_loader·§5.6 允许开发期占位·可保留)；**D 灰区诊断串**(game_repository label 参数 / encounter_service EquipNotFound 结果串)→ 改走 Error 构造即自动豁免;**E 战报格式化片段** → §一#12 已拍 D,damage_calculator 5 条**已于 2026-07-25 销账**(改 ASCII),余 damage_popup 正则 1 条转 §二#4 处理。**表内现存 26 条**(31 − 5) |
 | 4 | `damage_popup` 反解析 UiStrings 输出的耦合隐患 | battle 表现层 | ~30-45min | 2026-07-25 §一#12 拍板 D 时查出:`damage_popup.dart:301` 的 `RegExp(r'^暴击 (\d+) 伤害$')` 解析的正是 `UiStrings.criticalDamagePopup`(`strings.dart:230` `'暴击 $damage 伤害'`)自己拼出来的串——**中文是模板复制品,改 strings.dart 措辞会让解析静默失配且无测试拦**。修法=消除 parse-back(上游直接传 `(damage, isCritical)` 等结构化数据,不再从显示串反推);顺带该 allowlist 条目一并销账。**别按「散写」迁 UiStrings**——那是治标 |
 
 ## 三 · 依赖锁死(附再开条件)
