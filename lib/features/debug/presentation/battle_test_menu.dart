@@ -614,11 +614,31 @@ class BattleScenarioData {
         );
 
     final right = [
-      tankMob(11, '铁布衫客', 0, 'assets/enemies/qingshan_main.png'),
+      tankMob(11, '铁布衫客', 0, 'assets/enemies/guntou_zhu.png'),
       tankMob(12, '巷口杀手', 1, 'assets/enemies/killer_a.png'),
       tankMob(13, '巷尾杀手', 2, 'assets/enemies/killer_b.png'),
     ];
 
+    return (left, right);
+  }
+
+  /// 战斗人物素材角色门禁验收：有档案肖像、但尚无专用透明站姿的弟子，
+  /// 在正式战场只显示同流派透明身份剪影，绝不把带背景肖像铺进人物位。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioIdentitySilhouette() {
+    final (leftTemplates, right) = scenarioDragLive();
+    final sources = [
+      (name: '竹影', path: 'assets/characters/sect_candidate_bamboo.png'),
+      (name: '砺锋', path: 'assets/characters/sect_candidate_blacksmith.png'),
+      (name: '流沙', path: 'assets/characters/sect_candidate_desert.png'),
+    ];
+    final left = [
+      for (var i = 0; i < leftTemplates.length; i++)
+        leftTemplates[i].copyWith(
+          name: sources[i].name,
+          iconPath: sources[i].path,
+        ),
+    ];
     return (left, right);
   }
 

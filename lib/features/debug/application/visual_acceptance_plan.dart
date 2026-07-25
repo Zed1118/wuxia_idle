@@ -76,6 +76,7 @@ final List<VisualAcceptanceRoute> _battleRoutes = [
     VisualRoute.battleV2FastForwardPeak,
     VisualRoute.battleV2PreResult,
     VisualRoute.battleV2Neutral3v3,
+    VisualRoute.battleIdentitySilhouette,
     VisualRoute.battleV2ResourcePressure,
   ])
     VisualAcceptanceRoute(
@@ -292,6 +293,11 @@ List<String> _checksFor(VisualRoute route) {
       '标准 3v3 无待发/大招/结算遮挡',
       '三人阵列与完整案台同屏',
       'READY 只在战斗初态挂载后发出',
+    ],
+    VisualRoute.battleIdentitySilhouette => const [
+      '三名缺专用站姿弟子均显示透明身份剪影',
+      '档案肖像不进入战场人物位',
+      '剪影保留姓名首字与流派识别且不改变三人阵列',
     ],
     VisualRoute.battleV2ResourcePressure => const [
       '同帧至少一张冷却签和一张真气不足签',

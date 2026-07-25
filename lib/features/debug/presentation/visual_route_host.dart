@@ -583,6 +583,17 @@ Future<Widget> buildVisualTarget(
         readyTarget: VisualBattleReadyTarget.initialized,
         onTargetReady: onTargetReady,
       );
+    case VisualRoute.battleIdentitySilhouette:
+      return ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioIdentitySilhouette,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        autoStart: false,
+        startPaused: true,
+        seed: battleV2VisualSeed,
+        readyTarget: VisualBattleReadyTarget.initialized,
+        onTargetReady: onTargetReady,
+      );
     case VisualRoute.battleV2ResourcePressure:
       return ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioV2ResourcePressure,

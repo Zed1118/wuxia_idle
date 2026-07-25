@@ -17,6 +17,35 @@ import '../../../shared/widgets/wuxia_image.dart';
 
 enum CharacterDisplayMode { avatar, stageStandee }
 
+/// 战斗人物素材在生产链路中的明确角色。
+///
+/// [sourcePortrait] 只允许用于头像/档案来源，不能直接铺到战场；
+/// [stageStandee] 是透明全身图；缺专用站姿时使用 [identitySilhouette]，
+/// 以保留身份而不把带背景肖像伪装成全身立绘。
+enum BattleCharacterAssetRole {
+  sourcePortrait,
+  stageStandee,
+  identitySilhouette,
+}
+
+@immutable
+class BattleStandeeAssetResolution {
+  const BattleStandeeAssetResolution({
+    required this.sourcePath,
+    required this.sourceRole,
+    required this.displayPath,
+    required this.displayRole,
+  });
+
+  final String? sourcePath;
+  final BattleCharacterAssetRole? sourceRole;
+  final String? displayPath;
+  final BattleCharacterAssetRole displayRole;
+
+  bool get usesPortraitAsStandee =>
+      displayRole == BattleCharacterAssetRole.sourcePortrait;
+}
+
 /// 战斗立绘统一色级：轻抬暖灰黑位、压高光并降低色彩通道分离。
 /// 只包人物位图，不影响 HP/真气、状态标签与战场背景。
 const battleStandeeFusionMatrix = <double>[
@@ -288,8 +317,8 @@ class CharacterAvatar extends StatelessWidget {
   }
 }
 
-/// 战场全人物站姿。透明战斗立绘保持完整头脚；旧 RGB 原画作为降级路径，
-/// 继续用水墨晕染遮罩淡化图片矩形边缘。
+/// 战场全人物站姿。透明战斗立绘保持完整头脚；未登记的档案肖像只会降级为
+/// 无背景身份墨影，不会再把矩形/半身原画铺进战场人物位。
 class _StageCharacterStandee extends StatelessWidget {
   const _StageCharacterStandee({
     required this.character,
@@ -321,52 +350,56 @@ class _StageCharacterStandee extends StatelessWidget {
     final firstGlyph = character.name.characters.isEmpty
         ? '?'
         : character.name.characters.first;
-    final resolvedIconPath = _resolvedStageIconPath(character);
-    final hasIcon = resolvedIconPath != null;
-    final usesTransparentStandee = _isTransparentBattleStandee(
-      resolvedIconPath,
+    final asset = resolveBattleStandeeAsset(
+      sourcePath: character.iconPath,
+      teamSide: character.teamSide,
+      slotIndex: character.slotIndex,
     );
-    final sourceFootFraction = _stageStandeeFootFraction(resolvedIconPath);
+    final resolvedIconPath = asset.displayPath;
+    final sourceFootFraction = battleStandeeFootFraction(resolvedIconPath);
     final footY = portraitHeight * _stageStandeeAnchorFootFraction;
     final groundingHeight = height * 0.065;
     final wardActive =
         battleState != null && isGuardianWardActive(character, battleState!);
 
-    final image = hasIcon
-        ? WuxiaImage(
-            resolvedIconPath,
-            width: width,
-            height: portraitHeight,
-            fit: usesTransparentStandee ? BoxFit.contain : BoxFit.cover,
-            alignment: Alignment.topCenter,
-            errorBuilder: wuxiaAssetErrorBuilder(
-              () => _FirstGlyphStandee(
-                width: width,
-                height: portraitHeight,
-                color: borderColor,
-                firstGlyph: firstGlyph,
-              ),
-            ),
-          )
-        : _FirstGlyphStandee(
+    final Widget image;
+    if (asset.displayRole == BattleCharacterAssetRole.stageStandee &&
+        resolvedIconPath != null) {
+      image = WuxiaImage(
+        resolvedIconPath,
+        width: width,
+        height: portraitHeight,
+        fit: BoxFit.contain,
+        alignment: Alignment.topCenter,
+        errorBuilder: wuxiaAssetErrorBuilder(
+          () => _FirstGlyphStandee(
             width: width,
             height: portraitHeight,
             color: borderColor,
             firstGlyph: firstGlyph,
-          );
+          ),
+        ),
+      );
+    } else if (asset.displayRole ==
+            BattleCharacterAssetRole.identitySilhouette &&
+        resolvedIconPath != null) {
+      image = _InkIdentityStandee(
+        shapePath: resolvedIconPath,
+        width: width,
+        height: portraitHeight,
+        accent: borderColor,
+        firstGlyph: firstGlyph,
+      );
+    } else {
+      image = _FirstGlyphStandee(
+        width: width,
+        height: portraitHeight,
+        color: borderColor,
+        firstGlyph: firstGlyph,
+      );
+    }
 
-    Widget portraitImage = usesTransparentStandee
-        ? image
-        : ShaderMask(
-            blendMode: BlendMode.dstIn,
-            shaderCallback: (rect) => const RadialGradient(
-              center: Alignment(0, -0.08),
-              radius: 0.72,
-              colors: [Colors.white, Colors.white, Colors.transparent],
-              stops: [0, 0.50, 0.88],
-            ).createShader(rect),
-            child: image,
-          );
+    Widget portraitImage = image;
     portraitImage = ImageFiltered(
       key: const ValueKey('battle.stageStandeeEdgeSoftening'),
       imageFilter: ui.ImageFilter.blur(
@@ -596,10 +629,10 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: WuxiaUi.ink,
+                  color: WuxiaUi.paper,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+                  shadows: [Shadow(color: Colors.black87, blurRadius: 2)],
                 ),
               ),
               const SizedBox(height: 2),
@@ -686,19 +719,80 @@ class _StandeeGroundingPainter extends CustomPainter {
   bool shouldRepaint(covariant _StandeeGroundingPainter oldDelegate) => false;
 }
 
-String? _resolvedStageIconPath(BattleCharacter character) {
-  final iconPath = character.iconPath;
-  if (iconPath != null && iconPath.isNotEmpty) {
-    return _battleStandeeOverrides[iconPath] ?? iconPath;
+/// 将头像来源解析为战场专用显示素材。未登记的 portrait 永远不直接显示，
+/// 而是进入透明身份剪影；由此正式战斗不会再出现方形/半身照片式人物。
+BattleStandeeAssetResolution resolveBattleStandeeAsset({
+  required String? sourcePath,
+  required int teamSide,
+  required int slotIndex,
+}) {
+  final normalizedSource = sourcePath == null || sourcePath.isEmpty
+      ? null
+      : sourcePath;
+  if (normalizedSource != null) {
+    final registeredStandee = _battleStandeeOverrides[normalizedSource];
+    if (registeredStandee != null) {
+      final isIdentityStandee = registeredStandee == normalizedSource;
+      return BattleStandeeAssetResolution(
+        sourcePath: normalizedSource,
+        sourceRole: isIdentityStandee
+            ? BattleCharacterAssetRole.stageStandee
+            : BattleCharacterAssetRole.sourcePortrait,
+        displayPath: registeredStandee,
+        displayRole: BattleCharacterAssetRole.stageStandee,
+      );
+    }
+    if (_hasBattleStandeePathConvention(normalizedSource)) {
+      return BattleStandeeAssetResolution(
+        sourcePath: normalizedSource,
+        sourceRole: BattleCharacterAssetRole.stageStandee,
+        displayPath: normalizedSource,
+        displayRole: BattleCharacterAssetRole.stageStandee,
+      );
+    }
+    return BattleStandeeAssetResolution(
+      sourcePath: normalizedSource,
+      sourceRole: BattleCharacterAssetRole.sourcePortrait,
+      displayPath: _playerFallbackStandee(teamSide, slotIndex),
+      displayRole: BattleCharacterAssetRole.identitySilhouette,
+    );
   }
-  if (character.teamSide != 0) return null;
-  return switch (character.slotIndex) {
+  final playerFallback = _playerFallbackStandee(teamSide, slotIndex);
+  return BattleStandeeAssetResolution(
+    sourcePath: null,
+    sourceRole: null,
+    displayPath: playerFallback,
+    displayRole: playerFallback == null
+        ? BattleCharacterAssetRole.identitySilhouette
+        : BattleCharacterAssetRole.stageStandee,
+  );
+}
+
+String? _playerFallbackStandee(int teamSide, int slotIndex) {
+  if (teamSide != 0 || slotIndex < 0) return null;
+  return switch (slotIndex % 3) {
     0 => WuxiaUi.battleFounderFallback,
     1 => WuxiaUi.battleFirstDiscipleFallback,
     2 => WuxiaUi.battleSecondDiscipleFallback,
     _ => null,
   };
 }
+
+bool _hasBattleStandeePathConvention(String path) =>
+    path.startsWith('assets/characters/battle_') ||
+    path.startsWith('assets/enemies/battle_');
+
+/// 资产门禁读取的已登记 source/output，不允许调用方修改内部注册表。
+Set<String> get registeredBattleStandeeSourcePaths =>
+    Set<String>.unmodifiable(_battleStandeeOverrides.keys);
+
+Set<String> get registeredBattleStandeeDisplayPaths =>
+    Set<String>.unmodifiable({
+      WuxiaUi.battleFounderFallback,
+      WuxiaUi.battleFirstDiscipleFallback,
+      WuxiaUi.battleSecondDiscipleFallback,
+      ..._battleStandeeOverrides.values,
+    });
 
 const _battleStandeeOverrides = <String, String>{
   'assets/characters/founder.png': WuxiaUi.battleFounderFallback,
@@ -941,16 +1035,11 @@ const _battleStandeeOverrides = <String, String>{
       WuxiaUi.battleBaicaoRidgeRunnerStandee,
 };
 
-bool _isTransparentBattleStandee(String? path) =>
-    path?.startsWith('assets/characters/battle_') == true ||
-    path?.startsWith('assets/enemies/battle_') == true ||
-    _battleStandeeOverrides[path] == path;
-
 /// 透明图脚底在原图高度中的实际比例。生成立绘的透明画布留白不同，
 /// 不能用 Widget 容器底边冒充脚底；否则接触影和状态牌会漂在人物下方。
 const _stageStandeeAnchorFootFraction = 0.95;
 
-double _stageStandeeFootFraction(String? path) => switch (path) {
+double battleStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleFounderFallback => 0.938,
   WuxiaUi.battleFirstDiscipleFallback => 0.961,
   WuxiaUi.battleSecondDiscipleFallback => 0.957,
@@ -1379,21 +1468,346 @@ class _FirstGlyphStandee extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
+      key: const ValueKey('battle.stageStandeeIdentitySilhouette'),
       width: width,
       height: height,
-      color: WuxiaColors.avatarFill,
-      alignment: Alignment.center,
-      child: Text(
-        firstGlyph,
-        style: TextStyle(
-          color: color,
-          fontSize: width * 0.38,
-          fontWeight: FontWeight.bold,
+      child: CustomPaint(
+        painter: _IdentitySilhouettePainter(accent: color),
+        child: Align(
+          alignment: const Alignment(0, -0.04),
+          child: Text(
+            firstGlyph,
+            style: TextStyle(
+              color: WuxiaUi.paper.withValues(alpha: 0.72),
+              fontSize: width * 0.115,
+              fontWeight: FontWeight.bold,
+              shadows: const [Shadow(color: Colors.black87, blurRadius: 1)],
+            ),
+          ),
         ),
       ),
     );
   }
+}
+
+/// 用既有透明站姿的 alpha 外形绘制纯墨身份影，不泄露该站姿原人物的肤色、
+/// 衣纹或五官；专用人物图补齐后只需更新 source→standee 登记即可自动替换。
+class _InkIdentityStandee extends StatelessWidget {
+  const _InkIdentityStandee({
+    required this.shapePath,
+    required this.width,
+    required this.height,
+    required this.accent,
+    required this.firstGlyph,
+  });
+
+  final String shapePath;
+  final double width;
+  final double height;
+  final Color accent;
+  final String firstGlyph;
+
+  @override
+  Widget build(BuildContext context) {
+    final sealSize = width * 0.155;
+    return SizedBox(
+      key: const ValueKey('battle.stageStandeeIdentitySilhouette'),
+      width: width,
+      height: height,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          WuxiaImage(
+            shapePath,
+            width: width,
+            height: height,
+            fit: BoxFit.contain,
+            alignment: Alignment.topCenter,
+            color: WuxiaUi.ink2.withValues(alpha: 0.78),
+            colorBlendMode: BlendMode.srcIn,
+            errorBuilder: wuxiaAssetErrorBuilder(
+              () => _FirstGlyphStandee(
+                width: width,
+                height: height,
+                color: accent,
+                firstGlyph: firstGlyph,
+              ),
+            ),
+          ),
+          Positioned(
+            top: height * 0.39,
+            child: Container(
+              width: sealSize,
+              height: sealSize,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: WuxiaUi.ink.withValues(alpha: 0.40),
+                border: Border.all(
+                  color: accent.withValues(alpha: 0.48),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                firstGlyph,
+                style: TextStyle(
+                  color: WuxiaUi.paper.withValues(alpha: 0.78),
+                  fontSize: width * 0.082,
+                  fontWeight: FontWeight.bold,
+                  shadows: const [Shadow(color: Colors.black87, blurRadius: 1)],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IdentitySilhouettePainter extends CustomPainter {
+  const _IdentitySilhouettePainter({required this.accent});
+
+  final Color accent;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final centerX = size.width / 2;
+    final ink = Paint()
+      ..color = WuxiaUi.ink2.withValues(alpha: 0.72)
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.55);
+    final deepInk = Paint()
+      ..color = WuxiaUi.ink.withValues(alpha: 0.24)
+      ..style = PaintingStyle.fill;
+
+    // 发髻与头颈不采用几何圆头：略偏的轮廓、颌线和发束让墨影仍读作武侠人物。
+    final topknot = Path()
+      ..moveTo(centerX - size.width * 0.033, size.height * 0.126)
+      ..quadraticBezierTo(
+        centerX,
+        size.height * 0.096,
+        centerX + size.width * 0.034,
+        size.height * 0.128,
+      )
+      ..quadraticBezierTo(
+        centerX + size.width * 0.026,
+        size.height * 0.160,
+        centerX - size.width * 0.026,
+        size.height * 0.158,
+      )
+      ..close();
+    final head = Path()
+      ..moveTo(centerX - size.width * 0.058, size.height * 0.155)
+      ..quadraticBezierTo(
+        centerX - size.width * 0.082,
+        size.height * 0.200,
+        centerX - size.width * 0.048,
+        size.height * 0.252,
+      )
+      ..quadraticBezierTo(
+        centerX,
+        size.height * 0.283,
+        centerX + size.width * 0.050,
+        size.height * 0.246,
+      )
+      ..quadraticBezierTo(
+        centerX + size.width * 0.076,
+        size.height * 0.190,
+        centerX + size.width * 0.042,
+        size.height * 0.153,
+      )
+      ..quadraticBezierTo(
+        centerX,
+        size.height * 0.137,
+        centerX - size.width * 0.058,
+        size.height * 0.155,
+      )
+      ..close();
+    final neck = Path()
+      ..moveTo(centerX - size.width * 0.035, size.height * 0.238)
+      ..lineTo(centerX - size.width * 0.052, size.height * 0.300)
+      ..lineTo(centerX + size.width * 0.052, size.height * 0.300)
+      ..lineTo(centerX + size.width * 0.035, size.height * 0.238)
+      ..close();
+
+    // 中心袍服、两袖与分步下摆分开落墨，避免“厕所标识”式单块轮廓。
+    final robe = Path()
+      ..moveTo(centerX - size.width * 0.050, size.height * 0.282)
+      ..quadraticBezierTo(
+        centerX - size.width * 0.145,
+        size.height * 0.300,
+        centerX - size.width * 0.165,
+        size.height * 0.386,
+      )
+      ..lineTo(centerX - size.width * 0.112, size.height * 0.585)
+      ..quadraticBezierTo(
+        centerX - size.width * 0.175,
+        size.height * 0.720,
+        centerX - size.width * 0.128,
+        size.height * 0.852,
+      )
+      ..lineTo(centerX - size.width * 0.098, size.height * 0.915)
+      ..lineTo(centerX - size.width * 0.022, size.height * 0.915)
+      ..lineTo(centerX + size.width * 0.004, size.height * 0.704)
+      ..lineTo(centerX + size.width * 0.046, size.height * 0.915)
+      ..lineTo(centerX + size.width * 0.126, size.height * 0.915)
+      ..quadraticBezierTo(
+        centerX + size.width * 0.185,
+        size.height * 0.742,
+        centerX + size.width * 0.112,
+        size.height * 0.575,
+      )
+      ..lineTo(centerX + size.width * 0.164, size.height * 0.380)
+      ..quadraticBezierTo(
+        centerX + size.width * 0.143,
+        size.height * 0.300,
+        centerX + size.width * 0.050,
+        size.height * 0.282,
+      )
+      ..close();
+    final leftSleeve = Path()
+      ..moveTo(centerX - size.width * 0.120, size.height * 0.318)
+      ..quadraticBezierTo(
+        centerX - size.width * 0.225,
+        size.height * 0.365,
+        centerX - size.width * 0.278,
+        size.height * 0.515,
+      )
+      ..quadraticBezierTo(
+        centerX - size.width * 0.300,
+        size.height * 0.586,
+        centerX - size.width * 0.246,
+        size.height * 0.612,
+      )
+      ..quadraticBezierTo(
+        centerX - size.width * 0.198,
+        size.height * 0.566,
+        centerX - size.width * 0.132,
+        size.height * 0.430,
+      )
+      ..close();
+    final rightSleeve = Path()
+      ..moveTo(centerX + size.width * 0.118, size.height * 0.316)
+      ..quadraticBezierTo(
+        centerX + size.width * 0.238,
+        size.height * 0.342,
+        centerX + size.width * 0.275,
+        size.height * 0.455,
+      )
+      ..quadraticBezierTo(
+        centerX + size.width * 0.286,
+        size.height * 0.506,
+        centerX + size.width * 0.240,
+        size.height * 0.528,
+      )
+      ..quadraticBezierTo(
+        centerX + size.width * 0.182,
+        size.height * 0.492,
+        centerX + size.width * 0.108,
+        size.height * 0.410,
+      )
+      ..close();
+    final forearm = Path()
+      ..moveTo(centerX + size.width * 0.245, size.height * 0.482)
+      ..quadraticBezierTo(
+        centerX + size.width * 0.168,
+        size.height * 0.525,
+        centerX + size.width * 0.060,
+        size.height * 0.550,
+      )
+      ..lineTo(centerX + size.width * 0.026, size.height * 0.505)
+      ..quadraticBezierTo(
+        centerX + size.width * 0.128,
+        size.height * 0.455,
+        centerX + size.width * 0.232,
+        size.height * 0.430,
+      )
+      ..close();
+
+    for (final shape in [
+      topknot,
+      neck,
+      robe,
+      leftSleeve,
+      rightSleeve,
+      forearm,
+    ]) {
+      canvas.drawPath(shape, ink);
+    }
+    canvas.drawPath(head, ink);
+
+    final hairWash = Path()
+      ..moveTo(centerX - size.width * 0.053, size.height * 0.158)
+      ..quadraticBezierTo(
+        centerX + size.width * 0.018,
+        size.height * 0.142,
+        centerX + size.width * 0.050,
+        size.height * 0.194,
+      )
+      ..quadraticBezierTo(
+        centerX + size.width * 0.010,
+        size.height * 0.174,
+        centerX - size.width * 0.053,
+        size.height * 0.203,
+      )
+      ..close();
+    canvas.drawPath(hairWash, deepInk);
+
+    final clothWash = Paint()
+      ..color = WuxiaUi.paper.withValues(alpha: 0.085)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.018
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.7);
+    final lapel = Path()
+      ..moveTo(centerX - size.width * 0.070, size.height * 0.315)
+      ..quadraticBezierTo(
+        centerX + size.width * 0.018,
+        size.height * 0.405,
+        centerX + size.width * 0.070,
+        size.height * 0.520,
+      );
+    final robeFold = Path()
+      ..moveTo(centerX - size.width * 0.028, size.height * 0.595)
+      ..quadraticBezierTo(
+        centerX - size.width * 0.085,
+        size.height * 0.744,
+        centerX - size.width * 0.090,
+        size.height * 0.865,
+      );
+    canvas.drawPath(lapel, clothWash);
+    canvas.drawPath(robeFold, clothWash..strokeWidth = size.width * 0.012);
+
+    // 流派色只落成腰间一笔与胸口小印，保留身份提示但不把墨影画成彩色轮廓。
+    final accentStroke = Paint()
+      ..color = accent.withValues(alpha: 0.38)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.012
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(centerX - size.width * 0.116, size.height * 0.566),
+      Offset(centerX + size.width * 0.118, size.height * 0.558),
+      accentStroke,
+    );
+    canvas.drawCircle(
+      Offset(centerX, size.height * 0.478),
+      size.width * 0.070,
+      Paint()
+        ..color = accent.withValues(alpha: 0.14)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawCircle(
+      Offset(centerX, size.height * 0.478),
+      size.width * 0.070,
+      accentStroke..strokeWidth = 1,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _IdentitySilhouettePainter oldDelegate) =>
+      oldDelegate.accent != accent;
 }
 
 const _grayscaleFilter = ColorFilter.matrix(<double>[

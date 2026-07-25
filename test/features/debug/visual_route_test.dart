@@ -229,7 +229,7 @@ void main() {
       );
     });
 
-    test('V2 五个确定性战斗验收 route parse', () {
+    test('V2 与人物素材门禁的确定性战斗验收 route parse', () {
       expect(
         parseVisualRoute('battle_v2_casualty_replacement'),
         VisualRoute.battleV2CasualtyReplacement,
@@ -245,6 +245,10 @@ void main() {
       expect(
         parseVisualRoute('battle_v2_neutral_3v3'),
         VisualRoute.battleV2Neutral3v3,
+      );
+      expect(
+        parseVisualRoute('battle_identity_silhouette'),
+        VisualRoute.battleIdentitySilhouette,
       );
       expect(
         parseVisualRoute('battle_v2_resource_pressure'),
@@ -361,7 +365,7 @@ void main() {
       );
     });
 
-    test('battle suite 70个动态路由与5个V2状态全部可构造', () async {
+    test('battle suite 70个动态路由与6个确定性素材/状态路由全部可构造', () async {
       final targets = visualAcceptanceRoutes(VisualAcceptanceSuite.battle);
       for (final spec in targets) {
         final target = await buildVisualTarget(

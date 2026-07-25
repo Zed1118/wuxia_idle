@@ -102,6 +102,10 @@ enum VisualRoute {
     '战斗界面 V2·固定 seed 冻结在最后一次致胜 action 之前',
   ),
   battleV2Neutral3v3('battle_v2_neutral_3v3', '战斗界面 V2·中性标准 3v3 静态帧'),
+  battleIdentitySilhouette(
+    'battle_identity_silhouette',
+    '战斗人物素材门禁·三名未配专用站姿弟子使用透明身份剪影',
+  ),
   battleV2ResourcePressure(
     'battle_v2_resource_pressure',
     '战斗界面 V2·冷却签与真气不足签同帧静态验收',
@@ -368,6 +372,7 @@ enum VisualRoute {
     battleV2FastForwardPeak ||
     battleV2PreResult ||
     battleV2Neutral3v3 ||
+    battleIdentitySilhouette ||
     battleV2ResourcePressure ||
     battleV2AutoRotationFirst ||
     battleV2AutoRotationSecond => true,
@@ -380,6 +385,7 @@ enum VisualRoute {
     if (id.contains('gallery')) return VisualRouteKind.gallery;
     if (this == VisualRoute.redlineAudit ||
         this == VisualRoute.battleTapPreview ||
+        this == VisualRoute.battleIdentitySilhouette ||
         this == VisualRoute.hub) {
       return VisualRouteKind.component;
     }

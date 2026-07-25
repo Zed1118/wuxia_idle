@@ -248,6 +248,9 @@ void main() {
     final colors = (decoration.gradient! as LinearGradient).colors;
     expect(colors, everyElement(isNot(Colors.black)));
     expect(colors, everyElement(predicate<Color>((color) => color.a < 0.86)));
+    final name = tester.widget<Text>(find.text('黑风寨主'));
+    expect(name.style?.color, WuxiaUi.paper);
+    expect(name.style?.shadows?.single.blurRadius, lessThanOrEqualTo(2));
   });
 
   testWidgets('战场立绘使用固定暖灰色级与亚像素边缘柔化层', (tester) async {
@@ -636,7 +639,7 @@ void main() {
     }
   });
 
-  testWidgets('未配套透明图的旧敌人原画保持遮罩降级路径', (tester) async {
+  testWidgets('未登记敌人 portrait 不进入战场，改用透明身份剪影', (tester) async {
     final character = _char(
       isBoss: false,
     ).copyWith(iconPath: 'assets/enemies/unmapped.png');
@@ -651,10 +654,50 @@ void main() {
       ),
     );
 
-    final image = tester.widget<WuxiaImage>(find.byType(WuxiaImage));
-    expect(image.assetPath, 'assets/enemies/unmapped.png');
-    expect(image.fit, BoxFit.cover);
-    expect(find.byType(ShaderMask), findsOneWidget);
+    expect(find.byType(WuxiaImage), findsNothing);
+    expect(
+      find.byKey(const ValueKey('battle.stageStandeeIdentitySilhouette')),
+      findsOneWidget,
+    );
+    expect(find.byType(ShaderMask), findsNothing);
+  });
+
+  testWidgets('未配专用站姿的玩家以透明站姿 alpha 绘制纯墨身份影', (tester) async {
+    final character = _char(isBoss: false).copyWith(
+      teamSide: 0,
+      slotIndex: 4,
+      name: '竹影',
+      iconPath: 'assets/characters/sect_candidate_bamboo.png',
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CharacterAvatar(
+            character: character,
+            displayMode: CharacterDisplayMode.stageStandee,
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(const ValueKey('battle.stageStandeeIdentitySilhouette')),
+      findsOneWidget,
+    );
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is WuxiaImage &&
+            widget.assetPath == 'assets/characters/sect_candidate_bamboo.png',
+      ),
+      findsNothing,
+    );
+    final inkShape = tester.widget<WuxiaImage>(find.byType(WuxiaImage));
+    expect(inkShape.assetPath, WuxiaUi.battleFirstDiscipleFallback);
+    expect(inkShape.fit, BoxFit.contain);
+    expect(inkShape.colorBlendMode, BlendMode.srcIn);
+    expect(inkShape.color, isNotNull);
+    expect(find.text('竹'), findsOneWidget);
   });
 
   testWidgets('心魔镜像只给人物图施加反相墨色层', (tester) async {
