@@ -1,4 +1,5 @@
 import '../../core/domain/enums.dart';
+import '../../shared/strings.dart';
 
 /// 心法相生 requirement 类型(W18-A1 + 候选 2 2026-05-21 加 specificTechniques,GDD §4.5)。
 ///
@@ -57,15 +58,29 @@ class SynergyMultipliers {
   /// 简要文案(UI chip 显示用)。零值字段跳过。
   String summary() {
     final parts = <String>[];
-    if (attackPct != 0) parts.add('攻 ${_fmt(attackPct)}');
-    if (defensePct != 0) parts.add('防 ${_fmt(defensePct)}');
-    if (speedPct != 0) parts.add('速 ${_fmt(speedPct)}');
-    if (hpPct != 0) parts.add('血 ${_fmt(hpPct)}');
+    if (attackPct != 0) {
+      parts.add('${UiStrings.synergyStatAttack} ${_fmt(attackPct)}');
+    }
+    if (defensePct != 0) {
+      parts.add('${UiStrings.synergyStatDefense} ${_fmt(defensePct)}');
+    }
+    if (speedPct != 0) {
+      parts.add('${UiStrings.synergyStatSpeed} ${_fmt(speedPct)}');
+    }
+    if (hpPct != 0) {
+      parts.add('${UiStrings.synergyStatHp} ${_fmt(hpPct)}');
+    }
     if (internalForceMaxPct != 0) {
-      parts.add('内力上限 ${_fmt(internalForceMaxPct)}');
+      parts.add(
+        '${UiStrings.synergyStatInternalForceMax} '
+        '${_fmt(internalForceMaxPct)}',
+      );
     }
     if (internalForceGrowthPct != 0) {
-      parts.add('内力增长 ${_fmt(internalForceGrowthPct)}');
+      parts.add(
+        '${UiStrings.synergyStatInternalForceGrowth} '
+        '${_fmt(internalForceGrowthPct)}',
+      );
     }
     return parts.join(' · ');
   }

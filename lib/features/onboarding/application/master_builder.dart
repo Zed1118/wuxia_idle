@@ -8,6 +8,7 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/defs/master_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../../equipment/application/equipment_factory.dart';
 
@@ -67,13 +68,13 @@ Character buildMasterCharacter(
 String defaultMasterName(MasterDef def) {
   switch (def.slotIndex) {
     case 0:
-      return '祖师';
+      return UiStrings.masterDefaultNameFounder;
     case 1:
-      return '大弟子';
+      return UiStrings.lineageRoleSenior;
     case 2:
-      return '二弟子';
+      return UiStrings.lineageRoleJunior;
     default:
-      return '师徒_${def.id}';
+      return UiStrings.masterDefaultNameFallback(def.id);
   }
 }
 

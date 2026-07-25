@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/domain/enums.dart';
 import '../../features/battle/domain/enum_localizations.dart';
+import '../strings.dart';
 
 /// 装备缺图占位:tier 色描边内显部位首字(兵/护/饰…)。
 ///
@@ -17,7 +18,9 @@ class EquipGlyph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = EnumL10n.equipmentSlot(slot);
-    final glyph = label.characters.isEmpty ? '器' : label.characters.first;
+    final glyph = label.characters.isEmpty
+        ? UiStrings.equipmentGlyphFallback
+        : label.characters.first;
     return Center(
       child: Text(
         glyph,

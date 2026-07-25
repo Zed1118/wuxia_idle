@@ -6,6 +6,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
+import '../../../shared/strings.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
@@ -203,7 +204,7 @@ Future<GauntletInterludeView?> gauntletInterludeView(Ref ref) async {
     members.add(
       GauntletMemberView(
         characterId: m.characterId,
-        name: ch?.name ?? '门人',
+        name: ch?.name ?? UiStrings.gauntletMemberFallbackName,
         currentHp: m.currentHp,
         maxHp: m.maxHp,
         currentQi: m.currentQi,

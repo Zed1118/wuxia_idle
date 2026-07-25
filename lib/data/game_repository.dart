@@ -945,13 +945,16 @@ class GameRepository {
     // Stage enemies: label includes stage id for locatability.
     for (final s in stages.values) {
       for (final e in s.enemyTeam) {
-        checkEnemy(enemy: e, label: 'stage ${s.id} 敌人 ${e.id}');
+        checkEnemy(enemy: e, label: 'stage ${s.id} enemy ${e.id}');
       }
     }
     // Tower-floor enemies: label includes floorIndex for locatability.
     for (final f in towerFloors) {
       for (final e in f.enemyTeam) {
-        checkEnemy(enemy: e, label: 'tower floor ${f.floorIndex} 敌人 ${e.id}');
+        checkEnemy(
+          enemy: e,
+          label: 'tower floor ${f.floorIndex} enemy ${e.id}',
+        );
       }
     }
   }
@@ -1089,7 +1092,7 @@ class GameRepository {
     for (final teamEntry in config.enemyTeams.entries) {
       final teamId = teamEntry.key;
       final team = teamEntry.value;
-      final loc = 'boss_gauntlets 敌队 $teamId ';
+      final loc = 'boss_gauntlets team $teamId ';
       for (final e in team) {
         final redLines = numbers.combat.redLines;
         if (e.baseHp <= 0 || e.baseHp > redLines.bossHpMax) {

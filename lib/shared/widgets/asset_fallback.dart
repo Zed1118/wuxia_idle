@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../strings.dart';
 import '../theme/colors.dart';
 
 /// 缺图 errorBuilder 工厂:release 只渲染 [fallback];
@@ -31,7 +32,7 @@ class _MissingAssetBadge extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
         color: WuxiaColors.hpLow,
         child: const Text(
-          '缺图',
+          UiStrings.assetMissingBadge,
           style: TextStyle(fontSize: 8, color: Colors.white, height: 1.0),
         ),
       ),
