@@ -1,42 +1,60 @@
-# NEXT — 新会话开局提示词(2026-07-24 18:51 交接·主 checkout HEAD 91d749bd)
+# 新会话开工提示词（交接时间：2026-07-25 08:34 · HEAD 5dda32df）
+
+> 本文件由 /handoff 覆盖式维护。新会话用户说「开工」= 读本文件按其执行；动手前先核头部 HEAD 与 git 实况，漂移先报告再动。
+
+---
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
-三批全部闭环收账：Ch15「关山一程」整章实装(PR #67)+美术 11 图接线(PR #68)+真相源收口/死配置清理(PR #69·外审 07-24 triage 落地)全合 main。主线 15 章 75 关全交付、cap 35 绝顶段收束、GDD v1.24 当前状态块制上线。主 checkout main@`91d749bd` = origin/main 树净、载体全清。新会话任务 = 下波候选择一开工。
+Ch16「凉州词」宗师段首章实装批全链闭环（PR #71 --no-ff MERGED·批 commit `5441ea3d` 经 merge `a5d6ddba` 进 main·handoff docs `5dda32df`）。
+主线 16 章 80 关全交付，cap 38（zongShi cross-tier），宗师段 1/3 落地。主 checkout main@`5dda32df` = origin/main
+树净、载体全清。新会话任务 = 下波候选择一开工。
 
 开局动作：
-1. 读 PROGRESS.md 顶三段 2026-07-24 条
-2. 读 docs/sessions/2026-07-24_1851_三批收账.md（决策理由+踩坑三条）
+1. 读 PROGRESS.md 顶段 2026-07-24 Ch16 条
+2. 读 docs/sessions/2026-07-24_2220_Ch16凉州词实装.md（spec 证伪口径+相位配法+踩坑三条）
 3. git pull --rebase --autostash
-4. 选读 memory：reference_anti_hallucination（固定）+ feedback_wuxia_add_mainline_chapter_reconcile（含新站点「GDD 当前状态块」）+ 候选 1 加读 feedback_visual_check_real_target_bg（webp 批抽测配方在 #63/#66 PROGRESS 条）
+4. 选读 memory：reference_anti_hallucination（固定）+ 候选 1 加读
+   reference_codex_image_gen_art_pipeline + feedback_visual_acceptance；候选 2 加读
+   feedback_wuxia_add_mainline_chapter_reconcile + feedback_wuxia_release_cap_raise_reconcile
+   （within-tier 38→40 判据）+ feedback_multi_anchor_test_actual_attribution
 
 【环境快照】
-- HEAD `91d749bd`（= origin/main · 树净 · 本会话 main +10 commits 全 push — 2026-07-24 18:51 现跑实证）
-- analyze 0（18:51 实测）；全量 **4654/0** EXIT=0（2026-07-24 合并态主 checkout 实测·其后仅 docs commit）
-- 主线 15 章 75 关（内容+美术全交付）·cap 35·GDD v1.24 状态块制+truth_source_guard 守卫测
-- Ch15 11 图真 PNG ~18.9M 待 webp；kimi 2026-07-26 10:10 前配额不可用（派单走 Claude/codex）
+- HEAD `5dda32df`（= origin/main · 树净 · 本会话 main +2 commits：merge `a5d6ddba` + docs `5dda32df`，
+  批 commit `5441ea3d` 经 merge 进入 · 全 push — 2026-07-25 08:34 现跑实证）
+- analyze 0（handoff 时主 checkout 现测）；全量 **4654/0** EXIT=0（2026-07-24 22:10 合并态实测·其后仅 docs 两文件）
+- 主线 16 章 80 关·cap 38·首通 Lv97/全内容 Lv115（逐值实测）·Ch16 11 图缺走 errorBuilder
+  （known_missing 已登记 liangzhou_* 5 敌+chapter_16_cover+narrative_16_01..05）·BACKLOG §二两项可派
+- kimi 2026-07-26 10:10 前配额不可用（派单走 Claude/codex）
+- **网络注意**：GitHub 直连 07-24 22:20 起间歇 reset；sing-box 已启动；push 失败时用
+  `env https_proxy=http://127.0.0.1:2334 git push`（本会话实测通，hook 清代理后的备用通道）
 
 【下波候选】
 
 | # | 任务 | 模型 | 预估时长 | 备注 |
 |---|------|------|----------|------|
-| 1 | webp 清账小批：Ch15 11 图 18.9M 转码（推荐） | Claude opus high | ~15-20min | 沿 #63/#66 幂等脚本 `convert_assets_webp.py` q80 保 .png 名·抽测脚底 fraction 与 avatar 基线零差+四角 alpha·完整闭环 Ch15 |
-| 2 | battle-ui-v2 阶段 5 重建（Windows 缩放） | codex | 随批 | BACKLOG §二#1·新载体·证据留 repo 内非 gitignored（外审教训） |
-| 3 | 宗师段主线 spec（Ch16+） | Claude xhigh 专会话 | 专会话 | 先拍 BACKLOG §一#9 HP 头寸机制层方向·yang_guan/feng_juan 两 deferred 归此段 |
-| 4 | 中文散写门禁豁免口径拍板 | 用户拍板+Claude 轻批 | ~10min | BACKLOG §一#10·拍定注释/StateError/debug fixture 豁免与否再实装 CI allowlist |
+| 1 | Ch16 11 图 codex image_gen 专批（推荐） | codex+Claude 终判 | ~1h | 合并后美术批惯例·销已知风险①·沿 Ch11-15 配方（参考锚 sips 解码防 webp-in-png·脚底校准·Claude 视觉终判 11/11 逐图） |
+| 2 | Ch17「沙海纵深」实装批 | Claude xhigh 专会话 | ~3.5-4h | spec §8 前瞻已定方向·章级细化随批终拍；灵巧主题·末 Boss 单窗口 0.20 机制教学·feng_juan 收编+夜雨残页·cap 38→40 within-tier |
+| 3 | battle-ui-v2 阶段 5（Windows 缩放） | codex | 随批 | BACKLOG §二#1·证据留 repo 内非 gitignored |
+| 4 | 中文门禁豁免口径拍板 | 用户拍板+Claude 轻批 | ~10min | BACKLOG §一#10 |
 
 【硬约束沿用】
-- webp 批口径：q80 保 .png 名幂等转码；抽测立绘脚底 fraction 与 `character_avatar.dart` 校准基线零差+四角 alpha 全 0（值变=转码破 alpha,回退）
-- 加章/改 cap 必更 GDD 头部「当前状态块」——truth_source_guard_test 自动拦 cap/章关数,实测锚(Lv93/Lv112)手更
-- flutter test 禁裸接管道：`> file 2>&1; echo EXIT=$?` 显式取码
-- 合并纪律：draft PR 审 diff 后 --no-ff；合并后主 checkout analyze+targeted(资产批)/全量(跨切面批)复验
-- idle_horizon s3 50.7/下沿 50、s4 7.0/下沿 7.0 双贴线——Ch16 扩章必破必重校
+- Ch17 实装依据 = spec §8 前瞻；**「敌招 9 招新写」按 Ch16 证伪口径读**：tier6 敌招池 = skills.yaml
+  失传神功心法招 9 门已存在（心法招无 tier 字段勿按 tier:6 grep 盘点），沿 Ch13-16 惯例复用零新增
+- Ch17 末 Boss 相位直接沿 16_05 **unlockSkillIds 配法**（招同时在 skillIds 过红线①+相位 unlockSkillIds
+  受击即推蓄力；AI 自选路径在高 cap nearMax 速度碾压下不可见，勿走回 15_05 纯 chargeSkillId 老配法）
+- **idle_horizon s1 45.6 天/下沿 45 贴线，Ch17 扩缺口必破必重校**（三贴线 s3 45/s4 6/F 25 本批已重校）
+- flutter test 禁裸接管道：`> file 2>&1; echo EXIT=$?` 显式取码；破坏证红在 commit 后做；
+  计数断言 grep 双形态：`hasLength(N)` + `length, N`（本批 game_repository_test 裸值断言漏网实锤）
+- 合并纪律：draft PR 审 diff 后 --no-ff；合并后主 checkout build_runner+analyze+全量复验
+- 美术批合并后惯例跟进 webp 清账小批（Ch15 三批全链先例）
 
 【防幻觉守则】
-- 本提示词【环境快照】数字是 2026-07-24 18:51 交接实测快照；新会话改动后必重新实测，禁转抄。
+- 本提示词【环境快照】数字是 2026-07-25 08:34 交接实测快照；新会话改动后必重新实测，禁转抄。
 - 报「完成/已修复/全绿」前必跑验证并贴输出，launch ≠ 成功。
 - 引用代码现 grep/codegraph 查带 file:line；不确定写「不知道」。
 - 完整守则见 memory reference_anti_hallucination。
 
 【先报告】
-读完上述清单后：1. 报告 PROGRESS 顶三段与 session 记录关键信息 2. 确认环境状态（HEAD/树净/同步） 3. 不要直接动代码。
+读完上述清单后：1. 报告 PROGRESS 顶段与 session 记录关键信息 2. 确认环境状态（HEAD/树净/同步）
+3. 不要直接动代码。
