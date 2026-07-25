@@ -1450,6 +1450,8 @@ class UiStrings {
   static const String stageListTimelineTitle = '章节卷轴';
   static const String stageListTimelineHint = '沿路标推进，朱印为章末首领';
   static const String stageListBoss = 'Boss';
+  static const String stageListJourneyMinorBoss = '强敌';
+  static const String stageListJourneyFinalBoss = '章末';
   static String stageListJourneyNodeLabel(int stageIndex) => '第$stageIndex关';
   static String stageListTimelineStopLabel(int stageIndex, String stageName) =>
       '第$stageIndex关 · $stageName';

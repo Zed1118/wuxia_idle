@@ -259,7 +259,10 @@ class _TowerSpineOverview extends StatelessWidget {
                   _TowerSpineNode(entry: entry, summary: summary),
                   if (entry.def.floorIndex != entries.last.def.floorIndex)
                     Container(
-                      width: 10,
+                      // 24 个普通节点 + 6 个 Boss 节点在 1080 内容栏内的
+                      // 总宽度为 756；29 段 9px 连线后为 1017，恰好落在
+                      // 面板 1020px 安全区内。更窄窗口仍由横向滚动兜底。
+                      width: 9,
                       height: 2,
                       color: WuxiaUi.ink.withValues(alpha: 0.18),
                     ),
@@ -300,9 +303,9 @@ class _TowerSpineNode extends StatelessWidget {
     final isBoss = entry.def.isBoss;
     final isMajorBoss = entry.def.bossKind == TowerBossKind.major;
     final borderWidth = isCurrent
-        ? 2.2
+        ? 2.6
         : isHighest
-        ? 1.8
+        ? 2.2
         : isBoss
         ? 1.6
         : 1.1;
@@ -343,14 +346,14 @@ class _TowerSpineNode extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                isBoss
-                    ? (isMajorBoss
-                          ? UiStrings.towerBossBadgeMajor
-                          : UiStrings.towerBossBadgeMinor)
-                    : isCurrent
+                isCurrent
                     ? UiStrings.towerSpineCurrentBadge
                     : isHighest
                     ? UiStrings.towerSpineHighestBadge
+                    : isBoss
+                    ? (isMajorBoss
+                          ? UiStrings.towerBossBadgeMajor
+                          : UiStrings.towerBossBadgeMinor)
                     : '',
                 style: TextStyle(
                   color: color,

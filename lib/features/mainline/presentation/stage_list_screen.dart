@@ -413,6 +413,7 @@ class _StageJourneyMap extends StatelessWidget {
                               child: _StageJourneyNode(
                                 stageIndex: i + 1,
                                 entry: entries[i],
+                                isChapterFinal: i == entries.length - 1,
                               ),
                             )
                           else
@@ -420,6 +421,7 @@ class _StageJourneyMap extends StatelessWidget {
                               child: _StageJourneyNode(
                                 stageIndex: i + 1,
                                 entry: entries[i],
+                                isChapterFinal: i == entries.length - 1,
                               ),
                             ),
                           if (i != entries.length - 1)
@@ -821,10 +823,15 @@ class _ChapterFarmSpotChip extends StatelessWidget {
 }
 
 class _StageJourneyNode extends StatelessWidget {
-  const _StageJourneyNode({required this.stageIndex, required this.entry});
+  const _StageJourneyNode({
+    required this.stageIndex,
+    required this.entry,
+    required this.isChapterFinal,
+  });
 
   final int stageIndex;
   final StageEntry entry;
+  final bool isChapterFinal;
 
   @override
   Widget build(BuildContext context) {
@@ -864,7 +871,9 @@ class _StageJourneyNode extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           boss
-              ? UiStrings.stageListBoss
+              ? (isChapterFinal
+                    ? UiStrings.stageListJourneyFinalBoss
+                    : UiStrings.stageListJourneyMinorBoss)
               : UiStrings.stageListJourneyNodeLabel(stageIndex),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

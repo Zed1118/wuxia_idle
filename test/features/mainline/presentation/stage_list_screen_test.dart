@@ -105,6 +105,8 @@ void main() {
 
     expect(find.text(UiStrings.stageListTimelineTitle), findsOneWidget);
     expect(find.text(UiStrings.stageListTimelineHint), findsOneWidget);
+    expect(find.text(UiStrings.stageListJourneyMinorBoss), findsOneWidget);
+    expect(find.text(UiStrings.stageListJourneyFinalBoss), findsOneWidget);
     expect(find.text('山门之外'), findsOneWidget);
     expect(find.text(UiStrings.stageListAvailable), findsOneWidget);
     expect(find.byIcon(Icons.lock), findsNWidgets(4));
