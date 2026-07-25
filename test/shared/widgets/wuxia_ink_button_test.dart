@@ -144,6 +144,10 @@ void main() {
       ),
     );
     expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+    expect(
+      find.byWidgetPredicate((w) => w is Opacity && w.opacity == 0.4),
+      findsOneWidget,
+    );
 
     await tester.pumpWidget(
       host(const WuxiaInkButton(label: '主线', hint: 'x', onTap: null)),

@@ -85,201 +85,233 @@ class _WuxiaInkButtonState extends State<WuxiaInkButton> {
         child: MouseRegion(
           onEnter: _enabled ? (_) => setState(() => _hovered = true) : null,
           onExit: _enabled ? (_) => setState(() => _hovered = false) : null,
-          child: Opacity(
-            opacity: widget.disabled ? 0.4 : 1.0,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTapDown: _enabled ? (_) => _setPressed(true) : null,
-              onTapUp: _enabled ? (_) => _setPressed(false) : null,
-              onTapCancel: _enabled ? () => _setPressed(false) : null,
-              onTap: _enabled ? _activate : null,
-              child: Container(
-                constraints: const BoxConstraints(
-                  minHeight: WuxiaInkButton.minHeight,
-                ),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xE6D9C396),
-                      Color(0xE0B9915D),
-                      Color(0xE0695130),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: WuxiaUi.ink.withValues(alpha: 0.72),
-                  ),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x5C000000),
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
+          child: Stack(
+            children: [
+              Opacity(
+                opacity: widget.disabled ? 0.4 : 1.0,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapDown: _enabled ? (_) => _setPressed(true) : null,
+                  onTapUp: _enabled ? (_) => _setPressed(false) : null,
+                  onTapCancel: _enabled ? () => _setPressed(false) : null,
+                  onTap: _enabled ? _activate : null,
+                  child: Container(
+                    constraints: const BoxConstraints(
+                      minHeight: WuxiaInkButton.minHeight,
                     ),
-                    BoxShadow(
-                      color: Color(0x1AF3E2C0),
-                      blurRadius: 10,
-                      offset: Offset(0, -1),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0xE6D9C396),
+                          Color(0xE0B9915D),
+                          Color(0xE0695130),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: WuxiaUi.ink.withValues(alpha: 0.72),
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x5C000000),
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
+                        ),
+                        BoxShadow(
+                          color: Color(0x1AF3E2C0),
+                          blurRadius: 10,
+                          offset: Offset(0, -1),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(5),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: Opacity(
-                          opacity: 0.16,
-                          child: WuxiaImage(
-                            WuxiaUi.paperBg,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        top: 0,
-                        bottom: 0,
-                        child: Container(
-                          width: widget.thumbnailPath == null ? 7 : 96,
-                          color: WuxiaUi.ink.withValues(alpha: 0.42),
-                          child: widget.thumbnailPath == null
-                              ? null
-                              : _InkButtonThumbnail(
-                                  widget.thumbnailPath!,
-                                  icon: widget.icon,
-                                ),
-                        ),
-                      ),
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              top: BorderSide(
-                                color: WuxiaUi.paper.withValues(alpha: 0.34),
-                              ),
-                              bottom: BorderSide(
-                                color: WuxiaUi.ink.withValues(alpha: 0.24),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(5),
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: Opacity(
+                              opacity: 0.16,
+                              child: WuxiaImage(
+                                WuxiaUi.paperBg,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) =>
+                                    const SizedBox.shrink(),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          widget.thumbnailPath != null
-                              ? 108
-                              : (widget.icon == null ? 22 : 16),
-                          14,
-                          16,
-                          14,
-                        ),
-                        child: Row(
-                          children: [
-                            if (widget.thumbnailPath == null &&
-                                widget.icon != null) ...[
-                              _InkButtonIcon(widget.icon!),
-                              const SizedBox(width: 12),
-                            ],
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    widget.label,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: WuxiaUi.ink,
-                                      fontSize: 16,
-                                      height: 1.12,
-                                      fontWeight: FontWeight.w800,
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: widget.thumbnailPath == null ? 7 : 96,
+                              color: WuxiaUi.ink.withValues(alpha: 0.42),
+                              child: widget.thumbnailPath == null
+                                  ? null
+                                  : _InkButtonThumbnail(
+                                      widget.thumbnailPath!,
+                                      icon: widget.icon,
+                                    ),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  top: BorderSide(
+                                    color: WuxiaUi.paper.withValues(
+                                      alpha: 0.34,
                                     ),
                                   ),
-                                  if (widget.status != null) ...[
-                                    const SizedBox(height: 5),
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: _InkButtonStatusChip(
-                                        widget.status!,
-                                      ),
-                                    ),
-                                  ],
-                                  const SizedBox(height: 5),
-                                  SizedBox(
-                                    height: 30,
-                                    child: Text(
-                                      widget.hint,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: WuxiaUi.ink.withValues(
-                                          alpha: 0.72,
-                                        ),
-                                        fontSize: 12,
-                                        height: 1.2,
-                                      ),
-                                    ),
+                                  bottom: BorderSide(
+                                    color: WuxiaUi.ink.withValues(alpha: 0.24),
                                   ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              widget.thumbnailPath != null
+                                  ? 108
+                                  : (widget.icon == null ? 22 : 16),
+                              14,
+                              widget.locked ? 52 : 16,
+                              14,
+                            ),
+                            child: Row(
+                              children: [
+                                if (widget.thumbnailPath == null &&
+                                    widget.icon != null) ...[
+                                  _InkButtonIcon(widget.icon!),
+                                  const SizedBox(width: 12),
                                 ],
-                              ),
-                            ),
-                            if (widget.locked)
-                              const Padding(
-                                padding: EdgeInsets.only(left: 8),
-                                child: Icon(
-                                  Icons.lock_outline,
-                                  size: 16,
-                                  color: WuxiaUi.muted,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        widget.label,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: WuxiaUi.ink,
+                                          fontSize: 16,
+                                          height: 1.12,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      if (widget.status != null) ...[
+                                        const SizedBox(height: 5),
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: _InkButtonStatusChip(
+                                            widget.status!,
+                                          ),
+                                        ),
+                                      ],
+                                      const SizedBox(height: 5),
+                                      SizedBox(
+                                        height: 30,
+                                        child: Text(
+                                          widget.hint,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: WuxiaUi.ink.withValues(
+                                              alpha: 0.72,
+                                            ),
+                                            fontSize: 12,
+                                            height: 1.2,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: AnimatedOpacity(
-                            opacity: _pressed
-                                ? 1
-                                : _hovered
-                                ? 0.55
-                                : 0,
-                            duration: const Duration(milliseconds: 100),
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: _pressed
-                                    ? WuxiaUi.ink.withValues(alpha: 0.12)
-                                    : WuxiaUi.paper.withValues(alpha: 0.10),
+                              ],
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              child: AnimatedOpacity(
+                                opacity: _pressed
+                                    ? 1
+                                    : _hovered
+                                    ? 0.55
+                                    : 0,
+                                duration: const Duration(milliseconds: 100),
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: _pressed
+                                        ? WuxiaUi.ink.withValues(alpha: 0.12)
+                                        : WuxiaUi.paper.withValues(alpha: 0.10),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                      if (_focused)
-                        Positioned.fill(
-                          child: IgnorePointer(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                border: Border.all(
-                                  color: WuxiaUi.gold,
-                                  width: 2,
+                          if (_focused)
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    border: Border.all(
+                                      color: WuxiaUi.gold,
+                                      width: 2,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                    ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+              if (widget.locked)
+                const Positioned(
+                  right: 12,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(child: _InkButtonLockMark()),
+                ),
+            ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _InkButtonLockMark extends StatelessWidget {
+  const _InkButtonLockMark();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 28,
+      height: 28,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: WuxiaUi.jiang.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: WuxiaUi.paper2.withValues(alpha: 0.7)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: const Icon(Icons.lock_outline, size: 17, color: WuxiaUi.paper),
     );
   }
 }

@@ -32,9 +32,9 @@ class InkEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = _accentColor();
     final surface = PanelSurface.of(context);
     final isDarkSurface = surface.primary != WuxiaUi.ink;
+    final accent = _accentColor(isDarkSurface: isDarkSurface);
     final frameFill = isDarkSurface
         ? WuxiaColors.panel.withValues(alpha: 0.86)
         : WuxiaUi.paper.withValues(alpha: 0.72);
@@ -113,11 +113,14 @@ class InkEmptyState extends StatelessWidget {
     };
   }
 
-  Color _accentColor() {
+  Color _accentColor({required bool isDarkSurface}) {
     return switch (variant) {
-      InkEmptyStateVariant.empty => WuxiaUi.qing,
-      InkEmptyStateVariant.locked => WuxiaUi.jiang,
-      InkEmptyStateVariant.unavailable => WuxiaUi.muted,
+      InkEmptyStateVariant.empty =>
+        isDarkSurface ? WuxiaUi.qingOnDark : WuxiaUi.qing,
+      InkEmptyStateVariant.locked =>
+        isDarkSurface ? WuxiaColors.statDecrease : WuxiaUi.jiang,
+      InkEmptyStateVariant.unavailable =>
+        isDarkSurface ? WuxiaColors.textMuted : WuxiaUi.muted,
     };
   }
 }

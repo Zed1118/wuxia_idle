@@ -17,6 +17,9 @@ class WuxiaUi {
   static const Color paper = Color(0xFFE9DCC0); // 宣纸黄（面）
   static const Color paper2 = Color(0xFFDDCAA3);
   static const Color qing = Color(0xFF566B63); // 青灰（内息/辅）
+  // 青灰在深墨底上的同色相可读版本。用于空状态等“可行动但尚无内容”的弱强调，
+  // 避免直接把浅宣纸用 qing 放到深底后误读成禁用态。
+  static const Color qingOnDark = Color(0xFF94AFA4);
   static const Color jiang = Color(0xFF8A2B21); // 绛红（点缀/主行动）
   static const Color battleStatusPaperTop = Color(0xB85A4B3D);
   static const Color battleStatusPaperBottom = Color(0xCC2E2821);

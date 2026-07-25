@@ -18,6 +18,7 @@ import '../../onboarding/presentation/founder_creation_screen.dart';
 import '../application/save_slot_startup_service.dart';
 import '../application/slot_list_provider.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
+import '../../../shared/widgets/wuxia_ui/panel_surface.dart';
 
 /// 存档选择屏(spec B §3.2)。启动 splash 加载 defs 后进此屏,3 固定槽:
 /// 有档 → 点入直接 [switchSlot]→主菜单;空槽 → 确认「新开江湖」后同流程开新档;
@@ -368,13 +369,15 @@ class _EmptySlot extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            InkEmptyState(
-              variant: InkEmptyStateVariant.empty,
-              title: title,
-              body: UiStrings.slotSaveEmpty,
-              icon: Icons.add_circle_outline,
-              compact: true,
-              showFrame: false,
+            PanelSurface.dark(
+              child: InkEmptyState(
+                variant: InkEmptyStateVariant.empty,
+                title: title,
+                body: UiStrings.slotSaveEmpty,
+                icon: Icons.add_circle_outline,
+                compact: true,
+                showFrame: false,
+              ),
             ),
             if (allowQuickStart)
               const Padding(

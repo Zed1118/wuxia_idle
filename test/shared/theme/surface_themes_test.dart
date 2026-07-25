@@ -52,6 +52,10 @@ void main() {
       _contrastRatio(theme.colorScheme.onSurface, theme.colorScheme.surface),
       greaterThanOrEqualTo(4.5),
     );
+    expect(
+      _contrastRatio(WuxiaUi.qingOnDark, WuxiaColors.panel),
+      greaterThanOrEqualTo(4.5),
+    );
   });
 
   testWidgets('浅/深共享面板自动向 Material 子组件提供对应 Theme', (tester) async {
