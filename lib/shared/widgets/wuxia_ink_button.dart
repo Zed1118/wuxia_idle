@@ -67,6 +67,8 @@ class _WuxiaInkButtonState extends State<WuxiaInkButton> {
       enabled: _enabled,
       label: widget.label,
       hint: widget.hint,
+      value: widget.status,
+      excludeSemantics: true,
       child: FocusableActionDetector(
         enabled: _enabled,
         autofocus: widget.autofocus,

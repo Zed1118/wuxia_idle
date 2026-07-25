@@ -174,71 +174,91 @@ class _VictoryTile extends StatelessWidget {
     final dateStr = cleared != null
         ? '${cleared.year}.${cleared.month}.${cleared.day}'
         : '';
-
-    return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => BossMemoryDetailScreen(memory: memory),
-        ),
+    void openDetail() => Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BossMemoryDetailScreen(memory: memory),
       ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: WuxiaColors.panel,
-          border: Border.all(
+    );
+
+    return Semantics(
+      container: true,
+      button: true,
+      label: UiStrings.battleRecordMemorySemanticLabel(memory.bossName),
+      value: UiStrings.semanticDetails([
+        if (dateStr.isNotEmpty) UiStrings.battleRecordClearedAt(dateStr),
+        UiStrings.battleRecordDefeatCount(memory.defeatCount),
+      ]),
+      onTap: openDetail,
+      excludeSemantics: true,
+      child: Material(
+        color: WuxiaColors.panel,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+          side: BorderSide(
             color: WuxiaColors.bossFrame.withValues(alpha: 0.45),
           ),
-          borderRadius: BorderRadius.circular(4),
         ),
-        child: Row(
-          children: [
-            // 立绘方块（缺图退化纸调兜底）
-            _PortraitBox(imagePath: portraitPath),
-            const SizedBox(width: 12),
-            // Boss 名 + 日期 + 击败次数
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    memory.bossName,
-                    style: const TextStyle(
-                      color: WuxiaColors.textPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                  if (dateStr.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      UiStrings.battleRecordClearedAt(dateStr),
-                      style: const TextStyle(
-                        color: WuxiaColors.textMuted,
-                        fontSize: 12,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: openDetail,
+          overlayColor: WidgetStateProperty.resolveWith((states) {
+            return states.contains(WidgetState.focused)
+                ? WuxiaColors.bossFrame.withValues(alpha: 0.12)
+                : Colors.transparent;
+          }),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                // 立绘方块（缺图退化纸调兜底）
+                _PortraitBox(imagePath: portraitPath),
+                const SizedBox(width: 12),
+                // Boss 名 + 日期 + 击败次数
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        memory.bossName,
+                        style: const TextStyle(
+                          color: WuxiaColors.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1,
+                        ),
                       ),
-                    ),
-                  ],
-                  const SizedBox(height: 2),
-                  Text(
-                    UiStrings.battleRecordDefeatCount(memory.defeatCount),
-                    style: TextStyle(
-                      color: WuxiaColors.bossFrame.withValues(alpha: 0.9),
-                      fontSize: 12,
-                    ),
+                      if (dateStr.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          UiStrings.battleRecordClearedAt(dateStr),
+                          style: const TextStyle(
+                            color: WuxiaColors.textMuted,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 2),
+                      Text(
+                        UiStrings.battleRecordDefeatCount(memory.defeatCount),
+                        style: TextStyle(
+                          color: WuxiaColors.bossFrame.withValues(alpha: 0.9),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                // 详情箭头
+                const Icon(
+                  Icons.chevron_right,
+                  color: WuxiaColors.textMuted,
+                  size: 18,
+                ),
+              ],
             ),
-            // 详情箭头
-            const Icon(
-              Icons.chevron_right,
-              color: WuxiaColors.textMuted,
-              size: 18,
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -168,6 +168,30 @@ void main() {
     expect(find.text(UiStrings.towerBossMinor), findsOneWidget);
   });
 
+  testWidgets('掉落传闻图标具名称与按钮语义', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final progress = mkProgress();
+    await pumpScreen(tester, progress: progress);
+
+    final rumorSemantics = find
+        .byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.label == UiStrings.lootRumorDialogTitle &&
+              widget.properties.button == true,
+        )
+        .first;
+    expect(
+      tester.getSemantics(rumorSemantics),
+      isSemantics(
+        label: UiStrings.lootRumorDialogTitle,
+        isButton: true,
+        hasTapAction: true,
+      ),
+    );
+    semantics.dispose();
+  });
+
   testWidgets('点 available 层 → 进入战斗准备（Isar 未初始化显示准备失败）', (tester) async {
     final progress = mkProgress();
     await pumpScreen(tester, progress: progress);

@@ -1884,48 +1884,69 @@ class _RecipeSelector extends StatelessWidget {
               opacity: realmLocked ? 0.4 : 1.0,
               child: Tooltip(
                 message: realmLocked ? UiStrings.taohuaIslandRealmLocked : '',
-                child: GestureDetector(
+                child: Semantics(
+                  container: true,
+                  button: true,
+                  enabled: !realmLocked,
+                  selected: isActive,
+                  label: outputName,
+                  value: UiStrings.semanticDetails([
+                    if (isActive) UiStrings.semanticSelected,
+                    if (realmLocked) UiStrings.taohuaIslandRealmLocked,
+                  ]),
                   onTap: realmLocked
                       ? null
                       : () => _onSelectRecipe(context, recipe.recipeId),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? WuxiaUi.qing.withValues(alpha: 0.15)
-                          : WuxiaUi.paper2.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: isActive
-                            ? WuxiaUi.qing
-                            : WuxiaUi.ink.withValues(alpha: 0.3),
-                        width: WuxiaUi.borderWidth,
+                  excludeSemantics: true,
+                  child: InkWell(
+                    onTap: realmLocked
+                        ? null
+                        : () => _onSelectRecipe(context, recipe.recipeId),
+                    borderRadius: BorderRadius.circular(4),
+                    overlayColor: WidgetStateProperty.resolveWith((states) {
+                      return states.contains(WidgetState.focused)
+                          ? WuxiaUi.qing.withValues(alpha: 0.12)
+                          : Colors.transparent;
+                    }),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
                       ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (isActive)
-                          const Icon(
-                            Icons.check,
-                            size: 12,
-                            color: WuxiaUi.qing,
-                          ),
-                        if (isActive) const SizedBox(width: 4),
-                        Text(
-                          outputName,
-                          style: TextStyle(
-                            color: isActive ? WuxiaUi.qing : WuxiaUi.ink2,
-                            fontSize: 13,
-                            fontWeight: isActive
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                          ),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? WuxiaUi.qing.withValues(alpha: 0.15)
+                            : WuxiaUi.paper2.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: isActive
+                              ? WuxiaUi.qing
+                              : WuxiaUi.ink.withValues(alpha: 0.3),
+                          width: WuxiaUi.borderWidth,
                         ),
-                      ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isActive)
+                            const Icon(
+                              Icons.check,
+                              size: 12,
+                              color: WuxiaUi.qing,
+                            ),
+                          if (isActive) const SizedBox(width: 4),
+                          Text(
+                            outputName,
+                            style: TextStyle(
+                              color: isActive ? WuxiaUi.qing : WuxiaUi.ink2,
+                              fontSize: 13,
+                              fontWeight: isActive
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

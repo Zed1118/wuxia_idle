@@ -38,6 +38,7 @@ class ContextHelpButton extends ConsumerWidget {
     // 无长说明：点击弹短释义浮层。
     if (codexId == null) {
       return _wrap(
+        label: binding.label,
         definition: binding.shortText,
         enabled: true,
         onTap: () => _showInfoPopup(context, binding.label, binding.shortText),
@@ -64,6 +65,7 @@ class ContextHelpButton extends ConsumerWidget {
     // 未解锁：灰显，点击给「阅历未至」反馈（不剧透）。
     if (!unlocked) {
       return _wrap(
+        label: binding.label,
         definition: UiStrings.contextHelpLocked,
         enabled: false,
         onTap: () =>
@@ -73,6 +75,7 @@ class ContextHelpButton extends ConsumerWidget {
 
     final entry = match!.entry!;
     return _wrap(
+      label: binding.label,
       definition: binding.shortText,
       enabled: true,
       onTap: () => Navigator.of(context).push(
@@ -83,19 +86,28 @@ class ContextHelpButton extends ConsumerWidget {
 
   /// 统一外壳：hover tooltip + 放大点击热区 InkWell + `?` 图标。
   Widget _wrap({
+    required String label,
     required String definition,
     required bool enabled,
     required VoidCallback onTap,
   }) {
-    return GlossaryTip(
-      definition: definition,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(_hitSize / 2),
-        onTap: onTap,
-        child: SizedBox(
-          width: _hitSize,
-          height: _hitSize,
-          child: Center(child: _icon(enabled: enabled)),
+    return Semantics(
+      button: true,
+      enabled: true,
+      label: UiStrings.contextHelpSemanticLabel(label),
+      hint: definition,
+      onTap: onTap,
+      excludeSemantics: true,
+      child: GlossaryTip(
+        definition: definition,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(_hitSize / 2),
+          onTap: onTap,
+          child: SizedBox(
+            width: _hitSize,
+            height: _hitSize,
+            child: Center(child: _icon(enabled: enabled)),
+          ),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/glossary_tip.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
 
@@ -81,6 +82,30 @@ void main() {
       await tester.tap(find.text('身法'));
       await tester.pumpAndSettle();
       expect(find.byType(PaperDialog), findsNothing);
+    });
+
+    testWidgets('? 标记有明确的释义按钮语义', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        host(const GlossaryLabel(label: '身法', definition: '身法：决定出手速度与闪避。')),
+      );
+
+      final markerSemantics = find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.label == UiStrings.glossarySemanticLabel('身法'),
+      );
+      expect(markerSemantics, findsOneWidget);
+      expect(
+        tester.getSemantics(markerSemantics),
+        isSemantics(
+          label: UiStrings.glossarySemanticLabel('身法'),
+          hint: '身法：决定出手速度与闪避。',
+          isButton: true,
+          hasTapAction: true,
+        ),
+      );
+      semantics.dispose();
     });
   });
 }

@@ -1127,6 +1127,7 @@ class _EquipmentGridTile extends ConsumerWidget {
       slot: ItemSlot(
         imagePath: def?.iconPath,
         name: '',
+        semanticLabel: name,
         tierColor: color,
         equipmentSlot: eq.slot,
         enhanceLevel: eq.enhanceLevel,

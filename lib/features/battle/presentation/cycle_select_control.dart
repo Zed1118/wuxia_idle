@@ -165,52 +165,67 @@ class _CycleButton extends StatelessWidget {
         ? WuxiaColors.gangMeng
         : WuxiaColors.textMuted;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
+    final content = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: selected
+            ? accent.withValues(alpha: 0.22)
+            : (isChallenge ? WuxiaColors.panel : WuxiaColors.background),
+        border: Border.all(
           color: selected
-              ? accent.withValues(alpha: 0.22)
-              : (isChallenge ? WuxiaColors.panel : WuxiaColors.background),
-          border: Border.all(
-            color: selected
-                ? accent
-                : (isChallenge
-                      ? WuxiaColors.resultHighlight.withValues(alpha: 0.5)
-                      : WuxiaColors.border),
-            width: selected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(4),
+              ? accent
+              : (isChallenge
+                    ? WuxiaColors.resultHighlight.withValues(alpha: 0.5)
+                    : WuxiaColors.border),
+          width: selected ? 2 : 1,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                if (selected) ...[
-                  const Icon(
-                    Icons.check,
-                    size: 13,
-                    color: WuxiaColors.textPrimary,
-                  ),
-                  const SizedBox(width: 4),
-                ],
-                Text(
-                  cycleLabel,
-                  style: TextStyle(
-                    color: labelColor,
-                    fontSize: 13,
-                    fontWeight: (isChallenge || selected)
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              if (selected) ...[
+                const Icon(
+                  Icons.check,
+                  size: 13,
+                  color: WuxiaColors.textPrimary,
                 ),
+                const SizedBox(width: 4),
               ],
-            ),
-            Text(suffix, style: TextStyle(color: suffixColor, fontSize: 11)),
-          ],
-        ),
+              Text(
+                cycleLabel,
+                style: TextStyle(
+                  color: labelColor,
+                  fontSize: 13,
+                  fontWeight: (isChallenge || selected)
+                      ? FontWeight.w600
+                      : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+          Text(suffix, style: TextStyle(color: suffixColor, fontSize: 11)),
+        ],
+      ),
+    );
+    return Semantics(
+      container: true,
+      button: true,
+      selected: selected,
+      label: UiStrings.semanticDetails([cycleLabel, suffix]),
+      onTap: onTap,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        overlayColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.focused)
+              ? accent.withValues(alpha: 0.12)
+              : Colors.transparent;
+        }),
+        child: content,
       ),
     );
   }

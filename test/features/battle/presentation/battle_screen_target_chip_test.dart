@@ -160,6 +160,7 @@ void main() {
 
   group('单体技 · 多敌选择栏', () {
     testWidgets('≥2 敌时点单体技 → 进待发 + 选择栏显 N 个 chip', (tester) async {
+      final semantics = tester.ensureSemantics();
       final (left, right) = BattleDemo.mockTeams(); // 3 敌
       final focus = left.first.copyWith(availableSkills: [_single]);
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
@@ -179,6 +180,22 @@ void main() {
         findsNothing,
         reason: '死敌无选择 chip',
       );
+      final firstAlive = right.firstWhere((enemy) => enemy.currentHp > 0);
+      expect(
+        tester.getSemantics(
+          find.byKey(ValueKey('target_chip_${firstAlive.characterId}')),
+        ),
+        isSemantics(
+          label: firstAlive.name,
+          value: UiStrings.battleTargetHealth(
+            firstAlive.currentHp,
+            firstAlive.maxHp,
+          ),
+          isButton: true,
+          hasTapAction: true,
+        ),
+      );
+      semantics.dispose();
     });
 
     testWidgets('点选择栏 chip → 对该敌出手并清待发', (tester) async {

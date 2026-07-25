@@ -826,6 +826,15 @@ class UiStrings {
 
   /// 页面级帮助 `?` 未解锁时的气泡（吃 CodexIndex step gating，不剧透机制）。
   static const String contextHelpLocked = '阅历未至，待你历练更深，再来翻阅。';
+  static String contextHelpSemanticLabel(String label) => '查看“$label”帮助';
+  static String glossarySemanticLabel(String label) => '查看“$label”释义';
+  static String semanticDetails(Iterable<String?> details) =>
+      details.whereType<String>().where((text) => text.isNotEmpty).join('，');
+  static String battleTargetHealth(int current, int max) =>
+      '$statHp $current / $max';
+  static String battleRecordMemorySemanticLabel(String name) => '查看“$name”战绩';
+  static String treasureDropContinueSemanticLabel(String name) =>
+      '获得“$name”，继续';
 
   /// 内力当前/上限文案：`X / Y`。
   static String internalForceValue(int current, int max) => '$current / $max';
@@ -3300,6 +3309,7 @@ class UiStrings {
 
   /// 建筑选配方按钮。
   static const String taohuaIslandSelectRecipe = '选配方';
+  static const String semanticSelected = '已选中';
 
   /// 建筑收取按钮。
   static const String taohuaIslandHarvest = '收取';

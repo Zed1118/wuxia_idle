@@ -45,6 +45,7 @@ void main() {
   testWidgets('codexEntryId == null（属性 topic）→ hover tooltip + 点击弹短释义浮层', (
     tester,
   ) async {
+    final semantics = tester.ensureSemantics();
     await pump(tester, topic: HelpTopic.constitution, step: 8);
 
     expect(find.byIcon(Icons.help_outline), findsOneWidget);
@@ -57,6 +58,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(PaperDialog), findsOneWidget);
     expect(find.text(UiStrings.glossaryConstitution), findsWidgets);
+    semantics.dispose();
   });
 
   testWidgets('codex topic 已解锁（step=8）→ 可点击跳 CodexEntryDetail', (tester) async {
@@ -88,5 +90,23 @@ void main() {
     final size = tester.getSize(find.byType(InkWell));
     expect(size.width, greaterThanOrEqualTo(36));
     expect(size.height, greaterThanOrEqualTo(36));
+  });
+
+  testWidgets('帮助入口有可理解的按钮名称、提示与点击语义', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await pump(tester, topic: HelpTopic.constitution, step: 8);
+
+    final node = tester.getSemantics(find.byType(ContextHelpButton));
+    expect(
+      node,
+      isSemantics(
+        label: UiStrings.contextHelpSemanticLabel(UiStrings.attrConstitution),
+        hint: UiStrings.glossaryConstitution,
+        isButton: true,
+        isEnabled: true,
+        hasTapAction: true,
+      ),
+    );
+    semantics.dispose();
   });
 }

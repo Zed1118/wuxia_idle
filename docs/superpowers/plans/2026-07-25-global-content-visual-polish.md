@@ -94,7 +94,7 @@
 
 ## 当前恢复点
 
-- **状态**：Slice 8 内容、术语、资源与无障碍检查进行中；内容资源和正式界面术语已收口，下一步为无障碍与全局终验。
+- **状态**：Slice 8 内容、术语、资源与无障碍检查已完成；下一步只做全量 analyze/test/visual route 终验、冲突预检与 `[READY]` 收口。
 - **最后完成**：
   - Slice 1 章节路引已提交：`c5e9afc7`；
   - 新增 `paperSurfaceTheme`，统一浅宣纸上的 ColorScheme、TextTheme、ListTile、Switch、Slider、Dropdown、Menu、输入框、禁用态与交互态；
@@ -160,10 +160,10 @@
   - 透明成品统一收为 768×768 调色板 PNG，总体积约 2.58 MiB，与原 1254×1254 不透明源图同量级；仓库 80px 图格、商店与来源表所需 Retina 清晰度仍有充足余量；
   - 新增物品成品图门禁：固定覆盖 14 图、最小 512×512、四角透明、透明像素占比 ≥30%、主体非空，防止编辑器棋盘格再次进入发布包。
 - **下一步**：
-  1. 扫描玩家可见文案中的术语漂移、重复前缀、内部字段名、占位文本与全半角细节；
-  2. 复查物品/人物/场景资源的透明、裁切、编辑器底纹和低质量占位；
-  3. 补键盘焦点、语义标签、非纯颜色状态与窄高窗口门禁；
-  4. 独立提交内容与无障碍切片，再进入全量 analyze/test/visual route 终验。
+  1. 提交 Slice 8 无障碍恢复点；
+  2. 跑全量 `flutter test`、`flutter analyze`、视觉与资产门禁；
+  3. 跑全部视觉路由双视口并人工抽查关键页面；
+  4. 对主工作树做只读冲突预检，更新恢复点并提交 `[READY]`。
 - **已跑验证**：
   - 建分支前主线视觉/资产 targeted tests：55 pass / 0 fail；
   - 建分支前 `flutter analyze`：0 issue；
@@ -224,6 +224,11 @@
   - 术语与相关系统回归 315 pass / 0 fail，`flutter analyze` 0 issue；
   - `settings_panel_bottom`、`character_panel`、`chapter_list`、`stage_list`、`tower_floor_list`、`battle_defeat`、`taohua_island`、`stage_retry_dialog` × 1280×720、1440×900，16/16 READY 且无 overflow/exception；人工确认标签加长未改变原卡宽、节点、信息顺序或操作路径。
   - 真实时长统一为“小时 / 分”，`seclusion_active`、`seclusion_setup`、`expedition_active`、`taohua_island` × 1280×720、1440×900，8/8 READY 且无 overflow/exception；`seclusion_active` 追加 2/2 复验，整数时长不再显示多余小数或重复单位。
+  - 无障碍扫描覆盖共享入口、正式 `IconButton`、76 处 `InkWell/GestureDetector` 使用点；所有正式原生图标按钮均有 tooltip，自动过场与已有等价按钮的点击面保持原流程；
+  - 页面帮助与术语 `?`、仓库物品格、主菜单入口、周目选项、桃花岛配方、战斗目标、战绩纪念卡、塔层掉落传闻均补齐可访问名称、按钮/选中/禁用状态与点击动作；物品格会朗读真实装备名、品阶、强化、锁定和保护状态；
+  - 周目与配方改用可聚焦 `InkWell`，只在键盘 focus 时出现既有色相的克制反馈；爆品停留态增加 live-region 与 Enter/Space 激活，鼠标点击、动画时间轴和停留规则不变；
+  - 无障碍相关 11 组测试 125 pass / 0 fail，`flutter analyze` 0 issue；
+  - `stage_list_cycle`、`battle_tap_live`、`inventory`、`taohua_island`、`battle_record`、`tower_floor_list`、`battle_treasure_glow_rest`、`taohua_building_popup` × 1280×720、1440×900，16/16 READY 且无 overflow/exception；人工确认常态像素、卡片宽高、信息顺序和操作路径未漂移。
 - **阻塞项**：无。
 - **残留风险**：
   - 伪文字规则和跨平台正式字体方案仍需后续设计拍板；

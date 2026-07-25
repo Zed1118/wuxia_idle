@@ -299,47 +299,67 @@ class _TreasureDropOverlayState extends State<TreasureDropOverlay>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _finish, // 点击跳过
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        color: const Color(0xB3000000), // 半透明暗幕
-        child: AnimatedBuilder(
-          animation: _ctrl,
-          builder: (_, _) {
-            final t = _ctrl.value;
-            return Stack(
-              children: [
-                Positioned.fill(
-                  child: TreasureDropContent(highlight: widget.highlight, t: t),
-                ),
-                // 神物专属金光层(辉光 + 盖章金闪 + 双环涟漪)。拆出 TreasureGlowLayer:
-                // 既给固定 t 视觉验收路由复用,也便于 tier-gate widget test。
-                Positioned.fill(
-                  child: TreasureGlowLayer(tier: widget.highlight.tier, t: t),
-                ),
-                // 「轻触继续」提示(动画末期淡入,引导停留后手动继续)
-                Positioned(
-                  bottom: 40,
-                  left: 0,
-                  right: 0,
-                  child: Opacity(
-                    opacity: ((t - 0.5) / 0.3).clamp(0.0, 1.0),
-                    child: const Text(
-                      UiStrings.splashTapToContinue,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Color(0x99FFFFFF),
-                        fontSize: 12,
-                        letterSpacing: 2,
-                        shadows: [Shadow(color: Colors.black, blurRadius: 4)],
-                      ),
+    final content = Container(
+      color: const Color(0xB3000000), // 半透明暗幕
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (_, _) {
+          final t = _ctrl.value;
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: TreasureDropContent(highlight: widget.highlight, t: t),
+              ),
+              // 神物专属金光层(辉光 + 盖章金闪 + 双环涟漪)。拆出 TreasureGlowLayer:
+              // 既给固定 t 视觉验收路由复用,也便于 tier-gate widget test。
+              Positioned.fill(
+                child: TreasureGlowLayer(tier: widget.highlight.tier, t: t),
+              ),
+              // 「轻触继续」提示(动画末期淡入,引导停留后手动继续)
+              Positioned(
+                bottom: 40,
+                left: 0,
+                right: 0,
+                child: Opacity(
+                  opacity: ((t - 0.5) / 0.3).clamp(0.0, 1.0),
+                  child: const Text(
+                    UiStrings.splashTapToContinue,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0x99FFFFFF),
+                      fontSize: 12,
+                      letterSpacing: 2,
+                      shadows: [Shadow(color: Colors.black, blurRadius: 4)],
                     ),
                   ),
                 ),
-              ],
-            );
-          },
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      liveRegion: true,
+      button: true,
+      label: UiStrings.treasureDropContinueSemanticLabel(widget.highlight.name),
+      onTap: _finish,
+      child: FocusableActionDetector(
+        autofocus: true,
+        actions: <Type, Action<Intent>>{
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              _finish();
+              return null;
+            },
+          ),
+        },
+        child: GestureDetector(
+          onTap: _finish, // 点击跳过
+          behavior: HitTestBehavior.opaque,
+          child: content,
         ),
       ),
     );

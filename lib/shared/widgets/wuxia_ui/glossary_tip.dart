@@ -111,20 +111,28 @@ class GlossaryLabel extends StatelessWidget {
           // 标记本身可点 → 弹释义浮层（2026-06-19 修：原内联 `?` 纯 hover、桌面端
           // 点击无反馈）。**只裹 marker、不裹整行**：保住父级（如 StageProgressRow
           // 的 InkWell）的 onTap 不被抢；横向 padding 扩点击区、不改行高。
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
+          Semantics(
+            container: true,
+            button: true,
+            label: UiStrings.glossarySemanticLabel(label),
+            hint: definition,
             onTap: () => _showDefinitionPopup(context),
-            child: Padding(
-              // 上标式微抬 + 横向扩点击区（纵向不扩免抬行高）。
-              padding: const EdgeInsets.only(top: 1, left: 1, right: 5),
-              child: Text(
-                marker,
-                style: TextStyle(
-                  // 「?」标记直接排在父面板纸底上（inline），随所在面板底
-                  // 翻转取次要色；调用方显式传 markerColor 则优先。
-                  color: markerColor ?? PanelSurface.of(context).secondary,
-                  fontSize: markerSize.toDouble(),
-                  fontWeight: FontWeight.w700,
+            excludeSemantics: true,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _showDefinitionPopup(context),
+              child: Padding(
+                // 上标式微抬 + 横向扩点击区（纵向不扩免抬行高）。
+                padding: const EdgeInsets.only(top: 1, left: 1, right: 5),
+                child: Text(
+                  marker,
+                  style: TextStyle(
+                    // 「?」标记直接排在父面板纸底上（inline），随所在面板底
+                    // 翻转取次要色；调用方显式传 markerColor 则优先。
+                    color: markerColor ?? PanelSurface.of(context).secondary,
+                    fontSize: markerSize.toDouble(),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),

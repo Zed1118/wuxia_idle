@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/battle_state.dart';
+import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
 import '../../../../shared/widgets/asset_fallback.dart';
 import '../../../../shared/widgets/wuxia_image.dart';
@@ -80,59 +81,74 @@ class TargetChip extends StatelessWidget {
         ),
       ),
     );
-    return MouseRegion(
-      onEnter: (_) => onHover(true),
-      onExit: (_) => onHover(false),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 52,
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: WuxiaColors.sidebar,
-            border: Border.all(
-              color: hovered ? color : WuxiaColors.border,
-              width: hovered ? 2 : 1,
+    final content = Container(
+      width: 52,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: WuxiaColors.sidebar,
+        border: Border.all(
+          color: hovered ? color : WuxiaColors.border,
+          width: hovered ? 2 : 1,
+        ),
+        borderRadius: BorderRadius.circular(6),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClipOval(
+            child: SizedBox(
+              width: 32,
+              height: 32,
+              child: hasIcon
+                  ? WuxiaImage(
+                      enemy.iconPath!,
+                      width: 32,
+                      height: 32,
+                      fit: BoxFit.cover,
+                      errorBuilder: wuxiaAssetErrorBuilder(() => glyph),
+                    )
+                  : glyph,
             ),
-            borderRadius: BorderRadius.circular(6),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x66000000),
-                blurRadius: 6,
-                offset: Offset(0, 2),
-              ),
-            ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipOval(
-                child: SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: hasIcon
-                      ? WuxiaImage(
-                          enemy.iconPath!,
-                          width: 32,
-                          height: 32,
-                          fit: BoxFit.cover,
-                          errorBuilder: wuxiaAssetErrorBuilder(() => glyph),
-                        )
-                      : glyph,
-                ),
-              ),
-              const SizedBox(height: 3),
-              SizedBox(
-                width: 40,
-                child: HpBar(
-                  current: enemy.currentHp,
-                  max: enemy.maxHp,
-                  height: 4,
-                  showLabel: false,
-                ),
-              ),
-            ],
+          const SizedBox(height: 3),
+          SizedBox(
+            width: 40,
+            child: HpBar(
+              current: enemy.currentHp,
+              max: enemy.maxHp,
+              height: 4,
+              showLabel: false,
+            ),
           ),
+        ],
+      ),
+    );
+    return Semantics(
+      container: true,
+      button: true,
+      label: enemy.name,
+      value: UiStrings.battleTargetHealth(enemy.currentHp, enemy.maxHp),
+      onTap: onTap,
+      excludeSemantics: true,
+      child: MouseRegion(
+        onEnter: (_) => onHover(true),
+        onExit: (_) => onHover(false),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(6),
+          overlayColor: WidgetStateProperty.resolveWith((states) {
+            return states.contains(WidgetState.focused)
+                ? color.withValues(alpha: 0.16)
+                : Colors.transparent;
+          }),
+          child: content,
         ),
       ),
     );

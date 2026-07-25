@@ -264,6 +264,32 @@ void main() {
       expect(find.text(UiStrings.taohuaIslandSelectRecipe), findsOneWidget);
     });
 
+    testWidgets('配方选项具按钮、选中与锁定语义', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pump(tester, wrap(buildTestView()));
+      await selectBuilding(tester, BuildingType.daZaoTai);
+
+      final selectedRecipe = find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.label == '磨剑石' &&
+            widget.properties.selected == true,
+      );
+      expect(selectedRecipe, findsOneWidget);
+      expect(
+        tester.getSemantics(selectedRecipe),
+        isSemantics(
+          label: '磨剑石',
+          value: UiStrings.semanticSelected,
+          isButton: true,
+          isEnabled: true,
+          isSelected: true,
+          hasTapAction: true,
+        ),
+      );
+      semantics.dispose();
+    });
+
     testWidgets('点击不同加工建筑后产出中 / 已停标签正确', (tester) async {
       await pump(tester, wrap(buildTestView()));
 

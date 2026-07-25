@@ -21,6 +21,8 @@ void main() {
     bool selected = false,
     IconData? leadingBadgeIcon,
     IconData? trailingBadgeIcon,
+    String? semanticLabel,
+    VoidCallback? onTap,
   }) => ItemSlot(
     imagePath: imagePath,
     name: '青锋剑',
@@ -37,6 +39,8 @@ void main() {
     selected: selected,
     leadingBadgeIcon: leadingBadgeIcon,
     trailingBadgeIcon: trailingBadgeIcon,
+    semanticLabel: semanticLabel,
+    onTap: onTap,
   );
 
   BoxDecoration cellDeco(WidgetTester tester) =>
@@ -121,5 +125,36 @@ void main() {
     await tester.pumpWidget(host(slot(imagePath: null, selected: true)));
     final selected = cellDeco(tester);
     expect((selected.border as Border).top.color, WuxiaUi.jiang);
+  });
+
+  testWidgets('可点击物品格用真实装备名与状态组成单一语义节点', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      host(
+        slot(
+          enhanceLevel: 7,
+          locked: true,
+          statusText: '装备中',
+          tierLabel: '利器',
+          protected: true,
+          selected: true,
+          semanticLabel: '龙泉剑',
+          onTap: () {},
+        ),
+      ),
+    );
+
+    expect(
+      tester.getSemantics(find.byType(ItemSlot)),
+      isSemantics(
+        label: '龙泉剑',
+        value: '利器，强化等级 +7，装备中，受保护，未达境界',
+        isButton: true,
+        isEnabled: true,
+        isSelected: true,
+        hasTapAction: true,
+      ),
+    );
+    semantics.dispose();
   });
 }

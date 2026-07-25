@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
@@ -95,6 +96,46 @@ void main() {
     await tester.tap(find.textContaining(UiStrings.cycleChallengeNextLabel(2)));
     await tester.pumpAndSettle();
     expect(c.read(selectedChallengeCycleForCurrentSlot(chapterKey)), 2);
+  });
+
+  testWidgets('周目选项具按钮、选中语义并可用键盘切换', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final c = makeContainer(progress: progressWithCycles([1]), maxCycle: 3);
+    addTearDown(c.dispose);
+    await tester.pumpWidget(host(c));
+    await tester.pumpAndSettle();
+
+    final replaySemantics = find.byWidgetPredicate(
+      (widget) =>
+          widget is Semantics &&
+          widget.properties.label ==
+              UiStrings.semanticDetails([
+                UiStrings.cycleNthLabel(1),
+                UiStrings.cycleReplayCurrentSuffix,
+              ]),
+    );
+    expect(
+      tester.getSemantics(replaySemantics),
+      isSemantics(
+        label: UiStrings.semanticDetails([
+          UiStrings.cycleNthLabel(1),
+          UiStrings.cycleReplayCurrentSuffix,
+        ]),
+        isButton: true,
+        isSelected: true,
+        hasTapAction: true,
+      ),
+    );
+    expect(find.byType(InkWell), findsNWidgets(2));
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(c.read(selectedChallengeCycleForCurrentSlot(chapterKey)), 2);
+    semantics.dispose();
   });
 
   testWidgets('点「回放第1周目」→ 写 selectedChallengeCycleProvider=1', (tester) async {
