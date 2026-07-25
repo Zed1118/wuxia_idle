@@ -130,7 +130,7 @@ void main() {
     expect(find.text(UiStrings.skillCodexLocked), findsNothing);
   });
 
-  testWidgets('详情屏同步显 招名+description+倍率+未练', (tester) async {
+  testWidgets('详情屏同步显 招名+description+威力+未练', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 2000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final def = _s('po_shi', SkillSource.special, ci: true);

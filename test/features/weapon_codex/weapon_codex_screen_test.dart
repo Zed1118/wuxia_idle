@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/weapon_codex/application/equipment_catalog_p
 import 'package:wuxia_idle/features/weapon_codex/domain/equipment_catalog_entry.dart';
 import 'package:wuxia_idle/features/weapon_codex/presentation/weapon_codex_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/colors.dart';
 import '../../support/test_data.dart';
 
 /// 真实 def id（来自 data/equipment.yaml）。
@@ -53,6 +54,14 @@ void main() {
     expect(find.text(_acquiredWeaponName), findsOneWidget);
     // 大量未点亮件显剪影占位文案
     expect(find.text(UiStrings.weaponCodexLockedItem), findsWidgets);
+    final lockedLabel = tester.widget<Text>(
+      find.text(UiStrings.weaponCodexLockedItem).first,
+    );
+    expect(lockedLabel.style?.color, WuxiaColors.textSecondary);
+    expect(
+      find.descendant(of: find.byType(Material), matching: find.byType(Ink)),
+      findsWidgets,
+    );
   });
 
   testWidgets('点「护甲」筛选 chip → 兵器件(已点亮的铁剑)消失,护甲件留', (tester) async {

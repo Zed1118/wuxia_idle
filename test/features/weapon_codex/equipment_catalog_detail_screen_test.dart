@@ -56,6 +56,11 @@ void main() {
     expect(find.text(UiStrings.weaponCodexHistoryUnknown), findsNothing);
     // 历得次数始终显示
     expect(find.text(UiStrings.weaponCodexObtainedCount(3)), findsOneWidget);
+    expect(find.text(UiStrings.weaponCodexDetailSpecialSkills), findsOneWidget);
+    expect(
+      find.text(UiStrings.weaponCodexDetailSpecialSkillsCount(2)),
+      findsOneWidget,
+    );
   });
 
   testWidgets('回填态：显示「来历已不可考」，不显日期', (tester) async {

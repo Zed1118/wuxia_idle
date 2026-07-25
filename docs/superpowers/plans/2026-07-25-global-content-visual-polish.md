@@ -94,7 +94,7 @@
 
 ## 当前恢复点
 
-- **状态**：Slice 6 已完成；进入 Slice 7 长尾系统。
+- **状态**：Slice 7 进行中；档案簇已完成，下一簇为远行/断魂庄/弹层流程。
 - **最后完成**：
   - Slice 1 章节路引已提交：`c5e9afc7`；
   - 新增 `paperSurfaceTheme`，统一浅宣纸上的 ColorScheme、TextTheme、ListTile、Switch、Slider、Dropdown、Menu、输入框、禁用态与交互态；
@@ -146,9 +146,15 @@
   - 新增 `goldOnPaper` 同色相纸面金文字 sink，对宣纸达到 4.5:1；亮金装帧边框、进度条和深底金色不变；
   - 闭关活跃地图卡的纸面门槛/状态标签、圆满印与完成提示、结果路线编号、采集事件图标和跨境界徽记改用纸面金，不再把装帧亮金直接用作浅底小字；
   - 桃花岛满载热区在原“产出进度”单行槽内改显“仓储已满”，金色满条、建筑热区位置、宽高与点击详情路径均不变；满载不再只靠颜色表达。
+  - 长尾档案簇先跑门派、战绩册、兵器谱、门派谱、奇遇/武学图鉴、藏卷阁、资源总览 14 条 route 双视口基线；门派、战绩、门派谱、奇遇/武学列表未发现可在“不改布局”边界内成立的明确视觉缺陷，保留现状；
+  - 兵器谱已获得/未获得卡原有深墨 `Ink` 牌面因缺局部 `Material` 被画到宣纸后方，现补本地透明 Material 使原深墨卡面、品阶边和点击涟漪按声明呈现；92px 卡宽、Wrap 行列与筛选路径不变；
+  - 兵器详情继续保持两张 760 宽纸卡，仅把“开锋候选技 1”孤字断行收为“开锋候选 1 式”；
+  - 藏卷阁线索标题从深底亮金改为纸面金，四部卷册与 760 宽纵列不变；
+  - 资源总览保留原左侧卡宽和分组，把“来源：主要来源：”重复标题收为单一“来源：”；
+  - 玩家可见的招式 `powerMultiplier` 统一标为“威力”而非易误读为乘数的“倍率”；数值与伤害计算完全不变，武学详情、战斗技能浮层和角色招式信息共享同一 `UiStrings`。
 - **下一步**：
-  1. 进入门派、门派谱、见闻录、技能库、兵器谱、战绩册等长尾档案页；
-  2. 再复查资源总览、江湖远行、断魂庄、藏卷阁和归来/奖励/失败/确认弹层；
+  1. 复查江湖远行总览/在途/归来、断魂庄装载/关间/奖励/失败；
+  2. 复查归来、购买/使用、奖励、失败、重试与确认弹层；
   3. 先修明确的溢出、过密、低对比、disabled/hover/focus 和状态反馈瑕疵；
   4. 每个功能簇单独提交，并以 1280×720、1440×900 生产 route 验收。
 - **已跑验证**：
@@ -196,6 +202,10 @@
   - Slice 6E seclusion/taohua/theme targeted tests：61 pass / 0 fail；
   - Slice 6E `flutter analyze`：0 issue；
   - Slice 6E 真窗口截图：`seclusion_map_list`、`seclusion_setup`、`seclusion_active`、`seclusion_result`、`taohua_island` × 1280×720、1440×900，10/10 READY 且无 overflow/exception；人工确认原地图构图、卡片几何、闭关流程与桃花岛点击路径不变。
+  - Slice 7A archive/resource/baike/battle 扩展回归：78 pass / 0 fail；
+  - Slice 7A `flutter analyze`：0 issue；
+  - Slice 7A 基线截图：14 route × 1280×720、1440×900，28/28 READY 且无 overflow/exception；
+  - Slice 7A 修复后截图：`weapon_codex`、`weapon_codex_detail`、`zangjuange`、`resource_overview`、`skill_codex_detail` × 1280×720、1440×900，10/10 READY 且无 overflow/exception；人工确认页面宽度、卡位、网格、分组和导航不变。
 - **阻塞项**：无。
 - **残留风险**：
   - 伪文字规则和跨平台正式字体方案仍需后续设计拍板；

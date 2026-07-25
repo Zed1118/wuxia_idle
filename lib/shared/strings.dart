@@ -157,7 +157,7 @@ class UiStrings {
   // 字段标签（左列），值由活数据 / EnumL10n 填。
   static const String skillInfoType = '类型';
   static const String skillInfoTarget = '目标';
-  static const String skillInfoPower = '倍率';
+  static const String skillInfoPower = '威力';
   static const String skillInfoCost = '真气';
   static const String skillInfoCooldown = '冷却';
   static const String skillInfoTrait = '特性';
@@ -970,11 +970,16 @@ class UiStrings {
 
   /// 物料主要来源摘要。空 = 不显。
   static String materialSourceSummary(List<ItemSource> sources) {
+    final summary = materialSourceLabelsSummary(sources);
+    return summary.isEmpty ? '' : '$materialSourcePrefix$summary';
+  }
+
+  /// 物料来源名称摘要，不含标题前缀，供已有独立「来源」标签的页面消费。
+  static String materialSourceLabelsSummary(List<ItemSource> sources) {
     final labels = <String>{
       for (final source in sources) itemSourceLabel(source),
     }..remove('');
-    if (labels.isEmpty) return '';
-    return '$materialSourcePrefix${labels.take(6).join(' / ')}';
+    return labels.take(6).join(' / ');
   }
 
   static const String materialSourcePrefix = '主要来源：';
@@ -2340,7 +2345,7 @@ class UiStrings {
   static const String skillCodexProficiencyPrefix = '造诣';
   static const String skillCodexProficiencyNone = '未曾习练';
   static const String skillCodexBelongTo = '所属';
-  static const String skillCodexMultiplier = '倍率';
+  static const String skillCodexMultiplier = '威力';
   static const String skillCodexCost = '真气';
   static const String skillCodexCooldown = '冷却';
   static const String skillCodexManualSection = '秘本纲要';
@@ -3171,7 +3176,8 @@ class UiStrings {
   static const String weaponCodexDetailAttackRange = '攻击';
   static const String weaponCodexDetailHealthRange = '生命';
   static const String weaponCodexDetailSpeedRange = '速度';
-  static const String weaponCodexDetailSpecialSkills = '开锋候选技';
+  static const String weaponCodexDetailSpecialSkills = '开锋候选';
+  static String weaponCodexDetailSpecialSkillsCount(int count) => '$count 式';
   static const String weaponCodexDetailLineage = '师承遗物·境界相称方可佩用';
   static String weaponCodexDetailRange(int min, int max) =>
       min == max ? '$min' : '$min ~ $max';

@@ -158,7 +158,9 @@ class _ArchivePanelContent extends StatelessWidget {
         if (def.specialSkillCandidates.isNotEmpty)
           _ArchiveRow(
             label: UiStrings.weaponCodexDetailSpecialSkills,
-            value: '${def.specialSkillCandidates.length}',
+            value: UiStrings.weaponCodexDetailSpecialSkillsCount(
+              def.specialSkillCandidates.length,
+            ),
           ),
         if (def.isLineageHeritage) ...[
           const SizedBox(height: 4),
