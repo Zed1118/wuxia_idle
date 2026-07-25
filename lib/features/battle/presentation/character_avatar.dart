@@ -898,6 +898,17 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/guanshan_shahai_zongpiao.png',
   'assets/enemies/guanshan_shouguan_laojiang.png':
       'assets/enemies/guanshan_shouguan_laojiang.png',
+  // Ch16「凉州词」5 敌立绘(codex image_gen·透明全身图)
+  'assets/enemies/liangzhou_songguan_jiubu.png':
+      'assets/enemies/liangzhou_songguan_jiubu.png',
+  'assets/enemies/liangzhou_heishi_shoujing.png':
+      'assets/enemies/liangzhou_heishi_shoujing.png',
+  'assets/enemies/liangzhou_xiliang_xingke.png':
+      'assets/enemies/liangzhou_xiliang_xingke.png',
+  'assets/enemies/liangzhou_youqi_jiang.png':
+      'assets/enemies/liangzhou_youqi_jiang.png',
+  'assets/enemies/liangzhou_jieguan_ren.png':
+      'assets/enemies/liangzhou_jieguan_ren.png',
   'assets/enemies/enemy_gauntlet_su_wujiu.png':
       WuxiaUi.battleGauntletSuWujiuStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':
@@ -1073,6 +1084,12 @@ double _stageStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/guanshan_xingjiao_seng.png' => 0.962,
   'assets/enemies/guanshan_shahai_zongpiao.png' => 0.990,
   'assets/enemies/guanshan_shouguan_laojiang.png' => 0.959,
+  // Ch16「凉州词」5 敌脚底校准(alpha 包围盒实测·2026-07-25)
+  'assets/enemies/liangzhou_songguan_jiubu.png' => 0.973,
+  'assets/enemies/liangzhou_heishi_shoujing.png' => 0.982,
+  'assets/enemies/liangzhou_xiliang_xingke.png' => 0.982,
+  'assets/enemies/liangzhou_youqi_jiang.png' => 0.958,
+  'assets/enemies/liangzhou_jieguan_ren.png' => 0.973,
   WuxiaUi.battleGauntletSuWujiuStandee => 0.9681,
   WuxiaUi.battleGauntletQingyiGuardAStandee => 0.9571,
   WuxiaUi.battleGauntletQingyiGuardBStandee => 0.9642,
