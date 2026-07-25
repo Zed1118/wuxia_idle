@@ -23,7 +23,7 @@
 |---|---|---|---|---|
 | 1 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(原分支/worktree 已清,需新开载体) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段;阶段5证据须留 repo 内非 gitignored 目录(外审 07-24 教训) |
 | 2 | Ch17「沙海纵深」实装批(灵巧主题·末 Boss 单窗口 0.20 机制教学·feng_juan 收编+夜雨残页) | 主线内容 | xhigh 专会话 | spec `2026-07-24-zongshi-arc-ch16-18-design.md` §8 前瞻登记,章级细化随批终拍(Ch16 已于 2026-07-24 交付销账) |
-| 4 | `damage_popup` 反解析 UiStrings 输出的耦合隐患 | battle 表现层 | ~30-45min | 2026-07-25 §一#12 拍板 D 时查出:`damage_popup.dart:301` 的 `RegExp(r'^暴击 (\d+) 伤害$')` 解析的正是 `UiStrings.criticalDamagePopup`(`strings.dart:230` `'暴击 $damage 伤害'`)自己拼出来的串——**中文是模板复制品,改 strings.dart 措辞会让解析静默失配且无测试拦**。修法=消除 parse-back(上游直接传 `(damage, isCritical)` 等结构化数据,不再从显示串反推);顺带该 allowlist 条目一并销账。**别按「散写」迁 UiStrings**——那是治标 |
+| ~~4~~ | ~~`damage_popup` 反解析 UiStrings 输出的耦合隐患~~ **已销账 2026-07-25** | battle 表现层 | — | 上游改传纯伤害数字串,分段排版由 `PopupType.critical` 语义驱动;`_parseCriticalDamage`/`_CriticalDamageParts`/整句模板 `UiStrings.criticalDamagePopup` 全删,allowlist 3→2。**建表时的「且无测试拦」定性经实验证伪**:改模板措辞实测 3 条既有测试即红(`damage_popup_test` 2 + `widget_test` 1),真问题是往返本身无谓 + 失配退化成整串套数字样式且红在别处误导诊断。改后新增回归测 + 门禁棘轮双证红留档 |
 
 ## 三 · 依赖锁死(附再开条件)
 

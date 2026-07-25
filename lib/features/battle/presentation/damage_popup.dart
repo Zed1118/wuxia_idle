@@ -10,6 +10,10 @@ enum PopupType { normal, critical, dodge }
 /// 单次伤害飘字的数据载体。
 ///
 /// [id] 用于 Map key + widget key，保证同一角色多个飘字不混淆。
+/// [text] 是**待显示的原子文本**:[PopupType.normal] / [PopupType.critical] 为纯
+/// 伤害数字串,[PopupType.dodge] 为闪避标记。暴击的「暴击」标签与「伤害」后缀
+/// **不进此字段**——由飘字层按 [type] 分段排版时取 [UiStrings] 常量,使表现层与
+/// 文案措辞解耦(BACKLOG §二#4 消除 parse-back)。
 /// [hasSwordSong] = P1.1 候选 3-c,attacker 武器达 xinJianTongLing 共鸣 +
 /// 本次暴击时为 true → 浮字旁追加「✦剑鸣」红字。
 class DamagePopupData {
@@ -130,7 +134,7 @@ class _PopupContent extends StatelessWidget {
         : baseFontSize;
     final hasSideMark = data.hasSwordSong;
     final damageText = data.type == PopupType.critical
-        ? _CriticalDamageText(text: data.text, fontSize: fontSize)
+        ? _CriticalDamageText(damageText: data.text, fontSize: fontSize)
         : Text(
             data.text,
             style: TextStyle(
@@ -216,18 +220,22 @@ class _PopupContent extends StatelessWidget {
   };
 }
 
+/// 暴击飘字的分段排版:「暴击」标签 / 伤害数字 / 「伤害」后缀 各自字号字色。
+///
+/// [damageText] 是**纯伤害数字串**,不含任何文案模板。分段由 [PopupType.critical]
+/// 语义驱动,标签与后缀直接取 [UiStrings] 常量——表现层不依赖任何措辞。
+///
+/// 历史实现曾让上游先把伤害拼成整句(「暴击 N 伤害」)再在此正则反推
+/// (`RegExp(r'^暴击 (\d+) 伤害$')`),措辞一改就失配、退化成整串套数字样式;
+/// 已按 BACKLOG §二#4 改为上游直传数字,parse-back 与整句模板一并消除。
 class _CriticalDamageText extends StatelessWidget {
-  const _CriticalDamageText({required this.text, required this.fontSize});
+  const _CriticalDamageText({required this.damageText, required this.fontSize});
 
-  final String text;
+  final String damageText;
   final double fontSize;
 
   @override
   Widget build(BuildContext context) {
-    final parsed = _parseCriticalDamage(text);
-    if (parsed == null) {
-      return Text(text, style: _numberStyle(fontSize));
-    }
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -257,7 +265,7 @@ class _CriticalDamageText extends StatelessWidget {
             ),
           ),
         ),
-        Text(parsed.damage, style: _numberStyle(fontSize)),
+        Text(damageText, style: _numberStyle(fontSize)),
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 4),
           child: Text(
@@ -296,18 +304,6 @@ class _CriticalDamageText extends StatelessWidget {
       Shadow(blurRadius: 5, color: Color(0xAA3B0602), offset: Offset(1, 1)),
     ],
   );
-
-  static _CriticalDamageParts? _parseCriticalDamage(String text) {
-    final match = RegExp(r'^暴击 (\d+) 伤害$').firstMatch(text);
-    if (match == null) return null;
-    return _CriticalDamageParts(match.group(1)!);
-  }
-}
-
-class _CriticalDamageParts {
-  const _CriticalDamageParts(this.damage);
-
-  final String damage;
 }
 
 class _CriticalBrushPainter extends CustomPainter {
