@@ -18,6 +18,8 @@ import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/sweep/application/sweep_settlement.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
 import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
+import 'package:wuxia_idle/shared/utils/rng_provider.dart';
 
 import '../../../support/isar_test_support.dart';
 import '../../../support/test_data.dart';
@@ -104,59 +106,7 @@ void main() {
   ///   - expGained = stage.baseExpReward
   ///   - MainlineProgress.recordVictory 落 clearedStageIds
   testWidgets('主线战备充足:扣战备 + 掉落 recap + 进度落库', (tester) async {
-    final charId = (await tester.runAsync(() async {
-      final c = Character.create(
-        name: '祖师',
-        realmTier: RealmTier.xueTu,
-        realmLayer: RealmLayer.qiMeng,
-        attributes: Attributes(),
-        rarity: RarityTier.biaoZhun,
-        lineageRole: LineageRole.founder,
-        createdAt: DateTime(2026, 7, 19),
-        internalForce: 3000,
-      );
-      final cid = await IsarSetup.instance.writeTxn(
-        () => IsarSetup.instance.characters.put(c),
-      );
-      final save = await IsarSetup.currentSaveData();
-      await IsarSetup.instance.writeTxn(() async {
-        save!
-          ..activeCharacterIds = [cid]
-          ..sweepReadinessPoints = 3
-          ..sweepReadinessLastRecoveredAt = DateTime.now();
-        await IsarSetup.instance.saveDatas.put(save);
-      });
-      return cid;
-    }))!;
-
-    const stage = StageDef(
-      id: 'stage_sweep_test',
-      name: 'test stage',
-      stageType: StageType.mainline,
-      requiredRealm: RealmTier.xueTu,
-      enemyTeam: [],
-      isBossStage: false,
-      baseExpReward: 100,
-      difficultyMultiplier: 1,
-      dropTable: [
-        EquipmentDrop(
-          equipmentDefId: 'weapon_xunchang_tie_jian',
-          dropChance: 1.0,
-        ),
-        ItemDrop(
-          inventoryItemDefId: 'item_silver',
-          quantityMin: 5,
-          quantityMax: 5,
-          dropChance: 1.0,
-        ),
-        ItemDrop(
-          inventoryItemDefId: 'item_scroll_kai_bei_shou',
-          quantityMin: 1,
-          quantityMax: 1,
-          dropChance: 1.0,
-        ),
-      ],
-    );
+    final charId = (await tester.runAsync(_seedFounderWithReadiness))!;
 
     late WidgetRef ref;
     await tester.pumpWidget(
@@ -165,12 +115,15 @@ void main() {
           battleProvider.overrideWith(
             () => _StaticBattleNotifier(_finishedBattle([charId])),
           ),
+          // 彩头随机源钉死不中:否则 cycle=1 的 5%+1.5% 会在固定掉落外额外
+          // 发装备,把下面的 equipmentDrops==1 打成随机红(BACKLOG §一#8)。
+          rngProvider.overrideWithValue(_NoRareBonusRng()),
         ],
         child: _RefHarness(onReady: (value) => ref = value),
       ),
     );
     final outcome = await tester.runAsync(
-      () => settleMainlineSweepVictory(ref: ref, stage: stage, cycle: 1),
+      () => settleMainlineSweepVictory(ref: ref, stage: _dropStage, cycle: 1),
     );
 
     expect(outcome, isNotNull);
@@ -199,6 +152,41 @@ void main() {
         reason: 'recordVictory 幂等落进度',
       );
     });
+  });
+
+  /// 稀有彩头随机源可注入(BACKLOG §一#8 根因修·2026-07-25)。
+  ///
+  /// `applyVictoryResolution` 曾 inline `new DefaultRng()`,随机源绕过
+  /// [rngProvider] → 测试 override 不到,彩头(cycle=1 时 5%+1.5%)在固定掉落外
+  /// 额外发装备,把上面那条 `equipmentDrops == 1` 打成约 6.4% 概率的 CI 随机红。
+  /// 本测钉「生产读 provider」这一契约:注入必中 rng 时彩头必然出现。
+  testWidgets('稀有彩头走注入的 rngProvider(生产不 inline new 随机源)', (tester) async {
+    final charId = (await tester.runAsync(_seedFounderWithReadiness))!;
+
+    late WidgetRef ref;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          battleProvider.overrideWith(
+            () => _StaticBattleNotifier(_finishedBattle([charId])),
+          ),
+          rngProvider.overrideWithValue(_AlwaysRareBonusRng()),
+        ],
+        child: _RefHarness(onReady: (value) => ref = value),
+      ),
+    );
+    final outcome = await tester.runAsync(
+      () => settleMainlineSweepVictory(ref: ref, stage: _dropStage, cycle: 1),
+    );
+
+    expect(outcome, isNotNull);
+    expect(
+      outcome!.equipmentDrops,
+      2,
+      reason:
+          '固定掉落铁剑 1 件 + 必中 rng 下的稀有彩头 1 件;'
+          '若仍为 1,说明生产没读 rngProvider(随机源仍是 inline new)',
+    );
   });
 }
 
@@ -280,6 +268,84 @@ const _stage = StageDef(
   baseExpReward: 100,
   difficultyMultiplier: 1,
 );
+
+/// 同 [_stage] 但带固定掉落表:铁剑(必掉)+ 银两 + 秘籍(扫荡滤入 ignoredDrops)。
+const _dropStage = StageDef(
+  id: 'stage_sweep_test',
+  name: 'test stage',
+  stageType: StageType.mainline,
+  requiredRealm: RealmTier.xueTu,
+  enemyTeam: [],
+  isBossStage: false,
+  baseExpReward: 100,
+  difficultyMultiplier: 1,
+  dropTable: [
+    EquipmentDrop(equipmentDefId: 'weapon_xunchang_tie_jian', dropChance: 1.0),
+    ItemDrop(
+      inventoryItemDefId: 'item_silver',
+      quantityMin: 5,
+      quantityMax: 5,
+      dropChance: 1.0,
+    ),
+    ItemDrop(
+      inventoryItemDefId: 'item_scroll_kai_bei_shou',
+      quantityMin: 1,
+      quantityMax: 1,
+      dropChance: 1.0,
+    ),
+  ],
+);
+
+/// 建祖师 + 战备 3 点,返回 characterId(两条成功路径共用)。
+Future<int> _seedFounderWithReadiness() async {
+  final c = Character.create(
+    name: '祖师',
+    realmTier: RealmTier.xueTu,
+    realmLayer: RealmLayer.qiMeng,
+    attributes: Attributes(),
+    rarity: RarityTier.biaoZhun,
+    lineageRole: LineageRole.founder,
+    createdAt: DateTime(2026, 7, 19),
+    internalForce: 3000,
+  );
+  final cid = await IsarSetup.instance.writeTxn(
+    () => IsarSetup.instance.characters.put(c),
+  );
+  final save = await IsarSetup.currentSaveData();
+  await IsarSetup.instance.writeTxn(() async {
+    save!
+      ..activeCharacterIds = [cid]
+      ..sweepReadinessPoints = 3
+      ..sweepReadinessLastRecoveredAt = DateTime.now();
+    await IsarSetup.instance.saveDatas.put(save);
+  });
+  return cid;
+}
+
+/// 稀有彩头必不中:`nextDouble` 恒 0.999 → 各档 `< chance` 全不成立。
+/// 固定掉落判定是 `nextDouble() >= dropChance` 才跳过,dropChance=1.0 仍照掉。
+class _NoRareBonusRng implements Rng {
+  @override
+  int nextInt(int max) => 0;
+
+  @override
+  double nextDouble() => 0.999;
+
+  @override
+  T pick<T>(List<T> list) => list.first;
+}
+
+/// 稀有彩头必中:`nextDouble` 恒 0 → 各档 roll 全命中(取最高阶),`pick` 取首件。
+class _AlwaysRareBonusRng implements Rng {
+  @override
+  int nextInt(int max) => 0;
+
+  @override
+  double nextDouble() => 0.0;
+
+  @override
+  T pick<T>(List<T> list) => list.first;
+}
 
 const _floor = TowerFloorDef(
   floorIndex: 1,
