@@ -1,5 +1,5 @@
 > 交接时间：2026-07-25 15:48 · **HEAD = 本文件自己的 handoff commit**（末次纯 docs commit；其父 `9194c2c8` 是最后一个代码 commit）
-> 新会话打「开工」= 读本文件按其执行。核对方式：`git log -1` 应是本 handoff 的 docs commit、`git log -1 --format=%p` 应含 `9194c2c8`；对不上再报偏差。
+> 新会话打「开工」= 读本文件按其执行。核对方式：`git log --oneline -5` 顶部若干条为本次 handoff 的 docs commit，其下最后一个**代码** commit 应是 `9194c2c8`（PR #76 merge）；对不上再报偏差。
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
