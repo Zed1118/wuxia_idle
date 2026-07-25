@@ -9,7 +9,6 @@ import '../../../data/isar_provider.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../../shared/utils/rng.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/enum_localizations.dart';
@@ -68,7 +67,13 @@ class _FounderCreationScreenState extends ConsumerState<FounderCreationScreen> {
   void initState() {
     super.initState();
     _config = GameRepository.instance.founderCreation;
-    _fates = generateFounderFateChoices(config: _config, rng: DefaultRng());
+    // 随机源走 rngProvider(与下方 84/92 行两处一致):初始机缘三选一在此 roll,
+    // inline 的 DefaultRng 测试 override 不到。ConsumerState 的 initState 内
+    // ref.read 合法(ref 生命周期已就绪)。
+    _fates = generateFounderFateChoices(
+      config: _config,
+      rng: ref.read(rngProvider),
+    );
   }
 
   @override

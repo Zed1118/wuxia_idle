@@ -5,6 +5,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../data/narrative_loader.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../application/disciple_join_service.dart';
 import 'disciple_join_overlay.dart';
@@ -23,7 +24,8 @@ Future<void> runDiscipleJoinHookAfterVictory({
   // Isar 未 ready(纯 DI flow 测 / 早期启动)→ no-op,不阻塞胜利流。
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) return;
-  final svc = DiscipleJoinService(isar: isar);
+  // 随机源走 rngProvider:弟子起始装备属性 roll 在 service 内,注入后测试可确定化。
+  final svc = DiscipleJoinService(isar: isar, rng: ref.read(rngProvider));
   final joined = await svc.joinForClearedStage(stageId);
   if (joined.isEmpty) return;
 

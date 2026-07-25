@@ -6,6 +6,7 @@ import '../../../data/isar_setup.dart';
 import '../../../data/slot_summary.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
@@ -29,7 +30,12 @@ class SaveSelectScreen extends ConsumerWidget {
   Future<void> _enterSlot(BuildContext context, WidgetRef ref, int n) async {
     await SaveSlotStartupService.openSlot(n);
     // 幂等:已有 founder 跳过(老档/已开过的槽);空槽走全新 onboarding。
-    await OnboardingService(isar: IsarSetup.instance).ensureFoundingMasters();
+    // 随机源走 rngProvider:祖师/弟子起始装备属性 roll 在 service 内,
+    // 注入后测试可确定化。
+    await OnboardingService(
+      isar: IsarSetup.instance,
+      rng: ref.read(rngProvider),
+    ).ensureFoundingMasters();
     ref.invalidate(isarProvider); // 切档后所有 per-save provider 级联重读新 db
     if (!context.mounted) return;
     Navigator.of(context).pushReplacement(
