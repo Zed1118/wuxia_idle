@@ -1,5 +1,5 @@
-> 交接时间：2026-07-25 15:48 · HEAD `9194c2c8`（= origin/main·树净）
-> 新会话打「开工」= 读本文件按其执行；动手前先核头部 HEAD sha/时间与 git 实况，漂移先报告偏差再动。
+> 交接时间：2026-07-25 15:48 · **HEAD = 本文件自己的 handoff commit**（末次纯 docs commit；其父 `9194c2c8` 是最后一个代码 commit）
+> 新会话打「开工」= 读本文件按其执行。核对方式：`git log -1` 应是本 handoff 的 docs commit、`git log -1 --format=%p` 应含 `9194c2c8`；对不上再报偏差。
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
@@ -15,7 +15,7 @@ main@`9194c2c8` = origin/main、树净、零孤儿 worktree/分支。下一波�
    候选 4 加读 feedback_wuxia_add_mainline_chapter_reconcile + feedback_wuxia_release_cap_raise_reconcile
 
 【环境快照】
-- HEAD `9194c2c8`（本会话 main +3 = PR #74/#75/#76 三个 merge·全 push·2026-07-25 现跑
+- 最后代码 commit `9194c2c8`（本会话 main +3 = PR #74/#75/#76 三个 merge·全 push·2026-07-25 现跑
   `git rev-parse` + `git show --stat` 逐个实证）
 - 主 checkout 实测（合 #76 后·build_runner 66 outputs 在先）：analyze **0**；
   全量 **4657 pass / 0 fail**（EXIT=0·-1 标记 0 处）
