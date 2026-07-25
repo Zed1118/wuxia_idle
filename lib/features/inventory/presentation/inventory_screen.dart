@@ -798,7 +798,9 @@ class _FilterChip extends StatelessWidget {
         ? WuxiaColors.textMuted.withValues(alpha: 0.45)
         : selected
         ? WuxiaColors.textPrimary
-        : WuxiaColors.textMuted;
+        // 可点击未选中态不能与 disabled 共用灰阶；保持原深色筛选牌，
+        // 只把文字提到深底正文次级色，disabled 仍显著更淡。
+        : WuxiaColors.textSecondary;
     return Material(
       type: MaterialType.transparency,
       child: InkWell(

@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
 import 'package:wuxia_idle/shared/theme/tier_colors.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 void main() {
   group('tierColorForEquipment', () {
@@ -68,6 +70,12 @@ void main() {
     });
   });
 
+  test('神物浅纸文字色保留品阶色相且达到大标题对比门槛', () {
+    final color = paperTierColorForEquipment(EquipmentTier.shenWu);
+    expect(color, isNot(WuxiaColors.resultHighlight));
+    expect(_contrastRatio(color, WuxiaUi.paper), greaterThanOrEqualTo(3));
+  });
+
   group('treasureGlowColor & treasureSeedColor', () {
     test('爆品梯度色三档互异', () {
       final z = treasureSeedColor(EquipmentTier.zhongQi);
@@ -87,4 +95,16 @@ void main() {
       }
     });
   });
+}
+
+double _contrastRatio(Color first, Color second) {
+  final firstLuminance = first.computeLuminance();
+  final secondLuminance = second.computeLuminance();
+  final lighter = firstLuminance > secondLuminance
+      ? firstLuminance
+      : secondLuminance;
+  final darker = firstLuminance > secondLuminance
+      ? secondLuminance
+      : firstLuminance;
+  return (lighter + 0.05) / (darker + 0.05);
 }

@@ -310,7 +310,6 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final color = tierColorForEquipment(widget.def.tier);
     final highTreasure = isHighTreasureTier(widget.def.tier);
     final equippedIds = _watchActiveEquippedIds(ref);
     final canDispose = !isEquipmentProtected(
@@ -330,7 +329,11 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
         title: widget.def.name,
         onBack: () => Navigator.of(context).maybePop(),
         titleStyle: TextStyle(
-          color: highTreasure ? color : WuxiaUi.ink,
+          // 顶栏是浅宣纸面：高阶亮金直接落纸对比不足，保留同品阶色相，
+          // 只使用既有浅纸可读版本。英雄图金框仍沿用原亮金。
+          color: highTreasure
+              ? paperTierColorForEquipment(widget.def.tier)
+              : WuxiaUi.ink,
           fontSize: highTreasure ? 22 : null,
           letterSpacing: highTreasure ? 2 : null,
         ),
