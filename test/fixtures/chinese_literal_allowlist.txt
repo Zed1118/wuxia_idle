@@ -16,8 +16,12 @@
 #   encounter_event_loader「[文案待补]」
 # D 灰区诊断串(未处在 throw/Error 里,靠参数或结果类型传递):game_repository 的 label
 #   参数 / encounter_service 的 EquipNotFound 结果串
-# E 战报格式化片段(性质同 battle_log.dart 集中 sink,**是否列为第 4 sink 待用户拍板**):
-#   damage_calculator 明细 / damage_popup 解析用正则
+# E 战报格式化片段 → **2026-07-25 §一#12 拍板 D:不设第 4 集中 sink**,原 6 条拆两件:
+#   · damage_calculator 明细 5 条 = 零生产消费方的**调试串**(formulaBreakdown 只被测试读),
+#     标签已改 ASCII 自然出表(本批销账);
+#   · damage_popup 的 r'^暴击 (\d+) 伤害$' 保留在表内 = 对 UiStrings.criticalDamagePopup
+#     输出的**反解析**,中文是模板复制品(改 strings.dart 会静默失配)。真修法是消除
+#     parse-back 让上游传结构化数据,已另立 BACKLOG §二#4,不按散写迁 UiStrings。
 
 lib/data/defs/synergy_def.dart :: '攻 ${_fmt(attackPct)}'
 lib/data/defs/synergy_def.dart :: '防 ${_fmt(defensePct)}'
@@ -30,11 +34,6 @@ lib/data/game_repository.dart :: 'stage ${s.id} 敌人 ${e.id}'
 lib/data/game_repository.dart :: 'tower floor ${f.floorIndex} 敌人 ${e.id}'
 lib/data/game_repository.dart :: 'boss_gauntlets 敌队 $teamId '
 lib/data/narrative_loader.dart :: '[剧情待补：$id]'
-lib/features/battle/domain/damage_calculator.dart :: '(凝甲,原${_fmt(critMult)})'
-lib/features/battle/domain/damage_calculator.dart :: ' * ${_fmt(outputMultiplier)}(输出修正)'
-lib/features/battle/domain/damage_calculator.dart :: ' * ${_fmt(defenderSchoolDamageMult)}(弱点/抗性)'
-lib/features/battle/domain/damage_calculator.dart :: ' * ${_fmt(defenderWardMult)}(防御乘子)'
-lib/features/battle/domain/damage_calculator.dart :: ' + 震伤 $quakeDamage = $finalDamage'
 lib/features/battle/presentation/damage_popup.dart :: r'^暴击 (\d+) 伤害$'
 lib/features/boss_gauntlet/application/gauntlet_providers.dart :: '门人'
 lib/features/boss_gauntlet/application/gauntlet_service.dart :: '断魂庄'

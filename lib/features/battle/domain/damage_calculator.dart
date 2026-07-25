@@ -278,6 +278,11 @@ class DamageCalculator {
     // 吸血量:实际主伤害 × 吸血率(震伤不计入)。闪避走 dodged 工厂 heal=0。
     final lifestealHeal = (mainDamage * attackerLifestealPct).floor();
 
+    // 纯开发者调试串(零生产消费方,只被 damage_calculator_test 断言):标签一律
+    // ASCII 且对齐参数名,与同串既有的 DODGED/atkLv=/defLv= 同族。
+    // 2026-07-25 §一#12 拍板 D:不设「第 4 集中文案 sink」——这串不是玩家可见
+    // 文案,原中文标签(凝甲/输出修正/弱点抗性/防御乘子/震伤)是串里的异类,
+    // 改 ASCII 后自然出中文散写门禁 allowlist。
     final breakdown =
         '($attackerInternalForce*${_fmt(df.internalForceFactor)}'
         ' + $attackerEquipmentAttack'
@@ -285,16 +290,16 @@ class DamageCalculator {
         ' * ${_fmt(cultMult)}'
         ' * ${_fmt(schoolMult)}'
         ' * ${_fmt(effectiveCritMult)}'
-        '${effectiveCritMult != critMult ? '(凝甲,原${_fmt(critMult)})' : ''}'
+        '${effectiveCritMult != critMult ? '(ningjia,raw=${_fmt(critMult)})' : ''}'
         ' * ${_fmt(defMult)}'
         ' * ${_fmt(realmMult)}'
         '${attackPowerMultiplier != 1.0 ? ' * ${_fmt(attackPowerMultiplier)}' : ''}'
         '${proficiencyDamageMult != 1.0 ? ' * ${_fmt(proficiencyDamageMult)}' : ''}'
-        '${outputMultiplier != 1.0 ? ' * ${_fmt(outputMultiplier)}(输出修正)' : ''}'
-        '${defenderSchoolDamageMult != 1.0 ? ' * ${_fmt(defenderSchoolDamageMult)}(弱点/抗性)' : ''}'
-        '${defenderWardMult != 1.0 ? ' * ${_fmt(defenderWardMult)}(防御乘子)' : ''}'
+        '${outputMultiplier != 1.0 ? ' * ${_fmt(outputMultiplier)}(outputMult)' : ''}'
+        '${defenderSchoolDamageMult != 1.0 ? ' * ${_fmt(defenderSchoolDamageMult)}(schoolWeakness)' : ''}'
+        '${defenderWardMult != 1.0 ? ' * ${_fmt(defenderWardMult)}(ward)' : ''}'
         ' = $mainDamage'
-        '${quakeDamage > 0 ? ' + 震伤 $quakeDamage = $finalDamage' : ''}'
+        '${quakeDamage > 0 ? ' + quake $quakeDamage = $finalDamage' : ''}'
         ' [atkLv=$atkLevel,defLv=$defLevel]';
 
     return AttackResult(
