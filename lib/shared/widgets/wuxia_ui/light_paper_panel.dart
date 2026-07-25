@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/paper_surface_theme.dart';
 import '../../theme/wuxia_tokens.dart';
 import '../wuxia_image.dart';
 import 'panel_surface.dart';
@@ -29,31 +30,34 @@ class LightPaperPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PanelSurface.light(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: fillColor ?? WuxiaUi.panelFill,
-          borderRadius: BorderRadius.circular(WuxiaUi.radius),
-          border: showBorder
-              ? Border.all(color: WuxiaUi.ink, width: WuxiaUi.borderWidth)
-              : null,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(WuxiaUi.radius),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Opacity(
-                  opacity: paperOpacity,
-                  child: WuxiaImage(
-                    WuxiaUi.paperBg,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+    return Theme(
+      data: paperSurfaceTheme(Theme.of(context)),
+      child: PanelSurface.light(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: fillColor ?? WuxiaUi.panelFill,
+            borderRadius: BorderRadius.circular(WuxiaUi.radius),
+            border: showBorder
+                ? Border.all(color: WuxiaUi.ink, width: WuxiaUi.borderWidth)
+                : null,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(WuxiaUi.radius),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: paperOpacity,
+                    child: WuxiaImage(
+                      WuxiaUi.paperBg,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
                   ),
                 ),
-              ),
-              Padding(padding: padding, child: child),
-            ],
+                Padding(padding: padding, child: child),
+              ],
+            ),
           ),
         ),
       ),

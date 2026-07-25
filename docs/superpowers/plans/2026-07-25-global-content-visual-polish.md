@@ -94,7 +94,7 @@
 
 ## 当前恢复点
 
-- **状态**：Slice 4 已完成，准备进入 Slice 5（视觉基础设施）。
+- **状态**：Slice 5 已完成，准备进入 Slice 6（高频页面细节收口）。
 - **最后完成**：
   - Slice 1 章节路引已提交：`c5e9afc7`；
   - 新增 `paperSurfaceTheme`，统一浅宣纸上的 ColorScheme、TextTheme、ListTile、Switch、Slider、Dropdown、Menu、输入框、禁用态与交互态；
@@ -121,11 +121,16 @@
   - 战场状态牌仍沿用原深墨纸、原尺寸和原锚点，仅把角色名改为宣纸亮字并收窄描影，解决浅雾/暗牌上的低对比；
   - 中性调试 3v3 的首名敌人由与祖师近似的白须老者换成已登记独立敌人，只修验收样例的同脸干扰，不改生产数值或关卡；
   - 新增 `battle_identity_silhouette` 确定性组件 route，并加入 battle suite；battle suite 现为 70 条动态真关卡/塔路由 + 6 条确定性素材/状态路由。
+  - 新增 `WuxiaTypography` 语义字阶，等值收拢共享组件已经使用的 19/18/17/15/14/13/12/11 尺寸、既有字重与字距；战斗 HUD 继续独立使用 `BattleTypography`；
+  - `WuxiaTitleBar`、`PaperDialog`、`SectionHeader`、`InkEmptyState`、`WuxiaStatusPill` 已改为消费语义字阶，所有尺寸、间距和信息结构保持不变；
+  - 新增 `darkSurfaceTheme`，与 `paperSurfaceTheme` 对称覆盖 ListTile、Switch、Checkbox、Radio、Slider、输入框、Dropdown/Menu、Tooltip、禁用/hover/focus/选中态；
+  - 46 个 `LightPaperPanel` 与 18 个 `DarkParchmentPanel` 现在自动向内部 Material 组件提供正确浅/深 Theme，同时继续提供原 `PanelSurface.light/dark` 文字语义；
+  - 主题门禁新增 onSurface 对比度、组件交互态和面板 Theme 接线测试；`inventory` 与 `technique_panel_tier_all` 双视口前后比对确认布局/密度无漂移。
 - **下一步**：
-  1. 盘点现有字号、表面和分区标题的真实复用簇，先定最小语义 token；
-  2. 建立 `DarkSurfaceTheme`，与已完成的 `paperSurfaceTheme` 对齐交互态；
-  3. 先迁移高频共用标题栏、SectionHeader、状态 pill 和空状态；
-  4. 每个迁移小批次用双视口生产 route 验证，不做全仓机械替换。
+  1. 以启动/存档/主菜单、角色/编成、主线/塔、仓库/商店、闭关/桃花岛为高频页清单逐屏复查；
+  2. 先修明确的溢出、过密、低对比、disabled/hover/focus 和状态反馈瑕疵；
+  3. 复用已建立 token 与共享组件，不重排已确认的信息结构；
+  4. 每个功能簇单独提交，并以 1280×720、1440×900 生产 route 验收。
 - **已跑验证**：
   - 建分支前主线视觉/资产 targeted tests：55 pass / 0 fail；
   - 建分支前 `flutter analyze`：0 issue；
@@ -150,11 +155,16 @@
   - Slice 4 提交前 battle/route/acceptance targeted tests：70 pass / 0 fail；
   - Slice 4 `flutter analyze`：0 issue；
   - Slice 4 真窗口截图：`battle_v2_neutral_3v3`、`battle_audit_stage_01_05`、`battle_identity_silhouette` × 1280×720、1440×900，6/6 READY 且无 overflow/exception；人工确认原三人阵列/站位不变、姓名牌可读、墨影无矩形肖像。
+  - Slice 5 typography/surface/shared-kit targeted tests：44 pass / 0 fail；
+  - Slice 5 inventory/technique/shop/character 高影响调用方回归：93 pass / 0 fail；
+  - Slice 5 `flutter analyze`：0 issue；
+  - Slice 5 真窗口截图：`inventory`、`technique_panel_tier_all` × 1280×720、1440×900，4/4 READY 且无 overflow/exception；后者 4/4 像素一致，前者仅确定性 fixture 数值变化，几何与样式人工复核无漂移。
 - **阻塞项**：无。
 - **残留风险**：
   - 伪文字规则和跨平台正式字体方案仍需后续设计拍板；
   - 当前 macOS 可验证，Windows 缩放只能在 ship 前实机终验；
   - Claude 后续可能推进 `main`，本分支每个大批次前需要以 `merge-tree` 评估冲突，不直接重写其改动；
   - 9 名可出战候选仍是专用透明站姿美术债；当前身份墨影是风格一致的安全降级，不冒充完成稿，补图后必须更新角色门禁预期；
+  - 自动 Theme 已覆盖共享浅/深面板，高频调用方已回归；仍需在 Slice 6/7 用生产 route 继续覆盖长尾 Material 控件状态，避免极少数页面依赖旧的隐式 Theme；
   - visual route 当前固定全新进度，后段当前章的画面定位由 1280/1440 widget 几何测试覆盖；Slice 3 补视觉 route 状态矩阵时再加入后段进度截图；
   - 首次设置 route 尝试因本机存档自动叠加「归来」弹层，顺带发现该弹层在 1280×720 仍有 47px 底部溢出；已隔离 route 污染，问题列入 Slice 7，不在设置切片擅改其既定结构。

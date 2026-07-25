@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/colors.dart';
 import '../../theme/wuxia_tokens.dart';
+import '../../theme/wuxia_typography.dart';
 import 'panel_surface.dart';
 import 'plaque_button.dart';
 
@@ -63,11 +64,9 @@ class InkEmptyState extends StatelessWidget {
                 title,
                 maxLines: compact ? 1 : 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: accent,
-                  fontSize: compact ? 15 : 17,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: compact ? 1.2 : 1.8,
+                style: WuxiaTypography.emptyTitleStyle(
+                  accent,
+                  compact: compact,
                 ),
               ),
               const SizedBox(height: 5),
@@ -75,11 +74,7 @@ class InkEmptyState extends StatelessWidget {
                 body,
                 maxLines: compact ? 2 : 4,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: surface.secondary,
-                  fontSize: 12,
-                  height: 1.35,
-                ),
+                style: WuxiaTypography.supportingStyle(surface.secondary),
               ),
               if (actionLabel != null && onAction != null) ...[
                 SizedBox(height: compact ? 8 : 12),

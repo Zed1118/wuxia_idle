@@ -4,6 +4,7 @@ import '../../audio/sound_manager.dart';
 import '../../audio/audio_assets.dart';
 import '../../theme/paper_surface_theme.dart';
 import '../../theme/wuxia_tokens.dart';
+import '../../theme/wuxia_typography.dart';
 import '../wuxia_image.dart';
 import 'light_paper_panel.dart';
 import 'panel_surface.dart';
@@ -76,11 +77,8 @@ class PaperDialog extends StatelessWidget {
                         Expanded(
                           child: Text(
                             title,
-                            style: TextStyle(
-                              color: surface.primary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 4,
+                            style: WuxiaTypography.dialogTitleStyle(
+                              surface.primary,
                             ),
                           ),
                         ),
@@ -99,7 +97,7 @@ class PaperDialog extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     DefaultTextStyle.merge(
-                      style: TextStyle(color: surface.primary, fontSize: 13),
+                      style: WuxiaTypography.bodyStyle(surface.primary),
                       child: body,
                     ),
                     if (actions.isNotEmpty) ...[
