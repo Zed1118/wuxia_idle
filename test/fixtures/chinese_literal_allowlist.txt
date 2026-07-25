@@ -1,0 +1,52 @@
+# 中文散写门禁 allowlist(guard 消费·扫描器 test/tools/chinese_literal_audit.dart)。
+# 格式:每行 `<相对路径> :: <字面量片段>`;# 开头为注释;空行忽略。**不含行号**(行号会漂移)。
+#
+# 口径 A(2026-07-25 用户拍板)已在扫描器里自动豁免:注释 / 诊断异常串(throw·assert·
+# Error·Exception) / @Deprecated 注解 / 开发者日志(debugPrint·print·log) / debug 域 /
+# 三集中 sink(strings.dart·enum_localizations.dart·battle_log.dart)。
+# 本表 = 豁免之外的**存量**散写,门禁上线时冻结为基线,只减不增;清理一条删一条
+# (guard 2 会拦已清理的残留)。存量清理批见 BACKLOG。
+#
+# ── 分类说明(2026-07-25 建表时的人工判读)──
+# A 玩家可见 UI 文案 → 应迁 UiStrings:synergy_def 相生描述 / asset_fallback「缺图」/
+#   equipment_glyph「器」/ item_slot「未达境界」/ tower_entry_flow「· 胜利」
+# B 种子数据里的角色名/副本名 → 迁 UiStrings 或落 yaml:master_builder 祖师·大弟子·
+#   二弟子 / gauntlet_service 断魂庄·门人
+# C 占位兜底串(CLAUDE §5.6 允许开发期占位):narrative_loader「[剧情待补]」/
+#   encounter_event_loader「[文案待补]」
+# D 灰区诊断串(未处在 throw/Error 里,靠参数或结果类型传递):game_repository 的 label
+#   参数 / encounter_service 的 EquipNotFound 结果串
+# E 战报格式化片段(性质同 battle_log.dart 集中 sink,**是否列为第 4 sink 待用户拍板**):
+#   damage_calculator 明细 / damage_popup 解析用正则
+
+lib/data/defs/synergy_def.dart :: '攻 ${_fmt(attackPct)}'
+lib/data/defs/synergy_def.dart :: '防 ${_fmt(defensePct)}'
+lib/data/defs/synergy_def.dart :: '速 ${_fmt(speedPct)}'
+lib/data/defs/synergy_def.dart :: '血 ${_fmt(hpPct)}'
+lib/data/defs/synergy_def.dart :: '内力上限 ${_fmt(internalForceMaxPct)}'
+lib/data/defs/synergy_def.dart :: '内力增长 ${_fmt(internalForceGrowthPct)}'
+lib/data/encounter_event_loader.dart :: '[文案待补:$id]'
+lib/data/game_repository.dart :: 'stage ${s.id} 敌人 ${e.id}'
+lib/data/game_repository.dart :: 'tower floor ${f.floorIndex} 敌人 ${e.id}'
+lib/data/game_repository.dart :: 'boss_gauntlets 敌队 $teamId '
+lib/data/narrative_loader.dart :: '[剧情待补：$id]'
+lib/features/battle/domain/damage_calculator.dart :: '(凝甲,原${_fmt(critMult)})'
+lib/features/battle/domain/damage_calculator.dart :: ' * ${_fmt(outputMultiplier)}(输出修正)'
+lib/features/battle/domain/damage_calculator.dart :: ' * ${_fmt(defenderSchoolDamageMult)}(弱点/抗性)'
+lib/features/battle/domain/damage_calculator.dart :: ' * ${_fmt(defenderWardMult)}(防御乘子)'
+lib/features/battle/domain/damage_calculator.dart :: ' + 震伤 $quakeDamage = $finalDamage'
+lib/features/battle/presentation/damage_popup.dart :: r'^暴击 (\d+) 伤害$'
+lib/features/boss_gauntlet/application/gauntlet_providers.dart :: '门人'
+lib/features/boss_gauntlet/application/gauntlet_service.dart :: '断魂庄'
+lib/features/boss_gauntlet/application/gauntlet_service.dart :: '门人'
+lib/features/encounter/application/encounter_service.dart :: 'skill ${skillDef.id} 不是奇遇招式'
+lib/features/encounter/application/encounter_service.dart :: '未初始化'
+lib/features/encounter/application/encounter_service.dart :: 'character #$characterId 不存在'
+lib/features/onboarding/application/master_builder.dart :: '祖师'
+lib/features/onboarding/application/master_builder.dart :: '大弟子'
+lib/features/onboarding/application/master_builder.dart :: '二弟子'
+lib/features/onboarding/application/master_builder.dart :: '师徒_${def.id}'
+lib/features/tower/presentation/tower_entry_flow.dart :: '${UiStrings.towerFloorLabel(floor.floorIndex)} · 胜利'
+lib/shared/widgets/asset_fallback.dart :: '缺图'
+lib/shared/widgets/equipment_glyph.dart :: '器'
+lib/shared/widgets/wuxia_ui/item_slot.dart :: '未达境界'
