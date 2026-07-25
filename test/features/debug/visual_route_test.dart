@@ -135,7 +135,11 @@ void main() {
       expect(parseVisualRoute('narrative_scene'), VisualRoute.narrativeScene);
     });
 
-    test('M2 离线被动归来卡路由 parse', () {
+    test('M2 active / 被动归来卡路由 parse', () {
+      expect(
+        parseVisualRoute('offline_recap_active'),
+        VisualRoute.offlineRecapActive,
+      );
       expect(
         parseVisualRoute('offline_recap_passive'),
         VisualRoute.offlineRecapPassive,

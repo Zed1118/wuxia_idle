@@ -249,6 +249,16 @@ List<String> _checksFor(VisualRoute route) {
       '双分辨率无溢出裁切',
     ],
     VisualRoute.battleDefeat => const ['败北题字与战报可读', '破招提示存在', '背景压暗后内容层级清楚'],
+    VisualRoute.offlineRecapActive => const [
+      'active 闭关长明细在 720p 不溢出',
+      '明细可滚动且双操作始终可见',
+      '离线时长、地图状态与待收收益层级清楚',
+    ],
+    VisualRoute.offlineRecapPassive => const [
+      '被动收益已入库语义明确',
+      '仅保留告知关闭操作',
+      '720p 下完整可读且无领取诱导',
+    ],
     VisualRoute.shop => const ['货币顶栏可读', '可买/不可买态清楚', '货架按钮无文字溢出'],
     VisualRoute.resourceOverview => const [
       '五类资源分组可扫读',

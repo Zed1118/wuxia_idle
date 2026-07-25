@@ -180,6 +180,10 @@ enum VisualRoute {
     'battle_tap_preview',
     '两段点选交互静态预览(冻结态·single 技能待发高亮 + 敌头像可选标记 + 单体/群体角标)',
   ),
+  offlineRecapActive(
+    'offline_recap_active',
+    'M2 闭关归来卡静态验收(active 闭关·长材料明细 +「稍后再说/前去收功」双操作)',
+  ),
   offlineRecapPassive(
     'offline_recap_passive',
     'M2 离线被动归来卡静态验收(无 active 闭关·涓流入库告知卡:水墨 LightPaperPanel + 离线时长/磨剑石/经验 + 仅「知道了」按钮,无领取按钮守 §5.1)',
@@ -404,6 +408,7 @@ enum VisualRoute {
         this == VisualRoute.battleTreasureGlowPeak ||
         this == VisualRoute.battleTreasureGlowRest ||
         this == VisualRoute.battleTreasureZhongqi ||
+        this == VisualRoute.offlineRecapActive ||
         this == VisualRoute.offlineRecapPassive ||
         this == VisualRoute.discipleJoinCeremony ||
         this == VisualRoute.heroCamera) {

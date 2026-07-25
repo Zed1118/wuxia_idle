@@ -43,6 +43,10 @@ void main() {
       VisualRouteKind.transientOverlay,
     );
     expect(
+      VisualRoute.offlineRecapActive.kind,
+      VisualRouteKind.transientOverlay,
+    );
+    expect(
       routes.map((target) => target.kind).toSet(),
       containsAll(VisualRouteKind.values),
     );

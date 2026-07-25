@@ -58,6 +58,7 @@ import '../../seclusion/presentation/active_retreat_screen.dart';
 import '../../seclusion/presentation/retreat_result_screen.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../seclusion/presentation/seclusion_setup_screen.dart';
+import '../../seclusion/application/offline_recap_service.dart';
 import '../../seclusion/presentation/offline_recap_card.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';
@@ -695,6 +696,8 @@ Future<Widget> buildVisualTarget(
       return const _DefeatCeremonyPreview();
     case VisualRoute.defeatInnerDemonResidue:
       return const _InnerDemonResidueDefeatPreview();
+    case VisualRoute.offlineRecapActive:
+      return const _OfflineRecapActivePreview();
     case VisualRoute.offlineRecapPassive:
       return const _OfflineRecapPassivePreview();
     case VisualRoute.battleBossPhase:
@@ -2217,6 +2220,55 @@ class _FirstClearShowcasePreview extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// M2 active 闭关归来卡静态验收：用长材料明细稳定覆盖 720p 高度边界。
+///
+/// 外层复用生产 [Dialog]，确保默认 inset 与主菜单启动弹层一致；按钮 no-op，
+/// 只验证 [OfflineRecapCard] 的信息密度、滚动边界与双操作可见性。
+class _OfflineRecapActivePreview extends StatelessWidget {
+  const _OfflineRecapActivePreview();
+
+  @override
+  Widget build(BuildContext context) {
+    const recap = (
+      awayHours: 240.0,
+      retreatHours: 72.0,
+      passiveHours: 168.0,
+      passiveMojianshi: 420,
+      passiveExperience: 6800,
+      equipmentRollCount: 6,
+      nextEquipmentNodeHours: null,
+      fullRateComplete: true,
+      mapName: '断崖绝壁',
+      isComplete: true,
+      progressPct: 1.0,
+      estimatedMojianshi: 920,
+      estimatedExperience: 12800,
+      estimatedItemRewards: <String, int>{
+        'item_yaocao': 36,
+        'item_lingquanshui': 18,
+        'item_duancai': 12,
+        'item_kaifeng_fucai': 6,
+      },
+      estimatedTechniqueLearnPoints: 36,
+      estimatedSilver: 576,
+      settledHours: 240.0,
+      limitReason: OfflineRecapLimitReason.systemCap,
+    );
+    return Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: OfflineRecapCard(
+          recap: recap,
+          onGoCollect: () {},
+          onDismiss: () {},
+        ),
       ),
     );
   }
