@@ -210,6 +210,10 @@ void main() {
     expect(find.text(UiStrings.lineupAiFocus), findsNWidgets(4));
     // 装备攻击行(全员裸装 = 0)。
     expect(find.text(UiStrings.lineupEquipAttack(0)), findsNWidgets(5));
+    expect(
+      find.byKey(const ValueKey('portraitFrame.inkSilhouette')),
+      findsNWidgets(5),
+    );
     // 未修主修标:仅替补乙(替补甲已种主修行)。
     expect(find.text(UiStrings.lineupNoMainTag), findsOneWidget);
     expect(find.byKey(const ValueKey('lineup.formationStage')), findsOneWidget);

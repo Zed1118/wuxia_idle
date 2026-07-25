@@ -52,6 +52,28 @@ void main() {
     expect(find.text('云寒青'), findsNothing);
   });
 
+  testWidgets('portraitPath 为 null + shape → 渲染纯墨剪影与小印', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: PortraitFrame(
+          portraitPath: null,
+          size: 48,
+          borderColor: WuxiaColors.gangMeng,
+          placeholderText: '云寒青',
+          placeholderShapePath: 'assets/characters/battle_first_disciple.png',
+        ),
+      ),
+    );
+
+    expect(
+      find.byKey(const ValueKey('portraitFrame.inkSilhouette')),
+      findsOneWidget,
+    );
+    expect(find.byType(Image), findsOneWidget);
+    expect(find.text('云'), findsOneWidget);
+    expect(find.text('云寒青'), findsNothing);
+  });
+
   testWidgets('portraitPath 非空时 placeholderText 被忽略(优先显图)', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(

@@ -94,7 +94,7 @@
 
 ## 当前恢复点
 
-- **状态**：Slice 6 进行中；高频入口簇（启动/存档/主菜单）已完成，下一簇为角色/编成。
+- **状态**：Slice 6 进行中；高频入口簇与角色/编成簇已完成，下一簇为主线/塔。
 - **最后完成**：
   - Slice 1 章节路引已提交：`c5e9afc7`；
   - 新增 `paperSurfaceTheme`，统一浅宣纸上的 ColorScheme、TextTheme、ListTile、Switch、Slider、Dropdown、Menu、输入框、禁用态与交互态；
@@ -131,9 +131,13 @@
   - 新增 `qingOnDark` 同色相深底 token，深色空状态的标题、图标与副描述均有明确表面语义，并以 4.5:1 对比门禁约束；
   - 主菜单入口卡片、分组与滚动布局不变；锁定卡仍维持原 0.4 灰显契约，只把锁印移到灰显层外并改为绛红小印，使“未解锁”不再只靠低透明度表达；
   - `splash`、`save_select_filled`、`main_menu_clean` 双视口前后目检确认，仅目标可读性/状态细节改变，无结构漂移。
+  - 角色页继续沿用原“人物签在左、身份详情在右、后续成长模块纵向排列”的结构；宽屏详情列只将既有门人小传撑满可用宽度并贴齐人物签底部，使中间留白成为有边界的呼吸区，不新增/重排信息；
+  - `PortraitFrame` 新增可选 `placeholderShapePath`：仅消费既有透明站姿 alpha，以统一墨色绘制身份剪影并叠姓名首字小印；原无 shape 调用仍保留首字兼容降级；
+  - 出战三席和替补池无肖像角色均接入身份墨影，角色名、境界、流派、AI 倾向、装备攻击、弱势/闭关/未修主修标签及点选交换流程完全不变；
+  - 编成身份墨影按师承角色/稳定 id 选择三种现有外形，原人物肤色、衣纹、五官全部被 `srcIn` 墨色覆盖，不把他人的站姿冒充成该角色正式肖像。
 - **下一步**：
-  1. 复查角色详情与编成的头像/身份辨识、空白区、关系与装备状态，不改原上下分区和操作路径；
-  2. 随后处理主线/塔、仓库/商店、闭关/桃花岛；
+  1. 复查主线关卡与塔的长名、Boss 双状态、当前/最高/可挑战边界和 1280 密度，不改节点/卡片排列逻辑；
+  2. 随后处理仓库/商店、闭关/桃花岛；
   3. 先修明确的溢出、过密、低对比、disabled/hover/focus 和状态反馈瑕疵；
   4. 每个功能簇单独提交，并以 1280×720、1440×900 生产 route 验收。
 - **已跑验证**：
@@ -168,6 +172,9 @@
   - Slice 6A `surface_themes`、`ink_empty_state`、`wuxia_ink_button` 补充门禁：14 pass / 0 fail；
   - Slice 6A `flutter analyze`：0 issue；
   - Slice 6A 真窗口截图：`splash`、`save_select_filled`、`main_menu_clean` × 1280×720、1440×900，6/6 READY 且无 overflow/exception；锁印最终绛红版本另复核 2/2 READY。
+  - Slice 6B portrait/character/lineup targeted tests：51 pass / 0 fail（含编成交换真 Isar e2e 与 1440×900 smoke）；
+  - Slice 6B `flutter analyze`：0 issue；
+  - Slice 6B 真窗口截图：`character_panel`、`team_lineup` × 1280×720、1440×900，4/4 READY 且无 overflow/exception；人工确认原上下模块、三席位置、替补行和操作路径不变。
 - **阻塞项**：无。
 - **残留风险**：
   - 伪文字规则和跨平台正式字体方案仍需后续设计拍板；

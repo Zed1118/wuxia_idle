@@ -248,6 +248,16 @@ void main() {
     expect(find.text('悟性'), findsOneWidget);
     expect(find.text('身法'), findsOneWidget);
     expect(find.text('机缘'), findsOneWidget);
+
+    final detailsRect = tester.getRect(
+      find.byKey(const ValueKey('character.profileDetails')),
+    );
+    final biographyRect = tester.getRect(
+      find.byKey(const ValueKey('character.biographyStrip')),
+    );
+    expect(detailsRect.height, 217);
+    expect(biographyRect.width, greaterThan(800));
+    expect((detailsRect.bottom - biographyRect.bottom).abs(), lessThan(1));
   });
 
   testWidgets('档案头:受伤角色显示伤势影响与恢复入口', (tester) async {
