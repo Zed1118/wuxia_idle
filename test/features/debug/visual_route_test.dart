@@ -56,6 +56,14 @@ void main() {
       );
       expect(parseVisualRoute('chapter_list'), VisualRoute.chapterList);
       expect(parseVisualRoute('settings_panel'), VisualRoute.settingsPanel);
+      expect(
+        parseVisualRoute('settings_panel_bottom'),
+        VisualRoute.settingsPanelBottom,
+      );
+      expect(
+        parseVisualRoute('settings_panel_disabled'),
+        VisualRoute.settingsPanelDisabled,
+      );
       expect(parseVisualRoute('battle_scene'), VisualRoute.battleScene);
       expect(
         parseVisualRoute('equipment_detail_screen'),

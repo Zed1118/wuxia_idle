@@ -37,6 +37,8 @@ import '../../mainline/presentation/stage_entry_flow.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../save_slot/application/slot_list_provider.dart';
 import '../../save_slot/presentation/save_select_screen.dart';
+import '../../settings/application/display_settings_providers.dart';
+import '../../settings/domain/display_settings.dart';
 import '../../settings/presentation/settings_panel.dart';
 import '../../splash/presentation/splash_screen.dart';
 import '../../../data/slot_summary.dart';
@@ -124,6 +126,12 @@ class VisualRouteApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
+      overrides: [
+        if (route == VisualRoute.settingsPanelDisabled)
+          displaySettingsProvider.overrideWith(
+            (ref) async => const DisplaySettings(fullscreen: true),
+          ),
+      ],
       child: MaterialApp(
         title: UiStrings.appTitle,
         debugShowCheckedModeBanner: false,
@@ -301,7 +309,26 @@ Future<Widget> buildVisualTarget(
       await OnboardingService(
         isar: isar,
       ).ensureFoundingMasters(soloStart: false);
-      return _SettingsPanelPreview(onReady: onTargetReady);
+      return _SettingsPanelPreview(
+        position: _SettingsPanelPreviewPosition.top,
+        onReady: onTargetReady,
+      );
+    case VisualRoute.settingsPanelBottom:
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
+      return _SettingsPanelPreview(
+        position: _SettingsPanelPreviewPosition.bottom,
+        onReady: onTargetReady,
+      );
+    case VisualRoute.settingsPanelDisabled:
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
+      return _SettingsPanelPreview(
+        position: _SettingsPanelPreviewPosition.display,
+        onReady: onTargetReady,
+      );
     case VisualRoute.techniquePanelTierAll:
       await Phase2SeedService(isar: isar).seedVisualMasterAllTiers();
       return const TechniquePanelScreen(characterId: 1);
@@ -1250,9 +1277,12 @@ Future<void> _seedCleanMainMenu(Isar isar) async {
 /// 设置弹窗验收：以既有水墨门面为中性背景，并通过 [SettingsPanel.show] 打开
 /// 生产弹窗。避免主菜单根据本机存档自动叠加「归来」等一次性流程，污染验收帧。
 /// READY 延迟到弹窗过渡完成，避免截图命中半透明动画中间帧。
-class _SettingsPanelPreview extends StatefulWidget {
-  const _SettingsPanelPreview({this.onReady});
+enum _SettingsPanelPreviewPosition { top, display, bottom }
 
+class _SettingsPanelPreview extends StatefulWidget {
+  const _SettingsPanelPreview({required this.position, this.onReady});
+
+  final _SettingsPanelPreviewPosition position;
   final ValueChanged<String>? onReady;
 
   @override
@@ -1260,15 +1290,52 @@ class _SettingsPanelPreview extends StatefulWidget {
 }
 
 class _SettingsPanelPreviewState extends State<_SettingsPanelPreview> {
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _displaySectionKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      unawaited(SettingsPanel.show(context));
+      unawaited(
+        SettingsPanel.show(
+          context,
+          scrollController: _scrollController,
+          displaySectionKey: _displaySectionKey,
+        ),
+      );
       await Future<void>.delayed(const Duration(milliseconds: 400));
-      if (mounted) widget.onReady?.call('dialog=settings_panel_open');
+      if (!mounted) return;
+      await _positionScroll();
+      await WidgetsBinding.instance.endOfFrame;
+      if (mounted) {
+        widget.onReady?.call(
+          'dialog=settings_panel_open position=${widget.position.name}',
+        );
+      }
     });
+  }
+
+  Future<void> _positionScroll() async {
+    if (!_scrollController.hasClients) return;
+    switch (widget.position) {
+      case _SettingsPanelPreviewPosition.top:
+        _scrollController.jumpTo(0);
+      case _SettingsPanelPreviewPosition.display:
+        final targetContext = _displaySectionKey.currentContext;
+        if (targetContext != null) {
+          await Scrollable.ensureVisible(targetContext, alignment: 0);
+        }
+      case _SettingsPanelPreviewPosition.bottom:
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override

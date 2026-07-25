@@ -21,13 +21,30 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 设置面板：3 滑条 + 静音开关，改动即存（provider 内持久化 + 应用引擎）。
 class SettingsPanel extends ConsumerWidget {
-  const SettingsPanel({super.key});
+  const SettingsPanel({
+    super.key,
+    this.scrollController,
+    this.displaySectionKey,
+  });
 
-  static Future<void> show(BuildContext context) {
+  final ScrollController? scrollController;
+  final Key? displaySectionKey;
+
+  static Future<void> show(
+    BuildContext context, {
+    ScrollController? scrollController,
+    Key? displaySectionKey,
+  }) {
     return PaperDialog.show<void>(
       context,
       title: UiStrings.settingsTitle,
-      body: const SizedBox(width: 360, child: SettingsPanel()),
+      body: SizedBox(
+        width: 360,
+        child: SettingsPanel(
+          scrollController: scrollController,
+          displaySectionKey: displaySectionKey,
+        ),
+      ),
       actions: [
         Builder(
           builder: (ctx) => PlaqueButton(
@@ -57,6 +74,7 @@ class SettingsPanel extends ConsumerWidget {
           maxHeight: MediaQuery.of(context).size.height * 0.68,
         ),
         child: SingleChildScrollView(
+          controller: scrollController,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -88,7 +106,10 @@ class SettingsPanel extends ConsumerWidget {
               const _SettingsSectionHeader(UiStrings.settingsComfortSection),
               const _GameplayComfortSection(),
               const Divider(height: 1),
-              const _SettingsSectionHeader(UiStrings.settingsDisplaySection),
+              _SettingsSectionHeader(
+                UiStrings.settingsDisplaySection,
+                key: displaySectionKey,
+              ),
               const _DisplaySettingsSection(),
               const Divider(height: 1),
               const _SettingsSectionHeader(UiStrings.settingsSaveSection),
@@ -122,7 +143,7 @@ class SettingsPanel extends ConsumerWidget {
 }
 
 class _SettingsSectionHeader extends StatelessWidget {
-  const _SettingsSectionHeader(this.label);
+  const _SettingsSectionHeader(this.label, {super.key});
 
   final String label;
 

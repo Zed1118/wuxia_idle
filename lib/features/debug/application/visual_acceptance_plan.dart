@@ -23,12 +23,14 @@ class VisualAcceptanceRoute {
     required this.route,
     required this.id,
     required this.seed,
+    required this.kind,
     required this.checks,
   });
 
   final VisualRoute route;
   final String id;
   final String seed;
+  final VisualRouteKind kind;
   final List<String> checks;
 }
 
@@ -41,6 +43,8 @@ const List<VisualRoute> _smokeRoutes = [
   VisualRoute.mainMenuClean,
   VisualRoute.mainMenu,
   VisualRoute.settingsPanel,
+  VisualRoute.settingsPanelBottom,
+  VisualRoute.settingsPanelDisabled,
   VisualRoute.inventory,
   VisualRoute.battleScene,
   VisualRoute.mainlineFirstClearBattle,
@@ -78,6 +82,7 @@ final List<VisualAcceptanceRoute> _battleRoutes = [
       route: route,
       id: route.id,
       seed: visualAcceptanceSeed,
+      kind: route.kind,
       checks: _checksFor(route),
     ),
 ];
@@ -86,6 +91,7 @@ VisualAcceptanceRoute _battleStageRoute(String id) => VisualAcceptanceRoute(
   route: VisualRoute.battleStageAudit,
   id: id,
   seed: visualAcceptanceSeed,
+  kind: VisualRoute.battleStageAudit.kind,
   checks: _checksFor(VisualRoute.battleStageAudit),
 );
 
@@ -93,6 +99,7 @@ VisualAcceptanceRoute _battleTowerRoute(int floor) => VisualAcceptanceRoute(
   route: VisualRoute.battleTowerAudit,
   id: 'battle_audit_tower_${_twoDigits(floor)}',
   seed: visualAcceptanceSeed,
+  kind: VisualRoute.battleTowerAudit.kind,
   checks: _checksFor(VisualRoute.battleTowerAudit),
 );
 
@@ -114,6 +121,7 @@ List<VisualAcceptanceRoute> visualAcceptanceRoutes(
         route: route,
         id: route.id,
         seed: visualAcceptanceSeed,
+        kind: route.kind,
         checks: _checksFor(route),
       ),
   ];
@@ -142,12 +150,12 @@ String visualAcceptanceChecklistMarkdown(
       '- capture: `tools/visual_capture/visual_capture.sh --suite ${suite.name}`',
     )
     ..writeln()
-    ..writeln('| route | seed | checks |')
-    ..writeln('|---|---|---|');
+    ..writeln('| route | kind | seed | checks |')
+    ..writeln('|---|---|---|---|');
 
   for (final target in visualAcceptanceRoutes(suite)) {
     buffer.writeln(
-      '| `${target.id}` | `${target.seed}` | '
+      '| `${target.id}` | `${target.kind.name}` | `${target.seed}` | '
       '${target.checks.join('<br>')} |',
     );
   }
@@ -177,6 +185,16 @@ List<String> _checksFor(VisualRoute route) {
       '真实设置弹窗已完全打开',
       '浅宣纸上的标题、滑条、开关和下拉均为墨色可读态',
       '720p 下底部操作区固定可见且正文可滚动',
+    ],
+    VisualRoute.settingsPanelBottom => const [
+      '真实单栏滚动已抵达底部',
+      '存档管理、切换存档、关于与退出入口完整可读',
+      '720p 下关闭按钮仍固定可见且无内容遮挡',
+    ],
+    VisualRoute.settingsPanelDisabled => const [
+      '真实显示设置段已进入视口',
+      '全屏开启时分辨率下拉呈明确禁用态',
+      '禁用态仍可辨认但不与可交互控件混淆',
     ],
     VisualRoute.inventory => const ['背包分组清楚', '装备/材料标题无溢出', '操作按钮 hitbox 可见'],
     VisualRoute.battleScene => const [

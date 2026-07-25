@@ -10,6 +10,14 @@ enum VisualRoute {
     'settings_panel',
     '设置弹窗·真实 SettingsPanel.show 生产路径(浅宣纸组件对比 + 720p 滚动)',
   ),
+  settingsPanelBottom(
+    'settings_panel_bottom',
+    '设置弹窗·真实生产单栏底部(存档管理 + 切换存档 + 关于 + 退出)',
+  ),
+  settingsPanelDisabled(
+    'settings_panel_disabled',
+    '设置弹窗·真实生产显示段(全屏开启 + 分辨率禁用态)',
+  ),
   techniquePanelTierAll(
     'technique_panel_tier_all',
     '心法面板·武圣满学 7 阶分组头同屏(水墨文字头梯度验收)',
@@ -354,6 +362,8 @@ enum VisualRoute {
   /// 需要由目标战斗状态控制 READY 的 V2 验收路由。
   bool get controlsReadiness => switch (this) {
     settingsPanel ||
+    settingsPanelBottom ||
+    settingsPanelDisabled ||
     battleV2CasualtyReplacement ||
     battleV2FastForwardPeak ||
     battleV2PreResult ||
@@ -363,7 +373,41 @@ enum VisualRoute {
     battleV2AutoRotationSecond => true,
     _ => false,
   };
+
+  /// 验收目标的语义类型。完整生产页面、局部组件、图册和瞬时浮层不能按
+  /// 同一套标准评分，因此在 manifest 中显式区分。
+  VisualRouteKind get kind {
+    if (id.contains('gallery')) return VisualRouteKind.gallery;
+    if (this == VisualRoute.redlineAudit ||
+        this == VisualRoute.battleTapPreview ||
+        this == VisualRoute.hub) {
+      return VisualRouteKind.component;
+    }
+    if (id.contains('dialog') ||
+        id.contains('popup') ||
+        id.contains('snackbar') ||
+        id.contains('caption') ||
+        this == VisualRoute.settingsPanel ||
+        this == VisualRoute.settingsPanelBottom ||
+        this == VisualRoute.settingsPanelDisabled ||
+        this == VisualRoute.encounterOutcomeSkillBanner ||
+        this == VisualRoute.battleVictoryFirstClear ||
+        this == VisualRoute.battleFirstClearShowcase ||
+        this == VisualRoute.battleDefeat ||
+        this == VisualRoute.defeatInnerDemonResidue ||
+        this == VisualRoute.battleTreasureGlowPeak ||
+        this == VisualRoute.battleTreasureGlowRest ||
+        this == VisualRoute.battleTreasureZhongqi ||
+        this == VisualRoute.offlineRecapPassive ||
+        this == VisualRoute.discipleJoinCeremony ||
+        this == VisualRoute.heroCamera) {
+      return VisualRouteKind.transientOverlay;
+    }
+    return VisualRouteKind.productionShell;
+  }
 }
+
+enum VisualRouteKind { productionShell, component, gallery, transientOverlay }
 
 /// 纯函数:id 字符串 → 枚举,未知/空 → null。便于单测。
 VisualRoute? parseVisualRoute(String raw) {

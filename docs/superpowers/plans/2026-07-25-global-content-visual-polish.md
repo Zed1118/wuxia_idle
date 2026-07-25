@@ -94,7 +94,7 @@
 
 ## 当前恢复点
 
-- **状态**：Slice 3A（启动壳验收入口）已完成，Slice 3B（设置状态与 route metadata）进行中。
+- **状态**：Slice 3 已完成，准备进入 Slice 4（战斗资产角色）。
 - **最后完成**：
   - Slice 1 章节路引已提交：`c5e9afc7`；
   - 新增 `paperSurfaceTheme`，统一浅宣纸上的 ColorScheme、TextTheme、ListTile、Switch、Slider、Dropdown、Menu、输入框、禁用态与交互态；
@@ -107,12 +107,17 @@
   - 新增真实 `SplashScreen` 加载态 route；
   - 新增 `SaveSelectScreen` 三空槽与“最近存档 + 两空槽”两条确定性 route；
   - 新增 `main_menu_clean`，并让原 `main_menu` 同样先清理视觉库中的 active retreat、刷新在线基准，避免本机存档自动弹出归来卡；
-  - 启动/存档/纯净主菜单 4 route × 2 视口共 8 张真窗口截图均 READY、无异常。
+  - 启动/存档/纯净主菜单 4 route × 2 视口共 8 张真窗口截图均 READY、无异常；
+  - Slice 3A 已提交：`feb58d14`；
+  - 新增 `settings_panel_bottom` 与 `settings_panel_disabled`，分别稳定停在真实设置单栏底部和“全屏开启→分辨率禁用”状态；
+  - 设置面板仅增加可选验收滚动控制器/显示段锚点，生产调用默认值、360 宽度、分区顺序与交互路径均不变；
+  - route metadata 已区分 `productionShell`、`component`、`gallery`、`transientOverlay`，checklist 显式输出类型；
+  - 两条隐藏状态 route 已加入 smoke，1280×720、1440×900 真窗口均确认关闭动作固定、禁用态清楚、无溢出。
 - **下一步**：
-  1. 增加设置底部与禁用状态 route；
-  2. 为 route metadata 标注 production shell、component、gallery、transient overlay；
-  3. 更新 smoke/checklist 契约并补回归；
-  4. 双视口截图后提交 Slice 3B。
+  1. 盘点正式战斗 route 中 portrait/standee/detail 的角色混用；
+  2. 先建立资产角色门禁和可重复失败样例；
+  3. 修复最高曝光的方图、半身、同脸敌我与明显尺度异常；
+  4. 双视口真战斗截图后提交 Slice 4。
 - **已跑验证**：
   - 建分支前主线视觉/资产 targeted tests：55 pass / 0 fail；
   - 建分支前 `flutter analyze`：0 issue；
@@ -128,6 +133,10 @@
   - Slice 3A splash/save/main-menu/debug route targeted tests：57 pass / 0 fail；
   - Slice 3A `flutter analyze`：0 issue；
   - Slice 3A 真窗口截图：4 route × 1280×720、1440×900，8/8 READY 且无 overflow/exception。
+  - Slice 3B 设置/弹窗/route targeted tests：64 pass / 0 fail；
+  - Slice 3B 锚点复核 targeted tests：50 pass / 0 fail；
+  - Slice 3B `flutter analyze`：0 issue；
+  - Slice 3B 真窗口截图：`settings_panel_bottom`、`settings_panel_disabled` × 1280×720、1440×900，4/4 READY 且无 overflow/exception。
 - **阻塞项**：无。
 - **残留风险**：
   - 伪文字规则和跨平台正式字体方案仍需后续设计拍板；

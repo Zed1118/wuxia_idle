@@ -16,6 +16,8 @@ void main() {
         'main_menu_clean',
         'main_menu',
         'settings_panel',
+        'settings_panel_bottom',
+        'settings_panel_disabled',
         'inventory',
         'battle_scene',
         'technique_panel_tier_all',
@@ -26,6 +28,23 @@ void main() {
         'encounter_codex',
         'skill_codex',
       ]),
+    );
+  });
+
+  test('route metadata 区分生产壳、组件、图册与瞬时浮层', () {
+    final routes = visualAcceptanceRoutes(VisualAcceptanceSuite.full);
+
+    expect(VisualRoute.splash.kind, VisualRouteKind.productionShell);
+    expect(VisualRoute.saveSelectFilled.kind, VisualRouteKind.productionShell);
+    expect(VisualRoute.redlineAudit.kind, VisualRouteKind.component);
+    expect(VisualRoute.enemyGallery.kind, VisualRouteKind.gallery);
+    expect(
+      VisualRoute.settingsPanelDisabled.kind,
+      VisualRouteKind.transientOverlay,
+    );
+    expect(
+      routes.map((target) => target.kind).toSet(),
+      containsAll(VisualRouteKind.values),
     );
   });
 
@@ -91,6 +110,10 @@ void main() {
     expect(markdown, contains('`save_select_filled`'));
     expect(markdown, contains('`main_menu_clean`'));
     expect(markdown, contains('`settings_panel`'));
+    expect(markdown, contains('`settings_panel_bottom`'));
+    expect(markdown, contains('`settings_panel_disabled`'));
+    expect(markdown, contains('| route | kind | seed | checks |'));
+    expect(markdown, contains('`transientOverlay`'));
     expect(markdown, contains('浅宣纸上的标题'));
   });
 }
