@@ -67,6 +67,15 @@ class WuxiaColors {
       isEmpty,
       reason: '主 app / 视觉验收 app 不应再使用 ThemeData.dark/light 默认主题。',
     );
+    expect(
+      issues.where(
+        (i) =>
+            i.severity == ArtToneSeverity.high ||
+            i.severity == ArtToneSeverity.medium,
+      ),
+      isEmpty,
+      reason: '高风险 Material 默认色和中风险高饱和硬编码色必须先迁入用途 token。',
+    );
     expect(issues, isNotEmpty, reason: '当前代码库仍有历史硬编码色，报告应持续给出清单供后续小批量清账。');
   });
 }

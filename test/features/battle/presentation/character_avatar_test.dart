@@ -213,10 +213,15 @@ void main() {
       ),
     );
 
-    expect(
-      find.byKey(const ValueKey('battle.stageStandeeGrounding')),
-      findsOneWidget,
+    final groundingFinder = find.byKey(
+      const ValueKey('battle.stageStandeeGrounding'),
     );
+    expect(groundingFinder, findsOneWidget);
+
+    final grounding = tester.widget<Positioned>(groundingFinder);
+    expect(grounding.left, lessThan(160 * 0.17));
+    expect(grounding.right, lessThan(160 * 0.17));
+    expect(grounding.height, greaterThan(230 * 0.065));
   });
 
   testWidgets('战场人物信息板使用半透明窄墨拓而非纯黑矩形', (tester) async {
@@ -251,6 +256,10 @@ void main() {
     final name = tester.widget<Text>(find.text('黑风寨主'));
     expect(name.style?.color, WuxiaUi.paper);
     expect(name.style?.shadows?.single.blurRadius, lessThanOrEqualTo(2));
+    expect(
+      find.byKey(const ValueKey('battle.stageStatusAnchor')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('战场立绘使用固定暖灰色级与亚像素边缘柔化层', (tester) async {
