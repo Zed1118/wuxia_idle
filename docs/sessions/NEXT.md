@@ -19,7 +19,7 @@ Ch17「沙海纵深」整章实装已完成、合入 main 并 push；主线达 1
 【环境快照】
 - 本会话内容 commit 3 个（`bff16da8` 实装 / `ddbe39b6` 2A 修复 / `754c96b6` 合并），其后为若干 docs 收尾 commit·**全部已 push**（**HEAD sha 与 commit 数一律现跑 `git rev-parse --short HEAD` / `git status -sb` 实证，禁转抄本提示词——本行不写自指计数正是因为它会被写它的那次 commit 推翻**）
 - `flutter analyze --no-pub` **EXIT=0 · No issues found** —— 2026-07-26 19:5x 主 checkout 实测
-- 全量 `flutter test --no-pub` **4711 pass / 0 fail**（EXIT=0 · All tests passed! · `[E]` 0 · `-1` 0）—— **主 checkout 合并态实测于 `754c96b6`**；其后 `327413b3`/`e1b085a1` 均为纯文档 commit，故此数对当前 HEAD 仍成立。**一旦动代码必须重新实测。**
+- 全量 `flutter test --no-pub` **4711 pass / 0 fail**（EXIT=0 · All tests passed! · `[E]` 0 · `-1` 0）—— **主 checkout 合并态实测于 `754c96b6`**；其后所有 commit 均只动 `docs/` 与 `PROGRESS.md`（可用 `git diff --name-only 754c96b6..HEAD` 复核），故此数对当前 HEAD 仍成立。**一旦动代码必须重新实测。**
 - 主线 **17 章 85 关** · cap **40**（宗师·圆熟）· skills **216** · boss 敌 **36** · 图鉴 catalog **49** · 首通 **Lv102**（cumExp 3633）· 全内容 **Lv118**
 - Ch17 美术 **11 图未出**（`test/fixtures/known_missing_assets.txt` 已登记·errorBuilder 兜底）
 - PROGRESS **98 行**（100 上限内）
