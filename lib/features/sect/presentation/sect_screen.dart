@@ -7,6 +7,7 @@ import '../../../core/domain/character.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../../shared/utils/asset_framing.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
@@ -149,6 +150,9 @@ class _SectHallBackdrop extends StatelessWidget {
         WuxiaImage(
           'assets/scenes/sect_hall_main_v1.png',
           fit: BoxFit.cover,
+          alignment: assetFramingForScene(
+            'assets/scenes/sect_hall_main_v1.png',
+          ).alignment,
           errorBuilder: (_, _, _) =>
               const ColoredBox(color: WuxiaColors.paperUnderlay),
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../../shared/utils/asset_framing.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 
 enum BattleSceneBackgroundStyle {
@@ -53,6 +54,13 @@ class BattleSceneBackground extends StatelessWidget {
         resolvedStyle == BattleSceneBackgroundStyle.mainline ||
         resolvedStyle == BattleSceneBackgroundStyle.boss ||
         p?.contains('battle_mountain_pass_stage') == true;
+    final resolvedAsset = hasImage
+        ? _resolvedBackgroundAsset(
+            p,
+            isTowerScene: isTowerScene,
+            isMountainPassScene: isMountainPassScene,
+          )
+        : null;
     final profile = _SceneDepthProfile.resolve(path: p, style: resolvedStyle);
     final vignetteAlpha = hasImage
         ? profile.vignetteAlpha * profile.imageVignetteFactor
@@ -77,17 +85,14 @@ class BattleSceneBackground extends StatelessWidget {
         ),
         if (hasImage)
           WuxiaImage(
-            _resolvedBackgroundAsset(
-              p,
-              isTowerScene: isTowerScene,
-              isMountainPassScene: isMountainPassScene,
-            ),
+            resolvedAsset!,
             key: isTowerScene
                 ? const ValueKey('battle_scene_tower_asset')
                 : isMountainPassScene
                 ? const ValueKey('battle_scene_mainline_asset')
                 : null,
             fit: BoxFit.cover,
+            alignment: assetFramingForScene(resolvedAsset).alignment,
             errorBuilder: (_, _, _) => const SizedBox.shrink(),
           ),
         CustomPaint(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/colors.dart';
 import '../theme/wuxia_tokens.dart';
+import '../utils/asset_framing.dart';
 import 'asset_fallback.dart';
 import 'wuxia_image.dart';
 
@@ -23,12 +24,14 @@ class PortraitFrame extends StatelessWidget {
     this.placeholderText,
     this.placeholderShapePath,
     this.fit = BoxFit.cover,
+    this.alignment,
   });
 
   final String? portraitPath;
   final double size;
   final Color borderColor;
   final BoxFit fit;
+  final AlignmentGeometry? alignment;
 
   /// null 立绘时的首字水墨占位文本(通常传角色名)。为 null 则不占位。
   final String? placeholderText;
@@ -51,6 +54,8 @@ class PortraitFrame extends StatelessWidget {
           : WuxiaImage(
               portraitPath!,
               fit: fit,
+              alignment:
+                  alignment ?? assetFramingForPortrait(portraitPath!).alignment,
               errorBuilder: wuxiaAssetErrorBuilder(
                 () => Container(
                   color: WuxiaColors.avatarFill,

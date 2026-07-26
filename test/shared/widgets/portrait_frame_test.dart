@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
+import 'package:wuxia_idle/shared/utils/asset_framing.dart';
 import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_image.dart';
 
 void main() {
   testWidgets('portraitPath 非空 → 渲染 Image', (tester) async {
@@ -15,6 +17,44 @@ void main() {
       ),
     );
     expect(find.byType(Image), findsOneWidget);
+    expect(
+      tester.widget<WuxiaImage>(find.byType(WuxiaImage)).alignment,
+      assetFramingForPortrait(
+        'assets/characters/sect_candidate_bamboo.png',
+      ).alignment,
+    );
+  });
+
+  testWidgets('调用方可覆盖生产肖像焦点，不改变画框尺寸与 fit', (tester) async {
+    const alignment = Alignment(0.2, -0.7);
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: PortraitFrame(
+          portraitPath: 'assets/characters/sect_candidate_bamboo.png',
+          size: 48,
+          borderColor: WuxiaColors.border,
+          alignment: alignment,
+        ),
+      ),
+    );
+
+    final image = tester.widget<WuxiaImage>(find.byType(WuxiaImage));
+    expect(image.alignment, alignment);
+    expect(image.fit, BoxFit.cover);
+    final frame = tester.widget<Container>(
+      find
+          .descendant(
+            of: find.byType(PortraitFrame),
+            matching: find.byWidgetPredicate(
+              (widget) =>
+                  widget is Container &&
+                  widget.constraints?.maxWidth == 48 &&
+                  widget.constraints?.maxHeight == 48,
+            ),
+          )
+          .first,
+    );
+    expect(frame.constraints?.biggest, const Size(48, 48));
   });
 
   testWidgets('portraitPath 为 null + 无 placeholderText → 不渲染 Image 也不显文字', (

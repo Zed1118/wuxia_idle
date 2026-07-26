@@ -120,7 +120,7 @@
 
 ## 六、当前恢复点
 
-- 状态：Slice 1、Slice 2 已提交；Slice 3 已完成并提交前验收；Slice 4 待开始；
+- 状态：Slice 1–3 已提交；Slice 4 已完成并通过提交前验收；Slice 5 待开始；
 - 最后完成：
   - 从 `fb5a8851` 建立独立分支/worktree；
   - `flutter pub get`；
@@ -144,10 +144,14 @@
   - 新增全装备 1024 方图、精确重复、感知近似、透明角、主体占比、明暗层次和色键残边门禁；
   - 感知审计另发现 29 组历史近似重复，已显式登记为只减不增 allowlist；
   - 新增三件修复对照 route 和锁脉囊生产详情 route，双视口目检通过。
+  - Slice 3 已提交：`be86a168 补齐断魂庄装备专用详情图`；
+  - 四张离群场景登记 0–1 焦点与安全区，战斗背景和门派厅堂生产组件消费裁切焦点；
+  - 12 张生产纵向肖像改为脸部/上半身优先裁切，调用方保留可选覆盖，透明战斗站姿与未登记素材维持居中；
+  - 断崖瀑布实战和门派成员页双视口目检通过，画面主体完整且页面几何未改变。
 - 下一步：
-  - 提交 Slice 3；
-  - 为四张尺寸离群场景补焦点/安全裁切元数据并接入生产背景组件；
-  - 评估生产圆形头像 focus/crop 的最小兼容接线。
+  - 提交 Slice 4；
+  - 执行 Slice 5 全量测试、视觉复查和残留任务分级；
+  - 更新终验记录并冻结 `[READY]`。
 - 已跑验证：
   - `flutter analyze`：0 issue（代码生成后，2026-07-26）。
   - `flutter test --no-pub test/features/battle/presentation/character_avatar_test.dart test/features/battle/presentation/damage_popup_test.dart test/tools/art_tone_audit_test.dart`：29 pass / 0 fail。
@@ -162,5 +166,9 @@
   - `flutter test --no-pub test/features/debug/visual_route_test.dart test/tools/equipment_detail_asset_quality_test.dart`：46 pass / 0 fail。
   - `flutter analyze`：0 issue（Slice 3 代码接线后）。
   - `equipment_detail_repair_gallery`、`equipment_detail_gauntlet_reward` × 1280×720、1440×900：4/4 READY，异常日志 0；压缩后生产详情 route 再验 2/2 READY。
+  - `flutter test --no-pub test/shared/utils/asset_framing_test.dart test/shared/widgets/portrait_frame_test.dart test/features/battle/presentation/battle_scene_background_test.dart test/features/sect/sect_screen_test.dart`：29 pass / 0 fail。
+  - 六组 `PortraitFrame` 生产消费页回归：67 pass / 0 fail。
+  - Slice 4 scoped analyze：0 issue。
+  - `battle_audit_stage_13_04`、`sect_screen_npc` × 1280×720、1440×900：4/4 READY，异常日志 0。
 - 阻塞项：
   - 无；29 组历史感知近似详情图、正式字体、九张透明站姿、Windows 实机和伪文字规则进入最终残留清单，不阻塞 Slice 3。
