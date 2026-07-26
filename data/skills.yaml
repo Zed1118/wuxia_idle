@@ -3433,6 +3433,11 @@ skills:
       effects:
         shuLian: { damage_pct: 0.10 }
         jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        # 2026-07-26 Ch17 批补回(用户拍板 2A):本行原缺失,致化境层对铁马冰河零加成。
+        # 同注释「沿青锋绝锚」的一族——青锋绝 skill_qingshan_qingfeng / 千钧坠岳
+        # skill_qian_jun_zhui_yue / 十荡十决 skill_shi_dang_shi_jue——三者 proficiency
+        # 三层完全一致且均有本行,唯本招缺,判定为 Ch16 批(5441ea3d)写入时截断。
+        huaJing: { cooldown_delta: -1 }
 
   - id: skill_ping_sha_luo_yan
     name: 平沙落雁
