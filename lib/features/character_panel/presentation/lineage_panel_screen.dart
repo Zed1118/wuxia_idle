@@ -11,6 +11,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../ascension/application/ascend_service_providers.dart';
 import '../../ascension/presentation/ascension_screen.dart';
 import '../../lineup/presentation/team_lineup_screen.dart';
@@ -37,27 +38,25 @@ class LineagePanelScreen extends ConsumerWidget {
       track: BgmTrack.lineage,
       child: Scaffold(
         backgroundColor: WuxiaColors.background,
-        appBar: AppBar(
-          backgroundColor: WuxiaColors.background,
-          title: const Text(UiStrings.lineageCodexTitle),
-          leading: Navigator.of(context).canPop()
-              ? BackButton(onPressed: () => Navigator.of(context).pop())
+        appBar: WuxiaTitleBar(
+          title: UiStrings.lineageCodexTitle,
+          showHome: false,
+          onBack: Navigator.of(context).canPop()
+              ? () => Navigator.of(context).pop()
               : null,
-          actions: [
-            // 出战编成入口(玩法评估 §十三 #4 · spec §1:顶部动作位,主菜单不加)。
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: TextButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const TeamLineupScreen(),
-                  ),
+          // 出战编成入口(玩法评估 §十三 #4 · spec §1:顶部动作位,主菜单不加)。
+          trailing: Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const TeamLineupScreen(),
                 ),
-                style: TextButton.styleFrom(foregroundColor: WuxiaUi.gold),
-                child: const Text(UiStrings.lineupTitle),
               ),
+              style: TextButton.styleFrom(foregroundColor: WuxiaUi.goldOnPaper),
+              child: const Text(UiStrings.lineupTitle),
             ),
-          ],
+          ),
         ),
         body: SafeArea(
           child: async.when(
@@ -152,9 +151,12 @@ class _GenerationSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              LineageSectionTitle(
-                UiStrings.lineageCodexGenerationLabel(genIndex),
+              Expanded(
+                child: LineageSectionTitle(
+                  UiStrings.lineageCodexGenerationLabel(genIndex),
+                ),
               ),
+              const SizedBox(width: 12),
               _GenerationTag(isCurrent: gen.isCurrent),
             ],
           ),

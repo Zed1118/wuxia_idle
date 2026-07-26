@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_scene_background.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
+import 'package:wuxia_idle/shared/utils/asset_framing.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_image.dart';
 
 Widget _wrap(Widget c) => MaterialApp(home: Scaffold(body: c));
@@ -233,8 +234,37 @@ void main() {
       WuxiaUi.battleMountainPassStageCool,
     );
     expect(
+      tester
+          .widget<WuxiaImage>(
+            find.byKey(const ValueKey('battle_scene_mainline_asset')),
+          )
+          .alignment,
+      assetFramingForScene(WuxiaUi.battleMountainPassStageCool).alignment,
+    );
+    expect(
       find.byKey(const ValueKey('battle_scene_tower_color_grade')),
       findsNothing,
+    );
+  });
+
+  testWidgets('断崖瀑布背景消费登记焦点，普通背景仍保持居中', (tester) async {
+    const cliffPath = 'assets/scenes/battle_cliffwaterfall.png';
+    await tester.pumpWidget(
+      _wrap(const BattleSceneBackground(path: cliffPath)),
+    );
+    expect(
+      tester.widget<WuxiaImage>(find.byType(WuxiaImage)).alignment,
+      assetFramingForScene(cliffPath).alignment,
+    );
+
+    await tester.pumpWidget(
+      _wrap(
+        const BattleSceneBackground(path: 'assets/scenes/battle_citywall.png'),
+      ),
+    );
+    expect(
+      tester.widget<WuxiaImage>(find.byType(WuxiaImage)).alignment,
+      Alignment.center,
     );
   });
 

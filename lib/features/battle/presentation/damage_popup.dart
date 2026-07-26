@@ -215,7 +215,7 @@ class _PopupContent extends StatelessWidget {
 
   static Color _color(PopupType type) => switch (type) {
     PopupType.normal => const Color(0xFF211A13),
-    PopupType.critical => const Color(0xFFB72218),
+    PopupType.critical => WuxiaColors.battleCrimson,
     PopupType.dodge => WuxiaColors.popupDodge,
   };
 }

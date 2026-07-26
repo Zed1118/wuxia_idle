@@ -18,6 +18,8 @@ import 'package:wuxia_idle/features/expedition/presentation/expedition_overview_
 import 'package:wuxia_idle/features/expedition/presentation/expedition_recap_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/ink_archive_chrome.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 
 import '../../support/isar_test_support.dart';
 
@@ -129,6 +131,10 @@ void main() {
     );
     expect(find.text(UiStrings.expeditionDispatchButton), findsOneWidget);
     expect(find.text(UiStrings.expeditionSelectedCount(0)), findsOneWidget);
+    expect(find.byType(WuxiaTitleBar), findsOneWidget);
+    expect(find.byType(InkPageHeader), findsOneWidget);
+    expect(find.byType(InkSectionLabel), findsNWidgets(2));
+    expect(find.byType(InkListCard), findsNWidgets(6));
     expect(
       tester
           .widgetList<PortraitFrame>(find.byType(PortraitFrame))

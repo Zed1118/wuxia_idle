@@ -3,6 +3,7 @@ export '../../theme/wuxia_tokens.dart';
 export 'light_paper_panel.dart';
 export 'error_fallback.dart';
 export 'ink_loading.dart';
+export 'ink_archive_chrome.dart';
 export 'section_header.dart';
 export 'seal_badge.dart';
 export 'item_slot.dart';

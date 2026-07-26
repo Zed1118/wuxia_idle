@@ -9,6 +9,8 @@ import 'package:wuxia_idle/features/character_panel/application/lineage_codex_pr
 import 'package:wuxia_idle/features/character_panel/presentation/lineage_character_detail_screen.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/lineage_panel_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/ink_archive_chrome.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 
 /// LineagePanelScreen widget 测试（门派谱1.1 Task4 · 纵向世代卷）。
 ///
@@ -95,6 +97,9 @@ void main() {
     expect(find.text(UiStrings.lineageCodexGenerationLabel(1)), findsWidgets);
     expect(find.text('林青崖'), findsOneWidget);
     expect(find.text(UiStrings.lineageCodexCurrentTag), findsOneWidget);
+    expect(find.byType(WuxiaTitleBar), findsOneWidget);
+    expect(find.byType(InkListCard), findsWidgets);
+    expect(find.byType(InkSectionLabel), findsWidgets);
   });
 
   testWidgets('点祖师卡 push 角色详情屏', (tester) async {

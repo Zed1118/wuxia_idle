@@ -7,6 +7,7 @@ import 'package:wuxia_idle/features/sect/domain/sect.dart';
 import 'package:wuxia_idle/features/sect/domain/sect_event.dart';
 import 'package:wuxia_idle/features/sect/presentation/sect_screen.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_image.dart';
+import 'package:wuxia_idle/shared/utils/asset_framing.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 
 /// P3.4 sect_event Batch 2.3 widget 测族(spec §7 R4 + R5)。
@@ -105,6 +106,17 @@ void main() {
               widget.assetPath == 'assets/scenes/sect_hall_main_v1.png',
         ),
         findsOneWidget,
+      );
+      final backdrop = tester.widget<WuxiaImage>(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is WuxiaImage &&
+              widget.assetPath == 'assets/scenes/sect_hall_main_v1.png',
+        ),
+      );
+      expect(
+        backdrop.alignment,
+        assetFramingForScene('assets/scenes/sect_hall_main_v1.png').alignment,
       );
     });
 

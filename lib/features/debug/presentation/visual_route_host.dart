@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/game_repository.dart';
+import '../../../data/defs/equipment_def.dart';
 import 'battle_test_menu.dart';
 import 'redline_audit_screen.dart';
 import '../../../core/domain/attributes.dart';
@@ -676,6 +677,23 @@ Future<Widget> buildVisualTarget(
       return EquipmentDetailScreen(equipment: eq, def: def);
     case VisualRoute.equipmentDetailGallery:
       return const _EquipmentDetailGallery();
+    case VisualRoute.equipmentDetailRepairGallery:
+      return const _EquipmentDetailRepairGallery();
+    case VisualRoute.equipmentDetailGauntletReward:
+      final def = GameRepository.instance.getEquipment(
+        'weapon_haojiahuo_suo_mai_nang',
+      );
+      final eq = Equipment.create(
+        defId: def.id,
+        tier: def.tier,
+        slot: def.slot,
+        obtainedAt: DateTime(2026, 7, 26),
+        obtainedFrom: 'visual_route',
+        baseAttack: def.baseAttackMin,
+        baseHealth: def.baseHealthMin,
+        baseSpeed: def.baseSpeedMin,
+      )..id = 2;
+      return EquipmentDetailScreen(equipment: eq, def: def);
     case VisualRoute.narrativeScene:
       const envStage = String.fromEnvironment('VISUAL_STAGE');
       final stageId = envStage.isEmpty ? 'stage_01_05' : envStage;
@@ -2633,6 +2651,154 @@ class _EquipmentDetailGallery extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+/// 断魂庄三件修复素材的聚焦验收：左看原 icon，右看专用 detail 在深/浅底的边缘表现。
+class _EquipmentDetailRepairGallery extends StatelessWidget {
+  const _EquipmentDetailRepairGallery();
+
+  static const _ids = <String>[
+    'weapon_haojiahuo_suo_mai_nang',
+    'armor_haojiahuo_zhen_yue_tie_yi',
+    'accessory_haojiahuo_she_hun_ling',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = GameRepository.instance;
+    final defs = _ids.map(repo.getEquipment).toList();
+    return Scaffold(
+      backgroundColor: const Color(0xFF14181D),
+      appBar: AppBar(title: const Text('装备详情修复 · icon / detail')),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var i = 0; i < defs.length; i++) ...[
+              if (i > 0) const SizedBox(width: 16),
+              Expanded(child: _EquipmentDetailRepairCard(def: defs[i])),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EquipmentDetailRepairCard extends StatelessWidget {
+  const _EquipmentDetailRepairCard({required this.def});
+
+  final EquipmentDef def;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFF20262D),
+        border: Border.all(color: const Color(0xFF5A4B3A)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            Text(
+              def.name,
+              style: const TextStyle(
+                color: Color(0xFFD2AA55),
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              def.id,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white54, fontSize: 10),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 138,
+              child: _EquipmentRepairArtPanel(
+                label: 'ICON',
+                imagePath: def.iconPath,
+                splitSurface: false,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: _EquipmentRepairArtPanel(
+                label: 'DETAIL · 深/浅底',
+                imagePath: def.detailPath!,
+                splitSurface: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EquipmentRepairArtPanel extends StatelessWidget {
+  const _EquipmentRepairArtPanel({
+    required this.label,
+    required this.imagePath,
+    required this.splitSurface,
+  });
+
+  final String label;
+  final String imagePath;
+  final bool splitSurface;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white60, fontSize: 10),
+        ),
+        const SizedBox(height: 6),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (splitSurface)
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF11161A), Color(0xFFE8DDBF)],
+                        stops: [0.5, 0.5],
+                      ),
+                    ),
+                  )
+                else
+                  const ColoredBox(color: Color(0xFF11161A)),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: WuxiaImage(
+                    imagePath,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => const Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        color: WuxiaColors.danger,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

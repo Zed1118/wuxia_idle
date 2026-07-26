@@ -73,8 +73,9 @@ const battleStandeeFusionMatrix = <double>[
 
 const battleStandeeFusionOpacity = 0.96;
 const battleStandeeEdgeSofteningSigma = 0.38;
-const battleStandeeGroundingOpacity = 0.30;
-const battleStandeeGroundingWashOpacity = 0.16;
+const battleStandeeGroundingOpacity = 0.28;
+const battleStandeeGroundingCoreOpacity = 0.44;
+const battleStandeeGroundingWashOpacity = 0.20;
 
 /// 战斗角色头像（phase1_tasks.md T14 §784;M4 Stage 3 2026-05-21 美术接入)。
 ///
@@ -358,7 +359,7 @@ class _StageCharacterStandee extends StatelessWidget {
     final resolvedIconPath = asset.displayPath;
     final sourceFootFraction = battleStandeeFootFraction(resolvedIconPath);
     final footY = portraitHeight * _stageStandeeAnchorFootFraction;
-    final groundingHeight = height * 0.065;
+    final groundingHeight = height * 0.09;
     final wardActive =
         battleState != null && isGuardianWardActive(character, battleState!);
 
@@ -498,9 +499,9 @@ class _StageCharacterStandee extends StatelessWidget {
         children: [
           Positioned(
             key: const ValueKey('battle.stageStandeeGrounding'),
-            left: width * 0.17,
-            right: width * 0.17,
-            top: (footY - groundingHeight * 0.45).clamp(
+            left: width * 0.11,
+            right: width * 0.11,
+            top: (footY - groundingHeight * 0.50).clamp(
               0.0,
               height - groundingHeight,
             ),
@@ -597,72 +598,125 @@ class StageCharacterStatusOverlay extends StatelessWidget {
       top: (footY + 2).clamp(0.0, height - 40),
       child: Opacity(
         opacity: character.isAlive ? 1 : 0.45,
-        child: Container(
-          key: const ValueKey('battle.stageStatusInkRubbing'),
-          padding: const EdgeInsets.fromLTRB(5, 2, 5, 3),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                WuxiaUi.battleStatusPaperTop,
-                WuxiaUi.battleStatusPaperBottom,
-              ],
-            ),
-            border: Border(
-              top: BorderSide(color: WuxiaUi.paper.withValues(alpha: 0.22)),
-              bottom: BorderSide(color: borderColor.withValues(alpha: 0.62)),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF2B251E).withValues(alpha: 0.24),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                character.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: WuxiaUi.paper,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  shadows: [Shadow(color: Colors.black87, blurRadius: 2)],
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.topCenter,
+          children: [
+            Positioned(
+              top: -6,
+              width: 13,
+              height: 8,
+              child: IgnorePointer(
+                child: CustomPaint(
+                  key: const ValueKey('battle.stageStatusAnchor'),
+                  painter: _StageStatusAnchorPainter(color: borderColor),
                 ),
               ),
-              const SizedBox(height: 2),
-              HpBar(
-                current: character.currentHp,
-                max: character.maxHp,
-                height: 11,
-                fillColorOverride: WuxiaUi.jiang,
-                trackColorOverride: WuxiaUi.battleStatusTrack,
-                labelFontSize: BattleTypography.t5,
-                compactLabel: true,
+            ),
+            Container(
+              key: const ValueKey('battle.stageStatusInkRubbing'),
+              padding: const EdgeInsets.fromLTRB(5, 2, 5, 3),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    WuxiaUi.battleStatusPaperTop,
+                    WuxiaUi.battleStatusPaperBottom,
+                  ],
+                ),
+                border: Border(
+                  top: BorderSide(color: WuxiaUi.paper.withValues(alpha: 0.22)),
+                  bottom: BorderSide(
+                    color: borderColor.withValues(alpha: 0.62),
+                  ),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2B251E).withValues(alpha: 0.24),
+                    blurRadius: 4,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
               ),
-              const SizedBox(height: 1),
-              HpBar(
-                current: character.currentQi,
-                max: character.maxQi,
-                height: 9,
-                isInternalForce: true,
-                labelPrefix: UiStrings.internalForceShortLabel,
-                fillColorOverride: WuxiaUi.qing,
-                trackColorOverride: WuxiaUi.battleStatusTrack,
-                labelFontSize: BattleTypography.t5,
-                compactLabel: true,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    character.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: WuxiaUi.paper,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      shadows: [Shadow(color: Colors.black87, blurRadius: 2)],
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  HpBar(
+                    current: character.currentHp,
+                    max: character.maxHp,
+                    height: 11,
+                    fillColorOverride: WuxiaUi.jiang,
+                    trackColorOverride: WuxiaUi.battleStatusTrack,
+                    labelFontSize: BattleTypography.t5,
+                    compactLabel: true,
+                  ),
+                  const SizedBox(height: 1),
+                  HpBar(
+                    current: character.currentQi,
+                    max: character.maxQi,
+                    height: 9,
+                    isInternalForce: true,
+                    labelPrefix: UiStrings.internalForceShortLabel,
+                    fillColorOverride: WuxiaUi.qing,
+                    trackColorOverride: WuxiaUi.battleStatusTrack,
+                    labelFontSize: BattleTypography.t5,
+                    compactLabel: true,
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+/// 状态墨拓顶部的小型归属指针。它只占人物脚底与信息板之间的既有空隙，
+/// 不移动信息板、不改变阵位或点击区。
+class _StageStatusAnchorPainter extends CustomPainter {
+  const _StageStatusAnchorPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(size.width * 0.5, 0)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = WuxiaUi.battleStatusPaperBottom
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color.withValues(alpha: 0.72)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _StageStatusAnchorPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 /// 透明立绘的接触影与脚底墨晕。影子贴在人物层内，会跟随冲锋、
@@ -681,10 +735,24 @@ class _StandeeGroundingPainter extends CustomPainter {
     canvas.drawOval(
       Rect.fromCenter(
         center: center,
-        width: size.width * 0.78,
-        height: size.height * 0.46,
+        width: size.width * 0.88,
+        height: size.height * 0.58,
       ),
       contact,
+    );
+
+    final contactCore = Paint()
+      ..color = const Color(
+        0xFF241F1A,
+      ).withValues(alpha: battleStandeeGroundingCoreOpacity)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.8);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.5, size.height * 0.54),
+        width: size.width * 0.48,
+        height: size.height * 0.24,
+      ),
+      contactCore,
     );
 
     final wash = Paint()
@@ -696,19 +764,19 @@ class _StandeeGroundingPainter extends CustomPainter {
       ..strokeWidth = 1.4
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
     final leftWash = Path()
-      ..moveTo(size.width * 0.12, size.height * 0.72)
+      ..moveTo(size.width * 0.08, size.height * 0.72)
       ..quadraticBezierTo(
-        size.width * 0.32,
-        size.height * 0.42,
+        size.width * 0.30,
+        size.height * 0.36,
         size.width * 0.53,
         size.height * 0.67,
       );
     final rightWash = Path()
       ..moveTo(size.width * 0.42, size.height * 0.76)
       ..quadraticBezierTo(
-        size.width * 0.70,
-        size.height * 0.48,
-        size.width * 0.91,
+        size.width * 0.72,
+        size.height * 0.42,
+        size.width * 0.94,
         size.height * 0.70,
       );
     canvas.drawPath(leftWash, wash);

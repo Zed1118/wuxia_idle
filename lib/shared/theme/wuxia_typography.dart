@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 /// `BattleTypography` 独立管理，不与普通页面强行合并。
 abstract final class WuxiaTypography {
   static const double pageTitle = 19;
+  static const double featureTitle = 22;
   static const double dialogTitle = 18;
   static const double emptyStateTitle = 17;
   static const double compactTitle = 15;
@@ -27,6 +28,13 @@ abstract final class WuxiaTypography {
     fontSize: pageTitle,
     fontWeight: FontWeight.bold,
     letterSpacing: pageTitleLetterSpacing,
+  );
+
+  static TextStyle featureTitleStyle(Color color) => TextStyle(
+    color: color,
+    fontSize: featureTitle,
+    fontWeight: FontWeight.w900,
+    letterSpacing: sectionTitleLetterSpacing,
   );
 
   static TextStyle dialogTitleStyle(Color color) => TextStyle(
