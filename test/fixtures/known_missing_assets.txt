@@ -37,17 +37,5 @@
 # ── Ch16 宗师段首章「凉州词」立绘已补齐(2026-07-25·codex image_gen)──
 #
 # ── Ch17 宗师段第 2 章「沙海纵深」待补美术(2026-07-26·codex image_gen 另出图)──
-# 敌人立绘(5)
-assets/enemies/shahai_ta_sha_ke.png
+# 敌人立绘(1·黑风刀客刃形返修中,其余 4 敌 + 封面 + 5 背景已补齐清账)
 assets/enemies/shahai_heifeng_daoke.png
-assets/enemies/shahai_shoucheng_laozu.png
-assets/enemies/shahai_juan_sha_shou.png
-assets/enemies/shahai_linglu_ren.png
-# 章节封面(1)
-assets/scenes/chapter_17_cover.png
-# 主线剧情阅读背景(5)
-assets/scenes/narrative_stage_17_01.png
-assets/scenes/narrative_stage_17_02.png
-assets/scenes/narrative_stage_17_03.png
-assets/scenes/narrative_stage_17_04.png
-assets/scenes/narrative_stage_17_05.png

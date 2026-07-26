@@ -1071,9 +1071,8 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/liangzhou_youqi_jiang.png',
   'assets/enemies/liangzhou_jieguan_ren.png':
       'assets/enemies/liangzhou_jieguan_ren.png',
-  // Ch17「沙海纵深」5 敌立绘(2026-07-26 章批先登记 source→standee 角色;图待 codex
-  // image_gen 专批出,期间由 known_missing_assets allowlist 兜底、脚底 fraction 走
-  // 默认 0.95,出图批再按 alpha 包围盒实测补进下方 footFraction 表)。
+  // Ch17「沙海纵深」5 敌立绘(codex image_gen·透明全身图·2026-07-26 美术批已交付,
+  // 脚底 fraction 已按 alpha 包围盒实测补进下方表、allowlist 表项已清)。
   'assets/enemies/shahai_ta_sha_ke.png': 'assets/enemies/shahai_ta_sha_ke.png',
   'assets/enemies/shahai_heifeng_daoke.png':
       'assets/enemies/shahai_heifeng_daoke.png',
@@ -1259,6 +1258,12 @@ double battleStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/liangzhou_xiliang_xingke.png' => 0.982,
   'assets/enemies/liangzhou_youqi_jiang.png' => 0.958,
   'assets/enemies/liangzhou_jieguan_ren.png' => 0.973,
+  // Ch17「沙海纵深」5 敌脚底校准(alpha 包围盒实测·2026-07-26)
+  'assets/enemies/shahai_ta_sha_ke.png' => 0.970,
+  'assets/enemies/shahai_heifeng_daoke.png' => 0.981,
+  'assets/enemies/shahai_shoucheng_laozu.png' => 0.990,
+  'assets/enemies/shahai_juan_sha_shou.png' => 0.982,
+  'assets/enemies/shahai_linglu_ren.png' => 0.988,
   WuxiaUi.battleGauntletSuWujiuStandee => 0.9681,
   WuxiaUi.battleGauntletQingyiGuardAStandee => 0.9571,
   WuxiaUi.battleGauntletQingyiGuardBStandee => 0.9642,
