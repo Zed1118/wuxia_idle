@@ -1,8 +1,8 @@
 # 全局视觉收口第二阶段实施计划
 
-> 日期：2026-07-26  
-> 分支：`codex/global-visual-polish-phase2`  
-> worktree：`.worktrees/global-visual-polish-phase2`  
+> 日期：2026-07-26
+> 分支：`codex/global-visual-polish-phase2`
+> worktree：`.worktrees/global-visual-polish-phase2`
 > 基点：`fb5a8851 [READY] 完成全局内容与视觉收口`
 
 ## 一、目标
@@ -120,7 +120,7 @@
 
 ## 六、当前恢复点
 
-- 状态：Slice 1–3 已提交；Slice 4 已完成并通过提交前验收；Slice 5 待开始；
+- 状态：Slice 1–5 已完成；代码与素材改动已提交，终验与复查记录待冻结 `[READY]`；
 - 最后完成：
   - 从 `fb5a8851` 建立独立分支/worktree；
   - `flutter pub get`；
@@ -148,10 +148,18 @@
   - 四张离群场景登记 0–1 焦点与安全区，战斗背景和门派厅堂生产组件消费裁切焦点；
   - 12 张生产纵向肖像改为脸部/上半身优先裁切，调用方保留可选覆盖，透明战斗站姿与未登记素材维持居中；
   - 断崖瀑布实战和门派成员页双视口目检通过，画面主体完整且页面几何未改变。
+  - Slice 4 已提交：`fc7c1a7c 补齐场景与肖像安全裁切`；
+  - 全量测试首次复跑发现两项真实视觉门禁问题：深色共享题头触发浅纸文字审计误报、调试装备 gallery 回退使用 Material 饱和红；
+  - 深色题头以精确相邻注释登记审计边界，gallery 回退迁入项目危险色 token，没有放宽全局门禁；
+  - 终验门禁修复已提交：`6c12b14c 修正视觉终验色彩门禁`；
+  - 全量测试最终复跑 4703 pass / 0 skip / 0 error，`flutter analyze --no-pub` 0 issue；
+  - 当前完整视觉 route 清单 127 条；本阶段 8 条唯一目标 route × 双视口共 16/16 READY，异常日志 0；
+  - 二次复查记录：`docs/reviews/global_visual_rereview_2026-07-26.md`；
+  - 二次复评综合 8.6 / 10；macOS 可验证范围没有新的 P0/P1 视觉硬伤。
 - 下一步：
-  - 提交 Slice 4；
-  - 执行 Slice 5 全量测试、视觉复查和残留任务分级；
-  - 更新终验记录并冻结 `[READY]`。
+  - 检查文档、提交边界与工作树洁净度；
+  - 冻结 `[READY]`；
+  - 等待 Claude Code 审核合并，不主动合并或推送。
 - 已跑验证：
   - `flutter analyze`：0 issue（代码生成后，2026-07-26）。
   - `flutter test --no-pub test/features/battle/presentation/character_avatar_test.dart test/features/battle/presentation/damage_popup_test.dart test/tools/art_tone_audit_test.dart`：29 pass / 0 fail。
@@ -170,5 +178,8 @@
   - 六组 `PortraitFrame` 生产消费页回归：67 pass / 0 fail。
   - Slice 4 scoped analyze：0 issue。
   - `battle_audit_stage_13_04`、`sect_screen_npc` × 1280×720、1440×900：4/4 READY，异常日志 0。
+  - 首次全量测试定位并修复 2 项视觉门禁问题，直接门禁复验 7 pass / 0 fail。
+  - `flutter test --no-pub --machine`：4703 pass / 0 skip / 0 error，退出码 0，用时 265589 ms。
+  - `flutter analyze --no-pub`：No issues found（3.9s）。
 - 阻塞项：
-  - 无；29 组历史感知近似详情图、正式字体、九张透明站姿、Windows 实机和伪文字规则进入最终残留清单，不阻塞 Slice 3。
+  - 本阶段无阻塞；29 组历史感知近似详情图、正式字体、九张透明站姿、Windows 实机和伪文字规则已进入最终残留清单，不冒充已完成。
