@@ -1,5 +1,5 @@
-> 交接时间：2026-07-26 19:53 · **HEAD = `e1b085a1`**（main·与 origin 逐字节一致·工作树净·现跑 `git rev-parse --short HEAD` 实证）
-> 新会话打「开工」= 读本文件按其执行。核对方式：`git log --oneline -6` 应能看到 `e1b085a1`（handoff）→ `327413b3` → `754c96b6`（Ch17 合并）三条；对不上先报偏差再动。
+> 交接时间：2026-07-26 19:53 · **最后一个内容 commit = `754c96b6`**（Ch17 `--no-ff` 合并）；其后全是 handoff 收尾的 docs commit（本文件即其一），故 **HEAD sha 不钉死**——以现跑 `git rev-parse --short HEAD` 为准。
+> 新会话打「开工」= 读本文件按其执行。核对方式：`git log --oneline -8` 里应能看到 `754c96b6` → `ddbe39b6` → `bff16da8` 三条内容 commit，且 `git status -sb` 显示与 origin **ahead/behind 0/0**。对不上先报偏差再动。
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
@@ -17,7 +17,7 @@ Ch17「沙海纵深」整章实装已完成、合入 main 并 push；主线达 1
    + feedback_zero_ref_asset_may_be_deprecated（接线前先查移除史）
 
 【环境快照】
-- HEAD `e1b085a1`（本会话 5 commit·**全部已 push**·sha 现跑 `git rev-parse` 实证，禁转抄）
+- 本会话 6 commit·**全部已 push**·与 origin ahead/behind **0/0**（**sha 与 ahead 数一律现跑 `git rev-parse --short HEAD` / `git status -sb` 实证，禁转抄本提示词**）
 - `flutter analyze --no-pub` **EXIT=0 · No issues found** —— 2026-07-26 19:5x 主 checkout 实测
 - 全量 `flutter test --no-pub` **4711 pass / 0 fail**（EXIT=0 · All tests passed! · `[E]` 0 · `-1` 0）—— **主 checkout 合并态实测于 `754c96b6`**；其后 `327413b3`/`e1b085a1` 均为纯文档 commit，故此数对当前 HEAD 仍成立。**一旦动代码必须重新实测。**
 - 主线 **17 章 85 关** · cap **40**（宗师·圆熟）· skills **216** · boss 敌 **36** · 图鉴 catalog **49** · 首通 **Lv102**（cumExp 3633）· 全内容 **Lv118**
