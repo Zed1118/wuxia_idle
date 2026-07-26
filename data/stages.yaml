@@ -1,11 +1,14 @@
 # =============================================================================
-# stages.yaml · 全关卡表（主线 + 副本 · 共 57 关，2026-07 实测）
+# stages.yaml · 全关卡表（主线 + 副本 · 共 102 关，2026-07-26 实测）
 # =============================================================================
-# 共 57 关：mainline 40（8 章 × 5）+ innerDemon 7 +
+# 共 102 关：mainline 85（17 章 × 5）+ innerDemon 7 +
 # lightFoot 5 + massBattle 5。stageType 按关分填（非全 mainline）。
+# （头注计数 2026-07-26 Ch17 批订正：旧值「57 关 / mainline 40（8 章）」是 Ch9 起
+#   八次加章连续漏更的历史 drift，本次按 python 逐条实测重写。）
 # 常规关尽量 3 敌人（StageDef.enemyTeam 上限 3）；三流派分布尽量覆盖
 # gangMeng / lingQiao / yinRou。stage_01_01 是 production 单人空手开局的
-# 开场战，使用 1 敌人避免首战断链。难度按章递增 xueTu → sanLiu → erLiu。
+# 开场战，使用 1 敌人避免首战断链。难度按章递增 xueTu → sanLiu → erLiu →
+# yiLiu → jueDing → zongShi（Ch16-17 宗师段，2026-07-26 同批订正原 stale 三阶写法）。
 #
 # Phase 3 Week 5 schema：在 T33 三段 narrative 基础上加 `narrativeDefeatId`。
 #   narrativeOpeningId   —— 进入关卡前播放（联结 data/narratives/stages/<id>.yaml）
@@ -3879,6 +3882,261 @@ stages:
         dropChance: 0.30  # 经验丹大档(宗师章末)
     baseExpReward: 108
     difficultyMultiplier: 17.8
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: clear
+
+  # ============================================================================
+  # Ch17「沙海纵深」宗师段第 2 章(2026-07-26 章级 spec 六项拍板冻结·全按推荐 1A-6A)
+  # ----------------------------------------------------------------------------
+  # · within-tier:requiredRealm zongShi·cap 38→40(宗师·圆熟 yuanShu·releaseTier 不变)
+  #   敌层 shuLian→yuanShu(01-02 熟练/03-04 精通/05 圆熟=cap 40 同层)
+  # · 敌招零新增:01/02/05 用既有 skill_*_shichuan_{basic,skill};03 用 yinrou_shichuan_fang_*、
+  #   04 用 lingqiao_shichuan_fang_*(fang=佛门防御变体·tier6 同档·此前全仓零使用,本章首次接线)
+  # · 唯一新增 = 末Boss真解 skill_ping_sha_luo_yan;17_04 章中 Boss 收编 skill_feng_juan_liu_sha
+  #   (删 mount_deferred·[balance] 3200→4800);17_05 章末重打残页挂 skill_ye_yu_shi_nian_deng。
+  # · 机制层首入主线(spec §4·段级拍板 6):17_05 末 Boss 单窗口 vulnerability 0.20(比照塔 floor30
+  #   宽松位),窗口外承伤 20%;17_04 章中 Boss 只配 chargeCounter 相位不配 vulnerability——
+  #   两级递进:章中学「打断蓄招」,末关学「只有窗口能打」。cycleVulnerability 本章不配(留 Ch18)。
+  # · HP 头寸 56800→58000(<60000 硬线·段级 §2 三章分配中位)·攻 1925→1950(≤2000 参照)。
+  # · 流派 = 灵巧主题章(段级 §8):01/04/05 lingQiao·02 gangMeng·03 yinRou,三流派全覆盖。
+  #   17_04 定 lingQiao 而非章级 spec §3 表写的 gangMeng——其 chargeSkillId=风卷流沙是灵巧招
+  #   (自身描述「身法散作流沙」),且现存 18 个 Boss 蓄力技流派与敌 school 全部一致,不破例。
+  # ============================================================================
+
+  # === stage_17_01 · 砂丘初程(入沙海第一浪 · 灵巧 · 中原步法在流沙上不管用 · 章首不配 prevStageId)===
+  - id: stage_17_01
+    name: 砂丘初程
+    stageType: mainline
+    chapterIndex: 17
+    narrativeOpeningId: stage_17_01_opening
+    narrativeVictoryId: stage_17_01_victory
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_shahai_ta_sha_ke
+        name: 踏沙客
+        realmTier: zongShi
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 56800
+        baseAttack: 1925
+        baseSpeed: 352
+        skillIds:
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill   # 章首两招喘息(照 Ch16 体例)
+        iconPath: assets/enemies/shahai_ta_sha_ke.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_baowu_bing_po_zhen
+        dropChance: 1.0
+      - equipmentDefId: accessory_baowu_yu_long_pei
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [64, 74]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [860, 990]
+        dropChance: 1.0  # 银两(宗师段第 2 章 · 承 Ch16 曲线续进)
+    baseExpReward: 70
+    difficultyMultiplier: 18.0
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: clear
+
+  # === stage_17_02 · 黑风口(沙暴迷路·天地压人 · 刚猛 · 挡在风口上的那个人)===
+  - id: stage_17_02
+    name: 黑风口
+    stageType: mainline
+    chapterIndex: 17
+    prevStageId: stage_17_01
+    narrativeOpeningId: stage_17_02_opening
+    narrativeVictoryId: stage_17_02_victory
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_shahai_heifeng_daoke
+        name: 黑风刀客
+        realmTier: zongShi
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 57100
+        baseAttack: 1932
+        baseSpeed: 354
+        skillIds:
+          - skill_gangmeng_shichuan_basic
+          - skill_gangmeng_shichuan_skill   # 章首两招喘息
+        iconPath: assets/enemies/shahai_heifeng_daoke.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_baowu_xuan_tian_fu
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_wu_jin_zhan_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [65, 75]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [870, 1000]
+        dropChance: 1.0  # 银两(宗师段第 2 章)
+    baseExpReward: 72
+    difficultyMultiplier: 18.2
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: clear
+
+  # === stage_17_03 · 沙埋古城(整座城被沙吞掉·守城人不走 · 阴柔 · fang 防御变体首接线 · 03 起 ult 化)===
+  - id: stage_17_03
+    name: 沙埋古城
+    stageType: mainline
+    chapterIndex: 17
+    prevStageId: stage_17_02
+    narrativeOpeningId: stage_17_03_opening
+    narrativeVictoryId: stage_17_03_victory
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_shahai_shoucheng_laozu
+        name: 守城老卒
+        realmTier: zongShi
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 57400
+        baseAttack: 1938
+        baseSpeed: 356
+        skillIds:
+          - skill_yinrou_shichuan_fang_basic
+          - skill_yinrou_shichuan_fang_skill
+          - skill_yinrou_shichuan_fang_ult   # 防御变体=「守着一座空城不走」的静;03 起 ult 化(照 Ch16 体例)
+        iconPath: assets/enemies/shahai_shoucheng_laozu.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_baowu_yin_yang_ci
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_can_si_ruan_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [66, 76]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [880, 1010]
+        dropChance: 1.0  # 银两(宗师段第 2 章)
+    baseExpReward: 74
+    difficultyMultiplier: 18.4
+    biome: temple
+    sceneBackgroundPath: assets/scenes/battle_temple.png
+    weather: clear
+
+  # === stage_17_04 · 沙海深处(卷沙手 · 灵巧章中 Boss · 破招前置教学:打断蓄招即掉风卷流沙 · 不配 vulnerability)===
+  - id: stage_17_04
+    name: 沙海深处
+    stageType: mainline
+    chapterIndex: 17
+    prevStageId: stage_17_03
+    narrativeOpeningId: stage_17_04_opening
+    narrativeVictoryId: stage_17_04_victory
+    narrativeDefeatId: stage_17_04_defeat
+    requiredRealm: zongShi
+    dropSkillManualId: skill_feng_juan_liu_sha  # 收编(spec §6 拍板 3A):章中 Boss 掉落·同招为 boss chargeSkillId 双用·破招首通 markUnlocked
+    enemyTeam:
+      - id: enemy_zongShi_shahai_juan_sha_shou
+        name: 卷沙手
+        realmTier: zongShi
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 57700
+        baseAttack: 1944
+        baseSpeed: 358
+        skillIds:
+          - skill_lingqiao_shichuan_fang_basic
+          - skill_lingqiao_shichuan_fang_skill
+          - skill_feng_juan_liu_sha            # 本命蓄力技 = 章中 Boss chargeSkill(双用 canon·红线① chargeSkillId∈skillIds)
+        iconPath: assets/enemies/shahai_juan_sha_shou.png
+        isBoss: true
+        chargeSkillId: skill_feng_juan_liu_sha  # 破招前置教学:玩家拦截蓄招,首通掉同招
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.9   # 照 16_05 校准先例:受击进相位立即推蓄力,保 nearMax 首发即开窗;本关只教「打断」故不配 vulnerability
+            unlockSkillIds:
+              - skill_feng_juan_liu_sha
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_baowu_xue_lian_bian
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_jin_si_jia
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [67, 77]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [930, 1080]
+        dropChance: 1.0  # 银两(宗师章中 Boss)
+    baseExpReward: 94
+    difficultyMultiplier: 18.6
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: clear
+
+  # === stage_17_05 · 西凉腹地门前(沙海领路人 · 灵巧末 Boss · 单窗口 vulnerability 0.20 机制教学 · 敌层 yuanShu=cap 40 同层)===
+  - id: stage_17_05
+    name: 西凉腹地门前
+    stageType: mainline
+    chapterIndex: 17
+    prevStageId: stage_17_04
+    narrativeOpeningId: stage_17_05_opening
+    narrativeVictoryId: stage_17_05_victory
+    narrativeDefeatId: stage_17_05_defeat
+    requiredRealm: zongShi
+    dropSkillManualId: skill_ping_sha_luo_yan  # 真解(平沙落雁·领路人本命·同招为 boss chargeSkillId 双用·破招首通 markUnlocked·2026-07-26 新写)
+    dropSkillFragmentId: skill_ye_yu_shi_nian_deng  # 章末重打残页(夜雨十年灯·tier6 阴柔·删 mount_deferred 收编·spec §7)
+    enemyTeam:
+      - id: enemy_zongShi_shahai_linglu_ren
+        name: 沙海领路人
+        realmTier: zongShi
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 58000        # 宗师段第 2 章末 Boss(<60000 硬线·头寸 56500→58000→59500 三章分配=段级 §2)
+        baseAttack: 1950
+        baseSpeed: 360
+        skillIds:
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill
+          - skill_ping_sha_luo_yan             # 本命真解 = 末Boss chargeSkill(双用 canon·红线① chargeSkillId∈skillIds)
+        iconPath: assets/enemies/shahai_linglu_ren.png
+        isBoss: true
+        chargeSkillId: skill_ping_sha_luo_yan   # 破招:玩家拦截,首通掉同招真解
+        vulnerability:
+          outOfWindowDamageMult: 0.20   # 主线首个机制型 Boss(段级拍板 6):窗口外承伤 20%,比照塔 floor30
+                                        # 同值宽松位(towers.yaml 同为 0.20);玩家第一次遇主线机制型给最宽容错。
+                                        # 单窗口=只在蓄招期开窗,不做 floor25 两相位复合(0.12×ward)。
+                                        # cycleVulnerability 本章不配(周目收窄留 Ch18 或周目批)。
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.9   # 照 16_05 校准先例:受击进相位立即推蓄力,保 nearMax 首发即开窗(否则窗口 50 seeds 不可见)
+            unlockSkillIds:
+              - skill_ping_sha_luo_yan
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_baowu_chang_hong_jian
+        dropChance: 1.0
+      - equipmentDefId: accessory_baowu_zi_jin_hu_lu
+        dropChance: 0.50
+      - equipmentDefId: accessory_baowu_long_gu_lian
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [69, 79]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1050, 1230]
+        dropChance: 1.0  # 银两(宗师章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(宗师章末)
+    baseExpReward: 114
+    difficultyMultiplier: 18.8
     biome: frontier
     sceneBackgroundPath: assets/scenes/battle_frontier.png
     weather: clear

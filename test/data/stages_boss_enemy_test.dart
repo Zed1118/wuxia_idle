@@ -32,12 +32,12 @@ void main() {
     }
   });
 
-  test('恰好标注 32 个 boss 敌人(production 红线)', () {
+  test('恰好标注 36 个 boss 敌人(production 红线)', () {
     final stages = GameRepository.instance.stageDefs.values;
     final total = stages.fold<int>(
       0,
       (n, s) => n + s.enemyTeam.where((e) => e.isBoss).length,
     );
-    expect(total, 34, reason: 'Ch16 +2(西凉游骑将章中 + 接关人章末)');
+    expect(total, 36, reason: 'Ch17 +2(卷沙手章中 + 沙海领路人章末)');
   });
 }

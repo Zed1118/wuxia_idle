@@ -19,7 +19,7 @@ void main() {
     repo = await loadTestGameRepository();
   });
 
-  test('80 主线首通从 Lv1 出发，累计 3209 经验结束于 Lv97(2026-07-24 Ch16 +394)', () {
+  test('85 主线首通从 Lv1 出发，累计 3633 经验结束于 Lv102(2026-07-26 Ch17 +424)', () {
     final character = _newCharacter(repo);
     final mainline =
         repo.stageDefs.values
@@ -27,7 +27,7 @@ void main() {
             .toList()
           ..sort((a, b) => a.id.compareTo(b.id));
 
-    expect(mainline, hasLength(80));
+    expect(mainline, hasLength(85));
     var cumulativeExperience = 0;
     var maximumJump = 0;
     for (final stage in mainline) {
@@ -44,13 +44,13 @@ void main() {
       );
     }
 
-    expect(cumulativeExperience, 3209); // Ch16 +394(80 关)
+    expect(cumulativeExperience, 3633); // Ch17 +424(85 关)
     expect(maximumJump, 3);
-    expect(_displayLevel(repo, character), 97);
+    expect(_displayLevel(repo, character), 102);
   });
 
   test(
-    '当前全内容 + 72h 闭关 + 24h 离线 + 三枚丹药结束于 Lv115(2026-07-24 Ch16 扩·guard ≤115 = 宗师段 spec 预估 ~115 命中·纯展示级不影响红线·逐值实测终拍)',
+    '当前全内容 + 72h 闭关 + 24h 离线 + 三枚丹药结束于 Lv118(2026-07-26 Ch17 扩 115→118·纯展示级不影响红线·逐值实测终拍)',
     () {
       final character = _newCharacter(repo);
       final combatRewards = <int>[
@@ -63,8 +63,8 @@ void main() {
       for (final reward in combatRewards) {
         _applyExperience(repo, character, reward);
       }
-      expect(combatRewards.fold<int>(0, (sum, reward) => sum + reward), 4116);
-      expect(_displayLevel(repo, character), 105);
+      expect(combatRewards.fold<int>(0, (sum, reward) => sum + reward), 4540);
+      expect(_displayLevel(repo, character), 109);
 
       final retreatExperience = _retreatExperience(
         repo,
@@ -74,7 +74,7 @@ void main() {
       );
       _applyExperience(repo, character, retreatExperience);
       expect(retreatExperience, 356);
-      expect(_displayLevel(repo, character), 108);
+      expect(_displayLevel(repo, character), 111);
 
       final passive = OfflinePassiveService.compute(
         awayHours: 24,
@@ -83,7 +83,7 @@ void main() {
       );
       _applyExperience(repo, character, passive.experience);
       expect(passive.experience, 115);
-      expect(_displayLevel(repo, character), 109);
+      expect(_displayLevel(repo, character), 112);
 
       for (final id in const [
         'item_jingyandan_small',
@@ -98,7 +98,7 @@ void main() {
       }
 
       final level = _displayLevel(repo, character);
-      expect(level, 115);
+      expect(level, 118);
     },
   );
 
