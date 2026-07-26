@@ -94,7 +94,7 @@
 
 ## 当前恢复点
 
-- **状态**：Slice 8 内容、术语、资源与无障碍检查已完成；下一步只做全量 analyze/test/visual route 终验、冲突预检与 `[READY]` 收口。
+- **状态**：全部切片与终验已完成，分支冻结；下一步由 Claude 按合并 Gate 评审 `[READY]` tip。
 - **最后完成**：
   - Slice 1 章节路引已提交：`c5e9afc7`；
   - 新增 `paperSurfaceTheme`，统一浅宣纸上的 ColorScheme、TextTheme、ListTile、Switch、Slider、Dropdown、Menu、输入框、禁用态与交互态；
@@ -160,10 +160,9 @@
   - 透明成品统一收为 768×768 调色板 PNG，总体积约 2.58 MiB，与原 1254×1254 不透明源图同量级；仓库 80px 图格、商店与来源表所需 Retina 清晰度仍有充足余量；
   - 新增物品成品图门禁：固定覆盖 14 图、最小 512×512、四角透明、透明像素占比 ≥30%、主体非空，防止编辑器棋盘格再次进入发布包。
 - **下一步**：
-  1. 提交 Slice 8 无障碍恢复点；
-  2. 跑全量 `flutter test`、`flutter analyze`、视觉与资产门禁；
-  3. 跑全部视觉路由双视口并人工抽查关键页面；
-  4. 对主工作树做只读冲突预检，更新恢复点并提交 `[READY]`。
+  1. Claude 只读复核本分支 diff 与门禁证据；
+  2. 按 `CLAUDE.md §8.2` 跑合并 Gate；
+  3. 合并后在 Windows 发布前补 100% / 125% / 150% 缩放实机验收。
 - **已跑验证**：
   - 建分支前主线视觉/资产 targeted tests：55 pass / 0 fail；
   - 建分支前 `flutter analyze`：0 issue；
@@ -229,12 +228,16 @@
   - 周目与配方改用可聚焦 `InkWell`，只在键盘 focus 时出现既有色相的克制反馈；爆品停留态增加 live-region 与 Enter/Space 激活，鼠标点击、动画时间轴和停留规则不变；
   - 无障碍相关 11 组测试 125 pass / 0 fail，`flutter analyze` 0 issue；
   - `stage_list_cycle`、`battle_tap_live`、`inventory`、`taohua_island`、`battle_record`、`tower_floor_list`、`battle_treasure_glow_rest`、`taohua_building_popup` × 1280×720、1440×900，16/16 READY 且无 overflow/exception；人工确认常态像素、卡片宽高、信息顺序和操作路径未漂移。
+  - 批末全量 `flutter test --no-pub --reporter compact`：4694 pass / 0 fail；批末 `flutter analyze --no-pub`：0 issue；
+  - 缺图、物品透明底、战斗站姿角色、WebP 解码、pubspec 资产声明与美术色调专项门禁：16 pass / 0 fail；浅纸面文字对比扫描 0 finding；
+  - `full` 125 条 route × 1280×720、1440×900：250/250 PNG、250/250 READY、缺失 0、额外 0、空文件 0、异常日志 0；Retina 实际尺寸为 2560×1440、2880×1800；
+  - 关键页 1920×1080：默认 smoke 21 条 + `chapter_list`、`battle_v2_neutral_3v3`、`taohua_island`、`battle_record` 4 条，共 25/25 READY、异常日志 0；Retina 实际尺寸 3840×2160；
+  - 人工终验覆盖启动/存档/主菜单、设置、章节/关卡/塔、角色/编成、正式 3v3、仓库/装备/商店、闭关/归来、桃花岛、档案/图鉴/资源页、断魂庄与确认弹层；确认水墨/宣纸/沉郁/绛红方向、既定结构、信息顺序、屏幕几何与操作路径未被重设计；
+  - 主工作树 `main` 保持 clean 且为 `8c9b5ef4`；以共同基点 `fbd567df` 执行只读 `merge-tree`，冲突标记 0。
 - **阻塞项**：无。
 - **残留风险**：
   - 伪文字规则和跨平台正式字体方案仍需后续设计拍板；
   - 当前 macOS 可验证，Windows 缩放只能在 ship 前实机终验；
-  - Claude 后续可能推进 `main`，本分支每个大批次前需要以 `merge-tree` 评估冲突，不直接重写其改动；
+  - Claude 若在评审前继续推进 `main`，应重新执行 `merge-tree`，本分支不直接重写其改动；
   - 9 名可出战候选仍是专用透明站姿美术债；当前身份墨影是风格一致的安全降级，不冒充完成稿，补图后必须更新角色门禁预期；
-  - 自动 Theme 已覆盖共享浅/深面板，高频调用方已回归；仍需在 Slice 6/7 用生产 route 继续覆盖长尾 Material 控件状态，避免极少数页面依赖旧的隐式 Theme；
-  - visual route 当前固定全新进度，后段当前章的画面定位由 1280/1440 widget 几何测试覆盖；Slice 3 补视觉 route 状态矩阵时再加入后段进度截图；
   - active「归来」弹层的偶发高度溢出已在 Slice 7B 通过正文内部滚动与固定操作区收口，并有独立生产 Dialog route；后续只需在 Windows 缩放终验复核。
