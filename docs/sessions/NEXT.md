@@ -1,17 +1,17 @@
-> 交接时间：2026-07-26 18:25 · **HEAD = 本文件所在的 handoff commit**（本会话末次 commit；其父 `b7a70788` 是最后一个内容 commit，`060c53d5` 是 spec 冻结）
-> 新会话打「开工」= 读本文件按其执行。核对方式：`git log --oneline -3` 顶部为本次 handoff 的 docs commit，其下应是 `b7a70788` → `060c53d5`；对不上先报偏差再动。
+> 交接时间：2026-07-26 18:25 · **HEAD = 本会话末尾若干 docs/chore commit 之一**（本文件写完后仍有收尾 commit，故不钉 sha）；**最后一个内容 commit = `b7a70788`**（PROGRESS），其下 `060c53d5` = Ch17 spec 冻结
+> 新会话打「开工」= 读本文件按其执行。核对方式：`git log --oneline -6` 里应能看到 `b7a70788` → `060c53d5` 两个内容 commit；**ahead 数以现跑 `git status -sb` 为准**（本文件写死会漂）。对不上先报偏差再动。
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
 Ch17「沙海纵深」章级 spec 已六项拍板冻结（全按推荐 1A/2A/3A/4A/5A/6A），实装依据就位、无阻塞。
 本会话纯文档零代码改动；顺带关闭 PR #83（改走 cherry-pick）、清掉孤儿 worktree、视觉证据 493M→204M。
-main 工作树净，**领先 origin 43 个 commit 未 push**（用户明示不推）。
+main 工作树净，**领先 origin 46 个 commit 未 push**（用户明示不推·此数以现跑 `git status -sb` 为准）。
 
 开局动作：
 1. 读 PROGRESS.md 顶段 2026-07-26 首条
 2. 读 docs/sessions/2026-07-26_1825_Ch17spec与清账.md
 3. **读 docs/spec/2026-07-26-ch17-shahai-zongshen-design.md（130 行·实装唯一依据·六项已冻结）**
-4. git pull --rebase --autostash（本地纯领先 43、落后 0，pull 为 no-op；先确认不会打乱）
+4. git pull --rebase --autostash（本地纯领先、落后 0，pull 为 no-op；先确认不会打乱）
 5. 选读 memory：reference_anti_hallucination（固定）
    + feedback_wuxia_add_mainline_chapter_reconcile（**Ch17 必读**·加章 ~17 站点）
    + feedback_wuxia_release_cap_raise_reconcile（cap 38→40·**within-tier 判据**）
@@ -21,7 +21,7 @@ main 工作树净，**领先 origin 43 个 commit 未 push**（用户明示不�
    + feedback_gh_pr_mergeable_vs_local_divergence（本会话新增）
 
 【环境快照】
-- HEAD = 本次 handoff commit（本会话 6 commit·**全部未 push**·sha 由现跑 `git rev-parse` 实证，勿转抄）
+- HEAD：本会话 8 commit（5 内容 + 3 收尾）·**全部未 push**·**sha 与 ahead 数一律现跑 `git rev-parse --short HEAD` / `git status -sb` 实证，勿转抄本文件**
 - **本会话主 checkout 实测**：`flutter analyze --no-pub` **EXIT=0 · No issues found**（3.0s）
 - **全量 test 4711 pass / 0 fail** — 来自 **2026-07-26 16:5x 上一会话**主 checkout 实测；本会话**纯文档零代码/零 yaml 改动**故未重跑（守 CLAUDE §8.0）。**新会话一旦动代码必须重新实测，禁转抄此数字。**
 - PROGRESS **98 行**（100 上限·本会话净增 0）
@@ -42,7 +42,7 @@ main 工作树净，**领先 origin 43 个 commit 未 push**（用户明示不�
 - **不 push 远端**，除非用户当轮明确授权；bg 会话禁自行 merge PR。
 - **上游 spec 的前瞻段当假设不当事实**：Ch17 spec §1 已列段级 spec 三处错（skill 计数实为 255 / fang 是佛门防御变体非敦煌意象且 9 招已存在 / 「三灵巧向」有一招实为阴柔）。**Ch18 起草前必读 Ch17 spec §1**，段级 spec 本身未回改。
 - **`flutter test` 批传显式路径会静默漏跑**（已三次复现）。日志 grep 到文件名**不足以**证明它跑完了，验收须逐文件单跑或按出现次数对账。
-- **bg 写守卫拦 Write/Edit**：纯文档用 Bash heredoc；改已有中文文档先 heredoc 写 python 脚本再跑。**不要为文档开 EnterWorktree**（baseRef=fresh 基于 origin，会丢本地 43 个未 push commit）。
+- **bg 写守卫拦 Write/Edit**：纯文档用 Bash heredoc；改已有中文文档先 heredoc 写 python 脚本再跑。**不要为文档开 EnterWorktree**（baseRef=fresh 基于 origin，会丢本地全部未 push commit）。
 - Edit dart 后必 `dart format`；破坏证红必须在 commit 之后做。
 
 【防幻觉守则】
