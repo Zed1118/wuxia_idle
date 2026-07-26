@@ -20,13 +20,22 @@ import 'equipment_factory.dart';
 /// 设计原则(与同期服务一致)：依赖注入 [Isar]；装备实例化复用
 /// [EquipmentFactory.fromDef] 不重复 roll 逻辑。
 class MilestoneEquipmentGrantService {
-  MilestoneEquipmentGrantService({required this.isar, DateTime Function()? now})
-    : now = now ?? DateTime.now;
+  MilestoneEquipmentGrantService({
+    required this.isar,
+    DateTime Function()? now,
+    Rng? rng,
+  }) : now = now ?? DateTime.now,
+       rng = rng ?? DefaultRng();
 
   final Isar isar;
 
   /// 当前时间提供者(注入式，便于测试固定 obtainedAt)。
   final DateTime Function() now;
+
+  /// 随机源(里程碑装备属性 roll)。与 [now] 同为注入式,便于测试确定化。
+  /// 本 service 的两个构造点(ascend_service / milestone_grant_hook)都在
+  /// 无 `ref` 的层,故保留默认实现兜底;可注入才是本次收口的目的。
+  final Rng rng;
 
   /// 自开 writeTxn 授予(caller 不持锁)。
   /// 返回本次新授予的 defId(已授予过 / 无匹配 / repo 未载 → 空)。
@@ -74,7 +83,6 @@ class MilestoneEquipmentGrantService {
     String obtainedFrom,
   ) async {
     final already = save.grantedMilestoneEquipmentIds.toSet();
-    final rng = DefaultRng();
     final newly = <String>[];
     for (final def in defs) {
       if (already.contains(def.id)) continue;

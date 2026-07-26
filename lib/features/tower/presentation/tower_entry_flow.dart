@@ -56,7 +56,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
-import '../../../shared/utils/rng.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
 import '../../../data/defs/tower_floor_def.dart';
@@ -224,7 +224,10 @@ Future<void> runTowerFlow({
       equipmentDefLookup: GameRepository.instance.getEquipment,
       defaultObtainedFrom: UiStrings.towerDropSource,
     );
-    final towerRng = DefaultRng();
+    // 随机源走 rngProvider(不 inline new):塔层首通掉落与稀有彩头共用此源,
+    // inline 的 DefaultRng 测试 override 不到,会把精确掉落数断言打成随机红
+    // (PR #75 已在主线结算侧证过同一根因)。
+    final towerRng = ref.read(rngProvider);
     drops = towerDropSvc.rollTowerRewards(floor, towerRng);
     // 第八阶段 E·稀有彩头:塔层首通也额外 roll(与塔奖同 first-clear gating 守 §5.1
     // 防刷:重打不发,故彩头也仅首通)。
@@ -484,7 +487,8 @@ applyTowerVictoryResolution({
     participatingCharacters: characters,
     equipmentsByCharacter: equipsByCh,
     techniquesByCharacter: techsByCh,
-    rng: DefaultRng(),
+    // 同主线结算:随机源走 rngProvider,保持可注入。
+    rng: ref.read(rngProvider),
     progressToNextMap: numbers.cultivationProgressToNext,
     techniqueDefLookup: GameRepository.instance.getTechnique,
     dropService: dropSvc,

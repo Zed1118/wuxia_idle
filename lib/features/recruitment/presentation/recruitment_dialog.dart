@@ -13,6 +13,7 @@ import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../tutorial/application/tutorial_providers.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../application/recruitment_providers.dart';
 import '../application/recruitment_service.dart';
@@ -142,7 +143,7 @@ class _RecruitmentDialogState extends ConsumerState<RecruitmentDialog> {
     if (isar == null) return;
     setState(() => _submitting = true);
     try {
-      final svc = RecruitmentService(isar);
+      final svc = RecruitmentService(isar, rng: ref.read(rngProvider));
       await isar.writeTxn(() => svc.acceptCandidate(candidate.id));
       // tutorial step 6 banner 同步关闭(markHintRead)
       final tutorialSvc = TutorialService(isar);
@@ -188,7 +189,7 @@ class _RecruitmentDialogState extends ConsumerState<RecruitmentDialog> {
     if (isar == null) return;
     setState(() => _submitting = true);
     try {
-      final svc = RecruitmentService(isar);
+      final svc = RecruitmentService(isar, rng: ref.read(rngProvider));
       await isar.writeTxn(() => svc.declineRecruitment());
       final tutorialSvc = TutorialService(isar);
       await isar.writeTxn(() => tutorialSvc.markHintRead(6));

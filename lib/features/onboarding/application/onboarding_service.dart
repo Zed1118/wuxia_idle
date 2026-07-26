@@ -31,9 +31,15 @@ import 'master_builder.dart';
 ///
 /// 不动:GDD / numbers.yaml / masters.yaml / Isar schema 版本 / §5.4 红线 / §6 公式。
 class OnboardingService {
-  const OnboardingService({required this.isar});
+  /// 注:因随机源改注入式(`rng ?? DefaultRng()` 非常量表达式)去掉了 `const`;
+  /// 现查全仓无 `const OnboardingService(...)` 调用点,去 const 无破坏面。
+  OnboardingService({required this.isar, Rng? rng}) : rng = rng ?? DefaultRng();
 
   final Isar isar;
+
+  /// 随机源(祖师/弟子起始装备属性 roll)。构造注入以便测试确定化;
+  /// 有 `ref` 的构造点传 `ref.read(rngProvider)`,无 ref 的落默认实现。
+  final Rng rng;
 
   /// 基础物料:新玩家锚点 — 磨剑石 50(够试 +0→+5)/ 心血结晶 0。
   /// 沿 §5.1 反留存:不给爆量,鼓励玩家通过挂机/掉落获取。
@@ -76,7 +82,6 @@ class OnboardingService {
 
     final repo = GameRepository.instance;
     final masters = repo.masters;
-    final rng = DefaultRng();
     final now = DateTime.now();
 
     await isar.writeTxn(() async {

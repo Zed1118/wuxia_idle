@@ -12,8 +12,13 @@ import '../../onboarding/application/master_builder.dart';
 /// 防重双保险:① [SaveData.triggeredDiscipleJoinStageIds](一次性,重战不触发);
 /// ② 该 role 命名弟子已存在则不重建(防御边缘:迁移防重集丢失 / 未来 boot 顺序回归)。
 class DiscipleJoinService {
-  DiscipleJoinService({required this.isar});
+  DiscipleJoinService({required this.isar, Rng? rng})
+    : rng = rng ?? DefaultRng();
   final Isar isar;
+
+  /// 随机源(弟子起始装备属性 roll)。构造注入以便测试确定化;
+  /// 有 `ref` 的构造点传 `ref.read(rngProvider)`,无 ref 的落默认实现。
+  final Rng rng;
 
   /// 若 [clearedStageId] 命中一条或多条弟子拜入触发条目且该关未触发过,
   /// 按配置顺序逐条懒创建尚不存在的弟子并入队,返回新建弟子列表(可能 0-2 人)。
@@ -76,7 +81,6 @@ class DiscipleJoinService {
     if (join.masterSlotIndex >= masters.length) return null;
     final def = masters[join.masterSlotIndex];
     final now = at ?? DateTime.now();
-    final rng = DefaultRng();
 
     Character? created;
     await isar.writeTxn(() async {

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../../shared/utils/rng.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/gauntlet_providers.dart';
@@ -115,7 +115,9 @@ class _Body extends ConsumerWidget {
         chosenEquipmentDefId: candidate.defId,
         config: config,
         numbers: numbers,
-        rng: DefaultRng(),
+        // 随机源走 rngProvider(不 inline new):奖励装备属性 roll 在此链路上,
+        // inline 的 DefaultRng 测试 override 不到(PR #75 同类根因)。
+        rng: ref.read(rngProvider),
       );
     } on StateError {
       // 相位已变 / 会话已结算 / 候选不合：静默（下一帧 provider 反映真态）。

@@ -33,7 +33,11 @@ import '../../equipment/application/equipment_factory.dart';
 class RecruitmentService {
   final Isar isar;
 
-  RecruitmentService(this.isar);
+  /// 随机源(候选装备属性 roll)。构造注入以便测试确定化;
+  /// 有 `ref` 的构造点传 `ref.read(rngProvider)`,无 ref 的落默认实现。
+  final Rng rng;
+
+  RecruitmentService(this.isar, {Rng? rng}) : rng = rng ?? DefaultRng();
 
   /// 读 SaveData.recruitmentOffered(默认 false)。
   ///
@@ -81,7 +85,6 @@ class RecruitmentService {
     }
     final realmDef = repo.getRealm(def.defaultRealm, def.defaultLayer);
     final t = now ?? DateTime.now();
-    final rng = DefaultRng();
 
     // 1. 创 Character(isActive=false / lineageRole=disciple / isFounder=false)
     final c = Character.create(

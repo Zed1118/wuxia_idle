@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../data/isar_provider.dart';
+import '../../../shared/utils/rng_provider.dart';
 import 'recruitment_service.dart';
 
 part 'recruitment_providers.g.dart';
@@ -11,7 +12,8 @@ part 'recruitment_providers.g.dart';
 RecruitmentService? recruitmentService(Ref ref) {
   final isar = ref.watch(isarProvider);
   if (isar == null) return null;
-  return RecruitmentService(isar);
+  // 随机源走 rngProvider:候选装备属性 roll 在 service 内,注入后测试可确定化。
+  return RecruitmentService(isar, rng: ref.read(rngProvider));
 }
 
 /// 收徒提议是否已发出(默认 false)。
