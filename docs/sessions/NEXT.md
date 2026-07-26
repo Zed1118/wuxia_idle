@@ -1,6 +1,6 @@
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
-Ch17「沙海纵深」美术 11 图已全部出图并接线，Ch17 全章闭环，主线 17 章 85 关美术齐备、缺图 allowlist 清零。**成果在 draft PR #84，尚未合入 main**——main 仍是 `19f21445` 未动、工作树净、与 origin 同步（0/0）。
+Ch17「沙海纵深」美术 11 图已全部出图并接线，Ch17 全章闭环，主线 17 章 85 关美术齐备、缺图 allowlist 清零。**代码成果在 draft PR #84，尚未合入 main**——main 上只有本次 handoff 的 docs commit，无 Ch17 美术改动；工作树净、与 origin 同步。
 
 开局动作：
 1. 读 PROGRESS.md 顶段 2026-07-26「Ch17 美术 11 图接线」条
@@ -13,7 +13,7 @@ Ch17「沙海纵深」美术 11 图已全部出图并接线，Ch17 全章闭环�
    + feedback_flutter_test_batch_silent_skip（targeted 必逐个单跑）
 
 【环境快照】
-- main HEAD `19f21445`（本会话**未动 main**；成果在分支 `worktree-ch17-art` @ `b420fc56`·2 commit·已 push）—— sha 现跑 `git rev-parse --short HEAD` 实证，禁转抄
+- main HEAD：**现跑 `git rev-parse --short HEAD` 取，禁转抄本文**。main 上本会话只落了 handoff docs commit；**代码成果在分支 `worktree-ch17-art`（2 commit·已 push·PR #84）**，未合 main
 - PR **#84** draft · OPEN · MERGEABLE · 14 文件（11 图 + PROGRESS + character_avatar + allowlist）
 - `flutter analyze --no-pub` **EXIT=0 · No issues found** —— 2026-07-26 23:2x **主 checkout** 实测
 - 全量 `flutter test --no-pub` **4711 pass / 0 fail**（EXIT=0 · `All tests passed!` · `-1` 0 · `[E]` 0）—— 2026-07-26 **分支 `b420fc56` worktree 实测**；main 未含本批改动，其绿态沿用 `754c96b6` 同数字。**改动代码后必须重新实测。**
