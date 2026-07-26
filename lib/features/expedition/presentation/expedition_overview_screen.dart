@@ -31,12 +31,11 @@ class ExpeditionOverviewScreen extends ConsumerWidget {
     final activeAsync = ref.watch(activeExpeditionProvider);
     return Scaffold(
       backgroundColor: WuxiaColors.background,
-      appBar: AppBar(
-        backgroundColor: WuxiaColors.sidebar,
-        foregroundColor: WuxiaColors.textPrimary,
-        title: const Text(UiStrings.expeditionOverviewTitle),
-        leading: Navigator.of(context).canPop()
-            ? BackButton(onPressed: () => Navigator.of(context).pop())
+      appBar: WuxiaTitleBar(
+        title: UiStrings.expeditionOverviewTitle,
+        showHome: false,
+        onBack: Navigator.of(context).canPop()
+            ? () => Navigator.of(context).pop()
             : null,
       ),
       body: SafeArea(
@@ -201,18 +200,9 @@ class _CandidateTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: WuxiaColors.panel.withValues(alpha: dim ? 0.55 : 1),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: selected
-                ? WuxiaUi.gold
-                : WuxiaColors.border.withValues(alpha: dim ? 0.5 : 1),
-            width: selected ? 1.6 : 1,
-          ),
-        ),
+      child: InkListCard(
+        selected: selected,
+        enabled: !dim,
         child: Row(
           children: [
             PortraitFrame(
@@ -292,16 +282,9 @@ class _PolicyOption extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
-      child: Container(
+      child: InkListCard(
+        selected: selected,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: WuxiaColors.panel,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: selected ? WuxiaUi.gold : WuxiaColors.border,
-            width: selected ? 1.6 : 1,
-          ),
-        ),
         child: Row(
           children: [
             Icon(
@@ -486,15 +469,9 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
               const SizedBox(height: 16),
               const _SectionLabel(UiStrings.expeditionActiveSection),
               const SizedBox(height: 10),
-              Container(
+              InkListCard(
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: WuxiaColors.panel,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: WuxiaUi.gold.withValues(alpha: 0.3),
-                  ),
-                ),
+                borderRadius: 8,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -572,24 +549,9 @@ class _BaicaoHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          UiStrings.expeditionBaicaoName,
-          style: TextStyle(
-            color: WuxiaColors.textPrimary,
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 2,
-          ),
-        ),
-        SizedBox(height: 2),
-        Text(
-          UiStrings.expeditionBaicaoSubtitle,
-          style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
-        ),
-      ],
+    return const InkPageHeader(
+      title: UiStrings.expeditionBaicaoName,
+      subtitle: UiStrings.expeditionBaicaoSubtitle,
     );
   }
 }
@@ -601,14 +563,7 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: WuxiaUi.gold,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
-    );
+    return InkSectionLabel(text);
   }
 }
 

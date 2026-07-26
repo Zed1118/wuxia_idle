@@ -120,7 +120,7 @@
 
 ## 六、当前恢复点
 
-- 状态：Slice 1 已完成，准备提交；Slice 2 待开始；
+- 状态：Slice 1、Slice 2 已完成并提交前验收；Slice 3 待开始；
 - 最后完成：
   - 从 `fb5a8851` 建立独立分支/worktree；
   - `flutter pub get`；
@@ -133,14 +133,23 @@
   - `damage_popup.dart` 唯一中风险高饱和硬编码色迁入战斗绛红 token；
   - 高/中风险美术色调问题纳入测试硬门禁；
   - `battle_tower_floor_14` 双视口真窗口截图目检通过，布局与战位未漂移。
+  - Slice 1 已提交：`fb8de088 增强战斗落地感与状态归属`；
+  - 新增 `InkPageHeader`、`InkSectionLabel`、`InkListCard` 三个长尾深色页面共享视觉件；
+  - 远征总览、断魂庄装载统一为宣纸标题栏、身份题头、枯笔分区与墨底选择卡；
+  - 门派谱及人物纪事共享卡面和分区题签，顶部动作入口、内容顺序和满宽卷轴布局不变；
+  - 远征、断魂庄、门派谱各自 1280×720、1440×900 真窗口目检通过，无溢出或异常日志。
 - 下一步：
-  - 提交 Slice 1；
-  - 设计并接入长尾深色页面共享身份标记与分区组件；
-  - 从远征总览、断魂庄装载和门派谱代表页开始。
+  - 提交 Slice 2；
+  - 修复三组装备 icon/detail 完全重复素材；
+  - 建立详情素材规格、精确重复和感知重复门禁。
 - 已跑验证：
   - `flutter analyze`：0 issue（代码生成后，2026-07-26）。
   - `flutter test --no-pub test/features/battle/presentation/character_avatar_test.dart test/features/battle/presentation/damage_popup_test.dart test/tools/art_tone_audit_test.dart`：29 pass / 0 fail。
   - `flutter analyze`：0 issue（Slice 1 修改后）。
   - `battle_tower_floor_14` × 1280×720、1440×900：2/2 READY，异常日志 0。
+  - `flutter test --no-pub test/shared/widgets/wuxia_ui/ink_archive_chrome_test.dart test/features/expedition/expedition_overview_screen_test.dart test/features/boss_gauntlet/gauntlet_loadout_screen_test.dart test/features/character_panel/presentation/lineage_panel_screen_test.dart`：20 pass / 0 fail。
+  - `flutter test --no-pub test/features/character_panel/lineage_character_detail_screen_test.dart`：8 pass / 0 fail。
+  - `flutter analyze`：0 issue（Slice 2 修改后）。
+  - `expedition_overview`、`gauntlet_loadout`、`lineage_codex` × 1280×720、1440×900：6/6 READY，异常日志 0。
 - 阻塞项：
-  - 无；正式字体、九张透明站姿、Windows 实机和伪文字规则属于后续外部输入，不阻塞 Slice 1。
+  - 无；正式字体、九张透明站姿、Windows 实机和伪文字规则属于后续外部输入，不阻塞 Slice 2。

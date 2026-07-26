@@ -5,6 +5,7 @@ import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
+import '../../../shared/widgets/wuxia_ui/ink_archive_chrome.dart';
 
 /// 门派谱共享展示组件（门派谱1.1 M1 去重）。
 ///
@@ -18,7 +19,7 @@ String lineagePctLabel(double v) {
   return '+${(v * 100).toStringAsFixed(0)}%';
 }
 
-/// 卡片容器：宣纸底 + 描边。
+/// 卡片容器：长卷墨底 + 克制描边。
 class LineagePanelCard extends StatelessWidget {
   const LineagePanelCard({super.key, required this.child});
 
@@ -26,13 +27,9 @@ class LineagePanelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return InkListCard(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border.all(color: WuxiaColors.border),
-        borderRadius: BorderRadius.circular(4),
-      ),
+      borderRadius: 4,
       child: child,
     );
   }
@@ -46,14 +43,7 @@ class LineageSectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: WuxiaColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
-    );
+    return InkSectionLabel(text);
   }
 }
 

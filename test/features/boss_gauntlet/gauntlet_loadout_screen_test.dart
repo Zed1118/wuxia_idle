@@ -121,6 +121,10 @@ void main() {
     expect(find.text('行囊补给'), findsOneWidget);
     expect(find.text(UiStrings.gauntletEnterButton), findsOneWidget);
     expect(find.text(UiStrings.gauntletSelectedCount(0)), findsOneWidget);
+    expect(find.byType(WuxiaTitleBar), findsOneWidget);
+    expect(find.byType(InkPageHeader), findsOneWidget);
+    expect(find.byType(InkSectionLabel), findsWidgets);
+    expect(find.byType(InkListCard), findsWidgets);
     expect(
       tester
           .widgetList<PortraitFrame>(find.byType(PortraitFrame))

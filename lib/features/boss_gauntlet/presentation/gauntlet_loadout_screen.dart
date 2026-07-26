@@ -149,12 +149,11 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
-      appBar: AppBar(
-        backgroundColor: WuxiaColors.sidebar,
-        foregroundColor: WuxiaColors.textPrimary,
-        title: const Text(UiStrings.gauntletLoadoutTitle),
-        leading: Navigator.of(context).canPop()
-            ? BackButton(onPressed: () => Navigator.of(context).pop())
+      appBar: WuxiaTitleBar(
+        title: UiStrings.gauntletLoadoutTitle,
+        showHome: false,
+        onBack: Navigator.of(context).canPop()
+            ? () => Navigator.of(context).pop()
             : null,
       ),
       body: SafeArea(
@@ -449,13 +448,8 @@ class _EnemyTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return InkListCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: WuxiaColors.panel,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: WuxiaColors.border),
-      ),
       child: Row(
         children: [
           _StageBadge(ordinal: ordinal),
@@ -561,18 +555,9 @@ class _CandidateTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: WuxiaColors.panel.withValues(alpha: dim ? 0.55 : 1),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: selected
-                ? WuxiaUi.gold
-                : WuxiaColors.border.withValues(alpha: dim ? 0.5 : 1),
-            width: selected ? 1.6 : 1,
-          ),
-        ),
+      child: InkListCard(
+        selected: selected,
+        enabled: !dim,
         child: Row(
           children: [
             PortraitFrame(
@@ -657,13 +642,8 @@ class _SupplyStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return InkListCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: WuxiaColors.panel,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: WuxiaColors.border),
-      ),
       child: Row(
         children: [
           Expanded(
@@ -747,24 +727,9 @@ class _GauntletHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          UiStrings.gauntletName,
-          style: TextStyle(
-            color: WuxiaColors.textPrimary,
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 2,
-          ),
-        ),
-        SizedBox(height: 2),
-        Text(
-          UiStrings.gauntletSubtitle,
-          style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
-        ),
-      ],
+    return const InkPageHeader(
+      title: UiStrings.gauntletName,
+      subtitle: UiStrings.gauntletSubtitle,
     );
   }
 }
@@ -792,14 +757,7 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: WuxiaUi.gold,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
-    );
+    return InkSectionLabel(text);
   }
 }
 
