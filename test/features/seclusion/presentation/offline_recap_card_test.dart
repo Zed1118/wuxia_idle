@@ -163,6 +163,47 @@ void main() {
     expect(find.textContaining('离线上限'), findsNothing);
   });
 
+  testWidgets('小高度长明细：正文内部滚动，双操作固定可见且无溢出', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 520));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    const recap = (
+      awayHours: 240.0,
+      retreatHours: 72.0,
+      passiveHours: 168.0,
+      passiveMojianshi: 420,
+      passiveExperience: 6800,
+      equipmentRollCount: 6,
+      nextEquipmentNodeHours: null,
+      fullRateComplete: true,
+      mapName: '断崖绝壁',
+      isComplete: true,
+      progressPct: 1.0,
+      estimatedMojianshi: 920,
+      estimatedExperience: 12800,
+      estimatedItemRewards: <String, int>{
+        'item_yaocao': 36,
+        'item_lingquanshui': 18,
+        'item_duancai': 12,
+        'item_kaifeng_fucai': 6,
+      },
+      estimatedTechniqueLearnPoints: 36,
+      estimatedSilver: 576,
+      settledHours: 240.0,
+      limitReason: OfflineRecapLimitReason.systemCap,
+    );
+
+    await pumpCard(tester, recap: recap, onGoCollect: () {}, onDismiss: () {});
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(
+      find.byKey(const Key('offline-recap-active-scroll')),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.offlineRecapDismiss).hitTestable(), findsOne);
+    expect(find.text(UiStrings.offlineRecapGoCollect).hitTestable(), findsOne);
+  });
+
   testWidgets('0 值收益项隐藏，保留结算说明与收功揭晓', (tester) async {
     const recap = (
       awayHours: 2.0,

@@ -1328,7 +1328,7 @@ class PendingStamp extends StatelessWidget {
 }
 
 /// 批次 1.3:技能简介浮层正文(直接读 [SkillDef] 活数据)。
-/// 描述 + 字段表(类型/目标/倍率/耗内/冷却/特性)+ 拖招提示。
+/// 描述 + 字段表(类型/目标/威力/真气/冷却/特性)+ 拖招提示。
 /// 不走 HelpCatalog/CodexIndex,纯活数据 + [EnumL10n] 枚举显示名。
 class SkillInfoBody extends StatelessWidget {
   final SkillDef skill;

@@ -38,6 +38,7 @@ class ItemSlot extends StatefulWidget {
     this.protectedText,
     this.protectedTooltip,
     this.selected = false,
+    this.semanticLabel,
     this.onTap,
   });
 
@@ -62,6 +63,7 @@ class ItemSlot extends StatefulWidget {
   final String? protectedText;
   final String? protectedTooltip;
   final bool selected;
+  final String? semanticLabel;
   final VoidCallback? onTap;
 
   @override
@@ -102,10 +104,20 @@ class _ItemSlotState extends State<ItemSlot> {
           offset: const Offset(0, 2),
         ),
     ];
+    final semanticValue = UiStrings.semanticDetails([
+      widget.tierLabel,
+      if (widget.enhanceLevel > 0)
+        '${UiStrings.equipmentCompareEnhance} ${UiStrings.enhanceLevel(widget.enhanceLevel)}',
+      widget.statusText,
+      widget.leadingBadgeTooltip,
+      widget.trailingBadgeTooltip,
+      if (widget.protected) widget.protectedTooltip ?? widget.protectedText,
+      if (widget.locked) widget.lockText,
+    ]);
     // RepaintBoundary:格子有渐变+多重阴影+图标,页面切换动画/hover 时
     // 隔离重绘——栅格化一次后合成,不随过渡每帧重绘整片网格(144Hz 实测
     // 进仓库持续 8-11ms 光栅丢帧根因)。
-    return RepaintBoundary(
+    final content = RepaintBoundary(
       child: SizedBox(
         width: widget.size,
         child: Column(
@@ -357,6 +369,16 @@ class _ItemSlotState extends State<ItemSlot> {
           ],
         ),
       ),
+    );
+    return Semantics(
+      button: widget.onTap != null,
+      enabled: widget.onTap != null,
+      selected: widget.selected,
+      label: widget.semanticLabel ?? widget.name,
+      value: semanticValue.isEmpty ? null : semanticValue,
+      onTap: widget.onTap,
+      excludeSemantics: true,
+      child: content,
     );
   }
 }

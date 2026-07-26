@@ -83,7 +83,7 @@ class EnumL10n {
   static String skillType(SkillType t) {
     return switch (t) {
       SkillType.normalAttack => '普攻',
-      SkillType.powerSkill => '强力技能',
+      SkillType.powerSkill => '强力招式',
       SkillType.ultimate => '大招',
       SkillType.jointSkill => '人剑合一',
     };
@@ -123,7 +123,7 @@ class EnumL10n {
   static String internalInjuryFatal(String actorName) => '$actorName 内伤崩裂,经脉俱断';
 
   /// P0 破招:Boss 起手蓄力招牌技日志。
-  static String chargeStart(String name, String skill) => '$name 凝气蓄势:$skill';
+  static String chargeStart(String name, String skill) => '$name 凝气蓄势：$skill';
 
   /// P0 破招:Boss 蓄力中(未满)跳过本次行动日志。
   static String charging(String name) => '$name 蓄力中……';
@@ -209,7 +209,7 @@ class EnumL10n {
       ForgingSlotType.speed => '速度',
       ForgingSlotType.lifesteal => '吸血',
       ForgingSlotType.pierce => '破甲',
-      ForgingSlotType.specialSkill => '专属技能',
+      ForgingSlotType.specialSkill => '专属招式',
     };
   }
 

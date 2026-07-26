@@ -265,7 +265,9 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                               const SizedBox(height: 18),
                               _TimeRangePanel(
                                 start: startStr,
-                                elapsed: _formatHours(settlement.elapsedHours),
+                                elapsed: UiStrings.hoursAmountLabel(
+                                  _formatHours(settlement.elapsedHours),
+                                ),
                               ),
                               const SizedBox(height: 12),
                               _ActiveRetreatStatusCard(
@@ -309,7 +311,7 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   color: fullRateComplete
-                                      ? WuxiaUi.gold
+                                      ? WuxiaUi.goldOnPaper
                                       : WuxiaUi.ink2,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -345,7 +347,12 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
   static String _formatTime(DateTime t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
-  static String _formatHours(double hours) => hours.toStringAsFixed(1);
+  static String _formatHours(double hours) {
+    final rounded = (hours * 10).round() / 10;
+    return rounded == rounded.truncateToDouble()
+        ? '${rounded.toInt()}'
+        : '$rounded';
+  }
 }
 
 class _StateSeal extends StatelessWidget {
@@ -382,7 +389,7 @@ class _ProgressStamp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = done ? WuxiaUi.gold : WuxiaUi.qing;
+    final color = done ? WuxiaUi.goldOnPaper : WuxiaUi.qing;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.16),
@@ -604,7 +611,7 @@ class _ActiveRetreatStatusCard extends StatelessWidget {
     final safe = elapsed.isNegative ? Duration.zero : elapsed;
     final hours = safe.inHours;
     final minutes = safe.inMinutes.remainder(60);
-    return '${hours}h${minutes.toString().padLeft(2, '0')}min';
+    return UiStrings.durationHoursMinutes(hours, minutes);
   }
 }
 

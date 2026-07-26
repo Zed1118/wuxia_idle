@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/app_exit.dart';
 import '../../../shared/strings.dart';
-import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../save_slot/presentation/save_select_screen.dart';
@@ -21,13 +21,30 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 设置面板：3 滑条 + 静音开关，改动即存（provider 内持久化 + 应用引擎）。
 class SettingsPanel extends ConsumerWidget {
-  const SettingsPanel({super.key});
+  const SettingsPanel({
+    super.key,
+    this.scrollController,
+    this.displaySectionKey,
+  });
 
-  static Future<void> show(BuildContext context) {
+  final ScrollController? scrollController;
+  final Key? displaySectionKey;
+
+  static Future<void> show(
+    BuildContext context, {
+    ScrollController? scrollController,
+    Key? displaySectionKey,
+  }) {
     return PaperDialog.show<void>(
       context,
       title: UiStrings.settingsTitle,
-      body: const SizedBox(width: 360, child: SettingsPanel()),
+      body: SizedBox(
+        width: 360,
+        child: SettingsPanel(
+          scrollController: scrollController,
+          displaySectionKey: displaySectionKey,
+        ),
+      ),
       actions: [
         Builder(
           builder: (ctx) => PlaqueButton(
@@ -51,12 +68,13 @@ class SettingsPanel extends ConsumerWidget {
       error: (e, _) =>
           Padding(padding: const EdgeInsets.all(24), child: Text('$e')),
       data: (s) => ConstrainedBox(
-        // L1-2 回归:加显示设置段后内容变高,720p 窄高度下底部 overflow。
-        // 限高 80% 屏 + 可滚动,内容超高时滚动而非溢出。
+        // 正文之外还需为 PaperDialog 标题、动作区和外边距留出空间。
+        // 720p 下正文限高 68% 并保持原单栏滚动，不改变既有信息顺序。
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
+          maxHeight: MediaQuery.of(context).size.height * 0.68,
         ),
         child: SingleChildScrollView(
+          controller: scrollController,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -88,7 +106,10 @@ class SettingsPanel extends ConsumerWidget {
               const _SettingsSectionHeader(UiStrings.settingsComfortSection),
               const _GameplayComfortSection(),
               const Divider(height: 1),
-              const _SettingsSectionHeader(UiStrings.settingsDisplaySection),
+              _SettingsSectionHeader(
+                UiStrings.settingsDisplaySection,
+                key: displaySectionKey,
+              ),
               const _DisplaySettingsSection(),
               const Divider(height: 1),
               const _SettingsSectionHeader(UiStrings.settingsSaveSection),
@@ -122,7 +143,7 @@ class SettingsPanel extends ConsumerWidget {
 }
 
 class _SettingsSectionHeader extends StatelessWidget {
-  const _SettingsSectionHeader(this.label);
+  const _SettingsSectionHeader(this.label, {super.key});
 
   final String label;
 
@@ -135,7 +156,7 @@ class _SettingsSectionHeader extends StatelessWidget {
         child: Text(
           label,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: WuxiaColors.resultHighlight,
+            color: WuxiaUi.jiang,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -152,7 +173,7 @@ Future<void> _switchSlotFlow(BuildContext context) async {
     title: UiStrings.slotSwitch,
     body: const Text(
       UiStrings.slotSwitchConfirm,
-      style: TextStyle(color: WuxiaColors.textSecondary),
+      style: TextStyle(color: WuxiaUi.ink2),
     ),
     actions: [
       Builder(

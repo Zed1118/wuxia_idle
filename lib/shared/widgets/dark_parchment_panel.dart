@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/colors.dart';
+import '../theme/dark_surface_theme.dart';
 import 'wuxia_ui/panel_surface.dart';
 import 'wuxia_image.dart';
 
@@ -34,29 +35,32 @@ class DarkParchmentPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PanelSurface.dark(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: WuxiaColors.paperUnderlay,
-          border: showBorder
-              ? Border.all(color: WuxiaColors.inkPanelEdge)
-              : null,
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned.fill(
-              child: Opacity(
-                opacity: paperOpacity,
-                child: WuxiaImage(
-                  'assets/ui/paper_bg.png',
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+    return Theme(
+      data: darkSurfaceTheme(Theme.of(context)),
+      child: PanelSurface.dark(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: WuxiaColors.paperUnderlay,
+            border: showBorder
+                ? Border.all(color: WuxiaColors.inkPanelEdge)
+                : null,
+          ),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Positioned.fill(
+                child: Opacity(
+                  opacity: paperOpacity,
+                  child: WuxiaImage(
+                    'assets/ui/paper_bg.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  ),
                 ),
               ),
-            ),
-            Padding(padding: padding, child: child),
-          ],
+              Padding(padding: padding, child: child),
+            ],
+          ),
         ),
       ),
     );

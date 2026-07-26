@@ -23,6 +23,16 @@ import '../../support/isar_test_support.dart';
 void main() {
   group('parseVisualRoute', () {
     test('已知 id → 对应枚举', () {
+      expect(parseVisualRoute('splash'), VisualRoute.splash);
+      expect(
+        parseVisualRoute('save_select_empty'),
+        VisualRoute.saveSelectEmpty,
+      );
+      expect(
+        parseVisualRoute('save_select_filled'),
+        VisualRoute.saveSelectFilled,
+      );
+      expect(parseVisualRoute('main_menu_clean'), VisualRoute.mainMenuClean);
       expect(parseVisualRoute('main_menu'), VisualRoute.mainMenu);
       expect(
         parseVisualRoute('technique_panel_tier_all'),
@@ -45,6 +55,15 @@ void main() {
         VisualRoute.characterPanelProfile,
       );
       expect(parseVisualRoute('chapter_list'), VisualRoute.chapterList);
+      expect(parseVisualRoute('settings_panel'), VisualRoute.settingsPanel);
+      expect(
+        parseVisualRoute('settings_panel_bottom'),
+        VisualRoute.settingsPanelBottom,
+      );
+      expect(
+        parseVisualRoute('settings_panel_disabled'),
+        VisualRoute.settingsPanelDisabled,
+      );
       expect(parseVisualRoute('battle_scene'), VisualRoute.battleScene);
       expect(
         parseVisualRoute('equipment_detail_screen'),
@@ -116,7 +135,11 @@ void main() {
       expect(parseVisualRoute('narrative_scene'), VisualRoute.narrativeScene);
     });
 
-    test('M2 离线被动归来卡路由 parse', () {
+    test('M2 active / 被动归来卡路由 parse', () {
+      expect(
+        parseVisualRoute('offline_recap_active'),
+        VisualRoute.offlineRecapActive,
+      );
       expect(
         parseVisualRoute('offline_recap_passive'),
         VisualRoute.offlineRecapPassive,
@@ -210,7 +233,7 @@ void main() {
       );
     });
 
-    test('V2 五个确定性战斗验收 route parse', () {
+    test('V2 与人物素材门禁的确定性战斗验收 route parse', () {
       expect(
         parseVisualRoute('battle_v2_casualty_replacement'),
         VisualRoute.battleV2CasualtyReplacement,
@@ -226,6 +249,10 @@ void main() {
       expect(
         parseVisualRoute('battle_v2_neutral_3v3'),
         VisualRoute.battleV2Neutral3v3,
+      );
+      expect(
+        parseVisualRoute('battle_identity_silhouette'),
+        VisualRoute.battleIdentitySilhouette,
       );
       expect(
         parseVisualRoute('battle_v2_resource_pressure'),
@@ -342,7 +369,7 @@ void main() {
       );
     });
 
-    test('battle suite 70个动态路由与5个V2状态全部可构造', () async {
+    test('battle suite 70个动态路由与6个确定性素材/状态路由全部可构造', () async {
       final targets = visualAcceptanceRoutes(VisualAcceptanceSuite.battle);
       for (final spec in targets) {
         final target = await buildVisualTarget(

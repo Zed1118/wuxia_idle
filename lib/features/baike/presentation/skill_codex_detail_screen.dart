@@ -19,7 +19,7 @@ import '../application/martial_codex_provider.dart';
 /// 武学详情屏(Task7)。从武学图鉴 tab 点亮行推入,回看一招已习武学。
 ///
 /// 纯同步展示(招式 name/description 是 [SkillDef] 同步字段,无 async):
-/// 类型标(普攻/强力/大招) + 招名 + description + 倍率/内力/冷却 + 来源标 + 所属心法 +
+/// 类型标(普攻/强力/大招) + 招名 + description + 威力/真气/冷却 + 来源标 + 所属心法 +
 /// 全队最高熟练阶([maxStage] 由 tab 算好传入,null=未曾习练)。
 /// 纯只读,不读 provider / 不写库。
 class SkillCodexDetailScreen extends StatelessWidget {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../strings.dart';
 import '../../theme/wuxia_tokens.dart';
+import '../../theme/wuxia_typography.dart';
 import '../wuxia_image.dart';
 import 'panel_surface.dart';
 import 'wuxia_icon_button.dart';
@@ -73,11 +74,8 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: surface.primary,
-                      fontSize: 19,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 6,
+                    style: WuxiaTypography.pageTitleStyle(
+                      surface.primary,
                     ).merge(titleStyle),
                   ),
                 ),

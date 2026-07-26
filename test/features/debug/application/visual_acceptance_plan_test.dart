@@ -6,11 +6,18 @@ void main() {
   test('smoke suite 固定覆盖核心视觉 route', () {
     final ids = visualAcceptanceRouteIds(VisualAcceptanceSuite.smoke);
 
-    expect(ids.first, 'main_menu');
+    expect(ids.first, 'splash');
     expect(
       ids,
       containsAllInOrder([
+        'splash',
+        'save_select_empty',
+        'save_select_filled',
+        'main_menu_clean',
         'main_menu',
+        'settings_panel',
+        'settings_panel_bottom',
+        'settings_panel_disabled',
         'inventory',
         'battle_scene',
         'technique_panel_tier_all',
@@ -21,6 +28,27 @@ void main() {
         'encounter_codex',
         'skill_codex',
       ]),
+    );
+  });
+
+  test('route metadata 区分生产壳、组件、图册与瞬时浮层', () {
+    final routes = visualAcceptanceRoutes(VisualAcceptanceSuite.full);
+
+    expect(VisualRoute.splash.kind, VisualRouteKind.productionShell);
+    expect(VisualRoute.saveSelectFilled.kind, VisualRouteKind.productionShell);
+    expect(VisualRoute.redlineAudit.kind, VisualRouteKind.component);
+    expect(VisualRoute.enemyGallery.kind, VisualRouteKind.gallery);
+    expect(
+      VisualRoute.settingsPanelDisabled.kind,
+      VisualRouteKind.transientOverlay,
+    );
+    expect(
+      VisualRoute.offlineRecapActive.kind,
+      VisualRouteKind.transientOverlay,
+    );
+    expect(
+      routes.map((target) => target.kind).toSet(),
+      containsAll(VisualRouteKind.values),
     );
   });
 
@@ -42,27 +70,29 @@ void main() {
         'battle_v2_fast_forward_peak',
         'battle_v2_pre_result',
         'battle_v2_neutral_3v3',
+        'battle_identity_silhouette',
         'battle_v2_resource_pressure',
       ]),
     );
   });
 
-  test('battle suite 覆盖70动态战斗与5个V2确定性状态', () {
+  test('battle suite 覆盖70动态战斗与6个确定性素材/状态 route', () {
     final ids = visualAcceptanceRouteIds(VisualAcceptanceSuite.battle);
 
-    expect(ids, hasLength(75));
-    expect(ids.toSet(), hasLength(75));
+    expect(ids, hasLength(76));
+    expect(ids.toSet(), hasLength(76));
     expect(ids.first, 'battle_audit_stage_01_01');
     expect(ids, contains('battle_audit_stage_06_05'));
     expect(ids, contains('battle_audit_tower_01'));
     expect(ids, contains('battle_audit_tower_30'));
     expect(ids, contains('battle_audit_stage_light_foot_05'));
     expect(ids, contains('battle_audit_stage_mass_battle_05'));
-    expect(ids.sublist(ids.length - 5), <String>[
+    expect(ids.sublist(ids.length - 6), <String>[
       'battle_v2_casualty_replacement',
       'battle_v2_fast_forward_peak',
       'battle_v2_pre_result',
       'battle_v2_neutral_3v3',
+      'battle_identity_silhouette',
       'battle_v2_resource_pressure',
     ]);
     for (final id in ids) {
@@ -82,5 +112,14 @@ void main() {
     expect(markdown, contains('2560x1080'));
     expect(markdown, contains('`main_menu`'));
     expect(markdown, contains('主菜单入口可见'));
+    expect(markdown, contains('`splash`'));
+    expect(markdown, contains('`save_select_filled`'));
+    expect(markdown, contains('`main_menu_clean`'));
+    expect(markdown, contains('`settings_panel`'));
+    expect(markdown, contains('`settings_panel_bottom`'));
+    expect(markdown, contains('`settings_panel_disabled`'));
+    expect(markdown, contains('| route | kind | seed | checks |'));
+    expect(markdown, contains('`transientOverlay`'));
+    expect(markdown, contains('浅宣纸上的标题'));
   });
 }

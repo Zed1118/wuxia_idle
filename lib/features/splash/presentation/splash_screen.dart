@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_typography.dart';
 import '../../save_slot/presentation/save_select_screen.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
@@ -149,6 +150,13 @@ class _SplashScreenState extends State<SplashScreen> {
                             fontSize: 32,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 8,
+                            shadows: [
+                              Shadow(
+                                color: Color(0xB3000000),
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -178,9 +186,17 @@ class _SplashFooter extends StatelessWidget {
       return const Text(
         UiStrings.splashTapToContinue,
         style: TextStyle(
-          color: WuxiaColors.textSecondary,
-          fontSize: 13,
+          color: WuxiaColors.textPrimary,
+          fontSize: WuxiaTypography.body,
           letterSpacing: 4,
+          fontWeight: FontWeight.w600,
+          shadows: [
+            Shadow(
+              color: Color(0xD9000000),
+              blurRadius: 6,
+              offset: Offset(0, 1),
+            ),
+          ],
         ),
       );
     }
@@ -198,9 +214,17 @@ class _SplashFooter extends StatelessWidget {
         const Text(
           UiStrings.splashLoadingHint,
           style: TextStyle(
-            color: WuxiaColors.textSecondary,
-            fontSize: 12,
+            color: WuxiaColors.textPrimary,
+            fontSize: WuxiaTypography.supporting,
             letterSpacing: 3,
+            fontWeight: FontWeight.w600,
+            shadows: [
+              Shadow(
+                color: Color(0xD9000000),
+                blurRadius: 6,
+                offset: Offset(0, 1),
+              ),
+            ],
           ),
         ),
       ],

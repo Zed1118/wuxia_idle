@@ -400,7 +400,7 @@ class _RouteStep extends StatelessWidget {
           Text(
             '$index.',
             style: const TextStyle(
-              color: WuxiaUi.gold,
+              color: WuxiaUi.goldOnPaper,
               fontSize: 13,
               fontWeight: FontWeight.w800,
             ),
@@ -436,7 +436,7 @@ class _MapEventLine extends StatelessWidget {
       RetreatMapEventKind.trace => UiStrings.seclusionMapEventTrace,
     };
     final color = switch (event.kind) {
-      RetreatMapEventKind.harvest => WuxiaUi.gold,
+      RetreatMapEventKind.harvest => WuxiaUi.goldOnPaper,
       RetreatMapEventKind.risk => WuxiaColors.gangMeng,
       RetreatMapEventKind.trace => WuxiaUi.muted,
     };
@@ -569,7 +569,9 @@ class _AdvancementBanner extends StatelessWidget {
         children: [
           Icon(
             advancement.crossedTier ? Icons.military_tech : Icons.auto_awesome,
-            color: advancement.crossedTier ? WuxiaUi.gold : WuxiaUi.jiang,
+            color: advancement.crossedTier
+                ? WuxiaUi.goldOnPaper
+                : WuxiaUi.jiang,
             size: advancement.crossedTier ? 24 : 22,
           ),
           const SizedBox(width: 12),
@@ -581,7 +583,7 @@ class _AdvancementBanner extends StatelessWidget {
                   const Text(
                     UiStrings.advancementTierUpBadge,
                     style: TextStyle(
-                      color: WuxiaUi.gold,
+                      color: WuxiaUi.goldOnPaper,
                       fontSize: 11,
                       letterSpacing: 2,
                       fontWeight: FontWeight.w600,

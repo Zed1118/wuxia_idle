@@ -91,6 +91,8 @@ void main() {
     expect(find.text('采买'), findsOneWidget);
     expect(find.textContaining('商店采买'), findsOneWidget);
     expect(find.textContaining('江湖商店'), findsOneWidget);
+    expect(find.textContaining('来源：主要来源：'), findsNothing);
+    expect(find.textContaining('来源：江湖商店'), findsOneWidget);
     expect(
       find.text(UiStrings.resourceOverviewSourceDetailTitle),
       findsOneWidget,

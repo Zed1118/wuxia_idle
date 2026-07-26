@@ -161,12 +161,12 @@ void main() {
     final def = mkDef(specialSkillCandidates: const [specialSkillId]);
     await pumpPanel(tester, eq: eq, def: def);
 
-    await tester.tap(find.widgetWithText(OutlinedButton, '专属技能'));
+    await tester.tap(find.widgetWithText(OutlinedButton, '专属招式'));
     await tester.pumpAndSettle();
     expect(find.byType(PaperDialog), findsOneWidget);
     expect(find.byType(AlertDialog), findsNothing);
     expect(find.byType(PlaqueButton), findsOneWidget);
-    expect(find.text('选择专属技能'), findsOneWidget);
+    expect(find.text('选择专属招式'), findsOneWidget);
     expect(find.text(skillName), findsOneWidget);
     expect(find.text('灵巧 · 第1阶 · 威力 1250'), findsOneWidget);
 
@@ -181,7 +181,7 @@ void main() {
 
     expect(eq.forgingSlots[2].specialSkillId, specialSkillId);
     expect(eq.forgingSlots[2].type, ForgingSlotType.specialSkill);
-    expect(find.text('专属技能：$skillName'), findsOneWidget);
+    expect(find.text('专属招式：$skillName'), findsOneWidget);
   });
 
   testWidgets('已开锋槽显示「<类型> +X%」+「已开锋」灰色标签', (tester) async {

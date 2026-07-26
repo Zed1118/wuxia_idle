@@ -39,6 +39,7 @@ void main() {
     int silver = 100,
     Map<String, int>? materials,
     int founderRealmIndex = 0,
+    double tieStored = 50,
     List<IslandPrepAdvice> prepAdvice = const [],
     int injuredCharacterCount = 0,
     double maxInjuryHoursRemaining = 0,
@@ -46,7 +47,7 @@ void main() {
     final tieState = IslandBuildingState()
       ..type = BuildingType.tieJiangChang
       ..level = 2
-      ..stored = 50;
+      ..stored = tieStored;
 
     final caoState = IslandBuildingState()
       ..type = BuildingType.caoYaoYuan
@@ -179,6 +180,15 @@ void main() {
       expect(after.value, greaterThan(0));
     });
 
+    testWidgets('仓储满载热区用文字标明状态', (tester) async {
+      await pump(
+        tester,
+        wrap(buildTestView(tieStored: 900, founderRealmIndex: 6)),
+      );
+
+      expect(find.text(UiStrings.taohuaIslandSceneFullShort), findsOneWidget);
+    });
+
     testWidgets('场景标题与地图资产均渲染', (tester) async {
       await pump(tester, wrap(buildTestView()));
 
@@ -252,6 +262,32 @@ void main() {
       await selectBuilding(tester, BuildingType.danFang);
 
       expect(find.text(UiStrings.taohuaIslandSelectRecipe), findsOneWidget);
+    });
+
+    testWidgets('配方选项具按钮、选中与锁定语义', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pump(tester, wrap(buildTestView()));
+      await selectBuilding(tester, BuildingType.daZaoTai);
+
+      final selectedRecipe = find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.label == '磨剑石' &&
+            widget.properties.selected == true,
+      );
+      expect(selectedRecipe, findsOneWidget);
+      expect(
+        tester.getSemantics(selectedRecipe),
+        isSemantics(
+          label: '磨剑石',
+          value: UiStrings.semanticSelected,
+          isButton: true,
+          isEnabled: true,
+          isSelected: true,
+          hasTapAction: true,
+        ),
+      );
+      semantics.dispose();
     });
 
     testWidgets('点击不同加工建筑后产出中 / 已停标签正确', (tester) async {

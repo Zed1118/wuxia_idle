@@ -211,6 +211,14 @@ void main() {
         find.textContaining(UiStrings.seclusionMapEventHarvest),
         findsOneWidget,
       );
+      expect(
+        tester.widget<Text>(find.text('1.')).style?.color,
+        WuxiaUi.goldOnPaper,
+      );
+      expect(
+        tester.widget<Icon>(find.byIcon(Icons.local_florist)).color,
+        WuxiaUi.goldOnPaper,
+      );
     });
 
     testWidgets('只有 internalForce → 仅显内力行', (tester) async {

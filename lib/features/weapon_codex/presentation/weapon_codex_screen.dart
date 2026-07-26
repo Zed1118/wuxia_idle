@@ -301,49 +301,53 @@ class _AcquiredTile extends StatelessWidget {
       label: def.name,
       child: SizedBox(
         width: _tileWidth,
-        child: InkWell(
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) =>
-                  EquipmentCatalogDetailScreen(def: def, entry: entry),
-            ),
-          ),
-          mouseCursor: SystemMouseCursors.click,
+        child: Material(
+          type: MaterialType.transparency,
           borderRadius: borderRadius,
-          child: Ink(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 8),
-            decoration: BoxDecoration(
-              color: WuxiaColors.inkPanelBottom,
-              border: Border.all(color: color.withValues(alpha: 0.72)),
-              borderRadius: borderRadius,
+          child: InkWell(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) =>
+                    EquipmentCatalogDetailScreen(def: def, entry: entry),
+              ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(3),
-                  child: WuxiaImage(
-                    def.iconPath,
-                    width: 56,
-                    height: 56,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => _iconPlaceholder(),
+            mouseCursor: SystemMouseCursors.click,
+            borderRadius: borderRadius,
+            child: Ink(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 8),
+              decoration: BoxDecoration(
+                color: WuxiaColors.inkPanelBottom,
+                border: Border.all(color: color.withValues(alpha: 0.72)),
+                borderRadius: borderRadius,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: WuxiaImage(
+                      def.iconPath,
+                      width: 56,
+                      height: 56,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => _iconPlaceholder(),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  def.name,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: WuxiaColors.textPrimary,
-                    fontSize: 12,
-                    height: 1.2,
-                    letterSpacing: 0.5,
+                  const SizedBox(height: 6),
+                  Text(
+                    def.name,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: WuxiaColors.textPrimary,
+                      fontSize: 12,
+                      height: 1.2,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -381,54 +385,58 @@ class _LockedTile extends StatelessWidget {
       label: UiStrings.weaponCodexLockedItem,
       child: SizedBox(
         width: _tileWidth,
-        child: InkWell(
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text(UiStrings.weaponCodexNotObtained)),
-          ),
-          mouseCursor: SystemMouseCursors.click,
+        child: Material(
+          type: MaterialType.transparency,
           borderRadius: borderRadius,
-          child: Ink(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 8),
-            decoration: BoxDecoration(
-              color: WuxiaColors.avatarFill,
-              border: Border.all(
-                color: WuxiaColors.textMuted.withValues(alpha: 0.22),
-              ),
-              borderRadius: borderRadius,
+          child: InkWell(
+            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text(UiStrings.weaponCodexNotObtained)),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: WuxiaColors.textMuted.withValues(alpha: 0.13),
-                    borderRadius: BorderRadius.circular(3),
-                    border: Border.all(
-                      color: WuxiaColors.textMuted.withValues(alpha: 0.16),
+            mouseCursor: SystemMouseCursors.click,
+            borderRadius: borderRadius,
+            child: Ink(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 8),
+              decoration: BoxDecoration(
+                color: WuxiaColors.avatarFill,
+                border: Border.all(
+                  color: WuxiaColors.textMuted.withValues(alpha: 0.38),
+                ),
+                borderRadius: borderRadius,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: WuxiaColors.textMuted.withValues(alpha: 0.13),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(
+                        color: WuxiaColors.textMuted.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: const SizedBox(
+                      width: 56,
+                      height: 56,
+                      child: Icon(
+                        Icons.help_outline,
+                        color: WuxiaColors.textMuted,
+                        size: 28,
+                      ),
                     ),
                   ),
-                  child: const SizedBox(
-                    width: 56,
-                    height: 56,
-                    child: Icon(
-                      Icons.help_outline,
-                      color: Colors.white24,
-                      size: 28,
+                  const SizedBox(height: 6),
+                  const Text(
+                    UiStrings.weaponCodexLockedItem,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: WuxiaColors.textSecondary,
+                      fontSize: 12,
+                      height: 1.2,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  UiStrings.weaponCodexLockedItem,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: WuxiaColors.textMuted,
-                    fontSize: 12,
-                    height: 1.2,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 
 void main() {
@@ -66,6 +67,12 @@ void main() {
     expect(n, 0);
     final op = tester.widget<Opacity>(find.byType(Opacity));
     expect(op.opacity, 0.4);
+    final label = tester.widget<Text>(find.text('卸下'));
+    expect(
+      label.style?.color,
+      WuxiaUi.ink2,
+      reason: '禁用牌面保持 0.4 灰显，但操作名本身仍须可读',
+    );
   });
 
   testWidgets('onTap=null 视为不可用', (tester) async {

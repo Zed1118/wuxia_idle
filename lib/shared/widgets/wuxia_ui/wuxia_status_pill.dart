@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/colors.dart';
+import '../../theme/wuxia_typography.dart';
 
 enum WuxiaStatusTone { neutral, positive, negative, warning, accent }
 
@@ -30,7 +31,9 @@ class WuxiaStatusPill extends StatelessWidget {
     };
     final vertical = dense ? 2.0 : 3.0;
     final horizontal = dense ? 6.0 : 8.0;
-    final fontSize = dense ? 11.0 : 12.0;
+    final fontSize = dense
+        ? WuxiaTypography.metadata
+        : WuxiaTypography.supporting;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -54,12 +57,7 @@ class WuxiaStatusPill extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: color,
-                fontSize: fontSize,
-                fontWeight: FontWeight.w700,
-                height: 1.1,
-              ),
+              style: WuxiaTypography.statusStyle(color, dense: dense),
             ),
           ],
         ),

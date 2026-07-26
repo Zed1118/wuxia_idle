@@ -23,19 +23,28 @@ class VisualAcceptanceRoute {
     required this.route,
     required this.id,
     required this.seed,
+    required this.kind,
     required this.checks,
   });
 
   final VisualRoute route;
   final String id;
   final String seed;
+  final VisualRouteKind kind;
   final List<String> checks;
 }
 
 const String visualAcceptanceSeed = 'visual-route-host-fixture-20260627';
 
 const List<VisualRoute> _smokeRoutes = [
+  VisualRoute.splash,
+  VisualRoute.saveSelectEmpty,
+  VisualRoute.saveSelectFilled,
+  VisualRoute.mainMenuClean,
   VisualRoute.mainMenu,
+  VisualRoute.settingsPanel,
+  VisualRoute.settingsPanelBottom,
+  VisualRoute.settingsPanelDisabled,
   VisualRoute.inventory,
   VisualRoute.battleScene,
   VisualRoute.mainlineFirstClearBattle,
@@ -67,12 +76,14 @@ final List<VisualAcceptanceRoute> _battleRoutes = [
     VisualRoute.battleV2FastForwardPeak,
     VisualRoute.battleV2PreResult,
     VisualRoute.battleV2Neutral3v3,
+    VisualRoute.battleIdentitySilhouette,
     VisualRoute.battleV2ResourcePressure,
   ])
     VisualAcceptanceRoute(
       route: route,
       id: route.id,
       seed: visualAcceptanceSeed,
+      kind: route.kind,
       checks: _checksFor(route),
     ),
 ];
@@ -81,6 +92,7 @@ VisualAcceptanceRoute _battleStageRoute(String id) => VisualAcceptanceRoute(
   route: VisualRoute.battleStageAudit,
   id: id,
   seed: visualAcceptanceSeed,
+  kind: VisualRoute.battleStageAudit.kind,
   checks: _checksFor(VisualRoute.battleStageAudit),
 );
 
@@ -88,6 +100,7 @@ VisualAcceptanceRoute _battleTowerRoute(int floor) => VisualAcceptanceRoute(
   route: VisualRoute.battleTowerAudit,
   id: 'battle_audit_tower_${_twoDigits(floor)}',
   seed: visualAcceptanceSeed,
+  kind: VisualRoute.battleTowerAudit.kind,
   checks: _checksFor(VisualRoute.battleTowerAudit),
 );
 
@@ -109,6 +122,7 @@ List<VisualAcceptanceRoute> visualAcceptanceRoutes(
         route: route,
         id: route.id,
         seed: visualAcceptanceSeed,
+        kind: route.kind,
         checks: _checksFor(route),
       ),
   ];
@@ -137,12 +151,12 @@ String visualAcceptanceChecklistMarkdown(
       '- capture: `tools/visual_capture/visual_capture.sh --suite ${suite.name}`',
     )
     ..writeln()
-    ..writeln('| route | seed | checks |')
-    ..writeln('|---|---|---|');
+    ..writeln('| route | kind | seed | checks |')
+    ..writeln('|---|---|---|---|');
 
   for (final target in visualAcceptanceRoutes(suite)) {
     buffer.writeln(
-      '| `${target.id}` | `${target.seed}` | '
+      '| `${target.id}` | `${target.kind.name}` | `${target.seed}` | '
       '${target.checks.join('<br>')} |',
     );
   }
@@ -151,7 +165,38 @@ String visualAcceptanceChecklistMarkdown(
 
 List<String> _checksFor(VisualRoute route) {
   return switch (route) {
+    VisualRoute.splash => const ['启动背景完整铺满', '标题与展卷状态可读', '无系统 loading 圈混入'],
+    VisualRoute.saveSelectEmpty => const [
+      '三空槽同屏',
+      '首次启动信息层级清楚',
+      '1280×720 不需要滚动即可理解入口',
+    ],
+    VisualRoute.saveSelectFilled => const [
+      '最近存档、祖师与进度摘要可扫读',
+      '重命名/删除与整卡进入层级分明',
+      '有档/空槽/快速开局三态区分',
+    ],
     VisualRoute.mainMenu => const ['主菜单入口可见', '水墨克制基调', '按钮文字无溢出'],
+    VisualRoute.mainMenuClean => const [
+      '无归来或一次性弹层遮挡',
+      '主菜单题字、状态区与首屏入口同时可见',
+      '水墨门面和锁定态保持生产样式',
+    ],
+    VisualRoute.settingsPanel => const [
+      '真实设置弹窗已完全打开',
+      '浅宣纸上的标题、滑条、开关和下拉均为墨色可读态',
+      '720p 下底部操作区固定可见且正文可滚动',
+    ],
+    VisualRoute.settingsPanelBottom => const [
+      '真实单栏滚动已抵达底部',
+      '存档管理、切换存档、关于与退出入口完整可读',
+      '720p 下关闭按钮仍固定可见且无内容遮挡',
+    ],
+    VisualRoute.settingsPanelDisabled => const [
+      '真实显示设置段已进入视口',
+      '全屏开启时分辨率下拉呈明确禁用态',
+      '禁用态仍可辨认但不与可交互控件混淆',
+    ],
     VisualRoute.inventory => const ['背包分组清楚', '装备/材料标题无溢出', '操作按钮 hitbox 可见'],
     VisualRoute.battleScene => const [
       '战斗深色底文字可读',
@@ -204,6 +249,16 @@ List<String> _checksFor(VisualRoute route) {
       '双分辨率无溢出裁切',
     ],
     VisualRoute.battleDefeat => const ['败北题字与战报可读', '破招提示存在', '背景压暗后内容层级清楚'],
+    VisualRoute.offlineRecapActive => const [
+      'active 闭关长明细在 720p 不溢出',
+      '明细可滚动且双操作始终可见',
+      '离线时长、地图状态与待收收益层级清楚',
+    ],
+    VisualRoute.offlineRecapPassive => const [
+      '被动收益已入库语义明确',
+      '仅保留告知关闭操作',
+      '720p 下完整可读且无领取诱导',
+    ],
     VisualRoute.shop => const ['货币顶栏可读', '可买/不可买态清楚', '货架按钮无文字溢出'],
     VisualRoute.resourceOverview => const [
       '五类资源分组可扫读',
@@ -248,6 +303,11 @@ List<String> _checksFor(VisualRoute route) {
       '标准 3v3 无待发/大招/结算遮挡',
       '三人阵列与完整案台同屏',
       'READY 只在战斗初态挂载后发出',
+    ],
+    VisualRoute.battleIdentitySilhouette => const [
+      '三名缺专用站姿弟子均显示透明身份剪影',
+      '档案肖像不进入战场人物位',
+      '剪影保留姓名首字与流派识别且不改变三人阵列',
     ],
     VisualRoute.battleV2ResourcePressure => const [
       '同帧至少一张冷却签和一张真气不足签',

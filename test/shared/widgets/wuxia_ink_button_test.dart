@@ -115,6 +115,7 @@ void main() {
         WuxiaInkButton(
           label: '心法',
           hint: 'x',
+          status: '可研习',
           onTap: () => tapped++,
           autofocus: true,
         ),
@@ -122,7 +123,13 @@ void main() {
     );
     expect(
       tester.getSemantics(find.byType(WuxiaInkButton)),
-      isSemantics(isButton: true, isEnabled: true),
+      isSemantics(
+        label: '心法',
+        hint: 'x',
+        value: '可研习',
+        isButton: true,
+        isEnabled: true,
+      ),
     );
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
@@ -144,6 +151,10 @@ void main() {
       ),
     );
     expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+    expect(
+      find.byWidgetPredicate((w) => w is Opacity && w.opacity == 0.4),
+      findsOneWidget,
+    );
 
     await tester.pumpWidget(
       host(const WuxiaInkButton(label: '主线', hint: 'x', onTap: null)),

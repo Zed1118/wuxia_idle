@@ -50,6 +50,9 @@ void main() {
       findsWidgets,
     );
     expect(find.text(UiStrings.skillCodexUseNormal), findsOneWidget);
+    expect(find.text(UiStrings.skillCodexMultiplier), findsOneWidget);
+    expect(find.text('500'), findsOneWidget);
+    expect(find.text('倍率'), findsNothing);
   });
 
   testWidgets('破招详情显示可打断蓄力和截断用途', (tester) async {

@@ -10,6 +10,7 @@ import 'package:wuxia_idle/core/domain/forging_slot.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/inventory/presentation/equipment_detail_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/tier_colors.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../support/test_data.dart';
 
@@ -107,6 +108,12 @@ void main() {
     expect(find.text('速度'), findsOneWidget);
     expect(find.text(UiStrings.equipmentSourceSectionDivider), findsOneWidget);
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
+    final titleBar = tester.widget<WuxiaTitleBar>(find.byType(WuxiaTitleBar));
+    expect(
+      titleBar.titleStyle?.color,
+      paperTierColorForEquipment(def.tier),
+      reason: '神物标题在浅宣纸顶栏必须使用同色相的可读 tier 色',
+    );
     expect(find.byType(LightPaperPanel), findsWidgets);
     // 高阶/稀有保护：神物详情只显示穿戴、养成与锁定入口，不给出售/分解入口。
     expect(find.byType(PlaqueButton), findsNWidgets(4));

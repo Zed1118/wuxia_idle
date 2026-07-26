@@ -143,6 +143,52 @@ void main() {
     );
   });
 
+  testWidgets('已击败纪念卡有名称、战绩摘要与按钮语义', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final memory = mkMemory(
+      bossKey: 'stage_01_05',
+      source: BossMemorySource.mainline,
+      groupIndex: 1,
+      bossName: '撑伞高人',
+      defeatCount: 3,
+    );
+    await pumpScreen(
+      tester,
+      catalog: [
+        const BossCatalogEntry(
+          bossKey: 'stage_01_05',
+          source: BossMemorySource.mainline,
+          groupIndex: 1,
+        ),
+      ],
+      memories: [memory],
+    );
+
+    final memorySemantics = find.byWidgetPredicate(
+      (widget) =>
+          widget is Semantics &&
+          widget.properties.label ==
+              UiStrings.battleRecordMemorySemanticLabel('撑伞高人'),
+    );
+    expect(
+      tester.getSemantics(memorySemantics),
+      isSemantics(
+        label: UiStrings.battleRecordMemorySemanticLabel('撑伞高人'),
+        value: UiStrings.semanticDetails([
+          UiStrings.battleRecordClearedAt('2026.3.15'),
+          UiStrings.battleRecordDefeatCount(3),
+        ]),
+        isButton: true,
+        hasTapAction: true,
+      ),
+    );
+    expect(
+      find.descendant(of: memorySemantics, matching: find.byType(InkWell)),
+      findsOneWidget,
+    );
+    semantics.dispose();
+  });
+
   testWidgets('剩影占位不显 bossName（§5.7 不剧透）', (tester) async {
     final catalog = [
       const BossCatalogEntry(

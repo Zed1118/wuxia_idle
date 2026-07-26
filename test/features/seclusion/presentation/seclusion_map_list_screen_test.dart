@@ -14,6 +14,7 @@ import 'package:wuxia_idle/data/defs/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_map_list_screen.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_setup_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 import '../../../support/test_data.dart';
 
@@ -240,6 +241,15 @@ void main() {
     expect(
       find.text(UiStrings.seclusionMapActiveElapsedHint('0.0')),
       findsWidgets,
+    );
+    final paperStatusLabels = tester.widgetList<Text>(
+      find.text(UiStrings.seclusionMapStatusLabel),
+    );
+    expect(
+      paperStatusLabels.any(
+        (label) => label.style?.color == WuxiaUi.goldOnPaper,
+      ),
+      isTrue,
     );
   });
 

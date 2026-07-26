@@ -8,7 +8,7 @@ import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_floor_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
-import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../support/test_data.dart';
 
 /// T42 TowerFloorListScreen widget 测试（不接真实 Isar）。
@@ -91,6 +91,38 @@ void main() {
     expect(find.text(UiStrings.towerFloorChallenge), findsOneWidget);
   });
 
+  testWidgets('塔势总览在桌面内容栏完整容纳第30层节点', (tester) async {
+    final progress = mkProgress(highest: 30);
+    await pumpScreen(
+      tester,
+      progress: progress,
+      surfaceSize: const Size(1280, 800),
+    );
+
+    final horizontalScroller = find.descendant(
+      of: find.ancestor(
+        of: find.text(UiStrings.towerSpineTitle),
+        matching: find.byType(LightPaperPanel),
+      ),
+      matching: find.byType(SingleChildScrollView),
+    );
+    expect(horizontalScroller, findsOneWidget);
+
+    final viewportBox = tester.renderObject<RenderBox>(horizontalScroller);
+    final floor30 = find.descendant(
+      of: horizontalScroller,
+      matching: find.text('30'),
+    );
+    expect(floor30, findsOneWidget);
+    final nodeBox = tester.renderObject<RenderBox>(floor30);
+    final nodeRight = nodeBox.localToGlobal(Offset(nodeBox.size.width, 0)).dx;
+    final viewportRight = viewportBox
+        .localToGlobal(Offset(viewportBox.size.width, 0))
+        .dx;
+    expect(nodeRight, lessThanOrEqualTo(viewportRight));
+    expect(find.text(UiStrings.towerSpineHighestBadge), findsOneWidget);
+  });
+
   testWidgets('三态分布：已通 3 层 → cleared / available / locked 同时可见', (
     tester,
   ) async {
@@ -115,6 +147,14 @@ void main() {
     expect(find.text(UiStrings.towerFloorLocked), findsWidgets);
   });
 
+  testWidgets('塔势 Boss 节点优先显示当前与最高进度标记', (tester) async {
+    final progress = mkProgress(highest: 4, attempts: 4);
+    await pumpScreen(tester, progress: progress);
+
+    expect(find.text(UiStrings.towerSpineCurrentBadge), findsOneWidget);
+    expect(find.text(UiStrings.towerSpineHighestBadge), findsOneWidget);
+  });
+
   testWidgets('Boss 层视觉差异：第5层（小 Boss）显示「小 Boss」chip', (tester) async {
     // highest=0：floor 1 available，floor 5 locked + minor boss
     final progress = mkProgress();
@@ -126,6 +166,30 @@ void main() {
     );
 
     expect(find.text(UiStrings.towerBossMinor), findsOneWidget);
+  });
+
+  testWidgets('掉落传闻图标具名称与按钮语义', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final progress = mkProgress();
+    await pumpScreen(tester, progress: progress);
+
+    final rumorSemantics = find
+        .byWidgetPredicate(
+          (widget) =>
+              widget is Semantics &&
+              widget.properties.label == UiStrings.lootRumorDialogTitle &&
+              widget.properties.button == true,
+        )
+        .first;
+    expect(
+      tester.getSemantics(rumorSemantics),
+      isSemantics(
+        label: UiStrings.lootRumorDialogTitle,
+        isButton: true,
+        hasTapAction: true,
+      ),
+    );
+    semantics.dispose();
   });
 
   testWidgets('点 available 层 → 进入战斗准备（Isar 未初始化显示准备失败）', (tester) async {

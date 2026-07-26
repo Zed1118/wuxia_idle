@@ -44,7 +44,7 @@ class _TestBattleNotifier extends BattleNotifier {
   void step() {}
 }
 
-/// 单体强力技(可打断破招技),带活描述/倍率/耗内/CD。
+/// 单体强力技(可打断破招技),带活描述/威力/真气/CD。
 const _single = SkillDef(
   id: 'single1',
   name: '截脉手',
@@ -108,7 +108,7 @@ Future<_TestBattleNotifier> _pumpWith(
 
 void main() {
   group('长按技能方块 → 简介浮层', () {
-    testWidgets('长按单体技方块 → 浮层含 description + 倍率/耗内/CD/目标/特性', (tester) async {
+    testWidgets('长按单体技方块 → 浮层含 description + 威力/真气/CD/目标/特性', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_single]);
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
@@ -118,7 +118,7 @@ void main() {
 
       // 描述活文本。
       expect(find.text('一指点向对手脉门，逼其招式中断。'), findsOneWidget);
-      // 倍率(1500)、耗内(200)、CD(2)在浮层某处可见。
+      // 威力(1500)、耗气(200)、CD(2)在浮层某处可见。
       expect(find.textContaining('1500'), findsWidgets);
       expect(find.textContaining('200'), findsWidgets);
       // 目标类型(单体)。

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/colors.dart';
 import '../../theme/wuxia_tokens.dart';
+import '../../theme/wuxia_typography.dart';
 import 'panel_surface.dart';
 import 'plaque_button.dart';
 
@@ -31,9 +32,9 @@ class InkEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = _accentColor();
     final surface = PanelSurface.of(context);
     final isDarkSurface = surface.primary != WuxiaUi.ink;
+    final accent = _accentColor(isDarkSurface: isDarkSurface);
     final frameFill = isDarkSurface
         ? WuxiaColors.panel.withValues(alpha: 0.86)
         : WuxiaUi.paper.withValues(alpha: 0.72);
@@ -63,11 +64,9 @@ class InkEmptyState extends StatelessWidget {
                 title,
                 maxLines: compact ? 1 : 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: accent,
-                  fontSize: compact ? 15 : 17,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: compact ? 1.2 : 1.8,
+                style: WuxiaTypography.emptyTitleStyle(
+                  accent,
+                  compact: compact,
                 ),
               ),
               const SizedBox(height: 5),
@@ -75,11 +74,7 @@ class InkEmptyState extends StatelessWidget {
                 body,
                 maxLines: compact ? 2 : 4,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: surface.secondary,
-                  fontSize: 12,
-                  height: 1.35,
-                ),
+                style: WuxiaTypography.supportingStyle(surface.secondary),
               ),
               if (actionLabel != null && onAction != null) ...[
                 SizedBox(height: compact ? 8 : 12),
@@ -118,11 +113,14 @@ class InkEmptyState extends StatelessWidget {
     };
   }
 
-  Color _accentColor() {
+  Color _accentColor({required bool isDarkSurface}) {
     return switch (variant) {
-      InkEmptyStateVariant.empty => WuxiaUi.qing,
-      InkEmptyStateVariant.locked => WuxiaUi.jiang,
-      InkEmptyStateVariant.unavailable => WuxiaUi.muted,
+      InkEmptyStateVariant.empty =>
+        isDarkSurface ? WuxiaUi.qingOnDark : WuxiaUi.qing,
+      InkEmptyStateVariant.locked =>
+        isDarkSurface ? WuxiaColors.statDecrease : WuxiaUi.jiang,
+      InkEmptyStateVariant.unavailable =>
+        isDarkSurface ? WuxiaColors.textMuted : WuxiaUi.muted,
     };
   }
 }

@@ -334,17 +334,28 @@ class _FloorPlaque extends StatelessWidget {
                             ),
                             Tooltip(
                               message: UiStrings.lootRumorDialogTitle,
-                              child: GestureDetector(
-                                behavior: HitTestBehavior.opaque,
+                              child: Semantics(
+                                container: true,
+                                button: true,
+                                label: UiStrings.lootRumorDialogTitle,
                                 onTap: () => showLootRumorDialog(
                                   context,
                                   table: rumor,
                                   currentRealm: currentRealm,
                                 ),
-                                child: const Icon(
-                                  Icons.info_outline,
-                                  size: 16,
-                                  color: WuxiaColors.textMuted,
+                                excludeSemantics: true,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () => showLootRumorDialog(
+                                    context,
+                                    table: rumor,
+                                    currentRealm: currentRealm,
+                                  ),
+                                  child: const Icon(
+                                    Icons.info_outline,
+                                    size: 16,
+                                    color: WuxiaColors.textMuted,
+                                  ),
                                 ),
                               ),
                             ),

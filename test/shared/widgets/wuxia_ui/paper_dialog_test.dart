@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 
@@ -70,6 +71,54 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     expect(find.text('掉落'), findsOneWidget);
+  });
+
+  testWidgets('深色全局主题下 Material 组件继承浅宣纸主题', (tester) async {
+    late ThemeData dialogTheme;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(useMaterial3: true),
+        home: Scaffold(
+          body: PaperDialog(
+            title: '设置',
+            body: Builder(
+              builder: (context) {
+                dialogTheme = Theme.of(context);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const ListTile(
+                      leading: Icon(Icons.tune),
+                      title: Text('显示'),
+                      subtitle: Text('窗口设置'),
+                    ),
+                    SwitchListTile(
+                      title: const Text('全屏'),
+                      value: true,
+                      onChanged: (_) {},
+                    ),
+                    Slider(value: 0.5, onChanged: (_) {}),
+                  ],
+                );
+              },
+            ),
+            actions: const [],
+          ),
+        ),
+      ),
+    );
+
+    expect(dialogTheme.brightness, Brightness.light);
+    expect(dialogTheme.colorScheme.surface, WuxiaUi.paper);
+    expect(dialogTheme.colorScheme.onSurface, WuxiaUi.ink);
+    expect(dialogTheme.listTileTheme.textColor, WuxiaUi.ink);
+    expect(dialogTheme.listTileTheme.iconColor, WuxiaUi.ink2);
+    expect(
+      dialogTheme.switchTheme.trackColor!.resolve({WidgetState.selected}),
+      WuxiaUi.jiang,
+    );
+    expect(dialogTheme.sliderTheme.activeTrackColor, WuxiaUi.jiang);
+    expect(tester.takeException(), isNull);
   });
 }
 

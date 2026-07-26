@@ -8,6 +8,7 @@ import 'battle_test_menu.dart';
 import 'redline_audit_screen.dart';
 import '../../../core/domain/attributes.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/save_data.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../battle/application/battle_providers.dart';
@@ -34,6 +35,13 @@ import '../../mainline/presentation/stage_victory_dialog.dart';
 import '../../mainline/presentation/stage_list_screen.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../../main_menu/presentation/main_menu.dart';
+import '../../save_slot/application/slot_list_provider.dart';
+import '../../save_slot/presentation/save_select_screen.dart';
+import '../../settings/application/display_settings_providers.dart';
+import '../../settings/domain/display_settings.dart';
+import '../../settings/presentation/settings_panel.dart';
+import '../../splash/presentation/splash_screen.dart';
+import '../../../data/slot_summary.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../onboarding/application/master_builder.dart';
 import '../../onboarding/presentation/founder_creation_screen.dart';
@@ -50,6 +58,7 @@ import '../../seclusion/presentation/active_retreat_screen.dart';
 import '../../seclusion/presentation/retreat_result_screen.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../seclusion/presentation/seclusion_setup_screen.dart';
+import '../../seclusion/application/offline_recap_service.dart';
 import '../../seclusion/presentation/offline_recap_card.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';
@@ -118,6 +127,12 @@ class VisualRouteApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
+      overrides: [
+        if (route == VisualRoute.settingsPanelDisabled)
+          displaySettingsProvider.overrideWith(
+            (ref) async => const DisplaySettings(fullscreen: true),
+          ),
+      ],
       child: MaterialApp(
         title: UiStrings.appTitle,
         debugShowCheckedModeBanner: false,
@@ -258,11 +273,63 @@ Future<Widget> buildVisualTarget(
   ValueChanged<String>? onTargetReady,
 }) async {
   switch (route) {
+    case VisualRoute.splash:
+      return const SplashScreen(
+        minDisplay: Duration(days: 1),
+        loadDefinitions: _neverCompleteVisualSplashLoad,
+      );
+    case VisualRoute.saveSelectEmpty:
+      return ProviderScope(
+        overrides: [
+          slotListProvider.overrideWith(
+            (ref) async => [
+              SlotSummary.empty(1),
+              SlotSummary.empty(2),
+              SlotSummary.empty(3),
+            ],
+          ),
+        ],
+        child: const SaveSelectScreen(),
+      );
+    case VisualRoute.saveSelectFilled:
+      return ProviderScope(
+        overrides: [
+          slotListProvider.overrideWith(
+            (ref) async => _visualSaveSlotSummaries(),
+          ),
+        ],
+        child: const SaveSelectScreen(),
+      );
     case VisualRoute.mainMenu:
+      await _seedCleanMainMenu(isar);
+      return const MainMenu();
+    case VisualRoute.mainMenuClean:
+      await _seedCleanMainMenu(isar);
+      return const MainMenu();
+    case VisualRoute.settingsPanel:
       await OnboardingService(
         isar: isar,
       ).ensureFoundingMasters(soloStart: false);
-      return const MainMenu();
+      return _SettingsPanelPreview(
+        position: _SettingsPanelPreviewPosition.top,
+        onReady: onTargetReady,
+      );
+    case VisualRoute.settingsPanelBottom:
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
+      return _SettingsPanelPreview(
+        position: _SettingsPanelPreviewPosition.bottom,
+        onReady: onTargetReady,
+      );
+    case VisualRoute.settingsPanelDisabled:
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
+      return _SettingsPanelPreview(
+        position: _SettingsPanelPreviewPosition.display,
+        onReady: onTargetReady,
+      );
     case VisualRoute.techniquePanelTierAll:
       await Phase2SeedService(isar: isar).seedVisualMasterAllTiers();
       return const TechniquePanelScreen(characterId: 1);
@@ -517,6 +584,17 @@ Future<Widget> buildVisualTarget(
         readyTarget: VisualBattleReadyTarget.initialized,
         onTargetReady: onTargetReady,
       );
+    case VisualRoute.battleIdentitySilhouette:
+      return ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioIdentitySilhouette,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        autoStart: false,
+        startPaused: true,
+        seed: battleV2VisualSeed,
+        readyTarget: VisualBattleReadyTarget.initialized,
+        onTargetReady: onTargetReady,
+      );
     case VisualRoute.battleV2ResourcePressure:
       return ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioV2ResourcePressure,
@@ -618,6 +696,8 @@ Future<Widget> buildVisualTarget(
       return const _DefeatCeremonyPreview();
     case VisualRoute.defeatInnerDemonResidue:
       return const _InnerDemonResidueDefeatPreview();
+    case VisualRoute.offlineRecapActive:
+      return const _OfflineRecapActivePreview();
     case VisualRoute.offlineRecapPassive:
       return const _OfflineRecapPassivePreview();
     case VisualRoute.battleBossPhase:
@@ -1176,6 +1256,117 @@ Future<Widget> buildVisualTarget(
   }
 }
 
+Future<void> _neverCompleteVisualSplashLoad() => Completer<void>().future;
+
+List<SlotSummary> _visualSaveSlotSummaries() => [
+  SlotSummary(
+    slotId: 1,
+    isEmpty: false,
+    slotName: '夜雨江湖',
+    founderName: '沈孤鸿',
+    realmDisplay: '武圣登峰',
+    chapterIndex: 16,
+    clearedStageCount: 80,
+    completedFirstCycle: true,
+    highestTowerFloor: 30,
+    lastPlayed: DateTime(2026, 7, 25, 18, 30),
+    isMostRecent: true,
+  ),
+  SlotSummary.empty(2),
+  SlotSummary.empty(3),
+];
+
+Future<void> _seedCleanMainMenu(Isar isar) async {
+  await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+  final now = DateTime.now();
+  await isar.writeTxn(() async {
+    await isar.retreatSessions.clear();
+    final save = await isar.saveDatas.get(0);
+    if (save == null) return;
+    save.lastOnlineAt = now;
+    await isar.saveDatas.put(save);
+  });
+}
+
+/// 设置弹窗验收：以既有水墨门面为中性背景，并通过 [SettingsPanel.show] 打开
+/// 生产弹窗。避免主菜单根据本机存档自动叠加「归来」等一次性流程，污染验收帧。
+/// READY 延迟到弹窗过渡完成，避免截图命中半透明动画中间帧。
+enum _SettingsPanelPreviewPosition { top, display, bottom }
+
+class _SettingsPanelPreview extends StatefulWidget {
+  const _SettingsPanelPreview({required this.position, this.onReady});
+
+  final _SettingsPanelPreviewPosition position;
+  final ValueChanged<String>? onReady;
+
+  @override
+  State<_SettingsPanelPreview> createState() => _SettingsPanelPreviewState();
+}
+
+class _SettingsPanelPreviewState extends State<_SettingsPanelPreview> {
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _displaySectionKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      unawaited(
+        SettingsPanel.show(
+          context,
+          scrollController: _scrollController,
+          displaySectionKey: _displaySectionKey,
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+      if (!mounted) return;
+      await _positionScroll();
+      await WidgetsBinding.instance.endOfFrame;
+      if (mounted) {
+        widget.onReady?.call(
+          'dialog=settings_panel_open position=${widget.position.name}',
+        );
+      }
+    });
+  }
+
+  Future<void> _positionScroll() async {
+    if (!_scrollController.hasClients) return;
+    switch (widget.position) {
+      case _SettingsPanelPreviewPosition.top:
+        _scrollController.jumpTo(0);
+      case _SettingsPanelPreviewPosition.display:
+        final targetContext = _displaySectionKey.currentContext;
+        if (targetContext != null) {
+          await Scrollable.ensureVisible(targetContext, alignment: 0);
+        }
+      case _SettingsPanelPreviewPosition.bottom:
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          WuxiaImage(WuxiaUi.mainMenuBg, fit: BoxFit.cover),
+          ColoredBox(color: Color(0x660F0D0B)),
+        ],
+      ),
+    );
+  }
+}
+
 /// 百草岭远征返程行记验收 fixture:构造一份主动召回结果(最深 14 处·奖获修为/
 /// 药草/灵泉/银两·断魂帖 ×1 里程碑·1 人负伤),直传只读 [ExpeditionRecapScreen]。
 Widget _buildExpeditionRecapVisual() {
@@ -1507,7 +1698,7 @@ class _VictoryFirstClearPreview extends StatelessWidget {
       GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian'),
       rng: DefaultRng(seed: 607),
       obtainedAt: DateTime(2026, 6, 7),
-      obtainedFrom: 'Boss 首胜',
+      obtainedFrom: '首领首胜',
     );
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -2034,6 +2225,55 @@ class _FirstClearShowcasePreview extends StatelessWidget {
   }
 }
 
+/// M2 active 闭关归来卡静态验收：用长材料明细稳定覆盖 720p 高度边界。
+///
+/// 外层复用生产 [Dialog]，确保默认 inset 与主菜单启动弹层一致；按钮 no-op，
+/// 只验证 [OfflineRecapCard] 的信息密度、滚动边界与双操作可见性。
+class _OfflineRecapActivePreview extends StatelessWidget {
+  const _OfflineRecapActivePreview();
+
+  @override
+  Widget build(BuildContext context) {
+    const recap = (
+      awayHours: 240.0,
+      retreatHours: 72.0,
+      passiveHours: 168.0,
+      passiveMojianshi: 420,
+      passiveExperience: 6800,
+      equipmentRollCount: 6,
+      nextEquipmentNodeHours: null,
+      fullRateComplete: true,
+      mapName: '断崖绝壁',
+      isComplete: true,
+      progressPct: 1.0,
+      estimatedMojianshi: 920,
+      estimatedExperience: 12800,
+      estimatedItemRewards: <String, int>{
+        'item_yaocao': 36,
+        'item_lingquanshui': 18,
+        'item_duancai': 12,
+        'item_kaifeng_fucai': 6,
+      },
+      estimatedTechniqueLearnPoints: 36,
+      estimatedSilver: 576,
+      settledHours: 240.0,
+      limitReason: OfflineRecapLimitReason.systemCap,
+    );
+    return Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: OfflineRecapCard(
+          recap: recap,
+          onGoCollect: () {},
+          onDismiss: () {},
+        ),
+      ),
+    );
+  }
+}
+
 /// M2 离线被动归来卡静态验收:无 active 闭关时的涓流入库告知卡
 /// ([OfflineRecapCard.passive])。纯静态(card 无副作用、文案走 UiStrings),
 /// 居中浮于水墨底,模拟弹窗态。onDismiss no-op(纯截图)。
@@ -2082,7 +2322,7 @@ class _DefeatCeremonyPreview extends StatelessWidget {
             diagnosis: const BattleDiagnosis(
               ruleId: 'killed_by_charge',
               shortfall: DefeatShortfall.technique,
-              primaryCause: '被 Boss 蓄力大招击溃',
+              primaryCause: UiStrings.diagCauseCharge,
               dataLines: ['致命一击：摧心掌 720', '内力余量：180/500'],
               suggestions: [
                 DiagnosisSuggestion('保留内力、装配破招技。', DiagnosisJumpTarget.skills),

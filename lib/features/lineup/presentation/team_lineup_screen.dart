@@ -580,6 +580,7 @@ class _ActiveSlotCard extends ConsumerWidget {
                   size: 44,
                   borderColor: _schoolColor(character.school),
                   placeholderText: character.name,
+                  placeholderShapePath: _lineupSilhouettePath(character),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -713,6 +714,7 @@ class _ReserveTile extends ConsumerWidget {
               size: 36,
               borderColor: _schoolColor(character.school),
               placeholderText: character.name,
+              placeholderShapePath: _lineupSilhouettePath(character),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -776,4 +778,16 @@ class _ReserveTile extends ConsumerWidget {
       ),
     );
   }
+}
+
+String _lineupSilhouettePath(Character character) {
+  return switch (character.lineageRole) {
+    LineageRole.founder => WuxiaUi.battleFounderFallback,
+    LineageRole.senior => WuxiaUi.battleFirstDiscipleFallback,
+    LineageRole.junior => WuxiaUi.battleSecondDiscipleFallback,
+    LineageRole.disciple || LineageRole.grandDisciple =>
+      character.id.isEven
+          ? WuxiaUi.battleFirstDiscipleFallback
+          : WuxiaUi.battleSecondDiscipleFallback,
+  };
 }

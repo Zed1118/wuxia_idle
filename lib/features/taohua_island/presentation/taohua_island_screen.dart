@@ -543,6 +543,7 @@ class _SceneBuildingHotspot extends StatelessWidget {
     final stored = state.stored.floor();
     final active =
         bCfg.kind == BuildingKind.source || state.activeRecipeId != null;
+    final full = progress.pauseReason == IslandProductionPauseReason.full;
     final accent = selected
         ? WuxiaUi.jiang
         : (active ? WuxiaUi.qing : WuxiaUi.muted);
@@ -636,13 +637,19 @@ class _SceneBuildingHotspot extends StatelessWidget {
                     compact: compact,
                   ),
                   Text(
-                    active
+                    full
+                        ? UiStrings.taohuaIslandSceneFullShort
+                        : active
                         ? UiStrings.taohuaIslandSceneProgressLabel
                         : UiStrings.taohuaIslandScenePausedShort,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: active ? WuxiaUi.muted : WuxiaUi.jiang,
+                      color: full
+                          ? WuxiaUi.goldOnPaper
+                          : active
+                          ? WuxiaUi.muted
+                          : WuxiaUi.jiang,
                       fontSize: compact ? 9.5 : 10.5,
                       height: 1,
                     ),
@@ -742,11 +749,13 @@ class _HotspotProductionProgress {
     required this.value,
     required this.color,
     required this.backgroundColor,
+    required this.pauseReason,
   });
 
   final double value;
   final Color color;
   final Color backgroundColor;
+  final IslandProductionPauseReason pauseReason;
 
   factory _HotspotProductionProgress.from({
     required IslandBuildingState state,
@@ -769,22 +778,26 @@ class _HotspotProductionProgress {
         value: _fractionalProgress(stored),
         color: WuxiaUi.qing,
         backgroundColor: base,
+        pauseReason: IslandProductionPauseReason.none,
       ),
       IslandProductionPauseReason.full => _HotspotProductionProgress(
         value: 1,
         color: WuxiaUi.gold,
         backgroundColor: base,
+        pauseReason: IslandProductionPauseReason.full,
       ),
       IslandProductionPauseReason.realmLocked => _HotspotProductionProgress(
         value: 0,
         color: WuxiaUi.jiang,
         backgroundColor: WuxiaUi.jiang.withValues(alpha: 0.16),
+        pauseReason: IslandProductionPauseReason.realmLocked,
       ),
       IslandProductionPauseReason.noRecipe ||
       IslandProductionPauseReason.noProgress => _HotspotProductionProgress(
         value: 0,
         color: WuxiaUi.muted,
         backgroundColor: base,
+        pauseReason: intel.pauseReason,
       ),
     };
   }
@@ -1871,48 +1884,69 @@ class _RecipeSelector extends StatelessWidget {
               opacity: realmLocked ? 0.4 : 1.0,
               child: Tooltip(
                 message: realmLocked ? UiStrings.taohuaIslandRealmLocked : '',
-                child: GestureDetector(
+                child: Semantics(
+                  container: true,
+                  button: true,
+                  enabled: !realmLocked,
+                  selected: isActive,
+                  label: outputName,
+                  value: UiStrings.semanticDetails([
+                    if (isActive) UiStrings.semanticSelected,
+                    if (realmLocked) UiStrings.taohuaIslandRealmLocked,
+                  ]),
                   onTap: realmLocked
                       ? null
                       : () => _onSelectRecipe(context, recipe.recipeId),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? WuxiaUi.qing.withValues(alpha: 0.15)
-                          : WuxiaUi.paper2.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: isActive
-                            ? WuxiaUi.qing
-                            : WuxiaUi.ink.withValues(alpha: 0.3),
-                        width: WuxiaUi.borderWidth,
+                  excludeSemantics: true,
+                  child: InkWell(
+                    onTap: realmLocked
+                        ? null
+                        : () => _onSelectRecipe(context, recipe.recipeId),
+                    borderRadius: BorderRadius.circular(4),
+                    overlayColor: WidgetStateProperty.resolveWith((states) {
+                      return states.contains(WidgetState.focused)
+                          ? WuxiaUi.qing.withValues(alpha: 0.12)
+                          : Colors.transparent;
+                    }),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
                       ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (isActive)
-                          const Icon(
-                            Icons.check,
-                            size: 12,
-                            color: WuxiaUi.qing,
-                          ),
-                        if (isActive) const SizedBox(width: 4),
-                        Text(
-                          outputName,
-                          style: TextStyle(
-                            color: isActive ? WuxiaUi.qing : WuxiaUi.ink2,
-                            fontSize: 13,
-                            fontWeight: isActive
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                          ),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? WuxiaUi.qing.withValues(alpha: 0.15)
+                            : WuxiaUi.paper2.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: isActive
+                              ? WuxiaUi.qing
+                              : WuxiaUi.ink.withValues(alpha: 0.3),
+                          width: WuxiaUi.borderWidth,
                         ),
-                      ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isActive)
+                            const Icon(
+                              Icons.check,
+                              size: 12,
+                              color: WuxiaUi.qing,
+                            ),
+                          if (isActive) const SizedBox(width: 4),
+                          Text(
+                            outputName,
+                            style: TextStyle(
+                              color: isActive ? WuxiaUi.qing : WuxiaUi.ink2,
+                              fontSize: 13,
+                              fontWeight: isActive
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

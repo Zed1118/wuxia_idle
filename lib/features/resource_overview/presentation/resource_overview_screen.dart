@@ -152,7 +152,7 @@ class _ResourceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final usage = UiStrings.materialUsageSummary(item.usages);
-    final source = UiStrings.materialSourceSummary(item.sources);
+    final source = UiStrings.materialSourceLabelsSummary(item.sources);
     final showSourceDetails =
         item.category != ResourceOverviewCategory.scroll &&
         item.sources.isNotEmpty;

@@ -466,6 +466,12 @@ void main() {
     expect(find.text(UiStrings.inventoryFilterGroupStatus), findsOneWidget);
     expect(find.text(UiStrings.inventorySortTierDesc), findsOneWidget);
     expect(find.text(UiStrings.inventoryFilterReset), findsOneWidget);
+    final unselectedWeapon = tester.widget<Text>(find.text('武器').first);
+    expect(
+      unselectedWeapon.style?.color,
+      WuxiaColors.textSecondary,
+      reason: '可点击的未选筛选项应与真正 disabled 灰阶区分',
+    );
   });
 
   testWidgets('库存整理控件：状态筛选「师承遗物」只显示遗物', (tester) async {

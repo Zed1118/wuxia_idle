@@ -1,7 +1,23 @@
 /// 出版美术视觉验收的目标验收点。每个值对应一个 (seed + screen) 组合,
 /// 由 `--dart-define=VISUAL_ROUTE=<id>` 在 debug 启动时选中。
 enum VisualRoute {
+  splash('splash', '启动闪屏·真实 SplashScreen 加载态(水墨渔舟 + 标题 + 展卷状态)'),
+  saveSelectEmpty('save_select_empty', '存档选择·三槽皆空的首次启动生产屏'),
+  saveSelectFilled('save_select_filled', '存档选择·最近存档 + 首周目完成 + 两个空槽混合生产屏'),
   mainMenu('main_menu', '主菜单(出版美术门面 bg + 题字 + 木牌)'),
+  mainMenuClean('main_menu_clean', '主菜单·清洁首帧(无归来/闭关弹层污染的完整生产壳)'),
+  settingsPanel(
+    'settings_panel',
+    '设置弹窗·真实 SettingsPanel.show 生产路径(浅宣纸组件对比 + 720p 滚动)',
+  ),
+  settingsPanelBottom(
+    'settings_panel_bottom',
+    '设置弹窗·真实生产单栏底部(存档管理 + 切换存档 + 关于 + 退出)',
+  ),
+  settingsPanelDisabled(
+    'settings_panel_disabled',
+    '设置弹窗·真实生产显示段(全屏开启 + 分辨率禁用态)',
+  ),
   techniquePanelTierAll(
     'technique_panel_tier_all',
     '心法面板·武圣满学 7 阶分组头同屏(水墨文字头梯度验收)',
@@ -86,6 +102,10 @@ enum VisualRoute {
     '战斗界面 V2·固定 seed 冻结在最后一次致胜 action 之前',
   ),
   battleV2Neutral3v3('battle_v2_neutral_3v3', '战斗界面 V2·中性标准 3v3 静态帧'),
+  battleIdentitySilhouette(
+    'battle_identity_silhouette',
+    '战斗人物素材门禁·三名未配专用站姿弟子使用透明身份剪影',
+  ),
   battleV2ResourcePressure(
     'battle_v2_resource_pressure',
     '战斗界面 V2·冷却签与真气不足签同帧静态验收',
@@ -159,6 +179,10 @@ enum VisualRoute {
   battleTapPreview(
     'battle_tap_preview',
     '两段点选交互静态预览(冻结态·single 技能待发高亮 + 敌头像可选标记 + 单体/群体角标)',
+  ),
+  offlineRecapActive(
+    'offline_recap_active',
+    'M2 闭关归来卡静态验收(active 闭关·长材料明细 +「稍后再说/前去收功」双操作)',
   ),
   offlineRecapPassive(
     'offline_recap_passive',
@@ -345,16 +369,56 @@ enum VisualRoute {
 
   /// 需要由目标战斗状态控制 READY 的 V2 验收路由。
   bool get controlsReadiness => switch (this) {
+    settingsPanel ||
+    settingsPanelBottom ||
+    settingsPanelDisabled ||
     battleV2CasualtyReplacement ||
     battleV2FastForwardPeak ||
     battleV2PreResult ||
     battleV2Neutral3v3 ||
+    battleIdentitySilhouette ||
     battleV2ResourcePressure ||
     battleV2AutoRotationFirst ||
     battleV2AutoRotationSecond => true,
     _ => false,
   };
+
+  /// 验收目标的语义类型。完整生产页面、局部组件、图册和瞬时浮层不能按
+  /// 同一套标准评分，因此在 manifest 中显式区分。
+  VisualRouteKind get kind {
+    if (id.contains('gallery')) return VisualRouteKind.gallery;
+    if (this == VisualRoute.redlineAudit ||
+        this == VisualRoute.battleTapPreview ||
+        this == VisualRoute.battleIdentitySilhouette ||
+        this == VisualRoute.hub) {
+      return VisualRouteKind.component;
+    }
+    if (id.contains('dialog') ||
+        id.contains('popup') ||
+        id.contains('snackbar') ||
+        id.contains('caption') ||
+        this == VisualRoute.settingsPanel ||
+        this == VisualRoute.settingsPanelBottom ||
+        this == VisualRoute.settingsPanelDisabled ||
+        this == VisualRoute.encounterOutcomeSkillBanner ||
+        this == VisualRoute.battleVictoryFirstClear ||
+        this == VisualRoute.battleFirstClearShowcase ||
+        this == VisualRoute.battleDefeat ||
+        this == VisualRoute.defeatInnerDemonResidue ||
+        this == VisualRoute.battleTreasureGlowPeak ||
+        this == VisualRoute.battleTreasureGlowRest ||
+        this == VisualRoute.battleTreasureZhongqi ||
+        this == VisualRoute.offlineRecapActive ||
+        this == VisualRoute.offlineRecapPassive ||
+        this == VisualRoute.discipleJoinCeremony ||
+        this == VisualRoute.heroCamera) {
+      return VisualRouteKind.transientOverlay;
+    }
+    return VisualRouteKind.productionShell;
+  }
 }
+
+enum VisualRouteKind { productionShell, component, gallery, transientOverlay }
 
 /// 纯函数:id 字符串 → 枚举,未知/空 → null。便于单测。
 VisualRoute? parseVisualRoute(String raw) {

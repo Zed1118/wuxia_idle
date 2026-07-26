@@ -44,13 +44,13 @@ class UiStrings {
   static const String battleSurrender = '投降';
   static const String surrenderConfirmTitle = '认输撤退';
   static const String surrenderConfirmMessage =
-      '确定认输撤退?本场不计掉落,Boss 关也不折损修为,只是退回去重整旗鼓。';
+      '确定认输撤退？本场不计掉落，首领关也不折损修为，只是退回去重整旗鼓。';
   static const String surrenderConfirmAction = '撤退';
   static const String surrenderCancelAction = '再打打';
   // M3:普通关战败立即重试(Boss 关不给 · 试错免费无惩罚)。
   static const String stageRetryTitle = '功亏一篑';
-  static const String stageRetryPrompt = '这一战未能取胜。要再试一次吗?';
-  static const String stageRetryHintLine = '可回行囊换装备,或先去别处历练再来。';
+  static const String stageRetryPrompt = '这一战未能取胜。要再试一次吗？';
+  static const String stageRetryHintLine = '可回行囊换装备，或先去别处历练再来。';
   static const String stageRetryAction = '再战';
   static const String stageRetryBackAction = '返回';
   static const String emptyLog = '（无动作）';
@@ -74,7 +74,7 @@ class UiStrings {
   static const String battleCommandDesk = '武学案台';
   static const String battlePouch = '战备行囊';
   static const String battlePouchReserved = '待装配';
-  static const String battleEmptySkillSlot = '空技能位';
+  static const String battleEmptySkillSlot = '空招式位';
 
   static String combatTermLabel(CombatTerm term) => switch (term) {
     CombatTerm.charge => '蓄力',
@@ -96,10 +96,10 @@ class UiStrings {
     CombatTerm.interrupt => '破招：命中蓄力中的目标可打断其招牌技，并让目标短暂踉跄、防御骤降。',
     CombatTerm.zhenqi => '真气：敌方内力上限提高 ${pct ?? ''}，更容易多放一次大招。',
     CombatTerm.yuti => '御体：敌方防御率提高 ${pct ?? ''}，更耐久，适合用克制流派或破甲手段处理。',
-    CombatTerm.phase => '相位：Boss 血量跌破阈值后的阶段变化，会切换招式节奏或触发蓄力反扑。',
+    CombatTerm.phase => '相位：首领血量跌破阈值后的阶段变化，会切换招式节奏或触发蓄力反扑。',
     CombatTerm.heavyInjury =>
       '重伤：硬仗战败或惨胜后的伤势。'
-          '调息 ${hours?.ceil() ?? 0}h，输出 -${attackPenaltyPct ?? 0}%，'
+          '调息 ${hours?.ceil() ?? 0} 小时，输出 -${attackPenaltyPct ?? 0}%，'
           '内力上限 -${internalForcePenaltyPct ?? 0}%。',
   };
 
@@ -157,7 +157,7 @@ class UiStrings {
   // 字段标签（左列），值由活数据 / EnumL10n 填。
   static const String skillInfoType = '类型';
   static const String skillInfoTarget = '目标';
-  static const String skillInfoPower = '倍率';
+  static const String skillInfoPower = '威力';
   static const String skillInfoCost = '真气';
   static const String skillInfoCooldown = '冷却';
   static const String skillInfoTrait = '特性';
@@ -169,7 +169,7 @@ class UiStrings {
   // 冷却值单位（战斗节拍）。
   static String skillInfoCooldownTurns(int turns) => '$turns 拍';
   // 浮层底部操作提示：点选交互说明。
-  static const String skillInfoTapHint = '轻点技能：单体技再点敌人出手，群体技一键即放';
+  static const String skillInfoTapHint = '轻点招式：单体技再点敌人出手，群体技一键即放';
   // 技能按钮角标：区分单体 / 群体目标类型。
   static const String skillBadgeSingle = '单';
   static const String skillBadgeAoe = '群';
@@ -264,11 +264,11 @@ class UiStrings {
 
   // 主因（1 条/规则）
   static const String diagCauseRealm = '境界差距压住了招式';
-  static const String diagCauseCharge = '被 Boss 蓄力大招击溃';
+  static const String diagCauseCharge = '被首领蓄力大招击溃';
   static const String diagCauseCounter = '主力流派被对面克住';
   static const String diagCauseInternalWound = '被内伤层层拖垮';
   static const String diagCauseMob = '被群敌围殴拖死';
-  static const String diagCauseGuardianWard = 'Boss 仍受护法结界庇护';
+  static const String diagCauseGuardianWard = '首领仍受护法结界庇护';
   static const String diagCauseFrontline = '前排太脆，过早倒下';
   static const String diagCauseSupplies = '续航不足，伤势拖到见底';
   static const String diagCauseDps = '输出不足，未能速决';
@@ -285,7 +285,7 @@ class UiStrings {
   static String diagDamageTaken(int dmg) => '受到总伤：$dmg';
   static String diagMinionRatio(int pct) => '小怪伤害占比：$pct%';
   static String diagGuardianAliveCount(int count) => '存活护法：$count 名';
-  static String diagGuardianWardDamageTaken(int pct) => 'Boss 当前承伤：$pct%';
+  static String diagGuardianWardDamageTaken(int pct) => '首领当前承伤：$pct%';
   static String diagFrontlineDeath(String name, int tick) =>
       '$name 在第 $tick 拍倒下';
   static String diagFrontlineMaxHp(int hp) => '其最大血量：$hp';
@@ -300,14 +300,14 @@ class UiStrings {
   static const String diagSuggestCounter = '换一名主修不被克的门人上阵，或调整主修流派。';
   static const String diagSuggestInternalWound = '备好回复，或换能压住内伤的心法。';
   static const String diagSuggestMob = '补一名清场手，先清场再攻坚。';
-  static const String diagSuggestGuardianWard = '先集火护法，破掉结界后再打 Boss。';
+  static const String diagSuggestGuardianWard = '先集火护法，破掉结界后再攻首领。';
   static const String diagSuggestFrontline = '强化护具、以虚弱/回复护住前排。';
   static const String diagSuggestSupplies = '查看药囊、疗伤丹与带回复的装备。';
-  static const String diagSuggestDps = '提升技能熟练度，使用破防技提速。';
-  static const String diagSuggestGeneric = '检视技能装配，调整后再战。';
+  static const String diagSuggestDps = '提升招式熟练度，使用破防技提速。';
+  static const String diagSuggestGeneric = '检视招式装配，调整后再战。';
 
   // 跳转按钮 label
-  static const String diagJumpSkills = '查看技能装配';
+  static const String diagJumpSkills = '查看招式装配';
   static const String diagJumpEquipment = '查看装备';
   static const String diagJumpCultivation = '查看心法';
   static const String diagJumpRoster = '查看角色面板';
@@ -635,7 +635,7 @@ class UiStrings {
   static String realmEquipmentCap(String tier) => '可用装备：$tier';
   static const String profileLevelLabel = '等级'; // 第八阶段·角色等级 Lv
   static const String profileLevelPeak = '巅峰';
-  static String profileLevelValue(int level) => 'Lv $level';
+  static String profileLevelValue(int level) => 'Lv$level';
   static String profileLevelProgress(int current, int next) =>
       '$current / $next';
   static const String profileCultivationLevelLabel = '修为等级';
@@ -828,6 +828,15 @@ class UiStrings {
 
   /// 页面级帮助 `?` 未解锁时的气泡（吃 CodexIndex step gating，不剧透机制）。
   static const String contextHelpLocked = '阅历未至，待你历练更深，再来翻阅。';
+  static String contextHelpSemanticLabel(String label) => '查看“$label”帮助';
+  static String glossarySemanticLabel(String label) => '查看“$label”释义';
+  static String semanticDetails(Iterable<String?> details) =>
+      details.whereType<String>().where((text) => text.isNotEmpty).join('，');
+  static String battleTargetHealth(int current, int max) =>
+      '$statHp $current / $max';
+  static String battleRecordMemorySemanticLabel(String name) => '查看“$name”战绩';
+  static String treasureDropContinueSemanticLabel(String name) =>
+      '获得“$name”，继续';
 
   /// 内力当前/上限文案：`X / Y`。
   static String internalForceValue(int current, int max) => '$current / $max';
@@ -972,11 +981,16 @@ class UiStrings {
 
   /// 物料主要来源摘要。空 = 不显。
   static String materialSourceSummary(List<ItemSource> sources) {
+    final summary = materialSourceLabelsSummary(sources);
+    return summary.isEmpty ? '' : '$materialSourcePrefix$summary';
+  }
+
+  /// 物料来源名称摘要，不含标题前缀，供已有独立「来源」标签的页面消费。
+  static String materialSourceLabelsSummary(List<ItemSource> sources) {
     final labels = <String>{
       for (final source in sources) itemSourceLabel(source),
     }..remove('');
-    if (labels.isEmpty) return '';
-    return '$materialSourcePrefix${labels.take(6).join(' / ')}';
+    return labels.take(6).join(' / ');
   }
 
   static const String materialSourcePrefix = '主要来源：';
@@ -1177,7 +1191,7 @@ class UiStrings {
   static const String forgingForged = '已开锋';
   static const String forgingNoSpecialSkill = '此装备尚未记载专属锋意';
   static const String forgingNoSpecialSkillHint = '换一件武器,或先打磨前两道锋意。';
-  static const String forgingSpecialSkillPickerTitle = '选择专属技能';
+  static const String forgingSpecialSkillPickerTitle = '选择专属招式';
   static String forgingSpecialSkillSummary(
     String styleLabel,
     int? tier,
@@ -1205,7 +1219,7 @@ class UiStrings {
   static String forgingBonusLabel(String typeLabel, int bonus) =>
       '$typeLabel +$bonus%';
 
-  static String forgingSpecialSkillLabel(String skillName) => '专属技能：$skillName';
+  static String forgingSpecialSkillLabel(String skillName) => '专属招式：$skillName';
   static const String forgingSpecialSkillDetailTitle = '器物绝招';
   static const String forgingSpecialSkillDetailSubtitle = '第三锋意已定，战斗中随装备带入。';
   static const String forgingSpecialSkillTriggerManual = '触发：手动下发';
@@ -1388,7 +1402,7 @@ class UiStrings {
   // ── Phase 3 主线（T35）──
 
   static const String mainMenuMainline = '主线';
-  static const String mainMenuMainlineHint = '16 章 80 关,按章节顺序解锁';
+  static const String mainMenuMainlineHint = '16 章 80 关，按章节顺序解锁';
   static String mainMenuMainlineGoalHint(
     String target,
     String reward,
@@ -1400,11 +1414,12 @@ class UiStrings {
 
   static const String chapterListTitle = '主线 · 章节';
   static const String mainlineRouteMapTitle = '江湖路引';
-  static const String mainlineRouteMapSubtitle = '十六章江湖路 · 每章五关，朱印为 Boss';
+  static const String mainlineRouteMapSubtitle = '十六章江湖路 · 每章五关，朱印为首领';
+  static const String mainlineRouteMapA11yHint = '可横向滚动，使用左右方向键查看各章';
   static const String mainlineRouteCurrent = '当前';
   static const String mainlineRouteCleared = '已通';
   static const String mainlineRouteLocked = '未至';
-  static const String mainlineRouteBoss = 'Boss';
+  static const String mainlineRouteBoss = '首领';
   static const String chapter1Title = '第一章 · 学武出山';
   static const String chapter2Title = '第二章 · 武林初识';
   static const String chapter3Title = '第三章 · 名扬江湖';
@@ -1450,7 +1465,9 @@ class UiStrings {
   static const String stageListJourneyTitle = '章内行程';
   static const String stageListTimelineTitle = '章节卷轴';
   static const String stageListTimelineHint = '沿路标推进，朱印为章末首领';
-  static const String stageListBoss = 'Boss';
+  static const String stageListBoss = '首领';
+  static const String stageListJourneyMinorBoss = '强敌';
+  static const String stageListJourneyFinalBoss = '章末';
   static String stageListJourneyNodeLabel(int stageIndex) => '第$stageIndex关';
   static String stageListTimelineStopLabel(int stageIndex, String stageName) =>
       '第$stageIndex关 · $stageName';
@@ -1555,7 +1572,7 @@ class UiStrings {
   static String mainMenuTowerStatus(int highest, int next) =>
       highest <= 0 ? '未登塔 · 1层' : '已至$highest层 · 下$next层';
   static String mainMenuTowerBossStatus(int highest, int next) =>
-      highest <= 0 ? '未登塔 · 1层' : '已至$highest层 · 下$next层Boss';
+      highest <= 0 ? '未登塔 · 1层' : '已至$highest层 · 下$next层首领';
   static const String mainMenuTowerCompleteStatus = '三十层已通';
 
   // ── P0.2 #40 排行榜(本地榜,D 方案 Demo 不接 Supabase backend)──
@@ -1580,8 +1597,8 @@ class UiStrings {
   static const String towerTitle = '问鼎九霄';
   static const String towerSpineTitle = '九霄塔势';
 
-  static const String towerBossMinor = '小 Boss';
-  static const String towerBossMajor = '大 Boss';
+  static const String towerBossMinor = '小首领';
+  static const String towerBossMajor = '大首领';
 
   static const String towerFloorLocked = '通关前一层解锁';
   static const String towerFloorChallenge = '挑战';
@@ -1605,8 +1622,8 @@ class UiStrings {
   static String towerNextMilestoneTarget(int floor, String name) =>
       '下一节点：第 $floor 层 · $name';
   static const String towerNextMilestoneComplete = '下一节点：三十层已尽';
-  static const String towerMilestoneSummitBoss = '登顶大 Boss';
-  static const String towerSpineLegend = 'Boss 作节点，亮印为当前可挑战层，厚边为最高已通层';
+  static const String towerMilestoneSummitBoss = '登顶大首领';
+  static const String towerSpineLegend = '首领作节点，亮印为当前可挑战层，厚边为最高已通层';
 
   static String towerFloorLabel(int floorIndex) => '第 $floorIndex 层';
 
@@ -1634,7 +1651,7 @@ class UiStrings {
   static String towerFirstClearCeremony(
     int floorIndex, {
     bool isBoss = false,
-  }) => isBoss ? '破阵 · 第 $floorIndex 层 Boss' : '首通 · 第 $floorIndex 层';
+  }) => isBoss ? '破阵 · 第 $floorIndex 层首领' : '首通 · 第 $floorIndex 层';
 
   // ─── 主线 victory dialog（W15 #30 P3 后续 A 任务）────────────────────────
 
@@ -1773,12 +1790,12 @@ class UiStrings {
     String stageName,
     bool isBoss,
   ) => isBoss
-      ? '主线·第$chapterIndex章 Boss「$stageName」'
+      ? '主线·第$chapterIndex章首领「$stageName」'
       : '主线·第$chapterIndex章「$stageName」';
   static String equipmentSourceStage(String stageName, bool isBoss) =>
-      isBoss ? '支线·Boss「$stageName」' : '支线·「$stageName」';
+      isBoss ? '支线·首领「$stageName」' : '支线·「$stageName」';
   static String equipmentSourceTower(int floorIndex, bool isBoss) =>
-      isBoss ? '爬塔·第$floorIndex层 Boss' : '爬塔·第$floorIndex层';
+      isBoss ? '爬塔·第$floorIndex层首领' : '爬塔·第$floorIndex层';
   static String equipmentSourceSeclusion(String mapName) => '闭关·$mapName';
   static const String equipmentSourceShop = '江湖商店';
   static const String equipmentSourceUnknown = '来源未明';
@@ -1934,7 +1951,7 @@ class UiStrings {
   static const String seclusionBonusBalanced = '综合产出';
   static const String seclusionMapActiveDoneHint = '已完成，可收功';
   static String seclusionMapActiveRemainingHint(int remainingMinutes) =>
-      '剩余 ${remainingMinutes ~/ 60}h${remainingMinutes % 60}min，可查看';
+      '剩余 ${durationHoursMinutes(remainingMinutes ~/ 60, remainingMinutes % 60)}，可查看';
   static String seclusionMapActiveBannerRemaining(String remaining) =>
       '$seclusionMapActive · 剩余 $remaining';
   static String seclusionMapActiveBannerDone() => '$activeRetreatDone · 可收功';
@@ -1970,7 +1987,7 @@ class UiStrings {
   static const String activeRetreatDoneHint = '气息已满，可收功离山';
   static const String activeRetreatEarlyHint = '行功未满，提前收功将按实际时长结算';
   static String activeRetreatTimeRange(String start, String end, int hours) =>
-      '$start → $end（$hours h）';
+      '$start → $end（$hours 小时）';
   static const String activeRetreatStatusCardTitle = '闭关状态';
   static String activeRetreatStatusLocation(String mapName) => '地点：$mapName';
   static String activeRetreatElapsed(String elapsed) => '已闭关：$elapsed';
@@ -1988,7 +2005,7 @@ class UiStrings {
     int mojianshi,
     int silver,
     int experience,
-  ) => '当前必得：磨剑石 $mojianshi · 银两 $silver · 修为 $experience';
+  ) => '当前必得：磨剑石 $mojianshi · 银两 $silver · 修为经验 $experience';
   static String activeRetreatTierWeights(
     int hour,
     int base,
@@ -2045,9 +2062,9 @@ class UiStrings {
   static String seclusionActualHours(double h) =>
       '实际挂机 ${h.toStringAsFixed(1)} 小时';
   static String seclusionExpected(String key, double perHour) =>
-      '$key：${perHour.toStringAsFixed(1)}/h';
+      '$key：${perHour.toStringAsFixed(1)} / 小时';
   static String seclusionMapEventHour(double h) =>
-      '第 ${h.toStringAsFixed(0)} 时';
+      '第 ${h.toStringAsFixed(0)} 小时';
   static const String seclusionMapEventHarvest = '偶得';
   static const String seclusionMapEventRisk = '险兆';
   static const String seclusionMapEventTrace = '见闻';
@@ -2150,7 +2167,7 @@ class UiStrings {
     int slotId,
     String saveVersion,
     int backupCount,
-  ) => 'slot $slotId · v$saveVersion · $backupCount 个备份';
+  ) => '槽位 $slotId · 版本 $saveVersion · $backupCount 个备份';
   static String saveManagementDateTime(DateTime value) {
     String two(int n) => n.toString().padLeft(2, '0');
     return '${value.year}-${two(value.month)}-${two(value.day)} '
@@ -2339,7 +2356,7 @@ class UiStrings {
   static const String skillCodexProficiencyPrefix = '造诣';
   static const String skillCodexProficiencyNone = '未曾习练';
   static const String skillCodexBelongTo = '所属';
-  static const String skillCodexMultiplier = '倍率';
+  static const String skillCodexMultiplier = '威力';
   static const String skillCodexCost = '真气';
   static const String skillCodexCooldown = '冷却';
   static const String skillCodexManualSection = '秘本纲要';
@@ -2458,7 +2475,7 @@ class UiStrings {
     String charName,
     int actualHours,
     String mapName,
-  ) => '$charName 于「$mapName」闭关 $actualHours 时，今晨收功。';
+  ) => '$charName 于「$mapName」闭关 $actualHours 小时，今晨收功。';
 
   // #2 adventureTriggered
   static String gameEventAdventureSummary(String encounterTitle) =>
@@ -2646,8 +2663,8 @@ class UiStrings {
 
   // A2 SnackBar / 错误提示($e 变量用带参方法保留)。
   static const String encounterSkillUnequipSuccess = '已卸下奇遇招式';
-  static String encounterSkillEquipFailed(Object e) => '装备失败: $e';
-  static String encounterSkillUnequipFailed(Object e) => '卸下失败: $e';
+  static String encounterSkillEquipFailed(Object _) => '装备失败，请稍后重试';
+  static String encounterSkillUnequipFailed(Object _) => '卸下失败，请稍后重试';
   static String retreatCollectFailed(Object e) => '收功失败：$e';
   static String seclusionStartFailed(Object e) => '开始闭关失败：$e';
   static String ascensionFailed(Object e) => '飞升失败:$e';
@@ -2668,18 +2685,16 @@ class UiStrings {
   // :188「该招式尚未 unlock」中英混排统一为中文。
   static const String encounterSkillNotUnlocked = '该招式尚未领悟';
   static String encounterSkillTierLocked(int requiredTier, String current) =>
-      '境界不足:需 tier $requiredTier,当前 $current';
+      '境界不足：需第 $requiredTier 阶，当前 $current';
   static String encounterSkillEquipFailedReason(String reason) =>
-      '装备失败: $reason';
+      '装备失败：$reason';
 
   /// `equipEncounterSkill` 的失败原因(经上面的 [encounterSkillEquipFailedReason]
   /// 呈现给玩家,故不是纯诊断串)。
-  static String encounterSkillNotEncounterSkill(String skillId) =>
-      'skill $skillId 不是奇遇招式';
+  static String encounterSkillNotEncounterSkill(String _) => '此招并非奇遇武学，无法装配';
   static const String encounterSkillEquipUninitialized = '未初始化';
-  static String encounterSkillCharacterMissing(int characterId) =>
-      'character #$characterId 不存在';
-  static String encounterSkillDefMissing(String id) => '招式定义缺失: $id';
+  static String encounterSkillCharacterMissing(int _) => '角色资料暂不可用';
+  static String encounterSkillDefMissing(String _) => '招式资料暂不可用';
 
   // sect_screen 空状态。
   static const String sectNotCreated = '门派尚未创建';
@@ -2813,9 +2828,9 @@ class UiStrings {
   static String mainMenuRetreatPassivePhase(String hours) =>
       '地图圆满 · 挂机接续 $hours 小时';
 
-  /// 剩余时长格式:有小时显「N 时 M 分」,否则「M 分」
+  /// 剩余时长格式:有小时显「N 小时 M 分」,否则「M 分」
   static String retreatRemainingText(int hours, int minutes) =>
-      hours > 0 ? '$hours 时 $minutes 分' : '$minutes 分';
+      durationHoursMinutes(hours, minutes);
 
   /// 出战锁弹窗(闭关进行中点战斗入口)
   static const String seclusionBattleLockTitle = '闭关修行中';
@@ -3040,7 +3055,7 @@ class UiStrings {
 
   /// 心魔余毒清解提示。
   static String conditionInnerDemonResidueRecovery(double hours) =>
-      '调息：闭关/离线 ${hours.ceil()}h，或完成有效战斗';
+      '调息：闭关或离线 ${hours.ceil()} 小时，或完成有效战斗';
   static String conditionInnerBreathEffective({
     required int actual,
     required int effective,
@@ -3052,9 +3067,9 @@ class UiStrings {
   /// 重伤状态标签：`重伤`。
   static String get injuryHeavyLabel => combatTermLabel(CombatTerm.heavyInjury);
 
-  /// 重伤疗养剩余提示：`内伤未愈 · 调息 <N>h`（h 向上取整）。
+  /// 重伤疗养剩余提示，小时向上取整。
   static String injuryRecoveryHint(double hours) =>
-      '内伤未愈 · 调息 ${hours.ceil()}h';
+      '内伤未愈 · 调息 ${hours.ceil()} 小时';
 
   static const String injuryStatusTitle = '伤势';
   static const String injuryStatusHealthy = '无伤 · 可出战';
@@ -3109,7 +3124,7 @@ class UiStrings {
   /// 残页集齐卷轴题字（fragmentJustUnlocked 时展示）。
   static const String skillTreasureFragmentCaption = '残页集齐 · 神功重现';
   static const String skillTreasureScrollLabel = '得卷';
-  static const String skillTreasureManualHint = 'Boss 真解入卷，可入藏经阁研习。';
+  static const String skillTreasureManualHint = '首领真解入卷，可入藏经阁研习。';
   static const String skillTreasureFragmentHint = '散页合为一卷，旧招重见全貌。';
   static const String skillTreasureFallbackGlyph = '卷';
 
@@ -3170,7 +3185,8 @@ class UiStrings {
   static const String weaponCodexDetailAttackRange = '攻击';
   static const String weaponCodexDetailHealthRange = '生命';
   static const String weaponCodexDetailSpeedRange = '速度';
-  static const String weaponCodexDetailSpecialSkills = '开锋候选技';
+  static const String weaponCodexDetailSpecialSkills = '开锋候选';
+  static String weaponCodexDetailSpecialSkillsCount(int count) => '$count 式';
   static const String weaponCodexDetailLineage = '师承遗物·境界相称方可佩用';
   static String weaponCodexDetailRange(int min, int max) =>
       min == max ? '$min' : '$min ~ $max';
@@ -3237,8 +3253,9 @@ class UiStrings {
     int workshopStored,
   ) => '物产 $rawStored · 成品 $workshopStored';
   static String taohuaIslandSceneHotspotMeta(int level, int stored) =>
-      'Lv.$level · $stored';
+      'Lv$level · $stored';
   static const String taohuaIslandSceneProgressLabel = '产出进度';
+  static const String taohuaIslandSceneFullShort = '仓储已满';
   static const String taohuaIslandScenePausedShort = '暂停';
   static String taohuaIslandSelectedBuildingTitle(String buildingName) =>
       '$buildingName详情';
@@ -3258,7 +3275,7 @@ class UiStrings {
   static const String taohuaIslandStatusHealingTitle = '伤员疗养';
   static const String taohuaIslandStatusHealingNone = '无人重伤';
   static String taohuaIslandStatusHealingValue(int count, double hours) =>
-      '$count 名调息 · 余 ${hours.ceil()}h';
+      '$count 名调息 · 余 ${hours.ceil()} 小时';
 
   /// 桃花岛据点分区：原料产出。
   static const String taohuaIslandSectionRaw = '物产';
@@ -3294,6 +3311,7 @@ class UiStrings {
 
   /// 建筑选配方按钮。
   static const String taohuaIslandSelectRecipe = '选配方';
+  static const String semanticSelected = '已选中';
 
   /// 建筑收取按钮。
   static const String taohuaIslandHarvest = '收取';
@@ -3424,7 +3442,7 @@ class UiStrings {
     final minutes = ((hours * 60) - 1e-6).ceil();
     if (minutes < 60) return '$minutes 分';
     final roundedHours = (hours - 1e-6).ceil();
-    return '${roundedHours}h';
+    return '$roundedHours 小时';
   }
 
   /// selectRecipe 不可达路径失败文案（notProcessor / recipeNotFound）。
@@ -3562,7 +3580,7 @@ class UiStrings {
   static const String sweepRecapNoGains = '无新增收益';
 
   /// 爬塔扫荡重打仅掉残页的说明（守 §5.1 防刷）。
-  static const String sweepTowerRepeatNote = '爬塔重打仅掉技能残页，不掉装备 / 银两';
+  static const String sweepTowerRepeatNote = '爬塔重打仅掉招式残页，不掉装备 / 银两';
 
   static const String sweepPreviewTitle = '扫荡前预估';
   static const String sweepPreviewDropsPrefix = '可能掉落';
@@ -3703,7 +3721,7 @@ class UiStrings {
   static const String expeditionNextNodeReady = '下一处将至……';
   static const String expeditionDefeatedBanner = '全队战败，滞留待归——召回后结算伤势返程。';
   static String expeditionRemainingText(int hours, int minutes) =>
-      hours > 0 ? '$hours 时 $minutes 分' : '$minutes 分';
+      durationHoursMinutes(hours, minutes);
   static const String expeditionRecallButton = '召回队伍';
   static const String expeditionRecallConfirmTitle = '召回远征队伍';
   static const String expeditionRecallConfirmBody =
@@ -3811,4 +3829,17 @@ class UiStrings {
 
   // 战斗驱动编排（#1 wiring Task 4）
   static const String gauntletSessionNotReady = '断魂庄会话未就绪';
+
+  /// 正式界面的真实时长格式。整小时不补「0 分」，避免 `79h00min`
+  /// 一类内部式缩写；叙事世界的「时辰」不走此方法。
+  static String durationHoursMinutes(int hours, int minutes) {
+    final safeHours = hours < 0 ? 0 : hours;
+    final safeMinutes = minutes < 0 ? 0 : minutes;
+    final totalMinutes = safeHours * 60 + safeMinutes;
+    final normalizedHours = totalMinutes ~/ 60;
+    final normalizedMinutes = totalMinutes % 60;
+    if (normalizedHours <= 0) return '$normalizedMinutes 分';
+    if (normalizedMinutes <= 0) return '$normalizedHours 小时';
+    return '$normalizedHours 小时 $normalizedMinutes 分';
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/wuxia_tokens.dart';
+import '../../theme/wuxia_typography.dart';
 import 'panel_surface.dart';
 
 /// 分区小标（UI kit · demo `.wx .shead`）：墨笔标题 + 底部枯笔分隔线。
@@ -27,12 +28,7 @@ class SectionHeader extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(
-              color: surface.primary,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-            ),
+            style: WuxiaTypography.sectionTitleStyle(surface.primary),
           ),
           const SizedBox(height: 5),
           Align(

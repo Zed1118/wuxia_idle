@@ -6,7 +6,8 @@ import '../../theme/wuxia_tokens.dart';
 
 /// 木牌按钮（UI kit · demo `.wbtn`）：替黄描边 Material 按钮。
 ///
-/// 木纹渐变底 + 木边；[primary] 为真=绛红朱漆主行动钮。[disabled] 半透 0.4 拦点击。
+/// 木纹渐变底 + 木边；[primary] 为真=绛红朱漆主行动钮。[disabled] 牌面半透
+/// 0.4 并拦截点击，标签保持墨色可读，避免浅纸上的禁用操作近乎消失。
 /// [autofocus] 桌面端可让对话框主按钮起手聚焦。
 /// P2-6(2026-06-29 审查修复):去 Material InkWell 灰色水波纹(与木牌质感不符),
 /// 改 GestureDetector + 按下暗层 overlay(`AnimatedOpacity` 暗色 scrim),点击响应不变。
@@ -101,36 +102,43 @@ class _PlaqueButtonState extends State<PlaqueButton> {
           ),
         },
         onShowFocusHighlight: (v) => setState(() => _focused = v),
-        child: Opacity(
-          opacity: disabled ? 0.4 : 1.0,
-          child: MouseRegion(
-            onEnter: disabled ? null : (_) => setState(() => _hovered = true),
-            onExit: disabled ? null : (_) => setState(() => _hovered = false),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTapDown: disabled ? null : (_) => _setPressed(true),
-              onTapUp: disabled ? null : (_) => _setPressed(false),
-              onTapCancel: disabled ? null : () => _setPressed(false),
-              onTap: disabled ? null : _activate,
+        child: MouseRegion(
+          onEnter: disabled ? null : (_) => setState(() => _hovered = true),
+          onExit: disabled ? null : (_) => setState(() => _hovered = false),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: disabled ? null : (_) => _setPressed(true),
+            onTapUp: disabled ? null : (_) => _setPressed(false),
+            onTapCancel: disabled ? null : () => _setPressed(false),
+            onTap: disabled ? null : _activate,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                minWidth: PlaqueButton.minWidth,
+                minHeight: PlaqueButton.minHeight,
+              ),
               child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  Container(
-                    constraints: const BoxConstraints(
-                      minWidth: PlaqueButton.minWidth,
-                      minHeight: PlaqueButton.minHeight,
+                  Positioned.fill(
+                    child: Opacity(
+                      // 保留既有 disabled 牌面 0.4 契约；仅标签移出透明层。
+                      opacity: disabled ? 0.4 : 1.0,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: gradient,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: _hovered ? WuxiaUi.gold : borderColor,
+                            width: WuxiaUi.borderWidth,
+                          ),
+                        ),
+                      ),
                     ),
-                    alignment: Alignment.center,
+                  ),
+                  Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 22,
                       vertical: 9,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: gradient,
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: _hovered ? WuxiaUi.gold : borderColor,
-                        width: WuxiaUi.borderWidth,
-                      ),
                     ),
                     child: Text(
                       widget.label,
@@ -138,7 +146,7 @@ class _PlaqueButtonState extends State<PlaqueButton> {
                       overflow: TextOverflow.ellipsis,
                       softWrap: false,
                       style: TextStyle(
-                        color: fg,
+                        color: disabled ? WuxiaUi.ink2 : fg,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 2,

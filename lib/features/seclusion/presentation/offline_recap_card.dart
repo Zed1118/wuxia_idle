@@ -77,49 +77,63 @@ class OfflineRecapCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              UiStrings.offlineRecapTitle,
-              style: TextStyle(
-                color: WuxiaUi.ink,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 4,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              UiStrings.offlineRecapAwayLine(recap.awayHours.floor()),
-              style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              statusLine,
-              style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
-            ),
-            if (recap.passiveHours > 0) ...[
-              const SizedBox(height: 4),
-              Text(
-                UiStrings.offlineRecapPassiveContinues(
-                  recap.passiveHours.toStringAsFixed(1),
+            Flexible(
+              fit: FlexFit.loose,
+              child: SingleChildScrollView(
+                key: const Key('offline-recap-active-scroll'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      UiStrings.offlineRecapTitle,
+                      style: TextStyle(
+                        color: WuxiaUi.ink,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 4,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      UiStrings.offlineRecapAwayLine(recap.awayHours.floor()),
+                      style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      statusLine,
+                      style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
+                    ),
+                    if (recap.passiveHours > 0) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        UiStrings.offlineRecapPassiveContinues(
+                          recap.passiveHours.toStringAsFixed(1),
+                        ),
+                        style: const TextStyle(
+                          color: WuxiaUi.ink2,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    Text(
+                      UiStrings.offlineRecapRewardOverview(
+                        recap.estimatedMojianshi,
+                        recap.estimatedSilver,
+                        recap.estimatedExperience,
+                      ),
+                      style: const TextStyle(
+                        color: WuxiaUi.ink,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _BreakdownBlock(groups: detail.groups),
+                  ],
                 ),
-                style: const TextStyle(color: WuxiaUi.ink2, fontSize: 12),
-              ),
-            ],
-            const SizedBox(height: 6),
-            Text(
-              UiStrings.offlineRecapRewardOverview(
-                recap.estimatedMojianshi,
-                recap.estimatedSilver,
-                recap.estimatedExperience,
-              ),
-              style: const TextStyle(
-                color: WuxiaUi.ink,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 12),
-            _BreakdownBlock(groups: detail.groups),
             const SizedBox(height: 18),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,

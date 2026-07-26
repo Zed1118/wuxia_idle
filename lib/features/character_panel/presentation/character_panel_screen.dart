@@ -227,6 +227,7 @@ class _ProfileHeaderCard extends StatelessWidget {
   const _ProfileHeaderCard({required this.character});
 
   final Character character;
+  static const double _wideDetailsHeight = 217;
 
   @override
   Widget build(BuildContext context) {
@@ -236,37 +237,40 @@ class _ProfileHeaderCard extends StatelessWidget {
     return _PanelCard(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final details = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _SectionTitle(UiStrings.panelIdentity),
-              const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      character.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: WuxiaUi.ink,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
+          Widget details({required bool fillHeight}) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const _SectionTitle(UiStrings.panelIdentity),
+                const SizedBox(height: 8),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        character.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: WuxiaUi.ink,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
-                  ),
-                  if (character.school != null)
-                    _SchoolBadge(
-                      label: EnumL10n.school(character.school!),
-                      color: schoolColor,
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              _BiographyStrip(character: character, schoolColor: schoolColor),
-            ],
-          );
+                    if (character.school != null)
+                      _SchoolBadge(
+                        label: EnumL10n.school(character.school!),
+                        color: schoolColor,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (fillHeight) const Spacer(),
+                _BiographyStrip(character: character, schoolColor: schoolColor),
+              ],
+            );
+          }
 
           if (constraints.maxWidth < 620) {
             return Column(
@@ -279,7 +283,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                details,
+                details(fillHeight: false),
               ],
             );
           }
@@ -292,7 +296,13 @@ class _ProfileHeaderCard extends StatelessWidget {
                 borderColor: schoolColor,
               ),
               const SizedBox(width: 18),
-              Expanded(child: details),
+              Expanded(
+                child: SizedBox(
+                  key: const ValueKey('character.profileDetails'),
+                  height: _wideDetailsHeight,
+                  child: details(fillHeight: true),
+                ),
+              ),
             ],
           );
         },
@@ -464,6 +474,7 @@ class _BiographyStrip extends StatelessWidget {
     ];
 
     return DecoratedBox(
+      key: const ValueKey('character.biographyStrip'),
       decoration: BoxDecoration(
         color: WuxiaUi.paper.withValues(alpha: 0.34),
         borderRadius: BorderRadius.circular(4),
