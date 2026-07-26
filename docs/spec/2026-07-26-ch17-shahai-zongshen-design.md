@@ -1,7 +1,7 @@
-# Ch17「沙海纵深」章级设计 spec(宗师段第 2 章 · 待拍板)
+# Ch17「沙海纵深」章级设计 spec(宗师段第 2 章 · **已拍板冻结**)
 
 **日期**:2026-07-26 · **载体**:main 直落(bg 会话·纯文档) · **上游**:`docs/spec/2026-07-24-zongshi-arc-ch16-18-design.md` §8 前瞻
-**状态**:**待用户拍板**(§10 六项)。段级六项已于 2026-07-24 冻结,本 spec 只细化 Ch17,不改段级拍板。
+**状态**:**已拍板冻结**(2026-07-26 用户六项全按推荐 = 1A/2A/3A/4A/5A/6A·实装依据)。段级六项已于 2026-07-24 冻结,本 spec 只细化 Ch17,不改段级拍板。
 
 ---
 
@@ -39,7 +39,7 @@
 | 1 | stage_17_01 | desert 砂丘初程 | 入沙海第一浪·中原步法失效 | lingQiao·shuLian | — | 56800 / 1925 / 352 |
 | 2 | stage_17_02 | desert 黑风口 | 沙暴迷路·天地压人 | gangMeng·shuLian | — | 57100 / 1932 / 354 |
 | 3 | stage_17_03 | temple 沙埋古城 | 整座城被沙吞掉(非佛窟·避撞 Ch15_03)·守城人不走 | yinRou·jingTong | — | 57400 / 1938 / 356 |
-| 4 | stage_17_04 | desert 沙海深处 | 章中 Boss·**破招前置教学** | gangMeng·jingTong | 章中 Boss | 57700 / 1944 / 358 |
+| 4 | stage_17_04 | desert 沙海深处 | 章中 Boss·**破招前置教学**·掉 feng_juan(拍板 3A) | gangMeng·jingTong | 章中 Boss(配 chargeCounter) | 57700 / 1944 / 358 |
 | 5 | stage_17_05 | frontier 西凉腹地门前 | 末 Boss·**0.20 单窗口机制教学**·真解 | lingQiao·yuanShu | 末 Boss | **58000** / **1950** / 360 |
 
 - Boss 位 **{4,5}**(沿全段体例)· 17_01 **不配 prevStageId**(跨章引用加载期 StateError)· diffMult **18.0→18.8**(+0.2/关,承 Ch16 末 17.8)· baseExpReward **70/72/74/94/114**(章计 **424**·沿 +6/关轨迹) → 累计 exp 3209 **→ 3633**。
@@ -51,7 +51,7 @@
 - `vulnerability.outOfWindowDamageMult: **0.20**`,比照塔 floor30(`towers.yaml:1300` 同为 0.20)的**宽松位**;`bossPhases` 单相位 `onEnterMechanic: chargeCounter` 开窗,窗口外承伤 20%。
 - **单窗口**=只在蓄招期开窗,不做 floor25 的两相位复合(0.12×ward);玩家第一次遇到主线机制型 Boss,给最宽的容错。cycleVulnerability(周目收窄)**本章不配**,留 Ch18 或周目批。
 - `chargeSkillId` = 真解(双用 canon:破他的招、学他的招),与 `dropSkillManualId` 同招——`wave_b_content_redline_test:31` 硬断言。
-- **17_04 章中 Boss 的定位取决于 §6 拍板**:若走 A 案则配 chargeCounter 作破招前置教学(先学「打断蓄招」,末关再学「只有窗口能打」,两级递进);若走 C 案则同 Ch16_04 走纯 stat 门槛、**不配 bossPhases**(memory:有 bossPhases ⟹ 必须有 charge,否则 readable_tempo 挂)。
+- **17_04 章中 Boss(拍板 3A/6A 已定)**:配 `chargeSkillId: skill_feng_juan_liu_sha` + 单相位 `onEnterMechanic: chargeCounter`,作**破招前置教学**——章中先学「打断蓄招」(打断即掉该招),末关再学「只有窗口能打」,两级递进。**不配 vulnerability**(窗口机制是末 Boss 的独家教学点)。注:配了 `bossPhases` 就**必须**有 charge 机制,否则 `readable_tempo` 的 missingBossMechanic 会挂。
 
 ## 5. 真解「平沙落雁」`skill_ping_sha_luo_yan`(新写 · 避撞 0)
 
@@ -59,17 +59,24 @@
 proficiency 灵巧向高半档:`shuLian {damage_pct 0.05}` / `jingTong {damage_pct 0.05, cooldown_delta -1}` / `huaJing {cooldown_delta -2}`。
 **取名依据**:古琴曲名,雁阵起落写「顺风势而非抗风势」,与 §2 主题同拍;沙海意象不撞 Ch8「瀚海孤烟」/ Ch14「十荡十决」/ Ch16「铁马冰河」。
 
-## 6. ★ feng_juan 收编 fork(本 spec 最需拍板项)
+## 6. feng_juan 收编(**拍板 3A** · 2026-07-26 冻结)
 
 段级 §5 拍「feng_juan 宗师段沙海关**普通掉落收编**(非真解·收集向·删 mount_deferred)」。**Phase 0 实测:该拍板与现行红线测不相容**——
 `wave_b_content_redline_test:40-53` 用**集合相等**断言:凡 `mainline_drop && !mountDeferred && 在发布阶内` 的招,**必须**是某个 `isBossStage && dropSkillManualId != null` 主线关的掉落;同测 `:36` 又断言**每章至多 1 本真解**。feng_juan(tier4·在阶内)一旦删 deferred,就只能挂章末 Boss,而 Ch17 的章末位已给平沙落雁。**没有「普通关普通掉落」这条通路**。
 
 | 案 | 做法 | 代价 | 收益 |
 |---|---|---|---|
-| **A(推荐)** | 挂 **17_04 章中 Boss** 作其 `dropSkillManualId` + `chargeSkillId`;红线测 `:36` 语义收紧为「每章至多 1 本**末Boss**真解」 | 改 1 处测语义;17_04 须配 chargeCounter 相位;feng_juan mult 3200 在宗师段偏弱,建议 [balance] **3200→4800**(同十荡十决 3600→4800 先例) | 兑现段级拍板;两级破招教学(章中学打断→末关学窗口)正好是本章机制主题;测语义本意就是「每章一门末Boss真解」,现写法把章中 Boss 也算进来是口径过宽,**收紧是订正不是放水** |
+| **A ✅ 拍定** | 挂 **17_04 章中 Boss** 作其 `dropSkillManualId` + `chargeSkillId`;红线测 `:36` 语义收紧为「每章至多 1 本**末Boss**真解」 | 改 1 处测语义;17_04 须配 chargeCounter 相位;feng_juan mult 3200 在宗师段偏弱,建议 [balance] **3200→4800**(同十荡十决 3600→4800 先例) | 兑现段级拍板;两级破招教学(章中学打断→末关学窗口)正好是本章机制主题;测语义本意就是「每章一门末Boss真解」,现写法把章中 Boss 也算进来是口径过宽,**收紧是订正不是放水** |
 | B | feng_juan 顶替平沙落雁作末 Boss 真解,不新写 | 违段级 §4「Ch16/17 新写 tier6 真解 ×2」冻结项;须 tier 4→6 + mult 3200→6400 双改 | skill 计数不变 255,改动最小 |
 | C | 续 deferred 到 Ch18 | 段级 §5「归 Ch17」drift;Ch18 要同时收 yang_guan + feng_juan **两个** mainline_drop,撞同一条断言,问题只是推迟且更挤 | Ch17 零测试语义改动 |
 | D | 改 `source: mainline_drop → fragment` | **破残页 3/3/3 配平**(lingQiao 变 4),须再补 2 招 | 字面最贴「非真解收集向」 |
+
+**A 案实装细则(拍定后展开)**:
+1. `skills.yaml` feng_juan:删 `mount_deferred: true`;`[balance] powerMultiplier 3200→4800`(同十荡十决 3600→4800 先例·仍 ≤8000);`tier: 4` **不动**(收集向定位,不充宗师档)。
+2. `stages.yaml` 17_04:`dropSkillManualId: skill_feng_juan_liu_sha` + Boss `chargeSkillId` 同招(双用 canon 强制) + 单相位 `onEnterMechanic: chargeCounter`;配 `narrativeDefeatId`(Boss 关惯例)。
+3. `wave_b_content_redline_test:36` 语义收紧:`每章至多 1 本真解` → **`每章至多 1 本末Boss真解`**(判定加「该关是否为本章最末关」)。**这是口径订正不是放宽**——原写法把章中 Boss 也算进同一约束,与「每章一门末Boss真解」的设计本意不符;收紧后 Ch1-16 **全绿已实证**(2026-07-26 现跑:全仓 12 处 `dropSkillManualId` 全部落在 `_05` 章末关——stage_{01,02,07,08,09,10,11,12,13,14,15,16}_05,无一挂在章中关),故收紧零破坏面。
+4. `standaloneBossManualIds` 白名单**登记两条**:`skill_ping_sha_luo_yan` + `skill_feng_juan_liu_sha`(后者删 deferred 后会进真解配平池,不登记则破 2/2/2)。
+5. **破坏证红**(commit 后做):把 `:36` 退回原语义 → 应精确报「每章至多 1 本末Boss真解」失败;还原复绿。
 
 ## 7. 夜雨十年灯残页(段级 §3 · 无 fork)
 
@@ -97,16 +104,16 @@ proficiency 灵巧向高半档:`shuLian {damage_pct 0.05}` / `jingTong {damage_p
 - **GDD 头部当前状态块必更**(cap 40 / 17 章 85 关 / 实测锚两值),`truth_source_guard_test` 自动拦;§8.1 章表 + 招式池同步。
 - **美术**:`known_missing_assets` 登记 11 图(5 敌立绘 + chapter_17_cover + 5 叙事背景),合并后走 codex image_gen 专批(沿 Ch14-16 惯例)。
 
-## 10. ★ 拍板汇总(六项 · 每项附推荐)
+## 10. 拍板汇总(六项 · **2026-07-26 全按推荐拍定**)
 
-| # | 决策项 | 选项 | 推荐 |
+| # | 决策项 | 选项 | **拍定** |
 |---|---|---|---|
-| 1 | **章名** | A「沙海纵深」/ B 另拟 | **A** — Ch16 章尾末句已写死「下一程,沙海纵深」,改名要回改已合并叙事 |
-| 2 | **真解** | A 新写「平沙落雁」(lingQiao·6400·CD4·避撞 0)/ B 另拟 | **A** — 琴曲名写「顺势不抗势」,与本章机制主题同拍 |
-| 3 | **feng_juan 收编**(详 §6) | A 挂 17_04 + 收紧测语义 + [balance] 3200→4800 / B 顶替末Boss真解 / C 续 deferred 到 Ch18 / D 改 fragment | **A** — 唯一同时兑现段级拍板、不破配平、且让机制教学成两级递进的走法 |
-| 4 | **末 Boss 身份** | A 沙海领路人(霸主座下·灵巧·教「等势」)/ B 沙海马贼首领 / C 无名沙行者 | **A** — 承接 Ch16 接关人「霸主在西凉深处等」的引路链,Ch18 重会霸主前的最后一环 |
-| 5 | **17_03 意象** | A 沙埋古城(temple·避撞 Ch15_03 佛窟)/ B 敦煌佛窟(段级 §8 原候选) | **A** — B 与 Ch15_03「戈壁古窟·行脚僧」重复;「整座城被沙吞掉」更贴宗师段天地母题 |
-| 6 | **机制密度** | A 末 Boss 单窗口 0.20(段级拍板 6)+ 17_04 破招前置 / B 只末 Boss,17_04 纯 stat 门槛 | **A** — 与 §6 A 案绑定;若 §6 改选 C 则本项自动退 B |
+| 1 | **章名** | A「沙海纵深」/ B 另拟 | **A ✅** — Ch16 章尾末句已写死「下一程,沙海纵深」,改名要回改已合并叙事 |
+| 2 | **真解** | A 新写「平沙落雁」(lingQiao·6400·CD4·避撞 0)/ B 另拟 | **A ✅** — 琴曲名写「顺势不抗势」,与本章机制主题同拍 |
+| 3 | **feng_juan 收编**(详 §6) | A 挂 17_04 + 收紧测语义 + [balance] 3200→4800 / B 顶替末Boss真解 / C 续 deferred 到 Ch18 / D 改 fragment | **A ✅** — 唯一同时兑现段级拍板、不破配平、且让机制教学成两级递进的走法 |
+| 4 | **末 Boss 身份** | A 沙海领路人(霸主座下·灵巧·教「等势」)/ B 沙海马贼首领 / C 无名沙行者 | **A ✅** — 承接 Ch16 接关人「霸主在西凉深处等」的引路链,Ch18 重会霸主前的最后一环 |
+| 5 | **17_03 意象** | A 沙埋古城(temple·避撞 Ch15_03 佛窟)/ B 敦煌佛窟(段级 §8 原候选) | **A ✅** — B 与 Ch15_03「戈壁古窟·行脚僧」重复;「整座城被沙吞掉」更贴宗师段天地母题 |
+| 6 | **机制密度** | A 末 Boss 单窗口 0.20(段级拍板 6)+ 17_04 破招前置 / B 只末 Boss,17_04 纯 stat 门槛 | **A ✅** — 与 §6 A 案绑定(§6 已拍 A,本项随之落定) |
 
 ## 11. 红线守卫
 
