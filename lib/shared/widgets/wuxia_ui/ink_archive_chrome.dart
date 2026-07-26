@@ -61,6 +61,7 @@ class InkPageHeader extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: WuxiaTypography.featureTitleStyle(
+                      // paper-text-audit: allow 题头为深墨渐变；印章 fallback 的纸色描边不构成浅底。
                       WuxiaColors.textPrimary,
                     ),
                   ),
@@ -70,6 +71,7 @@ class InkPageHeader extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: WuxiaTypography.supportingStyle(
+                      // paper-text-audit: allow 同上，副题位于深墨渐变表面。
                       WuxiaColors.textMuted,
                     ),
                   ),

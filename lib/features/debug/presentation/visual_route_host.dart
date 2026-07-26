@@ -2787,7 +2787,10 @@ class _EquipmentRepairArtPanel extends StatelessWidget {
                     imagePath,
                     fit: BoxFit.contain,
                     errorBuilder: (_, _, _) => const Center(
-                      child: Icon(Icons.broken_image, color: Colors.redAccent),
+                      child: Icon(
+                        Icons.broken_image,
+                        color: WuxiaColors.danger,
+                      ),
                     ),
                   ),
                 ),
