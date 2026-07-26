@@ -124,7 +124,9 @@ void main() {
 
     expect(find.text(UiStrings.activeRetreatFullRateComplete), findsWidgets);
     expect(
-      find.text(UiStrings.activeRetreatPassiveOverflow('168.0')),
+      find.text(
+        UiStrings.activeRetreatPassiveOverflow(UiStrings.compactHours(168.0)),
+      ),
       findsOneWidget,
     );
     expect(

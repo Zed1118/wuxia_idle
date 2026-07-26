@@ -111,4 +111,45 @@ void main() {
     expect(UiStrings.towerCurrentCycleLabel(2), contains('轮回'));
     expect(UiStrings.offlineRecapAwayLine(8), contains('小时'));
   });
+
+  // 2026-07-26 合并后视觉抽查补洞:上面的断言只查「各词出现在该出现的地方」,
+  // 放过了爬塔屏扫荡按钮显示「第 1 周目」而同屏又写「当前：第1轮回」的自相矛盾。
+  // 改为双向排他断言,任一侧串混入对方词即红。
+  test('爬塔面向玩家串不得混入主线「周目」', () {
+    final towerStrings = <String>[
+      UiStrings.sweepTowerCycleBadge(1),
+      UiStrings.sweepTowerButtonCycle(1),
+      UiStrings.sweepTowerLockedHintCycle(2),
+      UiStrings.sweepTowerRecapCycle(3),
+      UiStrings.towerCurrentCycleLabel(1),
+      UiStrings.towerAdvanceCycleButton,
+      UiStrings.towerCycleReadyHint,
+    ];
+    for (final s in towerStrings) {
+      expect(s, isNot(contains('周目')), reason: '爬塔串混入主线「周目」：$s');
+      expect(s, contains('轮回'), reason: '爬塔串应使用「轮回」：$s');
+    }
+  });
+
+  test('主线扫荡串不得混入爬塔「轮回」', () {
+    final mainlineStrings = <String>[
+      UiStrings.sweepCycleBadge(1),
+      UiStrings.sweepChapterButtonCycle(1),
+      UiStrings.sweepLockedHintCycle(2),
+      UiStrings.sweepRecapCycle(3),
+      UiStrings.cycleNthLabel(2),
+    ];
+    for (final s in mainlineStrings) {
+      expect(s, isNot(contains('轮回')), reason: '主线串混入爬塔「轮回」：$s');
+      expect(s, contains('周目'), reason: '主线串应使用「周目」：$s');
+    }
+  });
+
+  test('整小时不显示多余小数', () {
+    expect(UiStrings.compactHours(168.0), '168');
+    expect(UiStrings.compactHours(240), '240');
+    expect(UiStrings.compactHours(0), '0');
+    expect(UiStrings.compactHours(1.5), '1.5');
+    expect(UiStrings.compactHours(1.04), '1');
+  });
 }

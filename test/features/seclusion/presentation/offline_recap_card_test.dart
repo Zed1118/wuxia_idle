@@ -88,7 +88,9 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text(UiStrings.offlineRecapPassiveContinues('168.0')),
+      find.text(
+        UiStrings.offlineRecapPassiveContinues(UiStrings.compactHours(168.0)),
+      ),
       findsOneWidget,
     );
     expect(find.text(UiStrings.offlineRecapGoCollect), findsOneWidget);

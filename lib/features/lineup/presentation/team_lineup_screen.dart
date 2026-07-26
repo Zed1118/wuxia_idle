@@ -562,12 +562,15 @@ class _ActiveSlotCard extends ConsumerWidget {
                 ),
                 const SizedBox(width: 6),
                 if (slotIndex == 0)
-                  const _Tag(UiStrings.lineupFrontRowTag, color: WuxiaUi.gold),
+                  const _Tag(
+                    UiStrings.lineupFrontRowTag,
+                    color: WuxiaUi.goldOnPaper,
+                  ),
                 if (inRetreat) ...[
                   const SizedBox(width: 4),
                   const _Tag(
                     UiStrings.lineupRetreatLockedTag,
-                    color: WuxiaColors.internalForce,
+                    color: WuxiaUi.qing,
                   ),
                 ],
               ],
@@ -758,20 +761,14 @@ class _ReserveTile extends ConsumerWidget {
             ),
             if (isWeak || inRetreat || noMain) const SizedBox(width: 8),
             if (isWeak)
-              const _Tag(
-                UiStrings.lineupWeakTag,
-                color: WuxiaColors.statDecrease,
-              ),
+              const _Tag(UiStrings.lineupWeakTag, color: WuxiaUi.jiang),
             if (noMain) ...[
               if (isWeak) const SizedBox(width: 4),
               const _Tag(UiStrings.lineupNoMainTag, color: WuxiaUi.muted),
             ],
             if (inRetreat) ...[
               if (isWeak || noMain) const SizedBox(width: 4),
-              const _Tag(
-                UiStrings.lineupRetreatLockedTag,
-                color: WuxiaColors.internalForce,
-              ),
+              const _Tag(UiStrings.lineupRetreatLockedTag, color: WuxiaUi.qing),
             ],
           ],
         ),

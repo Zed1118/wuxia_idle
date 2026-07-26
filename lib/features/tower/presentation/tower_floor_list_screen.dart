@@ -572,7 +572,7 @@ class _TowerSweepButton extends StatelessWidget {
       return SizedBox(
         width: double.infinity,
         child: PlaqueButton(
-          label: UiStrings.sweepLockedHintCycle(cycleIndex),
+          label: UiStrings.sweepTowerLockedHintCycle(cycleIndex),
           disabled: true,
           onTap: null,
         ),

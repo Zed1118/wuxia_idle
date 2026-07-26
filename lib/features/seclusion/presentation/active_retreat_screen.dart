@@ -530,7 +530,7 @@ class _ActiveRetreatStatusCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               UiStrings.activeRetreatPassiveOverflow(
-                settlement.passiveHours.toStringAsFixed(1),
+                UiStrings.compactHours(settlement.passiveHours),
               ),
               style: const TextStyle(color: WuxiaUi.ink2, fontSize: 12),
             ),

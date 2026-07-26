@@ -151,7 +151,9 @@ void main() {
     expect(find.text(UiStrings.seclusionResultRetreatSection), findsOneWidget);
     expect(find.text(UiStrings.seclusionResultPassiveSection), findsOneWidget);
     expect(
-      find.text(UiStrings.seclusionResultPhaseHours('168.0')),
+      find.text(
+        UiStrings.seclusionResultPhaseHours(UiStrings.compactHours(168.0)),
+      ),
       findsOneWidget,
     );
   });

@@ -92,7 +92,7 @@ class RetreatResultScreen extends StatelessWidget {
                       ),
                       Text(
                         UiStrings.seclusionResultPhaseHours(
-                          result.retreatHours.toStringAsFixed(1),
+                          UiStrings.compactHours(result.retreatHours),
                         ),
                         style: const TextStyle(
                           color: WuxiaUi.muted,
@@ -149,7 +149,7 @@ class RetreatResultScreen extends StatelessWidget {
                         ),
                         Text(
                           UiStrings.seclusionResultPhaseHours(
-                            result.passiveHours.toStringAsFixed(1),
+                            UiStrings.compactHours(result.passiveHours),
                           ),
                           style: const TextStyle(
                             color: WuxiaUi.muted,

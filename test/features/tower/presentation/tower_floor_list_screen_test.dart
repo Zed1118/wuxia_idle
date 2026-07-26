@@ -219,7 +219,7 @@ void main() {
     await pumpScreen(tester, progress: progress);
 
     expect(find.text(UiStrings.sweepTowerButtonCycle(1)), findsOneWidget);
-    expect(find.text(UiStrings.sweepLockedHintCycle(1)), findsNothing);
+    expect(find.text(UiStrings.sweepTowerLockedHintCycle(1)), findsNothing);
     expect(find.text(UiStrings.towerCurrentChallengeComplete), findsOneWidget);
     expect(find.text(UiStrings.towerNextMilestoneComplete), findsOneWidget);
   });
@@ -232,7 +232,7 @@ void main() {
       ..currentCycleIndex = 2;
     await pumpScreen(tester, progress: progress);
 
-    expect(find.text(UiStrings.sweepLockedHintCycle(2)), findsOneWidget);
+    expect(find.text(UiStrings.sweepTowerLockedHintCycle(2)), findsOneWidget);
     expect(find.text(UiStrings.sweepTowerButtonCycle(2)), findsNothing);
   });
 
@@ -240,7 +240,7 @@ void main() {
     final progress = mkProgress(highest: 0);
     await pumpScreen(tester, progress: progress);
 
-    expect(find.text(UiStrings.sweepLockedHintCycle(1)), findsNothing);
+    expect(find.text(UiStrings.sweepTowerLockedHintCycle(1)), findsNothing);
     expect(find.text(UiStrings.sweepTowerButtonCycle(1)), findsNothing);
   });
 

@@ -107,7 +107,7 @@ class OfflineRecapCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         UiStrings.offlineRecapPassiveContinues(
-                          recap.passiveHours.toStringAsFixed(1),
+                          UiStrings.compactHours(recap.passiveHours),
                         ),
                         style: const TextStyle(
                           color: WuxiaUi.ink2,

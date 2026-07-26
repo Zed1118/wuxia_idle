@@ -158,7 +158,9 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
               _index + 1,
               widget.units.length,
             ),
-            cycleLabel: UiStrings.sweepCycleBadge(widget.cycle),
+            cycleLabel: widget.towerRepeatNote
+                ? UiStrings.sweepTowerCycleBadge(widget.cycle)
+                : UiStrings.sweepCycleBadge(widget.cycle),
             towerRepeatNote: widget.towerRepeatNote,
             onStop: _controller.requestStop,
           ),
@@ -183,7 +185,9 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
     }
 
     final overviewRows = <String>[
-      UiStrings.sweepRecapCycle(widget.cycle),
+      widget.towerRepeatNote
+          ? UiStrings.sweepTowerRecapCycle(widget.cycle)
+          : UiStrings.sweepRecapCycle(widget.cycle),
       UiStrings.sweepRecapStages(r.stagesCleared),
     ];
     final layers = r.resultLayers();

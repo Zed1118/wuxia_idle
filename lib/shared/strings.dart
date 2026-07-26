@@ -2853,6 +2853,18 @@ class UiStrings {
 
   /// 闭关已达系统收益封顶状态行
   static String offlineRecapMapCapped(String mapName) => '「$mapName」地图收益已圆满';
+
+  /// 真实时长紧凑写法:整小时不显示多余小数(168.0 → 168),非整数保留一位。
+  /// 与 offlineRecapAwayLine 的整数口径对齐,避免同一张归来卡里出现
+  /// 「240 小时」与「168.0 小时」两种格式(2026-07-26 合并后视觉抽查发现)。
+  static String compactHours(double hours) {
+    final rounded = double.parse(hours.toStringAsFixed(1));
+    if (rounded == rounded.roundToDouble()) {
+      return rounded.toStringAsFixed(0);
+    }
+    return rounded.toStringAsFixed(1);
+  }
+
   static String offlineRecapPassiveContinues(String hours) =>
       '超出时间已按普通挂机接续 $hours 小时';
 
@@ -3508,9 +3520,21 @@ class UiStrings {
   static String sweepReadinessNextRecoveryMinutes(int minutes) =>
       '下点恢复约 $minutes 分钟';
 
-  /// 爬塔扫荡按钮（带周目）。
+  /// 爬塔轮回徽章。爬塔循环按 docs/UI_TERMINOLOGY.md 用「轮回」,不与主线
+  /// 「周目」混用(2026-07-26 合并后视觉抽查:扫荡按钮曾与同屏「第1轮回」矛盾)。
+  static String sweepTowerCycleBadge(int cycle) => '第 $cycle 轮回';
+
+  /// 爬塔扫荡按钮（带轮回）。
   static String sweepTowerButtonCycle(int cycle) =>
-      '$sweepTowerButton · ${sweepCycleBadge(cycle)}';
+      '$sweepTowerButton · ${sweepTowerCycleBadge(cycle)}';
+
+  /// 爬塔未达门槛灰显提示（带轮回·§5.7 先手工通关该轮回全部层）。
+  static String sweepTowerLockedHintCycle(int cycle) =>
+      '${sweepTowerCycleBadge(cycle)}需先手工通关全部关卡';
+
+  /// 爬塔 recap 行：本次扫荡的轮回。
+  static String sweepTowerRecapCycle(int cycle) =>
+      '扫荡 · ${sweepTowerCycleBadge(cycle)}';
 
   /// 未达门槛灰显提示（带周目，§5.7 先手工通关该周目全部关卡）。
   static String sweepLockedHintCycle(int cycle) =>
