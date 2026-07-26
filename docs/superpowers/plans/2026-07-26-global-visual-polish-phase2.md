@@ -120,7 +120,7 @@
 
 ## 六、当前恢复点
 
-- 状态：Slice 1、Slice 2 已完成并提交前验收；Slice 3 待开始；
+- 状态：Slice 1、Slice 2 已提交；Slice 3 已完成并提交前验收；Slice 4 待开始；
 - 最后完成：
   - 从 `fb5a8851` 建立独立分支/worktree；
   - `flutter pub get`；
@@ -138,10 +138,16 @@
   - 远征总览、断魂庄装载统一为宣纸标题栏、身份题头、枯笔分区与墨底选择卡；
   - 门派谱及人物纪事共享卡面和分区题签，顶部动作入口、内容顺序和满宽卷轴布局不变；
   - 远征、断魂庄、门派谱各自 1280×720、1440×900 真窗口目检通过，无溢出或异常日志。
+  - Slice 2 已提交：`6a5d1aff 统一长尾页面水墨视觉语言`；
+  - 锁脉囊、镇岳铁衣、摄魂铃补为专用详情构图，保留原 icon 和生产数据引用；
+  - 三张新详情图具备透明安全边、枯笔墨痕和深/浅底可见性，并压缩为 q92 WebP（沿用既有 `.png` 路径），合计约 1.02MB；
+  - 新增全装备 1024 方图、精确重复、感知近似、透明角、主体占比、明暗层次和色键残边门禁；
+  - 感知审计另发现 29 组历史近似重复，已显式登记为只减不增 allowlist；
+  - 新增三件修复对照 route 和锁脉囊生产详情 route，双视口目检通过。
 - 下一步：
-  - 提交 Slice 2；
-  - 修复三组装备 icon/detail 完全重复素材；
-  - 建立详情素材规格、精确重复和感知重复门禁。
+  - 提交 Slice 3；
+  - 为四张尺寸离群场景补焦点/安全裁切元数据并接入生产背景组件；
+  - 评估生产圆形头像 focus/crop 的最小兼容接线。
 - 已跑验证：
   - `flutter analyze`：0 issue（代码生成后，2026-07-26）。
   - `flutter test --no-pub test/features/battle/presentation/character_avatar_test.dart test/features/battle/presentation/damage_popup_test.dart test/tools/art_tone_audit_test.dart`：29 pass / 0 fail。
@@ -151,5 +157,10 @@
   - `flutter test --no-pub test/features/character_panel/lineage_character_detail_screen_test.dart`：8 pass / 0 fail。
   - `flutter analyze`：0 issue（Slice 2 修改后）。
   - `expedition_overview`、`gauntlet_loadout`、`lineage_codex` × 1280×720、1440×900：6/6 READY，异常日志 0。
+  - `flutter test --no-pub test/tools/equipment_detail_asset_quality_test.dart`：3 pass / 0 fail。
+  - `flutter test --no-pub test/tools/asset_audit_test.dart test/features/inventory/presentation/equipment_detail_screen_test.dart test/features/weapon_codex/equipment_catalog_detail_screen_test.dart`：27 pass / 0 fail。
+  - `flutter test --no-pub test/features/debug/visual_route_test.dart test/tools/equipment_detail_asset_quality_test.dart`：46 pass / 0 fail。
+  - `flutter analyze`：0 issue（Slice 3 代码接线后）。
+  - `equipment_detail_repair_gallery`、`equipment_detail_gauntlet_reward` × 1280×720、1440×900：4/4 READY，异常日志 0；压缩后生产详情 route 再验 2/2 READY。
 - 阻塞项：
-  - 无；正式字体、九张透明站姿、Windows 实机和伪文字规则属于后续外部输入，不阻塞 Slice 2。
+  - 无；29 组历史感知近似详情图、正式字体、九张透明站姿、Windows 实机和伪文字规则进入最终残留清单，不阻塞 Slice 3。

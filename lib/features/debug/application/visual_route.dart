@@ -134,6 +134,14 @@ enum VisualRoute {
     'equipment_detail_gallery',
     '装备 detail gallery·全 detailPath 大图滚动验收(按阶排序,含神物 contain 显示)',
   ),
+  equipmentDetailRepairGallery(
+    'equipment_detail_repair_gallery',
+    '装备详情修复对照·断魂庄三件 icon/detail 双底色验收',
+  ),
+  equipmentDetailGauntletReward(
+    'equipment_detail_gauntlet_reward',
+    '装备详情生产屏·断魂庄锁脉囊专用详情图接线验收',
+  ),
   narrativeScene(
     'narrative_scene',
     '剧情阅读屏·专属背景图 + scrim + 正文浮层验收(stage_01_05 风雨渡口)',

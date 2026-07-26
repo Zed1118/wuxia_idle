@@ -69,6 +69,14 @@ void main() {
         parseVisualRoute('equipment_detail_screen'),
         VisualRoute.equipmentDetailScreen,
       );
+      expect(
+        parseVisualRoute('equipment_detail_repair_gallery'),
+        VisualRoute.equipmentDetailRepairGallery,
+      );
+      expect(
+        parseVisualRoute('equipment_detail_gauntlet_reward'),
+        VisualRoute.equipmentDetailGauntletReward,
+      );
       expect(parseVisualRoute('team_lineup'), VisualRoute.teamLineup);
     });
 
