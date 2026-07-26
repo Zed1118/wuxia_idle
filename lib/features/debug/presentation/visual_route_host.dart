@@ -19,6 +19,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_app_theme.dart';
+import '../../../shared/theme/wuxia_typography.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/utils/rng.dart';
@@ -69,6 +70,7 @@ import '../application/battle_frame_profile.dart';
 import '../../battle/presentation/ultimate_caption_overlay.dart';
 import '../../../data/numbers_config.dart' show AnimationNumbers;
 import '../../battle/presentation/battle_scene_background.dart';
+import '../../battle/presentation/damage_popup.dart';
 import '../../battle/presentation/victory_overlay.dart';
 import '../../battle/domain/battle_diagnosis.dart';
 import '../application/visual_route.dart';
@@ -677,6 +679,8 @@ Future<Widget> buildVisualTarget(
       return EquipmentDetailScreen(equipment: eq, def: def);
     case VisualRoute.equipmentDetailGallery:
       return const _EquipmentDetailGallery();
+    case VisualRoute.battleDamagePopupGallery:
+      return const _DamagePopupGallery();
     case VisualRoute.equipmentDetailRepairGallery:
       return const _EquipmentDetailRepairGallery();
     case VisualRoute.equipmentDetailGauntletReward:
@@ -2656,6 +2660,131 @@ class _EquipmentDetailGallery extends StatelessWidget {
 }
 
 /// 断魂庄三件修复素材的聚焦验收：左看原 icon，右看专用 detail 在深/浅底的边缘表现。
+/// 伤害飘字图册:各型飘字同屏冻结在起始帧,补上「飘字只在命中瞬间闪现、
+/// 静态 route 截不到」的长期验收盲区(2026-07-26 phase2 抽查暴露:暴击语义色
+/// 从 #B72218 改成 battleCrimson 却无处复看观感)。
+///
+/// 不动生产代码:用公共参数 [DamagePopup.durationMsOverride] 把时长拉到远超
+/// 截图等待窗口,画面就停在满不透明、零位移的起始帧;背景用真战斗场景层,
+/// 保证暴击色是对着真实深底判读而非白底。
+class _DamagePopupGallery extends StatelessWidget {
+  const _DamagePopupGallery();
+
+  /// 1 小时,远大于 visual_capture 的 --wait(默认 12s)。
+  static const _frozenMs = 3600000;
+
+  static const _samples = <(String, DamagePopupData)>[
+    ('普通', DamagePopupData(id: 1, text: '8420', type: PopupType.normal)),
+    ('暴击', DamagePopupData(id: 2, text: '21360', type: PopupType.critical)),
+    (
+      '暴击 + 剑鸣',
+      DamagePopupData(
+        id: 3,
+        text: '21360',
+        type: PopupType.critical,
+        hasSwordSong: true,
+      ),
+    ),
+    // 克制升降**有意不出标记**:`damage_popup_test` 显式断言
+    // `find.text(UiStrings.counterUp)` 为 findsNothing。这两格与「普通」看着
+    // 一样是既定设计,不是漏渲——标签写明,免得后续目检重复误报。
+    (
+      '克制升(按设计无标记)',
+      DamagePopupData(
+        id: 4,
+        text: '10520',
+        type: PopupType.normal,
+        hasCounterUp: true,
+      ),
+    ),
+    (
+      '被克降(按设计无标记)',
+      DamagePopupData(
+        id: 5,
+        text: '6310',
+        type: PopupType.normal,
+        hasCounterDown: true,
+      ),
+    ),
+    (
+      '闪避',
+      DamagePopupData(id: 6, text: UiStrings.dodge, type: PopupType.dodge),
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final config = GameRepository.instance.numbers.animation;
+    return Scaffold(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const BattleSceneBackground(
+            path: WuxiaUi.battleMountainPassStage,
+            style: BattleSceneBackgroundStyle.mainline,
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '战斗飘字图册 · 各型同屏冻结',
+                    style: WuxiaTypography.pageTitleStyle(WuxiaUi.paper),
+                  ),
+                  const SizedBox(height: 20),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: 24,
+                        runSpacing: 28,
+                        children: [
+                          for (final (label, data) in _samples)
+                            SizedBox(
+                              width: 280,
+                              height: 130,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    label,
+                                    style: WuxiaTypography.supportingStyle(
+                                      WuxiaUi.gold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Expanded(
+                                    child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: DamagePopup(
+                                        key: ValueKey(
+                                          'popupGallery.${data.id}',
+                                        ),
+                                        data: data,
+                                        config: config,
+                                        durationMsOverride: _frozenMs,
+                                        onComplete: () {},
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _EquipmentDetailRepairGallery extends StatelessWidget {
   const _EquipmentDetailRepairGallery();
 

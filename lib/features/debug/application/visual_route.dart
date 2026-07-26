@@ -188,6 +188,10 @@ enum VisualRoute {
     'battle_tap_preview',
     '两段点选交互静态预览(冻结态·single 技能待发高亮 + 敌头像可选标记 + 单体/群体角标)',
   ),
+  battleDamagePopupGallery(
+    'battle_damage_popup_gallery',
+    '战斗飘字图册·普通/暴击/暴击+剑鸣/克制升降/闪避 同屏冻结在真战斗深底(暴击语义色专用验收位)',
+  ),
   offlineRecapActive(
     'offline_recap_active',
     'M2 闭关归来卡静态验收(active 闭关·长材料明细 +「稍后再说/前去收功」双操作)',

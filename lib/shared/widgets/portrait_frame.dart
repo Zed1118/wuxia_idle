@@ -51,16 +51,24 @@ class PortraitFrame extends StatelessWidget {
       alignment: Alignment.center,
       child: portraitPath == null
           ? _placeholder()
-          : WuxiaImage(
-              portraitPath!,
-              fit: fit,
-              alignment:
-                  alignment ?? assetFramingForPortrait(portraitPath!).alignment,
-              errorBuilder: wuxiaAssetErrorBuilder(
-                () => Container(
-                  color: WuxiaColors.avatarFill,
-                  alignment: Alignment.center,
-                  child: _placeholder(),
+          // SizedBox.expand 不可省:Container 的 alignment 会把子 widget 包进
+          // Align 并下发**松约束**,RenderImage 在松约束下按源图比例自行收缩
+          // (纵版肖像 896×1344 收成 0.667 比例的窄条),盒子比例与源图一致 →
+          // BoxFit.cover 无溢出可裁、alignment 焦点静默失效,画框左右还露出
+          // avatarFill 暗柱。撑满后 cover 才真按 [alignment] 取景。
+          : SizedBox.expand(
+              child: WuxiaImage(
+                portraitPath!,
+                fit: fit,
+                alignment:
+                    alignment ??
+                    assetFramingForPortrait(portraitPath!).alignment,
+                errorBuilder: wuxiaAssetErrorBuilder(
+                  () => Container(
+                    color: WuxiaColors.avatarFill,
+                    alignment: Alignment.center,
+                    child: _placeholder(),
+                  ),
                 ),
               ),
             ),
