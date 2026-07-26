@@ -3,7 +3,7 @@
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
-Ch17「沙海纵深」整章实装已完成、合入 main 并 push；主线达 17 章 85 关，cap 40，机制型 Boss 首次进入主线。HEAD `e1b085a1`，工作树净，与 origin **完全同步（ahead/behind 0/0）**。本章唯一未闭合项是 11 张美术图。
+Ch17「沙海纵深」整章实装已完成、合入 main 并 push；主线达 17 章 85 关，cap 40，机制型 Boss 首次进入主线。工作树净，与 origin **完全同步（ahead/behind 0/0）**。本章唯一未闭合项是 11 张美术图。
 
 开局动作：
 1. 读 PROGRESS.md 顶段 2026-07-26「Ch17 整章实装」条
