@@ -1260,7 +1260,7 @@ double battleStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/liangzhou_jieguan_ren.png' => 0.973,
   // Ch17「沙海纵深」5 敌脚底校准(alpha 包围盒实测·2026-07-26)
   'assets/enemies/shahai_ta_sha_ke.png' => 0.970,
-  'assets/enemies/shahai_heifeng_daoke.png' => 0.981,
+  'assets/enemies/shahai_heifeng_daoke.png' => 0.982,
   'assets/enemies/shahai_shoucheng_laozu.png' => 0.990,
   'assets/enemies/shahai_juan_sha_shou.png' => 0.982,
   'assets/enemies/shahai_linglu_ren.png' => 0.988,

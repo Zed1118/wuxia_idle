@@ -36,6 +36,4 @@
 #
 # ── Ch16 宗师段首章「凉州词」立绘已补齐(2026-07-25·codex image_gen)──
 #
-# ── Ch17 宗师段第 2 章「沙海纵深」待补美术(2026-07-26·codex image_gen 另出图)──
-# 敌人立绘(1·黑风刀客刃形返修中,其余 4 敌 + 封面 + 5 背景已补齐清账)
-assets/enemies/shahai_heifeng_daoke.png
+# ── Ch17 宗师段第 2 章「沙海纵深」立绘已补齐(2026-07-26·codex image_gen)──
