@@ -203,7 +203,7 @@ combat:
 
 progression:
   release_cap:
-    max_absolute_realm_level: 38  # Ch16「凉州词」抬 35→38(宗师·熟练 shuLian = 宗师段首章·2026-07-24 宗师段 spec 段级#2 拍板):cross-tier releaseTier jueDing→zongShi,三系连动宝物/失传神功入 in-range;挂载完备:月落无声挂 16_05 章末残页收编,夜雨十年灯补 mount_deferred 归 Ch17,feng_juan/yang_guan 仍 deferred 至 Ch17/18;段轨迹 38→40(Ch17)→42(Ch18 封顶)
+    max_absolute_realm_level: 40  # Ch17「沙海纵深」抬 38→40(宗师·圆熟 yuanShu = 宗师段第 2 章·2026-07-26 章级 spec 拍板):**within-tier**——`RealmTier.values[(cap-1)~/7]` 对 38 与 40 同得 index 5 = zongShi,故 releaseTier 不变,cross-tier 全套(三系锁死连动/新阶招暴露/mount_deferred 挂载完备)本章**不触发**,只 cap-value 断言需同步;挂载完备:平沙落雁挂 17_05 末Boss真解(新写),风卷流沙删 deferred 挂 17_04 章中 Boss,夜雨十年灯删 deferred 挂 17_05 章末残页,仅 yang_guan 仍 deferred 至 Ch18;段轨迹 38→40(Ch17)→42(Ch18 封顶)
 
 # =============================================================================
 # 2. 49 级境界系统

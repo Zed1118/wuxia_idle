@@ -56,16 +56,18 @@ void main() {
       // + Ch13 候峰翁本命真解 skill_yi_lan_zhong_shan = 213
       // + Ch15 守关老将本命真解 skill_gu_cheng_bi = 214(Ch14 十荡十决为收编非新增)
       // + Ch16 接关人本命真解 skill_tie_ma_bing_he = 215
-      // + 40 encounter_skills.yaml = 255 total
+      // + Ch17 沙海领路人本命真解 skill_ping_sha_luo_yan = 216
+      //   (Ch17 风卷流沙为收编非新增——删 mount_deferred 挂 17_04,不改总数)
+      // + 40 encounter_skills.yaml = 256 total
       expect(
         repo.skillDefs.length,
-        255,
+        256,
         reason:
-            '215 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+            '216 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
             ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技 + 1 断魂庄锁脉针'
             ' + 1 Ch8 灰袖回风 + 1 Ch9 沉沙一诀 + 1 Ch10 止水诀 + 1 Ch11 鎏金诀'
             ' + 1 Ch12 绵里藏针 + 1 Ch13 一览众山 + 1 Ch15 孤城闭'
-            ' + 1 Ch16 铁马冰河) + 40 奇遇招',
+            ' + 1 Ch16 铁马冰河 + 1 Ch17 平沙落雁) + 40 奇遇招',
       );
       expect(
         repo.encounterSkillIds.length,
@@ -86,8 +88,8 @@ void main() {
           .length;
       expect(
         mainlineCount,
-        80,
-        reason: '主线 80 关(2026-07-24 Ch16 凉州词宗师段首章扩,16 章 × 5 关)',
+        85,
+        reason: '主线 85 关(2026-07-26 Ch17 沙海纵深宗师段第 2 章扩,17 章 × 5 关)',
       );
       expect(
         innerDemonCount,
@@ -685,14 +687,26 @@ void main() {
     );
 
     test(
-      '主线 80 关红线:16 章 × 5 关 + 每章双 Boss 关(2026-07-24 Ch16 凉州词宗师段首章扩·Boss 位随叙事定)',
+      '主线 85 关红线:17 章 × 5 关 + 每章双 Boss 关(2026-07-26 Ch17 沙海纵深宗师段第 2 章扩·Boss 位随叙事定)',
       () async {
         final repo = await GameRepository.loadAllDefs(loader: fileLoader);
         final mainlines = repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
             .toList();
-        expect(mainlines.length, 80);
-        for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]) {
+        expect(mainlines.length, 85);
+        // 2026-07-26 Ch17 批订正:旧写法把章号硬列成 [1..15],Ch16 加章时漏补 16,
+        // 致 Ch16 的「每章 5 关」从未被校验。改为从数据派生章号集合再断言其为
+        // 连续 1..N 无缺口(守 feedback_red_line_test_semantics:写约束语义不写瞬时事实)。
+        final chapterIndices = mainlines
+            .map((s) => s.chapterIndex)
+            .whereType<int>()
+            .toSet();
+        expect(
+          chapterIndices,
+          List.generate(17, (i) => i + 1).toSet(),
+          reason: '主线章号须为连续 1..17 无缺口',
+        );
+        for (final ch in chapterIndices) {
           final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();
           expect(inCh.length, 5, reason: 'Ch$ch 应有 5 关');
         }

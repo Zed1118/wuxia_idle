@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 
+import '../../../tools/asset_audit.dart';
+
 Future<String> _fileLoader(String path) => File(path).readAsString();
 
 void main() {
@@ -102,7 +104,16 @@ void main() {
   test('全部登记 standee 满足透明、留边、最小尺寸与脚底标定', () async {
     final violations = <String>[];
 
+    // 2026-07-26 Ch17 批新增:跳过「已登记但美术未交付」的 standee。
+    // 背景——本测 2026-07-25 加入,晚于 Ch16 美术批,故从未见过「章批已落、出图批
+    // 未跑」的中间态;Ch17 是第一个撞上的章批(章批与美术批历来分两次,见 5441ea3d
+    // vs 589457cf)。跳过依据复用 asset_audit 的同一份 allowlist,不是本测私开口子:
+    // 出图后 asset_audit guard 2「allowlist 无已补齐残留」会强制删表项,表项一删本
+    // 测立刻恢复全量把关,构成双向棘轮、无法长期挂账。
+    final pendingArt = loadAllowlist();
+
     for (final path in registeredBattleStandeeDisplayPaths) {
+      if (pendingArt.contains(path)) continue;
       final profile = await _readAlphaProfile(path);
 
       void require(bool condition, String message) {

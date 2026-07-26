@@ -2935,7 +2935,7 @@ skills:
     description: 大漠风起,沙走石飞。身法散作流沙,聚时剑已封喉。
     type: powerSkill
     targetType: single
-    powerMultiplier: 3200
+    powerMultiplier: 4800
     qiDelta: -30
     cooldownTurns: 4
     requiresManualTrigger: false
@@ -2944,7 +2944,11 @@ skills:
     source: mainline_drop
     style: lingQiao
     tier: 4
-    mount_deferred: true  # 2026-07-22 更新:Ch13 主题定「从看江湖到成为江湖」中州传承弧,本招(大漠·灵巧)仍不搭;继续 deferred,待边塞回访章收编或最终否决(2026-07-20 Ch10 弃用原注:改用 skill_zhi_shui_jue;红线⑦按 !mountDeferred 豁免)
+    # 2026-07-26 Ch17「沙海纵深」收编(章级 spec §6 拍板 3A):删 mount_deferred,挂 stage_17_04
+    # 章中 Boss 的 dropSkillManualId + chargeSkillId 双用(破招前置教学:章中学「打断蓄招」,
+    # 末关再学「只有窗口能打」,两级递进)。[balance] powerMultiplier 3200→4800——同十荡十决
+    # 3600→4800 先例,原 3200 为 tier4 旧锚,在宗师段偏弱造成爽感倒挂;仍 ≤8000 硬线。
+    # tier 4 不动:收集向定位,不充宗师档(真解位由 tier6 平沙落雁占)。
     proficiency:        # 真解手工高半档(灵巧向:CD 倾斜)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -3194,7 +3198,10 @@ skills:
     source: fragment
     style: yinRou
     tier: 6
-    mount_deferred: true  # 2026-07-24 宗师段 spec §3 拍定:cap 抬 38(zongShi)后 tier6 残页入挂载完备 in-range,本招章末残页位归 Ch17 沙海纵深章(与月落无声 Ch16/夜雨 Ch17 双挂分置·红线⑦豁免),Ch17 批删标挂载
+    # 2026-07-26 Ch17「沙海纵深」收编(章级 spec §7·段级 §3 兑现):删 mount_deferred,挂 stage_17_05
+    # dropSkillFragmentId 章末重打残页(照 Ch16_05 挂月落无声先例)。配平零影响——`残页` 配平
+    # (wave_b_content_redline_test)不排除 mountDeferred,本招原就计在 3/3/3 内;删标只让它
+    # 进 releaseFragments 挂载完备集合、必须被挂上。数值零改动。
     proficiency:        # 波A 流派模板(阴柔)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -3426,3 +3433,31 @@ skills:
       effects:
         shuLian: { damage_pct: 0.10 }
         jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        # 2026-07-26 Ch17 批补回(用户拍板 2A):本行原缺失,致化境层对铁马冰河零加成。
+        # 同注释「沿青锋绝锚」的一族——青锋绝 skill_qingshan_qingfeng / 千钧坠岳
+        # skill_qian_jun_zhui_yue / 十荡十决 skill_shi_dang_shi_jue——三者 proficiency
+        # 三层完全一致且均有本行,唯本招缺,判定为 Ch16 批(5441ea3d)写入时截断。
+        huaJing: { cooldown_delta: -1 }
+
+  - id: skill_ping_sha_luo_yan
+    name: 平沙落雁
+    description: 平沙万里,雁阵自高处斜掠而下。沙上立不住脚,便不与沙争、不与风争——只借那一线将歇未歇的风势落下,落点早在你起手之先。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 6400
+    qiDelta: -30
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: geese_over_sand
+    source: mainline_drop
+    style: lingQiao
+    tier: 6
+    # 2026-07-26 Ch17「沙海纵深」末Boss沙海领路人本命真解(章级 spec §5 拍板 2A):tier6 真解档
+    # 6400≤8000(同铁马冰河对齐先例);CD 4 沿灵巧真解差异化(照风卷流沙三层模板·区别于刚猛真解 CD5)。
+    # 取名古琴曲「平沙落雁」,雁阵起落写「顺风势而非抗风势」,与本章末 Boss 单窗口机制主题同拍。
+    proficiency:        # 真解手工高半档(灵巧向:CD 倾斜)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        jingTong: { damage_pct: 0.05, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }

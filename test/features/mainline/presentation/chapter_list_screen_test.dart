@@ -32,10 +32,10 @@ void main() {
   Future<void> pumpScreen(
     WidgetTester tester,
     MainlineProgress p, {
-    Size surfaceSize = const Size(1024, 4500),
+    Size surfaceSize = const Size(1024, 5000),
   }) async {
-    // 章节卡加封面条后变高,扩 viewport 让 15 卡全 build(memory
-    // feedback_listview_widget_test_viewport)。
+    // 章节卡加封面条后变高,扩 viewport 让 17 卡全 build(memory
+    // feedback_listview_widget_test_viewport;2026-07-26 Ch17 扩章随卡数抬 4500→5000)。
     await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
@@ -54,7 +54,7 @@ void main() {
         'stage_${chapter.toString().padLeft(2, '0')}_${stage.toString().padLeft(2, '0')}',
   ];
 
-  testWidgets('全新进度 → 16 章卡渲染,Ch1 进行中 + Ch2-16 锁', (tester) async {
+  testWidgets('全新进度 → 17 章卡渲染,Ch1 进行中 + Ch2-17 锁', (tester) async {
     await pumpScreen(tester, mkProgress());
 
     expect(find.text(UiStrings.mainlineRouteMapTitle), findsOneWidget);
@@ -87,19 +87,20 @@ void main() {
     expect(find.text(UiStrings.chapter14Title), findsNWidgets(2));
     expect(find.text(UiStrings.chapter15Title), findsNWidgets(2));
     expect(find.text(UiStrings.chapter16Title), findsNWidgets(2));
+    expect(find.text(UiStrings.chapter17Title), findsNWidgets(2));
     expect(find.text(UiStrings.mainlineRouteCurrent), findsOneWidget);
-    expect(find.text(UiStrings.mainlineRouteLocked), findsNWidgets(15));
+    expect(find.text(UiStrings.mainlineRouteLocked), findsNWidgets(16));
 
     expect(
       find.text(UiStrings.chapterStatusInProgress),
       findsOneWidget,
       reason: '只有 Ch1 进行中',
     );
-    expect(find.byIcon(Icons.lock), findsNWidgets(15), reason: 'Ch2–Ch16 都锁');
+    expect(find.byIcon(Icons.lock), findsNWidgets(16), reason: 'Ch2–Ch17 都锁');
     expect(find.byIcon(Icons.check_circle), findsNothing);
   });
 
-  testWidgets('Ch1 全通(5 关)→ Ch1 ✓ + Ch2 进行中 + Ch3-16 锁', (tester) async {
+  testWidgets('Ch1 全通(5 关)→ Ch1 ✓ + Ch2 进行中 + Ch3-17 锁', (tester) async {
     await pumpScreen(
       tester,
       mkProgress(
@@ -123,18 +124,20 @@ void main() {
       findsOneWidget,
       reason: 'Ch2 解锁进行中',
     );
-    expect(find.byIcon(Icons.lock), findsNWidgets(14), reason: 'Ch3–Ch16 仍锁');
+    expect(find.byIcon(Icons.lock), findsNWidgets(15), reason: 'Ch3–Ch17 仍锁');
   });
 
-  testWidgets('全 80 关通关 → 16 章都 ✓,无锁', (tester) async {
+  testWidgets('全 85 关通关 → 17 章都 ✓,无锁', (tester) async {
     final cleared = <String>[
-      for (final ch in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+      for (final ch in [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, //
+      ])
         for (final idx in [1, 2, 3, 4, 5])
           'stage_${ch.toString().padLeft(2, '0')}_0$idx',
     ];
     await pumpScreen(tester, mkProgress(cleared: cleared));
 
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(16));
+    expect(find.byIcon(Icons.check_circle), findsNWidgets(17));
     expect(find.byIcon(Icons.lock), findsNothing);
     expect(find.text(UiStrings.chapterStatusInProgress), findsNothing);
   });

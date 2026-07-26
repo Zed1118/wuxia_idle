@@ -23,9 +23,26 @@ void main() {
           s.isBossStage &&
           s.dropSkillManualId != null,
     );
-    // 每个有真解的章末关:Boss chargeSkillId == 掉落真解(双用)。
+    // 每个有真解的 Boss 关:chargeSkillId == 掉落真解(双用)。
     expect(chapterEnds, isNotEmpty);
-    final chapters = <int>{};
+
+    // 2026-07-26 Ch17 批语义收紧(章级 spec §6 拍板 3A):
+    // 旧写法是「每章至多 1 本真解」,把章中 Boss 也算进同一约束,与设计本意
+    // 「每章一门**末Boss**真解」口径过宽不符——章中 Boss 掉收编向招式(Ch17
+    // 风卷流沙)是合法通路,旧写法把它堵死。收紧为「末Boss / 章中各至多 1 本」,
+    // 总强度不变(每章仍最多 2 本、各位置唯一),但不再误伤章中收编。
+    // **这是口径订正不是放宽**:2026-07-26 现跑实证,收紧前全仓 12 处
+    // dropSkillManualId 全部落在各章最末关,无一挂章中关 → 对 Ch1-16 零破坏面。
+    //
+    // 「本章最末关」从单链结构派生(该章内无任何其他关以它作 prevStageId),
+    // 不锚 `_05` 字面 id(守 feedback_red_line_test_semantics:写约束语义)。
+    final prevRefs = repo.stageDefs.values
+        .where((s) => s.stageType == StageType.mainline)
+        .map((s) => s.prevStageId)
+        .whereType<String>()
+        .toSet();
+    final finalBossChapters = <int>{};
+    final midBossChapters = <int>{};
     for (final st in chapterEnds) {
       final boss = st.enemyTeam.firstWhere((e) => e.isBoss);
       expect(
@@ -33,7 +50,20 @@ void main() {
         st.dropSkillManualId,
         reason: '${st.id} 蓄力技应与掉落真解同招(波B 双用 canon)',
       );
-      expect(chapters.add(st.chapterIndex!), isTrue, reason: '每章至多 1 本真解');
+      final isChapterFinal = !prevRefs.contains(st.id);
+      if (isChapterFinal) {
+        expect(
+          finalBossChapters.add(st.chapterIndex!),
+          isTrue,
+          reason: '每章至多 1 本末Boss真解(${st.id})',
+        );
+      } else {
+        expect(
+          midBossChapters.add(st.chapterIndex!),
+          isTrue,
+          reason: '每章至多 1 本章中Boss真解(${st.id})',
+        );
+      }
     }
     final releaseTier = _releaseCapTier(repo);
     // mountDeferred 招豁免挂载完备性(发布阶内但正式挂载点留 batch3/Phase C)。
@@ -143,6 +173,10 @@ void main() {
       'skill_shi_dang_shi_jue', // Ch14 马战宗师·十荡十决(2026-07-23 收编为独立末Boss真解·wave_b 配平排除)
       'skill_gu_cheng_bi', // Ch15 守关老将·孤城闭(独立末Boss真解·wave_b 配平排除)
       'skill_tie_ma_bing_he', // Ch16 接关人·铁马冰河(独立末Boss真解·wave_b 配平排除)
+      'skill_ping_sha_luo_yan', // Ch17 沙海领路人·平沙落雁(独立末Boss真解·wave_b 配平排除)
+      // Ch17 卷沙手·风卷流沙:章中 Boss 收编(2026-07-26 spec §6 拍板 3A 删 mount_deferred)。
+      // 删 deferred 后它进 mainlineDrop 配平池,不在此登记会把 lingQiao 侧顶到 3 破 2/2/2。
+      'skill_feng_juan_liu_sha',
     };
 
     // mount_deferred 招不在发布内容内,不参与配平(2026-07-23 Ch14 收编 shi_dang

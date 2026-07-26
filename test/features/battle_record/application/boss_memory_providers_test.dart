@@ -40,14 +40,14 @@ void main() {
   // ── bossCatalog 测试 ────────────────────────────────────────────────────
 
   group('bossCatalog', () {
-    test('含全 Boss：主线 isBossStage(41 条) + 塔 6 层，共 47 条', () {
+    test('含全 Boss：主线 isBossStage(43 条) + 塔 6 层，共 49 条', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
       final catalog = container.read(bossCatalogProvider);
 
       // 总数
-      expect(catalog, hasLength(47), reason: '主线 41 + 塔 6 = 47');
+      expect(catalog, hasLength(49), reason: '主线 43 + 塔 6 = 49');
 
       // 塔条目恰好 6 个
       final towerEntries = catalog
@@ -59,14 +59,16 @@ void main() {
         reason: '爬塔 Boss 层 [5,10,15,20,25,30]',
       );
 
-      // 主线条目恰好 39 个
+      // 主线条目恰好 43 个(2026-07-26 Ch17 批订正:旧注释写「39 个」与断言值 41 不符,
+      // 是 Ch15/Ch16 加章时只改断言未改注释的历史 drift)
       final mainlineEntries = catalog
           .where((e) => e.source == BossMemorySource.mainline)
           .toList();
       expect(
         mainlineEntries,
-        hasLength(41),
-        reason: '主线 isBossStage=true 共 41 关',
+        hasLength(43),
+        reason:
+            '主线 isBossStage=true 共 43 关(mainline 34 + innerDemon 7 + lightFoot 1 + massBattle 1)',
       );
 
       // 特定主线 Boss

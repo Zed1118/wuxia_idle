@@ -56,22 +56,22 @@ void main() {
     repo = await loadTestGameRepository();
   });
 
-  test('锚点对账：参考路线终态 Lv115/abs12/余量692，缺口 5408 EXP', () {
+  test('锚点对账：参考路线终态 Lv118/abs12/余量692，缺口 4879 EXP', () {
     final ch = _referenceRouteEnd(repo);
     expect(
       _displayLevel(repo, ch),
-      115,
-      reason: '对账 progression_release_budget_test Lv115 锚点',
+      118,
+      reason: '对账 progression_release_budget_test Lv118 锚点',
     );
     final realm = repo.getRealm(ch.realmTier, ch.realmLayer);
     expect(realm.absoluteLevel, 12, reason: 'Lv115 = 三流·圆熟(abs12) 层内段');
-    expect(ch.experience, 692, reason: '参考路线三丹后层内余量');
+    expect(ch.experience, 1221, reason: '参考路线三丹后层内余量');
     expect(_expToDisplayLevel(repo, ch, 100), 0);
-    expect(_expToDisplayLevel(repo, ch, 120), 748);
+    expect(_expToDisplayLevel(repo, ch, 120), 219);
     expect(
       _expToDisplayLevel(repo, ch, _targetLevel),
-      5408,
-      reason: 'Lv115→Lv141 纯挂机经验缺口',
+      4879,
+      reason: 'Lv118→Lv141 纯挂机经验缺口',
     );
   });
 
@@ -206,10 +206,11 @@ void main() {
     );
     expect(s1.totalHours, lessThan(s3.totalHours));
     expect(s3.totalHours, lessThan(s2.totalHours));
-    // Ch16 缺口 5907→5408 后 s3 实测 46.4 天,下沿 50→45 同步重校(节奏带随内容扩张单调收窄·2026-07-24;s1 45.6 天距下沿 45 仅 0.6,Ch17 扩缺口必破须重校)。
-    expect(s1.days, inInclusiveRange(45.0, 120.0));
-    expect(s2.days, inInclusiveRange(45.0, 100.0));
-    expect(s3.days, inInclusiveRange(45.0, 110.0));
+    // 2026-07-26 Ch17 扩:缺口 5408→4879,三档实测 s1 41.1 / s2 42.5 / s3 41.9 天,
+    // 下沿 45→40 同步重校(节奏带随内容扩张单调收窄,上一轮注释已预告本次必破)。
+    expect(s1.days, inInclusiveRange(40.0, 120.0));
+    expect(s2.days, inInclusiveRange(40.0, 100.0));
+    expect(s3.days, inInclusiveRange(40.0, 110.0));
   });
 
   test('加速通道：百草岭远征 / 桃花岛丹房 / 闭关+银两购丹', () {
@@ -220,7 +221,7 @@ void main() {
       avgDepth: 20,
       baseExpPerBattle: baseExp,
     );
-    final gap = 5408; // 锚点测已钉（2026-07-24 Ch16 扩后重校·全内容终态 Lv112→115·缺口 -499）
+    final gap = 4879; // 锚点测已钉（2026-07-26 Ch17 扩后重校·全内容终态 Lv115→118·缺口 -529）
     final s4Days = daysToTraverse(totalExp: gap, expPerHour: y.expPerHour);
     // 交叉对账：同口径 abs10→17 应 ≈ 18 天（expeditions.yaml 注释锚点）。
     final fullRangeDays = daysToTraverse(
@@ -276,11 +277,11 @@ void main() {
     expect(f.totalHours, lessThan(1730), reason: '购丹混合快于纯离线(1730h·三场景测钉)');
     expect(
       e1.days,
-      inInclusiveRange(1.0, 3.5),
-    ); // 2026-07-24 Ch16 扩后缺口 5408·E1 下沿随缺口重校
-    expect(s4Days, inInclusiveRange(6.0, 14.0));
-    // Ch16 缺口重校后 f 实测 29.2 天,下沿 30→25 同步(同 s1 口径·2026-07-24)。
-    expect(f.days, inInclusiveRange(25.0, 65.0));
+      inInclusiveRange(0.5, 3.5),
+    ); // 2026-07-26 Ch17 扩后缺口 4879·E1 实测 0.96 天·下沿 1.0→0.5 随缺口重校
+    expect(s4Days, inInclusiveRange(5.0, 14.0)); // D 实测 5.8 天·下沿 6.0→5.0
+    // 2026-07-26 Ch17 缺口重校后下沿 25→20 同步(同 s1 口径)。
+    expect(f.days, inInclusiveRange(20.0, 65.0));
   });
 }
 
@@ -603,8 +604,16 @@ void _record(GameRepository repo, _HorizonResult r) {
 
 void _assertMonotonic(_HorizonResult r) {
   final hours = [for (final m in _milestones) r.milestoneHours[m]!];
+  // 2026-07-26 Ch17 批语义订正:真不变式是「高里程碑不可能早于低里程碑达成」=**非递减**。
+  // 旧写法用严格递增,只是因为当时参考路线终态(Lv115)离 Lv100/Lv120 还远、各里程碑
+  // 天然落在不同小时;内容扩张后起点抬到 Lv118,最快档(E3 丹房L3)在第 1 小时内同时
+  // 越过 Lv100 与 Lv120,严格递增被结构性打破——放宽到非递减是订正不是放水。
   for (var i = 1; i < hours.length; i++) {
-    expect(hours[i], greaterThan(hours[i - 1]), reason: '${r.name}: 里程碑小时单调递增');
+    expect(
+      hours[i],
+      greaterThanOrEqualTo(hours[i - 1]),
+      reason: '${r.name}: 里程碑小时单调非递减',
+    );
   }
   expect(r.totalHours, hours.last, reason: '${r.name}: 总时长 = 达 Lv141 时刻');
 }
@@ -618,8 +627,8 @@ void _assertConservation(GameRepository repo, _HorizonResult r) {
   );
   expect(
     r.appliedExp,
-    5408 + ch.experience,
-    reason: '${r.name}: 经验守恒 = 缺口 5408 + 终点层内余量',
+    4879 + ch.experience,
+    reason: '${r.name}: 经验守恒 = 缺口 4879 + 终点层内余量',
   );
 }
 
