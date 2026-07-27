@@ -2983,7 +2983,7 @@ skills:
     description: 西凉霸主压箱底的绝学。一掌出,关山寂寂,故人不复。
     type: powerSkill
     targetType: single
-    powerMultiplier: 4000
+    powerMultiplier: 6400
     qiDelta: -30
     cooldownTurns: 5
     requiresManualTrigger: false
@@ -2992,7 +2992,14 @@ skills:
     source: mainline_drop
     style: yinRou
     tier: 6
-    mount_deferred: true  # 2026-07-22 拍定:挂账显性化·本招(Ch4 西出阳关原生·tier6 宗师档)留宗师段阳关/西凉回访章收编;cap 到宗师前天然豁免⑦,补标零影响
+    # 2026-07-27 Ch18「阳关故人」末Boss西凉霸主本命真解 —— 收编落地(段级拍板 4 + 章级 spec §5):
+    # ① 删 mount_deferred(2026-07-22 起挂账,原留「宗师段阳关/西凉回访章收编」,本章兑现)
+    #    → 收编后全仓 mount_deferred 归零,红线⑦挂载完备此后无豁免项。
+    # ② [balance] powerMultiplier 4000→6400:对齐 tier6 真解档(同铁马冰河/平沙落雁·≤8000 硬线),
+    #    敌招 cap 5500 上浮档,同十荡十决 3600→4800 先例。
+    # ③ CD 5 / qiDelta -30 / tier 6 / style yinRou 均不动;挂 stage_18_05 dropSkillManualId +
+    #    chargeSkillId 双用(霸主 school 亦 yinRou,流派天然自洽)。
+    # ④ 招名「阳关无故人」不改(Ch4 西出阳关原生锚);章名「阳关故人」去一「无」字完成叙事反转。
     proficiency:        # 真解手工高半档(阴柔向:伤害温和 + CD)
       effects:
         shuLian: { damage_pct: 0.08 }

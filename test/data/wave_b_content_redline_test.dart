@@ -177,6 +177,10 @@ void main() {
       // Ch17 卷沙手·风卷流沙:章中 Boss 收编(2026-07-26 spec §6 拍板 3A 删 mount_deferred)。
       // 删 deferred 后它进 mainlineDrop 配平池,不在此登记会把 lingQiao 侧顶到 3 破 2/2/2。
       'skill_feng_juan_liu_sha',
+      // Ch18 西凉霸主·阳关无故人:末Boss 真解收编(2026-07-27 spec §5 段级拍板 4 删
+      // mount_deferred + [balance] 4000→6400)。删 deferred 后它进 mainlineDrop 配平池,
+      // 不在此登记会把 yinRou 侧顶到 3 破 2/2/2。
+      'skill_yang_guan_wu_gu_ren',
     };
 
     // mount_deferred 招不在发布内容内,不参与配平(2026-07-23 Ch14 收编 shi_dang

@@ -37,3 +37,20 @@
 # ── Ch16 宗师段首章「凉州词」立绘已补齐(2026-07-25·codex image_gen)──
 #
 # ── Ch17 宗师段第 2 章「沙海纵深」立绘已补齐(2026-07-26·codex image_gen)──
+
+#
+# ── Ch18 宗师段收官章「阳关故人」待补美术(2026-07-27·codex image_gen 另出图)──
+# 敌人立绘(5)
+assets/enemies/yangguan_qikou_shoushao.png
+assets/enemies/yangguan_jie_yan_ke.png
+assets/enemies/yangguan_chengxia_houke.png
+assets/enemies/yangguan_san_dizi.png
+assets/enemies/yangguan_xiliang_bazhu.png
+# 章节封面(1)
+assets/scenes/chapter_18_cover.png
+# 主线剧情阅读背景(5)
+assets/scenes/narrative_stage_18_01.png
+assets/scenes/narrative_stage_18_02.png
+assets/scenes/narrative_stage_18_03.png
+assets/scenes/narrative_stage_18_04.png
+assets/scenes/narrative_stage_18_05.png

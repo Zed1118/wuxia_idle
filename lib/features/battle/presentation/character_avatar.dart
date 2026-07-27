@@ -1082,6 +1082,18 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/shahai_juan_sha_shou.png',
   'assets/enemies/shahai_linglu_ren.png':
       'assets/enemies/shahai_linglu_ren.png',
+  // Ch18「阳关故人」宗师段收官章(2026-07-27 章批):图待出(known_missing_assets 已登记),
+  // 脚底 fraction 暂走 `_ => 0.95` 默认,出图批按 alpha 包围盒实测再补本表下方映射。
+  'assets/enemies/yangguan_qikou_shoushao.png':
+      'assets/enemies/yangguan_qikou_shoushao.png',
+  'assets/enemies/yangguan_jie_yan_ke.png':
+      'assets/enemies/yangguan_jie_yan_ke.png',
+  'assets/enemies/yangguan_chengxia_houke.png':
+      'assets/enemies/yangguan_chengxia_houke.png',
+  'assets/enemies/yangguan_san_dizi.png':
+      'assets/enemies/yangguan_san_dizi.png',
+  'assets/enemies/yangguan_xiliang_bazhu.png':
+      'assets/enemies/yangguan_xiliang_bazhu.png',
   'assets/enemies/enemy_gauntlet_su_wujiu.png':
       WuxiaUi.battleGauntletSuWujiuStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':
