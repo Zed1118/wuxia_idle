@@ -12,7 +12,8 @@ import '../support/progression_battle_probe.dart';
 import '../support/test_data.dart';
 
 const _seedCount = 50;
-// 主线关总数(14 章 × 5 关 = 70·2026-07-23 Ch14 山外来客绝顶段第二章扩;新增主线章时改此一处)。
+// 主线关总数(18 章 × 5 关 = 90·2026-07-27 Ch18 阳关故人宗师段收官章扩;新增主线章时改此一处)。
+// (旧注写「14 章 × 5 关 = 70」是 Ch15 起四次加章连续漏更的 drift,2026-07-27 现测订正。)
 const _mainlineStageCount = 90;
 const _csvPath =
     'test/tools/output/progression_attribute_playtest_2026-07-13.csv';

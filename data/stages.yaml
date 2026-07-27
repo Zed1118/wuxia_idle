@@ -4149,7 +4149,10 @@ stages:
   #   下一次抬 cap(武圣段)才是 cross-tier。
   # · 敌招零新增:01 用 gangmeng_shichuan_fang_*(此前全仓唯一零使用的一组,本章首接线·守碗口语义)、
   #   02 用 lingqiao_shichuan_*、03/05 用 yinrou_shichuan_*、04 用 yinrou_shichuan_fang_*。
-  #   三章共用池(9 基础 + 9 fang)到此用尽,全段零新写敌招。
+  #   三章共用池的六组(三流派 × 基础/fang)到此全部接线过,全段零新写敌招。
+  #   (组内仍有 3 个 ult 未进任何敌队:gangmeng_shichuan_ult / gangmeng_shichuan_fang_ult /
+  #    lingqiao_shichuan_fang_ult,但三者在 data/techniques.yaml 有引用,非死配置——
+  #    2026-07-27 现测订正原注「9 基础 + 9 fang 到此用尽」的招级口径。)
   # · 真解 = 收编 skill_yang_guan_wu_gu_ren(Ch4 西出阳关原生·删 mount_deferred·[balance] 4000→6400),
   #   挂 18_05 末 Boss dropSkillManualId + chargeSkillId 双用。收编后全仓 mount_deferred 归零(段级 §3)。
   #   章末不设残页(段级 §3:Ch18 章末 = 真解位,不另设 fragment;fragment 3/3/3 现已平不动即不破)。
