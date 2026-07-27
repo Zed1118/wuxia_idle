@@ -1,14 +1,14 @@
 # =============================================================================
-# stages.yaml · 全关卡表（主线 + 副本 · 共 102 关，2026-07-26 实测）
+# stages.yaml · 全关卡表（主线 + 副本 · 共 107 关，2026-07-27 实测）
 # =============================================================================
-# 共 102 关：mainline 85（17 章 × 5）+ innerDemon 7 +
+# 共 107 关：mainline 90（18 章 × 5）+ innerDemon 7 +
 # lightFoot 5 + massBattle 5。stageType 按关分填（非全 mainline）。
 # （头注计数 2026-07-26 Ch17 批订正：旧值「57 关 / mainline 40（8 章）」是 Ch9 起
-#   八次加章连续漏更的历史 drift，本次按 python 逐条实测重写。）
+#   八次加章连续漏更的历史 drift，本次按 python 逐条实测重写；2026-07-27 Ch18 批同步。）
 # 常规关尽量 3 敌人（StageDef.enemyTeam 上限 3）；三流派分布尽量覆盖
 # gangMeng / lingQiao / yinRou。stage_01_01 是 production 单人空手开局的
 # 开场战，使用 1 敌人避免首战断链。难度按章递增 xueTu → sanLiu → erLiu →
-# yiLiu → jueDing → zongShi（Ch16-17 宗师段，2026-07-26 同批订正原 stale 三阶写法）。
+# yiLiu → jueDing → zongShi（Ch16-18 宗师段，2026-07-26 同批订正原 stale 三阶写法）。
 #
 # Phase 3 Week 5 schema：在 T33 三段 narrative 基础上加 `narrativeDefeatId`。
 #   narrativeOpeningId   —— 进入关卡前播放（联结 data/narratives/stages/<id>.yaml）
@@ -4137,6 +4137,283 @@ stages:
         dropChance: 0.30  # 经验丹大档(宗师章末)
     baseExpReward: 114
     difficultyMultiplier: 18.8
+    biome: frontier
+    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    weather: clear
+
+  # ============================================================================
+  # Ch18「阳关故人」宗师段收官章(2026-07-27 章级 spec 六项拍板冻结·1A/2A/3A/4A/5A/6B)
+  # ----------------------------------------------------------------------------
+  # · within-tier:requiredRealm zongShi·cap 40→42(宗师·登峰 dengFeng = 段封顶·releaseTier 不变)
+  #   敌层 yuanShu→dengFeng(01-02 圆熟/03-04 化境/05 登峰=cap 42 同层)。42 是 zongShi 末层,
+  #   下一次抬 cap(武圣段)才是 cross-tier。
+  # · 敌招零新增:01 用 gangmeng_shichuan_fang_*(此前全仓唯一零使用的一组,本章首接线·守碗口语义)、
+  #   02 用 lingqiao_shichuan_*、03/05 用 yinrou_shichuan_*、04 用 yinrou_shichuan_fang_*。
+  #   三章共用池的六组(三流派 × 基础/fang)到此全部接线过,全段零新写敌招。
+  #   (组内仍有 3 个 ult 未进任何敌队:gangmeng_shichuan_ult / gangmeng_shichuan_fang_ult /
+  #    lingqiao_shichuan_fang_ult,但三者在 data/techniques.yaml 有引用,非死配置——
+  #    2026-07-27 现测订正原注「9 基础 + 9 fang 到此用尽」的招级口径。)
+  # · 真解 = 收编 skill_yang_guan_wu_gu_ren(Ch4 西出阳关原生·删 mount_deferred·[balance] 4000→6400),
+  #   挂 18_05 末 Boss dropSkillManualId + chargeSkillId 双用。收编后全仓 mount_deferred 归零(段级 §3)。
+  #   章末不设残页(段级 §3:Ch18 章末 = 真解位,不另设 fragment;fragment 3/3/3 现已平不动即不破)。
+  # · 机制层终点(spec §4·段级拍板 6「章中+末 Boss 全机制」):18_04 章中 Boss vulnerability 0.20
+  #   +两相位(承 Ch17 末关同档,玩家已学过);18_05 末 Boss 0.12 +两相位(比照塔 floor25 复合位)。
+  #   相位阈值取 0.9/0.5 而非 floor25 的 0.80/0.5——照 16_05/17_05 已校准先例,保 nearMax 首发即
+  #   开窗(主线玩家侧强度高于塔环境,0.80 易被首击直接跌破致相位跳过)。cycleVulnerability 不配(拍板 6B)。
+  # · HP 头寸 58300→59500(<60000 硬线·段级 §2 三章 56500→58000→59500 分配终点)·
+  #   敌攻 1960→2000(段级 §2「≤2000 用尽」·拍板 5A)。
+  # · 流派 = 阴柔收官章:01 gangMeng·02 lingQiao·03/04/05 yinRou(三流派全覆盖)。
+  #   04 三弟子与 05 霸主同为 yinRou 系既定人物(Ch5 enemy_zongShi_xiliang_sandizi school: yinRou),
+  #   与真解 yang_guan(yinRou)流派天然自洽,双用 canon 不需改任一侧。
+  # ============================================================================
+
+  # === stage_18_01 · 碛口守哨(从丘脊下到碗底·真正踏进腹地 · 刚猛 · 章首不配 prevStageId)===
+  - id: stage_18_01
+    name: 碛口
+    stageType: mainline
+    chapterIndex: 18
+    narrativeOpeningId: stage_18_01_opening
+    narrativeVictoryId: stage_18_01_victory
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_yangguan_qikou_shoushao
+        name: 碛口守哨
+        realmTier: zongShi
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 58300
+        baseAttack: 1960
+        baseSpeed: 362
+        skillIds:
+          - skill_gangmeng_shichuan_fang_basic
+          - skill_gangmeng_shichuan_fang_skill   # 章首两招喘息(照 Ch16/17 体例);fang 防御变体=「守着碗口不问来路」
+        iconPath: assets/enemies/yangguan_qikou_shoushao.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_baowu_chang_hong_jian
+        dropChance: 1.0
+      - equipmentDefId: accessory_baowu_long_gu_lian
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [70, 80]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [890, 1020]
+        dropChance: 1.0  # 银两(宗师段收官章 · 承 Ch17 曲线续进)
+    baseExpReward: 76
+    difficultyMultiplier: 19.0
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: clear
+
+  # === stage_18_02 · 截烟客(那缕烟是唯一路标·有人不许人循烟走 · 灵巧)===
+  - id: stage_18_02
+    name: 沿烟一线
+    stageType: mainline
+    chapterIndex: 18
+    prevStageId: stage_18_01
+    narrativeOpeningId: stage_18_02_opening
+    narrativeVictoryId: stage_18_02_victory
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_yangguan_jie_yan_ke
+        name: 截烟客
+        realmTier: zongShi
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 58600
+        baseAttack: 1970
+        baseSpeed: 364
+        skillIds:
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill   # 章首两招喘息
+        iconPath: assets/enemies/yangguan_jie_yan_ke.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_baowu_yin_yang_ci
+        dropChance: 1.0
+      - equipmentDefId: accessory_baowu_zi_jin_hu_lu
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [71, 81]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [900, 1030]
+        dropChance: 1.0  # 银两(宗师段收官章)
+    baseExpReward: 78
+    difficultyMultiplier: 19.2
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: clear
+
+  # === stage_18_03 · 城下候客(看见城·城不像中原的城;候客=也在等的人 · 阴柔 · 03 起 ult 化)===
+  - id: stage_18_03
+    name: 西凉城下
+    stageType: mainline
+    chapterIndex: 18
+    prevStageId: stage_18_02
+    narrativeOpeningId: stage_18_03_opening
+    narrativeVictoryId: stage_18_03_victory
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_yangguan_chengxia_houke
+        name: 城下候客
+        realmTier: zongShi
+        realmLayer: huaJing
+        school: yinRou
+        baseHp: 58900
+        baseAttack: 1980
+        baseSpeed: 366
+        skillIds:
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill
+          - skill_yinrou_shichuan_ult   # 03 起 ult 化(照 Ch16/17 体例)
+        iconPath: assets/enemies/yangguan_chengxia_houke.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_baowu_bing_po_zhen
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_jin_si_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [72, 82]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [910, 1040]
+        dropChance: 1.0  # 银两(宗师段收官章)
+    baseExpReward: 80
+    difficultyMultiplier: 19.4
+    biome: cityWall
+    sceneBackgroundPath: assets/scenes/battle_citywall.png
+    weather: clear
+
+  # === stage_18_04 · 演武场(西凉三弟子·Ch5/Ch6 既有人物复出 · 阴柔章中 Boss · vulnerability 0.20 + 两相位)===
+  - id: stage_18_04
+    name: 演武场
+    stageType: mainline
+    chapterIndex: 18
+    prevStageId: stage_18_03
+    narrativeOpeningId: stage_18_04_opening
+    narrativeVictoryId: stage_18_04_victory
+    narrativeDefeatId: stage_18_04_defeat
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_yangguan_san_dizi
+        name: 西凉三弟子
+        realmTier: zongShi
+        realmLayer: huaJing
+        school: yinRou     # 沿 Ch5 enemy_zongShi_xiliang_sandizi 既定 school(人物连续性,不因段位改流派)
+        baseHp: 59200
+        baseAttack: 1990
+        baseSpeed: 368
+        skillIds:
+          - skill_yinrou_shichuan_fang_basic
+          - skill_yinrou_shichuan_fang_skill
+          - skill_yinrou_shichuan_fang_ult      # 章中 Boss chargeSkill(fang 防御变体=护主守成)
+        iconPath: assets/enemies/yangguan_san_dizi.png
+        isBoss: true
+        chargeSkillId: skill_yinrou_shichuan_fang_ult  # 章中 Boss 无 dropSkillManualId(真解归末 Boss),故 chargeSkill 取既有 tier6 ult,不构成双用约束
+        vulnerability:
+          outOfWindowDamageMult: 0.20   # 承 Ch17 末关同档(玩家已在 17_05 学过窗口),章中先复习再于末关加压到 0.12
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.9   # 照 16_05/17_05 已校准先例:受击进相位立即推蓄力,保 nearMax 首发即开窗
+            unlockSkillIds:
+              - skill_yinrou_shichuan_fang_ult
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+          - hpThresholdPct: 0.5   # 第二窗口(段级拍板 6「全机制」:章中 Boss 本章起配两相位)
+            unlockSkillIds:
+              - skill_yinrou_shichuan_fang_skill
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_baowu_xuan_tian_fu
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_wu_jin_zhan_jia
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [73, 83]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [960, 1110]
+        dropChance: 1.0  # 银两(宗师章中 Boss)
+    baseExpReward: 100
+    difficultyMultiplier: 19.6
+    biome: drillGround
+    sceneBackgroundPath: assets/scenes/battle_drillground.png
+    weather: clear
+
+  # === stage_18_05 · 火堆前(西凉霸主 · 阴柔末 Boss · vulnerability 0.12 两相位 = 主线机制线终点 · 敌层 dengFeng=cap 42 同层)===
+  - id: stage_18_05
+    name: 火堆前
+    stageType: mainline
+    chapterIndex: 18
+    prevStageId: stage_18_04
+    narrativeOpeningId: stage_18_05_opening
+    narrativeVictoryId: stage_18_05_victory
+    narrativeDefeatId: stage_18_05_defeat
+    requiredRealm: zongShi
+    dropSkillManualId: skill_yang_guan_wu_gu_ren  # 真解收编(段级拍板 4·spec §5):霸主本命·同招为 boss chargeSkillId 双用·破招首通 markUnlocked
+    enemyTeam:
+      - id: enemy_zongShi_yangguan_xiliang_bazhu
+        name: 西凉霸主
+        realmTier: zongShi
+        realmLayer: dengFeng
+        school: yinRou     # 沿 Ch6 enemy_wuSheng_xiliang_bazhu 既定 school;与真解 yang_guan(yinRou)自洽
+        baseHp: 59500      # 宗师段收官末 Boss(<60000 硬线·头寸 56500→58000→59500 三章分配终点=段级 §2)
+        baseAttack: 2000   # 段级 §2「≤2000 用尽」(拍板 5A);武圣段难度全走机制层,攻轴不再留余量
+        baseSpeed: 370
+        skillIds:
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill
+          - skill_yinrou_shichuan_ult
+          - skill_yang_guan_wu_gu_ren          # 本命真解 = 末Boss chargeSkill(双用 canon·红线① chargeSkillId∈skillIds)
+        iconPath: assets/enemies/yangguan_xiliang_bazhu.png
+        isBoss: true
+        chargeSkillId: skill_yang_guan_wu_gu_ren   # 破招:玩家拦截,首通掉同招真解
+        vulnerability:
+          outOfWindowDamageMult: 0.12   # 主线机制线终点(段级拍板 6):窗口外承伤 12%,比照塔 floor25
+                                        # 同值(towers.yaml:983)。cap 42 = 段封顶,末 Boss 与玩家同 tier
+                                        # 无阶可跨,难度只走机制层——0.12 两相位等价制造「差 2 阶」的
+                                        # 破防感但不膨胀伤害数字(守 §5.4 例外条款)。
+                                        # cycleVulnerability 不配(拍板 6B:周目收窄留独立周目批)。
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.9   # 首窗照 16_05/17_05 校准先例(不取 floor25 的 0.80:主线玩家侧更强,易首击跌破致相位跳过)
+            unlockSkillIds:
+              - skill_yang_guan_wu_gu_ren
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+          - hpThresholdPct: 0.5   # 次窗照 floor25 复合位
+            unlockSkillIds:
+              - skill_yinrou_shichuan_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_baowu_xue_lian_bian
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_can_si_ruan_jia
+        dropChance: 0.50
+      - equipmentDefId: accessory_baowu_yu_long_pei
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [75, 85]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1080, 1260]
+        dropChance: 1.0  # 银两(宗师章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(宗师章末)
+    baseExpReward: 120
+    difficultyMultiplier: 19.8
     biome: frontier
     sceneBackgroundPath: assets/scenes/battle_frontier.png
     weather: clear

@@ -15,9 +15,9 @@ import 'chapter_transition_screen.dart';
 import 'stage_list_screen.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 
-/// 主线章节列表（Phase 3 T35，现为 17 章完整主线）。
+/// 主线章节列表（Phase 3 T35，现为 18 章完整主线）。
 ///
-/// 列 17 章，状态:
+/// 列 18 章，状态:
 ///   - cleared 已通过:右上 ✓ 标识,可重入
 ///   - inProgress 进行中:主色边框高亮(章节内仍有未通关卡)
 ///   - locked 未解锁:灰色 + 锁图标,点击无响应
@@ -46,6 +46,7 @@ class ChapterListScreen extends ConsumerWidget {
     15,
     16,
     17,
+    18,
   ];
 
   @override

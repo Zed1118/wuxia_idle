@@ -88,8 +88,8 @@ void main() {
           .length;
       expect(
         mainlineCount,
-        85,
-        reason: '主线 85 关(2026-07-26 Ch17 沙海纵深宗师段第 2 章扩,17 章 × 5 关)',
+        90,
+        reason: '主线 90 关(2026-07-27 Ch18 阳关故人宗师段收官章扩,18 章 × 5 关)',
       );
       expect(
         innerDemonCount,
@@ -687,13 +687,13 @@ void main() {
     );
 
     test(
-      '主线 85 关红线:17 章 × 5 关 + 每章双 Boss 关(2026-07-26 Ch17 沙海纵深宗师段第 2 章扩·Boss 位随叙事定)',
+      '主线 90 关红线:18 章 × 5 关 + 每章双 Boss 关(2026-07-27 Ch18 阳关故人宗师段收官章扩·Boss 位随叙事定)',
       () async {
         final repo = await GameRepository.loadAllDefs(loader: fileLoader);
         final mainlines = repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
             .toList();
-        expect(mainlines.length, 85);
+        expect(mainlines.length, 90);
         // 2026-07-26 Ch17 批订正:旧写法把章号硬列成 [1..15],Ch16 加章时漏补 16,
         // 致 Ch16 的「每章 5 关」从未被校验。改为从数据派生章号集合再断言其为
         // 连续 1..N 无缺口(守 feedback_red_line_test_semantics:写约束语义不写瞬时事实)。
@@ -703,8 +703,8 @@ void main() {
             .toSet();
         expect(
           chapterIndices,
-          List.generate(17, (i) => i + 1).toSet(),
-          reason: '主线章号须为连续 1..17 无缺口',
+          List.generate(18, (i) => i + 1).toSet(),
+          reason: '主线章号须为连续 1..18 无缺口',
         );
         for (final ch in chapterIndices) {
           final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();

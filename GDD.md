@@ -9,9 +9,9 @@
 > **v1.23 变更**(2026-07-22 头部口径订正·外部审查 07-21 P1):发布上限以 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level=28`（一流·登峰 / Lv280，Ch12 由 26 抬至 28）为准，v1.22 的「层 10 / Lv100」口径已被后续扩章取代；当前主线 12 章 60 关（`data/stages.yaml` `stageType: mainline` ×60），60 关首通实测至 Lv80，全内容参考路线实测至 Lv103（与 §8 内容结构 2026-07-21 重校口径一致）。49 层 / Lv1～Lv490 长线定义、唯一经验账与旧档不回退原则不变。**[历史快照,数字已过时,现值见当前状态块]**
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
-> - 发布上限:绝对境界层 **40**(宗师·圆熟;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)
-> - 主线规模:**17 章 85 关**(真相源 `data/stages.yaml` `stageType: mainline` 计数)
-> - 实测锚:85 关首通 **Lv102**(累计 3633 经验);全内容参考路线 **Lv118**(由 `progression_release_budget_test` 维护,实测锚不入自动校验)
+> - 发布上限:绝对境界层 **42**(宗师·登峰 = 宗师段封顶;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)
+> - 主线规模:**18 章 90 关**(真相源 `data/stages.yaml` `stageType: mainline` 计数)
+> - 实测锚:90 关首通 **Lv105**(累计 4087 经验);全内容参考路线 **Lv121**(由 `progression_release_budget_test` 维护,实测锚不入自动校验)
 
 ---
 
