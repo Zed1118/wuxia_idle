@@ -1,61 +1,51 @@
-# 新会话开局提示词（覆盖式 · 新会话打「开工」= 读本文件按其执行）
-
-**交接时间：** 2026-07-27 14:49
-**主 checkout HEAD：** `bc6064f9`（ahead origin/main 1 · 未 push）
-**PR 分支 HEAD：** `fcf3e344`（已 push · PR #86 draft OPEN）
-
-> 动手前先核头部 HEAD sha / 时间与 git 实况；漂移（HEAD 不符 / 明显过期）先报告偏差再动。
-
----
+> 交接时间：2026-07-27 22:31 · HEAD `ac7c8ba4`（main，与 origin 同步）
+> 新会话打「开工」即读本文件执行。动手前先核头部 HEAD sha / 时间与 git 实况，漂移先报告偏差再动。
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
-Ch18「阳关故人」宗师段收官章内容层已全部实装完成并全绿，**停在 draft PR #86 待审合并**。
-主 checkout 干净、领先 origin 1 commit（`bc6064f9` = Ch18 章级 spec，纯文档，未 push）。
-注意：**main 上仍是 17 章 85 关 / cap 40**，18 章 90 关 / cap 42 全在 PR #86 里，未合。
+Ch18「阳关故人」宗师段收官章内容层已合 main（PR #86），美术 11 图已出齐接线但停在 draft PR #87 待审合。
+主 checkout 干净、与 origin 同步。main 上已是 18 章 90 关 / cap 42 / `mount_deferred` 全仓归零。
 
 开局动作：
-1. 读 PROGRESS.md 顶段 2026-07-27「Ch18「阳关故人」宗师段收官章实装」条
-2. 读 docs/sessions/2026-07-27_1449_Ch18实装.md
+1. 读 PROGRESS.md 顶段 2026-07-27 Ch18 条目
+2. 读 docs/sessions/2026-07-27_2231_Ch18美术批.md
 3. git pull --rebase --autostash
 4. 选读 memory：reference_anti_hallucination（固定）
-   + feedback_wuxia_add_mainline_chapter_reconcile（加主线章站点清单）
-   + feedback_wuxia_release_cap_raise_reconcile（抬 cap 站点）
-   + feedback_visual_acceptance + reference_codex_image_gen_art_pipeline（若开美术批）
-   + feedback_chinese_path_shell_pitfalls（中文名 heredoc / zsh 不分词）
-   + feedback_bg_worktree_baseref_fresh_diverge（bg 开 worktree 会基于 origin 漏本地 commit）
+   + reference_codex_image_gen_art_pipeline（**本会话已订正 CLI 调用式，出图批必读**）
+   + feedback_visual_acceptance（Claude 终判闸门）
+   + feedback_wuxia_webp_cleanup_recipe（若开 webp 清账批）
+   + feedback_gh_pr_mergeable_vs_local_divergence（PR 合并前本地 merge-tree 复算）
+   + feedback_worktree_gitignored_evidence_lost（清 worktree 前先救留置证据）
 
 【环境快照】
-- 主 checkout HEAD `bc6064f9`（ahead origin/main **1**，未 push；该 commit 同时在 PR 分支内，PR 合后本地可直接快进，无分叉）
-- PR 分支 `worktree-ch18-yangguan` HEAD `fcf3e344`（已 push · PR #86 draft OPEN · MERGEABLE）
-- 主 checkout `flutter analyze --no-pub` **EXIT=0 · No issues found（4.9s）** —— 2026-07-27 本会话实测
-- 主 checkout **全量本会话未跑**（代码改动全在 PR 分支）。最近一次主 checkout 全量 = **4711/0 @ `80531d37`**（2026-07-26 实测）
-- PR 分支 `fcf3e344`：analyze EXIT=0 + 全量 **4711 pass / 0 fail**（EXIT=0 · `[E]` 0 · `-1` 0 · 4m35s）—— 2026-07-27 worktree 实测
-- 内容规模：**main 上 17 章 85 关 / cap 40**；PR #86 内 **18 章 90 关 / cap 42 / mount_deferred 全仓归零**
-- assets **99M** · `build/dispatch` **25M** · `build/visual_acceptance` **204M**（含 111M 待阶段 5 终验）
-- PROGRESS：PR 分支内 **96 行**（main 上仍 98 行）
+- 主 checkout HEAD `ac7c8ba4`（本会话 5 commit，**已全部 push**，与 origin 同步）
+- 主 checkout `flutter analyze --no-pub` **EXIT=0 · No issues found**（5.7s）—— 2026-07-27 本会话实测
+- 主 checkout targeted 受影响测族 9 文件 **80 pass / 0 fail**（EXIT 逐个取证）—— 本会话 PR #86 合并后实测
+- 主 checkout 全量本会话**未跑**（代码改动在 PR #87 分支）。PR #87 分支全量 = **4711 pass / 0 fail**（EXIT=0 · `[E]` 0 · `-1` 0 · 7m03s）—— 本会话 worktree 实测
+- PR #87：OPEN · draft · 相对 main **1 commit / 15 文件**（本地 merge-tree **零冲突**实测；GitHub 侧 mergeable 当时报 UNKNOWN 未采信）
+- worktree 只剩 `ch18-art`（陈旧的 ch18-yangguan / ch18-lore 本轮已清）
+- assets：main 上 **99M**；PR #87 分支 **122M**（11 张真 PNG 未转 webp）· build/dispatch 25M · build/visual_acceptance 204M
+- 全局 MEMORY.md **139 行**（本会话 163→139）
 
 【下波候选】
 
 | # | 任务 | 模型 | 预估时长 | 备注 |
 |---|------|------|----------|------|
-| 1 | 审并合 PR #86（推荐） | opus high | ~30min | 内容层已全绿只卡 review；不合就没法开美术批，且本地 main 一直领先 origin |
-| 2 | Ch18 美术 11 图 codex image_gen 专批 | opus high | ~2h | 沿 Ch14-17 配方；**须先合 PR #86** |
-| 3 | 压缩全局 `MEMORY.md` 163→<140 行 | opus high | ~20min | hook 已提示；需逐条判断可合并/过时项 |
-| 4 | battle-ui-v2 阶段 5 全模式终验 | opus high | ~1.5h | 需独占 app 与屏幕；做完可回收 111M |
+| 1 | 审并合 PR #87（推荐） | opus high | ~20min | 已全绿只卡 review；不合则 webp 清账批无从开工，且 Ch18 唯一未闭合项挂着 |
+| 2 | webp 清账批 | opus high | ~40min | assets 122M，Ch14-17 惯例压缩率 ~93%，可回收约 22M；须先合 #87 |
+| 3 | 铜镜 canon 修正 | opus high | ~40min | **需用户先拍板 D1/D2/D3**（记录「重要决策」有权衡，我方推 D3） |
+| 4 | battle-ui-v2 阶段 5 全模式终验 | opus high | ~1.5h | 需独占 app 与屏幕；做完可回收 204M 里的 111M |
 
 【硬约束沿用】
-- **spec / 代码注释里写的「判据公式」可能压根不是活代码**：`data/numbers.yaml:206` 连写三章的 `RealmTier.values[(cap-1)~/7]` 在全 `lib/` grep 不到，真判据是 `getRealmByAbsoluteLevel(cap).tier`（`game_repository.dart:865` → `skill_red_lines_validator.dart:109`）。引用任何「判据/公式」前先 grep 确认它存在，别信注释自述。本批已订正该注释。
-- **既有人物复出的关，先 grep 其原始 def 再写数值**：Ch18 三弟子 school 在 Ch5 已定 `yinRou`，spec 草案凭印象写成 gangMeng。人物连续性优先于配平美观。
-- **叙事人物关系必须全 narratives grep**：`chapter_07`/`chapter_09` 才证得出「李寒 = 主角师父」，Ch16/17 一律用「那个背剑的人」指代，只读近两章会误判成路人。
-- **bg 会话 Write 被守卫拦时纯文档走 Bash heredoc，但中文文件名不能做重定向目标**（静默不落盘）——用 ASCII 临时文件 + `cp` 落中文名，写完必 `ls` 实证。
-- **bg 开 worktree 会基于 origin 而非本地 HEAD**：本地有未 push commit 时新 worktree 会缺，须 `git merge --ff-only main` 先对齐（本批踩过）。
+- **codex CLI 正解 = `codex exec -C <dir> -s workspace-write -i a.png -- "$PROMPT" < /dev/null`**：`--` 终止变参 + 显式喂 EOF，两者缺一不可。旧记法 `cat prompt.txt | codex exec -i img` **实测挂死 2 小时 0 输出 %CPU 0.0**；prompt 走位置参数会被变参 `-i` 吞成图片路径。判活看 %CPU + 日志行数是否在涨，别只看进程还在。
+- **不采信 codex 自评**：本批它自报 `san_dizi`「不等边三角队形更明确」实为近乎并排（与 Ch17 批「厚背阔刀」误报同型）。Claude 逐图视觉终判是必过闸门。验收工装在 `build/dispatch/gate_precheck.py`（另存 `~/scripts/wuxia_gate_precheck.py`），逐条复刻 `battle_standee_asset_role_test:120-151` 九判据，已用 Ch17 五张已知 fraction 反验一致。
+- **改叙事前必读全文再估代价**：铜镜方案 D1 初估「~14 处但机械」是错的——镜子与「师」字玉佩配对撑着 Ch5/Ch6 五个情感段落，只 grep 关键词会严重低估。
 
 【防幻觉守则】
 - 本提示词【环境快照】里的数字是上一会话实测的快照；新会话改动代码后**必须重新实测**，禁直接转抄。
 - 报「完成/已修复/0 引用/全绿」前必跑验证并贴输出，launch ≠ 成功。
-- 引用代码现 grep/codegraph 查带 `file:line`；不确定写「不知道」，不凭记忆硬答。
+- 引用代码现 grep/codegraph 查带 file:line；不确定写「不知道」，不凭记忆硬答。
 - 完整守则见 memory `reference_anti_hallucination`。
 
 【先报告】
-读完上述清单后：1. 报告 PROGRESS.md 和 session 记录的关键信息 2. 确认环境状态（现跑 HEAD / status / worktree list / PR 状态） 3. 不要直接动代码。
+读完上述清单后：1. 报告 PROGRESS.md 和 session 记录的关键信息 2. 确认环境状态（现跑 HEAD / status / worktree list / PR #87 状态） 3. 不要直接动代码。
