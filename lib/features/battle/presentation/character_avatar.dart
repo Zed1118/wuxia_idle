@@ -1276,6 +1276,12 @@ double battleStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/shahai_shoucheng_laozu.png' => 0.990,
   'assets/enemies/shahai_juan_sha_shou.png' => 0.982,
   'assets/enemies/shahai_linglu_ren.png' => 0.988,
+  // Ch18「阳关故人」5 敌脚底校准(alpha 包围盒实测·2026-07-27·codex image_gen 专批)
+  'assets/enemies/yangguan_qikou_shoushao.png' => 0.947,
+  'assets/enemies/yangguan_jie_yan_ke.png' => 0.953,
+  'assets/enemies/yangguan_chengxia_houke.png' => 0.954,
+  'assets/enemies/yangguan_san_dizi.png' => 0.934,
+  'assets/enemies/yangguan_xiliang_bazhu.png' => 0.991,
   WuxiaUi.battleGauntletSuWujiuStandee => 0.9681,
   WuxiaUi.battleGauntletQingyiGuardAStandee => 0.9571,
   WuxiaUi.battleGauntletQingyiGuardBStandee => 0.9642,
