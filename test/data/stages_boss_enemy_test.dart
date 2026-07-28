@@ -32,12 +32,12 @@ void main() {
     }
   });
 
-  test('恰好标注 38 个 boss 敌人(production 红线)', () {
+  test('恰好标注 40 个 boss 敌人(production 红线)', () {
     final stages = GameRepository.instance.stageDefs.values;
     final total = stages.fold<int>(
       0,
       (n, s) => n + s.enemyTeam.where((e) => e.isBoss).length,
     );
-    expect(total, 38, reason: 'Ch18 +2(西凉三弟子章中 + 西凉霸主章末)');
+    expect(total, 40, reason: 'Ch19 +2(接关人章中复出 + 黑石守镜人章末)');
   });
 }

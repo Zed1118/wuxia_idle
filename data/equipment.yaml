@@ -14,7 +14,9 @@
 #   - 寻常货/像样货/好家伙 → mainline_ch1/2/3 + tower_5/15
 #   - 利器/重器           → tower_25 + yiLiu_quest / jueDing_unlock
 #   - 宝物                → tower_30 + zongShi_unlock
-#   - 神物                → wuSheng_unlock（Phase 4+ 飞升机制后定义,Demo 玩家境界 ≤ zongShi 不可装备）
+#   - 神物                → wuSheng_unlock（2026-07-28 Ch19 起**真投放**:发布上限抬至 45=武圣·熟练,
+#                            三系锁死随之开放神物,首批 4 件挂 stage_19_01/02/04/05 dropTable。
+#                            旧注「Demo 玩家境界 ≤ zongShi 不可装备」已被本章 cross-tier 推翻。）
 # =============================================================================
 
 equipment:

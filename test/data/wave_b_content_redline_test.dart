@@ -181,6 +181,10 @@ void main() {
       // mount_deferred + [balance] 4000→6400)。删 deferred 后它进 mainlineDrop 配平池,
       // 不在此登记会把 yinRou 侧顶到 3 破 2/2/2。
       'skill_yang_guan_wu_gu_ren',
+      // Ch19 黑石守镜人·一镜双照:武圣段首章末Boss 真解**新写**(2026-07-28 段级拍板 5A +
+      // 章级拍板 3A)。与前几章不同——tier7 drop 招此前全仓 0 门,无可收编对象故新写;
+      // style yinRou 沿守镜人 Ch16 既定 school,不在此登记会把 yinRou 侧顶到 3 破 2/2/2。
+      'skill_yi_jing_shuang_zhao',
     };
 
     // mount_deferred 招不在发布内容内,不参与配平(2026-07-23 Ch14 收编 shi_dang
