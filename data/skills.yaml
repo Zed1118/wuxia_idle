@@ -3006,6 +3006,34 @@ skills:
         jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
         huaJing: { cooldown_delta: -1 }
 
+  - id: skill_yi_jing_shuang_zhao
+    name: 一镜双照
+    description: 黑石守镜人守了几十年的一手。两半合上,照出来的不是人,是来路。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 7000
+    qiDelta: -30
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: mirror_double
+    source: mainline_drop
+    style: yinRou
+    tier: 7
+    # 2026-07-28 Ch19「旧路照人」末Boss 黑石守镜人本命真解 —— 新写(段级拍板 5A + 章级拍板 3A):
+    # ① tier7 drop 招全仓此前 **0 门**(Phase 0 实测:全仓显式 tier7 只 4 招且全 special),
+    #    武圣段无可收编对象,故新写而非收编 —— 与 Ch14/Ch16/Ch18 收编路线的根本差别。
+    # ② powerMultiplier 7000:tier7 招 cap 8000 = §5.4 全局硬红线**本身**,零上浮空间;
+    #    宗师段真解 6400 是唯一参照,取 7000 留 Ch20/21 各一档(候选 7400 / 7800)。
+    # ③ style yinRou 沿守镜人 Ch16 既定 school(enemy_zongShi_liangzhouci_heishi_shoujing),
+    #    人物连续性优先不因段位改流派;与末 Boss chargeSkillId 双用 canon 自洽。
+    # ④ 已登记进 wave_b standaloneBossManualIds 白名单(独立末Boss真解不进 2/2/2 配平池)。
+    proficiency:        # 真解手工高半档(阴柔向:伤害温和 + CD),沿 yang_guan 体例
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
+
   # ─── 塔残页 ×6(Boss 层 5/10/15/20/25/30 每胜概率掉)───
 
   - id: skill_kai_bei_shou

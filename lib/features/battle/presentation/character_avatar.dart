@@ -1094,6 +1094,18 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/yangguan_san_dizi.png',
   'assets/enemies/yangguan_xiliang_bazhu.png':
       'assets/enemies/yangguan_xiliang_bazhu.png',
+  // Ch19「旧路照人」武圣段首章(2026-07-28 章批):图待出(known_missing_assets 已登记),
+  // 脚底 fraction 暂走 `_ => 0.95` 默认,出图批按 alpha 包围盒实测再补本表下方映射。
+  // 注:接关人/守镜人是 Ch16 既有人物复出,出图时须以 Ch16 立绘作**人物锚**(非仅风格锚)。
+  'assets/enemies/jiulu_zhe_fan_ke.png': 'assets/enemies/jiulu_zhe_fan_ke.png',
+  'assets/enemies/jiulu_liang_sha_ke.png':
+      'assets/enemies/jiulu_liang_sha_ke.png',
+  'assets/enemies/jiulu_ting_feng_ren.png':
+      'assets/enemies/jiulu_ting_feng_ren.png',
+  'assets/enemies/jiulu_jieguan_ren.png':
+      'assets/enemies/jiulu_jieguan_ren.png',
+  'assets/enemies/jiulu_heishi_shoujing.png':
+      'assets/enemies/jiulu_heishi_shoujing.png',
   'assets/enemies/enemy_gauntlet_su_wujiu.png':
       WuxiaUi.battleGauntletSuWujiuStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':
