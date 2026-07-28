@@ -123,3 +123,14 @@ Ch18 章尾原文(`chapter_18.yaml` 卷尾)已把方向钉死:
 - 实装前必重跑 Phase-0 grep 复定本 spec 全部行号(本 spec 行号 2026-07-28 实测,会 drift)。
 - 必读 memory:`feedback_wuxia_add_mainline_chapter_reconcile` / `feedback_wuxia_release_cap_raise_reconcile` / `feedback_wuxia_boss_balance_crosstier` / `reference_anti_hallucination`。
 - Ch19 是 cross-tier 首章,**破坏证红在 commit 后做**(真解 mult 越 8000 → RED → 还原复绿)。
+
+## 8. 攻轴封顶后难度定调(2026-07-28 夜批自主拍板 · 晨间可推翻)
+
+**问题实测**:敌三轴全顶(攻 2000=`numbers.yaml:171` / Boss HP ≤60000 现余 ≤2000 / 招 8000 tier7 已在线),玩家 45→47→49 仍在涨;章中 Boss undergeared 残血 17_04 `0.9099`→18_04 `0.9437`→19_04 **`1.0000`** 单调变软;机制层现有工具全是「减 Boss 受伤」方向,只拉长不威胁;固定 DoT(内伤 200/tick×3+震伤 500)对终段血池 3-5% 级无感。
+
+**拍定 = A 基调 + B 点缀**:
+- **A(定调)**:武圣段主线不做 undergeared 战败威胁,难度语义=机制参与度+时长曲线+周目压力;威胁性内容归塔 floor25/30·心魔 05-07·断魂庄。
+- **B(收官点缀)**:Ch21 末 Boss 配 **`surviveTicks` 型胜负条件**——威胁换轴「血线→条件」。工程实测零新代码:`stage_win_condition.dart:9` 通用 schema + `default_ground_strategy.dart:103` 已消费,现仅心魔 07 用过(`stages.yaml:4827`);与「Ch21 收官即开飞升」仪式感自洽。tick 数由 Ch21 章批探针校准,不预钉。
+- **C(玩家侧百分比承压)不开**:绕 2000 攻硬线,顶「不膨胀伤害数字」红线边缘,须真人拍板才允许起 spec。**D(回调 Ch17-19)不做**:段首/章中残血历代本就软(13_05 0.9117/15_05 0.9379),尖峰只属段末设计。
+
+**连带**:Ch20 照 Ch19 机制配方(vuln+cycle+相位·HP 头寸 ~59000·攻钉 2000);Ch21 章批 Phase 0 必查 surviveTicks 主线首用的 UI/结算文案面(战斗 HUD 是否显条件·胜利结算文案是否贴,心魔 07 是独立 strategy 呈现先例不直接可比)。
