@@ -57,13 +57,16 @@ class AvatarStatusTags extends StatelessWidget {
     // ① 结界庇护(floor30 护法结界·boss 专属 buff):有护法存活时展示,
     // 让玩家理解「为何 Boss 几乎打不动」——优先级摆最前,信息权重高于自身
     // debuff(直接决定当前输出是否有效)。
+    // 取色 bossFrame(Boss 专属深金)而非 internalForce(内力青蓝):后者是真气
+    // 语义色,挂到 boss 头顶 pill 上会在水墨色板外多出一块高饱和蓝(基准图同位
+    // 是绛红/金印),且与同屏 boss 金边不同源。深金与 boss 专属语义一致。
     if (wardActive) {
       items.add(
         const AvatarStatusTag(
           spec: AvatarStatusSpec(
             label: UiStrings.guardianWardActiveLabel,
             gloss: UiStrings.guardianWardActiveGloss,
-            color: WuxiaColors.internalForce,
+            color: WuxiaColors.bossFrame,
           ),
         ),
       );

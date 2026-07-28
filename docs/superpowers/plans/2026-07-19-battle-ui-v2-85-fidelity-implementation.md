@@ -1,7 +1,7 @@
 # 战斗界面 V2 ≥85% 风格还原实施计划
 
 > 日期：2026-07-19  
-> 状态：实施中（Task 0.3 已完成）
+> 状态：**已完成**（2026-07-28 阶段 5 全模式终验收官 · 实测 94/100 ≥85 目标 · 用户接受）
 > 阶段：1.0 长线打磨期  
 > 基准分支：`main@ad94a2bb`  
 > 推荐实施分支：`codex/battle-ui-v2-fidelity-85`  
@@ -859,7 +859,7 @@ bash -n tools/visual_capture/visual_capture.sh
 
 ## 11. 当前恢复点
 
-- **状态**：`READY` 阶段 4 + A 案的纸面对比度、死亡 opacity 与门控回归均已修，等待主窗口重新执行 §8.2 Gate；旧 tip `67b350e2` 的 READY 已撤销，用户已经拍板的阶段 2/3 构图比例未再改动。
+- **状态**：**全部阶段已收官**（2026-07-28 阶段 5 全模式终验完成 · 实测 94/100 · 用户接受）。以下 863–871 为阶段 4 的历史恢复点，保留备查；阶段 5 结果见本节末尾。
 - **基点**：`main@ad94a2bb`（完整提交 `ad94a2bb2f600f8f0a7982d03f8566ee49178f45`）。
 - **最后完成**：批末全量的 2 个失败均定位于 `character_avatar.dart`。①旧纸信息板在阶段 3 改成浅纸渐变后，姓名仍使用深底专用 `WuxiaColors.textPrimary`；已换为纸底色板 `WuxiaUi.ink`，`audit_paper_text_contrast` finding 从 1 清零。②阶段 3 融雾提交将死亡站姿 opacity 从 P0-2 固定 0.45 改成 0.30，越过本批授权；生产值已恢复 0.45，并把阶段 3 局部测试的 `≤0.34` 冲突断言同步对齐为 0.45，保留下沉与 grayscale。此前自动案台门控修复继续有效。
 - **下一步**：主窗口按串行全量命令重新执行 §8.2 Gate 后合并；本 worktree 无后续实现任务。
@@ -869,3 +869,23 @@ bash -n tools/visual_capture/visual_capture.sh
 - **阻塞项**：无。残留风险：`BattleAction` 未携带 teamSide，若未来跨队伍出现 actorId 理论重号，自动亮签的日志匹配存在歧义；Windows 字体回退已配置但本轮仅在 macOS 双视口目检；未新增资产，既有 RepaintBoundary 与性能条款保持不变。
 - **§8.2 四证据**：①生产接线：正式 `BattleScreen` 的自动/可点分支、人物旧纸信息板与死亡站姿均消费本轮修复，debug route 不承载唯一实现；②验证：退回 2 失败已逐项复现，修复后隔离 19/19、冲突测试 33/33、串行全量 4479/4479、analyze 0 issue；③红线：纸面文字两套色板不再混用，死亡 opacity 恢复 P0-2 0.45；相对基点 `data/`、战斗规则、schema/saveVersion、真实存档与禁改文件变化均为 0；④残留风险：actorId 理论重号、Windows 实机字体/缩放尚未目检、自动分析诊断元数据缺失已如实列明。
 - **Git 状态口径**：A 案 `17cc9902`，Task 4.1/4.2 `c440ae88`，Task 4.3 `14bbd02e`，轮转证据 `1f33dcd9`，门控修复 `44a63dff`，纸面/死亡生产修复 `9bcfd31b`，规范测试对齐 `3ebaafc9`；恢复点提交后使用精确空提交 `[READY] 阶段4+A案交付(纸面对比度+死亡opacity回归已修)`，最终 worktree 必须干净。
+
+### 阶段 5 收官记录（2026-07-28）
+
+- **实测 94/100**：A 20/20 · B 22/25 · C 23/25 · D 15/15 · E 10/10 · F 4/5。总分 ≥85 且 A～E 各 ≥88%。
+  与阶段 4 自评 88.5 的差异集中在 A/D/E——本轮补上了代码常量(A2)、场景 profile 实现(D3)、
+  对比度代码层精算(E4)三项证据；C(23)/F(4)/B(22.5→22) 两次独立评分高度吻合，评分模型可复现。
+- **证据面 40 张**：24 图 S1～S12 双视口 + 12 图生产/特殊模式 + 4 图补充真 3v3。全部零黑图、
+  40 份 route log 零 overflow/RenderFlex/exception/assertion。产物在 `build/visual_acceptance/battle_ui_v2_85/final/`，
+  改后复拍在 `build/visual_acceptance/after_fix/`（含 SCORE_V2.md / SCORE_V3.md 改判溯源）。
+- **本轮生产改动 2 处**（commit `57c6b164`）：护法结界药丸 `internalForce`→`bossFrame`（前者是真气语义色
+  SteelBlue，属 CLAUDE.md §9 禁的 Material 默认饱和色）；空技能签 `paper@0.38`/纸纹 `0.08` → `0.55`/`0.18`
+  （旧值致早期关卡案台读成按钮阵列，触阶段 2 Gate 红线）。另补 `avatar_status_tags` 视觉守卫测（破坏证红 `+7 -1` 已验）。
+- **Task 5.2 关卡指认修正**：plan 原写「正式主线标准 3v3：stage_01_03」，实测 **90 个主线关卡 `enemyTeam` 长度分布 `{1: 90}`**，
+  主线不存在 3v3；3v3 只在塔(11 层)/群战(5 关)/轻功(5 关)。本轮改用 `battle_audit_stage_mass_battle_01`（真 stage 3v3）。
+- **未取的 6 分（不为凑分放宽判据）**：F2 缺 1（所有 visual route 冻结静态帧，`--wait` 不推进战斗，
+  全仓无特效/动作 route）；B3 缺 3（`stage_01_05` 冷白背景致立绘浮贴属真实差距，但修法须改
+  `_mainlineSceneColorGrade` 全主线矩阵，波及 90 关已终拍美术）；C5 缺 2（行囊三格为硬编码占位，
+  属未实装功能预留位）。
+- **A2 方法论**：图像分析三次均未过基准图自校验（暗缝低谷法／最大连续亮带法／宽度众数法），
+  最终改读 `BattleLayoutTokens` 确定性常量解决。教训：能读确定性配置时不要从渲染结果反推。

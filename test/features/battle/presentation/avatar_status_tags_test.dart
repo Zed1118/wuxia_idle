@@ -7,6 +7,7 @@ import 'package:wuxia_idle/features/battle/presentation/avatar_status_tags.dart'
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/colors.dart';
 
 /// 批次 1.4:头像旁 buff/debuff 状态标签 + hover 释义。
 ///
@@ -115,6 +116,42 @@ void main() {
   testWidgets('剑鸣 buff 保留文字药丸', (tester) async {
     await pump(tester, _char(swordSongResonanceActive: true));
     expect(find.text(UiStrings.statusSwordSongLabel), findsOneWidget);
+  });
+
+  // 视觉守卫(阶段 5 终验 D 项「总色板和低饱和关系」):护法结界是 boss 专属
+  // buff,药丸取色必须与同屏 boss 金边同源,不得复用真气语义色 internalForce
+  // (SteelBlue #4682B4 属 Material 默认饱和色,挂 boss 头顶会在水墨色板外多出
+  // 一块高饱和蓝;基准图同位元素是绛红/金印)。约束写成「必须 boss 专属色 +
+  // 不得是真气色」两条,改回旧色即红。
+  testWidgets('护法结界药丸取 boss 专属深金,不得复用真气语义色', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: AvatarStatusTags(
+              character: _char(),
+              beat: const AlwaysStoppedAnimation<double>(0),
+              wardActive: true,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text(UiStrings.guardianWardActiveLabel), findsOneWidget);
+    final tag = tester.widget<AvatarStatusTag>(find.byType(AvatarStatusTag));
+    expect(
+      tag.spec.color,
+      equals(WuxiaColors.bossFrame),
+      reason: 'boss 专属 buff 须与同屏 boss 金边同源',
+    );
+    expect(
+      tag.spec.color,
+      isNot(WuxiaColors.internalForce),
+      reason: 'internalForce 是真气语义色,不可挪用为 boss buff 标记',
+    );
   });
 
   testWidgets('常驻状态最多保留两个关键态并按生死 > 操作优先', (tester) async {
