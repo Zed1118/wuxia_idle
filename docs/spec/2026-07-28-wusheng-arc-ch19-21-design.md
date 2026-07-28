@@ -124,7 +124,7 @@ Ch18 章尾原文(`chapter_18.yaml` 卷尾)已把方向钉死:
 - 必读 memory:`feedback_wuxia_add_mainline_chapter_reconcile` / `feedback_wuxia_release_cap_raise_reconcile` / `feedback_wuxia_boss_balance_crosstier` / `reference_anti_hallucination`。
 - Ch19 是 cross-tier 首章,**破坏证红在 commit 后做**(真解 mult 越 8000 → RED → 还原复绿)。
 
-## 8. 攻轴封顶后难度定调(2026-07-28 夜批自主拍板 · 晨间可推翻)
+## 12. 攻轴封顶后难度定调(2026-07-28 夜批自主拍板 · 晨间可推翻)
 
 **问题实测**:敌三轴全顶(攻 2000=`numbers.yaml:171` / Boss HP ≤60000 现余 ≤2000 / 招 8000 tier7 已在线),玩家 45→47→49 仍在涨;章中 Boss undergeared 残血 17_04 `0.9099`→18_04 `0.9437`→19_04 **`1.0000`** 单调变软;机制层现有工具全是「减 Boss 受伤」方向,只拉长不威胁;固定 DoT(内伤 200/tick×3+震伤 500)对终段血池 3-5% 级无感。
 
