@@ -1152,11 +1152,15 @@ class EmptySkillSlot extends StatelessWidget {
         child: DecoratedBox(
           key: ValueKey('battle.emptySkillSlot.blankPaper.$index'),
           decoration: BoxDecoration(
-            color: WuxiaUi.paper.withValues(alpha: 0.38),
+            // 空签仍须读成「素纸签」而非灰按钮(阶段 2 Gate:案台不得读成普通
+            // 按钮阵列)。旧值 paper@0.38 + 纸纹 0.08 在深褐案台底上被压成灰
+            // 褐块,早期关卡 7 槽多空时整条案台就退化成按钮阵列;抬到 0.55 /
+            // 0.18 让宣纸底与纸纹可辨,同时仍明显暗于有招式签(paper 不透明)。
+            color: WuxiaUi.paper.withValues(alpha: 0.55),
             image: const DecorationImage(
               image: AssetImage(WuxiaUi.paperBg),
               fit: BoxFit.cover,
-              opacity: 0.08,
+              opacity: 0.18,
             ),
             border: Border.all(color: const Color(0x667A6A55)),
             borderRadius: BorderRadius.circular(2),
