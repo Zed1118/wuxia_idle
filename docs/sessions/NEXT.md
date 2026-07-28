@@ -1,9 +1,10 @@
-> 交接时间：2026-07-28 14:57 · 主 checkout HEAD `1a0a0e96`（与 origin/main 同步，工作树干净）
+> 交接时间：2026-07-28 14:57 · 最后**内容** commit `37f3d396`（在 PR #90 分支）
+> main 侧末尾均为 docs commit；**HEAD 本身不钉**——以现跑 `git rev-parse --short HEAD` + `git status -sb` 为准
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
 battle-ui-v2 视觉验收子系统**全阶段收官**（阶段 1-5 完成，终验 94/100 ≥85 目标，用户接受）。
-main HEAD `1a0a0e96`，工作树干净、与 origin 同步。**但 PR #90 尚未合并**——本轮 2 个 commit
+main 工作树干净、与 origin 同步。**但 PR #90 尚未合并**——本轮 2 个 commit
 （`57c6b164` 生产改动 + `37f3d396` 收尾文档）在分支 `worktree-battle-ui-v2-stage5-fix` 上，
 不在 main。CI `macos-build` 已 SUCCESS，`test` 交接时仍 IN_PROGRESS。
 
@@ -19,7 +20,7 @@ main HEAD `1a0a0e96`，工作树干净、与 origin 同步。**但 PR #90 尚未
    + feedback_gh_pr_mergeable_vs_local_divergence（PR 合并前本地 merge-tree 复算）
 
 【环境快照】（2026-07-28 本会话实测，新会话改动后须重测）
-- 主 checkout HEAD `1a0a0e96`（本会话 1 个 docs commit 直落 main 并 push；另 2 个 commit 在 PR #90 分支未合）
+- 主 checkout：本会话 docs commit 直落 main 并 push（session 记录 + 本 NEXT.md）；代码改动 2 commit 在 PR #90 分支未合。**HEAD sha 不钉，现跑取**
 - 主 checkout `flutter analyze --no-pub` **EXIT=0 · No issues found**（6.0s）
 - **全量 4712 pass / 0 fail** EXIT=0（5m26s）—— 该数字来自 **PR #90 分支** worktree 实测；
   main 当前仍是 4711 基线（+1 为分支上新增的视觉守卫测），合并后才会变 4712
