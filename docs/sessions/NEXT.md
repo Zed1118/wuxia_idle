@@ -1,6 +1,7 @@
 # 新会话开局提示词
 
-> 交接时间：2026-07-28 11:47 · HEAD `8d5f29c0`（现跑 `git rev-parse --short HEAD` 复核）
+> 交接时间：2026-07-28 11:47 · 最后一个**内容** commit `8d5f29c0`（其后所有 commit 只动 `docs/`，可用 `git diff --name-only 8d5f29c0..HEAD` 复核）
+> HEAD 本身不钉——写这份文档又会产生 commit；以现跑 `git rev-parse --short HEAD` + `git status -sb` 为准。
 > 动手前先核头部 HEAD sha 与 git 实况，漂移先报告偏差再动。
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
@@ -19,7 +20,7 @@ Ch18「阳关故人」四项全闭环（内容 PR #86 / 美术 #87 / webp #88 / 
    + feedback_exit_worktree_merged_branch_warning（清 worktree 三验）
 
 【环境快照】（2026-07-28 主 checkout 实测，新会话改动后须重测）
-- HEAD `8d5f29c0`（本会话 8 commit，已全部 push，与 origin 同步，工作树干净）
+- 最后内容 commit `8d5f29c0`（本会话 8 个内容 commit，已全部 push，与 origin 同步，工作树干净；其后只有 docs commit）
 - `flutter analyze --no-pub` **EXIT=0 · No issues found**（4.4s）
 - 受影响测族 9 文件 **59 pass / 0 fail**（逐文件 EXIT=0）
 - 全量未在主 checkout 跑；PR #89 分支 CI 全量 test **pass（22m57s）**、macos-build pass
