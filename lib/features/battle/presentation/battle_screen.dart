@@ -8,6 +8,7 @@ import '../domain/battle_state.dart';
 import '../domain/battle_stats.dart';
 import '../domain/battle_diagnosis.dart';
 import '../../../data/defs/skill_def.dart';
+import '../../../data/defs/stage_win_condition.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/numbers_config.dart';
@@ -582,6 +583,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         critCount: stats.critCount,
         totalTicks: stats.totalTicks,
         diagnosis: diagnosis,
+        // surviveTicks 型取胜 → 副标题改「守住了」(2026-07-29 Ch21 主线首用补)。
+        survivedByTicks:
+            s.winCondition?.type == StageWinConditionType.surviveTicks,
         onJump: (target) => _handleDiagnosisJump(s, target),
         onContinue: () {
           Navigator.of(ctx).pop();

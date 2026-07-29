@@ -23,6 +23,11 @@ class VictoryOverlay extends StatelessWidget {
   /// 诊断建议跳转回调（overlay 保持纯展示，导航交给 caller）。
   final void Function(DiagnosisJumpTarget target)? onJump;
 
+  /// 本场是否为 surviveTicks 型取胜（撑满拍数而非击败全部敌人）。
+  /// 2026-07-29 Ch21 主线首用补：赢法不同，副标题就不同，否则玩家读作
+  /// 「打不死的对手忽然赢了」。默认 false —— 前 20 章全是 defeatAll 型，零影响。
+  final bool survivedByTicks;
+
   const VictoryOverlay({
     super.key,
     required this.result,
@@ -32,6 +37,7 @@ class VictoryOverlay extends StatelessWidget {
     required this.onContinue,
     this.diagnosis,
     this.onJump,
+    this.survivedByTicks = false,
   });
 
   bool get _isVictory => result == BattleResult.leftWin;
@@ -51,7 +57,9 @@ class VictoryOverlay extends StatelessWidget {
         : WuxiaColors.sealCrimson;
     final title = _isVictory ? UiStrings.victoryTitle : UiStrings.defeatTitle;
     final subtitle = _isVictory
-        ? UiStrings.victorySubtitle
+        ? (survivedByTicks
+              ? UiStrings.battleResultSurvived
+              : UiStrings.victorySubtitle)
         : UiStrings.defeatSubtitle;
 
     return Container(

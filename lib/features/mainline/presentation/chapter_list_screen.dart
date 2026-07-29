@@ -49,6 +49,7 @@ class ChapterListScreen extends ConsumerWidget {
     18,
     19,
     20,
+    21,
   ];
 
   @override
