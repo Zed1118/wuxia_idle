@@ -7,6 +7,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_typography.dart';
 import '../../save_slot/presentation/save_select_screen.dart';
 import '../../../shared/widgets/wuxia_image.dart';
+import '../../../shared/widgets/wuxia_ui/dismiss_layer.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 启动闪屏(M4 PoC #46 美术 Stage 2 W6 收官 `landscape_loading.png` 9.5/10 接入)。
@@ -102,9 +103,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: _onTapSkip,
+    return DismissLayer(
+      onDismiss: _onTapSkip,
       child: Scaffold(
         backgroundColor: WuxiaColors.background,
         // 开场整体淡入,告别硬切入。

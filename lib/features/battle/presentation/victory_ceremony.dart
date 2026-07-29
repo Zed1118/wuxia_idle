@@ -94,9 +94,8 @@ class _VictorySealFlashState extends State<VictorySealFlash>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _finish,
-      behavior: HitTestBehavior.opaque,
+    return DismissLayer(
+      onDismiss: _finish,
       child: AnimatedBuilder(
         animation: _ctrl,
         builder: (_, child) {

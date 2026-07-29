@@ -1,0 +1,25 @@
+# 桌面语义门禁 allowlist(desktop_semantics_audit 消费)。
+#
+# 收录标准:该 GestureDetector 祖先链上没有键盘可达包装件,但**不构成缺陷**。
+# 每条必须写清分类与理由——「没空加」不是合法理由。
+#
+# 格式:<lib 相对路径>:<行号>  # <分类> · <理由>
+# 分类三种:
+#   convenience —— 便利点击层。同一 widget 内**另有键盘可达的真按钮**能完成同一操作,
+#                  此层只是「点哪都行」的便利。给它 autofocus 反而会跟真按钮抢焦点。
+#   noop        —— 吞点无操作(onTap: () {}),用于挡住父级手势。它不是控件,加语义是错的。
+#   content-tap —— 内容区推进/取消,同屏另有键盘可达按钮承载同一动作。
+#
+# 行号会随代码移动而漂移。测试报「登记行号已失效」时,重新定位后更新本表,
+# 不要直接删条目了事。
+
+# ── convenience:整屏遮罩,真操作在内部按钮上 ──
+lib/features/battle/presentation/widgets/battle_header.dart:353  # convenience · PauseOverlay 罩层「轻触任意处恢复」;同屏 FilledButton(onPressed: onResume) 已键盘可达
+lib/features/battle/presentation/widgets/battle_header.dart:403  # convenience · LogDrawer 外层 scrim「点外关闭」;抽屉内 WuxiaIconButton(Icons.close) 四项俱全已键盘可达
+lib/features/encounter/presentation/encounter_dialog.dart:488  # convenience · 奇遇弹窗「点外完成」;_ChoiceButton 走 InkWell(canRequestFocus)、_ConfirmButton 走 PlaqueButton(autofocus:true),外层再抢焦点会压掉确认键
+
+# ── noop:吞点不操作 ──
+lib/features/battle/presentation/widgets/battle_header.dart:409  # noop · LogDrawer 内层 onTap:(){} 仅阻止点击冒泡到 scrim 把抽屉关掉,不是控件
+
+# ── content-tap:内容区推进,另有按钮承载 ──
+lib/features/narrative/presentation/narrative_reader_screen.dart:153  # content-tap · 剧情正文区轻点推进;同屏另有「继续」按钮(onPressed:_next)与 AppBar「跳过」TextButton,均键盘可达

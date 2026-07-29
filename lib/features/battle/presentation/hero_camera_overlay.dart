@@ -108,9 +108,8 @@ class _HeroCameraOverlayState extends State<HeroCameraOverlay>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _finish,
-      behavior: HitTestBehavior.opaque,
+    return DismissLayer(
+      onDismiss: _finish,
       child: Container(
         // 径向 vignette 暗角（与 victory_overlay / VictorySealFlash 对齐）
         decoration: const BoxDecoration(
