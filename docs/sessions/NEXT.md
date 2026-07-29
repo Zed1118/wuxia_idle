@@ -1,4 +1,4 @@
-> 交接时间：2026-07-29 16:30 · 内容 HEAD `fa3118de`（codex 的 PROGRESS 收账）+ 本次 handoff docs commit
+> 交接时间：2026-07-29 17:05（二次 handoff） · 内容 HEAD `fa3118de`（codex 的 PROGRESS 收账）+ 本次 handoff docs commit
 > · main **ahead origin，未 push**（本会话被禁止 push main）· 实际 sha 请现跑 `git rev-parse --short HEAD` 确认，勿信本行转抄
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
@@ -22,8 +22,8 @@ Ch20 三 PR 已由 codex 审查合并进 main；Ch21「绝顶交程」主线终�
 - 主 checkout **全量 4713 pass / 0 fail · EXIT=0**（`[E]` 0 · 10m01s；慢因 codex 美术批抢 CPU）
 - main 主线 **20 章 100 关 / cap 47**（Ch21 在 PR #96 未合）
 - **PR #96** `9af9af1c` draft — Ch21 终章：5 关 / 真解 7800 / 神物收口 / 叙事 6673 字 / cap 47→49 / surviveTicks 主线首用+表现层；分支实测 analyze 0 + 全量 **4719/0** + 双破坏证红
-- 遗留 1 worktree + 1 同名分支（撑 PR #96，合并后清）
-- **Ch20 美术 11 图已出齐**（ART_EXIT=0，落 `build/dispatch/ch20_art_20260729/out/`）：规格独立复测 **11/11 PASS**（1024×1536 RGBA·四角 alpha 0·fraction 0.9277-0.9635；场景尺寸全对）；**目检仅 2/11**（两个人物锚均确认同一张脸），**余 9 图待目检**
+- **worktree 已清**（17:05 三验后移除，只剩主 checkout）；本地 + 远端分支 `worktree-ch21-shougong` 保留撑 PR #96
+- **Ch20 美术 11 图已出齐**（`build/dispatch/ch20_art_20260729/out/` · 23M · gitignored 留置）：规格独立复测 **11/11 PASS**（5 立绘 1024×1536 RGBA·四角 alpha 全 0·脚底 fraction 0.9277/0.9486/0.9622/0.9622/0.9635；6 场景尺寸全对）；**目检仅 2/11** —— 两个人物锚（送关旧部 vs Ch16_01、守关老将 vs Ch15_05）均确认**同一张脸**且指定差异到位；**余 9 图待目检**
 
 【下波候选】
 
