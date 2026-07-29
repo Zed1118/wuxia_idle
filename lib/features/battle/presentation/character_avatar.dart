@@ -1094,9 +1094,8 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/yangguan_san_dizi.png',
   'assets/enemies/yangguan_xiliang_bazhu.png':
       'assets/enemies/yangguan_xiliang_bazhu.png',
-  // Ch19「旧路照人」武圣段首章(2026-07-28 章批):图待出(known_missing_assets 已登记),
-  // 脚底 fraction 暂走 `_ => 0.95` 默认,出图批按 alpha 包围盒实测再补本表下方映射。
-  // 注:接关人/守镜人是 Ch16 既有人物复出,出图时须以 Ch16 立绘作**人物锚**(非仅风格锚)。
+  // Ch19「旧路照人」武圣段首章(2026-07-28 章批·美术已接线):接关人/守镜人以 Ch16 立绘
+  // 作人物锚复出(非仅风格锚);脚底 fraction 见本文件下方映射表(alpha 包围盒实测)。
   'assets/enemies/jiulu_zhe_fan_ke.png': 'assets/enemies/jiulu_zhe_fan_ke.png',
   'assets/enemies/jiulu_liang_sha_ke.png':
       'assets/enemies/jiulu_liang_sha_ke.png',
@@ -1294,6 +1293,12 @@ double battleStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/yangguan_chengxia_houke.png' => 0.954,
   'assets/enemies/yangguan_san_dizi.png' => 0.934,
   'assets/enemies/yangguan_xiliang_bazhu.png' => 0.991,
+  // Ch19「旧路照人」(2026-07-28 美术批):alpha 包围盒实测登记。
+  'assets/enemies/jiulu_zhe_fan_ke.png' => 0.963,
+  'assets/enemies/jiulu_liang_sha_ke.png' => 0.994,
+  'assets/enemies/jiulu_ting_feng_ren.png' => 0.973,
+  'assets/enemies/jiulu_jieguan_ren.png' => 0.981,
+  'assets/enemies/jiulu_heishi_shoujing.png' => 0.981,
   WuxiaUi.battleGauntletSuWujiuStandee => 0.9681,
   WuxiaUi.battleGauntletQingyiGuardAStandee => 0.9571,
   WuxiaUi.battleGauntletQingyiGuardBStandee => 0.9642,
