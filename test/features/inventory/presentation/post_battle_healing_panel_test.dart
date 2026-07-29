@@ -85,10 +85,36 @@ void main() {
   );
 
   /// 泵 host 并给真 Isar `_load` 留真时钟窗口,随后泵出结果帧。
-  Future<void> pumpAndSettleReal(WidgetTester tester, {int rounds = 4}) async {
-    for (var i = 0; i < rounds; i++) {
+  ///
+  /// 两种模式:
+  /// - 不带 [until]:固定 [rounds]×30ms(负断言用——「隐藏」无法靠等待证明,
+  ///   只能给足加载窗口后断言不存在,维持旧语义)。
+  /// - 带 [until]:轮询到该 Finder 出现即返回,[timeout] 内等不到直接 fail。
+  ///   旧版对正断言也只给固定 4×30ms=120ms 墙钟预算,tap 后
+  ///   ItemUseService→真 Isar 写事务→provider invalidate→rebuild 链在慢
+  ///   CI runner 上会超预算(2026-07-28 PR #92 CI 随机红实锤),
+  ///   等「条件达成」而非「固定时长」才是对的。
+  Future<void> pumpAndSettleReal(
+    WidgetTester tester, {
+    int rounds = 4,
+    Finder? until,
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    if (until == null) {
+      for (var i = 0; i < rounds; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 30));
+        await tester.pump();
+      }
+      return;
+    }
+    final deadline = DateTime.now().add(timeout);
+    while (true) {
       await Future<void>.delayed(const Duration(milliseconds: 30));
       await tester.pump();
+      if (tester.any(until)) return;
+      if (DateTime.now().isAfter(deadline)) {
+        fail('pumpAndSettleReal 超时 ${timeout.inSeconds}s 未等到 $until');
+      }
     }
   }
 
@@ -97,7 +123,7 @@ void main() {
       await seedInjuredFounder();
       await seedPill(2);
       await tester.pumpWidget(host);
-      await pumpAndSettleReal(tester);
+      await pumpAndSettleReal(tester, until: find.text('战后疗伤'));
 
       expect(find.text('战后疗伤'), findsOneWidget);
       expect(find.text('疗伤丹 ×2'), findsOneWidget);
@@ -132,10 +158,10 @@ void main() {
       await seedInjuredFounder();
       await seedPill(2);
       await tester.pumpWidget(host);
-      await pumpAndSettleReal(tester);
+      await pumpAndSettleReal(tester, until: find.text('服用疗伤丹'));
 
       await tester.tap(find.text('服用疗伤丹'));
-      await pumpAndSettleReal(tester);
+      await pumpAndSettleReal(tester, until: find.text('伤者伤势稍平。'));
 
       expect(find.text('伤者伤势稍平。'), findsOneWidget);
       final item = await IsarSetup.instance.inventoryItems.getByDefId(
