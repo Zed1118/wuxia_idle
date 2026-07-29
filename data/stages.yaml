@@ -4702,6 +4702,267 @@ stages:
     sceneBackgroundPath: assets/scenes/battle_desert.png
     weather: clear
 
+
+  # === stage_20_01 · 旧驿东行(驿道从西头走回去 · 站里没人,灶是温的 · 灵巧)===
+  - id: stage_20_01
+    name: 旧驿东行
+    stageType: mainline
+    chapterIndex: 20
+    narrativeOpeningId: stage_20_01_opening
+    narrativeVictoryId: stage_20_01_victory
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_wuSheng_ruguan_huan_ma_ren
+        name: 换马人
+        realmTier: wuSheng
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 58200
+        baseAttack: 2000        # 攻轴钉死 2000(段级 canon·§12 定调 A:难度=机制参与+时长,不追威胁)
+        baseSpeed: 382
+        skillIds:
+          - skill_lingqiao_chuanshuo_basic
+          - skill_lingqiao_chuanshuo_skill   # 章首两招喘息(照 Ch16-19 体例)
+        iconPath: assets/enemies/ruguan_huan_ma_ren.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_shenwu_hun_yuan_chui
+        dropChance: 0.30                     # 神物第二批 5/11(章级拍板 5·within-tier 不再 1.0 保底)
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [81, 91]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1300, 1490]
+        dropChance: 1.0  # 银两(武圣段中章 · 承 Ch19 曲线续进)
+    baseExpReward: 86
+    difficultyMultiplier: 21.0
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: clear
+
+  # === stage_20_02 · 望关(烽燧下第一次望见阳关 · 三十年没点过火的守烽人 · 阴柔)===
+  - id: stage_20_02
+    name: 望关
+    stageType: mainline
+    chapterIndex: 20
+    prevStageId: stage_20_01
+    narrativeOpeningId: stage_20_02_opening
+    narrativeVictoryId: stage_20_02_victory
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_wuSheng_ruguan_shou_feng_ren
+        name: 守烽人
+        realmTier: wuSheng
+        realmLayer: shuLian
+        school: yinRou
+        baseHp: 58400
+        baseAttack: 2000
+        baseSpeed: 384
+        skillIds:
+          - skill_yinrou_chuanshuo_basic
+          - skill_yinrou_chuanshuo_skill   # 章首两招喘息
+        iconPath: assets/enemies/ruguan_shou_feng_ren.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_baowu_yin_yang_ci
+        dropChance: 1.0
+      - equipmentDefId: armor_shenwu_bing_can_yi
+        dropChance: 0.30                     # 神物第二批 6/11(armor)
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [82, 92]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1310, 1500]
+        dropChance: 1.0  # 银两(武圣段中章)
+    baseExpReward: 88
+    difficultyMultiplier: 21.2
+    biome: desert
+    sceneBackgroundPath: assets/scenes/battle_desert.png
+    weather: clear
+
+  # === stage_20_03 · 关下(补了一辈子墙的人 · 刚猛 · 03 起 ult 化)===
+  - id: stage_20_03
+    name: 关下
+    stageType: mainline
+    chapterIndex: 20
+    prevStageId: stage_20_02
+    narrativeOpeningId: stage_20_03_opening
+    narrativeVictoryId: stage_20_03_victory
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_wuSheng_ruguan_bu_qiang_jiang
+        name: 补墙匠
+        realmTier: wuSheng
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 58600
+        baseAttack: 2000
+        baseSpeed: 386
+        skillIds:
+          - skill_gangmeng_chuanshuo_basic
+          - skill_gangmeng_chuanshuo_skill
+          - skill_gangmeng_chuanshuo_ult     # 03 起 ult 化(照体例)·gangmeng 基础组 ult 全仓首用
+        iconPath: assets/enemies/ruguan_bu_qiang_jiang.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_baowu_bing_po_zhen
+        dropChance: 1.0
+      - equipmentDefId: accessory_baowu_zi_jin_hu_lu
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [83, 93]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1320, 1510]
+        dropChance: 1.0  # 银两(武圣段中章)
+    baseExpReward: 90
+    difficultyMultiplier: 21.4
+    biome: cityWall
+    sceneBackgroundPath: assets/scenes/battle_citywall.png
+    weather: clear
+
+  # === stage_20_04 · 接程(16_01 送关旧部复出 · 刚猛章中 Boss · 章中首带 vulnerability = 段级「复合化」台阶)===
+  # 反向对称:Ch16 他在驿道尽头「送最后一程」(stage_16_01_opening:3「替关里送出去的人,数不清了」);
+  # 这一次他告了三十年来头一个假,离站东行,在关下等着「接第一程」——送了一辈子,接,是头一回。
+  # 机制注:章中 Boss 首带 vuln 0.18(Ch19 章中只 chargeCounter),兑现段级拍板 7A「复合方向」+ §12 定调 A;
+  # 值待探针校准(readable_first_clear 残血/动作行,不预钉死)。
+  - id: stage_20_04
+    name: 接程
+    stageType: mainline
+    chapterIndex: 20
+    prevStageId: stage_20_03
+    narrativeOpeningId: stage_20_04_opening
+    narrativeVictoryId: stage_20_04_victory
+    narrativeDefeatId: stage_20_04_defeat
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_wuSheng_ruguan_songguan_jiubu
+        name: 送关旧部
+        realmTier: wuSheng
+        realmLayer: jingTong
+        school: gangMeng   # 沿 Ch16 enemy_zongShi_liangzhouci_songguan_jiubu 既定 school(人物连续性)
+        baseHp: 58800
+        baseAttack: 2000
+        baseSpeed: 388
+        skillIds:
+          - skill_gangmeng_chuanshuo_nei_basic
+          - skill_gangmeng_chuanshuo_nei_skill
+          - skill_gangmeng_chuanshuo_nei_ult   # 章中 Boss chargeSkill(nei 内功变体 = 老卒沉桩语义)·nei 组全仓首用
+        iconPath: assets/enemies/ruguan_songguan_jiubu.png
+        isBoss: true
+        chargeSkillId: skill_gangmeng_chuanshuo_nei_ult  # 章中 Boss 无 dropSkillManualId(真解归末 Boss),不构成双用约束
+        vulnerability:
+          outOfWindowDamageMult: 0.18   # 章中 Boss 主线首带 vuln(Ch19 章中无):复合化第一级,
+                                        # 介于 Ch17 教学 0.20 与 Ch18 收官 0.12 之间,窗口语义=破招/蓄招/相位。
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.9   # 照 16_05/17_05/18_04/19_04 已校准先例,保 nearMax 首发即开窗
+            unlockSkillIds:
+              - skill_gangmeng_chuanshuo_nei_ult
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+          - hpThresholdPct: 0.5
+            unlockSkillIds:
+              - skill_gangmeng_chuanshuo_nei_skill
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: accessory_shenwu_she_li_zhu
+        dropChance: 0.30                     # 神物第二批 7/11(accessory)
+      - equipmentDefId: armor_baowu_wu_jin_zhan_jia
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [84, 94]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1370, 1580]
+        dropChance: 1.0  # 银两(武圣章中 Boss)
+    baseExpReward: 110
+    difficultyMultiplier: 21.6
+    biome: cityWall
+    sceneBackgroundPath: assets/scenes/battle_citywall.png
+    weather: clear
+
+  # === stage_20_05 · 孤城开(Ch15_05 守关老将复出 · 阴柔末 Boss · 交账开门 = 章眼 · 敌层 yuanShu = cap 47 同层)===
+  # 反向对称:Ch15 他「称过才放行」西出的人(stage_15_05_opening:3),真解掉的是「孤城闭」——落闩的功夫;
+  # chapter_15:16 早写死「关是朝廷的关,门却为走得出去的人开。老夫守到今日,守的就是这一开」——
+  # 本关兑现那「一开」:东归者交账(「替老夫看一眼西边如今的样子」chapter_15:20),他把开门的功夫使全,
+  # 真解「孤城开」与 Ch15「孤城闭」成对收束。几十年前放走背剑少年(李寒)没等到人回来的账,也在此销。
+  # 敌招注:yinrou_chuanshuo_fang 组 = 闩/守语义(此前仅 Ch6 用过);老将 school 沿 Ch15 yinRou 不改。
+  - id: stage_20_05
+    name: 孤城开
+    stageType: mainline
+    chapterIndex: 20
+    prevStageId: stage_20_04
+    narrativeOpeningId: stage_20_05_opening
+    narrativeVictoryId: stage_20_05_victory
+    narrativeDefeatId: stage_20_05_defeat
+    requiredRealm: wuSheng
+    dropSkillManualId: skill_gu_cheng_kai  # 真解新写(段级拍板 5A):守关老将「开门的功夫」·与 chargeSkillId 同招双用·破招首通 markUnlocked
+    enemyTeam:
+      - id: enemy_wuSheng_ruguan_shouguan_laojiang
+        name: 守关老将
+        realmTier: wuSheng
+        realmLayer: yuanShu     # = cap 47 同层(照 Ch18/Ch19 末 Boss = cap 同层体例)
+        school: yinRou          # 沿 Ch15 enemy_jueDing_guanshanyicheng_shouguan_laojiang 既定 school
+        baseHp: 59000           # 武圣段中章末 Boss(段级 §7 三章 58000→59000→59500 分配中点·<60000 硬线)
+        baseAttack: 2000        # 攻轴上限已用尽,难度全走机制层
+        baseSpeed: 390
+        skillIds:
+          - skill_yinrou_chuanshuo_fang_basic
+          - skill_yinrou_chuanshuo_fang_skill
+          - skill_yinrou_chuanshuo_fang_ult
+          - skill_gu_cheng_kai              # 本命真解 = 末Boss chargeSkill(双用 canon·红线① chargeSkillId ∈ skillIds)
+        iconPath: assets/enemies/ruguan_shouguan_laojiang.png
+        isBoss: true
+        chargeSkillId: skill_gu_cheng_kai   # 破招:玩家拦截,首通掉同招真解
+        vulnerability:
+          outOfWindowDamageMult: 0.12   # 承 Ch19 末 0.15 收一档(= Ch18 收官档);段中章不破新低,
+                                        # 新台阶继续交给 cycleVulnerability 周目轴。
+        cycleVulnerability:
+          2:
+            outOfWindowDamageMult: 0.06   # 周目加压第二章(Ch19 首用 0.08 → 本章 0.06):
+                                          # 二周目起窗口收窄,不影响首通难度曲线。
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.9   # 首窗照 16_05/17_05/18_05/19_05 校准先例(不取塔的 0.80)
+            unlockSkillIds:
+              - skill_gu_cheng_kai
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+          - hpThresholdPct: 0.5
+            unlockSkillIds:
+              - skill_yinrou_chuanshuo_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_shenwu_huan_meng_bian
+        dropChance: 0.30                     # 神物第二批 8/11(weapon)= 本章 4 件收齐(余 3 件恰给 Ch21)
+      - equipmentDefId: weapon_baowu_xue_lian_bian
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_can_si_ruan_jia
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [85, 95]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1500, 1730]
+        dropChance: 1.0  # 银两(武圣章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(武圣章末)
+    baseExpReward: 131
+    difficultyMultiplier: 21.8
+    biome: cityWall
+    sceneBackgroundPath: assets/scenes/battle_citywall.png
+    weather: clear
+
   # ============================================================================
   # 心魔境 7 关（1.0 P2.2 §12.1 · stageType: innerDemon）
   # ----------------------------------------------------------------------------

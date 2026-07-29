@@ -3034,6 +3034,36 @@ skills:
         jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
         huaJing: { cooldown_delta: -1 }
 
+
+  - id: skill_gu_cheng_kai
+    name: 孤城开
+    description: 守关老将守了几十年的另一半功夫。落闩的一手江湖都称过,开门的一手,只使给走得回来的人看——门开的那一线,先破后立,退无可退。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 7400
+    qiDelta: -30
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: gate_seal
+    source: mainline_drop
+    style: yinRou
+    tier: 7
+    # 2026-07-28 Ch20「东入阳关」末Boss 守关老将本命真解 —— 新写(段级拍板 5A + 章级拍板 4 订正):
+    # ① 与 Ch15 真解「孤城闭」(skill_gu_cheng_bi)成对:chapter_15:16「关是朝廷的关,门却为
+    #    走得出去的人开。老夫守到今日,守的就是这一开」—— 真解名与开门语义均为既有 canon 自生长,
+    #    非新编设定;visualEffect 沿 gate_seal 同族。
+    # ② powerMultiplier 7400:canon 预留档(skill_yi_jing_shuang_zhao 注②「留 Ch20/21 各一档
+    #    (候选 7400 / 7800)」),tier7 招 cap 8000 = §5.4 全局硬红线,Ch21 只余 7800 一档。
+    # ③ style yinRou 沿守关老将 Ch15 既定 school(enemy_jueDing_guanshanyicheng_shouguan_laojiang),
+    #    人物连续性优先;与末 Boss chargeSkillId 双用 canon 自洽。
+    # ④ 已登记进 wave_b standaloneBossManualIds 白名单(独立末Boss真解不进 2/2/2 配平池)。
+    proficiency:        # 真解手工高半档(阴柔向:伤害温和 + CD),沿 yang_guan/yi_jing 体例
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
+
   # ─── 塔残页 ×6(Boss 层 5/10/15/20/25/30 每胜概率掉)───
 
   - id: skill_kai_bei_shou

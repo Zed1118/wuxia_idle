@@ -185,6 +185,7 @@ void main() {
       // 章级拍板 3A)。与前几章不同——tier7 drop 招此前全仓 0 门,无可收编对象故新写;
       // style yinRou 沿守镜人 Ch16 既定 school,不在此登记会把 yinRou 侧顶到 3 破 2/2/2。
       'skill_yi_jing_shuang_zhao',
+      'skill_gu_cheng_kai',
     };
 
     // mount_deferred 招不在发布内容内,不参与配平(2026-07-23 Ch14 收编 shi_dang
