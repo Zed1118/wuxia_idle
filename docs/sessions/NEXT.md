@@ -1,4 +1,5 @@
-> 交接时间：2026-07-29 16:30 · HEAD `0af07aaa`（main，ahead origin 1，**未 push**）
+> 交接时间：2026-07-29 16:30 · 内容 HEAD `fa3118de`（codex 的 PROGRESS 收账）+ 本次 handoff docs commit
+> · main **ahead origin，未 push**（本会话被禁止 push main）· 实际 sha 请现跑 `git rev-parse --short HEAD` 确认，勿信本行转抄
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
@@ -16,7 +17,7 @@ Ch20 三 PR 已由 codex 审查合并进 main；Ch21「绝顶交程」主线终�
    + reference_codex_image_gen_art_pipeline（美术批配方）
 
 【环境快照】（2026-07-29 16:30 主 checkout 现测）
-- main HEAD `0af07aaa`（本会话 main +1 docs commit，**未 push**；sha 由 `git rev-parse --short HEAD` 现跑）
+- main 内容 HEAD `fa3118de` + 本次 handoff docs commit（**未 push**）；**新会话必自跑 `git rev-parse --short HEAD` 取真值**，本行不写死 sha 防 amend/rebase 漂移
 - 主 checkout `flutter analyze --no-pub` **EXIT=0 · No issues found**（4.9s）
 - 主 checkout **全量 4713 pass / 0 fail · EXIT=0**（`[E]` 0 · 10m01s；慢因 codex 美术批抢 CPU）
 - main 主线 **20 章 100 关 / cap 47**（Ch21 在 PR #96 未合）
