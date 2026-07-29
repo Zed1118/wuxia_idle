@@ -40,20 +40,6 @@
 
 #
 # ── Ch18 宗师段收官章「阳关故人」立绘已补齐(2026-07-27·codex image_gen)──
-# 全表再次归零:standee 门禁自动恢复全量把关(asset_audit guard 2 双向棘轮)。
 #
-# ── Ch19 武圣段首章「旧路照人」待补美术(2026-07-28 章批·codex image_gen 另出图)──
-# 敌人立绘(5)
-assets/enemies/jiulu_zhe_fan_ke.png
-assets/enemies/jiulu_liang_sha_ke.png
-assets/enemies/jiulu_ting_feng_ren.png
-assets/enemies/jiulu_jieguan_ren.png
-assets/enemies/jiulu_heishi_shoujing.png
-# 章节封面(1)
-assets/scenes/chapter_19_cover.png
-# 主线剧情阅读背景(5)
-assets/scenes/narrative_stage_19_01.png
-assets/scenes/narrative_stage_19_02.png
-assets/scenes/narrative_stage_19_03.png
-assets/scenes/narrative_stage_19_04.png
-assets/scenes/narrative_stage_19_05.png
+# ── Ch19 武圣段首章「旧路照人」立绘已补齐(2026-07-28·codex image_gen)──
+# 全表再次归零:standee 门禁自动恢复全量把关(asset_audit guard 2 双向棘轮)。
