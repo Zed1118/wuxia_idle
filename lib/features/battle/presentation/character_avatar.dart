@@ -1105,10 +1105,11 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/jiulu_jieguan_ren.png',
   'assets/enemies/jiulu_heishi_shoujing.png':
       'assets/enemies/jiulu_heishi_shoujing.png',
-  // Ch20「东入阳关」武圣段中章(2026-07-28 章批):图待出(known_missing_assets 已登记),
-  // 脚底 fraction 暂走 `_ => 0.95` 默认,出图批按 alpha 包围盒实测再补本表下方映射。
-  // 注:送关旧部/守关老将是 Ch16_01/Ch15_05 既有人物复出,出图时须以
-  // liangzhou_songguan_jiubu.png / guanshan_shouguan_laojiang.png 作**人物锚**(非仅风格锚)。
+  // Ch20「东入阳关」武圣段中章(2026-07-28 章批·2026-07-29 美术已接线):
+  // 脚底 fraction 见本文件下方映射表(alpha 包围盒实测)。
+  // 送关旧部/守关老将是 Ch16_01/Ch15_05 既有人物复出,出图已以
+  // liangzhou_songguan_jiubu.png / guanshan_shouguan_laojiang.png 作**人物锚**,
+  // 目检确认与锚图同一张脸(送关旧部新白布被风吹直 / 守关老将刀暗沉如门闩、刀尖下垂)。
   'assets/enemies/ruguan_huan_ma_ren.png':
       'assets/enemies/ruguan_huan_ma_ren.png',
   'assets/enemies/ruguan_shou_feng_ren.png':
@@ -1327,6 +1328,14 @@ double battleStandeeFootFraction(String? path) => switch (path) {
   'assets/enemies/jiulu_ting_feng_ren.png' => 0.973,
   'assets/enemies/jiulu_jieguan_ren.png' => 0.981,
   'assets/enemies/jiulu_heishi_shoujing.png' => 0.981,
+  // Ch20「东入阳关」(2026-07-29 美术批):alpha 包围盒实测登记(PIL 逐图现测,非采信出图端自报)。
+  // 送关旧部 0.9277 明显低于同批其余四张(0.9486-0.9635),是其 alpha 包围盒底沿实测值
+  // (bbox=(40,86,1003,1425) / 1536)——本表存在的意义就是吸收这种逐图差异,勿手改成「看着齐」。
+  'assets/enemies/ruguan_huan_ma_ren.png' => 0.9486,
+  'assets/enemies/ruguan_shou_feng_ren.png' => 0.9635,
+  'assets/enemies/ruguan_bu_qiang_jiang.png' => 0.9622,
+  'assets/enemies/ruguan_songguan_jiubu.png' => 0.9277,
+  'assets/enemies/ruguan_shouguan_laojiang.png' => 0.9622,
   WuxiaUi.battleGauntletSuWujiuStandee => 0.9681,
   WuxiaUi.battleGauntletQingyiGuardAStandee => 0.9571,
   WuxiaUi.battleGauntletQingyiGuardBStandee => 0.9642,
