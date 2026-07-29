@@ -1,6 +1,9 @@
 # 新会话开局提示词
 
-**交接时间：** 2026-07-29 23:14 · **HEAD：** `5f049a79`（用 `git rev-parse --short HEAD` 自验；不符先报偏差）
+**交接时间：** 2026-07-29 23:14 · **代码态锚点：** `5f049a79`
+
+> 锚的是**代码态**不是 HEAD：`5f049a79` 之后只有 NEXT.md 自身的 docs commit，`lib/`/`data/`/`test/` 零改动。
+> 开局请 `git rev-parse --short HEAD` 自验——只要 `git diff --stat 5f049a79..HEAD -- lib data test` 为空即无漂移。
 
 ---
 
@@ -21,7 +24,7 @@
    + feedback_visual_score_first_pass_underestimate（视觉打分首轮系统性低估）
 
 【环境快照】（全部 2026-07-29 23:0x 主 checkout 实测，非转抄）
-- HEAD `5f049a79`（本会话 18 commit，**已全部 push**）
+- 代码态锚点 `5f049a79`（本会话 18 commit + 2 个 docs commit，**已全部 push**）
 - 主 checkout `flutter analyze --no-pub` **EXIT=0 · No issues found**（4.4s）
 - 主 checkout 全量 **4719 pass / 0 fail · EXIT=0**（`[E]` 0 · 失败行 0 · 6m11s）
 - 主线 **21 章 105 关 / cap 49 封顶**；飞升条件③ 首次可达（系统早已实装，只差 cap）
