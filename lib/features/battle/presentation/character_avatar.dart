@@ -1339,6 +1339,12 @@ double battleStandeeFootFraction(String? path) => switch (path) {
   // Ch21「绝顶交程」主线终章(2026-07-29 美术批):alpha 包围盒实测登记(PIL 逐图现测)。
   // 五张人像纵向占比收敛在 1374-1415px 窄带(摆渡老手首版只占 1127px、比同批矮两成,
   // 已退回重构图修正),故本章无需再上 `_stageStandeeOpticalProfile` 的 scale 补偿。
+  // 2026-07-30 真机战斗屏目检补记:`jueding_lunjian_houren` 曾**左脚整只(含鞋尖)悬空**、
+  // 与落地的右脚差 164px(=其身高纵跨 1394 的 10.7%),违「脚完整踩在同一水平面上」。
+  // 已返修(后脚只抬跟、脚尖仍着地,双脚最低点差降到 10px),**脚底 fraction 实测仍 0.9603
+  // 故本表零改动**。此类缺陷 `battle_standee_asset_role_test` 逮不到——九判据只验 alpha
+  // 包围盒**底沿**,单脚悬空不改底沿;且已实测存量 75 张里 30 张底部高差 >120px 全是
+  // 前后脚透视深度差(前脚更近故在画布上更低)而非悬空,该几何量不具判别力,不可自动化。
   'assets/enemies/jueding_guan_he_zu.png' => 0.9596,
   'assets/enemies/jueding_bai_du_lao_shou.png' => 0.9473,
   'assets/enemies/jueding_lunjian_houren.png' => 0.9603,
