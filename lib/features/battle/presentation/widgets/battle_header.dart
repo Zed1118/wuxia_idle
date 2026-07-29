@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../data/defs/stage_win_condition.dart';
 import '../../domain/battle_log.dart';
 import '../../domain/battle_state.dart';
 import '../../domain/enum_localizations.dart';
@@ -10,6 +11,14 @@ import '../../../help/domain/help_topic.dart';
 import '../../../help/presentation/context_help_button.dart';
 import '../battle_layout_tokens.dart';
 import '../battle_typography_tokens.dart';
+
+/// surviveTicks 型胜负条件的需撑拍数；非该型（含未配 winCondition）返回 null，
+/// 调用点据此整行不渲染 —— 前 20 章全是 defeatAll 型，零影响。
+int? _surviveRequired(BattleState state) {
+  final wc = state.winCondition;
+  if (wc == null || wc.type != StageWinConditionType.surviveTicks) return null;
+  return wc.surviveTicksRequired;
+}
 
 class Header extends StatelessWidget {
   final BattleState state;
@@ -114,6 +123,31 @@ class Header extends StatelessWidget {
                       fontFeatures: BattleTypography.tabularFigures,
                     ),
                   ),
+                  // surviveTicks 型胜负条件的条件条(2026-07-29 Ch21 主线首用补)。
+                  // 不配 winCondition 或 defeatAll 型时整行不渲染,前 20 章零影响。
+                  if (_surviveRequired(state) case final int required)
+                    Text(
+                      state.tick >= required
+                          ? UiStrings.surviveConditionMet(required)
+                          : UiStrings.surviveConditionRemaining(
+                              required,
+                              required - state.tick,
+                            ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: state.tick >= required
+                            ? WuxiaColors.resultHighlight
+                            : const Color(0xFFBFAE8D),
+                        fontFamilyFallback: BattleTypography.uiFallback,
+                        fontSize: BattleTypography.t5,
+                        letterSpacing: 1,
+                        fontWeight: state.tick >= required
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                        fontFeatures: BattleTypography.tabularFigures,
+                      ),
+                    ),
                 ],
               ),
             ),

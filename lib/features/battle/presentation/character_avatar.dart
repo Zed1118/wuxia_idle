@@ -1119,6 +1119,20 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/ruguan_songguan_jiubu.png',
   'assets/enemies/ruguan_shouguan_laojiang.png':
       'assets/enemies/ruguan_shouguan_laojiang.png',
+  // Ch21「绝顶交程」武圣段收官 = 主线终章(2026-07-29 章批):图待出
+  // (known_missing_assets 已登记),脚底 fraction 暂走 `_ => 0.95` 默认,
+  // 出图批按 alpha 包围盒实测再补本表下方映射。
+  // 注:五人全为新人物,无人物锚;风格锚取 Ch19/Ch20 同段立绘。
+  'assets/enemies/jueding_guan_he_zu.png':
+      'assets/enemies/jueding_guan_he_zu.png',
+  'assets/enemies/jueding_bai_du_lao_shou.png':
+      'assets/enemies/jueding_bai_du_lao_shou.png',
+  'assets/enemies/jueding_lunjian_houren.png':
+      'assets/enemies/jueding_lunjian_houren.png',
+  'assets/enemies/jueding_lan_jing_lao_pu.png':
+      'assets/enemies/jueding_lan_jing_lao_pu.png',
+  'assets/enemies/jueding_xun_fu_shaonian.png':
+      'assets/enemies/jueding_xun_fu_shaonian.png',
   'assets/enemies/enemy_gauntlet_su_wujiu.png':
       WuxiaUi.battleGauntletSuWujiuStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':

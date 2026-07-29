@@ -17,7 +17,10 @@ const _towerBossFloors = [5, 10, 15, 20, 25, 30];
 ///
 /// 主线：遍历 GameRepository.stageDefs 中 isBossStage=true 的关卡。
 /// 爬塔：固定层 [5,10,15,20,25,30]。
-/// 总计约 27 条（21 主线 + 6 塔）。
+/// 总计 = 主线 isBossStage 关数 + 6 个塔层。**不在此硬写条数**——主线每扩一章 +2，
+/// 旧注写死的「27 条（21 主线 + 6 塔）」自 Ch13 起已连续多章 drift（2026-07-29 现测
+/// 主线 isBossStage 含心魔 7 / 群战 1 / 轻功 1，实际远超该值）；真值以
+/// `boss_memory_providers_test` 的实测断言为准。
 ///
 /// 供主屏（T8）join BossMemory 显已击败 / 占位；catalog 自身不含 bossName（锁定态不剧透）。
 @Riverpod(dependencies: [])

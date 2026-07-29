@@ -4963,6 +4963,282 @@ stages:
     sceneBackgroundPath: assets/scenes/battle_citywall.png
     weather: clear
 
+  # ==========================================================================
+  # Ch21「绝顶交程」· 武圣段收官 = 主线终章(2026-07-29)
+  # --------------------------------------------------------------------------
+  # 关序由 Ch20 章尾写死:「往东，官道通向中原腹地。潼关，黄河，嵩山——来路的
+  # 最后一段，一程一程铺回山门去。」末关回 Ch13_05「绝顶平台」同一处(biome
+  # mountainForest 沿 Ch13_05 不改),石下压着 Ch14 留的凉铜符。
+  # 敌招零新增(段级拍板 4A):21_05 独占 tier7 仅存闲置组 lingqiao_chuanshuo_fang
+  # ×3(全仓首用);21_04 chargeSkill 复用 gangmeng_chuanshuo_ult(Ch20 20_03 已用)。
+  # 末 Boss school = lingQiao:由招池(闲置招全 lingQiao)与段级 §13 硬约束
+  # (禁 yinRou,打破 18_04/18_05/19_05/20_05 连续四关 yinRou)双重锁定。
+  # ==========================================================================
+
+  # === stage_21_01 · 潼关(东归第一程 · 出中原的那道门,今日从外面进来 · 刚猛)===
+  - id: stage_21_01
+    name: 潼关
+    stageType: mainline
+    chapterIndex: 21
+    narrativeOpeningId: stage_21_01_opening
+    narrativeVictoryId: stage_21_01_victory
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_wuSheng_jueding_guan_he_zu
+        name: 关河卒
+        realmTier: wuSheng
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 59100
+        baseAttack: 2000        # 攻轴钉死 2000(段级 canon·§12 定调 A)
+        baseSpeed: 392
+        skillIds:
+          - skill_gangmeng_chuanshuo_basic
+          - skill_gangmeng_chuanshuo_skill   # 章首两招喘息(照 Ch16-20 体例)
+        iconPath: assets/enemies/jueding_guan_he_zu.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: weapon_baowu_yin_yang_ci
+        dropChance: 1.0                      # 保底宝物(照 Ch19_02/Ch20_02 同款):补齐「每关至少一件装备」体例,
+                                             # 此前 21_01 是武圣段唯一零装备关(2026-07-29 复核补)
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [86, 96]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1520, 1750]
+        dropChance: 1.0  # 银两(武圣收官章 · 承 Ch20 曲线续进)
+    baseExpReward: 92
+    difficultyMultiplier: 22.0
+    biome: cityWall
+    sceneBackgroundPath: assets/scenes/battle_citywall.png
+    weather: clear
+
+  # === stage_21_02 · 黄河渡(沿 Ch5_03 义渡 / Ch6_03 之源同一条河 · 阴柔)===
+  - id: stage_21_02
+    name: 黄河渡
+    stageType: mainline
+    chapterIndex: 21
+    prevStageId: stage_21_01
+    narrativeOpeningId: stage_21_02_opening
+    narrativeVictoryId: stage_21_02_victory
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_wuSheng_jueding_bai_du_lao_shou
+        name: 摆渡老手
+        realmTier: wuSheng
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 59200
+        baseAttack: 2000
+        baseSpeed: 394
+        skillIds:
+          - skill_yinrou_chuanshuo_basic
+          - skill_yinrou_chuanshuo_skill   # 章首两招喘息
+        iconPath: assets/enemies/jueding_bai_du_lao_shou.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: accessory_shenwu_tian_yuan_zhi
+        dropChance: 0.30                     # 神物第三批 9/11(accessory)
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [87, 97]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1530, 1760]
+        dropChance: 1.0  # 银两(武圣收官章)
+    baseExpReward: 94
+    difficultyMultiplier: 22.2
+    biome: dock
+    sceneBackgroundPath: assets/scenes/battle_dock.png
+    weather: clear
+
+  # === stage_21_03 · 嵩山旧坪(= Ch5_04「中州论剑」同一处论剑坪 · biome drillGround 沿旧 · 灵巧 · 03 起 ult 化)===
+  - id: stage_21_03
+    name: 嵩山旧坪
+    stageType: mainline
+    chapterIndex: 21
+    prevStageId: stage_21_02
+    narrativeOpeningId: stage_21_03_opening
+    narrativeVictoryId: stage_21_03_victory
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_wuSheng_jueding_lunjian_houren
+        name: 论剑后人
+        realmTier: wuSheng
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 59300
+        baseAttack: 2000
+        baseSpeed: 396
+        skillIds:
+          - skill_lingqiao_chuanshuo_basic
+          - skill_lingqiao_chuanshuo_skill
+          - skill_lingqiao_chuanshuo_ult   # ult 化起点(闲置基础组 ult·全仓首用)
+        iconPath: assets/enemies/jueding_lunjian_houren.png
+    isBossStage: false
+    dropTable:
+      - equipmentDefId: armor_shenwu_tian_can_bao_jia
+        dropChance: 0.30                     # 神物第三批 10/11(armor)
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [88, 98]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1540, 1770]
+        dropChance: 1.0  # 银两(武圣收官章)
+    baseExpReward: 96
+    difficultyMultiplier: 22.4
+    biome: drillGround
+    sceneBackgroundPath: assets/scenes/battle_drillground.png
+    weather: clear
+
+  # === stage_21_04 · 樵径(Ch13 prologue「被草埋了半截的樵径」同一条 · 刚猛章中 Boss)===
+  # 机制注:vuln 0.16 承 Ch20 20_04 的 0.18 收一档(逐章收紧曲线 0.20→0.18→0.16);
+  # chargeSkill 复用 gangmeng_chuanshuo_ult 不新增招(段级拍板 4A)。
+  - id: stage_21_04
+    name: 樵径
+    stageType: mainline
+    chapterIndex: 21
+    prevStageId: stage_21_03
+    narrativeOpeningId: stage_21_04_opening
+    narrativeVictoryId: stage_21_04_victory
+    narrativeDefeatId: stage_21_04_defeat
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_wuSheng_jueding_lan_jing_lao_pu
+        name: 拦径老仆
+        realmTier: wuSheng
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 59400
+        baseAttack: 2000
+        baseSpeed: 398
+        skillIds:
+          - skill_gangmeng_chuanshuo_basic
+          - skill_gangmeng_chuanshuo_skill
+          - skill_gangmeng_chuanshuo_ult
+        iconPath: assets/enemies/jueding_lan_jing_lao_pu.png
+        isBoss: true
+        chargeSkillId: skill_gangmeng_chuanshuo_ult  # 章中 Boss 无 dropSkillManualId(真解归末 Boss)
+        vulnerability:
+          outOfWindowDamageMult: 0.16   # 承 Ch20 章中 0.18 收一档;窗口语义=破招/蓄招/相位
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.9   # 照 16_05..20_04 已校准先例,保 nearMax 首发即开窗
+            unlockSkillIds:
+              - skill_gangmeng_chuanshuo_ult
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+          - hpThresholdPct: 0.5
+            unlockSkillIds:
+              - skill_gangmeng_chuanshuo_skill
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: armor_baowu_wu_jin_zhan_jia
+        dropChance: 0.40                     # 章中 Boss 副件(照 Ch19_04/Ch20_04 同款同概率)。
+                                             # 孔雀翎 2026-07-29 复核后挪去 21_05 末 Boss:武圣段前两章末 Boss
+                                             # (19_05 昆仑佩 / 20_05 幻梦鞭)均掉神物,主线终章末 Boss 不该独缺。
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [89, 99]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1560, 1790]
+        dropChance: 1.0  # 银两(武圣章中 Boss)
+    baseExpReward: 112
+    difficultyMultiplier: 22.6
+    biome: mountainPath
+    sceneBackgroundPath: assets/scenes/battle_mountainpath.png
+    weather: clear
+
+  # === stage_21_05 · 绝顶平台(= Ch13_05 同一处 · 灵巧末 Boss · 交程 = 章眼 · 敌层 dengFeng = cap 49 同层)===
+  # 主线终关。Ch14「符面向着来路,等下一个走得上来的人」在此兑现:那个人到了。
+  # 玩家坐在候峰翁当年的位置上,要做的不是赢,是「把路守成活的」(chapter_13:12)——
+  # 故胜负条件换轴:surviveTicks(段级拍板 B·主线首用)。撑满即胜,不必击败少年。
+  # 真解「山外无山」与 Ch13 候峰翁「一览众山」严格成对(4800 → 7800),
+  # 兑现 chapter_14:8「绝顶之上没有更高的山了,可有比山更远的东西」。
+  - id: stage_21_05
+    name: 绝顶平台
+    stageType: mainline
+    chapterIndex: 21
+    prevStageId: stage_21_04
+    narrativeOpeningId: stage_21_05_opening
+    narrativeVictoryId: stage_21_05_victory
+    narrativeDefeatId: stage_21_05_defeat
+    requiredRealm: wuSheng
+    dropSkillManualId: skill_shan_wai_wu_shan  # 真解新写(段级拍板 5A):少年本命·与 chargeSkillId 同招双用·破招首通 markUnlocked
+    winCondition:
+      type: surviveTicks
+      ticks: 10                  # 主线首用(此前仅心魔 07)。**已探针校准**(2026-07-29·15750 场):
+                                 # 「击败」与「撑满」任一即胜(default_ground_strategy:101 既有语义,
+                                 # 同心魔 07),故调高 ticks 不会让战斗更长,只会让更少人走到「守住」
+                                 # 结局 —— 而本章题眼正是「不必赢」。实测纯击败耗时中位数
+                                 # 欠配 20 / 标准 13 / 满配 6 拍,取 10 得:欠配 100% · 标准 96% ·
+                                 # 满配 0% 走守住路线 —— 只有刻意满配的玩家会把少年打趴
+                                 # (守 §5.4「满配秒杀=有意爽感」),正常玩家都拿到题眼结局。
+                                 # 原设 18 经实测只有欠配 72%/标准 2% 命中,已废。
+    enemyTeam:
+      - id: enemy_wuSheng_jueding_xun_fu_shaonian
+        name: 循符少年
+        realmTier: wuSheng
+        realmLayer: dengFeng    # = cap 49 同层(照 Ch18/19/20 末 Boss = cap 同层体例·49 为绝对终点)
+        school: lingQiao        # 段级 §13 硬约束(禁 yinRou)+ tier7 闲置招池双重锁定
+        baseHp: 59500           # 段级 §7 预算终点(三章 58000→59000→59500)·<60000 硬线
+        baseAttack: 2000        # 攻轴上限已用尽,难度全走机制层
+        baseSpeed: 400
+        skillIds:
+          - skill_lingqiao_chuanshuo_fang_basic
+          - skill_lingqiao_chuanshuo_fang_skill
+          - skill_lingqiao_chuanshuo_fang_ult
+          - skill_shan_wai_wu_shan          # 本命真解 = 末Boss chargeSkill(双用 canon·红线① chargeSkillId ∈ skillIds)
+        iconPath: assets/enemies/jueding_xun_fu_shaonian.png
+        isBoss: true
+        chargeSkillId: skill_shan_wai_wu_shan   # 破招:玩家拦截,首通掉同招真解
+        vulnerability:
+          outOfWindowDamageMult: 0.10   # 承 Ch20 末 0.12 收一档(逐章 0.20→0.15→0.12→0.10)
+        cycleVulnerability:
+          2:
+            outOfWindowDamageMult: 0.05   # = §5.4 承伤乘子下界本身,收官到底不再有下一档
+                                          # (周目轴 Ch19 0.08 → Ch20 0.06 → 本章 0.05 触底)
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.9
+            unlockSkillIds:
+              - skill_shan_wai_wu_shan
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+          - hpThresholdPct: 0.5
+            unlockSkillIds:
+              - skill_lingqiao_chuanshuo_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+    isBossStage: true
+    dropTable:
+      - equipmentDefId: weapon_shenwu_kong_que_ling
+        dropChance: 0.30                     # 神物第三批 11/11 = 全 11 件投放收口清零。
+                                             # 落末 Boss(自 21_04 挪来)与 19_05/20_05 末 Boss 掉神物体例对齐。
+      - equipmentDefId: weapon_baowu_xue_lian_bian
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_can_si_ruan_jia
+        dropChance: 0.50                     # 末 Boss 副件(照 Ch19_05/Ch20_05 同款同概率)
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [90, 100]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [1580, 1820]
+        dropChance: 1.0  # 银两(武圣章末 Boss)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.30  # 经验丹大档(武圣章末)
+    baseExpReward: 136
+    difficultyMultiplier: 22.8
+    biome: mountainForest
+    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
+    weather: clear
+
   # ============================================================================
   # 心魔境 7 关（1.0 P2.2 §12.1 · stageType: innerDemon）
   # ----------------------------------------------------------------------------

@@ -127,7 +127,15 @@ ProgressionBattleRun runProgressionMainlineStage({
     stage.enemyTeam,
     readableFirstClearTuning: true,
   );
-  final initial = BattleState.initial(leftTeam: players, rightTeam: enemies);
+  // 2026-07-29 修正:此前未透传 stage.winCondition,探针与生产分叉——凡配了
+  // surviveTicks 的关(Ch21_05 主线首用),探针测的是「打死 Boss 要多少拍」而非
+  // 真实战斗时长。校准该类关卡前必须让探针与生产同路。未配 winCondition 的
+  // 104 关行为不变(null → defeatAll 语义)。
+  final initial = BattleState.initial(
+    leftTeam: players,
+    rightTeam: enemies,
+    winCondition: stage.winCondition,
+  );
   final terminal = defaultGroundStrategy.runToEnd(
     initial,
     repository.numbers,

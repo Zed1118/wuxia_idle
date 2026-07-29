@@ -32,6 +32,20 @@ class UiStrings {
       '战斗 $leftAlive v $rightAlive';
 
   static const String tickPrefix = '节拍';
+
+  // ── surviveTicks 型胜负条件的玩家可见面(2026-07-29 Ch21 主线首用补) ──
+  // 此前该条件只有战斗逻辑(schema + strategy 逐 tick 判定),表现层零呈现:
+  // 玩家看到的是「打不死的对手忽然赢了」。心魔 07 靠独立呈现路径兜底,主线不可复用。
+  /// 战斗顶栏条件条：`守住 N 拍 · 还差 M`。M 为剩余拍数。
+  static String surviveConditionRemaining(int required, int remaining) =>
+      '守住 $required 拍 · 还差 $remaining';
+
+  /// 战斗顶栏条件条(已达成)：`守住 N 拍 · 已守满`。
+  static String surviveConditionMet(int required) => '守住 $required 拍 · 已守满';
+
+  /// 结算标题(surviveTicks 型胜利)：与「击败」区分——赢法不同,说法就不同。
+  static const String battleResultSurvived = '守住了';
+
   static const String battleLog = '战斗日志';
   static const String battleLogShort = '日志';
   // H3:战斗暂停(停 tick + 遮罩 + 继续)。
@@ -1402,7 +1416,7 @@ class UiStrings {
   // ── Phase 3 主线（T35）──
 
   static const String mainMenuMainline = '主线';
-  static const String mainMenuMainlineHint = '20 章 100 关，按章节顺序解锁';
+  static const String mainMenuMainlineHint = '21 章 105 关，按章节顺序解锁';
   static String mainMenuMainlineGoalHint(
     String target,
     String reward,
@@ -1440,6 +1454,7 @@ class UiStrings {
   static const String chapter18Title = '第十八章 · 阳关故人';
   static const String chapter19Title = '第十九章 · 旧路照人';
   static const String chapter20Title = '第二十章 · 东入阳关';
+  static const String chapter21Title = '第二十一章 · 绝顶交程';
   static const String chapter1Hint = '初出茅庐，山道试剑、林间伏击';
   static const String chapter2Hint = '镖局护送、黑风寨剿匪';
   static const String chapter3Hint = '武林会、一战封王';
@@ -1460,6 +1475,7 @@ class UiStrings {
   static const String chapter18Hint = '碛口守哨、沿烟一线、西凉城下、演武三子、火堆之前';
   static const String chapter19Hint = '东望回身、旧沙重涉、风口听风、关城再叩、黑石重照';
   static const String chapter20Hint = '旧驿东行、烽下望关、墙前走门、门外接程、孤城为开';
+  static const String chapter21Hint = '潼关认人、黄河过秤、旧坪取答、樵径受拦、绝顶交程';
 
   static const String chapterStatusLocked = '未解锁';
   static const String chapterStatusInProgress = '进行中';
@@ -1534,6 +1550,7 @@ class UiStrings {
       18 => chapter18Title,
       19 => chapter19Title,
       20 => chapter20Title,
+      21 => chapter21Title,
       _ => '第 $chapterIndex 章',
     };
   }
@@ -1561,6 +1578,7 @@ class UiStrings {
       18 => chapter18Hint,
       19 => chapter19Hint,
       20 => chapter20Hint,
+      21 => chapter21Hint,
       _ => '',
     };
   }

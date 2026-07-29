@@ -3064,6 +3064,38 @@ skills:
         jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
         huaJing: { cooldown_delta: -1 }
 
+
+  - id: skill_shan_wai_wu_shan
+    name: 山外无山
+    description: 站到绝顶才知道,再没有更高的山了——可路并没有到头。这一招不是往上打,是往外打:打向山之外那片没有名字的地方。走得上来的人自己会悟,教不了。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 7800
+    qiDelta: -30
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: mountain_vista
+    source: mainline_drop
+    style: lingQiao
+    tier: 7
+    # 2026-07-29 Ch21「绝顶交程」末Boss 循符少年本命真解 —— 新写(段级拍板 5A + 章级拍板 4):
+    # ① 与 Ch13 候峰翁真解「一览众山」(skill_yi_lan_zhong_shan·mult 4800·tier5·lingQiao)严格成对:
+    #    一览众山 = 登高回望、来路群山尽低;山外无山 = 绝顶之上再无高山,故转身向外。
+    #    兑现 chapter_14:8 既有 canon「绝顶之上没有更高的山了,可有比山更远的东西」——
+    #    真解名与语义均为 canon 自生长,非新编设定。
+    #    visualEffect 共用 mountain_vista(照孤城闭/孤城开共用 gate_seal 的成对体例)。
+    # ② powerMultiplier 7800:canon 唯一剩余预留档(skill_gu_cheng_kai 注②「Ch21 只余 7800 一档」),
+    #    tier7 招 cap 8000 = §5.4 全局硬红线,此后主线真解档位用尽(主线终章,无下一档需求)。
+    # ③ style lingQiao:由 tier7 敌招闲置池(仅存 lingqiao_chuanshuo_fang 组)与段级 spec §13
+    #    末 Boss 流派硬约束(禁 yinRou·打破 18_04/18_05/19_05/20_05 连续四关 yinRou)双重锁定。
+    # ④ 已登记进 wave_b standaloneBossManualIds 白名单(独立末Boss真解不进 2/2/2 配平池)。
+    proficiency:        # 真解手工高半档(灵巧向:CD 倾斜·照 skill_yi_lan_zhong_shan 成对同档)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        jingTong: { damage_pct: 0.05, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
+
   # ─── 塔残页 ×6(Boss 层 5/10/15/20/25/30 每胜概率掉)───
 
   - id: skill_kai_bei_shou

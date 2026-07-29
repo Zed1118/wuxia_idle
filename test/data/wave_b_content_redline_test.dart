@@ -186,6 +186,10 @@ void main() {
       // style yinRou 沿守镜人 Ch16 既定 school,不在此登记会把 yinRou 侧顶到 3 破 2/2/2。
       'skill_yi_jing_shuang_zhao',
       'skill_gu_cheng_kai',
+      // Ch21 循符少年·山外无山:主线终章末Boss 真解**新写**(2026-07-29 段级拍板 5A +
+      // 章级拍板 4)。与 Ch13 候峰翁「一览众山」成对;style lingQiao 由 tier7 闲置招池
+      // 与段级 spec §13 末Boss流派硬约束双重锁定,不在此登记会把 lingQiao 侧顶到 3 破 2/2/2。
+      'skill_shan_wai_wu_shan',
     };
 
     // mount_deferred 招不在发布内容内,不参与配平(2026-07-23 Ch14 收编 shi_dang
