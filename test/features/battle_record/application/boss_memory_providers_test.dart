@@ -66,9 +66,9 @@ void main() {
           .toList();
       expect(
         mainlineEntries,
-        hasLength(47),
+        hasLength(49),
         reason:
-            '主线 isBossStage=true 共 47 关(mainline 38 + innerDemon 7 + lightFoot 1 + massBattle 1)',
+            '主线 isBossStage=true 共 49 关(mainline 40 + innerDemon 7 + lightFoot 1 + massBattle 1)',
       );
 
       // 特定主线 Boss
