@@ -4998,6 +4998,9 @@ stages:
         iconPath: assets/enemies/jueding_guan_he_zu.png
     isBossStage: false
     dropTable:
+      - equipmentDefId: weapon_baowu_yin_yang_ci
+        dropChance: 1.0                      # 保底宝物(照 Ch19_02/Ch20_02 同款):补齐「每关至少一件装备」体例,
+                                             # 此前 21_01 是武圣段唯一零装备关(2026-07-29 复核补)
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [86, 96]
         dropChance: 1.0
@@ -5133,8 +5136,10 @@ stages:
             titleKey: bossPhase_desperate
     isBossStage: true
     dropTable:
-      - equipmentDefId: weapon_shenwu_kong_que_ling
-        dropChance: 0.30                     # 神物第三批 11/11 = 全 11 件投放收口清零
+      - equipmentDefId: armor_baowu_wu_jin_zhan_jia
+        dropChance: 0.40                     # 章中 Boss 副件(照 Ch19_04/Ch20_04 同款同概率)。
+                                             # 孔雀翎 2026-07-29 复核后挪去 21_05 末 Boss:武圣段前两章末 Boss
+                                             # (19_05 昆仑佩 / 20_05 幻梦鞭)均掉神物,主线终章末 Boss 不该独缺。
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [89, 99]
         dropChance: 1.0
@@ -5212,8 +5217,13 @@ stages:
             titleKey: bossPhase_desperate
     isBossStage: true
     dropTable:
+      - equipmentDefId: weapon_shenwu_kong_que_ling
+        dropChance: 0.30                     # 神物第三批 11/11 = 全 11 件投放收口清零。
+                                             # 落末 Boss(自 21_04 挪来)与 19_05/20_05 末 Boss 掉神物体例对齐。
       - equipmentDefId: weapon_baowu_xue_lian_bian
         dropChance: 1.0
+      - equipmentDefId: armor_baowu_can_si_ruan_jia
+        dropChance: 0.50                     # 末 Boss 副件(照 Ch19_05/Ch20_05 同款同概率)
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [90, 100]
         dropChance: 1.0
