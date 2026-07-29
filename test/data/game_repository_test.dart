@@ -61,16 +61,18 @@ void main() {
       //   (Ch18 阳关无故人为收编非新增——删 mount_deferred 挂 18_05,不改总数)
       // + Ch19 黑石守镜人本命真解 skill_yi_jing_shuang_zhao = 217(tier7 首门 drop 招·新写)
       // + Ch20 守关老将本命真解 skill_gu_cheng_kai = 218(与 Ch15 孤城闭成对·新写)
-      // + 40 encounter_skills.yaml = 258 total
+      // + Ch21 循符少年本命真解 skill_shan_wai_wu_shan = 219(与 Ch13 一览众山成对·新写)
+      // + 40 encounter_skills.yaml = 259 total
       expect(
         repo.skillDefs.length,
-        258,
+        259,
         reason:
-            '218 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+            '219 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
             ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技 + 1 断魂庄锁脉针'
             ' + 1 Ch8 灰袖回风 + 1 Ch9 沉沙一诀 + 1 Ch10 止水诀 + 1 Ch11 鎏金诀'
             ' + 1 Ch12 绵里藏针 + 1 Ch13 一览众山 + 1 Ch15 孤城闭'
-            ' + 1 Ch16 铁马冰河 + 1 Ch17 平沙落雁 + 1 Ch19 一镜双照 + 1 Ch20 孤城开) + 40 奇遇招',
+            ' + 1 Ch16 铁马冰河 + 1 Ch17 平沙落雁 + 1 Ch19 一镜双照 + 1 Ch20 孤城开'
+            ' + 1 Ch21 山外无山) + 40 奇遇招',
       );
       expect(
         repo.encounterSkillIds.length,
@@ -91,8 +93,8 @@ void main() {
           .length;
       expect(
         mainlineCount,
-        100,
-        reason: '主线 100 关(2026-07-28 Ch20 东入阳关武圣段中章扩,20 章 × 5 关)',
+        105,
+        reason: '主线 105 关(2026-07-29 Ch21 绝顶交程武圣段收官扩,21 章 × 5 关)',
       );
       expect(
         innerDemonCount,
@@ -690,13 +692,13 @@ void main() {
     );
 
     test(
-      '主线 100 关红线:20 章 × 5 关 + 每章双 Boss 关(2026-07-28 Ch20 东入阳关武圣段中章扩·Boss 位随叙事定)',
+      '主线 105 关红线:21 章 × 5 关 + 每章双 Boss 关(2026-07-29 Ch21 绝顶交程武圣段收官扩·Boss 位随叙事定)',
       () async {
         final repo = await GameRepository.loadAllDefs(loader: fileLoader);
         final mainlines = repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
             .toList();
-        expect(mainlines.length, 100);
+        expect(mainlines.length, 105);
         // 2026-07-26 Ch17 批订正:旧写法把章号硬列成 [1..15],Ch16 加章时漏补 16,
         // 致 Ch16 的「每章 5 关」从未被校验。改为从数据派生章号集合再断言其为
         // 连续 1..N 无缺口(守 feedback_red_line_test_semantics:写约束语义不写瞬时事实)。
@@ -704,10 +706,15 @@ void main() {
             .map((s) => s.chapterIndex)
             .whereType<int>()
             .toSet();
+        // 2026-07-29 Ch21 批再订正:上一版虽写了「不写瞬时事实」的注释,却仍硬写
+        // List.generate(20,...),每加一章照样得改。改为从数据取最大章号,断言集合
+        // 恰为 1..max —— 这才是真语义(从 1 起、连续、无缺口);关卡总数由上面
+        // `mainlines.length` 那条单独把关,两条互不替代。
+        final maxChapter = chapterIndices.reduce((a, b) => a > b ? a : b);
         expect(
           chapterIndices,
-          List.generate(20, (i) => i + 1).toSet(),
-          reason: '主线章号须为连续 1..20 无缺口',
+          List.generate(maxChapter, (i) => i + 1).toSet(),
+          reason: '主线章号须从 1 起连续无缺口(实测最大章号 $maxChapter)',
         );
         for (final ch in chapterIndices) {
           final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();

@@ -5165,8 +5165,14 @@ stages:
     dropSkillManualId: skill_shan_wai_wu_shan  # 真解新写(段级拍板 5A):少年本命·与 chargeSkillId 同招双用·破招首通 markUnlocked
     winCondition:
       type: surviveTicks
-      ticks: 18                  # 主线首用(此前仅心魔 07)。18 = Ch20 末关 undergeared 实测 8.16 tick
-                                 # 的两倍出头:不是赢不了,是「赢」已不是判据。值待探针校准。
+      ticks: 10                  # 主线首用(此前仅心魔 07)。**已探针校准**(2026-07-29·15750 场):
+                                 # 「击败」与「撑满」任一即胜(default_ground_strategy:101 既有语义,
+                                 # 同心魔 07),故调高 ticks 不会让战斗更长,只会让更少人走到「守住」
+                                 # 结局 —— 而本章题眼正是「不必赢」。实测纯击败耗时中位数
+                                 # 欠配 20 / 标准 13 / 满配 6 拍,取 10 得:欠配 100% · 标准 96% ·
+                                 # 满配 0% 走守住路线 —— 只有刻意满配的玩家会把少年打趴
+                                 # (守 §5.4「满配秒杀=有意爽感」),正常玩家都拿到题眼结局。
+                                 # 原设 18 经实测只有欠配 72%/标准 2% 命中,已废。
     enemyTeam:
       - id: enemy_wuSheng_jueding_xun_fu_shaonian
         name: 循符少年

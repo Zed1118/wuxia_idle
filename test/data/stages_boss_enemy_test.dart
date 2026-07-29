@@ -32,12 +32,12 @@ void main() {
     }
   });
 
-  test('恰好标注 42 个 boss 敌人(production 红线)', () {
+  test('恰好标注 44 个 boss 敌人(production 红线)', () {
     final stages = GameRepository.instance.stageDefs.values;
     final total = stages.fold<int>(
       0,
       (n, s) => n + s.enemyTeam.where((e) => e.isBoss).length,
     );
-    expect(total, 42, reason: 'Ch20 +2(送关旧部章中复出 + 守关老将章末复出)');
+    expect(total, 44, reason: 'Ch21 +2(拦径老仆章中 + 循符少年章末·主线终章)');
   });
 }

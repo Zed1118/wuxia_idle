@@ -12,9 +12,9 @@ import '../support/progression_battle_probe.dart';
 import '../support/test_data.dart';
 
 const _seedCount = 50;
-// 主线关总数(20 章 × 5 关 = 100·2026-07-28 Ch20 东入阳关武圣段中章扩;新增主线章时改此一处)。
+// 主线关总数(21 章 × 5 关 = 105·2026-07-29 Ch21 绝顶交程武圣段收官扩;新增主线章时改此一处)。
 // (旧注写「14 章 × 5 关 = 70」是 Ch15 起四次加章连续漏更的 drift,2026-07-27 现测订正。)
-const _mainlineStageCount = 100;
+const _mainlineStageCount = 105;
 const _csvPath =
     'test/tools/output/progression_attribute_playtest_2026-07-13.csv';
 const _updateEvidenceEnvironment = 'UPDATE_PROGRESSION_PLAYTEST_EVIDENCE';

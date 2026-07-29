@@ -90,19 +90,20 @@ void main() {
     expect(find.text(UiStrings.chapter17Title), findsNWidgets(2));
     expect(find.text(UiStrings.chapter19Title), findsNWidgets(2));
     expect(find.text(UiStrings.chapter20Title), findsNWidgets(2));
+    expect(find.text(UiStrings.chapter21Title), findsNWidgets(2));
     expect(find.text(UiStrings.mainlineRouteCurrent), findsOneWidget);
-    expect(find.text(UiStrings.mainlineRouteLocked), findsNWidgets(19));
+    expect(find.text(UiStrings.mainlineRouteLocked), findsNWidgets(20));
 
     expect(
       find.text(UiStrings.chapterStatusInProgress),
       findsOneWidget,
       reason: '只有 Ch1 进行中',
     );
-    expect(find.byIcon(Icons.lock), findsNWidgets(19), reason: 'Ch2–Ch20 都锁');
+    expect(find.byIcon(Icons.lock), findsNWidgets(20), reason: 'Ch2–Ch21 都锁');
     expect(find.byIcon(Icons.check_circle), findsNothing);
   });
 
-  testWidgets('Ch1 全通(5 关)→ Ch1 ✓ + Ch2 进行中 + Ch3-20 锁', (tester) async {
+  testWidgets('Ch1 全通(5 关)→ Ch1 ✓ + Ch2 进行中 + Ch3-21 锁', (tester) async {
     await pumpScreen(
       tester,
       mkProgress(
@@ -126,10 +127,10 @@ void main() {
       findsOneWidget,
       reason: 'Ch2 解锁进行中',
     );
-    expect(find.byIcon(Icons.lock), findsNWidgets(18), reason: 'Ch3–Ch20 仍锁');
+    expect(find.byIcon(Icons.lock), findsNWidgets(19), reason: 'Ch3–Ch21 仍锁');
   });
 
-  testWidgets('全 100 关通关 → 20 章都 ✓,无锁', (tester) async {
+  testWidgets('全 105 关通关 → 21 章都 ✓,无锁', (tester) async {
     final cleared = <String>[
       for (final ch in [
         1,
@@ -151,14 +152,15 @@ void main() {
         17,
         18,
         19,
-        20, //
+        20,
+        21, //
       ])
         for (final idx in [1, 2, 3, 4, 5])
           'stage_${ch.toString().padLeft(2, '0')}_0$idx',
     ];
     await pumpScreen(tester, mkProgress(cleared: cleared));
 
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(20));
+    expect(find.byIcon(Icons.check_circle), findsNWidgets(21));
     expect(find.byIcon(Icons.lock), findsNothing);
     expect(find.text(UiStrings.chapterStatusInProgress), findsNothing);
   });

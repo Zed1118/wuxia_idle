@@ -55,7 +55,7 @@ void main() {
       }
     }
 
-    expect(mainlineStages.length, 100, reason: '当前主线应覆盖 Ch1-20 共 100 关');
+    expect(mainlineStages.length, 105, reason: '当前主线应覆盖 Ch1-21 共 105 关');
     expect(
       checked.length,
       greaterThanOrEqualTo(190),
@@ -63,8 +63,8 @@ void main() {
     );
   });
 
-  test('主线 chapter_01..20 卷首卷尾全为真内容', () async {
-    for (var i = 1; i <= 20; i++) {
+  test('主线 chapter_01..21 卷首卷尾全为真内容', () async {
+    for (var i = 1; i <= 21; i++) {
       final id = 'chapter_${i.toString().padLeft(2, '0')}';
       final chapter = await NarrativeLoader.loadChapter(id, loader: fileLoader);
 
