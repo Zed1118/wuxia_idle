@@ -83,10 +83,36 @@ Esc / Enter / NumpadEnter / Space，点击行为原样保留）。
 `MethodInvocation` 而非 `InstanceCreationExpression`。只认后者会一个站点都扫不到
 （实测 TOTAL=0）。两种都要认。
 
-## 剩余未覆盖维度（本批不做，如实记账）
+## 六、真机键盘走查（本批已做，结论如下）
 
-- **真机键盘走查**未做：本批是静态量测 + widget 测，没在真机上逐屏 Tab 一遍看焦点环是否可见、
-  顺序是否合理。焦点**可视化**（focus ring 对比度）属视觉验收范畴，需另起一批。
+在真 app 上跑了 Tab 走查（CGEvent 直投 pid，`frontmost_before_send=wuxia_idle` 自检通过），
+路由取 `main_menu` 与 `shop_buy_confirm`（后者确有两个真 `PlaqueButton`：取消 / 购买）。
+
+**实拍结果**：按 Tab ×3 后，**窗口内容区零像素变化**——差异全部落在逻辑 y≤83 的标题栏带
+（窗口激活导致的红绿灯出现），基线帧的两个木牌按钮上也**看不到任何金色焦点环**。
+
+**根因用对照实验定死**（`test/shared/widgets/plaque_button_focus_ring_test.dart`）：
+
+| 条件 | 金边环 |
+|---|---|
+| `FocusHighlightStrategy.alwaysTraditional` + autofocus | **画** |
+| `alwaysTraditional` + Tab traversal | **画** |
+| **默认 `automatic`** + 仅 autofocus（无键盘事件） | **不画** |
+| 默认 `automatic` + Tab traversal | 画 |
+
+即 **`PlaqueButton` 的实现是对的**（有焦点必画环，已由 4 条断言钉住），
+问题出在 Flutter 默认 `FocusHighlightStrategy.automatic` **开局处于 touch 模式**，
+`onShowFocusHighlight` 不回调 true。
+
+**可操作结论**：像 `_ConfirmButton` 那样用 `PlaqueButton(autofocus: true)` 的确认弹窗，
+玩家**在按下第一个键之前看不出回车会落到哪**。若要让自动聚焦的主按钮起手就可见，
+需在桌面端把策略钉成 `alwaysTraditional`（一行，全局）——**属设计拍板，本批不改**。
+
+**未能证伪的一点**：真机 Tab 之所以零变化，可能是键事件未真正进入 Flutter 引擎
+（bg 会话投递），也可能是该路由的复刻件没进遍历组。两者无法从截图区分，
+故**不据此断言产品缺陷**；上面的结论只建立在可复现的 widget 层对照实验上。
+
+## 剩余未覆盖维度（本批不做，如实记账）
 - **读屏软件实测**未做：Semantics 树的断言只到「节点存在且标注正确」，
   没用 VoiceOver/NVDA 真听一遍朗读顺序。
 - Windows 端未验：开发/验收在 macOS，`SystemMouseCursors` 与 Tab 遍历在 Windows 的实际表现待 ship 前实机验。
