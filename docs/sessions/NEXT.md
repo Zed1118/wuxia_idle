@@ -23,14 +23,14 @@ Ch20 三 PR 已由 codex 审查合并进 main；Ch21「绝顶交程」主线终�
 - main 主线 **20 章 100 关 / cap 47**（Ch21 在 PR #96 未合）
 - **PR #96** `9af9af1c` draft — Ch21 终章：5 关 / 真解 7800 / 神物收口 / 叙事 6673 字 / cap 47→49 / surviveTicks 主线首用+表现层；分支实测 analyze 0 + 全量 **4719/0** + 双破坏证红
 - 遗留 1 worktree + 1 同名分支（撑 PR #96，合并后清）
-- **Ch20 美术批在飞**：codex image_gen 后台跑（16:05 启动），产物落 `build/dispatch/ch20_art_20260729/out/`
+- **Ch20 美术 11 图已出齐**（ART_EXIT=0，落 `build/dispatch/ch20_art_20260729/out/`）：规格独立复测 **11/11 PASS**（1024×1536 RGBA·四角 alpha 0·fraction 0.9277-0.9635；场景尺寸全对）；**目检仅 2/11**（两个人物锚均确认同一张脸），**余 9 图待目检**
 
 【下波候选】
 
 | # | 任务 | 模型 | 预估时长 | 备注 |
 |---|------|------|----------|------|
 | 1 | Review PR #96 六项拍板 + 飞升 canon（推荐） | opus high | ~30min | 唯一需人拍板项；章名/末Boss 定错则 6673 字叙事全废，先拍最省返工 |
-| 2 | 收 Ch20 美术批 → 接线 + 脚底 fraction 实测 + known_missing 清零 | opus high | ~40min | 依赖美术批跑完；沿 Ch16-19 体例 |
+| 2 | Ch20 美术余 9 图目检 → 接线 + fraction 登记 + known_missing 清零 | opus high | ~40min | 图已出齐、规格已复测；只差目检(3 新人物查「手里无兵器」/6 场景查题眼与无文字)+接线 |
 | 3 | Ch21 美术 11 图派单 | codex image_gen | ~1h | 前缀 `jueding_*`，五人全新无人物锚 |
 | 4 | Ch19+Ch20 共 22 张 PNG webp 清账 | opus high | ~1h | 沿 PR #77/#85/#88 配方；别先 dry-run |
 
