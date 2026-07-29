@@ -27,7 +27,7 @@ void main() {
     _writeSummary(supply: supply, demands: [to15, to30, to49]);
 
     expect(supply.mojianshi, closeTo(56.5, 0.01));
-    expect(supply.xinxueJiejing, closeTo(3607.0, 0.01));
+    expect(supply.xinxueJiejing, closeTo(4047.0, 0.01));
 
     expect(to15.guaranteeCrystalCost, 6);
     expect(to30.guaranteeCrystalCost, 112);
@@ -46,10 +46,11 @@ void main() {
     // Ch17 扩 85 关后 2806(≈10.63 件·264×10=2640·刚过 10 件上界抬至 11 件线·宗师段第 2 章续放宽·沿逐章 +5 关自然增轨迹·spec §9「沿放宽复核」已拍·[balance] 绝对值待用户终拍)。
     // Ch18 扩 90 关后 3192(≈12.09 件·264×12=3168·刚过 12 件上界抬至 13 件线·宗师段收官续放宽·沿逐章 +5 关自然增轨迹·spec §7「沿放宽复核」已拍·[balance] 绝对值待用户终拍)。
     // Ch19 扩 95 关后 3607(≈13.66 件·264×13=3432·刚过 13 件上界抬至 14 件线·武圣段首章续放宽·沿逐章 +5 关自然增轨迹·章级 spec §5「沿放宽复核」已拍·[balance] 绝对值待用户终拍)。
+    // Ch20 扩 100 关后 4047(≈15.33 件·264×15=3960·刚过 15 件上界抬至 16 件线·武圣段中章续放宽·沿逐章 +5 关自然增轨迹·章级 spec §5「沿放宽复核」已拍·[balance] 绝对值待用户终拍)。
     expect(
       supply.xinxueJiejing,
-      lessThan(to49.guaranteeCrystalCost * 14),
-      reason: '95 关首通结晶支撑约 13.66 件 +49 保底,不足 14 件,不是无约束溢出',
+      lessThan(to49.guaranteeCrystalCost * 16),
+      reason: '100 关首通结晶支撑约 15.33 件 +49 保底,不足 16 件,不是无约束溢出',
     );
     expect(to49.naturalMojianshiExpected, greaterThan(supply.mojianshi));
     expect(

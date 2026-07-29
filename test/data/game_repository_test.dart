@@ -60,16 +60,17 @@ void main() {
       //   (Ch17 风卷流沙为收编非新增——删 mount_deferred 挂 17_04,不改总数)
       //   (Ch18 阳关无故人为收编非新增——删 mount_deferred 挂 18_05,不改总数)
       // + Ch19 黑石守镜人本命真解 skill_yi_jing_shuang_zhao = 217(tier7 首门 drop 招·新写)
-      // + 40 encounter_skills.yaml = 257 total
+      // + Ch20 守关老将本命真解 skill_gu_cheng_kai = 218(与 Ch15 孤城闭成对·新写)
+      // + 40 encounter_skills.yaml = 258 total
       expect(
         repo.skillDefs.length,
-        257,
+        258,
         reason:
-            '217 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+            '218 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
             ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技 + 1 断魂庄锁脉针'
             ' + 1 Ch8 灰袖回风 + 1 Ch9 沉沙一诀 + 1 Ch10 止水诀 + 1 Ch11 鎏金诀'
             ' + 1 Ch12 绵里藏针 + 1 Ch13 一览众山 + 1 Ch15 孤城闭'
-            ' + 1 Ch16 铁马冰河 + 1 Ch17 平沙落雁 + 1 Ch19 一镜双照) + 40 奇遇招',
+            ' + 1 Ch16 铁马冰河 + 1 Ch17 平沙落雁 + 1 Ch19 一镜双照 + 1 Ch20 孤城开) + 40 奇遇招',
       );
       expect(
         repo.encounterSkillIds.length,
@@ -90,8 +91,8 @@ void main() {
           .length;
       expect(
         mainlineCount,
-        95,
-        reason: '主线 95 关(2026-07-28 Ch19 旧路照人武圣段首章扩,19 章 × 5 关)',
+        100,
+        reason: '主线 100 关(2026-07-28 Ch20 东入阳关武圣段中章扩,20 章 × 5 关)',
       );
       expect(
         innerDemonCount,
@@ -689,13 +690,13 @@ void main() {
     );
 
     test(
-      '主线 95 关红线:19 章 × 5 关 + 每章双 Boss 关(2026-07-28 Ch19 旧路照人武圣段首章扩·Boss 位随叙事定)',
+      '主线 100 关红线:20 章 × 5 关 + 每章双 Boss 关(2026-07-28 Ch20 东入阳关武圣段中章扩·Boss 位随叙事定)',
       () async {
         final repo = await GameRepository.loadAllDefs(loader: fileLoader);
         final mainlines = repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
             .toList();
-        expect(mainlines.length, 95);
+        expect(mainlines.length, 100);
         // 2026-07-26 Ch17 批订正:旧写法把章号硬列成 [1..15],Ch16 加章时漏补 16,
         // 致 Ch16 的「每章 5 关」从未被校验。改为从数据派生章号集合再断言其为
         // 连续 1..N 无缺口(守 feedback_red_line_test_semantics:写约束语义不写瞬时事实)。
@@ -705,8 +706,8 @@ void main() {
             .toSet();
         expect(
           chapterIndices,
-          List.generate(19, (i) => i + 1).toSet(),
-          reason: '主线章号须为连续 1..19 无缺口',
+          List.generate(20, (i) => i + 1).toSet(),
+          reason: '主线章号须为连续 1..20 无缺口',
         );
         for (final ch in chapterIndices) {
           final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();

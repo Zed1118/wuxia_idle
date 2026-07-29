@@ -32,12 +32,12 @@ void main() {
     }
   });
 
-  test('恰好标注 40 个 boss 敌人(production 红线)', () {
+  test('恰好标注 42 个 boss 敌人(production 红线)', () {
     final stages = GameRepository.instance.stageDefs.values;
     final total = stages.fold<int>(
       0,
       (n, s) => n + s.enemyTeam.where((e) => e.isBoss).length,
     );
-    expect(total, 40, reason: 'Ch19 +2(接关人章中复出 + 黑石守镜人章末)');
+    expect(total, 42, reason: 'Ch20 +2(送关旧部章中复出 + 守关老将章末复出)');
   });
 }

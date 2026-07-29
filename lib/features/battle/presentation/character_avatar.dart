@@ -1106,6 +1106,20 @@ const _battleStandeeOverrides = <String, String>{
       'assets/enemies/jiulu_jieguan_ren.png',
   'assets/enemies/jiulu_heishi_shoujing.png':
       'assets/enemies/jiulu_heishi_shoujing.png',
+  // Ch20「东入阳关」武圣段中章(2026-07-28 章批):图待出(known_missing_assets 已登记),
+  // 脚底 fraction 暂走 `_ => 0.95` 默认,出图批按 alpha 包围盒实测再补本表下方映射。
+  // 注:送关旧部/守关老将是 Ch16_01/Ch15_05 既有人物复出,出图时须以
+  // liangzhou_songguan_jiubu.png / guanshan_shouguan_laojiang.png 作**人物锚**(非仅风格锚)。
+  'assets/enemies/ruguan_huan_ma_ren.png':
+      'assets/enemies/ruguan_huan_ma_ren.png',
+  'assets/enemies/ruguan_shou_feng_ren.png':
+      'assets/enemies/ruguan_shou_feng_ren.png',
+  'assets/enemies/ruguan_bu_qiang_jiang.png':
+      'assets/enemies/ruguan_bu_qiang_jiang.png',
+  'assets/enemies/ruguan_songguan_jiubu.png':
+      'assets/enemies/ruguan_songguan_jiubu.png',
+  'assets/enemies/ruguan_shouguan_laojiang.png':
+      'assets/enemies/ruguan_shouguan_laojiang.png',
   'assets/enemies/enemy_gauntlet_su_wujiu.png':
       WuxiaUi.battleGauntletSuWujiuStandee,
   'assets/enemies/enemy_gauntlet_qingyi_hu_a.png':
