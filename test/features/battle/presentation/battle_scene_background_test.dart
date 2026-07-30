@@ -217,13 +217,13 @@ void main() {
     );
   });
 
-  testWidgets('主线山道背景进入轻冷灰分级，压制右半区暖黄 glow', (tester) async {
+  testWidgets('主线山道保留暖色样板原画且不叠冷灰分级', (tester) async {
     await tester.pumpWidget(
       _wrap(const BattleSceneBackground(path: WuxiaUi.battleMountainPassStage)),
     );
     expect(
       find.byKey(const ValueKey('battle_scene_mainline_color_grade')),
-      findsOneWidget,
+      findsNothing,
     );
     expect(
       tester
@@ -231,7 +231,7 @@ void main() {
             find.byKey(const ValueKey('battle_scene_mainline_asset')),
           )
           .assetPath,
-      WuxiaUi.battleMountainPassStageCool,
+      WuxiaUi.battleMountainPassStage,
     );
     expect(
       tester
@@ -239,7 +239,7 @@ void main() {
             find.byKey(const ValueKey('battle_scene_mainline_asset')),
           )
           .alignment,
-      assetFramingForScene(WuxiaUi.battleMountainPassStageCool).alignment,
+      assetFramingForScene(WuxiaUi.battleMountainPassStage).alignment,
     );
     expect(
       find.byKey(const ValueKey('battle_scene_tower_color_grade')),
