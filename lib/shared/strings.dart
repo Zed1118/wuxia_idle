@@ -89,6 +89,7 @@ class UiStrings {
   static const String battlePouch = '战备行囊';
   static const String battlePouchReserved = '待装配';
   static const String battleEmptySkillSlot = '空招式位';
+  static const String battlePouchEmptySlot = '空囊位';
 
   static String combatTermLabel(CombatTerm term) => switch (term) {
     CombatTerm.charge => '蓄力',

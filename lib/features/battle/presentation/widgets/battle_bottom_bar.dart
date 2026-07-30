@@ -1255,28 +1255,39 @@ class BattlePouchRail extends StatelessWidget {
                         border: Border.all(color: const Color(0xFF654F3D)),
                         borderRadius: BorderRadius.circular(1),
                       ),
-                      child: i < 2
-                          ? Opacity(
-                              opacity: 0.90,
-                              child: Image.asset(
-                                i == 0
-                                    ? 'assets/equipment/accessory_baowu_zi_jin_hu_lu.png'
-                                    : 'assets/equipment/accessory_xunchang_yao_nang.png',
-                                width: compact ? 28 : 42,
-                                height: compact ? 28 : 42,
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, _, _) => const Icon(
-                                  Icons.inventory_2_outlined,
-                                  size: 17,
-                                  color: Color(0xFF8C7A5D),
-                                ),
+                      // 三格一律空囊纹样。旧版 slot 0/1 无条件写死显示紫金葫芦与
+                      // 寻常药囊两张真实道具图,与玩家实际背包毫无关系 —— 那是在
+                      // 展示**假的游戏状态**(每个玩家每场战斗行囊里都「有」这两件),
+                      // 比中性占位更误导;旁边「待装配」小字字号 9,视觉权重远输于
+                      // 42px 实心彩图。改沿技能案台空签的印记体例(见
+                      // [EmptySkillSlot]),但用锦囊侧的暖浅色而非宣纸色 —— 行囊格底
+                      // 是深褐织锦,套宣纸色会突兀(memory
+                      // `feedback_paper_vs_dark_text_color_palette`:两套色板不可混用)。
+                      child: Center(
+                        child: Transform.rotate(
+                          angle: -0.08,
+                          child: Container(
+                            key: ValueKey('battle.pouch.emptySeal.$i'),
+                            width: compact ? 16 : 22,
+                            height: compact ? 16 : 22,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0x14C9B183),
+                              border: Border.all(
+                                color: const Color(0x59BFA97C),
                               ),
-                            )
-                          : const Icon(
-                              Icons.inventory_2_outlined,
-                              size: 17,
-                              color: Color(0xFF8C7A5D),
                             ),
+                            child: Text(
+                              UiStrings.battlePouchEmptySlot.characters.first,
+                              style: TextStyle(
+                                color: const Color(0x8CC9B183),
+                                fontSize: compact ? 9 : 11,
+                                height: 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
