@@ -8,7 +8,9 @@ import '../../../../data/defs/skill_def.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
+import '../../../../shared/widgets/wuxia_image.dart';
 import '../battle_layout_tokens.dart';
+import '../battle_screen_config.dart';
 import '../battle_typography_tokens.dart';
 import '../countdown_ring.dart';
 import 'battle_command_desk.dart';
@@ -458,6 +460,7 @@ class BottomBar extends StatelessWidget {
   final Animation<double> beat;
   // 待发单体技的技能格锚点(其上方浮出敌人快捷选择栏)。
   final LayerLink skillTargetLink;
+  final List<BattlePouchPreviewItem> previewPouchItems;
 
   const BottomBar({
     super.key,
@@ -471,6 +474,7 @@ class BottomBar extends StatelessWidget {
     required this.pendingSkillId,
     required this.beat,
     required this.skillTargetLink,
+    this.previewPouchItems = const [],
   });
 
   @override
@@ -578,6 +582,7 @@ class BottomBar extends StatelessWidget {
             BattlePouchRail(
               width: metrics.pouchRailWidth,
               height: metrics.sampleSkillSlotHeight,
+              previewItems: previewPouchItems,
             ),
           ],
         );
@@ -1216,11 +1221,13 @@ class BattlePouchRail extends StatelessWidget {
     this.compact = false,
     this.width,
     this.height,
+    this.previewItems = const [],
   });
 
   final bool compact;
   final double? width;
   final double? height;
+  final List<BattlePouchPreviewItem> previewItems;
 
   @override
   Widget build(BuildContext context) {
@@ -1256,7 +1263,9 @@ class BattlePouchRail extends StatelessWidget {
               for (var i = 0; i < 3; i++) ...[
                 Semantics(
                   label: '${UiStrings.battlePouch} ${i + 1}',
-                  value: UiStrings.battlePouchReserved,
+                  value: i < previewItems.length
+                      ? '${previewItems[i].count}'
+                      : UiStrings.battlePouchReserved,
                   child: Container(
                     key: ValueKey('battle_pouch_slot_$i'),
                     width: slotSize,
@@ -1285,31 +1294,66 @@ class BattlePouchRail extends StatelessWidget {
                       // [EmptySkillSlot]),但用锦囊侧的暖浅色而非宣纸色 —— 行囊格底
                       // 是深褐织锦,套宣纸色会突兀(memory
                       // `feedback_paper_vs_dark_text_color_palette`:两套色板不可混用)。
-                      child: Center(
-                        child: Transform.rotate(
-                          angle: -0.08,
-                          child: Container(
-                            key: ValueKey('battle.pouch.emptySeal.$i'),
-                            width: compact ? 16 : 22,
-                            height: compact ? 16 : 22,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: const Color(0x14C9B183),
-                              border: Border.all(
-                                color: const Color(0x59BFA97C),
+                      child: i < previewItems.length
+                          ? Stack(
+                              key: ValueKey('battle.pouch.item.$i'),
+                              fit: StackFit.expand,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(2),
+                                  child: WuxiaImage(
+                                    previewItems[i].assetPath,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 1,
+                                  bottom: 0,
+                                  child: Text(
+                                    '${previewItems[i].count}',
+                                    style: TextStyle(
+                                      color: const Color(0xFFE7D7B6),
+                                      fontSize: compact ? 10 : 13,
+                                      fontWeight: FontWeight.w700,
+                                      shadows: const [
+                                        Shadow(
+                                          color: Colors.black,
+                                          blurRadius: 3,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Center(
+                              child: Transform.rotate(
+                                angle: -0.08,
+                                child: Container(
+                                  key: ValueKey('battle.pouch.emptySeal.$i'),
+                                  width: compact ? 16 : 22,
+                                  height: compact ? 16 : 22,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0x14C9B183),
+                                    border: Border.all(
+                                      color: const Color(0x59BFA97C),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    UiStrings
+                                        .battlePouchEmptySlot
+                                        .characters
+                                        .first,
+                                    style: TextStyle(
+                                      color: const Color(0x8CC9B183),
+                                      fontSize: compact ? 9 : 11,
+                                      height: 1,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                            child: Text(
-                              UiStrings.battlePouchEmptySlot.characters.first,
-                              style: TextStyle(
-                                color: const Color(0x8CC9B183),
-                                fontSize: compact ? 9 : 11,
-                                height: 1,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ),

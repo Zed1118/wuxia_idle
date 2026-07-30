@@ -8,6 +8,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_screen_config.dart';
 import 'package:wuxia_idle/features/battle/presentation/hero_camera_overlay.dart';
 import 'package:wuxia_idle/features/debug/application/visual_route.dart';
 import 'package:wuxia_idle/features/debug/application/visual_acceptance_plan.dart';
@@ -552,6 +553,16 @@ void main() {
         15,
         25,
         30,
+      ]);
+      expect(launcher.previewPouchItems, const [
+        BattlePouchPreviewItem(
+          assetPath: WuxiaUi.battleSamplePouchGourd,
+          count: 3,
+        ),
+        BattlePouchPreviewItem(
+          assetPath: WuxiaUi.battleSamplePouchManual,
+          count: 2,
+        ),
       ]);
     });
 

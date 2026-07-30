@@ -895,6 +895,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                               _pendingSkill?.id ?? widget.previewPendingSkillId,
                           beat: _playback.beat,
                           skillTargetLink: _skillTargetLink,
+                          previewPouchItems: widget.playback.previewPouchItems,
                         )
                       else
                         AutoCommandDesk(state: state, beat: _playback.beat),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_screen_config.dart';
 import 'package:wuxia_idle/features/battle/presentation/widgets/battle_bottom_bar.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
@@ -79,6 +80,46 @@ void main() {
         matching: find.byType(Image),
       ),
       findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('样板预览显两件指定道具与数量,第三格仍为空囊', (tester) async {
+    const previewItems = [
+      BattlePouchPreviewItem(assetPath: 'assets/a.png', count: 3),
+      BattlePouchPreviewItem(assetPath: 'assets/b.png', count: 2),
+    ];
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(size: Size(1280, 720)),
+        child: const MaterialApp(
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.bottomRight,
+              child: BattlePouchRail(previewItems: previewItems),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('battle.pouch.item.0')), findsOneWidget);
+    expect(find.byKey(const ValueKey('battle.pouch.item.1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('battle.pouch.item.2')), findsNothing);
+    expect(find.text('3'), findsOneWidget);
+    expect(find.text('2'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('battle.pouch.emptySeal.0')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('battle.pouch.emptySeal.1')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('battle.pouch.emptySeal.2')),
+      findsOneWidget,
     );
     expect(tester.takeException(), isNull);
   });

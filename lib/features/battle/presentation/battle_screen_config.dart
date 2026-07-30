@@ -1,3 +1,19 @@
+class BattlePouchPreviewItem {
+  const BattlePouchPreviewItem({required this.assetPath, required this.count});
+
+  final String assetPath;
+  final int count;
+
+  @override
+  bool operator ==(Object other) =>
+      other is BattlePouchPreviewItem &&
+      other.assetPath == assetPath &&
+      other.count == count;
+
+  @override
+  int get hashCode => Object.hash(assetPath, count);
+}
+
 class BattleScreenPlaybackConfig {
   const BattleScreenPlaybackConfig({
     this.autoStart = true,
@@ -7,6 +23,7 @@ class BattleScreenPlaybackConfig {
     this.readablePacing = false,
     this.autoStartOnMount = false,
     this.firstClearShowcase = false,
+    this.previewPouchItems = const [],
   });
 
   const BattleScreenPlaybackConfig.sweep()
@@ -16,7 +33,8 @@ class BattleScreenPlaybackConfig {
       startFastForward = true,
       readablePacing = false,
       autoStartOnMount = true,
-      firstClearShowcase = false;
+      firstClearShowcase = false,
+      previewPouchItems = const [];
 
   final bool autoStart;
   final bool allowPlayerIntervention;
@@ -24,6 +42,10 @@ class BattleScreenPlaybackConfig {
   final bool startFastForward;
   final bool readablePacing;
   final bool autoStartOnMount;
+
+  /// Debug/visual preview only. Empty by default so production battles never
+  /// imply that an item is equipped before the pouch has real domain wiring.
+  final List<BattlePouchPreviewItem> previewPouchItems;
 
   /// 首通脚本化展示帧(玩法评估 §十三 #2):开局亮相/首技慢镜/敌方首次蓄力
   /// 提示/破招题字强化,整场各一次,纯表现层。主线入口与 readablePacing 同

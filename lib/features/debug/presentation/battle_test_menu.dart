@@ -1341,6 +1341,7 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   /// 静态验收预览专用:纯 presentation 初始待发态,不写 BattleState。
   final int? previewPendingCharacterId;
   final String? previewPendingSkillId;
+  final List<BattlePouchPreviewItem> previewPouchItems;
 
   /// 透传给 BattleScreen.startPaused(默认 false 现有用法不变);true 时起手暂停,
   /// 战斗冻结 seed 初态 + 顶栏出「单步」键供验收者逐步推进操作点选。
@@ -1360,6 +1361,7 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
     this.allowPlayerIntervention = false,
     this.previewPendingCharacterId,
     this.previewPendingSkillId,
+    this.previewPouchItems = const [],
     this.startPaused = false,
     this.readyTarget,
     this.onTargetReady,
@@ -1408,6 +1410,7 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
       autoStart: widget.autoStart,
       allowPlayerIntervention: widget.allowPlayerIntervention,
       startPaused: widget.startPaused,
+      previewPouchItems: widget.previewPouchItems,
     ),
     previewPendingCharacterId: widget.previewPendingCharacterId,
     previewPendingSkillId: widget.previewPendingSkillId,

@@ -641,6 +641,16 @@ Future<Widget> buildVisualTarget(
         allowPlayerIntervention: true,
         startPaused: true,
         seed: battleV2VisualSeed,
+        previewPouchItems: [
+          BattlePouchPreviewItem(
+            assetPath: WuxiaUi.battleSamplePouchGourd,
+            count: 3,
+          ),
+          BattlePouchPreviewItem(
+            assetPath: WuxiaUi.battleSamplePouchManual,
+            count: 2,
+          ),
+        ],
       );
     case VisualRoute.battleTapPreview:
       // 两段点选静态验收:冻结画面(autoStart false)预置 single 技能待发,
