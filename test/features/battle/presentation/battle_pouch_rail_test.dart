@@ -83,12 +83,13 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('「待装配」说明字仍在(保住「这里将来是行囊」的信息)', (tester) async {
+  testWidgets('「待装配」只保留在语义层，不挤占样板行囊标题', (tester) async {
     await tester.pumpWidget(host());
     await tester.pump();
 
-    expect(find.text(UiStrings.battlePouchReserved), findsOneWidget);
+    expect(find.text(UiStrings.battlePouchReserved), findsNothing);
     expect(find.text(UiStrings.battlePouch), findsOneWidget);
+    expect(find.text(UiStrings.battlePouchShort), findsOneWidget);
   });
 
   testWidgets('三格外框与木匣仍在(未把整条行囊栏改没)', (tester) async {
@@ -103,5 +104,13 @@ void main() {
         findsOneWidget,
       );
     }
+    expect(
+      find.byKey(const ValueKey('battle.pouch.footerPlaque')),
+      findsOneWidget,
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey('battle_pouch_slot_0'))).width,
+      greaterThanOrEqualTo(60),
+    );
   });
 }

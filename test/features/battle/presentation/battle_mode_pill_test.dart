@@ -49,7 +49,7 @@ void main() {
 
     final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
     expect(tooltip.message, UiStrings.battleAutoInterventionHint);
-    expect(find.text('自动·点选'), findsOneWidget);
+    expect(find.text(UiStrings.battleAutoModeShort), findsOneWidget);
     final semantics = tester.getSemantics(
       find.byKey(const ValueKey('battle_auto_mode')),
     );

@@ -52,15 +52,15 @@ void main() {
 
           expect(
             metrics.focusRailWidth / viewport.width,
-            inInclusiveRange(0.18, 0.20),
+            inInclusiveRange(0.15, 0.17),
           );
           expect(
             metrics.skillRailWidth / viewport.width,
-            inInclusiveRange(0.58, 0.62),
+            inInclusiveRange(0.51, 0.55),
           );
           expect(
             metrics.pouchRailWidth / viewport.width,
-            inInclusiveRange(0.20, 0.22),
+            inInclusiveRange(0.19, 0.21),
           );
         },
       );

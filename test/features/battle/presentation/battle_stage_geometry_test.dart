@@ -31,8 +31,11 @@ void main() {
       expect(leftSecond.dx, lessThan(leftThird.dx));
       expect(rightMain.dx, lessThan(rightSecond.dx));
       expect(rightSecond.dx, lessThan(rightThird.dx));
-      expect(leftMain.dx, inInclusiveRange(0.13, 0.17));
+      expect(leftMain.dx, inInclusiveRange(0.10, 0.13));
       expect(rightMain.dx, inInclusiveRange(0.63, 0.69));
+      expect(leftMain.dy, inInclusiveRange(0.62, 0.66));
+      expect(leftThird.dy, inInclusiveRange(0.41, 0.45));
+      expect(rightMain.dy, inInclusiveRange(0.44, 0.48));
     });
 
     test('1v1/2v2 左右同序槽位严格镜像', () {

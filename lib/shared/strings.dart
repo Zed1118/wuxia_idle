@@ -70,6 +70,8 @@ class UiStrings {
   static const String emptyLog = '（无动作）';
   static const String ultimate = '大招';
   static const String fastForward = '快进';
+  static const String battleSpeedNormal = '一倍';
+  static const String battleSpeedFast = '急速';
   static const String battleAutoMode = '自动战斗';
   static const String battleAutoIntervention = '可点选';
   static const String battleAutoModeShort = '自动';
@@ -87,6 +89,7 @@ class UiStrings {
   static String skillCooldownRemaining(int turns) => '息 $turns';
   static const String battleCommandDesk = '武学案台';
   static const String battlePouch = '战备行囊';
+  static const String battlePouchShort = '行囊';
   static const String battlePouchReserved = '待装配';
   static const String battleEmptySkillSlot = '空招式位';
   static const String battlePouchEmptySlot = '空囊位';
@@ -133,6 +136,11 @@ class UiStrings {
   // T1 战斗指令台：技能分组标签 + 状态印 + 内力/冷却短标。
   static const String skillGroupPower = '强力';
   static const String skillGroupJoint = '共鸣';
+  static const String skillSealPower = '强';
+  static const String skillSealInterrupt = '破';
+  static const String skillSealGroup = '群';
+  static const String skillSealUltimate = '绝';
+  static const String skillSealAssist = '辅';
   // 破招用 [battleInterruptSkill]='破招'、大招用 [ultimate]='大招'。
   static const String skillPendingStamp = '待发';
   static const String skillAwaitingAction = '回势中';

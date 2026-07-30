@@ -22,8 +22,8 @@ Offset battleStageAnchor(
       mode != BattleStageLayoutMode.lightFoot &&
       mode != BattleStageLayoutMode.innerDemon) {
     final anchors = teamSide == 0
-        ? const [Offset(0.15, 0.56), Offset(0.27, 0.59), Offset(0.38, 0.35)]
-        : const [Offset(0.66, 0.51), Offset(0.80, 0.58), Offset(0.90, 0.62)];
+        ? const [Offset(0.12, 0.64), Offset(0.27, 0.59), Offset(0.38, 0.43)]
+        : const [Offset(0.66, 0.46), Offset(0.80, 0.58), Offset(0.90, 0.62)];
     return anchors[normalizedSlot];
   }
 

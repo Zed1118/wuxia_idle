@@ -318,7 +318,7 @@ void main() {
         );
         expect(find.text(actor.name), findsWidgets);
       }
-      expect(find.text(UiStrings.battleAutoRotation), findsOneWidget);
+      expect(find.text(UiStrings.battleAutoRotation), findsNothing);
       for (var i = 0; i < 7; i++) {
         expect(find.byKey(ValueKey('battle_skill_slot_$i')), findsOneWidget);
       }
@@ -741,9 +741,9 @@ void main() {
         final pouch = tester.getSize(
           find.byKey(const ValueKey('battle_desk_pouch_region')),
         );
-        expect(focus.width / size.width, inInclusiveRange(0.18, 0.20));
-        expect(skills.width / size.width, inInclusiveRange(0.58, 0.62));
-        expect(pouch.width / size.width, inInclusiveRange(0.20, 0.22));
+        expect(focus.width / size.width, inInclusiveRange(0.15, 0.17));
+        expect(skills.width / size.width, inInclusiveRange(0.51, 0.55));
+        expect(pouch.width / size.width, inInclusiveRange(0.19, 0.21));
         expect(
           find.byKey(const ValueKey('battle_skill_slot_6')),
           findsOneWidget,
@@ -859,7 +859,7 @@ void main() {
       );
     });
 
-    testWidgets('当前执招者展开姓名流派真气名帖，其余收束且阵亡褪墨', (tester) async {
+    testWidgets('角色名帖保持三行等高，真气汇总独立落在底部', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final team = [
         left[0],
@@ -877,13 +877,27 @@ void main() {
           of: expanded,
           matching: find.text(EnumL10n.school(team.first.school)),
         ),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.descendant(
           of: expanded,
           matching: find.text('${team.first.currentQi}/${team.first.maxQi}'),
         ),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('battle.focusQiSummary')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          '${UiStrings.statQi} ${team.first.currentQi}/${team.first.maxQi}',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('battle.focusQiProgress')),
         findsOneWidget,
       );
       expect(
@@ -942,10 +956,10 @@ void main() {
       expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsOneWidget);
       expect(find.byKey(const ValueKey('skill_cmd_1_b1')), findsOneWidget);
       expect(find.byKey(const ValueKey('skill_cmd_1_u1')), findsOneWidget);
-      // 分组标签
-      expect(find.text('强力'), findsWidgets);
-      expect(find.text('破招'), findsWidgets);
-      expect(find.text('大招'), findsWidgets);
+      // 样板使用单字朱印，不在签头横排完整分组名。
+      expect(find.text(UiStrings.skillSealPower), findsWidgets);
+      expect(find.text(UiStrings.skillSealInterrupt), findsWidgets);
+      expect(find.text(UiStrings.skillSealUltimate), findsWidgets);
     });
 
     // 两段点选：长按技能方块弹简介浮层(不下发);点击 = 释放由 battle_tap_skill_test 守。
@@ -1107,6 +1121,19 @@ void main() {
         ),
         findsOneWidget,
       );
+      final titleRect = tester.getRect(
+        find.descendant(
+          of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipTitle')),
+        ),
+      );
+      final sealRect = tester.getRect(
+        find.descendant(
+          of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipNatureSeal')),
+        ),
+      );
+      expect(sealRect.top, greaterThan(titleRect.center.dy));
       final nativeButton = tester.widget<ElevatedButton>(
         find.descendant(of: skill, matching: find.byType(ElevatedButton)),
       );
@@ -1119,8 +1146,15 @@ void main() {
         find.byKey(const ValueKey('battle.skillSlip.state.available')),
         findsOneWidget,
       );
-      expect(find.text(UiStrings.skillQiCostChip(200)), findsOneWidget);
-      expect(find.text(UiStrings.skillCooldownChip(2)), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('battle.skillSlipQiCost')),
+        findsOneWidget,
+      );
+      expect(find.text('200'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('battle.skillSlipQiSwirl')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('真气不足态技能按钮显示「真气不足」', (tester) async {
@@ -1133,8 +1167,7 @@ void main() {
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillInsufficientForce), findsOneWidget);
-      expect(find.text('真气不足'), findsOneWidget);
+      expect(find.text(UiStrings.skillInsufficientForce), findsNothing);
       expect(
         find.byKey(const ValueKey('battle.skillSlip.state.insufficientQi')),
         findsOneWidget,
@@ -1143,6 +1176,10 @@ void main() {
         find.byKey(const ValueKey('battle.skillSlip.qiGap')),
         findsOneWidget,
       );
+      final semantics = tester.widget<Semantics>(
+        find.byKey(const ValueKey('skill_cmd_1_p1')),
+      );
+      expect(semantics.properties.value, UiStrings.skillInsufficientForce);
       // 内力不足态不显示可用态的耗内文案。
       expect(find.textContaining('耗气'), findsNothing);
     });
@@ -1158,7 +1195,12 @@ void main() {
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillQiCostChip(160)), findsOneWidget);
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('battle.skillSlipQiCost')))
+            .data,
+        '160',
+      );
       expect(find.text(UiStrings.skillInsufficientForce), findsNothing);
       final semantics = tester.widget<Semantics>(
         find.byKey(const ValueKey('skill_cmd_1_p1')),
@@ -1177,11 +1219,12 @@ void main() {
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillAwaitingAction), findsOneWidget);
+      expect(find.text(UiStrings.skillAwaitingAction), findsNothing);
       final semantics = tester.widget<Semantics>(
         find.byKey(const ValueKey('skill_cmd_1_p1')),
       );
       expect(semantics.properties.enabled, isFalse);
+      expect(semantics.properties.value, UiStrings.skillAwaitingAction);
     });
 
     testWidgets('蓄力中技能按钮显示「蓄力中」并保持禁用', (tester) async {
@@ -1197,11 +1240,12 @@ void main() {
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillCharging), findsOneWidget);
+      expect(find.text(UiStrings.skillCharging), findsNothing);
       final semantics = tester.widget<Semantics>(
         find.byKey(const ValueKey('skill_cmd_1_p1')),
       );
       expect(semantics.properties.enabled, isFalse);
+      expect(semantics.properties.value, UiStrings.skillCharging);
     });
 
     testWidgets('踉跄中技能按钮显示「踉跄中」并保持禁用', (tester) async {
@@ -1216,11 +1260,12 @@ void main() {
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillStaggered), findsOneWidget);
+      expect(find.text(UiStrings.skillStaggered), findsNothing);
       final semantics = tester.widget<Semantics>(
         find.byKey(const ValueKey('skill_cmd_1_p1')),
       );
       expect(semantics.properties.enabled, isFalse);
+      expect(semantics.properties.value, UiStrings.skillStaggered);
     });
 
     testWidgets('冷却态技能按钮显读秒环 + 中心剩余拍数（不再显文字「冷却N」）', (tester) async {

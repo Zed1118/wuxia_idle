@@ -9,22 +9,23 @@ abstract final class BattleLayoutTokens {
   static const double commandDeskFraction = 0.25;
   static const double headerMinHeight = 44;
   static const double headerMaxHeight = 60;
-  static const double headerHorizontalPadding = 28;
+  static const double headerHorizontalPadding = 34;
+  static const double headerRightPadding = 70;
   static const double headerSealMinWidth = 44;
   static const double headerSealHeight = 36;
   static const double headerSealGap = 3;
   static const double commandDeskMinHeight = 172;
   static const double commandDeskMaxHeight = 230;
-  static const double commandDeskHorizontalPadding = 4;
-  static const double commandDeskVerticalPadding = 5;
-  static const double focusRailFraction = 0.19;
-  static const double pouchRailFraction = 0.21;
-  static const double actorChipHeight = 36;
+  static const double commandDeskHorizontalPadding = 38;
+  static const double commandDeskVerticalPadding = 9;
+  static const double focusRailFraction = 0.16;
+  static const double pouchRailFraction = 0.20;
+  static const double actorChipHeight = 30;
   static const double skillSlotHeight = 150;
-  static const double skillSlotGap = 16;
-  static const double sectionGap = 4;
+  static const double skillSlotGap = 22;
+  static const double sectionGap = 22;
   static const double sectionDividerHeight = 148;
-  static const double pouchSlotSize = 54;
+  static const double pouchSlotSize = 64;
   static const double pouchSlotGap = 8;
   static const double stageHorizontalPadding = 10;
   static const double stageVerticalPadding = 0;
@@ -68,6 +69,10 @@ final class BattleLayoutMetrics {
       1 -
       focusRailWidth -
       pouchRailWidth;
+  double get sampleSkillSlotHeight =>
+      (commandDeskHeight * 0.88).clamp(146.0, 200.0);
+  double get sampleSectionDividerHeight =>
+      (commandDeskHeight * 0.88).clamp(144.0, 200.0);
 
   static BattleLayoutMetrics resolve(Size viewport) {
     final headerHeight = (viewport.height * BattleLayoutTokens.headerFraction)

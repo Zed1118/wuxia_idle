@@ -7,17 +7,20 @@ class BattlePouchRailSurface extends StatelessWidget {
     required this.width,
     required this.compact,
     required this.child,
+    this.height,
   });
 
   final double width;
   final bool compact;
   final Widget child;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       key: const ValueKey('battle_desk_pouch_region'),
       width: width,
+      height: height,
       padding: const EdgeInsets.all(4),
       decoration: const BoxDecoration(color: Color(0xB3131210)),
       child: Container(

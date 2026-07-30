@@ -7,8 +7,6 @@ import '../../domain/enum_localizations.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
 import '../../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
-import '../../../help/domain/help_topic.dart';
-import '../../../help/presentation/context_help_button.dart';
 import '../battle_layout_tokens.dart';
 import '../battle_typography_tokens.dart';
 
@@ -56,8 +54,9 @@ class Header extends StatelessWidget {
 
     return Container(
       height: metrics.headerHeight,
-      padding: const EdgeInsets.symmetric(
-        horizontal: BattleLayoutTokens.headerHorizontalPadding,
+      padding: const EdgeInsets.only(
+        left: BattleLayoutTokens.headerHorizontalPadding,
+        right: BattleLayoutTokens.headerRightPadding,
       ),
       decoration: const BoxDecoration(
         color: Color(0xF2191816),
@@ -77,7 +76,7 @@ class Header extends StatelessWidget {
                   color: Color(0xFFE2CFAB),
                   fontFamily: BattleTypography.displayFamily,
                   fontFamilyFallback: BattleTypography.displayFallback,
-                  fontSize: BattleTypography.t1,
+                  fontSize: 28,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 4,
                   fontFeatures: BattleTypography.tabularFigures,
@@ -94,40 +93,23 @@ class Header extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (sceneTitle != null)
-                        Flexible(
-                          child: Text(
-                            sceneTitle!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Color(0xFFD8C29A),
-                              fontFamily: BattleTypography.displayFamily,
-                              fontFamilyFallback:
-                                  BattleTypography.displayFallback,
-                              fontSize: BattleTypography.t2,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                        ),
-                      if (sceneTitle != null) const SizedBox(width: 10),
-                      Text(
-                        '${UiStrings.tickPrefix} ${state.tick}',
-                        style: TextStyle(
-                          color: const Color(0xFF8F826B),
-                          fontFamilyFallback: BattleTypography.uiFallback,
-                          fontSize: sceneTitle == null
-                              ? BattleTypography.t3
-                              : BattleTypography.t5,
-                          letterSpacing: 1,
-                          fontFeatures: BattleTypography.tabularFigures,
-                        ),
+                  if (sceneTitle != null)
+                    Text(
+                      sceneTitle!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFFD8C29A),
+                        fontFamily: BattleTypography.displayFamily,
+                        fontFamilyFallback: BattleTypography.displayFallback,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.5,
                       ),
-                    ],
+                    ),
+                  Semantics(
+                    label: '${UiStrings.tickPrefix} ${state.tick}',
+                    child: const SizedBox.shrink(),
                   ),
                   // surviveTicks 型胜负条件的条件条(2026-07-29 Ch21 主线首用补)。
                   // 不配 winCondition 或 defeatAll 型时整行不渲染,前 20 章零影响。
@@ -182,7 +164,9 @@ class Header extends StatelessWidget {
                   BattleHeaderIconButton(
                     key: const ValueKey('battle_fast_forward_toggle'),
                     icon: Icons.fast_forward,
-                    label: UiStrings.fastForward,
+                    label: isFastForward
+                        ? UiStrings.battleSpeedFast
+                        : UiStrings.battleSpeedNormal,
                     tooltip: UiStrings.fastForward,
                     onPressed: onFastForward,
                     isActive: isFastForward,
@@ -199,6 +183,21 @@ class Header extends StatelessWidget {
                         : UiStrings.battlePause,
                     onPressed: onPause,
                   ),
+                BattleHeaderIconButton(
+                  key: const ValueKey('battle_log_toggle'),
+                  icon: Icons.list_alt,
+                  label: UiStrings.battleLogShort,
+                  tooltip: UiStrings.battleLog,
+                  onPressed: onToggleLog,
+                ),
+                if (state.result == null && onSurrender != null)
+                  BattleHeaderIconButton(
+                    key: const ValueKey('battle_surrender'),
+                    icon: Icons.flag_outlined,
+                    label: UiStrings.surrenderConfirmAction,
+                    tooltip: UiStrings.battleSurrender,
+                    onPressed: onSurrender,
+                  ),
                 if (state.result == null && onStepOnce != null)
                   BattleHeaderIconButton(
                     key: const ValueKey('battle_step_once'),
@@ -207,26 +206,6 @@ class Header extends StatelessWidget {
                     tooltip: UiStrings.battleStepOnce,
                     onPressed: onStepOnce,
                   ),
-                if (state.result == null && onSurrender != null)
-                  BattleHeaderIconButton(
-                    key: const ValueKey('battle_surrender'),
-                    icon: Icons.flag_outlined,
-                    label: UiStrings.battleSurrender,
-                    tooltip: UiStrings.battleSurrender,
-                    onPressed: onSurrender,
-                  ),
-                BattleHeaderIconButton(
-                  key: const ValueKey('battle_log_toggle'),
-                  icon: Icons.list_alt,
-                  label: UiStrings.battleLogShort,
-                  tooltip: UiStrings.battleLog,
-                  onPressed: onToggleLog,
-                ),
-                const SizedBox(width: BattleLayoutTokens.headerSealGap),
-                const ContextHelpButton(
-                  topic: HelpTopic.combatAdvanced,
-                  size: 20,
-                ),
               ],
             ),
           ),
@@ -278,7 +257,7 @@ class BattleHeaderIconButton extends StatelessWidget {
               style: const TextStyle(
                 fontFamily: BattleTypography.displayFamily,
                 fontFamilyFallback: BattleTypography.displayFallback,
-                fontSize: BattleTypography.t4,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
               ),
@@ -360,15 +339,13 @@ class BattleModePill extends StatelessWidget {
               border: Border.all(color: const Color(0xFF6D5940)),
             ),
             alignment: Alignment.center,
-            child: Text(
-              allowPlayerIntervention
-                  ? '${UiStrings.battleAutoModeShort}·${UiStrings.battleAutoInterventionShort}'
-                  : UiStrings.battleAutoModeShort,
-              style: const TextStyle(
+            child: const Text(
+              UiStrings.battleAutoModeShort,
+              style: TextStyle(
                 color: Color(0xFFCBB992),
                 fontFamily: BattleTypography.displayFamily,
                 fontFamilyFallback: BattleTypography.displayFallback,
-                fontSize: BattleTypography.t4,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
             ),

@@ -111,7 +111,9 @@ void main() {
     expect(find.text(UiStrings.surrenderConfirmTitle), findsWidgets);
     expect(surrendered, 0, reason: '确认前不触发');
 
-    await tester.tap(find.text(UiStrings.surrenderConfirmAction));
+    await tester.tap(
+      find.widgetWithText(TextButton, UiStrings.surrenderConfirmAction),
+    );
     await tester.pumpAndSettle();
     expect(surrendered, 1);
   });

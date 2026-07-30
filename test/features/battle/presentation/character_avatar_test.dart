@@ -6,6 +6,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
 import 'package:wuxia_idle/features/battle/presentation/hp_bar.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_image.dart';
@@ -271,6 +272,40 @@ void main() {
     expect(
       find.byKey(const ValueKey('battle.stageStatusAnchor')),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('战场人物信息条显示样板式完整数值且真气条无额外前缀', (tester) async {
+    final character = _char(
+      isBoss: false,
+    ).copyWith(currentHp: 37810, maxHp: 37810, currentQi: 50, maxQi: 100);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 240,
+            height: 300,
+            child: Stack(
+              children: [
+                StageCharacterStatusOverlay(
+                  character: character,
+                  battleState: null,
+                  width: 240,
+                  height: 300,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('37810/37810'), findsOneWidget);
+    expect(find.text('50/100'), findsOneWidget);
+    expect(find.textContaining('37.8K'), findsNothing);
+    expect(
+      find.textContaining(UiStrings.internalForceShortLabel),
+      findsNothing,
     );
   });
 
