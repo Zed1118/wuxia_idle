@@ -25,23 +25,24 @@ Path battleSkillSlipPaperPath(Rect rect) {
   final right = rect.right;
   final bottom = rect.bottom;
   return Path()
-    ..moveTo(left + 5, top + 2)
-    ..lineTo(left + rect.width * 0.28, top + 1)
-    ..lineTo(left + rect.width * 0.56, top + 3)
-    ..lineTo(right - 6, top + 1)
-    ..lineTo(right - 2, top + 7)
-    ..lineTo(right - 4, top + rect.height * 0.22)
-    ..lineTo(right - 1, top + rect.height * 0.42)
-    ..lineTo(right - 3, top + rect.height * 0.67)
-    ..lineTo(right - 1, bottom - 8)
-    ..lineTo(right - 7, bottom - 2)
-    ..lineTo(left + rect.width * 0.68, bottom - 1)
-    ..lineTo(left + rect.width * 0.43, bottom - 3)
-    ..lineTo(left + 7, bottom - 1)
-    ..lineTo(left + 2, bottom - 7)
-    ..lineTo(left + 4, top + rect.height * 0.72)
-    ..lineTo(left + 1, top + rect.height * 0.48)
-    ..lineTo(left + 3, top + rect.height * 0.21)
+    ..moveTo(left + 0.5, top + 6)
+    ..lineTo(left + 3, top + 1.5)
+    ..lineTo(left + rect.width * 0.27, top + 0.5)
+    ..lineTo(left + rect.width * 0.55, top + 2.2)
+    ..lineTo(right - 5, top + 0.8)
+    ..lineTo(right - 0.5, top + 6)
+    ..lineTo(right - 2.4, top + rect.height * 0.22)
+    ..lineTo(right - 0.5, top + rect.height * 0.43)
+    ..lineTo(right - 2.2, top + rect.height * 0.68)
+    ..lineTo(right - 0.5, bottom - 7)
+    ..lineTo(right - 5, bottom - 0.8)
+    ..lineTo(left + rect.width * 0.68, bottom - 0.5)
+    ..lineTo(left + rect.width * 0.44, bottom - 2.2)
+    ..lineTo(left + 5, bottom - 0.5)
+    ..lineTo(left + 0.5, bottom - 6)
+    ..lineTo(left + 2.4, top + rect.height * 0.72)
+    ..lineTo(left + 0.5, top + rect.height * 0.48)
+    ..lineTo(left + 2.3, top + rect.height * 0.21)
     ..close();
 }
 
@@ -135,6 +136,15 @@ class BattleSkillSlipSurface extends StatelessWidget {
             ),
           ),
         ),
+        if (visualState == BattleSkillSlipVisualState.interrupt)
+          const Positioned.fill(
+            child: IgnorePointer(
+              child: ColoredBox(
+                key: ValueKey('battle.skillSlipSelectedWash'),
+                color: Color(0x1AFFECD0),
+              ),
+            ),
+          ),
         Positioned.fill(
           child: IgnorePointer(
             child: CustomPaint(
@@ -209,7 +219,7 @@ class BattleSkillSlipSurface extends StatelessWidget {
     final staged = visualState == BattleSkillSlipVisualState.interrupt
         ? Transform.translate(
             key: const ValueKey('battle.skillSlip.interruptLift'),
-            offset: const Offset(0, -3),
+            offset: Offset(0, height >= 190 ? 0 : -3),
             child: slip,
           )
         : slip;
@@ -236,18 +246,18 @@ class _BattleSkillSlipOuterFinishPainter extends CustomPainter {
       canvas.drawPath(
         path,
         Paint()
-          ..color = accent.withValues(alpha: 0.52)
+          ..color = accent.withValues(alpha: 0.62)
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 5
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+          ..strokeWidth = 8
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
       );
       canvas.drawPath(
         path,
         Paint()
-          ..color = const Color(0xFFF3D38B).withValues(alpha: 0.52)
+          ..color = const Color(0xFFF3D38B).withValues(alpha: 0.58)
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+          ..strokeWidth = 3
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
       );
       canvas.drawPath(
         path,
@@ -256,6 +266,19 @@ class _BattleSkillSlipOuterFinishPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.6,
       );
+      final spark = Paint()
+        ..color = const Color(0xFFF2CC79).withValues(alpha: 0.92)
+        ..strokeCap = StrokeCap.round;
+      for (var i = 0; i < 24; i++) {
+        final onVertical = i.isEven;
+        final x = onVertical
+            ? (i % 4 == 0 ? 1.0 : size.width - 1.0)
+            : 3.0 + ((i * 17) % 83) / 83 * (size.width - 6);
+        final y = onVertical
+            ? 4.0 + ((i * 23) % 97) / 97 * (size.height - 8)
+            : (i % 4 == 1 ? 1.0 : size.height - 1.0);
+        canvas.drawCircle(Offset(x, y), i % 5 == 0 ? 1.0 : 0.55, spark);
+      }
     }
   }
 
@@ -296,7 +319,7 @@ class _BattleSkillCooldownWashPainter extends CustomPainter {
     canvas.drawPath(
       wash,
       Paint()
-        ..color = const Color(0xFF29241E).withValues(alpha: 0.52)
+        ..color = const Color(0xFF29241E).withValues(alpha: 0.58)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
     );
 
@@ -372,23 +395,33 @@ class _BattleSkillSlipFramePainter extends CustomPainter {
     canvas.drawPath(
       roughEdge,
       Paint()
-        ..color = const Color(0xFF4B3B2B).withValues(alpha: 0.48)
+        ..color = const Color(0xFF33281F).withValues(alpha: 0.28)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.1,
+        ..strokeWidth = 4.4
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.7),
+    );
+    canvas.drawPath(
+      roughEdge,
+      Paint()
+        ..color = const Color(0xFF403126).withValues(alpha: 0.76)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.35,
     );
 
     final ink = Paint()
-      ..color = const Color(0xFF5B4934).withValues(alpha: 0.42)
+      ..color = const Color(0xFF59452F).withValues(alpha: 0.48)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
-    canvas.drawRect(
-      Rect.fromLTWH(4.5, 4.5, size.width - 9, size.height - 9),
+      ..strokeWidth = 0.85;
+    canvas.drawPath(
+      battleSkillSlipPaperPath(
+        Rect.fromLTWH(3.5, 3.5, size.width - 7, size.height - 7),
+      ),
       ink,
     );
 
     final accentPaint = Paint()
-      ..color = accent.withValues(alpha: 0.82)
-      ..strokeWidth = 2.2
+      ..color = accent.withValues(alpha: 0.58)
+      ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.square;
     canvas.drawLine(
       const Offset(4.5, 7),
@@ -396,65 +429,87 @@ class _BattleSkillSlipFramePainter extends CustomPainter {
       accentPaint,
     );
 
-    final corner = Paint()
-      ..color = const Color(0xFF382E24).withValues(alpha: 0.54)
-      ..strokeWidth = 1.1;
-    canvas.drawLine(const Offset(9, 9), const Offset(20, 9), corner);
-    canvas.drawLine(const Offset(9, 9), const Offset(9, 18), corner);
-    canvas.drawLine(
-      Offset(size.width - 9, size.height - 9),
-      Offset(size.width - 20, size.height - 9),
-      corner,
-    );
-    canvas.drawLine(
-      Offset(size.width - 9, size.height - 9),
-      Offset(size.width - 9, size.height - 18),
-      corner,
-    );
-
     final fiber = Paint()
-      ..color = const Color(0xFF5D4D38).withValues(alpha: 0.12)
-      ..strokeWidth = 0.55
+      ..color = const Color(0xFF5D4D38).withValues(alpha: 0.085)
+      ..strokeWidth = 0.48
       ..strokeCap = StrokeCap.round;
-    for (var i = 0; i < 14; i++) {
-      final y = 13.0 + i * ((size.height - 26) / 14);
-      final start = 8.0 + (i % 4) * 3.0;
-      final length = size.width * (0.22 + (i % 3) * 0.09);
+    for (var i = 0; i < 24; i++) {
+      final y = 9.0 + ((i * 37) % 101) / 101 * (size.height - 18);
+      final start = 6.0 + ((i * 23) % 61) / 61 * size.width * 0.55;
+      final length = size.width * (0.10 + (i % 5) * 0.045);
       canvas.drawLine(
         Offset(start, y),
         Offset(
-          (start + length).clamp(0, size.width - 8),
-          y + (i.isEven ? 1 : -1),
+          (start + length).clamp(0, size.width - 5),
+          y + (i.isEven ? 0.8 : -0.6),
         ),
         fiber,
       );
     }
 
     final fleck = Paint()
-      ..color = const Color(0xFF4C3F30).withValues(alpha: 0.17)
+      ..color = const Color(0xFF4C3F30).withValues(alpha: 0.19)
       ..strokeCap = StrokeCap.round;
-    for (var i = 0; i < 36; i++) {
-      final x = 8.0 + ((i * 29) % 83) / 83 * (size.width - 16);
-      final y = 9.0 + ((i * 47) % 97) / 97 * (size.height - 18);
-      canvas.drawCircle(Offset(x, y), i % 5 == 0 ? 0.6 : 0.325, fleck);
+    for (var i = 0; i < 108; i++) {
+      final x = 5.0 + ((i * 29) % 83) / 83 * (size.width - 10);
+      final y = 7.0 + ((i * 47) % 97) / 97 * (size.height - 14);
+      canvas.drawCircle(
+        Offset(x, y),
+        i % 7 == 0 ? 0.8 : (i % 3 == 0 ? 0.5 : 0.32),
+        fleck,
+      );
     }
 
     final mottle = Paint()
-      ..color = const Color(0xFF66533D).withValues(alpha: 0.12)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+      ..color = const Color(0xFF66533D).withValues(alpha: 0.09)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.5);
     final paleMottle = Paint()
-      ..color = const Color(0xFFF1DEC0).withValues(alpha: 0.055)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
-    for (var i = 0; i < 14; i++) {
+      ..color = const Color(0xFFF1DEC0).withValues(alpha: 0.05)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.5);
+    for (var i = 0; i < 18; i++) {
       final x = 10.0 + ((i * 31) % 73) / 73 * (size.width - 20);
       final y = 12.0 + ((i * 43) % 89) / 89 * (size.height - 24);
       canvas.drawOval(
         Rect.fromCenter(
           center: Offset(x, y),
-          width: 18 + (i % 3) * 9,
-          height: 10 + (i % 4) * 6,
+          width: 12 + (i % 3) * 7,
+          height: 7 + (i % 4) * 4,
         ),
         i.isEven ? mottle : paleMottle,
+      );
+    }
+
+    final edgeGrime = Paint()
+      ..color = const Color(0xFF3A2D22).withValues(alpha: 0.16)
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 11; i++) {
+      final x = 5.0 + i * ((size.width - 10) / 10);
+      final y = i.isEven ? 3.4 : size.height - 3.2;
+      canvas.drawLine(
+        Offset(x - 2.5, y),
+        Offset(x + 2 + (i % 3), y + (i.isEven ? 0.7 : -0.6)),
+        edgeGrime,
+      );
+    }
+
+    final edgeNick = Paint()
+      ..color = const Color(0xFF32261D).withValues(alpha: 0.40)
+      ..strokeWidth = 0.8
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 18; i++) {
+      final y = 8.0 + i * ((size.height - 16) / 17);
+      final leftLength = 1.8 + (i % 4) * 0.8;
+      final rightLength = 1.4 + ((i + 2) % 4) * 0.75;
+      canvas.drawLine(
+        Offset(1.2, y),
+        Offset(1.2 + leftLength, y + (i.isEven ? 0.7 : -0.5)),
+        edgeNick,
+      );
+      canvas.drawLine(
+        Offset(size.width - 1.2, y + 1),
+        Offset(size.width - 1.2 - rightLength, y + (i.isEven ? 0.4 : 1.6)),
+        edgeNick,
       );
     }
   }

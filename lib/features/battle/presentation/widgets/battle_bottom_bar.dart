@@ -387,7 +387,9 @@ class AutoCommandDesk extends StatelessWidget {
                 key: const ValueKey('battle_desk_skills_region'),
                 width: metrics.skillRailWidth,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 7),
+                  padding: const EdgeInsets.only(
+                    top: BattleLayoutTokens.sampleSkillSlipTopInset,
+                  ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -412,13 +414,13 @@ class AutoCommandDesk extends StatelessWidget {
                                       lastPlayerAction?.skill?.id ==
                                       skills[index].id,
                                   beat: beat,
-                                  height: metrics.sampleSkillSlotHeight,
+                                  height: metrics.sampleSkillSlipHeight,
                                   onTap: () {},
                                   onShowInfo: () {},
                                 )
                               : EmptySkillSlot(
                                   index: index,
-                                  height: metrics.sampleSkillSlotHeight,
+                                  height: metrics.sampleSkillSlipHeight,
                                 ),
                         ),
                         if (index < 6)
@@ -539,7 +541,9 @@ class BottomBar extends StatelessWidget {
               key: const ValueKey('battle_desk_skills_region'),
               width: metrics.skillRailWidth,
               child: Padding(
-                padding: const EdgeInsets.only(right: 7),
+                padding: const EdgeInsets.only(
+                  top: BattleLayoutTokens.sampleSkillSlipTopInset,
+                ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -573,7 +577,7 @@ class BottomBar extends StatelessWidget {
                                     allowPlayerIntervention:
                                         allowPlayerIntervention,
                                     beat: beat,
-                                    height: metrics.sampleSkillSlotHeight,
+                                    height: metrics.sampleSkillSlipHeight,
                                     onTap: () =>
                                         onSkillTap(focus.characterId, skill),
                                     onShowInfo: () => onShowSkillInfo(skill),
@@ -588,7 +592,7 @@ class BottomBar extends StatelessWidget {
                               )
                             : EmptySkillSlot(
                                 index: index,
-                                height: metrics.sampleSkillSlotHeight,
+                                height: metrics.sampleSkillSlipHeight,
                               ),
                       ),
                       if (index < 6)
@@ -1191,6 +1195,73 @@ class SkillCommandButton extends StatelessWidget {
     }
 
     final accent = highlight ? WuxiaUi.gold : const Color(0xFF493B2D);
+    final skillTitle = _VerticalSkillTitle(
+      key: const ValueKey('battle.skillSlipTitle'),
+      name: skill.name,
+      expandedSampleStyle: expandedSampleStyle,
+    );
+    final natureSeal = Transform.rotate(
+      angle: -0.045,
+      child: Container(
+        key: const ValueKey('battle.skillSlipNatureSeal'),
+        width: expandedSampleStyle ? 28 : 24,
+        height: expandedSampleStyle ? 28 : 22,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: expandedSampleStyle
+              ? WuxiaUi.battleSkillSeal
+              : WuxiaUi.jiang.withValues(alpha: 0.10),
+          border: Border.all(
+            color: expandedSampleStyle
+                ? const Color(0xFF4F211C)
+                : WuxiaUi.jiang.withValues(alpha: 0.78),
+            width: expandedSampleStyle ? 1.2 : 1,
+          ),
+          boxShadow: expandedSampleStyle
+              ? const [
+                  BoxShadow(
+                    color: Color(0x66301713),
+                    blurRadius: 2,
+                    offset: Offset(1, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (expandedSampleStyle)
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(painter: _SkillSealTexturePainter()),
+                ),
+              ),
+            Text(
+              _sealLabel(skill),
+              style: TextStyle(
+                color: expandedSampleStyle
+                    ? WuxiaUi.battleSkillSealInk
+                    : WuxiaUi.jiang,
+                fontFamily: BattleTypography.displayFamily,
+                fontFamilyFallback: BattleTypography.displayFallback,
+                fontSize: expandedSampleStyle ? 15 : 12,
+                fontWeight: FontWeight.w700,
+                height: 1,
+                shadows: expandedSampleStyle
+                    ? const [
+                        Shadow(
+                          color: Color(0x99301916),
+                          blurRadius: 1,
+                          offset: Offset(0.5, 0.5),
+                        ),
+                      ]
+                    : null,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
     final button = BattleSkillSlipSurface(
       height: height,
       tiltAngle: battleSkillSlipTilt(skill.id),
@@ -1217,50 +1288,39 @@ class SkillCommandButton extends StatelessWidget {
               children: [
                 const SizedBox(
                   key: ValueKey('battle.skillSlipHeader'),
-                  height: 18,
+                  height: 14,
                 ),
                 Expanded(
-                  child: Transform.translate(
-                    offset: Offset(0, expandedSampleStyle ? -10 : 0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _VerticalSkillTitle(
-                          key: const ValueKey('battle.skillSlipTitle'),
-                          name: skill.name,
-                          expandedSampleStyle: expandedSampleStyle,
-                        ),
-                        SizedBox(height: expandedSampleStyle ? 12 : 8),
-                        Transform.rotate(
-                          angle: -0.045,
-                          child: Container(
-                            key: const ValueKey('battle.skillSlipNatureSeal'),
-                            width: expandedSampleStyle ? 28 : 24,
-                            height: expandedSampleStyle ? 27 : 22,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: WuxiaUi.jiang.withValues(alpha: 0.10),
-                              border: Border.all(
-                                color: WuxiaUi.jiang.withValues(alpha: 0.78),
-                              ),
+                  child: expandedSampleStyle
+                      ? Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Positioned(
+                              top:
+                                  visualState ==
+                                      BattleSkillSlipVisualState.interrupt
+                                  ? 7
+                                  : 6,
+                              left: 0,
+                              right: 0,
+                              child: skillTitle,
                             ),
-                            child: Text(
-                              _sealLabel(skill),
-                              style: TextStyle(
-                                color: WuxiaUi.jiang,
-                                fontFamily: BattleTypography.displayFamily,
-                                fontFamilyFallback:
-                                    BattleTypography.displayFallback,
-                                fontSize: expandedSampleStyle ? 14 : 12,
-                                fontWeight: FontWeight.w700,
-                                height: 1,
-                              ),
+                            Positioned(
+                              top: 93,
+                              left: 0,
+                              right: 0,
+                              child: Center(child: natureSeal),
                             ),
-                          ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            skillTitle,
+                            const SizedBox(height: 8),
+                            natureSeal,
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
                 ),
                 Container(
                   key: const ValueKey('battle.skillSlipFooter'),
@@ -1274,7 +1334,7 @@ class SkillCommandButton extends StatelessWidget {
                   decoration: BoxDecoration(
                     border: Border(
                       top: BorderSide(
-                        color: const Color(0xFF79674D).withValues(alpha: 0.24),
+                        color: const Color(0xFF79674D).withValues(alpha: 0.10),
                       ),
                     ),
                   ),
@@ -1283,7 +1343,7 @@ class SkillCommandButton extends StatelessWidget {
                     children: [
                       CustomPaint(
                         key: const ValueKey('battle.skillSlipQiSwirl'),
-                        size: Size.square(expandedSampleStyle ? 19 : 13),
+                        size: Size.square(expandedSampleStyle ? 22 : 13),
                         painter: const _QiSwirlPainter(),
                       ),
                       SizedBox(width: expandedSampleStyle ? 5 : 3),
@@ -1291,8 +1351,10 @@ class SkillCommandButton extends StatelessWidget {
                         '$effectiveCost',
                         key: const ValueKey('battle.skillSlipQiCost'),
                         style: TextStyle(
-                          color: WuxiaUi.qing,
-                          fontSize: expandedSampleStyle ? 15 : 10,
+                          color: expandedSampleStyle
+                              ? WuxiaUi.battleSkillQi
+                              : WuxiaUi.qing,
+                          fontSize: expandedSampleStyle ? 18 : 10,
                           fontWeight: FontWeight.w700,
                           height: 1,
                           fontFeatures: BattleTypography.tabularFigures,
@@ -1372,6 +1434,8 @@ class _VerticalSkillTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fourCharacterSample =
+        expandedSampleStyle && name.characters.length >= 4;
     return Text(
       name.characters.take(4).join('\n'),
       maxLines: 4,
@@ -1381,9 +1445,11 @@ class _VerticalSkillTitle extends StatelessWidget {
         color: WuxiaUi.ink,
         fontFamily: BattleTypography.displayFamily,
         fontFamilyFallback: BattleTypography.displayFallback,
-        fontSize: expandedSampleStyle ? 20 : BattleTypography.t2,
+        fontSize: expandedSampleStyle
+            ? (fourCharacterSample ? 20 : 21.5)
+            : BattleTypography.t2,
         fontWeight: FontWeight.w700,
-        height: expandedSampleStyle ? 0.96 : 0.92,
+        height: expandedSampleStyle ? (fourCharacterSample ? 1.0 : 1.10) : 0.92,
         letterSpacing: 0,
       ),
     );
@@ -1396,20 +1462,20 @@ class _QiSwirlPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = WuxiaUi.qing
+      ..color = size.width >= 20 ? WuxiaUi.battleSkillQi : WuxiaUi.qing
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5
+      ..strokeWidth = size.width >= 20 ? 2.0 : 1.5
       ..strokeCap = StrokeCap.round;
     final center = Offset(size.width / 2, size.height / 2);
     canvas.drawArc(
-      Rect.fromCircle(center: center, radius: size.width * 0.38),
+      Rect.fromCircle(center: center, radius: size.width * 0.41),
       -0.6,
       4.9,
       false,
       paint,
     );
     canvas.drawArc(
-      Rect.fromCircle(center: center, radius: size.width * 0.22),
+      Rect.fromCircle(center: center, radius: size.width * 0.24),
       2.2,
       4.1,
       false,
@@ -1420,6 +1486,39 @@ class _QiSwirlPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _QiSwirlPainter oldDelegate) => false;
+}
+
+class _SkillSealTexturePainter extends CustomPainter {
+  const _SkillSealTexturePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final dark = Paint()
+      ..color = const Color(0xFF351713).withValues(alpha: 0.46)
+      ..strokeWidth = 0.9
+      ..strokeCap = StrokeCap.round;
+    final worn = Paint()
+      ..color = WuxiaUi.battleSkillSealInk.withValues(alpha: 0.22)
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 13; i++) {
+      final x = 2.0 + ((i * 11) % 23) / 23 * (size.width - 4);
+      final y = 2.0 + ((i * 17) % 19) / 19 * (size.height - 4);
+      canvas.drawCircle(
+        Offset(x, y),
+        i % 4 == 0 ? 0.8 : 0.45,
+        i.isEven ? dark : worn,
+      );
+    }
+    canvas.drawLine(const Offset(1.5, 3), Offset(size.width - 2, 1.5), dark);
+    canvas.drawLine(
+      Offset(2, size.height - 1.5),
+      Offset(size.width - 1.5, size.height - 3),
+      dark,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _SkillSealTexturePainter oldDelegate) => false;
 }
 
 class EmptySkillSlot extends StatelessWidget {

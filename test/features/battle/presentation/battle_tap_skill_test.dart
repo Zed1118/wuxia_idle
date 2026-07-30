@@ -158,7 +158,11 @@ void main() {
       );
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillQiCostChip(640)), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('battle.skillSlipQiCost')),
+        findsOneWidget,
+      );
+      expect(find.text('640'), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
       await tester.pump();
       expect(notifier.interveneCount, 1);
@@ -173,7 +177,10 @@ void main() {
       );
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillAwaitingAction), findsOneWidget);
+      final semantics = tester.widget<Semantics>(
+        find.byKey(const ValueKey('skill_cmd_1_aoe1')),
+      );
+      expect(semantics.properties.value, UiStrings.skillAwaitingAction);
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
       await tester.pump();
       expect(notifier.interveneCount, 0);
@@ -211,7 +218,10 @@ void main() {
       );
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillCharging), findsOneWidget);
+      final semantics = tester.widget<Semantics>(
+        find.byKey(const ValueKey('skill_cmd_1_single1')),
+      );
+      expect(semantics.properties.value, UiStrings.skillCharging);
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
       await tester.pump();
       expect(find.text(UiStrings.skillPendingStamp), findsNothing);
@@ -227,7 +237,10 @@ void main() {
       );
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillStaggered), findsOneWidget);
+      final semantics = tester.widget<Semantics>(
+        find.byKey(const ValueKey('skill_cmd_1_aoe1')),
+      );
+      expect(semantics.properties.value, UiStrings.skillStaggered);
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
       await tester.pump();
       expect(notifier.interveneCount, 0);
@@ -270,7 +283,13 @@ void main() {
         startPaused: true,
       );
 
-      expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('battle_pause_toggle')),
+          matching: find.text(UiStrings.battleResume),
+        ),
+        findsOneWidget,
+      );
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
       await tester.pump();
       await tester.tap(
@@ -281,7 +300,10 @@ void main() {
       expect(notifier.interveneCount, 1);
       expect(find.text(UiStrings.skillPendingStamp), findsNothing);
       expect(
-        find.byIcon(Icons.play_arrow),
+        find.descendant(
+          of: find.byKey(const ValueKey('battle_pause_toggle')),
+          matching: find.text(UiStrings.battleResume),
+        ),
         findsOneWidget,
         reason: '待发只拥有自己施加的软暂停，不能覆盖玩家已有暂停',
       );
@@ -305,7 +327,13 @@ void main() {
 
       expect(notifier.interveneCount, 0);
       expect(find.text(UiStrings.skillPendingStamp), findsNothing);
-      expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('battle_pause_toggle')),
+          matching: find.text(UiStrings.battleResume),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('手动暂停中切换另一单体技 → 出手后仍保持暂停且使用新招', (tester) async {
@@ -328,7 +356,13 @@ void main() {
       await tester.pump();
 
       expect(notifier.lastInterveneSkill?.id, _singleAlt.id);
-      expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('battle_pause_toggle')),
+          matching: find.text(UiStrings.battleResume),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('待发中战斗被外部结束 → 清除待发印与目标可选提示', (tester) async {

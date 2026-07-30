@@ -23,7 +23,9 @@ abstract final class BattleLayoutTokens {
   static const double pouchRailFraction = 0.20;
   static const double actorChipHeight = 40;
   static const double skillSlotHeight = 150;
-  static const double skillSlotGap = 26;
+  static const double skillSlotGap = 28;
+  static const double sampleSkillSlipTopInset = 2;
+  static const double sampleSkillSlipHeightReduction = 2;
   static const double focusDividerGap = 20;
   static const double dividerSkillGap = 32;
   static const double skillPouchGap = 31;
@@ -78,6 +80,8 @@ final class BattleLayoutMetrics {
       pouchRailWidth;
   double get sampleSkillSlotHeight =>
       (commandDeskHeight * 0.88).clamp(146.0, 206.0);
+  double get sampleSkillSlipHeight =>
+      sampleSkillSlotHeight - BattleLayoutTokens.sampleSkillSlipHeightReduction;
   double get sampleSectionDividerHeight =>
       (commandDeskHeight * 0.88).clamp(144.0, 200.0);
   double get stageTopSafetyInset =>

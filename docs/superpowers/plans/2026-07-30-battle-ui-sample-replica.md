@@ -62,7 +62,7 @@
 
 ## 当前恢复点
 
-- 状态：底部状态栏 / 七技能签加严复刻已完成，等待分支交付。
+- 状态：角色状态栏与技能卡 / 案台背景定点复刻已完成，等待提交并打 READY。
 - 根因证据：`BattleSceneBackground` 收到暖色 `battle_mountain_pass_stage_v2.png`
   后，主动替换成 `battle_mountain_pass_stage_cool_v3.png`，并再套
   `_mainlineSceneColorGrade`；当前战场饱和度约为样板一半，是最大画风偏差源。
@@ -159,3 +159,33 @@
 - 证据：
   `build/visual_acceptance/sample_replica/focus-status-verified-v11/`；
   黄金帧 READY，日志无 overflow / exception / route error。
+
+## 技能卡与案台背景复刻（2026-07-31）
+
+- 生产接线：`BottomBar` / `AutoCommandDesk` 继续通过
+  `SkillCommandButton → BattleSkillSlipSurface` 消费同一套生产纸签；
+  `BattleCommandDeskSurface` 提供整块案台材质，没有停在验收 fixture 或孤立组件。
+- 黄金尺寸几何：1672×941 下七签起点 x≈368、纸签顶线 y≈712、纸签高 204；
+  七槽宽度锁定 100/120/120/100/92/94/95，槽间墨案留白锁定 28px。
+  名帖 / 行囊仍消费原 206px 高度，不回退上一轮状态栏验收结果。
+- 纸签材质：破边路径扩展到签面真实边界，撤掉规则化 L 形角标，补双层暗边、
+  边缘缺口、细纤维、纸屑颗粒与低频斑驳；冷却签加深右侧墨洗，选中签保留
+  金线 / 金粒而不整体上抬。
+- 卡面层级：招名固定顶线，不再因二字 / 三字长度改变朱印纵坐标；朱印改为
+  暗绛填色、浅纸字与磨损颗粒；真气旋纹恢复 22px，费用字恢复 18px 与深青色。
+  四字招名在黄金签上自动使用紧凑字级，避免与固定朱印行重叠。
+- 案台背景：保持暖墨基色，增强灰墨斑驳、短纤维和确定性明暗颗粒；黄金截图
+  案台区域当前减样板平均 RGB 为 (-2.47,-0.75,-0.83)，完整技能带为
+  (-3.54,-1.58,-1.43)。
+- 交互与语义：仍使用原生 `ElevatedButton`、鼠标光标、焦点、键盘与 Semantics；
+  同步把点选测试从已退役的可见状态文字 / Material 图标断言收口到现有语义节点。
+- 验证：技能卡、案台布局、点选交互、简介浮层相关测试 85/85 通过；
+  `flutter analyze --no-pub` 为 0 issue；格式与 `git diff --check` 通过。
+  1280×720 / 1440×900 / 1672×941 三视口均 READY，日志未出现
+  overflow / exception / route error。
+- 红线影响：纯表现层与测试调整；不改伤害、血量、真气规则、AI、在线离线、
+  schema / saveVersion，不新增运行时中文文案或依赖。
+- 残留风险：Windows 字体栅格与系统缩放尚未实机目检；不同纸纹抗锯齿下不会
+  追求逐像素完全相同，但黄金尺寸结构、层级、色阶与材质已按样板验收口径锁定。
+- 最终证据：
+  `build/visual_acceptance/sample_replica/skill-card-final-v15/skill-card-side.png`。

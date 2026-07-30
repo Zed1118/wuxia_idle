@@ -895,11 +895,27 @@ void main() {
           tester.getRect(find.byKey(ValueKey('battle_skill_slot_$index'))),
       ];
       expect(slots.first.left, closeTo(368, 2));
-      expect(slots.first.height, closeTo(206, 2));
+      expect(slots.first.top, closeTo(712, 1));
+      expect(slots.first.height, closeTo(204, 1));
       expect(
         slots.map((rect) => rect.width.round()).toList(),
-        orderedEquals([101, 121, 121, 101, 93, 95, 96]),
+        orderedEquals([100, 120, 120, 100, 92, 94, 95]),
       );
+      for (var index = 0; index < slots.length - 1; index++) {
+        expect(
+          slots[index + 1].left - slots[index].right,
+          closeTo(28, 0.1),
+          reason: '技能签间隔须与样板的 28px 墨案留白一致',
+        );
+      }
+
+      final samplePaperBounds = battleSkillSlipPaperPath(
+        const Rect.fromLTWH(0, 0, 100, 204),
+      ).getBounds();
+      expect(samplePaperBounds.left, closeTo(0.5, 0.1));
+      expect(samplePaperBounds.top, closeTo(0.5, 0.1));
+      expect(samplePaperBounds.right, closeTo(99.5, 0.1));
+      expect(samplePaperBounds.bottom, closeTo(203.5, 0.1));
 
       final firstSkill = find.byKey(const ValueKey('skill_cmd_1_p1'));
       final firstFooter = tester.widget<Container>(
@@ -1260,6 +1276,10 @@ void main() {
     });
 
     testWidgets('可用态技能签将招名、分类与耗气冷却收进完整卡面层级', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1672, 941);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
         availableSkills: [_power], // cost=200, cd=2
@@ -1267,7 +1287,12 @@ void main() {
         maxInternalForce: 1000,
         skillCooldowns: const {},
       );
-      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        size: const Size(1672, 941),
+      );
 
       final skill = find.byKey(const ValueKey('skill_cmd_1_p1'));
       expect(
@@ -1325,13 +1350,38 @@ void main() {
           matching: find.byKey(const ValueKey('battle.skillSlipTitle')),
         ),
       );
-      final sealRect = tester.getRect(
+      final sealFinder = find.descendant(
+        of: skill,
+        matching: find.byKey(const ValueKey('battle.skillSlipNatureSeal')),
+      );
+      final sealRect = tester.getRect(sealFinder);
+      expect(sealRect.top, greaterThan(titleRect.center.dy));
+      final title = tester.widget<Text>(
         find.descendant(
-          of: skill,
-          matching: find.byKey(const ValueKey('battle.skillSlipNatureSeal')),
+          of: find.descendant(
+            of: skill,
+            matching: find.byKey(const ValueKey('battle.skillSlipTitle')),
+          ),
+          matching: find.byType(Text),
         ),
       );
-      expect(sealRect.top, greaterThan(titleRect.center.dy));
+      expect(title.style!.fontSize, 21.5);
+      expect(title.style!.height, 1.10);
+      final seal = tester.widget<Container>(sealFinder);
+      final sealDecoration = seal.decoration! as BoxDecoration;
+      expect(sealDecoration.color, const Color(0xFF6E2B23));
+      expect(
+        tester
+            .widget<Text>(
+              find.descendant(
+                of: sealFinder,
+                matching: find.text(UiStrings.skillSealPower),
+              ),
+            )
+            .style!
+            .color,
+        const Color(0xFFE6D2B5),
+      );
       final nativeButton = tester.widget<ElevatedButton>(
         find.descendant(of: skill, matching: find.byType(ElevatedButton)),
       );
@@ -1352,6 +1402,24 @@ void main() {
       expect(
         find.byKey(const ValueKey('battle.skillSlipQiSwirl')),
         findsOneWidget,
+      );
+      expect(
+        tester.getSize(find.byKey(const ValueKey('battle.skillSlipQiSwirl'))),
+        const Size.square(22),
+      );
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('battle.skillSlipQiCost')))
+            .style!
+            .fontSize,
+        18,
+      );
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('battle.skillSlipQiCost')))
+            .style!
+            .color,
+        const Color(0xFF3F5960),
       );
     });
 

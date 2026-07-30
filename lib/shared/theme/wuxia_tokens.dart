@@ -31,8 +31,11 @@ class WuxiaUi {
   static const Color battleDeskTextureTint = Color(0xFF272724);
   static const Color battleFocusBase = Color(0xD9242320);
   static const Color battleFocusPaper = Color(0xFFAE9479);
-  static const Color battleSkillPaper = Color(0xFFE6D5BE);
+  static const Color battleSkillPaper = Color(0xFFE9D7C0);
   static const Color battleSkillPaperSelected = Color(0xFFFDE4C5);
+  static const Color battleSkillSeal = Color(0xFF6E2B23);
+  static const Color battleSkillSealInk = Color(0xFFE6D2B5);
+  static const Color battleSkillQi = Color(0xFF3F5960);
   static const Color battlePouchBase = Color(0xD12C2B27);
   static const Color battlePouchWoodTop = Color(0xFF383631);
   static const Color battlePouchWoodMiddle = Color(0xFF2E2D29);

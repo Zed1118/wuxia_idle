@@ -74,10 +74,10 @@ class _BattleCommandDeskMottlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final darkMottle = Paint()
-      ..color = const Color(0xFF101210).withValues(alpha: 0.075)
+      ..color = const Color(0xFF101210).withValues(alpha: 0.105)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
     final lightMottle = Paint()
-      ..color = const Color(0xFF777169).withValues(alpha: 0.015)
+      ..color = const Color(0xFF777169).withValues(alpha: 0.040)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
 
     for (var i = 0; i < 28; i++) {
@@ -92,7 +92,7 @@ class _BattleCommandDeskMottlePainter extends CustomPainter {
     }
 
     final fiber = Paint()
-      ..color = const Color(0xFFAEA69A).withValues(alpha: 0.035)
+      ..color = const Color(0xFFAEA69A).withValues(alpha: 0.052)
       ..strokeWidth = 0.7
       ..strokeCap = StrokeCap.round;
     for (var i = 0; i < 13; i++) {
@@ -102,6 +102,22 @@ class _BattleCommandDeskMottlePainter extends CustomPainter {
         Offset(start, y),
         Offset((start + size.width * (0.10 + (i % 4) * 0.035)), y + 1),
         fiber,
+      );
+    }
+
+    final grain = Paint()
+      ..color = const Color(0xFFB8B0A4).withValues(alpha: 0.065)
+      ..strokeCap = StrokeCap.round;
+    final darkGrain = Paint()
+      ..color = const Color(0xFF080A09).withValues(alpha: 0.11)
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 180; i++) {
+      final x = ((i * 149 + 31) % 1151) / 1151 * size.width;
+      final y = ((i * 71 + 19) % 431) / 431 * size.height;
+      canvas.drawCircle(
+        Offset(x, y),
+        i % 11 == 0 ? 1.0 : 0.52,
+        i.isEven ? grain : darkGrain,
       );
     }
   }
