@@ -189,3 +189,42 @@
   追求逐像素完全相同，但黄金尺寸结构、层级、色阶与材质已按样板验收口径锁定。
 - 最终证据：
   `build/visual_acceptance/sample_replica/skill-card-final-v15/skill-card-side.png`。
+
+## 动态战斗 UI 复刻工作流（2026-07-31 夜）
+
+### 目标
+
+- 样板图是战斗 HUD 的视觉母版，不是只在静态 fixture 成立的截图目标。
+- 所有技能签继续使用生产 `SkillCommandButton` / `BattleSkillSlipSurface`，
+  不新增只供截图的替代卡；状态变化只换水墨层、朱印与提示，不改变签宽、签高、
+  招名字线、朱印线和真气脚线。
+- 覆盖可用、冷却、真气不足、待发、破招高亮、自动轮转，以及重点角色切换、
+  暂停 / 继续和实时节拍推进。
+- 验收视口固定为 1280×720、1440×900、1672×941；静态 route 必须
+  `VISUAL_ROUTE_READY`，动态 route 除截图外还要守交互 Semantics、焦点、键盘
+  和鼠标语义。
+
+### 状态矩阵
+
+| 状态 | 生产入口 / 验收 route | 视觉合同 | 当前状态 |
+| --- | --- | --- | --- |
+| 可用 / 样板中性 | `battle_tap_live`、`battle_v2_neutral_3v3` | 样板纸色、固定标题 / 朱印 / 真气脚线 | 已有基线 |
+| 冷却 | `battle_tap_live` 第三签、`battle_v2_resource_pressure` | 右侧干笔墨洗 + 米灰剩余拍数；实时节拍只改数字，不改几何 | 本轮校准中 |
+| 真气不足 | `battle_v2_resource_pressure` | 低饱和青墨断痕；保持旧纸签而非系统禁用按钮 | 待校准 |
+| 待发 / 选目标 | `battle_tap_preview` + 真点选 | 朱砂旧印完整落在签内；软暂停与敌方可选提示可读 | 本轮校准中 |
+| 破招高亮 | `battle_tap_live` 敌方蓄力 | 样板金线 / 金粒，不抬高签体、不改变宽高 | 待复核 |
+| 自动轮转 | `battle_v2_auto_rotation_first/second` | 与可点选案台同构；只读 Semantics，不伪装按钮 | 待复核 |
+
+### 本轮恢复点
+
+- 已把黄金大签 CD 数字从通用 25px 粗白强调字收回为 21px 米灰宋体中等字重，
+  右侧内收，并新增 widget 样式门禁。
+- 已把冷却背景从柔焦灰色渐变带改为多层断续干笔：锯齿墨缘、重墨笔脊、
+  纸面刮痕与破碎边缘分层绘制；`battle_tap_live` 和
+  `battle_v2_resource_pressure` 已实拍。
+- 已定位待发印使用负坐标导致被纸签 `ClipPath` 截掉；修复为签内朱砂旧印，
+  并用测试守住非负定位、朱砂纸色与无圆角材质。
+- 当前动态截图根目录：
+  `build/visual_acceptance/sample_replica/dynamic-state-audit-v18/`。
+- 下一步：复拍待发印 → 把真气不足的几何青线改为低饱和青墨断痕 →
+  复核自动轮转与破招动态 → 三视口总验收。

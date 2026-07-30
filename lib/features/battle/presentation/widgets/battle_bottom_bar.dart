@@ -1279,124 +1279,159 @@ class SkillCommandButton extends StatelessWidget {
       onPressed: enabled ? onTap : null,
       onLongPress: readOnly ? null : onShowInfo,
       interactive: !readOnly,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Opacity(
-            opacity: onCd ? (expandedSampleStyle ? 0.78 : 0.62) : 1.0,
-            child: Column(
-              children: [
-                const SizedBox(
-                  key: ValueKey('battle.skillSlipHeader'),
-                  height: 14,
-                ),
-                Expanded(
-                  child: expandedSampleStyle
-                      ? Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Positioned(
-                              top:
-                                  visualState ==
-                                      BattleSkillSlipVisualState.interrupt
-                                  ? 7
-                                  : 6,
-                              left: 0,
-                              right: 0,
-                              child: skillTitle,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final sampleCardWidth = constraints.maxWidth;
+          final cooldownCountSize = (12 + sampleCardWidth * 0.075).clamp(
+            18.0,
+            21.0,
+          );
+          final cooldownCountRight = (sampleCardWidth * 0.30 - 19).clamp(
+            5.0,
+            17.0,
+          );
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Opacity(
+                opacity: onCd
+                    ? (expandedSampleStyle ? 0.78 : 0.62)
+                    : insufficientQi
+                    ? 0.72
+                    : 1.0,
+                child: Column(
+                  children: [
+                    const SizedBox(
+                      key: ValueKey('battle.skillSlipHeader'),
+                      height: 14,
+                    ),
+                    Expanded(
+                      child: expandedSampleStyle
+                          ? Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Positioned(
+                                  top:
+                                      visualState ==
+                                          BattleSkillSlipVisualState.interrupt
+                                      ? 7
+                                      : 6,
+                                  left: 0,
+                                  right: 0,
+                                  child: skillTitle,
+                                ),
+                                Positioned(
+                                  top: 93,
+                                  left: 0,
+                                  right: 0,
+                                  child: Center(child: natureSeal),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                skillTitle,
+                                const SizedBox(height: 8),
+                                natureSeal,
+                              ],
                             ),
-                            Positioned(
-                              top: 93,
-                              left: 0,
-                              right: 0,
-                              child: Center(child: natureSeal),
-                            ),
-                          ],
-                        )
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                    ),
+                    Container(
+                      key: const ValueKey('battle.skillSlipFooter'),
+                      height: expandedSampleStyle ? 34 : 29,
+                      margin: EdgeInsets.fromLTRB(
+                        5,
+                        0,
+                        5,
+                        expandedSampleStyle ? 18 : 4,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(
+                            color: const Color(
+                              0xFF79674D,
+                            ).withValues(alpha: 0.10),
+                          ),
+                        ),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            skillTitle,
-                            const SizedBox(height: 8),
-                            natureSeal,
+                            CustomPaint(
+                              key: const ValueKey('battle.skillSlipQiSwirl'),
+                              size: Size.square(expandedSampleStyle ? 22 : 13),
+                              painter: const _QiSwirlPainter(),
+                            ),
+                            SizedBox(width: expandedSampleStyle ? 5 : 3),
+                            Text(
+                              '$effectiveCost',
+                              key: const ValueKey('battle.skillSlipQiCost'),
+                              style: TextStyle(
+                                color: expandedSampleStyle
+                                    ? WuxiaUi.battleSkillQi
+                                    : WuxiaUi.qing,
+                                fontSize: expandedSampleStyle ? 18 : 10,
+                                fontWeight: FontWeight.w700,
+                                height: 1,
+                                fontFeatures: BattleTypography.tabularFigures,
+                              ),
+                            ),
                           ],
                         ),
-                ),
-                Container(
-                  key: const ValueKey('battle.skillSlipFooter'),
-                  height: expandedSampleStyle ? 34 : 29,
-                  margin: EdgeInsets.fromLTRB(
-                    5,
-                    0,
-                    5,
-                    expandedSampleStyle ? 18 : 4,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        color: const Color(0xFF79674D).withValues(alpha: 0.10),
                       ),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CustomPaint(
-                        key: const ValueKey('battle.skillSlipQiSwirl'),
-                        size: Size.square(expandedSampleStyle ? 22 : 13),
-                        painter: const _QiSwirlPainter(),
-                      ),
-                      SizedBox(width: expandedSampleStyle ? 5 : 3),
-                      Text(
-                        '$effectiveCost',
-                        key: const ValueKey('battle.skillSlipQiCost'),
-                        style: TextStyle(
-                          color: expandedSampleStyle
-                              ? WuxiaUi.battleSkillQi
-                              : WuxiaUi.qing,
-                          fontSize: expandedSampleStyle ? 18 : 10,
-                          fontWeight: FontWeight.w700,
-                          height: 1,
-                          fontFeatures: BattleTypography.tabularFigures,
+                  ],
+                ),
+              ),
+              if (onCd && expandedSampleStyle)
+                Positioned(
+                  top: height * 0.35,
+                  right: cooldownCountRight,
+                  child: Text(
+                    '$cd',
+                    key: const ValueKey('battle.skillSlipCooldownCount'),
+                    style: TextStyle(
+                      color: const Color(0xFFD2C3A4),
+                      fontFamily: BattleTypography.displayFamily,
+                      fontFamilyFallback: BattleTypography.displayFallback,
+                      fontSize: cooldownCountSize,
+                      fontWeight: FontWeight.w500,
+                      height: 1,
+                      fontFeatures: BattleTypography.tabularFigures,
+                      shadows: const [
+                        Shadow(
+                          color: Color(0x66302820),
+                          blurRadius: 1.5,
+                          offset: Offset(0.5, 0.5),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  ),
+                )
+              else if (onCd)
+                Positioned(
+                  top: height * 0.42,
+                  right: 7,
+                  child: BeatCountdownRing(
+                    remaining: cd,
+                    total: skill.cooldownTurns,
+                    beat: beat,
+                    color: WuxiaColors.lingQiao,
+                    size: 25,
                   ),
                 ),
-              ],
-            ),
-          ),
-          if (onCd && expandedSampleStyle)
-            Positioned(
-              top: height * 0.34,
-              right: 8,
-              child: Text(
-                '$cd',
-                key: const ValueKey('battle.skillSlipCooldownCount'),
-                style: const TextStyle(
-                  color: Color(0xFFE7D8B8),
-                  fontSize: 25,
-                  fontWeight: FontWeight.w700,
-                  height: 1,
-                  shadows: [Shadow(color: Colors.black87, blurRadius: 3)],
+              if (isPending)
+                Positioned(
+                  top: 3,
+                  right: 3,
+                  child: PendingStamp(expandedSampleStyle: expandedSampleStyle),
                 ),
-              ),
-            )
-          else if (onCd)
-            Positioned(
-              top: height * 0.42,
-              right: 7,
-              child: BeatCountdownRing(
-                remaining: cd,
-                total: skill.cooldownTurns,
-                beat: beat,
-                color: WuxiaColors.lingQiao,
-                size: 25,
-              ),
-            ),
-          if (isPending)
-            const Positioned(top: -7, right: -7, child: PendingStamp()),
-        ],
+            ],
+          );
+        },
       ),
     );
 
@@ -1789,36 +1824,58 @@ class BattlePouchRail extends StatelessWidget {
 }
 
 class PendingStamp extends StatelessWidget {
-  const PendingStamp({super.key});
+  const PendingStamp({super.key, this.expandedSampleStyle = false});
+
+  final bool expandedSampleStyle;
 
   @override
   Widget build(BuildContext context) {
     return Transform.rotate(
-      angle: -0.16,
-      child: DecoratedBox(
-        key: const ValueKey('skill_pending_stamp_badge'),
-        decoration: BoxDecoration(
-          color: WuxiaColors.resultHighlight.withValues(alpha: 0.95),
-          borderRadius: BorderRadius.circular(3),
-          border: Border.all(color: WuxiaColors.textPrimary, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: WuxiaColors.resultHighlight.withValues(alpha: 0.34),
-              blurRadius: 8,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-          child: Text(
-            UiStrings.skillPendingStamp,
-            style: TextStyle(
-              color: WuxiaColors.panel,
-              fontSize: 10,
-              height: 1,
-              fontWeight: FontWeight.w900,
-            ),
+      angle: -0.07,
+      child: SizedBox(
+        width: expandedSampleStyle ? 31 : 27,
+        height: expandedSampleStyle ? 18 : 17,
+        child: DecoratedBox(
+          key: const ValueKey('skill_pending_stamp_badge'),
+          decoration: BoxDecoration(
+            color: WuxiaUi.battleSkillSeal,
+            border: Border.all(color: const Color(0xFF4F211C), width: 1.1),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x66301713),
+                blurRadius: 2,
+                offset: Offset(1, 1),
+              ),
+            ],
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(painter: _SkillSealTexturePainter()),
+                ),
+              ),
+              Text(
+                UiStrings.skillPendingStamp,
+                style: TextStyle(
+                  color: WuxiaUi.battleSkillSealInk,
+                  fontFamily: BattleTypography.displayFamily,
+                  fontFamilyFallback: BattleTypography.displayFallback,
+                  fontSize: expandedSampleStyle ? 9 : 8,
+                  height: 1,
+                  letterSpacing: expandedSampleStyle ? 0.7 : 0.3,
+                  fontWeight: FontWeight.w700,
+                  shadows: const [
+                    Shadow(
+                      color: Color(0x99301916),
+                      blurRadius: 1,
+                      offset: Offset(0.5, 0.5),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

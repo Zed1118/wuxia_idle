@@ -718,6 +718,97 @@ void main() {
   });
 
   group('T1 战斗指令台', () {
+    testWidgets('样板大签冷却数字使用右侧内收的米灰细字，不抢招名层级', (tester) async {
+      final (left, _) = BattleDemo.mockTeams();
+      final character = left.first.copyWith(
+        availableSkills: [_power],
+        skillCooldowns: const {'p1': 2},
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 120,
+                child: SkillCommandButton(
+                  character: character,
+                  skill: _power,
+                  interventionWindowOpen: true,
+                  isPending: false,
+                  pendingTapEnabled: false,
+                  queuedAnother: false,
+                  highlight: false,
+                  allowPlayerIntervention: false,
+                  readOnly: true,
+                  autoActive: false,
+                  height: 204,
+                  beat: const AlwaysStoppedAnimation<double>(0),
+                  onTap: () {},
+                  onShowInfo: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final count = find.byKey(const ValueKey('battle.skillSlipCooldownCount'));
+      expect(count, findsOneWidget);
+      final text = tester.widget<Text>(count);
+      expect(text.style?.fontSize, 21);
+      expect(text.style?.fontWeight, FontWeight.w500);
+      expect(text.style?.color, const Color(0xFFD2C3A4));
+      final position = tester
+          .element(count)
+          .findAncestorWidgetOfExactType<Positioned>();
+      expect(position?.right, 17);
+    });
+
+    testWidgets('窄视口大签会收小并外移冷却数字，避免压住纵排招名', (tester) async {
+      final (left, _) = BattleDemo.mockTeams();
+      final character = left.first.copyWith(
+        availableSkills: [_power],
+        skillCooldowns: const {'p1': 2},
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 80,
+                child: SkillCommandButton(
+                  character: character,
+                  skill: _power,
+                  interventionWindowOpen: true,
+                  isPending: false,
+                  pendingTapEnabled: false,
+                  queuedAnother: false,
+                  highlight: false,
+                  allowPlayerIntervention: false,
+                  readOnly: true,
+                  autoActive: false,
+                  height: 204,
+                  beat: const AlwaysStoppedAnimation<double>(0),
+                  onTap: () {},
+                  onShowInfo: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final count = find.byKey(const ValueKey('battle.skillSlipCooldownCount'));
+      final text = tester.widget<Text>(count);
+      expect(text.style?.fontSize, 18);
+      final position = tester
+          .element(count)
+          .findAncestorWidgetOfExactType<Positioned>();
+      expect(position?.right, 5);
+    });
+
     testWidgets('技能签保留桌面按钮语义、焦点、键盘激活与点击光标', (tester) async {
       var activations = 0;
       await tester.pumpWidget(
@@ -1197,6 +1288,19 @@ void main() {
         find.byKey(const ValueKey('skill_pending_stamp_badge')),
         findsOneWidget,
       );
+      final stamp = find.byKey(const ValueKey('skill_pending_stamp_badge'));
+      final stampPosition = tester
+          .element(stamp)
+          .findAncestorWidgetOfExactType<Positioned>();
+      expect(stampPosition?.top, greaterThanOrEqualTo(3));
+      expect(stampPosition?.right, greaterThanOrEqualTo(3));
+      final stampSize = tester.getSize(stamp);
+      expect(stampSize.width, lessThanOrEqualTo(31));
+      expect(stampSize.height, lessThanOrEqualTo(18));
+      final stampDecoration =
+          tester.widget<DecoratedBox>(stamp).decoration as BoxDecoration;
+      expect(stampDecoration.color, WuxiaUi.battleSkillSeal);
+      expect(stampDecoration.borderRadius, isNull);
       expect(
         find.byKey(const ValueKey('battle.skillSlip.state.pending')),
         findsOneWidget,
@@ -1442,6 +1546,14 @@ void main() {
         find.byKey(const ValueKey('battle.skillSlip.qiGap')),
         findsOneWidget,
       );
+      final mutedContent = find.descendant(
+        of: find.byKey(const ValueKey('skill_cmd_1_p1')),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Opacity && widget.child is Column,
+        ),
+      );
+      expect(mutedContent, findsOneWidget);
+      expect(tester.widget<Opacity>(mutedContent).opacity, 0.72);
       final semantics = tester.widget<Semantics>(
         find.byKey(const ValueKey('skill_cmd_1_p1')),
       );

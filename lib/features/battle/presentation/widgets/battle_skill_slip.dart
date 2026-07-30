@@ -294,48 +294,90 @@ class _BattleSkillCooldownWashPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final wash = Path()
-      ..moveTo(size.width * 0.55, 2)
-      ..quadraticBezierTo(
-        size.width * 0.75,
-        size.height * 0.08,
-        size.width * 0.69,
-        size.height * 0.30,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.90,
-        size.height * 0.46,
-        size.width * 0.70,
-        size.height * 0.70,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.88,
-        size.height * 0.87,
-        size.width * 0.59,
-        size.height - 3,
-      )
+      ..moveTo(size.width * 0.61, 2)
+      ..lineTo(size.width * 0.70, size.height * 0.06)
+      ..lineTo(size.width * 0.64, size.height * 0.15)
+      ..lineTo(size.width * 0.72, size.height * 0.24)
+      ..lineTo(size.width * 0.62, size.height * 0.34)
+      ..lineTo(size.width * 0.70, size.height * 0.43)
+      ..lineTo(size.width * 0.64, size.height * 0.52)
+      ..lineTo(size.width * 0.73, size.height * 0.62)
+      ..lineTo(size.width * 0.61, size.height * 0.73)
+      ..lineTo(size.width * 0.68, size.height * 0.82)
+      ..lineTo(size.width * 0.59, size.height * 0.91)
+      ..lineTo(size.width * 0.66, size.height - 3)
       ..lineTo(size.width - 1, size.height - 2)
       ..lineTo(size.width - 1, 1)
       ..close();
     canvas.drawPath(
       wash,
       Paint()
-        ..color = const Color(0xFF29241E).withValues(alpha: 0.58)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+        ..color = const Color(0xFF29241E).withValues(alpha: 0.60)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.1),
     );
 
-    for (var i = 0; i < 6; i++) {
-      final x = size.width * (0.61 + i * 0.058);
+    for (var i = 0; i < 15; i++) {
+      final x = size.width * (0.60 + ((i * 19) % 36) / 100);
       final dryBrush = Paint()
         ..color = const Color(
-          0xFF211D18,
-        ).withValues(alpha: 0.10 + (i.isEven ? 0.08 : 0))
-        ..strokeWidth = 2.2 + (i % 3) * 1.4
+          0xFF1F1B17,
+        ).withValues(alpha: 0.10 + (i % 5) * 0.035)
+        ..strokeWidth = 1.2 + (i % 4) * 1.25
         ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.2);
+        ..maskFilter = MaskFilter.blur(
+          BlurStyle.normal,
+          i % 3 == 0 ? 0.8 : 0.25,
+        );
       canvas.drawLine(
-        Offset(x, 9 + i * 5),
-        Offset(x - 8 + (i % 2) * 5, size.height - 12 - i * 4),
+        Offset(x, 3 + ((i * 17) % 27)),
+        Offset(x - 7 + (i % 4) * 3.5, size.height - 4 - ((i * 13) % 23)),
         dryBrush,
+      );
+    }
+
+    final loadedBristle = Paint()
+      ..color = const Color(0xFF171411).withValues(alpha: 0.14)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.7);
+    for (var i = 0; i < 4; i++) {
+      final x = size.width * (0.68 + i * 0.075);
+      canvas.drawPath(
+        Path()
+          ..moveTo(x, 8 + i * 6)
+          ..quadraticBezierTo(
+            x - 9 + i * 2,
+            size.height * (0.42 + i * 0.025),
+            x - 4 + i,
+            size.height - 10 - i * 5,
+          ),
+        loadedBristle..strokeWidth = 4.8 - i * 0.55,
+      );
+    }
+
+    final brokenEdge = Paint()
+      ..color = const Color(0xFF1E1A16).withValues(alpha: 0.32)
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 24; i++) {
+      final y = 8.0 + ((i * 37) % 101) / 101 * (size.height - 16);
+      final x = size.width * (0.58 + ((i * 11) % 15) / 100);
+      final length = 2.0 + (i % 5) * 1.5;
+      canvas.drawLine(
+        Offset(x, y),
+        Offset(x + length, y - 0.8 + (i % 3) * 0.8),
+        brokenEdge..strokeWidth = 0.7 + (i % 3) * 0.45,
+      );
+    }
+
+    final paperScratch = Paint()
+      ..color = const Color(0xFFC2B292).withValues(alpha: 0.13)
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 9; i++) {
+      final x = size.width * (0.66 + ((i * 23) % 30) / 100);
+      canvas.drawLine(
+        Offset(x, 14 + i * 8),
+        Offset(x - 3 + (i % 3), size.height - 15 - i * 6),
+        paperScratch..strokeWidth = 0.55 + (i % 2) * 0.45,
       );
     }
   }
@@ -350,21 +392,50 @@ class _BattleSkillQiGapPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF486B68).withValues(alpha: 0.78)
-      ..strokeWidth = 1.8
-      ..strokeCap = StrokeCap.square;
-    final y = size.height - 9;
-    canvas.drawLine(Offset(8, y), Offset(size.width * 0.38, y), paint);
-    canvas.drawLine(
-      Offset(size.width * 0.56, y),
-      Offset(size.width - 8, y),
-      paint,
+    final y = size.height - 9.5;
+    final dryQing = Paint()
+      ..color = const Color(0xFF486B68).withValues(alpha: 0.52)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.25
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(
+      Path()
+        ..moveTo(8, y + 0.8)
+        ..lineTo(size.width * 0.19, y - 0.5)
+        ..lineTo(size.width * 0.37, y + 0.4),
+      dryQing,
     );
-    canvas.drawLine(
-      Offset(size.width * 0.42, y - 3),
-      Offset(size.width * 0.52, y + 3),
-      paint..color = paint.color.withValues(alpha: 0.44),
+    canvas.drawPath(
+      Path()
+        ..moveTo(size.width * 0.58, y - 0.3)
+        ..lineTo(size.width * 0.76, y + 0.7)
+        ..lineTo(size.width - 8, y - 0.6),
+      dryQing,
+    );
+
+    final brokenStroke = Paint()
+      ..color = const Color(0xFF486B68).withValues(alpha: 0.30)
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 8; i++) {
+      final leftHalf = i < 4;
+      final x = leftHalf
+          ? 10 + i * size.width * 0.075
+          : size.width * 0.60 + (i - 4) * size.width * 0.08;
+      canvas.drawLine(
+        Offset(x, y - 2 + (i % 3)),
+        Offset(x + 4 + (i % 2) * 3, y - 1 + ((i + 1) % 3)),
+        brokenStroke..strokeWidth = 0.45 + (i % 3) * 0.25,
+      );
+    }
+
+    canvas.drawPath(
+      Path()
+        ..moveTo(size.width * 0.43, y - 3)
+        ..lineTo(size.width * 0.49, y + 1.5)
+        ..lineTo(size.width * 0.54, y - 1.5),
+      dryQing
+        ..color = const Color(0xFF486B68).withValues(alpha: 0.34)
+        ..strokeWidth = 0.9,
     );
   }
 
