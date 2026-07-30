@@ -99,9 +99,8 @@ class _DiscipleJoinOverlayState extends State<DiscipleJoinOverlay>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _finish,
-      behavior: HitTestBehavior.opaque,
+    return DismissLayer(
+      onDismiss: _finish,
       child: Container(
         // 径向 vignette 暗角(与 HeroCameraOverlay / victory_overlay 对齐)。
         decoration: const BoxDecoration(

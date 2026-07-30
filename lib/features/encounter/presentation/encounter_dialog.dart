@@ -482,6 +482,9 @@ class _EncounterOutcomeOverlayState extends State<EncounterOutcomeOverlay>
 
   @override
   Widget build(BuildContext context) {
+    // 不换 DismissLayer:本弹窗内部已有键盘可达控件(_ChoiceButton 走
+    // InkWell(canRequestFocus) / _ConfirmButton 走 PlaqueButton(autofocus:true)),
+    // 外层遮罩再 autofocus 会与确认键抢焦点。此处只作「点外关闭」的便利层。
     return GestureDetector(
       onTap: _finish,
       behavior: HitTestBehavior.opaque,

@@ -344,17 +344,36 @@ class _FloorPlaque extends StatelessWidget {
                                   currentRealm: currentRealm,
                                 ),
                                 excludeSemantics: true,
-                                child: GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: () => showLootRumorDialog(
-                                    context,
-                                    table: rumor,
-                                    currentRealm: currentRealm,
-                                  ),
-                                  child: const Icon(
-                                    Icons.info_outline,
-                                    size: 16,
-                                    color: WuxiaColors.textMuted,
+                                // 2026-07-30 桌面语义量测补齐:原先只有 Semantics +
+                                // 裸 GestureDetector——读屏可达,但键盘 Tab 到不了、
+                                // 鼠标不给 click 光标。补 FocusableActionDetector 后三项齐。
+                                child: FocusableActionDetector(
+                                  mouseCursor: SystemMouseCursors.click,
+                                  actions: <Type, Action<Intent>>{
+                                    ActivateIntent:
+                                        CallbackAction<ActivateIntent>(
+                                          onInvoke: (_) {
+                                            showLootRumorDialog(
+                                              context,
+                                              table: rumor,
+                                              currentRealm: currentRealm,
+                                            );
+                                            return null;
+                                          },
+                                        ),
+                                  },
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () => showLootRumorDialog(
+                                      context,
+                                      table: rumor,
+                                      currentRealm: currentRealm,
+                                    ),
+                                    child: const Icon(
+                                      Icons.info_outline,
+                                      size: 16,
+                                      color: WuxiaColors.textMuted,
+                                    ),
                                   ),
                                 ),
                               ),

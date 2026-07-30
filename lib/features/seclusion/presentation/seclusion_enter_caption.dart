@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/dismiss_layer.dart';
 
 /// 开始闭关题字过场:「闭关」淡入→停→淡出 ~1600ms 自动消失(点击可跳过)。
 /// 镜像 battle/presentation/victory_ceremony.dart VictorySealFlash 体例。
@@ -52,9 +53,8 @@ class _SeclusionEnterCaptionState extends State<SeclusionEnterCaption>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _finish,
-      behavior: HitTestBehavior.opaque,
+    return DismissLayer(
+      onDismiss: _finish,
       child: AnimatedBuilder(
         animation: _ctrl,
         builder: (_, child) {

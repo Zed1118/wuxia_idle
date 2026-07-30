@@ -351,9 +351,8 @@ class _SkillTreasureOverlayState extends State<SkillTreasureOverlay>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _finish,
-      behavior: HitTestBehavior.opaque,
+    return DismissLayer(
+      onDismiss: _finish,
       child: Container(
         decoration: const BoxDecoration(
           gradient: RadialGradient(

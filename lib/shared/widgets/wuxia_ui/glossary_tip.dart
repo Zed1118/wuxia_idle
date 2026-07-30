@@ -118,20 +118,34 @@ class GlossaryLabel extends StatelessWidget {
             hint: definition,
             onTap: () => _showDefinitionPopup(context),
             excludeSemantics: true,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => _showDefinitionPopup(context),
-              child: Padding(
-                // 上标式微抬 + 横向扩点击区（纵向不扩免抬行高）。
-                padding: const EdgeInsets.only(top: 1, left: 1, right: 5),
-                child: Text(
-                  marker,
-                  style: TextStyle(
-                    // 「?」标记直接排在父面板纸底上（inline），随所在面板底
-                    // 翻转取次要色；调用方显式传 markerColor 则优先。
-                    color: markerColor ?? PanelSurface.of(context).secondary,
-                    fontSize: markerSize.toDouble(),
-                    fontWeight: FontWeight.w700,
+            // 2026-07-30 桌面语义量测补齐:原先只有 Semantics + 裸 GestureDetector
+            // ——读屏可达,但**键盘 Tab 到不了、鼠标也不给 click 光标**。
+            // 补 FocusableActionDetector 后三项齐(焦点/回车空格激活/手型光标)。
+            child: FocusableActionDetector(
+              mouseCursor: SystemMouseCursors.click,
+              actions: <Type, Action<Intent>>{
+                ActivateIntent: CallbackAction<ActivateIntent>(
+                  onInvoke: (_) {
+                    _showDefinitionPopup(context);
+                    return null;
+                  },
+                ),
+              },
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _showDefinitionPopup(context),
+                child: Padding(
+                  // 上标式微抬 + 横向扩点击区（纵向不扩免抬行高）。
+                  padding: const EdgeInsets.only(top: 1, left: 1, right: 5),
+                  child: Text(
+                    marker,
+                    style: TextStyle(
+                      // 「?」标记直接排在父面板纸底上（inline），随所在面板底
+                      // 翻转取次要色；调用方显式传 markerColor 则优先。
+                      color: markerColor ?? PanelSurface.of(context).secondary,
+                      fontSize: markerSize.toDouble(),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
