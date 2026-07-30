@@ -445,7 +445,8 @@ void main() {
   });
 
   group('T2 蓄力危险条', () {
-    testWidgets('敌人蓄力时顶部出现危险条，显示蓄力招名', (tester) async {
+    testWidgets('敌人蓄力时顶部使用样板短条，完整招名保留给语义', (tester) async {
+      final semantics = tester.ensureSemantics();
       final (left, right) = BattleDemo.mockTeams();
       final charging = right.first.copyWith(
         chargingSkill: _chargeSkill,
@@ -455,7 +456,18 @@ void main() {
 
       expect(find.byKey(const ValueKey('battle_danger_bar')), findsOneWidget);
       expect(find.text(UiStrings.battleDangerChargeLabel), findsOneWidget);
-      expect(find.textContaining(_chargeSkill.name), findsWidgets);
+      expect(find.text(UiStrings.battleDangerTicks(3)), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(
+          UiStrings.battleDangerCharging(
+            charging.name,
+            _chargeSkill.name,
+            charging.chargeTicksRemaining,
+          ),
+        ),
+        findsOneWidget,
+      );
+      semantics.dispose();
     });
 
     testWidgets('无敌人蓄力时不显示危险条', (tester) async {

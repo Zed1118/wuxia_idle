@@ -66,6 +66,8 @@
   `_mainlineSceneColorGrade` 与 cool_v3 强制替换已移除，爬塔冷灰分级零变化。
   `battle_tap_live` 固定使用隐世老者 / 山贼刀客 / 山贼弓手三张样板立绘，
   首领固定蓄势 2 拍；该状态仅存在于 debug 验收 fixture，生产状态仍由战斗数据驱动。
+  顶部蓄势条已收束为样板的「蓄势 · N拍」短条和相同横向锚点，敌名 / 招名完整
+  信息保留在 Semantics，不牺牲无障碍提示。
   旧版几何比例继续冻结，不再做广泛布局调整。
 - 下一步：复拍 `battle_tap_live` 同一固定帧并按差异校准立绘融合。
 - 已跑验证：扩展 targeted tests 共 131 项通过，最后 `const` 修正覆盖的
@@ -75,5 +77,5 @@
 - 合并态验证：旧版结果，不作为本轮 95% 完成证据。
 - 本轮验证：`flutter test --no-pub
   test/features/battle/presentation/battle_scene_background_test.dart`，10/10 通过；
-  黄金敌方阵容 targeted test 1/1 通过。
+  黄金敌方阵容 targeted test 1/1 通过；蓄势短条与 Semantics targeted test 1/1 通过。
 - 阻塞项：无。
