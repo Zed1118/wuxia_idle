@@ -73,6 +73,8 @@ final class BattleLayoutMetrics {
       (commandDeskHeight * 0.88).clamp(146.0, 200.0);
   double get sampleSectionDividerHeight =>
       (commandDeskHeight * 0.88).clamp(144.0, 200.0);
+  double get stageTopSafetyInset =>
+      ((800 - viewport.height) * 0.5).clamp(0.0, 40.0);
 
   static BattleLayoutMetrics resolve(Size viewport) {
     final headerHeight = (viewport.height * BattleLayoutTokens.headerFraction)

@@ -79,7 +79,9 @@
   (-4.0,-2.9,-0.5)，案台约 (+1.4,-0.2,-3.4)。
   脚下状态条宽度恢复到完整数值可读区间，Boss 增加有机金墨游丝，仍无矩形黄底。
   1672×941 顶栏 / 战场 / 案台边界固定为 y=60 / y=700；五个控制章钮的直径、
-  间距、字号与样板密度对齐。黄金帧综合人工量表为 95/100：
+  间距、字号与样板密度对齐。1280×720 矮视口增加 40px 舞台顶部安全距，
+  脚底放大的老者立绘不再侵入顶栏；1440×900 和黄金视口保持零偏移。
+  黄金帧综合人工量表为 95/100：
   结构 24/25、色彩 19/20、人物构图 19/20、案台内容 19/20、材质字形 14/15。
 - 下一步：无；可进入合并审查。
 - 已跑验证：扩展 targeted tests 共 131 项通过，最后 `const` 修正覆盖的
@@ -90,6 +92,6 @@
 - 本轮验证：`flutter test --no-pub
   test/features/battle/presentation/battle_scene_background_test.dart`，10/10 通过；
   黄金敌方阵容 targeted test 1/1 通过；蓄势短条与 Semantics targeted test 1/1 通过。
-  最终相关测试族共 148 项通过（visual route / config / paused / pouch / layout /
+  最终相关测试族共 149 项通过（visual route / config / paused / pouch / layout /
   geometry / background / character avatar / command console）。
 - 阻塞项：无。

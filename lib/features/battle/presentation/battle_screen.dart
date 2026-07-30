@@ -869,21 +869,26 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       ),
                       DangerBar(state: state),
                       Expanded(
-                        child: BattlePlaybackMotion(
-                          controller: _playback,
-                          child: BattlePlaybackField(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            top: layoutMetrics.stageTopSafetyInset,
+                          ),
+                          child: BattlePlaybackMotion(
                             controller: _playback,
-                            state: state,
-                            stageLayout: stageLayout,
-                            standeeFusion: standeeFusion,
-                            chargeMaxTicks: chargeMaxTicks,
-                            staggerWindowTicks: staggerWindowTicks,
-                            onEnemyTap: _onEnemyTap,
-                            targetableEnemyIds: _pendingActive
-                                ? _targetableEnemyIds(state)
-                                : const <int>{},
-                            hoveredEnemyId: _hoveredPendingEnemyId,
-                            onEnemyHover: _onPendingEnemyHover,
+                            child: BattlePlaybackField(
+                              controller: _playback,
+                              state: state,
+                              stageLayout: stageLayout,
+                              standeeFusion: standeeFusion,
+                              chargeMaxTicks: chargeMaxTicks,
+                              staggerWindowTicks: staggerWindowTicks,
+                              onEnemyTap: _onEnemyTap,
+                              targetableEnemyIds: _pendingActive
+                                  ? _targetableEnemyIds(state)
+                                  : const <int>{},
+                              hoveredEnemyId: _hoveredPendingEnemyId,
+                              onEnemyHover: _onPendingEnemyHover,
+                            ),
                           ),
                         ),
                       ),

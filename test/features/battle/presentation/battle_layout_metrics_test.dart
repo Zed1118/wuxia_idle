@@ -112,5 +112,20 @@ void main() {
       );
       expect(metrics.commandDeskHeight, inInclusiveRange(240, 242));
     });
+
+    test('矮视口为脚底放大立绘预留顶部安全距，黄金视口不偏移', () {
+      expect(
+        BattleLayoutMetrics.resolve(const Size(1280, 720)).stageTopSafetyInset,
+        40,
+      );
+      expect(
+        BattleLayoutMetrics.resolve(const Size(1440, 900)).stageTopSafetyInset,
+        0,
+      );
+      expect(
+        BattleLayoutMetrics.resolve(const Size(1672, 941)).stageTopSafetyInset,
+        0,
+      );
+    });
   });
 }
