@@ -509,6 +509,27 @@ void main() {
       expect(launcher.seed, battleV2VisualSeed);
     });
 
+    test('battle_tap_live → 黄金样板敌方立绘与蓄势 2 拍固定', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.battleTapLive,
+        IsarSetup.instance,
+      );
+      final launcher = target as ScenarioLauncher;
+      final (_, right) = launcher.teamsFactory();
+
+      expect(
+        right.map((character) => character.iconPath),
+        [
+          WuxiaUi.battleHiddenElderStandee,
+          WuxiaUi.battleBanditBladeStandee,
+          WuxiaUi.battleBanditArcherStandee,
+        ],
+      );
+      expect(right.first.isBoss, isTrue);
+      expect(right.first.chargingSkill, isNotNull);
+      expect(right.first.chargeTicksRemaining, 2);
+    });
+
     test('battle_tap_preview → 冻结态 + 纯 presentation 待发预览', () async {
       final target = await buildVisualTarget(
         VisualRoute.battleTapPreview,

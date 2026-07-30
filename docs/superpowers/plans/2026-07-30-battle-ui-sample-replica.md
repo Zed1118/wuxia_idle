@@ -58,20 +58,22 @@
 
 ## 当前恢复点
 
-- 状态：95% 返修进行中（WIP）；P0 背景根因已修复。
+- 状态：95% 返修进行中（WIP）；P0 背景与黄金敌方阵容已修复。
 - 根因证据：`BattleSceneBackground` 收到暖色 `battle_mountain_pass_stage_v2.png`
   后，主动替换成 `battle_mountain_pass_stage_cool_v3.png`，并再套
   `_mainlineSceneColorGrade`；当前战场饱和度约为样板一半，是最大画风偏差源。
 - 最后完成：新增防回退测试并确认先红后绿；山道直接消费暖色 v2 原画，
   `_mainlineSceneColorGrade` 与 cool_v3 强制替换已移除，爬塔冷灰分级零变化。
+  `battle_tap_live` 固定使用隐世老者 / 山贼刀客 / 山贼弓手三张样板立绘，
+  首领固定蓄势 2 拍；该状态仅存在于 debug 验收 fixture，生产状态仍由战斗数据驱动。
   旧版几何比例继续冻结，不再做广泛布局调整。
-- 下一步：复拍 `battle_tap_live` 同一固定帧，测量战场分区 RGB / 饱和度与样板差，
-  再按证据校准立绘融合。
+- 下一步：复拍 `battle_tap_live` 同一固定帧并按差异校准立绘融合。
 - 已跑验证：扩展 targeted tests 共 131 项通过，最后 `const` 修正覆盖的
   52 项再次通过；`flutter analyze --no-pub` 为 0 issue；`battle_tap_live`
   1280×720 / 1440×900、量产群战 1280×720、Boss 1280×720 均已重新复拍，
   `VISUAL_ROUTE_READY` 日志无 Flutter overflow / exception。
 - 合并态验证：旧版结果，不作为本轮 95% 完成证据。
 - 本轮验证：`flutter test --no-pub
-  test/features/battle/presentation/battle_scene_background_test.dart`，10/10 通过。
+  test/features/battle/presentation/battle_scene_background_test.dart`，10/10 通过；
+  黄金敌方阵容 targeted test 1/1 通过。
 - 阻塞项：无。

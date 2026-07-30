@@ -613,10 +613,31 @@ class BattleScenarioData {
           iconPath: icon,
         );
 
+    final elder = tankMob(
+      11,
+      '铁布衫客',
+      0,
+      WuxiaUi.battleHiddenElderStandee,
+    ).copyWith(isBoss: true);
+    final elderCharge = elder.availableSkills.first;
     final right = [
-      tankMob(11, '铁布衫客', 0, 'assets/enemies/guntou_zhu.png'),
-      tankMob(12, '巷口杀手', 1, 'assets/enemies/killer_a.png'),
-      tankMob(13, '巷尾杀手', 2, 'assets/enemies/killer_b.png'),
+      elder.copyWith(
+        chargeSkillId: elderCharge.id,
+        chargingSkill: elderCharge,
+        chargeTicksRemaining: 2,
+      ),
+      tankMob(
+        12,
+        '巷口杀手',
+        1,
+        WuxiaUi.battleBanditBladeStandee,
+      ),
+      tankMob(
+        13,
+        '巷尾杀手',
+        2,
+        WuxiaUi.battleBanditArcherStandee,
+      ),
     ];
 
     return (left, right);
