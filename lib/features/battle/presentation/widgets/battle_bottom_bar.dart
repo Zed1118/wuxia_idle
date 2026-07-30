@@ -995,7 +995,7 @@ class SkillCommandButton extends StatelessWidget {
       blockingStatus = '';
     }
 
-    final accent = highlight ? WuxiaUi.gold : WuxiaUi.jiang;
+    final accent = highlight ? WuxiaUi.gold : const Color(0xFF493B2D);
     final button = BattleSkillSlipSurface(
       height: height,
       tiltAngle: battleSkillSlipTilt(skill.id),
@@ -1017,7 +1017,7 @@ class SkillCommandButton extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Opacity(
-            opacity: onCd ? 0.62 : 1.0,
+            opacity: onCd ? (expandedSampleStyle ? 0.78 : 0.62) : 1.0,
             child: Column(
               children: [
                 const SizedBox(

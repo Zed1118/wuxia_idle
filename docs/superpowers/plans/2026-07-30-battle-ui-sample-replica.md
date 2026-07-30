@@ -109,3 +109,7 @@
 - 新增黄金尺寸硬几何与多破招强调态回归测试；本轮相关测试 102 项通过。
   最终叠图：
   `build/visual_acceptance/sample_replica/status-skill-final/bottom-stacked.png`。
+- 素材级优化：以黄金样板为风格参考生成红褐药葫芦与线装册页透明 PNG，
+  替换验收 fixture 中偏黑的紫金葫芦和卷轴；技能签撤掉统一朱色侧边，强化
+  冷却墨洗与纸面斑驳，行囊补双线角花。最终素材叠图：
+  `build/visual_acceptance/sample_replica/material-final-v2/bottom-stacked.png`。

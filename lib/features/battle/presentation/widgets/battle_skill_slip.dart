@@ -271,23 +271,23 @@ class _BattleSkillCooldownWashPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final wash = Path()
-      ..moveTo(size.width * 0.58, 2)
+      ..moveTo(size.width * 0.55, 2)
       ..quadraticBezierTo(
-        size.width * 0.82,
+        size.width * 0.75,
         size.height * 0.08,
-        size.width * 0.76,
+        size.width * 0.69,
         size.height * 0.30,
       )
       ..quadraticBezierTo(
-        size.width * 0.96,
+        size.width * 0.90,
         size.height * 0.46,
-        size.width * 0.78,
+        size.width * 0.70,
         size.height * 0.70,
       )
       ..quadraticBezierTo(
         size.width * 0.88,
         size.height * 0.87,
-        size.width * 0.66,
+        size.width * 0.59,
         size.height - 3,
       )
       ..lineTo(size.width - 1, size.height - 2)
@@ -296,19 +296,22 @@ class _BattleSkillCooldownWashPainter extends CustomPainter {
     canvas.drawPath(
       wash,
       Paint()
-        ..color = const Color(0xFF29241E).withValues(alpha: 0.48)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.2),
+        ..color = const Color(0xFF29241E).withValues(alpha: 0.52)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
     );
 
-    final dryBrush = Paint()
-      ..color = const Color(0xFF211D18).withValues(alpha: 0.25)
-      ..strokeWidth = 1.2
-      ..strokeCap = StrokeCap.round;
-    for (var i = 0; i < 7; i++) {
-      final x = size.width * (0.62 + i * 0.045);
+    for (var i = 0; i < 6; i++) {
+      final x = size.width * (0.61 + i * 0.058);
+      final dryBrush = Paint()
+        ..color = const Color(
+          0xFF211D18,
+        ).withValues(alpha: 0.10 + (i.isEven ? 0.08 : 0))
+        ..strokeWidth = 2.2 + (i % 3) * 1.4
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.2);
       canvas.drawLine(
-        Offset(x, 12 + i * 4),
-        Offset(x - 5, size.height - 15 - i * 5),
+        Offset(x, 9 + i * 5),
+        Offset(x - 8 + (i % 2) * 5, size.height - 12 - i * 4),
         dryBrush,
       );
     }
@@ -434,6 +437,22 @@ class _BattleSkillSlipFramePainter extends CustomPainter {
       final x = 8.0 + ((i * 29) % 83) / 83 * (size.width - 16);
       final y = 9.0 + ((i * 47) % 97) / 97 * (size.height - 18);
       canvas.drawCircle(Offset(x, y), i % 5 == 0 ? 0.6 : 0.325, fleck);
+    }
+
+    final mottle = Paint()
+      ..color = const Color(0xFF66533D).withValues(alpha: 0.035)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    for (var i = 0; i < 9; i++) {
+      final x = 10.0 + ((i * 31) % 73) / 73 * (size.width - 20);
+      final y = 12.0 + ((i * 43) % 89) / 89 * (size.height - 24);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(x, y),
+          width: 12 + (i % 3) * 7,
+          height: 7 + (i % 4) * 5,
+        ),
+        mottle,
+      );
     }
   }
 

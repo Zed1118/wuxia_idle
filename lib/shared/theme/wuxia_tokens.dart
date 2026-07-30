@@ -135,9 +135,9 @@ class WuxiaUi {
   static const String battleMountainPassStageCool =
       'assets/scenes/battle_mountain_pass_stage_cool_v3.png';
   static const String battleSamplePouchGourd =
-      'assets/equipment/accessory_baowu_zi_jin_hu_lu.png';
+      'assets/ui/mj/battle_pouch_gourd_sample_v2.png';
   static const String battleSamplePouchManual =
-      'assets/images/items/item_scroll_generic.png';
+      'assets/ui/mj/battle_pouch_manual_sample_v2.png';
   static const String battleInnerRealmCool =
       'assets/scenes/battle_innerrealm_cool_v2.png';
   static const String battleFirstDiscipleFallback =

@@ -555,6 +555,14 @@ void main() {
         25,
         30,
       ]);
+      expect(
+        WuxiaUi.battleSamplePouchGourd,
+        'assets/ui/mj/battle_pouch_gourd_sample_v2.png',
+      );
+      expect(
+        WuxiaUi.battleSamplePouchManual,
+        'assets/ui/mj/battle_pouch_manual_sample_v2.png',
+      );
       expect(launcher.previewPouchItems, const [
         BattlePouchPreviewItem(
           assetPath: WuxiaUi.battleSamplePouchGourd,

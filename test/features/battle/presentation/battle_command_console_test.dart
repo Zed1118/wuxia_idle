@@ -904,6 +904,10 @@ void main() {
         );
       }
       expect(
+        find.byKey(const ValueKey('battle.pouch.ornateFrame')),
+        findsOneWidget,
+      );
+      expect(
         find.descendant(of: desk, matching: find.byType(SingleChildScrollView)),
         findsNothing,
       );
@@ -1252,6 +1256,13 @@ void main() {
       expect(
         find.descendant(
           of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipTornPaperClip')),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: skill,
           matching: find.byKey(const ValueKey('battle.skillSlipNatureSeal')),
         ),
         findsOneWidget,
@@ -1275,7 +1286,7 @@ void main() {
       expect(nativeButton.style?.elevation?.resolve({}), 0);
       expect(
         nativeButton.style?.shape?.resolve({}),
-        isNot(isA<BeveledRectangleBorder>()),
+        isA<BattleSkillSlipShapeBorder>(),
       );
       expect(
         find.byKey(const ValueKey('battle.skillSlip.state.available')),
