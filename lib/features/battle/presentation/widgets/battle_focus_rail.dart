@@ -18,15 +18,16 @@ class BattleFocusRailSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final expandedSampleStyle = (height ?? 0) >= 190;
-    return Container(
+    final rail = Container(
       key: const ValueKey('battle_desk_focus_region'),
       width: width,
-      height: height,
+      height: expandedSampleStyle ? height! + 8 : height,
       decoration: const BoxDecoration(
         color: WuxiaUi.battleFocusBase,
         boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 8)],
       ),
       child: Stack(
+        clipBehavior: Clip.none,
         fit: StackFit.expand,
         children: [
           const IgnorePointer(
@@ -45,6 +46,9 @@ class BattleFocusRailSurface extends StatelessWidget {
         ],
       ),
     );
+    return expandedSampleStyle
+        ? Transform.translate(offset: const Offset(0, -3), child: rail)
+        : rail;
   }
 }
 
@@ -69,6 +73,31 @@ class _BattleFocusRailMottlePainter extends CustomPainter {
           height: 14 + (i % 3) * 9,
         ),
         i.isEven ? dark : pale,
+      );
+    }
+    final lightGrain = Paint()
+      ..color = const Color(0xFFC3B7A1).withValues(alpha: 0.045);
+    final darkGrain = Paint()
+      ..color = const Color(0xFF0D0E0D).withValues(alpha: 0.07);
+    for (var i = 0; i < 96; i++) {
+      final x = ((i * 73 + 19) % 257) / 257 * size.width;
+      final y = ((i * 41 + 13) % 193) / 193 * size.height;
+      canvas.drawCircle(
+        Offset(x, y),
+        0.24 + (i % 3) * 0.14,
+        i.isEven ? lightGrain : darkGrain,
+      );
+    }
+    final fiber = Paint()
+      ..color = const Color(0xFFB6AA95).withValues(alpha: 0.038)
+      ..strokeWidth = 0.45;
+    for (var i = 0; i < 17; i++) {
+      final y = 8.0 + i * ((size.height - 16) / 17);
+      final start = ((i * 53) % 149) / 149 * size.width * 0.7;
+      canvas.drawLine(
+        Offset(start, y),
+        Offset(start + 18 + (i % 4) * 12, y + 0.5),
+        fiber,
       );
     }
   }
@@ -98,11 +127,11 @@ class _BattleFocusRailFramePainter extends CustomPainter {
     );
 
     final ornament = Paint()
-      ..color = const Color(0xFF8D714E).withValues(alpha: 0.55)
+      ..color = const Color(0xFF8D714E).withValues(alpha: 0.38)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.9;
     final faintOrnament = Paint()
-      ..color = const Color(0xFF8D714E).withValues(alpha: 0.26)
+      ..color = const Color(0xFF8D714E).withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.9;
     for (final anchor in [
@@ -113,6 +142,49 @@ class _BattleFocusRailFramePainter extends CustomPainter {
     ]) {
       canvas.drawCircle(anchor, 2.3, ornament);
       canvas.drawCircle(anchor, 4.8, faintOrnament);
+    }
+
+    void drawCornerFlourish(Offset anchor, double scaleX, double scaleY) {
+      canvas.save();
+      canvas.translate(anchor.dx, anchor.dy);
+      canvas.scale(scaleX, scaleY);
+      final curl = Path()
+        ..moveTo(0, 13)
+        ..cubicTo(5, 13, 7, 11, 7, 7)
+        ..cubicTo(7, 3, 10, 1, 14, 1)
+        ..moveTo(1, 14)
+        ..cubicTo(1, 10, 3, 7, 7, 7)
+        ..cubicTo(11, 7, 13, 5, 13, 0);
+      canvas.drawPath(curl, ornament);
+      final diamond = Path()
+        ..moveTo(7, 4)
+        ..lineTo(10, 7)
+        ..lineTo(7, 10)
+        ..lineTo(4, 7)
+        ..close();
+      canvas.drawPath(diamond, faintOrnament);
+      canvas.restore();
+    }
+
+    drawCornerFlourish(Offset.zero, 1, 1);
+    drawCornerFlourish(Offset(size.width, 0), -1, 1);
+    drawCornerFlourish(Offset(0, size.height), 1, -1);
+    drawCornerFlourish(Offset(size.width, size.height), -1, -1);
+
+    final dividerX = size.width + 20;
+    canvas.drawLine(
+      Offset(dividerX, 15),
+      Offset(dividerX, size.height - 15),
+      faintOrnament,
+    );
+    for (final y in [20.0, size.height / 2, size.height - 20]) {
+      final knot = Path()
+        ..moveTo(dividerX, y - 4)
+        ..lineTo(dividerX + 3, y)
+        ..lineTo(dividerX, y + 4)
+        ..lineTo(dividerX - 3, y)
+        ..close();
+      canvas.drawPath(knot, faintOrnament);
     }
     canvas.drawLine(
       Offset(size.width + 10, size.height * 0.08),

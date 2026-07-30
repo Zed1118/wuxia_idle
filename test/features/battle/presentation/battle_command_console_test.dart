@@ -829,8 +829,8 @@ void main() {
         find.byKey(const ValueKey('battle_desk_focus_region')),
       );
       expect(focusRect.left, closeTo(48, 1));
-      expect(focusRect.top, closeTo(710, 1));
-      expect(focusRect.height, closeTo(206, 1));
+      expect(focusRect.top, closeTo(707, 1));
+      expect(focusRect.height, closeTo(214, 1));
 
       final selectedNameplate = tester.getRect(
         find.byKey(
@@ -838,6 +838,23 @@ void main() {
         ),
       );
       expect(selectedNameplate.height, 40);
+      expect(selectedNameplate.left, closeTo(67, 1));
+      expect(selectedNameplate.top, closeTo(711, 1));
+      expect(selectedNameplate.right, closeTo(288, 1));
+      final secondNameplate = tester.getRect(
+        find.byKey(
+          ValueKey('battle.focusNameplate.compact.${left[1].characterId}'),
+        ),
+      );
+      final thirdNameplate = tester.getRect(
+        find.byKey(
+          ValueKey('battle.focusNameplate.compact.${left[2].characterId}'),
+        ),
+      );
+      expect(secondNameplate.top, closeTo(760, 1));
+      expect(secondNameplate.height, 36);
+      expect(thirdNameplate.top, closeTo(805, 1));
+      expect(thirdNameplate.height, 36);
       final selectedPlate = tester.widget<Container>(
         find.byKey(
           ValueKey('battle.focusNameplate.expanded.${focus.characterId}'),
@@ -845,9 +862,13 @@ void main() {
       );
       expect(
         (selectedPlate.decoration! as BoxDecoration).color,
-        WuxiaUi.battleFocusPaper,
+        Colors.transparent,
       );
-      expect(WuxiaUi.battleFocusPaper, const Color(0xFFB19C85));
+      expect(
+        find.byKey(const ValueKey('battle.focusSelectedPaper')),
+        findsOneWidget,
+      );
+      expect(WuxiaUi.battleFocusPaper, const Color(0xFFAE9479));
       final focusRail = tester.widget<Container>(
         find.byKey(const ValueKey('battle_desk_focus_region')),
       );
@@ -856,12 +877,18 @@ void main() {
         WuxiaUi.battleFocusBase,
       );
       expect(WuxiaUi.battleFocusBase, const Color(0xD9242320));
-      expect(
-        tester
-            .getRect(find.byKey(const ValueKey('battle.focusQiProgress')))
-            .height,
-        10,
+      final qiProgressRect = tester.getRect(
+        find.byKey(const ValueKey('battle.focusQiProgress')),
       );
+      expect(qiProgressRect.left, closeTo(61, 1));
+      expect(qiProgressRect.right, closeTo(292, 1));
+      expect(qiProgressRect.top, closeTo(899, 1));
+      expect(qiProgressRect.height, 15);
+      final qiLabelRect = tester.getRect(
+        find.text('${UiStrings.statQi} ${focus.currentQi}/${focus.maxQi}'),
+      );
+      expect(qiLabelRect.left, closeTo(67, 1));
+      expect(qiLabelRect.top, closeTo(864, 2));
 
       final slots = [
         for (var index = 0; index < 7; index++)

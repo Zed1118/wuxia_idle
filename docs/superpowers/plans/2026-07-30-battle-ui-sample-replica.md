@@ -141,3 +141,21 @@
   `flutter analyze --no-pub` 为 0 issue；四张新增 PNG 均为有效 RGBA、
   alpha 范围 0–255 且四角透明；`dart format --set-exit-if-changed` 与
   `git diff --check` 通过。
+
+## 左下角色状态栏 100% 验收口径（2026-07-30）
+
+- 本轮仅修改 `FocusSelector` / `FocusChip` / `BattleFocusRailSurface` /
+  真气汇总，不触碰人物、技能签、行囊与战斗逻辑。
+- 1672×941 黄金尺寸下，外框锁定 x=48、y=707、h=214；三行名帖锁定
+  y=711 / 760 / 805，选中行 h=40、其余 h=36；真气槽锁定
+  x=61..292、y=899、h=15。上述坐标均有 widget test 硬断言。
+- 选中名帖改为破边旧纸路径，撤掉误读为箭头的朱色左边，恢复外伸宣纸箭头；
+  未选名帖补灰墨斑驳与细颗粒，外框补四角卷草、右侧竖向结饰；真气文字恢复
+  样板字号，进度槽补外框并使用样板青灰填充。
+- 最终单区域量测（当前减样板）最大通道差为 1.29 RGB：panel
+  (-0.04,-0.36,-1.16)、selected (+0.43,+0.92,+0.75)、row2
+  (+1.04,+1.21,+0.59)、row3 (+0.19,+0.26,-0.43)、qi
+  (+1.11,-0.28,-1.29)。结构坐标全命中，状态栏按本项目验收口径记 100%。
+- 证据：
+  `build/visual_acceptance/sample_replica/focus-status-verified-v11/`；
+  黄金帧 READY，日志无 overflow / exception / route error。

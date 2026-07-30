@@ -667,15 +667,15 @@ class FocusSelector extends StatelessWidget {
                     expandedSampleStyle: expandedSampleStyle,
                   ),
                   if (i < team.length - 1)
-                    SizedBox(height: expandedSampleStyle ? 6 : 4),
+                    SizedBox(height: expandedSampleStyle ? 9 : 4),
                 ],
               ],
             ),
             if (summary != null)
               Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
+                left: expandedSampleStyle ? -6 : 0,
+                right: expandedSampleStyle ? -4 : 0,
+                bottom: expandedSampleStyle ? 1 : 0,
                 child: _FocusQiSummary(
                   character: summary,
                   expandedSampleStyle: expandedSampleStyle,
@@ -716,31 +716,11 @@ class FocusChip extends StatelessWidget {
           : expandedSampleStyle
           ? BattleLayoutTokens.actorChipHeight - 4
           : 30,
-      padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
-        color: selected ? WuxiaUi.battleFocusPaper : Colors.transparent,
-        image: selected
-            ? const DecorationImage(
-                image: AssetImage(WuxiaUi.paperBg),
-                fit: BoxFit.cover,
-                opacity: 0.09,
-              )
-            : null,
-        border: Border(
-          left: BorderSide(
-            color: selected ? WuxiaUi.jiang : const Color(0xFF4C4439),
-            width: selected ? 3 : 1,
-          ),
-          top: BorderSide(
-            color: selected ? const Color(0xFFC3A46A) : const Color(0xFF4C4439),
-          ),
-          right: BorderSide(
-            color: selected ? const Color(0xFFC3A46A) : const Color(0xFF4C4439),
-          ),
-          bottom: BorderSide(
-            color: selected ? const Color(0xFFC3A46A) : const Color(0xFF4C4439),
-          ),
-        ),
+        color: Colors.transparent,
+        border: selected
+            ? null
+            : Border.all(color: const Color(0xFF665744), width: 1),
       ),
       child: Stack(
         clipBehavior: Clip.none,
@@ -749,21 +729,30 @@ class FocusChip extends StatelessWidget {
           if (selected)
             const Positioned.fill(
               child: IgnorePointer(
-                child: CustomPaint(painter: _FocusPaperMottlePainter()),
+                child: CustomPaint(
+                  key: ValueKey('battle.focusSelectedPaper'),
+                  painter: _FocusSelectedPaperPainter(),
+                ),
+              ),
+            )
+          else
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(painter: _FocusDarkNameplatePainter()),
               ),
             ),
           if (selected)
             Align(
               alignment: Alignment.centerLeft,
               child: Transform.translate(
-                offset: const Offset(-14, 0),
+                offset: const Offset(-3, 0),
                 child: CustomPaint(
                   key: const ValueKey('battle.focusSelectedPointer'),
-                  size: const Size(16, 20),
+                  size: const Size(14, 20),
                   painter: _FocusPointerPainter(
                     color: dim
                         ? const Color(0xFF8F8574)
-                        : WuxiaUi.battleFocusPaper,
+                        : const Color(0xFFD8C6A5),
                   ),
                 ),
               ),
@@ -778,7 +767,7 @@ class FocusChip extends StatelessWidget {
               style: TextStyle(
                 fontFamily: BattleTypography.displayFamily,
                 fontFamilyFallback: BattleTypography.displayFallback,
-                fontSize: expandedSampleStyle ? (selected ? 18 : 16) : 11,
+                fontSize: expandedSampleStyle ? (selected ? 20 : 18) : 11,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 color: dim
                     ? const Color(0xFF8F8574)
@@ -816,33 +805,138 @@ class FocusChip extends StatelessWidget {
   }
 }
 
-class _FocusPaperMottlePainter extends CustomPainter {
-  const _FocusPaperMottlePainter();
+class _FocusSelectedPaperPainter extends CustomPainter {
+  const _FocusSelectedPaperPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(1, 0)
+      ..lineTo(size.width * 0.17, 0)
+      ..lineTo(size.width * 0.34, 1.2)
+      ..lineTo(size.width * 0.56, 0)
+      ..lineTo(size.width * 0.77, 0.8)
+      ..lineTo(size.width - 1, 0)
+      ..lineTo(size.width - 2, size.height * 0.30)
+      ..lineTo(size.width - 1, size.height * 0.56)
+      ..lineTo(size.width - 2.4, size.height)
+      ..lineTo(size.width * 0.78, size.height - 1)
+      ..lineTo(size.width * 0.61, size.height)
+      ..lineTo(size.width * 0.39, size.height - 1)
+      ..lineTo(size.width * 0.19, size.height)
+      ..lineTo(1.4, size.height - 1)
+      ..lineTo(2.2, size.height * 0.69)
+      ..lineTo(1, size.height * 0.43)
+      ..close();
+    canvas.drawPath(
+      path,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFBBA082),
+            WuxiaUi.battleFocusPaper,
+            Color(0xFFA1886F),
+          ],
+        ).createShader(Offset.zero & size),
+    );
+
     final dark = Paint()
-      ..color = const Color(0xFF5F4935).withValues(alpha: 0.14)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+      ..color = const Color(0xFF4F3D30).withValues(alpha: 0.13)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.4);
     final pale = Paint()
-      ..color = const Color(0xFFEED9B8).withValues(alpha: 0.08)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
-    for (var i = 0; i < 12; i++) {
+      ..color = const Color(0xFFE5D2AF).withValues(alpha: 0.09)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.4);
+    canvas.save();
+    canvas.clipPath(path);
+    for (var i = 0; i < 16; i++) {
       final x = ((i * 43 + 7) % 127) / 127 * size.width;
       final y = ((i * 29 + 5) % 101) / 101 * size.height;
       canvas.drawOval(
         Rect.fromCenter(
           center: Offset(x, y),
-          width: 38 + (i % 4) * 17,
-          height: 10 + (i % 3) * 8,
+          width: 32 + (i % 4) * 15,
+          height: 8 + (i % 3) * 7,
         ),
         i.isEven ? dark : pale,
       );
     }
+    final fiber = Paint()
+      ..color = const Color(0xFF665443).withValues(alpha: 0.15)
+      ..strokeWidth = 0.55;
+    for (var i = 0; i < 9; i++) {
+      final y = 4.0 + i * 4.1;
+      final start = ((i * 31) % 67) / 67 * size.width * 0.62;
+      canvas.drawLine(
+        Offset(start, y),
+        Offset(start + 26 + (i % 3) * 13, y + 0.6),
+        fiber,
+      );
+    }
+    final grain = Paint()
+      ..color = const Color(0xFF534235).withValues(alpha: 0.17);
+    for (var i = 0; i < 42; i++) {
+      final x = ((i * 61 + 17) % 211) / 211 * size.width;
+      final y = ((i * 37 + 9) % 97) / 97 * size.height;
+      canvas.drawCircle(Offset(x, y), 0.28 + (i % 3) * 0.18, grain);
+    }
+    canvas.restore();
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = const Color(0xFF756047).withValues(alpha: 0.82)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
   }
 
   @override
-  bool shouldRepaint(covariant _FocusPaperMottlePainter oldDelegate) => false;
+  bool shouldRepaint(covariant _FocusSelectedPaperPainter oldDelegate) => false;
+}
+
+class _FocusDarkNameplatePainter extends CustomPainter {
+  const _FocusDarkNameplatePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final wash = Paint()
+      ..color = const Color(0xFF817767).withValues(alpha: 0.015)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    for (var i = 0; i < 7; i++) {
+      final x = ((i * 37 + 11) % 83) / 83 * size.width;
+      final y = ((i * 23 + 7) % 59) / 59 * size.height;
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(x, y),
+          width: 42 + (i % 3) * 19,
+          height: 8 + (i % 2) * 7,
+        ),
+        wash,
+      );
+    }
+    final fiber = Paint()
+      ..color = const Color(0xFFACA08B).withValues(alpha: 0.07)
+      ..strokeWidth = 0.45;
+    for (var i = 0; i < 5; i++) {
+      final y = 5.0 + i * 6.2;
+      canvas.drawLine(
+        Offset(8 + (i * 29) % 71, y),
+        Offset(size.width * (0.46 + (i % 3) * 0.12), y + 0.5),
+        fiber,
+      );
+    }
+    final grain = Paint()
+      ..color = const Color(0xFFB9AC96).withValues(alpha: 0.075);
+    for (var i = 0; i < 30; i++) {
+      final x = ((i * 47 + 13) % 127) / 127 * size.width;
+      final y = ((i * 31 + 7) % 83) / 83 * size.height;
+      canvas.drawCircle(Offset(x, y), 0.25 + (i % 2) * 0.18, grain);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _FocusDarkNameplatePainter oldDelegate) => false;
 }
 
 class _FocusQiSummary extends StatelessWidget {
@@ -859,6 +953,43 @@ class _FocusQiSummary extends StatelessWidget {
     final fraction = character.maxQi <= 0
         ? 0.0
         : (character.currentQi / character.maxQi).clamp(0.0, 1.0);
+    if (expandedSampleStyle) {
+      return Semantics(
+        label: UiStrings.statQi,
+        value: '${character.currentQi}/${character.maxQi}',
+        child: SizedBox(
+          key: const ValueKey('battle.focusQiSummary'),
+          height: 50,
+          child: Stack(
+            children: [
+              Positioned(
+                top: 0,
+                left: 6,
+                right: 4,
+                child: Text(
+                  '${UiStrings.statQi} ${character.currentQi}/${character.maxQi}',
+                  style: const TextStyle(
+                    color: Color(0xFFD9C5A0),
+                    fontFamily: BattleTypography.displayFamily,
+                    fontFamilyFallback: BattleTypography.displayFallback,
+                    fontSize: 21,
+                    height: 1.1,
+                    letterSpacing: 0.6,
+                    fontFeatures: BattleTypography.tabularFigures,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _SampleFocusQiProgress(fraction: fraction),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     return Semantics(
       label: UiStrings.statQi,
       value: '${character.currentQi}/${character.maxQi}',
@@ -866,30 +997,59 @@ class _FocusQiSummary extends StatelessWidget {
         key: const ValueKey('battle.focusQiSummary'),
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            '${UiStrings.statQi} ${character.currentQi}/${character.maxQi}',
-            style: TextStyle(
-              color: const Color(0xFFD5C29D),
-              fontFamily: BattleTypography.displayFamily,
-              fontFamilyFallback: BattleTypography.displayFallback,
-              fontSize: expandedSampleStyle ? 18 : 11,
-              height: expandedSampleStyle ? 1.1 : null,
-              letterSpacing: 0.8,
-              fontFeatures: BattleTypography.tabularFigures,
+          Padding(
+            padding: EdgeInsets.zero,
+            child: Text(
+              '${UiStrings.statQi} ${character.currentQi}/${character.maxQi}',
+              style: const TextStyle(
+                color: Color(0xFFD9C5A0),
+                fontFamily: BattleTypography.displayFamily,
+                fontFamilyFallback: BattleTypography.displayFallback,
+                fontSize: 11,
+                letterSpacing: 0.8,
+                fontFeatures: BattleTypography.tabularFigures,
+              ),
             ),
           ),
-          SizedBox(height: expandedSampleStyle ? 8 : 4),
+          const SizedBox(height: 4),
           ClipRRect(
             borderRadius: BorderRadius.circular(1),
             child: LinearProgressIndicator(
               key: const ValueKey('battle.focusQiProgress'),
-              minHeight: expandedSampleStyle ? 10 : 6,
+              minHeight: 6,
               value: fraction,
               color: WuxiaUi.qing,
               backgroundColor: const Color(0xFF40382E),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SampleFocusQiProgress extends StatelessWidget {
+  const _SampleFocusQiProgress({required this.fraction});
+
+  final double fraction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const ValueKey('battle.focusQiProgress'),
+      height: 15,
+      padding: const EdgeInsets.all(1),
+      decoration: BoxDecoration(
+        color: const Color(0xFF282721),
+        border: Border.all(color: const Color(0xFF77664F), width: 1),
+      ),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: FractionallySizedBox(
+          widthFactor: fraction,
+          heightFactor: 1,
+          child: const ColoredBox(color: Color(0xFF5F8E89)),
+        ),
       ),
     );
   }
