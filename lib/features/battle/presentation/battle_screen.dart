@@ -22,6 +22,7 @@ import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/theme/colors.dart';
 import 'battle_atmosphere_overlay.dart';
 import 'battle_scene_background.dart';
+import 'battle_standee_fusion.dart';
 import 'guardian_ward_presentation.dart';
 import 'victory_overlay.dart';
 import '../../cangjingge/presentation/cangjingge_screen.dart';
@@ -788,6 +789,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       hasBoss: showBossInkCloud,
     );
     final stageLayout = _stageLayoutForTrack(widget.bgmTrack);
+    // B3 方案 B:立绘融合强度随本场背景的合成明度走(亮底多融、暗底不动)。
+    final standeeFusion = battleStandeeFusionFor(
+      scenePath: widget.sceneBackgroundPath,
+    );
 
     return BgmScope(
       track: widget.bgmTrack,
@@ -857,6 +862,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             controller: _playback,
                             state: state,
                             stageLayout: stageLayout,
+                            standeeFusion: standeeFusion,
                             chargeMaxTicks: chargeMaxTicks,
                             staggerWindowTicks: staggerWindowTicks,
                             onEnemyTap: _onEnemyTap,

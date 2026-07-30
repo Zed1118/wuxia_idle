@@ -8,6 +8,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'avatar_status_tags.dart';
+import 'battle_standee_fusion.dart';
 import 'battle_typography_tokens.dart';
 import 'countdown_ring.dart';
 import 'guardian_ward_presentation.dart';
@@ -46,33 +47,6 @@ class BattleStandeeAssetResolution {
       displayRole == BattleCharacterAssetRole.sourcePortrait;
 }
 
-/// 战斗立绘统一色级：轻抬暖灰黑位、压高光并降低色彩通道分离。
-/// 只包人物位图，不影响 HP/真气、状态标签与战场背景。
-const battleStandeeFusionMatrix = <double>[
-  0.74,
-  0.10,
-  0.06,
-  0,
-  12,
-  0.08,
-  0.75,
-  0.07,
-  0,
-  10,
-  0.06,
-  0.14,
-  0.67,
-  0,
-  8,
-  0,
-  0,
-  0,
-  0.96,
-  0,
-];
-
-const battleStandeeFusionOpacity = 0.96;
-const battleStandeeEdgeSofteningSigma = 0.38;
 const battleStandeeGroundingOpacity = 0.28;
 const battleStandeeGroundingCoreOpacity = 0.44;
 const battleStandeeGroundingWashOpacity = 0.20;
@@ -113,6 +87,11 @@ class CharacterAvatar extends StatelessWidget {
   /// null(测试/无结界场景)→ 跳过判定,不展示结界标签(零回归)。
   final BattleState? battleState;
 
+  /// 立绘大气融合档(B3 方案 B):由所在场景背景的合成明度决定强度。
+  /// 缺省 [BattleStandeeFusion.baseline] = 自适应前的既有观感,保证未接线的
+  /// 调用点(debug route / widget 测)零回归。
+  final BattleStandeeFusion standeeFusion;
+
   const CharacterAvatar({
     super.key,
     required this.character,
@@ -127,6 +106,7 @@ class CharacterAvatar extends StatelessWidget {
     this.beat,
     this.staggerWindowTicks = 3,
     this.battleState,
+    this.standeeFusion = BattleStandeeFusion.baseline,
   });
 
   @override
@@ -142,6 +122,7 @@ class CharacterAvatar extends StatelessWidget {
         height: standeeHeight,
         inkMirror: inkMirror,
         showStatusOverlay: showStageStatusOverlay,
+        fusion: standeeFusion,
       );
     }
 
@@ -331,6 +312,7 @@ class _StageCharacterStandee extends StatelessWidget {
     required this.height,
     required this.inkMirror,
     required this.showStatusOverlay,
+    required this.fusion,
   });
 
   final BattleCharacter character;
@@ -342,6 +324,7 @@ class _StageCharacterStandee extends StatelessWidget {
   final double height;
   final bool inkMirror;
   final bool showStatusOverlay;
+  final BattleStandeeFusion fusion;
 
   @override
   Widget build(BuildContext context) {
@@ -410,10 +393,10 @@ class _StageCharacterStandee extends StatelessWidget {
       ),
       child: ColorFiltered(
         key: const ValueKey('battle.stageStandeeFusionGrade'),
-        colorFilter: const ColorFilter.matrix(battleStandeeFusionMatrix),
+        colorFilter: ColorFilter.matrix(fusion.matrix),
         child: Opacity(
           key: const ValueKey('battle.stageStandeeFusionOpacity'),
-          opacity: battleStandeeFusionOpacity,
+          opacity: fusion.opacity,
           child: portraitImage,
         ),
       ),

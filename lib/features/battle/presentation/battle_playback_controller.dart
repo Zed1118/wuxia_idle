@@ -23,6 +23,7 @@ import '../../settings/domain/gameplay_settings.dart';
 import 'battle_vfx_entries.dart';
 import 'battle_action_template.dart';
 import 'battle_stage_geometry.dart';
+import 'battle_standee_fusion.dart';
 import 'battle_visual_roster.dart';
 import 'boss_phase_presentation.dart';
 import 'damage_popup.dart';
