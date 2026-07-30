@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/theme/wuxia_tokens.dart';
+
 /// 战备行囊的独立装帧，避免与纸签共享按钮外观。
 class BattlePouchRailSurface extends StatelessWidget {
   const BattlePouchRailSurface({
@@ -22,7 +24,7 @@ class BattlePouchRailSurface extends StatelessWidget {
       width: width,
       height: height,
       padding: const EdgeInsets.all(4),
-      decoration: const BoxDecoration(color: Color(0xB31B1A17)),
+      decoration: const BoxDecoration(color: WuxiaUi.battlePouchBase),
       child: Container(
         key: const ValueKey('battle.pouch.woodCase'),
         padding: compact
@@ -32,7 +34,11 @@ class BattlePouchRailSurface extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF2B2923), Color(0xFF1D1D1A), Color(0xFF29261F)],
+            colors: [
+              WuxiaUi.battlePouchWoodTop,
+              WuxiaUi.battlePouchWoodMiddle,
+              WuxiaUi.battlePouchWoodBottom,
+            ],
             stops: [0, 0.58, 1],
           ),
           border: Border.all(color: const Color(0xFF756349), width: 1.2),

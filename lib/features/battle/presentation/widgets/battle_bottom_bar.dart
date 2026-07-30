@@ -718,9 +718,7 @@ class FocusChip extends StatelessWidget {
           : 30,
       padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
-        color: selected
-            ? WuxiaUi.paper.withValues(alpha: 0.92)
-            : Colors.black.withValues(alpha: 0.16),
+        color: selected ? WuxiaUi.battleFocusPaper : Colors.transparent,
         image: selected
             ? const DecorationImage(
                 image: AssetImage(WuxiaUi.paperBg),
@@ -747,6 +745,12 @@ class FocusChip extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
+          if (selected)
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(painter: _FocusPaperMottlePainter()),
+              ),
+            ),
           if (selected)
             Align(
               alignment: Alignment.centerLeft,
@@ -806,6 +810,35 @@ class FocusChip extends StatelessWidget {
           )
         : keyedNameplate;
   }
+}
+
+class _FocusPaperMottlePainter extends CustomPainter {
+  const _FocusPaperMottlePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final dark = Paint()
+      ..color = const Color(0xFF5F4935).withValues(alpha: 0.14)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    final pale = Paint()
+      ..color = const Color(0xFFEED9B8).withValues(alpha: 0.08)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    for (var i = 0; i < 12; i++) {
+      final x = ((i * 43 + 7) % 127) / 127 * size.width;
+      final y = ((i * 29 + 5) % 101) / 101 * size.height;
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(x, y),
+          width: 38 + (i % 4) * 17,
+          height: 10 + (i % 3) * 8,
+        ),
+        i.isEven ? dark : pale,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _FocusPaperMottlePainter oldDelegate) => false;
 }
 
 class _FocusQiSummary extends StatelessWidget {
@@ -971,11 +1004,9 @@ class SkillCommandButton extends StatelessWidget {
     if (visualState == BattleSkillSlipVisualState.insufficientQi) {
       bgColor = const Color(0xFFC4B596);
     } else if (visualState == BattleSkillSlipVisualState.interrupt) {
-      bgColor = const Color(0xFFF2DFB4);
-    } else if (!interventionReady) {
-      bgColor = const Color(0xFFCDBF9F);
+      bgColor = WuxiaUi.battleSkillPaperSelected;
     } else {
-      bgColor = WuxiaUi.paper;
+      bgColor = WuxiaUi.battleSkillPaper;
     }
 
     final String blockingStatus;
@@ -1365,7 +1396,10 @@ class BattlePouchRail extends StatelessWidget {
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Color(0xFF4A3A31), Color(0xFF2D2722)],
+                          colors: [
+                            WuxiaUi.battlePouchSlotTop,
+                            WuxiaUi.battlePouchSlotBottom,
+                          ],
                         ),
                         border: Border.all(color: const Color(0xFF654F3D)),
                         borderRadius: BorderRadius.circular(1),

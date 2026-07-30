@@ -366,6 +366,13 @@ void main() {
       );
       final deskDecoration = desk.decoration! as BoxDecoration;
       expect(deskDecoration.color, WuxiaUi.battleDeskBase);
+      expect(WuxiaUi.battleDeskBase, const Color(0xFF272724));
+      expect(WuxiaUi.battleDeskTextureTint, const Color(0xFF272724));
+      expect(deskDecoration.image!.opacity, 0.04);
+      expect(
+        find.byKey(const ValueKey('battle.commandDeskMottle')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('自动与可点选模式的案台三分区几何同构', (tester) async {
@@ -831,6 +838,24 @@ void main() {
         ),
       );
       expect(selectedNameplate.height, 40);
+      final selectedPlate = tester.widget<Container>(
+        find.byKey(
+          ValueKey('battle.focusNameplate.expanded.${focus.characterId}'),
+        ),
+      );
+      expect(
+        (selectedPlate.decoration! as BoxDecoration).color,
+        WuxiaUi.battleFocusPaper,
+      );
+      expect(WuxiaUi.battleFocusPaper, const Color(0xFFB19C85));
+      final focusRail = tester.widget<Container>(
+        find.byKey(const ValueKey('battle_desk_focus_region')),
+      );
+      expect(
+        (focusRail.decoration! as BoxDecoration).color,
+        WuxiaUi.battleFocusBase,
+      );
+      expect(WuxiaUi.battleFocusBase, const Color(0xD9242320));
       expect(
         tester
             .getRect(find.byKey(const ValueKey('battle.focusQiProgress')))

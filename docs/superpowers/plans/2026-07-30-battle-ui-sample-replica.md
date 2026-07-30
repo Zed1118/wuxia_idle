@@ -113,3 +113,10 @@
   替换验收 fixture 中偏黑的紫金葫芦和卷轴；技能签撤掉统一朱色侧边，强化
   冷却墨洗与纸面斑驳，行囊补双线角花。最终素材叠图：
   `build/visual_acceptance/sample_replica/material-final-v2/bottom-stacked.png`。
+- 材质色阶二次收敛：案台、名帖、普通/选中技能签与行囊改用集中 token，
+  补确定性灰墨斑驳、纸纤维与木格渐变。1672×941 固定区域取样中，案台、
+  名帖、技能签和行囊平均 RGB 与样板均已收敛到约 ±2；最终底部叠图：
+  `build/visual_acceptance/sample_replica/material-palette-final-v3/bottom-stacked.png`。
+  1280×720 / 1440×900 / 1672×941 三视口均重新复拍且 READY 日志无
+  overflow / exception；相关回归 160 项通过，`flutter analyze --no-pub`
+  为 0 issue。

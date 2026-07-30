@@ -27,8 +27,18 @@ class WuxiaUi {
   static const Color battleStatusTrack = Color(0x7A211D18);
   // 战斗样板三段式的两块深色基底。集中成 token，避免顶栏/案台各自漂移。
   static const Color battleHeaderBase = Color(0xFF22201D);
-  static const Color battleDeskBase = Color(0xFF2F2A28);
-  static const Color battleDeskTextureTint = Color(0xFF44382B);
+  static const Color battleDeskBase = Color(0xFF272724);
+  static const Color battleDeskTextureTint = Color(0xFF272724);
+  static const Color battleFocusBase = Color(0xD9242320);
+  static const Color battleFocusPaper = Color(0xFFB19C85);
+  static const Color battleSkillPaper = Color(0xFFE6D5BE);
+  static const Color battleSkillPaperSelected = Color(0xFFFDE4C5);
+  static const Color battlePouchBase = Color(0xD12C2B27);
+  static const Color battlePouchWoodTop = Color(0xFF383631);
+  static const Color battlePouchWoodMiddle = Color(0xFF2E2D29);
+  static const Color battlePouchWoodBottom = Color(0xFF36332D);
+  static const Color battlePouchSlotTop = Color(0xFF413B32);
+  static const Color battlePouchSlotBottom = Color(0xFF3E3830);
   static const Color gold = Color(0xFFB08A47); // 金线（仅高阶装帧）
   // 金色语义落到浅宣纸上的文字 sink。保留旧金线色相，但压暗到小字
   // 对 paper 仍有 4.5:1 以上对比；装帧边框与进度条继续使用 gold。

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/theme/wuxia_tokens.dart';
+
 /// 执招者名帖的统一墨框，内容与点击语义由调用方提供。
 class BattleFocusRailSurface extends StatelessWidget {
   const BattleFocusRailSurface({
@@ -21,12 +23,15 @@ class BattleFocusRailSurface extends StatelessWidget {
       width: width,
       height: height,
       decoration: const BoxDecoration(
-        color: Color(0xB3131210),
+        color: WuxiaUi.battleFocusBase,
         boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 8)],
       ),
       child: Stack(
         fit: StackFit.expand,
         children: [
+          const IgnorePointer(
+            child: CustomPaint(painter: _BattleFocusRailMottlePainter()),
+          ),
           const CustomPaint(
             key: ValueKey('battle.focusRailOrnateFrame'),
             painter: _BattleFocusRailFramePainter(),
@@ -41,6 +46,36 @@ class BattleFocusRailSurface extends StatelessWidget {
       ),
     );
   }
+}
+
+class _BattleFocusRailMottlePainter extends CustomPainter {
+  const _BattleFocusRailMottlePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final dark = Paint()
+      ..color = const Color(0xFF0F100F).withValues(alpha: 0.08)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+    final pale = Paint()
+      ..color = const Color(0xFF8B8478).withValues(alpha: 0.09)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+    for (var i = 0; i < 18; i++) {
+      final x = ((i * 47 + 13) % 193) / 193 * size.width;
+      final y = ((i * 31 + 11) % 149) / 149 * size.height;
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(x, y),
+          width: 34 + (i % 4) * 17,
+          height: 14 + (i % 3) * 9,
+        ),
+        i.isEven ? dark : pale,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BattleFocusRailMottlePainter oldDelegate) =>
+      false;
 }
 
 class _BattleFocusRailFramePainter extends CustomPainter {

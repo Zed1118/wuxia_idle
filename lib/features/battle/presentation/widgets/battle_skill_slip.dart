@@ -125,7 +125,7 @@ class BattleSkillSlipSurface extends StatelessWidget {
       children: [
         Positioned.fill(
           child: Opacity(
-            opacity: 0.32,
+            opacity: 0.40,
             child: Image.asset(
               WuxiaUi.paperBg,
               fit: BoxFit.cover,
@@ -413,7 +413,7 @@ class _BattleSkillSlipFramePainter extends CustomPainter {
     );
 
     final fiber = Paint()
-      ..color = const Color(0xFF5D4D38).withValues(alpha: 0.065)
+      ..color = const Color(0xFF5D4D38).withValues(alpha: 0.12)
       ..strokeWidth = 0.55
       ..strokeCap = StrokeCap.round;
     for (var i = 0; i < 14; i++) {
@@ -431,7 +431,7 @@ class _BattleSkillSlipFramePainter extends CustomPainter {
     }
 
     final fleck = Paint()
-      ..color = const Color(0xFF4C3F30).withValues(alpha: 0.12)
+      ..color = const Color(0xFF4C3F30).withValues(alpha: 0.17)
       ..strokeCap = StrokeCap.round;
     for (var i = 0; i < 36; i++) {
       final x = 8.0 + ((i * 29) % 83) / 83 * (size.width - 16);
@@ -440,18 +440,21 @@ class _BattleSkillSlipFramePainter extends CustomPainter {
     }
 
     final mottle = Paint()
-      ..color = const Color(0xFF66533D).withValues(alpha: 0.035)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-    for (var i = 0; i < 9; i++) {
+      ..color = const Color(0xFF66533D).withValues(alpha: 0.12)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+    final paleMottle = Paint()
+      ..color = const Color(0xFFF1DEC0).withValues(alpha: 0.055)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+    for (var i = 0; i < 14; i++) {
       final x = 10.0 + ((i * 31) % 73) / 73 * (size.width - 20);
       final y = 12.0 + ((i * 43) % 89) / 89 * (size.height - 24);
       canvas.drawOval(
         Rect.fromCenter(
           center: Offset(x, y),
-          width: 12 + (i % 3) * 7,
-          height: 7 + (i % 4) * 5,
+          width: 18 + (i % 3) * 9,
+          height: 10 + (i % 4) * 6,
         ),
-        mottle,
+        i.isEven ? mottle : paleMottle,
       );
     }
   }
