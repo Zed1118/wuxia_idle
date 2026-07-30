@@ -10,6 +10,7 @@ import '../attack_animation.dart';
 import '../battle_action_template.dart';
 import '../battle_layout_tokens.dart';
 import '../battle_stage_geometry.dart';
+import '../battle_standee_fusion.dart';
 import '../battle_visual_roster.dart';
 import '../battle_vfx_entries.dart';
 import '../character_avatar.dart';
@@ -35,6 +36,8 @@ class BattleField extends StatefulWidget {
   final Set<int> targetableEnemyIds;
   final int? hoveredEnemyId;
   final void Function(int enemyId, bool hovering) onEnemyHover;
+  // 立绘大气融合档(B3 方案 B):由 battle_screen 按场景背景算好后整场统一下发。
+  final BattleStandeeFusion standeeFusion;
 
   const BattleField({
     super.key,
@@ -54,6 +57,7 @@ class BattleField extends StatefulWidget {
     this.targetableEnemyIds = const <int>{},
     required this.hoveredEnemyId,
     required this.onEnemyHover,
+    this.standeeFusion = BattleStandeeFusion.baseline,
   });
 
   @override
@@ -144,6 +148,7 @@ class _BattleFieldState extends State<BattleField> {
   Widget build(BuildContext context) {
     final state = widget.state;
     final stageLayout = widget.stageLayout;
+    final standeeFusion = widget.standeeFusion;
     final attackControllers = widget.attackControllers;
     final actionTemplates = widget.actionTemplates;
     final popups = widget.popups;
@@ -290,6 +295,7 @@ class _BattleFieldState extends State<BattleField> {
                             flashColor: hitFlashColors[slotKey] ?? Colors.white,
                             standeeWidth: width,
                             standeeHeight: height,
+                            standeeFusion: standeeFusion,
                             showStageStatusOverlay: false,
                             inkMirror:
                                 stageLayout ==
@@ -505,6 +511,8 @@ class CharacterSlot extends StatelessWidget {
   final bool hovered;
   final bool targetable;
   final ValueChanged<bool>? onHoverChanged;
+  // 立绘大气融合档(B3 方案 B):按场景背景合成明度自适应,缺省为既有观感。
+  final BattleStandeeFusion standeeFusion;
 
   const CharacterSlot({
     super.key,
@@ -530,6 +538,7 @@ class CharacterSlot extends StatelessWidget {
     this.hovered = false,
     this.targetable = false,
     this.onHoverChanged,
+    this.standeeFusion = BattleStandeeFusion.baseline,
   });
 
   @override
@@ -548,6 +557,7 @@ class CharacterSlot extends StatelessWidget {
           standeeHeight: standeeHeight,
           showStageStatusOverlay: showStageStatusOverlay,
           inkMirror: inkMirror,
+          standeeFusion: standeeFusion,
         ),
         if (targetable)
           Positioned(

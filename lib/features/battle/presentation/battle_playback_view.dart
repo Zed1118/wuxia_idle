@@ -52,11 +52,14 @@ class BattlePlaybackField extends StatelessWidget {
     required this.targetableEnemyIds,
     required this.hoveredEnemyId,
     required this.onEnemyHover,
+    this.standeeFusion = BattleStandeeFusion.baseline,
   });
 
   final BattlePlaybackController controller;
   final BattleState state;
   final BattleStageLayoutMode stageLayout;
+  // 立绘大气融合档(B3 方案 B):battle_screen 按场景背景算好后下发。
+  final BattleStandeeFusion standeeFusion;
   final int chargeMaxTicks;
   final int staggerWindowTicks;
   final void Function(int enemyId) onEnemyTap;
@@ -71,6 +74,7 @@ class BattlePlaybackField extends StatelessWidget {
         BattleField(
           state: state,
           stageLayout: stageLayout,
+          standeeFusion: standeeFusion,
           attackControllers: controller._attackControllers,
           actionTemplates: controller._actionTemplates,
           popups: controller._popups,
