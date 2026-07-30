@@ -358,7 +358,9 @@ class BattleModePill extends StatelessWidget {
   }
 }
 
-/// H3 暂停遮罩:半透明罩 +「已暂停」+ 继续(轻触任意处或按钮恢复)。
+/// 暂停遮罩延续战斗样板的墨幕、旧纸与朱印语言。
+///
+/// 轻触幕布或朱印都可恢复；朱印保留原生按钮语义与键盘操作。
 class PauseOverlay extends StatelessWidget {
   const PauseOverlay({super.key, required this.onResume});
 
@@ -369,38 +371,232 @@ class PauseOverlay extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onResume,
-      child: ColoredBox(
-        color: Colors.black54,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.pause_circle_outline,
-                color: WuxiaColors.textPrimary,
-                size: 56,
+      child: Stack(
+        key: const ValueKey('battle.pauseOverlay.inkVeil'),
+        fit: StackFit.expand,
+        children: [
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                radius: 1.08,
+                colors: [Color(0x8A171512), Color(0xD10B0B0A)],
               ),
-              const SizedBox(height: 16),
-              const Text(
-                UiStrings.battlePausedTitle,
-                style: TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 4,
+            ),
+          ),
+          const IgnorePointer(
+            child: CustomPaint(painter: _PauseInkVeilPainter()),
+          ),
+          Center(
+            child: GestureDetector(
+              onTap: () {},
+              child: Container(
+                key: const ValueKey('battle.pauseOverlay.paperPanel'),
+                width: 238,
+                height: 166,
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 15),
+                decoration: BoxDecoration(
+                  color: const Color(0xE6CBB996),
+                  border: Border.all(
+                    color: const Color(0xB342382C),
+                    width: 1.2,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x99000000),
+                      blurRadius: 18,
+                      offset: Offset(0, 8),
+                    ),
+                    BoxShadow(
+                      color: Color(0x246E573A),
+                      blurRadius: 0,
+                      spreadRadius: 4,
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Positioned.fill(
+                      child: Opacity(
+                        opacity: 0.24,
+                        child: Image.asset(
+                          WuxiaUi.paperBg,
+                          fit: BoxFit.cover,
+                          color: const Color(0xFF786650),
+                          colorBlendMode: BlendMode.multiply,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                    const Positioned.fill(
+                      child: IgnorePointer(
+                        child: CustomPaint(painter: _PausePaperPainter()),
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        const Text(
+                          UiStrings.battlePausedTitle,
+                          style: TextStyle(
+                            color: WuxiaUi.ink,
+                            fontFamily: BattleTypography.displayFamily,
+                            fontFamilyFallback:
+                                BattleTypography.displayFallback,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 7,
+                            shadows: [
+                              Shadow(
+                                color: Color(0x2E3A2A1A),
+                                offset: Offset(0.5, 1),
+                                blurRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                        SizedBox.square(
+                          dimension: 66,
+                          child: TextButton(
+                            key: const ValueKey(
+                              'battle.pauseOverlay.resumeSeal',
+                            ),
+                            onPressed: onResume,
+                            style: TextButton.styleFrom(
+                              foregroundColor: const Color(0xFFE6D2B5),
+                              backgroundColor: const Color(0xD16E2B23),
+                              overlayColor: const Color(0x2EFFE0B2),
+                              padding: EdgeInsets.zero,
+                              shape: const CircleBorder(
+                                side: BorderSide(
+                                  color: Color(0xFF4B211D),
+                                  width: 1.4,
+                                ),
+                              ),
+                              textStyle: const TextStyle(
+                                fontFamily: BattleTypography.displayFamily,
+                                fontFamilyFallback:
+                                    BattleTypography.displayFallback,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                            child: const Text(UiStrings.battleResume),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-              FilledButton(
-                onPressed: onResume,
-                child: const Text(UiStrings.battleResume),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
+}
+
+class _PauseInkVeilPainter extends CustomPainter {
+  const _PauseInkVeilPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final wash = Paint()
+      ..color = const Color(0x241A1712)
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, size.height * 0.18)
+        ..quadraticBezierTo(
+          size.width * 0.31,
+          size.height * 0.08,
+          size.width * 0.62,
+          size.height * 0.20,
+        )
+        ..quadraticBezierTo(
+          size.width * 0.83,
+          size.height * 0.28,
+          size.width,
+          size.height * 0.12,
+        )
+        ..lineTo(size.width, size.height * 0.37)
+        ..quadraticBezierTo(
+          size.width * 0.64,
+          size.height * 0.30,
+          0,
+          size.height * 0.43,
+        )
+        ..close(),
+      wash,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, size.height * 0.72)
+        ..quadraticBezierTo(
+          size.width * 0.28,
+          size.height * 0.64,
+          size.width * 0.58,
+          size.height * 0.77,
+        )
+        ..quadraticBezierTo(
+          size.width * 0.82,
+          size.height * 0.86,
+          size.width,
+          size.height * 0.69,
+        )
+        ..lineTo(size.width, size.height)
+        ..lineTo(0, size.height)
+        ..close(),
+      wash,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _PauseInkVeilPainter oldDelegate) => false;
+}
+
+class _PausePaperPainter extends CustomPainter {
+  const _PausePaperPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final ink = Paint()
+      ..color = const Color(0x59483B2E)
+      ..strokeWidth = 1.0
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(size.width * 0.13, 52),
+      Offset(size.width * 0.42, 50.5),
+      ink,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.58, 50.5),
+      Offset(size.width * 0.87, 52),
+      ink,
+    );
+    final stain = Paint()..color = const Color(0x16785E41);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.18, size.height * 0.75),
+        width: 54,
+        height: 17,
+      ),
+      stain,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.82, size.height * 0.27),
+        width: 43,
+        height: 14,
+      ),
+      stain,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _PausePaperPainter oldDelegate) => false;
 }
 
 // ─── 日志折叠抽屉（P0-2 Task6）─────────────────────────────────────────────

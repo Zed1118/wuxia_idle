@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 
 enum BattleSkillSlipVisualState {
+  empty,
   available,
   cooldown,
   insufficientQi,
@@ -106,6 +107,7 @@ class BattleSkillSlipSurface extends StatelessWidget {
     required this.onLongPress,
     required this.child,
     this.interactive = true,
+    this.activeTrace = false,
   });
 
   final double height;
@@ -119,6 +121,7 @@ class BattleSkillSlipSurface extends StatelessWidget {
   final VoidCallback? onLongPress;
   final Widget child;
   final bool interactive;
+  final bool activeTrace;
 
   @override
   Widget build(BuildContext context) {
@@ -207,7 +210,8 @@ class BattleSkillSlipSurface extends StatelessWidget {
       key: const ValueKey('battle.skillSlipOuterFinish'),
       painter: _BattleSkillSlipOuterFinishPainter(
         accent: accent,
-        highlighted: visualState == BattleSkillSlipVisualState.interrupt,
+        highlighted:
+            activeTrace || visualState == BattleSkillSlipVisualState.interrupt,
       ),
       child: surface,
     );
@@ -219,13 +223,19 @@ class BattleSkillSlipSurface extends StatelessWidget {
     final staged = visualState == BattleSkillSlipVisualState.interrupt
         ? Transform.translate(
             key: const ValueKey('battle.skillSlip.interruptLift'),
-            offset: Offset(0, height >= 190 ? 0 : -3),
+            offset: Offset.zero,
             child: slip,
           )
         : slip;
+    final traced = activeTrace
+        ? KeyedSubtree(
+            key: const ValueKey('battle.skillSlip.autoActiveTrace'),
+            child: staged,
+          )
+        : staged;
     return KeyedSubtree(
       key: ValueKey('battle.skillSlip.state.${visualState.name}'),
-      child: staged,
+      child: traced,
     );
   }
 }

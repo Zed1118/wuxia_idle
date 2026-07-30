@@ -78,9 +78,24 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('battle_pause_toggle')));
     await tester.pump();
     expect(find.text(UiStrings.battlePausedTitle), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('battle.pauseOverlay.inkVeil')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('battle.pauseOverlay.paperPanel')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('battle.pauseOverlay.resumeSeal')),
+      findsOneWidget,
+    );
+    expect(find.byIcon(Icons.pause_circle_outline), findsNothing);
+    expect(find.byType(FilledButton), findsNothing);
 
-    // 顶栏在暂停后也显示“继续”，按按钮类型精确命中遮罩操作。
-    await tester.tap(find.widgetWithText(FilledButton, UiStrings.battleResume));
+    await tester.tap(
+      find.byKey(const ValueKey('battle.pauseOverlay.resumeSeal')),
+    );
     await tester.pump();
     expect(find.text(UiStrings.battlePausedTitle), findsNothing);
   });

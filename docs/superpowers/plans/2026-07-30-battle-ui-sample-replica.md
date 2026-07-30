@@ -208,12 +208,12 @@
 
 | 状态 | 生产入口 / 验收 route | 视觉合同 | 当前状态 |
 | --- | --- | --- | --- |
-| 可用 / 样板中性 | `battle_tap_live`、`battle_v2_neutral_3v3` | 样板纸色、固定标题 / 朱印 / 真气脚线 | 已有基线 |
-| 冷却 | `battle_tap_live` 第三签、`battle_v2_resource_pressure` | 右侧干笔墨洗 + 米灰剩余拍数；实时节拍只改数字，不改几何 | 本轮校准中 |
-| 真气不足 | `battle_v2_resource_pressure` | 低饱和青墨断痕；保持旧纸签而非系统禁用按钮 | 待校准 |
-| 待发 / 选目标 | `battle_tap_preview` + 真点选 | 朱砂旧印完整落在签内；软暂停与敌方可选提示可读 | 本轮校准中 |
-| 破招高亮 | `battle_tap_live` 敌方蓄力 | 样板金线 / 金粒，不抬高签体、不改变宽高 | 待复核 |
-| 自动轮转 | `battle_v2_auto_rotation_first/second` | 与可点选案台同构；只读 Semantics，不伪装按钮 | 待复核 |
+| 可用 / 样板中性 | `battle_tap_live`、`battle_v2_neutral_3v3` | 样板纸色、固定标题 / 朱印 / 真气脚线 | 已验收 |
+| 冷却 | `battle_tap_live` 第三签、`battle_v2_resource_pressure` | 右侧干笔墨洗 + 米灰剩余拍数；实时节拍只改数字，不改几何 | 已验收 |
+| 真气不足 | `battle_v2_resource_pressure` | 低饱和青墨断痕；保持旧纸签而非系统禁用按钮 | 已验收 |
+| 待发 / 选目标 | `battle_tap_preview` + 真点选 | 朱砂旧印完整落在签内；软暂停与敌方可选提示可读 | 已验收 |
+| 破招高亮 | `battle_tap_live` 敌方蓄力 | 样板金线 / 金粒，不抬高签体、不改变宽高 | 已验收 |
+| 自动轮转 | `battle_v2_auto_rotation_first/second` | 与可点选案台同构；只读 Semantics，不伪装按钮 | 已验收 |
 
 ### 本轮恢复点
 
@@ -224,7 +224,24 @@
   `battle_v2_resource_pressure` 已实拍。
 - 已定位待发印使用负坐标导致被纸签 `ClipPath` 截掉；修复为签内朱砂旧印，
   并用测试守住非负定位、朱砂纸色与无圆角材质。
-- 当前动态截图根目录：
-  `build/visual_acceptance/sample_replica/dynamic-state-audit-v18/`。
-- 下一步：复拍待发印 → 把真气不足的几何青线改为低饱和青墨断痕 →
-  复核自动轮转与破招动态 → 三视口总验收。
+- 冷却数在 1280 窄签和 1440 / 1672 大签统一使用样板式纯数字，不再在窄屏
+  回退为金色圆环；数字仍由真实 `skillCooldowns` 逐拍更新。
+- 空技能位复用与真招相同的破边旧纸曲线，但使用独立 `empty` 状态和 30% 退后
+  透明度；不会伪装成按钮，也不会污染可用技能状态查询。
+- 自动出招的金色执招痕迹可与冷却墨洗同时叠加；第一、第二角色轮转只更换名帖
+  与招式内容，焦点区 / 七签区矩形保持不变。
+- 待发选目标不再弹黄色 Material 胶囊和蓝黑头像卡：敌方提示改为低饱和墨牌，
+  快捷目标改为暗木小像牌与绛红血线，点击、悬停、Semantics 保持生产逻辑。
+- 玩家真实点击暂停后显示墨幕、旧纸停战笺和朱印继续按钮；已在 macOS 真实窗口
+  点击暂停与恢复，恢复后遮罩消失，战场和案台不重排。
+- 最终动态截图：
+  `build/visual_acceptance/sample_replica/dynamic-state-final-v25/`
+  （1440 与 1672 基线）、
+  `dynamic-state-final-v26/`（待发选目标双视口）、
+  `dynamic-state-final-v27/` / `dynamic-state-final-v28/`
+  （1280 纯数字 CD）和
+  `dynamic-state-fixed-v24/manual_pause/1440x900/manual_pause.jpeg`
+  （真实点击暂停）。
+- 最终门禁：相关战斗 UI / 播放 / 目标选择 / 暂停 / 布局 / Semantics 共
+  118 项测试通过；`flutter analyze --no-pub` 为 0 issue；`git diff --check`
+  通过。残留风险仅为 Windows 字体栅格与系统缩放尚未实机目检。

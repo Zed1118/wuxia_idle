@@ -12,7 +12,6 @@ import '../../../../shared/widgets/wuxia_image.dart';
 import '../battle_layout_tokens.dart';
 import '../battle_screen_config.dart';
 import '../battle_typography_tokens.dart';
-import '../countdown_ring.dart';
 import 'battle_command_desk.dart';
 import 'battle_focus_rail.dart';
 import 'battle_pouch_rail.dart';
@@ -1279,6 +1278,7 @@ class SkillCommandButton extends StatelessWidget {
       onPressed: enabled ? onTap : null,
       onLongPress: readOnly ? null : onShowInfo,
       interactive: !readOnly,
+      activeTrace: autoActive,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final sampleCardWidth = constraints.maxWidth;
@@ -1386,7 +1386,7 @@ class SkillCommandButton extends StatelessWidget {
                   ],
                 ),
               ),
-              if (onCd && expandedSampleStyle)
+              if (onCd)
                 Positioned(
                   top: height * 0.35,
                   right: cooldownCountRight,
@@ -1409,18 +1409,6 @@ class SkillCommandButton extends StatelessWidget {
                         ),
                       ],
                     ),
-                  ),
-                )
-              else if (onCd)
-                Positioned(
-                  top: height * 0.42,
-                  right: 7,
-                  child: BeatCountdownRing(
-                    remaining: cd,
-                    total: skill.cooldownTurns,
-                    beat: beat,
-                    color: WuxiaColors.lingQiao,
-                    size: 25,
                   ),
                 ),
               if (isPending)
@@ -1573,40 +1561,44 @@ class EmptySkillSlot extends StatelessWidget {
       child: SizedBox(
         key: ValueKey('battle_skill_empty_$index'),
         height: height,
-        child: DecoratedBox(
-          key: ValueKey('battle.emptySkillSlot.blankPaper.$index'),
-          decoration: BoxDecoration(
-            // 空签保留旧纸材质，但必须退入案台。满高亮空纸会在早期关卡形成
-            // 六块大面积「空表单」，视觉权重反而高过唯一的真招式签。
-            color: WuxiaUi.paper.withValues(
-              alpha: BattleLayoutTokens.emptySkillPaperOpacity,
-            ),
-            image: const DecorationImage(
-              image: AssetImage(WuxiaUi.paperBg),
-              fit: BoxFit.cover,
-              opacity: BattleLayoutTokens.emptySkillTextureOpacity,
-            ),
-            border: Border.all(color: const Color(0x4D7A6A55)),
-            borderRadius: BorderRadius.circular(2),
-          ),
-          child: Center(
-            child: Transform.rotate(
-              angle: -0.08,
-              child: Container(
-                key: ValueKey('battle.emptySkillSlot.emptySeal.$index'),
-                width: 22,
-                height: 22,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: const Color(0x0A6E6252),
-                  border: Border.all(color: const Color(0x406E6252)),
-                ),
-                child: Text(
-                  UiStrings.battleEmptySkillSlot.characters.first,
-                  style: const TextStyle(
-                    color: Color(0x596A5E4C),
-                    fontSize: 9,
-                    height: 1,
+        child: Opacity(
+          key: ValueKey('battle.emptySkillSlot.opacity.$index'),
+          // 空签必须保留与真招相同的破边纸形，但整体退入案台。这样角色只装一招
+          // 时仍是一列旧签，而不是六块抢眼的灰色表单。
+          opacity: BattleLayoutTokens.emptySkillPaperOpacity,
+          child: BattleSkillSlipSurface(
+            key: ValueKey('battle.emptySkillSlot.blankPaper.$index'),
+            height: height,
+            tiltAngle: battleSkillSlipTilt('empty_skill_$index'),
+            backgroundColor: WuxiaUi.battleSkillPaper,
+            foregroundColor: WuxiaUi.muted,
+            border: const BorderSide(color: Color(0xFF6C5A43), width: 1),
+            accent: const Color(0xFF493B2D),
+            visualState: BattleSkillSlipVisualState.empty,
+            onPressed: null,
+            onLongPress: null,
+            interactive: false,
+            child: Center(
+              child: Transform.rotate(
+                angle: -0.08,
+                child: Container(
+                  key: ValueKey('battle.emptySkillSlot.emptySeal.$index'),
+                  width: 24,
+                  height: 24,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: const Color(0x146E6252),
+                    border: Border.all(color: const Color(0x806E6252)),
+                  ),
+                  child: Text(
+                    UiStrings.battleEmptySkillSlot.characters.first,
+                    style: const TextStyle(
+                      color: Color(0xA66A5E4C),
+                      fontFamily: BattleTypography.displayFamily,
+                      fontFamilyFallback: BattleTypography.displayFallback,
+                      fontSize: 10,
+                      height: 1,
+                    ),
                   ),
                 ),
               ),

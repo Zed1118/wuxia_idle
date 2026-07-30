@@ -413,6 +413,45 @@ void main() {
         find.byKey(ValueKey('enemy_target_hint_${right.first.characterId}')),
         findsOneWidget,
       );
+      final firstHint = find.byKey(
+        ValueKey('enemy_target_hint_${right.first.characterId}'),
+      );
+      expect(
+        find.descendant(
+          of: firstHint,
+          matching: find.byKey(const ValueKey('battle.targetHint.inkSeal')),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: firstHint,
+          matching: find.byIcon(Icons.my_location),
+        ),
+        findsNothing,
+        reason: '选目标提示沿用纸墨印记，不得回退为 Material 准星胶囊',
+      );
+      final firstChip = find.byKey(
+        ValueKey('target_chip_${right.first.characterId}'),
+      );
+      expect(
+        find.descendant(
+          of: firstChip,
+          matching: find.byKey(
+            ValueKey('battle.targetChip.inkPlaque.${right.first.characterId}'),
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: firstChip,
+          matching: find.byKey(
+            ValueKey('battle.targetChip.hpInk.${right.first.characterId}'),
+          ),
+        ),
+        findsOneWidget,
+      );
 
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
@@ -567,8 +606,8 @@ void main() {
     });
   });
 
-  group('技能 CD 读秒环', () {
-    testWidgets('CD>0 技能按钮显读秒环 + 中心剩余拍数', (tester) async {
+  group('技能签 CD 数字', () {
+    testWidgets('CD>0 技能签显样板式纯数字，不随窄视口回退圆环', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
         availableSkills: [_single],
@@ -579,12 +618,18 @@ void main() {
         of: find.byKey(const ValueKey('skill_cmd_1_single1')),
         matching: find.byType(BeatCountdownRing),
       );
-      expect(ring, findsOneWidget);
-      // 读秒环喂入剩余 = 该技能 CD(2)；渲染 ceil 随节拍插值,由 countdown_ring 单测覆盖。
-      expect(tester.widget<BeatCountdownRing>(ring).remaining, 2);
+      expect(ring, findsNothing);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('skill_cmd_1_single1')),
+          matching: find.byKey(const ValueKey('battle.skillSlipCooldownCount')),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('2'), findsOneWidget);
     });
 
-    testWidgets('CD=0 技能按钮无读秒环', (tester) async {
+    testWidgets('CD=0 技能签无剩余拍数', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
         availableSkills: [_single],
@@ -594,7 +639,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byKey(const ValueKey('skill_cmd_1_single1')),
-          matching: find.byType(BeatCountdownRing),
+          matching: find.byKey(const ValueKey('battle.skillSlipCooldownCount')),
         ),
         findsNothing,
       );

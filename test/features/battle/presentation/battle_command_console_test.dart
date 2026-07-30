@@ -413,6 +413,12 @@ void main() {
         right,
         allowPlayerIntervention: false,
       );
+      final focusRailRect = tester.getRect(
+        find.byKey(const ValueKey('battle_desk_focus_region')),
+      );
+      final skillRailRect = tester.getRect(
+        find.byKey(const ValueKey('battle_desk_skills_region')),
+      );
 
       notifier.appendActions([
         BattleAction(
@@ -424,6 +430,14 @@ void main() {
           description: '崩山拳命中',
         ),
       ]);
+      notifier.setState(
+        notifier.state.copyWith(
+          leftTeam: [
+            first.copyWith(skillCooldowns: const {'p1': 2}),
+            second,
+          ],
+        ),
+      );
       await tester.pump();
       expect(
         find.byKey(ValueKey('battle_auto_actor_active_${first.characterId}')),
@@ -432,6 +446,29 @@ void main() {
       expect(
         find.byKey(const ValueKey('battle_auto_skill_active_p1')),
         findsOneWidget,
+      );
+      final activeSkill = find.byKey(
+        const ValueKey('battle_auto_skill_active_p1'),
+      );
+      expect(
+        find.descendant(
+          of: activeSkill,
+          matching: find.byKey(
+            const ValueKey('battle.skillSlip.state.cooldown'),
+          ),
+        ),
+        findsOneWidget,
+        reason: '真实出手后仍必须如实显示冷却态',
+      );
+      expect(
+        find.descendant(
+          of: activeSkill,
+          matching: find.byKey(
+            const ValueKey('battle.skillSlip.autoActiveTrace'),
+          ),
+        ),
+        findsOneWidget,
+        reason: '轮转金线要与冷却墨洗叠加，不能被状态优先级吞掉',
       );
 
       notifier.appendActions([
@@ -456,6 +493,16 @@ void main() {
       expect(
         find.byKey(ValueKey('battle_auto_actor_active_${first.characterId}')),
         findsNothing,
+      );
+      expect(
+        tester.getRect(find.byKey(const ValueKey('battle_desk_focus_region'))),
+        focusRailRect,
+        reason: '执招者轮转只能换内容与高亮，不能推动左侧名帖几何',
+      );
+      expect(
+        tester.getRect(find.byKey(const ValueKey('battle_desk_skills_region'))),
+        skillRailRect,
+        reason: '技能数量和冷却状态变化不能令七签案台左右跳动',
       );
     });
 
@@ -1121,19 +1168,36 @@ void main() {
       }
       expect(find.text(UiStrings.battleEmptySkillSlot), findsNothing);
 
-      final blankPaper = tester.widget<DecoratedBox>(
-        find.byKey(const ValueKey('battle.emptySkillSlot.blankPaper.3')),
-      );
-      final decoration = blankPaper.decoration as BoxDecoration;
-      expect(
-        decoration.color!.a,
-        lessThanOrEqualTo(0.34),
-        reason: '空签应退入案台，不得形成大面积高亮空表单',
+      final blankPaper = find.byKey(
+        const ValueKey('battle.emptySkillSlot.blankPaper.3'),
       );
       expect(
-        decoration.image!.opacity,
-        lessThanOrEqualTo(0.12),
-        reason: '空签纸纹只保留弱材质提示',
+        tester.widget(blankPaper),
+        isA<BattleSkillSlipSurface>(),
+        reason: '空槽也应复用同一破边旧纸签，而不是退回纯灰矩形',
+      );
+      expect(
+        find.descendant(
+          of: blankPaper,
+          matching: find.byKey(const ValueKey('battle.skillSlipTornPaperClip')),
+        ),
+        findsOneWidget,
+      );
+      final fadedPaper = tester.widget<Opacity>(
+        find.byKey(const ValueKey('battle.emptySkillSlot.opacity.3')),
+      );
+      expect(
+        fadedPaper.opacity,
+        BattleLayoutTokens.emptySkillPaperOpacity,
+        reason: '空签保留纸形但退入案台，不得形成高亮空表单',
+      );
+      expect(
+        find.descendant(
+          of: blankPaper,
+          matching: find.byType(ButtonStyleButton),
+        ),
+        findsNothing,
+        reason: '自动与手动空槽都只是陈列，不伪装可点技能',
       );
     });
 
@@ -1646,7 +1710,7 @@ void main() {
       expect(semantics.properties.value, UiStrings.skillStaggered);
     });
 
-    testWidgets('冷却态技能按钮显读秒环 + 中心剩余拍数（不再显文字「冷却N」）', (tester) async {
+    testWidgets('冷却态技能签在窄视口也只显样板式剩余拍数', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
         availableSkills: [_power], // cd=2
@@ -1660,13 +1724,15 @@ void main() {
         of: find.byKey(const ValueKey('skill_cmd_1_p1')),
         matching: find.byType(BeatCountdownRing),
       );
-      expect(ring, findsOneWidget);
-      // 读秒环喂入剩余 = 该技能 CD(3)；渲染 ceil 值随节拍插值,由 countdown_ring 单测覆盖。
-      expect(tester.widget<BeatCountdownRing>(ring).remaining, 3);
+      expect(ring, findsNothing);
       expect(
-        tester.widget<BeatCountdownRing>(ring).total,
-        _power.cooldownTurns,
+        find.descendant(
+          of: find.byKey(const ValueKey('skill_cmd_1_p1')),
+          matching: find.byKey(const ValueKey('battle.skillSlipCooldownCount')),
+        ),
+        findsOneWidget,
       );
+      expect(find.text('3'), findsOneWidget);
       expect(find.text('冷却3'), findsNothing);
       expect(
         find.byKey(const ValueKey('battle.skillSlip.state.cooldown')),
@@ -1736,6 +1802,31 @@ void main() {
       expect(
         find.byKey(const ValueKey('battle.skillSlip.interruptLift')),
         findsOneWidget,
+      );
+    });
+
+    testWidgets('样板高度的破招高亮只亮金边，不抬高破坏七签齐底', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final c0 = left[0].copyWith(availableSkills: [_power]);
+      final c1 = left[1].copyWith(availableSkills: [_break]);
+      final charging = right.first.copyWith(
+        chargingSkill: _chargeSkill,
+        chargeTicksRemaining: 2,
+      );
+      await _pumpWith(
+        tester,
+        [c0, c1, left[2]],
+        [charging, ...right.skip(1)],
+        size: const Size(1672, 941),
+      );
+
+      final lift = tester.widget<Transform>(
+        find.byKey(const ValueKey('battle.skillSlip.interruptLift')),
+      );
+      expect(
+        lift.transform.getTranslation().y,
+        0,
+        reason: '样板尺寸靠金边与纸面提亮表达破招，卡片底沿仍须与其余技能签齐平',
       );
     });
 

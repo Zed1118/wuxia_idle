@@ -43,7 +43,6 @@ abstract final class BattleLayoutTokens {
   static const double stageStatusHpHeight = 11;
   static const double stageStatusQiHeight = 10;
   static const double emptySkillPaperOpacity = 0.30;
-  static const double emptySkillTextureOpacity = 0.10;
 }
 
 /// 同一视口下的战斗三段式布局量测。
