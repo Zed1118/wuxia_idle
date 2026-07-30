@@ -19,21 +19,24 @@ double _renderedAlphaArea({
 
 void main() {
   group('battleStageAnchor', () {
-    test('3v3 首席靠近中场，其余两席以非对称纵深展开', () {
+    test('3v3 复刻样板：我方主位在左前景，敌方主位在右中场', () {
       final leftMain = battleStageAnchor(0, 0, 3);
       final leftSecond = battleStageAnchor(0, 1, 3);
       final leftThird = battleStageAnchor(0, 2, 3);
+      final rightMain = battleStageAnchor(1, 0, 3);
+      final rightSecond = battleStageAnchor(1, 1, 3);
+      final rightThird = battleStageAnchor(1, 2, 3);
 
-      expect(leftMain.dx, greaterThan(leftSecond.dx));
-      expect(leftSecond.dx, greaterThan(leftThird.dx));
-      expect(
-        leftMain.dx - leftSecond.dx,
-        isNot(closeTo(leftSecond.dx - leftThird.dx, 1e-9)),
-      );
+      expect(leftMain.dx, lessThan(leftSecond.dx));
+      expect(leftSecond.dx, lessThan(leftThird.dx));
+      expect(rightMain.dx, lessThan(rightSecond.dx));
+      expect(rightSecond.dx, lessThan(rightThird.dx));
+      expect(leftMain.dx, inInclusiveRange(0.13, 0.17));
+      expect(rightMain.dx, inInclusiveRange(0.63, 0.69));
     });
 
-    test('1v1/2v2/3v3 左右同序槽位严格镜像', () {
-      for (var teamSize = 1; teamSize <= 3; teamSize++) {
+    test('1v1/2v2 左右同序槽位严格镜像', () {
+      for (var teamSize = 1; teamSize <= 2; teamSize++) {
         for (var slot = 0; slot < teamSize; slot++) {
           final left = battleStageAnchor(0, slot, teamSize);
           final right = battleStageAnchor(1, slot, teamSize);
@@ -44,7 +47,7 @@ void main() {
     });
 
     test('1v1/2v2 靠近交锋区且保持前低后高层次', () {
-      for (var teamSize = 1; teamSize <= 3; teamSize++) {
+      for (var teamSize = 1; teamSize <= 2; teamSize++) {
         final leftMain = battleStageAnchor(0, 0, teamSize);
         final rightMain = battleStageAnchor(1, 0, teamSize);
         expect(rightMain.dx - leftMain.dx, inInclusiveRange(0.20, 0.28));
@@ -55,25 +58,27 @@ void main() {
       );
     });
 
-    test('轻功舞台扩大上下错层与向中央位移距离', () {
-      final standardTop = battleStageAnchor(0, 1, 3);
-      final lightFootTop = battleStageAnchor(
-        0,
-        1,
-        3,
-        mode: BattleStageLayoutMode.lightFoot,
-      );
-      final standardBottom = battleStageAnchor(0, 2, 3);
-      final lightFootBottom = battleStageAnchor(
-        0,
-        2,
-        3,
-        mode: BattleStageLayoutMode.lightFoot,
-      );
+    test('轻功舞台保持比标准舞台更大的上下错层', () {
+      final standard = [
+        for (var slot = 0; slot < 3; slot++) battleStageAnchor(0, slot, 3).dy,
+      ];
+      final lightFoot = [
+        for (var slot = 0; slot < 3; slot++)
+          battleStageAnchor(
+            0,
+            slot,
+            3,
+            mode: BattleStageLayoutMode.lightFoot,
+          ).dy,
+      ];
 
-      expect(lightFootTop.dx, lessThan(standardTop.dx));
-      expect(lightFootTop.dy, lessThan(standardTop.dy));
-      expect(lightFootBottom.dy, greaterThan(standardBottom.dy));
+      final standardSpan =
+          standard.reduce((a, b) => a > b ? a : b) -
+          standard.reduce((a, b) => a < b ? a : b);
+      final lightFootSpan =
+          lightFoot.reduce((a, b) => a > b ? a : b) -
+          lightFoot.reduce((a, b) => a < b ? a : b);
+      expect(lightFootSpan, greaterThan(standardSpan));
     });
   });
 

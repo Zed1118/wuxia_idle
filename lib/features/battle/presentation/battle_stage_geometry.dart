@@ -6,8 +6,9 @@ enum BattleStageLayoutMode { standard, innerDemon, lightFoot, massBattle }
 
 /// 人物舞台比例锚点（0..1）。
 ///
-/// slot 0 是靠近中场的主位，slot 1/2 是斜向展开的后位。右队只镜像
-/// x 坐标，y 坐标与左队一致，保证弹道与人物锚点共用同一真相源。
+/// 1v1/2v2 保持左右镜像。标准 3v3 复刻指挥案台样板的非对称舞台：
+/// 我方主位在左前景、两名弟子向中场展开；敌方主位在右中场、两名随从向右展开。
+/// 轻功与心魔仍保留各自的镜像构图。
 Offset battleStageAnchor(
   int teamSide,
   int slotIndex,
@@ -16,6 +17,15 @@ Offset battleStageAnchor(
 }) {
   final normalizedSize = teamSize.clamp(1, 3);
   final normalizedSlot = slotIndex.clamp(0, normalizedSize - 1);
+
+  if (normalizedSize == 3 &&
+      mode != BattleStageLayoutMode.lightFoot &&
+      mode != BattleStageLayoutMode.innerDemon) {
+    final anchors = teamSide == 0
+        ? const [Offset(0.15, 0.56), Offset(0.27, 0.59), Offset(0.38, 0.35)]
+        : const [Offset(0.66, 0.51), Offset(0.80, 0.58), Offset(0.90, 0.62)];
+    return anchors[normalizedSlot];
+  }
 
   final left = mode == BattleStageLayoutMode.lightFoot
       ? switch (normalizedSize) {

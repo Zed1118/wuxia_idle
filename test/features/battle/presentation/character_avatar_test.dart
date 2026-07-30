@@ -224,7 +224,7 @@ void main() {
     expect(grounding.height, greaterThan(230 * 0.065));
   });
 
-  testWidgets('战场人物信息板使用半透明窄墨拓而非纯黑矩形', (tester) async {
+  testWidgets('战场人物信息板使用低透明贴脚窄条而非厚重卡片', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -252,10 +252,22 @@ void main() {
     final decoration = rubbing.decoration! as BoxDecoration;
     final colors = (decoration.gradient! as LinearGradient).colors;
     expect(colors, everyElement(isNot(Colors.black)));
-    expect(colors, everyElement(predicate<Color>((color) => color.a < 0.86)));
+    expect(colors, everyElement(predicate<Color>((color) => color.a < 0.50)));
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('battle.stageStatusInkRubbing')))
+          .height,
+      lessThanOrEqualTo(34),
+    );
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('battle.stageStatusInkRubbing')))
+          .width,
+      lessThanOrEqualTo(120),
+    );
     final name = tester.widget<Text>(find.text('黑风寨主'));
     expect(name.style?.color, WuxiaUi.paper);
-    expect(name.style?.shadows?.single.blurRadius, lessThanOrEqualTo(2));
+    expect(name.style?.shadows?.single.blurRadius, lessThanOrEqualTo(1));
     expect(
       find.byKey(const ValueKey('battle.stageStatusAnchor')),
       findsOneWidget,

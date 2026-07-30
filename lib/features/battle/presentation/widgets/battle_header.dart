@@ -52,14 +52,17 @@ class Header extends StatelessWidget {
     final metrics = BattleLayoutMetrics.resolve(MediaQuery.sizeOf(context));
     final aliveLeft = state.leftTeam.where((c) => c.isAlive).length;
     final aliveRight = state.rightTeam.where((c) => c.isAlive).length;
+    final surviveRequired = _surviveRequired(state);
 
     return Container(
       height: metrics.headerHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 28),
+      padding: const EdgeInsets.symmetric(
+        horizontal: BattleLayoutTokens.headerHorizontalPadding,
+      ),
       decoration: const BoxDecoration(
         color: Color(0xF2191816),
-        border: Border(bottom: BorderSide(color: Color(0xFF6D5940))),
-        boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 12)],
+        border: Border(bottom: BorderSide(color: Color(0xB36D5940))),
+        boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 8)],
       ),
       child: Stack(
         alignment: Alignment.center,
@@ -67,14 +70,7 @@ class Header extends StatelessWidget {
           Center(
             child: Container(
               key: const ValueKey('battle_header_title_slip'),
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 4),
-              decoration: const BoxDecoration(
-                border: Border(
-                  left: BorderSide(color: Color(0xFF8A2B21), width: 2),
-                  right: BorderSide(color: Color(0xFF8A2B21), width: 2),
-                  bottom: BorderSide(color: Color(0xFF6D5940)),
-                ),
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
               child: Text(
                 UiStrings.battleTitle(aliveLeft, aliveRight),
                 style: const TextStyle(
@@ -98,34 +94,44 @@ class Header extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (sceneTitle != null)
-                    Text(
-                      sceneTitle!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFFD8C29A),
-                        fontFamilyFallback: BattleTypography.uiFallback,
-                        fontSize: BattleTypography.t2,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.5,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (sceneTitle != null)
+                        Flexible(
+                          child: Text(
+                            sceneTitle!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Color(0xFFD8C29A),
+                              fontFamily: BattleTypography.displayFamily,
+                              fontFamilyFallback:
+                                  BattleTypography.displayFallback,
+                              fontSize: BattleTypography.t2,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        ),
+                      if (sceneTitle != null) const SizedBox(width: 10),
+                      Text(
+                        '${UiStrings.tickPrefix} ${state.tick}',
+                        style: TextStyle(
+                          color: const Color(0xFF8F826B),
+                          fontFamilyFallback: BattleTypography.uiFallback,
+                          fontSize: sceneTitle == null
+                              ? BattleTypography.t3
+                              : BattleTypography.t5,
+                          letterSpacing: 1,
+                          fontFeatures: BattleTypography.tabularFigures,
+                        ),
                       ),
-                    ),
-                  Text(
-                    '${UiStrings.tickPrefix} ${state.tick}',
-                    style: TextStyle(
-                      color: const Color(0xFFBFAE8D),
-                      fontFamilyFallback: BattleTypography.uiFallback,
-                      fontSize: sceneTitle == null
-                          ? BattleTypography.t3
-                          : BattleTypography.t5,
-                      letterSpacing: 1,
-                      fontFeatures: BattleTypography.tabularFigures,
-                    ),
+                    ],
                   ),
                   // surviveTicks 型胜负条件的条件条(2026-07-29 Ch21 主线首用补)。
                   // 不配 winCondition 或 defeatAll 型时整行不渲染,前 20 章零影响。
-                  if (_surviveRequired(state) case final int required)
+                  if (surviveRequired case final int required)
                     Text(
                       state.tick >= required
                           ? UiStrings.surviveConditionMet(required)
@@ -171,7 +177,7 @@ class Header extends StatelessWidget {
                 BattleModePill(
                   allowPlayerIntervention: allowPlayerIntervention,
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: BattleLayoutTokens.headerSealGap),
                 if (state.result == null)
                   BattleHeaderIconButton(
                     key: const ValueKey('battle_fast_forward_toggle'),
@@ -216,7 +222,7 @@ class Header extends StatelessWidget {
                   tooltip: UiStrings.battleLog,
                   onPressed: onToggleLog,
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: BattleLayoutTokens.headerSealGap),
                 const ContextHelpButton(
                   topic: HelpTopic.combatAdvanced,
                   size: 20,
@@ -249,45 +255,59 @@ class BattleHeaderIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
-      child: IconButton(
-        tooltip: tooltip,
-        onPressed: onPressed,
-        icon: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 14),
-            const SizedBox(width: 3),
-            Text(
+      padding: const EdgeInsets.symmetric(
+        horizontal: BattleLayoutTokens.headerSealGap,
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(
+            BattleLayoutTokens.headerSealHeight / 2 + 2,
+          ),
+          border: Border.all(
+            color: const Color(0xFF8A704B).withValues(alpha: 0.52),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(2),
+          child: IconButton(
+            tooltip: tooltip,
+            onPressed: onPressed,
+            icon: Text(
               label,
+              maxLines: 1,
               style: const TextStyle(
-                fontFamilyFallback: BattleTypography.uiFallback,
-                fontSize: BattleTypography.t5,
-                fontWeight: FontWeight.w700,
+                fontFamily: BattleTypography.displayFamily,
+                fontFamilyFallback: BattleTypography.displayFallback,
+                fontSize: BattleTypography.t4,
+                fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
               ),
             ),
-          ],
-        ),
-        color: isActive
-            ? WuxiaColors.resultHighlight
-            : WuxiaColors.textSecondary,
-        disabledColor: WuxiaColors.textMuted,
-        constraints: const BoxConstraints(minWidth: 50, minHeight: 36),
-        padding: EdgeInsets.zero,
-        splashRadius: 18,
-        style: IconButton.styleFrom(
-          backgroundColor: isActive
-              ? WuxiaColors.resultHighlight.withValues(alpha: 0.12)
-              : Colors.black.withValues(alpha: 0.28),
-          hoverColor: WuxiaColors.resultHighlight.withValues(alpha: 0.10),
-          highlightColor: WuxiaColors.resultHighlight.withValues(alpha: 0.14),
-          shape: BeveledRectangleBorder(
-            borderRadius: const BorderRadius.all(Radius.circular(3)),
-            side: BorderSide(
-              color: isActive
-                  ? WuxiaColors.resultHighlight
-                  : const Color(0xFF6D5940),
+            color: isActive
+                ? WuxiaColors.resultHighlight
+                : const Color(0xFFCBB992),
+            disabledColor: WuxiaColors.textMuted,
+            constraints: const BoxConstraints(
+              minWidth: BattleLayoutTokens.headerSealMinWidth,
+              minHeight: BattleLayoutTokens.headerSealHeight,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            splashRadius: 18,
+            style: IconButton.styleFrom(
+              backgroundColor: isActive
+                  ? WuxiaColors.resultHighlight.withValues(alpha: 0.12)
+                  : Colors.black.withValues(alpha: 0.22),
+              hoverColor: WuxiaColors.resultHighlight.withValues(alpha: 0.10),
+              highlightColor: WuxiaColors.resultHighlight.withValues(
+                alpha: 0.14,
+              ),
+              shape: StadiumBorder(
+                side: BorderSide(
+                  color: isActive
+                      ? WuxiaColors.resultHighlight
+                      : const Color(0xFF6D5940),
+                ),
+              ),
             ),
           ),
         ),
@@ -315,25 +335,42 @@ class BattleModePill extends StatelessWidget {
             ? UiStrings.battleAutoIntervention
             : UiStrings.battleAutoMode,
         hint: hint,
-        child: Container(
+        child: DecoratedBox(
           key: const ValueKey('battle_auto_mode'),
-          height: 30,
-          padding: const EdgeInsets.symmetric(horizontal: 9),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.28),
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: const Color(0xFF6D5940)),
+            borderRadius: BorderRadius.circular(
+              BattleLayoutTokens.headerSealHeight / 2 + 2,
+            ),
+            border: Border.all(
+              color: const Color(0xFF8A704B).withValues(alpha: 0.52),
+            ),
           ),
-          alignment: Alignment.center,
-          child: Text(
-            allowPlayerIntervention
-                ? '${UiStrings.battleAutoModeShort}·${UiStrings.battleAutoInterventionShort}'
-                : UiStrings.battleAutoModeShort,
-            style: const TextStyle(
-              color: WuxiaColors.textSecondary,
-              fontFamilyFallback: BattleTypography.uiFallback,
-              fontSize: BattleTypography.t4,
-              fontWeight: FontWeight.w600,
+          child: Container(
+            height: BattleLayoutTokens.headerSealHeight + 4,
+            constraints: const BoxConstraints(
+              minWidth: BattleLayoutTokens.headerSealMinWidth + 4,
+            ),
+            margin: const EdgeInsets.all(2),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.22),
+              borderRadius: BorderRadius.circular(
+                BattleLayoutTokens.headerSealHeight / 2,
+              ),
+              border: Border.all(color: const Color(0xFF6D5940)),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              allowPlayerIntervention
+                  ? '${UiStrings.battleAutoModeShort}·${UiStrings.battleAutoInterventionShort}'
+                  : UiStrings.battleAutoModeShort,
+              style: const TextStyle(
+                color: Color(0xFFCBB992),
+                fontFamily: BattleTypography.displayFamily,
+                fontFamilyFallback: BattleTypography.displayFallback,
+                fontSize: BattleTypography.t4,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),

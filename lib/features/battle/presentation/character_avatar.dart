@@ -8,6 +8,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'avatar_status_tags.dart';
+import 'battle_layout_tokens.dart';
 import 'battle_standee_fusion.dart';
 import 'battle_typography_tokens.dart';
 import 'countdown_ring.dart';
@@ -567,9 +568,8 @@ class StageCharacterStatusOverlay extends StatelessWidget {
     final portraitHeight = height * 0.91;
     final footY = portraitHeight * _stageStandeeAnchorFootFraction;
     final insetFraction = switch (character.slotIndex) {
-      0 => 0.24,
-      2 => 0.18,
-      _ => 0.16,
+      0 => 0.29,
+      _ => 0.26,
     };
     final borderColor = character.isBoss
         ? WuxiaColors.bossFrame
@@ -578,7 +578,7 @@ class StageCharacterStatusOverlay extends StatelessWidget {
     return Positioned(
       left: width * insetFraction,
       right: width * insetFraction,
-      top: (footY + 2).clamp(0.0, height - 40),
+      top: (footY + 3).clamp(0.0, height - 34),
       child: Opacity(
         opacity: character.isAlive ? 1 : 0.45,
         child: Stack(
@@ -598,7 +598,7 @@ class StageCharacterStatusOverlay extends StatelessWidget {
             ),
             Container(
               key: const ValueKey('battle.stageStatusInkRubbing'),
-              padding: const EdgeInsets.fromLTRB(5, 2, 5, 3),
+              padding: const EdgeInsets.fromLTRB(4, 1, 4, 2),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   begin: Alignment.topCenter,
@@ -609,15 +609,15 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                   ],
                 ),
                 border: Border(
-                  top: BorderSide(color: WuxiaUi.paper.withValues(alpha: 0.22)),
+                  top: BorderSide(color: WuxiaUi.paper.withValues(alpha: 0.14)),
                   bottom: BorderSide(
-                    color: borderColor.withValues(alpha: 0.62),
+                    color: borderColor.withValues(alpha: 0.48),
                   ),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2B251E).withValues(alpha: 0.24),
-                    blurRadius: 4,
+                    color: const Color(0xFF2B251E).withValues(alpha: 0.14),
+                    blurRadius: 2,
                     offset: const Offset(0, 1),
                   ),
                 ],
@@ -631,16 +631,17 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: WuxiaUi.paper,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      shadows: [Shadow(color: Colors.black87, blurRadius: 2)],
+                      fontSize: BattleTypography.t5,
+                      fontWeight: FontWeight.w600,
+                      height: 1,
+                      shadows: [Shadow(color: Colors.black87, blurRadius: 1)],
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 1),
                   HpBar(
                     current: character.currentHp,
                     max: character.maxHp,
-                    height: 11,
+                    height: BattleLayoutTokens.stageStatusHpHeight,
                     fillColorOverride: WuxiaUi.jiang,
                     trackColorOverride: WuxiaUi.battleStatusTrack,
                     labelFontSize: BattleTypography.t5,
@@ -650,7 +651,7 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                   HpBar(
                     current: character.currentQi,
                     max: character.maxQi,
-                    height: 9,
+                    height: BattleLayoutTokens.stageStatusQiHeight,
                     isInternalForce: true,
                     labelPrefix: UiStrings.internalForceShortLabel,
                     fillColorOverride: WuxiaUi.qing,

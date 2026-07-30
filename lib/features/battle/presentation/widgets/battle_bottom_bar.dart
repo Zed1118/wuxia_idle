@@ -363,7 +363,7 @@ class AutoCommandDesk extends StatelessWidget {
       builder: (context, metrics) => KeyedSubtree(
         key: const ValueKey('battle_auto_rotation_desk'),
         child: Opacity(
-          opacity: 0.78,
+          opacity: 0.92,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -1152,17 +1152,17 @@ class EmptySkillSlot extends StatelessWidget {
         child: DecoratedBox(
           key: ValueKey('battle.emptySkillSlot.blankPaper.$index'),
           decoration: BoxDecoration(
-            // 空签仍须读成「素纸签」而非灰按钮(阶段 2 Gate:案台不得读成普通
-            // 按钮阵列)。旧值 paper@0.38 + 纸纹 0.08 在深褐案台底上被压成灰
-            // 褐块,早期关卡 7 槽多空时整条案台就退化成按钮阵列;抬到 0.55 /
-            // 0.18 让宣纸底与纸纹可辨,同时仍明显暗于有招式签(paper 不透明)。
-            color: WuxiaUi.paper.withValues(alpha: 0.55),
+            // 空签保留旧纸材质，但必须退入案台。满高亮空纸会在早期关卡形成
+            // 六块大面积「空表单」，视觉权重反而高过唯一的真招式签。
+            color: WuxiaUi.paper.withValues(
+              alpha: BattleLayoutTokens.emptySkillPaperOpacity,
+            ),
             image: const DecorationImage(
               image: AssetImage(WuxiaUi.paperBg),
               fit: BoxFit.cover,
-              opacity: 0.18,
+              opacity: BattleLayoutTokens.emptySkillTextureOpacity,
             ),
-            border: Border.all(color: const Color(0x667A6A55)),
+            border: Border.all(color: const Color(0x4D7A6A55)),
             borderRadius: BorderRadius.circular(2),
           ),
           child: Center(
@@ -1174,13 +1174,13 @@ class EmptySkillSlot extends StatelessWidget {
                 height: 22,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: const Color(0x0F6E6252),
-                  border: Border.all(color: const Color(0x596E6252)),
+                  color: const Color(0x0A6E6252),
+                  border: Border.all(color: const Color(0x406E6252)),
                 ),
                 child: Text(
                   UiStrings.battleEmptySkillSlot.characters.first,
                   style: const TextStyle(
-                    color: Color(0x756A5E4C),
+                    color: Color(0x596A5E4C),
                     fontSize: 9,
                     height: 1,
                   ),

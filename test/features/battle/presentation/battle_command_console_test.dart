@@ -263,7 +263,7 @@ Future<_TestBattleNotifier> _pumpWith(
 
 void main() {
   group('自动观战轮转谱', () {
-    testWidgets('自动案台整体压暗且仅陈列AI可轮转招式', (tester) async {
+    testWidgets('自动案台轻压暗且仅陈列AI可轮转招式', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final actor = left.first.copyWith(availableSkills: [_power, _ult]);
       await _pumpWith(tester, [actor], right, allowPlayerIntervention: false);
@@ -276,7 +276,7 @@ void main() {
             )
             .first,
       );
-      expect(opacity.opacity, 0.78);
+      expect(opacity.opacity, 0.92);
       expect(
         find.byKey(
           ValueKey('battle_auto_skill_${actor.characterId}_${_power.id}'),
@@ -842,6 +842,21 @@ void main() {
         );
       }
       expect(find.text(UiStrings.battleEmptySkillSlot), findsNothing);
+
+      final blankPaper = tester.widget<DecoratedBox>(
+        find.byKey(const ValueKey('battle.emptySkillSlot.blankPaper.3')),
+      );
+      final decoration = blankPaper.decoration as BoxDecoration;
+      expect(
+        decoration.color!.a,
+        lessThanOrEqualTo(0.34),
+        reason: '空签应退入案台，不得形成大面积高亮空表单',
+      );
+      expect(
+        decoration.image!.opacity,
+        lessThanOrEqualTo(0.12),
+        reason: '空签纸纹只保留弱材质提示',
+      );
     });
 
     testWidgets('当前执招者展开姓名流派真气名帖，其余收束且阵亡褪墨', (tester) async {

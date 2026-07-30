@@ -9,6 +9,10 @@ abstract final class BattleLayoutTokens {
   static const double commandDeskFraction = 0.25;
   static const double headerMinHeight = 44;
   static const double headerMaxHeight = 60;
+  static const double headerHorizontalPadding = 28;
+  static const double headerSealMinWidth = 44;
+  static const double headerSealHeight = 36;
+  static const double headerSealGap = 3;
   static const double commandDeskMinHeight = 172;
   static const double commandDeskMaxHeight = 230;
   static const double commandDeskHorizontalPadding = 4;
@@ -17,7 +21,7 @@ abstract final class BattleLayoutTokens {
   static const double pouchRailFraction = 0.21;
   static const double actorChipHeight = 36;
   static const double skillSlotHeight = 150;
-  static const double skillSlotGap = 8;
+  static const double skillSlotGap = 16;
   static const double sectionGap = 4;
   static const double sectionDividerHeight = 148;
   static const double pouchSlotSize = 54;
@@ -29,6 +33,10 @@ abstract final class BattleLayoutTokens {
   static const double stageWidthFraction = 0.19;
   static const double stageHeightFraction = 0.78;
   static const double bossStageScale = 1.16;
+  static const double stageStatusHpHeight = 8;
+  static const double stageStatusQiHeight = 7;
+  static const double emptySkillPaperOpacity = 0.30;
+  static const double emptySkillTextureOpacity = 0.10;
 }
 
 /// 同一视口下的战斗三段式布局量测。

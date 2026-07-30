@@ -21,9 +21,10 @@ class WuxiaUi {
   // 避免直接把浅宣纸用 qing 放到深底后误读成禁用态。
   static const Color qingOnDark = Color(0xFF94AFA4);
   static const Color jiang = Color(0xFF8A2B21); // 绛红（点缀/主行动）
-  static const Color battleStatusPaperTop = Color(0xB85A4B3D);
-  static const Color battleStatusPaperBottom = Color(0xCC2E2821);
-  static const Color battleStatusTrack = Color(0xA62A241D);
+  // 战场脚下状态条只作辅助：透明度刻意低于 50%，避免六块状态牌压过人物。
+  static const Color battleStatusPaperTop = Color(0x70473B30);
+  static const Color battleStatusPaperBottom = Color(0x61221E19);
+  static const Color battleStatusTrack = Color(0x7A211D18);
   static const Color gold = Color(0xFFB08A47); // 金线（仅高阶装帧）
   // 金色语义落到浅宣纸上的文字 sink。保留旧金线色相，但压暗到小字
   // 对 paper 仍有 4.5:1 以上对比；装帧边框与进度条继续使用 gold。
