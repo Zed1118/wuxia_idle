@@ -17,9 +17,15 @@ import 'shared/audio/sound_manager.dart';
 import 'shared/strings.dart';
 import 'shared/theme/wuxia_app_theme.dart';
 import 'shared/theme/wuxia_tokens.dart';
+import 'shared/utils/desktop_focus_highlight.dart';
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 桌面端键盘落点:默认 automatic 策略开局按 touch 处理,autofocus 的主按钮
+  // 在玩家按第一个键前画不出焦点环。放在 visual-route 短路之前,让验收路由与
+  // 生产走同一套焦点表现。详见 applyDesktopFocusHighlightStrategy 头注。
+  applyDesktopFocusHighlightStrategy();
 
   SoundManager.instance = SoundManager(AudioPlayersBackend());
   await SoundManager.instance.applySettings(
