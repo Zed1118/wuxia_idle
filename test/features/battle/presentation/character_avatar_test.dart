@@ -386,9 +386,16 @@ void main() {
   });
 
   testWidgets('战场立绘按有效人物边界校准尺度与视觉重心', (tester) async {
-    Future<(double scale, double shiftX, double shiftY)> opticalTransformFor(
-      String iconPath,
-    ) async {
+    Future<
+      (
+        double scale,
+        double shiftX,
+        double shiftY,
+        double aspectX,
+        double aspectY,
+      )
+    >
+    opticalTransformFor(String iconPath) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -408,10 +415,15 @@ void main() {
       final shiftTransform = tester.widget<Transform>(
         find.byKey(const ValueKey('battle.stageStandeeOpticalShift')),
       );
+      final aspectTransform = tester.widget<Transform>(
+        find.byKey(const ValueKey('battle.stageStandeeSampleAspect')),
+      );
       return (
         scaleTransform.transform.storage[0],
         shiftTransform.transform.storage[12],
         shiftTransform.transform.storage[13],
+        aspectTransform.transform.storage[0],
+        aspectTransform.transform.storage[5],
       );
     }
 
@@ -444,6 +456,17 @@ void main() {
     expect(banditBlade.$3, greaterThan(0));
     expect(banditArcher.$1, closeTo(1.28, 0.001));
     expect(umbrellaBoss.$1, closeTo(0.81, 0.001));
+    expect(founder.$2, lessThan(0));
+    expect(founder.$4, closeTo(1.30, 0.001));
+    expect(founder.$5, closeTo(0.95, 0.001));
+    expect(secondDisciple.$4, closeTo(1.0, 0.001));
+    expect(secondDisciple.$5, closeTo(0.88, 0.001));
+    expect(hiddenElder.$4, closeTo(1.12, 0.001));
+    expect(hiddenElder.$5, closeTo(0.93, 0.001));
+    expect(banditBlade.$4, closeTo(1.08, 0.001));
+    expect(banditBlade.$5, closeTo(0.92, 0.001));
+    expect(banditArcher.$4, closeTo(1.05, 0.001));
+    expect(banditArcher.$5, closeTo(0.95, 0.001));
   });
 
   testWidgets('战场将已配套的旧原画映射到对应透明立绘', (tester) async {

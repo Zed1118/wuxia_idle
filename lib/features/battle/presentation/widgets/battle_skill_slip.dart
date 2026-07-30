@@ -236,18 +236,18 @@ class _BattleSkillSlipOuterFinishPainter extends CustomPainter {
       canvas.drawPath(
         path,
         Paint()
-          ..color = accent.withValues(alpha: 0.68)
+          ..color = accent.withValues(alpha: 0.52)
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 8
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7),
+          ..strokeWidth = 5
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
       );
       canvas.drawPath(
         path,
         Paint()
-          ..color = const Color(0xFFF3D38B).withValues(alpha: 0.58)
+          ..color = const Color(0xFFF3D38B).withValues(alpha: 0.52)
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+          ..strokeWidth = 2
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
       );
       canvas.drawPath(
         path,

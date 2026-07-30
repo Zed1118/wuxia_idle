@@ -87,12 +87,12 @@ void main() {
   });
 
   test('3v3 样板状态签独立压在人物下裳,不跟随透明画布脚底漂移', () {
-    expect(battleStageStatusVerticalFraction(0, 0, 3), 0.68);
-    expect(battleStageStatusVerticalFraction(0, 1, 3), 0.65);
-    expect(battleStageStatusVerticalFraction(0, 2, 3), 0.84);
-    expect(battleStageStatusVerticalFraction(1, 0, 3), 0.705);
-    expect(battleStageStatusVerticalFraction(1, 1, 3), 0.736);
-    expect(battleStageStatusVerticalFraction(1, 2, 3), 0.808);
+    expect(battleStageStatusVerticalFraction(0, 0, 3), 0.724);
+    expect(battleStageStatusVerticalFraction(0, 1, 3), 0.703);
+    expect(battleStageStatusVerticalFraction(0, 2, 3), 0.901);
+    expect(battleStageStatusVerticalFraction(1, 0, 3), 0.745);
+    expect(battleStageStatusVerticalFraction(1, 1, 3), 0.789);
+    expect(battleStageStatusVerticalFraction(1, 2, 3), 0.868);
     expect(battleStageStatusVerticalFraction(0, 0, 2), 0.865);
   });
 

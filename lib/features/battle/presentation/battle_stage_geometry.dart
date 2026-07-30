@@ -67,8 +67,8 @@ double battleStageStatusVerticalFraction(
   int teamSize,
 ) {
   if (teamSize != 3) return 0.865;
-  const left = [0.68, 0.65, 0.84];
-  const right = [0.705, 0.736, 0.808];
+  const left = [0.724, 0.703, 0.901];
+  const right = [0.745, 0.789, 0.868];
   final slot = slotIndex.clamp(0, 2);
   return (teamSide == 0 ? left : right)[slot];
 }

@@ -120,3 +120,24 @@
   1280×720 / 1440×900 / 1672×941 三视口均重新复拍且 READY 日志无
   overflow / exception；相关回归 160 项通过，`flutter analyze --no-pub`
   为 0 issue。
+
+## 人物素材与构图纠偏（2026-07-30）
+
+- 根因从布局层下钻到素材层：旧验收 fixture 的凌风、隐世老者、山贼刀客和
+  山贼弓手与样板并非同一动作轮廓，继续只调锚点/缩放无法追平。新增四张
+  样板专用透明水墨立绘并仅接入 `battle_tap_live` / 复用该 fixture 的验收路由，
+  不替换生产角色的通用立绘。
+- 舞台渲染新增黄金样板立绘的横纵独立光学校准；祖师、两弟子与三名敌人的
+  宽高比例按 1672×941 实拍逐项校准。隐世老者素材自带样板金墨游丝，验收
+  fixture 不再叠加通用 Boss 气韵，避免双重金边。
+- 六名角色的姓名 / 气血 / 真气条统一下移约 18–22px，1672×941 实拍中六个
+  状态签的纵向位置与样板逐项重合；底栏选中名帖改为外伸宣纸箭头，断流选中
+  金边由宽泛光晕收束为窄金线。
+- 最终证据：
+  `build/visual_acceptance/sample_replica/character-final-v7/`，含
+  1280×720 / 1440×900 / 1672×941 三视口；日志均 READY，未出现
+  overflow / exception / route error。
+- 本轮验证：相关视觉、布局、素材门禁与路由共 167 项通过；
+  `flutter analyze --no-pub` 为 0 issue；四张新增 PNG 均为有效 RGBA、
+  alpha 范围 0–255 且四角透明；`dart format --set-exit-if-changed` 与
+  `git diff --check` 通过。

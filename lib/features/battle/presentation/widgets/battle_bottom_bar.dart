@@ -743,6 +743,7 @@ class FocusChip extends StatelessWidget {
         ),
       ),
       child: Stack(
+        clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
           if (selected)
@@ -754,13 +755,16 @@ class FocusChip extends StatelessWidget {
           if (selected)
             Align(
               alignment: Alignment.centerLeft,
-              child: CustomPaint(
-                key: const ValueKey('battle.focusSelectedPointer'),
-                size: const Size(8, 12),
-                painter: _FocusPointerPainter(
-                  color: dim
-                      ? const Color(0xFF8F8574)
-                      : const Color(0xFFC3A46A),
+              child: Transform.translate(
+                offset: const Offset(-14, 0),
+                child: CustomPaint(
+                  key: const ValueKey('battle.focusSelectedPointer'),
+                  size: const Size(16, 20),
+                  painter: _FocusPointerPainter(
+                    color: dim
+                        ? const Color(0xFF8F8574)
+                        : WuxiaUi.battleFocusPaper,
+                  ),
                 ),
               ),
             ),

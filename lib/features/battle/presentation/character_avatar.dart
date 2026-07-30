@@ -435,6 +435,7 @@ class _StageCharacterStandee extends StatelessWidget {
     // 立绘生成时的透明画布留白不一致。绕实际脚底缩放，使成对角色的
     // 有效人物高度接近；水平修正 alpha 重心，垂直将脚底对齐公共基准线。
     final opticalProfile = _stageStandeeOpticalProfile(resolvedIconPath);
+    final sampleAspect = _stageStandeeSampleAspect(resolvedIconPath);
     portraitImage = Transform.translate(
       key: const ValueKey('battle.stageStandeeOpticalShift'),
       offset: Offset(
@@ -445,7 +446,16 @@ class _StageCharacterStandee extends StatelessWidget {
         key: const ValueKey('battle.stageStandeeOpticalScale'),
         scale: opticalProfile.scale,
         alignment: Alignment(0, sourceFootFraction * 2 - 1),
-        child: portraitImage,
+        child: Transform(
+          key: const ValueKey('battle.stageStandeeSampleAspect'),
+          alignment: Alignment(0, sourceFootFraction * 2 - 1),
+          transform: Matrix4.diagonal3Values(
+            sampleAspect.horizontalScale,
+            sampleAspect.verticalScale,
+            1,
+          ),
+          child: portraitImage,
+        ),
       ),
     );
 
@@ -495,7 +505,8 @@ class _StageCharacterStandee extends StatelessWidget {
               child: CustomPaint(painter: _StandeeGroundingPainter()),
             ),
           ),
-          if (character.isBoss)
+          if (character.isBoss &&
+              resolvedIconPath != WuxiaUi.battleSampleHiddenElderStandee)
             Positioned(
               left: width * 0.03,
               right: width * 0.03,
@@ -1283,10 +1294,14 @@ const _stageStandeeAnchorFootFraction = 0.95;
 double battleStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleFounderFallback => 0.938,
   WuxiaUi.battleFirstDiscipleFallback => 0.961,
+  WuxiaUi.battleSampleFirstDiscipleStandee => 0.999,
   WuxiaUi.battleSecondDiscipleFallback => 0.957,
   WuxiaUi.battleHiddenElderStandee => 0.952,
+  WuxiaUi.battleSampleHiddenElderStandee => 0.942,
   WuxiaUi.battleBanditBladeStandee => 0.823,
+  WuxiaUi.battleSampleBanditBladeStandee => 0.811,
   WuxiaUi.battleBanditArcherStandee => 0.939,
+  WuxiaUi.battleSampleBanditArcherStandee => 0.885,
   WuxiaUi.battleYoungRuffianStandee => 0.928,
   WuxiaUi.battleGauntCutpurseStandee => 0.943,
   WuxiaUi.battleVillageRuffianStandee => 0.957,
@@ -1484,27 +1499,94 @@ typedef _StageStandeeOpticalProfile = ({
   double horizontalShiftFraction,
 });
 
+typedef _StageStandeeSampleAspect = ({
+  double horizontalScale,
+  double verticalScale,
+});
+
+/// 黄金样板角色原画的身形校准。这里只修正透明立绘在舞台上的视觉纵横比，
+/// 不改变阵型锚点、状态牌位置或战斗数值。
+_StageStandeeSampleAspect _stageStandeeSampleAspect(String? path) =>
+    switch (path) {
+      WuxiaUi.battleFounderFallback => (
+        horizontalScale: 1.30,
+        verticalScale: 0.95,
+      ),
+      WuxiaUi.battleSampleFirstDiscipleStandee => (
+        horizontalScale: 1.0,
+        verticalScale: 1.0,
+      ),
+      WuxiaUi.battleSecondDiscipleFallback => (
+        horizontalScale: 1.0,
+        verticalScale: 0.88,
+      ),
+      WuxiaUi.battleHiddenElderStandee => (
+        horizontalScale: 1.12,
+        verticalScale: 0.93,
+      ),
+      WuxiaUi.battleSampleHiddenElderStandee => (
+        horizontalScale: 1.12,
+        verticalScale: 0.96,
+      ),
+      WuxiaUi.battleBanditBladeStandee => (
+        horizontalScale: 1.08,
+        verticalScale: 0.92,
+      ),
+      WuxiaUi.battleBanditArcherStandee => (
+        horizontalScale: 1.05,
+        verticalScale: 0.95,
+      ),
+      WuxiaUi.battleSampleBanditBladeStandee => (
+        horizontalScale: 1.30,
+        verticalScale: 1.25,
+      ),
+      WuxiaUi.battleSampleBanditArcherStandee => (
+        horizontalScale: 1.12,
+        verticalScale: 1.22,
+      ),
+      _ => (horizontalScale: 1.0, verticalScale: 1.0),
+    };
+
 /// 以透明像素的有效包围盒为基准的光学校准。
 /// 数值只补偿原图画布留白，不表示战斗单位的体型或阵型位置。
 _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
   String? path,
 ) => switch (path) {
-  WuxiaUi.battleFounderFallback => (scale: 1.40, horizontalShiftFraction: 0),
+  WuxiaUi.battleFounderFallback => (
+    scale: 1.40,
+    horizontalShiftFraction: -0.05,
+  ),
   WuxiaUi.battleFirstDiscipleFallback => (
     scale: 1.18,
     horizontalShiftFraction: 0.04,
+  ),
+  WuxiaUi.battleSampleFirstDiscipleStandee => (
+    scale: 1.08,
+    horizontalShiftFraction: -0.03,
   ),
   WuxiaUi.battleSecondDiscipleFallback => (
     scale: 1.12,
     horizontalShiftFraction: 0,
   ),
   WuxiaUi.battleHiddenElderStandee => (scale: 1.14, horizontalShiftFraction: 0),
+  WuxiaUi.battleSampleHiddenElderStandee => (
+    scale: 1.14,
+    horizontalShiftFraction: 0.03,
+  ),
   WuxiaUi.battleBanditBladeStandee => (
     scale: 1.33,
     horizontalShiftFraction: 0.015,
   ),
   WuxiaUi.battleBanditArcherStandee => (
     scale: 1.28,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleSampleBanditBladeStandee => (
+    scale: 1.0,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleSampleBanditArcherStandee => (
+    scale: 1.05,
     horizontalShiftFraction: 0,
   ),
   WuxiaUi.battleYoungRuffianStandee => (

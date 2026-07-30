@@ -152,6 +152,8 @@ class WuxiaUi {
       'assets/scenes/battle_innerrealm_cool_v2.png';
   static const String battleFirstDiscipleFallback =
       'assets/characters/battle_first_disciple.png';
+  static const String battleSampleFirstDiscipleStandee =
+      'assets/characters/battle_first_disciple_sample_v2.png';
   static const String battleSecondDiscipleFallback =
       'assets/characters/battle_second_disciple.png';
   static const String battleThugStandee = 'assets/enemies/battle_thug_a.png';
@@ -159,10 +161,16 @@ class WuxiaUi {
       'assets/enemies/battle_black_killer.png';
   static const String battleHiddenElderStandee =
       'assets/enemies/battle_hidden_elder.png';
+  static const String battleSampleHiddenElderStandee =
+      'assets/enemies/battle_hidden_elder_sample_v2.png';
   static const String battleBanditBladeStandee =
       'assets/enemies/battle_bandit_blade.png';
+  static const String battleSampleBanditBladeStandee =
+      'assets/enemies/battle_bandit_blade_sample_v2.png';
   static const String battleBanditArcherStandee =
       'assets/enemies/battle_bandit_archer.png';
+  static const String battleSampleBanditArcherStandee =
+      'assets/enemies/battle_bandit_archer_sample_v2.png';
   static const String battleYoungRuffianStandee =
       'assets/enemies/battle_thug_b.png';
   static const String battleGauntCutpurseStandee =

@@ -521,9 +521,9 @@ void main() {
       final (_, right) = launcher.teamsFactory();
 
       expect(right.map((character) => character.iconPath), [
-        WuxiaUi.battleHiddenElderStandee,
-        WuxiaUi.battleBanditBladeStandee,
-        WuxiaUi.battleBanditArcherStandee,
+        WuxiaUi.battleSampleHiddenElderStandee,
+        WuxiaUi.battleSampleBanditBladeStandee,
+        WuxiaUi.battleSampleBanditArcherStandee,
       ]);
       expect(right.first.isBoss, isTrue);
       expect(right.first.chargingSkill, isNotNull);
@@ -540,6 +540,11 @@ void main() {
         UiStrings.battleSampleFounder,
         UiStrings.battleSampleFirstDisciple,
         UiStrings.battleSampleSecondDisciple,
+      ]);
+      expect(left.map((character) => character.iconPath), [
+        isNull,
+        WuxiaUi.battleSampleFirstDiscipleStandee,
+        isNull,
       ]);
       final visibleSkills = left.first.availableSkills.skip(1).toList();
       expect(

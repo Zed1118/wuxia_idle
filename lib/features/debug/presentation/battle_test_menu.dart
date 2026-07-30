@@ -485,6 +485,7 @@ class BattleScenarioData {
       int slot,
       List<SkillDef> skills, {
       TechniqueSchool school = TechniqueSchool.gangMeng,
+      String? iconPath,
     }) => _char(
       id: id,
       name: name,
@@ -500,6 +501,7 @@ class BattleScenarioData {
       skills: skills,
       teamSide: 0,
       slotIndex: slot,
+      iconPath: iconPath,
     );
 
     final left = [
@@ -602,6 +604,7 @@ class BattleScenarioData {
         1,
         [_normal('dl_normal_2', '基础招')],
         school: TechniqueSchool.lingQiao,
+        iconPath: WuxiaUi.battleSampleFirstDiscipleStandee,
       ).copyWith(maxHp: 3564, currentHp: 3564, maxQi: 100, currentQi: 55),
       player(3, UiStrings.battleSampleSecondDisciple, 2, [
         _normal('dl_normal_3', '基础招'),
@@ -633,7 +636,7 @@ class BattleScenarioData {
           11,
           UiStrings.battleSampleHiddenElder,
           0,
-          WuxiaUi.battleHiddenElderStandee,
+          WuxiaUi.battleSampleHiddenElderStandee,
         ).copyWith(
           isBoss: true,
           maxHp: 7820,
@@ -652,13 +655,13 @@ class BattleScenarioData {
         12,
         UiStrings.battleSampleBanditBlade,
         1,
-        WuxiaUi.battleBanditBladeStandee,
+        WuxiaUi.battleSampleBanditBladeStandee,
       ).copyWith(maxHp: 3126, currentHp: 3126, maxQi: 100, currentQi: 45),
       tankMob(
         13,
         UiStrings.battleSampleBanditArcher,
         2,
-        WuxiaUi.battleBanditArcherStandee,
+        WuxiaUi.battleSampleBanditArcherStandee,
       ).copyWith(maxHp: 2894, currentHp: 2894, maxQi: 100, currentQi: 50),
     ];
 
