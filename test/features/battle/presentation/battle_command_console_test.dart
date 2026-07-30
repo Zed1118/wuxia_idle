@@ -186,6 +186,18 @@ const _joint = SkillDef(
   requiresManualTrigger: false,
   visualEffect: '',
 );
+const _encounter = SkillDef(
+  id: 'e1',
+  name: '奇门截脉',
+  description: '',
+  type: SkillType.ultimate,
+  powerMultiplier: 2200,
+  internalForceCost: 250,
+  cooldownTurns: 4,
+  requiresManualTrigger: true,
+  source: SkillSource.encounter,
+  visualEffect: '',
+);
 const _powerC = SkillDef(
   id: 'pC',
   name: '回风掌',
@@ -337,6 +349,23 @@ void main() {
         reason: '自动案台与可点选案台同形，但不接受按钮、焦点或拖放输入',
       );
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('样板顶栏与案台消费集中暖墨色基线', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      await _pumpWith(tester, left, right);
+
+      final header = tester.widget<Container>(
+        find.byKey(const ValueKey('battle_header_surface')),
+      );
+      final headerDecoration = header.decoration! as BoxDecoration;
+      expect(headerDecoration.color, WuxiaUi.battleHeaderBase);
+
+      final desk = tester.widget<Container>(
+        find.byKey(const ValueKey('battle_command_desk')),
+      );
+      final deskDecoration = desk.decoration! as BoxDecoration;
+      expect(deskDecoration.color, WuxiaUi.battleDeskBase);
     });
 
     testWidgets('自动与可点选模式的案台三分区几何同构', (tester) async {
@@ -960,7 +989,7 @@ void main() {
     testWidgets('指令台暴露重点角色的全部可用技能（分组按钮）', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
-        availableSkills: [_power, _break, _ult],
+        availableSkills: [_power, _break, _ult, _encounter],
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
@@ -972,6 +1001,26 @@ void main() {
       expect(find.text(UiStrings.skillSealPower), findsWidgets);
       expect(find.text(UiStrings.skillSealInterrupt), findsWidgets);
       expect(find.text(UiStrings.skillSealUltimate), findsWidgets);
+      expect(find.text(UiStrings.skillSealEncounter), findsOneWidget);
+    });
+
+    testWidgets('技能签保持装配顺序，不按类型重新洗牌', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_ult, _power, _joint, _break],
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      final orderedKeys = ['u1', 'p1', 'j1', 'b1'];
+      final leftEdges = [
+        for (final id in orderedKeys)
+          tester
+              .getTopLeft(
+                find.byKey(ValueKey('skill_cmd_${focus.characterId}_$id')),
+              )
+              .dx,
+      ];
+      expect(leftEdges, orderedEquals([...leftEdges]..sort()));
     });
 
     // 两段点选：长按技能方块弹简介浮层(不下发);点击 = 释放由 battle_tap_skill_test 守。

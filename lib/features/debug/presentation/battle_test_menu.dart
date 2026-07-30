@@ -503,94 +503,103 @@ class BattleScenarioData {
     );
 
     final left = [
-      player(1, '主控', 0, [
+      player(1, UiStrings.battleSampleFounder, 0, [
         _normal('dl_normal_1', '基础招'),
-        // single 大招:点技能后点敌方人物指定目标(ultimate → 只手动触发,不自动 burst)。
+        // 七枚非普攻签固定对应 2026-07-15 黄金样板；id 保持稳定，沿用待发预览接线。
         const SkillDef(
           id: 'dl_single_1',
-          name: '裂石指',
+          name: UiStrings.battleSampleSkillOpenMountain,
           description: '',
-          type: SkillType.ultimate,
-          powerMultiplier: 3000,
-          internalForceCost: 250,
+          type: SkillType.powerSkill,
+          powerMultiplier: 1200,
+          internalForceCost: 20,
           cooldownTurns: 3,
           requiresManualTrigger: true,
           visualEffect: '',
         ),
-        // aoe 大招:点技能即对全体触发(targetType.aoe)。
         const SkillDef(
           id: 'dl_aoe_1',
-          name: '万钧裂空',
+          name: UiStrings.battleSampleSkillBreakCurrent,
           description: '',
-          type: SkillType.ultimate,
-          powerMultiplier: 5000,
-          internalForceCost: 250,
+          type: SkillType.powerSkill,
+          powerMultiplier: 1000,
+          internalForceCost: 30,
           cooldownTurns: 5,
           requiresManualTrigger: true,
           visualEffect: '',
-          targetType: TargetType.aoe,
+          canInterrupt: true,
+          style: TechniqueSchool.gangMeng,
         ),
         const SkillDef(
           id: 'dl_single_2',
-          name: '断流',
+          name: UiStrings.battleSampleSkillSnowStep,
           description: '',
           type: SkillType.ultimate,
           powerMultiplier: 2600,
-          internalForceCost: 180,
+          internalForceCost: 35,
           cooldownTurns: 2,
-          requiresManualTrigger: true,
-          visualEffect: '',
-        ),
-        const SkillDef(
-          id: 'dl_aoe_2',
-          name: '踏雪',
-          description: '',
-          type: SkillType.ultimate,
-          powerMultiplier: 3200,
-          internalForceCost: 300,
-          cooldownTurns: 4,
           requiresManualTrigger: true,
           visualEffect: '',
           targetType: TargetType.aoe,
         ),
         const SkillDef(
-          id: 'dl_single_3',
-          name: '归一式',
+          id: 'dl_aoe_2',
+          name: UiStrings.battleSampleSkillReturnOne,
           description: '',
           type: SkillType.ultimate,
-          powerMultiplier: 4000,
-          internalForceCost: 420,
+          powerMultiplier: 3200,
+          internalForceCost: 60,
+          cooldownTurns: 4,
+          requiresManualTrigger: true,
+          visualEffect: '',
+        ),
+        const SkillDef(
+          id: 'dl_single_3',
+          name: UiStrings.battleSampleSkillSwallowReturn,
+          description: '',
+          type: SkillType.jointSkill,
+          powerMultiplier: 4500,
+          internalForceCost: 15,
           cooldownTurns: 6,
           requiresManualTrigger: true,
           visualEffect: '',
         ),
         const SkillDef(
           id: 'dl_single_4',
-          name: '燕回',
+          name: UiStrings.battleSampleSkillMeridianCut,
           description: '',
           type: SkillType.ultimate,
           powerMultiplier: 2800,
-          internalForceCost: 220,
+          internalForceCost: 25,
           cooldownTurns: 3,
           requiresManualTrigger: true,
           visualEffect: '',
+          source: SkillSource.encounter,
         ),
         const SkillDef(
           id: 'dl_single_5',
-          name: '截脉',
+          name: UiStrings.battleSampleSkillHiddenEdge,
           description: '',
-          type: SkillType.ultimate,
-          powerMultiplier: 3500,
-          internalForceCost: 360,
+          type: SkillType.powerSkill,
+          powerMultiplier: 1800,
+          internalForceCost: 30,
           cooldownTurns: 5,
           requiresManualTrigger: true,
           visualEffect: '',
+          canInterrupt: true,
+          style: TechniqueSchool.gangMeng,
         ),
-      ]),
-      player(2, '弟子甲', 1, [
-        _normal('dl_normal_2', '基础招'),
-      ], school: TechniqueSchool.lingQiao),
-      player(3, '弟子乙', 2, [_normal('dl_normal_3', '基础招')]),
+      ]).copyWith(maxHp: 4982, currentHp: 4982, maxQi: 100, currentQi: 68),
+      player(
+        2,
+        UiStrings.battleSampleFirstDisciple,
+        1,
+        [_normal('dl_normal_2', '基础招')],
+        school: TechniqueSchool.lingQiao,
+      ).copyWith(maxHp: 3564, currentHp: 3564, maxQi: 100, currentQi: 55),
+      player(3, UiStrings.battleSampleSecondDisciple, 2, [
+        _normal('dl_normal_3', '基础招'),
+      ]).copyWith(maxHp: 3781, currentHp: 3781, maxQi: 100, currentQi: 50),
     ];
 
     // 敌人:超高血(久撑) + 低攻击/低速(不秒玩家)→ 战斗拖很长,从容点选。
@@ -613,12 +622,19 @@ class BattleScenarioData {
           iconPath: icon,
         );
 
-    final elder = tankMob(
-      11,
-      '铁布衫客',
-      0,
-      WuxiaUi.battleHiddenElderStandee,
-    ).copyWith(isBoss: true);
+    final elder =
+        tankMob(
+          11,
+          UiStrings.battleSampleHiddenElder,
+          0,
+          WuxiaUi.battleHiddenElderStandee,
+        ).copyWith(
+          isBoss: true,
+          maxHp: 7820,
+          currentHp: 7820,
+          maxQi: 100,
+          currentQi: 90,
+        );
     final elderCharge = elder.availableSkills.first;
     final right = [
       elder.copyWith(
@@ -628,16 +644,16 @@ class BattleScenarioData {
       ),
       tankMob(
         12,
-        '巷口杀手',
+        UiStrings.battleSampleBanditBlade,
         1,
         WuxiaUi.battleBanditBladeStandee,
-      ),
+      ).copyWith(maxHp: 3126, currentHp: 3126, maxQi: 100, currentQi: 45),
       tankMob(
         13,
-        '巷尾杀手',
+        UiStrings.battleSampleBanditArcher,
         2,
         WuxiaUi.battleBanditArcherStandee,
-      ),
+      ).copyWith(maxHp: 2894, currentHp: 2894, maxQi: 100, currentQi: 50),
     ];
 
     return (left, right);
@@ -725,7 +741,7 @@ class BattleScenarioData {
   scenarioV2ResourcePressure() {
     final (leftTemplates, right) = scenarioDragLive();
     final first = leftTemplates.first.copyWith(
-      currentQi: 200,
+      currentQi: 10,
       skillCooldowns: const {'dl_single_1': 2},
     );
     return ([first, ...leftTemplates.skip(1)], right);

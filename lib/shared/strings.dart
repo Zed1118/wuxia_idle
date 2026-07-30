@@ -134,6 +134,31 @@ class UiStrings {
   static String battleDangerTicks(int ticks) => '$ticks拍';
   static const String battleDangerPrefix = '⚠ ';
 
+  // 战斗指挥案台黄金样板 fixture：集中维护，避免 debug 路由散写文案。
+  static const String battleSampleSceneTitle = '山道伏击';
+  static const String battleSampleFounder = '祖师';
+  static const String battleSampleFirstDisciple = '弟子·凌风';
+  static const String battleSampleSecondDisciple = '弟子·云舟';
+  static const String battleSampleHiddenElder = '隐世老者';
+  static const String battleSampleBanditBlade = '山贼刀客';
+  static const String battleSampleBanditArcher = '山贼弓手';
+  static const String battleSampleSkillOpenMountain = '开山掌';
+  static const String battleSampleSkillBreakCurrent = '断流';
+  static const String battleSampleSkillSnowStep = '踏雪';
+  static const String battleSampleSkillReturnOne = '归一式';
+  static const String battleSampleSkillSwallowReturn = '燕回';
+  static const String battleSampleSkillMeridianCut = '截脉';
+  static const String battleSampleSkillHiddenEdge = '藏锋';
+  static const List<String> battleSampleSkillNames = [
+    battleSampleSkillOpenMountain,
+    battleSampleSkillBreakCurrent,
+    battleSampleSkillSnowStep,
+    battleSampleSkillReturnOne,
+    battleSampleSkillSwallowReturn,
+    battleSampleSkillMeridianCut,
+    battleSampleSkillHiddenEdge,
+  ];
+
   // T1 战斗指令台：技能分组标签 + 状态印 + 内力/冷却短标。
   static const String skillGroupPower = '强力';
   static const String skillGroupJoint = '共鸣';
@@ -142,6 +167,7 @@ class UiStrings {
   static const String skillSealGroup = '群';
   static const String skillSealUltimate = '绝';
   static const String skillSealAssist = '辅';
+  static const String skillSealEncounter = '奇';
   // 破招用 [battleInterruptSkill]='破招'、大招用 [ultimate]='大招'。
   static const String skillPendingStamp = '待发';
   static const String skillAwaitingAction = '回势中';

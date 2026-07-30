@@ -348,16 +348,13 @@ class AutoCommandDesk extends StatelessWidget {
     final activeActor = activeIndex >= 0 && activeIndex < state.leftTeam.length
         ? state.leftTeam[activeIndex]
         : null;
-    final skills =
-        <SkillDef>[
-          if (activeActor != null)
-            for (final skill in activeActor.availableSkills)
-              if (skill.type != SkillType.normalAttack &&
-                  !skill.requiresManualTrigger)
-                skill,
-        ]..sort(
-          (a, b) => BottomBar._groupRank(a).compareTo(BottomBar._groupRank(b)),
-        );
+    final skills = <SkillDef>[
+      if (activeActor != null)
+        for (final skill in activeActor.availableSkills)
+          if (skill.type != SkillType.normalAttack &&
+              !skill.requiresManualTrigger)
+            skill,
+    ];
 
     return BattleCommandDeskSurface(
       builder: (context, metrics) => KeyedSubtree(
@@ -476,17 +473,6 @@ class BottomBar extends StatelessWidget {
     required this.skillTargetLink,
   });
 
-  /// 排序/分组秩：强力 0 → 破招 1 → 共鸣 2 → 大招 3（普攻 4，已被过滤）。
-  static int _groupRank(SkillDef s) {
-    if (s.canInterrupt) return 1;
-    return switch (s.type) {
-      SkillType.powerSkill => 0,
-      SkillType.jointSkill => 2,
-      SkillType.ultimate => 3,
-      SkillType.normalAttack => 4,
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
     return BattleCommandDeskSurface(
@@ -505,11 +491,13 @@ class BottomBar extends StatelessWidget {
             ? pendingSkillId
             : null;
 
+        // 签位遵守角色的装配顺序。样板把招式编排当作案台的一部分，类型只由
+        // 单字朱印表达，不再把玩家已经排好的顺序二次洗牌。
         final skills = <SkillDef>[
           if (focus != null)
             for (final s in focus.availableSkills)
               if (s.type != SkillType.normalAttack) s,
-        ]..sort((a, b) => _groupRank(a).compareTo(_groupRank(b)));
+        ];
 
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -894,6 +882,9 @@ class SkillCommandButton extends StatelessWidget {
   static String _sealLabel(SkillDef skill) {
     if (skill.canInterrupt) return UiStrings.skillSealInterrupt;
     if (skill.targetType == TargetType.aoe) return UiStrings.skillSealGroup;
+    if (skill.source == SkillSource.encounter) {
+      return UiStrings.skillSealEncounter;
+    }
     return switch (skill.type) {
       SkillType.powerSkill => UiStrings.skillSealPower,
       SkillType.jointSkill => UiStrings.skillSealAssist,

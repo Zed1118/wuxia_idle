@@ -28,13 +28,13 @@ class BattleCommandDeskSurface extends StatelessWidget {
             vertical: BattleLayoutTokens.commandDeskVerticalPadding,
           ),
           decoration: const BoxDecoration(
-            color: Color(0xFF211D18),
+            color: WuxiaUi.battleDeskBase,
             image: DecorationImage(
               image: AssetImage(WuxiaUi.paperBg),
               fit: BoxFit.cover,
               opacity: 0.12,
               colorFilter: ColorFilter.mode(
-                Color(0xFF33291F),
+                WuxiaUi.battleDeskTextureTint,
                 BlendMode.multiply,
               ),
             ),

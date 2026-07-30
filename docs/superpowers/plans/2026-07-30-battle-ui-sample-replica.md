@@ -58,7 +58,7 @@
 
 ## 当前恢复点
 
-- 状态：95% 返修进行中（WIP）；P0 背景与黄金敌方阵容已修复。
+- 状态：95% 返修进行中（WIP）；P0 完成，P1 样板内容与色彩完成。
 - 根因证据：`BattleSceneBackground` 收到暖色 `battle_mountain_pass_stage_v2.png`
   后，主动替换成 `battle_mountain_pass_stage_cool_v3.png`，并再套
   `_mainlineSceneColorGrade`；当前战场饱和度约为样板一半，是最大画风偏差源。
@@ -68,8 +68,15 @@
   首领固定蓄势 2 拍；该状态仅存在于 debug 验收 fixture，生产状态仍由战斗数据驱动。
   顶部蓄势条已收束为样板的「蓄势 · N拍」短条和相同横向锚点，敌名 / 招名完整
   信息保留在 Semantics，不牺牲无障碍提示。
+  黄金 fixture 的场景题名、六人姓名、血量 / 真气、七签名称 / 顺序 / 耗气 /
+  单字朱印均与样板对齐；正式案台改为尊重装配顺序，不再按类型二次洗牌。
+  顶栏 / 案台深色基底集中到 `WuxiaUi` token；1672×941 实拍分区平均 RGB
+  已全部进入每通道 ±4 目标：顶栏差 (-1.5,-1.6,-0.7)，战场
+  (-2.9,-1.5,+0.7)，案台 (+2.1,+0.7,-3.4)。
+  脚下状态条宽度恢复到完整数值可读区间，Boss 增加有机金墨游丝，仍无矩形黄底。
   旧版几何比例继续冻结，不再做广泛布局调整。
-- 下一步：复拍 `battle_tap_live` 同一固定帧并按差异校准立绘融合。
+- 下一步：复拍最新 1672×941 黄金帧与 1280×720 / 1440×900 双视口，
+  生成最终叠图并评估剩余结构 / 材质偏差。
 - 已跑验证：扩展 targeted tests 共 131 项通过，最后 `const` 修正覆盖的
   52 项再次通过；`flutter analyze --no-pub` 为 0 issue；`battle_tap_live`
   1280×720 / 1440×900、量产群战 1280×720、Boss 1280×720 均已重新复拍，
@@ -78,4 +85,6 @@
 - 本轮验证：`flutter test --no-pub
   test/features/battle/presentation/battle_scene_background_test.dart`，10/10 通过；
   黄金敌方阵容 targeted test 1/1 通过；蓄势短条与 Semantics targeted test 1/1 通过。
+  最新相关测试族共 120 项通过（visual route / command console / background /
+  character avatar）。
 - 阻塞项：无。

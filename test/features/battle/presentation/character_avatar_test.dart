@@ -264,7 +264,8 @@ void main() {
       tester
           .getSize(find.byKey(const ValueKey('battle.stageStatusInkRubbing')))
           .width,
-      lessThanOrEqualTo(120),
+      inInclusiveRange(88, 100),
+      reason: '样板状态条应保持窄，但不能窄到姓名与完整数值拥挤',
     );
     final name = tester.widget<Text>(find.text('黑风寨主'));
     expect(name.style?.color, WuxiaUi.paper);
@@ -361,7 +362,7 @@ void main() {
     expect(fade.opacity, 0.45);
   });
 
-  testWidgets('Boss全身立绘不再绘制矩形金色黄底', (tester) async {
+  testWidgets('Boss全身立绘使用有机金墨气韵且不绘制矩形黄底', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -378,6 +379,10 @@ void main() {
     final frame = tester.widget(find.byKey(_bossFrameKey));
     expect(frame, isA<KeyedSubtree>());
     expect(frame, isNot(isA<Container>()));
+    expect(
+      find.byKey(const ValueKey('battle.stageBossInkAura')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('战场立绘按有效人物边界校准尺度与视觉重心', (tester) async {

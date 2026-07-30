@@ -494,6 +494,19 @@ class _StageCharacterStandee extends StatelessWidget {
               child: CustomPaint(painter: _StandeeGroundingPainter()),
             ),
           ),
+          if (character.isBoss)
+            Positioned(
+              left: width * 0.03,
+              right: width * 0.03,
+              top: height * 0.04,
+              bottom: height * 0.10,
+              child: const IgnorePointer(
+                child: CustomPaint(
+                  key: ValueKey('battle.stageBossInkAura'),
+                  painter: _BossInkAuraPainter(),
+                ),
+              ),
+            ),
           portrait,
           Positioned(
             top: 4,
@@ -568,8 +581,8 @@ class StageCharacterStatusOverlay extends StatelessWidget {
     final portraitHeight = height * 0.91;
     final footY = portraitHeight * _stageStandeeAnchorFootFraction;
     final insetFraction = switch (character.slotIndex) {
-      0 => 0.29,
-      _ => 0.26,
+      0 => 0.25,
+      _ => 0.22,
     };
     final borderColor = character.isBoss
         ? WuxiaColors.bossFrame
@@ -666,6 +679,110 @@ class StageCharacterStatusOverlay extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Boss 背后的金墨气韵。只画细线与局部雾化弧，不铺矩形光晕；
+/// 既承接样板中隐世老者的游丝金气，也避免浅色战景出现一整块黄色底板。
+class _BossInkAuraPainter extends CustomPainter {
+  const _BossInkAuraPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final glow = Paint()
+      ..color = WuxiaUi.gold.withValues(alpha: 0.13)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7);
+    canvas.drawArc(
+      Rect.fromLTWH(
+        size.width * 0.12,
+        size.height * 0.12,
+        size.width * 0.76,
+        size.height * 0.76,
+      ),
+      -2.55,
+      4.75,
+      false,
+      glow,
+    );
+
+    final strand = Paint()
+      ..color = const Color(0xFFC5A86B).withValues(alpha: 0.42)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.15
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.45);
+    final faintStrand = Paint()
+      ..color = const Color(0xFFD2BA84).withValues(alpha: 0.23)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8
+      ..strokeCap = StrokeCap.round;
+
+    void drawStrand({
+      required Offset start,
+      required Offset control1,
+      required Offset control2,
+      required Offset end,
+      bool faint = false,
+    }) {
+      final path = Path()
+        ..moveTo(start.dx * size.width, start.dy * size.height)
+        ..cubicTo(
+          control1.dx * size.width,
+          control1.dy * size.height,
+          control2.dx * size.width,
+          control2.dy * size.height,
+          end.dx * size.width,
+          end.dy * size.height,
+        );
+      canvas.drawPath(path, faint ? faintStrand : strand);
+    }
+
+    drawStrand(
+      start: const Offset(0.44, 0.82),
+      control1: const Offset(0.03, 0.65),
+      control2: const Offset(0.10, 0.29),
+      end: const Offset(0.30, 0.17),
+    );
+    drawStrand(
+      start: const Offset(0.42, 0.75),
+      control1: const Offset(0.12, 0.55),
+      control2: const Offset(0.30, 0.15),
+      end: const Offset(0.46, 0.08),
+      faint: true,
+    );
+    drawStrand(
+      start: const Offset(0.53, 0.80),
+      control1: const Offset(0.88, 0.64),
+      control2: const Offset(0.91, 0.28),
+      end: const Offset(0.69, 0.15),
+    );
+    drawStrand(
+      start: const Offset(0.58, 0.72),
+      control1: const Offset(0.94, 0.52),
+      control2: const Offset(0.75, 0.21),
+      end: const Offset(0.60, 0.10),
+      faint: true,
+    );
+    drawStrand(
+      start: const Offset(0.30, 0.65),
+      control1: const Offset(0.05, 0.48),
+      control2: const Offset(0.14, 0.21),
+      end: const Offset(0.38, 0.30),
+      faint: true,
+    );
+    drawStrand(
+      start: const Offset(0.69, 0.63),
+      control1: const Offset(0.94, 0.43),
+      control2: const Offset(0.81, 0.18),
+      end: const Offset(0.58, 0.27),
+      faint: true,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _BossInkAuraPainter oldDelegate) => false;
 }
 
 /// 状态墨拓顶部的小型归属指针。它只占人物脚底与信息板之间的既有空隙，

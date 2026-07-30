@@ -6,6 +6,7 @@ import '../../domain/battle_state.dart';
 import '../../domain/enum_localizations.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
+import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import '../battle_layout_tokens.dart';
 import '../battle_typography_tokens.dart';
@@ -53,13 +54,14 @@ class Header extends StatelessWidget {
     final surviveRequired = _surviveRequired(state);
 
     return Container(
+      key: const ValueKey('battle_header_surface'),
       height: metrics.headerHeight,
       padding: const EdgeInsets.only(
         left: BattleLayoutTokens.headerHorizontalPadding,
         right: BattleLayoutTokens.headerRightPadding,
       ),
       decoration: const BoxDecoration(
-        color: Color(0xF2191816),
+        color: WuxiaUi.battleHeaderBase,
         border: Border(bottom: BorderSide(color: Color(0xB36D5940))),
         boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 8)],
       ),
