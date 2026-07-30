@@ -23,9 +23,11 @@ class BattleCommandDeskSurface extends StatelessWidget {
         return Container(
           key: const ValueKey('battle_command_desk'),
           height: metrics.commandDeskHeight,
-          padding: const EdgeInsets.symmetric(
-            horizontal: BattleLayoutTokens.commandDeskHorizontalPadding,
-            vertical: BattleLayoutTokens.commandDeskVerticalPadding,
+          padding: const EdgeInsets.fromLTRB(
+            BattleLayoutTokens.commandDeskHorizontalPadding,
+            BattleLayoutTokens.commandDeskVerticalPadding,
+            BattleLayoutTokens.commandDeskRightPadding,
+            BattleLayoutTokens.commandDeskVerticalPadding,
           ),
           decoration: const BoxDecoration(
             color: WuxiaUi.battleDeskBase,

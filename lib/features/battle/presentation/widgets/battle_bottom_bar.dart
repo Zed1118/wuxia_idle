@@ -376,55 +376,61 @@ class AutoCommandDesk extends StatelessWidget {
                 title: UiStrings.battleAutoRotation,
                 activeCharacterId: activeActor?.characterId,
               ),
-              const SizedBox(width: BattleLayoutTokens.sectionGap),
+              const SizedBox(width: BattleLayoutTokens.focusDividerGap),
               Container(
                 width: 1,
                 height: metrics.sampleSectionDividerHeight,
                 color: const Color(0xFF6D5940),
               ),
-              const SizedBox(width: BattleLayoutTokens.sectionGap),
+              const SizedBox(width: BattleLayoutTokens.dividerSkillGap),
               SizedBox(
                 key: const ValueKey('battle_desk_skills_region'),
                 width: metrics.skillRailWidth,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    for (var index = 0; index < 7; index++) ...[
-                      Expanded(
-                        key: ValueKey('battle_skill_slot_$index'),
-                        child: index < skills.length && activeActor != null
-                            ? SkillCommandButton(
-                                character: activeActor,
-                                skill: skills[index],
-                                interventionWindowOpen: true,
-                                isPending: false,
-                                pendingTapEnabled: false,
-                                queuedAnother: false,
-                                highlight:
-                                    lastPlayerAction?.skill?.id ==
-                                    skills[index].id,
-                                allowPlayerIntervention: false,
-                                readOnly: true,
-                                autoActive:
-                                    lastPlayerAction?.skill?.id ==
-                                    skills[index].id,
-                                beat: beat,
-                                height: metrics.sampleSkillSlotHeight,
-                                onTap: () {},
-                                onShowInfo: () {},
-                              )
-                            : EmptySkillSlot(
-                                index: index,
-                                height: metrics.sampleSkillSlotHeight,
-                              ),
-                      ),
-                      if (index < 6)
-                        const SizedBox(width: BattleLayoutTokens.skillSlotGap),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 7),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      for (var index = 0; index < 7; index++) ...[
+                        Flexible(
+                          key: ValueKey('battle_skill_slot_$index'),
+                          flex: BattleLayoutTokens.sampleSkillFlex[index],
+                          child: index < skills.length && activeActor != null
+                              ? SkillCommandButton(
+                                  character: activeActor,
+                                  skill: skills[index],
+                                  interventionWindowOpen: true,
+                                  isPending: false,
+                                  pendingTapEnabled: false,
+                                  queuedAnother: false,
+                                  highlight:
+                                      lastPlayerAction?.skill?.id ==
+                                      skills[index].id,
+                                  allowPlayerIntervention: false,
+                                  readOnly: true,
+                                  autoActive:
+                                      lastPlayerAction?.skill?.id ==
+                                      skills[index].id,
+                                  beat: beat,
+                                  height: metrics.sampleSkillSlotHeight,
+                                  onTap: () {},
+                                  onShowInfo: () {},
+                                )
+                              : EmptySkillSlot(
+                                  index: index,
+                                  height: metrics.sampleSkillSlotHeight,
+                                ),
+                        ),
+                        if (index < 6)
+                          const SizedBox(
+                            width: BattleLayoutTokens.skillSlotGap,
+                          ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
-              const SizedBox(width: BattleLayoutTokens.sectionGap),
+              const SizedBox(width: BattleLayoutTokens.skillPouchGap),
               BattlePouchRail(
                 width: metrics.pouchRailWidth,
                 height: metrics.sampleSkillSlotHeight,
@@ -502,6 +508,15 @@ class BottomBar extends StatelessWidget {
             for (final s in focus.availableSkills)
               if (s.type != SkillType.normalAttack) s,
         ];
+        SkillDef? emphasizedInterruptSkill;
+        if (enemyCharging) {
+          for (final skill in skills) {
+            if (skill.canInterrupt) {
+              emphasizedInterruptSkill = skill;
+              break;
+            }
+          }
+        }
 
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,72 +528,77 @@ class BottomBar extends StatelessWidget {
               width: metrics.focusRailWidth,
               height: metrics.sampleSkillSlotHeight,
             ),
-            const SizedBox(width: BattleLayoutTokens.sectionGap),
+            const SizedBox(width: BattleLayoutTokens.focusDividerGap),
             Container(
               width: 1,
               height: metrics.sampleSectionDividerHeight,
               color: const Color(0xFF6D5940),
             ),
-            const SizedBox(width: BattleLayoutTokens.sectionGap),
+            const SizedBox(width: BattleLayoutTokens.dividerSkillGap),
             SizedBox(
               key: const ValueKey('battle_desk_skills_region'),
               width: metrics.skillRailWidth,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  for (var index = 0; index < 7; index++) ...[
-                    Expanded(
-                      key: ValueKey('battle_skill_slot_$index'),
-                      child: index < skills.length && focus != null
-                          ? Builder(
-                              builder: (context) {
-                                final skill = skills[index];
-                                final localPendingThis =
-                                    localPendingForFocus == skill.id;
-                                final domainPendingThis =
-                                    domainPending?.id == skill.id;
-                                final button = SkillCommandButton(
-                                  character: focus,
-                                  skill: skill,
-                                  interventionWindowOpen:
-                                      state.actorQueue.isEmpty &&
-                                      !state.isFinished,
-                                  isPending:
-                                      localPendingThis || domainPendingThis,
-                                  pendingTapEnabled: localPendingThis,
-                                  queuedAnother:
-                                      domainPending != null &&
-                                      domainPending.id != skill.id,
-                                  highlight:
-                                      enemyCharging && skill.canInterrupt,
-                                  allowPlayerIntervention:
-                                      allowPlayerIntervention,
-                                  beat: beat,
-                                  height: metrics.sampleSkillSlotHeight,
-                                  onTap: () =>
-                                      onSkillTap(focus.characterId, skill),
-                                  onShowInfo: () => onShowSkillInfo(skill),
-                                );
-                                return localPendingThis
-                                    ? CompositedTransformTarget(
-                                        link: skillTargetLink,
-                                        child: button,
-                                      )
-                                    : button;
-                              },
-                            )
-                          : EmptySkillSlot(
-                              index: index,
-                              height: metrics.sampleSkillSlotHeight,
-                            ),
-                    ),
-                    if (index < 6)
-                      const SizedBox(width: BattleLayoutTokens.skillSlotGap),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 7),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    for (var index = 0; index < 7; index++) ...[
+                      Flexible(
+                        key: ValueKey('battle_skill_slot_$index'),
+                        flex: BattleLayoutTokens.sampleSkillFlex[index],
+                        child: index < skills.length && focus != null
+                            ? Builder(
+                                builder: (context) {
+                                  final skill = skills[index];
+                                  final localPendingThis =
+                                      localPendingForFocus == skill.id;
+                                  final domainPendingThis =
+                                      domainPending?.id == skill.id;
+                                  final button = SkillCommandButton(
+                                    character: focus,
+                                    skill: skill,
+                                    interventionWindowOpen:
+                                        state.actorQueue.isEmpty &&
+                                        !state.isFinished,
+                                    isPending:
+                                        localPendingThis || domainPendingThis,
+                                    pendingTapEnabled: localPendingThis,
+                                    queuedAnother:
+                                        domainPending != null &&
+                                        domainPending.id != skill.id,
+                                    highlight:
+                                        skill.id ==
+                                        emphasizedInterruptSkill?.id,
+                                    allowPlayerIntervention:
+                                        allowPlayerIntervention,
+                                    beat: beat,
+                                    height: metrics.sampleSkillSlotHeight,
+                                    onTap: () =>
+                                        onSkillTap(focus.characterId, skill),
+                                    onShowInfo: () => onShowSkillInfo(skill),
+                                  );
+                                  return localPendingThis
+                                      ? CompositedTransformTarget(
+                                          link: skillTargetLink,
+                                          child: button,
+                                        )
+                                      : button;
+                                },
+                              )
+                            : EmptySkillSlot(
+                                index: index,
+                                height: metrics.sampleSkillSlotHeight,
+                              ),
+                      ),
+                      if (index < 6)
+                        const SizedBox(width: BattleLayoutTokens.skillSlotGap),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-            const SizedBox(width: BattleLayoutTokens.sectionGap),
+            const SizedBox(width: BattleLayoutTokens.skillPouchGap),
             BattlePouchRail(
               width: metrics.pouchRailWidth,
               height: metrics.sampleSkillSlotHeight,
@@ -616,6 +636,7 @@ class FocusSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final expandedSampleStyle = (height ?? 0) >= 190;
     final summaryIndex = focusSlotIndex >= 0 && focusSlotIndex < team.length
         ? focusSlotIndex
         : team.indexWhere(
@@ -631,24 +652,35 @@ class FocusSelector extends StatelessWidget {
       child: BattleFocusRailSurface(
         width: width,
         height: height,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisAlignment: MainAxisAlignment.start,
+        child: Stack(
           children: [
-            for (var i = 0; i < team.length; i++) ...[
-              FocusChip(
-                key: ValueKey('focus_chip_$i'),
-                character: team[i],
-                selected: i == focusSlotIndex,
-                onTap: interactive ? () => onSelectFocus(i) : null,
-                autoActive: team[i].characterId == activeCharacterId,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < team.length; i++) ...[
+                  FocusChip(
+                    key: ValueKey('focus_chip_$i'),
+                    character: team[i],
+                    selected: i == focusSlotIndex,
+                    onTap: interactive ? () => onSelectFocus(i) : null,
+                    autoActive: team[i].characterId == activeCharacterId,
+                    expandedSampleStyle: expandedSampleStyle,
+                  ),
+                  if (i < team.length - 1)
+                    SizedBox(height: expandedSampleStyle ? 6 : 4),
+                ],
+              ],
+            ),
+            if (summary != null)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _FocusQiSummary(
+                  character: summary,
+                  expandedSampleStyle: expandedSampleStyle,
+                ),
               ),
-              if (i < team.length - 1) const SizedBox(height: 4),
-            ],
-            if (summary != null) ...[
-              const SizedBox(height: 7),
-              _FocusQiSummary(character: summary),
-            ],
           ],
         ),
       ),
@@ -661,6 +693,7 @@ class FocusChip extends StatelessWidget {
   final bool selected;
   final VoidCallback? onTap;
   final bool autoActive;
+  final bool expandedSampleStyle;
 
   const FocusChip({
     super.key,
@@ -668,6 +701,7 @@ class FocusChip extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.autoActive = false,
+    this.expandedSampleStyle = false,
   });
 
   @override
@@ -677,7 +711,11 @@ class FocusChip extends StatelessWidget {
       key: ValueKey(
         'battle.focusNameplate.${selected ? 'expanded' : 'compact'}.${character.characterId}',
       ),
-      height: BattleLayoutTokens.actorChipHeight,
+      height: expandedSampleStyle && selected
+          ? BattleLayoutTokens.actorChipHeight
+          : expandedSampleStyle
+          ? BattleLayoutTokens.actorChipHeight - 4
+          : 30,
       padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
         color: selected
@@ -732,7 +770,7 @@ class FocusChip extends StatelessWidget {
               style: TextStyle(
                 fontFamily: BattleTypography.displayFamily,
                 fontFamilyFallback: BattleTypography.displayFallback,
-                fontSize: 11,
+                fontSize: expandedSampleStyle ? (selected ? 18 : 16) : 11,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 color: dim
                     ? const Color(0xFF8F8574)
@@ -771,9 +809,13 @@ class FocusChip extends StatelessWidget {
 }
 
 class _FocusQiSummary extends StatelessWidget {
-  const _FocusQiSummary({required this.character});
+  const _FocusQiSummary({
+    required this.character,
+    required this.expandedSampleStyle,
+  });
 
   final BattleCharacter character;
+  final bool expandedSampleStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -789,21 +831,22 @@ class _FocusQiSummary extends StatelessWidget {
         children: [
           Text(
             '${UiStrings.statQi} ${character.currentQi}/${character.maxQi}',
-            style: const TextStyle(
-              color: Color(0xFFD5C29D),
+            style: TextStyle(
+              color: const Color(0xFFD5C29D),
               fontFamily: BattleTypography.displayFamily,
               fontFamilyFallback: BattleTypography.displayFallback,
-              fontSize: 11,
+              fontSize: expandedSampleStyle ? 18 : 11,
+              height: expandedSampleStyle ? 1.1 : null,
               letterSpacing: 0.8,
               fontFeatures: BattleTypography.tabularFigures,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: expandedSampleStyle ? 8 : 4),
           ClipRRect(
             borderRadius: BorderRadius.circular(1),
             child: LinearProgressIndicator(
               key: const ValueKey('battle.focusQiProgress'),
-              minHeight: 6,
+              minHeight: expandedSampleStyle ? 10 : 6,
               value: fraction,
               color: WuxiaUi.qing,
               backgroundColor: const Color(0xFF40382E),
@@ -900,6 +943,7 @@ class SkillCommandButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final expandedSampleStyle = height >= 190;
     final cd = character.skillCooldowns[skill.id] ?? 0;
     final effectiveCost = effectiveSkillQiCost(character, skill);
     final actionReady = character.actionPoint > 0;
@@ -929,7 +973,7 @@ class SkillCommandButton extends StatelessWidget {
     } else if (visualState == BattleSkillSlipVisualState.interrupt) {
       bgColor = const Color(0xFFF2DFB4);
     } else if (!interventionReady) {
-      bgColor = const Color(0xFFB0A58E);
+      bgColor = const Color(0xFFCDBF9F);
     } else {
       bgColor = WuxiaUi.paper;
     }
@@ -981,48 +1025,57 @@ class SkillCommandButton extends StatelessWidget {
                   height: 18,
                 ),
                 Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _VerticalSkillTitle(
-                        key: const ValueKey('battle.skillSlipTitle'),
-                        name: skill.name,
-                      ),
-                      const SizedBox(height: 8),
-                      Transform.rotate(
-                        angle: -0.045,
-                        child: Container(
-                          key: const ValueKey('battle.skillSlipNatureSeal'),
-                          width: 24,
-                          height: 22,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: WuxiaUi.jiang.withValues(alpha: 0.10),
-                            border: Border.all(
-                              color: WuxiaUi.jiang.withValues(alpha: 0.78),
+                  child: Transform.translate(
+                    offset: Offset(0, expandedSampleStyle ? -10 : 0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _VerticalSkillTitle(
+                          key: const ValueKey('battle.skillSlipTitle'),
+                          name: skill.name,
+                          expandedSampleStyle: expandedSampleStyle,
+                        ),
+                        SizedBox(height: expandedSampleStyle ? 12 : 8),
+                        Transform.rotate(
+                          angle: -0.045,
+                          child: Container(
+                            key: const ValueKey('battle.skillSlipNatureSeal'),
+                            width: expandedSampleStyle ? 28 : 24,
+                            height: expandedSampleStyle ? 27 : 22,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: WuxiaUi.jiang.withValues(alpha: 0.10),
+                              border: Border.all(
+                                color: WuxiaUi.jiang.withValues(alpha: 0.78),
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            _sealLabel(skill),
-                            style: const TextStyle(
-                              color: WuxiaUi.jiang,
-                              fontFamily: BattleTypography.displayFamily,
-                              fontFamilyFallback:
-                                  BattleTypography.displayFallback,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              height: 1,
+                            child: Text(
+                              _sealLabel(skill),
+                              style: TextStyle(
+                                color: WuxiaUi.jiang,
+                                fontFamily: BattleTypography.displayFamily,
+                                fontFamilyFallback:
+                                    BattleTypography.displayFallback,
+                                fontSize: expandedSampleStyle ? 14 : 12,
+                                fontWeight: FontWeight.w700,
+                                height: 1,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 Container(
                   key: const ValueKey('battle.skillSlipFooter'),
-                  height: 29,
-                  margin: const EdgeInsets.fromLTRB(5, 0, 5, 4),
+                  height: expandedSampleStyle ? 34 : 29,
+                  margin: EdgeInsets.fromLTRB(
+                    5,
+                    0,
+                    5,
+                    expandedSampleStyle ? 18 : 4,
+                  ),
                   decoration: BoxDecoration(
                     border: Border(
                       top: BorderSide(
@@ -1033,18 +1086,18 @@ class SkillCommandButton extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const CustomPaint(
-                        key: ValueKey('battle.skillSlipQiSwirl'),
-                        size: Size.square(15),
-                        painter: _QiSwirlPainter(),
+                      CustomPaint(
+                        key: const ValueKey('battle.skillSlipQiSwirl'),
+                        size: Size.square(expandedSampleStyle ? 19 : 13),
+                        painter: const _QiSwirlPainter(),
                       ),
-                      const SizedBox(width: 5),
+                      SizedBox(width: expandedSampleStyle ? 5 : 3),
                       Text(
                         '$effectiveCost',
                         key: const ValueKey('battle.skillSlipQiCost'),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: WuxiaUi.qing,
-                          fontSize: 11,
+                          fontSize: expandedSampleStyle ? 15 : 10,
                           fontWeight: FontWeight.w700,
                           height: 1,
                           fontFeatures: BattleTypography.tabularFigures,
@@ -1056,7 +1109,23 @@ class SkillCommandButton extends StatelessWidget {
               ],
             ),
           ),
-          if (onCd)
+          if (onCd && expandedSampleStyle)
+            Positioned(
+              top: height * 0.34,
+              right: 8,
+              child: Text(
+                '$cd',
+                key: const ValueKey('battle.skillSlipCooldownCount'),
+                style: const TextStyle(
+                  color: Color(0xFFE7D8B8),
+                  fontSize: 25,
+                  fontWeight: FontWeight.w700,
+                  height: 1,
+                  shadows: [Shadow(color: Colors.black87, blurRadius: 3)],
+                ),
+              ),
+            )
+          else if (onCd)
             Positioned(
               top: height * 0.42,
               right: 7,
@@ -1097,9 +1166,14 @@ class SkillCommandButton extends StatelessWidget {
 }
 
 class _VerticalSkillTitle extends StatelessWidget {
-  const _VerticalSkillTitle({super.key, required this.name});
+  const _VerticalSkillTitle({
+    super.key,
+    required this.name,
+    required this.expandedSampleStyle,
+  });
 
   final String name;
+  final bool expandedSampleStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -1108,13 +1182,13 @@ class _VerticalSkillTitle extends StatelessWidget {
       maxLines: 4,
       overflow: TextOverflow.ellipsis,
       textAlign: TextAlign.center,
-      style: const TextStyle(
+      style: TextStyle(
         color: WuxiaUi.ink,
         fontFamily: BattleTypography.displayFamily,
         fontFamilyFallback: BattleTypography.displayFallback,
-        fontSize: BattleTypography.t2,
+        fontSize: expandedSampleStyle ? 20 : BattleTypography.t2,
         fontWeight: FontWeight.w700,
-        height: 0.92,
+        height: expandedSampleStyle ? 0.96 : 0.92,
         letterSpacing: 0,
       ),
     );
@@ -1233,10 +1307,17 @@ class BattlePouchRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final metrics = BattleLayoutMetrics.resolve(MediaQuery.sizeOf(context));
     final railWidth = width ?? metrics.pouchRailWidth;
+    final expandedSampleStyle = !compact && (height ?? 0) >= 190;
+    final heightBoundSlotSize = height == null
+        ? BattleLayoutTokens.pouchSlotSize
+        : height! - (expandedSampleStyle ? 94 : 82);
+    final maxSlotSize = heightBoundSlotSize < BattleLayoutTokens.pouchSlotSize
+        ? heightBoundSlotSize
+        : BattleLayoutTokens.pouchSlotSize;
     final slotSize = compact
         ? 34.0
         : ((railWidth - 31 - BattleLayoutTokens.pouchSlotGap * 2) / 3)
-              .clamp(44.0, BattleLayoutTokens.pouchSlotSize)
+              .clamp(44.0, maxSlotSize)
               .toDouble();
     return BattlePouchRailSurface(
       width: railWidth,
@@ -1246,18 +1327,21 @@ class BattlePouchRail extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Center(
+          Center(
             child: Text(
               UiStrings.battlePouch,
+              key: const ValueKey('battle.pouch.title'),
               style: TextStyle(
-                color: Color(0xFFCBB58C),
-                fontSize: 12,
+                color: const Color(0xFFCBB58C),
+                fontFamily: BattleTypography.displayFamily,
+                fontFamilyFallback: BattleTypography.displayFallback,
+                fontSize: expandedSampleStyle ? 18 : 12,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1,
               ),
             ),
           ),
-          SizedBox(height: compact ? 4 : 8),
+          SizedBox(height: compact ? 4 : (expandedSampleStyle ? 5 : 8)),
           Row(
             children: [
               for (var i = 0; i < 3; i++) ...[
@@ -1364,17 +1448,17 @@ class BattlePouchRail extends StatelessWidget {
               ],
             ],
           ),
-          SizedBox(height: compact ? 4 : 8),
+          SizedBox(height: compact ? 4 : (expandedSampleStyle ? 12 : 8)),
           Align(
             child: FractionallySizedBox(
-              widthFactor: compact ? 1 : 0.58,
+              widthFactor: compact ? 1 : (expandedSampleStyle ? 0.51 : 0.58),
               child: Semantics(
                 readOnly: true,
                 label: UiStrings.battlePouch,
                 value: UiStrings.battlePouchReserved,
                 child: Container(
                   key: const ValueKey('battle.pouch.footerPlaque'),
-                  height: compact ? 18 : 26,
+                  height: compact ? 18 : (expandedSampleStyle ? 30 : 26),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: const Color(0xFF211B16).withValues(alpha: 0.72),
@@ -1393,7 +1477,7 @@ class BattlePouchRail extends StatelessWidget {
                       color: const Color(0xFFCBB58C),
                       fontFamily: BattleTypography.displayFamily,
                       fontFamilyFallback: BattleTypography.displayFallback,
-                      fontSize: compact ? 9 : 11,
+                      fontSize: compact ? 9 : (expandedSampleStyle ? 16 : 11),
                       letterSpacing: compact ? 1 : 2,
                     ),
                   ),

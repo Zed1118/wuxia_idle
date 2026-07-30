@@ -589,7 +589,13 @@ class BattleScenarioData {
           canInterrupt: true,
           style: TechniqueSchool.gangMeng,
         ),
-      ]).copyWith(maxHp: 4982, currentHp: 4982, maxQi: 100, currentQi: 68),
+      ]).copyWith(
+        maxHp: 4982,
+        currentHp: 4982,
+        maxQi: 100,
+        currentQi: 68,
+        skillCooldowns: const {'dl_single_2': 2},
+      ),
       player(
         2,
         UiStrings.battleSampleFirstDisciple,

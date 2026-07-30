@@ -783,7 +783,7 @@ void main() {
           find.byKey(const ValueKey('battle_desk_pouch_region')),
         );
         expect(focus.width / size.width, inInclusiveRange(0.15, 0.17));
-        expect(skills.width / size.width, inInclusiveRange(0.51, 0.55));
+        expect(skills.width / size.width, inInclusiveRange(0.49, 0.55));
         expect(pouch.width / size.width, inInclusiveRange(0.19, 0.21));
         expect(
           find.byKey(const ValueKey('battle_skill_slot_6')),
@@ -792,6 +792,80 @@ void main() {
         expect(find.byType(SingleChildScrollView), findsNothing);
         expect(tester.takeException(), isNull, reason: '$size 不应溢出');
       }
+    });
+
+    testWidgets('1672×941 名帖与七技能签按样板几何硬对齐', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1672, 941);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [
+          _power,
+          _powerB,
+          _powerC,
+          _break,
+          _joint,
+          _ult,
+          _ultB,
+        ],
+      );
+      await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        size: const Size(1672, 941),
+      );
+
+      final focusRect = tester.getRect(
+        find.byKey(const ValueKey('battle_desk_focus_region')),
+      );
+      expect(focusRect.left, closeTo(48, 1));
+      expect(focusRect.top, closeTo(710, 1));
+      expect(focusRect.height, closeTo(206, 1));
+
+      final selectedNameplate = tester.getRect(
+        find.byKey(
+          ValueKey('battle.focusNameplate.expanded.${focus.characterId}'),
+        ),
+      );
+      expect(selectedNameplate.height, 40);
+      expect(
+        tester
+            .getRect(find.byKey(const ValueKey('battle.focusQiProgress')))
+            .height,
+        10,
+      );
+
+      final slots = [
+        for (var index = 0; index < 7; index++)
+          tester.getRect(find.byKey(ValueKey('battle_skill_slot_$index'))),
+      ];
+      expect(slots.first.left, closeTo(368, 2));
+      expect(slots.first.height, closeTo(206, 2));
+      expect(
+        slots.map((rect) => rect.width.round()).toList(),
+        orderedEquals([101, 121, 121, 101, 93, 95, 96]),
+      );
+
+      final firstSkill = find.byKey(const ValueKey('skill_cmd_1_p1'));
+      final firstFooter = tester.widget<Container>(
+        find.descendant(
+          of: firstSkill,
+          matching: find.byKey(const ValueKey('battle.skillSlipFooter')),
+        ),
+      );
+      expect((firstFooter.margin! as EdgeInsets).bottom, 18);
+
+      final pouchSlot = tester.getRect(
+        find.byKey(const ValueKey('battle_pouch_slot_0')),
+      );
+      expect(pouchSlot.size, const Size.square(92));
+      final pouchFooter = tester.getRect(
+        find.byKey(const ValueKey('battle.pouch.footerPlaque')),
+      );
+      expect(pouchFooter.width, closeTo(154, 3));
     });
 
     testWidgets('1280宽案台固定展示7个技能位与3个战备行囊位', (tester) async {
@@ -1201,7 +1275,7 @@ void main() {
       expect(nativeButton.style?.elevation?.resolve({}), 0);
       expect(
         nativeButton.style?.shape?.resolve({}),
-        isA<BeveledRectangleBorder>(),
+        isNot(isA<BeveledRectangleBorder>()),
       );
       expect(
         find.byKey(const ValueKey('battle.skillSlip.state.available')),
@@ -1420,6 +1494,30 @@ void main() {
         find.byKey(const ValueKey('battle.skillSlip.interruptLift')),
         findsOneWidget,
       );
+    });
+
+    testWidgets('同角色有多枚破招签时只强调装配顺序最前的一枚', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_break, _breakB],
+        actionPoint: 1,
+      );
+      final charging = right.first.copyWith(
+        chargingSkill: _chargeSkill,
+        chargeTicksRemaining: 2,
+      );
+
+      await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        [charging, ...right.skip(1)],
+      );
+
+      expect(
+        find.byKey(const ValueKey('battle.skillSlip.state.interrupt')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('skill_cmd_1_b2')), findsOneWidget);
     });
 
     testWidgets('敌人蓄力时保留已可破招的玩家手选角色', (tester) async {

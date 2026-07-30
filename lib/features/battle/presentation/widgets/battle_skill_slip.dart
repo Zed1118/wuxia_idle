@@ -19,6 +19,77 @@ double battleSkillSlipTilt(String skillId) {
   };
 }
 
+Path battleSkillSlipPaperPath(Rect rect) {
+  final left = rect.left;
+  final top = rect.top;
+  final right = rect.right;
+  final bottom = rect.bottom;
+  return Path()
+    ..moveTo(left + 5, top + 2)
+    ..lineTo(left + rect.width * 0.28, top + 1)
+    ..lineTo(left + rect.width * 0.56, top + 3)
+    ..lineTo(right - 6, top + 1)
+    ..lineTo(right - 2, top + 7)
+    ..lineTo(right - 4, top + rect.height * 0.22)
+    ..lineTo(right - 1, top + rect.height * 0.42)
+    ..lineTo(right - 3, top + rect.height * 0.67)
+    ..lineTo(right - 1, bottom - 8)
+    ..lineTo(right - 7, bottom - 2)
+    ..lineTo(left + rect.width * 0.68, bottom - 1)
+    ..lineTo(left + rect.width * 0.43, bottom - 3)
+    ..lineTo(left + 7, bottom - 1)
+    ..lineTo(left + 2, bottom - 7)
+    ..lineTo(left + 4, top + rect.height * 0.72)
+    ..lineTo(left + 1, top + rect.height * 0.48)
+    ..lineTo(left + 3, top + rect.height * 0.21)
+    ..close();
+}
+
+class BattleSkillSlipPaperClipper extends CustomClipper<Path> {
+  const BattleSkillSlipPaperClipper();
+
+  @override
+  Path getClip(Size size) => battleSkillSlipPaperPath(Offset.zero & size);
+
+  @override
+  bool shouldReclip(covariant BattleSkillSlipPaperClipper oldClipper) => false;
+}
+
+class BattleSkillSlipShapeBorder extends OutlinedBorder {
+  const BattleSkillSlipShapeBorder({super.side});
+
+  @override
+  EdgeInsetsGeometry get dimensions => EdgeInsets.all(side.width);
+
+  @override
+  ShapeBorder scale(double t) =>
+      BattleSkillSlipShapeBorder(side: side.scale(t));
+
+  @override
+  OutlinedBorder copyWith({BorderSide? side}) =>
+      BattleSkillSlipShapeBorder(side: side ?? this.side);
+
+  @override
+  Path getInnerPath(Rect rect, {TextDirection? textDirection}) =>
+      battleSkillSlipPaperPath(rect.deflate(side.width));
+
+  @override
+  Path getOuterPath(Rect rect, {TextDirection? textDirection}) =>
+      battleSkillSlipPaperPath(rect);
+
+  @override
+  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
+    if (side.style == BorderStyle.none || side.width == 0) return;
+    canvas.drawPath(
+      getOuterPath(rect),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = side.width
+        ..color = side.color,
+    );
+  }
+}
+
 /// 保留原生按钮的桌面交互语义，同时把外观收束成旧纸武学签。
 class BattleSkillSlipSurface extends StatelessWidget {
   const BattleSkillSlipSurface({
@@ -54,7 +125,7 @@ class BattleSkillSlipSurface extends StatelessWidget {
       children: [
         Positioned.fill(
           child: Opacity(
-            opacity: 0.20,
+            opacity: 0.32,
             child: Image.asset(
               WuxiaUi.paperBg,
               fit: BoxFit.cover,
@@ -75,20 +146,9 @@ class BattleSkillSlipSurface extends StatelessWidget {
         if (visualState == BattleSkillSlipVisualState.cooldown)
           const Positioned.fill(
             child: IgnorePointer(
-              child: DecoratedBox(
+              child: CustomPaint(
                 key: ValueKey('battle.skillSlip.inkCooldown'),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0x8A211D18),
-                      Color(0x401B1814),
-                      Colors.transparent,
-                    ],
-                    stops: [0, 0.58, 1],
-                  ),
-                ),
+                painter: _BattleSkillCooldownWashPainter(),
               ),
             ),
           ),
@@ -104,6 +164,11 @@ class BattleSkillSlipSurface extends StatelessWidget {
         child,
       ],
     );
+    final clippedContents = ClipPath(
+      key: const ValueKey('battle.skillSlipTornPaperClip'),
+      clipper: const BattleSkillSlipPaperClipper(),
+      child: contents,
+    );
     final surface = interactive
         ? ElevatedButton(
             onPressed: onPressed,
@@ -118,25 +183,28 @@ class BattleSkillSlipSurface extends StatelessWidget {
               shadowColor: Colors.transparent,
               enabledMouseCursor: SystemMouseCursors.click,
               disabledMouseCursor: SystemMouseCursors.basic,
-              shape: const BeveledRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(3)),
-              ),
+              shape: const BattleSkillSlipShapeBorder(),
             ),
-            child: contents,
+            child: clippedContents,
           )
         : Material(
             color: backgroundColor,
-            shape: BeveledRectangleBorder(
-              borderRadius: const BorderRadius.all(Radius.circular(3)),
-              side: border,
-            ),
+            shape: BattleSkillSlipShapeBorder(side: border),
             clipBehavior: Clip.antiAlias,
-            child: contents,
+            child: clippedContents,
           );
+    final glowingSurface = CustomPaint(
+      key: const ValueKey('battle.skillSlipOuterFinish'),
+      painter: _BattleSkillSlipOuterFinishPainter(
+        accent: accent,
+        highlighted: visualState == BattleSkillSlipVisualState.interrupt,
+      ),
+      child: surface,
+    );
     final slip = Transform.rotate(
       key: const ValueKey('battle.skillSlipNaturalTilt'),
       angle: tiltAngle,
-      child: SizedBox(height: height, child: surface),
+      child: SizedBox(height: height, child: glowingSurface),
     );
     final staged = visualState == BattleSkillSlipVisualState.interrupt
         ? Transform.translate(
@@ -150,6 +218,105 @@ class BattleSkillSlipSurface extends StatelessWidget {
       child: staged,
     );
   }
+}
+
+class _BattleSkillSlipOuterFinishPainter extends CustomPainter {
+  const _BattleSkillSlipOuterFinishPainter({
+    required this.accent,
+    required this.highlighted,
+  });
+
+  final Color accent;
+  final bool highlighted;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = battleSkillSlipPaperPath(Offset.zero & size);
+    if (highlighted) {
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = accent.withValues(alpha: 0.68)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 8
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7),
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFFF3D38B).withValues(alpha: 0.58)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+      );
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = const Color(0xFFE4BF72).withValues(alpha: 0.88)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.6,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(
+    covariant _BattleSkillSlipOuterFinishPainter oldDelegate,
+  ) => oldDelegate.accent != accent || oldDelegate.highlighted != highlighted;
+}
+
+class _BattleSkillCooldownWashPainter extends CustomPainter {
+  const _BattleSkillCooldownWashPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final wash = Path()
+      ..moveTo(size.width * 0.58, 2)
+      ..quadraticBezierTo(
+        size.width * 0.82,
+        size.height * 0.08,
+        size.width * 0.76,
+        size.height * 0.30,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.96,
+        size.height * 0.46,
+        size.width * 0.78,
+        size.height * 0.70,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.88,
+        size.height * 0.87,
+        size.width * 0.66,
+        size.height - 3,
+      )
+      ..lineTo(size.width - 1, size.height - 2)
+      ..lineTo(size.width - 1, 1)
+      ..close();
+    canvas.drawPath(
+      wash,
+      Paint()
+        ..color = const Color(0xFF29241E).withValues(alpha: 0.48)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.2),
+    );
+
+    final dryBrush = Paint()
+      ..color = const Color(0xFF211D18).withValues(alpha: 0.25)
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 7; i++) {
+      final x = size.width * (0.62 + i * 0.045);
+      canvas.drawLine(
+        Offset(x, 12 + i * 4),
+        Offset(x - 5, size.height - 15 - i * 5),
+        dryBrush,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BattleSkillCooldownWashPainter oldDelegate) =>
+      false;
 }
 
 class _BattleSkillQiGapPainter extends CustomPainter {
@@ -198,14 +365,7 @@ class _BattleSkillSlipFramePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final roughEdge = Path()
-      ..moveTo(3, 5)
-      ..lineTo(size.width - 5, 2)
-      ..lineTo(size.width - 2, size.height - 6)
-      ..lineTo(size.width - 7, size.height - 2)
-      ..lineTo(4, size.height - 4)
-      ..lineTo(1.5, 8)
-      ..close();
+    final roughEdge = battleSkillSlipPaperPath(Offset.zero & size);
     canvas.drawPath(
       roughEdge,
       Paint()
@@ -248,6 +408,33 @@ class _BattleSkillSlipFramePainter extends CustomPainter {
       Offset(size.width - 9, size.height - 18),
       corner,
     );
+
+    final fiber = Paint()
+      ..color = const Color(0xFF5D4D38).withValues(alpha: 0.065)
+      ..strokeWidth = 0.55
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 14; i++) {
+      final y = 13.0 + i * ((size.height - 26) / 14);
+      final start = 8.0 + (i % 4) * 3.0;
+      final length = size.width * (0.22 + (i % 3) * 0.09);
+      canvas.drawLine(
+        Offset(start, y),
+        Offset(
+          (start + length).clamp(0, size.width - 8),
+          y + (i.isEven ? 1 : -1),
+        ),
+        fiber,
+      );
+    }
+
+    final fleck = Paint()
+      ..color = const Color(0xFF4C3F30).withValues(alpha: 0.12)
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 36; i++) {
+      final x = 8.0 + ((i * 29) % 83) / 83 * (size.width - 16);
+      final y = 9.0 + ((i * 47) % 97) / 97 * (size.height - 18);
+      canvas.drawCircle(Offset(x, y), i % 5 == 0 ? 0.6 : 0.325, fleck);
+    }
   }
 
   @override

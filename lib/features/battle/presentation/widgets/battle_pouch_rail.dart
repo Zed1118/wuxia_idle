@@ -22,7 +22,7 @@ class BattlePouchRailSurface extends StatelessWidget {
       width: width,
       height: height,
       padding: const EdgeInsets.all(4),
-      decoration: const BoxDecoration(color: Color(0xB3131210)),
+      decoration: const BoxDecoration(color: Color(0xB31B1A17)),
       child: Container(
         key: const ValueKey('battle.pouch.woodCase'),
         padding: compact
@@ -32,10 +32,10 @@ class BattlePouchRailSurface extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF3C2C20), Color(0xFF251B15), Color(0xFF332419)],
+            colors: [Color(0xFF2B2923), Color(0xFF1D1D1A), Color(0xFF29261F)],
             stops: [0, 0.58, 1],
           ),
-          border: Border.all(color: const Color(0xFF8A6945), width: 1.2),
+          border: Border.all(color: const Color(0xFF756349), width: 1.2),
           boxShadow: const [
             BoxShadow(
               color: Colors.black54,

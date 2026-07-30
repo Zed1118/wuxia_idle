@@ -16,16 +16,20 @@ abstract final class BattleLayoutTokens {
   static const double headerSealGap = 10;
   static const double commandDeskMinHeight = 172;
   static const double commandDeskMaxHeight = 241;
-  static const double commandDeskHorizontalPadding = 38;
+  static const double commandDeskHorizontalPadding = 48;
+  static const double commandDeskRightPadding = 51;
   static const double commandDeskVerticalPadding = 9;
-  static const double focusRailFraction = 0.16;
+  static const double focusRailFraction = 0.1585;
   static const double pouchRailFraction = 0.20;
-  static const double actorChipHeight = 30;
+  static const double actorChipHeight = 40;
   static const double skillSlotHeight = 150;
-  static const double skillSlotGap = 22;
-  static const double sectionGap = 22;
+  static const double skillSlotGap = 26;
+  static const double focusDividerGap = 20;
+  static const double dividerSkillGap = 32;
+  static const double skillPouchGap = 31;
+  static const List<int> sampleSkillFlex = [100, 120, 120, 100, 92, 94, 95];
   static const double sectionDividerHeight = 148;
-  static const double pouchSlotSize = 64;
+  static const double pouchSlotSize = 92;
   static const double pouchSlotGap = 8;
   static const double stageHorizontalPadding = 10;
   static const double stageVerticalPadding = 0;
@@ -64,13 +68,16 @@ final class BattleLayoutMetrics {
       viewport.width * BattleLayoutTokens.pouchRailFraction;
   double get skillRailWidth =>
       viewport.width -
-      BattleLayoutTokens.commandDeskHorizontalPadding * 2 -
-      BattleLayoutTokens.sectionGap * 3 -
+      BattleLayoutTokens.commandDeskHorizontalPadding -
+      BattleLayoutTokens.commandDeskRightPadding -
+      BattleLayoutTokens.focusDividerGap -
+      BattleLayoutTokens.dividerSkillGap -
+      BattleLayoutTokens.skillPouchGap -
       1 -
       focusRailWidth -
       pouchRailWidth;
   double get sampleSkillSlotHeight =>
-      (commandDeskHeight * 0.88).clamp(146.0, 200.0);
+      (commandDeskHeight * 0.88).clamp(146.0, 206.0);
   double get sampleSectionDividerHeight =>
       (commandDeskHeight * 0.88).clamp(144.0, 200.0);
   double get stageTopSafetyInset =>

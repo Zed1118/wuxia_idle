@@ -56,7 +56,7 @@ void main() {
           );
           expect(
             metrics.skillRailWidth / viewport.width,
-            inInclusiveRange(0.51, 0.55),
+            inInclusiveRange(0.49, 0.55),
           );
           expect(
             metrics.pouchRailWidth / viewport.width,
@@ -111,6 +111,19 @@ void main() {
         inInclusiveRange(699, 701),
       );
       expect(metrics.commandDeskHeight, inInclusiveRange(240, 242));
+    });
+
+    test('1672×941 样板案台使用非对称边距、206px 名帖/纸签与三段间距', () {
+      final metrics = BattleLayoutMetrics.resolve(const Size(1672, 941));
+
+      expect(BattleLayoutTokens.commandDeskHorizontalPadding, 48);
+      expect(BattleLayoutTokens.commandDeskRightPadding, 51);
+      expect(BattleLayoutTokens.focusDividerGap, 20);
+      expect(BattleLayoutTokens.dividerSkillGap, 32);
+      expect(BattleLayoutTokens.skillPouchGap, 31);
+      expect(BattleLayoutTokens.skillSlotGap, 26);
+      expect(BattleLayoutTokens.actorChipHeight, 40);
+      expect(metrics.sampleSkillSlotHeight, 206);
     });
 
     test('矮视口为脚底放大立绘预留顶部安全距，黄金视口不偏移', () {

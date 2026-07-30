@@ -62,7 +62,7 @@
 
 ## 当前恢复点
 
-- 状态：95% 返修已完成，等待分支交付。
+- 状态：底部状态栏 / 七技能签加严复刻已完成，等待分支交付。
 - 根因证据：`BattleSceneBackground` 收到暖色 `battle_mountain_pass_stage_v2.png`
   后，主动替换成 `battle_mountain_pass_stage_cool_v3.png`，并再套
   `_mainlineSceneColorGrade`；当前战场饱和度约为样板一半，是最大画风偏差源。
@@ -95,3 +95,17 @@
   最终相关测试族共 149 项通过（visual route / config / paused / pouch / layout /
   geometry / background / character avatar / command console）。
 - 阻塞项：无。
+
+## 底部案台加严复刻（2026-07-30）
+
+- 1672×941 不再使用等分技能按钮：状态栏 x=48、七签起点 x≈368、行囊起点
+  x≈1287，七签按样板的 100/120/120/100/92/94/95 宽度节奏分配。
+- 状态名帖高度恢复为 40/36/36，真气摘要固定到底部；技能签固定约 206px，
+  使用真实破边路径、旧纸纤维、朱印、底部耗气栏和样板式冷却墨洗。
+- 同角色有多枚破招技时，只强调装配顺序最前的推荐签，避免样板中「断流」之外
+  的纸签同时泛金；其余破招签仍保留能力和朱印，不改战斗规则。
+- 行囊黄金视口使用 92px 锦格和约 154px 底牌；较矮视口按可用高度收束，
+  不牺牲 1280×720 / 1440×900 的零溢出门禁。
+- 新增黄金尺寸硬几何与多破招强调态回归测试；本轮相关测试 102 项通过。
+  最终叠图：
+  `build/visual_acceptance/sample_replica/status-skill-final/bottom-stacked.png`。
