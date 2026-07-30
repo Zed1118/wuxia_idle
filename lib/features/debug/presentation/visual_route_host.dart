@@ -641,6 +641,7 @@ Future<Widget> buildVisualTarget(
         allowPlayerIntervention: true,
         startPaused: true,
         seed: battleV2VisualSeed,
+        previewHeaderControls: true,
         previewPouchItems: [
           BattlePouchPreviewItem(
             assetPath: WuxiaUi.battleSamplePouchGourd,

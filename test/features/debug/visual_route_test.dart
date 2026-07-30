@@ -509,6 +509,7 @@ void main() {
       );
       expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,点选随时干预');
       expect(launcher.seed, battleV2VisualSeed);
+      expect(launcher.previewHeaderControls, isTrue);
     });
 
     test('battle_tap_live → 黄金样板敌方立绘与蓄势 2 拍固定', () async {

@@ -259,7 +259,7 @@ class BattleHeaderIconButton extends StatelessWidget {
               style: const TextStyle(
                 fontFamily: BattleTypography.displayFamily,
                 fontFamilyFallback: BattleTypography.displayFallback,
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
               ),
@@ -347,7 +347,7 @@ class BattleModePill extends StatelessWidget {
                 color: Color(0xFFCBB992),
                 fontFamily: BattleTypography.displayFamily,
                 fontFamilyFallback: BattleTypography.displayFallback,
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
             ),

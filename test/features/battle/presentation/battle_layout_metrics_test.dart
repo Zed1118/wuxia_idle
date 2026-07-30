@@ -101,5 +101,16 @@ void main() {
         );
       }
     });
+
+    test('1672×941 黄金样板分界落在 y=700±1', () {
+      final metrics = BattleLayoutMetrics.resolve(const Size(1672, 941));
+
+      expect(metrics.headerHeight, 60);
+      expect(
+        metrics.headerHeight + metrics.battlefieldHeight,
+        inInclusiveRange(699, 701),
+      );
+      expect(metrics.commandDeskHeight, inInclusiveRange(240, 242));
+    });
   });
 }

@@ -9,6 +9,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'avatar_status_tags.dart';
 import 'battle_layout_tokens.dart';
+import 'battle_stage_geometry.dart';
 import 'battle_standee_fusion.dart';
 import 'battle_typography_tokens.dart';
 import 'countdown_ring.dart';
@@ -569,19 +570,21 @@ class StageCharacterStatusOverlay extends StatelessWidget {
     required this.battleState,
     required this.width,
     required this.height,
+    this.teamSize = 1,
   });
 
   final BattleCharacter character;
   final BattleState? battleState;
   final double width;
   final double height;
+  final int teamSize;
 
   @override
   Widget build(BuildContext context) {
-    final portraitHeight = height * 0.91;
-    final footY = portraitHeight * _stageStandeeAnchorFootFraction;
-    final insetFraction = switch (character.slotIndex) {
-      0 => 0.25,
+    final insetFraction = switch ((character.isBoss, character.slotIndex)) {
+      (true, _) => 0.32,
+      (false, 0) => 0.25,
+      (false, 2) => 0.19,
       _ => 0.22,
     };
     final borderColor = character.isBoss
@@ -591,7 +594,14 @@ class StageCharacterStatusOverlay extends StatelessWidget {
     return Positioned(
       left: width * insetFraction,
       right: width * insetFraction,
-      top: (footY + 3).clamp(0.0, height - 34),
+      top:
+          (height *
+                  battleStageStatusVerticalFraction(
+                    character.teamSide,
+                    character.slotIndex,
+                    teamSize,
+                  ))
+              .clamp(0.0, height - 34),
       child: Opacity(
         opacity: character.isAlive ? 1 : 0.45,
         child: Stack(
@@ -644,7 +654,7 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: WuxiaUi.paper,
-                      fontSize: BattleTypography.t5,
+                      fontSize: BattleTypography.t4,
                       fontWeight: FontWeight.w600,
                       height: 1,
                       shadows: [Shadow(color: Colors.black87, blurRadius: 1)],
@@ -657,7 +667,7 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                     height: BattleLayoutTokens.stageStatusHpHeight,
                     fillColorOverride: WuxiaUi.jiang,
                     trackColorOverride: WuxiaUi.battleStatusTrack,
-                    labelFontSize: BattleTypography.t5,
+                    labelFontSize: 10,
                     tightLabel: true,
                   ),
                   const SizedBox(height: 1),
@@ -668,7 +678,7 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                     isInternalForce: true,
                     fillColorOverride: WuxiaUi.qing,
                     trackColorOverride: WuxiaUi.battleStatusTrack,
-                    labelFontSize: BattleTypography.t5,
+                    labelFontSize: 10,
                     tightLabel: true,
                   ),
                 ],
@@ -689,7 +699,7 @@ class _BossInkAuraPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final glow = Paint()
-      ..color = WuxiaUi.gold.withValues(alpha: 0.13)
+      ..color = WuxiaUi.gold.withValues(alpha: 0.20)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 5
       ..strokeCap = StrokeCap.round
@@ -708,13 +718,13 @@ class _BossInkAuraPainter extends CustomPainter {
     );
 
     final strand = Paint()
-      ..color = const Color(0xFFC5A86B).withValues(alpha: 0.42)
+      ..color = const Color(0xFFC5A86B).withValues(alpha: 0.65)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.15
       ..strokeCap = StrokeCap.round
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.45);
     final faintStrand = Paint()
-      ..color = const Color(0xFFD2BA84).withValues(alpha: 0.23)
+      ..color = const Color(0xFFD2BA84).withValues(alpha: 0.38)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8
       ..strokeCap = StrokeCap.round;
@@ -1479,17 +1489,22 @@ typedef _StageStandeeOpticalProfile = ({
 _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
   String? path,
 ) => switch (path) {
-  WuxiaUi.battleFounderFallback => (scale: 1.055, horizontalShiftFraction: 0),
+  WuxiaUi.battleFounderFallback => (scale: 1.40, horizontalShiftFraction: 0),
   WuxiaUi.battleFirstDiscipleFallback => (
-    scale: 1,
+    scale: 1.18,
     horizontalShiftFraction: 0.04,
   ),
+  WuxiaUi.battleSecondDiscipleFallback => (
+    scale: 1.12,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleHiddenElderStandee => (scale: 1.14, horizontalShiftFraction: 0),
   WuxiaUi.battleBanditBladeStandee => (
-    scale: 1.18,
+    scale: 1.33,
     horizontalShiftFraction: 0.015,
   ),
   WuxiaUi.battleBanditArcherStandee => (
-    scale: 1.045,
+    scale: 1.28,
     horizontalShiftFraction: 0,
   ),
   WuxiaUi.battleYoungRuffianStandee => (

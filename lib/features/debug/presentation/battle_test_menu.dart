@@ -1342,6 +1342,7 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   final int? previewPendingCharacterId;
   final String? previewPendingSkillId;
   final List<BattlePouchPreviewItem> previewPouchItems;
+  final bool previewHeaderControls;
 
   /// 透传给 BattleScreen.startPaused(默认 false 现有用法不变);true 时起手暂停,
   /// 战斗冻结 seed 初态 + 顶栏出「单步」键供验收者逐步推进操作点选。
@@ -1362,6 +1363,7 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
     this.previewPendingCharacterId,
     this.previewPendingSkillId,
     this.previewPouchItems = const [],
+    this.previewHeaderControls = false,
     this.startPaused = false,
     this.readyTarget,
     this.onTargetReady,
@@ -1411,9 +1413,13 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
       allowPlayerIntervention: widget.allowPlayerIntervention,
       startPaused: widget.startPaused,
       previewPouchItems: widget.previewPouchItems,
+      previewHeaderControls: widget.previewHeaderControls,
     ),
     previewPendingCharacterId: widget.previewPendingCharacterId,
     previewPendingSkillId: widget.previewPendingSkillId,
+    onSurrender: widget.previewHeaderControls
+        ? () => Navigator.of(context).maybePop()
+        : null,
     onBattleEnd: () => Navigator.of(context).pop(),
   );
 }

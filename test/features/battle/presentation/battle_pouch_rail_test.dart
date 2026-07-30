@@ -90,9 +90,9 @@ void main() {
       BattlePouchPreviewItem(assetPath: 'assets/b.png', count: 2),
     ];
     await tester.pumpWidget(
-      MediaQuery(
-        data: const MediaQueryData(size: Size(1280, 720)),
-        child: const MaterialApp(
+      const MediaQuery(
+        data: MediaQueryData(size: Size(1280, 720)),
+        child: MaterialApp(
           home: Scaffold(
             body: Align(
               alignment: Alignment.bottomRight,

@@ -31,11 +31,12 @@ void main() {
       expect(leftSecond.dx, lessThan(leftThird.dx));
       expect(rightMain.dx, lessThan(rightSecond.dx));
       expect(rightSecond.dx, lessThan(rightThird.dx));
-      expect(leftMain.dx, inInclusiveRange(0.10, 0.13));
-      expect(rightMain.dx, inInclusiveRange(0.63, 0.69));
-      expect(leftMain.dy, inInclusiveRange(0.62, 0.66));
-      expect(leftThird.dy, inInclusiveRange(0.41, 0.45));
-      expect(rightMain.dy, inInclusiveRange(0.44, 0.48));
+      expect(leftMain, const Offset(0.11, 0.772));
+      expect(leftSecond, const Offset(0.283, 0.592));
+      expect(leftThird, const Offset(0.372, 0.436));
+      expect(rightMain, const Offset(0.669, 0.521));
+      expect(rightSecond, const Offset(0.79, 0.601));
+      expect(rightThird, const Offset(0.908, 0.615));
     });
 
     test('1v1/2v2 左右同序槽位严格镜像', () {
@@ -83,6 +84,31 @@ void main() {
           lightFoot.reduce((a, b) => a < b ? a : b);
       expect(lightFootSpan, greaterThan(standardSpan));
     });
+  });
+
+  test('3v3 样板状态签独立压在人物下裳,不跟随透明画布脚底漂移', () {
+    expect(battleStageStatusVerticalFraction(0, 0, 3), 0.68);
+    expect(battleStageStatusVerticalFraction(0, 1, 3), 0.65);
+    expect(battleStageStatusVerticalFraction(0, 2, 3), 0.84);
+    expect(battleStageStatusVerticalFraction(1, 0, 3), 0.705);
+    expect(battleStageStatusVerticalFraction(1, 1, 3), 0.736);
+    expect(battleStageStatusVerticalFraction(1, 2, 3), 0.808);
+    expect(battleStageStatusVerticalFraction(0, 0, 2), 0.865);
+  });
+
+  test('样板左前景主位允许袍角越过槽位底线,其他站位不越界', () {
+    expect(battleStageBottomOverflowFraction(0, 0, 3), 0.06);
+    expect(battleStageBottomOverflowFraction(0, 1, 3), 0);
+    expect(battleStageBottomOverflowFraction(1, 0, 3), 0);
+    expect(
+      battleStageBottomOverflowFraction(
+        0,
+        0,
+        3,
+        mode: BattleStageLayoutMode.lightFoot,
+      ),
+      0,
+    );
   });
 
   test('1v1/2v2 自动放大主体但不反转三人阵列景深', () {

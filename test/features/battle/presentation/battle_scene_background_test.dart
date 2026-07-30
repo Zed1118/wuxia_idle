@@ -242,6 +242,14 @@ void main() {
       assetFramingForScene(WuxiaUi.battleMountainPassStage).alignment,
     );
     expect(
+      tester
+          .widget<WuxiaImage>(
+            find.byKey(const ValueKey('battle_scene_mainline_asset')),
+          )
+          .fit,
+      BoxFit.fill,
+    );
+    expect(
       find.byKey(const ValueKey('battle_scene_tower_color_grade')),
       findsNothing,
     );

@@ -258,7 +258,7 @@ void main() {
       tester
           .getSize(find.byKey(const ValueKey('battle.stageStatusInkRubbing')))
           .height,
-      lessThanOrEqualTo(34),
+      lessThanOrEqualTo(42),
     );
     expect(
       tester
@@ -425,15 +425,24 @@ void main() {
     final banditArcher = await opticalTransformFor(
       'assets/enemies/killer_b.png',
     );
+    final secondDisciple = await opticalTransformFor(
+      'assets/characters/second_disciple.png',
+    );
+    final hiddenElder = await opticalTransformFor(
+      'assets/enemies/qingshan_main.png',
+    );
     final umbrellaBoss = await opticalTransformFor(
       'assets/enemies/umbrella.png',
     );
 
-    expect(founder.$1, closeTo(1.055, 0.001));
+    expect(founder.$1, closeTo(1.40, 0.001));
     expect(firstDisciple.$2, greaterThan(0));
-    expect(banditBlade.$1, closeTo(1.18, 0.001));
+    expect(firstDisciple.$1, closeTo(1.18, 0.001));
+    expect(secondDisciple.$1, closeTo(1.12, 0.001));
+    expect(hiddenElder.$1, closeTo(1.14, 0.001));
+    expect(banditBlade.$1, closeTo(1.33, 0.001));
     expect(banditBlade.$3, greaterThan(0));
-    expect(banditArcher.$1, closeTo(1.045, 0.001));
+    expect(banditArcher.$1, closeTo(1.28, 0.001));
     expect(umbrellaBoss.$1, closeTo(0.81, 0.001));
   });
 

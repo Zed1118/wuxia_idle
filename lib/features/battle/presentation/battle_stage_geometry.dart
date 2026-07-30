@@ -22,8 +22,16 @@ Offset battleStageAnchor(
       mode != BattleStageLayoutMode.lightFoot &&
       mode != BattleStageLayoutMode.innerDemon) {
     final anchors = teamSide == 0
-        ? const [Offset(0.12, 0.64), Offset(0.27, 0.59), Offset(0.38, 0.43)]
-        : const [Offset(0.66, 0.46), Offset(0.80, 0.58), Offset(0.90, 0.62)];
+        ? const [
+            Offset(0.11, 0.772),
+            Offset(0.283, 0.592),
+            Offset(0.372, 0.436),
+          ]
+        : const [
+            Offset(0.669, 0.521),
+            Offset(0.79, 0.601),
+            Offset(0.908, 0.615),
+          ];
     return anchors[normalizedSlot];
   }
 
@@ -48,6 +56,36 @@ Offset battleStageAnchor(
         };
   final anchor = left[normalizedSlot];
   return teamSide == 0 ? anchor : Offset(1 - anchor.dx, anchor.dy);
+}
+
+/// 样板的状态签刻意压在人物下裳，而不是跟随每张透明原图的脚底留白。
+///
+/// 仅标准 3v3 使用非对称校准；1v1/2v2 与特殊舞台继续沿公共脚底线。
+double battleStageStatusVerticalFraction(
+  int teamSide,
+  int slotIndex,
+  int teamSize,
+) {
+  if (teamSize != 3) return 0.865;
+  const left = [0.68, 0.65, 0.84];
+  const right = [0.705, 0.736, 0.808];
+  final slot = slotIndex.clamp(0, 2);
+  return (teamSide == 0 ? left : right)[slot];
+}
+
+double battleStageBottomOverflowFraction(
+  int teamSide,
+  int slotIndex,
+  int teamSize, {
+  BattleStageLayoutMode mode = BattleStageLayoutMode.standard,
+}) {
+  if (mode == BattleStageLayoutMode.standard &&
+      teamSize == 3 &&
+      teamSide == 0 &&
+      slotIndex == 0) {
+    return 0.06;
+  }
+  return 0;
 }
 
 /// 后位略缩小，形成前后景深度；1v1/2v2 时两人都保持主体尺寸。

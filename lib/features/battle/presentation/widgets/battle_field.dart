@@ -362,6 +362,7 @@ class _BattleFieldState extends State<BattleField> {
                             battleState: state,
                             width: layout.width,
                             height: layout.height,
+                            teamSize: layout.slot.teamSize,
                           ),
                         ],
                       ),
@@ -410,9 +411,17 @@ class _StageSlotLayout {
       0.0,
       maxWidth - width,
     );
+    final bottomOverflow =
+        height *
+        battleStageBottomOverflowFraction(
+          slot.teamSide,
+          slot.slotIndex,
+          slot.teamSize,
+          mode: slot.stageLayout,
+        );
     final top = (slot.anchor.dy * maxHeight - height / 2).clamp(
       0.0,
-      maxHeight - height,
+      maxHeight - height + bottomOverflow,
     );
     return _StageSlotLayout(
       slot: slot,

@@ -6,16 +6,16 @@ import 'dart:ui';
 /// widget 中散改魔法数。
 abstract final class BattleLayoutTokens {
   static const double headerFraction = 0.065;
-  static const double commandDeskFraction = 0.25;
+  static const double commandDeskFraction = 0.256;
   static const double headerMinHeight = 44;
   static const double headerMaxHeight = 60;
   static const double headerHorizontalPadding = 34;
   static const double headerRightPadding = 70;
-  static const double headerSealMinWidth = 44;
-  static const double headerSealHeight = 36;
-  static const double headerSealGap = 3;
+  static const double headerSealMinWidth = 46;
+  static const double headerSealHeight = 42;
+  static const double headerSealGap = 10;
   static const double commandDeskMinHeight = 172;
-  static const double commandDeskMaxHeight = 230;
+  static const double commandDeskMaxHeight = 241;
   static const double commandDeskHorizontalPadding = 38;
   static const double commandDeskVerticalPadding = 9;
   static const double focusRailFraction = 0.16;
@@ -34,8 +34,8 @@ abstract final class BattleLayoutTokens {
   static const double stageWidthFraction = 0.19;
   static const double stageHeightFraction = 0.78;
   static const double bossStageScale = 1.16;
-  static const double stageStatusHpHeight = 8;
-  static const double stageStatusQiHeight = 7;
+  static const double stageStatusHpHeight = 11;
+  static const double stageStatusQiHeight = 10;
   static const double emptySkillPaperOpacity = 0.30;
   static const double emptySkillTextureOpacity = 0.10;
 }

@@ -24,6 +24,7 @@ class BattleScreenPlaybackConfig {
     this.autoStartOnMount = false,
     this.firstClearShowcase = false,
     this.previewPouchItems = const [],
+    this.previewHeaderControls = false,
   });
 
   const BattleScreenPlaybackConfig.sweep()
@@ -34,7 +35,8 @@ class BattleScreenPlaybackConfig {
       readablePacing = false,
       autoStartOnMount = true,
       firstClearShowcase = false,
-      previewPouchItems = const [];
+      previewPouchItems = const [],
+      previewHeaderControls = false;
 
   final bool autoStart;
   final bool allowPlayerIntervention;
@@ -46,6 +48,10 @@ class BattleScreenPlaybackConfig {
   /// Debug/visual preview only. Empty by default so production battles never
   /// imply that an item is equipped before the pouch has real domain wiring.
   final List<BattlePouchPreviewItem> previewPouchItems;
+
+  /// Debug golden-frame only: keep playback frozen while presenting the
+  /// production "暂停 / 撤退" control set instead of "继续 / 单步".
+  final bool previewHeaderControls;
 
   /// 首通脚本化展示帧(玩法评估 §十三 #2):开局亮相/首技慢镜/敌方首次蓄力
   /// 提示/破招题字强化,整场各一次,纯表现层。主线入口与 readablePacing 同

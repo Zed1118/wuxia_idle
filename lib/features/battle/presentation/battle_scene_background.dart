@@ -55,11 +55,10 @@ class BattleSceneBackground extends StatelessWidget {
         resolvedStyle == BattleSceneBackgroundStyle.boss ||
         p?.contains('battle_mountain_pass_stage') == true;
     final resolvedAsset = hasImage
-        ? _resolvedBackgroundAsset(
-            p,
-            isTowerScene: isTowerScene,
-          )
+        ? _resolvedBackgroundAsset(p, isTowerScene: isTowerScene)
         : null;
+    final preserveFullMountainPassFrame =
+        resolvedAsset == WuxiaUi.battleMountainPassStage;
     final profile = _SceneDepthProfile.resolve(path: p, style: resolvedStyle);
     final vignetteAlpha = hasImage
         ? profile.vignetteAlpha * profile.imageVignetteFactor
@@ -90,7 +89,7 @@ class BattleSceneBackground extends StatelessWidget {
                 : isMountainPassScene
                 ? const ValueKey('battle_scene_mainline_asset')
                 : null,
-            fit: BoxFit.cover,
+            fit: preserveFullMountainPassFrame ? BoxFit.fill : BoxFit.cover,
             alignment: assetFramingForScene(resolvedAsset).alignment,
             errorBuilder: (_, _, _) => const SizedBox.shrink(),
           ),
@@ -173,10 +172,7 @@ const _towerSceneColorGrade = ColorFilter.matrix(<double>[
   0,
 ]);
 
-String _resolvedBackgroundAsset(
-  String path, {
-  required bool isTowerScene,
-}) {
+String _resolvedBackgroundAsset(String path, {required bool isTowerScene}) {
   if (isTowerScene && path.contains('battle_innerrealm.png')) {
     return WuxiaUi.battleInnerRealmCool;
   }
@@ -325,7 +321,7 @@ class _SceneDepthProfile {
           groundAlpha: 0.22,
           glowAlpha: 0.13,
           vignetteAlpha: 0.42,
-          imageScrim: Color(0x212D2420),
+          imageScrim: Color(0x082D2420),
           imageMistIntensity: 0.16,
           imageGroundIntensity: 0.32,
           imageVignetteFactor: 0.42,
