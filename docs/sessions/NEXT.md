@@ -1,60 +1,57 @@
 # 新会话开局提示词
 
-**交接时间：** 2026-07-30 03:0x · **代码态锚点：** `09c44486`（main 未动）
-
-> 夜批产出全部落在 **4 条 draft PR / 候选分支**上，`main` 一行未改。
-> 开局自验：`git rev-parse --short HEAD` 应为 `09c44486`；`git diff --stat 09c44486..HEAD -- lib data test` 应为空。
+**交接时间：** 2026-07-31 16:01 · **HEAD：** `ae237056`（已 push，与 origin/main 同步）
 
 ---
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
-夜批（2026-07-30 00:20–03:0x，用户睡眠期间自主推进）产出 **4 条 draft PR 待人工挑合**。
-本批是 1.0 打磨期验收线批，**零主线内容改动、零数值改动**。
+上一会话合掉了夜批四 PR + 自做三 PR（B3 立绘自适应融合 / C5 行囊中性化+桌面焦点 / F2 证据订正），
+并评审 codex 战斗样板复刻批（R1 82 分 → 派单返修一轮 → R2 98/100）。
+main 全绿且干净；唯一在途是 codex 复刻分支，未推未合，等合并决策。
 
 开局动作：
-1. 读 PROGRESS.md 顶两段（2026-07-30 夜批 / 早批 Ch20·Ch21 目检）
-2. 读 `docs/handoff/night_batch_closeout_2026-07-30.md`（**自主决策清单在 §二，7 条逐条可推翻**）
-3. `git fetch --prune && git worktree list`（夜批留 4 个 worktree，清理指引见 handoff §六）
+1. 读 PROGRESS.md 顶段 2026-07-30「用户拍板『按推荐执行』批」
+2. 读 `docs/sessions/2026-07-31_1601_打磨批与复刻评审.md`
+3. `git pull --rebase --autostash`
 4. 选读 memory：`reference_anti_hallucination`（固定）
+   + `feedback_codex_worktree_dispatch_sandbox`（本次新增·派单到 worktree 的沙箱坑）
+   + `feedback_golden_frame_hides_viewport_defect`（本次新增·黄金帧掩盖真实视口缺陷）
    + `feedback_visual_acceptance`（视觉验收 SOP）
-   + `feedback_measure_from_config_not_render`（B3 评估方法学）
-   + `feedback_backlog_premise_experiment_on_clean_tree`（本夜白做一段的教训邻域）
+   + `feedback_visual_score_first_pass_underestimate`（评分别系统性低估）
+   + `feedback_night_batch_dispatch_protocol`（派单收账以 git 为唯一真相源）
 
-【环境快照】（夜批实测，非转抄）
-- main 仍 `09c44486` **未动**；4 条分支均基于同一基线、文件不重叠
-- **#101** `night-lunjian-art` — 论剑后人立绘修复（1 图 + 1 段注释）
-- **#102** `night-b3-eval` — B3 评估文档（零生产改动）
-- **#103** `night-closeout` — 交接 + 全主线目检报告 + PROGRESS（纯文档）
-- **#100** `worktree-night-desktop-semantics` — 桌面语义（10 生产文件 + 4 测试，面最大）
-- #100 全量 **4734 pass / 0 fail EXIT=0**（基线 4719 + 新增 15）· analyze 0 · 破坏证红 ×2
-- #101 targeted 4 文件逐个 EXIT=0 · 真机战斗屏复验 · 双向破坏证红
-- 真机战斗屏目检首次全覆盖：主线 **105/105** + 非主线 **48**（塔 30/轻功 5/群战 5/心魔镜像 1）= **153 关**，除已修的论剑后人外**零缺陷、零截图失败**
-- **battle-ui 遗留 F2 已解**：原判「visual route 冻结静态帧、`--wait` 不推进」被证伪——根因是 `autoStepInitialDelay` 为 60s 而当初只等 14–23s；改 `--wait 75/95` 实测落到节拍 6/11，配方 `--wait ≈ 60 + 4×N`
-
-【先拍板（挡住后续）】
-| # | 决策项 | 选项 | 推荐 |
-|---|--------|------|------|
-| 1 | 四条 PR 合不合、按什么顺序 | **A** 全合（#101→#102→#103→#100，面从小到大）/ **B** 只合 #101+#102+#103，#100 单独细审 / **C** 逐条 review 再定 | **A** |
-| 2 | battle-ui B3 怎么处置 | **A** 不做（承认高反差是有意风格）/ **B** 立绘侧自适应融合（零触背景美术）/ **C** 全局加强融合 / **D** 原方案改背景色温矩阵 | **B** — 证据见 #102，D 已被实测证伪 |
-| 3 | 自动聚焦按钮的焦点落点 | **A** 桌面端钉 `alwaysTraditional`（一行全局）/ **B** 不改 | **A** — 否则确认弹窗按回车前看不出落点 |
-| 4 | 送关旧部白布动势 | **A** 再派一轮返修 / **B** 不改（语义已达成） | **B** — 动势属锦上添花，不值单独一轮 |
+【环境快照】（2026-07-31 主 checkout 实测，非转抄）
+- HEAD `ae237056`（本会话 main 上 4 commit：3 条 merge + 1 条 handoff，**已全部 push**）
+- 主 checkout `flutter analyze --no-pub` **EXIT=0 · No issues**
+- 主 checkout 全量 **4762 pass / 0 fail · EXIT=0**（= 合并前 4734 + B3 新增 16 + C5 新增 12）
+- worktree：主 checkout + `codex-battle-ui-sample-replica`（**待合交付物，非孤儿**）
+- 分支：本地 `main` + `codex/battle-ui-sample-replica`（20 commit · tip `[READY]` · 干净 · 纯本地）；远端只剩 `main`
+- codex 分支我已独立验证：全量 **4779/0** · analyze 0 · 三视口原生截图零 overflow · 四条硬约束未违反
 
 【下波候选】
-| # | 任务 | 模型 | 时长 | 备注 |
-|---|------|------|------|------|
-| 1 | 合并夜批 PR + 清 4 个 worktree（推荐） | opus high | ~40min | 先做，否则后续都在旧基线上 |
-| 2 | B3 选项 B 实装（若拍板做） | opus **xhigh** | ~2h | 按场景亮度自适应 + 暗场景钳下限，须先补量塔/心魔样本 |
-| 3 | C5 行囊三格处置（slot 0/1 写死显示两个真实道具图标=假游戏状态） | opus high | ~40min | 证据见 #102 追加节；改中性占位或隐藏 |
-| 4 | F2 补「战斗中/特效帧」证据图（既已可做） | opus high | ~40min | 配方已给；断魂庄/远征仍无 audit 路由待补 |
+
+| # | 任务 | 模型 | 预估时长 | 备注 |
+|---|------|------|----------|------|
+| 1 | 推 codex 分支开 PR → CI 复跑 → 合并（推荐） | opus high | ~30min | 唯一在途交付物，已本地验全绿，只差 CI 独立背书 |
+| 2 | 复刻批剩余 2 分：顶栏 Tab/tooltip 走查取证 | opus high | ~40min | 98→100 的最后两分，需真机键盘走查 |
+| 3 | 断魂庄 / 远征补 audit 路由 | opus high | ~1h | 解跨多轮挂账，同时补齐视觉验收覆盖面 |
+| 4 | B3 观感真人拍方向后调档 | opus high | ~20min | 只动 3 个常量，门禁测守边界；需你先看实拍图 |
 
 【硬约束沿用】
-- **codex 自报一律不可信**：本夜它两轮返修都漏报了 113 个绿边像素，规格/目检必须自己复测
-- **加自动化判据前先量存量分布**：本夜「双脚共面」判据就是量完才发现不具判别力而放弃的
-- **查到异常先翻 `BACKLOG.md`**：本夜白做了 25 分钟重扫一个已拍板条目
-- **判「键盘不可达」必须查同屏有无别的键盘可达控件**承载同一操作，不能只查该 widget 有无键盘处理器
+- **派 codex 到 worktree 必须 `--add-dir` 覆盖主仓 `.git`**：worktree 元数据在主仓 `.git/worktrees/` 下，
+  只给 `-s workspace-write` 会让它活全干完却提不了 commit（本次实录）
+- **派视觉单必须钉「在 1280×720 复拍」**：codex 只对样板黄金尺寸自验，缺陷会被掩盖
+  （本次冷却签遮字在 1672 最不明显、720p 最严重）
+- **§8.3 判就绪须 tip 前缀 + worktree 干净两条同时看**：只扫 `[READY]` 会撞上陈标记
 - 不动 numbers.yaml / GDD.md / CLAUDE.md / data_schema.md（改前 ask）
 
+【防幻觉守则】
+- 本提示词【环境快照】里的数字是上一会话实测的快照；新会话改动代码后**必须重新实测**，禁直接转抄。
+- 报「完成/已修复/0 引用/全绿」前必跑验证并贴输出，launch ≠ 成功。
+- 引用代码现 grep/codegraph 查带 file:line；不确定写「不知道」，不凭记忆硬答。
+- 完整守则见 memory `reference_anti_hallucination`。
+
 【先报告】
-读完上述清单后：1. 报四条 PR 的差异面与相互冲突情况（以 `merge-tree` 复算为准，不只信 gh mergeable）
-2. 报 worktree/分支清理状态 3. **不要直接动代码**。
+读完上述清单后：1. 报告 PROGRESS.md 与 session 记录的关键信息 2. 确认环境状态（HEAD / worktree / codex 分支）
+3. 不要直接动代码。
