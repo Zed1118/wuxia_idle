@@ -1,6 +1,9 @@
 # 新会话开局提示词
 
-**交接时间：** 2026-07-31 16:01 · **HEAD：** `ae237056`（已 push，与 origin/main 同步）
+**交接时间：** 2026-07-31 16:01 · **代码态锚点：** `ef443e4d`
+
+> 锚的是**代码态**不是 HEAD：`ef443e4d` 之后只有 handoff 与本文件两条 docs commit，
+> `lib`/`data`/`test` 零改动。开局自验：`git diff --stat ef443e4d..HEAD -- lib data test` 为空即无漂移。
 
 ---
 
@@ -22,7 +25,7 @@ main 全绿且干净；唯一在途是 codex 复刻分支，未推未合，等�
    + `feedback_night_batch_dispatch_protocol`（派单收账以 git 为唯一真相源）
 
 【环境快照】（2026-07-31 主 checkout 实测，非转抄）
-- HEAD `ae237056`（本会话 main 上 4 commit：3 条 merge + 1 条 handoff，**已全部 push**）
+- 代码态锚点 `ef443e4d`（本会话 main 上 3 条 merge + 2 条 docs commit，**已全部 push**）
 - 主 checkout `flutter analyze --no-pub` **EXIT=0 · No issues**
 - 主 checkout 全量 **4762 pass / 0 fail · EXIT=0**（= 合并前 4734 + B3 新增 16 + C5 新增 12）
 - worktree：主 checkout + `codex-battle-ui-sample-replica`（**待合交付物，非孤儿**）
