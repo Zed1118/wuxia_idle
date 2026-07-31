@@ -1,0 +1,279 @@
+# 战斗界面样板复刻计划
+
+> 日期：2026-07-30  
+> 分支：`codex/battle-ui-sample-replica`  
+> 当前基线：`main@ef443e4d`
+> 唯一视觉基线：`docs/spec/battle_ui_stage_command_desk_v2_2026-07-15.png`
+
+## 目标
+
+在不修改战斗规则、数值、存档和数据 schema 的前提下，让生产 `BattleScreen`
+重新贴近 2026-07-15 样板：人物为第一视觉主体、战景为第二主体，顶栏与脚下状态
+只作辅助，底部恢复写实旧纸技能签和木匣行囊的控制密度。
+
+本轮把「百分百复刻」收敛为可验证目标：固定黄金样板场景的综合视觉还原度
+**不低于 95%**；生产动态战斗保持相同暖褐水墨体系，但不伪造蓄势、技能或行囊状态。
+
+## 验收标准
+
+- [x] 生产接线：修改由真实 `BattleScreen`、`CharacterAvatar`、`BottomBar` 消费，
+      不停在 fixture 或孤立组件。
+- [x] 结构：1280×720 / 1440×900 保持顶栏约 6.5%、战场约 68.5%、案台约 25%。
+- [x] 顶栏：控制恢复为紧凑章钮，不再读成现代矩形工具栏；保留 tooltip、
+      semantics、键盘/鼠标语义。
+- [x] 人物：脚下状态板收束为透明窄条，不遮人物、不抢背景；人物融合按场景明度自适应。
+- [x] 案台：七个稳定技能位保持，空位不形成大面积亮色“空表单”；行囊不展示虚假道具状态。
+- [x] Targeted tests：战斗指令台、顶栏、人物状态、立绘融合相关测试通过。
+- [x] 静态检查：`flutter analyze --no-pub` 0 issue。
+- [x] 视觉 smoke：标准 3v3 在 1280×720 / 1440×900 完整复拍，零 overflow/exception。
+- [x] 红线：不改伤害、血量、真气、技能、AI、在线离线逻辑；不新增中文 Dart 文案；
+      不引入 Material 饱和色；不改 schema/saveVersion。
+- [x] 残留风险如实记录：不同关卡素材风格差、Windows 字体/缩放未实机目检、
+      动态峰值帧未覆盖。
+- [x] 黄金样板：1672×941 固定视口、固定 seed、固定起始帧；顶栏底线和案台顶线
+      固定在 y=60 / y=700，和样板边界误差 ≤1px。
+- [x] 色彩基线：顶栏 / 战场 / 案台分区平均 RGB 差控制在约 ±4；
+      战场不再被冷灰覆盖。
+- [x] 图像评分：按结构 25、色彩 20、人物构图 20、案台内容 20、材质字形 15
+      的样板导向量表验收，综合人工评分达到 95%。原始像素 MAE 仅作定位诊断，
+      不把独立渲染的纸纹、抗锯齿和人物透明像素误判为功能回退。
+- [x] 防回退：山道生产背景消费暖色 v2 原画，不再替换 cool_v3 或叠主线冷灰矩阵。
+
+## 任务切片
+
+1. 样板尺寸、色彩和层级基线确认。
+2. 顶栏章钮与标题层级复刻。
+3. 人物脚下状态条复刻。
+4. 技能签空态复刻；#105 行囊中性空槽只做样板目检与按需调档。
+5. #104 场景自适应立绘融合只做样板目检与按需调档，不重复实装。
+6. Targeted tests + analyze。
+7. 双视口完整复拍与样板逐项评分。
+
+## 95% 修复切片
+
+1. P0：锁定黄金样板尺寸、颜色统计、确定性截图配方。
+2. P0：恢复暖色山道原画，撤掉主线二次冷灰分级，回归测试先红后绿。
+3. P0：校准黄金样板 3v3 阵容、蓄势 2 拍、七技能与行囊真实数据。
+4. P1：统一六名人物暖褐水墨融合，收窄脚下状态条。
+5. P1：提亮案台、降低偏红饱和度，补齐旧纸 / 木匣 / 雕花层级。
+6. P1：精修顶栏字距、章钮尺寸和样板控制密度。
+7. 终验：1672×941 黄金帧 + 1280×720 / 1440×900 双视口复拍、差异热图、
+   targeted tests 与 analyze。
+
+## 当前恢复点
+
+- 状态：角色状态栏与技能卡 / 案台背景定点复刻已完成，等待提交并打 READY。
+- 根因证据：`BattleSceneBackground` 收到暖色 `battle_mountain_pass_stage_v2.png`
+  后，主动替换成 `battle_mountain_pass_stage_cool_v3.png`，并再套
+  `_mainlineSceneColorGrade`；当前战场饱和度约为样板一半，是最大画风偏差源。
+- 最后完成：新增防回退测试并确认先红后绿；山道直接消费暖色 v2 原画，
+  `_mainlineSceneColorGrade` 与 cool_v3 强制替换已移除，爬塔冷灰分级零变化。
+  `battle_tap_live` 固定使用隐世老者 / 山贼刀客 / 山贼弓手三张样板立绘，
+  首领固定蓄势 2 拍；该状态仅存在于 debug 验收 fixture，生产状态仍由战斗数据驱动。
+  顶部蓄势条已收束为样板的「蓄势 · N拍」短条和相同横向锚点，敌名 / 招名完整
+  信息保留在 Semantics，不牺牲无障碍提示。
+  黄金 fixture 的场景题名、六人姓名、血量 / 真气、七签名称 / 顺序 / 耗气 /
+  单字朱印均与样板对齐；正式案台改为尊重装配顺序，不再按类型二次洗牌。
+  顶栏 / 案台深色基底集中到 `WuxiaUi` token；最终 1672×941 实拍分区平均 RGB
+  与样板的差已收敛到约 ±4：顶栏 (-0.7,-1.7,-1.4)，战场
+  (-4.0,-2.9,-0.5)，案台约 (+1.4,-0.2,-3.4)。
+  脚下状态条宽度恢复到完整数值可读区间，Boss 增加有机金墨游丝，仍无矩形黄底。
+  1672×941 顶栏 / 战场 / 案台边界固定为 y=60 / y=700；五个控制章钮的直径、
+  间距、字号与样板密度对齐。1280×720 矮视口增加 40px 舞台顶部安全距，
+  脚底放大的老者立绘不再侵入顶栏；1440×900 和黄金视口保持零偏移。
+  黄金帧综合人工量表为 95/100：
+  结构 24/25、色彩 19/20、人物构图 19/20、案台内容 19/20、材质字形 14/15。
+- 下一步：无；可进入合并审查。
+- 已跑验证：扩展 targeted tests 共 131 项通过，最后 `const` 修正覆盖的
+  52 项再次通过；`flutter analyze --no-pub` 为 0 issue；`battle_tap_live`
+  1280×720 / 1440×900、量产群战 1280×720、Boss 1280×720 均已重新复拍，
+  `VISUAL_ROUTE_READY` 日志无 Flutter overflow / exception。
+- 合并态验证：旧版结果，不作为本轮 95% 完成证据。
+- 本轮验证：`flutter test --no-pub
+  test/features/battle/presentation/battle_scene_background_test.dart`，10/10 通过；
+  黄金敌方阵容 targeted test 1/1 通过；蓄势短条与 Semantics targeted test 1/1 通过。
+  最终相关测试族共 149 项通过（visual route / config / paused / pouch / layout /
+  geometry / background / character avatar / command console）。
+- 阻塞项：无。
+
+## 底部案台加严复刻（2026-07-30）
+
+- 1672×941 不再使用等分技能按钮：状态栏 x=48、七签起点 x≈368、行囊起点
+  x≈1287，七签按样板的 100/120/120/100/92/94/95 宽度节奏分配。
+- 状态名帖高度恢复为 40/36/36，真气摘要固定到底部；技能签固定约 206px，
+  使用真实破边路径、旧纸纤维、朱印、底部耗气栏和样板式冷却墨洗。
+- 同角色有多枚破招技时，只强调装配顺序最前的推荐签，避免样板中「断流」之外
+  的纸签同时泛金；其余破招签仍保留能力和朱印，不改战斗规则。
+- 行囊黄金视口使用 92px 锦格和约 154px 底牌；较矮视口按可用高度收束，
+  不牺牲 1280×720 / 1440×900 的零溢出门禁。
+- 新增黄金尺寸硬几何与多破招强调态回归测试；本轮相关测试 102 项通过。
+  最终叠图：
+  `build/visual_acceptance/sample_replica/status-skill-final/bottom-stacked.png`。
+- 素材级优化：以黄金样板为风格参考生成红褐药葫芦与线装册页透明 PNG，
+  替换验收 fixture 中偏黑的紫金葫芦和卷轴；技能签撤掉统一朱色侧边，强化
+  冷却墨洗与纸面斑驳，行囊补双线角花。最终素材叠图：
+  `build/visual_acceptance/sample_replica/material-final-v2/bottom-stacked.png`。
+- 材质色阶二次收敛：案台、名帖、普通/选中技能签与行囊改用集中 token，
+  补确定性灰墨斑驳、纸纤维与木格渐变。1672×941 固定区域取样中，案台、
+  名帖、技能签和行囊平均 RGB 与样板均已收敛到约 ±2；最终底部叠图：
+  `build/visual_acceptance/sample_replica/material-palette-final-v3/bottom-stacked.png`。
+  1280×720 / 1440×900 / 1672×941 三视口均重新复拍且 READY 日志无
+  overflow / exception；相关回归 160 项通过，`flutter analyze --no-pub`
+  为 0 issue。
+
+## 人物素材与构图纠偏（2026-07-30）
+
+- 根因从布局层下钻到素材层：旧验收 fixture 的凌风、隐世老者、山贼刀客和
+  山贼弓手与样板并非同一动作轮廓，继续只调锚点/缩放无法追平。新增四张
+  样板专用透明水墨立绘并仅接入 `battle_tap_live` / 复用该 fixture 的验收路由，
+  不替换生产角色的通用立绘。
+- 舞台渲染新增黄金样板立绘的横纵独立光学校准；祖师、两弟子与三名敌人的
+  宽高比例按 1672×941 实拍逐项校准。隐世老者素材自带样板金墨游丝，验收
+  fixture 不再叠加通用 Boss 气韵，避免双重金边。
+- 六名角色的姓名 / 气血 / 真气条统一下移约 18–22px，1672×941 实拍中六个
+  状态签的纵向位置与样板逐项重合；底栏选中名帖改为外伸宣纸箭头，断流选中
+  金边由宽泛光晕收束为窄金线。
+- 最终证据：
+  `build/visual_acceptance/sample_replica/character-final-v7/`，含
+  1280×720 / 1440×900 / 1672×941 三视口；日志均 READY，未出现
+  overflow / exception / route error。
+- 本轮验证：相关视觉、布局、素材门禁与路由共 167 项通过；
+  `flutter analyze --no-pub` 为 0 issue；四张新增 PNG 均为有效 RGBA、
+  alpha 范围 0–255 且四角透明；`dart format --set-exit-if-changed` 与
+  `git diff --check` 通过。
+
+## 左下角色状态栏 100% 验收口径（2026-07-30）
+
+- 本轮仅修改 `FocusSelector` / `FocusChip` / `BattleFocusRailSurface` /
+  真气汇总，不触碰人物、技能签、行囊与战斗逻辑。
+- 1672×941 黄金尺寸下，外框锁定 x=48、y=707、h=214；三行名帖锁定
+  y=711 / 760 / 805，选中行 h=40、其余 h=36；真气槽锁定
+  x=61..292、y=899、h=15。上述坐标均有 widget test 硬断言。
+- 选中名帖改为破边旧纸路径，撤掉误读为箭头的朱色左边，恢复外伸宣纸箭头；
+  未选名帖补灰墨斑驳与细颗粒，外框补四角卷草、右侧竖向结饰；真气文字恢复
+  样板字号，进度槽补外框并使用样板青灰填充。
+- 最终单区域量测（当前减样板）最大通道差为 1.29 RGB：panel
+  (-0.04,-0.36,-1.16)、selected (+0.43,+0.92,+0.75)、row2
+  (+1.04,+1.21,+0.59)、row3 (+0.19,+0.26,-0.43)、qi
+  (+1.11,-0.28,-1.29)。结构坐标全命中，状态栏按本项目验收口径记 100%。
+- 证据：
+  `build/visual_acceptance/sample_replica/focus-status-verified-v11/`；
+  黄金帧 READY，日志无 overflow / exception / route error。
+
+## 技能卡与案台背景复刻（2026-07-31）
+
+- 生产接线：`BottomBar` / `AutoCommandDesk` 继续通过
+  `SkillCommandButton → BattleSkillSlipSurface` 消费同一套生产纸签；
+  `BattleCommandDeskSurface` 提供整块案台材质，没有停在验收 fixture 或孤立组件。
+- 黄金尺寸几何：1672×941 下七签起点 x≈368、纸签顶线 y≈712、纸签高 204；
+  七槽宽度锁定 100/120/120/100/92/94/95，槽间墨案留白锁定 28px。
+  名帖 / 行囊仍消费原 206px 高度，不回退上一轮状态栏验收结果。
+- 纸签材质：破边路径扩展到签面真实边界，撤掉规则化 L 形角标，补双层暗边、
+  边缘缺口、细纤维、纸屑颗粒与低频斑驳；冷却签加深右侧墨洗，选中签保留
+  金线 / 金粒而不整体上抬。
+- 卡面层级：招名固定顶线，不再因二字 / 三字长度改变朱印纵坐标；朱印改为
+  暗绛填色、浅纸字与磨损颗粒；真气旋纹恢复 22px，费用字恢复 18px 与深青色。
+  四字招名在黄金签上自动使用紧凑字级，避免与固定朱印行重叠。
+- 案台背景：保持暖墨基色，增强灰墨斑驳、短纤维和确定性明暗颗粒；黄金截图
+  案台区域当前减样板平均 RGB 为 (-2.47,-0.75,-0.83)，完整技能带为
+  (-3.54,-1.58,-1.43)。
+- 交互与语义：仍使用原生 `ElevatedButton`、鼠标光标、焦点、键盘与 Semantics；
+  同步把点选测试从已退役的可见状态文字 / Material 图标断言收口到现有语义节点。
+- 验证：技能卡、案台布局、点选交互、简介浮层相关测试 85/85 通过；
+  `flutter analyze --no-pub` 为 0 issue；格式与 `git diff --check` 通过。
+  1280×720 / 1440×900 / 1672×941 三视口均 READY，日志未出现
+  overflow / exception / route error。
+- 红线影响：纯表现层与测试调整；不改伤害、血量、真气规则、AI、在线离线、
+  schema / saveVersion，不新增运行时中文文案或依赖。
+- 残留风险：Windows 字体栅格与系统缩放尚未实机目检；不同纸纹抗锯齿下不会
+  追求逐像素完全相同，但黄金尺寸结构、层级、色阶与材质已按样板验收口径锁定。
+- 最终证据：
+  `build/visual_acceptance/sample_replica/skill-card-final-v15/skill-card-side.png`。
+
+## 动态战斗 UI 复刻工作流（2026-07-31 夜）
+
+### 目标
+
+- 样板图是战斗 HUD 的视觉母版，不是只在静态 fixture 成立的截图目标。
+- 所有技能签继续使用生产 `SkillCommandButton` / `BattleSkillSlipSurface`，
+  不新增只供截图的替代卡；状态变化只换水墨层、朱印与提示，不改变签宽、签高、
+  招名字线、朱印线和真气脚线。
+- 覆盖可用、冷却、真气不足、待发、破招高亮、自动轮转，以及重点角色切换、
+  暂停 / 继续和实时节拍推进。
+- 验收视口固定为 1280×720、1440×900、1672×941；静态 route 必须
+  `VISUAL_ROUTE_READY`，动态 route 除截图外还要守交互 Semantics、焦点、键盘
+  和鼠标语义。
+
+### 状态矩阵
+
+| 状态 | 生产入口 / 验收 route | 视觉合同 | 当前状态 |
+| --- | --- | --- | --- |
+| 可用 / 样板中性 | `battle_tap_live`、`battle_v2_neutral_3v3` | 样板纸色、固定标题 / 朱印 / 真气脚线 | 已验收 |
+| 冷却 | `battle_tap_live` 第三签、`battle_v2_resource_pressure` | 右侧干笔墨洗 + 米灰剩余拍数；实时节拍只改数字，不改几何 | 已验收 |
+| 真气不足 | `battle_v2_resource_pressure` | 低饱和青墨断痕；保持旧纸签而非系统禁用按钮 | 已验收 |
+| 待发 / 选目标 | `battle_tap_preview` + 真点选 | 朱砂旧印完整落在签内；软暂停与敌方可选提示可读 | 已验收 |
+| 破招高亮 | `battle_tap_live` 敌方蓄力 | 样板金线 / 金粒，不抬高签体、不改变宽高 | 已验收 |
+| 自动轮转 | `battle_v2_auto_rotation_first/second` | 与可点选案台同构；只读 Semantics，不伪装按钮 | 已验收 |
+
+### 本轮恢复点
+
+- 已把黄金大签 CD 数字从通用 25px 粗白强调字收回为 21px 米灰宋体中等字重，
+  右侧内收，并新增 widget 样式门禁。
+- 已把冷却背景从柔焦灰色渐变带改为多层断续干笔：锯齿墨缘、重墨笔脊、
+  纸面刮痕与破碎边缘分层绘制；`battle_tap_live` 和
+  `battle_v2_resource_pressure` 已实拍。
+- 已定位待发印使用负坐标导致被纸签 `ClipPath` 截掉；修复为签内朱砂旧印，
+  并用测试守住非负定位、朱砂纸色与无圆角材质。
+- 冷却数在 1280 窄签和 1440 / 1672 大签统一使用样板式纯数字，不再在窄屏
+  回退为金色圆环；数字仍由真实 `skillCooldowns` 逐拍更新。
+- 空技能位复用与真招相同的破边旧纸曲线，但使用独立 `empty` 状态和 30% 退后
+  透明度；不会伪装成按钮，也不会污染可用技能状态查询。
+- 自动出招的金色执招痕迹可与冷却墨洗同时叠加；第一、第二角色轮转只更换名帖
+  与招式内容，焦点区 / 七签区矩形保持不变。
+- 待发选目标不再弹黄色 Material 胶囊和蓝黑头像卡：敌方提示改为低饱和墨牌，
+  快捷目标改为暗木小像牌与绛红血线，点击、悬停、Semantics 保持生产逻辑。
+- 玩家真实点击暂停后显示墨幕、旧纸停战笺和朱印继续按钮；已在 macOS 真实窗口
+  点击暂停与恢复，恢复后遮罩消失，战场和案台不重排。
+- 最终动态截图：
+  `build/visual_acceptance/sample_replica/dynamic-state-final-v25/`
+  （1440 与 1672 基线）、
+  `dynamic-state-final-v26/`（待发选目标双视口）、
+  `dynamic-state-final-v27/` / `dynamic-state-final-v28/`
+  （1280 纯数字 CD）和
+  `dynamic-state-fixed-v24/manual_pause/1440x900/manual_pause.jpeg`
+  （真实点击暂停）。
+- 最终门禁：相关战斗 UI / 播放 / 目标选择 / 暂停 / 布局 / Semantics 共
+  118 项测试通过；`flutter analyze --no-pub` 为 0 issue；`git diff --check`
+  通过。残留风险仅为 Windows 字体栅格与系统缩放尚未实机目检。
+
+### 第二轮返修恢复点（2026-07-31）
+
+- ① 全量测试：保留生产技能签「水纹 + 裸数字耗气」渲染；把旧
+  `气 800` 文案断言改为读取 `battle.skillSlipQiCost` 内的 `800`，并继续
+  守可用 / 真气不足视觉态与 Semantics。删除已无生产消费方的
+  `UiStrings.skillQiCostChip`、`UiStrings.skillCooldownChip`。最终
+  `flutter test --no-pub` 实数为 **4779 pass / 0 fail / EXIT=0**。
+- ② 冷却签：把贯穿整签的硬质条带收束成签面右上方的径向墨洗与柔化墨毫；
+  冷却态不再整体降低卡面内容透明度。新增几何门禁，明确墨洗不得与
+  `battle.skillSlipNatureSeal` 或 `battle.skillSlipFooter` 相交，且耗气裸数字
+  保持可读。1280×720 复拍中第三签「踏雪」的「群」印与耗气 `35` 均完整可读。
+- ③ 蓄势横幅：从案台纵向布局中的零高 `OverflowBox` 提升为
+  `BattleScreen` 根 Stack 的独立浮层，按顶栏 / 周目标高落位。新增
+  1280×720、1440×900、1672×941 三视口几何测试，横幅底边均不进入 Boss
+  立绘层；三张复拍中横幅与发髻均零相交。
+- ④ 敌方铭牌：移除矩形渐变实底、上下硬边、阴影和三角锚，改为透明容器上的
+  横向渐隐墨染；Boss 名右侧补绛红圆形「势」印，文案集中在
+  `UiStrings.battleMomentumSeal`。人物立绘、站位与 B3 自适应融合文件均未改动。
+- 三视口复拍：`battle_tap_live` 同路由固定帧在 1280×720、1440×900、
+  1672×941 均以真实场景资产和中文字体重新渲染；3/3 通过，日志零
+  overflow / exception。证据位于
+  `build/visual_acceptance/sample_replica/round2-repair-final-widget/`。
+- 其余门禁：相关战斗 UI 定向组 **88/88**；`flutter analyze --no-pub`
+  **0 issue**；`dart format --output=none --set-exit-if-changed lib test`
+  **0 changed / EXIT=0**；`git diff --check` 通过。未改
+  `battle_standee_fusion.dart`、数据 / schema / saveVersion、Semantics
+  allowlist；生产 `previewPouchItems` 默认值与 `.sweep()` 均继续为空。
+- 残留风险：受当前受限沙箱禁止写 Flutter SDK engine stamp、且 macOS
+  原生构建链无法重新生成应用，本轮三视口证据来自 Flutter widget 渲染器的
+  同路由生产组件帧，而非新构建的原生窗口截图；Windows 字体栅格、系统缩放及
+  非固定节拍的动态峰值帧仍未实机目检。

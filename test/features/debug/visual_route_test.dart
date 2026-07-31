@@ -8,6 +8,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_screen_config.dart';
 import 'package:wuxia_idle/features/battle/presentation/hero_camera_overlay.dart';
 import 'package:wuxia_idle/features/debug/application/visual_route.dart';
 import 'package:wuxia_idle/features/debug/application/visual_acceptance_plan.dart';
@@ -16,6 +17,7 @@ import 'package:wuxia_idle/features/debug/presentation/visual_route_host.dart';
 import 'package:wuxia_idle/core/domain/island_building_type.dart';
 import 'package:wuxia_idle/features/taohua_island/presentation/taohua_island_screen.dart';
 import 'package:wuxia_idle/shared/audio/audio_assets.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 import '../../support/isar_test_support.dart';
@@ -507,6 +509,75 @@ void main() {
       );
       expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,点选随时干预');
       expect(launcher.seed, battleV2VisualSeed);
+      expect(launcher.previewHeaderControls, isTrue);
+    });
+
+    test('battle_tap_live → 黄金样板敌方立绘与蓄势 2 拍固定', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.battleTapLive,
+        IsarSetup.instance,
+      );
+      final launcher = target as ScenarioLauncher;
+      final (_, right) = launcher.teamsFactory();
+
+      expect(right.map((character) => character.iconPath), [
+        WuxiaUi.battleSampleHiddenElderStandee,
+        WuxiaUi.battleSampleBanditBladeStandee,
+        WuxiaUi.battleSampleBanditArcherStandee,
+      ]);
+      expect(right.first.isBoss, isTrue);
+      expect(right.first.chargingSkill, isNotNull);
+      expect(right.first.chargeTicksRemaining, 2);
+      expect(launcher.hint, UiStrings.battleSampleSceneTitle);
+      expect(right.map((character) => character.name), [
+        UiStrings.battleSampleHiddenElder,
+        UiStrings.battleSampleBanditBlade,
+        UiStrings.battleSampleBanditArcher,
+      ]);
+
+      final (left, _) = launcher.teamsFactory();
+      expect(left.map((character) => character.name), [
+        UiStrings.battleSampleFounder,
+        UiStrings.battleSampleFirstDisciple,
+        UiStrings.battleSampleSecondDisciple,
+      ]);
+      expect(left.map((character) => character.iconPath), [
+        isNull,
+        WuxiaUi.battleSampleFirstDiscipleStandee,
+        isNull,
+      ]);
+      final visibleSkills = left.first.availableSkills.skip(1).toList();
+      expect(
+        visibleSkills.map((skill) => skill.name),
+        UiStrings.battleSampleSkillNames,
+      );
+      expect(visibleSkills.map((skill) => skill.qiCost), [
+        20,
+        30,
+        35,
+        60,
+        15,
+        25,
+        30,
+      ]);
+      expect(
+        WuxiaUi.battleSamplePouchGourd,
+        'assets/ui/mj/battle_pouch_gourd_sample_v2.png',
+      );
+      expect(
+        WuxiaUi.battleSamplePouchManual,
+        'assets/ui/mj/battle_pouch_manual_sample_v2.png',
+      );
+      expect(launcher.previewPouchItems, const [
+        BattlePouchPreviewItem(
+          assetPath: WuxiaUi.battleSamplePouchGourd,
+          count: 3,
+        ),
+        BattlePouchPreviewItem(
+          assetPath: WuxiaUi.battleSamplePouchManual,
+          count: 2,
+        ),
+      ]);
     });
 
     test('battle_tap_preview → 冻结态 + 纯 presentation 待发预览', () async {

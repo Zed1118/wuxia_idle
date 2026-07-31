@@ -636,11 +636,22 @@ Future<Widget> buildVisualTarget(
       // 两段点选真玩/验收:真战斗 + 干预层挂上 + 高血耐久敌久撑。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioDragLive,
-        hint: UiStrings.chapter1Title,
+        hint: UiStrings.battleSampleSceneTitle,
         sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
         allowPlayerIntervention: true,
         startPaused: true,
         seed: battleV2VisualSeed,
+        previewHeaderControls: true,
+        previewPouchItems: [
+          BattlePouchPreviewItem(
+            assetPath: WuxiaUi.battleSamplePouchGourd,
+            count: 3,
+          ),
+          BattlePouchPreviewItem(
+            assetPath: WuxiaUi.battleSamplePouchManual,
+            count: 2,
+          ),
+        ],
       );
     case VisualRoute.battleTapPreview:
       // 两段点选静态验收:冻结画面(autoStart false)预置 single 技能待发,

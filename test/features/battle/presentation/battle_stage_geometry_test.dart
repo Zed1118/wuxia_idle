@@ -19,21 +19,28 @@ double _renderedAlphaArea({
 
 void main() {
   group('battleStageAnchor', () {
-    test('3v3 首席靠近中场，其余两席以非对称纵深展开', () {
+    test('3v3 复刻样板：我方主位在左前景，敌方主位在右中场', () {
       final leftMain = battleStageAnchor(0, 0, 3);
       final leftSecond = battleStageAnchor(0, 1, 3);
       final leftThird = battleStageAnchor(0, 2, 3);
+      final rightMain = battleStageAnchor(1, 0, 3);
+      final rightSecond = battleStageAnchor(1, 1, 3);
+      final rightThird = battleStageAnchor(1, 2, 3);
 
-      expect(leftMain.dx, greaterThan(leftSecond.dx));
-      expect(leftSecond.dx, greaterThan(leftThird.dx));
-      expect(
-        leftMain.dx - leftSecond.dx,
-        isNot(closeTo(leftSecond.dx - leftThird.dx, 1e-9)),
-      );
+      expect(leftMain.dx, lessThan(leftSecond.dx));
+      expect(leftSecond.dx, lessThan(leftThird.dx));
+      expect(rightMain.dx, lessThan(rightSecond.dx));
+      expect(rightSecond.dx, lessThan(rightThird.dx));
+      expect(leftMain, const Offset(0.11, 0.772));
+      expect(leftSecond, const Offset(0.283, 0.592));
+      expect(leftThird, const Offset(0.372, 0.436));
+      expect(rightMain, const Offset(0.669, 0.521));
+      expect(rightSecond, const Offset(0.79, 0.601));
+      expect(rightThird, const Offset(0.908, 0.615));
     });
 
-    test('1v1/2v2/3v3 左右同序槽位严格镜像', () {
-      for (var teamSize = 1; teamSize <= 3; teamSize++) {
+    test('1v1/2v2 左右同序槽位严格镜像', () {
+      for (var teamSize = 1; teamSize <= 2; teamSize++) {
         for (var slot = 0; slot < teamSize; slot++) {
           final left = battleStageAnchor(0, slot, teamSize);
           final right = battleStageAnchor(1, slot, teamSize);
@@ -44,7 +51,7 @@ void main() {
     });
 
     test('1v1/2v2 靠近交锋区且保持前低后高层次', () {
-      for (var teamSize = 1; teamSize <= 3; teamSize++) {
+      for (var teamSize = 1; teamSize <= 2; teamSize++) {
         final leftMain = battleStageAnchor(0, 0, teamSize);
         final rightMain = battleStageAnchor(1, 0, teamSize);
         expect(rightMain.dx - leftMain.dx, inInclusiveRange(0.20, 0.28));
@@ -55,26 +62,53 @@ void main() {
       );
     });
 
-    test('轻功舞台扩大上下错层与向中央位移距离', () {
-      final standardTop = battleStageAnchor(0, 1, 3);
-      final lightFootTop = battleStageAnchor(
-        0,
-        1,
-        3,
-        mode: BattleStageLayoutMode.lightFoot,
-      );
-      final standardBottom = battleStageAnchor(0, 2, 3);
-      final lightFootBottom = battleStageAnchor(
-        0,
-        2,
-        3,
-        mode: BattleStageLayoutMode.lightFoot,
-      );
+    test('轻功舞台保持比标准舞台更大的上下错层', () {
+      final standard = [
+        for (var slot = 0; slot < 3; slot++) battleStageAnchor(0, slot, 3).dy,
+      ];
+      final lightFoot = [
+        for (var slot = 0; slot < 3; slot++)
+          battleStageAnchor(
+            0,
+            slot,
+            3,
+            mode: BattleStageLayoutMode.lightFoot,
+          ).dy,
+      ];
 
-      expect(lightFootTop.dx, lessThan(standardTop.dx));
-      expect(lightFootTop.dy, lessThan(standardTop.dy));
-      expect(lightFootBottom.dy, greaterThan(standardBottom.dy));
+      final standardSpan =
+          standard.reduce((a, b) => a > b ? a : b) -
+          standard.reduce((a, b) => a < b ? a : b);
+      final lightFootSpan =
+          lightFoot.reduce((a, b) => a > b ? a : b) -
+          lightFoot.reduce((a, b) => a < b ? a : b);
+      expect(lightFootSpan, greaterThan(standardSpan));
     });
+  });
+
+  test('3v3 样板状态签独立压在人物下裳,不跟随透明画布脚底漂移', () {
+    expect(battleStageStatusVerticalFraction(0, 0, 3), 0.724);
+    expect(battleStageStatusVerticalFraction(0, 1, 3), 0.703);
+    expect(battleStageStatusVerticalFraction(0, 2, 3), 0.901);
+    expect(battleStageStatusVerticalFraction(1, 0, 3), 0.745);
+    expect(battleStageStatusVerticalFraction(1, 1, 3), 0.789);
+    expect(battleStageStatusVerticalFraction(1, 2, 3), 0.868);
+    expect(battleStageStatusVerticalFraction(0, 0, 2), 0.865);
+  });
+
+  test('样板左前景主位允许袍角越过槽位底线,其他站位不越界', () {
+    expect(battleStageBottomOverflowFraction(0, 0, 3), 0.06);
+    expect(battleStageBottomOverflowFraction(0, 1, 3), 0);
+    expect(battleStageBottomOverflowFraction(1, 0, 3), 0);
+    expect(
+      battleStageBottomOverflowFraction(
+        0,
+        0,
+        3,
+        mode: BattleStageLayoutMode.lightFoot,
+      ),
+      0,
+    );
   });
 
   test('1v1/2v2 自动放大主体但不反转三人阵列景深', () {

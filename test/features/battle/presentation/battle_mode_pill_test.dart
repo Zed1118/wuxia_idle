@@ -49,7 +49,7 @@ void main() {
 
     final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
     expect(tooltip.message, UiStrings.battleAutoInterventionHint);
-    expect(find.text('自动·点选'), findsOneWidget);
+    expect(find.text(UiStrings.battleAutoModeShort), findsOneWidget);
     final semantics = tester.getSemantics(
       find.byKey(const ValueKey('battle_auto_mode')),
     );
@@ -58,7 +58,7 @@ void main() {
     expect(semantics.hint, UiStrings.battleAutoInterventionHint);
   });
 
-  testWidgets('顶栏控制改为带短文字的窄题签且点击区不小于36', (tester) async {
+  testWidgets('顶栏控制使用无图标圆章且点击区不小于36', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -77,7 +77,8 @@ void main() {
     expect(size.width, greaterThanOrEqualTo(48));
     expect(size.height, greaterThanOrEqualTo(36));
     final button = tester.widget<IconButton>(find.byType(IconButton));
-    expect(button.style?.shape?.resolve({}), isA<BeveledRectangleBorder>());
+    expect(button.style?.shape?.resolve({}), isA<StadiumBorder>());
     expect(button.tooltip, UiStrings.battleLog);
+    expect(find.byIcon(Icons.list_alt), findsNothing);
   });
 }

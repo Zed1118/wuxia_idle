@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/theme/wuxia_tokens.dart';
+
 /// 战备行囊的独立装帧，避免与纸签共享按钮外观。
 class BattlePouchRailSurface extends StatelessWidget {
   const BattlePouchRailSurface({
@@ -7,19 +9,22 @@ class BattlePouchRailSurface extends StatelessWidget {
     required this.width,
     required this.compact,
     required this.child,
+    this.height,
   });
 
   final double width;
   final bool compact;
   final Widget child;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       key: const ValueKey('battle_desk_pouch_region'),
       width: width,
+      height: height,
       padding: const EdgeInsets.all(4),
-      decoration: const BoxDecoration(color: Color(0xB3131210)),
+      decoration: const BoxDecoration(color: WuxiaUi.battlePouchBase),
       child: Container(
         key: const ValueKey('battle.pouch.woodCase'),
         padding: compact
@@ -29,10 +34,14 @@ class BattlePouchRailSurface extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF3C2C20), Color(0xFF251B15), Color(0xFF332419)],
+            colors: [
+              WuxiaUi.battlePouchWoodTop,
+              WuxiaUi.battlePouchWoodMiddle,
+              WuxiaUi.battlePouchWoodBottom,
+            ],
             stops: [0, 0.58, 1],
           ),
-          border: Border.all(color: const Color(0xFF8A6945), width: 1.2),
+          border: Border.all(color: const Color(0xFF756349), width: 1.2),
           boxShadow: const [
             BoxShadow(
               color: Colors.black54,
@@ -41,10 +50,74 @@ class BattlePouchRailSurface extends StatelessWidget {
             ),
           ],
         ),
-        child: CustomPaint(painter: _WoodCaseGrainPainter(), child: child),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            CustomPaint(painter: _WoodCaseGrainPainter(), child: child),
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  key: ValueKey('battle.pouch.ornateFrame'),
+                  painter: _PouchOrnateFramePainter(),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+class _PouchOrnateFramePainter extends CustomPainter {
+  const _PouchOrnateFramePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final outer = Paint()
+      ..color = const Color(0xFF9A825D).withValues(alpha: 0.38)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+    final inner = Paint()
+      ..color = const Color(0xFF5D4B37).withValues(alpha: 0.52)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.7;
+    canvas.drawRect(
+      Rect.fromLTWH(2.5, 2.5, size.width - 5, size.height - 5),
+      outer,
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(6.5, 6.5, size.width - 13, size.height - 13),
+      inner,
+    );
+
+    final corner = Paint()
+      ..color = const Color(0xFFAA8E62).withValues(alpha: 0.40)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.9
+      ..strokeCap = StrokeCap.round;
+    for (final sx in [-1.0, 1.0]) {
+      for (final sy in [-1.0, 1.0]) {
+        final origin = Offset(
+          sx < 0 ? 7 : size.width - 7,
+          sy < 0 ? 7 : size.height - 7,
+        );
+        final path = Path()
+          ..moveTo(origin.dx, origin.dy + sy * 9)
+          ..quadraticBezierTo(
+            origin.dx,
+            origin.dy,
+            origin.dx + sx * 9,
+            origin.dy,
+          );
+        canvas.drawPath(path, corner);
+        canvas.drawCircle(origin, 1.7, corner);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PouchOrnateFramePainter oldDelegate) => false;
 }
 
 class _WoodCaseGrainPainter extends CustomPainter {

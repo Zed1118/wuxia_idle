@@ -52,15 +52,15 @@ void main() {
 
           expect(
             metrics.focusRailWidth / viewport.width,
-            inInclusiveRange(0.18, 0.20),
+            inInclusiveRange(0.15, 0.17),
           );
           expect(
             metrics.skillRailWidth / viewport.width,
-            inInclusiveRange(0.58, 0.62),
+            inInclusiveRange(0.49, 0.55),
           );
           expect(
             metrics.pouchRailWidth / viewport.width,
-            inInclusiveRange(0.20, 0.22),
+            inInclusiveRange(0.19, 0.21),
           );
         },
       );
@@ -100,6 +100,46 @@ void main() {
           lessThan(viewport.width),
         );
       }
+    });
+
+    test('1672×941 黄金样板分界落在 y=700±1', () {
+      final metrics = BattleLayoutMetrics.resolve(const Size(1672, 941));
+
+      expect(metrics.headerHeight, 60);
+      expect(
+        metrics.headerHeight + metrics.battlefieldHeight,
+        inInclusiveRange(699, 701),
+      );
+      expect(metrics.commandDeskHeight, inInclusiveRange(240, 242));
+    });
+
+    test('1672×941 样板案台使用非对称边距、206px 名帖/204px 纸签与三段间距', () {
+      final metrics = BattleLayoutMetrics.resolve(const Size(1672, 941));
+
+      expect(BattleLayoutTokens.commandDeskHorizontalPadding, 48);
+      expect(BattleLayoutTokens.commandDeskRightPadding, 51);
+      expect(BattleLayoutTokens.focusDividerGap, 20);
+      expect(BattleLayoutTokens.dividerSkillGap, 32);
+      expect(BattleLayoutTokens.skillPouchGap, 31);
+      expect(BattleLayoutTokens.skillSlotGap, 28);
+      expect(BattleLayoutTokens.actorChipHeight, 40);
+      expect(metrics.sampleSkillSlotHeight, 206);
+      expect(metrics.sampleSkillSlipHeight, 204);
+    });
+
+    test('矮视口为脚底放大立绘预留顶部安全距，黄金视口不偏移', () {
+      expect(
+        BattleLayoutMetrics.resolve(const Size(1280, 720)).stageTopSafetyInset,
+        40,
+      );
+      expect(
+        BattleLayoutMetrics.resolve(const Size(1440, 900)).stageTopSafetyInset,
+        0,
+      );
+      expect(
+        BattleLayoutMetrics.resolve(const Size(1672, 941)).stageTopSafetyInset,
+        0,
+      );
     });
   });
 }

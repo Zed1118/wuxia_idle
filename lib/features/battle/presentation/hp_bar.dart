@@ -19,6 +19,7 @@ class HpBar extends StatelessWidget {
   final Color? trackColorOverride;
   final double? labelFontSize;
   final bool compactLabel;
+  final bool tightLabel;
 
   /// 居中数值前的标签前缀（如内力条传「内 」→「内 100 / 100」）。
   /// 走 [UiStrings]，不在调用点内联中文。
@@ -36,6 +37,7 @@ class HpBar extends StatelessWidget {
     this.trackColorOverride,
     this.labelFontSize,
     this.compactLabel = false,
+    this.tightLabel = false,
   });
 
   @override
@@ -74,6 +76,8 @@ class HpBar extends StatelessWidget {
                 child: Text(
                   compactLabel
                       ? '$labelPrefix${_compactBattleValue(current)}/${_compactBattleValue(max)}'
+                      : tightLabel
+                      ? '$labelPrefix$current/$max'
                       : '$labelPrefix$current / $max',
                   style: TextStyle(
                     // 内力条 height 小(9)时 height*0.72≈6.5px 近不可读，设 10px 下限。

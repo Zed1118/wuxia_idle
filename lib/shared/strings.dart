@@ -70,6 +70,8 @@ class UiStrings {
   static const String emptyLog = '（无动作）';
   static const String ultimate = '大招';
   static const String fastForward = '快进';
+  static const String battleSpeedNormal = '一倍';
+  static const String battleSpeedFast = '急速';
   static const String battleAutoMode = '自动战斗';
   static const String battleAutoIntervention = '可点选';
   static const String battleAutoModeShort = '自动';
@@ -87,6 +89,7 @@ class UiStrings {
   static String skillCooldownRemaining(int turns) => '息 $turns';
   static const String battleCommandDesk = '武学案台';
   static const String battlePouch = '战备行囊';
+  static const String battlePouchShort = '行囊';
   static const String battlePouchReserved = '待装配';
   static const String battleEmptySkillSlot = '空招式位';
   static const String battlePouchEmptySlot = '空囊位';
@@ -128,11 +131,43 @@ class UiStrings {
   ) =>
       '$enemyName 正在${combatTermLabel(CombatTerm.charge)}：$skillName（还有 $ticks 拍发动）';
   static const String battleDangerChargeLabel = '蓄势';
+  static String battleDangerTicks(int ticks) => '$ticks拍';
   static const String battleDangerPrefix = '⚠ ';
+
+  // 战斗指挥案台黄金样板 fixture：集中维护，避免 debug 路由散写文案。
+  static const String battleSampleSceneTitle = '山道伏击';
+  static const String battleSampleFounder = '祖师';
+  static const String battleSampleFirstDisciple = '弟子·凌风';
+  static const String battleSampleSecondDisciple = '弟子·云舟';
+  static const String battleSampleHiddenElder = '隐世老者';
+  static const String battleSampleBanditBlade = '山贼刀客';
+  static const String battleSampleBanditArcher = '山贼弓手';
+  static const String battleSampleSkillOpenMountain = '开山掌';
+  static const String battleSampleSkillBreakCurrent = '断流';
+  static const String battleSampleSkillSnowStep = '踏雪';
+  static const String battleSampleSkillReturnOne = '归一式';
+  static const String battleSampleSkillSwallowReturn = '燕回';
+  static const String battleSampleSkillMeridianCut = '截脉';
+  static const String battleSampleSkillHiddenEdge = '藏锋';
+  static const List<String> battleSampleSkillNames = [
+    battleSampleSkillOpenMountain,
+    battleSampleSkillBreakCurrent,
+    battleSampleSkillSnowStep,
+    battleSampleSkillReturnOne,
+    battleSampleSkillSwallowReturn,
+    battleSampleSkillMeridianCut,
+    battleSampleSkillHiddenEdge,
+  ];
 
   // T1 战斗指令台：技能分组标签 + 状态印 + 内力/冷却短标。
   static const String skillGroupPower = '强力';
   static const String skillGroupJoint = '共鸣';
+  static const String skillSealPower = '强';
+  static const String skillSealInterrupt = '破';
+  static const String skillSealGroup = '群';
+  static const String skillSealUltimate = '绝';
+  static const String skillSealAssist = '辅';
+  static const String skillSealEncounter = '奇';
   // 破招用 [battleInterruptSkill]='破招'、大招用 [ultimate]='大招'。
   static const String skillPendingStamp = '待发';
   static const String skillAwaitingAction = '回势中';
@@ -143,8 +178,6 @@ class UiStrings {
   // 可用态：耗气 N · CD M。
   static String skillCostShort(int cost, int cooldown) =>
       '耗气$cost · CD$cooldown';
-  static String skillQiCostChip(int cost) => '气 $cost';
-  static String skillCooldownChip(int cooldown) => '息 $cooldown';
   static String skillQiChange(int delta) => delta > 0
       ? '产气 +$delta'
       : delta < 0
@@ -168,6 +201,7 @@ class UiStrings {
   static String skillCooldownShort(int turns) => '冷却$turns';
   // 真气不足态短标。
   static const String skillInsufficientForce = '真气不足';
+  static const String battleMomentumSeal = '势';
   // 批次 1.3 技能简介浮层：点击技能方块弹出，直接读 SkillDef 活数据。
   // 字段标签（左列），值由活数据 / EnumL10n 填。
   static const String skillInfoType = '类型';

@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import '../../domain/battle_state.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
+import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../../../shared/widgets/asset_fallback.dart';
 import '../../../../shared/widgets/wuxia_image.dart';
-import '../hp_bar.dart';
+import '../battle_typography_tokens.dart';
 
 /// 单体技待发态时,在技能格上方冒出的敌人快捷选择栏(存活敌人按 slotIndex 升序)。
 class TargetChipStrip extends StatelessWidget {
@@ -67,64 +68,92 @@ class TargetChip extends StatelessWidget {
     final color = WuxiaColors.schoolColor(enemy.school);
     final firstGlyph = enemy.name.isEmpty ? '?' : enemy.name.substring(0, 1);
     final hasIcon = enemy.iconPath != null && enemy.iconPath!.isNotEmpty;
+    final hpRatio = enemy.maxHp <= 0
+        ? 0.0
+        : (enemy.currentHp / enemy.maxHp).clamp(0.0, 1.0);
     final glyph = Container(
-      width: 32,
-      height: 32,
+      width: 34,
+      height: 34,
       alignment: Alignment.center,
-      color: WuxiaColors.avatarFill,
+      color: const Color(0xFF302C26),
       child: Text(
         firstGlyph,
         style: TextStyle(
           fontSize: 16,
-          color: color,
+          color: Color.lerp(color, WuxiaUi.paper2, 0.62),
+          fontFamily: BattleTypography.displayFamily,
+          fontFamilyFallback: BattleTypography.displayFallback,
           fontWeight: FontWeight.w600,
         ),
       ),
     );
     final content = Container(
-      width: 52,
+      key: ValueKey('battle.targetChip.inkPlaque.${enemy.characterId}'),
+      width: 50,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: WuxiaColors.sidebar,
-        border: Border.all(
-          color: hovered ? color : WuxiaColors.border,
-          width: hovered ? 2 : 1,
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xF23A342B), Color(0xFA211F1B)],
         ),
-        borderRadius: BorderRadius.circular(6),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x66000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
+        border: Border.all(
+          color: hovered ? const Color(0xFFC09A55) : const Color(0xFF6D5940),
+          width: hovered ? 1.6 : 1,
+        ),
+        boxShadow: [
+          const BoxShadow(
+            color: Color(0x73000000),
+            blurRadius: 7,
+            offset: Offset(0, 3),
           ),
+          if (hovered)
+            const BoxShadow(
+              color: Color(0x52C09A55),
+              blurRadius: 9,
+              spreadRadius: 1,
+            ),
         ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ClipOval(
-            child: SizedBox(
-              width: 32,
-              height: 32,
+          Container(
+            width: 36,
+            height: 36,
+            padding: const EdgeInsets.all(1),
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color(0x806D5940)),
+            ),
+            child: ClipRect(
               child: hasIcon
                   ? WuxiaImage(
                       enemy.iconPath!,
-                      width: 32,
-                      height: 32,
+                      width: 34,
+                      height: 34,
                       fit: BoxFit.cover,
+                      color: const Color(0xFFD7C6A2),
+                      colorBlendMode: BlendMode.modulate,
                       errorBuilder: wuxiaAssetErrorBuilder(() => glyph),
                     )
                   : glyph,
             ),
           ),
-          const SizedBox(height: 3),
-          SizedBox(
+          const SizedBox(height: 4),
+          Container(
+            key: ValueKey('battle.targetChip.hpInk.${enemy.characterId}'),
             width: 40,
-            child: HpBar(
-              current: enemy.currentHp,
-              max: enemy.maxHp,
-              height: 4,
-              showLabel: false,
+            height: 4,
+            alignment: Alignment.centerLeft,
+            decoration: const BoxDecoration(
+              color: Color(0xFF191714),
+              border: Border(
+                bottom: BorderSide(color: Color(0x806D5940), width: 0.5),
+              ),
+            ),
+            child: FractionallySizedBox(
+              widthFactor: hpRatio,
+              child: const ColoredBox(color: Color(0xFF8A2B21)),
             ),
           ),
         ],
@@ -142,10 +171,13 @@ class TargetChip extends StatelessWidget {
         onExit: (_) => onHover(false),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(6),
+          customBorder: const BeveledRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(2)),
+          ),
+          mouseCursor: SystemMouseCursors.click,
           overlayColor: WidgetStateProperty.resolveWith((states) {
             return states.contains(WidgetState.focused)
-                ? color.withValues(alpha: 0.16)
+                ? const Color(0x33C09A55)
                 : Colors.transparent;
           }),
           child: content,

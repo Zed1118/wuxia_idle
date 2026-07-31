@@ -21,6 +21,7 @@ import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/theme/colors.dart';
 import 'battle_atmosphere_overlay.dart';
+import 'battle_layout_tokens.dart';
 import 'battle_scene_background.dart';
 import 'battle_standee_fusion.dart';
 import 'guardian_ward_presentation.dart';
@@ -793,6 +794,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     final standeeFusion = battleStandeeFusionFor(
       scenePath: widget.sceneBackgroundPath,
     );
+    final layoutMetrics = BattleLayoutMetrics.resolve(
+      MediaQuery.sizeOf(context),
+    );
 
     return BgmScope(
       track: widget.bgmTrack,
@@ -800,7 +804,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         backgroundColor: WuxiaColors.background,
         body: Stack(
           children: [
-            Positioned.fill(
+            Positioned(
+              key: const ValueKey('battle_scene_stage_viewport'),
+              top: layoutMetrics.headerHeight,
+              bottom: layoutMetrics.commandDeskHeight,
+              left: 0,
+              right: 0,
               child: BattleSceneBackground(
                 path: widget.sceneBackgroundPath,
                 style: backgroundStyle,
@@ -841,7 +850,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                         sceneTitle: widget.hint,
                         onToggleLog: () => setState(() => _logOpen = !_logOpen),
                         onPause: _togglePause,
-                        isPaused: _playback.isPaused,
+                        isPaused: widget.playback.previewHeaderControls
+                            ? false
+                            : _playback.isPaused,
                         onFastForward: _playback.toggleFastForward,
                         isFastForward: _playback.isFastForward,
                         allowPlayerIntervention:
@@ -850,27 +861,33 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             ? null
                             : _confirmSurrender,
                         // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
-                        onStepOnce: widget.playback.startPaused
+                        onStepOnce:
+                            widget.playback.startPaused &&
+                                !widget.playback.previewHeaderControls
                             ? _stepOnce
                             : null,
                       ),
-                      DangerBar(state: state),
                       Expanded(
-                        child: BattlePlaybackMotion(
-                          controller: _playback,
-                          child: BattlePlaybackField(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            top: layoutMetrics.stageTopSafetyInset,
+                          ),
+                          child: BattlePlaybackMotion(
                             controller: _playback,
-                            state: state,
-                            stageLayout: stageLayout,
-                            standeeFusion: standeeFusion,
-                            chargeMaxTicks: chargeMaxTicks,
-                            staggerWindowTicks: staggerWindowTicks,
-                            onEnemyTap: _onEnemyTap,
-                            targetableEnemyIds: _pendingActive
-                                ? _targetableEnemyIds(state)
-                                : const <int>{},
-                            hoveredEnemyId: _hoveredPendingEnemyId,
-                            onEnemyHover: _onPendingEnemyHover,
+                            child: BattlePlaybackField(
+                              controller: _playback,
+                              state: state,
+                              stageLayout: stageLayout,
+                              standeeFusion: standeeFusion,
+                              chargeMaxTicks: chargeMaxTicks,
+                              staggerWindowTicks: staggerWindowTicks,
+                              onEnemyTap: _onEnemyTap,
+                              targetableEnemyIds: _pendingActive
+                                  ? _targetableEnemyIds(state)
+                                  : const <int>{},
+                              hoveredEnemyId: _hoveredPendingEnemyId,
+                              onEnemyHover: _onPendingEnemyHover,
+                            ),
                           ),
                         ),
                       ),
@@ -895,6 +912,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                               _pendingSkill?.id ?? widget.previewPendingSkillId,
                           beat: _playback.beat,
                           skillTargetLink: _skillTargetLink,
+                          previewPouchItems: widget.playback.previewPouchItems,
                         )
                       else
                         AutoCommandDesk(state: state, beat: _playback.beat),
@@ -902,6 +920,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                   ),
                 ),
               ),
+            ),
+            Positioned(
+              key: const ValueKey('battle_danger_bar_layer'),
+              top:
+                  layoutMetrics.headerHeight +
+                  (widget.cycleHint == null ? 0 : 24),
+              left: 0,
+              right: 0,
+              child: IgnorePointer(child: DangerBar(state: state)),
             ),
             Positioned.fill(
               child: BattlePlaybackOverlays(controller: _playback),

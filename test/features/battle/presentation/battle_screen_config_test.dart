@@ -14,6 +14,7 @@ void main() {
       expect(config.readablePacing, isFalse);
       expect(config.autoStartOnMount, isFalse);
       expect(config.firstClearShowcase, isFalse);
+      expect(config.previewHeaderControls, isFalse);
     },
   );
 
@@ -28,5 +29,6 @@ void main() {
     expect(config.autoStartOnMount, isTrue);
     // 扫荡是复刷路径,首通展示帧永不参与。
     expect(config.firstClearShowcase, isFalse);
+    expect(config.previewHeaderControls, isFalse);
   });
 }

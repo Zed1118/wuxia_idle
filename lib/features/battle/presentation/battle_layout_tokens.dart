@@ -6,21 +6,32 @@ import 'dart:ui';
 /// widget 中散改魔法数。
 abstract final class BattleLayoutTokens {
   static const double headerFraction = 0.065;
-  static const double commandDeskFraction = 0.25;
+  static const double commandDeskFraction = 0.256;
   static const double headerMinHeight = 44;
   static const double headerMaxHeight = 60;
+  static const double headerHorizontalPadding = 34;
+  static const double headerRightPadding = 70;
+  static const double headerSealMinWidth = 46;
+  static const double headerSealHeight = 42;
+  static const double headerSealGap = 10;
   static const double commandDeskMinHeight = 172;
-  static const double commandDeskMaxHeight = 230;
-  static const double commandDeskHorizontalPadding = 4;
-  static const double commandDeskVerticalPadding = 5;
-  static const double focusRailFraction = 0.19;
-  static const double pouchRailFraction = 0.21;
-  static const double actorChipHeight = 36;
+  static const double commandDeskMaxHeight = 241;
+  static const double commandDeskHorizontalPadding = 48;
+  static const double commandDeskRightPadding = 51;
+  static const double commandDeskVerticalPadding = 9;
+  static const double focusRailFraction = 0.1585;
+  static const double pouchRailFraction = 0.20;
+  static const double actorChipHeight = 40;
   static const double skillSlotHeight = 150;
-  static const double skillSlotGap = 8;
-  static const double sectionGap = 4;
+  static const double skillSlotGap = 28;
+  static const double sampleSkillSlipTopInset = 2;
+  static const double sampleSkillSlipHeightReduction = 2;
+  static const double focusDividerGap = 20;
+  static const double dividerSkillGap = 32;
+  static const double skillPouchGap = 31;
+  static const List<int> sampleSkillFlex = [100, 120, 120, 100, 92, 94, 95];
   static const double sectionDividerHeight = 148;
-  static const double pouchSlotSize = 54;
+  static const double pouchSlotSize = 92;
   static const double pouchSlotGap = 8;
   static const double stageHorizontalPadding = 10;
   static const double stageVerticalPadding = 0;
@@ -29,6 +40,9 @@ abstract final class BattleLayoutTokens {
   static const double stageWidthFraction = 0.19;
   static const double stageHeightFraction = 0.78;
   static const double bossStageScale = 1.16;
+  static const double stageStatusHpHeight = 11;
+  static const double stageStatusQiHeight = 10;
+  static const double emptySkillPaperOpacity = 0.30;
 }
 
 /// 同一视口下的战斗三段式布局量测。
@@ -55,11 +69,22 @@ final class BattleLayoutMetrics {
       viewport.width * BattleLayoutTokens.pouchRailFraction;
   double get skillRailWidth =>
       viewport.width -
-      BattleLayoutTokens.commandDeskHorizontalPadding * 2 -
-      BattleLayoutTokens.sectionGap * 3 -
+      BattleLayoutTokens.commandDeskHorizontalPadding -
+      BattleLayoutTokens.commandDeskRightPadding -
+      BattleLayoutTokens.focusDividerGap -
+      BattleLayoutTokens.dividerSkillGap -
+      BattleLayoutTokens.skillPouchGap -
       1 -
       focusRailWidth -
       pouchRailWidth;
+  double get sampleSkillSlotHeight =>
+      (commandDeskHeight * 0.88).clamp(146.0, 206.0);
+  double get sampleSkillSlipHeight =>
+      sampleSkillSlotHeight - BattleLayoutTokens.sampleSkillSlipHeightReduction;
+  double get sampleSectionDividerHeight =>
+      (commandDeskHeight * 0.88).clamp(144.0, 200.0);
+  double get stageTopSafetyInset =>
+      ((800 - viewport.height) * 0.5).clamp(0.0, 40.0);
 
   static BattleLayoutMetrics resolve(Size viewport) {
     final headerHeight = (viewport.height * BattleLayoutTokens.headerFraction)

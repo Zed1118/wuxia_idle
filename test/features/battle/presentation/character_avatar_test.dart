@@ -6,6 +6,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
 import 'package:wuxia_idle/features/battle/presentation/hp_bar.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_image.dart';
@@ -224,7 +225,7 @@ void main() {
     expect(grounding.height, greaterThan(230 * 0.065));
   });
 
-  testWidgets('战场人物信息板使用半透明窄墨拓而非纯黑矩形', (tester) async {
+  testWidgets('战场人物信息板使用低透明贴脚窄条而非厚重卡片', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -250,15 +251,105 @@ void main() {
       find.byKey(const ValueKey('battle.stageStatusInkRubbing')),
     );
     final decoration = rubbing.decoration! as BoxDecoration;
-    final colors = (decoration.gradient! as LinearGradient).colors;
-    expect(colors, everyElement(isNot(Colors.black)));
-    expect(colors, everyElement(predicate<Color>((color) => color.a < 0.86)));
+    expect(decoration.border, isNull, reason: '状态牌不得保留矩形硬边');
+    expect(decoration.color, Colors.transparent);
+    expect(
+      find.byKey(const ValueKey('battle.stageStatusInkWash')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('battle.stageStatusInkRubbing')))
+          .height,
+      lessThanOrEqualTo(42),
+    );
+    expect(
+      tester
+          .getSize(find.byKey(const ValueKey('battle.stageStatusInkRubbing')))
+          .width,
+      inInclusiveRange(88, 100),
+      reason: '样板状态条应保持窄，但不能窄到姓名与完整数值拥挤',
+    );
     final name = tester.widget<Text>(find.text('黑风寨主'));
     expect(name.style?.color, WuxiaUi.paper);
-    expect(name.style?.shadows?.single.blurRadius, lessThanOrEqualTo(2));
+    expect(name.style?.shadows?.single.blurRadius, lessThanOrEqualTo(1));
     expect(
       find.byKey(const ValueKey('battle.stageStatusAnchor')),
+      findsNothing,
+      reason: '无边墨染状态条不再使用硬质三角锚',
+    );
+  });
+
+  testWidgets('敌方 Boss 名字右侧显示绛红圆形「势」印', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 240,
+            height: 300,
+            child: Stack(
+              children: [
+                StageCharacterStatusOverlay(
+                  character: _char(isBoss: true),
+                  battleState: null,
+                  width: 240,
+                  height: 300,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final sealFinder = find.byKey(
+      const ValueKey('battle.stageBossMomentumSeal'),
+    );
+    expect(sealFinder, findsOneWidget);
+    final seal = tester.widget<Container>(sealFinder);
+    final decoration = seal.decoration! as BoxDecoration;
+    expect(decoration.shape, BoxShape.circle);
+    expect(decoration.color, WuxiaUi.jiang);
+    expect(
+      find.descendant(
+        of: sealFinder,
+        matching: find.text(UiStrings.battleMomentumSeal),
+      ),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('战场人物信息条显示样板式完整数值且真气条无额外前缀', (tester) async {
+    final character = _char(
+      isBoss: false,
+    ).copyWith(currentHp: 37810, maxHp: 37810, currentQi: 50, maxQi: 100);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 240,
+            height: 300,
+            child: Stack(
+              children: [
+                StageCharacterStatusOverlay(
+                  character: character,
+                  battleState: null,
+                  width: 240,
+                  height: 300,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('37810/37810'), findsOneWidget);
+    expect(find.text('50/100'), findsOneWidget);
+    expect(find.textContaining('37.8K'), findsNothing);
+    expect(
+      find.textContaining(UiStrings.internalForceShortLabel),
+      findsNothing,
     );
   });
 
@@ -314,7 +405,7 @@ void main() {
     expect(fade.opacity, 0.45);
   });
 
-  testWidgets('Boss全身立绘不再绘制矩形金色黄底', (tester) async {
+  testWidgets('Boss全身立绘使用有机金墨气韵且不绘制矩形黄底', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -331,12 +422,23 @@ void main() {
     final frame = tester.widget(find.byKey(_bossFrameKey));
     expect(frame, isA<KeyedSubtree>());
     expect(frame, isNot(isA<Container>()));
+    expect(
+      find.byKey(const ValueKey('battle.stageBossInkAura')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('战场立绘按有效人物边界校准尺度与视觉重心', (tester) async {
-    Future<(double scale, double shiftX, double shiftY)> opticalTransformFor(
-      String iconPath,
-    ) async {
+    Future<
+      (
+        double scale,
+        double shiftX,
+        double shiftY,
+        double aspectX,
+        double aspectY,
+      )
+    >
+    opticalTransformFor(String iconPath) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -356,10 +458,15 @@ void main() {
       final shiftTransform = tester.widget<Transform>(
         find.byKey(const ValueKey('battle.stageStandeeOpticalShift')),
       );
+      final aspectTransform = tester.widget<Transform>(
+        find.byKey(const ValueKey('battle.stageStandeeSampleAspect')),
+      );
       return (
         scaleTransform.transform.storage[0],
         shiftTransform.transform.storage[12],
         shiftTransform.transform.storage[13],
+        aspectTransform.transform.storage[0],
+        aspectTransform.transform.storage[5],
       );
     }
 
@@ -373,16 +480,36 @@ void main() {
     final banditArcher = await opticalTransformFor(
       'assets/enemies/killer_b.png',
     );
+    final secondDisciple = await opticalTransformFor(
+      'assets/characters/second_disciple.png',
+    );
+    final hiddenElder = await opticalTransformFor(
+      'assets/enemies/qingshan_main.png',
+    );
     final umbrellaBoss = await opticalTransformFor(
       'assets/enemies/umbrella.png',
     );
 
-    expect(founder.$1, closeTo(1.055, 0.001));
+    expect(founder.$1, closeTo(1.40, 0.001));
     expect(firstDisciple.$2, greaterThan(0));
-    expect(banditBlade.$1, closeTo(1.18, 0.001));
+    expect(firstDisciple.$1, closeTo(1.18, 0.001));
+    expect(secondDisciple.$1, closeTo(1.12, 0.001));
+    expect(hiddenElder.$1, closeTo(1.14, 0.001));
+    expect(banditBlade.$1, closeTo(1.33, 0.001));
     expect(banditBlade.$3, greaterThan(0));
-    expect(banditArcher.$1, closeTo(1.045, 0.001));
+    expect(banditArcher.$1, closeTo(1.28, 0.001));
     expect(umbrellaBoss.$1, closeTo(0.81, 0.001));
+    expect(founder.$2, lessThan(0));
+    expect(founder.$4, closeTo(1.30, 0.001));
+    expect(founder.$5, closeTo(0.95, 0.001));
+    expect(secondDisciple.$4, closeTo(1.0, 0.001));
+    expect(secondDisciple.$5, closeTo(0.88, 0.001));
+    expect(hiddenElder.$4, closeTo(1.12, 0.001));
+    expect(hiddenElder.$5, closeTo(0.93, 0.001));
+    expect(banditBlade.$4, closeTo(1.08, 0.001));
+    expect(banditBlade.$5, closeTo(0.92, 0.001));
+    expect(banditArcher.$4, closeTo(1.05, 0.001));
+    expect(banditArcher.$5, closeTo(0.95, 0.001));
   });
 
   testWidgets('战场将已配套的旧原画映射到对应透明立绘', (tester) async {

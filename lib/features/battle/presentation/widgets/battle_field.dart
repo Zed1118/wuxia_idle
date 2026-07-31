@@ -6,11 +6,13 @@ import '../../domain/battle_state.dart';
 import '../../../../data/numbers_config.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
+import '../../../../shared/theme/wuxia_tokens.dart';
 import '../attack_animation.dart';
 import '../battle_action_template.dart';
 import '../battle_layout_tokens.dart';
 import '../battle_stage_geometry.dart';
 import '../battle_standee_fusion.dart';
+import '../battle_typography_tokens.dart';
 import '../battle_visual_roster.dart';
 import '../battle_vfx_entries.dart';
 import '../character_avatar.dart';
@@ -362,6 +364,7 @@ class _BattleFieldState extends State<BattleField> {
                             battleState: state,
                             width: layout.width,
                             height: layout.height,
+                            teamSize: layout.slot.teamSize,
                           ),
                         ],
                       ),
@@ -410,9 +413,17 @@ class _StageSlotLayout {
       0.0,
       maxWidth - width,
     );
+    final bottomOverflow =
+        height *
+        battleStageBottomOverflowFraction(
+          slot.teamSide,
+          slot.slotIndex,
+          slot.teamSize,
+          mode: slot.stageLayout,
+        );
     final top = (slot.anchor.dy * maxHeight - height / 2).clamp(
       0.0,
-      maxHeight - height,
+      maxHeight - height + bottomOverflow,
     );
     return _StageSlotLayout(
       slot: slot,
@@ -750,46 +761,51 @@ class EnemyTargetHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: active
-            ? WuxiaColors.resultHighlight
-            : WuxiaColors.panel.withValues(alpha: 0.86),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: active ? WuxiaColors.textPrimary : WuxiaColors.resultHighlight,
-          width: active ? 2 : 1,
-        ),
-        boxShadow: [
-          if (active)
-            BoxShadow(
-              color: WuxiaColors.resultHighlight.withValues(alpha: 0.5),
-              blurRadius: 10,
-              spreadRadius: 1,
+    return Transform.rotate(
+      angle: active ? -0.025 : 0.018,
+      child: DecoratedBox(
+        key: const ValueKey('battle.targetHint.inkSeal'),
+        decoration: BoxDecoration(
+          color: active ? const Color(0xE6842F25) : const Color(0xE6292722),
+          border: Border.all(
+            color: active ? const Color(0xFFD1AC66) : const Color(0xFF806B49),
+            width: active ? 1.4 : 1,
+          ),
+          boxShadow: [
+            const BoxShadow(
+              color: Color(0x66000000),
+              blurRadius: 5,
+              offset: Offset(0, 2),
             ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.my_location,
-              size: 10,
-              color: active ? WuxiaColors.panel : WuxiaColors.resultHighlight,
-            ),
-            const SizedBox(width: 3),
-            Text(
-              active ? UiStrings.skillTargetLocked : UiStrings.skillTargetable,
-              style: TextStyle(
-                color: active ? WuxiaColors.panel : WuxiaColors.resultHighlight,
-                fontSize: 9,
-                height: 1,
-                fontWeight: FontWeight.w800,
+            if (active)
+              const BoxShadow(
+                color: Color(0x42D1AC66),
+                blurRadius: 9,
+                spreadRadius: 1,
               ),
-            ),
           ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+          child: Text(
+            active ? UiStrings.skillTargetLocked : UiStrings.skillTargetable,
+            style: const TextStyle(
+              color: WuxiaUi.paper2,
+              fontFamily: BattleTypography.displayFamily,
+              fontFamilyFallback: BattleTypography.displayFallback,
+              fontSize: 10,
+              height: 1,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1,
+              shadows: [
+                Shadow(
+                  color: Color(0x80000000),
+                  offset: Offset(0, 1),
+                  blurRadius: 1,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

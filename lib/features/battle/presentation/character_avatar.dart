@@ -8,6 +8,8 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'avatar_status_tags.dart';
+import 'battle_layout_tokens.dart';
+import 'battle_stage_geometry.dart';
 import 'battle_standee_fusion.dart';
 import 'battle_typography_tokens.dart';
 import 'countdown_ring.dart';
@@ -433,6 +435,7 @@ class _StageCharacterStandee extends StatelessWidget {
     // 立绘生成时的透明画布留白不一致。绕实际脚底缩放，使成对角色的
     // 有效人物高度接近；水平修正 alpha 重心，垂直将脚底对齐公共基准线。
     final opticalProfile = _stageStandeeOpticalProfile(resolvedIconPath);
+    final sampleAspect = _stageStandeeSampleAspect(resolvedIconPath);
     portraitImage = Transform.translate(
       key: const ValueKey('battle.stageStandeeOpticalShift'),
       offset: Offset(
@@ -443,7 +446,16 @@ class _StageCharacterStandee extends StatelessWidget {
         key: const ValueKey('battle.stageStandeeOpticalScale'),
         scale: opticalProfile.scale,
         alignment: Alignment(0, sourceFootFraction * 2 - 1),
-        child: portraitImage,
+        child: Transform(
+          key: const ValueKey('battle.stageStandeeSampleAspect'),
+          alignment: Alignment(0, sourceFootFraction * 2 - 1),
+          transform: Matrix4.diagonal3Values(
+            sampleAspect.horizontalScale,
+            sampleAspect.verticalScale,
+            1,
+          ),
+          child: portraitImage,
+        ),
       ),
     );
 
@@ -493,6 +505,20 @@ class _StageCharacterStandee extends StatelessWidget {
               child: CustomPaint(painter: _StandeeGroundingPainter()),
             ),
           ),
+          if (character.isBoss &&
+              resolvedIconPath != WuxiaUi.battleSampleHiddenElderStandee)
+            Positioned(
+              left: width * 0.03,
+              right: width * 0.03,
+              top: height * 0.04,
+              bottom: height * 0.10,
+              child: const IgnorePointer(
+                child: CustomPaint(
+                  key: ValueKey('battle.stageBossInkAura'),
+                  painter: _BossInkAuraPainter(),
+                ),
+              ),
+            ),
           portrait,
           Positioned(
             top: 4,
@@ -555,151 +581,274 @@ class StageCharacterStatusOverlay extends StatelessWidget {
     required this.battleState,
     required this.width,
     required this.height,
+    this.teamSize = 1,
   });
 
   final BattleCharacter character;
   final BattleState? battleState;
   final double width;
   final double height;
+  final int teamSize;
 
   @override
   Widget build(BuildContext context) {
-    final portraitHeight = height * 0.91;
-    final footY = portraitHeight * _stageStandeeAnchorFootFraction;
-    final insetFraction = switch (character.slotIndex) {
-      0 => 0.24,
-      2 => 0.18,
-      _ => 0.16,
+    final insetFraction = switch ((character.isBoss, character.slotIndex)) {
+      (true, _) => 0.32,
+      (false, 0) => 0.25,
+      (false, 2) => 0.19,
+      _ => 0.22,
     };
-    final borderColor = character.isBoss
-        ? WuxiaColors.bossFrame
-        : WuxiaColors.schoolColor(character.school);
-
     return Positioned(
       left: width * insetFraction,
       right: width * insetFraction,
-      top: (footY + 2).clamp(0.0, height - 40),
+      top:
+          (height *
+                  battleStageStatusVerticalFraction(
+                    character.teamSide,
+                    character.slotIndex,
+                    teamSize,
+                  ))
+              .clamp(0.0, height - 34),
       child: Opacity(
         opacity: character.isAlive ? 1 : 0.45,
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.topCenter,
-          children: [
-            Positioned(
-              top: -6,
-              width: 13,
-              height: 8,
-              child: IgnorePointer(
-                child: CustomPaint(
-                  key: const ValueKey('battle.stageStatusAnchor'),
-                  painter: _StageStatusAnchorPainter(color: borderColor),
-                ),
-              ),
-            ),
-            Container(
-              key: const ValueKey('battle.stageStatusInkRubbing'),
-              padding: const EdgeInsets.fromLTRB(5, 2, 5, 3),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    WuxiaUi.battleStatusPaperTop,
-                    WuxiaUi.battleStatusPaperBottom,
-                  ],
-                ),
-                border: Border(
-                  top: BorderSide(color: WuxiaUi.paper.withValues(alpha: 0.22)),
-                  bottom: BorderSide(
-                    color: borderColor.withValues(alpha: 0.62),
+        child: Container(
+          key: const ValueKey('battle.stageStatusInkRubbing'),
+          padding: const EdgeInsets.fromLTRB(4, 1, 4, 2),
+          decoration: const BoxDecoration(color: Colors.transparent),
+          child: Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(
+                    key: ValueKey('battle.stageStatusInkWash'),
+                    painter: _StageStatusInkWashPainter(),
                   ),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF2B251E).withValues(alpha: 0.24),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
               ),
-              child: Column(
+              Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    character.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: WuxiaUi.paper,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      shadows: [Shadow(color: Colors.black87, blurRadius: 2)],
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          character.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: WuxiaUi.paper,
+                            fontSize: BattleTypography.t4,
+                            fontWeight: FontWeight.w600,
+                            height: 1,
+                            shadows: [
+                              Shadow(color: Colors.black87, blurRadius: 1),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (character.isBoss && character.teamSide == 1) ...[
+                        const SizedBox(width: 3),
+                        Container(
+                          key: const ValueKey('battle.stageBossMomentumSeal'),
+                          width: 14,
+                          height: 14,
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            color: WuxiaUi.jiang,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Text(
+                            UiStrings.battleMomentumSeal,
+                            style: TextStyle(
+                              color: WuxiaUi.paper,
+                              fontFamily: BattleTypography.displayFamily,
+                              fontFamilyFallback:
+                                  BattleTypography.displayFallback,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              height: 1,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 1),
                   HpBar(
                     current: character.currentHp,
                     max: character.maxHp,
-                    height: 11,
+                    height: BattleLayoutTokens.stageStatusHpHeight,
                     fillColorOverride: WuxiaUi.jiang,
                     trackColorOverride: WuxiaUi.battleStatusTrack,
-                    labelFontSize: BattleTypography.t5,
-                    compactLabel: true,
+                    labelFontSize: 10,
+                    tightLabel: true,
                   ),
                   const SizedBox(height: 1),
                   HpBar(
                     current: character.currentQi,
                     max: character.maxQi,
-                    height: 9,
+                    height: BattleLayoutTokens.stageStatusQiHeight,
                     isInternalForce: true,
-                    labelPrefix: UiStrings.internalForceShortLabel,
                     fillColorOverride: WuxiaUi.qing,
                     trackColorOverride: WuxiaUi.battleStatusTrack,
-                    labelFontSize: BattleTypography.t5,
-                    compactLabel: true,
+                    labelFontSize: 10,
+                    tightLabel: true,
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-/// 状态墨拓顶部的小型归属指针。它只占人物脚底与信息板之间的既有空隙，
-/// 不移动信息板、不改变阵位或点击区。
-class _StageStatusAnchorPainter extends CustomPainter {
-  const _StageStatusAnchorPainter({required this.color});
-
-  final Color color;
+/// Boss 背后的金墨气韵。只画细线与局部雾化弧，不铺矩形光晕；
+/// 既承接样板中隐世老者的游丝金气，也避免浅色战景出现一整块黄色底板。
+class _BossInkAuraPainter extends CustomPainter {
+  const _BossInkAuraPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
-    final path = Path()
-      ..moveTo(size.width * 0.5, 0)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = WuxiaUi.battleStatusPaperBottom
-        ..style = PaintingStyle.fill,
+    final glow = Paint()
+      ..color = WuxiaUi.gold.withValues(alpha: 0.20)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7);
+    canvas.drawArc(
+      Rect.fromLTWH(
+        size.width * 0.12,
+        size.height * 0.12,
+        size.width * 0.76,
+        size.height * 0.76,
+      ),
+      -2.55,
+      4.75,
+      false,
+      glow,
     );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = color.withValues(alpha: 0.72)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1,
+
+    final strand = Paint()
+      ..color = const Color(0xFFC5A86B).withValues(alpha: 0.65)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.15
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.45);
+    final faintStrand = Paint()
+      ..color = const Color(0xFFD2BA84).withValues(alpha: 0.38)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8
+      ..strokeCap = StrokeCap.round;
+
+    void drawStrand({
+      required Offset start,
+      required Offset control1,
+      required Offset control2,
+      required Offset end,
+      bool faint = false,
+    }) {
+      final path = Path()
+        ..moveTo(start.dx * size.width, start.dy * size.height)
+        ..cubicTo(
+          control1.dx * size.width,
+          control1.dy * size.height,
+          control2.dx * size.width,
+          control2.dy * size.height,
+          end.dx * size.width,
+          end.dy * size.height,
+        );
+      canvas.drawPath(path, faint ? faintStrand : strand);
+    }
+
+    drawStrand(
+      start: const Offset(0.44, 0.82),
+      control1: const Offset(0.03, 0.65),
+      control2: const Offset(0.10, 0.29),
+      end: const Offset(0.30, 0.17),
+    );
+    drawStrand(
+      start: const Offset(0.42, 0.75),
+      control1: const Offset(0.12, 0.55),
+      control2: const Offset(0.30, 0.15),
+      end: const Offset(0.46, 0.08),
+      faint: true,
+    );
+    drawStrand(
+      start: const Offset(0.53, 0.80),
+      control1: const Offset(0.88, 0.64),
+      control2: const Offset(0.91, 0.28),
+      end: const Offset(0.69, 0.15),
+    );
+    drawStrand(
+      start: const Offset(0.58, 0.72),
+      control1: const Offset(0.94, 0.52),
+      control2: const Offset(0.75, 0.21),
+      end: const Offset(0.60, 0.10),
+      faint: true,
+    );
+    drawStrand(
+      start: const Offset(0.30, 0.65),
+      control1: const Offset(0.05, 0.48),
+      control2: const Offset(0.14, 0.21),
+      end: const Offset(0.38, 0.30),
+      faint: true,
+    );
+    drawStrand(
+      start: const Offset(0.69, 0.63),
+      control1: const Offset(0.94, 0.43),
+      control2: const Offset(0.81, 0.18),
+      end: const Offset(0.58, 0.27),
+      faint: true,
     );
   }
 
   @override
-  bool shouldRepaint(covariant _StageStatusAnchorPainter oldDelegate) =>
-      oldDelegate.color != color;
+  bool shouldRepaint(covariant _BossInkAuraPainter oldDelegate) => false;
+}
+
+/// 人物脚下状态条的柔和墨染。透明渐隐与断续墨毫替代矩形实底和硬边，
+/// 数值条仍保持原宽度与对比，不改变人物站位或点击区域。
+class _StageStatusInkWashPainter extends CustomPainter {
+  const _StageStatusInkWashPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final bounds = Offset.zero & size;
+    canvas.drawRect(
+      bounds,
+      Paint()
+        ..shader = const LinearGradient(
+          colors: [
+            Color(0x00221E19),
+            Color(0x6B2C2721),
+            Color(0x75221E19),
+            Color(0x00221E19),
+          ],
+          stops: [0, 0.13, 0.86, 1],
+        ).createShader(bounds),
+    );
+
+    final wash = Paint()
+      ..color = const Color(0xFF191612).withValues(alpha: 0.16)
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.6);
+    for (var i = 0; i < 5; i++) {
+      final y = size.height * (0.16 + i * 0.18);
+      canvas.drawLine(
+        Offset(size.width * (0.08 + (i % 2) * 0.05), y),
+        Offset(size.width * (0.90 - (i % 3) * 0.04), y + (i.isEven ? 1 : -1)),
+        wash..strokeWidth = 2.8 + (i % 2),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _StageStatusInkWashPainter oldDelegate) => false;
 }
 
 /// 透明立绘的接触影与脚底墨晕。影子贴在人物层内，会跟随冲锋、
@@ -1156,10 +1305,14 @@ const _stageStandeeAnchorFootFraction = 0.95;
 double battleStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleFounderFallback => 0.938,
   WuxiaUi.battleFirstDiscipleFallback => 0.961,
+  WuxiaUi.battleSampleFirstDiscipleStandee => 0.999,
   WuxiaUi.battleSecondDiscipleFallback => 0.957,
   WuxiaUi.battleHiddenElderStandee => 0.952,
+  WuxiaUi.battleSampleHiddenElderStandee => 0.942,
   WuxiaUi.battleBanditBladeStandee => 0.823,
+  WuxiaUi.battleSampleBanditBladeStandee => 0.811,
   WuxiaUi.battleBanditArcherStandee => 0.939,
+  WuxiaUi.battleSampleBanditArcherStandee => 0.885,
   WuxiaUi.battleYoungRuffianStandee => 0.928,
   WuxiaUi.battleGauntCutpurseStandee => 0.943,
   WuxiaUi.battleVillageRuffianStandee => 0.957,
@@ -1357,22 +1510,94 @@ typedef _StageStandeeOpticalProfile = ({
   double horizontalShiftFraction,
 });
 
+typedef _StageStandeeSampleAspect = ({
+  double horizontalScale,
+  double verticalScale,
+});
+
+/// 黄金样板角色原画的身形校准。这里只修正透明立绘在舞台上的视觉纵横比，
+/// 不改变阵型锚点、状态牌位置或战斗数值。
+_StageStandeeSampleAspect _stageStandeeSampleAspect(String? path) =>
+    switch (path) {
+      WuxiaUi.battleFounderFallback => (
+        horizontalScale: 1.30,
+        verticalScale: 0.95,
+      ),
+      WuxiaUi.battleSampleFirstDiscipleStandee => (
+        horizontalScale: 1.0,
+        verticalScale: 1.0,
+      ),
+      WuxiaUi.battleSecondDiscipleFallback => (
+        horizontalScale: 1.0,
+        verticalScale: 0.88,
+      ),
+      WuxiaUi.battleHiddenElderStandee => (
+        horizontalScale: 1.12,
+        verticalScale: 0.93,
+      ),
+      WuxiaUi.battleSampleHiddenElderStandee => (
+        horizontalScale: 1.12,
+        verticalScale: 0.96,
+      ),
+      WuxiaUi.battleBanditBladeStandee => (
+        horizontalScale: 1.08,
+        verticalScale: 0.92,
+      ),
+      WuxiaUi.battleBanditArcherStandee => (
+        horizontalScale: 1.05,
+        verticalScale: 0.95,
+      ),
+      WuxiaUi.battleSampleBanditBladeStandee => (
+        horizontalScale: 1.30,
+        verticalScale: 1.25,
+      ),
+      WuxiaUi.battleSampleBanditArcherStandee => (
+        horizontalScale: 1.12,
+        verticalScale: 1.22,
+      ),
+      _ => (horizontalScale: 1.0, verticalScale: 1.0),
+    };
+
 /// 以透明像素的有效包围盒为基准的光学校准。
 /// 数值只补偿原图画布留白，不表示战斗单位的体型或阵型位置。
 _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
   String? path,
 ) => switch (path) {
-  WuxiaUi.battleFounderFallback => (scale: 1.055, horizontalShiftFraction: 0),
+  WuxiaUi.battleFounderFallback => (
+    scale: 1.40,
+    horizontalShiftFraction: -0.05,
+  ),
   WuxiaUi.battleFirstDiscipleFallback => (
-    scale: 1,
+    scale: 1.18,
     horizontalShiftFraction: 0.04,
   ),
+  WuxiaUi.battleSampleFirstDiscipleStandee => (
+    scale: 1.08,
+    horizontalShiftFraction: -0.03,
+  ),
+  WuxiaUi.battleSecondDiscipleFallback => (
+    scale: 1.12,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleHiddenElderStandee => (scale: 1.14, horizontalShiftFraction: 0),
+  WuxiaUi.battleSampleHiddenElderStandee => (
+    scale: 1.14,
+    horizontalShiftFraction: 0.03,
+  ),
   WuxiaUi.battleBanditBladeStandee => (
-    scale: 1.18,
+    scale: 1.33,
     horizontalShiftFraction: 0.015,
   ),
   WuxiaUi.battleBanditArcherStandee => (
-    scale: 1.045,
+    scale: 1.28,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleSampleBanditBladeStandee => (
+    scale: 1.0,
+    horizontalShiftFraction: 0,
+  ),
+  WuxiaUi.battleSampleBanditArcherStandee => (
+    scale: 1.05,
     horizontalShiftFraction: 0,
   ),
   WuxiaUi.battleYoungRuffianStandee => (

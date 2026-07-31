@@ -124,67 +124,82 @@ class DangerBar extends StatelessWidget {
       }
     }
     if (imminent == null) return const SizedBox.shrink();
+    final imminentCharacter = imminent;
 
     return SizedBox(
       key: const ValueKey('battle_danger_bar'),
       height: 34,
       width: double.infinity,
-      child: Align(
-        alignment: Alignment.topRight,
-        child: Container(
-          width: 390,
-          margin: const EdgeInsets.only(right: 112),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.transparent,
-                WuxiaColors.danger.withValues(alpha: 0.54),
-                WuxiaColors.danger.withValues(alpha: 0.34),
-                Colors.transparent,
-              ],
-              stops: const [0, 0.14, 0.86, 1],
-            ),
-            border: Border(
-              bottom: BorderSide(
-                color: WuxiaColors.danger.withValues(alpha: 0.68),
-              ),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                UiStrings.battleDangerChargeLabel,
-                style: TextStyle(
-                  color: Color(0xFFE3C59F),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 2,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final stripWidth = (constraints.maxWidth * 0.16)
+              .clamp(230.0, 290.0)
+              .toDouble();
+          final rightInset = (constraints.maxWidth * 0.23)
+              .clamp(100.0, 390.0)
+              .toDouble();
+          return Align(
+            alignment: Alignment.topRight,
+            child: Container(
+              key: const ValueKey('battle_danger_bar_strip'),
+              width: stripWidth,
+              height: 34,
+              margin: EdgeInsets.only(right: rightInset),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    WuxiaColors.danger.withValues(alpha: 0.64),
+                    WuxiaColors.danger.withValues(alpha: 0.48),
+                    Colors.transparent,
+                  ],
+                  stops: const [0, 0.14, 0.86, 1],
                 ),
               ),
-              const SizedBox(width: 8),
-              Container(width: 1, height: 14, color: const Color(0x888A2B21)),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  UiStrings.battleDangerCharging(
-                    imminent.name,
-                    imminent.chargingSkill!.name,
-                    imminent.chargeTicksRemaining,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFFD8C8AF),
-                    fontSize: 11,
-                    height: 1.1,
-                  ),
+              child: Semantics(
+                container: true,
+                label: UiStrings.battleDangerCharging(
+                  imminentCharacter.name,
+                  imminentCharacter.chargingSkill!.name,
+                  imminentCharacter.chargeTicksRemaining,
+                ),
+                excludeSemantics: true,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      UiStrings.battleDangerChargeLabel,
+                      style: TextStyle(
+                        color: Color(0xFFE3C59F),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 1,
+                      height: 14,
+                      color: const Color(0x888A2B21),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      UiStrings.battleDangerTicks(
+                        imminentCharacter.chargeTicksRemaining,
+                      ),
+                      style: const TextStyle(
+                        color: Color(0xFFD8C8AF),
+                        fontSize: 11,
+                        height: 1.1,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

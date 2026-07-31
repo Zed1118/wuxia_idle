@@ -55,12 +55,10 @@ class BattleSceneBackground extends StatelessWidget {
         resolvedStyle == BattleSceneBackgroundStyle.boss ||
         p?.contains('battle_mountain_pass_stage') == true;
     final resolvedAsset = hasImage
-        ? _resolvedBackgroundAsset(
-            p,
-            isTowerScene: isTowerScene,
-            isMountainPassScene: isMountainPassScene,
-          )
+        ? _resolvedBackgroundAsset(p, isTowerScene: isTowerScene)
         : null;
+    final preserveFullMountainPassFrame =
+        resolvedAsset == WuxiaUi.battleMountainPassStage;
     final profile = _SceneDepthProfile.resolve(path: p, style: resolvedStyle);
     final vignetteAlpha = hasImage
         ? profile.vignetteAlpha * profile.imageVignetteFactor
@@ -91,7 +89,7 @@ class BattleSceneBackground extends StatelessWidget {
                 : isMountainPassScene
                 ? const ValueKey('battle_scene_mainline_asset')
                 : null,
-            fit: BoxFit.cover,
+            fit: preserveFullMountainPassFrame ? BoxFit.fill : BoxFit.cover,
             alignment: assetFramingForScene(resolvedAsset).alignment,
             errorBuilder: (_, _, _) => const SizedBox.shrink(),
           ),
@@ -133,13 +131,7 @@ class BattleSceneBackground extends StatelessWidget {
       ],
     );
     Widget gradedScene;
-    if (isMountainPassScene) {
-      gradedScene = ColorFiltered(
-        key: const ValueKey('battle_scene_mainline_color_grade'),
-        colorFilter: _mainlineSceneColorGrade,
-        child: scene,
-      );
-    } else if (isTowerScene) {
+    if (isTowerScene) {
       gradedScene = ColorFiltered(
         key: const ValueKey('battle_scene_tower_color_grade'),
         colorFilter: _towerSceneColorGrade,
@@ -180,44 +172,12 @@ const _towerSceneColorGrade = ColorFilter.matrix(<double>[
   0,
 ]);
 
-String _resolvedBackgroundAsset(
-  String path, {
-  required bool isTowerScene,
-  required bool isMountainPassScene,
-}) {
+String _resolvedBackgroundAsset(String path, {required bool isTowerScene}) {
   if (isTowerScene && path.contains('battle_innerrealm.png')) {
     return WuxiaUi.battleInnerRealmCool;
   }
-  if (isMountainPassScene && path.contains('battle_mountain_pass_stage')) {
-    return WuxiaUi.battleMountainPassStageCool;
-  }
   return path;
 }
-
-/// 主线山道背景轻微冷灰化，压掉径向 glow 与原图叠加后的暖黄块。
-/// 只作用于背景组件，人物、状态牌和技能案台不参与滤镜。
-const _mainlineSceneColorGrade = ColorFilter.matrix(<double>[
-  0.82,
-  0.12,
-  0.06,
-  0,
-  14,
-  0.10,
-  0.84,
-  0.06,
-  0,
-  10,
-  0.08,
-  0.18,
-  0.74,
-  0,
-  4,
-  0,
-  0,
-  0,
-  1,
-  0,
-]);
 
 class _SceneDepthProfile {
   const _SceneDepthProfile({
@@ -361,7 +321,7 @@ class _SceneDepthProfile {
           groundAlpha: 0.22,
           glowAlpha: 0.13,
           vignetteAlpha: 0.42,
-          imageScrim: Color(0x212D2420),
+          imageScrim: Color(0x082D2420),
           imageMistIntensity: 0.16,
           imageGroundIntensity: 0.32,
           imageVignetteFactor: 0.42,

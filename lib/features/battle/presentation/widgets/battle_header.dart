@@ -6,9 +6,8 @@ import '../../domain/battle_state.dart';
 import '../../domain/enum_localizations.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
+import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
-import '../../../help/domain/help_topic.dart';
-import '../../../help/presentation/context_help_button.dart';
 import '../battle_layout_tokens.dart';
 import '../battle_typography_tokens.dart';
 
@@ -52,14 +51,19 @@ class Header extends StatelessWidget {
     final metrics = BattleLayoutMetrics.resolve(MediaQuery.sizeOf(context));
     final aliveLeft = state.leftTeam.where((c) => c.isAlive).length;
     final aliveRight = state.rightTeam.where((c) => c.isAlive).length;
+    final surviveRequired = _surviveRequired(state);
 
     return Container(
+      key: const ValueKey('battle_header_surface'),
       height: metrics.headerHeight,
-      padding: const EdgeInsets.symmetric(horizontal: 28),
+      padding: const EdgeInsets.only(
+        left: BattleLayoutTokens.headerHorizontalPadding,
+        right: BattleLayoutTokens.headerRightPadding,
+      ),
       decoration: const BoxDecoration(
-        color: Color(0xF2191816),
-        border: Border(bottom: BorderSide(color: Color(0xFF6D5940))),
-        boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 12)],
+        color: WuxiaUi.battleHeaderBase,
+        border: Border(bottom: BorderSide(color: Color(0xB36D5940))),
+        boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 8)],
       ),
       child: Stack(
         alignment: Alignment.center,
@@ -67,21 +71,14 @@ class Header extends StatelessWidget {
           Center(
             child: Container(
               key: const ValueKey('battle_header_title_slip'),
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 4),
-              decoration: const BoxDecoration(
-                border: Border(
-                  left: BorderSide(color: Color(0xFF8A2B21), width: 2),
-                  right: BorderSide(color: Color(0xFF8A2B21), width: 2),
-                  bottom: BorderSide(color: Color(0xFF6D5940)),
-                ),
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
               child: Text(
                 UiStrings.battleTitle(aliveLeft, aliveRight),
                 style: const TextStyle(
                   color: Color(0xFFE2CFAB),
                   fontFamily: BattleTypography.displayFamily,
                   fontFamilyFallback: BattleTypography.displayFallback,
-                  fontSize: BattleTypography.t1,
+                  fontSize: 28,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 4,
                   fontFeatures: BattleTypography.tabularFigures,
@@ -105,27 +102,20 @@ class Header extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Color(0xFFD8C29A),
-                        fontFamilyFallback: BattleTypography.uiFallback,
-                        fontSize: BattleTypography.t2,
+                        fontFamily: BattleTypography.displayFamily,
+                        fontFamilyFallback: BattleTypography.displayFallback,
+                        fontSize: 20,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 1.5,
                       ),
                     ),
-                  Text(
-                    '${UiStrings.tickPrefix} ${state.tick}',
-                    style: TextStyle(
-                      color: const Color(0xFFBFAE8D),
-                      fontFamilyFallback: BattleTypography.uiFallback,
-                      fontSize: sceneTitle == null
-                          ? BattleTypography.t3
-                          : BattleTypography.t5,
-                      letterSpacing: 1,
-                      fontFeatures: BattleTypography.tabularFigures,
-                    ),
+                  Semantics(
+                    label: '${UiStrings.tickPrefix} ${state.tick}',
+                    child: const SizedBox.shrink(),
                   ),
                   // surviveTicks 型胜负条件的条件条(2026-07-29 Ch21 主线首用补)。
                   // 不配 winCondition 或 defeatAll 型时整行不渲染,前 20 章零影响。
-                  if (_surviveRequired(state) case final int required)
+                  if (surviveRequired case final int required)
                     Text(
                       state.tick >= required
                           ? UiStrings.surviveConditionMet(required)
@@ -171,12 +161,14 @@ class Header extends StatelessWidget {
                 BattleModePill(
                   allowPlayerIntervention: allowPlayerIntervention,
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: BattleLayoutTokens.headerSealGap),
                 if (state.result == null)
                   BattleHeaderIconButton(
                     key: const ValueKey('battle_fast_forward_toggle'),
                     icon: Icons.fast_forward,
-                    label: UiStrings.fastForward,
+                    label: isFastForward
+                        ? UiStrings.battleSpeedFast
+                        : UiStrings.battleSpeedNormal,
                     tooltip: UiStrings.fastForward,
                     onPressed: onFastForward,
                     isActive: isFastForward,
@@ -193,6 +185,21 @@ class Header extends StatelessWidget {
                         : UiStrings.battlePause,
                     onPressed: onPause,
                   ),
+                BattleHeaderIconButton(
+                  key: const ValueKey('battle_log_toggle'),
+                  icon: Icons.list_alt,
+                  label: UiStrings.battleLogShort,
+                  tooltip: UiStrings.battleLog,
+                  onPressed: onToggleLog,
+                ),
+                if (state.result == null && onSurrender != null)
+                  BattleHeaderIconButton(
+                    key: const ValueKey('battle_surrender'),
+                    icon: Icons.flag_outlined,
+                    label: UiStrings.surrenderConfirmAction,
+                    tooltip: UiStrings.battleSurrender,
+                    onPressed: onSurrender,
+                  ),
                 if (state.result == null && onStepOnce != null)
                   BattleHeaderIconButton(
                     key: const ValueKey('battle_step_once'),
@@ -201,26 +208,6 @@ class Header extends StatelessWidget {
                     tooltip: UiStrings.battleStepOnce,
                     onPressed: onStepOnce,
                   ),
-                if (state.result == null && onSurrender != null)
-                  BattleHeaderIconButton(
-                    key: const ValueKey('battle_surrender'),
-                    icon: Icons.flag_outlined,
-                    label: UiStrings.battleSurrender,
-                    tooltip: UiStrings.battleSurrender,
-                    onPressed: onSurrender,
-                  ),
-                BattleHeaderIconButton(
-                  key: const ValueKey('battle_log_toggle'),
-                  icon: Icons.list_alt,
-                  label: UiStrings.battleLogShort,
-                  tooltip: UiStrings.battleLog,
-                  onPressed: onToggleLog,
-                ),
-                const SizedBox(width: 4),
-                const ContextHelpButton(
-                  topic: HelpTopic.combatAdvanced,
-                  size: 20,
-                ),
               ],
             ),
           ),
@@ -249,45 +236,59 @@ class BattleHeaderIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
-      child: IconButton(
-        tooltip: tooltip,
-        onPressed: onPressed,
-        icon: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 14),
-            const SizedBox(width: 3),
-            Text(
+      padding: const EdgeInsets.symmetric(
+        horizontal: BattleLayoutTokens.headerSealGap,
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(
+            BattleLayoutTokens.headerSealHeight / 2 + 2,
+          ),
+          border: Border.all(
+            color: const Color(0xFF8A704B).withValues(alpha: 0.52),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(2),
+          child: IconButton(
+            tooltip: tooltip,
+            onPressed: onPressed,
+            icon: Text(
               label,
+              maxLines: 1,
               style: const TextStyle(
-                fontFamilyFallback: BattleTypography.uiFallback,
-                fontSize: BattleTypography.t5,
-                fontWeight: FontWeight.w700,
+                fontFamily: BattleTypography.displayFamily,
+                fontFamilyFallback: BattleTypography.displayFallback,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
               ),
             ),
-          ],
-        ),
-        color: isActive
-            ? WuxiaColors.resultHighlight
-            : WuxiaColors.textSecondary,
-        disabledColor: WuxiaColors.textMuted,
-        constraints: const BoxConstraints(minWidth: 50, minHeight: 36),
-        padding: EdgeInsets.zero,
-        splashRadius: 18,
-        style: IconButton.styleFrom(
-          backgroundColor: isActive
-              ? WuxiaColors.resultHighlight.withValues(alpha: 0.12)
-              : Colors.black.withValues(alpha: 0.28),
-          hoverColor: WuxiaColors.resultHighlight.withValues(alpha: 0.10),
-          highlightColor: WuxiaColors.resultHighlight.withValues(alpha: 0.14),
-          shape: BeveledRectangleBorder(
-            borderRadius: const BorderRadius.all(Radius.circular(3)),
-            side: BorderSide(
-              color: isActive
-                  ? WuxiaColors.resultHighlight
-                  : const Color(0xFF6D5940),
+            color: isActive
+                ? WuxiaColors.resultHighlight
+                : const Color(0xFFCBB992),
+            disabledColor: WuxiaColors.textMuted,
+            constraints: const BoxConstraints(
+              minWidth: BattleLayoutTokens.headerSealMinWidth,
+              minHeight: BattleLayoutTokens.headerSealHeight,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            splashRadius: 18,
+            style: IconButton.styleFrom(
+              backgroundColor: isActive
+                  ? WuxiaColors.resultHighlight.withValues(alpha: 0.12)
+                  : Colors.black.withValues(alpha: 0.22),
+              hoverColor: WuxiaColors.resultHighlight.withValues(alpha: 0.10),
+              highlightColor: WuxiaColors.resultHighlight.withValues(
+                alpha: 0.14,
+              ),
+              shape: StadiumBorder(
+                side: BorderSide(
+                  color: isActive
+                      ? WuxiaColors.resultHighlight
+                      : const Color(0xFF6D5940),
+                ),
+              ),
             ),
           ),
         ),
@@ -315,25 +316,40 @@ class BattleModePill extends StatelessWidget {
             ? UiStrings.battleAutoIntervention
             : UiStrings.battleAutoMode,
         hint: hint,
-        child: Container(
+        child: DecoratedBox(
           key: const ValueKey('battle_auto_mode'),
-          height: 30,
-          padding: const EdgeInsets.symmetric(horizontal: 9),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.28),
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: const Color(0xFF6D5940)),
+            borderRadius: BorderRadius.circular(
+              BattleLayoutTokens.headerSealHeight / 2 + 2,
+            ),
+            border: Border.all(
+              color: const Color(0xFF8A704B).withValues(alpha: 0.52),
+            ),
           ),
-          alignment: Alignment.center,
-          child: Text(
-            allowPlayerIntervention
-                ? '${UiStrings.battleAutoModeShort}·${UiStrings.battleAutoInterventionShort}'
-                : UiStrings.battleAutoModeShort,
-            style: const TextStyle(
-              color: WuxiaColors.textSecondary,
-              fontFamilyFallback: BattleTypography.uiFallback,
-              fontSize: BattleTypography.t4,
-              fontWeight: FontWeight.w600,
+          child: Container(
+            height: BattleLayoutTokens.headerSealHeight + 4,
+            constraints: const BoxConstraints(
+              minWidth: BattleLayoutTokens.headerSealMinWidth + 4,
+            ),
+            margin: const EdgeInsets.all(2),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.22),
+              borderRadius: BorderRadius.circular(
+                BattleLayoutTokens.headerSealHeight / 2,
+              ),
+              border: Border.all(color: const Color(0xFF6D5940)),
+            ),
+            alignment: Alignment.center,
+            child: const Text(
+              UiStrings.battleAutoModeShort,
+              style: TextStyle(
+                color: Color(0xFFCBB992),
+                fontFamily: BattleTypography.displayFamily,
+                fontFamilyFallback: BattleTypography.displayFallback,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
@@ -342,7 +358,9 @@ class BattleModePill extends StatelessWidget {
   }
 }
 
-/// H3 暂停遮罩:半透明罩 +「已暂停」+ 继续(轻触任意处或按钮恢复)。
+/// 暂停遮罩延续战斗样板的墨幕、旧纸与朱印语言。
+///
+/// 轻触幕布或朱印都可恢复；朱印保留原生按钮语义与键盘操作。
 class PauseOverlay extends StatelessWidget {
   const PauseOverlay({super.key, required this.onResume});
 
@@ -353,38 +371,232 @@ class PauseOverlay extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onResume,
-      child: ColoredBox(
-        color: Colors.black54,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.pause_circle_outline,
-                color: WuxiaColors.textPrimary,
-                size: 56,
+      child: Stack(
+        key: const ValueKey('battle.pauseOverlay.inkVeil'),
+        fit: StackFit.expand,
+        children: [
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                radius: 1.08,
+                colors: [Color(0x8A171512), Color(0xD10B0B0A)],
               ),
-              const SizedBox(height: 16),
-              const Text(
-                UiStrings.battlePausedTitle,
-                style: TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 4,
+            ),
+          ),
+          const IgnorePointer(
+            child: CustomPaint(painter: _PauseInkVeilPainter()),
+          ),
+          Center(
+            child: GestureDetector(
+              onTap: () {},
+              child: Container(
+                key: const ValueKey('battle.pauseOverlay.paperPanel'),
+                width: 238,
+                height: 166,
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 15),
+                decoration: BoxDecoration(
+                  color: const Color(0xE6CBB996),
+                  border: Border.all(
+                    color: const Color(0xB342382C),
+                    width: 1.2,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x99000000),
+                      blurRadius: 18,
+                      offset: Offset(0, 8),
+                    ),
+                    BoxShadow(
+                      color: Color(0x246E573A),
+                      blurRadius: 0,
+                      spreadRadius: 4,
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Positioned.fill(
+                      child: Opacity(
+                        opacity: 0.24,
+                        child: Image.asset(
+                          WuxiaUi.paperBg,
+                          fit: BoxFit.cover,
+                          color: const Color(0xFF786650),
+                          colorBlendMode: BlendMode.multiply,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                    const Positioned.fill(
+                      child: IgnorePointer(
+                        child: CustomPaint(painter: _PausePaperPainter()),
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        const Text(
+                          UiStrings.battlePausedTitle,
+                          style: TextStyle(
+                            color: WuxiaUi.ink,
+                            fontFamily: BattleTypography.displayFamily,
+                            fontFamilyFallback:
+                                BattleTypography.displayFallback,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 7,
+                            shadows: [
+                              Shadow(
+                                color: Color(0x2E3A2A1A),
+                                offset: Offset(0.5, 1),
+                                blurRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                        SizedBox.square(
+                          dimension: 66,
+                          child: TextButton(
+                            key: const ValueKey(
+                              'battle.pauseOverlay.resumeSeal',
+                            ),
+                            onPressed: onResume,
+                            style: TextButton.styleFrom(
+                              foregroundColor: const Color(0xFFE6D2B5),
+                              backgroundColor: const Color(0xD16E2B23),
+                              overlayColor: const Color(0x2EFFE0B2),
+                              padding: EdgeInsets.zero,
+                              shape: const CircleBorder(
+                                side: BorderSide(
+                                  color: Color(0xFF4B211D),
+                                  width: 1.4,
+                                ),
+                              ),
+                              textStyle: const TextStyle(
+                                fontFamily: BattleTypography.displayFamily,
+                                fontFamilyFallback:
+                                    BattleTypography.displayFallback,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                            child: const Text(UiStrings.battleResume),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 20),
-              FilledButton(
-                onPressed: onResume,
-                child: const Text(UiStrings.battleResume),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
+}
+
+class _PauseInkVeilPainter extends CustomPainter {
+  const _PauseInkVeilPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final wash = Paint()
+      ..color = const Color(0x241A1712)
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, size.height * 0.18)
+        ..quadraticBezierTo(
+          size.width * 0.31,
+          size.height * 0.08,
+          size.width * 0.62,
+          size.height * 0.20,
+        )
+        ..quadraticBezierTo(
+          size.width * 0.83,
+          size.height * 0.28,
+          size.width,
+          size.height * 0.12,
+        )
+        ..lineTo(size.width, size.height * 0.37)
+        ..quadraticBezierTo(
+          size.width * 0.64,
+          size.height * 0.30,
+          0,
+          size.height * 0.43,
+        )
+        ..close(),
+      wash,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(0, size.height * 0.72)
+        ..quadraticBezierTo(
+          size.width * 0.28,
+          size.height * 0.64,
+          size.width * 0.58,
+          size.height * 0.77,
+        )
+        ..quadraticBezierTo(
+          size.width * 0.82,
+          size.height * 0.86,
+          size.width,
+          size.height * 0.69,
+        )
+        ..lineTo(size.width, size.height)
+        ..lineTo(0, size.height)
+        ..close(),
+      wash,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _PauseInkVeilPainter oldDelegate) => false;
+}
+
+class _PausePaperPainter extends CustomPainter {
+  const _PausePaperPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final ink = Paint()
+      ..color = const Color(0x59483B2E)
+      ..strokeWidth = 1.0
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(size.width * 0.13, 52),
+      Offset(size.width * 0.42, 50.5),
+      ink,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.58, 50.5),
+      Offset(size.width * 0.87, 52),
+      ink,
+    );
+    final stain = Paint()..color = const Color(0x16785E41);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.18, size.height * 0.75),
+        width: 54,
+        height: 17,
+      ),
+      stain,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.82, size.height * 0.27),
+        width: 43,
+        height: 14,
+      ),
+      stain,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _PausePaperPainter oldDelegate) => false;
 }
 
 // ─── 日志折叠抽屉（P0-2 Task6）─────────────────────────────────────────────

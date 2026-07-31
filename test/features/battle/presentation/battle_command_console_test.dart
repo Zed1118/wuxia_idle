@@ -186,6 +186,18 @@ const _joint = SkillDef(
   requiresManualTrigger: false,
   visualEffect: '',
 );
+const _encounter = SkillDef(
+  id: 'e1',
+  name: '奇门截脉',
+  description: '',
+  type: SkillType.ultimate,
+  powerMultiplier: 2200,
+  internalForceCost: 250,
+  cooldownTurns: 4,
+  requiresManualTrigger: true,
+  source: SkillSource.encounter,
+  visualEffect: '',
+);
 const _powerC = SkillDef(
   id: 'pC',
   name: '回风掌',
@@ -263,7 +275,7 @@ Future<_TestBattleNotifier> _pumpWith(
 
 void main() {
   group('自动观战轮转谱', () {
-    testWidgets('自动案台整体压暗且仅陈列AI可轮转招式', (tester) async {
+    testWidgets('自动案台轻压暗且仅陈列AI可轮转招式', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final actor = left.first.copyWith(availableSkills: [_power, _ult]);
       await _pumpWith(tester, [actor], right, allowPlayerIntervention: false);
@@ -276,7 +288,7 @@ void main() {
             )
             .first,
       );
-      expect(opacity.opacity, 0.78);
+      expect(opacity.opacity, 0.92);
       expect(
         find.byKey(
           ValueKey('battle_auto_skill_${actor.characterId}_${_power.id}'),
@@ -318,7 +330,7 @@ void main() {
         );
         expect(find.text(actor.name), findsWidgets);
       }
-      expect(find.text(UiStrings.battleAutoRotation), findsOneWidget);
+      expect(find.text(UiStrings.battleAutoRotation), findsNothing);
       for (var i = 0; i < 7; i++) {
         expect(find.byKey(ValueKey('battle_skill_slot_$i')), findsOneWidget);
       }
@@ -337,6 +349,30 @@ void main() {
         reason: '自动案台与可点选案台同形，但不接受按钮、焦点或拖放输入',
       );
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('样板顶栏与案台消费集中暖墨色基线', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      await _pumpWith(tester, left, right);
+
+      final header = tester.widget<Container>(
+        find.byKey(const ValueKey('battle_header_surface')),
+      );
+      final headerDecoration = header.decoration! as BoxDecoration;
+      expect(headerDecoration.color, WuxiaUi.battleHeaderBase);
+
+      final desk = tester.widget<Container>(
+        find.byKey(const ValueKey('battle_command_desk')),
+      );
+      final deskDecoration = desk.decoration! as BoxDecoration;
+      expect(deskDecoration.color, WuxiaUi.battleDeskBase);
+      expect(WuxiaUi.battleDeskBase, const Color(0xFF272724));
+      expect(WuxiaUi.battleDeskTextureTint, const Color(0xFF272724));
+      expect(deskDecoration.image!.opacity, 0.04);
+      expect(
+        find.byKey(const ValueKey('battle.commandDeskMottle')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('自动与可点选模式的案台三分区几何同构', (tester) async {
@@ -377,6 +413,12 @@ void main() {
         right,
         allowPlayerIntervention: false,
       );
+      final focusRailRect = tester.getRect(
+        find.byKey(const ValueKey('battle_desk_focus_region')),
+      );
+      final skillRailRect = tester.getRect(
+        find.byKey(const ValueKey('battle_desk_skills_region')),
+      );
 
       notifier.appendActions([
         BattleAction(
@@ -388,6 +430,14 @@ void main() {
           description: '崩山拳命中',
         ),
       ]);
+      notifier.setState(
+        notifier.state.copyWith(
+          leftTeam: [
+            first.copyWith(skillCooldowns: const {'p1': 2}),
+            second,
+          ],
+        ),
+      );
       await tester.pump();
       expect(
         find.byKey(ValueKey('battle_auto_actor_active_${first.characterId}')),
@@ -396,6 +446,29 @@ void main() {
       expect(
         find.byKey(const ValueKey('battle_auto_skill_active_p1')),
         findsOneWidget,
+      );
+      final activeSkill = find.byKey(
+        const ValueKey('battle_auto_skill_active_p1'),
+      );
+      expect(
+        find.descendant(
+          of: activeSkill,
+          matching: find.byKey(
+            const ValueKey('battle.skillSlip.state.cooldown'),
+          ),
+        ),
+        findsOneWidget,
+        reason: '真实出手后仍必须如实显示冷却态',
+      );
+      expect(
+        find.descendant(
+          of: activeSkill,
+          matching: find.byKey(
+            const ValueKey('battle.skillSlip.autoActiveTrace'),
+          ),
+        ),
+        findsOneWidget,
+        reason: '轮转金线要与冷却墨洗叠加，不能被状态优先级吞掉',
       );
 
       notifier.appendActions([
@@ -421,6 +494,16 @@ void main() {
         find.byKey(ValueKey('battle_auto_actor_active_${first.characterId}')),
         findsNothing,
       );
+      expect(
+        tester.getRect(find.byKey(const ValueKey('battle_desk_focus_region'))),
+        focusRailRect,
+        reason: '执招者轮转只能换内容与高亮，不能推动左侧名帖几何',
+      );
+      expect(
+        tester.getRect(find.byKey(const ValueKey('battle_desk_skills_region'))),
+        skillRailRect,
+        reason: '技能数量和冷却状态变化不能令七签案台左右跳动',
+      );
     });
 
     testWidgets('轮转谱在单人、两人、三人队与双视口均不溢出', (tester) async {
@@ -445,7 +528,8 @@ void main() {
   });
 
   group('T2 蓄力危险条', () {
-    testWidgets('敌人蓄力时顶部出现危险条，显示蓄力招名', (tester) async {
+    testWidgets('敌人蓄力时顶部使用样板短条，完整招名保留给语义', (tester) async {
+      final semantics = tester.ensureSemantics();
       final (left, right) = BattleDemo.mockTeams();
       final charging = right.first.copyWith(
         chargingSkill: _chargeSkill,
@@ -455,7 +539,51 @@ void main() {
 
       expect(find.byKey(const ValueKey('battle_danger_bar')), findsOneWidget);
       expect(find.text(UiStrings.battleDangerChargeLabel), findsOneWidget);
-      expect(find.textContaining(_chargeSkill.name), findsWidgets);
+      expect(find.text(UiStrings.battleDangerTicks(3)), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(
+          UiStrings.battleDangerCharging(
+            charging.name,
+            _chargeSkill.name,
+            charging.chargeTicksRemaining,
+          ),
+        ),
+        findsOneWidget,
+      );
+      semantics.dispose();
+    });
+
+    testWidgets('蓄势横幅在三视口均落在 Boss 立绘上方', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final chargingBoss = right.first.copyWith(
+        isBoss: true,
+        chargingSkill: _chargeSkill,
+        chargeTicksRemaining: 2,
+      );
+
+      for (final size in const [
+        Size(1280, 720),
+        Size(1440, 900),
+        Size(1672, 941),
+      ]) {
+        await _pumpWith(tester, left, [
+          chargingBoss,
+          ...right.skip(1),
+        ], size: size);
+
+        final stripRect = tester.getRect(
+          find.byKey(const ValueKey('battle_danger_bar_strip')),
+        );
+        final bossLayerRect = tester.getRect(
+          find.byKey(const ValueKey('battle.stageCharacterLayer.1.0')),
+        );
+        expect(
+          stripRect.bottom,
+          lessThanOrEqualTo(bossLayerRect.top),
+          reason: '$size 蓄势横幅不得与 Boss 立绘层相交',
+        );
+        expect(tester.takeException(), isNull);
+      }
     });
 
     testWidgets('无敌人蓄力时不显示危险条', (tester) async {
@@ -670,6 +798,97 @@ void main() {
   });
 
   group('T1 战斗指令台', () {
+    testWidgets('样板大签冷却数字使用右侧内收的米灰细字，不抢招名层级', (tester) async {
+      final (left, _) = BattleDemo.mockTeams();
+      final character = left.first.copyWith(
+        availableSkills: [_power],
+        skillCooldowns: const {'p1': 2},
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 120,
+                child: SkillCommandButton(
+                  character: character,
+                  skill: _power,
+                  interventionWindowOpen: true,
+                  isPending: false,
+                  pendingTapEnabled: false,
+                  queuedAnother: false,
+                  highlight: false,
+                  allowPlayerIntervention: false,
+                  readOnly: true,
+                  autoActive: false,
+                  height: 204,
+                  beat: const AlwaysStoppedAnimation<double>(0),
+                  onTap: () {},
+                  onShowInfo: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final count = find.byKey(const ValueKey('battle.skillSlipCooldownCount'));
+      expect(count, findsOneWidget);
+      final text = tester.widget<Text>(count);
+      expect(text.style?.fontSize, 21);
+      expect(text.style?.fontWeight, FontWeight.w500);
+      expect(text.style?.color, const Color(0xFFD2C3A4));
+      final position = tester
+          .element(count)
+          .findAncestorWidgetOfExactType<Positioned>();
+      expect(position?.right, 17);
+    });
+
+    testWidgets('窄视口大签会收小并外移冷却数字，避免压住纵排招名', (tester) async {
+      final (left, _) = BattleDemo.mockTeams();
+      final character = left.first.copyWith(
+        availableSkills: [_power],
+        skillCooldowns: const {'p1': 2},
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 80,
+                child: SkillCommandButton(
+                  character: character,
+                  skill: _power,
+                  interventionWindowOpen: true,
+                  isPending: false,
+                  pendingTapEnabled: false,
+                  queuedAnother: false,
+                  highlight: false,
+                  allowPlayerIntervention: false,
+                  readOnly: true,
+                  autoActive: false,
+                  height: 204,
+                  beat: const AlwaysStoppedAnimation<double>(0),
+                  onTap: () {},
+                  onShowInfo: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final count = find.byKey(const ValueKey('battle.skillSlipCooldownCount'));
+      final text = tester.widget<Text>(count);
+      expect(text.style?.fontSize, 18);
+      final position = tester
+          .element(count)
+          .findAncestorWidgetOfExactType<Positioned>();
+      expect(position?.right, 5);
+    });
+
     testWidgets('技能签保留桌面按钮语义、焦点、键盘激活与点击光标', (tester) async {
       var activations = 0;
       await tester.pumpWidget(
@@ -741,9 +960,9 @@ void main() {
         final pouch = tester.getSize(
           find.byKey(const ValueKey('battle_desk_pouch_region')),
         );
-        expect(focus.width / size.width, inInclusiveRange(0.18, 0.20));
-        expect(skills.width / size.width, inInclusiveRange(0.58, 0.62));
-        expect(pouch.width / size.width, inInclusiveRange(0.20, 0.22));
+        expect(focus.width / size.width, inInclusiveRange(0.15, 0.17));
+        expect(skills.width / size.width, inInclusiveRange(0.49, 0.55));
+        expect(pouch.width / size.width, inInclusiveRange(0.19, 0.21));
         expect(
           find.byKey(const ValueKey('battle_skill_slot_6')),
           findsOneWidget,
@@ -751,6 +970,141 @@ void main() {
         expect(find.byType(SingleChildScrollView), findsNothing);
         expect(tester.takeException(), isNull, reason: '$size 不应溢出');
       }
+    });
+
+    testWidgets('1672×941 名帖与七技能签按样板几何硬对齐', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1672, 941);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [
+          _power,
+          _powerB,
+          _powerC,
+          _break,
+          _joint,
+          _ult,
+          _ultB,
+        ],
+      );
+      await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        size: const Size(1672, 941),
+      );
+
+      final focusRect = tester.getRect(
+        find.byKey(const ValueKey('battle_desk_focus_region')),
+      );
+      expect(focusRect.left, closeTo(48, 1));
+      expect(focusRect.top, closeTo(707, 1));
+      expect(focusRect.height, closeTo(214, 1));
+
+      final selectedNameplate = tester.getRect(
+        find.byKey(
+          ValueKey('battle.focusNameplate.expanded.${focus.characterId}'),
+        ),
+      );
+      expect(selectedNameplate.height, 40);
+      expect(selectedNameplate.left, closeTo(67, 1));
+      expect(selectedNameplate.top, closeTo(711, 1));
+      expect(selectedNameplate.right, closeTo(288, 1));
+      final secondNameplate = tester.getRect(
+        find.byKey(
+          ValueKey('battle.focusNameplate.compact.${left[1].characterId}'),
+        ),
+      );
+      final thirdNameplate = tester.getRect(
+        find.byKey(
+          ValueKey('battle.focusNameplate.compact.${left[2].characterId}'),
+        ),
+      );
+      expect(secondNameplate.top, closeTo(760, 1));
+      expect(secondNameplate.height, 36);
+      expect(thirdNameplate.top, closeTo(805, 1));
+      expect(thirdNameplate.height, 36);
+      final selectedPlate = tester.widget<Container>(
+        find.byKey(
+          ValueKey('battle.focusNameplate.expanded.${focus.characterId}'),
+        ),
+      );
+      expect(
+        (selectedPlate.decoration! as BoxDecoration).color,
+        Colors.transparent,
+      );
+      expect(
+        find.byKey(const ValueKey('battle.focusSelectedPaper')),
+        findsOneWidget,
+      );
+      expect(WuxiaUi.battleFocusPaper, const Color(0xFFAE9479));
+      final focusRail = tester.widget<Container>(
+        find.byKey(const ValueKey('battle_desk_focus_region')),
+      );
+      expect(
+        (focusRail.decoration! as BoxDecoration).color,
+        WuxiaUi.battleFocusBase,
+      );
+      expect(WuxiaUi.battleFocusBase, const Color(0xD9242320));
+      final qiProgressRect = tester.getRect(
+        find.byKey(const ValueKey('battle.focusQiProgress')),
+      );
+      expect(qiProgressRect.left, closeTo(61, 1));
+      expect(qiProgressRect.right, closeTo(292, 1));
+      expect(qiProgressRect.top, closeTo(899, 1));
+      expect(qiProgressRect.height, 15);
+      final qiLabelRect = tester.getRect(
+        find.text('${UiStrings.statQi} ${focus.currentQi}/${focus.maxQi}'),
+      );
+      expect(qiLabelRect.left, closeTo(67, 1));
+      expect(qiLabelRect.top, closeTo(864, 2));
+
+      final slots = [
+        for (var index = 0; index < 7; index++)
+          tester.getRect(find.byKey(ValueKey('battle_skill_slot_$index'))),
+      ];
+      expect(slots.first.left, closeTo(368, 2));
+      expect(slots.first.top, closeTo(712, 1));
+      expect(slots.first.height, closeTo(204, 1));
+      expect(
+        slots.map((rect) => rect.width.round()).toList(),
+        orderedEquals([100, 120, 120, 100, 92, 94, 95]),
+      );
+      for (var index = 0; index < slots.length - 1; index++) {
+        expect(
+          slots[index + 1].left - slots[index].right,
+          closeTo(28, 0.1),
+          reason: '技能签间隔须与样板的 28px 墨案留白一致',
+        );
+      }
+
+      final samplePaperBounds = battleSkillSlipPaperPath(
+        const Rect.fromLTWH(0, 0, 100, 204),
+      ).getBounds();
+      expect(samplePaperBounds.left, closeTo(0.5, 0.1));
+      expect(samplePaperBounds.top, closeTo(0.5, 0.1));
+      expect(samplePaperBounds.right, closeTo(99.5, 0.1));
+      expect(samplePaperBounds.bottom, closeTo(203.5, 0.1));
+
+      final firstSkill = find.byKey(const ValueKey('skill_cmd_1_p1'));
+      final firstFooter = tester.widget<Container>(
+        find.descendant(
+          of: firstSkill,
+          matching: find.byKey(const ValueKey('battle.skillSlipFooter')),
+        ),
+      );
+      expect((firstFooter.margin! as EdgeInsets).bottom, 18);
+
+      final pouchSlot = tester.getRect(
+        find.byKey(const ValueKey('battle_pouch_slot_0')),
+      );
+      expect(pouchSlot.size, const Size.square(92));
+      final pouchFooter = tester.getRect(
+        find.byKey(const ValueKey('battle.pouch.footerPlaque')),
+      );
+      expect(pouchFooter.width, closeTo(154, 3));
     });
 
     testWidgets('1280宽案台固定展示7个技能位与3个战备行囊位', (tester) async {
@@ -788,6 +1142,10 @@ void main() {
           findsOneWidget,
         );
       }
+      expect(
+        find.byKey(const ValueKey('battle.pouch.ornateFrame')),
+        findsOneWidget,
+      );
       expect(
         find.descendant(of: desk, matching: find.byType(SingleChildScrollView)),
         findsNothing,
@@ -842,9 +1200,41 @@ void main() {
         );
       }
       expect(find.text(UiStrings.battleEmptySkillSlot), findsNothing);
+
+      final blankPaper = find.byKey(
+        const ValueKey('battle.emptySkillSlot.blankPaper.3'),
+      );
+      expect(
+        tester.widget(blankPaper),
+        isA<BattleSkillSlipSurface>(),
+        reason: '空槽也应复用同一破边旧纸签，而不是退回纯灰矩形',
+      );
+      expect(
+        find.descendant(
+          of: blankPaper,
+          matching: find.byKey(const ValueKey('battle.skillSlipTornPaperClip')),
+        ),
+        findsOneWidget,
+      );
+      final fadedPaper = tester.widget<Opacity>(
+        find.byKey(const ValueKey('battle.emptySkillSlot.opacity.3')),
+      );
+      expect(
+        fadedPaper.opacity,
+        BattleLayoutTokens.emptySkillPaperOpacity,
+        reason: '空签保留纸形但退入案台，不得形成高亮空表单',
+      );
+      expect(
+        find.descendant(
+          of: blankPaper,
+          matching: find.byType(ButtonStyleButton),
+        ),
+        findsNothing,
+        reason: '自动与手动空槽都只是陈列，不伪装可点技能',
+      );
     });
 
-    testWidgets('当前执招者展开姓名流派真气名帖，其余收束且阵亡褪墨', (tester) async {
+    testWidgets('角色名帖保持三行等高，真气汇总独立落在底部', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final team = [
         left[0],
@@ -862,13 +1252,27 @@ void main() {
           of: expanded,
           matching: find.text(EnumL10n.school(team.first.school)),
         ),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.descendant(
           of: expanded,
           matching: find.text('${team.first.currentQi}/${team.first.maxQi}'),
         ),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('battle.focusQiSummary')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          '${UiStrings.statQi} ${team.first.currentQi}/${team.first.maxQi}',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('battle.focusQiProgress')),
         findsOneWidget,
       );
       expect(
@@ -919,7 +1323,7 @@ void main() {
     testWidgets('指令台暴露重点角色的全部可用技能（分组按钮）', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
-        availableSkills: [_power, _break, _ult],
+        availableSkills: [_power, _break, _ult, _encounter],
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
@@ -927,10 +1331,30 @@ void main() {
       expect(find.byKey(const ValueKey('skill_cmd_1_p1')), findsOneWidget);
       expect(find.byKey(const ValueKey('skill_cmd_1_b1')), findsOneWidget);
       expect(find.byKey(const ValueKey('skill_cmd_1_u1')), findsOneWidget);
-      // 分组标签
-      expect(find.text('强力'), findsWidgets);
-      expect(find.text('破招'), findsWidgets);
-      expect(find.text('大招'), findsWidgets);
+      // 样板使用单字朱印，不在签头横排完整分组名。
+      expect(find.text(UiStrings.skillSealPower), findsWidgets);
+      expect(find.text(UiStrings.skillSealInterrupt), findsWidgets);
+      expect(find.text(UiStrings.skillSealUltimate), findsWidgets);
+      expect(find.text(UiStrings.skillSealEncounter), findsOneWidget);
+    });
+
+    testWidgets('技能签保持装配顺序，不按类型重新洗牌', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_ult, _power, _joint, _break],
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      final orderedKeys = ['u1', 'p1', 'j1', 'b1'];
+      final leftEdges = [
+        for (final id in orderedKeys)
+          tester
+              .getTopLeft(
+                find.byKey(ValueKey('skill_cmd_${focus.characterId}_$id')),
+              )
+              .dx,
+      ];
+      expect(leftEdges, orderedEquals([...leftEdges]..sort()));
     });
 
     // 两段点选：长按技能方块弹简介浮层(不下发);点击 = 释放由 battle_tap_skill_test 守。
@@ -961,6 +1385,19 @@ void main() {
         find.byKey(const ValueKey('skill_pending_stamp_badge')),
         findsOneWidget,
       );
+      final stamp = find.byKey(const ValueKey('skill_pending_stamp_badge'));
+      final stampPosition = tester
+          .element(stamp)
+          .findAncestorWidgetOfExactType<Positioned>();
+      expect(stampPosition?.top, greaterThanOrEqualTo(3));
+      expect(stampPosition?.right, greaterThanOrEqualTo(3));
+      final stampSize = tester.getSize(stamp);
+      expect(stampSize.width, lessThanOrEqualTo(31));
+      expect(stampSize.height, lessThanOrEqualTo(18));
+      final stampDecoration =
+          tester.widget<DecoratedBox>(stamp).decoration as BoxDecoration;
+      expect(stampDecoration.color, WuxiaUi.battleSkillSeal);
+      expect(stampDecoration.borderRadius, isNull);
       expect(
         find.byKey(const ValueKey('battle.skillSlip.state.pending')),
         findsOneWidget,
@@ -1040,6 +1477,10 @@ void main() {
     });
 
     testWidgets('可用态技能签将招名、分类与耗气冷却收进完整卡面层级', (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1672, 941);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
         availableSkills: [_power], // cost=200, cd=2
@@ -1047,7 +1488,12 @@ void main() {
         maxInternalForce: 1000,
         skillCooldowns: const {},
       );
-      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        right,
+        size: const Size(1672, 941),
+      );
 
       final skill = find.byKey(const ValueKey('skill_cmd_1_p1'));
       expect(
@@ -1088,9 +1534,54 @@ void main() {
       expect(
         find.descendant(
           of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipTornPaperClip')),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: skill,
           matching: find.byKey(const ValueKey('battle.skillSlipNatureSeal')),
         ),
         findsOneWidget,
+      );
+      final titleRect = tester.getRect(
+        find.descendant(
+          of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipTitle')),
+        ),
+      );
+      final sealFinder = find.descendant(
+        of: skill,
+        matching: find.byKey(const ValueKey('battle.skillSlipNatureSeal')),
+      );
+      final sealRect = tester.getRect(sealFinder);
+      expect(sealRect.top, greaterThan(titleRect.center.dy));
+      final title = tester.widget<Text>(
+        find.descendant(
+          of: find.descendant(
+            of: skill,
+            matching: find.byKey(const ValueKey('battle.skillSlipTitle')),
+          ),
+          matching: find.byType(Text),
+        ),
+      );
+      expect(title.style!.fontSize, 21.5);
+      expect(title.style!.height, 1.10);
+      final seal = tester.widget<Container>(sealFinder);
+      final sealDecoration = seal.decoration! as BoxDecoration;
+      expect(sealDecoration.color, const Color(0xFF6E2B23));
+      expect(
+        tester
+            .widget<Text>(
+              find.descendant(
+                of: sealFinder,
+                matching: find.text(UiStrings.skillSealPower),
+              ),
+            )
+            .style!
+            .color,
+        const Color(0xFFE6D2B5),
       );
       final nativeButton = tester.widget<ElevatedButton>(
         find.descendant(of: skill, matching: find.byType(ElevatedButton)),
@@ -1098,14 +1589,39 @@ void main() {
       expect(nativeButton.style?.elevation?.resolve({}), 0);
       expect(
         nativeButton.style?.shape?.resolve({}),
-        isA<BeveledRectangleBorder>(),
+        isA<BattleSkillSlipShapeBorder>(),
       );
       expect(
         find.byKey(const ValueKey('battle.skillSlip.state.available')),
         findsOneWidget,
       );
-      expect(find.text(UiStrings.skillQiCostChip(200)), findsOneWidget);
-      expect(find.text(UiStrings.skillCooldownChip(2)), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('battle.skillSlipQiCost')),
+        findsOneWidget,
+      );
+      expect(find.text('200'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('battle.skillSlipQiSwirl')),
+        findsOneWidget,
+      );
+      expect(
+        tester.getSize(find.byKey(const ValueKey('battle.skillSlipQiSwirl'))),
+        const Size.square(22),
+      );
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('battle.skillSlipQiCost')))
+            .style!
+            .fontSize,
+        18,
+      );
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('battle.skillSlipQiCost')))
+            .style!
+            .color,
+        const Color(0xFF3F5960),
+      );
     });
 
     testWidgets('真气不足态技能按钮显示「真气不足」', (tester) async {
@@ -1118,8 +1634,7 @@ void main() {
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillInsufficientForce), findsOneWidget);
-      expect(find.text('真气不足'), findsOneWidget);
+      expect(find.text(UiStrings.skillInsufficientForce), findsNothing);
       expect(
         find.byKey(const ValueKey('battle.skillSlip.state.insufficientQi')),
         findsOneWidget,
@@ -1128,6 +1643,18 @@ void main() {
         find.byKey(const ValueKey('battle.skillSlip.qiGap')),
         findsOneWidget,
       );
+      final mutedContent = find.descendant(
+        of: find.byKey(const ValueKey('skill_cmd_1_p1')),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Opacity && widget.child is Column,
+        ),
+      );
+      expect(mutedContent, findsOneWidget);
+      expect(tester.widget<Opacity>(mutedContent).opacity, 0.72);
+      final semantics = tester.widget<Semantics>(
+        find.byKey(const ValueKey('skill_cmd_1_p1')),
+      );
+      expect(semantics.properties.value, UiStrings.skillInsufficientForce);
       // 内力不足态不显示可用态的耗内文案。
       expect(find.textContaining('耗气'), findsNothing);
     });
@@ -1143,7 +1670,12 @@ void main() {
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillQiCostChip(160)), findsOneWidget);
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('battle.skillSlipQiCost')))
+            .data,
+        '160',
+      );
       expect(find.text(UiStrings.skillInsufficientForce), findsNothing);
       final semantics = tester.widget<Semantics>(
         find.byKey(const ValueKey('skill_cmd_1_p1')),
@@ -1162,11 +1694,12 @@ void main() {
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillAwaitingAction), findsOneWidget);
+      expect(find.text(UiStrings.skillAwaitingAction), findsNothing);
       final semantics = tester.widget<Semantics>(
         find.byKey(const ValueKey('skill_cmd_1_p1')),
       );
       expect(semantics.properties.enabled, isFalse);
+      expect(semantics.properties.value, UiStrings.skillAwaitingAction);
     });
 
     testWidgets('蓄力中技能按钮显示「蓄力中」并保持禁用', (tester) async {
@@ -1182,11 +1715,12 @@ void main() {
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillCharging), findsOneWidget);
+      expect(find.text(UiStrings.skillCharging), findsNothing);
       final semantics = tester.widget<Semantics>(
         find.byKey(const ValueKey('skill_cmd_1_p1')),
       );
       expect(semantics.properties.enabled, isFalse);
+      expect(semantics.properties.value, UiStrings.skillCharging);
     });
 
     testWidgets('踉跄中技能按钮显示「踉跄中」并保持禁用', (tester) async {
@@ -1201,14 +1735,15 @@ void main() {
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillStaggered), findsOneWidget);
+      expect(find.text(UiStrings.skillStaggered), findsNothing);
       final semantics = tester.widget<Semantics>(
         find.byKey(const ValueKey('skill_cmd_1_p1')),
       );
       expect(semantics.properties.enabled, isFalse);
+      expect(semantics.properties.value, UiStrings.skillStaggered);
     });
 
-    testWidgets('冷却态技能按钮显读秒环 + 中心剩余拍数（不再显文字「冷却N」）', (tester) async {
+    testWidgets('冷却态技能签在窄视口也只显样板式剩余拍数', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
         availableSkills: [_power], // cd=2
@@ -1222,13 +1757,15 @@ void main() {
         of: find.byKey(const ValueKey('skill_cmd_1_p1')),
         matching: find.byType(BeatCountdownRing),
       );
-      expect(ring, findsOneWidget);
-      // 读秒环喂入剩余 = 该技能 CD(3)；渲染 ceil 值随节拍插值,由 countdown_ring 单测覆盖。
-      expect(tester.widget<BeatCountdownRing>(ring).remaining, 3);
+      expect(ring, findsNothing);
       expect(
-        tester.widget<BeatCountdownRing>(ring).total,
-        _power.cooldownTurns,
+        find.descendant(
+          of: find.byKey(const ValueKey('skill_cmd_1_p1')),
+          matching: find.byKey(const ValueKey('battle.skillSlipCooldownCount')),
+        ),
+        findsOneWidget,
       );
+      expect(find.text('3'), findsOneWidget);
       expect(find.text('冷却3'), findsNothing);
       expect(
         find.byKey(const ValueKey('battle.skillSlip.state.cooldown')),
@@ -1237,6 +1774,31 @@ void main() {
       expect(
         find.byKey(const ValueKey('battle.skillSlip.inkCooldown')),
         findsOneWidget,
+      );
+      final cooldownWash = tester.getRect(
+        find.byKey(const ValueKey('battle.skillSlip.inkCooldown')),
+      );
+      final natureSeal = tester.getRect(
+        find.byKey(const ValueKey('battle.skillSlipNatureSeal')),
+      );
+      final qiFooter = tester.getRect(
+        find.byKey(const ValueKey('battle.skillSlipFooter')),
+      );
+      expect(
+        cooldownWash.overlaps(natureSeal),
+        isFalse,
+        reason: '冷却墨洗不得压住类型朱印: $cooldownWash / $natureSeal',
+      );
+      expect(
+        cooldownWash.overlaps(qiFooter),
+        isFalse,
+        reason: '冷却墨洗不得压住底部耗气数字',
+      );
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('battle.skillSlipQiCost')))
+            .data,
+        '200',
       );
     });
 
@@ -1299,6 +1861,55 @@ void main() {
         find.byKey(const ValueKey('battle.skillSlip.interruptLift')),
         findsOneWidget,
       );
+    });
+
+    testWidgets('样板高度的破招高亮只亮金边，不抬高破坏七签齐底', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final c0 = left[0].copyWith(availableSkills: [_power]);
+      final c1 = left[1].copyWith(availableSkills: [_break]);
+      final charging = right.first.copyWith(
+        chargingSkill: _chargeSkill,
+        chargeTicksRemaining: 2,
+      );
+      await _pumpWith(
+        tester,
+        [c0, c1, left[2]],
+        [charging, ...right.skip(1)],
+        size: const Size(1672, 941),
+      );
+
+      final lift = tester.widget<Transform>(
+        find.byKey(const ValueKey('battle.skillSlip.interruptLift')),
+      );
+      expect(
+        lift.transform.getTranslation().y,
+        0,
+        reason: '样板尺寸靠金边与纸面提亮表达破招，卡片底沿仍须与其余技能签齐平',
+      );
+    });
+
+    testWidgets('同角色有多枚破招签时只强调装配顺序最前的一枚', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_break, _breakB],
+        actionPoint: 1,
+      );
+      final charging = right.first.copyWith(
+        chargingSkill: _chargeSkill,
+        chargeTicksRemaining: 2,
+      );
+
+      await _pumpWith(
+        tester,
+        [focus, ...left.skip(1)],
+        [charging, ...right.skip(1)],
+      );
+
+      expect(
+        find.byKey(const ValueKey('battle.skillSlip.state.interrupt')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('skill_cmd_1_b2')), findsOneWidget);
     });
 
     testWidgets('敌人蓄力时保留已可破招的玩家手选角色', (tester) async {
