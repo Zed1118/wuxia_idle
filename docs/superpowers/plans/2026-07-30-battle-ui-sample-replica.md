@@ -245,3 +245,35 @@
 - 最终门禁：相关战斗 UI / 播放 / 目标选择 / 暂停 / 布局 / Semantics 共
   118 项测试通过；`flutter analyze --no-pub` 为 0 issue；`git diff --check`
   通过。残留风险仅为 Windows 字体栅格与系统缩放尚未实机目检。
+
+### 第二轮返修恢复点（2026-07-31）
+
+- ① 全量测试：保留生产技能签「水纹 + 裸数字耗气」渲染；把旧
+  `气 800` 文案断言改为读取 `battle.skillSlipQiCost` 内的 `800`，并继续
+  守可用 / 真气不足视觉态与 Semantics。删除已无生产消费方的
+  `UiStrings.skillQiCostChip`、`UiStrings.skillCooldownChip`。最终
+  `flutter test --no-pub` 实数为 **4779 pass / 0 fail / EXIT=0**。
+- ② 冷却签：把贯穿整签的硬质条带收束成签面右上方的径向墨洗与柔化墨毫；
+  冷却态不再整体降低卡面内容透明度。新增几何门禁，明确墨洗不得与
+  `battle.skillSlipNatureSeal` 或 `battle.skillSlipFooter` 相交，且耗气裸数字
+  保持可读。1280×720 复拍中第三签「踏雪」的「群」印与耗气 `35` 均完整可读。
+- ③ 蓄势横幅：从案台纵向布局中的零高 `OverflowBox` 提升为
+  `BattleScreen` 根 Stack 的独立浮层，按顶栏 / 周目标高落位。新增
+  1280×720、1440×900、1672×941 三视口几何测试，横幅底边均不进入 Boss
+  立绘层；三张复拍中横幅与发髻均零相交。
+- ④ 敌方铭牌：移除矩形渐变实底、上下硬边、阴影和三角锚，改为透明容器上的
+  横向渐隐墨染；Boss 名右侧补绛红圆形「势」印，文案集中在
+  `UiStrings.battleMomentumSeal`。人物立绘、站位与 B3 自适应融合文件均未改动。
+- 三视口复拍：`battle_tap_live` 同路由固定帧在 1280×720、1440×900、
+  1672×941 均以真实场景资产和中文字体重新渲染；3/3 通过，日志零
+  overflow / exception。证据位于
+  `build/visual_acceptance/sample_replica/round2-repair-final-widget/`。
+- 其余门禁：相关战斗 UI 定向组 **88/88**；`flutter analyze --no-pub`
+  **0 issue**；`dart format --output=none --set-exit-if-changed lib test`
+  **0 changed / EXIT=0**；`git diff --check` 通过。未改
+  `battle_standee_fusion.dart`、数据 / schema / saveVersion、Semantics
+  allowlist；生产 `previewPouchItems` 默认值与 `.sweep()` 均继续为空。
+- 残留风险：受当前受限沙箱禁止写 Flutter SDK engine stamp、且 macOS
+  原生构建链无法重新生成应用，本轮三视口证据来自 Flutter widget 渲染器的
+  同路由生产组件帧，而非新构建的原生窗口截图；Windows 字体栅格、系统缩放及
+  非固定节拍的动态峰值帧仍未实机目检。

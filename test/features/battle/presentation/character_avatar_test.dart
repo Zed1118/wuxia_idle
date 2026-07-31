@@ -251,9 +251,12 @@ void main() {
       find.byKey(const ValueKey('battle.stageStatusInkRubbing')),
     );
     final decoration = rubbing.decoration! as BoxDecoration;
-    final colors = (decoration.gradient! as LinearGradient).colors;
-    expect(colors, everyElement(isNot(Colors.black)));
-    expect(colors, everyElement(predicate<Color>((color) => color.a < 0.50)));
+    expect(decoration.border, isNull, reason: '状态牌不得保留矩形硬边');
+    expect(decoration.color, Colors.transparent);
+    expect(
+      find.byKey(const ValueKey('battle.stageStatusInkWash')),
+      findsOneWidget,
+    );
     expect(
       tester
           .getSize(find.byKey(const ValueKey('battle.stageStatusInkRubbing')))
@@ -272,6 +275,46 @@ void main() {
     expect(name.style?.shadows?.single.blurRadius, lessThanOrEqualTo(1));
     expect(
       find.byKey(const ValueKey('battle.stageStatusAnchor')),
+      findsNothing,
+      reason: '无边墨染状态条不再使用硬质三角锚',
+    );
+  });
+
+  testWidgets('敌方 Boss 名字右侧显示绛红圆形「势」印', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 240,
+            height: 300,
+            child: Stack(
+              children: [
+                StageCharacterStatusOverlay(
+                  character: _char(isBoss: true),
+                  battleState: null,
+                  width: 240,
+                  height: 300,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final sealFinder = find.byKey(
+      const ValueKey('battle.stageBossMomentumSeal'),
+    );
+    expect(sealFinder, findsOneWidget);
+    final seal = tester.widget<Container>(sealFinder);
+    final decoration = seal.decoration! as BoxDecoration;
+    expect(decoration.shape, BoxShape.circle);
+    expect(decoration.color, WuxiaUi.jiang);
+    expect(
+      find.descendant(
+        of: sealFinder,
+        matching: find.text(UiStrings.battleMomentumSeal),
+      ),
       findsOneWidget,
     );
   });

@@ -553,6 +553,39 @@ void main() {
       semantics.dispose();
     });
 
+    testWidgets('蓄势横幅在三视口均落在 Boss 立绘上方', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final chargingBoss = right.first.copyWith(
+        isBoss: true,
+        chargingSkill: _chargeSkill,
+        chargeTicksRemaining: 2,
+      );
+
+      for (final size in const [
+        Size(1280, 720),
+        Size(1440, 900),
+        Size(1672, 941),
+      ]) {
+        await _pumpWith(tester, left, [
+          chargingBoss,
+          ...right.skip(1),
+        ], size: size);
+
+        final stripRect = tester.getRect(
+          find.byKey(const ValueKey('battle_danger_bar_strip')),
+        );
+        final bossLayerRect = tester.getRect(
+          find.byKey(const ValueKey('battle.stageCharacterLayer.1.0')),
+        );
+        expect(
+          stripRect.bottom,
+          lessThanOrEqualTo(bossLayerRect.top),
+          reason: '$size 蓄势横幅不得与 Boss 立绘层相交',
+        );
+        expect(tester.takeException(), isNull);
+      }
+    });
+
     testWidgets('无敌人蓄力时不显示危险条', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       await _pumpWith(tester, left, right);
@@ -1741,6 +1774,31 @@ void main() {
       expect(
         find.byKey(const ValueKey('battle.skillSlip.inkCooldown')),
         findsOneWidget,
+      );
+      final cooldownWash = tester.getRect(
+        find.byKey(const ValueKey('battle.skillSlip.inkCooldown')),
+      );
+      final natureSeal = tester.getRect(
+        find.byKey(const ValueKey('battle.skillSlipNatureSeal')),
+      );
+      final qiFooter = tester.getRect(
+        find.byKey(const ValueKey('battle.skillSlipFooter')),
+      );
+      expect(
+        cooldownWash.overlaps(natureSeal),
+        isFalse,
+        reason: '冷却墨洗不得压住类型朱印: $cooldownWash / $natureSeal',
+      );
+      expect(
+        cooldownWash.overlaps(qiFooter),
+        isFalse,
+        reason: '冷却墨洗不得压住底部耗气数字',
+      );
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('battle.skillSlipQiCost')))
+            .data,
+        '200',
       );
     });
 

@@ -867,7 +867,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             ? _stepOnce
                             : null,
                       ),
-                      DangerBar(state: state),
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.only(
@@ -921,6 +920,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                   ),
                 ),
               ),
+            ),
+            Positioned(
+              key: const ValueKey('battle_danger_bar_layer'),
+              top:
+                  layoutMetrics.headerHeight +
+                  (widget.cycleHint == null ? 0 : 24),
+              left: 0,
+              right: 0,
+              child: IgnorePointer(child: DangerBar(state: state)),
             ),
             Positioned.fill(
               child: BattlePlaybackOverlays(controller: _playback),

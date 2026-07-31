@@ -1294,11 +1294,7 @@ class SkillCommandButton extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               Opacity(
-                opacity: onCd
-                    ? (expandedSampleStyle ? 0.78 : 0.62)
-                    : insufficientQi
-                    ? 0.72
-                    : 1.0,
+                opacity: insufficientQi ? 0.72 : 1.0,
                 child: Column(
                   children: [
                     const SizedBox(
@@ -1662,7 +1658,7 @@ class BattlePouchRail extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: compact ? 4 : (expandedSampleStyle ? 5 : 8)),
+          SizedBox(height: compact ? 4 : (expandedSampleStyle ? 5 : 7)),
           Row(
             children: [
               for (var i = 0; i < 3; i++) ...[
@@ -1772,7 +1768,7 @@ class BattlePouchRail extends StatelessWidget {
               ],
             ],
           ),
-          SizedBox(height: compact ? 4 : (expandedSampleStyle ? 12 : 8)),
+          SizedBox(height: compact ? 4 : (expandedSampleStyle ? 12 : 7)),
           Align(
             child: FractionallySizedBox(
               widthFactor: compact ? 1 : (expandedSampleStyle ? 0.51 : 0.58),

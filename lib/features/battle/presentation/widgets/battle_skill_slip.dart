@@ -125,6 +125,8 @@ class BattleSkillSlipSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final expandedSampleStyle = height >= 190;
+    final cooldownWashWidth = (height * 0.18).clamp(24.0, 38.0);
     final contents = Stack(
       children: [
         Positioned.fill(
@@ -157,8 +159,12 @@ class BattleSkillSlipSurface extends StatelessWidget {
           ),
         ),
         if (visualState == BattleSkillSlipVisualState.cooldown)
-          const Positioned.fill(
-            child: IgnorePointer(
+          Positioned(
+            top: expandedSampleStyle ? 10 : 8,
+            right: 3,
+            width: cooldownWashWidth,
+            height: expandedSampleStyle ? 86 : 64,
+            child: const IgnorePointer(
               child: CustomPaint(
                 key: ValueKey('battle.skillSlip.inkCooldown'),
                 painter: _BattleSkillCooldownWashPainter(),
@@ -303,91 +309,46 @@ class _BattleSkillCooldownWashPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final wash = Path()
-      ..moveTo(size.width * 0.61, 2)
-      ..lineTo(size.width * 0.70, size.height * 0.06)
-      ..lineTo(size.width * 0.64, size.height * 0.15)
-      ..lineTo(size.width * 0.72, size.height * 0.24)
-      ..lineTo(size.width * 0.62, size.height * 0.34)
-      ..lineTo(size.width * 0.70, size.height * 0.43)
-      ..lineTo(size.width * 0.64, size.height * 0.52)
-      ..lineTo(size.width * 0.73, size.height * 0.62)
-      ..lineTo(size.width * 0.61, size.height * 0.73)
-      ..lineTo(size.width * 0.68, size.height * 0.82)
-      ..lineTo(size.width * 0.59, size.height * 0.91)
-      ..lineTo(size.width * 0.66, size.height - 3)
-      ..lineTo(size.width - 1, size.height - 2)
-      ..lineTo(size.width - 1, 1)
-      ..close();
-    canvas.drawPath(
-      wash,
+    final washBounds = Rect.fromLTWH(
+      -size.width * 0.30,
+      size.height * 0.02,
+      size.width * 1.42,
+      size.height * 0.94,
+    );
+    canvas.drawOval(
+      washBounds,
       Paint()
-        ..color = const Color(0xFF29241E).withValues(alpha: 0.60)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.1),
+        ..shader = const RadialGradient(
+          center: Alignment(0.32, -0.10),
+          radius: 0.92,
+          colors: [
+            Color(0xB8443C33),
+            Color(0x71362F28),
+            Color(0x2E29241F),
+            Color(0x0029241F),
+          ],
+          stops: [0, 0.36, 0.72, 1],
+        ).createShader(washBounds)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.2),
     );
 
-    for (var i = 0; i < 15; i++) {
-      final x = size.width * (0.60 + ((i * 19) % 36) / 100);
-      final dryBrush = Paint()
-        ..color = const Color(
-          0xFF1F1B17,
-        ).withValues(alpha: 0.10 + (i % 5) * 0.035)
-        ..strokeWidth = 1.2 + (i % 4) * 1.25
-        ..strokeCap = StrokeCap.round
-        ..maskFilter = MaskFilter.blur(
-          BlurStyle.normal,
-          i % 3 == 0 ? 0.8 : 0.25,
-        );
-      canvas.drawLine(
-        Offset(x, 3 + ((i * 17) % 27)),
-        Offset(x - 7 + (i % 4) * 3.5, size.height - 4 - ((i * 13) % 23)),
-        dryBrush,
-      );
-    }
-
-    final loadedBristle = Paint()
-      ..color = const Color(0xFF171411).withValues(alpha: 0.14)
+    final feather = Paint()
+      ..color = const Color(0xFF29241E).withValues(alpha: 0.10)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.7);
-    for (var i = 0; i < 4; i++) {
-      final x = size.width * (0.68 + i * 0.075);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.8);
+    for (var i = 0; i < 6; i++) {
+      final y = size.height * (0.14 + i * 0.12);
       canvas.drawPath(
         Path()
-          ..moveTo(x, 8 + i * 6)
+          ..moveTo(size.width * (0.12 + (i % 2) * 0.10), y)
           ..quadraticBezierTo(
-            x - 9 + i * 2,
-            size.height * (0.42 + i * 0.025),
-            x - 4 + i,
-            size.height - 10 - i * 5,
+            size.width * 0.50,
+            y + (i.isEven ? 3 : -2),
+            size.width * (0.88 - (i % 3) * 0.06),
+            y + 1,
           ),
-        loadedBristle..strokeWidth = 4.8 - i * 0.55,
-      );
-    }
-
-    final brokenEdge = Paint()
-      ..color = const Color(0xFF1E1A16).withValues(alpha: 0.32)
-      ..strokeCap = StrokeCap.round;
-    for (var i = 0; i < 24; i++) {
-      final y = 8.0 + ((i * 37) % 101) / 101 * (size.height - 16);
-      final x = size.width * (0.58 + ((i * 11) % 15) / 100);
-      final length = 2.0 + (i % 5) * 1.5;
-      canvas.drawLine(
-        Offset(x, y),
-        Offset(x + length, y - 0.8 + (i % 3) * 0.8),
-        brokenEdge..strokeWidth = 0.7 + (i % 3) * 0.45,
-      );
-    }
-
-    final paperScratch = Paint()
-      ..color = const Color(0xFFC2B292).withValues(alpha: 0.13)
-      ..strokeCap = StrokeCap.round;
-    for (var i = 0; i < 9; i++) {
-      final x = size.width * (0.66 + ((i * 23) % 30) / 100);
-      canvas.drawLine(
-        Offset(x, 14 + i * 8),
-        Offset(x - 3 + (i % 3), size.height - 15 - i * 6),
-        paperScratch..strokeWidth = 0.55 + (i % 2) * 0.45,
+        feather..strokeWidth = 2.8 - i * 0.20,
       );
     }
   }

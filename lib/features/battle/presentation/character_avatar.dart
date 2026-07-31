@@ -598,10 +598,6 @@ class StageCharacterStatusOverlay extends StatelessWidget {
       (false, 2) => 0.19,
       _ => 0.22,
     };
-    final borderColor = character.isBoss
-        ? WuxiaColors.bossFrame
-        : WuxiaColors.schoolColor(character.school);
-
     return Positioned(
       left: width * insetFraction,
       right: width * insetFraction,
@@ -615,61 +611,70 @@ class StageCharacterStatusOverlay extends StatelessWidget {
               .clamp(0.0, height - 34),
       child: Opacity(
         opacity: character.isAlive ? 1 : 0.45,
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.topCenter,
-          children: [
-            Positioned(
-              top: -6,
-              width: 13,
-              height: 8,
-              child: IgnorePointer(
-                child: CustomPaint(
-                  key: const ValueKey('battle.stageStatusAnchor'),
-                  painter: _StageStatusAnchorPainter(color: borderColor),
-                ),
-              ),
-            ),
-            Container(
-              key: const ValueKey('battle.stageStatusInkRubbing'),
-              padding: const EdgeInsets.fromLTRB(4, 1, 4, 2),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    WuxiaUi.battleStatusPaperTop,
-                    WuxiaUi.battleStatusPaperBottom,
-                  ],
-                ),
-                border: Border(
-                  top: BorderSide(color: WuxiaUi.paper.withValues(alpha: 0.14)),
-                  bottom: BorderSide(
-                    color: borderColor.withValues(alpha: 0.48),
+        child: Container(
+          key: const ValueKey('battle.stageStatusInkRubbing'),
+          padding: const EdgeInsets.fromLTRB(4, 1, 4, 2),
+          decoration: const BoxDecoration(color: Colors.transparent),
+          child: Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(
+                    key: ValueKey('battle.stageStatusInkWash'),
+                    painter: _StageStatusInkWashPainter(),
                   ),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF2B251E).withValues(alpha: 0.14),
-                    blurRadius: 2,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
               ),
-              child: Column(
+              Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    character.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: WuxiaUi.paper,
-                      fontSize: BattleTypography.t4,
-                      fontWeight: FontWeight.w600,
-                      height: 1,
-                      shadows: [Shadow(color: Colors.black87, blurRadius: 1)],
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          character.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: WuxiaUi.paper,
+                            fontSize: BattleTypography.t4,
+                            fontWeight: FontWeight.w600,
+                            height: 1,
+                            shadows: [
+                              Shadow(color: Colors.black87, blurRadius: 1),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (character.isBoss && character.teamSide == 1) ...[
+                        const SizedBox(width: 3),
+                        Container(
+                          key: const ValueKey('battle.stageBossMomentumSeal'),
+                          width: 14,
+                          height: 14,
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            color: WuxiaUi.jiang,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Text(
+                            UiStrings.battleMomentumSeal,
+                            style: TextStyle(
+                              color: WuxiaUi.paper,
+                              fontFamily: BattleTypography.displayFamily,
+                              fontFamilyFallback:
+                                  BattleTypography.displayFallback,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              height: 1,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 1),
                   HpBar(
@@ -694,8 +699,8 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -806,38 +811,44 @@ class _BossInkAuraPainter extends CustomPainter {
   bool shouldRepaint(covariant _BossInkAuraPainter oldDelegate) => false;
 }
 
-/// 状态墨拓顶部的小型归属指针。它只占人物脚底与信息板之间的既有空隙，
-/// 不移动信息板、不改变阵位或点击区。
-class _StageStatusAnchorPainter extends CustomPainter {
-  const _StageStatusAnchorPainter({required this.color});
-
-  final Color color;
+/// 人物脚下状态条的柔和墨染。透明渐隐与断续墨毫替代矩形实底和硬边，
+/// 数值条仍保持原宽度与对比，不改变人物站位或点击区域。
+class _StageStatusInkWashPainter extends CustomPainter {
+  const _StageStatusInkWashPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
-    final path = Path()
-      ..moveTo(size.width * 0.5, 0)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas.drawPath(
-      path,
+    final bounds = Offset.zero & size;
+    canvas.drawRect(
+      bounds,
       Paint()
-        ..color = WuxiaUi.battleStatusPaperBottom
-        ..style = PaintingStyle.fill,
+        ..shader = const LinearGradient(
+          colors: [
+            Color(0x00221E19),
+            Color(0x6B2C2721),
+            Color(0x75221E19),
+            Color(0x00221E19),
+          ],
+          stops: [0, 0.13, 0.86, 1],
+        ).createShader(bounds),
     );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = color.withValues(alpha: 0.72)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1,
-    );
+
+    final wash = Paint()
+      ..color = const Color(0xFF191612).withValues(alpha: 0.16)
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.6);
+    for (var i = 0; i < 5; i++) {
+      final y = size.height * (0.16 + i * 0.18);
+      canvas.drawLine(
+        Offset(size.width * (0.08 + (i % 2) * 0.05), y),
+        Offset(size.width * (0.90 - (i % 3) * 0.04), y + (i.isEven ? 1 : -1)),
+        wash..strokeWidth = 2.8 + (i % 2),
+      );
+    }
   }
 
   @override
-  bool shouldRepaint(covariant _StageStatusAnchorPainter oldDelegate) =>
-      oldDelegate.color != color;
+  bool shouldRepaint(covariant _StageStatusInkWashPainter oldDelegate) => false;
 }
 
 /// 透明立绘的接触影与脚底墨晕。影子贴在人物层内，会跟随冲锋、

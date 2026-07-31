@@ -178,8 +178,6 @@ class UiStrings {
   // 可用态：耗气 N · CD M。
   static String skillCostShort(int cost, int cooldown) =>
       '耗气$cost · CD$cooldown';
-  static String skillQiCostChip(int cost) => '气 $cost';
-  static String skillCooldownChip(int cooldown) => '息 $cooldown';
   static String skillQiChange(int delta) => delta > 0
       ? '产气 +$delta'
       : delta < 0
@@ -203,6 +201,7 @@ class UiStrings {
   static String skillCooldownShort(int turns) => '冷却$turns';
   // 真气不足态短标。
   static const String skillInsufficientForce = '真气不足';
+  static const String battleMomentumSeal = '势';
   // 批次 1.3 技能简介浮层：点击技能方块弹出，直接读 SkillDef 活数据。
   // 字段标签（左列），值由活数据 / EnumL10n 填。
   static const String skillInfoType = '类型';
