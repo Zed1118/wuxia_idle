@@ -21,9 +21,12 @@
 
 | # | 项 | 域 | 预估 | 依据 |
 |---|---|---|---|---|
-| 1 | battle-ui-v2 阶段 5(Windows 100%/125%/150% 缩放) | battle 表现层(原分支/worktree 已清,需新开载体) | 随批 | plan `2026-07-19-battle-ui-v2-85-fidelity-implementation.md` 既定末段;阶段5证据须留 repo 内非 gitignored 目录(外审 07-24 教训) |
-| 2 | Ch17「沙海纵深」实装批(灵巧主题·末 Boss 单窗口 0.20 机制教学·feng_juan 收编+夜雨残页) | 主线内容 | xhigh 专会话 | spec `2026-07-24-zongshi-arc-ch16-18-design.md` §8 前瞻登记,章级细化随批终拍(Ch16 已于 2026-07-24 交付销账) |
 | ~~4~~ | ~~`damage_popup` 反解析 UiStrings 输出的耦合隐患~~ **已销账 2026-07-25** | battle 表现层 | — | 上游改传纯伤害数字串,分段排版由 `PopupType.critical` 语义驱动;`_parseCriticalDamage`/`_CriticalDamageParts`/整句模板 `UiStrings.criticalDamagePopup` 全删,allowlist 3→2。**建表时的「且无测试拦」定性经实验证伪**:改模板措辞实测 3 条既有测试即红(`damage_popup_test` 2 + `widget_test` 1),真问题是往返本身无谓 + 失配退化成整串套数字样式且红在别处误导诊断。改后新增回归测 + 门禁棘轮双证红留档 |
+| 5 | 断魂庄 / 百草岭远征补 audit 路由 | debug 视觉路由 + 视觉验收 | ~1h | 2026-07-31 现查:audit 路由实测只有 `battle_audit_stage`(主线)/`_light_foot_`/`_mass_battle_`/`battle_audit_tower` 四类,断魂庄与远征均不在内 → 其敌立绘**从未进过任何一轮目检**;补路由即补齐 153 关覆盖外最后一块 |
+| 6 | 战斗样板复刻批余下 2 分 | battle 表现层验收 | ~40min | R2 98/100 未拿两项:顶栏 Tab/tooltip 键盘走查无直证 + 「渲染器帧 vs 原生窗口截图」方法学局限未前置到交付摘要(PR #107 已合 `cdb370e4`) |
+| 7 | B3 立绘融合观感真人拍方向 | battle 表现层数值 | ~20min | 需先看真机实拍图;要调只动 `battleStandeeFusionOpacityAtFull`/明度下沿/上沿三常量,门禁测守边界。附带:登记值精度 ±9、`cliffwaterfall` 仅 boss 用法其取样带可能被立绘右缘侵入(该资产落下沿之下走基线档,当前不影响行为) |
+| 8 | 送关旧部立绘白布动势 | 美术返修 | 随批 | 07-30 目检半中项:语义达成(「今早特意换的新布」)但派单要求的「被风吹得笔直/画面里唯一在动的东西」动势缺失 |
+| 9 | F2「wait=80 冻结 vs wait=85 濒死」机制未解释 | 视觉验收工具链 | 低优 | 07-30 批只做了证据与可判读判据,底层为何在该窗口跳变未查明;不影响判据可用 |
 
 ## 三 · 依赖锁死(附再开条件)
 

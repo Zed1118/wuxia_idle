@@ -3,14 +3,29 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 /// 真相源守卫(2026-07-24 外审 triage 落地)。
 ///
 /// A. GDD 头部「当前状态块」必须与生产真值一致——cap 读 numbers.yaml、
 ///    章数/关数统计 stages.yaml。加章 reconcile 漏更状态块时此测红,
 ///    防 GDD 头部快照再漂移(07-21/07-24 两轮外审同病根)。
+///    **2026-07-31 扩覆盖到玩家可见文案**:原守卫只钉 GDD.md,
+///    `UiStrings` 里同样写死章数的两条不在覆盖内,于是
+///    `mainlineRouteMapSubtitle` 一路 drift 到「十六章」而实况已 21 章
+///    (既有测试只 `find.text(常量)` 引用常量本身、不钉字面量,拦不住)。
 /// B. 已退役配置字段不得复活(v1.34 战败不扣内力,
 ///    `boss_internal_force_penalty` 2026-07-24 删除)。
+
+/// 阿拉伯数字转中文数字(覆盖 1-99,够主线章数用)。
+String cnNum(int n) {
+  const digits = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  if (n < 10) return digits[n];
+  if (n < 20) return n == 10 ? '十' : '十${digits[n % 10]}';
+  final tens = '${digits[n ~/ 10]}十';
+  return n % 10 == 0 ? tens : '$tens${digits[n % 10]}';
+}
+
 void main() {
   Future<String> fileLoader(String path) async {
     final f = File(path);
@@ -44,6 +59,29 @@ void main() {
             'GDD 头部当前状态块主线规模与 stages.yaml 实况'
             '($chapterCount 章 ${mainlines.length} 关)漂移,'
             '加章 reconcile 须同步状态块',
+      );
+    });
+
+    test('玩家可见主线规模文案与 stages.yaml 一致', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final mainlines = repo.stageDefs.values
+          .where((s) => s.stageType == StageType.mainline)
+          .toList();
+      final chapterCount = mainlines.map((s) => s.chapterIndex).toSet().length;
+
+      expect(
+        UiStrings.mainMenuMainlineHint,
+        contains('$chapterCount 章 ${mainlines.length} 关'),
+        reason:
+            '主菜单主线副标题与 stages.yaml 实况'
+            '($chapterCount 章 ${mainlines.length} 关)漂移,加章 reconcile 须同步',
+      );
+      expect(
+        UiStrings.mainlineRouteMapSubtitle,
+        startsWith('${cnNum(chapterCount)}章'),
+        reason:
+            '江湖路引副标题章数与 stages.yaml 实况($chapterCount 章)漂移;'
+            '该处用中文数字体例,期望以「${cnNum(chapterCount)}章」开头',
       );
     });
   });
