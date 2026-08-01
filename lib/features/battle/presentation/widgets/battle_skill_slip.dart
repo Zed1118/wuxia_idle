@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/wuxia_tokens.dart';
+import '../battle_layout_tokens.dart';
 
 enum BattleSkillSlipVisualState {
   empty,
@@ -125,7 +126,7 @@ class BattleSkillSlipSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final expandedSampleStyle = height >= 190;
+    final style = BattleDeskResponsiveStyle.fromSlipHeight(height);
     final cooldownWashWidth = (height * 0.18).clamp(24.0, 38.0);
     final contents = Stack(
       children: [
@@ -160,10 +161,10 @@ class BattleSkillSlipSurface extends StatelessWidget {
         ),
         if (visualState == BattleSkillSlipVisualState.cooldown)
           Positioned(
-            top: expandedSampleStyle ? 10 : 8,
+            top: style.value(8, 10),
             right: 3,
             width: cooldownWashWidth,
-            height: expandedSampleStyle ? 86 : 64,
+            height: style.value(64, 86),
             child: const IgnorePointer(
               child: CustomPaint(
                 key: ValueKey('battle.skillSlip.inkCooldown'),

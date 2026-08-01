@@ -639,7 +639,9 @@ class FocusSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final expandedSampleStyle = (height ?? 0) >= 190;
+    final responsiveStyle = BattleDeskResponsiveStyle.fromSlotHeight(
+      height ?? BattleLayoutTokens.sampleStyleCompactSlotHeight,
+    );
     final summaryIndex = focusSlotIndex >= 0 && focusSlotIndex < team.length
         ? focusSlotIndex
         : team.indexWhere(
@@ -667,21 +669,21 @@ class FocusSelector extends StatelessWidget {
                     selected: i == focusSlotIndex,
                     onTap: interactive ? () => onSelectFocus(i) : null,
                     autoActive: team[i].characterId == activeCharacterId,
-                    expandedSampleStyle: expandedSampleStyle,
+                    responsiveStyle: responsiveStyle,
                   ),
                   if (i < team.length - 1)
-                    SizedBox(height: expandedSampleStyle ? 9 : 4),
+                    SizedBox(height: responsiveStyle.value(4, 9)),
                 ],
               ],
             ),
             if (summary != null)
               Positioned(
-                left: expandedSampleStyle ? -6 : 0,
-                right: expandedSampleStyle ? -4 : 0,
-                bottom: expandedSampleStyle ? 1 : 0,
+                left: responsiveStyle.value(0, -6),
+                right: responsiveStyle.value(0, -4),
+                bottom: responsiveStyle.value(0, 1),
                 child: _FocusQiSummary(
                   character: summary,
-                  expandedSampleStyle: expandedSampleStyle,
+                  responsiveStyle: responsiveStyle,
                 ),
               ),
           ],
@@ -696,15 +698,15 @@ class FocusChip extends StatelessWidget {
   final bool selected;
   final VoidCallback? onTap;
   final bool autoActive;
-  final bool expandedSampleStyle;
+  final BattleDeskResponsiveStyle responsiveStyle;
 
   const FocusChip({
     super.key,
     required this.character,
     required this.selected,
     required this.onTap,
+    required this.responsiveStyle,
     this.autoActive = false,
-    this.expandedSampleStyle = false,
   });
 
   @override
@@ -714,11 +716,12 @@ class FocusChip extends StatelessWidget {
       key: ValueKey(
         'battle.focusNameplate.${selected ? 'expanded' : 'compact'}.${character.characterId}',
       ),
-      height: expandedSampleStyle && selected
-          ? BattleLayoutTokens.actorChipHeight
-          : expandedSampleStyle
-          ? BattleLayoutTokens.actorChipHeight - 4
-          : 30,
+      height: responsiveStyle.value(
+        30,
+        selected
+            ? BattleLayoutTokens.actorChipHeight
+            : BattleLayoutTokens.actorChipHeight - 4,
+      ),
       decoration: BoxDecoration(
         color: Colors.transparent,
         border: selected
@@ -770,7 +773,7 @@ class FocusChip extends StatelessWidget {
               style: TextStyle(
                 fontFamily: BattleTypography.displayFamily,
                 fontFamilyFallback: BattleTypography.displayFallback,
-                fontSize: expandedSampleStyle ? (selected ? 20 : 18) : 11,
+                fontSize: responsiveStyle.value(11, selected ? 20 : 18),
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 color: dim
                     ? const Color(0xFF8F8574)
@@ -945,102 +948,69 @@ class _FocusDarkNameplatePainter extends CustomPainter {
 class _FocusQiSummary extends StatelessWidget {
   const _FocusQiSummary({
     required this.character,
-    required this.expandedSampleStyle,
+    required this.responsiveStyle,
   });
 
   final BattleCharacter character;
-  final bool expandedSampleStyle;
+  final BattleDeskResponsiveStyle responsiveStyle;
 
   @override
   Widget build(BuildContext context) {
     final fraction = character.maxQi <= 0
         ? 0.0
         : (character.currentQi / character.maxQi).clamp(0.0, 1.0);
-    if (expandedSampleStyle) {
-      return Semantics(
-        label: UiStrings.statQi,
-        value: '${character.currentQi}/${character.maxQi}',
-        child: SizedBox(
-          key: const ValueKey('battle.focusQiSummary'),
-          height: 50,
-          child: Stack(
-            children: [
-              Positioned(
-                top: 0,
-                left: 6,
-                right: 4,
-                child: Text(
-                  '${UiStrings.statQi} ${character.currentQi}/${character.maxQi}',
-                  style: const TextStyle(
-                    color: Color(0xFFD9C5A0),
-                    fontFamily: BattleTypography.displayFamily,
-                    fontFamilyFallback: BattleTypography.displayFallback,
-                    fontSize: 21,
-                    height: 1.1,
-                    letterSpacing: 0.6,
-                    fontFeatures: BattleTypography.tabularFigures,
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: _SampleFocusQiProgress(fraction: fraction),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
     return Semantics(
       label: UiStrings.statQi,
       value: '${character.currentQi}/${character.maxQi}',
-      child: Column(
+      child: SizedBox(
         key: const ValueKey('battle.focusQiSummary'),
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: EdgeInsets.zero,
-            child: Text(
-              '${UiStrings.statQi} ${character.currentQi}/${character.maxQi}',
-              style: const TextStyle(
-                color: Color(0xFFD9C5A0),
-                fontFamily: BattleTypography.displayFamily,
-                fontFamilyFallback: BattleTypography.displayFallback,
-                fontSize: 11,
-                letterSpacing: 0.8,
-                fontFeatures: BattleTypography.tabularFigures,
+        height: responsiveStyle.value(26, 50),
+        child: Stack(
+          children: [
+            Positioned(
+              top: 0,
+              left: responsiveStyle.value(0, 6),
+              right: responsiveStyle.value(0, 4),
+              child: Text(
+                '${UiStrings.statQi} ${character.currentQi}/${character.maxQi}',
+                style: TextStyle(
+                  color: const Color(0xFFD9C5A0),
+                  fontFamily: BattleTypography.displayFamily,
+                  fontFamilyFallback: BattleTypography.displayFallback,
+                  fontSize: responsiveStyle.value(11, 21),
+                  height: responsiveStyle.value(1, 1.1),
+                  letterSpacing: responsiveStyle.value(0.8, 0.6),
+                  fontFeatures: BattleTypography.tabularFigures,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 4),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(1),
-            child: LinearProgressIndicator(
-              key: const ValueKey('battle.focusQiProgress'),
-              minHeight: 6,
-              value: fraction,
-              color: WuxiaUi.qing,
-              backgroundColor: const Color(0xFF40382E),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _SampleFocusQiProgress(
+                fraction: fraction,
+                height: responsiveStyle.value(6, 15),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
 class _SampleFocusQiProgress extends StatelessWidget {
-  const _SampleFocusQiProgress({required this.fraction});
+  const _SampleFocusQiProgress({required this.fraction, required this.height});
 
   final double fraction;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       key: const ValueKey('battle.focusQiProgress'),
-      height: 15,
+      height: height,
       padding: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         color: const Color(0xFF282721),
@@ -1143,7 +1113,7 @@ class SkillCommandButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final expandedSampleStyle = height >= 190;
+    final responsiveStyle = BattleDeskResponsiveStyle.fromSlipHeight(height);
     final cd = character.skillCooldowns[skill.id] ?? 0;
     final effectiveCost = effectiveSkillQiCost(character, skill);
     final actionReady = character.actionPoint > 0;
@@ -1197,64 +1167,53 @@ class SkillCommandButton extends StatelessWidget {
     final skillTitle = _VerticalSkillTitle(
       key: const ValueKey('battle.skillSlipTitle'),
       name: skill.name,
-      expandedSampleStyle: expandedSampleStyle,
+      responsiveStyle: responsiveStyle,
     );
     final natureSeal = Transform.rotate(
       angle: -0.045,
       child: Container(
         key: const ValueKey('battle.skillSlipNatureSeal'),
-        width: expandedSampleStyle ? 28 : 24,
-        height: expandedSampleStyle ? 28 : 22,
+        width: responsiveStyle.value(24, 28),
+        height: responsiveStyle.value(22, 28),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: expandedSampleStyle
-              ? WuxiaUi.battleSkillSeal
-              : WuxiaUi.jiang.withValues(alpha: 0.10),
+          color: WuxiaUi.battleSkillSeal,
           border: Border.all(
-            color: expandedSampleStyle
-                ? const Color(0xFF4F211C)
-                : WuxiaUi.jiang.withValues(alpha: 0.78),
-            width: expandedSampleStyle ? 1.2 : 1,
+            color: const Color(0xFF4F211C),
+            width: responsiveStyle.value(1, 1.2),
           ),
-          boxShadow: expandedSampleStyle
-              ? const [
-                  BoxShadow(
-                    color: Color(0x66301713),
-                    blurRadius: 2,
-                    offset: Offset(1, 1),
-                  ),
-                ]
-              : null,
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x66301713),
+              blurRadius: 2,
+              offset: Offset(1, 1),
+            ),
+          ],
         ),
         child: Stack(
           alignment: Alignment.center,
           children: [
-            if (expandedSampleStyle)
-              const Positioned.fill(
-                child: IgnorePointer(
-                  child: CustomPaint(painter: _SkillSealTexturePainter()),
-                ),
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(painter: _SkillSealTexturePainter()),
               ),
+            ),
             Text(
               _sealLabel(skill),
               style: TextStyle(
-                color: expandedSampleStyle
-                    ? WuxiaUi.battleSkillSealInk
-                    : WuxiaUi.jiang,
+                color: WuxiaUi.battleSkillSealInk,
                 fontFamily: BattleTypography.displayFamily,
                 fontFamilyFallback: BattleTypography.displayFallback,
-                fontSize: expandedSampleStyle ? 15 : 12,
+                fontSize: responsiveStyle.value(12, 15),
                 fontWeight: FontWeight.w700,
                 height: 1,
-                shadows: expandedSampleStyle
-                    ? const [
-                        Shadow(
-                          color: Color(0x99301916),
-                          blurRadius: 1,
-                          offset: Offset(0.5, 0.5),
-                        ),
-                      ]
-                    : null,
+                shadows: const [
+                  Shadow(
+                    color: Color(0x99301916),
+                    blurRadius: 1,
+                    offset: Offset(0.5, 0.5),
+                  ),
+                ],
               ),
             ),
           ],
@@ -1302,45 +1261,38 @@ class SkillCommandButton extends StatelessWidget {
                       height: 14,
                     ),
                     Expanded(
-                      child: expandedSampleStyle
-                          ? Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Positioned(
-                                  top:
-                                      visualState ==
-                                          BattleSkillSlipVisualState.interrupt
-                                      ? 7
-                                      : 6,
-                                  left: 0,
-                                  right: 0,
-                                  child: skillTitle,
-                                ),
-                                Positioned(
-                                  top: 93,
-                                  left: 0,
-                                  right: 0,
-                                  child: Center(child: natureSeal),
-                                ),
-                              ],
-                            )
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                skillTitle,
-                                const SizedBox(height: 8),
-                                natureSeal,
-                              ],
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Positioned(
+                            top: responsiveStyle.value(
+                              12,
+                              visualState ==
+                                      BattleSkillSlipVisualState.interrupt
+                                  ? 7
+                                  : 6,
                             ),
+                            left: 0,
+                            right: 0,
+                            child: skillTitle,
+                          ),
+                          Positioned(
+                            top: responsiveStyle.value(68, 93),
+                            left: 0,
+                            right: 0,
+                            child: Center(child: natureSeal),
+                          ),
+                        ],
+                      ),
                     ),
                     Container(
                       key: const ValueKey('battle.skillSlipFooter'),
-                      height: expandedSampleStyle ? 34 : 29,
+                      height: responsiveStyle.value(29, 34),
                       margin: EdgeInsets.fromLTRB(
                         5,
                         0,
                         5,
-                        expandedSampleStyle ? 18 : 4,
+                        responsiveStyle.value(4, 18),
                       ),
                       decoration: BoxDecoration(
                         border: Border(
@@ -1358,18 +1310,18 @@ class SkillCommandButton extends StatelessWidget {
                           children: [
                             CustomPaint(
                               key: const ValueKey('battle.skillSlipQiSwirl'),
-                              size: Size.square(expandedSampleStyle ? 22 : 13),
-                              painter: const _QiSwirlPainter(),
+                              size: Size.square(responsiveStyle.value(13, 22)),
+                              painter: _QiSwirlPainter(
+                                responsiveStyle: responsiveStyle,
+                              ),
                             ),
-                            SizedBox(width: expandedSampleStyle ? 5 : 3),
+                            SizedBox(width: responsiveStyle.value(3, 5)),
                             Text(
                               '$effectiveCost',
                               key: const ValueKey('battle.skillSlipQiCost'),
                               style: TextStyle(
-                                color: expandedSampleStyle
-                                    ? WuxiaUi.battleSkillQi
-                                    : WuxiaUi.qing,
-                                fontSize: expandedSampleStyle ? 18 : 10,
+                                color: WuxiaUi.battleSkillQi,
+                                fontSize: responsiveStyle.value(10, 18),
                                 fontWeight: FontWeight.w700,
                                 height: 1,
                                 fontFeatures: BattleTypography.tabularFigures,
@@ -1411,7 +1363,7 @@ class SkillCommandButton extends StatelessWidget {
                 Positioned(
                   top: 3,
                   right: 3,
-                  child: PendingStamp(expandedSampleStyle: expandedSampleStyle),
+                  child: PendingStamp(responsiveStyle: responsiveStyle),
                 ),
             ],
           );
@@ -1445,16 +1397,17 @@ class _VerticalSkillTitle extends StatelessWidget {
   const _VerticalSkillTitle({
     super.key,
     required this.name,
-    required this.expandedSampleStyle,
+    required this.responsiveStyle,
   });
 
   final String name;
-  final bool expandedSampleStyle;
+  final BattleDeskResponsiveStyle responsiveStyle;
 
   @override
   Widget build(BuildContext context) {
-    final fourCharacterSample =
-        expandedSampleStyle && name.characters.length >= 4;
+    final fourCharacterSample = name.characters.length >= 4;
+    final expandedFontSize = fourCharacterSample ? 20.0 : 21.5;
+    final expandedLineHeight = fourCharacterSample ? 1.0 : 1.10;
     return Text(
       name.characters.take(4).join('\n'),
       maxLines: 4,
@@ -1464,11 +1417,9 @@ class _VerticalSkillTitle extends StatelessWidget {
         color: WuxiaUi.ink,
         fontFamily: BattleTypography.displayFamily,
         fontFamilyFallback: BattleTypography.displayFallback,
-        fontSize: expandedSampleStyle
-            ? (fourCharacterSample ? 20 : 21.5)
-            : BattleTypography.t2,
+        fontSize: responsiveStyle.value(BattleTypography.t2, expandedFontSize),
         fontWeight: FontWeight.w700,
-        height: expandedSampleStyle ? (fourCharacterSample ? 1.0 : 1.10) : 0.92,
+        height: responsiveStyle.value(0.92, expandedLineHeight),
         letterSpacing: 0,
       ),
     );
@@ -1476,14 +1427,16 @@ class _VerticalSkillTitle extends StatelessWidget {
 }
 
 class _QiSwirlPainter extends CustomPainter {
-  const _QiSwirlPainter();
+  const _QiSwirlPainter({required this.responsiveStyle});
+
+  final BattleDeskResponsiveStyle responsiveStyle;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = size.width >= 20 ? WuxiaUi.battleSkillQi : WuxiaUi.qing
+      ..color = WuxiaUi.battleSkillQi
       ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width >= 20 ? 2.0 : 1.5
+      ..strokeWidth = responsiveStyle.value(1.5, 2)
       ..strokeCap = StrokeCap.round;
     final center = Offset(size.width / 2, size.height / 2);
     canvas.drawArc(
@@ -1504,7 +1457,8 @@ class _QiSwirlPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _QiSwirlPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _QiSwirlPainter oldDelegate) =>
+      oldDelegate.responsiveStyle.progress != responsiveStyle.progress;
 }
 
 class _SkillSealTexturePainter extends CustomPainter {
@@ -1624,10 +1578,12 @@ class BattlePouchRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final metrics = BattleLayoutMetrics.resolve(MediaQuery.sizeOf(context));
     final railWidth = width ?? metrics.pouchRailWidth;
-    final expandedSampleStyle = !compact && (height ?? 0) >= 190;
+    final responsiveStyle = BattleDeskResponsiveStyle.fromSlotHeight(
+      height ?? BattleLayoutTokens.sampleStyleCompactSlotHeight,
+    );
     final heightBoundSlotSize = height == null
         ? BattleLayoutTokens.pouchSlotSize
-        : height! - (expandedSampleStyle ? 94 : 82);
+        : height! - responsiveStyle.value(82, 94);
     final maxSlotSize = heightBoundSlotSize < BattleLayoutTokens.pouchSlotSize
         ? heightBoundSlotSize
         : BattleLayoutTokens.pouchSlotSize;
@@ -1652,13 +1608,13 @@ class BattlePouchRail extends StatelessWidget {
                 color: const Color(0xFFCBB58C),
                 fontFamily: BattleTypography.displayFamily,
                 fontFamilyFallback: BattleTypography.displayFallback,
-                fontSize: expandedSampleStyle ? 18 : 12,
+                fontSize: compact ? 12 : responsiveStyle.value(12, 18),
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1,
               ),
             ),
           ),
-          SizedBox(height: compact ? 4 : (expandedSampleStyle ? 5 : 7)),
+          SizedBox(height: compact ? 4 : responsiveStyle.value(7, 5)),
           Row(
             children: [
               for (var i = 0; i < 3; i++) ...[
@@ -1768,17 +1724,17 @@ class BattlePouchRail extends StatelessWidget {
               ],
             ],
           ),
-          SizedBox(height: compact ? 4 : (expandedSampleStyle ? 12 : 7)),
+          SizedBox(height: compact ? 4 : responsiveStyle.value(7, 12)),
           Align(
             child: FractionallySizedBox(
-              widthFactor: compact ? 1 : (expandedSampleStyle ? 0.51 : 0.58),
+              widthFactor: compact ? 1 : responsiveStyle.value(0.58, 0.51),
               child: Semantics(
                 readOnly: true,
                 label: UiStrings.battlePouch,
                 value: UiStrings.battlePouchReserved,
                 child: Container(
                   key: const ValueKey('battle.pouch.footerPlaque'),
-                  height: compact ? 18 : (expandedSampleStyle ? 30 : 26),
+                  height: compact ? 18 : responsiveStyle.value(26, 30),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: const Color(0xFF211B16).withValues(alpha: 0.72),
@@ -1797,7 +1753,7 @@ class BattlePouchRail extends StatelessWidget {
                       color: const Color(0xFFCBB58C),
                       fontFamily: BattleTypography.displayFamily,
                       fontFamilyFallback: BattleTypography.displayFallback,
-                      fontSize: compact ? 9 : (expandedSampleStyle ? 16 : 11),
+                      fontSize: compact ? 9 : responsiveStyle.value(11, 16),
                       letterSpacing: compact ? 1 : 2,
                     ),
                   ),
@@ -1812,17 +1768,17 @@ class BattlePouchRail extends StatelessWidget {
 }
 
 class PendingStamp extends StatelessWidget {
-  const PendingStamp({super.key, this.expandedSampleStyle = false});
+  const PendingStamp({super.key, required this.responsiveStyle});
 
-  final bool expandedSampleStyle;
+  final BattleDeskResponsiveStyle responsiveStyle;
 
   @override
   Widget build(BuildContext context) {
     return Transform.rotate(
       angle: -0.07,
       child: SizedBox(
-        width: expandedSampleStyle ? 31 : 27,
-        height: expandedSampleStyle ? 18 : 17,
+        width: responsiveStyle.value(27, 31),
+        height: responsiveStyle.value(17, 18),
         child: DecoratedBox(
           key: const ValueKey('skill_pending_stamp_badge'),
           decoration: BoxDecoration(
@@ -1850,9 +1806,9 @@ class PendingStamp extends StatelessWidget {
                   color: WuxiaUi.battleSkillSealInk,
                   fontFamily: BattleTypography.displayFamily,
                   fontFamilyFallback: BattleTypography.displayFallback,
-                  fontSize: expandedSampleStyle ? 9 : 8,
+                  fontSize: responsiveStyle.value(8, 9),
                   height: 1,
-                  letterSpacing: expandedSampleStyle ? 0.7 : 0.3,
+                  letterSpacing: responsiveStyle.value(0.3, 0.7),
                   fontWeight: FontWeight.w700,
                   shadows: const [
                     Shadow(

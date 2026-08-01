@@ -127,6 +127,25 @@ void main() {
       expect(metrics.sampleSkillSlipHeight, 204);
     });
 
+    test('案台样式在正式三视口共用单调连续预算', () {
+      final styles = [
+        BattleLayoutMetrics.resolve(const Size(1280, 720)).sampleDeskStyle,
+        BattleLayoutMetrics.resolve(const Size(1440, 900)).sampleDeskStyle,
+        BattleLayoutMetrics.resolve(const Size(1672, 941)).sampleDeskStyle,
+      ];
+
+      expect(styles[0].progress, inInclusiveRange(0, 0.01));
+      expect(styles[1].progress, inInclusiveRange(0.92, 0.94));
+      expect(styles[2].progress, 1);
+      expect(styles[0].progress, lessThan(styles[1].progress));
+      expect(styles[1].progress, lessThan(styles[2].progress));
+
+      final before = BattleDeskResponsiveStyle.fromSlotHeight(189.9);
+      final after = BattleDeskResponsiveStyle.fromSlotHeight(190.1);
+      expect(after.progress - before.progress, lessThan(0.01));
+      expect(after.value(11, 21) - before.value(11, 21), lessThan(0.1));
+    });
+
     test('矮视口为脚底放大立绘预留顶部安全距，黄金视口不偏移', () {
       expect(
         BattleLayoutMetrics.resolve(const Size(1280, 720)).stageTopSafetyInset,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/wuxia_tokens.dart';
+import '../battle_layout_tokens.dart';
 
 /// 执招者名帖的统一墨框，内容与点击语义由调用方提供。
 class BattleFocusRailSurface extends StatelessWidget {
@@ -17,11 +18,13 @@ class BattleFocusRailSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final expandedSampleStyle = (height ?? 0) >= 190;
+    final responsiveStyle = BattleDeskResponsiveStyle.fromSlotHeight(
+      height ?? BattleLayoutTokens.sampleStyleCompactSlotHeight,
+    );
     final rail = Container(
       key: const ValueKey('battle_desk_focus_region'),
       width: width,
-      height: expandedSampleStyle ? height! + 8 : height,
+      height: height == null ? null : height! + responsiveStyle.value(0, 8),
       decoration: const BoxDecoration(
         color: WuxiaUi.battleFocusBase,
         boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 8)],
@@ -38,17 +41,21 @@ class BattleFocusRailSurface extends StatelessWidget {
             painter: _BattleFocusRailFramePainter(),
           ),
           Padding(
-            padding: expandedSampleStyle
-                ? const EdgeInsets.fromLTRB(19, 4, 26, 6)
-                : const EdgeInsets.fromLTRB(12, 4, 12, 6),
+            padding: EdgeInsets.fromLTRB(
+              responsiveStyle.value(12, 19),
+              4,
+              responsiveStyle.value(12, 26),
+              6,
+            ),
             child: child,
           ),
         ],
       ),
     );
-    return expandedSampleStyle
-        ? Transform.translate(offset: const Offset(0, -3), child: rail)
-        : rail;
+    return Transform.translate(
+      offset: Offset(0, responsiveStyle.value(0, -3)),
+      child: rail,
+    );
   }
 }
 

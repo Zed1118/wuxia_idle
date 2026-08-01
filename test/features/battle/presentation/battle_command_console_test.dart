@@ -1017,6 +1017,110 @@ void main() {
       }
     });
 
+    testWidgets('190px 附近名帖与行囊不得整套跃迁', (tester) async {
+      final (left, _) = BattleDemo.mockTeams();
+
+      Future<(double, double, double)> measure(double sampleHeight) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Row(
+                children: [
+                  FocusSelector(
+                    team: left,
+                    focusSlotIndex: 0,
+                    onSelectFocus: (_) {},
+                    width: 220,
+                    height: sampleHeight,
+                  ),
+                  BattlePouchRail(width: 300, height: sampleHeight),
+                ],
+              ),
+            ),
+          ),
+        );
+        final plateHeight = tester
+            .getSize(
+              find.byKey(
+                ValueKey(
+                  'battle.focusNameplate.expanded.${left.first.characterId}',
+                ),
+              ),
+            )
+            .height;
+        final pouchTitle = tester.widget<Text>(
+          find.byKey(const ValueKey('battle.pouch.title')),
+        );
+        final railHeight = tester
+            .getSize(find.byKey(const ValueKey('battle_desk_focus_region')))
+            .height;
+        return (plateHeight, pouchTitle.style!.fontSize!, railHeight);
+      }
+
+      final before = await measure(189.9);
+      final after = await measure(190.1);
+
+      expect((after.$1 - before.$1).abs(), lessThanOrEqualTo(1));
+      expect((after.$2 - before.$2).abs(), lessThanOrEqualTo(0.5));
+      expect((after.$3 - before.$3).abs(), lessThanOrEqualTo(1));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('190px 附近技能签印章与字号不得跃迁', (tester) async {
+      final (left, _) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_power]);
+
+      Future<(double, double)> measure(double sampleHeight) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 80,
+                  child: SkillCommandButton(
+                    character: focus,
+                    skill: _power,
+                    interventionWindowOpen: true,
+                    isPending: false,
+                    pendingTapEnabled: false,
+                    queuedAnother: false,
+                    highlight: false,
+                    allowPlayerIntervention: true,
+                    height: sampleHeight,
+                    beat: const AlwaysStoppedAnimation<double>(0),
+                    onTap: () {},
+                    onShowInfo: () {},
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        final skill = find.byType(SkillCommandButton);
+        final seal = find.descendant(
+          of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipNatureSeal')),
+        );
+        final title = tester.widget<Text>(
+          find.descendant(
+            of: find.descendant(
+              of: skill,
+              matching: find.byKey(const ValueKey('battle.skillSlipTitle')),
+            ),
+            matching: find.byType(Text),
+          ),
+        );
+        return (tester.getSize(seal).height, title.style!.fontSize!);
+      }
+
+      final before = await measure(189.9);
+      final after = await measure(190.1);
+
+      expect((after.$1 - before.$1).abs(), lessThanOrEqualTo(1));
+      expect((after.$2 - before.$2).abs(), lessThanOrEqualTo(0.5));
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('1672×941 名帖与七技能签按样板几何硬对齐', (tester) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(1672, 941);
