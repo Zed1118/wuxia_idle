@@ -49,9 +49,9 @@ class BattleStandeeAssetResolution {
       displayRole == BattleCharacterAssetRole.sourcePortrait;
 }
 
-const battleStandeeGroundingOpacity = 0.28;
-const battleStandeeGroundingCoreOpacity = 0.44;
-const battleStandeeGroundingWashOpacity = 0.20;
+const battleStandeeGroundingOpacity = 0.22;
+const battleStandeeGroundingCoreOpacity = 0.36;
+const battleStandeeGroundingWashOpacity = 0.16;
 
 /// 战斗角色头像（phase1_tasks.md T14 §784;M4 Stage 3 2026-05-21 美术接入)。
 ///
@@ -335,7 +335,7 @@ class _StageCharacterStandee extends StatelessWidget {
     final resolvedIconPath = asset.displayPath;
     final sourceFootFraction = battleStandeeFootFraction(resolvedIconPath);
     final footY = portraitHeight * _stageStandeeAnchorFootFraction;
-    final groundingHeight = height * 0.09;
+    final groundingHeight = height * 0.055;
     final wardActive =
         battleState != null && isGuardianWardActive(character, battleState!);
 
@@ -485,8 +485,8 @@ class _StageCharacterStandee extends StatelessWidget {
         children: [
           Positioned(
             key: const ValueKey('battle.stageStandeeGrounding'),
-            left: width * 0.11,
-            right: width * 0.11,
+            left: width * 0.22,
+            right: width * 0.22,
             top: (footY - groundingHeight * 0.50).clamp(
               0.0,
               height - groundingHeight,
@@ -841,17 +841,17 @@ class _StandeeGroundingPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width * 0.5, size.height * 0.58);
+    final center = Offset(size.width * 0.5, size.height * 0.56);
     final contact = Paint()
       ..color = const Color(
         0xFF2B251E,
       ).withValues(alpha: battleStandeeGroundingOpacity)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.2);
     canvas.drawOval(
       Rect.fromCenter(
         center: center,
-        width: size.width * 0.88,
-        height: size.height * 0.58,
+        width: size.width * 0.78,
+        height: size.height * 0.42,
       ),
       contact,
     );
@@ -860,12 +860,12 @@ class _StandeeGroundingPainter extends CustomPainter {
       ..color = const Color(
         0xFF241F1A,
       ).withValues(alpha: battleStandeeGroundingCoreOpacity)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.8);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.6);
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(size.width * 0.5, size.height * 0.54),
-        width: size.width * 0.48,
-        height: size.height * 0.24,
+        width: size.width * 0.44,
+        height: size.height * 0.18,
       ),
       contactCore,
     );
@@ -877,7 +877,7 @@ class _StandeeGroundingPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 1.4
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.1);
     final leftWash = Path()
       ..moveTo(size.width * 0.08, size.height * 0.72)
       ..quadraticBezierTo(
