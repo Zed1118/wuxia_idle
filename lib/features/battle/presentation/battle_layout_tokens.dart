@@ -44,7 +44,7 @@ abstract final class BattleLayoutTokens {
   static const double bossStageScale = 1.16;
   static const double stageStatusHpHeight = 11;
   static const double stageStatusQiHeight = 10;
-  static const double emptySkillPaperOpacity = 0.30;
+  static const double emptySkillPaperOpacity = 0.42;
 }
 
 /// 案台子组件共用的连续尺寸预算。

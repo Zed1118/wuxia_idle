@@ -1391,6 +1391,11 @@ void main() {
         find.byKey(const ValueKey('battle.emptySkillSlot.opacity.3')),
       );
       expect(
+        BattleLayoutTokens.emptySkillPaperOpacity,
+        0.42,
+        reason: '生产四签三空签也要保持七签案台的纸形连续性',
+      );
+      expect(
         fadedPaper.opacity,
         BattleLayoutTokens.emptySkillPaperOpacity,
         reason: '空签保留纸形但退入案台，不得形成高亮空表单',

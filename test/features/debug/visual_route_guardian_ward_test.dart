@@ -39,6 +39,7 @@ void main() {
 
   test('代表生产主控只使用真实可装配的四张非普攻签，不伪造黄金七签', () {
     final (left, _) = BattleScenarioData.scenarioGuardianWard();
+    expect(left.map((character) => character.name), ['祖师', '大弟子', '二弟子']);
     final visibleSkillIds = left.first.availableSkills
         .where((skill) => skill.type.name != 'normalAttack')
         .map((skill) => skill.id)

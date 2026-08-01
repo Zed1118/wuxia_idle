@@ -379,6 +379,11 @@ void main() {
         reason: '用户终拍应显示正式塔名，不应把调试操作长句塞进战斗标题',
       );
       expect(
+        launcher.previewHeaderControls,
+        isTrue,
+        reason: '代表生产终拍不应暴露“继续/单步”审计控件',
+      );
+      expect(
         launcher.sceneBackgroundPath,
         'assets/scenes/battle_innerrealm.png',
       );

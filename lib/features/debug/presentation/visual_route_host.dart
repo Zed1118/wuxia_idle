@@ -779,6 +779,9 @@ Future<Widget> buildVisualTarget(
         sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
         bgmTrack: BgmTrack.tower,
         allowPlayerIntervention: true,
+        // 终拍保留 frame-0 护罩状态，但顶栏走生产控件口径，
+        // 不把“继续/单步”审计按钮当成游戏终拍。
+        previewHeaderControls: true,
         startPaused: true,
       );
     case VisualRoute.battleTowerFloor13:

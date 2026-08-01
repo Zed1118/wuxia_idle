@@ -962,9 +962,14 @@ class BattleScenarioData {
     );
 
     final left = [
-      player(1, '主控', 0, TechniqueSchool.gangMeng),
-      player(2, '弟子甲', 1, TechniqueSchool.gangMeng),
-      player(3, '弟子乙', 2, TechniqueSchool.lingQiao),
+      player(
+        1,
+        UiStrings.masterDefaultNameFounder,
+        0,
+        TechniqueSchool.gangMeng,
+      ),
+      player(2, UiStrings.lineageRoleSenior, 1, TechniqueSchool.gangMeng),
+      player(3, UiStrings.lineageRoleJunior, 2, TechniqueSchool.lingQiao),
     ];
 
     return (left, right);
