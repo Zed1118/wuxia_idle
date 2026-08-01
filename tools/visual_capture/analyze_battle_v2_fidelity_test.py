@@ -72,6 +72,14 @@ class BattleV2FidelityTest(unittest.TestCase):
             self.config["comparison"]["boundaries"],
             {"header_bottom": 60, "desk_top": 700},
         )
+        self.assertEqual(
+            self.config["layout"]["command_desk_horizontal"],
+            {
+                "focus": [0.15, 0.17],
+                "skills": [0.49, 0.55],
+                "pouch": [0.19, 0.21],
+            },
+        )
 
     def test_alpha_bbox_uses_strict_threshold(self):
         rgba = np.zeros((6, 8, 4), dtype=np.uint8)
