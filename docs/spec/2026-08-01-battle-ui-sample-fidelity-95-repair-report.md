@@ -508,6 +508,10 @@ Retina 2× 截图先用 Lanczos 缩回 1672×941，再按母版边界 y=60 / y=7
 | 文件/区域 | 计划改动 | 必测内容 | 风险 |
 |---|---|---|---|
 | `tools/visual_capture/analyze_battle_v2_fidelity.py` | 加 reference 比较、热图、指标报告 | 哈希、DPR、自校验、错误 route | 工具给出虚假精确分 |
+| `tools/visual_capture/visual_capture.sh` | 默认生成带哈希与窗口元数据的 manifest | 单路由/套件、dry-run、跨目录分析 | 截图与证据清单漂移 |
+| `visual_fidelity_region_probe.dart` | debug-only 输出真实布局矩形 | 顶栏/战场/案台及三横向区域 | 探针泄漏生产或高频刷日志 |
+| `tools/visual_capture/analyze_battle_v2_fidelity_test.py` | 守 reference、分区指标、ROI/mask | 同图/错路由/边界/跨目录/产物 | 测试只守 happy path |
+| `test/features/debug/presentation/visual_fidelity_region_probe_test.dart` | 守 keyed rect 采集和单次 JSON 输出 | 实际坐标、日志去重 | 调试探针静默失效 |
 | `battle_banners.dart` | 朱砂干笔蓄势短签 | 三视口、Semantics、Boss 不相交 | 警示变得不可读 |
 | `character_avatar.dart` | 倒数降权、状态条、融合/接地收口 | 1v1/2v2/3v3、Boss、暗亮场景 | 热点文件、资产 profile 多 |
 | `hp_bar.dart` | 直接水墨化轨道、填充与数字层 | 4 个生产调用点、四至六位数、HP/真气 | 可读性与压缩策略回归 |

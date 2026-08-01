@@ -51,7 +51,7 @@
 
 ## 4. 可恢复切片
 
-### 切片 0：把视觉验收工具变成可信证据
+### 切片 0：把视觉验收工具变成可信证据（已完成）
 
 **目标**：reference/current 真正分离，截图、清单、诊断层与差异报告可复现。
 
@@ -59,7 +59,9 @@
 
 - `tools/visual_capture/analyze_battle_v2_fidelity.py`
 - `tools/visual_capture/visual_capture.sh`
-- `test/tools/visual_capture_test.py`
+- `tools/visual_capture/analyze_battle_v2_fidelity_test.py`
+- `lib/features/debug/presentation/visual_fidelity_region_probe.dart`
+- `test/features/debug/presentation/visual_fidelity_region_probe_test.dart`
 - `test/features/debug/application/visual_acceptance_plan_test.dart`
 - `test/features/debug/visual_acceptance_gauntlet_coverage_test.dart`
 - `test/features/debug/visual_route_test.dart`
@@ -76,6 +78,18 @@
 不得静默给高分。
 
 **建议提交**：`校准战斗视觉验收证据`
+
+**完成证据（2026-08-01）**：
+
+- Python 测试先红后绿：12/12；覆盖同文件、无损重编码同像素、错误 route、跨目录
+  manifest、reference 自校验、RGB/LAB/MAE/Canny IoU、边界 Gate 与 ROI/mask；
+- debug visual route 实拍日志成功输出 `VISUAL_FIDELITY_REGIONS`，1280 实测顶栏/案台锚点
+  误差为 `0.891 / 0.080 px`，均通过 `<=1 px` Gate；
+- 1672 旧基线复算为 RGB `(+0.60,+0.43,-0.07) / (+7.25,+8.51,+10.27) /
+  (-0.85,+0.06,-0.36)`、MAE `10.13 / 28.44 / 15.51`、边缘 IoU
+  `0.194 / 0.106 / 0.140`，与报告原始证据一致（战场 0.106 四舍五入口径约 0.107）；
+- capture 默认输出 schema v2 manifest，包含 commit、route、seed/tick、视口、DPR、原生窗口 ID、
+  capture method、PNG/log SHA；capture 与分析产物均留在 gitignored `build/`。
 
 ### 切片 1：公共 HUD 去现代化并守住多敌蓄势信息
 
@@ -217,9 +231,12 @@ git status --short
 - `flutter analyze --no-pub`：`No issues found`；
 - 主 checkout 同一 HEAD 的全量基线：`+4792: All tests passed!`；
 - battle visual acceptance route 容量：79（73 dynamic + 6 deterministic）。
+- 切片 0 已完成：reference/current 真比较、严格同图/错路由拒绝、可复现 manifest、分区热图、
+  before/after ROI/mask、debug 实际布局矩形和 unavailable 纪律均已落地；
+- 切片 0 targeted：Python 12/12、probe widget 2/2；真实 macOS 1280 capture 与分析通过。
 
-**下一步唯一入口**：从“切片 0：把视觉验收工具变成可信证据”开始，先写 reference/current
-同图拒绝的失败测试；本轮没有修改任何战斗代码、数据或资产。
+**下一步唯一入口**：从“切片 1：公共 HUD 去现代化并守住多敌蓄势信息”开始，先为
+`HpBar` 墨拓轨道和双/三敌同步蓄势建立失败测试；不得先改实现后补测试。
 
 **已知风险**：
 

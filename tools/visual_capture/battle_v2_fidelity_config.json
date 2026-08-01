@@ -3,7 +3,38 @@
   "reference": {
     "path": "docs/spec/battle_ui_stage_command_desk_v2_2026-07-15.png",
     "sha256": "fe5c8e8d1696c8136db140ae31ccb7e096b34e385bb21b442340e90b582f5957",
+    "route": "battle_tap_live",
+    "viewport": [1672, 941],
     "fit": "cover_center"
+  },
+  "comparison": {
+    "boundaries": {
+      "header_bottom": 60,
+      "desk_top": 700
+    },
+    "edge_threshold_low": 50.0,
+    "edge_threshold_high": 150.0,
+    "gates": {
+      "mean_rgb_abs_max": {
+        "header": 3.0,
+        "field": 4.0,
+        "desk": 3.0
+      },
+      "mae_max": {
+        "header": 12.0,
+        "field": 22.0,
+        "desk": 14.0
+      },
+      "edge_iou_min": {
+        "header": 0.22,
+        "field": 0.12,
+        "desk": 0.18
+      },
+      "anchor_error_max": 1.0
+    }
+  },
+  "baseline_diff": {
+    "changed_pixel_threshold": 0
   },
   "layout": {
     "vertical": {

@@ -118,6 +118,7 @@ import '../../expedition/presentation/expedition_overview_screen.dart';
 import '../../expedition/presentation/expedition_recap_screen.dart';
 import '../../../core/domain/reward_entry.dart';
 import 'hitbox_debug_overlay.dart';
+import 'visual_fidelity_region_probe.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -233,8 +234,9 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
     if (_error != null) {
       return Scaffold(body: Center(child: Text('VISUAL_ROUTE_ERROR: $_error')));
     }
-    return _target ??
-        const Scaffold(body: Center(child: InkLoadingIndicator()));
+    return VisualFidelityRegionProbe.maybeWrap(
+      _target ?? const Scaffold(body: Center(child: InkLoadingIndicator())),
+    );
   }
 }
 

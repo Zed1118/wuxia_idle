@@ -4,6 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SWIFT_WINID="$REPO_ROOT/tools/visual_capture/window_id.swift"
 CROP_CONTENT="$REPO_ROOT/tools/visual_capture/crop_window_content.py"
+FIDELITY_ANALYZER="$REPO_ROOT/tools/visual_capture/analyze_battle_v2_fidelity.py"
 APP_PROCESS_NAME="wuxia_idle"
 APP_EXECUTABLE="$REPO_ROOT/build/macos/Build/Products/Debug/wuxia_idle.app/Contents/MacOS/wuxia_idle"
 
@@ -23,6 +24,7 @@ ALL_SPACES=0
 EXISTING_WINDOW=0
 PREBUILT=1
 BACKGROUND=0
+WRITE_MANIFEST=1
 
 usage() {
   cat <<'USAGE'
@@ -46,6 +48,7 @@ Options:
                             prebuilt debug app with runtime route arguments.
   --background              Do not focus or resize the app; capture its window
                             by CGWindowID across Spaces (window env locks size).
+  --no-manifest             Do not write <output>/fidelity_manifest.json.
   --dry-run                  Print planned commands only.
   -h, --help                 Show this help.
 
@@ -108,6 +111,10 @@ while [[ $# -gt 0 ]]; do
     --background)
       BACKGROUND=1
       ALL_SPACES=1
+      shift
+      ;;
+    --no-manifest)
+      WRITE_MANIFEST=0
       shift
       ;;
     --dry-run)
@@ -296,6 +303,7 @@ run_capture() {
       flutter run -d macos
       --dart-define=VISUAL_ROUTE="$route"
       --dart-define=HITBOX_DEBUG="$hitbox_define"
+      --dart-define=VISUAL_FIDELITY_PROBE=true
     )
   fi
 
@@ -341,7 +349,9 @@ if [[ "$EXISTING_WINDOW" -eq 0 && "$PREBUILT" -eq 1 && "$DRY_RUN" -eq 0 ]]; then
   if [[ "$HITBOX" -eq 1 ]]; then
     hitbox_define="true"
   fi
-  flutter build macos --debug --dart-define=HITBOX_DEBUG="$hitbox_define"
+  flutter build macos --debug \
+    --dart-define=HITBOX_DEBUG="$hitbox_define" \
+    --dart-define=VISUAL_FIDELITY_PROBE=true
 fi
 while IFS= read -r route; do
   [[ -z "$route" ]] && continue
@@ -349,3 +359,17 @@ while IFS= read -r route; do
     run_capture "$route" "$resolution"
   done
 done < <(route_ids)
+
+if [[ "$WRITE_MANIFEST" -eq 1 ]]; then
+  manifest_path="$OUTPUT_DIR/fidelity_manifest.json"
+  commit="$(git -C "$REPO_ROOT" rev-parse HEAD)"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    printf '[dry-run] write fidelity manifest commit=%s %s\n' "$commit" "$manifest_path"
+  else
+    python3 "$FIDELITY_ANALYZER" \
+      --capture-root "$OUTPUT_DIR" \
+      --commit "$commit" \
+      --write-manifest "$manifest_path"
+    printf 'fidelity manifest: %s\n' "$manifest_path"
+  fi
+fi
