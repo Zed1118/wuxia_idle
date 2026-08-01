@@ -379,7 +379,7 @@ void main() {
       );
     });
 
-    test('battle suite 70个动态路由与6个确定性素材/状态路由全部可构造', () async {
+    test('battle suite 73个动态路由与6个确定性素材/状态路由全部可构造', () async {
       final targets = visualAcceptanceRoutes(VisualAcceptanceSuite.battle);
       for (final spec in targets) {
         final target = await buildVisualTarget(
@@ -394,7 +394,23 @@ void main() {
         expect(right, isNotEmpty, reason: spec.id);
         expect(right.length, lessThanOrEqualTo(4), reason: spec.id);
         expect(launcher.startPaused, isTrue, reason: spec.id);
-        expect(launcher.sceneBackgroundPath, isNotNull, reason: spec.id);
+
+        if (spec.route == VisualRoute.battleGauntletAudit) {
+          // 断魂庄生产入口 `gauntlet_entry_flow` 不传 sceneBackgroundPath,
+          // audit 必须照样传 null——补一张背景就等于在验玩家看不到的画面。
+          // 【顺带发现·2026-08-01】断魂庄是全项目唯一不叠场景美术的战斗
+          // (mainline/tower/sweep 三入口都传背景)。`BattleSceneBackground`
+          // 在 path==null 时只跳过 `WuxiaImage` 与 image scrim 两层,
+          // 程序化层反而全开满强度(天空渐变 + `_DistantMountainPainter` 远山 +
+          // mist/ground 两 painter intensity=1 + 晕影),故画面并不残缺——
+          // 720p 实拍(build/visual_acceptance/gauntlet_audit_20260801)观感成立。
+          // 即:这是「唯一纯靠程序化兜底」而非「画面缺失」,补不补场景美术是内容层
+          // 决定,不在本批范围;此前无人注意到也正因它从未进过任何 audit 路由。
+          expect(launcher.sceneBackgroundPath, isNull, reason: spec.id);
+          expect(launcher.bgmTrack, BgmTrack.boss, reason: spec.id);
+        } else {
+          expect(launcher.sceneBackgroundPath, isNotNull, reason: spec.id);
+        }
 
         if (spec.route == VisualRoute.battleTowerAudit) {
           expect(launcher.bgmTrack, BgmTrack.tower, reason: spec.id);
