@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../battle_layout_tokens.dart';
+import '../battle_typography_tokens.dart';
 
 enum BattleSkillSlipVisualState {
   empty,
@@ -19,6 +20,113 @@ double battleSkillSlipTilt(String skillId) {
     1 => 0.0,
     _ => 0.010,
   };
+}
+
+/// 冷却拍数的淡墨批注牌。
+///
+/// 它刻意不是圆环、徽章或第二枚朱印：不规则纸痕只负责给剩余拍数一个
+/// 视觉落点，层级低于招名与流派印，避免数字像临时浮在签面上。
+class BattleSkillCooldownMark extends StatelessWidget {
+  const BattleSkillCooldownMark({
+    super.key,
+    required this.count,
+    required this.width,
+    required this.height,
+    required this.fontSize,
+  });
+
+  final int count;
+  final double width;
+  final double height;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: width,
+    height: height,
+    child: CustomPaint(
+      key: const ValueKey('battle.skillSlipCooldownMarkPaper'),
+      painter: const _BattleSkillCooldownMarkPainter(),
+      child: Center(
+        child: Text(
+          '$count',
+          key: const ValueKey('battle.skillSlipCooldownCount'),
+          style: TextStyle(
+            color: const Color(0xFFE0D0AE),
+            fontFamily: BattleTypography.displayFamily,
+            fontFamilyFallback: BattleTypography.displayFallback,
+            fontSize: fontSize,
+            fontWeight: FontWeight.w600,
+            height: 1,
+            fontFeatures: BattleTypography.tabularFigures,
+            shadows: const [
+              Shadow(
+                color: Color(0x66302820),
+                blurRadius: 1,
+                offset: Offset(0.5, 0.5),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _BattleSkillCooldownMarkPainter extends CustomPainter {
+  const _BattleSkillCooldownMarkPainter();
+
+  Path _paperPath(Size size, {Offset offset = Offset.zero}) {
+    final left = offset.dx;
+    final top = offset.dy;
+    final right = left + size.width;
+    final bottom = top + size.height;
+    return Path()
+      ..moveTo(left + 2, top + 3)
+      ..lineTo(left + size.width * 0.38, top + 1)
+      ..lineTo(right - 2, top + 2.5)
+      ..lineTo(right - 1, top + size.height * 0.42)
+      ..lineTo(right - 2.5, bottom - 1.5)
+      ..lineTo(left + size.width * 0.55, bottom - 2.5)
+      ..lineTo(left + 1, bottom - 1)
+      ..lineTo(left + 2.5, top + size.height * 0.58)
+      ..close();
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final shadow = _paperPath(size, offset: const Offset(1, 1));
+    canvas.drawPath(shadow, Paint()..color = const Color(0x3D171411));
+
+    final paper = _paperPath(size);
+    canvas.drawPath(paper, Paint()..color = const Color(0xB33B342C));
+    canvas.drawPath(
+      paper,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.8
+        ..color = const Color(0x8F79684F),
+    );
+
+    final brush = Paint()
+      ..color = const Color(0x304F4335)
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 1.2;
+    canvas.drawLine(
+      Offset(size.width * 0.22, size.height * 0.30),
+      Offset(size.width * 0.78, size.height * 0.24),
+      brush,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.28, size.height * 0.74),
+      Offset(size.width * 0.72, size.height * 0.79),
+      brush,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _BattleSkillCooldownMarkPainter oldDelegate) =>
+      false;
 }
 
 Path battleSkillSlipPaperPath(Rect rect) {

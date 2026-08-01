@@ -843,7 +843,7 @@ void main() {
   });
 
   group('T1 战斗指令台', () {
-    testWidgets('样板大签冷却数字使用右侧内收的米灰细字，不抢招名层级', (tester) async {
+    testWidgets('冷却拍数由右上淡墨批注牌承接，不再作为裸字浮在签面', (tester) async {
       final (left, _) = BattleDemo.mockTeams();
       final character = left.first.copyWith(
         availableSkills: [_power],
@@ -878,19 +878,34 @@ void main() {
         ),
       );
 
-      final count = find.byKey(const ValueKey('battle.skillSlipCooldownCount'));
+      final mark = find.byKey(const ValueKey('battle.skillSlipCooldownMark'));
+      expect(mark, findsOneWidget);
+      expect(
+        find.descendant(
+          of: mark,
+          matching: find.byKey(
+            const ValueKey('battle.skillSlipCooldownMarkPaper'),
+          ),
+        ),
+        findsOneWidget,
+      );
+      final count = find.descendant(
+        of: mark,
+        matching: find.byKey(const ValueKey('battle.skillSlipCooldownCount')),
+      );
       expect(count, findsOneWidget);
       final text = tester.widget<Text>(count);
-      expect(text.style?.fontSize, 21);
-      expect(text.style?.fontWeight, FontWeight.w500);
-      expect(text.style?.color, const Color(0xFFD2C3A4));
+      expect(text.style?.fontSize, 14);
+      expect(text.style?.fontWeight, FontWeight.w600);
+      expect(text.style?.color, const Color(0xFFE0D0AE));
       final position = tester
-          .element(count)
+          .element(mark)
           .findAncestorWidgetOfExactType<Positioned>();
-      expect(position?.right, 17);
+      expect(position?.top, inInclusiveRange(20, 26));
+      expect(position?.right, 7);
     });
 
-    testWidgets('窄视口大签会收小并外移冷却数字，避免压住纵排招名', (tester) async {
+    testWidgets('窄视口批注牌会整体收小，仍不压住纵排招名', (tester) async {
       final (left, _) = BattleDemo.mockTeams();
       final character = left.first.copyWith(
         availableSkills: [_power],
@@ -925,13 +940,20 @@ void main() {
         ),
       );
 
-      final count = find.byKey(const ValueKey('battle.skillSlipCooldownCount'));
+      final mark = find.byKey(const ValueKey('battle.skillSlipCooldownMark'));
+      final count = find.descendant(
+        of: mark,
+        matching: find.byKey(const ValueKey('battle.skillSlipCooldownCount')),
+      );
       final text = tester.widget<Text>(count);
-      expect(text.style?.fontSize, 18);
+      expect(text.style?.fontSize, 12);
+      final size = tester.getSize(mark);
+      expect(size.width, 22);
+      expect(size.height, 26);
       final position = tester
           .element(count)
           .findAncestorWidgetOfExactType<Positioned>();
-      expect(position?.right, 5);
+      expect(position?.right, closeTo(4.8, 0.01));
     });
 
     testWidgets('技能签保留桌面按钮语义、焦点、键盘激活与点击光标', (tester) async {

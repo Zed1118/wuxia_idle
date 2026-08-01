@@ -922,6 +922,21 @@ class BattleScenarioData {
       isTower: true,
     );
 
+    List<SkillDef> productionSkills(TechniqueSchool school) {
+      final schoolId = switch (school) {
+        TechniqueSchool.gangMeng => 'gangmeng',
+        TechniqueSchool.lingQiao => 'lingqiao',
+        TechniqueSchool.yinRou => 'yinrou',
+      };
+      final repository = GameRepository.instance;
+      final technique = repository.getTechnique('tech_${schoolId}_chuanshuo');
+      return [
+        for (final skillId in technique.skillIds) repository.getSkill(skillId),
+        repository.getSkill('skill_encounter_ting_yu_jian'),
+        repository.getSkill('skill_po_shi'),
+      ];
+    }
+
     BattleCharacter player(
       int id,
       String name,
@@ -939,11 +954,9 @@ class BattleScenarioData {
       critRate: 0.15,
       eqAtk: 1500,
       cultivation: CultivationLayer.yuanMan,
-      skills: [
-        _normal('gw_normal_$id', '基础招'),
-        _power('gw_power_$id', '重击', pm: 2400, cost: 800, cd: 3),
-        _ultimate('gw_ult_$id', '绝命式', 2000),
-      ],
+      // 生产装配可真实形成：主修三招 + 一招奇遇 + 玩家通用破势。
+      // 底栏会滤掉普攻，因此终拍为四张真签 + 三张空签，不借黄金 fixture 填七签。
+      skills: productionSkills(school),
       teamSide: 0,
       slotIndex: slot,
     );

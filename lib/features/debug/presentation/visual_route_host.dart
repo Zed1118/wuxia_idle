@@ -775,7 +775,7 @@ Future<Widget> buildVisualTarget(
       // 手动步进清完两护法 → 「结界破！」题字 + 破界闪白;干预层可点选招式。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioGuardianWard,
-        hint: UiStrings.battleGuardianWardHint,
+        hint: UiStrings.towerTitle,
         sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
         bgmTrack: BgmTrack.tower,
         allowPlayerIntervention: true,

@@ -1241,14 +1241,16 @@ class SkillCommandButton extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final sampleCardWidth = constraints.maxWidth;
-          final cooldownCountSize = (12 + sampleCardWidth * 0.075).clamp(
-            18.0,
-            21.0,
+          final cooldownMarkWidth = (sampleCardWidth * 0.23).clamp(22.0, 28.0);
+          final cooldownMarkHeight = (18 + sampleCardWidth * 0.10).clamp(
+            26.0,
+            30.0,
           );
-          final cooldownCountRight = (sampleCardWidth * 0.30 - 19).clamp(
-            5.0,
-            17.0,
+          final cooldownMarkFontSize = (8 + sampleCardWidth * 0.05).clamp(
+            12.0,
+            14.0,
           );
+          final cooldownMarkRight = (sampleCardWidth * 0.06).clamp(4.0, 7.0);
           return Stack(
             clipBehavior: Clip.none,
             children: [
@@ -1336,27 +1338,14 @@ class SkillCommandButton extends StatelessWidget {
               ),
               if (onCd)
                 Positioned(
-                  top: height * 0.35,
-                  right: cooldownCountRight,
-                  child: Text(
-                    '$cd',
-                    key: const ValueKey('battle.skillSlipCooldownCount'),
-                    style: TextStyle(
-                      color: const Color(0xFFD2C3A4),
-                      fontFamily: BattleTypography.displayFamily,
-                      fontFamilyFallback: BattleTypography.displayFallback,
-                      fontSize: cooldownCountSize,
-                      fontWeight: FontWeight.w500,
-                      height: 1,
-                      fontFeatures: BattleTypography.tabularFigures,
-                      shadows: const [
-                        Shadow(
-                          color: Color(0x66302820),
-                          blurRadius: 1.5,
-                          offset: Offset(0.5, 0.5),
-                        ),
-                      ],
-                    ),
+                  top: (height * 0.12).clamp(20.0, 26.0),
+                  right: cooldownMarkRight,
+                  child: BattleSkillCooldownMark(
+                    key: const ValueKey('battle.skillSlipCooldownMark'),
+                    count: cd,
+                    width: cooldownMarkWidth,
+                    height: cooldownMarkHeight,
+                    fontSize: cooldownMarkFontSize,
                   ),
                 ),
               if (isPending)

@@ -374,6 +374,11 @@ void main() {
       final launcher = target as ScenarioLauncher;
       expect(launcher.bgmTrack, BgmTrack.tower);
       expect(
+        launcher.hint,
+        UiStrings.towerTitle,
+        reason: '用户终拍应显示正式塔名，不应把调试操作长句塞进战斗标题',
+      );
+      expect(
         launcher.sceneBackgroundPath,
         'assets/scenes/battle_innerrealm.png',
       );

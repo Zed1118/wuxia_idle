@@ -37,6 +37,28 @@ void main() {
     expect(left.length, 3, reason: '宗师 on-level 3v3');
   });
 
+  test('代表生产主控只使用真实可装配的四张非普攻签，不伪造黄金七签', () {
+    final (left, _) = BattleScenarioData.scenarioGuardianWard();
+    final visibleSkillIds = left.first.availableSkills
+        .where((skill) => skill.type.name != 'normalAttack')
+        .map((skill) => skill.id)
+        .toList();
+
+    expect(visibleSkillIds, [
+      'skill_gangmeng_chuanshuo_skill',
+      'skill_gangmeng_chuanshuo_ult',
+      'skill_encounter_ting_yu_jian',
+      'skill_po_shi',
+    ]);
+    for (final skill in left.first.availableSkills) {
+      expect(
+        skill,
+        same(GameRepository.instance.getSkill(skill.id)),
+        reason: '${skill.id} 应直接来自生产 SkillDef，不能由 debug fixture 仿造',
+      );
+    }
+  });
+
   test('frame-0 两护法存活 → Boss 护罩生效(验收冻结帧显 pill)', () {
     final (left, right) = BattleScenarioData.scenarioGuardianWard();
     final state = BattleState.initial(leftTeam: left, rightTeam: right);

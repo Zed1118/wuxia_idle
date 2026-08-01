@@ -607,7 +607,7 @@ void main() {
   });
 
   group('技能签 CD 数字', () {
-    testWidgets('CD>0 技能签显样板式纯数字，不随窄视口回退圆环', (tester) async {
+    testWidgets('CD>0 技能签显淡墨批注牌，不随窄视口回退圆环或裸字', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
         availableSkills: [_single],
@@ -619,9 +619,14 @@ void main() {
         matching: find.byType(BeatCountdownRing),
       );
       expect(ring, findsNothing);
+      final mark = find.descendant(
+        of: find.byKey(const ValueKey('skill_cmd_1_single1')),
+        matching: find.byKey(const ValueKey('battle.skillSlipCooldownMark')),
+      );
+      expect(mark, findsOneWidget);
       expect(
         find.descendant(
-          of: find.byKey(const ValueKey('skill_cmd_1_single1')),
+          of: mark,
           matching: find.byKey(const ValueKey('battle.skillSlipCooldownCount')),
         ),
         findsOneWidget,
