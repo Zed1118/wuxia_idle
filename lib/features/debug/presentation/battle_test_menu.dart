@@ -668,6 +668,25 @@ class BattleScenarioData {
     return (left, right);
   }
 
+  /// 多敌同拍蓄势的确定性视觉审查帧。复用黄金样板人物与技能，
+  /// 只更改已有 [BattleCharacter] 蓄势字段，不改战斗规则或配置。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioV2MultiCharge() {
+    final (left, right) = scenarioDragLive();
+    final chargeSkill = right.first.chargingSkill!;
+    const remaining = [3, 1, 2];
+    return (
+      left,
+      [
+        for (var i = 0; i < right.length; i++)
+          right[i].copyWith(
+            chargingSkill: chargeSkill,
+            chargeTicksRemaining: remaining[i],
+          ),
+      ],
+    );
+  }
+
   /// 战斗人物素材角色门禁验收：有档案肖像、但尚无专用透明站姿的弟子，
   /// 在正式战场只显示同流派透明身份剪影，绝不把带背景肖像铺进人物位。
   static (List<BattleCharacter>, List<BattleCharacter>)

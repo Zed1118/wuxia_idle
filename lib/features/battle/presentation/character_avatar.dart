@@ -8,11 +8,11 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'avatar_status_tags.dart';
+import 'battle_charge_seal.dart';
 import 'battle_layout_tokens.dart';
 import 'battle_stage_geometry.dart';
 import 'battle_standee_fusion.dart';
 import 'battle_typography_tokens.dart';
-import 'countdown_ring.dart';
 import 'guardian_ward_presentation.dart';
 import 'hp_bar.dart';
 import '../../../shared/widgets/asset_fallback.dart';
@@ -74,7 +74,7 @@ class CharacterAvatar extends StatelessWidget {
   final bool showStageStatusOverlay;
 
   /// Boss/敌人蓄力满值（`numbers.combat.bossCharge.defaultChargeTicks`）。
-  /// 用于把 [BattleCharacter.chargeTicksRemaining] 换算成蓄力读秒环比例。
+  /// 保留在公开构造器上兼容战场调用链；新的蓄势小印只显示剩余拍数。
   final int chargeMaxTicks;
 
   /// 读秒环节拍（本拍内 0→1，供蓄力/破绽环平滑插值）。
@@ -118,7 +118,6 @@ class CharacterAvatar extends StatelessWidget {
         character: character,
         battleState: battleState,
         beat: beat ?? const AlwaysStoppedAnimation<double>(0),
-        chargeMaxTicks: chargeMaxTicks,
         staggerWindowTicks: staggerWindowTicks,
         width: standeeWidth,
         height: standeeHeight,
@@ -237,7 +236,7 @@ class CharacterAvatar extends StatelessWidget {
             labelPrefix: UiStrings.internalForceShortLabel,
           ),
         ),
-        // P0 破招：固定蓄力环行高度，避免蓄力态单槽挤压相邻头像。
+        // 固定蓄势印行高度，避免蓄势态单槽挤压相邻头像。
         const SizedBox(height: 4),
         SizedBox(
           width: barWidth,
@@ -248,13 +247,7 @@ class CharacterAvatar extends StatelessWidget {
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      BeatCountdownRing(
-                        remaining: character.chargeTicksRemaining,
-                        total: chargeMaxTicks,
-                        beat: effBeat,
-                        color: WuxiaColors.hpLow,
-                        size: 34,
-                      ),
+                      BattleChargeSeal(character: character, size: 24),
                       const SizedBox(width: 4),
                       const Icon(
                         Icons.flash_on,
@@ -308,7 +301,6 @@ class _StageCharacterStandee extends StatelessWidget {
     required this.character,
     required this.battleState,
     required this.beat,
-    required this.chargeMaxTicks,
     required this.staggerWindowTicks,
     required this.width,
     required this.height,
@@ -320,7 +312,6 @@ class _StageCharacterStandee extends StatelessWidget {
   final BattleCharacter character;
   final BattleState? battleState;
   final Animation<double> beat;
-  final int chargeMaxTicks;
   final int staggerWindowTicks;
   final double width;
   final double height;
@@ -533,18 +524,6 @@ class _StageCharacterStandee extends StatelessWidget {
               ),
             ),
           ),
-          if (character.chargingSkill != null)
-            Positioned(
-              top: 34,
-              right: 6,
-              child: BeatCountdownRing(
-                remaining: character.chargeTicksRemaining,
-                total: chargeMaxTicks,
-                beat: beat,
-                color: WuxiaColors.hpLow,
-                size: 34,
-              ),
-            ),
           if (showStatusOverlay)
             StageCharacterStatusOverlay(
               character: character,
@@ -673,6 +652,10 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                             ),
                           ),
                         ),
+                      ],
+                      if (character.chargingSkill != null) ...[
+                        const SizedBox(width: 3),
+                        BattleChargeSeal(character: character),
                       ],
                     ],
                   ),

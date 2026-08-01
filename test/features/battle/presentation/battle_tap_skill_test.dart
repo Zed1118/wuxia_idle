@@ -646,26 +646,18 @@ void main() {
     });
   });
 
-  group('读秒环端到端接线', () {
-    testWidgets('敌方蓄力 → 头像显读秒环(beat 穿 4 层到达头像)', (tester) async {
+  group('蓄势小印端到端接线', () {
+    testWidgets('敌方蓄力 → 人物名帖显蓄势小印', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final charging = right.first.copyWith(
         chargingSkill: _aoe,
         chargeTicksRemaining: 3,
       );
       await _pumpWith(tester, left, [charging, ...right.skip(1)]);
-      // 蓄力敌头像内出现读秒环,证明 _beatCtrl 经 _BattleField→_TeamColumn→
-      // _CharacterSlot→CharacterAvatar 全链透传到达。
-      final enemyAvatar = find.byWidgetPredicate(
-        (w) =>
-            w is CharacterAvatar &&
-            w.character.characterId == charging.characterId,
-      );
+      // 蓄势敌人的人物层必须保留独立小印，不可只靠顶部仅显示
+      // 最迫近发动者的横幅。
       expect(
-        find.descendant(
-          of: enemyAvatar,
-          matching: find.byType(BeatCountdownRing),
-        ),
+        find.byKey(ValueKey('battle.chargeSeal.${charging.characterId}')),
         findsOneWidget,
       );
     });

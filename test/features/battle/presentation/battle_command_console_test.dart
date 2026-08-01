@@ -538,17 +538,62 @@ void main() {
       await _pumpWith(tester, left, [charging, ...right.skip(1)]);
 
       expect(find.byKey(const ValueKey('battle_danger_bar')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('battle.dangerInkBrush')),
+        findsOneWidget,
+      );
       expect(find.text(UiStrings.battleDangerChargeLabel), findsOneWidget);
       expect(find.text(UiStrings.battleDangerTicks(3)), findsOneWidget);
       expect(
-        find.bySemanticsLabel(
-          UiStrings.battleDangerCharging(
-            charging.name,
-            _chargeSkill.name,
-            charging.chargeTicksRemaining,
+        find.descendant(
+          of: find.byKey(const ValueKey('battle_danger_bar')),
+          matching: find.bySemanticsLabel(
+            UiStrings.battleDangerCharging(
+              charging.name,
+              _chargeSkill.name,
+              charging.chargeTicksRemaining,
+            ),
           ),
         ),
         findsOneWidget,
+      );
+      semantics.dispose();
+    });
+
+    testWidgets('三敌同时蓄势时顶幅取最近者且三枚人物小印都保留', (tester) async {
+      final semantics = tester.ensureSemantics();
+      final (left, right) = BattleDemo.mockTeams();
+      final remaining = [3, 1, 2];
+      final charging = <BattleCharacter>[
+        for (var i = 0; i < right.length; i++)
+          right[i].copyWith(
+            chargingSkill: _chargeSkill,
+            chargeTicksRemaining: remaining[i],
+          ),
+      ];
+
+      await _pumpWith(tester, left, charging);
+
+      expect(find.byKey(const ValueKey('battle_danger_bar')), findsOneWidget);
+      for (var i = 0; i < charging.length; i++) {
+        final seal = find.byKey(
+          ValueKey('battle.chargeSeal.${charging[i].characterId}'),
+        );
+        expect(seal, findsOneWidget);
+        expect(
+          find.descendant(of: seal, matching: find.text('${remaining[i]}')),
+          findsOneWidget,
+        );
+      }
+      expect(
+        find.bySemanticsLabel(
+          UiStrings.battleDangerCharging(
+            charging[1].name,
+            _chargeSkill.name,
+            charging[1].chargeTicksRemaining,
+          ),
+        ),
+        findsWidgets,
       );
       semantics.dispose();
     });

@@ -589,6 +589,29 @@ Future<Widget> buildVisualTarget(
         readyTarget: VisualBattleReadyTarget.initialized,
         onTargetReady: onTargetReady,
       );
+    case VisualRoute.battleV2MultiCharge:
+      return ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioV2MultiCharge,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        autoStart: false,
+        startPaused: true,
+        allowPlayerIntervention: true,
+        seed: battleV2VisualSeed,
+        previewHeaderControls: true,
+        previewPouchItems: const [
+          BattlePouchPreviewItem(
+            assetPath: WuxiaUi.battleSamplePouchGourd,
+            count: 3,
+          ),
+          BattlePouchPreviewItem(
+            assetPath: WuxiaUi.battleSamplePouchManual,
+            count: 2,
+          ),
+        ],
+        readyTarget: VisualBattleReadyTarget.initialized,
+        onTargetReady: onTargetReady,
+      );
     case VisualRoute.battleIdentitySilhouette:
       return ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioIdentitySilhouette,

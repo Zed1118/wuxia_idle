@@ -234,9 +234,25 @@ git status --short
 - 切片 0 已完成：reference/current 真比较、严格同图/错路由拒绝、可复现 manifest、分区热图、
   before/after ROI/mask、debug 实际布局矩形和 unavailable 纪律均已落地；
 - 切片 0 targeted：Python 12/12、probe widget 2/2；真实 macOS 1280 capture 与分析通过。
+- 切片 1 已完成：`HpBar` 本体直接统一为确定性干笔墨轨/填充/数值墨托，
+  顶部蓄势条改为毛边墨刷；原压住头脸的蓄力圆环已替换为名帖旁暗绛小印。
+- 切片 1 新增 `battle_v2_multi_charge`：确定性冻结三敌 `3/1/2` 拍同时蓄势，
+  顶幅仍只取最近者，三名蓄势者各有一枚小印；已纳入 battle suite。
+- 切片 1 fail-first 证据：旧实现在新契约下出现 6 类预期失败（墨轨类型缺失、
+  蓄势圆环残留、顶幅笔刷缺失、三敌小印缺失及端到端接线缺失）。
+- 切片 1 验证：相关 battle widget `109 pass / 0 fail`；audit route `56 pass / 0 fail`；
+  `flutter analyze --no-pub` 无问题；全量 `4796 pass / 0 fail`；battle suite 容量更新为
+  80（73 dynamic + 7 deterministic）。
+- 切片 1 真实截图：`build/visual_acceptance/battle_ui_phase2_final/`
+  含 1280×720、1440×900、1672×941 三档 manifest、window-id log 和诊断报告；
+  三档均无遮脸、状态条互撞或 overflow。
+- 切片 1 严格母版对照：顶栏/案台锚点误差分别为 0 / 0.104 px，本切片与切片 0
+  的 MAE/IoU 基本持平；整体机器 Gate 仍因后续人物与案台差距未收敛而为 false，
+  不将本切片冒充为 95 分终验。
 
-**下一步唯一入口**：从“切片 1：公共 HUD 去现代化并守住多敌蓄势信息”开始，先为
-`HpBar` 墨拓轨道和双/三敌同步蓄势建立失败测试；不得先改实现后补测试。
+**下一步唯一入口**：从“切片 2：统一案台响应式连续语法”开始，先用
+1280×720 / 1440×900 / 1672×941 的失败测试锁定连续尺寸预算，再替换
+`height >= 190` 的一刀切换皮；不得先改实现后补测试。
 
 **已知风险**：
 

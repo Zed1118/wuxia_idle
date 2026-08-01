@@ -144,7 +144,7 @@ void main() {
     expect(find.text('100 / 100'), findsOneWidget);
   });
 
-  testWidgets('状态环与蓄力环预留稳定高度，避免同队槽位独立缩放', (tester) async {
+  testWidgets('状态环与蓄势小印预留稳定高度，避免同队槽位独立缩放', (tester) async {
     await pump(tester, _char(isBoss: false));
     final plainSize = _avatarFootprintSize(tester);
 
@@ -162,7 +162,8 @@ void main() {
     final denseSize = _avatarFootprintSize(tester);
 
     expect(denseSize, plainSize);
-    expect(find.byType(BeatCountdownRing), findsNWidgets(2));
+    expect(find.byType(BeatCountdownRing), findsOneWidget);
+    expect(find.byKey(const ValueKey('battle.chargeSeal.1')), findsOneWidget);
     expect(find.byIcon(Icons.flash_on), findsOneWidget);
   });
 

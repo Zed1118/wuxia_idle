@@ -193,15 +193,15 @@ void main() {
     expect(tip.message, UiStrings.statusInternalInjuryGloss);
   });
 
-  testWidgets('蓄力中渲染读秒环 + 中心剩余拍数(替代进度条)', (tester) async {
+  testWidgets('蓄势中渲染暗绛小印 + 中心剩余拍数', (tester) async {
     await pump(
       tester,
       _char(chargingSkill: _chargeSkill, chargeTicksRemaining: 2),
     );
-    expect(find.byType(BeatCountdownRing), findsOneWidget);
+    expect(find.byType(BeatCountdownRing), findsNothing);
     expect(
       find.descendant(
-        of: find.byType(BeatCountdownRing),
+        of: find.byKey(const ValueKey('battle.chargeSeal.1')),
         matching: find.text('2'),
       ),
       findsOneWidget,
