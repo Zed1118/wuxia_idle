@@ -1,9 +1,10 @@
 # 新会话开局提示词
 
-**交接时间：** 2026-08-01 08:47 · **HEAD：** `a60db250`（现跑 `git rev-parse` 取得，禁转抄）
+**交接时间：** 2026-08-01 08:47 · **代码态锚点：** `42d7e00c`
 
-> 代码态锚点 `42d7e00c`：其后 2 条均为 docs commit，`git diff 42d7e00c..HEAD -- lib data test` 为空。
-> 开局自验该命令为空即无漂移。
+> **不锚 HEAD sha**：本文件自身的提交会让 HEAD 前进一格，写死即自指漂移（上一轮已踩，commit `e5ead03b` 订正过）。
+> HEAD 开局现跑 `git rev-parse --short HEAD`；代码态自验 `git diff 42d7e00c..HEAD -- lib data test` 为空即无漂移
+> （`42d7e00c` 之后全是 docs commit）。
 
 ---
 
@@ -24,7 +25,7 @@
    + `feedback_bg_session_git_push_gh_auth`
 
 【环境快照】（2026-08-01 主 checkout 实测，非转抄）
-- HEAD `a60db250`（本会话 25 commit，全部已 push，与 origin 同步）
+- 本会话 25 commit，全部已 push，工作树干净且与 origin 同步（HEAD sha 开局现跑，不在此写死——见上方自指漂移说明）
 - `flutter analyze --no-pub` **EXIT=0 · No issues**（handoff 时现跑）
 - 全量 **4780 pass / 0 fail · EXIT=0**（于 `42d7e00c` 实测；其后仅 docs commit，lib/test/data 零改动）
 - main CI run 30675641102 **双 job success**（headSha `2c4a411e`）
