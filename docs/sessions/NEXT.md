@@ -1,60 +1,61 @@
 # 新会话开局提示词
 
-**交接时间：** 2026-07-31 16:01 · **代码态锚点：** `ef443e4d`
+**交接时间：** 2026-08-01 08:47 · **HEAD：** `a60db250`（现跑 `git rev-parse` 取得，禁转抄）
 
-> 锚的是**代码态**不是 HEAD：`ef443e4d` 之后只有 handoff 与本文件两条 docs commit，
-> `lib`/`data`/`test` 零改动。开局自验：`git diff --stat ef443e4d..HEAD -- lib data test` 为空即无漂移。
+> 代码态锚点 `42d7e00c`：其后 2 条均为 docs commit，`git diff 42d7e00c..HEAD -- lib data test` 为空。
+> 开局自验该命令为空即无漂移。
 
 ---
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
-上一会话合掉了夜批四 PR + 自做三 PR（B3 立绘自适应融合 / C5 行囊中性化+桌面焦点 / F2 证据订正），
-并评审 codex 战斗样板复刻批（R1 82 分 → 派单返修一轮 → R2 98/100）。
-main 全绿且干净；唯一在途是 codex 复刻分支，未推未合，等合并决策。
+上一会话合掉两条 PR（#107 codex 战斗样板复刻批 / #108 账面订正批），把工作区从 13G 清到 3.0G，
+并做了一次阶段性全面审查。main 全绿且干净，**零在途交付物、零遗留债**。
 
 开局动作：
-1. 读 PROGRESS.md 顶段 2026-07-30「用户拍板『按推荐执行』批」
-2. 读 `docs/sessions/2026-07-31_1601_打磨批与复刻评审.md`
-3. `git pull --rebase --autostash`
-4. 选读 memory：`reference_anti_hallucination`（固定）
-   + `feedback_codex_worktree_dispatch_sandbox`（本次新增·派单到 worktree 的沙箱坑）
-   + `feedback_golden_frame_hides_viewport_defect`（本次新增·黄金帧掩盖真实视口缺陷）
-   + `feedback_visual_acceptance`（视觉验收 SOP）
-   + `feedback_visual_score_first_pass_underestimate`（评分别系统性低估）
-   + `feedback_night_batch_dispatch_protocol`（派单收账以 git 为唯一真相源）
+1. 读 PROGRESS.md 顶段 2026-08-01 条
+2. 读 `docs/sessions/2026-08-01_0828_账面订正与全面审查.md`
+3. 读 `docs/audit/stage_review_2026-08-01.md`（本轮审查，含 P1 缺口与路线图）
+4. `git pull --rebase --autostash`
+5. 选读 memory：`reference_anti_hallucination`（固定）
+   + `feedback_chinese_path_shell_pitfalls`（本次新增第 6 条 · git ls-files 转义中文名致存在性检查假报）
+   + `feedback_probe_must_prove_its_load`（量测本身会假报）
+   + `feedback_exit_worktree_merged_branch_warning`
+   + `feedback_bg_session_git_push_gh_auth`
 
-【环境快照】（2026-07-31 主 checkout 实测，非转抄）
-- 代码态锚点 `ef443e4d`（本会话 main 上 3 条 merge + 2 条 docs commit，**已全部 push**）
-- 主 checkout `flutter analyze --no-pub` **EXIT=0 · No issues**
-- 主 checkout 全量 **4762 pass / 0 fail · EXIT=0**（= 合并前 4734 + B3 新增 16 + C5 新增 12）
-- worktree：主 checkout + `codex-battle-ui-sample-replica`（**待合交付物，非孤儿**）
-- 分支：本地 `main` + `codex/battle-ui-sample-replica`（20 commit · tip `[READY]` · 干净 · 纯本地）；远端只剩 `main`
-- codex 分支我已独立验证：全量 **4779/0** · analyze 0 · 三视口原生截图零 overflow · 四条硬约束未违反
+【环境快照】（2026-08-01 主 checkout 实测，非转抄）
+- HEAD `a60db250`（本会话 25 commit，全部已 push，与 origin 同步）
+- `flutter analyze --no-pub` **EXIT=0 · No issues**（handoff 时现跑）
+- 全量 **4780 pass / 0 fail · EXIT=0**（于 `42d7e00c` 实测；其后仅 docs commit，lib/test/data 零改动）
+- main CI run 30675641102 **双 job success**（headSha `2c4a411e`）
+- worktree：只剩主 checkout；本地分支只 main；远端只 main；untracked 0
+- 项目占用 3.0G（清理前 13G）；`BACKLOG.md` 43 行 / `PROGRESS.md` 96 行
 
 【下波候选】
 
 | # | 任务 | 模型 | 预估时长 | 备注 |
 |---|------|------|----------|------|
-| 1 | 推 codex 分支开 PR → CI 复跑 → 合并（推荐） | opus high | ~30min | 唯一在途交付物，已本地验全绿，只差 CI 独立背书 |
-| 2 | 复刻批剩余 2 分：顶栏 Tab/tooltip 走查取证 | opus high | ~40min | 98→100 的最后两分，需真机键盘走查 |
-| 3 | 断魂庄 / 远征补 audit 路由 | opus high | ~1h | 解跨多轮挂账，同时补齐视觉验收覆盖面 |
-| 4 | B3 观感真人拍方向后调档 | opus high | ~20min | 只动 3 个常量，门禁测守边界；需你先看实拍图 |
+| 1 | 规模类文案扩真相源守卫（推荐） | opus high | ~40min | 本轮审查唯一新增 P1；约 11 处 UI 文案写死数字且无守卫（塔30层×5/心魔7关×2/轻功5/群战5/断魂庄3关×2），当前值实测全对但扩内容即静默 drift——章数那处已这样活了 5 章 |
+| 2 | 断魂庄 / 百草岭远征补 audit 路由 | opus high | ~1h | 153 关视觉验收覆盖外唯一缺口；BACKLOG §二#5 |
+| 3 | 查 `audioplayers` 6.8.1 是否解 VS2026 | opus high | ~15min | 解了即可松开 windows-release 的 `windows-2022` 钉；BACKLOG §二#11 |
+| 4 | 战斗样板复刻批余下 2 分 | opus high | ~40min | 顶栏 Tab/tooltip 键盘走查取证 + 方法学局限前置；BACKLOG §二#6 |
+| 5 | B3 立绘融合观感真人拍方向 | opus high | ~20min | 只动 3 个常量，门禁测守边界；需先看真机实拍图；BACKLOG §二#7 |
 
 【硬约束沿用】
-- **派 codex 到 worktree 必须 `--add-dir` 覆盖主仓 `.git`**：worktree 元数据在主仓 `.git/worktrees/` 下，
-  只给 `-s workspace-write` 会让它活全干完却提不了 commit（本次实录）
-- **派视觉单必须钉「在 1280×720 复拍」**：codex 只对样板黄金尺寸自验，缺陷会被掩盖
-  （本次冷却签遮字在 1672 最不明显、720p 最严重）
-- **§8.3 判就绪须 tip 前缀 + worktree 干净两条同时看**：只扫 `[READY]` 会撞上陈标记
-- 不动 numbers.yaml / GDD.md / CLAUDE.md / data_schema.md（改前 ask）
+- **量测本身会假报，两法互证再下结论**：上一会话三次实录——`git ls-files`（不带 `-z`）对中文名
+  转义致「跟踪文件缺失 268」（实为 0）、`grep -c 'stageType: innerDemon'` 报 8（第 8 个是注释行，
+  生效 7）、`towers.yaml` grep 报 60（`- floor:`/`- id:` 双模式重复计数，实为 30 层）。
+- **ExitWorktree「Discarded N commit」对已合并分支是误报**：删前跑三验
+  （`is-ancestor` / `main..branch` 计数 0 / `branch --merged`），过了再 `discard_changes: true`。
+- **GitHub 合并后不自动删远端分支**：本仓未开 auto-delete，需显式 `push origin --delete` + `fetch --prune`。
+- 不动 `numbers.yaml` / `GDD.md` / `CLAUDE.md` / `data_schema.md`（改前 ask）。
 
 【防幻觉守则】
 - 本提示词【环境快照】里的数字是上一会话实测的快照；新会话改动代码后**必须重新实测**，禁直接转抄。
 - 报「完成/已修复/0 引用/全绿」前必跑验证并贴输出，launch ≠ 成功。
-- 引用代码现 grep/codegraph 查带 file:line；不确定写「不知道」，不凭记忆硬答。
+- 引用代码现 grep/codegraph 查带 `file:line`；不确定写「不知道」，不凭记忆硬答。
 - 完整守则见 memory `reference_anti_hallucination`。
 
 【先报告】
-读完上述清单后：1. 报告 PROGRESS.md 与 session 记录的关键信息 2. 确认环境状态（HEAD / worktree / codex 分支）
-3. 不要直接动代码。
+读完上述清单后：1. 报告 PROGRESS.md 与 session 记录、审查报告的关键信息 2. 确认环境状态
+（HEAD / 工作树 / 代码态锚点自验）3. 不要直接动代码。
