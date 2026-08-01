@@ -26,8 +26,9 @@ import 'countdown_ring.dart';
 /// 故不新建平行术语表,直接用最薄 tooltip——与本任务「优先复用、没有就用最薄
 /// hover tooltip」边界一致。
 ///
-/// **蓄势/破招**不在此渲染:[CharacterAvatar] 已用 [BeatCountdownRing] +
-/// flash_on 图标专门表现,不重复贴标签。
+/// **蓄势**不在此渲染：顶部横幅保留单主警示，每名蓄势者的名帖旁使用
+/// 暗绛拍数小印。本组件中的 [BeatCountdownRing] 只表示破绽/踉跄窗口，
+/// 不能被误认为已移除的蓄势读秒环。
 class AvatarStatusTags extends StatelessWidget {
   const AvatarStatusTags({
     super.key,
