@@ -2,7 +2,7 @@
 
 > 日期：2026-08-01<br>
 > 文档类型：视觉修复规格 / 实施与终验依据<br>
-> 实施基点：`main@acc31ee8`；最终视觉实现代码态：`codex/battle-ui-fidelity-95@2efbb556680fb48db95a0ceceaa15ba8f755ee3f`<br>
+> 实施基点：`main@acc31ee8`；最终视觉与证据代码态：`codex/battle-ui-fidelity-95@2bdd796894e0388b5b0d21df4dbe805e2247f5de`<br>
 > 状态：**五个切片已实施，待用户终拍确认**<br>
 > 唯一视觉母版：`docs/spec/battle_ui_stage_command_desk_v2_2026-07-15.png`<br>
 > 母版规格：1672 × 941 逻辑像素<br>

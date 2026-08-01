@@ -296,7 +296,7 @@ git status --short
   伤害陈列、多敌蓄势、破招、Boss 阶段、替补、濒死、胜负、资源压力和自动轮转。
 - 最终黄金帧位于 `build/visual_acceptance/battle_ui_final_golden/`，代表生产 Boss 位于
   `build/visual_acceptance/battle_ui_final_production_boss/`；manifest 已刷新到实现代码态
-  `2efbb556680fb48db95a0ceceaa15ba8f755ee3f`。
+  `2bdd796894e0388b5b0d21df4dbe805e2247f5de`。
 - 实现者人工暂评：G=`95/100`（24+19+19+19+14），P=`95/100`
   （19+24+19+14+9+10），F=`95/100`。这是待用户终拍复核的暂评分，不是 READY 声明。
 - 最终静态与全量验证：`dart format` 无改动；`flutter analyze --no-pub` 输出
@@ -306,6 +306,15 @@ git status --short
   `0 / 0.104px`。绝对像素阈值并未全绿：战场 MAE `28.532 > 22`、战场边缘 IoU
   `0.107 < 0.12`，案台 MAE `15.513 > 14`，且若干边缘阈值未过；这是人物姿势、
   场景语义与诊断层缺失共同影响的辅助指标，必须原样披露，不能用人工 95 分覆盖。
+- 后续完成一次证据口径自审：analyzer 案台横向阈值误用旧 `18–20% / 58–62% /
+  20–22%`，与生产布局及既有 Dart Gate 的 `15–17% / 49–55% / 19–21%` 矛盾。
+  失败测试证红后只校正配置，黄金布局的 focus/skills/pouch Gate 现为 3/3 true，
+  未改任何界面像素。Python 12/12、layout 11/11、analyze 均通过。
+- 全仓 `assets/scenes/**/*.png` 穷举对照证明母版战场不是同源生产背景：最接近的正式
+  `battle_mountain_pass_stage_v2.png` 原图 MAE 仍为 `34.662`；即便对最终截图做每通道
+  最优线性色彩拟合，战场 MAE 也只能从 `28.532` 降到 `27.143`，仍无法达到 `22`。
+  因此剩余绝对战场 Gate 是不同背景/姿势语义的辅助差异，不以改母版、换生产资产或
+  放宽阈值制造假绿。
 
 **下一步唯一入口**：用户终拍黄金 3v3 与代表生产 Boss。用户明确回复“终拍通过”前，
 目标保持 active、分支不得标记 READY；若用户指出具体扣分区域，回到对应切片继续修复。
