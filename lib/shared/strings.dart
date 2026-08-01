@@ -1463,7 +1463,7 @@ class UiStrings {
 
   static const String chapterListTitle = '主线 · 章节';
   static const String mainlineRouteMapTitle = '江湖路引';
-  static const String mainlineRouteMapSubtitle = '十六章江湖路 · 每章五关，朱印为首领';
+  static const String mainlineRouteMapSubtitle = '二十一章江湖路 · 每章五关，朱印为首领';
   static const String mainlineRouteMapA11yHint = '可横向滚动，使用左右方向键查看各章';
   static const String mainlineRouteCurrent = '当前';
   static const String mainlineRouteCleared = '已通';
