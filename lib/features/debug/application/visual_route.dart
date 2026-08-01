@@ -256,6 +256,10 @@ enum VisualRoute {
     'battle_audit_tower',
     '敌人立绘全塔层验收·动态真 floor（实际 id 形如 battle_audit_tower_01）',
   ),
+  battleGauntletAudit(
+    'battle_audit_gauntlet',
+    '敌人立绘断魂庄三关验收·动态真关次（实际 id 形如 battle_audit_gauntlet_01）',
+  ),
   discipleJoinCeremony(
     'disciple_join_ceremony',
     '第七阶段批三目检·拜入立绘题字 overlay 动效(读真 lineage_onboarding 配置:大弟子/二弟子真立绘交替循环滑入+放大+「XX 拜入门下」题字,自动重播;单帧截不出须真机看动效)',
@@ -439,11 +443,15 @@ VisualRoute? parseVisualRoute(String raw) {
   }
   if (battleAuditStageId(raw) != null) return VisualRoute.battleStageAudit;
   if (battleAuditTowerFloor(raw) != null) return VisualRoute.battleTowerAudit;
+  if (battleAuditGauntletStage(raw) != null) {
+    return VisualRoute.battleGauntletAudit;
+  }
   return null;
 }
 
 const String battleAuditStagePrefix = 'battle_audit_stage_';
 const String battleAuditTowerPrefix = 'battle_audit_tower_';
+const String battleAuditGauntletPrefix = 'battle_audit_gauntlet_';
 
 /// 动态主线/轻功/群战验收 route → 真 stage id。
 String? battleAuditStageId(String routeId) {
@@ -456,6 +464,20 @@ String? battleAuditStageId(String routeId) {
 int? battleAuditTowerFloor(String routeId) {
   if (!routeId.startsWith(battleAuditTowerPrefix)) return null;
   return int.tryParse(routeId.substring(battleAuditTowerPrefix.length));
+}
+
+/// 动态断魂庄验收 route → 1-based 关次序号。
+///
+/// 断魂庄敌队不在 `stageDefs` 里(随 `BossGauntletConfig.enemyTeams` 独立解析),
+/// 故不能复用 [battleAuditStageId] 那条 stage 查表路径,另起一条前缀。
+/// 非正数直接判无效——0/负数会让下游 `stages[i - 1]` 越界。
+int? battleAuditGauntletStage(String routeId) {
+  if (!routeId.startsWith(battleAuditGauntletPrefix)) return null;
+  final parsed = int.tryParse(
+    routeId.substring(battleAuditGauntletPrefix.length),
+  );
+  if (parsed == null || parsed < 1) return null;
+  return parsed;
 }
 
 /// 保留动态 route 的完整 id，供 host 取 stage/floor 参数并回报 READY。

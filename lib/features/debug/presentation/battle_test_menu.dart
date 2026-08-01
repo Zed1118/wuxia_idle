@@ -1043,6 +1043,31 @@ class BattleScenarioData {
     return (left, right);
   }
 
+  /// 敌人立绘逐关次验收（断魂庄）：右队读真 `boss_gauntlets.yaml`，左队同上作尺度参照。
+  ///
+  /// 断魂庄敌队独立于 `stageDefs`（`GameRepository._enforceGauntletEnemyRedLines`
+  /// 头注已注明），故这里按 `stages[i].enemyTeamId` 查 `enemyTeams`，
+  /// 与生产 `gauntlet_entry_flow` 走同一条 `StageBattleSetup.buildEnemyTeam`
+  /// （不传 `isTower`，与生产一致）。
+  static (List<BattleCharacter>, List<BattleCharacter>)
+  scenarioGauntletStandeeAudit(int stageOrdinal) {
+    final config = GameRepository.instance.bossGauntletConfig;
+    if (config == null) {
+      throw StateError('boss_gauntlets.yaml 未加载，断魂庄立绘验收无从取敌队');
+    }
+    final stage = config.stages[stageOrdinal - 1];
+    final defs = config.enemyTeams[stage.enemyTeamId];
+    if (defs == null) {
+      throw StateError(
+        'boss_gauntlets: 关次 $stageOrdinal 的 enemy_team_id='
+        '${stage.enemyTeamId} 在 enemy_teams 里不存在',
+      );
+    }
+    final right = StageBattleSetup.buildEnemyTeam(defs);
+    final (left, _) = scenarioGuardianWard();
+    return (left, right);
+  }
+
   // ── 场景 C：二流·圆熟 1v1，装备对比 ─────────────────────────────────────────
   //
   // 左：基础攻400 × 强化1.60 × 默契1.20 = 768

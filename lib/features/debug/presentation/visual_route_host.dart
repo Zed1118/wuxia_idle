@@ -989,6 +989,21 @@ Future<Widget> buildVisualTarget(
         bgmTrack: BgmTrack.tower,
         startPaused: true,
       );
+    case VisualRoute.battleGauntletAudit:
+      // 断魂庄立绘验收:三项都按生产 `gauntlet_entry_flow` 对齐——
+      // BGM 走 BgmTrack.boss、场景背景生产侧不传(故此处 null)、hint 用同两条 UiStrings。
+      // 背景若擅自补一张,合成观感就不是玩家看到的那张,目检结论作废。
+      final gauntletStage = battleAuditGauntletStage(routeId ?? '') ?? 1;
+      return ScenarioLauncher(
+        teamsFactory: () =>
+            BattleScenarioData.scenarioGauntletStandeeAudit(gauntletStage),
+        hint:
+            '${UiStrings.gauntletName} · '
+            '${UiStrings.gauntletStageOrdinal(gauntletStage)}',
+        sceneBackgroundPath: null,
+        bgmTrack: BgmTrack.boss,
+        startPaused: true,
+      );
     case VisualRoute.discipleJoinCeremony:
       // 第七阶段批三目检:拜入立绘题字 overlay 动效。读真 lineage_onboarding 配置,
       // 大弟子/二弟子真立绘交替循环重播(GameRepository 已在 _prepare 加载完)。

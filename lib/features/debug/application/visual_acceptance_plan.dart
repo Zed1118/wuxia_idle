@@ -71,6 +71,11 @@ final List<VisualAcceptanceRoute> _battleRoutes = [
     _battleStageRoute('battle_audit_stage_light_foot_${_twoDigits(stage)}'),
   for (var stage = 1; stage <= 5; stage++)
     _battleStageRoute('battle_audit_stage_mass_battle_${_twoDigits(stage)}'),
+  // 断魂庄三关次。这里只能写常量(plan 是纯元数据层,不加载 GameRepository),
+  // 与 `boss_gauntlets.yaml` 实况的一致性由
+  // `visual_acceptance_gauntlet_coverage_test` 从生产 config 派生断言钉住。
+  for (var stage = 1; stage <= gauntletAuditStageCount; stage++)
+    _battleGauntletRoute(stage),
   for (final route in const [
     VisualRoute.battleV2CasualtyReplacement,
     VisualRoute.battleV2FastForwardPeak,
@@ -102,6 +107,18 @@ VisualAcceptanceRoute _battleTowerRoute(int floor) => VisualAcceptanceRoute(
   seed: visualAcceptanceSeed,
   kind: VisualRoute.battleTowerAudit.kind,
   checks: _checksFor(VisualRoute.battleTowerAudit),
+);
+
+/// 断魂庄关次数。真相源是 `boss_gauntlets.yaml` 的 `stages`,
+/// 本层拿不到 GameRepository 故落常量,由守卫测从生产 config 派生钉住。
+const int gauntletAuditStageCount = 3;
+
+VisualAcceptanceRoute _battleGauntletRoute(int stage) => VisualAcceptanceRoute(
+  route: VisualRoute.battleGauntletAudit,
+  id: 'battle_audit_gauntlet_${_twoDigits(stage)}',
+  seed: visualAcceptanceSeed,
+  kind: VisualRoute.battleGauntletAudit.kind,
+  checks: _checksFor(VisualRoute.battleGauntletAudit),
 );
 
 String _twoDigits(int value) => value.toString().padLeft(2, '0');
@@ -212,6 +229,11 @@ List<String> _checksFor(VisualRoute route) {
       '真塔层敌队配置接线',
       '敌我站位对称且全身立绘清晰',
       'HUD/血条/技能栏无溢出',
+    ],
+    VisualRoute.battleGauntletAudit => const [
+      '真断魂庄关次敌队接线(苏无咎/石镇岳/闻九针三关次)',
+      '精英关三人阵列与 Boss 关单人阵列各自站位正确、脚底贴地',
+      '护法结界/破招脆弱窗等 Boss 机制 tag 与血条同屏不挤压',
     ],
     VisualRoute.mainlineFirstClearBattle => const [
       '真主线 stage 首通起手暂停可见',
