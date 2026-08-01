@@ -3,18 +3,20 @@
 > 日期：2026-08-01  
 > 分支：`codex/battle-ui-fidelity-95`  
 > 实施基点：`main@acc31ee8`  
-> 最终视觉与证据代码态：`2bdd796894e0388b5b0d21df4dbe805e2247f5de`<br>
-> 状态：**实现者暂评 G=95、P=95、F=95；待用户终拍，不是 READY**
+> 最终视觉与证据代码态：`82a0c03ef5175edacfe43a56a2e12126cadefb88`<br>
+> 状态：**首轮终拍部分通过；已按反馈修订，待用户二次终拍，不是 READY**
 
 ## 1. 结论
 
-五个计划切片均已实施并完成本机验证。黄金样板和生产泛化按既定量表的实现者人工暂评均为
+五个计划切片均已实施并完成本机验证。首轮用户终拍认可黄金图整体方向，但明确否决了
+冷却裸数字和代表生产 Boss 图。两项已重做：冷却拍数改为右上淡墨批注牌；Boss 路由改用正式塔名和
+仓库真实可装配招式。黄金样板和生产泛化按既定量表的实现者人工暂评仍为
 `95/100`，最终分 `F=min(G,P)=95/100`。所有核心分项达到各自最低目标，目标测试、静态分析、
 全量测试、差异检查和原生窗口截图均完成。
 
 这不是无条件的“已完成”声明。严格 reference/current analyzer 的绝对像素阈值没有全部通过，
-Windows 实机发布 Gate 尚未执行，用户也尚未终拍。因此当前最准确的状态是：**代码与本机证据
-已收口，人工暂评达到 95，等待用户对最终两张图作最终判断。**
+Windows 实机发布 Gate 尚未执行，用户也尚未通过修订后终拍。因此当前最准确的状态是：**本轮反馈已落地并
+通过本机验证，人工暂评仍为 95，等待用户对修订后两张图作二次终拍。**
 
 ## 2. 本轮实际修复
 
@@ -26,6 +28,7 @@ Windows 实机发布 Gate 尚未执行，用户也尚未终拍。因此当前最
 | 3 · 人物接地 | 证伪“全场人物普遍偏小”；定位为窄身立绘下的宽灰雾垫，收窄接地影而不改站位、资产、背景或数据 | `2e0bc766 收窄战斗人物接地墨影` |
 | 4 · 动态终验 | 审计 13 条动态路由与桌面交互；现有行为覆盖充分，无需额外战斗逻辑改动；澄清蓄势与破绽读秒语义 | `2efbb556 澄清战斗状态读秒语义` |
 | 证据复核 | 发现 analyzer 案台横向阈值与生产布局及既有 Dart Gate 口径矛盾；失败测试后校正，3 个布局 Gate 由误报转绿，不改 UI 像素 | `2bdd7968 校正案台视觉量测口径` |
+| 用户终拍修订 | 将冷却裸数字改为右上淡墨批注牌；护法 Boss 终拍改用正式塔名与生产 `SkillDef`，保留真实四签三空签、空行囊、底数与结界 | `82a0c03e 重做冷却标记并校正Boss终拍` |
 
 边界核对：未修改 `data/`、资产、伤害、真气、冷却、AI、tick、胜负、掉落、存档 schema 或
 `saveVersion`；未给断魂庄 audit 补背景；未引入独立 `HpBar` 战场样式；未提交截图、日志、
@@ -38,7 +41,7 @@ Windows 实机发布 Gate 尚未执行，用户也尚未终拍。因此当前最
 | G1 结构与比例 | 24/25 | 24 | 顶栏与案台边界误差 `0 / 0.104px`；三段结构稳定。横向 focus/skills 比例与母版仍非逐像素一致，扣 1。 |
 | G2 色彩基调 | 19/20 | 19 | 黑金、旧纸、暗绛与青灰语义色克制；战场平均 RGB 仍比母版偏亮，扣 1。 |
 | G3 人物构图 | 19/20 | 19 | 六人轮廓、Boss 层级与接地成立，宽灰雾垫已消除；具体姿势和面积分布不可能逐像素同母版，扣 1。 |
-| G4 案台内容 | 19/20 | 19 | 名帖、七签、朱印、耗气和行囊层级完整，三视口不换皮；局部间距仍有实现差异，扣 1。 |
+| G4 案台内容 | 19/20 | 19 | 名帖、七签、朱印、耗气和行囊层级完整；冷却数字已被淡墨批注牌纳入签面语言；局部间距仍有实现差异，扣 1。 |
 | G5 材质与字形 | 14/15 | 14 | 血条与横幅去现代化，纸、墨、金线统一；字体抗锯齿与边缘纹理仍有平台差异，扣 1。 |
 | **G 合计** | **95/100** | **≥95** | **实现者暂评达标，待用户终拍。** |
 
@@ -48,9 +51,9 @@ Windows 实机发布 Gate 尚未执行，用户也尚未终拍。因此当前最
 |---|---:|---:|---|
 | P1 结构与响应式 | 19/20 | 19 | 1280、1440、1672 使用同一连续样式；无断层或 overflow。 |
 | P2 场景与人物融合 | 24/25 | 24 | 主线、浅色塔境、群战、纯程序化断魂庄、心魔、轻功、护法结界均复核；接地与轮廓稳定。 |
-| P3 案台与信息密度 | 19/20 | 19 | 七招、少招、空签、空行囊和自动轮转都保持完成品结构。 |
+| P3 案台与信息密度 | 19/20 | 19 | 七招、少招、空签、空行囊和自动轮转都保持完成品结构；Boss 终拍明示生产可达的四签三空签，不伪造黄金七签。 |
 | P4 HUD 与材质统一 | 14/15 | 14 | `HpBar`、蓄势主横幅与每敌小印统一；多敌同时蓄势不丢信息。 |
-| P5 动态状态一致性 | 9/10 | 9 | 伤害、暴击、破招、Boss 阶段、替补、濒死、胜负、暂停和资源压力均覆盖。 |
+| P5 动态状态一致性 | 9/10 | 9 | 伤害、暴击、破招、Boss 阶段、替补、濒死、胜负、暂停、资源压力和冷却批注均覆盖。 |
 | P6 桌面交互与稳定性 | 10/10 | 10 | Tab/Enter、hover、ESC、暂停/继续、两阶段选敌、cursor、双视口和逻辑缩放测试全绿。 |
 | **P 合计** | **95/100** | **≥95** | **实现者暂评达标，待用户终拍。** |
 
@@ -61,14 +64,14 @@ Windows 实机发布 Gate 尚未执行，用户也尚未终拍。因此当前最
 ### 5.1 最终命令
 
 ```text
-$ dart format lib/features/battle/presentation/avatar_status_tags.dart
-Formatted 1 file (0 changed)
+$ dart format <8 changed Dart files>
+Formatted 8 files (0 changed)
 
 $ flutter analyze --no-pub
 No issues found! (ran in 11.0s)
 
-$ flutter test --no-pub --reporter compact
-+4799: All tests passed!
+$ flutter test --no-pub
++4800: All tests passed!
 
 $ git diff --check
 (no output, exit 0)
@@ -85,26 +88,29 @@ $ git diff --check
 | 案台核心 | 72/72 |
 | 人物 / 场景 / audit route | 105/105 |
 | 最终 battle presentation + Boss/route 动态组 | 380/380 |
-| 全仓最终套件 | 4799/4799 |
+| 用户修订目标组 | 130/130 |
+| 全仓最终套件 | 4800/4800 |
 
 ## 6. 截图与差异证据
 
 | 证据 | 数量 | 路径 |
 |---|---:|---|
-| 最终黄金 1672×941 | 1 | `build/visual_acceptance/battle_ui_final_golden/` |
-| 最终代表生产 Boss 1440×900 | 1 | `build/visual_acceptance/battle_ui_final_production_boss/` |
+| 修订后黄金 1672×941 + 1280×720 | 2 | `build/visual_acceptance/battle_ui_user_revision_golden/` |
+| 修订后代表生产 Boss 1440×900 + 1280×720 | 2 | `build/visual_acceptance/battle_ui_user_revision_production_boss_v2/` |
 | 动态矩阵 13 routes × 2 viewports | 26 | `build/visual_acceptance/battle_ui_phase5_dynamic/` |
 | 人物接地 before/after 5 scenes × 2 viewports | 10 + 10 | `build/visual_acceptance/battle_ui_phase4_before/`、`battle_ui_phase4_after/` |
 | 心魔 / 轻功 / 护法结界 × 2 viewports | 6 | `build/visual_acceptance/battle_ui_phase4_special_modes/` |
 
-所有最终与动态截图日志均包含 READY 和原生 window-id，未检出 fallback、route error、
+采用终拍和动态截图日志均包含 READY 和原生 window-id，未检出 route error、
 RenderFlex 或 overflow。人物接地前后对账中，10/10 图的变化像素 100% 位于 battlefield ROI，
 顶栏和案台变化像素均为 0。
+首轮黄金图到本次修订图仅 `3542/6293408` 像素变化（`0.0563%`），且逻辑坐标 `y<700`
+的顶栏与战场变化像素为 0，证明修订只收敛在案台 CD 标记，没有破坏用户已认可的黄金构图。
 
 最终用户终拍文件：
 
-1. 黄金 3v3：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95/build/visual_acceptance/battle_ui_final_golden/battle_tap_live/1672x941/battle_tap_live.png`
-2. 代表生产 Boss：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95/build/visual_acceptance/battle_ui_final_production_boss/battle_guardian_ward/1440x900/battle_guardian_ward.png`
+1. 黄金 3v3：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95/build/visual_acceptance/battle_ui_user_revision_golden/battle_tap_live/1672x941/battle_tap_live.png`
+2. 代表生产 Boss：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95/build/visual_acceptance/battle_ui_user_revision_production_boss_v2/battle_guardian_ward/1440x900/battle_guardian_ward.png`
 3. 母版并排：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95/build/visual_acceptance/battle_ui_final_golden/analysis/reference_current_side_by_side.png`
 
 ## 7. 机器指标：必须披露的未绿项
@@ -155,6 +161,7 @@ focus/skills/pouch 三项均为 true；这次只修证据口径，没有修改�
 
 ## 9. 用户终拍判定
 
-请重点看两张最终图的四个位置：人物大小与脚底接地、Boss 层级、多敌状态信息、1280/1440
-案台连续性。若认可，请明确回复“终拍通过”；若不认可，请指出“哪张图 + 哪个区域 + 主要问题”。
+首轮判定为“部分通过”：黄金图整体方向获得认可，CD 数字和生产 Boss 图未通过。请二次终拍重点检查：
+黄金图右上淡墨 CD 批注牌，以及 Boss 图的正式标题、四张真实招式签与三空签。若认可，请明确回复“终拍通过”；
+若不认可，请指出“哪张图 + 哪个区域 + 主要问题”。
 收到“终拍通过”前，本目标保持 active，不标记 READY，也不合并为已完成。

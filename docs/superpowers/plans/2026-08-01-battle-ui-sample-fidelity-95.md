@@ -1,7 +1,7 @@
 # 战斗界面样板还原度 95+ 实施计划
 
 > 日期：2026-08-01<br>
-> 状态：**五个切片已实施，待用户终拍确认**<br>
+> 状态：**五个切片已实施；首轮终拍部分通过，待修订版二次终拍**<br>
 > 基点：`main@acc31ee8`<br>
 > 分支：`codex/battle-ui-fidelity-95`<br>
 > worktree：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95`<br>
@@ -294,14 +294,17 @@ git status --short
 - 切片 4 动态实拍位于 `build/visual_acceptance/battle_ui_phase5_dynamic/`：13 条路由 ×
   1280/1440 共 26 张，全部 READY + window-id，未见 fallback、error 或 overflow；覆盖
   伤害陈列、多敌蓄势、破招、Boss 阶段、替补、濒死、胜负、资源压力和自动轮转。
-- 最终黄金帧位于 `build/visual_acceptance/battle_ui_final_golden/`，代表生产 Boss 位于
-  `build/visual_acceptance/battle_ui_final_production_boss/`；manifest 已刷新到实现代码态
-  `2bdd796894e0388b5b0d21df4dbe805e2247f5de`。
+- 首轮用户终拍认可黄金图整体方向，但要求重做 CD 数字并指出代表生产 Boss 偏离。修订后黄金帧位于
+  `build/visual_acceptance/battle_ui_user_revision_golden/`，代表生产 Boss 位于
+  `build/visual_acceptance/battle_ui_user_revision_production_boss_v2/`；实现代码态为
+  `82a0c03ef5175edacfe43a56a2e12126cadefb88`。
+- CD 已改为右上淡墨批注牌；Boss 路由保留 floor30 真敌方、结界、背景和空行囊，改用正式塔名与仓库
+  `SkillDef` 组成的生产可达四签三空签，不伪造黄金七签。
 - 实现者人工暂评：G=`95/100`（24+19+19+19+14），P=`95/100`
   （19+24+19+14+9+10），F=`95/100`。这是待用户终拍复核的暂评分，不是 READY 声明。
 - 最终静态与全量验证：`dart format` 无改动；`flutter analyze --no-pub` 输出
   `No issues found!`；`flutter test --no-pub --reporter compact` 输出
-  `+4799: All tests passed!`；`git diff --check` 通过。
+  `+4800: All tests passed!`；用户修订目标组 `130/130`；`git diff --check` 通过。
 - 严格 reference/current analyzer 自校验通过，reference SHA 一致，顶栏/案台锚点误差
   `0 / 0.104px`。绝对像素阈值并未全绿：战场 MAE `28.532 > 22`、战场边缘 IoU
   `0.107 < 0.12`，案台 MAE `15.513 > 14`，且若干边缘阈值未过；这是人物姿势、
@@ -316,7 +319,7 @@ git status --short
   因此剩余绝对战场 Gate 是不同背景/姿势语义的辅助差异，不以改母版、换生产资产或
   放宽阈值制造假绿。
 
-**下一步唯一入口**：用户终拍黄金 3v3 与代表生产 Boss。用户明确回复“终拍通过”前，
+**下一步唯一入口**：用户二次终拍修订后黄金 3v3 与代表生产 Boss。用户明确回复“终拍通过”前，
 目标保持 active、分支不得标记 READY；若用户指出具体扣分区域，回到对应切片继续修复。
 
 **已知风险**：
