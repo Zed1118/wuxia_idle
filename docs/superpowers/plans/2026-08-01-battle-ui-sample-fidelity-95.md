@@ -1,7 +1,7 @@
 # 战斗界面样板还原度 95+ 实施计划
 
 > 日期：2026-08-01<br>
-> 状态：**已复核待实施**（本轮只完成外审 triage、计划与 worktree 初始化）<br>
+> 状态：**五个切片已实施，待用户终拍确认**<br>
 > 基点：`main@acc31ee8`<br>
 > 分支：`codex/battle-ui-fidelity-95`<br>
 > worktree：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95`<br>
@@ -287,11 +287,28 @@ git status --short
   `battle_field_repaint_test.dart` 重跑并取得上述绿色结果。
 - 切片 3 人工分项暂评 G3 `19/20`、P2 `24/25`。机器像素证据只证明修复域没有外溢；
   该分项仍必须由最终人工评分与用户终拍确认。
+- 切片 4 已完成动态状态与桌面交互覆盖审计。battle presentation、Boss phase、
+  guardian ward 与 visual route 目标组 `380 pass / 0 fail`；覆盖 Tab/Enter、hover、
+  ESC 取消、暂停/继续、两阶段选敌、胜负结算、1280/1440 视口以及 Windows
+  100%/125%/150% 逻辑缩放。
+- 切片 4 动态实拍位于 `build/visual_acceptance/battle_ui_phase5_dynamic/`：13 条路由 ×
+  1280/1440 共 26 张，全部 READY + window-id，未见 fallback、error 或 overflow；覆盖
+  伤害陈列、多敌蓄势、破招、Boss 阶段、替补、濒死、胜负、资源压力和自动轮转。
+- 最终黄金帧位于 `build/visual_acceptance/battle_ui_final_golden/`，代表生产 Boss 位于
+  `build/visual_acceptance/battle_ui_final_production_boss/`；manifest 已刷新到实现代码态
+  `2efbb556680fb48db95a0ceceaa15ba8f755ee3f`。
+- 实现者人工暂评：G=`95/100`（24+19+19+19+14），P=`95/100`
+  （19+24+19+14+9+10），F=`95/100`。这是待用户终拍复核的暂评分，不是 READY 声明。
+- 最终静态与全量验证：`dart format` 无改动；`flutter analyze --no-pub` 输出
+  `No issues found!`；`flutter test --no-pub --reporter compact` 输出
+  `+4799: All tests passed!`；`git diff --check` 通过。
+- 严格 reference/current analyzer 自校验通过，reference SHA 一致，顶栏/案台锚点误差
+  `0 / 0.104px`。绝对像素阈值并未全绿：战场 MAE `28.532 > 22`、战场边缘 IoU
+  `0.107 < 0.12`，案台 MAE `15.513 > 14`，且若干边缘阈值未过；这是人物姿势、
+  场景语义与诊断层缺失共同影响的辅助指标，必须原样披露，不能用人工 95 分覆盖。
 
-**下一步唯一入口**：进入“切片 4：动态状态与桌面交互终验”，先用现有
-确定性 route 和 widget/interaction 测试清单核对普攻、受击、暴击、多敌蓄势、破招、
-Boss、濒死、胜负、暂停、hover/点击、键鼠焦点和窗口缩放覆盖缺口；仍先失败证据、
-后最小修复，不把静态终帧当成动态通过。
+**下一步唯一入口**：用户终拍黄金 3v3 与代表生产 Boss。用户明确回复“终拍通过”前，
+目标保持 active、分支不得标记 READY；若用户指出具体扣分区域，回到对应切片继续修复。
 
 **已知风险**：
 
@@ -301,16 +318,20 @@ Boss、濒死、胜负、暂停、hover/点击、键鼠焦点和窗口缩放覆�
 - `--delete-conflicting-outputs` 在当前 build_runner 版本已被忽略，但生成成功。
 - 断魂庄旧 before 目录 `build/visual_acceptance/gauntlet_audit_20260801/` 实际不存在；
   triage 新抓图只作事实核查，正式实施需按统一 manifest 重建 before 基线。
+- 绝对 reference/current 机器阈值未全部通过；它不能自动否决或证明 G/P 人工分，
+  但在用户终拍前仍作为显式未闭合证据保留。
+- Windows 100%/125%/150% 已由 widget 逻辑视口测试覆盖；发布前仍需 Windows 实机字体与
+  缩放抽验，当前 macOS worktree 无法替代该发布 Gate。
 
 ## 7. 合并前 `CLAUDE.md §8.2` Gate
 
-- [ ] 生产验证证据齐全，不只跑固定 fixture；
-- [ ] targeted tests 覆盖本切片真实改动；
-- [ ] 红线检查通过；
-- [ ] 残留项与已知风险有明确结论；
-- [ ] 1280x720、1440x900，必要时 1672x941 的 UI 证据齐全；
-- [ ] 所有新外审意见先进入 triage，先证伪再采纳；
-- [ ] 无中文文案/数值常量散写进 Dart；
-- [ ] 无高频 `debugPrint`、`.g.dart`、capture、log 或临时 probe 误提交；
-- [ ] commit message 使用中文动宾；
+- [x] 生产验证证据齐全，不只跑固定 fixture；
+- [x] targeted tests 覆盖本切片真实改动；
+- [x] 红线检查通过；
+- [x] 残留项与已知风险有明确结论；
+- [x] 1280x720、1440x900，必要时 1672x941 的 UI 证据齐全；
+- [x] 所有新外审意见先进入 triage，先证伪再采纳；
+- [x] 无中文文案/数值常量散写进 Dart；
+- [x] 无高频生产 `debugPrint`、`.g.dart`、capture、log 或临时 probe 误提交；
+- [x] commit message 使用中文动宾；
 - [ ] 用户终拍通过后才可标记 READY。
