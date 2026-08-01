@@ -27,8 +27,7 @@
 | 7 | B3 立绘融合观感真人拍方向 | battle 表现层数值 | ~20min | 需先看真机实拍图;要调只动 `battleStandeeFusionOpacityAtFull`/明度下沿/上沿三常量,门禁测守边界。附带:登记值精度 ±9、`cliffwaterfall` 仅 boss 用法其取样带可能被立绘右缘侵入(该资产落下沿之下走基线档,当前不影响行为) |
 | 8 | 送关旧部立绘白布动势 | 美术返修 | 随批 | 07-30 目检半中项:语义达成(「今早特意换的新布」)但派单要求的「被风吹得笔直/画面里唯一在动的东西」动势缺失 |
 | 9 | F2「wait=80 冻结 vs wait=85 濒死」机制未解释 | 视觉验收工具链 | 低优 | 07-30 批只做了证据与可判读判据,底层为何在该窗口跳变未查明;不影响判据可用 |
-| 10 | 规模类文案扩真相源守卫(审查 08-01 P1-1) | 门禁 | ~40min | 塔 30 层 ×5/心魔 7 关 ×2/轻功 5/群战 5/断魂庄 3 关 ×2 共约 11 处 UI 文案写死数字且**不在任何守卫内**;当前值实测全对故非活 bug,但扩内容即静默 drift(章数那处已这样活了 5 章)。沿 `truth_source_guard_test` 既有体例扩断言,规模从生产 yaml 派生 |
-| 11 | 查 `audioplayers` 6.8.1 是否解 VS2026 | 依赖/CI | ~15min | `windows-release.yml` 头注明写「解除条件 = audioplayers 升级到支持 VS2026 的版本」,runner 现钉 `windows-2022`;上游已出 6.8.1(本地锁 6.7.1),解了即可松钉 |
+| 11 | 升 `audioplayers` 6.8.1 松开 `windows-2022` 钉 | 依赖/CI | ~30min + 一次 Windows CI 验 | **2026-08-01 已查证,结论可直接用勿重查**。① **上游确已修**:`audioplayers_windows` **4.4.1**(2026-06-27,随 audioplayers 6.8.1)changelog 明写 `FIX(windows): Compatibility with Visual Studio 18 (2026)`(issue #2011),4.4.0 配套 `Update to C++23 & Windows Implementation Lib`;本地锁 6.7.1 / windows 4.3.1,`pubspec.yaml` 的 `^6.0.0` 本就允许 6.8.1,`flutter pub upgrade` 即可动锁。② **但有前置,光升包不够**:上游 README 新增要求——VS2026 下依赖库需 CMP0091 NEW 策略,须把 `windows/CMakeLists.txt:2,11` 与 `windows/runner/CMakeLists.txt:1` 的 `3.14` 抬到 `3.15`(现三处全是 3.14),不改大概率仍红;改完把 `windows-release.yml:26` 的 `windows-2022` 放回 `windows-latest`。③ **证据口径(别误当实证)**:上述结论源自上游 changelog + issue,**非源码级实证**——原打算扒包 grep `experimental/coroutine` 的方法**已作废**(对照组 4.3.1 也搜不到,该头文件由 C++ 传递依赖引入而非 audioplayers 自身源码),唯一真证明是跑一次 Windows release CI |
 
 ## 三 · 依赖锁死(附再开条件)
 
