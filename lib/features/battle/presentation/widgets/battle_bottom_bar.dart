@@ -1518,25 +1518,27 @@ class EmptySkillSlot extends StatelessWidget {
             onLongPress: null,
             interactive: false,
             child: Center(
-              child: Transform.rotate(
-                angle: -0.08,
-                child: Container(
-                  key: ValueKey('battle.emptySkillSlot.emptySeal.$index'),
-                  width: 24,
-                  height: 24,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0x146E6252),
-                    border: Border.all(color: const Color(0x806E6252)),
-                  ),
-                  child: Text(
-                    UiStrings.battleEmptySkillSlot.characters.first,
-                    style: const TextStyle(
-                      color: Color(0xA66A5E4C),
-                      fontFamily: BattleTypography.displayFamily,
-                      fontFamilyFallback: BattleTypography.displayFallback,
-                      fontSize: 10,
-                      height: 1,
+              child: SizedBox(
+                key: ValueKey('battle.emptySkillSlot.emptySeal.$index'),
+                width: 36,
+                height: 52,
+                child: CustomPaint(
+                  key: ValueKey('battle.emptySkillSlot.untitledTrace.$index'),
+                  painter: const _UntitledSkillSlipPainter(),
+                  child: Align(
+                    alignment: const Alignment(0.12, 0.48),
+                    child: Transform.rotate(
+                      angle: -0.09,
+                      child: Text(
+                        UiStrings.battleEmptySkillSlot.characters.first,
+                        style: const TextStyle(
+                          color: Color(0x5C6A5E4C),
+                          fontFamily: BattleTypography.displayFamily,
+                          fontFamilyFallback: BattleTypography.displayFallback,
+                          fontSize: 9,
+                          height: 1,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -1547,6 +1549,47 @@ class EmptySkillSlot extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 空技能位不是灰色 placeholder，而是一张尚未题字的旧签。
+/// 两道极淡干笔与一枚磨损小字只说明“留白”，不制造可点击按钮的视觉承诺。
+class _UntitledSkillSlipPainter extends CustomPainter {
+  const _UntitledSkillSlipPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final wash = Paint()
+      ..color = const Color(0xFF574A39).withValues(alpha: 0.20)
+      ..strokeCap = StrokeCap.square
+      ..strokeWidth = 1.1;
+    canvas.drawLine(
+      Offset(size.width * 0.43, size.height * 0.08),
+      Offset(size.width * 0.39, size.height * 0.68),
+      wash,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.58, size.height * 0.20),
+      Offset(size.width * 0.55, size.height * 0.58),
+      wash..color = const Color(0xFF574A39).withValues(alpha: 0.11),
+    );
+
+    final seal = Path()
+      ..moveTo(size.width * 0.35, size.height * 0.66)
+      ..lineTo(size.width * 0.69, size.height * 0.63)
+      ..lineTo(size.width * 0.72, size.height * 0.89)
+      ..lineTo(size.width * 0.38, size.height * 0.92)
+      ..close();
+    canvas.drawPath(
+      seal,
+      Paint()
+        ..color = const Color(0xFF6A5E4C).withValues(alpha: 0.28)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.8,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _UntitledSkillSlipPainter oldDelegate) => false;
 }
 
 class BattlePouchRail extends StatelessWidget {

@@ -232,6 +232,11 @@ void main() {
           .assetPath,
       WuxiaUi.battleInnerRealmCool,
     );
+    expect(
+      battleTowerImageGroundIntensity,
+      0.38,
+      reason: '塔境下三分之一需保留足够墨层承接人物脚底，不能只做整图调色',
+    );
 
     await tester.pumpWidget(
       _wrap(

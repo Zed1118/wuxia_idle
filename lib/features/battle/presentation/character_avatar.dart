@@ -510,6 +510,19 @@ class _StageCharacterStandee extends StatelessWidget {
                 ),
               ),
             ),
+          if (wardActive)
+            Positioned(
+              left: width * 0.01,
+              right: width * 0.01,
+              top: height * 0.02,
+              bottom: height * 0.07,
+              child: const IgnorePointer(
+                child: CustomPaint(
+                  key: ValueKey('battle.guardianWardBrokenHalo'),
+                  painter: _GuardianWardBrokenHaloPainter(),
+                ),
+              ),
+            ),
           portrait,
           Positioned(
             top: 4,
@@ -697,25 +710,6 @@ class _BossInkAuraPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final glow = Paint()
-      ..color = WuxiaUi.gold.withValues(alpha: 0.20)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7);
-    canvas.drawArc(
-      Rect.fromLTWH(
-        size.width * 0.12,
-        size.height * 0.12,
-        size.width * 0.76,
-        size.height * 0.76,
-      ),
-      -2.55,
-      4.75,
-      false,
-      glow,
-    );
-
     final strand = Paint()
       ..color = const Color(0xFFC5A86B).withValues(alpha: 0.65)
       ..style = PaintingStyle.stroke
@@ -792,6 +786,111 @@ class _BossInkAuraPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _BossInkAuraPainter oldDelegate) => false;
+}
+
+/// 结界生效时的断续护界金墨。使用不对称曲线与断毫，不画规则圆/椭圆，
+/// 避免把武侠机制读成科幻护盾；护法倒下后组件随纯展示判定立即消失。
+class _GuardianWardBrokenHaloPainter extends CustomPainter {
+  const _GuardianWardBrokenHaloPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final glow = Paint()
+      ..color = WuxiaUi.gold.withValues(alpha: 0.07)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+    final ink = Paint()
+      ..color = WuxiaUi.gold.withValues(alpha: 0.38)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1
+      ..strokeCap = StrokeCap.square;
+    final faint = Paint()
+      ..color = WuxiaUi.gold.withValues(alpha: 0.19)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.75
+      ..strokeCap = StrokeCap.square;
+
+    Path curve(List<Offset> points) => Path()
+      ..moveTo(points[0].dx * size.width, points[0].dy * size.height)
+      ..cubicTo(
+        points[1].dx * size.width,
+        points[1].dy * size.height,
+        points[2].dx * size.width,
+        points[2].dy * size.height,
+        points[3].dx * size.width,
+        points[3].dy * size.height,
+      );
+
+    final leftLower = curve(const [
+      Offset(0.43, 0.87),
+      Offset(0.22, 0.76),
+      Offset(0.24, 0.54),
+      Offset(0.31, 0.42),
+    ]);
+    final leftUpper = curve(const [
+      Offset(0.29, 0.36),
+      Offset(0.24, 0.24),
+      Offset(0.33, 0.12),
+      Offset(0.42, 0.08),
+    ]);
+    final rightUpper = curve(const [
+      Offset(0.59, 0.10),
+      Offset(0.70, 0.16),
+      Offset(0.76, 0.31),
+      Offset(0.72, 0.43),
+    ]);
+    final rightLower = curve(const [
+      Offset(0.74, 0.49),
+      Offset(0.79, 0.62),
+      Offset(0.71, 0.79),
+      Offset(0.58, 0.86),
+    ]);
+    for (final path in [leftLower, leftUpper, rightUpper, rightLower]) {
+      canvas.drawPath(path, glow);
+      canvas.drawPath(path, ink);
+    }
+
+    canvas.drawPath(
+      curve(const [
+        Offset(0.36, 0.73),
+        Offset(0.20, 0.58),
+        Offset(0.28, 0.31),
+        Offset(0.45, 0.20),
+      ]),
+      faint,
+    );
+    canvas.drawPath(
+      curve(const [
+        Offset(0.55, 0.18),
+        Offset(0.70, 0.27),
+        Offset(0.79, 0.51),
+        Offset(0.65, 0.69),
+      ]),
+      faint,
+    );
+
+    final dust = Paint()..color = WuxiaUi.gold.withValues(alpha: 0.30);
+    for (final point in const [
+      Offset(0.27, 0.47),
+      Offset(0.33, 0.24),
+      Offset(0.67, 0.22),
+      Offset(0.73, 0.53),
+      Offset(0.64, 0.76),
+    ]) {
+      canvas.drawCircle(
+        Offset(point.dx * size.width, point.dy * size.height),
+        0.8,
+        dust,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _GuardianWardBrokenHaloPainter oldDelegate) =>
+      false;
 }
 
 /// 人物脚下状态条的柔和墨染。透明渐隐与断续墨毫替代矩形实底和硬边，

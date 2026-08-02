@@ -44,6 +44,19 @@ class HpBar extends StatelessWidget {
     final fillColor =
         fillColorOverride ?? (isInternalForce ? WuxiaUi.qing : WuxiaUi.jiang);
     final trackColor = trackColorOverride ?? WuxiaUi.battleStatusTrack;
+    final resolvedLabelFontSize =
+        labelFontSize ?? math.max(height * 0.72, 10.0);
+    final labelStyle = TextStyle(
+      // 内力条 height 小(9)时仍保留 10px 下限。
+      fontSize: resolvedLabelFontSize,
+      color: WuxiaUi.paper,
+      fontWeight: FontWeight.w500,
+      fontFamilyFallback: BattleTypography.uiFallback,
+      fontFeatures: BattleTypography.tabularFigures,
+      height: 1,
+      shadows: const [Shadow(color: Colors.black54, blurRadius: 1)],
+    );
+    final deEmphasizeMaximum = tightLabel && max.abs() >= 10000;
 
     return SizedBox(
       height: height,
@@ -86,25 +99,36 @@ class HpBar extends StatelessWidget {
                 painter: const _BarLabelInkPlatePainter(),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 3),
-                  child: Text(
-                    compactLabel
-                        ? '$labelPrefix${_compactBattleValue(current)}/${_compactBattleValue(max)}'
-                        : tightLabel
-                        ? '$labelPrefix$current/$max'
-                        : '$labelPrefix$current / $max',
-                    style: TextStyle(
-                      // 内力条 height 小(9)时仍保留 10px 下限。
-                      fontSize: labelFontSize ?? math.max(height * 0.72, 10.0),
-                      color: WuxiaUi.paper,
-                      fontWeight: FontWeight.w500,
-                      fontFamilyFallback: BattleTypography.uiFallback,
-                      fontFeatures: BattleTypography.tabularFigures,
-                      height: 1,
-                      shadows: const [
-                        Shadow(color: Colors.black54, blurRadius: 1),
-                      ],
-                    ),
-                  ),
+                  child: deEmphasizeMaximum
+                      ? Text.rich(
+                          key: const ValueKey(
+                            'battle.hpBarDeemphasizedMaxLabel',
+                          ),
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: '$labelPrefix$current',
+                                style: labelStyle,
+                              ),
+                              TextSpan(
+                                text: '/$max',
+                                style: labelStyle.copyWith(
+                                  color: WuxiaUi.paper.withValues(alpha: 0.68),
+                                  fontSize: resolvedLabelFontSize * 0.88,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Text(
+                          compactLabel
+                              ? '$labelPrefix${_compactBattleValue(current)}/${_compactBattleValue(max)}'
+                              : tightLabel
+                              ? '$labelPrefix$current/$max'
+                              : '$labelPrefix$current / $max',
+                          style: labelStyle,
+                        ),
                 ),
               ),
             ),

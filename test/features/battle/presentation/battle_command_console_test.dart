@@ -1369,6 +1369,10 @@ void main() {
           find.byKey(ValueKey('battle.emptySkillSlot.emptySeal.$i')),
           findsOneWidget,
         );
+        expect(
+          find.byKey(ValueKey('battle.emptySkillSlot.untitledTrace.$i')),
+          findsOneWidget,
+        );
       }
       expect(find.text(UiStrings.battleEmptySkillSlot), findsNothing);
 
@@ -1392,7 +1396,7 @@ void main() {
       );
       expect(
         BattleLayoutTokens.emptySkillPaperOpacity,
-        0.42,
+        0.52,
         reason: '生产四签三空签也要保持七签案台的纸形连续性',
       );
       expect(
