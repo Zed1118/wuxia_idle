@@ -366,9 +366,13 @@ if [[ "$WRITE_MANIFEST" -eq 1 ]]; then
   if [[ "$DRY_RUN" -eq 1 ]]; then
     printf '[dry-run] write fidelity manifest commit=%s %s\n' "$commit" "$manifest_path"
   else
+    # --repo-root records the working-tree git tree id and a dirty flag.
+    # Captures are usually taken before the edits are committed, so commit
+    # alone names the previous code state and cannot pin what was rendered.
     python3 "$FIDELITY_ANALYZER" \
       --capture-root "$OUTPUT_DIR" \
       --commit "$commit" \
+      --repo-root "$REPO_ROOT" \
       --write-manifest "$manifest_path"
     printf 'fidelity manifest: %s\n' "$manifest_path"
   fi

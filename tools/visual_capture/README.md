@@ -12,8 +12,17 @@
 3. 用 `screencapture -x -o -l<window_id>` 截干净窗口。
 4. 若窗口 ID 捕获失败，退回区域截图并在 route log 中记录
    `VISUAL_CAPTURE: fallback_region`。
-5. 截图结束后默认生成 `<output>/fidelity_manifest.json`，记录 commit、route、
-   seed/tick、逻辑视口、DPR、原生窗口 ID、截图方式及 PNG/log SHA-256。
+5. 截图结束后默认生成 `<output>/fidelity_manifest.json`（`schema_version: 3`），记录
+   commit、**tree/dirty**、route、seed/tick、逻辑视口、DPR、原生窗口 ID、截图方式及
+   PNG/log SHA-256。
+
+   **为什么单有 commit 不够**：抓图几乎总发生在「改完但还没 commit」的时刻，
+   此时 `git rev-parse HEAD` 指的是**上一个**代码态。2026-08-02 的
+   `battle_ui_user_revision_production_boss_v5` 就是实例——manifest 记 `558885f7`，
+   而图里的四项视觉改动是 7 分钟后才落成 `680ea698` 的，只能靠人眼逐像素补证。
+   现在 `tree` 是工作树的真实 git tree id（`build/` 等 gitignored 产物不计入），
+   `dirty` 表示它是否偏离 `HEAD^{tree}`；两者都拿不到时记为 `null`，
+   **不会把「未知」写成「干净」**。计算走一次性临时 index，不动你的暂存区。
 
 ## 用法
 
