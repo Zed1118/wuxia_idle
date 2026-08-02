@@ -115,11 +115,12 @@ RenderFlex 或 overflow。人物接地前后对账中，10/10 图的变化像素
 Boss v5 延续 v3 的暖灰背景分级；v3 中央背景 ROI 平均 RGB 为 `(177.3,170.0,157.6)`，黄金图为 `(184.3,172.1,156.4)`；
 亮度由 v2 的 `158.1` 提至 `170.7`，黄金图为 `173.6`。该量测只用于证明色相收敛，不代替用户视觉判断。
 
-最终用户终拍文件：
+最终用户终拍文件（原抓图 worktree 已于 2026-08-02 合并后删除；以下三件连同各自 log 与
+manifest 已抽存归档，逐文件 sha256 与 manifest `png_sha256` 双校验通过）：
 
-1. 黄金 3v3：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95/build/visual_acceptance/battle_ui_user_revision_golden/battle_tap_live/1672x941/battle_tap_live.png`
-2. 代表生产 Boss：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95/build/visual_acceptance/battle_ui_user_revision_production_boss_v5/battle_guardian_ward/1440x900/battle_guardian_ward.png`
-3. 母版并排：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95/build/visual_acceptance/battle_ui_final_golden/analysis/reference_current_side_by_side.png`
+1. 黄金 3v3：`/Users/a10506/Desktop/挂机武侠_战斗界面95终拍证据_2026-08-02/battle_ui_user_revision_golden/battle_tap_live/1672x941/battle_tap_live.png`
+2. 代表生产 Boss：`/Users/a10506/Desktop/挂机武侠_战斗界面95终拍证据_2026-08-02/battle_ui_user_revision_production_boss_v5/battle_guardian_ward/1440x900/battle_guardian_ward.png`
+3. 母版并排：`/Users/a10506/Desktop/挂机武侠_战斗界面95终拍证据_2026-08-02/battle_ui_final_golden/analysis/reference_current_side_by_side.png`
 
 ## 7. 机器指标：必须披露的未绿项
 

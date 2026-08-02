@@ -4,7 +4,7 @@
 > 状态：**五个切片已实施；生产 Boss v5 用户终拍通过，READY**<br>
 > 基点：`main@acc31ee8`<br>
 > 分支：`codex/battle-ui-fidelity-95`<br>
-> worktree：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95`<br>
+> worktree：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95`（已于 2026-08-02 合并后删除）<br>
 > 修复规格：`docs/spec/2026-08-01-battle-ui-sample-fidelity-95-repair-report.md`
 
 ## 1. 目标与完成定义
