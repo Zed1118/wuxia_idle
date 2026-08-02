@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -483,6 +484,105 @@ class BattleV2FidelityTest(unittest.TestCase):
                 (self.root / "analysis" / "comparisons" / "production_before_after" / name).exists(),
                 name,
             )
+
+
+class WorkTreeProvenanceTest(unittest.TestCase):
+    """`commit` alone cannot prove which code produced a capture.
+
+    A capture run usually happens on an edited-but-uncommitted tree, so
+    `git rev-parse HEAD` names the *previous* state. These tests pin the
+    working-tree tree id instead, and guard that computing it never
+    disturbs the repository index the user is working in.
+    """
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.temp.name) / "repo"
+        self.repo.mkdir()
+        self._git("init", "-q")
+        self._git("config", "user.email", "test@example.com")
+        self._git("config", "user.name", "test")
+        (self.repo / ".gitignore").write_text("build/\n", encoding="utf-8")
+        (self.repo / "tracked.txt").write_text("v1\n", encoding="utf-8")
+        self._git("add", "-A")
+        self._git("commit", "-q", "-m", "init")
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def _git(self, *args):
+        return subprocess.run(
+            ("git", "-C", str(self.repo)) + args,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+
+    def test_clean_tree_matches_head_and_is_not_dirty(self):
+        state = fidelity.work_tree_state(self.repo)
+        self.assertEqual(state["tree"], self._git("rev-parse", "HEAD^{tree}"))
+        self.assertEqual(state["head_tree"], state["tree"])
+        self.assertFalse(state["dirty"])
+
+    def test_uncommitted_edit_changes_tree_and_sets_dirty(self):
+        clean = fidelity.work_tree_state(self.repo)
+        (self.repo / "tracked.txt").write_text("v2\n", encoding="utf-8")
+        dirty = fidelity.work_tree_state(self.repo)
+        self.assertNotEqual(dirty["tree"], clean["tree"])
+        self.assertEqual(dirty["head_tree"], clean["head_tree"])
+        self.assertTrue(dirty["dirty"])
+
+    def test_untracked_file_counts_but_gitignored_output_does_not(self):
+        clean = fidelity.work_tree_state(self.repo)
+        build_png = self.repo / "build" / "visual_acceptance" / "shot.png"
+        build_png.parent.mkdir(parents=True)
+        build_png.write_bytes(b"not-code")
+        self.assertEqual(
+            fidelity.work_tree_state(self.repo)["tree"],
+            clean["tree"],
+            "captures live under gitignored build/ and must not move the tree id",
+        )
+
+        (self.repo / "new_probe.dart").write_text("x", encoding="utf-8")
+        state = fidelity.work_tree_state(self.repo)
+        self.assertNotEqual(state["tree"], clean["tree"])
+        self.assertTrue(state["dirty"])
+
+    def test_computing_the_tree_never_touches_the_real_index(self):
+        (self.repo / "tracked.txt").write_text("v2\n", encoding="utf-8")
+        (self.repo / "new_probe.dart").write_text("x", encoding="utf-8")
+        before = self._git("status", "--porcelain")
+        fidelity.work_tree_state(self.repo)
+        self.assertEqual(self._git("status", "--porcelain"), before)
+        self.assertEqual(self._git("diff", "--cached", "--name-only"), "")
+
+    def test_build_manifest_records_tree_provenance(self):
+        capture_root = self.repo / "captures"
+        shot_dir = capture_root / "battle_tap_live" / "100x50"
+        shot_dir.mkdir(parents=True)
+        Image.new("RGBA", (200, 100), (10, 10, 10, 255)).save(
+            shot_dir / "battle_tap_live.png"
+        )
+
+        manifest = fidelity.build_manifest(
+            capture_root, "commit-sha", tree="tree-sha", dirty=True
+        )
+        self.assertEqual(manifest["schema_version"], 3)
+        self.assertEqual(manifest["commit"], "commit-sha")
+        self.assertEqual(manifest["tree"], "tree-sha")
+        self.assertTrue(manifest["dirty"])
+
+    def test_build_manifest_leaves_tree_unknown_rather_than_claiming_clean(self):
+        capture_root = self.repo / "captures"
+        shot_dir = capture_root / "battle_tap_live" / "100x50"
+        shot_dir.mkdir(parents=True)
+        Image.new("RGBA", (200, 100), (10, 10, 10, 255)).save(
+            shot_dir / "battle_tap_live.png"
+        )
+
+        manifest = fidelity.build_manifest(capture_root, "commit-sha")
+        self.assertIsNone(manifest["tree"])
+        self.assertIsNone(manifest["dirty"])
 
 
 if __name__ == "__main__":

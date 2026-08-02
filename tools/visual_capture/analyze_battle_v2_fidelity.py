@@ -9,8 +9,11 @@ never promotes a guessed value to an acceptance result.
 import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
+import subprocess
+import tempfile
 from pathlib import Path
 from statistics import median
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -58,8 +61,47 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def build_manifest(capture_root: Path, commit: str) -> Dict[str, Any]:
-    """Discover visual captures and bind each image to its deterministic state."""
+def work_tree_state(repo_root: Path) -> Dict[str, Any]:
+    """Pin the working tree that produced a capture, not just HEAD.
+
+    Captures are normally taken on an edited-but-uncommitted tree, so HEAD
+    names the *previous* code state and cannot prove which code rendered an
+    image. `git write-tree` against a throwaway index yields a real tree id for
+    the current working tree — gitignored output such as `build/` stays
+    excluded, and the repository index the user is working in is never touched.
+    """
+    repo_root = Path(repo_root)
+
+    def git(*args: str, env: Optional[Dict[str, str]] = None) -> str:
+        return subprocess.run(
+            ("git", "-C", str(repo_root)) + args,
+            check=True,
+            capture_output=True,
+            text=True,
+            env=env,
+        ).stdout.strip()
+
+    head_tree = git("rev-parse", "HEAD^{tree}")
+    with tempfile.TemporaryDirectory() as scratch:
+        scratch_env = dict(os.environ)
+        scratch_env["GIT_INDEX_FILE"] = str(Path(scratch) / "index")
+        git("read-tree", "HEAD", env=scratch_env)
+        git("add", "-A", env=scratch_env)
+        tree = git("write-tree", env=scratch_env)
+    return {"tree": tree, "head_tree": head_tree, "dirty": tree != head_tree}
+
+
+def build_manifest(
+    capture_root: Path,
+    commit: str,
+    tree: Optional[str] = None,
+    dirty: Optional[bool] = None,
+) -> Dict[str, Any]:
+    """Discover visual captures and bind each image to its deterministic state.
+
+    `tree`/`dirty` stay None when the caller could not resolve them, so an
+    unknown provenance is never reported as a clean one.
+    """
     capture_root = capture_root.resolve()
     captures: List[Dict[str, Any]] = []
     for png_path in sorted(capture_root.glob("*/*/*.png")):
@@ -133,8 +175,10 @@ def build_manifest(capture_root: Path, commit: str) -> Dict[str, Any]:
     if not captures:
         raise ValueError("capture root contains no <route>/<WxH>/*.png captures")
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "commit": commit,
+        "tree": tree,
+        "dirty": dirty,
         "capture_root": str(capture_root),
         "captures": captures,
     }
@@ -1089,6 +1133,15 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--manifest", type=Path, help="Capture manifest JSON.")
     parser.add_argument("--capture-root", type=Path, help="Capture root used to generate a manifest.")
     parser.add_argument("--commit", help="Commit recorded in a generated manifest.")
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        help=(
+            "Repository whose working tree produced the captures. Records the "
+            "git tree id and a dirty flag so a capture taken on uncommitted "
+            "code cannot be mistaken for its HEAD commit."
+        ),
+    )
     parser.add_argument("--write-manifest", type=Path, help="Destination for a generated manifest.")
     parser.add_argument(
         "--config", type=Path, default=DEFAULT_CONFIG, help="Single threshold config JSON."
@@ -1108,7 +1161,21 @@ def main() -> int:
     if args.capture_root is not None:
         if args.write_manifest is None:
             parser.error("--write-manifest is required with --capture-root")
-        manifest = build_manifest(args.capture_root, args.commit or "unknown")
+        tree: Optional[str] = None
+        dirty: Optional[bool] = None
+        if args.repo_root is not None:
+            try:
+                state = work_tree_state(args.repo_root)
+            except (OSError, subprocess.CalledProcessError) as error:
+                # Provenance is evidence, not a gate: a non-git checkout still
+                # produces a manifest, it just records tree/dirty as unknown.
+                print("warning: could not resolve work tree state: %s" % error)
+            else:
+                tree = state["tree"]
+                dirty = state["dirty"]
+        manifest = build_manifest(
+            args.capture_root, args.commit or "unknown", tree=tree, dirty=dirty
+        )
         args.write_manifest.parent.mkdir(parents=True, exist_ok=True)
         args.write_manifest.write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
