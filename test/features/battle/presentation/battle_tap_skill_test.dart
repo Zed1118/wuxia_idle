@@ -607,7 +607,7 @@ void main() {
   });
 
   group('技能签 CD 数字', () {
-    testWidgets('CD>0 技能签显样板式纯数字，不随窄视口回退圆环', (tester) async {
+    testWidgets('CD>0 技能签显淡墨批注牌，不随窄视口回退圆环或裸字', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
         availableSkills: [_single],
@@ -619,9 +619,14 @@ void main() {
         matching: find.byType(BeatCountdownRing),
       );
       expect(ring, findsNothing);
+      final mark = find.descendant(
+        of: find.byKey(const ValueKey('skill_cmd_1_single1')),
+        matching: find.byKey(const ValueKey('battle.skillSlipCooldownMark')),
+      );
+      expect(mark, findsOneWidget);
       expect(
         find.descendant(
-          of: find.byKey(const ValueKey('skill_cmd_1_single1')),
+          of: mark,
           matching: find.byKey(const ValueKey('battle.skillSlipCooldownCount')),
         ),
         findsOneWidget,
@@ -646,26 +651,18 @@ void main() {
     });
   });
 
-  group('读秒环端到端接线', () {
-    testWidgets('敌方蓄力 → 头像显读秒环(beat 穿 4 层到达头像)', (tester) async {
+  group('蓄势小印端到端接线', () {
+    testWidgets('敌方蓄力 → 人物名帖显蓄势小印', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final charging = right.first.copyWith(
         chargingSkill: _aoe,
         chargeTicksRemaining: 3,
       );
       await _pumpWith(tester, left, [charging, ...right.skip(1)]);
-      // 蓄力敌头像内出现读秒环,证明 _beatCtrl 经 _BattleField→_TeamColumn→
-      // _CharacterSlot→CharacterAvatar 全链透传到达。
-      final enemyAvatar = find.byWidgetPredicate(
-        (w) =>
-            w is CharacterAvatar &&
-            w.character.characterId == charging.characterId,
-      );
+      // 蓄势敌人的人物层必须保留独立小印，不可只靠顶部仅显示
+      // 最迫近发动者的横幅。
       expect(
-        find.descendant(
-          of: enemyAvatar,
-          matching: find.byType(BeatCountdownRing),
-        ),
+        find.byKey(ValueKey('battle.chargeSeal.${charging.characterId}')),
         findsOneWidget,
       );
     });

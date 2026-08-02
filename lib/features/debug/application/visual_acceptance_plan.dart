@@ -81,6 +81,7 @@ final List<VisualAcceptanceRoute> _battleRoutes = [
     VisualRoute.battleV2FastForwardPeak,
     VisualRoute.battleV2PreResult,
     VisualRoute.battleV2Neutral3v3,
+    VisualRoute.battleV2MultiCharge,
     VisualRoute.battleIdentitySilhouette,
     VisualRoute.battleV2ResourcePressure,
   ])
@@ -325,6 +326,11 @@ List<String> _checksFor(VisualRoute route) {
       '标准 3v3 无待发/大招/结算遮挡',
       '三人阵列与完整案台同屏',
       'READY 只在战斗初态挂载后发出',
+    ],
+    VisualRoute.battleV2MultiCharge => const [
+      '三名敌人同时蓄势时各有一枚人物小印',
+      '顶部横幅只提示剩余拍数最少者',
+      '小印不遮挡人物头脸与双状态条',
     ],
     VisualRoute.battleIdentitySilhouette => const [
       '三名缺专用站姿弟子均显示透明身份剪影',

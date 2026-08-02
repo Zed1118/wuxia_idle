@@ -2,13 +2,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import 'battle_typography_tokens.dart';
 
-/// 通用比例条（phase1_tasks.md T14 §785-786）。
-///
-/// 用 Stack 把背景轨道、按比例填充的前景、居中文本三层叠起来。
-/// `isInternalForce=true` 走内力蓝；否则走 HP 三段色。
+/// 战斗纸本比例条。墨轨、干笔填充和数值墨托均由确定性
+/// [CustomPainter] 绘制，避免现代 HUD 的光滑圆角轨道。
 class HpBar extends StatelessWidget {
   final int current;
   final int max;
@@ -44,60 +42,183 @@ class HpBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final ratio = max <= 0 ? 0.0 : (current / max).clamp(0.0, 1.0).toDouble();
     final fillColor =
-        fillColorOverride ??
-        (isInternalForce
-            ? WuxiaColors.internalForce
-            : WuxiaColors.hpColor(ratio));
-    final borderRadius = BorderRadius.circular(2);
+        fillColorOverride ?? (isInternalForce ? WuxiaUi.qing : WuxiaUi.jiang);
+    final trackColor = trackColorOverride ?? WuxiaUi.battleStatusTrack;
+    final resolvedLabelFontSize =
+        labelFontSize ?? math.max(height * 0.72, 10.0);
+    final labelStyle = TextStyle(
+      // 内力条 height 小(9)时仍保留 10px 下限。
+      fontSize: resolvedLabelFontSize,
+      color: WuxiaUi.paper,
+      fontWeight: FontWeight.w500,
+      fontFamilyFallback: BattleTypography.uiFallback,
+      fontFeatures: BattleTypography.tabularFigures,
+      height: 1,
+      shadows: const [Shadow(color: Colors.black54, blurRadius: 1)],
+    );
+    final deEmphasizeMaximum = tightLabel && max.abs() >= 10000;
 
     return SizedBox(
       height: height,
-      child: ClipRRect(
-        borderRadius: borderRadius,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ColoredBox(
-                key: const ValueKey('battle.hpBarTrack'),
-                color: trackColorOverride ?? WuxiaColors.barTrack,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: RepaintBoundary(
+              key: const ValueKey('battle.hpBarTrack'),
+              child: CustomPaint(
+                key: const ValueKey('battle.hpBarInkTrack'),
+                painter: BattleInkBarPainter(color: trackColor),
               ),
             ),
-            FractionallySizedBox(
-              widthFactor: ratio,
-              child: SizedBox.expand(
-                child: ColoredBox(
-                  key: const ValueKey('battle.hpBarFill'),
-                  color: fillColor,
-                ),
-              ),
-            ),
-            if (showLabel)
-              Center(
-                child: Text(
-                  compactLabel
-                      ? '$labelPrefix${_compactBattleValue(current)}/${_compactBattleValue(max)}'
-                      : tightLabel
-                      ? '$labelPrefix$current/$max'
-                      : '$labelPrefix$current / $max',
-                  style: TextStyle(
-                    // 内力条 height 小(9)时 height*0.72≈6.5px 近不可读，设 10px 下限。
-                    fontSize: labelFontSize ?? math.max(height * 0.72, 10.0),
-                    color: WuxiaColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontFamilyFallback: BattleTypography.uiFallback,
-                    fontFeatures: BattleTypography.tabularFigures,
-                    height: 1,
-                    shadows: const [
-                      Shadow(color: Colors.black54, blurRadius: 2),
-                    ],
+          ),
+          if (ratio > 0)
+            Align(
+              alignment: Alignment.centerLeft,
+              widthFactor: 1,
+              child: FractionallySizedBox(
+                widthFactor: ratio,
+                child: SizedBox.expand(
+                  child: RepaintBoundary(
+                    key: const ValueKey('battle.hpBarFill'),
+                    child: CustomPaint(
+                      key: const ValueKey('battle.hpBarInkFill'),
+                      painter: BattleInkBarPainter(
+                        color: fillColor,
+                        isFill: true,
+                      ),
+                    ),
                   ),
                 ),
               ),
-          ],
-        ),
+            ),
+          if (showLabel)
+            Center(
+              child: CustomPaint(
+                key: const ValueKey('battle.hpBarLabelInkPlate'),
+                painter: const _BarLabelInkPlatePainter(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  child: deEmphasizeMaximum
+                      ? Text.rich(
+                          key: const ValueKey(
+                            'battle.hpBarDeemphasizedMaxLabel',
+                          ),
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: '$labelPrefix$current',
+                                style: labelStyle,
+                              ),
+                              TextSpan(
+                                text: '/$max',
+                                style: labelStyle.copyWith(
+                                  color: WuxiaUi.paper.withValues(alpha: 0.68),
+                                  fontSize: resolvedLabelFontSize * 0.88,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Text(
+                          compactLabel
+                              ? '$labelPrefix${_compactBattleValue(current)}/${_compactBattleValue(max)}'
+                              : tightLabel
+                              ? '$labelPrefix$current/$max'
+                              : '$labelPrefix$current / $max',
+                          style: labelStyle,
+                        ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
+}
+
+/// 用同一个可验证的墨轨绘制器统一 HP/真气的纸本边缘。
+class BattleInkBarPainter extends CustomPainter {
+  const BattleInkBarPainter({required this.color, this.isFill = false});
+
+  final Color color;
+  final bool isFill;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final h = size.height;
+    final w = size.width;
+    final body = Path()
+      ..moveTo(0, h * 0.28)
+      ..lineTo(w * 0.07, h * 0.13)
+      ..lineTo(w * 0.24, h * 0.20)
+      ..lineTo(w * 0.48, h * 0.08)
+      ..lineTo(w * 0.72, h * 0.18)
+      ..lineTo(w * 0.93, h * 0.10)
+      ..lineTo(w, h * 0.30)
+      ..lineTo(w * 0.97, h * 0.76)
+      ..lineTo(w * 0.80, h * 0.88)
+      ..lineTo(w * 0.57, h * 0.80)
+      ..lineTo(w * 0.35, h * 0.92)
+      ..lineTo(w * 0.12, h * 0.82)
+      ..lineTo(0, h * 0.68)
+      ..close();
+    canvas.drawPath(body, Paint()..color = color);
+
+    final edgeColor = Color.lerp(color, WuxiaUi.ink, isFill ? 0.42 : 0.68)!;
+    canvas.drawPath(
+      body,
+      Paint()
+        ..color = edgeColor.withValues(alpha: 0.82)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = math.max(0.65, h * 0.075)
+        ..strokeCap = StrokeCap.square,
+    );
+
+    final fiber = Paint()
+      ..color = (isFill ? WuxiaUi.paper2 : WuxiaUi.ink).withValues(
+        alpha: isFill ? 0.16 : 0.28,
+      )
+      ..strokeWidth = math.max(0.45, h * 0.045)
+      ..strokeCap = StrokeCap.square;
+    canvas.drawLine(
+      Offset(w * 0.04, h * 0.33),
+      Offset(w * 0.31, h * 0.27),
+      fiber,
+    );
+    canvas.drawLine(
+      Offset(w * 0.58, h * 0.67),
+      Offset(w * 0.91, h * 0.61),
+      fiber,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant BattleInkBarPainter oldDelegate) =>
+      color != oldDelegate.color || isFill != oldDelegate.isFill;
+}
+
+class _BarLabelInkPlatePainter extends CustomPainter {
+  const _BarLabelInkPlatePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final path = Path()
+      ..moveTo(0, size.height * 0.28)
+      ..lineTo(size.width * 0.08, size.height * 0.12)
+      ..lineTo(size.width * 0.92, size.height * 0.18)
+      ..lineTo(size.width, size.height * 0.72)
+      ..lineTo(size.width * 0.88, size.height * 0.90)
+      ..lineTo(size.width * 0.10, size.height * 0.84)
+      ..close();
+    canvas.drawPath(path, Paint()..color = WuxiaUi.ink.withValues(alpha: 0.48));
+  }
+
+  @override
+  bool shouldRepaint(covariant _BarLabelInkPlatePainter oldDelegate) => false;
 }
 
 /// 全人物舞台的状态牌宽度受站位景深限制，五位数以上改用

@@ -27,6 +27,10 @@ BattleSceneBackgroundStyle battleSceneStyleForEncounter(
   return requested;
 }
 
+/// 塔境有图背景的下部地面墨层强度。单独暴露为视觉契约，避免后续只调整
+/// 整图色相却让人物脚底重新漂浮。
+const double battleTowerImageGroundIntensity = 0.38;
+
 /// 战斗场景背景层(出版美术 B1):背景图 + scrim 压暗遮罩 + 水墨层次兜底。
 /// path 空时仍渲染远山、雾气、地面纹理和暗角,避免露出纯黑/纯白空底。
 /// Image.asset 挂 errorBuilder(widget 测不加载 assets,守测不破)。
@@ -147,24 +151,25 @@ class BattleSceneBackground extends StatelessWidget {
   }
 }
 
-/// 塔境整张背景（原画 + 景深 + 地面 + 暗角）统一为冷灰低彩。
-/// 仅包背景组件，不影响人物肤色、流派色、状态牌与技能案台。
+/// 塔境整张背景（原画 + 景深 + 地面 + 暗角）统一为暖灰低彩旧纸调。
+/// 保留异境的冷峻明度关系，但色相回到黄金图的暖纸主轴。仅包背景组件，
+/// 不影响人物肤色、流派色、状态牌与技能案台。
 const _towerSceneColorGrade = ColorFilter.matrix(<double>[
   0.233,
   0.458,
   0.089,
   0,
+  38,
+  0.233,
+  0.458,
+  0.089,
+  0,
+  26,
+  0.233,
+  0.458,
+  0.089,
+  0,
   10,
-  0.233,
-  0.458,
-  0.089,
-  0,
-  12,
-  0.233,
-  0.458,
-  0.089,
-  0,
-  15,
   0,
   0,
   0,
@@ -238,12 +243,12 @@ class _SceneDepthProfile {
           glowRadius: 1.22,
           mountainAlpha: 0.18,
           mistAlpha: 0.22,
-          groundAlpha: 0.22,
+          groundAlpha: 0.25,
           glowAlpha: 0.12,
           vignetteAlpha: 0.36,
           imageScrim: Color(0x2D2E3440),
           imageMistIntensity: 0.16,
-          imageGroundIntensity: 0.3,
+          imageGroundIntensity: battleTowerImageGroundIntensity,
           imageVignetteFactor: 0.55,
         );
       case BattleSceneBackgroundStyle.innerDemon:

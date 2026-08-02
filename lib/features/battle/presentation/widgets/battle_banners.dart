@@ -6,6 +6,7 @@ import '../../domain/battle_skill_utils.dart';
 import '../../domain/battle_state.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
+import '../../../../shared/theme/wuxia_tokens.dart';
 
 class HintBanner extends StatelessWidget {
   final String hint;
@@ -146,56 +147,57 @@ class DangerBar extends StatelessWidget {
               height: 34,
               margin: EdgeInsets.only(right: rightInset),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.transparent,
-                    WuxiaColors.danger.withValues(alpha: 0.64),
-                    WuxiaColors.danger.withValues(alpha: 0.48),
-                    Colors.transparent,
-                  ],
-                  stops: const [0, 0.14, 0.86, 1],
-                ),
-              ),
-              child: Semantics(
-                container: true,
-                label: UiStrings.battleDangerCharging(
-                  imminentCharacter.name,
-                  imminentCharacter.chargingSkill!.name,
-                  imminentCharacter.chargeTicksRemaining,
-                ),
-                excludeSemantics: true,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      UiStrings.battleDangerChargeLabel,
-                      style: TextStyle(
-                        color: Color(0xFFE3C59F),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 2,
+              child: Stack(
+                children: [
+                  const Positioned.fill(
+                    child: IgnorePointer(
+                      child: CustomPaint(
+                        key: ValueKey('battle.dangerInkBrush'),
+                        painter: _DangerInkBrushPainter(),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 1,
-                      height: 14,
-                      color: const Color(0x888A2B21),
+                  ),
+                  Semantics(
+                    container: true,
+                    label: UiStrings.battleDangerCharging(
+                      imminentCharacter.name,
+                      imminentCharacter.chargingSkill!.name,
+                      imminentCharacter.chargeTicksRemaining,
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      UiStrings.battleDangerTicks(
-                        imminentCharacter.chargeTicksRemaining,
-                      ),
-                      style: const TextStyle(
-                        color: Color(0xFFD8C8AF),
-                        fontSize: 11,
-                        height: 1.1,
-                      ),
+                    excludeSemantics: true,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          UiStrings.battleDangerChargeLabel,
+                          style: TextStyle(
+                            color: Color(0xFFE3C59F),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 1,
+                          height: 14,
+                          color: const Color(0x888A2B21),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          UiStrings.battleDangerTicks(
+                            imminentCharacter.chargeTicksRemaining,
+                          ),
+                          style: const TextStyle(
+                            color: Color(0xFFD8C8AF),
+                            fontSize: 11,
+                            height: 1.1,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           );
@@ -203,6 +205,60 @@ class DangerBar extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DangerInkBrushPainter extends CustomPainter {
+  const _DangerInkBrushPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final path = Path()
+      ..moveTo(0, size.height * 0.45)
+      ..lineTo(size.width * 0.08, size.height * 0.26)
+      ..lineTo(size.width * 0.20, size.height * 0.18)
+      ..lineTo(size.width * 0.37, size.height * 0.22)
+      ..lineTo(size.width * 0.54, size.height * 0.12)
+      ..lineTo(size.width * 0.74, size.height * 0.20)
+      ..lineTo(size.width * 0.92, size.height * 0.30)
+      ..lineTo(size.width, size.height * 0.52)
+      ..lineTo(size.width * 0.91, size.height * 0.72)
+      ..lineTo(size.width * 0.71, size.height * 0.79)
+      ..lineTo(size.width * 0.52, size.height * 0.70)
+      ..lineTo(size.width * 0.29, size.height * 0.84)
+      ..lineTo(size.width * 0.10, size.height * 0.71)
+      ..close();
+    canvas.drawPath(
+      path,
+      Paint()..color = WuxiaUi.jiang.withValues(alpha: 0.57),
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = WuxiaUi.ink.withValues(alpha: 0.72)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.85
+        ..strokeCap = StrokeCap.square,
+    );
+
+    final scratch = Paint()
+      ..color = WuxiaUi.paper2.withValues(alpha: 0.12)
+      ..strokeWidth = 0.75
+      ..strokeCap = StrokeCap.square;
+    canvas.drawLine(
+      Offset(size.width * 0.09, size.height * 0.38),
+      Offset(size.width * 0.34, size.height * 0.31),
+      scratch,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.61, size.height * 0.61),
+      Offset(size.width * 0.91, size.height * 0.55),
+      scratch,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _DangerInkBrushPainter oldDelegate) => false;
 }
 
 // ─── 最近战报条（T3）──────────────────────────────────────────────────────

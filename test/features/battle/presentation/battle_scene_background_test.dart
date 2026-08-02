@@ -181,7 +181,7 @@ void main() {
     expect(colors, hasLength(6));
   });
 
-  testWidgets('爬塔背景图单独进入冷灰色分级，不染色其他战斗层', (tester) async {
+  testWidgets('爬塔背景单独进入暖灰旧纸分级，向黄金图色相收敛', (tester) async {
     await tester.pumpWidget(
       _wrap(
         const BattleSceneBackground(
@@ -196,11 +196,46 @@ void main() {
     );
     expect(
       tester
+          .widget<ColorFiltered>(
+            find.byKey(const ValueKey('battle_scene_tower_color_grade')),
+          )
+          .colorFilter,
+      const ColorFilter.matrix(<double>[
+        0.233,
+        0.458,
+        0.089,
+        0,
+        38,
+        0.233,
+        0.458,
+        0.089,
+        0,
+        26,
+        0.233,
+        0.458,
+        0.089,
+        0,
+        10,
+        0,
+        0,
+        0,
+        1,
+        0,
+      ]),
+      reason: '塔境保留低彩水墨，但不应与黄金图分裂成蓝灰与暖纸两套气质',
+    );
+    expect(
+      tester
           .widget<WuxiaImage>(
             find.byKey(const ValueKey('battle_scene_tower_asset')),
           )
           .assetPath,
       WuxiaUi.battleInnerRealmCool,
+    );
+    expect(
+      battleTowerImageGroundIntensity,
+      0.38,
+      reason: '塔境下三分之一需保留足够墨层承接人物脚底，不能只做整图调色',
     );
 
     await tester.pumpWidget(

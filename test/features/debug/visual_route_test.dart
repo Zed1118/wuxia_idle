@@ -374,6 +374,16 @@ void main() {
       final launcher = target as ScenarioLauncher;
       expect(launcher.bgmTrack, BgmTrack.tower);
       expect(
+        launcher.hint,
+        UiStrings.towerTitle,
+        reason: '用户终拍应显示正式塔名，不应把调试操作长句塞进战斗标题',
+      );
+      expect(
+        launcher.previewHeaderControls,
+        isTrue,
+        reason: '代表生产终拍不应暴露“继续/单步”审计控件',
+      );
+      expect(
         launcher.sceneBackgroundPath,
         'assets/scenes/battle_innerrealm.png',
       );
@@ -641,6 +651,35 @@ void main() {
       final (left, right) = launcher.teamsFactory();
       expect(left, hasLength(3));
       expect(right, hasLength(3));
+    });
+
+    test('V2 多敌蓄势 → 三敌同帧保留 3/1/2 拍真实状态', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.battleV2MultiCharge,
+        IsarSetup.instance,
+      );
+      expect(target, isA<ScenarioLauncher>());
+      final launcher = target as ScenarioLauncher;
+      expect(
+        launcher.teamsFactory,
+        same(BattleScenarioData.scenarioV2MultiCharge),
+      );
+      expect(launcher.autoStart, isFalse);
+      expect(launcher.startPaused, isTrue);
+      expect(launcher.allowPlayerIntervention, isTrue);
+      expect(launcher.previewHeaderControls, isTrue);
+      expect(launcher.previewPouchItems, hasLength(2));
+      expect(launcher.readyTarget, VisualBattleReadyTarget.initialized);
+      final (_, right) = launcher.teamsFactory();
+      expect(right.map((character) => character.chargeTicksRemaining), [
+        3,
+        1,
+        2,
+      ]);
+      expect(
+        right.every((character) => character.chargingSkill != null),
+        isTrue,
+      );
     });
 
     test('V2 资源压力 → 同帧含冷却签与真气不足签', () async {

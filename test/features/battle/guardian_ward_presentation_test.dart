@@ -170,7 +170,7 @@ void main() {
       );
       await pump(tester, state);
       expect(find.text(UiStrings.guardianWardActiveLabel), findsOneWidget);
-      expect(find.byType(AvatarStatusTag), findsOneWidget);
+      expect(find.byType(GuardianWardBrushTag), findsOneWidget);
     });
 
     testWidgets('护法全灭 → 护罩标签消失', (tester) async {
@@ -185,7 +185,7 @@ void main() {
       );
       await pump(tester, state);
       expect(find.text(UiStrings.guardianWardActiveLabel), findsNothing);
-      expect(find.byType(AvatarStatusTag), findsNothing);
+      expect(find.byType(GuardianWardBrushTag), findsNothing);
     });
 
     testWidgets('battleState 未传(null,零回归) → 不判定 · 不渲染护罩标签', (tester) async {
@@ -233,8 +233,48 @@ void main() {
       );
       // 三态标签全渲染 + 无 RenderFlex/Wrap overflow 异常。
       expect(find.text(UiStrings.guardianWardActiveLabel), findsOneWidget);
-      expect(find.byType(AvatarStatusTag), findsOneWidget); // 结界药丸
+      expect(find.byType(GuardianWardBrushTag), findsOneWidget); // 结界题签
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('舞台立绘仅在结界生效时显示断续金墨护界', (tester) async {
+      final guardian = _mkChar(id: 2, enemyDefId: 'enemy_tower_30_cultist_a');
+      final active = BattleState.initial(
+        leftTeam: const [],
+        rightTeam: [boss, guardian],
+      );
+      final broken = BattleState.initial(
+        leftTeam: const [],
+        rightTeam: [boss, guardian.copyWith(isAlive: false, currentHp: 0)],
+      );
+
+      Future<void> pumpStage(BattleState state) => tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: CharacterAvatar(
+                character: boss,
+                battleState: state,
+                displayMode: CharacterDisplayMode.stageStandee,
+                standeeWidth: 180,
+                standeeHeight: 260,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await pumpStage(active);
+      expect(
+        find.byKey(const ValueKey('battle.guardianWardBrokenHalo')),
+        findsOneWidget,
+      );
+
+      await pumpStage(broken);
+      expect(
+        find.byKey(const ValueKey('battle.guardianWardBrokenHalo')),
+        findsNothing,
+      );
     });
   });
 

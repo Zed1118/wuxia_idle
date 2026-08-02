@@ -144,7 +144,7 @@ void main() {
     expect(find.text('100 / 100'), findsOneWidget);
   });
 
-  testWidgets('状态环与蓄力环预留稳定高度，避免同队槽位独立缩放', (tester) async {
+  testWidgets('状态环与蓄势小印预留稳定高度，避免同队槽位独立缩放', (tester) async {
     await pump(tester, _char(isBoss: false));
     final plainSize = _avatarFootprintSize(tester);
 
@@ -162,7 +162,8 @@ void main() {
     final denseSize = _avatarFootprintSize(tester);
 
     expect(denseSize, plainSize);
-    expect(find.byType(BeatCountdownRing), findsNWidgets(2));
+    expect(find.byType(BeatCountdownRing), findsOneWidget);
+    expect(find.byKey(const ValueKey('battle.chargeSeal.1')), findsOneWidget);
     expect(find.byIcon(Icons.flash_on), findsOneWidget);
   });
 
@@ -200,7 +201,7 @@ void main() {
     }
   });
 
-  testWidgets('战场全身立绘具有独立脚底接触墨影', (tester) async {
+  testWidgets('战场全身立绘具有贴脚窄幅接触墨影', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -220,9 +221,9 @@ void main() {
     expect(groundingFinder, findsOneWidget);
 
     final grounding = tester.widget<Positioned>(groundingFinder);
-    expect(grounding.left, lessThan(160 * 0.17));
-    expect(grounding.right, lessThan(160 * 0.17));
-    expect(grounding.height, greaterThan(230 * 0.065));
+    expect(grounding.left, greaterThanOrEqualTo(160 * 0.20));
+    expect(grounding.right, greaterThanOrEqualTo(160 * 0.20));
+    expect(grounding.height, lessThanOrEqualTo(230 * 0.06));
   });
 
   testWidgets('战场人物信息板使用低透明贴脚窄条而非厚重卡片', (tester) async {

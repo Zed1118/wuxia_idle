@@ -118,6 +118,7 @@ import '../../expedition/presentation/expedition_overview_screen.dart';
 import '../../expedition/presentation/expedition_recap_screen.dart';
 import '../../../core/domain/reward_entry.dart';
 import 'hitbox_debug_overlay.dart';
+import 'visual_fidelity_region_probe.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -233,8 +234,9 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
     if (_error != null) {
       return Scaffold(body: Center(child: Text('VISUAL_ROUTE_ERROR: $_error')));
     }
-    return _target ??
-        const Scaffold(body: Center(child: InkLoadingIndicator()));
+    return VisualFidelityRegionProbe.maybeWrap(
+      _target ?? const Scaffold(body: Center(child: InkLoadingIndicator())),
+    );
   }
 }
 
@@ -587,6 +589,29 @@ Future<Widget> buildVisualTarget(
         readyTarget: VisualBattleReadyTarget.initialized,
         onTargetReady: onTargetReady,
       );
+    case VisualRoute.battleV2MultiCharge:
+      return ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioV2MultiCharge,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleMountainPassStage,
+        autoStart: false,
+        startPaused: true,
+        allowPlayerIntervention: true,
+        seed: battleV2VisualSeed,
+        previewHeaderControls: true,
+        previewPouchItems: const [
+          BattlePouchPreviewItem(
+            assetPath: WuxiaUi.battleSamplePouchGourd,
+            count: 3,
+          ),
+          BattlePouchPreviewItem(
+            assetPath: WuxiaUi.battleSamplePouchManual,
+            count: 2,
+          ),
+        ],
+        readyTarget: VisualBattleReadyTarget.initialized,
+        onTargetReady: onTargetReady,
+      );
     case VisualRoute.battleIdentitySilhouette:
       return ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioIdentitySilhouette,
@@ -750,10 +775,13 @@ Future<Widget> buildVisualTarget(
       // 手动步进清完两护法 → 「结界破！」题字 + 破界闪白;干预层可点选招式。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioGuardianWard,
-        hint: UiStrings.battleGuardianWardHint,
+        hint: UiStrings.towerTitle,
         sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
         bgmTrack: BgmTrack.tower,
         allowPlayerIntervention: true,
+        // 终拍保留 frame-0 护罩状态，但顶栏走生产控件口径，
+        // 不把“继续/单步”审计按钮当成游戏终拍。
+        previewHeaderControls: true,
         startPaused: true,
       );
     case VisualRoute.battleTowerFloor13:

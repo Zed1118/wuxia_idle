@@ -1,3 +1,5 @@
+import copy
+import hashlib
 import json
 import tempfile
 import unittest
@@ -22,8 +24,41 @@ class BattleV2FidelityTest(unittest.TestCase):
 
     def _rgba(self, name, size, color=(120, 110, 90, 255)):
         path = self.root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
         Image.new("RGBA", size, color).save(path)
         return path
+
+    def _comparison_config(
+        self,
+        reference,
+        *,
+        reference_viewport=(100, 50),
+        header_bottom=10,
+        desk_top=40,
+    ):
+        config = copy.deepcopy(self.config)
+        config["reference"] = {
+            "path": str(reference),
+            "sha256": hashlib.sha256(reference.read_bytes()).hexdigest(),
+            "route": "battle_tap_live",
+            "viewport": list(reference_viewport),
+            "fit": "cover_center",
+        }
+        config["comparison"] = {
+            "boundaries": {
+                "header_bottom": header_bottom,
+                "desk_top": desk_top,
+            },
+            "edge_threshold_low": 50.0,
+            "edge_threshold_high": 150.0,
+            "gates": {
+                "mean_rgb_abs_max": {"header": 12.0, "field": 12.0, "desk": 12.0},
+                "mae_max": {"header": 12.0, "field": 22.0, "desk": 14.0},
+                "edge_iou_min": {"header": 0.22, "field": 0.12, "desk": 0.18},
+                "anchor_error_max": 1.0,
+            },
+        }
+        return config
 
     def test_config_is_single_source_for_report_thresholds(self):
         self.assertEqual(self.config["characters"]["alpha_threshold"], 16)
@@ -32,6 +67,19 @@ class BattleV2FidelityTest(unittest.TestCase):
             self.config["semantic_color"]["non_ultimate_area_max"], 0.08
         )
         self.assertEqual(self.config["contrast"]["body_min"], 4.5)
+        self.assertEqual(self.config["reference"]["route"], "battle_tap_live")
+        self.assertEqual(
+            self.config["comparison"]["boundaries"],
+            {"header_bottom": 60, "desk_top": 700},
+        )
+        self.assertEqual(
+            self.config["layout"]["command_desk_horizontal"],
+            {
+                "focus": [0.15, 0.17],
+                "skills": [0.49, 0.55],
+                "pouch": [0.19, 0.21],
+            },
+        )
 
     def test_alpha_bbox_uses_strict_threshold(self):
         rgba = np.zeros((6, 8, 4), dtype=np.uint8)
@@ -86,7 +134,12 @@ class BattleV2FidelityTest(unittest.TestCase):
         manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
         output = self.root / "analysis"
 
-        result = fidelity.analyze_manifest(manifest_path, self.config, output)
+        result = fidelity.analyze_manifest(
+            manifest_path,
+            self.config,
+            output,
+            require_reference_comparison=False,
+        )
         capture = result["captures"][0]
 
         self.assertEqual(capture["png_pixels"], [200, 100])
@@ -114,7 +167,10 @@ class BattleV2FidelityTest(unittest.TestCase):
         manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
         result = fidelity.analyze_manifest(
-            manifest_path, self.config, self.root / "analysis"
+            manifest_path,
+            self.config,
+            self.root / "analysis",
+            require_reference_comparison=False,
         )
         capture = result["captures"][0]
 
@@ -133,13 +189,20 @@ class BattleV2FidelityTest(unittest.TestCase):
         (dynamic_dir / "battle_v2_fast_forward_peak.log").write_text(
             "flutter: VISUAL_ROUTE_STATE: route=battle_v2_fast_forward_peak "
             "seed=20260719 tick=1 steps=1 leftAlive=3 rightAlive=3 "
-            "target=fastForwardPeak actions=3 peakActions=3\n",
+            "target=fastForwardPeak actions=3 peakActions=3\n"
+            "flutter: VISUAL_FIDELITY_REGIONS: "
+            '{"header":{"x":0,"y":0,"width":1280,"height":47},'
+            '"battlefield":{"x":0,"y":47,"width":1280,"height":489},'
+            '"command_desk":{"x":0,"y":536,"width":1280,"height":184}}\n'
+            "VISUAL_CAPTURE: window_id:4172\n",
             encoding="utf-8",
         )
-        static_dir = capture_root / "battle_tap_preview" / "1440x900"
+        # Suite captures are grouped by suite name, so route truth comes from
+        # the PNG/log filename rather than the group directory.
+        static_dir = capture_root / "battle" / "1440x900"
         static_dir.mkdir(parents=True)
         self._rgba(
-            "baseline/battle_tap_preview/1440x900/battle_tap_preview.png",
+            "baseline/battle/1440x900/battle_tap_preview.png",
             (2880, 1800),
         )
         (static_dir / "battle_tap_preview.log").write_text(
@@ -160,11 +223,266 @@ class BattleV2FidelityTest(unittest.TestCase):
         self.assertEqual(dynamic["tick"], 1)
         self.assertEqual(dynamic["dpr"], 2.0)
         self.assertEqual(dynamic["viewport"], {"width": 1280, "height": 720})
+        self.assertEqual(dynamic["native_window_id"], 4172)
+        self.assertEqual(dynamic["capture_method"], "window_id")
+        self.assertEqual(dynamic["regions"]["command_desk"]["y"], 536)
+        self.assertEqual(
+            dynamic["png_sha256"],
+            hashlib.sha256((dynamic_dir / "battle_v2_fast_forward_peak.png").read_bytes()).hexdigest(),
+        )
+        self.assertEqual(manifest["capture_root"], str(capture_root.resolve()))
         static = next(
             item for item in manifest["captures"] if item["route"] == "battle_tap_preview"
         )
         self.assertEqual(static["seed"], "visual-route-host-fixture-20260627")
         self.assertIsNone(static["tick"])
+
+    def test_build_manifest_rejects_log_route_mismatch(self):
+        capture_root = self.root / "baseline"
+        route_dir = capture_root / "battle_tap_live" / "100x50"
+        route_dir.mkdir(parents=True)
+        self._rgba(
+            "baseline/battle_tap_live/100x50/battle_tap_live.png",
+            (100, 50),
+        )
+        (route_dir / "battle_tap_live.log").write_text(
+            "VISUAL_ROUTE_STATE: route=battle_audit_tower_14 seed=1 tick=0\n",
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(ValueError, "route mismatch"):
+            fidelity.build_manifest(capture_root, commit="abc123")
+
+    def test_generated_manifest_can_be_analyzed_outside_capture_root(self):
+        capture_root = self.root / "captures"
+        route_dir = capture_root / "battle_v2_neutral_3v3" / "100x50"
+        route_dir.mkdir(parents=True)
+        self._rgba(
+            "captures/battle_v2_neutral_3v3/100x50/battle_v2_neutral_3v3.png",
+            (100, 50),
+        )
+        manifest = fidelity.build_manifest(capture_root, commit="abc123")
+        manifest_dir = self.root / "evidence"
+        manifest_dir.mkdir()
+        manifest_path = manifest_dir / "fidelity_manifest.json"
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        result = fidelity.analyze_manifest(
+            manifest_path,
+            self.config,
+            manifest_dir / "analysis",
+            require_reference_comparison=False,
+        )
+
+        self.assertEqual(len(result["captures"]), 1)
+        self.assertEqual(result["captures"][0]["png_pixels"], [100, 50])
+
+    def test_acceptance_analysis_rejects_current_identical_to_reference(self):
+        reference = self._rgba("reference.png", (100, 50))
+        config = self._comparison_config(reference)
+        manifest = {
+            "captures": [
+                {
+                    "id": "golden",
+                    "route": "battle_tap_live",
+                    "viewport": {"width": 100, "height": 50},
+                    "png": str(reference),
+                }
+            ]
+        }
+        manifest_path = self.root / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        with self.assertRaisesRegex(ValueError, "identical to reference"):
+            fidelity.analyze_manifest(
+                manifest_path,
+                config,
+                self.root / "analysis",
+                require_reference_comparison=True,
+            )
+
+    def test_acceptance_analysis_rejects_lossless_reencode_of_reference(self):
+        reference = self._rgba("reference.png", (100, 50))
+        current = self.root / "current-reencoded.png"
+        Image.open(reference).save(current, compress_level=0)
+        self.assertNotEqual(
+            hashlib.sha256(reference.read_bytes()).hexdigest(),
+            hashlib.sha256(current.read_bytes()).hexdigest(),
+        )
+        config = self._comparison_config(reference)
+        manifest = {
+            "captures": [
+                {
+                    "id": "golden-reencoded",
+                    "route": "battle_tap_live",
+                    "viewport": {"width": 100, "height": 50},
+                    "png": str(current),
+                }
+            ]
+        }
+        manifest_path = self.root / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        with self.assertRaisesRegex(ValueError, "pixel-identical to reference"):
+            fidelity.analyze_manifest(
+                manifest_path,
+                config,
+                self.root / "analysis",
+                require_reference_comparison=True,
+            )
+
+    def test_reference_comparison_writes_metrics_and_review_artifacts(self):
+        reference = self._rgba("reference.png", (100, 50), (100, 100, 100, 255))
+        current = self._rgba("current.png", (200, 100), (110, 110, 110, 255))
+        config = self._comparison_config(reference)
+        manifest = {
+            "schema_version": 2,
+            "commit": "abc123",
+            "captures": [
+                {
+                    "id": "battle_tap_live_100x50",
+                    "route": "battle_tap_live",
+                    "viewport": {"width": 100, "height": 50},
+                    "dpr": 2.0,
+                    "png": str(current),
+                    "regions": {
+                        "header": {"x": 0, "y": 0, "width": 100, "height": 10},
+                        "battlefield": {"x": 0, "y": 10, "width": 100, "height": 30},
+                        "command_desk": {"x": 0, "y": 40, "width": 100, "height": 10},
+                    },
+                }
+            ],
+        }
+        manifest_path = self.root / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        output = self.root / "analysis"
+
+        result = fidelity.analyze_manifest(
+            manifest_path,
+            config,
+            output,
+            require_reference_comparison=True,
+        )
+
+        comparison = result["captures"][0]["comparison"]
+        self.assertEqual(comparison["current_sha256"], hashlib.sha256(current.read_bytes()).hexdigest())
+        self.assertAlmostEqual(comparison["regions"]["header"]["mae"], 10.0)
+        self.assertEqual(comparison["regions"]["header"]["rgb_delta_mean"], [10.0, 10.0, 10.0])
+        self.assertAlmostEqual(comparison["self_check"]["regions"]["field"]["mae"], 0.0)
+        self.assertAlmostEqual(comparison["self_check"]["regions"]["field"]["edge_iou"], 1.0)
+        for name in (
+            "fidelity_metrics.json",
+            "fidelity_report.md",
+            "diff_full.png",
+            "diff_header.png",
+            "diff_field.png",
+            "diff_desk.png",
+            "reference_current_side_by_side.png",
+        ):
+            self.assertTrue((output / name).exists(), name)
+
+    def test_wrong_route_and_shifted_boundary_fail_reference_gates(self):
+        reference = self._rgba("reference.png", (100, 50), (100, 100, 100, 255))
+        current = self._rgba("current.png", (100, 50), (105, 105, 105, 255))
+        config = self._comparison_config(reference)
+        manifest = {
+            "captures": [
+                {
+                    "id": "wrong",
+                    "route": "battle_audit_tower_14",
+                    "viewport": {"width": 100, "height": 50},
+                    "png": str(current),
+                }
+            ]
+        }
+        manifest_path = self.root / "wrong_manifest.json"
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "reference route"):
+            fidelity.analyze_manifest(
+                manifest_path,
+                config,
+                self.root / "wrong_analysis",
+                require_reference_comparison=True,
+            )
+
+        manifest["captures"][0].update(
+            {
+                "id": "shifted",
+                "route": "battle_tap_live",
+                "regions": {
+                    "header": {"x": 0, "y": 0, "width": 100, "height": 10},
+                    "battlefield": {"x": 0, "y": 10, "width": 100, "height": 32},
+                    "command_desk": {"x": 0, "y": 42, "width": 100, "height": 8},
+                },
+            }
+        )
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        result = fidelity.analyze_manifest(
+            manifest_path,
+            config,
+            self.root / "shifted_analysis",
+            require_reference_comparison=True,
+        )
+        self.assertFalse(result["captures"][0]["comparison"]["gates"]["desk_anchor"])
+
+    def test_before_after_roi_and_allowed_change_mask_are_auditable(self):
+        before_pixels = np.zeros((10, 10, 4), dtype=np.uint8)
+        before_pixels[:, :, 3] = 255
+        current_pixels = before_pixels.copy()
+        current_pixels[1, 1, :3] = 255
+        current_pixels[8, 8, :3] = 255
+        allowed_pixels = np.zeros((10, 10), dtype=np.uint8)
+        allowed_pixels[1, 1] = 255
+        before = self.root / "before.png"
+        current = self.root / "current.png"
+        allowed = self.root / "allowed.png"
+        Image.fromarray(before_pixels).save(before)
+        Image.fromarray(current_pixels).save(current)
+        Image.fromarray(allowed_pixels).save(allowed)
+        manifest = {
+            "captures": [
+                {
+                    "id": "production_before_after",
+                    "route": "battle_audit_tower_14",
+                    "viewport": {"width": 10, "height": 10},
+                    "png": str(current),
+                    "baseline": {
+                        "png": str(before),
+                        "sha256": hashlib.sha256(before.read_bytes()).hexdigest(),
+                        "allowed_change_mask": str(allowed),
+                        "rois": {
+                            "top_left": {"x": 0, "y": 0, "width": 5, "height": 5},
+                            "bottom_right": {"x": 5, "y": 5, "width": 5, "height": 5},
+                        },
+                    },
+                }
+            ]
+        }
+        manifest_path = self.root / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+        result = fidelity.analyze_manifest(
+            manifest_path,
+            self.config,
+            self.root / "analysis",
+            require_reference_comparison=False,
+        )
+
+        baseline = result["captures"][0]["baseline_comparison"]
+        self.assertEqual(baseline["changed_pixels_total"], 2)
+        self.assertEqual(baseline["changed_pixels_allowed"], 1)
+        self.assertEqual(baseline["changed_pixels_unexpected"], 1)
+        self.assertEqual(baseline["rois"]["top_left"]["changed_pixels"], 1)
+        self.assertEqual(baseline["rois"]["bottom_right"]["unexpected_pixels"], 1)
+        for name in (
+            "baseline_diff_full.png",
+            "baseline_unexpected_diff.png",
+            "baseline_current_side_by_side.png",
+        ):
+            self.assertTrue(
+                (self.root / "analysis" / "comparisons" / "production_before_after" / name).exists(),
+                name,
+            )
 
 
 if __name__ == "__main__":

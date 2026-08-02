@@ -538,17 +538,62 @@ void main() {
       await _pumpWith(tester, left, [charging, ...right.skip(1)]);
 
       expect(find.byKey(const ValueKey('battle_danger_bar')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('battle.dangerInkBrush')),
+        findsOneWidget,
+      );
       expect(find.text(UiStrings.battleDangerChargeLabel), findsOneWidget);
       expect(find.text(UiStrings.battleDangerTicks(3)), findsOneWidget);
       expect(
-        find.bySemanticsLabel(
-          UiStrings.battleDangerCharging(
-            charging.name,
-            _chargeSkill.name,
-            charging.chargeTicksRemaining,
+        find.descendant(
+          of: find.byKey(const ValueKey('battle_danger_bar')),
+          matching: find.bySemanticsLabel(
+            UiStrings.battleDangerCharging(
+              charging.name,
+              _chargeSkill.name,
+              charging.chargeTicksRemaining,
+            ),
           ),
         ),
         findsOneWidget,
+      );
+      semantics.dispose();
+    });
+
+    testWidgets('三敌同时蓄势时顶幅取最近者且三枚人物小印都保留', (tester) async {
+      final semantics = tester.ensureSemantics();
+      final (left, right) = BattleDemo.mockTeams();
+      final remaining = [3, 1, 2];
+      final charging = <BattleCharacter>[
+        for (var i = 0; i < right.length; i++)
+          right[i].copyWith(
+            chargingSkill: _chargeSkill,
+            chargeTicksRemaining: remaining[i],
+          ),
+      ];
+
+      await _pumpWith(tester, left, charging);
+
+      expect(find.byKey(const ValueKey('battle_danger_bar')), findsOneWidget);
+      for (var i = 0; i < charging.length; i++) {
+        final seal = find.byKey(
+          ValueKey('battle.chargeSeal.${charging[i].characterId}'),
+        );
+        expect(seal, findsOneWidget);
+        expect(
+          find.descendant(of: seal, matching: find.text('${remaining[i]}')),
+          findsOneWidget,
+        );
+      }
+      expect(
+        find.bySemanticsLabel(
+          UiStrings.battleDangerCharging(
+            charging[1].name,
+            _chargeSkill.name,
+            charging[1].chargeTicksRemaining,
+          ),
+        ),
+        findsWidgets,
       );
       semantics.dispose();
     });
@@ -798,7 +843,7 @@ void main() {
   });
 
   group('T1 战斗指令台', () {
-    testWidgets('样板大签冷却数字使用右侧内收的米灰细字，不抢招名层级', (tester) async {
+    testWidgets('冷却拍数由右上淡墨批注牌承接，不再作为裸字浮在签面', (tester) async {
       final (left, _) = BattleDemo.mockTeams();
       final character = left.first.copyWith(
         availableSkills: [_power],
@@ -833,19 +878,34 @@ void main() {
         ),
       );
 
-      final count = find.byKey(const ValueKey('battle.skillSlipCooldownCount'));
+      final mark = find.byKey(const ValueKey('battle.skillSlipCooldownMark'));
+      expect(mark, findsOneWidget);
+      expect(
+        find.descendant(
+          of: mark,
+          matching: find.byKey(
+            const ValueKey('battle.skillSlipCooldownMarkPaper'),
+          ),
+        ),
+        findsOneWidget,
+      );
+      final count = find.descendant(
+        of: mark,
+        matching: find.byKey(const ValueKey('battle.skillSlipCooldownCount')),
+      );
       expect(count, findsOneWidget);
       final text = tester.widget<Text>(count);
-      expect(text.style?.fontSize, 21);
-      expect(text.style?.fontWeight, FontWeight.w500);
-      expect(text.style?.color, const Color(0xFFD2C3A4));
+      expect(text.style?.fontSize, 14);
+      expect(text.style?.fontWeight, FontWeight.w600);
+      expect(text.style?.color, const Color(0xFFE0D0AE));
       final position = tester
-          .element(count)
+          .element(mark)
           .findAncestorWidgetOfExactType<Positioned>();
-      expect(position?.right, 17);
+      expect(position?.top, inInclusiveRange(20, 26));
+      expect(position?.right, 7);
     });
 
-    testWidgets('窄视口大签会收小并外移冷却数字，避免压住纵排招名', (tester) async {
+    testWidgets('窄视口批注牌会整体收小，仍不压住纵排招名', (tester) async {
       final (left, _) = BattleDemo.mockTeams();
       final character = left.first.copyWith(
         availableSkills: [_power],
@@ -880,13 +940,20 @@ void main() {
         ),
       );
 
-      final count = find.byKey(const ValueKey('battle.skillSlipCooldownCount'));
+      final mark = find.byKey(const ValueKey('battle.skillSlipCooldownMark'));
+      final count = find.descendant(
+        of: mark,
+        matching: find.byKey(const ValueKey('battle.skillSlipCooldownCount')),
+      );
       final text = tester.widget<Text>(count);
-      expect(text.style?.fontSize, 18);
+      expect(text.style?.fontSize, 12);
+      final size = tester.getSize(mark);
+      expect(size.width, 22);
+      expect(size.height, 26);
       final position = tester
           .element(count)
           .findAncestorWidgetOfExactType<Positioned>();
-      expect(position?.right, 5);
+      expect(position?.right, closeTo(4.8, 0.01));
     });
 
     testWidgets('技能签保留桌面按钮语义、焦点、键盘激活与点击光标', (tester) async {
@@ -970,6 +1037,110 @@ void main() {
         expect(find.byType(SingleChildScrollView), findsNothing);
         expect(tester.takeException(), isNull, reason: '$size 不应溢出');
       }
+    });
+
+    testWidgets('190px 附近名帖与行囊不得整套跃迁', (tester) async {
+      final (left, _) = BattleDemo.mockTeams();
+
+      Future<(double, double, double)> measure(double sampleHeight) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Row(
+                children: [
+                  FocusSelector(
+                    team: left,
+                    focusSlotIndex: 0,
+                    onSelectFocus: (_) {},
+                    width: 220,
+                    height: sampleHeight,
+                  ),
+                  BattlePouchRail(width: 300, height: sampleHeight),
+                ],
+              ),
+            ),
+          ),
+        );
+        final plateHeight = tester
+            .getSize(
+              find.byKey(
+                ValueKey(
+                  'battle.focusNameplate.expanded.${left.first.characterId}',
+                ),
+              ),
+            )
+            .height;
+        final pouchTitle = tester.widget<Text>(
+          find.byKey(const ValueKey('battle.pouch.title')),
+        );
+        final railHeight = tester
+            .getSize(find.byKey(const ValueKey('battle_desk_focus_region')))
+            .height;
+        return (plateHeight, pouchTitle.style!.fontSize!, railHeight);
+      }
+
+      final before = await measure(189.9);
+      final after = await measure(190.1);
+
+      expect((after.$1 - before.$1).abs(), lessThanOrEqualTo(1));
+      expect((after.$2 - before.$2).abs(), lessThanOrEqualTo(0.5));
+      expect((after.$3 - before.$3).abs(), lessThanOrEqualTo(1));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('190px 附近技能签印章与字号不得跃迁', (tester) async {
+      final (left, _) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_power]);
+
+      Future<(double, double)> measure(double sampleHeight) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 80,
+                  child: SkillCommandButton(
+                    character: focus,
+                    skill: _power,
+                    interventionWindowOpen: true,
+                    isPending: false,
+                    pendingTapEnabled: false,
+                    queuedAnother: false,
+                    highlight: false,
+                    allowPlayerIntervention: true,
+                    height: sampleHeight,
+                    beat: const AlwaysStoppedAnimation<double>(0),
+                    onTap: () {},
+                    onShowInfo: () {},
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        final skill = find.byType(SkillCommandButton);
+        final seal = find.descendant(
+          of: skill,
+          matching: find.byKey(const ValueKey('battle.skillSlipNatureSeal')),
+        );
+        final title = tester.widget<Text>(
+          find.descendant(
+            of: find.descendant(
+              of: skill,
+              matching: find.byKey(const ValueKey('battle.skillSlipTitle')),
+            ),
+            matching: find.byType(Text),
+          ),
+        );
+        return (tester.getSize(seal).height, title.style!.fontSize!);
+      }
+
+      final before = await measure(189.9);
+      final after = await measure(190.1);
+
+      expect((after.$1 - before.$1).abs(), lessThanOrEqualTo(1));
+      expect((after.$2 - before.$2).abs(), lessThanOrEqualTo(0.5));
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('1672×941 名帖与七技能签按样板几何硬对齐', (tester) async {
@@ -1198,6 +1369,10 @@ void main() {
           find.byKey(ValueKey('battle.emptySkillSlot.emptySeal.$i')),
           findsOneWidget,
         );
+        expect(
+          find.byKey(ValueKey('battle.emptySkillSlot.untitledTrace.$i')),
+          findsOneWidget,
+        );
       }
       expect(find.text(UiStrings.battleEmptySkillSlot), findsNothing);
 
@@ -1218,6 +1393,11 @@ void main() {
       );
       final fadedPaper = tester.widget<Opacity>(
         find.byKey(const ValueKey('battle.emptySkillSlot.opacity.3')),
+      );
+      expect(
+        BattleLayoutTokens.emptySkillPaperOpacity,
+        0.52,
+        reason: '生产四签三空签也要保持七签案台的纸形连续性',
       );
       expect(
         fadedPaper.opacity,

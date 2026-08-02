@@ -26,7 +26,34 @@ void main() {
     expect(find.text('12345 / 40000'), findsOneWidget);
   });
 
-  testWidgets('战场窄条可覆盖为旧纸墨轨并保留绛红语义', (tester) async {
+  testWidgets('战场高阶窄条保留精确值但降低上限视觉权重', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: HpBar(current: 18000, max: 18000, tightLabel: true),
+        ),
+      ),
+    );
+
+    expect(find.text('18000/18000'), findsOneWidget);
+    final label = tester.widget<Text>(
+      find.byKey(const ValueKey('battle.hpBarDeemphasizedMaxLabel')),
+    );
+    final spans = (label.textSpan! as TextSpan).children!;
+    expect(spans, hasLength(2));
+    expect((spans.first as TextSpan).text, '18000');
+    expect((spans.last as TextSpan).text, '/18000');
+    expect(
+      (spans.last as TextSpan).style!.color!.a,
+      lessThan((spans.first as TextSpan).style!.color!.a),
+    );
+    expect(
+      (spans.last as TextSpan).style!.fontSize,
+      lessThan((spans.first as TextSpan).style!.fontSize!),
+    );
+  });
+
+  testWidgets('战场窄条使用干笔墨轨与数值墨托', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -40,13 +67,21 @@ void main() {
       ),
     );
 
-    final track = tester.widget<ColoredBox>(
-      find.byKey(const ValueKey('battle.hpBarTrack')),
+    final track = tester.widget<CustomPaint>(
+      find.byKey(const ValueKey('battle.hpBarInkTrack')),
     );
-    final fill = tester.widget<ColoredBox>(
-      find.byKey(const ValueKey('battle.hpBarFill')),
+    final fill = tester.widget<CustomPaint>(
+      find.byKey(const ValueKey('battle.hpBarInkFill')),
     );
-    expect(track.color, const Color(0xA62A241D));
-    expect(fill.color, WuxiaUi.jiang);
+    expect(
+      (track.painter! as BattleInkBarPainter).color,
+      const Color(0xA62A241D),
+    );
+    expect((fill.painter! as BattleInkBarPainter).color, WuxiaUi.jiang);
+    expect(
+      find.byKey(const ValueKey('battle.hpBarLabelInkPlate')),
+      findsOneWidget,
+    );
+    expect(find.byType(ClipRRect), findsNothing);
   });
 }

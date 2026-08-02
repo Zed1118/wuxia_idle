@@ -12,6 +12,8 @@
 3. 用 `screencapture -x -o -l<window_id>` 截干净窗口。
 4. 若窗口 ID 捕获失败，退回区域截图并在 route log 中记录
    `VISUAL_CAPTURE: fallback_region`。
+5. 截图结束后默认生成 `<output>/fidelity_manifest.json`，记录 commit、route、
+   seed/tick、逻辑视口、DPR、原生窗口 ID、截图方式及 PNG/log SHA-256。
 
 ## 用法
 
@@ -37,12 +39,14 @@ tools/visual_capture/visual_capture.sh --dry-run
 - `--all-spaces`：跨 macOS Space 枚举应用窗口。
 - `--existing-window`：只截已运行窗口，不启动、不聚焦、不缩放、不关闭应用；与
   `--all-spaces` 合用可在桌面 1 后台截取桌面 2 的目检窗口。
+- `--no-manifest`：仅在临时探针中关闭默认 manifest 输出；正式验收不得使用。
 
 输出结构：
 
 ```text
 <output>/<suite-or-route>/<resolution>/<route>.png
 <output>/<suite-or-route>/<resolution>/<route>.log
+<output>/fidelity_manifest.json
 ```
 
 route log 中应至少包含：
@@ -90,6 +94,54 @@ flutter pub run tool/visual_acceptance.dart routes --suite full --format ids
 - Command Line Tools 的 `swift`，用于执行 `window_id.swift`。
 - Flutter macOS desktop。
 - Screen Recording 权限：`screencapture`/CGWindowID 捕获需要该权限；无权限时可能失败或退回兜底。
+- Python 侧需要 Pillow、NumPy 与 OpenCV (`cv2`)；OpenCV Canny 固定使用 50/150 阈值，
+  以复现报告中的边缘 IoU 基线。
+
+## Battle UI 95+ reference/current 证据
+
+`analyze_battle_v2_fidelity.py` 默认是严格 reference 模式：manifest 必须包含配置中的
+`battle_tap_live`，母版 SHA 必须匹配，且 current 与 reference 若为同一 PNG 会直接失败。
+它会把 Retina current 缩回逻辑视口、将唯一母版 cover-center 对齐，然后按母版
+`y=60 / y=700` 等比切分顶栏、战场和案台。
+
+```bash
+python3 tools/visual_capture/analyze_battle_v2_fidelity.py \
+  --manifest build/visual_acceptance/battle_sample_95/fidelity_manifest.json \
+  --output build/visual_acceptance/battle_sample_95/analysis
+```
+
+标准输出包包括：
+
+- `fidelity_manifest.json`：分析时消费的输入清单；
+- `fidelity_metrics.json`：RGB/LAB、Delta E、MAE、Canny 边缘 IoU、结构锚点与 Gate；
+- `fidelity_report.md`：机器证据与待填人工评分表；
+- `diff_full.png`、`diff_header.png`、`diff_field.png`、`diff_desk.png`；
+- `reference_current_side_by_side.png`；
+- `comparisons/<capture>/`：每条 capture 的完整比较图及可选 before/after ROI 证据；
+- `masks/`：人物与语义色诊断 mask。
+
+纯生产路由若只做布局、人物层或 before/after 诊断，必须显式使用
+`--diagnostics-only`；这不会关闭母版 SHA 校验，也不会跳过 manifest 中已有
+`battle_tap_live` 的 reference/current 比较。
+
+before/after 零回归使用 capture 条目的可选 `baseline` 字段，且 baseline 必须带 SHA：
+
+```json
+{
+  "baseline": {
+    "png": "/absolute/path/to/before.png",
+    "sha256": "...",
+    "allowed_change_mask": "/absolute/path/to/allowed.png",
+    "rois": {
+      "hud": {"x": 0, "y": 0, "width": 1672, "height": 60},
+      "field": {"x": 0, "y": 60, "width": 1672, "height": 640}
+    }
+  }
+}
+```
+
+报告会分别列出总变化、mask 内允许变化、mask 外意外变化以及各 ROI 计数；只有明确
+不在改动影响域内的 ROI 才应要求 `unexpected_pixels == 0`。
 
 ## 验证建议
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../domain/battle_state.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/glossary_tip.dart';
 import 'countdown_ring.dart';
 
@@ -26,8 +27,9 @@ import 'countdown_ring.dart';
 /// 故不新建平行术语表,直接用最薄 tooltip——与本任务「优先复用、没有就用最薄
 /// hover tooltip」边界一致。
 ///
-/// **蓄势/破招**不在此渲染:[CharacterAvatar] 已用 [BeatCountdownRing] +
-/// flash_on 图标专门表现,不重复贴标签。
+/// **蓄势**不在此渲染：顶部横幅保留单主警示，每名蓄势者的名帖旁使用
+/// 暗绛拍数小印。本组件中的 [BeatCountdownRing] 只表示破绽/踉跄窗口，
+/// 不能被误认为已移除的蓄势读秒环。
 class AvatarStatusTags extends StatelessWidget {
   const AvatarStatusTags({
     super.key,
@@ -62,7 +64,7 @@ class AvatarStatusTags extends StatelessWidget {
     // 是绛红/金印),且与同屏 boss 金边不同源。深金与 boss 专属语义一致。
     if (wardActive) {
       items.add(
-        const AvatarStatusTag(
+        const GuardianWardBrushTag(
           spec: AvatarStatusSpec(
             label: UiStrings.guardianWardActiveLabel,
             gloss: UiStrings.guardianWardActiveGloss,
@@ -125,6 +127,88 @@ class AvatarStatusTags extends StatelessWidget {
       children: items.take(2).toList(growable: false),
     );
   }
+}
+
+/// 护法结界专用的断边干笔题签。
+///
+/// 结界是战场机制提示，不沿用普通 buff 的现代圆角药丸；文字仍保留 hover
+/// 释义与同一深金语义，底形则用不规则墨痕承接人物背后的护界气韵。
+class GuardianWardBrushTag extends StatelessWidget {
+  const GuardianWardBrushTag({super.key, required this.spec});
+
+  final AvatarStatusSpec spec;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlossaryTip(
+      definition: spec.gloss,
+      child: CustomPaint(
+        key: const ValueKey('battle.statusTag.guardianWardBrushPaper'),
+        painter: _GuardianWardBrushTagPainter(spec.color),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(7, 3, 7, 3),
+          child: Text(
+            spec.label,
+            style: const TextStyle(
+              fontSize: 10,
+              height: 1,
+              color: WuxiaUi.goldOnPaper,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.35,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GuardianWardBrushTagPainter extends CustomPainter {
+  const _GuardianWardBrushTagPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final paper = Path()
+      ..moveTo(1, size.height * 0.34)
+      ..lineTo(size.width * 0.09, size.height * 0.12)
+      ..lineTo(size.width * 0.38, size.height * 0.18)
+      ..lineTo(size.width * 0.63, size.height * 0.08)
+      ..lineTo(size.width - 1, size.height * 0.28)
+      ..lineTo(size.width * 0.95, size.height * 0.76)
+      ..lineTo(size.width * 0.71, size.height * 0.88)
+      ..lineTo(size.width * 0.43, size.height * 0.80)
+      ..lineTo(size.width * 0.14, size.height * 0.92)
+      ..lineTo(0, size.height * 0.66)
+      ..close();
+    canvas.drawPath(
+      paper,
+      Paint()..color = WuxiaUi.gold.withValues(alpha: 0.11),
+    );
+
+    final edge = Paint()
+      ..color = WuxiaUi.goldOnPaper.withValues(alpha: 0.68)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.85
+      ..strokeCap = StrokeCap.square;
+    canvas.drawPath(paper, edge);
+    canvas.drawLine(
+      Offset(size.width * 0.12, size.height * 0.34),
+      Offset(size.width * 0.46, size.height * 0.27),
+      edge..color = WuxiaUi.goldOnPaper.withValues(alpha: 0.20),
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.58, size.height * 0.73),
+      Offset(size.width * 0.88, size.height * 0.66),
+      edge,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _GuardianWardBrushTagPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 /// 单个状态标签:水墨克制的圆角小药丸 + hover/长按释义。

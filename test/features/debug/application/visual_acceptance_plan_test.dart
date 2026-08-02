@@ -70,17 +70,18 @@ void main() {
         'battle_v2_fast_forward_peak',
         'battle_v2_pre_result',
         'battle_v2_neutral_3v3',
+        'battle_v2_multi_charge',
         'battle_identity_silhouette',
         'battle_v2_resource_pressure',
       ]),
     );
   });
 
-  test('battle suite 覆盖73动态战斗与6个确定性素材/状态 route', () {
+  test('battle suite 覆盖73动态战斗与7个确定性素材/状态 route', () {
     final ids = visualAcceptanceRouteIds(VisualAcceptanceSuite.battle);
 
-    expect(ids, hasLength(79));
-    expect(ids.toSet(), hasLength(79));
+    expect(ids, hasLength(80));
+    expect(ids.toSet(), hasLength(80));
     expect(ids.first, 'battle_audit_stage_01_01');
     expect(ids, contains('battle_audit_stage_06_05'));
     expect(ids, contains('battle_audit_tower_01'));
@@ -89,11 +90,12 @@ void main() {
     expect(ids, contains('battle_audit_stage_mass_battle_05'));
     expect(ids, contains('battle_audit_gauntlet_01'));
     expect(ids, contains('battle_audit_gauntlet_03'));
-    expect(ids.sublist(ids.length - 6), <String>[
+    expect(ids.sublist(ids.length - 7), <String>[
       'battle_v2_casualty_replacement',
       'battle_v2_fast_forward_peak',
       'battle_v2_pre_result',
       'battle_v2_neutral_3v3',
+      'battle_v2_multi_charge',
       'battle_identity_silhouette',
       'battle_v2_resource_pressure',
     ]);

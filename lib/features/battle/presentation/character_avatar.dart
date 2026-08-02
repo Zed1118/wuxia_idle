@@ -8,11 +8,11 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'avatar_status_tags.dart';
+import 'battle_charge_seal.dart';
 import 'battle_layout_tokens.dart';
 import 'battle_stage_geometry.dart';
 import 'battle_standee_fusion.dart';
 import 'battle_typography_tokens.dart';
-import 'countdown_ring.dart';
 import 'guardian_ward_presentation.dart';
 import 'hp_bar.dart';
 import '../../../shared/widgets/asset_fallback.dart';
@@ -49,9 +49,9 @@ class BattleStandeeAssetResolution {
       displayRole == BattleCharacterAssetRole.sourcePortrait;
 }
 
-const battleStandeeGroundingOpacity = 0.28;
-const battleStandeeGroundingCoreOpacity = 0.44;
-const battleStandeeGroundingWashOpacity = 0.20;
+const battleStandeeGroundingOpacity = 0.22;
+const battleStandeeGroundingCoreOpacity = 0.36;
+const battleStandeeGroundingWashOpacity = 0.16;
 
 /// 战斗角色头像（phase1_tasks.md T14 §784;M4 Stage 3 2026-05-21 美术接入)。
 ///
@@ -74,7 +74,7 @@ class CharacterAvatar extends StatelessWidget {
   final bool showStageStatusOverlay;
 
   /// Boss/敌人蓄力满值（`numbers.combat.bossCharge.defaultChargeTicks`）。
-  /// 用于把 [BattleCharacter.chargeTicksRemaining] 换算成蓄力读秒环比例。
+  /// 保留在公开构造器上兼容战场调用链；新的蓄势小印只显示剩余拍数。
   final int chargeMaxTicks;
 
   /// 读秒环节拍（本拍内 0→1，供蓄力/破绽环平滑插值）。
@@ -118,7 +118,6 @@ class CharacterAvatar extends StatelessWidget {
         character: character,
         battleState: battleState,
         beat: beat ?? const AlwaysStoppedAnimation<double>(0),
-        chargeMaxTicks: chargeMaxTicks,
         staggerWindowTicks: staggerWindowTicks,
         width: standeeWidth,
         height: standeeHeight,
@@ -237,7 +236,7 @@ class CharacterAvatar extends StatelessWidget {
             labelPrefix: UiStrings.internalForceShortLabel,
           ),
         ),
-        // P0 破招：固定蓄力环行高度，避免蓄力态单槽挤压相邻头像。
+        // 固定蓄势印行高度，避免蓄势态单槽挤压相邻头像。
         const SizedBox(height: 4),
         SizedBox(
           width: barWidth,
@@ -248,13 +247,7 @@ class CharacterAvatar extends StatelessWidget {
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      BeatCountdownRing(
-                        remaining: character.chargeTicksRemaining,
-                        total: chargeMaxTicks,
-                        beat: effBeat,
-                        color: WuxiaColors.hpLow,
-                        size: 34,
-                      ),
+                      BattleChargeSeal(character: character, size: 24),
                       const SizedBox(width: 4),
                       const Icon(
                         Icons.flash_on,
@@ -308,7 +301,6 @@ class _StageCharacterStandee extends StatelessWidget {
     required this.character,
     required this.battleState,
     required this.beat,
-    required this.chargeMaxTicks,
     required this.staggerWindowTicks,
     required this.width,
     required this.height,
@@ -320,7 +312,6 @@ class _StageCharacterStandee extends StatelessWidget {
   final BattleCharacter character;
   final BattleState? battleState;
   final Animation<double> beat;
-  final int chargeMaxTicks;
   final int staggerWindowTicks;
   final double width;
   final double height;
@@ -344,7 +335,7 @@ class _StageCharacterStandee extends StatelessWidget {
     final resolvedIconPath = asset.displayPath;
     final sourceFootFraction = battleStandeeFootFraction(resolvedIconPath);
     final footY = portraitHeight * _stageStandeeAnchorFootFraction;
-    final groundingHeight = height * 0.09;
+    final groundingHeight = height * 0.055;
     final wardActive =
         battleState != null && isGuardianWardActive(character, battleState!);
 
@@ -494,8 +485,8 @@ class _StageCharacterStandee extends StatelessWidget {
         children: [
           Positioned(
             key: const ValueKey('battle.stageStandeeGrounding'),
-            left: width * 0.11,
-            right: width * 0.11,
+            left: width * 0.22,
+            right: width * 0.22,
             top: (footY - groundingHeight * 0.50).clamp(
               0.0,
               height - groundingHeight,
@@ -519,6 +510,19 @@ class _StageCharacterStandee extends StatelessWidget {
                 ),
               ),
             ),
+          if (wardActive)
+            Positioned(
+              left: width * 0.01,
+              right: width * 0.01,
+              top: height * 0.02,
+              bottom: height * 0.07,
+              child: const IgnorePointer(
+                child: CustomPaint(
+                  key: ValueKey('battle.guardianWardBrokenHalo'),
+                  painter: _GuardianWardBrokenHaloPainter(),
+                ),
+              ),
+            ),
           portrait,
           Positioned(
             top: 4,
@@ -533,18 +537,6 @@ class _StageCharacterStandee extends StatelessWidget {
               ),
             ),
           ),
-          if (character.chargingSkill != null)
-            Positioned(
-              top: 34,
-              right: 6,
-              child: BeatCountdownRing(
-                remaining: character.chargeTicksRemaining,
-                total: chargeMaxTicks,
-                beat: beat,
-                color: WuxiaColors.hpLow,
-                size: 34,
-              ),
-            ),
           if (showStatusOverlay)
             StageCharacterStatusOverlay(
               character: character,
@@ -674,6 +666,10 @@ class StageCharacterStatusOverlay extends StatelessWidget {
                           ),
                         ),
                       ],
+                      if (character.chargingSkill != null) ...[
+                        const SizedBox(width: 3),
+                        BattleChargeSeal(character: character),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 1),
@@ -714,25 +710,6 @@ class _BossInkAuraPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final glow = Paint()
-      ..color = WuxiaUi.gold.withValues(alpha: 0.20)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7);
-    canvas.drawArc(
-      Rect.fromLTWH(
-        size.width * 0.12,
-        size.height * 0.12,
-        size.width * 0.76,
-        size.height * 0.76,
-      ),
-      -2.55,
-      4.75,
-      false,
-      glow,
-    );
-
     final strand = Paint()
       ..color = const Color(0xFFC5A86B).withValues(alpha: 0.65)
       ..style = PaintingStyle.stroke
@@ -811,6 +788,111 @@ class _BossInkAuraPainter extends CustomPainter {
   bool shouldRepaint(covariant _BossInkAuraPainter oldDelegate) => false;
 }
 
+/// 结界生效时的断续护界金墨。使用不对称曲线与断毫，不画规则圆/椭圆，
+/// 避免把武侠机制读成科幻护盾；护法倒下后组件随纯展示判定立即消失。
+class _GuardianWardBrokenHaloPainter extends CustomPainter {
+  const _GuardianWardBrokenHaloPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final glow = Paint()
+      ..color = WuxiaUi.gold.withValues(alpha: 0.07)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+    final ink = Paint()
+      ..color = WuxiaUi.gold.withValues(alpha: 0.38)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1
+      ..strokeCap = StrokeCap.square;
+    final faint = Paint()
+      ..color = WuxiaUi.gold.withValues(alpha: 0.19)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.75
+      ..strokeCap = StrokeCap.square;
+
+    Path curve(List<Offset> points) => Path()
+      ..moveTo(points[0].dx * size.width, points[0].dy * size.height)
+      ..cubicTo(
+        points[1].dx * size.width,
+        points[1].dy * size.height,
+        points[2].dx * size.width,
+        points[2].dy * size.height,
+        points[3].dx * size.width,
+        points[3].dy * size.height,
+      );
+
+    final leftLower = curve(const [
+      Offset(0.43, 0.87),
+      Offset(0.22, 0.76),
+      Offset(0.24, 0.54),
+      Offset(0.31, 0.42),
+    ]);
+    final leftUpper = curve(const [
+      Offset(0.29, 0.36),
+      Offset(0.24, 0.24),
+      Offset(0.33, 0.12),
+      Offset(0.42, 0.08),
+    ]);
+    final rightUpper = curve(const [
+      Offset(0.59, 0.10),
+      Offset(0.70, 0.16),
+      Offset(0.76, 0.31),
+      Offset(0.72, 0.43),
+    ]);
+    final rightLower = curve(const [
+      Offset(0.74, 0.49),
+      Offset(0.79, 0.62),
+      Offset(0.71, 0.79),
+      Offset(0.58, 0.86),
+    ]);
+    for (final path in [leftLower, leftUpper, rightUpper, rightLower]) {
+      canvas.drawPath(path, glow);
+      canvas.drawPath(path, ink);
+    }
+
+    canvas.drawPath(
+      curve(const [
+        Offset(0.36, 0.73),
+        Offset(0.20, 0.58),
+        Offset(0.28, 0.31),
+        Offset(0.45, 0.20),
+      ]),
+      faint,
+    );
+    canvas.drawPath(
+      curve(const [
+        Offset(0.55, 0.18),
+        Offset(0.70, 0.27),
+        Offset(0.79, 0.51),
+        Offset(0.65, 0.69),
+      ]),
+      faint,
+    );
+
+    final dust = Paint()..color = WuxiaUi.gold.withValues(alpha: 0.30);
+    for (final point in const [
+      Offset(0.27, 0.47),
+      Offset(0.33, 0.24),
+      Offset(0.67, 0.22),
+      Offset(0.73, 0.53),
+      Offset(0.64, 0.76),
+    ]) {
+      canvas.drawCircle(
+        Offset(point.dx * size.width, point.dy * size.height),
+        0.8,
+        dust,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _GuardianWardBrokenHaloPainter oldDelegate) =>
+      false;
+}
+
 /// 人物脚下状态条的柔和墨染。透明渐隐与断续墨毫替代矩形实底和硬边，
 /// 数值条仍保持原宽度与对比，不改变人物站位或点击区域。
 class _StageStatusInkWashPainter extends CustomPainter {
@@ -858,17 +940,17 @@ class _StandeeGroundingPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width * 0.5, size.height * 0.58);
+    final center = Offset(size.width * 0.5, size.height * 0.56);
     final contact = Paint()
       ..color = const Color(
         0xFF2B251E,
       ).withValues(alpha: battleStandeeGroundingOpacity)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.2);
     canvas.drawOval(
       Rect.fromCenter(
         center: center,
-        width: size.width * 0.88,
-        height: size.height * 0.58,
+        width: size.width * 0.78,
+        height: size.height * 0.42,
       ),
       contact,
     );
@@ -877,12 +959,12 @@ class _StandeeGroundingPainter extends CustomPainter {
       ..color = const Color(
         0xFF241F1A,
       ).withValues(alpha: battleStandeeGroundingCoreOpacity)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.8);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.6);
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(size.width * 0.5, size.height * 0.54),
-        width: size.width * 0.48,
-        height: size.height * 0.24,
+        width: size.width * 0.44,
+        height: size.height * 0.18,
       ),
       contactCore,
     );
@@ -894,7 +976,7 @@ class _StandeeGroundingPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = 1.4
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.1);
     final leftWash = Path()
       ..moveTo(size.width * 0.08, size.height * 0.72)
       ..quadraticBezierTo(

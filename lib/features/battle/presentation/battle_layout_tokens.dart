@@ -26,6 +26,8 @@ abstract final class BattleLayoutTokens {
   static const double skillSlotGap = 28;
   static const double sampleSkillSlipTopInset = 2;
   static const double sampleSkillSlipHeightReduction = 2;
+  static const double sampleStyleCompactSlotHeight = 162;
+  static const double sampleStyleExpandedSlotHeight = 206;
   static const double focusDividerGap = 20;
   static const double dividerSkillGap = 32;
   static const double skillPouchGap = 31;
@@ -42,7 +44,36 @@ abstract final class BattleLayoutTokens {
   static const double bossStageScale = 1.16;
   static const double stageStatusHpHeight = 11;
   static const double stageStatusQiHeight = 10;
-  static const double emptySkillPaperOpacity = 0.30;
+  static const double emptySkillPaperOpacity = 0.52;
+}
+
+/// 案台子组件共用的连续尺寸预算。
+///
+/// 名帖、技能签和行囊以前各自在 190px 做二元换皮，导致窗口
+/// 只变 1px 就同时跳字号、间距和装饰。现在它们都从同一签位高度区间
+/// 取 0～1 进度；样板材质不变，只连续压缩几何。
+final class BattleDeskResponsiveStyle {
+  const BattleDeskResponsiveStyle._(this.progress);
+
+  factory BattleDeskResponsiveStyle.fromSlotHeight(double height) {
+    final progress =
+        ((height - BattleLayoutTokens.sampleStyleCompactSlotHeight) /
+                (BattleLayoutTokens.sampleStyleExpandedSlotHeight -
+                    BattleLayoutTokens.sampleStyleCompactSlotHeight))
+            .clamp(0.0, 1.0)
+            .toDouble();
+    return BattleDeskResponsiveStyle._(progress);
+  }
+
+  factory BattleDeskResponsiveStyle.fromSlipHeight(double height) =>
+      BattleDeskResponsiveStyle.fromSlotHeight(
+        height + BattleLayoutTokens.sampleSkillSlipHeightReduction,
+      );
+
+  final double progress;
+
+  double value(double compact, double expanded) =>
+      lerpDouble(compact, expanded, progress)!;
 }
 
 /// 同一视口下的战斗三段式布局量测。
@@ -81,6 +112,8 @@ final class BattleLayoutMetrics {
       (commandDeskHeight * 0.88).clamp(146.0, 206.0);
   double get sampleSkillSlipHeight =>
       sampleSkillSlotHeight - BattleLayoutTokens.sampleSkillSlipHeightReduction;
+  BattleDeskResponsiveStyle get sampleDeskStyle =>
+      BattleDeskResponsiveStyle.fromSlotHeight(sampleSkillSlotHeight);
   double get sampleSectionDividerHeight =>
       (commandDeskHeight * 0.88).clamp(144.0, 200.0);
   double get stageTopSafetyInset =>
