@@ -1,6 +1,8 @@
 # 新会话开局清单
 
-> 交接时间：2026-08-02 18:35 · HEAD `0ef9de71` · 与 origin/main 完全同步、工作树干净
+> 交接时间：2026-08-02 18:35 · 工作收口于 HEAD `0ef9de71` · 与 origin/main 完全同步、工作树干净
+> 注：本清单自身的落盘 commit 排在 `0ef9de71` 之后，故实际 HEAD 会比它新 1-2 个纯文档 commit；
+> 这不是漂移。以 `git rev-parse --short HEAD` 现查为准，只要 `git status -sb` 显示与 origin 同步即可。
 > 动手前先核头部 HEAD sha 与 git 实况；漂移（HEAD 不符/明显过期）先报告偏差再动。
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
@@ -19,7 +21,8 @@
    + `feedback_flutter_test_batch_silent_skip` + `feedback_wuxia_pen_build_runner`
 
 【环境快照】
-- HEAD `0ef9de71`（本 session 23 commits `acc31ee8..0ef9de71`，全部已 push）
+- 工作收口于 `0ef9de71`（本 session 23 commits `acc31ee8..0ef9de71`，全部已 push；其后为本清单与
+  session 记录的纯文档 commit）
 - `flutter analyze --no-pub` → **No issues found (3.7s)**｜主 checkout HEAD `3b091b69` 实测；
   `3b091b69..0ef9de71` 仅新增 1 个 session 记录 `.md`，零代码差异
 - 全量 `flutter test --no-pub` → **4802 pass / 0 fail (4m01s)**｜同上实测点
