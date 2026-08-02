@@ -1,7 +1,7 @@
 # 战斗界面样板还原度 95+ 实施计划
 
 > 日期：2026-08-01<br>
-> 状态：**五个切片已实施；黄金图锁为唯一视觉基准，待生产 Boss v3 终拍**<br>
+> 状态：**五个切片已实施；黄金图锁为唯一视觉基准，待生产 Boss v5 终拍**<br>
 > 基点：`main@acc31ee8`<br>
 > 分支：`codex/battle-ui-fidelity-95`<br>
 > worktree：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95`<br>
@@ -296,17 +296,19 @@ git status --short
   伤害陈列、多敌蓄势、破招、Boss 阶段、替补、濒死、胜负、资源压力和自动轮转。
 - 首轮用户终拍认可黄金图整体方向，但要求重做 CD 数字并指出代表生产 Boss 偏离。修订后黄金帧位于
   `build/visual_acceptance/battle_ui_user_revision_golden/`，代表生产 Boss 位于
-  `build/visual_acceptance/battle_ui_user_revision_production_boss_v3/`；实现代码态为
-  `618e8ce7c73314d314865d3b88a9ce7638c369d6`。
+  `build/visual_acceptance/battle_ui_user_revision_production_boss_v5/`；实现代码态为
+  `680ea69862e48d4d7c78be4d792e289f4acecdf6`。
 - CD 已改为右上淡墨批注牌；Boss 路由保留 floor30 真敌方、结界、背景和空行囊，改用正式塔名与仓库
   `SkillDef` 组成的生产可达四签三空签，不伪造黄金七签。
 - 用户随后确认黄金图更佳，故将其锁为唯一视觉基准；Boss v3 将塔境从蓝灰收敛为暖灰旧纸，抬高空签纸形可见度，
   隐去终拍中的“继续/单步”审计态，并使用“祖师/大弟子/二弟子”生产角色称谓。
+- Boss v5 继续收敛生产终拍：结界用旧金干笔题签与贴身断毫替代规则药丸/椭圆圈；三张空签由压暗占位框改成
+  52% 可见度的未题字旧签；高阶血/真气保留完整精确值但降低上限权重；塔境只加强下部接地墨层。
 - 实现者人工暂评：G=`95/100`（24+19+19+19+14），P=`95/100`
   （19+24+19+14+9+10），F=`95/100`。这是待用户终拍复核的暂评分，不是 READY 声明。
 - 最终静态与全量验证：`dart format` 无改动；`flutter analyze --no-pub` 输出
   `No issues found!`；`flutter test --no-pub --reporter compact` 输出
-  `+4800: All tests passed!`；用户修订目标组 `130/130`；唯一基准收敛目标组 `116/116`；`git diff --check` 通过。
+  `+4802: All tests passed!`；本轮视觉契约组 `92/92`；结界最终细修组 `44/44`；`git diff --check` 通过。
 - 严格 reference/current analyzer 自校验通过，reference SHA 一致，顶栏/案台锚点误差
   `0 / 0.104px`。绝对像素阈值并未全绿：战场 MAE `28.532 > 22`、战场边缘 IoU
   `0.107 < 0.12`，案台 MAE `15.513 > 14`，且若干边缘阈值未过；这是人物姿势、
@@ -321,7 +323,7 @@ git status --short
   因此剩余绝对战场 Gate 是不同背景/姿势语义的辅助差异，不以改母版、换生产资产或
   放宽阈值制造假绿。
 
-**下一步唯一入口**：黄金 3v3 不再作候选方案，用户只终拍代表生产 Boss v3。用户明确回复“终拍通过”前，
+**下一步唯一入口**：黄金 3v3 不再作候选方案，用户只终拍代表生产 Boss v5。用户明确回复“终拍通过”前，
 目标保持 active、分支不得标记 READY；若用户指出具体扣分区域，回到对应切片继续修复。
 
 **已知风险**：

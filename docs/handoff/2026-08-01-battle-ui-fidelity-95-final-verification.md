@@ -3,8 +3,8 @@
 > 日期：2026-08-01  
 > 分支：`codex/battle-ui-fidelity-95`  
 > 实施基点：`main@acc31ee8`  
-> 最终视觉与证据代码态：`618e8ce7c73314d314865d3b88a9ce7638c369d6`<br>
-> 状态：**黄金图已锁为唯一视觉基准；生产 Boss v3 待用户终拍，不是 READY**
+> 最终视觉与证据代码态：`680ea69862e48d4d7c78be4d792e289f4acecdf6`<br>
+> 状态：**黄金图已锁为唯一视觉基准；生产 Boss v5 待用户终拍，不是 READY**
 
 ## 1. 结论
 
@@ -15,8 +15,8 @@
 全量测试、差异检查和原生窗口截图均完成。
 
 这不是无条件的“已完成”声明。严格 reference/current analyzer 的绝对像素阈值没有全部通过，
-Windows 实机发布 Gate 尚未执行，用户也尚未通过生产 Boss v3 终拍。因此当前最准确的状态是：**黄金图作为
-唯一视觉基准不再反复改动；生产 Boss 已向该基准收敛并通过本机验证，等待用户只对 v3 作终拍。**
+Windows 实机发布 Gate 尚未执行，用户也尚未通过生产 Boss v5 终拍。因此当前最准确的状态是：**黄金图作为
+唯一视觉基准不再反复改动；生产 Boss 已向该基准收敛并通过本机验证，等待用户只对 v5 作终拍。**
 
 ## 2. 本轮实际修复
 
@@ -30,6 +30,7 @@ Windows 实机发布 Gate 尚未执行，用户也尚未通过生产 Boss v3 终
 | 证据复核 | 发现 analyzer 案台横向阈值与生产布局及既有 Dart Gate 口径矛盾；失败测试后校正，3 个布局 Gate 由误报转绿，不改 UI 像素 | `2bdd7968 校正案台视觉量测口径` |
 | 用户终拍修订 | 将冷却裸数字改为右上淡墨批注牌；护法 Boss 终拍改用正式塔名与生产 `SkillDef`，保留真实四签三空签、空行囊、底数与结界 | `82a0c03e 重做冷却标记并校正Boss终拍` |
 | 唯一基准收敛 | 黄金图锁为唯一方向；塔境改为暖灰旧纸调，空签抬高至 42% 纸形可见度，终拍顶栏隐去“继续/单步”审计态，师徒名称回归生产角色称谓 | `618e8ce7 收敛生产Boss终拍视觉` |
+| Boss 终拍细化 | 结界由规则药丸/椭圆圈改为旧金干笔题签与贴身断毫；空签提至 52% 并改成未题字旧签；高阶血/真气保留精确值但降低上限权重；塔境只加强下部接地墨层 | `680ea698 细化Boss终拍视觉层次` |
 
 边界核对：未修改 `data/`、资产、伤害、真气、冷却、AI、tick、胜负、掉落、存档 schema 或
 `saveVersion`；未给断魂庄 audit 补背景；未引入独立 `HpBar` 战场样式；未提交截图、日志、
@@ -51,9 +52,9 @@ Windows 实机发布 Gate 尚未执行，用户也尚未通过生产 Boss v3 终
 | 分项 | 分数 | 目标 | 独立判断与证据 |
 |---|---:|---:|---|
 | P1 结构与响应式 | 19/20 | 19 | 1280、1440、1672 使用同一连续样式；无断层或 overflow。 |
-| P2 场景与人物融合 | 24/25 | 24 | 主线、塔境、群战、纯程序化断魂庄、心魔、轻功、护法结界均复核；Boss 中央 ROI 暖度 `R−B` 由 `-4.3` 收敛到 `+19.7`，黄金图为 `+27.9`。 |
-| P3 案台与信息密度 | 19/20 | 19 | 七招、少招、空签、空行囊均保持完成品结构；Boss 保留真实四签三空签，三张空签纸形可读但不伪装可点。 |
-| P4 HUD 与材质统一 | 14/15 | 14 | `HpBar`、蓄势主横幅与每敌小印统一；多敌同时蓄势不丢信息。 |
+| P2 场景与人物融合 | 24/25 | 24 | 主线、塔境、群战、纯程序化断魂庄、心魔、轻功、护法结界均复核；塔境下三分之一增强接地墨层，护界改为不闭合断毫。 |
+| P3 案台与信息密度 | 19/20 | 19 | 七招、少招、空签、空行囊均保持完成品结构；Boss 真实四签三空签现为未题字旧签，纸形可读但不伪装可点。 |
+| P4 HUD 与材质统一 | 14/15 | 14 | 高阶血/真气保留完整精确值并降低上限视觉权重；`HpBar`、蓄势主横幅与每敌小印统一，多敌同时蓄势不丢信息。 |
 | P5 动态状态一致性 | 9/10 | 9 | 伤害、暴击、破招、Boss 阶段、替补、濒死、胜负、暂停、资源压力和冷却批注均覆盖。 |
 | P6 桌面交互与稳定性 | 10/10 | 10 | Tab/Enter、hover、ESC、暂停/继续、两阶段选敌、cursor、双视口和逻辑缩放测试全绿。 |
 | **P 合计** | **95/100** | **≥95** | **实现者暂评达标，待用户终拍。** |
@@ -65,14 +66,14 @@ Windows 实机发布 Gate 尚未执行，用户也尚未通过生产 Boss v3 终
 ### 5.1 最终命令
 
 ```text
-$ dart format <8 changed Dart files>
-Formatted 8 files (0 changed)
+$ dart format <changed Dart files>
+Formatted (exit 0)
 
 $ flutter analyze --no-pub
-No issues found! (ran in 11.0s)
+No issues found! (ran in 3.7s)
 
 $ flutter test --no-pub
-+4800: All tests passed!
++4802: All tests passed!
 
 $ git diff --check
 (no output, exit 0)
@@ -91,14 +92,16 @@ $ git diff --check
 | 最终 battle presentation + Boss/route 动态组 | 380/380 |
 | 用户修订目标组 | 130/130 |
 | 唯一基准收敛目标组 | 116/116 |
-| 全仓最终套件 | 4800/4800 |
+| 本轮四项视觉契约组 | 92/92 |
+| 结界最终细修复核组 | 44/44 |
+| 全仓最终套件 | 4802/4802 |
 
 ## 6. 截图与差异证据
 
 | 证据 | 数量 | 路径 |
 |---|---:|---|
 | 修订后黄金 1672×941 + 1280×720 | 2 | `build/visual_acceptance/battle_ui_user_revision_golden/` |
-| 收敛后代表生产 Boss v3·1440×900 + 1280×720 | 2 | `build/visual_acceptance/battle_ui_user_revision_production_boss_v3/` |
+| 收敛后代表生产 Boss v5·1440×900 + 1280×720 | 2 | `build/visual_acceptance/battle_ui_user_revision_production_boss_v5/` |
 | 动态矩阵 13 routes × 2 viewports | 26 | `build/visual_acceptance/battle_ui_phase5_dynamic/` |
 | 人物接地 before/after 5 scenes × 2 viewports | 10 + 10 | `build/visual_acceptance/battle_ui_phase4_before/`、`battle_ui_phase4_after/` |
 | 心魔 / 轻功 / 护法结界 × 2 viewports | 6 | `build/visual_acceptance/battle_ui_phase4_special_modes/` |
@@ -108,13 +111,13 @@ RenderFlex 或 overflow。人物接地前后对账中，10/10 图的变化像素
 顶栏和案台变化像素均为 0。
 首轮黄金图到本次修订图仅 `3542/6293408` 像素变化（`0.0563%`），且逻辑坐标 `y<700`
 的顶栏与战场变化像素为 0，证明修订只收敛在案台 CD 标记，没有破坏用户已认可的黄金构图。
-Boss v3 中央背景 ROI 平均 RGB 为 `(177.3,170.0,157.6)`，黄金图为 `(184.3,172.1,156.4)`；
+Boss v5 延续 v3 的暖灰背景分级；v3 中央背景 ROI 平均 RGB 为 `(177.3,170.0,157.6)`，黄金图为 `(184.3,172.1,156.4)`；
 亮度由 v2 的 `158.1` 提至 `170.7`，黄金图为 `173.6`。该量测只用于证明色相收敛，不代替用户视觉判断。
 
 最终用户终拍文件：
 
 1. 黄金 3v3：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95/build/visual_acceptance/battle_ui_user_revision_golden/battle_tap_live/1672x941/battle_tap_live.png`
-2. 代表生产 Boss：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95/build/visual_acceptance/battle_ui_user_revision_production_boss_v3/battle_guardian_ward/1440x900/battle_guardian_ward.png`
+2. 代表生产 Boss：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95/build/visual_acceptance/battle_ui_user_revision_production_boss_v5/battle_guardian_ward/1440x900/battle_guardian_ward.png`
 3. 母版并排：`/Users/a10506/Desktop/Projects/挂机武侠/.worktrees/battle-ui-fidelity-95/build/visual_acceptance/battle_ui_final_golden/analysis/reference_current_side_by_side.png`
 
 ## 7. 机器指标：必须披露的未绿项
@@ -165,7 +168,7 @@ focus/skills/pouch 三项均为 true；这次只修证据口径，没有修改�
 
 ## 9. 用户终拍判定
 
-用户已明确更喜欢黄金图；因此黄金图现是唯一视觉基准，不是与 Boss 图并列的候选方案。本轮只需终拍 Boss v3：
-重点检查塔境暖灰色相、正式顶栏、师徒称谓与四签三空签的案台连续性。若认可，请明确回复“终拍通过”；
+用户已明确更喜欢黄金图；因此黄金图现是唯一视觉基准，不是与 Boss 图并列的候选方案。本轮只需终拍 Boss v5：
+重点检查旧金断毫结界、精确数值的主次、未题字空签和塔境接地。若认可，请明确回复“终拍通过”；
 若不认可，请指出“哪张图 + 哪个区域 + 主要问题”。
 收到“终拍通过”前，本目标保持 active，不标记 READY，也不合并为已完成。
