@@ -226,6 +226,11 @@ void main() {
   // 终拍认可的旧金干笔题签变成亮金。把 spec.color 接进 painter 即红。
   testWidgets('护法结界题签渲染不随 spec.color 变', (tester) async {
     Future<Uint8List> renderWith(Color color) async {
+      // 必须先拆掉元素树再重建:painter 的 shouldRepaint 恒 false,同型 widget
+      // 原地换 spec.color 不会触发重绘,直接第二次 pump 量到的是上一次的陈旧
+      // 像素——那样即便画笔真接了 spec.color 本测也照样绿(假绿)。
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
