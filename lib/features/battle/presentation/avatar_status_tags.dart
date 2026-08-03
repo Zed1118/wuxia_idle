@@ -144,7 +144,7 @@ class GuardianWardBrushTag extends StatelessWidget {
       definition: spec.gloss,
       child: CustomPaint(
         key: const ValueKey('battle.statusTag.guardianWardBrushPaper'),
-        painter: _GuardianWardBrushTagPainter(spec.color),
+        painter: const _GuardianWardBrushTagPainter(),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(7, 3, 7, 3),
           child: Text(
@@ -163,10 +163,15 @@ class GuardianWardBrushTag extends StatelessWidget {
   }
 }
 
+/// 题签底形画笔。
+///
+/// **刻意不接 [AvatarStatusSpec.color]**:该字段是深底色板的 boss 金
+/// ([WuxiaColors.bossFrame] `0xFFD4A017`),而题签是宣纸底,须走 [WuxiaUi] 那套
+/// 旧金([WuxiaUi.goldOnPaper] `0xFF755D34`)——两套色板混用会把 2026-08-02 终拍
+/// 认可的旧金干笔题签变成亮金。语义同源由 `avatar_status_tags_test` 在 spec 层
+/// 断言,不靠这里渲染。故本画笔无入参,渲染只随 size 变。
 class _GuardianWardBrushTagPainter extends CustomPainter {
-  const _GuardianWardBrushTagPainter(this.color);
-
-  final Color color;
+  const _GuardianWardBrushTagPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -188,27 +193,34 @@ class _GuardianWardBrushTagPainter extends CustomPainter {
       Paint()..color = WuxiaUi.gold.withValues(alpha: 0.11),
     );
 
-    final edge = Paint()
-      ..color = WuxiaUi.goldOnPaper.withValues(alpha: 0.68)
+    // 断边轮廓与两道贴身断毫分用两支笔。两道断毫本就同为 0.20(比轮廓淡一档),
+    // 旧写法靠 `edge..color=` 级联改写同一支 Paint 达成,第二道是"继承"来的淡度、
+    // 不是写明的——读代码时极易误判成 0.68。这里只把真实渲染写明,像素不变。
+    Paint strokeAt(double alpha) => Paint()
+      ..color = WuxiaUi.goldOnPaper.withValues(alpha: alpha)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.85
       ..strokeCap = StrokeCap.square;
-    canvas.drawPath(paper, edge);
+
+    canvas.drawPath(paper, strokeAt(0.68));
+
+    final hair = strokeAt(0.20);
     canvas.drawLine(
       Offset(size.width * 0.12, size.height * 0.34),
       Offset(size.width * 0.46, size.height * 0.27),
-      edge..color = WuxiaUi.goldOnPaper.withValues(alpha: 0.20),
+      hair,
     );
     canvas.drawLine(
       Offset(size.width * 0.58, size.height * 0.73),
       Offset(size.width * 0.88, size.height * 0.66),
-      edge,
+      hair,
     );
   }
 
+  // 渲染只随 size 变(无入参),故重建同型 painter 时无需重绘。
   @override
   bool shouldRepaint(covariant _GuardianWardBrushTagPainter oldDelegate) =>
-      oldDelegate.color != color;
+      false;
 }
 
 /// 单个状态标签:水墨克制的圆角小药丸 + hover/长按释义。

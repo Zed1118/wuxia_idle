@@ -1,4 +1,8 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
@@ -215,5 +219,58 @@ void main() {
     );
     // 保留「可破招」金标。
     expect(find.byIcon(Icons.flash_on), findsOneWidget);
+  });
+
+  // 题签底形走宣纸色板的旧金(WuxiaUi.goldOnPaper),**刻意不接** spec.color
+  // (深底色板的 WuxiaColors.bossFrame 亮金)——两套色板混用会把 2026-08-02
+  // 终拍认可的旧金干笔题签变成亮金。把 spec.color 接进 painter 即红。
+  testWidgets('护法结界题签渲染不随 spec.color 变', (tester) async {
+    Future<Uint8List> renderWith(Color color) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: RepaintBoundary(
+                key: const ValueKey('wardProbe'),
+                child: SizedBox(
+                  width: 120,
+                  height: 40,
+                  child: GuardianWardBrushTag(
+                    spec: AvatarStatusSpec(
+                      label: UiStrings.guardianWardActiveLabel,
+                      gloss: UiStrings.guardianWardActiveGloss,
+                      color: color,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(const ValueKey('wardProbe')),
+      );
+      late Uint8List bytes;
+      await tester.runAsync(() async {
+        final image = await boundary.toImage(pixelRatio: 3);
+        final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+        bytes = data!.buffer.asUint8List();
+      });
+      return bytes;
+    }
+
+    final asBossGold = await renderWith(WuxiaColors.bossFrame);
+    final asQiBlue = await renderWith(WuxiaColors.internalForce);
+
+    expect(asBossGold.length, greaterThan(0));
+    expect(
+      asQiBlue,
+      orderedEquals(asBossGold),
+      reason:
+          '题签像素若随 spec.color 变,说明画笔接了深底色板色,'
+          '会打破终拍认可的宣纸旧金观感',
+    );
   });
 }
