@@ -1,4 +1,7 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/presentation/widgets/battle_header.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_typography_tokens.dart';
@@ -80,5 +83,66 @@ void main() {
     expect(button.style?.shape?.resolve({}), isA<StadiumBorder>());
     expect(button.tooltip, UiStrings.battleLog);
     expect(find.byIcon(Icons.list_alt), findsNothing);
+  });
+
+  testWidgets('顶栏圆章可 Tab 走到并由 Enter 激活', (tester) async {
+    var pressed = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: BattleHeaderIconButton(
+            icon: Icons.list_alt,
+            label: UiStrings.battleLogShort,
+            tooltip: UiStrings.battleLog,
+            onPressed: () => pressed++,
+          ),
+        ),
+      ),
+    );
+
+    final semantics = tester
+        .getSemantics(find.byType(IconButton))
+        .getSemanticsData();
+    expect(semantics.flagsCollection.isButton, isTrue);
+    expect(semantics.hasAction(SemanticsAction.tap), isTrue);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+
+    // 弱断言「有东西拿到焦点」证明不了顶栏可达:焦点必须真落在圆章子树内。
+    final focusedContext = FocusManager.instance.primaryFocus?.context;
+    expect(focusedContext, isNotNull);
+    expect(
+      focusedContext!.findAncestorWidgetOfExactType<BattleHeaderIconButton>(),
+      isNotNull,
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(pressed, 1);
+  });
+
+  testWidgets('顶栏圆章禁用时不吃键盘焦点', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: BattleHeaderIconButton(
+            icon: Icons.list_alt,
+            label: UiStrings.battleLogShort,
+            tooltip: UiStrings.battleLog,
+            onPressed: null,
+          ),
+        ),
+      ),
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+
+    final focusedContext = FocusManager.instance.primaryFocus?.context;
+    expect(
+      focusedContext?.findAncestorWidgetOfExactType<BattleHeaderIconButton>(),
+      isNull,
+    );
   });
 }
