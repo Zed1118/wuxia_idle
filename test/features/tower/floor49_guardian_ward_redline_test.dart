@@ -121,7 +121,8 @@ void main() {
     expect(
       boss.realmTier,
       RealmTier.wuSheng,
-      reason: 'floor49 主 Boss 境界不应被护法结界/HP 校准连带偷改'
+      reason:
+          'floor49 主 Boss 境界不应被护法结界/HP 校准连带偷改'
           '(塔顶=wuSheng.dengFeng,1:1 锚死)',
     );
     expect(

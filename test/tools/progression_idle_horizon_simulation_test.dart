@@ -61,7 +61,8 @@ void main() {
     expect(
       _displayLevel(repo, ch),
       134,
-      reason: '对账 progression_release_budget_test Lv134 锚点'
+      reason:
+          '对账 progression_release_budget_test Lv134 锚点'
           '(批 A 塔扩 49 层,塔 EXP 总量 507→1440,2026-08-04 实测)',
     );
     final realm = repo.getRealm(ch.realmTier, ch.realmLayer);
@@ -225,7 +226,8 @@ void main() {
       avgDepth: 20,
       baseExpPerBattle: baseExp,
     );
-    final gap = 1585; // 锚点测已钉(2026-08-04 批 A 塔扩 49 层重校;顺带订正:旧值 3198 是 Ch20 遗留,Ch21 改 2668 时此处漏同步)
+    final gap =
+        1585; // 锚点测已钉(2026-08-04 批 A 塔扩 49 层重校;顺带订正:旧值 3198 是 Ch20 遗留,Ch21 改 2668 时此处漏同步)
     final s4Days = daysToTraverse(totalExp: gap, expPerHour: y.expPerHour);
     // 交叉对账：同口径 abs10→17 应 ≈ 18 天（expeditions.yaml 注释锚点）。
     final fullRangeDays = daysToTraverse(

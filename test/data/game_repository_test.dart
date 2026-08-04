@@ -306,7 +306,8 @@ void main() {
               expect(
                 repo.getSkill(skillId).tier,
                 lessThanOrEqualTo(scrollTierCap),
-                reason: '$label 不应掉落 tier ${scrollTierCap + 1}+ 秘籍 $inventoryItemDefId',
+                reason:
+                    '$label 不应掉落 tier ${scrollTierCap + 1}+ 秘籍 $inventoryItemDefId',
               );
             }
           }

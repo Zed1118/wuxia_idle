@@ -27,20 +27,17 @@ void main() {
     );
   });
 
-  test(
-    '塔层残页 skill_guan_shan_ba_ji → 爬塔·第11层(批 A 重排随 Boss 迁移)',
-    () {
-      final repo = GameRepository.instance;
-      expect(
-        fragmentSourceLabel(
-          'skill_guan_shan_ba_ji',
-          floors: repo.towerFloors,
-          stages: repo.stageDefs.values,
-        ),
-        UiStrings.cangjingFragmentSourceTower(11),
-      );
-    },
-  );
+  test('塔层残页 skill_guan_shan_ba_ji → 爬塔·第11层(批 A 重排随 Boss 迁移)', () {
+    final repo = GameRepository.instance;
+    expect(
+      fragmentSourceLabel(
+        'skill_guan_shan_ba_ji',
+        floors: repo.towerFloors,
+        stages: repo.stageDefs.values,
+      ),
+      UiStrings.cangjingFragmentSourceTower(11),
+    );
+  });
 
   test('塔层残页 skill_jin_gang_fu_mo → 爬塔·第14层(批 A 重排随 Boss 迁移)', () {
     final repo = GameRepository.instance;

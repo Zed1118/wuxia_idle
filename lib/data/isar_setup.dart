@@ -451,7 +451,14 @@ class IsarSetup {
       // bossKey 字面拼接同 towerBossKey 体例。旧体系不存在 groupIndex ∈ 新位
       // 集合的塔纪念(旧 Boss 层只有 5/10/15/20/25/30),故重映射无碰撞风险。
       if (_compareVersion(fromVersion, '0.38.0') < 0) {
-        const towerBossRelocation = {5: 4, 10: 7, 15: 11, 20: 14, 25: 32, 30: 49};
+        const towerBossRelocation = {
+          5: 4,
+          10: 7,
+          15: 11,
+          20: 14,
+          25: 32,
+          30: 49,
+        };
         final towerMemories = await isar.bossMemorys
             .filter()
             .bossKeyStartsWith('tower_floor_')
