@@ -28,27 +28,30 @@ void main() {
       );
     });
 
-    test('margin 语义：需 ≥ 推进后敌境界 - 1（sanLiu 敌 cycle2 → 推进 jueDing，需 ≥ yiLiu）', () {
-      // sanLiu(1) + 3 = jueDing(4)；margin 1 → 玩家须 ≥ yiLiu(3)。
-      expect(
-        CycleRealmGate.meetsRealmGate(
-          cycle: 2,
-          playerMaxTier: RealmTier.yiLiu,
-          baseEnemyMaxTier: RealmTier.sanLiu,
-          ra: ra,
-        ),
-        isTrue,
-      );
-      expect(
-        CycleRealmGate.meetsRealmGate(
-          cycle: 2,
-          playerMaxTier: RealmTier.erLiu,
-          baseEnemyMaxTier: RealmTier.sanLiu,
-          ra: ra,
-        ),
-        isFalse,
-      );
-    });
+    test(
+      'margin 语义：需 ≥ 推进后敌境界 - 1（sanLiu 敌 cycle2 → 推进 jueDing，需 ≥ yiLiu）',
+      () {
+        // sanLiu(1) + 3 = jueDing(4)；margin 1 → 玩家须 ≥ yiLiu(3)。
+        expect(
+          CycleRealmGate.meetsRealmGate(
+            cycle: 2,
+            playerMaxTier: RealmTier.yiLiu,
+            baseEnemyMaxTier: RealmTier.sanLiu,
+            ra: ra,
+          ),
+          isTrue,
+        );
+        expect(
+          CycleRealmGate.meetsRealmGate(
+            cycle: 2,
+            playerMaxTier: RealmTier.erLiu,
+            baseEnemyMaxTier: RealmTier.sanLiu,
+            ra: ra,
+          ),
+          isFalse,
+        );
+      },
+    );
 
     test('推进 clamp 武圣后再减 margin（sanLiu 敌 cycle3 名义 +6 越顶 → 按武圣算门槛）', () {
       // sanLiu(1) + 6 = 7 > wuSheng(6) → clamp 武圣；margin 1 → 须 ≥ zongShi(5)。

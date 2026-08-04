@@ -123,11 +123,8 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
     // ── 批 B 周目选择：深度里程碑折算「已通」∩ 配置 cap ∩ 境界门槛。
     // 境界口径 = 当前已选队伍最高（未选人时取可派遣候选最高，乐观展示）；
     // dispatch 侧按实际队伍硬校验兜底。
-    final ra = GameRepository
-        .instanceOrNull
-        ?.numbers
-        .cycleEvolution
-        .realmAdvance;
+    final ra =
+        GameRepository.instanceOrNull?.numbers.cycleEvolution.realmAdvance;
     final config = ref.watch(expeditionConfigProvider);
     final maxDepth = ref
         .watch(expeditionMaxDepthProvider)

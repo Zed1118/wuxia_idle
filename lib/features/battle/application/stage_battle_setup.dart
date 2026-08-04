@@ -476,10 +476,7 @@ class StageBattleSetup {
         ? RealmTier.wuSheng
         : RealmTier.values[advancedIndex];
 
-    final realm = GameRepository.instance.getRealm(
-      effTier,
-      enemy.realmLayer,
-    );
+    final realm = GameRepository.instance.getRealm(effTier, enemy.realmLayer);
     final redLineCap = numbers.combat.redLines.internalForceMax;
 
     // ── 周目缩放系数（cycle 1 = 1.0，零变化）─────────────────────────────

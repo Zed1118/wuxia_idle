@@ -65,14 +65,18 @@ void main() {
       for (var i = 0; i < adv.length; i++) {
         final baseTier = stage.enemyTeam[i].realmTier;
         final effTier = advanced(baseTier, ra.tiersFor(2));
-        expect(effTier.index - baseTier.index, ra.tiersFor(2),
-            reason: '轻功 01 敌为低段位，+3 不应撞 clamp');
+        expect(
+          effTier.index - baseTier.index,
+          ra.tiersFor(2),
+          reason: '轻功 01 敌为低段位，+3 不应撞 clamp',
+        );
         expect(adv[i].realmTier, effTier);
         // 内力派生自境界表：同层(layer)下高 tier 的 internal_force_max 更大。
         expect(adv[i].internalForce, greaterThan(plain[i].internalForce));
         // 防御率档随 tier 抬升（词条 yuti 两边同加，差值即境界档差）。
         final tierDelta =
-            RealmUtils.defenseRateOf(effTier) - RealmUtils.defenseRateOf(baseTier);
+            RealmUtils.defenseRateOf(effTier) -
+            RealmUtils.defenseRateOf(baseTier);
         expect(
           adv[i].defenseRate - plain[i].defenseRate,
           closeTo(tierDelta, 1e-9),
@@ -130,17 +134,21 @@ void main() {
     // 远征零装备掉落。周目推进只改 BattleCharacter.realmTier（战斗内），
     // 不入掉落路径 → 结构性满足「推进不得让掉落越出玩家可装备阶」。
     // 本测钉死该语义：若未来有人把推进后的敌境界接进掉落基准，此处红。
-    test('稀有彩头 baseTier 锚 stageDef.requiredRealm 静态值，不消费敌 BattleCharacter 境界', () {
-      final source = File(
-        'lib/features/battle/application/battle_resolution.dart',
-      ).readAsStringSync();
-      expect(
-        source,
-        contains('baseTier: equipmentTierForRealm(stageDef.requiredRealm)'),
-        reason: '彩头基准阶必须锚关卡静态 requiredRealm（§5.3），'
-            '不得改为战斗队列推进后的 realmTier',
-      );
-    });
+    test(
+      '稀有彩头 baseTier 锚 stageDef.requiredRealm 静态值，不消费敌 BattleCharacter 境界',
+      () {
+        final source = File(
+          'lib/features/battle/application/battle_resolution.dart',
+        ).readAsStringSync();
+        expect(
+          source,
+          contains('baseTier: equipmentTierForRealm(stageDef.requiredRealm)'),
+          reason:
+              '彩头基准阶必须锚关卡静态 requiredRealm（§5.3），'
+              '不得改为战斗队列推进后的 realmTier',
+        );
+      },
+    );
 
     test('轻功/群战关 requiredRealm 与 yaml 敌境界一致（推进前静态锚自洽）', () {
       for (final stageId in [
@@ -156,7 +164,8 @@ void main() {
         expect(
           stage.requiredRealm.index,
           lessThanOrEqualTo(maxEnemyTier),
-          reason: '$stageId requiredRealm 应 ≤ yaml 敌最高境界'
+          reason:
+              '$stageId requiredRealm 应 ≤ yaml 敌最高境界'
               '（掉落阶提前发放守卫，同塔 A4 口径）',
         );
       }

@@ -72,10 +72,7 @@ void main() {
     });
   }
 
-  Future<void> setCleared({
-    int cyclesMax = 0,
-    DateTime? firstClearedAt,
-  }) async {
+  Future<void> setCleared({int cyclesMax = 0, DateTime? firstClearedAt}) async {
     await IsarSetup.instance.writeTxn(() async {
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
       save.duanhunClearedCyclesMax = cyclesMax;

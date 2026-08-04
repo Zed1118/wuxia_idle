@@ -204,9 +204,7 @@ class GauntletService {
           ra: ra,
         );
         if (cycleIndex > unlocked) {
-          throw StateError(
-            '断魂庄入场：周目 $cycleIndex 未解锁（当前可挑战至 $unlocked）',
-          );
+          throw StateError('断魂庄入场：周目 $cycleIndex 未解锁（当前可挑战至 $unlocked）');
         }
       }
 

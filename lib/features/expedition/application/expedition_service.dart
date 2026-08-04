@@ -117,9 +117,7 @@ class ExpeditionService {
           ra: ra,
         );
         if (cycleIndex > unlocked) {
-          throw StateError(
-            '远征派遣：周目 $cycleIndex 未解锁（当前可挑战至 $unlocked）',
-          );
+          throw StateError('远征派遣：周目 $cycleIndex 未解锁（当前可挑战至 $unlocked）');
         }
       }
 
@@ -155,11 +153,7 @@ class ExpeditionService {
     int cycleIndex,
   ) {
     if (cycleIndex <= 1) return rewards;
-    final mult = GameRepository
-        .instance
-        .numbers
-        .cycleEvolution
-        .realmAdvance
+    final mult = GameRepository.instance.numbers.cycleEvolution.realmAdvance
         .rewardMultFor(cycleIndex);
     if (mult == 1.0) return rewards;
     return [

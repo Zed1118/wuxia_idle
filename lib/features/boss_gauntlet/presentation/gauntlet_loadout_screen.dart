@@ -210,11 +210,8 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
     // ── 批 B 周目选择：可挑战上限 = 顺序解锁 ∩ 配置 cap ∩ 境界门槛。
     // 境界口径 = 当前已选队伍最高（未选人时取可入场候选最高，乐观展示）；
     // enter 侧按实际队伍硬校验兜底。
-    final ra = GameRepository
-        .instanceOrNull
-        ?.numbers
-        .cycleEvolution
-        .realmAdvance;
+    final ra =
+        GameRepository.instanceOrNull?.numbers.cycleEvolution.realmAdvance;
     final cleared = info.clearedCyclesMax;
     var unlockedCap = 1;
     if (ra != null && config != null) {
@@ -232,7 +229,8 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
         clearedCyclesMax: cleared,
         playerMaxTier: playerMaxTier,
         baseEnemyMaxTier: CycleRealmGate.maxEnemyTierOf([
-          for (final s in config.stages) ...config.enemiesForTeam(s.enemyTeamId),
+          for (final s in config.stages)
+            ...config.enemiesForTeam(s.enemyTeamId),
         ]),
         ra: ra,
       );

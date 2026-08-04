@@ -45,7 +45,12 @@ void main() {
 
   /// 敌 → 玩家 / 玩家 → 敌 的单发期望伤害（无闪避无暴击）。
   ({int enemyHitsPlayer, int playerHitsEnemy}) exchange(int cycleIndex) {
-    final player = _buildPlayer(repo, RealmTier.wuSheng, slot: 0, isFounder: true);
+    final player = _buildPlayer(
+      repo,
+      RealmTier.wuSheng,
+      slot: 0,
+      isFounder: true,
+    );
     final enemy = StageBattleSetup.buildEnemyTeam(
       stage.enemyTeam,
       cycleIndex: cycleIndex,
@@ -128,21 +133,25 @@ void main() {
     );
   });
 
-  test('战斗层真负载：cycle3（clamp 武圣 diff0）整场承伤 >0 且满配必胜', () {
-    var dmgTaken = 0;
-    var wins = 0;
-    const seeds = 20;
-    for (var seed = 0; seed < seeds; seed++) {
-      final r = _sim(repo, stage, cycleIndex: 3, seed: seed);
-      dmgTaken += r.playerDamageTaken;
-      if (r.result == 'leftWin') wins++;
-    }
-    print('[net-threat] battle c3 dmgTaken=$dmgTaken wins=$wins/$seeds');
-    // 真负载自证：diff0 下敌能在整场自动战斗里造成非零伤害。
-    expect(dmgTaken, greaterThan(0), reason: 'cycle3 敌应能真实造成承伤（机制咬合）');
-    // 推进是威胁恢复非硬墙：武圣满配打 sanLiu 段支线 cycle3 仍必胜。
-    expect(wins, equals(seeds), reason: '武圣满配打推进后的轻功 05 应必胜');
-  }, timeout: const Timeout(Duration(minutes: 5)));
+  test(
+    '战斗层真负载：cycle3（clamp 武圣 diff0）整场承伤 >0 且满配必胜',
+    () {
+      var dmgTaken = 0;
+      var wins = 0;
+      const seeds = 20;
+      for (var seed = 0; seed < seeds; seed++) {
+        final r = _sim(repo, stage, cycleIndex: 3, seed: seed);
+        dmgTaken += r.playerDamageTaken;
+        if (r.result == 'leftWin') wins++;
+      }
+      print('[net-threat] battle c3 dmgTaken=$dmgTaken wins=$wins/$seeds');
+      // 真负载自证：diff0 下敌能在整场自动战斗里造成非零伤害。
+      expect(dmgTaken, greaterThan(0), reason: 'cycle3 敌应能真实造成承伤（机制咬合）');
+      // 推进是威胁恢复非硬墙：武圣满配打 sanLiu 段支线 cycle3 仍必胜。
+      expect(wins, equals(seeds), reason: '武圣满配打推进后的轻功 05 应必胜');
+    },
+    timeout: const Timeout(Duration(minutes: 5)),
+  );
 }
 
 ({String result, int playerDamageTaken}) _sim(
@@ -171,10 +180,7 @@ void main() {
   for (final p in terminal.leftTeam) {
     taken += p.maxHp - p.currentHp;
   }
-  return (
-    result: terminal.result?.name ?? 'timeout',
-    playerDamageTaken: taken,
-  );
+  return (result: terminal.result?.name ?? 'timeout', playerDamageTaken: taken);
 }
 
 /// 满配武圣（同 vulnerability_window_diagnostic._buildPlayer geared 档：
