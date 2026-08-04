@@ -860,7 +860,8 @@ floors:
         realmLayer: dengFeng
         school: gangMeng
         baseHp: 30000
-        baseAttack: 1050
+        # 1050→1100:守 feel 诊断 no-regress(Boss 层总 atk 1900 > 前驱 20 层 1860)。
+        baseAttack: 1100
         baseSpeed: 288
         skillIds:
           - skill_gangmeng_mingjia_basic

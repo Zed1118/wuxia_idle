@@ -72,6 +72,7 @@ void main() {
       [13, 14],
       [20, 21],
       [27, 28],
+      [31, 32], // 机制 Boss(剑魔·vuln)对——相位触发断言需要其模拟数据
       [34, 35],
       [41, 42],
       [48, 49],
@@ -132,15 +133,11 @@ void main() {
     // 噪声易漂的瞬时值,守 memory red_line_test_semantics)。
     //
     // 为何豁免 floor profile(实测差异):
-    //   - **floor25(首相位阈值 0.70 深)**:窗口外承伤 ×0.10 让零投入队 DPS 啃不到
-    //     -30% 的首阈值 → 触发不了相位(bootstrapping:要开窗须先跌破阈值,而跌破所
-    //     需伤害又被窗口外 0.10 折扣压住)。因此 floor profile 不承担相位可见性的
-    //     硬门槛；这是有意软门槛(用户 2026-07-03 拍板「接受为软门槛」)。
-    //   - **floor30(首相位阈值 0.90 浅)**:只需啃到 -10% 即开窗,零投入队也啃得到,
-    //     **本不受 vuln bootstrapping 困**；豁免对 floor30 无实际影响,只是统一
-    //     ceiling-only 断言口径。
-    // 非 vuln Boss 不适用本豁免。
-    for (final floorIndex in [25, 30]) {
+    //   - **floor32(批 A 后剑魔位,首相位 0.92 浅开窗)**:批 A 校准后零投入队理论
+    //     可开窗,但保持 ceiling-only 口径不变(floor profile 仍只观测不断言)。
+    //   - **floor49(魔尊位,首相位 0.90 浅)**:同上。
+    // 非 vuln Boss 不适用本豁免。旧 [25,30] 是重排前的机制 Boss 位(2026-08-04 迁)。
+    for (final floorIndex in [32, 49]) {
       final triggered = results
           .where(
             (r) =>
@@ -159,29 +156,33 @@ void main() {
 }
 
 void _expectBossDoesNotRegress(TowerFloorDef previous, TowerFloorDef boss) {
-  final previousHp = previous.enemyTeam.fold<int>(
-    0,
-    (sum, e) => sum + e.baseHp,
-  );
-  final bossHp = boss.enemyTeam.fold<int>(0, (sum, e) => sum + e.baseHp);
-  final previousAttack = previous.enemyTeam.fold<int>(
-    0,
-    (sum, e) => sum + e.baseAttack,
-  );
-  final bossAttack = boss.enemyTeam.fold<int>(
-    0,
-    (sum, e) => sum + e.baseAttack,
-  );
+  // 2026-08-04 批 A 塔 49 层后语义修正:比较口径从「队伍总量」改「单体最强」。
+  // 高段普通层是 3 人贴 60000 红线的队(总血 15 万+),单体 Boss 被同一红线钉死,
+  // 「Boss 总量 > 普通层总量」在红线段结构上不可满足;体感上「守关人比路人强」
+  // 本就是单体对单体的比较。顶格段(48/49 均 59500/2000)用 >=(贴线相等=不倒退)。
+  // vuln 机制 Boss 的名义血刻意低于曲线(§5.4 机制型=减伤方向不膨胀数字,
+  // 血量与乘子联动校准),体感血量 = baseHp / outOfWindowDamageMult(窗口外
+  // 有效血),用它参与不倒退比较(剑魔 40000/0.35≈11.4 万 >> 前驱 47000)。
+  int effectiveHp(dynamic e) {
+    final mult = e.vulnerability?.outOfWindowDamageMult;
+    if (mult == null || mult <= 0) return e.baseHp as int;
+    return (e.baseHp / mult).round();
+  }
+
+  int maxHp(TowerFloorDef f) =>
+      f.enemyTeam.map(effectiveHp).reduce((a, b) => a > b ? a : b);
+  int maxAtk(TowerFloorDef f) =>
+      f.enemyTeam.map((e) => e.baseAttack).reduce((a, b) => a > b ? a : b);
 
   expect(
-    bossHp,
-    greaterThan(previousHp),
-    reason: 'floor ${boss.floorIndex} Boss 总 baseHp 不应低于前一普通层',
+    maxHp(boss),
+    greaterThanOrEqualTo(maxHp(previous)),
+    reason: 'floor ${boss.floorIndex} Boss 单体体感血量(vuln 折算)不应低于前一普通层单体',
   );
   expect(
-    bossAttack,
-    greaterThan(previousAttack),
-    reason: 'floor ${boss.floorIndex} Boss 总 baseAttack 不应低于前一普通层',
+    maxAtk(boss),
+    greaterThanOrEqualTo(maxAtk(previous)),
+    reason: 'floor ${boss.floorIndex} Boss 单体 baseAttack 不应低于前一普通层单体',
   );
 }
 
