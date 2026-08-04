@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import "../../support/isar_test_support.dart";
 
 /// P1 周目进化 Task A2：TowerProgress 周目字段 + advanceCycle 方法。
@@ -41,6 +42,57 @@ void main() {
     if (await tempDir.exists()) {
       await tempDir.delete(recursive: true);
     }
+  });
+
+  // 纯静态函数，不碰 Isar：专钉 availableFloor / canChallenge 的上界确实
+  // 来自 maxFloor 入参。`tower_progress_service_test` 那边跑在真 towers.yaml
+  // （当前 30 层）上，实现若写死 30 与派生值恰好相等、抓不到回退；本组用
+  // 非 30 的 [_towerMax] 才能证伪。
+  group('availableFloor / canChallenge 上界跟随 maxFloor 入参', () {
+    test('顶层已通 → availableFloor 封顶在 maxFloor', () {
+      final p = TowerProgress()
+        ..saveDataId = 1
+        ..highestClearedFloor = _towerMax;
+      expect(
+        TowerProgressService.availableFloor(p, maxFloor: _towerMax),
+        _towerMax,
+        reason: '封顶值须是入参 maxFloor，写死 30 时会返回 ${_towerMax + 1}',
+      );
+    });
+
+    test('未到顶层 → availableFloor = highest + 1', () {
+      final p = TowerProgress()
+        ..saveDataId = 1
+        ..highestClearedFloor = _towerMax - 2;
+      expect(
+        TowerProgressService.availableFloor(p, maxFloor: _towerMax),
+        _towerMax - 1,
+      );
+    });
+
+    test('超出 maxFloor 的层号不可挑战', () {
+      final p = TowerProgress()
+        ..saveDataId = 1
+        ..highestClearedFloor = _towerMax;
+      expect(
+        TowerProgressService.canChallenge(
+          progress: p,
+          floorIndex: _towerMax + 1,
+          maxFloor: _towerMax,
+        ),
+        isFalse,
+        reason: '上界须是入参 maxFloor，写死 30 时第 ${_towerMax + 1} 层会被放行',
+      );
+      expect(
+        TowerProgressService.canChallenge(
+          progress: p,
+          floorIndex: _towerMax,
+          maxFloor: _towerMax,
+        ),
+        isTrue,
+        reason: '顶层本身可重打',
+      );
+    });
   });
 
   group('TowerProgress 周目字段默认值', () {
