@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -117,6 +119,46 @@ void main() {
       );
       for (var i = 0; i < plain.length; i++) {
         expect(plain[i].realmTier, floor.enemyTeam[i].realmTier);
+      }
+    });
+  });
+
+  group('批 B 三系锁死守卫（B3 · §5.3）：掉落基准阶不吃境界推进', () {
+    // 摸底实证（2026-08-04）：4 入口掉落基准阶全部锚定静态配置——
+    // 稀有彩头 baseTier = equipmentTierForRealm(stageDef.requiredRealm)
+    // （battle_resolution.dart，关卡静态字段）；断魂庄奖励 = 3 件固定 defId；
+    // 远征零装备掉落。周目推进只改 BattleCharacter.realmTier（战斗内），
+    // 不入掉落路径 → 结构性满足「推进不得让掉落越出玩家可装备阶」。
+    // 本测钉死该语义：若未来有人把推进后的敌境界接进掉落基准，此处红。
+    test('稀有彩头 baseTier 锚 stageDef.requiredRealm 静态值，不消费敌 BattleCharacter 境界', () {
+      final source = File(
+        'lib/features/battle/application/battle_resolution.dart',
+      ).readAsStringSync();
+      expect(
+        source,
+        contains('baseTier: equipmentTierForRealm(stageDef.requiredRealm)'),
+        reason: '彩头基准阶必须锚关卡静态 requiredRealm（§5.3），'
+            '不得改为战斗队列推进后的 realmTier',
+      );
+    });
+
+    test('轻功/群战关 requiredRealm 与 yaml 敌境界一致（推进前静态锚自洽）', () {
+      for (final stageId in [
+        'stage_light_foot_01',
+        'stage_light_foot_05',
+        'stage_mass_battle_01',
+        'stage_mass_battle_05',
+      ]) {
+        final stage = GameRepository.instance.getStage(stageId);
+        final maxEnemyTier = stage.enemyTeam
+            .map((e) => e.realmTier.index)
+            .reduce((a, b) => a >= b ? a : b);
+        expect(
+          stage.requiredRealm.index,
+          lessThanOrEqualTo(maxEnemyTier),
+          reason: '$stageId requiredRealm 应 ≤ yaml 敌最高境界'
+              '（掉落阶提前发放守卫，同塔 A4 口径）',
+        );
       }
     });
   });

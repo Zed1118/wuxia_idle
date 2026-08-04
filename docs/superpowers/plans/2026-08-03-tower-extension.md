@@ -100,19 +100,21 @@ codex image_gen 自主批(配方见 memory `reference_codex_image_gen_art_pipeli
 
 ## 当前恢复点
 
-- **状态**:**批 A 主体完成**(A0-A4 + 断魂帖 16/33/49 + 机制校准)。A0 已合 main
-  (PR #114 merge `e36884f9`);A1+A2+A3+断魂帖在分支 `worktree-tower-batch-a`
-  (commit `f5b71742`/`9a128e18`/`65db9bad`/`879dc456` + GDD 收尾)
-- **最后完成**:towers.yaml 全重写 49 层(2438 行·116 敌条目·曲线对齐主线锚点);
-  Boss 位 14 个(6 迁移+8 新);28 篇叙事(12 迁移+16 新写);saveVersion 0.38.0
-  (bossKey 重映射);断魂帖 16/33/49;塔势总览定位滚动;23 个测试文件 reconcile;
-  **机制型 Boss 血量-乘子联动校准**(floor32 55000×0.12 全败→40000×0.35 定稿 /
-  floor49 0.20 速通失效→0.10;vulnerability_window+cycle2+feel 三诊断全绿)
-- **A4**:requiredRealm ≤ 敌境界已做成**加载期校验**(progression validator,
-  比守卫测更硬);A5 塔曲线部分由 feel/soft_gate/vulnerability_window 诊断覆盖,
-  §1.3「净威胁 ~2.4×」推算属批 B 周目实测项
-- **下一步**:批 B 周目语义修正(B1-B5,与批 A 文件不重叠);批 C 8 张 Boss 立绘
-  (18/21/25/28/35/39/42/46 现为主线敌池占位)
-- **已跑验证**:全量 `flutter test --no-pub` **4813 pass / 0 fail**;analyze 0;
-  truth_source_guard 9 pass(GDD 状态块含新爬塔行)
-- **阻塞项**:无(断魂帖已拍板 a 并实装)
+- **状态**:**批 A 已合 main(PR #114/#115)+ 批 B 主体完成**(B1-B5 + 净威胁实测),
+  分支 `worktree-tower-batch-b`(commit `075b5346` B1+B2 / `ae0dbe52` B4+B5 +
+  B3/B6/账本收尾待 commit)
+- **最后完成(批 B · 2026-08-04)**:B1 `realm_advance` 配置+解析(tiers 3/cap 3/
+  margin 1/奖励 0.25,远征深度里程碑 [20,40]);B2 `_enemyToBattle` 三轴消费
+  (effTier→内力派生/防御率档/差距修正,白名单 lightFoot+massBattle,断魂庄/远征
+  runner 显式开);B3 摸底证实掉落基准阶全锚静态配置,结构性满足 §5.3,守卫测钉死;
+  B4 断魂庄/远征从零建周目(run.cycleIndex+duanhunClearedCyclesMax,零迁移)+
+  奖励乘数接线;B5 `CycleRealmGate` 三重门槛(顺序∩cap∩境界)+enter/dispatch
+  硬守卫+两屏 `CycleSelectLayout` 复用;**净威胁实测 ×5.11**(spec §1.3 挂账销账,
+  calculator 单发交换比口径,第一版整场承伤被自证零负载否决)
+- **批 B 拍板(2026-08-04)**:周目体例=主线式自由回选;高周目奖励本批一并做;
+  cap 3/margin 1 按推荐;远征(无终点无通关)解锁=深度里程碑
+- **塔 cycle2 重校结论**:诊断 3/3 绿(参数本批零改动),≥80% 语义维持,无需调参
+- **下一步**:批 C 8 张 Boss 立绘(18/21/25/28/35/39/42/46 现为主线敌池占位,
+  codex image_gen)+ 塔 49 层 1280×720 视觉 smoke
+- **已跑验证**:见 PROGRESS 顶段批 B 条目(全量数字以其为准)
+- **阻塞项**:无
