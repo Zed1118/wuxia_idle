@@ -1306,6 +1306,46 @@ Future<Widget> buildVisualTarget(
       // (帖库存/三关 Boss/推荐境界/择人/补给装载/入庄)。
       await Phase2SeedService(isar: isar).seedGauntletLoadout();
       return const GauntletLoadoutScreen();
+    case VisualRoute.gauntletLoadoutCycle:
+      // 批 C 周目选择区目检:装载态种子 + 种断魂庄已通 cycle1(批 B §B5「已通 cycle1
+      // 起显」)+ 抬一名可入场弟子到绝顶过 cycle2 境界门槛(推进后敌 zongShi − margin 1
+      // = jueDing)→ 同屏拍到「cycle1 已通✓ + cycle2 可选」完整选择态(主线式自由回选)。
+      await Phase2SeedService(isar: isar).seedGauntletLoadout();
+      await isar.writeTxn(() async {
+        final save = await isar.saveDatas.get(0) ?? (SaveData()..id = 0);
+        save.duanhunClearedCyclesMax = 1;
+        await isar.saveDatas.put(save);
+        final chars = await isar.characters
+            .filter()
+            .isFounderEqualTo(false)
+            .findAll();
+        final lead = chars.firstWhere(
+          (c) => c.mainTechniqueId != null && c.currentRetreatSessionId == null,
+        );
+        lead.realmTier = RealmTier.jueDing;
+        await isar.characters.put(lead);
+      });
+      return const GauntletLoadoutScreen();
+    case VisualRoute.expeditionOverviewCycle:
+      // 批 C 周目选择区目检:派遣态种子 + 种 baicaoMaxDepth=25(≥首里程碑 20 折算
+      // 已通 cycle1,批 B §B5 远征无终点绑深度;25 兼验「已达 20 未达 40」中间态)
+      // + 抬一名可派遣弟子到绝顶过境界门槛 → 拍「cycle1✓ + cycle2 可选」完整态。
+      await Phase2SeedService(isar: isar).seedTeamLineup();
+      await isar.writeTxn(() async {
+        final save = await isar.saveDatas.get(0) ?? (SaveData()..id = 0);
+        save.baicaoMaxDepth = 25;
+        await isar.saveDatas.put(save);
+        final chars = await isar.characters
+            .filter()
+            .isFounderEqualTo(false)
+            .findAll();
+        final lead = chars.firstWhere(
+          (c) => c.mainTechniqueId != null && c.currentRetreatSessionId == null,
+        );
+        lead.realmTier = RealmTier.jueDing;
+        await isar.characters.put(lead);
+      });
+      return const ExpeditionOverviewScreen();
     case VisualRoute.gauntletInterlude:
       // 断魂庄庄内整备(§7.2):造 active 会话推进到 interlude(第 2 关·一存活带冷却/
       // 一倒下 + 托管补给余量),显成员状态 + 补给 + 使用/继续/认输。
