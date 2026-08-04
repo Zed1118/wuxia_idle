@@ -21,9 +21,10 @@
 
 ## 【环境快照】
 
-- main=`0bb16d37` 与 origin 同步;夜班分支基线即此,**零 lib/ 生产代码改动**(N1 全在 tools/),基线 analyze/test 绿沿用
-- 夜班分支:`night/20260805-capture-window-pid`(N1 代码 1 commit + docs 1 commit,本地未 push)
-- N1 验证证据:`build/visual_acceptance/night_n1_verify/`(night-shift worktree 下,gitignored)
+- main=`0bb16d37` 与 origin 同步;夜班两分支基线即此,**零 lib/ 生产代码改动**(N1 全在 tools/),基线 analyze/test 绿沿用
+- 夜班分支一:`night/20260805-capture-window-pid`(N1 修复 + N2-N5 报告/handoff,可评审合并)
+- 夜班分支二:`night/20260805-songguan-baibu` tip `2c5278f1` **[BLOCKED]**(二#8 派单已备,卡 Codex 出图+用户终拍,§8.3 勿合;派单 `docs/superpowers/plans/2026-08-05-songguan-baibu-imagegen-dispatch.md`)
+- N1 验证证据:`build/visual_acceptance/night_n1_verify/`;二#7 量测证据:`build/visual_acceptance/night_n5_cliff/`(均 gitignored)
 - 错拍取证唯一留存:job tmp `batch_c_smoke_review/`(18 张当晚 smoke 平铺副本),N1 合并前勿删
 
 ## 【下波候选】
@@ -33,6 +34,7 @@
 | 1 | 评审合并夜班 N1 分支 + BACKLOG 批改(推荐) | opus high | 30min | Gate 复核 tools/ 两文件 diff+验证证据 → 合 main;随批 BACKLOG:二#9 销(N4)/二#10 销改「错拍已修」(N1)/一#14 注记 N3 报告 |
 | 2 | 色调方案拍板 → 若拍 a 开工重出 3 张 | opus high | 1 批 | N3 报告数据+出图规范已备(`player_standee_tone_audit_2026-08-05.md`) |
 | 3 | 远征周目调参拍板 | opus high | 15min | N2 报告候选 a-d(`expedition_cycle_numbers_probe_2026-08-05.md`),核心=整数件奖励 round 吞没 |
+| 4 | 二#8 白布返修:发 Codex 派单 → 复测接线 → 终拍 | opus high | 1 派单往返 | 派单已自包含备好([BLOCKED] 分支);BACKLOG 批改随 #1 一并:二#7 附带销/二#9 销/二#10 销/四·塔条目更新 |
 
 ## 【硬约束沿用】
 
