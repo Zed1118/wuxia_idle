@@ -1568,6 +1568,8 @@ double battleStandeeFootFraction(String? path) => switch (path) {
   // Ch20「东入阳关」(2026-07-29 美术批):alpha 包围盒实测登记(PIL 逐图现测,非采信出图端自报)。
   // 送关旧部 0.9277 明显低于同批其余四张(0.9486-0.9635),是其 alpha 包围盒底沿实测值
   // (bbox=(40,86,1003,1425) / 1536)——本表存在的意义就是吸收这种逐图差异,勿手改成「看着齐」。
+  // 2026-08-05 白布动势返修换图后 PIL 复测:bbox=(43,91,1001,1423)、fraction 0.926432,
+  // 与表值偏差 0.0013 ≤ 返修派单 0.002 阈值,表值维持 0.9277 不动。
   'assets/enemies/ruguan_huan_ma_ren.png' => 0.9486,
   'assets/enemies/ruguan_shou_feng_ren.png' => 0.9635,
   'assets/enemies/ruguan_bu_qiang_jiang.png' => 0.9622,
