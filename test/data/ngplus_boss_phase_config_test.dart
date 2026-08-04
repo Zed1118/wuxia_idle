@@ -81,7 +81,8 @@ void main() {
         .singleWhere((e) => e.id == 'enemy_tower_boss_49');
 
     expect(floor14.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.65, 0.35]);
-    expect(floor32.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.80, 0.5]);
+    // floor32 首相位 0.92 = 批 A 校准的浅开窗(vuln bootstrapping 解,见 towers.yaml)。
+    expect(floor32.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.92, 0.5]);
     expect(floor49.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.90, 0.50]);
 
     expect(floor14.bossPhasesForCycle(2)!.map((p) => p.hpThresholdPct), [
@@ -91,7 +92,7 @@ void main() {
     ]);
     expect(floor32.bossPhasesForCycle(2)!.map((p) => p.hpThresholdPct), [
       1.0,
-      0.82,
+      0.93,
       0.42,
     ]);
     expect(floor49.bossPhasesForCycle(2)!.map((p) => p.hpThresholdPct), [

@@ -1443,8 +1443,12 @@ floors:
         realmTier: jueDing
         realmLayer: jingTong
         school: lingQiao
-        baseHp: 55000
-        baseAttack: 1800
+        # 血量与 vuln 乘子联动校准(2026-08-04 vulnerability_window 诊断迭代):
+        # 55000×0.12 时 on-level 0/20 全败 → 45000×0.30+浅开窗 18/20 →
+        # 40000+atk 1500 定稿(2026-08-04 诊断迭代):满配 20/20 必胜,
+        # 同阶 0 强化偶胜(软门槛非绝杀),跨阶全败(门槛真咬合)。
+        baseHp: 40000
+        baseAttack: 1500
         baseSpeed: 330
         skillIds:
           - skill_lingqiao_jianghu_basic
@@ -1456,15 +1460,25 @@ floors:
           yinRou: 1.25
           gangMeng: 0.75
         vulnerability:
-          outOfWindowDamageMult: 0.12   # 机制教学 soft gate（原 floor25 参数原样迁移）:
-                                        # 窗口外(未蓄招/未踉跄)受 12% 伤;窗口靠 bossPhases
-                                        # chargeCounter 相位(0.80/0.50)开。A5 balance 复校。
+          outOfWindowDamageMult: 0.35   # 机制教学 soft gate:窗口外(未蓄招/未踉跄)受 35% 伤;
+                                        # 窗口靠 bossPhases chargeCounter 相位(0.80/0.50)开。
+                                        # 原 floor25 的 0.12 是 sanLiu 数值(6000 血)下校准的,
+                                        # 迁 jueDing 段后 vuln 型 Boss 的血量与乘子必须联动。
+                                        # 2026-08-04 vulnerability_window 诊断迭代:55000×0.12
+                                        # on-level 0/20 全败 → 40000×0.35+浅开窗 0.92+影侍减压
+                                        # 后「满配 20/20 必胜·同阶 0 强化偶胜·跨阶全败」
+                                        # 软门槛梯度成立。
         cycleVulnerability:
           2:
-            outOfWindowDamageMult: 0.07   # 二周目收窄窗口加压（原 floor25 参数）
+            outOfWindowDamageMult: 0.30   # 二周目收窄窗口加压(0.35→0.30;0.21 半数败/
+                                          # 0.28 仍 17/20,cycle2 诊断校准回全胜线)
         bossPhases:
           - hpThresholdPct: 1.0
-          - hpThresholdPct: 0.80
+          - hpThresholdPct: 0.92
+            # 首相位阈值 0.80→0.92(批 A 校准):血量从 sanLiu 6000 抬到 jueDing
+            # 55000 后,「跌破 0.80 才首开窗」的前置伤害门槛同比 ×9,窗口外 ×0.20
+            # 下 on-level 队开窗前先被打死(vulnerability_window 诊断 0/20 全败)。
+            # 浅开窗(-8%)同塔顶 0.90 体例,恢复「满配必胜·欠配可败」软门槛语义。
             unlockSkillIds:
               - skill_lingqiao_jianghu_fang_skill
             aiMode: focus
@@ -1479,7 +1493,7 @@ floors:
         cycleBossPhases:
           2:
             - hpThresholdPct: 1.0
-            - hpThresholdPct: 0.82
+            - hpThresholdPct: 0.93
               unlockSkillIds:
                 - skill_lingqiao_jianghu_fang_skill
               aiMode: focus
@@ -1496,8 +1510,12 @@ floors:
         realmTier: jueDing
         realmLayer: jingTong
         school: yinRou
-        baseHp: 26000
-        baseAttack: 800
+        # 影侍血从 26000 降 16000:原随普通层曲线配置成「半个 Boss 的墙」,
+        # 打墙时长挤掉脆弱窗输出时间(诊断 A 臂 ratio 0.97→无机制差异);
+        # 降到 Boss 血 ~30% 恢复「影侍是节奏点不是血墙」的原 floor25 角色。
+        # atk 800→650:压敌方合计输出,清墙期玩家血线不被击穿(诊断迭代)。
+        baseHp: 13000
+        baseAttack: 550
         baseSpeed: 320
         skillIds: [skill_yinrou_jianghu_basic, skill_yinrou_jianghu_skill]
         iconPath: assets/enemies/anye.png
@@ -1506,8 +1524,8 @@ floors:
         realmTier: jueDing
         realmLayer: jingTong
         school: gangMeng
-        baseHp: 27000
-        baseAttack: 820
+        baseHp: 14000
+        baseAttack: 570
         baseSpeed: 325
         skillIds: [skill_gangmeng_jianghu_basic, skill_gangmeng_jianghu_skill]
         iconPath: assets/enemies/jianghu_qianbei.png
@@ -2368,11 +2386,15 @@ floors:
             - enemy_tower_49_cultist_a
             - enemy_tower_49_cultist_b
         vulnerability:
-          outOfWindowDamageMult: 0.20   # 机制型:护法墙(taunt)破后靠脆弱窗口打残局。
+          outOfWindowDamageMult: 0.10   # 机制型:护法墙(taunt)破后靠脆弱窗口打残局。
                                         # 窗口靠 bossPhases chargeCounter 相位(0.90/0.50)。
+                                        # 原 floor30 的 0.20 迁到 wuSheng 数值段后被满配
+                                        # 6 tick 速通(vuln 差异无感=机制门槛失效),收窄到
+                                        # 0.10 恢复「抓窗口输出」体感(2026-08-04 诊断校准;
+                                        # on-level 必胜由 floor49_soft_gate 测守)。
         cycleVulnerability:
           2:
-            outOfWindowDamageMult: 0.12   # 二周目收窄窗口加压（原 floor30 参数）
+            outOfWindowDamageMult: 0.06   # 二周目收窄窗口加压(随 base 0.10 同比重校)
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.90
