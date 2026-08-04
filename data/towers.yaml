@@ -733,7 +733,7 @@ floors:
           - skill_yinrou_mingjia_basic
           - skill_yinrou_mingjia_skill
           - skill_yinrou_mingjia_ult
-        iconPath: assets/enemies/hanhai_shadao.png
+        iconPath: assets/enemies/tower_boss_dushou_yaocha.png
         isBoss: true
     dropTable:
       - equipmentDefId: weapon_haojiahuo_qing_feng_jian
@@ -867,7 +867,7 @@ floors:
           - skill_gangmeng_mingjia_basic
           - skill_gangmeng_mingjia_skill
           - skill_gangmeng_mingjia_ult
-        iconPath: assets/enemies/beipai_zongjiang.png
+        iconPath: assets/enemies/tower_boss_tieta_jingang.png
         isBoss: true
         schoolDamageTakenMult:
           lingQiao: 1.25
@@ -1095,7 +1095,7 @@ floors:
           - skill_lingqiao_menpai_basic
           - skill_lingqiao_menpai_skill
           - skill_lingqiao_menpai_ult
-        iconPath: assets/enemies/zhongzhou_hetao_jianke.png
+        iconPath: assets/enemies/tower_boss_zhuifeng_jianyin.png
         isBoss: true
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
@@ -1222,7 +1222,7 @@ floors:
           - skill_yinrou_menpai_basic
           - skill_yinrou_menpai_skill
           - skill_yinrou_menpai_ult
-        iconPath: assets/enemies/zhongzhou_huangcun_wuming.png
+        iconPath: assets/enemies/tower_boss_youming_panguan.png
         isBoss: true
         schoolDamageTakenMult:
           gangMeng: 1.25
@@ -1658,7 +1658,7 @@ floors:
           - skill_gangmeng_jianghu_basic
           - skill_gangmeng_jianghu_skill
           - skill_gangmeng_jianghu_ult
-        iconPath: assets/enemies/xiliang_mazhan_zongshi.png
+        iconPath: assets/enemies/tower_boss_duanyue_badao.png
         isBoss: true
         schoolDamageTakenMult:
           lingQiao: 1.25
@@ -1869,7 +1869,7 @@ floors:
           - skill_yinrou_shichuan_basic
           - skill_yinrou_shichuan_skill
           - skill_yinrou_shichuan_ult
-        iconPath: assets/enemies/shahai_shoucheng_laozu.png
+        iconPath: assets/enemies/tower_boss_wuxiang_shenni.png
         isBoss: true
     dropTable:
       - equipmentDefId: weapon_baowu_xuan_tian_fu
@@ -2002,7 +2002,7 @@ floors:
           - skill_gangmeng_shichuan_basic
           - skill_gangmeng_shichuan_skill
           - skill_gangmeng_shichuan_ult
-        iconPath: assets/enemies/yangguan_chengxia_houke.png
+        iconPath: assets/enemies/tower_boss_suixing_quansheng.png
         isBoss: true
         schoolDamageTakenMult:
           lingQiao: 1.25
@@ -2236,7 +2236,7 @@ floors:
           - skill_lingqiao_chuanshuo_basic
           - skill_lingqiao_chuanshuo_skill
           - skill_lingqiao_chuanshuo_ult
-        iconPath: assets/enemies/jueding_lunjian_houren.png
+        iconPath: assets/enemies/tower_boss_jiuxiao_jianshi.png
         isBoss: true
     dropTable:
       - equipmentDefId: weapon_shenwu_po_jun_dao

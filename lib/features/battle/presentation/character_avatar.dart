@@ -1378,6 +1378,25 @@ const _battleStandeeOverrides = <String, String>{
       WuxiaUi.battleBaicaoRidgeNeedlerStandee,
   'assets/enemies/enemy_baicao_ridge_runner.png':
       WuxiaUi.battleBaicaoRidgeRunnerStandee,
+  // 塔 49 层批 C 8 新 Boss 立绘(2026-08-04·codex image_gen·透明全身图):
+  // 18 毒手药叉 / 21 铁塔金刚 / 25 追风剑隐 / 28 幽冥判官 / 35 断岳霸刀 /
+  // 39 无相神尼 / 42 碎星拳圣 / 46 九霄剑侍,替换批 A 主线敌池占位。
+  'assets/enemies/tower_boss_dushou_yaocha.png':
+      'assets/enemies/tower_boss_dushou_yaocha.png',
+  'assets/enemies/tower_boss_tieta_jingang.png':
+      'assets/enemies/tower_boss_tieta_jingang.png',
+  'assets/enemies/tower_boss_zhuifeng_jianyin.png':
+      'assets/enemies/tower_boss_zhuifeng_jianyin.png',
+  'assets/enemies/tower_boss_youming_panguan.png':
+      'assets/enemies/tower_boss_youming_panguan.png',
+  'assets/enemies/tower_boss_duanyue_badao.png':
+      'assets/enemies/tower_boss_duanyue_badao.png',
+  'assets/enemies/tower_boss_wuxiang_shenni.png':
+      'assets/enemies/tower_boss_wuxiang_shenni.png',
+  'assets/enemies/tower_boss_suixing_quansheng.png':
+      'assets/enemies/tower_boss_suixing_quansheng.png',
+  'assets/enemies/tower_boss_jiuxiao_jianshi.png':
+      'assets/enemies/tower_boss_jiuxiao_jianshi.png',
 };
 
 /// 透明图脚底在原图高度中的实际比例。生成立绘的透明画布留白不同，
@@ -1584,6 +1603,17 @@ double battleStandeeFootFraction(String? path) => switch (path) {
   WuxiaUi.battleBaicaoRidgeLeaderStandee => 0.9817,
   WuxiaUi.battleBaicaoRidgeNeedlerStandee => 0.9564,
   WuxiaUi.battleBaicaoRidgeRunnerStandee => 0.9566,
+  // 塔 49 层批 C 8 新 Boss(2026-08-04):alpha 包围盒 PIL 逐图现测(非采信出图端自报,
+  // 两侧独立复测逐值一致)。出图端做过批次尺度归一(bbox 上 70/下 1480/纵跨 1410 全批一致),
+  // 故 8 张 fraction 相同是实测结果而非「看着齐」的手改。
+  'assets/enemies/tower_boss_dushou_yaocha.png' => 0.9629,
+  'assets/enemies/tower_boss_tieta_jingang.png' => 0.9629,
+  'assets/enemies/tower_boss_zhuifeng_jianyin.png' => 0.9629,
+  'assets/enemies/tower_boss_youming_panguan.png' => 0.9629,
+  'assets/enemies/tower_boss_duanyue_badao.png' => 0.9629,
+  'assets/enemies/tower_boss_wuxiang_shenni.png' => 0.9629,
+  'assets/enemies/tower_boss_suixing_quansheng.png' => 0.9629,
+  'assets/enemies/tower_boss_jiuxiao_jianshi.png' => 0.9629,
   _ => 0.95,
 };
 
