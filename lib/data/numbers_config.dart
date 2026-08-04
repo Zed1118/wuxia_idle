@@ -2971,6 +2971,9 @@ class CycleEvolutionConfig {
   /// 反制词条参数容器。
   final CycleTraitsConfig traits;
 
+  /// 批 B 周目境界段推进参数（`realm_advance`，仅 4 个支线入口消费）。
+  final RealmAdvanceConfig realmAdvance;
+
   /// assignment 表：`{ tableKey → { cycle → [traitId] } }`。
   /// tableKey ∈ {'mainline', 'tower_normal', 'tower_boss'}。
   final Map<String, Map<int, Set<String>>> _assignment;
@@ -2981,6 +2984,7 @@ class CycleEvolutionConfig {
     required this.maxCycleTower,
     required this.defenseRateCap,
     required this.traits,
+    required this.realmAdvance,
     required Map<String, Map<int, Set<String>>> assignment,
   }) : _assignment = assignment;
 
@@ -2998,6 +3002,7 @@ class CycleEvolutionConfig {
       zhenqi: ZhenqiTraitParams(internalForcePct: 0.0),
       shipo: ShipoTraitParams(chargeSkillId: ''),
     ),
+    realmAdvance: RealmAdvanceConfig.empty,
     assignment: {},
   );
 
@@ -3010,6 +3015,9 @@ class CycleEvolutionConfig {
       defenseRateCap: (y['defense_rate_cap'] as num).toDouble(),
       traits: CycleTraitsConfig.fromYaml(
         (y['traits'] as Map).cast<String, dynamic>(),
+      ),
+      realmAdvance: RealmAdvanceConfig.fromYaml(
+        (y['realm_advance'] as Map?)?.cast<String, dynamic>(),
       ),
       assignment: _parseAssignment(
         (y['assignment'] as Map?)?.cast<String, dynamic>() ?? const {},
@@ -3056,6 +3064,59 @@ class CycleEvolutionConfig {
         : 'mainline';
     return _assignment[tableKey]?[cycle] ?? const {};
   }
+}
+
+/// 批 B 周目境界段推进参数（`cycle_evolution.realm_advance`，
+/// spec 2026-08-01-tower-extension 拍板 #5）。
+///
+/// 仅 4 个支线入口消费（轻功对决 / 群战守城 / 断魂庄 / 远征，调用点显式开启）；
+/// 主线 / 爬塔不推进（拍板 #3：塔走扩层）。敌境界 = yaml 原值 +
+/// [tiersFor] 后 clamp 武圣，带动敌内力派生 / 防御率档 / 境界差修正三轴。
+class RealmAdvanceConfig {
+  /// 每周目抬升的境界阶数（spec §1.3：<3 落 diff_3_or_more 死区空转）。
+  final int tiersPerCycle;
+
+  /// 4 入口周目上限。
+  final int maxCycle;
+
+  /// 解锁门槛：开 cycle N 需出战最高境界 ≥ 推进后敌最高境界 - margin。
+  final int unlockRealmMargin;
+
+  /// 高周目奖励乘数增幅：奖励 ×(1 + bonus×(cycle-1))。
+  final double rewardBonusPerCycle;
+
+  const RealmAdvanceConfig({
+    required this.tiersPerCycle,
+    required this.maxCycle,
+    required this.unlockRealmMargin,
+    required this.rewardBonusPerCycle,
+  });
+
+  /// 空配置兜底（fixture / test yaml 不带 `realm_advance` 段时）：
+  /// 不推进、cap 1、无门槛、无奖励加成，既有测试零回归。
+  static const RealmAdvanceConfig empty = RealmAdvanceConfig(
+    tiersPerCycle: 0,
+    maxCycle: 1,
+    unlockRealmMargin: 0,
+    rewardBonusPerCycle: 0.0,
+  );
+
+  factory RealmAdvanceConfig.fromYaml(Map<String, dynamic>? y) {
+    if (y == null || y.isEmpty) return empty;
+    return RealmAdvanceConfig(
+      tiersPerCycle: (y['tiers_per_cycle'] as num).toInt(),
+      maxCycle: (y['max_cycle'] as num).toInt(),
+      unlockRealmMargin: (y['unlock_realm_margin'] as num).toInt(),
+      rewardBonusPerCycle: (y['reward_bonus_per_cycle'] as num).toDouble(),
+    );
+  }
+
+  /// cycle → 推进阶数（cycle ≤ 1 = 0，不推进）。
+  int tiersFor(int cycle) => cycle <= 1 ? 0 : tiersPerCycle * (cycle - 1);
+
+  /// cycle → 奖励乘数（cycle ≤ 1 = 1.0）。
+  double rewardMultFor(int cycle) =>
+      cycle <= 1 ? 1.0 : 1.0 + rewardBonusPerCycle * (cycle - 1);
 }
 
 /// M2 范围 B 通用被动离线挂机配置（numbers.yaml `passive_idle`）。
