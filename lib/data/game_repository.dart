@@ -68,9 +68,16 @@ class GameRepository {
   final Map<String, SkillDef> skillDefs;
   final Map<String, StageDef> stageDefs;
 
-  /// 爬塔 30 层，按 floorIndex 升序（1..30）。
-  /// 索引方式：`towerFloors[floorIndex - 1]`（红线校验保证 1-30 连续唯一）。
+  /// 爬塔全部层，按 floorIndex 升序（1..[towerMaxFloor]）。
+  /// 索引方式：`towerFloors[floorIndex - 1]`（红线校验保证连续唯一）。
   final List<TowerFloorDef> towerFloors;
+
+  /// 爬塔最高层号（唯一派生点）。
+  ///
+  /// 层数由 `towers.yaml` 数据定义，不在代码里写死——
+  /// 所有「塔通关没有 / 可挑战上界 / 周目是否完成」判定都从此派生。
+  /// 红线校验保证 floorIndex 从 1 起连续唯一，故 `length` 即最高层号。
+  int get towerMaxFloor => towerFloors.length;
 
   /// 闭关地图 5 张（numbers.yaml `retreat.maps`，Phase 3 T47）。
   final List<SeclusionMapDef> seclusionMaps;
@@ -1251,10 +1258,10 @@ class GameRepository {
   StageDef getStage(String defId) =>
       stageDefs[defId] ?? (throw StateError('StageDef 未配置: $defId'));
 
-  /// 取第 N 层爬塔（1-30）。越界抛 [RangeError]。
+  /// 取第 N 层爬塔（1..[towerMaxFloor]）。越界抛 [RangeError]。
   TowerFloorDef getTowerFloor(int floorIndex) {
-    if (floorIndex < 1 || floorIndex > 30) {
-      throw RangeError('爬塔 floorIndex 必须 ∈ [1, 30]，实际 $floorIndex');
+    if (floorIndex < 1 || floorIndex > towerMaxFloor) {
+      throw RangeError('爬塔 floorIndex 必须 ∈ [1, $towerMaxFloor]，实际 $floorIndex');
     }
     return towerFloors[floorIndex - 1];
   }

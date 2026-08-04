@@ -9,9 +9,19 @@ import "../../support/isar_test_support.dart";
 /// P1 周目进化 Task A2：TowerProgress 周目字段 + advanceCycle 方法。
 ///
 /// 验证「问鼎轮回」全塔周目规则：
-///   - 30 层全通关 → maxClearedCycle = currentCycleIndex
+///   - 全塔通关 → maxClearedCycle = currentCycleIndex
 ///   - advanceCycle → currentCycleIndex++ + highestClearedFloor 归零(从头爬)
-///   - 未全通 30 层时 advanceCycle 是 no-op(防提前推进)
+///   - 未全通时 advanceCycle 是 no-op(防提前推进)
+///
+/// **本文件刻意用非 30 的层数**（[_towerMax]）：周目完成判定必须跟随
+/// `recordClear` 的 `maxFloor` 入参，而非代码里写死的层数。若实现回退成
+/// 硬编码 30，本文件断言全红——这是 A0「解层数硬编码」的永久守卫
+/// （破坏证红的常驻化，见 spec 2026-08-01 §8 批 A）。
+///
+/// 本文件是 Isar-only 测（不加载 GameRepository），故直接传常量而非
+/// 从 `towerMaxFloor` 派生——正好证明判定只依赖入参。
+const _towerMax = 12;
+
 void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
@@ -38,22 +48,27 @@ void main() {
       final svc = TowerProgressService(isar: IsarSetup.instance);
       final p = await svc.getOrCreate(saveDataId: 1);
       expect(p.currentCycleIndex, 1, reason: '初始从第 1 周目开始爬');
-      expect(p.maxClearedCycle, 0, reason: '0 = 从未 30 层全通');
+      expect(p.maxClearedCycle, 0, reason: '0 = 从未全塔通关');
     });
   });
 
-  group('30 层全通 → maxClearedCycle 更新', () {
+  group('全塔通关 → maxClearedCycle 更新', () {
     test(
-      '通关 30 层 → maxClearedCycle=1；advanceCycle 后 currentCycleIndex=2 从头爬',
+      '通关全塔 → maxClearedCycle=1；advanceCycle 后 currentCycleIndex=2 从头爬',
       () async {
         final svc = TowerProgressService(isar: IsarSetup.instance);
         await svc.getOrCreate(saveDataId: 1);
         final now = DateTime(2026, 6, 14);
-        for (var f = 1; f <= 30; f++) {
-          await svc.recordClear(floorIndex: f, now: now, elapsedMs: 1000);
+        for (var f = 1; f <= _towerMax; f++) {
+          await svc.recordClear(
+            floorIndex: f,
+            now: now,
+            elapsedMs: 1000,
+            maxFloor: _towerMax,
+          );
         }
         var p = await svc.getOrCreate(saveDataId: 1);
-        expect(p.maxClearedCycle, 1, reason: '30 层全通首次 → 当前周目(1)已完成');
+        expect(p.maxClearedCycle, 1, reason: '全塔通关首次 → 当前周目(1)已完成');
         expect(
           p.currentCycleIndex,
           1,
@@ -70,15 +85,20 @@ void main() {
       },
     );
 
-    test('通到 29 层（未满 30）→ maxClearedCycle 仍 0', () async {
+    test('通到顶层前一层（未满全塔）→ maxClearedCycle 仍 0', () async {
       final svc = TowerProgressService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
       final now = DateTime(2026, 6, 14);
-      for (var f = 1; f <= 29; f++) {
-        await svc.recordClear(floorIndex: f, now: now, elapsedMs: 1000);
+      for (var f = 1; f <= _towerMax - 1; f++) {
+        await svc.recordClear(
+          floorIndex: f,
+          now: now,
+          elapsedMs: 1000,
+          maxFloor: _towerMax,
+        );
       }
       final p = await svc.getOrCreate(saveDataId: 1);
-      expect(p.maxClearedCycle, 0, reason: '未满 30 层，周目未完成');
+      expect(p.maxClearedCycle, 0, reason: '未通到顶层，周目未完成');
     });
   });
 
@@ -88,10 +108,15 @@ void main() {
       () async {
         final svc = TowerProgressService(isar: IsarSetup.instance);
         await svc.getOrCreate(saveDataId: 1);
-        // 通 10 层但未满 30
+        // 通 10 层但未满全塔
         final now = DateTime(2026, 6, 14);
         for (var f = 1; f <= 10; f++) {
-          await svc.recordClear(floorIndex: f, now: now, elapsedMs: 1000);
+          await svc.recordClear(
+            floorIndex: f,
+            now: now,
+            elapsedMs: 1000,
+            maxFloor: _towerMax,
+          );
         }
 
         await svc.advanceCycle(saveDataId: 1, maxCycleCap: 99); // 测试通关守卫，不限 cap
@@ -108,8 +133,13 @@ void main() {
       final svc = TowerProgressService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
       final now = DateTime(2026, 6, 14);
-      for (var f = 1; f <= 30; f++) {
-        await svc.recordClear(floorIndex: f, now: now, elapsedMs: 1000);
+      for (var f = 1; f <= _towerMax; f++) {
+        await svc.recordClear(
+          floorIndex: f,
+          now: now,
+          elapsedMs: 1000,
+          maxFloor: _towerMax,
+        );
       }
       final beforeAdvance = await svc.getOrCreate(saveDataId: 1);
       final attemptsBeforeAdvance = beforeAdvance.totalAttempts;

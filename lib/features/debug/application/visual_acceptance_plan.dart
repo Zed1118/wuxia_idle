@@ -66,7 +66,8 @@ final List<VisualAcceptanceRoute> _battleRoutes = [
       _battleStageRoute(
         'battle_audit_stage_${_twoDigits(chapter)}_${_twoDigits(stage)}',
       ),
-  for (var floor = 1; floor <= 30; floor++) _battleTowerRoute(floor),
+  for (var floor = 1; floor <= towerAuditFloorCount; floor++)
+    _battleTowerRoute(floor),
   for (var stage = 1; stage <= 5; stage++)
     _battleStageRoute('battle_audit_stage_light_foot_${_twoDigits(stage)}'),
   for (var stage = 1; stage <= 5; stage++)
@@ -109,6 +110,12 @@ VisualAcceptanceRoute _battleTowerRoute(int floor) => VisualAcceptanceRoute(
   kind: VisualRoute.battleTowerAudit.kind,
   checks: _checksFor(VisualRoute.battleTowerAudit),
 );
+
+/// 爬塔层数。真相源是 `towers.yaml`,本层拿不到 GameRepository 故落常量,
+/// 由 `visual_acceptance_tower_coverage_test` 从生产 config 派生钉住
+/// (同 [gauntletAuditStageCount] 体例)。**扩层时改这里**——不改则新层
+/// 静默漏出视觉验收计划,守卫测会红提醒。
+const int towerAuditFloorCount = 30;
 
 /// 断魂庄关次数。真相源是 `boss_gauntlets.yaml` 的 `stages`,
 /// 本层拿不到 GameRepository 故落常量,由守卫测从生产 config 派生钉住。

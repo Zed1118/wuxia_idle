@@ -167,6 +167,7 @@ Future<void> runTowerFlow({
         floorIndex: floor.floorIndex,
         now: DateTime.now(),
         elapsedMs: elapsedMs,
+        maxFloor: GameRepository.instance.towerMaxFloor,
       );
     }
   } catch (e, st) {

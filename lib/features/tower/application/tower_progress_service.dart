@@ -73,24 +73,29 @@ class TowerProgressService {
     return fresh;
   }
 
-  /// 当前可挑战的最高层号；30 已通则返回 30（封顶，UI 显示"已通关"）。
-  static int availableFloor(TowerProgress progress) {
-    if (progress.highestClearedFloor >= 30) return 30;
+  /// 当前可挑战的最高层号；顶层已通则返回顶层（封顶，UI 显示"已通关"）。
+  ///
+  /// [maxFloor] 塔的最高层号，由调用方从 `GameRepository.instance.towerMaxFloor`
+  /// 传入（注入式，同 [floorList] 的 allFloors / [advanceCycle] 的 maxCycleCap）。
+  /// **不得在此写死层数**：塔层数由 `towers.yaml` 定义，写死会让扩层静默失效。
+  static int availableFloor(TowerProgress progress, {required int maxFloor}) {
+    if (progress.highestClearedFloor >= maxFloor) return maxFloor;
     return progress.highestClearedFloor + 1;
   }
 
   /// 是否可以挑战指定层（UI 端在 onTap 前拦截非法跳层）。
   ///
-  /// 规则：`floorIndex ∈ [1, highestClearedFloor + 1]`，即可重打 + 下一关。
+  /// 规则：`floorIndex ∈ [1, min(maxFloor, highestClearedFloor + 1)]`，即可重打 + 下一关。
   static bool canChallenge({
     required TowerProgress progress,
     required int floorIndex,
+    required int maxFloor,
   }) {
-    if (floorIndex < 1 || floorIndex > 30) return false;
+    if (floorIndex < 1 || floorIndex > maxFloor) return false;
     return floorIndex <= progress.highestClearedFloor + 1;
   }
 
-  /// 全 30 层 + 状态（cleared / available / locked），按 floorIndex 升序。
+  /// 全部层 + 状态（cleared / available / locked），按 floorIndex 升序。
   ///
   /// [allFloors] 由调用方传入（通常是 `GameRepository.instance.towerFloors`）；
   /// 注入式参数便于测试/未来 fixture 替换。
@@ -128,10 +133,13 @@ class TowerProgressService {
   ///
   /// 调用方应根据 `isFirstClear` 决定是否走 [DropService.rollTowerRewards]
   /// 发奖（[CLAUDE.md §5.1] 反主流：重打不发奖防刷）。
+  /// [maxFloor] 塔的最高层号（同 [availableFloor]，注入式不写死）：决定
+  /// 首通判定上界与「本周目已通关」判定层，扩层后新层能否记进度全靠它。
   Future<TowerClearResult> recordClear({
     required int floorIndex,
     required DateTime now,
     required int elapsedMs,
+    required int maxFloor,
   }) async {
     late TowerClearResult result;
     await isar.writeTxn(() async {
@@ -146,7 +154,7 @@ class TowerProgressService {
       final isFirstClear =
           floorIndex == progress.highestClearedFloor + 1 &&
           floorIndex >= 1 &&
-          floorIndex <= 30;
+          floorIndex <= maxFloor;
       if (isFirstClear) {
         progress.highestClearedFloor = floorIndex;
         progress.highestClearedAt = now;
@@ -171,9 +179,9 @@ class TowerProgressService {
             ? null
             : nonZero.reduce((a, b) => a < b ? a : b);
 
-        // P1 A2 问鼎轮回：30 层首通 → 标记当前周目已完成
+        // P1 A2 问鼎轮回：顶层首通 → 标记当前周目已完成
         // 单调递增（max 防回退），不降级
-        if (floorIndex == 30) {
+        if (floorIndex == maxFloor) {
           final completed = progress.currentCycleIndex;
           if (completed > progress.maxClearedCycle) {
             progress.maxClearedCycle = completed;
@@ -274,7 +282,7 @@ class TowerProgressService {
 
   /// 推进到下一周目（问鼎轮回）。
   ///
-  /// 守卫：仅当 `maxClearedCycle >= currentCycleIndex`（本周目 30 层已全通）
+  /// 守卫：仅当 `maxClearedCycle >= currentCycleIndex`（本周目全塔已通）
   /// 时才执行，否则 no-op，防止未通整塔提前推进。
   ///
   /// [maxCycleCap]：周目进化配置上限（来自 `numbers.yaml cycle_evolution.max_cycle_tower`）。
@@ -301,7 +309,7 @@ class TowerProgressService {
           .findFirst();
       if (progress == null) return; // 未初始化 → no-op
 
-      // 守卫：当前周目 30 层未全通，不推进
+      // 守卫：当前周目全塔未通，不推进
       if (progress.maxClearedCycle < progress.currentCycleIndex) return;
 
       // 守卫：已达配置上限，不推进（UI 已拦，service 端镜像 config cap）

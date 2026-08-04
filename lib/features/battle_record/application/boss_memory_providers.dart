@@ -10,14 +10,19 @@ import 'boss_memory_service.dart';
 
 part 'boss_memory_providers.g.dart';
 
-/// 爬塔 Boss 层固定常量（与 BossMemoryService.backfillFromProgress 保持一致）。
-const _towerBossFloors = [5, 10, 15, 20, 25, 30];
+/// 爬塔 Boss 层从 `towers.yaml` 派生（`bossKind` 非 null），与
+/// [BossMemoryService.backfillFromProgress] 同源。**不写死层号**——
+/// 扩层 / Boss 位重排后战绩册目录须自动跟随，写死会静默漏掉新 Boss。
+List<int> _towerBossFloors(GameRepository repo) => [
+  for (final f in repo.towerFloors)
+    if (f.isBoss) f.floorIndex,
+];
 
 /// 全 Boss 应有目录（不读 Isar，纯从 GameRepository 派生，同步 provider）。
 ///
 /// 主线：遍历 GameRepository.stageDefs 中 isBossStage=true 的关卡。
-/// 爬塔：固定层 [5,10,15,20,25,30]。
-/// 总计 = 主线 isBossStage 关数 + 6 个塔层。**不在此硬写条数**——主线每扩一章 +2，
+/// 爬塔：towers.yaml 中 bossKind 非 null 的层（派生，不写死）。
+/// 总计 = 主线 isBossStage 关数 + 塔 Boss 层数。**不在此硬写条数**——主线每扩一章 +2，
 /// 旧注写死的「27 条（21 主线 + 6 塔）」自 Ch13 起已连续多章 drift（2026-07-29 现测
 /// 主线 isBossStage 含心魔 7 / 群战 1 / 轻功 1，实际远超该值）；真值以
 /// `boss_memory_providers_test` 的实测断言为准。
@@ -41,7 +46,7 @@ List<BossCatalogEntry> bossCatalog(Ref ref) {
   }
 
   // 爬塔 Boss
-  for (final floor in _towerBossFloors) {
+  for (final floor in _towerBossFloors(repo)) {
     entries.add(
       BossCatalogEntry(
         bossKey: towerBossKey(floor),

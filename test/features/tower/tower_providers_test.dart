@@ -19,6 +19,10 @@ import '../../support/test_data.dart';
 ///   - towerProgress:getOrCreate 默认 highestClearedFloor=0
 ///   - towerFloorList:与 yaml 楼层对齐,recordClear 后层态级联推进
 ///   - leaderboardSync:Demo 阶段恒 NoopLeaderboardSync(0 backend 断言点)
+///
+/// 层数从 [_maxFloor] 派生不写死（A0 解层数硬编码）。
+int get _maxFloor => GameRepository.instance.towerMaxFloor;
+
 void main() {
   late Directory tempDir;
 
@@ -63,6 +67,7 @@ void main() {
       floorIndex: 1,
       now: DateTime(2026, 7, 19),
       elapsedMs: 0,
+      maxFloor: _maxFloor,
     );
     container.invalidate(towerProgressProvider);
 
