@@ -1,7 +1,7 @@
 # 新会话开局清单
 
-> 交接时间：2026-08-04 14:16 · 工作收口于 main HEAD `e36884f9` · 主 checkout 与 origin/main 同步、工作树干净
-> 本清单自身的落盘 commit 排在 `e36884f9` 之后，故实际 HEAD 会比它新 1-2 个纯文档 commit——**这不是漂移**，判据见【开局动作】第 4 步。
+> 交接时间：2026-08-04 15:16 · 工作收口于 HEAD `ce114bac`（PR #115 merge）· 与 origin/main 同步、工作树干净
+> 本清单自身的落盘 commit 排在 `ce114bac` 之后，故实际 HEAD 会比它新 1-2 个纯文档 commit——**这不是漂移**，判据见【开局动作】第 4 步。
 
 ## 【本会话契约】（置顶，最高优先级）
 
@@ -11,72 +11,60 @@
   - **非阻塞型**（不影响当前任务正确性）→ 记入项目根 `BACKLOG.md`，附 file:line 与复现步骤，**不动代码**；
   - **阻塞型**（当前任务建立在它之上，不修就是在错地基上盖楼）→ **停下报告**，不要记了账继续干。
 - **拍板点**（设计取舍、多方案选型、观感判断）：停下列选项等用户，禁代拍。
-- **本轮额外围栏**：批 B/C 体量均不小，**不压缩、不切「最小闭环」**（CLAUDE §7 打磨期原则）；
-  出推荐前过「假设工作量不是考虑因素，这条会变吗」自检 → memory `feedback_no_effort_saving_in_recommendations`。
+- **本轮额外围栏**：批 B/批 C 体量各约等于一个专批，**不压缩、不切「最小闭环」**（CLAUDE §7 打磨期原则）；
+  出任何推荐前先过「假设工作量不是考虑因素，这条会变吗」自检 → memory `feedback_no_effort_saving_in_recommendations`。
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
-塔 49 层 1:1 锚死批 A 主体已完成（PR #115 draft **未合**，含数据/代码/28 篇叙事/机制校准），
-批 B（周目语义）/批 C（8 张立绘）未开工。
+塔 49 层扩展批 A（A0-A4+断魂帖 16/33/49+机制校准）已全部合入 main（PR #114/#115），批 B（周目语义）/批 C（立绘）未开工。
 
 ## 【开局动作】
 
-1. 读 PROGRESS.md 顶段。**注意**：main 顶段是「2026-08-04 批 A · A0」条目；**批 A 主体的
-   条目在 PR #115 分支上未进 main**，看全貌须读分支版 PROGRESS 或 PR #115 body。
-2. 读 `docs/sessions/2026-08-04_1416_批A塔重排.md`
-3. `git worktree list` + `git branch --list 'worktree-*'`：**本轮确有在途分支**（见下方在途行），
-   PROGRESS.md 只反映 main，别在不知情的情况下重做一遍。
+1. 读 PROGRESS.md 顶段「2026-08-04 批 A 主体」条目（含末尾**已合并**落账段）
+2. 读 `docs/sessions/2026-08-04_1516_批A合并落账.md`
+3. `git worktree list` + `git branch --list 'worktree-*'`：上会话收尾判定应为**无在途**；若有残留即上会话
+   worktree 清理未完成，按 /handoff Step 0c 处置后再继续。
 4. `git pull --rebase --autostash`，然后校验本清单是否仍然有效：
 
    ```bash
-   git merge-base --is-ancestor e36884f9 HEAD && echo ANCESTOR_OK
+   git merge-base --is-ancestor ce114bac HEAD && echo ANCESTOR_OK
    git status -sb | head -1
    ```
 
-   - `ANCESTOR_OK` **且**与 origin 同步 → 快照有效，继续。（HEAD 比 `e36884f9` 新几个纯文档
-     commit 属正常，**不是**漂移，别误报）
-   - `--is-ancestor` 不成立 → **快照作废**：停下报告差异，重测 analyze/test 基线，禁转抄下方数字。
+   - `ANCESTOR_OK` **且**与 origin 同步 → 快照有效，继续。（HEAD 比 `ce114bac` 新几个纯文档 commit 属正常，**不是**漂移，别误报）
+   - `--is-ancestor` 不成立 → **快照作废**：停下报告差异，重测 analyze/test 基线，禁止转抄下方数字。
 5. 选读 memory：`reference_anti_hallucination`（固定）+ `feedback_no_effort_saving_in_recommendations`
    + `feedback_wuxia_long_term_polish_no_backlog` + `feedback_living_doc_state_drift`
-   + `feedback_test_cadence_no_blind_full` + `feedback_break_red_after_commit`
-   + `reference_codex_image_gen_art_pipeline`（若做批 C）
+   + `feedback_test_cadence_no_blind_full` + `feedback_backlog_premise_experiment_on_clean_tree`
+   + `feedback_wuxia_boss_balance_crosstier`（批 B 周目平衡相关）
 
 ## 【环境快照】（上一会话实测；本会话改动代码后必须重测，禁转抄）
 
-- main HEAD `e36884f9`（= PR #114 merge；本 session main 上 0 功能 commit，批 A 主体 6 commit
-  在分支 `f5b71742..c6eaca80`，已全 push）
-- `flutter analyze --no-pub` → **EXIT=0 · No issues found · 6.8s**｜主 checkout `e36884f9` 2026-08-04 实测
-- 全量 `flutter test --no-pub`：
-  - main（A0 态）→ **CI run 30872962995 全绿**（21m14s success，PR #114 合并后 push run）
-  - 分支（批 A 主体）→ **4813 pass / 0 fail**｜worktree 2026-08-04 实测
-  - **守恒核对**：4813 = 上轮基线 4805 + A0 新增 8（isFirstClear 上界 1 + availableFloor/canChallenge
-    上界 3 + tower coverage 守卫 4）；批 A 主体净增 0（23 文件全是改断言/采样重排），逐值吻合
-- **在途 PR / 分支**：
-  - PR **#115**（draft，OPEN，未合）`worktree-tower-batch-a` @ `c6eaca80` — 批 A 主体全部产物；
-    worktree `.claude/worktrees/tower-batch-a` 保留
-  - **PR #115 CI 首跑 format 门禁红**（python 批量编辑 6 文件），`c6eaca80` 修复后重跑中——
-    **合并前必须现查 `gh pr checks 115` 双 job 绿**，别转抄本行
-- 子系统状态：塔 49 层数据/代码/叙事/机制校准全部完成；批 D worktree 与分支已四侧清理；
-  codegraph 索引已重建（lib/ 521 文件全覆盖，test/ 基本未索引仍须 grep）
+- HEAD `ce114bac`（本次 session 0 个代码 commit；合并 PR #115 + 纯文档收尾）
+- `flutter analyze --no-pub` → **EXIT=0 · No issues found · 7.5s**｜本会话于分支 tip `c6eaca80` 实测
+  （合并态 main 与该树差异仅 2 纯 markdown 文档，结论等价传递）
+- 全量 `flutter test --no-pub` → **4813 pass / 0 fail · EXIT=0**｜本会话同树实测（首跑即绿未触发在册 flaky）
+  - **守恒核对**：= 批 A 两会话后基线 4813（A0 会话 +8 例后即 4813），本会话零测试增减，逐值吻合
+  - `save_data`/`isar_setup` 无 @collection 字段增删 → 主 checkout **免 build_runner**（已实证判定）
+- 在途 PR / 分支：**无**（#113/#114/#115 全合，`worktree-tower-batch-a` 四侧已清）
+- 子系统状态：塔 49 层数据/机制/叙事/断魂帖全落 main；批 A 残留 4 条传递风险见 PROGRESS 顶段已知风险
 
 ## 【下波候选】
 
 | # | 任务 | 模型 | 预估时长 | 备注 |
 |---|------|------|----------|------|
-| 1 | 等 PR #115 CI 绿 → review → 合并（推荐） | opus high | 30-45min | 2438 行数值+8 新 Boss 命名+16 篇文案+机制校准拍板，方向性内容多值得扫一眼；合并前可选真机 720p smoke（塔列表 49 行/总览滚动/新 Boss 战斗屏三处 UI） |
-| 2 | 批 B 周目语义修正（B1-B5） | opus xhigh | 60-90min | 属性缩放→境界段推进；与批 A 文件不重叠可并行；含 spec §1.3「净威胁 ~2.4×」实测与 cycle2 败率统一重校 |
-| 3 | 批 C 8 张 Boss 立绘 | codex image_gen | 随批 | 18/21/25/28/35/39/42/46 现为主线敌池占位；配方 memory `reference_codex_image_gen_art_pipeline`；出图后换 iconPath+脚底校准+真机目检 |
-| 4 | 真机视觉 smoke（塔三处 UI） | opus high | ~20min | 若不随 #1 做则单独跑；widget 测已绿但 49 行滚动/定位滚动手感须真机 |
+| 1 | 批 B 周目语义修正（推荐） | opus xhigh | 60-90min | 属性缩放→境界段推进；解锁 cycle2 败率重校/净威胁 ~2.4× 实测/撞线语义 3 项挂账，塔扩展收口关键路径；plan B1-B5 在 `docs/superpowers/plans/2026-08-03-tower-extension.md` |
+| 2 | 批 C 新 Boss 立绘 | opus high（派单 codex） | 派单 30min+异步 | 8 新 Boss 专属图（image_gen 管线）+ 塔 49 层 1280×720 视觉 smoke（列表滚动/总览定位/新 Boss 战斗屏，合并时判非阻塞传递至此）；与批 B 文件不重叠可并行 |
+| 3 | `codegraph` 索引重建 | opus high | 10min | 主 checkout 索引 stale（A0 会话证伪「未初始化」）；批 B 大量查调用链前值得 |
 
 ## 【硬约束沿用】
 
-- 推荐不得为省工作量缩水范围；抄来的形状必自己算 → memory `feedback_no_effort_saving_in_recommendations`
-- backlog 只承载「依赖未解除 / 待拍板」两类 → memory `feedback_wuxia_long_term_polish_no_backlog`
-- 长寿文档状态/行号会 drift，引用前重新定位 → memory `feedback_living_doc_state_drift`
-- 全量默认并发，交接不重复验已记录的绿 → memory `feedback_test_cadence_no_blind_full`
-- 破坏证红必须在 commit 后做 → memory `feedback_break_red_after_commit`
-- python/perl 批量编辑 dart 后必跑 `dart format`（管道 tail 会吞 analyze exit code）→ 本轮踩坑，详 session 记录
-- vuln 型 Boss 迁数值段必须血量-乘子-相位联动校准（bootstrapping）→ 详 session 记录「踩坑提醒」
+- 推荐不得为省工作量缩水范围；抄来的形状必自己算一遍 → memory `feedback_no_effort_saving_in_recommendations`
+- backlog 只承载「依赖未解除 / 待用户拍板」两类，「没空做」不合法 → memory `feedback_wuxia_long_term_polish_no_backlog`
+- 长寿文档状态与行号会 drift，引用前重新定位 → memory `feedback_living_doc_state_drift`
+- 净树是零风险实验窗口，BACKLOG 定性先证伪再动手 → memory `feedback_backlog_premise_experiment_on_clean_tree`
+- 全量测试默认并发（`-j1` 仅排查 flaky）；自包含改动只跑 targeted → memory `feedback_test_cadence_no_blind_full`
+- 章末/终局 Boss 跨阶才能真难，同阶必胜是结构事实 → memory `feedback_wuxia_boss_balance_crosstier`
 
 ## 【防幻觉守则】
 
@@ -89,11 +77,10 @@
 
 读完上述清单后先提交一份报告，**不动代码**：
 
-1. **防装读要求**：须引用本清单里**不存在**的原文——main 上 PROGRESS.md 顶段条目的**原文标题行
-   与日期**，以及 `docs/sessions/2026-08-04_1416_批A塔重排.md`「下一步建议」小节的**原文首条**。
+1. **防装读要求**：须引用本清单里**不存在**的原文——PROGRESS.md 顶段条目的**原文标题行与日期**，
+   以及 `docs/sessions/2026-08-04_1516_批A合并落账.md`「下一步建议」小节的**原文首条**。
    只复述本清单已有的信息不算完成。
-2. 报告【开局动作】第 3、4 步结果：在途分支情况 + HEAD 校验判定（有效 / 作废）+
-   `gh pr checks 115` 现查结果。
+2. 报告【开局动作】第 3、4 步结果：在途分支情况 + HEAD 校验判定（有效 / 作废）。
 3. 等指令。
 
 ## 【收尾】
