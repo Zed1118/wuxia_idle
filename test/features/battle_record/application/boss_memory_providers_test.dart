@@ -79,8 +79,14 @@ void main() {
         reason: '主线 Boss stage_01_05 须在 catalog',
       );
 
-      // 特定塔层
-      for (final floor in [5, 10, 15, 20, 25, 30]) {
+      // 塔 Boss 层：从 towers.yaml 的 bossKind 派生，不写死层号。
+      // 生产端若把 Boss 层清单改回硬编码，Boss 位一重排（批 A · A3）
+      // 这条就红——新 Boss 进不了战绩册是静默失效，须有测拦住。
+      final bossFloors = GameRepository.instance.towerFloors
+          .where((f) => f.isBoss)
+          .map((f) => f.floorIndex);
+      expect(bossFloors, isNotEmpty, reason: 'towers.yaml 零 Boss 层，断言无意义');
+      for (final floor in bossFloors) {
         expect(
           keys.contains('tower_floor_$floor'),
           isTrue,
@@ -99,7 +105,16 @@ void main() {
           .toList();
 
       final floors = towerEntries.map((e) => e.groupIndex).toSet();
-      expect(floors, containsAll([5, 10, 15, 20, 25, 30]));
+      final expected = GameRepository.instance.towerFloors
+          .where((f) => f.isBoss)
+          .map((f) => f.floorIndex)
+          .toSet();
+      expect(expected, isNotEmpty, reason: 'towers.yaml 零 Boss 层，断言无意义');
+      expect(
+        floors,
+        expected,
+        reason: '塔条目须与 towers.yaml 的 Boss 层一一对应（派生，不写死层号）',
+      );
     });
 
     test('catalog 内 bossKey 不重复', () {
