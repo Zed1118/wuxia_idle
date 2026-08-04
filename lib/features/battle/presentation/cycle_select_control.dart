@@ -54,7 +54,7 @@ class CycleSelectControl extends ConsumerWidget {
         .read(selectedChallengeCycleForCurrentSlot(chapterKey).notifier)
         .select(cycle);
 
-    return _CycleSelectLayout(
+    return CycleSelectLayout(
       highestCleared: highest,
       maxCycle: maxCycle,
       atMax: atMax,
@@ -64,10 +64,14 @@ class CycleSelectControl extends ConsumerWidget {
   }
 }
 
-// ─── Internal Layout ─────────────────────────────────────────────────────────
+// ─── Layout ──────────────────────────────────────────────────────────────────
 
-class _CycleSelectLayout extends StatelessWidget {
-  const _CycleSelectLayout({
+/// 周目选择纯展示层。批 B 起公开：断魂庄装载屏 / 远征派遣屏复用同一视觉，
+/// 各自把「已通最高周目」与「可挑战上限」（[CycleRealmGate.unlockedCycleCap]，
+/// 含境界门槛）喂进 [highestCleared] / [maxCycle] 槽位。
+class CycleSelectLayout extends StatelessWidget {
+  const CycleSelectLayout({
+    super.key,
     required this.highestCleared,
     required this.maxCycle,
     required this.atMax,

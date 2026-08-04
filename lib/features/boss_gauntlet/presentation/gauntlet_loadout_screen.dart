@@ -8,7 +8,9 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../battle/domain/cycle_realm_gate.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../battle/presentation/cycle_select_control.dart';
 import '../application/gauntlet_providers.dart';
 import '../application/gauntlet_service.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
@@ -43,9 +45,12 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
   final Map<String, int> _supplyLoad = {}; // defId → 装载份数
   bool _submitting = false;
 
+  /// 批 B：选定挑战周目（null = 未手选，默认已通最高周目；未通过 cycle1 恒 1）。
+  int? _cycle;
+
   int get _loadedTotal => _supplyLoad.values.fold(0, (a, b) => a + b);
 
-  Future<void> _enter(int ticketCount) async {
+  Future<void> _enter(int ticketCount, int cycleIndex) async {
     if (_selected.isEmpty || _submitting || ticketCount < 1) return;
     final service = ref.read(gauntletServiceProvider);
     if (service == null) return; // 测试旁路：未 init Isar
@@ -58,6 +63,7 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
             if (e.value > 0) e.key: e.value,
         },
         supplyCap: _supplyCap,
+        cycleIndex: cycleIndex,
       );
       if (!mounted) return;
       ref.invalidate(activeGauntletProvider);
@@ -201,6 +207,41 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
     final canEnter =
         !resuming && _selected.isNotEmpty && hasTicket && !_submitting;
 
+    // ── 批 B 周目选择：可挑战上限 = 顺序解锁 ∩ 配置 cap ∩ 境界门槛。
+    // 境界口径 = 当前已选队伍最高（未选人时取可入场候选最高，乐观展示）；
+    // enter 侧按实际队伍硬校验兜底。
+    final ra = GameRepository
+        .instanceOrNull
+        ?.numbers
+        .cycleEvolution
+        .realmAdvance;
+    final cleared = info.clearedCyclesMax;
+    var unlockedCap = 1;
+    if (ra != null && config != null) {
+      final gateTiers = [
+        for (final c in candidates)
+          if (_selected.isEmpty
+              ? c.selectable
+              : _selected.contains(c.character.id))
+            c.character.realmTier,
+      ];
+      final playerMaxTier = gateTiers.isEmpty
+          ? RealmTier.xueTu
+          : gateTiers.reduce((a, b) => a.index >= b.index ? a : b);
+      unlockedCap = CycleRealmGate.unlockedCycleCap(
+        clearedCyclesMax: cleared,
+        playerMaxTier: playerMaxTier,
+        baseEnemyMaxTier: CycleRealmGate.maxEnemyTierOf([
+          for (final s in config.stages) ...config.enemiesForTeam(s.enemyTeamId),
+        ]),
+        ra: ra,
+      );
+    }
+    final selectedCycle = (_cycle ?? cleared.clamp(1, unlockedCap)).clamp(
+      1,
+      unlockedCap,
+    );
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       child: Center(
@@ -304,6 +345,18 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
                   fontSize: 12,
                 ),
               ),
+              // 批 B：周目选择（已通 cycle1 起显；未通首闯恒 cycle1 不渲染，
+              // 沿 CycleSelectControl「highest==0 → 空占位」体例）。
+              if (!resuming && cleared >= 1) ...[
+                const SizedBox(height: 18),
+                CycleSelectLayout(
+                  highestCleared: cleared,
+                  maxCycle: unlockedCap,
+                  atMax: cleared >= unlockedCap,
+                  selected: selectedCycle,
+                  onChoose: (c) => setState(() => _cycle = c),
+                ),
+              ],
               const SizedBox(height: 18),
               // 续战态帖已耗，无帖提示无义，仅新建态显。
               if (!hasTicket && !resuming)
@@ -323,7 +376,9 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
                 child: PlaqueButton(
                   label: UiStrings.gauntletEnterButton,
                   primary: true,
-                  onTap: canEnter ? () => _enter(info.ticketCount) : null,
+                  onTap: canEnter
+                      ? () => _enter(info.ticketCount, selectedCycle)
+                      : null,
                 ),
               ),
             ],

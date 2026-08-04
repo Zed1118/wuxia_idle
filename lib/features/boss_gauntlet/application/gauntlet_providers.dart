@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/inventory_item.dart';
+import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
 import '../../../shared/strings.dart';
@@ -68,10 +69,15 @@ class GauntletLoadoutInfo {
   const GauntletLoadoutInfo({
     required this.ticketCount,
     required this.supplies,
+    this.clearedCyclesMax = 0,
   });
 
   final int ticketCount;
   final List<GauntletSupplyOption> supplies;
+
+  /// 已全通最高周目（批 B 周目选择用；含 [SaveData.duanhunFirstClearedAt]
+  /// 旧档 cycle1 派生兜底）。
+  final int clearedCyclesMax;
 }
 
 /// 装载屏信息 provider（断魂帖库存 + 补给持有·§7.1）。
@@ -100,9 +106,13 @@ Future<GauntletLoadoutInfo> gauntletLoadoutInfo(Ref ref) async {
     }
   }
   supplies.sort((a, b) => a.defId.compareTo(b.defId));
+  final save = await isar.saveDatas.get(0);
   return GauntletLoadoutInfo(
     ticketCount: ticket?.quantity ?? 0,
     supplies: supplies,
+    clearedCyclesMax: save != null
+        ? GauntletService.duanhunClearedCyclesMaxOf(save)
+        : 0,
   );
 }
 

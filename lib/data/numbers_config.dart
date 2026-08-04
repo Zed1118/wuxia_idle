@@ -3085,11 +3085,16 @@ class RealmAdvanceConfig {
   /// 高周目奖励乘数增幅：奖励 ×(1 + bonus×(cycle-1))。
   final double rewardBonusPerCycle;
 
+  /// 远征深度里程碑（2026-08-04 拍板：远征无终点，周目解锁改绑历史最深）：
+  /// 第 i 项 = 解锁 cycle i+2 所需 `baicaoMaxDepth`。空表 = 远征不开高周目。
+  final List<int> expeditionDepthMilestones;
+
   const RealmAdvanceConfig({
     required this.tiersPerCycle,
     required this.maxCycle,
     required this.unlockRealmMargin,
     required this.rewardBonusPerCycle,
+    required this.expeditionDepthMilestones,
   });
 
   /// 空配置兜底（fixture / test yaml 不带 `realm_advance` 段时）：
@@ -3099,6 +3104,7 @@ class RealmAdvanceConfig {
     maxCycle: 1,
     unlockRealmMargin: 0,
     rewardBonusPerCycle: 0.0,
+    expeditionDepthMilestones: [],
   );
 
   factory RealmAdvanceConfig.fromYaml(Map<String, dynamic>? y) {
@@ -3108,6 +3114,10 @@ class RealmAdvanceConfig {
       maxCycle: (y['max_cycle'] as num).toInt(),
       unlockRealmMargin: (y['unlock_realm_margin'] as num).toInt(),
       rewardBonusPerCycle: (y['reward_bonus_per_cycle'] as num).toDouble(),
+      expeditionDepthMilestones: List.unmodifiable([
+        for (final m in (y['expedition_depth_milestones'] as List? ?? const []))
+          (m as num).toInt(),
+      ]),
     );
   }
 

@@ -8,7 +8,10 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../../data/game_repository.dart';
+import '../../battle/domain/cycle_realm_gate.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../battle/presentation/cycle_select_control.dart';
 import '../application/expedition_combat_runner.dart';
 import '../application/expedition_providers.dart';
 import '../application/expedition_startup.dart';
@@ -67,16 +70,24 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
   ExpeditionPolicy _policy = ExpeditionPolicy.yanJingCaiYao;
   bool _submitting = false;
 
-  Future<void> _dispatch() async {
+  /// 批 B：选定挑战周目（null = 未手选，默认已解锁等价周目；未达里程碑恒 1）。
+  int? _cycle;
+
+  Future<void> _dispatch(int cycleIndex) async {
     if (_selected.isEmpty || _submitting) return;
     final service = ref.read(expeditionServiceProvider);
     if (service == null) return; // 测试旁路：未 init Isar
     setState(() => _submitting = true);
     try {
-      await service.dispatch(characterIds: _selected.toList(), policy: _policy);
+      await service.dispatch(
+        characterIds: _selected.toList(),
+        policy: _policy,
+        cycleIndex: cycleIndex,
+      );
       if (!mounted) return;
       ref.invalidate(activeExpeditionProvider);
       ref.invalidate(expeditionCandidatesProvider);
+      ref.invalidate(expeditionMaxDepthProvider);
     } on StateError {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -108,6 +119,50 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
     };
     _selected.removeWhere((id) => !dispatchableIds.contains(id));
     final canDispatch = _selected.isNotEmpty && !_submitting;
+
+    // ── 批 B 周目选择：深度里程碑折算「已通」∩ 配置 cap ∩ 境界门槛。
+    // 境界口径 = 当前已选队伍最高（未选人时取可派遣候选最高，乐观展示）；
+    // dispatch 侧按实际队伍硬校验兜底。
+    final ra = GameRepository
+        .instanceOrNull
+        ?.numbers
+        .cycleEvolution
+        .realmAdvance;
+    final config = ref.watch(expeditionConfigProvider);
+    final maxDepth = ref
+        .watch(expeditionMaxDepthProvider)
+        .maybeWhen(data: (d) => d, orElse: () => 0);
+    var cleared = 0;
+    var unlockedCap = 1;
+    if (ra != null && config != null) {
+      cleared = CycleRealmGate.expeditionClearedEquivalent(
+        maxDepth: maxDepth,
+        milestones: ra.expeditionDepthMilestones,
+      );
+      final gateTiers = [
+        for (final c in candidates)
+          if (_selected.isEmpty
+              ? c.dispatchable
+              : _selected.contains(c.character.id))
+            c.character.realmTier,
+      ];
+      final playerMaxTier = gateTiers.isEmpty
+          ? RealmTier.xueTu
+          : gateTiers.reduce((a, b) => a.index >= b.index ? a : b);
+      unlockedCap = CycleRealmGate.unlockedCycleCap(
+        clearedCyclesMax: cleared,
+        playerMaxTier: playerMaxTier,
+        baseEnemyMaxTier: CycleRealmGate.maxEnemyTierOf([
+          for (final t in config.normalEnemyTeams) ...t.enemies,
+          for (final t in config.eliteEnemyTeams) ...t.enemies,
+        ]),
+        ra: ra,
+      );
+    }
+    final selectedCycle = (_cycle ?? cleared.clamp(1, unlockedCap)).clamp(
+      1,
+      unlockedCap,
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -165,13 +220,25 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
                 ),
                 const SizedBox(height: 8),
               ],
+              // 批 B：周目选择（达成首个深度里程碑起显；未达恒 cycle1 不渲染，
+              // 沿 CycleSelectControl「highest==0 → 空占位」体例）。
+              if (cleared >= 1) ...[
+                const SizedBox(height: 16),
+                CycleSelectLayout(
+                  highestCleared: cleared,
+                  maxCycle: unlockedCap,
+                  atMax: cleared >= unlockedCap,
+                  selected: selectedCycle,
+                  onChoose: (c) => setState(() => _cycle = c),
+                ),
+              ],
               const SizedBox(height: 10),
               Align(
                 alignment: Alignment.center,
                 child: PlaqueButton(
                   label: UiStrings.expeditionDispatchButton,
                   primary: true,
-                  onTap: canDispatch ? _dispatch : null,
+                  onTap: canDispatch ? () => _dispatch(selectedCycle) : null,
                 ),
               ),
             ],

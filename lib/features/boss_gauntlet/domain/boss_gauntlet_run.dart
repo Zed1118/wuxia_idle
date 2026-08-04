@@ -23,6 +23,11 @@ class BossGauntletRun {
   /// 当前关次 1..3（1 苏无咎 / 2 石镇岳 / 3 闻九针）。
   int currentStage = 1;
 
+  /// 本会话挑战周目（批 B 境界段推进）。默认 1；升级窗口内的旧 in-flight
+  /// 会话缺失读 0，与 cycle1 语义等价（tiersFor(0)=0 / rewardMultFor(0)=1.0），
+  /// 无实害不迁移。
+  int cycleIndex = 1;
+
   @enumerated
   GauntletPhase sessionPhase = GauntletPhase.inBattle;
 

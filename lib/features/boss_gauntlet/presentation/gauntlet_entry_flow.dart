@@ -180,7 +180,12 @@ class _GauntletBattleHostState extends ConsumerState<_GauntletBattleHost> {
         final run = await service.activeRun();
         final plan = await service.prepareStage(config: widget.config);
         if (!mounted) return;
-        final enemyTeam = StageBattleSetup.buildEnemyTeam(plan.enemyDefs);
+        // 批 B：断魂庄属境界段推进入口，live 路与 headless runner 同口径。
+        final enemyTeam = StageBattleSetup.buildEnemyTeam(
+          plan.enemyDefs,
+          cycleIndex: plan.cycleIndex,
+          advanceRealmPerCycle: true,
+        );
         setState(() => _stage = run?.currentStage ?? 1);
         ref
             .read(battleProvider.notifier)

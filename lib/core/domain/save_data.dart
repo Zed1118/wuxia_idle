@@ -131,6 +131,12 @@ class SaveData {
   /// 断魂庄首通时间（展示用，§3.3；DateTime? 沿 [islandLastSettledAt] 体例）。
   DateTime? duanhunFirstClearedAt;
 
+  /// 断魂庄已全通的最高周目（批 B 境界段推进 · spec 2026-08-01 拍板 #5）。
+  /// 默认 0（未通）；旧档缺失读 0，cycle1 通关态由 [duanhunFirstClearedAt]
+  /// 派生兜底（读侧 max），零迁移。远征侧无此字段——远征无终点，
+  /// 周目解锁改绑深度里程碑（[baicaoMaxDepth] 纯派生，2026-08-04 拍板）。
+  int duanhunClearedCyclesMax = 0;
+
   /// 问鼎江湖断魂帖里程碑·旧档补发防重（§6.4，F1 里程碑同款一次性体例）。
   ///
   /// 里程碑层现为 16/33/49（批 A 塔扩 49 层，2026-08-04 拍板保持 3 张均匀分布，

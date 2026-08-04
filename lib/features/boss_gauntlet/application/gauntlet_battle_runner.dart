@@ -34,9 +34,15 @@ class GauntletBattleRunner {
     required List<EnemyDef> enemyDefs,
     required NumbersConfig numbers,
     required int seed,
+    int cycleIndex = 1,
     int maxTicks = 240,
   }) {
-    final enemies = StageBattleSetup.buildEnemyTeam(enemyDefs);
+    // 批 B：断魂庄属境界段推进入口（spec 拍板 #5），cycle≥2 敌境界整体抬升。
+    final enemies = StageBattleSetup.buildEnemyTeam(
+      enemyDefs,
+      cycleIndex: cycleIndex,
+      advanceRealmPerCycle: true,
+    );
     final result = ExpeditionBattleRunner.runNodeBattle(
       playerTeam: playerTeam,
       enemyTeam: enemies,

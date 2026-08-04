@@ -2,6 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/domain/character.dart';
+import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
 import '../../activity/application/character_occupancy_service.dart';
@@ -37,6 +38,17 @@ Future<ExpeditionRun?> activeExpedition(Ref ref) async {
 @riverpod
 ExpeditionConfig? expeditionConfig(Ref ref) =>
     GameRepository.instanceOrNull?.expeditionConfig;
+
+/// 历史最深节点（批 B 周目选择：深度里程碑折算「已通周目」等价值 +
+/// [SaveData.baicaoMaxDepth] 展示）。派遣/召回写路径后由 caller
+/// `ref.invalidate(expeditionMaxDepthProvider)` 统一失效。
+@riverpod
+Future<int> expeditionMaxDepth(Ref ref) async {
+  final isar = ref.watch(isarProvider);
+  if (isar == null) return 0;
+  final save = await isar.saveDatas.get(0);
+  return save?.baicaoMaxDepth ?? 0;
+}
 
 /// 单个派遣候选（总览派遣态用）：角色 + 可派遣性标注（§4.1）。
 class ExpeditionCandidate {

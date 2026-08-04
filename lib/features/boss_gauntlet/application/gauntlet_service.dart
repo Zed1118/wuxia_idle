@@ -20,6 +20,7 @@ import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/battle_state.dart';
+import '../../battle/domain/cycle_realm_gate.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../equipment/application/equipment_factory.dart';
@@ -37,6 +38,7 @@ typedef GauntletStagePlan = ({
   List<EnemyDef> enemyDefs,
   int seed,
   bool isBoss,
+  int cycleIndex,
 });
 
 /// 断魂庄崩溃恢复结果（C2.3b·§5.6/§10）。
@@ -116,13 +118,24 @@ class GauntletService {
   /// 入场：单 `writeTxn` 建断魂庄 active 会话，返回落库的 run id。
   ///
   /// [supplies] = defId → 份数（疗伤丹/行囊补给自由混装），总份数 ≤ [supplyCap]。
+  /// 断魂庄已全通最高周目（读侧兜底：旧档 cycle1 通关态由
+  /// [SaveData.duanhunFirstClearedAt] 派生，`duanhunClearedCyclesMax` 缺失读 0）。
+  static int duanhunClearedCyclesMaxOf(SaveData save) => math.max(
+    save.duanhunClearedCyclesMax,
+    save.duanhunFirstClearedAt != null ? 1 : 0,
+  );
+
   Future<int> enter({
     required List<int> characterIds,
     Map<String, int> supplies = const {},
     required int supplyCap,
+    int cycleIndex = 1,
   }) async {
     if (characterIds.isEmpty || characterIds.length > 3) {
       throw StateError('断魂庄入场：队伍须 1-3 人，got ${characterIds.length}');
+    }
+    if (cycleIndex < 1) {
+      throw StateError('断魂庄入场：周目须 ≥1，got $cycleIndex');
     }
     if (characterIds.toSet().length != characterIds.length) {
       throw StateError('断魂庄入场：队伍含重复角色');
@@ -146,9 +159,11 @@ class GauntletService {
 
       final occupancy = await CharacterOccupancyService(_isar).snapshot();
       final members = <ActivityMemberSnapshot>[];
+      var entryMaxTier = RealmTier.xueTu;
       for (final cid in characterIds) {
         final c = await _isar.characters.get(cid);
         if (c == null) throw StateError('断魂庄入场：角色 $cid 不存在');
+        if (c.realmTier.index > entryMaxTier.index) entryMaxTier = c.realmTier;
         if (c.isFounder) throw StateError('断魂庄入场：祖师不可入场');
         if (occupancy.isCharacterOccupied(cid)) {
           throw StateError('断魂庄入场：角色 $cid 已被其它活动占用');
@@ -170,6 +185,29 @@ class GauntletService {
             ..currentQi = 0
             ..isDowned = false,
         );
+      }
+
+      // 批 B：周目解锁门槛硬守卫（顺序解锁 + 境界门槛，UI 为第一道拦截）。
+      if (cycleIndex > 1) {
+        final config = GameRepository.instance.bossGauntletConfig;
+        if (config == null) {
+          throw StateError('断魂庄入场：无断魂庄配置，不可挑战高周目');
+        }
+        final ra = GameRepository.instance.numbers.cycleEvolution.realmAdvance;
+        final unlocked = CycleRealmGate.unlockedCycleCap(
+          clearedCyclesMax: duanhunClearedCyclesMaxOf(save),
+          playerMaxTier: entryMaxTier,
+          baseEnemyMaxTier: CycleRealmGate.maxEnemyTierOf([
+            for (final s in config.stages)
+              ...config.enemiesForTeam(s.enemyTeamId),
+          ]),
+          ra: ra,
+        );
+        if (cycleIndex > unlocked) {
+          throw StateError(
+            '断魂庄入场：周目 $cycleIndex 未解锁（当前可挑战至 $unlocked）',
+          );
+        }
       }
 
       // 扣一张断魂帖（消耗凭证与建会话同事务·§5.1）。
@@ -201,6 +239,7 @@ class GauntletService {
         // seed = saveId 派生（无 run serial·异于远征）；每关组合层再混 currentStage。
         ..seed = save.id
         ..currentStage = 1
+        ..cycleIndex = cycleIndex
         ..sessionPhase = GauntletPhase.inBattle
         ..members = members
         ..escrowItemDefIds = escrowDefIds
@@ -324,6 +363,7 @@ class GauntletService {
       enemyDefs: plan.enemyDefs,
       numbers: numbers,
       seed: plan.seed,
+      cycleIndex: plan.cycleIndex,
     );
     await settleStageResult(finalState: result.finalState, config: config);
     return result;
@@ -363,6 +403,7 @@ class GauntletService {
       enemyDefs: enemyDefs,
       seed: _stageSeed(run.seed, run.currentStage),
       isBoss: stageCfg.role == 'boss',
+      cycleIndex: run.cycleIndex,
     );
   }
 
@@ -443,13 +484,23 @@ class GauntletService {
     final eqDef = repo.getEquipment(chosenEquipmentDefId);
     final isFirstClear = run0.isFirstClearPending;
     final memberIds = run0.members.map((m) => m.characterId).toList();
-    // §6.2：首通全额，重复通关取半。
-    final rewardExp = isFirstClear
-        ? config.firstClearRewardExp
-        : config.firstClearRewardExp ~/ 2;
-    final rewardInsight = isFirstClear
-        ? config.firstClearRewardInsight
-        : config.firstClearRewardInsight ~/ 2;
+    // §6.2：首通全额，重复通关取半。批 B：高周目奖励乘数
+    // ×(1+bonus×(cycle-1))（用户拍板 2026-08-04·打更强的敌奖励随之抬）。
+    final cycleRewardMult = numbers.cycleEvolution.realmAdvance.rewardMultFor(
+      run0.cycleIndex,
+    );
+    final rewardExp =
+        ((isFirstClear
+                    ? config.firstClearRewardExp
+                    : config.firstClearRewardExp ~/ 2) *
+                cycleRewardMult)
+            .round();
+    final rewardInsight =
+        ((isFirstClear
+                    ? config.firstClearRewardInsight
+                    : config.firstClearRewardInsight ~/ 2) *
+                cycleRewardMult)
+            .round();
 
     await _isar.writeTxn(() async {
       final run = await _activeRun(save0.id);
@@ -513,6 +564,10 @@ class GauntletService {
       // ④ 记通关（防重键·首通秘籍不重复掉落靠此·§inv5）。
       if (!alreadyCleared) {
         save.clearedGauntletIds = [...save.clearedGauntletIds, gauntletId];
+      }
+      // ④b 批 B：记已全通最高周目（周目解锁判定读侧·旧档缺失 cycleIndex 读 0 不写）。
+      if (run.cycleIndex > save.duanhunClearedCyclesMax) {
+        save.duanhunClearedCyclesMax = run.cycleIndex;
       }
       await _isar.saveDatas.put(save);
 
