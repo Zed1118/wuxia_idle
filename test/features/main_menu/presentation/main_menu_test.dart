@@ -282,7 +282,7 @@ void main() {
           towerProgressProvider.overrideWith(
             (ref) async => TowerProgress()
               ..saveDataId = 1
-              ..highestClearedFloor = 9
+              ..highestClearedFloor = 6
               ..createdAt = now,
           ),
           allEquipmentsProvider.overrideWith((ref) async => equipments),
@@ -305,7 +305,8 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('目标：打第1章第2关「荒山野店」'), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuTowerBossStatus(9, 10)), findsOneWidget);
+    // 批 A 塔重排:大 Boss 位 7(黑风寨主),fixture highest=6 → 下一层 7 走 Boss 文案分支。
+    expect(find.text(UiStrings.mainMenuTowerBossStatus(6, 7)), findsOneWidget);
     expect(
       find.text(UiStrings.mainMenuInventoryStatus(2, '宝物')),
       findsOneWidget,
@@ -1181,7 +1182,7 @@ void main() {
       final now = DateTime(2026, 7, 16);
       return SaveData()
         ..id = 0
-        ..saveVersion = '0.37.0'
+        ..saveVersion = '0.38.0'
         ..createdAt = now
         ..lastSavedAt = now
         ..lastOnlineAt = now

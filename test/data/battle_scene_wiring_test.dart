@@ -55,7 +55,7 @@ void main() {
   });
 
   test('所有 tower floor 背景路径 == battle_innerrealm.png', () {
-    expect(repo.towerFloors, hasLength(30));
+    expect(repo.towerFloors, hasLength(49));
     for (final f in repo.towerFloors) {
       expect(
         f.sceneBackgroundPath,

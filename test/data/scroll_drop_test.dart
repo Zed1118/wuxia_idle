@@ -9,7 +9,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 /// 当前发布方案(T5 首通必得):
 ///   - 主线前三章各 1 本当前阶秘籍:dropChance=1.0 + isFirstClear gate 于
 ///     stage_entry_flow.dart(非首通跳过写入,避免重复刷)
-///   - 爬塔 2 本(5/10 层):dropChance=1.0 + tower_entry_flow isFirstClear 门控。
+///   - 爬塔 2 本(4/7 层,批 A 重排随 Boss 迁移):dropChance=1.0 + tower_entry_flow isFirstClear 门控。
 /// 高阶秘籍定义保留给未来副本，不从当前主线/塔提前投放。
 void main() {
   Future<String> fileLoader(String path) async {
@@ -79,8 +79,8 @@ void main() {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
       const towerScrolls = <int, String>{
-        5: 'item_scroll_kai_bei_shou',
-        10: 'item_scroll_yan_zi_san_chao',
+        4: 'item_scroll_kai_bei_shou',
+        7: 'item_scroll_yan_zi_san_chao',
       };
 
       for (final entry in towerScrolls.entries) {
@@ -101,8 +101,8 @@ void main() {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
       const towerScrolls = <int, String>{
-        5: 'item_scroll_kai_bei_shou',
-        10: 'item_scroll_yan_zi_san_chao',
+        4: 'item_scroll_kai_bei_shou',
+        7: 'item_scroll_yan_zi_san_chao',
       };
 
       for (final entry in towerScrolls.entries) {

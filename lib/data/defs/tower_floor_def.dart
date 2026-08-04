@@ -10,19 +10,22 @@ import '../../core/domain/enums.dart';
 ///     F5/2026-06-23 删主线 Phase 1 占位字段 dropEquipmentDefIds / dropItemDefIds）
 ///   - 主线允许 enemyTeam 空（剧情关），爬塔每层必须 1-3 个敌人
 ///
-/// 30 层数值曲线（phase3_tasks T40 拍板）：
-///   - 1-5 学徒 / 6-10 三流 / 11-15 二流 / 16-20 一流 / 21-25 绝顶 / 26-30 宗师
-///   - 普通层 HP 800→12000 线性插值；普通层攻 200→2500
-///   - Boss 层以主 Boss 为核心；后段 Boss 可带 1-2 名护法形成多目标压力
+/// 49 层数值曲线（批 A · 1:1 锚死，spec 2026-08-01 §7）：
+///   - floor N ↔ 境界绝对层 N，每 tier 7 层：学徒 1-7 / 三流 8-14 / 二流 15-21 /
+///     一流 22-28 / 绝顶 29-35 / 宗师 36-42 / 武圣 43-49
+///   - 普通敌单体 hp/atk/spd 对齐主线 stages.yaml 同 (tier,layer) 实测中位
+///   - Boss 层以主 Boss 为核心；大 Boss 层可带护卫/护法形成多目标压力
 ///
 /// 数值红线（[GameRepository._enforceRedLines] 校验）：
 ///   - 普伤 ≤ 8000、Boss HP ≤ 60000（§5.4，2026-06-14 调）、玩家血 ≤ 20000、内力 ≤ 15000
-///   - floorIndex ∈ [1, 30] 唯一且连续
-///   - bossKind 仅在 5/10/15/20/25/30 层非 null
+///   - floorIndex 从 1 起唯一连续；层数 ≤ 境界总层数 49（1:1 锚死上界）
+///   - bossKind 按结构规则：tier 中点（4/11/18/25/32/39/46）minor、
+///     tier 末层（7/14/21/28/35/42/49）major，其余必须 null
 ///   - 普通层 narrativeOpeningId / narrativeVictoryId 必须为 null
+///   - requiredRealm ≤ 该层敌人境界（拍板 #8，防掉落阶提前发放）
 ///   - baseExpReward ≥ 0
 class TowerFloorDef {
-  /// 层号，1-30，唯一且连续（[GameRepository._enforceRedLines] 校验）。
+  /// 层号，从 1 起唯一连续（[GameRepository._enforceRedLines] 校验）。
   final int floorIndex;
 
   /// 推荐境界，仅用于 UI 提示（**不做硬挡**：挑战自由，难度自然惩罚）。
@@ -46,16 +49,16 @@ class TowerFloorDef {
   /// **重打不发奖**（[TowerProgressService.recordClear] 返回 isFirstClear 控制）。
   final List<DropEntry> dropTable;
 
-  /// 通关基础经验奖励（W15 #30 第 3 期）。
+  /// 通关基础经验奖励（W15 #30 第 3 期；批 A 扩 49 层重定曲线）。
   ///
-  /// 曲线：普通层 80×floorIndex / 小 Boss(5/15/25) ×2 / 大 Boss(10/20/30) ×3。
-  /// 30 层全清总 EXP ≈ 5.04w(stages.yaml 15 关总 ≈ 2.6w),塔承担「中盘 layer
-  /// 推进主力」与主线开局 + 闭关挂机长尾形成 3 系互补。重打不发奖由
+  /// 曲线：普通层按 tier 递增 8→32 / 小 Boss ≈ 普通 ×2.5 / 大 Boss ≈ 普通 ×3。
+  /// 塔承担「中盘 layer 推进主力」，与主线开局 + 闭关挂机长尾形成 3 系互补；
+  /// 总量由 A5 balance 探针复校。重打不发奖由
   /// [TowerProgressService.recordClear] 控制(isFirstClear)。
   final int baseExpReward;
 
   /// M4 Stage 3 美术(2026-05-21):战斗屏场景背景 png 路径。
-  /// 仅爬塔 BOSS 层(5/10/15/20/25/30)在 yaml 配置;null 时 battle_screen 走 backgroundColor 兜底。
+  /// null 时 battle_screen 走 backgroundColor 兜底。
   final String? sceneBackgroundPath;
 
   /// 可玩性 P1a:爬塔 Boss 残页(spec §二)。仅 bossKind != null 层可配 · null=不掉。

@@ -100,12 +100,19 @@ codex image_gen 自主批(配方见 memory `reference_codex_image_gen_art_pipeli
 
 ## 当前恢复点
 
-- **状态**:批 D 已合 main(PR #113,merge `5d62321d`);批 A 进行中,**A0 已完成**
-- **最后完成**:A0 解层数硬编码(分支 `worktree-tower-batch-a`,4 commit
-  `f5f4ac71`/`06dca593`/`74e238a9`/`e14d927c`)。范围由起草的 3 处修正为 11 处生产行为点,
-  5 轮破坏证红逐处验证一一对应
-- **下一步**:A1 重排既有 30 层 → abs 1-30(整体重排非纯追加,曲线须整体重校)
-- **已跑验证**:`flutter analyze --no-pub` **No issues found**;targeted 全绿
-  tower 98 / battle_record 63 / data 449 / sweep 44 / main_menu 69 / debug 156
-  (含新建 `visual_acceptance_tower_coverage_test` 4 例);全量见 PROGRESS
-- **阻塞项**:A1/A3 前须拍断魂帖里程碑分布(见本文开头);A0 不受此阻塞已放行
+- **状态**:**批 A 主体完成**(A0-A4 + 断魂帖 16/33/49 + 机制校准)。A0 已合 main
+  (PR #114 merge `e36884f9`);A1+A2+A3+断魂帖在分支 `worktree-tower-batch-a`
+  (commit `f5b71742`/`9a128e18`/`65db9bad`/`879dc456` + GDD 收尾)
+- **最后完成**:towers.yaml 全重写 49 层(2438 行·116 敌条目·曲线对齐主线锚点);
+  Boss 位 14 个(6 迁移+8 新);28 篇叙事(12 迁移+16 新写);saveVersion 0.38.0
+  (bossKey 重映射);断魂帖 16/33/49;塔势总览定位滚动;23 个测试文件 reconcile;
+  **机制型 Boss 血量-乘子联动校准**(floor32 55000×0.12 全败→40000×0.35 定稿 /
+  floor49 0.20 速通失效→0.10;vulnerability_window+cycle2+feel 三诊断全绿)
+- **A4**:requiredRealm ≤ 敌境界已做成**加载期校验**(progression validator,
+  比守卫测更硬);A5 塔曲线部分由 feel/soft_gate/vulnerability_window 诊断覆盖,
+  §1.3「净威胁 ~2.4×」推算属批 B 周目实测项
+- **下一步**:批 B 周目语义修正(B1-B5,与批 A 文件不重叠);批 C 8 张 Boss 立绘
+  (18/21/25/28/35/39/42/46 现为主线敌池占位)
+- **已跑验证**:全量 `flutter test --no-pub` **4813 pass / 0 fail**;analyze 0;
+  truth_source_guard 9 pass(GDD 状态块含新爬塔行)
+- **阻塞项**:无(断魂帖已拍板 a 并实装)

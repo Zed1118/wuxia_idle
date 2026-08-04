@@ -35,10 +35,12 @@ void main() {
       }
     });
 
-    test('爬塔 10/20/30 层含 item_jingyandan_large 掉落', () async {
+    test('爬塔全部大 Boss 层含 item_jingyandan_large 掉落', () async {
+      // 批 A 塔重排:大 Boss 位 = tier 末层 7/14/21/28/35/42/49,
+      // 「大 Boss 首通必得」体例一条规则无特例(经济总量 A5 探针复校)。
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
-      for (final floor in [10, 20, 30]) {
+      for (final floor in [7, 14, 21, 28, 35, 42, 49]) {
         final floorDef = repo.getTowerFloor(floor);
         final itemIds = floorDef.dropTable
             .whereType<ItemDrop>()
@@ -85,7 +87,7 @@ void main() {
       }
 
       // 爬塔大 Boss 层
-      for (final floor in [10, 20, 30]) {
+      for (final floor in [7, 14, 21, 28, 35, 42, 49]) {
         final floorDef = repo.getTowerFloor(floor);
         final drops = floorDef.dropTable
             .whereType<ItemDrop>()

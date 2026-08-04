@@ -37,9 +37,10 @@ void main() {
       GameRepository.instance,
     ).sourcesFor('weapon_xiangyang_chang_jian');
 
+    // 批 A 塔重排:xiangyang_chang_jian 现于 floor 13(sanLiu 普通层)轮转掉落。
     expect(
       sources,
-      contains(const EquipmentSource.tower(floorIndex: 30, isBoss: true)),
+      contains(const EquipmentSource.tower(floorIndex: 13, isBoss: false)),
     );
   });
 

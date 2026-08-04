@@ -77,15 +77,18 @@ void main() {
     );
   });
 
-  test('battle suite 覆盖73动态战斗与7个确定性素材/状态 route', () {
+  test('battle suite 覆盖92动态战斗与7个确定性素材/状态 route', () {
     final ids = visualAcceptanceRouteIds(VisualAcceptanceSuite.battle);
 
-    expect(ids, hasLength(80));
-    expect(ids.toSet(), hasLength(80));
+    // 批 A 塔 30→49 层:塔 audit route +19(30 主线 + 49 塔 + 5 轻功 + 5 群战
+    // + 3 断魂庄 = 92 动态)。
+    expect(ids, hasLength(99));
+    expect(ids.toSet(), hasLength(99));
     expect(ids.first, 'battle_audit_stage_01_01');
     expect(ids, contains('battle_audit_stage_06_05'));
     expect(ids, contains('battle_audit_tower_01'));
     expect(ids, contains('battle_audit_tower_30'));
+    expect(ids, contains('battle_audit_tower_49'));
     expect(ids, contains('battle_audit_stage_light_foot_05'));
     expect(ids, contains('battle_audit_stage_mass_battle_05'));
     expect(ids, contains('battle_audit_gauntlet_01'));

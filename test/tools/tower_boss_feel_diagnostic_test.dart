@@ -9,6 +9,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import 'package:wuxia_idle/data/defs/stage_def.dart' show EnemyDef;
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -63,17 +64,19 @@ void main() {
     Directory(_outputDir).createSync(recursive: true);
   });
 
-  test('爬塔全坡度 6 Boss 层 + 前驱普通层体感只读诊断', () async {
-    // 全 6 Boss 层(5/10/15/20/25/30 · minor/major 交替每 5 层)+ 各自前驱
-    // 普通层(4/9/14/19/24/29)成对采样,直接支撑 6 对 Boss no-regress 断言与
-    // 整塔难度坡度实测。
+  test('爬塔全坡度 7 大 Boss 层 + 前驱普通层体感只读诊断', () async {
+    // 批 A 塔 49 层重排:采样每 tier 的大 Boss(tier 末层 7/14/21/28/35/42/49)
+    // + 各自前驱普通层成对,7 tier 全坡度覆盖,支撑 no-regress 断言与
+    // 整塔难度坡度实测(14 Boss 全采样会翻倍模拟时长,大 Boss 对已覆盖每段落)。
     const bossPairs = [
-      [4, 5],
-      [9, 10],
-      [14, 15],
-      [19, 20],
-      [24, 25],
-      [29, 30],
+      [6, 7],
+      [13, 14],
+      [20, 21],
+      [27, 28],
+      [31, 32], // 机制 Boss(剑魔·vuln)对——相位触发断言需要其模拟数据
+      [34, 35],
+      [41, 42],
+      [48, 49],
     ];
     final sampleFloors = [for (final pair in bossPairs) ...pair];
     final floors = sampleFloors.map(repo.getTowerFloor).toList();
@@ -99,7 +102,7 @@ void main() {
     );
     expect(results.where((r) => r.result != 'timeout'), isNotEmpty);
 
-    // 全 6 Boss 层不得弱于其前驱普通层(总 baseHp/baseAttack 单调)。
+    // 全部采样 Boss 层不得弱于其前驱普通层(总 baseHp/baseAttack 单调)。
     for (final pair in bossPairs) {
       _expectBossDoesNotRegress(
         repo.getTowerFloor(pair[0]),
@@ -107,23 +110,23 @@ void main() {
       );
     }
 
-    final floor25 = repo
-        .getTowerFloor(25)
+    final floor32 = repo
+        .getTowerFloor(32)
         .enemyTeam
         .firstWhere((e) => e.isBoss);
-    final floor30 = repo
-        .getTowerFloor(30)
+    final floor49 = repo
+        .getTowerFloor(49)
         .enemyTeam
         .firstWhere((e) => e.isBoss);
     expect(
-      floor25.bossPhases,
+      floor32.bossPhases,
       isNotNull,
-      reason: '25 层小 Boss 应至少有二阶段,避免单体 Boss 体感弱于前一普通层',
+      reason: '32 层剑魔应至少有二阶段,避免单体 Boss 体感弱于前一普通层',
     );
     expect(
-      floor30.bossPhases,
+      floor49.bossPhases,
       isNotNull,
-      reason: '30 层终关 Boss 应至少有二阶段,避免终关体感弱于前一普通层',
+      reason: '49 层终关 Boss 应至少有二阶段,避免终关体感弱于前一普通层',
     );
     // 相位触发不变量**只对 ceiling(满投入 on-level)成立**——保证正常养成玩家能
     // 看到完整相位战。floor(零投入 on-level:0 强化 / 0 战意 / 无 buff)profile 不硬
@@ -131,15 +134,11 @@ void main() {
     // 噪声易漂的瞬时值,守 memory red_line_test_semantics)。
     //
     // 为何豁免 floor profile(实测差异):
-    //   - **floor25(首相位阈值 0.70 深)**:窗口外承伤 ×0.10 让零投入队 DPS 啃不到
-    //     -30% 的首阈值 → 触发不了相位(bootstrapping:要开窗须先跌破阈值,而跌破所
-    //     需伤害又被窗口外 0.10 折扣压住)。因此 floor profile 不承担相位可见性的
-    //     硬门槛；这是有意软门槛(用户 2026-07-03 拍板「接受为软门槛」)。
-    //   - **floor30(首相位阈值 0.90 浅)**:只需啃到 -10% 即开窗,零投入队也啃得到,
-    //     **本不受 vuln bootstrapping 困**；豁免对 floor30 无实际影响,只是统一
-    //     ceiling-only 断言口径。
-    // 非 vuln Boss 不适用本豁免。
-    for (final floorIndex in [25, 30]) {
+    //   - **floor32(批 A 后剑魔位,首相位 0.92 浅开窗)**:批 A 校准后零投入队理论
+    //     可开窗,但保持 ceiling-only 口径不变(floor profile 仍只观测不断言)。
+    //   - **floor49(魔尊位,首相位 0.90 浅)**:同上。
+    // 非 vuln Boss 不适用本豁免。旧 [25,30] 是重排前的机制 Boss 位(2026-08-04 迁)。
+    for (final floorIndex in [32, 49]) {
       final triggered = results
           .where(
             (r) =>
@@ -158,29 +157,33 @@ void main() {
 }
 
 void _expectBossDoesNotRegress(TowerFloorDef previous, TowerFloorDef boss) {
-  final previousHp = previous.enemyTeam.fold<int>(
-    0,
-    (sum, e) => sum + e.baseHp,
-  );
-  final bossHp = boss.enemyTeam.fold<int>(0, (sum, e) => sum + e.baseHp);
-  final previousAttack = previous.enemyTeam.fold<int>(
-    0,
-    (sum, e) => sum + e.baseAttack,
-  );
-  final bossAttack = boss.enemyTeam.fold<int>(
-    0,
-    (sum, e) => sum + e.baseAttack,
-  );
+  // 2026-08-04 批 A 塔 49 层后语义修正:比较口径从「队伍总量」改「单体最强」。
+  // 高段普通层是 3 人贴 60000 红线的队(总血 15 万+),单体 Boss 被同一红线钉死,
+  // 「Boss 总量 > 普通层总量」在红线段结构上不可满足;体感上「守关人比路人强」
+  // 本就是单体对单体的比较。顶格段(48/49 均 59500/2000)用 >=(贴线相等=不倒退)。
+  // vuln 机制 Boss 的名义血刻意低于曲线(§5.4 机制型=减伤方向不膨胀数字,
+  // 血量与乘子联动校准),体感血量 = baseHp / outOfWindowDamageMult(窗口外
+  // 有效血),用它参与不倒退比较(剑魔 40000/0.35≈11.4 万 >> 前驱 47000)。
+  int effectiveHp(EnemyDef e) {
+    final mult = e.vulnerability?.outOfWindowDamageMult;
+    if (mult == null || mult <= 0) return e.baseHp;
+    return (e.baseHp / mult).round();
+  }
+
+  int maxHp(TowerFloorDef f) =>
+      f.enemyTeam.map(effectiveHp).reduce((a, b) => a > b ? a : b);
+  int maxAtk(TowerFloorDef f) =>
+      f.enemyTeam.map((e) => e.baseAttack).reduce((a, b) => a > b ? a : b);
 
   expect(
-    bossHp,
-    greaterThan(previousHp),
-    reason: 'floor ${boss.floorIndex} Boss 总 baseHp 不应低于前一普通层',
+    maxHp(boss),
+    greaterThanOrEqualTo(maxHp(previous)),
+    reason: 'floor ${boss.floorIndex} Boss 单体体感血量(vuln 折算)不应低于前一普通层单体',
   );
   expect(
-    bossAttack,
-    greaterThan(previousAttack),
-    reason: 'floor ${boss.floorIndex} Boss 总 baseAttack 不应低于前一普通层',
+    maxAtk(boss),
+    greaterThanOrEqualTo(maxAtk(previous)),
+    reason: 'floor ${boss.floorIndex} Boss 单体 baseAttack 不应低于前一普通层单体',
   );
 }
 
@@ -377,7 +380,7 @@ String _summarize(List<_FloorResult> results, List<TowerFloorDef> floors) {
   buf.writeln('# 爬塔 Boss 体感诊断 · 2026-07-01');
   buf.writeln();
   buf.writeln(
-    '全坡度 6 Boss 层(5/10/15/20/25/30)+ 各自前驱普通层(4/9/14/19/24/29) · '
+    '全坡度 7 大 Boss 层(7/14/21/28/35/42/49)+ 各自前驱普通层 · '
     '${_BuildProfile.values.length} profile × '
     '$_seeds seed · maxTicks=$_maxTicks · 只读模拟,不改数值。',
   );

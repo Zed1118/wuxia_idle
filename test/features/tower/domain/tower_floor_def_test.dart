@@ -5,15 +5,16 @@ import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 
-/// Phase 3 T40 · towers.yaml schema + TowerFloorDef + 30 层 fixture
+/// Phase 3 T40 · towers.yaml schema + TowerFloorDef + 49 层 fixture
+/// （批 A 塔 30→49 层 1:1 锚死重排，spec 2026-08-01 §7）
 ///
 /// 覆盖：
 ///   - fromYaml 解析（含 bossKind null / minor / major / dropTable）
-///   - 30 层 fixture 加载（启动校验全过）
-///   - floorIndex 1-30 连续唯一
-///   - Boss 分布严格（minor 5/15/25、major 10/20/30）
+///   - 49 层 fixture 加载（启动校验全过）
+///   - floorIndex 1-49 连续唯一
+///   - Boss 分布严格（tier 中点 minor 4/11/18/25/32/39/46、tier 末层 major 7/14/21/28/35/42/49）
 ///   - 普通层 narrative 必须 null
-///   - 境界曲线（每 5 层升一阶）
+///   - 境界曲线（floor N ↔ abs N，每 tier 7 层）
 ///   - getTowerFloor 越界 RangeError
 ///   - fail-fast：普通层带 narrative / Boss 分布错位 / 层不连续 / Boss HP 越界
 void main() {
@@ -116,23 +117,23 @@ void main() {
     });
   });
 
-  group('30 层 fixture 集成（GameRepository 启动校验）', () {
-    test('towerFloors.length == 30 + 升序 + floorIndex 1-30 连续唯一', () async {
+  group('49 层 fixture 集成（GameRepository 启动校验）', () {
+    test('towerFloors.length == 49 + 升序 + floorIndex 1-49 连续唯一', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
-      expect(repo.towerFloors.length, 30);
+      expect(repo.towerFloors.length, 49);
       for (var i = 0; i < repo.towerFloors.length; i++) {
         expect(
           repo.towerFloors[i].floorIndex,
           i + 1,
-          reason: 'floorIndex 必须连续 1-30',
+          reason: 'floorIndex 必须连续 1-49',
         );
       }
     });
 
-    test('Boss 分布严格：minor=5/15/25、major=10/20/30，其他层 bossKind=null', () async {
+    test('Boss 分布严格：tier 中点 minor、tier 末层 major，其他层 bossKind=null', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
-      const minor = {5, 15, 25};
-      const major = {10, 20, 30};
+      const minor = {4, 11, 18, 25, 32, 39, 46};
+      const major = {7, 14, 21, 28, 35, 42, 49};
       for (final f in repo.towerFloors) {
         final expected = minor.contains(f.floorIndex)
             ? TowerBossKind.minor
@@ -176,11 +177,16 @@ void main() {
       }
     });
 
-    test('当前发布境界曲线：1-15 学徒，16-30 三流', () async {
+    test('1:1 锚死境界曲线：floor N ↔ abs N，每 tier 7 层', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       const expectedByRange = <RealmTier, List<int>>{
-        RealmTier.xueTu: [1, 15],
-        RealmTier.sanLiu: [16, 30],
+        RealmTier.xueTu: [1, 7],
+        RealmTier.sanLiu: [8, 14],
+        RealmTier.erLiu: [15, 21],
+        RealmTier.yiLiu: [22, 28],
+        RealmTier.jueDing: [29, 35],
+        RealmTier.zongShi: [36, 42],
+        RealmTier.wuSheng: [43, 49],
       };
       for (final entry in expectedByRange.entries) {
         for (var i = entry.value[0]; i <= entry.value[1]; i++) {
@@ -211,9 +217,10 @@ void main() {
       }
     });
 
-    test('20/25/30 层后段 Boss 具备多目标压力、弱点抗性与阶段反扑', () async {
+    test('带护卫的 Boss 层具备多目标压力、弱点抗性与阶段反扑', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
-      for (final floorIndex in const [20, 25, 30]) {
+      // 批 A 重排后带护卫/影侍的 Boss 位:14/21/28(大)/32(剑魔)/42/49(大)
+      for (final floorIndex in const [14, 21, 28, 32, 42, 49]) {
         final floor = repo.getTowerFloor(floorIndex);
         expect(
           floor.enemyTeam.length,
@@ -251,11 +258,11 @@ void main() {
     test('getTowerFloor 越界 → RangeError', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       expect(() => repo.getTowerFloor(0), throwsRangeError);
-      expect(() => repo.getTowerFloor(31), throwsRangeError);
+      expect(() => repo.getTowerFloor(50), throwsRangeError);
       expect(() => repo.getTowerFloor(-1), throwsRangeError);
       // 边界命中
       expect(repo.getTowerFloor(1).floorIndex, 1);
-      expect(repo.getTowerFloor(30).floorIndex, 30);
+      expect(repo.getTowerFloor(49).floorIndex, 49);
     });
   });
 
@@ -330,7 +337,7 @@ void main() {
 
     test('Boss HP > bossHpMax（§5.4 红线，60000）→ StateError', () async {
       final overrides = _buildBrokenTowersYaml((floors) {
-        // floor=30 大 Boss baseHp 拉到越界值
+        // floor=30 敌人 baseHp 拉到越界值（红线覆盖全部敌条目非仅 Boss）
         floors[29] = floors[29].replaceFirst(
           RegExp(r'baseHp:\s+\d+'),
           'baseHp: 99999',
@@ -350,7 +357,7 @@ void main() {
   });
 }
 
-/// 读真 towers.yaml，按 `- floorIndex:` 切成 30 块，让 mutator 改若干块，
+/// 读真 towers.yaml，按 `- floorIndex:` 切成 49 块，让 mutator 改若干块，
 /// 然后拼回 yaml 字符串。用于构造 fail-fast 测试的 broken fixture。
 String _buildBrokenTowersYaml(void Function(List<String> floorBlocks) mutator) {
   final raw = File(
@@ -369,8 +376,8 @@ String _buildBrokenTowersYaml(void Function(List<String> floorBlocks) mutator) {
   // parts[0] 可能是注释行/空行，剩下是 30 个 floor 块
   final preamble = parts.first;
   final floors = parts.skip(1).toList();
-  if (floors.length != 30) {
-    throw StateError('解析 towers.yaml 切到 ${floors.length} 块，期望 30');
+  if (floors.length != 49) {
+    throw StateError('解析 towers.yaml 切到 ${floors.length} 块，期望 49');
   }
   mutator(floors);
   return '$header$preamble${floors.join()}';

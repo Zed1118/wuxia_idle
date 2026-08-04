@@ -101,7 +101,7 @@ void main() {
     });
 
     test(
-      '塔：highestClearedFloor=10 → 回填 tower_floor_5 + tower_floor_10',
+      '塔：highestClearedFloor=10 → 回填 tower_floor_4 + tower_floor_7',
       () async {
         final isar = IsarSetup.instance;
         final saveDataId = IsarSetup.currentSlotId;
@@ -120,10 +120,10 @@ void main() {
         final towerEntries = all
             .where((m) => m.source == BossMemorySource.tower)
             .toList();
-        expect(towerEntries, hasLength(2), reason: 'Boss 层 5、10 均 <= 10 应回填');
+        expect(towerEntries, hasLength(2), reason: 'Boss 层 4、7 均 <= 10 应回填');
 
         final keys = towerEntries.map((m) => m.bossKey).toSet();
-        expect(keys, containsAll(['tower_floor_5', 'tower_floor_10']));
+        expect(keys, containsAll(['tower_floor_4', 'tower_floor_7']));
 
         for (final m in towerEntries) {
           expect(m.isPreRecord, isTrue);

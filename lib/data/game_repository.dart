@@ -762,11 +762,12 @@ class GameRepository {
     //   - narrativeDefeatId 必须仅在 isBossStage=true 关配置
     enforceMainlineRedLines(stageDefs: stageDefs);
 
-    // Phase 3 T40：爬塔 30 层校验
-    //   - floorIndex 1-30 连续唯一
-    //   - bossKind 严格在 5/10/15/20/25/30
+    // Phase 3 T40（批 A 扩 49 层重排）：爬塔校验
+    //   - floorIndex 从 1 起连续唯一；层数 ≤ 境界总层数 49（1:1 锚死上界）
+    //   - bossKind 按结构规则：tier 中点 minor / tier 末层 major
     //   - 普通层 narrativeOpeningId / narrativeVictoryId 必须为 null
     //   - Boss HP ≤ bossHpMax（§5.4 红线，config-driven，2026-06-14 调至 60000）
+    //   - requiredRealm ≤ 该层敌人境界（拍板 #8，防掉落阶提前发放）
     enforceTowerRedLines(
       towerFloors: towerFloors,
       skillDefs: skillDefs,

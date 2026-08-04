@@ -1637,12 +1637,12 @@ class UiStrings {
   // ── Phase 3 爬塔（T42）──
 
   static const String mainMenuTower = '问鼎九霄';
-  static const String mainMenuTowerHint = '30 层，无限重试，永久记录';
+  static const String mainMenuTowerHint = '49 层，无限重试，永久记录';
   static String mainMenuTowerStatus(int highest, int next) =>
       highest <= 0 ? '未登塔 · 1层' : '已至$highest层 · 下$next层';
   static String mainMenuTowerBossStatus(int highest, int next) =>
       highest <= 0 ? '未登塔 · 1层' : '已至$highest层 · 下$next层首领';
-  static const String mainMenuTowerCompleteStatus = '三十层已通';
+  static const String mainMenuTowerCompleteStatus = '四十九层已通';
 
   // ── P0.2 #40 排行榜(本地榜,D 方案 Demo 不接 Supabase backend)──
 
@@ -1679,7 +1679,7 @@ class UiStrings {
 
   static const String towerEntryPlaceholder = '爬塔进入流程待 T43 接入';
 
-  static String towerProgressCleared(int cleared) => '已通 $cleared / 30 层';
+  static String towerProgressCleared(int cleared) => '已通 $cleared / 49 层';
   static String towerProgressAttempts(int n) => '总尝试 $n 次';
   static String towerProgressDefeats(int n) => '失败 $n 次';
   static String towerProgressBarLabel(int cleared, int total) =>
@@ -1690,7 +1690,7 @@ class UiStrings {
   static const String towerHighestClearedNone = '最高进度：未破首层';
   static String towerNextMilestoneTarget(int floor, String name) =>
       '下一节点：第 $floor 层 · $name';
-  static const String towerNextMilestoneComplete = '下一节点：三十层已尽';
+  static const String towerNextMilestoneComplete = '下一节点：四十九层已尽';
   static const String towerMilestoneSummitBoss = '登顶大首领';
   static const String towerSpineLegend = '首领作节点，亮印为当前可挑战层，厚边为最高已通层';
 
@@ -2384,7 +2384,7 @@ class UiStrings {
   static const String towerAdvanceCycleButton = '挑战下一轮回';
 
   /// 爬塔周目推进提示（全 30 层已通，可进入下一轮回）。
-  static const String towerCycleReadyHint = '已通 30 层，可挑战下一轮回';
+  static const String towerCycleReadyHint = '已通 49 层，可挑战下一轮回';
 
   static const String baikeScreenTitle = '江湖见闻录';
   static const String baikeEmptyTitle = '卷册暂空';
@@ -3553,7 +3553,7 @@ class UiStrings {
   static const String sweepChapterButton = '一键扫荡本章';
 
   /// 爬塔扫荡入口主按钮。
-  static const String sweepTowerButton = '一键扫荡 30 层';
+  static const String sweepTowerButton = '一键扫荡 49 层';
 
   /// 未达门槛时的灰显提示（需本周目通关全部关卡）。
   static const String sweepLockedHint = '需本周目通关全部关卡后解锁';

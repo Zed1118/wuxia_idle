@@ -15,15 +15,15 @@ import '../../support/test_data.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
     show RealmUtils;
 
-/// Task 5 · floor30 护法结界软门槛确定性回归。
+/// Task 5 · floor49 护法结界软门槛确定性回归。
 ///
-/// **软门槛不变量**(spec §4.3):
-///   - on-level 三流·熟练满配队 → 全自动打 floor30 必胜，并完整触发护法/相位。
-///   - under-geared(-1 阶学徒,0 强化 0 战意)队 → 存在会输的确定 seed
+/// **软门槛不变量**(spec §4.3;批 A 塔顶迁 floor49·wuSheng 数值重排):
+///   - on-level 武圣·登峰满配队 → 全自动打 floor49 必胜，并完整触发护法/相位。
+///   - under-geared(-1 阶宗师,0 强化 0 战意)队 → 存在会输的确定 seed
 ///     (护法当血墙 + 攻击压力拖垮清关窗口)。
 ///
-/// **诊断实测背景**(test/tools/floor30_soft_gate_diagnostic_test.dart,30 seed):
-///   当前三流版本下，onLevel 必胜，学徒欠配队被护法墙稳定拦住。**注意**:
+/// **诊断实测背景**(旧 30 层版 test/tools/floor30_soft_gate_diagnostic_test.dart
+///   30 seed 体例;本文件 seed 为批 A 重排后 2026-08-04 实测重校)。**注意**:
 ///   全自动 lowest-HP 选敌下,Boss 在护法全灭
 ///   前从不被攻击,故 guardianWard.damageTakenMult 对自动战斗无实效——门槛全由
 ///   护法血墙+攻击压力构成。damageTakenMult 只对手动越过护法直捶 Boss 的玩家生效。
@@ -38,14 +38,14 @@ void main() {
     await loadTestGameRepository();
   });
 
-  BattleState runFloor30(
+  BattleState runFloor49(
     RealmTier tier, {
     required RealmLayer layer,
     required bool geared,
     required int seed,
   }) {
     final repo = GameRepository.instance;
-    final floor30 = repo.getTowerFloor(30);
+    final floor49 = repo.getTowerFloor(49);
     final players = [
       for (var slot = 0; slot < 3; slot++)
         _buildPlayer(
@@ -58,7 +58,7 @@ void main() {
         ),
     ];
     final enemies = StageBattleSetup.buildEnemyTeam(
-      floor30.enemyTeam,
+      floor49.enemyTeam,
       isTower: true,
     );
 
@@ -83,10 +83,10 @@ void main() {
     return container.read(battleProvider);
   }
 
-  test('on-level 三流·熟练满配队全自动必胜:破结界 + 击杀 Boss', () {
-    final s = runFloor30(
-      RealmTier.sanLiu,
-      layer: RealmLayer.shuLian,
+  test('on-level 武圣·登峰满配队全自动必胜:破结界 + 击杀 Boss', () {
+    final s = runFloor49(
+      RealmTier.wuSheng,
+      layer: RealmLayer.dengFeng,
       geared: true,
       seed: 0,
     );
@@ -98,8 +98,8 @@ void main() {
     final guardiansAlive = s.rightTeam
         .where(
           (e) =>
-              (e.enemyDefId == 'enemy_tower_30_cultist_a' ||
-                  e.enemyDefId == 'enemy_tower_30_cultist_b') &&
+              (e.enemyDefId == 'enemy_tower_49_cultist_a' ||
+                  e.enemyDefId == 'enemy_tower_49_cultist_b') &&
               e.isAlive,
         )
         .length;
@@ -107,7 +107,7 @@ void main() {
 
     // 击杀主 Boss。
     final boss = s.rightTeam.firstWhere(
-      (e) => e.enemyDefId == 'enemy_tower_boss_30',
+      (e) => e.enemyDefId == 'enemy_tower_boss_49',
     );
     expect(boss.isAlive, isFalse, reason: '破结界后应击杀主 Boss');
 
@@ -115,11 +115,11 @@ void main() {
     expect(s.actionLog.length, greaterThan(3), reason: '应产生实际交战动作,非空过');
   });
 
-  test('under-geared 学徒(-1 阶)0 强化队在确定 seed 会败(护法软门槛咬合)', () {
-    // seed 8:诊断中 underGear rightWin(tick~5,团灭于清关窗口)。
-    final s = runFloor30(
-      RealmTier.xueTu,
-      layer: RealmLayer.shuLian,
+  test('under-geared 宗师(-1 阶)0 强化队在确定 seed 会败(护法软门槛咬合)', () {
+    // seed 实测重校(批 A 塔顶 wuSheng 数值,2026-08-04):见下方断言。
+    final s = runFloor49(
+      RealmTier.zongShi,
+      layer: RealmLayer.dengFeng,
       geared: false,
       seed: 8,
     );
@@ -172,7 +172,7 @@ BattleCharacter _buildPlayer(
         tier: def.tier,
         slot: def.slot,
         obtainedAt: DateTime(2026, 6, 28),
-        obtainedFrom: 'floor30_soft_gate',
+        obtainedFrom: 'floor49_soft_gate',
         school: school,
         baseAttack: (def.baseAttackMin + def.baseAttackMax) ~/ 2,
         baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,

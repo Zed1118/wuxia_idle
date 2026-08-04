@@ -14,8 +14,8 @@ import '../../../support/test_data.dart';
 /// T42 TowerFloorListScreen widget 测试（不接真实 Isar）。
 ///
 /// - towerProgressProvider / towerFloorListProvider 均 override 为 fixture
-/// - 需要查看多层的测试使用 4000px 高视口，确保所有 30 行在视口内
-///   （content ~1800px < 4000px → maxScrollExtent=0 → auto-scroll 无效）
+/// - 需要查看多层的测试使用 7500px 高视口，确保所有 49 行在视口内
+///   （content ~3000px < 7500px → maxScrollExtent=0 → auto-scroll 无效）
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
@@ -70,16 +70,16 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('全新进度：顶部进度卡显示 0/30 + 第1层可挑战', (tester) async {
+  testWidgets('全新进度：顶部进度卡显示 0/49 + 第1层可挑战', (tester) async {
     final progress = mkProgress();
     await pumpScreen(tester, progress: progress);
 
-    expect(find.text(UiStrings.towerProgressBarLabel(0, 30)), findsOneWidget);
+    expect(find.text(UiStrings.towerProgressBarLabel(0, 49)), findsOneWidget);
     expect(find.text(UiStrings.towerCurrentChallengeFloor(1)), findsOneWidget);
     expect(find.text(UiStrings.towerHighestClearedNone), findsOneWidget);
     expect(
       find.text(
-        UiStrings.towerNextMilestoneTarget(5, UiStrings.towerBossMinor),
+        UiStrings.towerNextMilestoneTarget(4, UiStrings.towerBossMinor),
       ),
       findsOneWidget,
     );
@@ -91,8 +91,8 @@ void main() {
     expect(find.text(UiStrings.towerFloorChallenge), findsOneWidget);
   });
 
-  testWidgets('塔势总览在桌面内容栏完整容纳第30层节点', (tester) async {
-    final progress = mkProgress(highest: 30);
+  testWidgets('塔势总览在桌面内容栏完整容纳塔顶节点', (tester) async {
+    final progress = mkProgress(highest: 49);
     await pumpScreen(
       tester,
       progress: progress,
@@ -109,12 +109,12 @@ void main() {
     expect(horizontalScroller, findsOneWidget);
 
     final viewportBox = tester.renderObject<RenderBox>(horizontalScroller);
-    final floor30 = find.descendant(
+    final topNode = find.descendant(
       of: horizontalScroller,
-      matching: find.text('30'),
+      matching: find.text('49'),
     );
-    expect(floor30, findsOneWidget);
-    final nodeBox = tester.renderObject<RenderBox>(floor30);
+    expect(topNode, findsOneWidget);
+    final nodeBox = tester.renderObject<RenderBox>(topNode);
     final nodeRight = nodeBox.localToGlobal(Offset(nodeBox.size.width, 0)).dx;
     final viewportRight = viewportBox
         .localToGlobal(Offset(viewportBox.size.width, 0))
@@ -127,11 +127,11 @@ void main() {
     tester,
   ) async {
     final progress = mkProgress(highest: 3, attempts: 3);
-    // 4000px 视口：30 行全部可见，auto-scroll 被 clamp 到 0
+    // 7500px 视口：49 行全部可见，auto-scroll 被 clamp 到 0
     await pumpScreen(
       tester,
       progress: progress,
-      surfaceSize: const Size(1024, 4000),
+      surfaceSize: const Size(1024, 7500),
     );
 
     // floor 1 cleared（check_circle）
@@ -215,7 +215,7 @@ void main() {
   });
 
   testWidgets('整塔30层已通 → 扫荡按钮高亮且标签带周目「第 1 周目」', (tester) async {
-    final progress = mkProgress(highest: 30, attempts: 30);
+    final progress = mkProgress(highest: 49, attempts: 49);
     await pumpScreen(tester, progress: progress);
 
     expect(find.text(UiStrings.sweepTowerButtonCycle(1)), findsOneWidget);
@@ -246,11 +246,11 @@ void main() {
 
   testWidgets('点 cleared 层 → 弹重打确认 dialog，确认后进入战斗准备', (tester) async {
     final progress = mkProgress(highest: 3, attempts: 3);
-    // 4000px 确保 floor 1（cleared）可见
+    // 7500px 确保 floor 1（cleared）可见
     await pumpScreen(
       tester,
       progress: progress,
-      surfaceSize: const Size(1024, 4000),
+      surfaceSize: const Size(1024, 7500),
     );
 
     await tester.tap(find.text(UiStrings.towerFloorLabel(1)));

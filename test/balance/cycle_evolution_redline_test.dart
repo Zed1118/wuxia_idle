@@ -302,7 +302,8 @@ void main() {
     });
 
     test('2.5 机制型 Boss cycle-2 脆弱窗口 ∈ [0.05,1.0] 且不永久免疫', () {
-      for (final bossId in ['enemy_tower_boss_25', 'enemy_tower_boss_30']) {
+      // 批 A 塔重排:绝顶剑魔 25→32 / 九霄魔尊 30→49,机制随迁。
+      for (final bossId in ['enemy_tower_boss_32', 'enemy_tower_boss_49']) {
         final floor = int.parse(bossId.split('_').last);
         final def = GameRepository.instance
             .getTowerFloor(floor)
@@ -330,8 +331,8 @@ void main() {
   // ════════════════════════════════════════════════════════════════════════════
 
   group('§3 真气 + cycle scale 后 internalForce ≤ 内力红线', () {
-    test('3.1 爬塔 floor 30（最高 Boss，cycle 2 tower_boss 词条集）', () {
-      final floor = GameRepository.instance.getTowerFloor(30);
+    test('3.1 爬塔 floor 49（最高 Boss，cycle 2 tower_boss 词条集）', () {
+      final floor = GameRepository.instance.getTowerFloor(49);
       final redLine =
           GameRepository.instance.numbers.combat.redLines.internalForceMax;
       final team = StageBattleSetup.buildEnemyTeam(
@@ -346,13 +347,13 @@ void main() {
           bc.internalForce,
           lessThanOrEqualTo(redLine),
           reason:
-              'tower floor 30 cycle 2 ${bc.name} '
+              'tower floor 49 cycle 2 ${bc.name} '
               'internalForce=${bc.internalForce} 超 §5.4 红线=$redLine',
         );
       }
       addTearDown(
         () => printOnFailure(
-          'tower floor 30 cycle2 max IF = $maxIf（红线=$redLine，余量=${redLine - maxIf}）',
+          'tower floor 49 cycle2 max IF = $maxIf（红线=$redLine，余量=${redLine - maxIf}）',
         ),
       );
     });
@@ -555,23 +556,36 @@ void main() {
       },
     );
 
-    test('5.2 爬塔最大 Boss HP（floor 30 当前 baseHp）cycle 2 scale 精确', () {
-      final floor = GameRepository.instance.getTowerFloor(30);
+    test('5.2 爬塔最大 Boss HP（floor 49 当前 baseHp）cycle 2 scale 精确', () {
+      final floor = GameRepository.instance.getTowerFloor(49);
       final team = StageBattleSetup.buildEnemyTeam(
         floor.enemyTeam,
         cycleIndex: 2,
         isTower: true,
       );
-      final boss = team.first; // floor 30 单人
-      final baseHpFloor30 = floor.enemyTeam.firstWhere((e) => e.isBoss).baseHp;
+      // floor 49 = Boss + 左右使 3 人,按 defId 定位主 Boss 不靠位序。
+      final boss = team.firstWhere(
+        (bc) => bc.enemyDefId == 'enemy_tower_boss_49',
+      );
+      final baseHpFloor49 = floor.enemyTeam.firstWhere((e) => e.isBoss).baseHp;
       final ce = GameRepository.instance.numbers.cycleEvolution;
-      final expectedHp = (baseHpFloor30 * (1.0 + ce.scalePerCycle)).toInt();
+      final redLine = GameRepository.instance.numbers.combat.redLines.bossHpMax;
+      // 塔顶 Boss 贴红线配置(59500),×1.1 会越线 → 生产端 clamp ≤ bossHpMax
+      // (stage_battle_setup「防终局周目越线」既有行为,旧 floor30 12600 数值下
+      // 从未触发过,批 A 塔顶抬到贴线后 clamp 首次生效——正是红线的意义)。
+      final expectedHp = ((baseHpFloor49 * (1.0 + ce.scalePerCycle)).toInt())
+          .clamp(0, redLine);
       expect(
         boss.maxHp,
         expectedHp,
         reason:
-            'floor 30 cycle 2 boss HP 应精确 = $baseHpFloor30 × '
-            '${1.0 + ce.scalePerCycle} = $expectedHp（scale 逻辑验算）',
+            'floor 49 cycle 2 boss HP 应 = min($baseHpFloor49 × '
+            '${1.0 + ce.scalePerCycle}, 红线 $redLine) = $expectedHp',
+      );
+      expect(
+        boss.maxHp,
+        lessThanOrEqualTo(redLine),
+        reason: '周目缩放不得越 §5.4 Boss HP 红线',
       );
     });
 
@@ -649,25 +663,27 @@ void main() {
     });
 
     test(
-      '6.2 tower floor 30 cycle 2 attack scale 精确（当前 baseAttack × 1.10）',
+      '6.2 tower floor 49 cycle 2 attack scale 精确（当前 baseAttack × 1.10）',
       () {
-        final floor30 = GameRepository.instance.getTowerFloor(30);
-        final team30 = StageBattleSetup.buildEnemyTeam(
-          floor30.enemyTeam,
+        final floor49 = GameRepository.instance.getTowerFloor(49);
+        final team49 = StageBattleSetup.buildEnemyTeam(
+          floor49.enemyTeam,
           cycleIndex: 2,
           isTower: true,
         );
         final ce = GameRepository.instance.numbers.cycleEvolution;
-        final baseAtk30 = floor30.enemyTeam
+        final baseAtk49 = floor49.enemyTeam
             .firstWhere((e) => e.isBoss)
             .baseAttack;
-        final expectedAtk = (baseAtk30 * (1.0 + ce.scalePerCycle)).toInt();
+        final expectedAtk = (baseAtk49 * (1.0 + ce.scalePerCycle)).toInt();
         expect(
-          team30.first.totalEquipmentAttack,
+          team49
+              .firstWhere((bc) => bc.enemyDefId == 'enemy_tower_boss_49')
+              .totalEquipmentAttack,
           expectedAtk,
           reason:
-              'tower floor 30 cycle 2 attack scale 精确验算 '
-              '$baseAtk30 × ${1.0 + ce.scalePerCycle} = $expectedAtk',
+              'tower floor 49 cycle 2 attack scale 精确验算 '
+              '$baseAtk49 × ${1.0 + ce.scalePerCycle} = $expectedAtk',
         );
       },
     );

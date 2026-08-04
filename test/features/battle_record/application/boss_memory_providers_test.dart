@@ -40,14 +40,15 @@ void main() {
   // ── bossCatalog 测试 ────────────────────────────────────────────────────
 
   group('bossCatalog', () {
-    test('含全 Boss：主线 isBossStage(51 条) + 塔 6 层，共 57 条', () {
+    test('含全 Boss：主线 isBossStage(51 条) + 塔 14 层，共 65 条', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
       final catalog = container.read(bossCatalogProvider);
 
       // 总数
-      expect(catalog, hasLength(57), reason: '主线 51 + 塔 6 = 57');
+      // 批 A 塔 49 层重排:塔 Boss 6→14(tier 中点 7 + tier 末层 7)。
+      expect(catalog, hasLength(65), reason: '主线 51 + 塔 14 = 65');
 
       // 塔条目恰好 6 个
       final towerEntries = catalog
@@ -55,8 +56,9 @@ void main() {
           .toList();
       expect(
         towerEntries,
-        hasLength(6),
-        reason: '爬塔 Boss 层 [5,10,15,20,25,30]',
+        hasLength(14),
+        reason:
+            '爬塔 Boss 层 = tier 中点 4/11/18/25/32/39/46 + 末层 7/14/21/28/35/42/49',
       );
 
       // 主线条目恰好 43 个(2026-07-26 Ch17 批订正:旧注释写「39 个」与断言值 41 不符,

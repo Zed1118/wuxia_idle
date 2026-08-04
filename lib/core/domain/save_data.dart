@@ -131,6 +131,12 @@ class SaveData {
   /// 断魂庄首通时间（展示用，§3.3；DateTime? 沿 [islandLastSettledAt] 体例）。
   DateTime? duanhunFirstClearedAt;
 
-  /// 问鼎江湖第 10/20/30 层断魂帖·旧档补发防重（§6.4，F1 里程碑同款一次性体例）。
+  /// 问鼎江湖断魂帖里程碑·旧档补发防重（§6.4，F1 里程碑同款一次性体例）。
+  ///
+  /// 里程碑层现为 16/33/49（批 A 塔扩 49 层，2026-08-04 拍板保持 3 张均匀分布，
+  /// 见 [TowerProgressService.ticketMilestoneFloors]）。塔扩层前已按旧位
+  /// 10/20/30 领过的 id（`tower_floor_10/20/30`）永久留在本集合防重——历史
+  /// 发放不收回；旧档 highest ≥ 16 会按新位懒补发 `tower_floor_16`，属重排
+  /// 后的合法补发（该玩家在新体系下确实通过了 16 层）。
   List<String> grantedTicketMilestoneIds = [];
 }

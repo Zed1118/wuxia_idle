@@ -1,6 +1,7 @@
 /// battle_guardian_ward VISUAL_ROUTE scenario 接线守卫。
 ///
-/// `scenarioGuardianWard()` 复用**真 floor30 塔队**(towers.yaml),Boss 护法结界
+/// `scenarioGuardianWard()` 复用**真塔顶层塔队**(towers.yaml `.last`,批 A 后
+/// = floor49),Boss 护法结界
 /// 随 EnemyDef 经 buildEnemyTeam 原样接线。验:
 /// - 右队 = Boss(九霄魔尊)+ 左使/右使,护罩字段透传正确
 /// - frame-0(两护法存活)→ 护罩生效(验收路由起手冻结帧确显「护法结界」pill)
@@ -22,16 +23,16 @@ void main() {
     }
   });
 
-  test('右队 = 真 floor30 塔队(Boss + 双护法),护罩字段透传', () {
+  test('右队 = 真 floor49 塔队(Boss + 双护法),护罩字段透传', () {
     final (left, right) = BattleScenarioData.scenarioGuardianWard();
-    expect(right.length, 3, reason: 'floor30 终局塔队 = Boss + 左使 + 右使');
+    expect(right.length, 3, reason: 'floor49 终局塔队 = Boss + 左使 + 右使');
     final boss = right.first;
     expect(boss.isBoss, isTrue);
-    expect(boss.enemyDefId, 'enemy_tower_boss_30');
+    expect(boss.enemyDefId, 'enemy_tower_boss_49');
     expect(boss.guardianWardMult, 0.15);
     expect(boss.guardianDefIds, [
-      'enemy_tower_30_cultist_a',
-      'enemy_tower_30_cultist_b',
+      'enemy_tower_49_cultist_a',
+      'enemy_tower_49_cultist_b',
     ]);
     expect(right.every((c) => c.isAlive), isTrue, reason: '起手三敌全存活');
     expect(left.length, 3, reason: '宗师 on-level 3v3');
@@ -78,22 +79,30 @@ void main() {
   });
 
   test('高复用敌人验收路由读取真 13/14/19/22 层队伍', () {
+    // 批 A 塔重排后各层敌队立绘随 towers.yaml 更新(floor14 现为武林霸主
+    // Boss 层带双护卫;19/22 为 erLiu/yiLiu 段复用主线敌池)。
     final cases = [
       (BattleScenarioData.scenarioTowerFloor13, {'assets/enemies/anye.png'}),
       (
         BattleScenarioData.scenarioTowerFloor14,
-        {'assets/enemies/jianghu_qianbei.png', 'assets/enemies/shiye.png'},
-      ),
-      (
-        BattleScenarioData.scenarioTowerFloor19,
         {
-          'assets/enemies/wulin_bazhu.png',
+          'assets/enemies/tower_boss_20.png',
           'assets/enemies/jianghu_qianbei.png',
         },
       ),
       (
+        BattleScenarioData.scenarioTowerFloor19,
+        {
+          'assets/enemies/beipai_youshao.png',
+          'assets/enemies/qibei_aikou_shouwei.png',
+        },
+      ),
+      (
         BattleScenarioData.scenarioTowerFloor22,
-        {'assets/enemies/wulin_bazhu.png', 'assets/enemies/fu_zhaizhu.png'},
+        {
+          'assets/enemies/zhongzhou_hetao_jianke.png',
+          'assets/enemies/zhongzhou_yanmen_youxia.png',
+        },
       ),
     ];
 
@@ -117,6 +126,7 @@ void main() {
       (BattleScenarioData.scenarioStage0104, {'assets/enemies/qingshan.png'}),
       (BattleScenarioData.scenarioTowerFloor02, {'assets/enemies/thug_b.png'}),
       (BattleScenarioData.scenarioTowerFloor03, {'assets/enemies/thug_c.png'}),
+      // 批 A 重排:floor 6 游方武僧 / floor 7 黑风寨主 Boss 层
       (
         BattleScenarioData.scenarioTowerFloor08,
         {'assets/enemies/bandit_head.png'},
@@ -174,11 +184,11 @@ void main() {
       ),
       (
         BattleScenarioData.scenarioTowerFloor06,
-        {'assets/enemies/bandit_b.png'},
+        {'assets/enemies/seng_huiyi.png'},
       ),
       (
         BattleScenarioData.scenarioTowerFloor07,
-        {'assets/enemies/bandit_c.png'},
+        {'assets/enemies/tower_boss_10.png'},
       ),
       (
         BattleScenarioData.scenarioTowerFloor12,

@@ -115,7 +115,7 @@ VisualAcceptanceRoute _battleTowerRoute(int floor) => VisualAcceptanceRoute(
 /// 由 `visual_acceptance_tower_coverage_test` 从生产 config 派生钉住
 /// (同 [gauntletAuditStageCount] 体例)。**扩层时改这里**——不改则新层
 /// 静默漏出视觉验收计划,守卫测会红提醒。
-const int towerAuditFloorCount = 30;
+const int towerAuditFloorCount = 49;
 
 /// 断魂庄关次数。真相源是 `boss_gauntlets.yaml` 的 `stages`,
 /// 本层拿不到 GameRepository 故落常量,由守卫测从生产 config 派生钉住。
