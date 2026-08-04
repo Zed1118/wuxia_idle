@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
 
 import '../support/test_data.dart';
 
@@ -95,6 +96,38 @@ void main() {
       test('未配置的 cycle=3 爬塔普通 → 空集(无对应 entry)', () {
         final ce = GameRepository.instance.numbers.cycleEvolution;
         expect(ce.traitsFor(cycle: 3, isBoss: false, isTower: true), isEmpty);
+      });
+    });
+
+    group('realmAdvance（批 B 周目境界段推进 · spec 2026-08-01 拍板 #5）', () {
+      test('realm_advance 参数解析（2026-08-04 拍板值）', () {
+        final ra = GameRepository.instance.numbers.cycleEvolution.realmAdvance;
+        expect(ra.tiersPerCycle, 3); // <3 落 diff_3_or_more 死区空转
+        expect(ra.maxCycle, 3); // 与主线一致
+        expect(ra.unlockRealmMargin, 1);
+        expect(ra.rewardBonusPerCycle, closeTo(0.25, 1e-9));
+      });
+
+      test('tiersFor：cycle≤1 不推进，cycle2=+3，cycle3=+6', () {
+        final ra = GameRepository.instance.numbers.cycleEvolution.realmAdvance;
+        expect(ra.tiersFor(0), 0);
+        expect(ra.tiersFor(1), 0);
+        expect(ra.tiersFor(2), 3);
+        expect(ra.tiersFor(3), 6);
+      });
+
+      test('rewardMultFor：cycle≤1=1.0，cycle2=1.25，cycle3=1.5', () {
+        final ra = GameRepository.instance.numbers.cycleEvolution.realmAdvance;
+        expect(ra.rewardMultFor(1), closeTo(1.0, 1e-9));
+        expect(ra.rewardMultFor(2), closeTo(1.25, 1e-9));
+        expect(ra.rewardMultFor(3), closeTo(1.5, 1e-9));
+      });
+
+      test('empty 兜底：不推进 / 奖励乘数恒 1.0（fixture 零回归）', () {
+        const ra = RealmAdvanceConfig.empty;
+        expect(ra.tiersFor(2), 0);
+        expect(ra.tiersFor(3), 0);
+        expect(ra.rewardMultFor(3), closeTo(1.0, 1e-9));
       });
     });
   });

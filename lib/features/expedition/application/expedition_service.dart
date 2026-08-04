@@ -11,6 +11,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
+import '../../battle/domain/cycle_realm_gate.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../injury/application/injury_service.dart';
@@ -43,6 +44,7 @@ class ExpeditionService {
   Future<int> dispatch({
     required List<int> characterIds,
     required ExpeditionPolicy policy,
+    int cycleIndex = 1,
     DateTime? now,
   }) async {
     if (characterIds.isEmpty || characterIds.length > 3) {
@@ -50,6 +52,9 @@ class ExpeditionService {
     }
     if (characterIds.toSet().length != characterIds.length) {
       throw StateError('远征派遣：队伍含重复角色');
+    }
+    if (cycleIndex < 1) {
+      throw StateError('远征派遣：周目须 ≥1，got $cycleIndex');
     }
 
     return _isar.writeTxn(() async {
@@ -63,10 +68,12 @@ class ExpeditionService {
 
       final occupancy = await CharacterOccupancyService(_isar).snapshot();
       final members = <ActivityMemberSnapshot>[];
+      var entryMaxTier = RealmTier.xueTu;
       for (final cid in characterIds) {
         final c = await _isar.characters.get(cid);
         if (c == null) throw StateError('远征派遣：角色 $cid 不存在');
         if (c.isFounder) throw StateError('远征派遣：祖师不可派遣');
+        if (c.realmTier.index > entryMaxTier.index) entryMaxTier = c.realmTier;
         if (occupancy.isCharacterOccupied(cid)) {
           throw StateError('远征派遣：角色 $cid 已被其它活动占用');
         }
@@ -89,6 +96,31 @@ class ExpeditionService {
         );
       }
 
+      // 批 B：周目解锁门槛硬守卫（深度里程碑折算「已通」+ 境界门槛，
+      // 2026-08-04 拍板：远征无终点，解锁改绑历史最深 baicaoMaxDepth）。
+      if (cycleIndex > 1) {
+        final config = GameRepository.instance.expeditionConfig;
+        if (config == null) {
+          throw StateError('远征派遣：无远行配置，不可挑战高周目');
+        }
+        final ra = GameRepository.instance.numbers.cycleEvolution.realmAdvance;
+        final unlocked = CycleRealmGate.unlockedCycleCap(
+          clearedCyclesMax: CycleRealmGate.expeditionClearedEquivalent(
+            maxDepth: save.baicaoMaxDepth,
+            milestones: ra.expeditionDepthMilestones,
+          ),
+          playerMaxTier: entryMaxTier,
+          baseEnemyMaxTier: CycleRealmGate.maxEnemyTierOf([
+            for (final t in config.normalEnemyTeams) ...t.enemies,
+            for (final t in config.eliteEnemyTeams) ...t.enemies,
+          ]),
+          ra: ra,
+        );
+        if (cycleIndex > unlocked) {
+          throw StateError('远征派遣：周目 $cycleIndex 未解锁（当前可挑战至 $unlocked）');
+        }
+      }
+
       final newSerial = save.expeditionRunSerial + 1;
       save.expeditionRunSerial = newSerial;
 
@@ -99,6 +131,7 @@ class ExpeditionService {
         ..departedAt = now ?? DateTime.now()
         ..lastSettledAt = null
         ..currentNode = 0
+        ..cycleIndex = cycleIndex
         ..members = members
         ..stagedRewards = [];
 
@@ -110,6 +143,26 @@ class ExpeditionService {
   /// 单批离线结算允许的最大节点数（禁数十节点一事务，§4.4）。
   // TODO(batch3-probe): 探针定案后可下沉 expeditions.yaml。
   static const int defaultMaxNodesPerBatch = 24;
+
+  /// 批 B：高周目奖励乘数（×(1+bonus×(cycle-1))，用户拍板 2026-08-04）。
+  /// cycle≤1 恒等短路且**不读全局配置**——轻量 fake-combat 结算测不加载
+  /// GameRepository，结算路径读 config 会崩（memory
+  /// feedback_battle_result_path_config_read_crashes_light_test 同模式）。
+  static List<RewardEntry> _scaleRewardsForCycle(
+    List<RewardEntry> rewards,
+    int cycleIndex,
+  ) {
+    if (cycleIndex <= 1) return rewards;
+    final mult = GameRepository.instance.numbers.cycleEvolution.realmAdvance
+        .rewardMultFor(cycleIndex);
+    if (mult == 1.0) return rewards;
+    return [
+      for (final r in rewards)
+        RewardEntry()
+          ..rewardKey = r.rewardKey
+          ..quantity = (r.quantity * mult).round(),
+    ];
+  }
 
   /// 离线分批幂等结算（§4.4/§9.1，本 feature 最难点）。
   ///
@@ -208,6 +261,7 @@ class ExpeditionService {
             runSerial: run.seed,
             node: index,
           ),
+          cycleIndex: run.cycleIndex,
         );
         outcome.survivorHp.forEach((id, hp) {
           vitals[id] = ExpeditionMemberVital(
@@ -225,11 +279,14 @@ class ExpeditionService {
       _applyRecovery(vitals, downed, caps, config, deepestCompletedNode: index);
       _mergeRewards(
         newRewards,
-        ExpeditionRules.rewardsForNode(
-          node: genNode,
-          saveId: run.saveDataId,
-          runSerial: run.seed,
-          baseExpPerBattle: config.baseExpPerBattle,
+        _scaleRewardsForCycle(
+          ExpeditionRules.rewardsForNode(
+            node: genNode,
+            saveId: run.saveDataId,
+            runSerial: run.seed,
+            baseExpPerBattle: config.baseExpPerBattle,
+          ),
+          run.cycleIndex,
         ),
       );
       node = index;

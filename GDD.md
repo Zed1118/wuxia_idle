@@ -4,15 +4,16 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
-> **版本**:v1.24
+> **版本**:v1.25
+> **v1.25 变更**(2026-08-04 批 B 周目语义修正·spec 2026-08-01 拍板 #5 实装):4 个支线入口(轻功对决/群战守城/断魂庄/远征)周目从「属性缩放」升级为**境界段推进**——敌境界 = yaml 原值 + 3 阶/周目后 clamp 武圣,带动敌内力派生/防御率档/境界差修正三轴联动,解除终局玩家对支线的 `diff_3_or_more 0.05` 近免疫(净威胁实测 ×5.11,spec §1.3 解析推算 ~2.4 方向坐实;`cycle_realm_advance_net_threat_diagnostic_test`)。断魂庄/远征从零建周目(此前连属性缩放周目都没有);远征无终点,解锁改绑**深度里程碑**(`baicaoMaxDepth ≥20/40`,2026-08-04 拍板)。周目解锁统一三重门槛:顺序解锁 ∩ cap 3 ∩ **境界门槛**(开 cycle N 须出战最高境界 ≥ 推进后敌境界 −1,防差 3 阶硬墙;`CycleRealmGate`)。高周目奖励 ×(1+0.25×(cycle−1))(断魂庄经验/领悟点、远征全奖励;初值保守待真机校)。主线/爬塔/心魔不推进(拍板 #3:塔走扩层);敌基础数值 yaml 零变化,推进属威胁恢复非数字膨胀,敌内力经 §5.4 ≤15,000 clamp。配置 `numbers.yaml cycle_evolution.realm_advance`;saveVersion 不变(新字段默认值语义自洽,旧档零迁移)。
 > **v1.24 变更**(2026-07-24 真相源收口·外部审查 07-24 triage):① 头部新增**当前状态块**为 GDD 内唯一权威快照(发布上限/章数/关数/实测锚),由加章 reconcile 同步、`test/data/truth_source_guard_test.dart` 自动校验;历史版本摘要与正文散布的旧快照数字不再逐处订正,一律以状态块为准;② §3.1 发布边界与主线规模两句改为引用状态块,不再手写数字;③ §5.2 Boss 血量红线措辞「60,000+」统一为「上限 60,000」(消除与硬约束 ≤60,000 的字面歧义);④ 排行榜口径订正为「本地榜 + Noop 同步抽象(零 Supabase 依赖),云端为未来方向」(§1 联网形式/§8.2 爬塔/§13 技术栈三处);⑤ 战败代价死配置 `boss_internal_force_penalty` 退役删除(v1.34 起战败不扣内力,配置/解析/注释/测试标题同步清理,防回归断言进 truth_source_guard)。
-> **v1.23 变更**(2026-07-22 头部口径订正·外部审查 07-21 P1):发布上限以 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level=28`（一流·登峰 / Lv280，Ch12 由 26 抬至 28）为准，v1.22 的「层 10 / Lv100」口径已被后续扩章取代；当前主线 12 章 60 关（`data/stages.yaml` `stageType: mainline` ×60），60 关首通实测至 Lv80，全内容参考路线实测至 Lv103（与 §8 内容结构 2026-07-21 重校口径一致）。49 层 / Lv1～Lv490 长线定义、唯一经验账与旧档不回退原则不变。**[历史快照,数字已过时,现值见当前状态块]**
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
 > - 发布上限:绝对境界层 **49**(武圣·登峰 = 武圣段收官 = **主线终章**·49 为绝对终点无第 50 层;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)
 > - 主线规模:**21 章 105 关**(真相源 `data/stages.yaml` `stageType: mainline` 计数)
 > - 实测锚:105 关首通 **Lv116**(累计 5604 经验);全内容参考路线 **Lv134**(批 A 塔扩 49 层后塔 EXP 总量 507→1440;由 `progression_release_budget_test` 维护,实测锚不入自动校验)
 > - 爬塔:**49 层 1:1 锚死**(floor N ↔ abs N·14 Boss 位·spec 2026-08-01,批 A 2026-08-04 实装;真相源 `data/towers.yaml`)
+> - 支线周目:轻功/群战/断魂庄/远征 4 入口**境界段推进**(+3 阶/周目 clamp 武圣·cap 3·解锁绑境界门槛,远征绑深度里程碑;批 B 2026-08-04 实装;真相源 `data/numbers.yaml` `cycle_evolution.realm_advance`)
 
 ---
 

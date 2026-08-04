@@ -30,6 +30,7 @@ class _FakeCombat implements ExpeditionCombat {
     required ExpeditionNode node,
     required Map<int, ExpeditionMemberVital> memberStates,
     required int nodeSeed,
+    required int cycleIndex,
   }) async {
     final hp = <int, int>{};
     final qi = <int, int>{};

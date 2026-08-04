@@ -182,6 +182,7 @@ class _NumbersStub implements NumbersConfig {
   @override
   CycleEvolutionConfig get cycleEvolution => CycleEvolutionConfig(
     maxCycleMainline: _maxCycle,
+    realmAdvance: RealmAdvanceConfig.empty,
     maxCycleTower: 2,
     scalePerCycle: 0.0,
     defenseRateCap: 0.6,

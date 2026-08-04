@@ -1971,6 +1971,19 @@ cycle_evolution:
       2: [yuti, zhenqi]
     tower_boss:                # 爬塔 Boss 关
       2: [yuti, fanzhen, shipo, ningjia]
+  # 批 B 周目境界段推进(spec 2026-08-01-tower-extension 拍板 #5 · 2026-08-04 实装)。
+  # 仅 4 个支线入口消费(轻功对决/群战守城/断魂庄/远征,调用点显式开启);主线/爬塔
+  # 不推进(拍板 #3:塔走扩层)。敌境界 = yaml 原值 + tiers_per_cycle×(cycle-1) 后
+  # clamp 武圣,带动敌内力派生/防御率档/境界差修正三轴联动(词条表沿用 mainline)。
+  realm_advance:
+    tiers_per_cycle: 3           # 每周目抬 3 阶(spec §1.3:<3 落 diff_3_or_more 死区空转)
+    max_cycle: 3                 # 4 入口周目上限(与主线一致;cycle3 敌推进后 clamp 武圣顶格)
+    unlock_realm_margin: 1       # 开 cycle N 需出战最高境界 ≥ 推进后敌最高境界 - margin(防差 3 阶硬墙)
+    reward_bonus_per_cycle: 0.25 # 高周目奖励乘数 ×(1+0.25×(cycle-1)),初值保守待 EXP 预算链探针校
+    # 远征专用(2026-08-04 拍板:远征无终点无通关,解锁改绑历史最深 baicaoMaxDepth):
+    # 第 i 项 = 解锁 cycle i+2 所需最深节点(≥20 深解锁 cycle2 / ≥40 解锁 cycle3)。
+    # 90min/节点 ⇒ 20 深约 30h 挂机资格线;初值保守待真机校。境界门槛照常另判。
+    expedition_depth_milestones: [20, 40]
 
 # =============================================================================
 # 战后体验(第七阶段 批一)。英雄镜头表现参数(纯表现层,不参与战斗结算)。

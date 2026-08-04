@@ -71,6 +71,9 @@ class StageBattleSetup {
             stage.enemyTeam,
             cycleIndex: cycleIndex,
             isTower: false,
+            advanceRealmPerCycle: realmAdvanceStageTypes.contains(
+              stage.stageType,
+            ),
             stageNpcId: stage.isBossStage ? stage.npcId : null,
             readableFirstClearTuning: readableFirstClearTuning,
           );
@@ -110,13 +113,24 @@ class StageBattleSetup {
 
   /// 将 [EnemyDef] 列表装配为右队 [BattleCharacter] 列表（最多 3 人）。
   ///
+  /// 批 B 境界段推进入口白名单（spec 2026-08-01 拍板 #5）：StageDef 系里仅
+  /// 轻功对决 / 群战守城两个支线推进；主线 / 心魔不推进，爬塔走扩层（拍板 #3）。
+  /// 断魂庄 / 远征不走 StageDef 路径，由各自 runner 显式传
+  /// [buildEnemyTeam] 的 `advanceRealmPerCycle: true`。
+  static const Set<StageType> realmAdvanceStageTypes = {
+    StageType.lightFoot,
+    StageType.massBattle,
+  };
+
   /// 主线 [buildTeams] 与爬塔 [buildTeamsForTower] 共用，避免重复。纯函数,保持 static。
   /// [cycleIndex] 默认 1（cycle-1 行为与旧版完全一致，零回归）；
-  /// [isTower] 决定词条分配表选取（false=主线，true=爬塔）。
+  /// [isTower] 决定词条分配表选取（false=主线，true=爬塔）；
+  /// [advanceRealmPerCycle] 开启批 B 周目境界段推进（默认 false 零回归）。
   static List<BattleCharacter> buildEnemyTeam(
     List<EnemyDef> enemies, {
     int cycleIndex = 1,
     bool isTower = false,
+    bool advanceRealmPerCycle = false,
     String? stageNpcId,
     bool readableFirstClearTuning = false,
   }) {
@@ -131,6 +145,7 @@ class StageBattleSetup {
               : null,
           cycleIndex: cycleIndex,
           isTower: isTower,
+          advanceRealmPerCycle: advanceRealmPerCycle,
           readableFirstClearTuning: readableFirstClearTuning,
         ),
       );
@@ -160,6 +175,9 @@ class StageBattleSetup {
               characterIdOverride: -10000 - (cursor++),
               cycleIndex: cycleIndex,
               isTower: false, // 群战守城属于主线场景，非爬塔
+              advanceRealmPerCycle: realmAdvanceStageTypes.contains(
+                stage.stageType,
+              ),
             ),
         ],
     ];
@@ -437,6 +455,7 @@ class StageBattleSetup {
     int? characterIdOverride,
     int cycleIndex = 1,
     bool isTower = false,
+    bool advanceRealmPerCycle = false,
     bool readableFirstClearTuning = false,
   }) {
     final numbers = GameRepository.instance.numbers;
@@ -444,10 +463,20 @@ class StageBattleSetup {
         .map((id) => GameRepository.instance.getSkill(id))
         .toList(growable: false);
     final enemyDefaults = numbers.combat.enemyDefaults;
-    final realm = GameRepository.instance.getRealm(
-      enemy.realmTier,
-      enemy.realmLayer,
-    );
+
+    // ── 批 B 周目境界段推进（spec 2026-08-01 拍板 #5，仅支线 4 入口开启）────
+    // effTier = yaml 原值 + tiers_per_cycle×(cycle-1) 后 clamp 武圣；layer 保留。
+    // 三轴消费：境界内力派生(realm) / 防御率档(defenseRate) / 差距修正(realmTier)。
+    // 主线/爬塔 advanceRealmPerCycle=false → effTier 恒等原值（零回归）。
+    final advTiers = advanceRealmPerCycle
+        ? numbers.cycleEvolution.realmAdvance.tiersFor(cycleIndex)
+        : 0;
+    final advancedIndex = enemy.realmTier.index + advTiers;
+    final effTier = advancedIndex >= RealmTier.wuSheng.index
+        ? RealmTier.wuSheng
+        : RealmTier.values[advancedIndex];
+
+    final realm = GameRepository.instance.getRealm(effTier, enemy.realmLayer);
     final redLineCap = numbers.combat.redLines.internalForceMax;
 
     // ── 周目缩放系数（cycle 1 = 1.0，零变化）─────────────────────────────
@@ -484,7 +513,7 @@ class StageBattleSetup {
     );
 
     // ── 御体词条：defenseRate↑，按周目分档，clamp ≤ defenseRateCap ─────────
-    var defenseRate = RealmUtils.defenseRateOf(enemy.realmTier);
+    var defenseRate = RealmUtils.defenseRateOf(effTier);
     if (traits.contains('yuti')) {
       final yutiBonus = cycleIndex >= 3
           ? ce.traits.yuti.defenseRateBonusC3
@@ -540,7 +569,7 @@ class StageBattleSetup {
     final battle = BattleCharacter(
       characterId: characterIdOverride ?? -(slotIndex + 1),
       name: enemy.name,
-      realmTier: enemy.realmTier,
+      realmTier: effTier,
       realmLayer: enemy.realmLayer,
       school: enemy.school,
       maxHp: scaledHp,

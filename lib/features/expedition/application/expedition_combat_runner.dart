@@ -38,6 +38,7 @@ class ExpeditionCombatRunner implements ExpeditionCombat {
     required ExpeditionNode node,
     required Map<int, ExpeditionMemberVital> memberStates,
     required int nodeSeed,
+    required int cycleIndex,
   }) async {
     final base = await _base(memberStates.keys.toList());
     final players = <BattleCharacter>[
@@ -54,7 +55,13 @@ class ExpeditionCombatRunner implements ExpeditionCombat {
       nodeSeed: nodeSeed,
       elite: node.type == ExpeditionNodeType.xianGuan,
     );
-    final enemies = StageBattleSetup.buildEnemyTeam(enemyDefs);
+    // 批 B：远征属境界段推进入口（spec 拍板 #5），cycle≥2 敌境界整体抬升；
+    // 深度 hp/atk 缩放（enemiesForNode 内）照旧叠加。
+    final enemies = StageBattleSetup.buildEnemyTeam(
+      enemyDefs,
+      cycleIndex: cycleIndex,
+      advanceRealmPerCycle: true,
+    );
     final result = ExpeditionBattleRunner.runNodeBattle(
       playerTeam: players,
       enemyTeam: enemies,

@@ -28,6 +28,10 @@ class ExpeditionRun {
   /// 已完成节点数；离线结算按 `lastSettledAt → now` 顺序推进。
   int currentNode = 0;
 
+  /// 本次远征挑战周目（批 B 境界段推进）。默认 1；升级窗口内旧 in-flight
+  /// 会话缺失读 0，与 cycle1 语义等价（tiersFor(0)=0 / rewardMultFor(0)=1.0）。
+  int cycleIndex = 1;
+
   /// 出发快照 + 远征生命/真气状态。
   List<ActivityMemberSnapshot> members = [];
 

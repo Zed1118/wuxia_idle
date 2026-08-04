@@ -34,6 +34,7 @@ class _FakeCombat implements ExpeditionCombat {
     required ExpeditionNode node,
     required Map<int, ExpeditionMemberVital> memberStates,
     required int nodeSeed,
+    required int cycleIndex,
   }) async {
     foughtNodes.add(node.index);
     final win = loseAtNode == null || node.index != loseAtNode;

@@ -254,6 +254,7 @@ class _NoopCombat implements ExpeditionCombat {
     required ExpeditionNode node,
     required Map<int, ExpeditionMemberVital> memberStates,
     required int nodeSeed,
+    required int cycleIndex,
   }) async => const ExpeditionNodeOutcome(
     leftWin: true,
     survivorHp: {},

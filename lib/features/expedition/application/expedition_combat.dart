@@ -17,10 +17,13 @@ abstract class ExpeditionCombat {
 
   /// 跑一个战斗节点。[memberStates] 是当前存活成员的 HP/qi（fresh 时为满值），
   /// [nodeSeed] 为稳定随机种子（同 run/节点结果一致）。
+  /// [cycleIndex] 本次远征周目（批 B 境界段推进；显式必传——runner 文件受
+  /// 「零数值字面量」红线测约束，不设默认值）。
   Future<ExpeditionNodeOutcome> fight({
     required ExpeditionNode node,
     required Map<int, ExpeditionMemberVital> memberStates,
     required int nodeSeed,
+    required int cycleIndex,
   });
 }
 
