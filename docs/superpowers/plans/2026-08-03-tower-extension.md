@@ -23,11 +23,29 @@
 
 ## 批 A · 塔 30→49 层(主体 · 跨切面 · 约等于一个主线段体量)
 
-**A0 · 解层数硬编码(前置阻塞,不做则新层进不去)**
-`tower_progress_service.dart` 三处硬编码 30 改为从 `allFloors` 派生:
-`:78` `availableFloor` 封顶 / `:89` `canChallenge` 上界 `floorIndex > 30` / `:176` 周目完成判定。
-另 `enums.dart:238-240` 注释「30 层共 6 Boss / major 在 10/20/30」须同步。
-**破坏证红**:把塔层数据临时截到 20 层,三处派生断言必红。
+**A0 · 解层数硬编码(前置阻塞,不做则新层进不去)** — ✅ **已完成**(2026-08-04,
+分支 `worktree-tower-batch-a`,commit `f5f4ac71..e14d927c`)
+
+起草时列「`tower_progress_service.dart` 三处」,**实测为 11 处生产行为点**,其中两处更硬:
+- `progression_red_lines_validator.dart:20` `towerFloors.length != 30` 抛错 —— yaml 一扩层
+  **启动期直接崩**,比「新层进不去」更早;已改 1:1 锚死上界语义(≤ `maxRealmLayers`)。
+- `tower_progress_service.dart:149` `floorIndex <= 30`(recordClear 的 isFirstClear 上界)
+  —— 起草版未列;不改则 31-49 层通关后 highest 卡 30 且不发奖,**静默无错**。
+
+做法:`GameRepository.towerMaxFloor` 唯一派生点 + service 四处改注入式 `maxFloor`
+(同既有 `allFloors`/`maxCycleCap` 体例)。另修 `main_menu` 完成判定、`boss_memory`
+两处 Boss 层清单(改从 `bossKind` 派生)、`battle_test_menu` `towerFloors[29]`→`.last`、
+`visual_acceptance_plan` 裸常量提为 `towerAuditFloorCount` + 补 coverage 守卫测。
+
+**有意不动**:`ticketMilestoneFloors`(待拍板)、`isar_setup.dart:344`(0.21.0 前旧档迁移的
+历史常量,非当前层数)、`strings.dart` 四条塔文案(`truth_source_guard_test:155` 已断言其
+数字 == `towerFloors.length`,扩层不改会红而非静默失效,属 A2)。
+
+**破坏证红(5 轮,逐处植入验证一一对应)**:①`:157` isFirstClear 上界 → 唯一红「超出顶层
+不算首通」②`:184` 周目判定 → 唯一红「通关全塔 maxClearedCycle=1」③`:82` availableFloor
+封顶 ④`:94` canChallenge 上界 ⑤`towerAuditFloorCount=20` → coverage 测红 2 条。
+首轮暴露两个守卫缺口(真 30 层数据下硬编码与派生等价,抓不到)已补:
+`tower_cycle_progress_test` 改用非 30 的 `_towerMax=12` 常驻化证红。
 
 **A1 · 重排既有 30 层 → abs 1-30**
 现状 floor 1-30 覆盖 abs 1/2/3/8/9/10(每 abs 5 楼),重排为 abs 1-30 各 1 楼。
@@ -82,9 +100,12 @@ codex image_gen 自主批(配方见 memory `reference_codex_image_gen_art_pipeli
 
 ## 当前恢复点
 
-- **状态**:批 D 进行中(spec 已修订完成,plan 本文件)
-- **最后完成**:spec 修订 149 行——4 条订正(断档成因/0.05 措辞/70 层否决/D 方案前提证伪)
-  + 全入口境界分布表 + 境界差阶梯函数表 + 8 项拍板结果 + 实装批次
-- **下一步**:批 D commit/push/draft PR → 用户拍断魂帖里程碑分布 → 开批 A(A0 先行)
-- **已跑验证**:批 D 纯文档,无需测试;spec 全部数字本会话实测(HEAD `36fe9d80`)
-- **阻塞项**:批 A 开工前须拍断魂帖里程碑分布(见本文开头)
+- **状态**:批 D 已合 main(PR #113,merge `5d62321d`);批 A 进行中,**A0 已完成**
+- **最后完成**:A0 解层数硬编码(分支 `worktree-tower-batch-a`,4 commit
+  `f5f4ac71`/`06dca593`/`74e238a9`/`e14d927c`)。范围由起草的 3 处修正为 11 处生产行为点,
+  5 轮破坏证红逐处验证一一对应
+- **下一步**:A1 重排既有 30 层 → abs 1-30(整体重排非纯追加,曲线须整体重校)
+- **已跑验证**:`flutter analyze --no-pub` **No issues found**;targeted 全绿
+  tower 98 / battle_record 63 / data 449 / sweep 44 / main_menu 69 / debug 156
+  (含新建 `visual_acceptance_tower_coverage_test` 4 例);全量见 PROGRESS
+- **阻塞项**:A1/A3 前须拍断魂帖里程碑分布(见本文开头);A0 不受此阻塞已放行

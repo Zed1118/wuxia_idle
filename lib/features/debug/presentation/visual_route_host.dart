@@ -1242,11 +1242,13 @@ Future<Widget> buildVisualTarget(
       final towerSvc = TowerProgressService(isar: isar);
       await towerSvc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
       final towerNow = DateTime.now();
-      for (var floor = 1; floor <= 30; floor++) {
+      final towerMax = GameRepository.instance.towerMaxFloor;
+      for (var floor = 1; floor <= towerMax; floor++) {
         await towerSvc.recordClear(
           floorIndex: floor,
           now: towerNow,
           elapsedMs: 60000,
+          maxFloor: towerMax,
         );
       }
       return const TowerFloorListScreen();

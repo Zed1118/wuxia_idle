@@ -2,6 +2,7 @@ import '../../core/domain/enums.dart';
 import '../defs/seclusion_map_def.dart';
 import '../defs/skill_def.dart';
 import '../defs/stage_def.dart';
+import '../defs/progression_release_cap.dart';
 import '../defs/tower_floor_def.dart';
 import '../numbers_config.dart';
 
@@ -17,8 +18,14 @@ void enforceTowerRedLines({
   required NumbersConfig numbers,
 }) {
   if (towerFloors.isEmpty) return; // 允许测试 fixture 不带 towers
-  if (towerFloors.length != 30) {
-    throw StateError('爬塔层数应为 30，实际 ${towerFloors.length}');
+  // 1:1 锚死（spec 2026-08-01 §7）：floor N ↔ 境界绝对层 N，故塔层数不得
+  // 超过境界总层数。层数本身由 towers.yaml 定义，代码不写死具体值——
+  // 上界是约束语义，具体层数是数据事实（memory feedback_red_line_test_semantics）。
+  if (towerFloors.length > ProgressionReleaseCap.maxRealmLayers) {
+    throw StateError(
+      '爬塔层数 ${towerFloors.length} 超过境界总层数 '
+      '${ProgressionReleaseCap.maxRealmLayers}（1:1 锚死上界）',
+    );
   }
   const minorBossFloors = {5, 15, 25};
   const majorBossFloors = {10, 20, 30};

@@ -16,7 +16,14 @@ import "../../../support/test_data.dart";
 /// Phase 3 T41 · TowerProgressService 真 Isar 落地测试。
 ///
 /// 沿用 mainline_progress_service_test 的 setUp：临时目录 + IsarSetup.init +
-/// GameRepository.loadAllDefs（从文件系统加载 30 层 fixture）。
+/// GameRepository.loadAllDefs（从文件系统加载真 towers.yaml）。
+///
+/// **层数一律从 [_maxFloor] 派生，不写死**（A0 解层数硬编码）：塔扩层后
+/// 本文件断言自动跟随数据，不会因为写死 30 而在扩层时静默失效。
+/// 「maxFloor 参数确实生效」的正面证明在 `tower_cycle_progress_test.dart`
+/// （刻意用非 30 的层数，实现若回退成硬编码则全红）。
+int get _maxFloor => GameRepository.instance.towerMaxFloor;
+
 void main() {
   late Directory tempDir;
 
@@ -89,22 +96,39 @@ void main() {
       final p = await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
-      expect(TowerProgressService.availableFloor(p), 1);
+      expect(TowerProgressService.availableFloor(p, maxFloor: _maxFloor), 1);
       expect(
-        TowerProgressService.canChallenge(progress: p, floorIndex: 1),
+        TowerProgressService.canChallenge(
+          progress: p,
+          floorIndex: 1,
+          maxFloor: _maxFloor,
+        ),
         isTrue,
       );
       expect(
-        TowerProgressService.canChallenge(progress: p, floorIndex: 2),
+        TowerProgressService.canChallenge(
+          progress: p,
+          floorIndex: 2,
+          maxFloor: _maxFloor,
+        ),
         isFalse,
       );
       expect(
-        TowerProgressService.canChallenge(progress: p, floorIndex: 0),
+        TowerProgressService.canChallenge(
+          progress: p,
+          floorIndex: 0,
+          maxFloor: _maxFloor,
+        ),
         isFalse,
       );
       expect(
-        TowerProgressService.canChallenge(progress: p, floorIndex: 31),
+        TowerProgressService.canChallenge(
+          progress: p,
+          floorIndex: _maxFloor + 1,
+          maxFloor: _maxFloor,
+        ),
         isFalse,
+        reason: '超出塔顶层号不可挑战（上界跟随数据，不写死 31）',
       );
     });
 
@@ -119,21 +143,30 @@ void main() {
             floorIndex: i,
             now: DateTime(2026, 5, 11, i),
             elapsedMs: 1000,
+            maxFloor: _maxFloor,
           );
         }
         final p = await TowerProgressService(
           isar: IsarSetup.instance,
         ).getOrCreate(saveDataId: 1);
-        expect(TowerProgressService.availableFloor(p), 11);
+        expect(TowerProgressService.availableFloor(p, maxFloor: _maxFloor), 11);
         for (var i = 1; i <= 11; i++) {
           expect(
-            TowerProgressService.canChallenge(progress: p, floorIndex: i),
+            TowerProgressService.canChallenge(
+              progress: p,
+              floorIndex: i,
+              maxFloor: _maxFloor,
+            ),
             isTrue,
             reason: 'floor $i 应可挑战（重打或下一关）',
           );
         }
         expect(
-          TowerProgressService.canChallenge(progress: p, floorIndex: 12),
+          TowerProgressService.canChallenge(
+            progress: p,
+            floorIndex: 12,
+            maxFloor: _maxFloor,
+          ),
           isFalse,
         );
       },
@@ -143,35 +176,47 @@ void main() {
       final p = TowerProgress()
         ..saveDataId = 1
         ..highestClearedFloor = 19;
-      expect(TowerProgressService.availableFloor(p), 20);
+      expect(TowerProgressService.availableFloor(p, maxFloor: _maxFloor), 20);
       expect(
-        TowerProgressService.canChallenge(progress: p, floorIndex: 20),
+        TowerProgressService.canChallenge(
+          progress: p,
+          floorIndex: 20,
+          maxFloor: _maxFloor,
+        ),
         isTrue,
         reason: 'floor 20 已按顺序推进到下一层时可挑战；队伍人数由战斗难度自然体现',
       );
       expect(
-        TowerProgressService.canChallenge(progress: p, floorIndex: 21),
+        TowerProgressService.canChallenge(
+          progress: p,
+          floorIndex: 21,
+          maxFloor: _maxFloor,
+        ),
         isFalse,
         reason: '仍然不允许跳层，锁门只来自层进度',
       );
     });
 
-    test('30 层全通 → availableFloor 封顶 30', () async {
+    test('全塔通关 → availableFloor 封顶在顶层', () async {
       await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
-      for (var i = 1; i <= 30; i++) {
+      for (var i = 1; i <= _maxFloor; i++) {
         await TowerProgressService(isar: IsarSetup.instance).recordClear(
           floorIndex: i,
           now: DateTime(2026, 5, 11),
           elapsedMs: 1000,
+          maxFloor: _maxFloor,
         );
       }
       final p = await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
-      expect(p.highestClearedFloor, 30);
-      expect(TowerProgressService.availableFloor(p), 30);
+      expect(p.highestClearedFloor, _maxFloor);
+      expect(
+        TowerProgressService.availableFloor(p, maxFloor: _maxFloor),
+        _maxFloor,
+      );
     });
   });
 
@@ -183,9 +228,13 @@ void main() {
           isar: IsarSetup.instance,
         ).getOrCreate(saveDataId: 1);
         final t = DateTime(2026, 5, 11, 14, 30);
-        final result = await TowerProgressService(
-          isar: IsarSetup.instance,
-        ).recordClear(floorIndex: 1, now: t, elapsedMs: 1000);
+        final result = await TowerProgressService(isar: IsarSetup.instance)
+            .recordClear(
+              floorIndex: 1,
+              now: t,
+              elapsedMs: 1000,
+              maxFloor: _maxFloor,
+            );
         expect(result.isFirstClear, isTrue);
         expect(result.highestAfter, 1);
 
@@ -202,14 +251,21 @@ void main() {
       await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
-      await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 1, now: DateTime(2026, 5, 11), elapsedMs: 1000);
+      await TowerProgressService(isar: IsarSetup.instance).recordClear(
+        floorIndex: 1,
+        now: DateTime(2026, 5, 11),
+        elapsedMs: 1000,
+        maxFloor: _maxFloor,
+      );
       final firstAt = DateTime(2026, 5, 11);
       // 重打 1 层
-      final result = await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 1, now: DateTime(2026, 5, 12), elapsedMs: 1000);
+      final result = await TowerProgressService(isar: IsarSetup.instance)
+          .recordClear(
+            floorIndex: 1,
+            now: DateTime(2026, 5, 12),
+            elapsedMs: 1000,
+            maxFloor: _maxFloor,
+          );
       expect(result.isFirstClear, isFalse);
       expect(result.highestAfter, 1);
 
@@ -233,6 +289,7 @@ void main() {
               floorIndex: 5,
               now: DateTime(2026, 5, 11),
               elapsedMs: 1000,
+              maxFloor: _maxFloor,
             );
         expect(result.isFirstClear, isFalse);
         expect(result.highestAfter, 0);
@@ -251,6 +308,7 @@ void main() {
           floorIndex: 1,
           now: DateTime(2026, 5, 11),
           elapsedMs: 1000,
+          maxFloor: _maxFloor,
         ),
         throwsA(
           isA<StateError>().having(
@@ -268,12 +326,18 @@ void main() {
       await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
-      await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 1, now: DateTime(2026, 5, 11), elapsedMs: 5000);
-      await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 2, now: DateTime(2026, 5, 11), elapsedMs: 8000);
+      await TowerProgressService(isar: IsarSetup.instance).recordClear(
+        floorIndex: 1,
+        now: DateTime(2026, 5, 11),
+        elapsedMs: 5000,
+        maxFloor: _maxFloor,
+      );
+      await TowerProgressService(isar: IsarSetup.instance).recordClear(
+        floorIndex: 2,
+        now: DateTime(2026, 5, 11),
+        elapsedMs: 8000,
+        maxFloor: _maxFloor,
+      );
       final p = await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
@@ -290,13 +354,19 @@ void main() {
       await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
-      await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 1, now: DateTime(2026, 5, 11), elapsedMs: 5000);
+      await TowerProgressService(isar: IsarSetup.instance).recordClear(
+        floorIndex: 1,
+        now: DateTime(2026, 5, 11),
+        elapsedMs: 5000,
+        maxFloor: _maxFloor,
+      );
       // 重打 1 层用更快耗时 → 不覆盖首通(玩家强化后刷数据被防住)
-      await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 1, now: DateTime(2026, 5, 12), elapsedMs: 2000);
+      await TowerProgressService(isar: IsarSetup.instance).recordClear(
+        floorIndex: 1,
+        now: DateTime(2026, 5, 12),
+        elapsedMs: 2000,
+        maxFloor: _maxFloor,
+      );
       final p = await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
@@ -311,17 +381,24 @@ void main() {
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
       // 顺序通 3 层,耗时各不同
-      await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 1, now: DateTime(2026, 5, 11), elapsedMs: 7000);
+      await TowerProgressService(isar: IsarSetup.instance).recordClear(
+        floorIndex: 1,
+        now: DateTime(2026, 5, 11),
+        elapsedMs: 7000,
+        maxFloor: _maxFloor,
+      );
       await TowerProgressService(isar: IsarSetup.instance).recordClear(
         floorIndex: 2,
         now: DateTime(2026, 5, 11),
         elapsedMs: 3000, // 最快
+        maxFloor: _maxFloor,
       );
-      await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 3, now: DateTime(2026, 5, 11), elapsedMs: 9000);
+      await TowerProgressService(isar: IsarSetup.instance).recordClear(
+        floorIndex: 3,
+        now: DateTime(2026, 5, 11),
+        elapsedMs: 9000,
+        maxFloor: _maxFloor,
+      );
       final p = await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
@@ -341,18 +418,24 @@ void main() {
       final t3 = DateTime(2026, 5, 11, 16, 0);
 
       // 首通 1 层
-      await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 1, now: t1, elapsedMs: 5000);
+      await TowerProgressService(isar: IsarSetup.instance).recordClear(
+        floorIndex: 1,
+        now: t1,
+        elapsedMs: 5000,
+        maxFloor: _maxFloor,
+      );
       var p = await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
       expect(p.lastClearedAt, t1, reason: '首通更新 lastClearedAt');
 
       // 重打 1 层
-      await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 1, now: t2, elapsedMs: 4000);
+      await TowerProgressService(isar: IsarSetup.instance).recordClear(
+        floorIndex: 1,
+        now: t2,
+        elapsedMs: 4000,
+        maxFloor: _maxFloor,
+      );
       p = await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
@@ -363,9 +446,12 @@ void main() {
       );
 
       // 跳层挑战(违反 canChallenge)— lastClearedAt 也更新(任何 recordClear 调用都更)
-      await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 10, now: t3, elapsedMs: 6000);
+      await TowerProgressService(isar: IsarSetup.instance).recordClear(
+        floorIndex: 10,
+        now: t3,
+        elapsedMs: 6000,
+        maxFloor: _maxFloor,
+      );
       p = await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
@@ -386,9 +472,12 @@ void main() {
       await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
-      await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 1, now: DateTime(2026, 5, 11), elapsedMs: 1000);
+      await TowerProgressService(isar: IsarSetup.instance).recordClear(
+        floorIndex: 1,
+        now: DateTime(2026, 5, 11),
+        elapsedMs: 1000,
+        maxFloor: _maxFloor,
+      );
       // 挑战 2 层失败
       await TowerProgressService(
         isar: IsarSetup.instance,
@@ -424,7 +513,7 @@ void main() {
   });
 
   group('floorList', () {
-    test('全新进度 → floor 1 available，2-30 全 locked', () async {
+    test('全新进度 → floor 1 available，其余全 locked', () async {
       final p = await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
@@ -433,10 +522,10 @@ void main() {
         progress: p,
         allFloors: floors,
       );
-      expect(entries.length, 30);
+      expect(entries.length, _maxFloor);
       expect(entries[0].def.floorIndex, 1);
       expect(entries[0].status, TowerFloorStatus.available);
-      for (var i = 1; i < 30; i++) {
+      for (var i = 1; i < _maxFloor; i++) {
         expect(
           entries[i].status,
           TowerFloorStatus.locked,
@@ -445,7 +534,7 @@ void main() {
       }
     });
 
-    test('通到 5 层 → 1-5 cleared、6 available、7-30 locked', () async {
+    test('通到 5 层 → 1-5 cleared、6 available、其余 locked', () async {
       await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
@@ -454,6 +543,7 @@ void main() {
           floorIndex: i,
           now: DateTime(2026, 5, 11),
           elapsedMs: 1000,
+          maxFloor: _maxFloor,
         );
       }
       final p = await TowerProgressService(
@@ -476,7 +566,7 @@ void main() {
         TowerFloorStatus.available,
         reason: 'floor 6 应可挑战',
       );
-      for (var i = 6; i < 30; i++) {
+      for (var i = 6; i < _maxFloor; i++) {
         expect(
           entries[i].status,
           TowerFloorStatus.locked,
@@ -485,15 +575,16 @@ void main() {
       }
     });
 
-    test('全 30 通 → 全 cleared（无 available）', () async {
+    test('全塔通关 → 全 cleared（无 available）', () async {
       await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
-      for (var i = 1; i <= 30; i++) {
+      for (var i = 1; i <= _maxFloor; i++) {
         await TowerProgressService(isar: IsarSetup.instance).recordClear(
           floorIndex: i,
           now: DateTime(2026, 5, 11),
           elapsedMs: 1000,
+          maxFloor: _maxFloor,
         );
       }
       final p = await TowerProgressService(
@@ -513,31 +604,28 @@ void main() {
 
   group('advanceCycle', () {
     test(
-      '当前周目 30 层未全通 → advanceCycle no-op（maxClearedCycle < currentCycleIndex）',
+      '当前周目未全通 → advanceCycle no-op（maxClearedCycle < currentCycleIndex）',
       () async {
         final svc = TowerProgressService(isar: IsarSetup.instance);
         await svc.getOrCreate(saveDataId: 1);
         // 默认 currentCycleIndex=1, maxClearedCycle=0 → 守卫触发 no-op
         await svc.advanceCycle(saveDataId: 1, maxCycleCap: 99);
         final p = await svc.getOrCreate(saveDataId: 1);
-        expect(
-          p.currentCycleIndex,
-          1,
-          reason: '未 30 层全通时 advanceCycle 应 no-op',
-        );
+        expect(p.currentCycleIndex, 1, reason: '未全塔通关时 advanceCycle 应 no-op');
       },
     );
 
     test(
-      '30 层全通后 advanceCycle → currentCycleIndex++ + highestClearedFloor=0',
+      '全塔通关后 advanceCycle → currentCycleIndex++ + highestClearedFloor=0',
       () async {
         final svc = TowerProgressService(isar: IsarSetup.instance);
         await svc.getOrCreate(saveDataId: 1);
-        for (var i = 1; i <= 30; i++) {
+        for (var i = 1; i <= _maxFloor; i++) {
           await svc.recordClear(
             floorIndex: i,
             now: DateTime(2026, 5, 11),
             elapsedMs: 1000,
+            maxFloor: _maxFloor,
           );
         }
         await svc.advanceCycle(saveDataId: 1, maxCycleCap: 99); // cap 不限，专注通关守卫
@@ -545,7 +633,7 @@ void main() {
         expect(
           p.currentCycleIndex,
           2,
-          reason: '30 层全通后 advanceCycle 应 currentCycleIndex=2',
+          reason: '全塔通关后 advanceCycle 应 currentCycleIndex=2',
         );
         expect(
           p.highestClearedFloor,
@@ -596,9 +684,12 @@ void main() {
       await TowerProgressService(
         isar: IsarSetup.instance,
       ).getOrCreate(saveDataId: 1);
-      await TowerProgressService(
-        isar: IsarSetup.instance,
-      ).recordClear(floorIndex: 1, now: DateTime(2026, 5, 11), elapsedMs: 1000);
+      await TowerProgressService(isar: IsarSetup.instance).recordClear(
+        floorIndex: 1,
+        now: DateTime(2026, 5, 11),
+        elapsedMs: 1000,
+        maxFloor: _maxFloor,
+      );
       expect(
         await IsarSetup.instance.mainlineProgress.count(),
         0,
@@ -626,6 +717,7 @@ void main() {
           floorIndex: f,
           now: DateTime(2026, 5, 11),
           elapsedMs: 1000,
+          maxFloor: _maxFloor,
         );
       }
 
@@ -637,6 +729,7 @@ void main() {
         floorIndex: 10,
         now: DateTime(2026, 5, 12),
         elapsedMs: 900,
+        maxFloor: _maxFloor,
       );
       expect(await ticketQty(), 1);
       expect(await grantedIds(), ['tower_floor_10']);
@@ -650,6 +743,7 @@ void main() {
           floorIndex: f,
           now: DateTime(2026, 5, 11),
           elapsedMs: 1000,
+          maxFloor: _maxFloor,
         );
       }
 

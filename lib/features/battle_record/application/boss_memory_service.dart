@@ -86,8 +86,8 @@ class BossMemoryService {
   ///
   /// 来源：
   ///   1. MainlineProgress.clearedStageIds — 仅筛 isBossStage=true 的关卡。
-  ///   2. TowerProgress.highestClearedFloor — Boss 层 {5,10,15,20,25,30} 中
-  ///      ≤ highestClearedFloor 的层数。
+  ///   2. TowerProgress.highestClearedFloor — towers.yaml 中 bossKind 非 null
+  ///      的层（派生，不写死）里 ≤ highestClearedFloor 的层数。
   ///
   /// 塔回填的 firstClearedAt 为 null（无精确时间）。
   /// 全部条目在一个 writeTxn 内批量 put。
@@ -132,7 +132,13 @@ class BossMemoryService {
     }
 
     // --- 爬塔 ---
-    const bossFloors = [5, 10, 15, 20, 25, 30];
+    // Boss 层从 towers.yaml 派生（bossKind 非 null），不写死层号——扩层 /
+    // Boss 位重排后回填须自动跟随。towerFloors 已按 floorIndex 升序（红线保证），
+    // 故下方 `break` 提前退出仍成立。
+    final bossFloors = [
+      for (final f in repo.towerFloors)
+        if (f.isBoss) f.floorIndex,
+    ];
     final tpRow = await isar.towerProgress
         .filter()
         .saveDataIdEqualTo(saveDataId)

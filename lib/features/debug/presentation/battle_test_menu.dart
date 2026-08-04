@@ -915,10 +915,12 @@ class BattleScenarioData {
   // 左队 = 3 宗师 dengFeng on-level(2 刚猛[boss 吃 ×1.25]+ 1 灵巧),真能逐步清护法
   // 演出破界,不被秒杀也不打不动。纯展示 scenario·零碰 numbers/结算(承伤仍走真管线)。
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioGuardianWard() {
-    // 真 floor30 塔层(towerFloors 按 floorIndex 升序,索引 29 = 第 30 层)。
-    final floor30 = GameRepository.instance.towerFloors[29];
+    // 真塔顶层(towerFloors 按 floorIndex 升序,末元素 = 塔顶)。
+    // **不按索引取第 30 层**：扩层后索引 29 不再是塔顶，会静默拿到中间层
+    // 当「终局塔队」——护法结界是塔顶 Boss 的机制，须跟随数据取末层。
+    final topFloor = GameRepository.instance.towerFloors.last;
     final right = StageBattleSetup.buildEnemyTeam(
-      floor30.enemyTeam,
+      topFloor.enemyTeam,
       isTower: true,
     );
 

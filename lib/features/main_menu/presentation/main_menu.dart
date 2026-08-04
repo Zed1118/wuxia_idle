@@ -704,13 +704,20 @@ class MainMenu extends ConsumerWidget {
 
   static String _towerMenuStatus(TowerProgress progress) {
     final highest = progress.highestClearedFloor;
-    if (highest >= 30) return UiStrings.mainMenuTowerCompleteStatus;
-    final next = TowerProgressService.availableFloor(progress);
-    final nextIsBoss =
-        GameRepository.isLoaded &&
-        GameRepository.instance.towerFloors.any(
-          (f) => f.floorIndex == next && f.isBoss,
-        );
+    // 塔层数由 towers.yaml 定义，不写死——扩层后「已通关」判定须跟随数据。
+    // Repo 未加载（极早期启动帧）→ 退化为「下一层 = highest+1」，不误报通关。
+    if (!GameRepository.isLoaded) {
+      return UiStrings.mainMenuTowerStatus(highest, highest + 1);
+    }
+    final maxFloor = GameRepository.instance.towerMaxFloor;
+    if (highest >= maxFloor) return UiStrings.mainMenuTowerCompleteStatus;
+    final next = TowerProgressService.availableFloor(
+      progress,
+      maxFloor: maxFloor,
+    );
+    final nextIsBoss = GameRepository.instance.towerFloors.any(
+      (f) => f.floorIndex == next && f.isBoss,
+    );
     if (nextIsBoss) return UiStrings.mainMenuTowerBossStatus(highest, next);
     return UiStrings.mainMenuTowerStatus(highest, next);
   }

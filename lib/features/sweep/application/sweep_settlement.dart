@@ -118,6 +118,7 @@ Future<SweepBattleOutcome?> settleTowerSweepVictory({
     floorIndex: floor.floorIndex,
     now: DateTime.now(),
     elapsedMs: 0,
+    maxFloor: GameRepository.instance.towerMaxFloor,
   );
 
   // 战斗结算（battleCount/skillUsage in-place；drops 不在此 roll，下方 gate 控）。
