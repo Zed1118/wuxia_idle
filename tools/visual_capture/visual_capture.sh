@@ -178,9 +178,16 @@ capture_region() {
 }
 
 window_id() {
+  # $1(可选)= 本次启动的 app pid。传了就只认该进程的窗口——同名残留进程
+  # (TERM 免疫僵尸)的旧窗与新窗面积并列时,纯按名+面积会截出前一 route 的
+  # 画面(2026-08-04 批 C cycle 720 错拍实锤),绑 pid 根除。
+  local owner_pid="${1:-}"
   local err
   err="$(mktemp -t vc_winid.XXXXXX)"
   local args=("$SWIFT_WINID" "$APP_PROCESS_NAME")
+  if [[ -n "$owner_pid" ]]; then
+    args+=(--pid "$owner_pid")
+  fi
   if [[ "$ALL_SPACES" -eq 1 ]]; then
     args+=(--all-spaces)
   fi
@@ -197,8 +204,9 @@ capture_visual_window() {
   local width="$1"
   local height="$2"
   local output="$3"
+  local owner_pid="${4:-}"
   local wid
-  wid="$(window_id)"
+  wid="$(window_id "$owner_pid")"
   if [[ -n "$wid" ]] && screencapture -x -o -l"$wid" "$output" >/dev/null 2>&1 && [[ -s "$output" ]]; then
     printf 'window_id:%s\n' "$wid"
     return 0
@@ -237,7 +245,45 @@ OSA
     sleep 1
     elapsed=$((elapsed + 1))
   done
+  # TERM 免疫僵尸(READY 超时后 kill 未退的卡死进程)是批 C cycle 720 错拍与
+  # 「首启抖动」的共同真身:pkill 后必须确认退净,不净升级 SIGKILL 再确认。
   pkill -x "$APP_PROCESS_NAME" >/dev/null 2>&1 || true
+  elapsed=0
+  while [[ "$elapsed" -lt 5 ]]; do
+    if ! pgrep -x "$APP_PROCESS_NAME" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+  pkill -9 -x "$APP_PROCESS_NAME" >/dev/null 2>&1 || true
+  elapsed=0
+  while [[ "$elapsed" -lt 5 ]]; do
+    if ! pgrep -x "$APP_PROCESS_NAME" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+  echo "VISUAL_CAPTURE_WARN: stale $APP_PROCESS_NAME still alive after SIGKILL" >&2
+}
+
+# 停掉本次启动的 app:SIGTERM → 5s 内未退升级 SIGKILL → wait 收尸。
+# 裸 kill+wait 对 TERM 免疫进程会让 wait 永挂 / 或留下僵尸窗口污染下一 route。
+stop_pid() {
+  local pid="$1"
+  local log="$2"
+  kill "$pid" >/dev/null 2>&1 || true
+  local elapsed=0
+  while kill -0 "$pid" >/dev/null 2>&1 && [[ "$elapsed" -lt 5 ]]; do
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+  if kill -0 "$pid" >/dev/null 2>&1; then
+    kill -9 "$pid" >/dev/null 2>&1 || true
+    printf 'VISUAL_CAPTURE_WARN: app pid %s ignored SIGTERM, escalated to SIGKILL\n' "$pid" >>"$log"
+  fi
+  wait "$pid" >/dev/null 2>&1 || true
 }
 
 wait_for_route_ready() {
@@ -320,8 +366,7 @@ run_capture() {
   local pid=$!
   if ! wait_for_route_ready "$route" "$log"; then
     echo "Route did not become ready: $route (see $log)" >&2
-    kill "$pid" >/dev/null 2>&1 || true
-    wait "$pid" >/dev/null 2>&1 || true
+    stop_pid "$pid" "$log"
     return 1
   fi
   sleep "$WAIT_SECONDS"
@@ -334,12 +379,11 @@ run_capture() {
     sleep 1
   fi
   local capture_status
-  capture_status="$(capture_visual_window "$width" "$height" "$png")"
+  capture_status="$(capture_visual_window "$width" "$height" "$png" "$pid")"
   python3 "$CROP_CONTENT" "$png" \
     --logical-width "$width" \
     --logical-height "$height" >>"$log"
-  kill "$pid" >/dev/null 2>&1 || true
-  wait "$pid" >/dev/null 2>&1 || true
+  stop_pid "$pid" "$log"
   printf 'VISUAL_CAPTURE: %s\n' "$capture_status" >>"$log"
 }
 
