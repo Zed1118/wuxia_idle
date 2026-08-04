@@ -365,6 +365,14 @@ enum VisualRoute {
     'gauntlet_loadout',
     '断魂庄装载屏目检·帖库存×2 + 庄中三关(苏无咎/石镇岳/闻九针 + 推荐境界) + 择人1-3(占用/未修主修标) + 补给装载步进 + 持帖入庄,§7.1',
   ),
+  gauntletLoadoutCycle(
+    'gauntlet_loadout_cycle',
+    '断魂庄装载屏·周目选择区目检(批 C:种已通 cycle1 → 选择区起显,cycle1 可选 + cycle2 境界门槛锁态;未通态由 gauntlet_loadout 覆盖),批 B §B5',
+  ),
+  expeditionOverviewCycle(
+    'expedition_overview_cycle',
+    '江湖远行总览·周目选择区目检(批 C:种 baicaoMaxDepth=25 达首里程碑 → 折算已通 cycle1 选择区起显;未达态由 expedition_overview 覆盖),批 B §B5',
+  ),
   gauntletInterlude(
     'gauntlet_interlude',
     '断魂庄庄内整备目检·第2关整备(三成员生命/真气/阵亡/冷却) + 托管补给余量(疗伤丹余1/行囊补给余1) + 使用/继续闯关/认输离庄,§7.2',
