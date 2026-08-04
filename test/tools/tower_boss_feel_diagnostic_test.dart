@@ -9,6 +9,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import 'package:wuxia_idle/data/defs/stage_def.dart' show EnemyDef;
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -163,9 +164,9 @@ void _expectBossDoesNotRegress(TowerFloorDef previous, TowerFloorDef boss) {
   // vuln 机制 Boss 的名义血刻意低于曲线(§5.4 机制型=减伤方向不膨胀数字,
   // 血量与乘子联动校准),体感血量 = baseHp / outOfWindowDamageMult(窗口外
   // 有效血),用它参与不倒退比较(剑魔 40000/0.35≈11.4 万 >> 前驱 47000)。
-  int effectiveHp(dynamic e) {
+  int effectiveHp(EnemyDef e) {
     final mult = e.vulnerability?.outOfWindowDamageMult;
-    if (mult == null || mult <= 0) return e.baseHp as int;
+    if (mult == null || mult <= 0) return e.baseHp;
     return (e.baseHp / mult).round();
   }
 
