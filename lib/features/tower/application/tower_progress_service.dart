@@ -30,9 +30,14 @@ class TowerProgressService {
 
   final Isar isar;
 
-  /// 断魂帖里程碑层（design §6.4：问鼎江湖第 10/20/30 层一次性各一张，
+  /// 断魂帖里程碑层（design §6.4：一次性各一张，
   /// `SaveData.grantedTicketMilestoneIds` 防重，沿 F1 里程碑一次性体例）。
-  static const List<int> ticketMilestoneFloors = [10, 20, 30];
+  ///
+  /// 批 A 塔扩 49 层后按 2026-08-04 拍板（a）重定为 16/33/49：保持 3 张、
+  /// 约三等分塔高、经济总量不变（扩层是内容深度改动，不顺带改奖励经济）；
+  /// 16/33 落在 erLiu/jueDing 段内不撞 tier 边界。旧位 10/20/30 已领的
+  /// 防重记录永久保留（历史发放不收回），见 [SaveData.grantedTicketMilestoneIds]。
+  static const List<int> ticketMilestoneFloors = [16, 33, 49];
 
   static String _ticketMilestoneId(int floor) => 'tower_floor_$floor';
 
@@ -188,7 +193,7 @@ class TowerProgressService {
           }
         }
 
-        // 断魂帖里程碑（design §6.4）：第 10/20/30 层首通一次性各一张。
+        // 断魂帖里程碑（design §6.4·批 A 重定 16/33/49）：首通一次性各一张。
         if (ticketMilestoneFloors.contains(floorIndex)) {
           await _grantTicketMilestone(floorIndex, now);
         }

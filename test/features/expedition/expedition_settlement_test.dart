@@ -69,7 +69,7 @@ void main() {
       await IsarSetup.instance.saveDatas.put(
         SaveData()
           ..id = 0
-          ..saveVersion = '0.37.0'
+          ..saveVersion = '0.38.0'
           ..createdAt = departedAt
           ..lastSavedAt = departedAt
           ..lastOnlineAt = departedAt,

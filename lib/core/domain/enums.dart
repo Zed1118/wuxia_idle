@@ -233,11 +233,11 @@ enum Formation {
 ///   - cleared   → 绿勾，点击可重玩（不再触发首通逻辑）
 enum StageStatus { locked, available, cleared }
 
-/// 爬塔 Boss 层类型（Phase 3 T40，GDD §8.2 + CLAUDE §7）。
+/// 爬塔 Boss 层类型（Phase 3 T40，GDD §8.2 + CLAUDE §7；批 A 扩 49 层重排）。
 ///
-/// 30 层共 6 Boss：
-///   - minor：小 Boss，分布在 5 / 15 / 25 层
-///   - major：大 Boss，分布在 10 / 20 / 30 层
+/// 49 层共 14 Boss（1:1 锚死下的结构规则，spec 2026-08-01 §7）：
+///   - minor：小 Boss，tier 中点 4 / 11 / 18 / 25 / 32 / 39 / 46 层
+///   - major：大 Boss，tier 末层 7 / 14 / 21 / 28 / 35 / 42 / 49 层
 ///
 /// 普通层 bossKind 为 null。
 enum TowerBossKind { minor, major }

@@ -89,7 +89,7 @@ void main() {
             const AsyncValue.error(
               UnsupportedSaveVersionException(
                 actualVersion: '0.99.0',
-                supportedVersion: '0.37.0',
+                supportedVersion: '0.38.0',
               ),
               StackTrace.empty,
             ),

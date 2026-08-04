@@ -236,14 +236,64 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
   }
 }
 
-class _TowerSpineOverview extends StatelessWidget {
+class _TowerSpineOverview extends StatefulWidget {
   const _TowerSpineOverview({required this.entries, required this.summary});
 
   final List<TowerFloorEntry> entries;
   final TowerProgressSummary summary;
 
   @override
+  State<_TowerSpineOverview> createState() => _TowerSpineOverviewState();
+}
+
+class _TowerSpineOverviewState extends State<_TowerSpineOverview> {
+  // 批 A 扩 49 层后总览条必然超宽(14 Boss×34 + 35 普通×23 + 48 连线×9 ≈ 1713px,
+  // 旧注「30 节点总宽 1017 恰落 1020 安全区」的前提失效),首帧把视口定位到
+  // 当前进度节点附近——爬到高层的玩家打开塔页,总览该停在进度处而非第 1 层。
+  // 宽度常量与 _TowerSpineNode 的 SizedBox/连线实宽一致,漂移由 widget 测兜底。
+  static const double _kNodeWidthBoss = 34.0;
+  static const double _kNodeWidthNormal = 23.0;
+  static const double _kLinkWidth = 9.0;
+
+  final _spineController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _centerOnProgress());
+  }
+
+  @override
+  void dispose() {
+    _spineController.dispose();
+    super.dispose();
+  }
+
+  void _centerOnProgress() {
+    if (!mounted || !_spineController.hasClients) return;
+    final pos = _spineController.position;
+    if (!pos.hasContentDimensions || pos.maxScrollExtent <= 0) return;
+    // 焦点 = 当前可挑战层;全塔通关后 = 最高层(塔顶)。
+    final focusFloor = widget.summary.isComplete
+        ? widget.summary.highestClearedFloor
+        : widget.summary.currentFloor;
+    var leading = 0.0;
+    for (final e in widget.entries) {
+      if (e.def.floorIndex >= focusFloor) break;
+      leading +=
+          (e.def.isBoss ? _kNodeWidthBoss : _kNodeWidthNormal) + _kLinkWidth;
+    }
+    final viewport = pos.viewportDimension;
+    final target = (leading - viewport / 2 + _kNodeWidthBoss / 2).clamp(
+      0.0,
+      pos.maxScrollExtent,
+    );
+    _spineController.jumpTo(target);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final entries = widget.entries;
     return LightPaperPanel(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       child: Column(
@@ -252,16 +302,14 @@ class _TowerSpineOverview extends StatelessWidget {
           const SectionHeader(UiStrings.towerSpineTitle),
           const SizedBox(height: 10),
           SingleChildScrollView(
+            controller: _spineController,
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
                 for (final entry in entries) ...[
-                  _TowerSpineNode(entry: entry, summary: summary),
+                  _TowerSpineNode(entry: entry, summary: widget.summary),
                   if (entry.def.floorIndex != entries.last.def.floorIndex)
                     Container(
-                      // 24 个普通节点 + 6 个 Boss 节点在 1080 内容栏内的
-                      // 总宽度为 756；29 段 9px 连线后为 1017，恰好落在
-                      // 面板 1020px 安全区内。更窄窗口仍由横向滚动兜底。
                       width: 9,
                       height: 2,
                       color: WuxiaUi.ink.withValues(alpha: 0.18),

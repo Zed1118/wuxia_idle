@@ -27,8 +27,6 @@ void enforceTowerRedLines({
       '${ProgressionReleaseCap.maxRealmLayers}（1:1 锚死上界）',
     );
   }
-  const minorBossFloors = {5, 15, 25};
-  const majorBossFloors = {10, 20, 30};
   final seen = <int>{};
   for (var i = 0; i < towerFloors.length; i++) {
     final f = towerFloors[i];
@@ -38,10 +36,14 @@ void enforceTowerRedLines({
     if (!seen.add(f.floorIndex)) {
       throw StateError('爬塔 floorIndex 重复：${f.floorIndex}');
     }
-    // Boss 分布严格校验
-    final expectedKind = minorBossFloors.contains(f.floorIndex)
+    // Boss 分布严格校验（spec 2026-08-01 §7 · 1:1 锚死下的结构规则）：
+    // 每 tier 7 层，中点（tier 内第 4 层）小 Boss、末层（tier 内第 7 层）大 Boss
+    // → minor = 4/11/18/25/32/39/46，major = 7/14/21/28/35/42/49。
+    // 公式派生而非写死集合：塔顶随 towers.yaml 扩缩时规则自动跟随。
+    final posInTier = (f.floorIndex - 1) % 7 + 1;
+    final expectedKind = posInTier == 4
         ? TowerBossKind.minor
-        : majorBossFloors.contains(f.floorIndex)
+        : posInTier == 7
         ? TowerBossKind.major
         : null;
     if (f.bossKind != expectedKind) {
@@ -62,7 +64,7 @@ void enforceTowerRedLines({
         '应 ∈ [1, 3]',
       );
     }
-    // Boss 层至少有一个主 Boss；20/25/30 可带护法形成多目标压力。
+    // Boss 层至少有一个主 Boss；大 Boss 层可带护卫/护法形成多目标压力。
     if (f.bossKind != null && !f.enemyTeam.any((e) => e.isBoss)) {
       throw StateError('爬塔 Boss floor=${f.floorIndex} 至少应有 1 个 isBoss 主敌');
     }
@@ -73,6 +75,17 @@ void enforceTowerRedLines({
         throw StateError(
           '红线越界：爬塔 floor=${f.floorIndex} enemy=${e.id} '
           'baseHp=${e.baseHp} > $bossHpMax',
+        );
+      }
+      // 拍板 #8（spec 2026-08-01 §5）：requiredRealm ≤ 该层敌人境界。
+      // requiredRealm 经 tower_entry_flow → equipmentTierCapOf 决定稀有彩头
+      // 装备阶——配得比敌人境界高会把高阶装备提前发给低境界玩家（§5.3 三系
+      // 锁死的「提前发放」漏洞），加载期 fail-fast 拦死。
+      if (f.requiredRealm.index > e.realmTier.index) {
+        throw StateError(
+          '爬塔 floor=${f.floorIndex} requiredRealm=${f.requiredRealm.name} '
+          '高于敌人 ${e.id} 境界 ${e.realmTier.name}（掉落阶提前发放风险，'
+          '拍板 #8 requiredRealm ≤ 该层敌人境界）',
         );
       }
     }

@@ -26,8 +26,8 @@ void main() {
 
     _writeSummary(supply: supply, demands: [to15, to30, to49]);
 
-    expect(supply.mojianshi, closeTo(56.5, 0.01));
-    expect(supply.xinxueJiejing, closeTo(4512.0, 0.01));
+    expect(supply.mojianshi, closeTo(66.5, 0.01));
+    expect(supply.xinxueJiejing, closeTo(4679.5, 0.01));
 
     expect(to15.guaranteeCrystalCost, 6);
     expect(to30.guaranteeCrystalCost, 112);
@@ -48,6 +48,8 @@ void main() {
     // Ch19 扩 95 关后 3607(≈13.66 件·264×13=3432·刚过 13 件上界抬至 14 件线·武圣段首章续放宽·沿逐章 +5 关自然增轨迹·章级 spec §5「沿放宽复核」已拍·[balance] 绝对值待用户终拍)。
     // Ch20 扩 100 关后 4047(≈15.33 件·264×15=3960·刚过 15 件上界抬至 16 件线·武圣段中章续放宽·沿逐章 +5 关自然增轨迹·章级 spec §5「沿放宽复核」已拍·[balance] 绝对值待用户终拍)。
     // Ch21 扩 105 关后 4512(≈17.09 件·264×17=4488·刚过 17 件上界抬至 18 件线·武圣段收官续放宽·沿逐章 +5 关自然增轨迹·章级 spec §5「沿放宽复核」已拍·[balance] 绝对值待用户终拍)。
+    // 批 A 塔扩 49 层(2026-08-04)后 4679.5(≈17.72 件·仍不足 18 件·塔材料掉落随 49 层重排
+    // 自然增·上界 18 件线**未动**·[balance] 绝对值待 A5 探针复校)。
     // **主线终章:此后无扩章来源再抬本上界**。
     expect(
       supply.xinxueJiejing,

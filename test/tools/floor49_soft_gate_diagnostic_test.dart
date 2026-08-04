@@ -20,17 +20,17 @@ import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
 import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 import '../support/test_data.dart';
 
-/// floor30 护法墙 taunt + 脆弱窗口硬闸诊断(Task 5,本批核心验证)。
+/// floor49 护法墙 taunt + 脆弱窗口硬闸诊断(Task 5,本批核心验证)。
 ///
-/// 两个 team profile 对同一 floor30 全自动跑到底:
-///   - onLevel   : floor30 当前推荐阶(三流)满配 + 50% 强化 + 400 战意 + 创始 buff。意图必胜。
-///   - underGear : 低一阶(学徒)本阶装 + 0 强化 + 0 战意。意图可败。
+/// 两个 team profile 对同一 floor49 全自动跑到底:
+///   - onLevel   : floor49 当前推荐阶(武圣·塔顶)满配 + 50% 强化 + 400 战意 + 创始 buff。意图必胜。
+///   - underGear : 低一阶(宗师)本阶装 + 0 强化 + 0 战意。意图可败。
 ///
 /// 三个断言:
-///   ① 集成 sanity(**非 taunt 因果隔离**):真实 floor30 配置下,护法全灭前主 Boss
+///   ① 集成 sanity(**非 taunt 因果隔离**):真实 floor49 配置下,护法全灭前主 Boss
 ///      从不掉血 → 首个 Boss 掉血 tick >= 护法全灭 tick(bossFirstDamageTick >=
 ///      wardBreakTick)。这是有用的集成不变量(证真实关卡里玩家确实被逼先清护法),
-///      **但不隔离 taunt 的因果**:floor30 护法血显著低于 Boss，
+///      **但不隔离 taunt 的因果**:floor49 护法血显著低于 Boss，
 ///      既有的「最低血集火」AI 本就避开高血 Boss,故有无 taunt 此断言同结果
 ///      (对抗验证:把 isGuardedBoss patch 成 return false,本诊断输出逐字节相同)。
 ///      **taunt 的因果正确性由 test/features/battle/battle_ai_guardian_taunt_test.dart
@@ -45,9 +45,9 @@ import '../support/test_data.dart';
 const int _maxTicks = 300;
 const int _seeds = 30;
 const String _outputDir = 'test/tools/output';
-const String _bossDefId = 'enemy_tower_boss_30';
+const String _bossDefId = 'enemy_tower_boss_49';
 
-const _guardianIds = {'enemy_tower_30_cultist_a', 'enemy_tower_30_cultist_b'};
+const _guardianIds = {'enemy_tower_49_cultist_a', 'enemy_tower_49_cultist_b'};
 
 enum _Profile { onLevel, underGear }
 
@@ -80,8 +80,8 @@ void main() {
     Directory(_outputDir).createSync(recursive: true);
   });
 
-  test('floor30 护法墙 taunt + 终局硬门槛诊断', () async {
-    final floor = repo.getTowerFloor(30);
+  test('floor49 护法墙 taunt + 终局硬门槛诊断', () async {
+    final floor = repo.getTowerFloor(49);
     final results = <_Res>[];
     for (final profile in _Profile.values) {
       for (var seed = 0; seed < _seeds; seed++) {
@@ -91,7 +91,7 @@ void main() {
     final summary = _summarize(results);
     print(summary);
     File(
-      '$_outputDir/floor30_soft_gate_diagnostic.md',
+      '$_outputDir/floor49_soft_gate_diagnostic.md',
     ).writeAsStringSync(summary);
 
     final onLevel = results.where((r) => r.profile == _Profile.onLevel);
@@ -99,9 +99,9 @@ void main() {
     final onWins = onLevel.where((r) => r.result == 'leftWin').length;
     final underWins = underGear.where((r) => r.result == 'leftWin').length;
 
-    // ① 集成 sanity(非 taunt 因果隔离,见 docstring):真实 floor30 里护法全灭前
+    // ① 集成 sanity(非 taunt 因果隔离,见 docstring):真实 floor49 里护法全灭前
     //    Boss 从不掉血。onLevel 会打死 Boss(bossFirstDamageTick 必被记录)且该 tick
-    //    >= wardBreakTick。⚠ 因 floor30 护法血 << Boss 血,最低血 AI 本就避开 Boss,
+    //    >= wardBreakTick。⚠ 因 floor49 护法血 << Boss 血,最低血 AI 本就避开 Boss,
     //    有无 taunt 同结果——taunt 因果由 battle_ai_guardian_taunt_test.dart 隔离证。
     //    OBSERVED(30 seed):onLevel avgWardBreakTick=2.1 / avgBossFirstDmgTick=2.3。
     for (final r in onLevel) {
@@ -122,12 +122,12 @@ void main() {
     // ② 满配必胜(护法灭后靠脆弱窗口打残局,能打死)。
     expect(onWins, _seeds, reason: 'onLevel 满配应全 seed 必胜');
 
-    // ③ 终局硬门槛:跨阶欠配允许全败。floor30 是终局护法墙,不再要求
+    // ③ 终局硬门槛:跨阶欠配允许全败。floor49 是终局护法墙,不再要求
     //    underGear 偶尔通关;只要求满配必胜、欠配不优于满配。
     expect(
       underWins,
       lessThanOrEqualTo((_seeds * 0.5).floor()),
-      reason: 'underGear 跨阶欠配至少半数应败(floor30 终局硬门槛)',
+      reason: 'underGear 跨阶欠配至少半数应败(floor49 终局硬门槛)',
     );
 
     expect(results.length, _Profile.values.length * _seeds);
@@ -237,7 +237,7 @@ BattleCharacter _buildPlayer(
         tier: def.tier,
         slot: def.slot,
         obtainedAt: DateTime(2026, 6, 28),
-        obtainedFrom: 'floor30_soft_gate',
+        obtainedFrom: 'floor49_soft_gate',
         school: school,
         baseAttack: (def.baseAttackMin + def.baseAttackMax) ~/ 2,
         baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,
@@ -304,7 +304,7 @@ String _summarize(List<_Res> results) {
   }
 
   final buf = StringBuffer();
-  buf.writeln('# floor30 护法墙 taunt + 终局硬门槛诊断');
+  buf.writeln('# floor49 护法墙 taunt + 终局硬门槛诊断');
   buf.writeln();
   buf.writeln('$_seeds seed · maxTicks=$_maxTicks · 逐 tick 采样只读模拟。');
   buf.writeln();

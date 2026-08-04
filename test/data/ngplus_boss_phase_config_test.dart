@@ -64,35 +64,37 @@ void main() {
     }
   });
 
-  test('塔 20/25/30 基础 bossPhases 保持第一梯队阈值，高周目走覆盖', () {
-    final floor20 = GameRepository.instance
-        .getTowerFloor(20)
+  test('塔 14/32/49 基础 bossPhases 保持第一梯队阈值，高周目走覆盖', () {
+    // 批 A 塔重排:武林霸主 20→14 / 绝顶剑魔 25→32 / 九霄魔尊 30→49,
+    // 相位阈值随 Boss 原样迁移(机制不变,只挪位置)。
+    final floor14 = GameRepository.instance
+        .getTowerFloor(14)
         .enemyTeam
-        .singleWhere((e) => e.id == 'enemy_tower_boss_20');
-    final floor25 = GameRepository.instance
-        .getTowerFloor(25)
+        .singleWhere((e) => e.id == 'enemy_tower_boss_14');
+    final floor32 = GameRepository.instance
+        .getTowerFloor(32)
         .enemyTeam
-        .singleWhere((e) => e.id == 'enemy_tower_boss_25');
-    final floor30 = GameRepository.instance
-        .getTowerFloor(30)
+        .singleWhere((e) => e.id == 'enemy_tower_boss_32');
+    final floor49 = GameRepository.instance
+        .getTowerFloor(49)
         .enemyTeam
-        .singleWhere((e) => e.id == 'enemy_tower_boss_30');
+        .singleWhere((e) => e.id == 'enemy_tower_boss_49');
 
-    expect(floor20.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.65, 0.35]);
-    expect(floor25.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.80, 0.5]);
-    expect(floor30.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.90, 0.50]);
+    expect(floor14.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.65, 0.35]);
+    expect(floor32.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.80, 0.5]);
+    expect(floor49.bossPhases!.map((p) => p.hpThresholdPct), [1.0, 0.90, 0.50]);
 
-    expect(floor20.bossPhasesForCycle(2)!.map((p) => p.hpThresholdPct), [
+    expect(floor14.bossPhasesForCycle(2)!.map((p) => p.hpThresholdPct), [
       1.0,
       0.80,
       0.45,
     ]);
-    expect(floor25.bossPhasesForCycle(2)!.map((p) => p.hpThresholdPct), [
+    expect(floor32.bossPhasesForCycle(2)!.map((p) => p.hpThresholdPct), [
       1.0,
       0.82,
       0.42,
     ]);
-    expect(floor30.bossPhasesForCycle(2)!.map((p) => p.hpThresholdPct), [
+    expect(floor49.bossPhasesForCycle(2)!.map((p) => p.hpThresholdPct), [
       1.0,
       0.92,
       0.60,

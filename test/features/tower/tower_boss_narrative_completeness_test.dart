@@ -36,7 +36,16 @@ void main() {
         checked.add(id);
       }
     }
-    // 6 Boss 层 × (opening + victory) = 12,防「一个都没配」误判全绿。
-    expect(checked.length, 12, reason: '应覆盖 6 Boss 层 × opening/victory');
+    // Boss 层数 × (opening + victory),从生产数据派生防「一个都没配」误判全绿
+    // (批 A 扩 49 层后 14 Boss × 2 = 28;写派生而非常量,Boss 位再调整时自动跟随)。
+    final bossFloorCount = GameRepository.instance.towerFloors
+        .where((f) => f.isBoss)
+        .length;
+    expect(bossFloorCount, greaterThan(0), reason: '塔零 Boss 层,断言无意义');
+    expect(
+      checked.length,
+      bossFloorCount * 2,
+      reason: '应覆盖 $bossFloorCount 个 Boss 层 × opening/victory',
+    );
   });
 }

@@ -56,25 +56,25 @@ void main() {
     repo = await loadTestGameRepository();
   });
 
-  test('锚点对账：参考路线终态 Lv130/abs13/余量1832，缺口 2668 EXP', () {
+  test('锚点对账：参考路线终态 Lv134/abs14/余量915，缺口 1585 EXP', () {
     final ch = _referenceRouteEnd(repo);
     expect(
       _displayLevel(repo, ch),
-      130,
-      reason: '对账 progression_release_budget_test Lv130 锚点',
+      134,
+      reason: '对账 progression_release_budget_test Lv134 锚点'
+          '(批 A 塔扩 49 层,塔 EXP 总量 507→1440,2026-08-04 实测)',
     );
     final realm = repo.getRealm(ch.realmTier, ch.realmLayer);
-    expect(realm.absoluteLevel, 13, reason: 'Lv130 = 三流·化境(abs13) 层内段');
-    expect(ch.experience, 1832, reason: '参考路线三丹后层内余量');
+    expect(realm.absoluteLevel, 14, reason: 'Lv134 = 三流·登峰(abs14) 层内段');
+    expect(ch.experience, 915, reason: '参考路线三丹后层内余量');
     expect(_expToDisplayLevel(repo, ch, 100), 0);
-    // 中途锚:取一个仍在参考路线终点(Lv130)之前方的等级,与上一行「已越过→0」
-    // 形成对照。Ch21 后路线终点由 Lv127 抬到 Lv130,旧中途点 130 已被走到,
-    // 退化成与上一行同义,故上移到 135。
-    expect(_expToDisplayLevel(repo, ch, 135), 1168);
+    // 中途锚:取一个仍在参考路线终点(Lv134)之前方的等级,与上一行「已越过→0」
+    // 形成对照。批 A 后路线终点由 Lv130 抬到 Lv134,中途点相应上移到 140。
+    expect(_expToDisplayLevel(repo, ch, 140), 1335);
     expect(
       _expToDisplayLevel(repo, ch, _targetLevel),
-      2668,
-      reason: 'Lv130→Lv141 纯挂机经验缺口',
+      1585,
+      reason: 'Lv134→Lv141 纯挂机经验缺口',
     );
   });
 
@@ -209,12 +209,12 @@ void main() {
     );
     expect(s1.totalHours, lessThan(s3.totalHours));
     expect(s3.totalHours, lessThan(s2.totalHours));
-    // 2026-07-29 Ch21 扩:缺口 3198→2668,三档天数随之再降(实测 s1 22.5 / s2 23.2 / s3 22.9;
-    // 旧 Ch20 值 s1 26.x 档)。下沿 25→20 同步重校 —— 节奏带随内容扩张单调收窄,
-    // 已连续五章下调:45→40→35→30→25→20。**主线终章,此后无扩章来源再压缩缺口**。
-    expect(s1.days, inInclusiveRange(20.0, 120.0));
-    expect(s2.days, inInclusiveRange(20.0, 100.0));
-    expect(s3.days, inInclusiveRange(20.0, 110.0));
+    // 2026-08-04 批 A 塔扩 49 层:参考路线终态 Lv130→134,缺口 2668→1585,
+    // 三档天数随之再降(实测 s1 13.4 / s2 13.8 / s3 13.6)。下沿 20→12 同步重校
+    // —— 节奏带随内容扩张单调收窄:45→40→35→30→25→20→12。
+    expect(s1.days, inInclusiveRange(12.0, 120.0));
+    expect(s2.days, inInclusiveRange(12.0, 100.0));
+    expect(s3.days, inInclusiveRange(12.0, 110.0));
   });
 
   test('加速通道：百草岭远征 / 桃花岛丹房 / 闭关+银两购丹', () {
@@ -225,7 +225,7 @@ void main() {
       avgDepth: 20,
       baseExpPerBattle: baseExp,
     );
-    final gap = 3198; // 锚点测已钉（2026-07-28 Ch20 扩后重校·全内容终态 Lv124→127·缺口 -625）
+    final gap = 1585; // 锚点测已钉(2026-08-04 批 A 塔扩 49 层重校;顺带订正:旧值 3198 是 Ch20 遗留,Ch21 改 2668 时此处漏同步)
     final s4Days = daysToTraverse(totalExp: gap, expPerHour: y.expPerHour);
     // 交叉对账：同口径 abs10→17 应 ≈ 18 天（expeditions.yaml 注释锚点）。
     final fullRangeDays = daysToTraverse(
@@ -281,14 +281,14 @@ void main() {
     expect(f.totalHours, lessThan(1730), reason: '购丹混合快于纯离线(1730h·三场景测钉)');
     expect(
       e1.days,
-      inInclusiveRange(0.4, 3.5),
-    ); // 2026-07-29 Ch21 扩后缺口 2668·E1 实测 0.46 天·下沿 0.5→0.4 随缺口重校
+      inInclusiveRange(0.25, 3.5),
+    ); // 2026-08-04 批 A 缺口 1585·E1 实测 0.29 天·下沿 0.4→0.25 随缺口重校
     expect(
       s4Days,
-      inInclusiveRange(3.5, 14.0),
-    ); // D 实测 3.8 天·下沿 4.0→3.5(Ch20 扩后)
-    // 2026-07-29 Ch21 缺口重校后下沿 15→12 同步(同 s1 口径·F 实测 14.1 天)。
-    expect(f.days, inInclusiveRange(12.0, 65.0));
+      inInclusiveRange(1.5, 14.0),
+    ); // D 实测 1.9 天·下沿 3.5→1.5(批 A 缺口重校)
+    // 2026-08-04 批 A 缺口重校后下沿 12→8 同步(同 s1 口径·F 实测 9.2 天)。
+    expect(f.days, inInclusiveRange(8.0, 65.0));
   });
 }
 
@@ -634,8 +634,8 @@ void _assertConservation(GameRepository repo, _HorizonResult r) {
   );
   expect(
     r.appliedExp,
-    2668 + ch.experience,
-    reason: '\${r.name}: 经验守恒 = 缺口 2668 + 终点层内余量',
+    1585 + ch.experience,
+    reason: '\${r.name}: 经验守恒 = 缺口 1585 + 终点层内余量(批 A 塔扩后实测)',
   );
 }
 

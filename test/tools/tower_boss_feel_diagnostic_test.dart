@@ -63,17 +63,18 @@ void main() {
     Directory(_outputDir).createSync(recursive: true);
   });
 
-  test('爬塔全坡度 6 Boss 层 + 前驱普通层体感只读诊断', () async {
-    // 全 6 Boss 层(5/10/15/20/25/30 · minor/major 交替每 5 层)+ 各自前驱
-    // 普通层(4/9/14/19/24/29)成对采样,直接支撑 6 对 Boss no-regress 断言与
-    // 整塔难度坡度实测。
+  test('爬塔全坡度 7 大 Boss 层 + 前驱普通层体感只读诊断', () async {
+    // 批 A 塔 49 层重排:采样每 tier 的大 Boss(tier 末层 7/14/21/28/35/42/49)
+    // + 各自前驱普通层成对,7 tier 全坡度覆盖,支撑 no-regress 断言与
+    // 整塔难度坡度实测(14 Boss 全采样会翻倍模拟时长,大 Boss 对已覆盖每段落)。
     const bossPairs = [
-      [4, 5],
-      [9, 10],
-      [14, 15],
-      [19, 20],
-      [24, 25],
-      [29, 30],
+      [6, 7],
+      [13, 14],
+      [20, 21],
+      [27, 28],
+      [34, 35],
+      [41, 42],
+      [48, 49],
     ];
     final sampleFloors = [for (final pair in bossPairs) ...pair];
     final floors = sampleFloors.map(repo.getTowerFloor).toList();
@@ -99,7 +100,7 @@ void main() {
     );
     expect(results.where((r) => r.result != 'timeout'), isNotEmpty);
 
-    // 全 6 Boss 层不得弱于其前驱普通层(总 baseHp/baseAttack 单调)。
+    // 全部采样 Boss 层不得弱于其前驱普通层(总 baseHp/baseAttack 单调)。
     for (final pair in bossPairs) {
       _expectBossDoesNotRegress(
         repo.getTowerFloor(pair[0]),
@@ -107,23 +108,23 @@ void main() {
       );
     }
 
-    final floor25 = repo
-        .getTowerFloor(25)
+    final floor32 = repo
+        .getTowerFloor(32)
         .enemyTeam
         .firstWhere((e) => e.isBoss);
-    final floor30 = repo
-        .getTowerFloor(30)
+    final floor49 = repo
+        .getTowerFloor(49)
         .enemyTeam
         .firstWhere((e) => e.isBoss);
     expect(
-      floor25.bossPhases,
+      floor32.bossPhases,
       isNotNull,
-      reason: '25 层小 Boss 应至少有二阶段,避免单体 Boss 体感弱于前一普通层',
+      reason: '32 层剑魔应至少有二阶段,避免单体 Boss 体感弱于前一普通层',
     );
     expect(
-      floor30.bossPhases,
+      floor49.bossPhases,
       isNotNull,
-      reason: '30 层终关 Boss 应至少有二阶段,避免终关体感弱于前一普通层',
+      reason: '49 层终关 Boss 应至少有二阶段,避免终关体感弱于前一普通层',
     );
     // 相位触发不变量**只对 ceiling(满投入 on-level)成立**——保证正常养成玩家能
     // 看到完整相位战。floor(零投入 on-level:0 强化 / 0 战意 / 无 buff)profile 不硬
@@ -377,7 +378,7 @@ String _summarize(List<_FloorResult> results, List<TowerFloorDef> floors) {
   buf.writeln('# 爬塔 Boss 体感诊断 · 2026-07-01');
   buf.writeln();
   buf.writeln(
-    '全坡度 6 Boss 层(5/10/15/20/25/30)+ 各自前驱普通层(4/9/14/19/24/29) · '
+    '全坡度 7 大 Boss 层(7/14/21/28/35/42/49)+ 各自前驱普通层 · '
     '${_BuildProfile.values.length} profile × '
     '$_seeds seed · maxTicks=$_maxTicks · 只读模拟,不改数值。',
   );

@@ -15,7 +15,7 @@ void main() {
     }
   });
 
-  test('塔层残页 skill_kai_bei_shou → 爬塔·第5层', () {
+  test('塔层残页 skill_kai_bei_shou → 爬塔·第4层(批 A 重排随 Boss 迁移)', () {
     final repo = GameRepository.instance;
     expect(
       fragmentSourceLabel(
@@ -23,12 +23,12 @@ void main() {
         floors: repo.towerFloors,
         stages: repo.stageDefs.values,
       ),
-      UiStrings.cangjingFragmentSourceTower(5),
+      UiStrings.cangjingFragmentSourceTower(4),
     );
   });
 
   test(
-    '塔层残页 skill_guan_shan_ba_ji → 爬塔·第15层(2026-07-22 Ch13 收编挂载·原「未投放→null」断言改写)',
+    '塔层残页 skill_guan_shan_ba_ji → 爬塔·第11层(批 A 重排随 Boss 迁移)',
     () {
       final repo = GameRepository.instance;
       expect(
@@ -37,12 +37,12 @@ void main() {
           floors: repo.towerFloors,
           stages: repo.stageDefs.values,
         ),
-        UiStrings.cangjingFragmentSourceTower(15),
+        UiStrings.cangjingFragmentSourceTower(11),
       );
     },
   );
 
-  test('塔层残页 skill_jin_gang_fu_mo → 爬塔·第20层(2026-07-22 Ch13 收编挂载)', () {
+  test('塔层残页 skill_jin_gang_fu_mo → 爬塔·第14层(批 A 重排随 Boss 迁移)', () {
     final repo = GameRepository.instance;
     expect(
       fragmentSourceLabel(
@@ -50,11 +50,11 @@ void main() {
         floors: repo.towerFloors,
         stages: repo.stageDefs.values,
       ),
-      UiStrings.cangjingFragmentSourceTower(20),
+      UiStrings.cangjingFragmentSourceTower(14),
     );
   });
 
-  test('塔层残页 skill_ma_ta_fei_yan → 爬塔·第25层(2026-07-22 Ch13 收编挂载)', () {
+  test('塔层残页 skill_ma_ta_fei_yan → 爬塔·第32层(批 A 重排随绝顶剑魔迁移)', () {
     final repo = GameRepository.instance;
     expect(
       fragmentSourceLabel(
@@ -62,7 +62,7 @@ void main() {
         floors: repo.towerFloors,
         stages: repo.stageDefs.values,
       ),
-      UiStrings.cangjingFragmentSourceTower(25),
+      UiStrings.cangjingFragmentSourceTower(32),
     );
   });
 

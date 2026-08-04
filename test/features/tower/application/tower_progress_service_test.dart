@@ -709,10 +709,11 @@ void main() {
     Future<List<String>> grantedIds() async =>
         (await IsarSetup.instance.saveDatas.get(0))!.grantedTicketMilestoneIds;
 
-    test('第 10 层首通 → 断魂帖 +1 并记防重；重打不重复发', () async {
+    test('第 16 层首通 → 断魂帖 +1 并记防重；重打不重复发', () async {
+      // 里程碑层 16/33/49（批 A 拍板 a：保持 3 张、约三等分、经济总量不变）。
       final svc = TowerProgressService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
-      for (var f = 1; f <= 10; f++) {
+      for (var f = 1; f <= 16; f++) {
         await svc.recordClear(
           floorIndex: f,
           now: DateTime(2026, 5, 11),
@@ -721,24 +722,24 @@ void main() {
         );
       }
 
-      expect(await ticketQty(), 1, reason: '10 层里程碑一张');
-      expect(await grantedIds(), ['tower_floor_10']);
+      expect(await ticketQty(), 1, reason: '16 层里程碑一张');
+      expect(await grantedIds(), ['tower_floor_16']);
 
-      // 重打第 10 层（isFirstClear=false）不再发。
+      // 重打第 16 层（isFirstClear=false）不再发。
       await svc.recordClear(
-        floorIndex: 10,
+        floorIndex: 16,
         now: DateTime(2026, 5, 12),
         elapsedMs: 900,
         maxFloor: _maxFloor,
       );
       expect(await ticketQty(), 1);
-      expect(await grantedIds(), ['tower_floor_10']);
+      expect(await grantedIds(), ['tower_floor_16']);
     });
 
-    test('一路首通至 30 层 → 10/20/30 三里程碑各一张共三张', () async {
+    test('一路首通至塔顶 → 16/33/49 三里程碑各一张共三张', () async {
       final svc = TowerProgressService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
-      for (var f = 1; f <= 30; f++) {
+      for (var f = 1; f <= _maxFloor; f++) {
         await svc.recordClear(
           floorIndex: f,
           now: DateTime(2026, 5, 11),
@@ -749,34 +750,37 @@ void main() {
 
       expect(await ticketQty(), 3);
       expect(await grantedIds(), [
-        'tower_floor_10',
-        'tower_floor_20',
-        'tower_floor_30',
+        'tower_floor_16',
+        'tower_floor_33',
+        'tower_floor_49',
       ]);
     });
 
-    test('旧档补发：highest=25 无防重记录 → getOrCreate 懒补 10/20 两张，且只补一次', () async {
+    test('旧档补发：highest=40 无防重记录 → getOrCreate 懒补 16/33 两张，且只补一次', () async {
       final svc = TowerProgressService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
-      // 模拟功能上线前的旧档：已通 25 层但无里程碑记录。
+      // 模拟功能上线前的旧档：已通 40 层但无里程碑记录。
       await IsarSetup.instance.writeTxn(() async {
         final p = await IsarSetup.instance.towerProgress
             .filter()
             .saveDataIdEqualTo(1)
             .findFirst();
-        p!.highestClearedFloor = 25;
+        p!.highestClearedFloor = 40;
         await IsarSetup.instance.towerProgress.put(p);
       });
 
       await svc.getOrCreate(saveDataId: 1);
-      expect(await ticketQty(), 2, reason: '10/20 层各补一张');
-      expect(await grantedIds(), ['tower_floor_10', 'tower_floor_20']);
+      expect(await ticketQty(), 2, reason: '16/33 层各补一张');
+      expect(await grantedIds(), ['tower_floor_16', 'tower_floor_33']);
 
       await svc.getOrCreate(saveDataId: 1);
       expect(await ticketQty(), 2, reason: '防重集合守「只补一次」');
     });
 
     test('旧档补发：已有部分防重记录 → 只补缺失层', () async {
+      // 旧位 10/20/30 已领的记录永久保留在防重集合（历史发放不收回），
+      // 与新位 16/33/49 互不干扰——本例含 tower_floor_10 旧记录，验证
+      // 塔重排后旧记录不阻塞、也不冒充新里程碑。
       final svc = TowerProgressService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
       await IsarSetup.instance.writeTxn(() async {
@@ -784,15 +788,15 @@ void main() {
             .filter()
             .saveDataIdEqualTo(1)
             .findFirst();
-        p!.highestClearedFloor = 30;
+        p!.highestClearedFloor = 49;
         await IsarSetup.instance.towerProgress.put(p);
         final save = (await IsarSetup.instance.saveDatas.get(0))!
-          ..grantedTicketMilestoneIds = ['tower_floor_10'];
+          ..grantedTicketMilestoneIds = ['tower_floor_10', 'tower_floor_16'];
         await IsarSetup.instance.saveDatas.put(save);
       });
 
       final granted = await svc.backfillTicketMilestones(saveDataId: 1);
-      expect(granted, [20, 30], reason: '10 已发过只补 20/30');
+      expect(granted, [33, 49], reason: '16 已发过只补 33/49；旧位 10 记录不干扰');
       expect(await ticketQty(), 2);
     });
   });

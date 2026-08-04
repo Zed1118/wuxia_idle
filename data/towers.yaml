@@ -1,33 +1,34 @@
 # =============================================================================
-# towers.yaml · 问鼎九霄爬塔（Phase 3 T40）
+# towers.yaml · 问鼎九霄爬塔（批 A · 塔 30→49 层 1:1 锚死 · spec 2026-08-01）
 # =============================================================================
-# 共 30 层：3 小 Boss [5/15/25] + 3 大 Boss [10/20/30] + 24 普通层。
+# 共 49 层：floor N ↔ 境界绝对层 N（每 tier 7 层，与主线 cap abs 49 对齐）。
+#   xueTu 1-7 / sanLiu 8-14 / erLiu 15-21 / yiLiu 22-28 /
+#   jueDing 29-35 / zongShi 36-42 / wuSheng 43-49
 #
-# Lv100 发布境界曲线（每 5 层一段）：
-#   1-5   学徒·启蒙 /  6-10  学徒·入门 / 11-15 学徒·熟练
-#   16-20 三流·启蒙 / 21-25  三流·入门 / 26-30 三流·熟练（Lv100）
+# Boss 位 14 个：小 Boss = tier 中点 4/11/18/25/32/39/46；
+#               大 Boss = tier 末层 7/14/21/28/35/42/49。
+# 旧 6 Boss 迁移（5→4 / 10→7 / 15→11 / 20→14 / 25→32 / 30→49，机制原样）+
+# 新 8 Boss（18/21/25/28/35/39/42/46；立绘为主线敌池占位，批 C 出专属图）。
 #
-# 数值曲线：
-#   - 六段沿旧值依次按 1.00 / 0.80 / 0.60 / 0.50 / 0.40 / 0.30 缩放
-#   - Boss 层保留相位、护法和脆弱窗口，只重校境界与基础面板
-#   - 多人队 scale：1 人 ×1.0 / 2 人 ×0.7 / 3 人 ×0.55
-#       → 团队总威胁 ×1.0 / ×1.4 / ×1.65 平滑递增
-#   - 敌人数：1-10 层 1 人 / 11-20 层 2 人 / 21-30 层 3 人；20/25/30 Boss 可带护法形成多目标压力
+# 数值曲线：普通敌单体 hp/atk/spd 对齐主线 stages.yaml 同 (tier,layer) 实测中位
+# （2026-08-04 提取；主线每 tier 只实配前 3 层，其余层段内线性插值），
+# Boss = 同层普通 ×1.6-2.5，全部守 §5.4 Boss HP ≤ 60000 硬线。
+# 敌人数：1-7 层 1 人 / 8-14 层 2 人 / 15+ 层 3 人；大 Boss 可带护卫。
 #
-# 红线（GameRepository._enforceRedLines 校验）：
-#   - floorIndex ∈ [1, 30] 唯一连续
-#   - bossKind 严格在 5/10/15/20/25/30；其他层 bossKind 必须 null
+# 红线（GameRepository._enforceRedLines / progression_red_lines_validator 校验）：
+#   - floorIndex 从 1 起唯一连续；层数 ≤ 境界总层数 49（1:1 锚死上界）
+#   - bossKind 严格在上述 14 位；其他层必须 null
 #   - 普通层 narrativeOpeningId / narrativeVictoryId 必须 null
-#   - 数值守 §5.4（红线分两层 2026-06-14）：Boss HP ≤ 60000（boss_hp_max，终局周目膨胀 50000→60000）；
-#     普伤为软红线（典型 build 设计目标 ≤8000，满强化神物极值 build 实战可见值不进十万），由战斗结算守、敌 baseAttack 间接约束
+#   - Boss HP ≤ 60000（boss_hp_max）；敌 baseAttack 全曲线 ≤ 2000（对齐主线顶格）
 #
-# 二流及以上的装备、技能和敌人定义保留给未来副本；当前塔只消费学徒/三流内容。
+# requiredRealm = 该层敌人境界 tier（拍板 #8；tower_entry_flow 稀有彩头装备阶
+# 经 equipmentTierCapOf 从此派生，守卫测钉 requiredRealm ≤ 该层敌人境界）。
 # =============================================================================
 
 floors:
 
   # ─────────────────────────────────────────────────────────────────────────
-  # 第 1 段 · 学徒 (1-5)
+  # 学徒段 · abs 1-7（floor 1-7）
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 1
@@ -40,17 +41,19 @@ floors:
         realmTier: xueTu
         realmLayer: qiMeng
         school: gangMeng
-        baseHp: 800
-        baseAttack: 200
-        baseSpeed: 105
+        baseHp: 2000
+        baseAttack: 150
+        baseSpeed: 115
         skillIds: [skill_gangmeng_jichu_basic]
         iconPath: assets/enemies/thug_a.png
     dropTable:
+      - equipmentDefId: weapon_xunchang_tie_jian
+        dropChance: 0.30
       - inventoryItemDefId: item_mojianshi
-        quantity: [1, 2]
+        quantity: [1, 3]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [5, 10]
+        quantity: [5, 12]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 2
@@ -61,19 +64,19 @@ floors:
       - id: enemy_tower_02
         name: 流浪剑客
         realmTier: xueTu
-        realmLayer: qiMeng
+        realmLayer: ruMen
         school: lingQiao
-        baseHp: 1100
-        baseAttack: 250
+        baseHp: 2400
+        baseAttack: 175
         baseSpeed: 120
         skillIds: [skill_lingqiao_jichu_basic]
         iconPath: assets/enemies/thug_b.png
     dropTable:
       - inventoryItemDefId: item_mojianshi
-        quantity: [1, 2]
+        quantity: [1, 3]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [5, 10]
+        quantity: [5, 12]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 3
@@ -84,38 +87,13 @@ floors:
       - id: enemy_tower_03
         name: 黑衣少年
         realmTier: xueTu
-        realmLayer: qiMeng
+        realmLayer: shuLian
         school: yinRou
-        baseHp: 1450
-        baseAttack: 300
-        baseSpeed: 115
+        baseHp: 2800
+        baseAttack: 200
+        baseSpeed: 130
         skillIds: [skill_yinrou_jichu_basic]
         iconPath: assets/enemies/thug_c.png
-    dropTable:
-      - equipmentDefId: weapon_xunchang_tie_jian
-        dropChance: 0.30
-      - inventoryItemDefId: item_mojianshi
-        quantity: [1, 3]
-        dropChance: 1.0
-      - inventoryItemDefId: item_silver
-        quantity: [5, 10]
-        dropChance: 1.0  # 银两(P1 占位,待 balance)
-
-  - floorIndex: 4
-    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 8
-    requiredRealm: xueTu
-    enemyTeam:
-      - id: enemy_tower_04
-        name: 流民武者
-        realmTier: xueTu
-        realmLayer: qiMeng
-        school: gangMeng
-        baseHp: 1750
-        baseAttack: 350
-        baseSpeed: 110
-        skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
-        iconPath: assets/enemies/thug_a.png
     dropTable:
       - equipmentDefId: armor_xunchang_bu_yi
         dropChance: 0.30
@@ -123,27 +101,28 @@ floors:
         quantity: [1, 3]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [5, 10]
+        quantity: [5, 12]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
-  # === Floor 5 · 小 Boss · 学徒·启蒙 ===
-  - floorIndex: 5
-    dropSkillFragmentId: skill_kai_bei_shou  # 波B 残页(刚猛「开碑手」· 每胜概率掉,集齐 5 片解锁)
+  # === Floor 4 · 小 Boss · 学徒·精通 · 试剑石老叟 ===
+  # 原 floor5 迁移（spec 2026-08-01 §7 1:1 锚死重排），机制不变、数值抬到 abs4
+  - floorIndex: 4
+    dropSkillFragmentId: skill_kai_bei_shou  # 残页随原 Boss 迁移（挂点逻辑不变）
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 20
     requiredRealm: xueTu
     bossKind: minor
-    narrativeOpeningId: tower_05_opening
-    narrativeVictoryId: tower_05_victory
+    narrativeOpeningId: tower_04_opening
+    narrativeVictoryId: tower_04_victory
     enemyTeam:
-      - id: enemy_tower_boss_05
+      - id: enemy_tower_boss_04
         name: 试剑石老叟
         realmTier: xueTu
-        realmLayer: qiMeng
+        realmLayer: jingTong
         school: gangMeng
-        baseHp: 3100
-        baseAttack: 600
-        baseSpeed: 140
+        baseHp: 5500
+        baseAttack: 380
+        baseSpeed: 150
         skillIds:
           - skill_gangmeng_jichu_basic
           - skill_gangmeng_jichu_skill
@@ -153,153 +132,100 @@ floors:
     dropTable:
       - equipmentDefId: weapon_xunchang_tie_jian
         dropChance: 1.0
+      - equipmentDefId: armor_xunchang_bu_yi
+        dropChance: 0.50
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [1, 2]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [20, 30]
+        quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_scroll_kai_bei_shou
         quantity: [1, 1]
-        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear=true 才 rollDrops,重打不 roll)
+        dropChance: 1.0  # 秘籍掉落(首通必得,tower_entry_flow isFirstClear 才 rollDrops)
 
-  # ─────────────────────────────────────────────────────────────────────────
-  # 第 2 段 · 学徒·入门 (6-10)
-  # ─────────────────────────────────────────────────────────────────────────
+  - floorIndex: 5
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 8
+    requiredRealm: xueTu
+    enemyTeam:
+      - id: enemy_tower_05
+        name: 山下猎户
+        realmTier: xueTu
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 3500
+        baseAttack: 250
+        baseSpeed: 150
+        skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
+        iconPath: assets/enemies/ruffian_a.png
+    dropTable:
+      - inventoryItemDefId: item_mojianshi
+        quantity: [1, 3]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [5, 12]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 6
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 10
+    baseExpReward: 8
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_tower_06
-        name: 三流刀客
+        name: 游方武僧
         realmTier: xueTu
-        realmLayer: ruMen
-        school: lingQiao
-        baseHp: 1900
-        baseAttack: 360
-        baseSpeed: 145
-        skillIds: [skill_lingqiao_jichu_basic, skill_lingqiao_jichu_skill]
-        iconPath: assets/enemies/bandit_b.png
-    dropTable:
-      - inventoryItemDefId: item_mojianshi
-        quantity: [2, 4]
-        dropChance: 1.0
-      - inventoryItemDefId: item_silver
-        quantity: [8, 15]
-        dropChance: 1.0  # 银两(P1 占位,待 balance)
-
-  - floorIndex: 7
-    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 10
-    requiredRealm: xueTu
-    enemyTeam:
-      - id: enemy_tower_07
-        name: 黑风寨喽啰
-        realmTier: xueTu
-        realmLayer: ruMen
+        realmLayer: huaJing
         school: yinRou
-        baseHp: 2150
-        baseAttack: 400
-        baseSpeed: 130
-        skillIds: [skill_yinrou_jichu_basic, skill_yinrou_jichu_skill]
-        iconPath: assets/enemies/bandit_c.png
-    dropTable:
-      - inventoryItemDefId: item_mojianshi
-        quantity: [2, 4]
-        dropChance: 1.0
-      - inventoryItemDefId: item_silver
-        quantity: [8, 15]
-        dropChance: 1.0  # 银两(P1 占位,待 balance)
-
-  - floorIndex: 8
-    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 10
-    requiredRealm: xueTu
-    enemyTeam:
-      - id: enemy_tower_08
-        name: 镖局护卫
-        realmTier: xueTu
-        realmLayer: ruMen
-        school: gangMeng
-        baseHp: 2400
-        baseAttack: 440
-        baseSpeed: 135
-        skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
-        iconPath: assets/enemies/bandit_head.png
-    dropTable:
-      - equipmentDefId: weapon_xiangyang_gang_dao
-        dropChance: 0.40
-      - inventoryItemDefId: item_mojianshi
-        quantity: [2, 4]
-        dropChance: 1.0
-      - inventoryItemDefId: item_silver
-        quantity: [8, 15]
-        dropChance: 1.0  # 银两(P1 占位,待 balance)
-
-  - floorIndex: 9
-    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 10
-    requiredRealm: xueTu
-    enemyTeam:
-      - id: enemy_tower_09
-        name: 杀手堂使者
-        realmTier: xueTu
-        realmLayer: ruMen
-        school: lingQiao
-        baseHp: 2700
-        baseAttack: 480
+        baseHp: 3800
+        baseAttack: 275
         baseSpeed: 160
-        skillIds: [skill_lingqiao_jichu_basic, skill_lingqiao_jichu_skill]
-        iconPath: assets/enemies/black_killer.png
+        skillIds: [skill_yinrou_jichu_basic, skill_yinrou_jichu_skill]
+        iconPath: assets/enemies/seng_huiyi.png
     dropTable:
-      - equipmentDefId: armor_xiangyang_pi_jia
-        dropChance: 0.40
+      - equipmentDefId: weapon_xunchang_zhe_dao
+        dropChance: 0.30
       - inventoryItemDefId: item_mojianshi
-        quantity: [2, 4]
+        quantity: [1, 3]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [8, 15]
+        quantity: [5, 12]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
-  # === Floor 10 · 大 Boss · 学徒·入门 ===
-  - floorIndex: 10
-    dropSkillFragmentId: skill_yan_zi_san_chao  # 波B 残页 re-point(灵巧「燕子三抄」· 集齐 5 片解锁)
+  # === Floor 7 · 大 Boss · 学徒·登峰 · 黑风寨主 ===
+  # 原 floor10 迁移，二阶段背水一击体例保留
+  - floorIndex: 7
+    dropSkillFragmentId: skill_yan_zi_san_chao  # 残页随原 Boss 迁移（挂点逻辑不变）
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 25
     requiredRealm: xueTu
     bossKind: major
-    narrativeOpeningId: tower_10_opening
-    narrativeVictoryId: tower_10_victory
+    narrativeOpeningId: tower_07_opening
+    narrativeVictoryId: tower_07_victory
     enemyTeam:
-      - id: enemy_tower_boss_10
+      - id: enemy_tower_boss_07
         name: 黑风寨主
         realmTier: xueTu
-        realmLayer: ruMen
+        realmLayer: dengFeng
         school: lingQiao
-        baseHp: 4400
-        baseAttack: 720
-        baseSpeed: 175
+        baseHp: 9000
+        baseAttack: 520
+        baseSpeed: 180
         skillIds:
           - skill_lingqiao_jichu_basic
           - skill_lingqiao_jichu_skill
           - skill_lingqiao_jichu_ult
         iconPath: assets/enemies/tower_boss_10.png
         isBoss: true
-        # 批二②:弱点/抗性。lingQiao 被 yinRou 克(灵巧怕阴柔)→ 弱点×1.25;
-        # lingQiao 克 gangMeng(灵巧克刚猛)→ 抗性×0.75。
         schoolDamageTakenMult:
           yinRou: 1.25
           gangMeng: 0.75
-        # 第七阶段批二 ①:爬塔大 Boss(floor 10·major)二阶段。满血起手 → 跌破 50%
-        # 入「背水一击」,解锁同阶(changlian·sanLiu §5.3)大招 + 转攻势 + 蓄力反击。
         bossPhases:
           - hpThresholdPct: 1.0
             # hpThresholdPct: 1.0 = 起始阶段；无 titleKey（策略层仅为 next>=1 触发转阶段题字）
           - hpThresholdPct: 0.5
             unlockSkillIds:
-              - skill_lingqiao_jichu_ult          # changlian 阶(对齐 sanLiu §5.3)
+              - skill_lingqiao_jichu_ult
             aiMode: aggressive
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
@@ -318,9 +244,9 @@ floors:
               onEnterMechanic: chargeCounter
               titleKey: bossPhase_desperate
     dropTable:
-      - equipmentDefId: weapon_xiangyang_gang_dao
+      - equipmentDefId: weapon_xunchang_tie_jian
         dropChance: 1.0
-      - equipmentDefId: accessory_xiangyang_yin_jie
+      - equipmentDefId: accessory_xunchang_yu_pei
         dropChance: 0.50
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 4]
@@ -330,179 +256,147 @@ floors:
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_scroll_yan_zi_san_chao
         quantity: [1, 1]
-        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear=true 才 rollDrops,重打不 roll)
+        dropChance: 1.0  # 秘籍掉落(首通必得,tower_entry_flow isFirstClear 才 rollDrops)
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
-        dropChance: 1.0  # 经验丹大档(I-1 修:爬塔首通门控一次性 roll,0.20=80%永久错过→改首通必得 bonus 1 颗;主线大还丹保每次胜利概率刷=可farming主来源)
+        dropChance: 1.0  # 经验丹大档(大 Boss 首通必得体例,I-1)
 
   # ─────────────────────────────────────────────────────────────────────────
-  # 第 3 段 · 学徒·熟练 (11-15) · 2 人队
+  # 三流段 · abs 8-14（floor 8-14）
   # ─────────────────────────────────────────────────────────────────────────
 
-  - floorIndex: 11
+  - floorIndex: 8
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 12
-    requiredRealm: xueTu
+    requiredRealm: sanLiu
     enemyTeam:
-      - id: enemy_tower_11a
-        name: 名门弟子（剑）
-        realmTier: xueTu
-        realmLayer: shuLian
+      - id: enemy_tower_08a
+        name: 镖局护卫
+        realmTier: sanLiu
+        realmLayer: qiMeng
         school: gangMeng
-        baseHp: 1700
-        baseAttack: 270
-        baseSpeed: 150
-        skillIds: [skill_gangmeng_jichu_basic]
-        iconPath: assets/enemies/mingmen_a.png
-      - id: enemy_tower_11b
-        name: 名门弟子（掌）
-        realmTier: xueTu
-        realmLayer: shuLian
-        school: yinRou
-        baseHp: 1700
-        baseAttack: 270
-        baseSpeed: 145
-        skillIds: [skill_yinrou_jichu_basic]
-        iconPath: assets/enemies/jianghu_a.png
-    dropTable:
-      - inventoryItemDefId: item_mojianshi
-        quantity: [3, 5]
-        dropChance: 1.0
-      - inventoryItemDefId: item_silver
-        quantity: [12, 20]
-        dropChance: 1.0  # 银两(P1 占位,待 balance)
-
-  - floorIndex: 12
-    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 12
-    requiredRealm: xueTu
-    enemyTeam:
-      - id: enemy_tower_12a
-        name: 江湖游侠（甲）
-        realmTier: xueTu
-        realmLayer: shuLian
+        baseHp: 4300
+        baseAttack: 320
+        baseSpeed: 175
+        skillIds: [skill_gangmeng_changlian_basic, skill_gangmeng_changlian_skill]
+        iconPath: assets/enemies/bandit_head.png
+      - id: enemy_tower_08b
+        name: 三流刀客
+        realmTier: sanLiu
+        realmLayer: qiMeng
         school: lingQiao
-        baseHp: 1800
-        baseAttack: 300
-        baseSpeed: 165
-        skillIds: [skill_lingqiao_jichu_basic]
-        iconPath: assets/enemies/jianghu_b.png
-      - id: enemy_tower_12b
-        name: 江湖游侠（乙）
-        realmTier: xueTu
-        realmLayer: shuLian
-        school: gangMeng
-        baseHp: 1800
-        baseAttack: 300
-        baseSpeed: 150
-        skillIds: [skill_gangmeng_jichu_basic]
-        iconPath: assets/enemies/jianghu_a.png
-    dropTable:
-      - inventoryItemDefId: item_mojianshi
-        quantity: [3, 5]
-        dropChance: 1.0
-      - inventoryItemDefId: item_silver
-        quantity: [12, 20]
-        dropChance: 1.0  # 银两(P1 占位,待 balance)
-
-  - floorIndex: 13
-    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 12
-    requiredRealm: xueTu
-    enemyTeam:
-      - id: enemy_tower_13a
-        name: 暗夜剑客
-        realmTier: xueTu
-        realmLayer: shuLian
-        school: yinRou
-        baseHp: 1900
-        baseAttack: 330
-        baseSpeed: 160
-        skillIds: [skill_yinrou_jichu_basic, skill_yinrou_jichu_skill]
-        iconPath: assets/enemies/anye.png
-      - id: enemy_tower_13b
-        name: 暗夜刀客
-        realmTier: xueTu
-        realmLayer: shuLian
-        school: lingQiao
-        baseHp: 1900
-        baseAttack: 330
+        baseHp: 4300
+        baseAttack: 320
         baseSpeed: 170
-        skillIds: [skill_lingqiao_jichu_basic]
-        iconPath: assets/enemies/black_killer.png
+        skillIds: [skill_lingqiao_changlian_basic]
+        iconPath: assets/enemies/bandit_b.png
     dropTable:
-      - equipmentDefId: weapon_xiangyang_chang_jian
-        dropChance: 0.35
+      - equipmentDefId: weapon_xiangyang_gang_dao
+        dropChance: 0.30
       - inventoryItemDefId: item_mojianshi
-        quantity: [3, 5]
+        quantity: [2, 4]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [12, 20]
+        quantity: [10, 20]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
-  - floorIndex: 14
+  - floorIndex: 9
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 12
-    requiredRealm: xueTu
+    requiredRealm: sanLiu
     enemyTeam:
-      - id: enemy_tower_14a
-        name: 江湖前辈
-        realmTier: xueTu
+      - id: enemy_tower_09a
+        name: 杀手堂使者
+        realmTier: sanLiu
+        realmLayer: ruMen
+        school: lingQiao
+        baseHp: 4600
+        baseAttack: 340
+        baseSpeed: 180
+        skillIds: [skill_lingqiao_changlian_basic, skill_lingqiao_changlian_skill]
+        iconPath: assets/enemies/black_killer.png
+      - id: enemy_tower_09b
+        name: 黑风喽啰
+        realmTier: sanLiu
+        realmLayer: ruMen
+        school: yinRou
+        baseHp: 4600
+        baseAttack: 340
+        baseSpeed: 175
+        skillIds: [skill_yinrou_changlian_basic]
+        iconPath: assets/enemies/bandit_c.png
+    dropTable:
+      - inventoryItemDefId: item_mojianshi
+        quantity: [2, 4]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [10, 20]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 10
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 12
+    requiredRealm: sanLiu
+    enemyTeam:
+      - id: enemy_tower_10a
+        name: 名门弟子（剑）
+        realmTier: sanLiu
         realmLayer: shuLian
         school: gangMeng
-        baseHp: 2050
+        baseHp: 4900
         baseAttack: 360
-        baseSpeed: 155
-        skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
-        iconPath: assets/enemies/jianghu_qianbei.png
-      - id: enemy_tower_14b
-        name: 师爷
-        realmTier: xueTu
+        baseSpeed: 190
+        skillIds: [skill_gangmeng_changlian_basic, skill_gangmeng_changlian_skill]
+        iconPath: assets/enemies/mingmen_a.png
+      - id: enemy_tower_10b
+        name: 名门弟子（掌）
+        realmTier: sanLiu
         realmLayer: shuLian
         school: yinRou
-        baseHp: 2050
+        baseHp: 4900
         baseAttack: 360
-        baseSpeed: 150
-        skillIds: [skill_yinrou_jichu_basic, skill_yinrou_jichu_skill]
-        iconPath: assets/enemies/shiye.png
+        baseSpeed: 185
+        skillIds: [skill_yinrou_changlian_basic, skill_yinrou_changlian_skill]
+        iconPath: assets/enemies/jianghu_a.png
     dropTable:
       - equipmentDefId: armor_xiangyang_pi_jia
-        dropChance: 0.35
+        dropChance: 0.30
       - inventoryItemDefId: item_mojianshi
-        quantity: [3, 5]
+        quantity: [2, 4]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [12, 20]
+        quantity: [10, 20]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
-  # === Floor 15 · 小 Boss · 学徒·熟练 ===
-  - floorIndex: 15
-    dropSkillFragmentId: skill_guan_shan_ba_ji  # 2026-07-22 拍定收编(A2):残页(刚猛「关山拔戟」· tier4· 每胜概率掉,集齐 5 片解锁)
+  # === Floor 11 · 小 Boss · 三流·精通 · 暗夜阁主 ===
+  # 原 floor15 迁移
+  - floorIndex: 11
+    dropSkillFragmentId: skill_guan_shan_ba_ji  # 残页随原 Boss 迁移（挂点逻辑不变）
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 30
-    requiredRealm: xueTu
+    requiredRealm: sanLiu
     bossKind: minor
-    narrativeOpeningId: tower_15_opening
-    narrativeVictoryId: tower_15_victory
+    narrativeOpeningId: tower_11_opening
+    narrativeVictoryId: tower_11_victory
     enemyTeam:
-      - id: enemy_tower_boss_15
+      - id: enemy_tower_boss_11
         name: 暗夜阁主
-        realmTier: xueTu
-        realmLayer: shuLian
+        realmTier: sanLiu
+        realmLayer: jingTong
         school: yinRou
-        baseHp: 4700
-        baseAttack: 750
-        baseSpeed: 200
+        baseHp: 9500
+        baseAttack: 600
+        baseSpeed: 210
         skillIds:
-          - skill_yinrou_jichu_basic
-          - skill_yinrou_jichu_skill
-          - skill_yinrou_jichu_ult
+          - skill_yinrou_changlian_basic
+          - skill_yinrou_changlian_skill
+          - skill_yinrou_changlian_ult
         iconPath: assets/enemies/tower_boss_15.png
         isBoss: true
     dropTable:
-      - equipmentDefId: weapon_xiangyang_chang_jian
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 1.0
-      - equipmentDefId: accessory_xiangyang_yin_jie
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.50
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [3, 5]
@@ -511,173 +405,93 @@ floors:
         quantity: [50, 75]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
-  # ─────────────────────────────────────────────────────────────────────────
-  # 第 4 段 · 三流·启蒙 (16-20) · 2 人队
-  # ─────────────────────────────────────────────────────────────────────────
-
-  - floorIndex: 16
+  - floorIndex: 12
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 14
+    baseExpReward: 12
     requiredRealm: sanLiu
     enemyTeam:
-      - id: enemy_tower_16a
-        name: 一流剑客
+      - id: enemy_tower_12a
+        name: 江湖游侠（甲）
         realmTier: sanLiu
-        realmLayer: qiMeng
-        school: gangMeng
-        baseHp: 1950
-        baseAttack: 330
-        baseSpeed: 170
-        skillIds: [skill_gangmeng_changlian_basic, skill_gangmeng_changlian_skill]
-        iconPath: assets/enemies/zuo_hufa.png
-      - id: enemy_tower_16b
-        name: 一流刀客
-        realmTier: sanLiu
-        realmLayer: qiMeng
+        realmLayer: yuanShu
         school: lingQiao
-        baseHp: 1950
-        baseAttack: 330
-        baseSpeed: 180
+        baseHp: 5500
+        baseAttack: 400
+        baseSpeed: 210
         skillIds: [skill_lingqiao_changlian_basic, skill_lingqiao_changlian_skill]
-        iconPath: assets/enemies/you_hufa.png
-    dropTable:
-      - inventoryItemDefId: item_xinxuejiejing
-        quantity: [1, 2]
-        dropChance: 1.0
-      - inventoryItemDefId: item_silver
-        quantity: [20, 35]
-        dropChance: 1.0  # 银两(P1 占位,待 balance)
-
-  - floorIndex: 17
-    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 14
-    requiredRealm: sanLiu
-    enemyTeam:
-      - id: enemy_tower_17a
-        name: 江湖名宿
+        iconPath: assets/enemies/jianghu_b.png
+      - id: enemy_tower_12b
+        name: 江湖游侠（乙）
         realmTier: sanLiu
-        realmLayer: qiMeng
-        school: yinRou
-        baseHp: 2050
-        baseAttack: 350
-        baseSpeed: 165
-        skillIds: [skill_yinrou_changlian_basic, skill_yinrou_changlian_skill]
-        iconPath: assets/enemies/shiye.png
-      - id: enemy_tower_17b
-        name: 江湖宿将
-        realmTier: sanLiu
-        realmLayer: qiMeng
+        realmLayer: yuanShu
         school: gangMeng
-        baseHp: 2050
-        baseAttack: 350
-        baseSpeed: 175
+        baseHp: 5500
+        baseAttack: 400
+        baseSpeed: 205
         skillIds: [skill_gangmeng_changlian_basic, skill_gangmeng_changlian_skill]
-        iconPath: assets/enemies/jianghu_qianbei.png
+        iconPath: assets/enemies/jianghu_a.png
     dropTable:
-      - inventoryItemDefId: item_xinxuejiejing
-        quantity: [1, 2]
+      - inventoryItemDefId: item_mojianshi
+        quantity: [2, 4]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [20, 35]
+        quantity: [10, 20]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
-  - floorIndex: 18
+  - floorIndex: 13
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 14
+    baseExpReward: 12
     requiredRealm: sanLiu
     enemyTeam:
-      - id: enemy_tower_18a
-        name: 一流护法
+      - id: enemy_tower_13a
+        name: 暗夜剑客
         realmTier: sanLiu
-        realmLayer: qiMeng
-        school: lingQiao
-        baseHp: 2200
-        baseAttack: 380
-        baseSpeed: 185
-        skillIds:
-          - skill_lingqiao_changlian_basic
-          - skill_lingqiao_changlian_skill
-          - skill_lingqiao_changlian_ult
-        iconPath: assets/enemies/zuo_hufa.png
-      - id: enemy_tower_18b
-        name: 一流副护法
-        realmTier: sanLiu
-        realmLayer: qiMeng
+        realmLayer: huaJing
         school: yinRou
-        baseHp: 2200
-        baseAttack: 380
-        baseSpeed: 170
+        baseHp: 5800
+        baseAttack: 420
+        baseSpeed: 215
         skillIds: [skill_yinrou_changlian_basic, skill_yinrou_changlian_skill]
         iconPath: assets/enemies/anye.png
+      - id: enemy_tower_13b
+        name: 暗夜刀客
+        realmTier: sanLiu
+        realmLayer: huaJing
+        school: lingQiao
+        baseHp: 5800
+        baseAttack: 420
+        baseSpeed: 210
+        skillIds: [skill_lingqiao_changlian_basic, skill_lingqiao_changlian_skill]
+        iconPath: assets/enemies/black_killer.png
     dropTable:
       - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.30
-      - inventoryItemDefId: item_xinxuejiejing
-        quantity: [1, 2]
+      - inventoryItemDefId: item_mojianshi
+        quantity: [2, 4]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [20, 35]
+        quantity: [10, 20]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
-  - floorIndex: 19
-    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 14
-    requiredRealm: sanLiu
-    enemyTeam:
-      - id: enemy_tower_19a
-        name: 武林前辈
-        realmTier: sanLiu
-        realmLayer: qiMeng
-        school: gangMeng
-        baseHp: 2300
-        baseAttack: 400
-        baseSpeed: 180
-        skillIds:
-          - skill_gangmeng_changlian_basic
-          - skill_gangmeng_changlian_skill
-          - skill_gangmeng_changlian_ult
-        iconPath: assets/enemies/wulin_bazhu.png
-      - id: enemy_tower_19b
-        name: 武林宿老
-        realmTier: sanLiu
-        realmLayer: qiMeng
-        school: yinRou
-        baseHp: 2300
-        baseAttack: 400
-        baseSpeed: 175
-        skillIds:
-          - skill_yinrou_changlian_basic
-          - skill_yinrou_changlian_skill
-          - skill_yinrou_changlian_ult
-        iconPath: assets/enemies/jianghu_qianbei.png
-    dropTable:
-      - equipmentDefId: weapon_xiangyang_chang_jian
-        dropChance: 0.30
-      - inventoryItemDefId: item_xinxuejiejing
-        quantity: [1, 2]
-        dropChance: 1.0
-      - inventoryItemDefId: item_silver
-        quantity: [20, 35]
-        dropChance: 1.0  # 银两(P1 占位,待 balance)
-
-  # === Floor 20 · 大 Boss · 三流·启蒙 ===
-  - floorIndex: 20
-    dropSkillFragmentId: skill_jin_gang_fu_mo  # 2026-07-22 拍定收编(A2·恢复 5680ea2c 原设计):残页(刚猛「金刚伏魔」· tier4· 集齐 5 片解锁)
+  # === Floor 14 · 大 Boss · 三流·登峰 · 武林霸主 ===
+  # 原 floor20 迁移，护法墙前身（普通护卫无 taunt）
+  - floorIndex: 14
+    dropSkillFragmentId: skill_jin_gang_fu_mo  # 残页随原 Boss 迁移（挂点逻辑不变）
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 35
     requiredRealm: sanLiu
     bossKind: major
-    narrativeOpeningId: tower_20_opening
-    narrativeVictoryId: tower_20_victory
+    narrativeOpeningId: tower_14_opening
+    narrativeVictoryId: tower_14_victory
     enemyTeam:
-      - id: enemy_tower_boss_20
+      - id: enemy_tower_boss_14
         name: 武林霸主
         realmTier: sanLiu
-        realmLayer: qiMeng
+        realmLayer: dengFeng
         school: gangMeng
-        baseHp: 5150
-        baseAttack: 800
-        baseSpeed: 210
+        baseHp: 13500
+        baseAttack: 750
+        baseSpeed: 230
         skillIds:
           - skill_gangmeng_changlian_basic
           - skill_gangmeng_changlian_skill
@@ -716,35 +530,31 @@ floors:
               aiMode: aggressive
               onEnterMechanic: chargeCounter
               titleKey: bossPhase_desperate
-      - id: enemy_tower_20_guard_a
+      - id: enemy_tower_14_guard_a
         name: 霸主铁卫
         realmTier: sanLiu
-        realmLayer: qiMeng
+        realmLayer: dengFeng
         school: yinRou
-        baseHp: 1300
+        baseHp: 3600
         baseAttack: 260
-        baseSpeed: 175
-        skillIds:
-          - skill_yinrou_changlian_basic
-          - skill_yinrou_changlian_skill
+        baseSpeed: 215
+        skillIds: [skill_yinrou_changlian_basic, skill_yinrou_changlian_skill]
         iconPath: assets/enemies/jianghu_qianbei.png
-      - id: enemy_tower_20_guard_b
+      - id: enemy_tower_14_guard_b
         name: 霸主游卫
         realmTier: sanLiu
-        realmLayer: qiMeng
+        realmLayer: dengFeng
         school: lingQiao
-        baseHp: 1200
+        baseHp: 3400
         baseAttack: 250
-        baseSpeed: 205
-        skillIds:
-          - skill_lingqiao_changlian_basic
-          - skill_lingqiao_changlian_skill
+        baseSpeed: 225
+        skillIds: [skill_lingqiao_changlian_basic, skill_lingqiao_changlian_skill]
         iconPath: assets/enemies/zuo_hufa.png
     dropTable:
-      - equipmentDefId: weapon_xiangyang_chang_jian
+      - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 1.0
       - equipmentDefId: accessory_xiangyang_yin_jie
-        dropChance: 1.0
+        dropChance: 0.50
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [5, 8]
         dropChance: 1.0
@@ -753,251 +563,916 @@ floors:
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
-        dropChance: 1.0  # 经验丹大档(I-1 修:爬塔首通门控一次性 roll,0.20=80%永久错过→改首通必得 bonus 1 颗;主线大还丹保每次胜利概率刷=可farming主来源)
+        dropChance: 1.0  # 经验丹大档(大 Boss 首通必得体例,I-1)
 
   # ─────────────────────────────────────────────────────────────────────────
-  # 第 5 段 · 三流·入门 (21-25) · 3 人队
-  # Phase 4 待补：高阶 skill (menpaijuxue) + 高阶装备
+  # 二流段 · abs 15-21（floor 15-21）
   # ─────────────────────────────────────────────────────────────────────────
 
-  - floorIndex: 21
+  - floorIndex: 15
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 16
-    requiredRealm: sanLiu
+    requiredRealm: erLiu
     enemyTeam:
-      - id: enemy_tower_21a
-        name: 绝顶高手（剑）
-        realmTier: sanLiu
+      - id: enemy_tower_15a
+        name: 名门执事
+        realmTier: erLiu
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 6500
+        baseAttack: 460
+        baseSpeed: 230
+        skillIds: [skill_gangmeng_mingjia_basic, skill_gangmeng_mingjia_skill]
+        iconPath: assets/enemies/beipai_zongjiang.png
+      - id: enemy_tower_15b
+        name: 名门供奉
+        realmTier: erLiu
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 6500
+        baseAttack: 460
+        baseSpeed: 225
+        skillIds: [skill_lingqiao_mingjia_basic, skill_lingqiao_mingjia_skill]
+        iconPath: assets/enemies/fengxue_shaoqi.png
+      - id: enemy_tower_15c
+        name: 名门客卿
+        realmTier: erLiu
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 6500
+        baseAttack: 460
+        baseSpeed: 235
+        skillIds: [skill_yinrou_mingjia_basic]
+        iconPath: assets/enemies/beidi_shuzu.png
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_qing_feng_jian
+        dropChance: 0.30
+      - inventoryItemDefId: item_mojianshi
+        quantity: [3, 5]
+        dropChance: 1.0
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [1, 2]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [25, 45]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 16
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 16
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_tower_16a
+        name: 绿林寨主
+        realmTier: erLiu
         realmLayer: ruMen
         school: gangMeng
-        baseHp: 1600
-        baseAttack: 240
-        baseSpeed: 190
-        skillIds: [skill_gangmeng_changlian_basic]
-        iconPath: assets/enemies/zuo_hufa.png
-      - id: enemy_tower_21b
-        name: 绝顶高手（刀）
-        realmTier: sanLiu
-        realmLayer: ruMen
-        school: lingQiao
-        baseHp: 1600
-        baseAttack: 240
-        baseSpeed: 200
-        skillIds: [skill_lingqiao_changlian_basic]
-        iconPath: assets/enemies/black_killer.png
-      - id: enemy_tower_21c
-        name: 绝顶高手（掌）
-        realmTier: sanLiu
+        baseHp: 7200
+        baseAttack: 480
+        baseSpeed: 240
+        skillIds: [skill_gangmeng_mingjia_basic, skill_gangmeng_mingjia_skill]
+        iconPath: assets/enemies/monan_mazei.png
+      - id: enemy_tower_16b
+        name: 绿林军师
+        realmTier: erLiu
         realmLayer: ruMen
         school: yinRou
-        baseHp: 1600
-        baseAttack: 240
-        baseSpeed: 185
-        skillIds: [skill_yinrou_changlian_basic]
-        iconPath: assets/enemies/anye.png
+        baseHp: 7200
+        baseAttack: 480
+        baseSpeed: 235
+        skillIds: [skill_yinrou_mingjia_basic, skill_yinrou_mingjia_skill]
+        iconPath: assets/enemies/hanhai_shadao.png
+      - id: enemy_tower_16c
+        name: 绿林快刀
+        realmTier: erLiu
+        realmLayer: ruMen
+        school: lingQiao
+        baseHp: 7200
+        baseAttack: 480
+        baseSpeed: 245
+        skillIds: [skill_lingqiao_mingjia_basic, skill_lingqiao_mingjia_skill]
+        iconPath: assets/enemies/qibei_baiguo_shadao.png
     dropTable:
-      - equipmentDefId: weapon_xiangyang_chang_jian
+      - inventoryItemDefId: item_mojianshi
+        quantity: [3, 5]
+        dropChance: 1.0
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [1, 2]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [25, 45]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 17
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 16
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_tower_17a
+        name: 镖行总镖头
+        realmTier: erLiu
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 9000
+        baseAttack: 500
+        baseSpeed: 255
+        skillIds: [skill_gangmeng_mingjia_basic, skill_gangmeng_mingjia_skill]
+        iconPath: assets/enemies/gucheng_shuwei.png
+      - id: enemy_tower_17b
+        name: 镖行趟子手
+        realmTier: erLiu
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 9000
+        baseAttack: 500
+        baseSpeed: 250
+        skillIds: [skill_lingqiao_mingjia_basic, skill_lingqiao_mingjia_skill]
+        iconPath: assets/enemies/qibei_guanmazei.png
+      - id: enemy_tower_17c
+        name: 镖行护院
+        realmTier: erLiu
+        realmLayer: shuLian
+        school: yinRou
+        baseHp: 9000
+        baseAttack: 500
+        baseSpeed: 260
+        skillIds: [skill_yinrou_mingjia_basic, skill_yinrou_mingjia_skill]
+        iconPath: assets/enemies/huiyiren_saibei.png
+    dropTable:
+      - equipmentDefId: armor_haojiahuo_jin_pao
+        dropChance: 0.30
+      - inventoryItemDefId: item_mojianshi
+        quantity: [3, 5]
+        dropChance: 1.0
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [1, 2]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [25, 45]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  # === Floor 18 · 小 Boss · 二流·精通 · 毒手药叉 ===
+  # 新增（批 A·A2），立绘为主线敌池占位，批 C 出专属图
+  - floorIndex: 18
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 40
+    requiredRealm: erLiu
+    bossKind: minor
+    narrativeOpeningId: tower_18_opening
+    narrativeVictoryId: tower_18_victory
+    enemyTeam:
+      - id: enemy_tower_boss_18
+        name: 毒手药叉
+        realmTier: erLiu
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 19000
+        baseAttack: 800
+        baseSpeed: 270
+        skillIds:
+          - skill_yinrou_mingjia_basic
+          - skill_yinrou_mingjia_skill
+          - skill_yinrou_mingjia_ult
+        iconPath: assets/enemies/hanhai_shadao.png
+        isBoss: true
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_qing_feng_jian
+        dropChance: 1.0
+      - equipmentDefId: armor_haojiahuo_jin_pao
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [5, 8]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [80, 120]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 19
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 16
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_tower_19a
+        name: 塔卫统领
+        realmTier: erLiu
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 13000
+        baseAttack: 580
+        baseSpeed: 268
+        skillIds: [skill_gangmeng_mingjia_basic, skill_gangmeng_mingjia_skill]
+        iconPath: assets/enemies/beipai_youshao.png
+      - id: enemy_tower_19b
+        name: 塔卫游击
+        realmTier: erLiu
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 13000
+        baseAttack: 580
+        baseSpeed: 263
+        skillIds: [skill_lingqiao_mingjia_basic, skill_lingqiao_mingjia_skill]
+        iconPath: assets/enemies/qibei_aikou_shouwei.png
+      - id: enemy_tower_19c
+        name: 塔卫暗哨
+        realmTier: erLiu
+        realmLayer: yuanShu
+        school: yinRou
+        baseHp: 13000
+        baseAttack: 580
+        baseSpeed: 273
+        skillIds: [skill_yinrou_mingjia_basic, skill_yinrou_mingjia_skill]
+        iconPath: assets/enemies/huiyiren_beijing.png
+    dropTable:
+      - inventoryItemDefId: item_mojianshi
+        quantity: [3, 5]
+        dropChance: 1.0
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [1, 2]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [25, 45]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 20
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 16
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_tower_20a
+        name: 二流剑豪
+        realmTier: erLiu
+        realmLayer: huaJing
+        school: lingQiao
+        baseHp: 15000
+        baseAttack: 620
+        baseSpeed: 274
+        skillIds:
+          - skill_lingqiao_mingjia_basic
+          - skill_lingqiao_mingjia_skill
+          - skill_lingqiao_mingjia_ult
+        iconPath: assets/enemies/fengxue_shaoqi.png
+      - id: enemy_tower_20b
+        name: 二流拳师
+        realmTier: erLiu
+        realmLayer: huaJing
+        school: gangMeng
+        baseHp: 15000
+        baseAttack: 620
+        baseSpeed: 269
+        skillIds: [skill_gangmeng_mingjia_basic, skill_gangmeng_mingjia_skill]
+        iconPath: assets/enemies/beipai_zongjiang.png
+      - id: enemy_tower_20c
+        name: 二流药师
+        realmTier: erLiu
+        realmLayer: huaJing
+        school: yinRou
+        baseHp: 15000
+        baseAttack: 620
+        baseSpeed: 279
+        skillIds: [skill_yinrou_mingjia_basic, skill_yinrou_mingjia_skill]
+        iconPath: assets/enemies/hanhai_shadao.png
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_yuan_yang_yue
+        dropChance: 0.30
+      - inventoryItemDefId: item_mojianshi
+        quantity: [3, 5]
+        dropChance: 1.0
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [1, 2]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [25, 45]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  # === Floor 21 · 大 Boss · 二流·登峰 · 铁塔金刚 ===
+  # 新增（批 A·A2），立绘占位，批 C 出专属图
+  - floorIndex: 21
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 45
+    requiredRealm: erLiu
+    bossKind: major
+    narrativeOpeningId: tower_21_opening
+    narrativeVictoryId: tower_21_victory
+    enemyTeam:
+      - id: enemy_tower_boss_21
+        name: 铁塔金刚
+        realmTier: erLiu
+        realmLayer: dengFeng
+        school: gangMeng
+        baseHp: 30000
+        baseAttack: 1050
+        baseSpeed: 288
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+          - skill_gangmeng_mingjia_ult
+        iconPath: assets/enemies/beipai_zongjiang.png
+        isBoss: true
+        schoolDamageTakenMult:
+          lingQiao: 1.25
+          yinRou: 0.75
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.60
+            unlockSkillIds:
+              - skill_gangmeng_mingjia_fang_skill
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+          - hpThresholdPct: 0.30
+            unlockSkillIds:
+              - skill_gangmeng_mingjia_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.75
+              unlockSkillIds:
+                - skill_gangmeng_mingjia_fang_skill
+              aiMode: focus
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.40
+              unlockSkillIds:
+                - skill_gangmeng_mingjia_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
+      - id: enemy_tower_21_guard_a
+        name: 金刚左卫
+        realmTier: erLiu
+        realmLayer: dengFeng
+        school: lingQiao
+        baseHp: 10000
+        baseAttack: 400
+        baseSpeed: 275
+        skillIds: [skill_lingqiao_mingjia_basic, skill_lingqiao_mingjia_skill]
+        iconPath: assets/enemies/qibei_aikou_shouwei.png
+      - id: enemy_tower_21_guard_b
+        name: 金刚右卫
+        realmTier: erLiu
+        realmLayer: dengFeng
+        school: yinRou
+        baseHp: 10000
+        baseAttack: 400
+        baseSpeed: 270
+        skillIds: [skill_yinrou_mingjia_basic, skill_yinrou_mingjia_skill]
+        iconPath: assets/enemies/huiyiren_beijing.png
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_qing_feng_jian
+        dropChance: 1.0
+      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [7, 10]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [130, 180]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 1.0  # 经验丹大档(大 Boss 首通必得体例,I-1)
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 一流段 · abs 22-28（floor 22-28）
+  # ─────────────────────────────────────────────────────────────────────────
+
+  - floorIndex: 22
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 20
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_tower_22a
+        name: 一流高手（剑）
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 18500
+        baseAttack: 730
+        baseSpeed: 285
+        skillIds: [skill_gangmeng_menpai_basic, skill_gangmeng_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_hetao_jianke.png
+      - id: enemy_tower_22b
+        name: 一流高手（刀）
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 18500
+        baseAttack: 730
+        baseSpeed: 280
+        skillIds: [skill_lingqiao_menpai_basic, skill_lingqiao_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_yanmen_youxia.png
+      - id: enemy_tower_22c
+        name: 一流高手（掌）
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 18500
+        baseAttack: 730
+        baseSpeed: 290
+        skillIds: [skill_yinrou_menpai_basic, skill_yinrou_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_huaixiang_quanshi.png
+    dropTable:
+      - equipmentDefId: weapon_liqi_long_quan
         dropChance: 0.30
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 3]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [35, 55]
-        dropChance: 1.0  # 银两(P1 占位,待 balance)
-
-  - floorIndex: 22
-    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 16
-    requiredRealm: sanLiu
-    enemyTeam:
-      - id: enemy_tower_22a
-        name: 绝顶护法（甲）
-        realmTier: sanLiu
-        realmLayer: ruMen
-        school: gangMeng
-        baseHp: 1650
-        baseAttack: 260
-        baseSpeed: 195
-        skillIds: [skill_gangmeng_changlian_basic]
-        iconPath: assets/enemies/wulin_bazhu.png
-      - id: enemy_tower_22b
-        name: 绝顶护法（乙）
-        realmTier: sanLiu
-        realmLayer: ruMen
-        school: lingQiao
-        baseHp: 1650
-        baseAttack: 260
-        baseSpeed: 205
-        skillIds: [skill_lingqiao_changlian_basic]
-        iconPath: assets/enemies/fu_zhaizhu.png
-      - id: enemy_tower_22c
-        name: 绝顶护法（丙）
-        realmTier: sanLiu
-        realmLayer: ruMen
-        school: yinRou
-        baseHp: 1650
-        baseAttack: 260
-        baseSpeed: 190
-        skillIds: [skill_yinrou_changlian_basic]
-        iconPath: assets/enemies/you_hufa.png
-    dropTable:
-      - equipmentDefId: armor_xiangyang_pi_jia
-        dropChance: 0.40
-      - inventoryItemDefId: item_xinxuejiejing
-        quantity: [2, 3]
-        dropChance: 1.0
-      - inventoryItemDefId: item_silver
-        quantity: [35, 55]
+        quantity: [40, 70]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 23
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 16
-    requiredRealm: sanLiu
+    baseExpReward: 20
+    requiredRealm: yiLiu
     enemyTeam:
       - id: enemy_tower_23a
-        name: 名门长老（甲）
-        realmTier: sanLiu
+        name: 门派长老（甲）
+        realmTier: yiLiu
         realmLayer: ruMen
         school: lingQiao
-        baseHp: 1700
-        baseAttack: 280
-        baseSpeed: 205
-        skillIds:
-          - skill_lingqiao_changlian_basic
-          - skill_lingqiao_changlian_skill
-        iconPath: assets/enemies/zuo_hufa.png
+        baseHp: 20500
+        baseAttack: 780
+        baseSpeed: 288
+        skillIds: [skill_lingqiao_menpai_basic, skill_lingqiao_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_jinding_menren.png
       - id: enemy_tower_23b
-        name: 名门长老（乙）
-        realmTier: sanLiu
+        name: 门派长老（乙）
+        realmTier: yiLiu
         realmLayer: ruMen
         school: gangMeng
-        baseHp: 1700
-        baseAttack: 280
-        baseSpeed: 195
-        skillIds: [skill_gangmeng_changlian_basic, skill_gangmeng_changlian_skill]
-        iconPath: assets/enemies/jianghu_qianbei.png
+        baseHp: 20500
+        baseAttack: 780
+        baseSpeed: 283
+        skillIds: [skill_gangmeng_menpai_basic, skill_gangmeng_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_songyang_guanzhu.png
       - id: enemy_tower_23c
-        name: 名门长老（丙）
-        realmTier: sanLiu
+        name: 门派长老（丙）
+        realmTier: yiLiu
         realmLayer: ruMen
         school: yinRou
-        baseHp: 1700
-        baseAttack: 280
-        baseSpeed: 200
-        skillIds: [skill_yinrou_changlian_basic, skill_yinrou_changlian_skill]
-        iconPath: assets/enemies/shiye.png
+        baseHp: 20500
+        baseAttack: 780
+        baseSpeed: 293
+        skillIds: [skill_yinrou_menpai_basic, skill_yinrou_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_xudu_mingjia.png
     dropTable:
-      # F4:清回掉低阶装备(原 weapon_xiangyang_chang_jian -1 阶),终局价值落同阶+材料,心血结晶加码补偿
-      - equipmentDefId: weapon_xiangyang_chang_jian
-        dropChance: 0.40
       - inventoryItemDefId: item_xinxuejiejing
-        quantity: [3, 4]
+        quantity: [2, 3]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [35, 55]
+        quantity: [40, 70]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 24
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 16
-    requiredRealm: sanLiu
+    baseExpReward: 20
+    requiredRealm: yiLiu
     enemyTeam:
       - id: enemy_tower_24a
         name: 武林名宿（甲）
-        realmTier: sanLiu
-        realmLayer: ruMen
+        realmTier: yiLiu
+        realmLayer: shuLian
         school: gangMeng
-        baseHp: 1800
-        baseAttack: 280
-        baseSpeed: 200
-        skillIds:
-          - skill_gangmeng_changlian_basic
-          - skill_gangmeng_changlian_skill
-        iconPath: assets/enemies/wulin_bazhu.png
+        baseHp: 22500
+        baseAttack: 830
+        baseSpeed: 292
+        skillIds: [skill_gangmeng_menpai_basic, skill_gangmeng_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_luoyang_haoke.png
       - id: enemy_tower_24b
         name: 武林名宿（乙）
-        realmTier: sanLiu
-        realmLayer: ruMen
+        realmTier: yiLiu
+        realmLayer: shuLian
         school: lingQiao
-        baseHp: 1800
-        baseAttack: 280
-        baseSpeed: 210
-        skillIds:
-          - skill_lingqiao_changlian_basic
-          - skill_lingqiao_changlian_skill
-        iconPath: assets/enemies/fu_zhaizhu.png
+        baseHp: 22500
+        baseAttack: 830
+        baseSpeed: 287
+        skillIds: [skill_lingqiao_menpai_basic, skill_lingqiao_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_luoshui_zhaoying.png
       - id: enemy_tower_24c
         name: 武林名宿（丙）
-        realmTier: sanLiu
-        realmLayer: ruMen
+        realmTier: yiLiu
+        realmLayer: shuLian
         school: yinRou
-        baseHp: 1800
-        baseAttack: 280
-        baseSpeed: 195
-        skillIds:
-          - skill_yinrou_changlian_basic
-          - skill_yinrou_changlian_skill
-        iconPath: assets/enemies/you_hufa.png
+        baseHp: 22500
+        baseAttack: 830
+        baseSpeed: 297
+        skillIds: [skill_yinrou_menpai_basic, skill_yinrou_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_shouzhuo_weng.png
     dropTable:
-      # F4:清回掉低阶装备(原 armor_xiangyang_pi_jia -2 阶),心血结晶加码补偿
-      - equipmentDefId: accessory_xiangyang_yin_jie
-        dropChance: 0.50
+      - equipmentDefId: armor_liqi_xuan_tie_jia
+        dropChance: 0.30
       - inventoryItemDefId: item_xinxuejiejing
-        quantity: [3, 4]
+        quantity: [2, 3]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [35, 55]
+        quantity: [40, 70]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
-  # === Floor 25 · 小 Boss · 三流·入门 ===
+  # === Floor 25 · 小 Boss · 一流·精通 · 追风剑隐 ===
+  # 新增（批 A·A2），立绘占位，批 C 出专属图
   - floorIndex: 25
-    dropSkillFragmentId: skill_ma_ta_fei_yan  # 2026-07-22 拍定收编:残页(灵巧「马踏飞燕」· tier5· 集齐 5 片解锁);挂 25 层=灵巧 Boss(绝顶剑魔)对灵巧残页流派相合,且顶原波B 同 tier 灵巧残页(jing_hong 改挂 Ch13 章末)空位
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 40
-    requiredRealm: sanLiu
+    baseExpReward: 50
+    requiredRealm: yiLiu
     bossKind: minor
     narrativeOpeningId: tower_25_opening
     narrativeVictoryId: tower_25_victory
     enemyTeam:
       - id: enemy_tower_boss_25
-        name: 绝顶剑魔
-        realmTier: sanLiu
+        name: 追风剑隐
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 40000
+        baseAttack: 1300
+        baseSpeed: 300
+        skillIds:
+          - skill_lingqiao_menpai_basic
+          - skill_lingqiao_menpai_skill
+          - skill_lingqiao_menpai_ult
+        iconPath: assets/enemies/zhongzhou_hetao_jianke.png
+        isBoss: true
+    dropTable:
+      - equipmentDefId: weapon_liqi_long_quan
+        dropChance: 1.0
+      - equipmentDefId: armor_liqi_xuan_tie_jia
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [8, 12]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [120, 170]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 26
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 20
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_tower_26a
+        name: 一流护法（甲）
+        realmTier: yiLiu
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 26500
+        baseAttack: 910
+        baseSpeed: 300
+        skillIds: [skill_gangmeng_menpai_basic, skill_gangmeng_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_hanjiang_chenggao.png
+      - id: enemy_tower_26b
+        name: 一流护法（乙）
+        realmTier: yiLiu
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 26500
+        baseAttack: 910
+        baseSpeed: 295
+        skillIds: [skill_lingqiao_menpai_basic, skill_lingqiao_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_qiushan_tiaoshan.png
+      - id: enemy_tower_26c
+        name: 一流护法（丙）
+        realmTier: yiLiu
+        realmLayer: yuanShu
+        school: yinRou
+        baseHp: 26500
+        baseAttack: 910
+        baseSpeed: 305
+        skillIds: [skill_yinrou_menpai_basic, skill_yinrou_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_liujin_gong.png
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [2, 3]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [40, 70]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 27
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 20
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_tower_27a
+        name: 一流真传（甲）
+        realmTier: yiLiu
+        realmLayer: huaJing
+        school: yinRou
+        baseHp: 29000
+        baseAttack: 955
+        baseSpeed: 304
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+          - skill_yinrou_menpai_ult
+        iconPath: assets/enemies/zhongzhou_huangcun_wuming.png
+      - id: enemy_tower_27b
+        name: 一流真传（乙）
+        realmTier: yiLiu
+        realmLayer: huaJing
+        school: gangMeng
+        baseHp: 29000
+        baseAttack: 955
+        baseSpeed: 299
+        skillIds: [skill_gangmeng_menpai_basic, skill_gangmeng_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_laotie_tiejiang.png
+      - id: enemy_tower_27c
+        name: 一流真传（丙）
+        realmTier: yiLiu
+        realmLayer: huaJing
+        school: lingQiao
+        baseHp: 29000
+        baseAttack: 955
+        baseSpeed: 309
+        skillIds: [skill_lingqiao_menpai_basic, skill_lingqiao_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_hetao_jianke.png
+    dropTable:
+      - equipmentDefId: weapon_liqi_pan_long_dao
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [2, 3]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [40, 70]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  # === Floor 28 · 大 Boss · 一流·登峰 · 幽冥判官 ===
+  # 新增（批 A·A2），立绘占位，批 C 出专属图
+  - floorIndex: 28
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 55
+    requiredRealm: yiLiu
+    bossKind: major
+    narrativeOpeningId: tower_28_opening
+    narrativeVictoryId: tower_28_victory
+    enemyTeam:
+      - id: enemy_tower_boss_28
+        name: 幽冥判官
+        realmTier: yiLiu
+        realmLayer: dengFeng
+        school: yinRou
+        baseHp: 52000
+        baseAttack: 1650
+        baseSpeed: 315
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+          - skill_yinrou_menpai_ult
+        iconPath: assets/enemies/zhongzhou_huangcun_wuming.png
+        isBoss: true
+        schoolDamageTakenMult:
+          gangMeng: 1.25
+          lingQiao: 0.75
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.60
+            unlockSkillIds:
+              - skill_yinrou_menpai_fang_skill
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+          - hpThresholdPct: 0.30
+            unlockSkillIds:
+              - skill_yinrou_menpai_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.75
+              unlockSkillIds:
+                - skill_yinrou_menpai_fang_skill
+              aiMode: focus
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.40
+              unlockSkillIds:
+                - skill_yinrou_menpai_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
+      - id: enemy_tower_28_guard_a
+        name: 幽冥文判
+        realmTier: yiLiu
+        realmLayer: dengFeng
+        school: lingQiao
+        baseHp: 18000
+        baseAttack: 630
+        baseSpeed: 305
+        skillIds: [skill_lingqiao_menpai_basic, skill_lingqiao_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_luoshui_zhaoying.png
+      - id: enemy_tower_28_guard_b
+        name: 幽冥武判
+        realmTier: yiLiu
+        realmLayer: dengFeng
+        school: gangMeng
+        baseHp: 18000
+        baseAttack: 630
+        baseSpeed: 300
+        skillIds: [skill_gangmeng_menpai_basic, skill_gangmeng_menpai_skill]
+        iconPath: assets/enemies/zhongzhou_laotie_tiejiang.png
+    dropTable:
+      - equipmentDefId: weapon_liqi_long_quan
+        dropChance: 1.0
+      - equipmentDefId: accessory_liqi_fei_yu_pei
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [10, 14]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [180, 240]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 1.0  # 经验丹大档(大 Boss 首通必得体例,I-1)
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 绝顶段 · abs 29-35（floor 29-35）
+  # ─────────────────────────────────────────────────────────────────────────
+
+  - floorIndex: 29
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 24
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_tower_29a
+        name: 绝顶高手（剑）
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 43000
+        baseAttack: 1220
+        baseSpeed: 310
+        skillIds: [skill_gangmeng_jianghu_basic, skill_gangmeng_jianghu_skill]
+        iconPath: assets/enemies/shanwai_jueding_houfeng.png
+      - id: enemy_tower_29b
+        name: 绝顶高手（刀）
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 43000
+        baseAttack: 1220
+        baseSpeed: 305
+        skillIds: [skill_lingqiao_jianghu_basic, skill_lingqiao_jianghu_skill]
+        iconPath: assets/enemies/guanshan_dukou_yeke.png
+      - id: enemy_tower_29c
+        name: 绝顶高手（掌）
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 43000
+        baseAttack: 1220
+        baseSpeed: 315
+        skillIds: [skill_yinrou_jianghu_basic, skill_yinrou_jianghu_skill]
+        iconPath: assets/enemies/shanwai_zhulin_yinke.png
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_po_zhen_chui
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [3, 5]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [60, 90]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 30
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 24
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_tower_30a
+        name: 绝顶客卿（甲）
+        realmTier: jueDing
         realmLayer: ruMen
         school: lingQiao
-        # 2026-06-28 审计修:24→25 不应从三人普通层掉成更轻单体 Boss。
-        # 25 层作为绝顶段小 Boss,总 HP/攻需高于 floor24 三人组(13350 / 2100)。
-        baseHp: 6000
-        baseAttack: 650
-        baseSpeed: 180
+        baseHp: 45000
+        baseAttack: 1300
+        baseSpeed: 314
+        skillIds: [skill_lingqiao_jianghu_basic, skill_lingqiao_jianghu_skill]
+        iconPath: assets/enemies/xiliang_kaidao_xinshi.png
+      - id: enemy_tower_30b
+        name: 绝顶客卿（乙）
+        realmTier: jueDing
+        realmLayer: ruMen
+        school: gangMeng
+        baseHp: 45000
+        baseAttack: 1300
+        baseSpeed: 309
+        skillIds: [skill_gangmeng_jianghu_basic, skill_gangmeng_jianghu_skill]
+        iconPath: assets/enemies/xiliang_fujiang.png
+      - id: enemy_tower_30c
+        name: 绝顶客卿（丙）
+        realmTier: jueDing
+        realmLayer: ruMen
+        school: yinRou
+        baseHp: 45000
+        baseAttack: 1300
+        baseSpeed: 319
+        skillIds: [skill_yinrou_jianghu_basic, skill_yinrou_jianghu_skill]
+        iconPath: assets/enemies/shanwai_banshan_seng.png
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [3, 5]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [60, 90]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 31
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 24
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_tower_31a
+        name: 绝顶游侠（甲）
+        realmTier: jueDing
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 47000
+        baseAttack: 1380
+        baseSpeed: 318
+        skillIds: [skill_gangmeng_jianghu_basic, skill_gangmeng_jianghu_skill]
+        iconPath: assets/enemies/guanshan_shahai_zongpiao.png
+      - id: enemy_tower_31b
+        name: 绝顶游侠（乙）
+        realmTier: jueDing
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 47000
+        baseAttack: 1380
+        baseSpeed: 313
+        skillIds: [skill_lingqiao_jianghu_basic, skill_lingqiao_jianghu_skill]
+        iconPath: assets/enemies/xiliang_xianfeng.png
+      - id: enemy_tower_31c
+        name: 绝顶游侠（丙）
+        realmTier: jueDing
+        realmLayer: shuLian
+        school: yinRou
+        baseHp: 47000
+        baseAttack: 1380
+        baseSpeed: 323
+        skillIds: [skill_yinrou_jianghu_basic, skill_yinrou_jianghu_skill]
+        iconPath: assets/enemies/guanshan_xingjiao_seng.png
+    dropTable:
+      - equipmentDefId: armor_zhongqi_yin_lin_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [3, 5]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [60, 90]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  # === Floor 32 · 小 Boss · 绝顶·精通 · 绝顶剑魔 ===
+  # 原 floor25 绝顶剑魔迁移——jueDing（绝顶）段名实相副；vulnerability 脆弱窗机制原样
+  - floorIndex: 32
+    dropSkillFragmentId: skill_ma_ta_fei_yan  # 残页随原 Boss 迁移（挂点逻辑不变）
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 60
+    requiredRealm: jueDing
+    bossKind: minor
+    narrativeOpeningId: tower_32_opening
+    narrativeVictoryId: tower_32_victory
+    enemyTeam:
+      - id: enemy_tower_boss_32
+        name: 绝顶剑魔
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 55000
+        baseAttack: 1800
+        baseSpeed: 330
         skillIds:
-          - skill_lingqiao_changlian_basic
-          - skill_lingqiao_changlian_skill
-          - skill_lingqiao_changlian_ult
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
+          - skill_lingqiao_jianghu_ult
         iconPath: assets/enemies/tower_boss_25.png
         isBoss: true
         schoolDamageTakenMult:
           yinRou: 1.25
           gangMeng: 0.75
         vulnerability:
-          outOfWindowDamageMult: 0.12   # 机制教学 soft gate:窗口外(未蓄招/未踉跄)受 12% 伤;
-                                        # 窗口靠 bossPhases chargeCounter 相位(0.80/0.50)开。
-                                        # 2026-07-08 调整:保留满配必胜与机制耗时,同时让同阶 0 强化
-                                        # 保有少量通关空间,避免 floor25 从 soft gate 退化为硬墙。
+          outOfWindowDamageMult: 0.12   # 机制教学 soft gate（原 floor25 参数原样迁移）:
+                                        # 窗口外(未蓄招/未踉跄)受 12% 伤;窗口靠 bossPhases
+                                        # chargeCounter 相位(0.80/0.50)开。A5 balance 复校。
         cycleVulnerability:
           2:
-            outOfWindowDamageMult: 0.07   # 二周目收窄窗口(base 0.12)加压;仍保留机制可读性
+            outOfWindowDamageMult: 0.07   # 二周目收窄窗口加压（原 floor25 参数）
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.80
             unlockSkillIds:
-              - skill_lingqiao_changlian_fang_skill
+              - skill_lingqiao_jianghu_fang_skill
             aiMode: focus
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
           - hpThresholdPct: 0.5
             unlockSkillIds:
-              - skill_lingqiao_changlian_fang_ult
+              - skill_lingqiao_jianghu_fang_ult
             aiMode: aggressive
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
@@ -1006,316 +1481,909 @@ floors:
             - hpThresholdPct: 1.0
             - hpThresholdPct: 0.82
               unlockSkillIds:
-                - skill_lingqiao_changlian_fang_skill
+                - skill_lingqiao_jianghu_fang_skill
               aiMode: focus
               onEnterMechanic: chargeCounter
               titleKey: bossPhase_desperate
             - hpThresholdPct: 0.42
               unlockSkillIds:
-                - skill_lingqiao_changlian_fang_ult
+                - skill_lingqiao_jianghu_fang_ult
               aiMode: aggressive
               onEnterMechanic: chargeCounter
               titleKey: bossPhase_desperate
-      - id: enemy_tower_25_shadow_a
+      - id: enemy_tower_32_guard_a
         name: 剑魔影侍
-        realmTier: sanLiu
-        realmLayer: ruMen
+        realmTier: jueDing
+        realmLayer: jingTong
         school: yinRou
-        baseHp: 1300
-        baseAttack: 100
-        baseSpeed: 170
-        skillIds:
-          - skill_yinrou_changlian_basic
-          - skill_yinrou_changlian_skill
+        baseHp: 26000
+        baseAttack: 800
+        baseSpeed: 320
+        skillIds: [skill_yinrou_jianghu_basic, skill_yinrou_jianghu_skill]
         iconPath: assets/enemies/anye.png
-      - id: enemy_tower_25_shadow_b
+      - id: enemy_tower_32_guard_b
         name: 剑魔快剑
-        realmTier: sanLiu
-        realmLayer: ruMen
+        realmTier: jueDing
+        realmLayer: jingTong
         school: gangMeng
-        baseHp: 1350
-        baseAttack: 100
-        baseSpeed: 170
-        skillIds:
-          - skill_gangmeng_changlian_basic
-          - skill_gangmeng_changlian_skill
+        baseHp: 27000
+        baseAttack: 820
+        baseSpeed: 325
+        skillIds: [skill_gangmeng_jianghu_basic, skill_gangmeng_jianghu_skill]
         iconPath: assets/enemies/jianghu_qianbei.png
     dropTable:
-      # F4:清回掉低阶装备(原 weapon_xiangyang_chang_jian -1 + accessory_xiangyang_yin_jie -2 阶),心血结晶加码补偿
-      - equipmentDefId: weapon_xiangyang_chang_jian
+      - equipmentDefId: weapon_zhongqi_po_zhen_chui
         dropChance: 1.0
+      - equipmentDefId: armor_zhongqi_yin_lin_jia
+        dropChance: 0.50
       - inventoryItemDefId: item_xinxuejiejing
-        quantity: [8, 12]
+        quantity: [10, 15]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [120, 170]
+        quantity: [160, 220]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
+  - floorIndex: 33
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 24
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_tower_33a
+        name: 剑魔旧部（甲）
+        realmTier: jueDing
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 51000
+        baseAttack: 1520
+        baseSpeed: 326
+        skillIds:
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
+          - skill_lingqiao_jianghu_ult
+        iconPath: assets/enemies/guanshan_songxing_tongdao.png
+      - id: enemy_tower_33b
+        name: 剑魔旧部（乙）
+        realmTier: jueDing
+        realmLayer: yuanShu
+        school: yinRou
+        baseHp: 51000
+        baseAttack: 1520
+        baseSpeed: 321
+        skillIds: [skill_yinrou_jianghu_basic, skill_yinrou_jianghu_skill]
+        iconPath: assets/enemies/shanwai_chapeng_bashi.png
+      - id: enemy_tower_33c
+        name: 剑魔旧部（丙）
+        realmTier: jueDing
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 51000
+        baseAttack: 1520
+        baseSpeed: 331
+        skillIds: [skill_gangmeng_jianghu_basic, skill_gangmeng_jianghu_skill]
+        iconPath: assets/enemies/xiliang_mazhan_zongshi.png
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [3, 5]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [60, 90]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 34
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 24
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_tower_34a
+        name: 绝顶宿老（甲）
+        realmTier: jueDing
+        realmLayer: huaJing
+        school: gangMeng
+        baseHp: 53000
+        baseAttack: 1600
+        baseSpeed: 330
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+          - skill_gangmeng_jianghu_ult
+        iconPath: assets/enemies/shanwai_duanya_shouguan.png
+      - id: enemy_tower_34b
+        name: 绝顶宿老（乙）
+        realmTier: jueDing
+        realmLayer: huaJing
+        school: yinRou
+        baseHp: 53000
+        baseAttack: 1600
+        baseSpeed: 325
+        skillIds: [skill_yinrou_jianghu_basic, skill_yinrou_jianghu_skill]
+        iconPath: assets/enemies/guanshan_shouguan_laojiang.png
+      - id: enemy_tower_34c
+        name: 绝顶宿老（丙）
+        realmTier: jueDing
+        realmLayer: huaJing
+        school: lingQiao
+        baseHp: 53000
+        baseAttack: 1600
+        baseSpeed: 335
+        skillIds: [skill_lingqiao_jianghu_basic, skill_lingqiao_jianghu_skill]
+        iconPath: assets/enemies/guanshan_dukou_yeke.png
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_qing_xu_jian
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [3, 5]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [60, 90]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  # === Floor 35 · 大 Boss · 绝顶·登峰 · 断岳霸刀 ===
+  # 新增（批 A·A2），立绘占位，批 C 出专属图
+  - floorIndex: 35
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 65
+    requiredRealm: jueDing
+    bossKind: major
+    narrativeOpeningId: tower_35_opening
+    narrativeVictoryId: tower_35_victory
+    enemyTeam:
+      - id: enemy_tower_boss_35
+        name: 断岳霸刀
+        realmTier: jueDing
+        realmLayer: dengFeng
+        school: gangMeng
+        baseHp: 58000
+        baseAttack: 1900
+        baseSpeed: 342
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+          - skill_gangmeng_jianghu_ult
+        iconPath: assets/enemies/xiliang_mazhan_zongshi.png
+        isBoss: true
+        schoolDamageTakenMult:
+          lingQiao: 1.25
+          yinRou: 0.75
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.60
+            unlockSkillIds:
+              - skill_gangmeng_jianghu_fang_skill
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+          - hpThresholdPct: 0.30
+            unlockSkillIds:
+              - skill_gangmeng_jianghu_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.75
+              unlockSkillIds:
+                - skill_gangmeng_jianghu_fang_skill
+              aiMode: focus
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.40
+              unlockSkillIds:
+                - skill_gangmeng_jianghu_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_po_zhen_chui
+        dropChance: 1.0
+      - equipmentDefId: accessory_zhongqi_qing_yu_huan
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [12, 17]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [240, 310]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 1.0  # 经验丹大档(大 Boss 首通必得体例,I-1)
+
   # ─────────────────────────────────────────────────────────────────────────
-  # 第 6 段 · 三流·熟练 (26-30) · 3 人队
+  # 宗师段 · abs 36-42（floor 36-42）
   # ─────────────────────────────────────────────────────────────────────────
 
-  - floorIndex: 26
+  - floorIndex: 36
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 18
-    requiredRealm: sanLiu
+    baseExpReward: 28
+    requiredRealm: zongShi
     enemyTeam:
-      - id: enemy_tower_26a
+      - id: enemy_tower_36a
         name: 宗师弟子（甲）
-        realmTier: sanLiu
-        realmLayer: shuLian
+        realmTier: zongShi
+        realmLayer: qiMeng
         school: gangMeng
-        baseHp: 1450
-        baseAttack: 230
-        baseSpeed: 215
-        skillIds:
-          - skill_gangmeng_changlian_basic
-        iconPath: assets/enemies/wulin_bazhu.png
-      - id: enemy_tower_26b
+        baseHp: 55500
+        baseAttack: 1860
+        baseSpeed: 341
+        skillIds: [skill_gangmeng_shichuan_basic, skill_gangmeng_shichuan_skill]
+        iconPath: assets/enemies/liangzhou_youqi_jiang.png
+      - id: enemy_tower_36b
         name: 宗师弟子（乙）
-        realmTier: sanLiu
-        realmLayer: shuLian
+        realmTier: zongShi
+        realmLayer: qiMeng
         school: lingQiao
-        baseHp: 1450
-        baseAttack: 230
-        baseSpeed: 225
-        skillIds:
-          - skill_lingqiao_changlian_basic
-        iconPath: assets/enemies/zuo_hufa.png
-      - id: enemy_tower_26c
+        baseHp: 55500
+        baseAttack: 1860
+        baseSpeed: 336
+        skillIds: [skill_lingqiao_shichuan_basic, skill_lingqiao_shichuan_skill]
+        iconPath: assets/enemies/shahai_heifeng_daoke.png
+      - id: enemy_tower_36c
         name: 宗师弟子（丙）
-        realmTier: sanLiu
-        realmLayer: shuLian
+        realmTier: zongShi
+        realmLayer: qiMeng
         school: yinRou
-        baseHp: 1450
-        baseAttack: 230
-        baseSpeed: 220
-        skillIds:
-          - skill_yinrou_changlian_basic
-        iconPath: assets/enemies/anye.png
+        baseHp: 55500
+        baseAttack: 1860
+        baseSpeed: 346
+        skillIds: [skill_yinrou_shichuan_basic, skill_yinrou_shichuan_skill]
+        iconPath: assets/enemies/liangzhou_jieguan_ren.png
     dropTable:
-      - equipmentDefId: weapon_xiangyang_chang_jian
+      - equipmentDefId: weapon_baowu_xuan_tian_fu
         dropChance: 0.30
-      - inventoryItemDefId: item_xinxuejiejing
-        quantity: [3, 5]
-        dropChance: 1.0
-      - inventoryItemDefId: item_silver
-        quantity: [55, 80]
-        dropChance: 1.0  # 银两(P1 占位,待 balance)
-
-  - floorIndex: 27
-    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 18
-    requiredRealm: sanLiu
-    enemyTeam:
-      - id: enemy_tower_27a
-        name: 宗师真传（甲）
-        realmTier: sanLiu
-        realmLayer: shuLian
-        school: yinRou
-        baseHp: 1500
-        baseAttack: 230
-        baseSpeed: 225
-        skillIds:
-          - skill_yinrou_changlian_basic
-        iconPath: assets/enemies/shiye.png
-      - id: enemy_tower_27b
-        name: 宗师真传（乙）
-        realmTier: sanLiu
-        realmLayer: shuLian
-        school: gangMeng
-        baseHp: 1500
-        baseAttack: 230
-        baseSpeed: 215
-        skillIds:
-          - skill_gangmeng_changlian_basic
-        iconPath: assets/enemies/wulin_bazhu.png
-      - id: enemy_tower_27c
-        name: 宗师真传（丙）
-        realmTier: sanLiu
-        realmLayer: shuLian
-        school: lingQiao
-        baseHp: 1500
-        baseAttack: 230
-        baseSpeed: 230
-        skillIds:
-          - skill_lingqiao_changlian_basic
-        iconPath: assets/enemies/black_killer.png
-    dropTable:
-      - equipmentDefId: armor_xiangyang_pi_jia
-        dropChance: 0.30
-      - inventoryItemDefId: item_xinxuejiejing
-        quantity: [3, 5]
-        dropChance: 1.0
-      - inventoryItemDefId: item_silver
-        quantity: [55, 80]
-        dropChance: 1.0  # 银两(P1 占位,待 balance)
-
-  - floorIndex: 28
-    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 18
-    requiredRealm: sanLiu
-    enemyTeam:
-      - id: enemy_tower_28a
-        name: 宗师护法（甲）
-        realmTier: sanLiu
-        realmLayer: shuLian
-        school: gangMeng
-        baseHp: 1550
-        baseAttack: 240
-        baseSpeed: 220
-        skillIds:
-          - skill_gangmeng_changlian_basic
-          - skill_gangmeng_changlian_skill
-        iconPath: assets/enemies/zuo_hufa.png
-      - id: enemy_tower_28b
-        name: 宗师护法（乙）
-        realmTier: sanLiu
-        realmLayer: shuLian
-        school: lingQiao
-        baseHp: 1550
-        baseAttack: 240
-        baseSpeed: 230
-        skillIds:
-          - skill_lingqiao_changlian_basic
-          - skill_lingqiao_changlian_skill
-        iconPath: assets/enemies/you_hufa.png
-      - id: enemy_tower_28c
-        name: 宗师护法（丙）
-        realmTier: sanLiu
-        realmLayer: shuLian
-        school: yinRou
-        baseHp: 1550
-        baseAttack: 240
-        baseSpeed: 225
-        skillIds:
-          - skill_yinrou_changlian_basic
-          - skill_yinrou_changlian_skill
-        iconPath: assets/enemies/anye.png
-    dropTable:
-      # F4:清回掉低阶装备(原 weapon_xiangyang_chang_jian -2 阶),心血结晶加码补偿
-      - equipmentDefId: weapon_xiangyang_chang_jian
-        dropChance: 0.40
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [4, 6]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [55, 80]
+        quantity: [80, 120]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
-  - floorIndex: 29
+  - floorIndex: 37
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 18
-    requiredRealm: sanLiu
+    baseExpReward: 28
+    requiredRealm: zongShi
     enemyTeam:
-      - id: enemy_tower_29a
-        name: 宗师亲传（甲）
-        realmTier: sanLiu
-        realmLayer: shuLian
-        school: lingQiao
-        baseHp: 1600
-        baseAttack: 240
-        baseSpeed: 235
-        skillIds:
-          - skill_lingqiao_changlian_basic
-          - skill_lingqiao_changlian_skill
-        iconPath: assets/enemies/wulin_bazhu.png
-      - id: enemy_tower_29b
-        name: 宗师亲传（乙）
-        realmTier: sanLiu
-        realmLayer: shuLian
+      - id: enemy_tower_37a
+        name: 宗师真传（甲）
+        realmTier: zongShi
+        realmLayer: ruMen
         school: yinRou
-        baseHp: 1600
-        baseAttack: 240
-        baseSpeed: 225
-        skillIds:
-          - skill_yinrou_changlian_basic
-          - skill_yinrou_changlian_skill
-        iconPath: assets/enemies/fu_zhaizhu.png
-      - id: enemy_tower_29c
-        name: 宗师亲传（丙）
-        realmTier: sanLiu
-        realmLayer: shuLian
+        baseHp: 56500
+        baseAttack: 1900
+        baseSpeed: 346
+        skillIds: [skill_yinrou_shichuan_basic, skill_yinrou_shichuan_skill]
+        iconPath: assets/enemies/shahai_linglu_ren.png
+      - id: enemy_tower_37b
+        name: 宗师真传（乙）
+        realmTier: zongShi
+        realmLayer: ruMen
         school: gangMeng
-        baseHp: 1600
-        baseAttack: 240
-        baseSpeed: 220
-        skillIds:
-          - skill_gangmeng_changlian_basic
-          - skill_gangmeng_changlian_skill
-        iconPath: assets/enemies/jianghu_qianbei.png
+        baseHp: 56500
+        baseAttack: 1900
+        baseSpeed: 341
+        skillIds: [skill_gangmeng_shichuan_basic, skill_gangmeng_shichuan_skill]
+        iconPath: assets/enemies/liangzhou_heishi_shoujing.png
+      - id: enemy_tower_37c
+        name: 宗师真传（丙）
+        realmTier: zongShi
+        realmLayer: ruMen
+        school: lingQiao
+        baseHp: 56500
+        baseAttack: 1900
+        baseSpeed: 351
+        skillIds: [skill_lingqiao_shichuan_basic, skill_lingqiao_shichuan_skill]
+        iconPath: assets/enemies/shahai_juan_sha_shou.png
     dropTable:
-      # F4:清回掉低阶装备(原 weapon_xiangyang_chang_jian -2 + armor_xiangyang_pi_jia -3 阶),心血结晶加码补偿
-      - equipmentDefId: accessory_xiangyang_yin_jie
-        dropChance: 0.50
       - inventoryItemDefId: item_xinxuejiejing
-        quantity: [5, 7]
+        quantity: [4, 6]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [55, 80]
+        quantity: [80, 120]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
 
-  # === Floor 30 · 大 Boss · 三流·熟练 · Lv100 终关 ===
-  - floorIndex: 30
+  - floorIndex: 38
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
-    baseExpReward: 45
-    requiredRealm: sanLiu
-    bossKind: major
-    narrativeOpeningId: tower_30_opening
-    narrativeVictoryId: tower_30_victory
+    baseExpReward: 28
+    requiredRealm: zongShi
     enemyTeam:
-      - id: enemy_tower_boss_30
-        name: 九霄魔尊
-        realmTier: sanLiu
+      - id: enemy_tower_38a
+        name: 宗师护法（甲）
+        realmTier: zongShi
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 57200
+        baseAttack: 1930
+        baseSpeed: 351
+        skillIds:
+          - skill_gangmeng_shichuan_basic
+          - skill_gangmeng_shichuan_skill
+          - skill_gangmeng_shichuan_ult
+        iconPath: assets/enemies/yangguan_chengxia_houke.png
+      - id: enemy_tower_38b
+        name: 宗师护法（乙）
+        realmTier: zongShi
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 57200
+        baseAttack: 1930
+        baseSpeed: 346
+        skillIds: [skill_lingqiao_shichuan_basic, skill_lingqiao_shichuan_skill]
+        iconPath: assets/enemies/shahai_ta_sha_ke.png
+      - id: enemy_tower_38c
+        name: 宗师护法（丙）
+        realmTier: zongShi
         realmLayer: shuLian
         school: yinRou
-        # 2026-06-28 审计修:终关单体 Boss 不应弱于 floor29 三人组(16050/2400)。
-        # 2026-06-29 相位修:20000→42000 让 on-level ceiling 队无法首击秒杀,
-        # 多相位机制(0.90/0.50 阈值)才有时间触发。仍 <boss_hp_max=60000。
-        baseHp: 12600
-        baseAttack: 840
-        baseSpeed: 245
+        baseHp: 57200
+        baseAttack: 1930
+        baseSpeed: 356
+        skillIds: [skill_yinrou_shichuan_basic, skill_yinrou_shichuan_skill]
+        iconPath: assets/enemies/yangguan_jie_yan_ke.png
+    dropTable:
+      - equipmentDefId: armor_baowu_jin_si_jia
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [4, 6]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [80, 120]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  # === Floor 39 · 小 Boss · 宗师·精通 · 无相神尼 ===
+  # 新增（批 A·A2），立绘占位，批 C 出专属图
+  - floorIndex: 39
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 70
+    requiredRealm: zongShi
+    bossKind: minor
+    narrativeOpeningId: tower_39_opening
+    narrativeVictoryId: tower_39_victory
+    enemyTeam:
+      - id: enemy_tower_boss_39
+        name: 无相神尼
+        realmTier: zongShi
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 58500
+        baseAttack: 2000
+        baseSpeed: 360
         skillIds:
-          - skill_yinrou_changlian_basic
-          - skill_yinrou_changlian_skill
-          - skill_yinrou_changlian_ult
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill
+          - skill_yinrou_shichuan_ult
+        iconPath: assets/enemies/shahai_shoucheng_laozu.png
+        isBoss: true
+    dropTable:
+      - equipmentDefId: weapon_baowu_xuan_tian_fu
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_jin_si_jia
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [12, 18]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [200, 270]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 40
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 28
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_tower_40a
+        name: 宗师客卿（甲）
+        realmTier: zongShi
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 58300
+        baseAttack: 1965
+        baseSpeed: 361
+        skillIds:
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill
+          - skill_lingqiao_shichuan_ult
+        iconPath: assets/enemies/yangguan_qikou_shoushao.png
+      - id: enemy_tower_40b
+        name: 宗师客卿（乙）
+        realmTier: zongShi
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 58300
+        baseAttack: 1965
+        baseSpeed: 356
+        skillIds: [skill_gangmeng_shichuan_basic, skill_gangmeng_shichuan_skill]
+        iconPath: assets/enemies/liangzhou_songguan_jiubu.png
+      - id: enemy_tower_40c
+        name: 宗师客卿（丙）
+        realmTier: zongShi
+        realmLayer: yuanShu
+        school: yinRou
+        baseHp: 58300
+        baseAttack: 1965
+        baseSpeed: 366
+        skillIds: [skill_yinrou_shichuan_basic, skill_yinrou_shichuan_skill]
+        iconPath: assets/enemies/shahai_shoucheng_laozu.png
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [4, 6]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [80, 120]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 41
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 28
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_tower_41a
+        name: 宗师亲传（甲）
+        realmTier: zongShi
+        realmLayer: huaJing
+        school: lingQiao
+        baseHp: 58700
+        baseAttack: 1985
+        baseSpeed: 366
+        skillIds:
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill
+          - skill_lingqiao_shichuan_ult
+        iconPath: assets/enemies/yangguan_san_dizi.png
+      - id: enemy_tower_41b
+        name: 宗师亲传（乙）
+        realmTier: zongShi
+        realmLayer: huaJing
+        school: yinRou
+        baseHp: 58700
+        baseAttack: 1985
+        baseSpeed: 361
+        skillIds:
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill
+          - skill_yinrou_shichuan_ult
+        iconPath: assets/enemies/shahai_linglu_ren.png
+      - id: enemy_tower_41c
+        name: 宗师亲传（丙）
+        realmTier: zongShi
+        realmLayer: huaJing
+        school: gangMeng
+        baseHp: 58700
+        baseAttack: 1985
+        baseSpeed: 371
+        skillIds: [skill_gangmeng_shichuan_basic, skill_gangmeng_shichuan_skill]
+        iconPath: assets/enemies/liangzhou_xiliang_xingke.png
+    dropTable:
+      - equipmentDefId: weapon_baowu_chang_hong_jian
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [4, 6]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [80, 120]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  # === Floor 42 · 大 Boss · 宗师·登峰 · 碎星拳圣 ===
+  # 新增（批 A·A2），立绘占位，批 C 出专属图
+  - floorIndex: 42
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 75
+    requiredRealm: zongShi
+    bossKind: major
+    narrativeOpeningId: tower_42_opening
+    narrativeVictoryId: tower_42_victory
+    enemyTeam:
+      - id: enemy_tower_boss_42
+        name: 碎星拳圣
+        realmTier: zongShi
+        realmLayer: dengFeng
+        school: gangMeng
+        baseHp: 59000
+        baseAttack: 2000
+        baseSpeed: 372
+        skillIds:
+          - skill_gangmeng_shichuan_basic
+          - skill_gangmeng_shichuan_skill
+          - skill_gangmeng_shichuan_ult
+        iconPath: assets/enemies/yangguan_chengxia_houke.png
+        isBoss: true
+        schoolDamageTakenMult:
+          lingQiao: 1.25
+          yinRou: 0.75
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.60
+            unlockSkillIds:
+              - skill_gangmeng_shichuan_fang_skill
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+          - hpThresholdPct: 0.30
+            unlockSkillIds:
+              - skill_gangmeng_shichuan_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.75
+              unlockSkillIds:
+                - skill_gangmeng_shichuan_fang_skill
+              aiMode: focus
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.40
+              unlockSkillIds:
+                - skill_gangmeng_shichuan_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
+      - id: enemy_tower_42_guard_a
+        name: 碎星左护
+        realmTier: zongShi
+        realmLayer: dengFeng
+        school: lingQiao
+        baseHp: 30000
+        baseAttack: 1500
+        baseSpeed: 360
+        skillIds: [skill_lingqiao_shichuan_basic, skill_lingqiao_shichuan_skill]
+        iconPath: assets/enemies/yangguan_san_dizi.png
+      - id: enemy_tower_42_guard_b
+        name: 碎星右护
+        realmTier: zongShi
+        realmLayer: dengFeng
+        school: yinRou
+        baseHp: 30000
+        baseAttack: 1500
+        baseSpeed: 356
+        skillIds: [skill_yinrou_shichuan_basic, skill_yinrou_shichuan_skill]
+        iconPath: assets/enemies/shahai_ta_sha_ke.png
+    dropTable:
+      - equipmentDefId: weapon_baowu_xuan_tian_fu
+        dropChance: 1.0
+      - equipmentDefId: accessory_baowu_yu_long_pei
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [15, 20]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [300, 380]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 1.0  # 经验丹大档(大 Boss 首通必得体例,I-1)
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 武圣段 · abs 43-49（floor 43-49）
+  # ─────────────────────────────────────────────────────────────────────────
+
+  - floorIndex: 43
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 32
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_tower_43a
+        name: 九霄门卫（甲）
+        realmTier: wuSheng
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 59100
+        baseAttack: 2000
+        baseSpeed: 374
+        skillIds: [skill_gangmeng_chuanshuo_basic, skill_gangmeng_chuanshuo_skill]
+        iconPath: assets/enemies/ruguan_bu_qiang_jiang.png
+      - id: enemy_tower_43b
+        name: 九霄门卫（乙）
+        realmTier: wuSheng
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 59100
+        baseAttack: 2000
+        baseSpeed: 369
+        skillIds: [skill_lingqiao_chuanshuo_basic, skill_lingqiao_chuanshuo_skill]
+        iconPath: assets/enemies/jiulu_liang_sha_ke.png
+      - id: enemy_tower_43c
+        name: 九霄门卫（丙）
+        realmTier: wuSheng
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 59100
+        baseAttack: 2000
+        baseSpeed: 379
+        skillIds: [skill_yinrou_chuanshuo_basic, skill_yinrou_chuanshuo_skill]
+        iconPath: assets/enemies/jiulu_ting_feng_ren.png
+    dropTable:
+      - equipmentDefId: weapon_shenwu_po_jun_dao
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [5, 8]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [100, 150]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 44
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 32
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_tower_44a
+        name: 九霄执法（甲）
+        realmTier: wuSheng
+        realmLayer: ruMen
+        school: yinRou
+        baseHp: 59200
+        baseAttack: 2000
+        baseSpeed: 378
+        skillIds:
+          - skill_yinrou_chuanshuo_basic
+          - skill_yinrou_chuanshuo_skill
+          - skill_yinrou_chuanshuo_ult
+        iconPath: assets/enemies/jiulu_jieguan_ren.png
+      - id: enemy_tower_44b
+        name: 九霄执法（乙）
+        realmTier: wuSheng
+        realmLayer: ruMen
+        school: gangMeng
+        baseHp: 59200
+        baseAttack: 2000
+        baseSpeed: 373
+        skillIds: [skill_gangmeng_chuanshuo_basic, skill_gangmeng_chuanshuo_skill]
+        iconPath: assets/enemies/ruguan_shou_feng_ren.png
+      - id: enemy_tower_44c
+        name: 九霄执法（丙）
+        realmTier: wuSheng
+        realmLayer: ruMen
+        school: lingQiao
+        baseHp: 59200
+        baseAttack: 2000
+        baseSpeed: 383
+        skillIds: [skill_lingqiao_chuanshuo_basic, skill_lingqiao_chuanshuo_skill]
+        iconPath: assets/enemies/jiulu_zhe_fan_ke.png
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [5, 8]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [100, 150]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 45
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 32
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_tower_45a
+        name: 九霄护殿（甲）
+        realmTier: wuSheng
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 59300
+        baseAttack: 2000
+        baseSpeed: 382
+        skillIds:
+          - skill_gangmeng_chuanshuo_basic
+          - skill_gangmeng_chuanshuo_skill
+          - skill_gangmeng_chuanshuo_ult
+        iconPath: assets/enemies/jueding_guan_he_zu.png
+      - id: enemy_tower_45b
+        name: 九霄护殿（乙）
+        realmTier: wuSheng
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 59300
+        baseAttack: 2000
+        baseSpeed: 377
+        skillIds: [skill_lingqiao_chuanshuo_basic, skill_lingqiao_chuanshuo_skill]
+        iconPath: assets/enemies/jueding_lunjian_houren.png
+      - id: enemy_tower_45c
+        name: 九霄护殿（丙）
+        realmTier: wuSheng
+        realmLayer: shuLian
+        school: yinRou
+        baseHp: 59300
+        baseAttack: 2000
+        baseSpeed: 387
+        skillIds: [skill_yinrou_chuanshuo_basic, skill_yinrou_chuanshuo_skill]
+        iconPath: assets/enemies/jueding_bai_du_lao_shou.png
+    dropTable:
+      - equipmentDefId: armor_shenwu_xuan_huang_pao
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [5, 8]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [100, 150]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  # === Floor 46 · 小 Boss · 武圣·精通 · 九霄剑侍 ===
+  # 新增（批 A·A2），塔顶前哨=魔尊麾下剑侍；立绘占位，批 C 出专属图
+  - floorIndex: 46
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 80
+    requiredRealm: wuSheng
+    bossKind: minor
+    narrativeOpeningId: tower_46_opening
+    narrativeVictoryId: tower_46_victory
+    enemyTeam:
+      - id: enemy_tower_boss_46
+        name: 九霄剑侍
+        realmTier: wuSheng
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 59200
+        baseAttack: 2000
+        baseSpeed: 390
+        skillIds:
+          - skill_lingqiao_chuanshuo_basic
+          - skill_lingqiao_chuanshuo_skill
+          - skill_lingqiao_chuanshuo_ult
+        iconPath: assets/enemies/jueding_lunjian_houren.png
+        isBoss: true
+    dropTable:
+      - equipmentDefId: weapon_shenwu_po_jun_dao
+        dropChance: 1.0
+      - equipmentDefId: armor_shenwu_xuan_huang_pao
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [15, 20]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [250, 330]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 47
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 32
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_tower_47a
+        name: 九霄亲卫（甲）
+        realmTier: wuSheng
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 59400
+        baseAttack: 2000
+        baseSpeed: 392
+        skillIds:
+          - skill_lingqiao_chuanshuo_basic
+          - skill_lingqiao_chuanshuo_skill
+          - skill_lingqiao_chuanshuo_ult
+        iconPath: assets/enemies/ruguan_huan_ma_ren.png
+      - id: enemy_tower_47b
+        name: 九霄亲卫（乙）
+        realmTier: wuSheng
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 59400
+        baseAttack: 2000
+        baseSpeed: 387
+        skillIds:
+          - skill_gangmeng_chuanshuo_basic
+          - skill_gangmeng_chuanshuo_skill
+          - skill_gangmeng_chuanshuo_ult
+        iconPath: assets/enemies/ruguan_shouguan_laojiang.png
+      - id: enemy_tower_47c
+        name: 九霄亲卫（丙）
+        realmTier: wuSheng
+        realmLayer: yuanShu
+        school: yinRou
+        baseHp: 59400
+        baseAttack: 2000
+        baseSpeed: 397
+        skillIds: [skill_yinrou_chuanshuo_basic, skill_yinrou_chuanshuo_skill]
+        iconPath: assets/enemies/jueding_lan_jing_lao_pu.png
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [5, 8]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [100, 150]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  - floorIndex: 48
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 32
+    requiredRealm: wuSheng
+    enemyTeam:
+      - id: enemy_tower_48a
+        name: 九霄双使座下（甲）
+        realmTier: wuSheng
+        realmLayer: huaJing
+        school: yinRou
+        baseHp: 59500
+        baseAttack: 2000
+        baseSpeed: 396
+        skillIds:
+          - skill_yinrou_chuanshuo_basic
+          - skill_yinrou_chuanshuo_skill
+          - skill_yinrou_chuanshuo_ult
+        iconPath: assets/enemies/jiulu_heishi_shoujing.png
+      - id: enemy_tower_48b
+        name: 九霄双使座下（乙）
+        realmTier: wuSheng
+        realmLayer: huaJing
+        school: lingQiao
+        baseHp: 59500
+        baseAttack: 2000
+        baseSpeed: 391
+        skillIds:
+          - skill_lingqiao_chuanshuo_basic
+          - skill_lingqiao_chuanshuo_skill
+          - skill_lingqiao_chuanshuo_ult
+        iconPath: assets/enemies/jueding_xun_fu_shaonian.png
+      - id: enemy_tower_48c
+        name: 九霄双使座下（丙）
+        realmTier: wuSheng
+        realmLayer: huaJing
+        school: gangMeng
+        baseHp: 59500
+        baseAttack: 2000
+        baseSpeed: 401
+        skillIds: [skill_gangmeng_chuanshuo_basic, skill_gangmeng_chuanshuo_skill]
+        iconPath: assets/enemies/jiulu_zhe_fan_ke.png
+    dropTable:
+      - equipmentDefId: weapon_shenwu_tian_wen_jian
+        dropChance: 0.30
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [5, 8]
+        dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [100, 150]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
+
+  # === Floor 49 · 大 Boss · 武圣·登峰 · 九霄魔尊 ===
+  # 原 floor30 九霄魔尊迁移登顶——护法墙 taunt + 脆弱窗全套机制原样；乘子参数沿用旧 Task5 诊断值，A5 balance 探针复校
+  - floorIndex: 49
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    baseExpReward: 90
+    requiredRealm: wuSheng
+    bossKind: major
+    narrativeOpeningId: tower_49_opening
+    narrativeVictoryId: tower_49_victory
+    enemyTeam:
+      - id: enemy_tower_boss_49
+        name: 九霄魔尊
+        realmTier: wuSheng
+        realmLayer: dengFeng
+        school: yinRou
+        baseHp: 59500
+        baseAttack: 2000
+        baseSpeed: 400
+        skillIds:
+          - skill_yinrou_chuanshuo_basic
+          - skill_yinrou_chuanshuo_skill
+          - skill_yinrou_chuanshuo_ult
         iconPath: assets/enemies/tower_boss_30.png
         isBoss: true
         schoolDamageTakenMult:
           gangMeng: 1.25
           lingQiao: 0.75
-        # [balance] 护法墙 taunt(批次2 Task3 实装):护法(左使/右使)存活时主 Boss
+        # [balance] 护法墙 taunt（原 floor30 机制原样迁移登顶）:护法(左使/右使)存活时主 Boss
         # 被 taunt 从自动目标池排除(BattleAI.isGuardedBoss),逼玩家先清护法;护法全灭
-        # 后 Boss 进池 + 脆弱窗口接管。damageTakenMult 0.15 仅对「手动越护法直捶」的玩家
-        # 生效(越护法惩罚),自动战斗下 Boss 护法灭前从不被攻击,故 0.15 对 auto 是纯手动惩罚。
-        # Task5 诊断(test/tools/floor30_soft_gate_diagnostic_test.dart,30 seed,taunt+vuln 0.20):
-        #   onLevel 宗师满配 100% 胜 / underGear 绝顶-1阶 0强化 13.3% 胜(86.7% 败)= 软门槛。
-        #   taunt 真生效实测:avgWardBreakTick=2.1,avgBossFirstDmgTick=2.3(护法全灭前 Boss 满血)。
+        # 后 Boss 进池 + 脆弱窗口接管。damageTakenMult 0.15 仅对「手动越护法直捶」生效。
+        # 旧 Task5 诊断在 sanLiu 数值下校准,数值抬到 wuSheng 后乘子语义不变,A5 探针复校。
         guardianWard:
           damageTakenMult: 0.15
           guardianIds:
-            - enemy_tower_30_cultist_a
-            - enemy_tower_30_cultist_b
+            - enemy_tower_49_cultist_a
+            - enemy_tower_49_cultist_b
         vulnerability:
           outOfWindowDamageMult: 0.20   # 机制型:护法墙(taunt)破后靠脆弱窗口打残局。
                                         # 窗口靠 bossPhases chargeCounter 相位(0.90/0.50)。
-                                        # 0.20(比 floor25 宽:叠护法血墙+42000血)。Task5 诊断锁定:
-                                        # onLevel 100% 胜且非秒穿(avgTicks=4/phaseTrans=2.0/首伤在护法灭后),
-                                        # 机制真触发无需放宽,0.20 定稿。
         cycleVulnerability:
           2:
-            outOfWindowDamageMult: 0.12   # 批次4:二周目收窄窗口(base 0.20 约减半)加压;诊断校准
+            outOfWindowDamageMult: 0.12   # 二周目收窄窗口加压（原 floor30 参数）
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.90
             unlockSkillIds:
-              - skill_yinrou_changlian_fang_skill
+              - skill_yinrou_chuanshuo_fang_skill
             aiMode: focus
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
           - hpThresholdPct: 0.50
             unlockSkillIds:
-              - skill_yinrou_changlian_fang_ult
+              - skill_yinrou_chuanshuo_fang_ult
             aiMode: aggressive
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
@@ -1324,54 +2392,47 @@ floors:
             - hpThresholdPct: 1.0
             - hpThresholdPct: 0.92
               unlockSkillIds:
-                - skill_yinrou_changlian_fang_skill
+                - skill_yinrou_chuanshuo_fang_skill
               aiMode: focus
               onEnterMechanic: chargeCounter
               titleKey: bossPhase_desperate
             - hpThresholdPct: 0.60
               unlockSkillIds:
-                - skill_yinrou_changlian_fang_ult
+                - skill_yinrou_chuanshuo_fang_ult
               aiMode: aggressive
               onEnterMechanic: chargeCounter
               titleKey: bossPhase_desperate
-      - id: enemy_tower_30_cultist_a
+      - id: enemy_tower_49_cultist_a
         name: 九霄左使
-        realmTier: sanLiu
-        realmLayer: shuLian
+        realmTier: wuSheng
+        realmLayer: dengFeng
         school: gangMeng
-        # [balance] 护法结界:提血使 burst 掉护法成软门槛,Task 5 诊断校准。
-        baseHp: 2700
-        baseAttack: 210
-        baseSpeed: 220
-        skillIds:
-          - skill_gangmeng_changlian_basic
-          - skill_gangmeng_changlian_skill
+        baseHp: 30000
+        baseAttack: 1400
+        baseSpeed: 385
+        skillIds: [skill_gangmeng_chuanshuo_basic, skill_gangmeng_chuanshuo_skill]
         iconPath: assets/enemies/zuo_hufa.png
-      - id: enemy_tower_30_cultist_b
+      - id: enemy_tower_49_cultist_b
         name: 九霄右使
-        realmTier: sanLiu
-        realmLayer: shuLian
+        realmTier: wuSheng
+        realmLayer: dengFeng
         school: lingQiao
-        # [balance] 护法结界:提血使 burst 掉护法成软门槛,Task 5 诊断校准。
-        baseHp: 2550
-        baseAttack: 200
-        baseSpeed: 235
-        skillIds:
-          - skill_lingqiao_changlian_basic
-          - skill_lingqiao_changlian_skill
+        baseHp: 28000
+        baseAttack: 1350
+        baseSpeed: 392
+        skillIds: [skill_lingqiao_chuanshuo_basic, skill_lingqiao_chuanshuo_skill]
         iconPath: assets/enemies/you_hufa.png
     dropTable:
-      # F4:终局大 Boss 清 3 件回掉低阶装备(原 weapon_xiangyang_chang_jian -2 / accessory_xiangyang_yin_jie -3 / armor_xiangyang_pi_jia -3 阶,宗师阶下死重),价值落同阶宝物+秘籍+心血结晶大加码
-      - equipmentDefId: weapon_xiangyang_chang_jian
+      - equipmentDefId: weapon_shenwu_po_jun_dao
         dropChance: 1.0
-      - equipmentDefId: armor_xiangyang_pi_jia
+      - equipmentDefId: accessory_shenwu_kun_lun_pei
         dropChance: 0.50
       - inventoryItemDefId: item_xinxuejiejing
-        quantity: [15, 22]
+        quantity: [18, 25]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
-        quantity: [200, 280]
+        quantity: [360, 450]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
-        dropChance: 1.0  # 经验丹大档(I-1 修:爬塔首通门控一次性 roll,0.20=80%永久错过→改首通必得 bonus 1 颗;主线大还丹保每次胜利概率刷=可farming主来源)
+        dropChance: 1.0  # 经验丹大档(大 Boss 首通必得体例,I-1)

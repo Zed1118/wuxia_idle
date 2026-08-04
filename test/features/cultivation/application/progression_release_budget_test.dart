@@ -50,7 +50,7 @@ void main() {
   });
 
   test(
-    '当前全内容 + 72h 闭关 + 24h 离线 + 三枚丹药结束于 Lv130(2026-07-29 Ch21 扩 127→130·纯展示级不影响红线·逐值实测终拍)',
+    '当前全内容 + 72h 闭关 + 24h 离线 + 三枚丹药结束于 Lv134(2026-08-04 批 A 塔扩 49 层 130→134·塔 EXP 总量 507→1440·纯展示级不影响红线·逐值实测终拍)',
     () {
       final character = _newCharacter(repo);
       final combatRewards = <int>[
@@ -63,8 +63,8 @@ void main() {
       for (final reward in combatRewards) {
         _applyExperience(repo, character, reward);
       }
-      expect(combatRewards.fold<int>(0, (sum, reward) => sum + reward), 6511);
-      expect(_displayLevel(repo, character), 121);
+      expect(combatRewards.fold<int>(0, (sum, reward) => sum + reward), 7444);
+      expect(_displayLevel(repo, character), 126);
 
       final retreatExperience = _retreatExperience(
         repo,
@@ -74,7 +74,7 @@ void main() {
       );
       _applyExperience(repo, character, retreatExperience);
       expect(retreatExperience, 356);
-      expect(_displayLevel(repo, character), 123);
+      expect(_displayLevel(repo, character), 128);
 
       final passive = OfflinePassiveService.compute(
         awayHours: 24,
@@ -83,7 +83,7 @@ void main() {
       );
       _applyExperience(repo, character, passive.experience);
       expect(passive.experience, 115);
-      expect(_displayLevel(repo, character), 124);
+      expect(_displayLevel(repo, character), 128);
 
       for (final id in const [
         'item_jingyandan_small',
@@ -98,7 +98,7 @@ void main() {
       }
 
       final level = _displayLevel(repo, character);
-      expect(level, 130);
+      expect(level, 134);
     },
   );
 

@@ -190,9 +190,13 @@ class IsarSetup {
   // 旧 active session 迁移时以关联角色当前境界固化，startedAt 不动。
   // 0.36.0 内力/真气拆分:Character +innerBreathDisorderHoursRemaining;
   // 旧档永久内力保护性补满上限，心魔余毒迁入内息紊乱。
+  // 0.38.0 塔 49 层重排(批 A·spec 2026-08-01):塔 Boss 战绩纪念 bossKey 重映射
+  //   (5→4/10→7/15→11/20→14/25→32/30→49),防旧纪念在新 catalog 下成数据孤儿;
+  //   TowerProgress 层进度/周目字段语义不变故不迁移(通到第 N 层仍是第 N 层,
+  //   重排后各层难度对齐 abs 属塔整体改版的自然结果)。
   // 0.37.0 江湖远行:SaveData +6 永久进度字段(默认空/false)+ ExpeditionRun/
   //   BossGauntletRun 两个空会话 collection(可加性迁移,旧档零 active 记录)。
-  static const _currentSaveVersion = '0.37.0';
+  static const _currentSaveVersion = '0.38.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -436,6 +440,29 @@ class IsarSetup {
       // 幂等占位与版本文档锚,真正落版本号由本函数尾部统一执行。
       if (_compareVersion(fromVersion, '0.37.0') < 0) {
         // 无显式迁移动作(纯可加)。
+      }
+
+      // --- 段 8(0.38.0 塔 49 层重排·批 A)---
+      // 塔 30→49 层 1:1 锚死重排(spec 2026-08-01 §7),6 个旧 Boss 迁位:
+      // 5→4 / 10→7 / 15→11 / 20→14 / 25→32 / 30→49。旧档战绩册里这些层号的
+      // 纪念条目重写 bossKey/groupIndex 指到新位置——否则从新 towers.yaml 派生
+      // 的 catalog 找不到旧 key,旧纪念在战绩册 UI 里**静默消失**(数据孤儿)。
+      // 映射表按 0.37→0.38 时点写死(迁移段是历史快照,不跟随后续 Boss 位再调整);
+      // bossKey 字面拼接同 towerBossKey 体例。旧体系不存在 groupIndex ∈ 新位
+      // 集合的塔纪念(旧 Boss 层只有 5/10/15/20/25/30),故重映射无碰撞风险。
+      if (_compareVersion(fromVersion, '0.38.0') < 0) {
+        const towerBossRelocation = {5: 4, 10: 7, 15: 11, 20: 14, 25: 32, 30: 49};
+        final towerMemories = await isar.bossMemorys
+            .filter()
+            .bossKeyStartsWith('tower_floor_')
+            .findAll();
+        for (final m in towerMemories) {
+          final newFloor = towerBossRelocation[m.groupIndex];
+          if (newFloor == null) continue;
+          m.bossKey = 'tower_floor_$newFloor';
+          m.groupIndex = newFloor;
+          await isar.bossMemorys.put(m);
+        }
       }
 
       save.saveVersion = _currentSaveVersion;

@@ -245,29 +245,15 @@ void main() {
 
     test('当前塔与支线全部收口在发布上限内', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
-      const groupTiers = [
-        RealmTier.xueTu,
-        RealmTier.xueTu,
-        RealmTier.xueTu,
-        RealmTier.sanLiu,
-        RealmTier.sanLiu,
-        RealmTier.sanLiu,
-      ];
-      const groupLayers = [
-        RealmLayer.qiMeng,
-        RealmLayer.ruMen,
-        RealmLayer.shuLian,
-        RealmLayer.qiMeng,
-        RealmLayer.ruMen,
-        RealmLayer.shuLian,
-      ];
-
+      // 批 A 塔 49 层 1:1 锚死:floor N ↔ abs N,tier/layer 由公式派生
+      // (spec 2026-08-01 §7),不再是旧 6 段×5 楼结构。
       for (final floor in repo.towerFloors) {
-        final group = (floor.floorIndex - 1) ~/ 5;
-        expect(floor.requiredRealm, groupTiers[group]);
+        final tier = RealmTier.values[(floor.floorIndex - 1) ~/ 7];
+        final layer = RealmLayer.values[(floor.floorIndex - 1) % 7];
+        expect(floor.requiredRealm, tier);
         for (final enemy in floor.enemyTeam) {
-          expect(enemy.realmTier, groupTiers[group]);
-          expect(enemy.realmLayer, groupLayers[group]);
+          expect(enemy.realmTier, tier);
+          expect(enemy.realmLayer, layer);
         }
       }
 
@@ -294,21 +280,33 @@ void main() {
         }
       }
 
-      void expectDropWithinReleaseCap(Iterable<DropEntry> drops, String label) {
+      // 批 A 塔 49 层后掉落上限分两级:
+      //   塔层 —— 装备阶 ≤ 该层 requiredRealm 对应阶(拍板 #8「掉落阶随层境界」,
+      //     防提前发放的掉落侧守卫,比旧「全塔 ≤ xiangYang」快照更强也更准);
+      //   支线关 —— 沿旧口径按传入 tier 上限。
+      // 秘籍 tier 上限沿残页同款 cap 派生(cap-agnostic,不写死 2)。
+      final capIndexForDrops =
+          repo.numbers.progressionReleaseCap.maxAbsoluteRealmLevel;
+      final scrollTierCap = ((capIndexForDrops - 1) ~/ 7) + 1;
+      void expectDropWithinReleaseCap(
+        Iterable<DropEntry> drops,
+        String label, {
+        required EquipmentTier equipTierCap,
+      }) {
         for (final drop in drops) {
           if (drop case EquipmentDrop(:final equipmentDefId)) {
             expect(
               repo.getEquipment(equipmentDefId).tier.index,
-              lessThanOrEqualTo(EquipmentTier.xiangYang.index),
-              reason: '$label 不应掉落三流以上装备 $equipmentDefId',
+              lessThanOrEqualTo(equipTierCap.index),
+              reason: '$label 不应掉落超出 ${equipTierCap.name} 阶的装备 $equipmentDefId',
             );
           } else if (drop case ItemDrop(:final inventoryItemDefId)) {
             final skillId = repo.itemDefs[inventoryItemDefId]?.unlockSkillId;
             if (skillId != null) {
               expect(
                 repo.getSkill(skillId).tier,
-                lessThanOrEqualTo(2),
-                reason: '$label 不应掉落 tier 3+ 秘籍 $inventoryItemDefId',
+                lessThanOrEqualTo(scrollTierCap),
+                reason: '$label 不应掉落 tier ${scrollTierCap + 1}+ 秘籍 $inventoryItemDefId',
               );
             }
           }
@@ -316,7 +314,12 @@ void main() {
       }
 
       for (final floor in repo.towerFloors) {
-        expectDropWithinReleaseCap(floor.dropTable, '塔 ${floor.floorIndex} 层');
+        expectDropWithinReleaseCap(
+          floor.dropTable,
+          '塔 ${floor.floorIndex} 层',
+          // 三系锁死:该层玩家境界门槛对应的装备阶就是掉落上限。
+          equipTierCap: EquipmentTier.values[floor.requiredRealm.index],
+        );
         final fragmentId = floor.dropSkillFragmentId;
         if (fragmentId != null) {
           // 残页 tier 上限 = 发布上限阶 + 1(同 mainline_stage_curve 口径·
@@ -333,7 +336,13 @@ void main() {
         }
       }
       for (final stage in currentStages) {
-        expectDropWithinReleaseCap(stage.dropTable, stage.id);
+        // 支线(轻功/群战)最高 sanLiu,沿旧口径 xiangYang 上限(批 B 周目语义
+        // 修正时随境界段推进一并重定)。
+        expectDropWithinReleaseCap(
+          stage.dropTable,
+          stage.id,
+          equipTierCap: EquipmentTier.xiangYang,
+        );
         for (final skillId in [
           stage.dropSkillManualId,
           stage.dropSkillFragmentId,
