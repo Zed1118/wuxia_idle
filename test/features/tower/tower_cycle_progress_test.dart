@@ -100,6 +100,41 @@ void main() {
       final p = await svc.getOrCreate(saveDataId: 1);
       expect(p.maxClearedCycle, 0, reason: '未通到顶层，周目未完成');
     });
+
+    test('超出顶层的层号不算首通（isFirstClear 上界跟随 maxFloor）', () async {
+      // 这条专钉 recordClear 的 `floorIndex <= maxFloor` 上界。若实现回退成
+      // 硬编码 30，本用例的第 _towerMax+1 层（13 <= 30 成立）会被误判成首通，
+      // highestClearedFloor 越过塔顶且照常发奖 —— 扩层时最严重的静默失效形态。
+      final svc = TowerProgressService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      final now = DateTime(2026, 6, 14);
+      for (var f = 1; f <= _towerMax; f++) {
+        await svc.recordClear(
+          floorIndex: f,
+          now: now,
+          elapsedMs: 1000,
+          maxFloor: _towerMax,
+        );
+      }
+      final result = await svc.recordClear(
+        floorIndex: _towerMax + 1,
+        now: now,
+        elapsedMs: 1000,
+        maxFloor: _towerMax,
+      );
+      expect(
+        result.isFirstClear,
+        isFalse,
+        reason: '第 ${_towerMax + 1} 层超出塔顶，不得算首通',
+      );
+      expect(
+        result.highestAfter,
+        _towerMax,
+        reason: 'highestClearedFloor 不得越过塔顶',
+      );
+      final p = await svc.getOrCreate(saveDataId: 1);
+      expect(p.highestClearedFloor, _towerMax);
+    });
   });
 
   group('advanceCycle 守卫：未全通时 no-op', () {
