@@ -1404,10 +1404,12 @@ const _battleStandeeOverrides = <String, String>{
 const _stageStandeeAnchorFootFraction = 0.95;
 
 double battleStandeeFootFraction(String? path) => switch (path) {
-  WuxiaUi.battleFounderFallback => 0.938,
-  WuxiaUi.battleFirstDiscipleFallback => 0.961,
+  // 2026-08-05 色调代际批:我方三张重出为批 C 归一体例(1024×1536,bbox 上 70/
+  // 下 1480,纵跨 1410),脚底 fraction 三张 PIL 实测均 1480/1536=0.9635。
+  WuxiaUi.battleFounderFallback => 0.9635,
+  WuxiaUi.battleFirstDiscipleFallback => 0.9635,
   WuxiaUi.battleSampleFirstDiscipleStandee => 0.999,
-  WuxiaUi.battleSecondDiscipleFallback => 0.957,
+  WuxiaUi.battleSecondDiscipleFallback => 0.9635,
   WuxiaUi.battleHiddenElderStandee => 0.952,
   WuxiaUi.battleSampleHiddenElderStandee => 0.942,
   WuxiaUi.battleBanditBladeStandee => 0.823,
@@ -1633,17 +1635,11 @@ typedef _StageStandeeSampleAspect = ({
 /// 不改变阵型锚点、状态牌位置或战斗数值。
 _StageStandeeSampleAspect _stageStandeeSampleAspect(String? path) =>
     switch (path) {
-      WuxiaUi.battleFounderFallback => (
-        horizontalScale: 1.30,
-        verticalScale: 0.95,
-      ),
+      // 2026-08-05 色调代际批:我方三张(founder/first/second Fallback)重出为
+      // 批 C 归一画布后,旧画布拉伸补偿移除,走默认 1.0(与批 C 敌立绘同口径)。
       WuxiaUi.battleSampleFirstDiscipleStandee => (
         horizontalScale: 1.0,
         verticalScale: 1.0,
-      ),
-      WuxiaUi.battleSecondDiscipleFallback => (
-        horizontalScale: 1.0,
-        verticalScale: 0.88,
       ),
       WuxiaUi.battleHiddenElderStandee => (
         horizontalScale: 1.12,
@@ -1677,21 +1673,11 @@ _StageStandeeSampleAspect _stageStandeeSampleAspect(String? path) =>
 _StageStandeeOpticalProfile _stageStandeeOpticalProfile(
   String? path,
 ) => switch (path) {
-  WuxiaUi.battleFounderFallback => (
-    scale: 1.40,
-    horizontalShiftFraction: -0.05,
-  ),
-  WuxiaUi.battleFirstDiscipleFallback => (
-    scale: 1.18,
-    horizontalShiftFraction: 0.04,
-  ),
+  // 2026-08-05 色调代际批:我方三张(founder/first/second Fallback)重出为
+  // 批 C 归一画布后,画布留白光学补偿移除,走默认(与批 C 敌立绘同口径)。
   WuxiaUi.battleSampleFirstDiscipleStandee => (
     scale: 1.08,
     horizontalShiftFraction: -0.03,
-  ),
-  WuxiaUi.battleSecondDiscipleFallback => (
-    scale: 1.12,
-    horizontalShiftFraction: 0,
   ),
   WuxiaUi.battleHiddenElderStandee => (scale: 1.14, horizontalShiftFraction: 0),
   WuxiaUi.battleSampleHiddenElderStandee => (

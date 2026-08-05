@@ -491,20 +491,23 @@ void main() {
       'assets/enemies/umbrella.png',
     );
 
-    expect(founder.$1, closeTo(1.40, 0.001));
-    expect(firstDisciple.$2, greaterThan(0));
-    expect(firstDisciple.$1, closeTo(1.18, 0.001));
-    expect(secondDisciple.$1, closeTo(1.12, 0.001));
+    // 2026-08-05 色调代际批:我方三张重出为批 C 归一画布,三层补偿全部走默认
+    // (scale 1.0 / shift 0 / aspect 1.0)。机制本身(逐图校准经三个 Transform
+    // 生效)由下方仍持非默认值的敌方标本继续守卫。
+    expect(founder.$1, closeTo(1.0, 0.001));
+    expect(founder.$2, closeTo(0, 0.001));
+    expect(firstDisciple.$1, closeTo(1.0, 0.001));
+    expect(firstDisciple.$2, closeTo(0, 0.001));
+    expect(secondDisciple.$1, closeTo(1.0, 0.001));
     expect(hiddenElder.$1, closeTo(1.14, 0.001));
     expect(banditBlade.$1, closeTo(1.33, 0.001));
     expect(banditBlade.$3, greaterThan(0));
     expect(banditArcher.$1, closeTo(1.28, 0.001));
     expect(umbrellaBoss.$1, closeTo(0.81, 0.001));
-    expect(founder.$2, lessThan(0));
-    expect(founder.$4, closeTo(1.30, 0.001));
-    expect(founder.$5, closeTo(0.95, 0.001));
+    expect(founder.$4, closeTo(1.0, 0.001));
+    expect(founder.$5, closeTo(1.0, 0.001));
     expect(secondDisciple.$4, closeTo(1.0, 0.001));
-    expect(secondDisciple.$5, closeTo(0.88, 0.001));
+    expect(secondDisciple.$5, closeTo(1.0, 0.001));
     expect(hiddenElder.$4, closeTo(1.12, 0.001));
     expect(hiddenElder.$5, closeTo(0.93, 0.001));
     expect(banditBlade.$4, closeTo(1.08, 0.001));

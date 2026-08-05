@@ -5,6 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/reward_entry.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
@@ -141,5 +142,55 @@ void main() {
       ),
       throwsA(isA<StateError>()),
     );
+  });
+
+  group('周目奖励缩放（2026-08-05 拍板候选 a：整数件 ceil 反吞没、连续量 round）', () {
+    RewardEntry entry(String key, int qty) => RewardEntry()
+      ..rewardKey = key
+      ..quantity = qty;
+
+    test('cycle=1 恒等短路：原列表原样返回（不读全局配置的契约不破）', () {
+      final rewards = [entry('item_duanhuntie', 1)];
+      expect(ExpeditionService.scaleRewardsForCycle(rewards, 1), same(rewards));
+    });
+
+    test('cycle=2 整数件奖励不被 round 吞没（帖/药草 1 件必得增益）', () {
+      final ra = GameRepository.instance.numbers.cycleEvolution.realmAdvance;
+      expect(
+        ra.rewardMultFor(2),
+        greaterThan(1.0),
+        reason: '前提自证：配置的周目奖励加成 >0，否则本组测试无判别力',
+      );
+      final scaled = ExpeditionService.scaleRewardsForCycle([
+        entry('item_duanhuntie', 1),
+        entry('item_yaocao', 1),
+      ], 2);
+      for (final r in scaled) {
+        expect(
+          r.quantity,
+          greaterThan(1),
+          reason: '${r.rewardKey} 在 cycle2 必须拿到整件增益（反吞没不变式）',
+        );
+      }
+    });
+
+    test('cycle=2 exp 维持按比例 round（批 B 口径、EXP 预算探针锚）', () {
+      final ra = GameRepository.instance.numbers.cycleEvolution.realmAdvance;
+      final mult = ra.rewardMultFor(2);
+      // 17×1.25=21.25：round=21 / ceil=22，可判别两种口径。
+      final scaled = ExpeditionService.scaleRewardsForCycle([
+        entry('exp', 17),
+      ], 2);
+      expect(scaled.single.quantity, (17 * mult).round());
+    });
+
+    test('internal_force 归连续量口径（round 不 ceil）', () {
+      final ra = GameRepository.instance.numbers.cycleEvolution.realmAdvance;
+      final mult = ra.rewardMultFor(2);
+      final scaled = ExpeditionService.scaleRewardsForCycle([
+        entry('internal_force', 17),
+      ], 2);
+      expect(scaled.single.quantity, (17 * mult).round());
+    });
   });
 }

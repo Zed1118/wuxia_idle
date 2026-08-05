@@ -148,7 +148,11 @@ class ExpeditionService {
   /// cycle≤1 恒等短路且**不读全局配置**——轻量 fake-combat 结算测不加载
   /// GameRepository，结算路径读 config 会崩（memory
   /// feedback_battle_result_path_config_read_crashes_light_test 同模式）。
-  static List<RewardEntry> _scaleRewardsForCycle(
+  /// 2026-08-05 拍板候选 a:exp/internal_force 是连续量按比例 round;其余
+  /// rewardKey 为整件发放的物品/装备 defId,round 会把小数量吞成零增益
+  /// (帖/药草 1×1.25→1,cycle2 白打),改 ceil 保证周目加成对整数件永不空转。
+  @visibleForTesting
+  static List<RewardEntry> scaleRewardsForCycle(
     List<RewardEntry> rewards,
     int cycleIndex,
   ) {
@@ -160,9 +164,15 @@ class ExpeditionService {
       for (final r in rewards)
         RewardEntry()
           ..rewardKey = r.rewardKey
-          ..quantity = (r.quantity * mult).round(),
+          ..quantity = _isContinuousReward(r.rewardKey)
+              ? (r.quantity * mult).round()
+              : (r.quantity * mult).ceil(),
     ];
   }
+
+  /// exp/内力是连续量;其余 rewardKey(item/equipment defId)按整件发放。
+  static bool _isContinuousReward(String rewardKey) =>
+      rewardKey == 'exp' || rewardKey == 'internal_force';
 
   /// 离线分批幂等结算（§4.4/§9.1，本 feature 最难点）。
   ///
@@ -279,7 +289,7 @@ class ExpeditionService {
       _applyRecovery(vitals, downed, caps, config, deepestCompletedNode: index);
       _mergeRewards(
         newRewards,
-        _scaleRewardsForCycle(
+        scaleRewardsForCycle(
           ExpeditionRules.rewardsForNode(
             node: genNode,
             saveId: run.saveDataId,
