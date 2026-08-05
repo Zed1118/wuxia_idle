@@ -32,7 +32,7 @@ void main() {
       expect(rightMain.dx, lessThan(rightSecond.dx));
       expect(rightSecond.dx, lessThan(rightThird.dx));
       expect(leftMain, const Offset(0.11, 0.772));
-      expect(leftSecond, const Offset(0.283, 0.592));
+      expect(leftSecond, const Offset(0.241, 0.592));
       expect(leftThird, const Offset(0.372, 0.436));
       expect(rightMain, const Offset(0.669, 0.521));
       expect(rightSecond, const Offset(0.79, 0.601));

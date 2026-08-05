@@ -24,7 +24,7 @@ Offset battleStageAnchor(
     final anchors = teamSide == 0
         ? const [
             Offset(0.11, 0.772),
-            Offset(0.283, 0.592),
+            Offset(0.241, 0.592),
             Offset(0.372, 0.436),
           ]
         : const [
