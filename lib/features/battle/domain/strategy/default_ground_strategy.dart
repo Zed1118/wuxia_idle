@@ -124,6 +124,11 @@ class DefaultGroundStrategy implements BattleStrategy {
     if (actor == null || !actor.isAlive) {
       return state.copyWith(actorQueue: rest);
     }
+    // 第八阶段 §2.2:本 tick 行动拍已被合击消费(先行动的搭档护法把两人伤害
+    // 合并打出,同拍已在队列中的本护法仅出队,防双花;AP 已在合击结算时 -1000)。
+    if (actor.coopStrikeConsumedAtTick == state.tick) {
+      return state.copyWith(actorQueue: rest);
+    }
     // 对面如果已经全死 → 提前结束本 tick（清空剩余队列）。
     final enemyAlive = (actor.teamSide == 0 ? state.rightTeam : state.leftTeam)
         .any((c) => c.isAlive);
@@ -465,6 +470,26 @@ class DefaultGroundStrategy implements BattleStrategy {
       }
     }
 
+    // ── 第八阶段 §2.2 护法合击(每相位一次)──────────────────────────────
+    // actor 为协同 Boss 的存活掩护护法、Boss 蓄力中(掩护相位)、同队另一护法
+    // 存活且未踉跄(actor 自己踉跄已在上方 pre-step 早返回)、本次蓄力未合击过
+    // → 本次行动替换为合击(两护法普攻公式伤害合并一次结算)。gate 挂在
+    // guardInterceptsInterrupt(仅协同型 Boss 配置),既有 4 护法层不配 → 不可达,
+    // 零行为变化;rng 消费也仅在触发时才发生,零配置路径确定性逐字节不变。
+    if (forcedSkill == null) {
+      final coop = _coopStrikeContext(preActor, preState);
+      if (coop != null) {
+        return _resolveCoopStrike(
+          preState,
+          preActor,
+          coop.boss,
+          coop.partner,
+          n,
+          rng,
+        );
+      }
+    }
+
     final SkillDef skill;
     final List<int> targetIds;
     if (forcedSkill != null) {
@@ -480,6 +505,8 @@ class DefaultGroundStrategy implements BattleStrategy {
           chargingSkill: decided.$1,
           chargeTicksRemaining: n.combat.bossCharge.defaultChargeTicks,
           actionPoint: preActor.actionPoint - 1000,
+          // 第八阶段 §2.2:进入蓄力=新掩护相位开始,重置合击已用标记。
+          coopStrikeUsedInCharge: false,
         );
         final lt = preState.leftTeam.toList();
         final rt = preState.rightTeam.toList();
@@ -506,6 +533,27 @@ class DefaultGroundStrategy implements BattleStrategy {
     // 全部 target 基于 preState 行动前快照独立算(aoe 同时命中,前一个打死不改
     // 后一个的输入);rng 按本顺序逐个消费(闪避+暴击),顺序固定 = 确定性保证。
     final oppSide = preActor.teamSide == 0 ? 1 : 0;
+
+    // ── 第八阶段 §2.1 破招重定向(掩护相位)────────────────────────────────
+    // 单体破招技指向被掩护的协同 Boss(guardInterceptsInterrupt 且蓄力中且有
+    // 存活护法)→ 目标重定向为掩护护法:护法代吃这一击并强制踉跄(集火窗口),
+    // Boss 本次不作 target,蓄力字段无人触碰=蓄力不断(§2.1 第 1 步)。护法死光
+    // 后 coveringGuardianOf 返 null,下一发破招走既有真打断路径(§2.1 第 3 步)。
+    // AI 破招锁定与手动指定目标(canManuallyTargetEnemy 的破招例外)两条路径都
+    // 汇入本结算层,统一在此拦截;aoe 不涉(decide 的 aoe 分支已排除被护 Boss)。
+    var effectiveTargetIds = targetIds;
+    var guardIntercepted = false;
+    if (skill.canInterrupt && targetIds.length == 1) {
+      final directTarget = _findById(preState, targetIds.first, oppSide);
+      if (directTarget != null) {
+        final guardian = coveringGuardianOf(directTarget, preState);
+        if (guardian != null) {
+          guardIntercepted = true;
+          effectiveTargetIds = [guardian.characterId];
+        }
+      }
+    }
+
     final targetAfters = <BattleCharacter>[];
     final actions = <BattleAction>[];
     // fanzhen 累积:初值 = preActor 现有内伤;每 target 仅在「本 target 触发反震」
@@ -513,7 +561,7 @@ class DefaultGroundStrategy implements BattleStrategy {
     // (覆盖语义,与单体逐字节等价)。
     InternalInjurySlot? actorFanzhen = preActor.internalInjury;
     var lifestealTotal = 0;
-    for (final tid in targetIds) {
+    for (final tid in effectiveTargetIds) {
       final target = _findById(preState, tid, oppSide);
       if (target == null) {
         throw StateError(
@@ -538,6 +586,7 @@ class DefaultGroundStrategy implements BattleStrategy {
         skill,
         result,
         n,
+        guardIntercepted: guardIntercepted,
       );
       final defenderBonus = QiCycle.schoolBonus(
         school: target.school,
@@ -789,6 +838,8 @@ class DefaultGroundStrategy implements BattleStrategy {
           cur = cur.copyWith(
             chargingSkill: signature,
             chargeTicksRemaining: n.combat.bossCharge.defaultChargeTicks,
+            // 第八阶段 §2.2:进入蓄力=新掩护相位开始,重置合击已用标记。
+            coopStrikeUsedInCharge: false,
           );
           phaseChargeStartSkill = signature;
         }
@@ -845,8 +896,9 @@ class DefaultGroundStrategy implements BattleStrategy {
     BattleCharacter target,
     SkillDef skill,
     AttackResult result,
-    NumbersConfig n,
-  ) {
+    NumbersConfig n, {
+    bool guardIntercepted = false,
+  }) {
     // 应用伤害到目标
     final newTargetHp = (target.currentHp - result.finalDamage).clamp(
       0,
@@ -905,6 +957,13 @@ class DefaultGroundStrategy implements BattleStrategy {
     final opensBreak =
         !result.isDodged && skill.defenseBreakPct > 0 && newTargetHp > 0;
     final breakDef = opensBreak ? skill.defenseBreakPct.clamp(0.0, cap) : null;
+    // 第八阶段 §2.1:破招被护法代吃 → 护法强制踉跄(打开集火窗口,§2.1 第 2 步)。
+    // 基础窗口 ticks、基础减防(override 不写,_calculateInBattle 对 null 走
+    // staggerDefenseDown 默认值=与被破招蓄力敌同一基础减防,零新数值);破招技
+    // 若同时带 defenseBreakPct,由上方 opensBreak 分支处理(窗口更长),此处兜底。
+    // 与既有破招 vs Boss 同口径:闪避照常 roll,闪掉则不踉跄(概念零特例)。
+    final interceptStagger =
+        guardIntercepted && !result.isDodged && newTargetHp > 0;
     // 统一窗口:破招优先(更强/特定);否则破防;刷新不缩短:取 max,避免破防覆盖已有更长的破招窗口。
     final int newStaggerTicks = brokeCharging
         ? n.combat.bossCharge.defaultStaggerTicks +
@@ -916,6 +975,10 @@ class DefaultGroundStrategy implements BattleStrategy {
         : opensBreak
         ? (n.combat.defenseBreak.windowTicks > target.staggerTicksRemaining
               ? n.combat.defenseBreak.windowTicks
+              : target.staggerTicksRemaining)
+        : interceptStagger
+        ? (n.combat.bossCharge.defaultStaggerTicks > target.staggerTicksRemaining
+              ? n.combat.bossCharge.defaultStaggerTicks
               : target.staggerTicksRemaining)
         : target.staggerTicksRemaining;
     final double? newStaggerDef = brokeCharging
@@ -954,9 +1017,12 @@ class DefaultGroundStrategy implements BattleStrategy {
       attackResult: result,
       description: brokeCharging
           ? EnumL10n.interrupted(preActor.name, targetAfter.name)
+          : interceptStagger
+          ? EnumL10n.guardIntercepted(targetAfter.name)
           : '',
       interrupted: brokeCharging,
       openedBreakWindow: opensBreak && !brokeCharging,
+      guardIntercepted: guardIntercepted,
       defeatedTarget: target.isAlive && !result.isDodged && newTargetHp <= 0,
       // 批二②会心:仅「真弱点」(mult>1.0)且命中(非闪避)才打 flag → 表现层弹会心
       // 题字;抗性(mult<1.0)不算会心。与伤害结算同 weaknessMultOf 查表口径。
@@ -1096,5 +1162,194 @@ class DefaultGroundStrategy implements BattleStrategy {
     final vulnerable =
         defender.chargingSkill != null || defender.staggerTicksRemaining > 0;
     return vulnerable ? 1.0 : mult;
+  }
+
+  /// 第八阶段 §2.1 掩护相位:defender 为协同型被护 Boss(guardInterceptsInterrupt
+  /// 且蓄力中)时返回代吃破招的掩护护法;无掩护(非协同/未蓄力/护法死光)→ null。
+  ///
+  /// 代吃者=存活掩护护法中血最低(同 hp 取 slotIndex 小)——与 [_pickFocusTargetId]
+  /// 集火 tie-break 同体例:代吃踉跄者即集火首选,破招→集火→击破链路自然衔接。
+  /// 存活判定与 [BattleAI.isGuardedBoss] / [wardMultOf] 同源(enemyDefId ∈
+  /// guardianDefIds),纯函数只读 state 快照。
+  static BattleCharacter? coveringGuardianOf(
+    BattleCharacter defender,
+    BattleState state,
+  ) {
+    if (!defender.guardInterceptsInterrupt) return null;
+    if (defender.chargingSkill == null) return null;
+    if (defender.guardianDefIds.isEmpty) return null;
+    final team = defender.teamSide == 1 ? state.rightTeam : state.leftTeam;
+    BattleCharacter? best;
+    for (final c in team) {
+      if (!c.isAlive || c.enemyDefId == null) continue;
+      if (!defender.guardianDefIds.contains(c.enemyDefId)) continue;
+      if (best == null ||
+          c.currentHp < best.currentHp ||
+          (c.currentHp == best.currentHp && c.slotIndex < best.slotIndex)) {
+        best = c;
+      }
+    }
+    return best;
+  }
+
+  /// 第八阶段 §2.2:合击触发条件。actor 为协同 Boss 的存活掩护护法且:Boss
+  /// 蓄力中(掩护相位)+ 本相位未合击 + 同队另一护法存活、未踉跄、未蓄力 +
+  /// 两护法都有普攻(合击用普攻公式;缺普攻=不合击,防 _pickSkill 同款 throw)。
+  /// actor 自己踉跄/蓄力已在 _resolveAction pre-step 拦下,到此必为可行动态。
+  /// 玩家方 guardInterceptsInterrupt 恒 false(仅 EnemyDef 灌入)→ 天然不可达。
+  ({BattleCharacter boss, BattleCharacter partner})? _coopStrikeContext(
+    BattleCharacter actor,
+    BattleState state,
+  ) {
+    if (actor.enemyDefId == null) return null;
+    if (_normalAttackOf(actor) == null) return null;
+    final team = actor.teamSide == 0 ? state.leftTeam : state.rightTeam;
+    for (final b in team) {
+      if (!b.isAlive || !b.guardInterceptsInterrupt) continue;
+      if (b.chargingSkill == null || b.coopStrikeUsedInCharge) continue;
+      if (!b.guardianDefIds.contains(actor.enemyDefId)) continue;
+      for (final p in team) {
+        if (!p.isAlive || p.characterId == actor.characterId) continue;
+        if (p.enemyDefId == null) continue;
+        if (!b.guardianDefIds.contains(p.enemyDefId)) continue;
+        if (p.staggerTicksRemaining > 0 || p.chargingSkill != null) continue;
+        if (_normalAttackOf(p) == null) continue;
+        return (boss: b, partner: p);
+      }
+    }
+    return null;
+  }
+
+  /// 角色的普攻招式(无则 null)。
+  SkillDef? _normalAttackOf(BattleCharacter c) {
+    for (final s in c.availableSkills) {
+      if (s.type == SkillType.normalAttack) return s;
+    }
+    return null;
+  }
+
+  /// 第八阶段 §2.2:合击结算(actor=主发起护法、partner=搭档、boss=蓄力中的
+  /// 协同 Boss)。两护法**普攻**公式伤害各自独立计算(各 roll 闪避/暴击,rng
+  /// 顺序 actor 先 partner 后=确定性锚)后**合并一次扣血**,目标=对面血最低
+  /// ([BattleAI.pickLowestHpTargetId],与默认选目标同口径)。
+  ///
+  /// 零膨胀(§5.4 / spec §0):合并=两份公式伤害求和,无独立倍率字段;普攻为
+  /// 两人保底输出,总量不高于两人正常两拍。附带效果从简——不施内伤/反震/破招
+  /// 副作用,只走伤害 + 守方受击产气(至多一次)+ 主发起者普攻产气(partner 份
+  /// 不结算),均为「少于正常两拍」的保守方向。partner 行动拍被消费:AP-1000
+  /// (预支,同 interveneNow 语义)+ [BattleCharacter.coopStrikeConsumedAtTick]
+  /// 防同 tick 已入队双花;boss 置 coopStrikeUsedInCharge(每相位一次)。
+  /// 敌方无掉血 → 无需查 Boss 转阶段;合击可致我方全灭 → 胜负判定照做。
+  BattleState _resolveCoopStrike(
+    BattleState preState,
+    BattleCharacter actor,
+    BattleCharacter boss,
+    BattleCharacter partner,
+    NumbersConfig n,
+    Random rng,
+  ) {
+    final targetId = BattleAI.pickLowestHpTargetId(actor, preState);
+    final oppSide = actor.teamSide == 0 ? 1 : 0;
+    final target = _findById(preState, targetId, oppSide);
+    if (target == null) {
+      throw StateError(
+        'DefaultGroundStrategy._resolveCoopStrike: 找不到 targetId=$targetId',
+      );
+    }
+    final actorNormal = _normalAttackOf(actor)!;
+    final partnerNormal = _normalAttackOf(partner)!;
+    // rng 消费点:actor 先 partner 后,各 roll 闪避+暴击(与逐 target 同模式)。
+    final r1 = _calculateInBattle(
+      attacker: actor,
+      defender: target,
+      skill: actorNormal,
+      n: n,
+      rng: rng,
+      state: preState,
+    );
+    final r2 = _calculateInBattle(
+      attacker: partner,
+      defender: target,
+      skill: partnerNormal,
+      n: n,
+      rng: rng,
+      state: preState,
+    );
+    final totalDamage = r1.finalDamage + r2.finalDamage;
+    final newHp = (target.currentHp - totalDamage).clamp(0, target.maxHp);
+    // 守方受击产气:合并一次结算=至多一次 receivedHit(任一命中);双闪按 dodged。
+    final bothDodged = r1.isDodged && r2.isDodged;
+    final defenderBonus = QiCycle.schoolBonus(
+      school: target.school,
+      event: QiActionEvent(receivedHit: !bothDodged, dodged: bothDodged),
+      bonus: n.combat.qi.schoolBonus,
+    );
+    var targetAfter = target.copyWith(currentHp: newHp, isAlive: newHp > 0);
+    if (defenderBonus != 0) {
+      targetAfter = targetAfter.copyWith(
+        currentQi: QiCycle.applyDelta(
+          currentQi: targetAfter.currentQi,
+          maxQi: targetAfter.maxQi,
+          delta: defenderBonus,
+        ),
+      );
+    }
+    // 主发起者:普攻产气 + 自己命中事件的流派附加,AP-1000(正常拍口径)。
+    final actorSchoolBonus = QiCycle.schoolBonus(
+      school: actor.school,
+      event: QiActionEvent(landedHit: !r1.isDodged, critical: r1.isCritical),
+      bonus: n.combat.qi.schoolBonus,
+    );
+    final actorAfter = actor.copyWith(
+      currentQi: QiCycle.applyDelta(
+        currentQi: actor.currentQi,
+        maxQi: actor.maxQi,
+        delta:
+            QiCycle.effectiveSkillDelta(
+              baseDelta: actorNormal.qiDelta,
+              gainMultiplier: actor.qiGainMultiplier,
+              gainMultiplierCap: n.combat.qi.gainMultiplierCap,
+              costReductionPct: actor.qiCostReductionPct,
+              costReductionCap: n.combat.qi.costReductionCap,
+            ) +
+            actorSchoolBonus,
+      ),
+      actionPoint: actor.actionPoint - 1000,
+    );
+    final partnerAfter = partner.copyWith(
+      actionPoint: partner.actionPoint - 1000,
+      coopStrikeConsumedAtTick: preState.tick,
+    );
+    final bossAfter = boss.copyWith(coopStrikeUsedInCharge: true);
+
+    final left = preState.leftTeam.toList();
+    final right = preState.rightTeam.toList();
+    for (final c in [actorAfter, partnerAfter, bossAfter, targetAfter]) {
+      _replaceById(c.teamSide == 0 ? left : right, c);
+    }
+    final action = BattleAction(
+      tick: preState.tick,
+      actorId: actor.characterId,
+      targetId: target.characterId,
+      skill: actorNormal,
+      attackResult: r1,
+      description: EnumL10n.coopStrike(actor.name, partner.name),
+      coopStrikePartnerId: partner.characterId,
+      coopStrikeTotalDamage: totalDamage,
+      defeatedTarget: target.isAlive && totalDamage > 0 && newHp <= 0,
+    );
+    final next = preState.copyWith(
+      leftTeam: List.unmodifiable(left),
+      rightTeam: List.unmodifiable(right),
+      actionLog: [...preState.actionLog, action],
+    );
+    final leftAlive = next.leftTeam.any((c) => c.isAlive);
+    final rightAlive = next.rightTeam.any((c) => c.isAlive);
+    if (!leftAlive && !rightAlive) {
+      return next.copyWith(result: BattleResult.draw);
+    }
+    if (!leftAlive) return next.copyWith(result: BattleResult.rightWin);
+    if (!rightAlive) return next.copyWith(result: BattleResult.leftWin);
+    return next;
   }
 }

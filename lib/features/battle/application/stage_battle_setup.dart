@@ -614,6 +614,8 @@ class StageBattleSetup {
       vulnerabilityMult: enemy
           .vulnerabilityForCycle(cycleIndex)
           ?.outOfWindowDamageMult,
+      // 第八阶段:协同掩护开关透传(玩家方 fromCharacter 不 expose 恒 false)。
+      guardInterceptsInterrupt: enemy.guardInterceptsInterrupt,
     );
     return readableFirstClearTuning
         ? _applyReadableFirstClearOpeningCooldownToOne(battle)

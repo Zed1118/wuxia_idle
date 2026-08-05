@@ -196,6 +196,11 @@ class BattleAI {
     );
   }
 
+  /// 第八阶段 §2.2:合击目标复用默认「血最低」口径(公开 wrapper 防两处口径
+  /// drift——strategy 层合击不自写选目标逻辑)。语义同 [_pickTargetId]。
+  static int pickLowestHpTargetId(BattleCharacter actor, BattleState state) =>
+      _pickTargetId(actor, state);
+
   /// 目标选择：对面活角色 currentHp 最低的；同 hp 选 slotIndex 小的（前排优先）。
   static int _pickTargetId(BattleCharacter actor, BattleState state) {
     final enemyTeam = actor.teamSide == 0 ? state.rightTeam : state.leftTeam;

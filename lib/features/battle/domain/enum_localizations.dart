@@ -135,6 +135,14 @@ class EnumL10n {
   /// P0 破招:踉跄跳过本次行动日志。
   static String staggered(String name) => '$name 踉跄难稳。';
 
+  /// 第八阶段 §2.1:破招被掩护护法代吃(重定向)标识(toString debug 合法 sink;
+  /// 战报正文由 BattleLog.formatAction 按 guardIntercepted 元数据格式化)。
+  static String guardIntercepted(String guardian) => '$guardian 挺身掩护,代承此击!';
+
+  /// 第八阶段 §2.2:双护法合击标识(toString debug 合法 sink;战报正文由
+  /// BattleLog.formatAction 按 coopStrike 元数据格式化)。
+  static String coopStrike(String a, String b) => '$a、$b 双掌合璧,联手齐击!';
+
   /// C1.3.1 断魂庄:敌方蓄力技完成夺取真气(锁脉针·§5.2)日志。
   static String qiDrained(String name, int amount) => '$name 经脉被封,真气散去 $amount';
 
