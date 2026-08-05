@@ -377,6 +377,21 @@ choices:
 ❌ 写教程弹窗——用剧情、气泡提示、百科三种方式（见 GDD §10.2）
 ❌ 让"低境界 + 神物装备"或"低境界 + 高阶心法"的组合在任何代码路径上能跑通（**师承遗物也不例外**）
 
+### §9.1 执行端操作坑速查（2026-08-05 从 Claude memory 沉降，所有执行端必读）
+
+- fresh worktree 里 `libisar.dylib` 会被截断：跑测试前从主仓拷完整 dylib
+- `.g.dart` 已 gitignore：fresh checkout / merge schema 批后必跑 `dart run build_runner build`，否则静默丢字段或编译红
+- 两套色板不可混用：深色底用 `WuxiaColors.text*`，浅宣纸底用 `WuxiaUi.ink / muted`
+- `WuxiaPaperPanel` 滚动列表 tile 外层包 `IntrinsicHeight`（内部 StackFit.expand 遇无界高度会炸）
+- `Image.asset` 一律带 `errorBuilder`（守 widget test 与 release 布局）
+- sub-screen 加 Tab 前检查有无 AppBar：无 AppBar 的 TabBar 页会卡死
+- 需要确定性的逻辑走 `rngProvider`，不要新接 `dart:math Random` 签名的 service（会绕开 override）；确定性测试在纯函数层 stub
+- 编辑 `stages.yaml` 从 `- id:` 正向定位目标关卡，禁从 `isBossStage` 反搜
+- `flutter test` 传多个显式文件路径可能静默漏跑：验收逐文件确认「All tests passed」出现次数
+- `testWidgets` 体内不要 await 真 IO（dart:io / Isar 会挂 10min）：init 收进 `setUp` 或 `tester.runAsync`
+- 测试不得绕开生产路径（手设字段/手动改队列/常量比自己）：自检「破坏那行生产代码，这条断言必然红吗」
+- 列表行悬停浮层用 `IgnorePointer` 包纯展示层，否则浮层盖后续行吃鼠标事件
+
 ## 10. 拿不准时的处理顺序
 
 1. 查 `GDD.md` 对应章节（用 §1 的快速索引定位）
