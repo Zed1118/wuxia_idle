@@ -1362,6 +1362,9 @@ const _battleStandeeOverrides = <String, String>{
       WuxiaUi.battleGauntletStaffRetainerBStandee,
   'assets/enemies/enemy_gauntlet_wen_jiuzhen.png':
       WuxiaUi.battleGauntletWenJiuzhenStandee,
+  // 百草岭远征 9 敌立绘(2026-07-20 codex 出图批·与断魂庄 7 张同批出):远征已拍定
+  // 纯离线结算(2026-08-01 方案 a)零渲染路径,属超前生产资产——2026-08-05 拍板保留
+  // 待未来可视化复用,勿再当「零引用悬案」审计(BACKLOG 一#12 销账;脚底已校准)。
   'assets/enemies/enemy_baicao_shanjia.png': WuxiaUi.battleBaicaoShanjiaStandee,
   'assets/enemies/enemy_baicao_fenghou.png': WuxiaUi.battleBaicaoFenghouStandee,
   'assets/enemies/enemy_baicao_duwu.png':

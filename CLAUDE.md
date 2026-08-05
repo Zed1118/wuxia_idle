@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.42**
+> v1.42 变更摘要(2026-08-05 BACKLOG 一区拍板批 · 0 改代码数值):§12.2 #5 归档行闭关产出倍率表述订正——2026-07-19 经验倍率拆分批后 stale:实况为 retreat 双倍率 `realm_scale_per_tier: 1.3`(银两/材料/心法/内力)+ `experience_realm_scale_per_tier: 1.65`(经验专用,防闭关经验劣于纯离线的速率倒挂),passive_idle 被动经验另有专用 1.6(numbers.yaml:1236-1237/:1275 现查)。源:BACKLOG 一#7 用户拍板。
 > **版本:v1.41**
 > v1.41 变更摘要(2026-07-24 真相源收口批 · 外审 07-24 triage · 0 改数值):① §5.4 Boss 血量红线措辞「60,000+」→「上限 60,000」(消除字面歧义,与 schema/生产 ≤60,000 一致);② GDD v1.24 同批:头部「当前状态块」制(`test/data/truth_source_guard_test.dart` 自动校验 cap/章数/关数)+排行榜 Noop 口径订正+战败死配置 `boss_internal_force_penalty` 退役删除。
 > **版本:v1.40**
@@ -426,7 +428,7 @@ choices:
 | 2 | 单项属性范围 | `numbers.yaml character.attributes`：单项 [1,10] / 总和 [16,24] / 正态 μ=5.5 σ=1.5 / `rerollable: false` |
 | 3 | 强化 +20-49 成功率与材料 | `numbers.yaml equipment.enhancement.success_curve`：`max(0.30, 0.50 - 0.02*(level-19))`，磨剑石 18/25 颗，心血结晶保底 8 颗 |
 | 4 | 暴击系数 + 防御率 | `numbers.yaml combat.critical`：基础 7.5%，身法不再提供暴击；上限 50%，倍率 1.5-2.5（灵巧固定 2.0）。防御率走 `realms.tiers.defense_rate` 按境界固定档（学徒 5%→武圣 35%） |
-| 5 | 闭关产出公式 | `numbers.yaml retreat`:5 地图 base_outputs + `realm_scale_per_tier: 1.3`;前 `cap_hours: 72` 是地图完整收益阶段,溢出转无上限 `passive_idle`;装备每12h判定、最多6次、无保底(2026-07-12 决议) |
+| 5 | 闭关产出公式 | `numbers.yaml retreat`:5 地图 base_outputs + 双倍率 `realm_scale_per_tier: 1.3`(银两/材料/心法/内力)+ `experience_realm_scale_per_tier: 1.65`(经验专用,2026-07-19 拆分防速率倒挂);前 `cap_hours: 72` 是地图完整收益阶段,溢出转无上限 `passive_idle`(其被动经验专用倍率 1.6);装备每12h判定、最多6次、无保底(2026-07-12 决议) |
 | 6 | 武学领悟与普通奇遇概率 | 不单独累积“机缘值”。`techniqueInsight` 使用悟性：`p = baseProbability × (1 + enlightenment/20)`；其他奇遇使用机缘：`p = baseProbability × (1 + fortune/20)`。统一规则见 `numbers.yaml attribute_effects` + `AttributeEffectPolicy`。 |
 | 8 | 心法速度加成 | `numbers.yaml techniques.tiers[*].speed_bonus`：7 阶 0/5/10/15/25/40/60，直接进 GDD §5.6 公式，无独立上限 |
 | 9 | 人剑合一招式定义位置 | `numbers.yaml combat.resonance.unlocks_joint_skill: true`（默契阶段解锁）+ `skills.reference_multipliers.joint_skill.base: 4500`，**统一固定倍率，不绑流派/不绑装备类型**，由共鸣度系统统管。**v1.9 补**:P1.1 候选 3-b(2026-05-21,commit `15ff8aa`)已实装 battle 释放路径 — `skills.yaml` `skill_joint_skill`(mult=4500 / cost=250 / cd=4)+ `ResonanceStageConfig.unlocksJointSkill/hasSwordSongEffect` 解析 + `battle_ai` 优先级 `pending>jointSkill>powerSkill>normalAttack`,红线 27,421 < 100,000 ✅ |
