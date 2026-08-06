@@ -74,11 +74,7 @@ void main() {
         'guardInterceptsInterrupt': true,
       }),
       throwsA(
-        isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('蓄招途径'),
-        ),
+        isA<StateError>().having((e) => e.message, 'message', contains('蓄招途径')),
       ),
     );
   });

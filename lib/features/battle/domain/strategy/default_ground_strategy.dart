@@ -977,7 +977,8 @@ class DefaultGroundStrategy implements BattleStrategy {
               ? n.combat.defenseBreak.windowTicks
               : target.staggerTicksRemaining)
         : interceptStagger
-        ? (n.combat.bossCharge.defaultStaggerTicks > target.staggerTicksRemaining
+        ? (n.combat.bossCharge.defaultStaggerTicks >
+                  target.staggerTicksRemaining
               ? n.combat.bossCharge.defaultStaggerTicks
               : target.staggerTicksRemaining)
         : target.staggerTicksRemaining;

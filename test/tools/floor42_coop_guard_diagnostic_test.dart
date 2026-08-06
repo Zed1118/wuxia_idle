@@ -87,89 +87,89 @@ void main() {
     Directory(_outputDir).createSync(recursive: true);
   });
 
-  test('floor42 敌方协同实例校准诊断(三画像×20 seed)', () async {
-    final floor = repo.getTowerFloor(42);
-    final results = <_Res>[];
-    for (final profile in _Profile.values) {
-      for (var seed = 0; seed < _seeds; seed++) {
-        results.add(_sim(floor, seed, repo, profile));
+  test(
+    'floor42 敌方协同实例校准诊断(三画像×20 seed)',
+    () async {
+      final floor = repo.getTowerFloor(42);
+      final results = <_Res>[];
+      for (final profile in _Profile.values) {
+        for (var seed = 0; seed < _seeds; seed++) {
+          results.add(_sim(floor, seed, repo, profile));
+        }
       }
-    }
-    final summary = _summarize(results);
-    print(summary);
-    File(
-      '$_outputDir/floor42_coop_guard_diagnostic.md',
-    ).writeAsStringSync(summary);
+      final summary = _summarize(results);
+      print(summary);
+      File(
+        '$_outputDir/floor42_coop_guard_diagnostic.md',
+      ).writeAsStringSync(summary);
 
-    final onLevel = results.where((r) => r.profile == _Profile.onLevel);
-    final bare = results.where((r) => r.profile == _Profile.onLevelBare);
-    final under = results.where((r) => r.profile == _Profile.underTier);
-    final onWins = onLevel.where((r) => r.result == 'leftWin').length;
-    final bareWins = bare.where((r) => r.result == 'leftWin').length;
-    final underWins = under.where((r) => r.result == 'leftWin').length;
+      final onLevel = results.where((r) => r.profile == _Profile.onLevel);
+      final bare = results.where((r) => r.profile == _Profile.onLevelBare);
+      final under = results.where((r) => r.profile == _Profile.underTier);
+      final onWins = onLevel.where((r) => r.result == 'leftWin').length;
+      final bareWins = bare.where((r) => r.result == 'leftWin').length;
+      final underWins = under.where((r) => r.result == 'leftWin').length;
 
-    // ① 机制负载自证:重定向/合击/蓄力相位都真的发生过,不在量 0 负载。
-    final totalIntercepts = results.fold<int>(
-      0,
-      (s, r) => s + r.interceptCount,
-    );
-    final totalCoops = results.fold<int>(0, (s, r) => s + r.coopStrikeCount);
-    expect(
-      totalIntercepts,
-      greaterThan(0),
-      reason: '掩护重定向应在真实 floor42 配置下真触发(0=机制死配置或速杀盲区)',
-    );
-    expect(
-      totalCoops,
-      greaterThan(0),
-      reason: '护法合击应在真实 floor42 配置下真触发(0=机制死配置)',
-    );
-    for (final r in onLevel) {
-      expect(
-        r.phaseTransitions,
-        greaterThanOrEqualTo(1),
-        reason: 'onLevel 应至少进一次蓄力相位(种子 ${r.seed}),否则掩护窗从未打开',
+      // ① 机制负载自证:重定向/合击/蓄力相位都真的发生过,不在量 0 负载。
+      final totalIntercepts = results.fold<int>(
+        0,
+        (s, r) => s + r.interceptCount,
       );
-    }
-
-    // ② 集成不变量:护法全灭前 Boss 不掉血(taunt + 掩护代吃双封)。
-    for (final r in onLevel) {
+      final totalCoops = results.fold<int>(0, (s, r) => s + r.coopStrikeCount);
       expect(
-        r.wardBreakTick,
+        totalIntercepts,
         greaterThan(0),
-        reason: 'onLevel 应打破护法墙(种子 ${r.seed})',
+        reason: '掩护重定向应在真实 floor42 配置下真触发(0=机制死配置或速杀盲区)',
       );
       expect(
-        r.bossFirstDamageTick,
-        greaterThanOrEqualTo(r.wardBreakTick),
-        reason:
-            '护法全灭前 Boss 不应掉血(掩护体系双封,种子 ${r.seed}):'
-            'bossFirstDmg=${r.bossFirstDamageTick} wardBreak=${r.wardBreakTick}',
+        totalCoops,
+        greaterThan(0),
+        reason: '护法合击应在真实 floor42 配置下真触发(0=机制死配置)',
       );
-    }
+      for (final r in onLevel) {
+        expect(
+          r.phaseTransitions,
+          greaterThanOrEqualTo(1),
+          reason: 'onLevel 应至少进一次蓄力相位(种子 ${r.seed}),否则掩护窗从未打开',
+        );
+      }
 
-    // ③ 满配必胜(软门槛非硬墙)。
-    expect(onWins, _seeds, reason: 'onLevel 满配应全 seed 必胜');
+      // ② 集成不变量:护法全灭前 Boss 不掉血(taunt + 掩护代吃双封)。
+      for (final r in onLevel) {
+        expect(
+          r.wardBreakTick,
+          greaterThan(0),
+          reason: 'onLevel 应打破护法墙(种子 ${r.seed})',
+        );
+        expect(
+          r.bossFirstDamageTick,
+          greaterThanOrEqualTo(r.wardBreakTick),
+          reason:
+              '护法全灭前 Boss 不应掉血(掩护体系双封,种子 ${r.seed}):'
+              'bossFirstDmg=${r.bossFirstDamageTick} wardBreak=${r.wardBreakTick}',
+        );
+      }
 
-    // ④ 软门槛梯度(floor32 高段位修正语义)。
-    expect(
-      bareWins,
-      lessThan(onWins),
-      reason: '同阶 0 强化不应达到满配胜率(门槛真存在)',
-    );
-    expect(
-      bareWins,
-      greaterThanOrEqualTo(underWins),
-      reason: '同阶 0 强化不应比跨阶欠配更差(梯度排序自洽)',
-    );
-    expect(
-      underWins,
-      lessThanOrEqualTo((_seeds * 0.5).floor()),
-      reason: '跨 1 阶欠配应有实质败率(门槛真咬合)',
-    );
+      // ③ 满配必胜(软门槛非硬墙)。
+      expect(onWins, _seeds, reason: 'onLevel 满配应全 seed 必胜');
 
-    expect(results.length, _Profile.values.length * _seeds);
-  }, timeout: const Timeout(Duration(minutes: 10)));
+      // ④ 软门槛梯度(floor32 高段位修正语义)。
+      expect(bareWins, lessThan(onWins), reason: '同阶 0 强化不应达到满配胜率(门槛真存在)');
+      expect(
+        bareWins,
+        greaterThanOrEqualTo(underWins),
+        reason: '同阶 0 强化不应比跨阶欠配更差(梯度排序自洽)',
+      );
+      expect(
+        underWins,
+        lessThanOrEqualTo((_seeds * 0.5).floor()),
+        reason: '跨 1 阶欠配应有实质败率(门槛真咬合)',
+      );
+
+      expect(results.length, _Profile.values.length * _seeds);
+    },
+    timeout: const Timeout(Duration(minutes: 10)),
+  );
 }
 
 _Res _sim(TowerFloorDef floor, int seed, GameRepository repo, _Profile p) {

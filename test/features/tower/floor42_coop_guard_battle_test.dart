@@ -132,16 +132,8 @@ void main() {
     final coopStrikes = s.actionLog
         .where((a) => a.coopStrikeTotalDamage != null)
         .length;
-    expect(
-      intercepts,
-      greaterThan(0),
-      reason: '败局中掩护重定向应真触发(0=协同机制死配置)',
-    );
-    expect(
-      coopStrikes,
-      greaterThan(0),
-      reason: '败局中护法合击应真触发(0=协同机制死配置)',
-    );
+    expect(intercepts, greaterThan(0), reason: '败局中掩护重定向应真触发(0=协同机制死配置)');
+    expect(coopStrikes, greaterThan(0), reason: '败局中护法合击应真触发(0=协同机制死配置)');
   });
 
   test('跨 1 阶(绝顶)0 强化队确定 seed 会败(门槛真咬合)', () {

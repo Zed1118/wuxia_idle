@@ -380,11 +380,7 @@ void main() {
     });
 
     test('搭档踉跄中 → 合击被压制(踉跄=硬直不能协同)', () {
-      final s0 = makeState(
-        playerSpeed: 1,
-        guardSpeed: 1000,
-        guardBStagger: 3,
-      );
+      final s0 = makeState(playerSpeed: 1, guardSpeed: 1000, guardBStagger: 3);
       final s1 = strategy.tick(s0, numbers, rng: Random(42));
       expect(s1.actionLog.where((a) => a.coopStrikePartnerId != null), isEmpty);
     });
