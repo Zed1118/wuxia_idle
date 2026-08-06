@@ -28,5 +28,5 @@
 
 ## 进度(唤醒时更新)
 - [x] C1 发出(22:2x) / [ ] C1 [READY]
-- [x] K1 发出(22:26,预热 PREP_OK 后直发) / [ ] K1 [READY]
-- [x] 块1(23:0x 完成:spec §1 订正/BACKLOG 四区销账/P2③ 勾销/.codegraph 重建 Done 但 MCP status 报 locked 待复验) / [x] 块2(direction_candidates_2026-08-07.md,55 行) / [ ] 块3(A1 试玩数据阀门 spec 草案,23:41 巡查点做) / [ ] 块4
+- [x] K1 发出(22:26) / [x] K1 全序列 [READY](23:1x 收官:0e9e1c22 目标1+246449bf 目标3+ac449241 报告;目标2 审计零可修项;预 Gate 复核过=analyze 0+4 测试文件 5/34/3/24 全绿本会话实测;全量留收账)
+- [x] 块1(23:0x 完成:spec §1 订正/BACKLOG 四区销账/P2③ 勾销/.codegraph 重建 Done 但 MCP status 报 locked 待复验) / [x] 块2(direction_candidates_2026-08-07.md,55 行) / [x] 块3(23:1x 提前完成:playtest-data-collection-draft 43 行) / [ ] 块4
