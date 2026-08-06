@@ -1,0 +1,168 @@
+# REPORT_K1 · 夜批单 K1 技术债目标序列（2026-08-06）
+
+- 工作树:`.claude/worktrees/kimi-techdebt` · 分支 `kimi/tonight-techdebt` · 基线 main `74a7993c`
+- 执行:kimi(夜班)· 全程 auto 模式
+- 终态:目标 1 / 2 / 3 全部完成,两 commit 均 `[READY]`,树净
+
+| 目标 | 状态 | commit |
+|---|---|---|
+| 目标 1 dart:math Random() 注入化 | ✅ READY | `0e9e1c22` |
+| 目标 2 extension on 实体类硬编码审计 | ✅ READY(零可修项,纯审计) | 无代码改动,审计表见附录 A |
+| 目标 3 测试假绿抽查 13 文件 | ✅ READY(3 处假绿修复) | `246449bf` |
+
+---
+
+## 目标 1 · 生产代码裸 `Random()` 位点收口(commit `0e9e1c22`)
+
+### Phase 0 实测盘点(15 处 / 10 文件,历史盘点「约 15 处」吻合)
+
+| # | 位点 | 层 | 接线方式 |
+|---|---|---|---|
+| 1 | `stage_entry_flow.dart:233` | flow(有 ref) | `ref.read(mathRandomProvider)` |
+| 2 | `tower_entry_flow.dart:196` | flow(有 ref) | 同上 |
+| 3 | `sweep_settlement.dart:82,145` | application(有 WidgetRef) | 同上 ×2 |
+| 4 | `sect_providers.dart:97` | providers(有 Ref) | 同上 |
+| 5 | `sect_event_dialog.dart:84` | widget(ConsumerState 有 ref) | `widget.rng ?? ref.read(...)` |
+| 6 | `default_ground_strategy.dart:56,138,154` | domain(无 ref) | `rng ?? newMathRandom()` ×3 |
+| 7 | `mass_battle_strategy.dart:104` | domain | 同上 |
+| 8 | `damage_calculator.dart:85` | domain | `ctx.rng ?? newMathRandom()` |
+| 9 | `battle_providers.dart:67,89` | notifier 字段/重建 | `newMathRandom([seed:])` ×2 |
+| 10 | `game_event_service.dart:70` | service 构造注入兜底 | `random ?? newMathRandom()` |
+| 11 | `expedition_battle_runner.dart:61` | service(静态 runner) | `newMathRandom(seed: nodeSeed)`(原 `Random(nodeSeed)` 逐字节等价) |
+
+白名单(不动):注入点定义处 `lib/shared/utils/math_random.dart` 本身、Rng 抽象注入点定义 `lib/shared/utils/rng.dart:25`(DefaultRng)、`lib/features/debug/`(redline_audit.dart:350 非生产)。
+
+### 设计
+
+新文件 `lib/shared/utils/math_random.dart`,与既有 `Rng`/`rngProvider` 三方法抽象**并存不合并**(迁移签名属行为风险,本批纯接线):
+- `mathRandomProvider = Provider<Random>` —— 有 ref 层(UI/flow/providers),测试 `overrideWithValue(Random(seed))`;
+- `newMathRandom({int? seed})` —— 无 ref 层(domain/service)兜底构造唯一入口,默认无种子随机(与裸 `Random()` 行为一致),传 seed 等价 `Random(seed)`。
+
+**零行为变化**:默认路径全部仍是无种子随机;唯一带 seed 的位点(远征 nodeSeed)经 `newMathRandom(seed:)` 构造同一 `Random(nodeSeed)`,确定性逐字节不变。
+
+### 新增契约测 `test/shared/utils/math_random_wiring_contract_test.dart`(5 测)
+
+1. **扫描归零契约**:递归扫 lib/**/*.dart,剥注释(块+行)后词边界正则 `(?<![A-Za-z0-9_$])Random\s*\(` 断言零命中(白名单 2 文件 + debug + .g.dart);`newMathRandom(` 因前导词字符天然不匹配,`math.Random(` 别名导入形式也会被逮(实测仓库当前零别名形式)。
+2. **有 ref 层断言**(5 文件):contains `mathRandomProvider` + 剥注释后无裸 `Random(`。
+3. **无 ref 层断言**(6 文件):contains `newMathRandom(` + 剥注释后无裸 `Random(`。
+4. **override 生效**:固定种子 `Random(42)` override 后与全新 `Random(42)` 逐值一致 ×8(纯函数层断言,不在 widget 层)。
+5. **默认路径不变式**:不 override 返回可用 `Random` 实例(不钉值)。
+
+### 验收四证据
+
+**① analyze**:`flutter analyze --no-pub` → `No issues found!`(过程 4 次 + 终态 1 次,终态输出见文末)。
+
+**② targeted 逐文件单独跑,全部出现「All tests passed!」(19 文件)**:
+
+```
+test/shared/utils/math_random_wiring_contract_test.dart        +5  All tests passed!
+test/shared/utils/rng_provider_wiring_contract_test.dart       +3  All tests passed!
+test/features/sect/sect_providers_test.dart                   +18  All tests passed!
+test/features/sect/sect_monthly_tick_service_test.dart        +12  All tests passed!
+test/features/sweep/application/sweep_settlement_test.dart     +4  All tests passed!
+test/features/expedition/expedition_battle_runner_test.dart    +2  All tests passed!
+test/features/event/application/game_event_service_test.dart  +18  All tests passed!
+test/features/mainline/presentation/stage_entry_flow_test.dart +7  All tests passed!
+test/features/tower/presentation/tower_entry_flow_test.dart    +5  All tests passed!
+test/features/battle/battle_step_one_test.dart                 +3  All tests passed!
+test/features/battle/battle_seed_determinism_test.dart         +1  All tests passed!
+test/features/battle/intervene_determinism_test.dart           +2  All tests passed!
+test/features/battle/application/coop_chain_determinism_test.dart +1 All tests passed!
+test/features/battle/domain/damage_calculator_forging_test.dart +6 All tests passed!
+test/features/battle/domain/damage_calculator_output_multiplier_test.dart +3 All tests passed!
+test/features/sect/sect_screen_test.dart                       +9  All tests passed!
+test/features/sect/sect_battle_integration_test.dart           +5  All tests passed!
+test/features/sweep/application/sweep_unit_test.dart           +6  All tests passed!
+test/features/expedition/expedition_combat_runner_test.dart    +2  All tests passed!
+test/features/event/application/game_event_service_lineage_routing_edge_test.dart +5 All tests passed!
+```
+
+**③ 破坏证红(commit 后做)**:`stage_entry_flow.dart` 改回 `rng: Random(),` → 契约测 **恰 2 红**(扫描归零契约 + 有 ref 层断言,均精确点名该文件,`+3 -2 Some tests failed`)→ `git checkout --` 还原 → 复跑 `+5 All tests passed!` 复绿。
+
+**④ format**:全部改动 dart 文件 `dart format` 过(仅契约测 1 文件重排,生产 12 文件 0 changed;尾注:sect_event_dialog 一次显式类型标注后 0 changed 复检)。
+
+**过程中的一个坑(记录)**:`sect_event_dialog.dart` 里 `final rng = widget.rng ?? ref.read(mathRandomProvider);` 被 analyzer 推断为可空(`unchecked_use_of_nullable_value`),独立探针文件同写法却干净——显式标注 `final Random rng = ...` 后通过。未深究根因(疑多库导出 `Random` 符号的 LUB 推断),显式标注更稳。
+
+---
+
+## 目标 2 · `extension ... on` 实体类硬编码审计(零代码改动)
+
+扫描 `^extension\s+\w*\s*on\s+\w+` 全 lib/ 共 **15 处**,逐个人工通读(非 grep 抽查)。**结论:零「低风险且归宿明确」可修项**。唯一带硬编码的 `codex_category.dart` step 1-8 是「枚举序=GDD §10.1 解锁档」的领域定义本身,无 tokens/config 更优归宿,按「拿不准只列表不动」处理。完整审计表见**附录 A**。
+
+---
+
+## 目标 3 · 测试假绿抽查(commit `246449bf`)
+
+判据「破坏那行生产代码,这条断言必然红吗」,抽查战斗/结算/掉落域 **13 个测试文件**(逐文件独立审查,沿 import 读生产代码核对锚点,全部结论附 file:line 证据):
+
+| 文件 | 结论 |
+|---|---|
+| battle/battle_step_one_test | 真守卫(3 测;附「tick==stepOne 等价性不守卫 stepOne 内部语义」盲区说明) |
+| battle/battle_seed_determinism_test | 真守卫 |
+| battle/damage_calculator_proficiency_test | 真守卫(期望字面量已逐项对公式验算) |
+| battle/guardian_ward_damage_test | 真守卫(11 测) |
+| battle/application/battle_resolution_test | **混合 24 真 / 1 假绿** → 已修 |
+| battle/application/combat_progression_settlement_service_test | 真守卫(5 测) |
+| battle/application/post_combat_invalidation_test | 真守卫(4 测;13 行 invalidate 只锁 6 行=覆盖缺口非假绿,见附录 B) |
+| sweep/application/sweep_settlement_test | 真守卫(4 测) |
+| expedition/expedition_battle_runner_test | 真守卫(2 测) |
+| equipment/application/drop_service_test | **混合 ~14 真 / 1 假绿** → 已修 |
+| equipment/application/drop_service_roll_one_test | 真守卫(3 测) |
+| equipment/application/milestone_equipment_grant_service_test | 真守卫(5 测) |
+| cultivation/stage_skill_drop_hook_test | **混合 2 真 / 1 假绿** → 已修 |
+
+### 3 处假绿修复(均已破坏证红)
+
+1. **`battle_resolution_test.dart` benchEq 断言(半假绿)**:`benchEq` 装备从未传入 `resolve`,`expect(benchEq.battleCount, 7)` 验的是 fixture 自己,破坏任何生产代码都不红。修法=删 benchEq 及其断言(「未传入不算」防御语义由下一条 StateError 测真实守卫),保留 w1 真锚。
+2. **`drop_service_test.dart` quantity 区间(假绿)**:原断言 `inInclusiveRange(1, 3)` 对 `_rollQuantity` 的 `nextInt(max - min + 1)` → `nextInt(max - min)`(上界 3 永不命中)变异不红。修法=200 次 roll 收集 seen 集合,补 `expect(seen, contains(3))` 上界可达性锚。**破坏证红:改 `max - min` → 恰 1 红(该测)→ 还原复绿(+24)**。
+3. **`stage_skill_drop_hook_test.dart` isFirstClear 闸门(假绿)**:原重复通关断言 `isUnlocked==true` 不可破坏——`grantManual` 幂等,已解锁场景下即使删掉 hook 的 `&& isFirstClear` 结果也不变(自查修正:子代理首报修法「断言 manualGranted isNull」同样逮不到该变异,已升级为下述写法)。修法=换未解锁的招 `skill_real_late` + 快照已含本关:闸门在→不授;删闸门→授予即红,同时首通分支补 `manualGranted == 'skill_real'` 正向锚。**破坏证红:删 `&& isFirstClear` → 恰 1 红(该测)→ 还原复绿(+3)**。
+
+### 验收四证据
+
+① analyze 0(改动后复跑);② 三文件逐跑:`battle_resolution +34` / `drop_service +24` / `stage_skill_drop_hook +3` 均 All tests passed;③ 破坏证红见上(目标 3 两处新增锚各一轮);④ `dart format` 3 文件 0 changed;独立 commit `246449bf`。
+
+---
+
+## 边界确认
+
+- 禁区零触碰:numbers.yaml / GDD.md / PROGRESS.md(收尾更新除外)/ BACKLOG.md / lib/shared/strings.dart / assets/ / pubspec.yaml 均未出现在任何 commit。
+- 未跑全量 test(按派单留收账方);两 commit 共 16 文件,+204/−36。
+- `dart format` 所有改动文件均过(CI 门禁)。
+
+## 终态 analyze 输出
+
+```
+$ flutter analyze --no-pub
+Analyzing kimi-techdebt...
+No issues found! (ran in 1.8s)
+```
+
+---
+
+## 附录 A · 目标 2 extension 审计表(15 处全量)
+
+| file:line | on 类型 | 内容 | 硬编码 | 风险 | 处置 |
+|---|---|---|---|---|---|
+| lib/core/domain/technique.dart:79 | Technique(Isar collection) | 散功 disperse | 无(数值走 `NumbersConfig.dispersionCultivationPenalty`) | — | 不动 |
+| lib/core/domain/equipment.dart:117 | Equipment(Isar collection) | 共鸣段/加成/传承 | 无(阈值倍率保留比全读 NumbersConfig;注释中 0.7/1.10 系配置值引用) | — | 不动 |
+| lib/core/domain/enums.dart:171 | LineageRole(枚举) | isDiscipleRole | 无(纯枚举成员判定) | — | 不动 |
+| lib/core/domain/skill_unlock_entry.dart:20 | List<SkillUnlockEntry>(@embedded) | Map 语义 | 无 | — | 不动 |
+| lib/core/domain/skill_usage_entry.dart:19 | List<SkillUsageEntry>(@embedded) | Map 语义 | 无 | — | 不动 |
+| lib/core/domain/reward_entry.dart:16 | List<RewardEntry>(@embedded) | quantityOf | 无 | — | 不动 |
+| lib/features/encounter/domain/encounter_progress.dart:93 | List<SchoolKillCount>(@embedded) | Map 语义 | 无 | — | 不动 |
+| 同 :118 | List<BiomeMinutes>(@embedded) | Map 语义 | 无 | — | 不动 |
+| 同 :143 | List<WeatherMinutes>(@embedded) | Map 语义 | 无 | — | 不动 |
+| lib/features/encounter/application/encounter_service.dart:550 | EncounterService | CurrentSlot 别名 | 无(走 `IsarSetup.currentSlotId`) | — | 不动 |
+| lib/data/defs/codex_category.dart:34 | CodexCategory(def 枚举) | step 解锁档映射 | **step 1-8 序数字面量** | 低 | **只列表不动**:枚举序即 GDD §10.1 八档解锁节奏的领域定义,非「常量已存在于 tokens/config 未引用」,无更优归宿 |
+| lib/features/settings/presentation/settings_panel.dart:612 | Widget | withFollowing 布局 helper | 无 | — | 不动(非实体类,列入备查) |
+| lib/features/battle/presentation/projectile_trail.dart:413 | Path | moveToPoint/lineToPoint | 无 | — | 不动(非实体类,列入备查) |
+| lib/features/shop/presentation/shop_screen.dart:262 | _ShopShelfFilter(私有枚举) | label/includes | 无(文案全走 UiStrings) | — | 不动(非实体类,列入备查) |
+| lib/features/shop/presentation/shop_screen.dart:288 | _ShopShelfGroupKind(私有枚举) | label/description | 无(文案全走 UiStrings) | — | 不动(非实体类,列入备查) |
+
+## 附录 B · 目标 3 记录的覆盖缺口(非假绿,未修,供收账方参考)
+
+- `post_combat_invalidation.dart` 13 行 invalidate 仅 6 行有测试锁定;`silverBalanceProvider`(:42)恰在缺口中(文件头注释自列三大病理之一)。修法自明:照现有模板补 seed 银两后断 0→N。
+- `battle_seed_determinism_test` 无「不同 seed 必发散」反向对照:生产若改为恒 `seed: 0` 不红。
+- `expedition_battle_runner_test` survivor map 只测确定性(r1==r2 自比)不测正确性;且 `leftWin=false` 单方向断言无法区分战败 vs draw。
+- `drop_service_roll_one_test` 权重选择只测 roll=0.0 单点,未覆盖落第二条权重区间用例。
+- `guardian_ward_damage_test` fixture 只用 0.15 一个 mult 值,字段改字面量 0.15 不红(mutation 级边角)。
