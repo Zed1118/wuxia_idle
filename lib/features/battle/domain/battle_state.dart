@@ -83,6 +83,18 @@ class BattleAction {
   /// 阵亡时，早先的普通命中也会被追溯误标为“击杀”。
   final bool defeatedTarget;
 
+  /// 第八阶段 §2.1:本次破招被掩护护法代吃(目标由被护 Boss 重定向为护法)。
+  /// targetId 已是护法;表现层/战报据此标注「掩护代吃」(纯读元数据,不参与结算)。
+  final bool guardIntercepted;
+
+  /// 第八阶段 §2.2:合击动作的搭档护法 charId(null=非合击)。actorId=主发起
+  /// 护法,[attackResult] 仅主发起者那份(保真不伪造合成 result)。
+  final int? coopStrikePartnerId;
+
+  /// 第八阶段 §2.2:合击合并总伤害(两护法各自公式伤害求和,一次扣血;
+  /// null=非合击)。战报直读此值,不从 attackResult 重算(那只是主发起者份)。
+  final int? coopStrikeTotalDamage;
+
   const BattleAction({
     required this.tick,
     required this.actorId,
@@ -96,6 +108,9 @@ class BattleAction {
     this.bossPhaseTitleKey,
     this.weaknessHit = false,
     this.defeatedTarget = false,
+    this.guardIntercepted = false,
+    this.coopStrikePartnerId,
+    this.coopStrikeTotalDamage,
   });
 
   @override
@@ -259,6 +274,20 @@ class BattleCharacter {
   /// 由 StageBattleSetup 从 EnemyDef.vulnerability 灌入。
   final double? vulnerabilityMult;
 
+  /// 第八阶段:协同 Boss 掩护开关(EnemyDef.guardInterceptsInterrupt 透传;
+  /// 玩家方恒 false)。true 且蓄力中且有 [guardianDefIds] 护法存活 → 我方破招
+  /// 被护法代吃(重定向+踉跄),Boss 蓄力不断(spec §2.1);同相位双护法可合击(§2.2)。
+  final bool guardInterceptsInterrupt;
+
+  /// 第八阶段 §2.2:本次蓄力(掩护相位)内合击已用(运行时;Boss 侧字段,
+  /// 每次进入蓄力态时重置 false,合击触发后置 true=每相位一次)。
+  final bool coopStrikeUsedInCharge;
+
+  /// 第八阶段 §2.2:护法侧「本 tick 行动拍已被合击消费」标记(运行时;
+  /// == 当前 [BattleState.tick] 时 stepOne 弹出直接出队防同拍双花)。
+  /// 旧 tick 残值无害——仅与当前 tick 比对,无需清理。
+  final int? coopStrikeConsumedAtTick;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -312,6 +341,9 @@ class BattleCharacter {
     this.guardianWardMult,
     this.guardianDefIds = const [],
     this.vulnerabilityMult,
+    this.guardInterceptsInterrupt = false,
+    this.coopStrikeUsedInCharge = false,
+    this.coopStrikeConsumedAtTick,
   }) : assert(
          (internalForce != null && maxQi != null && currentQi != null) ||
              (maxInternalForce != null && currentInternalForce != null),
@@ -613,6 +645,9 @@ class BattleCharacter {
     double? guardianWardMult,
     List<String>? guardianDefIds,
     double? vulnerabilityMult,
+    bool? guardInterceptsInterrupt,
+    bool? coopStrikeUsedInCharge,
+    Object? coopStrikeConsumedAtTick = _unset,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -686,6 +721,13 @@ class BattleCharacter {
       guardianWardMult: guardianWardMult ?? this.guardianWardMult,
       guardianDefIds: guardianDefIds ?? this.guardianDefIds,
       vulnerabilityMult: vulnerabilityMult ?? this.vulnerabilityMult,
+      guardInterceptsInterrupt:
+          guardInterceptsInterrupt ?? this.guardInterceptsInterrupt,
+      coopStrikeUsedInCharge:
+          coopStrikeUsedInCharge ?? this.coopStrikeUsedInCharge,
+      coopStrikeConsumedAtTick: identical(coopStrikeConsumedAtTick, _unset)
+          ? this.coopStrikeConsumedAtTick
+          : coopStrikeConsumedAtTick as int?,
     );
   }
 

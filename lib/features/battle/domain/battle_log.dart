@@ -41,10 +41,26 @@ class BattleLog {
 
     final targetName = _findName(state, action.targetId!) ?? '未知';
 
+    // 第八阶段 §2.2:合击专句。合并总伤直读 coopStrikeTotalDamage,不从
+    // attackResult 重算(那只是主发起护法那一份)。
+    if (action.coopStrikePartnerId != null) {
+      final partnerName = _findName(state, action.coopStrikePartnerId!) ?? '未知';
+      final total = action.coopStrikeTotalDamage ?? 0;
+      if (total <= 0) {
+        return '$tickStr $actorName 与 $partnerName 双掌合璧齐击 $targetName，'
+            '皆被闪过';
+      }
+      final kill = action.defeatedTarget ? '（击杀）' : '';
+      return '$tickStr $actorName 与 $partnerName 双掌合璧齐击 $targetName，'
+          '两势并发共造成 $total 伤害$kill';
+    }
+
     if (r.isDodged) {
       final ev = (r.evasionRate * 100).toStringAsFixed(0);
+      // 第八阶段 §2.1:重定向后闪避=护法扑挡但闪开了(目标名已是护法)。
+      final guardTag = action.guardIntercepted ? '掩护代吃，' : '';
       return '$tickStr $actorName 对 $targetName 使用「$skillName」，'
-          '被闪避（闪避率 $ev%）';
+          '$guardTag被闪避（闪避率 $ev%）';
     }
 
     final critTag = r.isCritical ? '暴击' : '';
@@ -88,6 +104,9 @@ class BattleLog {
         ),
       );
     }
+
+    // 第八阶段 §2.1:破招被护法代吃(目标已重定向为护法,标注掩护语义)。
+    if (action.guardIntercepted) markers.add('掩护代吃·主帅蓄力未断');
 
     if (action.defeatedTarget) markers.add('击杀');
 

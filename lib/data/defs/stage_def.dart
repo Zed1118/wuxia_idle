@@ -279,6 +279,14 @@ class EnemyDef {
   /// cycle 仅收紧强度，fromYaml 校验）。
   final Map<int, BossVulnerabilityDef> cycleVulnerability;
 
+  /// 第八阶段(spec 2026-08-05 敌方协同):协同型 Boss 掩护开关。true 时该 Boss
+  /// 蓄力中被我方破招命中 → 存活护法代吃(重定向+踉跄),Boss 蓄力不断;同相位
+  /// 双护法可合击。默认 false=既有护法层(塔 14/21/28/32)零行为变化。
+  /// 联结校验(fromYaml fail-fast):须同时配 [guardianWard](否则无护法可掩护)
+  /// 与蓄招途径([chargeSkillId] 或 bossPhases 含 chargeCounter,否则永不蓄力
+  /// =掩护/合击永不触发,死配置)。
+  final bool guardInterceptsInterrupt;
+
   const EnemyDef({
     required this.id,
     required this.name,
@@ -298,6 +306,7 @@ class EnemyDef {
     this.guardianWard,
     this.vulnerability,
     this.cycleVulnerability = const {},
+    this.guardInterceptsInterrupt = false,
   });
 
   factory EnemyDef.fromYaml(Map<String, dynamic> y) {
@@ -333,6 +342,24 @@ class EnemyDef {
         '（基周目须有脆弱机制，cycleVulnerability 仅收紧强度）',
       );
     }
+    // 第八阶段:协同掩护开关的联结校验(沿 vulnerability 开窗途径先例)。
+    final guardInterceptsInterrupt =
+        y['guardInterceptsInterrupt'] as bool? ?? false;
+    if (guardInterceptsInterrupt) {
+      if (y['guardianWard'] == null) {
+        throw StateError(
+          'EnemyDef ${y['id']}: 配 guardInterceptsInterrupt 必须同时配 '
+          'guardianWard（掩护重定向依赖护法注册，无护法=开关空转死配置）',
+        );
+      }
+      if (chargeSkillId == null && !hasChargePhase) {
+        throw StateError(
+          'EnemyDef ${y['id']}: 配 guardInterceptsInterrupt 必须有蓄招途径'
+          '（顶层 chargeSkillId 或 bossPhases 含 onEnterMechanic: chargeCounter），'
+          '否则永不进入掩护相位=机制永不触发死配置',
+        );
+      }
+    }
     return EnemyDef(
       id: y['id'] as String,
       name: y['name'] as String,
@@ -365,6 +392,7 @@ class EnemyDef {
             ),
       vulnerability: vulnerability,
       cycleVulnerability: cycleVulnerability,
+      guardInterceptsInterrupt: guardInterceptsInterrupt,
     );
   }
 

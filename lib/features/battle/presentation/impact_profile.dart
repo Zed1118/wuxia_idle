@@ -29,7 +29,10 @@ ImpactProfile? impactProfileFor(BattleAction action, ImpactFeedbackConfig cfg) {
   if (result == null || result.isDodged) return null;
   final skill = action.skill;
   final ImpactTier tier;
-  if (isUltimateCaptionSkill(skill)) {
+  if (action.coopStrikePartnerId != null) {
+    // 第八阶段 §2.2:双护法合击=重压呈现,提 heavy 顿帧/震屏(压迫感走表现层)。
+    tier = ImpactTier.heavy;
+  } else if (isUltimateCaptionSkill(skill)) {
     tier = ImpactTier.heavy;
   } else if (skill?.type == SkillType.powerSkill) {
     tier = ImpactTier.medium;

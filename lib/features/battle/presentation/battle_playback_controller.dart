@@ -929,6 +929,8 @@ class BattlePlaybackController {
     if (action.openedBreakWindow) score += 40;
     if (action.weaknessHit) score += 60;
     if (action.interrupted) score += 80;
+    // 第八阶段 §2.2:合击与破招同级关键帧(双人齐击=本拍最重呈现)。
+    if (action.coopStrikePartnerId != null) score += 80;
     return score;
   }
 
@@ -1011,6 +1013,14 @@ class BattlePlaybackController {
             ? _animConfig.hitTier.captionPeakSize.toDouble()
             : 56,
         glowBlur: isCrit ? _animConfig.hitTier.captionGlowBlur : 0,
+      );
+    }
+    // 第八阶段 §2.2:双护法合击 → 弹「合击！」题字(敌方绛红,沿破招题字体例)。
+    if (!_isFastForward && action.coopStrikePartnerId != null) {
+      _ultimateCaptionKey.currentState?.show(
+        UiStrings.coopStrikeCaption,
+        isEnemy: actor?.teamSide == 1,
+        fontSize: 56,
       );
     }
     // B3 破招:打断蓄力 → 弹「破！」题字(破招方暖金/敌方绛红,纯读 state)。
