@@ -30,3 +30,24 @@
 - [x] C1 发出(22:2x) / [ ] C1 [READY]
 - [x] K1 发出(22:26) / [x] K1 全序列 [READY](23:1x 收官:0e9e1c22 目标1+246449bf 目标3+ac449241 报告;目标2 审计零可修项;预 Gate 复核过=analyze 0+4 测试文件 5/34/3/24 全绿本会话实测;全量留收账)
 - [x] 块1(23:0x 完成:spec §1 订正/BACKLOG 四区销账/P2③ 勾销/.codegraph 收尾:db 重建成功(1294 files/56273 edges,CLI 验证);locked 根因=双 serve 进程锁竞争(8/5 起 45440 与 8/6 起 20757);误杀本会话连接的 45440 致本会话 MCP 断连(grep 兜底不阻塞),20757 现独占锁,下会话预期自愈——教训:kill MCP server 前先验 ppid 归属,启动时间早≠残留) / [x] 块2(direction_candidates_2026-08-07.md,55 行) / [x] 块3(23:1x 提前完成:playtest-data-collection-draft 43 行) / [ ] 块4
+
+## 块4 预收账终稿(8/7 01:3x,双端收官后提前完成)
+
+### 验证矩阵(全部本会话实测)
+| 端/批 | 产出 | analyze | targeted | 全量 | merge-tree |
+|---|---|---|---|---|---|
+| kimi K1(3 commits,tip `ac449241`) | 目标1 Random 注入化 15 位点+契约测 / 目标2 审计零可修项 / 目标3 假绿修 3 处 | 0 issues | 4 文件 5/34/3/24 全绿 | **4885/0**(=4880+5 守恒吻合) | vs main CLEAN |
+| codex C1(`62986b1a`) | 20 张题字清除(固定 8+narrative 105 全查命中 12),印章保留,contact sheet×4 | —(纯资产) | asset 4 件套 4/3/2/3 全绿 | 不适用 | vs main CLEAN |
+| 双分支互检 | lib/test vs assets 零交集 | — | — | — | CLEAN |
+
+### Claude 侧产出(已进 main)
+`001c14bc` 派单包 → `fc702a86` 块1 订正×3+块2 方向盘点 → `52881aac` 块3 试玩采集 spec 草案 → `40df126d` codegraph 根因记录。
+
+### 等用户拍板项
+1. **「收账」指令** → 合并两分支(零冲突,建议 kimi 先 codex 后)+CI 确认
+2. **C1 视觉终拍**:contact sheet 在 `.claude/worktrees/codex-inscription/docs/dispatch_evidence/inscription_2026-08-06/`(抽验 2 张初检 PASS)
+3. **方向盘点拍板**:`docs/audit/direction_candidates_2026-08-07.md`(A1 试玩数据阀门头部推荐)+ 配套 spec 草案
+4. **真机塔 42 目检**(第八阶段关账最后一验)
+5. **工作流优化 A-F 拍板**(昨晚探讨:首件抽检/追加单池/夜合/真机录屏/刷新点/扇出 review)
+
+### [BLOCKED]:无。收账末问:本批「预热 worktree(pub get+dylib+build_runner)」已手工做 3 次,值得封装成脚本/Skill。
