@@ -2007,6 +2007,28 @@ floors:
         schoolDamageTakenMult:
           lingQiao: 1.25
           yinRou: 0.75
+        # [balance] 第八阶段敌方协同首实例(spec 2026-08-05 §4:塔终局段大 Boss 选点)。
+        # 护法墙 taunt 沿 floor49 体例(0.15 仅对手动越护法直捶生效);掩护重定向:
+        # Boss 蓄力(chargeCounter 相位)中被破招命中 → 存活护法血最低者代吃+踉跄,
+        # Boss 蓄力不断,护法全灭后第二发破招才真打断;双护法存活时每相位一次合击
+        # (两人普攻公式和一次结算,零膨胀)。选 42 因双护卫+蓄招相位既有,零新敌人。
+        guardianWard:
+          damageTakenMult: 0.15
+          guardianIds:
+            - enemy_tower_42_guard_a
+            - enemy_tower_42_guard_b
+        guardInterceptsInterrupt: true
+        # CD 型蓄招(spec §2.3 原设计,沿青锋绝先例):协同窗口必须落在护法存活期。
+        # 诊断第 1 轮实证:仅靠 bossPhases chargeCounter(掉血触发)时,taunt 逼玩家
+        # 先清护法 → Boss 蓄力时护法必已死 → 重定向/合击 0 触发(结构互斥死配置,
+        # fromYaml「或」校验放行但运行时永不触发)。顶层 chargeSkillId 让 Boss 开局
+        # 即周期蓄大招,掩护循环在护法存活期成立。
+        # 校准定稿(2026-08-06 diagnostic 三画像×20 seed):满配 100%(8 tick 速胜)/
+        # 同阶 0 强化 15% 偶胜(24 tick 长战,场均重定向 5.1+合击 1.0,蓄力窗+代吃
+        # 踉跄集火链=真实翻盘线,首通体验主舞台)/ 跨阶 0% 全败(墙都破不了)。
+        # 数值零改动定稿:Boss/护法面板与 ward 0.15 维持现状,软门槛梯度一次成立;
+        # 回归守卫 test/features/tower/floor42_coop_guard_battle_test.dart。
+        chargeSkillId: skill_gangmeng_shichuan_ult
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.60
