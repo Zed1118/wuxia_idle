@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +14,7 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/narrative_loader.dart';
+import '../../../shared/utils/math_random.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../battle/application/battle_providers.dart';
 import '../../battle/application/battle_resolution.dart';
@@ -230,7 +230,7 @@ Future<void> runStageFlow({
       clearedStageIds: clearedBeforeVictory,
       towerFragmentDropProb:
           GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
-      rng: Random(),
+      rng: ref.read(mathRandomProvider),
     );
 
     // P4 战绩册:Boss 胜利 → 留档(纯数据写;test stub 路径不进 else,天然跳过,同 recordVictory/skillDrop)。

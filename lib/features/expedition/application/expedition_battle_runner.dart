@@ -1,6 +1,5 @@
-import 'dart:math';
-
 import '../../../data/numbers_config.dart';
+import '../../../shared/utils/math_random.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../battle/domain/strategy/default_ground_strategy.dart';
 
@@ -35,7 +34,8 @@ class ExpeditionNodeBattleResult {
 /// 百草岭节点 headless 自动战斗驱动（§4.5）。
 ///
 /// 复用 `defaultGroundStrategy.runToEnd`（地面 3v3 逐 tick 制），确定性由
-/// `Random(nodeSeed)` 保证；**不复用会自动跑完所有波次的群战策略**（§8.1）。
+/// `newMathRandom(seed: nodeSeed)`（math_random 注入点，等价 `Random(nodeSeed)`）
+/// 保证；**不复用会自动跑完所有波次的群战策略**（§8.1）。
 class ExpeditionBattleRunner {
   const ExpeditionBattleRunner._();
 
@@ -58,7 +58,7 @@ class ExpeditionBattleRunner {
       initial,
       numbers,
       maxTicks: maxTicks,
-      rng: Random(nodeSeed),
+      rng: newMathRandom(seed: nodeSeed),
     );
     final survivorHp = <int, int>{};
     final survivorQi = <int, int>{};

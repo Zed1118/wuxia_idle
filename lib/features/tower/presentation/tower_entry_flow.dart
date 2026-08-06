@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -56,6 +55,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
+import '../../../shared/utils/math_random.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
@@ -193,7 +193,7 @@ Future<void> runTowerFlow({
       ),
       towerFragmentDropProb:
           GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
-      rng: Random(),
+      rng: ref.read(mathRandomProvider),
     );
   }
 

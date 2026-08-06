@@ -1,8 +1,7 @@
-import 'dart:math';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart' show isTechniqueScrollDefId;
+import '../../../shared/utils/math_random.dart';
 import '../../battle/application/battle_providers.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
@@ -79,7 +78,7 @@ Future<SweepBattleOutcome?> settleMainlineSweepVictory({
     clearedStageIds: clearedBefore,
     towerFragmentDropProb:
         GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
-    rng: Random(),
+    rng: ref.read(mathRandomProvider),
   );
   if (skillDrop.fragmentSkillId != null) skillFragments = 1;
 
@@ -142,7 +141,7 @@ Future<SweepBattleOutcome?> settleTowerSweepVictory({
       ),
       towerFragmentDropProb:
           GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
-      rng: Random(),
+      rng: ref.read(mathRandomProvider),
     );
     if (skillDrop.fragmentSkillId != null) skillFragments = 1;
   }

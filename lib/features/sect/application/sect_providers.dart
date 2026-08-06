@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
@@ -12,6 +11,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/game_loop/monthly_tick.dart';
 import '../../../data/isar_provider.dart';
+import '../../../shared/utils/math_random.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../domain/sect.dart';
 import '../domain/sect_event.dart';
@@ -92,9 +92,10 @@ Future<void> _runSectMonthlyTick(Ref ref, DateTime now) async {
     activeEvents: active,
     playerRealm: realm,
     now: now,
-    // 生产非确定性 Random(同 SectEventDialog 体例);确定性验证在
+    // 生产非确定性随机源走 mathRandomProvider 注入点(K1 收口,测试可
+    // overrideWithValue(Random(seed)));确定性验证在
     // SectMonthlyTickService 纯函数测覆盖。
-    rng: Random(),
+    rng: ref.read(mathRandomProvider),
   );
 
   if (result.newEvents.isEmpty && result.expiredEvents.isEmpty) {

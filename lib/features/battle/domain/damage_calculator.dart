@@ -8,6 +8,7 @@ import '../../../core/domain/technique.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/numbers_config.dart';
 import '../../../core/domain/skill_usage_entry.dart';
+import '../../../shared/utils/math_random.dart';
 import '../../cultivation/domain/skill_proficiency.dart';
 import 'derived_stats.dart';
 
@@ -82,7 +83,7 @@ class DamageCalculator {
       attackPowerMultiplier: 1.0,
       skill: ctx.skill,
       n: n,
-      rng: ctx.rng ?? Random(),
+      rng: ctx.rng ?? newMathRandom(),
       forceCritical: ctx.forceCritical,
       proficiencyDamageMult: profMult,
       outputMultiplier: 1.0, // Character 路径无临时输出修正，固定 1.0

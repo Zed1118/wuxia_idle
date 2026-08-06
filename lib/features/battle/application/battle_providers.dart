@@ -17,6 +17,7 @@ import 'battle_resolution.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../jianghu/application/enmity_battle_modifier.dart';
 import '../../jianghu/application/npc_relation_service.dart';
+import '../../../shared/utils/math_random.dart';
 import '../../../shared/utils/rng.dart';
 
 part 'battle_providers.g.dart';
@@ -64,7 +65,7 @@ class BattleNotifier extends _$BattleNotifier {
   ///
   /// [startBattle] 用注入或自动生成的 seed 重建;[advance] / [step] 全程复用同一
   /// 实例,确保同 seed 逐 action 可复现(测试服务 + balance sim)。
-  Random _rng = Random();
+  Random _rng = newMathRandom();
 
   @override
   BattleState build() =>
@@ -86,7 +87,7 @@ class BattleNotifier extends _$BattleNotifier {
     StageWinCondition? winCondition,
   }) {
     _strategy = strategy ?? const DefaultGroundStrategy();
-    _rng = Random(seed ?? Random().nextInt(1 << 32));
+    _rng = seed == null ? newMathRandom() : newMathRandom(seed: seed);
     state = BattleState.initial(
       leftTeam: leftTeam,
       rightTeam: rightTeam,
