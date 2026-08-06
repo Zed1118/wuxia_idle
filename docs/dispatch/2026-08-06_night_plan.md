@@ -1,0 +1,32 @@
+# 2026-08-06 夜批总计划(22:14 起 · 8h 档 · 至 ~06:15)
+
+> 断点续跑唯一真相源:任何一次唤醒(cron/事件)都从本文件重建上下文,不依赖会话记忆。
+> 基线 main `74a7993c`;两执行端 worktree 均自该基线。
+
+## 端与单
+- codex · 单 C1 题字清查:`docs/dispatch/2026-08-06_C1_codex_inscription_cleanup.md`,worktree `.claude/worktrees/codex-inscription`,log `/Users/a10506/.claude/jobs/1dedbe6d/tmp/codex_C1.log`
+- kimi · 单 K1 技术债序列:`docs/dispatch/2026-08-06_K1_kimi_techdebt_series.md`,worktree `.claude/worktrees/kimi-techdebt`,log `/Users/a10506/.claude/jobs/1dedbe6d/tmp/kimi_K1.log`(预热 log `kimi_prep.log`)
+- Claude 自主活块(主 checkout;代码改动须 EnterWorktree,纯文档 Bash heredoc):
+  - 块1 杂项清账:phase8 spec §1「塔 14/21/28/32 已用 guardianDefIds」→ 实况 {42,49} 回改 / BACKLOG 四区第八阶段条目销账(已收官改归档指针) / docs/spec/playability_phase2_backlog.md 四区 P2③ 勾销(第八阶段落地) / `.codegraph` 重建(codegraph_status 查,坏则重建)
+  - 块2 方向盘点:产出 `docs/audit/direction_candidates_2026-08-07.md`——盘 GDD 各系统余量、音频二期(phase2_backlog §七)、战斗爽感原则落点、master spec 后续、rejected_task_registry 排除项;每候选 Phase 0 grep 实测+预估+推荐标记;早上用户拍板用
+  - 块3 头部候选 spec 草案(标【草案待拍板】,≤150 行)
+  - 块4 早班预收账:双端 [READY] 预 Gate 检查(merge-tree 预检,不合并)+ handoff 文档
+- 真机塔 42 目检未排(需用户在场),留早上收账后;第八阶段关账以它为准
+
+## 巡查 SOP(cron 唤醒时执行)
+1. 双端活性:`ps aux | grep -E 'codex|kimi'` + log 行数增量(codex 判活=日志持续涨;卡在 banner+prompt 回显=挂死,别只看进程在)
+2. 挂死处理:codex → `codex exec resume --last`(不认 --cd/--sandbox,workdir 继承);kimi → `~/.kimi-code/bin/kimi -r <sid>`(-p 结束会打印续跑命令,log 尾可查)
+3. `git -C <worktree> log --oneline -5` 查 [READY]/[BLOCKED];`status` 查未提交残留
+4. 出现 [READY] → 预 Gate 记录(不合并;合并等早上用户说「收账」)
+5. 更新本文件「进度」段
+6. Claude 自主活块未完则继续做;全完则本次唤醒只巡查
+
+## 用量护栏(方案详 memory feedback_overnight_quota_refresh_scheduling)
+- 双端配额独立,Claude 撞墙不影响其整夜跑;重活已前置发出
+- cron 唤醒失败(配额尽)→ 下一 cron 点自动重试 = 天然等到窗口刷新,无需精确刷新时刻
+- 唤醒节奏:23:41 / 01:41 / 03:41 / 05:41 巡查 + 22:47 接力(块1/块2)+ 06:07 收尾(块4)
+
+## 进度(唤醒时更新)
+- [x] C1 发出(22:2x) / [ ] C1 [READY]
+- [ ] K1 发出(预热完自动接发) / [ ] K1 [READY]
+- [ ] 块1 / [ ] 块2 / [ ] 块3 / [ ] 块4
