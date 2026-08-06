@@ -10,7 +10,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 ///   1. Boss HP 红线:baseHp == 59500 且 <= bossHpMax(60000),护法结界不得
 ///      变相把 Boss 血量堆到红线之上(批 A 塔顶迁 49 层·wuSheng 数值)。
 ///   2. 护法结界承伤倍率 ∈ (0, 1],不允许 >=1(等于没结界)或 <=0(免疫)。
-///   3. Scope 收敛:guardianWard 仅 floor49 主 Boss 配置,遍历全部 49 层验证。
+///   3. Scope 收敛:guardianWard 白名单 {42, 49} 内各仅主 Boss 配置,遍历全部
+///      49 层验证(floor42 = 第八阶段敌方协同实例,2026-08-06 校准闭环后登记)。
 ///   4. 三系锁死:floor49 主 Boss + 两名护法均为 wuSheng 境界(塔顶层),
 ///      结界/HP 改动不应连带偷改境界档位。
 ///   5. 护法 HP 校准值钉死:30000 / 28000(批 A 塔顶重排值,A5 balance 复校),
@@ -67,7 +68,7 @@ void main() {
     );
   });
 
-  test('guardianWard 仅 floor49 配置,其余 48 层全部为 null(非空遍历)', () async {
+  test('guardianWard 白名单 {42, 49} 内各恰 1 个主 Boss 配置,名单外全 null(非空遍历)', () async {
     final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
     expect(
@@ -76,12 +77,18 @@ void main() {
       reason: '塔层数据应至少覆盖 30 层,遍历才有意义',
     );
 
-    var floor49WardCount = 0;
+    // 白名单语义:floor42 为第八阶段敌方协同实例(2026-08-06 校准闭环后登记);
+    // 扩名单必须先过 floor42_coop_guard_diagnostic 同体例校准再改此处。
+    const wardFloors = {42, 49};
+    final wardCountByFloor = <int, int>{};
     var otherFloorsChecked = 0;
     for (final f in repo.towerFloors) {
       for (final e in f.enemyTeam) {
-        if (f.floorIndex == 49) {
-          if (e.guardianWard != null) floor49WardCount++;
+        if (wardFloors.contains(f.floorIndex)) {
+          if (e.guardianWard != null) {
+            wardCountByFloor[f.floorIndex] =
+                (wardCountByFloor[f.floorIndex] ?? 0) + 1;
+          }
           continue;
         }
         otherFloorsChecked++;
@@ -90,20 +97,22 @@ void main() {
           isNull,
           reason:
               'floor ${f.floorIndex} 敌人 ${e.id} 不应配 guardianWard'
-              '(guardianWard 是 floor49 专属机制)',
+              '(guardianWard 是白名单 {42, 49} 专属机制)',
         );
       }
     }
 
-    expect(
-      floor49WardCount,
-      1,
-      reason: 'floor49 应恰好 1 个敌人(主 Boss)配置 guardianWard',
-    );
+    for (final floor in wardFloors) {
+      expect(
+        wardCountByFloor[floor],
+        1,
+        reason: 'floor $floor 应恰好 1 个敌人(主 Boss)配置 guardianWard',
+      );
+    }
     expect(
       otherFloorsChecked,
       greaterThan(0),
-      reason: '非 floor49 敌人遍历不能是空集,否则上面的断言是空跑',
+      reason: '白名单外敌人遍历不能是空集,否则上面的断言是空跑',
     );
   });
 
