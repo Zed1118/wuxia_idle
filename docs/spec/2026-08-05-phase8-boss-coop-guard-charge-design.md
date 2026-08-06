@@ -14,7 +14,7 @@
 
 ## 1. Phase 0 现状(2026-08-05 实测,file:line)
 
-- 护法 taunt+结界:`BattleAI.isGuardedBoss`(`battle_ai.dart:185`)读 `guardianDefIds`+`guardianWardMult`,护法存活 → Boss 排除出常规目标选择 + ward 减伤;塔 14/21/28/32 层已用(静态结构协同)。
+- 护法 taunt+结界:`BattleAI.isGuardedBoss`(`domain/battle_ai.dart:45` 消费)读 `guardianDefIds`+`guardianWardMult`,护法存活 → Boss 排除出常规目标选择 + ward 减伤;机制型结界(towers.yaml `guardianWard`)实配 {42,49} 两层——49 原有(floor30 迁移)、42 本阶段首实例;14/21/28/32 仅站位 flavor 双护卫无 ward 机制(2026-08-06 收官订正:原文误记「14/21/28/32 已用」,行号 185→45 同步更新)。
 - 蓄招+破招:`chargingSkill`/`chargeTicksRemaining` 已有;破招锁定(`battle_ai.dart:70`)优先锁蓄招敌,**现状有意不排除被护 Boss**——`:65` 注释留下的拍板点「未来若配蓄招+护法的 Boss,再拍板是否让破招穿透 taunt」,**本 spec §2.1 即该拍板**。
 - 破绽集火:`_pickFocusTargetId`(`battle_ai.dart:228`)集火踉跄敌(血最低优先);`BattleAI.decide` 为 actor 视角纯函数,**敌我共用**。
 - 相位蓄招先例:floor32 vulnerability 型(`towers.yaml:1463`)bossPhases chargeCounter 开窗,2026-08-04 校准出「满配必胜/同阶偶胜/跨阶全败」软门槛梯度体例(血量与乘子必须联动)。

@@ -35,6 +35,6 @@
 
 ## 四 · 方向级候选(大活·需专注会话+xhigh)
 
-- **第八阶段 · 敌方协同实装批(掩护-蓄力+护法合击)**:spec `docs/spec/2026-08-05-phase8-boss-coop-guard-charge-design.md`(2026-08-05 拍板 a+d 融合;b/c 已进 rejected registry);机制通用化+塔终局段 1-2 实例+校准闭环,预估 1-2 专注会话+xhigh
+- (归档:「第八阶段 · 敌方协同」已于 2026-08-06 全五切片收官进 main(merge `714e68a0`+`9e4dc275`,塔 42 首实例三态校准 100%/15%/0%),详 spec `docs/spec/2026-08-05-phase8-boss-coop-guard-charge-design.md` 与 PROGRESS 顶段;真机观感目检待用户,一验后关账。)
 - (归档:「爬塔与支线终局适配」已于 2026-08-04 三批(PR #115/#117/#118)全收口进 main,详 `docs/spec/2026-08-01-tower-extension-design.md`。)
 

@@ -28,5 +28,5 @@
 
 ## 进度(唤醒时更新)
 - [x] C1 发出(22:2x) / [ ] C1 [READY]
-- [ ] K1 发出(预热完自动接发) / [ ] K1 [READY]
-- [ ] 块1 / [ ] 块2 / [ ] 块3 / [ ] 块4
+- [x] K1 发出(22:26,预热 PREP_OK 后直发) / [ ] K1 [READY]
+- [x] 块1(23:0x 完成:spec §1 订正/BACKLOG 四区销账/P2③ 勾销/.codegraph 重建 Done 但 MCP status 报 locked 待复验) / [x] 块2(direction_candidates_2026-08-07.md,55 行) / [ ] 块3(A1 试玩数据阀门 spec 草案,23:41 巡查点做) / [ ] 块4
