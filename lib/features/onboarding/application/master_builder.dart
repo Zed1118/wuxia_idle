@@ -50,7 +50,7 @@ Character buildMasterCharacter(
       ..enlightenment = profile.enlightenment
       ..agility = profile.agility
       ..fortune = profile.fortune,
-    rarity: RarityTier.biaoZhun,
+    rarity: GameRepository.instance.numbers.rarityForTotalPoints(profile.total),
     lineageRole: def.lineageRole,
     isFounder: def.lineageRole == LineageRole.founder,
     createdAt: now,

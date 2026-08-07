@@ -96,7 +96,7 @@ class RecruitmentService {
         ..enlightenment = def.attributeProfile.enlightenment
         ..agility = def.attributeProfile.agility
         ..fortune = def.attributeProfile.fortune,
-      rarity: RarityTier.biaoZhun,
+      rarity: repo.numbers.rarityForTotalPoints(def.attributeProfile.total),
       lineageRole: LineageRole.disciple,
       isFounder: false,
       createdAt: t,

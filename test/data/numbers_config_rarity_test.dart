@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/onboarding/application/master_builder.dart';
 
 /// 稀有度档位派生红线(GDD §4.1:六档 = 四项属性总点数的标签)。
 ///
@@ -77,6 +78,34 @@ void main() {
       });
     },
   );
+
+  group('生产创建路径产出的 rarity 必须是派生值(不得写死)', () {
+    test('buildMasterCharacter:祖师/大弟子/二弟子档位各不相同', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final now = DateTime(2026, 8, 7);
+
+      final produced = <String, RarityTier>{};
+      for (final def in repo.masters) {
+        final c = buildMasterCharacter(def, now: now);
+        produced[def.id] = c.rarity;
+        expect(
+          c.rarity,
+          repo.numbers.rarityForTotalPoints(c.attributes.total),
+          reason:
+              '${def.id} 的 rarity 与其 attributes.total(${c.attributes.total})不符,'
+              '说明创建点又写死了档位',
+        );
+      }
+
+      // 反「全部写死成同一档」:三位开局角色总点数 22/19/17,档位必须分化。
+      // 若哪天有人把 rarity 改回常量,这条会红。
+      expect(
+        produced.values.toSet().length,
+        greaterThan(1),
+        reason: '三位开局角色档位全同,疑似 rarity 被写死:$produced',
+      );
+    });
+  });
 
   group('角色 def 的总点数与派生档位自洽', () {
     test('recruit_candidates / sect_candidates 全部落在 16-24 且可派生', () async {

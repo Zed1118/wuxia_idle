@@ -107,7 +107,9 @@ Future<SectRecruitOutcome> runSectRecruitFlow({
         ..enlightenment = candidate.attributeProfile.enlightenment
         ..agility = candidate.attributeProfile.agility
         ..fortune = candidate.attributeProfile.fortune,
-      rarity: RarityTier.biaoZhun,
+      rarity: repo.numbers.rarityForTotalPoints(
+        candidate.attributeProfile.total,
+      ),
       lineageRole: LineageRole.disciple,
       isFounder: false,
       isActive: false,
