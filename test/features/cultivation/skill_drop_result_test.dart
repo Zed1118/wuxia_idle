@@ -72,6 +72,7 @@ void main() {
   group('SkillDropResult == / hashCode', () {
     test('none == SkillDropResult() (non-const RHS, exercises field ==)', () {
       // RHS 去 const：否则与 none 常量规范化为同实例,identical 短路 == 字段比较,假绿。
+      // ignore: prefer_const_constructors
       final rhs = SkillDropResult();
       expect(SkillDropResult.none, equals(rhs));
       expect(SkillDropResult.none.hashCode, equals(rhs.hashCode));
@@ -85,6 +86,7 @@ void main() {
         fragmentJustUnlocked: false,
       );
       // b 去 const：否则与 a 常量规范化为同实例,identical 短路字段比较,假绿。
+      // ignore: prefer_const_constructors
       final b = SkillDropResult(
         fragmentSkillId: 'skill_x',
         fragmentCount: 3,
