@@ -109,10 +109,18 @@ class EncounterService {
     this.attributeGainCap = 5,
     this.fortuneSensitivity = 20.0,
     this.attributeEffects,
+    this.rarityResolver,
   });
 
   final Isar isar;
   final int attributeGainCap;
+
+  /// 四项属性总点数 → 稀有度档位(生产端注入 `NumbersConfig.rarityForTotalPoints`)。
+  ///
+  /// 奇遇加点会改变 `Character.attributes.total`,而 `Character.rarity` 是该总点数
+  /// 的标签(GDD §4.1)——不同步就会漂:founder 起始 22 分(资优)吃满生涯 cap +5
+  /// 到 27 分,标签却还停在出生那刻。null 仅保留旧测试 fixture 的兼容路径。
+  final RarityTier Function(int totalPoints)? rarityResolver;
 
   /// 旧测试 fixture 的兼容参数；正式玩法统一使用 [attributeEffects]。
   final double fortuneSensitivity;
@@ -364,6 +372,12 @@ class EncounterService {
               // per-char 计数,持久于 Isar,供后续角色页「奇遇弥补 +N」展示(读端
               // 待接,不删字段免 schema churn)。
               character.attributeBonusFromAdventure += applied;
+              // rarity 是 attributes.total 的标签(GDD §4.1),属性一变必须同步
+              // 重算,否则标签停在出生那刻(资优吃满 cap 到 27 分仍显示资优)。
+              final resolve = rarityResolver;
+              if (resolve != null) {
+                character.rarity = resolve(character.attributes.total);
+              }
               await isar.characters.put(character);
             }
           }
