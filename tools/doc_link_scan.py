@@ -60,8 +60,10 @@ EXCLUDE_DIRS = {"docs/_archive", "docs/dispatch/reports"}
 EXCLUDE_FILES = {"docs/PATH_MIGRATION_MAP.md"}
 
 # 反引号路径:必须以这些顶级目录开头(允许 ./ ../ 前缀),才视为路径 token。
-# 与派单 §1.2 一致:docs / lib / test / data / tool / tools / assets
-TOP_DIRS = ("docs", "lib", "test", "data", "tool", "tools", "assets")
+# 与派单 §1.2 一致:docs / lib / test / data / tool / tools / assets。
+# build 仅用于识别文档中明确写出的 gitignored 生成物引用,由 check-ignore
+# 归入 ignored,避免把这类引用在采集阶段静默漏掉。
+TOP_DIRS = ("docs", "lib", "test", "data", "tool", "tools", "assets", "build")
 
 # 已知扩展名(用于剥字段后缀):data/skills.yaml.powerMultiplier → data/skills.yaml
 KNOWN_EXTS = (
@@ -477,7 +479,7 @@ def scan():
         for ref in iter_doc_refs(fpath, content):
             raw = ref["raw"]
             # 清洗
-            cleaned = clean_target(raw)
+            cleaned = clean_target(ref["target"])
             # 跳过判定
             skip, reason = should_skip(cleaned)
             if skip:
