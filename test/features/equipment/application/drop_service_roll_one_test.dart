@@ -53,6 +53,43 @@ void main() {
     expect(eq!.defId, 'a');
   });
 
+  test('等权区间边界:roll 落首/中/尾/跨区间点各归其位(严格 < 语义)', () {
+    // 只测 roll=0.0 单点对「恒返第一条」「反序遍历」等实现同样成立。
+    // 生产语义:roll×total 逐条累计,严格小于才命中 → 恰落累计边界时归下一条。
+    final table = [
+      const EquipmentDrop(equipmentDefId: 'a', dropChance: 1.0),
+      const EquipmentDrop(equipmentDefId: 'b', dropChance: 1.0),
+    ];
+    final cases = {
+      0.0: 'a', // 区间首
+      0.49: 'a', // a 区间中
+      0.5: 'b', // 恰跨边界(1.0-1.0=0 不 <0)→ 归下一条
+      0.99: 'b', // b 区间尾
+      1.0: 'b', // 上界:浮点兜底落 last
+    };
+    for (final e in cases.entries) {
+      final eq = svc().rollOneWeighted(table, _ConstRng(e.key));
+      expect(eq?.defId, e.value, reason: 'roll=${e.key} 应落 ${e.value}');
+    }
+  });
+
+  test('非等权区间边界(1:3):累计边界严格落入下一条', () {
+    final table = [
+      const EquipmentDrop(equipmentDefId: 'a', dropChance: 1.0),
+      const EquipmentDrop(equipmentDefId: 'b', dropChance: 3.0),
+    ];
+    final cases = {
+      0.24: 'a', // a 区间内(0.96<1.0)
+      0.25: 'b', // 恰跨边界(1.0-1.0=0 不 <0)→ 归 b
+      0.75: 'b', // b 区间中
+      0.999: 'b', // b 区间尾
+    };
+    for (final e in cases.entries) {
+      final eq = svc().rollOneWeighted(table, _ConstRng(e.key));
+      expect(eq?.defId, e.value, reason: 'roll=${e.key} 应落 ${e.value}');
+    }
+  });
+
   test('忽略非 EquipmentDrop 条目', () {
     final table = [
       const ItemDrop(
