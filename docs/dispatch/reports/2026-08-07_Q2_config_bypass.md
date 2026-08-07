@@ -10,6 +10,16 @@
 > - ⚠ **不可复现**:叶字段提取与消费扫描脚本留在 `/tmp/q2/` 未入仓(报告 §二自述),故 8 背离 / 7 部分背离 / 21 休眠 三个计数**当前无法一键复跑**,只能逐条按 file:line 人工验。脚本补齐入仓已入滚动池 P4。
 > - **本批不据此实装**:B1 `rarity_distribution` 属产品语义(稀有度三问未拍板);字段删除属 schema 红色决策。本报告仅作只读底账。
 
+> ## P4 行号订正注记(2026-08-08)
+>
+> 本报告正文全部 `numbers.yaml:<行号>` 引用已于 2026-08-08 按**字段名正向 grep**
+> 重新定位并订正(P4 审计脚本入仓单,脚本见 `tools/audit/`)。2026-08-08 当日 commits
+> 再动 numbers.yaml 注释,行号较上方批注的 `:1954` 又漂(如 `stage_boss_recruit_prob`
+> 现为 `:1958`)。历史批注保留原貌不追改。另:2026-08-08 稀有度收口批次
+> (`19481cba` 等)已给 `rarity_distribution` 接 loader 与派生消费,**B1 背离与
+> A1 报告 `Character.rarity` 只写不读结论在 main 上已失效**,复跑见
+> `python3 tools/audit/run_all.py`(现值 7/7/21 与 43/14)。
+
 - **性质**:只读深核 + 报告,零代码改动(派单 Q2)
 - **时间**:2026-08-07(夜批)
 - **基线**:branch `qoder/config-bypass-audit` @ `af82baea`(worktree 干净)
@@ -38,7 +48,7 @@
 **一句话结论**:全仓未发现 rarity 式"概率分布整段失效"的大面积数值撒谎,但**实锤 8 处背离 + 7 处部分背离**,集中在**飞升传承规则、断魂庄补给、Boss 招降概率、师徒阵容开关、门派克制附带效果开关**五个子系统;另有 **21 处"已解析零 caller"的休眠配置**(心魔惩罚、江湖 NPC、桃花岛地形副本等),是下一轮接线/删配置的主要候选。
 
 ### 自校验闸门:方法是否扫出活样本?
-**是。** 活样本 `character.rarity_distribution`(numbers.yaml:942)被本方法独立命中:机械筛发现 `RarityTier` 六档枚举在 lib 满屏命中、但三个生产赋值点全部写死 `RarityTier.biaoZhun`,且该 yaml 段**根本没被 `NumbersConfig.fromYaml` 解析**(连 loader 都没有)。判据成立,方法无漏。
+**是。** 活样本 `character.rarity_distribution`(numbers.yaml:966)被本方法独立命中:机械筛发现 `RarityTier` 六档枚举在 lib 满屏命中、但三个生产赋值点全部写死 `RarityTier.biaoZhun`,且该 yaml 段**根本没被 `NumbersConfig.fromYaml` 解析**(连 loader 都没有)。判据成立,方法无漏。
 
 ---
 
@@ -59,7 +69,7 @@
 > 判据:yaml 有可调字段;生产决策点是字面量/结构性硬编码,不读该字段;**改 yaml 不改变行为**。
 
 ### B1. `character.rarity_distribution` —— 六档稀有度概率整段失效【活样本 · 最高危】
-- **yaml**:`data/numbers.yaml:942-961`(庸才 15% / 寻常 35% / 标准 25% / 资优 18% / 天才 5% / 绝世 2%,GDD §4.1 强制规则)。
+- **yaml**:`data/numbers.yaml:966-984`(庸才 15% / 寻常 35% / 标准 25% / 资优 18% / 天才 5% / 绝世 2%,GDD §4.1 强制规则)。
 - **loader**:**未解析**——`NumbersConfig.fromYaml`(numbers_config.dart:315)只取 `character.adventure_attribute_bonus.lifetime_cap_per_character`(:459-465),`rarity_distribution` 无 loader。
 - **lib 硬编码点(全部)**:
   - `lib/features/recruitment/application/recruitment_service.dart:99` `rarity: RarityTier.biaoZhun`
@@ -77,7 +87,7 @@
 - **玩家侧表现**:断魂庄补给装载恒 3 份,UI/拦截/文案全用常量,yaml 调整完全无效。
 
 ### B3. `sect_recruit.stage_boss_recruit_prob` —— Boss 招降概率被 Dart 字面量顶替(注释误导)
-- **yaml**:`data/numbers.yaml:1917` `stage_boss_recruit_prob: 0.40`。
+- **yaml**:`data/numbers.yaml:1958` `stage_boss_recruit_prob: 0.40`。
 - **loader**:`lib/data/numbers_config.dart:2687-2688` 解析为 `stageBossRecruitProb`(:2664);**该属性全 lib 无业务读取**。
 - **lib 硬编码点**:`lib/data/defs/stage_def.dart:198` `this.baseProbability = 0.40` + `:204` `?? 0.40`(`BossRecruitConfig.fromYaml` 缺省回退是字面量,**不是**读 numbers.yaml);决策点 `lib/features/sect/presentation/stage_boss_recruit_hook.dart:174` 用 `stage.bossRecruit!.baseProbability`。`data/stages.yaml` 全部 6 处 `bossRecruit`(:263/:517/:768/:1029/:1286/:1552)均省略 `baseProbability` → 生产 100% 走字面量。
 - **误导注释**:`stage_def.dart:191`、`stage_boss_recruit_hook.dart:146`、`numbers_config.dart:2664` 三处都声称"走 numbers.yaml stage_boss_recruit_prob",实际从不读。
@@ -92,7 +102,7 @@
 - **玩家侧表现**:当前全 true 无可观察差异;一旦想用此开关下线某弟子,不生效(低危,但开关是死的)。
 
 ### B5-B8. `inheritance.heritage_items` 四条规则字段 —— 飞升传承规则全写死(yaml 注释自相矛盾)
-- **yaml**:`data/numbers.yaml:1408` `transfer_trigger`、`:1409` `multi_disciple_allocation`、`:1410` `stack_across_generations`、`:1411` `conflict_slot_resolution`。
+- **yaml**:`data/numbers.yaml:1444` `transfer_trigger`、`:1445` `multi_disciple_allocation`、`:1446` `stack_across_generations`、`:1447` `conflict_slot_resolution`。
 - **loader**:`lib/data/numbers_config.dart:694-700` 解析(字段声明 :662-665),缺省值与 yaml 同。
 - **lib 硬编码点(逐条)**:
   - `transfer_trigger`(仅飞升触发):传承只存在于 `lib/features/ascension/application/ascend_service.dart:238` `eq.inheritFrom(founderId, numbers)`,触发时机结构性钉死=飞升,无 `if(transferTrigger==…)` 分支。
@@ -109,21 +119,21 @@
 > 判据:配置对象被读取,但**某些子字段/分支**绕过它、由结构性硬编码顶替。
 
 ### P1. `retreat.zhengWu.target_attribute` —— 正午闭关目标维度写死
-- **yaml**:`data/numbers.yaml:1208` `target_attribute: "internal_force_points"`。
+- **yaml**:`data/numbers.yaml:1232` `target_attribute: "internal_force_points"`。
 - **loader**:`lib/data/numbers_config.dart:2130` 解析为 `zhengWuTargetAttribute`(声明 :2039);**全 lib 零消费**。
 - **读配置的路径**:同一 zhengWu 块的 `multiplier`(1.20)与 `applies_to_school`(gangMeng)走配置(`seclusion_service.dart:236` 算 `zhengWuBonus`)。
 - **绕开的路径**:`lib/features/seclusion/application/seclusion_service.dart:282` `zhengWuBonus` **无条件只乘进 `internalForcePoints`**,无按目标属性路由的分支。
 - **玩家侧表现**:正午刚猛闭关加成永远只落在内力点数;把 yaml 改成 `experience_points` 不生效。
 
 ### P2. `combat.school_counter.gang_meng_quake` 三语义布尔 —— 震伤语义结构性写死
-- **yaml**:`data/numbers.yaml:878/879/880`(`pierces_defense`/`pierces_critical`/`follows_main_hit`,全 true)。
+- **yaml**:`data/numbers.yaml:881/882/883`(`pierces_defense`/`pierces_critical`/`follows_main_hit`,全 true)。
 - **loader**:`lib/data/numbers_config.dart:1154-1156`。
 - **读配置的路径**:同对象 `.damage` 被 `lib/features/battle/domain/damage_calculator.dart:269` 消费。
 - **绕开的路径**:震伤在 `damage_calculator.dart:263-271` 以**独立加值**在防御率/暴击乘式之外叠加、闪避早退——"穿防/不暴击/随主攻击"三条语义靠代码结构写死;触发对硬编码 `gangMeng→yinRou`(:267-269),不查 `_counterTarget`。
 - **玩家侧表现**:当前 yaml 全 true 与硬编码行为恰好一致,无可见差异;但把任一布尔改 false 行为不变,配置可调性失效。
 
 ### P3. `combat.school_counter.yin_rou_internal_injury` 三标志 —— 内伤叠加/穿透写死
-- **yaml**:`data/numbers.yaml:890` `pierces_defense`、`:891` `stack_rule: "refresh"`、`:892` `follows_main_hit`。
+- **yaml**:`data/numbers.yaml:893` `pierces_defense`、`:894` `stack_rule: "refresh"`、`:895` `follows_main_hit`。
 - **loader**:`lib/data/numbers_config.dart:1187`(stackRule)。
 - **读配置的路径**:同对象 `turnsPersist`/`damagePerTick` 被 `lib/features/battle/domain/strategy/default_ground_strategy.dart:915-916` 消费。
 - **绕开的路径**:`:908-918` 触发对硬编码 `yinRou→lingQiao`(:912-913),**直接覆盖旧 slot 不叠层**(refresh 语义结构性写死,:909/:921 注释);dot 结算 `:359-374` 固定伤害直扣(pierces_defense 写死)、`!result.isDodged`(:911, follows_main_hit 写死)。
@@ -137,25 +147,25 @@
 
 | # | 字段 | yaml | loader | 零 caller 说明 / 替代路径 |
 |---|---|---|---|---|
-| 1 | `combat.critical.max_damage_multiplier` | numbers.yaml:137 | numbers_config.dart:1748 | 自述"信息性上限,不作运行时 clamp";暴击走固定档(damage_calculator.dart:196-200),无 clamp 分支 |
-| 2 | `combat.qi.chain_recovery_pct` | numbers.yaml:80 | numbers_config.dart:1308 | "连锁恢复"机制不存在;唯一真气回复是群战 waveIntermission(喂另一字段) |
-| 3 | `inner_demon.failure_penalty.internal_force_multiplier` | numbers.yaml:1657 | inner_demon_def.dart:256-266 | 惩罚改版:`applyFailurePenalty`(inner_demon_service.dart:160-193)不扣内力,改挂"内息紊乱";测试锁定不扣内力 |
-| 4 | `inner_demon.failure_penalty.internal_force_floor_pct` | numbers.yaml:1658 | 同上 | 同上(内力地板无意义) |
-| 5 | `inner_demon.failure_penalty.sub_cultivation_multiplier` | numbers.yaml:1660 | 同上 | 代码内自标 UNUSED;只扣主修(`mainCultivationMultiplier` 被消费,:183) |
-| 6 | `inner_demon.failure_penalty.debuff_id` | numbers.yaml:1661 | 同上 | 余毒走 `innerBreathDisorderHoursRemaining` 时数,不按 id 派发 |
-| 7 | `inner_demon.failure_penalty.debuff_clear_via_retreat_hours` | numbers.yaml:1662 | 同上 | 清解走实际闭关时长/战斗结算/离线,无硬编码 8 |
-| 8 | `sect_recruit.encounter_base_prob` | numbers.yaml:1916 | numbers_config.dart:2686 | 奇遇招收概率实际由 `encounters.yaml` per-event `baseProbability`(:1229/1248/1267)掌管并接 rng roll;numbers 侧旋钮挂空 |
-| 9 | `jianghu.triggers.encounter_npc_delta_min` | numbers.yaml:1900 | numbers_config.dart:2408-2411 | NpcRelation 机制未实装:`NpcRelationService.upsert` 生产 0 caller,仅测试调 |
-| 10 | `jianghu.triggers.encounter_npc_delta_max` | numbers.yaml:1901 | 同上 | 同上 |
-| 11 | `jianghu.enmity.enemy_attack_power_mult` | numbers.yaml:1893 | numbers_config.dart:2372-2373 | loader 注释自认"schema 占位,0 caller";敌方加成复用 `player_attack_power_mult`(双向对等设计) |
-| 12 | `sect_management.demo_initial_count` | numbers.yaml:1921 | numbers_config.dart:2716 | 领地清单整体数据驱动(territories.yaml 恰 6 条),无按 count 截断;纯描述 |
-| 13 | `light_foot.stage_terrain` | numbers.yaml:1735 | light_foot_def.dart:53-61 | **双真相源**:地形实际取自 `stages.yaml` `terrainBiome`(:5438 等)→ light_foot_strategy.dart:41/49;numbers 侧副本零 lookup |
+| 1 | `combat.critical.max_damage_multiplier` | numbers.yaml:140 | numbers_config.dart:1748 | 自述"信息性上限,不作运行时 clamp";暴击走固定档(damage_calculator.dart:196-200),无 clamp 分支 |
+| 2 | `combat.qi.chain_recovery_pct` | numbers.yaml:83 | numbers_config.dart:1308 | "连锁恢复"机制不存在;唯一真气回复是群战 waveIntermission(喂另一字段) |
+| 3 | `inner_demon.failure_penalty.internal_force_multiplier` | numbers.yaml:1698 | inner_demon_def.dart:256-266 | 惩罚改版:`applyFailurePenalty`(inner_demon_service.dart:160-193)不扣内力,改挂"内息紊乱";测试锁定不扣内力 |
+| 4 | `inner_demon.failure_penalty.internal_force_floor_pct` | numbers.yaml:1699 | 同上 | 同上(内力地板无意义) |
+| 5 | `inner_demon.failure_penalty.sub_cultivation_multiplier` | numbers.yaml:1701 | 同上 | 代码内自标 UNUSED;只扣主修(`mainCultivationMultiplier` 被消费,:183) |
+| 6 | `inner_demon.failure_penalty.debuff_id` | numbers.yaml:1702 | 同上 | 余毒走 `innerBreathDisorderHoursRemaining` 时数,不按 id 派发 |
+| 7 | `inner_demon.failure_penalty.debuff_clear_via_retreat_hours` | numbers.yaml:1703 | 同上 | 清解走实际闭关时长/战斗结算/离线,无硬编码 8 |
+| 8 | `sect_recruit.encounter_base_prob` | numbers.yaml:1957 | numbers_config.dart:2686 | 奇遇招收概率实际由 `encounters.yaml` per-event `baseProbability`(:1229/1248/1267)掌管并接 rng roll;numbers 侧旋钮挂空 |
+| 9 | `jianghu.triggers.encounter_npc_delta_min` | numbers.yaml:1941 | numbers_config.dart:2408-2411 | NpcRelation 机制未实装:`NpcRelationService.upsert` 生产 0 caller,仅测试调 |
+| 10 | `jianghu.triggers.encounter_npc_delta_max` | numbers.yaml:1942 | 同上 | 同上 |
+| 11 | `jianghu.enmity.enemy_attack_power_mult` | numbers.yaml:1934 | numbers_config.dart:2372-2373 | loader 注释自认"schema 占位,0 caller";敌方加成复用 `player_attack_power_mult`(双向对等设计) |
+| 12 | `sect_management.demo_initial_count` | numbers.yaml:1962 | numbers_config.dart:2716 | 领地清单整体数据驱动(territories.yaml 恰 6 条),无按 count 截断;纯描述 |
+| 13 | `light_foot.stage_terrain` | numbers.yaml:1776 | light_foot_def.dart:53-61 | **双真相源**:地形实际取自 `stages.yaml` `terrainBiome`(:5438 等)→ light_foot_strategy.dart:41/49;numbers 侧副本零 lookup |
 | 14 | `StageDef.towerLayer` | stages.yaml 无条目 | stage_def.dart:136 | 塔走独立 `towers.yaml`/TowerFloorDef,关卡↔塔层不经 stages.yaml |
 | 15 | `FactionDef.npc_ids` | factions.yaml:17 等(六派全空) | faction_def.dart:23-25 | schema 占位;NPC↔门派关联实际由 StageDef.factionId / EncounterDef.affectsReputation 建立 |
 | 16 | `TerritoryDef.initialOwnerSectId` | territories.yaml:21 等(全 null) | territory_def.dart:33 | 初始领地 seeding 未实装;ownership 唯一权威源=动态 `Sect.territoryIds` |
-| 17 | `animation.readable_victory_min_ms` | numbers.yaml:1598 | numbers_config.dart:1923 | 纯诊断锚点;胜利节拍走 `victoryHandoffDelayMs`/`keyMomentHoldMs`;yaml(14000)与 Dart 默认(10000)已漂移 |
-| 18 | `animation.shake_offset_px` | numbers.yaml:1602 | numbers_config.dart:1927 | 批次 2.4 起废弃,震幅改走 `combat.impact_feedback` 分档(该链是活的) |
-| 19 | `inheritance.founder_ancestor_buff.cultivation_progress_pct` | numbers.yaml:1430 | numbers_config.dart:633 | yaml 自注"未生效 · Phase 5+ 接公式";修炼度机制无 buff 注入点 |
+| 17 | `animation.readable_victory_min_ms` | numbers.yaml:1639 | numbers_config.dart:1923 | 纯诊断锚点;胜利节拍走 `victoryHandoffDelayMs`/`keyMomentHoldMs`;yaml(14000)与 Dart 默认(10000)已漂移 |
+| 18 | `animation.shake_offset_px` | numbers.yaml:1643 | numbers_config.dart:1927 | 批次 2.4 起废弃,震幅改走 `combat.impact_feedback` 分档(该链是活的) |
+| 19 | `inheritance.founder_ancestor_buff.cultivation_progress_pct` | numbers.yaml:1466 | numbers_config.dart:633 | yaml 自注"未生效 · Phase 5+ 接公式";修炼度机制无 buff 注入点 |
 | 20 | `TechniqueDef.speedBonus`(per-心法) | techniques.yaml 每条目 | technique_def.dart:85 | **被影子替代**:速度实际按主修心法 tier 查 `numbers.techniqueSpeedBonus`(derived_stats.dart:157),per-心法值不参与公式 |
 | 21 | `TechniqueDef.internalForceGrowthBonus`(per-心法) | techniques.yaml 每条目 | technique_def.dart:83 | 内力上限纯按境界 `RealmDef.internalForceMax`(character_advancement_service.dart:95),无心法成长环节 |
 | (+预留) | `SectCandidateDef.targetSectId` | sect_candidates.yaml 未配置 | sect_candidate_def.dart:75 | 文档化预留(1.2 跨派系启用);当前招收落派硬编玩家门派(sect_recruit_handler.dart:81/127),yaml 无值可背离 |
