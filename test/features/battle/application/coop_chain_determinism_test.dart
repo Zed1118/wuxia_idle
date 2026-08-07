@@ -83,7 +83,7 @@ void main() {
     slotIndex: slot,
   );
 
-  String runOnce(int seed) {
+  BattleState runState(int seed) {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     // 永久 listener 防 autoDispose 在 read 间隙释放 notifier。
@@ -115,7 +115,11 @@ void main() {
       guard++;
     }
 
-    final s = container.read(battleProvider);
+    return container.read(battleProvider);
+  }
+
+  String runOnce(int seed) {
+    final s = runState(seed);
     final ops = s.actionLog
         .map(
           (a) =>
@@ -152,5 +156,49 @@ void main() {
           '含破防开窗+集火的 advance() 全程须走注入的单一 seeded rng,'
           '同 seed 两跑 actionLog(含 openedBreakWindow 标记)与胜负全等',
     );
+  });
+
+  test('正确性:破绽窗口开启后,同队跟进攻击在窗口内集火被破敌(非纯确定性复述)', () {
+    // 确定性断言只锁「两跑一致」——对「恒不集火」或「踉跄不落」的实现同样成立。
+    // 本条锁语义本身:_pickFocusTargetId 契约 = 破绽窗口内同队攻击必须指向
+    // 被破敌。把 stagger 落子改坏(开窗标记照打但踉跄不上)本条必红,而上面的
+    // 确定性测照样绿——两条互补。
+    final s = runState(20260618);
+    final log = s.actionLog;
+
+    // fixture 无蓄力敌(无人配 chargeSkillId)→ 踉跄唯一来源是 defenseBreakPct
+    // 开窗。故首个 openedBreakWindow 之前不存在任何踉跄敌,开窗后窗口期内
+    // 受害者是唯一踉跄敌 → 同队跟进攻击的集火指向无歧义。
+    final openIdx = log.indexWhere((a) => a.openedBreakWindow);
+    expect(openIdx, greaterThanOrEqualTo(0), reason: '场景应至少开一次破绽窗口');
+    final opener = log[openIdx];
+    final victimId = opener.targetId;
+    expect(victimId, isNotNull, reason: '开窗动作应有目标');
+    final openerOnLeft = opener.actorId > 0; // fixture 约定:正 id=左队
+
+    // 受害者下一次行动时,其踉跄在自己的回合起始递减(strategy tick 内
+    // preActor.staggerTicksRemaining - 1);若窗口期内被补刀击杀,集火目标
+    // 合法转移。两者先到者即窗口上界。
+    final windowEnd = log.indexWhere(
+      (a) =>
+          a.tick > opener.tick &&
+          (a.actorId == victimId ||
+              (a.defeatedTarget && a.targetId == victimId)),
+    );
+    final end = windowEnd == -1 ? log.length : windowEnd;
+    final followUps = log
+        .sublist(openIdx + 1, end)
+        .where((a) => (a.actorId > 0) == openerOnLeft && a.attackResult != null)
+        .toList();
+    expect(followUps, isNotEmpty, reason: '窗口期内应存在同队跟进攻击,否则集火指向无从证伪(防空过)');
+    for (final f in followUps) {
+      expect(
+        f.targetId,
+        victimId,
+        reason:
+            '破绽窗口内同队攻击须集火被破敌(_pickFocusTargetId);'
+            'tick=${f.tick} actor=${f.actorId} 却打向 ${f.targetId}',
+      );
+    }
   });
 }
