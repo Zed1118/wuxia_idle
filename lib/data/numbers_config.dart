@@ -216,6 +216,16 @@ class NumbersConfig {
   /// #4③ B2:接入 [EncounterService.attributeGainCap],消除该 yaml key 零消费。
   final int adventureAttributeLifetimeCap;
 
+  /// 六档稀有度的总点数区间(numbers.yaml `character.rarity_distribution`,GDD §4.1)。
+  ///
+  /// 按 `total_points_range` 升序;稀有度是四项属性**总点数的标签**,由
+  /// [rarityForTotalPoints] 派生,不得在创建点写死(2026-08-07 N1:此前三处
+  /// 创建点硬编码 biaoZhun,致 18 个角色 def 中 16 个标签与实际点数不符)。
+  ///
+  /// yaml 同段的 `probability` 列当前无消费者——本仓角色资质为逐个手写的静态
+  /// profile,无程序化生成路径;该列保留作程序化生成时的分布指引。
+  final List<RarityTierRange> rarityTiers;
+
   /// 技能装配大招槽阈值(numbers.yaml `skill_loadout.ultimate_power_threshold`,GDD §6)。
   /// 主修心法招 powerMultiplier ≥ 此值时自动填入大招槽，由 [SkillLoadout.autoFill] 消费。
   final int loadoutUltimatePowerThreshold;
@@ -275,6 +285,7 @@ class NumbersConfig {
     required this.founderAncestorBuff,
     required this.heritageItems,
     required this.ascension,
+    required this.rarityTiers,
     required this.dispersionCultivationPenalty,
     required this.defeatBossCultivationPenalty,
     required this.learningCost,
@@ -466,6 +477,10 @@ class NumbersConfig {
                   as num?)
               ?.toInt() ??
           5,
+      rarityTiers: _parseRarityTiers(
+        (y['character'] as Map<String, dynamic>?)?['rarity_distribution']
+            as List?,
+      ),
       loadoutUltimatePowerThreshold:
           ((y['skill_loadout']
                       as Map<String, dynamic>?)?['ultimate_power_threshold']
@@ -543,6 +558,36 @@ class NumbersConfig {
     return m;
   }
 
+  /// 解析 `character.rarity_distribution`;缺段(fixture)→ 空表,
+  /// [rarityForTotalPoints] 退化为 §5.4 default 兜底。
+  static List<RarityTierRange> _parseRarityTiers(List? raw) {
+    if (raw == null) return const [];
+    final out = [
+      for (final e in raw)
+        RarityTierRange(
+          tier: RarityTier.values.byName((e as Map)['rarity'] as String),
+          minTotal: ((e['total_points_range'] as List)[0] as num).toInt(),
+          maxTotal: ((e['total_points_range'] as List)[1] as num).toInt(),
+        ),
+    ]..sort((a, b) => a.minTotal.compareTo(b.minTotal));
+    return List.unmodifiable(out);
+  }
+
+  /// 四项属性总点数 → 稀有度档位(GDD §4.1)。
+  ///
+  /// 钳制两端而非抛错:奇遇生涯加成(cap +5)可让 founder 的 total 超出表上界
+  /// (22 起始 + 5 = 27 > 24),此时归最高档;低于下界归最低档。
+  /// [rarityTiers] 为空(fixture 未配该段)时兜底 [RarityTier.biaoZhun]。
+  RarityTier rarityForTotalPoints(int total) {
+    if (rarityTiers.isEmpty) return RarityTier.biaoZhun;
+    for (final r in rarityTiers) {
+      if (total >= r.minTotal && total <= r.maxTotal) return r.tier;
+    }
+    return total < rarityTiers.first.minTotal
+        ? rarityTiers.first.tier
+        : rarityTiers.last.tier;
+  }
+
   static List<ResonanceStageConfig> _parseResonanceStages(
     Map<String, dynamic> resonance,
   ) {
@@ -560,6 +605,19 @@ class NumbersConfig {
         ),
     ];
   }
+}
+
+/// 一档稀有度对应的四项属性总点数区间(numbers.yaml `character.rarity_distribution`)。
+class RarityTierRange {
+  final RarityTier tier;
+  final int minTotal;
+  final int maxTotal;
+
+  const RarityTierRange({
+    required this.tier,
+    required this.minTotal,
+    required this.maxTotal,
+  });
 }
 
 /// 祖师爷 buff(P1.1 A1 E.5,GDD §7.1)。numbers.yaml `inheritance.founder_ancestor_buff`。
