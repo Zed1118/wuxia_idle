@@ -57,3 +57,28 @@
 - Q2 报出的 8 条背离(supply_cap / stage_boss_recruit_prob / enabledInDemo / 飞升传承 4 字段)—— 未复核未处置
 - A1 报出的 44 个只写不读字段 —— 未复核未处置
 - 稀有度 spec §四 的分布问题(12 人池天才 17% / 绝世 17% vs 目标 5% / 2%)—— 待拍
+
+## 七、清理后落点(2026-08-07 收工)
+
+**worktree 全部清空**,主仓 `git worktree list` 只剩 main;工作区干净、与 origin 同步、analyze 0。
+
+**已合入并删除分支**(三验全过:ancestor=YES / main..b=0 / --merged 命中):
+`pi/doc-links-s1` · `cb/doc-links-s2` · `pi/doc-headers-s3` · `claude/n1-numbers-fields`
+
+**保留的分支**(worktree 目录已删,commit 全在分支上,需要时 `git worktree add .claude/worktrees/<name> <branch>` 重建):
+
+| 分支 | 内容 | 下一步 |
+|---|---|---|
+| `worktree-claude-rarity` | 稀有度派生实装 3 commit,analyze 0 + 全量 4892/0 + 破坏证红 | 等稀有度三问拍板后再决定合不合 |
+| `kimi/night-goals-0807` | 假绿抽查 12 commit / 12 测试文件,6/7 目标 | 逐目标标完成态 + 跑 targeted 后再评 |
+| `codex/taohua-art-0807` | 3 commit(仅自测报告;图不在 git) | 图已持久化,见下 |
+| `qoder/config-bypass-audit` | Q2 报告(背离 8/部分 7/休眠 21) | 数字未复核,脚本未入仓,需在当前 main 重跑 |
+| `pi/dead-field-audit` | A1 报告(44 只写不读 + 14 仅 debug) | 同上;且 `Character.rarity` 结论已被稀有度分支改写,存在基线漂移 |
+| `cb/doc-link-scan-tool` | L1-D 死链扫描器 | **缺陷实锤不可合**:md 链接分支存 `raw="[text](path)"`,主流程 `:477` 拿 `raw` 去清洗,带 `[]` 被判模板跳过 → 所有 md 链接静默漏扫,`target` 字段采了不用 |
+
+**C2 美术已持久化出仓**:`~/Desktop/Projects/挂机武侠素材/桃花岛美术候选_20260807/`
+- 23 张成品 + 4 张出图中间件(27 文件,27MB)
+- `清单_MANIFEST.md`——逐图尺寸/模式/四角 alpha/大小/md5(前 12 位)/状态列(待选·已选·淘汰)
+- `contact_sheet.png`——23 张成品拼图(宣纸底,透明图合成到次纸底以验抠图)
+- `派单包_原始规格.md` + `执行端自测报告.md`
+- 规格实测:A 图标 14 张全 256×256 RGBA 四角 α=0 · B 卡背景 7 张全 1408×864 · C 入口图 2 张全 1456×816;**D 类背景候选 2 张未做**
