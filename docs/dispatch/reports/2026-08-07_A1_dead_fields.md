@@ -9,6 +9,15 @@
 > - ⚠ **不可复现**:脚本在 `/tmp/a1_audit/` 未入仓(报告 §6 自述),故 44 只写不读 / 14 仅 debug 读 两个计数**当前无法一键复跑**,只能逐条按 file:line 人工验。脚本补齐入仓已入滚动池 P4。
 > - **只读结论,本批不实装**:字段删除/改 schema 属红色决策,须用户拍板;`rarity` 一项还与稀有度三问耦合。
 
+> ## P4 注记(2026-08-08)
+>
+> 1. 本报告 `numbers.yaml:<行号>` 引用已按字段名正向 grep 重新定位订正
+>    (`:942` → `:966`,P4 审计脚本入仓单,脚本见 `tools/audit/`)。
+> 2. 2026-08-08 稀有度收口批次(`19481cba` 等)合入 main 后,`Character.rarity`
+>    已有生产读(角色档案展示等),**主表 A 的 `rarity` 一项结论在 main 上已失效**;
+>    复跑 `python3 tools/audit/run_all.py` 现值:只写不读 = 43(报告值 44),
+>    仅 debug/test 读 = 14(不变)。其余 43 项不受影响。
+
 - 执行:pi (DeepSeek V4 Flash) · worktree `pi-deadfield` · 分支 `pi/dead-field-audit`
 - 日期:2026-08-07 · 性质:只读审计,**零代码改动**
 - 派单:docs/dispatch/2026-08-07_A1.md
@@ -35,7 +44,7 @@
 
 | 类 | 字段 | 声明 | 赋值点 | 这意味着什么 |
 |---|---|---|---|---|
-| Character | `rarity` | `lib/core/domain/character.dart:64` | factory `:207`;写死 `RarityTier.biaoZhun` ×3(recruitment_service.dart:99 / sect_recruit_handler.dart:110 / master_builder.dart:53) | **锚点案例**。6 档稀有度概率(numbers.yaml:942)完全不生效;稀有度设计只做了声明+写,读端(显示/派生)没做 |
+| Character | `rarity` | `lib/core/domain/character.dart:64` | factory `:207`;写死 `RarityTier.biaoZhun` ×3(recruitment_service.dart:99 / sect_recruit_handler.dart:110 / master_builder.dart:53) | **锚点案例**。6 档稀有度概率(numbers.yaml:966)完全不生效;稀有度设计只做了声明+写,读端(显示/派生)没做 |
 | Character | `levelExp` | `character.dart:53` | factory `:219` | legacy 兼容字段(和 `level` 配套,但 `level` 有读、`levelExp` 无读);经验展示走 `experience` 体系 |
 | Character | `learnedSkillIds` | `character.dart:76` | factory `:227` | 技能系统走 Technique 实体,此列表从未被接线;「已学技能 id 冗余副本」 |
 | Character | `isInRetreat` | `character.dart:103` | factory `:235`(恒默认 false) | 闭关状态靠 `RetreatSession` 判定,此标记从未接线(lineup_service.dart:49 注释自认「无写点」) |
