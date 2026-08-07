@@ -136,7 +136,7 @@ data/narratives/
 └── mainline_test_06_victory.yaml      第三章 一战封王（胜利）
 ```
 
-**章节背景**（DeepSeek 自由发挥；Mac 端的 `lib/ui/strings.dart` 已写 章节标题
+**章节背景**（DeepSeek 自由发挥；Mac 端的 `lib/shared/strings.dart` 已写 章节标题
 + 简介，DeepSeek 端可参考但不必引用）：
 
 | 章节 | 标题 | 简介 |

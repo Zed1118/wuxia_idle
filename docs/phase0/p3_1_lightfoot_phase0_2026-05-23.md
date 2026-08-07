@@ -19,7 +19,7 @@ P3.1 codebase 0 引用 greenfield。**BattleStrategy plug-in 路径全 ready**(`
 | D5 | numbers.yaml 顶级段 | `data/numbers.yaml` 1346 行;`combat:39 / retreat:825 / inner_demon:1289`;末尾 1344 行后 | `light_foot:` 段插 1344 前(沿 inner_demon 体例),~40-50 行(3 terrain × 3 modifier + lightfoot_skill_boost) |
 | D6 | stages.yaml 体例 | `data/stages.yaml` 2015 行;`stage_inner_demon_01:1898 / _07:2000` 7 关心魔 + Ch5 13 文件 stage_05_01..05 | `stage_light_foot_01..05` 5 entries 插 inner_demon 后(2010+);沿 inner_demon entry 体例 + 加 `terrainBiome:` 字段 |
 | D7 | enums.dart | `lib/core/domain/enums.dart` `StageType:157`(mainline/tower/innerDemon 3 项)/ `EncounterBiome:213`(18 项,**dock/bambooForest/cliffWaterfall/frontier 已有 4 项可复用,rooftop 缺**) | StageType +1 `lightFoot` / **新建 TerrainBiome enum**(water/rooftop/bamboo/mixed)独立于 EncounterBiome — 后者继续做 stage 标签,前者进战斗机制 |
-| D8 | BattleStrategy 注入位 | `lib/core/application/battle_providers.dart:58/75` `BattleNotifier.startBattle(strategy: ...)` 已支持注入 + 默认 fallback DefaultGroundStrategy | StageEntryFlow / TowerEntryFlow 调 startBattle 时按 stage.stageType 注入 LightFootStrategy 实例(constructor 接 terrainBiome + numbers.lightFoot) |
+| D8 | BattleStrategy 注入位 | `lib/features/battle/application/battle_providers.dart:82/89` `BattleNotifier.startBattle(strategy: ...)` 已支持注入 + 默认 fallback DefaultGroundStrategy | StageEntryFlow / TowerEntryFlow 调 startBattle 时按 stage.stageType 注入 LightFootStrategy 实例(constructor 接 terrainBiome + numbers.lightFoot) |
 
 ## 4 主轴自主拍板
 

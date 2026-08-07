@@ -37,12 +37,12 @@
 
 | stage id | narrative 文件 | 状态 |
 |---|---|---|
-| `mainline_test_01` | `data/narratives/mainline_test_01.yaml` | ⚠ 缺失 |
-| `mainline_test_02` | `data/narratives/mainline_test_02.yaml` | ⚠ 缺失 |
-| `mainline_test_03` | `data/narratives/mainline_test_03.yaml` | ⚠ 缺失 |
-| `mainline_test_04` | `data/narratives/mainline_test_04.yaml` | ⚠ 缺失 |
-| `mainline_test_05` | `data/narratives/mainline_test_05.yaml` | ⚠ 缺失 |
-| `mainline_test_06` | `data/narratives/mainline_test_06.yaml` | ⚠ 缺失 |
+| `mainline_test_01` | `data/narratives/mainline_test_01.yaml`(已移除) | ⚠ 缺失 |
+| `mainline_test_02` | `data/narratives/mainline_test_02.yaml`(已移除) | ⚠ 缺失 |
+| `mainline_test_03` | `data/narratives/mainline_test_03.yaml`(已移除) | ⚠ 缺失 |
+| `mainline_test_04` | `data/narratives/mainline_test_04.yaml`(已移除) | ⚠ 缺失 |
+| `mainline_test_05` | `data/narratives/mainline_test_05.yaml`(已移除) | ⚠ 缺失 |
+| `mainline_test_06` | `data/narratives/mainline_test_06.yaml`(已移除) | ⚠ 缺失 |
 
 | stage id | prevStageId | 状态 |
 |---|---|---|
@@ -62,7 +62,7 @@
 | `mainline_test_05` | `mainline_test_05_opening` | ⚠ 缺失 | `mainline_test_05_victory` | ⚠ 缺失 |
 | `mainline_test_06` | `mainline_test_06_opening` | ⚠ 缺失 | `mainline_test_06_victory` | ⚠ 缺失 |
 
-备注：仓库里存在 DeepSeek 侧 `data/narratives/stages/stage_01_01.yaml` 等文件，但它们不按当前 `stages.yaml` 的 `mainline_test_*` id 命名，精确联结口径下不匹配。
+备注：仓库里存在 DeepSeek 侧 `data/narratives/stages/stage_01_01_opening.yaml` 等文件，但它们不按当前 `stages.yaml` 的 `mainline_test_*` id 命名，精确联结口径下不匹配。
 
 ### 2.2 `towers.yaml` ↔ `narratives/`（Boss 层）
 
@@ -163,5 +163,5 @@
 1. 明天 Opus 优先决定主线 narrative id 体系：是让 DeepSeek 按 `mainline_test_*` 补文件，还是 Mac 侧重命名 `stages.yaml` / narrative id。
 2. 第二优先处理装备 lore 联结：当前 `equipment.yaml` 与 `data/lore/` 文件名完全不对齐，会影响典故系统接入。
 3. 若 Week 4 选 C 奇遇，先定 `encounters.yaml` id 清单，再让 `data/events/` 对齐；否则会重复出现“文案已写但无法联结”的状态。
-4. 若 Week 4 选 E 武学领悟，需要先统一 `data/narratives/techniques/insights/` 与未来 `insights.yaml` 的 id 关系。
+4. 若 Week 4 选 E 武学领悟，需要先统一 `data/narratives/techniques/insights/`(已移至 `data/narratives/_archive/techniques/insights/`)与未来 `insights.yaml` 的 id 关系。
 5. 七阶覆盖不足是 Demo 内容量问题，不是当前 schema 启动问题；扩装备/心法时再同步检查 7 阶与三系锁死。

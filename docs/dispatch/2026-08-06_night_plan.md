@@ -45,7 +45,7 @@
 
 ### 等用户拍板项
 1. **「收账」指令** → 合并两分支(零冲突,建议 kimi 先 codex 后)+CI 确认
-2. **C1 视觉终拍**:contact sheet 在 `.claude/worktrees/codex-inscription/docs/dispatch_evidence/inscription_2026-08-06/`(抽验 2 张初检 PASS)
+2. **C1 视觉终拍**:contact sheet 在 `docs/dispatch_evidence/inscription_2026-08-06/`(抽验 2 张初检 PASS)
 3. **方向盘点拍板**:`docs/audit/direction_candidates_2026-08-07.md`(A1 试玩数据阀门头部推荐)+ 配套 spec 草案
 4. **真机塔 42 目检**(第八阶段关账最后一验)
 5. **工作流优化 A-F 拍板**(昨晚探讨:首件抽检/追加单池/夜合/真机录屏/刷新点/扇出 review)
