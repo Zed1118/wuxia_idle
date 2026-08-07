@@ -22,7 +22,7 @@
 | `lib/data/numbers_config.dart` | `DefenseBreakConfig` 强类型 + 接入 `CombatConfig` | Modify |
 | `data/numbers.yaml` | `combat.defense_break` 配置块 | Modify |
 | `lib/features/battle/domain/strategy/default_ground_strategy.dart` | 破防开窗分支（统一破招/破防窗口字段 + 刷新不叠加 + 减防地板 clamp） | Modify |
-| `lib/features/battle/domain/battle_action.dart` | `openedBreakWindow` bool（表现层读，沿 `interrupted` 体例） | Modify |
+| `lib/features/battle/domain/battle_action.dart(已移除)` | `openedBreakWindow` bool（表现层读，沿 `interrupted` 体例） | Modify |
 | `lib/features/battle/domain/battle_ai.dart` | `decide` 目标优先级加破绽敌集火 | Modify |
 | `lib/features/battle/presentation/impact_profile.dart` | 「破绽」glyph 派生（开窗 action） | Modify |
 | `lib/features/battle/presentation/battle_screen.dart` | 开窗题字「破绽」+ 破绽敌高亮 + 即放提示「该爆发了」 | Modify |
@@ -137,7 +137,7 @@ git commit -m "feat(第六阶段): 破防 schema - SkillDef.defenseBreakPct + De
 
 **Files:**
 - Modify: `lib/features/battle/domain/strategy/default_ground_strategy.dart`（`_resolveOneTarget` 结算区 ~:595-646）
-- Modify: `lib/features/battle/domain/battle_action.dart`（加 `openedBreakWindow`）
+- Modify: `lib/features/battle/domain/battle_action.dart(已移除)`（加 `openedBreakWindow`）
 - Test: `test/features/battle/domain/defense_break_window_test.dart`
 
 - [ ] **Step 1: 写失败测**（破防命中非蓄力敌也开窗 + 刷新不叠加 + 减防 clamp）
@@ -199,7 +199,7 @@ git commit -m "feat(第六阶段): 破防 schema - SkillDef.defenseBreakPct + De
 
 - [ ] **Step 7: commit**
 ```bash
-git add lib/features/battle/domain/strategy/default_ground_strategy.dart lib/features/battle/domain/battle_action.dart test/features/battle/domain/defense_break_window_test.dart
+git add lib/features/battle/domain/strategy/default_ground_strategy.dart lib/features/battle/domain/battle_action.dart(已移除) test/features/battle/domain/defense_break_window_test.dart
 git commit -m "feat(第六阶段): 破防开窗 - 统一破招/破防窗口字段 + 刷新不叠加 + 减防地板 clamp"
 ```
 

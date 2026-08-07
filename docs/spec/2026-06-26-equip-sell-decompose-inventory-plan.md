@@ -17,7 +17,7 @@
 - `lib/core/domain/enums.dart:61` EquipmentTier 7 阶 `xunChang..shenWu`；`:348` ItemType `moJianShi/xinXueJieJing/silver`；`fromDefId` defId=`item_mojianshi`/`item_xinxuejiejing`/`item_silver`。
 - `lib/core/domain/inventory_item.dart`：`defId`(unique)/`itemType`/`quantity`/`firstObtainedAt`/`lastObtainedAt`。
 - `lib/data/numbers_config.dart`：`NumbersConfig.fromYaml` 解析；`final LevelConfig level`（:162）；equipment 段在 `y['equipment']`（:326）。
-- `lib/features/level/domain/level_config.dart`：`expToNext(L)=base+(L-1)*perLevel`，`fromYaml` 默认 120/40（注释自称=生产初值）。
+- `lib/features/level/domain/level_config.dart(已移除)`：`expToNext(L)=base+(L-1)*perLevel`，`fromYaml` 默认 120/40（注释自称=生产初值）。
 - `lib/features/inventory/presentation/inventory_screen.dart`：装备 tab `_EquipmentGrid`→`_SlotGroupSection`（按 slot 分组 Wrap）→`_EquipmentGridTile`(:423，Stack + ItemSlot + isLineageHeritage 角标 :459)；物料 tab `_MaterialTab`(:243，顶部银两位 + `_MaterialList`/`_MaterialGroup` ExpansionTile)。providers：`allEquipmentsProvider`/`allInventoryItemsProvider`/`silverBalanceProvider`/`activeCharacterIdsProvider`/`characterByIdProvider`。
 - `lib/features/equipment/presentation/equipment_detail_screen.dart`：单件详情页（单件出售/分解入口落点，实装时读取结构）。
 - `lib/shared/strings.dart`：`UiStrings`（新增中文串全进此处，参照 `inventoryTabEquipment`:535 / `silverBalanceLabel`:235 / `itemUseButton`:552 体例）。
@@ -589,7 +589,7 @@ git commit -m "物料界面格子化(像装备网格)"
 
 **Files:**
 - Modify: `data/numbers.yaml`（`level` 段 exp 曲线）
-- Modify: `lib/features/level/domain/level_config.dart`（`fromYaml` 默认值同步，保持「默认=生产初值」honest）
+- Modify: `lib/features/level/domain/level_config.dart(已移除)`（`fromYaml` 默认值同步，保持「默认=生产初值」honest）
 - Test: 全仓 grep 同步 + 契约
 
 - [ ] **Step 1: grep 现有 exp 断言**
@@ -613,7 +613,7 @@ Expected: PASS（若有读真 yaml 的断言失败，按新值 200/80 同步）
 - [ ] **Step 5: 提交**
 
 ```bash
-git add data/numbers.yaml lib/features/level/domain/level_config.dart
+git add data/numbers.yaml lib/features/level/domain/level_config.dart(已移除)
 git commit -m "[balance] 放慢角色升级速度 exp 曲线 120/40→200/80"
 ```
 

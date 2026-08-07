@@ -16,7 +16,7 @@
 - `EquipmentTier`（`enums.dart:61`）：`xunChang < xiangYang < haoJiaHuo < liQi < zhongQi < baoWu < shenWu`（7 阶，`.index` 升序）。
 - `RealmTier`（`enums.dart:22`）：`xueTu < sanLiu < erLiu < yiLiu < jueDing < zongShi < wuSheng`（7 阶）。三系锁死：装备可用 ⇔ `equipmentTier.index <= realmTier.index`（`equipment.dart:107`）。
 - `StageDef`（`stage_def.dart`）：`List<DropEntry> dropTable`（:39）/ `RealmTier requiredRealm`（:18）/ `int? chapterIndex`（:16）。
-- `TowerFloorDef`（`lib/features/tower/domain/tower_floor_def.dart`）：`List<DropEntry> dropTable`（:47）/ `int floorIndex`（:26）/ `RealmTier requiredRealm`（:29）。
+- `TowerFloorDef`（`lib/data/defs/tower_floor_def.dart`）：`List<DropEntry> dropTable`（:47）/ `int floorIndex`（:26）/ `RealmTier requiredRealm`（:29）。
 - 名称解析（`stage_victory_dialog.dart:214-256` 体例）：
   - guard：`if (!GameRepository.isLoaded) return rawDefId;`
   - 装备：`GameRepository.instance.getEquipment(defId).name` + 阶名 `EnumL10n.equipmentTier(def.tier)` + 阶色 `tierColorForEquipment(def.tier)`。

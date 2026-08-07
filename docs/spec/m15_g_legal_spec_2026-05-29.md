@@ -38,15 +38,15 @@ CHECKLIST G 5 子项 0/5 → 5/5(因 Q1 海外 only,ICP 备案此版本砍,实�
 
 ## 4. 子任务粒度
 
-- **G1.1**:`docs/legal/ai_disclosure.md` 起草 · 包含:
+- **G1.1**:`docs/legal/ai_disclosure.md(待创建)` 起草 · 包含:
   - LoRA 训练数据来源(MJ v7 sref 用户原图 / 公共域武侠插画 / 自绘草稿)
   - 风格独立性证明(独有 sref code + 7 阶配色矩阵 + 武侠水墨基调 audit)
   - 非 IP 仿冒声明(不涉及金庸 / 古龙 / 温瑞安等 IP 角色 / 招式名)
   - 衍生作品权属(玩家截图 / 直播 / Mod / fan art 授权范围)
 - **G2.1**:`grep -rn "fontFamily" lib/` 字体审计 + `pubspec.yaml fonts:` 段 audit
-- **G2.2**:`docs/legal/font_license.md` 思源黑体 + 思源宋体 + (备选)源界明朝体 全 Apache 2.0 / SIL OFL 1.1 LICENSE 文件归位 `assets/fonts/LICENSES/`
+- **G2.2**:`docs/legal/font_license.md(待创建)` 思源黑体 + 思源宋体 + (备选)源界明朝体 全 Apache 2.0 / SIL OFL 1.1 LICENSE 文件归位 `assets/fonts/LICENSES/`
 - **G2.3**:fallback 方案(如 OS 系统字体缺失时使用 default)
-- **G3.1**:`docs/legal/audio_license.md` E 段素材清单(BGM 3 + SFX 36 + 配音 10 = 49 条目)+ 每条目附:来源 / 授权类型 / 使用范围 / 衍生范围
+- **G3.1**:`docs/legal/audio_license.md(待创建)` E 段素材清单(BGM 3 + SFX 36 + 配音 10 = 49 条目)+ 每条目附:来源 / 授权类型 / 使用范围 / 衍生范围
 - **G3.2**:`assets/audio/LICENSES/<id>.txt` 单素材 LICENSE
 - **G4.1**:Termly 模板生成中文隐私政策 + 自我适配(Sentry crash report / Isar 本地存储 / Steam 成就同步)
 - **G4.2**:英文版隐私政策 + 同步翻译
@@ -66,7 +66,7 @@ CHECKLIST G 5 子项 0/5 → 5/5(因 Q1 海外 only,ICP 备案此版本砍,实�
 
 ## 6. 验收
 
-- [ ] G1 `docs/legal/ai_disclosure.md` 起草完成 + Steam 商品页 AI-Generated tag 勾
+- [ ] G1 `docs/legal/ai_disclosure.md(待创建)` 起草完成 + Steam 商品页 AI-Generated tag 勾
 - [ ] G2 字体审计完成 + 思源 LICENSE 归位 `assets/fonts/LICENSES/` + pubspec.yaml fonts 段对齐
 - [ ] G3 audio 来源清单完成 + 49 条 LICENSE 归位 `assets/audio/LICENSES/`
 - [ ] G4 隐私政策中/英双语 + 游戏内入口 + 首次启动展示

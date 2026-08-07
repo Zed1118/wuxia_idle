@@ -40,7 +40,7 @@ injury:
 |---|---|---|
 | `lib/core/domain/character.dart` | +2 字段 `lightInjuryStacks`/`injuryHoursRemaining` | Modify :31,137,178 |
 | `lib/data/isar_setup.dart` | saveVer 0.28→0.29（无迁移分支） | Modify :138 |
-| `lib/features/injury/domain/injury_config.dart` | `InjuryConfig.fromYaml`（仿 InnerDemonResidueDebuff） | Create |
+| `lib/data/defs/injury_config.dart` | `InjuryConfig.fromYaml`（仿 InnerDemonResidueDebuff） | Create |
 | `lib/data/numbers_config.dart` | 挂载 `injury` 字段 | Modify :152,259,382 |
 | `lib/features/injury/application/injury_service.dart` | `applyHeavyInjury` + 轻伤累积纯函数 | Create |
 | `lib/features/battle/domain/derived_stats.dart` | `internalForceMaxWithLineage` +heavyInjured / `speed` +lightInjuryStacks | Modify :255,139 |
@@ -96,7 +96,7 @@ git commit -m "feat(injury): Character 加双层伤势字段 + saveVer 0.29"
 
 ### Task 2: InjuryConfig + numbers.yaml + 挂载
 
-**Files:** Create `lib/features/injury/domain/injury_config.dart`；Modify `data/numbers.yaml`、`lib/data/numbers_config.dart`（:152,259,382）；Test `test/features/injury/domain/injury_config_test.dart`
+**Files:** Create `lib/data/defs/injury_config.dart`；Modify `data/numbers.yaml`、`lib/data/numbers_config.dart`（:152,259,382）；Test `test/features/injury/domain/injury_config_test.dart`
 
 - [ ] **Step 1: 写失败测**（injury_config_test.dart）
 
@@ -173,7 +173,7 @@ Expected: PASS / 0 issues
 - [ ] **Step 7: Commit**
 
 ```bash
-git add lib/features/injury/domain/injury_config.dart lib/data/numbers_config.dart data/numbers.yaml test/features/injury/domain/injury_config_test.dart
+git add lib/data/defs/injury_config.dart lib/data/numbers_config.dart data/numbers.yaml test/features/injury/domain/injury_config_test.dart
 git commit -m "feat(injury): InjuryConfig + numbers.yaml injury 段 + NumbersConfig 挂载"
 ```
 

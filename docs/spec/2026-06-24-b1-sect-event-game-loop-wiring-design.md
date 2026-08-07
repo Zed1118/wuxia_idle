@@ -105,7 +105,7 @@ HomeFeed 首帧
 | `lib/features/sect/application/sect_monthly_tick_service.dart` | 新建纯函数 service + SectTickResult |
 | `lib/features/sect/application/sect_providers.dart` | 加 `sectMonthlyTickProvider` + `_runSectTick` |
 | `lib/features/sect/application/sect_monthly_tick_gate.dart` | 新建 `maybeRunSectMonthlyTick` 顶层函数（或并入 providers）|
-| `lib/features/home_feed/presentation/home_feed_screen.dart` | 首帧加 tick 调用 |
+| `lib/features/home_feed/presentation/home_feed_screen.dart(已移除)` | 首帧加 tick 调用 |
 | `lib/features/sect/presentation/sect_screen.dart` | dev-gated 调试触发按钮 |
 | `data/numbers.yaml` + `lib/data/numbers_config.dart` | `narrative_ids` 配置 + `SectTournamentDef.narrativeIds` 解析 |
 | `test/...` | 纯 service 测 + provider 测 |
