@@ -1,5 +1,7 @@
 # Taohua Island Phase 2 Foundation Implementation Plan
 
+> 📋 计划态存档 · 本文是实施前的计划,文中路径与文件名为**当时的规划意图**,以实际落地为准;`lib/` 路径的新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Expand 桃花岛 from a four-building card list into a medium-depth经营据点 foundation with 6-8 buildings, two-layer production chains, and a denser island-style screen.

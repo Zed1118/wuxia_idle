@@ -1,5 +1,7 @@
 # Phase 5 #3 第 5 批 — isar_provider 8 个 service provider 整体拆分(I 任务)
 
+> 🔒 迁移账本 · 本文记录 2026-05 Phase 5.3 的目录重构过程本身,文中新旧路径**并存是有意的**;任何批量路径替换都会使账本自毁,禁止对本文做路径替换。对照表见 `docs/PATH_MIGRATION_MAP.md`。
+
 **日期**:2026-05-16
 **模型**:Opus 4.7 xhigh(C 接力,未降档)
 **会话密度**:1 会话 / 1 commit + 1 docs commit / 3 新文件 + 1 文件重写 + 6 consumer 改 = **10 文件改动** / ~10 行 import 改 / 全程零回退

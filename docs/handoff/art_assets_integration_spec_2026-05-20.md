@@ -1,5 +1,7 @@
 # M4 PoC #46 美术 89 张 assets 归位 + Flutter UI 接入 spec(2026-05-20)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > **范围**:Stage 2 量产收官后 89 张产物 → `assets/` 归位 + yaml schema 字段注册 + Flutter UI 3 处接入
 > **scope 拍板**:**完整方案 Phase 1+2+3**(2026-05-20 用户拍板)
 > **节奏**:主对话 opus xhigh,估时 ~1.5-2h

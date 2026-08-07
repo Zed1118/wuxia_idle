@@ -1,5 +1,7 @@
 # Phase 3 Week 9 A 爬塔 UI 自审 + W6 drift 收尾 closeout（2026-05-13 自主推进会话）
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 写给下一会话开局者(Mac Opus 自己)看。
 > 用户离线 2 小时自主推进模式产物,无 Pen 视觉验收。
 > PROGRESS.md「当前阶段」「W9 自审条」是单一信源;本文档补「为什么这么处理」+「下次开局必读」。

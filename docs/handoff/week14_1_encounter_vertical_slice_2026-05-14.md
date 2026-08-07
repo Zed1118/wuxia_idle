@@ -1,5 +1,7 @@
 # W14-1 C 任务奇遇/武学领悟 vertical slice closeout(2026-05-14)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 写给下一会话开局者(Mac Opus 自己)+ C-W14-2/3 继续推进的人。
 > 本文是 GDD §7.2 奇遇/武学领悟系统从 0 → 端到端跑通的总结。
 > 单 commit `8ecdbe3`,**572/572**,analyze 0 issues。

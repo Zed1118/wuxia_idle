@@ -1,5 +1,7 @@
 # Phase 3 Week 4 T53 / T54 / T55 收尾（2026-05-13）
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 写给下一会话开局后回来接 T56 的 Mac Opus 自己看。
 > Week 4 D 师徒系统数据/service 子系统已经全部落地，T56 起进入 UI 子系统。
 > PROGRESS.md「当前阶段」段是单一信源；本文档补充「为什么这么做」的决策链。

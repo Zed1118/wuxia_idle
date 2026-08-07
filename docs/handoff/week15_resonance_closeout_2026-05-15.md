@@ -1,5 +1,7 @@
 # Phase 4 W15 共鸣/强化/开锋视觉验收真闭环 + C-1 收尾 closeout
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > Mac 端 Opus 4.7 维护,本会话末态。
 > 创建日期:2026-05-15(W15 真闭环 v0.5.3-w15-final 之后开新会话)
 > 上游锚:tag `v0.5.3-w15-final` 之后 6 commits,HEAD `6011fca`

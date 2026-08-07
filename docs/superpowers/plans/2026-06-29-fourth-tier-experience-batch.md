@@ -1,5 +1,7 @@
 # Fourth Tier Experience Batch Implementation Plan
 
+> 📋 计划态存档 · 本文是实施前的计划,文中路径与文件名为**当时的规划意图**,以实际落地为准;`lib/` 路径的新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 推进第 4 梯队 10 个体验增强任务,让既有系统更会解释自己,但不新增任务系统、不做催促、不改收益/概率/核心结算。

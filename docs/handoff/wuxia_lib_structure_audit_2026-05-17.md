@@ -1,5 +1,7 @@
 # lib/ 目录结构审计 vs CLAUDE.md §3（2026-05-17）
 
+> 🔒 迁移账本 · 本文记录 2026-05 Phase 5.3 的目录重构过程本身,文中新旧路径**并存是有意的**;任何批量路径替换都会使账本自毁,禁止对本文做路径替换。对照表见 `docs/PATH_MIGRATION_MAP.md`。
+
 > Nightshift T05 产出。预期 0 漂移（Phase 5 #3 第 6 批 finalization 销账后）。
 
 ## 0. 扫描范围

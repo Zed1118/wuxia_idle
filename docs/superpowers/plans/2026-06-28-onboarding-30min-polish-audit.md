@@ -1,5 +1,7 @@
 # 新手前 30 分钟体验打磨审计计划
 
+> 📋 计划态存档 · 本文是实施前的计划,文中路径与文件名为**当时的规划意图**,以实际落地为准;`lib/` 路径的新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to execute this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 审计当前 production 新档前 30 分钟路径，列出解锁顺序、默认目标、初期掉落、首个失败点、首个成长反馈的摩擦与可执行修复切片。

@@ -1,5 +1,7 @@
 # W13 Codex 桌面视觉验收 + Mac 端 6 处链式修复 closeout(2026-05-14)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 写给下一会话开局者(Mac Opus 自己)+ 后续派 Codex 桌面视觉验收的人。
 > 本文是 W7-W11 五周累积视觉验收闭环 + W13 4 轮迭代修复链的总结。
 > tag `v0.4.0-w11` 已 push origin。**552/552**,analyze 0 issues。

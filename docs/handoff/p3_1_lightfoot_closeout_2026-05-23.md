@@ -1,5 +1,7 @@
 # §12.3 轻功对决 P3.1 全收尾 closeout(8h overnight)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 日期:2026-05-23 夜 → 2026-05-24 晨 / 模型:Mac + Opus 4.7 xhigh
 > worktree:`feat/p3_1_lightfoot`(from `613a072`)→ push origin 等 review
 > 上游 spec:`docs/spec/p3_1_lightfoot_spec_2026-05-23.md`(149 行 · 实际 177 略超 +18%)

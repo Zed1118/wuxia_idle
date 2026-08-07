@@ -1,5 +1,7 @@
 # Codex 派单 · W15 共鸣度 / 强化里程碑 / 开锋槽 build 视觉验收
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 派单方:Mac Opus 4.7 · 接单方:Pen Windows Codex 桌面
 > 创建日期:2026-05-15
 > 关联上游:本派单 fixture 与 spec 同一 commit 落 main(派单 push 后告知 HEAD)

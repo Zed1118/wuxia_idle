@@ -1,5 +1,7 @@
 # W15 反审 + C-2 收尾 closeout(2026-05-15)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 写给下次开局者(Mac Opus 自己)。本会话从 W15 整批闭环 `8c33922`(tag
 > `v0.5.2-w15`)接力,B → A → C 三件套 + 反审撞二重错。
 >

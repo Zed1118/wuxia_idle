@@ -1,5 +1,7 @@
 # W15 #30 第 3 期 experiencePoints 消费层 + 升层链路接入 closeout
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 2026-05-16 / Mac · opus 4.7 xhigh / 单会话 ~2.5h / 0 commit(待 commit)/ 零回退
 
 ## 1. 起点与背景

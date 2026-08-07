@@ -1,5 +1,7 @@
 # Phase 4 W11 victory 路径接 resolveBattle 双端 + 销账 #32（2026-05-13 xhigh 会话）
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 写给下一会话开局者（Mac Opus 自己）看。
 > 用户接力同意继续 W11，开整后未中途介入。
 > PROGRESS.md「当前阶段」/「已完成」/「已知偏差 #32」是单一信源；本文档补「为什么这么处理」+「Pen 验收要点」+「下次开局必读」。

@@ -1,5 +1,7 @@
 # Week 15 · Phase 5 #3 第 3 批 feature 迁(character_panel / inventory / technique_panel)closeout
 
+> 🔒 迁移账本 · 本文记录 2026-05 Phase 5.3 的目录重构过程本身,文中新旧路径**并存是有意的**;任何批量路径替换都会使账本自毁,禁止对本文做路径替换。对照表见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 2026-05-16 · opus xhigh(用户拍板 A + 方案 1 只迁 presentation)· Phase 5 #3 第 2 批 cookbook 落地后第 2 次批量复用。
 >
 > **结论**:character_panel / inventory / technique_panel 3 UI feature **只迁 presentation 层**(方案 1)到 `lib/features/{character_panel,inventory,technique_panel}/presentation/`,model + providers 留原位等 lib/core 抽离时统一迁。**3 feature 零踩坑一次过**(analyze 0 issues + 653/653 全测,3 次连续 verify 无回退)。Phase 5 主战场 **7/14 feature 落地**(seclusion / tower / mainline / encounter / character_panel / inventory / technique_panel)。**顺手搬 `encounter_skill_section`**(closeout §7.4 预案落地),`encounter_debug_picker` 留 ui/debug/ 等独立 debug feature 时再决议。
