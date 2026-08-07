@@ -26,8 +26,10 @@
 
 | 分支 | 端 | 进度 | 说明 |
 |---|---|---|---|
-| `kimi/night-goals-0807` | kimi | 12 commit,7 目标序列做到约 T4(synergy_service 假绿修) | 未打 [READY],**按 §8.3 属 WIP 不可合** |
-| `codex/taohua-art-0807` | codex | 3 commit,A 类图标 + 部分 B 类卡背景 | 图落 `build/art_candidates/taohua_2026-08-07/`(gitignored,未进 git) |
+| `kimi/night-goals-0807` | kimi | 12 commit / 12 测试文件。**7 目标完成约 6 个**:T1 全(3 文件)· T2 全(2)· T6 全(extension 棘轮新建)· T7 全(2)· T3 部分(3 文件中做了 coop_chain)· T4 部分(top8 中做了 3)· **T5 宗门+奇遇域未开工** | 未打 [READY],**按 §8.3 属 WIP 不可合** |
+| `codex/taohua-art-0807` | codex | 3 commit(报告)。**25 张规格完成 23 张**:A 类图标 7 建筑×2 变体=14 · B 类卡背景 7 · C 类入口图 2;**D 类背景候选 2 张未做** | 图落 `build/art_candidates/taohua_2026-08-07/`(gitignored,未进 git),含中间件共 27 文件 |
+
+> ⚠ 本节初稿低报了两端进度(写成「kimi 做到 T4」「codex A 类+部分 B 类」),2026-08-07 停止后按 git 与产出目录实测订正如上。
 
 ## 四、Claude 自己的分支(全绿,待你决定合不合)
 
