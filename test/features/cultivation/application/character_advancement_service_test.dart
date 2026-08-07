@@ -310,7 +310,14 @@ void main() {
         internalForce: 200,
         internalForceMax: 500,
       );
-      final attrsBefore = ch.attributes;
+      // Attributes 无 == 覆写(identity 相等),同对象引用断言恒真;
+      // 必须按字段快照比较,生产若改任一项即红。
+      final attrsBefore = (
+        ch.attributes.constitution,
+        ch.attributes.enlightenment,
+        ch.attributes.agility,
+        ch.attributes.fortune,
+      );
       final ifBefore = ch.internalForce;
 
       CharacterAdvancementService.applyExperience(
@@ -319,7 +326,10 @@ void main() {
         realmLookup: _lookup,
       );
 
-      expect(ch.attributes, attrsBefore);
+      expect(ch.attributes.constitution, attrsBefore.$1, reason: '根骨不动');
+      expect(ch.attributes.enlightenment, attrsBefore.$2, reason: '悟性不动');
+      expect(ch.attributes.agility, attrsBefore.$3, reason: '身法不动');
+      expect(ch.attributes.fortune, attrsBefore.$4, reason: '机缘不动');
       expect(ch.internalForce, ifBefore, reason: '升层不回血,只升 cap');
       expect(ch.internalForceMax, 600);
     });
