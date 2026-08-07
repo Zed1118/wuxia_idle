@@ -1,9 +1,13 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import '../../../support/test_data.dart';
 
 /// 第六阶段 Task 3:集火破绽窗口确定性测试。
@@ -57,6 +61,7 @@ void main() {
     required int slot,
     required int speed,
     required int equipAttack,
+    int hp = 10000,
     List<SkillDef> skills = const [breakSkill, normal],
   }) => BattleCharacter(
     characterId: charId,
@@ -64,8 +69,8 @@ void main() {
     realmTier: RealmTier.yiLiu,
     realmLayer: RealmLayer.qiMeng,
     school: TechniqueSchool.gangMeng,
-    maxHp: 10000,
-    currentHp: 10000,
+    maxHp: hp,
+    currentHp: hp,
     maxInternalForce: 2000,
     currentInternalForce: 2000,
     speed: speed,
@@ -158,47 +163,94 @@ void main() {
     );
   });
 
-  test('正确性:破绽窗口开启后,同队跟进攻击在窗口内集火被破敌(非纯确定性复述)', () {
-    // 确定性断言只锁「两跑一致」——对「恒不集火」或「踉跄不落」的实现同样成立。
-    // 本条锁语义本身:_pickFocusTargetId 契约 = 破绽窗口内同队攻击必须指向
-    // 被破敌。把 stagger 落子改坏(开窗标记照打但踉跄不上)本条必红,而上面的
-    // 确定性测照样绿——两条互补。
-    final s = runState(20260618);
-    final log = s.actionLog;
+  test('正确性:破绽窗口内集火优先于血最低回落(非纯确定性复述)', () {
+    // 与上一条确定性测互补:确定性只锁「两跑一致」——对「恒不集火」或
+    // 「踉跄不落」的实现同样成立。本条锁语义本身:_pickFocusTargetId 契约 =
+    // 破绽窗口内的踉跄敌优先于血最低回落(_pickTargetId)。
+    //
+    // 判别设计:被破敌 X 血量高于另一敌 Y(弱破招手 equipAttack=10 + 生产
+    // requestUltimate 手动指定破 X)。若集火失效回落血最低,跟进攻击会打 Y
+    // 而非 X → 恰红;两敌同血量的场景两条规则同指向,无判别力(首轮教训:
+    // 破坏 stagger 落子后旧版本条曾照样绿)。
+    const strategy = DefaultGroundStrategy();
+    final numbers = GameRepository.instance.numbers;
 
-    // fixture 无蓄力敌(无人配 chargeSkillId)→ 踉跄唯一来源是 defenseBreakPct
-    // 开窗。故首个 openedBreakWindow 之前不存在任何踉跄敌,开窗后窗口期内
-    // 受害者是唯一踉跄敌 → 同队跟进攻击的集火指向无歧义。
-    final openIdx = log.indexWhere((a) => a.openedBreakWindow);
-    expect(openIdx, greaterThanOrEqualTo(0), reason: '场景应至少开一次破绽窗口');
-    final opener = log[openIdx];
-    final victimId = opener.targetId;
-    expect(victimId, isNotNull, reason: '开窗动作应有目标');
-    final openerOnLeft = opener.actorId > 0; // fixture 约定:正 id=左队
-
-    // 受害者下一次行动时,其踉跄在自己的回合起始递减(strategy tick 内
-    // preActor.staggerTicksRemaining - 1);若窗口期内被补刀击杀,集火目标
-    // 合法转移。两者先到者即窗口上界。
-    final windowEnd = log.indexWhere(
-      (a) =>
-          a.tick > opener.tick &&
-          (a.actorId == victimId ||
-              (a.defeatedTarget && a.targetId == victimId)),
+    final breaker = unit(
+      charId: 1,
+      teamSide: 0,
+      slot: 0,
+      speed: 130,
+      equipAttack: 10, // 弱破招手:X 挨破后血仍远高于 Y
     );
-    final end = windowEnd == -1 ? log.length : windowEnd;
-    final followUps = log
-        .sublist(openIdx + 1, end)
-        .where((a) => (a.actorId > 0) == openerOnLeft && a.attackResult != null)
-        .toList();
-    expect(followUps, isNotEmpty, reason: '窗口期内应存在同队跟进攻击,否则集火指向无从证伪(防空过)');
-    for (final f in followUps) {
-      expect(
-        f.targetId,
-        victimId,
-        reason:
-            '破绽窗口内同队攻击须集火被破敌(_pickFocusTargetId);'
-            'tick=${f.tick} actor=${f.actorId} 却打向 ${f.targetId}',
-      );
+    final attacker = unit(
+      charId: 2,
+      teamSide: 0,
+      slot: 1,
+      speed: 120,
+      equipAttack: 400,
+      skills: const [normal],
+    );
+    final enemyX = unit(
+      charId: -1,
+      teamSide: 1,
+      slot: 0,
+      speed: 50, // 慢速:跟进者行动前敌不行动,踉跄不被自递减
+      equipAttack: 10,
+      skills: const [normal],
+    );
+    final enemyY = unit(
+      charId: -2,
+      teamSide: 1,
+      slot: 1,
+      speed: 40,
+      equipAttack: 10,
+      hp: 5000, // Y 恒为血最低 → 回落规则的指向
+      skills: const [normal],
+    );
+
+    var s = BattleState.initial(
+      leftTeam: [breaker, attacker],
+      rightTeam: [enemyX, enemyY],
+    );
+    // 生产手动指定路径:玩家命令破招手破 X(而非 AI 默认的血最低 Y)。
+    s = strategy.requestUltimate(s, 1, breakSkill, targetId: -1);
+    // AP 满 1000 才出手:推进到破招手行动(speed 130 → 第 8 tick 才满)。
+    var guard = 0;
+    while (!s.actionLog.any((a) => a.actorId == 1 && a.attackResult != null) &&
+        guard < 50) {
+      s = strategy.tick(s, numbers, rng: Random(7));
+      guard++;
     }
+    expect(guard, lessThan(50), reason: '破招手应在有限 tick 内行动');
+
+    final xAfter = s.rightTeam.firstWhere((c) => c.characterId == -1);
+    expect(
+      xAfter.staggerTicksRemaining,
+      greaterThan(0),
+      reason: '破招应真开出破绽窗口,否则集火指向无从证伪(防空过)',
+    );
+    expect(
+      xAfter.currentHp,
+      greaterThan(5000),
+      reason: '判别前提:X 挨破后血仍高于 Y(5000),集火与血最低两条规则才有区分度',
+    );
+
+    // 推进到跟进者行动(speed 120 → 破招手行动后下一 tick 满)。
+    while (!s.actionLog.any((a) => a.actorId == 2 && a.attackResult != null) &&
+        guard < 100) {
+      s = strategy.tick(s, numbers, rng: Random(8));
+      guard++;
+    }
+    expect(guard, lessThan(100), reason: '跟进者应在有限 tick 内行动');
+    final followUp = s.actionLog.lastWhere(
+      (a) => a.actorId == 2 && a.attackResult != null,
+    );
+    expect(
+      followUp.targetId,
+      -1,
+      reason:
+          '破绽窗口内同队攻击须集火被破敌 X(_pickFocusTargetId),'
+          '而非血最低的 Y(_pickTargetId 回落)',
+    );
   });
 }
