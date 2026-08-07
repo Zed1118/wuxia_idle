@@ -78,9 +78,15 @@
 
 **测试**:`test/features/battle/presentation/battle_drag_skill_test.dart` · `test/support/def_loading.dart` · `test/tools/floor30_soft_gate_diagnostic_test.dart` · `test/data/{drop_table,enemy_def_vulnerability_validation}_test.dart` · `test/combat/battle_engine_test.dart`
 
-**数据**:`data/{ranks,inventory,chapters,proficiency}.yaml` · `data/models/` · `data/codex/`(实为 `data/narratives/codex/`) · `data/narratives/{techniques,retreat,mainline_test_0*}` · `data/narratives/lore/events/`(实为 `data/lore/` + `data/events/`) · `data/lore/{pvp,masters}/`
+**数据**:`data/{ranks,inventory,chapters,proficiency}.yaml` · `data/models/` · `data/codex/`(实为 `data/narratives/codex/`) · `data/narratives/{retreat,mainline_test_0*}` · `data/narratives/lore/events/`(实为 `data/lore/` + `data/events/`) · `data/lore/{pvp,masters}/`
 
 **文档**:`docs/UX_GUIDELINES.md` · `docs/legal/` · `docs/progress` · `docs/audits/`
+
+### 五之补 · 已归档(不是删除,引用可直指归档实址)
+
+| 旧引用 | 归档实址 |
+|---|---|
+| `data/narratives/techniques/` | `data/narratives/_archive/techniques/`(实测 67 文件;⚠ `_archive` 未在 pubspec 声明,不进 asset bundle,运行时不加载) |
 
 ## 六、不是死链的三类(勿"修")
 
