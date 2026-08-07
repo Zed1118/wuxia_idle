@@ -12,6 +12,7 @@ import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../battle/domain/enum_localizations.dart';
 import '../../tutorial/application/tutorial_providers.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../../tutorial/application/tutorial_service.dart';
@@ -414,7 +415,52 @@ class _AttrRow extends StatelessWidget {
           label: UiStrings.recruitmentAttrFortuneLabel,
           value: profile.fortune,
         ),
+        // 资质档位（GDD §4.1）：招募时资质是核心决策信息，此前玩家只能看四项
+        // 数字自己求和（2026-08-08 用户拍板展示面 = 角色档案页 + 招募候选卡）。
+        // GameRepository 未加载时静默省略，与本文件既有 isLoaded 守卫同体例。
+        if (GameRepository.isLoaded)
+          _RarityItem(
+            tier: GameRepository.instance.numbers.rarityForTotalPoints(
+              profile.total,
+            ),
+            total: profile.total,
+          ),
       ],
+    );
+  }
+}
+
+/// 资质档位展示（招募候选卡）。样式与 [_AttrItem] 同款：档名走正文色，
+/// 「资质」前缀与总点数走弱化色。
+class _RarityItem extends StatelessWidget {
+  const _RarityItem({required this.tier, required this.total});
+
+  final RarityTier tier;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text.rich(
+      TextSpan(
+        children: [
+          const TextSpan(
+            text: '${UiStrings.rarityTierLabel} ',
+            style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+          ),
+          TextSpan(
+            text: EnumL10n.rarityTier(tier),
+            style: const TextStyle(
+              color: WuxiaColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          TextSpan(
+            text: UiStrings.rarityTotalParen(total),
+            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+          ),
+        ],
+      ),
     );
   }
 }

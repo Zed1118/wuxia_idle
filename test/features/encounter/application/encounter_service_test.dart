@@ -490,6 +490,68 @@ void main() {
       expect(p!.attributeGainsFortune, 1);
     });
 
+    test('红线 · 奇遇加点跨档不改 rarity（资质是出生属性，终身不变）', () async {
+      // 2026-08-08 用户拍板:GDD §4.1「不可重 roll·出生即命运」+ 设计理由
+      // 「让投胎本身具有意义」→ 资质锁死在出生那刻,奇遇只加点数不改档位标签。
+      //
+      // 本用例**故意踩在档位边界上**:总点数 22 属「资优」(21-22),加 1 点到 23
+      // 就落进「天才」(23)。若哪天有人把 rarity 重算加回 applyOutcome,
+      // updated.rarity 会变成 tianCai,这条立刻红。
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+
+      // 根骨5 + 悟性6 + 身法5 + 机缘6 = 22
+      final attrs = _mkAttrs(enlightenment: 6, fortune: 6);
+      expect(attrs.total, 22, reason: 'fixture 总点数漂了,本用例的跨档前提失效');
+      expect(
+        GameRepository.instance.numbers.rarityForTotalPoints(22),
+        RarityTier.ziYou,
+        reason: '22 分应派生为资优;若 numbers.yaml 区间表改了,本用例需重挑边界',
+      );
+      expect(
+        GameRepository.instance.numbers.rarityForTotalPoints(23),
+        RarityTier.tianCai,
+        reason: '23 分应派生为天才——这是本红线要防的「漂过去」的目标档',
+      );
+
+      final ch = Character.create(
+        name: '边界主角',
+        realmTier: RealmTier.xueTu,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: attrs,
+        rarity: RarityTier.ziYou, // 出生那刻由总点数 22 派生
+        lineageRole: LineageRole.founder,
+        createdAt: DateTime(2026, 1, 1),
+      );
+      late int charId;
+      await IsarSetup.instance.writeTxn(() async {
+        charId = await IsarSetup.instance.characters.put(ch);
+      });
+
+      final r = await svc.applyOutcome(
+        saveDataId: 1,
+        encounter: _mkFortune(),
+        outcomeId: 'gain_wisdom',
+        founderCharacterId: charId,
+      );
+      expect(r, isA<AttributeBonusApplied>());
+
+      final updated = await IsarSetup.instance.characters.get(charId);
+      expect(
+        updated!.attributes.total,
+        23,
+        reason: '点数必须真加上去(否则本用例没在测跨档,是在测「什么都没发生」)',
+      );
+      expect(
+        updated.rarity,
+        RarityTier.ziYou,
+        reason:
+            '资质必须停在出生档位「资优」。现在是 ${updated.rarity.name} —— '
+            '说明 applyOutcome 又按 attributes.total 重算了 rarity,'
+            '违反 GDD §4.1「出生即命运」(2026-08-08 拍板)',
+      );
+    });
+
     test('skip(未配 outcomeMapping)→ NoneOutcome,不写 Isar', () async {
       final svc = EncounterService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
