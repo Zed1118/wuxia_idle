@@ -1,61 +1,101 @@
-# 角色稀有度系统未实装 · 现状与选项(待拍板)
+# 角色稀有度标签未派生 · 现状与选项(待拍板)
 
-> 2026-08-07 N1 处置时发现并逐条实测。**本文只陈述现状与选项,不含实装**——接线涉平衡改动,需用户拍板。
+> 2026-08-07 N1 处置时发现。**2026-08-07 二稿:一稿结论有重大错误已作废重写**——一稿称「属性系统不存在、接线属 ±25% 平衡改动」,实测证伪:四项属性完整实装且已被战斗/奇遇/修炼消费,稀有度只是其总点数的派生标签,接线**零平衡影响**。错因:一稿只 grep 了 `character.dart` 找拼音字段名,而属性在独立文件 `lib/core/domain/attributes.dart` 且用英文名。
 
 ## 一、结论
 
-GDD §4.1 把「6 档角色稀有度分布」写为**强制规则**,`data/numbers.yaml:942` 也配了完整概率表,但**整套设计零实装**:配置在、枚举在、字段在、赋值写死、读取端为空。
+**属性系统是完整的,缺的只是稀有度这个"标签"没有从属性派生出来。** 三处创建点把 `rarity` 写死成 `RarityTier.biaoZhun`(标准),导致**全仓 18 个角色定义里 16 个带着错标签**。
 
-## 二、实测证据(2026-08-07 本会话跑)
+## 二、实测证据(2026-08-07 本会话)
 
-**配置侧**——`data/numbers.yaml` 6 档齐全:
+### 2.1 属性系统:完整实装
 
-| 档 | 概率 | total_points_range |
-|---|---|---|
-| 庸才 yongCai | 15% | 16-17 |
-| 寻常 xunChang | 35% | 18-19 |
-| 标准 biaoZhun | 25% | 20 |
-| 资优 ziYou | 18% | 21-22 |
-| 天才 tianCai | 5% | 23 |
-| 绝世 jueShi | 2% | 24 |
-
-**代码侧**——全 `lib/`(排除 `*.g.dart` 与 `lib/features/debug/`)**只有 7 处**引用 rarity:
-
-| file:line | 性质 |
+| 环节 | 实况 |
 |---|---|
-| `lib/core/domain/enums.dart:150-157` | 枚举定义(6 档齐全,中文名只在行末注释) |
-| `lib/core/domain/character.dart:64` | 字段声明 `late RarityTier rarity` |
-| `lib/core/domain/character.dart:158` | 构造参数 |
-| `lib/core/domain/character.dart:207` | 赋值 `..rarity = rarity` |
-| `lib/features/recruitment/application/recruitment_service.dart:99` | **硬编码 `RarityTier.biaoZhun`** |
-| `lib/features/sect/presentation/sect_recruit_handler.dart:110` | **硬编码 `RarityTier.biaoZhun`** |
-| `lib/features/onboarding/application/master_builder.dart:53` | **硬编码 `RarityTier.biaoZhun`** |
+| 数据 | `lib/core/domain/attributes.dart:11-14` — `constitution`/`enlightenment`/`agility`/`fortune`,`@embedded`,另有 `int get total`(:17) |
+| 差异化 | 三处创建点全部从 yaml def 的 `attributeProfile` 读:`recruitment_service.dart:94-98` / `sect_recruit_handler.dart:105-109` / `master_builder.dart:48-52`。**每个角色的资质是逐个手写在 yaml 里的**,非 roll |
+| 战斗消费 | `derived_stats.dart:101` HP 含 `根骨*conFactor` · `:139` 出手速度含 `身法*agFactor` · `:196` 闪避率 = `身法*perPointRate` |
+| 奇遇消费 | `encounter_service.dart:100,210` 武学领悟读悟性、其他奇遇读机缘 |
+| 奇遇补偿 | `encounter_service.dart:353-360` 真往属性上 `+=`;生涯上限 `numbers.yaml:983 lifetime_cap_per_character: 5`,经 `EncounterProgress.attributeGainsTotal` 兜底,**已实装** |
+| UI | `lineage_character_detail_screen.dart:275` 角色面板已有「资质段:四项属性」;四项中文名 `enum_localizations.dart:240-243` |
 
-**关键:零读取点。** 没有任何代码读 `character.rarity` 做任何事——无 UI 展示、无属性派生、无战斗影响。`lib/shared/strings.dart` 里也没有六档档名文案(仅有「稀有彩头」等无关词条)。
+### 2.2 稀有度:标签写死,16/18 与实际不符
 
-**玩家侧可观察表现**:招募、宗门收徒、开局祖师——所有角色都是「标准」档,且界面上根本看不到稀有度这个概念。改 yaml 概率表不产生任何行为变化。
+`Attributes.total` getter 已存在;`numbers.yaml:942 rarity_distribution` 的 `total_points_range` 正是 total→档位映射表。但三处创建点写死 `RarityTier.biaoZhun`。逐角色实测:
 
-## 三、为什么之前两轮审计没逮到
+| 来源 | 角色 | 四项 | 总点 | 应为 | 实际 |
+|---|---|---|---:|---|---|
+| recruit_candidates | candidate_a 云寒青 | 6/5/4/3 | 18 | 寻常 | 标准 ✗ |
+| recruit_candidates | candidate_b 柳拂陻 | 3/5/7/4 | 19 | 寻常 | 标准 ✗ |
+| recruit_candidates | candidate_c 马智远 | 5/5/5/5 | 20 | 标准 | 标准 ✓ |
+| sect_candidates | bamboo_swordsman | 5/7/7/5 | 24 | **绝世** | 标准 ✗ |
+| sect_candidates | mountain_hermit | 6/8/4/6 | 24 | **绝世** | 标准 ✗ |
+| sect_candidates | river_drifter | 5/5/7/6 | 23 | **天才** | 标准 ✗ |
+| sect_candidates | valley_hermit | 5/7/5/6 | 23 | **天才** | 标准 ✗ |
+| sect_candidates | desert_wanderer | 8/4/5/4 | 21 | 资优 | 标准 ✗ |
+| sect_candidates | blacksmith_son | 7/4/4/5 | 20 | 标准 | 标准 ✓ |
+| masters | founder 祖师 | 5/7/5/5 | 22 | 资优 | 标准 ✗ |
+| masters | first_disciple 大弟子 | 5/4/6/4 | 19 | 寻常 | 标准 ✗ |
+| masters | second_disciple 二弟子 | 4/4/4/5 | 17 | **庸才** | 标准 ✗ |
+| founder_creation | 6 个开局出身 | — | 21-22 | 资优 | 标准 ✗ |
 
-- **PI1**(未消费字段扫描)按「lib 里 grep 字段名零命中」筛——`rarity` 在 lib 里满屏命中,不入候选。
-- **Q1**(假阴复核)复核的是 PI1 的候选集,同样不覆盖。
-- 这类「字段名有命中、真实取值是写死常量」的背离,需要专门的判据才扫得到。已据此新开 Q2 单(`docs/dispatch/2026-08-07_Q2.md`)全仓扫同类。
+### 2.3 UI 侧:稀有度零展示
 
-## 四、选项(需拍板,推荐 B)
+- `rarity` 在全部 presentation 层**零引用**(只有 `sect_recruit_handler.dart:110` 那处赋值)
+- 六档档名(庸才/寻常/标准/资优/天才/绝世)**只存在于 `enums.dart:151-156` 的行末注释**,`strings.dart` 无对应文案条目
 
-| 选项 | 内容 | 代价 | 风险 |
+## 三、关键设计判断:rarity 必须是 computed 不能是 stored
+
+现在 `Character.rarity` 是 Isar **存储字段**。但:
+
+1. 它是 `attributes.total` 的纯函数
+2. 奇遇会真的往属性上加点(生涯 cap +5)
+
+→ 存储字段**必然漂移**:二弟子出生 17 点(庸才),奇遇加满 5 点变 22 点(资优),存的标签却还是出生那刻的。
+
+而 GDD §4.1 的设计理由原文是「用奇遇的微弱补偿留出努力空间,避免初始绝望感」——**「庸才逆袭成资优」是设计意图**,不是需要防止的漂移。所以正解是 computed getter,让标签始终反映当下。
+
+代价:移除 Isar 存储字段需 schema 升版 + 老档迁移。
+
+## 四、真正需要拍板的问题:实际分布严重偏离设计曲线
+
+改成派生后,标签会说实话——但说出来的实话可能不好看。可获得角色池(12 个,不含开局六选一)实测分布 vs GDD §4.1 目标:
+
+| 档 | GDD 目标 | 实际(12 人池) | 偏差 |
+|---|---:|---:|---|
+| 庸才 | 15% | 8%(1) | |
+| 寻常 | 35% | 25%(3) | |
+| 标准 | 25% | 17%(2) | |
+| 资优 | 18% | 17%(2) | |
+| 天才 | 5% | **17%(2)** | 3.4× |
+| 绝世 | 2% | **17%(2)** | 8.5× |
+
+**门派候选是重灾区**:`sect_candidates.yaml` 6 人里 2 绝世 + 2 天才 = 67% 在天才档以上。一旦档位可见,玩家会发现「门派随便招都是天才绝世」,稀有度的稀缺感当场归零。
+
+这不是代码问题,是内容配置问题。**两条路需要你拍**:
+
+| 选项 | 做法 | 影响 |
+|---|---|---|
+| **调资质贴合曲线** | 改 `sect_candidates.yaml` 等的 attributeProfile,让分布接近 15/35/25/18/5/2 | **真平衡改动**——这些角色的 HP/速度/闪避/奇遇率都会变,需重跑平衡验证 |
+| **承认手工角色不适用概率分布** | 这 12 个是有名有姓的设计角色(每个都有 lore 文案),本就不该当随机抽卡看待;`probability` 列注释为「程序化生成时的分布指引」 | 零平衡影响,但要接受「已知角色偏强」这个设定 |
+
+我的看法:后者更符合现状——这些角色都写了背景故事、指定了流派和初始装备,是**叙事角色**不是抽卡池。稀缺感应该靠「能不能招到他」(解锁条件)而不是「资质 roll 得好不好」。但这是你的产品判断。
+
+## 五、完整范围(按依赖排序)
+
+| # | 层 | 内容 | 平衡风险 |
 |---|---|---|---|
-| **A 全量接线** | roll 概率 + 按 total_points_range 派生属性 + UI 展示档位 + 红线测试 | 大 | **平衡风险实**:16→24 是 ±25% 属性摆幅。低档角色可能卡关、高档可能压平难度曲线;且现无属性→战力的直接通路(Character 无根骨/悟性等字段,只有 `attributeBonusFromAdventure` 一个奇遇加成计数器),派生路径本身要先设计 |
-| **B 先接表现层,不动平衡**(推荐) | roll 概率决定档位 + UI 展示(角色面板/招募界面标档位)+ 六档文案入 strings;**total_points_range 暂不接**,属性维持现状 | 中 | 低。玩家立刻能看到「这徒弟是天才/庸才」的差异感,零平衡影响;后续要接属性再单独拍 |
-| **C 砍配置** | 删 yaml 的 rarity_distribution + 删 Character.rarity 字段 | 小 | 与 GDD §4.1「强制规则」冲突,等于放弃该设计;且 Isar schema 改字段需升版迁移 |
-| **D 维持现状 + 注释** | 已于 2026-08-07 执行(numbers.yaml:942 附近已加未接线警告) | 零 | 配置与行为继续脱节,但至少不再误导读者 |
+| 1 | 派生 | rarity 改 computed getter,从 `attributes.total` 查 `rarity_distribution.total_points_range`;删三处硬编码;Isar schema 升版 + 老档迁移 | **零** |
+| 2 | 文案 | 六档档名进 `strings.dart`(现仅存于代码注释) | 零 |
+| 3 | 展示 | 角色面板资质段加档位标签;**招募/收徒界面加档位**(选人决策的核心信息) | 零 |
+| 4 | 视觉 | 六档在水墨基调下怎么表达(色阶/印章/题字)——需视觉拍板 | 零 |
+| 5 | 守卫 | 红线测试:rarity 恒等于 total 派生值(防再被写死);契约测试:新增 def 的 attributeProfile 总和必须 16-24、单项 1-10(GDD 强制规则) | 零 |
+| 6 | 内容 | §四 的分布决策 | **视选项而定** |
 
-**推荐 B 的理由**:稀有度的产品价值主要在「养成的期待感/差异感」——玩家收到一个「天才」弟子的情绪价值,不依赖属性真的更高。先把这份感受做出来,平衡风险为零;属性派生是独立的第二步,可等真人试玩数据再拍(与 BACKLOG 现有三条数值项同一处理节奏)。
+第 1-5 层合计代码量很小(核心逻辑约 20 行 + 一个映射函数 + 测试),真正的工作量在第 4 层的视觉设计与第 6 层的产品决策。
 
-**注意 B 也不是零成本**:要设计六档在 UI 上怎么呈现(色阶?题字?印章?),六档档名要进 strings,招募界面要有展示位。属于表现层任务,可派执行端。
+## 六、关联
 
-## 五、关联
-
-- 处置注释落点:`data/numbers.yaml` rarity_distribution 段头
-- 同类背离全仓扫描:`docs/dispatch/2026-08-07_Q2.md`(qoderclicn 执行中)
-- 同批发现的第二条:`inheritance.unlock_rules` 与活配置 `ascension.unlock_triggers.required_realm` 重复声明同一门槛(详见 numbers.yaml 该段注释)
+- 注释落点:`data/numbers.yaml` rarity_distribution 段头(2026-08-07 已加,一稿措辞含上述错误,待随本文二稿同步订正)
+- 同类背离全仓扫描:`docs/dispatch/reports/2026-08-07_Q2_config_bypass.md`
+- `Character.attributeBonusFromAdventure` 目前是**只写不读**字段(`encounter_service.dart:366` 写,零读取点;代码注释自陈「读端待接」)——若做第 3 层展示,「奇遇弥补 +N」正是它的读端
