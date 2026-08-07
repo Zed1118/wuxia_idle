@@ -60,8 +60,19 @@ class Character {
 
   late Attributes attributes;
 
+  /// 资质档位（GDD §4.1）：四项属性总点数的**派生标签**，由
+  /// `NumbersConfig.rarityForTotalPoints(attributes.total)` 求得，创建点不得写死
+  /// （2026-08-07 前三处创建点硬编码 biaoZhun，致 18 个角色 def 中 16 个标签错）。
+  /// 奇遇加点会改 total，[EncounterService] 在加点后同步重算本字段。
+  ///
+  /// 默认 [RarityTier.biaoZhun] 与默认 [Attributes]（四项各 5 = 总 20）自洽；
+  /// 此前为 `late` 无默认，任何不走 [Character.create] 的构造读它即抛
+  /// LateInitializationError（全仓 64 处 fixture + visual_route_host 命中）。
+  ///
+  /// 本字段是可从 attributes 推导的冗余存储，保留仅为 Isar schema 兼容，
+  /// 与 [level] / [levelExp] 同批留待未来 schema cleanup 改为 getter。
   @Enumerated(EnumType.name)
-  late RarityTier rarity;
+  RarityTier rarity = RarityTier.biaoZhun;
 
   @Enumerated(EnumType.name)
   TechniqueSchool? school;

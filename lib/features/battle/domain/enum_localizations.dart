@@ -244,6 +244,21 @@ class EnumL10n {
     };
   }
 
+  /// 角色资质档位（GDD §4.1 六档 = 四项属性总点数的标签）。
+  ///
+  /// 档位由 `NumbersConfig.rarityForTotalPoints` 从 `attributes.total` 派生，
+  /// 不在创建点写死；六档名此前只存在于 enums.dart 的行末注释里，无可渲染文案。
+  static String rarityTier(RarityTier r) {
+    return switch (r) {
+      RarityTier.yongCai => '庸才',
+      RarityTier.xunChang => '寻常',
+      RarityTier.biaoZhun => '标准',
+      RarityTier.ziYou => '资优',
+      RarityTier.tianCai => '天才',
+      RarityTier.jueShi => '绝世',
+    };
+  }
+
   /// 轻功地形（GDD §轻功）。null 表示平地（无特殊地形修正）。
   static String terrainBiome(TerrainBiome? biome) {
     return switch (biome) {
