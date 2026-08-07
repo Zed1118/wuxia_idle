@@ -222,8 +222,11 @@ class NumbersConfig {
   /// [rarityForTotalPoints] 派生,不得在创建点写死(2026-08-07 N1:此前三处
   /// 创建点硬编码 biaoZhun,致 18 个角色 def 中 16 个标签与实际点数不符)。
   ///
-  /// yaml 同段的 `probability` 列当前无消费者——本仓角色资质为逐个手写的静态
-  /// profile,无程序化生成路径;该列保留作程序化生成时的分布指引。
+  /// yaml 同段的 `probability` 列**无运行时消费者,且这是拍板结果不是欠账**
+  /// (2026-08-08 用户拍板):本仓 18 个角色资质是逐个手写的静态 profile,点数服务
+  /// 剧情人设、**不受 GDD 概率表约束**;该列仅作未来程序化生成时的分布指引保留。
+  /// 实测偏差(2026-08-08):静态 profile 资优占 44.4%(GDD 18%)、绝世 11.1%
+  /// (GDD 2%)——刻意如此,不要「修正」。yaml 侧同步有注释,改一处须同步另一处。
   final List<RarityTierRange> rarityTiers;
 
   /// 技能装配大招槽阈值(numbers.yaml `skill_loadout.ultimate_power_threshold`,GDD §6)。
@@ -573,10 +576,11 @@ class NumbersConfig {
     return List.unmodifiable(out);
   }
 
-  /// 四项属性总点数 → 稀有度档位(GDD §4.1)。
+  /// 四项属性总点数 → 稀有度档位(GDD §4.1)。**只在角色创建时调用一次**——
+  /// 资质是出生属性,奇遇加点不重算(2026-08-08 拍板,详 [Character.rarity])。
   ///
-  /// 钳制两端而非抛错:奇遇生涯加成(cap +5)可让 founder 的 total 超出表上界
-  /// (22 起始 + 5 = 27 > 24),此时归最高档;低于下界归最低档。
+  /// 钳制两端而非抛错:静态 profile 的 total 理应落在 [16,24] 表内,但 fixture 与
+  /// 未来程序化生成可能越界,此时归最近档而不是崩。
   /// [rarityTiers] 为空(fixture 未配该段)时兜底 [RarityTier.biaoZhun]。
   RarityTier rarityForTotalPoints(int total) {
     if (rarityTiers.isEmpty) return RarityTier.biaoZhun;

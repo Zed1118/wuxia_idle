@@ -785,10 +785,13 @@ class UiStrings {
   static String lineageCharacterDetailFounderGen(int gen) =>
       gen == 1 ? '开派太祖' : '第 $gen 代掌门';
 
+  /// 资质档位前缀（GDD §4.1）。角色档案页与招募候选卡共用。
+  static const String rarityTierLabel = '资质';
+
   /// 资质档位 chip（GDD §4.1）：档名由 `EnumL10n.rarityTier` 提供，
   /// 总点数为 `Attributes.total`。例:「资质 绝世（24）」。
   static String rarityTierWithTotal(String tierName, int total) =>
-      '资质 $tierName（$total）';
+      '$rarityTierLabel $tierName（$total）';
 
   static const String attrConstitution = '根骨';
   static const String attrEnlightenment = '悟性';

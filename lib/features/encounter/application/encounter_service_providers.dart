@@ -20,7 +20,6 @@ EncounterService? encounterService(Ref ref) {
     isar: isarInstance,
     attributeGainCap: n.adventureAttributeLifetimeCap,
     attributeEffects: n.attributeEffects,
-    rarityResolver: n.rarityForTotalPoints,
   );
 }
 

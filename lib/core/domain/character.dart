@@ -60,17 +60,19 @@ class Character {
 
   late Attributes attributes;
 
-  /// 资质档位（GDD §4.1）：四项属性总点数的**派生标签**，由
-  /// `NumbersConfig.rarityForTotalPoints(attributes.total)` 求得，创建点不得写死
-  /// （2026-08-07 前三处创建点硬编码 biaoZhun，致 18 个角色 def 中 16 个标签错）。
-  /// 奇遇加点会改 total，[EncounterService] 在加点后同步重算本字段。
+  /// 资质档位（GDD §4.1）：**出生属性**，创建时由
+  /// `NumbersConfig.rarityForTotalPoints(attributes.total)` 求得一次，此后**终身不变**。
+  /// 创建点不得写死（2026-08-07 前三处创建点硬编码 biaoZhun，致 18 个角色 def 中
+  /// 16 个标签错）。
+  ///
+  /// **奇遇加点不重算本字段**（2026-08-08 用户拍板）：GDD §4.1「不可重 roll·出生即
+  /// 命运」与设计理由「让投胎本身具有意义」要求档位锁死在出生那刻；奇遇只加
+  /// [Attributes] 点数与 [attributeBonusFromAdventure]，不动档位标签。故本字段
+  /// **不是** attributes 的派生冗余，不可改写成 getter。
   ///
   /// 默认 [RarityTier.biaoZhun] 与默认 [Attributes]（四项各 5 = 总 20）自洽；
   /// 此前为 `late` 无默认，任何不走 [Character.create] 的构造读它即抛
   /// LateInitializationError（全仓 64 处 fixture + visual_route_host 命中）。
-  ///
-  /// 本字段是可从 attributes 推导的冗余存储，保留仅为 Isar schema 兼容，
-  /// 与 [level] / [levelExp] 同批留待未来 schema cleanup 改为 getter。
   @Enumerated(EnumType.name)
   RarityTier rarity = RarityTier.biaoZhun;
 

@@ -43,7 +43,6 @@ Future<void> runEncounterHookAfterVictory({
     isar: isar,
     attributeGainCap: n.adventureAttributeLifetimeCap,
     attributeEffects: n.attributeEffects,
-    rarityResolver: n.rarityForTotalPoints,
   );
   // W13 教训:race 防御,ensure getOrCreate
   await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);

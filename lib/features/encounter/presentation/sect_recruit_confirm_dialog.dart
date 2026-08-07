@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/sect_candidate_def.dart';
+import '../../../data/game_repository.dart';
+import '../../battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
@@ -165,6 +167,16 @@ class _CandidateInfo extends StatelessWidget {
                 label: UiStrings.recruitmentAttrFortuneLabel,
                 value: ap.fortune,
               ),
+              // 资质档位（GDD §4.1）：招募时资质是核心决策信息，此前玩家只能看
+              // 四项数字自己求和（2026-08-08 用户拍板展示面 = 角色档案页 + 招募
+              // 候选卡）。GameRepository 未加载时静默省略。
+              if (GameRepository.isLoaded)
+                _RarityChip(
+                  tier: GameRepository.instance.numbers.rarityForTotalPoints(
+                    ap.total,
+                  ),
+                  total: ap.total,
+                ),
             ],
           ),
           const SizedBox(height: 12),
@@ -204,6 +216,40 @@ class _AttrChip extends StatelessWidget {
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 资质档位展示（宗门招募确认弹窗）。样式与 [_AttrChip] 同款。
+class _RarityChip extends StatelessWidget {
+  const _RarityChip({required this.tier, required this.total});
+
+  final RarityTier tier;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text.rich(
+      TextSpan(
+        children: [
+          const TextSpan(
+            text: '${UiStrings.rarityTierLabel} ',
+            style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+          ),
+          TextSpan(
+            text: EnumL10n.rarityTier(tier),
+            style: const TextStyle(
+              color: WuxiaColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          TextSpan(
+            text: '（$total）',
+            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
         ],
       ),

@@ -109,18 +109,10 @@ class EncounterService {
     this.attributeGainCap = 5,
     this.fortuneSensitivity = 20.0,
     this.attributeEffects,
-    this.rarityResolver,
   });
 
   final Isar isar;
   final int attributeGainCap;
-
-  /// 四项属性总点数 → 稀有度档位(生产端注入 `NumbersConfig.rarityForTotalPoints`)。
-  ///
-  /// 奇遇加点会改变 `Character.attributes.total`,而 `Character.rarity` 是该总点数
-  /// 的标签(GDD §4.1)——不同步就会漂:founder 起始 22 分(资优)吃满生涯 cap +5
-  /// 到 27 分,标签却还停在出生那刻。null 仅保留旧测试 fixture 的兼容路径。
-  final RarityTier Function(int totalPoints)? rarityResolver;
 
   /// 旧测试 fixture 的兼容参数；正式玩法统一使用 [attributeEffects]。
   final double fortuneSensitivity;
@@ -372,12 +364,11 @@ class EncounterService {
               // per-char 计数,持久于 Isar,供后续角色页「奇遇弥补 +N」展示(读端
               // 待接,不删字段免 schema churn)。
               character.attributeBonusFromAdventure += applied;
-              // rarity 是 attributes.total 的标签(GDD §4.1),属性一变必须同步
-              // 重算,否则标签停在出生那刻(资优吃满 cap 到 27 分仍显示资优)。
-              final resolve = rarityResolver;
-              if (resolve != null) {
-                character.rarity = resolve(character.attributes.total);
-              }
+              // ⚠ 这里**故意不重算** `character.rarity`(2026-08-08 用户拍板)。
+              // GDD §4.1「不可重 roll·出生即命运」把资质定为**出生属性**,奇遇只
+              // 加点数、不改档位标签;设计理由那句「让投胎本身具有意义」要求档位
+              // 终身不变。若跟随 attributes.total 重算,开局六档全是 21-22(资优)
+              // 吃满生涯 cap +5 后一律钳到「绝世」(GDD 标 2%),档位失去区分度。
               await isar.characters.put(character);
             }
           }

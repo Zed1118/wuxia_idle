@@ -48,11 +48,11 @@ void main() {
         }
       });
 
-      test('超出上界向最高档钳制(奇遇生涯 +5 可使 founder 达 27)', () async {
+      test('超出上界向最高档钳制(防御性,非正常路径)', () async {
         final repo = await GameRepository.loadAllDefs(loader: fileLoader);
-        // founder 起始 22 分 + 生涯 cap 5(numbers.yaml
-        // character.adventure_attribute_bonus.lifetime_cap_per_character)= 27,
-        // 超出 rarity_distribution 表的 24 上界,必须钳到最高档而非抛/返 null。
+        // 2026-08-08 拍板后,资质只在创建时求值一次、奇遇不重算,故生产路径的
+        // total 恒落在静态 profile 的 16-24 内,越界只可能来自 fixture 或未来的
+        // 程序化生成。钳制保留作防御:越界归最近档而不是抛/返 null。
         expect(repo.numbers.rarityForTotalPoints(25), RarityTier.jueShi);
         expect(repo.numbers.rarityForTotalPoints(27), RarityTier.jueShi);
       });

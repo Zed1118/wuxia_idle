@@ -23,7 +23,6 @@ SeclusionService? seclusionService(Ref ref) {
       attributeGainCap:
           GameRepository.instance.numbers.adventureAttributeLifetimeCap,
       attributeEffects: GameRepository.instance.numbers.attributeEffects,
-      rarityResolver: GameRepository.instance.numbers.rarityForTotalPoints,
     ),
   );
 }

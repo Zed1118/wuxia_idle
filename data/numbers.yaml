@@ -943,22 +943,26 @@ character:
   # --- 6 档稀有度概率（GDD §4.1，强制规则）---
   # 总和必须为 100%
   #
-  # ❗ 标签未派生（2026-08-07 N1 实测 · 二稿订正）：
+  # ✅ 标签已派生（2026-08-07 实装 · 2026-08-08 用户拍板收口）：
   #   本表 total_points_range 是「四项属性总点数 → 稀有度档位」的映射表，
-  #   Attributes.total（lib/core/domain/attributes.dart:17）已存在，但三处角色
-  #   创建点把 rarity 写死成 RarityTier.biaoZhun：
-  #     lib/features/recruitment/application/recruitment_service.dart:99
-  #     lib/features/sect/presentation/sect_recruit_handler.dart:110
-  #     lib/features/onboarding/application/master_builder.dart:53
-  #   后果：全仓 18 个角色定义中 **16 个带着错标签**（如 bamboo_swordsman 24 点
-  #   应为「绝世」、second_disciple 17 点应为「庸才」，全被标成「标准」）；
-  #   且 rarity 在 UI 零展示，六档档名只存在于 enums.dart:151-156 的行末注释。
-  #   ⚠ 注意：四项属性本身**完整实装且已被消费**（HP/出手速度/闪避/奇遇概率/
-  #     修炼速度），各角色资质逐个手写在 yaml attributeProfile 里 —— 所以把
-  #     rarity 改成派生**零平衡影响**，只是让标签说实话。
-  #   ⚠ probability 列（15/35/25/18/5/2）无消费者：现无程序化角色生成，12 人
-  #     可获得池实测分布严重偏离该曲线（天才 17% vs 5%、绝世 17% vs 2%）。
-  #   现状、完整范围与待拍板项详 docs/spec/rarity_wiring_gap_2026-08-07.md
+  #   由 NumbersConfig.rarityForTotalPoints 消费；三处角色创建点（recruitment_service
+  #   / sect_recruit_handler / master_builder）已改为从 attributeProfile.total 派生，
+  #   此前 18 个角色 def 中 16 个带错标签（全被写死成 biaoZhun）的问题已消除。
+  #
+  #   ❗ 档位是**出生属性，终身不变**（2026-08-08 拍板）：
+  #     只在角色创建时求值一次，奇遇加点**不重算**。依据 GDD §4.1「不可重 roll·
+  #     出生即命运」与设计理由「让投胎本身具有意义」。若跟随 total 重算，开局六档
+  #     全是 21-22（资优）吃满生涯 cap +5 后一律钳到「绝世」，档位失去区分度。
+  #     对应实装见 lib/core/domain/character.dart 的 rarity 字段注释（改一处须同步）。
+  #
+  #   ❗ probability 列（15/35/25/18/5/2）**无运行时消费者，且这是拍板结果不是欠账**
+  #     （2026-08-08）：本仓角色资质为逐个手写的静态 profile，点数服务剧情人设，
+  #     **不受本概率表约束**，不要拿它去「修正」角色数值。本列仅作未来程序化生成
+  #     时的分布指引保留。
+  #     实测偏差（2026-08-08 本会话现算，data/ 四个 yaml）：
+  #       全 18 个 profile：资优 44.4%（表 18%）、绝世 11.1%（表 2%）、寻常 16.7%（表 35%）
+  #       12 人可获得池（除去 founder_creation 6 个开局选项）：天才 17%、绝世 17%
+  #     ⚠ founder_creation.yaml 六个开局选项总点数为 [21,21,21,21,21,22]，即全部资优。
   rarity_distribution:
     - rarity: yongCai     # 庸才
       probability: 0.15   # 15%
