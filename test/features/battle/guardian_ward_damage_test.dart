@@ -98,9 +98,21 @@ void main() {
       rightTeam: [boss, guardianDead],
     );
 
-    test('护法存活 → wardMult 生效', () {
-      expect(DefaultGroundStrategy.wardMultOf(boss, stateGuardianAlive), 0.15);
-    });
+    for (final mult in [0.0, 0.15, 0.5, 1.0]) {
+      test('护法存活 → wardMult=$mult 按配置值生效(公式守护,非单点 0.15)', () {
+        final bossM = _mkChar(
+          id: 1,
+          enemyDefId: 'boss',
+          guardianWardMult: mult,
+          guardianDefIds: const ['g'],
+        );
+        final state = BattleState.initial(
+          leftTeam: const [],
+          rightTeam: [bossM, guardianAlive],
+        );
+        expect(DefaultGroundStrategy.wardMultOf(bossM, state), mult);
+      });
+    }
 
     test('护法全灭 → 1.0', () {
       expect(DefaultGroundStrategy.wardMultOf(boss, stateGuardianDead), 1.0);
@@ -234,6 +246,26 @@ void main() {
       expect(warded, closeTo(full * 0.15, full * 0.02 + 1));
       expect(warded, lessThan(full));
     });
+
+    test(
+      '多值参数化:wardMult ∈ {0, 0.15, 0.5, 1.0} → 主伤害 = 满伤 × mult 且单调(公式守护)',
+      () {
+        // 只测 0.15 单点对「满伤 - 固定减免」「×0.15 硬编码」等错误实现同样
+        // 成立;参数化边界(0=全免/中间值/上界 1.0=零回归)锁的是乘法公式本身。
+        final full = call().mainDamage;
+        var prev = -1;
+        for (final mult in [0.0, 0.15, 0.5, 1.0]) {
+          final warded = call(wardMult: mult).mainDamage;
+          expect(
+            warded,
+            closeTo(full * mult, full * 0.02 + 1),
+            reason: 'wardMult=$mult 应末端相乘',
+          );
+          expect(warded, greaterThan(prev), reason: '承伤应随 mult 单调不减');
+          prev = warded;
+        }
+      },
+    );
   });
 
   // ── 端到端:守 default_ground_strategy 结算路径确实透传 wardMultOf ──
@@ -258,7 +290,7 @@ void main() {
 
     // 玩家(快,先手)手动锁 Boss(pendingUltimates+pendingTargets 越 taunt)。
     // 返回玩家首次命中 Boss(targetId==2)的 finalDamage。
-    int firstBossHit({required bool guardianAlive}) {
+    int firstBossHit({required bool guardianAlive, double wardMult = 0.15}) {
       final n = GameRepository.instance.numbers;
       final player = _mkChar(
         id: 1,
@@ -275,7 +307,7 @@ void main() {
         id: 2,
         teamSide: 1,
         enemyDefId: 'boss',
-        guardianWardMult: 0.15,
+        guardianWardMult: wardMult,
         guardianDefIds: const ['g'],
         speed: 1,
         maxHp: 100000,
@@ -325,6 +357,21 @@ void main() {
       expect(full, 900);
       expect(warded, 135); // 900 × 0.15 = 135
       expect(warded, lessThan(full));
+    });
+
+    test('多值参数化 e2e:护法存活时 Boss 承伤 = 满伤 × wardMult(边界 0/中间值/上界)', () {
+      // 单点 135 对「×0.15 硬编码在结算里」的实现同样成立;参数化把公式
+      // (满伤 × 配置 mult)本身钉死在真实 strategy 结算路径上。
+      final full = firstBossHit(guardianAlive: false);
+      expect(full, 900);
+      for (final mult in [0.0, 0.15, 0.5, 1.0]) {
+        final warded = firstBossHit(guardianAlive: true, wardMult: mult);
+        expect(
+          warded,
+          closeTo(full * mult, 1),
+          reason: 'wardMult=$mult 应末端相乘(容差 1 兜 toInt 截断)',
+        );
+      }
     });
   });
 }

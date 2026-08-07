@@ -148,4 +148,26 @@ void main() {
           '同 seed 两次跑应逐 action(含伤害/暴击)与胜负全等',
     );
   });
+
+  test('反向对照:不同 seed 轨迹应发散(6 seed ≥5 distinct,容偶然相等防 flaky)', () {
+    // 只测同 seed 收敛对「seed 被忽略、rng 恒为固定种子」的实现同样成立——
+    // 那种实现下同 seed 两跑照样全等。补反向:注入的 seed 必须真影响 roll 流。
+    // 每场 >10 action × 暴击率 0.5 + 伤害浮动,两个不同 seed 全场逐 action
+    // 全等的概率可忽略;仍放宽 1 个名额兜理论上的偶然相等,不写成 flaky。
+    final traces = <String>{
+      for (final seed in [1, 2, 3, 4, 5, 6]) runOnce(seed),
+    };
+    expect(
+      traces.first.split(';').length,
+      greaterThan(10),
+      reason: '场景应产生 >10 个 action,确保有足够暴击 roll 暴露发散(防空过)',
+    );
+    expect(
+      traces.length,
+      greaterThanOrEqualTo(5),
+      reason:
+          '不同 seed 应产生不同战斗轨迹;6 seed 仅 ${traces.length} 种轨迹,'
+          '疑似 seed 未真接入 rng(如被常量种子替代)',
+    );
+  });
 }

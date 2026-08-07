@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show ProviderOrFamily;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
@@ -149,6 +151,67 @@ void main() {
     invalidateAfterCombatSettlement(container.invalidate);
 
     expect(await container.read(bossMemoryCountProvider.future), 1);
+  });
+
+  test('首次获银两 → helper 失效 silverBalanceProvider → 银两余额刷新', () async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    // 永久 listener 保持 provider alive,否则 autoDispose 每次 read 全新算。
+    final sub = container.listen(silverBalanceProvider, (_, _) {});
+    addTearDown(sub.close);
+
+    expect(await container.read(silverBalanceProvider.future), 0);
+
+    await seedSilver(500);
+
+    expect(
+      await container.read(silverBalanceProvider.future),
+      0,
+      reason: '未 invalidate 前仍读到缓存的 0(正是 bug 现场)',
+    );
+
+    invalidateAfterCombatSettlement(container.invalidate);
+
+    expect(await container.read(silverBalanceProvider.future), 500);
+  });
+
+  test('契约:helper 失效集合恰为 13 个指定 provider(新增 invalidate 未锁即红)', () {
+    // 生产 13 个 invalidate(post_combat_invalidation.dart:31-45)逐个钉死。
+    // 不以行为测逐个覆盖(角色/装备/心法 family 无 ui 读侧可验),改锁集合本身:
+    // 生产新增第 14 个 invalidate → 本测红,强制同步进此表(即「被锁」);
+    // 删掉既有 invalidate → 同样红。集合比较不锁顺序(失效顺序无语义)。
+    final recorded = <ProviderOrFamily>[];
+    invalidateAfterCombatSettlement(recorded.add);
+
+    final expected = <ProviderOrFamily>{
+      // 1. 角色 / 装备 / 心法 family。
+      characterByIdProvider,
+      activeCharacterIdsProvider,
+      equipmentByIdProvider,
+      techniqueByIdProvider,
+      characterAllTechniquesProvider,
+      allEquipmentsProvider,
+      // 2. 背包 / 资源派生缓存。
+      allInventoryItemsProvider,
+      inventoryQuantityByDefIdProvider,
+      inventoryQuantityByTypeProvider,
+      // 3. 主菜单隐藏入口门控 + 银两余额。
+      silverBalanceProvider,
+      shopUnlockedProvider,
+      equipmentCatalogCountProvider,
+      bossMemoryCountProvider,
+    };
+
+    expect(
+      recorded,
+      hasLength(13),
+      reason: '生产 invalidate 数与契约表不一致——新增 invalidate 须同步锁进本表',
+    );
+    expect(
+      recorded.toSet(),
+      expected,
+      reason: '失效集合漂移:对照 post_combat_invalidation.dart 找出新增/删除项',
+    );
   });
 
   test('战后掉落物品 → helper 失效背包列表与数量派生 provider', () async {
