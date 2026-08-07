@@ -34,7 +34,7 @@
 - [x] §5.5 在线=离线(挂机 = 实际时间)
 - [x] §5.1 反留存(无每日任务 / 登录奖励 / 战令 / 抽卡 / VIP / 体力)
 - [x] §6 公式集中在 `lib/features/battle/domain/`(damage_calculator.dart + derived_stats.dart)
-- [x] 0 硬编码(中文文案走 `data/narratives/lore/events/` · 数值走 `data/*.yaml`)
+- [x] 0 硬编码(中文文案走 `data/lore/` + `data/events/` · 数值走 `data/*.yaml`)
 - [x] Isar schema 0.14.0 稳定(Q6B saveVersion 升档)
 - [x] Riverpod 3.x 锁定(无 BLoC)
 - [x] 无第三方游戏引擎(无 Flame)

@@ -7,7 +7,7 @@
 - 目标序列制:目标 1 → 2 → 3 依次推进,做到哪冻到哪,未开始不算欠账;每目标完成即独立 commit
 
 ## 目标 1:生产代码裸用 `dart:math Random()` 位点收口(注入化)
-现状(先自己 Phase 0 实测):lib/ 生产代码直接构造 `Random()`(dart:math 签名)约 15 处(历史盘点值,以实测为准;已知一处 `lib/features/stage/stage_entry_flow.dart:233` 的 `rng: Random()`;`lib/features/debug/` 下不算生产)。这些位点绕开项目 `rngProvider`(Rng 抽象)注入体系,测试 override 不到。
+现状(先自己 Phase 0 实测):lib/ 生产代码直接构造 `Random()`(dart:math 签名)约 15 处(历史盘点值,以实测为准;已知一处 `lib/features/mainline/presentation/stage_entry_flow.dart:233` 的 `rng: Random()`;`lib/features/debug/` 下不算生产)。这些位点绕开项目 `rngProvider`(Rng 抽象)注入体系,测试 override 不到。
 期望终态(可观测验收):
 - 立一个 Random 类型注入点(Provider<math.Random> 或构造注入,设计你定;参考先例:2026-07-26 对 DefaultRng 的收口体例=UI/flow 层 `ref.read` + service 层构造注入,grep `test/shared/utils/rng_provider_wiring_contract_test.dart` 看契约测样式)
 - lib/ 生产代码 dart:math `Random(` 裸构造 grep 归 0(白名单:注入点定义处本身、lib/features/debug/)

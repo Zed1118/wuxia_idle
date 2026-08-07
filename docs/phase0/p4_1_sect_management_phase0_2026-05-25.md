@@ -96,6 +96,6 @@ P4.1 = **§12.2 帮派门派**结构性扩展(member 模型 + 山头占领 terri
 
 ## 5. 不实装边界 · 估时 · 起床 first-read
 
-- **不实装**:0 Isar schema 真改 / 0 `lib/features/sect_management/` / 0 `data/territories.yaml` / 0 enum / spec §0 Q1-Q8 默认决议草案留用户拍板
+- **不实装**:0 Isar schema 真改 / 0 `lib/features/sect/` / 0 `data/territories.yaml` / 0 enum / spec §0 Q1-Q8 默认决议草案留用户拍板
 - **估时**:spec 起草 ~1h xhigh(本 task) + B1 schema 3-4h + B2 service 4-5h + B3 UI 4-5h + B4 R5+closeout 3-4h = **~15-20h xhigh**(memory `feedback_opus_xhigh_interactive_duration` 0.5-0.7× 系数 → 实测)
 - **起床 first-read**:① 本 doc Q1-Q8 + 默认决议草案 ② spec doc §0 决议表 + §8 batch 拆分 ③ AskUserQuestion Q1-Q8 拍板(或全收默认决议直推 B1)④ 起新 worktree `feat/p4_1_sect_management_impl` 走 B1

@@ -38,9 +38,9 @@ pubspec.yaml:54-55 声明 `data/lore/` 与 `_templates/`,Flutter asset 目录声
 - **P1-8 玩家可见中文散写 ~11 处**(§5.6 违规):synergy_def.dart:60-68 buff 描述拼串 / master_builder.dart:69-75 默认角色名 / item_slot.dart:24 `'未达境界'` / asset_fallback.dart:34 `'缺图'` 等,半天量级收进 UiStrings/EnumL10n。
 
 ### 数据与内容
-- **P1-9 66 篇文案写了玩家看不到**:`data/narratives/techniques/` 26 篇(拼音命名,与 techniques.yaml id 体系不联结,0 引用真孤儿)+ `insights/` 40 篇(encounter_skills.yaml 填了 22 条 `narrativeInsightId` 映射且测试守合法性,但 lib 无任何代码读 `insights/<id>.yaml`,管线缺失)。→ 拍板:接 UI 或移 _archive。
+- **P1-9 66 篇文案写了玩家看不到**:`data/narratives/techniques/`(已移至 `data/narratives/_archive/techniques/`)26 篇(拼音命名,与 techniques.yaml id 体系不联结,0 引用真孤儿)+ `insights/`(已一并归档)40 篇(encounter_skills.yaml 填了 22 条 `narrativeInsightId` 映射且测试守合法性,但 lib 无任何代码读 `insights/<id>.yaml`,管线缺失)。→ 拍板:接 UI 或移 _archive。
 - **P1-10 numbers.yaml 两段 0 消费死配置**:`tower` 段(:1258 起,真值在 towers.yaml)与 `synergies.effect_values`(:1380 起,真值在 synergies.yaml),均无 unused 头注,双源 drift 风险,违反「配置而不消费必须标注或砍」约定。
-- **P1-11 测试样板重复**:`GameRepository.loadAllDefs` setUpAll 样板在 243/517 个测试文件重复,建议抽 `test/support/def_loading.dart`,新测试统一走,存量防扩散即可。
+- **P1-11 测试样板重复**:`GameRepository.loadAllDefs` setUpAll 样板在 243/517 个测试文件重复,建议抽 `test/support/def_loading.dart`(未实装,该路径不存在),新测试统一走,存量防扩散即可。
 
 ### 文档
 - **P1-12 GDD 反向 drift**:桃花岛一二期已实装合 main(saveVer 0.30 养成支柱,lib/features/taohua_island/ 12 文件),GDD.md 全文 **0 提及**;§12 已实装导语独漏此项。一行修复。
