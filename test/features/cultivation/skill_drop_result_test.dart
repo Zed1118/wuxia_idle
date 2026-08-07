@@ -70,12 +70,11 @@ void main() {
 
   // ── SkillDropResult ==, hashCode ─────────────────────────────────────────
   group('SkillDropResult == / hashCode', () {
-    test('none == const SkillDropResult()', () {
-      expect(SkillDropResult.none, equals(const SkillDropResult()));
-      expect(
-        SkillDropResult.none.hashCode,
-        equals(const SkillDropResult().hashCode),
-      );
+    test('none == SkillDropResult() (non-const RHS, exercises field ==)', () {
+      // RHS 去 const：否则与 none 常量规范化为同实例,identical 短路 == 字段比较,假绿。
+      final rhs = SkillDropResult();
+      expect(SkillDropResult.none, equals(rhs));
+      expect(SkillDropResult.none.hashCode, equals(rhs.hashCode));
     });
 
     test('identical fields → equal', () {
@@ -85,7 +84,8 @@ void main() {
         fragmentThreshold: 5,
         fragmentJustUnlocked: false,
       );
-      const b = SkillDropResult(
+      // b 去 const：否则与 a 常量规范化为同实例,identical 短路字段比较,假绿。
+      final b = SkillDropResult(
         fragmentSkillId: 'skill_x',
         fragmentCount: 3,
         fragmentThreshold: 5,
@@ -364,6 +364,8 @@ void main() {
       );
       expect(r.manualGranted, null);
       expect(r.fragmentSkillId, null);
+      // 判别式：整体须等于 none,防 hook 空配置时编造 count/threshold 信号。
+      expect(r, SkillDropResult.none);
     });
 
     test(
@@ -439,6 +441,8 @@ void main() {
       );
       expect(r.fragmentSkillId, null);
       expect(r.manualGranted, null);
+      // 判别式：整体须等于 none,防 hook 空配置时编造 count/threshold 信号。
+      expect(r, SkillDropResult.none);
     });
   });
 }
