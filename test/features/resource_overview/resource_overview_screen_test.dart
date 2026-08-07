@@ -102,6 +102,77 @@ void main() {
     expect(find.text('江湖商店'), findsOneWidget);
   });
 
+  testWidgets('tapping material name opens MaterialSourceSheet', (
+    tester,
+  ) async {
+    const sections = [
+      ResourceOverviewSection(
+        category: ResourceOverviewCategory.currency,
+        items: [],
+      ),
+      ResourceOverviewSection(
+        category: ResourceOverviewCategory.equipmentMaterial,
+        items: [
+          ResourceOverviewItem(
+            defId: 'item_mat_fixture',
+            name: '玄铁',
+            quantity: 7,
+            category: ResourceOverviewCategory.equipmentMaterial,
+            usages: [ItemUsage(kind: ItemUsageKind.equipmentEnhancement)],
+            sources: [ItemSource.tower(floorIndex: 3, isBoss: false)],
+            usageGroups: [ResourceUsageGroup.equipment],
+            consumptionDirection: ResourceConsumptionDirection.equipment,
+          ),
+        ],
+      ),
+      ResourceOverviewSection(
+        category: ResourceOverviewCategory.islandProduct,
+        items: [],
+      ),
+      ResourceOverviewSection(
+        category: ResourceOverviewCategory.pill,
+        items: [],
+      ),
+      ResourceOverviewSection(
+        category: ResourceOverviewCategory.scroll,
+        items: [],
+      ),
+    ];
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          resourceOverviewProvider.overrideWith((ref) async => sections),
+          sweepReadinessStatusProvider.overrideWith(
+            (ref) async => sweepReadinessFixture,
+          ),
+        ],
+        child: const MaterialApp(home: ResourceOverviewScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    // 入口存在：卡片名称行包在 InkWell 内（材料来源反查接线）。
+    final nameText = find.text('玄铁');
+    expect(nameText, findsOneWidget);
+    expect(
+      find.ancestor(of: nameText, matching: find.byType(InkWell)),
+      findsOneWidget,
+    );
+
+    await tester.tap(nameText);
+    await tester.pumpAndSettle();
+
+    // 既有 MaterialSourceSheet 弹出：标题区 + 持有量（sheet 内 GameRepository
+    // 未初始化时防御式空来源/空用途占位，不 crash）。
+    expect(
+      find.text(UiStrings.materialSourceSheetSourcesTitle),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.materialSourceSheetOwned(7)), findsOneWidget);
+  });
+
   testWidgets('keeps scroll source details collapsed into summary only', (
     tester,
   ) async {

@@ -10,6 +10,7 @@ import '../../../shared/widgets/wuxia_ui/panel_surface.dart';
 import '../../../shared/widgets/wuxia_ui/currency_pill.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
+import '../../inventory/presentation/material_source_sheet.dart';
 import '../../sweep/presentation/sweep_readiness_status.dart';
 import '../application/resource_overview_providers.dart';
 import '../domain/resource_overview_item.dart';
@@ -186,14 +187,24 @@ class _ResourceCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      item.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: WuxiaUi.ink,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                    // 材料来源反查：名称行可点 → 既有 MaterialSourceSheet
+                    // （沿背包名称行体例，只补入口，sheet 本体/来源模型不动）。
+                    InkWell(
+                      onTap: () => MaterialSourceSheet.show(
+                        context,
+                        itemId: item.defId,
+                        quantity: item.quantity,
+                      ),
+                      borderRadius: BorderRadius.circular(3),
+                      child: Text(
+                        item.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: WuxiaUi.ink,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 3),
