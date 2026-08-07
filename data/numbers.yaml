@@ -28,6 +28,9 @@
 meta:
   version: "0.2.0"             # 与 SaveData.saveVersion 对应；major.minor.patch
   description: "Demo 阶段数值配置 · 覆盖学徒到武圣全程"
+  # ⚠ 纯文档（2026-08-07 N1 处置）：NumbersConfig.fromYaml 只取 meta['version']
+  #   （numbers_config.dart:316,323），meta 其余 key 无任何读取点。last_updated 已
+  #   长期不随改动更新（本行值停留在 2026-05-10），当作时间戳会误导，仅存档用。
   last_updated: "2026-05-10"
   notes: "所有数值基于 GDD v1.1 §5.2 数值红线设计；公式系数见 combat 段"
 
@@ -939,6 +942,21 @@ character:
 
   # --- 6 档稀有度概率（GDD §4.1，强制规则）---
   # 总和必须为 100%
+  #
+  # ❗ 未接线（2026-08-07 N1 实测，非"未使用"而是"配了但不生效"）：
+  #   本表 6 档概率**从未被任何代码读取**。全部生产赋值点硬编码 RarityTier.biaoZhun：
+  #     lib/features/recruitment/application/recruitment_service.dart:99
+  #     lib/features/sect/presentation/sect_recruit_handler.dart:110
+  #     lib/features/onboarding/application/master_builder.dart:53
+  #   即游戏内招募/收徒得到的角色**永远是「标准」档**，6 档稀有度分布零生效。
+  #   更进一步：Character.rarity 字段**从未被读取过**——全 lib（除 debug/codegen）
+  #   仅 7 处引用，全是枚举定义/字段声明/构造参数/上述 3 处写死赋值，**零消费点**，
+  #   无 UI 展示、无战斗影响、六档中文名只存在于 enums.dart:151-156 的行末注释里。
+  #   所以这不是"配了没 roll"，而是**整套稀有度设计零实装**（配置在、枚举在、
+  #   字段在、赋值写死、读取端为空）。改本表任何概率都不产生行为变化。
+  #   ⚠ 接线 = 建整个功能（roll + 属性派生 + UI 展示 + 平衡验证），且各档
+  #     total_points_range 16→24 是 ±25% 属性摆幅，属平衡改动需拍板，勿擅自实装。
+  #     现状与选项详 docs/spec/rarity_wiring_gap_2026-08-07.md
   rarity_distribution:
     - rarity: yongCai     # 庸才
       probability: 0.15   # 15%
@@ -1386,6 +1404,18 @@ tower:
 inheritance:
 
   # --- 解锁节奏（GDD §7.1）---
+  #
+  # ❗ 未消费（2026-08-07 N1 实测）：本块三字段 lib/ 零读取点
+  #   （NumbersConfig 解析 inheritance 仅取 founder_ancestor_buff（numbers_config.dart:399）
+  #   与 heritage_items（:404））。逐字段现状：
+  #   · can_take_disciple_at / disciple_can_take_grand_disciple_at
+  #     ——描述的是"按境界解锁收徒"，而实装的收徒是一次性剧情事件
+  #       （recruitment_service.dart:47,79,172 走 SaveData.recruitmentOffered flag），
+  #       **完全没有境界门禁**。设计与实装分叉，不是失修。
+  #   · can_pass_legacy_at ——与活配置 ascension.unlock_triggers.required_realm.tier
+  #       （本文件 :1830-1832，AscendService 经 numbers.ascension 消费，
+  #        ascend_service.dart:60）**重复声明同一门槛**，且本处是死的那份。
+  #       改本行不生效；要改飞升境界门槛请改 ascension 段。
   unlock_rules:
     can_take_disciple_at: yiLiu              # 突破到一流可收徒
     disciple_can_take_grand_disciple_at: jueDing  # 弟子突破到绝顶可收徒孙
@@ -1474,6 +1504,11 @@ synergies:
 # 用具体战例反向验证上述数值是否合理。如果改动 combat 段的系数，
 # 务必重新跑一遍这些战例确认未突破 GDD §5.2 红线。
 
+# ⚠ 纯文档（2026-08-07 N1 处置）：本段 example_a..e 不进 NumbersConfig.fromYaml
+#   解析（无 y['validation_examples'] 取值点），lib/data/validation/ 下的红线校验器
+#   校验的是已解析的配置对象，不读本段战例。test/combat/damage_calculator_test.dart
+#   的对照值为测试内手写，非从本段加载 —— 改本段数字不会让任何测试变红。
+#   本段价值在于人工核对公式，改 combat 系数后请手工重算这些战例。
 validation_examples:
 
   # --- 战例 A：学徒新手关 ---
