@@ -26,7 +26,7 @@
 | `lib/ui/mainline/` | `lib/features/mainline/presentation/` |
 | `lib/features/*/domain/*_def.dart` | `lib/data/defs/*_def.dart` |
 | `lib/features/*/domain/*_config.dart` | `lib/data/defs/*_config.dart` |
-| `lib/features/battle/presentation/widgets/` | `lib/features/battle/presentation/`(去掉 `widgets/` 一层) |
+| ~~`lib/features/battle/presentation/widgets/`~~ | ⚠ **该目录仍存在**(8+ 文件),**不是目录级迁移**;只有 `character_avatar.dart` 单文件搬到了 `lib/features/battle/presentation/`。其余 `widgets/` 路径引用有效,勿替。 |
 | `lib/features/sect_management/` | `lib/features/sect/` |
 
 ## 三、文件级 1:1 映射
