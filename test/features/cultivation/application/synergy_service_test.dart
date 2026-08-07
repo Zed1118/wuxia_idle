@@ -449,11 +449,27 @@ void main() {
     });
 
     test('assistTechniqueIds 为空 → null', () {
+      // main 链完全有效(def 可查),null 只能来自 assist 为空这一条件;
+      // 否则 ownedTechniques 为空会让 mainTech 找不到,掩盖被测路径。
+      final defs = {
+        'a': mkTechDef(
+          id: 'a',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.gangMeng,
+        ),
+      };
       expect(
         SynergyService.detectActive(
           character: mkChar(mainTechId: 1, assistIds: const []),
-          ownedTechniques: const [],
-          techDefLookup: (_) => null,
+          ownedTechniques: [
+            mkTech(
+              id: 1,
+              defId: 'a',
+              tier: TechniqueTier.ruMenGong,
+              school: TechniqueSchool.gangMeng,
+            ),
+          ],
+          techDefLookup: lookupOf(defs),
           synergies: synergies,
         ),
         isNull,
@@ -505,11 +521,38 @@ void main() {
     });
 
     test('synergies 为空 list → null', () {
+      // 主 gangMeng + 辅 yinRou 本可命中阴阳调和;null 只能来自 synergies
+      // 为空这一条件,而不是被 mainTech/mainDef 找不到的旁路掩盖。
+      final defs = {
+        'a': mkTechDef(
+          id: 'a',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.gangMeng,
+        ),
+        'b': mkTechDef(
+          id: 'b',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.yinRou,
+        ),
+      };
       expect(
         SynergyService.detectActive(
           character: mkChar(mainTechId: 1, assistIds: [2]),
-          ownedTechniques: const [],
-          techDefLookup: (_) => null,
+          ownedTechniques: [
+            mkTech(
+              id: 1,
+              defId: 'a',
+              tier: TechniqueTier.ruMenGong,
+              school: TechniqueSchool.gangMeng,
+            ),
+            mkTech(
+              id: 2,
+              defId: 'b',
+              tier: TechniqueTier.ruMenGong,
+              school: TechniqueSchool.yinRou,
+            ),
+          ],
+          techDefLookup: lookupOf(defs),
           synergies: const [],
         ),
         isNull,
