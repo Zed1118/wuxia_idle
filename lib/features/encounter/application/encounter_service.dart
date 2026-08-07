@@ -367,7 +367,8 @@ class EncounterService {
               // ⚠ 这里**故意不重算** `character.rarity`(2026-08-08 用户拍板)。
               // GDD §4.1「不可重 roll·出生即命运」把资质定为**出生属性**,奇遇只
               // 加点数、不改档位标签;设计理由那句「让投胎本身具有意义」要求档位
-              // 终身不变。若跟随 attributes.total 重算,开局六档全是 21-22(资优)
+              // 终身不变。若跟随 attributes.total 重算:祖师起手两条来源都落资优
+              // (masters.yaml masters[0]=22 / founder_creation fatePool 六命格 21-22),
               // 吃满生涯 cap +5 后一律钳到「绝世」(GDD 标 2%),档位失去区分度。
               await isar.characters.put(character);
             }
