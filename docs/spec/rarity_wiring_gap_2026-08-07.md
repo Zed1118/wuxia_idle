@@ -81,6 +81,49 @@
 
 我的看法:后者更符合现状——这些角色都写了背景故事、指定了流派和初始装备,是**叙事角色**不是抽卡池。稀缺感应该靠「能不能招到他」(解锁条件)而不是「资质 roll 得好不好」。但这是你的产品判断。
 
+## 四之补 · 三条改变结论的事实(2026-08-07 侦察实测)
+
+### 补1 · 属性在战力里排第 5,是最弱的一层
+
+角色间战力差异的主导来源实测排序:
+
+| # | 来源 | 量级 |
+|---|---|---|
+| ① | **境界** | `derived_stats.dart:115` `hp += (absoluteLevel-1)×156`,49 阶跨度约 7500 HP;`damage_calculator.dart:74-77` 跨阶乘区 1.4/2.5/0.05 —— 差 2 阶就是 2.5× 攻 / 0.3× 守 |
+| ② | **装备** | `derived_stats.dart:207-211` 攻击 = base ×(1+强化)× 共鸣 ×(1+开锋) 四段连乘;且是**唯一有随机性**的维度(`EquipmentFactory.fromDef(rng:)`) |
+| ③ | 心法/流派 | 3×3 单向克制 1.25/0.75;灵巧流派暴击 +20% |
+| ④ | 心法相生 | `SynergyService.detectActive` 调 5 个字段 |
+| ⑤ | **属性** | 16→24 全摆幅 ≈ 1600 HP / 32 速度上限,**远小于一阶境界** |
+
+**含义反转**:接稀有度的真实风险**不是"高档角色破坏平衡/低档卡关"**,而是**"玩家根本感知不到差别"**。绝世与庸才实战差异被境界与装备淹没,标签会沦为纯装饰。
+
+另注:**机缘(fortune)对战力零贡献**(只进奇遇触发率),所以「同档位不同分配」的战力方差比 total 摆幅看起来更大——全点机缘的绝世可能弱于全点根骨的寻常。
+
+### 补2 · 生成端全死,GDD 的「投胎」从未兑现
+
+`data/numbers.yaml:933-941` 的 `character.attributes` 块(`point_per_attribute_min/max`、`total_points_min/max`、`distribution: normal`、`distribution_mean/stddev`、`rerollable`)**全仓零引用**(实测 `grep -rn` 在 lib/ tool/ tools/ test/ bin/ 全空)。`numbers_config.dart` 只从 `y['character']` 取 `adventure_attribute_bonus.lifetime_cap_per_character`(:460-466),`character.attributes` 子 map 从未被读。
+
+> ⚠ 勿与顶层 `attribute_effects:`(`numbers.yaml:37-48`)混淆——**那块是活的**(`numbers_config.dart:325-327` 解析,7 处消费)。两块名字近、语义完全不同。
+
+**16-24 / 1-10 的规则确实在执行,但硬编码在校验器里不读配置**:`lineage_recruit_red_lines_validator.dart:81`(单项 1-10)、`:88,230,289,366`(total 16-24,四处重复字面量)。这本身又是一条「配置声明 vs 生产硬编码」背离。
+
+结果:GDD §4.1 的核心约束「**不可重 roll。出生即命运**」与设计理由「**拒绝洗练-保底循环,让'投胎'本身具有意义**」——**零实装**。所有角色资质都是设计师手写的静态值,创建路径上零 `Rng` 调用。
+
+### 补3 · 招募预览的硬约束
+
+`recruitment_dialog.dart:390-419` **已经把候选四项属性展示给玩家了**,但它读的是 yaml 的 `AttributeProfile`,**不是 `Character`** —— 预览渲染在角色创建**之前**。
+
+→ 若稀有度/资质是创建时 roll 的,**招募预览看不到**。要让玩家"挑着招",roll 必须提前到候选生成时(或候选池本身预生成)。这是接线时绕不开的设计约束。
+
+### 补4 · 测试红面积分档(实测)
+
+| 方案 | 会红 |
+|---|---|
+| **仅标签派生**(不动 attributes) | **0 个**。`rarity` 是 `Character.create` 的 required 具名参数,138 个测试文件已在传值,加派生不改签名 |
+| **接 total_points 反写属性** | `founder_creation_onboarding_test.dart:80-86` 与 `stage_boss_recruit_test.dart:246-249` **必红**(逐项断言 attributes == yaml profile);另 `test/tools/` 下 13+ 个平衡/节奏 diagnostic 需重新校准 |
+
+## 四之末 · 于是真问题不是"接多少层",而是"要哪个游戏"
+
 ## 五、完整范围(按依赖排序)
 
 | # | 层 | 内容 | 平衡风险 |
