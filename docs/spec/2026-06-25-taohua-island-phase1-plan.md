@@ -18,9 +18,9 @@
 |---|---|---|
 | `data/numbers.yaml` | `taohua_island:` 段(产速/cap/配方/升级成本/境界门槛) | 改(尾部追加) |
 | `data/items.yaml` | 新材料 精铁/药草 条目 | 改 |
-| `lib/features/taohua_island/domain/island_building_type.dart` | `BuildingType` enum + `RecipeDef` | 新建 |
-| `lib/features/taohua_island/domain/taohua_island_config.dart` | `TaohuaIslandConfig` + `BuildingConfig` + `fromYaml` | 新建 |
-| `lib/features/taohua_island/domain/island_building_state.dart` | `@embedded IslandBuildingState` | 新建 |
+| `lib/core/domain/island_building_type.dart` | `BuildingType` enum + `RecipeDef` | 新建 |
+| `lib/data/defs/taohua_island_config.dart` | `TaohuaIslandConfig` + `BuildingConfig` + `fromYaml` | 新建 |
+| `lib/core/domain/island_building_state.dart` | `@embedded IslandBuildingState` | 新建 |
 | `lib/features/taohua_island/application/island_production_service.dart` | 纯 `settle`/`compute` 累积逻辑 | 新建 |
 | `lib/features/taohua_island/application/island_settle_service.dart` | Isar 读写 + 收取入背包(仿 offline_passive_service) | 新建 |
 | `lib/features/taohua_island/application/island_providers.dart` | provider(无 codegen FutureProvider) | 新建 |
@@ -116,7 +116,7 @@ taohua_island:
 
 ## Task 2: BuildingType / RecipeDef / TaohuaIslandConfig 解析
 
-**Files:** Create `lib/features/taohua_island/domain/island_building_type.dart`, `lib/features/taohua_island/domain/taohua_island_config.dart`; Test `test/features/taohua_island/taohua_island_config_test.dart`
+**Files:** Create `lib/core/domain/island_building_type.dart`, `lib/data/defs/taohua_island_config.dart`; Test `test/features/taohua_island/taohua_island_config_test.dart`
 
 - [ ] **Step 1 (RED):** 写失败测,断言解析与 helper:
 
@@ -292,7 +292,7 @@ taohuaIsland: TaohuaIslandConfig.fromYaml(
 
 ## Task 5: 持久化 — IslandBuildingState 嵌入 SaveData + saveVer bump
 
-**Files:** Create `lib/features/taohua_island/domain/island_building_state.dart`; Modify `lib/core/domain/save_data.dart`, `lib/data/isar_setup.dart`; Test `test/features/taohua_island/island_persistence_test.dart`
+**Files:** Create `lib/core/domain/island_building_state.dart`; Modify `lib/core/domain/save_data.dart`, `lib/data/isar_setup.dart`; Test `test/features/taohua_island/island_persistence_test.dart`
 
 - [ ] **Step 1:** `island_building_state.dart`:
 

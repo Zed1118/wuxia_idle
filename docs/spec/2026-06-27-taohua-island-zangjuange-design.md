@@ -35,7 +35,7 @@
 - `lib/features/taohua_island/application/island_production_service.dart`
 - `lib/features/taohua_island/application/island_settle_service.dart`
 - `lib/features/taohua_island/application/island_action_service.dart`
-- `lib/features/taohua_island/domain/taohua_island_config.dart`
+- `lib/data/defs/taohua_island_config.dart`
 
 常规建筑建议：
 

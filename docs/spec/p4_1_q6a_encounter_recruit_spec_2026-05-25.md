@@ -33,7 +33,7 @@
 ## 2. schema 改动
 
 ```dart
-// lib/features/encounter/domain/encounter_def.dart(加 · 沿 AffectsReputation 体例)
+// lib/data/defs/encounter_def.dart(加 · 沿 AffectsReputation 体例)
 /// Q6 A · encounter resolve 后触发 sect 招收 hook。
 /// candidateRef 引 data/sect_candidates.yaml id;cap 满或玩家拒绝 → fallbackOutcomeId。
 class AffectsSectMembership {

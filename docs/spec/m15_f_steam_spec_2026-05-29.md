@@ -68,7 +68,7 @@ F3-F7 工程集成(主对话推)
 
 ## 6. 子任务粒度
 
-- **F1.1**:Steam Direct 注册指引 doc(`docs/handoff/m15_f1_steam_signup_guide.md`)
+- **F1.1**:Steam Direct 注册指引 doc(`docs/handoff/m15_f1_steam_signup_guide_2026-05-29.md`)
 - **F1.2**:W-8BEN 填表指引(海外 only,免美国税)+ 银行账户(支持 USD 收款)
 - **F2.1**:游戏简介中文 ~500 字 + 英文 ~300 words + tag 列表(20 个)
 - **F2.2**:截图 8 张(主菜单 / 战斗 / 闭关 / 装备 / 心法 / 师徒 / 飞升 / Boss 战)+ trailer 脚本 ~1 分钟

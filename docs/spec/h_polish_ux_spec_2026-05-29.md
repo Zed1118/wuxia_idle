@@ -35,7 +35,7 @@ CHECKLIST H 6 子项 0/6 → 6/6。1.0 ship 前游戏体验三段(上手 30min /
 
 ### H1 上手 30min
 - **H1.1**:Phase 0 grep `OnboardingService` + `main_menu_screen` + `stage_entry_flow` 上手路径(无遗漏 widget)
-- **H1.2**:`docs/handoff/h1_onboarding_audit.md` ≤80 行 · stage_01_01 第一次战斗节奏 / 装备首次掉落 / Tutorial chip 触发清单
+- **H1.2**:`docs/handoff/h1_onboarding_audit_2026-05-29.md` ≤80 行 · stage_01_01 第一次战斗节奏 / 装备首次掉落 / Tutorial chip 触发清单
 - **H1.3**:卡点候选清单(若有 → numbers tune 联动)
 
 ### H2 中期 2-3h

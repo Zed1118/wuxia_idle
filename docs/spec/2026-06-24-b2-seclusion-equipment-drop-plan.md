@@ -16,7 +16,7 @@
 
 | 文件 | 改动 |
 |---|---|
-| `lib/features/seclusion/domain/seclusion_map_def.dart` | +`dropTable` 字段 + fromYaml 解析 |
+| `lib/data/defs/seclusion_map_def.dart` | +`dropTable` 字段 + fromYaml 解析 |
 | `lib/features/equipment/application/drop_service.dart` | +`rollOneWeighted` 方法 |
 | `lib/shared/strings.dart` | +`dropSourceSeclusion` 常量 |
 | `lib/features/seclusion/application/seclusion_service.dart` | computeOutputs +`dropService` 参数 / 填空块 / completeRetreat 构造注入 + writeTxn 落库 |
@@ -30,7 +30,7 @@
 ### Task 1: SeclusionMapDef 加 dropTable 字段 + 解析
 
 **Files:**
-- Modify: `lib/features/seclusion/domain/seclusion_map_def.dart`
+- Modify: `lib/data/defs/seclusion_map_def.dart`
 - Test: `test/features/seclusion/domain/seclusion_map_def_test.dart`
 
 - [ ] **Step 1: 写失败测试**（在该测试文件末尾 group 内追加）
@@ -116,7 +116,7 @@ Expected: PASS
 - [ ] **Step 5: 提交**
 
 ```bash
-git add lib/features/seclusion/domain/seclusion_map_def.dart test/features/seclusion/domain/seclusion_map_def_test.dart
+git add lib/data/defs/seclusion_map_def.dart test/features/seclusion/domain/seclusion_map_def_test.dart
 git commit -m "feat: SeclusionMapDef 加 dropTable 字段 + 解析(B2 task1)"
 ```
 
