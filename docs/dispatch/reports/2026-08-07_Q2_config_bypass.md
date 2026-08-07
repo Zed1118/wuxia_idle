@@ -1,5 +1,15 @@
 # REPORT_Q2 · 配置声明 vs 生产硬编码背离全仓扫描
 
+> ## 协调者复核批注(2026-08-07 夜 · Claude 实测,非采信自报)
+>
+> **判定:结论成立可采信;但引用坐标已 drift,脚本未入仓故计数不可复跑。**
+>
+> - **抽验 B2 `boss_gauntlets.supply_cap` —— 四项证据全中**:`data/boss_gauntlets.yaml:10` `supply_cap: 3` ✓;`lib/data/defs/boss_gauntlet_config.dart:75-76` 硬校验 `if (supplyCap != 3) throw StateError` ✓;`gauntlet_loadout_screen.dart:42` `static const int _supplyCap = 3` ✓;`.supplyCap` 生产读取(排除 defs/`.g.dart`)**0 处** ✓
+> - **抽验 B3 `stage_boss_recruit_prob` —— Dart 侧全中**:`stage_def.dart:198` `this.baseProbability = 0.40`、`:204` `?? 0.40` ✓;`stageBossRecruitProb` 业务读取 **0 处** ✓;`data/stages.yaml` 中 `baseProbability` 出现 **0 次**(证实 6 处 bossRecruit 全走字面量)✓
+> - ⚠ **坐标 drift(必读)**:报告写 `numbers.yaml:1917`,当前实为 **`:1954`**(偏移 +37,因 N1 批 `13ce2300` 给 numbers.yaml 插入 4 段注释)。**本报告所有 numbers.yaml 行号须重新定位后再用**;其他文件行号抽验未见 drift。
+> - ⚠ **不可复现**:叶字段提取与消费扫描脚本留在 `/tmp/q2/` 未入仓(报告 §二自述),故 8 背离 / 7 部分背离 / 21 休眠 三个计数**当前无法一键复跑**,只能逐条按 file:line 人工验。脚本补齐入仓已入滚动池 P4。
+> - **本批不据此实装**:B1 `rarity_distribution` 属产品语义(稀有度三问未拍板);字段删除属 schema 红色决策。本报告仅作只读底账。
+
 - **性质**:只读深核 + 报告,零代码改动(派单 Q2)
 - **时间**:2026-08-07(夜批)
 - **基线**:branch `qoder/config-bypass-audit` @ `af82baea`(worktree 干净)

@@ -1,5 +1,14 @@
 # A1 · 领域实体「只写不读」字段审计报告
 
+> ## 协调者复核批注(2026-08-07 夜 · Claude 实测,非采信自报)
+>
+> **判定:锚点成立,结论对当前 main 有效;脚本未入仓故计数不可复跑。**
+>
+> - **抽验锚点 `Character.rarity` —— 逐字吻合**:`lib/core/domain/character.dart:64` `late RarityTier rarity;` ✓;全 `lib/` 排除 `.g.dart` 与 `features/debug/` 后,`.rarity` 唯一出现在 `:207` 的 `..rarity = rarity`(**赋值不是读取**)✓;三个生产赋值点全写死 `RarityTier.biaoZhun` —— `sect_recruit_handler.dart:110` / `recruitment_service.dart:99` / `master_builder.dart:53` ✓
+> - **澄清「基线漂移」担忧**:此前记录称本报告结论已被稀有度实装作废。经核实 **`worktree-claude-rarity` 分支并未合并进 main**,故本报告结论**在当前 main 上完全成立**;所谓漂移只相对于那个未合并分支。**若将来合并该分支,`Character.rarity` 一项须重跑**,其余 43 项不受影响。
+> - ⚠ **不可复现**:脚本在 `/tmp/a1_audit/` 未入仓(报告 §6 自述),故 44 只写不读 / 14 仅 debug 读 两个计数**当前无法一键复跑**,只能逐条按 file:line 人工验。脚本补齐入仓已入滚动池 P4。
+> - **只读结论,本批不实装**:字段删除/改 schema 属红色决策,须用户拍板;`rarity` 一项还与稀有度三问耦合。
+
 - 执行:pi (DeepSeek V4 Flash) · worktree `pi-deadfield` · 分支 `pi/dead-field-audit`
 - 日期:2026-08-07 · 性质:只读审计,**零代码改动**
 - 派单:docs/dispatch/2026-08-07_A1.md
