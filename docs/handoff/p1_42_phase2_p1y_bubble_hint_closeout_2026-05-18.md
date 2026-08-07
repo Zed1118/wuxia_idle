@@ -1,5 +1,7 @@
 # P1 #42 Phase 2 · §10 新手引导骨架 P1.y closeout
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 2026-05-18,Mac + Opus 4.7 xhigh 同会话续跑 spec 起草 + 4 phase 实装 + Phase 5 收口。GDD §10.2 第 2 方式(上下文气泡提示)+ §7.1/§7.2/§6.5 业务门槛 hook 全收口。**Mac 端 100% 落地,1057/1057 + 1 skip + analyze 0 issues**。
 
 ## 1. 概览

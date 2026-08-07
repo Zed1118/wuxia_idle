@@ -1,5 +1,7 @@
 # 会话 closeout · 2026-05-25 P4.1 §12.2 帮派门派 B1 schema
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 体量 ≤80 行 · Mac+Opus xhigh ~1h · spec `p4_1_sect_management_spec_2026-05-25` Q1-Q8 默认决议直推
 > 范围:5 modified + 3 new = 8 file · `feat/p4_1_sect_management_b1_schema` branch
 > 0 analyze · 1458 测全过(基线一致 · 0 regression)

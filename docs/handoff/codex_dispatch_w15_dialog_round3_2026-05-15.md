@@ -1,5 +1,7 @@
 # Codex 桌面 @ Pen 视觉验收派单 · W15 dialog round3 W14-2 新 12 events 文案验收(2026-05-15)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 派单方:Mac Opus(zhangpeng.12334@gmail.com)
 > 执行方:Codex 桌面 @ Pen Windows
 > 沟通契约:Codex 全程不联系派单方,只在 closeout 报回。探路失败也有价值,不要硬撑。

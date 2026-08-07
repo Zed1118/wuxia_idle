@@ -1,5 +1,7 @@
 # W15 LoreLoader 接入会话 closeout(2026-05-15)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 写给下次开局者(Mac Opus 自己)。本会话从 W15 开局会话 closeout(`c979abb`)
 > 接力,推进单一子系统:75 段 lore 的加载层 + 配置链路打通。
 > 起点 `c979abb` → 终点 `7392f8d`(2 个 commit,已 push origin/main)。

@@ -1,5 +1,7 @@
 # §12.1 心魔系统 Phase 2 实装收口 + Batch 2.5 handoff(1.0 P2.2)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 日期:2026-05-22 夜 / 模型:Mac + Opus 4.7 xhigh
 > 上游 Phase 0:`p2_x_inner_demon_phase0_reality_check_2026-05-22.md`(59 行)
 > 上游 Phase 1:`p2_x_inner_demon_spec_2026-05-22.md`(148 行) + closeout `p2_x_inner_demon_phase1_closeout_2026-05-22.md`

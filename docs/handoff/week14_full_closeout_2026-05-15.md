@@ -1,5 +1,7 @@
 # W14 整批会话 closeout(2026-05-14 ~ 2026-05-15)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 写给下次开局者(Mac Opus 自己)。本会话从 W14-3-A 已闭环开局,推到 W14 整批 tag `v0.5.1-w14`。
 > 起点 commit `9320286` → 终点 `96a8d54` + tag `v0.5.1-w14`(指向 `c4180d8`)。
 

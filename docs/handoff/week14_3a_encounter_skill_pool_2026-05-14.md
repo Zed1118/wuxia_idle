@@ -1,5 +1,7 @@
 # W14-3-A C 任务 奇遇专属 skill 池 + 战斗消费 + 装备 UI closeout(2026-05-14)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 写给下一会话开局者(Mac Opus)+ W14-3-B/C 继续推进的人。
 > 单 commit + **607/607** + analyze 0 issues。
 

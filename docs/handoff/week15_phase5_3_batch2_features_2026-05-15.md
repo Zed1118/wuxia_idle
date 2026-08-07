@@ -1,5 +1,7 @@
 # Week 15 · Phase 5 #3 第 2 批 feature 迁(tower / mainline / encounter)closeout
 
+> 🔒 迁移账本 · 本文记录 2026-05 Phase 5.3 的目录重构过程本身,文中新旧路径**并存是有意的**;任何批量路径替换都会使账本自毁,禁止对本文做路径替换。对照表见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 2026-05-15 · opus(xhigh + 用户拍板 A 整批)· Phase 5 #2 cookbook 落地后批量复用。
 >
 > **结论**:tower / mainline / encounter 3 feature 完整迁到 `lib/features/{tower,mainline,encounter}/{domain,application,presentation}/`,**3 feature 全部零踩坑一次过**(analyze 0 issues + 653/653 全测,3 次连续 verify 无回退)。Phase 5 主战场 4/14 feature 落地(seclusion + tower + mainline + encounter)。cookbook 8 步样板验证完全可复用。**本批无新踩坑,cookbook 不需要更新**。

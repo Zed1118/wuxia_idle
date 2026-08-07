@@ -1,5 +1,7 @@
 # P1 #1 Mac 端接手 handoff（2026-05-12）
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 会话边界文档：上游 Pen + DeepSeek 端已交付，下游 Mac 端接手未动。
 当前会话 Opus 用量风险高，本文档目标是让**新会话开局即上下文齐备**。
 

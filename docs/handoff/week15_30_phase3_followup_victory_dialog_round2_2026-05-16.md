@@ -1,5 +1,7 @@
 # W15 #30 P3 后续 B · victory dialog 本地化 + P5-Fresh seed closeout
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 2026-05-16 / Mac · opus 4.7 / 单会话 ~1h / 一波 commit / 零回退
 
 ## 1. 一句话

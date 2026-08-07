@@ -1,5 +1,7 @@
 # P3.2.C 修法 ① 数值大改 closeout
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 日期:2026-05-24 / 模型:Opus 4.7 xhigh / 工时 ~1h10min
 > 主 cwd `/Users/a10506/Desktop/挂机武侠` @ main · 直推 main(无 PR)
 

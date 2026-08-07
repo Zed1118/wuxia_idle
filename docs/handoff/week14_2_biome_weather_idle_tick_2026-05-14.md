@@ -1,5 +1,7 @@
 # W14-2 C 任务 biome/weather + 闭关 idle tick + tower 接入 closeout(2026-05-14)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 写给下一会话开局者(Mac Opus 自己)+ W14-3 继续推进的人。
 > 用户离线 1 小时期间自主推进 11 个子任务全闭环。
 > 单 commit + **590/590**,analyze 0 issues。

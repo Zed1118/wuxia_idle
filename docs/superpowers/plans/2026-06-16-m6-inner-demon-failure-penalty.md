@@ -1,5 +1,7 @@
 # M6 心魔失败惩罚 实装计划
 
+> 📋 计划态存档 · 本文是实施前的计划,文中路径与文件名为**当时的规划意图**,以实际落地为准;`lib/` 路径的新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 把 GDD §12.1 设计、配置已就绪但零 wire 的心魔关战败惩罚（内力 ×0.85 / 主修 ×0.9 + 余毒 debuff）接入战斗结算与存档。

@@ -1,5 +1,7 @@
 # §12.1 心魔系统 Phase 2 final closeout(1.0 P2.2 全收尾)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 日期:2026-05-23 / 模型:Mac + Opus 4.7 xhigh
 > 上游 implementation closeout(Batch 2.1-2.4):`p2_x_inner_demon_implementation_closeout_2026-05-22.md`
 > ROADMAP_1_0.md:110/200/247 P2.2 子阶段 final

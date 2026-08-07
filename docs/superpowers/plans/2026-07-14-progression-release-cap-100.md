@@ -1,5 +1,7 @@
 # Lv100 发布上限与当前内容经验重校实施计划
 
+> 📋 计划态存档 · 本文是实施前的计划,文中路径与文件名为**当时的规划意图**,以实际落地为准;`lib/` 路径的新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:executing-plans` to implement this plan task-by-task. Follow RED→GREEN→REFACTOR for every behavior change and keep the checkbox state current.
 
 **Goal:** 将当前版本的角色成长硬封顶于 Lv100，保留溢出经验与 490 级长线空间，并把现有主线、塔、支线和挂机内容重校到 Lv80～95 的完整当前体验。

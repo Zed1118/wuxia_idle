@@ -2,6 +2,8 @@ WORKFLOW_OK · finders=3 · total_findings=21
 
 # 只读静态 Audit 报告 — 挂机武侠
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 - **base**: `b882907 docs(H2): 中期玩法深度 audit + 候选清单 · 4 系统 Phase 0 grep`
 - **方式**: dynamic workflow，3 个并行 sonnet finder（Explore agentType · 只读 grep/read · schema 结构化返回）
 - **范围**: `lib/` `data/` `test/` 纯静态审查，未跑 build/test，未改任何现有文件

@@ -1,5 +1,7 @@
 # Week 15 · Phase 5 #2 DDD 目录整理 + 闭关 feature 试点 closeout
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 2026-05-15 · opus(xhigh + 用户拍板)· #30 收口后 Phase 5 主战场起步首批。
 >
 > **结论**:闭关 feature 完整迁到 `lib/features/seclusion/{domain,application,presentation}/`,3 屏全 Consumer 化,**#28 闭关 widget e2e 老挂账销账**(W6 drift 5 轮探路无解的硬骨头通过 fake service + `ProviderScope.overrides` 解了)。**653/653 测试**(原 649 → +4 e2e),analyze 0 issues。

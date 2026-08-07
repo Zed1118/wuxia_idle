@@ -1,5 +1,7 @@
 # W15 #30 第 2 期 内力 + 心法领悟点消费层接入 closeout
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 2026-05-16 / Mac · opus xhigh / 单会话 / 3 commit(feat + docs + saveVersion 修救)/ 零回退
 
 ## 1. 起点与背景

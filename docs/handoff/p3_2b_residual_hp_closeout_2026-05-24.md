@@ -1,5 +1,7 @@
 # P3.2.B 残血容差数值调优 closeout
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 日期:2026-05-24 / 模型:Mac + Opus 4.7 xhigh
 > worktree:`/Users/a10506/Desktop/wuxia_idle_p3_2` @ `feat/p3_2_mass_battle`
 > 1 commit `本` · 1269 pass / 0 analyze · ~70min(诊断 25min + 实装 25min + 收尾 20min)

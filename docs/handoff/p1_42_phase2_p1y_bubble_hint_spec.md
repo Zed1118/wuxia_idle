@@ -1,5 +1,7 @@
 # P1 #42 Phase 2 · §10 新手引导骨架 P1.y spec
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 2026-05-18,Mac + Opus 4.7 xhigh,起草于 P1.x 范围 B 销账(`cf91809`)之后。范围:`TutorialBannerCard` widget + step 6-8 业务门槛 hook(GDD §10.2 第 2 方式上下文气泡提示)。**不含 §10.2 第 3 方式 BaikeScreen 系统百科条目**(留另起 spec)。
 
 ## 1. 背景

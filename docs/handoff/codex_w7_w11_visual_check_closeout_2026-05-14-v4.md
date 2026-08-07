@@ -1,5 +1,7 @@
 # W7-W11 视觉验收第四轮 closeout
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 日期：2026-05-14
 项目：`F:\Projects\wuxia_idle`
 分支：`main`

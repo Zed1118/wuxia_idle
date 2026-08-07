@@ -1,5 +1,7 @@
 # 终局机制型 Boss 批次3 心魔应用 · Implementation Plan
 
+> 📋 计划态存档 · 本文是实施前的计划,文中路径与文件名为**当时的规划意图**,以实际落地为准;`lib/` 路径的新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 让 inner_demon_05/06 心魔镜像带脆弱窗口（削满配秒杀），inner_demon_07 终关加「撑过 N tick 或击败镜像任一即胜」的限时生存胜负条件。

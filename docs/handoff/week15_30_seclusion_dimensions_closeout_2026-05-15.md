@@ -1,5 +1,7 @@
 # Phase 4 W15 #30 闭关 3 维度接 service closeout
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > Mac 端 Opus 4.7 维护,本会话末态。
 > 创建日期:2026-05-15(§12 收口之后下波 A 起手)
 > 上游锚:`v0.5.3-w15-final` 之后 9 commits,HEAD 待提交

@@ -1,5 +1,7 @@
 # Phase 5 W6 升级 + service 实例化 + nullable provider 架构全交付收尾（2026-05-14）
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 写给下一会话开局后接 Week 7 的 Mac Opus 自己看。
 > Phase 5 W6 4 commits 单日落地,tag `v0.3.0-w6` push origin。
 > PROGRESS.md「当前阶段」段是单一信源；本文档补充「为什么这么做」与「下次开局必读」。

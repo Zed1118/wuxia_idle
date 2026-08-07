@@ -1,5 +1,7 @@
 # Codex 派单 · W15 装备详情屏 round2 视觉验收(3 段 lore + 实际强化)
 
+> 📌 历史快照 · 本文路径按撰写当时的目录结构保留未改;`lib/ui/` `lib/providers/` `lib/services/` `lib/utils/` `lib/combat/` `lib/data/models/` 等已于 2026-05 迁移,新旧对照见 `docs/PATH_MIGRATION_MAP.md`。
+
 > 派单方:Mac Opus 4.7 · 接单方:Pen Windows Codex 桌面
 > 创建日期:2026-05-15
 > 关联上游:HEAD `93288ec`(本派单 fixture 全部已在 main 上)
