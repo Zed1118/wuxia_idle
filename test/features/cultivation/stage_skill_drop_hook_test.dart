@@ -41,24 +41,29 @@ void main() {
     final svc = SkillUnlockService(IsarSetup.instance);
     final stage = _bossStage(manual: 'skill_real');
 
-    await runStageSkillDropHookAfterVictory(
+    final first = await runStageSkillDropHookAfterVictory(
       stage: stage,
       svc: svc,
       clearedStageIds: const {}, // 首通快照
       towerFragmentDropProb: 0.20,
       rng: Random(1),
     );
+    // K1 假绿修复:捕获返回值锚 isFirstClear 闸门——首通必须真授。
+    expect(first.manualGranted, 'skill_real');
     expect(await svc.isUnlocked('skill_real'), true);
 
-    // 重复通关:快照已含本关 → manual 分支不触发,但已解锁状态不变
-    await runStageSkillDropHookAfterVictory(
-      stage: stage,
+    // K1 假绿修复:闸门必须用「重复且未解锁」场景锚——grantManual 幂等,
+    // 在已解锁场景下即使删掉 hook 的 `&& isFirstClear` 结果也不变(不可破坏)。
+    // 换一个未解锁的招 + 快照已含本关:闸门在 → 不授;闸门删 → 会授(红)。
+    final gated = await runStageSkillDropHookAfterVictory(
+      stage: _bossStage(manual: 'skill_real_late'),
       svc: svc,
       clearedStageIds: const {'stage_test_boss'},
       towerFragmentDropProb: 0.20,
       rng: Random(2),
     );
-    expect(await svc.isUnlocked('skill_real'), true);
+    expect(gated.manualGranted, isNull);
+    expect(await svc.isUnlocked('skill_real_late'), false);
   });
 
   test('残页:prob=1.0 必掉,集齐 5 次自动解锁', () async {

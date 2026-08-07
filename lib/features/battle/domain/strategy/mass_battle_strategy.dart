@@ -6,6 +6,7 @@ import '../../../../data/defs/skill_def.dart';
 import '../../../../data/numbers_config.dart';
 import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/mass_battle_def.dart';
+import '../../../../shared/utils/math_random.dart';
 import '../battle_state.dart';
 import '../qi_cycle.dart';
 import 'battle_strategy.dart';
@@ -101,7 +102,7 @@ class MassBattleStrategy extends BattleStrategy {
     if (enemyTeamsPerWave.isEmpty) {
       return initial.copyWith(result: BattleResult.draw);
     }
-    final r = rng ?? Random();
+    final r = rng ?? newMathRandom();
     var s = _applyFormation(initial, n.combat.redLines.combinedRateCap);
 
     for (var w = 0; w < waveCount; w++) {

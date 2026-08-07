@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yaml/yaml.dart';
 
 import '../../../../shared/strings.dart';
+import '../../../../shared/utils/math_random.dart';
 import '../../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../application/sect_providers.dart';
@@ -81,7 +82,7 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
   }
 
   void _handleAccept(_NarrativeData narrative) {
-    final rng = widget.rng ?? Random();
+    final Random rng = widget.rng ?? ref.read(mathRandomProvider);
     final win = rng.nextBool();
     final outcome = win ? SectOutcome.win : SectOutcome.loss;
     ref

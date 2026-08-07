@@ -5,6 +5,7 @@ import '../../../../data/defs/skill_def.dart';
 import '../../../../data/defs/stage_win_condition.dart';
 import '../../../../core/domain/enums.dart';
 import '../../../../data/numbers_config.dart';
+import '../../../../shared/utils/math_random.dart';
 import '../battle_ai.dart';
 import '../battle_skill_utils.dart';
 import '../enum_localizations.dart';
@@ -53,7 +54,7 @@ class DefaultGroundStrategy implements BattleStrategy {
   @override
   BattleState tick(BattleState state, NumbersConfig n, {Random? rng}) {
     if (state.isFinished) return state;
-    final r = rng ?? Random();
+    final r = rng ?? newMathRandom();
     // 边界步:推进 AP/CD + 排序 + 填队列(tick++,不结算)。
     var s = stepOne(state, n, rng: r);
     // drain:逐 actor 结算直到本 tick 队列空或战斗结束。
@@ -135,7 +136,7 @@ class DefaultGroundStrategy implements BattleStrategy {
     if (!enemyAlive) {
       return state.copyWith(actorQueue: const []);
     }
-    final s = _resolveAction(state, actor, n, rng ?? Random());
+    final s = _resolveAction(state, actor, n, rng ?? newMathRandom());
     return s.copyWith(actorQueue: rest);
   }
 
@@ -151,7 +152,7 @@ class DefaultGroundStrategy implements BattleStrategy {
     Random? rng,
   }) {
     var s = initial;
-    final r = rng ?? Random();
+    final r = rng ?? newMathRandom();
     var i = 0;
     while (!s.isFinished && i < maxTicks) {
       s = tick(s, n, rng: r);

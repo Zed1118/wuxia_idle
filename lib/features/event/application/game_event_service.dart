@@ -10,6 +10,7 @@ import '../../../core/domain/lore.dart';
 import '../../../data/lore_loader.dart';
 import '../../../features/battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/utils/math_random.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 
 /// GameEvent 9 type 写入 helper(P1 #42 Phase 2)。
@@ -31,7 +32,8 @@ class GameEventService {
   /// [LoreLoader.load](rootBundle 读 `data/lore/<id>.yaml`)。
   final Future<LoreContent> Function(String loreId)? loreLoader;
 
-  /// P1 #44 · Random 注入(测试用 deterministic seed)。默认 null → new Random()。
+  /// P1 #44 · Random 注入(测试用 deterministic seed)。默认 null →
+  /// 走 math_random 注入点 `newMathRandom()`(K1 收口)。
   final Random? random;
 
   GameEventService(this.isar, {this.loreLoader, this.random});
@@ -67,7 +69,7 @@ class GameEventService {
         ? lore.continuedLoreBossDefeatedPool
         : lore.continuedLoreObtainedPool;
     if (pool.isEmpty) return fallback;
-    final rnd = random ?? Random();
+    final rnd = random ?? newMathRandom();
     final pick = pool[rnd.nextInt(pool.length)];
     return _applyPlaceholders(pick.text, vars);
   }

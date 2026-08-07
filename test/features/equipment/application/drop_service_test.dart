@@ -156,6 +156,7 @@ void main() {
 
   test('quantity = [1, 3] → roll 出的 quantity 始终 ∈ [1, 3]', () {
     final rng = DefaultRng(seed: 7);
+    final seen = <int>{};
     for (int i = 0; i < 200; i++) {
       final result = service().rollDrops(
         stageWith(const [
@@ -169,7 +170,12 @@ void main() {
         rng,
       );
       expect(result.items.first.quantity, inInclusiveRange(1, 3));
+      seen.add(result.items.first.quantity);
     }
+    // K1 假绿修复:上界 3 必须真实可达,否则 _rollQuantity 的
+    // `nextInt(max - min + 1)` 退化成 `nextInt(max - min)`(上界永不命中)
+    // 时上面的区间断言照样绿。
+    expect(seen, contains(3), reason: '200 次 roll 上界 3 必须至少命中一次');
   });
 
   test('quantity = [5, 5] 单点 → 总是 5', () {

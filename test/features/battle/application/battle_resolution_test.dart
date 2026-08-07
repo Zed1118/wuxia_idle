@@ -557,11 +557,6 @@ void main() {
 
   test('未参战角色：未传入 participatingCharacters 时装备/心法不动', () {
     final ch1 = buildCharacter(id: 1, mainTechId: 200);
-    final benchEq = buildEquipment(
-      id: 999,
-      slot: EquipmentSlot.weapon,
-      battleCount: 7,
-    );
     final w1 = buildEquipment(id: 100, slot: EquipmentSlot.weapon);
     final tech1 = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
 
@@ -589,7 +584,8 @@ void main() {
       dropService: dropSvc(),
     );
 
-    expect(benchEq.battleCount, 7, reason: '板凳角色装备不该动');
+    // K1 假绿修复:原 benchEq(从未传入 resolve)断言「不动」不可破坏已删;
+    // 「未传入不算」的防御语义由下一 test(StateError)真实守卫。
     expect(w1.battleCount, 1);
   });
 
