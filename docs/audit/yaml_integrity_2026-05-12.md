@@ -37,12 +37,12 @@
 
 | stage id | narrative 文件 | 状态 |
 |---|---|---|
-| `mainline_test_01` | `data/narratives/mainline_test_01.yaml`(已移除) | ⚠ 缺失 |
-| `mainline_test_02` | `data/narratives/mainline_test_02.yaml`(已移除) | ⚠ 缺失 |
-| `mainline_test_03` | `data/narratives/mainline_test_03.yaml`(已移除) | ⚠ 缺失 |
-| `mainline_test_04` | `data/narratives/mainline_test_04.yaml`(已移除) | ⚠ 缺失 |
-| `mainline_test_05` | `data/narratives/mainline_test_05.yaml`(已移除) | ⚠ 缺失 |
-| `mainline_test_06` | `data/narratives/mainline_test_06.yaml`(已移除) | ⚠ 缺失 |
+| `mainline_test_01` | `data/narratives/mainline_test_01.yaml`(从未入库·git 全历史零记录,2026-08-07 复核) | ⚠ 缺失 |
+| `mainline_test_02` | `data/narratives/mainline_test_02.yaml`(从未入库·git 全历史零记录,2026-08-07 复核) | ⚠ 缺失 |
+| `mainline_test_03` | `data/narratives/mainline_test_03.yaml`(从未入库·git 全历史零记录,2026-08-07 复核) | ⚠ 缺失 |
+| `mainline_test_04` | `data/narratives/mainline_test_04.yaml`(从未入库·git 全历史零记录,2026-08-07 复核) | ⚠ 缺失 |
+| `mainline_test_05` | `data/narratives/mainline_test_05.yaml`(从未入库·git 全历史零记录,2026-08-07 复核) | ⚠ 缺失 |
+| `mainline_test_06` | `data/narratives/mainline_test_06.yaml`(从未入库·git 全历史零记录,2026-08-07 复核) | ⚠ 缺失 |
 
 | stage id | prevStageId | 状态 |
 |---|---|---|
