@@ -248,7 +248,7 @@ class _RarityChip extends StatelessWidget {
             ),
           ),
           TextSpan(
-            text: '（$total）',
+            text: UiStrings.rarityTotalParen(total),
             style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
         ],

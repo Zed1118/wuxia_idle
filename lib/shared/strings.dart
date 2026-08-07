@@ -788,6 +788,11 @@ class UiStrings {
   /// 资质档位前缀（GDD §4.1）。角色档案页与招募候选卡共用。
   static const String rarityTierLabel = '资质';
 
+  /// 资质档位后缀的总点数括注。招募候选卡把「资质」「档名」「总点数」拆成
+  /// 三段独立着色，无法整串走 [rarityTierWithTotal]，故括注单独出一个入口，
+  /// 避免全角括号散写进 widget（§8.2 Gate ⓐ）。
+  static String rarityTotalParen(int total) => '（$total）';
+
   /// 资质档位 chip（GDD §4.1）：档名由 `EnumL10n.rarityTier` 提供，
   /// 总点数为 `Attributes.total`。例:「资质 绝世（24）」。
   static String rarityTierWithTotal(String tierName, int total) =>
