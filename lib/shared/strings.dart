@@ -785,6 +785,11 @@ class UiStrings {
   static String lineageCharacterDetailFounderGen(int gen) =>
       gen == 1 ? '开派太祖' : '第 $gen 代掌门';
 
+  /// 资质档位 chip（GDD §4.1）：档名由 `EnumL10n.rarityTier` 提供，
+  /// 总点数为 `Attributes.total`。例:「资质 绝世（24）」。
+  static String rarityTierWithTotal(String tierName, int total) =>
+      '资质 $tierName（$total）';
+
   static const String attrConstitution = '根骨';
   static const String attrEnlightenment = '悟性';
   static const String attrAgility = '身法';

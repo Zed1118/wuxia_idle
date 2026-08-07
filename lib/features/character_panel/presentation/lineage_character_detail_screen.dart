@@ -295,6 +295,15 @@ class _AttributesSection extends StatelessWidget {
               _AttrChip('${UiStrings.attrEnlightenment} ${a.enlightenment}'),
               _AttrChip('${UiStrings.attrAgility} ${a.agility}'),
               _AttrChip('${UiStrings.attrFortune} ${a.fortune}'),
+              // 资质档位（GDD §4.1）：四项总点数的标签，由 rarityForTotalPoints
+              // 派生。⚠ 视觉表现为临时版（沿用 _AttrChip 同款样式，未做色阶/印章
+              // 等档位化表达），待视觉终拍。
+              _AttrChip(
+                UiStrings.rarityTierWithTotal(
+                  EnumL10n.rarityTier(character.rarity),
+                  a.total,
+                ),
+              ),
             ],
           ),
         ],
