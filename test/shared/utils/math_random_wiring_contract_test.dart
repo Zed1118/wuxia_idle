@@ -18,9 +18,18 @@ import 'package:wuxia_idle/shared/utils/math_random.dart';
 ///   - **override 生效**:固定种子注入 provider 后结果可预测(纯函数层断言,
 ///     不在 widget 层)。
 void main() {
-  /// 裸构造检测:词边界 `Random(`,兼容 `math.Random(` 别名导入;
-  /// `newMathRandom(` 因前一个字符是词字符天然不匹配。
-  final bareRandom = RegExp(r'(?<![A-Za-z0-9_$])Random\s*\(');
+  /// 裸构造检测:词边界 `Random(`,兼容 `math.Random(` / 任意 `xxx.Random(` 别名
+  /// 前缀(`.` 不在排除集);`newMathRandom(` 因前一个字符是词字符天然不匹配。
+  /// 另覆盖 `Random.secure(` / `math.Random.secure(`——`Random\s*\(` 对
+  /// `Random.secure(` 零命中(中间隔 `.secure`),须显式钉(K1 :45 自陈缺口)。
+  final bareRandom = RegExp(r'(?<![A-Za-z0-9_$])Random\s*(?:\(|\.secure\s*\()');
+
+  /// 别名 import 检测:`import 'dart:math' show Random as Foo;` 把构造名改写成
+  /// `Foo(`,词边界正则对改名后的标识符零命中(K1 :45 自陈缺口)——直接钉
+  /// import 行本身。hide 无碍(藏起来就不会被构造)。
+  final aliasedRandomImport = RegExp(
+    r"import\s+'dart:math'[^;\n]*\bshow\b[^;\n]*\bRandom\s+as\s+",
+  );
 
   /// 剥掉注释(块注释 + 行注释),只留可执行代码参与扫描。
   String stripComments(String source) {
@@ -35,6 +44,54 @@ void main() {
   }
 
   group('K1 · dart:math Random 注入点接线契约', () {
+    test('扫描口径自控:别名/secure/前缀形式必命中,注入点形式必不命中', () {
+      // 正则一旦 drift(如有人「优化」掉 lookbehind),扫描测仍绿但已失明——
+      // 本测把命中/不命中样本钉死,保证扫描口径本身被守护。
+      const hits = {
+        'final r = Random();': '裸构造',
+        'final r = Random(42);': '带种子裸构造',
+        'final r = Random.secure();': 'secure 构造',
+        'final r = math.Random.secure();': '前缀 secure 构造',
+        'final r = m.Random(1);': '别名前缀构造',
+        'final r=Random();': '无空格变体',
+      };
+      for (final e in hits.entries) {
+        expect(
+          bareRandom.hasMatch(e.key),
+          isTrue,
+          reason: '${e.value}: ${e.key}',
+        );
+      }
+      const misses = {
+        'final r = newMathRandom();': '注入点兜底',
+        'final r = newMathRandom(seed: 1);': '注入点带种子',
+      };
+      for (final e in misses.entries) {
+        expect(
+          bareRandom.hasMatch(e.key),
+          isFalse,
+          reason: '${e.value}: ${e.key}',
+        );
+      }
+      expect(
+        aliasedRandomImport.hasMatch(
+          "import 'dart:math' show Random as MyRandom;",
+        ),
+        isTrue,
+        reason: 'show Random as X 别名 import 必须命中',
+      );
+      expect(
+        aliasedRandomImport.hasMatch("import 'dart:math' show Random, Point;"),
+        isFalse,
+        reason: '正常 show 导入不误伤',
+      );
+      expect(
+        aliasedRandomImport.hasMatch("import 'dart:math' as math;"),
+        isFalse,
+        reason: '库前缀导入由 .Random( 词边界正则覆盖,本正则不误伤',
+      );
+    });
+
     test('lib/ 生产代码裸 Random( 构造归 0(白名单:注入点定义处 + debug)', () {
       const whitelist = {
         'lib/shared/utils/math_random.dart', // 注入点定义处本身
@@ -48,14 +105,16 @@ void main() {
         if (whitelist.contains(path)) continue;
         if (path.startsWith('lib/features/debug/')) continue; // 非生产
         final code = stripComments(entity.readAsStringSync());
-        if (bareRandom.hasMatch(code)) offenders.add(path);
+        if (bareRandom.hasMatch(code) || aliasedRandomImport.hasMatch(code)) {
+          offenders.add(path);
+        }
       }
       expect(
         offenders,
         isEmpty,
         reason:
-            '这些文件仍裸构造 Random(,请走 mathRandomProvider / newMathRandom:\n'
-            '${offenders.join('\n')}',
+            '这些文件仍裸构造 Random(/Random.secure(/别名导入 Random,'
+            '请走 mathRandomProvider / newMathRandom:\n${offenders.join('\n')}',
       );
     });
 
