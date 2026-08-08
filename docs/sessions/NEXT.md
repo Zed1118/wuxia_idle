@@ -1,8 +1,8 @@
 # 新会话开局清单
 
-> 交接时间：2026-08-08 12:40（夜批 02:40 交接后，上午又清了一轮遗留，本行已更新）· 工作收口于 HEAD `48f5e422` · 与 origin 同步、工作树干净、worktree 全清
-> **上午增量**：补齐资质 chip 1280×720 视觉证据（昨夜欠的 §8.2 Gate 项）· **推翻昨夜对 capture 失败的误诊**（「显示器休眠」「后台执行」两假设均已证伪，caffeinate 修复已 revert 不合，根因未立）· 修 `/afk` skill 派单包禁区缺陷（昨夜 P6 越界事故根因）
-> 本清单自身的落盘 commit 排在 `053dc6dd` 之后，故实际 HEAD 会比它新 1-2 个纯文档 commit——**这不是漂移**，判据见【开局动作】第 4 步。
+> 交接时间：2026-08-08 12:59 · 工作收口于 HEAD `410066b0` · 与 origin 同步、工作树干净、worktree 与本地分支已全清
+> 本清单自身的落盘 commit 排在 `410066b0` 之后，故实际 HEAD 会比它新 1 个纯文档 commit——**这不是漂移**，判据见【开局动作】第 4 步。
+> ⚠ 该 commit **默认未 push**（`/handoff` 未带 `--push`）。若 `git status -sb` 显示 `ahead 1`，那就是它，不是异常。
 
 ## 【本会话契约】（置顶，最高优先级）
 
@@ -16,67 +16,70 @@
 
 项目：挂机武侠（`/Users/a10506/Desktop/Projects/挂机武侠`）
 
-上一会话是 8h `/afk` 挂机，已批准 5 单（稀有度收口 / C2b 桃花岛美术闭环 / P4 审计脚本入仓 / P5 PROGRESS 瘦身 / P6 死链标注验证）**全部关闭并合入 main**，WIP 清零。**剩两件卡用户拍板**：扫描器修复合不合、C2b 四张图取舍。
+08-08 夜批 5 单已全部关闭合入；同日上午又清了一轮夜批遗留（含**推翻自己昨夜的一个误诊**）。
+当前**无在途实装**，**6 项等用户拍板 / 5 项可直接做**。
 
 ## 【开局动作】
 
-1. 读 PROGRESS.md 顶段「2026-08-08 夜批（8h 挂机）」条目
-2. 读 `docs/sessions/2026-08-08_023200_夜批五单收口_main.md`
-3. 读 `docs/dispatch/reports/2026-08-08_夜批收账早报.md`（含代拍决策清单 + 决策菜单，用户拍板前必读）
-4. `git worktree list` + `git branch --list`：确认在途分支。**本轮无执行端在途任务**；若仍见 `afk-coordinator-0808`，其内容已全部 FF 进 main，可直接清。
+1. 读 PROGRESS.md 顶段「2026-08-08 夜批（8h 挂机）」条目（**注意末尾的【同日上午续:清夜批遗留】段是最新状态**）
+2. 读 `docs/sessions/2026-08-08_125900_清夜批遗留_main.md`
+3. 读 `docs/dispatch/reports/2026-08-08_夜批收账早报.md`（决策菜单 5 项，用户拍板前必读）
+4. `git worktree list` + `git branch --list`：**预期只有 main**。若见其他分支属异常，停下报告。
 5. **只 `git fetch`，不自动 rebase/autostash**：
 
    ```bash
    git status -sb | head -1
    git fetch origin
    git rev-list --left-right --count origin/main...HEAD
-   git merge-base --is-ancestor 053dc6dd HEAD && echo ANCESTOR_OK
+   git merge-base --is-ancestor 410066b0 HEAD && echo ANCESTOR_OK
    ```
 
    - 工作树 dirty / 有分叉 / 有其他活跃写者 → **停下报告**，不自行更新；干净且可 FF 才 `git merge --ff-only origin/main`
-   - `ANCESTOR_OK` 且与 origin 同步 → 快照有效（HEAD 比 `053dc6dd` 新 1-2 个纯文档 commit 属正常）
+   - `ANCESTOR_OK` 且 `ahead ≤1`（那 1 个是本清单自身的 commit）→ 快照有效
    - `--is-ancestor` 不成立 → **快照作废**：停下报告差异，重测基线，禁转抄下方数字
-   - **并发检查**：`~/.claude/locks/` 下协调锁是否仍被他人持有。⚠ 该锁的 `heartbeat_at` **全程不更新**（v2 缺口，已入池 P9），不能用心跳新鲜度判活，须查 pid 存活 + git tip 是否推进
-6. 选读 memory：`reference_anti_hallucination`（固定）+ `feedback_developer_dir_breaks_flutter_macos_build` / `feedback_bg_session_write_guard_subagent_dev` / `feedback_measure_from_config_not_render` / `feedback_no_effort_saving_in_recommendations`
+   - **并发检查**：`~/.claude/locks/` 下协调锁。⚠ 该锁 `heartbeat_at` **全程不更新**（v2 缺口，池内 P9），**不能用心跳新鲜度判活**，须查 pid 存活 + git tip 是否推进
+6. 选读 memory：`reference_anti_hallucination`（固定）+ `feedback_developer_dir_breaks_flutter_macos_build` / `feedback_probe_must_prove_its_load` / `feedback_measure_from_config_not_render` / `feedback_no_effort_saving_in_recommendations`
 
-## 【环境快照】（2026-08-08 主 checkout 实测，改动代码后必重测禁转抄）
+## 【环境快照】（实测；改动代码后必重测，禁转抄）
 
-- HEAD `48f5e422`（夜批 22 commit + 上午清遗留，**已 push**，`origin/main...main` = `0 0` 反验同步）
-- `flutter analyze --no-pub` → **No issues found**，4.2s｜主 checkout 实测
-- 全量 `flutter test --no-pub` → **4910 pass / 0 fail**，exit 0，4m05s｜主 checkout 实测（跑在 `053dc6dd`；其后 commit 全为文档/BACKLOG，零 `.dart` 改动，故未重跑）
-  - **守恒核对**：= 上轮基线 4903 + 本次新增 7（`numbers_config_rarity_test.dart` 新文件 6 例 + `encounter_service_test` 的「奇遇加点跨档不改 rarity」红线 1 例），逐值吻合
-- CI：对 `9c4d00d0` **conclusion=success**（headSha 与本地 rev-parse 逐字符一致）；`053dc6dd` 的 run 为纯文档变更，收尾时仍在跑
-- **在途 PR / 分支：无执行端在途任务**。远端留有 4 个**已合并的备份分支**（`worktree-claude-rarity` / `codex/taohua-art-0807` / `pi/p6-link-label-0808` / `qoder/p4-audit-scripts-0808`），是上一会话主动推的备份，等用户决定是否清；其中 `pi/p6-link-label-0808` 含一个**故意未合并**的 commit（执行端越界改 PROGRESS.md，已弃用）
-- 滚动池（`docs/dispatch/pool/README.md`）：P2 真机录屏 · P3 checklist reconcile · **P7 扫描器修复待拍板** · P8 扫描器真实 git fixture 测试 · P9 `/afk` v2 门禁缺口
+- HEAD `410066b0`（夜批 22 commit + 上午清遗留 6 commit，**已 push**，`origin/main...main` = `0 0` 反验同步）
+- `flutter analyze --no-pub` → **No issues found**，4.3s｜2026-08-08 12:5x 主 checkout 实测
+- 全量 `flutter test --no-pub` → **4910 pass / 0 fail**，exit 0，4m05s｜2026-08-08 02:4x 主 checkout 实测（跑在 `053dc6dd`）
+  - **未重跑的依据（本会话实测）**：`git diff --name-only 053dc6dd..HEAD -- '*.dart'` = **0 文件**，其后全是 BACKLOG/PROGRESS/docs 改动。守 memory `feedback_test_cadence_no_blind_full`
+  - **守恒核对**：4910 = 上轮基线 4903 + 新增 7（`numbers_config_rarity_test.dart` 新文件 6 例 + `encounter_service_test` 出生锁死红线 1 例）
+- CI：对 `44ee808a` **conclusion=success**（headSha 与本地 rev-parse 逐字符一致）；其后仅文档 commit
+- **在途 PR / 分支：本地无**。远端留 4 个**已合并的备份分支**（`worktree-claude-rarity` / `codex/taohua-art-0807` / `pi/p6-link-label-0808` / `qoder/p4-audit-scripts-0808`）——实测 2 个 `main..origin/<b>`=0，另 2 个是 rebase/cherry-pick **前**的旧 SHA（内容在 main，SHA 不同）。**等用户拍是否清，已续传 1 轮**
+- 滚动池（`docs/dispatch/pool/README.md`）：P2 真机录屏 · P3 checklist reconcile · **P7 扫描器修复待拍板** · P8 真实 git fixture 测试 · P9 v2 门禁缺口（四缺口中 `dispatch_template` 一条已于 08-08 上午修）
 
 ## 【下波候选】
 
 | # | 任务 | 模型 | 预估时长 | 备注 |
 |---|------|------|----------|------|
-| 0 | 拍 BACKLOG 一#15：老存档角色档案页资质停留「标准」 | 用户 + opus | 10min 拍板 + 30-60min 实装 | 上一会话「出生锁死」拍板的后遗症，但**二次审计后严重性已下调=纯展示零数值影响**：`character.rarity` 唯一读取点是角色档案页，招募卡是现算不读存档，战斗/成长/掉落层零消费。三选项与误差见 BACKLOG。**同一 chip 另有 BACKLOG 一#16(新档也中):拼「出生档位+当前总点数」在锁死语义下按设计分叉,如「资质 资优(27)」而资优区间 21-22**,与 defer 的视觉档位化同一决策面,建议一并拍。⚠ 均为读码推断未拿真档验证 |
-| 1 | 拍 P7 扫描器修复合不合（推荐） | opus | 5-10min | **补丁已写好并全验证**（死链 940→909、工作树漂移 17→0、既有 10 类样例 10/10、总数守恒），提案在 `docs/dispatch/reports/2026-08-08_scanner_fp_fix_proposal.md`，用户点头即可合，是所有候选里性价比最高的 |
-| 2 | C2b 四张桃花岛图取舍 | 用户 + Claude | 15-30min | 靠看图；证据 `~/Desktop/Projects/挂机武侠素材/桃花岛美术候选_20260807/_复检_*.png` 两张；🔴 级不可代拍 |
-| 3 | P9 修 `/afk` v2 四处门禁缺口 | opus | 30-45min | preflight 漏报待拍板 / approved_tasks 子串误匹配 / doctor 不透 dispatch_template / 锁无心跳 |
-| 4 | P8 扫描器引真实 git fixture 的测试 | qoderclicn 或 kimi | 60-90min | P7 的最大缺口：现有样例 mock 了 git 调用，**测不出**那两个 bug，加了也是假绿 |
-| 5 | 资质 chip 真机观感 + BACKLOG 二#11 抓图修复 | 用户 + Claude | 30-60min | 上一会话 1280×720 smoke 两轮失败（`could not create image from rect`），资质 UI 无视觉证据 |
+| 1 | **P8 扫描器补真实 git fixture 测试（推荐）** | opus | 60-90min | 已确证 `tools/test_doc_link_scan.py:34-39` mock 掉 `git_ls_files`/`git_check_ignore` 且无 `git init`；**它决定 P7 补丁能不能放心合**。Bug B 可在 mock 层测、Bug A2 须建真 git 仓 |
+| 2 | 拍 P7 扫描器假阳修复合不合 | 用户 | 5-10min | 补丁已全验证（死链 940→909、工作树漂移 17→0、10 类样例仍全过、总数守恒），提案含可 `git apply` 补丁 |
+| 3 | 拍资质三连（BACKLOG 一#15 老存档迁移 / 一#16 chip 拼法分叉 / 视觉档位化） | 用户 + opus | 20min 拍 + 30-60min 实装 | 同一决策面，攒一起效率高；真机图已有可直接看 |
+| 4 | C2b 桃花岛 4 张图取舍 | 用户 | 15-30min | 复检图 `~/Desktop/Projects/挂机武侠素材/桃花岛美术候选_20260807/_复检_*.png` |
+| 5 | P9 v2 门禁余三缺口 | opus | 30-45min | preflight 漏报待拍板 / approved_tasks 子串误匹配 / 锁无心跳 |
+| 6 | 追 capture 根因（BACKLOG 二#11） | opus | 不定 | 只剩「锁屏」一条假设，**需夜间无人时段才能复现**，白天验不了 |
 
 ## 【硬约束沿用】
 
 - `DEVELOPER_DIR` 只给 git 用，带进 `flutter build macos` 即报 xcodebuild 找不到 → memory `feedback_developer_dir_breaks_flutter_macos_build`
-- 写守卫看会话 cwd 不看目标路径；worktree 隔离态下 Bash 拒复合命令 → memory `feedback_bg_session_write_guard_subagent_dev`
-- 机制断言先做最小可逆隔离实验，不能安全实验则标假设 → memory `feedback_verify_mechanism_before_building_on_it`
-- commit message 必须中文动宾（§11 + 合并 Gate ⓓ）→ memory `feedback_wuxia_commit_message_chinese_gate`
-- 命令名/路径/API 从事实源取，`which` 查空≠未安装 → memory `feedback_identifier_from_source_not_guessed`
+- 探针/修复必须自证有负载，对照组要跑**未修版** → memory `feedback_probe_must_prove_its_load`
 - 图像法结论前必过基准图自校验 → memory `feedback_measure_from_config_not_render`
+- 机制断言先做最小可逆隔离实验 → memory `feedback_verify_mechanism_before_building_on_it`
+- commit message 必须中文动宾（§11 + 合并 Gate ⓓ）→ memory `feedback_wuxia_commit_message_chinese_gate`
+- 写守卫看会话 cwd 不看目标路径；worktree 隔离态 Bash 拒复合命令 → memory `feedback_bg_session_write_guard_subagent_dev`
+- 派单包必须显式列全执行端禁区 → memory `feedback_night_batch_dispatch_protocol`（08-08 已升级进 `/afk` skill Phase 2）
 - 推荐不得为省工作量缩水，出推荐前做「工作量无关」自检 → memory `feedback_no_effort_saving_in_recommendations`
-- 破坏证红必须在 commit 之后做，还原后必重跑绿 → memory `feedback_break_red_after_commit`
+- 破坏证红必须在 commit 之后做 → memory `feedback_break_red_after_commit`
 - 写完 dart 必 `dart format`（CI 门禁）→ memory `feedback_wuxia_ci_format_gate_not_in_merge_gate`
-- 派单包必须显式列全执行端禁区（`numbers.yaml`/`GDD.md`/`PROGRESS.md`/`strings.dart`/`pubspec.yaml`）→ memory `feedback_night_batch_dispatch_protocol`
 
 ## 【防幻觉守则】
 
 - 本清单【环境快照】的数字是上一会话实测快照；改动代码后**必须重测**，禁转抄。
-- 报「完成/已修复/0 引用/全绿」前必跑验证并贴输出，launch ≠ 成功；**退出码要看归属**（管道后的 `$?` 是末端命令的码；`gh run watch` 非零可能是 run 被后续 push 取代成 cancelled 而非红）。
+- 报「完成/已修复/0 引用/全绿」前必跑验证并贴输出，launch ≠ 成功；**退出码要看归属**（管道后 `$?` 是末端命令的码；`gh run watch` 非零可能是 run 被后续 push 取代成 cancelled 而非红）。
+- **「登记进 BACKLOG」不等于「已处置」**——08-08 上午实录：昨夜把猜的根因写进 BACKLOG 就走，次日一查日志即塌。
 - 引用代码现 grep/codegraph 查带 file:line；不确定写「不知道」，不凭记忆硬答。
 - 完整守则见 memory `reference_anti_hallucination`。
 
@@ -84,7 +87,7 @@
 
 读完上述清单后先提交一份报告，**不动代码**：
 
-1. **防装读要求**：须引用本清单里**不存在**的原文——PROGRESS.md 顶段条目的**原文标题行与日期**，以及 `docs/dispatch/reports/2026-08-08_夜批收账早报.md`「决策菜单」小节里**第 2 项的原文选项**。只复述本清单已有信息不算完成。
+1. **防装读要求**：须引用本清单里**不存在**的原文——PROGRESS.md 顶段条目的**原文标题行与日期**，以及 `docs/sessions/2026-08-08_125900_清夜批遗留_main.md`「重要决策」小节的**原文首条**。只复述本清单已有信息不算完成。
 2. 报告【开局动作】第 4、5 步结果：在途分支情况 + HEAD 校验判定（有效 / 作废）。
 3. 等指令。
 
