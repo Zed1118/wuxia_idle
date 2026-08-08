@@ -1,6 +1,7 @@
 # 新会话开局清单
 
-> 交接时间：2026-08-08 02:40 · 工作收口于 HEAD `053dc6dd` · 与 origin 同步、工作树干净、执行端 worktree 已全清
+> 交接时间：2026-08-08 12:40（夜批 02:40 交接后，上午又清了一轮遗留，本行已更新）· 工作收口于 HEAD `48f5e422` · 与 origin 同步、工作树干净、worktree 全清
+> **上午增量**：补齐资质 chip 1280×720 视觉证据（昨夜欠的 §8.2 Gate 项）· **推翻昨夜对 capture 失败的误诊**（「显示器休眠」「后台执行」两假设均已证伪，caffeinate 修复已 revert 不合，根因未立）· 修 `/afk` skill 派单包禁区缺陷（昨夜 P6 越界事故根因）
 > 本清单自身的落盘 commit 排在 `053dc6dd` 之后，故实际 HEAD 会比它新 1-2 个纯文档 commit——**这不是漂移**，判据见【开局动作】第 4 步。
 
 ## 【本会话契约】（置顶，最高优先级）
@@ -40,9 +41,9 @@
 
 ## 【环境快照】（2026-08-08 主 checkout 实测，改动代码后必重测禁转抄）
 
-- HEAD `053dc6dd`（本 session 22 commit，**已 push**，`origin/main...main` = `0 0` 反验同步）
+- HEAD `48f5e422`（夜批 22 commit + 上午清遗留，**已 push**，`origin/main...main` = `0 0` 反验同步）
 - `flutter analyze --no-pub` → **No issues found**，4.2s｜主 checkout 实测
-- 全量 `flutter test --no-pub` → **4910 pass / 0 fail**，exit 0，4m05s｜主 checkout 实测（HEAD `053dc6dd`）
+- 全量 `flutter test --no-pub` → **4910 pass / 0 fail**，exit 0，4m05s｜主 checkout 实测（跑在 `053dc6dd`；其后 commit 全为文档/BACKLOG，零 `.dart` 改动，故未重跑）
   - **守恒核对**：= 上轮基线 4903 + 本次新增 7（`numbers_config_rarity_test.dart` 新文件 6 例 + `encounter_service_test` 的「奇遇加点跨档不改 rarity」红线 1 例），逐值吻合
 - CI：对 `9c4d00d0` **conclusion=success**（headSha 与本地 rev-parse 逐字符一致）；`053dc6dd` 的 run 为纯文档变更，收尾时仍在跑
 - **在途 PR / 分支：无执行端在途任务**。远端留有 4 个**已合并的备份分支**（`worktree-claude-rarity` / `codex/taohua-art-0807` / `pi/p6-link-label-0808` / `qoder/p4-audit-scripts-0808`），是上一会话主动推的备份，等用户决定是否清；其中 `pi/p6-link-label-0808` 含一个**故意未合并**的 commit（执行端越界改 PROGRESS.md，已弃用）
