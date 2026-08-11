@@ -794,7 +794,8 @@ class UiStrings {
   static String rarityTotalParen(int total) => '（$total）';
 
   /// 资质档位 chip（GDD §4.1）：档名由 `EnumL10n.rarityTier` 提供，
-  /// 总点数为 `Attributes.total`。例:「资质 绝世（24）」。
+  /// 总点数为**出生点数** `CharacterBirthAttributes.birthAttributeTotal`
+  /// （非当前 `Attributes.total`，BACKLOG 一#16）。例:「资质 绝世（24）」。
   static String rarityTierWithTotal(String tierName, int total) =>
       '$rarityTierLabel $tierName（$total）';
 

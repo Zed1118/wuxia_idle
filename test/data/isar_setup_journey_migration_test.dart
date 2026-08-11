@@ -33,7 +33,7 @@ void main() {
     await IsarSetup.init(directory: tempDir, inspector: false);
     final migrated = (await IsarSetup.currentSaveData())!;
 
-    expect(migrated.saveVersion, '0.38.0');
+    expect(migrated.saveVersion, IsarSetup.currentSaveVersion);
     expect(migrated.jianghuJourneyUnlocked, isFalse);
     expect(migrated.baicaoMaxDepth, 0);
     expect(migrated.grantedTicketMilestoneIds, isEmpty);

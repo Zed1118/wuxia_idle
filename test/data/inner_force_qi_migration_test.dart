@@ -54,6 +54,9 @@ void main() {
     expect(migrated!.internalForce, 3500);
     expect(migrated.innerBreathDisorderHoursRemaining, 8);
     expect(migrated.innerDemonResidueHoursRemaining, 0);
-    expect((await IsarSetup.currentSaveData())!.saveVersion, '0.38.0');
+    expect(
+      (await IsarSetup.currentSaveData())!.saveVersion,
+      IsarSetup.currentSaveVersion,
+    );
   });
 }
