@@ -246,6 +246,14 @@ _RE_STRIP_LINENO = re.compile(
     r":\d+(?:[-,+]\d+)*$"  # :12 / :12-30 / :12,30 / :12+ / :12,30-50
 )
 
+# Bug B 修复(2026-08-08):上面那条只剥「锚定行尾的纯数字」,漏两类真实写法——
+#   data/numbers.yaml:130 combined_rate_cap: 0.95   (行号后还跟内容)
+#   lib/.../sect_screen.dart:_MemberRow             (冒号后是符号名不是数字)
+# 两类的基底文件都真实存在却被判死链。改为:只要「已知扩展名 + 冒号」就在冒号处截断。
+_RE_STRIP_COLON_SUFFIX = re.compile(
+    r"^(.*?\.(?:" + _EXT_ALT + r")):.*$"
+)
+
 # 剥字段后缀:已知扩展名后再有 .xxx 的剥掉
 # data/skills.yaml.powerMultiplier → data/skills.yaml
 # 注意只剥 1 段,若有 .a.b.c 多段后缀也只剥尾段(更通用做法递归剥)。
@@ -290,6 +298,11 @@ def clean_target(target: str) -> str:
     target = _RE_STRIP_ANCHOR.sub("", target)
     # 2) 剥 :行号
     target = _RE_STRIP_LINENO.sub("", target)
+    # 2b) Bug B 修复:「已知扩展名 + 冒号」一律在冒号处截断,覆盖 :Symbol 与
+    #     :行号+内容 两类((2) 只处理锚定行尾的纯数字,这两类漏网)。
+    m_colon = _RE_STRIP_COLON_SUFFIX.match(target)
+    if m_colon:
+        target = m_colon.group(1)
     # 3) 剥字段后缀(已知扩展名后的 .xxx)
     # 递归剥(最多剥 3 段,避免死循环)
     for _ in range(3):
@@ -524,7 +537,18 @@ def scan():
 
     # 第三遍:批量 check-ignore 过滤
     not_alive_targets = {r["target"] for r in not_alive}
-    ignored_targets = git_check_ignore(not_alive_targets)
+    # Bug A2 修复(2026-08-08):文档里裸写目录名(如 `build`,无尾斜杠)时,
+    # `git check-ignore build` 对 `build/` 这类目录型模式**只在该目录物理存在时**
+    # 才命中 → 扫描结果随工作树漂移,违反 tools/README 自述的「任何 worktree 结果一致」。
+    # 故对每个 target 额外用 `target + "/"` 再查一次:目录型模式对带斜杠的路径
+    # 是纯模式匹配,与物理存在无关。
+    probe_targets = set(not_alive_targets)
+    probe_targets |= {t + "/" for t in not_alive_targets if not t.endswith("/")}
+    _ignored_raw = git_check_ignore(probe_targets)
+    ignored_targets = {
+        t for t in not_alive_targets
+        if t in _ignored_raw or (t + "/") in _ignored_raw
+    }
     ignored_count = 0
     ignored_rows: list[dict] = []
     dead_rows: list[dict] = []

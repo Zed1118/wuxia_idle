@@ -13,11 +13,11 @@
 ——沿用 mock 体例加再多样例也测不出,加了还是假绿。
 详 `docs/dispatch/reports/2026-08-08_scanner_fp_fix_proposal.md`「四、未做/待补」。
 
-**`expectedFailure` 的用法约定(重要)**:
-下方 `KnownFalsePositiveTest` 里带 `@unittest.expectedFailure` 的用例断言的是
-**修复后应有的正确行为**,在补丁未合并的当下必然红,故标为预期失败以保持主干绿。
-**P7 补丁一旦合并,这些用例会变成 unittest 的 "unexpected success",整个套件随即报失败**
-——那不是回归,是提醒你把装饰器删掉、让它们转为正式回归防线。
+**修复状态(2026-08-08)**:P7 补丁已合并,下方 `FixedFalsePositiveTest` 里原先标
+`@unittest.expectedFailure` 的 4 条已按设计转为**正式回归断言**——那套装饰器的作用就是
+在补丁落地时以 "unexpected success" 让套件报错、逼人来删它,现已履行完毕。
+合并时实测:同一份代码在有 `build/` 的主 checkout 与无 `build/` 的 fresh worktree
+跑出逐值相同的 `refs=7442 alive=5929 dead=908 ignored=605`,工作树漂移 17 → 0。
 
 跑法(与既有体例一致,无需第三方依赖):
     python3 tools/test_doc_link_scan_gitfixture.py
@@ -205,18 +205,20 @@ class RealGitVerdictRegressionTest(RealGitFixtureTestCase):
 
 
 # ---------------------------------------------------------------------------
-# 三、两个已知系统性假阳(P7 补丁的验收面)
+# 三、两个曾经的系统性假阳(P7 已修 · 本节现为防复发红线)
 # ---------------------------------------------------------------------------
 
-class KnownFalsePositiveTest(RealGitFixtureTestCase):
-    """P6 查出、协调者独立复现成立的两个假阳。
+class FixedFalsePositiveTest(RealGitFixtureTestCase):
+    """P6 查出、协调者独立复现、P7 补丁修掉的两个假阳。
 
     每个 bug 配两条用例:
-      - `..._reference_is_collected`(**不带**装饰器)——只断言引用被采集进判定环节。
-        它的作用是防止 `expectedFailure` 把「fixture 或解析层坏掉」也一并吞掉:
-        真出那种问题时,这条会红在明面上。
-      - `..._should_be_...`(**带** `@unittest.expectedFailure`)——断言修复后的正确判定。
-        P7 合并后它会变成 unexpected success,套件报失败,提醒删掉装饰器。
+      - `..._reference_is_collected`——只断言引用被采集进判定环节。它守的是
+        「fixture 或解析层坏掉」这条独立失效路径:那种问题下判定类用例的红
+        会指向错误方向,这条能把真因摆到明面上。
+      - `..._is_...`——断言正确判定。这两条曾带 `@unittest.expectedFailure`,
+        在 P7 落地时以 unexpected success 报错逼人来删装饰器,职责已完成。
+
+    **改坏 `doc_link_scan.py` 里 P7 那两处修复,本节必红** —— 这是它们存在的意义。
     """
 
     # -- Bug A:裸目录引用的判定随工作树漂移 --------------------------------
@@ -235,23 +237,22 @@ class KnownFalsePositiveTest(RealGitFixtureTestCase):
         self.assertEqual([r["target"] for r in result["rows"]] or
                          [r["target"] for r in result["ignored_rows"]], ["build"])
 
-    @unittest.expectedFailure
     def test_bare_gitignored_dir_is_ignored_when_directory_absent(self) -> None:
-        """裸写 `build` 且工作树上没有 build/ 目录时,应判 ignored。
+        """裸写 `build` 且工作树上没有 build/ 目录时,判 ignored。
 
-        当前实际:`git check-ignore build`(无尾斜杠)对 `build/` 这类目录型模式
+        原缺陷:`git check-ignore build`(无尾斜杠)对 `build/` 这类目录型模式
         只在该目录物理存在时才命中 → 判成死链。
-        修法见提案「改动 2(Bug A2)」:查询侧额外补 `target + "/"` 变体。
+        修法(P7「改动 2 / Bug A2」):查询侧额外补 `target + "/"` 变体,
+        目录型模式对带斜杠路径是纯模式匹配,与物理存在无关。
         """
         self._bare_build_repo(create_dir=False)
         self.assertEqual(self.verdict(self.repo.scan()), "ignored")
 
-    @unittest.expectedFailure
     def test_bare_gitignored_dir_verdict_is_worktree_independent(self) -> None:
-        """同一份 git 内容,判定不应随工作树上是否存在 build/ 目录而变。
+        """同一份 git 内容,判定不随工作树上是否存在 build/ 目录而变。
 
-        这条直指 `tools/README.md:12` 自述的「任何 worktree 结果一致」。
-        当前实际:目录不存在 → dead,目录存在 → ignored,两地不一致。
+        这条守的正是 `tools/README.md` 曾自述、又被实测证伪的
+        「任何 worktree 结果一致」。原缺陷:目录不存在 → dead,存在 → ignored。
         """
         self._bare_build_repo(create_dir=False)
         without_dir = self.verdict(self.repo.scan())
@@ -269,12 +270,12 @@ class KnownFalsePositiveTest(RealGitFixtureTestCase):
         self.doc("`lib/features/sect/presentation/sect_screen.dart:_MemberRow`")
         self.assertEqual(self.repo.scan()["refs_total"], 1)
 
-    @unittest.expectedFailure
     def test_colon_symbol_suffix_is_stripped(self) -> None:
-        """`文件.dart:_Symbol` 的基底文件存在时应判存活。
+        """`文件.dart:_Symbol` 的基底文件存在时判存活。
 
-        当前实际:`_RE_STRIP_LINENO` 只剥「锚定行尾的纯数字」,冒号后是符号名时
-        整串拿去查 → 死链。修法见提案「改动 1(Bug B)」。
+        原缺陷:`_RE_STRIP_LINENO` 只剥「锚定行尾的纯数字」,冒号后是符号名时
+        整串拿去查 → 死链。修法(P7「改动 1 / Bug B」):`_RE_STRIP_COLON_SUFFIX`
+        对「已知扩展名 + 冒号」一律在冒号处截断。
         """
         self.repo.track("lib/features/sect/presentation/sect_screen.dart")
         self.doc("`lib/features/sect/presentation/sect_screen.dart:_MemberRow`")
@@ -285,11 +286,11 @@ class KnownFalsePositiveTest(RealGitFixtureTestCase):
         self.doc("`data/numbers.yaml:130 combined_rate_cap: 0.95`")
         self.assertEqual(self.repo.scan()["refs_total"], 1)
 
-    @unittest.expectedFailure
     def test_colon_lineno_with_trailing_content_is_stripped(self) -> None:
-        """`文件.yaml:130 字段: 值` 的基底文件存在时应判存活。
+        """`文件.yaml:130 字段: 值` 的基底文件存在时判存活。
 
-        当前实际:行号后还跟内容,`:\\d+$` 的行尾锚定失效 → 整串查 → 死链。
+        原缺陷:行号后还跟内容,`:\\d+$` 的行尾锚定失效 → 整串查 → 死链。
+        与上一条同由 `_RE_STRIP_COLON_SUFFIX` 覆盖。
         """
         self.repo.track("data/numbers.yaml")
         self.doc("`data/numbers.yaml:130 combined_rate_cap: 0.95`")
