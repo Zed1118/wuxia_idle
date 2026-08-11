@@ -3,7 +3,7 @@
 |---|---|---|
 | ~~P1~~ 资源总览接 MaterialSourceSheet **2026-08-07 试跑批 kimi 消化合入(789d0f4d)** | kimi | 已销 |
 | P10 扫描器扫描范围收敛(2026-08-11 评估发现:939 条 dead 里 **600 条(64%)来自 `docs/handoff/` 的 404 篇归档文档**——那里的引用本就指向当时状态,拿这个数当清理清单会做 600 条无意义的活;同时 `tools/doc_link_scan.py:59` 的 `EXCLUDE_DIRS` **定义后全仓零消费**,排除项硬编码在 `collect_scan_files` 里。做法待拍:把 handoff 移出扫描源 / 单列一类 / 只改接线不改范围) | Claude | 待拍范围 |
-| P11 资质三连实装(BACKLOG 一#15 老档档位迁移 + 一#16 chip 拼法 + 视觉档位化;2026-08-11 用户按推荐拍板:#15 取 (c) 按出生点数重算、#16 取 (b) 改显出生点数、视觉档位化并入试玩局再定。含存档迁移,属数据模型改动) | Claude | 已拍待做 |
+| ~~P11~~ 资质三连实装 **2026-08-11 Claude 做完(`1e0c810c` 分支 `feat/aptitude-birth-rarity`)**:#15 saveVersion `0.38.0`→`0.39.0` 加迁移段 9 按出生点数(`attributes.total − attributeBonusFromAdventure`)重算全部角色档位;#16 chip 括注改传出生点数;算法 sink 走 `CharacterBirthAttributes` extension——**类内 getter 会被 isar_community 生成成持久化属性**(实证 `Attributes.total` → `attributes.g.dart PropertySchema(id:4)`),故走 extension,重跑 build_runner 后 `character.g.dart` 零命中。新增迁移测 5 例 + chip 测 2 例(该 chip 此前零覆盖),3 次变异全部精确命中(改按当前总点数→`jueShi`、chip 回退、清零 bonus)。**第三项视觉档位化用户拍板并入试玩局,已单独立行为 BACKLOG 一#19** | Claude | 已销 |
 | P12 远端 4 个遗留备份分支清理拍板(实测 `main..origin/<b>` 独有 commit:`codex/taohua-art-0807`=0、`qoder/p4-audit-scripts-0808`=0 两个 git 可断言已包含删除零风险;`pi/p6-link-label-0808`=2、`worktree-claude-rarity`=3 是 rebase/cherry-pick 前旧 SHA,内容在 main 但 git 证明不了) | 用户拍板 | 待拍 |
 | P2 真机录屏验收管线准备(CGEvent 打局+screencapture 录屏+关键帧;首用例塔 42,下批真机位) | Claude | 待发 |
 | ~~P3~~ checklist E 段 reconcile **2026-08-11 Claude 做完(逐条现查:BGM 11 轨 / 战斗 SFX 6 类 / UI SFX 3 类全已实装,原 4 项全未勾属 stale;另订正原文两处与实装不符——「死亡」音 v1 明确不做、「7 阶递进」实为 teamSide×slotIndex 变体;唯一真未完项=配音 0 段)** | Claude | 已销 |
