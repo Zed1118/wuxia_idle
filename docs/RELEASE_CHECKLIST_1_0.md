@@ -143,12 +143,15 @@
 - [x] Isar IO 无 ANR ✅(零同步 IO 亲验 `getSync/putSync` 全空 · stress 计时 10000 写 53ms / feed 815µs · 全异步无主线程阻塞 · 2026-06-02)
 - [ ] P5.4b closed beta ~10 人外部反馈(Google 表单结构化:难度评分 / 数值 bug / 流程卡点 / 通关时长)
 
-## E. 音频(P5.3 · 留 M15-16)
+## E. 音频(P5.3 · 2026-08-08 reconcile:3/4 已实装,余配音)
 
-- [ ] BGM 主线 / 战斗 / 闭关 3 套(水墨克制基调)
-- [ ] SFX 战斗(攻击 / 命中 / 暴击 / 死亡 · 7 阶递进)
-- [ ] SFX UI(按钮 / 翻页 / 反馈)
-- [ ] 配音(关键剧情:师父三句遗言 / Ch4-6 主敌登场 · 至少 ~10 段)
+> 2026-08-08 逐条现查订正——原本 4 项全未勾属 stale 批注,实装早已超出。
+> 计数依据:`git ls-files assets/audio/**` + `lib/shared/audio/audio_assets.dart` 的 enum。
+
+- [x] BGM(水墨克制基调)—— **11 轨**,远超原定「主线 / 战斗 / 闭关 3 套」:mainMenu / seclusion / battle / mainline / tower / boss / innerDemon / lightFoot / massBattle / lineage / baike。`BgmTrack` enum 与 `assets/audio/bgm/<name>.mp3` 同名对应(`bgmAssetPath`),播放层 `lib/shared/audio/bgm_scope.dart`
+- [x] SFX 战斗(攻击 / 命中 / 暴击)—— battleHit(+6 个变体)/ battleCrit / battleUlt / battleChargeStart / battleInterrupt / battleStagger 全在位。**原文两处与实装不符,一并订正**:① **「死亡」不在 1.0 范围**——`sfxForAction` 头注明写「死亡 SFX v1 不做」,`SfxId.battleDeath` 枚举值保留但无 `battleDeath.mp3`,生产路径不会取它;② **「7 阶递进」未实装**——变体维度是 `battleHit_<teamSide>_<slotIndex>`(队伍侧 × 站位各 3),不是按七阶递进
+- [x] SFX UI(按钮 / 翻页 / 反馈)—— uiTap / uiTabSwitch / uiPaperOpen 全在位
+- [ ] 配音(关键剧情:师父三句遗言 / Ch4-6 主敌登场 · 至少 ~10 段)—— **实测 0 段,确实未做**,本段唯一真未完项
 
 ## F. Steam 集成(P5.4 · 留 M15-16 · 1 月 buffer)
 

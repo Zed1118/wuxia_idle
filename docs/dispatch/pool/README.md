@@ -2,11 +2,14 @@
 | 单 | 端 | 状态 |
 |---|---|---|
 | ~~P1~~ 资源总览接 MaterialSourceSheet **2026-08-07 试跑批 kimi 消化合入(789d0f4d)** | kimi | 已销 |
+| P10 扫描器扫描范围收敛(2026-08-08 评估发现:939 条 dead 里 **600 条(64%)来自 `docs/handoff/` 的 404 篇归档文档**——那里的引用本就指向当时状态,拿这个数当清理清单会做 600 条无意义的活;同时 `tools/doc_link_scan.py:59` 的 `EXCLUDE_DIRS` **定义后全仓零消费**,排除项硬编码在 `collect_scan_files` 里。做法待拍:把 handoff 移出扫描源 / 单列一类 / 只改接线不改范围) | Claude | 待拍范围 |
+| P11 资质三连实装(BACKLOG 一#15 老档档位迁移 + 一#16 chip 拼法 + 视觉档位化;2026-08-08 用户按推荐拍板:#15 取 (c) 按出生点数重算、#16 取 (b) 改显出生点数、视觉档位化并入试玩局再定。含存档迁移,属数据模型改动) | Claude | 已拍待做 |
+| P12 远端 4 个遗留备份分支清理拍板(实测 `main..origin/<b>` 独有 commit:`codex/taohua-art-0807`=0、`qoder/p4-audit-scripts-0808`=0 两个 git 可断言已包含删除零风险;`pi/p6-link-label-0808`=2、`worktree-claude-rarity`=3 是 rebase/cherry-pick 前旧 SHA,内容在 main 但 git 证明不了) | 用户拍板 | 待拍 |
 | P2 真机录屏验收管线准备(CGEvent 打局+screencapture 录屏+关键帧;首用例塔 42,下批真机位) | Claude | 待发 |
-| P3 checklist E 段 reconcile(BGM 8 轨已实装未勾等 stale 批注) | Claude/捎带 | 待发 |
-| P4 Q2/A1 审计脚本入仓补齐可复现性(2026-08-07 夜抽验 3 条全中、两报告结论已确认成立并合入 main;**缺的只是脚本**——叶字段提取/消费扫描留在 `/tmp/q2/`、字段读写扫描留在 `/tmp/a1_audit/`,致 8/7/21 与 44/14 五个计数不可一键复跑。顺带按当前 main 重新定位 numbers.yaml 行号:报告写 `:1917` 现为 `:1954`) | qoderclicn 或 pi | 待发 |
+| ~~P3~~ checklist E 段 reconcile **2026-08-08 下午 Claude 做完(逐条现查:BGM 11 轨 / 战斗 SFX 6 类 / UI SFX 3 类全已实装,原 4 项全未勾属 stale;另订正原文两处与实装不符——「死亡」音 v1 明确不做、「7 阶递进」实为 teamSide×slotIndex 变体;唯一真未完项=配音 0 段)** | Claude | 已销 |
+| ~~P4~~ Q2/A1 审计脚本入仓补齐可复现性 **2026-08-07 夜批 qoderclicn 交付并合入(`tools/audit/` 9 脚本 + `run_all.py` 统一入口,五个计数可一键复跑;2026-08-08 下午核实全部 git 跟踪)** | qoderclicn | 已销 |
 | ~~P5~~ PROGRESS.md 瘦身 **2026-08-08 夜批 Claude 做完(110 行 79623B → 100 行 58468B,压缩 11 条旧条目)** | Claude | 已销 |
 | ~~P6~~ 死链扫描器准确率标注验证 **2026-08-08 夜批 pi 交付并合入(precision 95.0%/recall 100%/一致率 88/90,查出两处系统性假阳)** | pi | 已销 |
-| P7 死链扫描器假阳修复合并拍板(**代码已写好并验证,只差你点头**:修复提案+完整补丁在 `docs/dispatch/reports/2026-08-08_scanner_fp_fix_proposal.md`;实测死链 940→909、工作树漂移 17→0、既有 10 类样例仍 10/10。🟡 级故未合) | 用户拍板 | 待拍 |
-| P8 死链扫描器引真实 git fixture 的测试(P7 的最大缺口:现有 10 类样例 mock 了 `git_ls_files`/`git_check_ignore`,而 P6 查出的两个 bug 恰恰活在**未被 mock 的真实 git 行为**里,沿用同体例加样例测不出、加了也是假绿) | qoderclicn 或 kimi | 待发 |
-| P9 `/afk` 工作流 v2 三处门禁缺口(2026-08-08 首跑实测:① preflight `blocked_decisions` 只认分支 tip 的 `[BLOCKED]` 前缀,卡用户拍板但没打标记的分支被漏报为「待拍板=无」;② `approved_tasks` 用池文本子串匹配,在途分支收口类工作无法表达,硬塞短 ID 会被 `README` 之类误匹配;③ `doctor --json` 不透出 `dispatch_template` 字段,skill 文档却说「按 doctor --json 给出的 dispatch_template 发单」) | Claude | 待发 |
+| ~~P7~~ 死链扫描器假阳修复 **2026-08-08 下午用户拍板合入(`ab38b43c`)**:两处改动 49 行。协调者独立实测——修复前主 checkout dead=939/ignored=592、fresh worktree dead=956/ignored=575(漂移 17),修复后同一份代码两地逐值相同 refs=7442 alive=5929 dead=908 ignored=605(漂移 0);引用总数守恒。两处修复各自破坏证红精确命中 2 条红线 | 用户拍板→Claude | 已销 |
+| ~~P8~~ 死链扫描器引真实 git fixture 的测试 **2026-08-08 下午 Claude 做完并合入(`b3c74a6b`)**:15 例(harness 自证 3 + 正确行为回归 5 + 假阳红线 7),真起临时 git 仓只替换 `REPO_ROOT`;4 条 `expectedFailure` 已随 P7 落地转为正式断言 | Claude | 已销 |
+| ~~P9~~ `/afk` 工作流 v2 三处门禁缺口 **2026-08-08 下午 Claude 做完(`~/.claude` `f231137`)**:待拍板改双信号源(分支 tip `[BLOCKED]` + 池内「待拍/用户拍板」)并新增致命检查 `tasks_awaiting_decision`;`approved_tasks` 改前导 ID 精确匹配 + `branch:`/`adhoc:` 逃生舱;`doctor --json` 补透出 `dispatch_template`。测试 19→34 例,三次变异各自精确命中 | Claude | 已销 |
