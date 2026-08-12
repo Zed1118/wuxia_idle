@@ -19,8 +19,9 @@ class DocLinkScanFixtureTest(unittest.TestCase):
         source: str = "docs/source.md",
         tracked_targets: set[str] | None = None,
         ignored_targets: set[str] | None = None,
+        extra_sources: dict[str, str] | None = None,
     ) -> dict:
-        tracked = {source, *(tracked_targets or set())}
+        tracked = {source, *(tracked_targets or set()), *(extra_sources or {})}
         ignored = ignored_targets or set()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -28,6 +29,10 @@ class DocLinkScanFixtureTest(unittest.TestCase):
             source_path = repo_root / source
             source_path.parent.mkdir(parents=True, exist_ok=True)
             source_path.write_text(content, encoding="utf-8")
+            for rel, text in (extra_sources or {}).items():
+                extra_path = repo_root / rel
+                extra_path.parent.mkdir(parents=True, exist_ok=True)
+                extra_path.write_text(text, encoding="utf-8")
 
             with (
                 mock.patch.object(doc_link_scan, "REPO_ROOT", repo_root),
@@ -47,6 +52,7 @@ class DocLinkScanFixtureTest(unittest.TestCase):
         self.assertEqual(result["alive"], 1)
         self.assertEqual(result["dead"], 0)
         self.assertEqual(result["ignored"], 0)
+        self.assertEqual(result["archival"], 0)
         self.assertEqual(result["skipped"], 0)
 
     def assert_dead_reference(self, result: dict, target: str) -> None:
@@ -54,6 +60,7 @@ class DocLinkScanFixtureTest(unittest.TestCase):
         self.assertEqual(result["alive"], 0)
         self.assertEqual(result["dead"], 1)
         self.assertEqual(result["ignored"], 0)
+        self.assertEqual(result["archival"], 0)
         self.assertEqual(result["skipped"], 0)
         self.assertEqual([row["target"] for row in result["rows"]], [target])
 
@@ -126,6 +133,72 @@ class DocLinkScanFixtureTest(unittest.TestCase):
             "[见 lib/a.dart](docs/b.md)", tracked_targets={"docs/b.md"}
         )
         self.assert_alive_reference(result)
+
+    # -- 归档类单列(ARCHIVAL_DIRS) ----------------------------------------
+
+    def test_dead_reference_in_archival_doc_is_archival_not_dead(self) -> None:
+        """归档目录(docs/handoff)下文档里的失效引用 → archival,不计 dead。"""
+        result = self.scan_fixture(
+            "`lib/gone.dart`", source="docs/handoff/h1.md"
+        )
+        self.assertEqual(result["refs_total"], 1)
+        self.assertEqual(result["alive"], 0)
+        self.assertEqual(result["ignored"], 0)
+        self.assertEqual(result["dead"], 0)
+        self.assertEqual(result["archival"], 1)
+        self.assertEqual(
+            [row["target"] for row in result["archival_rows"]],
+            ["lib/gone.dart"],
+        )
+
+    def test_dead_reference_pointing_at_archival_dir_stays_dead(self) -> None:
+        """判据是「引用写在哪个文件里」,不是「引用指向哪个路径」:
+        非归档文档里指向归档目录的死引用仍归 dead。"""
+        result = self.scan_fixture(
+            "`docs/handoff/gone.md`", source="docs/source.md"
+        )
+        self.assertEqual(result["refs_total"], 1)
+        self.assertEqual(result["alive"], 0)
+        self.assertEqual(result["ignored"], 0)
+        self.assertEqual(result["dead"], 1)
+        self.assertEqual(result["archival"], 0)
+        self.assertEqual(
+            [row["target"] for row in result["rows"]],
+            ["docs/handoff/gone.md"],
+        )
+
+    def test_alive_reference_in_archival_doc_stays_alive(self) -> None:
+        """归档类只收失效引用;归档文档里的存活引用不受影响。"""
+        result = self.scan_fixture(
+            "`lib/main.dart`", source="docs/handoff/h1.md",
+            tracked_targets={"lib/main.dart"},
+        )
+        self.assert_alive_reference(result)
+
+    def test_archival_split_conserves_dead_total(self) -> None:
+        """守恒:同一份 fixture 下 dead + archival == 失效引用总数,
+        且 refs_total == alive + dead + ignored + archival。"""
+        result = self.scan_fixture(
+            "`lib/gone_a.dart`",
+            extra_sources={"docs/handoff/h1.md": "`lib/gone_b.dart`"},
+        )
+        self.assertEqual(result["refs_total"], 2)
+        self.assertEqual(result["alive"], 0)
+        self.assertEqual(result["ignored"], 0)
+        self.assertEqual(result["dead"], 1)
+        self.assertEqual(result["archival"], 1)
+        self.assertEqual(result["dead"] + result["archival"], 2)
+        self.assertEqual(
+            result["refs_total"],
+            result["alive"] + result["dead"]
+            + result["ignored"] + result["archival"],
+        )
+        self.assertEqual(
+            [row["target"] for row in result["rows"]], ["lib/gone_a.dart"]
+        )
+        self.assertEqual(
+            [row["target"] for row in result["archival_rows"]], ["lib/gone_b.dart"]
+        )
 
 
 if __name__ == "__main__":

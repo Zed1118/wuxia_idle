@@ -26,6 +26,8 @@ tools/doc_link_scan.py — docs/ 内部引用死链扫描器
   python3 tools/doc_link_scan.py            # 人读汇总
   python3 tools/doc_link_scan.py --json     # 结构化输出(供 diff 比对)
   python3 tools/doc_link_scan.py --rows     # 人读汇总 + 死链明细行
+  python3 tools/doc_link_scan.py --ignored  # + ignored 明细行(诊断用)
+  python3 tools/doc_link_scan.py --archival # + 归档类明细行(诊断用)
 """
 
 from __future__ import annotations
@@ -58,6 +60,14 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SCAN_ROOT = "docs"
 EXCLUDE_DIRS = {"docs/_archive", "docs/dispatch/reports"}
 EXCLUDE_FILES = {"docs/PATH_MIGRATION_MAP.md"}
+
+# 归档类目录:这些目录下的文档照扫,但其内部的失效引用单列为 archival 类,
+# 不计入 dead。归档文档(如历史交接记录)里的路径引用本就指向写作当时的
+# 仓库状态,后续重构把文件移走是正常演进,不是文档失修;拿它们当修复
+# 清单等于安排无意义的活。
+# 范围口径:是否把别的目录(如 docs/sessions、docs/dispatch)也纳入属范围
+# 决策,须由派单方拍板,本常量不自行扩张。
+ARCHIVAL_DIRS = {"docs/handoff"}
 
 # 反引号路径:必须以这些顶级目录开头(允许 ./ ../ 前缀),才视为路径 token。
 # 与派单 §1.2 一致:docs / lib / test / data / tool / tools / assets。
@@ -127,11 +137,23 @@ def git_ls_files_for_ignore_test(paths: Iterable[str]) -> set[str]:
 
 
 # --------------------------------------------------------------------------
-# 扫描源:已跟踪的 docs/**/*.md(排除 _archive)
+# 扫描源:已跟踪的 docs/**/*.md(排除 EXCLUDE_DIRS / EXCLUDE_FILES)
 # --------------------------------------------------------------------------
 
+def _is_under_any_dir(path: str, dirs: set[str]) -> bool:
+    """path 是否位于 dirs 中任一目录之下(按目录边界匹配)。
+
+    常量里的目录不带尾斜杠,裸 startswith 会把 `docs/_archiveXYZ/`
+    误判成 `docs/_archive` 之下;故补 `/` 再比,或整串相等。
+    """
+    for d in dirs:
+        if path == d or path.startswith(d + "/"):
+            return True
+    return False
+
+
 def collect_scan_files(tracked: set[str]) -> list[str]:
-    """扫描源 = 已跟踪的 docs/**/*.md,排除 docs/_archive/。
+    """扫描源 = 已跟踪的 docs/**/*.md,排除 EXCLUDE_DIRS 与 EXCLUDE_FILES。
 
     用 git ls-files 而非工作树 os.walk,理由同 §1.6:
     与工作树 build 状态解耦,任何 worktree / 主树跑结果一致。
@@ -142,9 +164,7 @@ def collect_scan_files(tracked: set[str]) -> list[str]:
             continue
         if not p.startswith("docs/"):
             continue
-        if p.startswith("docs/_archive/"):
-            continue
-        if p.startswith("docs/dispatch/reports/"):
+        if _is_under_any_dir(p, EXCLUDE_DIRS):
             continue
         if p in EXCLUDE_FILES:
             continue
@@ -552,19 +572,26 @@ def scan():
     ignored_count = 0
     ignored_rows: list[dict] = []
     dead_rows: list[dict] = []
+    archival_rows: list[dict] = []
     for ref in not_alive:
         if ref["target"] in ignored_targets:
             ignored_count += 1
             ignored_rows.append(ref)
+        elif _is_under_any_dir(ref["file"], ARCHIVAL_DIRS):
+            # 归档类:判据是「引用写在哪个文件里」,不是「引用指向哪个路径」。
+            # 非归档文档里指向归档目录的死引用仍归 dead。
+            archival_rows.append(ref)
         else:
             dead_rows.append(ref)
 
     # 排序保证幂等
     dead_rows.sort(key=lambda r: (r["file"], r["line"], r["target"], r["raw"]))
     ignored_rows.sort(key=lambda r: (r["file"], r["line"], r["target"], r["raw"]))
+    archival_rows.sort(key=lambda r: (r["file"], r["line"], r["target"], r["raw"]))
 
     # 子目录分布
     by_dir_dead: dict[str, int] = {}
+    by_dir_archival: dict[str, int] = {}
     by_dir_refs: dict[str, int] = {}
     for r in all_refs:
         seg = r["file"].split("/")
@@ -574,6 +601,10 @@ def scan():
         seg = r["file"].split("/")
         d = seg[1] if len(seg) > 2 else "(top)"
         by_dir_dead[d] = by_dir_dead.get(d, 0) + 1
+    for r in archival_rows:
+        seg = r["file"].split("/")
+        d = seg[1] if len(seg) > 2 else "(top)"
+        by_dir_archival[d] = by_dir_archival.get(d, 0) + 1
 
     return {
         "scanned_files": len(scan_files),
@@ -581,19 +612,22 @@ def scan():
         "alive": alive_count,
         "dead": len(dead_rows),
         "ignored": ignored_count,
+        "archival": len(archival_rows),
         "skipped": skipped_count,
         "out_of_repo": out_of_repo_count,
         "skipped_reasons": skipped_reasons,
         "by_dir_refs": dict(sorted(by_dir_refs.items())),
         "by_dir_dead": dict(sorted(by_dir_dead.items())),
+        "by_dir_archival": dict(sorted(by_dir_archival.items())),
         "rows": dead_rows,
         "ignored_rows": ignored_rows,
+        "archival_rows": archival_rows,
         "tracked_files_total": len(tracked_set),
     }
 
 
 def fmt_human(result: dict, show_rows: bool = False,
-              show_ignored: bool = False) -> str:
+              show_ignored: bool = False, show_archival: bool = False) -> str:
     lines = []
     lines.append("=" * 60)
     lines.append("docs/ 内部引用死链扫描报告")
@@ -601,9 +635,12 @@ def fmt_human(result: dict, show_rows: bool = False,
     lines.append("")
     lines.append("汇总:")
     lines.append(f"  扫描 md 文件数:  {result['scanned_files']}")
-    lines.append(f"  引用总数(存活+死+ignored):  {result['refs_total']}")
+    lines.append(f"  引用总数(存活+死+ignored+归档):  {result['refs_total']}")
     lines.append(f"  ├─ 存活(已跟踪):  {result['alive']}")
     lines.append(f"  ├─ ignored(gitignored,不计死链):  {result['ignored']}")
+    lines.append(
+        f"  ├─ 归档类(归档文档内的失效引用,不进修复清单):  {result['archival']}"
+    )
     lines.append(f"  └─ 死链(未跟踪且未被 ignore):  {result['dead']}")
     lines.append(f"  跳过类(通配/模板/worktree 名等):  {result['skipped']}")
     lines.append(f"    (其中出 repo 边界:  {result['out_of_repo']})")
@@ -617,12 +654,16 @@ def fmt_human(result: dict, show_rows: bool = False,
     lines.append("")
 
     lines.append("按 docs 一级子目录分布:")
-    lines.append(f"  {'子目录':20s} {'引用数':>10s} {'死链数':>10s}")
-    all_dirs = sorted(set(result["by_dir_refs"]) | set(result["by_dir_dead"]))
+    lines.append(
+        f"  {'子目录':20s} {'引用数':>10s} {'死链数':>10s} {'归档类':>10s}"
+    )
+    all_dirs = sorted(set(result["by_dir_refs"]) | set(result["by_dir_dead"])
+                      | set(result["by_dir_archival"]))
     for d in all_dirs:
         r = result["by_dir_refs"].get(d, 0)
         dead = result["by_dir_dead"].get(d, 0)
-        lines.append(f"  {d:20s} {r:>10d} {dead:>10d}")
+        arch = result["by_dir_archival"].get(d, 0)
+        lines.append(f"  {d:20s} {r:>10d} {dead:>10d} {arch:>10d}")
     lines.append("")
 
     if show_rows:
@@ -641,6 +682,15 @@ def fmt_human(result: dict, show_rows: bool = False,
             lines.append(f"  {r['file']:50s} {r['line']:>6d}  {r['target']}")
         lines.append("")
 
+    if show_archival:
+        lines.append("归档类明细(归档文档内的失效引用,不进修复清单;"
+                     "按 文件 / 行 / target 排序):")
+        lines.append(f"  共 {len(result['archival_rows'])} 条")
+        lines.append(f"  {'文件':50s} {'行':>6s}  target")
+        for r in result["archival_rows"]:
+            lines.append(f"  {r['file']:50s} {r['line']:>6d}  {r['target']}")
+        lines.append("")
+
     return "\n".join(lines)
 
 
@@ -654,6 +704,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="人读模式 + 死链明细行")
     parser.add_argument("--ignored", action="store_true",
                         help="人读模式 + ignored 明细行(诊断用)")
+    parser.add_argument("--archival", action="store_true",
+                        help="人读模式 + 归档类明细行(诊断用)")
     args = parser.parse_args(argv)
 
     result = scan()
@@ -662,15 +714,18 @@ def main(argv: list[str] | None = None) -> int:
         # JSON 模式:输出结构化结果(rows 已排序,幂等)
         # 标准形状只含 dead rows(派单 §二建议);ignored_rows 仅在诊断时用,
         # 这里一并输出便于外部脚本三类反例验证,字段名独立,不影响标准形状消费。
+        # archival_rows 同理:归档类明细,字段名独立。
         out = {
             "scanned_files": result["scanned_files"],
             "refs_total": result["refs_total"],
             "alive": result["alive"],
             "dead": result["dead"],
             "ignored": result["ignored"],
+            "archival": result["archival"],
             "skipped": result["skipped"],
             "by_dir_refs": result["by_dir_refs"],
             "by_dir_dead": result["by_dir_dead"],
+            "by_dir_archival": result["by_dir_archival"],
             "rows": [
                 {"file": r["file"], "line": r["line"], "target": r["target"],
                  "raw": r["raw"], "kind": r["kind"]}
@@ -681,11 +736,17 @@ def main(argv: list[str] | None = None) -> int:
                  "raw": r["raw"], "kind": r["kind"]}
                 for r in result["ignored_rows"]
             ],
+            "archival_rows": [
+                {"file": r["file"], "line": r["line"], "target": r["target"],
+                 "raw": r["raw"], "kind": r["kind"]}
+                for r in result["archival_rows"]
+            ],
         }
         print(json.dumps(out, ensure_ascii=False, indent=2, sort_keys=False))
         return 0
 
-    print(fmt_human(result, show_rows=args.rows, show_ignored=args.ignored))
+    print(fmt_human(result, show_rows=args.rows, show_ignored=args.ignored,
+                    show_archival=args.archival))
     return 0
 
 
