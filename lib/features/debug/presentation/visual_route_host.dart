@@ -14,6 +14,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../battle/application/battle_providers.dart';
 import '../../../data/isar_setup.dart';
+import '../application/visual_route_isar_directory.dart';
 import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/audio/audio_assets.dart';
@@ -200,8 +201,11 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
   Future<void> _prepare() async {
     try {
       // 1. 照 splash bootstrap:加载 defs + 初始化 Isar
+      //    视觉路由一律开隔离空库(systemTemp 下,每次启动清空重建),
+      //    绝不碰生产存档——否则打开即可能迁移 saveVersion 顶到未来版本,
+      //    且 seed 的 _clearAll() 会清掉玩家全部业务表。
       await GameRepository.loadAllDefs();
-      await IsarSetup.init();
+      await IsarSetup.init(directory: await visualRouteIsarDirectory());
       final isar = IsarSetup.instance;
 
       // 2. 按 route 构造目标屏(逻辑抽到顶层 buildVisualTarget,供 hub 运行时复用)
