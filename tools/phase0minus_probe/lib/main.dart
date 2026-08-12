@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flame/game.dart';
@@ -60,7 +61,7 @@ Future<void> main() async {
     WindowOptions(
       size: Size(viewport.width, viewport.height),
       minimumSize: Size(viewport.width, viewport.height),
-      maximumSize: Size(viewport.width, viewport.height),
+      maximumSize: Size(viewport.width + 100, viewport.height + 100),
       center: true,
       title: 'Phase 0-minus Performance Probe',
       titleBarStyle: TitleBarStyle.hidden,
@@ -138,7 +139,26 @@ final class _ProbeAppState extends State<ProbeApp> {
   @override
   void initState() {
     super.initState();
-    controller.start();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(_calibrateViewportAndStart()),
+    );
+  }
+
+  Future<void> _calibrateViewportAndStart() async {
+    final view = View.of(context);
+    for (var attempt = 0; attempt < 5; attempt++) {
+      await WidgetsBinding.instance.endOfFrame;
+      final actual = view.physicalSize / view.devicePixelRatio;
+      final widthDelta = widget.viewport.width - actual.width;
+      final heightDelta = widget.viewport.height - actual.height;
+      if (widthDelta.abs() < 0.5 && heightDelta.abs() < 0.5) break;
+      final outer = await windowManager.getSize();
+      await windowManager.setSize(
+        Size(outer.width + widthDelta, outer.height + heightDelta),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+    await controller.start();
   }
 
   @override
