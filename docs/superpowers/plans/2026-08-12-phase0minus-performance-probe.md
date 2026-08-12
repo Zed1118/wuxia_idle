@@ -162,16 +162,18 @@ Phase 0− 是有意隔离的原型，四证据必须按以下口径交付，不
 
 ## 8. 当前恢复点
 
-- **状态**：Slice 0–3 已完成；Mac 短 Profile smoke 已产出可复现报告。完整 Mac Gate 矩阵尚未运行，Windows 实机仍阻塞 Overall Gate。
+- **状态**：Slice 0–4 已完成；Mac 最终 Profile 矩阵 18/18 个 run 通过完整单-run Gate。Windows 实机仍阻塞 Overall Gate。
 - **最后完成**：
   - 核实现有群战为 wave 制，不是实时同屏先例；
   - 核实现有 `BattleFrameProfileProbe` 与视觉路由 Isar 隔离守卫；
   - 核实当前开发环境为 Flutter 3.41.5 / Dart 3.11.3 / macOS 26.4 / Apple M5 / 32GB；正式 run 仍须由报告重新采集并冻结；
   - 完成本计划与 `docs/spec/2026-08-12-phase0minus-performance-probe-spec.md`；
   - 在 `tools/phase0minus_probe/` 完成独立 Flame 1.38.0 桌面探针、三档固定负载、默认 Sweep 碰撞、对象池、Flutter HUD、FrameTiming/RSS/报告与两平台脚本；
-  - 完成 30 敌人短 Profile smoke：真实视口 `1280×720`、253 帧、p99 `2.458ms`、无严重帧；因缩短时长和 GC 采集缺失只作链路证据，不作 Gate 结论。
-- **下一步**：提交 Slice 1–3；按两视口 × 三档 × 3 run 运行 Mac Profile 完整矩阵并汇总。随后冻结 Windows 复跑包，等待最低档实机。
-- **已跑验证**：nested `flutter analyze` 通过；nested `flutter test` 16 项通过；根 `flutter analyze` 通过；短 Profile smoke 产出 `frames.jsonl`、`memory_gc.jsonl`、`summary.json`、`manifest.json` 与 SHA-256。正式性能 Gate 尚未运行，不得声称 PASS。
+  - 接通只读 VM service GC stream，不主动触发 GC；
+  - 完成两视口 × 三档 × 3 run 的 Mac 最终矩阵：18/18 有效且单-run Gate 通过，最坏 p99 `2.440ms`、最坏单帧 `17.784ms`、连续严重帧 0、对象池预热后零分配；
+  - 输出 `docs/phase0/2026-08-13-phase0minus-macos-baseline.md`。
+- **下一步**：冻结并分发 Windows Profile 复跑包；目标最低档实机回传两视口 × 三档 × 3 run 与硬件/驱动 manifest 后，执行 Slice 5–6 总裁决。
+- **已跑验证**：nested `flutter analyze` 通过；nested `flutter test` 17 项通过；根 `flutter analyze` 通过；Mac 18 个最终 Profile run 均产出 `frames.jsonl`、`memory_gc.jsonl`、`summary.json`、`manifest.json` 与 SHA-256。Mac Gate PASS；Phase 0− Overall 因 Windows 缺失保持 BLOCKED。
 - **已拍板边界**：
   1. 首轮以“i5-8250U / Intel UHD 620 级核显 / 8GB”作为目标 Windows 最低档候选；若后续商业最低配置变化，须用新目标档复跑；
   2. Flame 只进入 `tools/phase0minus_probe/` 独立探针包，根应用依赖保持不变。
