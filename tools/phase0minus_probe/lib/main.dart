@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:phase0minus_probe/config/probe_config.dart';
@@ -5,39 +7,55 @@ import 'package:phase0minus_probe/run/probe_run_controller.dart';
 import 'package:phase0minus_probe/workload/probe_game.dart';
 import 'package:window_manager/window_manager.dart';
 
-const _tierId = String.fromEnvironment('PROBE_TIER', defaultValue: 'stress_30');
-const _viewportId = String.fromEnvironment(
+const _tierDefine = String.fromEnvironment(
+  'PROBE_TIER',
+  defaultValue: 'stress_30',
+);
+const _viewportDefine = String.fromEnvironment(
   'PROBE_VIEWPORT',
   defaultValue: 'desktop_1280x720',
 );
-const _runId = String.fromEnvironment(
+const _runIdDefine = String.fromEnvironment(
   'PROBE_RUN_ID',
   defaultValue: 'local-smoke',
 );
-const _durationScaleText = String.fromEnvironment(
+const _durationScaleDefine = String.fromEnvironment(
   'PROBE_DURATION_SCALE',
   defaultValue: '1.0',
 );
-const _autoCloseText = String.fromEnvironment(
+const _autoCloseDefine = String.fromEnvironment(
   'PROBE_AUTO_CLOSE',
   defaultValue: 'true',
 );
-const _outputRoot = String.fromEnvironment(
+const _outputRootDefine = String.fromEnvironment(
   'PROBE_OUTPUT_ROOT',
   defaultValue: 'build/results',
 );
-const _repositoryRoot = String.fromEnvironment(
+const _repositoryRootDefine = String.fromEnvironment(
   'PROBE_REPOSITORY_ROOT',
   defaultValue: '../..',
 );
+const _windowXDefine = String.fromEnvironment('PROBE_WINDOW_X');
+const _windowYDefine = String.fromEnvironment('PROBE_WINDOW_Y');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
   final config = await ProbeConfig.load();
-  final viewport = config.viewport(_viewportId);
-  final tier = config.tier(_tierId);
-  final durationScale = double.parse(_durationScaleText);
+  final viewport = config.viewport(_runtime('PROBE_VIEWPORT', _viewportDefine));
+  final tier = config.tier(_runtime('PROBE_TIER', _tierDefine));
+  final runId = _runtime('PROBE_RUN_ID', _runIdDefine);
+  final durationScale = double.parse(
+    _runtime('PROBE_DURATION_SCALE', _durationScaleDefine),
+  );
+  final autoClose = _runtime('PROBE_AUTO_CLOSE', _autoCloseDefine) == 'true';
+  final outputRoot = _runtime('PROBE_OUTPUT_ROOT', _outputRootDefine);
+  final repositoryRoot = _runtime(
+    'PROBE_REPOSITORY_ROOT',
+    _repositoryRootDefine,
+  );
+  final windowXText = _runtime('PROBE_WINDOW_X', _windowXDefine);
+  final windowYText = _runtime('PROBE_WINDOW_Y', _windowYDefine);
   await windowManager.waitUntilReadyToShow(
     WindowOptions(
       size: Size(viewport.width, viewport.height),
@@ -48,6 +66,11 @@ Future<void> main() async {
       titleBarStyle: TitleBarStyle.hidden,
     ),
     () async {
+      if (windowXText.isNotEmpty && windowYText.isNotEmpty) {
+        await windowManager.setPosition(
+          Offset(double.parse(windowXText), double.parse(windowYText)),
+        );
+      }
       await windowManager.show();
       await windowManager.focus();
     },
@@ -57,14 +80,17 @@ Future<void> main() async {
       config: config,
       tier: tier,
       viewport: viewport,
-      runId: _runId,
+      runId: runId,
       durationScale: durationScale,
-      autoClose: _autoCloseText == 'true',
-      outputRoot: _outputRoot,
-      repositoryRoot: _repositoryRoot,
+      autoClose: autoClose,
+      outputRoot: outputRoot,
+      repositoryRoot: repositoryRoot,
     ),
   );
 }
+
+String _runtime(String key, String compileTimeValue) =>
+    Platform.environment[key] ?? compileTimeValue;
 
 final class ProbeApp extends StatefulWidget {
   const ProbeApp({

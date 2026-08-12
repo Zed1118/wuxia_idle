@@ -11,17 +11,23 @@ $ErrorActionPreference = "Stop"
 $ProbeDir = Split-Path -Parent $PSScriptRoot
 $RepositoryRoot = (Resolve-Path (Join-Path $ProbeDir "../..")).Path
 Set-Location $ProbeDir
+flutter build windows --profile
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+$Binary = Join-Path $ProbeDir "build/windows/x64/runner/Profile/phase0minus_probe.exe"
+if (-not (Test-Path $Binary)) { throw "Profile binary not found: $Binary" }
 
 for ($Index = 1; $Index -le $Repeat; $Index++) {
   $Timestamp = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
   $RunId = "windows-$Viewport-$Tier-r$Index-$Timestamp"
-  flutter run -d windows --profile `
-    --dart-define="PROBE_VIEWPORT=$Viewport" `
-    --dart-define="PROBE_TIER=$Tier" `
-    --dart-define="PROBE_RUN_ID=$RunId" `
-    --dart-define="PROBE_DURATION_SCALE=$DurationScale" `
-    --dart-define="PROBE_OUTPUT_ROOT=$ProbeDir/build/results" `
-    --dart-define="PROBE_REPOSITORY_ROOT=$RepositoryRoot" `
-    --dart-define=PROBE_AUTO_CLOSE=true
+  $env:PROBE_VIEWPORT = $Viewport
+  $env:PROBE_TIER = $Tier
+  $env:PROBE_RUN_ID = $RunId
+  $env:PROBE_DURATION_SCALE = $DurationScale.ToString(
+    [Globalization.CultureInfo]::InvariantCulture
+  )
+  $env:PROBE_OUTPUT_ROOT = Join-Path $ProbeDir "build/results"
+  $env:PROBE_REPOSITORY_ROOT = $RepositoryRoot
+  $env:PROBE_AUTO_CLOSE = "true"
+  & $Binary
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }

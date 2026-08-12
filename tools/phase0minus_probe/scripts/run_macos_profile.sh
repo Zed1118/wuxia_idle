@@ -7,6 +7,8 @@ viewport="${1:-desktop_1280x720}"
 tier="${2:-stress_30}"
 repeat="${3:-1}"
 duration_scale="${4:-1.0}"
+window_x="${5:-}"
+window_y="${6:-}"
 
 case "$viewport" in
   desktop_1280x720|desktop_1440x900) ;;
@@ -18,14 +20,31 @@ case "$tier" in
 esac
 
 cd "$probe_dir"
+if [[ "${PROBE_SKIP_BUILD:-false}" != "true" ]]; then
+  flutter build macos --profile
+fi
+binary="$probe_dir/build/macos/Build/Products/Profile/phase0minus_probe.app/Contents/MacOS/phase0minus_probe"
+if [[ ! -x "$binary" ]]; then
+  echo "Profile binary not found: $binary" >&2
+  exit 3
+fi
 for ((index = 1; index <= repeat; index++)); do
   run_id="macos-${viewport}-${tier}-r${index}-$(date -u +%Y%m%dT%H%M%SZ)"
-  flutter run -d macos --profile \
-    --dart-define="PROBE_VIEWPORT=$viewport" \
-    --dart-define="PROBE_TIER=$tier" \
-    --dart-define="PROBE_RUN_ID=$run_id" \
-    --dart-define="PROBE_DURATION_SCALE=$duration_scale" \
-    --dart-define="PROBE_OUTPUT_ROOT=$probe_dir/build/results" \
-    --dart-define="PROBE_REPOSITORY_ROOT=$repository_root" \
-    --dart-define=PROBE_AUTO_CLOSE=true
+  run_env=(
+    env
+    "PROBE_VIEWPORT=$viewport"
+    "PROBE_TIER=$tier"
+    "PROBE_RUN_ID=$run_id"
+    "PROBE_DURATION_SCALE=$duration_scale"
+    "PROBE_OUTPUT_ROOT=$probe_dir/build/results"
+    "PROBE_REPOSITORY_ROOT=$repository_root"
+    "PROBE_AUTO_CLOSE=true"
+  )
+  if [[ -n "$window_x" && -n "$window_y" ]]; then
+    run_env+=(
+      "PROBE_WINDOW_X=$window_x"
+      "PROBE_WINDOW_Y=$window_y"
+    )
+  fi
+  "${run_env[@]}" "$binary"
 done

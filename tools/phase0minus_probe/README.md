@@ -27,6 +27,16 @@ scripts/run_macos_profile.sh desktop_1280x720 stress_30 1 1.0
 scripts/run_macos_matrix.sh 3 1.0
 ```
 
+On a multi-display Mac, optional trailing `x y` coordinates pin the window to
+a known display. For the current 60Hz LG display (frame origin `2560,0`), use:
+
+```bash
+scripts/run_macos_matrix.sh 3 1.0 2800 200
+```
+
+Every manifest records the actual Flutter display ID, refresh rate, DPR, and
+physical viewport; coordinates are only a placement request, not evidence.
+
 The last argument is a duration scale. Values below `1.0` are smoke-only and
 are recorded as ineligible for the Gate. Windows uses the same parameter set:
 
@@ -37,6 +47,11 @@ are recorded as ineligible for the Gate. Windows uses the same parameter set:
 
 Raw JSONL and generated manifests are written below `build/results/` and are
 ignored by Git.
+
+The scripts build one Profile executable and pass scenario values through the
+child process environment. The matrix therefore does not recompile for every
+tier, viewport, or repeat; compile-time `--dart-define` values remain supported
+only as a manual fallback.
 
 ## Current evidence limit
 
