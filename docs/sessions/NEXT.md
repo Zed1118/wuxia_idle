@@ -1,5 +1,21 @@
 # 新会话开局清单
 
+> # ⛔ 本清单已于 2026-08-12 中午失效,不要照它开局
+>
+> **失效原因**:它描述的是 PR #119 合并**之前**的状态。此后 2026-08-12 上午的挂机批已把 PR #119/#120/#121 全部合入 main,分支 `feat/aptitude-birth-rarity` 已删除,下方【环境快照】的 HEAD、测试数、在途 PR/分支、BACKLOG 与滚动池条目**全部过期**。
+>
+> **该看哪里**:
+> - 当前进度与本批全貌 → `PROGRESS.md` 顶段「**2026-08-12 挂机批 A-F 六单**」条目
+> - 待办与待拍板 → `BACKLOG.md`(一#18 已重开,附回退原因)与 `docs/dispatch/pool/README.md`
+> - 本批新增的可直接用的东西 → `docs/spec/2026-08-12-playtest-decision-session.md`(8 项决策清单)+ `tools/playtest/decision_session.sh`
+> - 截图管线锁屏根因 → `docs/audit/visual_capture_lock_rect_failure_2026-08-12.md`
+>
+> **需要新的开局清单时**:让 Claude 跑 `/handoff` 或明说「输出新会话提示词」,会覆盖式重写本文件。在那之前本文件仅作历史留存。
+>
+> ---
+>
+> 以下为 2026-08-12 00:11 的原始内容,**仅供追溯,勿照做**。
+>
 > 交接时间：2026-08-12 00:11 · 工作收口于 HEAD `be029505` · 与 origin 同步(`feat/aptitude-birth-rarity` 已 push)、工作树干净
 > ⚠ **本清单住在分支 `feat/aptitude-birth-rarity` 上,不在 main**。PR #119 合并前,main 上的 `docs/sessions/NEXT.md` 还是**上一轮(2026-08-11 15:36)的旧版**。若你在 main 上读到「资质三连已拍待做」那份,说明 PR 还没合——先合 PR 再回来读这份。
 > 本清单自身的落盘 commit 排在 `be029505` 之后,故实际 HEAD 会比它新 1 个纯文档 commit——**这不是漂移**,判据见【开局动作】第 4 步。
