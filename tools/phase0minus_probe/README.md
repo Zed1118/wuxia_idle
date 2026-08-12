@@ -12,7 +12,9 @@ routes, YAML, rewards, repositories, and save storage.
 - Clear burst: every 10 seconds.
 - Collision backend: Flame `StandardCollisionDetection` with its default
   `Sweep` broadphase.
-- Runtime: 10 seconds warmup, 60 seconds sample, 30 seconds cooldown.
+- Runtime: 12 seconds warmup, 60 seconds sample, 30 seconds cooldown. The
+  first real 10-second clear burst stays inside warmup so shader and render-path
+  cold start cannot race the sampling boundary.
 
 All workload values are in `assets/probe_scenarios.yaml`. A SHA-256 of that
 exact file is written to every manifest.

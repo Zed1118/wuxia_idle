@@ -15,7 +15,7 @@ viewports:
     width: 1440.0
     height: 900.0
 timing:
-  warmup_seconds: 10.0
+  warmup_seconds: 12.0
   sample_seconds: 60.0
   cooldown_seconds: 30.0
   burst_interval_seconds: 10.0
