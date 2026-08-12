@@ -27,13 +27,20 @@ final class RunMetrics {
     );
   }
 
-  Map<String, Object?> summarize(List<FrameSample> samples) {
+  Map<String, Object?> summarize(
+    List<FrameSample> samples, {
+    required bool gcTelemetryAvailable,
+    required int gcEventCount,
+  }) {
     if (samples.isEmpty) {
       return {
         'validity': 'INVALID_INSUFFICIENT_FRAMES',
         'frames': 0,
-        'gc_telemetry': 'GC_TELEMETRY_MISSING',
-        'gate': 'BLOCKED',
+        'gc_telemetry': gcTelemetryAvailable
+            ? 'GC_TELEMETRY_COLLECTED'
+            : 'GC_TELEMETRY_MISSING',
+        'gc_event_count': gcEventCount,
+        'gate': 'INVALID',
       };
     }
     final total = samples.map((sample) => sample.totalSpanUs).toList();
@@ -71,9 +78,19 @@ final class RunMetrics {
                 ? 'PASS'
                 : 'FAIL'
           : 'INVALID',
-      'gc_telemetry': 'GC_TELEMETRY_MISSING',
-      'gate': 'BLOCKED',
-      'gate_reason': 'GC telemetry is mandatory and was not collected.',
+      'gc_telemetry': gcTelemetryAvailable
+          ? 'GC_TELEMETRY_COLLECTED'
+          : 'GC_TELEMETRY_MISSING',
+      'gc_event_count': gcEventCount,
+      'gate': !enoughFrames
+          ? 'INVALID'
+          : !gcTelemetryAvailable
+          ? 'BLOCKED'
+          : timingPass
+          ? 'PASS'
+          : 'FAIL',
+      if (!gcTelemetryAvailable)
+        'gate_reason': 'GC telemetry is mandatory and was not collected.',
     };
   }
 }

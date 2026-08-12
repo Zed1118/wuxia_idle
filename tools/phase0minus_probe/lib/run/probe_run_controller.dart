@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:phase0minus_probe/config/probe_config.dart';
 import 'package:phase0minus_probe/metrics/frame_collector.dart';
+import 'package:phase0minus_probe/metrics/gc_collector.dart';
 import 'package:phase0minus_probe/metrics/run_metrics.dart';
 import 'package:phase0minus_probe/report/result_writer.dart';
 import 'package:phase0minus_probe/workload/probe_game.dart';
@@ -31,6 +32,7 @@ final class ProbeRunController {
   final String outputRoot;
   final String repositoryRoot;
   final RunMetrics metrics;
+  final GcCollector gcCollector = GcCollector();
   late final FrameCollector collector = FrameCollector(
     phase: () => phase,
     clearEventId: () => game.clearEventId,
@@ -43,6 +45,7 @@ final class ProbeRunController {
 
   Future<void> start() async {
     await game.loaded;
+    await gcCollector.connect();
     collector.attach();
     _stopwatch.start();
     stdout.writeln('PHASE0_MINUS_RUN_START $runId');
@@ -80,6 +83,7 @@ final class ProbeRunController {
     _stopwatch.stop();
     collector.detach();
     metrics.rssAtCooldownEnd = ProcessInfo.currentRss;
+    await gcCollector.close();
     final workload = game.workloadSnapshot()
       ..['duration_scale'] = durationScale
       ..['gate_eligible_duration'] = durationScale == 1;
@@ -94,9 +98,12 @@ final class ProbeRunController {
       workloadSnapshot: workload,
       outputRoot: outputRoot,
       repositoryRoot: repositoryRoot,
+      gcCollector: gcCollector,
     );
     stdout.writeln('PHASE0_MINUS_RESULT ${directory.absolute.path}');
-    stdout.writeln('GC_TELEMETRY_MISSING: run cannot PASS');
+    stdout.writeln(
+      '${gcCollector.status}: ${gcCollector.events.length} GC events',
+    );
     if (autoClose) {
       await Future<void>.delayed(const Duration(milliseconds: 500));
       await windowManager.close();
@@ -106,5 +113,6 @@ final class ProbeRunController {
   void dispose() {
     _timer?.cancel();
     collector.detach();
+    unawaited(gcCollector.close());
   }
 }

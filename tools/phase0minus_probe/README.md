@@ -61,13 +61,11 @@ only as a manual fallback.
 ## Current evidence limit
 
 The application records raw `FrameTiming.totalSpan`, build and raster samples,
-nearest-rank percentiles, severe-frame streaks, RSS, pool counters, collision
-workload, and file checksums. It does not trigger garbage collection.
-
-Automated VM-service GC collection is not yet available in Slice 1-3. Every
-run therefore emits `GC_TELEMETRY_MISSING`: the timing sub-gate can be inspected,
-but the overall Phase 0-minus verdict remains `BLOCKED` and can never be
-reported as `PASS`.
+nearest-rank percentiles, severe-frame streaks, RSS, VM-service GC events, pool
+counters, collision workload, and file checksums. It only subscribes to the VM
+GC event stream and never requests or triggers garbage collection. If the
+Profile VM service is unavailable, the run emits `GC_TELEMETRY_MISSING` and
+cannot pass.
 
 The Windows minimum-spec evidence template is at
 `config/windows_minimum_spec_manifest.template.json`. Windows results require

@@ -5,6 +5,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:phase0minus_probe/config/probe_config.dart';
 import 'package:phase0minus_probe/metrics/frame_collector.dart';
+import 'package:phase0minus_probe/metrics/gc_collector.dart';
 import 'package:phase0minus_probe/metrics/run_metrics.dart';
 
 final class ResultWriter {
@@ -21,6 +22,7 @@ final class ResultWriter {
     required Map<String, Object?> workloadSnapshot,
     required String outputRoot,
     required String repositoryRoot,
+    required GcCollector gcCollector,
   }) async {
     final directory = Directory('$outputRoot/$runId');
     await directory.create(recursive: true);
@@ -34,9 +36,21 @@ final class ResultWriter {
     final memoryFile = File('${directory.path}/memory_gc.jsonl');
     final memoryBuffer = StringBuffer();
     for (final sample in metrics.memory) {
-      memoryBuffer.writeln(jsonEncode(sample.toJson()));
+      memoryBuffer.writeln(
+        jsonEncode({'record_type': 'rss_sample', ...sample.toJson()}),
+      );
     }
-    memoryBuffer.writeln(jsonEncode({'status': 'GC_TELEMETRY_MISSING'}));
+    for (final event in gcCollector.events) {
+      memoryBuffer.writeln(jsonEncode(event.toJson()));
+    }
+    memoryBuffer.writeln(
+      jsonEncode({
+        'record_type': 'gc_status',
+        'status': gcCollector.status,
+        'event_count': gcCollector.events.length,
+        if (gcCollector.error != null) 'error': gcCollector.error,
+      }),
+    );
     await memoryFile.writeAsString(memoryBuffer.toString(), flush: true);
 
     final view = PlatformDispatcher.instance.views.firstOrNull;
@@ -53,10 +67,15 @@ final class ResultWriter {
     final viewportMatches =
         (actualLogicalWidth - viewport.width).abs() < 0.5 &&
         (actualLogicalHeight - viewport.height).abs() < 0.5;
-    final frameMetrics = metrics.summarize(frames);
+    final frameMetrics = metrics.summarize(
+      frames,
+      gcTelemetryAvailable: gcCollector.available,
+      gcEventCount: gcCollector.events.length,
+    );
     if (!viewportMatches) {
       frameMetrics['validity'] = 'INVALID_VIEWPORT';
       frameMetrics['timing_gate'] = 'INVALID';
+      frameMetrics['gate'] = 'INVALID';
       frameMetrics['viewport_reason'] =
           'Expected ${viewport.width}x${viewport.height}, '
           'measured ${actualLogicalWidth}x$actualLogicalHeight.';
@@ -69,6 +88,7 @@ final class ResultWriter {
     if (!displayMatches) {
       frameMetrics['validity'] = 'INVALID_DISPLAY';
       frameMetrics['timing_gate'] = 'INVALID';
+      frameMetrics['gate'] = 'INVALID';
       frameMetrics['display_reason'] =
           'Expected refresh=$expectedRefreshRate DPR=$expectedDpr, '
           'measured refresh=$actualRefreshRate DPR=$dpr.';
@@ -137,7 +157,9 @@ final class ResultWriter {
       'renderer': 'COLLECT_MANUALLY',
       'refresh_rate_hz': view?.display.refreshRate,
       'device_pixel_ratio': view?.devicePixelRatio,
-      'gc_collector': 'GC_TELEMETRY_MISSING',
+      'gc_collector': gcCollector.status,
+      'gc_event_count': gcCollector.events.length,
+      if (gcCollector.error != null) 'gc_collector_error': gcCollector.error,
       ...git,
       'files_sha256': checksums,
     };
