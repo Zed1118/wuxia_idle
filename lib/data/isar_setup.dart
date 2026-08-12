@@ -196,7 +196,11 @@ class IsarSetup {
   //   重排后各层难度对齐 abs 属塔整体改版的自然结果)。
   // 0.37.0 江湖远行:SaveData +6 永久进度字段(默认空/false)+ ExpeditionRun/
   //   BossGauntletRun 两个空会话 collection(可加性迁移,旧档零 active 记录)。
-  static const _currentSaveVersion = '0.38.0';
+  // 0.39.0 资质档位回填(BACKLOG 一#15):无 schema 变更,纯数据修复——按**出生点数**
+  //   重算全部角色的 Character.rarity。2026-08-08「出生锁死」后加载期不再重算,
+  //   而 08-08 之前的创建点写死 biaoZhun,那批角色会永久停在错档位(纯展示,
+  //   RarityTier 在战斗/成长/掉落层零消费)。
+  static const _currentSaveVersion = '0.39.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -469,6 +473,35 @@ class IsarSetup {
           m.bossKey = 'tower_floor_$newFloor';
           m.groupIndex = newFloor;
           await isar.bossMemorys.put(m);
+        }
+      }
+
+      // --- 段 9(0.39.0 资质档位回填 · BACKLOG 一#15)---
+      // 2026-08-08「出生锁死」把 rarity 定为出生属性、加载期不再重算,而 08-08
+      // 之前的三处创建点写死 biaoZhun → 那批角色永久停在错档位。此处按**出生
+      // 点数**(当前总点数 − 奇遇生涯加点,见 CharacterBirthAttributes)一次性重算。
+      //
+      // 为何不是「当前总点数」(BACKLOG 一#15 选项 b):祖师出生 21-22 吃满生涯
+      // cap +5 后当前 26-27,越出 rarity_distribution 上界会被 rarityForTotalPoints
+      // 钳到 jueShi(GDD 标 2%),档位失去区分度——正是出生锁死要避免的失真。
+      //
+      // 幂等:出生点数是常量(奇遇同块同增 attributes 与 attributeBonusFromAdventure),
+      // 重算恒得同值,重跑不改数据。只写档位标签,零数值字段改动。
+      //
+      // isLoaded 门:rarityForTotalPoints 来自 numbers.yaml,未加载则跳过。生产不会
+      // 走到——splash 先 loadAllDefs(splash_screen.dart)、Isar 由 SaveSelectScreen
+      // 选档后 switchSlot 才开,顺序实测在案。⚠ 与段 3/段 4 不同,本段**没有自愈
+      // 路径**(档位锁死后玩家怎么玩都不会重算),真跳过就是永久停留旧值。
+      if (_compareVersion(fromVersion, '0.39.0') < 0 &&
+          GameRepository.isLoaded) {
+        final numbers = GameRepository.instance.numbers;
+        for (final character in characters) {
+          // 同段 6:前置段可能已写回同一角色,必须重读当前行,避免用事务前快照覆盖。
+          final current = await isar.characters.get(character.id) ?? character;
+          current.rarity = numbers.rarityForTotalPoints(
+            current.birthAttributeTotal,
+          );
+          await isar.characters.put(current);
         }
       }
 

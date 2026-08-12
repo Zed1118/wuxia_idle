@@ -249,7 +249,8 @@ void main() {
       expect(migrated!.realmTierAtStart, RealmTier.erLiu);
       expect(migrated.startedAt, startedAt);
       expect(migrated.status, RetreatStatus.active);
-      expect(IsarSetup.currentSaveVersion, '0.38.0');
+      // 故意钉字面量:每次 saveVer bump 都逼人回来看一眼本套件的版本门是否还成立。
+      expect(IsarSetup.currentSaveVersion, '0.39.0');
     });
   });
 }

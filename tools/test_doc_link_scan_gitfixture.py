@@ -13,7 +13,7 @@
 ——沿用 mock 体例加再多样例也测不出,加了还是假绿。
 详 `docs/dispatch/reports/2026-08-08_scanner_fp_fix_proposal.md`「四、未做/待补」。
 
-**修复状态(2026-08-08)**:P7 补丁已合并,下方 `FixedFalsePositiveTest` 里原先标
+**修复状态(2026-08-11)**:P7 补丁已合并,下方 `FixedFalsePositiveTest` 里原先标
 `@unittest.expectedFailure` 的 4 条已按设计转为**正式回归断言**——那套装饰器的作用就是
 在补丁落地时以 "unexpected success" 让套件报错、逼人来删它,现已履行完毕。
 合并时实测:同一份代码在有 `build/` 的主 checkout 与无 `build/` 的 fresh worktree

@@ -70,6 +70,13 @@ class Character {
   /// [Attributes] 点数与 [attributeBonusFromAdventure]，不动档位标签。故本字段
   /// **不是** attributes 的派生冗余，不可改写成 getter。
   ///
+  /// **旧档回填（saveVersion 0.39.0 · BACKLOG 一#15）**：08-08 之前三处创建点写死
+  /// `biaoZhun`，而出生锁死后加载期不再重算 → 那批角色会永久停在错档位（改锁死
+  /// 之前那版反而会在吃一次奇遇后自愈）。故 [IsarSetup] 段 9 按
+  /// [CharacterBirthAttributes.birthAttributeTotal] 一次性重算本字段。选「出生点数」
+  /// 而非「当前总点数」：后者对吃满生涯 cap 的祖师会把 22 点算成 27 点、钳到
+  /// `jueShi`，正是出生锁死要避免的档位失真。
+  ///
   /// 默认 [RarityTier.biaoZhun] 与默认 [Attributes]（四项各 5 = 总 20）自洽；
   /// 此前为 `late` 无默认，任何不走 [Character.create] 的构造读它即抛
   /// LateInitializationError（全仓 64 处 fixture + visual_route_host 命中）。
@@ -261,4 +268,24 @@ class Character {
       ..founderCreationOriginId = founderCreationOriginId
       ..founderCreationFateId = founderCreationFateId;
   }
+}
+
+/// 出生点数（GDD §4.1「资质是出生属性」的唯一算法 sink）。
+///
+/// **必须是 extension 不能是 [Character] 上的 getter**：isar_community 会把
+/// 类内公开 getter 生成成持久化属性（`Attributes.total` 即以
+/// `PropertySchema(id: 4)` 落在 `attributes.g.dart` 里），加进 [Character]
+/// 就是白白的 schema churn——本值可随时算得，没有落盘的理由。extension 不进
+/// 生成器视野，零 schema 影响。
+extension CharacterBirthAttributes on Character {
+  /// 出生时的四项属性总点数 = 当前总点数 − 奇遇生涯加点。
+  ///
+  /// 成立依据（2026-08-11 Phase 0 全仓实测）：生产层改 `attributes` 的唯一站点是
+  /// `EncounterService.applyOutcome` 的 AttributeBonus 分支，它在同一个 `applied`
+  /// 上同块累加 `attributes.<key>` 与 [Character.attributeBonusFromAdventure]
+  /// （`encounter_service.dart` 同一 if 块内），故二者差恒等于出生点数、不随奇遇漂移。
+  ///
+  /// ⚠ 将来若新增**非奇遇**的属性来源（丹药 / 传承 / 洗点），必须同步在那里累加
+  /// [Character.attributeBonusFromAdventure] 的同侪计数，否则本式静默失真。
+  int get birthAttributeTotal => attributes.total - attributeBonusFromAdventure;
 }

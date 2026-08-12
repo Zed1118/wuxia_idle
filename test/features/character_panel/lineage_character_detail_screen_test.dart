@@ -226,6 +226,80 @@ void main() {
     expect(find.text(UiStrings.injuryLightLabel), findsNothing);
     expect(find.text(UiStrings.conditionInnerDemonResidueLabel), findsNothing);
   });
+
+  // BACKLOG 一#16：资质 chip 的括注是**出生点数**不是当前总点数。
+  // 2026-08-08「出生锁死」后档名恒为出生档位，再拼当前总点数会自相矛盾
+  // （祖师出生 22=资优、吃满 +5 后显示「资优（27）」，而资优区间是 21-22）。
+  testWidgets('资质 chip 带出生点数而非当前总点数（吃过奇遇的角色）', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    // 出生 5/7/5/5 = 22（资优），生涯 cap +5 记在根骨上 → 当前 27。
+    final f = Character()
+      ..id = 13
+      ..name = '林青崖'
+      ..realmTier = RealmTier.wuSheng
+      ..realmLayer = RealmLayer.dengFeng
+      ..lineageRole = LineageRole.founder
+      ..isFounder = true
+      ..birthInGameYear = 1
+      ..rarity = RarityTier.ziYou
+      ..attributeBonusFromAdventure = 5
+      ..attributes = (Attributes()
+        ..constitution = 10
+        ..enlightenment = 7
+        ..agility = 5
+        ..fortune = 5);
+    await tester.pumpWidget(
+      _detailHost(LineageCharacterDetailScreen(character: f)),
+    );
+    await tester.pumpAndSettle();
+
+    final tierName = EnumL10n.rarityTier(RarityTier.ziYou);
+    expect(
+      find.text(UiStrings.rarityTierWithTotal(tierName, 22)),
+      findsOneWidget,
+      reason: '22 = 27 − 5，与「资质是出生属性」语义自洽',
+    );
+    expect(
+      find.text(UiStrings.rarityTierWithTotal(tierName, 27)),
+      findsNothing,
+      reason: '当前总点数 27 越出资优区间 [21,22]，正是 #16 要消除的自相矛盾',
+    );
+  });
+
+  testWidgets('资质 chip：未吃奇遇的角色出生点数=当前总点数', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final d = Character()
+      ..id = 14
+      ..name = '叶清'
+      ..realmTier = RealmTier.sanLiu
+      ..realmLayer = RealmLayer.ruMen
+      ..lineageRole = LineageRole.senior
+      ..isFounder = false
+      ..birthInGameYear = 5
+      ..rarity = RarityTier.xunChang
+      ..attributeBonusFromAdventure = 0
+      ..attributes = (Attributes()
+        ..constitution = 3
+        ..enlightenment = 5
+        ..agility = 7
+        ..fortune = 4);
+    await tester.pumpWidget(
+      _detailHost(LineageCharacterDetailScreen(character: d)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        UiStrings.rarityTierWithTotal(
+          EnumL10n.rarityTier(RarityTier.xunChang),
+          19,
+        ),
+      ),
+      findsOneWidget,
+    );
+  });
 }
 
 Widget _detailHost(Widget child) {

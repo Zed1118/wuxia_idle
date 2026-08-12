@@ -295,13 +295,17 @@ class _AttributesSection extends StatelessWidget {
               _AttrChip('${UiStrings.attrEnlightenment} ${a.enlightenment}'),
               _AttrChip('${UiStrings.attrAgility} ${a.agility}'),
               _AttrChip('${UiStrings.attrFortune} ${a.fortune}'),
-              // 资质档位（GDD §4.1）：四项总点数的标签，由 rarityForTotalPoints
-              // 派生。⚠ 视觉表现为临时版（沿用 _AttrChip 同款样式，未做色阶/印章
-              // 等档位化表达），待视觉终拍。
+              // 资质档位（GDD §4.1）：出生属性，档名与括注同取**出生**口径——
+              // 括注给 birthAttributeTotal 而非 a.total（BACKLOG 一#16）。给当前
+              // 总点数会与锁死的档名自相矛盾：祖师出生 22（资优）吃满生涯 cap +5
+              // 后显示「资优（27）」，而资优区间是 21-22。四项属性各自的 chip 已在
+              // 上方显示当前值，出生总点数不与它们重复。
+              // ⚠ 视觉表现为临时版（沿用 _AttrChip 同款样式，未做色阶/印章等档位化
+              // 表达），待视觉终拍。
               _AttrChip(
                 UiStrings.rarityTierWithTotal(
                   EnumL10n.rarityTier(character.rarity),
-                  a.total,
+                  character.birthAttributeTotal,
                 ),
               ),
             ],
