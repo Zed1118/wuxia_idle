@@ -118,10 +118,12 @@ class RealGitFixtureTestCase(unittest.TestCase):
             f"期望恰好采集到 1 条引用,实得 {result['refs_total']} 条"
             f"(skipped={result['skipped']} reasons={result['skipped_reasons']})",
         )
-        for name in ("alive", "dead", "ignored"):
+        for name in ("alive", "dead", "ignored", "archival"):
             if result[name] == 1:
                 return name
-        raise AssertionError(f"引用未落入 alive/dead/ignored 任一类:{result}")
+        raise AssertionError(
+            f"引用未落入 alive/dead/ignored/archival 任一类:{result}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -295,6 +297,50 @@ class FixedFalsePositiveTest(RealGitFixtureTestCase):
         self.repo.track("data/numbers.yaml")
         self.doc("`data/numbers.yaml:130 combined_rate_cap: 0.95`")
         self.assertEqual(self.verdict(self.repo.scan()), "alive")
+
+
+# ---------------------------------------------------------------------------
+# 四、EXCLUDE_DIRS 接线:排除项必须真从常量派生(防两份真相复发)
+# ---------------------------------------------------------------------------
+
+class ScanSourceExclusionTest(RealGitFixtureTestCase):
+    """历史缺陷:`EXCLUDE_DIRS` 定义后全仓零消费,真正生效的排除是
+    `collect_scan_files` 里两条硬编码 startswith——常量与行为两份真相,
+    改常量不产生任何效果。本节钉住接线后的行为。
+    """
+
+    def test_added_exclude_dir_is_actually_consumed(self) -> None:
+        """往 `EXCLUDE_DIRS` 加一个目录 → 该目录下的文档立即不再进扫描源。
+
+        这是唯一能证明「常量真被读取」的断言:若排除逻辑仍是硬编码字面量
+        (或读的是别的集合),加 `docs/misc` 不会改变扫描源,本条必红。
+        """
+        self.doc("`lib/a.dart`", rel="docs/misc/note.md")
+        self.doc("无引用\n", rel="docs/keep.md")
+
+        before = self.repo.scan()
+        self.assertEqual(before["scanned_files"], 2)
+        self.assertEqual(before["refs_total"], 1)
+
+        with mock.patch.object(
+            doc_link_scan, "EXCLUDE_DIRS",
+            doc_link_scan.EXCLUDE_DIRS | {"docs/misc"},
+        ):
+            after = self.repo.scan()
+        self.assertEqual(after["scanned_files"], 1)
+        self.assertEqual(after["refs_total"], 0)
+
+    def test_exclude_dir_matches_boundary_not_raw_prefix(self) -> None:
+        """目录边界匹配:`docs/_archive` 不得误排除 `docs/_archiveXYZ/`。
+
+        常量值不带尾斜杠,若退化成裸 startswith,同前缀的兄弟目录会被
+        连坐排除,本条必红。
+        """
+        self.doc("`lib/a.dart`", rel="docs/_archiveXYZ/note.md")
+        self.doc("无引用\n", rel="docs/_archive/old.md")
+        result = self.repo.scan()
+        self.assertEqual(result["scanned_files"], 1)
+        self.assertEqual(result["refs_total"], 1)
 
 
 if __name__ == "__main__":
