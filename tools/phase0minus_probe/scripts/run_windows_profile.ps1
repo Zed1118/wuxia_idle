@@ -28,6 +28,8 @@ for ($Index = 1; $Index -le $Repeat; $Index++) {
   $env:PROBE_OUTPUT_ROOT = Join-Path $ProbeDir "build/results"
   $env:PROBE_REPOSITORY_ROOT = $RepositoryRoot
   $env:PROBE_AUTO_CLOSE = "true"
+  $env:PROBE_EXPECTED_REFRESH_RATE = "60"
+  $env:PROBE_EXPECTED_DPR = "1"
   & $Binary
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }

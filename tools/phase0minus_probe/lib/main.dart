@@ -66,12 +66,12 @@ Future<void> main() async {
       titleBarStyle: TitleBarStyle.hidden,
     ),
     () async {
+      await windowManager.show();
       if (windowXText.isNotEmpty && windowYText.isNotEmpty) {
         await windowManager.setPosition(
           Offset(double.parse(windowXText), double.parse(windowYText)),
         );
       }
-      await windowManager.show();
       await windowManager.focus();
     },
   );

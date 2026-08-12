@@ -38,6 +38,9 @@ scripts/run_macos_matrix.sh 3 1.0 2800 200
 
 Every manifest records the actual Flutter display ID, refresh rate, DPR, and
 physical viewport; coordinates are only a placement request, not evidence.
+If only a 60Hz Retina display is available, omit coordinates and run with
+`PROBE_GATE_DPR=2`; the manifest keeps this higher physical-pixel load distinct
+from the preferred DPR 1 baseline.
 
 The last argument is a duration scale. Values below `1.0` are smoke-only and
 are recorded as ineligible for the Gate. Windows uses the same parameter set:

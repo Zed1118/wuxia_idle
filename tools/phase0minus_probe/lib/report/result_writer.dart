@@ -43,6 +43,13 @@ final class ResultWriter {
     final dpr = view?.devicePixelRatio ?? 1;
     final actualLogicalWidth = (view?.physicalSize.width ?? 0) / dpr;
     final actualLogicalHeight = (view?.physicalSize.height ?? 0) / dpr;
+    final actualRefreshRate = view?.display.refreshRate;
+    final expectedRefreshRate = double.tryParse(
+      Platform.environment['PROBE_EXPECTED_REFRESH_RATE'] ?? '',
+    );
+    final expectedDpr = double.tryParse(
+      Platform.environment['PROBE_EXPECTED_DPR'] ?? '',
+    );
     final viewportMatches =
         (actualLogicalWidth - viewport.width).abs() < 0.5 &&
         (actualLogicalHeight - viewport.height).abs() < 0.5;
@@ -53,6 +60,18 @@ final class ResultWriter {
       frameMetrics['viewport_reason'] =
           'Expected ${viewport.width}x${viewport.height}, '
           'measured ${actualLogicalWidth}x$actualLogicalHeight.';
+    }
+    final displayMatches =
+        (expectedRefreshRate == null ||
+            (actualRefreshRate != null &&
+                (actualRefreshRate - expectedRefreshRate).abs() < 0.5)) &&
+        (expectedDpr == null || (dpr - expectedDpr).abs() < 0.01);
+    if (!displayMatches) {
+      frameMetrics['validity'] = 'INVALID_DISPLAY';
+      frameMetrics['timing_gate'] = 'INVALID';
+      frameMetrics['display_reason'] =
+          'Expected refresh=$expectedRefreshRate DPR=$expectedDpr, '
+          'measured refresh=$actualRefreshRate DPR=$dpr.';
     }
     final summary = <String, Object?>{
       'run_id': runId,
@@ -67,6 +86,13 @@ final class ResultWriter {
         'actual_logical_width': actualLogicalWidth,
         'actual_logical_height': actualLogicalHeight,
         'matches': viewportMatches,
+      },
+      'display_measurement': {
+        'expected_refresh_rate_hz': expectedRefreshRate,
+        'expected_device_pixel_ratio': expectedDpr,
+        'actual_refresh_rate_hz': actualRefreshRate,
+        'actual_device_pixel_ratio': dpr,
+        'matches': displayMatches,
       },
       'pools': poolSnapshot,
       'workload': workloadSnapshot,

@@ -9,6 +9,7 @@ repeat="${3:-1}"
 duration_scale="${4:-1.0}"
 window_x="${5:-}"
 window_y="${6:-}"
+expected_dpr="${PROBE_GATE_DPR:-1}"
 
 case "$viewport" in
   desktop_1280x720|desktop_1440x900) ;;
@@ -39,6 +40,8 @@ for ((index = 1; index <= repeat; index++)); do
     "PROBE_OUTPUT_ROOT=$probe_dir/build/results"
     "PROBE_REPOSITORY_ROOT=$repository_root"
     "PROBE_AUTO_CLOSE=true"
+    "PROBE_EXPECTED_REFRESH_RATE=60"
+    "PROBE_EXPECTED_DPR=$expected_dpr"
   )
   if [[ -n "$window_x" && -n "$window_y" ]]; then
     run_env+=(
@@ -47,4 +50,20 @@ for ((index = 1; index <= repeat; index++)); do
     )
   fi
   "${run_env[@]}" "$binary"
+  manifest="$probe_dir/build/results/$run_id/manifest.json"
+  if ! /usr/bin/python3 - "$manifest" "$expected_dpr" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding='utf-8') as source:
+    manifest = json.load(source)
+viewport = manifest['viewport']
+valid = abs(float(viewport['refresh_rate_hz']) - 60.0) < 0.5
+valid = valid and abs(float(viewport['device_pixel_ratio']) - float(sys.argv[2])) < 0.01
+raise SystemExit(0 if valid else 4)
+PY
+  then
+    echo "Run $run_id landed on the wrong display; stopping matrix." >&2
+    exit 4
+  fi
 done
