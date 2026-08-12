@@ -10,8 +10,16 @@
 2. 用 `tools/visual_capture/window_id.swift` 通过 CGWindowList 获取 app 主窗口
    CGWindowID。
 3. 用 `screencapture -x -o -l<window_id>` 截干净窗口。
-4. 若窗口 ID 捕获失败，退回区域截图并在 route log 中记录
-   `VISUAL_CAPTURE: fallback_region`。
+4. 若窗口截图失败，先用 `lock_state.py` 判定会话锁屏态并把
+   锁屏态、`window_id` 返回值、窗口截图退出码/字节数写进 route log
+   （前缀 `VISUAL_CAPTURE_DIAG:`），再退回区域截图。区域截图成功记
+   `VISUAL_CAPTURE: fallback_region`；两者都失败则记
+   `VISUAL_CAPTURE: all_failed:lock=<locked|unlocked|unknown>` 并以非零码
+   硬失败，**不再进入 `crop_window_content.py`**（避免 PNG 不存在时 PIL
+   `FileNotFoundError` 盖住真实原因）。
+   锁屏判定：`ioreg -n Root -d1 -w0` 的 `IOConsoleUsers` 字典是否含键
+   `CGSSessionScreenIsLocked`（未锁时该键整个不存在，只能判有无，不能比值；
+   ioreg 失败/空输出一律判 `unknown`，绝不错报未锁）。
 5. 截图结束后默认生成 `<output>/fidelity_manifest.json`（`schema_version: 3`），记录
    commit、**tree/dirty**、route、seed/tick、逻辑视口、DPR、原生窗口 ID、截图方式及
    PNG/log SHA-256。
@@ -64,6 +72,25 @@ route log 中应至少包含：
 VISUAL_ROUTE_READY: <route>
 VISUAL_CAPTURE: window_id:<id>
 ```
+
+`VISUAL_CAPTURE:` 状态串有三种，用于区分截图结果：
+
+```text
+VISUAL_CAPTURE: window_id:<id>                 # 窗口截图成功（主路径）
+VISUAL_CAPTURE: fallback_region                 # 走了区域 fallback 且成功
+VISUAL_CAPTURE: all_failed:lock=<locked|unlocked|unknown>   # 两者均失败（硬失败）
+```
+
+窗口截图失败时（无论 fallback 成败）会额外写入诊断行：
+
+```text
+VISUAL_CAPTURE_DIAG: lock_state=<locked|unlocked|unknown>
+VISUAL_CAPTURE_DIAG: window_id=<id|<empty>>
+VISUAL_CAPTURE_DIAG: window_capture_rc=<n> bytes=<n>   # 仅当拿到 window id
+```
+
+全失败时还会追加一行 `VISUAL_CAPTURE_FAIL:`（含锁屏态与重跑建议），并以非零码
+结束该路由采集。
 
 启用 `--hitbox` 时还应包含：
 

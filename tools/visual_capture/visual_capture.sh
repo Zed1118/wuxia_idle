@@ -4,6 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SWIFT_WINID="$REPO_ROOT/tools/visual_capture/window_id.swift"
 CROP_CONTENT="$REPO_ROOT/tools/visual_capture/crop_window_content.py"
+LOCK_STATE_HELPER="$REPO_ROOT/tools/visual_capture/lock_state.py"
 FIDELITY_ANALYZER="$REPO_ROOT/tools/visual_capture/analyze_battle_v2_fidelity.py"
 APP_PROCESS_NAME="wuxia_idle"
 APP_EXECUTABLE="$REPO_ROOT/build/macos/Build/Products/Debug/wuxia_idle.app/Contents/MacOS/wuxia_idle"
@@ -205,14 +206,37 @@ capture_visual_window() {
   local height="$2"
   local output="$3"
   local owner_pid="${4:-}"
-  local wid
+  local log="${5:-}"
+  local wid lock_state win_rc=0 win_bytes=0 region_rc=0
   wid="$(window_id "$owner_pid")"
-  if [[ -n "$wid" ]] && screencapture -x -o -l"$wid" "$output" >/dev/null 2>&1 && [[ -s "$output" ]]; then
-    printf 'window_id:%s\n' "$wid"
+  if [[ -n "$wid" ]]; then
+    screencapture -x -o -l"$wid" "$output" >/dev/null 2>&1 || win_rc=$?
+    win_bytes="$(stat -f%z "$output" 2>/dev/null || printf '0')"
+    if [[ "$win_rc" -eq 0 && "$win_bytes" -gt 0 ]]; then
+      printf 'window_id:%s\n' "$wid"
+      return 0
+    fi
+  fi
+  # 主路径失败:判定并留痕锁屏态与分模式结果,再走区域 fallback。
+  # 注意 -R fallback 不是「抢救出图」——锁屏时 osascript 摆不了窗口,几何前提
+  # 本就不成立,此时不存在“正确的画面”可抢救,只能如实报失败。
+  lock_state="$(python3 "$LOCK_STATE_HELPER" 2>/dev/null || printf 'unknown')"
+  if [[ -n "$log" ]]; then
+    {
+      printf 'VISUAL_CAPTURE_DIAG: lock_state=%s\n' "$lock_state"
+      printf 'VISUAL_CAPTURE_DIAG: window_id=%s\n' "${wid:-<empty>}"
+      if [[ -n "$wid" ]]; then
+        printf 'VISUAL_CAPTURE_DIAG: window_capture_rc=%s bytes=%s\n' "$win_rc" "$win_bytes"
+      fi
+    } >>"$log"
+  fi
+  capture_region "$width" "$height" "$output" || region_rc=$?
+  if [[ "$region_rc" -eq 0 && -s "$output" ]]; then
+    printf 'fallback_region\n'
     return 0
   fi
-  capture_region "$width" "$height" "$output"
-  printf 'fallback_region\n'
+  printf 'all_failed:lock=%s\n' "$lock_state"
+  return 1
 }
 
 focus_visual_app() {
@@ -378,13 +402,26 @@ run_capture() {
     focus_visual_app >>"$log" 2>&1 || printf 'VISUAL_CAPTURE_WARN: focus_failed\n' >>"$log"
     sleep 1
   fi
-  local capture_status
-  capture_status="$(capture_visual_window "$width" "$height" "$png" "$pid")"
-  python3 "$CROP_CONTENT" "$png" \
-    --logical-width "$width" \
-    --logical-height "$height" >>"$log"
+  local capture_status capture_rc=0
+  capture_status="$(capture_visual_window "$width" "$height" "$png" "$pid" "$log")" || capture_rc=$?
+  if [[ "$capture_rc" -eq 0 ]]; then
+    python3 "$CROP_CONTENT" "$png" \
+      --logical-width "$width" \
+      --logical-height "$height" >>"$log"
+  fi
   stop_pid "$pid" "$log"
   printf 'VISUAL_CAPTURE: %s\n' "$capture_status" >>"$log"
+  if [[ "$capture_rc" -ne 0 ]]; then
+    local lock_word
+    case "$capture_status" in
+      *lock=locked)   lock_word="是" ;;
+      *lock=unlocked) lock_word="否" ;;
+      *)              lock_word="未知" ;;
+    esac
+    printf 'VISUAL_CAPTURE_FAIL: 窗口截图与区域截图均失败;会话锁屏=%s ⇒ 无人值守时段无法采集视觉证据,请在解锁会话下重跑\n' "$lock_word" >>"$log"
+    printf '窗口截图与区域截图均失败;会话锁屏=%s ⇒ 无人值守时段无法采集视觉证据,请在解锁会话下重跑(route=%s, log=%s)\n' "$lock_word" "$route" "$log" >&2
+    return 1
+  fi
 }
 
 IFS=',' read -r -a resolution_list <<< "$RESOLUTIONS"
