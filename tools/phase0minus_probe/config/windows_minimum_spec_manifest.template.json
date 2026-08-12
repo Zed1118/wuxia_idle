@@ -1,0 +1,22 @@
+{
+  "status": "UNVERIFIED_TEMPLATE",
+  "operator": "FILL_BEFORE_RUN",
+  "device": {
+    "os": "Windows 10 22H2 or Windows 11 64-bit",
+    "cpu": "Intel Core i5-8250U class or weaker supported target",
+    "gpu": "Intel UHD 620 class DirectX 11 integrated GPU",
+    "ram_gib": 8,
+    "storage": "SSD",
+    "power_mode": "Best performance, plugged in"
+  },
+  "display": {
+    "refresh_rate_hz": 60,
+    "scale_percent": 100,
+    "required_logical_viewports": ["1280x720", "1440x900"]
+  },
+  "driver_version": "FILL_BEFORE_RUN",
+  "renderer": "FILL_FROM_RUN",
+  "remote_desktop": false,
+  "valid_for_minimum_spec_gate": false,
+  "validation_notes": "A stronger discrete-GPU machine cannot sign this gate."
+}
