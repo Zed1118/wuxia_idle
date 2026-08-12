@@ -100,25 +100,36 @@ OUT_OF_REPO_MARKERS = (".claude/projects/",)
 # --------------------------------------------------------------------------
 
 def git_ls_files() -> list[str]:
-    """返回仓库所有已跟踪文件路径(相对 repo root)。"""
+    """返回仓库所有已跟踪文件路径(相对 repo root)。
+
+    必须用 `-z`(NUL 分隔):git 默认对非 ASCII 文件名做八进制转义并加引号
+    (core.quotePath 默认 true,如 `"docs/..._\350\265\204..."`),转义串
+    以 `"` 开头会让 `collect_scan_files` 的 startswith 判定恒假 → 中文名
+    文档整体漏出扫描源,且别处引用它们时误判死链。`-z` 模式下 git 不做
+    转义,且 NUL 分隔天然兼容文件名中的换行。
+    """
     out = subprocess.check_output(
-        ["git", "ls-files"], cwd=REPO_ROOT, text=True, encoding="utf-8"
+        ["git", "ls-files", "-z"], cwd=REPO_ROOT, text=True, encoding="utf-8"
     )
-    return [line for line in out.splitlines() if line]
+    return [p for p in out.split("\0") if p]
 
 
 def git_check_ignore(paths: Iterable[str]) -> set[str]:
     """批量判定 path 是否被 .gitignore 命中。返回命中的 path 集合。
 
     一次性 stdin 喂入,避免逐个调用(很慢)。
+
+    输入输出均用 NUL 分隔(`-z --stdin`,git 文档明载两侧同改):默认换行
+    模式下 git 回显命中路径会做 quotePath 八进制转义,中文名路径回显串与
+    原串对不上 → 误归 dead 而非 ignored。
     """
     paths = list(paths)
     if not paths:
         return set()
-    # git check-ignore --stdin 一次吃 N 行,输出命中的那批。
-    stdin = "\n".join(paths) + ("\n" if paths else "")
+    # git check-ignore --stdin 一次吃 N 条,输出命中的那批。
+    stdin = "\0".join(paths) + "\0"
     proc = subprocess.run(
-        ["git", "check-ignore", "--stdin"],
+        ["git", "check-ignore", "-z", "--stdin"],
         cwd=REPO_ROOT, input=stdin,
         text=True, capture_output=True, encoding="utf-8",
     )
@@ -127,7 +138,7 @@ def git_check_ignore(paths: Iterable[str]) -> set[str]:
         raise RuntimeError(
             f"git check-ignore 异常 rc={proc.returncode} stderr={proc.stderr!r}"
         )
-    return {line for line in proc.stdout.splitlines() if line}
+    return {p for p in proc.stdout.split("\0") if p}
 
 
 def git_ls_files_for_ignore_test(paths: Iterable[str]) -> set[str]:
