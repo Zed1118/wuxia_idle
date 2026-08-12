@@ -343,5 +343,49 @@ class ScanSourceExclusionTest(RealGitFixtureTestCase):
         self.assertEqual(result["refs_total"], 1)
 
 
+# ---------------------------------------------------------------------------
+# 五、非 ASCII 文件名:quotePath 转义漏扫缺陷(派单 F 修复)的防复发红线
+# ---------------------------------------------------------------------------
+
+class NonAsciiPathTest(RealGitFixtureTestCase):
+    """git 默认对非 ASCII 文件名做八进制转义并加引号(core.quotePath)。
+    修复前:`git_ls_files` 把带引号的转义串记进 tracked →
+    `collect_scan_files` 的 `startswith("docs/")` 恒假,中文名文档整体漏扫;
+    指向它们的引用也因 tracked 里匹配不上而误判死链;`git_check_ignore`
+    回显同样转义 → 中文名 gitignored 路径误归 dead。
+    修法:`ls-files -z` / `check-ignore -z --stdin`(NUL 分隔,不转义)。
+    把 `-z` 改回换行模式,本节必红。
+    """
+
+    NON_ASCII_DOC = "docs/测试_中文名.md"
+
+    def test_non_ascii_doc_enters_scan_source(self) -> None:
+        """中文名 .md 被 git 跟踪后必须出现在 collect_scan_files 结果里。
+
+        本条是派单 F 的核心闸门:修复前 git ls-files 回显
+        `"docs/\\346\\265\\213..."` 转义串,startswith 判定恒假,本条必红。
+        """
+        self.repo.track(self.NON_ASCII_DOC, "无引用\n")
+        with mock.patch.object(doc_link_scan, "REPO_ROOT", self.repo.root):
+            tracked = set(doc_link_scan.git_ls_files())
+            files = doc_link_scan.collect_scan_files(tracked)
+        self.assertIn(self.NON_ASCII_DOC, files)
+
+    def test_reference_to_non_ascii_file_is_alive(self) -> None:
+        """反引号引用中文名文件时判存活,而非误判死链。"""
+        self.repo.track(self.NON_ASCII_DOC, "无引用\n")
+        self.doc(f"`{self.NON_ASCII_DOC}`")
+        self.assertEqual(self.verdict(self.repo.scan()), "alive")
+
+    def test_check_ignore_honours_non_ascii_path(self) -> None:
+        """.gitignore 命中中文名路径时判 ignored,而非误归 dead。
+
+        修复前 `check-ignore --stdin` 回显转义串,与原路径对不上 → dead。
+        """
+        self.repo.gitignore("*.log")
+        self.doc("`tools/调试_中文.log`")
+        self.assertEqual(self.verdict(self.repo.scan()), "ignored")
+
+
 if __name__ == "__main__":
     unittest.main()
