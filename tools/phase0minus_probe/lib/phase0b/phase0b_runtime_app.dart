@@ -8,7 +8,9 @@ enum Phase0bRuntimeBeat {
   approach('01 拉扯与包围'),
   gather('02 Q 聚怪'),
   clear('03 R 清场'),
-  settle('04 击退与留白');
+  breakTelegraph('04A 精英蓄力'),
+  breakSuccess('04B 破招命中'),
+  settle('05 击退与留白');
 
   const Phase0bRuntimeBeat(this.label);
 
@@ -69,7 +71,7 @@ final class _Phase0bRuntimeAppState extends State<Phase0bRuntimeApp> {
                         ),
                         const SizedBox(height: 4),
                         const Text(
-                          'POSE ATLAS PROTOTYPE · 1 主角 + 6 杂兵 · 自动循环',
+                          'POSE ATLAS PROTOTYPE · 1 主角 + 6 杂兵 + 1 精英',
                           style: TextStyle(
                             color: Color(0xFFBDB6A8),
                             fontSize: 12,
@@ -108,7 +110,7 @@ final class _Phase0bRuntimeAppState extends State<Phase0bRuntimeApp> {
 final class Phase0bRuntimeGame extends FlameGame {
   static const atlasColumns = 3;
   static const atlasRows = 2;
-  static const loopSeconds = 7.2;
+  static const loopSeconds = 8.0;
 
   final ValueNotifier<Phase0bRuntimeBeat> beat = ValueNotifier(
     Phase0bRuntimeBeat.approach,
@@ -117,10 +119,14 @@ final class Phase0bRuntimeGame extends FlameGame {
   ui.Image? _background;
   ui.Image? _founder;
   ui.Image? _bandit;
+  ui.Image? _elite;
   double _elapsed = 0;
 
   bool get assetsReady =>
-      _background != null && _founder != null && _bandit != null;
+      _background != null &&
+      _founder != null &&
+      _bandit != null &&
+      _elite != null;
 
   @override
   Future<void> onLoad() async {
@@ -131,6 +137,7 @@ final class Phase0bRuntimeGame extends FlameGame {
     );
     _founder = await images.load('phase0b/runtime/founder_pose_atlas_v1.png');
     _bandit = await images.load('phase0b/runtime/bandit_pose_atlas_v1.png');
+    _elite = await images.load('phase0b/runtime/elite_pose_atlas_v1.png');
   }
 
   @override
@@ -138,9 +145,11 @@ final class Phase0bRuntimeGame extends FlameGame {
     super.update(dt);
     _elapsed = (_elapsed + dt) % loopSeconds;
     final next = switch (_elapsed) {
-      < 2.0 => Phase0bRuntimeBeat.approach,
-      < 3.5 => Phase0bRuntimeBeat.gather,
-      < 4.8 => Phase0bRuntimeBeat.clear,
+      < 1.8 => Phase0bRuntimeBeat.approach,
+      < 3.2 => Phase0bRuntimeBeat.gather,
+      < 4.5 => Phase0bRuntimeBeat.clear,
+      < 5.65 => Phase0bRuntimeBeat.breakTelegraph,
+      < 6.6 => Phase0bRuntimeBeat.breakSuccess,
       _ => Phase0bRuntimeBeat.settle,
     };
     if (beat.value != next) beat.value = next;
@@ -152,7 +161,13 @@ final class Phase0bRuntimeGame extends FlameGame {
     final background = _background;
     final founder = _founder;
     final bandit = _bandit;
-    if (background == null || founder == null || bandit == null) return;
+    final elite = _elite;
+    if (background == null ||
+        founder == null ||
+        bandit == null ||
+        elite == null) {
+      return;
+    }
 
     canvas.drawImageRect(
       background,
@@ -174,9 +189,10 @@ final class Phase0bRuntimeGame extends FlameGame {
     final scaleY = size.y / 720;
     final center = Offset(640 * scaleX, 430 * scaleY);
     final phase = _elapsed;
-    final gatherT = _segment(phase, 2.0, 3.5);
-    final clearT = _segment(phase, 3.5, 4.8);
-    final settleT = _segment(phase, 4.8, 7.2);
+    final gatherT = _segment(phase, 1.8, 3.2);
+    final clearT = _segment(phase, 3.2, 4.5);
+    final breakT = _segment(phase, 4.5, 6.6);
+    final settleT = _segment(phase, 6.6, loopSeconds);
 
     _drawGroundEffects(canvas, center, gatherT, clearT, scaleX, scaleY);
 
@@ -212,20 +228,25 @@ final class Phase0bRuntimeGame extends FlameGame {
       );
       Offset position;
       var pose = index.isEven ? 1 : 0;
-      if (phase < 2.0) {
-        final approachT = Curves.easeInOut.transform(phase / 2.0);
+      if (phase < 1.8) {
+        final approachT = Curves.easeInOut.transform(phase / 1.8);
         position = Offset.lerp(start, group, approachT * 0.42)!;
         pose = index.isEven ? 1 : 2;
-      } else if (phase < 3.5) {
+      } else if (phase < 3.2) {
         position = Offset.lerp(start, group, Curves.easeIn.transform(gatherT))!;
         pose = 4;
-      } else if (phase < 4.8) {
+      } else if (phase < 4.5) {
         position = group + outward * Curves.easeOutCubic.transform(clearT);
         pose = 5;
       } else {
         final cleared = group + outward;
-        position = Offset.lerp(cleared, start, settleT)!;
-        pose = settleT < 0.55 ? 5 : 0;
+        if (phase < 6.6) {
+          position = cleared;
+          pose = 5;
+        } else {
+          position = Offset.lerp(cleared, start, settleT)!;
+          pose = settleT < 0.5 ? 5 : 0;
+        }
       }
       _drawAtlasPose(
         canvas,
@@ -234,16 +255,53 @@ final class Phase0bRuntimeGame extends FlameGame {
         position,
         210 * math.min(scaleX, scaleY),
         mirror: index < 3,
-        opacity: phase >= 4.8 ? math.min(1, 0.32 + settleT) : 1,
+        opacity: phase >= 4.5 && phase < 6.6
+            ? 0.32
+            : phase >= 6.6
+            ? math.min(1, 0.32 + settleT)
+            : 1,
         rowDividerRatio: 500 / 941,
       );
     }
 
+    final eliteStart = Offset(1080 * scaleX, 485 * scaleY);
+    final eliteThreat = Offset(930 * scaleX, 475 * scaleY);
+    final eliteBase = phase < 4.5
+        ? Offset.lerp(eliteStart, eliteThreat, clearT * 0.18)!
+        : phase < 6.6
+        ? Offset.lerp(
+            eliteStart,
+            eliteThreat,
+            Curves.easeOut.transform(breakT),
+          )!
+        : Offset.lerp(eliteThreat, eliteStart, settleT)!;
+    final elitePose = switch (phase) {
+      < 4.5 => 0,
+      < 5.65 => 1,
+      < 6.6 => 2,
+      _ => 0,
+    };
+    if (phase >= 4.5 && phase < 5.65) {
+      _drawEliteTelegraph(canvas, eliteBase, breakT, scaleX, scaleY);
+    }
+    _drawAtlasPose(
+      canvas,
+      elite,
+      elitePose,
+      eliteBase,
+      310 * math.min(scaleX, scaleY),
+      mirror: true,
+      columns: 2,
+      rows: 2,
+    );
+
     final heroPose = switch (phase) {
       < 1.2 => 0,
-      < 2.0 => 1,
-      < 3.5 => 3,
-      < 4.8 => 4,
+      < 1.8 => 1,
+      < 3.2 => 3,
+      < 4.5 => 4,
+      < 5.65 => 0,
+      < 6.6 => 5,
       _ => 0,
     };
     _drawAtlasPose(
@@ -262,11 +320,15 @@ final class Phase0bRuntimeGame extends FlameGame {
     ui.Image atlas,
     int pose, {
     double rowDividerRatio = 0.5,
+    int columns = atlasColumns,
+    int rows = atlasRows,
   }) {
     return atlasCellRectForSize(
       Size(atlas.width.toDouble(), atlas.height.toDouble()),
       pose,
       rowDividerRatio: rowDividerRatio,
+      columns: columns,
+      rows: rows,
     );
   }
 
@@ -274,23 +336,28 @@ final class Phase0bRuntimeGame extends FlameGame {
     Size atlasSize,
     int pose, {
     double rowDividerRatio = 0.5,
+    int columns = atlasColumns,
+    int rows = atlasRows,
   }) {
-    if (pose < 0 || pose >= atlasColumns * atlasRows) {
-      throw RangeError.range(pose, 0, atlasColumns * atlasRows - 1, 'pose');
+    if (columns <= 0 || rows != 2) {
+      throw ArgumentError('atlas grid must use positive columns and two rows');
+    }
+    if (pose < 0 || pose >= columns * rows) {
+      throw RangeError.range(pose, 0, columns * rows - 1, 'pose');
     }
     if (rowDividerRatio <= 0 || rowDividerRatio >= 1) {
       throw RangeError.range(rowDividerRatio, 0, 1, 'rowDividerRatio');
     }
-    final column = pose % atlasColumns;
-    final row = pose ~/ atlasColumns;
-    final left = atlasSize.width * column / atlasColumns;
+    final column = pose % columns;
+    final row = pose ~/ columns;
+    final left = atlasSize.width * column / columns;
     final divider = atlasSize.height * rowDividerRatio;
     final top = row == 0 ? 0.0 : divider;
     final bottom = row == 0 ? divider : atlasSize.height;
     return Rect.fromLTRB(
       left,
       top,
-      atlasSize.width * (column + 1) / atlasColumns,
+      atlasSize.width * (column + 1) / columns,
       bottom,
     );
   }
@@ -304,8 +371,16 @@ final class Phase0bRuntimeGame extends FlameGame {
     bool mirror = false,
     double opacity = 1,
     double rowDividerRatio = 0.5,
+    int columns = atlasColumns,
+    int rows = atlasRows,
   }) {
-    final source = atlasCellRect(atlas, pose, rowDividerRatio: rowDividerRatio);
+    final source = atlasCellRect(
+      atlas,
+      pose,
+      rowDividerRatio: rowDividerRatio,
+      columns: columns,
+      rows: rows,
+    );
     final width = height * source.width / source.height;
     final destination = Rect.fromLTWH(-width / 2, -height, width, height);
     canvas.save();
@@ -362,5 +437,29 @@ final class Phase0bRuntimeGame extends FlameGame {
         paint,
       );
     }
+  }
+
+  static void _drawEliteTelegraph(
+    Canvas canvas,
+    Offset eliteBase,
+    double progress,
+    double scaleX,
+    double scaleY,
+  ) {
+    final pulse = 0.55 + math.sin(progress * math.pi * 5).abs() * 0.22;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5 * math.min(scaleX, scaleY)
+      ..strokeCap = StrokeCap.round
+      ..color = Color.fromRGBO(145, 45, 34, pulse);
+    final path = Path()
+      ..moveTo(eliteBase.dx - 20 * scaleX, eliteBase.dy - 132 * scaleY)
+      ..quadraticBezierTo(
+        eliteBase.dx - 120 * scaleX,
+        eliteBase.dy - 205 * scaleY,
+        eliteBase.dx - 205 * scaleX,
+        eliteBase.dy - 76 * scaleY,
+      );
+    canvas.drawPath(path, paint);
   }
 }

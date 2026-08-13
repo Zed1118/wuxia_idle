@@ -58,6 +58,7 @@ source_manifest_checksum=$(shasum -a 256 "$probe_dir/assets/phase0b/manifest.jso
 for runtime_asset in \
   founder_pose_atlas_v1.png \
   bandit_pose_atlas_v1.png \
+  elite_pose_atlas_v1.png \
   mountain_pass_background_v1.webp; do
   [[ -s "$embedded_assets/runtime/$runtime_asset" ]] || {
     echo "PHASE0B_PACKAGE_FAIL EMBEDDED_RUNTIME_ASSET_MISSING $runtime_asset" >&2

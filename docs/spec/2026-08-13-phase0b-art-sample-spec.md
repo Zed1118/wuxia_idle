@@ -27,8 +27,9 @@ Phase 0B 不是“批量出漂亮图”，只回答五件事：
 | `phase0b_founder_action_sheet_v1.png` | 现有祖师身份能否扩展到六动作 | 身份一致性成立；长袖/衣摆/须发成本高 |
 | `phase0b_bandit_action_sheet_v1.png` | 普通敌人低成本量产骨架 | 成立；短衣单刀适合作模板和换片变体 |
 | `phase0b_elite_action_sheet_v1.png` | 精英四态是否值得独立资产 | 成立；姿态本身能表达蓄力/破招/释放 |
-| `runtime/founder_pose_atlas_v1.png` | 透明主角姿态能否在 Flame 内正确缩放/分层 | 通过 1+6 macOS Debug 目视验证 |
+| `runtime/founder_pose_atlas_v1.png` | 透明主角姿态能否在 Flame 内正确缩放/分层 | 通过 1+6+1 macOS Debug 目视验证 |
 | `runtime/bandit_pose_atlas_v1.png` | 六名敌人聚拢和击退时是否仍可读 | 通过；已修复上下排像素串格 |
+| `runtime/elite_pose_atlas_v1.png` | 精英能否抵抗 R 且在蓄力/踉跄中独立可读 | 通过；深墨体量 + 姿态 + 单笔朱砂足够 |
 | `runtime/phase0b_runtime_*_capture_v1.png` | 引擎内 Q/R 实机证据 | 只证明透明图集合成与可读性，不签骨骼/性能 Gate |
 
 祖师只是样片主控，用于复用现成身份与快速验证，不等于永久固定主角已经拍板。
@@ -76,7 +77,7 @@ Phase 0B 不是“批量出漂亮图”，只回答五件事：
 | 逐帧序列 | 关键动作质量稳定，运行时简单 | 文件大、动作与方向扩展昂贵 | 仅为 R/破招高潮做 6–10 帧对照片 |
 | 整张立绘变形 | 最快 | 纸片感强，不能支撑 ARPG 手感 | 不通过，不进入正式样片 |
 
-Phase 0B 不直接拍板 Spine、Rive 或自研运行时。透明姿态图集已完成第一个引擎接线对照：`1 主角 + 6 刀客`按 `approach → gather → clear → settle` 自动循环。它是离散姿态切换，不是骨骼或连续逐帧动画；下一 Slice 仍需做相同 3 秒动作的骨骼/逐帧对照，再按画质、工时、包体、帧时间和授权成本决策。
+Phase 0B 不直接拍板 Spine、Rive 或自研运行时。透明姿态图集已完成第一个引擎接线对照：`1 主角 + 6 刀客 + 1 精英`按 `approach → gather → clear → elite telegraph → break success → settle` 自动循环。它是离散姿态切换，不是骨骼或连续逐帧动画；下一 Slice 仍需做相同 3 秒动作的骨骼/逐帧对照，再按画质、工时、包体、帧时间和授权成本决策。
 
 ## 6. 首轮工时模型（待真实计时替换）
 
@@ -115,12 +116,11 @@ Phase 0B 不直接拍板 Spine、Rive 或自研运行时。透明姿态图集已
 
 ### 8.2 下一 Slice
 
-1. 为透明姿态图集增加 1 名精英，先完成 `1+6+1` 读图对照；
-2. 对主角动作表和刀客动作表进行人工结构清理；
-3. 各拆一套分层 PSD/PNG；
-4. 制作同一段 `idle → basic → dash` 的骨骼与逐帧对照；
-5. 记录制作工时、纹理内存、包体和 Mac Profile 帧时间；
-6. 对照通过后才扩大到 `20+1`，不直接批量做 30 Boss。
+1. 对主角动作表和刀客动作表进行人工结构清理；
+2. 各拆一套分层 PSD/PNG；
+3. 制作同一段 `idle → basic → dash` 的骨骼与逐帧对照；
+4. 记录制作工时、纹理内存、包体和 Mac Profile 帧时间；
+5. 对照通过后才扩大到 `20+1`，不直接批量做 30 Boss。
 
 ## 9. 明确未完成
 

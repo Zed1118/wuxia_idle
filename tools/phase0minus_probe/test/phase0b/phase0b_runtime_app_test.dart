@@ -40,11 +40,28 @@ void main() {
     expect(bottom.bottom, 941);
   });
 
+  test('elite atlas partitions a 2x2 sheet', () {
+    const size = Size(1254, 1254);
+    final last = Phase0bRuntimeGame.atlasCellRectForSize(
+      size,
+      3,
+      columns: 2,
+      rows: 2,
+    );
+
+    expect(last, const Rect.fromLTWH(627, 627, 627, 627));
+    expect(
+      () =>
+          Phase0bRuntimeGame.atlasCellRectForSize(size, 4, columns: 2, rows: 2),
+      throwsRangeError,
+    );
+  });
+
   testWidgets('runtime overlay states the prototype boundary', (tester) async {
     await tester.pumpWidget(const Phase0bRuntimeApp());
     await tester.pump();
 
-    expect(find.textContaining('POSE ATLAS PROTOTYPE'), findsOneWidget);
+    expect(find.textContaining('1 主角 + 6 杂兵 + 1 精英'), findsOneWidget);
     expect(find.textContaining('不是骨骼动画'), findsOneWidget);
     expect(find.byKey(const ValueKey('phase0b-runtime-beat')), findsOneWidget);
   });

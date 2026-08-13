@@ -69,6 +69,15 @@
       "runtime_scope": "discrete_pose_playback_only"
     },
     {
+      "path": "runtime/elite_pose_atlas_v1.png",
+      "role": "transparent_pose_atlas",
+      "character": "elite_hidden_elder",
+      "pose_count": 4,
+      "layout": "2x2",
+      "runtime_ready": true,
+      "runtime_scope": "discrete_pose_playback_only"
+    },
+    {
       "path": "runtime/mountain_pass_background_v1.webp",
       "role": "isolated_runtime_backdrop_copy",
       "derived_from": "assets/scenes/battle_mountain_pass_stage_v2.png",
@@ -84,6 +93,12 @@
       "path": "runtime/phase0b_runtime_clear_capture_v1.png",
       "role": "macos_debug_runtime_capture",
       "beat": "clear",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_runtime_elite_break_capture_v1.png",
+      "role": "macos_debug_runtime_capture",
+      "beat": "elite_break_success",
       "runtime_ready": false
     }
   ],
