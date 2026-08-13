@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -140,6 +141,14 @@ void main() {
     expect(reports.single['outcome'], 'defeat');
     expect(reports.single['damage_events'], 1);
     expect(reports.single['actions'], isA<Map<String, int>>());
+    expect(reports.single['session_serial'], 1);
+    expect(reports.single['replay_requested'], isFalse);
+
+    game.requestReplay();
+    expect(reports, hasLength(2));
+    expect(reports.last['session_serial'], 1);
+    expect(reports.last['outcome'], 'defeat');
+    expect(reports.last['replay_requested'], isTrue);
   });
 
   testWidgets('pause restores between-wave phase', (tester) async {
@@ -208,6 +217,40 @@ void main() {
       game.replayPoolSnapshot()['enemy_residents'],
       containsPair('invariant_holds', true),
     );
+  });
+
+  testWidgets('normal attack leases stay at three and starts are staggered', (
+    tester,
+  ) async {
+    final game = await mountGame(tester);
+    final normals = game.enemies.where((enemy) => !enemy.elite).toList();
+    for (var index = 0; index < normals.length; index++) {
+      normals[index]
+        ..spawnGrace = 0
+        ..attackCooldown = 0
+        ..position = game.player.position + Vector2(45 + index * 2, 0);
+    }
+
+    final firstStartAt = <int, double>{};
+    var maximumAttackers = 0;
+    for (var frame = 0; frame < 90; frame++) {
+      game.update(1 / 60);
+      final attackers = normals
+          .where((enemy) => enemy.mode == EnemyMode.attack)
+          .toList();
+      maximumAttackers = math.max(maximumAttackers, attackers.length);
+      for (final enemy in attackers) {
+        firstStartAt.putIfAbsent(enemy.id, () => frame / 60);
+      }
+    }
+
+    expect(maximumAttackers, lessThanOrEqualTo(3));
+    final starts = firstStartAt.values.toList()..sort();
+    expect(starts.length, greaterThanOrEqualTo(3));
+    for (var index = 1; index < starts.length; index++) {
+      expect(starts[index] - starts[index - 1], greaterThanOrEqualTo(0.16));
+    }
+    expect(game.telemetry.peakConcurrentNormalAttackers, lessThanOrEqualTo(3));
   });
 
   testWidgets('resident feedback pool survives the compressed clear burst', (

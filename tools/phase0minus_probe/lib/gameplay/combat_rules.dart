@@ -228,8 +228,10 @@ final class GameplayTelemetry {
   double waveStartedAt = 0;
   int peakActiveEnemies = 0;
   int damageEvents = 0;
+  int peakConcurrentNormalAttackers = 0;
   int breakOpportunities = 0;
   int replayRequests = 0;
+  final Map<int, int> damageEventsByWave = {};
   final Map<int, double> waveDurations = {};
   final List<int> gatherTargetCounts = [];
   final List<int> clearHitCounts = [];
@@ -240,17 +242,28 @@ final class GameplayTelemetry {
     waveStartedAt = 0;
     peakActiveEnemies = 0;
     damageEvents = 0;
+    peakConcurrentNormalAttackers = 0;
     breakOpportunities = 0;
     replayRequests = 0;
+    damageEventsByWave.clear();
     waveDurations.clear();
     gatherTargetCounts.clear();
     clearHitCounts.clear();
     clearKillCounts.clear();
   }
 
-  void tick(double dt, int activeEnemies) {
+  void tick(double dt, int activeEnemies, int concurrentNormalAttackers) {
     elapsedSeconds += dt;
     peakActiveEnemies = math.max(peakActiveEnemies, activeEnemies);
+    peakConcurrentNormalAttackers = math.max(
+      peakConcurrentNormalAttackers,
+      concurrentNormalAttackers,
+    );
+  }
+
+  void recordDamage(int wave) {
+    damageEvents++;
+    damageEventsByWave.update(wave, (value) => value + 1, ifAbsent: () => 1);
   }
 
   void finishWave(int wave) {
@@ -266,6 +279,11 @@ final class GameplayTelemetry {
     'elapsed_seconds': elapsedSeconds,
     'peak_active_enemies': peakActiveEnemies,
     'damage_events': damageEvents,
+    'damage_events_by_wave': {
+      for (final entry in damageEventsByWave.entries)
+        entry.key.toString(): entry.value,
+    },
+    'peak_concurrent_normal_attackers': peakConcurrentNormalAttackers,
     'break_opportunities': breakOpportunities,
     'replay_requests': replayRequests,
     'wave_durations_seconds': {

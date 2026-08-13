@@ -46,6 +46,10 @@ const _modeDefine = String.fromEnvironment(
   'PROBE_MODE',
   defaultValue: 'benchmark',
 );
+const _buildCommitDefine = String.fromEnvironment(
+  'PROBE_BUILD_COMMIT',
+  defaultValue: 'uncommitted-local-build',
+);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -400,6 +404,10 @@ final class _GameplayPlaytestAppState extends State<GameplayPlaytestApp> {
     onSessionEnded: (report) => unawaited(_writeReport(report)),
   );
   final FocusNode _focusNode = FocusNode(debugLabel: 'phase0a-playtest');
+  final String _launchId = DateTime.now().toUtc().toIso8601String().replaceAll(
+    ':',
+    '-',
+  );
 
   @override
   void initState() {
@@ -425,13 +433,18 @@ final class _GameplayPlaytestAppState extends State<GameplayPlaytestApp> {
   Future<void> _writeReport(Map<String, Object?> report) async {
     final directory = Directory('${widget.outputRoot}/phase0a-playtests');
     await directory.create(recursive: true);
-    final runId = DateTime.now().toUtc().toIso8601String().replaceAll(':', '-');
+    final sessionSerial = report['session_serial'] as int? ?? 0;
+    final runId =
+        '$_launchId-session-${sessionSerial.toString().padLeft(2, '0')}';
     final file = File('${directory.path}/$runId.json');
     await file.writeAsString(
       const JsonEncoder.withIndent('  ').convert({
         'schema_version': 1,
         'scenario_checksum': widget.config.checksum,
+        'build_commit': _buildCommitDefine,
         'platform': Platform.operatingSystem,
+        'platform_version': Platform.operatingSystemVersion,
+        'logical_viewport': {'width': game.size.x, 'height': game.size.y},
         'run_id': runId,
         ...report,
       }),

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:phase0minus_probe/config/probe_config.dart';
 import 'package:phase0minus_probe/gameplay/gameplay_game.dart';
@@ -81,11 +82,56 @@ final class GameplayReplayController {
     collector.detach();
     metrics.rssAtCooldownEnd = ProcessInfo.currentRss;
     await gcCollector.close();
+    final poolSnapshot = game.replayPoolSnapshot();
+    final feedbackPool =
+        poolSnapshot['feedback_residents']! as Map<String, Object?>;
+    final enemyPool = poolSnapshot['enemy_residents']! as Map<String, Object?>;
+    final residentPoolPass =
+        feedbackPool['invariant_holds'] == true &&
+        feedbackPool['overflow_total'] == 0 &&
+        feedbackPool['allocation_after_warmup'] == 0 &&
+        enemyPool['invariant_holds'] == true &&
+        enemyPool['allocation_after_warmup'] == 0;
+    final requiredCoverage = durationScale == 1 ? 5 : 1;
+    final workloadCoveragePass =
+        game.replayObservedPeakCount >= requiredCoverage &&
+        game.clearEventId + 1 >= requiredCoverage;
+    final rssAllowance = config.number('thresholds.rss_cooldown_bytes');
+    final rssFraction = config.number('thresholds.rss_cooldown_fraction');
+    final rssLimit =
+        metrics.rssAtWarmupEnd +
+        math.max(rssAllowance, metrics.rssAtWarmupEnd * rssFraction);
+    final rssPass = metrics.rssAtCooldownEnd <= rssLimit;
+    final timing = metrics.summarize(
+      collector.samples,
+      gcTelemetryAvailable: gcCollector.available,
+      gcEventCount: gcCollector.events.length,
+    );
+    final fixturePass =
+        timing['gate'] == 'PASS' &&
+        residentPoolPass &&
+        workloadCoveragePass &&
+        rssPass;
     final workload = game.replayWorkloadSnapshot()
       ..['duration_scale'] = durationScale
       ..['gate_eligible_duration'] = durationScale == 1
-      ..['preliminary_gate'] =
-          'FEEDBACK_POOL_PASS_COLLISION_AND_STRATEGY_PENDING';
+      ..['gate_breakdown'] = {
+        'timing_gc_gate': timing['gate'],
+        'resident_pool_gate': residentPoolPass ? 'PASS' : 'FAIL',
+        'workload_coverage_gate': durationScale == 1
+            ? workloadCoveragePass
+                  ? 'PASS'
+                  : 'FAIL'
+            : 'INVALID_SHORT_RUN',
+        'rss_gate': rssPass ? 'PASS' : 'FAIL',
+        'collision_gate': 'PENDING',
+        'strategy_gate': 'PENDING',
+      }
+      ..['overall_preliminary_status'] = fixturePass && durationScale == 1
+          ? 'PERFORMANCE_FIXTURE_PASS_GAMEPLAY_GATES_PENDING'
+          : durationScale == 1
+          ? 'PERFORMANCE_FIXTURE_FAIL'
+          : 'INVALID_SHORT_RUN';
     final directory = await const ResultWriter().write(
       runId: runId,
       config: config,
@@ -93,7 +139,7 @@ final class GameplayReplayController {
       viewport: viewport,
       frames: collector.samples,
       metrics: metrics,
-      poolSnapshot: game.replayPoolSnapshot(),
+      poolSnapshot: poolSnapshot,
       workloadSnapshot: workload,
       outputRoot: outputRoot,
       repositoryRoot: repositoryRoot,

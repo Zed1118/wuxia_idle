@@ -104,6 +104,8 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   int _nextEnemyId = 0;
   final Set<int> _spawnedBatches = {};
   bool _sessionReported = false;
+  int _sessionSerial = 1;
+  String? _terminalOutcome;
   GameplayPhase _phaseBeforePause = GameplayPhase.active;
   int clearEventId = -1;
   int replayPeakCount = 0;
@@ -114,6 +116,9 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   bool _replayCleared = false;
   double _hitStopRemaining = 0;
   double _cameraShakeRemaining = 0;
+  double _normalAttackStartCooldown = 0;
+  bool _replayPeakObservedThisPhase = false;
+  int replayObservedPeakCount = 0;
 
   double get fieldWidth => config.number('gameplay.field.width');
   double get fieldHeight => config.number('gameplay.field.height');
@@ -177,6 +182,10 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
       simulationDt -= _hitStopRemaining;
       _hitStopRemaining = 0;
     }
+    _normalAttackStartCooldown = math.max(
+      0,
+      _normalAttackStartCooldown - simulationDt,
+    );
     super.update(simulationDt);
     _assignAttackSlots();
     if (deterministicReplay) {
@@ -184,7 +193,14 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     } else {
       _driveWaves(simulationDt);
     }
-    telemetry.tick(simulationDt, enemies.where((enemy) => enemy.alive).length);
+    final aliveEnemies = enemies.where((enemy) => enemy.alive).length;
+    final normalAttackers = enemies
+        .where(
+          (enemy) =>
+              enemy.alive && !enemy.elite && enemy.mode == EnemyMode.attack,
+        )
+        .length;
+    telemetry.tick(simulationDt, aliveEnemies, normalAttackers);
     _updateCamera(simulationDt);
     _hudElapsed += simulationDt;
     if (_hudElapsed >= 0.1) {
@@ -204,9 +220,6 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     if (event is KeyDownEvent && event is! KeyRepeatEvent) {
       if (event.logicalKey == LogicalKeyboardKey.escape) {
         togglePause();
-      } else if (event.logicalKey == LogicalKeyboardKey.enter &&
-          (phase == GameplayPhase.victory || phase == GameplayPhase.defeat)) {
-        resetSession();
       } else if (event.logicalKey == LogicalKeyboardKey.space) {
         player.requestMovementArt();
       } else if (event.logicalKey == LogicalKeyboardKey.keyQ) {
@@ -293,6 +306,8 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
       ..currentChain = 0;
     telemetry.reset();
     _sessionReported = false;
+    _sessionSerial++;
+    _terminalOutcome = null;
     random = math.Random(config.fixedSeed);
     _nextEnemyId = 0;
     _phaseBeforePause = GameplayPhase.active;
@@ -301,6 +316,7 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     _waveElapsed = 0;
     _betweenRemaining = 0;
     _spawnedBatches.clear();
+    _normalAttackStartCooldown = 0;
     player.resetForSession();
     _spawnDueBatches();
     _updateHud('Wave 1: move, aim, then use Q to R.');
@@ -309,8 +325,7 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   void requestReplay() {
     if (phase != GameplayPhase.victory && phase != GameplayPhase.defeat) return;
     telemetry.replayRequests++;
-    _sessionReported = false;
-    _finishSession('replay_requested');
+    _finishSession(_terminalOutcome ?? 'unknown', replace: true);
     resetSession();
   }
 
@@ -343,11 +358,11 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   void damagePlayer(double amount, Vector2 source) {
     if (deterministicReplay) return;
     if (player.receiveDamage(amount, source, heavy: amount >= 20)) {
-      telemetry.damageEvents++;
+      telemetry.recordDamage(wave);
       counters.breakChain();
       if (player.health <= 0) {
         phase = GameplayPhase.defeat;
-        _updateHud('Defeated. Press Enter to try again.');
+        _updateHud('Defeated. Click PLAY AGAIN if you want another run.');
         _finishSession('defeat');
       }
     }
@@ -361,7 +376,7 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
         if (wave > 3) {
           phase = GameplayPhase.victory;
           _updateHud(
-            'Complete. Press Enter to replay after recording feedback.',
+            'Complete. Click PLAY AGAIN only if you want another run.',
           );
           _finishSession('victory');
           return;
@@ -387,12 +402,15 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     }
   }
 
-  void _finishSession(String outcome) {
-    if (_sessionReported) return;
+  void _finishSession(String outcome, {bool replace = false}) {
+    if (_sessionReported && !replace) return;
     _sessionReported = true;
-    onSessionEnded?.call(
-      telemetry.toJson(outcome: outcome, counters: counters),
-    );
+    _terminalOutcome ??= outcome;
+    onSessionEnded?.call({
+      ...telemetry.toJson(outcome: _terminalOutcome!, counters: counters),
+      'session_serial': _sessionSerial,
+      'replay_requested': telemetry.replayRequests > 0,
+    });
   }
 
   void _spawnDueBatches() {
@@ -456,6 +474,11 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     primaryHeld = true;
     pointerWorld = player.position + Vector2(260, 0);
     if (_replayPhase == 2) {
+      if (!_replayPeakObservedThisPhase &&
+          enemies.where((enemy) => enemy.alive).length == 21) {
+        _replayPeakObservedThisPhase = true;
+        replayObservedPeakCount++;
+      }
       final local = cycleTime - 8;
       if (local >= 1.0 && !_replayGathered) {
         _replayGathered = player.requestGather();
@@ -472,6 +495,7 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     _replayPhase = nextPhase;
     _replayGathered = false;
     _replayCleared = false;
+    _replayPeakObservedThisPhase = false;
     wave = nextPhase + 1;
     if (nextPhase == 0 && _replayElapsed > 0) replayCycleCount++;
     final activeNormals = switch (nextPhase) {
@@ -507,8 +531,10 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     'mode': 'phase0a_replay',
     'replay_script_version': 'phase0a-compressed-12s-v1',
     'replay_peak_20_plus_1_count': replayPeakCount,
+    'replay_observed_peak_20_plus_1_count': replayObservedPeakCount,
     'replay_cycle_count': replayCycleCount,
     'clear_event_id': clearEventId,
+    'clear_event_count': clearEventId + 1,
     'resident_enemies': enemies.length,
     'active_enemies': enemies.where((enemy) => enemy.alive).length,
     'telemetry': telemetry.toJson(outcome: 'replay', counters: counters),
@@ -533,10 +559,28 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
               .compareTo(b.position.distanceToSquared(player.position)),
         );
     final slots = config.integer('gameplay.normal.attack_slots');
-    for (var index = 0; index < aliveNormals.length; index++) {
-      final enemy = aliveNormals[index];
-      enemy.hasAttackSlot = enemy.mode == EnemyMode.attack || index < slots;
+    final leased = aliveNormals
+        .where((enemy) => enemy.mode == EnemyMode.attack)
+        .take(slots)
+        .toSet();
+    for (final enemy in aliveNormals) {
+      enemy.hasAttackSlot = leased.contains(enemy);
     }
+    var remaining = slots - leased.length;
+    for (final enemy in aliveNormals) {
+      if (remaining == 0) break;
+      if (enemy.hasAttackSlot || enemy.mode == EnemyMode.attack) continue;
+      enemy.hasAttackSlot = true;
+      remaining--;
+    }
+  }
+
+  bool tryStartNormalAttack() {
+    if (_normalAttackStartCooldown > 0) return false;
+    _normalAttackStartCooldown = config.number(
+      'gameplay.normal.attack_start_interval_seconds',
+    );
+    return true;
   }
 
   void _updateCamera(double dt) {
@@ -1021,8 +1065,11 @@ final class GameplayEnemy extends PositionComponent {
       }
       return;
     }
+    final wasInSpawnGrace = spawnGrace > 0;
     spawnGrace = math.max(0, spawnGrace - dt);
-    attackCooldown = math.max(0, attackCooldown - dt);
+    if (!wasInSpawnGrace) {
+      attackCooldown = math.max(0, attackCooldown - dt);
+    }
     imbalanceRemaining = math.max(0, imbalanceRemaining - dt);
     _flashRemaining = math.max(0, _flashRemaining - dt);
     if (_pullRemaining > 0 && _pullTarget != null) {
@@ -1109,7 +1156,7 @@ final class GameplayEnemy extends PositionComponent {
           position += delta / distance * speed * dt;
         }
       }
-    } else if (attackCooldown <= 0) {
+    } else if (attackCooldown <= 0 && (elite || game.tryStartNormalAttack())) {
       mode = EnemyMode.attack;
       modeRemaining = 0.35;
     }

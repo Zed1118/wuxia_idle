@@ -108,6 +108,10 @@ void main() {
     expect(tuning.gatherCooldown, 6.5);
     expect(tuning.clearQiCost, 60);
     expect(tuning.eliteBreakThreshold, 2);
+    expect(
+      config.number('gameplay.normal.attack_start_interval_seconds'),
+      0.18,
+    );
     expect(config.integer('gameplay.feedback.pool_size'), 160);
     expect(config.integer('gameplay.feedback.clear_particles'), 128);
     expect(config.number('gameplay.feedback.clear_hit_stop_seconds'), 0.065);

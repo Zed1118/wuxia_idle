@@ -97,6 +97,7 @@ gameplay:
     radius: 20.0
     attack_range: 55.0
     attack_interval_seconds: 1.33
+    attack_start_interval_seconds: 0.18
     damage: 7.0
     attack_slots: 3
   elite:
