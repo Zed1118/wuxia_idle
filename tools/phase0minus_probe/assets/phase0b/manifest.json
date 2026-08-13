@@ -142,6 +142,25 @@
       "role": "macos_profile_camera_v2_capture",
       "beat": "settle",
       "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_scroll_mountain_pass_v2.png",
+      "role": "macos_profile_scroll_capture",
+      "region": "mountain_pass",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_scroll_bamboo_road_v2.png",
+      "role": "macos_profile_scroll_capture",
+      "region": "bamboo_road",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_scroll_checkpoint_20plus1_v2.png",
+      "role": "macos_profile_scroll_capture",
+      "region": "checkpoint_20plus1",
+      "runtime_ready": false,
+      "outcome": "load_and_composition_evidence_not_final_enemy_ai_formation"
     }
   ],
   "invariants": [

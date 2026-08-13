@@ -30,6 +30,13 @@ cp "$probe_dir/assets/phase0b/SHA256SUMS.txt" "$package_root/原图校验.sha256
 cp \
   "$probe_dir/assets/phase0b/runtime/scroll_panorama_mountain_to_gate_v1.png" \
   "$package_root/连续地图长卷_3600x720.png"
+mkdir -p "$package_root/连续地图实机截图"
+cp "$probe_dir/assets/phase0b/runtime/phase0b_scroll_mountain_pass_v2.png" \
+  "$package_root/连续地图实机截图/01_山口.png"
+cp "$probe_dir/assets/phase0b/runtime/phase0b_scroll_bamboo_road_v2.png" \
+  "$package_root/连续地图实机截图/02_竹林道.png"
+cp "$probe_dir/assets/phase0b/runtime/phase0b_scroll_checkpoint_20plus1_v2.png" \
+  "$package_root/连续地图实机截图/03_关隘20加1.png"
 
 cat > "$package_root/查看概念样片.command" <<'EOF'
 #!/bin/zsh
@@ -121,6 +128,9 @@ printf '%s\n' \
     asset_manifest.json \
     原图校验.sha256 \
     连续地图长卷_3600x720.png \
+    连续地图实机截图/01_山口.png \
+    连续地图实机截图/02_竹林道.png \
+    连续地图实机截图/03_关隘20加1.png \
     查看概念样片.command \
     查看运行样片.command \
     查看动画路线失败对照.command \
