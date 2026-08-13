@@ -16,9 +16,14 @@ case "$viewport" in
   *) echo "Unsupported viewport: $viewport" >&2; exit 2 ;;
 esac
 
+repository_root="$(cd "$probe_dir/../.." && pwd)"
+build_commit="$(git -C "$repository_root" rev-parse HEAD)"
+panorama_sha256="$(shasum -a 256 "$probe_dir/assets/phase0b/runtime/scroll_panorama_mountain_to_gate_v1.png" | awk '{print $1}')"
 cd "$probe_dir"
 if [[ "${PROBE_SKIP_BUILD:-false}" != "true" ]]; then
-  flutter build macos --profile
+  flutter build macos --profile \
+    --dart-define=PROBE_BUILD_COMMIT="$build_commit" \
+    --dart-define=PHASE0B_PANORAMA_SHA256="$panorama_sha256"
 fi
 binary="$probe_dir/build/macos/Build/Products/Profile/phase0minus_probe.app/Contents/MacOS/phase0minus_probe"
 [[ -x "$binary" ]] || { echo "Profile binary not found: $binary" >&2; exit 3; }
@@ -46,10 +51,14 @@ for ((index = 1; index <= repeat; index++)); do
     --argjson expected_height "$expected_height" \
     --argjson expected_refresh "$expected_refresh" \
     --argjson expected_dpr "$expected_dpr" \
+    --arg build_commit "$build_commit" \
+    --arg panorama_sha256 "$panorama_sha256" \
     '.probe_kind == "phase0b_scroll_art_demo" and
      .gate_eligible == false and
      .claim == "continuous_map_camera_and_local_art_load_observation_only" and
      .build_mode == "profile" and
+     .build_commit == $build_commit and
+     .panorama_sha256 == $panorama_sha256 and
      .validity == "VALID_OBSERVATION" and
      .viewport.id == $viewport and
      .viewport.actual_width == $expected_width and

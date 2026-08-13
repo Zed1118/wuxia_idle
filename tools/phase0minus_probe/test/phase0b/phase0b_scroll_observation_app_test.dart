@@ -14,6 +14,8 @@ void main() {
         viewportId: 'desktop_1280x720',
         expectedWidth: 1280,
         expectedHeight: 720,
+        buildCommit: 'widget-test-commit',
+        panoramaSha256: 'widget-test-sha256',
         enableRun: false,
       ),
     );
@@ -29,6 +31,8 @@ void main() {
       'scripts/run_phase0b_scroll_matrix_macos.sh',
     ).readAsStringSync();
     expect(single, contains('PROBE_MODE=phase0b_scroll_profile'));
+    expect(single, contains(r'.build_commit == $build_commit'));
+    expect(single, contains(r'.panorama_sha256 == $panorama_sha256'));
     expect(single, contains('.gate_eligible == false'));
     expect(single, contains('.workload.encounter_peaks == [6,10,21]'));
     expect(

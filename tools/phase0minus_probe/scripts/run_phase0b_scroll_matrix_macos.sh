@@ -8,8 +8,13 @@ window_y="${3:-}"
 matrix_id="phase0b-scroll-matrix-$(date -u +%Y%m%dT%H%M%SZ)"
 matrix_started="$(date +%s)"
 
+repository_root="$(cd "$probe_dir/../.." && pwd)"
+build_commit="$(git -C "$repository_root" rev-parse HEAD)"
+panorama_sha256="$(shasum -a 256 "$probe_dir/assets/phase0b/runtime/scroll_panorama_mountain_to_gate_v1.png" | awk '{print $1}')"
 cd "$probe_dir"
-flutter build macos --profile
+flutter build macos --profile \
+  --dart-define=PROBE_BUILD_COMMIT="$build_commit" \
+  --dart-define=PHASE0B_PANORAMA_SHA256="$panorama_sha256"
 for viewport in desktop_1280x720 desktop_1440x900; do
   PROBE_SKIP_BUILD=true \
     "$probe_dir/scripts/run_phase0b_scroll_macos.sh" \
@@ -31,7 +36,7 @@ paths = sorted(
 if len(paths) != 6:
     raise SystemExit(f'PHASE0B_SCROLL_MATRIX_INVALID expected 6 fresh summaries, got {len(paths)}')
 keys = (
-    'run_id', 'viewport', 'frames', 'total_span',
+    'run_id', 'build_commit', 'panorama_sha256', 'viewport', 'frames', 'total_span',
     'over_reference_budget_count', 'maximum_severe_streak',
     'rss_warmup_end_bytes', 'rss_peak_bytes', 'rss_cooldown_end_bytes', 'workload',
 )

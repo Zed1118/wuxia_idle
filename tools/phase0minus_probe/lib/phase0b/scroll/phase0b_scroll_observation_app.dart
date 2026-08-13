@@ -20,6 +20,8 @@ final class Phase0bScrollObservationApp extends StatefulWidget {
     required this.viewportId,
     required this.expectedWidth,
     required this.expectedHeight,
+    required this.buildCommit,
+    required this.panoramaSha256,
     this.enableRun = true,
     super.key,
   });
@@ -31,6 +33,8 @@ final class Phase0bScrollObservationApp extends StatefulWidget {
   final String viewportId;
   final double expectedWidth;
   final double expectedHeight;
+  final String buildCommit;
+  final String panoramaSha256;
   final bool enableRun;
 
   @override
@@ -129,6 +133,8 @@ final class _Phase0bScrollObservationAppState
           : 'release',
       'validity': validity,
       'run_id': widget.runId,
+      'build_commit': widget.buildCommit,
+      'panorama_sha256': widget.panoramaSha256,
       'duration_scale': widget.durationScale,
       'frames': collector.samples.length,
       'viewport': {

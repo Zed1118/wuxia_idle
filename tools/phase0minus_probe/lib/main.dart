@@ -59,6 +59,10 @@ const _buildCommitDefine = String.fromEnvironment(
   'PROBE_BUILD_COMMIT',
   defaultValue: 'uncommitted-local-build',
 );
+const _panoramaSha256Define = String.fromEnvironment(
+  'PHASE0B_PANORAMA_SHA256',
+  defaultValue: 'unverified-local-asset',
+);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -146,6 +150,11 @@ Future<void> main() async {
       viewportId: viewport.id,
       expectedWidth: viewport.width,
       expectedHeight: viewport.height,
+      buildCommit: _runtime('PROBE_BUILD_COMMIT', _buildCommitDefine),
+      panoramaSha256: _runtime(
+        'PHASE0B_PANORAMA_SHA256',
+        _panoramaSha256Define,
+      ),
     ),
     'phase0b_art_load' => Phase0bArtLoadApp(
       runId: runId,
