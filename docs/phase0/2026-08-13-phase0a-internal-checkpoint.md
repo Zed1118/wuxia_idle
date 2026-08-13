@@ -2,7 +2,7 @@
 
 > 日期：2026-08-13  
 > 分支：`codex/phase0a-gameplay-greybox`  
-> 最终运行时：`37f81c42`
+> 最终运行时：`965e948e`
 > 裁决：`WIP / MAC_AND_STRATEGY_PASS / HUMAN_AND_WINDOWS_PENDING`
 
 ## 已经成立
@@ -20,8 +20,8 @@
 
 | 视口 | commit | 有效样本 | 最坏 p99 | 最坏帧 | >33.3ms 连帧 | 碰撞/池/RSS |
 |---|---|---:|---:|---:|---:|---|
-| 1280×720 | `37f81c42` | 3/3 | 3.878ms | 7.810ms | 0 | PASS |
-| 1440×900 | `37f81c42` | 3/3 | 2.331ms | 5.066ms | 0 | PASS |
+| 1280×720 | `965e948e` | 3/3 | 3.294ms | 16.565ms | 0 | PASS |
+| 1440×900 | `965e948e` | 3/3 | 3.668ms | 21.884ms | 0 | PASS |
 
 六个 manifest 均 clean；FrameTiming+GC、居民池、负载覆盖、RSS 和碰撞工作负载均 PASS。详见 `docs/phase0/2026-08-13-phase0a-macos-matrix.md`。
 
