@@ -78,3 +78,26 @@ sign the ARPG greybox Gate. Follow
 `docs/phase0/phase0a-windows-physical-gate.md` from the repository root and run
 `scripts/run_phase0a_windows_matrix.ps1` for the required two-viewports by
 three-runs matrix.
+
+## Phase 0B isolated art reviews
+
+The same nested package also hosts four explicitly non-production art modes:
+
+- `phase0b_runtime`: 1+6+1 discrete pose-atlas review;
+- `phase0b_joint_compare`: rejected automatic cutout hierarchy evidence;
+- `phase0b_art_load`: fixed-camera 20+1 local peak observation, not the final
+  battle interface;
+- `phase0b_scroll_review`: 3600×720 continuous-map and follow-camera direction,
+  with local encounter density 6 → 10 → 20+1.
+
+Run the interactive product-direction review with:
+
+```bash
+PROBE_MODE=phase0b_scroll_review PROBE_VIEWPORT=desktop_1280x720 \
+  build/macos/Build/Products/Profile/phase0minus_probe.app/Contents/MacOS/phase0minus_probe
+```
+
+The fixed-camera art-load runner writes only observation reports with
+`gate_eligible=false`. Pin both viewports to the same 60Hz display before
+comparing runs; mixed-display results are invalid even though this is not a
+gameplay Gate.

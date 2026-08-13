@@ -11,15 +11,21 @@ void main() {
       final bandit = File('$root/bandit_pose_atlas_v1.png');
       final elite = File('$root/elite_pose_atlas_v1.png');
       final backdrop = File('$root/mountain_pass_background_v1.webp');
+      final cleanBackdrop = File('$root/mountain_pass_background_v2.png');
+      final cutout = File('$root/founder_cutout_parts_v1.png');
 
       expect(founder.existsSync(), isTrue);
       expect(bandit.existsSync(), isTrue);
       expect(elite.existsSync(), isTrue);
       expect(backdrop.existsSync(), isTrue);
+      expect(cleanBackdrop.existsSync(), isTrue);
+      expect(cutout.existsSync(), isTrue);
       expect(founder.lengthSync(), greaterThan(100000));
       expect(bandit.lengthSync(), greaterThan(100000));
       expect(elite.lengthSync(), greaterThan(100000));
       expect(backdrop.lengthSync(), greaterThan(10000));
+      expect(cleanBackdrop.lengthSync(), greaterThan(100000));
+      expect(cutout.lengthSync(), greaterThan(100000));
       expect(founder.readAsBytesSync().take(8), <int>[
         137,
         80,

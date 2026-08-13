@@ -42,7 +42,36 @@ package_root=${0:A:h}
 PROBE_MODE=phase0b_runtime PROBE_VIEWPORT=desktop_1280x720 \
   "$package_root/挂机武侠_Phase0B美术样片.app/Contents/MacOS/phase0minus_probe"
 EOF
-chmod +x "$package_root/查看概念样片.command" "$package_root/查看运行样片.command"
+cat > "$package_root/查看动画路线失败对照.command" <<'EOF'
+#!/bin/zsh
+set -euo pipefail
+package_root=${0:A:h}
+PROBE_MODE=phase0b_joint_compare PROBE_VIEWPORT=desktop_1280x720 \
+  "$package_root/挂机武侠_Phase0B美术样片.app/Contents/MacOS/phase0minus_probe"
+EOF
+cat > "$package_root/查看20加1镜头与负载.command" <<'EOF'
+#!/bin/zsh
+set -euo pipefail
+package_root=${0:A:h}
+PROBE_MODE=phase0b_art_load PROBE_VIEWPORT=desktop_1280x720 \
+PROBE_AUTO_CLOSE=false PROBE_DURATION_SCALE=0.05 \
+PROBE_OUTPUT_ROOT=/tmp/wuxia_phase0b_art_load \
+PROBE_RUN_ID=packaged-camera-review \
+  "$package_root/挂机武侠_Phase0B美术样片.app/Contents/MacOS/phase0minus_probe"
+EOF
+cat > "$package_root/查看连续地图方向.command" <<'EOF'
+#!/bin/zsh
+set -euo pipefail
+package_root=${0:A:h}
+PROBE_MODE=phase0b_scroll_review PROBE_VIEWPORT=desktop_1280x720 \
+  "$package_root/挂机武侠_Phase0B美术样片.app/Contents/MacOS/phase0minus_probe"
+EOF
+chmod +x \
+  "$package_root/查看概念样片.command" \
+  "$package_root/查看运行样片.command" \
+  "$package_root/查看动画路线失败对照.command" \
+  "$package_root/查看20加1镜头与负载.command" \
+  "$package_root/查看连续地图方向.command"
 
 embedded_assets="$package_root/挂机武侠_Phase0B美术样片.app/Contents/Frameworks/App.framework/Resources/flutter_assets/assets/phase0b"
 [[ -f "$embedded_assets/manifest.json" ]] || {
@@ -59,7 +88,9 @@ for runtime_asset in \
   founder_pose_atlas_v1.png \
   bandit_pose_atlas_v1.png \
   elite_pose_atlas_v1.png \
-  mountain_pass_background_v1.webp; do
+  founder_cutout_parts_v1.png \
+  mountain_pass_background_v1.webp \
+  mountain_pass_background_v2.png; do
   [[ -s "$embedded_assets/runtime/$runtime_asset" ]] || {
     echo "PHASE0B_PACKAGE_FAIL EMBEDDED_RUNTIME_ASSET_MISSING $runtime_asset" >&2
     exit 4
@@ -70,9 +101,9 @@ printf '%s\n' \
   "commit=$commit" \
   "git_dirty=$dirty" \
   "built_at_utc=$timestamp" \
-  'modes=phase0b_gallery,phase0b_runtime' \
+  'modes=phase0b_gallery,phase0b_runtime,phase0b_joint_compare,phase0b_art_load,phase0b_scroll_review' \
   'viewport=desktop_1280x720' \
-  'claim=concept_and_pose_atlas_runtime_review_only_not_bone_animation_gate' \
+  'claim=concept_camera_v2_art_load_and_rejected_auto_cutout_review_only' \
   "source_manifest_checksum=$source_manifest_checksum" \
   "embedded_manifest_checksum=$embedded_manifest_checksum" \
   > "$package_root/MANIFEST.txt"
@@ -87,6 +118,9 @@ printf '%s\n' \
     原图校验.sha256 \
     查看概念样片.command \
     查看运行样片.command \
+    查看动画路线失败对照.command \
+    查看20加1镜头与负载.command \
+    查看连续地图方向.command \
     挂机武侠_Phase0B美术样片.app/Contents/MacOS/phase0minus_probe \
     > SHA256SUMS.txt
   shasum -a 256 -c SHA256SUMS.txt

@@ -11,8 +11,11 @@ import 'package:phase0minus_probe/gameplay/gameplay_replay_controller.dart';
 import 'package:phase0minus_probe/human_gate/playtest_identity.dart';
 import 'package:phase0minus_probe/human_gate/playtest_report.dart';
 import 'package:phase0minus_probe/human_gate/readability_stimulus_app.dart';
+import 'package:phase0minus_probe/phase0b/joint/phase0b_joint_compare_app.dart';
+import 'package:phase0minus_probe/phase0b/load/phase0b_art_load_app.dart';
 import 'package:phase0minus_probe/phase0b/phase0b_art_gallery_app.dart';
 import 'package:phase0minus_probe/phase0b/phase0b_runtime_app.dart';
+import 'package:phase0minus_probe/phase0b/scroll/phase0b_scroll_review_app.dart';
 import 'package:phase0minus_probe/run/probe_run_controller.dart';
 import 'package:phase0minus_probe/workload/probe_game.dart';
 import 'package:window_manager/window_manager.dart';
@@ -66,12 +69,16 @@ Future<void> main() async {
       mode != 'phase0a_replay' &&
       mode != 'readability' &&
       mode != 'phase0b_gallery' &&
-      mode != 'phase0b_runtime') {
+      mode != 'phase0b_runtime' &&
+      mode != 'phase0b_joint_compare' &&
+      mode != 'phase0b_art_load' &&
+      mode != 'phase0b_scroll_review') {
     throw ArgumentError.value(
       mode,
       'PROBE_MODE',
       'benchmark, playtest, phase0a_replay, readability, phase0b_gallery, '
-          'or phase0b_runtime',
+          'phase0b_runtime, phase0b_joint_compare, phase0b_art_load, or '
+          'phase0b_scroll_review',
     );
   }
   final viewport = config.viewport(_runtime('PROBE_VIEWPORT', _viewportDefine));
@@ -102,6 +109,9 @@ Future<void> main() async {
         'readability' => 'Phase 0A Readability Stimuli',
         'phase0b_gallery' => 'Phase 0B Art Sample Gallery',
         'phase0b_runtime' => 'Phase 0B Pose Atlas Runtime',
+        'phase0b_joint_compare' => 'Phase 0B Animation Route Compare',
+        'phase0b_art_load' => 'Phase 0B Art Load Replay',
+        'phase0b_scroll_review' => 'Phase 0B Scrolling World Review',
         _ => 'Phase 0-minus Performance Probe',
       },
       titleBarStyle: TitleBarStyle.hidden,
@@ -122,6 +132,17 @@ Future<void> main() async {
     'readability' => const ReadabilityStimulusApp(),
     'phase0b_gallery' => const Phase0bArtGalleryApp(),
     'phase0b_runtime' => const Phase0bRuntimeApp(),
+    'phase0b_joint_compare' => const Phase0bJointCompareApp(),
+    'phase0b_scroll_review' => const Phase0bScrollReviewApp(),
+    'phase0b_art_load' => Phase0bArtLoadApp(
+      runId: runId,
+      outputRoot: outputRoot,
+      durationScale: durationScale,
+      autoClose: autoClose,
+      viewportId: viewport.id,
+      expectedWidth: viewport.width,
+      expectedHeight: viewport.height,
+    ),
     'phase0a_replay' => GameplayReplayApp(
       config: config,
       viewport: viewport,

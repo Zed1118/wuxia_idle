@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "phase": "phase0b_art_sample",
-  "status": "concept_keyframes_and_pose_atlas_runtime_prototype",
+  "status": "continuous_map_direction_and_rejected_auto_cutout_rig",
   "generated_with": "built_in_imagegen",
   "source_identity_assets": {
     "hero": "assets/characters/battle_founder_v2.png",
@@ -84,6 +84,24 @@
       "runtime_ready": true
     },
     {
+      "path": "runtime/mountain_pass_background_v2.png",
+      "role": "clean_16x9_runtime_backdrop",
+      "derived_from": "runtime/mountain_pass_background_v1.webp",
+      "runtime_ready": true
+    },
+    {
+      "path": "runtime/founder_cutout_parts_v1.png",
+      "role": "automatic_cutout_rig_input",
+      "runtime_ready": false,
+      "outcome": "rejected_visible_joint_seams_and_missing_hidden_overlap_art"
+    },
+    {
+      "path": "runtime/phase0b_joint_compare_failed_v1.png",
+      "role": "negative_route_evidence",
+      "runtime_ready": false,
+      "outcome": "hierarchy_runs_but_visual_quality_fails"
+    },
+    {
       "path": "runtime/phase0b_runtime_gather_capture_v1.png",
       "role": "macos_debug_runtime_capture",
       "beat": "gather",
@@ -99,6 +117,24 @@
       "path": "runtime/phase0b_runtime_elite_break_capture_v1.png",
       "role": "macos_debug_runtime_capture",
       "beat": "elite_break_success",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_art_load_20plus1_capture_v1.png",
+      "role": "rejected_camera_v1_evidence",
+      "runtime_ready": false,
+      "outcome": "hero_too_large_and_twenty_actor_ring_looks_artificial"
+    },
+    {
+      "path": "runtime/phase0b_art_load_camera_v2_gather.png",
+      "role": "macos_profile_camera_v2_capture",
+      "beat": "gather",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_art_load_camera_v2_settle.png",
+      "role": "macos_profile_camera_v2_capture",
+      "beat": "settle",
       "runtime_ready": false
     }
   ],
@@ -118,6 +154,10 @@
     "not_continuous_animation",
     "not_profile_runtime_performance_evidence",
     "pose_atlas_playback_does_not_pass_the_bone_animation_gate",
+    "automatic_cutout_joint_playback_failed_the_visual_quality_gate",
+    "art_load_observation_is_not_a_gameplay_or_performance_gate",
+    "fixed_art_load_camera_is_not_the_final_battle_interface",
+    "scroll_review_uses_temporary_background_not_final_map_art",
     "founder_is_sample_controller_not_permanent_protagonist_decision"
   ]
 }
