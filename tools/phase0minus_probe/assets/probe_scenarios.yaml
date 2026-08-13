@@ -53,6 +53,65 @@ effects:
   particle_lifetime_seconds: 0.8
   afterimage_lifetime_seconds: 0.55
   damage_label_lifetime_seconds: 0.65
+gameplay:
+  player:
+    health: 100.0
+    qi_capacity: 100.0
+    starting_qi: 40.0
+    horizontal_speed: 360.0
+    vertical_speed: 260.0
+    radius: 22.0
+  field:
+    width: 2400.0
+    height: 720.0
+    combat_top: 150.0
+    combat_bottom: 570.0
+  basic:
+    interval_seconds: 0.30
+    move_factor: 0.85
+    range: 150.0
+    half_arc_radians: 0.655
+    damage: 34.0
+    qi_gain: 5.0
+    maximum_hit_reacts: 3
+  movement_art:
+    speed: 1111.0
+    duration_seconds: 0.18
+    cooldown_seconds: 3.2
+  gather:
+    radius: 300.0
+    target_radius: 100.0
+    maximum_cast_range: 360.0
+    maximum_pull_distance: 220.0
+    cooldown_seconds: 6.5
+    imbalance_seconds: 2.0
+  clear:
+    radius: 340.0
+    damage: 65.0
+    imbalanced_multiplier: 1.7
+    elite_damage: 120.0
+    qi_cost: 60.0
+  normal:
+    health: 100.0
+    speed: 250.0
+    radius: 20.0
+    attack_range: 55.0
+    attack_interval_seconds: 1.33
+    damage: 7.0
+    attack_slots: 3
+  elite:
+    health: 1200.0
+    speed: 280.0
+    radius: 32.0
+    charge_interval_seconds: 5.0
+    telegraph_duration_seconds: 1.2
+    break_window_seconds: 0.65
+    break_threshold: 2
+    heavy_damage: 25.0
+    stagger_seconds: 1.8
+  waves:
+    between_seconds: 3.0
+    qi_recovery: 25.0
 tiers:
   baseline_10:
     normal_enemies: 10
