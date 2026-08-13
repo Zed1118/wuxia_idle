@@ -28,6 +28,22 @@ cp "$probe_dir/assets/phase0b/PROMPTS.md" "$package_root/提示词账本.md"
 cp "$probe_dir/assets/phase0b/manifest.json" "$package_root/asset_manifest.json"
 cp "$probe_dir/assets/phase0b/SHA256SUMS.txt" "$package_root/原图校验.sha256"
 
+cat > "$package_root/查看概念样片.command" <<'EOF'
+#!/bin/zsh
+set -euo pipefail
+package_root=${0:A:h}
+PROBE_MODE=phase0b_gallery PROBE_VIEWPORT=desktop_1280x720 \
+  "$package_root/挂机武侠_Phase0B美术样片.app/Contents/MacOS/phase0minus_probe"
+EOF
+cat > "$package_root/查看运行样片.command" <<'EOF'
+#!/bin/zsh
+set -euo pipefail
+package_root=${0:A:h}
+PROBE_MODE=phase0b_runtime PROBE_VIEWPORT=desktop_1280x720 \
+  "$package_root/挂机武侠_Phase0B美术样片.app/Contents/MacOS/phase0minus_probe"
+EOF
+chmod +x "$package_root/查看概念样片.command" "$package_root/查看运行样片.command"
+
 embedded_assets="$package_root/挂机武侠_Phase0B美术样片.app/Contents/Frameworks/App.framework/Resources/flutter_assets/assets/phase0b"
 [[ -f "$embedded_assets/manifest.json" ]] || {
   echo 'PHASE0B_PACKAGE_FAIL EMBEDDED_MANIFEST_MISSING' >&2
@@ -39,14 +55,23 @@ source_manifest_checksum=$(shasum -a 256 "$probe_dir/assets/phase0b/manifest.jso
   echo 'PHASE0B_PACKAGE_FAIL EMBEDDED_MANIFEST_DRIFT' >&2
   exit 3
 }
+for runtime_asset in \
+  founder_pose_atlas_v1.png \
+  bandit_pose_atlas_v1.png \
+  mountain_pass_background_v1.webp; do
+  [[ -s "$embedded_assets/runtime/$runtime_asset" ]] || {
+    echo "PHASE0B_PACKAGE_FAIL EMBEDDED_RUNTIME_ASSET_MISSING $runtime_asset" >&2
+    exit 4
+  }
+done
 
 printf '%s\n' \
   "commit=$commit" \
   "git_dirty=$dirty" \
   "built_at_utc=$timestamp" \
-  'mode=phase0b_gallery' \
+  'modes=phase0b_gallery,phase0b_runtime' \
   'viewport=desktop_1280x720' \
-  'claim=concept_review_only_not_runtime_animation_gate' \
+  'claim=concept_and_pose_atlas_runtime_review_only_not_bone_animation_gate' \
   "source_manifest_checksum=$source_manifest_checksum" \
   "embedded_manifest_checksum=$embedded_manifest_checksum" \
   > "$package_root/MANIFEST.txt"
@@ -59,6 +84,8 @@ printf '%s\n' \
     提示词账本.md \
     asset_manifest.json \
     原图校验.sha256 \
+    查看概念样片.command \
+    查看运行样片.command \
     挂机武侠_Phase0B美术样片.app/Contents/MacOS/phase0minus_probe \
     > SHA256SUMS.txt
   shasum -a 256 -c SHA256SUMS.txt

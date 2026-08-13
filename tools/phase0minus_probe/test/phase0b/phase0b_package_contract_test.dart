@@ -11,13 +11,17 @@ void main() {
       ).readAsStringSync();
 
       expect(source, contains('PROBE_MODE=phase0b_gallery'));
+      expect(source, contains('PROBE_MODE=phase0b_runtime'));
       expect(
         source,
-        contains('claim=concept_review_only_not_runtime_animation_gate'),
+        contains(
+          'claim=concept_and_pose_atlas_runtime_review_only_not_bone_animation_gate',
+        ),
       );
       expect(source, contains('EMBEDDED_MANIFEST_MISSING'));
       expect(source, contains('EMBEDDED_MANIFEST_DRIFT'));
       expect(source, contains('SHA256SUMS.txt'));
+      expect(source, contains('EMBEDDED_RUNTIME_ASSET_MISSING'));
     },
   );
 }

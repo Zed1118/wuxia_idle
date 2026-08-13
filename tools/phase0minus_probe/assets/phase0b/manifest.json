@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "phase": "phase0b_art_sample",
-  "status": "concept_keyframes_not_runtime_assets",
+  "status": "concept_keyframes_and_pose_atlas_runtime_prototype",
   "generated_with": "built_in_imagegen",
   "source_identity_assets": {
     "hero": "assets/characters/battle_founder_v2.png",
@@ -49,6 +49,42 @@
       "character": "elite_hidden_elder",
       "pose_count": 4,
       "runtime_ready": false
+    },
+    {
+      "path": "runtime/founder_pose_atlas_v1.png",
+      "role": "transparent_pose_atlas",
+      "character": "founder_sample_controller",
+      "pose_count": 6,
+      "layout": "2x3",
+      "runtime_ready": true,
+      "runtime_scope": "discrete_pose_playback_only"
+    },
+    {
+      "path": "runtime/bandit_pose_atlas_v1.png",
+      "role": "transparent_pose_atlas",
+      "character": "ordinary_blade_bandit",
+      "pose_count": 6,
+      "layout": "2x3",
+      "runtime_ready": true,
+      "runtime_scope": "discrete_pose_playback_only"
+    },
+    {
+      "path": "runtime/mountain_pass_background_v1.webp",
+      "role": "isolated_runtime_backdrop_copy",
+      "derived_from": "assets/scenes/battle_mountain_pass_stage_v2.png",
+      "runtime_ready": true
+    },
+    {
+      "path": "runtime/phase0b_runtime_gather_capture_v1.png",
+      "role": "macos_debug_runtime_capture",
+      "beat": "gather",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_runtime_clear_capture_v1.png",
+      "role": "macos_debug_runtime_capture",
+      "beat": "clear",
+      "runtime_ready": false
     }
   ],
   "invariants": [
@@ -63,9 +99,10 @@
   "explicit_non_claims": [
     "not_layer-separated",
     "not_rigged",
-    "not_animated",
-    "not_alpha_sprite_atlas",
-    "not_runtime_performance_evidence",
+    "not_layer-separated_bone_assets",
+    "not_continuous_animation",
+    "not_profile_runtime_performance_evidence",
+    "pose_atlas_playback_does_not_pass_the_bone_animation_gate",
     "founder_is_sample_controller_not_permanent_protagonist_decision"
   ]
 }
