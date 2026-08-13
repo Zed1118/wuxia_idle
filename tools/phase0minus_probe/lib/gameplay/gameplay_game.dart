@@ -20,6 +20,8 @@ enum PlayerAction {
 
 enum BufferedPlayerAction { movementArt, gather, clear }
 
+enum FeedbackKind { basic, gather, clear }
+
 enum EnemyMode {
   spawning,
   approach,
@@ -87,6 +89,7 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   final List<GameplayEnemy> enemies = [];
   final Set<LogicalKeyboardKey> _keys = {};
   late final GameplayPlayer player;
+  late final GameplayFeedbackPool feedbackPool;
 
   Vector2 pointerWorld = Vector2(800, 360);
   bool primaryHeld = false;
@@ -109,6 +112,8 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   int _replayPhase = -1;
   bool _replayGathered = false;
   bool _replayCleared = false;
+  double _hitStopRemaining = 0;
+  double _cameraShakeRemaining = 0;
 
   double get fieldWidth => config.number('gameplay.field.width');
   double get fieldHeight => config.number('gameplay.field.height');
@@ -137,13 +142,17 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     );
     player = GameplayPlayer(game: this);
     await world.add(player);
+    feedbackPool = GameplayFeedbackPool(
+      size: config.integer('gameplay.feedback.pool_size'),
+    );
+    await feedbackPool.mount(world);
     await world.add(GameplaySkillGuide(game: this));
     if (deterministicReplay) {
       _prepareReplayResidents();
     } else {
       _spawnDueBatches();
     }
-    _updateCamera();
+    _updateCamera(0);
     _updateHud('Wave 1: learn the moving attack and Q to R payoff.');
   }
 
@@ -159,16 +168,25 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
       }
       return;
     }
-    super.update(dt);
+    var simulationDt = dt;
+    if (_hitStopRemaining > 0) {
+      if (_hitStopRemaining >= simulationDt) {
+        _hitStopRemaining -= simulationDt;
+        return;
+      }
+      simulationDt -= _hitStopRemaining;
+      _hitStopRemaining = 0;
+    }
+    super.update(simulationDt);
     _assignAttackSlots();
     if (deterministicReplay) {
-      _driveReplay(dt);
+      _driveReplay(simulationDt);
     } else {
-      _driveWaves(dt);
+      _driveWaves(simulationDt);
     }
-    telemetry.tick(dt, enemies.where((enemy) => enemy.alive).length);
-    _updateCamera();
-    _hudElapsed += dt;
+    telemetry.tick(simulationDt, enemies.where((enemy) => enemy.alive).length);
+    _updateCamera(simulationDt);
+    _hudElapsed += simulationDt;
     if (_hudElapsed >= 0.1) {
       _hudElapsed = 0;
       _updateHud();
@@ -311,6 +329,16 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   }
 
   void onEnemyRemoval(GameplayEnemy enemy) => enemies.remove(enemy);
+
+  void triggerHitStop(double seconds) {
+    _hitStopRemaining = math.max(_hitStopRemaining, seconds);
+  }
+
+  void triggerCameraShake() {
+    _cameraShakeRemaining = config.number(
+      'gameplay.feedback.clear_camera_shake_seconds',
+    );
+  }
 
   void damagePlayer(double amount, Vector2 source) {
     if (deterministicReplay) return;
@@ -494,6 +522,7 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
       'allocation_after_warmup': 0,
       'invariant_holds': enemies.length == 21,
     },
+    'feedback_residents': feedbackPool.snapshot(),
   };
 
   void _assignAttackSlots() {
@@ -510,11 +539,18 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     }
   }
 
-  void _updateCamera() {
+  void _updateCamera(double dt) {
     final halfWidth = size.x / 2;
     final target = player.position.x.clamp(halfWidth, fieldWidth - halfWidth);
     _cameraX += (target - _cameraX) * 0.12;
-    camera.viewfinder.position = Vector2(_cameraX, fieldHeight / 2);
+    var shakeX = 0.0;
+    if (_cameraShakeRemaining > 0) {
+      _cameraShakeRemaining = math.max(0, _cameraShakeRemaining - dt);
+      shakeX =
+          math.sin(_cameraShakeRemaining * 210) *
+          config.number('gameplay.feedback.clear_camera_shake_pixels');
+    }
+    camera.viewfinder.position = Vector2(_cameraX + shakeX, fieldHeight / 2);
   }
 
   void _updateHud([String? message]) {
@@ -791,6 +827,18 @@ final class GameplayPlayer extends PositionComponent {
         capacity: game.config.number('gameplay.player.qi_capacity'),
         tuning: game.tuning,
       );
+      game.feedbackPool.emit(
+        kind: FeedbackKind.basic,
+        origin: position + aimDirection * 90,
+        count: game.config.integer('gameplay.feedback.basic_particles'),
+        lifetime: game.config.number(
+          'gameplay.feedback.basic_lifetime_seconds',
+        ),
+        random: game.random,
+      );
+      game.triggerHitStop(
+        game.config.number('gameplay.feedback.basic_hit_stop_seconds'),
+      );
     }
   }
 
@@ -805,6 +853,13 @@ final class GameplayPlayer extends PositionComponent {
         .enemiesInRadius(center, game.tuning.gatherRadius)
         .toList();
     game.telemetry.gatherTargetCounts.add(targets.length);
+    game.feedbackPool.emit(
+      kind: FeedbackKind.gather,
+      origin: center,
+      count: game.config.integer('gameplay.feedback.gather_particles'),
+      lifetime: game.config.number('gameplay.feedback.gather_lifetime_seconds'),
+      random: game.random,
+    );
     for (final enemy in targets) {
       if (enemy.elite) {
         enemy.pullToward(center, maxPull * 0.35);
@@ -857,6 +912,17 @@ final class GameplayPlayer extends PositionComponent {
     game.telemetry
       ..clearHitCounts.add(targets.length)
       ..clearKillCounts.add(kills);
+    game.feedbackPool.emit(
+      kind: FeedbackKind.clear,
+      origin: position,
+      count: game.config.integer('gameplay.feedback.clear_particles'),
+      lifetime: game.config.number('gameplay.feedback.clear_lifetime_seconds'),
+      random: game.random,
+    );
+    game.triggerHitStop(
+      game.config.number('gameplay.feedback.clear_hit_stop_seconds'),
+    );
+    game.triggerCameraShake();
   }
 
   @override
@@ -1094,6 +1160,9 @@ final class GameplayEnemy extends PositionComponent {
       modeRemaining = game.config.number('gameplay.elite.stagger_seconds');
       _telegraphCooldown = game.tuning.eliteChargeInterval;
       game.counters.record(GameplayAction.breakSuccess);
+      game.triggerHitStop(
+        game.config.number('gameplay.feedback.break_hit_stop_seconds'),
+      );
       game.player.qi = math.min(
         game.config.number('gameplay.player.qi_capacity'),
         game.player.qi + 15,
@@ -1240,5 +1309,130 @@ final class GameplaySkillGuide extends PositionComponent {
           ..strokeWidth = 2,
       );
     }
+  }
+}
+
+final class GameplayFeedbackPool {
+  GameplayFeedbackPool({required int size})
+    : _residents = List.generate(size, (_) => GameplayFeedback());
+
+  final List<GameplayFeedback> _residents;
+  int _cursor = 0;
+  int emittedTotal = 0;
+  int overflowTotal = 0;
+  int activePeak = 0;
+
+  Future<void> mount(World world) async {
+    await world.addAll(_residents);
+  }
+
+  void emit({
+    required FeedbackKind kind,
+    required Vector2 origin,
+    required int count,
+    required double lifetime,
+    required math.Random random,
+  }) {
+    for (var index = 0; index < count; index++) {
+      GameplayFeedback? target;
+      for (var attempt = 0; attempt < _residents.length; attempt++) {
+        final candidate = _residents[_cursor];
+        _cursor = (_cursor + 1) % _residents.length;
+        if (!candidate.active) {
+          target = candidate;
+          break;
+        }
+      }
+      if (target == null) {
+        overflowTotal++;
+        break;
+      }
+      final angle = random.nextDouble() * math.pi * 2;
+      final speed = switch (kind) {
+        FeedbackKind.basic => 90.0,
+        FeedbackKind.gather => -120.0,
+        FeedbackKind.clear => 210.0,
+      };
+      final radial = Vector2(math.cos(angle), math.sin(angle));
+      target.activate(
+        kind: kind,
+        origin: origin + radial * (kind == FeedbackKind.gather ? 210 : 12),
+        velocity: radial * speed,
+        lifetime: lifetime,
+      );
+      emittedTotal++;
+    }
+    activePeak = math.max(
+      activePeak,
+      _residents.where((resident) => resident.active).length,
+    );
+  }
+
+  Map<String, Object?> snapshot() => {
+    'created_total': _residents.length,
+    'active_current': _residents.where((resident) => resident.active).length,
+    'active_peak': activePeak,
+    'emitted_total': emittedTotal,
+    'overflow_total': overflowTotal,
+    'allocation_after_warmup': 0,
+    'invariant_holds': _residents.isNotEmpty && overflowTotal == 0,
+  };
+}
+
+final class GameplayFeedback extends PositionComponent {
+  GameplayFeedback()
+    : super(size: Vector2.all(8), anchor: Anchor.center, priority: 8);
+
+  bool active = false;
+  FeedbackKind kind = FeedbackKind.basic;
+  double _remaining = 0;
+  double _lifetime = 1;
+  Vector2 _velocity = Vector2.zero();
+
+  void activate({
+    required FeedbackKind kind,
+    required Vector2 origin,
+    required Vector2 velocity,
+    required double lifetime,
+  }) {
+    active = true;
+    this.kind = kind;
+    position = origin;
+    _velocity = velocity;
+    _remaining = lifetime;
+    _lifetime = lifetime;
+  }
+
+  @override
+  void update(double dt) {
+    if (!active) return;
+    _remaining -= dt;
+    position += _velocity * dt;
+    if (kind == FeedbackKind.gather) {
+      _velocity.scale(math.pow(0.06, dt).toDouble());
+    } else {
+      _velocity.scale(math.pow(0.22, dt).toDouble());
+    }
+    if (_remaining <= 0) {
+      active = false;
+      _remaining = 0;
+      _velocity = Vector2.zero();
+    }
+  }
+
+  @override
+  void render(Canvas canvas) {
+    if (!active) return;
+    final alpha = (_remaining / _lifetime).clamp(0.0, 1.0);
+    final color = switch (kind) {
+      FeedbackKind.basic => const Color(0xffeee6d2),
+      FeedbackKind.gather => const Color(0xff59655f),
+      FeedbackKind.clear => const Color(0xff7b332e),
+    };
+    canvas.drawCircle(
+      Offset(size.x / 2, size.y / 2),
+      kind == FeedbackKind.clear ? 4 : 3,
+      Paint()..color = color.withValues(alpha: alpha),
+    );
   }
 }

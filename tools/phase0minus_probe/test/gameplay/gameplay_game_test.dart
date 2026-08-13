@@ -119,7 +119,8 @@ void main() {
     naked
       ..spawnGrace = 99
       ..position = game.player.position + Vector2(120, 0);
-    game.update(0.50);
+    // Finish the previous clear recovery after its 65 ms hit-stop.
+    game.update(0.60);
     game.player.qi = 100;
     game.player.requestClear();
     game.update(0.30);
@@ -207,5 +208,29 @@ void main() {
       game.replayPoolSnapshot()['enemy_residents'],
       containsPair('invariant_holds', true),
     );
+  });
+
+  testWidgets('resident feedback pool survives the compressed clear burst', (
+    tester,
+  ) async {
+    final game = GameplayGame(config: config, deterministicReplay: true);
+    await tester.pumpWidget(
+      MaterialApp(home: GameWidget<GameplayGame>(game: game)),
+    );
+    await tester.pump();
+
+    for (var frame = 0; frame < 750; frame++) {
+      game.update(1 / 60);
+    }
+
+    final feedback =
+        game.replayPoolSnapshot()['feedback_residents']!
+            as Map<String, Object?>;
+    expect(feedback['created_total'], 160);
+    expect(feedback['active_peak'], greaterThanOrEqualTo(128));
+    expect(feedback['emitted_total'], greaterThanOrEqualTo(160));
+    expect(feedback['overflow_total'], 0);
+    expect(feedback['allocation_after_warmup'], 0);
+    expect(feedback['invariant_holds'], isTrue);
   });
 }

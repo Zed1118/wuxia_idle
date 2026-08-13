@@ -112,6 +112,19 @@ gameplay:
   waves:
     between_seconds: 3.0
     qi_recovery: 25.0
+  feedback:
+    pool_size: 160
+    basic_particles: 8
+    gather_particles: 32
+    clear_particles: 128
+    basic_lifetime_seconds: 0.20
+    gather_lifetime_seconds: 0.45
+    clear_lifetime_seconds: 0.70
+    basic_hit_stop_seconds: 0.022
+    clear_hit_stop_seconds: 0.065
+    break_hit_stop_seconds: 0.080
+    clear_camera_shake_seconds: 0.10
+    clear_camera_shake_pixels: 3.0
 tiers:
   baseline_10:
     normal_enemies: 10

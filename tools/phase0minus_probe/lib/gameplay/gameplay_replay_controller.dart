@@ -84,7 +84,8 @@ final class GameplayReplayController {
     final workload = game.replayWorkloadSnapshot()
       ..['duration_scale'] = durationScale
       ..['gate_eligible_duration'] = durationScale == 1
-      ..['preliminary_gate'] = 'POOL_AND_FEEDBACK_PENDING';
+      ..['preliminary_gate'] =
+          'FEEDBACK_POOL_PASS_COLLISION_AND_STRATEGY_PENDING';
     final directory = await const ResultWriter().write(
       runId: runId,
       config: config,
