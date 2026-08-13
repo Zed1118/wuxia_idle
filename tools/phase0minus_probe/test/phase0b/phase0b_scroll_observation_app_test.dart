@@ -31,6 +31,10 @@ void main() {
     expect(single, contains('PROBE_MODE=phase0b_scroll_profile'));
     expect(single, contains('.gate_eligible == false'));
     expect(single, contains('.workload.encounter_peaks == [6,10,21]'));
+    expect(
+      single,
+      contains('.workload.scene_layer_logical_ops_per_frame == 18'),
+    );
     expect(matrix, contains('expected 6 fresh summaries'));
     expect(
       matrix,

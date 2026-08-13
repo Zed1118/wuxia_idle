@@ -58,6 +58,24 @@ void main() {
     );
   });
 
+  test('scene layers use independent parallax without slicing panorama', () {
+    expect(Phase0bScrollReviewGame.parallaxScreenX(1000, 500, 0.18), 910);
+    expect(Phase0bScrollReviewGame.parallaxScreenX(1000, 500, 0.72), 640);
+    expect(Phase0bScrollReviewGame.parallaxScreenX(1000, 500, 1.04), 480);
+  });
+
+  test('pose alpha inset is compensated so visible feet meet ground', () {
+    expect(
+      Phase0bScrollReviewGame.visibleBottomInsetRatio('hero', 0),
+      closeTo(28 / 470, 0.0001),
+    );
+    expect(
+      Phase0bScrollReviewGame.visibleBottomInsetRatio('bandit', 3),
+      closeTo(86 / 441, 0.0001),
+    );
+    expect(Phase0bScrollReviewGame.visibleBottomInsetRatio('unknown', 0), 0);
+  });
+
   testWidgets('scroll review exposes input and non-final-art boundary', (
     tester,
   ) async {

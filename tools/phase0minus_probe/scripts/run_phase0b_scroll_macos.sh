@@ -57,6 +57,8 @@ for ((index = 1; index <= repeat; index++)); do
      .viewport.refresh_rate_hz == $expected_refresh and
      .viewport.device_pixel_ratio == $expected_dpr and
      .workload.encounter_peaks == [6,10,21] and
+     .workload.scene_layer_logical_ops_per_frame == 18 and
+     .workload.scene_layers == ["single_panorama","far_mist","ground_mist","actor_depth_sort","foreground_occluder"] and
      .workload.final_20_plus_1_visible_seconds >= 0.5 and
      .workload.camera_world_travel >= 2000 and
      (.total_span.p99_us | type == "number")' "$summary" >/dev/null || {

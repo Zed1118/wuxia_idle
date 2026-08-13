@@ -145,6 +145,15 @@ final class _Phase0bScrollObservationAppState
         'final_20_plus_1_visible_seconds': game.finalPeakVisibleSeconds,
         'hero_world_travel': maximumHeroX - minimumHeroX,
         'camera_world_travel': maximumCameraX - minimumCameraX,
+        'scene_layer_logical_ops_per_frame':
+            Phase0bScrollReviewGame.sceneLayerLogicalOpsPerFrame,
+        'scene_layers': const [
+          'single_panorama',
+          'far_mist',
+          'ground_mist',
+          'actor_depth_sort',
+          'foreground_occluder',
+        ],
       },
       if (total.isNotEmpty) ...{
         'total_span': DurationSummary.from(total).toJson(),

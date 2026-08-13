@@ -31,8 +31,8 @@ final class Phase0bScrollReviewApp extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: Text(
-                    'SCROLLING WORLD REVIEW · 3 SCREENS · WASD\n'
-                    'AUTO TOUR STOPS ON INPUT / NOT FINAL MAP ART',
+                    'SCROLLING WORLD REVIEW · SINGLE PANORAMA · WASD\n'
+                    'LAYER FX PROTOTYPE / NOT FINAL MAP ART',
                     style: TextStyle(color: Color(0xFFECE2CD), fontSize: 13),
                   ),
                 ),
@@ -79,6 +79,7 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
   static const rightDeadZone = 765.0;
   static const encounterTriggers = [620.0, 1450.0, 2630.0];
   static const encounterHoldSeconds = [3.2, 4.0, 5.5];
+  static const sceneLayerLogicalOpsPerFrame = 18;
 
   final Set<LogicalKeyboardKey> _keys = {};
   final List<_ReviewActor> _enemies = _buildEnemies();
@@ -263,6 +264,8 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
     canvas.scale(scale);
     canvas.clipRect(const Rect.fromLTWH(0, 0, viewWidth, viewHeight));
     _drawBackground(canvas);
+    _drawFarMist(canvas);
+    _drawGroundMist(canvas);
     final activeEnemies = _activeEnemies().where(
       (actor) =>
           actor.position.dx >= _cameraLeft - 220 &&
@@ -287,6 +290,7 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
     for (final actor in actors) {
       _drawActor(canvas, actor, founder, bandit, elite);
     }
+    _drawForegroundOccluders(canvas);
     _drawRegionProgress(canvas);
     canvas.restore();
   }
@@ -329,6 +333,72 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
       Rect.fromLTWH(-_cameraLeft, 0, worldWidth, viewHeight),
       Paint()..filterQuality = FilterQuality.high,
     );
+  }
+
+  void _drawFarMist(Canvas canvas) {
+    final paint = Paint()..color = const Color(0x16E6DDC8);
+    for (var index = -1; index < 5; index++) {
+      final worldX = index * 860.0 + 280;
+      final x = parallaxScreenX(worldX, _cameraLeft, 0.18);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(x, 285 + (index.isEven ? -24 : 18)),
+          width: 560,
+          height: 130,
+        ),
+        paint,
+      );
+    }
+  }
+
+  void _drawGroundMist(Canvas canvas) {
+    final paint = Paint()..color = const Color(0x12EFE7D5);
+    for (var index = -1; index < 7; index++) {
+      final worldX = index * 620.0 + 90;
+      final x = parallaxScreenX(worldX, _cameraLeft, 0.72);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(x, 565 + (index.isEven ? 18 : -12)),
+          width: 420,
+          height: 42,
+        ),
+        paint,
+      );
+    }
+  }
+
+  void _drawForegroundOccluders(Canvas canvas) {
+    const anchors = [360.0, 1180.0, 2140.0, 3380.0];
+    final stonePaint = Paint()..color = const Color(0x4D262620);
+    final grassPaint = Paint()
+      ..color = const Color(0x6635342C)
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    for (var index = 0; index < anchors.length; index++) {
+      final x = parallaxScreenX(anchors[index], _cameraLeft, 1.04);
+      if (x < -180 || x > viewWidth + 180) continue;
+      final baseY = 721.0;
+      final halfWidth = index.isEven ? 105.0 : 82.0;
+      final stone = Path()
+        ..moveTo(x - halfWidth, baseY)
+        ..quadraticBezierTo(
+          x - halfWidth * 0.65,
+          baseY - 38,
+          x - 18,
+          baseY - 34,
+        )
+        ..quadraticBezierTo(x + 22, baseY - 58, x + halfWidth, baseY)
+        ..close();
+      canvas.drawPath(stone, stonePaint);
+      for (var stem = -2; stem <= 2; stem++) {
+        final start = Offset(x + stem * 17, baseY - 28);
+        canvas.drawLine(
+          start,
+          Offset(start.dx + stem * 4, baseY - 68 - stem.abs() * 4),
+          grassPaint,
+        );
+      }
+    }
   }
 
   void _drawActorShadow(Canvas canvas, _ReviewActor actor) {
@@ -382,8 +452,13 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
     };
     final height = baseHeight * perspective;
     final width = height * source.width / source.height;
+    final bottomCompensation =
+        height * visibleBottomInsetRatio(actor.kind.name, actor.pose);
     canvas.save();
-    canvas.translate(displayPosition.dx - _cameraLeft, displayPosition.dy);
+    canvas.translate(
+      displayPosition.dx - _cameraLeft,
+      displayPosition.dy + bottomCompensation,
+    );
     if (actor.mirror) canvas.scale(-1, 1);
     canvas.drawImageRect(
       atlas,
@@ -424,8 +499,9 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
         final target = Offset(
           centerX +
               (column - (columns - 1) / 2) * 135 +
-              (row.isEven ? -26 : 26),
-          405 + row * 62 + region * 3,
+              (row.isEven ? -26 : 26) +
+              ((id * 37) % 31 - 15),
+          405 + row * 62 + region * 3 + ((id * 53) % 25 - 12),
         );
         final firstBatchCount = switch (region) {
           0 => 4,
@@ -489,5 +565,24 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
       heroPosition.dx + (dx < 0 || (dx == 0 && actorId.isEven) ? -112 : 112),
       enemyPosition.dy,
     );
+  }
+
+  @visibleForTesting
+  static double parallaxScreenX(
+    double worldX,
+    double cameraLeft,
+    double factor,
+  ) => worldX - cameraLeft * factor;
+
+  @visibleForTesting
+  static double visibleBottomInsetRatio(String kind, int pose) {
+    const ratios = <String, List<double>>{
+      'hero': [28 / 470, 40 / 470, 50 / 470, 90 / 471, 91 / 471, 88 / 471],
+      'bandit': [27 / 500, 37 / 500, 12 / 500, 86 / 441, 88 / 441, 115 / 441],
+      'elite': [51 / 627, 53 / 627, 139 / 627, 86 / 627],
+    };
+    final values = ratios[kind];
+    if (values == null || pose < 0 || pose >= values.length) return 0;
+    return values[pose];
   }
 }
