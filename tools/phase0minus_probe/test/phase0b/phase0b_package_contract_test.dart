@@ -14,6 +14,7 @@ void main() {
     expect(source, contains('PROBE_MODE=phase0b_art_load'));
     expect(source, contains('PROBE_MODE=phase0b_scroll_review'));
     expect(source, contains('scroll_panorama_mountain_to_gate_v1.png'));
+    expect(source, contains('连续地图长卷_3600x720.png'));
     expect(
       source,
       contains(
