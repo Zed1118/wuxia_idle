@@ -92,6 +92,7 @@ Future<void> main() async {
     ),
     () async {
       await windowManager.show();
+      await windowManager.setAlwaysOnTop(mode == 'phase0a_replay');
       if (windowXText.isNotEmpty && windowYText.isNotEmpty) {
         await windowManager.setPosition(
           Offset(double.parse(windowXText), double.parse(windowYText)),

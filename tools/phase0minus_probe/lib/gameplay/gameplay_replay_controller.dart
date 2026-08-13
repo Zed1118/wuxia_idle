@@ -159,7 +159,6 @@ final class GameplayReplayController {
     if (autoClose) {
       await Future<void>.delayed(const Duration(milliseconds: 500));
       await windowManager.close();
-      exit(0);
     }
   }
 
