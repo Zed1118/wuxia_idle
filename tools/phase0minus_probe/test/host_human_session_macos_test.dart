@@ -153,7 +153,8 @@ echo "\${PROBE_MODE:-comparison}" >> "\$PHASE0A_TEST_TRACE"
     );
   final packagedHost = File('${root.path}/主持试玩.command')
     ..writeAsStringSync(hostScriptSource);
-  final validator = File('${root.path}/校验汇总器')..writeAsStringSync('validator');
+  final validator = File('${root.path}/phase0a_human_gate')
+    ..writeAsStringSync('validator');
   final readability = Directory('${root.path}/可读性五帧');
   await readability.create(recursive: true);
   final stimulus = File('${readability.path}/frame.png')

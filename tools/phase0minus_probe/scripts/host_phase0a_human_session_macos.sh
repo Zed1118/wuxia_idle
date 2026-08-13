@@ -82,7 +82,7 @@ verify_hash comparison_protocol_checksum "$package_dir/对照说明.md"
 verify_hash schedule_checksum "$package_dir/匿名排期.json"
 verify_hash questionnaire_template_checksum "$package_dir/问卷模板.json"
 verify_hash host_checksum "$package_dir/主持试玩.command"
-verify_hash validator_checksum "$package_dir/校验汇总器"
+verify_hash validator_checksum "$package_dir/phase0a_human_gate"
 verify_hash readability_manifest_checksum "$package_dir/可读性五帧/manifest.json"
 verify_hash readability_checksums_checksum "$package_dir/可读性五帧/checksums.sha256"
 (cd "$package_dir/可读性五帧" && shasum -a 256 -c checksums.sha256 >/dev/null) || {

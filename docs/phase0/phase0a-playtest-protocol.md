@@ -92,7 +92,7 @@
 3. 六人完成后由观察员在包根目录运行：
 
    ```zsh
-   ./校验汇总器 human results/sessions results/human-gate-summary.json
+   ./phase0a_human_gate human results/sessions results/human-gate-summary.json
    ```
 
 汇总器只会输出 `HUMAN_GATE_PASS` / `LOCAL_FAIL` / `INCONCLUSIVE`；

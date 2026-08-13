@@ -49,7 +49,7 @@ cp \
 chmod +x "$package_root/主持试玩.command"
 dart compile exe \
   "$probe_dir/bin/phase0a_human_gate.dart" \
-  -o "$package_root/校验汇总器"
+  -o "$package_root/phase0a_human_gate"
 mkdir -p "$package_root/可读性五帧"
 cp "$probe_dir/assets/readability/manifest.json" "$package_root/可读性五帧/"
 cp "$probe_dir/assets/readability/"frame*.png "$package_root/可读性五帧/"
@@ -79,7 +79,7 @@ comparison_protocol_checksum=$(shasum -a 256 "$package_root/对照说明.md" | a
 schedule_checksum=$(shasum -a 256 "$package_root/匿名排期.json" | awk '{print $1}')
 questionnaire_template_checksum=$(shasum -a 256 "$package_root/问卷模板.json" | awk '{print $1}')
 host_checksum=$(shasum -a 256 "$package_root/主持试玩.command" | awk '{print $1}')
-validator_checksum=$(shasum -a 256 "$package_root/校验汇总器" | awk '{print $1}')
+validator_checksum=$(shasum -a 256 "$package_root/phase0a_human_gate" | awk '{print $1}')
 readability_manifest_checksum=$(shasum -a 256 "$package_root/可读性五帧/manifest.json" | awk '{print $1}')
 readability_checksums_checksum=$(shasum -a 256 "$package_root/可读性五帧/checksums.sha256" | awk '{print $1}')
 printf '%s\n' \
