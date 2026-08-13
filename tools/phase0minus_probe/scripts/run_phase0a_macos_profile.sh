@@ -7,6 +7,8 @@ viewport="${1:-desktop_1280x720}"
 repeat="${2:-1}"
 duration_scale="${3:-1.0}"
 expected_dpr="${PROBE_GATE_DPR:-1}"
+window_x="${4:-}"
+window_y="${5:-}"
 
 case "$viewport" in
   desktop_1280x720|desktop_1440x900) ;;
@@ -25,7 +27,7 @@ fi
 
 for ((index = 1; index <= repeat; index++)); do
   run_id="phase0a-replay-macos-${viewport}-r${index}-$(date -u +%Y%m%dT%H%M%SZ)"
-  env \
+  run_env=(env \
     PROBE_MODE=phase0a_replay \
     PROBE_VIEWPORT="$viewport" \
     PROBE_RUN_ID="$run_id" \
@@ -34,6 +36,9 @@ for ((index = 1; index <= repeat; index++)); do
     PROBE_REPOSITORY_ROOT="$repository_root" \
     PROBE_AUTO_CLOSE=true \
     PROBE_EXPECTED_REFRESH_RATE=60 \
-    PROBE_EXPECTED_DPR="$expected_dpr" \
-    "$binary"
+    PROBE_EXPECTED_DPR="$expected_dpr")
+  if [[ -n "$window_x" && -n "$window_y" ]]; then
+    run_env+=(PROBE_WINDOW_X="$window_x" PROBE_WINDOW_Y="$window_y")
+  fi
+  "${run_env[@]}" "$binary"
 done
