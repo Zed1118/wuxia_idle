@@ -304,14 +304,15 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
     }
     final progress = (localElapsed / 0.75).clamp(0, 1).toDouble();
     final eased = Curves.easeOutCubic.transform(progress);
+    final entryPosition = Offset.lerp(
+      actor.spawnPosition ?? actor.position,
+      actor.position,
+      eased,
+    )!;
     return _ReviewActor(
       id: actor.id,
       kind: actor.kind,
-      position: Offset.lerp(
-        actor.spawnPosition ?? actor.position,
-        actor.position,
-        eased,
-      )!,
+      position: applyReadabilityPocket(entryPosition, _hero, actor.id),
       pose: progress < 1 ? 1 : actor.pose,
       mirror: actor.mirror,
       region: actor.region,
@@ -353,17 +354,7 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
     ui.Image bandit,
     ui.Image elite,
   ) {
-    var displayPosition = actor.position;
-    if (actor.kind == _ReviewActorKind.bandit) {
-      final dx = displayPosition.dx - _hero.dx;
-      final dy = displayPosition.dy - _hero.dy;
-      if (dx.abs() < 112 && dy.abs() < 78) {
-        displayPosition = Offset(
-          _hero.dx + (dx < 0 || (dx == 0 && actor.id.isEven) ? -112 : 112),
-          displayPosition.dy,
-        );
-      }
-    }
+    final displayPosition = actor.position;
     final atlas = switch (actor.kind) {
       _ReviewActorKind.hero => founder,
       _ReviewActorKind.bandit => bandit,
@@ -425,12 +416,16 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
     final actors = <_ReviewActor>[];
     var id = 0;
     void addCluster(double centerX, int count, int region) {
+      final rows = count >= 10 ? 4 : 3;
+      final columns = (count / rows).ceil();
       for (var index = 0; index < count; index++) {
-        final row = index % 5;
-        final column = index ~/ 5;
+        final row = index % rows;
+        final column = index ~/ rows;
         final target = Offset(
-          centerX + (column - 1.5) * 118 + (row.isEven ? -32 : 34),
-          395 + row * 50 + region * 3,
+          centerX +
+              (column - (columns - 1) / 2) * 135 +
+              (row.isEven ? -26 : 26),
+          405 + row * 62 + region * 3,
         );
         final firstBatchCount = switch (region) {
           0 => 4,
@@ -463,14 +458,14 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
       }
     }
 
-    addCluster(930, 6, 0);
-    addCluster(1880, 10, 1);
-    addCluster(2910, 20, 2);
+    addCluster(700, 6, 0);
+    addCluster(1540, 10, 1);
+    addCluster(2700, 20, 2);
     actors.add(
       const _ReviewActor(
         id: 998,
         kind: _ReviewActorKind.elite,
-        position: Offset(3090, 520),
+        position: Offset(2990, 520),
         pose: 1,
         region: 2,
         spawnDelay: 1.2,
@@ -479,5 +474,20 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
       ),
     );
     return actors;
+  }
+
+  @visibleForTesting
+  static Offset applyReadabilityPocket(
+    Offset enemyPosition,
+    Offset heroPosition,
+    int actorId,
+  ) {
+    final dx = enemyPosition.dx - heroPosition.dx;
+    final dy = enemyPosition.dy - heroPosition.dy;
+    if (dx.abs() >= 112 || dy.abs() >= 78) return enemyPosition;
+    return Offset(
+      heroPosition.dx + (dx < 0 || (dx == 0 && actorId.isEven) ? -112 : 112),
+      enemyPosition.dy,
+    );
   }
 }

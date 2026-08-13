@@ -38,6 +38,26 @@ void main() {
     expect(Phase0bScrollReviewGame.activePopulationAt(2, 5.2), 0);
   });
 
+  test('readability pocket changes actor position before depth rendering', () {
+    const hero = Offset(640, 510);
+    expect(
+      Phase0bScrollReviewGame.applyReadabilityPocket(
+        const Offset(630, 520),
+        hero,
+        2,
+      ),
+      const Offset(528, 520),
+    );
+    expect(
+      Phase0bScrollReviewGame.applyReadabilityPocket(
+        const Offset(800, 520),
+        hero,
+        2,
+      ),
+      const Offset(800, 520),
+    );
+  });
+
   testWidgets('scroll review exposes input and non-final-art boundary', (
     tester,
   ) async {
