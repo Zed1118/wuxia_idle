@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -85,7 +86,9 @@ Future<void> main() async {
   await windowManager.waitUntilReadyToShow(
     WindowOptions(
       size: Size(viewport.width, viewport.height),
-      minimumSize: Size(viewport.width, viewport.height),
+      minimumSize: mode == 'benchmark' || mode == 'phase0a_replay'
+          ? Size(viewport.width - 64, viewport.height - 64)
+          : Size(viewport.width, viewport.height),
       maximumSize: Size(viewport.width + 100, viewport.height + 100),
       center: true,
       title: switch (mode) {
@@ -188,18 +191,15 @@ final class _ProbeAppState extends State<ProbeApp> {
   }
 
   Future<void> _calibrateViewportAndStart() async {
-    final view = View.of(context);
-    for (var attempt = 0; attempt < 5; attempt++) {
-      await WidgetsBinding.instance.endOfFrame;
-      final actual = view.physicalSize / view.devicePixelRatio;
-      final widthDelta = widget.viewport.width - actual.width;
-      final heightDelta = widget.viewport.height - actual.height;
-      if (widthDelta.abs() < 0.5 && heightDelta.abs() < 0.5) break;
-      final outer = await windowManager.getSize();
-      await windowManager.setSize(
-        Size(outer.width + widthDelta, outer.height + heightDelta),
-      );
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+    final calibrated = await _calibrateLogicalViewport(
+      View.of(context),
+      widget.viewport,
+    );
+    if (!mounted) return;
+    if (!calibrated) {
+      debugPrint('PROBE_VIEWPORT_CALIBRATION_FAIL ${widget.viewport.id}');
+      await windowManager.close();
+      return;
     }
     await controller.start();
   }
@@ -355,18 +355,15 @@ final class _GameplayReplayAppState extends State<GameplayReplayApp> {
   }
 
   Future<void> _calibrateViewportAndStart() async {
-    final view = View.of(context);
-    for (var attempt = 0; attempt < 5; attempt++) {
-      await WidgetsBinding.instance.endOfFrame;
-      final actual = view.physicalSize / view.devicePixelRatio;
-      final widthDelta = widget.viewport.width - actual.width;
-      final heightDelta = widget.viewport.height - actual.height;
-      if (widthDelta.abs() < 0.5 && heightDelta.abs() < 0.5) break;
-      final outer = await windowManager.getSize();
-      await windowManager.setSize(
-        Size(outer.width + widthDelta, outer.height + heightDelta),
-      );
-      await Future<void>.delayed(const Duration(milliseconds: 100));
+    final calibrated = await _calibrateLogicalViewport(
+      View.of(context),
+      widget.viewport,
+    );
+    if (!mounted) return;
+    if (!calibrated) {
+      debugPrint('PHASE0A_VIEWPORT_CALIBRATION_FAIL ${widget.viewport.id}');
+      await windowManager.close();
+      return;
     }
     await controller.start();
   }
@@ -390,6 +387,36 @@ final class _GameplayReplayAppState extends State<GameplayReplayApp> {
       ),
     ),
   );
+}
+
+Future<bool> _calibrateLogicalViewport(
+  ui.FlutterView view,
+  ProbeViewport viewport,
+) async {
+  var consecutiveMatches = 0;
+  for (var attempt = 1; attempt <= 20; attempt++) {
+    await WidgetsBinding.instance.endOfFrame;
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    final actual = view.physicalSize / view.devicePixelRatio;
+    final widthDelta = viewport.width - actual.width;
+    final heightDelta = viewport.height - actual.height;
+    final matches = widthDelta.abs() < 0.5 && heightDelta.abs() < 0.5;
+    debugPrint(
+      'PROBE_VIEWPORT_CALIBRATION attempt=$attempt '
+      'actual=${actual.width}x${actual.height} match=$matches',
+    );
+    if (matches) {
+      consecutiveMatches++;
+      if (consecutiveMatches >= 3) return true;
+      continue;
+    }
+    consecutiveMatches = 0;
+    final outer = await windowManager.getSize();
+    await windowManager.setSize(
+      Size(outer.width + widthDelta, outer.height + heightDelta),
+    );
+  }
+  return false;
 }
 
 final class GameplayPlaytestApp extends StatefulWidget {
