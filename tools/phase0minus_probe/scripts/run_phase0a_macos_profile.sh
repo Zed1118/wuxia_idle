@@ -20,6 +20,7 @@ if [[ "${PROBE_SKIP_BUILD:-false}" != "true" ]]; then
   flutter build macos --profile
 fi
 binary="$probe_dir/build/macos/Build/Products/Profile/phase0minus_probe.app/Contents/MacOS/phase0minus_probe"
+app_bundle="$probe_dir/build/macos/Build/Products/Profile/phase0minus_probe.app"
 if [[ ! -x "$binary" ]]; then
   echo "Profile binary not found: $binary" >&2
   exit 3
@@ -40,5 +41,15 @@ for ((index = 1; index <= repeat; index++)); do
   if [[ -n "$window_x" && -n "$window_y" ]]; then
     run_env+=(PROBE_WINDOW_X="$window_x" PROBE_WINDOW_Y="$window_y")
   fi
-  "${run_env[@]}" "$binary"
+  "${run_env[@]}" "$binary" &
+  probe_pid=$!
+  # A directly launched macOS app may remain backgrounded after the previous
+  # run exits. Flutter then stops delivering FrameTiming callbacks and a fake
+  # zero-frame run can linger indefinitely. Activate the exact built bundle;
+  # do not rely on a user click or a possibly ambiguous bundle identifier.
+  sleep 0.5
+  if kill -0 "$probe_pid" 2>/dev/null; then
+    open -a "$app_bundle"
+  fi
+  wait "$probe_pid"
 done

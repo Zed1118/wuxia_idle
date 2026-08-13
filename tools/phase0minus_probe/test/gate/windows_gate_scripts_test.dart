@@ -46,4 +46,15 @@ void main() {
     expect(source, contains(r'power_mode_confirmed_best_performance = $false'));
     expect(source, contains('renderer = "FILL_FROM_FLUTTER_GPU_TRACE"'));
   });
+
+  test('macOS Phase 0A runner foregrounds every exact app bundle', () {
+    final source = File(
+      '$probeRoot/scripts/run_phase0a_macos_profile.sh',
+    ).readAsStringSync();
+
+    expect(source, contains(r'"${run_env[@]}" "$binary" &'));
+    expect(source, contains(r'open -a "$app_bundle"'));
+    expect(source, contains(r'wait "$probe_pid"'));
+    expect(source, isNot(contains('open -a phase0minus_probe')));
+  });
 }
