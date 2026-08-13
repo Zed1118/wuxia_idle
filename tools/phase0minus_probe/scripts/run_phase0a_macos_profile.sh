@@ -20,10 +20,13 @@ if [[ "${PROBE_SKIP_BUILD:-false}" != "true" ]]; then
   flutter build macos --profile
 fi
 binary="$probe_dir/build/macos/Build/Products/Profile/phase0minus_probe.app/Contents/MacOS/phase0minus_probe"
-app_bundle="$probe_dir/build/macos/Build/Products/Profile/phase0minus_probe.app"
 if [[ ! -x "$binary" ]]; then
   echo "Profile binary not found: $binary" >&2
   exit 3
+fi
+if ! command -v jq >/dev/null 2>&1; then
+  echo "jq is required to validate each macOS result." >&2
+  exit 4
 fi
 
 for ((index = 1; index <= repeat; index++)); do
@@ -41,15 +44,47 @@ for ((index = 1; index <= repeat; index++)); do
   if [[ -n "$window_x" && -n "$window_y" ]]; then
     run_env+=(PROBE_WINDOW_X="$window_x" PROBE_WINDOW_Y="$window_y")
   fi
-  "${run_env[@]}" "$binary" &
-  probe_pid=$!
-  # A directly launched macOS app may remain backgrounded after the previous
-  # run exits. Flutter then stops delivering FrameTiming callbacks and a fake
-  # zero-frame run can linger indefinitely. Activate the exact built bundle;
-  # do not rely on a user click or a possibly ambiguous bundle identifier.
-  sleep 0.5
-  if kill -0 "$probe_pid" 2>/dev/null; then
-    open -a "$app_bundle"
+  # The app focuses its own exact window. caffeinate keeps the local display
+  # session active without launching a second copy of the app.
+  "${run_env[@]}" caffeinate -dimsu "$binary"
+  summary="$probe_dir/build/results/phase0a-replays/$run_id/summary.json"
+  manifest="$probe_dir/build/results/phase0a-replays/$run_id/manifest.json"
+  if [[ ! -f "$summary" || ! -f "$manifest" ]]; then
+    echo "PHASE0A_MACOS_RUN_FAIL missing result for $run_id" >&2
+    exit 5
   fi
-  wait "$probe_pid"
+  expected_commit=$(git -C "$repository_root" rev-parse HEAD)
+  jq -e \
+    --arg viewport "$viewport" \
+    --arg commit "$expected_commit" \
+    --argjson dpr "$expected_dpr" \
+    '.viewport == $viewport and
+     .frame_metrics.validity == "VALID" and
+     .frame_metrics.gate == "PASS" and
+     .workload.mode == "phase0a_replay" and
+     .workload.gate_eligible_duration == true and
+     .workload.gate_breakdown.timing_gc_gate == "PASS" and
+     .workload.gate_breakdown.resident_pool_gate == "PASS" and
+     .workload.gate_breakdown.workload_coverage_gate == "PASS" and
+     .workload.gate_breakdown.rss_gate == "PASS" and
+     .workload.gate_breakdown.collision_workload_gate == "PASS"' \
+    "$summary" >/dev/null || {
+      echo "PHASE0A_MACOS_RUN_FAIL invalid summary for $run_id" >&2
+      exit 6
+    }
+  jq -e \
+    --arg viewport "$viewport" \
+    --arg commit "$expected_commit" \
+    --argjson dpr "$expected_dpr" \
+    '.viewport.id == $viewport and
+     .git_commit == $commit and
+     .git_dirty == false and
+     .flutter_build_mode == "profile" and
+     .device_pixel_ratio == $dpr and
+     .refresh_rate_hz == 60' \
+    "$manifest" >/dev/null || {
+      echo "PHASE0A_MACOS_RUN_FAIL invalid manifest for $run_id" >&2
+      exit 7
+    }
+  echo "PHASE0A_MACOS_RUN_PASS $run_id"
 done
