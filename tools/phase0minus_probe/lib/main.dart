@@ -5,7 +5,9 @@ import 'dart:io';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:phase0minus_probe/config/probe_config.dart';
+import 'package:phase0minus_probe/gameplay/combat_rules.dart';
 import 'package:phase0minus_probe/gameplay/gameplay_game.dart';
+import 'package:phase0minus_probe/gameplay/gameplay_replay_controller.dart';
 import 'package:phase0minus_probe/run/probe_run_controller.dart';
 import 'package:phase0minus_probe/workload/probe_game.dart';
 import 'package:window_manager/window_manager.dart';
@@ -50,8 +52,12 @@ Future<void> main() async {
   await windowManager.ensureInitialized();
   final config = await ProbeConfig.load();
   final mode = _runtime('PROBE_MODE', _modeDefine);
-  if (mode != 'benchmark' && mode != 'playtest') {
-    throw ArgumentError.value(mode, 'PROBE_MODE', 'benchmark or playtest');
+  if (mode != 'benchmark' && mode != 'playtest' && mode != 'phase0a_replay') {
+    throw ArgumentError.value(
+      mode,
+      'PROBE_MODE',
+      'benchmark, playtest, or phase0a_replay',
+    );
   }
   final viewport = config.viewport(_runtime('PROBE_VIEWPORT', _viewportDefine));
   final tier = config.tier(_runtime('PROBE_TIER', _tierDefine));
@@ -73,9 +79,11 @@ Future<void> main() async {
       minimumSize: Size(viewport.width, viewport.height),
       maximumSize: Size(viewport.width + 100, viewport.height + 100),
       center: true,
-      title: mode == 'playtest'
-          ? 'Phase 0A Gameplay Greybox'
-          : 'Phase 0-minus Performance Probe',
+      title: switch (mode) {
+        'playtest' => 'Phase 0A Gameplay Greybox',
+        'phase0a_replay' => 'Phase 0A Deterministic Replay',
+        _ => 'Phase 0-minus Performance Probe',
+      },
       titleBarStyle: TitleBarStyle.hidden,
     ),
     () async {
@@ -88,20 +96,29 @@ Future<void> main() async {
       await windowManager.focus();
     },
   );
-  runApp(
-    mode == 'playtest'
-        ? GameplayPlaytestApp(config: config, outputRoot: outputRoot)
-        : ProbeApp(
-            config: config,
-            tier: tier,
-            viewport: viewport,
-            runId: runId,
-            durationScale: durationScale,
-            autoClose: autoClose,
-            outputRoot: outputRoot,
-            repositoryRoot: repositoryRoot,
-          ),
-  );
+  final Widget app = switch (mode) {
+    'playtest' => GameplayPlaytestApp(config: config, outputRoot: outputRoot),
+    'phase0a_replay' => GameplayReplayApp(
+      config: config,
+      viewport: viewport,
+      runId: runId,
+      durationScale: durationScale,
+      autoClose: autoClose,
+      outputRoot: '$outputRoot/phase0a-replays',
+      repositoryRoot: repositoryRoot,
+    ),
+    _ => ProbeApp(
+      config: config,
+      tier: tier,
+      viewport: viewport,
+      runId: runId,
+      durationScale: durationScale,
+      autoClose: autoClose,
+      outputRoot: outputRoot,
+      repositoryRoot: repositoryRoot,
+    ),
+  };
+  runApp(app);
 }
 
 String _runtime(String key, String compileTimeValue) =>
@@ -277,6 +294,92 @@ final class _Cooldown extends StatelessWidget {
   );
 }
 
+final class GameplayReplayApp extends StatefulWidget {
+  const GameplayReplayApp({
+    required this.config,
+    required this.viewport,
+    required this.runId,
+    required this.durationScale,
+    required this.autoClose,
+    required this.outputRoot,
+    required this.repositoryRoot,
+    super.key,
+  });
+
+  final ProbeConfig config;
+  final ProbeViewport viewport;
+  final String runId;
+  final double durationScale;
+  final bool autoClose;
+  final String outputRoot;
+  final String repositoryRoot;
+
+  @override
+  State<GameplayReplayApp> createState() => _GameplayReplayAppState();
+}
+
+final class _GameplayReplayAppState extends State<GameplayReplayApp> {
+  late final GameplayGame game = GameplayGame(
+    config: widget.config,
+    deterministicReplay: true,
+  );
+  late final GameplayReplayController controller = GameplayReplayController(
+    game: game,
+    config: widget.config,
+    viewport: widget.viewport,
+    runId: widget.runId,
+    durationScale: widget.durationScale,
+    autoClose: widget.autoClose,
+    outputRoot: widget.outputRoot,
+    repositoryRoot: widget.repositoryRoot,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(_calibrateViewportAndStart()),
+    );
+  }
+
+  Future<void> _calibrateViewportAndStart() async {
+    final view = View.of(context);
+    for (var attempt = 0; attempt < 5; attempt++) {
+      await WidgetsBinding.instance.endOfFrame;
+      final actual = view.physicalSize / view.devicePixelRatio;
+      final widthDelta = widget.viewport.width - actual.width;
+      final heightDelta = widget.viewport.height - actual.height;
+      if (widthDelta.abs() < 0.5 && heightDelta.abs() < 0.5) break;
+      final outer = await windowManager.getSize();
+      await windowManager.setSize(
+        Size(outer.width + widthDelta, outer.height + heightDelta),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+    await controller.start();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: Scaffold(
+      body: GameWidget<GameplayGame>(
+        game: game,
+        initialActiveOverlays: const ['gameplayHud'],
+        overlayBuilderMap: {
+          'gameplayHud': (context, game) => GameplayHud(game: game),
+        },
+      ),
+    ),
+  );
+}
+
 final class GameplayPlaytestApp extends StatefulWidget {
   const GameplayPlaytestApp({
     required this.config,
@@ -301,14 +404,20 @@ final class _GameplayPlaytestAppState extends State<GameplayPlaytestApp> {
   @override
   void initState() {
     super.initState();
+    _focusNode.addListener(_handleFocusChange);
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _focusNode.requestFocus(),
     );
   }
 
+  void _handleFocusChange() {
+    if (!_focusNode.hasFocus) game.clearInput();
+  }
+
   @override
   void dispose() {
     game.clearInput();
+    _focusNode.removeListener(_handleFocusChange);
     _focusNode.dispose();
     super.dispose();
   }
@@ -333,36 +442,31 @@ final class _GameplayPlaytestAppState extends State<GameplayPlaytestApp> {
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
     home: Scaffold(
-      body: Focus(
-        focusNode: _focusNode,
-        onFocusChange: (focused) {
-          if (!focused) game.clearInput();
+      body: Listener(
+        behavior: HitTestBehavior.opaque,
+        onPointerHover: (event) => game.updatePointer(
+          Vector2(event.localPosition.dx, event.localPosition.dy),
+        ),
+        onPointerMove: (event) => game.updatePointer(
+          Vector2(event.localPosition.dx, event.localPosition.dy),
+        ),
+        onPointerDown: (event) {
+          game.updatePointer(
+            Vector2(event.localPosition.dx, event.localPosition.dy),
+          );
+          if (event.buttons == 1) game.setPrimaryHeld(true);
+          _focusNode.requestFocus();
         },
-        child: Listener(
-          behavior: HitTestBehavior.opaque,
-          onPointerHover: (event) => game.updatePointer(
-            Vector2(event.localPosition.dx, event.localPosition.dy),
-          ),
-          onPointerMove: (event) => game.updatePointer(
-            Vector2(event.localPosition.dx, event.localPosition.dy),
-          ),
-          onPointerDown: (event) {
-            game.updatePointer(
-              Vector2(event.localPosition.dx, event.localPosition.dy),
-            );
-            if (event.buttons == 1) game.setPrimaryHeld(true);
-            _focusNode.requestFocus();
+        onPointerUp: (_) => game.setPrimaryHeld(false),
+        onPointerCancel: (_) => game.setPrimaryHeld(false),
+        child: GameWidget<GameplayGame>(
+          game: game,
+          focusNode: _focusNode,
+          autofocus: true,
+          initialActiveOverlays: const ['gameplayHud'],
+          overlayBuilderMap: {
+            'gameplayHud': (context, game) => GameplayHud(game: game),
           },
-          onPointerUp: (_) => game.setPrimaryHeld(false),
-          onPointerCancel: (_) => game.setPrimaryHeld(false),
-          child: GameWidget<GameplayGame>(
-            game: game,
-            autofocus: true,
-            initialActiveOverlays: const ['gameplayHud'],
-            overlayBuilderMap: {
-              'gameplayHud': (context, game) => GameplayHud(game: game),
-            },
-          ),
         ),
       ),
     ),
@@ -375,83 +479,105 @@ final class GameplayHud extends StatelessWidget {
   final GameplayGame game;
 
   @override
-  Widget build(BuildContext context) => IgnorePointer(
-    child: ValueListenableBuilder<GameplayHudState>(
-      valueListenable: game.hud,
-      builder: (context, state, _) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DecoratedBox(
-                decoration: const BoxDecoration(color: Color(0xcceee6d2)),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: SizedBox(
-                    width: 310,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'PHASE 0A  |  WASD · LMB · SPACE · Q · R',
-                          style: TextStyle(
-                            color: Color(0xff252d29),
-                            fontWeight: FontWeight.w700,
-                          ),
+  Widget build(
+    BuildContext context,
+  ) => ValueListenableBuilder<GameplayHudState>(
+    valueListenable: game.hud,
+    builder: (context, state, _) => Stack(
+      children: [
+        IgnorePointer(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DecoratedBox(
+                    decoration: const BoxDecoration(color: Color(0xcceee6d2)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 310,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'PHASE 0A  |  WASD · LMB · SPACE · Q · R',
+                              style: TextStyle(
+                                color: Color(0xff252d29),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            _LabeledMeter(
+                              label: 'HP',
+                              value: state.health,
+                              color: const Color(0xff8a332e),
+                            ),
+                            const SizedBox(height: 5),
+                            _LabeledMeter(
+                              label: 'QI',
+                              value: state.qi,
+                              color: const Color(0xff3f6159),
+                            ),
+                            const SizedBox(height: 9),
+                            Text(
+                              'Wave ${state.wave}/3  ·  enemies ${state.enemyCount}  ·  '
+                              'Space ${(state.movementArtCooldown * 3.2).toStringAsFixed(1)}s  ·  '
+                              'Q ${(state.gatherCooldown * 6.5).toStringAsFixed(1)}s',
+                              style: const TextStyle(color: Color(0xff252d29)),
+                            ),
+                            const SizedBox(height: 7),
+                            Text(
+                              state.message,
+                              style: const TextStyle(color: Color(0xff672d2a)),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 10),
-                        _LabeledMeter(
-                          label: 'HP',
-                          value: state.health,
-                          color: const Color(0xff8a332e),
-                        ),
-                        const SizedBox(height: 5),
-                        _LabeledMeter(
-                          label: 'QI',
-                          value: state.qi,
-                          color: const Color(0xff3f6159),
-                        ),
-                        const SizedBox(height: 9),
-                        Text(
-                          'Wave ${state.wave}/3  ·  enemies ${state.enemyCount}  ·  '
-                          'Space ${(state.movementArtCooldown * 3.2).toStringAsFixed(1)}s  ·  '
-                          'Q ${(state.gatherCooldown * 6.5).toStringAsFixed(1)}s',
-                          style: const TextStyle(color: Color(0xff252d29)),
-                        ),
-                        const SizedBox(height: 7),
-                        Text(
-                          state.message,
-                          style: const TextStyle(color: Color(0xff672d2a)),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ),
-              const Spacer(),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(color: Color(0xaa252d29)),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    child: Text(
-                      'kills ${state.counters['kills'] ?? 0}  ·  '
-                      'chain ${state.counters['maximum_chain'] ?? 0}  ·  '
-                      'breaks ${state.counters['break_successes'] ?? 0}',
-                      style: const TextStyle(color: Color(0xffeee6d2)),
+                  const Spacer(),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(color: Color(0xaa252d29)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          'kills ${state.counters['kills'] ?? 0}  ·  '
+                          'chain ${state.counters['maximum_chain'] ?? 0}  ·  '
+                          'breaks ${state.counters['break_successes'] ?? 0}',
+                          style: const TextStyle(color: Color(0xffeee6d2)),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
-      ),
+        if (state.phase == GameplayPhase.victory ||
+            state.phase == GameplayPhase.defeat)
+          Center(
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xff672d2a),
+                foregroundColor: const Color(0xffeee6d2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 18,
+                ),
+              ),
+              onPressed: game.requestReplay,
+              child: const Text('PLAY AGAIN'),
+            ),
+          ),
+      ],
     ),
   );
 }

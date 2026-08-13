@@ -229,6 +229,7 @@ final class GameplayTelemetry {
   int peakActiveEnemies = 0;
   int damageEvents = 0;
   int breakOpportunities = 0;
+  int replayRequests = 0;
   final Map<int, double> waveDurations = {};
   final List<int> gatherTargetCounts = [];
   final List<int> clearHitCounts = [];
@@ -240,6 +241,7 @@ final class GameplayTelemetry {
     peakActiveEnemies = 0;
     damageEvents = 0;
     breakOpportunities = 0;
+    replayRequests = 0;
     waveDurations.clear();
     gatherTargetCounts.clear();
     clearHitCounts.clear();
@@ -265,6 +267,7 @@ final class GameplayTelemetry {
     'peak_active_enemies': peakActiveEnemies,
     'damage_events': damageEvents,
     'break_opportunities': breakOpportunities,
+    'replay_requests': replayRequests,
     'wave_durations_seconds': {
       for (final entry in waveDurations.entries)
         entry.key.toString(): entry.value,

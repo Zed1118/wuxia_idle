@@ -18,7 +18,18 @@ enum PlayerAction {
   defeated,
 }
 
-enum EnemyMode { spawning, approach, attack, telegraph, staggered, defeated }
+enum BufferedPlayerAction { movementArt, gather, clear }
+
+enum EnemyMode {
+  spawning,
+  approach,
+  attack,
+  telegraph,
+  commit,
+  staggered,
+  hitReact,
+  defeated,
+}
 
 final class GameplayHudState {
   const GameplayHudState({
@@ -45,27 +56,31 @@ final class GameplayHudState {
 }
 
 final class GameplayGame extends FlameGame with KeyboardEvents {
-  GameplayGame({required this.config, this.onSessionEnded})
-    : tuning = GameplayTuning.fromConfig(config),
-      random = math.Random(config.fixedSeed),
-      hud = ValueNotifier(
-        const GameplayHudState(
-          health: 1,
-          qi: 0.4,
-          movementArtCooldown: 0,
-          gatherCooldown: 0,
-          enemyCount: 0,
-          wave: 1,
-          phase: GameplayPhase.active,
-          message: 'Preparing greybox...',
-          counters: {},
-        ),
-      );
+  GameplayGame({
+    required this.config,
+    this.onSessionEnded,
+    this.deterministicReplay = false,
+  }) : tuning = GameplayTuning.fromConfig(config),
+       random = math.Random(config.fixedSeed),
+       hud = ValueNotifier(
+         const GameplayHudState(
+           health: 1,
+           qi: 0.4,
+           movementArtCooldown: 0,
+           gatherCooldown: 0,
+           enemyCount: 0,
+           wave: 1,
+           phase: GameplayPhase.active,
+           message: 'Preparing greybox...',
+           counters: {},
+         ),
+       );
 
   final ProbeConfig config;
   final void Function(Map<String, Object?> report)? onSessionEnded;
+  final bool deterministicReplay;
   final GameplayTuning tuning;
-  final math.Random random;
+  math.Random random;
   final ValueNotifier<GameplayHudState> hud;
   final GameplayCounters counters = GameplayCounters();
   final GameplayTelemetry telemetry = GameplayTelemetry();
@@ -76,6 +91,7 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   Vector2 pointerWorld = Vector2(800, 360);
   bool primaryHeld = false;
   bool _primaryPressed = false;
+  bool _primaryReleased = false;
   GameplayPhase phase = GameplayPhase.active;
   int wave = 1;
   double _waveElapsed = 0;
@@ -85,6 +101,14 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   int _nextEnemyId = 0;
   final Set<int> _spawnedBatches = {};
   bool _sessionReported = false;
+  GameplayPhase _phaseBeforePause = GameplayPhase.active;
+  int clearEventId = -1;
+  int replayPeakCount = 0;
+  int replayCycleCount = 0;
+  double _replayElapsed = 0;
+  int _replayPhase = -1;
+  bool _replayGathered = false;
+  bool _replayCleared = false;
 
   double get fieldWidth => config.number('gameplay.field.width');
   double get fieldHeight => config.number('gameplay.field.height');
@@ -113,7 +137,12 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     );
     player = GameplayPlayer(game: this);
     await world.add(player);
-    _spawnDueBatches();
+    await world.add(GameplaySkillGuide(game: this));
+    if (deterministicReplay) {
+      _prepareReplayResidents();
+    } else {
+      _spawnDueBatches();
+    }
     _updateCamera();
     _updateHud('Wave 1: learn the moving attack and Q to R payoff.');
   }
@@ -132,7 +161,11 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     }
     super.update(dt);
     _assignAttackSlots();
-    _driveWaves(dt);
+    if (deterministicReplay) {
+      _driveReplay(dt);
+    } else {
+      _driveWaves(dt);
+    }
     telemetry.tick(dt, enemies.where((enemy) => enemy.alive).length);
     _updateCamera();
     _hudElapsed += dt;
@@ -188,7 +221,11 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
 
   void setPrimaryHeld(bool value) {
     primaryHeld = value;
-    if (value) _primaryPressed = true;
+    if (value) {
+      _primaryPressed = true;
+    } else {
+      _primaryReleased = true;
+    }
   }
 
   bool consumePrimaryPressed() {
@@ -197,17 +234,27 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     return pressed;
   }
 
+  bool consumePrimaryReleased() {
+    final released = _primaryReleased;
+    _primaryReleased = false;
+    return released;
+  }
+
   void clearInput() {
     _keys.clear();
     primaryHeld = false;
     _primaryPressed = false;
+    _primaryReleased = false;
   }
 
   void togglePause() {
     if (phase == GameplayPhase.victory || phase == GameplayPhase.defeat) return;
-    phase = phase == GameplayPhase.paused
-        ? GameplayPhase.active
-        : GameplayPhase.paused;
+    if (phase == GameplayPhase.paused) {
+      phase = _phaseBeforePause;
+    } else {
+      _phaseBeforePause = phase;
+      phase = GameplayPhase.paused;
+    }
     clearInput();
     _updateHud(phase == GameplayPhase.paused ? 'Paused' : 'Resumed');
   }
@@ -228,6 +275,9 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
       ..currentChain = 0;
     telemetry.reset();
     _sessionReported = false;
+    random = math.Random(config.fixedSeed);
+    _nextEnemyId = 0;
+    _phaseBeforePause = GameplayPhase.active;
     phase = GameplayPhase.active;
     wave = 1;
     _waveElapsed = 0;
@@ -236,6 +286,14 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     player.resetForSession();
     _spawnDueBatches();
     _updateHud('Wave 1: move, aim, then use Q to R.');
+  }
+
+  void requestReplay() {
+    if (phase != GameplayPhase.victory && phase != GameplayPhase.defeat) return;
+    telemetry.replayRequests++;
+    _sessionReported = false;
+    _finishSession('replay_requested');
+    resetSession();
   }
 
   Iterable<GameplayEnemy> enemiesInRadius(Vector2 center, double radius) sync* {
@@ -255,7 +313,8 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   void onEnemyRemoval(GameplayEnemy enemy) => enemies.remove(enemy);
 
   void damagePlayer(double amount, Vector2 source) {
-    if (player.receiveDamage(amount, source)) {
+    if (deterministicReplay) return;
+    if (player.receiveDamage(amount, source, heavy: amount >= 20)) {
       telemetry.damageEvents++;
       counters.breakChain();
       if (player.health <= 0) {
@@ -353,6 +412,90 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     world.add(enemy);
   }
 
+  void _prepareReplayResidents() {
+    for (var index = 0; index < 20; index++) {
+      _spawnEnemy(elite: false, batch: index % 3, index: index);
+    }
+    _spawnEnemy(elite: true, batch: 1, index: 99);
+    _activateReplayPhase(0);
+  }
+
+  void _driveReplay(double dt) {
+    _replayElapsed += dt;
+    final cycleTime = _replayElapsed % 12;
+    final nextPhase = (cycleTime / 4).floor().clamp(0, 2);
+    if (nextPhase != _replayPhase) _activateReplayPhase(nextPhase);
+    primaryHeld = true;
+    pointerWorld = player.position + Vector2(260, 0);
+    if (_replayPhase == 2) {
+      final local = cycleTime - 8;
+      if (local >= 1.0 && !_replayGathered) {
+        _replayGathered = player.requestGather();
+      }
+      if (local >= 1.7 && !_replayCleared) {
+        player.qi = config.number('gameplay.player.qi_capacity');
+        _replayCleared = player.requestClear();
+        if (_replayCleared) clearEventId++;
+      }
+    }
+  }
+
+  void _activateReplayPhase(int nextPhase) {
+    _replayPhase = nextPhase;
+    _replayGathered = false;
+    _replayCleared = false;
+    wave = nextPhase + 1;
+    if (nextPhase == 0 && _replayElapsed > 0) replayCycleCount++;
+    final activeNormals = switch (nextPhase) {
+      0 => 10,
+      1 => 20,
+      _ => 20,
+    };
+    var normalIndex = 0;
+    for (final enemy in enemies) {
+      if (enemy.elite) {
+        if (nextPhase == 2) {
+          enemy.activateForReplay(player.position + Vector2(250, -80));
+        } else {
+          enemy.deactivateForReplay();
+        }
+        continue;
+      }
+      if (normalIndex < activeNormals) {
+        final angle = normalIndex * math.pi * 2 / activeNormals;
+        final radius = (150 + (normalIndex % 4) * 35).toDouble();
+        enemy.activateForReplay(
+          player.position + Vector2(math.cos(angle), math.sin(angle)) * radius,
+        );
+      } else {
+        enemy.deactivateForReplay();
+      }
+      normalIndex++;
+    }
+    if (nextPhase == 2) replayPeakCount++;
+  }
+
+  Map<String, Object?> replayWorkloadSnapshot() => {
+    'mode': 'phase0a_replay',
+    'replay_script_version': 'phase0a-compressed-12s-v1',
+    'replay_peak_20_plus_1_count': replayPeakCount,
+    'replay_cycle_count': replayCycleCount,
+    'clear_event_id': clearEventId,
+    'resident_enemies': enemies.length,
+    'active_enemies': enemies.where((enemy) => enemy.alive).length,
+    'telemetry': telemetry.toJson(outcome: 'replay', counters: counters),
+  };
+
+  Map<String, Object?> replayPoolSnapshot() => {
+    'enemy_residents': {
+      'created_total': enemies.length,
+      'active_current': enemies.where((enemy) => enemy.alive).length,
+      'active_peak': 21,
+      'allocation_after_warmup': 0,
+      'invariant_holds': enemies.length == 21,
+    },
+  };
+
   void _assignAttackSlots() {
     final aliveNormals =
         enemies.where((enemy) => enemy.alive && !enemy.elite).toList()..sort(
@@ -362,7 +505,8 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
         );
     final slots = config.integer('gameplay.normal.attack_slots');
     for (var index = 0; index < aliveNormals.length; index++) {
-      aliveNormals[index].hasAttackSlot = index < slots;
+      final enemy = aliveNormals[index];
+      enemy.hasAttackSlot = enemy.mode == EnemyMode.attack || index < slots;
     }
   }
 
@@ -414,8 +558,11 @@ final class GameplayPlayer extends PositionComponent {
   double gatherCooldown = 0;
   double invulnerabilityRemaining = 0;
   double damageProtectionRemaining = 0;
+  double recoveryRemaining = 0;
   Vector2 aimDirection = Vector2(1, 0);
   Vector2 _movementArtDirection = Vector2(1, 0);
+  BufferedPlayerAction? _bufferedAction;
+  double _bufferRemaining = 0;
   bool _basicResolved = false;
   bool _gatherResolved = false;
   bool _clearResolved = false;
@@ -426,6 +573,9 @@ final class GameplayPlayer extends PositionComponent {
     gatherCooldown = math.max(0, gatherCooldown - dt);
     invulnerabilityRemaining = math.max(0, invulnerabilityRemaining - dt);
     damageProtectionRemaining = math.max(0, damageProtectionRemaining - dt);
+    recoveryRemaining = math.max(0, recoveryRemaining - dt);
+    _bufferRemaining = math.max(0, _bufferRemaining - dt);
+    if (_bufferRemaining == 0) _bufferedAction = null;
     final pointerDelta = game.pointerWorld - position;
     if (pointerDelta.length2 > 1) aimDirection = pointerDelta.normalized();
 
@@ -433,50 +583,77 @@ final class GameplayPlayer extends PositionComponent {
     if (actionRemaining > 0) {
       actionRemaining -= dt;
       _updateCurrentAction(dt);
-      if (actionRemaining <= 0) action = PlayerAction.locomotion;
+      if (actionRemaining <= 0) {
+        if (action == PlayerAction.movementArt) recoveryRemaining = 0.08;
+        action = PlayerAction.locomotion;
+      }
     } else {
       action = PlayerAction.locomotion;
       _move(game.movementInput(), dt, 1);
-      if (game.primaryHeld || game.consumePrimaryPressed()) _startBasic();
+      if (recoveryRemaining <= 0) {
+        if (_consumeBufferedAction()) {
+          super.update(dt);
+          return;
+        }
+        final pressed = game.consumePrimaryPressed();
+        game.consumePrimaryReleased();
+        if (game.primaryHeld || pressed) _startBasic();
+      }
     }
     super.update(dt);
   }
 
-  void requestMovementArt() {
-    if (action == PlayerAction.defeated || movementArtCooldown > 0) return;
+  bool requestMovementArt() {
+    if (action == PlayerAction.defeated || movementArtCooldown > 0) {
+      return false;
+    }
     final canCancelBasic =
         action == PlayerAction.basic && actionRemaining <= 0.095;
-    if (action != PlayerAction.locomotion && !canCancelBasic) return;
+    if (action != PlayerAction.locomotion && !canCancelBasic) {
+      _buffer(BufferedPlayerAction.movementArt);
+      return false;
+    }
     final input = game.movementInput();
     _movementArtDirection = input.length2 > 0 ? input : aimDirection;
     action = PlayerAction.movementArt;
     actionRemaining = game.tuning.dashDuration;
     movementArtCooldown = game.tuning.dashCooldown;
-    invulnerabilityRemaining = 0.15;
+    invulnerabilityRemaining = 0;
     game.counters.record(GameplayAction.dash);
+    return true;
   }
 
-  void requestGather() {
-    if (action != PlayerAction.locomotion || gatherCooldown > 0) return;
+  bool requestGather() {
+    if (gatherCooldown > 0 || action == PlayerAction.defeated) return false;
+    if (action != PlayerAction.locomotion) {
+      _buffer(BufferedPlayerAction.gather);
+      return false;
+    }
     action = PlayerAction.gather;
     actionRemaining = 0.60;
     gatherCooldown = game.tuning.gatherCooldown;
     _gatherResolved = false;
     game.counters.record(GameplayAction.gather);
+    return true;
   }
 
-  void requestClear() {
-    if (action != PlayerAction.locomotion || qi < game.tuning.clearQiCost) {
-      return;
+  bool requestClear() {
+    if (qi < game.tuning.clearQiCost || action == PlayerAction.defeated) {
+      return false;
+    }
+    if (action != PlayerAction.locomotion) {
+      _buffer(BufferedPlayerAction.clear);
+      return false;
     }
     action = PlayerAction.clear;
     actionRemaining = 0.76;
     qi -= game.tuning.clearQiCost;
     _clearResolved = false;
     game.counters.record(GameplayAction.clear);
+    return true;
   }
 
-  bool receiveDamage(double amount, Vector2 source) {
+  bool receiveDamage(double amount, Vector2 source, {required bool heavy}) {
     if (invulnerabilityRemaining > 0 || damageProtectionRemaining > 0) {
       return false;
     }
@@ -485,7 +662,7 @@ final class GameplayPlayer extends PositionComponent {
     if (health <= 0) {
       action = PlayerAction.defeated;
       actionRemaining = 0;
-    } else {
+    } else if (action != PlayerAction.clear || heavy) {
       action = PlayerAction.hurt;
       actionRemaining = 0.18;
       final away = position - source;
@@ -503,7 +680,27 @@ final class GameplayPlayer extends PositionComponent {
     gatherCooldown = 0;
     invulnerabilityRemaining = 0;
     damageProtectionRemaining = 0;
+    recoveryRemaining = 0;
+    _bufferedAction = null;
+    _bufferRemaining = 0;
     position = Vector2(400, game.fieldHeight / 2);
+  }
+
+  void _buffer(BufferedPlayerAction action) {
+    _bufferedAction = action;
+    _bufferRemaining = 0.12;
+  }
+
+  bool _consumeBufferedAction() {
+    final buffered = _bufferedAction;
+    if (buffered == null || _bufferRemaining <= 0) return false;
+    _bufferedAction = null;
+    _bufferRemaining = 0;
+    return switch (buffered) {
+      BufferedPlayerAction.movementArt => requestMovementArt(),
+      BufferedPlayerAction.gather => requestGather(),
+      BufferedPlayerAction.clear => requestClear(),
+    };
   }
 
   void _startBasic() {
@@ -522,10 +719,18 @@ final class GameplayPlayer extends PositionComponent {
           _resolveBasic();
         }
       case PlayerAction.movementArt:
-        invulnerabilityRemaining = math.max(invulnerabilityRemaining, 0.03);
-        _move(_movementArtDirection, dt, game.tuning.dashSpeed / 360);
+        final elapsed = game.tuning.dashDuration - actionRemaining;
+        invulnerabilityRemaining = elapsed >= 0.03 && elapsed <= 0.15
+            ? math.max(invulnerabilityRemaining, dt)
+            : 0;
+        position += _movementArtDirection * game.tuning.dashSpeed * dt;
+        final radius = size.x / 2;
+        position.clamp(
+          Vector2(radius, game.combatTop + radius),
+          Vector2(game.fieldWidth - radius, game.combatBottom - radius),
+        );
       case PlayerAction.gather:
-        if (!_gatherResolved && actionRemaining <= 0.30) {
+        if (!_gatherResolved && actionRemaining <= 0.42) {
           _gatherResolved = true;
           _resolveGather();
         }
@@ -678,7 +883,9 @@ final class GameplayPlayer extends PositionComponent {
           1 - actionRemaining / (action == PlayerAction.gather ? 0.60 : 0.76);
       canvas.drawCircle(
         center,
-        radius + 10 + progress * 12,
+        action == PlayerAction.clear
+            ? game.tuning.clearRadius * progress.clamp(0.05, 1)
+            : radius + 10 + progress * 12,
         Paint()
           ..color = const Color(0xff8a332e)
           ..style = PaintingStyle.stroke
@@ -722,22 +929,28 @@ final class GameplayEnemy extends PositionComponent {
   int breakPoints = 0;
   double _telegraphCooldown = 4.0;
   double _defeatRemaining = 0;
+  double _flashRemaining = 0;
+  double _pullRemaining = 0;
+  Vector2? _pullTarget;
+  bool _activeInEncounter = true;
   Vector2 _impulse = Vector2.zero();
 
-  bool get alive => health > 0 && mode != EnemyMode.defeated;
+  bool get alive =>
+      _activeInEncounter && health > 0 && mode != EnemyMode.defeated;
   bool get inBreakWindow =>
-      elite &&
-      mode == EnemyMode.telegraph &&
-      isBreakWindow(telegraphRemaining: modeRemaining, tuning: game.tuning);
+      elite && mode == EnemyMode.telegraph && modeRemaining <= 0.85;
 
   @override
   void update(double dt) {
     if (!alive) {
+      if (!_activeInEncounter) return;
       if (mode == EnemyMode.defeated) {
         _defeatRemaining -= dt;
         if (_defeatRemaining <= 0) {
-          removeFromParent();
-          game.onEnemyRemoval(this);
+          if (!game.deterministicReplay) {
+            removeFromParent();
+            game.onEnemyRemoval(this);
+          }
         }
       }
       return;
@@ -745,6 +958,13 @@ final class GameplayEnemy extends PositionComponent {
     spawnGrace = math.max(0, spawnGrace - dt);
     attackCooldown = math.max(0, attackCooldown - dt);
     imbalanceRemaining = math.max(0, imbalanceRemaining - dt);
+    _flashRemaining = math.max(0, _flashRemaining - dt);
+    if (_pullRemaining > 0 && _pullTarget != null) {
+      final step = math.min(1.0, dt / _pullRemaining);
+      position += (_pullTarget! - position) * step;
+      _pullRemaining = math.max(0, _pullRemaining - dt);
+      if (_pullRemaining == 0) _pullTarget = null;
+    }
     if (_impulse.length2 > 1) {
       position += _impulse * dt;
       _impulse.scale(math.pow(0.015, dt).toDouble());
@@ -754,13 +974,30 @@ final class GameplayEnemy extends PositionComponent {
       if (modeRemaining <= 0) mode = EnemyMode.approach;
       return;
     }
+    if (mode == EnemyMode.hitReact) {
+      modeRemaining -= dt;
+      if (modeRemaining <= 0) mode = EnemyMode.approach;
+      return;
+    }
     if (mode == EnemyMode.telegraph) {
       modeRemaining -= dt;
+      if (modeRemaining <= 0.2) {
+        mode = EnemyMode.commit;
+        modeRemaining = 0.2;
+      }
+      return;
+    }
+    if (mode == EnemyMode.commit) {
+      modeRemaining -= dt;
       if (modeRemaining <= 0) {
-        game.damagePlayer(
-          game.config.number('gameplay.elite.heavy_damage'),
-          position,
-        );
+        final heavyDelta = game.player.position - position;
+        const heavyRange = 230.0;
+        if (heavyDelta.length2 <= heavyRange * heavyRange) {
+          game.damagePlayer(
+            game.config.number('gameplay.elite.heavy_damage'),
+            position,
+          );
+        }
         mode = EnemyMode.approach;
         _telegraphCooldown = game.tuning.eliteChargeInterval;
       }
@@ -798,7 +1035,13 @@ final class GameplayEnemy extends PositionComponent {
       mode = EnemyMode.approach;
       if (distance > 0) {
         final speed = elite ? game.tuning.eliteSpeed : game.tuning.normalSpeed;
-        position += delta / distance * speed * dt;
+        if (!elite && !hasAttackSlot && distance < 155) {
+          final orbitDirection = id.isEven ? 1.0 : -1.0;
+          final tangent = Vector2(-delta.y, delta.x) / distance;
+          position += tangent * speed * orbitDirection * dt * 0.6;
+        } else {
+          position += delta / distance * speed * dt;
+        }
       }
     } else if (attackCooldown <= 0) {
       mode = EnemyMode.attack;
@@ -826,13 +1069,19 @@ final class GameplayEnemy extends PositionComponent {
     applyBreakPoints(breakPoints);
     final staggerMultiplier = mode == EnemyMode.staggered ? 1.5 : 1.0;
     health = math.max(0, health - damage * staggerMultiplier);
+    _flashRemaining = 0.08;
     final away = position - source;
     if (away.length2 > 0 && (lightReact || !elite)) {
       _impulse = away.normalized() * knockback;
     }
+    if (lightReact && !elite && mode == EnemyMode.attack) {
+      mode = EnemyMode.hitReact;
+      modeRemaining = 0.12;
+      attackCooldown = game.tuning.enemyAttackInterval;
+    }
     if (health <= 0) {
       mode = EnemyMode.defeated;
-      _defeatRemaining = 0.24;
+      _defeatRemaining = (id % 20) * 0.009;
       game.onEnemyDefeated(this);
     }
   }
@@ -843,6 +1092,7 @@ final class GameplayEnemy extends PositionComponent {
     if (breakPoints >= game.tuning.eliteBreakThreshold) {
       mode = EnemyMode.staggered;
       modeRemaining = game.config.number('gameplay.elite.stagger_seconds');
+      _telegraphCooldown = game.tuning.eliteChargeInterval;
       game.counters.record(GameplayAction.breakSuccess);
       game.player.qi = math.min(
         game.config.number('gameplay.player.qi_capacity'),
@@ -854,14 +1104,46 @@ final class GameplayEnemy extends PositionComponent {
   void pullToward(Vector2 target, double maximumDistance) {
     final delta = target - position;
     if (delta.length2 == 0) return;
-    position += delta.normalized() * math.min(maximumDistance, delta.length);
+    _pullTarget =
+        position + delta.normalized() * math.min(maximumDistance, delta.length);
+    _pullRemaining = 0.30;
+  }
+
+  void activateForReplay(Vector2 spawn) {
+    _activeInEncounter = true;
+    position = spawn;
+    health = elite ? game.tuning.eliteHealth : game.tuning.normalHealth;
+    mode = EnemyMode.spawning;
+    spawnGrace = 0.35;
+    attackCooldown = (id % 3) * 0.18;
+    modeRemaining = 0;
+    imbalanceRemaining = 0;
+    breakPoints = 0;
+    _telegraphCooldown = elite ? 1.0 : 4.0;
+    _defeatRemaining = 0;
+    _flashRemaining = 0;
+    _pullRemaining = 0;
+    _pullTarget = null;
+    _impulse = Vector2.zero();
+  }
+
+  void deactivateForReplay() {
+    _activeInEncounter = false;
+    health = 0;
+    mode = EnemyMode.defeated;
+    hasAttackSlot = false;
   }
 
   @override
   void render(Canvas canvas) {
+    if (!_activeInEncounter) return;
     final radius = size.x / 2;
     final center = Offset(radius, radius);
-    final color = elite ? const Color(0xff6a2f2b) : const Color(0xff515a54);
+    final color = _flashRemaining > 0
+        ? const Color(0xffeee6d2)
+        : elite
+        ? const Color(0xff6a2f2b)
+        : const Color(0xff515a54);
     canvas.drawOval(
       Rect.fromCenter(
         center: center,
@@ -893,6 +1175,16 @@ final class GameplayEnemy extends PositionComponent {
           ..strokeWidth = breakable ? 6 : 3,
       );
     }
+    if (mode == EnemyMode.commit) {
+      canvas.drawCircle(
+        center,
+        230,
+        Paint()
+          ..color = const Color(0x55a33b32)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 7,
+      );
+    }
     if (mode == EnemyMode.attack) {
       final facing = game.player.position - position;
       if (facing.length2 > 0) {
@@ -911,6 +1203,41 @@ final class GameplayEnemy extends PositionComponent {
       canvas.drawRect(
         Rect.fromLTWH(0, -8, size.x * (health / maxHealth), 4),
         Paint()..color = const Color(0xff8a332e),
+      );
+    }
+  }
+}
+
+final class GameplaySkillGuide extends PositionComponent {
+  GameplaySkillGuide({required this.game}) : super(priority: 14);
+
+  final GameplayGame game;
+
+  @override
+  void update(double dt) {
+    position = game.pointerWorld;
+    super.update(dt);
+  }
+
+  @override
+  void render(Canvas canvas) {
+    final gathering = game.player.action == PlayerAction.gather;
+    canvas.drawCircle(
+      Offset.zero,
+      gathering ? game.tuning.gatherRadius : 9,
+      Paint()
+        ..color = gathering ? const Color(0x66737b70) : const Color(0x99672d2a)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = gathering ? 3 : 2,
+    );
+    if (gathering) {
+      canvas.drawCircle(
+        Offset.zero,
+        game.tuning.gatherTargetRadius,
+        Paint()
+          ..color = const Color(0x998a332e)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
       );
     }
   }

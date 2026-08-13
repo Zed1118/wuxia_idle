@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:phase0minus_probe/config/probe_config.dart';
+import 'package:phase0minus_probe/gameplay/combat_rules.dart';
 import 'package:phase0minus_probe/gameplay/gameplay_game.dart';
 
 void main() {
@@ -49,6 +50,32 @@ void main() {
     game.clearInput();
     game.update(0.1);
     expect(game.player.position.x, closeTo(moved.x, 0.001));
+  });
+
+  testWidgets('GameWidget focus dispatches real keyboard events', (
+    tester,
+  ) async {
+    final game = GameplayGame(config: config);
+    final focusNode = FocusNode();
+    addTearDown(focusNode.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GameWidget<GameplayGame>(
+          game: game,
+          focusNode: focusNode,
+          autofocus: true,
+        ),
+      ),
+    );
+    await tester.pump();
+    final start = game.player.position.clone();
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.keyD);
+    game.update(0.1);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.keyD);
+
+    expect(focusNode.hasPrimaryFocus, isTrue);
+    expect(game.player.position.x, greaterThan(start.x));
   });
 
   testWidgets('one click attacks once and grants qi once', (tester) async {
@@ -112,5 +139,73 @@ void main() {
     expect(reports.single['outcome'], 'defeat');
     expect(reports.single['damage_events'], 1);
     expect(reports.single['actions'], isA<Map<String, int>>());
+  });
+
+  testWidgets('pause restores between-wave phase', (tester) async {
+    final game = await mountGame(tester);
+    game.phase = GameplayPhase.betweenWaves;
+
+    game.togglePause();
+    expect(game.phase, GameplayPhase.paused);
+    game.togglePause();
+
+    expect(game.phase, GameplayPhase.betweenWaves);
+  });
+
+  testWidgets('session reset reproduces seeded spawn positions', (
+    tester,
+  ) async {
+    final game = await mountGame(tester);
+    final firstRun = game.enemies
+        .map((enemy) => enemy.position.clone())
+        .toList();
+
+    game.resetSession();
+    await tester.pump();
+    final secondRun = game.enemies
+        .map((enemy) => enemy.position.clone())
+        .toList();
+
+    expect(secondRun, hasLength(firstRun.length));
+    for (var index = 0; index < firstRun.length; index++) {
+      expect(secondRun[index].x, firstRun[index].x);
+      expect(secondRun[index].y, firstRun[index].y);
+    }
+  });
+
+  testWidgets('one buffered command executes after basic recovery', (
+    tester,
+  ) async {
+    final game = await mountGame(tester);
+    game.setPrimaryHeld(true);
+    game.setPrimaryHeld(false);
+    game.update(0.01);
+    game.update(0.20);
+    expect(game.player.action, PlayerAction.basic);
+
+    expect(game.player.requestGather(), isFalse);
+    game.update(0.10);
+    game.update(0.01);
+
+    expect(game.player.action, PlayerAction.gather);
+  });
+
+  testWidgets('compressed replay reuses 21 resident enemies', (tester) async {
+    final game = GameplayGame(config: config, deterministicReplay: true);
+    await tester.pumpWidget(
+      MaterialApp(home: GameWidget<GameplayGame>(game: game)),
+    );
+    await tester.pump();
+
+    expect(game.enemies, hasLength(21));
+    expect(game.enemies.where((enemy) => enemy.alive), hasLength(10));
+    game.update(8.1);
+
+    expect(game.enemies.where((enemy) => enemy.alive), hasLength(21));
+    expect(game.replayPeakCount, greaterThanOrEqualTo(1));
+    expect(
+      game.replayPoolSnapshot()['enemy_residents'],
+      containsPair('invariant_holds', true),
+    );
   });
 }
