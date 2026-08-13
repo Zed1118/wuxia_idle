@@ -15,6 +15,7 @@ import 'package:phase0minus_probe/phase0b/joint/phase0b_joint_compare_app.dart';
 import 'package:phase0minus_probe/phase0b/load/phase0b_art_load_app.dart';
 import 'package:phase0minus_probe/phase0b/phase0b_art_gallery_app.dart';
 import 'package:phase0minus_probe/phase0b/phase0b_runtime_app.dart';
+import 'package:phase0minus_probe/phase0b/scroll/phase0b_scroll_observation_app.dart';
 import 'package:phase0minus_probe/phase0b/scroll/phase0b_scroll_review_app.dart';
 import 'package:phase0minus_probe/run/probe_run_controller.dart';
 import 'package:phase0minus_probe/workload/probe_game.dart';
@@ -72,12 +73,14 @@ Future<void> main() async {
       mode != 'phase0b_runtime' &&
       mode != 'phase0b_joint_compare' &&
       mode != 'phase0b_art_load' &&
+      mode != 'phase0b_scroll_profile' &&
       mode != 'phase0b_scroll_review') {
     throw ArgumentError.value(
       mode,
       'PROBE_MODE',
       'benchmark, playtest, phase0a_replay, readability, phase0b_gallery, '
-          'phase0b_runtime, phase0b_joint_compare, phase0b_art_load, or '
+          'phase0b_runtime, phase0b_joint_compare, phase0b_art_load, '
+          'phase0b_scroll_profile, or '
           'phase0b_scroll_review',
     );
   }
@@ -111,6 +114,7 @@ Future<void> main() async {
         'phase0b_runtime' => 'Phase 0B Pose Atlas Runtime',
         'phase0b_joint_compare' => 'Phase 0B Animation Route Compare',
         'phase0b_art_load' => 'Phase 0B Art Load Replay',
+        'phase0b_scroll_profile' => 'Phase 0B Scrolling World Observation',
         'phase0b_scroll_review' => 'Phase 0B Scrolling World Review',
         _ => 'Phase 0-minus Performance Probe',
       },
@@ -134,6 +138,15 @@ Future<void> main() async {
     'phase0b_runtime' => const Phase0bRuntimeApp(),
     'phase0b_joint_compare' => const Phase0bJointCompareApp(),
     'phase0b_scroll_review' => const Phase0bScrollReviewApp(),
+    'phase0b_scroll_profile' => Phase0bScrollObservationApp(
+      runId: runId,
+      outputRoot: outputRoot,
+      durationScale: durationScale,
+      autoClose: autoClose,
+      viewportId: viewport.id,
+      expectedWidth: viewport.width,
+      expectedHeight: viewport.height,
+    ),
     'phase0b_art_load' => Phase0bArtLoadApp(
       runId: runId,
       outputRoot: outputRoot,

@@ -90,7 +90,8 @@ for runtime_asset in \
   elite_pose_atlas_v1.png \
   founder_cutout_parts_v1.png \
   mountain_pass_background_v1.webp \
-  mountain_pass_background_v2.png; do
+  mountain_pass_background_v2.png \
+  scroll_panorama_mountain_to_gate_v1.png; do
   [[ -s "$embedded_assets/runtime/$runtime_asset" ]] || {
     echo "PHASE0B_PACKAGE_FAIL EMBEDDED_RUNTIME_ASSET_MISSING $runtime_asset" >&2
     exit 4
@@ -101,7 +102,7 @@ printf '%s\n' \
   "commit=$commit" \
   "git_dirty=$dirty" \
   "built_at_utc=$timestamp" \
-  'modes=phase0b_gallery,phase0b_runtime,phase0b_joint_compare,phase0b_art_load,phase0b_scroll_review' \
+  'modes=phase0b_gallery,phase0b_runtime,phase0b_joint_compare,phase0b_art_load,phase0b_scroll_review,phase0b_scroll_profile' \
   'viewport=desktop_1280x720' \
   'claim=concept_camera_v2_art_load_and_rejected_auto_cutout_review_only' \
   "source_manifest_checksum=$source_manifest_checksum" \

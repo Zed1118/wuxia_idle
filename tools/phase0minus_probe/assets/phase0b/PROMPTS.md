@@ -51,3 +51,21 @@
 ## 纯山道背景底板 V2
 
 编辑现有山道样片：删除所有人物、腾空武者、武器和人物状阴影；保持写实克制的水墨山谷、树木、远山和中央道路透视。中央与下半部必须是宽阔、空白、可落脚的横版战斗地面，加入轻微横向纵深层次；远景低对比，不与前景角色争夺轮廓。无角色、动物、文字、UI 和高饱和色。输出裁切为 1280×720 的干净背景底板。
+
+## 连续地图三段背景 V1
+
+三张均以纯山道 V2 为画风、镜头高度、道路尺度和宣纸色参考，生成 16:9 空场景；下方约 42% 保留浅纵深可战地面，左右边缘保持低细节雾路。共同禁止人物、剪影、武器、动物、文字、UI、边框、魔法与高饱和色。
+
+- 山口引入：左侧风化界碑与折松作为地标，中央道路保持开放；
+- 林道交战：道路两侧竹松与废弃木轮作为地标，不遮挡战斗带；
+- 关隘高潮：后景残破木石关门与一小面暗朱残旗，前景留出 20+1 空间。
+
+三张由内置 imagegen 分别生成后，实机发现跨图地平线和明度仍留下拼接痕迹，因此未进入项目资产，只作为被否决尝试保留在临时目录。
+
+## 单张连续超宽山道长卷 V1
+
+改为一次生成一张不中断的超宽全景母图，明确禁止三联画、面板、边框、镜像重复和多个中心消失点。同一条道路从左至右自然经过界碑折松、竹林木轮，最后抵达残破关隘；统一地平线、光照、纸纹、镜头高度和地面透视。原始母图约 2.5:1，从中部等比裁出连续战斗带，再等比放大为 3600×720；没有横向拉伸，也没有跨图拼缝。
+
+最终生成提示词（内置 imagegen）：
+
+> Use case: stylized-concept. Asset type: ONE SINGLE continuous ultra-wide panoramic side-scrolling wuxia game map master plate, exact composition ratio 5:1, intended runtime size 3600x720. This must be one uninterrupted landscape, not a triptych, not panels, no seams, no borders, no repeated mirrored sections. From left to right, the same road naturally progresses through: (1) an open mountain-pass entrance with a weathered boundary stele and bent pine; (2) a wooded/bamboo mountain road with a discarded cart wheel near the edge; (3) an approach to a ruined timber-and-stone checkpoint with one tiny muted dark-red torn banner. Preserve one continuous horizon, one continuous ground plane, consistent camera height, perspective, lighting, paper texture and restrained realistic Chinese ink-wash brushwork across the entire panorama. The lower 42% is a broad continuous shallow-depth playable road for human sprites about 160px tall. Keep landmarks at the sides or rear and the central combat band open. Far mountains are soft and desaturated. No characters, silhouettes, people-shaped shadows, weapons, animals, text, UI, frames, borders, panel dividers, duplicated central vanishing points, magic effects, or bright colors. Produce a clean seamless continuous panoramic background plate with generous detail across the full width.

@@ -32,6 +32,10 @@ void main() {
     expect(Phase0bScrollReviewGame.spawnedPopulationAt(2, 0.7), 12);
     expect(Phase0bScrollReviewGame.spawnedPopulationAt(2, 1.0), 20);
     expect(Phase0bScrollReviewGame.spawnedPopulationAt(2, 1.3), 21);
+    expect(Phase0bScrollReviewGame.activePopulationAt(0, 2.8), 6);
+    expect(Phase0bScrollReviewGame.activePopulationAt(0, 2.9), 0);
+    expect(Phase0bScrollReviewGame.activePopulationAt(1, 4.0), 0);
+    expect(Phase0bScrollReviewGame.activePopulationAt(2, 5.2), 0);
   });
 
   testWidgets('scroll review exposes input and non-final-art boundary', (

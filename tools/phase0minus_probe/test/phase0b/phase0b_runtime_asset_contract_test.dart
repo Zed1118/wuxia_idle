@@ -13,6 +13,7 @@ void main() {
       final backdrop = File('$root/mountain_pass_background_v1.webp');
       final cleanBackdrop = File('$root/mountain_pass_background_v2.png');
       final cutout = File('$root/founder_cutout_parts_v1.png');
+      final panorama = File('$root/scroll_panorama_mountain_to_gate_v1.png');
 
       expect(founder.existsSync(), isTrue);
       expect(bandit.existsSync(), isTrue);
@@ -20,6 +21,8 @@ void main() {
       expect(backdrop.existsSync(), isTrue);
       expect(cleanBackdrop.existsSync(), isTrue);
       expect(cutout.existsSync(), isTrue);
+      expect(panorama.existsSync(), isTrue);
+      expect(panorama.lengthSync(), greaterThan(1000000));
       expect(founder.lengthSync(), greaterThan(100000));
       expect(bandit.lengthSync(), greaterThan(100000));
       expect(elite.lengthSync(), greaterThan(100000));

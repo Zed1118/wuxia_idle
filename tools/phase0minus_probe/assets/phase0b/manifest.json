@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "phase": "phase0b_art_sample",
-  "status": "continuous_map_direction_and_rejected_auto_cutout_rig",
+  "status": "single_panorama_scroll_observation_and_rejected_auto_cutout_rig",
   "generated_with": "built_in_imagegen",
   "source_identity_assets": {
     "hero": "assets/characters/battle_founder_v2.png",
@@ -90,6 +90,12 @@
       "runtime_ready": true
     },
     {
+      "path": "runtime/scroll_panorama_mountain_to_gate_v1.png",
+      "role": "single_continuous_map_panorama",
+      "runtime_size": "3600x720",
+      "runtime_ready": true
+    },
+    {
       "path": "runtime/founder_cutout_parts_v1.png",
       "role": "automatic_cutout_rig_input",
       "runtime_ready": false,
@@ -157,7 +163,7 @@
     "automatic_cutout_joint_playback_failed_the_visual_quality_gate",
     "art_load_observation_is_not_a_gameplay_or_performance_gate",
     "fixed_art_load_camera_is_not_the_final_battle_interface",
-    "scroll_review_uses_temporary_background_not_final_map_art",
+    "scroll_review_uses_single_generated_panorama_not_final_layered_map_art",
     "founder_is_sample_controller_not_permanent_protagonist_decision"
   ]
 }
