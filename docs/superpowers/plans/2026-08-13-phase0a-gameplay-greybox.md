@@ -411,12 +411,12 @@ PROBE_GATE_DPR=2 scripts/run_macos_matrix.sh 1 0.1
 
 ## 9. 当前恢复点
 
-- **状态**：WIP / `STRATEGY_GATE_FAIL`；Slice 1–7 的工程闭环与 Mac 内部包已完成，尚未进入 6 人正式 Gate。
-- **当前分支/commit**：`codex/phase0a-gameplay-greybox` / `2f1736a5`。
+- **状态**：WIP / `STRATEGY_GATE_PASS`；Slice 1–7 的工程闭环与 Mac 内部包已完成，尚未进入 6 人正式 Gate。
+- **当前分支/commit**：`codex/phase0a-gameplay-greybox` / 当前 HEAD。
 - **已用工作日 / 10**：实现已启动；精确工时由主线工作记录按实际投入回填，不以文档更新时间代替。
-- **最后完成**：160 个常驻反馈实体、Q/R hit-stop 与镜震、普通攻击租约和 180ms 起手节流、复合性能 Gate、匿名试玩结果和可分发 Mac 包；10-seed 弱策略严格失败 9/10，基准策略胜利 7/10，策略 Gate 如实为 FAIL。
-- **下一步**：先做不计入正式样本的真人内部 smoke，判断基准 7/10 是策略代理不足还是三波累积伤害过重；只允许一次受控修订后重跑 10-seed。达 8/10 后再冻结 6 人包；碰撞工作负载仍须补签。
+- **最后完成**：160 个常驻反馈实体、Q/R hit-stop 与镜震、普通攻击租约和 180ms 起手节流、复合性能 Gate、匿名试玩结果和可分发 Mac 包；10-seed 弱策略严格失败 9/10，群体威胁/侧向拉扯基准策略胜利 10/10，策略 Gate PASS，且未修改战斗数值。
+- **下一步**：补碰撞工作负载与自动 Gate；以最新 commit 重建包，完成内部真人 smoke 后冻结 6 人正式测试包。
 - **已跑验证**：37 tests、nested/root `flutter analyze` 通过；真实窗口键鼠操作通过；最新包在 `tools/phase0minus_probe/build/playtest-packages/phase0a-2f1736a5-20260813T031329Z/`。性能 fixture 的帧时、GC、RSS、居民池和负载覆盖通过，但 `collision_gate=PENDING`、`strategy_gate=FAIL`，不得称总体通过。
-- **已知风险**：当前 Mac 只有 M5/32GB/DPR2 证据；三波基准策略尚差 1/10 达线，碰撞统计和 6 人结果未完成；测试者、生产对照片段和人类裁决人未冻结。
+- **已知风险**：当前 Mac 只有 M5/32GB/DPR2 证据；碰撞统计和 6 人结果未完成；测试者、生产对照片段和人类裁决人未冻结。
 - **外部阻塞**：目标最低档 Windows 实机缺失，跨平台 Gate 仍阻塞；项目主人已授权 Mac 先行，但不授权 0B/0C。
 - **不得重做/跨界**：不重写 0− 基线；不改根应用/存档/奖励；不加 AI 队友/换人/跳跃/正式美术/成长系统；不在 Windows 未签前进入 0B。

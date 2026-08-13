@@ -84,11 +84,15 @@ void main() {
       reason:
           'Weak strategy must fail in W3 or time out in at least 8/10 seeds.',
     );
-    expect(baselinePasses, greaterThan(0));
+    expect(
+      baselinePasses,
+      greaterThanOrEqualTo(8),
+      reason: 'Baseline strategy must win in at least 8/10 seeds.',
+    );
     expect(
       report['strategy_gate'],
-      'FAIL',
-      reason: 'Known recovery point: baseline is still below 8/10.',
+      'PASS',
+      reason: 'Weak and baseline thresholds must both be met.',
     );
   });
 }

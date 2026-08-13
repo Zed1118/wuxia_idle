@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
@@ -57,7 +58,8 @@ final class GameplayHudState {
   final Map<String, int> counters;
 }
 
-final class GameplayGame extends FlameGame with KeyboardEvents {
+final class GameplayGame extends FlameGame
+    with HasCollisionDetection, KeyboardEvents {
   GameplayGame({
     required this.config,
     this.onSessionEnded,
@@ -120,6 +122,7 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   double _normalAttackStartCooldown = 0;
   bool _replayPeakObservedThisPhase = false;
   int replayObservedPeakCount = 0;
+  int collisionHitboxResidents = 0;
 
   double get fieldWidth => config.number('gameplay.field.width');
   double get fieldHeight => config.number('gameplay.field.height');
@@ -340,10 +343,14 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   }
 
   Iterable<GameplayEnemy> enemiesInRadius(Vector2 center, double radius) sync* {
+    telemetry.rangeQueryCount++;
     final radiusSquared = radius * radius;
     for (final enemy in enemies) {
+      if (!enemy.alive) continue;
+      telemetry.rangeQueryCandidateChecks++;
       if (enemy.alive &&
           enemy.position.distanceToSquared(center) <= radiusSquared) {
+        telemetry.rangeQueryHits++;
         yield enemy;
       }
     }
@@ -547,6 +554,14 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     'clear_event_count': clearEventId + 1,
     'resident_enemies': enemies.length,
     'active_enemies': enemies.where((enemy) => enemy.alive).length,
+    'collision_workload': {
+      'backend': config.collisionBackend,
+      'resident_hitboxes': collisionHitboxResidents,
+      'contact_starts': telemetry.collisionContactStarts,
+      'range_query_count': telemetry.rangeQueryCount,
+      'range_query_candidate_checks': telemetry.rangeQueryCandidateChecks,
+      'range_query_hits': telemetry.rangeQueryHits,
+    },
     'telemetry': telemetry.toJson(outcome: 'replay', counters: counters),
   };
 
@@ -628,7 +643,7 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   }
 }
 
-final class GameplayPlayer extends PositionComponent {
+final class GameplayPlayer extends PositionComponent with CollisionCallbacks {
   GameplayPlayer({required this.game})
     : health = game.tuning.playerMaxHealth,
       qi = game.config.number('gameplay.player.starting_qi'),
@@ -637,7 +652,10 @@ final class GameplayPlayer extends PositionComponent {
         anchor: Anchor.center,
         position: Vector2(400, game.config.number('gameplay.field.height') / 2),
         priority: 20,
-      );
+        children: [CircleHitbox()],
+      ) {
+    game.collisionHitboxResidents++;
+  }
 
   final GameplayGame game;
   double health;
@@ -656,6 +674,15 @@ final class GameplayPlayer extends PositionComponent {
   bool _basicResolved = false;
   bool _gatherResolved = false;
   bool _clearResolved = false;
+
+  @override
+  void onCollisionStart(
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
+    game.telemetry.collisionContactStarts++;
+    super.onCollisionStart(intersectionPoints, other);
+  }
 
   @override
   void update(double dt) {
@@ -1015,7 +1042,7 @@ final class GameplayPlayer extends PositionComponent {
   }
 }
 
-final class GameplayEnemy extends PositionComponent {
+final class GameplayEnemy extends PositionComponent with CollisionCallbacks {
   GameplayEnemy({
     required this.game,
     required this.id,
@@ -1032,8 +1059,10 @@ final class GameplayEnemy extends PositionComponent {
          ),
          anchor: Anchor.center,
          priority: elite ? 12 : 10,
+         children: [CircleHitbox()],
        ) {
     attackCooldown = (id % 3) * 0.18;
+    game.collisionHitboxResidents++;
   }
 
   final GameplayGame game;
@@ -1059,6 +1088,15 @@ final class GameplayEnemy extends PositionComponent {
       _activeInEncounter && health > 0 && mode != EnemyMode.defeated;
   bool get inBreakWindow =>
       elite && mode == EnemyMode.telegraph && modeRemaining <= 0.85;
+
+  @override
+  void onCollisionStart(
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
+    game.telemetry.collisionContactStarts++;
+    super.onCollisionStart(intersectionPoints, other);
+  }
 
   @override
   void update(double dt) {

@@ -102,6 +102,15 @@ final class GameplayReplayController {
         metrics.rssAtWarmupEnd +
         math.max(rssAllowance, metrics.rssAtWarmupEnd * rssFraction);
     final rssPass = metrics.rssAtCooldownEnd <= rssLimit;
+    final workloadSnapshot = game.replayWorkloadSnapshot();
+    final collision =
+        workloadSnapshot['collision_workload']! as Map<String, Object?>;
+    final collisionWorkloadPass =
+        (collision['resident_hitboxes'] as int) >= 22 &&
+        (collision['contact_starts'] as int) > 0 &&
+        (collision['range_query_count'] as int) > 0 &&
+        (collision['range_query_candidate_checks'] as int) > 0 &&
+        (collision['range_query_hits'] as int) > 0;
     final timing = metrics.summarize(
       collector.samples,
       gcTelemetryAvailable: gcCollector.available,
@@ -111,8 +120,9 @@ final class GameplayReplayController {
         timing['gate'] == 'PASS' &&
         residentPoolPass &&
         workloadCoveragePass &&
-        rssPass;
-    final workload = game.replayWorkloadSnapshot()
+        rssPass &&
+        collisionWorkloadPass;
+    final workload = workloadSnapshot
       ..['duration_scale'] = durationScale
       ..['gate_eligible_duration'] = durationScale == 1
       ..['gate_breakdown'] = {
@@ -124,7 +134,7 @@ final class GameplayReplayController {
                   : 'FAIL'
             : 'INVALID_SHORT_RUN',
         'rss_gate': rssPass ? 'PASS' : 'FAIL',
-        'collision_gate': 'PENDING',
+        'collision_workload_gate': collisionWorkloadPass ? 'PASS' : 'FAIL',
         'strategy_gate': 'PENDING',
       }
       ..['overall_preliminary_status'] = fixturePass && durationScale == 1

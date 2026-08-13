@@ -65,25 +65,16 @@ final class BaselineComboStrategy implements GameplayStrategy {
     final aimTarget = breakTarget ?? cluster;
     game.pointerWorld = aimTarget.position.clone();
 
-    final nearest = _nearestAlive(game)!;
-    final nearestDelta = nearest.position - game.player.position;
-    final nearestDistance = nearestDelta.length;
-    var movement = Vector2.zero();
-    if (nearestDistance > 149) {
-      movement = nearestDelta.normalized();
-    } else if (nearestDistance < 138) {
-      movement = -nearestDelta.normalized();
-    } else if (nearestDistance > 0) {
-      final orbitSign = ((elapsedSeconds / 2).floor().isEven) ? 1.0 : -1.0;
-      movement = Vector2(-nearestDelta.y, nearestDelta.x).normalized()
-        ..scale(orbitSign);
-    }
+    final movement = _threatAwareMovement(
+      game: game,
+      alive: alive,
+      focus: cluster,
+      elapsedSeconds: elapsedSeconds,
+    );
     final player = game.player;
     final hazards = alive.where((enemy) {
       final distanceSquared = enemy.position.distanceToSquared(player.position);
-      if (enemy.elite &&
-          (enemy.mode == EnemyMode.telegraph ||
-              enemy.mode == EnemyMode.commit)) {
+      if (enemy.elite && enemy.mode == EnemyMode.commit) {
         return distanceSquared < 340 * 340;
       }
       return enemy.mode == EnemyMode.attack && distanceSquared < 210 * 210;
@@ -100,19 +91,6 @@ final class BaselineComboStrategy implements GameplayStrategy {
     if (immediateDanger &&
         elapsedSeconds >= _nextDashAt &&
         player.movementArtCooldown <= 0) {
-      final hazard = hazards.isNotEmpty
-          ? hazards.reduce(
-              (a, b) =>
-                  a.position.distanceToSquared(player.position) <
-                      b.position.distanceToSquared(player.position)
-                  ? a
-                  : b,
-            )
-          : nearest;
-      final escape = player.position - hazard.position;
-      if (escape.length2 > 0) {
-        movement = escape.normalized();
-      }
       game.setStrategyMovementOverride(movement);
       if (player.requestMovementArt()) {
         _nextDashAt = elapsedSeconds + game.tuning.dashCooldown;
@@ -159,6 +137,48 @@ final class BaselineComboStrategy implements GameplayStrategy {
       player.requestClear();
     }
   }
+}
+
+Vector2 _threatAwareMovement({
+  required GameplayGame game,
+  required List<GameplayEnemy> alive,
+  required GameplayEnemy focus,
+  required double elapsedSeconds,
+}) {
+  final player = game.player.position;
+  final repulsion = Vector2.zero();
+  for (final enemy in alive) {
+    final away = player - enemy.position;
+    final distance = away.length;
+    if (distance <= 0 || distance >= 260) continue;
+    final weight = (260 - distance) / 260;
+    repulsion.add(away / distance * weight * weight * 3.2);
+  }
+
+  final toFocus = focus.position - player;
+  final orbitSign = ((elapsedSeconds / 3).floor().isEven) ? 1.0 : -1.0;
+  final orbit = toFocus.length2 > 0
+      ? Vector2(-toFocus.y, toFocus.x).normalized() * orbitSign
+      : Vector2.zero();
+  final approach = toFocus.length > 185
+      ? toFocus.normalized() * 0.55
+      : Vector2.zero();
+  final boundary = Vector2.zero();
+  const margin = 150.0;
+  if (player.x < margin) boundary.x += (margin - player.x) / margin * 2;
+  if (player.x > game.fieldWidth - margin) {
+    boundary.x -= (player.x - (game.fieldWidth - margin)) / margin * 2;
+  }
+  if (player.y < game.combatTop + margin) {
+    boundary.y += (game.combatTop + margin - player.y) / margin * 2;
+  }
+  if (player.y > game.combatBottom - margin) {
+    boundary.y -= (player.y - (game.combatBottom - margin)) / margin * 2;
+  }
+
+  final movement = repulsion + orbit * 0.65 + approach + boundary;
+  if (movement.length2 > 1) movement.normalize();
+  return movement;
 }
 
 final class StrategyRunResult {

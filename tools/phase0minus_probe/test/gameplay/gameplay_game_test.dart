@@ -213,6 +213,17 @@ void main() {
 
     expect(game.enemies.where((enemy) => enemy.alive), hasLength(21));
     expect(game.replayPeakCount, greaterThanOrEqualTo(1));
+    game.enemies[0].position = game.player.position.clone();
+    game.enemies[1].position = game.player.position.clone();
+    game.update(1 / 60);
+    game.enemiesInRadius(game.player.position, 340).toList();
+    final collision =
+        game.replayWorkloadSnapshot()['collision_workload']!
+            as Map<String, Object?>;
+    expect(collision['resident_hitboxes'], 22);
+    expect(collision['contact_starts'], greaterThan(0));
+    expect(collision['range_query_count'], greaterThan(0));
+    expect(collision['range_query_hits'], greaterThan(0));
     expect(
       game.replayPoolSnapshot()['enemy_residents'],
       containsPair('invariant_holds', true),

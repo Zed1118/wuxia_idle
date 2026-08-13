@@ -231,6 +231,10 @@ final class GameplayTelemetry {
   int peakConcurrentNormalAttackers = 0;
   int breakOpportunities = 0;
   int replayRequests = 0;
+  int collisionContactStarts = 0;
+  int rangeQueryCount = 0;
+  int rangeQueryCandidateChecks = 0;
+  int rangeQueryHits = 0;
   final Map<int, int> damageEventsByWave = {};
   final Map<int, double> waveDurations = {};
   final List<int> gatherTargetCounts = [];
@@ -245,6 +249,10 @@ final class GameplayTelemetry {
     peakConcurrentNormalAttackers = 0;
     breakOpportunities = 0;
     replayRequests = 0;
+    collisionContactStarts = 0;
+    rangeQueryCount = 0;
+    rangeQueryCandidateChecks = 0;
+    rangeQueryHits = 0;
     damageEventsByWave.clear();
     waveDurations.clear();
     gatherTargetCounts.clear();
@@ -286,6 +294,10 @@ final class GameplayTelemetry {
     'peak_concurrent_normal_attackers': peakConcurrentNormalAttackers,
     'break_opportunities': breakOpportunities,
     'replay_requests': replayRequests,
+    'collision_contact_starts': collisionContactStarts,
+    'range_query_count': rangeQueryCount,
+    'range_query_candidate_checks': rangeQueryCandidateChecks,
+    'range_query_hits': rangeQueryHits,
     'wave_durations_seconds': {
       for (final entry in waveDurations.entries)
         entry.key.toString(): entry.value,
