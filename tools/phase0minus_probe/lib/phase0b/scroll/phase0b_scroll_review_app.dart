@@ -53,6 +53,9 @@ final class _ReviewActor {
     required this.kind,
     required this.position,
     required this.pose,
+    this.region = -1,
+    this.spawnDelay = 0,
+    this.spawnPosition,
     this.mirror = false,
   });
 
@@ -60,6 +63,9 @@ final class _ReviewActor {
   final _ReviewActorKind kind;
   final Offset position;
   final int pose;
+  final int region;
+  final double spawnDelay;
+  final Offset? spawnPosition;
   final bool mirror;
 }
 
@@ -71,6 +77,8 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
   static const combatBottom = 640.0;
   static const leftDeadZone = 455.0;
   static const rightDeadZone = 765.0;
+  static const encounterTriggers = [620.0, 1450.0, 2630.0];
+  static const encounterHoldSeconds = [3.2, 4.0, 5.5];
 
   final Set<LogicalKeyboardKey> _keys = {};
   final List<_ReviewActor> _enemies = _buildEnemies();
@@ -80,8 +88,11 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
   ui.Image? _elite;
   Offset _hero = const Offset(420, 510);
   double _cameraLeft = 0;
-  double _autoDirection = 1;
   bool _manualInputSeen = false;
+  final List<double?> _encounterStartedAt = [null, null, null];
+  double _tourElapsed = 0;
+  double _autoHoldRemaining = 0;
+  int _nextEncounter = 0;
 
   @override
   Future<void> onLoad() async {
@@ -110,6 +121,8 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
   @override
   void update(double dt) {
     super.update(dt);
+    _tourElapsed += dt;
+    _activateDueEncounter();
     var horizontal = 0.0;
     var vertical = 0.0;
     if (_manualInputSeen) {
@@ -126,9 +139,9 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
         vertical += 1;
       }
     } else {
-      horizontal = _autoDirection;
-      if (_hero.dx >= worldWidth - 420) _autoDirection = -1;
-      if (_hero.dx <= 420) _autoDirection = 1;
+      horizontal = _autoHoldRemaining > 0 ? 0 : 1;
+      _autoHoldRemaining = math.max(0, _autoHoldRemaining - dt);
+      if (_hero.dx >= worldWidth - 420) _resetAutoTour();
     }
     final length = math.sqrt(horizontal * horizontal + vertical * vertical);
     if (length > 0) {
@@ -140,6 +153,27 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
       );
     }
     _cameraLeft = nextCameraLeft(_cameraLeft, _hero.dx, dt);
+  }
+
+  void _resetAutoTour() {
+    _hero = const Offset(420, 510);
+    _cameraLeft = 0;
+    _tourElapsed = 0;
+    _autoHoldRemaining = 0;
+    _nextEncounter = 0;
+    for (var index = 0; index < _encounterStartedAt.length; index++) {
+      _encounterStartedAt[index] = null;
+    }
+  }
+
+  void _activateDueEncounter() {
+    if (_nextEncounter >= encounterTriggers.length) return;
+    if (_hero.dx < encounterTriggers[_nextEncounter]) return;
+    _encounterStartedAt[_nextEncounter] = _tourElapsed;
+    if (!_manualInputSeen) {
+      _autoHoldRemaining = encounterHoldSeconds[_nextEncounter];
+    }
+    _nextEncounter++;
   }
 
   bool _pressed(LogicalKeyboardKey first, LogicalKeyboardKey second) =>
@@ -162,6 +196,11 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
 
   @visibleForTesting
   static List<int> encounterPopulationByRegion() => const [6, 10, 21];
+
+  @visibleForTesting
+  static int spawnedPopulationAt(int region, double elapsed) => _buildEnemies()
+      .where((actor) => actor.region == region && actor.spawnDelay <= elapsed)
+      .length;
 
   @override
   void render(Canvas canvas) {
@@ -192,13 +231,17 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
     canvas.scale(scale);
     canvas.clipRect(const Rect.fromLTWH(0, 0, viewWidth, viewHeight));
     _drawBackground(canvas, background);
+    final activeEnemies = _enemies
+        .map(_activeActorFrame)
+        .whereType<_ReviewActor>()
+        .where(
+          (actor) =>
+              actor.position.dx >= _cameraLeft - 220 &&
+              actor.position.dx <= _cameraLeft + viewWidth + 220,
+        );
     final actors =
         <_ReviewActor>[
-          ..._enemies.where(
-            (actor) =>
-                actor.position.dx >= _cameraLeft - 220 &&
-                actor.position.dx <= _cameraLeft + viewWidth + 220,
-          ),
+          ...activeEnemies,
           _ReviewActor(
             id: 999,
             kind: _ReviewActorKind.hero,
@@ -210,24 +253,133 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
           return depth != 0 ? depth : a.id.compareTo(b.id);
         });
     for (final actor in actors) {
+      _drawActorShadow(canvas, actor);
+    }
+    for (final actor in actors) {
       _drawActor(canvas, actor, founder, bandit, elite);
     }
     _drawRegionProgress(canvas);
     canvas.restore();
   }
 
-  void _drawBackground(Canvas canvas, ui.Image background) {
-    final source = Rect.fromLTWH(
-      0,
-      0,
-      background.width.toDouble(),
-      background.height.toDouble(),
+  _ReviewActor? _activeActorFrame(_ReviewActor actor) {
+    final startedAt = actor.region < 0
+        ? 0.0
+        : _encounterStartedAt[actor.region];
+    if (startedAt == null) return null;
+    final localElapsed = _tourElapsed - startedAt - actor.spawnDelay;
+    if (localElapsed < 0) return null;
+    final progress = (localElapsed / 0.75).clamp(0, 1).toDouble();
+    final eased = Curves.easeOutCubic.transform(progress);
+    return _ReviewActor(
+      id: actor.id,
+      kind: actor.kind,
+      position: Offset.lerp(
+        actor.spawnPosition ?? actor.position,
+        actor.position,
+        eased,
+      )!,
+      pose: progress < 1 ? 1 : actor.pose,
+      mirror: actor.mirror,
+      region: actor.region,
+      spawnDelay: actor.spawnDelay,
+      spawnPosition: actor.spawnPosition,
     );
-    canvas.drawImageRect(
+  }
+
+  void _drawBackground(Canvas canvas, ui.Image background) {
+    canvas.drawRect(
+      const Rect.fromLTWH(0, 0, viewWidth, viewHeight),
+      Paint()..color = const Color(0xFFE4DAC2),
+    );
+    _drawTiledLayer(
+      canvas,
       background,
-      source,
-      Rect.fromLTWH(-_cameraLeft, 0, worldWidth, viewHeight),
-      Paint()..filterQuality = FilterQuality.high,
+      const Rect.fromLTWH(0, 0, 1280, 395),
+      0,
+      0.12,
+      1,
+    );
+    _drawFogBand(canvas, 226, 78);
+    _drawFogBand(canvas, 382, 62);
+    _drawTiledLayer(
+      canvas,
+      background,
+      const Rect.fromLTWH(0, 250, 1280, 250),
+      250,
+      0.42,
+      0.72,
+    );
+    _drawTiledLayer(
+      canvas,
+      background,
+      const Rect.fromLTWH(0, 405, 1280, 315),
+      405,
+      1,
+      1,
+    );
+  }
+
+  void _drawTiledLayer(
+    Canvas canvas,
+    ui.Image image,
+    Rect source,
+    double y,
+    double factor,
+    double opacity,
+  ) {
+    final offset = _cameraLeft * factor;
+    final first = (offset / viewWidth).floor() - 1;
+    for (var tile = first; tile <= first + 3; tile++) {
+      final left = tile * viewWidth - offset;
+      final paint = Paint()..color = Color.fromRGBO(255, 255, 255, opacity);
+      canvas.save();
+      if (tile.isOdd) {
+        canvas.translate(left + viewWidth, 0);
+        canvas.scale(-1, 1);
+        canvas.drawImageRect(
+          image,
+          source,
+          Rect.fromLTWH(-0.5, y, viewWidth + 1, source.height),
+          paint,
+        );
+      } else {
+        canvas.drawImageRect(
+          image,
+          source,
+          Rect.fromLTWH(left - 0.5, y, viewWidth + 1, source.height),
+          paint,
+        );
+      }
+      canvas.restore();
+    }
+  }
+
+  void _drawFogBand(Canvas canvas, double top, double height) {
+    canvas.drawRect(
+      Rect.fromLTWH(0, top, viewWidth, height),
+      Paint()
+        ..shader = ui.Gradient.linear(
+          Offset(0, top),
+          Offset(0, top + height),
+          const [Color(0x00E4DAC2), Color(0xCCE4DAC2), Color(0x00E4DAC2)],
+        ),
+    );
+  }
+
+  void _drawActorShadow(Canvas canvas, _ReviewActor actor) {
+    final size = switch (actor.kind) {
+      _ReviewActorKind.hero => const Size(52, 11),
+      _ReviewActorKind.bandit => const Size(40, 8),
+      _ReviewActorKind.elite => const Size(58, 12),
+    };
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(actor.position.dx - _cameraLeft, actor.position.dy - 2),
+        width: size.width,
+        height: size.height,
+      ),
+      Paint()..color = const Color(0x3325221D),
     );
   }
 
@@ -313,15 +465,35 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
       for (var index = 0; index < count; index++) {
         final row = index % 5;
         final column = index ~/ 5;
+        final target = Offset(
+          centerX + (column - 1.5) * 118 + (row.isEven ? -32 : 34),
+          395 + row * 50 + region * 3,
+        );
+        final firstBatchCount = switch (region) {
+          0 => 4,
+          1 => 5,
+          _ => 12,
+        };
+        final secondBatchDelay = switch (region) {
+          0 => 0.7,
+          1 => 0.8,
+          _ => 0.9,
+        };
+        final fromLeft = index % 4 == 0;
         actors.add(
           _ReviewActor(
             id: id++,
             kind: _ReviewActorKind.bandit,
-            position: Offset(
-              centerX + (column - 1.5) * 118 + (row.isEven ? -32 : 34),
-              395 + row * 50 + region * 3,
-            ),
+            position: target,
             pose: index % 4,
+            region: region,
+            spawnDelay: index < firstBatchCount
+                ? index * 0.06
+                : secondBatchDelay,
+            spawnPosition: Offset(
+              fromLeft ? centerX - 760 : centerX + 760,
+              target.dy + (index.isEven ? -35 : 32),
+            ),
             mirror: index.isEven,
           ),
         );
@@ -337,6 +509,9 @@ final class Phase0bScrollReviewGame extends FlameGame with KeyboardEvents {
         kind: _ReviewActorKind.elite,
         position: Offset(3290, 520),
         pose: 1,
+        region: 2,
+        spawnDelay: 1.2,
+        spawnPosition: Offset(3650, 470),
         mirror: true,
       ),
     );

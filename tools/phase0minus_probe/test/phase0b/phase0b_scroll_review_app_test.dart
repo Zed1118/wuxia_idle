@@ -24,6 +24,16 @@ void main() {
     expect(camera, closeTo(2320, 0.01));
   });
 
+  test('encounters arrive in fixed off-screen batches', () {
+    expect(Phase0bScrollReviewGame.spawnedPopulationAt(0, 0.2), 4);
+    expect(Phase0bScrollReviewGame.spawnedPopulationAt(0, 0.8), 6);
+    expect(Phase0bScrollReviewGame.spawnedPopulationAt(1, 0.3), 5);
+    expect(Phase0bScrollReviewGame.spawnedPopulationAt(1, 0.9), 10);
+    expect(Phase0bScrollReviewGame.spawnedPopulationAt(2, 0.7), 12);
+    expect(Phase0bScrollReviewGame.spawnedPopulationAt(2, 1.0), 20);
+    expect(Phase0bScrollReviewGame.spawnedPopulationAt(2, 1.3), 21);
+  });
+
   testWidgets('scroll review exposes input and non-final-art boundary', (
     tester,
   ) async {
