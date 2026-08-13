@@ -66,12 +66,12 @@ WASD 浅纵深移动 + 鼠标瞄准
 
 ### 3.1 必须冻结的输入
 
-- [ ] Phase 0− 当前 tip commit、`probe_scenarios.yaml` checksum、Mac 基线报告已记录；
-- [ ] 从冻结 tip 创建 0A 独立分支/worktree，不把 0− 已交付分支变回 WIP；
-- [ ] `tools/phase0minus_probe/` 当前 nested tests/analyze 和根 `flutter analyze` 为绿；
-- [ ] 0A 独立 app identifier、结果目录和源码隔离守卫方案已确认；
+- [x] Phase 0− 当前 tip commit、`probe_scenarios.yaml` checksum、Mac 基线报告已记录；
+- [x] 从冻结 tip 创建 0A 独立分支/worktree，不把 0− 已交付分支变回 WIP；
+- [x] `tools/phase0minus_probe/` 当前 nested tests/analyze 和根 `flutter analyze` 为绿；
+- [x] 0A 独立 app identifier、结果目录和源码隔离守卫方案已确认；
 - [ ] 6 名正式测试者 + 2 名候补的类型、排期、输入设备和测试方式已登记；
-- [ ] 问卷、观察表、当前生产对照段和 3/3 反顺序已冻结；
+- [x] 问卷、观察表、当前生产对照段和 3/3 反顺序已冻结；
 - [ ] 一名人类裁决责任人已确认。
 
 测试者名单未就绪不阻止 Slice 1–6 实现，但阻止冻结正式测试包和主观 Gate 签字。
@@ -414,9 +414,9 @@ PROBE_GATE_DPR=2 scripts/run_macos_matrix.sh 1 0.1
 - **状态**：WIP / `MAC_AND_STRATEGY_GATE_PASS`；Slice 1–7 的工程闭环、Mac 正式矩阵与内部包已完成，尚未进入 6 人正式 Gate。
 - **当前分支/commit**：`codex/phase0a-gameplay-greybox` / 当前 HEAD。
 - **已用工作日 / 10**：实现已启动；精确工时由主线工作记录按实际投入回填，不以文档更新时间代替。
-- **最后完成**：160 个常驻反馈实体、Q/R hit-stop 与镜震、普通攻击租约和 180ms 起手节流、复合性能 Gate、匿名试玩结果和可分发 Mac 包；10-seed 弱策略严格失败 9/10，群体威胁/侧向拉扯基准策略胜利 10/10，策略 Gate PASS，且未修改战斗数值。
-- **下一步**：以最新 commit 重建包，完成内部真人 smoke；冻结生产对照片段与 6+2 名单后执行 6 人正式 Gate。
-- **已跑验证**：37 tests、nested/root `flutter analyze` 通过；真实窗口键鼠操作通过；最新包在 `tools/phase0minus_probe/build/playtest-packages/phase0a-2f1736a5-20260813T031329Z/`。性能 fixture 的帧时、GC、RSS、居民池和负载覆盖通过，但 `collision_gate=PENDING`、`strategy_gate=FAIL`，不得称总体通过。
-- **已知风险**：当前 Mac 只有 M5/32GB/DPR2 证据；6 人结果未完成；测试者、生产对照片段和人类裁决人未冻结。
+- **最后完成**：Mac 两视口×三轮正式矩阵、碰撞/性能复合 Gate、十种子策略 Gate 均 PASS；生产对照冻结为 `battle_tap_live` / seed `20260719` / 45–60 秒，走真实 `BattleScreen -> interveneNow` 链路且 Isar 只在 systemTemp。
+- **下一步**：以最新 commit 重建同包 AB/BA 对照包，完成 2–3 人内部 smoke；冻结 6+2 名单和人类裁决人后执行 6 人正式 Gate。
+- **已跑验证**：37 tests、nested/root `flutter analyze` 通过；真实窗口键鼠操作通过；Mac 正式矩阵 6/6 复合 Gate PASS，p99 为 `3.911–4.051ms`；对照链路 97 项最小证据测试 PASS。
+- **已知风险**：当前 Mac 只有 M5/32GB/DPR2 证据；6 人结果未完成；测试者和人类裁决人未冻结。
 - **外部阻塞**：目标最低档 Windows 实机缺失，跨平台 Gate 仍阻塞；项目主人已授权 Mac 先行，但不授权 0B/0C。
 - **不得重做/跨界**：不重写 0− 基线；不改根应用/存档/奖励；不加 AI 队友/换人/跳跃/正式美术/成长系统；不在 Windows 未签前进入 0B。
