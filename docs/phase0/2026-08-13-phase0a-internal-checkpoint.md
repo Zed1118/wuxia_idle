@@ -3,7 +3,7 @@
 > 日期：2026-08-13  
 > 分支：`codex/phase0a-gameplay-greybox`  
 > 玩法包：`2f1736a5`  
-> 裁决：`WIP / STRATEGY_GATE_PASS / HUMAN_AND_WINDOWS_PENDING`
+> 裁决：`WIP / MAC_AND_STRATEGY_PASS / HUMAN_AND_WINDOWS_PENDING`
 
 ## 已经成立
 
@@ -18,12 +18,12 @@
 
 12s 预热 + 60s 采样 + 30s 冷却；每个样本覆盖 8 次实测 20+1 峰值和 8 次清场。
 
-| 视口 | commit | clean | 有效帧 | p99 | 最坏帧 | >33.3ms 连帧 | 反馈峰值/溢出 | 复合 fixture |
-|---|---|---|---:|---:|---:|---:|---:|---|
-| 1280×720 | `2f1736a5` | 是 | 3,597 | 3.697ms | 10.132ms | 0 | 136 / 0 | PASS |
-| 1440×900 | `c7af4b09` | 是 | 3,598 | 3.540ms | 8.107ms | 0 | 136 / 0 | PASS |
+| 视口 | commit | 有效样本 | 最坏 p99 | 最坏帧 | >33.3ms 连帧 | 碰撞/池/RSS |
+|---|---|---:|---:|---:|---:|---|
+| 1280×720 | `d4d2f20a` | 3/3 | 3.996ms | 8.034ms | 0 | PASS |
+| 1440×900 | `d4d2f20a` | 3/3 | 4.051ms | 9.023ms | 0 | PASS |
 
-两个 commit 的运行时代码一致，`c7af4b09` 只更新执行计划恢复点。两次结果的 FrameTiming+GC、居民池、负载覆盖和 RSS Gate 均为 PASS。该结论只签合成性能 fixture；`collision_gate=PENDING`，不能称完整 Phase 0A 性能通过。
+六个 manifest 均 clean；FrameTiming+GC、居民池、负载覆盖、RSS 和碰撞工作负载均 PASS。详见 `docs/phase0/2026-08-13-phase0a-macos-matrix.md`。
 
 ## 当前玩法 Gate
 
@@ -33,12 +33,11 @@
 - 基准策略首版胜利 `7/10`；只改群体威胁与侧向拉扯代理、不改战斗数值后胜利 `10/10`：PASS；
 - 综合策略 Gate：`PASS`。
 
-当前仍缺真人主观/可读性 Gate 与碰撞 Gate。不得进入 0B/0C，不得并入正式战斗。
+当前仍缺真人主观/可读性 Gate。不得进入 0B/0C，不得并入正式战斗。
 
 ## 下一步
 
 1. 以最新 commit 重建试玩包，做 2–3 人内部 smoke；
-2. 补碰撞工作负载与自动 Gate；
-3. 冻结生产对照片段、6+2 测试者与正式 6 人包；
-4. 执行真人爽感、可读性和操作意愿 Gate；
-5. Windows i5-8250U/UHD620/8GB 仍是进入正式生产前硬 Gate。
+2. 冻结生产对照片段、6+2 测试者与正式 6 人包；
+3. 执行真人爽感、可读性和操作意愿 Gate；
+4. Windows i5-8250U/UHD620/8GB 仍是进入正式生产前硬 Gate。
