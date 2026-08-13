@@ -411,12 +411,12 @@ PROBE_GATE_DPR=2 scripts/run_macos_matrix.sh 1 0.1
 
 ## 9. 当前恢复点
 
-- **状态**：WIP；Slice 1–5 首轮闭环已实现，Slice 6 确定性回放与两视口初步基线已完成；正式性能 Gate 仍待反馈池。
-- **当前分支/commit**：`codex/phase0a-gameplay-greybox` / `8955e126`。
+- **状态**：WIP / `STRATEGY_GATE_FAIL`；Slice 1–7 的工程闭环与 Mac 内部包已完成，尚未进入 6 人正式 Gate。
+- **当前分支/commit**：`codex/phase0a-gameplay-greybox` / `2f1736a5`。
 - **已用工作日 / 10**：实现已启动；精确工时由主线工作记录按实际投入回填，不以文档更新时间代替。
-- **最后完成**：修复真实焦点链、暂停/重开、精英重击范围、120ms 指令缓冲和最小 Q/R 反馈；接入 12 秒压缩确定性回放与结构化采集。两视口各 1 个有效 run，p99 为 3.183ms / 2.794ms，均覆盖 8 次 20+1 峰值。
-- **下一步**：补完整反馈实体、安全对象池、碰撞/池/RSS 自动 Gate，扩为两视口各 3 个有效 run；再执行内部走查和 6 人测试包冻结。
-- **已跑验证**：34 tests 与后续新增 targeted tests 通过，`flutter analyze` 通过；真实窗口键鼠操作通过；初步回放报告见 `docs/phase0/2026-08-13-phase0a-preliminary-macos-baseline.md`。结果显式标 `POOL_AND_FEEDBACK_PENDING`，不得代签正式 Gate。
-- **已知风险**：当前 Mac 只有 M5/32GB/DPR2 初步基线；完整反馈池、碰撞负载、10-seed 策略对照和 6 人结果尚未完成；测试者、对照关卡和人类裁决人未冻结。
+- **最后完成**：160 个常驻反馈实体、Q/R hit-stop 与镜震、普通攻击租约和 180ms 起手节流、复合性能 Gate、匿名试玩结果和可分发 Mac 包；10-seed 弱策略严格失败 9/10，基准策略胜利 7/10，策略 Gate 如实为 FAIL。
+- **下一步**：先做不计入正式样本的真人内部 smoke，判断基准 7/10 是策略代理不足还是三波累积伤害过重；只允许一次受控修订后重跑 10-seed。达 8/10 后再冻结 6 人包；碰撞工作负载仍须补签。
+- **已跑验证**：37 tests、nested/root `flutter analyze` 通过；真实窗口键鼠操作通过；最新包在 `tools/phase0minus_probe/build/playtest-packages/phase0a-2f1736a5-20260813T031329Z/`。性能 fixture 的帧时、GC、RSS、居民池和负载覆盖通过，但 `collision_gate=PENDING`、`strategy_gate=FAIL`，不得称总体通过。
+- **已知风险**：当前 Mac 只有 M5/32GB/DPR2 证据；三波基准策略尚差 1/10 达线，碰撞统计和 6 人结果未完成；测试者、生产对照片段和人类裁决人未冻结。
 - **外部阻塞**：目标最低档 Windows 实机缺失，跨平台 Gate 仍阻塞；项目主人已授权 Mac 先行，但不授权 0B/0C。
 - **不得重做/跨界**：不重写 0− 基线；不改根应用/存档/奖励；不加 AI 队友/换人/跳跃/正式美术/成长系统；不在 Windows 未签前进入 0B。
