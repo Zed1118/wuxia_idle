@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flame/game.dart';
@@ -8,6 +7,9 @@ import 'package:phase0minus_probe/config/probe_config.dart';
 import 'package:phase0minus_probe/gameplay/combat_rules.dart';
 import 'package:phase0minus_probe/gameplay/gameplay_game.dart';
 import 'package:phase0minus_probe/gameplay/gameplay_replay_controller.dart';
+import 'package:phase0minus_probe/human_gate/playtest_identity.dart';
+import 'package:phase0minus_probe/human_gate/playtest_report.dart';
+import 'package:phase0minus_probe/human_gate/readability_stimulus_app.dart';
 import 'package:phase0minus_probe/run/probe_run_controller.dart';
 import 'package:phase0minus_probe/workload/probe_game.dart';
 import 'package:window_manager/window_manager.dart';
@@ -56,11 +58,14 @@ Future<void> main() async {
   await windowManager.ensureInitialized();
   final config = await ProbeConfig.load();
   final mode = _runtime('PROBE_MODE', _modeDefine);
-  if (mode != 'benchmark' && mode != 'playtest' && mode != 'phase0a_replay') {
+  if (mode != 'benchmark' &&
+      mode != 'playtest' &&
+      mode != 'phase0a_replay' &&
+      mode != 'readability') {
     throw ArgumentError.value(
       mode,
       'PROBE_MODE',
-      'benchmark, playtest, or phase0a_replay',
+      'benchmark, playtest, phase0a_replay, or readability',
     );
   }
   final viewport = config.viewport(_runtime('PROBE_VIEWPORT', _viewportDefine));
@@ -86,6 +91,7 @@ Future<void> main() async {
       title: switch (mode) {
         'playtest' => 'Phase 0A Gameplay Greybox',
         'phase0a_replay' => 'Phase 0A Deterministic Replay',
+        'readability' => 'Phase 0A Readability Stimuli',
         _ => 'Phase 0-minus Performance Probe',
       },
       titleBarStyle: TitleBarStyle.hidden,
@@ -103,6 +109,7 @@ Future<void> main() async {
   );
   final Widget app = switch (mode) {
     'playtest' => GameplayPlaytestApp(config: config, outputRoot: outputRoot),
+    'readability' => const ReadabilityStimulusApp(),
     'phase0a_replay' => GameplayReplayApp(
       config: config,
       viewport: viewport,
@@ -400,15 +407,18 @@ final class GameplayPlaytestApp extends StatefulWidget {
 }
 
 final class _GameplayPlaytestAppState extends State<GameplayPlaytestApp> {
+  Future<void> _reportWriteQueue = Future<void>.value();
+  late final PlaytestIdentity _identity = PlaytestIdentity.fromEnvironment();
   late final GameplayGame game = GameplayGame(
     config: widget.config,
-    onSessionEnded: (report) => unawaited(_writeReport(report)),
+    onSessionEnded: (report) {
+      _reportWriteQueue = _reportWriteQueue.then(
+        (_) => _writeReport(Map<String, Object?>.from(report)),
+      );
+      unawaited(_reportWriteQueue);
+    },
   );
   final FocusNode _focusNode = FocusNode(debugLabel: 'phase0a-playtest');
-  final String _launchId = DateTime.now().toUtc().toIso8601String().replaceAll(
-    ':',
-    '-',
-  );
 
   @override
   void initState() {
@@ -436,20 +446,28 @@ final class _GameplayPlaytestAppState extends State<GameplayPlaytestApp> {
     await directory.create(recursive: true);
     final sessionSerial = report['session_serial'] as int? ?? 0;
     final runId =
-        '$_launchId-session-${sessionSerial.toString().padLeft(2, '0')}';
+        '${_identity.sessionId}-${_identity.participantId}-'
+        'slot${_identity.slot.toString().padLeft(2, '0')}-'
+        'run${sessionSerial.toString().padLeft(2, '0')}';
     final file = File('${directory.path}/$runId.json');
-    await file.writeAsString(
-      const JsonEncoder.withIndent('  ').convert({
-        'schema_version': 1,
-        'scenario_checksum': widget.config.checksum,
-        'build_commit': _buildCommitDefine,
-        'platform': Platform.operatingSystem,
-        'platform_version': Platform.operatingSystemVersion,
-        'logical_viewport': {'width': game.size.x, 'height': game.size.y},
-        'run_id': runId,
-        ...report,
-      }),
-    );
+    final structuredReport = <String, Object?>{
+      'schema_version': phase0aHumanGateSchemaVersion,
+      ..._identity.toJson(),
+      'scenario_checksum': widget.config.checksum,
+      'build_commit': _buildCommitDefine,
+      'platform': Platform.operatingSystem,
+      'platform_version': Platform.operatingSystemVersion,
+      'logical_viewport': {'width': game.size.x, 'height': game.size.y},
+      'run_id': runId,
+      ...report,
+    };
+    final validation = validatePlaytestReport(structuredReport);
+    if (!validation.isValid) {
+      throw StateError(
+        'Refusing invalid playtest report: ${validation.errors}',
+      );
+    }
+    await writeJsonAtomically(file, structuredReport);
   }
 
   @override

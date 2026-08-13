@@ -64,4 +64,24 @@ void main() {
       reason: 'The isolation guard must fail red for the known incident shape.',
     );
   });
+
+  test('Windows Gate tooling stays inside the disposable probe', () {
+    final files = <File>[
+      ...Directory('scripts').listSync().whereType<File>().where(
+        (file) => file.path.contains('phase0a_windows'),
+      ),
+      ...Directory('tool').listSync(recursive: true).whereType<File>(),
+      ...Directory('lib/gate').listSync(recursive: true).whereType<File>(),
+    ];
+    for (final file in files) {
+      final source = file.readAsStringSync();
+      for (final pattern in forbiddenSourcePatterns) {
+        expect(
+          source.contains(pattern),
+          isFalse,
+          reason: '${file.path} contains forbidden pattern $pattern',
+        );
+      }
+    }
+  });
 }

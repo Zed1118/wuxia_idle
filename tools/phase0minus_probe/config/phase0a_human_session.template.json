@@ -1,0 +1,60 @@
+{
+  "schema": "phase0a-human-session-v1",
+  "study_id": "phase0a-gate-v1",
+  "package_id": "REPLACE_WITH_MANIFEST_COMMIT",
+  "participant_id": "P01",
+  "participant_session_id": "REPLACE_WITH_SESSION_STATE_ID",
+  "player_type": "idle",
+  "order": "AB",
+  "slot": 1,
+  "ratings": {"release": 1, "readability": 1, "active_intent": 1},
+  "pairwise": {
+    "verbal_replay_willing": false,
+    "app_replay_clicked": false,
+    "clearly_better_than_production": false,
+    "qr_noninterchangeable_explained": false
+  },
+  "mechanical_evidence": {
+    "raw_report_run_id": "replace-with-raw-run-id",
+    "terminal_outcome": "defeat",
+    "replay_clicked_after_victory": false
+  },
+  "core_action_roles": {"dash": false, "gather": false, "break": false},
+  "readability_trials": [
+    {"frame": 1, "stimulus_id": "frame1_wave2_peak", "sha256": "ea86def982f4883b1b683b84c359eab8d12d50a4c1e6539185c72c77d5c57b5c", "protagonist_within_1s": false, "danger_correct": false},
+    {"frame": 2, "stimulus_id": "frame2_wave3_peak", "sha256": "8728204a904e0b9ee2c0645cb4c43c69ecfdc6714c32ebc02601d779705ef0bb", "protagonist_within_1s": false, "danger_correct": false},
+    {"frame": 3, "stimulus_id": "frame3_gather", "sha256": "235a34eb58ff87472bf99258ce1af9a7e38d46f8334b51c2a2716c944c07b889", "protagonist_within_1s": false, "danger_correct": false},
+    {"frame": 4, "stimulus_id": "frame4_break_window", "sha256": "82b645e8ce29a81e2bbb84c03f55eb1f562712d3f9d199a48640c451b56d5bce", "protagonist_within_1s": false, "danger_correct": false},
+    {"frame": 5, "stimulus_id": "frame5_clear", "sha256": "381b83e761a397787c52d9c0ba3dd744befbe73b8492ce104d674d76e75f9f7f", "protagonist_within_1s": false, "danger_correct": false}
+  ],
+  "observations": {
+    "frequently_lost_protagonist": false,
+    "frequently_lost_danger": false,
+    "single_skill_judged_optimal": false
+  },
+  "integrity": {
+    "completed_three_waves": false,
+    "implementer_assisted": false,
+    "same_package": true,
+    "optimal_answer_disclosed_before_run": false,
+    "external_event_polluted": false,
+    "questionnaire_complete": false
+    ,"participant_had_input_control": true
+    ,"facilitator_is_primary_implementer": false
+    ,"app_overlap": false
+    ,"scheduled_order_followed": true
+    ,"comparison_continue_pressed": false
+    ,"stimulus_hashes_verified": true
+    ,"stimulus_rewatch": false
+  },
+  "direct_veto": {
+    "stationary_or_cooldown_only_is_optimal": false,
+    "two_core_actions_lack_role": false,
+    "density_20_plus_1_unreadable": false,
+    "spectacle_not_grouping_or_timing": false,
+    "requires_forbidden_mechanic": false,
+    "production_storage_or_reward_touched": false,
+    "mac_performance_unrecoverable": false
+  },
+  "validity": {"valid": false, "invalid_reasons": ["NOT_FILLED"]}
+}

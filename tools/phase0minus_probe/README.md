@@ -71,3 +71,10 @@ The Windows minimum-spec evidence template is at
 `config/windows_minimum_spec_manifest.template.json`. Windows results require
 a physical i5-8250U/UHD 620/8GB-class device; a stronger discrete GPU cannot
 sign the minimum-spec Gate.
+
+Phase 0A uses a separate deterministic replay runner; the older
+`run_windows_profile.ps1` only covers the Phase 0-minus benchmark and cannot
+sign the ARPG greybox Gate. Follow
+`docs/phase0/phase0a-windows-physical-gate.md` from the repository root and run
+`scripts/run_phase0a_windows_matrix.ps1` for the required two-viewports by
+three-runs matrix.

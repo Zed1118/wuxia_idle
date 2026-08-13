@@ -1,22 +1,48 @@
 {
   "status": "UNVERIFIED_TEMPLATE",
-  "operator": "FILL_BEFORE_RUN",
+  "operator": "FILL_OPERATOR",
+  "captured_at_utc": "FILL_ISO_8601_UTC",
   "device": {
-    "os": "Windows 10 22H2 or Windows 11 64-bit",
-    "cpu": "Intel Core i5-8250U class or weaker supported target",
-    "gpu": "Intel UHD 620 class DirectX 11 integrated GPU",
-    "ram_gib": 8,
-    "storage": "SSD",
-    "power_mode": "Best performance, plugged in"
+    "os_caption": "FILL_ACTUAL_WINDOWS_EDITION",
+    "os_version": "FILL_ACTUAL_VERSION",
+    "os_build": "FILL_ACTUAL_BUILD",
+    "cpu_model": "FILL_ACTUAL_CPU_MODEL",
+    "cpu_physical_cores": 4,
+    "cpu_logical_processors": 8,
+    "gpu_name": "FILL_ACTUAL_GPU_NAME",
+    "gpu_driver_version": "FILL_ACTUAL_DRIVER_VERSION",
+    "gpu_is_integrated": true,
+    "ram_gib": 8.0,
+    "storage_type": "SSD",
+    "power_mode": "Best performance",
+    "plugged_in": true
   },
   "display": {
     "refresh_rate_hz": 60,
     "scale_percent": 100,
-    "required_logical_viewports": ["1280x720", "1440x900"]
+    "required_logical_viewports": ["1280x720", "1440x900"],
+    "local_interactive_session": true
   },
-  "driver_version": "FILL_BEFORE_RUN",
-  "renderer": "FILL_FROM_RUN",
-  "remote_desktop": false,
-  "valid_for_minimum_spec_gate": false,
-  "validation_notes": "A stronger discrete-GPU machine cannot sign this gate."
+  "session": {
+    "session_name": "Console",
+    "remote_desktop": false,
+    "virtual_machine": false
+  },
+  "runtime": {
+    "renderer": "FILL_FROM_FLUTTER_GPU_TRACE",
+    "flutter_version": "FILL_ACTUAL_FLUTTER_VERSION",
+    "flutter_channel": "stable",
+    "dart_version": "FILL_ACTUAL_DART_VERSION"
+  },
+  "attestation": {
+    "target_cpu_class": "Intel Core i5-8250U class or slower supported target",
+    "target_gpu_class": "Intel UHD Graphics 620 class integrated GPU",
+    "target_ram_gib": 8,
+    "valid_for_minimum_spec_gate": false,
+    "cpu_at_or_below_target": false,
+    "gpu_at_or_below_target": false,
+    "ram_matches_target": false,
+    "power_mode_confirmed_best_performance": false,
+    "validation_notes": "A stronger CPU, discrete GPU, VM, cloud runner, or RDP session cannot sign this gate."
+  }
 }
