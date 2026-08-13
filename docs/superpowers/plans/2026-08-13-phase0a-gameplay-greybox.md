@@ -415,8 +415,8 @@ PROBE_GATE_DPR=2 scripts/run_macos_matrix.sh 1 0.1
 - **当前分支/commit**：`codex/phase0a-gameplay-greybox` / 当前 HEAD。
 - **已用工作日 / 10**：实现已启动；精确工时由主线工作记录按实际投入回填，不以文档更新时间代替。
 - **最后完成**：Mac 两视口×三轮正式矩阵、碰撞/性能复合 Gate、十种子策略 Gate 均 PASS；生产对照冻结为 `battle_tap_live` / seed `20260719` / 45–60 秒，走真实 `BattleScreen -> interveneNow` 链路且 Isar 只在 systemTemp。
-- **下一步**：以最新 commit 重建同包 AB/BA 对照包，完成 2–3 人内部 smoke；冻结 6+2 名单和人类裁决人后执行 6 人正式 Gate。
+- **下一步**：对 runtime commit `2dd21018` 的同包 AB/BA 包完成 2–3 人内部 smoke；冻结 6+2 名单和人类裁决人后执行 6 人正式 Gate。
 - **已跑验证**：37 tests、nested/root `flutter analyze` 通过；真实窗口键鼠操作通过；Mac 正式矩阵 6/6 复合 Gate PASS，p99 为 `3.911–4.051ms`；对照链路 97 项最小证据测试 PASS。
-- **已知风险**：当前 Mac 只有 M5/32GB/DPR2 证据；6 人结果未完成；测试者和人类裁决人未冻结。
+- **已知风险**：当前 Mac 只有 M5/32GB/DPR2 证据；机械 UI smoke 已通过，但 2–3 人内部 smoke 和 6 人结果未完成；测试者和人类裁决人未冻结。
 - **外部阻塞**：目标最低档 Windows 实机缺失，跨平台 Gate 仍阻塞；项目主人已授权 Mac 先行，但不授权 0B/0C。
 - **不得重做/跨界**：不重写 0− 基线；不改根应用/存档/奖励；不加 AI 队友/换人/跳跃/正式美术/成长系统；不在 Windows 未签前进入 0B。
