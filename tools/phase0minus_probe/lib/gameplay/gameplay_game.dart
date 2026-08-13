@@ -88,6 +88,7 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
   final GameplayTelemetry telemetry = GameplayTelemetry();
   final List<GameplayEnemy> enemies = [];
   final Set<LogicalKeyboardKey> _keys = {};
+  Vector2? _strategyMovementOverride;
   late final GameplayPlayer player;
   late final GameplayFeedbackPool feedbackPool;
 
@@ -231,20 +232,28 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
     return KeyEventResult.handled;
   }
 
-  Vector2 movementInput() => normalizedMovement(
-    left:
-        _keys.contains(LogicalKeyboardKey.keyA) ||
-        _keys.contains(LogicalKeyboardKey.arrowLeft),
-    right:
-        _keys.contains(LogicalKeyboardKey.keyD) ||
-        _keys.contains(LogicalKeyboardKey.arrowRight),
-    up:
-        _keys.contains(LogicalKeyboardKey.keyW) ||
-        _keys.contains(LogicalKeyboardKey.arrowUp),
-    down:
-        _keys.contains(LogicalKeyboardKey.keyS) ||
-        _keys.contains(LogicalKeyboardKey.arrowDown),
-  );
+  Vector2 movementInput() {
+    final override = _strategyMovementOverride;
+    if (override != null) return override;
+    return normalizedMovement(
+      left:
+          _keys.contains(LogicalKeyboardKey.keyA) ||
+          _keys.contains(LogicalKeyboardKey.arrowLeft),
+      right:
+          _keys.contains(LogicalKeyboardKey.keyD) ||
+          _keys.contains(LogicalKeyboardKey.arrowRight),
+      up:
+          _keys.contains(LogicalKeyboardKey.keyW) ||
+          _keys.contains(LogicalKeyboardKey.arrowUp),
+      down:
+          _keys.contains(LogicalKeyboardKey.keyS) ||
+          _keys.contains(LogicalKeyboardKey.arrowDown),
+    );
+  }
+
+  void setStrategyMovementOverride(Vector2? movement) {
+    _strategyMovementOverride = movement?.clone();
+  }
 
   void updatePointer(Vector2 widgetPosition) {
     pointerWorld = camera.globalToLocal(widgetPosition);
@@ -273,6 +282,7 @@ final class GameplayGame extends FlameGame with KeyboardEvents {
 
   void clearInput() {
     _keys.clear();
+    _strategyMovementOverride = null;
     primaryHeld = false;
     _primaryPressed = false;
     _primaryReleased = false;
