@@ -670,7 +670,9 @@ Future<Widget> buildVisualTarget(
         allowPlayerIntervention: true,
         startPaused: true,
         seed: battleV2VisualSeed,
-        previewHeaderControls: true,
+        // 对照测试必须展示真实“继续/单步”状态。若强制生产顶栏，
+        // 初始虽已暂停却会显示“暂停”，测试者点一次后整场会快速播完。
+        previewHeaderControls: false,
         previewPouchItems: [
           BattlePouchPreviewItem(
             assetPath: WuxiaUi.battleSamplePouchGourd,

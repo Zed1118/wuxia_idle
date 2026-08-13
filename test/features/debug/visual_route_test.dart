@@ -520,8 +520,7 @@ void main() {
       }
     });
 
-    test('battle_tap_live → allowPlayerIntervention:true + autoStart:true '
-        '(两段点选干预层必须挂,守 ScenarioLauncher 透传缺口)', () async {
+    test('battle_tap_live → 起手暂停 + 单步控件 + 玩家干预', () async {
       final target = await buildVisualTarget(
         VisualRoute.battleTapLive,
         IsarSetup.instance,
@@ -533,9 +532,14 @@ void main() {
         isTrue,
         reason: '两段点选验收路由必须开干预,否则技能按钮不接收点选',
       );
-      expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,点选随时干预');
+      expect(launcher.autoStart, isTrue);
+      expect(launcher.startPaused, isTrue);
       expect(launcher.seed, battleV2VisualSeed);
-      expect(launcher.previewHeaderControls, isTrue);
+      expect(
+        launcher.previewHeaderControls,
+        isFalse,
+        reason: '对照段必须显示真实暂停态和单步键，不得伪装为正在播放',
+      );
     });
 
     test('battle_tap_live → 黄金样板敌方立绘与蓄势 2 拍固定', () async {
