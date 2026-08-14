@@ -81,7 +81,7 @@ three-runs matrix.
 
 ## Phase 0B isolated art reviews
 
-The same nested package also hosts five explicitly non-production modes:
+The same nested package also hosts six explicitly non-production modes:
 
 - `phase0b_runtime`: 1+6+1 discrete pose-atlas review;
 - `phase0b_joint_compare`: rejected automatic cutout hierarchy evidence;
@@ -94,6 +94,19 @@ The same nested package also hosts five explicitly non-production modes:
   memory-only loot display, and the mute audio-cue contract. Pure
   presentation review: no gameplay, no saves, no real drops or rewards,
   `gate_eligible=false`.
+- `phase0b_vertical_slice_draft`: NOT FINAL engineering integration slice —
+  a real encounter orchestrator run drives the feedback HUD through the
+  composition-layer adapter/bridge (keyboard: A/D or arrows move, Q gather,
+  E clear, 1/2 style, R reset; terminal input lock after victory/defeat).
+  Memory-only loot, mute cue sink, deterministic same-seed reset. No saves,
+  no real drops or rewards, `gate_eligible=false`.
+
+Run the vertical slice draft with:
+
+```bash
+PROBE_MODE=phase0b_vertical_slice_draft PROBE_VIEWPORT=desktop_1280x720 \
+  build/macos/Build/Products/Profile/phase0minus_probe.app/Contents/MacOS/phase0minus_probe
+```
 
 Run the feedback draft with:
 

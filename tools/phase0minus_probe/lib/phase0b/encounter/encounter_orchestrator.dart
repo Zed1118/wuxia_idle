@@ -135,6 +135,45 @@ final class EncounterOrchestrator {
 
   void _emit(EncounterEvent event) => _log.add(event);
 
+  /// Live input for interactive hosts (the vertical slice draft). Each call
+  /// applies immediately at the current clock and follows the exact same
+  /// rules as the equivalent scripted [EncounterCommand], so a fixed seed
+  /// plus a fixed input sequence stays deterministic. All live input is
+  /// ignored once the battle has concluded (terminal input lock).
+  void moveHeroBy(double dx) {
+    if (_battleConcluded) return;
+    _applyCommand(
+      EncounterCommand(at: _clock, kind: EncounterCommandKind.moveBy, dx: dx),
+    );
+  }
+
+  /// Live-input counterpart of [EncounterCommandKind.castGather]; see
+  /// [moveHeroBy] for the input contract.
+  void castGather() {
+    if (_battleConcluded) return;
+    _castGather();
+  }
+
+  /// Live-input counterpart of [EncounterCommandKind.castClear]; see
+  /// [moveHeroBy] for the input contract.
+  void castClear() {
+    if (_battleConcluded) return;
+    _castClear();
+  }
+
+  /// Live-input counterpart of [EncounterCommandKind.setStyle]; see
+  /// [moveHeroBy] for the input contract.
+  void setStyle(DraftStyleKind kind) {
+    if (_battleConcluded) return;
+    _applyCommand(
+      EncounterCommand(
+        at: _clock,
+        kind: EncounterCommandKind.setStyle,
+        style: kind,
+      ),
+    );
+  }
+
   void _consumeCommands() {
     while (_commandIndex < _commands.length &&
         _commands[_commandIndex].at <= _clock) {
