@@ -8,7 +8,7 @@
 > 审计范围：`tools/phase0minus_probe/`、`docs/phase0/`、相关 spec；不触碰根应用或正式游戏规则。
 > **重要说明**：本报告审计的是**工程就绪状态**（工具链、测试、文档），**不是外部门禁的执行结果**。Windows 物理机 Gate 和真人 Gate 均尚未执行（见 §2），需操作者在实际环境中执行后方可获得 PASS/FAIL 结论。
 >
-> **测试计数修正说明**：早期文档草稿中曾出现"27 tests"和"29/29"的计数，均为人工估算错误。本文档 §4.1 所列完整命令 `flutter test --no-pub test/gate/ test/human_gate/ test/isolation_contract_test.dart test/viewport_calibration_contract_test.dart` 的实际新鲜输出为 **33/33 通过**（见 commit `d2bef804` 及后续验证）。测试文件本身在 phase0b 分支期间未改动，计数差异纯属文档错误。
+> **测试计数修正说明**：早期文档草稿中"27 tests"为人工估算错误。基线 commit `06ab4162` 实际为 **29 项**；`dcc59a45` 新增 4 项破坏性证伪测试（Windows Gate 独显代签/混 commit、真人 Gate 重复测试者/缺失原始报告），合计 **33 项**。本文档 §4.1 所列完整命令 `flutter test --no-pub test/gate/ test/human_gate/ test/isolation_contract_test.dart test/viewport_calibration_contract_test.dart` 的新鲜输出为 **33/33 通过**。
 
 ---
 
