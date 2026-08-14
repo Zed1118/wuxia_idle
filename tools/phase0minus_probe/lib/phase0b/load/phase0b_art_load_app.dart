@@ -21,6 +21,8 @@ final class Phase0bArtLoadApp extends StatefulWidget {
     required this.viewportId,
     required this.expectedWidth,
     required this.expectedHeight,
+    required this.buildCommit,
+    required this.assetSha256,
     this.enableRun = true,
     super.key,
   });
@@ -32,6 +34,8 @@ final class Phase0bArtLoadApp extends StatefulWidget {
   final String viewportId;
   final double expectedWidth;
   final double expectedHeight;
+  final String buildCommit;
+  final Map<String, String> assetSha256;
   final bool enableRun;
 
   @override
@@ -119,6 +123,8 @@ final class _Phase0bArtLoadAppState extends State<Phase0bArtLoadApp> {
           : 'release',
       'validity': validity,
       'run_id': widget.runId,
+      'build_commit': widget.buildCommit,
+      'asset_sha256': widget.assetSha256,
       'duration_scale': widget.durationScale,
       'viewport': {
         'id': widget.viewportId,

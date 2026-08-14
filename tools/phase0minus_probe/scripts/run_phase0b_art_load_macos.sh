@@ -16,9 +16,21 @@ case "$viewport" in
   *) echo "Unsupported viewport: $viewport" >&2; exit 2 ;;
 esac
 
+repository_root="$(cd "$probe_dir/../.." && pwd)"
+build_commit="$(git -C "$repository_root" rev-parse HEAD)"
+background_sha256="$(shasum -a 256 "$probe_dir/assets/phase0b/runtime/mountain_pass_background_v2.png" | awk '{print $1}')"
+founder_sha256="$(shasum -a 256 "$probe_dir/assets/phase0b/runtime/founder_pose_atlas_v1.png" | awk '{print $1}')"
+bandit_sha256="$(shasum -a 256 "$probe_dir/assets/phase0b/runtime/bandit_pose_atlas_v1.png" | awk '{print $1}')"
+elite_sha256="$(shasum -a 256 "$probe_dir/assets/phase0b/runtime/elite_pose_atlas_v1.png" | awk '{print $1}')"
+
 cd "$probe_dir"
 if [[ "${PROBE_SKIP_BUILD:-false}" != "true" ]]; then
-  flutter build macos --profile
+  flutter build macos --profile \
+    --dart-define=PROBE_BUILD_COMMIT="$build_commit" \
+    --dart-define=PHASE0B_ARTLOAD_BG_SHA256="$background_sha256" \
+    --dart-define=PHASE0B_ARTLOAD_FOUNDER_SHA256="$founder_sha256" \
+    --dart-define=PHASE0B_ARTLOAD_BANDIT_SHA256="$bandit_sha256" \
+    --dart-define=PHASE0B_ARTLOAD_ELITE_SHA256="$elite_sha256"
 fi
 binary="$probe_dir/build/macos/Build/Products/Profile/phase0minus_probe.app/Contents/MacOS/phase0minus_probe"
 if [[ ! -x "$binary" ]]; then
@@ -55,10 +67,20 @@ for ((index = 1; index <= repeat; index++)); do
     --argjson expected_height "$expected_height" \
     --argjson expected_refresh "$expected_refresh" \
     --argjson expected_dpr "$expected_dpr" \
+    --arg build_commit "$build_commit" \
+    --arg background_sha256 "$background_sha256" \
+    --arg founder_sha256 "$founder_sha256" \
+    --arg bandit_sha256 "$bandit_sha256" \
+    --arg elite_sha256 "$elite_sha256" \
     '.probe_kind == "phase0b_art_load" and
      .gate_eligible == false and
      .claim == "art_load_observation_only_not_phase0minus_or_gameplay_gate" and
      .build_mode == "profile" and
+     .build_commit == $build_commit and
+     .asset_sha256.background == $background_sha256 and
+     .asset_sha256.founder == $founder_sha256 and
+     .asset_sha256.bandit == $bandit_sha256 and
+     .asset_sha256.elite == $elite_sha256 and
      .validity == "VALID_OBSERVATION" and
      .entity_counts == {"hero":1,"ordinary":20,"elite":1} and
      .logical_image_rect_ops == 23 and
