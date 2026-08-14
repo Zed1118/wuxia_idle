@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:phase0minus_probe/phase0b/feedback/feedback_events.dart';
 import 'package:phase0minus_probe/phase0b/feedback/feedback_hud_state.dart';
-import 'package:phase0minus_probe/phase0b/feedback/feedback_hud_widgets.dart';
+import 'package:phase0minus_probe/phase0b/feedback/feedback_hud_view.dart';
 import 'package:phase0minus_probe/phase0b/feedback/feedback_loot.dart';
 
 /// Non-Gate claim shown on screen and pinned by tests.
@@ -29,6 +29,24 @@ final class _Phase0bFeedbackDraftAppState
   final FeedbackHudController _controller = FeedbackHudController();
   final FocusNode _focusNode = FocusNode(debugLabel: 'phase0b-feedback-draft');
   int _lootCycle = 0;
+  FeedbackEndState _lastEndState = FeedbackEndState.none;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_restoreFocusAfterReset);
+  }
+
+  /// The end panel's reset button takes focus while shown; once the reset
+  /// lands, hand keyboard focus back to the demo key listener.
+  void _restoreFocusAfterReset() {
+    final current = _controller.value.endState;
+    if (current == FeedbackEndState.none &&
+        _lastEndState != FeedbackEndState.none) {
+      _focusNode.requestFocus();
+    }
+    _lastEndState = current;
+  }
 
   /// Deterministic demo drops; labels are draft placeholders, not
   /// production items.
@@ -40,6 +58,7 @@ final class _Phase0bFeedbackDraftAppState
 
   @override
   void dispose() {
+    _controller.removeListener(_restoreFocusAfterReset);
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -107,77 +126,23 @@ final class _Phase0bFeedbackDraftAppState
           builder: (context, state, _) => SafeArea(
             child: Stack(
               children: [
+                Positioned.fill(
+                  child: FeedbackHud(
+                    state: state,
+                    onReset: () => _controller.apply(const BattleReset()),
+                  ),
+                ),
                 const Positioned(
-                  left: 18,
+                  left: 0,
+                  right: 0,
                   top: 14,
-                  child: IgnorePointer(child: _DraftBanner()),
-                ),
-                Positioned(
-                  left: 18,
-                  top: 78,
-                  child: IgnorePointer(
-                    child: DecoratedBox(
-                      decoration: const BoxDecoration(color: hudPaperColor),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            FeedbackMeter(
-                              key: const ValueKey('meter-hp'),
-                              label: 'HP',
-                              value: state.health,
-                              color: hudHealthColor,
-                            ),
-                            const SizedBox(height: 6),
-                            FeedbackMeter(
-                              key: const ValueKey('meter-resource'),
-                              label: 'QI',
-                              value: state.resource,
-                              color: hudResourceColor,
-                            ),
-                            const SizedBox(height: 10),
-                            StylePlaque(style: state.style),
-                            const SizedBox(height: 8),
-                            BossPhasePips(
-                              phase: state.bossPhase,
-                              total: state.bossPhaseTotal,
-                            ),
-                            const SizedBox(height: 8),
-                            DangerTelegraphBanner(level: state.danger),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 18,
-                  top: 14,
-                  child: IgnorePointer(
-                    child: CueLogView(cues: state.recentCues),
-                  ),
-                ),
-                Positioned(
-                  right: 18,
-                  bottom: 18,
-                  child: IgnorePointer(
-                    child: LootFeedView(entries: state.loot),
-                  ),
+                  child: Center(child: IgnorePointer(child: _DraftBanner())),
                 ),
                 const Positioned(
                   left: 18,
                   bottom: 18,
                   child: IgnorePointer(child: _KeyHelp()),
                 ),
-                if (state.endState != FeedbackEndState.none)
-                  Positioned.fill(
-                    child: EndStatePanel(
-                      endState: state.endState,
-                      onReset: () => _controller.apply(const BattleReset()),
-                    ),
-                  ),
               ],
             ),
           ),

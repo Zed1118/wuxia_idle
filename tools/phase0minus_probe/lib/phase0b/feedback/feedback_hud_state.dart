@@ -15,6 +15,12 @@ import 'package:phase0minus_probe/phase0b/feedback/feedback_loot.dart';
 const recentCueLimit = 5;
 
 /// Immutable snapshot of everything the draft HUD renders.
+///
+/// This is the read-only HUD view model: widgets receive it by value and
+/// must never mutate it or reach back into the controller. Collection
+/// fields are always unmodifiable lists (enforced at production sites and
+/// pinned by contract tests). The controller's only input boundary is
+/// [FeedbackHudController.apply].
 final class FeedbackHudState {
   const FeedbackHudState({
     required this.health,
@@ -109,6 +115,11 @@ final class FeedbackHudController extends ValueNotifier<FeedbackHudState> {
 
   /// Apply one presentation event. After victory or defeat every event
   /// except [BattleReset] is ignored, keeping the end panel stable.
+  ///
+  /// Input contract: damage fractions must be finite and non-negative
+  /// (healing is not part of this contract), resource deltas must be
+  /// finite; violations raise [ArgumentError] instead of corrupting the
+  /// view model.
   void apply(FeedbackEvent event) {
     if (value.endState != FeedbackEndState.none && event is! BattleReset) {
       return;
@@ -118,6 +129,10 @@ final class FeedbackHudController extends ValueNotifier<FeedbackHudState> {
         // Cue-only: hit feedback carries no HUD number changes.
         break;
       case PlayerDamaged(:final fraction):
+        _requireFinite(fraction, 'fraction');
+        if (fraction < 0) {
+          throw ArgumentError.value(fraction, 'fraction', 'must be >= 0');
+        }
         final remaining = (value.health - fraction).clamp(0.0, 1.0);
         value = value.copyWith(health: remaining);
         if (remaining <= 0) {
@@ -128,6 +143,7 @@ final class FeedbackHudController extends ValueNotifier<FeedbackHudState> {
           return;
         }
       case ResourceAdjusted(:final delta):
+        _requireFinite(delta, 'delta');
         value = value.copyWith(
           resource: (value.resource + delta).clamp(0.0, 1.0),
         );
@@ -172,6 +188,12 @@ final class FeedbackHudController extends ValueNotifier<FeedbackHudState> {
     while (recent.length > recentCueLimit) {
       recent.removeAt(0);
     }
-    value = value.copyWith(recentCues: recent);
+    value = value.copyWith(recentCues: List<FeedbackCue>.unmodifiable(recent));
+  }
+}
+
+void _requireFinite(double value, String name) {
+  if (!value.isFinite) {
+    throw ArgumentError.value(value, name, 'must be finite');
   }
 }
