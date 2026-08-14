@@ -2,11 +2,13 @@
 
 > 状态：`ENGINEERING_READY / EXECUTION_PENDING`
 > 审计基线 commit：`06ab4162`（phase0b 分支起点，外部门禁工程尚未开始）
-> READY tip commit：`78a281a3`（本分支当前 HEAD，包含全部门禁工程改动）
+> 初次工程 READY 标记：`78a281a3`（后续文档修正已超越此 commit；最终 tip 请以 `git log -1` 为准）
 > Worktree：`feat/phase0b-qoder-gate-readiness`（隔离分支，未合入 main）
 > 审计日期：2026-08-14
 > 审计范围：`tools/phase0minus_probe/`、`docs/phase0/`、相关 spec；不触碰根应用或正式游戏规则。
 > **重要说明**：本报告审计的是**工程就绪状态**（工具链、测试、文档），**不是外部门禁的执行结果**。Windows 物理机 Gate 和真人 Gate 均尚未执行（见 §2），需操作者在实际环境中执行后方可获得 PASS/FAIL 结论。
+>
+> **测试计数修正说明**：早期文档草稿中曾出现"27 tests"和"29/29"的计数，均为人工估算错误。本文档 §4.1 所列完整命令 `flutter test --no-pub test/gate/ test/human_gate/ test/isolation_contract_test.dart test/viewport_calibration_contract_test.dart` 的实际新鲜输出为 **33/33 通过**（见 commit `d2bef804` 及后续验证）。测试文件本身在 phase0b 分支期间未改动，计数差异纯属文档错误。
 
 ---
 
