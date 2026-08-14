@@ -31,8 +31,12 @@
 
 ## 当前恢复点
 
-- 状态：**进行中**（切片 1 完成）。
-- 最后完成：完整阅读 AGENTS.md / CLAUDE.md §5/§7/§8 / 美术样片规格 / 已否任务清单 / 现有 feedback 源与 5 个测试文件；确认 mode 已登记于探针 `lib/main.dart`（本任务不动）；写出本计划。
-- 下一步：切片 2（controller 输入校验 + 状态只读化 + 契约测试）。
-- 已跑验证：基线复测（cwd=`tools/phase0minus_probe`）`flutter analyze --no-pub` → No issues found；`flutter test --no-pub`（probe 全量）→ **162 pass / 0 fail**，与用户口径一致。
-- 阻塞项：无。
+- 状态：**已完成**。五个切片全部落地，分支 tip 打 `[READY]`。
+- 最后完成：① controller 输入契约（`PlayerDamaged.fraction` 拒绝非有限/负值、`ResourceAdjusted.delta` 拒绝非有限，`ArgumentError`）+ `FeedbackHudState` 只读化（`recentCues` 不可变，loot 本就不可变）；② 抽取可复用只读视图 `FeedbackHud(state, onReset)`（`feedback_hud_view.dart`），LayoutBuilder 响应式：紧凑档断点 `宽<1320 或 高<800`（1280×720→紧凑：量表条 150px/面板 padding 8；1440×900→舒适：200px/12），draft app 变薄壳复用、键盘演示行为不变；③ 无障碍最小集：量表 `semanticsLabel`（progressBar 数字值语义）、Boss pips 单标签、危险横幅/终局面板 live region、危险升级与终局 `SemanticsService.sendAnnouncement` 边沿公告、终局 reset 按钮 autofocus + Enter/Space/R 激活、reset 后 draft app 焦点恢复；④ format/analyze/全量验证。
+- 下一步：无。等待合并审核；玩法事件对接属 Qoder 切片（消费 `FeedbackHud` + `FeedbackHudController.apply` 即可，本切片已备边界）。
+- 已跑验证（本会话实测，cwd=`tools/phase0minus_probe`）：
+  - `flutter analyze --no-pub` → No issues found（1.6s）；
+  - `flutter test --no-pub test/phase0b/feedback` → **61 pass / 0 fail**（基线 43 + 新增 18：输入契约 3、只读 view model 2、响应式 5、语义/公告/焦点 7、demo 焦点恢复 1）；
+  - `flutter test --no-pub`（probe 全量）→ **180 pass / 0 fail**（基线 162 + 18）；
+  - `dart format` 已跑并单独提交；范围核查 `git diff 314ebafd..HEAD` 仅触 `tools/phase0minus_probe/` 与本计划文件。
+- 阻塞项：无。真人/Windows Gate、正式美术与正式音频、玩法逻辑（Qoder 切片）不在本任务内，未伪造替代。
