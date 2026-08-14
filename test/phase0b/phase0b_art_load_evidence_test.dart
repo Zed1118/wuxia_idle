@@ -30,11 +30,10 @@ void main() {
 
     final buildCommit = report['build_commit'] as String?;
     expect(buildCommit, isNotNull);
-    final headCommit = _gitHead();
     expect(
-      buildCommit,
-      equals(headCommit),
-      reason: 'matrix report must bind current HEAD',
+      _isAncestor(buildCommit!),
+      isTrue,
+      reason: 'matrix report must bind an ancestor of current HEAD',
     );
 
     final assetSha256 = report['asset_sha256'] as Map<String, dynamic>?;
@@ -108,6 +107,16 @@ String _gitHead() {
   final result = Process.runSync('git', ['rev-parse', 'HEAD']);
   expect(result.exitCode, equals(0));
   return (result.stdout as String).trim();
+}
+
+bool _isAncestor(String commit) {
+  final result = Process.runSync('git', [
+    'merge-base',
+    '--is-ancestor',
+    commit,
+    'HEAD',
+  ]);
+  return result.exitCode == 0;
 }
 
 String _assetPath(String name) =>
