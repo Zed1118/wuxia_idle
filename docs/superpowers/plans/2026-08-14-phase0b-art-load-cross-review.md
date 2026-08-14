@@ -3,7 +3,7 @@
 > **日期**：2026-08-14
 > **基线**：Kimi commit `3db99c2b`（Phase 0B 固定镜头 20+1 观察矩阵已固化）
 > **审查者**：QoderCN（独立 worktree `fix/phase0b-qoder-cross-review`）
-> **状态**：执行中
+> **状态**：完成（证据契约与 runner 契约已收口）
 
 ## 0. 一句话
 
@@ -76,6 +76,15 @@ art-load runner 把 Kimi 本机 144Hz 写成了默认值，如果另一台 60Hz 
 - `flutter test test/phase0b/` 根项目
 - `cd tools/phase0minus_probe && flutter test test/phase0b/`
 - 提交信息：`[READY] Phase 0B art-load 交叉审查完成`
+
+## 5. 实际验证结果
+
+- 根级 `flutter test --no-pub test/phase0b`：2/2 通过
+- 嵌套 probe `flutter test --no-pub test/phase0b`：25/25 通过
+- 嵌套 probe `flutter test --no-pub`：92/92 通过（Qoder 执行记录）
+- 嵌套 probe `flutter analyze --no-pub`：0 issue
+- 冻结 JSON：SHA-256、6 条 observation、非 Gate claim、`build_commit` 祖先关系均通过独立校验
+- 根级 `flutter analyze --no-pub`：fresh worktree 未生成 `*.g.dart`，报 5066 条派生错误/警告；这些文件与本分支改动无关，因此不在本切片扩修。根级 Phase 0B 定向测试可在同一 fresh worktree 通过。
 
 ## 3. 不做什么
 
