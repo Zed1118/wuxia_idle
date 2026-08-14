@@ -1,9 +1,12 @@
 # Phase 0 外部门禁工程就绪报告
 
 > 状态：`ENGINEERING_READY / EXECUTION_PENDING`
-> 基线 commit：`06ab4162`（worktree `feat/phase0b-qoder-gate-readiness`）
+> 审计基线 commit：`06ab4162`（phase0b 分支起点，外部门禁工程尚未开始）
+> READY tip commit：`78a281a3`（本分支当前 HEAD，包含全部门禁工程改动）
+> Worktree：`feat/phase0b-qoder-gate-readiness`（隔离分支，未合入 main）
 > 审计日期：2026-08-14
 > 审计范围：`tools/phase0minus_probe/`、`docs/phase0/`、相关 spec；不触碰根应用或正式游戏规则。
+> **重要说明**：本报告审计的是**工程就绪状态**（工具链、测试、文档），**不是外部门禁的执行结果**。Windows 物理机 Gate 和真人 Gate 均尚未执行（见 §2），需操作者在实际环境中执行后方可获得 PASS/FAIL 结论。
 
 ---
 
@@ -33,8 +36,8 @@
 | 执行证据 | `lib/human_gate/human_execution_evidence.dart` | session.state + execution.events；AB/BA 序分别校验 |
 | 机械聚合 | `lib/human_gate/playtest_aggregator.dart` | 6 人排期完整性、AB/BA 计数、build_commit 一致性 |
 | 爽感裁决 | `lib/human_gate/human_gate_aggregator.dart` | 13 项 pass check（3 中位数 >= 4、4/6 重玩、5/6 主角、24/30 危险、无否决…）；exit code 0/1/2/70 |
-| 破坏性证伪测试 | `test/human_gate/human_gate_aggregator_test.dart` (9 tests) | 边界通过；不足 6 人 INCONCLUSIVE；否决 FAIL；3/6 失败；PII/评分/有效性矛盾 FAIL；败局重试不算；**重复测试者 INCONCLUSIVE**；**缺失原始报告 INCONCLUSIVE**；混包+违反排期 INCONCLUSIVE |
-| 身份与排期测试 | `test/human_gate/playtest_human_gate_test.dart` (6 tests) | 边界合法；PII/越界 FAIL；原子写入无残留；排期匿名平衡 |
+| 破坏性证伪测试 | `test/human_gate/human_gate_aggregator_test.dart` (10 tests) | 边界通过；不足 6 人 INCONCLUSIVE；否决 FAIL；3/6 失败；PII/评分/有效性矛盾 FAIL；败局重试不算；**重复测试者 INCONCLUSIVE**；**缺失原始报告 INCONCLUSIVE**；混包+违反排期 INCONCLUSIVE；**进程退出码不可信** |
+| 身份与排期测试 | `test/human_gate/playtest_human_gate_test.dart` (7 tests) | 边界合法；PII/越界 FAIL；原子写入无残留；排期匿名平衡；**越界元数据 FAIL**；**AB/BA 序交换 FAIL**；**混 build FAIL** |
 | 执行证据测试 | `test/human_gate/human_execution_evidence_test.dart` | 完整 AB PASS；中断 FAIL |
 | macOS 主持脚本测试 | `test/host_human_session_macos_test.dart` | 排期平衡；AB/BA 串行；重复参与者 exit 68；篡改冻结文件 exit 66 |
 
@@ -92,7 +95,7 @@ build/windows_gate_matrix/<timestamp>/
 results/sessions/
 ├── P01/
 │   ├── session.state                      # status=COMPLETE
-│   ├── execution.events                   # comparison_complete\ngameplay_complete\ngreadability_complete
+│   ├── execution.events                   # comparison_complete\ngameplay_complete\nreadability_complete
 │   ├── human-session.json                 # schema=phase0a-human-session-v1
 │   └── raw-report.json                    # schema_version=2
 ├── P02/ ... P06/
@@ -111,7 +114,7 @@ cd tools/phase0minus_probe
 # 静态分析
 flutter analyze --no-pub
 
-# 全部门禁契约测试（27 tests）
+# 全部门禁契约测试（33 tests）
 flutter test --no-pub test/gate/ test/human_gate/ test/isolation_contract_test.dart test/viewport_calibration_contract_test.dart
 
 # Phase 0B 合约测试

@@ -35,7 +35,7 @@
 - 已跑验证：
   - `flutter analyze --no-pub`：0 issues（probe 包）。
   - `flutter test --no-pub`（全 probe 包）：**95/95 通过**。
-  - 门禁契约测试（`test/gate` + `test/human_gate` + `test/isolation_contract_test.dart` + `test/viewport_calibration_contract_test.dart`）：**29/29 通过**（含新增 4 项破坏性证伪）。
+  - 门禁契约测试（`test/gate` + `test/human_gate` + `test/isolation_contract_test.dart` + `test/viewport_calibration_contract_test.dart`）：**33/33 通过**（含新增 4 项破坏性证伪）。
 - 新增破坏性证伪：
   - Windows Gate：独显代签 fail-closed、混 commit fail-closed。
   - 真人 Gate：重复测试者 fail-closed、缺失原始报告 fail-closed。
