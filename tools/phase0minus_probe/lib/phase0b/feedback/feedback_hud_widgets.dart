@@ -63,6 +63,9 @@ final class FeedbackMeter extends StatelessWidget {
           minHeight: 9,
           color: color,
           backgroundColor: const Color(0x44252D29),
+          // Numeric default ('35') is required: the progressBar role
+          // asserts a numeric value between min '0' and max '100'.
+          semanticsLabel: label,
         ),
       ),
     ],
@@ -99,22 +102,27 @@ final class BossPhasePips extends StatelessWidget {
   final int total;
 
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      const Text('boss', style: TextStyle(color: hudInkColor, fontSize: 11)),
-      const SizedBox(width: 6),
-      for (var index = 1; index <= total; index++)
-        Container(
-          width: 10,
-          height: 10,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: index <= phase ? hudInkColor : const Color(0x33252D29),
-          ),
-        ),
-    ],
+  Widget build(BuildContext context) => Semantics(
+    label: 'boss phase $phase of $total',
+    child: ExcludeSemantics(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('boss', style: TextStyle(color: hudInkColor, fontSize: 11)),
+          const SizedBox(width: 6),
+          for (var index = 1; index <= total; index++)
+            Container(
+              width: 10,
+              height: 10,
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: index <= phase ? hudInkColor : const Color(0x33252D29),
+              ),
+            ),
+        ],
+      ),
+    ),
   );
 }
 
@@ -127,20 +135,25 @@ final class DangerTelegraphBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (level == FeedbackDanger.none) return const SizedBox.shrink();
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: hudPaperColor,
-        border: Border.all(color: hudDangerColor, width: 1.5),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        child: Text(
-          level == FeedbackDanger.imminent ? 'DANGER · BREAK NOW' : 'danger',
-          style: const TextStyle(
-            color: hudDangerColor,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
+    // Live region: screen readers announce the telegraph as it appears.
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: hudPaperColor,
+          border: Border.all(color: hudDangerColor, width: 1.5),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          child: Text(
+            level == FeedbackDanger.imminent ? 'DANGER · BREAK NOW' : 'danger',
+            style: const TextStyle(
+              color: hudDangerColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+            ),
           ),
         ),
       ),
@@ -159,36 +172,44 @@ final class EndStatePanel extends StatelessWidget {
   Widget build(BuildContext context) {
     if (endState == FeedbackEndState.none) return const SizedBox.shrink();
     final victory = endState == FeedbackEndState.victory;
-    return Center(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: hudPaperColor,
-          border: Border.all(color: hudInkColor.withValues(alpha: 0.6)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                victory ? 'VICTORY' : 'DEFEAT',
-                style: TextStyle(
-                  color: victory ? hudInkColor : hudHealthColor,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 3,
+    // Live region + autofocused reset: the terminal panel is announced and
+    // immediately operable from the keyboard.
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      child: Center(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: hudPaperColor,
+            border: Border.all(color: hudInkColor.withValues(alpha: 0.6)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  victory ? 'VICTORY' : 'DEFEAT',
+                  style: TextStyle(
+                    color: victory ? hudInkColor : hudHealthColor,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 3,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: hudInkColor,
-                  side: const BorderSide(color: hudInkColor),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  key: const ValueKey('feedback-reset-button'),
+                  autofocus: true,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: hudInkColor,
+                    side: const BorderSide(color: hudInkColor),
+                  ),
+                  onPressed: onReset,
+                  child: const Text('RESET (R)'),
                 ),
-                onPressed: onReset,
-                child: const Text('RESET (R)'),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -29,6 +29,24 @@ final class _Phase0bFeedbackDraftAppState
   final FeedbackHudController _controller = FeedbackHudController();
   final FocusNode _focusNode = FocusNode(debugLabel: 'phase0b-feedback-draft');
   int _lootCycle = 0;
+  FeedbackEndState _lastEndState = FeedbackEndState.none;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_restoreFocusAfterReset);
+  }
+
+  /// The end panel's reset button takes focus while shown; once the reset
+  /// lands, hand keyboard focus back to the demo key listener.
+  void _restoreFocusAfterReset() {
+    final current = _controller.value.endState;
+    if (current == FeedbackEndState.none &&
+        _lastEndState != FeedbackEndState.none) {
+      _focusNode.requestFocus();
+    }
+    _lastEndState = current;
+  }
 
   /// Deterministic demo drops; labels are draft placeholders, not
   /// production items.
@@ -40,6 +58,7 @@ final class _Phase0bFeedbackDraftAppState
 
   @override
   void dispose() {
+    _controller.removeListener(_restoreFocusAfterReset);
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();

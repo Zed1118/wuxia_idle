@@ -12,9 +12,18 @@
 /// 1280x720 stays overflow-free while 1440x900 keeps comfortable spacing.
 /// Palette stays restrained ink-wash; cinnabar remains reserved for the
 /// danger telegraph.
+///
+/// Minimal accessibility: meters carry semantics labels/values, the danger
+/// telegraph and the end panel are live regions, danger escalation and
+/// battle conclusion are announced through [SemanticsService], and the
+/// end panel's reset button takes keyboard focus (Enter/Space or the R
+/// shortcut activate it). Focus restoration after reset is the consumer's
+/// job (the draft app re-focuses its keyboard listener).
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
+import 'package:flutter/services.dart';
 import 'package:phase0minus_probe/phase0b/feedback/feedback_events.dart';
 import 'package:phase0minus_probe/phase0b/feedback/feedback_hud_state.dart';
 import 'package:phase0minus_probe/phase0b/feedback/feedback_hud_widgets.dart';
@@ -27,7 +36,7 @@ const hudCompactMaxHeight = 800.0;
 
 /// Read-only HUD view: status panel (top-left), cue log (top-right),
 /// loot feed (bottom-right), and the terminal end panel overlay.
-final class FeedbackHud extends StatelessWidget {
+final class FeedbackHud extends StatefulWidget {
   const FeedbackHud({required this.state, this.onReset, super.key});
 
   /// The read-only view model to render.
@@ -43,31 +52,82 @@ final class FeedbackHud extends StatelessWidget {
       size.width < hudCompactMaxWidth || size.height < hudCompactMaxHeight;
 
   @override
+  State<FeedbackHud> createState() => _FeedbackHudState();
+}
+
+final class _FeedbackHudState extends State<FeedbackHud> {
+  @override
+  void didUpdateWidget(FeedbackHud oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _announceTransitions(oldWidget.state, widget.state);
+  }
+
+  /// Edge-triggered announcements: only transitions speak, and a battle
+  /// conclusion outranks a simultaneous danger change.
+  void _announceTransitions(FeedbackHudState old, FeedbackHudState current) {
+    String? message;
+    if (current.danger != old.danger) {
+      if (current.danger == FeedbackDanger.telegraph) {
+        message = 'Danger telegraph.';
+      } else if (current.danger == FeedbackDanger.imminent) {
+        message = 'Danger imminent. Break now.';
+      }
+    }
+    if (current.endState != old.endState &&
+        current.endState != FeedbackEndState.none) {
+      message = current.endState == FeedbackEndState.victory
+          ? 'Battle over. Victory.'
+          : 'Battle over. Defeat.';
+    }
+    if (message == null) return;
+    SemanticsService.sendAnnouncement(
+      View.of(context),
+      message,
+      Directionality.of(context),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final compact = isCompact(constraints.biggest);
+      final compact = FeedbackHud.isCompact(constraints.biggest);
+      final endState = widget.state.endState;
       return Stack(
         children: [
           Positioned(
             left: 18,
             top: 14,
             child: IgnorePointer(
-              child: _StatusPanel(state: state, compact: compact),
+              child: _StatusPanel(state: widget.state, compact: compact),
             ),
           ),
           Positioned(
             right: 18,
             top: 14,
-            child: IgnorePointer(child: CueLogView(cues: state.recentCues)),
+            child: IgnorePointer(
+              child: CueLogView(cues: widget.state.recentCues),
+            ),
           ),
           Positioned(
             right: 18,
             bottom: 18,
-            child: IgnorePointer(child: LootFeedView(entries: state.loot)),
+            child: IgnorePointer(
+              child: LootFeedView(entries: widget.state.loot),
+            ),
           ),
-          if (state.endState != FeedbackEndState.none)
+          if (endState != FeedbackEndState.none)
             Positioned.fill(
-              child: EndStatePanel(endState: state.endState, onReset: onReset),
+              child: CallbackShortcuts(
+                bindings: {
+                  if (widget.onReset != null)
+                    const SingleActivator(LogicalKeyboardKey.keyR):
+                        widget.onReset!,
+                },
+                child: EndStatePanel(
+                  endState: endState,
+                  onReset: widget.onReset,
+                ),
+              ),
             ),
         ],
       );

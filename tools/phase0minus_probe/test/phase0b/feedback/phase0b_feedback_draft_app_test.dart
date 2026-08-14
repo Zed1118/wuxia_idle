@@ -97,6 +97,25 @@ void main() {
     expect(find.text('DEFEAT'), findsOneWidget);
   });
 
+  testWidgets('reset restores demo keyboard input after the end panel', (
+    tester,
+  ) async {
+    await pumpDraft(tester);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyV);
+    await tester.pump();
+    expect(find.text('VICTORY'), findsOneWidget);
+
+    // The reset button holds focus while the end panel is up; tapping it
+    // must hand focus back to the demo keyboard listener.
+    await tester.tap(find.text('RESET (R)'));
+    await tester.pump();
+    expect(find.text('VICTORY'), findsNothing);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.digit3);
+    await tester.pump();
+    expect(meterValue(tester, const ValueKey('meter-hp')), closeTo(0.82, 1e-9));
+  });
+
   testWidgets('boss phase, style, and resource keys move their HUD pieces', (
     tester,
   ) async {
