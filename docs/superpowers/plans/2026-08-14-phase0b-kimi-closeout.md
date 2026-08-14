@@ -29,11 +29,11 @@
 
 ## 当前恢复点
 
-- 状态：固定镜头 `phase0b_art_load` 1.0× 矩阵已完成，产物与 commit/SHA-256/DPR/刷新率绑定。
-- 最后完成：补齐 art-load app/runner 的 `build_commit` 与 `asset_sha256` 字段；执行 1280×720 与 1440×900 各 3 次正式观察；`flutter test --no-pub test/phase0b` 2/2 通过；`flutter analyze --no-pub` 0 issue。
-- 下一步：冻结分支并写 `[READY]` tip。
+- 状态：**已完成**。固定镜头 `phase0b_art_load` 1.0× 矩阵已执行并固化证据，分支 tip 已打 `[READY]`。
+- 最后完成：补齐 art-load app/runner 的 `build_commit` 与 `asset_sha256` 字段；执行 1280×720 与 1440×900 各 3 次正式观察；`flutter test --no-pub test/phase0b` 2/2 通过；`flutter analyze --no-pub` 0 issue；工作区干净；tip 前缀 `[READY]`。
+- 下一步：无。等待合并审核。
 - 已跑验证：
-  - 矩阵脚本 6 次观察均通过 runner 校验并生成 `phase0b-art-load-matrix-20260814T123132Z.json`；
+  - 矩阵脚本 6 次观察均通过 runner 校验并生成 `phase0b-art-load-matrix-20260814T124851Z.json`；
   - `test/phase0b/phase0b_art_load_evidence_test.dart` 2/2 pass；
   - `flutter analyze --no-pub` 0 issue；
   - `tools/phase0minus_probe` targeted 测试 24/24 pass。
