@@ -11,6 +11,7 @@ import 'package:phase0minus_probe/gameplay/gameplay_replay_controller.dart';
 import 'package:phase0minus_probe/human_gate/playtest_identity.dart';
 import 'package:phase0minus_probe/human_gate/playtest_report.dart';
 import 'package:phase0minus_probe/human_gate/readability_stimulus_app.dart';
+import 'package:phase0minus_probe/phase0b/feedback/phase0b_feedback_draft_app.dart';
 import 'package:phase0minus_probe/phase0b/joint/phase0b_joint_compare_app.dart';
 import 'package:phase0minus_probe/phase0b/load/phase0b_art_load_app.dart';
 import 'package:phase0minus_probe/phase0b/phase0b_art_gallery_app.dart';
@@ -94,14 +95,15 @@ Future<void> main() async {
       mode != 'phase0b_joint_compare' &&
       mode != 'phase0b_art_load' &&
       mode != 'phase0b_scroll_profile' &&
-      mode != 'phase0b_scroll_review') {
+      mode != 'phase0b_scroll_review' &&
+      mode != 'phase0b_feedback_draft') {
     throw ArgumentError.value(
       mode,
       'PROBE_MODE',
       'benchmark, playtest, phase0a_replay, readability, phase0b_gallery, '
           'phase0b_runtime, phase0b_joint_compare, phase0b_art_load, '
-          'phase0b_scroll_profile, or '
-          'phase0b_scroll_review',
+          'phase0b_scroll_profile, phase0b_scroll_review, or '
+          'phase0b_feedback_draft',
     );
   }
   final viewport = config.viewport(_runtime('PROBE_VIEWPORT', _viewportDefine));
@@ -136,6 +138,7 @@ Future<void> main() async {
         'phase0b_art_load' => 'Phase 0B Art Load Replay',
         'phase0b_scroll_profile' => 'Phase 0B Scrolling World Observation',
         'phase0b_scroll_review' => 'Phase 0B Scrolling World Review',
+        'phase0b_feedback_draft' => 'Phase 0B Feedback Draft (NOT FINAL)',
         _ => 'Phase 0-minus Performance Probe',
       },
       titleBarStyle: TitleBarStyle.hidden,
@@ -158,6 +161,7 @@ Future<void> main() async {
     'phase0b_runtime' => const Phase0bRuntimeApp(),
     'phase0b_joint_compare' => const Phase0bJointCompareApp(),
     'phase0b_scroll_review' => const Phase0bScrollReviewApp(),
+    'phase0b_feedback_draft' => const Phase0bFeedbackDraftApp(),
     'phase0b_scroll_profile' => Phase0bScrollObservationApp(
       runId: runId,
       outputRoot: outputRoot,
