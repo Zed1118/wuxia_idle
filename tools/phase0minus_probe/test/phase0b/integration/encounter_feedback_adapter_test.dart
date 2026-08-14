@@ -1,5 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:phase0minus_probe/phase0b/encounter/encounter_events.dart'
+    as enc;
 import 'package:phase0minus_probe/phase0b/encounter/encounter_orchestrator.dart';
 import 'package:phase0minus_probe/phase0b/feedback/feedback_cues.dart';
 import 'package:phase0minus_probe/phase0b/feedback/feedback_events.dart';
@@ -127,6 +129,106 @@ void main() {
       expect(stateA.endState, stateB.endState);
       expect(stateA.loot.length, stateB.loot.length);
       expect(stateA.recentCues, stateB.recentCues);
+    });
+  });
+
+  group('overlapping telegraphs', () {
+    enc.EnemyTelegraphStarted enemyTelegraph(int enemyId) =>
+        enc.EnemyTelegraphStarted(time: 0, groupId: 0, enemyId: enemyId);
+    enc.EnemyStrikeResolved enemyStrike(int enemyId) => enc.EnemyStrikeResolved(
+      time: 0,
+      groupId: 0,
+      enemyId: enemyId,
+      hitHero: true,
+      damage: 4,
+    );
+    enc.BossTelegraphStarted bossTelegraph() => enc.BossTelegraphStarted(
+      time: 0,
+      shape: enc.EncounterDangerShape.circle,
+      center: Vector2.zero(),
+      radius: 80,
+      halfArcRadians: 0,
+      direction: null,
+    );
+    enc.BossStrikeResolved bossStrike() => enc.BossStrikeResolved(
+      time: 0,
+      kind: enc.EncounterBossStrikeKind.slam,
+      hitHero: false,
+      damage: 0,
+    );
+
+    test('a second enemy telegraph survives the first strike', () {
+      final adapter = EncounterFeedbackAdapter();
+      expect(
+        adapter.translate(enemyTelegraph(0)),
+        isA<DangerPresented>().having(
+          (e) => e.level,
+          'level',
+          FeedbackDanger.telegraph,
+        ),
+      );
+      expect(
+        adapter.translate(enemyTelegraph(1)),
+        isA<DangerPresented>().having(
+          (e) => e.level,
+          'level',
+          FeedbackDanger.telegraph,
+        ),
+      );
+
+      // The first strike resolves one telegraph only: danger must stay up
+      // while the second one is still pending.
+      expect(
+        adapter.translate(enemyStrike(0)),
+        isA<DangerPresented>().having(
+          (e) => e.level,
+          'level',
+          FeedbackDanger.telegraph,
+        ),
+      );
+      expect(
+        adapter.translate(enemyStrike(1)),
+        isA<DangerResolved>().having((e) => e.broken, 'broken', isFalse),
+      );
+      // Nothing left: a stray resolve is presentation-silent.
+      expect(adapter.translate(enemyStrike(0)), isNull);
+    });
+
+    test('an enemy strike never clears an active boss telegraph', () {
+      final adapter = EncounterFeedbackAdapter();
+      adapter.translate(bossTelegraph());
+      expect(
+        adapter.translate(enemyTelegraph(0)),
+        isA<DangerPresented>().having(
+          (e) => e.level,
+          'level',
+          FeedbackDanger.imminent,
+        ),
+      );
+      expect(
+        adapter.translate(enemyStrike(0)),
+        isA<DangerPresented>().having(
+          (e) => e.level,
+          'level',
+          FeedbackDanger.imminent,
+        ),
+      );
+      expect(adapter.translate(bossStrike()), isA<DangerResolved>());
+    });
+
+    test('a boss strike with an enemy telegraph pending keeps telegraph', () {
+      final adapter = EncounterFeedbackAdapter();
+      adapter.translate(enemyTelegraph(0));
+      adapter.translate(bossTelegraph());
+      expect(
+        adapter.translate(bossStrike()),
+        isA<DangerPresented>().having(
+          (e) => e.level,
+          'level',
+          FeedbackDanger.telegraph,
+        ),
+      );
+      expect(adapter.translate(enemyStrike(0)), isA<DangerResolved>());
     });
   });
 }

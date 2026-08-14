@@ -25,17 +25,14 @@ FeedbackStyle feedbackStyleForDraft(DraftStyleKind kind) => switch (kind) {
   DraftStyleKind.sinisterDraft => FeedbackStyle.sinister,
 };
 
-/// Which slice currently owns the danger telegraph, so a strike from one
-/// slice never clears the other's telegraph.
-enum _DangerOwner { none, enemy, boss }
-
 /// Translates neutral encounter events into HUD presentation events.
 ///
-/// Stateful in exactly one place: the danger-telegraph owner. Everything
-/// else is a pure function of the incoming event. Deterministic for a
-/// fixed event sequence.
+/// Stateful in exactly one place: the pending telegraph count per slice.
+/// Everything else is a pure function of the incoming event. Deterministic
+/// for a fixed event sequence.
 final class EncounterFeedbackAdapter {
-  _DangerOwner _dangerOwner = _DangerOwner.none;
+  int _pendingEnemyTelegraphs = 0;
+  int _pendingBossTelegraphs = 0;
 
   /// Map one encounter event to its HUD event, or `null` when the event
   /// has no presentation counterpart in this draft.
@@ -52,16 +49,10 @@ final class EncounterFeedbackAdapter {
     enc.HeroResourceChanged(:final delta) => ResourceAdjusted(
       delta / PlayableDraftTuning.playerQiCapacity,
     ),
-    enc.EnemyTelegraphStarted() => _presentDanger(
-      FeedbackDanger.telegraph,
-      _DangerOwner.enemy,
-    ),
-    enc.BossTelegraphStarted() => _presentDanger(
-      FeedbackDanger.imminent,
-      _DangerOwner.boss,
-    ),
-    enc.EnemyStrikeResolved() => _resolveDanger(_DangerOwner.enemy),
-    enc.BossStrikeResolved() => _resolveDanger(_DangerOwner.boss),
+    enc.EnemyTelegraphStarted() => _enemyTelegraphStarted(),
+    enc.BossTelegraphStarted() => _bossTelegraphStarted(),
+    enc.EnemyStrikeResolved() => _resolveEnemyTelegraph(),
+    enc.BossStrikeResolved() => _resolveBossTelegraph(),
     // A killing blow reads as the heavy hit; ordinary chip stays light.
     enc.EnemyDamaged(:final defeated) => EnemyHit(heavy: defeated),
     enc.BossDamaged() => const EnemyHit(heavy: true),
@@ -90,19 +81,43 @@ final class EncounterFeedbackAdapter {
     enc.BossDefeated() => null,
   };
 
-  FeedbackEvent _presentDanger(FeedbackDanger level, _DangerOwner owner) {
+  FeedbackEvent _enemyTelegraphStarted() {
+    _pendingEnemyTelegraphs += 1;
     // The boss telegraph always escalates; an enemy telegraph must not
     // downgrade an active boss window.
-    if (owner == _DangerOwner.enemy && _dangerOwner == _DangerOwner.boss) {
-      return const DangerPresented(FeedbackDanger.imminent);
-    }
-    _dangerOwner = owner;
-    return DangerPresented(level);
+    return DangerPresented(
+      _pendingBossTelegraphs > 0
+          ? FeedbackDanger.imminent
+          : FeedbackDanger.telegraph,
+    );
   }
 
-  FeedbackEvent? _resolveDanger(_DangerOwner owner) {
-    if (_dangerOwner != owner) return null;
-    _dangerOwner = _DangerOwner.none;
+  FeedbackEvent _bossTelegraphStarted() {
+    _pendingBossTelegraphs += 1;
+    return const DangerPresented(FeedbackDanger.imminent);
+  }
+
+  FeedbackEvent? _resolveEnemyTelegraph() {
+    if (_pendingEnemyTelegraphs == 0) return null;
+    _pendingEnemyTelegraphs -= 1;
+    return _updatedDanger();
+  }
+
+  FeedbackEvent? _resolveBossTelegraph() {
+    if (_pendingBossTelegraphs == 0) return null;
+    _pendingBossTelegraphs -= 1;
+    return _updatedDanger();
+  }
+
+  /// Danger level after a strike resolved: still-up telegraphs reassert
+  /// their strongest level, otherwise the window closes.
+  FeedbackEvent _updatedDanger() {
+    if (_pendingBossTelegraphs > 0) {
+      return const DangerPresented(FeedbackDanger.imminent);
+    }
+    if (_pendingEnemyTelegraphs > 0) {
+      return const DangerPresented(FeedbackDanger.telegraph);
+    }
     // This slice has no player break mechanic, so a resolution is never a
     // break success; it only clears the telegraph.
     return const DangerResolved(broken: false);
