@@ -4,23 +4,24 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  const resultsRoot = 'tools/phase0minus_probe/build/results/phase0b-art-load';
+  const frozenPath = 'docs/phase0/evidence/phase0b-art-load-matrix-frozen.json';
+  const checksumPath =
+      'docs/phase0/evidence/phase0b-art-load-matrix-frozen.json.sha256';
 
-  test('Phase 0B art-load matrix report exists and binds identity', () {
-    final directory = Directory(resultsRoot);
-    expect(directory.existsSync(), isTrue, reason: 'results directory missing');
+  test('Phase 0B art-load frozen matrix is intact and auditable', () {
+    final frozenFile = File(frozenPath);
+    expect(frozenFile.existsSync(), isTrue, reason: 'frozen evidence missing');
 
-    final reports = directory
-        .listSync()
-        .whereType<File>()
-        .where((file) => file.path.endsWith('.json'))
-        .where((file) => file.path.contains('phase0b-art-load-matrix'))
-        .toList();
-    expect(reports, isNotEmpty, reason: 'no matrix report found');
-    reports.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
-    final reportFile = reports.first;
+    final expectedSha256 = File(checksumPath).readAsStringSync().trim();
+    final actualSha256 = _fileSha256(frozenPath);
+    expect(
+      actualSha256,
+      equals(expectedSha256),
+      reason: 'frozen evidence checksum mismatch',
+    );
 
-    final report = jsonDecode(reportFile.readAsStringSync()) as Map<String, dynamic>;
+    final report =
+        jsonDecode(frozenFile.readAsStringSync()) as Map<String, dynamic>;
     expect(report['schema_version'], equals(1));
     expect(report['gate_eligible'], isFalse);
     expect(
@@ -28,18 +29,17 @@ void main() {
       equals('art_load_observation_only_not_phase0minus_or_gameplay_gate'),
     );
 
-    final buildCommit = report['build_commit'] as String?;
-    expect(buildCommit, isNotNull);
+    final buildCommit = report['build_commit'] as String;
+    expect(buildCommit, hasLength(greaterThanOrEqualTo(7)));
     expect(
-      _isAncestor(buildCommit!),
+      _isAncestor(buildCommit),
       isTrue,
-      reason: 'matrix report must bind an ancestor of current HEAD',
+      reason: 'frozen build_commit $buildCommit is not an ancestor of HEAD',
     );
 
-    final assetSha256 = report['asset_sha256'] as Map<String, dynamic>?;
-    expect(assetSha256, isNotNull);
+    final assetSha256 = report['asset_sha256'] as Map<String, dynamic>;
     expect(
-      assetSha256!['background'],
+      assetSha256['background'],
       equals(_sha256(_assetPath('mountain_pass_background_v2.png'))),
     );
     expect(
@@ -55,12 +55,14 @@ void main() {
       equals(_sha256(_assetPath('elite_pose_atlas_v1.png'))),
     );
 
-    final observations = report['observations'] as List<dynamic>?;
-    expect(observations, isNotNull);
-    expect(observations!.length, equals(6));
+    final observations = report['observations'] as List<dynamic>;
+    expect(observations.length, equals(6));
 
     final viewports = observations
-        .map((o) => (o as Map<String, dynamic>)['viewport'] as Map<String, dynamic>)
+        .map(
+          (o) =>
+              (o as Map<String, dynamic>)['viewport'] as Map<String, dynamic>,
+        )
         .map((v) => v['id'] as String)
         .toList();
     expect(
@@ -92,24 +94,31 @@ void main() {
       'tools/phase0minus_probe/scripts/run_phase0b_art_load_macos.sh',
     ).readAsStringSync();
     expect(runner, contains('gate_eligible == false'));
-    expect(runner, contains('art_load_observation_only_not_phase0minus_or_gameplay_gate'));
+    expect(
+      runner,
+      contains('art_load_observation_only_not_phase0minus_or_gameplay_gate'),
+    );
     expect(runner, contains(r'.build_commit == $build_commit'));
     expect(runner, contains('.asset_sha256.background'));
     expect(runner, contains('.asset_sha256.founder'));
     expect(runner, contains('.asset_sha256.bandit'));
     expect(runner, contains('.asset_sha256.elite'));
-    expect(runner, contains(r'.viewport.device_pixel_ratio == $expected_dpr'));
-    expect(runner, contains(r'.viewport.refresh_rate_hz == $expected_refresh'));
+    expect(
+      runner,
+      contains(r'.viewport.device_pixel_ratio == $expected_dpr'),
+    );
+    expect(
+      runner,
+      contains(r'.viewport.refresh_rate_hz == $expected_refresh'),
+    );
   });
 }
 
 bool _isAncestor(String commit) {
-  final result = Process.runSync('git', [
-    'merge-base',
-    '--is-ancestor',
-    commit,
-    'HEAD',
-  ]);
+  final result = Process.runSync(
+    'git',
+    ['merge-base', '--is-ancestor', commit, 'HEAD'],
+  );
   return result.exitCode == 0;
 }
 
@@ -117,6 +126,12 @@ String _assetPath(String name) =>
     'tools/phase0minus_probe/assets/phase0b/runtime/$name';
 
 String _sha256(String path) {
+  final result = Process.runSync('shasum', ['-a', '256', path]);
+  expect(result.exitCode, equals(0));
+  return (result.stdout as String).split(' ').first;
+}
+
+String _fileSha256(String path) {
   final result = Process.runSync('shasum', ['-a', '256', path]);
   expect(result.exitCode, equals(0));
   return (result.stdout as String).split(' ').first;
