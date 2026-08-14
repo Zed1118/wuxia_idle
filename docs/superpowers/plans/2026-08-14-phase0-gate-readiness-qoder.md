@@ -30,9 +30,19 @@
 
 ## 当前恢复点
 
-- 状态：已建隔离 worktree，等待 Qoder 执行。
-- 最后完成：`flutter pub get`；Windows/isolation/viewport targeted 13/13 通过。
-- 下一步：按冻结规格审计外部门禁全链并做破坏性证伪。
-- 已跑验证：`test/gate`、`test/isolation_contract_test.dart`、`test/viewport_calibration_contract_test.dart` 共 13/13。
-- 阻塞项：真实 Windows 物理机和 6 名真人不在本任务内；只能准备和验证工具链。
+- 状态：**全部完成**，等待合并。
+- 最后完成：5/5 切片全部提交。
+- 已跑验证：
+  - `flutter analyze --no-pub`：0 issues（probe 包）。
+  - `flutter test --no-pub`（全 probe 包）：**95/95 通过**。
+  - 门禁契约测试（`test/gate` + `test/human_gate` + `test/isolation_contract_test.dart` + `test/viewport_calibration_contract_test.dart`）：**29/29 通过**（含新增 4 项破坏性证伪）。
+- 新增破坏性证伪：
+  - Windows Gate：独显代签 fail-closed、混 commit fail-closed。
+  - 真人 Gate：重复测试者 fail-closed、缺失原始报告 fail-closed。
+- 产出文件：
+  - `docs/phase0/2026-08-14-phase0-gate-readiness-report.md`（操作者 readiness 报告）。
+  - `tools/phase0minus_probe/test/gate/windows_gate_validator_test.dart`（+2 tests）。
+  - `tools/phase0minus_probe/test/human_gate/human_gate_aggregator_test.dart`（+2 tests）。
+- 红线影响：零改生产数值、零改生产中文文案、零触碰根应用 `lib/`。
+- 残留阻塞：真实 Windows 物理机和 6 名真人不在本任务范围内；工具链已就绪，等待外部执行。
 
