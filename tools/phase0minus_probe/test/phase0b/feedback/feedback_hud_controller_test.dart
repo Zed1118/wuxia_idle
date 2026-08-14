@@ -119,4 +119,86 @@ void main() {
       controller.dispose();
     });
   });
+
+  group('input contract', () {
+    test('damage fraction must be finite and non-negative', () {
+      final controller = FeedbackHudController();
+      for (final bad in <double>[
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+        -0.1,
+      ]) {
+        expect(
+          () => controller.apply(PlayerDamaged(bad)),
+          throwsArgumentError,
+          reason: 'fraction $bad must be rejected',
+        );
+      }
+      // Rejected inputs left the view model untouched.
+      expect(controller.value.health, 1);
+      expect(controller.value.endState, FeedbackEndState.none);
+      expect(controller.value.recentCues, isEmpty);
+      controller.dispose();
+    });
+
+    test('resource delta must be finite', () {
+      final controller = FeedbackHudController();
+      for (final bad in <double>[
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ]) {
+        expect(
+          () => controller.apply(ResourceAdjusted(bad)),
+          throwsArgumentError,
+          reason: 'delta $bad must be rejected',
+        );
+      }
+      expect(controller.value.resource, 0.4);
+      controller.dispose();
+    });
+
+    test('boss phase total and battle result validation stay intact', () {
+      final controller = FeedbackHudController();
+      expect(
+        () => controller.apply(const BossPhasePresented(phase: 1, total: 0)),
+        throwsArgumentError,
+      );
+      expect(
+        () => controller.apply(const BattleConcluded(FeedbackEndState.none)),
+        throwsArgumentError,
+      );
+      controller.dispose();
+    });
+  });
+
+  group('read-only view model', () {
+    test('state collections are unmodifiable', () {
+      final controller = FeedbackHudController();
+      controller.apply(const EnemyHit(heavy: false));
+      controller.apply(const LootPresented(label: 'x', kind: LootKind.gear));
+
+      final state = controller.value;
+      expect(
+        () => state.recentCues.add(FeedbackCue.victory),
+        throwsUnsupportedError,
+      );
+      expect(
+        () => state.loot.add(state.loot.first),
+        throwsUnsupportedError,
+      );
+      controller.dispose();
+    });
+
+    test('initial state collections are unmodifiable and empty', () {
+      final state = FeedbackHudState.initial();
+      expect(state.loot, isEmpty);
+      expect(state.recentCues, isEmpty);
+      expect(
+        () => state.recentCues.add(FeedbackCue.defeat),
+        throwsUnsupportedError,
+      );
+    });
+  });
 }
