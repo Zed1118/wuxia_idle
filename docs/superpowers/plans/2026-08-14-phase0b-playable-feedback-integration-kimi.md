@@ -31,8 +31,13 @@
 
 ## 当前恢复点
 
-- 状态：**进行中**。
-- 最后完成：计划文件落盘（切片 1）。
-- 下一步：切片 2——orchestrator 运行时输入 API + integration adapter/bridge + 单测。
-- 已跑验证：无（尚未改代码）。
+- 状态：**已完成**。`phase0b_vertical_slice_draft` 模式已实装并登记 README/main.dart，分支 tip 已打 `[READY]`。
+- 最后完成：组合层 `lib/phase0b/integration/`（`encounter_feedback_adapter.dart` 事件翻译 + danger owner 防误清，`EncounterFeedbackBridge` 增量 drain）；orchestrator 增运行时输入 API（moveHeroBy/castGather/castClear/setStyle，终局忽略）；纵切模式应用（计时器推进 orchestrator → bridge → 真实 `FeedbackHud`，键盘 A/D/←/→ 移动、Q 聚、E 清、1/2 流派、R reset，终局锁输入，reset 重建同 seed 场景 + 新 controller/静音 sink）；测试 3 文件。
+- 下一步：无。等待合并审核；正式美术/音频/掉落、真人/Windows Gate 不在本任务内，未伪造替代。
+- 已跑验证（本会话实测，cwd=`tools/phase0minus_probe`）：
+  - `flutter analyze --no-pub` → No issues found（2.7s）；
+  - `flutter test --no-pub test/phase0b/integration` → **17 pass / 0 fail**（adapter 4 + 隔离守卫 6 + 模式 widget 7）；
+  - `flutter test --no-pub`（probe 全量）→ **201 pass / 0 fail**；
+  - `dart format` 已跑，本切片文件 0 drift。
+- 测试修正留痕（按真实行为修，未伪造事件）：① adapter switch 初版漏 `BossDefeated`，补 `→ null`（掉落由 `LootRequested` 承载）；② widget cue 日志仅留最近 5 条，`playerHurt` 会被后续 cue 挤出，改 250ms 轮询捕获；③ 败北路径英雄须站到 Boss 东侧（keyD×7）才不会被东向普攻反杀 Boss 导致终局永不到来。
 - 阻塞项：无。
