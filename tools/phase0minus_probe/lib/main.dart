@@ -63,6 +63,22 @@ const _panoramaSha256Define = String.fromEnvironment(
   'PHASE0B_PANORAMA_SHA256',
   defaultValue: 'unverified-local-asset',
 );
+const _artLoadBackgroundSha256Define = String.fromEnvironment(
+  'PHASE0B_ARTLOAD_BG_SHA256',
+  defaultValue: 'unverified-local-asset',
+);
+const _artLoadFounderSha256Define = String.fromEnvironment(
+  'PHASE0B_ARTLOAD_FOUNDER_SHA256',
+  defaultValue: 'unverified-local-asset',
+);
+const _artLoadBanditSha256Define = String.fromEnvironment(
+  'PHASE0B_ARTLOAD_BANDIT_SHA256',
+  defaultValue: 'unverified-local-asset',
+);
+const _artLoadEliteSha256Define = String.fromEnvironment(
+  'PHASE0B_ARTLOAD_ELITE_SHA256',
+  defaultValue: 'unverified-local-asset',
+);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -164,6 +180,25 @@ Future<void> main() async {
       viewportId: viewport.id,
       expectedWidth: viewport.width,
       expectedHeight: viewport.height,
+      buildCommit: _runtime('PROBE_BUILD_COMMIT', _buildCommitDefine),
+      assetSha256: {
+        'background': _runtime(
+          'PHASE0B_ARTLOAD_BG_SHA256',
+          _artLoadBackgroundSha256Define,
+        ),
+        'founder': _runtime(
+          'PHASE0B_ARTLOAD_FOUNDER_SHA256',
+          _artLoadFounderSha256Define,
+        ),
+        'bandit': _runtime(
+          'PHASE0B_ARTLOAD_BANDIT_SHA256',
+          _artLoadBanditSha256Define,
+        ),
+        'elite': _runtime(
+          'PHASE0B_ARTLOAD_ELITE_SHA256',
+          _artLoadEliteSha256Define,
+        ),
+      },
     ),
     'phase0a_replay' => GameplayReplayApp(
       config: config,

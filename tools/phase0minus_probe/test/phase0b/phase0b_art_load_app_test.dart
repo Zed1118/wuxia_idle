@@ -32,6 +32,13 @@ void main() {
         viewportId: 'desktop_1280x720',
         expectedWidth: 1280,
         expectedHeight: 720,
+        buildCommit: 'test-commit',
+        assetSha256: {
+          'background': 'bg-sha',
+          'founder': 'founder-sha',
+          'bandit': 'bandit-sha',
+          'elite': 'elite-sha',
+        },
         enableRun: false,
       ),
     );
