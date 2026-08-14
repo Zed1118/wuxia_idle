@@ -108,7 +108,10 @@ final class BossPhasePips extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('boss', style: TextStyle(color: hudInkColor, fontSize: 11)),
+          const Text(
+            'boss',
+            style: TextStyle(color: hudInkColor, fontSize: 11),
+          ),
           const SizedBox(width: 6),
           for (var index = 1; index <= total; index++)
             Container(

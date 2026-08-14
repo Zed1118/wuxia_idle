@@ -184,10 +184,7 @@ void main() {
         () => state.recentCues.add(FeedbackCue.victory),
         throwsUnsupportedError,
       );
-      expect(
-        () => state.loot.add(state.loot.first),
-        throwsUnsupportedError,
-      );
+      expect(() => state.loot.add(state.loot.first), throwsUnsupportedError);
       controller.dispose();
     });
 

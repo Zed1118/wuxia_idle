@@ -40,20 +40,21 @@ void main() {
 
   /// Maximal content: every HUD region filled to its bound. Any overflow
   /// throws during layout and fails the test.
-  FeedbackHudState busyState({FeedbackEndState endState = FeedbackEndState.none}) =>
-      FeedbackHudState.initial().copyWith(
-        health: 0.35,
-        resource: 0.8,
-        style: FeedbackStyle.sinister,
-        bossPhase: 3,
-        danger: FeedbackDanger.imminent,
-        endState: endState,
-        loot: [
-          for (var index = 1; index <= 6; index++)
-            LootEntry(sequence: index, label: 'drop $index', kind: LootKind.gear),
-        ],
-        recentCues: FeedbackCue.values.take(recentCueLimit).toList(),
-      );
+  FeedbackHudState busyState({
+    FeedbackEndState endState = FeedbackEndState.none,
+  }) => FeedbackHudState.initial().copyWith(
+    health: 0.35,
+    resource: 0.8,
+    style: FeedbackStyle.sinister,
+    bossPhase: 3,
+    danger: FeedbackDanger.imminent,
+    endState: endState,
+    loot: [
+      for (var index = 1; index <= 6; index++)
+        LootEntry(sequence: index, label: 'drop $index', kind: LootKind.gear),
+    ],
+    recentCues: FeedbackCue.values.take(recentCueLimit).toList(),
+  );
 
   testWidgets('1280x720 renders the compact variant without overflow', (
     tester,

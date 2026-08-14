@@ -10,7 +10,9 @@ void main() {
   const resetButtonKey = ValueKey('feedback-reset-button');
 
   Widget wrap(FeedbackHudState state, {VoidCallback? onReset}) => MaterialApp(
-    home: Scaffold(body: FeedbackHud(state: state, onReset: onReset)),
+    home: Scaffold(
+      body: FeedbackHud(state: state, onReset: onReset),
+    ),
   );
 
   Future<void> pumpState(
@@ -68,9 +70,7 @@ void main() {
 
       await pumpState(
         tester,
-        FeedbackHudState.initial().copyWith(
-          danger: FeedbackDanger.imminent,
-        ),
+        FeedbackHudState.initial().copyWith(danger: FeedbackDanger.imminent),
       );
       expect(anyLiveRegion(tester), isTrue);
 
@@ -79,9 +79,7 @@ void main() {
 
       await pumpState(
         tester,
-        FeedbackHudState.initial().copyWith(
-          endState: FeedbackEndState.defeat,
-        ),
+        FeedbackHudState.initial().copyWith(endState: FeedbackEndState.defeat),
       );
       expect(anyLiveRegion(tester), isTrue);
     });
@@ -118,35 +116,30 @@ void main() {
 
       await pumpState(
         tester,
-        FeedbackHudState.initial().copyWith(
-          danger: FeedbackDanger.telegraph,
-        ),
+        FeedbackHudState.initial().copyWith(danger: FeedbackDanger.telegraph),
       );
       expect(announcements, ['Danger telegraph.']);
 
       await pumpState(
         tester,
-        FeedbackHudState.initial().copyWith(
-          danger: FeedbackDanger.imminent,
-        ),
+        FeedbackHudState.initial().copyWith(danger: FeedbackDanger.imminent),
       );
-      expect(announcements, ['Danger telegraph.', 'Danger imminent. Break now.']);
+      expect(announcements, [
+        'Danger telegraph.',
+        'Danger imminent. Break now.',
+      ]);
 
       // Resolving danger is silent; concluding the battle speaks.
       await pumpState(tester, FeedbackHudState.initial());
       await pumpState(
         tester,
-        FeedbackHudState.initial().copyWith(
-          endState: FeedbackEndState.victory,
-        ),
+        FeedbackHudState.initial().copyWith(endState: FeedbackEndState.victory),
       );
       expect(announcements.last, 'Battle over. Victory.');
 
       await pumpState(
         tester,
-        FeedbackHudState.initial().copyWith(
-          endState: FeedbackEndState.defeat,
-        ),
+        FeedbackHudState.initial().copyWith(endState: FeedbackEndState.defeat),
       );
       expect(announcements.last, 'Battle over. Defeat.');
     });
@@ -159,9 +152,7 @@ void main() {
       var resets = 0;
       await pumpState(
         tester,
-        FeedbackHudState.initial().copyWith(
-          endState: FeedbackEndState.victory,
-        ),
+        FeedbackHudState.initial().copyWith(endState: FeedbackEndState.victory),
         onReset: () => resets += 1,
       );
 
@@ -189,9 +180,7 @@ void main() {
       var resets = 0;
       await pumpState(
         tester,
-        FeedbackHudState.initial().copyWith(
-          endState: FeedbackEndState.defeat,
-        ),
+        FeedbackHudState.initial().copyWith(endState: FeedbackEndState.defeat),
         onReset: () => resets += 1,
       );
 
