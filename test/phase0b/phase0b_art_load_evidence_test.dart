@@ -81,10 +81,10 @@ void main() {
       );
       expect(
         (observation['total_span'] as Map<String, dynamic>)['max_us'],
-        isA<int>,
+        isA<int>(),
       );
-      expect(observation['over_reference_budget_count'], isA<int>);
-      expect(observation['maximum_severe_streak'], isA<int>);
+      expect(observation['over_reference_budget_count'], isA<int>());
+      expect(observation['maximum_severe_streak'], isA<int>());
     }
   });
 

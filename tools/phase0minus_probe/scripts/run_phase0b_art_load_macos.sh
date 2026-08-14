@@ -7,8 +7,8 @@ repeat="${2:-1}"
 duration_scale="${3:-1.0}"
 window_x="${4:-}"
 window_y="${5:-}"
-expected_refresh="${PROBE_EXPECTED_REFRESH_RATE:-60}"
-expected_dpr="${PROBE_EXPECTED_DPR:-1}"
+expected_refresh="${PROBE_EXPECTED_REFRESH_RATE:-144}"
+expected_dpr="${PROBE_EXPECTED_DPR:-2}"
 
 case "$viewport" in
   desktop_1280x720) expected_width=1280; expected_height=720 ;;
