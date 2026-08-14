@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "matrix_id": "phase0b-art-load-matrix-20260814T124851Z",
+  "gate_eligible": false,
+  "claim": "art_load_observation_only_not_phase0minus_or_gameplay_gate",
+  "build_commit": "3db99c2b80c9434c7c0307cdbc0065bd787a3ae5",
+  "asset_sha256": {
+    "background": "7f81f5c7374e21bdf23a6cf18e9d59d03974f26dcef6db6c2089e62d062ab2e7",
+    "founder": "e1d0d3c4c647b684a94d10dbb61654739263cec69bb3c9f937b8b47fcc11bd42",
+    "bandit": "a245dc4f2016f0e517e070d4e5ab20a8fbfb3ee1e04f01966d2686cd8a8051c4",
+    "elite": "6e693ab6e9b2adfc42989aa17eeb51026e25c073e8eebd46adcf0d38ac6a7be6"
+  },
+  "observations": [
+    {
+      "run_id": "phase0b-art-load-macos-desktop_1280x720-r1-20260814T124916Z",
+      "viewport": {
+        "id": "desktop_1280x720",
+        "expected_width": 1280.0,
+        "expected_height": 720.0,
+        "actual_width": 1280.0,
+        "actual_height": 720.0,
+        "device_pixel_ratio": 2.0,
+        "refresh_rate_hz": 144.0
+      },
+      "frames": 8638,
+      "total_span": {
+        "p50_us": 1149,
+        "p95_us": 1434,
+        "p99_us": 1584,
+        "max_us": 16875
+      },
+      "build_duration": {
+        "p50_us": 277,
+        "p95_us": 352,
+        "p99_us": 390,
+        "max_us": 626
+      },
+      "raster_duration": {
+        "p50_us": 690,
+        "p95_us": 899,
+        "p99_us": 1006,
+        "max_us": 2788
+      },
+      "over_reference_budget_count": 1,
+      "maximum_severe_streak": 0,
+      "rss_warmup_end_bytes": 175079424,
+      "rss_peak_bytes": 192544768,
+      "rss_cooldown_end_bytes": 193101824,
+      "decoded_texture_bytes_theoretical": 22563280
+    },
+    {
+      "run_id": "phase0b-art-load-macos-desktop_1280x720-r2-20260814T125100Z",
+      "viewport": {
+        "id": "desktop_1280x720",
+        "expected_width": 1280.0,
+        "expected_height": 720.0,
+        "actual_width": 1280.0,
+        "actual_height": 720.0,
+        "device_pixel_ratio": 2.0,
+        "refresh_rate_hz": 144.0
+      },
+      "frames": 8626,
+      "total_span": {
+        "p50_us": 1167,
+        "p95_us": 1466,
+        "p99_us": 1663,
+        "max_us": 25684
+      },
+      "build_duration": {
+        "p50_us": 280,
+        "p95_us": 358,
+        "p99_us": 399,
+        "max_us": 624
+      },
+      "raster_duration": {
+        "p50_us": 694,
+        "p95_us": 913,
+        "p99_us": 1066,
+        "max_us": 2877
+      },
+      "over_reference_budget_count": 1,
+      "maximum_severe_streak": 0,
+      "rss_warmup_end_bytes": 181764096,
+      "rss_peak_bytes": 197722112,
+      "rss_cooldown_end_bytes": 198590464,
+      "decoded_texture_bytes_theoretical": 22563280
+    },
+    {
+      "run_id": "phase0b-art-load-macos-desktop_1280x720-r3-20260814T125242Z",
+      "viewport": {
+        "id": "desktop_1280x720",
+        "expected_width": 1280.0,
+        "expected_height": 720.0,
+        "actual_width": 1280.0,
+        "actual_height": 720.0,
+        "device_pixel_ratio": 2.0,
+        "refresh_rate_hz": 144.0
+      },
+      "frames": 8638,
+      "total_span": {
+        "p50_us": 997,
+        "p95_us": 1394,
+        "p99_us": 1549,
+        "max_us": 16344
+      },
+      "build_duration": {
+        "p50_us": 236,
+        "p95_us": 341,
+        "p99_us": 377,
+        "max_us": 516
+      },
+      "raster_duration": {
+        "p50_us": 598,
+        "p95_us": 868,
+        "p99_us": 982,
+        "max_us": 2732
+      },
+      "over_reference_budget_count": 0,
+      "maximum_severe_streak": 0,
+      "rss_warmup_end_bytes": 180305920,
+      "rss_peak_bytes": 197361664,
+      "rss_cooldown_end_bytes": 198262784,
+      "decoded_texture_bytes_theoretical": 22563280
+    },
+    {
+      "run_id": "phase0b-art-load-macos-desktop_1440x900-r1-20260814T125424Z",
+      "viewport": {
+        "id": "desktop_1440x900",
+        "expected_width": 1440.0,
+        "expected_height": 900.0,
+        "actual_width": 1440.0,
+        "actual_height": 900.0,
+        "device_pixel_ratio": 2.0,
+        "refresh_rate_hz": 144.0
+      },
+      "frames": 8638,
+      "total_span": {
+        "p50_us": 1108,
+        "p95_us": 1406,
+        "p99_us": 1565,
+        "max_us": 19067
+      },
+      "build_duration": {
+        "p50_us": 267,
+        "p95_us": 344,
+        "p99_us": 385,
+        "max_us": 604
+      },
+      "raster_duration": {
+        "p50_us": 663,
+        "p95_us": 876,
+        "p99_us": 986,
+        "max_us": 3198
+      },
+      "over_reference_budget_count": 1,
+      "maximum_severe_streak": 0,
+      "rss_warmup_end_bytes": 181846016,
+      "rss_peak_bytes": 203898880,
+      "rss_cooldown_end_bytes": 204832768,
+      "decoded_texture_bytes_theoretical": 22563280
+    },
+    {
+      "run_id": "phase0b-art-load-macos-desktop_1440x900-r2-20260814T125606Z",
+      "viewport": {
+        "id": "desktop_1440x900",
+        "expected_width": 1440.0,
+        "expected_height": 900.0,
+        "actual_width": 1440.0,
+        "actual_height": 900.0,
+        "device_pixel_ratio": 2.0,
+        "refresh_rate_hz": 144.0
+      },
+      "frames": 8637,
+      "total_span": {
+        "p50_us": 1127,
+        "p95_us": 1430,
+        "p99_us": 1593,
+        "max_us": 24740
+      },
+      "build_duration": {
+        "p50_us": 270,
+        "p95_us": 349,
+        "p99_us": 386,
+        "max_us": 600
+      },
+      "raster_duration": {
+        "p50_us": 672,
+        "p95_us": 890,
+        "p99_us": 1002,
+        "max_us": 3243
+      },
+      "over_reference_budget_count": 1,
+      "maximum_severe_streak": 0,
+      "rss_warmup_end_bytes": 180633600,
+      "rss_peak_bytes": 203210752,
+      "rss_cooldown_end_bytes": 203767808,
+      "decoded_texture_bytes_theoretical": 22563280
+    },
+    {
+      "run_id": "phase0b-art-load-macos-desktop_1440x900-r3-20260814T125749Z",
+      "viewport": {
+        "id": "desktop_1440x900",
+        "expected_width": 1440.0,
+        "expected_height": 900.0,
+        "actual_width": 1440.0,
+        "actual_height": 900.0,
+        "device_pixel_ratio": 2.0,
+        "refresh_rate_hz": 144.0
+      },
+      "frames": 8626,
+      "total_span": {
+        "p50_us": 1134,
+        "p95_us": 1433,
+        "p99_us": 1581,
+        "max_us": 21102
+      },
+      "build_duration": {
+        "p50_us": 271,
+        "p95_us": 350,
+        "p99_us": 392,
+        "max_us": 591
+      },
+      "raster_duration": {
+        "p50_us": 676,
+        "p95_us": 882,
+        "p99_us": 978,
+        "max_us": 3189
+      },
+      "over_reference_budget_count": 1,
+      "maximum_severe_streak": 0,
+      "rss_warmup_end_bytes": 182108160,
+      "rss_peak_bytes": 204111872,
+      "rss_cooldown_end_bytes": 205012992,
+      "decoded_texture_bytes_theoretical": 22563280
+    }
+  ]
+}
