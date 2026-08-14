@@ -103,12 +103,6 @@ void main() {
   });
 }
 
-String _gitHead() {
-  final result = Process.runSync('git', ['rev-parse', 'HEAD']);
-  expect(result.exitCode, equals(0));
-  return (result.stdout as String).trim();
-}
-
 bool _isAncestor(String commit) {
   final result = Process.runSync('git', [
     'merge-base',
