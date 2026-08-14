@@ -33,12 +33,17 @@ final class FeedbackMeter extends StatelessWidget {
     required this.label,
     required this.value,
     required this.color,
+    this.barWidth = 200,
     super.key,
   });
 
   final String label;
   final double value;
   final Color color;
+
+  /// Width of the progress bar; the responsive HUD narrows it in compact
+  /// layouts.
+  final double barWidth;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -52,7 +57,7 @@ final class FeedbackMeter extends StatelessWidget {
         ),
       ),
       SizedBox(
-        width: 200,
+        width: barWidth,
         child: LinearProgressIndicator(
           value: value.clamp(0.0, 1.0),
           minHeight: 9,

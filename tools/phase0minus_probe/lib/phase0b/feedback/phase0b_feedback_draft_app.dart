@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:phase0minus_probe/phase0b/feedback/feedback_events.dart';
 import 'package:phase0minus_probe/phase0b/feedback/feedback_hud_state.dart';
-import 'package:phase0minus_probe/phase0b/feedback/feedback_hud_widgets.dart';
+import 'package:phase0minus_probe/phase0b/feedback/feedback_hud_view.dart';
 import 'package:phase0minus_probe/phase0b/feedback/feedback_loot.dart';
 
 /// Non-Gate claim shown on screen and pinned by tests.
@@ -107,77 +107,23 @@ final class _Phase0bFeedbackDraftAppState
           builder: (context, state, _) => SafeArea(
             child: Stack(
               children: [
+                Positioned.fill(
+                  child: FeedbackHud(
+                    state: state,
+                    onReset: () => _controller.apply(const BattleReset()),
+                  ),
+                ),
                 const Positioned(
-                  left: 18,
+                  left: 0,
+                  right: 0,
                   top: 14,
-                  child: IgnorePointer(child: _DraftBanner()),
-                ),
-                Positioned(
-                  left: 18,
-                  top: 78,
-                  child: IgnorePointer(
-                    child: DecoratedBox(
-                      decoration: const BoxDecoration(color: hudPaperColor),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            FeedbackMeter(
-                              key: const ValueKey('meter-hp'),
-                              label: 'HP',
-                              value: state.health,
-                              color: hudHealthColor,
-                            ),
-                            const SizedBox(height: 6),
-                            FeedbackMeter(
-                              key: const ValueKey('meter-resource'),
-                              label: 'QI',
-                              value: state.resource,
-                              color: hudResourceColor,
-                            ),
-                            const SizedBox(height: 10),
-                            StylePlaque(style: state.style),
-                            const SizedBox(height: 8),
-                            BossPhasePips(
-                              phase: state.bossPhase,
-                              total: state.bossPhaseTotal,
-                            ),
-                            const SizedBox(height: 8),
-                            DangerTelegraphBanner(level: state.danger),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 18,
-                  top: 14,
-                  child: IgnorePointer(
-                    child: CueLogView(cues: state.recentCues),
-                  ),
-                ),
-                Positioned(
-                  right: 18,
-                  bottom: 18,
-                  child: IgnorePointer(
-                    child: LootFeedView(entries: state.loot),
-                  ),
+                  child: Center(child: IgnorePointer(child: _DraftBanner())),
                 ),
                 const Positioned(
                   left: 18,
                   bottom: 18,
                   child: IgnorePointer(child: _KeyHelp()),
                 ),
-                if (state.endState != FeedbackEndState.none)
-                  Positioned.fill(
-                    child: EndStatePanel(
-                      endState: state.endState,
-                      onReset: () => _controller.apply(const BattleReset()),
-                    ),
-                  ),
               ],
             ),
           ),
