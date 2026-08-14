@@ -30,8 +30,12 @@
 
 ## 当前恢复点
 
-- 状态：**进行中**。文档与既有 probe 模式已读完（AGENTS/CLAUDE/GDD/rejected registry/art-sample spec/probe README/scroll_review 体例/isolation contract）。
-- 最后完成：计划文件落盘。
-- 下一步：切片 2（纯 Dart 层 + 测试）。
-- 已跑验证：无（尚未改代码）。
-- 阻塞项：无。真人/Windows Gate、正式美术与正式音频、玩法逻辑（Qoder 切片）明确不在本任务内，不伪造替代。
+- 状态：**已完成**。`phase0b_feedback_draft` 模式已实装并登记 README，分支 tip 已打 `[READY]`。
+- 最后完成：纯 Dart 层（sealed 事件 / 纯函数 cue 映射 / 静音 sink / 有界内存 LootFeed / ValueNotifier HUD 状态机）+ 水墨 HUD 组件与键盘演示应用 + `main.dart` mode 接线；测试 43 新增（cue 映射表与确定性、HUD 状态转换、掉落内存性与 reset 清空、隔离守卫=无持久化/无音频依赖/无 Gate 接线/非 Gate 与 NOT FINAL 上屏、widget 交互 6 例）。
+- 下一步：无。等待合并审核；玩法事件对接属 Qoder 切片。
+- 已跑验证（本会话实测，cwd=`tools/phase0minus_probe`）：
+  - `flutter analyze --no-pub` → No issues found（1.1s）；
+  - `flutter test --no-pub test/phase0b/feedback` → **43 pass / 0 fail**（首跑 42 pass 1 fail：隔离守卫逮到 loot 文件注释里的禁用词字面量，改写注释后复绿——守卫自证有判别力）；
+  - `flutter test --no-pub`（probe 全量）→ **139 pass / 0 fail**；
+  - `dart format` 已跑，本切片文件 0 changed（探针既有两处 format drift 在 `test/gate/`、`test/human_gate/`，与本切片无关，已还原不混入）。
+- 阻塞项：无。真人/Windows Gate、正式美术与正式音频、玩法逻辑（Qoder 切片）不在本任务内，未伪造替代。

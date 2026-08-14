@@ -81,14 +81,26 @@ three-runs matrix.
 
 ## Phase 0B isolated art reviews
 
-The same nested package also hosts four explicitly non-production art modes:
+The same nested package also hosts five explicitly non-production modes:
 
 - `phase0b_runtime`: 1+6+1 discrete pose-atlas review;
 - `phase0b_joint_compare`: rejected automatic cutout hierarchy evidence;
 - `phase0b_art_load`: fixed-camera 20+1 local peak observation, not the final
   battle interface;
 - `phase0b_scroll_review`: 3600×720 continuous-map and follow-camera direction,
-  with local encounter density 6 → 10 → 20+1.
+  with local encounter density 6 → 10 → 20+1;
+- `phase0b_feedback_draft`: keyboard-driven NOT FINAL draft of the base HUD
+  (health / resource / style / boss phase / danger telegraph / end state),
+  memory-only loot display, and the mute audio-cue contract. Pure
+  presentation review: no gameplay, no saves, no real drops or rewards,
+  `gate_eligible=false`.
+
+Run the feedback draft with:
+
+```bash
+PROBE_MODE=phase0b_feedback_draft PROBE_VIEWPORT=desktop_1280x720 \
+  build/macos/Build/Products/Profile/phase0minus_probe.app/Contents/MacOS/phase0minus_probe
+```
 
 Run the interactive product-direction review with:
 
