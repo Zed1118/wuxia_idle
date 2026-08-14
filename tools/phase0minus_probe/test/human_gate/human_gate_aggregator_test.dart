@@ -143,6 +143,33 @@ void main() {
     );
   });
 
+  test('duplicate participant collapses the gate to inconclusive', () {
+    final sessions = _passingSessions();
+    final duplicate = _session(1);
+    duplicate['participant_session_id'] = 'session-duplicate';
+    sessions.add(duplicate);
+    final rawReports = _rawReports(sessions);
+
+    final result = aggregateHumanGate(sessions, rawReports: rawReports);
+
+    expect(result.verdict, 'INCONCLUSIVE');
+    final errors = result.summary['schema_errors'] as List;
+    expect(errors, contains('duplicate participant P01'));
+  });
+
+  test('missing linked raw report collapses the gate to inconclusive', () {
+    final sessions = _passingSessions();
+    final rawReports = _rawReports(sessions);
+    (sessions.first['mechanical_evidence']! as Map)['raw_report_run_id'] =
+        'nonexistent-run-id';
+
+    final result = aggregateHumanGate(sessions, rawReports: rawReports);
+
+    expect(result.verdict, 'INCONCLUSIVE');
+    final errors = result.summary['schema_errors'] as List;
+    expect(errors.any((e) => (e as String).contains('missing linked raw report')), isTrue);
+  });
+
   test('rejects mixed package and frozen schedule violation', () {
     final sessions = _passingSessions();
     sessions[1]['package_id'] = 'another-package';

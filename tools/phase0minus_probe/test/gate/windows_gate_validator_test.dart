@@ -40,6 +40,37 @@ void main() {
     expect(result.errors.join('\n'), contains('phase0a_replay'));
   });
 
+  test('rejects a discrete GPU masquerading as the minimum-spec integrated', () {
+    final host = _host();
+    (host['device']! as Map)['gpu_is_integrated'] = false;
+    (host['device']! as Map)['gpu_name'] = 'NVIDIA GeForce GTX 1050';
+
+    final result = validatePhase0aWindowsGate(
+      hostManifest: host,
+      runs: _matrix(),
+      expectedCommit: _commit,
+      expectedScenarioChecksum: _checksum,
+    );
+
+    expect(result.passed, isFalse);
+    expect(result.errors.join('\n'), contains('gpu_is_integrated'));
+  });
+
+  test('rejects a matrix where one run used a different build commit', () {
+    final runs = _matrix();
+    runs[3].manifest['git_commit'] = 'different-commit-000000';
+
+    final result = validatePhase0aWindowsGate(
+      hostManifest: _host(),
+      runs: runs,
+      expectedCommit: _commit,
+      expectedScenarioChecksum: _checksum,
+    );
+
+    expect(result.passed, isFalse);
+    expect(result.errors.join('\n'), contains('git_commit'));
+  });
+
   test('rejects remote, unattested, mixed binary, and incomplete evidence', () {
     final host = _host();
     host['session'] = {
