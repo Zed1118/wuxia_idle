@@ -75,7 +75,7 @@
 ## 文件 / 测试
 
 - 改 `lib/features/battle/presentation/battle_screen.dart`（单文件）。
-- 新增 `test/features/battle/battle_screen_target_chip_test.dart`：
+- 新增 `test/features/battle/presentation/battle_screen_target_chip_test.dart`：
   1. **1 敌**：点单体技能 → 立即出手（命令发出至该敌）、**不进待发态**、不暂停。
   2. **≥2 敌**：点单体技能 → 进待发态 + 选择栏显 N 个 chip → 点某 chip → 对该敌出手。
   3. **aoe**：无论几个敌人 → 立即放，不显选择栏。

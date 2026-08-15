@@ -33,7 +33,7 @@
 | `test/data/tower_vulnerability_config_test.dart` | 真实 yaml 加载守卫 | Create（Task 2/4） |
 | `lib/features/battle/domain/battle_ai.dart` | 目标选择器 taunt 排除 | Modify（Task 3 模块 A） |
 | `test/features/battle/battle_ai_guardian_taunt_test.dart` | taunt 单元测 + drift 守卫 | Create（Task 3） |
-| `test/tools/floor30_soft_gate_diagnostic_test.dart` | floor30 taunt + vuln 诊断 | Modify（Task 5） |
+| `test/tools/floor49_soft_gate_diagnostic_test.dart` | floor30 taunt + vuln 诊断 | Modify（Task 5） |
 | `test/tools/vulnerability_window_diagnostic_test.dart` | floor25 真 yaml 消费诊断 | Modify（Task 5） |
 
 ---
@@ -475,7 +475,7 @@ git commit -m "[balance] floor30 九霄魔尊配脆弱窗口 vulnerability 0.20�
 
 **Files:**
 - Modify: `test/tools/vulnerability_window_diagnostic_test.dart`（floor25 从 copyWith 注入改「验真实 yaml 已配 0.10」）
-- Modify: `test/tools/floor30_soft_gate_diagnostic_test.dart`（加 taunt 排除 + vuln 生效断言）
+- Modify: `test/tools/floor49_soft_gate_diagnostic_test.dart`（加 taunt 排除 + vuln 生效断言）
 
 - [ ] **Step 1: floor25 诊断改真实 yaml 消费**
 

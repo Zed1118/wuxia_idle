@@ -54,7 +54,7 @@
 - `data/towers.yaml`: 30 层塔的需求境界、经验、敌人和技能残页。
 - `data/items.yaml`: 三种经验丹的当层比例。
 - `lib/data/numbers_config.dart`: 解析并校验 `progression.release_cap`。
-- `lib/features/cultivation/domain/progression_release_cap.dart`: 新建发布上限值对象。
+- `lib/data/defs/progression_release_cap.dart`: 新建发布上限值对象。
 - `lib/features/cultivation/application/progression_gate_service.dart`: 新建统一进层门禁。
 - `lib/features/inner_demon/application/inner_demon_service.dart`: 将心魔锁从武圣专用改为绝对层通用。
 - `lib/features/{battle,seclusion,inventory}/...`: 把各经验入口改为统一门禁。
@@ -67,7 +67,7 @@
 ### Task 1: 增加可配置 Lv100 发布上限与统一门禁
 
 **Files:**
-- Create: `lib/features/cultivation/domain/progression_release_cap.dart`
+- Create: `lib/data/defs/progression_release_cap.dart`
 - Create: `lib/features/cultivation/application/progression_gate_service.dart`
 - Create: `test/features/cultivation/application/progression_gate_service_test.dart`
 - Create: `test/data/numbers_config_progression_release_cap_test.dart`
@@ -136,7 +136,7 @@
 
 **Files:**
 - Modify: `lib/features/inner_demon/application/inner_demon_service.dart`
-- Modify: `lib/features/inner_demon/domain/inner_demon_def.dart`
+- Modify: `lib/data/defs/inner_demon_def.dart`
 - Modify: `lib/features/inner_demon/domain/inner_demon_panel.dart`
 - Modify: `data/numbers.yaml`
 - Modify: `data/stages.yaml`
@@ -333,9 +333,9 @@
 - Modify: `test/data/game_repository_test.dart`
 - Modify: `test/balance/p3_1_light_foot_redline_test.dart`
 - Modify: `test/balance/p3_2_mass_battle_redline_test.dart`
-- Modify: `test/tools/floor30_soft_gate_diagnostic_test.dart`
+- Modify: `test/tools/floor49_soft_gate_diagnostic_test.dart`
 - Modify: `test/tools/tower_boss_feel_diagnostic_test.dart`
-- Modify: `test/features/tower/floor30_soft_gate_battle_test.dart`
+- Modify: `test/features/tower/floor49_soft_gate_battle_test.dart`
 
 - [x] **Step 1: 为境界分布、经验和掉落写 RED 合同**
 

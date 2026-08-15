@@ -19,7 +19,7 @@
 - `lib/data/numbers_config.dart`：`NumbersConfig.fromYaml` 解析；`final LevelConfig level`（:162）；equipment 段在 `y['equipment']`（:326）。
 - `lib/features/level/domain/level_config.dart(已移除)`：`expToNext(L)=base+(L-1)*perLevel`，`fromYaml` 默认 120/40（注释自称=生产初值）。
 - `lib/features/inventory/presentation/inventory_screen.dart`：装备 tab `_EquipmentGrid`→`_SlotGroupSection`（按 slot 分组 Wrap）→`_EquipmentGridTile`(:423，Stack + ItemSlot + isLineageHeritage 角标 :459)；物料 tab `_MaterialTab`(:243，顶部银两位 + `_MaterialList`/`_MaterialGroup` ExpansionTile)。providers：`allEquipmentsProvider`/`allInventoryItemsProvider`/`silverBalanceProvider`/`activeCharacterIdsProvider`/`characterByIdProvider`。
-- `lib/features/equipment/presentation/equipment_detail_screen.dart`：单件详情页（单件出售/分解入口落点，实装时读取结构）。
+- `lib/features/inventory/presentation/equipment_detail_screen.dart`：单件详情页（单件出售/分解入口落点，实装时读取结构）。
 - `lib/shared/strings.dart`：`UiStrings`（新增中文串全进此处，参照 `inventoryTabEquipment`:535 / `silverBalanceLabel`:235 / `itemUseButton`:552 体例）。
 - `lib/features/battle/domain/enum_localizations.dart:143`：`EnumL10n.equipmentTier(t)`。
 - ShopScreen 导航体例：`main_menu.dart:391 _push(context, const ShopScreen())`。
@@ -421,7 +421,7 @@ git commit -m "装备处置/批量/已装备标记 UiStrings"
 ## Task 5: 单件出售/分解入口（详情页）
 
 **Files:**
-- Modify: `lib/features/equipment/presentation/equipment_detail_screen.dart`
+- Modify: `lib/features/inventory/presentation/equipment_detail_screen.dart`
 - Test: `test/features/equipment/presentation/equipment_detail_screen_test.dart`（新建或追加）
 
 - [ ] **Step 1: 读详情页结构**

@@ -146,7 +146,7 @@ EncounterBiome **不动**(stage 标签层,rooftop biome 缺但 lightfoot 不需�
 
 ## 七 · R5 跨地形红线测计划
 
-`test/redline/p3_1_light_foot_redline_test.dart` 3 测(沿 P2.2 R5 体例 + memory `feedback_red_line_test_semantics`):
+`test/balance/p3_1_light_foot_redline_test.dart` 3 测(沿 P2.2 R5 体例 + memory `feedback_red_line_test_semantics`):
 - **R5.1** 5 关 × 50 种子分布:玩家 yiLiu/jueDing 满 build vs stage enemyTeam,断言「至少 ≥30/50 玩家胜利」(轻功对决玩家强 build 应主导,与心魔「克己难赢」语义对称)
 - **R5.2** terrain modifier cap e2e:water/rooftop/bamboo 三 terrain bake 后 critRate/evasionRate/defenseRate ≤0.95(clamp 校验)+ damage 不破 §5.4 普伤 ≤8000 红线
 - **R5.3** unlock 链 e2e:stage_06_05 victory → light_foot_01 unlock + light_foot_01..05 顺序解锁(不接管 wuSheng 突破链 · isLayerLocked 无 lightFoot 路径)

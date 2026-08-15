@@ -525,7 +525,7 @@ Expected: FAIL — `settle` 未定义。
   }
 ```
 
-补 import：`data/isar_setup.dart`、`core/domain/inventory_item.dart`(InventoryItem/ItemType)、`core/domain/character.dart`、`CharacterAdvancementService` 与 `InnerDemonService`(grep 定位文件路径)、`data/game_repository.dart`。字段名已对齐 `_addInventoryItem`（seclusion_service.dart:552）：`getByDefId` 索引 + `firstObtainedAt`/`lastObtainedAt`。`mainlineProgress.filter().saveDataIdEqualTo` 沿用 completeRetreat 同款 query（seclusion_service.dart:374）。
+补 import：`lib/data/isar_setup.dart`、`core/domain/inventory_item.dart`(InventoryItem/ItemType)、`core/domain/character.dart`、`CharacterAdvancementService` 与 `InnerDemonService`(grep 定位文件路径)、`lib/data/game_repository.dart`。字段名已对齐 `_addInventoryItem`（seclusion_service.dart:552）：`getByDefId` 索引 + `firstObtainedAt`/`lastObtainedAt`。`mainlineProgress.filter().saveDataIdEqualTo` 沿用 completeRetreat 同款 query（seclusion_service.dart:374）。
 
 - [ ] **Step 4: gate 分流（无闭关→settle→弹被动卡）**
 

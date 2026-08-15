@@ -97,8 +97,8 @@
 
 **主要文件**：
 
-- `lib/features/battle/presentation/widgets/hp_bar.dart`
-- `lib/features/battle/presentation/widgets/character_avatar.dart`
+- `lib/features/battle/presentation/hp_bar.dart`
+- `lib/features/battle/presentation/character_avatar.dart`
 - `lib/features/battle/presentation/widgets/battle_banners.dart`
 - 对应 widget/golden/语义测试
 
@@ -142,8 +142,8 @@
 
 **主要文件**：
 
-- `lib/features/battle/presentation/widgets/character_avatar.dart`
-- `lib/features/battle/presentation/widgets/battle_scene_background.dart`
+- `lib/features/battle/presentation/character_avatar.dart`
+- `lib/features/battle/presentation/battle_scene_background.dart`
 - `lib/features/battle/presentation/widgets/battlefield.dart`
 - `lib/features/debug/application/visual_acceptance_plan.dart`
 - `lib/features/debug/application/visual_route.dart`

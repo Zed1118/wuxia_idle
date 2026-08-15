@@ -422,7 +422,7 @@ git commit -m "test: 心跳压双吃/首启门控/聚焦幂等三族用例(P0-3)
 - Modify: `lib/features/seclusion/presentation/offline_recap_gate.dart`（范围 B 全段 :75-120 替换;范围 A 块首加 mark）
 - Test: 既有 `test/features/seclusion/presentation/offline_passive_gate_test.dart` / `offline_recap_gate_test.dart` 零改动跑绿（R7）
 
-- [ ] **Step 1: 改 gate**（imports 增 `../application/online_presence_controller.dart`,删不再用的 `../../../data/isar_setup.dart`/`offline_passive_service.dart` import 若 analyze 报 unused）
+- [ ] **Step 1: 改 gate**（imports 增 `../application/online_presence_controller.dart`,删不再用的 `../../../lib/data/isar_setup.dart`/`offline_passive_service.dart` import 若 analyze 报 unused）
 
 范围 A `if (session != null) {` 块内**首行**加:
 
@@ -590,7 +590,7 @@ class _OnlinePresenceLifecycleHookState
 }
 ```
 
-- [ ] **Step 3: main.dart 收编**——`_WuxiaAppState` 删 `_lifecycle` 字段/`initState`/`_recordOnline`/`dispose`(整个 State 只剩 build → `WuxiaApp` 降为 `ConsumerWidget`),删 `dart:async`+`data/isar_setup.dart` import,加 hook import;`MaterialApp` 外包:
+- [ ] **Step 3: main.dart 收编**——`_WuxiaAppState` 删 `_lifecycle` 字段/`initState`/`_recordOnline`/`dispose`(整个 State 只剩 build → `WuxiaApp` 降为 `ConsumerWidget`),删 `dart:async`+`lib/data/isar_setup.dart` import,加 hook import;`MaterialApp` 外包:
 
 ```dart
         child: OnlinePresenceLifecycleHook(

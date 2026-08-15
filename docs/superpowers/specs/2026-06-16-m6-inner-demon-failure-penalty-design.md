@@ -6,7 +6,7 @@
 
 ## 背景
 
-GDD §12.1 设计了心魔关战败惩罚「内力 ×0.85 / 主修修炼度 ×0.9 + 心魔余毒 debuff（闭关 8h 清）」，`numbers.yaml` `inner_demon.failure_penalty` / `residue_debuff` 与 `InnerDemonFailurePenalty` / `InnerDemonResidueDebuff`（`lib/features/inner_demon/domain/inner_demon_def.dart`）已完整定义，但**业务代码零 wire**（2026-06-16 续15 审计证实，GDD §12.1 已加纠偏注）。本设计把它接入战斗结算 + 存档。
+GDD §12.1 设计了心魔关战败惩罚「内力 ×0.85 / 主修修炼度 ×0.9 + 心魔余毒 debuff（闭关 8h 清）」，`numbers.yaml` `inner_demon.failure_penalty` / `residue_debuff` 与 `InnerDemonFailurePenalty` / `InnerDemonResidueDebuff`（`lib/data/defs/inner_demon_def.dart`）已完整定义，但**业务代码零 wire**（2026-06-16 续15 审计证实，GDD §12.1 已加纠偏注）。本设计把它接入战斗结算 + 存档。
 
 现状要点（Phase 0 实测）：
 - 心魔关 `StageType.innerDemon`，`isBossStage=false`，镜像敌队由 `InnerDemonService.buildMirrorEnemyTeam` 生成；胜利解锁下一关已实装，**战败无任何副作用**。

@@ -622,7 +622,7 @@ DEVELOPER_DIR=/Library/Developer/CommandLineTools git commit -m "feat(第七阶�
 - Modify: `lib/features/equipment/domain/treasure_highlight.dart`(`pickTreasureHighlight` 加 `extraDisplayTiers`)
 - Modify: `lib/features/equipment/presentation/treasure_drop_overlay.dart`(`playTreasureDropIfAny` 加 `extraDisplayTiers` 参,透传)
 - Modify: `stage_entry_flow.dart` + `tower_entry_flow.dart`(flow 层算「利器首次」集合并传入)
-- Test: `test/features/equipment/treasure_highlight_test.dart`(追加/新建)
+- Test: `test/features/equipment/domain/treasure_highlight_test.dart`(追加/新建)
 
 - [ ] **Step 1: 写失败测试**(`pickTreasureHighlight` 选取逻辑)
 

@@ -44,7 +44,7 @@
 >
 > **v1.9 变更**(2026-05-29 · 1.0 路径方向调整 + 5h 挂机 D4 推进):
 > - **用户拍板「先打磨游戏再启 Steam」** → F Steam 段 + G 法律段 **搁置 ship 前 1-2 月**(F1 注册 guide `docs/handoff/m15_f1_*` 已 ready 待启)→ 聚焦 **D 性能 + 数值再平衡** + **H 内容打磨 / UX**(从 nice-to-have 升主聚焦)+ E 部分(E1 SoundManager + E5 BGM 1 套纳入 / E3-E7 ship 前)
-> - **5h 挂机方案 A 单线推 D4**:Batch A0-A5 · `tools/balance_simulator.dart` PoC + 30 关全路径 1500 跑 + 难度曲线 csv + numbers tune 候选 diff(不上线 · 起床用户拍)+ R5 测族保护 + handoff
+> - **5h 挂机方案 A 单线推 D4**:Batch A0-A5 · `test/tools/balance_simulator_test.dart` PoC + 30 关全路径 1500 跑 + 难度曲线 csv + numbers tune 候选 diff(不上线 · 起床用户拍)+ R5 测族保护 + handoff
 > - **CHECKLIST v1.9** + **H spec 起草** + Q1-Q4 默认决议入档
 > - 1.0 整体 ~96% 维持(本批不改完成度,只改路径优先级 · D 段 0% → ~10-15% 视 D4 PoC 实际产出)
 

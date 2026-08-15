@@ -23,7 +23,7 @@
 |---|---|---|
 | `lib/core/domain/character.dart` | 加 5 装配字段 + 工厂参数 | 改 |
 | `lib/data/isar_setup.dart` | saveVersion 0.16.0→0.17.0 | 改 |
-| `lib/data/numbers.yaml` | `skill_loadout.ultimate_power_threshold: 5000` | 改 |
+| `data/numbers.yaml` | `skill_loadout.ultimate_power_threshold: 5000` | 改 |
 | `lib/data/numbers_config.dart` | 读上面字段 | 改 |
 | `lib/features/cultivation/domain/skill_loadout.dart` | 纯域：6 槽值对象 + autoFill | 建 |
 | `lib/features/cultivation/application/skill_loadout_service.dart` | Isar 持久化 + 装配 gate 校验 | 建 |
@@ -127,7 +127,7 @@ git commit -m "feat(schema): Character 加 5 技能装配槽 + saveVersion 0.17.
 **Files:**
 - Create: `lib/features/cultivation/domain/skill_loadout.dart`
 - Create: `test/features/cultivation/skill_loadout_test.dart`
-- Modify: `lib/data/numbers.yaml`（加阈值）+ `lib/data/numbers_config.dart`（读阈值）
+- Modify: `data/numbers.yaml`（加阈值）+ `lib/data/numbers_config.dart`（读阈值）
 
 - [ ] **Step 1: numbers.yaml 加大招阈值**
 

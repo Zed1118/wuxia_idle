@@ -27,7 +27,7 @@
 **Files:**
 - Modify: `lib/data/defs/item_def.dart`
 - Modify: `data/items.yaml:12-14`
-- Test: `test/data/defs/item_def_test.dart`(若无则新建)
+- Test: `test/data/item_def_test.dart`(若无则新建)
 
 - [ ] **Step 1: 改 items.yaml 经验丹 experience→layer_fraction**
 

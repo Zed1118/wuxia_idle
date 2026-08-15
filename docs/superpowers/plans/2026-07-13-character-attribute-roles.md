@@ -182,7 +182,7 @@ git commit -m "区分悟性领悟与机缘奇遇概率"
 ## Task 5: 增加四个机缘选项与可访问的锁定交互
 
 **Files:**
-- Modify: `lib/features/encounter/domain/encounter_event_loader.dart`
+- Modify: `lib/data/encounter_event_loader.dart`
 - Modify: `lib/features/encounter/presentation/encounter_dialog.dart`
 - Modify: `lib/features/encounter/presentation/encounter_hook.dart`
 - Modify: `lib/features/debug/presentation/encounter_debug_picker.dart`

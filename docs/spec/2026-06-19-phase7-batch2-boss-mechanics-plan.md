@@ -404,7 +404,7 @@ class SkillDropResult {
 
 ## Task 10: `skill_treasure_overlay`（重仪式）+ 残页轻提示
 
-**Files:** Create `lib/features/cultivation/presentation/skill_treasure_overlay.dart` · Modify victory dialog（残页行）、`lib/shared/strings.dart` · Test `test/features/cultivation/skill_treasure_overlay_test.dart`
+**Files:** Create `lib/features/cultivation/presentation/skill_treasure_overlay.dart` · Modify victory dialog（残页行）、`lib/shared/strings.dart` · Test `test/features/cultivation/presentation/skill_treasure_overlay_test.dart`
 
 - [ ] **Step 1: 写失败测试** —— `presentSkillTreasure(context, result)`：`isMajor` 时渲染卷轴 overlay（招式名题字 + 心法 cover 图，Image.asset 带 errorBuilder 降级）；widget 测断言显示招式名 + UiStrings 文案。残页轻提示行：`isMinorFragment` 时 victory dialog 末尾出现「得残页 X N/M」。
 

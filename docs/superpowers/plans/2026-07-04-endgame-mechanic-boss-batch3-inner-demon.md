@@ -217,7 +217,7 @@ git commit -m "feat: StageWinCondition 数据面（surviveTicks 型）+ StageDef
 **Files:**
 - Modify: `lib/features/battle/domain/battle_state.dart:664-769`（加字段 + 构造 + initial + copyWith）
 - Modify: `lib/features/battle/domain/strategy/default_ground_strategy.dart:76-95`（stepOne 边界 survive 检查）
-- Modify: `lib/core/application/battle_providers.dart:78-87`（startBattle 加 winCondition 参 → initial）
+- Modify: `lib/features/battle/application/battle_providers.dart:78-87`（startBattle 加 winCondition 参 → initial）
 - Modify: `lib/features/mainline/presentation/stage_entry_flow.dart:539,552,561`（透传 stage.winCondition）
 - Test: `test/features/battle/survive_win_condition_test.dart`（新建·确定性 via notifier）
 
@@ -373,7 +373,7 @@ Expected: FAIL（startBattle 无 winCondition 参 / survive 未判定，前 3 �
 
 - [ ] **Step 4: `startBattle` 加 winCondition 参 → initial**
 
-`lib/core/application/battle_providers.dart:78-87`：
+`lib/features/battle/application/battle_providers.dart:78-87`：
 ```dart
   void startBattle(
     List<BattleCharacter> leftTeam,
@@ -462,7 +462,7 @@ git commit -m "feat: survive 限时生存胜负条件（BattleState.winCondition
 **Files:**
 - Modify: `data/skills.yaml`（新增 `skill_inner_demon_charge`）
 - Modify: `data/numbers.yaml:1572-1627`（innerDemon 段加 `mirror_vulnerability_per_stage` + `mirror_charge_skill_id`）
-- Modify: `lib/features/inner_demon/domain/inner_demon_def.dart:15-116`（加两字段 + fromYaml + empty + 跨字段校验）
+- Modify: `lib/data/defs/inner_demon_def.dart:15-116`（加两字段 + fromYaml + empty + 跨字段校验）
 - Test: `test/features/inner_demon/inner_demon_vulnerability_def_test.dart`（新建）
 
 - [ ] **Step 1: 写失败测试（InnerDemonDef 脆弱字段解析 + 跨字段校验）**
@@ -529,7 +529,7 @@ Expected: FAIL（`mirrorVulnerabilityPerStage` / `mirrorChargeSkillId` 不存在
 
 - [ ] **Step 3: InnerDemonDef 加两字段 + fromYaml + empty + 校验**
 
-`lib/features/inner_demon/domain/inner_demon_def.dart`：
+`lib/data/defs/inner_demon_def.dart`：
 - 顶部 import：`import '../../../data/defs/boss_vulnerability_def.dart';`
 - 字段区（`requiredRealmLayer` 后）加：
 ```dart

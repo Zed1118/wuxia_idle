@@ -13,7 +13,7 @@ CHECKLIST E 4 子项 0/4 → 4/4。BGM 主线/战斗/闭关 3 套 + SFX 战斗(7
 
 | Batch | 内容 | Claude 推 | 用户办 | 估时 |
 |---|---|---|---|---|
-| **E1 SoundManager 架构** | `lib/core/audio/sound_manager.dart` + `audioplayers` 接入 + volume control(BGM/SFX/Master)+ Riverpod provider + 静音状态持久化 | 100% | — | ~2h |
+| **E1 SoundManager 架构** | `lib/shared/audio/sound_manager.dart` + `audioplayers` 接入 + volume control(BGM/SFX/Master)+ Riverpod provider + 静音状态持久化 | 100% | — | ~2h |
 | **E2 BGM cue point 接入** | 主菜单 / 主线战斗 / 闭关 3 cue point + 章节切歌 hook + 战斗胜利 / 失败 jingle + crossfade | 100% | — | ~2h |
 | **E3 SFX 7 阶战斗** | 攻击 / 命中 / 暴击 / 死亡 各 7 阶递进 = 28 SFX + 招式特效音(普攻 / 大招 / 共鸣 / 飞升)| 100% | — | ~3h |
 | **E4 SFX UI** | 按钮 click / 翻页 turn / 装备 swap / 心法学习 / 商店购买 / 升级 ding / 错误 buzz = 8 SFX | 100% | — | ~1h |
@@ -36,7 +36,7 @@ CHECKLIST E 4 子项 0/4 → 4/4。BGM 主线/战斗/闭关 3 套 + SFX 战斗(7
 
 ## 4. 子任务粒度
 
-- **E1.1**:`pubspec.yaml +audioplayers` + `lib/core/audio/sound_manager.dart` 单例 + Riverpod provider
+- **E1.1**:`pubspec.yaml +audioplayers` + `lib/shared/audio/sound_manager.dart` 单例 + Riverpod provider
 - **E1.2**:`audio_settings.dart` BGM/SFX/Master 三轴 volume + Isar 持久化 + 设置面板 widget
 - **E2.1**:主菜单 cue point `MainMenuScreen.initState`
 - **E2.2**:战斗 cue point `BattleScreen` enter/exit + 胜利 / 失败 jingle hook

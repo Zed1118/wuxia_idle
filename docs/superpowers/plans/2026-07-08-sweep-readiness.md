@@ -12,7 +12,7 @@
 
 ### File Structure
 
-- Create `lib/features/sweep/domain/sweep_readiness.dart`: pure config/status/recovery math.
+- Create `lib/data/defs/sweep_readiness.dart`: pure config/status/recovery math.
 - Create `lib/features/sweep/application/sweep_readiness_service.dart`: Isar-backed read/recover/spend service.
 - Create `lib/features/sweep/application/sweep_readiness_providers.dart`: Riverpod provider for current readiness.
 - Modify `lib/core/domain/save_data.dart`: add nullable readiness fields.
@@ -29,7 +29,7 @@
 ### Task 1: Pure Readiness Math
 
 **Files:**
-- Create: `lib/features/sweep/domain/sweep_readiness.dart`
+- Create: `lib/data/defs/sweep_readiness.dart`
 - Test: `test/features/sweep/domain/sweep_readiness_test.dart`
 
 - [ ] **Step 1: Write failing tests**

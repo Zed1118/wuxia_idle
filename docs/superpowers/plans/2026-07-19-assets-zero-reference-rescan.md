@@ -49,7 +49,7 @@
 
 | 文件 | 体积 | `git log -S` 最后引用史 | 标注 / 拍板提示 |
 |---|---:|---|---|
-| `assets/characters/battle_founder.png` | 26.6 KiB | `63eb0822`（2026-07-15）接入；`57242282`（2026-07-15）改指 `battle_founder_v2.png` | **疑似目检否决废弃品**；V1 被 V2 替换 |
+| `assets/characters/battle_founder_v2.png` | 26.6 KiB | `63eb0822`（2026-07-15）接入；`57242282`（2026-07-15）改指 `battle_founder_v2.png` | **疑似目检否决废弃品**；V1 被 V2 替换 |
 | `assets/enemies/battle_tower_boss_30.png` | 162.3 KiB | `f29ccef5`（2026-07-16）接入；`7d70ef11`（2026-07-16）改指 `battle_tower_boss_30_v2.png` | **疑似目检否决废弃品**；V1 被 V2 替换 |
 | `assets/enemies/guard_b.png` | 201.6 KiB | `df8b539d`（2026-05-21）加入关卡；`e73979ce`（2026-06-28）随敌人定义移除 | **疑似目检否决废弃品**；历史显示阵容删除，未证明图本身破损 |
 | `assets/enemies/kunlun_dunke.png` | 124.6 KiB | `4460bdb9`（2026-05-22）加入关卡；`e73979ce`（2026-06-28）随敌人定义移除 | **疑似目检否决废弃品**；历史显示阵容删除，未证明图本身破损 |

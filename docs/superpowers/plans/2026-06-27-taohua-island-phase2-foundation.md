@@ -26,10 +26,10 @@ git switch -c codex/taohua-island-phase2-foundation
 
 - Modify: `data/items.yaml` — add raw materials and processed island outputs.
 - Modify: `data/numbers.yaml` — expand `taohua_island.buildings`.
-- Modify: `lib/features/taohua_island/domain/island_building_type.dart` — add pinyin building enum values, following existing `tieJiangChang / caoYaoYuan / daZaoTai / danFang` style.
+- Modify: `lib/core/domain/island_building_type.dart` — add pinyin building enum values, following existing `tieJiangChang / caoYaoYuan / daZaoTai / danFang` style.
 - Modify: `lib/features/battle/domain/enum_localizations.dart` — add building display names if this file currently owns building labels.
 - Modify: `lib/shared/strings.dart` — add UI strings for new building states and section labels.
-- Modify: `lib/features/taohua_island/domain/taohua_island_config.dart` — validate 6-8 building config, no behavior fork unless validation requires it.
+- Modify: `lib/data/defs/taohua_island_config.dart` — validate 6-8 building config, no behavior fork unless validation requires it.
 - Modify: `lib/features/taohua_island/presentation/taohua_island_screen.dart` — replace linear card list with grouped据点 layout.
 - Test: `test/features/taohua_island/taohua_island_config_test.dart`
 - Test: `test/features/taohua_island/island_production_service_test.dart`
@@ -41,7 +41,7 @@ git switch -c codex/taohua-island-phase2-foundation
 ### Task 1: Add Building Types
 
 **Files:**
-- Modify: `lib/features/taohua_island/domain/island_building_type.dart`
+- Modify: `lib/core/domain/island_building_type.dart`
 - Modify: `test/features/taohua_island/taohua_island_config_test.dart`
 
 - [ ] **Step 1: Inspect current enum and parser**

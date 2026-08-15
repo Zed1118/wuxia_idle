@@ -21,7 +21,7 @@
 |---|---|---|
 | `lib/features/battle/domain/strategy/battle_strategy.dart` | 抽象 `interveneNow`(默认降级 pending) | Modify |
 | `lib/features/battle/domain/strategy/default_ground_strategy.dart` | override `interveneNow`(借 AP + `_resolveAction`) | Modify |
-| `lib/core/application/battle_providers.dart` | `BattleNotifier.interveneNow`(同 `_rng` 委托) | Modify |
+| `lib/features/battle/application/battle_providers.dart` | `BattleNotifier.interveneNow`(同 `_rng` 委托) | Modify |
 | `lib/features/battle/presentation/battle_screen.dart:671-689` | `_onSkillCommand` 改调 `interveneNow` 退 C5 rush | Modify |
 | `lib/features/battle/domain/auto_play_mode.dart` | `resolveAutoPlayModeWithFirstClear` 纯函数 | Modify |
 | `lib/features/mainline/application/mainline_progress_service.dart` | `isFirstClear` 静态纯函数 | Modify |
@@ -253,7 +253,7 @@ DEVELOPER_DIR=/Library/Developer/CommandLineTools git commit -m "feat(2.3): stra
 ## Task 2: `BattleNotifier.interveneNow` + 插队确定性测
 
 **Files:**
-- Modify: `lib/core/application/battle_providers.dart:97-102`(在 `requestUltimate` 后)
+- Modify: `lib/features/battle/application/battle_providers.dart:97-102`(在 `requestUltimate` 后)
 - Test: `test/features/battle/intervene_determinism_test.dart`
 
 - [ ] **Step 1: 写失败测**
@@ -371,7 +371,7 @@ Expected: FAIL（`interveneNow` isn't defined for BattleNotifier）。
 
 - [ ] **Step 3: BattleNotifier 加方法**
 
-`lib/core/application/battle_providers.dart` 在 `requestUltimate`(line 102 `}`)之后插入:
+`lib/features/battle/application/battle_providers.dart` 在 `requestUltimate`(line 102 `}`)之后插入:
 
 ```dart
   /// 主线二 2.3:玩家拖招立即插队出手(委托 strategy,消费本场同一 [_rng])。

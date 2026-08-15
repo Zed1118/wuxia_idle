@@ -42,7 +42,7 @@
 **Files:**
 - Modify: `lib/core/domain/enums.dart`（ItemType enum，参 `enums.dart:19-20` 既有材料值）
 - Modify: `lib/features/battle/domain/enum_localizations.dart:186-192`
-- Test: `test/features/battle/enum_localizations_test.dart`（既有，加断言）
+- Test: `test/features/battle/domain/enum_localizations_test.dart`（既有，加断言）
 
 - [ ] **Step 1: 写失败测试** — 在 enum_localizations_test.dart 加：
 ```dart
@@ -64,7 +64,7 @@ test('ItemType.silver 显示名为 银两', () {
 - Modify: `data/numbers.yaml`（retreat.maps[*].base_outputs，参既有 `mojianshi_per_hour`）
 - Modify: 闭关 map def 类（grep `mojianshiPerHour` 定位 def 类文件）+ fromYaml
 - Modify: `lib/features/seclusion/application/seclusion_service.dart`（computeOutputs:172-263 + completeRetreat:320-332 + _addInventoryItem:578-599）
-- Test: `test/features/seclusion/seclusion_service_test.dart`（既有，加银两产出断言）
+- Test: `test/features/seclusion/application/seclusion_service_test.dart`（既有，加银两产出断言）
 
 - [ ] **Step 1: 写失败测试** — 仿既有 mojianshi 产出测，断言某 map 闭关 N 小时产出 `item_silver` 数量 = `floor(silverPerHour * hours * scale * solarBonus)`，并 `_addInventoryItem` 入库后 `inventoryItems.getByDefId('item_silver').quantity` 等于该值。
 - [ ] **Step 2: 跑测试确认 fail** — `flutter test test/features/seclusion/seclusion_service_test.dart`，预期 fail（silverPerHour 未定义/产出为 0）。
@@ -82,7 +82,7 @@ test('ItemType.silver 显示名为 银两', () {
 **Files:**
 - Modify: `data/stages.yaml`（各关 dropTable 加 item_silver 条目）
 - Modify: `data/towers.yaml`（各层 dropTable 加 item_silver 条目）
-- Test: `test/features/equipment/drop_service_test.dart`（既有，加 item_silver 掉落断言）
+- Test: `test/features/equipment/application/drop_service_test.dart`（既有，加 item_silver 掉落断言）
 
 > DropService 已支持 ItemDrop（`drop_service.dart:70-78` + `_rollTable:86-107`），本 task 纯配置 + 验证，无 service 改动。
 
@@ -238,7 +238,7 @@ static String shopItemPrice(int p) => '$p 两';
 **Files:**
 - Modify: `lib/features/inventory/presentation/inventory_screen.dart`（item_silver 排除材料网格 + 加货币顶栏；参 `_MaterialGroup:478-479`）
 - Modify: `lib/features/main_menu/presentation/main_menu.dart`（341-354 区加商店入口，仿兵器谱）
-- Test: `test/features/inventory/inventory_screen_test.dart`（既有，加货币断言）+ `test/features/main_menu/main_menu_test.dart`（既有，加入口断言）
+- Test: `test/features/inventory/presentation/inventory_screen_test.dart`（既有，加货币断言）+ `test/features/main_menu/presentation/main_menu_test.dart`（既有，加入口断言）
 
 - [ ] **Step 1: 写失败测试** —
   - inventory：item_silver 行不出现在材料分组列表，改以「银两 N」顶栏展示。

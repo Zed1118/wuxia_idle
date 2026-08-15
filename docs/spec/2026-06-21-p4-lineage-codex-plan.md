@@ -46,7 +46,7 @@
 | `lib/features/debug/application/visual_route.dart`（改） | 新增 `lineageCodex`/`lineageCharacterDetail` 枚举 |
 | `lib/features/debug/presentation/visual_route_host.dart`（改） | buildVisualTarget 双 case + seed builder |
 | `test/features/character_panel/lineage_codex_provider_test.dart`（新建） | 分代派生纯逻辑测 |
-| `test/features/character_panel/lineage_panel_screen_test.dart`（新建/改） | 主屏 widget 测 |
+| `test/features/character_panel/presentation/lineage_panel_screen_test.dart`（新建/改） | 主屏 widget 测 |
 | `test/features/character_panel/lineage_character_detail_screen_test.dart`（新建） | 详情屏 widget 测 |
 | `test/features/debug/visual_route_test.dart`（改） | 双路由 parse 往返测 |
 
@@ -436,7 +436,7 @@ git commit -m "feat: 门派谱1.1 Task3 角色详情屏(祖师/弟子两态)"
 
 **Files:**
 - Modify (重写 body): `lib/features/character_panel/presentation/lineage_panel_screen.dart`
-- Test: `test/features/character_panel/lineage_panel_screen_test.dart`
+- Test: `test/features/character_panel/presentation/lineage_panel_screen_test.dart`
 
 保留：`LineagePanelScreen` 类名/BgmScope/AppBar/`_AscensionSection`（屏底）/`_FounderBuffSection`/`_HeritageRow`/`_PanelCard`/`_SectionTitle`/`_CharacterChip`（卡片加 onTap → push 详情屏）。
 改：`_Body` 改 watch `lineageCodexProvider`，渲染进度头 + per-代 `_GenerationSection`（代标题条 + 祖师卡 + 门人卡 + 该代遗物行），末尾 `_AscensionSection`。

@@ -36,7 +36,7 @@
 |---|---|---|---|
 | 1 | 反引号路径(存在) | `` `lib/main.dart` `` | 计入引用,非死链 |
 | 2 | 反引号路径(不存在) | `` `lib/nope.dart` `` | 计入死链 |
-| 3 | md 链接(存在) | `[说明](docs/GDD.md)` | 计入引用 —— **当前漏扫,本单核心** |
+| 3 | md 链接(存在) | `[说明](GDD.md)` | 计入引用 —— **当前漏扫,本单核心** |
 | 4 | md 链接(不存在) | `[x](docs/nope.md)` | 计入死链 |
 | 5 | 图片链接 | `![图](assets/x.png)` | 计入引用 |
 | 6 | 代码围栏内的路径 | 三反引号围栏内含 `lib/a.dart` | 跳过,不计引用 |
@@ -60,7 +60,7 @@
 ## 六、硬约束
 
 - **只动**:`tools/` 下文件 + `docs/dispatch/reports/` 下你的报告
-- **禁碰**:`data/numbers.yaml` / `docs/GDD.md` / `PROGRESS.md` / `lib/**/strings.dart` / `pubspec.yaml`
+- **禁碰**:`data/numbers.yaml` / `GDD.md` / `PROGRESS.md` / `lib/**/strings.dart` / `pubspec.yaml`
 - 完成后在**本 worktree** `commit`(消息前缀 `[READY]`),**不要 push,不要合并到 main**
 - 拿不准 → 停下,写 `[BLOCKED]` + 原因,**禁硬做**
 - **数字一律自己实跑得出**,禁复述本派单包里的数字(49 / 678 / 43 都要你自己复现)

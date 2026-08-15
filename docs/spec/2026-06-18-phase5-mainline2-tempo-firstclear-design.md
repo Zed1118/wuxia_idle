@@ -7,7 +7,7 @@
 
 ## 0. 修正源 spec 的两处 stale 前提(Phase 0 实测)
 
-1. **2.3 前置「读 BattleReplayRecord(saveVer0.19)保 seed 重放」已不成立**:`BattleReplayRecord` collection 在「战斗交互重做 Phase 3 / saveVer0.23」随录制回放链整体删除,不在 `_allSchemas`(`lib/data/isar_setup.dart:69-85`,删除注释 `:114`)。当前确定性**只靠**单一 `_rng` 实例 + advance 严格递进(`lib/core/application/battle_providers.dart:81`)。**不复活任何 replay 落盘。**
+1. **2.3 前置「读 BattleReplayRecord(saveVer0.19)保 seed 重放」已不成立**:`BattleReplayRecord` collection 在「战斗交互重做 Phase 3 / saveVer0.23」随录制回放链整体删除,不在 `_allSchemas`(`lib/data/isar_setup.dart:69-85`,删除注释 `:114`)。当前确定性**只靠**单一 `_rng` 实例 + advance 严格递进(`lib/features/battle/application/battle_providers.dart:81`)。**不复活任何 replay 落盘。**
 2. **2.5「自动推进只到已首通的最远关」是 loose wording**:实测无跨关自动链。选关始终手动(`stage_list_screen.dart:26` locked 关靠"通关前一关解锁");"挂机"= 离线收益 + 战斗内自动连播。`AutoPlayMode.auto`=自动连播无拖招层 / `interactive`=自动连播挂拖招层(`auto_play_mode.dart:8`)。故 2.5 落地为「首通强制 interactive 模式」(§3)。
 
 ## 1. 现状锚点(file:line)

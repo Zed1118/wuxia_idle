@@ -14,7 +14,7 @@
 
 ## File Structure
 
-- `lib/core/application/battle_providers.dart` — 加 `advanceOneAction()`（紧接 `advance()` 后，~L145）。
+- `lib/features/battle/application/battle_providers.dart` — 加 `advanceOneAction()`（紧接 `advance()` 后，~L145）。
 - `lib/data/numbers_config.dart` — `AnimationNumbers` 加 `keyMomentHoldMs` 字段 + fromYaml + defaults；retune `actionIntervalMs`/`damagePopupMs` 默认值。
 - `data/numbers.yaml` — `animation` 段加 `key_moment_hold_ms`、调 `action_interval_ms`/`damage_popup_ms`。
 - `lib/features/battle/presentation/battle_screen.dart` — 常速 Timer 改驱动 `advanceOneAction()`（快进留 `advance()`）；`_playAction` 关键帧延长 hold；加纯函数 `playbackHoldMs(...)`。
@@ -27,7 +27,7 @@
 ## Task 1: `BattleNotifier.advanceOneAction()`（逐 actor 单步 + 确定性）
 
 **Files:**
-- Modify: `lib/core/application/battle_providers.dart`（紧接 `advance()` 结束的 `}` 后，约 L145）
+- Modify: `lib/features/battle/application/battle_providers.dart`（紧接 `advance()` 结束的 `}` 后，约 L145）
 - Test: `test/features/battle/battle_advance_one_action_test.dart`（新建）
 
 - [ ] **Step 1: 写失败测**
