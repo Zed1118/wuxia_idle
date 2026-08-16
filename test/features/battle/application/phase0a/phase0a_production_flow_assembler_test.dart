@@ -48,12 +48,7 @@ void main() {
     cooldownTurns: 0,
     requiresManualTrigger: false,
     visualEffect: '',
-    proficiency: SkillProficiencyEffects(
-      {'shuLian': 0.10},
-      {},
-      {},
-      {},
-    ),
+    proficiency: SkillProficiencyEffects({'shuLian': 0.10}, {}, {}, {}),
   );
 
   const otherSkill = SkillDef(
@@ -174,9 +169,8 @@ void main() {
     Map<String, BattleCharacter> characters,
   ) {
     return [
-      for (final id in ['player', 'e1', 'e2', 'e3'])
-        if (characters.containsKey(id))
-          Phase0aCombatantInput(actorId: id, character: characters[id]!),
+      for (final entry in characters.entries)
+        Phase0aCombatantInput(actorId: entry.key, character: entry.value),
     ];
   }
 
@@ -404,7 +398,8 @@ void main() {
         expect(
           (hit.resolvedDamage, hit.isCritical),
           expected,
-          reason: '${hit.actor}→${hit.target} @tick${hit.tick} 须等于 '
+          reason:
+              '${hit.actor}→${hit.target} @tick${hit.tick} 须等于 '
               'direct 连续序列',
         );
       }
@@ -616,22 +611,23 @@ void main() {
     });
 
     test('非零吸血/护法/脆弱/活跃踉跄经装配入口立即 fail-fast,RNG 未消费', () {
-      final cases = <(String, BattleCharacter Function(BattleCharacter), String)>[
-        ('吸血', (c) => makeCharacter(forgingLifestealPct: 0.05), '吸血'),
-        ('护法 ward', (c) => makeCharacter(guardianWardMult: 0.5), '护法'),
-        (
-          '护法 ids',
-          (c) => makeCharacter(guardianDefIds: const ['guard_a']),
-          '护法',
-        ),
-        ('脆弱', (c) => makeCharacter(vulnerabilityMult: 0.4), '脆弱'),
-        ('踉跄 ticks', (c) => makeCharacter(staggerTicksRemaining: 2), '踉跄'),
-        (
-          '踉跄减防',
-          (c) => makeCharacter(staggerDefenseDownOverride: 0.3),
-          '踉跄',
-        ),
-      ];
+      final cases =
+          <(String, BattleCharacter Function(BattleCharacter), String)>[
+            ('吸血', (c) => makeCharacter(forgingLifestealPct: 0.05), '吸血'),
+            ('护法 ward', (c) => makeCharacter(guardianWardMult: 0.5), '护法'),
+            (
+              '护法 ids',
+              (c) => makeCharacter(guardianDefIds: const ['guard_a']),
+              '护法',
+            ),
+            ('脆弱', (c) => makeCharacter(vulnerabilityMult: 0.4), '脆弱'),
+            ('踉跄 ticks', (c) => makeCharacter(staggerTicksRemaining: 2), '踉跄'),
+            (
+              '踉跄减防',
+              (c) => makeCharacter(staggerDefenseDownOverride: 0.3),
+              '踉跄',
+            ),
+          ];
       for (final (label, make, needle) in cases) {
         const seed = 8;
         final rng = math.Random(seed);

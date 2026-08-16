@@ -118,7 +118,9 @@ void main() {
     // `battle_state.dart show BattleCharacter` 收窄导入;旧 3v3 运行依赖
     // 改按符号级锁死,不因同文件定义 BattleCharacter 而放宽。
     test('不得依赖旧 3v3 的 BattleState / BattleAI / DefaultGroundStrategy', () {
-      final legacyBattle = RegExp(r'\b(BattleState|BattleAI|DefaultGroundStrategy)\b');
+      final legacyBattle = RegExp(
+        r'\b(BattleState|BattleAI|DefaultGroundStrategy)\b',
+      );
       for (final file in sourceFiles(appDir)) {
         final code = stripComments(file.readAsStringSync());
         expect(
@@ -277,11 +279,7 @@ void main() {
         "import 'package:flame",
         'phase0minus_probe',
       ]) {
-        expect(
-          code.contains(needle),
-          isFalse,
-          reason: '装配器出现禁用依赖 "$needle"',
-        );
+        expect(code.contains(needle), isFalse, reason: '装配器出现禁用依赖 "$needle"');
       }
       for (final pattern in [
         RegExp(r'\bDamageCalculator\b'),
@@ -299,11 +297,7 @@ void main() {
       // adapter/calculator,装配器不得回流任何数值。
       final numericLiteral = RegExp(r'(?<![\w])-?\d+(?:\.\d+)?(?![\w])');
       final hit = numericLiteral.firstMatch(code);
-      expect(
-        hit,
-        isNull,
-        reason: '装配器出现数字字面量 "${hit?.group(0)}"',
-      );
+      expect(hit, isNull, reason: '装配器出现数字字面量 "${hit?.group(0)}"');
     });
   });
 }
