@@ -11,7 +11,7 @@
 - 只写三份 Markdown：本计划、`docs/spec/2026-08-16-phase0a-production-feedback-contract.md`、`docs/spec/2026-08-16-phase0a-production-asset-manifest.md`，各 ≤150 行。
 - 禁改：任何 Dart / YAML / 资产 / `data/numbers.yaml` / `GDD.md` / `PROGRESS.md` / `lib/l10n/strings.dart` / `pubspec.yaml` / schema / saveVersion；probe 不再改。
 - 禁 push / merge / rebase / revert / 碰 main；禁装依赖。仅本 worktree。
-- 事件契约不含玩家伤害、CD、半径等平衡数值，不绑定未实装的 Dart 类名。
+- 事件契约不含伤害倍率、CD 配置时长、技能半径等**调优/平衡常量**；但必须携带模拟核已结算的运行时结果（`resolved_damage`、`cooldown_remaining`、`qi_current` 等反馈数据，非平衡常量）。不绑定未实装的 Dart 类名。
 - 若规格需要新美术方向或改战斗规则才能成立，只列证据/选项，`[BLOCKED]` 冻结，不代拍。
 
 ## 依据（全部本会话实测复核）
@@ -19,7 +19,7 @@
 - 缺口事实：`docs/audit/phase0a-presentation-gap-audit-2026-08-16.md`（七类缺口 + 性能/资源基线）。
 - 接线边界：`docs/audit/phase0a-production-wiring-audit-2026-08-16.md` §4/§6（纯 Flutter、单角色水墨 ARPG、probe 数字不直迁、共用确定性核）。
 - 音频链路：`lib/shared/audio/audio_assets.dart`（SfxId 槽位，`battleDeath:55` 预留未接线）、`dedicated_audio_assets.dart:29-42`（battleUlt/battleChargeStart 借用登记）。
-- 资产现状：`assets/audio/sfx/` 19 个 mp3、`assets/audio/bgm/` 11 个；`assets/characters/` 16、`assets/enemies/` 265、`assets/scenes/` 147 个文件；webp-in-png 约定见 `assets/README.md`。
+- 资产现状（`find <dir> -type f | wc -l` 逐目录实测）：`assets/audio/sfx/` 20（19 mp3 + .gitkeep）、`assets/audio/bgm/` 12（11 mp3 + .gitkeep）；`assets/characters/` 16、`assets/enemies/` 266、`assets/scenes/` 148；webp-in-png 约定见 `assets/README.md`。
 - probe 事件模型参考：`tools/phase0minus_probe/lib/phase0b/feedback/feedback_events.dart` / `feedback_cues.dart`（语义事件 + 静音 cue 契约）。
 
 ## 验收标准
@@ -38,17 +38,20 @@
 
 ## 当前恢复点
 
-- 状态：切片 A 完成待冻结。
-- 最后完成：三份文档写完，复核命令全部本会话实测。
+- 状态：切片 A 返修完成已冻结（`5f4f2b9c` 后为返修 commit，非 amend/rebase）。
+- 最后完成：按返修 7 点修订三份文档——契约总纲区分平衡常量与运行时结算结果；hit_landed 补 `resolved_damage`/`remaining_health`；gather/clear applied 改有序 `outcomes` 列表；skill_availability_changed 补 `cooldown_remaining`/`qi_current`/`qi_required`；attack_started 删强制配对；enemy_defeated 回退锁静音并禁借 battleStagger；复核命令改逐目录 `find`。
 - 下一步：无（单切片任务）；评审按 §8.2 Gate。
-- 已跑验证：`git diff --check`；`wc -l` 三份均 ≤150；`git status --short` 仅三份新文件。
+- 已跑验证：`git diff --check`；`wc -l` 三份均 ≤150；`find <dir> -type f | wc -l` 逐目录实测。
 - 阻塞项：无。
 
 ## 核心复核命令
 
 ```sh
-ls assets/audio/sfx assets/audio/bgm                          # 19 / 11 个 mp3
-ls assets/characters assets/enemies assets/scenes | wc -l      # 16 / 265 / 147(分目录)
+find assets/audio/sfx -type f | wc -l                          # 20(19 mp3 + .gitkeep)
+find assets/audio/bgm -type f | wc -l                          # 12(11 mp3 + .gitkeep)
+find assets/characters -type f | wc -l                         # 16
+find assets/enemies -type f | wc -l                            # 266
+find assets/scenes -type f | wc -l                             # 148
 grep -n "battleDeath" lib/shared/audio/audio_assets.dart       # :47,:55 预留未接线
 grep -n "temporaryBorrowed" lib/shared/audio/dedicated_audio_assets.dart  # battleUlt/battleChargeStart 借用
 grep -rn "AudioPlayer\|audioplayers" tools/phase0minus_probe/lib          # 0 命中(probe 无音频)

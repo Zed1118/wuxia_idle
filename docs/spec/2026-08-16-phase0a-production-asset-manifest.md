@@ -20,7 +20,7 @@
 
 ## 2. 山贼动作（P0）
 
-- 现状：`assets/enemies/bandit_b.png`、`bandit_c.png`、`bandit_head.png` 及 `battle_bandit_blade.png`、`battle_bandit_archer.png` 等均为立绘（265 文件实测在列），无动作帧。
+- 现状：`assets/enemies/bandit_b.png`、`bandit_c.png`、`bandit_head.png` 及 `battle_bandit_blade.png`、`battle_bandit_archer.png` 等均为立绘（266 文件 find 实测在列），无动作帧。
 - 缺失：attack / hit / death 序列帧（可一套骨架多套皮，spec 不锁数量）。
 - 落点：`assets/enemies/anim/bandit_<action>_atlas_v1.png`。
 - 依赖/验收：同祖师组。
@@ -86,8 +86,8 @@
 | battleUlt（R 清场） | 文件在列但**借用** realmAdvance（`dedicated_audio_assets.dart:29-35`，目标时长 800–1600ms） | 重制专属资产同路径替换 | P0 |
 | battleChargeStart（精英预告） | 文件在列但**借用** defeat（`dedicated_audio_assets.dart:36-41`，500–1200ms） | 重制专属资产同路径替换 | P1 |
 | battleInterrupt（破招） | `battleInterrupt.mp3` 在列且已接线（`battle_screen.dart:747-748`） | 复用 | P0 |
-| battleStagger | `battleStagger.mp3` 在列 | 复用（enemy_defeated 回退候选） | P0 |
-| battleDeath（敌人死亡） | 槽位预留**无资产未接线**（`audio_assets.dart:47,55`） | 新资产 `assets/audio/sfx/battleDeath.mp3` + 后续切片接线；接线前回退 battleStagger 或静音 | P0 |
+| battleStagger | `battleStagger.mp3` 在列 | 复用（仅失衡语义，**不作** enemy_defeated 回退） | P0 |
+| battleDeath（敌人死亡） | 槽位预留**无资产未接线**（`audio_assets.dart:47,55`） | 新资产 `assets/audio/sfx/battleDeath.mp3` + 后续切片接线；接线前回退**锁为静音**，禁借 battleStagger 冒充死亡 | P0 |
 | Q 聚怪音效 | 无槽位无资产 | 新资产（命名随槽位定，方向待后续切片拍板；缺失期静音） | P1 |
 | 波次横幅 | 无专用 | 复用 `uiPaperOpen.mp3`（临时借用，需登记）或新资产 | P1 |
 | victory / defeat | `victory.mp3` / `defeat.mp3` 在列且生产已接线 | 复用 | P0 |
@@ -97,9 +97,10 @@
 ## 复核命令
 
 ```sh
-ls assets/audio/sfx/                                                # 19 个 mp3
+find assets/audio/sfx -type f | wc -l                           # 20(19 mp3 + .gitkeep)
+find assets/characters -type f | wc -l                          # 16
+find assets/enemies -type f | wc -l                             # 266
 grep -n "battleDeath\|SfxId" lib/shared/audio/audio_assets.dart     # 槽位全景 + battleDeath 预留
 grep -n "temporaryBorrowed\|targetDurationMsRange" lib/shared/audio/dedicated_audio_assets.dart
-ls assets/characters/ assets/enemies/ | wc -l                       # 立绘现状
 find assets -name "*atlas*" -o -name "*anim*"                       # 0 命中：根应用无动作帧图集
 ```
