@@ -54,7 +54,10 @@
    + 源码契约第六批扩项（红证据：装配器测试编译红 + 契约 4 项文件缺失红，`833b9051`）。
 4. [x] 最小实现装配器（`51e4b421`，含红测 fixture 修正：extra actor 用例的
    combatants 构造器原会按固定 id 白名单过滤掉多余 id,改全量遍历后该用例真红→绿）。
-5. [x] 全验证并冻结 `[READY]`。
+5. [x] 全验证并冻结 `[READY]`（`4fd48601`）。
+6. [x] 主窗口复审补测：端到端唯一终局（清空第二波、唯一 victory 紧邻末波
+   cleared、终局幂等、终局后零 RNG 消费对照），纯测补 1 项（`354147f8`），
+   复验后重新冻结 `[READY]`。
 
 ## 验收标准（证伪点）
 
@@ -81,13 +84,14 @@
 ## 当前恢复点
 
 - 状态：**已交付，tip 冻结 `[READY]`**。
-- 最后完成：装配器实装 + 9 项装配器测（两波 14 击同 seed 连续序列逐击同值 +
-  重置反例判别、回放全等、missing/extra/playerId/缺 binding 四类 fail-fast 零
-  RNG 消费、null control-only 穿透、外部 mutation 不污染、动态机制穿透）+
-  契约 4 项扩项全绿。
+- 最后完成：装配器实装 + 10 项装配器测（两波 14 击同 seed 连续序列逐击同值 +
+  重置反例判别、回放全等、**端到端唯一终局**：清空第二波、全场唯一 victory
+  紧邻末波 cleared、终局后两次 advance 幂等且显式 rng 下一值等于终局瞬间对照、
+  missing/extra/playerId/缺 binding 四类 fail-fast 零 RNG 消费、null
+  control-only 穿透、外部 mutation 不污染、动态机制穿透）+ 契约 4 项扩项全绿。
 - 下一步：主窗口独立复核精确覆盖、零 RNG 消费与同 seed 序列，合入协调分支。
 - 已跑验证（2026-08-16 实测）：
-  - `flutter test --no-pub test/features/battle/domain/phase0a test/features/battle/application/phase0a` → **149/149**（既有 136 + 装配器 9 + 契约扩项 4）
+  - `flutter test --no-pub test/features/battle/domain/phase0a test/features/battle/application/phase0a` → **150/150**（既有 136 + 装配器 10 + 契约扩项 4）
   - `flutter test --no-pub test/combat/damage_calculator_test.dart` → **51/51**
   - nested probe `tools/phase0minus_probe test/gameplay/combat_rules_test.dart` → **8/8**
   - `flutter analyze --no-pub` → **0 issue**；`git diff --check` → 干净
