@@ -118,7 +118,9 @@ void main() {
     // `battle_state.dart show BattleCharacter` 收窄导入;旧 3v3 运行依赖
     // 改按符号级锁死,不因同文件定义 BattleCharacter 而放宽。
     test('不得依赖旧 3v3 的 BattleState / BattleAI / DefaultGroundStrategy', () {
-      final legacyBattle = RegExp(r'\b(BattleState|BattleAI|DefaultGroundStrategy)\b');
+      final legacyBattle = RegExp(
+        r'\b(BattleState|BattleAI|DefaultGroundStrategy)\b',
+      );
       for (final file in sourceFiles(appDir)) {
         final code = stripComments(file.readAsStringSync());
         expect(
@@ -235,6 +237,67 @@ void main() {
         isNotNull,
         reason: '工厂必须调用 SkillProficiency,不得自推导熟练度公式',
       );
+    });
+  });
+
+  /// 第六批(生产 flow 装配器)专属契约:装配器只组合四个既有组件
+  /// (快照工厂/伤害 adapter/session/wave flow),禁第二套公式、旧 3v3、
+  /// 仓库回查与 UI 依赖,不得出现公式数字字面量。
+  group('生产装配器源码契约(第六批)', () {
+    final assemblerFile = File(
+      'lib/features/battle/application/phase0a/'
+      'phase0a_production_flow_assembler.dart',
+    );
+
+    test('装配器文件存在', () {
+      expect(assemblerFile.existsSync(), isTrue);
+    });
+
+    test('必须组合四个既有组件,不得自造结算件', () {
+      final code = stripComments(assemblerFile.readAsStringSync());
+      for (final symbol in [
+        'Phase0aBattleSnapshotFactory',
+        'Phase0aDamageCalculatorAdapter',
+        'Phase0aCombatSession',
+        'Phase0aWaveBattleFlow',
+      ]) {
+        expect(code.contains(symbol), isTrue, reason: '装配器必须组合 $symbol');
+      }
+    });
+
+    test('禁 DamageCalculator / GameRepository / 旧 3v3 / UI 依赖', () {
+      final code = stripComments(assemblerFile.readAsStringSync());
+      for (final needle in [
+        'damage_calculator.dart',
+        'game_repository.dart',
+        'battle_state.dart',
+        'battle_ai.dart',
+        'default_ground_strategy.dart',
+        'battle_resolution.dart',
+        "import 'dart:ui",
+        "import 'package:flutter",
+        "import 'package:flame",
+        'phase0minus_probe',
+      ]) {
+        expect(code.contains(needle), isFalse, reason: '装配器出现禁用依赖 "$needle"');
+      }
+      for (final pattern in [
+        RegExp(r'\bDamageCalculator\b'),
+        RegExp(r'\bGameRepository\b'),
+        RegExp(r'\b(BattleState|BattleAI|DefaultGroundStrategy)\b'),
+      ]) {
+        final hit = pattern.firstMatch(code);
+        expect(hit, isNull, reason: '装配器引用禁用符号 "${hit?.group(0)}"');
+      }
+    });
+
+    test('不得出现公式数字字面量', () {
+      final code = stripComments(assemblerFile.readAsStringSync());
+      // 词边界数字(排除 Phase0a 等标识符内数字):公式唯一真相源在
+      // adapter/calculator,装配器不得回流任何数值。
+      final numericLiteral = RegExp(r'(?<![\w])-?\d+(?:\.\d+)?(?![\w])');
+      final hit = numericLiteral.firstMatch(code);
+      expect(hit, isNull, reason: '装配器出现数字字面量 "${hit?.group(0)}"');
     });
   });
 }
