@@ -76,7 +76,7 @@
 
 1. [ ] 本计划档 commit。
 2. [ ] 红测:`phase0a_wave_flow_test.dart` + 源码契约扩展 commit(证红)。
-3. [ ] 最小实现:domain 事件/值对象 + session.replaceState + flow commit(转绿)。
+3. [ ] 最小实现:domain 事件/值对象 + flow(私有重建 session)commit(转绿)。
 4. [ ] 全验证 + 恢复点更新 + `[READY]` tip。
 
 ## 当前恢复点
