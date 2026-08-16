@@ -114,19 +114,22 @@ void main() {
       }
     });
 
-    test('不得依赖旧 3v3 的 BattleState / BattleAI', () {
-      final legacyBattle = RegExp(r'\b(BattleState|BattleAI)\b');
+    // 第五批(快照工厂)调整:工厂需读 BattleCharacter 字段,允许
+    // `battle_state.dart show BattleCharacter` 收窄导入;旧 3v3 运行依赖
+    // 改按符号级锁死,不因同文件定义 BattleCharacter 而放宽。
+    test('不得依赖旧 3v3 的 BattleState / BattleAI / DefaultGroundStrategy', () {
+      final legacyBattle = RegExp(r'\b(BattleState|BattleAI|DefaultGroundStrategy)\b');
       for (final file in sourceFiles(appDir)) {
         final code = stripComments(file.readAsStringSync());
-        expect(
-          code.contains('battle_state.dart'),
-          isFalse,
-          reason: '${file.path} import 旧 battle_state.dart',
-        );
         expect(
           code.contains('battle_ai.dart'),
           isFalse,
           reason: '${file.path} import 旧 battle_ai.dart',
+        );
+        expect(
+          code.contains('default_ground_strategy.dart'),
+          isFalse,
+          reason: '${file.path} import 旧 default_ground_strategy.dart',
         );
         final hit = legacyBattle.firstMatch(code);
         expect(
@@ -170,6 +173,68 @@ void main() {
               '(数值必须由调用方显式传入)',
         );
       }
+    });
+  });
+
+  /// 第五批(快照工厂)专属契约:工厂只做字段解析与 SkillProficiency 复用,
+  /// 禁止第二套伤害公式、禁止回查仓库、禁止依赖旧 strategy。
+  group('快照工厂源码契约(第五批)', () {
+    final factoryFile = File(
+      'lib/features/battle/application/phase0a/'
+      'phase0a_battle_snapshot_factory.dart',
+    );
+
+    test('工厂文件存在', () {
+      expect(factoryFile.existsSync(), isTrue);
+    });
+
+    test('BattleCharacter 仅经 show 收窄导入', () {
+      final code = factoryFile.readAsStringSync();
+      expect(
+        code.contains(
+          "import '../../domain/battle_state.dart' show BattleCharacter;",
+        ),
+        isTrue,
+        reason: '工厂必须 show BattleCharacter 收窄导入,不得整文件引入旧状态符号',
+      );
+    });
+
+    test('不复制伤害公式、不回查仓库:禁 DamageCalculator / GameRepository', () {
+      final code = stripComments(factoryFile.readAsStringSync());
+      expect(
+        code.contains('damage_calculator.dart'),
+        isFalse,
+        reason: '工厂不得 import damage_calculator.dart(公式唯一真相源在 adapter)',
+      );
+      expect(
+        RegExp(r'\bDamageCalculator\b').firstMatch(code),
+        isNull,
+        reason: '工厂不得引用 DamageCalculator',
+      );
+      expect(
+        code.contains('game_repository.dart'),
+        isFalse,
+        reason: '工厂不得 import game_repository.dart(运行时回查仓库)',
+      );
+      expect(
+        RegExp(r'\bGameRepository\b').firstMatch(code),
+        isNull,
+        reason: '工厂不得引用 GameRepository',
+      );
+    });
+
+    test('熟练度必须复用 SkillProficiency', () {
+      final code = stripComments(factoryFile.readAsStringSync());
+      expect(
+        code.contains('skill_proficiency.dart'),
+        isTrue,
+        reason: '工厂必须 import skill_proficiency.dart',
+      );
+      expect(
+        RegExp(r'\bSkillProficiency\b').firstMatch(code),
+        isNotNull,
+        reason: '工厂必须调用 SkillProficiency,不得自推导熟练度公式',
+      );
     });
   });
 }
