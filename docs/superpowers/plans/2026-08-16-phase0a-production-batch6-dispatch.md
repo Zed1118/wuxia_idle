@@ -26,13 +26,13 @@
 ## 切片
 
 1. [x] 主窗口冻结装配边界与启动期证伪点。
-2. [ ] Kimi 独立 worktree：计划 → 红测 → 最小装配器 → 两波 RNG 连续穿透 → `[READY]`。
-3. [ ] 主窗口独立复核精确覆盖、零 RNG 消费与同 seed 序列。
-4. [ ] 合入协调分支，复验并冻结 `[READY]`。
+2. [x] Kimi 独立 worktree：计划 → 红测 → 最小装配器 → 两波 RNG 连续穿透 → `[READY]`。
+3. [x] 主窗口独立复核精确覆盖、零 RNG 消费、同 seed 序列与唯一终局；发现终局覆盖缺口后由 Kimi 补测并重新冻结 `[READY] a63af7fd`。
+4. [x] 合入协调分支，复验并冻结 `[READY]`。
 
 ## 当前恢复点
 
-- 状态：第六批派单冻结中。
-- 最后完成：第五批 `[READY] 7cc62093`，真实 `BattleCharacter` 已能确定性映射为生产伤害快照。
-- 下一步：提交派单并创建 Kimi 独立 worktree。
-- 阻塞项：无；动态机制与终局副作用继续留在明确边界之外。
+- 状态：第六批已合入并完成主窗口独立复验。
+- 最后完成：生产装配器已贯通 factory → damage adapter → session → wave flow；Phase0a 150/150、damage 51/51、probe 8/8、analyze 0，且两波 RNG 连续、唯一 victory、终局后幂等与零 RNG 消费均有端到端证据。
+- 下一步：以本协调分支最终 `[READY]` 为第七批或生产路由接线的恢复基线；是否接 UI/路由仍需另行冻结范围。
+- 阻塞项：无；`AttackResult.appliedEffects` / `lifestealHeal` 消费方、动态护法/脆弱/踉跄 state-aware resolver 与 adapter 调优数值来源继续留在明确边界之外。
