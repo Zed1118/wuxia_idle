@@ -175,6 +175,30 @@ class UiStrings {
   static const String skillStaggered = '踉跄中';
   static const String skillTargetable = '可选';
   static const String skillTargetLocked = '锁定';
+
+  // ── Phase 0A 技能印(单角色竞技场 · Q 聚怪 / R 清场)──
+  /// 印章主 glyph:单字题字感,区别于完整技能名。
+  static const String phase0aSealGatherGlyph = '聚';
+  static const String phase0aSealClearGlyph = '清';
+
+  /// 键位角标(gather=Q / clear=R,与模拟核输入映射一致)。
+  static const String phase0aSealGatherKey = 'Q';
+  static const String phase0aSealClearKey = 'R';
+
+  /// cooldown 态状态行:`冷却 N.N 秒`(保留一位小数,跟模拟核剩余拍精度)。
+  static String phase0aSealCooldown(double seconds) =>
+      '冷却 ${seconds.toStringAsFixed(1)} 秒';
+
+  /// qi 态状态行:`真气 当前/所需`。
+  static String phase0aSealQiShort(int current, int cost) =>
+      '真气 $current/$cost';
+
+  /// casting 态状态行(明确禁用原因:正在施放)。
+  static const String phase0aSealCasting = '施放中';
+
+  /// down 态状态行(明确禁用原因:倒地无法出手)。
+  static const String phase0aSealDown = '倒地';
+
   // 可用态：耗气 N · CD M。
   static String skillCostShort(int cost, int cooldown) =>
       '耗气$cost · CD$cooldown';

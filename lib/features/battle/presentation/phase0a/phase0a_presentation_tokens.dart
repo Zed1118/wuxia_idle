@@ -30,4 +30,30 @@ abstract final class Phase0aPresentationTokens {
 
   /// 单次 consume 全部 VFX entry 上限。
   static const int maxEntries = 160;
+
+  // ── 技能印(skill_seals 切片):Q/R 两枚等宽等高水墨印章 ──
+
+  /// 单枚印章边长(正方形,两枚同尺寸)。
+  static const double skillSealSize = 96;
+
+  /// 两枚印章之间的横向间距。
+  static const double skillSealSpacing = 16;
+
+  /// 印章内边距(题字与印边的留白)。
+  static const double skillSealPadding = 8;
+
+  /// 印章墨边宽度。
+  static const double skillSealBorderWidth = 1.5;
+
+  /// 印章圆角。
+  static const double skillSealRadius = 6;
+
+  /// 印章主 glyph(聚/清)字号。
+  static const double skillSealGlyphFontSize = 28;
+
+  /// 键位角标(Q/R)字号。
+  static const double skillSealKeyFontSize = 12;
+
+  /// 状态行(CD 秒数 / 真气 / 禁用原因)字号。
+  static const double skillSealStatusFontSize = 11;
 }

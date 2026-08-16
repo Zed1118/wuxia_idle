@@ -76,11 +76,21 @@ void main() {
 
       expect(
         tester.getSemantics(find.byKey(_gatherKey)),
-        matchesSemantics(isButton: true, isEnabled: true, hasTapAction: true),
+        matchesSemantics(
+          isButton: true,
+          hasEnabledState: true,
+          isEnabled: true,
+          hasTapAction: true,
+        ),
       );
       expect(
         tester.getSemantics(find.byKey(_clearKey)),
-        matchesSemantics(isButton: true, isEnabled: true, hasTapAction: true),
+        matchesSemantics(
+          isButton: true,
+          hasEnabledState: true,
+          isEnabled: true,
+          hasTapAction: true,
+        ),
       );
     });
   });
@@ -107,7 +117,11 @@ void main() {
 
       expect(
         tester.getSemantics(find.byKey(_gatherKey)),
-        matchesSemantics(isButton: true, isEnabled: false),
+        matchesSemantics(
+          isButton: true,
+          hasEnabledState: true,
+          isEnabled: false,
+        ),
       );
     });
   });
@@ -135,7 +149,11 @@ void main() {
 
       expect(
         tester.getSemantics(find.byKey(_gatherKey)),
-        matchesSemantics(isButton: true, isEnabled: false),
+        matchesSemantics(
+          isButton: true,
+          hasEnabledState: true,
+          isEnabled: false,
+        ),
       );
     });
   });
@@ -161,7 +179,11 @@ void main() {
 
       expect(
         tester.getSemantics(find.byKey(_gatherKey)),
-        matchesSemantics(isButton: true, isEnabled: false),
+        matchesSemantics(
+          isButton: true,
+          hasEnabledState: true,
+          isEnabled: false,
+        ),
       );
     });
 
@@ -182,7 +204,11 @@ void main() {
 
       expect(
         tester.getSemantics(find.byKey(_gatherKey)),
-        matchesSemantics(isButton: true, isEnabled: false),
+        matchesSemantics(
+          isButton: true,
+          hasEnabledState: true,
+          isEnabled: false,
+        ),
       );
     });
   });
