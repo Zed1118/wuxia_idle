@@ -47,16 +47,15 @@
 
 ## 当前恢复点
 
-- 状态：已冻结待评审（tip `[READY]`，worktree 干净）。
-- 最后完成：S1–S6 全部完成。落点：
-  - domain：`phase0a_combat_model.dart`（actor/skill slot/arena state 不可变模型）、`phase0a_combat_intent.dart`（统一 sealed intent：移动/普攻/Q/R）、`phase0a_combat_events.dart`（契约对齐强类型语义事件 + outcomes）、`phase0a_combat_reducer.dart`（确定性 reducer + `Phase0aDamageResolver` 注入接口）。
-  - application：`phase0a_player_input_adapter.dart`（按键→intent，含 `Phase0aPlayerCommand`）、`phase0a_enemy_ai_adapter.dart`（同型 intent 产生）、`phase0a_combat_session.dart`（adapter→resolver→reducer 薄编排）。
-  - 测试：`phase0a_reducer_test.dart`（22）、`phase0a_session_test.dart`（9，全部从会话/适配器入口穿透）、源码契约测扩展至 application 目录与 BattleState/BattleAI 禁令（8）。
-- 证红记录：① 初始红——实现不存在时 reducer/session 测试编译红、契约测 application 目录 6 红；② 局部破坏证红——将普攻同距决胜 id 排序翻转为降序，「同距目标按 id 稳定决胜且与输入顺序无关」立即红，复原后 59/59 绿。
-- 已跑验证（2026-08-16）：
-  - `flutter test --no-pub test/features/battle/domain/phase0a/ test/features/battle/application/phase0a/` → 59/59 pass（规则 20 + 契约 8 + reducer 22 + 会话 9）。
-  - 首片回归（含于上行）：`realtime_combat_rules_test.dart` 20 + 契约原 4 项 = 24 项绿。
-  - probe 对照：`cd tools/phase0minus_probe && flutter test test/gameplay/combat_rules_test.dart` → 8/8 pass。
-  - `dart format` 干净；`git diff --check` 干净；`flutter analyze --no-pub` → No issues found。
-- 禁区自查：本分支仅新增/修改 phase0a domain+application+test 与计划文件（11 文件）；未触旧 `battle_state.dart` / `battle_ai.dart` / strategy / provider / presentation / 生产入口 / 结算 / YAML / GDD / PROGRESS / pubspec / probe / schema。
-- 阻塞项：无。残留风险见上节（未接 UI / 真实 DamageCalculator / 胜负结算存档 / 精英 telegraph 链）。
+- 状态：首轮返修已冻结待评审（tip `[READY]`，worktree 干净）。
+- 返修依据：`docs/dispatch/packages/2026-08-16_phase0a_qoder_reducer_followup.md`，只修两项、不扩范围。
+- 返修落点：
+  - 必修1 Q/R 显式作用半径：`Phase0aGatherIntent` / `Phase0aClearIntent` 新增 required `effectRadius`；reducer 仅对距 caster ≤ effectRadius 的存活敌对单位结算（闭区间），范围外不入 outcomes/不被拉拢/扣血/失衡/死亡；`ringRadius` 仍只决定 Q 落点；`ringRadius > effectRadius` 按 CD/真气同规则静默拒绝（无事件、不耗气、不动 CD）；玩家适配器新增 required `gatherEffectRadius` / `clearEffectRadius` 并透传，无默认值。
+  - 必修2 同拍刷新技能印：`_tryCastSkill` 不再预置 availability；施放成功后同拍按槽序对**全部**技能槽重算 `availabilityOf`，施放槽 ready→cooldown、余气不足槽 ready→qi 同拍各发一次真实迁移，下一空拍不重发；payload 携带 cooldownRemaining / qiCurrent / qiRequired。
+- 证红记录（返修）：① 红测先行 tip `bc67fd86`——新测引用不存在的 `effectRadius` 编译红；② 实现后 64/64 全绿。首上证红（同距决胜翻转）留痕见 git 历史。
+- 已跑验证（2026-08-16，返修）：
+  - 逐文件 targeted：规则 20 + 契约 8 + reducer 27（+5 新测）+ 会话 9 = 64/64 pass。
+  - 首片 24 回归（规则 20 + 契约原 4）含于上行，绿。
+  - probe 对照 `tools/phase0minus_probe` → 8/8 pass；根 `flutter analyze --no-pub` → No issues；`dart format` / `git diff --check` 干净。
+- 禁区自查：返修仅改 intent / reducer / 玩家适配器与对应测试（4 文件），未触首单禁区外任何文件。
+- 阻塞项：无。残留风险不变（未接 UI / 真实 DamageCalculator / 胜负结算存档 / 精英 telegraph 链）。
