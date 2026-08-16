@@ -74,19 +74,24 @@
 
 ## 切片
 
-1. [ ] 本计划档 commit。
-2. [ ] 红测:`phase0a_wave_flow_test.dart` + 源码契约扩展 commit(证红)。
-3. [ ] 最小实现:domain 事件/值对象 + flow(私有重建 session)commit(转绿)。
-4. [ ] 全验证 + 恢复点更新 + `[READY]` tip。
+1. [x] 本计划档 commit(`43dac7e0`,拍板Ⓒ勘误 `1cc2dbbb`)。
+2. [x] 红测:`phase0a_wave_flow_test.dart` + 源码契约扩展 commit(证红,`b0f233a9`)。
+3. [x] 最小实现:domain 事件/值对象 + flow(私有重建 session)commit(转绿,`0ac376c5`)。
+4. [x] 全验证 + 恢复点更新 + `[READY]` tip。
 
 ## 当前恢复点
 
-- 状态:计划档已冻结并勘误(拍板Ⓒ),红测编写中。
-- 最后完成:通读派单/协调计划/反馈契约/CLAUDE.md/既有 phase0a 源码与测试;
-  确认 worktree 干净、基线 HEAD=`a543a1f8`、probe 8 项 =
-  `tools/phase0minus_probe test/gameplay/combat_rules_test.dart`;
-  计划档 commit `43dac7e0`;按用户架构纠偏完成拍板Ⓒ勘误(未写过任何
-  replaceState 代码,红测未受影响)。
-- 下一步:commit 红测并证红 → 最小实现。
-- 已跑验证:无(仅只读勘察)。
+- 状态:已交付冻结,tip 打 `[READY]`。
+- 最后完成:wave/outcome 状态机全链路实装转绿;lint 修复 `57064b4e`;
+  破坏证红自检(反转玩家死亡优先分支 → 8 项测试变红 → 复原)。
+- 下一步:主窗口独立复核(切片 3)与合入协调分支(切片 4)。
+- 已跑验证(本 worktree 实测):
+  - Phase0a 全套 `flutter test --no-pub test/features/battle/domain/phase0a
+    test/features/battle/application/phase0a` → **116/116**(含新增 flow 16 项、
+    源码契约扩展后 9 项)。
+  - damage calculator 回归 `test/combat/damage_calculator_test.dart` → **51/51**。
+  - nested probe `tools/phase0minus_probe test/gameplay/combat_rules_test.dart`
+    → **8/8**。
+  - `flutter analyze --no-pub` → 0 issue;`dart format --set-exit-if-changed`
+    0 changed;`git diff --check` 通过。
 - 阻塞项:无。
