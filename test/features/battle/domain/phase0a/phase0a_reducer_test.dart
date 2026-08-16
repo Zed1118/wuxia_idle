@@ -176,6 +176,7 @@ void main() {
             actorId: 'player',
             slot: 'gather',
             ringRadius: 90,
+            effectRadius: 500,
             qiCost: 20,
             cooldownSeconds: 3,
           ),
@@ -184,6 +185,7 @@ void main() {
           const Phase0aClearIntent(
             actorId: 'player',
             slot: 'clear',
+            effectRadius: 500,
             qiCost: 30,
             cooldownSeconds: 4,
           ),
@@ -462,6 +464,7 @@ void main() {
   group('Q 聚怪', () {
     Phase0aGatherIntent gatherIntent({
       double ringRadius = 80,
+      double effectRadius = 500,
       int qiCost = 20,
       double cooldownSeconds = 3,
     }) {
@@ -469,6 +472,7 @@ void main() {
         actorId: 'player',
         slot: 'gather',
         ringRadius: ringRadius,
+        effectRadius: effectRadius,
         qiCost: qiCost,
         cooldownSeconds: cooldownSeconds,
       );
@@ -606,6 +610,7 @@ void main() {
           Phase0aClearIntent(
             actorId: 'player',
             slot: 'clear',
+            effectRadius: 500,
             qiCost: 30,
             cooldownSeconds: 4,
           ),
@@ -646,6 +651,7 @@ void main() {
           Phase0aClearIntent(
             actorId: 'player',
             slot: 'clear',
+            effectRadius: 500,
             qiCost: 30,
             cooldownSeconds: 4,
           ),
@@ -727,6 +733,181 @@ void main() {
       );
       expect(
         result.events.whereType<Phase0aSkillAvailabilityChanged>(),
+        isEmpty,
+      );
+    });
+  });
+
+  group('Q/R 显式作用半径(首轮返修)', () {
+    test('恰在作用半径边界上的目标进入结算(闭区间)', () {
+      final result = reducePhase0aTick(
+        state: makeState(
+          enemies: [
+            makeEnemy(id: 'e1', position: const ArenaVector(100, 0)),
+          ],
+          skillSlots: [makeSlot('gather')],
+        ),
+        intents: const [
+          Phase0aGatherIntent(
+            actorId: 'player',
+            slot: 'gather',
+            ringRadius: 80,
+            effectRadius: 100,
+            qiCost: 20,
+            cooldownSeconds: 3,
+          ),
+        ],
+        deltaSeconds: 0.1,
+        damageResolver: hitResolver,
+      );
+      final applied = result.events.whereType<Phase0aGatherApplied>().single;
+      expect(applied.outcomes.map((o) => o.target).toList(), ['e1']);
+      expect(applied.outcomes.single.statusApplied, Phase0aSkillStatus.pulled);
+      final enemy = result.state.enemies.single;
+      expect(enemy.position, const ArenaVector(80, 0));
+    });
+
+    test('作用半径外目标不入 outcomes,不被拉拢、扣血或失衡', () {
+      const gatherResolver = _GatherDamageResolver(
+        inner: hitResolver,
+        damage: 30,
+      );
+      final result = reducePhase0aTick(
+        state: makeState(
+          enemies: [
+            makeEnemy(id: 'e_far', position: const ArenaVector(300, 0)),
+            makeEnemy(id: 'e_near', position: const ArenaVector(50, 0)),
+          ],
+          skillSlots: [makeSlot('gather')],
+        ),
+        intents: const [
+          Phase0aGatherIntent(
+            actorId: 'player',
+            slot: 'gather',
+            ringRadius: 80,
+            effectRadius: 100,
+            qiCost: 20,
+            cooldownSeconds: 3,
+          ),
+        ],
+        deltaSeconds: 0.1,
+        damageResolver: gatherResolver,
+      );
+      final applied = result.events.whereType<Phase0aGatherApplied>().single;
+      expect(applied.outcomes.map((o) => o.target).toList(), ['e_near']);
+      final byId = {for (final e in result.state.enemies) e.id: e};
+      expect(byId['e_far']!.position, const ArenaVector(300, 0));
+      expect(byId['e_far']!.currentHealth, 60);
+      expect(byId['e_near']!.currentHealth, 30);
+    });
+
+    test('ringRadius 超过 effectRadius 时拒绝释放', () {
+      final result = reducePhase0aTick(
+        state: makeState(
+          enemies: [
+            makeEnemy(id: 'e1', position: const ArenaVector(90, 0)),
+          ],
+          skillSlots: [makeSlot('gather')],
+        ),
+        intents: const [
+          Phase0aGatherIntent(
+            actorId: 'player',
+            slot: 'gather',
+            ringRadius: 120,
+            effectRadius: 100,
+            qiCost: 20,
+            cooldownSeconds: 3,
+          ),
+        ],
+        deltaSeconds: 0.1,
+        damageResolver: hitResolver,
+      );
+      expect(result.events.whereType<Phase0aGatherStarted>(), isEmpty);
+      expect(result.events.whereType<Phase0aGatherApplied>(), isEmpty);
+      expect(result.state.player.qiCurrent, 100);
+      expect(result.state.skillSlots.single.cooldownRemaining, 0);
+      expect(result.state.enemies.single.position, const ArenaVector(90, 0));
+    });
+
+    test('R 仅清理作用半径内敌人,半径外不受影响', () {
+      final result = reducePhase0aTick(
+        state: makeState(
+          enemies: [
+            makeEnemy(id: 'e_far', position: const ArenaVector(300, 0)),
+            makeEnemy(id: 'e_near', position: const ArenaVector(100, 0)),
+          ],
+          skillSlots: [makeSlot('clear', qiCost: 30)],
+        ),
+        intents: const [
+          Phase0aClearIntent(
+            actorId: 'player',
+            slot: 'clear',
+            effectRadius: 150,
+            qiCost: 30,
+            cooldownSeconds: 4,
+          ),
+        ],
+        deltaSeconds: 0.1,
+        damageResolver: hitResolver,
+      );
+      final applied = result.events.whereType<Phase0aClearApplied>().single;
+      expect(applied.outcomes.map((o) => o.target).toList(), ['e_near']);
+      final byId = {for (final e in result.state.enemies) e.id: e};
+      expect(byId['e_near']!.currentHealth, 20);
+      expect(byId['e_far']!.currentHealth, 60);
+      expect(byId['e_far']!.position, const ArenaVector(300, 0));
+    });
+  });
+
+  group('施放后同拍刷新全部技能印(首轮返修)', () {
+    test('释放低耗槽后余气不足另槽,本拍同收 cooldown 与 qi 迁移', () {
+      final result = reducePhase0aTick(
+        state: makeState(
+          player: makePlayer(qiCurrent: 70),
+          skillSlots: [makeSlot('gather'), makeSlot('clear', qiCost: 60)],
+        ),
+        intents: const [
+          Phase0aGatherIntent(
+            actorId: 'player',
+            slot: 'gather',
+            ringRadius: 80,
+            effectRadius: 500,
+            qiCost: 20,
+            cooldownSeconds: 3,
+          ),
+        ],
+        deltaSeconds: 0.1,
+        damageResolver: hitResolver,
+      );
+      final changed = result.events
+          .whereType<Phase0aSkillAvailabilityChanged>()
+          .toList();
+      expect(changed.map((e) => e.slot).toList(), ['gather', 'clear']);
+      expect(changed[0].availability, Phase0aSkillAvailability.cooldown);
+      expect(changed[0].cooldownRemaining, 3);
+      expect(changed[0].qiCurrent, 50);
+      expect(changed[0].qiRequired, 20);
+      expect(changed[1].availability, Phase0aSkillAvailability.qi);
+      expect(changed[1].qiCurrent, 50);
+      expect(changed[1].qiRequired, 60);
+
+      final slots = {
+        for (final slot in result.state.skillSlots) slot.slot: slot,
+      };
+      expect(
+        slots['gather']!.availability,
+        Phase0aSkillAvailability.cooldown,
+      );
+      expect(slots['clear']!.availability, Phase0aSkillAvailability.qi);
+
+      final next = reducePhase0aTick(
+        state: result.state,
+        intents: const [],
+        deltaSeconds: 0.1,
+        damageResolver: hitResolver,
+      );
+      expect(
+        next.events.whereType<Phase0aSkillAvailabilityChanged>(),
         isEmpty,
       );
     });

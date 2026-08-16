@@ -110,9 +110,11 @@ Phase0aPlayerInputAdapter makePlayerAdapter() {
     attackCooldownSeconds: 1,
     gatherSlot: 'gather',
     gatherRingRadius: 90,
+    gatherEffectRadius: 500,
     gatherQiCost: 20,
     gatherCooldownSeconds: 3,
     clearSlot: 'clear',
+    clearEffectRadius: 500,
     clearQiCost: 30,
     clearCooldownSeconds: 4,
   );
@@ -177,9 +179,11 @@ void main() {
       final gather = intents.whereType<Phase0aGatherIntent>().single;
       expect(gather.slot, 'gather');
       expect(gather.ringRadius, 90);
+      expect(gather.effectRadius, 500);
       expect(gather.qiCost, 20);
       final clear = intents.whereType<Phase0aClearIntent>().single;
       expect(clear.slot, 'clear');
+      expect(clear.effectRadius, 500);
       expect(clear.qiCost, 30);
     });
   });
