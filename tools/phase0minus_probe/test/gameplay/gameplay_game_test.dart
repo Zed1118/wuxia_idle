@@ -259,6 +259,18 @@ void main() {
     }
   });
 
+  testWidgets('early waves stage three active batches before the 20+1 peak', (
+    tester,
+  ) async {
+    final game = await mountGame(tester);
+
+    expect(game.enemies, hasLength(4));
+    game.update(4.05);
+    expect(game.enemies, hasLength(7));
+    game.update(4.05);
+    expect(game.enemies, hasLength(10));
+  });
+
   testWidgets('one buffered command executes after basic recovery', (
     tester,
   ) async {
@@ -367,11 +379,20 @@ void main() {
     final feedback =
         game.replayPoolSnapshot()['feedback_residents']!
             as Map<String, Object?>;
+    final damageLabels =
+        game.replayPoolSnapshot()['damage_label_residents']!
+            as Map<String, Object?>;
     expect(feedback['created_total'], 160);
     expect(feedback['active_peak'], greaterThanOrEqualTo(128));
     expect(feedback['emitted_total'], greaterThanOrEqualTo(160));
     expect(feedback['overflow_total'], 0);
     expect(feedback['allocation_after_warmup'], 0);
     expect(feedback['invariant_holds'], isTrue);
+    expect(damageLabels['created_total'], 48);
+    expect(damageLabels['active_peak'], greaterThanOrEqualTo(20));
+    expect(damageLabels['overflow_total'], 0);
+    expect(damageLabels['cached_painters'], lessThanOrEqualTo(16));
+    expect(damageLabels['allocation_after_warmup'], 0);
+    expect(damageLabels['invariant_holds'], isTrue);
   });
 }

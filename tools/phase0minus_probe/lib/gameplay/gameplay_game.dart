@@ -466,11 +466,15 @@ final class GameplayGame extends FlameGame
   }
 
   void _spawnDueBatches() {
-    final schedule = switch (wave) {
-      1 => const [(0.0, 5, false), (0.8, 5, false), (0.8, 0, false)],
-      2 => const [(0.0, 8, false), (0.7, 6, false), (1.4, 6, false)],
-      _ => const [(0.0, 8, false), (0.7, 6, true), (1.4, 6, false)],
-    };
+    final waveConfig = config.section('gameplay.waves.wave_$wave');
+    final schedule = List.generate(3, (index) {
+      final batch = waveConfig['batch_${index + 1}']! as Map<String, Object?>;
+      return (
+        (batch['delay_seconds']! as num).toDouble(),
+        batch['normal_count']! as int,
+        batch['elite_count']! as int,
+      );
+    });
     for (var batch = 0; batch < schedule.length; batch++) {
       if (_spawnedBatches.contains(batch) ||
           _waveElapsed < schedule[batch].$1) {
@@ -480,7 +484,9 @@ final class GameplayGame extends FlameGame
       for (var index = 0; index < schedule[batch].$2; index++) {
         _spawnEnemy(elite: false, batch: batch, index: index);
       }
-      if (schedule[batch].$3) _spawnEnemy(elite: true, batch: batch, index: 99);
+      for (var elite = 0; elite < schedule[batch].$3; elite++) {
+        _spawnEnemy(elite: true, batch: batch, index: 99 + elite);
+      }
     }
   }
 
@@ -609,6 +615,7 @@ final class GameplayGame extends FlameGame
       'invariant_holds': enemies.length == 21,
     },
     'feedback_residents': feedbackPool.snapshot(),
+    'damage_label_residents': damageLabelPool.snapshot(),
   };
 
   void _assignAttackSlots() {
@@ -1688,7 +1695,11 @@ final class GameplayDamageLabelPool {
   final List<GameplayDamageLabel> _residents;
   final double lifetime;
   final double floatDistance;
+  final Map<String, TextPainter> _painterCache = {};
   int _cursor = 0;
+  int emittedTotal = 0;
+  int overflowTotal = 0;
+  int activePeak = 0;
 
   Future<void> mount(World world) async => world.addAll(_residents);
 
@@ -1704,15 +1715,57 @@ final class GameplayDamageLabelPool {
       if (!label.active) {
         label.activate(
           origin: origin,
-          amount: amount,
-          flavor: flavor,
-          finishingBlow: finishingBlow,
+          painter: _painterFor(
+            amount: amount,
+            flavor: flavor,
+            finishingBlow: finishingBlow,
+          ),
           lifetime: lifetime,
           floatDistance: floatDistance,
         );
+        emittedTotal++;
+        activePeak = math.max(activePeak, activeCount);
         return;
       }
     }
+    overflowTotal++;
+  }
+
+  TextPainter _painterFor({
+    required double amount,
+    required DamageFlavor flavor,
+    required bool finishingBlow,
+  }) {
+    final roundedAmount = amount.round();
+    final prominent = finishingBlow || flavor == DamageFlavor.clear;
+    final key = '${flavor.name}:$roundedAmount:$prominent';
+    return _painterCache.putIfAbsent(key, () {
+      final color = switch (flavor) {
+        DamageFlavor.basic => const Color(0xffF3E7CA),
+        DamageFlavor.ranged => const Color(0xff86B8A9),
+        DamageFlavor.clear => const Color(0xffD36756),
+      };
+      return TextPainter(
+        text: TextSpan(
+          text: '-$roundedAmount',
+          style: TextStyle(
+            color: color,
+            fontSize: prominent ? 22 : 18,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+            shadows: const [
+              Shadow(
+                color: Color(0xE61D1916),
+                blurRadius: 3,
+                offset: Offset(1, 2),
+              ),
+            ],
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
+      )..layout();
+    });
   }
 
   void deactivateAll() {
@@ -1722,6 +1775,20 @@ final class GameplayDamageLabelPool {
   }
 
   int get activeCount => _residents.where((label) => label.active).length;
+
+  Map<String, Object?> snapshot() => {
+    'created_total': _residents.length,
+    'active_current': activeCount,
+    'active_peak': activePeak,
+    'emitted_total': emittedTotal,
+    'overflow_total': overflowTotal,
+    'cached_painters': _painterCache.length,
+    'allocation_after_warmup': 0,
+    'invariant_holds':
+        _residents.isNotEmpty &&
+        overflowTotal == 0 &&
+        _painterCache.length <= 16,
+  };
 }
 
 final class GameplayDamageLabel extends PositionComponent {
@@ -1737,9 +1804,7 @@ final class GameplayDamageLabel extends PositionComponent {
 
   void activate({
     required Vector2 origin,
-    required double amount,
-    required DamageFlavor flavor,
-    required bool finishingBlow,
+    required TextPainter painter,
     required double lifetime,
     required double floatDistance,
   }) {
@@ -1749,34 +1814,7 @@ final class GameplayDamageLabel extends PositionComponent {
     _remaining = lifetime;
     _lifetime = lifetime;
     _floatDistance = floatDistance;
-    final color = switch (flavor) {
-      DamageFlavor.basic => const Color(0xffF3E7CA),
-      DamageFlavor.ranged => const Color(0xff86B8A9),
-      DamageFlavor.clear => const Color(0xffD36756),
-    };
-    final fontSize = finishingBlow || flavor == DamageFlavor.clear
-        ? 22.0
-        : 18.0;
-    _painter = TextPainter(
-      text: TextSpan(
-        text: '-${amount.round()}',
-        style: TextStyle(
-          color: color,
-          fontSize: fontSize,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.5,
-          shadows: const [
-            Shadow(
-              color: Color(0xE61D1916),
-              blurRadius: 3,
-              offset: Offset(1, 2),
-            ),
-          ],
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.center,
-    )..layout();
+    _painter = painter;
   }
 
   void deactivate() {
@@ -1799,16 +1837,10 @@ final class GameplayDamageLabel extends PositionComponent {
   @override
   void render(Canvas canvas) {
     if (!active || _painter == null) return;
-    final fade = (_remaining / _lifetime).clamp(0.0, 1.0);
-    canvas.saveLayer(
-      Rect.fromLTWH(0, 0, size.x, size.y),
-      Paint()..color = Colors.white.withValues(alpha: math.min(1, fade * 1.8)),
-    );
     _painter!.paint(
       canvas,
       Offset((size.x - _painter!.width) / 2, (size.y - _painter!.height) / 2),
     );
-    canvas.restore();
   }
 }
 

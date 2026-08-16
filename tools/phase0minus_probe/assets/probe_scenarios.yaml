@@ -117,8 +117,20 @@ gameplay:
     heavy_damage: 25.0
     stagger_seconds: 1.8
   waves:
-    between_seconds: 3.0
+    between_seconds: 5.0
     qi_recovery: 25.0
+    wave_1:
+      batch_1: { delay_seconds: 0.0, normal_count: 4, elite_count: 0 }
+      batch_2: { delay_seconds: 4.0, normal_count: 3, elite_count: 0 }
+      batch_3: { delay_seconds: 8.0, normal_count: 3, elite_count: 0 }
+    wave_2:
+      batch_1: { delay_seconds: 0.0, normal_count: 7, elite_count: 0 }
+      batch_2: { delay_seconds: 5.0, normal_count: 7, elite_count: 0 }
+      batch_3: { delay_seconds: 10.0, normal_count: 6, elite_count: 0 }
+    wave_3:
+      batch_1: { delay_seconds: 0.0, normal_count: 8, elite_count: 0 }
+      batch_2: { delay_seconds: 0.7, normal_count: 6, elite_count: 1 }
+      batch_3: { delay_seconds: 1.4, normal_count: 6, elite_count: 0 }
   feedback:
     pool_size: 160
     basic_particles: 8

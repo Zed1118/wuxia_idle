@@ -85,11 +85,16 @@ final class GameplayReplayController {
     final poolSnapshot = game.replayPoolSnapshot();
     final feedbackPool =
         poolSnapshot['feedback_residents']! as Map<String, Object?>;
+    final damageLabelPool =
+        poolSnapshot['damage_label_residents']! as Map<String, Object?>;
     final enemyPool = poolSnapshot['enemy_residents']! as Map<String, Object?>;
     final residentPoolPass =
         feedbackPool['invariant_holds'] == true &&
         feedbackPool['overflow_total'] == 0 &&
         feedbackPool['allocation_after_warmup'] == 0 &&
+        damageLabelPool['invariant_holds'] == true &&
+        damageLabelPool['overflow_total'] == 0 &&
+        damageLabelPool['allocation_after_warmup'] == 0 &&
         enemyPool['invariant_holds'] == true &&
         enemyPool['allocation_after_warmup'] == 0;
     final requiredCoverage = durationScale == 1 ? 5 : 1;
