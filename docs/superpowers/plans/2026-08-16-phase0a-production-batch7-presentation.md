@@ -75,8 +75,8 @@
 1. [x] 从第六批 `[READY] 2e688b08` 创建独立 worktree并完成依赖预热。
 2. [x] Phase0a 基线 150/150。
 3. [x] Kimi 只读审计根资产、复用组件、debug 接线点与事件映射。
-4. [ ] 红测与最小实现。
-5. [ ] 双视口真机验收与修正。
-6. [ ] 全验证并冻结 `[READY]`。
+4. [x] 红测与最小实现。
+5. [x] 双视口真机验收与修正。
+6. [x] 全验证并冻结 `[READY]`。
 
-当前恢复点：Kimi 只读审计已落地（`docs/audit/phase0a-production-presentation-implementation-audit-2026-08-16.md`）；下一步进入红测与最小实现。
+当前恢复点(已交付):实现分支 `feat/phase0a-kimi-production-presentation` 于 tip `bc7cdddd` 干净收口,并以 `--no-ff` 合并入协调分支。验证证据:根应用相关 340 项全绿;表现层两文件 26 项全绿;`flutter analyze --no-pub` 0 issue;macOS build 成功;1280×720 与 1440×900 原生窗口抓图成功,主窗口目检通过——无裁切遮挡、自然纵深成立、正式角色/敌人资产可辨、全体名字血条/伤害数字/HUD/Q-R 可读,Q 涡旋与受击并存,R 墨爆/波次/CD/真气/终局禁用正常;probe isolation 用 `--no-test-assets` 5 项全绿(probe 工具链测试须带 `--no-test-assets` 运行)。边界复核:未改 GDD.md/CLAUDE.md/PROGRESS.md/pubspec.yaml/tools/phase0minus_probe;新增战斗屏仅由 lib/features/debug 接线。
