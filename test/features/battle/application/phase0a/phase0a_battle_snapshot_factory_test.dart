@@ -163,10 +163,10 @@ void main() {
             makeCharacter(
               internalForce: 777,
               totalEquipmentAttack: 234,
-              mainCultivationLayer: CultivationLayer.dengTang,
+              mainCultivationLayer: CultivationLayer.zhongCheng,
               school: TechniqueSchool.lingQiao,
-              realmTier: RealmTier.shiZhe,
-              realmLayer: RealmLayer.xiaoCheng,
+              realmTier: RealmTier.erLiu,
+              realmLayer: RealmLayer.shuLian,
               defenseRate: 0.21,
               evasionRate: 0.07,
               criticalRate: 0.09,
@@ -181,10 +181,10 @@ void main() {
       final s = bundle.combatants['attacker']!;
       expect(s.internalForce, 777);
       expect(s.equipmentAttack, 234);
-      expect(s.cultivationLayer, CultivationLayer.dengTang);
+      expect(s.cultivationLayer, CultivationLayer.zhongCheng);
       expect(s.school, TechniqueSchool.lingQiao);
-      expect(s.realmTier, RealmTier.shiZhe);
-      expect(s.realmLayer, RealmLayer.xiaoCheng);
+      expect(s.realmTier, RealmTier.erLiu);
+      expect(s.realmLayer, RealmLayer.shuLian);
       expect(s.defenseRate, 0.21);
       expect(s.evasionRate, 0.07);
       expect(s.criticalRate, 0.09);
