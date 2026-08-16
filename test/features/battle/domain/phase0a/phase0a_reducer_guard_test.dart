@@ -234,18 +234,24 @@ void main() {
     final state = makeState();
 
     test('负 deltaSeconds 抛 ArgumentError', () {
-      expect(() => runTick(state, const [], deltaSeconds: -0.1),
-          throwsArgumentError);
+      expect(
+        () => runTick(state, const [], deltaSeconds: -0.1),
+        throwsArgumentError,
+      );
     });
 
     test('NaN deltaSeconds 抛 ArgumentError', () {
-      expect(() => runTick(state, const [], deltaSeconds: double.nan),
-          throwsArgumentError);
+      expect(
+        () => runTick(state, const [], deltaSeconds: double.nan),
+        throwsArgumentError,
+      );
     });
 
     test('Infinity deltaSeconds 抛 ArgumentError', () {
-      expect(() => runTick(state, const [], deltaSeconds: double.infinity),
-          throwsArgumentError);
+      expect(
+        () => runTick(state, const [], deltaSeconds: double.infinity),
+        throwsArgumentError,
+      );
     });
   });
 
@@ -322,10 +328,7 @@ void main() {
 
       expect(result.events, isEmpty);
       expect(result.state.player.qiCurrent, 100);
-      expect(
-        result.state.enemies.single.position,
-        const ArenaVector(300, 0),
-      );
+      expect(result.state.enemies.single.position, const ArenaVector(300, 0));
     });
 
     test('负 cooldownSeconds 技能:无事件、不置槽冷却', () {
