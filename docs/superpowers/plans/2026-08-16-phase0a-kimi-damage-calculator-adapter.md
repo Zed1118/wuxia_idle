@@ -27,10 +27,10 @@
 ## 任务切片
 
 1. [x] 调查：`damage_calculator.dart`、`default_ground_strategy.dart::_calculateInBattle`、第二批 reducer/session、根 numbers fixture（`test/support/test_data.dart::loadTestGameRepository`）。
-2. [ ] 本计划档 commit。
-3. [ ] 红测 `test/features/battle/application/phase0a/phase0a_damage_calculator_adapter_test.dart`（先红后绿）。
-4. [ ] 最小实现 `lib/features/battle/application/phase0a/phase0a_damage_calculator_adapter.dart`。
-5. [ ] 全验证并冻结 `[READY]`。
+2. [x] 本计划档 commit（`21a2587a`）。
+3. [x] 红测 `test/features/battle/application/phase0a/phase0a_damage_calculator_adapter_test.dart`（先编译红后转绿）。
+4. [x] 最小实现 `lib/features/battle/application/phase0a/phase0a_damage_calculator_adapter.dart`（`15421e57`；复核加固 `234abbbe`）。
+5. [x] 全验证并冻结 `[READY]`。
 
 ## 验收标准（证伪点）
 
@@ -43,13 +43,19 @@
 
 ## 当前恢复点
 
-- 状态：计划档已建，即将写红测。
-- 最后完成：契约调查完成；基线 phase0a 81/81 全绿（实测 2026-08-16）。
-- 下一步：写 adapter 红测。
-- 已跑验证：`flutter test --no-pub test/features/battle/domain/phase0a test/features/battle/application/phase0a` → 81/81 pass。
+- 状态：**已交付，tip 冻结 `[READY]`**。
+- 最后完成：adapter + 18 项穿透测试全绿；两轮复核拍板落地（control-only 前置快照校验、per-skill 熟练度查表、快照防御性不可修改副本）。
+- 下一步：主窗口交叉复核映射与 RNG/效果丢失边界，合入协调分支。
+- 已跑验证（2026-08-16 实测）：
+  - `flutter test --no-pub test/features/battle/domain/phase0a test/features/battle/application/phase0a` → **99/99**（第二批 81 + 新 adapter 18）
+  - `flutter test --no-pub test/combat/damage_calculator_test.dart` → **51/51**
+  - nested probe `tools/phase0minus_probe test/gameplay/combat_rules_test.dart` → **8/8**
+  - `flutter analyze --no-pub` → 0 issue；`git diff --check` → 干净
 - 阻塞项：无。
 
-## 残留风险（交付时更新）
+## 残留风险
 
-- `AttackResult.appliedEffects`（extra_effect 打标 / armor_pierce）在 Phase0A 无消费方，本片登记不扩状态系统。
-- `lifestealHeal` 同理：本片以「非零吸血 fail-fast」替代静默丢弃；未来 reducer 加回血输出后可放开。
+- `AttackResult.appliedEffects`（extra_effect 打标 / armor_pierce 标记）在 Phase 0A 无消费方，本片只登记不扩状态系统；未来 reducer 消费效果时需显式接线。
+- `lifestealHeal` 同理：本片以「非零吸血 fail-fast」替代静默丢弃；未来 reducer 加回血输出后可放开该校验。
+- 快照数值合法性只守「有限且非负」底线（与 reducer `_isUsableNumber` 同口径）；防御率/闪避率 >1 等业务上界不在本片拦截，交由调用方配置层守。
+- adapter 尚未被 Phase 0A 之外的运行时入口消费（生产接线=session 穿透测试证链路）；后续批次接真实角色快照构造器时需注意 `proficiencyDamageMults` 由调用方按 `SkillProficiency.combinedMult` 预解析。
