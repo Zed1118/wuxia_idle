@@ -46,11 +46,23 @@
 
 ## 当前恢复点
 
-- 状态:复核完成,两处缺陷确认,红测待写。
-- 最后完成:只读复核 + 缺陷定位(见上)。
-- 下一步:写守卫红测。
-- 已跑验证:无(仅静态阅读)。
+- 状态:已完成待评审(复核 + 两处缺陷最小修复 + 全验证绿)。
+- 最后完成:红测 `3d7c5845`(17 项,修复前 15 红 2 绿——负 effectRadius 例被既有 `ringRadius>effectRadius` 守门意外覆盖,修复前后行为一致,作防回归保留)→ 修复 `d1b5b07f`(player-only + 数值边界 + StateError fail-fast)→ 格式化 `750f99af`。
+- 证红留痕:破坏 gather 分支 player-only 一行 → 守卫测 +16 -1 红 → 复原 → 17/17 绿。
+- 已跑验证(2026-08-16,本 worktree 实测):
+  - targeted 逐文件:reducer 27 + 规则 20 + 契约 8 + 守卫 17 + 会话 9 = 81/81 pass(首片 24 项含于内)。
+  - probe 对照 `tools/phase0minus_probe test/gameplay/combat_rules_test.dart`:8/8 pass。
+  - 根 `flutter analyze --no-pub`:No issues found。
+  - `git diff --check 73f562c1..HEAD`:干净(main...HEAD 报的 trailing whitespace 均为 greybox 历史文件,非本单改动)。
+  - `dart format`:0 changed。
+- 改动面(73f562c1..HEAD):计划档 + intent 文档注释 + reducer + 守卫测,共 4 文件,+513/-9;零 UI/YAML/GDD/PROGRESS/pubspec/probe/旧 3v3/schema/saveVersion 改动。
 - 阻塞项:无。
+
+## 残留风险(登记,不在本单范围)
+
+- 敌 AI adapter `enemy_ai_adapter.dart:30` 有一处 `attackRange*attackRange` 射程预判:属移动/出手决策(命中判定仍在 reducer 内重做),非结算规则复制,后续片接真实配置时注意双源同步。
+- reducer 未接真实 `DamageCalculator`、无胜负结算/存档、无精英 telegraph/破招链(沿用 Qoder 登记)。
+- intent 非法数值采用静默拒绝(与既有 `ringRadius>effectRadius` 一致);若表现层需要「拒绝原因」反馈,后续片再加拒绝事件。
 
 ## 禁区
 
