@@ -546,20 +546,17 @@ void main() {
       expect(Phase0aVfxController.maxEntries, 160);
     });
 
-    test('单次消费 60 次非零命中,damage popup 不超过 48', () {
+    test('单次消费 60 次非零命中,damage popup 精确截断为 48', () {
       final controller = Phase0aVfxController()
         ..syncActors(_state(enemies: [_actor('e1', Phase0aSide.enemy, 40, 0)]));
       final events = [
         for (var i = 1; i <= 60; i++) _hit(seq: i, damage: 10 + i),
       ];
       final entries = controller.consume(events);
-      expect(
-        _popups(entries).length,
-        lessThanOrEqualTo(Phase0aVfxController.maxDamagePopups),
-      );
+      expect(_popups(entries).length, Phase0aVfxController.maxDamagePopups);
     });
 
-    test('高频混合事件下总 entry 不超过 160', () {
+    test('高频混合事件产量超过上限时,总 entry 精确截断为 160', () {
       final controller = Phase0aVfxController()
         ..syncActors(
           _state(
@@ -578,26 +575,23 @@ void main() {
       final events = <Phase0aEvent>[
         for (var i = 1; i <= 90; i++)
           _hit(seq: i, actor: 'e1', target: 'player', damage: 7),
-        for (var i = 91; i <= 140; i++)
+        for (var i = 91; i <= 220; i++)
           Phase0aEnemyDefeated(
             seq: i,
             tick: i,
             target: 'e$i',
             defeatKind: Phase0aDefeatKind.normal,
           ),
-        for (var i = 141; i <= 180; i++)
+        for (var i = 221; i <= 260; i++)
           Phase0aWaveStarted(
             seq: i,
             tick: i,
-            waveIndex: i - 140,
+            waveIndex: i - 220,
             waveTotal: 40,
           ),
       ];
       final entries = controller.consume(events);
-      expect(
-        entries.length,
-        lessThanOrEqualTo(Phase0aVfxController.maxEntries),
-      );
+      expect(entries.length, Phase0aVfxController.maxEntries);
     });
   });
 }
