@@ -74,6 +74,7 @@ enemy_templates:
     evasion_rate: 0.0
     qi: 0
     move_speed: 145.0
+    initial_attack_cooldown: 2.0
   elite:
     internal_force: 200
     equipment_attack: 60
@@ -82,6 +83,7 @@ enemy_templates:
     evasion_rate: 0.0
     qi: 0
     move_speed: 125.0
+    initial_attack_cooldown: 2.0
 
 waves:
   - enemies:

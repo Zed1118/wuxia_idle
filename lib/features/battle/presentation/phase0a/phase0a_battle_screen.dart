@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../shared/strings.dart';
@@ -25,14 +26,20 @@ final class Phase0aBattleScreen extends StatefulWidget {
   State<Phase0aBattleScreen> createState() => _Phase0aBattleScreenState();
 }
 
-class _Phase0aBattleScreenState extends State<Phase0aBattleScreen> {
+class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
+    with SingleTickerProviderStateMixin {
   late final FocusNode _focusNode;
+  late final Ticker _ticker;
+  Duration? _lastElapsed;
+  double _accumulatorSeconds = 0;
+  final List<_HeldFeedback> _heldFeedback = <_HeldFeedback>[];
 
   @override
   void initState() {
     super.initState();
     _focusNode = FocusNode(debugLabel: 'phase0a-battle-input');
     widget.controller.addListener(_refresh);
+    _ticker = createTicker(_onFrame)..start();
   }
 
   @override
@@ -41,17 +48,74 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen> {
     if (oldWidget.controller == widget.controller) return;
     oldWidget.controller.removeListener(_refresh);
     widget.controller.addListener(_refresh);
+    _lastElapsed = null;
+    _accumulatorSeconds = 0;
+    _heldFeedback.clear();
   }
 
   @override
   void dispose() {
     widget.controller.removeListener(_refresh);
+    _ticker.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
   void _refresh() {
+    if (widget.controller.feedback.isNotEmpty) {
+      for (final entry in widget.controller.feedback) {
+        if (_isSingletonFeedback(entry.kind)) {
+          _heldFeedback.removeWhere((held) => held.entry.kind == entry.kind);
+        }
+        _heldFeedback.add(
+          _HeldFeedback(entry, Phase0aPresentationTokens.feedbackHoldSeconds),
+        );
+      }
+      final overflow =
+          _heldFeedback.length - Phase0aPresentationTokens.maxEntries;
+      if (overflow > 0) _heldFeedback.removeRange(0, overflow);
+    }
     if (mounted) setState(() {});
+  }
+
+  static bool _isSingletonFeedback(Phase0aVfxKind kind) => switch (kind) {
+    Phase0aVfxKind.palmTrail ||
+    Phase0aVfxKind.gatherVortex ||
+    Phase0aVfxKind.clearBurst ||
+    Phase0aVfxKind.waveBanner ||
+    Phase0aVfxKind.outcomeSeal => true,
+    Phase0aVfxKind.damagePopup ||
+    Phase0aVfxKind.gatherPull ||
+    Phase0aVfxKind.defeatInk => false,
+  };
+
+  void _onFrame(Duration elapsed) {
+    final previous = _lastElapsed;
+    _lastElapsed = elapsed;
+    if (previous == null) return;
+    final deltaSeconds =
+        (elapsed - previous).inMicroseconds / Duration.microsecondsPerSecond;
+    for (final held in _heldFeedback) {
+      held.remainingSeconds -= deltaSeconds;
+    }
+    final previousFeedbackCount = _heldFeedback.length;
+    _heldFeedback.removeWhere((held) => held.remainingSeconds <= 0);
+    if (previousFeedbackCount != _heldFeedback.length && mounted) {
+      setState(() {});
+    }
+    if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) return;
+    _accumulatorSeconds += deltaSeconds;
+    var steps = 0;
+    while (_accumulatorSeconds >= widget.controller.fixedDeltaSeconds &&
+        steps < Phase0aPresentationTokens.maxCatchUpTicksPerFrame) {
+      widget.controller.step();
+      _accumulatorSeconds -= widget.controller.fixedDeltaSeconds;
+      steps++;
+      if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) break;
+    }
+    if (steps == Phase0aPresentationTokens.maxCatchUpTicksPerFrame) {
+      _accumulatorSeconds = 0;
+    }
   }
 
   KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
@@ -100,14 +164,18 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen> {
                 const ColoredBox(color: Color(0x380F0E0B)),
                 const CustomPaint(painter: _StageWashPainter()),
                 ..._buildActors(controller, stage),
-                _FeedbackLayer(controller: controller, stage: stage),
+                _FeedbackLayer(
+                  controller: controller,
+                  stage: stage,
+                  entries: [for (final held in _heldFeedback) held.entry],
+                ),
                 _PlayerHud(controller: controller),
                 Positioned(
                   right: Phase0aPresentationTokens.skillHudRight,
                   bottom: Phase0aPresentationTokens.skillHudBottom,
                   child: Phase0aSkillSeals(
-                    gatherSlot: _slot(controller.state, 'gather'),
-                    clearSlot: _slot(controller.state, 'clear'),
+                    gatherSlot: _displaySlot(controller, 'gather'),
+                    clearSlot: _displaySlot(controller, 'clear'),
                     qiCurrent: controller.state.player.qiCurrent,
                     onGather: () => controller.enqueue(
                       const Phase0aPlayerCommand(gather: true),
@@ -162,6 +230,23 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen> {
 
   static Phase0aSkillSlot _slot(Phase0aArenaState state, String id) =>
       state.skillSlots.firstWhere((slot) => slot.slot == id);
+
+  static Phase0aSkillSlot _displaySlot(
+    Phase0aBattleController controller,
+    String id,
+  ) {
+    final slot = _slot(controller.state, id);
+    return controller.outcome == Phase0aBattleOutcome.ongoing
+        ? slot
+        : slot.copyWith(availability: Phase0aSkillAvailability.down);
+  }
+}
+
+final class _HeldFeedback {
+  _HeldFeedback(this.entry, this.remainingSeconds);
+
+  final Phase0aVfxEntry entry;
+  double remainingSeconds;
 }
 
 class _ActorStandee extends StatelessWidget {
@@ -304,14 +389,18 @@ class _PlayerHud extends StatelessWidget {
 }
 
 class _FeedbackLayer extends StatelessWidget {
-  const _FeedbackLayer({required this.controller, required this.stage});
+  const _FeedbackLayer({
+    required this.controller,
+    required this.stage,
+    required this.entries,
+  });
 
   final Phase0aBattleController controller;
   final Phase0aStage stage;
+  final List<Phase0aVfxEntry> entries;
 
   @override
   Widget build(BuildContext context) {
-    final entries = controller.feedback;
     final children = <Widget>[];
     var popupIndex = 0;
     for (final entry in entries) {

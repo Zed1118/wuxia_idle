@@ -2,8 +2,7 @@ import '../../domain/phase0a/arena_vector.dart';
 
 /// Phase 0A 表现层 token 集中地:布局 / 阈值 / 池上限唯一定义处。
 ///
-/// 本切片不产生动画时长 token;后续切片如需 Duration 字面量,
-/// 一律新增在本文件,其余文件禁止写 `const Duration(...)`。
+/// 动画/反馈时长同样集中在本文件,表现层不得另写散落常量。
 abstract final class Phase0aPresentationTokens {
   /// 世界可活动范围(脚底锚点语义坐标,y 向下为正)。
   static const ArenaVector worldMin = ArenaVector(-640, -260);
@@ -88,4 +87,6 @@ abstract final class Phase0aPresentationTokens {
   static const double depthShadowHeight = 18;
   static const double depthShadowWidth = 82;
   static const int vfxSpokeCount = 12;
+  static const int maxCatchUpTicksPerFrame = 5;
+  static const double feedbackHoldSeconds = 0.65;
 }

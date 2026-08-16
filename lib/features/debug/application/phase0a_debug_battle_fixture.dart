@@ -236,7 +236,7 @@ final class _DebugBattleConfig {
       moveSpeed: _number(template, 'move_speed'),
       qiCurrent: _integer(template, 'qi'),
       qiMax: _integer(template, 'qi'),
-      attackCooldownRemaining: _number(defaults, 'action_point'),
+      attackCooldownRemaining: _number(template, 'initial_attack_cooldown'),
       defeatKind: elite ? Phase0aDefeatKind.elite : Phase0aDefeatKind.normal,
     );
   }
