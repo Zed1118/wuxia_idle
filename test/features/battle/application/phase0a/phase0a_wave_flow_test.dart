@@ -297,10 +297,7 @@ void main() {
       expect(events.whereType<Phase0aWaveCleared>(), isEmpty);
       expect(events.whereType<Phase0aBattleVictory>(), isEmpty);
       // defeat 排在全部命中/伤害事件之后。
-      expect(
-        events.last.seq,
-        greaterThan(hits.single.seq),
-      );
+      expect(events.last.seq, greaterThan(hits.single.seq));
       expectSeqContiguous(events, 1);
       expect(flow.outcome, Phase0aBattleOutcome.defeat);
 
@@ -366,7 +363,10 @@ void main() {
       ];
       return makeFlow(
         initialState: makeState(enemies: wave1),
-        waves: [Phase0aWave(enemies: wave1), Phase0aWave(enemies: wave2)],
+        waves: [
+          Phase0aWave(enemies: wave1),
+          Phase0aWave(enemies: wave2),
+        ],
       );
     }
 
@@ -524,10 +524,7 @@ void main() {
     });
 
     test('波内非 enemy side actor fail-fast', () {
-      expect(
-        () => Phase0aWave(enemies: [makePlayer()]),
-        throwsArgumentError,
-      );
+      expect(() => Phase0aWave(enemies: [makePlayer()]), throwsArgumentError);
     });
 
     test('空波次列表 fail-fast', () {
@@ -631,9 +628,7 @@ void main() {
       );
 
       // 构造后污染外部 list。
-      waveEnemies.add(
-        makeEnemy(id: 'e9', position: const ArenaVector(999, 0)),
-      );
+      waveEnemies.add(makeEnemy(id: 'e9', position: const ArenaVector(999, 0)));
       waves.add(
         Phase0aWave(
           enemies: [makeEnemy(id: 'e8', position: const ArenaVector(888, 0))],
@@ -654,10 +649,7 @@ void main() {
         deltaSeconds: 0.1,
         command: const Phase0aPlayerCommand(attack: true),
       );
-      expect(
-        (events.first as Phase0aWaveStarted).waveTotal,
-        1,
-      );
+      expect((events.first as Phase0aWaveStarted).waveTotal, 1);
       expect(flow.outcome, Phase0aBattleOutcome.victory);
     });
   });
@@ -777,10 +769,7 @@ void main() {
           playerAdapter: makePlayerAdapter(),
           enemyAiAdapter: makeEnemyAdapter(),
           damageResolver: Phase0aDamageCalculatorAdapter(
-            combatants: {
-              'player': playerSnapshot(),
-              'e1': enemySnapshot(),
-            },
+            combatants: {'player': playerSnapshot(), 'e1': enemySnapshot()},
             moveBindings: const {Phase0aDamageKind.basic: basicSkill},
             numbers: numbers(),
             rng: math.Random(seed),
