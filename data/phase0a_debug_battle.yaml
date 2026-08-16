@@ -1,0 +1,118 @@
+# Debug visual acceptance only. Never use this file as production balance data.
+meta:
+  seed: 20260816
+  fixed_delta_seconds: 0.1
+  initial_tick: 0
+  initial_seq: 1
+
+arena:
+  min_x: -640.0
+  max_x: 640.0
+  min_y: -260.0
+  max_y: 260.0
+
+combat_defaults:
+  realm_tier: xueTu
+  realm_layer: ruMen
+  cultivation_layer: chuKui
+  player_school: gangMeng
+  enemy_school: yinRou
+  attack_power_multiplier: 1.0
+  output_multiplier: 1.0
+  forging_pierce_pct: 0.0
+  forging_lifesteal_pct: 0.0
+  action_point: 0
+  player_team_side: 0
+  enemy_team_side: 1
+  player_slot_index: 0
+  basic_qi_delta: 0
+  clear_qi_delta: 0
+  skill_cooldown_turns: 0
+
+player:
+  id: player
+  character_id: 1
+  position: [-320.0, 0.0]
+  facing: [1.0, 0.0]
+  move_speed: 210.0
+  max_health: 15000
+  qi: 100
+  internal_force: 600
+  equipment_attack: 130
+  defense_rate: 0.15
+  critical_rate: 0.20
+  evasion_rate: 0.0
+  attack:
+    range: 360.0
+    half_arc_radians: 0.72
+    cooldown_seconds: 0.55
+    power_multiplier: 500
+  gather:
+    slot: gather
+    ring_radius: 120.0
+    effect_radius: 520.0
+    qi_cost: 25
+    cooldown_seconds: 5.0
+  clear:
+    slot: clear
+    effect_radius: 340.0
+    qi_cost: 50
+    cooldown_seconds: 8.0
+    power_multiplier: 1500
+
+enemy_ai:
+  attack_range: 82.0
+  attack_half_arc_radians: 0.9
+  attack_cooldown_seconds: 1.0
+
+enemy_templates:
+  normal:
+    internal_force: 120
+    equipment_attack: 40
+    defense_rate: 0.05
+    critical_rate: 0.0
+    evasion_rate: 0.0
+    qi: 0
+    move_speed: 145.0
+  elite:
+    internal_force: 200
+    equipment_attack: 60
+    defense_rate: 0.08
+    critical_rate: 0.0
+    evasion_rate: 0.0
+    qi: 0
+    move_speed: 125.0
+
+waves:
+  - enemies:
+      - id: wave1_blade
+        character_id: 2
+        slot_index: 0
+        role: normal
+        max_health: 1800
+        position: [0.0, -90.0]
+      - id: wave1_archer
+        character_id: 3
+        slot_index: 1
+        role: normal
+        max_health: 2400
+        position: [80.0, 100.0]
+  - enemies:
+      - id: wave2_bandit_b
+        character_id: 4
+        slot_index: 0
+        role: normal
+        max_health: 1800
+        position: [20.0, -120.0]
+      - id: wave2_bandit_c
+        character_id: 5
+        slot_index: 1
+        role: normal
+        max_health: 2400
+        position: [100.0, 120.0]
+      - id: wave2_elite
+        character_id: 6
+        slot_index: 2
+        role: elite
+        max_health: 6000
+        position: [260.0, 0.0]

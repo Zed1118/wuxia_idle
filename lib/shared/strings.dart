@@ -142,6 +142,8 @@ class UiStrings {
   static const String battleSampleHiddenElder = '隐世老者';
   static const String battleSampleBanditBlade = '山贼刀客';
   static const String battleSampleBanditArcher = '山贼弓手';
+  static const String phase0aDebugBanditB = '黑风打手';
+  static const String phase0aDebugBanditC = '黑风喽啰';
   static const String battleSampleSkillOpenMountain = '开山掌';
   static const String battleSampleSkillBreakCurrent = '断流';
   static const String battleSampleSkillSnowStep = '踏雪';
