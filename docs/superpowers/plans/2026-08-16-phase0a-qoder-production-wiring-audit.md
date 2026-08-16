@@ -37,19 +37,20 @@
 2. ✅ 追踪生产战斗链路：BattleScreen 挂载点 6 处（生产 4 + 调试 2）、runStageFlow 调用方 4 处、BattleResolutionService.resolve 生产调用 4 处、存档边界（20 collection / saveVersion 0.39.0）。
 3. ✅ 盘点 probe：`combat_rules.dart`（326 行，import flame，非纯 Dart）/ `gameplay_game.dart`（2085 行，extends FlameGame）/ 探针基建目录清单；probe 与根应用双向零代码依赖。
 4. ✅ 撰写审计报告（含最小接线路线、影响矩阵、决策项）。
-5. ✅ 复核验证 + 冻结提交。
+5. ✅ 复核验证 + 冻结提交（`02f4d010`，[BLOCKED]）。
+6. ✅ 收窄返修（派单方复核后）：报告 §4 重写为「确定性 simulation core → 手动/AI 输入适配器 → 纯 Flutter 表现 → 切生产入口并清旧 3v3 交互」，回退依赖小切片 commit；§6 四项待拍改为已确定边界（引擎/形态/数值/在线=离线），结论改为无新增待拍；§5 处置列同步去决策项化。
 
 ## 关键审计结论摘要
 
 - 根应用战斗为 actionPoint 时间行动制 + seeded 确定性 RNG（`BattleNotifier` + `BattleStrategy` 三实装）；probe 为 Flame 实时 ARPG。二者驱动模型、数值体系（probe 固定伤害 vs 根内力/装备攻击公式）、胜负判定完全不同构。
 - 根应用 CLAUDE.md §9 明文禁引入 Flame 等第三方游戏引擎 → probe 的 `GameplayGame` 不可直接迁移，必须纯 Flutter 重写；纯规则可剥离 flame 依赖后迁移。
-- GDD §5.1 仍定义战斗形态为「半横版队伍战 3v3」，与用户已拍板的 Phase 0A 水墨 ARPG 方向存在设计层冲突 → 本审计不代拍，列入决策项。
+- GDD §5.1 仍写「半横版队伍战 3v3」：派单方已确认这是待同步 drift，不是保留旧模式的依据；终态 = Phase 0A 单角色水墨 ARPG 替换玩家可见旧 3v3 交互（不并存），文字同步留待后续 drift 清理。
 - 3v3 硬编码残留 10+ 处（装配/编成/镜像/派遣/UI 站位/塔 schema 红线），详见审计报告。
 
 ## 当前恢复点
 
-- 状态：审计完成，报告已产出；因含 GDD 形态冲突与引擎/数值/schema 级决策项，tip 以 `[BLOCKED]` 冻结待拍板。
-- 最后完成：两份交付文档写完；入口计数（BattleScreen 6 挂载 / runStageFlow 4 调用 / resolve 4 生产调用）、3v3 残留、probe 隔离均经 rg 复核。
-- 下一步：派单方独立复查调用链/计数 → 用户对审计报告 §6 决策项拍板 → 另行派实施单。
-- 已跑验证：`git diff --check` 干净；越界文件零（仅新增 2 份 docs）；未装任何依赖。
-- 阻塞项：审计报告 §6 的 4 项决策（引擎选型 / GDD §5.1 形态口径 / 数值接线分层 / 无头自动刷表达）需用户拍板。
+- 状态：**审计收窄完成**。原 §6 四项待拍经派单方确认为已确定边界（引擎锁纯 Flutter / 单角色 ARPG 替换旧 3v3 不并存 / probe 数值不直迁 / 手动与无头共用同一确定性核），报告 §4 接线路线已按此重排，无新增待拍；tip 以 `[READY]` 冻结。
+- 最后完成：返修仅改两份交付文档（报告 §4/§5/§6 + 返修注记、本计划切片与恢复点），入口计数与残留清单沿用 `02f4d010` 已复核结果，未变动。
+- 下一步：按报告 §4 路线另行派实施单（先建确定性 simulation core，再接适配器/表现/生产入口）。
+- 已跑验证：`git diff --check` 干净；越界文件零（仍仅两份 docs）；未装任何依赖。
+- 阻塞项：无。

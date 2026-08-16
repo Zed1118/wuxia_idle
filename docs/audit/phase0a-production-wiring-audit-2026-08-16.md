@@ -2,6 +2,8 @@
 
 配套计划：`docs/superpowers/plans/2026-08-16-phase0a-qoder-production-wiring-audit.md`。基线 `5a107a5b`。全部计数经 rg 复核，复现命令见 §7。
 
+> **返修（2026-08-16）**：按派单方已确定约束重写 §4 接线路线、§6 改列「已确定边界」——引擎锁纯 Flutter、单角色水墨 ARPG 替换玩家可见旧 3v3 交互（不并存）、probe 固定数字不直迁、手动与无头共用同一确定性模拟/结算核。原四项待拍板不再成立。
+
 ## 1. 生产战斗精确链路
 
 - **入口（BattleScreen 挂载 6 处 = 生产 4 + 调试 2）**：主线/心魔/轻功/群战统一 `mainline/presentation/stage_entry_flow.dart`（`runStageFlow`→`_StageBattleHost`→`StageBattleSetup.buildTeams`:503→`BattleScreen`:580），`runStageFlow` 调用方 4 处：`stage_list_screen.dart:228`、`inner_demon_screen.dart:100`、`light_foot_screen.dart:103`、`mass_battle_screen.dart:111`；爬塔 `tower_entry_flow.dart:823/850`；扫荡 `sweep_screen.dart:138`（headless `sweep_unit.dart:58/90`）；断魂庄 `gauntlet_entry_flow.dart:184/213`（headless `gauntlet_service.dart:392`、`gauntlet_battle_runner.dart:41`）；远征纯 headless `expedition_combat_runner.dart:25/60`；调试 `battle_test_menu.dart:1480`、`visual_route_host.dart:1597`。
@@ -27,30 +29,32 @@
 | `progression_red_lines_validator.dart:61` | 塔敌队 ≤3 schema 红线 |
 | `battle_test_menu.dart:1286-87`（调试断言）、GDD §5.1「3v3」文字 | 测试与设计层口径 |
 
-## 4. 最小可回退接线路线
+## 4. 最小可回退接线路线（按 §6 已确定边界重排）
 
-1. **决策先行（停止条件：未拍板不动手）**——§6 四项决策落地。
-2. **规则层**：去 flame 化的 combat_rules 入 `lib/features/battle/domain/phase0a/`，数值走 yaml（新段需 schema+红线 validator），消费方=后续表现层；测试=规则单测移植；停止条件=红线 validator 不过。
-3. **表现层**：纯 Flutter（Widget+AnimationController+CustomPaint）重写实时表现，素材进 `assets/`+pubspec 声明；仅 debug 入口可玩；测试=渲染契约+双视口 smoke；停止条件=帧预算超标（切片实测 p99 ≤9.1ms 为基线）。
-4. **生产接线**：先接主线单一入口（`stage_entry_flow`），胜负/掉落/存档全部复用 `BattleResolutionService.resolve` 既有 4 调用方模式，零 schema 变更；headless 路径（扫荡/远征/断魂庄）暂不切；测试=`battle_resolution_test`/`stage_battle_setup_test` 族全绿；停止条件=任一头寸结算漂移。
-5. **回退**：每步独立可 revert；旧 3v3 表现在最终拍板前不删，回退=开关还原。
+1. **确定性 simulation core（纯 Dart）**：combat_rules 去 flame 化（Vector2→纯 Dart）入 `lib/features/battle/domain/phase0a/`，作为唯一战斗模拟/结算核，手动与无头共用；数值只接根配置层公式/YAML（新段须 schema+红线 validator），probe 固定数字不直迁。测试=规则单测+同种子确定性回归；停止条件=红线 validator 不过或确定性不可复现。
+2. **输入适配器**：手动实时操作与 AI 自动均为 simulation core 的输入适配器（同一 tick 接口），不改变模拟规则；无头自动刷=同核+AI 适配器，禁另造简化胜负、禁保留旧 3v3 作隐藏无头规则。测试=适配器契约测试+同种子手动/AI 胜负口径一致；停止条件=双路径结算漂移。
+3. **表现层（纯 Flutter）**：Widget+AnimationController+CustomPaint 重写实时表现，素材进 `assets/`+pubspec 声明；仅 debug 入口可玩；测试=渲染契约+双视口 smoke；停止条件=帧预算超标（切片实测 p99 ≤9.1ms 为基线）。
+4. **切生产入口 + 清旧交互**：先接主线单一入口（`stage_entry_flow`），胜负/掉落/存档全部复用 `BattleResolutionService.resolve` 既有 4 调用方模式，零 schema 变更；验证通过后移除玩家可见的旧 3v3 交互及 §3 残留（装配/编成/镜像/派遣/UI 槽位/塔 schema），headless 头寸（扫荡/远征/断魂庄）切到同一 simulation core；测试=`battle_resolution_test`/`stage_battle_setup_test` 族全绿；停止条件=任一头寸结算漂移。
+5. **回退**：不做产品内两套玩家可见模式并存/开关；回退完全依赖小切片独立 commit，每步可单独 revert。
 
 ## 5. 影响矩阵
 
 | 红线域 | 影响 | 处置 |
 |---|---|---|
 | 数值红线 | probe 固定伤害（24/65/100 血）与根公式体系断裂 | 结算必走 `damage_calculator`/`derived_stats`；新 yaml 段入 schema 拦截（装备攻 ≤2000/血 ≤20000/倍率 ≤8000 等） |
-| 三系锁死 | ARPG 单人形态下境界↔装备↔心法门槛与境界差修正映射未定义 | 入场校验（`isEquippableAtRealm` 等）必须保留；映射方案列决策项 |
-| 在线=离线 | 实时操作天然在线 | 按 GDD §2.2：实时操作仅首通 gate；已通内容刷取走无头（离线经 `seclusion/offline_*_service`，与战斗解耦现状保持） |
-| 存档/schema | 步骤 2-4 零 schema 变更 | 若需记录新战斗形态数据，须 saveVersion 迁移——决策项 |
+| 三系锁死 | ARPG 单人形态须继续守境界↔装备阶↔心法阶一一对应 | 入场校验（`isEquippableAtRealm` 等）原样保留并接 simulation core；红线已锁死，单角色形态沿用同一门槛校验，非决策项 |
+| 在线=离线 | 实时操作天然在线 | 按 GDD §2.2：实时手动仅首通 gate，已通内容刷取走无头自动；无头自动=同一确定性模拟/结算核+AI 适配器（离线收益仍经 `seclusion/offline_*_service`，与战斗解耦现状保持） |
+| 存档/schema | 步骤 1-4 零 schema 变更 | 若未来需记录新战斗形态数据，按既有 saveVersion 迁移机制实施（工程惯例，非决策项） |
 | 结算一致性 | v1.32 规则：胜负自 `finalState.result` 派生 | 新形态不得绕开 resolve；扫荡/远征/headless 结算口径不动 |
 
-## 6. 待拍板决策项（只列选项/证据/推荐，不代拍）
+## 6. 已确定边界（派单方/用户已拍板，不再待拍）
 
-1. **引擎**：A 纯 Flutter 重写（证据：CLAUDE.md §2 技术栈+§9 禁令；**推荐**）｜B 解禁 Flame（触技术栈锁死，须用户显式拍板）。
-2. **战斗形态与 GDD §5.1 冲突**：GDD 仍写「3v3 自动战斗」，用户已拍板水墨 ARPG 方向。A 新形态并存（`BattleStrategy` 插槽已有先例）｜B 替换 3v3（须修 GDD §5.1，本单禁改）。**推荐**接线期 A、方向终态 B，均待拍板。
-3. **数值接线**：A 表现层 probe 手感参数 + 结算层根公式分层（**推荐**，守红线）｜B probe 数值直迁（违反红线体系，不推荐；且触 `data/numbers.yaml` 禁区）。
-4. **无头自动刷**：ARPG 首通后自动刷如何表达（策略回放重算｜简化结算｜保留旧形态 headless），影响在线=离线与 §3 残留清理范围。
+1. **引擎**：锁纯 Flutter（`CLAUDE.md:86` 战斗表现不引入 Flame、`:372` 禁第三方游戏引擎），Flame 不进根应用；probe 的 `FlameGame` 实现只作规则参考。
+2. **战斗形态**：终态是 Phase 0A 单角色水墨 ARPG 替换玩家可见的旧 3v3 交互，不做两套玩家可见模式并存；GDD/CLAUDE 的 3v3 描述是待同步 drift，不是让旧模式留在产品的依据（文字同步为后续 drift 清理任务，本单禁改 GDD.md）。
+3. **数值**：probe 固定数字（24/65/100 血等）不直迁；生产只消费根应用公式/YAML/红线 validator。
+4. **在线=离线**：实时手动与无头自动共用同一确定性战斗模拟/结算核；手动与 AI 只是输入适配器差异，禁止另造简化胜负、禁止保留旧 3v3 作隐藏无头规则。
+
+**无新增待拍**：三系门槛校验沿用既有红线、schema 变更走既有 saveVersion 迁移机制，均可由上列边界与既有工程惯例推导，不再列决策项。
 
 ## 7. 核心复现命令
 
