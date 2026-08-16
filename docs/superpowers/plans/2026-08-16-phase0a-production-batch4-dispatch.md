@@ -27,15 +27,14 @@
 ## 切片
 
 1. [x] 主窗口审计旧 `BattleResolutionService` 与 Phase0a session/reducer，冻结副作用边界和事件顺序。
-2. [ ] Kimi 独立 worktree：计划 → 红测 → 最小状态机 → 验证 → `[READY]`。
-3. [ ] 主窗口独立复核终局唯一性、换波状态连续性和回放确定性。
-4. [ ] 合入协调分支，复验并冻结 `[READY]`。
+2. [x] Kimi 独立 worktree：计划 → 红测 → 最小状态机 → 验证 → `[READY]`。
+3. [x] 主窗口独立复核终局唯一性、换波状态连续性和回放确定性。
+4. [x] 合入协调分支，复验并冻结 `[READY]`。
 
 ## 当前恢复点
 
-- 状态：派单冻结中。
-- 最后完成：第三批 `[READY] 8d86fd3e`；确认 `BattleResolutionService.resolve` 会修改成长/掉落/伤势，故只作为未来终局事件下游，不进入本批状态机。
-- 下一步：提交派单并创建 Kimi 独立 worktree。
-- 已跑验证：新协调 worktree 已完成根 `pub get`、build_runner 与 nested probe `pub get`，worktree 干净。
+- 状态：第四批实现与独立复核完成，待协调 `[READY]` tip。
+- 最后完成：合入 Kimi `[READY] 1ad07977`；新增不可变波次值对象、4 类强类型 wave/outcome 事件与 `Phase0aWaveBattleFlow`，未向 `Phase0aCombatSession` 暴露可变状态后门。
+- 下一步：提交本恢复点并创建协调 `[READY]` tip；下一批接真实 `BattleCharacter` 数值快照/招式绑定工厂或纯 Flutter 表现层，不在本批扩张。
+- 已跑验证（合入后由主窗口独立复验）：Phase0a **116/116**、damage calculator **51/51**、nested probe **8/8**、`flutter analyze --no-pub` 0 issue、禁用依赖搜索与 `git diff --check` 干净。
 - 阻塞项：无。
-
