@@ -53,7 +53,7 @@ void main() {
     visualEffect: '',
   );
 
-  final profSkillA = SkillDef(
+  final profSkillA = const SkillDef(
     id: 'phase0a_test_prof_a',
     name: 'profA',
     description: 'profA',
@@ -63,7 +63,7 @@ void main() {
     cooldownTurns: 0,
     requiresManualTrigger: false,
     visualEffect: '',
-    proficiency: const SkillProficiencyEffects(
+    proficiency: SkillProficiencyEffects(
       {'shuLian': 0.10},
       {},
       {},
@@ -71,7 +71,7 @@ void main() {
     ),
   );
 
-  final profSkillB = SkillDef(
+  final profSkillB = const SkillDef(
     id: 'phase0a_test_prof_b',
     name: 'profB',
     description: 'profB',
@@ -81,7 +81,7 @@ void main() {
     cooldownTurns: 3,
     requiresManualTrigger: false,
     visualEffect: '',
-    proficiency: const SkillProficiencyEffects(
+    proficiency: SkillProficiencyEffects(
       {'huaJing': 0.20},
       {},
       {},

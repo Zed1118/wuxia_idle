@@ -52,11 +52,12 @@
 
 1. [x] 调查：`_calculateInBattle` 字段口径、`BattleCharacter`、`SkillProficiency`、
    第三/四批 adapter 与 wave flow 及其测试、源码契约测。
-2. [ ] 本计划档 commit。
-3. [ ] 红测 `test/features/battle/application/phase0a/phase0a_battle_snapshot_factory_test.dart`
-   + 源码契约扩项（先编译红后转绿）。
-4. [ ] 最小实现 `phase0a_battle_snapshot_factory.dart` + 契约放宽为符号级禁令。
-5. [ ] 全验证并冻结 `[READY]`。
+2. [x] 本计划档 commit（`4e84cba6`）。
+3. [x] 红测 `test/features/battle/application/phase0a/phase0a_battle_snapshot_factory_test.dart`
+   + 源码契约扩项（红证据：编译失败 + 契约 4 项文件缺失红，`50646522`）。
+4. [x] 最小实现 `phase0a_battle_snapshot_factory.dart` + 契约放宽为符号级禁令
+   （`2cf689aa`；const lint 收尾随最终提交）。
+5. [x] 全验证并冻结 `[READY]`。
 
 ## 验收标准（证伪点）
 
@@ -78,11 +79,18 @@
 
 ## 当前恢复点
 
-- 状态：计划档冻结，红测未开始。
-- 最后完成：调查切片（字段口径/熟练度/凝甲/动态机制边界已定位到行级）。
-- 下一步：写红测（工厂 + 契约扩项）并 commit。
-- 已跑验证：无（基线 `51205486` 为派单冻结 commit）。
-- 阻塞项：无；动态机制以构造期 fail-fast 留给后续 state-aware resolver 切片。
+- 状态：**已交付，tip 冻结 `[READY]`**。
+- 最后完成：工厂实装 + 16 项工厂测（含 1 项 工厂→adapter→wave flow→
+  session/reducer 穿透与 direct `calculateResolved` 同 seed 对照）+ 契约 4 项扩项全绿。
+- 下一步：主窗口独立复核字段同值、fail-fast 与确定性，合入协调分支。
+- 已跑验证（2026-08-16 实测）：
+  - `flutter test --no-pub test/features/battle/domain/phase0a test/features/battle/application/phase0a` → **136/136**（既有 120 + 工厂 16）
+  - `flutter test --no-pub test/combat/damage_calculator_test.dart` → **51/51**
+  - nested probe `tools/phase0minus_probe test/gameplay/combat_rules_test.dart` → **8/8**
+  - `flutter analyze --no-pub` → **0 issue**；`git diff --check` → 干净
+  - 禁用依赖搜索（工厂文件无 dart:ui/Flutter/Flame/probe/battle_ai/
+    default_ground_strategy/damage_calculator/game_repository）→ 无命中
+- 阻塞项：无；动态机制以明确 fail-fast 留给后续 state-aware resolver 切片。
 
 ## 残留风险（登记，不在本批扩）
 
