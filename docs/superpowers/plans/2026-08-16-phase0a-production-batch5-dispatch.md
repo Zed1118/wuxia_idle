@@ -26,14 +26,14 @@
 ## 切片
 
 1. [x] 主窗口审计 `BattleCharacter` 与旧 `_calculateInBattle` 字段口径，冻结动态机制不能静态化的边界。
-2. [ ] Kimi 独立 worktree：计划 → 红测 → 最小工厂 → 真实 flow 穿透 → `[READY]`。
-3. [ ] 主窗口独立复核字段同值、fail-fast 与确定性。
-4. [ ] 合入协调分支，复验并冻结 `[READY]`。
+2. [x] Kimi 独立 worktree：计划 → 红测 → 最小工厂 → 真实 flow 穿透 → `[READY] c133e0e6`。
+3. [x] 主窗口独立复核字段同值、fail-fast 与确定性。
+4. [x] 合入协调分支，复验并冻结 `[READY]`。
 
 ## 当前恢复点
 
-- 状态：第五批派单冻结中。
-- 最后完成：第四批 `[READY] d6763b06`；确认静态 `Phase0aDamageSnapshot` 不能静默承载会随战斗变化的护法/脆弱/踉跄机制。
-- 下一步：提交派单，创建 Kimi 独立 worktree并执行。
-- 已跑验证：新协调 worktree 已完成根 `pub get`、build_runner 与 nested probe `pub get`。
+- 状态：**第五批已完成并合入协调分支，待本文件恢复点提交后冻结 `[READY]`**。
+- 最后完成：合入 Kimi `[READY] c133e0e6`；新增 `BattleCharacter` 生产快照工厂、16 项工厂测试与真实 wave flow 同 seed 穿透。
+- 下一步：提交本恢复点并创建空 `[READY]` tip。
+- 已跑验证：Kimi 与主窗口独立两轮均通过 Phase0a 136/136、damage calculator 51/51、nested probe 8/8、`flutter analyze --no-pub` 0 issue、diff-check 干净。
 - 阻塞项：无；动态机制以明确 fail-fast 留给后续 state-aware resolver 切片。
