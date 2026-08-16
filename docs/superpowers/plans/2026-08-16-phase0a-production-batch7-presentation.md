@@ -74,9 +74,9 @@
 
 1. [x] 从第六批 `[READY] 2e688b08` 创建独立 worktree并完成依赖预热。
 2. [x] Phase0a 基线 150/150。
-3. [ ] Kimi 只读审计根资产、复用组件、debug 接线点与事件映射。
+3. [x] Kimi 只读审计根资产、复用组件、debug 接线点与事件映射。
 4. [ ] 红测与最小实现。
 5. [ ] 双视口真机验收与修正。
 6. [ ] 全验证并冻结 `[READY]`。
 
-当前恢复点：边界已冻结，工作树干净；等待 Kimi 只读审计落地后进入红测。
+当前恢复点：Kimi 只读审计已落地（`docs/audit/phase0a-production-presentation-implementation-audit-2026-08-16.md`）；下一步进入红测与最小实现。
