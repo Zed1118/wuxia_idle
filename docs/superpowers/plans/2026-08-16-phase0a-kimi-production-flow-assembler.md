@@ -49,11 +49,12 @@
 1. [x] 调查：四个既有组件签名与构造期校验、batch4/5 穿透测试体例、
    源码契约测（`test/features/battle/domain/phase0a/phase0a_source_contract_test.dart`）、
    `calculateResolved` RNG 消费序（先闪避 roll 后暴击 roll，未闪避恒 2 值/次）。
-2. [ ] 本计划档 commit。
-3. [ ] 红测 `test/features/battle/application/phase0a/phase0a_production_flow_assembler_test.dart`
-   + 源码契约第六批扩项（装配器未实现，预期编译红）commit。
-4. [ ] 最小实现装配器 commit。
-5. [ ] 全验证并冻结 `[READY]`。
+2. [x] 本计划档 commit（`b183efcf`）。
+3. [x] 红测 `test/features/battle/application/phase0a/phase0a_production_flow_assembler_test.dart`
+   + 源码契约第六批扩项（红证据：装配器测试编译红 + 契约 4 项文件缺失红，`833b9051`）。
+4. [x] 最小实现装配器（`51e4b421`，含红测 fixture 修正：extra actor 用例的
+   combatants 构造器原会按固定 id 白名单过滤掉多余 id,改全量遍历后该用例真红→绿）。
+5. [x] 全验证并冻结 `[READY]`。
 
 ## 验收标准（证伪点）
 
@@ -79,10 +80,21 @@
 
 ## 当前恢复点
 
-- 状态：计划档已创建，红测编写中。
-- 最后完成：调查收口（切片 1）。
-- 下一步：红测 + 契约扩项 commit。
-- 已跑验证：无（红测前）。
+- 状态：**已交付，tip 冻结 `[READY]`**。
+- 最后完成：装配器实装 + 9 项装配器测（两波 14 击同 seed 连续序列逐击同值 +
+  重置反例判别、回放全等、missing/extra/playerId/缺 binding 四类 fail-fast 零
+  RNG 消费、null control-only 穿透、外部 mutation 不污染、动态机制穿透）+
+  契约 4 项扩项全绿。
+- 下一步：主窗口独立复核精确覆盖、零 RNG 消费与同 seed 序列，合入协调分支。
+- 已跑验证（2026-08-16 实测）：
+  - `flutter test --no-pub test/features/battle/domain/phase0a test/features/battle/application/phase0a` → **149/149**（既有 136 + 装配器 9 + 契约扩项 4）
+  - `flutter test --no-pub test/combat/damage_calculator_test.dart` → **51/51**
+  - nested probe `tools/phase0minus_probe test/gameplay/combat_rules_test.dart` → **8/8**
+  - `flutter analyze --no-pub` → **0 issue**；`git diff --check` → 干净
+  - 禁用依赖搜索（装配器文件无 dart:ui/Flutter/Flame/probe/damage_calculator/
+    game_repository/battle_state/battle_ai/default_ground_strategy/battle_resolution
+    依赖、无 DamageCalculator/GameRepository/BattleState/BattleAI/
+    DefaultGroundStrategy 符号、无 `Random(` 新建 RNG）→ 无命中
 - 阻塞项：无。
 
 ## 残留风险（登记，不在本批扩）
