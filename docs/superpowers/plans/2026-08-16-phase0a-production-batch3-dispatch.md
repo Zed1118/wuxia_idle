@@ -31,10 +31,10 @@
 
 ## 当前恢复点
 
-- 状态：**已交付，待本计划恢复点提交并创建协调 `[READY]` tip**。
-- 最后完成：合入 Kimi `[READY] 3cecfb68`；适配器仅调用 `calculateResolved`，锁定 `finalDamage` 映射、seeded RNG、control-only、per-skill 熟练度与快照防御性副本。
-- 下一步：提交本恢复点，复跑协调分支最终验证并创建 `[READY]` tip。
-- 已跑验证（主窗口独立于 Kimi）：Phase0a **99/99**、damage calculator **51/51**、probe **8/8**、analyze 0 issue、禁用依赖搜索与 `git diff --check` 干净。
+- 状态：**已交付，协调分支最终验证全绿**。
+- 最后完成：合入 Kimi `[READY] 3cecfb68`；适配器仅调用 `calculateResolved`，锁定 `finalDamage` 映射、seeded RNG、control-only、per-skill 熟练度与快照防御性副本；协调分支复验通过。
+- 下一步：创建协调 `[READY]` tip；下一批单独接胜负/波次状态机或纯 Flutter 表现层，不在本批扩张。
+- 已跑验证（主窗口独立于 Kimi，合入后复验）：Phase0a **99/99**、damage calculator **51/51**、probe **8/8**、analyze 0 issue、禁用依赖搜索与 `git diff --check` 干净。
 - 阻塞项：无。
 
 ## 残留风险
