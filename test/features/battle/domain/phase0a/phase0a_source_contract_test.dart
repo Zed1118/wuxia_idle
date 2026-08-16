@@ -25,12 +25,13 @@ void main() {
         .join('\n');
   }
 
-  List<File> sourceFiles() => sourceDir
-      .listSync()
-      .whereType<File>()
-      .where((file) => file.path.endsWith('.dart'))
-      .toList()
-    ..sort((a, b) => a.path.compareTo(b.path));
+  List<File> sourceFiles() =>
+      sourceDir
+          .listSync()
+          .whereType<File>()
+          .where((file) => file.path.endsWith('.dart'))
+          .toList()
+        ..sort((a, b) => a.path.compareTo(b.path));
 
   test('phase0a domain 目录存在且非空', () {
     expect(sourceDir.existsSync(), isTrue);
@@ -81,7 +82,8 @@ void main() {
       expect(
         hit,
         isNull,
-        reason: '${file.path} 出现数值默认值 "${hit?.group(0)}"'
+        reason:
+            '${file.path} 出现数值默认值 "${hit?.group(0)}"'
             '(数值必须由调用方显式传入)',
       );
     }
