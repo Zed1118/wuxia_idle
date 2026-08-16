@@ -442,6 +442,90 @@ void main() {
     });
   });
 
+  group('端到端唯一终局与终局后零 RNG 消费', () {
+    /// 第二波双敌各一滴血:玩家每拍收一个,tick3 末敌死亡直达胜利。
+    List<Phase0aWave> lowHpWaves() => [
+      Phase0aWave(enemies: wave1Enemies()),
+      Phase0aWave(
+        enemies: [
+          arenaActor(
+            id: 'e2',
+            side: Phase0aSide.enemy,
+            position: const ArenaVector(50, 0),
+            currentHealth: 1,
+          ),
+          arenaActor(
+            id: 'e3',
+            side: Phase0aSide.enemy,
+            position: const ArenaVector(60, 0),
+            currentHealth: 1,
+          ),
+        ],
+      ),
+    ];
+
+    (List<Phase0aEvent>, Phase0aWaveBattleFlow, math.Random) runToVictory(
+      int seed,
+    ) {
+      final rng = math.Random(seed);
+      final flow = assemble(waves: lowHpWaves(), rng: rng);
+      final events = <Phase0aEvent>[];
+      var guard = 0;
+      while (flow.outcome == Phase0aBattleOutcome.ongoing && guard < 20) {
+        events.addAll(
+          flow.advance(
+            deltaSeconds: 0.5,
+            command: const Phase0aPlayerCommand(attack: true),
+          ),
+        );
+        guard++;
+      }
+      return (events, flow, rng);
+    }
+
+    test('清空第二波:唯一 victory 紧邻末波 cleared,终局幂等且 RNG 零消费', () {
+      const seed = 13;
+      final (eventsA, flowA, rngA) = runToVictory(seed);
+      expect(flowA.outcome, Phase0aBattleOutcome.victory);
+      expect(flowA.state.enemies, isEmpty);
+
+      // 全场唯一终局:victory 恰一条且为最后一个事件,无 defeat。
+      expect(eventsA.whereType<Phase0aBattleVictory>(), hasLength(1));
+      expect(eventsA.last, isA<Phase0aBattleVictory>());
+      expect(eventsA.whereType<Phase0aBattleDefeat>(), isEmpty);
+
+      // 末波 cleared 紧邻 victory:同拍、seq 相邻、各自 1-based 波序完整。
+      final cleared = eventsA.whereType<Phase0aWaveCleared>().toList();
+      expect(cleared.map((e) => e.waveIndex), [1, 2]);
+      expect(eventsA.last.tick, cleared.last.tick);
+      expect(eventsA.last.seq, cleared.last.seq + 1);
+
+      // 终局后两次 advance 完全幂等:空事件、state/tick/seq/outcome 不变。
+      final terminalState = flowA.state;
+      for (var i = 0; i < 2; i++) {
+        expect(
+          flowA.advance(
+            deltaSeconds: 0.5,
+            command: const Phase0aPlayerCommand(attack: true, gather: true),
+          ),
+          isEmpty,
+        );
+      }
+      expect(flowA.state, terminalState);
+      expect(flowA.state.tick, terminalState.tick);
+      expect(flowA.state.nextSeq, terminalState.nextSeq);
+      expect(flowA.outcome, Phase0aBattleOutcome.victory);
+
+      // 终局后零 RNG 消费:flowA 终局后又空转两拍,其显式 rng 下一值必须
+      // 等于同 seed 对照流「跑到终局即取」的下一值;两流事件/state 全等
+      // 保证此前消费序列一致,故相等 ⇔ 终局后空转拍未消费 RNG。
+      final (eventsB, flowB, rngB) = runToVictory(seed);
+      expect(eventsB, eventsA);
+      expect(flowB.state, terminalState);
+      expect(rngA.nextDouble(), rngB.nextDouble());
+    });
+  });
+
   group('启动期结构校验:fail-fast 且零 RNG 消费', () {
     test('missing actor:错误信息列稳定排序 id,RNG 未消费', () {
       const seed = 3;
