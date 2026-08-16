@@ -200,6 +200,12 @@ class UiStrings {
 
   /// down 态状态行(明确禁用原因:倒地无法出手)。
   static const String phase0aSealDown = '倒地';
+  static String phase0aWaveBanner(int index, int total) =>
+      '第 $index 波 · 共 $total 波';
+  static const String phase0aVictorySeal = '破阵';
+  static const String phase0aDefeatSeal = '败退';
+  static const String phase0aPlayerHealth = '气血';
+  static const String phase0aPlayerQi = '真气';
 
   // 可用态：耗气 N · CD M。
   static String skillCostShort(int cost, int cooldown) =>

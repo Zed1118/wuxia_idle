@@ -6,6 +6,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_in
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/hp_bar.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
@@ -32,8 +33,10 @@ import '../../../../support/test_data.dart';
 void main() {
   const viewports = [Size(1280, 720), Size(1440, 900)];
 
-  ValueKey standeeKey(String actorId) => ValueKey('phase0a_standee_$actorId');
-  ValueKey hpKey(String actorId) => ValueKey('phase0a_hp_$actorId');
+  ValueKey<String> standeeKey(String actorId) =>
+      ValueKey<String>('phase0a_standee_$actorId');
+  ValueKey<String> hpKey(String actorId) =>
+      ValueKey<String>('phase0a_hp_$actorId');
   const playerHudKey = ValueKey('phase0a_player_hud');
   const playerQiKey = ValueKey('phase0a_player_qi');
   const gatherSealKey = ValueKey('phase0a_seal_gather');
@@ -235,13 +238,19 @@ void main() {
       expect(find.text('${hit.resolvedDamage}'), findsWidgets);
 
       // 血条来自 state,且与事件剩余血一致(不由 widget 自算扣血)。
-      final target = controller.state.enemies.firstWhere(
-        (e) => e.id == hit.target,
-      );
-      expect(target.currentHealth, hit.remainingHealth);
-      final hpBar = tester.widget<HpBar>(find.byKey(hpKey(hit.target)));
-      expect(hpBar.current, hit.remainingHealth);
-      expect(hpBar.max, target.maxHealth);
+      final targets = controller.state.enemies
+          .where((enemy) => enemy.id == hit.target)
+          .toList();
+      if (targets.isEmpty) {
+        expect(hit.remainingHealth, 0);
+        expect(find.byKey(hpKey(hit.target)), findsNothing);
+      } else {
+        final target = targets.single;
+        expect(target.currentHealth, hit.remainingHealth);
+        final hpBar = tester.widget<HpBar>(find.byKey(hpKey(hit.target)));
+        expect(hpBar.current, hit.remainingHealth);
+        expect(hpBar.max, target.maxHealth);
+      }
     });
   });
 

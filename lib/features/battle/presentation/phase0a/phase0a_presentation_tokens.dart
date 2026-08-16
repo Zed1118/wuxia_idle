@@ -6,8 +6,8 @@ import '../../domain/phase0a/arena_vector.dart';
 /// 一律新增在本文件,其余文件禁止写 `const Duration(...)`。
 abstract final class Phase0aPresentationTokens {
   /// 世界可活动范围(脚底锚点语义坐标,y 向下为正)。
-  static const ArenaVector worldMin = ArenaVector(-400, 0);
-  static const ArenaVector worldMax = ArenaVector(400, 240);
+  static const ArenaVector worldMin = ArenaVector(-640, -260);
+  static const ArenaVector worldMax = ArenaVector(640, 260);
 
   /// safeRect 相对视口的四向内边距(像素)。
   static const double safeMarginHorizontal = 32;
@@ -56,4 +56,36 @@ abstract final class Phase0aPresentationTokens {
 
   /// 状态行(CD 秒数 / 真气 / 禁用原因)字号。
   static const double skillSealStatusFontSize = 11;
+
+  static const double actorWidth = 112;
+  static const double actorHeight = 158;
+  static const double actorImageHeight = 118;
+  static const double actorHpWidth = 104;
+  static const double actorHpHeight = 14;
+  static const double actorNameFontSize = 13;
+  static const double actorLabelGap = 3;
+  static const double hudWidth = 310;
+  static const double hudInset = 24;
+  static const double hudGap = 8;
+  static const double hudBarHeight = 18;
+  static const double hudPaperOpacity = 0.88;
+  static const double hudPadding = 14;
+  static const double hudBorderWidth = 1;
+  static const double skillHudRight = 28;
+  static const double skillHudBottom = 24;
+  static const double stageShadeOpacity = 0.22;
+  static const double vfxCenterSize = 250;
+  static const double vfxStrokeWidth = 4;
+  static const double vfxThinStrokeWidth = 2;
+  static const double vfxPopupGap = 38;
+  static const double vfxPopupFontSize = 32;
+  static const double vfxBannerTop = 62;
+  static const double vfxBannerWidth = 240;
+  static const double vfxBannerHeight = 54;
+  static const double vfxOutcomeSize = 168;
+  static const double vfxOutcomeFontSize = 30;
+  static const double depthShadowOpacity = 0.32;
+  static const double depthShadowHeight = 18;
+  static const double depthShadowWidth = 82;
+  static const int vfxSpokeCount = 12;
 }
