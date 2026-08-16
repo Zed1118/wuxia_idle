@@ -590,11 +590,11 @@ void main() {
       final waveEnemies = [
         makeEnemy(id: 'e1', position: const ArenaVector(50, 0)),
       ];
-      final roguePlayer = Phase0aActor(
+      const roguePlayer = Phase0aActor(
         id: 'player',
         side: Phase0aSide.enemy,
-        position: const ArenaVector(0, 0),
-        facing: const ArenaVector(1, 0),
+        position: ArenaVector(0, 0),
+        facing: ArenaVector(1, 0),
         maxHealth: 100,
         currentHealth: 100,
         moveSpeed: 100,
