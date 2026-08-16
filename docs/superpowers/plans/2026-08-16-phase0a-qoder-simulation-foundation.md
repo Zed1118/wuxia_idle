@@ -52,8 +52,8 @@
 
 ## 当前恢复点
 
-- 状态：（S5 完成后更新为已冻结）
-- 最后完成：S1 计划落档。
-- 下一步：S2 写测试。
-- 已跑验证：（冻结时填 targeted/analyze/probe 回归命令与通过数）
-- 阻塞项：无。
+- 状态：已冻结待评审（tip `[READY]`，worktree 干净）。
+- 最后完成：S1–S5 全部完成。落点 `lib/features/battle/domain/phase0a/{arena_vector.dart, realtime_combat_rules.dart}` + `test/features/battle/domain/phase0a/{realtime_combat_rules_test.dart, phase0a_source_contract_test.dart}`。符号：`ArenaVector` / `normalizeMovementInput` / `isTargetInsideStrikeArc` / `gatherRingDestination` / `isEliteBreakWindowOpen`，无 `Gameplay*`/`probe*` 前缀、无数值默认值。
+- 证红记录：① 初始红——实现不存在时 `flutter test --no-pub test/features/battle/domain/phase0a/` 6 红（行为测编译失败 + 契约测目录缺失）；② 局部破坏证红——把破招窗口上界 `<=` 改 `<`，「恰好等于窗口长度的上界按闭区间可破」立即红（Actual: false），复原后 24/24 绿。
+- 已跑验证：`flutter test --no-pub test/features/battle/domain/phase0a/` 24/24 pass；probe 回归 `cd tools/phase0minus_probe && flutter test test/gameplay/combat_rules_test.dart` 8/8 pass；`dart format` 无改动；`flutter analyze --no-pub` No issues found（首跑 1943 条全为 fresh worktree probe 未 pub get 的既有噪声，`flutter pub get --offline` 解析其已锁依赖后归零，未新增任何依赖）。
+- 阻塞项：无。残留风险：本片段当前无生产消费方（有意，后续 reducer 片接入）；y 轴向下为正的屏幕坐标口径已写入 `ArenaVector` 文档注释，后续 reducer/表现层须沿用。
