@@ -12,9 +12,9 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_in
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
-import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
+import 'package:wuxia_idle/features/cultivation/domain/skill_proficiency.dart';
 import '../../../../support/test_data.dart';
 
 /// Phase 0A 生产 DamageCalculator 适配器红测(第三批派单 §必测):
@@ -81,8 +81,14 @@ void main() {
       defenseRate: 0.05,
       evasionRate: evasionRate,
       criticalRate: criticalRate,
-      lifestealPct: lifestealPct,
+      attackPowerMultiplier: 1.0,
       proficiencyDamageMults: proficiencyDamageMults,
+      outputMultiplier: 1.0,
+      schoolDamageTakenMults: const {},
+      wardMult: 1.0,
+      piercePct: 0.0,
+      lifestealPct: lifestealPct,
+      critDamageTakenMult: 1.0,
     );
   }
 
@@ -92,6 +98,7 @@ void main() {
     double defenseRate = 0.05,
     double evasionRate = 0.05,
     double criticalRate = 0.05,
+    Map<TechniqueSchool, double> schoolDamageTakenMults = const {},
   }) {
     return Phase0aDamageSnapshot(
       internalForce: internalForce,
@@ -103,6 +110,14 @@ void main() {
       defenseRate: defenseRate,
       evasionRate: evasionRate,
       criticalRate: criticalRate,
+      attackPowerMultiplier: 1.0,
+      proficiencyDamageMults: const {},
+      outputMultiplier: 1.0,
+      schoolDamageTakenMults: schoolDamageTakenMults,
+      wardMult: 1.0,
+      piercePct: 0.0,
+      lifestealPct: 0.0,
+      critDamageTakenMult: 1.0,
     );
   }
 
@@ -321,6 +336,114 @@ void main() {
         ),
       );
     });
+
+    test('缺条目回落 1.0 与零使用(chuShi)既有熟练度语义一致', () {
+      // 语义锁定:既有路径(calculate / _calculateInBattle)对零使用招式
+      // 得 stageFor(0)=chuShi、combinedMult=1.00(numbers.yaml 实测),
+      // adapter 缺条目回落 1.0 与之同义,不是新造默认值。
+      final zeroUseMult = SkillProficiency.combinedMult(
+        0,
+        0.0,
+        numbers().skillProficiency,
+      );
+      expect(
+        zeroUseMult,
+        1.0,
+        reason: 'numbers.yaml skill_proficiency chuShi damage_mult=1.00',
+      );
+      final attacker = makePlayerSnapshot(criticalRate: 0.0);
+      final defender = makeEnemySnapshot(evasionRate: 0.0);
+      final adapter = makeAdapter(
+        seed: 8,
+        combatants: {'player': attacker, 'e1': defender},
+      );
+      final resolved = adapter.resolve(
+        attackerId: 'player',
+        targetId: 'e1',
+        kind: Phase0aDamageKind.basic,
+      );
+      // 空表 adapter 结果 == direct 显式传零使用既有倍率。
+      final direct = DamageCalculator.calculateResolved(
+        attackerInternalForce: attacker.internalForce,
+        attackerEquipmentAttack: attacker.equipmentAttack,
+        attackerCultivationLayer: attacker.cultivationLayer,
+        attackerSchool: attacker.school,
+        defenderSchool: defender.school,
+        attackerRealmTier: attacker.realmTier,
+        attackerRealmLayer: attacker.realmLayer,
+        defenderRealmTier: defender.realmTier,
+        defenderRealmLayer: defender.realmLayer,
+        defenderDefenseRate: defender.defenseRate,
+        defenderEvasionRate: defender.evasionRate,
+        attackerCriticalRate: attacker.criticalRate,
+        attackPowerMultiplier: attacker.attackPowerMultiplier,
+        skill: basicSkill,
+        n: numbers(),
+        rng: math.Random(8),
+        proficiencyDamageMult: zeroUseMult,
+      );
+      expectResolvedEqualsDirect(resolved, direct);
+    });
+  });
+
+  group('快照不可变性(防御性副本)', () {
+    test('外部 map 构造后 mutation 不影响快照与 seed 回放', () {
+      // 复核拍板:快照承诺不可变,两个乘子表必须做防御性不可修改副本,
+      // 否则 caller 构造后改外部 map 会静默污染同 seed 回放。
+      final profMap = <String, double>{'phase0a_test_basic': 1.2};
+      final weakMap = <TechniqueSchool, double>{TechniqueSchool.gangMeng: 1.5};
+      final attacker = makePlayerSnapshot(
+        criticalRate: 0.0,
+        proficiencyDamageMults: profMap,
+      );
+      final defender = makeEnemySnapshot(
+        evasionRate: 0.0,
+        schoolDamageTakenMults: weakMap,
+      );
+
+      // 构造后污染外部 map:若快照只持引用,回放结果会被改变。
+      profMap['phase0a_test_basic'] = 9.9;
+      profMap['phase0a_test_power'] = 9.9;
+      weakMap[TechniqueSchool.gangMeng] = 0.01;
+
+      // 快照内容不受外部 mutation 影响。
+      expect(attacker.proficiencyDamageMults['phase0a_test_basic'], 1.2);
+      expect(attacker.proficiencyDamageMults.containsKey('phase0a_test_power'),
+          isFalse);
+      expect(
+        defender.schoolDamageTakenMults[TechniqueSchool.gangMeng],
+        1.5,
+      );
+      // 副本自身不可写。
+      expect(
+        () => attacker.proficiencyDamageMults['x'] = 2.0,
+        throwsUnsupportedError,
+      );
+      expect(
+        () => defender.schoolDamageTakenMults[TechniqueSchool.yinRou] = 2.0,
+        throwsUnsupportedError,
+      );
+
+      // 回放仍与未污染口径的 direct 对照一致(directResolve 读快照副本)。
+      final adapter = makeAdapter(
+        seed: 42,
+        combatants: {'player': attacker, 'e1': defender},
+      );
+      final resolved = adapter.resolve(
+        attackerId: 'player',
+        targetId: 'e1',
+        kind: Phase0aDamageKind.basic,
+      );
+      expectResolvedEqualsDirect(
+        resolved,
+        directResolve(
+          attacker: attacker,
+          defender: defender,
+          skill: basicSkill,
+          rng: math.Random(42),
+        ),
+      );
+    });
   });
 
   group('seed 回放与稳定顺序', () {
@@ -501,17 +624,7 @@ void main() {
         throwsA(isA<ArgumentError>()),
       );
 
-      final negativeDefRate = Phase0aDamageSnapshot(
-        internalForce: 400,
-        equipmentAttack: 90,
-        cultivationLayer: CultivationLayer.chuKui,
-        school: TechniqueSchool.yinRou,
-        realmTier: RealmTier.xueTu,
-        realmLayer: RealmLayer.qiMeng,
-        defenseRate: -0.5,
-        evasionRate: 0.05,
-        criticalRate: 0.05,
-      );
+      final negativeDefRate = makeEnemySnapshot(defenseRate: -0.5);
       final badDefender = makeAdapter(
         seed: 1,
         combatants: {'player': makePlayerSnapshot(), 'e1': negativeDefRate},

@@ -10,9 +10,10 @@ import '../../domain/phase0a/phase0a_combat_reducer.dart';
 ///
 /// 全部字段为调用方已解析的 primitive/enum(沿 `calculate` /
 /// `_calculateInBattle` 两 adapter 体例):本类不推导任何公式,只承载值。
-/// 倍率类字段 default 与 `calculateResolved` 对齐(1.0/0.0=无修饰,零回归)。
+/// 倍率类字段全部 required(源码契约:application/phase0a 禁止数值默认值,
+/// 调用方显式传 1.0/0.0 表无修饰),语义与 `calculateResolved` 默认对齐。
 final class Phase0aDamageSnapshot {
-  const Phase0aDamageSnapshot({
+  Phase0aDamageSnapshot({
     required this.internalForce,
     required this.equipmentAttack,
     required this.cultivationLayer,
@@ -22,15 +23,18 @@ final class Phase0aDamageSnapshot {
     required this.defenseRate,
     required this.evasionRate,
     required this.criticalRate,
-    this.attackPowerMultiplier = 1.0,
-    this.proficiencyDamageMults = const {},
-    this.outputMultiplier = 1.0,
-    this.schoolDamageTakenMults = const {},
-    this.wardMult = 1.0,
-    this.piercePct = 0.0,
-    this.lifestealPct = 0.0,
-    this.critDamageTakenMult = 1.0,
-  });
+    required this.attackPowerMultiplier,
+    required Map<String, double> proficiencyDamageMults,
+    required this.outputMultiplier,
+    required Map<TechniqueSchool, double> schoolDamageTakenMults,
+    required this.wardMult,
+    required this.piercePct,
+    required this.lifestealPct,
+    required this.critDamageTakenMult,
+  }) : // 防御性不可修改副本:外部 map 构造后 mutation 不得改变快照,
+       // 否则同 seed 回放会被静默污染(2026-08-16 复核拍板)。
+       proficiencyDamageMults = Map.unmodifiable(proficiencyDamageMults),
+       schoolDamageTakenMults = Map.unmodifiable(schoolDamageTakenMults);
 
   /// 永久内力(不随真气消耗变化,沿战斗快照口径)。
   final int internalForce;
@@ -53,7 +57,7 @@ final class Phase0aDamageSnapshot {
   final double evasionRate;
   final double criticalRate;
 
-  /// 烘焙攻击乘子(轻功/群战/恩怨等,default 1.0 无修饰)。
+  /// 烘焙攻击乘子(轻功/群战/恩怨等,无修饰传 1.0)。
   final double attackPowerMultiplier;
 
   /// 调用方预解析的 per-skill 熟练度综合倍率表(skillId → mult)。
@@ -61,24 +65,24 @@ final class Phase0aDamageSnapshot {
   /// 不复制 `SkillProficiency` 推导公式(2026-08-16 拍板)。
   final Map<String, double> proficiencyDamageMults;
 
-  /// 临时状态输出乘数(default 1.0)。
+  /// 临时状态输出乘数(无修饰传 1.0)。
   final double outputMultiplier;
 
   /// 弱点/抗性受伤乘子表(攻方流派 → mult,沿 `weaknessMultOf` 体例
   /// 纯查表,缺条目 1.0)。>1.0 弱点 / <1.0 抗性。
   final Map<TechniqueSchool, double> schoolDamageTakenMults;
 
-  /// 护法结界×脆弱窗口的合并承伤乘子(调用方已解析,default 1.0)。
+  /// 护法结界×脆弱窗口的合并承伤乘子(调用方已解析,无修饰传 1.0)。
   final double wardMult;
 
-  /// 开锋破甲:绝对减防御率(default 0.0)。
+  /// 开锋破甲:绝对减防御率(无破甲传 0.0)。
   final double piercePct;
 
   /// 开锋吸血率。**当前必须为 0**:Phase 0A reducer 无回血输出,
   /// 非零值由 adapter 在计算前 fail-fast,禁止静默丢效果。
   final double lifestealPct;
 
-  /// 凝甲词条:暴击增量衰减系数(default 1.0=无凝甲)。
+  /// 凝甲词条:暴击增量衰减系数(无凝甲传 1.0)。
   final double critDamageTakenMult;
 }
 
