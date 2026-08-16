@@ -7,8 +7,8 @@
 ## 分支
 
 - 协调：`codex/phase0a-production-batch2-dispatch`
-- Qoder：待由本计划派生独立 worktree。
-- Kimi：待 Qoder `[READY]` 后从其 tip 派生独立 worktree。
+- Qoder：`feat/phase0a-qoder-reducer-input-event-loop`，`[READY] 73f562c1`。
+- Kimi：`audit/phase0a-kimi-reducer-contract-review`，`[READY] 10046908`。
 
 ## 验收标准
 
@@ -29,8 +29,8 @@
 
 ## 当前恢复点
 
-- 状态：派单冻结中。
-- 最后完成：首批 Qoder/Kimi `[READY]` 分支无冲突整合；根 Phase 0A 24 项通过；fresh worktree 补齐 nested probe package config 后 `flutter analyze --no-pub` 0 issue。
-- 下一步：提交派单文件，创建 Qoder 执行 worktree 并启动实现。
-- 已跑验证：`flutter test --no-pub test/features/battle/domain/phase0a/`（24）；`flutter analyze --no-pub`（0 issue）。
+- 状态：第二批实现、交叉复核与独立验收完成，待冻结协调 `[READY]`。
+- 最后完成：合入确定性 reducer、玩家/AI 输入适配器、application 会话和语义事件闭环；Kimi 复核修复敌方技能污染玩家全局态、负值/非有限值静默合法化两类缺陷。
+- 下一步：提交本恢复点，复跑协调分支验证并创建 `[READY]` tip。
+- 已跑验证（独立于执行代理）：`flutter test --no-pub test/features/battle/domain/phase0a test/features/battle/application/phase0a`（81/81）；nested probe `combat_rules_test.dart`（8/8）；`flutter analyze --no-pub`（0 issue）；禁用依赖检索、`git diff --check`、worktree 洁净均通过。
 - 阻塞项：无。
