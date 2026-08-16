@@ -87,6 +87,8 @@ final ArenaVector? vfxTarget;  // 掌风: 目标位置
 | RP0 | 计划落地后 | 审计文档 + 计划文档 + 空提交 (`b6e135be`) |
 | RP1 | S5 完成后 | 全部 VFX 位置绑定 + 红测通过 (`d709894a`) |
 | GATE | 坐标契约测试 + 视觉 Gate | 10 项新增测试 + 文档修复 + build 验证 (`e4ed139e`) |
+| GATE-2 | 接管后补强 | 精确屏幕坐标/方向/死亡流程 + 恢复容量测试 (`38826c4b`) |
+| GATE-3 | 交叉审查后 | 容量测试确实撞限并精确断言 48/160 (`b503ebf3`) |
 
 ## 完成记录
 
@@ -103,14 +105,36 @@ final ArenaVector? vfxTarget;  // 掌风: 目标位置
   - `flutter analyze lib/ test/` 零问题
   - `git diff --check` 通过
   - macOS debug build 成功 (`build/macos/Build/Products/Debug/wuxia_idle.app`)
+- **GATE-2**: `38826c4b` — 修复前述 GATE 证据缺口
+  - 恢复 3 项容量契约测试；屏幕断言改为精确比较 `worldToScreen`
+  - 新增掌风屏幕方向断言，以及敌人从 state 移除后的死亡墨迹/致死飘字真实流程测试
+  - 临时将掌风/Q/R/死亡墨迹恢复为旧版屏幕中心渲染，坐标组 **5/5 全红**；还原锚定实现后 **5/5 全绿**
+- **GATE-3**: `b503ebf3` — 收紧容量契约
+  - popup 场景从“≤48”改为精确等于 48
+  - 混合场景理论产量提升至 218，确认总 entry 精确截断为 160
+  - `phase0a_event_mapping_test.dart` **24/24 全绿**
 
-## 待 Qoder 交叉审查
+## Qoder 交叉审查
 
-审查范围: `d709894a` 到 `e4ed139e` 之间的 diff
+审查范围: `d709894a..38826c4b`
 
-- [ ] 坐标快照架构正确性 (anchor/source/vfxTarget)
-- [ ] 测试覆盖率是否充分
-- [ ] 无引入新 bug 或 regression
+- [x] 坐标快照架构正确性 (`anchor/source/vfxTarget`)
+- [x] `worldToScreen`、掌风方向、死亡快照、致死飘字无阻塞问题
+- [x] 指出的两项容量测试弱断言已在 `b503ebf3` 修复
+- [x] 所报 `dispose()` 监听器问题经 `git blame` 和源码复核为误报：当前实现为 `removeListener`
+- [x] `gatherPull` 渲染、掌风并发覆盖和 debug fallback 诊断为本批冻结范围外残余项，不混入 Batch 8A
+
+## 最终验证证据
+
+- 相关根应用回归：**351/351 全绿**
+- 根 `flutter analyze --no-pub`：**No issues found**（fresh worktree 先为独立 probe 离线重建 `.dart_tool`，未改源码/依赖）
+- probe 隔离契约：`--no-test-assets` **5/5 全绿**
+- macOS debug build：成功
+- 静态原生窗口：`1280x720`、`1440x900` 均成功，manifest 标记 `dirty: true` 以如实记录当时待提交测试修正
+- 真机交互帧：`J` 掌风连线、`Q` 玩家锚定涡旋与 4.8 秒冷却、`R` 玩家锚定墨爆/敌人死亡墨迹/3830 飘字与 7.8 秒冷却均通过
+- 视觉证据目录：`build/visual_acceptance/phase0a_batch8a_vfx_anchor/`（build 产物，按仓库规则忽略）
+- 两档 capture log：均含 `VISUAL_ROUTE_READY`，无异常/overflow，fidelity incomplete 为空
+- `git diff --check`：通过
 
 ## 工具分工
 
