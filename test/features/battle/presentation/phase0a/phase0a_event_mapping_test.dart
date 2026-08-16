@@ -440,9 +440,7 @@ void main() {
       final controller = Phase0aVfxController()
         ..syncActors(
           _state(
-            enemies: [
-              _actor('e1', Phase0aSide.enemy, enemyPos.x, enemyPos.y),
-            ],
+            enemies: [_actor('e1', Phase0aSide.enemy, enemyPos.x, enemyPos.y)],
           ),
         );
       final entries = controller.consume([
@@ -467,9 +465,7 @@ void main() {
       final controller = Phase0aVfxController()
         ..syncActors(
           _state(
-            enemies: [
-              _actor('e1', Phase0aSide.enemy, enemyPos.x, enemyPos.y),
-            ],
+            enemies: [_actor('e1', Phase0aSide.enemy, enemyPos.x, enemyPos.y)],
           ),
         );
       // 致死伤害:resolvedDamage >= remainingHealth
@@ -532,11 +528,76 @@ void main() {
       final popups = _popups(entries);
       expect(popups, hasLength(3));
       for (final popup in popups) {
-        expect(popup.anchor, isNotNull, reason: '${popup.targetId} 伤害数字必须有 anchor');
+        expect(
+          popup.anchor,
+          isNotNull,
+          reason: '${popup.targetId} 伤害数字必须有 anchor',
+        );
       }
       // 多目标 anchor 不应相同
       final anchors = popups.map((p) => p.anchor).toSet();
       expect(anchors.length, 3, reason: '多目标伤害数字 anchor 应互不相同');
+    });
+  });
+
+  group('Phase0aVfxController 容量上限', () {
+    test('契约常量:popup 上限 48,总 entry 上限 160', () {
+      expect(Phase0aVfxController.maxDamagePopups, 48);
+      expect(Phase0aVfxController.maxEntries, 160);
+    });
+
+    test('单次消费 60 次非零命中,damage popup 不超过 48', () {
+      final controller = Phase0aVfxController()
+        ..syncActors(_state(enemies: [_actor('e1', Phase0aSide.enemy, 40, 0)]));
+      final events = [
+        for (var i = 1; i <= 60; i++) _hit(seq: i, damage: 10 + i),
+      ];
+      final entries = controller.consume(events);
+      expect(
+        _popups(entries).length,
+        lessThanOrEqualTo(Phase0aVfxController.maxDamagePopups),
+      );
+    });
+
+    test('高频混合事件下总 entry 不超过 160', () {
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(
+            enemies: [
+              _actor('e1', Phase0aSide.enemy, 40, 0),
+              _actor(
+                'e2',
+                Phase0aSide.enemy,
+                -40,
+                0,
+                defeatKind: Phase0aDefeatKind.elite,
+              ),
+            ],
+          ),
+        );
+      final events = <Phase0aEvent>[
+        for (var i = 1; i <= 90; i++)
+          _hit(seq: i, actor: 'e1', target: 'player', damage: 7),
+        for (var i = 91; i <= 140; i++)
+          Phase0aEnemyDefeated(
+            seq: i,
+            tick: i,
+            target: 'e$i',
+            defeatKind: Phase0aDefeatKind.normal,
+          ),
+        for (var i = 141; i <= 180; i++)
+          Phase0aWaveStarted(
+            seq: i,
+            tick: i,
+            waveIndex: i - 140,
+            waveTotal: 40,
+          ),
+      ];
+      final entries = controller.consume(events);
+      expect(
+        entries.length,
+        lessThanOrEqualTo(Phase0aVfxController.maxEntries),
+      );
     });
   });
 }

@@ -410,7 +410,9 @@ class _FeedbackLayer extends StatelessWidget {
         case Phase0aVfxKind.palmTrail:
           children.add(_palmTrail(entry));
         case Phase0aVfxKind.gatherVortex:
-          children.add(_inkVfx(entry, _InkEffect.gather, gatherVortexKey: true));
+          children.add(
+            _inkVfx(entry, _InkEffect.gather, gatherVortexKey: true),
+          );
         case Phase0aVfxKind.clearBurst:
           children.add(_inkVfx(entry, _InkEffect.clear, clearBurstKey: true));
         case Phase0aVfxKind.defeatInk:
@@ -500,7 +502,12 @@ class _FeedbackLayer extends StatelessWidget {
 
   /// 单点水墨 VFX(Q 涡旋 / R 墨爆 / 死亡墨散):
   /// 以 [Phase0aVfxEntry.anchor] 的世界坐标快照映射到屏幕。
-  Widget _inkVfx(Phase0aVfxEntry entry, _InkEffect effect, {bool gatherVortexKey = false, bool clearBurstKey = false}) {
+  Widget _inkVfx(
+    Phase0aVfxEntry entry,
+    _InkEffect effect, {
+    bool gatherVortexKey = false,
+    bool clearBurstKey = false,
+  }) {
     final anchor = entry.anchor;
     if (anchor == null) {
       return const SizedBox.shrink();

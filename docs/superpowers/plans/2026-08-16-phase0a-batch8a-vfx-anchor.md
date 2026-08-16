@@ -57,7 +57,7 @@ final ArenaVector? vfxTarget;  // 掌风: 目标位置
 
 ### 各切片具体改动
 
-**S1 掌风**: `palmTrail` entry 携带 `source`/`target` 快照 → `_FeedbackLayer` 计算连线中点 + 角度 → `Positioned` 定位 `CustomPaint`
+**S1 掌风**: `palmTrail` entry 携带 `source`/`vfxTarget` 快照 → `_FeedbackLayer` 计算连线中点 + 角度 → `Positioned` 定位 `CustomPaint`
 
 **S2 Q 涡旋**: `gatherVortex` entry 携带 `anchor`(玩家位置) → `_FeedbackLayer` 映射到屏幕 → `Positioned` 定位
 
@@ -97,6 +97,8 @@ final ArenaVector? vfxTarget;  // 掌风: 目标位置
   - 移除 `_FeedbackLayer._actor()` 死代码
 - **GATE**: `e4ed139e` — 坐标契约测试 + 视觉 Gate
   - 新增 6 项 VFX 控制器坐标快照测试 + 4 项屏幕坐标测试
+  - 但误删了 3 项容量上限测试(见下个修复提交)
+  - 屏幕测试断言过弱(见下个修复提交)
   - 54 测试全过 (21 event_mapping + 33 其他 Phase0A)
   - `flutter analyze lib/ test/` 零问题
   - `git diff --check` 通过

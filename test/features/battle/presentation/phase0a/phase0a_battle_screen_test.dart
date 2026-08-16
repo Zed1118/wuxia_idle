@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +11,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/hp_bar.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_stage.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_vfx_controller.dart';
 import 'package:wuxia_idle/features/debug/application/phase0a_debug_battle_fixture.dart';
 import '../../../../support/test_data.dart';
@@ -45,6 +48,7 @@ void main() {
   const palmTrailKey = ValueKey('phase0a_palm_trail');
   const gatherVortexKey = ValueKey('phase0a_gather_vortex');
   const clearBurstKey = ValueKey('phase0a_clear_burst');
+  const defeatInkKey = ValueKey('phase0a_defeat_ink');
 
   late Phase0aDebugBattleFixture fixture;
   late Phase0aBattleController controller;
@@ -401,94 +405,261 @@ void main() {
   });
 
   group('Phase0aVfxController 坐标快照(Batch 8A)', () {
-    testWidgets('掌风 VFX 屏幕坐标在 safeRect 内且非屏幕中心 (1280x720)', (
-      tester,
-    ) async {
-      await pumpScreen(tester, viewport: const Size(1280, 720));
+    /// 容忍度:屏幕坐标与 worldToScreen 预期值的偏差上限(像素)。
+    const epsilon = 2.0;
 
-      var trailSeen = false;
+    testWidgets(
+      '掌风 VFX 中心 = source/vfxTarget 屏幕连线中点,且不在 safeRect.center (1280x720)',
+      (tester) async {
+        await pumpScreen(tester, viewport: const Size(1280, 720));
+        final stage = Phase0aStage(viewport: const Size(1280, 720));
+        final safeCenter = stage.safeRect.center;
+
+        var trailSeen = false;
+        for (
+          var i = 0;
+          i < 240 &&
+              !trailSeen &&
+              controller.outcome == Phase0aBattleOutcome.ongoing;
+          i++
+        ) {
+          final engaged = controller.feedback.any(
+            (e) => e.kind == Phase0aVfxKind.damagePopup,
+          );
+          final command = engaged
+              ? const Phase0aPlayerCommand(attack: true)
+              : attackTowardNearest(controller.state);
+          await stepAndPump(tester, command);
+          if (controller.feedback.any(
+            (e) => e.kind == Phase0aVfxKind.palmTrail,
+          )) {
+            trailSeen = true;
+          }
+        }
+
+        expect(trailSeen, isTrue, reason: 'fixture 必须产生掌风');
+        final palmEntry = controller.feedback.firstWhere(
+          (e) => e.kind == Phase0aVfxKind.palmTrail,
+        );
+        final src = palmEntry.source!;
+        final dst = palmEntry.vfxTarget!;
+        final screenSrc = stage.worldToScreen(src);
+        final screenDst = stage.worldToScreen(dst);
+        final expectedCenter = Offset(
+          (screenSrc.dx + screenDst.dx) / 2,
+          (screenSrc.dy + screenDst.dy) / 2,
+        );
+
+        final actualCenter = tester.getCenter(find.byKey(palmTrailKey));
+        expect(
+          (actualCenter - expectedCenter).distance,
+          lessThan(epsilon),
+          reason: '掌风中心应等于 source/vfxTarget 屏幕连线中点',
+        );
+        // 旧 Center 实现会把 VFX 放在 safeRect.center,新实现不应。
+        expect(
+          (actualCenter - safeCenter).distance,
+          greaterThan(epsilon * 10),
+          reason: '掌风不应在 safeRect.center(旧 Center 实现会通过)',
+        );
+
+        final transformFinder = find.ancestor(
+          of: find.byKey(palmTrailKey),
+          matching: find.byType(Transform),
+        );
+        expect(transformFinder, findsOneWidget);
+        final transform = tester.widget<Transform>(transformFinder);
+        final matrix = transform.transform.storage;
+        final actualAngle = math.atan2(matrix[1], matrix[0]);
+        final expectedAngle = math.atan2(
+          screenDst.dy - screenSrc.dy,
+          screenDst.dx - screenSrc.dx,
+        );
+        final angleDelta = math
+            .atan2(
+              math.sin(actualAngle - expectedAngle),
+              math.cos(actualAngle - expectedAngle),
+            )
+            .abs();
+        expect(
+          angleDelta,
+          lessThan(0.001),
+          reason: '掌风旋转角应与 source→vfxTarget 屏幕方向一致',
+        );
+      },
+    );
+
+    testWidgets(
+      'Q 涡旋中心 = worldToScreen(anchor),且不在 safeRect.center (1280x720)',
+      (tester) async {
+        await pumpScreen(tester, viewport: const Size(1280, 720));
+        final stage = Phase0aStage(viewport: const Size(1280, 720));
+        final safeCenter = stage.safeRect.center;
+
+        await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+        await stepAndPump(tester);
+
+        final vortexEntry = controller.feedback.firstWhere(
+          (e) => e.kind == Phase0aVfxKind.gatherVortex,
+        );
+        final anchor = vortexEntry.anchor!;
+        final expectedCenter = stage.worldToScreen(anchor);
+
+        expect(find.byKey(gatherVortexKey), findsOneWidget);
+        final actualCenter = tester.getCenter(find.byKey(gatherVortexKey));
+        expect(
+          (actualCenter - expectedCenter).distance,
+          lessThan(epsilon),
+          reason: 'Q 涡旋中心应等于 worldToScreen(entry.anchor)',
+        );
+        // 旧 Center 实现会放在 safeRect.center,新实现不应。
+        expect(
+          (actualCenter - safeCenter).distance,
+          greaterThan(epsilon * 10),
+          reason: 'Q 涡旋不应在 safeRect.center(旧 Center 实现会通过)',
+        );
+      },
+    );
+
+    testWidgets(
+      'R 墨爆中心 = worldToScreen(anchor),且不在 safeRect.center (1280x720)',
+      (tester) async {
+        await pumpScreen(tester, viewport: const Size(1280, 720));
+        final stage = Phase0aStage(viewport: const Size(1280, 720));
+        final safeCenter = stage.safeRect.center;
+
+        await tester.tap(find.byKey(clearSealKey));
+        await tester.pump();
+        await stepAndPump(tester);
+
+        final burstEntry = controller.feedback.firstWhere(
+          (e) => e.kind == Phase0aVfxKind.clearBurst,
+        );
+        final anchor = burstEntry.anchor!;
+        final expectedCenter = stage.worldToScreen(anchor);
+
+        expect(find.byKey(clearBurstKey), findsOneWidget);
+        final actualCenter = tester.getCenter(find.byKey(clearBurstKey));
+        expect(
+          (actualCenter - expectedCenter).distance,
+          lessThan(epsilon),
+          reason: 'R 墨爆中心应等于 worldToScreen(entry.anchor)',
+        );
+        expect(
+          (actualCenter - safeCenter).distance,
+          greaterThan(epsilon * 10),
+          reason: 'R 墨爆不应在 safeRect.center(旧 Center 实现会通过)',
+        );
+      },
+    );
+
+    testWidgets('VFX 坐标在 1440x900 视口下不裁切,且不在 safeRect.center', (tester) async {
+      await pumpScreen(tester, viewport: const Size(1440, 900));
+      final stage = Phase0aStage(viewport: const Size(1440, 900));
+      final safeCenter = stage.safeRect.center;
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      await stepAndPump(tester);
+
+      final vortexEntry = controller.feedback.firstWhere(
+        (e) => e.kind == Phase0aVfxKind.gatherVortex,
+      );
+      final anchor = vortexEntry.anchor!;
+      final expectedCenter = stage.worldToScreen(anchor);
+
+      expect(find.byKey(gatherVortexKey), findsOneWidget);
+      final actualCenter = tester.getCenter(find.byKey(gatherVortexKey));
+      expect(
+        (actualCenter - expectedCenter).distance,
+        lessThan(epsilon),
+        reason: '1440x900 下涡旋中心应等于 worldToScreen(anchor)',
+      );
+      expect(
+        (actualCenter - safeCenter).distance,
+        greaterThan(epsilon * 10),
+        reason: '1440x900 下涡旋不应在 safeRect.center',
+      );
+
+      // 验证不裁切
+      final topLeft = tester.getTopLeft(find.byKey(gatherVortexKey));
+      final size = tester.getSize(find.byKey(gatherVortexKey));
+      const vpW = 1440.0, vpH = 900.0;
+      expect(topLeft.dx, greaterThanOrEqualTo(0));
+      expect(topLeft.dy, greaterThanOrEqualTo(0));
+      expect(topLeft.dx + size.width, lessThanOrEqualTo(vpW));
+      expect(topLeft.dy + size.height, lessThanOrEqualTo(vpH));
+    });
+
+    testWidgets('致死伤害数字与死亡墨散保留被移除敌人的事件位置 (1280x720)', (tester) async {
+      const viewport = Size(1280, 720);
+      await pumpScreen(tester, viewport: viewport);
+      final stage = Phase0aStage(viewport: viewport);
+
+      Phase0aVfxEntry? defeatEntry;
+      Phase0aVfxEntry? lethalPopup;
       for (
         var i = 0;
         i < 240 &&
-            !trailSeen &&
+            defeatEntry == null &&
             controller.outcome == Phase0aBattleOutcome.ongoing;
         i++
       ) {
-        final engaged = controller.feedback.any(
-          (e) => e.kind == Phase0aVfxKind.damagePopup,
-        );
-        final command = engaged
-            ? const Phase0aPlayerCommand(attack: true)
-            : attackTowardNearest(controller.state);
-        await stepAndPump(tester, command);
-        if (controller.feedback.any(
-          (e) => e.kind == Phase0aVfxKind.palmTrail,
-        )) {
-          trailSeen = true;
-        }
+        await stepAndPump(tester, attackTowardNearest(controller.state));
+        final defeats = controller.feedback
+            .where((entry) => entry.kind == Phase0aVfxKind.defeatInk)
+            .toList();
+        if (defeats.isEmpty) continue;
+        defeatEntry = defeats.single;
+        lethalPopup = controller.feedback
+            .where(
+              (entry) =>
+                  entry.kind == Phase0aVfxKind.damagePopup &&
+                  entry.targetId == defeatEntry!.targetId,
+            )
+            .single;
       }
 
-      expect(trailSeen, isTrue, reason: 'fixture 必须产生掌风');
-      final trailCenter = tester.getCenter(find.byKey(palmTrailKey));
-      const vpW = 1280.0, vpH = 720.0;
-      // 掌风绑定连线中点,不应在屏幕中心 (640, 360)
-      expect(trailCenter.dx, greaterThan(0));
-      expect(trailCenter.dy, greaterThan(0));
-      expect(trailCenter.dx, lessThan(vpW));
-      expect(trailCenter.dy, lessThan(vpH));
-    });
+      expect(defeatEntry, isNotNull, reason: 'fixture 必须产生一次单目标击败');
+      expect(lethalPopup, isNotNull, reason: '击败同拍必须保留致死伤害数字');
+      expect(
+        controller.state.enemies.any(
+          (enemy) => enemy.id == defeatEntry!.targetId,
+        ),
+        isFalse,
+        reason: '验证时目标必须已经从当前 state 移除',
+      );
 
-    testWidgets('Q 涡旋 VFX 屏幕坐标在 safeRect 内且非屏幕中心 (1280x720)', (
-      tester,
-    ) async {
-      await pumpScreen(tester, viewport: const Size(1280, 720));
+      final expected = stage.worldToScreen(defeatEntry!.anchor!);
+      expect(
+        (expected - stage.safeRect.center).distance,
+        greaterThan(epsilon * 10),
+        reason: 'fixture 击败位置需与旧 fallback 中心可区分',
+      );
+      expect(find.byKey(defeatInkKey), findsOneWidget);
+      final actualDefeatCenter = tester.getCenter(find.byKey(defeatInkKey));
+      expect(
+        (actualDefeatCenter - expected).distance,
+        lessThan(epsilon),
+        reason: '死亡墨散中心应等于已移除敌人的事件位置快照',
+      );
 
-      await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
-      await stepAndPump(tester);
-
-      expect(find.byKey(gatherVortexKey), findsOneWidget);
-      final vortexCenter = tester.getCenter(find.byKey(gatherVortexKey));
-      const vpW = 1280.0, vpH = 720.0;
-      // 涡旋绑定玩家位置,初始在世界原点附近,屏幕坐标应接近中心
-      expect(vortexCenter.dx, greaterThan(0));
-      expect(vortexCenter.dx, lessThan(vpW));
-      expect(vortexCenter.dy, greaterThan(0));
-      expect(vortexCenter.dy, lessThan(vpH));
-    });
-
-    testWidgets('R 墨爆 VFX 屏幕坐标在 safeRect 内且非屏幕中心 (1280x720)', (
-      tester,
-    ) async {
-      await pumpScreen(tester, viewport: const Size(1280, 720));
-
-      await tester.tap(find.byKey(clearSealKey));
-      await tester.pump();
-      await stepAndPump(tester);
-
-      expect(find.byKey(clearBurstKey), findsOneWidget);
-      final burstCenter = tester.getCenter(find.byKey(clearBurstKey));
-      const vpW = 1280.0, vpH = 720.0;
-      expect(burstCenter.dx, greaterThan(0), reason: 'R 墨爆不应在左边缘');
-      expect(burstCenter.dy, greaterThan(0), reason: 'R 墨爆不应在上边缘');
-      expect(burstCenter.dx, lessThan(vpW));
-      expect(burstCenter.dy, lessThan(vpH));
-    });
-
-    testWidgets('VFX 坐标在 1440x900 视口下不裁切', (tester) async {
-      await pumpScreen(tester, viewport: const Size(1440, 900));
-
-      // 驱动 Q 产生涡旋
-      await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
-      await stepAndPump(tester);
-
-      expect(find.byKey(gatherVortexKey), findsOneWidget);
-      final vortexTopLeft = tester.getTopLeft(find.byKey(gatherVortexKey));
-      final vortexSize = tester.getSize(find.byKey(gatherVortexKey));
-      const vpW = 1440.0, vpH = 900.0;
-      expect(vortexTopLeft.dx, greaterThanOrEqualTo(0));
-      expect(vortexTopLeft.dy, greaterThanOrEqualTo(0));
-      expect(vortexTopLeft.dx + vortexSize.width, lessThanOrEqualTo(vpW));
-      expect(vortexTopLeft.dy + vortexSize.height, lessThanOrEqualTo(vpH));
+      final expectedPopup = stage.worldToScreen(lethalPopup!.anchor!);
+      final popupFinder = find.byWidgetPredicate((widget) {
+        final key = widget.key;
+        return widget is Positioned &&
+            key is ValueKey<String> &&
+            key.value.startsWith('phase0a_popup_');
+      });
+      final popupPositions = tester.widgetList<Positioned>(popupFinder);
+      expect(
+        popupPositions.any(
+          (positioned) =>
+              positioned.left != null &&
+              (positioned.left! - expectedPopup.dx).abs() < epsilon,
+        ),
+        isTrue,
+        reason: '致死飘字应使用事件位置快照，不得回退到 safeRect.center',
+      );
     });
   });
 }
