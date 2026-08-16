@@ -241,11 +241,10 @@ void main() {
     game.setPrimaryHeld(true);
     game.setPrimaryHeld(false);
     game.update(0.01);
-    game.update(0.20);
     expect(game.player.action, PlayerAction.basic);
 
     expect(game.player.requestGather(), isFalse);
-    game.update(0.10);
+    game.update(0.30);
     game.update(0.01);
 
     expect(game.player.action, PlayerAction.gather);

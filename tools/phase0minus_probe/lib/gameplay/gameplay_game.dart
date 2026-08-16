@@ -41,6 +41,14 @@ final class GameplayHudState {
     required this.qi,
     required this.movementArtCooldown,
     required this.gatherCooldown,
+    required this.movementArtCooldownSeconds,
+    required this.gatherCooldownSeconds,
+    required this.currentQi,
+    required this.clearQiCost,
+    required this.movementArtAvailable,
+    required this.gatherAvailable,
+    required this.clearAvailable,
+    required this.playerAction,
     required this.enemyCount,
     required this.wave,
     required this.phase,
@@ -52,6 +60,14 @@ final class GameplayHudState {
   final double qi;
   final double movementArtCooldown;
   final double gatherCooldown;
+  final double movementArtCooldownSeconds;
+  final double gatherCooldownSeconds;
+  final double currentQi;
+  final double clearQiCost;
+  final bool movementArtAvailable;
+  final bool gatherAvailable;
+  final bool clearAvailable;
+  final PlayerAction playerAction;
   final int enemyCount;
   final int wave;
   final GameplayPhase phase;
@@ -69,11 +85,23 @@ final class GameplayGame extends FlameGame
   }) : tuning = GameplayTuning.fromConfig(config),
        random = math.Random(config.fixedSeed),
        hud = ValueNotifier(
-         const GameplayHudState(
+         GameplayHudState(
            health: 1,
-           qi: 0.4,
+           qi:
+               config.number('gameplay.player.starting_qi') /
+               config.number('gameplay.player.qi_capacity'),
            movementArtCooldown: 0,
            gatherCooldown: 0,
+           movementArtCooldownSeconds: 0,
+           gatherCooldownSeconds: 0,
+           currentQi: config.number('gameplay.player.starting_qi'),
+           clearQiCost: config.number('gameplay.clear.qi_cost'),
+           movementArtAvailable: true,
+           gatherAvailable: true,
+           clearAvailable:
+               config.number('gameplay.player.starting_qi') >=
+               config.number('gameplay.clear.qi_cost'),
+           playerAction: PlayerAction.locomotion,
            enemyCount: 0,
            wave: 1,
            phase: GameplayPhase.active,
@@ -622,6 +650,26 @@ final class GameplayGame extends FlameGame
       qi: player.qi / config.number('gameplay.player.qi_capacity'),
       movementArtCooldown: player.movementArtCooldown / tuning.dashCooldown,
       gatherCooldown: player.gatherCooldown / tuning.gatherCooldown,
+      movementArtCooldownSeconds: player.movementArtCooldown,
+      gatherCooldownSeconds: player.gatherCooldown,
+      currentQi: player.qi,
+      clearQiCost: tuning.clearQiCost,
+      movementArtAvailable:
+          (phase == GameplayPhase.active ||
+              phase == GameplayPhase.betweenWaves) &&
+          player.movementArtCooldown <= 0 &&
+          player.action != PlayerAction.defeated,
+      gatherAvailable:
+          (phase == GameplayPhase.active ||
+              phase == GameplayPhase.betweenWaves) &&
+          player.gatherCooldown <= 0 &&
+          player.action != PlayerAction.defeated,
+      clearAvailable:
+          (phase == GameplayPhase.active ||
+              phase == GameplayPhase.betweenWaves) &&
+          player.qi >= tuning.clearQiCost &&
+          player.action != PlayerAction.defeated,
+      playerAction: player.action,
       enemyCount: enemies.where((enemy) => enemy.alive).length,
       wave: wave,
       phase: phase,
@@ -834,7 +882,7 @@ final class GameplayPlayer extends PositionComponent with CollisionCallbacks {
 
   void _buffer(BufferedPlayerAction action) {
     _bufferedAction = action;
-    _bufferRemaining = 0.12;
+    _bufferRemaining = game.tuning.commandBufferDuration;
   }
 
   bool _consumeBufferedAction() {

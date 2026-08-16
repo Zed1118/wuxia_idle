@@ -89,5 +89,21 @@ void main() {
     expect(find.text('STEP'), findsOneWidget);
     expect(find.text('GATHER'), findsOneWidget);
     expect(find.text('CLEAR'), findsOneWidget);
+    expect(find.text('READY'), findsNWidgets(2));
+    expect(find.text('QI 40/60'), findsOneWidget);
+
+    expect(game.player.requestGather(), isTrue);
+    game.update(0.1);
+    await tester.pump();
+    expect(find.text('CASTING'), findsOneWidget);
+
+    game.update(0.6);
+    await tester.pump();
+    expect(find.textContaining('CD '), findsOneWidget);
+
+    game.player.health = 1;
+    game.damagePlayer(1, game.player.position.clone());
+    await tester.pump();
+    expect(find.text('DOWN'), findsNWidgets(3));
   });
 }

@@ -735,18 +735,47 @@ final class GameplayHud extends StatelessWidget {
                             keyLabel: 'SPACE',
                             name: 'STEP',
                             readiness: 1 - state.movementArtCooldown,
+                            available: state.movementArtAvailable,
+                            active:
+                                state.playerAction == PlayerAction.movementArt,
+                            status: state.playerAction == PlayerAction.defeated
+                                ? 'DOWN'
+                                : state.movementArtCooldownSeconds > 0
+                                ? 'CD ${state.movementArtCooldownSeconds.toStringAsFixed(1)}S'
+                                : state.movementArtAvailable
+                                ? 'READY'
+                                : 'LOCKED',
                           ),
                           const SizedBox(width: 10),
                           _SkillSeal(
                             keyLabel: 'Q',
                             name: 'GATHER',
                             readiness: 1 - state.gatherCooldown,
+                            available: state.gatherAvailable,
+                            active: state.playerAction == PlayerAction.gather,
+                            status: state.playerAction == PlayerAction.defeated
+                                ? 'DOWN'
+                                : state.gatherCooldownSeconds > 0
+                                ? 'CD ${state.gatherCooldownSeconds.toStringAsFixed(1)}S'
+                                : state.gatherAvailable
+                                ? 'READY'
+                                : 'LOCKED',
                           ),
                           const SizedBox(width: 10),
                           _SkillSeal(
                             keyLabel: 'R',
                             name: 'CLEAR',
-                            readiness: (state.qi / 0.6).clamp(0, 1),
+                            readiness: (state.currentQi / state.clearQiCost)
+                                .clamp(0, 1),
+                            available: state.clearAvailable,
+                            active: state.playerAction == PlayerAction.clear,
+                            status: state.playerAction == PlayerAction.defeated
+                                ? 'DOWN'
+                                : state.currentQi < state.clearQiCost
+                                ? 'QI ${state.currentQi.round()}/${state.clearQiCost.round()}'
+                                : state.clearAvailable
+                                ? 'READY'
+                                : 'LOCKED',
                             accent: true,
                           ),
                         ],
@@ -826,32 +855,62 @@ final class _SkillSeal extends StatelessWidget {
     required this.keyLabel,
     required this.name,
     required this.readiness,
+    required this.available,
+    required this.active,
+    required this.status,
     this.accent = false,
   });
 
   final String keyLabel;
   final String name;
   final double readiness;
+  final bool available;
+  final bool active;
+  final String status;
   final bool accent;
 
   @override
   Widget build(BuildContext context) {
-    final ready = readiness >= 0.999;
     final ink = accent ? const Color(0xff9B4037) : const Color(0xff42675D);
+    final background = active
+        ? ink
+        : available
+        ? const Color(0xF2E9DDC5)
+        : const Color(0xE825231F);
+    final keyColor = active
+        ? const Color(0xffFFF2D6)
+        : available
+        ? const Color(0xff2B2822)
+        : const Color(0xff776F62);
+    final secondaryColor = active
+        ? const Color(0xffF5E5C7)
+        : available
+        ? ink
+        : const Color(0xff6E675C);
     return SizedBox(
       width: 86,
-      height: 58,
-      child: DecoratedBox(
+      height: 64,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 140),
+        curve: Curves.easeOut,
         decoration: BoxDecoration(
-          color: const Color(0xDD26231E),
+          color: background,
           border: Border.all(
-            color: ready
-                ? ink.withValues(alpha: 0.95)
-                : const Color(0x70766B59),
-            width: ready ? 2 : 1,
+            color: active
+                ? const Color(0xffF4E4C4)
+                : available
+                ? ink
+                : const Color(0x805F594F),
+            width: active || available ? 2 : 1,
           ),
-          boxShadow: ready
-              ? [BoxShadow(color: ink.withValues(alpha: 0.25), blurRadius: 9)]
+          boxShadow: active || available
+              ? [
+                  BoxShadow(
+                    color: ink.withValues(alpha: active ? 0.48 : 0.30),
+                    blurRadius: active ? 14 : 9,
+                    spreadRadius: active ? 1 : 0,
+                  ),
+                ]
               : null,
         ),
         child: Stack(
@@ -860,7 +919,12 @@ final class _SkillSeal extends StatelessWidget {
               alignment: Alignment.bottomCenter,
               child: FractionallySizedBox(
                 widthFactor: readiness.clamp(0, 1),
-                child: Container(height: 3, color: ink),
+                child: Container(
+                  height: 4,
+                  color: active
+                      ? const Color(0xffF7E7C8)
+                      : ink.withValues(alpha: available ? 1 : 0.45),
+                ),
               ),
             ),
             Center(
@@ -869,8 +933,8 @@ final class _SkillSeal extends StatelessWidget {
                 children: [
                   Text(
                     keyLabel,
-                    style: const TextStyle(
-                      color: Color(0xffF1E5CC),
+                    style: TextStyle(
+                      color: keyColor,
                       fontWeight: FontWeight.w800,
                       fontSize: 13,
                       letterSpacing: 1,
@@ -879,10 +943,22 @@ final class _SkillSeal extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     name,
-                    style: const TextStyle(
-                      color: Color(0xffBEB097),
+                    style: TextStyle(
+                      color: secondaryColor,
                       fontSize: 9,
                       letterSpacing: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    active ? 'CASTING' : status,
+                    style: TextStyle(
+                      color: secondaryColor.withValues(
+                        alpha: active || available ? 0.92 : 0.82,
+                      ),
+                      fontSize: 8,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.7,
                     ),
                   ),
                 ],

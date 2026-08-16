@@ -54,6 +54,8 @@ effects:
   afterimage_lifetime_seconds: 0.55
   damage_label_lifetime_seconds: 0.65
 gameplay:
+  input:
+    command_buffer_seconds: 0.42
   player:
     health: 100.0
     qi_capacity: 100.0

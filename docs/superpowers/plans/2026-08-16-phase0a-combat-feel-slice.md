@@ -27,7 +27,7 @@
 ## 当前恢复点
 
 - 状态：完成，待用户继续真机体验与上游评审。
-- 最后完成：Phase 0A `playtest` 已接入长卷、祖师/山贼/精英图集、脚底纵深、墨迹反馈与等宽技能 HUD；根据用户反馈补入同一左键的 150～420 像素窄幅掌风，并修正 1440×900 留白和胜利态 `Wave 4/3`。
-- 下一步：用户体验掌风命中感与 Q→R 爽感；若通过，由上游按 §8.2 决定合并，不在本分支扩展批量美术。
-- 已跑验证：`flutter analyze`（0 issue）；`flutter test test/gameplay/gameplay_visual_slice_test.dart test/gameplay/gameplay_game_test.dart test/gameplay/combat_rules_test.dart`（25/25 pass）；1280×720 与 1440×900 macOS 真机 visual smoke，键鼠/焦点/HUD 均可见，1440×900 背景已满屏。
+- 最后完成：Phase 0A `playtest` 已接入长卷、祖师/山贼/精英图集、脚底纵深、墨迹反馈与等宽技能 HUD；根据用户反馈补入同一左键的 150～420 像素窄幅掌风，并修正 1440×900 留白和胜利态 `Wave 4/3`。技能位进一步形成明确状态语言：可用整块亮起并显示 `READY`，CD/真气不足/战败时压暗并显示具体原因，施放中显示 `CASTING`；指令缓冲由 0.12 秒延长至配置化 0.42 秒，覆盖完整普攻周期。
+- 下一步：用户体验技能亮暗、CD/真气提示、早按键排队与 Q→R 爽感；若通过，由上游按 §8.2 决定合并，不在本分支扩展批量美术。
+- 已跑验证：`flutter analyze`（0 issue）；`flutter test test/gameplay/gameplay_visual_slice_test.dart test/gameplay/gameplay_game_test.dart test/gameplay/combat_rules_test.dart`（25/25 pass，含 READY/QI/CD/CASTING/DOWN 与早按键缓冲）；1280×720 与 1440×900 macOS 真机 visual smoke，键鼠/焦点/HUD 均可见，1440×900 背景已满屏。
 - 阻塞项：无代码阻塞。残留风险为暂未接正式音效，动作仍是六姿势图集切换而非骨骼动画；本切片不代表 Phase 0A 跨平台 Gate 或根应用生产接线完成。

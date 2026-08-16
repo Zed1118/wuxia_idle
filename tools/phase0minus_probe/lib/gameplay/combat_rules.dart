@@ -5,6 +5,7 @@ import 'package:phase0minus_probe/config/probe_config.dart';
 
 final class GameplayTuning {
   const GameplayTuning({
+    this.commandBufferDuration = 0.42,
     this.playerHorizontalSpeed = 360,
     this.playerVerticalSpeed = 260,
     this.basicMoveFactor = 0.85,
@@ -41,6 +42,9 @@ final class GameplayTuning {
   });
 
   factory GameplayTuning.fromConfig(ProbeConfig config) => GameplayTuning(
+    commandBufferDuration: config.number(
+      'gameplay.input.command_buffer_seconds',
+    ),
     playerHorizontalSpeed: config.number('gameplay.player.horizontal_speed'),
     playerVerticalSpeed: config.number('gameplay.player.vertical_speed'),
     basicMoveFactor: config.number('gameplay.basic.move_factor'),
@@ -84,6 +88,7 @@ final class GameplayTuning {
     playerMaxHealth: config.number('gameplay.player.health'),
   );
 
+  final double commandBufferDuration;
   final double playerHorizontalSpeed;
   final double playerVerticalSpeed;
   final double basicMoveFactor;
