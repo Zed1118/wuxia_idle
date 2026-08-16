@@ -254,7 +254,7 @@ void main() {
     });
 
     test('零方向移动不改变位置与朝向', () {
-      final initial = makeState(facing: const ArenaVector(0, -1));
+      final initial = makeState(player: makePlayer(facing: const ArenaVector(0, -1)));
       final result = reducePhase0aTick(
         state: initial,
         intents: const [
