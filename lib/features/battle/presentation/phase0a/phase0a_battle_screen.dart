@@ -408,44 +408,13 @@ class _FeedbackLayer extends StatelessWidget {
         case Phase0aVfxKind.damagePopup:
           children.add(_damagePopup(entry, popupIndex++));
         case Phase0aVfxKind.palmTrail:
-          children.add(
-            const Center(
-              child: CustomPaint(
-                key: ValueKey('phase0a_palm_trail'),
-                size: Size.square(Phase0aPresentationTokens.vfxCenterSize),
-                painter: _InkEffectPainter(_InkEffect.palm),
-              ),
-            ),
-          );
+          children.add(_palmTrail(entry));
         case Phase0aVfxKind.gatherVortex:
-          children.add(
-            const Center(
-              child: CustomPaint(
-                key: ValueKey('phase0a_gather_vortex'),
-                size: Size.square(Phase0aPresentationTokens.vfxCenterSize),
-                painter: _InkEffectPainter(_InkEffect.gather),
-              ),
-            ),
-          );
+          children.add(_inkVfx(entry, _InkEffect.gather, gatherVortexKey: true));
         case Phase0aVfxKind.clearBurst:
-          children.add(
-            const Center(
-              child: CustomPaint(
-                key: ValueKey('phase0a_clear_burst'),
-                size: Size.square(Phase0aPresentationTokens.vfxCenterSize),
-                painter: _InkEffectPainter(_InkEffect.clear),
-              ),
-            ),
-          );
+          children.add(_inkVfx(entry, _InkEffect.clear, clearBurstKey: true));
         case Phase0aVfxKind.defeatInk:
-          children.add(
-            const Center(
-              child: CustomPaint(
-                size: Size.square(Phase0aPresentationTokens.vfxCenterSize),
-                painter: _InkEffectPainter(_InkEffect.defeat),
-              ),
-            ),
-          );
+          children.add(_inkVfx(entry, _InkEffect.defeat));
         case Phase0aVfxKind.waveBanner:
           children.add(_waveBanner(entry));
         case Phase0aVfxKind.outcomeSeal:
@@ -463,10 +432,12 @@ class _FeedbackLayer extends StatelessWidget {
   }
 
   Widget _damagePopup(Phase0aVfxEntry entry, int index) {
-    final actor = _actor(entry.targetId);
-    final anchor = actor == null
-        ? stage.safeRect.center
-        : stage.worldToScreen(actor.position);
+    // 使用事件发生时的世界坐标快照(entry.anchor),不反查当前 state。
+    // 目标死亡后已从 controller.state 移除,直接查 id 会 fallback
+    // 到屏幕中心,导致伤害数字位置错误。
+    final anchor = entry.anchor != null
+        ? stage.worldToScreen(entry.anchor!)
+        : stage.safeRect.center;
     return Positioned(
       key: ValueKey('phase0a_popup_$index'),
       left: anchor.dx,
@@ -492,13 +463,69 @@ class _FeedbackLayer extends StatelessWidget {
     );
   }
 
-  Phase0aActor? _actor(String? id) {
-    if (id == null) return null;
-    if (controller.state.player.id == id) return controller.state.player;
-    for (final enemy in controller.state.enemies) {
-      if (enemy.id == id) return enemy;
+  /// 掌风轨迹:出手者→目标连线的世界坐标映射到屏幕,
+  /// 以连线中点为中心、以连线方向为旋转角度绘制。
+  Widget _palmTrail(Phase0aVfxEntry entry) {
+    final src = entry.source;
+    final dst = entry.vfxTarget;
+    if (src == null || dst == null) {
+      return const SizedBox.shrink();
     }
-    return null;
+    final screenSrc = stage.worldToScreen(src);
+    final screenDst = stage.worldToScreen(dst);
+    final mid = Offset(
+      (screenSrc.dx + screenDst.dx) / 2,
+      (screenSrc.dy + screenDst.dy) / 2,
+    );
+    final angle = math.atan2(
+      screenDst.dy - screenSrc.dy,
+      screenDst.dx - screenSrc.dx,
+    );
+    final size = Phase0aPresentationTokens.vfxCenterSize;
+    return Positioned(
+      left: mid.dx - size / 2,
+      top: mid.dy - size / 2,
+      width: size,
+      height: size,
+      child: Transform.rotate(
+        angle: angle,
+        child: CustomPaint(
+          key: const ValueKey('phase0a_palm_trail'),
+          size: Size.square(size),
+          painter: const _InkEffectPainter(_InkEffect.palm),
+        ),
+      ),
+    );
+  }
+
+  /// 单点水墨 VFX(Q 涡旋 / R 墨爆 / 死亡墨散):
+  /// 以 [Phase0aVfxEntry.anchor] 的世界坐标快照映射到屏幕。
+  Widget _inkVfx(Phase0aVfxEntry entry, _InkEffect effect, {bool gatherVortexKey = false, bool clearBurstKey = false}) {
+    final anchor = entry.anchor;
+    if (anchor == null) {
+      return const SizedBox.shrink();
+    }
+    final screen = stage.worldToScreen(anchor);
+    final size = Phase0aPresentationTokens.vfxCenterSize;
+    Key vfxKey;
+    if (gatherVortexKey) {
+      vfxKey = const ValueKey('phase0a_gather_vortex');
+    } else if (clearBurstKey) {
+      vfxKey = const ValueKey('phase0a_clear_burst');
+    } else {
+      vfxKey = const ValueKey('phase0a_defeat_ink');
+    }
+    return Positioned(
+      left: screen.dx - size / 2,
+      top: screen.dy - size / 2,
+      width: size,
+      height: size,
+      child: CustomPaint(
+        key: vfxKey,
+        size: Size.square(size),
+        painter: _InkEffectPainter(effect),
+      ),
+    );
   }
 
   Widget _waveBanner(Phase0aVfxEntry entry) => Positioned(

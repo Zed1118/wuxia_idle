@@ -31,6 +31,10 @@ enum Phase0aVfxKind {
 }
 
 /// 单条表现指令(不可变)。字段按 kind 取用,未用字段为空。
+///
+/// [anchor]/[source]/[target] 为事件发生时的世界坐标快照。
+/// 渲染层不得通过 id 反查当前 [Phase0aArenaState] 获取位置
+/// (敌人死亡后已从 state 移除,会导致 VFX 定位到错误的 fallback 位置)。
 final class Phase0aVfxEntry {
   const Phase0aVfxEntry({
     required this.kind,
@@ -42,6 +46,9 @@ final class Phase0aVfxEntry {
     this.waveIndex,
     this.waveTotal,
     this.isVictory,
+    this.anchor,
+    this.source,
+    this.vfxTarget,
   });
 
   final Phase0aVfxKind kind;
@@ -53,6 +60,15 @@ final class Phase0aVfxEntry {
   final int? waveIndex;
   final int? waveTotal;
   final bool? isVictory;
+
+  /// 单点 VFX 的世界坐标锚点(Q 涡旋 / R 墨爆 / 死亡墨散)。
+  final ArenaVector? anchor;
+
+  /// 掌风轨迹:出手者世界坐标。
+  final ArenaVector? source;
+
+  /// 掌风轨迹:目标世界坐标。
+  final ArenaVector? vfxTarget;
 }
 
 /// Phase 0A 事件 → VFX entry 映射器。
@@ -106,6 +122,9 @@ final class Phase0aVfxController {
           targetId: targetId,
           damage: damage,
           isCritical: isCritical,
+          // 保存事件发生时目标的世界坐标快照。
+          // 渲染层不得通过 id 反查当前 state(目标可能已死亡/移除)。
+          anchor: _actors[targetId]?.position,
         ),
       );
     }
@@ -117,7 +136,12 @@ final class Phase0aVfxController {
           pushPopup(event.target, event.resolvedDamage, event.isCritical);
           _maybePushPalmTrail(event, push);
         case Phase0aGatherStarted():
-          push(const Phase0aVfxEntry(kind: Phase0aVfxKind.gatherVortex));
+          push(
+            Phase0aVfxEntry(
+              kind: Phase0aVfxKind.gatherVortex,
+              anchor: _actors[event.actor]?.position,
+            ),
+          );
         case Phase0aGatherApplied():
           for (final outcome in event.outcomes) {
             if (outcome.statusApplied == Phase0aSkillStatus.pulled) {
@@ -131,7 +155,12 @@ final class Phase0aVfxController {
             }
           }
         case Phase0aClearStarted():
-          push(const Phase0aVfxEntry(kind: Phase0aVfxKind.clearBurst));
+          push(
+            Phase0aVfxEntry(
+              kind: Phase0aVfxKind.clearBurst,
+              anchor: _actors[event.actor]?.position,
+            ),
+          );
         case Phase0aClearApplied():
           for (final outcome in event.outcomes) {
             pushPopup(outcome.target, outcome.resolvedDamage, false);
@@ -142,6 +171,7 @@ final class Phase0aVfxController {
               kind: Phase0aVfxKind.defeatInk,
               targetId: event.target,
               defeatKind: event.defeatKind,
+              anchor: _actors[event.target]?.position,
             ),
           );
         case Phase0aWaveStarted():
@@ -183,6 +213,8 @@ final class Phase0aVfxController {
         kind: Phase0aVfxKind.palmTrail,
         actorId: event.actor,
         targetId: event.target,
+        source: actor.position,
+        vfxTarget: target.position,
       ),
     );
   }
