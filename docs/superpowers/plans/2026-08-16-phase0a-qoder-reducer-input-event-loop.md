@@ -12,17 +12,17 @@
 
 ## 验收标准（§8.2 转 checklist）
 
-- [ ] 生产接线证据：`application/phase0a` 会话真实 import 并消费 domain reducer；测试从会话入口穿透 adapter→resolver→reducer，不只测 fixture helper。入口 = `Phase0aCombatSession.advance`。
-- [ ] 统一输入协议：移动/普攻/Q 聚怪/R 清场同一 sealed intent；玩家与 AI 无两套结算入口。
-- [ ] 确定性：相同初态 + 相同输入序列回放 → 相等状态与相等事件序列（含 seq/tick）；稳定排序（距离→id）、按 seq 单调去重。
-- [ ] 事件携带运行时结算结果（resolvedDamage / remainingHealth / cooldownRemaining / qiCurrent / qiRequired），字段与冻结反馈契约一致，强类型无 `Map<String, dynamic>`；合法未命中不伪造 hit；死亡仅一次。
-- [ ] reducer 无调优数值默认值：deltaSeconds / 范围 / 角度 / 环半径 / 真气消耗 / CD 全部调用方显式传入；伤害走显式注入 resolver（本片固定实现，未来生产接 `DamageCalculator`），adapter/reducer 无第二套公式。
-- [ ] 红测覆盖项：回放相等 / 双源同 reducer / 对角归一 / 最近目标同距 id 决胜 / 命中未命中与伤害余血 / 死亡仅一次 / Q 环内不推环外投影与逐目标 outcomes / R 稳定顺序 / CD·真气不足拒绝与 ready·cooldown·qi 运行态 / 冷却边界归零 / 源码契约（禁 Flutter·Flame·probe·旧 BattleState/BattleAI·数值默认值）。
-- [ ] targeted tests 逐目录记录通过数；首片 24 项回归绿；probe `combat_rules_test.dart` 8 项对照绿。
-- [ ] `dart format` 干净；`git diff --check` 干净；根 `flutter analyze --no-pub` 0 issue。
-- [ ] 一次局部破坏证明测试有判别力（改坏→红→复原→绿），恢复点留痕。
-- [ ] 红线自查：零 YAML / schema / saveVersion / 数值公式变化；不触三系、在线=离线、反主流项；Dart 无中文文案/调优常量散写。
-- [ ] commit 中文动宾小切片；tip `[READY]`；worktree 干净。
+- [x] 生产接线证据：`application/phase0a` 会话真实 import 并消费 domain reducer；测试从会话入口穿透 adapter→resolver→reducer，不只测 fixture helper。入口 = `Phase0aCombatSession.advance`。
+- [x] 统一输入协议：移动/普攻/Q 聚怪/R 清场同一 sealed intent；玩家与 AI 无两套结算入口。
+- [x] 确定性：相同初态 + 相同输入序列回放 → 相等状态与相等事件序列（含 seq/tick）；稳定排序（距离→id）、按 seq 单调去重。
+- [x] 事件携带运行时结算结果（resolvedDamage / remainingHealth / cooldownRemaining / qiCurrent / qiRequired），字段与冻结反馈契约一致，强类型无 `Map<String, dynamic>`；合法未命中不伪造 hit；死亡仅一次。
+- [x] reducer 无调优数值默认值：deltaSeconds / 范围 / 角度 / 环半径 / 真气消耗 / CD 全部调用方显式传入；伤害走显式注入 resolver（本片固定实现，未来生产接 `DamageCalculator`），adapter/reducer 无第二套公式。
+- [x] 红测覆盖项：回放相等 / 双源同 reducer / 对角归一 / 最近目标同距 id 决胜 / 命中未命中与伤害余血 / 死亡仅一次 / Q 环内不推环外投影与逐目标 outcomes / R 稳定顺序 / CD·真气不足拒绝与 ready·cooldown·qi 运行态 / 冷却边界归零 / 源码契约（禁 Flutter·Flame·probe·旧 BattleState/BattleAI·数值默认值）。
+- [x] targeted tests 逐目录记录通过数；首片 24 项回归绿；probe `combat_rules_test.dart` 8 项对照绿。
+- [x] `dart format` 干净；`git diff --check` 干净；根 `flutter analyze --no-pub` 0 issue。
+- [x] 一次局部破坏证明测试有判别力（改坏→红→复原→绿），恢复点留痕。
+- [x] 红线自查：零 YAML / schema / saveVersion / 数值公式变化；不触三系、在线=离线、反主流项；Dart 无中文文案/调优常量散写。
+- [x] commit 中文动宾小切片；tip `[READY]`；worktree 干净。
 
 ## 任务切片
 
@@ -47,8 +47,16 @@
 
 ## 当前恢复点
 
-- 状态：进行中（S1）。
-- 最后完成：基线确认——worktree tip `353e5e11`，首片 `flutter test --no-pub test/features/battle/domain/phase0a/` 24/24 pass。
-- 下一步：S2 写红测。
-- 已跑验证：首片 24 项绿（2026-08-16）。
-- 阻塞项：无。
+- 状态：已冻结待评审（tip `[READY]`，worktree 干净）。
+- 最后完成：S1–S6 全部完成。落点：
+  - domain：`phase0a_combat_model.dart`（actor/skill slot/arena state 不可变模型）、`phase0a_combat_intent.dart`（统一 sealed intent：移动/普攻/Q/R）、`phase0a_combat_events.dart`（契约对齐强类型语义事件 + outcomes）、`phase0a_combat_reducer.dart`（确定性 reducer + `Phase0aDamageResolver` 注入接口）。
+  - application：`phase0a_player_input_adapter.dart`（按键→intent，含 `Phase0aPlayerCommand`）、`phase0a_enemy_ai_adapter.dart`（同型 intent 产生）、`phase0a_combat_session.dart`（adapter→resolver→reducer 薄编排）。
+  - 测试：`phase0a_reducer_test.dart`（22）、`phase0a_session_test.dart`（9，全部从会话/适配器入口穿透）、源码契约测扩展至 application 目录与 BattleState/BattleAI 禁令（8）。
+- 证红记录：① 初始红——实现不存在时 reducer/session 测试编译红、契约测 application 目录 6 红；② 局部破坏证红——将普攻同距决胜 id 排序翻转为降序，「同距目标按 id 稳定决胜且与输入顺序无关」立即红，复原后 59/59 绿。
+- 已跑验证（2026-08-16）：
+  - `flutter test --no-pub test/features/battle/domain/phase0a/ test/features/battle/application/phase0a/` → 59/59 pass（规则 20 + 契约 8 + reducer 22 + 会话 9）。
+  - 首片回归（含于上行）：`realtime_combat_rules_test.dart` 20 + 契约原 4 项 = 24 项绿。
+  - probe 对照：`cd tools/phase0minus_probe && flutter test test/gameplay/combat_rules_test.dart` → 8/8 pass。
+  - `dart format` 干净；`git diff --check` 干净；`flutter analyze --no-pub` → No issues found。
+- 禁区自查：本分支仅新增/修改 phase0a domain+application+test 与计划文件（11 文件）；未触旧 `battle_state.dart` / `battle_ai.dart` / strategy / provider / presentation / 生产入口 / 结算 / YAML / GDD / PROGRESS / pubspec / probe / schema。
+- 阻塞项：无。残留风险见上节（未接 UI / 真实 DamageCalculator / 胜负结算存档 / 精英 telegraph 链）。
