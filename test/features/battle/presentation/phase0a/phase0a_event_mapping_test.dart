@@ -198,7 +198,7 @@ void main() {
           statusApplied: Phase0aSkillStatus.none,
         ),
       ];
-      final applied = Phase0aGatherApplied(
+      const applied = Phase0aGatherApplied(
         seq: 2,
         tick: 2,
         actor: 'player',
