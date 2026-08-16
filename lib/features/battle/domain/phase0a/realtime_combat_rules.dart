@@ -32,7 +32,7 @@ bool isTargetInsideStrikeArc({
   if (delta.lengthSquared > range * range) return false;
   if (delta.lengthSquared == 0) return true;
   final aim = aimDirection.lengthSquared == 0
-      ? ArenaVector(1, 0)
+      ? const ArenaVector(1, 0)
       : aimDirection.normalized();
   final direction = delta.normalized();
   final dot = aim.dot(direction).clamp(-1.0, 1.0);

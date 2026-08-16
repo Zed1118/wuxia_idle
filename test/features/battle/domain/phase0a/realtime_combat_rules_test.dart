@@ -12,23 +12,23 @@ void main() {
   group('ArenaVector 值对象', () {
     test('零向量归一化安全返回零向量', () {
       expect(ArenaVector.zero.normalized(), ArenaVector.zero);
-      expect(ArenaVector(0, 0).normalized(), ArenaVector.zero);
+      expect(const ArenaVector(0, 0).normalized(), ArenaVector.zero);
     });
 
     test('非零归一化长度为一', () {
-      final normalized = ArenaVector(3, 4).normalized();
+      final normalized = const ArenaVector(3, 4).normalized();
       expect(normalized.x, closeTo(0.6, 0.0001));
       expect(normalized.y, closeTo(0.8, 0.0001));
       expect(normalized.length, closeTo(1, 0.0001));
     });
 
     test('加减点乘与数乘保持纯值语义', () {
-      final a = ArenaVector(1, 2);
-      final b = ArenaVector(3, -1);
-      expect(a + b, ArenaVector(4, 1));
-      expect(b - a, ArenaVector(2, -3));
+      final a = const ArenaVector(1, 2);
+      final b = const ArenaVector(3, -1);
+      expect(a + b, const ArenaVector(4, 1));
+      expect(b - a, const ArenaVector(2, -3));
       expect(a.dot(b), 1);
-      expect(a * 2, ArenaVector(2, 4));
+      expect(a * 2, const ArenaVector(2, 4));
     });
   });
 
@@ -72,20 +72,20 @@ void main() {
         up: false,
         down: false,
       );
-      expect(movement, ArenaVector(-1, 0));
+      expect(movement, const ArenaVector(-1, 0));
     });
   });
 
   group('距离与朝向扇区双条件判定', () {
     final origin = ArenaVector.zero;
-    final aimRight = ArenaVector(1, 0);
+    final aimRight = const ArenaVector(1, 0);
 
     test('同时满足距离与扇区才命中', () {
       expect(
         isTargetInsideStrikeArc(
           origin: origin,
           aimDirection: aimRight,
-          target: ArenaVector(100, 20),
+          target: const ArenaVector(100, 20),
           range: 145,
           halfArcRadians: 0.72,
         ),
@@ -98,7 +98,7 @@ void main() {
         isTargetInsideStrikeArc(
           origin: origin,
           aimDirection: aimRight,
-          target: ArenaVector(-100, 0),
+          target: const ArenaVector(-100, 0),
           range: 145,
           halfArcRadians: 0.72,
         ),
@@ -111,7 +111,7 @@ void main() {
         isTargetInsideStrikeArc(
           origin: origin,
           aimDirection: aimRight,
-          target: ArenaVector(150, 0),
+          target: const ArenaVector(150, 0),
           range: 145,
           halfArcRadians: 0.72,
         ),
@@ -137,7 +137,7 @@ void main() {
         isTargetInsideStrikeArc(
           origin: origin,
           aimDirection: ArenaVector.zero,
-          target: ArenaVector(50, 0),
+          target: const ArenaVector(50, 0),
           range: 145,
           halfArcRadians: 0.72,
         ),
@@ -147,7 +147,7 @@ void main() {
         isTargetInsideStrikeArc(
           origin: origin,
           aimDirection: ArenaVector.zero,
-          target: ArenaVector(0, 50),
+          target: const ArenaVector(0, 50),
           range: 145,
           halfArcRadians: 0.72,
         ),
@@ -191,8 +191,8 @@ void main() {
   group('聚怪可读环', () {
     test('环外敌人被拉到以玩家为中心的环上', () {
       final destination = gatherRingDestination(
-        playerCenter: ArenaVector(10, 20),
-        enemyPosition: ArenaVector(410, 20),
+        playerCenter: const ArenaVector(10, 20),
+        enemyPosition: const ArenaVector(410, 20),
         ringRadius: 88,
       );
       expect(destination.x, closeTo(98, 0.0001));
@@ -202,7 +202,7 @@ void main() {
     test('斜向敌人沿方向投影到环上', () {
       final destination = gatherRingDestination(
         playerCenter: ArenaVector.zero,
-        enemyPosition: ArenaVector(300, 400),
+        enemyPosition: const ArenaVector(300, 400),
         ringRadius: 100,
       );
       expect(destination.x, closeTo(60, 0.0001));
@@ -212,19 +212,19 @@ void main() {
     test('已在环内的敌人不被推走', () {
       final destination = gatherRingDestination(
         playerCenter: ArenaVector.zero,
-        enemyPosition: ArenaVector(30, 40),
+        enemyPosition: const ArenaVector(30, 40),
         ringRadius: 88,
       );
-      expect(destination, ArenaVector(30, 40));
+      expect(destination, const ArenaVector(30, 40));
     });
 
     test('恰好落在环上的敌人保持原位', () {
       final destination = gatherRingDestination(
         playerCenter: ArenaVector.zero,
-        enemyPosition: ArenaVector(88, 0),
+        enemyPosition: const ArenaVector(88, 0),
         ringRadius: 88,
       );
-      expect(destination, ArenaVector(88, 0));
+      expect(destination, const ArenaVector(88, 0));
     });
   });
 
