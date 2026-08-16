@@ -120,7 +120,7 @@ void main() {
     final enemy = game.enemies.first;
     enemy
       ..spawnGrace = 99
-      ..position = game.player.position + Vector2(300, 0);
+      ..position = game.player.position + Vector2(500, 0);
     game.pointerWorld = enemy.position.clone();
     game.setPrimaryHeld(true);
     game.setPrimaryHeld(false);
@@ -130,7 +130,30 @@ void main() {
 
     expect(enemy.health, 76);
     expect(game.player.qi, 45);
-    expect(game.feedbackPool.emittedTotal, 5);
+    expect(game.feedbackPool.emittedTotal, 2);
+    expect(game.damageLabelPool.activeCount, 1);
+  });
+
+  testWidgets('damaged normals expose health and pooled damage labels', (
+    tester,
+  ) async {
+    final game = await mountGame(tester);
+    final enemy = game.enemies.first;
+    enemy
+      ..spawnGrace = 99
+      ..position = game.player.position + Vector2(100, 0);
+
+    enemy.receiveHit(
+      34,
+      breakPoints: 0,
+      lightReact: true,
+      source: game.player.position,
+    );
+
+    expect(enemy.health, 66);
+    expect(game.damageLabelPool.activeCount, 1);
+    game.update(0.8);
+    expect(game.damageLabelPool.activeCount, 0);
   });
 
   testWidgets('Q then R clears an imbalanced normal but naked R does not', (
@@ -146,6 +169,8 @@ void main() {
     game.player.requestGather();
     game.update(0.31);
     expect(enemy.imbalanceRemaining, greaterThan(0));
+    expect(enemy.mode, EnemyMode.hitReact);
+    expect(enemy.modeRemaining, greaterThan(1));
     game.update(0.30);
     game.player.qi = 100;
     game.player.requestClear();

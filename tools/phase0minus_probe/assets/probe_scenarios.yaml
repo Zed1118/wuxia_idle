@@ -76,7 +76,7 @@ gameplay:
     damage: 34.0
     qi_gain: 5.0
     maximum_hit_reacts: 3
-    ranged_range: 420.0
+    ranged_range: 540.0
     ranged_half_arc_radians: 0.16
     ranged_damage: 24.0
   movement_art:
@@ -89,7 +89,8 @@ gameplay:
     maximum_cast_range: 360.0
     maximum_pull_distance: 220.0
     cooldown_seconds: 6.5
-    imbalance_seconds: 2.0
+    imbalance_seconds: 3.2
+    control_seconds: 1.35
   clear:
     radius: 340.0
     damage: 65.0
@@ -121,11 +122,11 @@ gameplay:
   feedback:
     pool_size: 160
     basic_particles: 8
-    ranged_particles: 5
+    ranged_particles: 2
     gather_particles: 32
     clear_particles: 128
     basic_lifetime_seconds: 0.20
-    ranged_lifetime_seconds: 0.26
+    ranged_lifetime_seconds: 0.68
     gather_lifetime_seconds: 0.45
     clear_lifetime_seconds: 0.70
     basic_hit_stop_seconds: 0.022
@@ -133,6 +134,9 @@ gameplay:
     break_hit_stop_seconds: 0.080
     clear_camera_shake_seconds: 0.10
     clear_camera_shake_pixels: 3.0
+    damage_label_pool_size: 48
+    damage_label_lifetime_seconds: 0.72
+    damage_label_float_distance: 48.0
 tiers:
   baseline_10:
     normal_enemies: 10

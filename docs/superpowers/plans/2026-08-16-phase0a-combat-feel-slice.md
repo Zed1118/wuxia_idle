@@ -27,7 +27,7 @@
 ## 当前恢复点
 
 - 状态：完成，待用户继续真机体验与上游评审。
-- 最后完成：Phase 0A `playtest` 已接入长卷、祖师/山贼/精英图集、脚底纵深、墨迹反馈与等宽技能 HUD；根据用户反馈补入同一左键的 150～420 像素窄幅掌风，并修正 1440×900 留白和胜利态 `Wave 4/3`。技能位进一步形成明确状态语言：可用整块亮起并显示 `READY`，CD/真气不足/战败时压暗并显示具体原因，施放中显示 `CASTING`；指令缓冲由 0.12 秒延长至配置化 0.42 秒，覆盖完整普攻周期。
-- 下一步：用户体验技能亮暗、CD/真气提示、早按键排队与 Q→R 爽感；若通过，由上游按 §8.2 决定合并，不在本分支扩展批量美术。
-- 已跑验证：`flutter analyze`（0 issue）；`flutter test test/gameplay/gameplay_visual_slice_test.dart test/gameplay/gameplay_game_test.dart test/gameplay/combat_rules_test.dart`（25/25 pass，含 READY/QI/CD/CASTING/DOWN 与早按键缓冲）；1280×720 与 1440×900 macOS 真机 visual smoke，键鼠/焦点/HUD 均可见，1440×900 背景已满屏。
+- 最后完成：Phase 0A `playtest` 已接入长卷、祖师/山贼/精英图集、脚底纵深、墨迹反馈与等宽技能 HUD；技能位具备 READY/CD/QI/CASTING/DOWN 状态语言，指令缓冲覆盖完整普攻周期。第二轮真机反馈后，掌风有效距离由 420 扩到 540，短白线改为墨绿掌风片；普通敌人近身或受击后显示血条，所有命中使用 48 个常驻对象池显示分色伤害数字；Q 拉拢后的失衡时间延长到 3.2 秒，并补 1.35 秒真实停顿窗口。
+- 下一步：用户复测远程命中确认、Q 控制窗口、R 群体飘字与第三波精英破招；若通过，由上游按 §8.2 决定合并，不在本分支扩展批量美术。
+- 已跑验证：`flutter analyze`（0 issue）；`flutter test test/gameplay/gameplay_visual_slice_test.dart test/gameplay/gameplay_game_test.dart test/gameplay/combat_rules_test.dart`（26/26 pass，含 500 像素远程命中、伤害飘字对象池与 Q 实际停顿）；1280×720 增强版已重开真机复测窗口，此前 1280×720 与 1440×900 visual smoke 均通过。
 - 阻塞项：无代码阻塞。残留风险为暂未接正式音效，动作仍是六姿势图集切换而非骨骼动画；本切片不代表 Phase 0A 跨平台 Gate 或根应用生产接线完成。

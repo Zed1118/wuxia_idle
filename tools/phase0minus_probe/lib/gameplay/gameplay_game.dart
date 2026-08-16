@@ -24,6 +24,8 @@ enum BufferedPlayerAction { movementArt, gather, clear }
 
 enum FeedbackKind { basic, ranged, gather, clear }
 
+enum DamageFlavor { basic, ranged, clear }
+
 enum EnemyMode {
   spawning,
   approach,
@@ -124,6 +126,7 @@ final class GameplayGame extends FlameGame
   Vector2? _strategyMovementOverride;
   late final GameplayPlayer player;
   late final GameplayFeedbackPool feedbackPool;
+  late final GameplayDamageLabelPool damageLabelPool;
   GameplayArt? art;
 
   Vector2 pointerWorld = Vector2(800, 360);
@@ -176,6 +179,16 @@ final class GameplayGame extends FlameGame
       size: config.integer('gameplay.feedback.pool_size'),
     );
     await feedbackPool.mount(world);
+    damageLabelPool = GameplayDamageLabelPool(
+      size: config.integer('gameplay.feedback.damage_label_pool_size'),
+      lifetime: config.number(
+        'gameplay.feedback.damage_label_lifetime_seconds',
+      ),
+      floatDistance: config.number(
+        'gameplay.feedback.damage_label_float_distance',
+      ),
+    );
+    await damageLabelPool.mount(world);
     await world.add(GameplaySkillGuide(game: this));
     if (deterministicReplay) {
       _prepareReplayResidents();
@@ -339,6 +352,7 @@ final class GameplayGame extends FlameGame
       ..maximumChain = 0
       ..currentChain = 0;
     telemetry.reset();
+    damageLabelPool.deactivateAll();
     _sessionReported = false;
     _sessionSerial++;
     _terminalOutcome = null;
@@ -1008,6 +1022,7 @@ final class GameplayPlayer extends PositionComponent with CollisionCallbacks {
           lightReact: true,
           source: position,
           knockback: 18,
+          flavor: DamageFlavor.ranged,
         );
       }
     }
@@ -1077,6 +1092,9 @@ final class GameplayPlayer extends PositionComponent with CollisionCallbacks {
           maxPull,
         );
         enemy.imbalanceRemaining = game.tuning.imbalanceDuration;
+        enemy.holdAfterGather(
+          game.config.number('gameplay.gather.control_seconds'),
+        );
       }
     }
   }
@@ -1094,6 +1112,7 @@ final class GameplayPlayer extends PositionComponent with CollisionCallbacks {
           breakPoints: 2,
           lightReact: false,
           source: position,
+          flavor: DamageFlavor.clear,
         );
       } else {
         enemy.receiveHit(
@@ -1108,6 +1127,7 @@ final class GameplayPlayer extends PositionComponent with CollisionCallbacks {
           lightReact: true,
           source: position,
           knockback: 100,
+          flavor: DamageFlavor.clear,
         );
       }
       if (wasAlive && !enemy.alive) kills++;
@@ -1238,6 +1258,7 @@ final class GameplayEnemy extends PositionComponent with CollisionCallbacks {
   double _telegraphCooldown = 4.0;
   double _defeatRemaining = 0;
   double _flashRemaining = 0;
+  double _healthBarEmphasisRemaining = 0;
   double _pullRemaining = 0;
   Vector2? _pullTarget;
   bool _activeInEncounter = true;
@@ -1280,6 +1301,7 @@ final class GameplayEnemy extends PositionComponent with CollisionCallbacks {
     }
     imbalanceRemaining = math.max(0, imbalanceRemaining - dt);
     _flashRemaining = math.max(0, _flashRemaining - dt);
+    _healthBarEmphasisRemaining = math.max(0, _healthBarEmphasisRemaining - dt);
     if (_pullRemaining > 0 && _pullTarget != null) {
       final step = math.min(1.0, dt / _pullRemaining);
       position += (_pullTarget! - position) * step;
@@ -1385,12 +1407,21 @@ final class GameplayEnemy extends PositionComponent with CollisionCallbacks {
     required bool lightReact,
     required Vector2 source,
     double knockback = 35,
+    DamageFlavor flavor = DamageFlavor.basic,
   }) {
     if (!alive) return;
     applyBreakPoints(breakPoints);
     final staggerMultiplier = mode == EnemyMode.staggered ? 1.5 : 1.0;
-    health = math.max(0, health - damage * staggerMultiplier);
+    final effectiveDamage = damage * staggerMultiplier;
+    health = math.max(0, health - effectiveDamage);
     _flashRemaining = 0.08;
+    _healthBarEmphasisRemaining = 1.4;
+    game.damageLabelPool.emit(
+      origin: position - Vector2(0, elite ? 92 : 67),
+      amount: effectiveDamage,
+      flavor: flavor,
+      finishingBlow: health <= 0,
+    );
     final away = position - source;
     if (away.length2 > 0 && (lightReact || !elite)) {
       _impulse = away.normalized() * knockback;
@@ -1405,6 +1436,13 @@ final class GameplayEnemy extends PositionComponent with CollisionCallbacks {
       _defeatRemaining = (id % 20) * 0.009;
       game.onEnemyDefeated(this);
     }
+  }
+
+  void holdAfterGather(double seconds) {
+    if (!alive || elite || seconds <= 0) return;
+    mode = EnemyMode.hitReact;
+    modeRemaining = math.max(modeRemaining, seconds);
+    attackCooldown = math.max(attackCooldown, seconds);
   }
 
   void applyBreakPoints(int amount) {
@@ -1446,6 +1484,7 @@ final class GameplayEnemy extends PositionComponent with CollisionCallbacks {
     _telegraphCooldown = elite ? 1.0 : 4.0;
     _defeatRemaining = 0;
     _flashRemaining = 0;
+    _healthBarEmphasisRemaining = 0;
     _pullRemaining = 0;
     _pullTarget = null;
     _impulse = Vector2.zero();
@@ -1562,26 +1601,43 @@ final class GameplayEnemy extends PositionComponent with CollisionCallbacks {
         flash: _flashRemaining > 0,
       );
     }
-    if (elite) {
-      final maxHealth = game.tuning.eliteHealth;
+    final maxHealth = elite
+        ? game.tuning.eliteHealth
+        : game.tuning.normalHealth;
+    final playerDistanceSquared = position.distanceToSquared(
+      game.player.position,
+    );
+    final showHealth =
+        elite ||
+        health < maxHealth ||
+        playerDistanceSquared <= 220 * 220 ||
+        _healthBarEmphasisRemaining > 0;
+    if (showHealth && mode != EnemyMode.defeated) {
+      final barWidth = elite ? size.x * 1.6 : 42.0;
+      final barHeight = elite ? 6.0 : 4.0;
+      final barTop = elite ? -28.0 : -22.0;
+      final barLeft = (size.x - barWidth) / 2;
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromLTWH(-size.x * 0.3, -28, size.x * 1.6, 6),
+          Rect.fromLTWH(barLeft, barTop, barWidth, barHeight),
           const Radius.circular(3),
         ),
-        Paint()..color = const Color(0xB428211D),
+        Paint()..color = const Color(0xC42A2520),
       );
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(
-            -size.x * 0.3,
-            -28,
-            size.x * 1.6 * (health / maxHealth),
-            6,
+            barLeft,
+            barTop,
+            barWidth * (health / maxHealth),
+            barHeight,
           ),
           const Radius.circular(3),
         ),
-        Paint()..color = const Color(0xff983D34),
+        Paint()
+          ..color = _healthBarEmphasisRemaining > 0
+              ? const Color(0xffB5483C)
+              : const Color(0xff823A34),
       );
     }
   }
@@ -1619,6 +1675,140 @@ final class GameplaySkillGuide extends PositionComponent {
           ..strokeWidth = 2,
       );
     }
+  }
+}
+
+final class GameplayDamageLabelPool {
+  GameplayDamageLabelPool({
+    required int size,
+    required this.lifetime,
+    required this.floatDistance,
+  }) : _residents = List.generate(size, (_) => GameplayDamageLabel());
+
+  final List<GameplayDamageLabel> _residents;
+  final double lifetime;
+  final double floatDistance;
+  int _cursor = 0;
+
+  Future<void> mount(World world) async => world.addAll(_residents);
+
+  void emit({
+    required Vector2 origin,
+    required double amount,
+    required DamageFlavor flavor,
+    required bool finishingBlow,
+  }) {
+    for (var attempt = 0; attempt < _residents.length; attempt++) {
+      final label = _residents[_cursor];
+      _cursor = (_cursor + 1) % _residents.length;
+      if (!label.active) {
+        label.activate(
+          origin: origin,
+          amount: amount,
+          flavor: flavor,
+          finishingBlow: finishingBlow,
+          lifetime: lifetime,
+          floatDistance: floatDistance,
+        );
+        return;
+      }
+    }
+  }
+
+  void deactivateAll() {
+    for (final label in _residents) {
+      label.deactivate();
+    }
+  }
+
+  int get activeCount => _residents.where((label) => label.active).length;
+}
+
+final class GameplayDamageLabel extends PositionComponent {
+  GameplayDamageLabel()
+    : super(size: Vector2(72, 34), anchor: Anchor.center, priority: 3900);
+
+  bool active = false;
+  double _remaining = 0;
+  double _lifetime = 1;
+  double _floatDistance = 0;
+  late Vector2 _origin;
+  TextPainter? _painter;
+
+  void activate({
+    required Vector2 origin,
+    required double amount,
+    required DamageFlavor flavor,
+    required bool finishingBlow,
+    required double lifetime,
+    required double floatDistance,
+  }) {
+    active = true;
+    position = origin;
+    _origin = origin.clone();
+    _remaining = lifetime;
+    _lifetime = lifetime;
+    _floatDistance = floatDistance;
+    final color = switch (flavor) {
+      DamageFlavor.basic => const Color(0xffF3E7CA),
+      DamageFlavor.ranged => const Color(0xff86B8A9),
+      DamageFlavor.clear => const Color(0xffD36756),
+    };
+    final fontSize = finishingBlow || flavor == DamageFlavor.clear
+        ? 22.0
+        : 18.0;
+    _painter = TextPainter(
+      text: TextSpan(
+        text: '-${amount.round()}',
+        style: TextStyle(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+          shadows: const [
+            Shadow(
+              color: Color(0xE61D1916),
+              blurRadius: 3,
+              offset: Offset(1, 2),
+            ),
+          ],
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout();
+  }
+
+  void deactivate() {
+    active = false;
+    _remaining = 0;
+    _painter = null;
+  }
+
+  @override
+  void update(double dt) {
+    if (!active) return;
+    _remaining = math.max(0, _remaining - dt);
+    final progress = 1 - _remaining / _lifetime;
+    position =
+        _origin -
+        Vector2(0, Curves.easeOutCubic.transform(progress) * _floatDistance);
+    if (_remaining <= 0) deactivate();
+  }
+
+  @override
+  void render(Canvas canvas) {
+    if (!active || _painter == null) return;
+    final fade = (_remaining / _lifetime).clamp(0.0, 1.0);
+    canvas.saveLayer(
+      Rect.fromLTWH(0, 0, size.x, size.y),
+      Paint()..color = Colors.white.withValues(alpha: math.min(1, fade * 1.8)),
+    );
+    _painter!.paint(
+      canvas,
+      Offset((size.x - _painter!.width) / 2, (size.y - _painter!.height) / 2),
+    );
+    canvas.restore();
   }
 }
 
@@ -1802,20 +1992,37 @@ final class GameplayFeedback extends PositionComponent {
             ..strokeWidth = 1.4,
         );
       case FeedbackKind.ranged:
-        canvas.drawLine(
-          center - tangent * 26,
-          center + tangent * 28,
+        final normal = Offset(-tangent.dy, tangent.dx);
+        final windPath = Path()
+          ..moveTo(
+            (center - tangent * 24 + normal * 7).dx,
+            (center - tangent * 24 + normal * 7).dy,
+          )
+          ..quadraticBezierTo(
+            (center + tangent * 13 + normal * 10).dx,
+            (center + tangent * 13 + normal * 10).dy,
+            (center + tangent * 31).dx,
+            (center + tangent * 31).dy,
+          )
+          ..quadraticBezierTo(
+            (center + tangent * 9 - normal * 7).dx,
+            (center + tangent * 9 - normal * 7).dy,
+            (center - tangent * 24 - normal * 3).dx,
+            (center - tangent * 24 - normal * 3).dy,
+          )
+          ..close();
+        canvas.drawPath(
+          windPath,
           Paint()
-            ..color = const Color(0xffF3E2BD).withValues(alpha: alpha * 0.9)
-            ..strokeCap = StrokeCap.round
-            ..strokeWidth = 3.4,
+            ..color = const Color(0xff355B52).withValues(alpha: alpha * 0.78),
         );
         canvas.drawLine(
-          center - tangent * 18 + const Offset(0, 4),
-          center + tangent * 19 + const Offset(0, 4),
+          center - tangent * 15 + normal * 1.5,
+          center + tangent * 25,
           Paint()
-            ..color = const Color(0xff36554C).withValues(alpha: alpha * 0.72)
-            ..strokeWidth = 2.1,
+            ..color = const Color(0xffF3E2BD).withValues(alpha: alpha * 0.88)
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = 2.4,
         );
       case FeedbackKind.gather:
         canvas.drawLine(
