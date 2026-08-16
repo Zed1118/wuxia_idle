@@ -39,32 +39,44 @@ final class Phase0aAttackIntent extends Phase0aIntent {
   final ArenaVector aimDirection;
 }
 
-/// Q 聚怪请求:环内目标不推、环外投影到环上,逐目标结算 outcomes。
+/// Q 聚怪请求:作用半径内目标逐目标结算 outcomes;
+/// [ringRadius] 只决定目标落点环,不得冒充作用半径,
+/// `ringRadius > effectRadius` 为非法参数(reducer 拒绝释放)。
 final class Phase0aGatherIntent extends Phase0aIntent {
   const Phase0aGatherIntent({
     required super.actorId,
     required this.slot,
     required this.ringRadius,
+    required this.effectRadius,
     required this.qiCost,
     required this.cooldownSeconds,
   });
 
   final String slot;
   final double ringRadius;
+
+  /// 作用半径:仅距 caster ≤ 该值的存活敌对单位进入结算(闭区间)。
+  final double effectRadius;
+
   final int qiCost;
   final double cooldownSeconds;
 }
 
-/// R 清场请求:对全体存活敌方单位结算,逐目标稳定顺序 outcomes。
+/// R 清场请求:作用半径内存活敌方单位逐目标稳定顺序结算。
 final class Phase0aClearIntent extends Phase0aIntent {
   const Phase0aClearIntent({
     required super.actorId,
     required this.slot,
+    required this.effectRadius,
     required this.qiCost,
     required this.cooldownSeconds,
   });
 
   final String slot;
+
+  /// 作用半径:仅距 caster ≤ 该值的存活敌对单位进入结算(闭区间)。
+  final double effectRadius;
+
   final int qiCost;
   final double cooldownSeconds;
 }

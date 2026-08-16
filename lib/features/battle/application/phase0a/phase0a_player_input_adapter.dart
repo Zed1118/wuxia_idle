@@ -42,9 +42,11 @@ final class Phase0aPlayerInputAdapter {
     required this.attackCooldownSeconds,
     required this.gatherSlot,
     required this.gatherRingRadius,
+    required this.gatherEffectRadius,
     required this.gatherQiCost,
     required this.gatherCooldownSeconds,
     required this.clearSlot,
+    required this.clearEffectRadius,
     required this.clearQiCost,
     required this.clearCooldownSeconds,
   });
@@ -55,9 +57,15 @@ final class Phase0aPlayerInputAdapter {
   final double attackCooldownSeconds;
   final String gatherSlot;
   final double gatherRingRadius;
+
+  /// Q 聚怪作用半径:仅距玩家 ≤ 该值的敌对单位进入结算(闭区间)。
+  final double gatherEffectRadius;
   final int gatherQiCost;
   final double gatherCooldownSeconds;
   final String clearSlot;
+
+  /// R 清场作用半径:仅距玩家 ≤ 该值的敌对单位进入结算(闭区间)。
+  final double clearEffectRadius;
   final int clearQiCost;
   final double clearCooldownSeconds;
 
@@ -93,6 +101,7 @@ final class Phase0aPlayerInputAdapter {
           actorId: playerId,
           slot: gatherSlot,
           ringRadius: gatherRingRadius,
+          effectRadius: gatherEffectRadius,
           qiCost: gatherQiCost,
           cooldownSeconds: gatherCooldownSeconds,
         ),
@@ -103,6 +112,7 @@ final class Phase0aPlayerInputAdapter {
         Phase0aClearIntent(
           actorId: playerId,
           slot: clearSlot,
+          effectRadius: clearEffectRadius,
           qiCost: clearQiCost,
           cooldownSeconds: clearCooldownSeconds,
         ),

@@ -200,6 +200,8 @@ Phase0aStepResult reducePhase0aTick({
           enemiesById[actorId] = recharged;
         }
       case Phase0aGatherIntent():
+        // 非法参数:落点环不得超出作用半径,否则会把目标从作用区内推出去。
+        if (intent.ringRadius > intent.effectRadius) continue;
         final cast = _tryCastSkill(
           actor: actor,
           slotId: intent.slot,
@@ -211,11 +213,20 @@ Phase0aStepResult reducePhase0aTick({
         events.add(
           Phase0aGatherStarted(seq: seq++, tick: tick, actor: actorId),
         );
-        final targets = _opposingTargets(
-          casterSide: actor.side,
-          player: player,
-          enemiesById: enemiesById,
-        );
+        final targets =
+            _opposingTargets(
+                  casterSide: actor.side,
+                  player: player,
+                  enemiesById: enemiesById,
+                )
+                .where(
+                  (target) => _withinEffectRadius(
+                    origin: actor.position,
+                    position: target.position,
+                    effectRadius: intent.effectRadius,
+                  ),
+                )
+                .toList();
         final outcomes = <Phase0aSkillOutcome>[];
         final deaths = <Phase0aActor>[];
         for (final target in targets) {
@@ -271,6 +282,7 @@ Phase0aStepResult reducePhase0aTick({
           seq: seq,
           tick: tick,
           cast: cast,
+          slots: slots,
         );
         if (isPlayer) {
           player = cast.casterAfterQi;
@@ -287,11 +299,20 @@ Phase0aStepResult reducePhase0aTick({
         );
         if (cast == null) continue;
         events.add(Phase0aClearStarted(seq: seq++, tick: tick, actor: actorId));
-        final targets = _opposingTargets(
-          casterSide: actor.side,
-          player: player,
-          enemiesById: enemiesById,
-        );
+        final targets =
+            _opposingTargets(
+                  casterSide: actor.side,
+                  player: player,
+                  enemiesById: enemiesById,
+                )
+                .where(
+                  (target) => _withinEffectRadius(
+                    origin: actor.position,
+                    position: target.position,
+                    effectRadius: intent.effectRadius,
+                  ),
+                )
+                .toList();
         final outcomes = <Phase0aSkillOutcome>[];
         final deaths = <Phase0aActor>[];
         for (final target in targets) {
@@ -336,6 +357,7 @@ Phase0aStepResult reducePhase0aTick({
           seq: seq,
           tick: tick,
           cast: cast,
+          slots: slots,
         );
         if (isPlayer) {
           player = cast.casterAfterQi;
@@ -457,10 +479,10 @@ _SkillCast? _tryCastSkill({
   if (index < 0) return null;
   final slot = slots[index];
   if (slot.cooldownRemaining > 0 || actor.qiCurrent < qiCost) return null;
+  // availability 不在此处预置:施放后由全槽同拍重算按槽序发出真实迁移。
   final slotAfterCast = slot.copyWith(
     cooldownRemaining: cooldownSeconds,
     qiCost: qiCost,
-    availability: Phase0aSkillAvailability.cooldown,
   );
   slots[index] = slotAfterCast;
   return _SkillCast(
@@ -490,22 +512,49 @@ int _emitDefeats(
   return nextSeq;
 }
 
+/// 技能施放(caster 真气已变)后同拍刷新全部技能槽可用态:
+/// 按槽稳定顺序只发真实迁移;施放槽进 cooldown,其余槽若余气不足
+/// 同拍进 qi,不等下一拍。payload 直接驱动 HUD。
 int _emitCastAvailability({
   required List<Phase0aEvent> events,
   required int seq,
   required int tick,
   required _SkillCast cast,
+  required List<Phase0aSkillSlot> slots,
 }) {
-  events.add(
-    Phase0aSkillAvailabilityChanged(
-      seq: seq++,
-      tick: tick,
-      slot: cast.slot,
-      availability: Phase0aSkillAvailability.cooldown,
-      cooldownRemaining: cast.slotAfterCast.cooldownRemaining,
-      qiCurrent: cast.casterAfterQi.qiCurrent,
-      qiRequired: cast.slotAfterCast.qiCost,
-    ),
-  );
-  return seq;
+  var nextSeq = seq;
+  final qiCurrent = cast.casterAfterQi.qiCurrent;
+  for (var i = 0; i < slots.length; i++) {
+    final slot = slots[i];
+    final availability = availabilityOf(
+      cooldownRemaining: slot.cooldownRemaining,
+      qiCurrent: qiCurrent,
+      qiCost: slot.qiCost,
+    );
+    if (availability == slot.availability) continue;
+    slots[i] = slot.copyWith(availability: availability);
+    events.add(
+      Phase0aSkillAvailabilityChanged(
+        seq: nextSeq++,
+        tick: tick,
+        slot: slot.slot,
+        availability: availability,
+        cooldownRemaining: availability == Phase0aSkillAvailability.cooldown
+            ? slot.cooldownRemaining
+            : null,
+        qiCurrent: qiCurrent,
+        qiRequired: slot.qiCost,
+      ),
+    );
+  }
+  return nextSeq;
+}
+
+/// 目标是否在以 origin 为圆心的作用半径内(闭区间)。
+bool _withinEffectRadius({
+  required ArenaVector origin,
+  required ArenaVector position,
+  required double effectRadius,
+}) {
+  return (position - origin).lengthSquared <= effectRadius * effectRadius;
 }

@@ -742,9 +742,7 @@ void main() {
     test('恰在作用半径边界上的目标进入结算(闭区间)', () {
       final result = reducePhase0aTick(
         state: makeState(
-          enemies: [
-            makeEnemy(id: 'e1', position: const ArenaVector(100, 0)),
-          ],
+          enemies: [makeEnemy(id: 'e1', position: const ArenaVector(100, 0))],
           skillSlots: [makeSlot('gather')],
         ),
         intents: const [
@@ -804,9 +802,7 @@ void main() {
     test('ringRadius 超过 effectRadius 时拒绝释放', () {
       final result = reducePhase0aTick(
         state: makeState(
-          enemies: [
-            makeEnemy(id: 'e1', position: const ArenaVector(90, 0)),
-          ],
+          enemies: [makeEnemy(id: 'e1', position: const ArenaVector(90, 0))],
           skillSlots: [makeSlot('gather')],
         ),
         intents: const [
@@ -894,10 +890,7 @@ void main() {
       final slots = {
         for (final slot in result.state.skillSlots) slot.slot: slot,
       };
-      expect(
-        slots['gather']!.availability,
-        Phase0aSkillAvailability.cooldown,
-      );
+      expect(slots['gather']!.availability, Phase0aSkillAvailability.cooldown);
       expect(slots['clear']!.availability, Phase0aSkillAvailability.qi);
 
       final next = reducePhase0aTick(
@@ -906,10 +899,7 @@ void main() {
         deltaSeconds: 0.1,
         damageResolver: hitResolver,
       );
-      expect(
-        next.events.whereType<Phase0aSkillAvailabilityChanged>(),
-        isEmpty,
-      );
+      expect(next.events.whereType<Phase0aSkillAvailabilityChanged>(), isEmpty);
     });
   });
 }
