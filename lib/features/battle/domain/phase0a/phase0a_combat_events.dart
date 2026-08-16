@@ -283,3 +283,78 @@ final class Phase0aSkillAvailabilityChanged extends Phase0aEvent {
     qiRequired,
   );
 }
+
+/// 新一波敌人入场(对齐契约 wave_started,每场 wave_index 严格递增)。
+///
+/// [waveIndex] 对外 1-based(首波 = 1,直对「第 N 波」,2026-08-16 拍板);
+/// [waveTotal] 为本场总波数。首波事件全场一次、排在首个战斗事件前。
+final class Phase0aWaveStarted extends Phase0aEvent {
+  const Phase0aWaveStarted({
+    required super.seq,
+    required super.tick,
+    required this.waveIndex,
+    required this.waveTotal,
+  });
+
+  final int waveIndex;
+  final int waveTotal;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aWaveStarted &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.waveIndex == waveIndex &&
+      other.waveTotal == waveTotal;
+
+  @override
+  int get hashCode => Object.hash(seq, tick, waveIndex, waveTotal);
+}
+
+/// 一波全部敌方单位移除完成(对齐契约 wave_cleared,与 wave_started 一一对应)。
+final class Phase0aWaveCleared extends Phase0aEvent {
+  const Phase0aWaveCleared({
+    required super.seq,
+    required super.tick,
+    required this.waveIndex,
+  });
+
+  /// 对外 1-based,与 [Phase0aWaveStarted.waveIndex] 同口径。
+  final int waveIndex;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aWaveCleared &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.waveIndex == waveIndex;
+
+  @override
+  int get hashCode => Object.hash(seq, tick, waveIndex);
+}
+
+/// 战斗胜利终局(对齐契约 battle_victory,全场至多一条;
+/// 其后一切战斗事件被忽略)。
+final class Phase0aBattleVictory extends Phase0aEvent {
+  const Phase0aBattleVictory({required super.seq, required super.tick});
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aBattleVictory && other.seq == seq && other.tick == tick;
+
+  @override
+  int get hashCode => Object.hash(seq, tick);
+}
+
+/// 战斗战败终局(对齐契约 battle_defeat,全场至多一条;
+/// 玩家死亡优先,病态双方同时为空也按 defeat,禁止双终局)。
+final class Phase0aBattleDefeat extends Phase0aEvent {
+  const Phase0aBattleDefeat({required super.seq, required super.tick});
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aBattleDefeat && other.seq == seq && other.tick == tick;
+
+  @override
+  int get hashCode => Object.hash(seq, tick);
+}

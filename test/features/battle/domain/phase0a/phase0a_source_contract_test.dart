@@ -137,6 +137,24 @@ void main() {
       }
     });
 
+    // 第四批(波次/终局状态机)派单禁区:BattleResolutionService 含掉落、
+    // 成长、伤势等终局下游副作用,只登记为未来终局事件下游,本层禁 import/call。
+    test('不得 import/call BattleResolutionService', () {
+      for (final file in sourceFiles(appDir)) {
+        final code = stripComments(file.readAsStringSync());
+        expect(
+          code.contains('battle_resolution.dart'),
+          isFalse,
+          reason: '${file.path} import battle_resolution.dart',
+        );
+        expect(
+          code.contains('BattleResolutionService'),
+          isFalse,
+          reason: '${file.path} 引用 BattleResolutionService',
+        );
+      }
+    });
+
     test('不得出现数值参数默认值', () {
       final numericDefault = RegExp(
         r'(?<![=<>!+\-*/])=\s*-?\d+(?:\.\d+)?\s*[,){]',
