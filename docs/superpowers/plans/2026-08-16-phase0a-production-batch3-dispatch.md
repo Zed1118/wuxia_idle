@@ -24,15 +24,21 @@
 
 ## 切片
 
-1. 主窗口定位公式与旧战中 adapter，冻结本契约。
-2. Kimi 独立 worktree：计划 → 红测 → 最小实现 → 验证 → `[READY]`。
-3. 主窗口交叉复核映射和 RNG/效果丢失边界。
-4. 合入协调分支，复跑验证并冻结。
+1. [x] 主窗口定位公式与旧战中 adapter，冻结本契约。
+2. [x] Kimi 独立 worktree：计划 → 红测 → 最小实现 → 验证 → `[READY]`。
+3. [x] 主窗口交叉复核映射和 RNG/效果丢失边界。
+4. [x] 合入协调分支，复跑验证并冻结。
 
 ## 当前恢复点
 
-- 状态：契约冻结中。
-- 最后完成：第二批 `[READY] 36b6aaff`；定位 `DamageCalculator.calculateResolved` 与旧 `_calculateInBattle` 字段口径。
-- 下一步：提交派单，创建 Kimi worktree 并执行。
-- 已跑验证：第二批最终 81/81、probe 8/8、analyze 0 issue。
+- 状态：**已交付，待本计划恢复点提交并创建协调 `[READY]` tip**。
+- 最后完成：合入 Kimi `[READY] 3cecfb68`；适配器仅调用 `calculateResolved`，锁定 `finalDamage` 映射、seeded RNG、control-only、per-skill 熟练度与快照防御性副本。
+- 下一步：提交本恢复点，复跑协调分支最终验证并创建 `[READY]` tip。
+- 已跑验证（主窗口独立于 Kimi）：Phase0a **99/99**、damage calculator **51/51**、probe **8/8**、analyze 0 issue、禁用依赖搜索与 `git diff --check` 干净。
 - 阻塞项：无。
+
+## 残留风险
+
+- `AttackResult.appliedEffects` 尚无 Phase 0A 消费方；本批不扩状态系统。
+- 非零吸血在 reducer 支持回血输出前保持 fail-fast，禁止静默丢失。
+- 本批完成 simulation session 的真实伤害链路，尚未切根应用 UI/旧 3v3 入口，也未接胜负结算与存档。
