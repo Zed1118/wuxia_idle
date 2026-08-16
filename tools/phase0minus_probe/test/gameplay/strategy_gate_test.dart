@@ -35,11 +35,22 @@ void main() {
     int seed,
     GameplayStrategy strategy,
   ) async {
-    final game = GameplayGame(config: configForSeed(seed));
+    final game = GameplayGame(config: configForSeed(seed), loadArt: false);
     await tester.pumpWidget(
       MaterialApp(home: GameWidget<GameplayGame>(game: game)),
     );
     await tester.pump();
+    await tester.runAsync(() async {
+      for (var attempt = 0; attempt < 60 && !game.isLoaded; attempt++) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+    });
+    await tester.pump();
+    expect(
+      game.isLoaded,
+      isTrue,
+      reason: 'Strategy fixture must finish loading',
+    );
     final result = runGameplayStrategy(
       game: game,
       strategy: strategy,
