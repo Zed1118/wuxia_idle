@@ -86,6 +86,7 @@ final ArenaVector? vfxTarget;  // 掌风: 目标位置
 |--------|---------|------|
 | RP0 | 计划落地后 | 审计文档 + 计划文档 + 空提交 (`b6e135be`) |
 | RP1 | S5 完成后 | 全部 VFX 位置绑定 + 红测通过 (`d709894a`) |
+| GATE | 坐标契约测试 + 视觉 Gate | 10 项新增测试 + 文档修复 + build 验证 (`e4ed139e`) |
 
 ## 完成记录
 
@@ -94,9 +95,23 @@ final ArenaVector? vfxTarget;  // 掌风: 目标位置
   - 8 屏幕红测 + 18 VFX 映射测试全部通过
   - `flutter analyze` 零问题
   - 移除 `_FeedbackLayer._actor()` 死代码
+- **GATE**: `e4ed139e` — 坐标契约测试 + 视觉 Gate
+  - 新增 6 项 VFX 控制器坐标快照测试 + 4 项屏幕坐标测试
+  - 54 测试全过 (21 event_mapping + 33 其他 Phase0A)
+  - `flutter analyze lib/ test/` 零问题
+  - `git diff --check` 通过
+  - macOS debug build 成功 (`build/macos/Build/Products/Debug/wuxia_idle.app`)
+
+## 待 Qoder 交叉审查
+
+审查范围: `d709894a` 到 `e4ed139e` 之间的 diff
+
+- [ ] 坐标快照架构正确性 (anchor/source/vfxTarget)
+- [ ] 测试覆盖率是否充分
+- [ ] 无引入新 bug 或 regression
 
 ## 工具分工
 
-- **主协调 (DeepSeek)**: 全部实现 + 红测 + 验证
-- **Qoder**: 交叉审查每个切片 diff
-- **Kimi**: 不参与本批（改动量小，适合单工具完成）
+- **主协调 (DeepSeek)**: 全部实现 + 红测 + 坐标契约测试 + 视觉 Gate
+- **Qoder**: 交叉审查 diff (待执行)
+- **Kimi**: 不参与本批
