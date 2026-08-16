@@ -28,8 +28,8 @@
 
 ## 当前恢复点
 
-- 状态：五个切片全部完成，审计报告已交付，待派单方按 §8.2 复查。
-- 最后完成：`docs/audit/phase0a-presentation-gap-audit-2026-08-16.md`。核心结论：切片运行时仅消费 4 张图（长卷 + 祖师/山贼/精英姿势图集），动作 = 每帧按状态取格切换（无序列帧/骨骼，实测 grep 0 命中）；全部特效为 Canvas 直绘占位；probe 音频为零（无依赖、0 播放点，且隔离守卫测试黑名单禁音频依赖）；主仓音频全链路可复用（30/30 mp3 有消费点，battleUlt/battleChargeStart 系借用素材，battleDeath 槽位预留无资产）。
-- 下一步：派单方复查路径/计数与越界情况后，按报告 P0→P2 拆单实装。
-- 已跑验证：本单为只读审计，未改代码，无需跑测试；报告中全部计数由文末复现命令实测（30 个 mp3、probe 音频 0 命中、stages/towers 的 sceneBackgroundPath 122/49 与 iconPath 135/116、SpriteAnimation/Skeleton 0 命中、runtime 目录 4 张消费图在列）。
-- 阻塞项：无。待派单方/用户拍板项（已在报告 P1-2 写明选项与证据，本单不代拍）：probe 内是否引入音频依赖（触 `feedback_isolation_guard_test.dart:18-21` 黑名单），或维持静音契约、音效随根应用生产接线实装。
+- 状态：返修完成——审计报告与本恢复点口径已收窄为「probe 仅作手感/图像/性能参考与验收证据，表现层实装域 = 根应用纯 Flutter 战斗表现层 + 根 `assets/`」，待派单方按 §8.2 复查。
+- 最后完成：`docs/audit/phase0a-presentation-gap-audit-2026-08-16.md` 返修（总览改口径、七类缺口加参考注记、双视口节改资产落点、「后续小切片」整节重写）。事实结论不变：切片运行时仅消费 4 张图（长卷 + 祖师/山贼/精英姿势图集），动作 = 每帧按状态取格切换（无序列帧/骨骼，实测 grep 0 命中）；全部特效为 Canvas 直绘占位；probe 音频为零且维持静音契约；主仓音频全链路可复用（30/30 mp3 有消费点，battleUlt/battleChargeStart 系借用素材，battleDeath 槽位预留无资产）。
+- 下一步：P0 只做资产规格固化/资产制作与根应用接线前置——缺的 battleDeath/battleUlt 与 Q/R 专用音效资产补入根 `assets/audio/`，复用根 `lib/shared/audio` 链路，不为 probe 引入音频依赖；纯 Flutter 动作/特效/HUD 实装排在 Qoder deterministic simulation core 与 input adapter 边界确立之后；实际文件名待生产接线路线冻结后再定。
+- 已跑验证：本单为只读审计 + 文档返修，未改代码，无需跑测试；报告中事实计数由文末复现命令实测（30 个 mp3、probe 音频 0 命中、stages/towers 的 sceneBackgroundPath 122/49 与 iconPath 135/116、SpriteAnimation/Skeleton 0 命中、runtime 目录 4 张消费图在列）。
+- 阻塞项：无。原「probe 是否引入音频依赖」待拍板项已由派单方拍板：不引入，音效走根应用现有后端。

@@ -8,9 +8,11 @@
 - 动作 = 每帧按状态取格 `drawImageRect`（`gameplay_art.dart:66-73`），无序列帧/骨骼（grep `SpriteAnimation|Skeleton|spine` 0 命中）；受击 = `ColorFilter` 闪白（`gameplay_art.dart:106-111`）；特效全部为 Canvas 直绘占位；greybox 回退仍内联（`gameplay_game.dart:719-722,1201-1205,1590-1598`）。
 - probe 音频为零：pubspec 无音频依赖、`AudioPlayer` 0 命中；隔离守卫 `test/phase0b/feedback/feedback_isolation_guard_test.dart:18-21` 黑名单 audioplayers/flame_audio/just_audio；`phase0b/feedback/feedback_cues.dart:5-6` 明示静音契约、真音频另行 gate。
 - 主仓音频全链路可复用：`lib/shared/audio/` 三件套（`AudioBackend`/`AudioPlayersBackend`/单例 `SoundManager`）+ 声明式 `BgmScope`；`assets/audio` 30 个 mp3 实测 30/30 有消费点；`battleUlt`/`battleChargeStart` 为借用素材（`dedicated_audio_assets.dart:29-42` 标 temporaryBorrowed）；`battleDeath` 槽位预留、无资产未接线（`audio_assets.dart:47,55`）。
-- 生产战斗 `lib/features/battle/` 与 probe 完全独立、零共享代码；其演出层完整（38 个 presentation 文件）且已消费场景/立绘资产（stages.yaml/towers.yaml 实测 sceneBackgroundPath 122/49 条、iconPath 135/116 条）并触发全部战斗 SFX——表现层缺口集中在 probe 切片一侧。
+- 生产战斗 `lib/features/battle/` 与 probe 完全独立、零共享代码；其演出层完整（38 个 presentation 文件）且已消费场景/立绘资产（stages.yaml/towers.yaml 实测 sceneBackgroundPath 122/49 条、iconPath 135/116 条）并触发全部战斗 SFX。**返修口径**：probe 从此仅作手感/图像/性能参考与验收对照，不再是表现层实装目标；根应用仍是旧战斗形态，表现层缺口需随 Qoder 生产接线在根应用纯 Flutter 战斗表现层 + 根 `assets/` 补齐。
 
 ## 七类反馈缺口
+
+> 返修口径：本节保留事实盘点，「缺失/规格」作为根应用补齐时的资产与效果规格参考；probe renderer 不再改动，缺失资产（含 battleDeath/battleUlt 与 Q/R 专用音效）入根 `assets/`。
 
 **1. 普攻/掌风 — P0**
 - 可复用：命中停顿 22ms（`assets/probe_scenarios.yaml:144`）、掌风 540 判定（`gameplay_game.dart:1003-1035`）、主仓 battleHit_0_0..1_2 六变体（消费链 `lib/shared/audio/audio_assets.dart:71-75`）。占位：掌风 = 贝塞尔色块（`gameplay_game.dart:2026-2058`，填充 `0xff355B52`）；普攻墨迹 = drawLine 线段（`:2010-2025`）；动作 = 祖师 6 姿势取格（映射 `:1191-1198`）。
@@ -45,15 +47,17 @@
 - 视口：1280×720 与 1440×900 均可操作、HUD 可读、20+1 同屏主角/精英长血条/飘字可辨、主角与精英不被特效遮挡（沿用切片既有目检口径）。
 - 性能基线（恢复点记录，LG 60Hz/DPR 1，`phase0a_replay` Profile 6/6 PASS）：720p p99 6.258–9.099ms、900p p99 8.023–8.105ms、最大帧 ≤12.730ms、超预算帧 0、连续严重帧 0；任何补齐不得回退。
 - 资源约束：反馈池 ≤160、伤害标签池 ≤48 且溢出 0（峰值基线 136/22）；`_painterCache` ≤16（`gameplay_game.dart:1790`）；禁逐标签 `saveLayer`；热路径禁 debug 日志。
-- 风格：水墨克制色板，禁 Material 默认饱和色；新资产入 `tools/phase0minus_probe/assets/` 并过运行时资产契约测试；readability 五帧（`assets/readability/manifest.json` sha256 校验）随视觉变更重生成。
+- 风格：水墨克制色板，禁 Material 默认饱和色；新资产入根 `assets/`（战斗音效入根 `assets/audio/`），不再新增 probe 资产；probe readability 五帧（`assets/readability/manifest.json` sha256 校验）与双视口基线仅作验收对照，正式验收对象为根应用真实入口。
 
-## 后续小切片（P0→P2）
+## 后续小切片（P0→P2 · 返修口径）
 
-- P0-1 动作序列帧化（祖师/山贼/精英攻击·受击·倒地多帧）：改动域 `tools/phase0minus_probe/assets/phase0b/runtime/` + `gameplay_art.dart`/`gameplay_game.dart` 渲染；验收：`test/gameplay/gameplay_visual_slice_test.dart` 等契约 + replay 双视口 Profile 6/6 + 池/帧预算不回退 + 真机目检。
-- P0-2 核心特效贴图化（掌风/聚怪涡旋/清场墨迹/死亡墨散）：改动域 同上图集 + `GameplayFeedback.render`（`gameplay_game.dart:1956-2085`）；验收：渲染契约测试 + 双视口 Profile + 遮挡目检。
-- P1-1 破招墨爆 + 波次横幅/入场墨入：改动域 `gameplay_game.dart` 反馈与 `main.dart` HUD overlay；验收：widget/渲染契约 + 双视口 smoke。
-- P1-2 战斗音效接线（**待拍板，二选一**：A. probe 引入音频依赖，须改 `feedback_isolation_guard_test.dart:18-21` 黑名单；B. 维持静音契约，音效随根应用生产接线复用 `lib/shared/audio` 并补 battleDeath/battleUlt 专属资产）：验收 `test/shared/audio/` + 真机听验。
-- P2-1 HUD 水墨化 + 中文五态 + 指令缓冲可视化：改动域 `main.dart` `GameplayHud`（`:636-972`）；验收：双视口 HUD 可读 smoke + semantics 检查。
+硬口径：probe 仅为手感/图像/性能参考与验收证据，不再扩展其美术、HUD、音频依赖或实现；表现层实装域 = 根应用纯 Flutter 战斗表现层 + 根 `assets/`；音效走根 `lib/shared/audio` 现有后端，专用资产入根 `assets/audio/`；实际文件名待 Qoder 生产接线路线冻结后再定，本节不虚构。
+
+- P0-1 资产规格固化与制作（不改 probe renderer、不改根应用代码）：祖师/山贼/精英攻击·受击·倒地序列帧，掌风/聚怪涡旋/清场墨迹/死亡墨散贴图，破招墨爆、波次横幅与 HUD 印面水墨化样式，规格以七类缺口节为准；产出入根 `assets/`；验收：资产清单对照七类规格 + 水墨克制色板目检。
+- P0-2 战斗音效资产补齐（根应用链路）：复用根 `lib/shared/audio` 现有后端，不引入 probe 音频依赖；battleDeath 接线、battleUlt 专属资产及 Q 聚怪/R 清场音效入根 `assets/audio/`；验收：`test/shared/audio/` + 真机听验。
+- P0-3 根应用接线前置：配合 Qoder 冻结 deterministic simulation core 与 input adapter 边界，产出根应用表现层接线清单（实际文件名届时再定）；本片只产清单，不写实现。
+- P1 纯 Flutter 动作/特效/HUD 实装（根应用）：必须排在 Qoder deterministic simulation core 与 input adapter 边界确立之后；序列帧动作、水墨特效、波次横幅、HUD 中文五态 + 指令缓冲可视化在根应用战斗表现层实装；验收：根应用真实入口双视口 smoke + 性能/可读性对照 probe 基线不回退。
+- P2 验收对照：正式验收对象 = 根应用真实入口；probe 已有双视口 Profile 与 readability 五帧基线仅作对照，probe 本体不改。
 
 ## 核心复现命令
 
