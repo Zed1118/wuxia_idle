@@ -42,6 +42,10 @@ final class Phase0aAttackIntent extends Phase0aIntent {
 /// Q 聚怪请求:作用半径内目标逐目标结算 outcomes;
 /// [ringRadius] 只决定目标落点环,不得冒充作用半径,
 /// `ringRadius > effectRadius` 为非法参数(reducer 拒绝释放)。
+///
+/// player-only 契约:技能印/真气循环是玩家全局态,reducer 拒绝非玩家
+/// actor 的 gather intent(不结算、不耗气、不动冷却、不发事件);
+/// 数值参数(半径/冷却/真气)要求有限且非负,非法同样拒绝。
 final class Phase0aGatherIntent extends Phase0aIntent {
   const Phase0aGatherIntent({
     required super.actorId,
@@ -63,6 +67,8 @@ final class Phase0aGatherIntent extends Phase0aIntent {
 }
 
 /// R 清场请求:作用半径内存活敌方单位逐目标稳定顺序结算。
+///
+/// player-only 契约与数值边界:同 [Phase0aGatherIntent]。
 final class Phase0aClearIntent extends Phase0aIntent {
   const Phase0aClearIntent({
     required super.actorId,

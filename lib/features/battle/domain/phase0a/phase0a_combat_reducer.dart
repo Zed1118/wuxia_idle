@@ -53,6 +53,14 @@ Phase0aStepResult reducePhase0aTick({
   required double deltaSeconds,
   required Phase0aDamageResolver damageResolver,
 }) {
+  // 拍长必须有限且非负:负值会让冷却反增/位移反向,NaN 会绕过一切比较。
+  if (!(deltaSeconds.isFinite && deltaSeconds >= 0)) {
+    throw ArgumentError.value(
+      deltaSeconds,
+      'deltaSeconds',
+      'must be finite and non-negative',
+    );
+  }
   final tick = state.tick + 1;
   var seq = state.nextSeq;
   final events = <Phase0aEvent>[];
@@ -130,6 +138,13 @@ Phase0aStepResult reducePhase0aTick({
           enemiesById[actorId] = moved;
         }
       case Phase0aAttackIntent():
+        // 非法数值(负/NaN/Infinity)静默拒绝:平方会掩盖负射程,
+        // 负冷却等价无冷却。
+        if (!_isUsableNumber(intent.range) ||
+            !_isUsableNumber(intent.halfArcRadians) ||
+            !_isUsableNumber(intent.cooldownSeconds)) {
+          continue;
+        }
         if (actor.attackCooldownRemaining > 0) continue;
         events.add(
           Phase0aAttackStarted(
@@ -154,10 +169,8 @@ Phase0aStepResult reducePhase0aTick({
             kind: Phase0aDamageKind.basic,
           );
           if (resolved.isHit) {
-            final remaining = math.max(
-              0,
-              target.currentHealth - resolved.damage,
-            );
+            final damage = _checkedDamage(resolved);
+            final remaining = math.max(0, target.currentHealth - damage);
             events.add(
               Phase0aHitLanded(
                 seq: seq++,
@@ -167,7 +180,7 @@ Phase0aStepResult reducePhase0aTick({
                 moveKind: intent.moveKind,
                 isCritical: resolved.isCritical,
                 isUltimate: false,
-                resolvedDamage: resolved.damage,
+                resolvedDamage: damage,
                 remainingHealth: remaining,
               ),
             );
@@ -200,8 +213,18 @@ Phase0aStepResult reducePhase0aTick({
           enemiesById[actorId] = recharged;
         }
       case Phase0aGatherIntent():
-        // 非法参数:落点环不得超出作用半径,否则会把目标从作用区内推出去。
-        if (intent.ringRadius > intent.effectRadius) continue;
+        // player-only 契约:技能印/真气循环是玩家全局态,敌方注入
+        // gather/clear 一律拒绝,禁止静默污染玩家 skillSlots 与 HUD。
+        if (actor.side != Phase0aSide.player) continue;
+        // 非法参数:负/NaN/Infinity 数值或负真气消耗静默拒绝;
+        // 落点环不得超出作用半径,否则会把目标从作用区内推出去。
+        if (!_isUsableNumber(intent.ringRadius) ||
+            !_isUsableNumber(intent.effectRadius) ||
+            !_isUsableNumber(intent.cooldownSeconds) ||
+            intent.qiCost < 0 ||
+            intent.ringRadius > intent.effectRadius) {
+          continue;
+        }
         final cast = _tryCastSkill(
           actor: actor,
           slotId: intent.slot,
@@ -241,7 +264,7 @@ Phase0aStepResult reducePhase0aTick({
             targetId: target.id,
             kind: Phase0aDamageKind.gather,
           );
-          final damage = resolved.isHit ? resolved.damage : 0;
+          final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);
           final updated = target.copyWith(
             position: destination,
@@ -290,6 +313,13 @@ Phase0aStepResult reducePhase0aTick({
           enemiesById[actorId] = cast.casterAfterQi;
         }
       case Phase0aClearIntent():
+        // player-only 契约与数值边界:同 gather 分支。
+        if (actor.side != Phase0aSide.player) continue;
+        if (!_isUsableNumber(intent.effectRadius) ||
+            !_isUsableNumber(intent.cooldownSeconds) ||
+            intent.qiCost < 0) {
+          continue;
+        }
         final cast = _tryCastSkill(
           actor: actor,
           slotId: intent.slot,
@@ -321,7 +351,7 @@ Phase0aStepResult reducePhase0aTick({
             targetId: target.id,
             kind: Phase0aDamageKind.clear,
           );
-          final damage = resolved.isHit ? resolved.damage : 0;
+          final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);
           final updated = target.copyWith(currentHealth: remaining);
           outcomes.add(
@@ -393,6 +423,22 @@ Phase0aSkillAvailability availabilityOf({
 double _cooldownAfter(double remaining, double deltaSeconds) {
   final next = remaining - deltaSeconds;
   return next > 0 ? next : 0;
+}
+
+/// intent 外部 double 参数合法性:必须有限且非负。
+/// 负值经平方(射程/半径)或减法(冷却/真气)会被悄悄合法化,NaN 比较
+/// 恒 false 会绕过一切边界检查,两者都必须在结算前拒绝。
+bool _isUsableNumber(double value) => value.isFinite && value >= 0;
+
+/// resolver 返回的结算伤害必须非负:负伤害经 `hp - damage` 会变成治疗,
+/// clamp 成 0 会掩盖 resolver/公式错误,故 fail-fast。
+int _checkedDamage(Phase0aResolvedHit resolved) {
+  if (resolved.damage < 0) {
+    throw StateError(
+      'Phase0aDamageResolver returned negative damage: ${resolved.damage}',
+    );
+  }
+  return resolved.damage;
 }
 
 /// intent 稳定排序:actorId 升序,同 actor 保持输入顺序
