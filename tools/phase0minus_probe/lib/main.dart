@@ -649,69 +649,148 @@ final class GameplayHud extends StatelessWidget {
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Stack(
                 children: [
-                  DecoratedBox(
-                    decoration: const BoxDecoration(color: Color(0xcceee6d2)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: SizedBox(
-                        width: 310,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'PHASE 0A  |  WASD · LMB · SPACE · Q · R',
-                              style: TextStyle(
-                                color: Color(0xff252d29),
-                                fontWeight: FontWeight.w700,
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: const Color(0xD9282621),
+                        border: Border.all(color: const Color(0x827A6B54)),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x66130F0C),
+                            blurRadius: 16,
+                            offset: Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(15, 12, 15, 13),
+                        child: SizedBox(
+                          width: 322,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text(
+                                    'FOUNDER',
+                                    style: TextStyle(
+                                      color: Color(0xffF0E4CB),
+                                      fontSize: 13,
+                                      letterSpacing: 2.1,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    'WAVE ${state.wave}/3  ·  ${state.enemyCount}',
+                                    style: const TextStyle(
+                                      color: Color(0xffC8B99D),
+                                      fontSize: 11,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            _LabeledMeter(
-                              label: 'HP',
-                              value: state.health,
-                              color: const Color(0xff8a332e),
-                            ),
-                            const SizedBox(height: 5),
-                            _LabeledMeter(
-                              label: 'QI',
-                              value: state.qi,
-                              color: const Color(0xff3f6159),
-                            ),
-                            const SizedBox(height: 9),
-                            Text(
-                              'Wave ${state.wave}/3  ·  enemies ${state.enemyCount}  ·  '
-                              'Space ${(state.movementArtCooldown * 3.2).toStringAsFixed(1)}s  ·  '
-                              'Q ${(state.gatherCooldown * 6.5).toStringAsFixed(1)}s',
-                              style: const TextStyle(color: Color(0xff252d29)),
-                            ),
-                            const SizedBox(height: 7),
-                            Text(
-                              state.message,
-                              style: const TextStyle(color: Color(0xff672d2a)),
-                            ),
-                          ],
+                              const SizedBox(height: 10),
+                              _LabeledMeter(
+                                label: 'HP',
+                                value: state.health,
+                                color: const Color(0xffA64A3F),
+                              ),
+                              const SizedBox(height: 6),
+                              _LabeledMeter(
+                                label: 'QI',
+                                value: state.qi,
+                                color: const Color(0xff668E82),
+                              ),
+                              const SizedBox(height: 9),
+                              Text(
+                                state.message,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Color(0xffD2C3A7),
+                                  fontSize: 11,
+                                  height: 1.25,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  const Spacer(),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _SkillSeal(
+                            keyLabel: 'SPACE',
+                            name: 'STEP',
+                            readiness: 1 - state.movementArtCooldown,
+                          ),
+                          const SizedBox(width: 10),
+                          _SkillSeal(
+                            keyLabel: 'Q',
+                            name: 'GATHER',
+                            readiness: 1 - state.gatherCooldown,
+                          ),
+                          const SizedBox(width: 10),
+                          _SkillSeal(
+                            keyLabel: 'R',
+                            name: 'CLEAR',
+                            readiness: (state.qi / 0.6).clamp(0, 1),
+                            accent: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   Align(
                     alignment: Alignment.bottomRight,
                     child: DecoratedBox(
-                      decoration: const BoxDecoration(color: Color(0xaa252d29)),
+                      decoration: BoxDecoration(
+                        color: const Color(0xB925231F),
+                        border: Border.all(color: const Color(0x5A8F8068)),
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 8,
                         ),
                         child: Text(
-                          'kills ${state.counters['kills'] ?? 0}  ·  '
-                          'chain ${state.counters['maximum_chain'] ?? 0}  ·  '
-                          'breaks ${state.counters['break_successes'] ?? 0}',
-                          style: const TextStyle(color: Color(0xffeee6d2)),
+                          'KILLS ${state.counters['kills'] ?? 0}  ·  '
+                          'CHAIN ${state.counters['maximum_chain'] ?? 0}  ·  '
+                          'BREAK ${state.counters['break_successes'] ?? 0}',
+                          style: const TextStyle(
+                            color: Color(0xffD8C9AC),
+                            fontSize: 11,
+                            letterSpacing: 0.7,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 2),
+                      child: Text(
+                        'WASD MOVE  ·  LMB STRIKE / PALM WIND',
+                        style: TextStyle(
+                          color: Color(0xD9E7DCC4),
+                          fontSize: 11,
+                          letterSpacing: 1.2,
+                          shadows: [
+                            Shadow(color: Color(0xCC17130F), blurRadius: 5),
+                          ],
                         ),
                       ),
                     ),
@@ -740,6 +819,80 @@ final class GameplayHud extends StatelessWidget {
       ],
     ),
   );
+}
+
+final class _SkillSeal extends StatelessWidget {
+  const _SkillSeal({
+    required this.keyLabel,
+    required this.name,
+    required this.readiness,
+    this.accent = false,
+  });
+
+  final String keyLabel;
+  final String name;
+  final double readiness;
+  final bool accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final ready = readiness >= 0.999;
+    final ink = accent ? const Color(0xff9B4037) : const Color(0xff42675D);
+    return SizedBox(
+      width: 86,
+      height: 58,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xDD26231E),
+          border: Border.all(
+            color: ready
+                ? ink.withValues(alpha: 0.95)
+                : const Color(0x70766B59),
+            width: ready ? 2 : 1,
+          ),
+          boxShadow: ready
+              ? [BoxShadow(color: ink.withValues(alpha: 0.25), blurRadius: 9)]
+              : null,
+        ),
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: FractionallySizedBox(
+                widthFactor: readiness.clamp(0, 1),
+                child: Container(height: 3, color: ink),
+              ),
+            ),
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    keyLabel,
+                    style: const TextStyle(
+                      color: Color(0xffF1E5CC),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      color: Color(0xffBEB097),
+                      fontSize: 9,
+                      letterSpacing: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 final class _LabeledMeter extends StatelessWidget {

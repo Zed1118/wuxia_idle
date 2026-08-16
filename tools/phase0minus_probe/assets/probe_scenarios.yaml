@@ -74,6 +74,9 @@ gameplay:
     damage: 34.0
     qi_gain: 5.0
     maximum_hit_reacts: 3
+    ranged_range: 420.0
+    ranged_half_arc_radians: 0.16
+    ranged_damage: 24.0
   movement_art:
     speed: 1111.0
     duration_seconds: 0.18
@@ -116,9 +119,11 @@ gameplay:
   feedback:
     pool_size: 160
     basic_particles: 8
+    ranged_particles: 5
     gather_particles: 32
     clear_particles: 128
     basic_lifetime_seconds: 0.20
+    ranged_lifetime_seconds: 0.26
     gather_lifetime_seconds: 0.45
     clear_lifetime_seconds: 0.70
     basic_hit_stop_seconds: 0.022

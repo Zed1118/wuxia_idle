@@ -13,6 +13,9 @@ final class GameplayTuning {
     this.basicHalfArcRadians = 0.655,
     this.basicDamage = 24,
     this.basicQiGain = 5,
+    this.rangedRange = 420,
+    this.rangedHalfArcRadians = 0.16,
+    this.rangedDamage = 24,
     this.dashSpeed = 1111,
     this.dashDuration = 0.18,
     this.dashCooldown = 3.2,
@@ -46,6 +49,11 @@ final class GameplayTuning {
     basicHalfArcRadians: config.number('gameplay.basic.half_arc_radians'),
     basicDamage: config.number('gameplay.basic.damage'),
     basicQiGain: config.number('gameplay.basic.qi_gain'),
+    rangedRange: config.number('gameplay.basic.ranged_range'),
+    rangedHalfArcRadians: config.number(
+      'gameplay.basic.ranged_half_arc_radians',
+    ),
+    rangedDamage: config.number('gameplay.basic.ranged_damage'),
     dashSpeed: config.number('gameplay.movement_art.speed'),
     dashDuration: config.number('gameplay.movement_art.duration_seconds'),
     dashCooldown: config.number('gameplay.movement_art.cooldown_seconds'),
@@ -84,6 +92,9 @@ final class GameplayTuning {
   final double basicHalfArcRadians;
   final double basicDamage;
   final double basicQiGain;
+  final double rangedRange;
+  final double rangedHalfArcRadians;
+  final double rangedDamage;
   final double dashSpeed;
   final double dashDuration;
   final double dashCooldown;

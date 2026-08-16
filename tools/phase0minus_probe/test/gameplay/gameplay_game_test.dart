@@ -18,15 +18,30 @@ void main() {
     );
   });
 
+  Future<void> pumpUntilLoaded(WidgetTester tester, GameplayGame game) async {
+    await tester.runAsync(() async {
+      for (var attempt = 0; attempt < 60 && !game.isLoaded; attempt++) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+    });
+    await tester.pump();
+    expect(game.isLoaded, isTrue, reason: 'Gameplay art must finish loading');
+  }
+
   Future<GameplayGame> mountGame(
     WidgetTester tester, {
     void Function(Map<String, Object?> report)? onSessionEnded,
   }) async {
-    final game = GameplayGame(config: config, onSessionEnded: onSessionEnded);
+    final game = GameplayGame(
+      config: config,
+      onSessionEnded: onSessionEnded,
+      loadArt: false,
+    );
     await tester.pumpWidget(
       MaterialApp(home: GameWidget<GameplayGame>(game: game)),
     );
     await tester.pump();
+    await pumpUntilLoaded(tester, game);
     await tester.pump(const Duration(milliseconds: 16));
     return game;
   }
@@ -56,7 +71,7 @@ void main() {
   testWidgets('GameWidget focus dispatches real keyboard events', (
     tester,
   ) async {
-    final game = GameplayGame(config: config);
+    final game = GameplayGame(config: config, loadArt: false);
     final focusNode = FocusNode();
     addTearDown(focusNode.dispose);
     await tester.pumpWidget(
@@ -69,6 +84,7 @@ void main() {
       ),
     );
     await tester.pump();
+    await pumpUntilLoaded(tester, game);
     final start = game.player.position.clone();
 
     await tester.sendKeyDownEvent(LogicalKeyboardKey.keyD);
@@ -95,6 +111,26 @@ void main() {
     expect(game.player.qi, 45);
     game.update(0.25);
     expect(game.counters.basicUses, 1);
+  });
+
+  testWidgets('left click releases one narrow ranged strike beyond melee', (
+    tester,
+  ) async {
+    final game = await mountGame(tester);
+    final enemy = game.enemies.first;
+    enemy
+      ..spawnGrace = 99
+      ..position = game.player.position + Vector2(300, 0);
+    game.pointerWorld = enemy.position.clone();
+    game.setPrimaryHeld(true);
+    game.setPrimaryHeld(false);
+
+    game.update(0.01);
+    game.update(0.06);
+
+    expect(enemy.health, 76);
+    expect(game.player.qi, 45);
+    expect(game.feedbackPool.emittedTotal, 5);
   });
 
   testWidgets('Q then R clears an imbalanced normal but naked R does not', (
@@ -162,6 +198,21 @@ void main() {
     expect(game.phase, GameplayPhase.betweenWaves);
   });
 
+  testWidgets('victory HUD keeps the final wave at three of three', (
+    tester,
+  ) async {
+    final game = await mountGame(tester);
+    game
+      ..wave = 3
+      ..phase = GameplayPhase.betweenWaves;
+
+    game.update(config.number('gameplay.waves.between_seconds') + 0.1);
+
+    expect(game.phase, GameplayPhase.victory);
+    expect(game.wave, 3);
+    expect(game.hud.value.wave, 3);
+  });
+
   testWidgets('session reset reproduces seeded spawn positions', (
     tester,
   ) async {
@@ -201,10 +252,16 @@ void main() {
   });
 
   testWidgets('compressed replay reuses 21 resident enemies', (tester) async {
-    final game = GameplayGame(config: config, deterministicReplay: true);
+    final game = GameplayGame(
+      config: config,
+      deterministicReplay: true,
+      loadArt: false,
+    );
     await tester.pumpWidget(
       MaterialApp(home: GameWidget<GameplayGame>(game: game)),
     );
+    await tester.pump();
+    await pumpUntilLoaded(tester, game);
     await tester.pump();
 
     expect(game.enemies, hasLength(21));
@@ -267,10 +324,16 @@ void main() {
   testWidgets('resident feedback pool survives the compressed clear burst', (
     tester,
   ) async {
-    final game = GameplayGame(config: config, deterministicReplay: true);
+    final game = GameplayGame(
+      config: config,
+      deterministicReplay: true,
+      loadArt: false,
+    );
     await tester.pumpWidget(
       MaterialApp(home: GameWidget<GameplayGame>(game: game)),
     );
+    await tester.pump();
+    await pumpUntilLoaded(tester, game);
     await tester.pump();
 
     for (var frame = 0; frame < 750; frame++) {

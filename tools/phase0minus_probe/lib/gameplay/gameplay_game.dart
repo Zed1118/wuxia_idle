@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:phase0minus_probe/config/probe_config.dart';
 import 'package:phase0minus_probe/gameplay/combat_rules.dart';
+import 'package:phase0minus_probe/gameplay/gameplay_art.dart';
 
 enum PlayerAction {
   locomotion,
@@ -21,7 +22,7 @@ enum PlayerAction {
 
 enum BufferedPlayerAction { movementArt, gather, clear }
 
-enum FeedbackKind { basic, gather, clear }
+enum FeedbackKind { basic, ranged, gather, clear }
 
 enum EnemyMode {
   spawning,
@@ -64,6 +65,7 @@ final class GameplayGame extends FlameGame
     required this.config,
     this.onSessionEnded,
     this.deterministicReplay = false,
+    this.loadArt = true,
   }) : tuning = GameplayTuning.fromConfig(config),
        random = math.Random(config.fixedSeed),
        hud = ValueNotifier(
@@ -83,6 +85,7 @@ final class GameplayGame extends FlameGame
   final ProbeConfig config;
   final void Function(Map<String, Object?> report)? onSessionEnded;
   final bool deterministicReplay;
+  final bool loadArt;
   final GameplayTuning tuning;
   math.Random random;
   final ValueNotifier<GameplayHudState> hud;
@@ -93,6 +96,7 @@ final class GameplayGame extends FlameGame
   Vector2? _strategyMovementOverride;
   late final GameplayPlayer player;
   late final GameplayFeedbackPool feedbackPool;
+  GameplayArt? art;
 
   Vector2 pointerWorld = Vector2(800, 360);
   bool primaryHeld = false;
@@ -136,19 +140,8 @@ final class GameplayGame extends FlameGame
   Future<void> onLoad() async {
     await super.onLoad();
     camera.viewfinder.anchor = Anchor.center;
-    await world.add(
-      RectangleComponent(
-        size: Vector2(fieldWidth, fieldHeight),
-        paint: Paint()..color = const Color(0xffd9cfb5),
-      ),
-    );
-    await world.add(
-      RectangleComponent(
-        position: Vector2(0, combatTop),
-        size: Vector2(fieldWidth, combatBottom - combatTop),
-        paint: Paint()..color = const Color(0xffc9c1aa),
-      ),
-    );
+    if (loadArt) art = await GameplayArt.load(images);
+    await world.add(GameplayBackdrop(game: this));
     player = GameplayPlayer(game: this);
     await world.add(player);
     feedbackPool = GameplayFeedbackPool(
@@ -389,8 +382,7 @@ final class GameplayGame extends FlameGame
     if (phase == GameplayPhase.betweenWaves) {
       _betweenRemaining -= dt;
       if (_betweenRemaining <= 0) {
-        wave++;
-        if (wave > 3) {
+        if (wave >= 3) {
           phase = GameplayPhase.victory;
           _updateHud(
             'Complete. Click PLAY AGAIN only if you want another run.',
@@ -398,6 +390,7 @@ final class GameplayGame extends FlameGame
           _finishSession('victory');
           return;
         }
+        wave++;
         phase = GameplayPhase.active;
         _waveElapsed = 0;
         _spawnedBatches.clear();
@@ -609,7 +602,8 @@ final class GameplayGame extends FlameGame
   }
 
   void _updateCamera(double dt) {
-    final halfWidth = size.x / 2;
+    camera.viewfinder.zoom = math.max(1, size.y / fieldHeight);
+    final halfWidth = size.x / (2 * camera.viewfinder.zoom);
     final target = player.position.x.clamp(halfWidth, fieldWidth - halfWidth);
     _cameraX += (target - _cameraX) * 0.12;
     var shakeX = 0.0;
@@ -640,6 +634,40 @@ final class GameplayGame extends FlameGame
   void onRemove() {
     hud.dispose();
     super.onRemove();
+  }
+}
+
+final class GameplayBackdrop extends PositionComponent {
+  GameplayBackdrop({required this.game})
+    : super(size: Vector2(game.fieldWidth, game.fieldHeight), priority: -1000);
+
+  final GameplayGame game;
+
+  @override
+  void render(Canvas canvas) {
+    final art = game.art;
+    if (art == null) {
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.x, size.y),
+        Paint()..color = const Color(0xffd9cfb5),
+      );
+    } else {
+      art.drawPanorama(canvas, Size(size.x, size.y));
+    }
+    canvas.drawRect(
+      Rect.fromLTWH(
+        0,
+        game.combatTop,
+        size.x,
+        game.combatBottom - game.combatTop,
+      ),
+      Paint()..color = const Color(0x0FDED2B7),
+    );
+    canvas.drawLine(
+      Offset(0, game.combatTop),
+      Offset(size.x, game.combatTop),
+      Paint()..color = const Color(0x382B2822),
+    );
   }
 }
 
@@ -686,6 +714,7 @@ final class GameplayPlayer extends PositionComponent with CollisionCallbacks {
 
   @override
   void update(double dt) {
+    priority = 100 + position.y.round();
     movementArtCooldown = math.max(0, movementArtCooldown - dt);
     gatherCooldown = math.max(0, gatherCooldown - dt);
     invulnerabilityRemaining = math.max(0, invulnerabilityRemaining - dt);
@@ -880,6 +909,7 @@ final class GameplayPlayer extends PositionComponent with CollisionCallbacks {
 
   void _resolveBasic() {
     var hitAny = false;
+    var rangedHit = false;
     var lightReacts = 0;
     final maxReacts = game.config.integer('gameplay.basic.maximum_hit_reacts');
     for (final enemy in game.enemies) {
@@ -901,6 +931,38 @@ final class GameplayPlayer extends PositionComponent with CollisionCallbacks {
         source: position,
       );
     }
+    if (!hitAny) {
+      final rangedTargets =
+          game.enemies
+              .where(
+                (enemy) =>
+                    enemy.alive &&
+                    isInsideAimArc(
+                      origin: position,
+                      aimDirection: aimDirection,
+                      target: enemy.position,
+                      range: game.tuning.rangedRange,
+                      halfArcRadians: game.tuning.rangedHalfArcRadians,
+                    ),
+              )
+              .toList()
+            ..sort(
+              (a, b) => a.position
+                  .distanceToSquared(position)
+                  .compareTo(b.position.distanceToSquared(position)),
+            );
+      if (rangedTargets.isNotEmpty) {
+        rangedHit = true;
+        hitAny = true;
+        rangedTargets.first.receiveHit(
+          game.tuning.rangedDamage,
+          breakPoints: 1,
+          lightReact: true,
+          source: position,
+          knockback: 18,
+        );
+      }
+    }
     if (hitAny) {
       qi = qiAfterBasicCast(
         currentQi: qi,
@@ -908,15 +970,27 @@ final class GameplayPlayer extends PositionComponent with CollisionCallbacks {
         capacity: game.config.number('gameplay.player.qi_capacity'),
         tuning: game.tuning,
       );
-      game.feedbackPool.emit(
-        kind: FeedbackKind.basic,
-        origin: position + aimDirection * 90,
-        count: game.config.integer('gameplay.feedback.basic_particles'),
-        lifetime: game.config.number(
-          'gameplay.feedback.basic_lifetime_seconds',
-        ),
-        random: game.random,
-      );
+      if (rangedHit) {
+        game.feedbackPool.emitDirected(
+          origin: position + aimDirection * 56,
+          direction: aimDirection,
+          count: game.config.integer('gameplay.feedback.ranged_particles'),
+          lifetime: game.config.number(
+            'gameplay.feedback.ranged_lifetime_seconds',
+          ),
+          random: game.random,
+        );
+      } else {
+        game.feedbackPool.emit(
+          kind: FeedbackKind.basic,
+          origin: position + aimDirection * 90,
+          count: game.config.integer('gameplay.feedback.basic_particles'),
+          lifetime: game.config.number(
+            'gameplay.feedback.basic_lifetime_seconds',
+          ),
+          random: game.random,
+        );
+      }
       game.triggerHitStop(
         game.config.number('gameplay.feedback.basic_hit_stop_seconds'),
       );
@@ -1010,35 +1084,72 @@ final class GameplayPlayer extends PositionComponent with CollisionCallbacks {
   void render(Canvas canvas) {
     final center = Offset(size.x / 2, size.y / 2);
     final radius = size.x / 2;
-    canvas.drawCircle(
-      center,
-      radius + 6,
-      Paint()..color = const Color(0x66eee6d2),
-    );
-    canvas.drawCircle(center, radius, Paint()..color = const Color(0xff24332e));
-    canvas.drawLine(
-      center,
-      center + Offset(aimDirection.x, aimDirection.y) * 34,
-      Paint()
-        ..color = action == PlayerAction.clear
-            ? const Color(0xffa33b32)
-            : const Color(0xffeee6d2)
-        ..strokeWidth = 5,
-    );
     if (action == PlayerAction.gather || action == PlayerAction.clear) {
       final progress =
           1 - actionRemaining / (action == PlayerAction.gather ? 0.60 : 0.76);
+      final isClear = action == PlayerAction.clear;
+      final eased = Curves.easeOutCubic.transform(progress.clamp(0, 1));
+      final effectRadius = isClear
+          ? game.tuning.clearRadius * eased.clamp(0.05, 1)
+          : radius + 18 + eased * 22;
+      for (var ring = 0; ring < (isClear ? 3 : 2); ring++) {
+        canvas.drawOval(
+          Rect.fromCenter(
+            center: center,
+            width: (effectRadius + ring * 12) * 2,
+            height: (effectRadius + ring * 12) * (isClear ? 0.58 : 0.72),
+          ),
+          Paint()
+            ..color =
+                (isClear ? const Color(0xB225211D) : const Color(0x8A314D46))
+                    .withValues(alpha: (1 - eased * 0.72) * 0.72)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = isClear ? 8 - ring * 2 : 3,
+        );
+      }
+    }
+    final perspective =
+        0.82 +
+        ((position.y - game.combatTop) / (game.combatBottom - game.combatTop))
+                .clamp(0, 1) *
+            0.24;
+    final pose = switch (action) {
+      PlayerAction.basic => 1,
+      PlayerAction.movementArt => 2,
+      PlayerAction.gather => 3,
+      PlayerAction.clear => 4,
+      PlayerAction.hurt || PlayerAction.defeated => 5,
+      PlayerAction.locomotion => 0,
+    };
+    final art = game.art;
+    if (art == null) {
       canvas.drawCircle(
         center,
-        action == PlayerAction.clear
-            ? game.tuning.clearRadius * progress.clamp(0.05, 1)
-            : radius + 10 + progress * 12,
-        Paint()
-          ..color = const Color(0xff8a332e)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3,
+        radius,
+        Paint()..color = const Color(0xff24332e),
+      );
+    } else {
+      art.drawActor(
+        canvas,
+        actor: GameplayActorArt.founder,
+        pose: pose,
+        foot: center.translate(0, radius * 0.62),
+        height: 174 * perspective,
+        mirror: aimDirection.x < 0,
+        opacity: action == PlayerAction.defeated ? 0.46 : 1,
       );
     }
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center.translate(0, radius * 0.72),
+        width: 46,
+        height: 17,
+      ),
+      Paint()
+        ..color = const Color(0xB4EEE2C8)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5,
+    );
   }
 }
 
@@ -1100,6 +1211,7 @@ final class GameplayEnemy extends PositionComponent with CollisionCallbacks {
 
   @override
   void update(double dt) {
+    priority = 100 + position.y.round();
     if (!alive) {
       if (!_activeInEncounter) return;
       if (mode == EnemyMode.defeated) {
@@ -1303,34 +1415,27 @@ final class GameplayEnemy extends PositionComponent with CollisionCallbacks {
     if (!_activeInEncounter) return;
     final radius = size.x / 2;
     final center = Offset(radius, radius);
-    final color = _flashRemaining > 0
-        ? const Color(0xffeee6d2)
-        : elite
-        ? const Color(0xff6a2f2b)
-        : const Color(0xff515a54);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: center,
-        width: radius * (elite ? 1.75 : 1.5),
-        height: radius * 2,
-      ),
-      Paint()..color = color,
-    );
     if (imbalanceRemaining > 0) {
-      canvas.drawCircle(
-        center,
-        radius + 4,
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: center.translate(0, radius * 0.7),
+          width: radius * 2.3,
+          height: radius * 0.8,
+        ),
         Paint()
-          ..color = const Color(0xff837c68)
+          ..color = const Color(0xAA7F725D)
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2,
+          ..strokeWidth = 3,
       );
     }
     if (mode == EnemyMode.telegraph) {
       final breakable = inBreakWindow;
-      canvas.drawCircle(
-        center,
-        radius + 8,
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: center.translate(0, radius * 0.6),
+          width: radius * 3.2,
+          height: radius * 1.2,
+        ),
         Paint()
           ..color = breakable
               ? const Color(0xffc04a3e)
@@ -1362,18 +1467,80 @@ final class GameplayEnemy extends PositionComponent with CollisionCallbacks {
         );
       }
     }
+    final perspective =
+        0.80 +
+        ((position.y - game.combatTop) / (game.combatBottom - game.combatTop))
+                .clamp(0, 1) *
+            0.22;
+    final pose = elite
+        ? switch (mode) {
+            EnemyMode.telegraph => 1,
+            EnemyMode.commit || EnemyMode.attack => 3,
+            EnemyMode.staggered ||
+            EnemyMode.hitReact ||
+            EnemyMode.defeated => 2,
+            _ => 0,
+          }
+        : switch (mode) {
+            EnemyMode.approach || EnemyMode.spawning => 0,
+            EnemyMode.telegraph => 2,
+            EnemyMode.attack || EnemyMode.commit => 3,
+            EnemyMode.staggered => 4,
+            EnemyMode.hitReact || EnemyMode.defeated => 5,
+          };
+    final defeatedOpacity = mode == EnemyMode.defeated
+        ? (_defeatRemaining / 0.18).clamp(0.08, 0.62)
+        : 1.0;
+    final art = game.art;
+    if (art == null) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: center,
+          width: radius * (elite ? 1.75 : 1.5),
+          height: radius * 2,
+        ),
+        Paint()
+          ..color = elite ? const Color(0xff6a2f2b) : const Color(0xff515a54),
+      );
+    } else {
+      art.drawActor(
+        canvas,
+        actor: elite ? GameplayActorArt.elite : GameplayActorArt.bandit,
+        pose: pose,
+        foot: center.translate(0, radius * 0.72),
+        height: (elite ? 188 : 132) * perspective,
+        mirror: game.player.position.x < position.x,
+        opacity: defeatedOpacity,
+        flash: _flashRemaining > 0,
+      );
+    }
     if (elite) {
       final maxHealth = game.tuning.eliteHealth;
-      canvas.drawRect(
-        Rect.fromLTWH(0, -8, size.x * (health / maxHealth), 4),
-        Paint()..color = const Color(0xff8a332e),
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(-size.x * 0.3, -28, size.x * 1.6, 6),
+          const Radius.circular(3),
+        ),
+        Paint()..color = const Color(0xB428211D),
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(
+            -size.x * 0.3,
+            -28,
+            size.x * 1.6 * (health / maxHealth),
+            6,
+          ),
+          const Radius.circular(3),
+        ),
+        Paint()..color = const Color(0xff983D34),
       );
     }
   }
 }
 
 final class GameplaySkillGuide extends PositionComponent {
-  GameplaySkillGuide({required this.game}) : super(priority: 14);
+  GameplaySkillGuide({required this.game}) : super(priority: 4000);
 
   final GameplayGame game;
 
@@ -1445,6 +1612,7 @@ final class GameplayFeedbackPool {
       final angle = random.nextDouble() * math.pi * 2;
       final speed = switch (kind) {
         FeedbackKind.basic => 90.0,
+        FeedbackKind.ranged => 760.0,
         FeedbackKind.gather => -120.0,
         FeedbackKind.clear => 210.0,
       };
@@ -1453,6 +1621,47 @@ final class GameplayFeedbackPool {
         kind: kind,
         origin: origin + radial * (kind == FeedbackKind.gather ? 210 : 12),
         velocity: radial * speed,
+        lifetime: lifetime,
+      );
+      emittedTotal++;
+    }
+    activePeak = math.max(
+      activePeak,
+      _residents.where((resident) => resident.active).length,
+    );
+  }
+
+  void emitDirected({
+    required Vector2 origin,
+    required Vector2 direction,
+    required int count,
+    required double lifetime,
+    required math.Random random,
+  }) {
+    final forward = direction.length2 == 0
+        ? Vector2(1, 0)
+        : direction.normalized();
+    final side = Vector2(-forward.y, forward.x);
+    for (var index = 0; index < count; index++) {
+      GameplayFeedback? target;
+      for (var attempt = 0; attempt < _residents.length; attempt++) {
+        final candidate = _residents[_cursor];
+        _cursor = (_cursor + 1) % _residents.length;
+        if (!candidate.active) {
+          target = candidate;
+          break;
+        }
+      }
+      if (target == null) {
+        overflowTotal++;
+        break;
+      }
+      final spread = (random.nextDouble() - 0.5) * 0.13;
+      final travel = (forward + side * spread).normalized();
+      target.activate(
+        kind: FeedbackKind.ranged,
+        origin: origin + side * (index - (count - 1) / 2) * 4,
+        velocity: travel * (690 + random.nextDouble() * 120),
         lifetime: lifetime,
       );
       emittedTotal++;
@@ -1476,7 +1685,7 @@ final class GameplayFeedbackPool {
 
 final class GameplayFeedback extends PositionComponent {
   GameplayFeedback()
-    : super(size: Vector2.all(8), anchor: Anchor.center, priority: 8);
+    : super(size: Vector2.all(12), anchor: Anchor.center, priority: 2000);
 
   bool active = false;
   FeedbackKind kind = FeedbackKind.basic;
@@ -1501,10 +1710,13 @@ final class GameplayFeedback extends PositionComponent {
   @override
   void update(double dt) {
     if (!active) return;
+    priority = 2000 + position.y.round();
     _remaining -= dt;
     position += _velocity * dt;
     if (kind == FeedbackKind.gather) {
       _velocity.scale(math.pow(0.06, dt).toDouble());
+    } else if (kind == FeedbackKind.ranged) {
+      _velocity.scale(math.pow(0.48, dt).toDouble());
     } else {
       _velocity.scale(math.pow(0.22, dt).toDouble());
     }
@@ -1519,15 +1731,68 @@ final class GameplayFeedback extends PositionComponent {
   void render(Canvas canvas) {
     if (!active) return;
     final alpha = (_remaining / _lifetime).clamp(0.0, 1.0);
-    final color = switch (kind) {
-      FeedbackKind.basic => const Color(0xffeee6d2),
-      FeedbackKind.gather => const Color(0xff59655f),
-      FeedbackKind.clear => const Color(0xff7b332e),
-    };
-    canvas.drawCircle(
-      Offset(size.x / 2, size.y / 2),
-      kind == FeedbackKind.clear ? 4 : 3,
-      Paint()..color = color.withValues(alpha: alpha),
-    );
+    final center = Offset(size.x / 2, size.y / 2);
+    final direction = _velocity.length2 > 0
+        ? _velocity.normalized()
+        : Vector2(1, 0);
+    final tangent = Offset(direction.x, direction.y);
+    switch (kind) {
+      case FeedbackKind.basic:
+        canvas.drawLine(
+          center - tangent * 15,
+          center + tangent * 15,
+          Paint()
+            ..color = const Color(0xffFAEFD5).withValues(alpha: alpha)
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = 3.2,
+        );
+        canvas.drawLine(
+          center - tangent * 8 + const Offset(0, 3),
+          center + tangent * 9 + const Offset(0, 3),
+          Paint()
+            ..color = const Color(0xff342E27).withValues(alpha: alpha * 0.7)
+            ..strokeWidth = 1.4,
+        );
+      case FeedbackKind.ranged:
+        canvas.drawLine(
+          center - tangent * 26,
+          center + tangent * 28,
+          Paint()
+            ..color = const Color(0xffF3E2BD).withValues(alpha: alpha * 0.9)
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = 3.4,
+        );
+        canvas.drawLine(
+          center - tangent * 18 + const Offset(0, 4),
+          center + tangent * 19 + const Offset(0, 4),
+          Paint()
+            ..color = const Color(0xff36554C).withValues(alpha: alpha * 0.72)
+            ..strokeWidth = 2.1,
+        );
+      case FeedbackKind.gather:
+        canvas.drawLine(
+          center - tangent * 11,
+          center + tangent * 8,
+          Paint()
+            ..color = const Color(0xff314A43).withValues(alpha: alpha * 0.82)
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = 2.4,
+        );
+      case FeedbackKind.clear:
+        canvas.drawLine(
+          center - tangent * 4,
+          center + tangent * 19,
+          Paint()
+            ..color = const Color(0xff2A2520).withValues(alpha: alpha * 0.82)
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = 4.8,
+        );
+        canvas.drawCircle(
+          center - tangent * 2,
+          2.4,
+          Paint()
+            ..color = const Color(0xff81352F).withValues(alpha: alpha * 0.7),
+        );
+    }
   }
 }
