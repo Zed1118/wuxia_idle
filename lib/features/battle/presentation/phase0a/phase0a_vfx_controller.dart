@@ -32,7 +32,7 @@ enum Phase0aVfxKind {
 
 /// 单条表现指令(不可变)。字段按 kind 取用,未用字段为空。
 ///
-/// [anchor]/[source]/[target] 为事件发生时的世界坐标快照。
+/// [anchor]/[source]/[vfxTarget] 为事件发生时的世界坐标快照。
 /// 渲染层不得通过 id 反查当前 [Phase0aArenaState] 获取位置
 /// (敌人死亡后已从 state 移除,会导致 VFX 定位到错误的 fallback 位置)。
 final class Phase0aVfxEntry {

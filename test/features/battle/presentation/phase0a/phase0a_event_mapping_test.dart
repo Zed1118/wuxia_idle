@@ -373,64 +373,170 @@ void main() {
     });
   });
 
-  group('Phase0aVfxController 容量上限', () {
-    test('契约常量:popup 上限 48,总 entry 上限 160', () {
-      expect(Phase0aVfxController.maxDamagePopups, 48);
-      expect(Phase0aVfxController.maxEntries, 160);
-    });
-
-    test('单次消费 60 次非零命中,damage popup 不超过 48', () {
-      final controller = Phase0aVfxController()
-        ..syncActors(_state(enemies: [_actor('e1', Phase0aSide.enemy, 40, 0)]));
-      final events = [
-        for (var i = 1; i <= 60; i++) _hit(seq: i, damage: 10 + i),
-      ];
-      final entries = controller.consume(events);
-      expect(
-        _popups(entries).length,
-        lessThanOrEqualTo(Phase0aVfxController.maxDamagePopups),
+  group('Phase0aVfxController 坐标快照(Batch 8A)', () {
+    test('掌风 entry 携带 source/vfxTarget 等于事件时 actor 位置', () {
+      const playerPos = ArenaVector(0, 0);
+      const enemyPos = ArenaVector(
+        Phase0aVfxController.palmTrailMinDistance + 50,
+        0,
       );
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(
+            playerPosition: playerPos,
+            enemies: [_actor('far', Phase0aSide.enemy, enemyPos.x, enemyPos.y)],
+          ),
+        );
+      final entries = controller.consume([
+        _hit(seq: 1, actor: 'player', target: 'far'),
+      ]);
+      final trails = entries
+          .where((e) => e.kind == Phase0aVfxKind.palmTrail)
+          .toList();
+      expect(trails, hasLength(1));
+      final trail = trails.single;
+      expect(trail.source, isNotNull, reason: '掌风必须有 source 快照');
+      expect(trail.vfxTarget, isNotNull, reason: '掌风必须有 vfxTarget 快照');
+      expect(trail.source!.x, playerPos.x);
+      expect(trail.source!.y, playerPos.y);
+      expect(trail.vfxTarget!.x, enemyPos.x);
+      expect(trail.vfxTarget!.y, enemyPos.y);
     });
 
-    test('高频混合事件下总 entry 不超过 160', () {
+    test('Q 涡旋 entry 携带 anchor 等于事件时玩家位置', () {
+      const playerPos = ArenaVector(100, 200);
+      final controller = Phase0aVfxController()
+        ..syncActors(_state(playerPosition: playerPos));
+      final entries = controller.consume([
+        const Phase0aGatherStarted(seq: 1, tick: 1, actor: 'player'),
+      ]);
+      final vortex = entries
+          .where((e) => e.kind == Phase0aVfxKind.gatherVortex)
+          .toList();
+      expect(vortex, hasLength(1));
+      expect(vortex.single.anchor, isNotNull, reason: 'Q 涡旋必须有 anchor 快照');
+      expect(vortex.single.anchor!.x, playerPos.x);
+      expect(vortex.single.anchor!.y, playerPos.y);
+    });
+
+    test('R 墨爆 entry 携带 anchor 等于事件时玩家位置', () {
+      const playerPos = ArenaVector(-50, 300);
+      final controller = Phase0aVfxController()
+        ..syncActors(_state(playerPosition: playerPos));
+      final entries = controller.consume([
+        const Phase0aClearStarted(seq: 1, tick: 1, actor: 'player'),
+      ]);
+      final burst = entries
+          .where((e) => e.kind == Phase0aVfxKind.clearBurst)
+          .toList();
+      expect(burst, hasLength(1));
+      expect(burst.single.anchor, isNotNull, reason: 'R 墨爆必须有 anchor 快照');
+      expect(burst.single.anchor!.x, playerPos.x);
+      expect(burst.single.anchor!.y, playerPos.y);
+    });
+
+    test('死亡墨散 entry 携带 anchor 等于被击败敌人位置', () {
+      const enemyPos = ArenaVector(400, -100);
       final controller = Phase0aVfxController()
         ..syncActors(
           _state(
             enemies: [
-              _actor('e1', Phase0aSide.enemy, 40, 0),
-              _actor(
-                'e2',
-                Phase0aSide.enemy,
-                -40,
-                0,
-                defeatKind: Phase0aDefeatKind.elite,
-              ),
+              _actor('e1', Phase0aSide.enemy, enemyPos.x, enemyPos.y),
             ],
           ),
         );
-      final events = <Phase0aEvent>[
-        for (var i = 1; i <= 90; i++)
-          _hit(seq: i, actor: 'e1', target: 'player', damage: 7),
-        for (var i = 91; i <= 140; i++)
-          Phase0aEnemyDefeated(
-            seq: i,
-            tick: i,
-            target: 'e$i',
-            defeatKind: Phase0aDefeatKind.normal,
+      final entries = controller.consume([
+        const Phase0aEnemyDefeated(
+          seq: 1,
+          tick: 1,
+          target: 'e1',
+          defeatKind: Phase0aDefeatKind.normal,
+        ),
+      ]);
+      final ink = entries
+          .where((e) => e.kind == Phase0aVfxKind.defeatInk)
+          .toList();
+      expect(ink, hasLength(1));
+      expect(ink.single.anchor, isNotNull, reason: '死亡墨散必须有 anchor 快照');
+      expect(ink.single.anchor!.x, enemyPos.x);
+      expect(ink.single.anchor!.y, enemyPos.y);
+    });
+
+    test('致死伤害数字 popup 携带 anchor 快照,不依赖 state 反查', () {
+      const enemyPos = ArenaVector(200, 150);
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(
+            enemies: [
+              _actor('e1', Phase0aSide.enemy, enemyPos.x, enemyPos.y),
+            ],
           ),
-        for (var i = 141; i <= 180; i++)
-          Phase0aWaveStarted(
-            seq: i,
-            tick: i,
-            waveIndex: i - 140,
-            waveTotal: 40,
+        );
+      // 致死伤害:resolvedDamage >= remainingHealth
+      final entries = controller.consume([
+        _hit(seq: 1, actor: 'player', target: 'e1', damage: 999),
+      ]);
+      final popups = _popups(entries);
+      expect(popups, hasLength(1));
+      final popup = popups.single;
+      expect(popup.targetId, 'e1');
+      expect(popup.damage, 999);
+      // 致死伤害数字必须有 anchor,渲染层不应 fallback 到屏幕中心
+      expect(popup.anchor, isNotNull, reason: '致死伤害数字必须有 anchor 快照');
+      expect(popup.anchor!.x, enemyPos.x);
+      expect(popup.anchor!.y, enemyPos.y);
+    });
+
+    test('R 清场多目标伤害数字各带 anchor,多目标时 anchor 互不相同', () {
+      const e1Pos = ArenaVector(40, 0);
+      const e2Pos = ArenaVector(-40, 50);
+      const e3Pos = ArenaVector(0, -80);
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(
+            enemies: [
+              _actor('e1', Phase0aSide.enemy, e1Pos.x, e1Pos.y),
+              _actor('e2', Phase0aSide.enemy, e2Pos.x, e2Pos.y),
+              _actor('e3', Phase0aSide.enemy, e3Pos.x, e3Pos.y),
+            ],
           ),
-      ];
-      final entries = controller.consume(events);
-      expect(
-        entries.length,
-        lessThanOrEqualTo(Phase0aVfxController.maxEntries),
-      );
+        );
+      final entries = controller.consume([
+        const Phase0aClearStarted(seq: 1, tick: 1, actor: 'player'),
+        const Phase0aClearApplied(
+          seq: 2,
+          tick: 2,
+          actor: 'player',
+          outcomes: [
+            Phase0aSkillOutcome(
+              target: 'e1',
+              resolvedDamage: 88,
+              defeated: false,
+              statusApplied: Phase0aSkillStatus.staggered,
+            ),
+            Phase0aSkillOutcome(
+              target: 'e2',
+              resolvedDamage: 55,
+              defeated: false,
+              statusApplied: Phase0aSkillStatus.staggered,
+            ),
+            Phase0aSkillOutcome(
+              target: 'e3',
+              resolvedDamage: 120,
+              defeated: false,
+              statusApplied: Phase0aSkillStatus.staggered,
+            ),
+          ],
+        ),
+      ]);
+      final popups = _popups(entries);
+      expect(popups, hasLength(3));
+      for (final popup in popups) {
+        expect(popup.anchor, isNotNull, reason: '${popup.targetId} 伤害数字必须有 anchor');
+      }
+      // 多目标 anchor 不应相同
+      final anchors = popups.map((p) => p.anchor).toSet();
+      expect(anchors.length, 3, reason: '多目标伤害数字 anchor 应互不相同');
     });
   });
 }

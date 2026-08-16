@@ -52,7 +52,7 @@ Phase0aEvent → Phase0aVfxController.consume()
 ```dart
 final ArenaVector? anchor;  // VFX 的世界坐标锚点
 final ArenaVector? source;  // 掌风: 出手者位置
-final ArenaVector? target;  // 掌风: 目标位置
+final ArenaVector? vfxTarget;  // 掌风: 目标位置
 ```
 
 ### 各切片具体改动

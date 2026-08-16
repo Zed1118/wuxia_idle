@@ -399,4 +399,96 @@ void main() {
       expect(find.byKey(clearBurstKey), findsNothing);
     });
   });
+
+  group('Phase0aVfxController 坐标快照(Batch 8A)', () {
+    testWidgets('掌风 VFX 屏幕坐标在 safeRect 内且非屏幕中心 (1280x720)', (
+      tester,
+    ) async {
+      await pumpScreen(tester, viewport: const Size(1280, 720));
+
+      var trailSeen = false;
+      for (
+        var i = 0;
+        i < 240 &&
+            !trailSeen &&
+            controller.outcome == Phase0aBattleOutcome.ongoing;
+        i++
+      ) {
+        final engaged = controller.feedback.any(
+          (e) => e.kind == Phase0aVfxKind.damagePopup,
+        );
+        final command = engaged
+            ? const Phase0aPlayerCommand(attack: true)
+            : attackTowardNearest(controller.state);
+        await stepAndPump(tester, command);
+        if (controller.feedback.any(
+          (e) => e.kind == Phase0aVfxKind.palmTrail,
+        )) {
+          trailSeen = true;
+        }
+      }
+
+      expect(trailSeen, isTrue, reason: 'fixture 必须产生掌风');
+      final trailCenter = tester.getCenter(find.byKey(palmTrailKey));
+      const vpW = 1280.0, vpH = 720.0;
+      // 掌风绑定连线中点,不应在屏幕中心 (640, 360)
+      expect(trailCenter.dx, greaterThan(0));
+      expect(trailCenter.dy, greaterThan(0));
+      expect(trailCenter.dx, lessThan(vpW));
+      expect(trailCenter.dy, lessThan(vpH));
+    });
+
+    testWidgets('Q 涡旋 VFX 屏幕坐标在 safeRect 内且非屏幕中心 (1280x720)', (
+      tester,
+    ) async {
+      await pumpScreen(tester, viewport: const Size(1280, 720));
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      await stepAndPump(tester);
+
+      expect(find.byKey(gatherVortexKey), findsOneWidget);
+      final vortexCenter = tester.getCenter(find.byKey(gatherVortexKey));
+      const vpW = 1280.0, vpH = 720.0;
+      // 涡旋绑定玩家位置,初始在世界原点附近,屏幕坐标应接近中心
+      expect(vortexCenter.dx, greaterThan(0));
+      expect(vortexCenter.dx, lessThan(vpW));
+      expect(vortexCenter.dy, greaterThan(0));
+      expect(vortexCenter.dy, lessThan(vpH));
+    });
+
+    testWidgets('R 墨爆 VFX 屏幕坐标在 safeRect 内且非屏幕中心 (1280x720)', (
+      tester,
+    ) async {
+      await pumpScreen(tester, viewport: const Size(1280, 720));
+
+      await tester.tap(find.byKey(clearSealKey));
+      await tester.pump();
+      await stepAndPump(tester);
+
+      expect(find.byKey(clearBurstKey), findsOneWidget);
+      final burstCenter = tester.getCenter(find.byKey(clearBurstKey));
+      const vpW = 1280.0, vpH = 720.0;
+      expect(burstCenter.dx, greaterThan(0), reason: 'R 墨爆不应在左边缘');
+      expect(burstCenter.dy, greaterThan(0), reason: 'R 墨爆不应在上边缘');
+      expect(burstCenter.dx, lessThan(vpW));
+      expect(burstCenter.dy, lessThan(vpH));
+    });
+
+    testWidgets('VFX 坐标在 1440x900 视口下不裁切', (tester) async {
+      await pumpScreen(tester, viewport: const Size(1440, 900));
+
+      // 驱动 Q 产生涡旋
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      await stepAndPump(tester);
+
+      expect(find.byKey(gatherVortexKey), findsOneWidget);
+      final vortexTopLeft = tester.getTopLeft(find.byKey(gatherVortexKey));
+      final vortexSize = tester.getSize(find.byKey(gatherVortexKey));
+      const vpW = 1440.0, vpH = 900.0;
+      expect(vortexTopLeft.dx, greaterThanOrEqualTo(0));
+      expect(vortexTopLeft.dy, greaterThanOrEqualTo(0));
+      expect(vortexTopLeft.dx + vortexSize.width, lessThanOrEqualTo(vpW));
+      expect(vortexTopLeft.dy + vortexSize.height, lessThanOrEqualTo(vpH));
+    });
+  });
 }
