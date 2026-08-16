@@ -42,11 +42,16 @@
   必须同库);新文件 `phase0a_wave.dart` 放 `Phase0aWave`(不可变、自校验)
   与 `Phase0aBattleOutcome` 枚举。
 - application: 新文件 `phase0a_wave_battle_flow.dart` 的
-  `Phase0aWaveBattleFlow` 包装 `Phase0aCombatSession`;session 增
-  `replaceState`(仅供 flow 在事件序边界整体换态:首波预留 seq / 换波装敌 /
-  终局 seq 持久化),不新增任何结算规则。
-- 首波 seq 预留:reducer 从 `state.nextSeq` 起分配,flow 在首个 advance 前把
-  `nextSeq+1` 写回,再用预留 seq 发 `wave_started`;reducer 抛错时回滚。
+  `Phase0aWaveBattleFlow` 包装 `Phase0aCombatSession`,不新增任何结算规则。
+- **拍板Ⓒ(用户架构纠偏,2026-08-16)**:`Phase0aCombatSession` 不增任何
+  public `replaceState`/`setState` 可变后门。flow 自存构造依赖(initialState、
+  playerAdapter、enemyAiAdapter、damageResolver、waves)与 mutable 私有
+  `_session`;需预留 seq / 换波装敌 / 固化终局 seq 时,用新
+  `Phase0aArenaState` 重建私有 `_session`,但复用同一 adapter/resolver 实例,
+  保证 seeded RNG 连续、外部无法任意注入状态。
+- 首波 seq 预留:reducer 从 `state.nextSeq` 起分配,flow 在首个 advance 前以
+  `nextSeq+1` 的新 state 重建 `_session`,再用预留 seq 发 `wave_started`;
+  advance 抛错时恢复原 `_session` 与 `_started` 标记。
 
 ## 验收标准(红测逐项对应)
 
@@ -76,10 +81,12 @@
 
 ## 当前恢复点
 
-- 状态:计划档冻结,待 commit。
+- 状态:计划档已冻结并勘误(拍板Ⓒ),红测编写中。
 - 最后完成:通读派单/协调计划/反馈契约/CLAUDE.md/既有 phase0a 源码与测试;
-  确认 worktree 干净、HEAD=`a543a1f8`、probe 8 项 =
-  `tools/phase0minus_probe test/gameplay/combat_rules_test.dart`。
-- 下一步:commit 本计划档 → 写红测。
+  确认 worktree 干净、基线 HEAD=`a543a1f8`、probe 8 项 =
+  `tools/phase0minus_probe test/gameplay/combat_rules_test.dart`;
+  计划档 commit `43dac7e0`;按用户架构纠偏完成拍板Ⓒ勘误(未写过任何
+  replaceState 代码,红测未受影响)。
+- 下一步:commit 红测并证红 → 最小实现。
 - 已跑验证:无(仅只读勘察)。
 - 阻塞项:无。
