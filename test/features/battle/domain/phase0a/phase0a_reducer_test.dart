@@ -148,7 +148,7 @@ Phase0aAttackIntent playerAttack({
 }
 
 void main() {
-  final hitResolver = FixedDamageResolver(
+  const hitResolver = FixedDamageResolver(
     basicDamage: 25,
     gatherDamage: 0,
     clearDamage: 40,
@@ -156,7 +156,7 @@ void main() {
 
   group('确定性回放', () {
     test('同初态同输入序列重复回放得到相等状态与事件序列', () {
-      Phase0aArenaState state = makeState(
+      final state = makeState(
         enemies: [
           makeEnemy(id: 'e1', position: const ArenaVector(80, 0)),
           makeEnemy(id: 'e2', position: const ArenaVector(60, 30)),
@@ -254,7 +254,9 @@ void main() {
     });
 
     test('零方向移动不改变位置与朝向', () {
-      final initial = makeState(player: makePlayer(facing: const ArenaVector(0, -1)));
+      final initial = makeState(
+        player: makePlayer(facing: const ArenaVector(0, -1)),
+      );
       final result = reducePhase0aTick(
         state: initial,
         intents: const [
@@ -315,8 +317,10 @@ void main() {
       expect(hit.target, 'near');
       expect(hit.resolvedDamage, 25);
       expect(hit.remainingHealth, 35);
-      expect(result.state.enemies.singleWhere((e) => e.id == 'near')
-          .currentHealth, 35);
+      expect(
+        result.state.enemies.singleWhere((e) => e.id == 'near').currentHealth,
+        35,
+      );
     });
 
     test('同距目标按 id 稳定决胜且与输入顺序无关', () {
@@ -329,7 +333,10 @@ void main() {
         final result = reducePhase0aTick(
           state: makeState(enemies: enemies),
           intents: [
-            playerAttack(halfArcRadians: math.pi, aimDirection: ArenaVector.zero),
+            playerAttack(
+              halfArcRadians: math.pi,
+              aimDirection: ArenaVector.zero,
+            ),
           ],
           deltaSeconds: 0.1,
           damageResolver: hitResolver,
@@ -396,7 +403,11 @@ void main() {
     test('死亡仅一次且其后不再出现该单位相关事件', () {
       var state = makeState(
         enemies: [
-          makeEnemy(id: 'e1', position: const ArenaVector(60, 0), currentHealth: 20),
+          makeEnemy(
+            id: 'e1',
+            position: const ArenaVector(60, 0),
+            currentHealth: 20,
+          ),
         ],
       );
       final first = reducePhase0aTick(
@@ -420,9 +431,11 @@ void main() {
         damageResolver: hitResolver,
       );
       expect(
-        second.events.where((e) =>
-            e is Phase0aEnemyDefeated ||
-            (e is Phase0aHitLanded && e.target == 'e1')),
+        second.events.where(
+          (e) =>
+              e is Phase0aEnemyDefeated ||
+              (e is Phase0aHitLanded && e.target == 'e1'),
+        ),
         isEmpty,
       );
     });
@@ -431,7 +444,11 @@ void main() {
       final result = reducePhase0aTick(
         state: makeState(
           enemies: [
-            makeEnemy(id: 'e1', position: const ArenaVector(60, 0), currentHealth: 5),
+            makeEnemy(
+              id: 'e1',
+              position: const ArenaVector(60, 0),
+              currentHealth: 5,
+            ),
           ],
         ),
         intents: [playerAttack()],
@@ -470,8 +487,10 @@ void main() {
         deltaSeconds: 0.1,
         damageResolver: hitResolver,
       );
-      expect(result.events.whereType<Phase0aGatherStarted>().single.actor,
-          'player');
+      expect(
+        result.events.whereType<Phase0aGatherStarted>().single.actor,
+        'player',
+      );
       final applied = result.events.whereType<Phase0aGatherApplied>().single;
       expect(applied.actor, 'player');
       expect(applied.outcomes.map((o) => o.target).toList(), ['e1', 'e2']);
@@ -487,16 +506,20 @@ void main() {
     });
 
     test('聚怪击杀携带结算伤害与 defeated,死亡事件仅一次', () {
-      final resolver = FixedDamageResolver(
+      const resolver = FixedDamageResolver(
         basicDamage: 25,
         gatherDamage: 0,
         clearDamage: 40,
       );
-      final gatherResolver = _GatherDamageResolver(inner: resolver, damage: 30);
+      const gatherResolver = _GatherDamageResolver(inner: resolver, damage: 30);
       final result = reducePhase0aTick(
         state: makeState(
           enemies: [
-            makeEnemy(id: 'e1', position: const ArenaVector(200, 0), currentHealth: 20),
+            makeEnemy(
+              id: 'e1',
+              position: const ArenaVector(200, 0),
+              currentHealth: 20,
+            ),
           ],
           skillSlots: [makeSlot('gather')],
         ),
@@ -515,9 +538,11 @@ void main() {
       final result = reducePhase0aTick(
         state: makeState(
           skillSlots: [
-            makeSlot('gather',
-                cooldownRemaining: 1.2,
-                availability: Phase0aSkillAvailability.cooldown),
+            makeSlot(
+              'gather',
+              cooldownRemaining: 1.2,
+              availability: Phase0aSkillAvailability.cooldown,
+            ),
           ],
         ),
         intents: [gatherIntent()],
@@ -527,8 +552,10 @@ void main() {
       expect(result.events.whereType<Phase0aGatherStarted>(), isEmpty);
       expect(result.events.whereType<Phase0aGatherApplied>(), isEmpty);
       expect(result.state.player.qiCurrent, 100);
-      expect(result.state.skillSlots.single.cooldownRemaining,
-          closeTo(1.1, 0.0001));
+      expect(
+        result.state.skillSlots.single.cooldownRemaining,
+        closeTo(1.1, 0.0001),
+      );
     });
 
     test('真气不足被拒绝:无事件、不进入冷却', () {
@@ -586,17 +613,24 @@ void main() {
         deltaSeconds: 0.1,
         damageResolver: hitResolver,
       );
-      expect(result.events.whereType<Phase0aClearStarted>().single.actor,
-          'player');
-      final applied = result.events.whereType<Phase0aClearApplied>().single;
-      expect(applied.outcomes.map((o) => o.target).toList(),
-          ['e1', 'e2', 'e3']);
-      expect(applied.outcomes.map((o) => o.resolvedDamage).toList(),
-          [40, 40, 40]);
       expect(
-        applied.outcomes.map((o) => o.statusApplied).toSet(),
-        {Phase0aSkillStatus.staggered},
+        result.events.whereType<Phase0aClearStarted>().single.actor,
+        'player',
       );
+      final applied = result.events.whereType<Phase0aClearApplied>().single;
+      expect(applied.outcomes.map((o) => o.target).toList(), [
+        'e1',
+        'e2',
+        'e3',
+      ]);
+      expect(applied.outcomes.map((o) => o.resolvedDamage).toList(), [
+        40,
+        40,
+        40,
+      ]);
+      expect(applied.outcomes.map((o) => o.statusApplied).toSet(), {
+        Phase0aSkillStatus.staggered,
+      });
       expect(result.state.player.qiCurrent, 70);
       expect(result.state.skillSlots.single.cooldownRemaining, 4);
     });
@@ -627,11 +661,13 @@ void main() {
 
   group('技能可用态运行态字段', () {
     test('冷却倒数到边界归零并发 ready 事件,携带真气快照', () {
-      var state = makeState(
+      final state = makeState(
         skillSlots: [
-          makeSlot('gather',
-              cooldownRemaining: 0.1,
-              availability: Phase0aSkillAvailability.cooldown),
+          makeSlot(
+            'gather',
+            cooldownRemaining: 0.1,
+            availability: Phase0aSkillAvailability.cooldown,
+          ),
         ],
       );
       final result = reducePhase0aTick(
@@ -655,9 +691,11 @@ void main() {
         state: makeState(
           player: makePlayer(qiCurrent: 5),
           skillSlots: [
-            makeSlot('gather',
-                cooldownRemaining: 0.05,
-                availability: Phase0aSkillAvailability.cooldown),
+            makeSlot(
+              'gather',
+              cooldownRemaining: 0.05,
+              availability: Phase0aSkillAvailability.cooldown,
+            ),
           ],
         ),
         intents: const [],
@@ -676,17 +714,21 @@ void main() {
       final result = reducePhase0aTick(
         state: makeState(
           skillSlots: [
-            makeSlot('gather',
-                cooldownRemaining: 2,
-                availability: Phase0aSkillAvailability.cooldown),
+            makeSlot(
+              'gather',
+              cooldownRemaining: 2,
+              availability: Phase0aSkillAvailability.cooldown,
+            ),
           ],
         ),
         intents: const [],
         deltaSeconds: 0.1,
         damageResolver: hitResolver,
       );
-      expect(result.events.whereType<Phase0aSkillAvailabilityChanged>(),
-          isEmpty);
+      expect(
+        result.events.whereType<Phase0aSkillAvailabilityChanged>(),
+        isEmpty,
+      );
     });
   });
 }
@@ -711,10 +753,6 @@ class _GatherDamageResolver implements Phase0aDamageResolver {
         kind: kind,
       );
     }
-    return Phase0aResolvedHit(
-      isHit: true,
-      isCritical: false,
-      damage: damage,
-    );
+    return Phase0aResolvedHit(isHit: true, isCritical: false, damage: damage);
   }
 }

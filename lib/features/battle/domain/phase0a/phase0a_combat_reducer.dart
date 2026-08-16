@@ -58,15 +58,19 @@ Phase0aStepResult reducePhase0aTick({
   final events = <Phase0aEvent>[];
 
   var player = state.player.copyWith(
-    attackCooldownRemaining:
-        _cooldownAfter(state.player.attackCooldownRemaining, deltaSeconds),
+    attackCooldownRemaining: _cooldownAfter(
+      state.player.attackCooldownRemaining,
+      deltaSeconds,
+    ),
   );
 
   final enemiesById = <String, Phase0aActor>{
     for (final enemy in state.enemies)
       enemy.id: enemy.copyWith(
-        attackCooldownRemaining:
-            _cooldownAfter(enemy.attackCooldownRemaining, deltaSeconds),
+        attackCooldownRemaining: _cooldownAfter(
+          enemy.attackCooldownRemaining,
+          deltaSeconds,
+        ),
       ),
   };
 
@@ -94,10 +98,9 @@ Phase0aStepResult reducePhase0aTick({
           tick: tick,
           slot: slot.slot,
           availability: availability,
-          cooldownRemaining:
-              availability == Phase0aSkillAvailability.cooldown
-                  ? cooldownRemaining
-                  : null,
+          cooldownRemaining: availability == Phase0aSkillAvailability.cooldown
+              ? cooldownRemaining
+              : null,
           qiCurrent: player.qiCurrent,
           qiRequired: slot.qiCost,
         ),
@@ -151,7 +154,10 @@ Phase0aStepResult reducePhase0aTick({
             kind: Phase0aDamageKind.basic,
           );
           if (resolved.isHit) {
-            final remaining = math.max(0, target.currentHealth - resolved.damage);
+            final remaining = math.max(
+              0,
+              target.currentHealth - resolved.damage,
+            );
             events.add(
               Phase0aHitLanded(
                 seq: seq++,
@@ -235,8 +241,9 @@ Phase0aStepResult reducePhase0aTick({
               target: target.id,
               resolvedDamage: damage,
               defeated: !updated.isAlive,
-              statusApplied:
-                  pulled ? Phase0aSkillStatus.pulled : Phase0aSkillStatus.none,
+              statusApplied: pulled
+                  ? Phase0aSkillStatus.pulled
+                  : Phase0aSkillStatus.none,
             ),
           );
           if (target.side == Phase0aSide.enemy) {
@@ -279,9 +286,7 @@ Phase0aStepResult reducePhase0aTick({
           slots: slots,
         );
         if (cast == null) continue;
-        events.add(
-          Phase0aClearStarted(seq: seq++, tick: tick, actor: actorId),
-        );
+        events.add(Phase0aClearStarted(seq: seq++, tick: tick, actor: actorId));
         final targets = _opposingTargets(
           casterSide: actor.side,
           player: player,

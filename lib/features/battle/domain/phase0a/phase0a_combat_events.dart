@@ -74,8 +74,17 @@ final class Phase0aHitLanded extends Phase0aEvent {
       other.remainingHealth == remainingHealth;
 
   @override
-  int get hashCode => Object.hash(seq, tick, actor, target, moveKind,
-      isCritical, isUltimate, resolvedDamage, remainingHealth);
+  int get hashCode => Object.hash(
+    seq,
+    tick,
+    actor,
+    target,
+    moveKind,
+    isCritical,
+    isUltimate,
+    resolvedDamage,
+    remainingHealth,
+  );
 }
 
 /// 敌方单位生命归零进入移除(对齐契约 enemy_defeated,全场至多一条)。
@@ -264,6 +273,13 @@ final class Phase0aSkillAvailabilityChanged extends Phase0aEvent {
       other.qiRequired == qiRequired;
 
   @override
-  int get hashCode =>
-      Object.hash(seq, tick, slot, availability, cooldownRemaining, qiCurrent, qiRequired);
+  int get hashCode => Object.hash(
+    seq,
+    tick,
+    slot,
+    availability,
+    cooldownRemaining,
+    qiCurrent,
+    qiRequired,
+  );
 }

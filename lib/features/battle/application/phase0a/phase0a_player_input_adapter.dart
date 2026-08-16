@@ -73,9 +73,7 @@ final class Phase0aPlayerInputAdapter {
       down: command.down,
     );
     if (direction.lengthSquared > 0) {
-      intents.add(
-        Phase0aMoveIntent(actorId: playerId, direction: direction),
-      );
+      intents.add(Phase0aMoveIntent(actorId: playerId, direction: direction));
     }
     if (command.attack) {
       intents.add(

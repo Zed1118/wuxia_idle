@@ -118,10 +118,16 @@ void main() {
       final legacyBattle = RegExp(r'\b(BattleState|BattleAI)\b');
       for (final file in sourceFiles(appDir)) {
         final code = stripComments(file.readAsStringSync());
-        expect(code.contains('battle_state.dart'), isFalse,
-            reason: '${file.path} import 旧 battle_state.dart');
-        expect(code.contains('battle_ai.dart'), isFalse,
-            reason: '${file.path} import 旧 battle_ai.dart');
+        expect(
+          code.contains('battle_state.dart'),
+          isFalse,
+          reason: '${file.path} import 旧 battle_state.dart',
+        );
+        expect(
+          code.contains('battle_ai.dart'),
+          isFalse,
+          reason: '${file.path} import 旧 battle_ai.dart',
+        );
         final hit = legacyBattle.firstMatch(code);
         expect(
           hit,

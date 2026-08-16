@@ -104,18 +104,18 @@ final class Phase0aActor {
 
   @override
   int get hashCode => Object.hash(
-        id,
-        side,
-        position,
-        facing,
-        maxHealth,
-        currentHealth,
-        moveSpeed,
-        qiCurrent,
-        qiMax,
-        attackCooldownRemaining,
-        defeatKind,
-      );
+    id,
+    side,
+    position,
+    facing,
+    maxHealth,
+    currentHealth,
+    moveSpeed,
+    qiCurrent,
+    qiMax,
+    attackCooldownRemaining,
+    defeatKind,
+  );
 }
 
 /// 玩家技能印运行态快照(slot 语义位 + 冷却剩余 + 真气门槛 + 可用态)。
@@ -160,7 +160,8 @@ final class Phase0aSkillSlot {
       other.availability == availability;
 
   @override
-  int get hashCode => Object.hash(slot, cooldownRemaining, qiCost, availability);
+  int get hashCode =>
+      Object.hash(slot, cooldownRemaining, qiCost, availability);
 }
 
 /// 一拍竞技场全量状态(不可变):玩家 + 存活敌人 + 技能印 + 拍号/事件序号。
@@ -196,6 +197,11 @@ final class Phase0aArenaState {
       _listEquals(other.skillSlots, skillSlots);
 
   @override
-  int get hashCode =>
-      Object.hash(tick, nextSeq, player, _listHash(enemies), _listHash(skillSlots));
+  int get hashCode => Object.hash(
+    tick,
+    nextSeq,
+    player,
+    _listHash(enemies),
+    _listHash(skillSlots),
+  );
 }

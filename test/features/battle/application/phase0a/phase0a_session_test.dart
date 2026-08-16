@@ -83,20 +83,22 @@ Phase0aArenaState makeState({
     nextSeq: 1,
     player: player ?? makePlayer(),
     enemies: enemies ?? const [],
-    skillSlots: skillSlots ?? const [
-      Phase0aSkillSlot(
-        slot: 'gather',
-        cooldownRemaining: 0,
-        qiCost: 20,
-        availability: Phase0aSkillAvailability.ready,
-      ),
-      Phase0aSkillSlot(
-        slot: 'clear',
-        cooldownRemaining: 0,
-        qiCost: 30,
-        availability: Phase0aSkillAvailability.ready,
-      ),
-    ],
+    skillSlots:
+        skillSlots ??
+        const [
+          Phase0aSkillSlot(
+            slot: 'gather',
+            cooldownRemaining: 0,
+            qiCost: 20,
+            availability: Phase0aSkillAvailability.ready,
+          ),
+          Phase0aSkillSlot(
+            slot: 'clear',
+            cooldownRemaining: 0,
+            qiCost: 30,
+            availability: Phase0aSkillAvailability.ready,
+          ),
+        ],
   );
 }
 
@@ -126,10 +128,11 @@ Phase0aEnemyAiAdapter makeEnemyAdapter() {
 
 Phase0aCombatSession makeSession({Phase0aArenaState? initialState}) {
   return Phase0aCombatSession(
-    initialState: initialState ??
-        makeState(enemies: [
-          makeEnemy(id: 'e1', position: const ArenaVector(300, 0)),
-        ]),
+    initialState:
+        initialState ??
+        makeState(
+          enemies: [makeEnemy(id: 'e1', position: const ArenaVector(300, 0))],
+        ),
     playerAdapter: makePlayerAdapter(),
     enemyAiAdapter: makeEnemyAdapter(),
     damageResolver: const FixedDamageResolver(basicDamage: 15),
@@ -242,20 +245,27 @@ void main() {
       final session = makeSession(
         initialState: makeState(
           enemies: [
-            makeEnemy(id: 'e1', position: const ArenaVector(150, 0), currentHealth: 15),
+            makeEnemy(
+              id: 'e1',
+              position: const ArenaVector(150, 0),
+              currentHealth: 15,
+            ),
           ],
         ),
       );
       final allEvents = <Phase0aEvent>[];
       for (var i = 0; i < 6; i++) {
-        allEvents.addAll(session.advance(
-          deltaSeconds: 0.5,
-          command: const Phase0aPlayerCommand(attack: true),
-        ));
+        allEvents.addAll(
+          session.advance(
+            deltaSeconds: 0.5,
+            command: const Phase0aPlayerCommand(attack: true),
+          ),
+        );
       }
       expect(allEvents.whereType<Phase0aEnemyDefeated>(), hasLength(1));
-      final defeatSeq = allEvents
-          .indexWhere((e) => e is Phase0aEnemyDefeated && e.target == 'e1');
+      final defeatSeq = allEvents.indexWhere(
+        (e) => e is Phase0aEnemyDefeated && e.target == 'e1',
+      );
       for (var i = defeatSeq + 1; i < allEvents.length; i++) {
         final e = allEvents[i];
         if (e is Phase0aHitLanded) {
@@ -269,11 +279,11 @@ void main() {
 
     test('同初态同指令序列的两个会话得到相等状态与事件序列', () {
       Phase0aArenaState initial() => makeState(
-            enemies: [
-              makeEnemy(id: 'e1', position: const ArenaVector(260, 40)),
-              makeEnemy(id: 'e2', position: const ArenaVector(200, -80)),
-            ],
-          );
+        enemies: [
+          makeEnemy(id: 'e1', position: const ArenaVector(260, 40)),
+          makeEnemy(id: 'e2', position: const ArenaVector(200, -80)),
+        ],
+      );
       const commands = [
         Phase0aPlayerCommand(right: true),
         Phase0aPlayerCommand(right: true, attack: true),

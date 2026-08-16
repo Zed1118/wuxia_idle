@@ -29,10 +29,7 @@ final class Phase0aEnemyAiAdapter {
       final delta = player.position - enemy.position;
       if (delta.lengthSquared > attackRange * attackRange) {
         intents.add(
-          Phase0aMoveIntent(
-            actorId: enemy.id,
-            direction: delta.normalized(),
-          ),
+          Phase0aMoveIntent(actorId: enemy.id, direction: delta.normalized()),
         );
         continue;
       }
