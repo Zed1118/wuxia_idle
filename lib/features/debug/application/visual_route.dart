@@ -60,6 +60,10 @@ enum VisualRoute {
     'battle_scene',
     '战斗屏·背景 scrim + 胜负仪式验收(seed 3v3 带背景,自动播放到胜负 overlay)',
   ),
+  phase0aBattlePlayable(
+    'phase0a_battle_playable',
+    'Phase 0A 单角色水墨 ARPG·真实 flow 键鼠可玩验收',
+  ),
   mainlineFirstClearBattle(
     'mainline_first_clear_battle',
     '主线首通真战斗验收·真 stage_01_03 + readable_first_clear 调参 + 起手暂停可单步',

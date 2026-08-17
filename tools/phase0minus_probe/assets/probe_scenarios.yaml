@@ -1,0 +1,164 @@
+schema_version: 1
+script_version: phase0minus-s1-3-v1
+fixed_seed: 20260812
+collision_backend: flame_sweep_default
+world:
+  width: 2400.0
+  depth: 480.0
+  grid_cell_size: 96.0
+  camera_travel: 1600.0
+viewports:
+  desktop_1280x720:
+    width: 1280.0
+    height: 720.0
+  desktop_1440x900:
+    width: 1440.0
+    height: 900.0
+timing:
+  warmup_seconds: 12.0
+  sample_seconds: 60.0
+  cooldown_seconds: 30.0
+  burst_interval_seconds: 10.0
+  respawn_delay_seconds: 1.2
+  minimum_valid_frames: 3000
+  hud_update_hz: 10.0
+thresholds:
+  frame_budget_us: 16600
+  severe_frame_us: 33300
+  maximum_severe_streak: 1
+  rss_cooldown_fraction: 0.10
+  rss_cooldown_bytes: 67108864
+simulation:
+  player_speed: 220.0
+  enemy_speed: 92.0
+  elite_speed: 72.0
+  enemy_radius: 17.0
+  elite_radius: 27.0
+  player_radius: 20.0
+  separation_radius: 42.0
+  melee_attack_slots: 4
+  elite_attack_slots: 1
+  elite_charge_seconds: 2.5
+  enemy_hit_points: 100.0
+  elite_hit_points: 350.0
+  hit_knockback: 55.0
+  enemy_animation_hz: 8.0
+effects:
+  death_particles_per_enemy: 6
+  center_burst_particles: 64
+  afterimages: 32
+  baseline_damage_labels: 10
+  target_damage_labels: 12
+  stress_damage_labels: 12
+  particle_lifetime_seconds: 0.8
+  afterimage_lifetime_seconds: 0.55
+  damage_label_lifetime_seconds: 0.65
+gameplay:
+  input:
+    command_buffer_seconds: 0.42
+  player:
+    health: 100.0
+    qi_capacity: 100.0
+    starting_qi: 40.0
+    horizontal_speed: 360.0
+    vertical_speed: 260.0
+    radius: 22.0
+  field:
+    width: 2400.0
+    height: 720.0
+    combat_top: 150.0
+    combat_bottom: 570.0
+  basic:
+    interval_seconds: 0.30
+    move_factor: 0.85
+    range: 150.0
+    half_arc_radians: 0.655
+    damage: 34.0
+    qi_gain: 5.0
+    maximum_hit_reacts: 3
+    ranged_range: 540.0
+    ranged_half_arc_radians: 0.16
+    ranged_damage: 24.0
+  movement_art:
+    speed: 1111.0
+    duration_seconds: 0.18
+    cooldown_seconds: 3.2
+  gather:
+    radius: 300.0
+    target_radius: 100.0
+    maximum_cast_range: 360.0
+    maximum_pull_distance: 220.0
+    cooldown_seconds: 6.5
+    imbalance_seconds: 3.2
+    control_seconds: 1.35
+  clear:
+    radius: 340.0
+    damage: 65.0
+    imbalanced_multiplier: 1.7
+    elite_damage: 120.0
+    qi_cost: 60.0
+  normal:
+    health: 100.0
+    speed: 250.0
+    radius: 20.0
+    attack_range: 55.0
+    attack_interval_seconds: 1.33
+    attack_start_interval_seconds: 0.18
+    damage: 7.0
+    attack_slots: 3
+  elite:
+    health: 1200.0
+    speed: 280.0
+    radius: 32.0
+    charge_interval_seconds: 5.0
+    telegraph_duration_seconds: 1.2
+    break_window_seconds: 0.65
+    break_threshold: 2
+    heavy_damage: 25.0
+    stagger_seconds: 1.8
+  waves:
+    between_seconds: 5.0
+    qi_recovery: 25.0
+    wave_1:
+      batch_1: { delay_seconds: 0.0, normal_count: 4, elite_count: 0 }
+      batch_2: { delay_seconds: 4.0, normal_count: 3, elite_count: 0 }
+      batch_3: { delay_seconds: 8.0, normal_count: 3, elite_count: 0 }
+    wave_2:
+      batch_1: { delay_seconds: 0.0, normal_count: 7, elite_count: 0 }
+      batch_2: { delay_seconds: 5.0, normal_count: 7, elite_count: 0 }
+      batch_3: { delay_seconds: 10.0, normal_count: 6, elite_count: 0 }
+    wave_3:
+      batch_1: { delay_seconds: 0.0, normal_count: 8, elite_count: 0 }
+      batch_2: { delay_seconds: 0.7, normal_count: 6, elite_count: 1 }
+      batch_3: { delay_seconds: 1.4, normal_count: 6, elite_count: 0 }
+  feedback:
+    pool_size: 160
+    basic_particles: 8
+    ranged_particles: 2
+    gather_particles: 32
+    clear_particles: 128
+    basic_lifetime_seconds: 0.20
+    ranged_lifetime_seconds: 0.68
+    gather_lifetime_seconds: 0.45
+    clear_lifetime_seconds: 0.70
+    basic_hit_stop_seconds: 0.022
+    clear_hit_stop_seconds: 0.065
+    break_hit_stop_seconds: 0.080
+    clear_camera_shake_seconds: 0.10
+    clear_camera_shake_pixels: 3.0
+    damage_label_pool_size: 48
+    damage_label_lifetime_seconds: 0.72
+    damage_label_float_distance: 48.0
+tiers:
+  baseline_10:
+    normal_enemies: 10
+    elite_enemies: 0
+    expected_peak_effects: 166
+  target_20_plus_1:
+    normal_enemies: 20
+    elite_enemies: 1
+    expected_peak_effects: 234
+  stress_30:
+    normal_enemies: 30
+    elite_enemies: 0
+    expected_peak_effects: 288

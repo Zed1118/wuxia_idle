@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "phase": "phase0b_art_sample",
+  "status": "single_panorama_scroll_observation_and_rejected_auto_cutout_rig",
+  "generated_with": "built_in_imagegen",
+  "source_identity_assets": {
+    "hero": "assets/characters/battle_founder_v2.png",
+    "ordinary_blade": "assets/enemies/battle_bandit_blade_sample_v2.png",
+    "ordinary_archer": "assets/enemies/battle_bandit_archer_sample_v2.png",
+    "elite": "assets/enemies/battle_hidden_elder_sample_v2.png",
+    "scene": "assets/scenes/battle_mountain_pass_stage_v2.png"
+  },
+  "artifacts": [
+    {
+      "path": "phase0b_gather_keyframe_v1.png",
+      "role": "gameplay_keyframe",
+      "action": "gather",
+      "runtime_ready": false
+    },
+    {
+      "path": "phase0b_clear_keyframe_v1.png",
+      "role": "gameplay_keyframe",
+      "action": "clear",
+      "runtime_ready": false
+    },
+    {
+      "path": "phase0b_break_keyframe_v1.png",
+      "role": "gameplay_keyframe",
+      "action": "elite_break_window",
+      "runtime_ready": false
+    },
+    {
+      "path": "phase0b_founder_action_sheet_v1.png",
+      "role": "animation_handoff_concept",
+      "character": "founder_sample_controller",
+      "pose_count": 6,
+      "runtime_ready": false
+    },
+    {
+      "path": "phase0b_bandit_action_sheet_v1.png",
+      "role": "animation_handoff_concept",
+      "character": "ordinary_blade_bandit",
+      "pose_count": 6,
+      "runtime_ready": false
+    },
+    {
+      "path": "phase0b_elite_action_sheet_v1.png",
+      "role": "animation_handoff_concept",
+      "character": "elite_hidden_elder",
+      "pose_count": 4,
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/founder_pose_atlas_v1.png",
+      "role": "transparent_pose_atlas",
+      "character": "founder_sample_controller",
+      "pose_count": 6,
+      "layout": "2x3",
+      "runtime_ready": true,
+      "runtime_scope": "discrete_pose_playback_only"
+    },
+    {
+      "path": "runtime/bandit_pose_atlas_v1.png",
+      "role": "transparent_pose_atlas",
+      "character": "ordinary_blade_bandit",
+      "pose_count": 6,
+      "layout": "2x3",
+      "runtime_ready": true,
+      "runtime_scope": "discrete_pose_playback_only"
+    },
+    {
+      "path": "runtime/elite_pose_atlas_v1.png",
+      "role": "transparent_pose_atlas",
+      "character": "elite_hidden_elder",
+      "pose_count": 4,
+      "layout": "2x2",
+      "runtime_ready": true,
+      "runtime_scope": "discrete_pose_playback_only"
+    },
+    {
+      "path": "runtime/mountain_pass_background_v1.webp",
+      "role": "isolated_runtime_backdrop_copy",
+      "derived_from": "assets/scenes/battle_mountain_pass_stage_v2.png",
+      "runtime_ready": true
+    },
+    {
+      "path": "runtime/mountain_pass_background_v2.png",
+      "role": "clean_16x9_runtime_backdrop",
+      "derived_from": "runtime/mountain_pass_background_v1.webp",
+      "runtime_ready": true
+    },
+    {
+      "path": "runtime/scroll_panorama_mountain_to_gate_v1.png",
+      "role": "single_continuous_map_panorama",
+      "runtime_size": "3600x720",
+      "runtime_ready": true
+    },
+    {
+      "path": "runtime/founder_cutout_parts_v1.png",
+      "role": "automatic_cutout_rig_input",
+      "runtime_ready": false,
+      "outcome": "rejected_visible_joint_seams_and_missing_hidden_overlap_art"
+    },
+    {
+      "path": "runtime/phase0b_joint_compare_failed_v1.png",
+      "role": "negative_route_evidence",
+      "runtime_ready": false,
+      "outcome": "hierarchy_runs_but_visual_quality_fails"
+    },
+    {
+      "path": "runtime/phase0b_runtime_gather_capture_v1.png",
+      "role": "macos_debug_runtime_capture",
+      "beat": "gather",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_runtime_clear_capture_v1.png",
+      "role": "macos_debug_runtime_capture",
+      "beat": "clear",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_runtime_elite_break_capture_v1.png",
+      "role": "macos_debug_runtime_capture",
+      "beat": "elite_break_success",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_art_load_20plus1_capture_v1.png",
+      "role": "rejected_camera_v1_evidence",
+      "runtime_ready": false,
+      "outcome": "hero_too_large_and_twenty_actor_ring_looks_artificial"
+    },
+    {
+      "path": "runtime/phase0b_art_load_camera_v2_gather.png",
+      "role": "macos_profile_camera_v2_capture",
+      "beat": "gather",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_art_load_camera_v2_settle.png",
+      "role": "macos_profile_camera_v2_capture",
+      "beat": "settle",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_scroll_mountain_pass_v2.png",
+      "role": "macos_profile_scroll_capture",
+      "region": "mountain_pass",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_scroll_bamboo_road_v2.png",
+      "role": "macos_profile_scroll_capture",
+      "region": "bamboo_road",
+      "runtime_ready": false
+    },
+    {
+      "path": "runtime/phase0b_scroll_checkpoint_20plus1_v2.png",
+      "role": "macos_profile_scroll_capture",
+      "region": "checkpoint_20plus1",
+      "runtime_ready": false,
+      "outcome": "load_and_composition_evidence_not_final_enemy_ai_formation"
+    }
+  ],
+  "invariants": [
+    "one_controllable_hero",
+    "no_ai_allies",
+    "grounded_human_enemies",
+    "restrained_ink_wash_palette",
+    "vermilion_reserved_for_danger_and_break",
+    "single_primary_effect_per_action",
+    "no_text_or_fake_chinese_lettering"
+  ],
+  "explicit_non_claims": [
+    "not_layer-separated",
+    "not_rigged",
+    "not_layer-separated_bone_assets",
+    "not_continuous_animation",
+    "not_profile_runtime_performance_evidence",
+    "pose_atlas_playback_does_not_pass_the_bone_animation_gate",
+    "automatic_cutout_joint_playback_failed_the_visual_quality_gate",
+    "art_load_observation_is_not_a_gameplay_or_performance_gate",
+    "fixed_art_load_camera_is_not_the_final_battle_interface",
+    "scroll_review_uses_single_generated_panorama_not_final_layered_map_art",
+    "founder_is_sample_controller_not_permanent_protagonist_decision"
+  ]
+}

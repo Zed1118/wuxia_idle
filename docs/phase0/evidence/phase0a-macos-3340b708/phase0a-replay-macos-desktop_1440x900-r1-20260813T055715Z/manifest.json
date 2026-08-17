@@ -1,0 +1,36 @@
+{
+  "run_id": "phase0a-replay-macos-desktop_1440x900-r1-20260813T055715Z",
+  "scenario_path": "assets/probe_scenarios.yaml",
+  "scenario_checksum": "9694a17d6e5eb301ad0b80de0492786e38f1355c946c381fe62ba8eeb71274ba",
+  "script_version": "phase0minus-s1-3-v1",
+  "seed": 20260812,
+  "flutter_build_mode": "profile",
+  "platform": "macos",
+  "os_version": "Version 26.4 (Build 25E246)",
+  "processor_count": 10,
+  "flame_version": "1.38.0",
+  "collision_backend": "flame_sweep_default",
+  "viewport": {
+    "id": "desktop_1440x900",
+    "logical_width": 1440.0,
+    "logical_height": 900.0,
+    "device_pixel_ratio": 2.0,
+    "physical_width": 2880.0,
+    "physical_height": 1800.0,
+    "display_id": 2,
+    "refresh_rate_hz": 60.0
+  },
+  "renderer": "COLLECT_MANUALLY",
+  "refresh_rate_hz": 60.0,
+  "device_pixel_ratio": 2.0,
+  "gc_collector": "GC_TELEMETRY_COLLECTED",
+  "gc_event_count": 573,
+  "git_commit": "3340b7086c3819f578d1b747672d758645b2a585",
+  "git_branch": "codex/phase0a-gameplay-greybox",
+  "git_dirty": false,
+  "files_sha256": {
+    "frames.jsonl": "f8a8c869391dd80a4ee7cef02b613d980b8c80f9dafb0c7e5eb772498b645a46",
+    "memory_gc.jsonl": "e46ead3f5e1f924bf82e4a567b1713af1eb44b783e4ada2433d5295642ade5e0",
+    "summary.json": "2bd06677d3844dfa6294bee3cc724d0d84b12db2b7280784a142234f830dd5df"
+  }
+}

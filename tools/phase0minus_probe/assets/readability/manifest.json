@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "suite_id": "phase0a-readability-five-v1",
+  "source_runtime_commit": "2dd21018b621d60eac412a503778b6dc5fbbd857",
+  "source_mode": "phase0a_replay",
+  "logical_viewport": "1280x720",
+  "exposure_ms": 1000,
+  "stimuli": [
+    {
+      "id": "frame1_wave2_peak",
+      "asset": "assets/readability/frame1_wave2_peak.png",
+      "sha256": "ea86def982f4883b1b683b84c359eab8d12d50a4c1e6539185c72c77d5c57b5c",
+      "main_character": "dark player with pale circular outline near left-center",
+      "danger": "none"
+    },
+    {
+      "id": "frame2_wave3_peak",
+      "asset": "assets/readability/frame2_wave3_peak.png",
+      "sha256": "8728204a904e0b9ee2c0645cb4c43c69ecfdc6714c32ebc02601d779705ef0bb",
+      "main_character": "dark player with pale circular outline near left-center",
+      "danger": "none; red elite is present but not telegraphing"
+    },
+    {
+      "id": "frame3_gather",
+      "asset": "assets/readability/frame3_gather.png",
+      "sha256": "235a34eb58ff87472bf99258ce1af9a7e38d46f8334b51c2a2716c944c07b889",
+      "main_character": "dark player with pale circular outline left of the red elite",
+      "danger": "red normal-attack line touching the player; red elite beside the player"
+    },
+    {
+      "id": "frame4_break_window",
+      "asset": "assets/readability/frame4_break_window.png",
+      "sha256": "82b645e8ce29a81e2bbb84c03f55eb1f562712d3f9d199a48640c451b56d5bce",
+      "main_character": "dark player with pale circular outline at left",
+      "danger": "red elite and red attack indicator immediately to the player's right"
+    },
+    {
+      "id": "frame5_clear",
+      "asset": "assets/readability/frame5_clear.png",
+      "sha256": "381b83e761a397787c52d9c0ba3dd744befbe73b8492ce104d674d76e75f9f7f",
+      "main_character": "dark player with pale circular outline near center-left",
+      "danger": "red normal-attack line from upper-left and the adjacent red elite"
+    }
+  ]
+}

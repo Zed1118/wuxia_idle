@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "session_id": "phase0a-gate-v1",
+  "participants": [
+    {"participant_id": "P01", "player_type": "idle", "order": "AB", "slot": 1},
+    {"participant_id": "P02", "player_type": "idle", "order": "BA", "slot": 2},
+    {"participant_id": "P03", "player_type": "arpg", "order": "AB", "slot": 3},
+    {"participant_id": "P04", "player_type": "arpg", "order": "BA", "slot": 4},
+    {"participant_id": "P05", "player_type": "mixed", "order": "AB", "slot": 5},
+    {"participant_id": "P06", "player_type": "mixed", "order": "BA", "slot": 6}
+  ],
+  "constraints": {
+    "anonymous_only": true,
+    "ab_count": 3,
+    "ba_count": 3,
+    "implementers_excluded": true
+  }
+}

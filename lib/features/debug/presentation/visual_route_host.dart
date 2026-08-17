@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 
 import '../../../data/game_repository.dart';
 import '../../../data/defs/equipment_def.dart';
@@ -84,6 +85,9 @@ import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../battle/presentation/battle_screen.dart';
+import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
+import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
+import '../application/phase0a_debug_battle_fixture.dart';
 import '../../encounter/presentation/encounter_dialog.dart';
 import '../../battle_record/domain/boss_memory.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
@@ -483,6 +487,18 @@ Future<Widget> buildVisualTarget(
         hint: null,
         sceneBackgroundPath: 'assets/scenes/battle_$sceneName.png',
       );
+    case VisualRoute.phase0aBattlePlayable:
+      final fixture = await Phase0aDebugBattleFixture.load(
+        assetLoader: rootBundle.loadString,
+        numbers: GameRepository.instance.numbers,
+      );
+      return Phase0aBattleScreen(
+        controller: Phase0aBattleController(
+          flow: fixture.flow,
+          roster: fixture.roster,
+          fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+        ),
+      );
     case VisualRoute.mainlineFirstClearBattle:
       await isar.writeTxn(() => isar.mainlineProgress.clear());
       await OnboardingService(
@@ -670,7 +686,9 @@ Future<Widget> buildVisualTarget(
         allowPlayerIntervention: true,
         startPaused: true,
         seed: battleV2VisualSeed,
-        previewHeaderControls: true,
+        // 对照测试必须展示真实“继续/单步”状态。若强制生产顶栏，
+        // 初始虽已暂停却会显示“暂停”，测试者点一次后整场会快速播完。
+        previewHeaderControls: false,
         previewPouchItems: [
           BattlePouchPreviewItem(
             assetPath: WuxiaUi.battleSamplePouchGourd,
