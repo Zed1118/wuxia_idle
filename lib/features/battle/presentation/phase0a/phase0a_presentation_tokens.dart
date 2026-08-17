@@ -120,5 +120,7 @@ abstract final class Phase0aPresentationTokens {
   static const double feedbackHoldSeconds = 0.65;
 
   /// debug 动态验收路由单拍冻结后的 VFX 保持时间;不用于正式可玩战斗。
-  static const double visualRouteFeedbackHoldSeconds = 5;
+  /// 须大于截图管线 READY 检测轮询 + focus/resize 的固有开销(实测约 5-8s),
+  /// 否则截图落在保持窗口外只能拍到过期帧。
+  static const double visualRouteFeedbackHoldSeconds = 20;
 }
