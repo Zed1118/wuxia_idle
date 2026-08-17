@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../shared/audio/sound_manager.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
@@ -12,6 +13,7 @@ import '../../domain/phase0a/phase0a_wave.dart';
 import '../hp_bar.dart';
 import 'phase0a_battle_controller.dart';
 import 'phase0a_presentation_tokens.dart';
+import 'phase0a_sfx.dart';
 import 'phase0a_skill_seals.dart';
 import 'phase0a_stage.dart';
 import 'phase0a_vfx_controller.dart';
@@ -73,6 +75,15 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   void _refresh() {
+    if (widget.controller.lastEvents.isNotEmpty) {
+      final playerId = widget.controller.state.player.id;
+      for (final event in widget.controller.lastEvents) {
+        final sfxAsset = phase0aSfxAssetForEvent(event, playerId: playerId);
+        if (sfxAsset != null) {
+          SoundManager.instance.playSfxPath(sfxAsset);
+        }
+      }
+    }
     if (widget.controller.feedback.isNotEmpty) {
       for (final entry in widget.controller.feedback) {
         if (entry.kind == Phase0aVfxKind.damagePopup &&
