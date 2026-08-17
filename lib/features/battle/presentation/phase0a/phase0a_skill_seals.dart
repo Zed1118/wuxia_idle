@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
@@ -76,7 +75,11 @@ final class Phase0aSkillSeals extends StatelessWidget {
 }
 
 /// 单枚技能印:固定边长的墨章,五态亮暗 + 状态行。
-class _SkillSeal extends StatelessWidget {
+///
+/// 键盘体例对齐 PlaqueButton:FocusableActionDetector 的
+/// onShowFocusHighlight 驱动 `if (_focused)` 金边环,Tab 落点可见;
+/// Enter/Space 走 ActivateIntent,其余键 ignored 冒泡给屏幕 handler。
+class _SkillSeal extends StatefulWidget {
   const _SkillSeal({
     super.key,
     required this.slot,
@@ -92,31 +95,29 @@ class _SkillSeal extends StatelessWidget {
   final int qiCurrent;
   final VoidCallback onPressed;
 
-  bool get _enabled => slot.availability == Phase0aSkillAvailability.ready;
+  @override
+  State<_SkillSeal> createState() => _SkillSealState();
+}
+
+class _SkillSealState extends State<_SkillSeal> {
+  bool _focused = false;
+
+  bool get _enabled =>
+      widget.slot.availability == Phase0aSkillAvailability.ready;
 
   /// 状态行:ready 亮「可用」,其余四态给出明确禁用原因。
-  String get _statusText => switch (slot.availability) {
+  String get _statusText => switch (widget.slot.availability) {
     Phase0aSkillAvailability.ready => UiStrings.skillReady,
     Phase0aSkillAvailability.cooldown => UiStrings.phase0aSealCooldown(
-      slot.cooldownRemaining,
+      widget.slot.cooldownRemaining,
     ),
     Phase0aSkillAvailability.qi => UiStrings.phase0aSealQiShort(
-      qiCurrent,
-      slot.qiCost,
+      widget.qiCurrent,
+      widget.slot.qiCost,
     ),
     Phase0aSkillAvailability.casting => UiStrings.phase0aSealCasting,
     Phase0aSkillAvailability.down => UiStrings.phase0aSealDown,
   };
-
-  KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.space) {
-      onPressed();
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,64 +130,105 @@ class _SkillSeal extends StatelessWidget {
     return Semantics(
       button: true,
       enabled: enabled,
-      onTap: enabled ? onPressed : null,
-      child: Focus(
-        canRequestFocus: enabled,
-        onKeyEvent: _onKeyEvent,
-        child: MouseRegion(
-          cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      // label = 印字 + 键位 + 状态行;内容层的视觉文字对读屏静音,
+      // 避免节点 label 与子 Text 拼出双份文案。
+      label: '${widget.glyph} ${widget.keyCap} $_statusText',
+      onTap: enabled ? widget.onPressed : null,
+      child: ExcludeSemantics(
+        child: FocusableActionDetector(
+          enabled: enabled,
+          mouseCursor: enabled
+              ? SystemMouseCursors.click
+              : SystemMouseCursors.basic,
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                widget.onPressed();
+                return null;
+              },
+            ),
+          },
+          onShowFocusHighlight: (v) => setState(() => _focused = v),
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: enabled ? onPressed : null,
-            child: Container(
+            onTap: enabled ? widget.onPressed : null,
+            child: SizedBox(
               width: Phase0aPresentationTokens.skillSealSize,
               height: Phase0aPresentationTokens.skillSealSize,
-              padding: const EdgeInsets.all(
-                Phase0aPresentationTokens.skillSealPadding,
-              ),
-              decoration: BoxDecoration(
-                color: background,
-                borderRadius: BorderRadius.circular(
-                  Phase0aPresentationTokens.skillSealRadius,
-                ),
-                border: Border.all(
-                  color: edge,
-                  width: Phase0aPresentationTokens.skillSealBorderWidth,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Stack(
                 children: [
-                  Text(
-                    glyph,
-                    style: TextStyle(
-                      color: foreground,
-                      fontSize:
-                          Phase0aPresentationTokens.skillSealGlyphFontSize,
-                      fontWeight: FontWeight.bold,
-                      height: 1.1,
-                    ),
-                  ),
-                  Text(
-                    keyCap,
-                    style: TextStyle(
-                      color: foreground,
-                      fontSize: Phase0aPresentationTokens.skillSealKeyFontSize,
-                      height: 1.2,
-                    ),
-                  ),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      _statusText,
-                      style: TextStyle(
-                        color: foreground,
-                        fontSize:
-                            Phase0aPresentationTokens.skillSealStatusFontSize,
-                        height: 1.2,
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: background,
+                        borderRadius: BorderRadius.circular(
+                          Phase0aPresentationTokens.skillSealRadius,
+                        ),
+                        border: Border.all(
+                          color: edge,
+                          width: Phase0aPresentationTokens.skillSealBorderWidth,
+                        ),
                       ),
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.all(
+                      Phase0aPresentationTokens.skillSealPadding,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          widget.glyph,
+                          style: TextStyle(
+                            color: foreground,
+                            fontSize: Phase0aPresentationTokens
+                                .skillSealGlyphFontSize,
+                            fontWeight: FontWeight.bold,
+                            height: 1.1,
+                          ),
+                        ),
+                        Text(
+                          widget.keyCap,
+                          style: TextStyle(
+                            color: foreground,
+                            fontSize:
+                                Phase0aPresentationTokens.skillSealKeyFontSize,
+                            height: 1.2,
+                          ),
+                        ),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            _statusText,
+                            style: TextStyle(
+                              color: foreground,
+                              fontSize: Phase0aPresentationTokens
+                                  .skillSealStatusFontSize,
+                              height: 1.2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // 键盘 focus 高亮:金边环(PlaqueButton 同体例,9C)。
+                  if (_focused)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                              Phase0aPresentationTokens.skillSealRadius,
+                            ),
+                            border: Border.all(
+                              color: WuxiaUi.gold,
+                              width: Phase0aPresentationTokens.focusRingWidth,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

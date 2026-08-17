@@ -112,6 +112,9 @@ abstract final class Phase0aPresentationTokens {
   static const double vfxBannerHeight = 54;
   static const double vfxOutcomeSize = 168;
   static const double vfxOutcomeFontSize = 30;
+
+  /// 键盘焦点金边环宽(PlaqueButton 同体例:桌面键盘导航可见落点)。
+  static const double focusRingWidth = 2;
   static const double retryButtonTopGap = 28;
   static const double retryButtonPaddingH = 34;
   static const double retryButtonPaddingV = 10;

@@ -374,52 +374,85 @@ final class _HeldFeedback {
 }
 
 /// 终局「再战」纸签按钮(9B)。宣纸底 + 墨字 + 绛红描边,守水墨克制基调;
-/// 禁用态(装配中)降透明度,不换色。
-class _RetryButton extends StatelessWidget {
+/// 禁用态(装配中)降透明度,不换色。键盘焦点金边环对齐 PlaqueButton
+/// 体例(9C):Tab 落点可见。
+class _RetryButton extends StatefulWidget {
   const _RetryButton({required this.onPressed});
 
   final VoidCallback? onPressed;
 
   @override
+  State<_RetryButton> createState() => _RetryButtonState();
+}
+
+class _RetryButtonState extends State<_RetryButton> {
+  bool _focused = false;
+
+  @override
   Widget build(BuildContext context) {
+    final enabled = widget.onPressed != null;
     return Opacity(
-      opacity: onPressed == null ? 0.55 : 1,
+      opacity: enabled ? 1 : 0.55,
       // 桌面语义门禁(CLAUDE §8.2):裸 GestureDetector 四项皆无,
       // 用 FocusableActionDetector 补焦点/键盘激活/鼠标光标。
       child: FocusableActionDetector(
-        enabled: onPressed != null,
-        mouseCursor: onPressed != null
+        enabled: enabled,
+        mouseCursor: enabled
             ? SystemMouseCursors.click
             : SystemMouseCursors.basic,
         actions: {
           ActivateIntent: CallbackAction<ActivateIntent>(
             onInvoke: (_) {
-              onPressed?.call();
+              widget.onPressed?.call();
               return null;
             },
           ),
         },
+        onShowFocusHighlight: (v) => setState(() => _focused = v),
         child: GestureDetector(
           key: const ValueKey('phase0a_retry_button'),
-          onTap: onPressed,
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: Phase0aPresentationTokens.retryButtonPaddingH,
-              vertical: Phase0aPresentationTokens.retryButtonPaddingV,
-            ),
-            decoration: BoxDecoration(
-              color: WuxiaUi.paper,
-              border: Border.all(color: WuxiaUi.jiang, width: 2),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: const Text(
-              UiStrings.phase0aRetryLabel,
-              style: TextStyle(
-                color: WuxiaUi.ink,
-                fontSize: Phase0aPresentationTokens.retryButtonFontSize,
-                fontWeight: FontWeight.w700,
+          onTap: widget.onPressed,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: WuxiaUi.paper,
+                    border: Border.all(color: WuxiaUi.jiang, width: 2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
               ),
-            ),
+              const Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: Phase0aPresentationTokens.retryButtonPaddingH,
+                  vertical: Phase0aPresentationTokens.retryButtonPaddingV,
+                ),
+                child: Text(
+                  UiStrings.phase0aRetryLabel,
+                  style: TextStyle(
+                    color: WuxiaUi.ink,
+                    fontSize: Phase0aPresentationTokens.retryButtonFontSize,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              // 键盘 focus 高亮:金边环(PlaqueButton 同体例,9C)。
+              if (_focused)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: WuxiaUi.gold,
+                          width: Phase0aPresentationTokens.focusRingWidth,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
