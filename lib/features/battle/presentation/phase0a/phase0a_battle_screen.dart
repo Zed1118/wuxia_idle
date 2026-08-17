@@ -944,9 +944,14 @@ class _GatherPullPainter extends CustomPainter {
     );
     final control =
         midpoint + normal * Phase0aPresentationTokens.gatherPullCurveBend;
+    final echoControl =
+        midpoint - normal * Phase0aPresentationTokens.gatherPullEchoBend;
     final path = Path()
       ..moveTo(source.dx, source.dy)
       ..quadraticBezierTo(control.dx, control.dy, target.dx, target.dy);
+    final echoPath = Path()
+      ..moveTo(source.dx, source.dy)
+      ..quadraticBezierTo(echoControl.dx, echoControl.dy, target.dx, target.dy);
     canvas.drawPath(
       path,
       Paint()
@@ -956,12 +961,28 @@ class _GatherPullPainter extends CustomPainter {
         ..strokeWidth = Phase0aPresentationTokens.gatherPullStrokeWidth,
     );
     canvas.drawPath(
-      path,
+      echoPath,
       Paint()
         ..color = WuxiaUi.ink.withValues(alpha: 0.48)
         ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
         ..strokeWidth = Phase0aPresentationTokens.gatherPullEchoStrokeWidth,
     );
+    for (final t in const <double>[0.32, 0.58, 0.78]) {
+      final point = Offset(
+        (1 - t) * (1 - t) * source.dx +
+            2 * (1 - t) * t * control.dx +
+            t * t * target.dx,
+        (1 - t) * (1 - t) * source.dy +
+            2 * (1 - t) * t * control.dy +
+            t * t * target.dy,
+      );
+      canvas.drawCircle(
+        point,
+        Phase0aPresentationTokens.gatherPullDropletRadius * (1 - t * 0.45),
+        Paint()..color = WuxiaUi.qing.withValues(alpha: 0.68),
+      );
+    }
     canvas.drawCircle(
       target,
       Phase0aPresentationTokens.gatherPullTargetDotRadius,

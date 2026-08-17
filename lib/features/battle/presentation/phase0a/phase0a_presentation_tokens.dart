@@ -94,10 +94,12 @@ abstract final class Phase0aPresentationTokens {
   static const double vfxMeleeSize = 148;
   static const double vfxEliteDefeatSize = 292;
   static const double gatherPullPadding = 24;
-  static const double gatherPullStrokeWidth = 3;
-  static const double gatherPullEchoStrokeWidth = 1.5;
-  static const double gatherPullCurveBend = 18;
+  static const double gatherPullStrokeWidth = 5.5;
+  static const double gatherPullEchoStrokeWidth = 2.5;
+  static const double gatherPullCurveBend = 30;
+  static const double gatherPullEchoBend = 14;
   static const double gatherPullTargetDotRadius = 4;
+  static const double gatherPullDropletRadius = 3;
   static const double vfxStrokeWidth = 4;
   static const double vfxThinStrokeWidth = 2;
   static const double vfxPopupGap = 38;
