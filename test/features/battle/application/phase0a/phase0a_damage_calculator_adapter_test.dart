@@ -130,8 +130,7 @@ void main() {
       combatants:
           combatants ??
           {'player': makePlayerSnapshot(), 'e1': makeEnemySnapshot()},
-      moveBindings:
-          moveBindings ?? const {Phase0aDamageKind.basic: basicSkill},
+      moveBindings: moveBindings ?? const {Phase0aDamageKind.basic: basicSkill},
       numbers: numbers(),
       rng: math.Random(seed),
     );
@@ -163,8 +162,7 @@ void main() {
       n: numbers(),
       rng: rng,
       // 拍板Ⓑ:熟练度按 binding 的 skill.id 查调用方预解析表,缺条目 1.0。
-      proficiencyDamageMult:
-          attacker.proficiencyDamageMults[skill.id] ?? 1.0,
+      proficiencyDamageMult: attacker.proficiencyDamageMults[skill.id] ?? 1.0,
       defenderCritDamageTakenMult: defender.critDamageTakenMult,
       outputMultiplier: attacker.outputMultiplier,
       defenderSchoolDamageMult:
@@ -408,12 +406,11 @@ void main() {
 
       // 快照内容不受外部 mutation 影响。
       expect(attacker.proficiencyDamageMults['phase0a_test_basic'], 1.2);
-      expect(attacker.proficiencyDamageMults.containsKey('phase0a_test_power'),
-          isFalse);
       expect(
-        defender.schoolDamageTakenMults[TechniqueSchool.gangMeng],
-        1.5,
+        attacker.proficiencyDamageMults.containsKey('phase0a_test_power'),
+        isFalse,
       );
+      expect(defender.schoolDamageTakenMults[TechniqueSchool.gangMeng], 1.5);
       // 副本自身不可写。
       expect(
         () => attacker.proficiencyDamageMults['x'] = 2.0,

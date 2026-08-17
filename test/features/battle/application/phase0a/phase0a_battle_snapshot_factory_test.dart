@@ -63,12 +63,7 @@ void main() {
     cooldownTurns: 0,
     requiresManualTrigger: false,
     visualEffect: '',
-    proficiency: SkillProficiencyEffects(
-      {'shuLian': 0.10},
-      {},
-      {},
-      {},
-    ),
+    proficiency: SkillProficiencyEffects({'shuLian': 0.10}, {}, {}, {}),
   );
 
   final profSkillB = const SkillDef(
@@ -81,12 +76,7 @@ void main() {
     cooldownTurns: 3,
     requiresManualTrigger: false,
     visualEffect: '',
-    proficiency: SkillProficiencyEffects(
-      {'huaJing': 0.20},
-      {},
-      {},
-      {},
-    ),
+    proficiency: SkillProficiencyEffects({'huaJing': 0.20}, {}, {}, {}),
   );
 
   BattleCharacter makeCharacter({
@@ -205,10 +195,7 @@ void main() {
         ],
         moveBindings: const {Phase0aDamageKind.basic: basicSkill},
       );
-      expect(
-        bundle.combatants['ningjia']!.critDamageTakenMult,
-        ningjiaMult,
-      );
+      expect(bundle.combatants['ningjia']!.critDamageTakenMult, ningjiaMult);
       expect(bundle.combatants['plain']!.critDamageTakenMult, 1.0);
     });
 
@@ -262,9 +249,7 @@ void main() {
         combatants: [
           input(
             'attacker',
-            makeCharacter(
-              skillUses: {profSkillA.id: 150, profSkillB.id: 900},
-            ),
+            makeCharacter(skillUses: {profSkillA.id: 150, profSkillB.id: 900}),
           ),
         ],
         moveBindings: {
@@ -317,10 +302,9 @@ void main() {
           Phase0aDamageKind.clear: null,
         },
       );
-      expect(
-        bundle.combatants['attacker']!.proficiencyDamageMults.keys,
-        [basicSkill.id],
-      );
+      expect(bundle.combatants['attacker']!.proficiencyDamageMults.keys, [
+        basicSkill.id,
+      ]);
       expect(bundle.moveBindings[Phase0aDamageKind.gather], isNull);
       expect(
         bundle.moveBindings.containsKey(Phase0aDamageKind.gather),
@@ -332,10 +316,7 @@ void main() {
 
   group('构造期 fail-fast 与防御性副本', () {
     test('空 actorId fail-fast', () {
-      expect(
-        () => input('', makeCharacter()),
-        throwsArgumentError,
-      );
+      expect(() => input('', makeCharacter()), throwsArgumentError);
     });
 
     test('重复 actorId fail-fast', () {
@@ -370,11 +351,7 @@ void main() {
           moveBindings: const {Phase0aDamageKind.basic: basicSkill},
         ),
         throwsA(
-          isA<StateError>().having(
-            (e) => e.message,
-            'message',
-            contains('吸血'),
-          ),
+          isA<StateError>().having((e) => e.message, 'message', contains('吸血')),
         ),
       );
     });
@@ -382,48 +359,47 @@ void main() {
     test('护法结界(guardianWardMult / guardianDefIds)构造期 fail-fast', () {
       expect(
         () => makeFactory().create(
-          combatants: [
-            input('boss', makeCharacter(guardianWardMult: 0.5)),
-          ],
+          combatants: [input('boss', makeCharacter(guardianWardMult: 0.5))],
           moveBindings: const {Phase0aDamageKind.basic: basicSkill},
         ),
-        throwsA(isA<StateError>().having((e) => e.message, 'm', contains('护法'))),
+        throwsA(
+          isA<StateError>().having((e) => e.message, 'm', contains('护法')),
+        ),
       );
       expect(
         () => makeFactory().create(
           combatants: [
-            input(
-              'boss',
-              makeCharacter(guardianDefIds: const ['guard_a']),
-            ),
+            input('boss', makeCharacter(guardianDefIds: const ['guard_a'])),
           ],
           moveBindings: const {Phase0aDamageKind.basic: basicSkill},
         ),
-        throwsA(isA<StateError>().having((e) => e.message, 'm', contains('护法'))),
+        throwsA(
+          isA<StateError>().having((e) => e.message, 'm', contains('护法')),
+        ),
       );
     });
 
     test('脆弱窗口 vulnerabilityMult 构造期 fail-fast', () {
       expect(
         () => makeFactory().create(
-          combatants: [
-            input('boss', makeCharacter(vulnerabilityMult: 0.4)),
-          ],
+          combatants: [input('boss', makeCharacter(vulnerabilityMult: 0.4))],
           moveBindings: const {Phase0aDamageKind.basic: basicSkill},
         ),
-        throwsA(isA<StateError>().having((e) => e.message, 'm', contains('脆弱'))),
+        throwsA(
+          isA<StateError>().having((e) => e.message, 'm', contains('脆弱')),
+        ),
       );
     });
 
     test('活跃踉跄(ticks 或减防 override)构造期 fail-fast', () {
       expect(
         () => makeFactory().create(
-          combatants: [
-            input('boss', makeCharacter(staggerTicksRemaining: 2)),
-          ],
+          combatants: [input('boss', makeCharacter(staggerTicksRemaining: 2))],
           moveBindings: const {Phase0aDamageKind.basic: basicSkill},
         ),
-        throwsA(isA<StateError>().having((e) => e.message, 'm', contains('踉跄'))),
+        throwsA(
+          isA<StateError>().having((e) => e.message, 'm', contains('踉跄')),
+        ),
       );
       expect(
         () => makeFactory().create(
@@ -432,7 +408,9 @@ void main() {
           ],
           moveBindings: const {Phase0aDamageKind.basic: basicSkill},
         ),
-        throwsA(isA<StateError>().having((e) => e.message, 'm', contains('踉跄'))),
+        throwsA(
+          isA<StateError>().having((e) => e.message, 'm', contains('踉跄')),
+        ),
       );
     });
 

@@ -65,14 +65,8 @@ void main() {
         )
         .map((v) => v['id'] as String)
         .toList();
-    expect(
-      viewports.where((id) => id == 'desktop_1280x720').length,
-      equals(3),
-    );
-    expect(
-      viewports.where((id) => id == 'desktop_1440x900').length,
-      equals(3),
-    );
+    expect(viewports.where((id) => id == 'desktop_1280x720').length, equals(3));
+    expect(viewports.where((id) => id == 'desktop_1440x900').length, equals(3));
 
     for (final observation in observations.cast<Map<String, dynamic>>()) {
       expect(observation['frames'], greaterThanOrEqualTo(300));
@@ -103,22 +97,18 @@ void main() {
     expect(runner, contains('.asset_sha256.founder'));
     expect(runner, contains('.asset_sha256.bandit'));
     expect(runner, contains('.asset_sha256.elite'));
-    expect(
-      runner,
-      contains(r'.viewport.device_pixel_ratio == $expected_dpr'),
-    );
-    expect(
-      runner,
-      contains(r'.viewport.refresh_rate_hz == $expected_refresh'),
-    );
+    expect(runner, contains(r'.viewport.device_pixel_ratio == $expected_dpr'));
+    expect(runner, contains(r'.viewport.refresh_rate_hz == $expected_refresh'));
   });
 }
 
 bool _isAncestor(String commit) {
-  final result = Process.runSync(
-    'git',
-    ['merge-base', '--is-ancestor', commit, 'HEAD'],
-  );
+  final result = Process.runSync('git', [
+    'merge-base',
+    '--is-ancestor',
+    commit,
+    'HEAD',
+  ]);
   return result.exitCode == 0;
 }
 

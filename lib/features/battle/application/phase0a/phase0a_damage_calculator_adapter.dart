@@ -196,10 +196,7 @@ final class Phase0aDamageCalculatorAdapter implements Phase0aDamageResolver {
     _requireUsable(snapshot.defenseRate, '$id.defenseRate');
     _requireUsable(snapshot.evasionRate, '$id.evasionRate');
     _requireUsable(snapshot.criticalRate, '$id.criticalRate');
-    _requireUsable(
-      snapshot.attackPowerMultiplier,
-      '$id.attackPowerMultiplier',
-    );
+    _requireUsable(snapshot.attackPowerMultiplier, '$id.attackPowerMultiplier');
     _requireUsable(snapshot.outputMultiplier, '$id.outputMultiplier');
     _requireUsable(snapshot.wardMult, '$id.wardMult');
     _requireUsable(snapshot.piercePct, '$id.piercePct');
