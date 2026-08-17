@@ -25,11 +25,15 @@ final class Phase0aBattleController extends ChangeNotifier {
     _vfx.syncActors(_flow.state);
   }
 
-  final Phase0aWaveBattleFlow _flow;
+  /// 当前 flow。`restart` 换入新实例,故非 final。
+  Phase0aWaveBattleFlow _flow;
   final Phase0aVisualRoster roster;
   final double fixedDeltaSeconds;
-  final Phase0aEventSequencer _sequencer = Phase0aEventSequencer();
-  final Phase0aVfxController _vfx = Phase0aVfxController();
+
+  /// 排序器/VFX 均带跨拍内部状态(已接受 seq 集合 / 终局封签 `_sealed`),
+  /// restart 必须一并重建,故非 final。
+  Phase0aEventSequencer _sequencer = Phase0aEventSequencer();
+  Phase0aVfxController _vfx = Phase0aVfxController();
 
   Phase0aPlayerCommand _pending = const Phase0aPlayerCommand();
   List<Phase0aEvent> _lastEvents = const <Phase0aEvent>[];
@@ -39,6 +43,20 @@ final class Phase0aBattleController extends ChangeNotifier {
   Phase0aBattleOutcome get outcome => _flow.outcome;
   List<Phase0aEvent> get lastEvents => _lastEvents;
   List<Phase0aVfxEntry> get feedback => _feedback;
+
+  /// 终局重开(9B):换入调用方装配的全新 flow,重建排序器与 VFX 控制器,
+  /// 清空 pending/事件/反馈缓存。只换实例,不触碰 domain 任何规则;
+  /// 新 flow 的装配责任在调用方(debug 路由 = 重载 fixture 同 seed 新会话)。
+  void restart(Phase0aWaveBattleFlow newFlow) {
+    _flow = newFlow;
+    _sequencer = Phase0aEventSequencer();
+    _vfx = Phase0aVfxController();
+    _pending = const Phase0aPlayerCommand();
+    _lastEvents = const <Phase0aEvent>[];
+    _feedback = const <Phase0aVfxEntry>[];
+    _vfx.syncActors(_flow.state);
+    notifyListeners();
+  }
 
   void enqueue(Phase0aPlayerCommand command) {
     if (outcome != Phase0aBattleOutcome.ongoing) return;

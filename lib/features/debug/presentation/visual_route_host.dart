@@ -89,6 +89,7 @@ import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
+import '../../battle/application/phase0a/phase0a_wave_battle_flow.dart';
 import '../application/phase0a_debug_battle_fixture.dart';
 import '../../encounter/presentation/encounter_dialog.dart';
 import '../../battle_record/domain/boss_memory.dart';
@@ -517,6 +518,16 @@ Future<Widget> buildVisualTarget(
       return _Phase0aFeedbackPreview(
         controller: controller,
         initialCommand: command,
+        // 仅可玩路由接终局「再战」(9B);三条首拍静态验收路由保持纯展示。
+        retryFlowBuilder: command == null
+            ? () async {
+                final fresh = await Phase0aDebugBattleFixture.load(
+                  assetLoader: rootBundle.loadString,
+                  numbers: GameRepository.instance.numbers,
+                );
+                return fresh.flow;
+              }
+            : null,
       );
     case VisualRoute.mainlineFirstClearBattle:
       await isar.writeTxn(() => isar.mainlineProgress.clear());
@@ -1456,10 +1467,12 @@ class _Phase0aFeedbackPreview extends StatefulWidget {
   const _Phase0aFeedbackPreview({
     required this.controller,
     required this.initialCommand,
+    this.retryFlowBuilder,
   });
 
   final Phase0aBattleController controller;
   final Phase0aPlayerCommand? initialCommand;
+  final Future<Phase0aWaveBattleFlow> Function()? retryFlowBuilder;
 
   @override
   State<_Phase0aFeedbackPreview> createState() =>
@@ -1482,6 +1495,7 @@ class _Phase0aFeedbackPreviewState extends State<_Phase0aFeedbackPreview> {
   Widget build(BuildContext context) => Phase0aBattleScreen(
     controller: widget.controller,
     autoStep: widget.initialCommand == null,
+    retryFlowBuilder: widget.retryFlowBuilder,
     feedbackHoldSeconds: widget.initialCommand == null
         ? Phase0aPresentationTokens.feedbackHoldSeconds
         : Phase0aPresentationTokens.visualRouteFeedbackHoldSeconds,

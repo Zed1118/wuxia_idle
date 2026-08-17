@@ -83,7 +83,24 @@ void main() {
       );
     });
 
-    test('死亡/波次/终局事件静默(battleDeath 无资产,victory 归终局批)', () {
+    test('终局 jingle:victory → victory / defeat → defeat(9B 落地)', () {
+      expect(
+        phase0aSfxAssetForEvent(
+          const Phase0aBattleVictory(seq: 5, tick: 1),
+          playerId: 'player',
+        ),
+        'audio/sfx/victory.mp3',
+      );
+      expect(
+        phase0aSfxAssetForEvent(
+          const Phase0aBattleDefeat(seq: 6, tick: 1),
+          playerId: 'player',
+        ),
+        'audio/sfx/defeat.mp3',
+      );
+    });
+
+    test('死亡/波次事件静默(battleDeath 无资产)', () {
       const silent = <Phase0aEvent>[
         Phase0aEnemyDefeated(
           seq: 1,
@@ -99,8 +116,6 @@ void main() {
         ),
         Phase0aWaveStarted(seq: 3, tick: 1, waveIndex: 0, waveTotal: 2),
         Phase0aWaveCleared(seq: 4, tick: 1, waveIndex: 0),
-        Phase0aBattleVictory(seq: 5, tick: 1),
-        Phase0aBattleDefeat(seq: 6, tick: 1),
       ];
       for (final event in silent) {
         expect(
@@ -213,6 +228,11 @@ void main() {
       }
       expect(controller.outcome, Phase0aBattleOutcome.victory);
       expect(backend.sfxPaths.where((p) => p.contains('battleDeath')), isEmpty);
+      expect(
+        backend.sfxPaths.where((p) => p == 'audio/sfx/victory.mp3').length,
+        1,
+        reason: '胜利 jingle 应恰好播放一次(9B)',
+      );
 
       // 终局后 step 零事件零音效。
       final total = backend.sfxPaths.length;

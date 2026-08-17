@@ -10,7 +10,8 @@ import '../../domain/phase0a/phase0a_combat_events.dart';
 /// - Q 聚怪起手用 `battleChargeStart`(力场蓄起,全库语义最接近的既有资产)。
 /// - R 清场起手用 `battleUlt`(大招语义)。
 /// - `Phase0aEnemyDefeated` 静默:`battleDeath.mp3` 资产不存在,待资产或拍板。
-/// - 波次/终局/可用性事件静默;victory/defeat jingle 归终局批一并评估。
+/// - 终局 jingle:`battle_victory → victory` / `battle_defeat → defeat`
+///   (9B 落地,对齐旧战斗结算 overlay 语义);波次/可用性事件静默。
 String? phase0aSfxAssetForEvent(
   Phase0aEvent event, {
   required String playerId,
@@ -28,6 +29,13 @@ String? phase0aSfxAssetForEvent(
   }
   if (event is Phase0aClearStarted) {
     return sfxAssetPath(SfxId.battleUlt);
+  }
+  // 终局 jingle:对齐旧战斗「勝/敗 结算 overlay 出现时」语义(9B 拍板落地)。
+  if (event is Phase0aBattleVictory) {
+    return sfxAssetPath(SfxId.victory);
+  }
+  if (event is Phase0aBattleDefeat) {
+    return sfxAssetPath(SfxId.defeat);
   }
   return null;
 }
