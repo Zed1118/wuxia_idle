@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../shared/audio/audio_assets.dart';
 import '../../../../shared/audio/sound_manager.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
+import '../../application/phase0a/phase0a_wave_battle_flow.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import '../hp_bar.dart';
@@ -25,11 +27,16 @@ final class Phase0aBattleScreen extends StatefulWidget {
     required this.controller,
     this.autoStep = true,
     this.feedbackHoldSeconds = Phase0aPresentationTokens.feedbackHoldSeconds,
+    this.retryFlowBuilder,
   }) : assert(feedbackHoldSeconds > 0);
 
   final Phase0aBattleController controller;
   final bool autoStep;
   final double feedbackHoldSeconds;
+
+  /// 终局「再战」的新 flow 装配器;为 null 时终局不出现重试入口
+  /// (静态验收路由等纯展示场景保持只读)。
+  final Future<Phase0aWaveBattleFlow> Function()? retryFlowBuilder;
 
   @override
   State<Phase0aBattleScreen> createState() => _Phase0aBattleScreenState();
@@ -44,6 +51,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   final List<_HeldFeedback> _heldFeedback = <_HeldFeedback>[];
   final Map<String, double> _hitFlashRemaining = <String, double>{};
   final Map<String, double> _hpEmphasisRemaining = <String, double>{};
+  bool _retryInFlight = false;
 
   @override
   void initState() {
@@ -179,9 +187,40 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     }
   }
 
+  /// 终局「再战」(9B):装配新 flow 换入 controller,清全部局部表现态。
+  /// 仅在终局且有 builder 时可触发(按钮与 Enter 两入口都过 `_retryInFlight`)。
+  Future<void> _retry() async {
+    final builder = widget.retryFlowBuilder;
+    if (builder == null || _retryInFlight) return;
+    setState(() => _retryInFlight = true);
+    SoundManager.instance.playSfx(SfxId.uiTap);
+    try {
+      final newFlow = await builder();
+      if (!mounted) return;
+      widget.controller.restart(newFlow);
+      _heldFeedback.clear();
+      _hitFlashRemaining.clear();
+      _hpEmphasisRemaining.clear();
+      _accumulatorSeconds = 0;
+      _lastElapsed = null;
+    } finally {
+      if (mounted) setState(() => _retryInFlight = false);
+    }
+    _focusNode.requestFocus();
+  }
+
   KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent ||
-        widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
+    if (event is! KeyDownEvent) {
+      return KeyEventResult.ignored;
+    }
+    if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
+      // 终局态唯一有效键:Enter = 再战(9B)。
+      if (event.logicalKey == LogicalKeyboardKey.enter &&
+          widget.retryFlowBuilder != null &&
+          !_retryInFlight) {
+        _retry();
+        return KeyEventResult.handled;
+      }
       return KeyEventResult.ignored;
     }
     final key = event.logicalKey;
@@ -251,6 +290,23 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                     ),
                   ),
                 ),
+                // 终局「再战」入口(9B):封签由 IgnorePointer 反馈层展示,
+                // 按钮必须落在主 Stack 才能收手势;无 builder 时纯展示不出按钮。
+                if (controller.outcome != Phase0aBattleOutcome.ongoing &&
+                    widget.retryFlowBuilder != null)
+                  Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(
+                          height:
+                              Phase0aPresentationTokens.vfxOutcomeSize +
+                              Phase0aPresentationTokens.retryButtonTopGap,
+                        ),
+                        _RetryButton(onPressed: _retryInFlight ? null : _retry),
+                      ],
+                    ),
+                  ),
               ],
             );
           },
@@ -315,6 +371,60 @@ final class _HeldFeedback {
 
   final Phase0aVfxEntry entry;
   double remainingSeconds;
+}
+
+/// 终局「再战」纸签按钮(9B)。宣纸底 + 墨字 + 绛红描边,守水墨克制基调;
+/// 禁用态(装配中)降透明度,不换色。
+class _RetryButton extends StatelessWidget {
+  const _RetryButton({required this.onPressed});
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: onPressed == null ? 0.55 : 1,
+      // 桌面语义门禁(CLAUDE §8.2):裸 GestureDetector 四项皆无,
+      // 用 FocusableActionDetector 补焦点/键盘激活/鼠标光标。
+      child: FocusableActionDetector(
+        enabled: onPressed != null,
+        mouseCursor: onPressed != null
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              onPressed?.call();
+              return null;
+            },
+          ),
+        },
+        child: GestureDetector(
+          key: const ValueKey('phase0a_retry_button'),
+          onTap: onPressed,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Phase0aPresentationTokens.retryButtonPaddingH,
+              vertical: Phase0aPresentationTokens.retryButtonPaddingV,
+            ),
+            decoration: BoxDecoration(
+              color: WuxiaUi.paper,
+              border: Border.all(color: WuxiaUi.jiang, width: 2),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text(
+              UiStrings.phase0aRetryLabel,
+              style: TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: Phase0aPresentationTokens.retryButtonFontSize,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _ActorStandee extends StatelessWidget {

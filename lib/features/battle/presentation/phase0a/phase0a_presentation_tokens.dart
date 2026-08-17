@@ -112,6 +112,10 @@ abstract final class Phase0aPresentationTokens {
   static const double vfxBannerHeight = 54;
   static const double vfxOutcomeSize = 168;
   static const double vfxOutcomeFontSize = 30;
+  static const double retryButtonTopGap = 28;
+  static const double retryButtonPaddingH = 34;
+  static const double retryButtonPaddingV = 10;
+  static const double retryButtonFontSize = 20;
   static const double depthShadowOpacity = 0.32;
   static const double depthShadowHeight = 18;
   static const double depthShadowWidth = 82;

@@ -204,6 +204,7 @@ class UiStrings {
       '第 $index 波 · 共 $total 波';
   static const String phase0aVictorySeal = '破阵';
   static const String phase0aDefeatSeal = '败退';
+  static const String phase0aRetryLabel = '再战';
   static const String phase0aPlayerHealth = '气血';
   static const String phase0aPlayerQi = '真气';
 
