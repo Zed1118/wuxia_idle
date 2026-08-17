@@ -24,6 +24,23 @@ abstract final class Phase0aPresentationTokens {
   /// 玩家普攻命中距离达到该值(世界单位)才产生掌风轨迹。
   static const double palmTrailMinDistance = 120;
 
+  /// 命中后角色闪白持续时间。
+  static const double hitFlashSeconds = 0.12;
+
+  /// 命中后血条强调持续时间。
+  static const double hpEmphasisSeconds = 1.4;
+
+  /// 命中闪白覆盖强度。
+  static const double hitFlashOpacity = 0.76;
+
+  /// 血条强调墨边宽度。
+  static const double hpEmphasisBorderWidth = 2;
+
+  static const double hpEmphasisFillOpacity = 0.16;
+  static const double hpEmphasisGlowOpacity = 0.42;
+  static const double hpEmphasisGlowBlur = 8;
+  static const double hpEmphasisRadius = 4;
+
   /// 单次 consume 伤害飘字 entry 上限。
   static const int maxDamagePopups = 48;
 
@@ -74,6 +91,18 @@ abstract final class Phase0aPresentationTokens {
   static const double skillHudBottom = 24;
   static const double stageShadeOpacity = 0.22;
   static const double vfxCenterSize = 250;
+  static const double vfxMeleeSize = 148;
+  static const double vfxEliteDefeatSize = 292;
+  static const double gatherPullPadding = 24;
+  static const double gatherPullStrokeWidth = 3.5;
+  static const double gatherPullEchoStrokeWidth = 2;
+  static const double gatherPullCurveBend = 30;
+  static const double gatherPullEchoBend = 14;
+  static const double gatherPullRibbonStartWidth = 10;
+  static const double gatherPullRibbonEndWidth = 2;
+  static const double gatherPullTargetDotRadius = 4;
+  static const double gatherPullDropletRadius = 3;
+  static const double gatherPullSourceSplashRadius = 6;
   static const double vfxStrokeWidth = 4;
   static const double vfxThinStrokeWidth = 2;
   static const double vfxPopupGap = 38;
@@ -89,4 +118,9 @@ abstract final class Phase0aPresentationTokens {
   static const int vfxSpokeCount = 12;
   static const int maxCatchUpTicksPerFrame = 5;
   static const double feedbackHoldSeconds = 0.65;
+
+  /// debug 动态验收路由单拍冻结后的 VFX 保持时间;不用于正式可玩战斗。
+  /// 须大于截图管线 READY 检测轮询 + focus/resize 的固有开销(实测约 5-8s),
+  /// 否则截图落在保持窗口外只能拍到过期帧。
+  static const double visualRouteFeedbackHoldSeconds = 20;
 }

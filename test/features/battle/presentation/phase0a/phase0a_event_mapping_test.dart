@@ -125,7 +125,7 @@ void main() {
       expect(_popups(entries), isEmpty);
     });
 
-    test('玩家远程命中产生掌风轨迹,近程不产生', () {
+    test('玩家近程命中产生双弧墨痕,远程命中产生掌风且互斥', () {
       final controller = Phase0aVfxController()
         ..syncActors(
           _state(
@@ -147,12 +147,19 @@ void main() {
       final trails = entries
           .where((e) => e.kind == Phase0aVfxKind.palmTrail)
           .toList();
+      final slashes = entries
+          .where((e) => e.kind == Phase0aVfxKind.meleeSlash)
+          .toList();
       expect(trails, hasLength(1));
       expect(trails.single.actorId, 'player');
       expect(trails.single.targetId, 'far');
+      expect(slashes, hasLength(1));
+      expect(slashes.single.actorId, 'player');
+      expect(slashes.single.targetId, 'near');
+      expect(slashes.single.anchor, const ArenaVector(20, 0));
     });
 
-    test('敌方远程命中不产生掌风轨迹', () {
+    test('敌方命中不产生玩家专属掌风或双弧墨痕', () {
       final controller = Phase0aVfxController()
         ..syncActors(
           _state(
@@ -170,6 +177,10 @@ void main() {
         _hit(seq: 1, actor: 'e1', target: 'player'),
       ]);
       expect(entries.where((e) => e.kind == Phase0aVfxKind.palmTrail), isEmpty);
+      expect(
+        entries.where((e) => e.kind == Phase0aVfxKind.meleeSlash),
+        isEmpty,
+      );
     });
   });
 
@@ -216,6 +227,8 @@ void main() {
           .where((e) => e.kind == Phase0aVfxKind.gatherPull)
           .toList();
       expect(pulls.map((e) => e.targetId).toList(), ['e1']);
+      expect(pulls.single.source, const ArenaVector(40, 0));
+      expect(pulls.single.vfxTarget, ArenaVector.zero);
       expect(applied.outcomes, outcomes);
     });
 

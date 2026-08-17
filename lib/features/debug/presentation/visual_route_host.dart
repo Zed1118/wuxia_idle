@@ -87,6 +87,8 @@ import '../../battle/domain/battle_state.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
+import '../../battle/presentation/phase0a/phase0a_presentation_tokens.dart';
+import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
 import '../application/phase0a_debug_battle_fixture.dart';
 import '../../encounter/presentation/encounter_dialog.dart';
 import '../../battle_record/domain/boss_memory.dart';
@@ -488,16 +490,33 @@ Future<Widget> buildVisualTarget(
         sceneBackgroundPath: 'assets/scenes/battle_$sceneName.png',
       );
     case VisualRoute.phase0aBattlePlayable:
+    case VisualRoute.phase0aBattleAttackFeedback:
+    case VisualRoute.phase0aBattleGatherFeedback:
+    case VisualRoute.phase0aBattleClearFeedback:
       final fixture = await Phase0aDebugBattleFixture.load(
         assetLoader: rootBundle.loadString,
         numbers: GameRepository.instance.numbers,
       );
-      return Phase0aBattleScreen(
-        controller: Phase0aBattleController(
-          flow: fixture.flow,
-          roster: fixture.roster,
-          fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+      final controller = Phase0aBattleController(
+        flow: fixture.flow,
+        roster: fixture.roster,
+        fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+      );
+      final command = switch (route) {
+        VisualRoute.phase0aBattleAttackFeedback => const Phase0aPlayerCommand(
+          attack: true,
         ),
+        VisualRoute.phase0aBattleGatherFeedback => const Phase0aPlayerCommand(
+          gather: true,
+        ),
+        VisualRoute.phase0aBattleClearFeedback => const Phase0aPlayerCommand(
+          clear: true,
+        ),
+        _ => null,
+      };
+      return _Phase0aFeedbackPreview(
+        controller: controller,
+        initialCommand: command,
       );
     case VisualRoute.mainlineFirstClearBattle:
       await isar.writeTxn(() => isar.mainlineProgress.clear());
@@ -1432,6 +1451,42 @@ Future<void> _seedCleanMainMenu(Isar isar) async {
 /// 生产弹窗。避免主菜单根据本机存档自动叠加「归来」等一次性流程，污染验收帧。
 /// READY 延迟到弹窗过渡完成，避免截图命中半透明动画中间帧。
 enum _SettingsPanelPreviewPosition { top, display, bottom }
+
+class _Phase0aFeedbackPreview extends StatefulWidget {
+  const _Phase0aFeedbackPreview({
+    required this.controller,
+    required this.initialCommand,
+  });
+
+  final Phase0aBattleController controller;
+  final Phase0aPlayerCommand? initialCommand;
+
+  @override
+  State<_Phase0aFeedbackPreview> createState() =>
+      _Phase0aFeedbackPreviewState();
+}
+
+class _Phase0aFeedbackPreviewState extends State<_Phase0aFeedbackPreview> {
+  @override
+  void initState() {
+    super.initState();
+    final command = widget.initialCommand;
+    if (command != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.controller.step(command);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Phase0aBattleScreen(
+    controller: widget.controller,
+    autoStep: widget.initialCommand == null,
+    feedbackHoldSeconds: widget.initialCommand == null
+        ? Phase0aPresentationTokens.feedbackHoldSeconds
+        : Phase0aPresentationTokens.visualRouteFeedbackHoldSeconds,
+  );
+}
 
 class _SettingsPanelPreview extends StatefulWidget {
   const _SettingsPanelPreview({required this.position, this.onReady});

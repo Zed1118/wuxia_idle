@@ -11,6 +11,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/hp_bar.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_stage.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_vfx_controller.dart';
 import 'package:wuxia_idle/features/debug/application/phase0a_debug_battle_fixture.dart';
@@ -45,10 +46,19 @@ void main() {
   const clearSealKey = ValueKey('phase0a_seal_clear');
   const waveBannerKey = ValueKey('phase0a_wave_banner');
   const outcomeSealKey = ValueKey('phase0a_outcome_seal');
+  const meleeSlashKey = ValueKey('phase0a_melee_slash');
   const palmTrailKey = ValueKey('phase0a_palm_trail');
   const gatherVortexKey = ValueKey('phase0a_gather_vortex');
   const clearBurstKey = ValueKey('phase0a_clear_burst');
   const defeatInkKey = ValueKey('phase0a_defeat_ink');
+  ValueKey<String> gatherPullKey(String actorId) =>
+      ValueKey<String>('phase0a_gather_pull_$actorId');
+  ValueKey<String> hitFlashKey(String actorId) =>
+      ValueKey<String>('phase0a_hit_flash_$actorId');
+  ValueKey<String> hpEmphasisKey(String actorId) =>
+      ValueKey<String>('phase0a_hp_emphasis_$actorId');
+  ValueKey<String> defeatInkTargetKey(String actorId) =>
+      ValueKey<String>('phase0a_defeat_ink_$actorId');
 
   late Phase0aDebugBattleFixture fixture;
   late Phase0aBattleController controller;
@@ -255,17 +265,89 @@ void main() {
         expect(hpBar.max, target.maxHealth);
       }
     });
-  });
 
-  group('玩家远距命中:掌风轨迹', () {
-    testWidgets('整局进攻中至少一次 palmTrail entry 且轨迹 widget 可见', (tester) async {
+    testWidgets('非致死命中短闪白,目标血条强调保持后自动消退', (tester) async {
       await pumpScreen(tester);
 
-      var trailSeen = false;
+      Phase0aHitLanded? survivingHit;
       for (
         var i = 0;
         i < 240 &&
-            !trailSeen &&
+            survivingHit == null &&
+            controller.outcome == Phase0aBattleOutcome.ongoing;
+        i++
+      ) {
+        final events = await stepAndPump(
+          tester,
+          attackTowardNearest(controller.state),
+        );
+        for (final event in events.whereType<Phase0aHitLanded>()) {
+          if (event.actor == 'player' &&
+              event.resolvedDamage > 0 &&
+              controller.state.enemies.any(
+                (enemy) => enemy.id == event.target,
+              )) {
+            survivingHit = event;
+          }
+        }
+      }
+
+      expect(survivingHit, isNotNull, reason: 'fixture 必须存在一次非致死玩家命中');
+      final target = survivingHit!.target;
+      expect(find.byKey(hitFlashKey(target)), findsOneWidget);
+      expect(find.byKey(hpEmphasisKey(target)), findsOneWidget);
+
+      await tester.pump(
+        Duration(
+          milliseconds:
+              (Phase0aPresentationTokens.hitFlashSeconds * 1000).ceil() + 40,
+        ),
+      );
+      expect(find.byKey(hitFlashKey(target)), findsNothing);
+      expect(find.byKey(hpEmphasisKey(target)), findsOneWidget);
+
+      await tester.pump(
+        Duration(
+          milliseconds:
+              ((Phase0aPresentationTokens.hpEmphasisSeconds -
+                          Phase0aPresentationTokens.hitFlashSeconds) *
+                      1000)
+                  .ceil() +
+              80,
+        ),
+      );
+      expect(find.byKey(hpEmphasisKey(target)), findsNothing);
+    });
+
+    testWidgets('玩家受击时立绘闪白且 HUD 气血条强调', (tester) async {
+      await pumpScreen(tester);
+
+      Phase0aHitLanded? playerHit;
+      for (var i = 0; i < 120 && playerHit == null; i++) {
+        final events = await stepAndPump(tester);
+        for (final event in events.whereType<Phase0aHitLanded>()) {
+          if (event.target == 'player' && event.resolvedDamage > 0) {
+            playerHit = event;
+          }
+        }
+      }
+
+      expect(playerHit, isNotNull, reason: '敌人 AI 必须能真实命中玩家');
+      expect(find.byKey(hitFlashKey('player')), findsOneWidget);
+      expect(find.byKey(hpEmphasisKey('player')), findsOneWidget);
+    });
+  });
+
+  group('玩家攻击分型:近战墨痕 / 远程掌风', () {
+    testWidgets('整局进攻中两种 VFX 均出现且同拍互斥', (tester) async {
+      await pumpScreen(tester);
+
+      var trailSeen = false;
+      var slashSeen = false;
+      for (
+        var i = 0;
+        i < 240 &&
+            !(trailSeen && slashSeen) &&
             controller.outcome == Phase0aBattleOutcome.ongoing;
         i++
       ) {
@@ -280,11 +362,20 @@ void main() {
           (e) => e.kind == Phase0aVfxKind.palmTrail,
         )) {
           trailSeen = true;
+          expect(find.byKey(palmTrailKey), findsOneWidget);
+          expect(find.byKey(meleeSlashKey), findsNothing);
+        }
+        if (controller.feedback.any(
+          (e) => e.kind == Phase0aVfxKind.meleeSlash,
+        )) {
+          slashSeen = true;
+          expect(find.byKey(meleeSlashKey), findsOneWidget);
+          expect(find.byKey(palmTrailKey), findsNothing);
         }
       }
 
       expect(trailSeen, isTrue, reason: 'fixture 必含一次玩家远距命中');
-      expect(find.byKey(palmTrailKey), findsWidgets);
+      expect(slashSeen, isTrue, reason: 'fixture 必含一次玩家近距命中');
     });
   });
 
@@ -308,7 +399,27 @@ void main() {
       expect(pulled, isNotEmpty, reason: 'fixture 首拍 Q 必须至少拉到一个敌人');
 
       expect(find.byKey(gatherVortexKey), findsOneWidget);
+      final stage = Phase0aStage(viewport: const Size(1280, 720));
       for (final outcome in pulled) {
+        final pull = controller.feedback.singleWhere(
+          (entry) =>
+              entry.kind == Phase0aVfxKind.gatherPull &&
+              entry.targetId == outcome.target,
+        );
+        final screenSource = stage.worldToScreen(pull.source!);
+        final screenTarget = stage.worldToScreen(pull.vfxTarget!);
+        final expectedMidpoint = Offset(
+          (screenSource.dx + screenTarget.dx) / 2,
+          (screenSource.dy + screenTarget.dy) / 2,
+        );
+        expect(find.byKey(gatherPullKey(outcome.target)), findsOneWidget);
+        expect(
+          (tester.getCenter(find.byKey(gatherPullKey(outcome.target))) -
+                  expectedMidpoint)
+              .distance,
+          lessThan(2),
+          reason: 'Q 拉拢轨迹必须绑定目标→玩家的事件位置快照',
+        );
         expect(
           distanceToPlayer(controller.state, outcome.target),
           lessThan(distanceToPlayer(before, outcome.target)),
@@ -351,6 +462,42 @@ void main() {
           .where((e) => e.kind == Phase0aVfxKind.damagePopup)
           .length;
       expect(popups, nonZero.length);
+    });
+  });
+
+  group('死亡墨散层级', () {
+    testWidgets('精英死亡墨散尺寸大于普通敌人且均绑定各自目标', (tester) async {
+      await pumpScreen(tester);
+
+      Size? normalSize;
+      Size? eliteSize;
+      for (
+        var i = 0;
+        i < 320 &&
+            eliteSize == null &&
+            controller.outcome == Phase0aBattleOutcome.ongoing;
+        i++
+      ) {
+        final events = await stepAndPump(
+          tester,
+          attackTowardNearest(controller.state),
+        );
+        for (final defeated in events.whereType<Phase0aEnemyDefeated>()) {
+          final finder = find.byKey(defeatInkTargetKey(defeated.target));
+          expect(finder, findsOneWidget);
+          final size = tester.getSize(finder);
+          if (defeated.defeatKind == Phase0aDefeatKind.elite) {
+            eliteSize = size;
+          } else {
+            normalSize ??= size;
+          }
+        }
+      }
+
+      expect(normalSize, isNotNull, reason: 'fixture 必须击败普通敌人');
+      expect(eliteSize, isNotNull, reason: 'fixture 必须击败精英敌人');
+      expect(eliteSize!.width, greaterThan(normalSize!.width));
+      expect(eliteSize.height, greaterThan(normalSize.height));
     });
   });
 

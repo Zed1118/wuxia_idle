@@ -8,6 +8,9 @@ enum Phase0aVfxKind {
   /// 精确伤害飘字(数值取自事件结算结果,不重算)。
   damagePopup,
 
+  /// 玩家近距普攻命中的双弧墨痕。
+  meleeSlash,
+
   /// 玩家远距普攻命中的掌风轨迹。
   palmTrail,
 
@@ -61,7 +64,7 @@ final class Phase0aVfxEntry {
   final int? waveTotal;
   final bool? isVictory;
 
-  /// 单点 VFX 的世界坐标锚点(Q 涡旋 / R 墨爆 / 死亡墨散)。
+  /// 单点 VFX 的世界坐标锚点(近战墨痕 / Q 涡旋 / R 墨爆 / 死亡墨散)。
   final ArenaVector? anchor;
 
   /// 掌风轨迹:出手者世界坐标。
@@ -77,8 +80,7 @@ final class Phase0aVfxEntry {
 /// 终局封签落下后(_sealed),后续一切战斗事件不再产出 entry。
 final class Phase0aVfxController {
   /// 契约常量(token 直引):伤害飘字上限。
-  static const int maxDamagePopups =
-      Phase0aPresentationTokens.maxDamagePopups;
+  static const int maxDamagePopups = Phase0aPresentationTokens.maxDamagePopups;
 
   /// 契约常量(token 直引):单次消费 entry 总上限。
   static const int maxEntries = Phase0aPresentationTokens.maxEntries;
@@ -134,7 +136,7 @@ final class Phase0aVfxController {
       switch (event) {
         case Phase0aHitLanded():
           pushPopup(event.target, event.resolvedDamage, event.isCritical);
-          _maybePushPalmTrail(event, push);
+          _maybePushPlayerAttackVfx(event, push);
         case Phase0aGatherStarted():
           push(
             Phase0aVfxEntry(
@@ -145,11 +147,16 @@ final class Phase0aVfxController {
         case Phase0aGatherApplied():
           for (final outcome in event.outcomes) {
             if (outcome.statusApplied == Phase0aSkillStatus.pulled) {
+              final source = _actors[outcome.target]?.position;
+              final target = _actors[event.actor]?.position;
+              if (source == null || target == null) continue;
               push(
                 Phase0aVfxEntry(
                   kind: Phase0aVfxKind.gatherPull,
                   actorId: event.actor,
                   targetId: outcome.target,
+                  source: source,
+                  vfxTarget: target,
                 ),
               );
             }
@@ -183,10 +190,20 @@ final class Phase0aVfxController {
             ),
           );
         case Phase0aBattleVictory():
-          push(const Phase0aVfxEntry(kind: Phase0aVfxKind.outcomeSeal, isVictory: true));
+          push(
+            const Phase0aVfxEntry(
+              kind: Phase0aVfxKind.outcomeSeal,
+              isVictory: true,
+            ),
+          );
           _sealed = true;
         case Phase0aBattleDefeat():
-          push(const Phase0aVfxEntry(kind: Phase0aVfxKind.outcomeSeal, isVictory: false));
+          push(
+            const Phase0aVfxEntry(
+              kind: Phase0aVfxKind.outcomeSeal,
+              isVictory: false,
+            ),
+          );
           _sealed = true;
         case Phase0aAttackStarted():
         case Phase0aSkillAvailabilityChanged():
@@ -197,8 +214,9 @@ final class Phase0aVfxController {
     return entries;
   }
 
-  /// 仅玩家普攻且出手距离达到阈值时产生掌风轨迹;敌方远程不发。
-  void _maybePushPalmTrail(
+  /// 玩家普攻按事件时距离二分表现:近距双弧墨痕,远距掌风;
+  /// 敌方命中只触发通用受击反馈,不冒用玩家招式 VFX。
+  void _maybePushPlayerAttackVfx(
     Phase0aHitLanded event,
     void Function(Phase0aVfxEntry) push,
   ) {
@@ -207,7 +225,17 @@ final class Phase0aVfxController {
     if (actor == null || target == null) return;
     if (actor.side != Phase0aSide.player) return;
     final ArenaVector delta = target.position - actor.position;
-    if (delta.length < palmTrailMinDistance) return;
+    if (delta.length < palmTrailMinDistance) {
+      push(
+        Phase0aVfxEntry(
+          kind: Phase0aVfxKind.meleeSlash,
+          actorId: event.actor,
+          targetId: event.target,
+          anchor: target.position,
+        ),
+      );
+      return;
+    }
     push(
       Phase0aVfxEntry(
         kind: Phase0aVfxKind.palmTrail,
