@@ -36,6 +36,11 @@ abstract final class Phase0aPresentationTokens {
   /// 血条强调墨边宽度。
   static const double hpEmphasisBorderWidth = 2;
 
+  static const double hpEmphasisFillOpacity = 0.16;
+  static const double hpEmphasisGlowOpacity = 0.42;
+  static const double hpEmphasisGlowBlur = 8;
+  static const double hpEmphasisRadius = 4;
+
   /// 单次 consume 伤害飘字 entry 上限。
   static const int maxDamagePopups = 48;
 
@@ -90,6 +95,9 @@ abstract final class Phase0aPresentationTokens {
   static const double vfxEliteDefeatSize = 292;
   static const double gatherPullPadding = 24;
   static const double gatherPullStrokeWidth = 3;
+  static const double gatherPullEchoStrokeWidth = 1.5;
+  static const double gatherPullCurveBend = 18;
+  static const double gatherPullTargetDotRadius = 4;
   static const double vfxStrokeWidth = 4;
   static const double vfxThinStrokeWidth = 2;
   static const double vfxPopupGap = 38;

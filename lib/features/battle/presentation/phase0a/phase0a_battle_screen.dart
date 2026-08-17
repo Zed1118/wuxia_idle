@@ -33,6 +33,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   Duration? _lastElapsed;
   double _accumulatorSeconds = 0;
   final List<_HeldFeedback> _heldFeedback = <_HeldFeedback>[];
+  final Map<String, double> _hitFlashRemaining = <String, double>{};
+  final Map<String, double> _hpEmphasisRemaining = <String, double>{};
 
   @override
   void initState() {
@@ -51,6 +53,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _lastElapsed = null;
     _accumulatorSeconds = 0;
     _heldFeedback.clear();
+    _hitFlashRemaining.clear();
+    _hpEmphasisRemaining.clear();
   }
 
   @override
@@ -64,7 +68,18 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   void _refresh() {
     if (widget.controller.feedback.isNotEmpty) {
       for (final entry in widget.controller.feedback) {
-        if (_isSingletonFeedback(entry.kind)) {
+        if (entry.kind == Phase0aVfxKind.damagePopup &&
+            entry.targetId != null) {
+          _hitFlashRemaining[entry.targetId!] =
+              Phase0aPresentationTokens.hitFlashSeconds;
+          _hpEmphasisRemaining[entry.targetId!] =
+              Phase0aPresentationTokens.hpEmphasisSeconds;
+        }
+        if (_isAttackFeedback(entry.kind)) {
+          _heldFeedback.removeWhere(
+            (held) => _isAttackFeedback(held.entry.kind),
+          );
+        } else if (_isSingletonFeedback(entry.kind)) {
           _heldFeedback.removeWhere((held) => held.entry.kind == entry.kind);
         }
         _heldFeedback.add(
@@ -79,6 +94,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   static bool _isSingletonFeedback(Phase0aVfxKind kind) => switch (kind) {
+    Phase0aVfxKind.meleeSlash ||
     Phase0aVfxKind.palmTrail ||
     Phase0aVfxKind.gatherVortex ||
     Phase0aVfxKind.clearBurst ||
@@ -88,6 +104,28 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aVfxKind.gatherPull ||
     Phase0aVfxKind.defeatInk => false,
   };
+
+  static bool _isAttackFeedback(Phase0aVfxKind kind) =>
+      kind == Phase0aVfxKind.meleeSlash || kind == Phase0aVfxKind.palmTrail;
+
+  static bool _advanceActorTimers(
+    Map<String, double> timers,
+    double deltaSeconds,
+  ) {
+    final expired = <String>[];
+    for (final entry in timers.entries) {
+      final remaining = entry.value - deltaSeconds;
+      if (remaining <= 0) {
+        expired.add(entry.key);
+      } else {
+        timers[entry.key] = remaining;
+      }
+    }
+    for (final id in expired) {
+      timers.remove(id);
+    }
+    return expired.isNotEmpty;
+  }
 
   void _onFrame(Duration elapsed) {
     final previous = _lastElapsed;
@@ -100,7 +138,11 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     }
     final previousFeedbackCount = _heldFeedback.length;
     _heldFeedback.removeWhere((held) => held.remainingSeconds <= 0);
-    if (previousFeedbackCount != _heldFeedback.length && mounted) {
+    final transientChanged =
+        _advanceActorTimers(_hitFlashRemaining, deltaSeconds) |
+        _advanceActorTimers(_hpEmphasisRemaining, deltaSeconds);
+    if ((previousFeedbackCount != _heldFeedback.length || transientChanged) &&
+        mounted) {
       setState(() {});
     }
     if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) return;
@@ -169,7 +211,12 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                   stage: stage,
                   entries: [for (final held in _heldFeedback) held.entry],
                 ),
-                _PlayerHud(controller: controller),
+                _PlayerHud(
+                  controller: controller,
+                  healthEmphasized: _hpEmphasisRemaining.containsKey(
+                    controller.state.player.id,
+                  ),
+                ),
                 Positioned(
                   right: Phase0aPresentationTokens.skillHudRight,
                   bottom: Phase0aPresentationTokens.skillHudBottom,
@@ -224,6 +271,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         key: ValueKey('phase0a_standee_${actor.id}'),
         actor: actor,
         visual: controller.roster.visualFor(actor.id),
+        isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
+        isHealthEmphasized: _hpEmphasisRemaining.containsKey(actor.id),
       ),
     );
   }
@@ -250,10 +299,18 @@ final class _HeldFeedback {
 }
 
 class _ActorStandee extends StatelessWidget {
-  const _ActorStandee({super.key, required this.actor, required this.visual});
+  const _ActorStandee({
+    super.key,
+    required this.actor,
+    required this.visual,
+    required this.isHitFlashing,
+    required this.isHealthEmphasized,
+  });
 
   final Phase0aActor actor;
   final Phase0aActorVisual visual;
+  final bool isHitFlashing;
+  final bool isHealthEmphasized;
 
   @override
   Widget build(BuildContext context) {
@@ -281,10 +338,23 @@ class _ActorStandee extends StatelessWidget {
           height: Phase0aPresentationTokens.actorImageHeight,
           left: 0,
           right: 0,
-          child: Image.asset(
-            visual.assetPath,
-            fit: BoxFit.contain,
-            filterQuality: FilterQuality.medium,
+          child: ColorFiltered(
+            key: isHitFlashing
+                ? ValueKey('phase0a_hit_flash_${actor.id}')
+                : null,
+            colorFilter: ColorFilter.mode(
+              WuxiaUi.paper.withValues(
+                alpha: isHitFlashing
+                    ? Phase0aPresentationTokens.hitFlashOpacity
+                    : 0,
+              ),
+              BlendMode.srcATop,
+            ),
+            child: Image.asset(
+              visual.assetPath,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.medium,
+            ),
           ),
         ),
         if (enemy)
@@ -292,32 +362,40 @@ class _ActorStandee extends StatelessWidget {
             left: 0,
             right: 0,
             top: 0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  visual.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: WuxiaUi.paper,
-                    fontSize: Phase0aPresentationTokens.actorNameFontSize,
-                    fontWeight: FontWeight.w700,
-                    shadows: [Shadow(color: WuxiaUi.ink, blurRadius: 3)],
+            child: _HitEmphasisFrame(
+              key: isHealthEmphasized
+                  ? ValueKey('phase0a_hp_emphasis_${actor.id}')
+                  : null,
+              active: isHealthEmphasized,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    visual.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: WuxiaUi.paper,
+                      fontSize: Phase0aPresentationTokens.actorNameFontSize,
+                      fontWeight: FontWeight.w700,
+                      shadows: [Shadow(color: WuxiaUi.ink, blurRadius: 3)],
+                    ),
                   ),
-                ),
-                const SizedBox(height: Phase0aPresentationTokens.actorLabelGap),
-                SizedBox(
-                  width: Phase0aPresentationTokens.actorHpWidth,
-                  child: HpBar(
-                    key: ValueKey('phase0a_hp_${actor.id}'),
-                    current: actor.currentHealth,
-                    max: actor.maxHealth,
-                    height: Phase0aPresentationTokens.actorHpHeight,
-                    tightLabel: true,
+                  const SizedBox(
+                    height: Phase0aPresentationTokens.actorLabelGap,
                   ),
-                ),
-              ],
+                  SizedBox(
+                    width: Phase0aPresentationTokens.actorHpWidth,
+                    child: HpBar(
+                      key: ValueKey('phase0a_hp_${actor.id}'),
+                      current: actor.currentHealth,
+                      max: actor.maxHealth,
+                      height: Phase0aPresentationTokens.actorHpHeight,
+                      tightLabel: true,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
       ],
@@ -325,10 +403,51 @@ class _ActorStandee extends StatelessWidget {
   }
 }
 
+class _HitEmphasisFrame extends StatelessWidget {
+  const _HitEmphasisFrame({
+    super.key,
+    required this.active,
+    required this.child,
+  });
+
+  final bool active;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: active
+          ? WuxiaUi.paper.withValues(
+              alpha: Phase0aPresentationTokens.hpEmphasisFillOpacity,
+            )
+          : Colors.transparent,
+      border: Border.all(
+        color: active ? WuxiaUi.qingOnDark : Colors.transparent,
+        width: Phase0aPresentationTokens.hpEmphasisBorderWidth,
+      ),
+      borderRadius: BorderRadius.circular(
+        Phase0aPresentationTokens.hpEmphasisRadius,
+      ),
+      boxShadow: active
+          ? [
+              BoxShadow(
+                color: WuxiaUi.paper.withValues(
+                  alpha: Phase0aPresentationTokens.hpEmphasisGlowOpacity,
+                ),
+                blurRadius: Phase0aPresentationTokens.hpEmphasisGlowBlur,
+              ),
+            ]
+          : null,
+    ),
+    child: child,
+  );
+}
+
 class _PlayerHud extends StatelessWidget {
-  const _PlayerHud({required this.controller});
+  const _PlayerHud({required this.controller, required this.healthEmphasized});
 
   final Phase0aBattleController controller;
+  final bool healthEmphasized;
 
   @override
   Widget build(BuildContext context) {
@@ -362,13 +481,19 @@ class _PlayerHud extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: Phase0aPresentationTokens.hudGap),
-              HpBar(
-                key: const ValueKey('phase0a_hp_player'),
-                current: player.currentHealth,
-                max: player.maxHealth,
-                height: Phase0aPresentationTokens.hudBarHeight,
-                labelPrefix: '${UiStrings.phase0aPlayerHealth} ',
-                tightLabel: true,
+              _HitEmphasisFrame(
+                key: healthEmphasized
+                    ? const ValueKey('phase0a_hp_emphasis_player')
+                    : null,
+                active: healthEmphasized,
+                child: HpBar(
+                  key: const ValueKey('phase0a_hp_player'),
+                  current: player.currentHealth,
+                  max: player.maxHealth,
+                  height: Phase0aPresentationTokens.hudBarHeight,
+                  labelPrefix: '${UiStrings.phase0aPlayerHealth} ',
+                  tightLabel: true,
+                ),
               ),
               const SizedBox(height: Phase0aPresentationTokens.hudGap),
               HpBar(
@@ -407,21 +532,46 @@ class _FeedbackLayer extends StatelessWidget {
       switch (entry.kind) {
         case Phase0aVfxKind.damagePopup:
           children.add(_damagePopup(entry, popupIndex++));
+        case Phase0aVfxKind.meleeSlash:
+          children.add(
+            _inkVfx(
+              entry,
+              _InkEffect.melee,
+              vfxKey: const ValueKey('phase0a_melee_slash'),
+            ),
+          );
         case Phase0aVfxKind.palmTrail:
           children.add(_palmTrail(entry));
         case Phase0aVfxKind.gatherVortex:
           children.add(
-            _inkVfx(entry, _InkEffect.gather, gatherVortexKey: true),
+            _inkVfx(
+              entry,
+              _InkEffect.gather,
+              vfxKey: const ValueKey('phase0a_gather_vortex'),
+            ),
           );
+        case Phase0aVfxKind.gatherPull:
+          children.add(_gatherPull(entry));
         case Phase0aVfxKind.clearBurst:
-          children.add(_inkVfx(entry, _InkEffect.clear, clearBurstKey: true));
+          children.add(
+            _inkVfx(
+              entry,
+              _InkEffect.clear,
+              vfxKey: const ValueKey('phase0a_clear_burst'),
+            ),
+          );
         case Phase0aVfxKind.defeatInk:
-          children.add(_inkVfx(entry, _InkEffect.defeat));
+          children.add(
+            _inkVfx(
+              entry,
+              _InkEffect.defeat,
+              vfxKey: const ValueKey('phase0a_defeat_ink'),
+              containerKey: ValueKey('phase0a_defeat_ink_${entry.targetId}'),
+            ),
+          );
         case Phase0aVfxKind.waveBanner:
           children.add(_waveBanner(entry));
         case Phase0aVfxKind.outcomeSeal:
-          break;
-        case Phase0aVfxKind.gatherPull:
           break;
       }
     }
@@ -500,37 +650,68 @@ class _FeedbackLayer extends StatelessWidget {
     );
   }
 
-  /// 单点水墨 VFX(Q 涡旋 / R 墨爆 / 死亡墨散):
+  /// Q 拉拢轨迹:以事件发生时的目标→玩家快照绘制弯曲墨线。
+  Widget _gatherPull(Phase0aVfxEntry entry) {
+    final source = entry.source;
+    final target = entry.vfxTarget;
+    final targetId = entry.targetId;
+    if (source == null || target == null || targetId == null) {
+      return const SizedBox.shrink();
+    }
+    final screenSource = stage.worldToScreen(source);
+    final screenTarget = stage.worldToScreen(target);
+    final padding = Phase0aPresentationTokens.gatherPullPadding;
+    final left = math.min(screenSource.dx, screenTarget.dx) - padding;
+    final top = math.min(screenSource.dy, screenTarget.dy) - padding;
+    final width = (screenSource.dx - screenTarget.dx).abs() + padding * 2;
+    final height = (screenSource.dy - screenTarget.dy).abs() + padding * 2;
+    return Positioned(
+      left: left,
+      top: top,
+      width: width,
+      height: height,
+      child: CustomPaint(
+        key: ValueKey('phase0a_gather_pull_$targetId'),
+        painter: _GatherPullPainter(
+          source: screenSource - Offset(left, top),
+          target: screenTarget - Offset(left, top),
+        ),
+      ),
+    );
+  }
+
+  /// 单点水墨 VFX(近战墨痕 / Q 涡旋 / R 墨爆 / 死亡墨散):
   /// 以 [Phase0aVfxEntry.anchor] 的世界坐标快照映射到屏幕。
   Widget _inkVfx(
     Phase0aVfxEntry entry,
     _InkEffect effect, {
-    bool gatherVortexKey = false,
-    bool clearBurstKey = false,
+    required Key vfxKey,
+    Key? containerKey,
   }) {
     final anchor = entry.anchor;
     if (anchor == null) {
       return const SizedBox.shrink();
     }
     final screen = stage.worldToScreen(anchor);
-    final size = Phase0aPresentationTokens.vfxCenterSize;
-    Key vfxKey;
-    if (gatherVortexKey) {
-      vfxKey = const ValueKey('phase0a_gather_vortex');
-    } else if (clearBurstKey) {
-      vfxKey = const ValueKey('phase0a_clear_burst');
-    } else {
-      vfxKey = const ValueKey('phase0a_defeat_ink');
-    }
+    final size = switch (effect) {
+      _InkEffect.melee => Phase0aPresentationTokens.vfxMeleeSize,
+      _InkEffect.defeat when entry.defeatKind == Phase0aDefeatKind.elite =>
+        Phase0aPresentationTokens.vfxEliteDefeatSize,
+      _ => Phase0aPresentationTokens.vfxCenterSize,
+    };
     return Positioned(
       left: screen.dx - size / 2,
       top: screen.dy - size / 2,
       width: size,
       height: size,
-      child: CustomPaint(
-        key: vfxKey,
-        size: Size.square(size),
-        painter: _InkEffectPainter(effect),
+      child: SizedBox.square(
+        key: containerKey,
+        dimension: size,
+        child: CustomPaint(
+          key: vfxKey,
+          size: Size.square(size),
+          painter: _InkEffectPainter(effect, defeatKind: entry.defeatKind),
+        ),
       ),
     );
   }
@@ -580,12 +761,13 @@ class _FeedbackLayer extends StatelessWidget {
   );
 }
 
-enum _InkEffect { palm, gather, clear, defeat }
+enum _InkEffect { melee, palm, gather, clear, defeat }
 
 class _InkEffectPainter extends CustomPainter {
-  const _InkEffectPainter(this.effect);
+  const _InkEffectPainter(this.effect, {this.defeatKind});
 
   final _InkEffect effect;
+  final Phase0aDefeatKind? defeatKind;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -600,26 +782,74 @@ class _InkEffectPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth;
     switch (effect) {
-      case _InkEffect.palm:
-        final path = Path()
-          ..moveTo(size.width * 0.08, size.height * 0.62)
+      case _InkEffect.melee:
+        final rising = Path()
+          ..moveTo(size.width * 0.18, size.height * 0.78)
           ..quadraticBezierTo(
-            size.width * 0.43,
-            size.height * 0.18,
-            size.width * 0.92,
-            size.height * 0.42,
-          )
-          ..quadraticBezierTo(
-            size.width * 0.55,
-            size.height * 0.52,
-            size.width * 0.16,
-            size.height * 0.78,
+            size.width * 0.48,
+            size.height * 0.30,
+            size.width * 0.84,
+            size.height * 0.16,
           );
-        canvas.drawPath(path, ink);
+        final falling = Path()
+          ..moveTo(size.width * 0.28, size.height * 0.18)
+          ..quadraticBezierTo(
+            size.width * 0.58,
+            size.height * 0.54,
+            size.width * 0.78,
+            size.height * 0.82,
+          );
+        canvas.drawPath(
+          rising,
+          Paint()
+            ..color = WuxiaUi.qing.withValues(alpha: 0.90)
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round
+            ..strokeWidth = Phase0aPresentationTokens.vfxStrokeWidth * 1.35,
+        );
+        canvas.drawPath(falling, ink);
+        canvas.drawCircle(
+          Offset(size.width * 0.72, size.height * 0.28),
+          Phase0aPresentationTokens.gatherPullTargetDotRadius,
+          Paint()..color = WuxiaUi.jiang.withValues(alpha: 0.58),
+        );
+      case _InkEffect.palm:
+        final body = Path()
+          ..moveTo(size.width * 0.07, size.height * 0.57)
+          ..cubicTo(
+            size.width * 0.33,
+            size.height * 0.24,
+            size.width * 0.68,
+            size.height * 0.25,
+            size.width * 0.93,
+            size.height * 0.43,
+          )
+          ..cubicTo(
+            size.width * 0.68,
+            size.height * 0.50,
+            size.width * 0.35,
+            size.height * 0.72,
+            size.width * 0.12,
+            size.height * 0.70,
+          )
+          ..close();
+        canvas.drawPath(
+          body,
+          Paint()..color = WuxiaUi.qing.withValues(alpha: 0.78),
+        );
+        final dryBrush = Path()
+          ..moveTo(size.width * 0.12, size.height * 0.61)
+          ..quadraticBezierTo(
+            size.width * 0.48,
+            size.height * 0.40,
+            size.width * 0.86,
+            size.height * 0.44,
+          );
+        canvas.drawPath(dryBrush, ink);
         canvas.drawArc(
-          Rect.fromCircle(center: center, radius: size.width * 0.24),
-          -1.2,
-          1.8,
+          Rect.fromCircle(center: center, radius: size.width * 0.27),
+          -1.35,
+          1.95,
           false,
           wash,
         );
@@ -652,17 +882,40 @@ class _InkEffectPainter extends CustomPainter {
         }
         canvas.drawCircle(center, size.width * 0.24, ink);
       case _InkEffect.defeat:
-        for (var i = 0; i < Phase0aPresentationTokens.vfxSpokeCount; i++) {
-          final angle =
-              i * math.pi * 2 / Phase0aPresentationTokens.vfxSpokeCount;
+        final elite = defeatKind == Phase0aDefeatKind.elite;
+        final count = elite
+            ? Phase0aPresentationTokens.vfxSpokeCount * 2
+            : Phase0aPresentationTokens.vfxSpokeCount;
+        if (elite) {
+          canvas.drawCircle(
+            center,
+            size.width * 0.22,
+            Paint()
+              ..color = WuxiaUi.jiang.withValues(alpha: 0.42)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth,
+          );
+          canvas.drawArc(
+            Rect.fromCircle(center: center, radius: size.width * 0.34),
+            -0.8,
+            4.9,
+            false,
+            ink,
+          );
+        }
+        for (var i = 0; i < count; i++) {
+          final angle = i * math.pi * 2 / count;
           final point = Offset(
-            center.dx + math.cos(angle) * size.width * 0.31,
-            center.dy + math.sin(angle) * size.height * 0.22,
+            center.dx + math.cos(angle) * size.width * (elite ? 0.37 : 0.31),
+            center.dy + math.sin(angle) * size.height * (elite ? 0.29 : 0.22),
           );
           canvas.drawCircle(
             point,
             i.isEven ? 5 : 3,
-            ink..style = PaintingStyle.fill,
+            Paint()
+              ..color = elite && i % 3 == 0
+                  ? WuxiaUi.jiang.withValues(alpha: 0.64)
+                  : WuxiaUi.ink.withValues(alpha: 0.72),
           );
         }
     }
@@ -670,7 +923,55 @@ class _InkEffectPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _InkEffectPainter oldDelegate) =>
-      oldDelegate.effect != effect;
+      oldDelegate.effect != effect || oldDelegate.defeatKind != defeatKind;
+}
+
+class _GatherPullPainter extends CustomPainter {
+  const _GatherPullPainter({required this.source, required this.target});
+
+  final Offset source;
+  final Offset target;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final delta = target - source;
+    final distance = delta.distance;
+    if (distance == 0) return;
+    final normal = Offset(-delta.dy / distance, delta.dx / distance);
+    final midpoint = Offset(
+      (source.dx + target.dx) / 2,
+      (source.dy + target.dy) / 2,
+    );
+    final control =
+        midpoint + normal * Phase0aPresentationTokens.gatherPullCurveBend;
+    final path = Path()
+      ..moveTo(source.dx, source.dy)
+      ..quadraticBezierTo(control.dx, control.dy, target.dx, target.dy);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = WuxiaUi.qing.withValues(alpha: 0.82)
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = Phase0aPresentationTokens.gatherPullStrokeWidth,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = WuxiaUi.ink.withValues(alpha: 0.48)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = Phase0aPresentationTokens.gatherPullEchoStrokeWidth,
+    );
+    canvas.drawCircle(
+      target,
+      Phase0aPresentationTokens.gatherPullTargetDotRadius,
+      Paint()..color = WuxiaUi.jiang.withValues(alpha: 0.62),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _GatherPullPainter oldDelegate) =>
+      oldDelegate.source != source || oldDelegate.target != target;
 }
 
 class _StageWashPainter extends CustomPainter {
