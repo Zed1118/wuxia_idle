@@ -94,12 +94,15 @@ abstract final class Phase0aPresentationTokens {
   static const double vfxMeleeSize = 148;
   static const double vfxEliteDefeatSize = 292;
   static const double gatherPullPadding = 24;
-  static const double gatherPullStrokeWidth = 5.5;
-  static const double gatherPullEchoStrokeWidth = 2.5;
+  static const double gatherPullStrokeWidth = 3.5;
+  static const double gatherPullEchoStrokeWidth = 2;
   static const double gatherPullCurveBend = 30;
   static const double gatherPullEchoBend = 14;
+  static const double gatherPullRibbonStartWidth = 10;
+  static const double gatherPullRibbonEndWidth = 2;
   static const double gatherPullTargetDotRadius = 4;
   static const double gatherPullDropletRadius = 3;
+  static const double gatherPullSourceSplashRadius = 6;
   static const double vfxStrokeWidth = 4;
   static const double vfxThinStrokeWidth = 2;
   static const double vfxPopupGap = 38;
@@ -115,4 +118,7 @@ abstract final class Phase0aPresentationTokens {
   static const int vfxSpokeCount = 12;
   static const int maxCatchUpTicksPerFrame = 5;
   static const double feedbackHoldSeconds = 0.65;
+
+  /// debug 动态验收路由单拍冻结后的 VFX 保持时间;不用于正式可玩战斗。
+  static const double visualRouteFeedbackHoldSeconds = 5;
 }

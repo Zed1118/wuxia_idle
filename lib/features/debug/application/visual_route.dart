@@ -64,6 +64,18 @@ enum VisualRoute {
     'phase0a_battle_playable',
     'Phase 0A 单角色水墨 ARPG·真实 flow 键鼠可玩验收',
   ),
+  phase0aBattleAttackFeedback(
+    'phase0a_battle_attack_feedback',
+    'Phase 0A 单角色战斗·首拍 J 攻击反馈静态验收',
+  ),
+  phase0aBattleGatherFeedback(
+    'phase0a_battle_gather_feedback',
+    'Phase 0A 单角色战斗·首拍 Q 聚怪反馈静态验收',
+  ),
+  phase0aBattleClearFeedback(
+    'phase0a_battle_clear_feedback',
+    'Phase 0A 单角色战斗·首拍 R 清场反馈静态验收',
+  ),
   mainlineFirstClearBattle(
     'mainline_first_clear_battle',
     '主线首通真战斗验收·真 stage_01_03 + readable_first_clear 调参 + 起手暂停可单步',

@@ -16,6 +16,20 @@ void main() {
       expect(VisualRoute.phase0aBattlePlayable.id, 'phase0a_battle_playable');
     });
 
+    test('反馈静态验收路由 id 可解析', () {
+      const routes = <VisualRoute, String>{
+        VisualRoute.phase0aBattleAttackFeedback:
+            'phase0a_battle_attack_feedback',
+        VisualRoute.phase0aBattleGatherFeedback:
+            'phase0a_battle_gather_feedback',
+        VisualRoute.phase0aBattleClearFeedback: 'phase0a_battle_clear_feedback',
+      };
+      for (final entry in routes.entries) {
+        expect(entry.key.id, entry.value);
+        expect(parseVisualRoute(entry.value), entry.key);
+      }
+    });
+
     test('parseVisualRoute 可解析', () {
       expect(
         parseVisualRoute('phase0a_battle_playable'),
@@ -39,6 +53,12 @@ void main() {
         isTrue,
         reason: 'visual_route_host.dart 的 buildVisualTarget 必须接新屏',
       );
+      expect(hostSource.contains('_Phase0aFeedbackPreview'), isTrue);
+      expect(
+        hostSource.contains('autoStep: widget.initialCommand == null'),
+        isTrue,
+      );
+      expect(hostSource.contains('visualRouteFeedbackHoldSeconds'), isTrue);
     });
 
     test('main.dart 与 stage_entry_flow.dart 不引用该路由', () {

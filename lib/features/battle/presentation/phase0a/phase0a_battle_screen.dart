@@ -18,9 +18,16 @@ import 'phase0a_vfx_controller.dart';
 import 'phase0a_visual_roster.dart';
 
 final class Phase0aBattleScreen extends StatefulWidget {
-  const Phase0aBattleScreen({super.key, required this.controller});
+  const Phase0aBattleScreen({
+    super.key,
+    required this.controller,
+    this.autoStep = true,
+    this.feedbackHoldSeconds = Phase0aPresentationTokens.feedbackHoldSeconds,
+  }) : assert(feedbackHoldSeconds > 0);
 
   final Phase0aBattleController controller;
+  final bool autoStep;
+  final double feedbackHoldSeconds;
 
   @override
   State<Phase0aBattleScreen> createState() => _Phase0aBattleScreenState();
@@ -82,9 +89,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         } else if (_isSingletonFeedback(entry.kind)) {
           _heldFeedback.removeWhere((held) => held.entry.kind == entry.kind);
         }
-        _heldFeedback.add(
-          _HeldFeedback(entry, Phase0aPresentationTokens.feedbackHoldSeconds),
-        );
+        _heldFeedback.add(_HeldFeedback(entry, widget.feedbackHoldSeconds));
       }
       final overflow =
           _heldFeedback.length - Phase0aPresentationTokens.maxEntries;
@@ -145,7 +150,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         mounted) {
       setState(() {});
     }
-    if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) return;
+    if (!widget.autoStep ||
+        widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
+      return;
+    }
     _accumulatorSeconds += deltaSeconds;
     var steps = 0;
     while (_accumulatorSeconds >= widget.controller.fixedDeltaSeconds &&
@@ -952,6 +960,45 @@ class _GatherPullPainter extends CustomPainter {
     final echoPath = Path()
       ..moveTo(source.dx, source.dy)
       ..quadraticBezierTo(echoControl.dx, echoControl.dy, target.dx, target.dy);
+    final startTangent = control - source;
+    final endTangent = target - control;
+    final startNormal = Offset(
+      -startTangent.dy / startTangent.distance,
+      startTangent.dx / startTangent.distance,
+    );
+    final endNormal = Offset(
+      -endTangent.dy / endTangent.distance,
+      endTangent.dx / endTangent.distance,
+    );
+    final ribbonStartWidth =
+        Phase0aPresentationTokens.gatherPullRibbonStartWidth;
+    final ribbonEndWidth = Phase0aPresentationTokens.gatherPullRibbonEndWidth;
+    final ribbon = Path()
+      ..moveTo(
+        source.dx + startNormal.dx * ribbonStartWidth,
+        source.dy + startNormal.dy * ribbonStartWidth,
+      )
+      ..quadraticBezierTo(
+        control.dx + normal.dx * ribbonStartWidth / 2,
+        control.dy + normal.dy * ribbonStartWidth / 2,
+        target.dx + endNormal.dx * ribbonEndWidth,
+        target.dy + endNormal.dy * ribbonEndWidth,
+      )
+      ..lineTo(
+        target.dx - endNormal.dx * ribbonEndWidth,
+        target.dy - endNormal.dy * ribbonEndWidth,
+      )
+      ..quadraticBezierTo(
+        control.dx - normal.dx * ribbonStartWidth / 3,
+        control.dy - normal.dy * ribbonStartWidth / 3,
+        source.dx - startNormal.dx * ribbonStartWidth,
+        source.dy - startNormal.dy * ribbonStartWidth,
+      )
+      ..close();
+    canvas.drawPath(
+      ribbon,
+      Paint()..color = WuxiaUi.qing.withValues(alpha: 0.46),
+    );
     canvas.drawPath(
       path,
       Paint()
@@ -983,6 +1030,11 @@ class _GatherPullPainter extends CustomPainter {
         Paint()..color = WuxiaUi.qing.withValues(alpha: 0.68),
       );
     }
+    canvas.drawCircle(
+      source,
+      Phase0aPresentationTokens.gatherPullSourceSplashRadius,
+      Paint()..color = WuxiaUi.qing.withValues(alpha: 0.54),
+    );
     canvas.drawCircle(
       target,
       Phase0aPresentationTokens.gatherPullTargetDotRadius,
