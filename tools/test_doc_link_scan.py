@@ -201,5 +201,56 @@ class DocLinkScanFixtureTest(unittest.TestCase):
         )
 
 
+    # -- Bug C 文内引用截断(2026-08-18,与 Bug B 冒号截断同体例) ----------
+
+    def test_space_section_suffix_stripped_to_alive_base(self) -> None:
+        """已知扩展名后空格段名(`numbers.yaml jianghu`)截断至基底;
+        基底 tracked → alive(剥而不验,与 #锚点口径一致)。"""
+        result = self.scan_fixture(
+            "`data/numbers.yaml jianghu`", tracked_targets={"data/numbers.yaml"}
+        )
+        self.assert_alive_reference(result)
+
+    def test_section_marker_suffix_stripped_to_alive_base(self) -> None:
+        """已知扩展名后 §章节(`backlog.md §十二`)同样截断至基底。"""
+        result = self.scan_fixture(
+            "`docs/spec/backlog.md §十二`",
+            tracked_targets={"docs/spec/backlog.md"},
+        )
+        self.assert_alive_reference(result)
+
+    def test_space_suffix_missing_base_stays_dead(self) -> None:
+        """截断后基底不存在仍判死:截断不改变存在性语义,只去段名噪声。"""
+        result = self.scan_fixture("`data/gone.yaml 段落`")
+        self.assert_dead_reference(result, "data/gone.yaml")
+
+    # -- 归档扩类(sessions/dispatch/superpowers/audit,2026-08-18 重拍) ---
+
+    def test_dead_reference_in_extended_archival_dirs_is_archival(self) -> None:
+        """四个历史目录与 handoff 同待遇:文内失效引用归 archival 不计 dead。"""
+        for source in (
+            "docs/sessions/s1.md",
+            "docs/dispatch/d1.md",
+            "docs/superpowers/plans/p1.md",
+            "docs/audit/a1.md",
+        ):
+            with self.subTest(source=source):
+                result = self.scan_fixture("`lib/gone.dart`", source=source)
+                self.assertEqual(result["dead"], 0)
+                self.assertEqual(result["archival"], 1)
+
+    # -- EXCLUDE_FILES:audio 指南计划素材清单(与 PATH_MIGRATION_MAP 同构) --
+
+    def test_audio_guide_is_excluded_from_scan(self) -> None:
+        """`docs/audio_asset_generation_guide.md` 主体是未生成素材的计划清单,
+        扫它必产计划性死链(同 PATH_MIGRATION_MAP 先例)→ 整文件排除。"""
+        result = self.scan_fixture(
+            "`assets/audio/sfx/never_generated.mp3`",
+            source="docs/audio_asset_generation_guide.md",
+        )
+        self.assertEqual(result["scanned_files"], 0)
+        self.assertEqual(result["refs_total"], 0)
+
+
 if __name__ == "__main__":
     unittest.main()
