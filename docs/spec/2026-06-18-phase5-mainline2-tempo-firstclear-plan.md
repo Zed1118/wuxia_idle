@@ -28,7 +28,7 @@
 | `lib/features/mainline/presentation/stage_entry_flow.dart:404-412` | initState 据首通算 `_mode` | Modify |
 | `test/features/battle/domain/strategy/intervene_now_test.dart` | 纯 strategy 插队单测 | Create |
 | `test/features/battle/intervene_determinism_test.dart` | notifier 插队确定性测 | Create |
-| `test/features/battle/presentation/battle_drag_skill_test.dart` | 改写:拖招 → interveneNow spy | Modify |
+| `test/features/battle/presentation/battle_tap_skill_test.dart` | 改写:拖招 → interveneNow spy | Modify |
 | `test/features/battle/domain/auto_play_first_clear_test.dart` | 2.5 模式纯函数 + isFirstClear 单测 | Create |
 
 ---
@@ -415,7 +415,7 @@ DEVELOPER_DIR=/Library/Developer/CommandLineTools git commit -m "feat(2.3): Batt
 
 **Files:**
 - Modify: `lib/features/battle/presentation/battle_screen.dart:671-689`
-- Test: `test/features/battle/presentation/battle_drag_skill_test.dart`
+- Test: `test/features/battle/presentation/battle_tap_skill_test.dart`
 
 - [ ] **Step 1: 改写 widget 测(改前先看现状契约)**
 
@@ -478,7 +478,7 @@ class _TestBattleNotifier extends BattleNotifier {
 
 - [ ] **Step 2: 跑测看红**
 
-Run: `flutter test test/features/battle/presentation/battle_drag_skill_test.dart`
+Run: `flutter test test/features/battle/presentation/battle_tap_skill_test.dart`
 Expected: FAIL（`_onSkillCommand` 仍调 `requestUltimate`,spy 的 `interveneCount` 恒 0 / `lastInterveneSkill` 为 null）。
 
 - [ ] **Step 3: 改 `_onSkillCommand`**
@@ -509,7 +509,7 @@ Expected: FAIL（`_onSkillCommand` 仍调 `requestUltimate`,spy 的 `interveneCo
 
 - [ ] **Step 4: 跑测看绿**
 
-Run: `flutter test test/features/battle/presentation/battle_drag_skill_test.dart`
+Run: `flutter test test/features/battle/presentation/battle_tap_skill_test.dart`
 Expected: PASS。
 
 - [ ] **Step 5: 检查 `_rushToActorId` 是否变死代码**
@@ -525,7 +525,7 @@ Expected: 全绿。
 - [ ] **Step 7: commit**
 
 ```bash
-DEVELOPER_DIR=/Library/Developer/CommandLineTools git add lib/features/battle/presentation/battle_screen.dart test/features/battle/presentation/battle_drag_skill_test.dart
+DEVELOPER_DIR=/Library/Developer/CommandLineTools git add lib/features/battle/presentation/battle_screen.dart test/features/battle/presentation/battle_tap_skill_test.dart
 DEVELOPER_DIR=/Library/Developer/CommandLineTools git commit -m "feat(2.3): 拖招 UI 改调 interveneNow 即放真插队 + 改写 widget 测"
 ```
 

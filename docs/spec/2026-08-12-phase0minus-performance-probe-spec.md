@@ -381,7 +381,7 @@ build/phase0minus_results/<commit>/<platform>/<timestamp>/
 
 原始文件不提交仓库；生成 SHA-256 manifest。仓库只提交一份短的裁决报告，例如：
 
-`docs/performance/2026-08-xx-phase0minus-performance-report.md`
+`docs/phase0/2026-08-13-phase0minus-macos-baseline.md`(实际落点,原示例 docs/performance/ 目录从未建立)
 
 ### 8.2 manifest 必填字段
 
