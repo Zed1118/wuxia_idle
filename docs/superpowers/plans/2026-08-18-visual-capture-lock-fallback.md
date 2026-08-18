@@ -29,13 +29,13 @@ E 批已落「诊断」(`VISUAL_CAPTURE_DIAG:` + 双失败硬停),本批落「�
 
 ## 验收标准
 
-- [ ] 锁屏 + 窗口截图失败 ⇒ 不再走区域 fallback;`capture_visual_window` 返回
+- [x] 锁屏 + 窗口截图失败 ⇒ 不再走区域 fallback;`capture_visual_window` 返回
       `all_failed:lock=locked` 且非零退出;日志含 DIAG 与 FAIL 人话结论
-- [ ] 未锁 + 窗口截图失败 + 区域成功 ⇒ 仍 `fallback_region` 返回 0(回归不破)
-- [ ] 窗口截图成功 ⇒ 仍 `window_id:<wid>` 返回 0(不查锁,快路径不变)
-- [ ] 行为测锁屏 case 在修法前红、修法后绿;RP2 反向还原修法复红再还原
-- [ ] `bash -n` 两脚本过 · `final_gate_check.sh` 的 dry-run 段可跑 · README 同步锁屏语义
-- [ ] CI:纯 shell 批,flutter test 计数应保持 5160 不变
+- [x] 未锁 + 窗口截图失败 + 区域成功 ⇒ 仍 `fallback_region` 返回 0(回归不破)
+- [x] 窗口截图成功 ⇒ 仍 `window_id:<wid>` 返回 0(不查锁，快路径不变)
+- [x] 行为测锁屏 case 在修法前红、修法后绿;RP2 反向还原修法复红再还原
+- [x] `bash -n` 全部脚本过 · dry-run 可跑 · README 同步锁屏语义 · 行为测接入 final_gate_check.sh
+- [ ] CI:纯 shell 批，flutter test 计数应保持 5160 不变
 
 ## 任务切片
 
@@ -51,9 +51,10 @@ E 批已落「诊断」(`VISUAL_CAPTURE_DIAG:` + 双失败硬停),本批落「�
 
 ## 当前恢复点
 
-- **状态**:RP0 进行中
-- **最后完成**:分支已建(自 main `5e2c5e7c`),摸底完毕(visual_capture.sh 现状 /
-  lock_state.py / audit 文档 / CI 行为)
-- **下一步**:本计划档 commit → 抽 lib + 行为测
-- **已跑验证**:无(未动代码)
+- **状态**:GATE 全绿，待合入收账
+- **最后完成**:修法实装 + 破坏证红(反向还原 case 3 精确红，还原复绿)+ GATE 全套绿
+  (bash -n ×4 / lock_state_test 6 例 / 行为测 3 例 / dry-run / __pycache__ 清零)
+- **commit 链**:`9c5def22` RP0 → `9c900256` 抽 lib+行为测钉现状 →
+  `3854cf66` 红测 → `8346575d` 实装 → GATE/README 批
+- **下一步**:merge main · PROGRESS 登记 · BACKLOG 二#11 销行 · push · CI 盯守
 - **阻塞项**:无

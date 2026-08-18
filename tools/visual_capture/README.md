@@ -12,11 +12,15 @@
 3. 用 `screencapture -x -o -l<window_id>` 截干净窗口。
 4. 若窗口截图失败，先用 `lock_state.py` 判定会话锁屏态并把
    锁屏态、`window_id` 返回值、窗口截图退出码/字节数写进 route log
-   （前缀 `VISUAL_CAPTURE_DIAG:`），再退回区域截图。区域截图成功记
-   `VISUAL_CAPTURE: fallback_region`；两者都失败则记
-   `VISUAL_CAPTURE: all_failed:lock=<locked|unlocked|unknown>` 并以非零码
+   （前缀 `VISUAL_CAPTURE_DIAG:`）。**锁屏时不走区域 fallback 直接硬失败**
+   （记 `VISUAL_CAPTURE: all_failed:lock=locked`）：`screencapture -R` 锁屏时必死
+   （2026-08-12 audit 8 采样完美相关），且锁屏下 osascript 摆不了窗口，
+   `(0,0,W,H)` 几何前提不成立——救不出正确画面，明着失败优于错图。
+   未锁时才退回区域截图，成功记 `VISUAL_CAPTURE: fallback_region`；
+   两者都失败则记 `VISUAL_CAPTURE: all_failed:lock=<unlocked|unknown>` 并以非零码
    硬失败，**不再进入 `crop_window_content.py`**（避免 PNG 不存在时 PIL
-   `FileNotFoundError` 盖住真实原因）。
+   `FileNotFoundError` 盖住真实原因）。锁屏下窗口截图本身照常成功，
+   无人值守时段应优先依赖窗口路径（如 `--background`）。
    锁屏判定：`ioreg -n Root -d1 -w0` 的 `IOConsoleUsers` 字典是否含键
    `CGSSessionScreenIsLocked`（未锁时该键整个不存在，只能判有无，不能比值；
    ioreg 失败/空输出一律判 `unknown`，绝不错报未锁）。
@@ -76,9 +80,9 @@ VISUAL_CAPTURE: window_id:<id>
 `VISUAL_CAPTURE:` 状态串有三种，用于区分截图结果：
 
 ```text
-VISUAL_CAPTURE: window_id:<id>                 # 窗口截图成功（主路径）
-VISUAL_CAPTURE: fallback_region                 # 走了区域 fallback 且成功
-VISUAL_CAPTURE: all_failed:lock=<locked|unlocked|unknown>   # 两者均失败（硬失败）
+VISUAL_CAPTURE: window_id:<id>                 # 窗口截图成功（主路径，锁屏下也可用）
+VISUAL_CAPTURE: fallback_region                 # 未锁时走区域 fallback 且成功
+VISUAL_CAPTURE: all_failed:lock=<locked|unlocked|unknown>   # 硬失败（锁屏时跳过区域 fallback 也记此串）
 ```
 
 窗口截图失败时（无论 fallback 成败）会额外写入诊断行：
@@ -183,10 +187,15 @@ before/after 零回归使用 capture 条目的可选 `baseline` 字段，且 bas
 
 ```bash
 bash -n tools/visual_capture/visual_capture.sh
+python3 tools/visual_capture/lock_state_test.py
+bash tools/visual_capture/lock_fallback_behavior_test.sh
 tools/visual_capture/visual_capture.sh --route main_menu --resolutions 1920x1080 --output /tmp/wuxia_visual_probe --wait 1 --ready-timeout 180
 rg "VISUAL_ROUTE_READY|VISUAL_CAPTURE" /tmp/wuxia_visual_probe/main_menu/1920x1080/main_menu.log
 file /tmp/wuxia_visual_probe/main_menu/1920x1080/main_menu.png
 ```
+
+锁屏 fallback 分支行为由 `lock_fallback_behavior_test.sh` 钉死（PATH stub 注入
+`screencapture`/`swift`/锁屏态，无需真锁屏），改 `capture_visual_window` 后必跑。
 
 在 Retina 屏上，`1920x1080` 逻辑窗口通常输出 `3840 x 2160` PNG。
 
