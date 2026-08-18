@@ -43,8 +43,8 @@
 
 ## 5. 验收勾选
 
-- [ ] RP0 落盘并 commit
-- [ ] N1 报告合入 + CI 绿
-- [ ] N2 清零合入 + CI 绿(或残余全归类待拍)
-- [ ] N3 报告合入(如开跑)
-- [ ] 早晨收账:PROGRESS 收账条 + 顺延目检项清单呈用户
+- [x] RP0 落盘并 commit(`5d3deabf`)
+- [x] N1 报告合入 + CI 绿(merge `92ebedac`;终态 tip CI `32149125730` success 5167)
+- [x] N2 清零合入 + CI 绿(merge `3f4228bf`;C 类 6 修,残余 65 全归类 B/D 接受)
+- [x] N3 报告合入(merge `86c9004f`;D1/D2 待拍 · D4 v2 方案未入库留指认)
+- [x] 早晨收账:PROGRESS 收账条 + 顺延目检项清单呈用户(夜批总报已呈;中间三个 cancelled run 系连推 concurrency 取消非失败;本勾选 commit 的 CI 待盯)
