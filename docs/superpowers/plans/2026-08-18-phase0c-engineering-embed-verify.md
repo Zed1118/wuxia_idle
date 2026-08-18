@@ -46,23 +46,24 @@ Batch 1–9C 已合 main(`phase0a_battle_playable` 等路由在产)。0C 工程�
 
 ## 验收标准
 
-- [ ] Esc 暂停/继续实装 + 测试钉(暂停中零 domain 推进)
-- [ ] 50 次进退稳定性测试绿(零异常 + 输入不失效)
-- [ ] 窗口缩放三视口测试绿
-- [ ] 存档零污染守卫测试绿
-- [ ] `flutter analyze --no-pub` 0 issue
-- [ ] 全量 `flutter test` 计数 = 基线 5161 + 本批新增
-- [ ] 裁决报告落 docs/phase0/ 并登记 PROGRESS
+- [x] Esc 暂停/继续实装 + 测试钉(暂停中零 domain 推进)
+- [x] 50 次进退稳定性测试绿(零异常 + 输入不失效)
+- [x] 窗口缩放三视口测试绿
+- [x] 存档零污染守卫测试绿
+- [x] `flutter analyze --no-pub` 0 issue
+- [x] 全量 `flutter test` 5167/0(基线 5161 + 本批 6,逐值吻合)
+- [x] 裁决报告落 docs/phase0/2026-08-18-phase0c-engineering-embed.md
+- [x] 破坏证红:反向补丁撤暂停实装 → 恰 3 红锚暂停语义 → 还原复绿 6/6
 
 ## 红线
 
 - 不动 domain 规则(reducer/数值);只加表现层暂停与测试
 - 不接生产存档/奖励/根导航;不引入 Flame 进根应用
-- 暂停文案不硬编码中文(走 data 或既有 token)
+- 暂停文案不硬编码中文(走 UiStrings.phase0aPausedBanner)
 
 ## 当前恢复点
 
-- **状态**:RP0 计划档落盘,实装未开始
-- **commit 链**:RP0 计划档 → Esc 暂停实装 → 0C 测试组 → 裁决报告 → 计划档终态
-- **下一步**:读 screen 键处理段与暂停可插点,实装 Esc 暂停
+- **状态**:实装完成,收账前终态
+- **commit 链**:RP0 计划档 → Esc 暂停实装 `68317574` → 0C 测试组 `eb2d490d` → 裁决报告+计划档终态
+- **下一步**:merge main → PROGRESS 插登记条 → push → CI 盯守(预期 5167)
 - **阻塞项**:无
