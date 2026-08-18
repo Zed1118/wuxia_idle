@@ -55,7 +55,7 @@ capture_visual_window() {
       return 0
     fi
   fi
-  # 主路径失败:判定并留痕锁屏态与分模式结果,再走区域 fallback。
+  # 主路径失败:判定并留痕锁屏态与分模式结果,再决定 fallback。
   # 注意 -R fallback 不是「抢救出图」——锁屏时 osascript 摆不了窗口,几何前提
   # 本就不成立,此时不存在“正确的画面”可抢救,只能如实报失败。
   lock_state="$(python3 "${LOCK_STATE_HELPER:-$REPO_ROOT/tools/visual_capture/lock_state.py}" 2>/dev/null || printf 'unknown')"
@@ -67,6 +67,13 @@ capture_visual_window() {
         printf 'VISUAL_CAPTURE_DIAG: window_capture_rc=%s bytes=%s\n' "$win_rc" "$win_bytes"
       fi
     } >>"$log"
+  fi
+  # 锁屏时区域 fallback 救不出正确画面:-R 本身锁屏必死(2026-08-12 audit 8 采样
+  # 完美相关),即使侥幸出图也只是锁屏画面(窗口没被 osascript 摆到左上角)。
+  # 看似成功的错图比明着失败更糟(本仓有过整张错拍事故)→ 跳 fallback 硬停。
+  if [[ "$lock_state" == "locked" ]]; then
+    printf 'all_failed:lock=locked\n'
+    return 1
   fi
   capture_region "$width" "$height" "$output" || region_rc=$?
   if [[ "$region_rc" -eq 0 && -s "$output" ]]; then
