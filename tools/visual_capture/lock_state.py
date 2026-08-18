@@ -15,8 +15,12 @@
 用法:
   python3 lock_state.py                 # 真跑 ioreg(真机/生产链路用)
   python3 lock_state.py --ioreg-file F  # 从文件读 ioreg 输出(注入,测试用)
+
+测试注入另支持环境变量 VC_TEST_LOCK_IOREG_FILE(语义同 --ioreg-file,供
+visual_capture.sh 链路的行为测注入;flag 优先,生产链路从不设该变量)。
 """
 import argparse
+import os
 import subprocess
 import sys
 
@@ -74,9 +78,10 @@ def main(argv=None):
     )
     args = parser.parse_args(argv)
 
-    if args.ioreg_file:
+    ioreg_file = args.ioreg_file or os.environ.get("VC_TEST_LOCK_IOREG_FILE")
+    if ioreg_file:
         try:
-            with open(args.ioreg_file, "r") as fh:
+            with open(ioreg_file, "r") as fh:
                 output, ok = fh.read(), True
         except OSError:
             output, ok = None, False
