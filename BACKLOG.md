@@ -29,8 +29,6 @@
 | 7 | B3 立绘融合观感真人拍方向 | battle 表现层数值 | ~20min | 需先看真机实拍图;要调只动 `battleStandeeFusionOpacityAtFull`/明度下沿/上沿三常量,门禁测守边界。登记值精度 ±9。**附带项(cliffwaterfall boss 取样带侵入)已证伪销 2026-08-05**:夜班 N5 真机差分实测 boss 尺寸下立绘右缘 ~0.71,距带起点 0.74 约 38 逻辑 px 未侵入;新发现=登记口径贴纯背景资产、实拍合成带 118.3(+14.6 超 ±9),均 <floor 125 零行为差,**未来若把 floor 下调至 ≤118 须先统一全表口径**,详 `docs/audit/cliffwaterfall_fusion_band_probe_2026-08-05.md` |
 | ~~10~~ | ~~cycle debug route 两分辨率抓图间 fixture 漂移~~ **前提证伪+根修已合 2026-08-05** | debug capture 基建 | — | 夜班 N1 证伪:720 版与前一 route 未通态图**逐像素 0 diff=整张错拍**,seed 从未漂移(正确拍摄必留大弟子境界文字差异)。根因=READY 超时 TERM 免疫僵尸进程残留旧窗→`focus_visual_app` 按名置前命中旧进程→`window_id` 面积并列截旧窗,「首启抖动」同根。根修已合 main(`window_id.swift --pid` 绑窗+杀净确认升级 SIGKILL+`stop_pid`);诊断法(疑图与嫌疑 route 图 `ImageChops.difference` 逐像素比,0 diff=错拍)与第二形态已入 memory `feedback_visual_capture_seed_idempotency`。(同批销:二#8 白布动势返修 2026-08-05 合入;二#9 F2 机制已查明,销账依据 `docs/audit/f2_wait_beat_mechanism_2026-08-05.md`) |
 
-| 11 | `visual_capture.sh` 锁屏截图修法未落(根因 2026-08-12 已定谳,本条只剩实装) | debug capture 基建 | ~30min | **根因(2026-08-12 挂机批ⓒ 两组实验定论)**:锁屏时 `screencapture -R` **必死**(8 采样完美相关),窗口截图与全屏截图**照常成功**;`could not create image from rect` 是 fallback 症状非根因。掩蔽因素=Amphetamine 持 `PreventUserIdleDisplaySleep` 95 小时致屏幕永不自动锁。详 `docs/audit/visual_capture_lock_rect_failure_2026-08-12.md`。**已落地**:E 批 `lock_state.py` 诊断(主路径失败时打 `VISUAL_CAPTURE_DIAG:` 记锁屏态/window_id/窗口截图 rc,双失败非零硬停)。**剩余修法(待做)**:检测到锁屏时改走窗口截图路径替代 `-R`(窗口截图锁屏下照常成功),或明确报错退出而非拍空;夜批无人值守视觉证据即解锁 |
-
 ## 三 · 依赖锁死(附再开条件)
 
 | # | 项 | 依赖/再开条件 |
