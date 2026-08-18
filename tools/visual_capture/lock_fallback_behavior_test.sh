@@ -7,9 +7,8 @@
 # 钉的行为(根因 2026-08-12 audit 定谳:锁屏时 -R 必死、窗口截图照常成功):
 #   case 1 未锁 + 窗口失败 + 区域成功 => fallback_region,rc=0(有效兜底不破)
 #   case 2 窗口成功 => window_id:<wid>,rc=0(快路径不查锁)
-#   case 3 锁屏 + 窗口失败 => 【现状钉位,修法后翻断言】锁屏下仍走区域 fallback,
-#          fallback_region rc=0;DIAG 已留痕 lock_state=locked
-#          (目标行为 = 跳区域硬停 all_failed:lock=locked,见 RP1-b)
+#   case 3 锁屏 + 窗口失败 => 跳区域 fallback,all_failed:lock=locked,rc!=0
+#          (区域 -R 锁屏必死,即使出图也是锁屏画面=错内容;明着失败优于假成功)
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -129,16 +128,17 @@ else
   check window_success 0 "rc=$CASE_RC status=$CASE_STATUS"
 fi
 
-# case 3:锁屏 + 窗口失败 => 现状钉位:仍走区域 fallback(RP1-b 翻为目标断言)
+# case 3:锁屏 + 窗口失败 => 跳区域 fallback,硬停
 export VC_STUB_WIN_RC=3
 export VC_STUB_REGION_RC=0
 export VC_TEST_LOCK_IOREG_FILE="$LOCKED_IOREG"
-run_case locked_region_fallback_current
-if [[ "$CASE_RC" -eq 0 && "$CASE_STATUS" == "fallback_region" && -s "$CASE_OUT" ]] \
-  && grep -q 'VISUAL_CAPTURE_DIAG: lock_state=locked' "$CASE_LOG"; then
-  check locked_region_fallback_current 1 ""
+run_case locked_skip_region
+if [[ "$CASE_RC" -ne 0 && "$CASE_STATUS" == "all_failed:lock=locked" ]] \
+  && grep -q 'VISUAL_CAPTURE_DIAG: lock_state=locked' "$CASE_LOG" \
+  && [[ ! -s "$CASE_OUT" ]]; then
+  check locked_skip_region 1 ""
 else
-  check locked_region_fallback_current 0 "rc=$CASE_RC status=$CASE_STATUS"
+  check locked_skip_region 0 "rc=$CASE_RC status=$CASE_STATUS"
 fi
 
 if [[ "$fail_count" -gt 0 ]]; then
