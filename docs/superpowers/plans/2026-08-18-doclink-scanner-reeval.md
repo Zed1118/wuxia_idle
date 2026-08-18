@@ -22,7 +22,8 @@ BACKLOG 一#18 重开原因:2026-08-12 升级拍板当日发现 `git ls-files`/`
 - [ ] 混淆矩阵 + precision/recall + 每个 FP/FN 逐条根因
 - [ ] 附带:一#20 (b) 案模拟测算——sessions/dispatch/superpowers/audit 纳入
       归档类后 dead 剩多少(数据供用户拍板,本批不做政策变更)
-- [ ] 报告 `docs/audit/doclink_scanner_reeval_2026-08-18.md` · PROGRESS 登记 ·
+- [ ] 报告 `docs/dispatch/reports/2026-08-18_doclink_scanner_reeval.md`(与 P6
+      同口径放排除区,报告引用死链示例不自指) · PROGRESS 登记 ·
       BACKLOG 一#18 更新为「重评已做,带数据待拍」状态
 - [ ] CI 守恒:零代码改动,flutter test 计数 5160 不变
 
