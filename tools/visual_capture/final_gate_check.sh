@@ -30,6 +30,12 @@ PYTHONPYCACHEPREFIX="$PYCACHE_DIR" python3 -m py_compile \
   tools/visual_capture/audit_visual_acceptance.py \
   tools/visual_capture/analyze_visual_density.py
 bash -n tools/visual_capture/visual_capture.sh
+bash -n tools/visual_capture/visual_capture_lib.sh
+
+echo
+echo "== Lock capture tests =="
+python3 tools/visual_capture/lock_state_test.py
+bash tools/visual_capture/lock_fallback_behavior_test.sh
 
 echo
 echo "== Capture dry-run =="
