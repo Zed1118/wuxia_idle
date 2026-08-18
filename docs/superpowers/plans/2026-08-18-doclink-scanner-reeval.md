@@ -15,17 +15,18 @@ BACKLOG 一#18 重开原因:2026-08-12 升级拍板当日发现 `git ls-files`/`
 
 ## 验收标准
 
-- [ ] 新基线落盘并与 08-12 隔离实测(1229/7911/366)、08-15 收口口径(278)差异归因
-- [ ] 分层抽样 ~90 条(dead 40 / alive 40 / ignored 10,对齐 P6 构成;新增量
+- [x] 新基线落盘并与 08-12 隔离实测(1229/7911/366)、08-15 收口口径(278)差异归因
+      (`5b398d58` worktree 重跑复现 278,+95 新增零消失)
+- [x] 分层抽样 ~90 条(dead 40 / alive 40 / ignored 10,对齐 P6 构成;新增量
       重点覆盖中文名文档引用)逐条独立标注(`ls`/`git ls-files`/`git check-ignore`
       现查,不拿扫描器输出当答案)
-- [ ] 混淆矩阵 + precision/recall + 每个 FP/FN 逐条根因
-- [ ] 附带:一#20 (b) 案模拟测算——sessions/dispatch/superpowers/audit 纳入
+- [x] 混淆矩阵 + precision/recall + 每个 FP/FN 逐条根因
+- [x] 附带:一#20 (b) 案模拟测算——sessions/dispatch/superpowers/audit 纳入
       归档类后 dead 剩多少(数据供用户拍板,本批不做政策变更)
-- [ ] 报告 `docs/dispatch/reports/2026-08-18_doclink_scanner_reeval.md`(与 P6
+- [x] 报告 `docs/dispatch/reports/2026-08-18_doclink_scanner_reeval.md`(与 P6
       同口径放排除区,报告引用死链示例不自指) · PROGRESS 登记 ·
       BACKLOG 一#18 更新为「重评已做,带数据待拍」状态
-- [ ] CI 守恒:零代码改动,flutter test 计数 5160 不变
+- [x] CI 守恒:零代码改动,flutter test 计数 5160 不变(待终核)
 
 ## 任务切片
 
@@ -43,7 +44,10 @@ BACKLOG 一#18 重开原因:2026-08-12 升级拍板当日发现 `git ls-files`/`
 
 ## 当前恢复点
 
-- **状态**:RP0,计划档冻结中
-- **最后完成**:分支已建,新基线已跑(1298/8344/6686/372/693/593)
-- **下一步**:基线差异归因 → 抽样标注
+- **状态**:已合入收账(merge `b692fc68` · 收账 `2fe78c18`)
+- **最后完成**:报告交付 + PROGRESS 100 行 + BACKLOG 一#18/#20 补数据 + push
+- **commit 链**:`c6074f60` RP0 → 订正报告路径 → 报告交付 → `7a955dd9` 底账 →
+  merge → `2fe78c18` 收账
+- **结论**:precision 92.5%(FP 恰 3 条=Bug C 空格段名/§章节未剥)/recall 100%;
+  一#18/#20 带数据待用户拍板
 - **阻塞项**:无
