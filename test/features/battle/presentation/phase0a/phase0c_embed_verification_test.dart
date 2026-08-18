@@ -62,9 +62,7 @@ void main() {
   }
 
   group('0C · 50 次进退稳定性', () {
-    testWidgets('mount/unmount 50 次零异常,输入与暂停键抽检不失效', (
-      tester,
-    ) async {
+    testWidgets('mount/unmount 50 次零异常,输入与暂停键抽检不失效', (tester) async {
       final controller = newController();
       for (var cycle = 1; cycle <= 50; cycle++) {
         await tester.pumpWidget(
@@ -155,12 +153,16 @@ void main() {
       await pumpScreen(tester, controller);
       // 打到终局(复用手动步进,最多 3000 拍兜底防 fixture 变更挂死)。
       var guard = 0;
-      while (controller.outcome == Phase0aBattleOutcome.ongoing && guard < 3000) {
+      while (controller.outcome == Phase0aBattleOutcome.ongoing &&
+          guard < 3000) {
         controller.step();
         guard++;
       }
-      expect(controller.outcome, isNot(Phase0aBattleOutcome.ongoing),
-          reason: '未达终局');
+      expect(
+        controller.outcome,
+        isNot(Phase0aBattleOutcome.ongoing),
+        reason: '未达终局',
+      );
       await tester.pump();
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pump();
@@ -169,15 +171,9 @@ void main() {
   });
 
   group('0C · 窗口缩放', () {
-    testWidgets('1280×720 → 1440×900 → 1152×648 三视口切换整屏可重建', (
-      tester,
-    ) async {
+    testWidgets('1280×720 → 1440×900 → 1152×648 三视口切换整屏可重建', (tester) async {
       final controller = newController();
-      const viewports = [
-        Size(1280, 720),
-        Size(1440, 900),
-        Size(1152, 648),
-      ];
+      const viewports = [Size(1280, 720), Size(1440, 900), Size(1152, 648)];
       for (final viewport in viewports) {
         await tester.binding.setSurfaceSize(viewport);
         await tester.pumpWidget(
@@ -227,7 +223,8 @@ void main() {
       expect(
         violations,
         isEmpty,
-        reason: 'Phase 0A 生产层必须与正式存档架构级隔离'
+        reason:
+            'Phase 0A 生产层必须与正式存档架构级隔离'
             '(v2 方案 §9.4 / 0C 存档零污染条件):\n${violations.join('\n')}',
       );
     });
