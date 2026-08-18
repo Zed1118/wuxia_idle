@@ -38,7 +38,7 @@
 ### 2.3 确定性与测试
 - 不恢复 replay 落盘。确定性只守 auto 路径红线测——本改动不碰它(无输入路径行为不变)。
 - 新增**插队确定性测**:同 seed + 同串拖招输入(固定 tick 时点+目标)两跑 → actionLog+胜负全等。
-- 扩 `test/features/battle/presentation/battle_drag_skill_test.dart`:验立即出手 + AP 归零 + CD/内力 pickup 拦截 + 连续插队。
+- 扩 `test/features/battle/presentation/battle_tap_skill_test.dart`:验立即出手 + AP 归零 + CD/内力 pickup 拦截 + 连续插队。
 
 ### 2.4 改动面(plan 阶段精确)
 - `default_ground_strategy.dart`:新立即插队入口(如 `interveneNow(state, charId, skill, targetIds)`):actorQueue 插队首 + 被拖角色 AP 归零 + 走既有 `_resolveOneTarget` 结算(逐目标独立,沿 aoe 体例)。

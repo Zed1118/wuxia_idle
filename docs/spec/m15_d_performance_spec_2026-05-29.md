@@ -38,7 +38,7 @@ CHECKLIST D 6 子项 0/6 → 6/6。1.0 ship 前 8h 长跑无 crash、FPS ≥60�
 - **D2.2**:Pen 8h 挂机后 memory snapshot 对比 → leak 候选清单 doc
 - **D3.1**:`isar_io_stress_test.dart` 80 件背包 + 20 character + 100 tick 写入压测
 - **D3.2**:writeTxn 体积红线测试(Phase 0 grep `writeTxn` 大块)
-- **D4.1**:`tools/balance_simulator.dart` 全 30 关玩家路径(rng × 50 seed)→ 难度曲线 csv
+- **D4.1**:`test/tools/balance_simulator_test.dart`(原计划 tools 路径从未入库,实装即此测,沿 ROADMAP v1.9 订正先例 `c3574d65`)全 30 关玩家路径(rng × 50 seed)→ 难度曲线 csv
 - **D4.2**:卡点 / 秒杀点诊断 + numbers.yaml 微调 + R5 红线测族不破
 - **D5.1**:`tools/idle_long_run.dart` 8h 自动化脚本(战斗 / 闭关 / 奇遇 cycle)
 - **D6.1**:Google Forms 模板 + 反馈分析 spreadsheet 结构 + 10 人邀请文案
@@ -56,7 +56,7 @@ CHECKLIST D 6 子项 0/6 → 6/6。1.0 ship 前 8h 长跑无 crash、FPS ≥60�
 - [ ] D1 FPS 平均 ≥60 @ GTX 1060 / Iris Xe(主菜单 / 战斗 / 闭关 3 场景)
 - [ ] D2 8h 长跑 memory 增长 < 100MB(无 leak 锚点)
 - [ ] D3 Isar IO 100 件背包 + 20 character + 100 tick 无 ANR(主线程 < 16ms / frame)
-- [ ] D4 全 30-35 关玩家路径模拟 通关率 [60%, 85%](难度曲线合理)
+- [ ] D4 全 30-35 关玩家路径模拟 通关率 [60%, 85%] (难度曲线合理)
 - [ ] D5 8h 长跑 0 crash + crash 报告自动化收集
 - [ ] D6 closed beta ~10 人反馈回收 ≥7 份(70%+)+ 高优 bug 闭环
 
