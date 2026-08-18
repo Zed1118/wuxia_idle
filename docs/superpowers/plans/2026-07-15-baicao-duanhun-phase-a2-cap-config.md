@@ -37,8 +37,8 @@ dart run build_runner build --delete-conflicting-outputs   # A1 新 collection �
 | `lib/core/domain/enums.dart:337` | `ItemType` 加 `ticket` + `fromDefId` case | Modify |
 | `data/items.yaml` | 断魂帖 def + 两补给副本内效果字段 | Modify |
 | `lib/data/defs/item_def.dart` | 副本内效果字段解析 | Modify |
-| `lib/features/expedition/domain/expedition_config.dart` | 远征配置 def + fromYaml | Create |
-| `lib/features/boss_gauntlet/domain/boss_gauntlet_config.dart` | 断魂庄配置 def + fromYaml | Create |
+| `lib/data/defs/expedition_config.dart` | 远征配置 def + fromYaml | Create |
+| `lib/data/defs/boss_gauntlet_config.dart` | 断魂庄配置 def + fromYaml | Create |
 | `data/expeditions.yaml` / `data/boss_gauntlets.yaml` | 最小合法骨架（B/C 填真数据） | Create |
 | `lib/data/game_repository.dart` | 加载接线 + 两 `_validate*` | Modify（`:172` loadAllDefs / `:415` _loadOptionalAsset 体例 / `:449` 校验区 / `:512` _validate 体例） |
 
@@ -373,8 +373,8 @@ git commit -m "feat: 疗伤丹行囊补给加副本内效果字段"
 > A2 只落**加载接线 + 校验不变式 + 最小合法骨架**；配置类为纯 Dart（非 Isar），Phase B 填 `expeditions.yaml` 真节点/奖励表、Phase C 填 `boss_gauntlets.yaml` 真敌人/机制表时**自由扩展这两个类**（无 schema 迁移成本）。
 
 **Files:**
-- Create: `lib/features/expedition/domain/expedition_config.dart`
-- Create: `lib/features/boss_gauntlet/domain/boss_gauntlet_config.dart`
+- Create: `lib/data/defs/expedition_config.dart`
+- Create: `lib/data/defs/boss_gauntlet_config.dart`
 - Create: `data/expeditions.yaml` / `data/boss_gauntlets.yaml`（最小合法骨架）
 - Modify: `lib/data/game_repository.dart`（`:141` 字段 / `:165` 构造 / `:415` 加载 / `:449` 校验区 / `:512` `_validate*` 体例）
 - Test: `test/features/expedition/expedition_config_validation_test.dart`

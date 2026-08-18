@@ -41,7 +41,7 @@
 - Modify: `test/tools/progression_playtest_diagnostic_test.dart:42`
 - Modify: `test/tools/balance_simulator_test.dart`（chapterIndex 过滤 / 30 关口径）
 - Modify: `test/features/economy/stage_silver_ratio_redline_test.dart`（若硬编码 30）
-- Test: `test/data/stage_win_condition_test.dart`, `test/data/mainline_stage_curve_redline_test.dart`, `test/data/stage_skill_drop_redline_test.dart`
+- Test: `test/data/defs/stage_win_condition_test.dart`, `test/data/mainline_stage_curve_redline_test.dart`, `test/data/stage_skill_drop_redline_test.dart`
 
 **数值锚**：二流敌队 baseHp/Attack/Speed 参照 `data/boss_gauntlets.yaml` 断魂庄二流 boss（苏无咎/石镇岳/闻九针）+ `data/stages.yaml` stage_06_05（三流 boss baseHp 12000/atk 450/spd 270，二流为上一阶，按现有 tier 曲线上抬）。**逐关数值经 T1 步 6 balance_simulator 校准，非拍脑袋。**
 

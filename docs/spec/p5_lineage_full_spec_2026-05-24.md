@@ -74,7 +74,7 @@
 | `test/features/ascension/application/ascend_service_test.dart` | R5.6/R5.7/R5.8 3 族 5-7 测 + boostToAscensionReady 扩 | +200/-5 |
 | `docs/handoff/p5_lineage_full_closeout_2026-05-24.md`(new) | closeout | +75 |
 | `data/numbers.yaml` | yaml 注释扩(4 行)说明 P5+ 实装 | +5/-3 |
-| `data/numbers_config.dart` | doc 注释扩(4 行)说明字段 P5+ 真消费 | +5/-2 |
+| `lib/data/numbers_config.dart` | doc 注释扩(4 行)说明字段 P5+ 真消费 | +5/-2 |
 
 合计 +467/-28 · 7 lib + 1 test + 1 closeout + 2 yaml/config doc 改
 

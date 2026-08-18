@@ -183,7 +183,7 @@ git commit -m "feat: UiStrings 加 3 条里程碑装备来历串(F1 Task3)"
 
 **Files:**
 - Create: `lib/features/equipment/application/milestone_equipment_grant_service.dart`
-- Test: `test/features/equipment/milestone_equipment_grant_service_test.dart`
+- Test: `test/features/equipment/application/milestone_equipment_grant_service_test.dart`
 
 - [ ] **Step 1: 写 service 失败测**
 
@@ -321,11 +321,11 @@ git commit -m "feat: MilestoneEquipmentGrantService 按 dropSourceTags 授予(F1
 **Files:**
 - Create: `lib/features/equipment/presentation/milestone_grant_hook.dart`
 - Modify: `lib/features/mainline/presentation/stage_entry_flow.dart`(import + :308 附近加调用)
-- Test: `test/features/equipment/milestone_grant_hook_test.dart`
+- Test: `test/features/equipment/presentation/milestone_grant_hook_test.dart`
 
 - [ ] **Step 1: 写 hook 失败测（service 级集成，不起 widget）**
 
-新建 `test/features/equipment/milestone_grant_hook_test.dart`，直接测「stageId→tag→grant」映射逻辑（hook 内调 service 的纯逻辑抽到可测函数 `grantMilestoneForClearedStage`）：
+新建 `test/features/equipment/presentation/milestone_grant_hook_test.dart`，直接测「stageId→tag→grant」映射逻辑（hook 内调 service 的纯逻辑抽到可测函数 `grantMilestoneForClearedStage`）：
 ```dart
 import 'package:flutter_test/flutter_test.dart';
 // isar + GameRepository helper import

@@ -25,7 +25,7 @@
 - `BattleAI.decide`(`battle_ai.dart:28`)目标级联 line 61-74;`_pickFocusTargetId`(line 179)/`_pickTargetId`(line 152)。
 - victory 流程 `runStageFlow`(`stage_entry_flow.dart:80`):victory 段 line 181-296。锚点:hero camera(230)→ 技能珍稀(236)→ 仪式+dialog(239-250)→ victory narrative(258-271)→ encounter hook(277-282)→ `runStageBossRecruitHookAfterVictory(context,ref,stage)`(288-292)→ 声望(295)。`clearedBeforeVictory` 快照(190-198)。
 - `presentHeroCamera(BuildContext, HeroCameraData)`(`victory_ceremony.dart:191`);`HeroCameraData{portraitPath,heroName,realmLabel,bossName,topDamage}`。
-- `NarrativeReaderScreen({required content, required fallbackTitle, onFinish, topBanner, backgroundImagePath})`;`NarrativeLoader.load(String id)`(`data/narrative_loader.dart`)扫 `data/narratives/<id>.yaml`。
+- `NarrativeReaderScreen({required content, required fallbackTitle, onFinish, topBanner, backgroundImagePath})`;`NarrativeLoader.load(String id)`(`lib/data/narrative_loader.dart`)扫 `data/narratives/<id>.yaml`。
 - `NumbersConfig` 子配置模式(`numbers_config.dart`):class+`fromYaml`,字段声明+构造 required+`NumbersConfig.fromYaml` 内 `x: XConfig.fromYaml(y['key'] as Map<String,dynamic>?)`(参照 innerDemon line 367)。
 - isar 迁移 `_migrateSaveData`(`isar_setup.dart:176`)+ `_compareVersion`(line 248)+ `_currentSaveVersion='0.24.0'`(line 121)。
 

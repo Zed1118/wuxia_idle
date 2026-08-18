@@ -710,7 +710,7 @@ git commit -m "feat(audio): AudioPlayersBackend audioplayers 真后端"
 **Files:**
 - Create: `lib/features/settings/application/audio_settings_provider.dart`（+ 生成 `.g.dart`）
 
-> 体例参考 `lib/core/application/battle_providers.dart`（`@riverpod` + `part '*.g.dart'`）。provider 单测从略（spec 测试计划未列；逻辑已由 service + SoundManager 测覆盖）。
+> 体例参考 `lib/features/battle/application/battle_providers.dart`（`@riverpod` + `part '*.g.dart'`）。provider 单测从略（spec 测试计划未列；逻辑已由 service + SoundManager 测覆盖）。
 
 - [ ] **Step 1: 写 provider**
 

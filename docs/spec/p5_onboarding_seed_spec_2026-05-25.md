@@ -27,7 +27,7 @@
 | **caller** | production 0 caller(`Phase2TestMenu` debug only)· test 8+ caller(保留不动)· `StageBattleSetup._buildPlayerTeam:93` 抛 `StateError('先跑 P1 种子')` 是真阻塞 |
 | **邻近目录** | `data/masters.yaml` 3 角色 def 已落 · `GameRepository._enforceMasterRedLines` 已校验 3 条 · 无 `lib/features/onboarding/` 包 |
 | **UI widget** | splash/home_feed/main_menu **0 onboarding 入口** — debug 入口经 Phase2TestMenu → seedMasterDisciple 已 wire,production 无 |
-| **红线层** | `test/features/battle/master_disciple_battle_test.dart` 6 测 + `founder_buff_service_test` 2 测 + `phase2_seed_service_test` 已有 — production 化后需新 R5 测族,debug seed 测族不动 |
+| **红线层** | `test/features/battle/application/master_disciple_battle_test.dart` 6 测 + `founder_buff_service_test` 2 测 + `phase2_seed_service_test` 已有 — production 化后需新 R5 测族,debug seed 测族不动 |
 | **公式** | `_buildMasterCharacter` 用 `realmDef.internalForceMax`(默认满血)· `_equipMasterStarting` 用 `EquipmentFactory.fromDef`(standard roll)· `_learnMasterStarting` 用 `Technique.create`(首项 main / 余 assist) · `_seedMaterials(mojianshi: 2000, jieJing: 200)` 基础物料 |
 
 ## 3. 设计决策点(待拍板)
@@ -81,7 +81,7 @@
 - P1-3:home_feed `_EmptyHint` 文案改加「点'开始挂机'踏出第一步」(具体文案待拍板)
 
 **Step 5 · R5 测族**(~30-45min)
-- `test/features/onboarding/onboarding_service_test.dart` 新建:
+- `test/features/onboarding/application/onboarding_service_test.dart` 新建:
   - R5.1 全新 db ensureFoundingMasters → 返 true + Character × 3 + SaveData.activeCharacterIds=[1,2,3] + founderCharacterId=1
   - R5.2 二次调用幂等 → 返 false + Character count 不变
   - R5.3 已存在 founder 但活跃槽空 → 返 false(信源是 Character 不是 SaveData · 与 Q3=M 对齐)

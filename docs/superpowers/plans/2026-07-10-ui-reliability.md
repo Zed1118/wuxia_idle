@@ -14,7 +14,7 @@
 
 **Files:**
 - Modify: `lib/shared/widgets/wuxia_ui/wuxia_title_bar.dart`
-- Test: `test/shared/widgets/wuxia_title_bar_test.dart`
+- Test: `test/shared/widgets/wuxia_ui/wuxia_title_bar_test.dart`
 
 - [x] **Step 1: 写失败测试**：返回和主页均有 44x44 热区、tooltip、Semantics button，点击调用正确 callback。
 - [x] **Step 2: 用 `WuxiaIconButton` 替换两个裸 `InkWell`，返回使用 `Icons.arrow_back`，主页使用 `Icons.home_outlined`。**

@@ -406,11 +406,11 @@ git commit -m "feat: 承伤管线接入护法结界减伤(wardMultOf 纯函数�
 
 **Files:**
 - Modify: `data/towers.yaml`（floor30 主 Boss 加 guardianWard；护法 HP 提值初值）
-- Test: `test/features/tower/floor30_guardian_ward_config_test.dart`（新建）
+- Test: `test/features/tower/floor49_guardian_ward_config_test.dart`（新建）
 
 - [ ] **Step 1: 写失败测试（floor30 加载出结界配置）**
 
-`test/features/tower/floor30_guardian_ward_config_test.dart`：加载真 towers.yaml，断言 floor30 主 Boss `guardianWard != null`、guardianIds = 两护法 id、护法 HP ≥ 初值下界；断言其他 floor 主 Boss guardianWard=null。参现有 `test/features/tower/domain/tower_floor_def_test.dart` 的加载范式（复用其 loader）。
+`test/features/tower/floor49_guardian_ward_config_test.dart`：加载真 towers.yaml，断言 floor30 主 Boss `guardianWard != null`、guardianIds = 两护法 id、护法 HP ≥ 初值下界；断言其他 floor 主 Boss guardianWard=null。参现有 `test/features/tower/domain/tower_floor_def_test.dart` 的加载范式（复用其 loader）。
 
 - [ ] **Step 2: 跑测试确认失败**
 
@@ -447,7 +447,7 @@ git commit -m "[balance] floor30 主 Boss 加护法结界配置 + 护法提血�
 
 **Files:**
 - Modify: `test/tools/`（复用 `tower_boss_feel_diagnostic` 相关工具）
-- Test: `test/features/tower/floor30_soft_gate_battle_test.dart`（新建，确定性 seed）
+- Test: `test/features/tower/floor49_soft_gate_battle_test.dart`（新建，确定性 seed）
 
 - [ ] **Step 1: 写 on-level 稳过 / 欠配会败的确定性战斗测**
 
@@ -514,7 +514,7 @@ git commit -m "feat: 护法结界表现层(护罩+题字+破界演出,纯表现�
 ## Task 7: 红线守护测 + 全量回归
 
 **Files:**
-- Test: `test/features/tower/floor30_guardian_ward_redline_test.dart`（新建）
+- Test: `test/features/tower/floor49_guardian_ward_redline_test.dart`（新建）
 
 - [ ] **Step 1: 写红线守护测**
 

@@ -17,7 +17,7 @@
 - **Modify** `lib/features/character_panel/presentation/character_panel_screen.dart:955` — `_tappableSlot` 改 `showDialog(EquipSlotDialog)`；删 `_EquipQuickActionSheet`(981-1086) + `_EquipPickerSheet`(1090-1294)。
 - **Modify** `lib/shared/strings.dart` — 新增 UiStrings 标签。
 - **Test** `test/features/character_panel/equipment_stat_diff_test.dart`
-- **Test** `test/features/character_panel/equip_slot_dialog_test.dart`
+- **Test** `test/features/character_panel/presentation/equip_slot_dialog_test.dart`
 
 ---
 
@@ -865,7 +865,7 @@ git commit -m "refactor: 装备槽改 EquipSlotDialog 一步到位,删旧贴底�
 ## Task 6: widget 测试
 
 **Files:**
-- Test: `test/features/character_panel/equip_slot_dialog_test.dart`
+- Test: `test/features/character_panel/presentation/equip_slot_dialog_test.dart`
 
 - [ ] **Step 1: 写测试**（ListView 扩 viewport · memory `feedback_listview_widget_test_viewport`）
 

@@ -44,7 +44,7 @@
 **Files:**
 - Modify: `data/stages.yaml`（stage_07_05 块之后追加 stage_08_01..05）
 - Modify: `data/equipment.yaml`（仅当好家伙 tier 掉落不足时新增）
-- Test: `test/data/stage_win_condition_test.dart`, `test/data/mainline_stage_curve_redline_test.dart`, `test/data/stage_skill_drop_redline_test.dart`
+- Test: `test/data/defs/stage_win_condition_test.dart`, `test/data/mainline_stage_curve_redline_test.dart`, `test/data/stage_skill_drop_redline_test.dart`
 
 **数值锚**：二流敌队沿 Ch7 stage_07_01..05 现值（同 tier·实读参照）；末Boss 灰衣人（阴柔）baseHp/Attack 参照 stage_07_05 北派宗匠（刚猛末Boss）同带、阴柔向略降 Hp 升 speed。**逐关数值经 Step 6 balance_simulator 校准，非拍脑袋。**
 

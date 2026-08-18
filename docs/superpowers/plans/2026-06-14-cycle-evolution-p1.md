@@ -24,7 +24,7 @@
 - `data/numbers.yaml` + `lib/data/numbers_config.dart`(或现有 config 类)— 新增 `cycle_evolution` 段解析
 - `lib/features/battle/application/stage_battle_setup.dart` — `_enemyToBattle` 加 cycleIndex + 词条注入;buildEnemyTeam/buildTeams 透传
 - `lib/features/battle/domain/damage_calculator.dart` — 加 `defenderCritDamageTakenMult` param(凝甲)
-- `lib/features/battle/domain/default_ground_strategy.dart`(或 _resolveAction 所在)— 反震 on-hit 逻辑
+- `lib/features/battle/domain/strategy/default_ground_strategy.dart`(或 _resolveAction 所在)— 反震 on-hit 逻辑
 - `lib/features/battle/domain/auto_play_mode.dart` 消费侧 — isCleared per-cycle
 - `lib/features/mainline/presentation/stage_list_screen.dart` 等选关屏 — 周目选择 UI
 - `lib/shared/strings.dart` — 江湖记招 + 周目 UiStrings

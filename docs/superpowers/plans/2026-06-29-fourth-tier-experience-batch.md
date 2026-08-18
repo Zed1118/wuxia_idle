@@ -32,7 +32,7 @@
 2. **桃花岛建筑手册**
    - 目标:每个建筑展示「产什么 / 消耗什么 / 协同影响 / 产物去向」。
    - 生产入口:`lib/features/taohua_island/presentation/taohua_island_screen.dart`
-   - 数据锚点:`lib/features/taohua_island/domain/taohua_island_config.dart`
+   - 数据锚点:`lib/data/defs/taohua_island_config.dart`
    - 测试锚点:`test/features/taohua_island/taohua_island_screen_test.dart`
    - 红线:纯说明层,不改 `settle`,不改产量,守在线=离线。
 

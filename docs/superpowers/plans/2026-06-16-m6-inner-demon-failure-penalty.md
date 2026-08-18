@@ -11,7 +11,7 @@
 **Tech Stack:** Dart / Flutter / Riverpod 3 / Isar（@collection 加字段需 `dart run build_runner build`）。
 
 **已读实接入点（worktree HEAD 基线，行号供定位、以实际为准）：**
-- 配置类 `lib/features/inner_demon/domain/inner_demon_def.dart`（`InnerDemonFailurePenalty` L152-189 / `InnerDemonResidueDebuff` L191-212 / `InnerDemonDef.empty` L48-68 / `fromYaml` L70-115）
+- 配置类 `lib/data/defs/inner_demon_def.dart`（`InnerDemonFailurePenalty` L152-189 / `InnerDemonResidueDebuff` L191-212 / `InnerDemonDef.empty` L48-68 / `fromYaml` L70-115）
 - numbers.yaml `inner_demon.failure_penalty` / `residue_debuff`（约 L564-599）
 - 结算 `lib/features/battle/application/battle_resolution.dart`（`resolve` L95，Boss 散功分支 L168-188，`BattleResolutionResult` L20-66）
 - 散功模型参照 `lib/features/dispel/application/dispel_service.dart`（`applyDefeatPenalty` L198，`DefeatPenaltyResult`）
@@ -32,7 +32,7 @@
 
 **Files:**
 - Modify: `data/numbers.yaml`（`inner_demon.failure_penalty` 段）
-- Modify: `lib/features/inner_demon/domain/inner_demon_def.dart`（`InnerDemonFailurePenalty`）
+- Modify: `lib/data/defs/inner_demon_def.dart`（`InnerDemonFailurePenalty`）
 - Test: `test/features/inner_demon/domain/inner_demon_def_test.dart`（若无则新建）
 
 - [ ] **Step 1: 写失败测试**
