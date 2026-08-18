@@ -205,6 +205,9 @@ class UiStrings {
   static const String phase0aVictorySeal = '破阵';
   static const String phase0aDefeatSeal = '败退';
   static const String phase0aRetryLabel = '再战';
+
+  /// Esc 暂停横幅(0C):暂停时世界零推进,再按 Esc 继续。
+  static const String phase0aPausedBanner = '稍歇 · Esc 继续';
   static const String phase0aPlayerHealth = '气血';
   static const String phase0aPlayerQi = '真气';
 
