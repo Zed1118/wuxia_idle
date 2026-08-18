@@ -81,35 +81,48 @@ class TaohuaIslandScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: asyncView.when(
-        loading: () =>
-            const Center(child: InkLoadingIndicator(color: WuxiaUi.qing)),
-        error: (e, _) => ErrorFallback(
-          message: UiStrings.errorFallbackMessage,
-          error: e,
-          onRetry: () => ref.invalidate(taohuaIslandViewProvider),
-        ),
-        data: (view) {
-          if (view == null) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: InkEmptyState(
-                  variant: InkEmptyStateVariant.unavailable,
-                  title: UiStrings.errorNoSaveTitle,
-                  body: UiStrings.taohuaIslandNoSave,
-                  icon: Icons.menu_book_outlined,
-                ),
-              ),
-            );
-          }
-          return _IslandBody(
-            view: view,
-            onRefresh: () =>
-                invalidateAfterIslandInventoryMutation(ref.invalidate),
-            initialBuildingMenu: initialBuildingMenu,
-          );
-        },
+      // 背景大图接线(一#17 拍板采用 v1,2026-08-18):底铺场景图 + scrim 保
+      // 可读性,scrim 值与 phase0a 战斗屏同体例。
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/scenes/taohua_island_v1.png',
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.medium,
+          ),
+          const ColoredBox(color: Color(0x380F0E0B)),
+          asyncView.when(
+            loading: () =>
+                const Center(child: InkLoadingIndicator(color: WuxiaUi.qing)),
+            error: (e, _) => ErrorFallback(
+              message: UiStrings.errorFallbackMessage,
+              error: e,
+              onRetry: () => ref.invalidate(taohuaIslandViewProvider),
+            ),
+            data: (view) {
+              if (view == null) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: InkEmptyState(
+                      variant: InkEmptyStateVariant.unavailable,
+                      title: UiStrings.errorNoSaveTitle,
+                      body: UiStrings.taohuaIslandNoSave,
+                      icon: Icons.menu_book_outlined,
+                    ),
+                  ),
+                );
+              }
+              return _IslandBody(
+                view: view,
+                onRefresh: () =>
+                    invalidateAfterIslandInventoryMutation(ref.invalidate),
+                initialBuildingMenu: initialBuildingMenu,
+              );
+            },
+          ),
+        ],
       ),
     );
   }
