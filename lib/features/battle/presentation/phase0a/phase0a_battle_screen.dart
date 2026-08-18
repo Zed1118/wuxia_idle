@@ -53,6 +53,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   final Map<String, double> _hpEmphasisRemaining = <String, double>{};
   bool _retryInFlight = false;
 
+  /// Esc 暂停态(0C):暂停期间帧回调零推进(不记性能样本),
+  /// 键鼠指令均不受理;再按 Esc 恢复。
+  bool _paused = false;
+
   @override
   void initState() {
     super.initState();
@@ -72,6 +76,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _heldFeedback.clear();
     _hitFlashRemaining.clear();
     _hpEmphasisRemaining.clear();
+    _paused = false;
   }
 
   @override
@@ -152,6 +157,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   void _onFrame(Duration elapsed) {
+    // 暂停中:世界零推进(反馈计时/domain 步进均冻结)。
+    if (_paused) return;
     final previous = _lastElapsed;
     _lastElapsed = elapsed;
     if (previous == null) return;
@@ -203,6 +210,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       _hpEmphasisRemaining.clear();
       _accumulatorSeconds = 0;
       _lastElapsed = null;
+      _paused = false;
     } finally {
       if (mounted) setState(() => _retryInFlight = false);
     }
@@ -224,6 +232,15 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       return KeyEventResult.ignored;
     }
     final key = event.logicalKey;
+    // Esc 暂停/继续(0C,spec §3.1):仅进行中可暂停;暂停中除 Esc 外不受理。
+    if (key == LogicalKeyboardKey.escape) {
+      setState(() {
+        _paused = !_paused;
+        if (!_paused) _lastElapsed = null; // 恢复首帧重建 delta 基准,不吞暂停时长
+      });
+      return KeyEventResult.handled;
+    }
+    if (_paused) return KeyEventResult.ignored;
     final command = switch (key) {
       LogicalKeyboardKey.keyA => const Phase0aPlayerCommand(left: true),
       LogicalKeyboardKey.keyD => const Phase0aPlayerCommand(right: true),
@@ -282,14 +299,40 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                     gatherSlot: _displaySlot(controller, 'gather'),
                     clearSlot: _displaySlot(controller, 'clear'),
                     qiCurrent: controller.state.player.qiCurrent,
-                    onGather: () => controller.enqueue(
-                      const Phase0aPlayerCommand(gather: true),
-                    ),
-                    onClear: () => controller.enqueue(
-                      const Phase0aPlayerCommand(clear: true),
-                    ),
+                    onGather: _paused
+                        ? () {}
+                        : () => controller.enqueue(
+                            const Phase0aPlayerCommand(gather: true),
+                          ),
+                    onClear: _paused
+                        ? () {}
+                        : () => controller.enqueue(
+                            const Phase0aPlayerCommand(clear: true),
+                          ),
                   ),
                 ),
+                // Esc 暂停横幅(0C):盖在 HUD/技能印之上,暂停中唯一新增可见物。
+                if (_paused)
+                  const Center(
+                    child: SizedBox(
+                      key: ValueKey('phase0a_paused_banner'),
+                      width: Phase0aPresentationTokens.vfxBannerWidth,
+                      height: Phase0aPresentationTokens.vfxBannerHeight,
+                      child: CustomPaint(
+                        painter: _PaperBannerPainter(),
+                        child: Center(
+                          child: Text(
+                            UiStrings.phase0aPausedBanner,
+                            style: TextStyle(
+                              color: WuxiaUi.ink,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 // 终局「再战」入口(9B):封签由 IgnorePointer 反馈层展示,
                 // 按钮必须落在主 Stack 才能收手势;无 builder 时纯展示不出按钮。
                 if (controller.outcome != Phase0aBattleOutcome.ongoing &&
