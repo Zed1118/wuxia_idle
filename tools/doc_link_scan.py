@@ -59,15 +59,20 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 #     自指同性质,一并排除(同口径,不凑数)。
 SCAN_ROOT = "docs"
 EXCLUDE_DIRS = {"docs/_archive", "docs/dispatch/reports"}
-EXCLUDE_FILES = {"docs/PATH_MIGRATION_MAP.md"}
+EXCLUDE_FILES = {"docs/PATH_MIGRATION_MAP.md",
+                 "docs/audio_asset_generation_guide.md"}
+# audio 指南主体是「计划未生成」素材清单(2026-08-18 用户拍板单列):
+# 扫它必产计划性死链,与 PATH_MIGRATION_MAP 自指同构,同口径排除。
 
 # 归档类目录:这些目录下的文档照扫,但其内部的失效引用单列为 archival 类,
 # 不计入 dead。归档文档(如历史交接记录)里的路径引用本就指向写作当时的
 # 仓库状态,后续重构把文件移走是正常演进,不是文档失修;拿它们当修复
 # 清单等于安排无意义的活。
-# 范围口径:是否把别的目录(如 docs/sessions、docs/dispatch)也纳入属范围
-# 决策,须由派单方拍板,本常量不自行扩张。
-ARCHIVAL_DIRS = {"docs/handoff"}
+# 范围口径:2026-08-12 首拍仅 docs/handoff;2026-08-18 用户重拍扩至四个
+# 带日期历史记录目录(重评报告 §八测算:吸收 249/373 条,
+# docs/dispatch/reports/2026-08-18_doclink_scanner_reeval.md)。
+ARCHIVAL_DIRS = {"docs/handoff", "docs/sessions", "docs/dispatch",
+                 "docs/superpowers", "docs/audit"}
 
 # 反引号路径:必须以这些顶级目录开头(允许 ./ ../ 前缀),才视为路径 token。
 # 与派单 §1.2 一致:docs / lib / test / data / tool / tools / assets。
@@ -285,6 +290,17 @@ _RE_STRIP_COLON_SUFFIX = re.compile(
     r"^(.*?\.(?:" + _EXT_ALT + r")):.*$"
 )
 
+# Bug C 修复(2026-08-18):文内引用除 #锚点/:冒号外还有两种真实写法——
+#   data/numbers.yaml jianghu            (空格 + 段名)
+#   docs/spec/backlog.md §十二          (§ + 章节)
+# 基底文件存在却被整串判死(重评 90 条标注的 3 条 FP 全在此类)。与 Bug B
+# 同体例:已知扩展名后遇空格/Tab/§ 即截断。剥而不验(不查段/章节是否真
+# 存在),与 #锚点口径一致;本仓 tracked 路径零含空格,无误伤面。
+
+_RE_STRIP_SPACE_SECTION = re.compile(
+    r"^(.*?\.(?:" + _EXT_ALT + r"))(?:[ \t].*|§.*)$"
+)
+
 # 剥字段后缀:已知扩展名后再有 .xxx 的剥掉
 # data/skills.yaml.powerMultiplier → data/skills.yaml
 # 注意只剥 1 段,若有 .a.b.c 多段后缀也只剥尾段(更通用做法递归剥)。
@@ -334,6 +350,11 @@ def clean_target(target: str) -> str:
     m_colon = _RE_STRIP_COLON_SUFFIX.match(target)
     if m_colon:
         target = m_colon.group(1)
+    # 2c) Bug C 修复:「已知扩展名 + 空格/Tab/§」在分隔符处截断,覆盖
+    #     空格段名与 §章节两类文内引用(剥而不验,与 #锚点同口径)。
+    m_space = _RE_STRIP_SPACE_SECTION.match(target)
+    if m_space:
+        target = m_space.group(1)
     # 3) 剥字段后缀(已知扩展名后的 .xxx)
     # 递归剥(最多剥 3 段,避免死循环)
     for _ in range(3):
