@@ -145,6 +145,27 @@ void main() {
       expect(find.text(UiStrings.taohuaIslandTitle), findsOneWidget);
     });
 
+    testWidgets('背景大图 v1 接线:场景图 cover + scrim 保可读', (tester) async {
+      // 一#17 拍板采用 v1(2026-08-18):钉住底铺图路径与 scrim 值
+      // (与 phase0a 战斗屏同体例),撤接线必红。
+      await pump(tester, wrap(buildTestView()));
+      final imageFinder = find.byWidgetPredicate(
+        (w) =>
+            w is Image &&
+            w.image is AssetImage &&
+            (w.image as AssetImage).assetName ==
+                'assets/scenes/taohua_island_v1.png',
+      );
+      expect(imageFinder, findsOneWidget);
+      expect(tester.widget<Image>(imageFinder).fit, BoxFit.cover);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is ColoredBox && w.color == const Color(0x380F0E0B),
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('7 个建筑热区均渲染', (tester) async {
       await pump(tester, wrap(buildTestView()));
 
