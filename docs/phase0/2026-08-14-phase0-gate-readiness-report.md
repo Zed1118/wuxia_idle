@@ -22,33 +22,33 @@
 | 主机信息模板 | `config/windows_minimum_spec_manifest.template.json` | 占位完整 |
 | 单次 Profile 运行 | `scripts/run_phase0a_windows_profile.ps1` | 锁定 `phase0a_replay`、DPR 1、60Hz、DurationScale 1.0；校验 git dirty、scenario checksum、host attestation、RDP/VM 拦截 |
 | 完整矩阵 | `scripts/run_phase0a_windows_matrix.ps1` | 构建一次 → 1280x720 x3 + 1440x900 x3 → validator → SHA256SUMS → zip |
-| 结果校验器 | `tool/validate_phase0a_windows_results.dart` | 读 results-root + host manifest → `validatePhase0aWindowsGate()` → JSON + Markdown 报告 |
-| 核心校验逻辑 | `lib/gate/windows_gate_validator.dart` | 21 项逐 run 检查 + 14 项 host 检查；独显/RDP/VM/混 binary/缺 evidence/placeholder 全 fail-closed |
-| 破坏性证伪测试 | `test/gate/windows_gate_validator_test.dart` (5 tests) | 合法矩阵 PASS；benchmark 伪装 FAIL；远程+未签字+混 binary+缺 evidence FAIL；**独显代签 FAIL**；**混 commit FAIL** |
-| 脚本契约测试 | `test/gate/windows_gate_scripts_test.dart` (4 tests) | Profile runner 锁定 replay；Matrix 覆盖两视口 x3；采集脚本不能自签；macOS runner 防休眠 |
+| 结果校验器 | `tools/phase0minus_probe/tool/validate_phase0a_windows_results.dart` | 读 results-root + host manifest → `validatePhase0aWindowsGate()` → JSON + Markdown 报告 |
+| 核心校验逻辑 | `tools/phase0minus_probe/lib/gate/windows_gate_validator.dart` | 21 项逐 run 检查 + 14 项 host 检查；独显/RDP/VM/混 binary/缺 evidence/placeholder 全 fail-closed |
+| 破坏性证伪测试 | `tools/phase0minus_probe/test/gate/windows_gate_validator_test.dart` (5 tests) | 合法矩阵 PASS；benchmark 伪装 FAIL；远程+未签字+混 binary+缺 evidence FAIL；**独显代签 FAIL**；**混 commit FAIL** |
+| 脚本契约测试 | `tools/phase0minus_probe/test/gate/windows_gate_scripts_test.dart` (4 tests) | Profile runner 锁定 replay；Matrix 覆盖两视口 x3；采集脚本不能自签；macOS runner 防休眠 |
 
 ### 1.2 真人试玩 Gate 工具链
 
 | 环节 | 文件 | 状态 |
 |---|---|---|
-| 匿名身份 | `lib/human_gate/playtest_identity.dart` | P01-P06、AB/BA、slot 1-6；环境变量注入 |
+| 匿名身份 | `tools/phase0minus_probe/lib/human_gate/playtest_identity.dart` | P01-P06、AB/BA、slot 1-6；环境变量注入 |
 | 冻结排期 | `config/phase0a_human_gate_schedule.json` | 6 人：2 idle + 2 arpg + 2 mixed；3 AB + 3 BA；无 PII |
-| 原始报告 schema | `lib/human_gate/playtest_report.dart` (v2) | 14 必填 key + 6 禁填 PII key；原子写入 |
-| 问卷 schema | `lib/human_gate/human_session.dart` (v1) | 17 必填分组；5 帧冻结 stimulus ID + SHA-256；有效性-完整性交叉校验 |
-| 执行证据 | `lib/human_gate/human_execution_evidence.dart` | session.state + execution.events；AB/BA 序分别校验 |
-| 机械聚合 | `lib/human_gate/playtest_aggregator.dart` | 6 人排期完整性、AB/BA 计数、build_commit 一致性 |
-| 爽感裁决 | `lib/human_gate/human_gate_aggregator.dart` | 13 项 pass check（3 中位数 >= 4、4/6 重玩、5/6 主角、24/30 危险、无否决…）；exit code 0/1/2/70 |
-| 破坏性证伪测试 | `test/human_gate/human_gate_aggregator_test.dart` (10 tests) | 边界通过；不足 6 人 INCONCLUSIVE；否决 FAIL；3/6 失败；PII/评分/有效性矛盾 FAIL；败局重试不算；**重复测试者 INCONCLUSIVE**；**缺失原始报告 INCONCLUSIVE**；混包+违反排期 INCONCLUSIVE；**进程退出码不可信** |
-| 身份与排期测试 | `test/human_gate/playtest_human_gate_test.dart` (7 tests) | 边界合法；PII/越界 FAIL；原子写入无残留；排期匿名平衡；**越界元数据 FAIL**；**AB/BA 序交换 FAIL**；**混 build FAIL** |
-| 执行证据测试 | `test/human_gate/human_execution_evidence_test.dart` | 完整 AB PASS；中断 FAIL |
-| macOS 主持脚本测试 | `test/host_human_session_macos_test.dart` | 排期平衡；AB/BA 串行；重复参与者 exit 68；篡改冻结文件 exit 66 |
+| 原始报告 schema | `tools/phase0minus_probe/lib/human_gate/playtest_report.dart` (v2) | 14 必填 key + 6 禁填 PII key；原子写入 |
+| 问卷 schema | `tools/phase0minus_probe/lib/human_gate/human_session.dart` (v1) | 17 必填分组；5 帧冻结 stimulus ID + SHA-256；有效性-完整性交叉校验 |
+| 执行证据 | `tools/phase0minus_probe/lib/human_gate/human_execution_evidence.dart` | session.state + execution.events；AB/BA 序分别校验 |
+| 机械聚合 | `tools/phase0minus_probe/lib/human_gate/playtest_aggregator.dart` | 6 人排期完整性、AB/BA 计数、build_commit 一致性 |
+| 爽感裁决 | `tools/phase0minus_probe/lib/human_gate/human_gate_aggregator.dart` | 13 项 pass check（3 中位数 >= 4、4/6 重玩、5/6 主角、24/30 危险、无否决…）；exit code 0/1/2/70 |
+| 破坏性证伪测试 | `tools/phase0minus_probe/test/human_gate/human_gate_aggregator_test.dart` (10 tests) | 边界通过；不足 6 人 INCONCLUSIVE；否决 FAIL；3/6 失败；PII/评分/有效性矛盾 FAIL；败局重试不算；**重复测试者 INCONCLUSIVE**；**缺失原始报告 INCONCLUSIVE**；混包+违反排期 INCONCLUSIVE；**进程退出码不可信** |
+| 身份与排期测试 | `tools/phase0minus_probe/test/human_gate/playtest_human_gate_test.dart` (7 tests) | 边界合法；PII/越界 FAIL；原子写入无残留；排期匿名平衡；**越界元数据 FAIL**；**AB/BA 序交换 FAIL**；**混 build FAIL** |
+| 执行证据测试 | `tools/phase0minus_probe/test/human_gate/human_execution_evidence_test.dart` | 完整 AB PASS；中断 FAIL |
+| macOS 主持脚本测试 | `tools/phase0minus_probe/test/host_human_session_macos_test.dart` | 排期平衡；AB/BA 串行；重复参与者 exit 68；篡改冻结文件 exit 66 |
 
 ### 1.3 隔离与视口契约
 
 | 测试 | 守护 |
 |---|---|
-| `test/isolation_contract_test.dart` (5 tests) | probe 源码无 `package:wuxia_idle/`、`isar`、`path_provider` 等生产导入；嵌套 pubspec 无持久化依赖；根 pubspec 无 Flame；Windows Gate 工具留在 probe 内 |
-| `test/viewport_calibration_contract_test.dart` | main.dart 实现 20 次重试 + 3 次连续匹配 + 校准失败关窗 |
+| `tools/phase0minus_probe/test/isolation_contract_test.dart` (5 tests) | probe 源码无 `package:wuxia_idle/`、`isar`、`path_provider` 等生产导入；嵌套 pubspec 无持久化依赖；根 pubspec 无 Flame；Windows Gate 工具留在 probe 内 |
+| `tools/phase0minus_probe/test/viewport_calibration_contract_test.dart` | main.dart 实现 20 次重试 + 3 次连续匹配 + 校准失败关窗 |
 
 ### 1.4 Mac 性能基线（已通过）
 
