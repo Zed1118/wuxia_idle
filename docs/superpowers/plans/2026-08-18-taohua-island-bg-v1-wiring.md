@@ -21,10 +21,13 @@
 
 ## 验收标准
 
-- [ ] 资产入库恰 1 文件,`git status` 零杂散
-- [ ] 新测绿 + 破坏证红精确命中 + 还原复绿
-- [ ] `taohua_island_screen_test` 既有全绿(零回归)+ analyze 0
-- [ ] 视觉路由拍图目检通过(可读性)
+- [x] 资产入库恰 1 文件(md5 与证据夹逐字节一致),`git status` 零杂散
+- [x] 新测绿 + 破坏证红精确命中(反向补丁撤接线 → 恰 1 红)→ 还原复绿 28/28
+- [x] `taohua_island_screen_test` 既有全绿(零回归)+ analyze 0(lib/ test/ 口径)
+- [x] 视觉路由拍图目检通过:`--route taohua_island --resolutions 1280x720
+      --all-spaces`(首跑 window_id=<empty> 失败,加 --all-spaces 重试成功;
+      图在 `build/visual_acceptance_taohua_v1/taohua_island/1280x720/`),
+      场景图底铺、设施卡/岛务概览文字在 scrim 上全部可读
 - [ ] 全量 flutter test 基线 +1(5161)或 CI 守恒核
 - [ ] PROGRESS 登记守 ≤100 行 · BACKLOG 一#17 销行
 
@@ -35,8 +38,9 @@
 
 ## 当前恢复点
 
-- **状态**:RP0,计划档冻结中
-- **最后完成**:分支已建,摸底完成(scenes 全 png / visual route 已有 /
-  screen test 696 行体例清楚 / phase0a scrim 体例 `0x380F0E0B`)
-- **下一步**:资产入库 → 接线 → 红绿测
+- **状态**:实装完成,收账前终态
+- **commit 链**:`ef5430ca` RP0 → `9605038f` 资产入库 → `ccffe38d` 接线+测试
+- **最后完成**:破坏证红闭环 + 视觉拍图目检通过
+- **下一步**:merge main → BACKLOG 一#17 销行 + PROGRESS 登记 → push → CI 盯守
+  (本批 +1 测试,预期 5161)
 - **阻塞项**:无
