@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../battle/domain/enum_localizations.dart' show EnumL10n;
+import '../../../shared/battle_shared/enum_localizations.dart' show EnumL10n;
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/presentation/loot_rumor_dialog.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';

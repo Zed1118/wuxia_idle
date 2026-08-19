@@ -11,7 +11,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
-import '../../battle/domain/cycle_realm_gate.dart';
+import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../injury/application/injury_service.dart';

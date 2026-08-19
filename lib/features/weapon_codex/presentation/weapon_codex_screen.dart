@@ -6,7 +6,7 @@ import '../../../data/defs/equipment_def.dart';
 import '../../../data/game_repository.dart';
 import '../application/equipment_catalog_providers.dart';
 import '../domain/equipment_catalog_entry.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';

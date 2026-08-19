@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../battle/application/selected_cycle_provider.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../battle/presentation/cycle_select_control.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';

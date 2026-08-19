@@ -9,7 +9,7 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../codex/presentation/codex_tab.dart';
 import '../../event/application/game_event_feed_providers.dart';
 import 'encounter_tab.dart';

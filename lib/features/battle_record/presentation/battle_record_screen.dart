@@ -6,7 +6,7 @@ import '../application/boss_memory_providers.dart';
 import '../domain/boss_catalog_entry.dart';
 import '../domain/boss_memory.dart';
 import '../domain/boss_memory_source.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';

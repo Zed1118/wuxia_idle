@@ -17,7 +17,7 @@ void main() {
       'lib/features/seclusion/application/seclusion_service.dart',
       'lib/features/seclusion/application/offline_passive_service.dart',
       'lib/features/inventory/application/item_use_service.dart',
-      'lib/features/battle/domain/derived_stats.dart',
+      'lib/shared/battle_shared/derived_stats.dart',
       'lib/features/character_panel/presentation/character_panel_screen.dart',
       'lib/data/numbers_config.dart',
       'lib/data/isar_setup.dart',

@@ -11,7 +11,7 @@ import '../../../data/isar_provider.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../equipment/application/equipment_service.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';

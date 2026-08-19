@@ -11,7 +11,7 @@ import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../battle/domain/qi_cycle.dart';
 import 'lineage_widgets.dart';
 

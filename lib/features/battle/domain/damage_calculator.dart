@@ -10,7 +10,7 @@ import '../../../data/numbers_config.dart';
 import '../../../core/domain/skill_usage_entry.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../cultivation/domain/skill_proficiency.dart';
-import 'derived_stats.dart';
+import '../../../shared/battle_shared/derived_stats.dart';
 
 /// 伤害计算器（phase1_tasks.md T10）。
 ///

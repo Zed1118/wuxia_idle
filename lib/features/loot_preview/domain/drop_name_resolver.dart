@@ -1,6 +1,6 @@
 // lib/features/loot_preview/domain/drop_name_resolver.dart
 import '../../../core/domain/enums.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../data/game_repository.dart';
 
 /// 薄封装 defId → 显示名 / 阶 / 越阶判定。复用 victory dialog 同源解析，

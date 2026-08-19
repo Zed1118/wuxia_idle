@@ -1,6 +1,6 @@
-import '../../../core/domain/enums.dart';
-import '../../../data/defs/stage_def.dart';
-import '../../../data/numbers_config.dart';
+import '../../core/domain/enums.dart';
+import '../../data/defs/stage_def.dart';
+import '../../data/numbers_config.dart';
 
 /// 批 B 周目解锁门槛（spec 2026-08-01-tower-extension 拍板 #5：
 /// 「周目解锁绑玩家境界门槛」，防低境界玩家撞差 3 阶硬墙）。

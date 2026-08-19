@@ -12,7 +12,7 @@ import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
+import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart'
     show RealmUtils;
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
 import '../support/test_data.dart';

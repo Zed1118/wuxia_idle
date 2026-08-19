@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
-import 'package:wuxia_idle/features/battle/domain/cycle_realm_gate.dart';
+import 'package:wuxia_idle/shared/battle_shared/cycle_realm_gate.dart';
 
 /// 批 B 周目解锁门槛纯函数层（spec 2026-08-01 拍板 #5：顺序解锁 ∩ 配置
 /// cap ∩ 境界门槛；远征深度里程碑折算 2026-08-04 拍板）。

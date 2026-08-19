@@ -7,7 +7,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../equipment/application/equipment_disposal_service.dart';
 import '../../equipment/application/equipment_inventory_invalidation.dart';
 import '../../equipment/domain/equipment_disposal.dart';

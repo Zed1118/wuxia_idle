@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../domain/advancement_entry.dart';
 
 /// 多角色升层 banner（mainline / tower victory dialog 共用）。

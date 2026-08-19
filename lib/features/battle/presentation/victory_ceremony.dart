@@ -9,7 +9,7 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/presentation/treasure_drop_overlay.dart';
 import '../domain/battle_state.dart';
-import '../domain/enum_localizations.dart' show EnumL10n;
+import '../../../shared/battle_shared/enum_localizations.dart' show EnumL10n;
 import '../domain/top_damage_contributor.dart';
 import 'hero_camera_overlay.dart';
 

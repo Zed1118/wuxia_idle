@@ -21,7 +21,7 @@ import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/widgets/wuxia_ui/currency_pill.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../inventory/presentation/material_source_sheet.dart';
 import '../application/shop_invalidation.dart';
 import '../application/shop_need_hint_service.dart';

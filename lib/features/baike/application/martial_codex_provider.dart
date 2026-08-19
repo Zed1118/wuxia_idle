@@ -12,7 +12,7 @@ import '../../../data/defs/technique_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../cultivation/domain/skill_proficiency.dart';
 import '../../encounter/application/encounter_service_providers.dart';
 

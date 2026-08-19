@@ -7,7 +7,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/equipment_glyph.dart';
 import '../../../shared/widgets/wuxia_image.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../application/drop_service.dart';
 import '../../../core/domain/enums.dart';
 import '../domain/treasure_highlight.dart';

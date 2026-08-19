@@ -4,7 +4,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../activity/application/character_occupancy_service.dart';
-import '../../battle/domain/derived_stats.dart';
+import '../../../shared/battle_shared/derived_stats.dart';
 
 /// 编成写入结果状态(spec `2026-07-14-team-lineup-screen-design.md` §2 校验矩阵)。
 enum LineupApplyStatus {

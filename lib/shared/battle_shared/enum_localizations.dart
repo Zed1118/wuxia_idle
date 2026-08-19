@@ -1,10 +1,11 @@
-import '../../../core/domain/enums.dart';
-import '../../battle_record/domain/boss_memory_source.dart';
-import '../../../data/defs/encounter_def.dart' show AttributeKey;
-import '../../../core/domain/island_building_type.dart';
-import '../../expedition/domain/expedition_run.dart' show ExpeditionPolicy;
-import '../../../shared/strings.dart';
-import 'battle_state.dart' show BattleResult;
+import '../../core/domain/enums.dart';
+import '../../features/battle_record/domain/boss_memory_source.dart';
+import '../../data/defs/encounter_def.dart' show AttributeKey;
+import '../../core/domain/island_building_type.dart';
+import '../../features/expedition/domain/expedition_run.dart'
+    show ExpeditionPolicy;
+import '../strings.dart';
+import 'battle_result.dart' show BattleResult;
 
 /// enum → 中文显示名的集中本地化层。
 ///

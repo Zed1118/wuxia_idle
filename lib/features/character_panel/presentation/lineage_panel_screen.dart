@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../core/domain/character.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';

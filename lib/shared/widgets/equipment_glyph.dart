@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/domain/enums.dart';
-import '../../features/battle/domain/enum_localizations.dart';
+import '../battle_shared/enum_localizations.dart';
 import '../strings.dart';
 
 /// 装备缺图占位:tier 色描边内显部位首字(兵/护/饰…)。

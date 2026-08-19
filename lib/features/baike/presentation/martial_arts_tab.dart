@@ -5,7 +5,7 @@ import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../application/martial_codex_provider.dart';
 import 'skill_codex_detail_screen.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';

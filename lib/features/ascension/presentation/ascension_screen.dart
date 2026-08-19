@@ -13,7 +13,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../character_panel/application/lineage_info_provider.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';

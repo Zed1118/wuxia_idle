@@ -12,7 +12,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import '../../support/test_data.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
+import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart'
     show RealmUtils;
 
 /// Task 5 · floor49 护法结界软门槛确定性回归。
