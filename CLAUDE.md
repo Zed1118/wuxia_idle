@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.44**
+> v1.44 变更摘要(2026-08-19 §7.4 路线 C 四子项拍板 · 0 改代码数值):与 GDD v1.27 同批同口径——v1.43 批所遗「4 子项未决」同日调研拍板全收口(全 α):headless 内核=复用 0A reducer(补玩家 bot adapter+快进循环)/65 路由=删路由·证据原地标注/共享层=拆分迁移(enum_localizations 等迁 lib/shared)/空窗=原子切换·零空窗;调研事实详 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md` §8。§1 漂移指针与正文措辞仍随 ADR 执行批改写,禁单独改。
 > **版本:v1.43**
 > v1.43 变更摘要(2026-08-19 §7.4 ADR 拍板 + 战斗形态漂移指针 · 0 改代码数值):① 存量战斗 ADR 用户拍板**路线 C 终态替换·前置排程**(终态=0A 单角色 ARPG 替换旧 3v3;硬前提=6 人 Gate+Windows 实机+Phase 1 纵切+共享层/headless 内核安置先行;4 子项未决;事实底座 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md`);② §1 一句话加漂移指针(与 GDD v1.26 同批同口径,措辞改写随 ADR 执行批,禁单独改);③ AGENTS.md 一句话随动同改。
 > **版本:v1.42**

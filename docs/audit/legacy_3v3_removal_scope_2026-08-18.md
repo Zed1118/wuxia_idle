@@ -1,7 +1,7 @@
 # 旧 3v3 拆除范围审计(N1)
 
 > 日期:2026-08-18(夜批)
-> 状态:`AUDIT_ONLY / DECISION_DEFERRED`
+> 状态:`AUDIT_ONLY / DECISIONS_LANDED`(⚠ 2026-08-19 拍板回声:§7.4 拍路线 C + 四子项同日全拍,详 §8)
 > 基线:`bb0f664d` 之上的 `audit/legacy-3v3-removal-scope-0818` 分支
 > 上位:v2 方案 §7.4 存量三路线 / §15.2 剩余拍板项(⚠ 2026-08-19 注:v2 方案系 08-16~18 派单会话上下文产物,未归档入库;用户 2026-08-19 确认不识此档,按拍板处置为引用显式标注未归档;本报告的定量清点即为可核验事实底座)/ BACKLOG 四#1「旧 3v3 → Phase 0A
 > 单角色 ARPG 替换收口」
@@ -98,12 +98,13 @@ phase0a 生产层已证明新引擎可复用正式数值(正式伤害公式适�
 替代必须先于表现层拆除,否则远征/扫荡/断魂庄托管先断;表现层拆除以路由批为
 单位(65 条),证据归档随批处置;domain 引擎最后删(测试面 180 文件同批清理)。
 
-## 8. 移交(留早晨拍板)
+## 8. 移交(2026-08-19 已拍板完毕)
 
-1. §7.4 ADR 路线选择(A/B/C 及过渡期处置)——🔴 用户拍板项;
-2. headless 结算内核替代方案(B/C 路线硬前提);
-3. 65 条旧战斗路由与目检证据归档的处置口径;
-4. 共享层重新安置的落点(留在 battle/domain 还是迁 shared)。
+1. §7.4 ADR 路线选择——已拍**路线 C 终态替换·前置排程**(详 BACKLOG 四#1);
+2. headless 结算内核替代方案——已拍**α 复用 0A reducer**:补玩家 bot adapter + 快进循环,headless 与可玩共用同一模拟核(在线=离线);远征/断魂庄队伍续传语义需随之重设计,绑内容迁移 ADR;**调研事实**:纯 headless 内核消费方仅远征/断魂庄托管(复用同一 expedition runner)且收敛到同一纯函数 `strategy.runToEnd`,扫荡走 live provider 快进不经纯内核,挂机主循环不经战斗引擎;0A reducer 已是纯函数 `(state, intents, dt)→(state, events)` 且敌方 AI adapter 已存在,缺的只是玩家 bot + 快进循环;
+3. 65 条旧战斗路由与目检证据——已拍**α 删路由·证据原地标注**:enum 条目随表现层拆除批删,截图留原位,归档文档加「路由已删·证据为历史快照」标注;
+4. 共享层重新安置落点——已拍**α 拆分迁移**:enum_localizations/derived_stats/cycle_* 迁 lib/shared(或 core/domain),战斗专属件(battle_state/battle_providers/stage_battle_setup)留 battle 随引擎删;**调研事实**:前三类外部 import 57/12/10+ 且与 3v3 零关系,纯错位;
+5. 过渡期主线战斗空窗(调研补项)——已拍**α 原子切换·零空窗**:0A 主线接线批与旧入口拆除批同次 merge;**调研事实**:主线入口单点(stage_entry_flow 直接返回 BattleScreen),且挂机主循环不经战斗引擎,即使空窗离线收益不受影响。
 
 ## 附录 A · 复现口径
 

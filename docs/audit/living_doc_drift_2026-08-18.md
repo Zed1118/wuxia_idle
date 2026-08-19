@@ -1,7 +1,7 @@
 # 长寿文档漂移审计(N3)
 
 > 日期:2026-08-18(夜批)
-> 状态:`AUDIT_ONLY / SYNC_DEFERRED_TO_USER`(⚠ 2026-08-19 拍板回声:D1/D2 拍「加漂移指针注记」已落 GDD v1.26/CLAUDE v1.43/AGENTS;D3 随动已落;D4 用户不识「v2 方案」此档,拍「引用改标注未归档」已落三份引用文档;§7.4 ADR 同日拍路线 C,详 BACKLOG 四#1)
+> 状态:`AUDIT_ONLY / SYNC_DEFERRED_TO_USER`(⚠ 2026-08-19 拍板回声:D1/D2 拍「加漂移指针注记」已落 GDD v1.26/CLAUDE v1.43/AGENTS;D3 随动已落;D4 用户不识「v2 方案」此档,拍「引用改标注未归档」已落三份引用文档;§7.4 ADR 同日拍路线 C 且四子项同日全拍 α(headless=复用 0A reducer/路由证据原地标注/共享层拆分迁移/零空窗原子切换),详 BACKLOG 四#1 与 N1 报告 §8)
 > 分支:`audit/living-doc-drift-0818`
 > 审计对象:PROGRESS.md / BACKLOG.md / GDD.md / CLAUDE.md / AGENTS.md /
 > docs/ROADMAP_1_0.md / docs/spec/rejected_task_registry.md / docs/sessions/NEXT.md
