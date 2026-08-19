@@ -5,7 +5,7 @@ import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strate
 import 'package:wuxia_idle/features/battle/domain/battle_log.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
-import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
+import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';

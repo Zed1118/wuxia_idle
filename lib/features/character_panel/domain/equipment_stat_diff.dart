@@ -2,8 +2,8 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
-import '../../battle/domain/derived_stats.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/derived_stats.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 
 /// 装备槽对话框「全量对比」的纯数据层（2026-06-26 · 一步到位 + 全量对比）。
 ///

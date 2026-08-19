@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
-import '../../../features/battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_image.dart';

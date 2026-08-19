@@ -14,7 +14,7 @@ import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/battle_stats.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../cultivation/domain/advancement_entry.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../equipment/application/drop_service.dart';

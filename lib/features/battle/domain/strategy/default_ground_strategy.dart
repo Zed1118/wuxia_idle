@@ -8,7 +8,7 @@ import '../../../../data/numbers_config.dart';
 import '../../../../shared/utils/math_random.dart';
 import '../battle_ai.dart';
 import '../battle_skill_utils.dart';
-import '../enum_localizations.dart';
+import '../../../../shared/battle_shared/enum_localizations.dart';
 import '../battle_state.dart';
 import '../damage_calculator.dart';
 import '../qi_cycle.dart';

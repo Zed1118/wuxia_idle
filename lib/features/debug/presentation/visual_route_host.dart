@@ -81,7 +81,7 @@ import '../../../data/narrative_loader.dart';
 import '../../mainline/domain/chapter_assets.dart';
 import '../../battle/presentation/character_avatar.dart';
 import '../../battle/presentation/hero_camera_overlay.dart';
-import '../../battle/domain/enum_localizations.dart' show EnumL10n;
+import '../../../shared/battle_shared/enum_localizations.dart' show EnumL10n;
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../battle/presentation/battle_screen.dart';

@@ -8,7 +8,7 @@ import 'package:wuxia_idle/core/domain/island_building_type.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_prep_advice.dart';
 import 'package:wuxia_idle/features/taohua_island/presentation/taohua_island_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
-import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
+import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import '../../support/test_data.dart';
 
 /// TaohuaIslandScreen widget 测试。

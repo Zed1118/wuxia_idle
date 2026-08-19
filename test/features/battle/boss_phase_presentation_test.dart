@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
+import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/features/battle/presentation/boss_phase_presentation.dart';
 import 'package:wuxia_idle/features/battle/presentation/ultimate_caption_overlay.dart';
 import 'package:wuxia_idle/features/battle/presentation/screen_flash.dart';

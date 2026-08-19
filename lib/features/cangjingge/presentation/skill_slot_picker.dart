@@ -4,7 +4,7 @@ import '../../../core/domain/enums.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 
 /// 打开换招 bottom sheet。
 ///

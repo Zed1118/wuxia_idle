@@ -10,7 +10,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
-import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
+import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/technique_panel/presentation/technique_panel_screen.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';

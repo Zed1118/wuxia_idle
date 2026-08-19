@@ -16,7 +16,7 @@ import '../../battle_record/presentation/battle_record_screen.dart';
 import '../../weapon_codex/application/equipment_catalog_providers.dart';
 import '../../weapon_codex/presentation/weapon_codex_screen.dart';
 import '../../cangjingge/presentation/cangjingge_screen.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
 import '../../debug/presentation/battle_test_menu.dart';

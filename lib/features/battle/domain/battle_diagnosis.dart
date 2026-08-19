@@ -1,7 +1,7 @@
 import '../../../data/numbers_config.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
-import 'enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import 'battle_state.dart';
 import 'battle_stats.dart';
 

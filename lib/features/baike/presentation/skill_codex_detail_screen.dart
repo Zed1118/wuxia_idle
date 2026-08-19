@@ -13,7 +13,7 @@ import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/stage_progress_row.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../application/martial_codex_provider.dart';
 
 /// 武学详情屏(Task7)。从武学图鉴 tab 点亮行推入,回看一招已习武学。

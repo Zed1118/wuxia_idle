@@ -11,7 +11,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../battle/domain/damage_calculator.dart';
-import '../../battle/domain/derived_stats.dart';
+import '../../../shared/battle_shared/derived_stats.dart';
 
 enum RedlineAuditStatus { pass, warn, fail }
 

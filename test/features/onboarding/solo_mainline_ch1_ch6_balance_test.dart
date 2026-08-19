@@ -14,7 +14,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
+import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/features/equipment/application/enhancement_service.dart';

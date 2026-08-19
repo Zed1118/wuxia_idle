@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
-import '../../battle/domain/derived_stats.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/derived_stats.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../equipment/application/equipment_service.dart';
 import '../../../data/defs/equipment_def.dart';
 import '../../../data/defs/item_def.dart';

@@ -14,7 +14,7 @@ import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
+import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart';
 import 'package:wuxia_idle/features/jianghu/application/enmity_battle_modifier.dart';
 import 'package:wuxia_idle/features/jianghu/application/npc_relation_service.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';

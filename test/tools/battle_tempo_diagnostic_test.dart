@@ -42,7 +42,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
+import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart'
     show RealmUtils;
 
 const int _maxTicks = 200;

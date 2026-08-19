@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
+import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/features/battle_record/domain/boss_memory_source.dart';
 
 void main() {

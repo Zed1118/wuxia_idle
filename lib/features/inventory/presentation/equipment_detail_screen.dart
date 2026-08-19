@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../battle/domain/derived_stats.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/derived_stats.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/equipment_def.dart';
 import '../../../data/defs/skill_def.dart';

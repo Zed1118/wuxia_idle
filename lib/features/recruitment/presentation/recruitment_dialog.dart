@@ -12,7 +12,7 @@ import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../tutorial/application/tutorial_providers.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../../tutorial/application/tutorial_service.dart';

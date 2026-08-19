@@ -6,7 +6,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../application/gauntlet_providers.dart';
 
 /// 断魂庄通关三选一奖励屏（§6.2 · #1 wiring Task 2）。Boss 终关胜利后

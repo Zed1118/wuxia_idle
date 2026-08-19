@@ -11,7 +11,7 @@ import '../../../shared/utils/asset_framing.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../application/sect_member_service.dart';
 import '../application/sect_providers.dart';
 import '../application/territory_service.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
-import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
+import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 
 /// W16 GDD §12.4 节日活动：[EnumL10n.festival] 8 映射单测（W17 扩 chuXi/qingMingJie）。
 ///

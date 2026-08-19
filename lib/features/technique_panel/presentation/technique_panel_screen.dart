@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/enums.dart';
@@ -19,7 +19,7 @@ import '../../cultivation/application/insight_exchange_service_providers.dart';
 import '../../cultivation/application/skill_proficiency_formatter.dart';
 import '../../cultivation/application/technique_learn_flow_service.dart';
 import '../../cultivation/application/technique_learn_flow_service_providers.dart';
-import '../../battle/domain/derived_stats.dart';
+import '../../../shared/battle_shared/derived_stats.dart';
 import '../../../data/defs/technique_def.dart';
 import '../domain/learnable_technique.dart';
 import '../domain/technique_equip_suggestion.dart';

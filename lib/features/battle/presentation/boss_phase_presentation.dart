@@ -1,6 +1,6 @@
 import '../../../shared/strings.dart';
 import '../domain/battle_state.dart';
-import '../domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 
 /// 第七阶段批二 ①：Boss 转阶段题字文本派生（纯函数，便于单测）。
 ///

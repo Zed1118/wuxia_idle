@@ -17,7 +17,7 @@ import 'package:analyzer/dart/ast/visitor.dart';
 /// 集中式文案 sink(口径 A ④):单一文件集中维护的中文,不算散写。
 const centralStringSinks = <String>{
   'lib/shared/strings.dart',
-  'lib/features/battle/domain/enum_localizations.dart',
+  'lib/shared/battle_shared/enum_localizations.dart',
   'lib/features/battle/domain/battle_log.dart',
 };
 

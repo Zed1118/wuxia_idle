@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/domain/cycle_trait_intel.dart';
+import 'package:wuxia_idle/shared/battle_shared/cycle_trait_intel.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 import '../../support/test_data.dart';

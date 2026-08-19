@@ -7,7 +7,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
+import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import "../../support/isar_test_support.dart";
 import '../../support/test_data.dart';

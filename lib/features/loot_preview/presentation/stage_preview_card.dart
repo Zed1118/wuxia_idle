@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../domain/drop_rumor.dart';
 import '../domain/stage_difficulty.dart';
 import 'loot_rumor_dialog.dart';

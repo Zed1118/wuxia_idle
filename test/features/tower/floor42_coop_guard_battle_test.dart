@@ -12,7 +12,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import '../../support/test_data.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart'
+import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart'
     show RealmUtils;
 
 /// 第八阶段切片 4-5 · floor42 敌方协同(掩护重定向+护法合击)实例确定性回归。

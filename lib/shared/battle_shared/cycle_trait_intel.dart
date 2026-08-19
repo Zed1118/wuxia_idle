@@ -1,5 +1,5 @@
-import '../../../data/numbers_config.dart';
-import '../../../shared/strings.dart';
+import '../../data/numbers_config.dart';
+import '../strings.dart';
 
 class CycleTraitIntelEntry {
   const CycleTraitIntelEntry({

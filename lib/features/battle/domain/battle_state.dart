@@ -10,8 +10,13 @@ import '../../../core/domain/technique.dart';
 import '../../../core/domain/skill_usage_entry.dart';
 import '../../../data/numbers_config.dart';
 import 'damage_calculator.dart';
-import 'derived_stats.dart';
+import '../../../shared/battle_shared/derived_stats.dart';
+import '../../../shared/battle_shared/battle_result.dart';
 import 'qi_cycle.dart';
+
+// 2026-08-19 共享层拆分迁移批:BattleResult 已迁 lib/shared/battle_shared/battle_result.dart,
+// re-export 保持存量 63 处 `import battle_state.dart` 消费方口径不破。
+export '../../../shared/battle_shared/battle_result.dart' show BattleResult;
 
 // P1.1 候选 3-b:resonanceStages 查找的 orElse fallback(防御性,正常情况不触发,
 // numbers.yaml 4 stage 全配)。
@@ -38,9 +43,6 @@ Iterable<SkillDef>? _matchingInterruptSkill(
 
 /// 玩家方 teamSide(fromCharacter 唯一在 _playerToBattle 以 0 调用)。
 const _playerTeamSide = 0;
-
-/// 战斗最终结局（phase1_tasks.md T11 §635）。
-enum BattleResult { leftWin, rightWin, draw }
 
 /// attackPowerMultiplier 的来源，用于战报解释乘区。
 enum AttackPowerMultiplierSource { jianghuEnmity, terrain, formation }

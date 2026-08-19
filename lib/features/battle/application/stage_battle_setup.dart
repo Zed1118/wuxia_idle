@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:isar_community/isar.dart';
 
 import '../domain/battle_state.dart';
-import '../domain/derived_stats.dart' show RealmUtils;
+import '../../../shared/battle_shared/derived_stats.dart' show RealmUtils;
 import '../domain/qi_cycle.dart';
 import '../../../data/defs/boss_phase_def.dart';
 import '../../../data/defs/skill_def.dart';

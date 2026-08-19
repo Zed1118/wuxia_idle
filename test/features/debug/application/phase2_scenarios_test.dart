@@ -8,7 +8,7 @@ import 'package:wuxia_idle/core/domain/forging_slot.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/features/dispel/application/dispel_service.dart';
 import 'package:wuxia_idle/features/equipment/application/enhancement_service.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
+import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 import '../../../support/test_data.dart';
 

@@ -12,7 +12,7 @@ import '../core/domain/character.dart';
 // 分层豁免(2026-07-18 审查批):本文件是 Isar schema 注册表(composition root,
 // 同 main.dart 性质),必须 import 全部 feature 的持久化 collection——这些是
 // feature 拥有的运行时状态模型(非 yaml def),不适用「data 不依赖 features」约束。
-import '../features/battle/domain/enum_localizations.dart';
+import '../shared/battle_shared/enum_localizations.dart';
 import '../features/encounter/domain/encounter_progress.dart';
 import '../core/domain/equipment.dart';
 import '../core/domain/game_event.dart';

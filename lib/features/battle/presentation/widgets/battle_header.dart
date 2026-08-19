@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../data/defs/stage_win_condition.dart';
 import '../../domain/battle_log.dart';
 import '../../domain/battle_state.dart';
-import '../../domain/enum_localizations.dart';
+import '../../../../shared/battle_shared/enum_localizations.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';

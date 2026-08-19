@@ -2,7 +2,7 @@ import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
 import '../../cultivation/application/skill_proficiency_formatter.dart';
 import 'battle_state.dart';
-import 'enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 
 /// 战斗事件日志（phase1_tasks.md T13）。
 ///

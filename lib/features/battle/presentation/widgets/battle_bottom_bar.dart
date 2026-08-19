@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/battle_skill_utils.dart';
 import '../../domain/battle_state.dart';
-import '../../domain/enum_localizations.dart';
+import '../../../../shared/battle_shared/enum_localizations.dart';
 import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../shared/strings.dart';

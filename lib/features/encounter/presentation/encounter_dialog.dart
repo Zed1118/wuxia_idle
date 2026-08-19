@@ -6,7 +6,7 @@ import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
-import '../../battle/domain/enum_localizations.dart' show EnumL10n;
+import '../../../shared/battle_shared/enum_localizations.dart' show EnumL10n;
 import '../application/encounter_service.dart';
 import '../../../data/defs/encounter_def.dart';
 import '../../../data/encounter_event_loader.dart';

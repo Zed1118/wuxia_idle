@@ -7,7 +7,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
+import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart';
 
 /// P0.1 #38 base maxHp 7 阶极值红线压测(spec §6 验收红线 + spec §5 矩阵)。
 ///

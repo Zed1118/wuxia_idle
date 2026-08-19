@@ -11,7 +11,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../application/onboarding_service.dart';
 import '../domain/founder_creation_selection.dart';

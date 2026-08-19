@@ -7,7 +7,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/item_usage.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
-import '../../../features/battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';

@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/baike/presentation/baike_screen.dart';
-import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
+import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 /// P1 #44 Nightshift T04 · BaikeScreen 典故 tab 7 阶分组严格顺序 + presetLoreIds 段数 edge。

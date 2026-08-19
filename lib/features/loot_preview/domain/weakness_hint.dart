@@ -2,7 +2,7 @@
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../shared/strings.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 
 /// 第七阶段批二②「弱点/抗性 事后可查」纯派生（drop_rumor 兄弟）。
 ///

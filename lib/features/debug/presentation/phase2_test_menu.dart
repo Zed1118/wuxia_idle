@@ -6,7 +6,7 @@ import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/isar_setup.dart';
 import '../application/phase2_seed_service.dart';
-import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../character_panel/application/lineage_info_provider.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';

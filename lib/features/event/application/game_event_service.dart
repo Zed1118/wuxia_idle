@@ -8,7 +8,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/game_event.dart';
 import '../../../core/domain/lore.dart';
 import '../../../data/lore_loader.dart';
-import '../../../features/battle/domain/enum_localizations.dart';
+import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../cultivation/application/character_advancement_service.dart';

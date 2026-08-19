@@ -6,7 +6,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
+import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/lineage_character_detail_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import '../../support/test_data.dart';
