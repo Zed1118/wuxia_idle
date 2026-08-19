@@ -6,6 +6,7 @@
 
 ## 当前阶段
 
+> **2026-08-19 解锁件拍板落档批合入(merge `b7992877`,分支 `fix/phase1-vs-decision-landing-0819`)**:用户全按推荐拍板→两份草稿转 DECIDED——纵切 P1=主线 Ch1/P2=不并入连续地图/P3=胜负+末态 HP;内容迁移 D1=机械映射+γ 后置校准/D2=全保留/D3=单主角续传/D4=headless 直结/D5=继承+bot 胜率验收。BACKLOG 四#1 加拍板回声,最小解锁集成立,Phase 1 纵切实装已解锁。纯 md 批,5178 待 CI 核。
 > **2026-08-19 解锁件起草批合入(merge `27cb5493`,分支 `docs/phase1-vs-content-migration-drafts-0819`)**:代码账清完后的解锁件起草(🟡 可起草不可拍板,全部拍板点 🔴 归用户)——① `docs/spec/2026-08-19-phase1-vertical-slice-draft-spec.md`:**全库首定义**路线 C 硬前提「Phase 1 纵切」=生产内容经 0A 引擎全链路(内容定义→装配→表现→结算→奖励→进度→headless 复核),范围候选 α 主线 Ch1(推荐)/β 塔/γ 断魂庄,成立判据五条含 live/headless 双跑一致;② `docs/spec/2026-08-19-content-migration-adr-decision-sheet.md`:D1 敌队机械映射/D2 122 关塔 49 全保留/D3 远征断魂庄单主角续传/D4 扫荡 headless 直结/D5 曲线继承+bot 胜率画像验收;最小解锁集=P1+D1 拍板即可开纵切。**顺带两销**:③ 共享层迁移批漏网 12 条 docs 死链(6 月历史计划档旧路径指向四文件新址,搬家先例修指向)dead 77→65 回基线守恒;④ 07-26 挂账「dart:math Random() ~15 处需另立注入点」实测事实消亡(stage_entry_flow 零 Random 引用=PR #75 已根治,余 9 处全为合法 rng??fallback 或 provider 本体)。纯 md 批,flutter test 计数应保持 5178 待 CI 核。
 > **2026-08-19 headless 内核批合入(merge `bc7fc71a`,分支 `feat/phase0a-headless-kernel-0819`)**:路线 C 前置排程第二序 = 子项①α 拍板落地——0A reducer 上补玩家 bot(`Phase0aPlayerBotAdapter`:每拍生成与真人同型语义指令,经同一 playerAdapter → reducer 结算,零数值复制,射程/扇区/slot 全取自 adapter;策略=趋最近敌+移动校朝向+普攻常按+技能印 ready 即按)+ headless 快进(`Phase0aHeadlessRunner.runToEnd`:固定拍长驱动已装配 wave flow 至终局或拍数预算耗尽,纯函数式零 Flutter 依赖,供远征/断魂庄托管与离线快进复用同一模拟核)。红测 11 条(bot 策略 5+终局 5 含确定性两次全等+fail-fast),破坏证红(attack 意图关闭恰 3 红)→还原复绿;format 0 changed/analyze 0/全量 **5178 pass / 0 fail**(=5167+11 逐值吻合)。远征/断魂庄消费面切换与队伍续传语义重设计绑内容迁移 ADR,本批不做。
 > **2026-08-19 共享层拆分迁移批合入(merge `fcbd9114`,分支 `refactor/shared-layer-relocation-0819`)**:路线 C 前置排程第一序 = 子项③拆分迁移拍板落地——enum_localizations/derived_stats/cycle_realm_gate/cycle_trait_intel 四文件 git mv 至 `lib/shared/battle_shared/`;`BattleResult` 枚举自 battle_state 提取入 `battle_result.dart`,battle_state re-export 保持存量 63 处旧 import 口径不破;selected_cycle_provider 留 battle application 层(依赖 mainline service·Riverpod UI 态);129 文件/142 处 import 重写(脚本化·含 package: URI lib/ 前缀 bug 修复)+3 处字符串路径引用订正(strings 注释/chinese_literal_audit 白名单/legacy_level 契约测路径断言)。**已验证(本会话实测)**:format 0 changed/analyze 0/全量 **5167 pass / 0 fail** 守恒/破坏证红(契约测路径回滚恰 1 红)→还原复绿。零行为变化;战斗专属件(battle_state/battle_providers/stage_battle_setup)留 battle 随引擎删。
@@ -87,9 +88,7 @@
 
 ### 当前阶段旧条目(逆时序 · 从上方迁入;标「已压缩归档」的为摘要,全文见 git 历史)
 
-> **2026-07-23 两批已压缩归档并入(Ch14/Ch15 spec 起草拍板七项+八项全兑现于 PR #64/#67 / Ch14 整章 PR #64 `8cf1d168` 4652/0 + 美术 #65 `79aeea4e` 终判 11/11 PASS·绝顶段第二章全链闭环)**:git log + spec 文件可溯,均合 main;当时已知风险均已由后续批销账或续传。
-
-> **2026-07-22..23 两批已压缩归档并入(日批五 PR #55-#59 4647/0 / kimi 三单 #60-#62+Ch13 美术 #61 4651/0 / 清账 #63 Ch13 webp / 夜批六 PR #49-#54 4626/0+mount_deferred A2+B1 拍定)**:git log + PR #49-#63 body 可溯,均合 main;当时已知风险均由后续批销账。
+> **2026-07-22..23 四批已压缩归档并入(Ch14/Ch15 spec 起草拍板七项+八项全兑现于 PR #64/#67 / Ch14 整章 PR #64 `8cf1d168` 4652/0+美术 #65 `79aeea4e` 终判 11/11 PASS·绝顶段第二章全链闭环 / 日批五 PR #55-#59 4647/0 / kimi 三单 #60-#62+Ch13 美术 #61 4651/0 / 清账 #63 Ch13 webp / 夜批六 PR #49-#54 4626/0+mount_deferred A2+B1 拍定)**:git log + PR #49-#63 body 可溯,均合 main;当时已知风险均由后续批销账。
 
 > **2026-07-20..21 五批已压缩归档(Ch10「中州」`8be841d0` / Ch11「名门之虚」`758a2637`+11 立绘 / Ch12「名下之实」一流三章收官 / kimi 红线区考核首单 `591fb81b` / Ch9 立绘接线 PR #44 `01dae889`+kimi 测试硬化 `7cdd9e23`+4A 死字段清理 `0bc59ed5`)**:git log + PR #44/#45 可溯,均合 main;当时已知风险均已由后续批销账。
 
