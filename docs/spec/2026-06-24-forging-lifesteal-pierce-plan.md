@@ -16,12 +16,12 @@
 
 | 文件 | 职责 | 改动 |
 |---|---|---|
-| `lib/features/battle/domain/derived_stats.dart` | 跨全装备开锋词条聚合 | +1 静态函数 |
+| `lib/shared/battle_shared/derived_stats.dart` | 跨全装备开锋词条聚合 | +1 静态函数 |
 | `lib/features/battle/domain/battle_state.dart` | BattleCharacter 烘焙 pierce/lifesteal 派生字段 | +2 字段/构造/copyWith/fromCharacter |
 | `lib/features/battle/domain/damage_calculator.dart` | 破甲减防 + 吸血量 + 破甲标记 | +2 参数/AttackResult +1 字段 |
 | `lib/features/battle/domain/strategy/default_ground_strategy.dart` | 破甲传参 + 吸血累积回血 | 调用块 + loop + actorAfter |
 | `lib/features/battle/domain/battle_log.dart` | 吸血 +N 战报 | formatAction +1 分支 |
-| `lib/features/battle/domain/enum_localizations.dart` | 破甲标记显示名 | switch +1 case |
+| `lib/shared/battle_shared/enum_localizations.dart` | 破甲标记显示名 | switch +1 case |
 | `test/balance/full_build_damage_redline_test.dart` | 满破甲 build 不进百万 | +1 探针 |
 
 ---
@@ -29,7 +29,7 @@
 ### Task 1: derived_stats 跨装备开锋词条聚合函数
 
 **Files:**
-- Modify: `lib/features/battle/domain/derived_stats.dart`（`_forgingBonusPct` 后，约 :228）
+- Modify: `lib/shared/battle_shared/derived_stats.dart`（`_forgingBonusPct` 后，约 :228）
 - Test: `test/features/battle/domain/derived_stats_forging_aggregate_test.dart`（新建）
 
 - [ ] **Step 1: 写失败测试**
@@ -117,7 +117,7 @@ Expected: PASS（5 tests）
 - [ ] **Step 5: 提交**
 
 ```bash
-git add lib/features/battle/domain/derived_stats.dart test/features/battle/domain/derived_stats_forging_aggregate_test.dart
+git add lib/shared/battle_shared/derived_stats.dart test/features/battle/domain/derived_stats_forging_aggregate_test.dart
 git commit -m "feat: 开锋词条跨装备聚合 forgingAggregatePct(A1 task1)"
 ```
 
@@ -477,7 +477,7 @@ git commit -m "feat: 战斗接通开锋破甲传参+吸血累积回血(A1 task4)
 ### Task 5: 战报标记（破甲 + 吸血 +N）
 
 **Files:**
-- Modify: `lib/features/battle/domain/enum_localizations.dart`（`attackEffect` switch :92）
+- Modify: `lib/shared/battle_shared/enum_localizations.dart`（`attackEffect` switch :92）
 - Modify: `lib/features/battle/domain/battle_log.dart`（`formatAction` markers 段 :67-74）
 - Test: `test/features/battle/domain/battle_log_forging_test.dart`（新建）
 
@@ -523,7 +523,7 @@ Expected: PASS
 - [ ] **Step 5: 提交**
 
 ```bash
-git add lib/features/battle/domain/enum_localizations.dart lib/features/battle/domain/battle_log.dart test/features/battle/domain/battle_log_forging_test.dart
+git add lib/shared/battle_shared/enum_localizations.dart lib/features/battle/domain/battle_log.dart test/features/battle/domain/battle_log_forging_test.dart
 git commit -m "feat: 开锋破甲/吸血战报标记(A1 task5)"
 ```
 

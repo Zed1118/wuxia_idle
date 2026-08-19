@@ -41,7 +41,7 @@
 | `lib/features/character_panel/application/lineage_codex_provider.dart`（新建） | `LineageGeneration` 模型 + `lineageCodexProvider`（查全部 Character 按 isFounder 分代 + 遗物分代 + 进度）|
 | `lib/features/character_panel/presentation/lineage_panel_screen.dart`（重写） | 主屏世代卷（进度头 + per-代段 + 屏底飞升入口）|
 | `lib/features/character_panel/presentation/lineage_character_detail_screen.dart`（新建） | 角色详情屏（祖师/弟子共用两态）|
-| `lib/features/battle/domain/enum_localizations.dart`（改） | 新增 `EnumL10n.lineageRole` |
+| `lib/shared/battle_shared/enum_localizations.dart`（改） | 新增 `EnumL10n.lineageRole` |
 | `lib/shared/strings.dart`（改） | UiStrings 门派谱/详情屏/世代卷文案词条 |
 | `lib/features/debug/application/visual_route.dart`（改） | 新增 `lineageCodex`/`lineageCharacterDetail` 枚举 |
 | `lib/features/debug/presentation/visual_route_host.dart`（改） | buildVisualTarget 双 case + seed builder |
@@ -259,7 +259,7 @@ git commit -m "feat: 门派谱1.1 Task1 分代派生 lineageCodexProvider + grou
 ## Task 2: 文案 — EnumL10n.lineageRole + UiStrings 词条
 
 **Files:**
-- Modify: `lib/features/battle/domain/enum_localizations.dart`
+- Modify: `lib/shared/battle_shared/enum_localizations.dart`
 - Modify: `lib/shared/strings.dart`
 - Test: `test/features/character_panel/lineage_codex_l10n_test.dart`（新建，小）
 
@@ -338,13 +338,13 @@ static String lineageCharacterDetailFounderGen(int gen) =>
 
 - [ ] **Step 5: 跑测确认 PASS + analyze**
 
-Run: `flutter test test/features/character_panel/lineage_codex_l10n_test.dart && flutter analyze lib/shared/strings.dart lib/features/battle/domain/enum_localizations.dart`
+Run: `flutter test test/features/character_panel/lineage_codex_l10n_test.dart && flutter analyze lib/shared/strings.dart lib/shared/battle_shared/enum_localizations.dart`
 Expected: PASS，analyze 0。
 
 - [ ] **Step 6: 提交**
 
 ```bash
-git add lib/features/battle/domain/enum_localizations.dart lib/shared/strings.dart test/features/character_panel/lineage_codex_l10n_test.dart
+git add lib/shared/battle_shared/enum_localizations.dart lib/shared/strings.dart test/features/character_panel/lineage_codex_l10n_test.dart
 git commit -m "feat: 门派谱1.1 Task2 EnumL10n.lineageRole + 世代卷/详情屏 UiStrings 词条"
 ```
 

@@ -25,7 +25,7 @@
 
 **修改：**
 - `lib/core/domain/enums.dart` — ItemType 加 `silver`
-- `lib/features/battle/domain/enum_localizations.dart:186-192` — itemType switch 加 `ItemType.silver => '银两'`
+- `lib/shared/battle_shared/enum_localizations.dart:186-192` — itemType switch 加 `ItemType.silver => '银两'`
 - `lib/data/game_repository.dart` — 加 `shopItemDefs` 字段 + loadAllDefs 解析 + `_enforceRedLines` 标价校验
 - `lib/shared/strings.dart` — UiStrings 加商店/货币文案
 - `data/numbers.yaml` — retreat.maps[*].base_outputs 加 `silver_per_hour`
@@ -41,7 +41,7 @@
 
 **Files:**
 - Modify: `lib/core/domain/enums.dart`（ItemType enum，参 `enums.dart:19-20` 既有材料值）
-- Modify: `lib/features/battle/domain/enum_localizations.dart:186-192`
+- Modify: `lib/shared/battle_shared/enum_localizations.dart:186-192`
 - Test: `test/features/battle/domain/enum_localizations_test.dart`（既有，加断言）
 
 - [ ] **Step 1: 写失败测试** — 在 enum_localizations_test.dart 加：
