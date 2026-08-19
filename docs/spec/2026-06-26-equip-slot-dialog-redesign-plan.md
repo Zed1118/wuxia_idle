@@ -273,7 +273,7 @@ EquipmentComparison equipmentFullDiff({
 ```
 
 > **实现前核对**（subagent 开工首步 grep，防签名 drift）：
-> - `EnumL10n.resonanceStage` / `EnumL10n.techniqueSchool` / `EnumL10n.equipmentTier` / `EnumL10n.forgingSlotType` 真实存在且签名匹配 —— `grep -nE 'static String (resonanceStage|techniqueSchool|equipmentTier|forgingSlotType)' lib/features/battle/domain/enum_localizations.dart`。若 `resonanceStage` 名不同(如 `resonance`)按实际改。
+> - `EnumL10n.resonanceStage` / `EnumL10n.techniqueSchool` / `EnumL10n.equipmentTier` / `EnumL10n.forgingSlotType` 真实存在且签名匹配 —— `grep -nE 'static String (resonanceStage|techniqueSchool|equipmentTier|forgingSlotType)' lib/shared/battle_shared/enum_localizations.dart`。若 `resonanceStage` 名不同(如 `resonance`)按实际改。
 > - `Equipment.resonanceStage(n)` extension 在 `equipment.dart`（已确认 line 117）。
 
 - [ ] **Step 4: 跑测试确认通过**

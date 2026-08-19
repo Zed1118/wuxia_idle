@@ -23,7 +23,7 @@
 
 **Files:**
 - Create: `lib/features/battle_record/domain/boss_memory_source.dart`
-- Modify: `lib/features/battle/domain/enum_localizations.dart`（追加 switch 方法）
+- Modify: `lib/shared/battle_shared/enum_localizations.dart`（追加 switch 方法）
 - Test: `test/features/battle/domain/enum_localizations_test.dart`（若存在则追加；否则在该目录新建）
 
 - [ ] **Step 1: 写枚举**
@@ -62,13 +62,13 @@ static String bossMemorySource(BossMemorySource s) => switch (s) {
 
 - [ ] **Step 5: 跑测试确认 PASS + analyze**
 
-Run: `flutter test test/features/battle/domain/enum_localizations_test.dart && flutter analyze lib/features/battle_record/ lib/features/battle/domain/enum_localizations.dart`
+Run: `flutter test test/features/battle/domain/enum_localizations_test.dart && flutter analyze lib/features/battle_record/ lib/shared/battle_shared/enum_localizations.dart`
 Expected: PASS / No issues
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add lib/features/battle_record/domain/boss_memory_source.dart lib/features/battle/domain/enum_localizations.dart test/features/battle/domain/enum_localizations_test.dart
+git add lib/features/battle_record/domain/boss_memory_source.dart lib/shared/battle_shared/enum_localizations.dart test/features/battle/domain/enum_localizations_test.dart
 git commit -m "feat(battle_record): BossMemorySource 枚举 + EnumL10n 显示名"
 ```
 

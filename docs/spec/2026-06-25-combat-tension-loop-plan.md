@@ -43,7 +43,7 @@ injury:
 | `lib/data/defs/injury_config.dart` | `InjuryConfig.fromYaml`（仿 InnerDemonResidueDebuff） | Create |
 | `lib/data/numbers_config.dart` | 挂载 `injury` 字段 | Modify :152,259,382 |
 | `lib/features/injury/application/injury_service.dart` | `applyHeavyInjury` + 轻伤累积纯函数 | Create |
-| `lib/features/battle/domain/derived_stats.dart` | `internalForceMaxWithLineage` +heavyInjured / `speed` +lightInjuryStacks | Modify :255,139 |
+| `lib/shared/battle_shared/derived_stats.dart` | `internalForceMaxWithLineage` +heavyInjured / `speed` +lightInjuryStacks | Modify :255,139 |
 | `lib/features/battle/application/stage_battle_setup.dart` | 烘焙伤势进 BattleCharacter | Modify :195,231 |
 | `lib/features/battle/application/battle_resolution.dart` | `resolve` +isHardFight + 轻伤/重伤判定 | Modify :204 |
 | `lib/features/mainline/presentation/stage_entry_flow.dart` + `tower/presentation/tower_entry_flow.dart` | caller 接线 + 持久化 | Modify |
@@ -243,7 +243,7 @@ git commit -m "feat(injury): InjuryService 重伤设值+轻伤累积纯函数"
 
 ### Task 4: 派生属性接伤势 debuff
 
-**Files:** Modify `lib/features/battle/domain/derived_stats.dart`（`internalForceMaxWithLineage` :255、`speed` :139）；Test `test/combat/derived_stats_test.dart`（追加）
+**Files:** Modify `lib/shared/battle_shared/derived_stats.dart`（`internalForceMaxWithLineage` :255、`speed` :139）；Test `test/combat/derived_stats_test.dart`（追加）
 
 - [ ] **Step 1: 写失败测**（追加到 derived_stats_test.dart）
 
@@ -281,7 +281,7 @@ if (sp < 0) sp = 0;
 - [ ] **Step 5: Commit**
 
 ```bash
-git add lib/features/battle/domain/derived_stats.dart test/combat/derived_stats_test.dart
+git add lib/shared/battle_shared/derived_stats.dart test/combat/derived_stats_test.dart
 git commit -m "feat(injury): derived_stats 接重伤减内力上限+轻伤减速度"
 ```
 

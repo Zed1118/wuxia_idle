@@ -21,7 +21,7 @@
 - `lib/features/inventory/presentation/inventory_screen.dart`：装备 tab `_EquipmentGrid`→`_SlotGroupSection`（按 slot 分组 Wrap）→`_EquipmentGridTile`(:423，Stack + ItemSlot + isLineageHeritage 角标 :459)；物料 tab `_MaterialTab`(:243，顶部银两位 + `_MaterialList`/`_MaterialGroup` ExpansionTile)。providers：`allEquipmentsProvider`/`allInventoryItemsProvider`/`silverBalanceProvider`/`activeCharacterIdsProvider`/`characterByIdProvider`。
 - `lib/features/inventory/presentation/equipment_detail_screen.dart`：单件详情页（单件出售/分解入口落点，实装时读取结构）。
 - `lib/shared/strings.dart`：`UiStrings`（新增中文串全进此处，参照 `inventoryTabEquipment`:535 / `silverBalanceLabel`:235 / `itemUseButton`:552 体例）。
-- `lib/features/battle/domain/enum_localizations.dart:143`：`EnumL10n.equipmentTier(t)`。
+- `lib/shared/battle_shared/enum_localizations.dart:143`：`EnumL10n.equipmentTier(t)`。
 - ShopScreen 导航体例：`main_menu.dart:391 _push(context, const ShopScreen())`。
 - `lib/shared/widgets/wuxia_ui/`：`ItemSlot` / `PaperDialog.show` / `PlaqueButton` / `PaperPanel` / `SectionHeader`。
 
