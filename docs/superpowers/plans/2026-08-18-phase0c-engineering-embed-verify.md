@@ -2,7 +2,7 @@
 
 > 分支 `feat/phase0c-engineering-embed-verify-0818` · 基于 main `a767fe91`
 > 性质=Phase 0C 工程嵌入裁决批(验证为主 + 一处表现实装:Esc 暂停)
-> 上位=v2 方案 §11 Phase 0C / `docs/spec/2026-08-13-phase0a-gameplay-greybox-spec.md`
+> 上位=v2 方案 §11 Phase 0C(⚠ 2026-08-19 注:v2 方案系 08-16~18 派单会话上下文产物,未归档入库,引用显式标注未归档) / `docs/spec/2026-08-13-phase0a-gameplay-greybox-spec.md`
 
 ## 背景
 

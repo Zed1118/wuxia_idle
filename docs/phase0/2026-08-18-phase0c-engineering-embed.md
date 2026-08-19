@@ -3,7 +3,7 @@
 > 日期：2026-08-18
 > 状态：`MAC_ENGINEERING_PASS / WINDOWS_AND_HUMAN_DEFERRED`
 > 分支：`feat/phase0c-engineering-embed-verify-0818`(基于 main `a767fe91`)
-> 上位:v2 方案 §11 Phase 0C / `docs/spec/2026-08-13-phase0a-gameplay-greybox-spec.md`
+> 上位:v2 方案 §11 Phase 0C(⚠ 2026-08-19 注:v2 方案系 08-16~18 派单会话上下文产物,未归档入库,用户确认不识此档,引用显式标注未归档) / `docs/spec/2026-08-13-phase0a-gameplay-greybox-spec.md`
 > 计划档:`docs/superpowers/plans/2026-08-18-phase0c-engineering-embed-verify.md`
 > 裁决授权:项目主人 2026-08-18 拍板 6 人真人 Gate 与 Windows 实机后置
 
