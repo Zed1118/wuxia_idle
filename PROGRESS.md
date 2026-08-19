@@ -6,6 +6,7 @@
 
 ## 当前阶段
 
+> **2026-08-19 ADR 路线 C 拍板落档批合入(merge `c6be5e60`,分支 `fix/adr-c-drift-pointer-0819`)**:用户拍板三项落档——① §7.4 存量战斗 ADR 拍**路线 C 终态替换·前置排程**(硬前提=6 人 Gate+Windows 实机+Phase 1 纵切+共享层/headless 内核安置先行;4 子项未决记 BACKLOG 四#1);② D1/D2/D3 拍「加漂移指针注记」:GDD 升 v1.26(§1.1 战斗形态行+§5.1 两处指针+v1.24 摘要按体例迁 CHANGELOG)/CLAUDE 升 v1.43(§1 一句话)/AGENTS 一句话随动——措辞改写仍随 ADR 执行批,禁单独改;③ D4 用户不识「v2 方案」此档,拍「引用改标注未归档」,N1 报告/0C 报告/0C RP0 三处上位行显式注记(源出 08-16~18 派单会话,N1 定量清点即为可核验事实底座)。truth_source_guard 9/9 本地绿(状态块未动)。纯 md 批,flutter test 计数应保持 5167 待 CI 核。
 > **2026-08-19 开局清单刷新批合入(merge `1cc5d158`,分支 `chore/next-md-refresh-0819`)**:NEXT.md 从 08-12 快照重写为夜批收账后状态——HEAD 锚点 `1fceb0ad`/5167 计数双 CI 证/死链残余 65 台账在案/战斗终态拍板与 GDD-CLAUDE drift 待拍状态写进环境快照/下波候选换为 §7.4 ADR 首要+6 人 Gate+Windows 实机+D4 v2 方案指认+0B 手动 rig;旧清单「先报告」机制随 08-12 会话体例退役。另:D4 追查本地穷尽(库内/桌面资料/会话缓存)确认 v2 方案正文未落盘,待用户指认来源。纯会话文档批,flutter test 计数应保持 5167 待 CI 核。
 > **2026-08-18 夜批 N3 长寿文档漂移审计合入(merge `86c9004f`,分支 `audit/living-doc-drift-0818`)**:只读审计零改动,报告 `docs/audit/living_doc_drift_2026-08-18.md`。行数纪律:PROGRESS 恰 100 触顶(本条插入前先压缩 08-17 9B/9C 两条超长条)/BACKLOG 31 合规。方向漂移(基准=08-18 战斗终态拍板):D1 GDD v1.25 战斗形态四处(:48/:292/:802/§12.3)+D2 CLAUDE v1.42 §1 一处未同步——均 🔴 须与 §7.4 ADR 同批升版,夜间禁代改;D3 AGENTS 一句话随动;D4「v2 方案」被 08-18 三文档引用但正文全库零命中(派单会话上下文未归档),留早晨指认来源后入库。无漂移项:BACKLOG/ROADMAP 状态钉/已否清单/「不引入 Flame」与 0C 裁决一致。纯只读批,flutter test 计数应保持 5167 待 CI 核。
 > **2026-08-18 夜批 N2 死链残余处置合入(merge `3f4228bf`,分支 `fix/doclink-residue-0818`)**:重扫基线 dead **71** 与 08-18 收账逐值吻合(后续 5 个文档批零新增)。逐条实证处置:C 类机械修 **6** —— ① `battle_drag_skill_test` 实为改名非删除(实证 `c579e70e`,**08-18 定性遗漏**,修 6 处引用)② m15_d balance_simulator 沿 ROADMAP v1.9 订正先例 ③ m15_d 散文括号误成链语法拆解 ④ phase0minus spec 示例路径换实际落点 `docs/phase0/2026-08-13-phase0minus-macos-baseline.md`。残余 **65** 逐条定性接受(B 23=待产资产落点/legal 待创建/作者自注已移除/示例假阳 · D 42=git 实证从未入库或确删功能废除),台账 `docs/audit/doclink_residue_disposition_2026-08-18.md` 含逐条证据与三条再开条件(legal 线/0A 资产落地自愈/归档类扩容须拍板)。守恒 dead 71→65(-6 恰 C)/refs −1/alive +5。纯 md 批零 `.dart`,flutter test 计数应保持 5167 待 CI 核。
@@ -61,10 +62,6 @@
 
 > **2026-07-24..23 Ch15 三批 + 两批已压缩归档(Ch15 整章 PR #67 `80439723`/美术 #68 `854a89ad`/webp #70 `1e7bc261` + 真相源收口·死配置清理 PR #69 `0091f06e`(GDD v1.24 当前状态块制+`truth_source_guard_test` 守卫+死配置 `boss_internal_force_penalty` 退役)/webp #66 `2a8e61a1`(Ch14 11 图 18.4M→2.3M))**:git log 可溯均已合 main,当时已知风险均由后续批销账。
 
-> **2026-07-23 Ch14/Ch15 spec 起草+拍板 已压缩归档**(`docs/spec/2026-07-23-ch14-shanwai-laike-design.md` 七项拍板全兑现于 PR #64、`docs/spec/2026-07-23-ch15-guanshan-yicheng-design.md` 八项拍板全兑现于 PR #67·git log + spec 文件可溯)。
-
-> **2026-07-23 Ch14 两批已压缩归档(整章实装 PR #64 `8cf1d168`·全量 4652/0 / 美术 11 图接线 PR #65 `79aeea4e`·终判 11/11 PASS)**:git log + 各 PR body 可溯,均已合 main;绝顶段第二章全链闭环(5 关西凉马队·真解十荡十决收编·cap 31→33·叙事 13 篇·全站点 reconcile·kimi 403 中断 Claude 接手历史可溯);当时已知风险(11 图 18M 待转码/随机 fail 未捕获名/kimi 配额)均已由后续批销账或续传。
-
 ---
 ## 已知偏差 / 挂账事项
 
@@ -85,6 +82,8 @@
 ## 归档
 
 ### 当前阶段旧条目(逆时序 · 从上方迁入;标「已压缩归档」的为摘要,全文见 git 历史)
+
+> **2026-07-23 两批已压缩归档并入(Ch14/Ch15 spec 起草拍板七项+八项全兑现于 PR #64/#67 / Ch14 整章 PR #64 `8cf1d168` 4652/0 + 美术 #65 `79aeea4e` 终判 11/11 PASS·绝顶段第二章全链闭环)**:git log + spec 文件可溯,均合 main;当时已知风险均已由后续批销账或续传。
 
 > **2026-07-22..23 两批已压缩归档并入(日批五 PR #55-#59 4647/0 / kimi 三单 #60-#62+Ch13 美术 #61 4651/0 / 清账 #63 Ch13 webp / 夜批六 PR #49-#54 4626/0+mount_deferred A2+B1 拍定)**:git log + PR #49-#63 body 可溯,均合 main;当时已知风险均由后续批销账。
 
