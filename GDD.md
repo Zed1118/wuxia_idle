@@ -4,9 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
-> **版本**:v1.26
+> **版本**:v1.27
+> **v1.27 变更**(2026-08-19 §7.4 路线 C 四子项拍板 · 0 改代码数值):v1.26 批所遗「4 子项未决」同日调研拍板全收口(全 α 推荐项)——① headless 结算内核 = **复用 0A reducer**(补玩家 bot adapter + 快进循环,headless 与可玩共用同一模拟核;远征/断魂庄队伍续传语义需重设计,绑内容迁移 ADR)② 65 条旧战斗路由 = **删路由·证据原地标注**③ 共享层 = **拆分迁移**(enum_localizations/derived_stats/cycle_* 迁 lib/shared,战斗专属件留 battle 随引擎删)④ 过渡期主线战斗空窗 = **原子切换·零空窗**(0A 主线接线批与旧入口拆除批同次 merge)。调研事实与口径详 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md` §8;v1.25 摘要按体例迁 `docs/_archive/GDD_CHANGELOG.md`。
 > **v1.26 变更**(2026-08-19 §7.4 ADR 拍板 + 战斗形态漂移指针 · 0 改代码数值):① 存量战斗 ADR 用户拍板**路线 C 终态替换·前置排程**——终态 = Phase 0A 单角色 ARPG 替换旧 3v3(不两模式并存),硬前提 = 6 人 Gate + Windows 实机过线(已后置)+ Phase 1 纵切成立 + 共享层安置/headless 结算内核替代先于表现层拆除;4 子项未决(headless 内核替代方案/65 路由与目检证据归档/共享层落点/过渡期主线战斗空窗处置),事实底座 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md`;② §1.1 战斗形态行/§5.1 加漂移指针注记(口径同步随 ADR 执行批,禁单独改写,详 `docs/audit/living_doc_drift_2026-08-18.md`);③ v1.24 摘要按体例迁 `docs/_archive/GDD_CHANGELOG.md`。
-> **v1.25 变更**(2026-08-04 批 B 周目语义修正·spec 2026-08-01 拍板 #5 实装):4 个支线入口(轻功对决/群战守城/断魂庄/远征)周目从「属性缩放」升级为**境界段推进**——敌境界 = yaml 原值 + 3 阶/周目后 clamp 武圣,带动敌内力派生/防御率档/境界差修正三轴联动,解除终局玩家对支线的 `diff_3_or_more 0.05` 近免疫(净威胁实测 ×5.11,spec §1.3 解析推算 ~2.4 方向坐实;`cycle_realm_advance_net_threat_diagnostic_test`)。断魂庄/远征从零建周目(此前连属性缩放周目都没有);远征无终点,解锁改绑**深度里程碑**(`baicaoMaxDepth ≥20/40`,2026-08-04 拍板)。周目解锁统一三重门槛:顺序解锁 ∩ cap 3 ∩ **境界门槛**(开 cycle N 须出战最高境界 ≥ 推进后敌境界 −1,防差 3 阶硬墙;`CycleRealmGate`)。高周目奖励 ×(1+0.25×(cycle−1))(断魂庄经验/领悟点、远征全奖励;初值保守待真机校)。主线/爬塔/心魔不推进(拍板 #3:塔走扩层);敌基础数值 yaml 零变化,推进属威胁恢复非数字膨胀,敌内力经 §5.4 ≤15,000 clamp。配置 `numbers.yaml cycle_evolution.realm_advance`;saveVersion 不变(新字段默认值语义自洽,旧档零迁移)。
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
 > - 发布上限:绝对境界层 **49**(武圣·登峰 = 武圣段收官 = **主线终章**·49 为绝对终点无第 50 层;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)
