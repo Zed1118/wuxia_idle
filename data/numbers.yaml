@@ -500,6 +500,50 @@ realms:
           experience_to_next: 1250000  # 终局修为刻度，不产生第 50 层
 
 # =============================================================================
+# Phase 0A 竞技场形态调参(Phase 1 纵切切片 1 · spec 2026-08-19 P1=α 拍板)
+# =============================================================================
+# 单角色动作战斗的空间/能量/动作默认值;内容面(stages.yaml 敌队阵容+数值)
+# 由 phase0a_stage_content_mapper 装配时消费本段。初值沿
+# data/phase0a_debug_battle.yaml debug fixture(批 1-8A 已验证),后续
+# 平衡校准批可独立调参。fixture 缺段走 Phase0aArenaConfig.empty。
+
+phase0a_arena:
+  arena:
+    min_x: -640.0
+    max_x: 640.0
+    min_y: -260.0
+    max_y: 260.0
+  player:
+    move_speed: 210.0
+    attack_range: 360.0
+    attack_half_arc_radians: 0.72
+    attack_cooldown_seconds: 0.55
+    gather_slot: gather
+    gather_ring_radius: 120.0
+    gather_effect_radius: 520.0
+    gather_qi_cost: 25
+    gather_cooldown_seconds: 5.0
+    clear_slot: clear
+    clear_effect_radius: 340.0
+    clear_qi_cost: 50
+    clear_cooldown_seconds: 8.0
+  enemy:
+    move_speed: 145.0
+    attack_range: 82.0              # 敌 AI 普攻参数(沿 debug enemy_ai 段)
+    attack_half_arc_radians: 0.9
+    attack_cooldown_seconds: 1.0
+    initial_attack_cooldown: 2.0    # 首攻延迟,给玩家开场反应窗口
+    qi: 0                           # Ch1 敌人不用技能,中性值
+  moves:
+    basic_skill_id: phase0a_mainline_basic
+    basic_power_multiplier: 500
+    basic_qi_delta: 0
+    clear_skill_id: phase0a_mainline_clear
+    clear_power_multiplier: 1500
+    clear_qi_delta: 0
+    # gather 为 control-only(采气环无伤害),绑定 null 不配倍率
+
+# =============================================================================
 # 3. 装备系统
 # =============================================================================
 # GDD §3.2 7 阶装备 + §6.2 强化 + §6.3 心血结晶 + §6.4 共鸣 + §6.5 开锋
