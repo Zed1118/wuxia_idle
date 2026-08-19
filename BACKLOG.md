@@ -28,4 +28,4 @@
 
 ## 四 · 方向级候选(大活·需专注会话+xhigh)
 
-- **旧 3v3 → Phase 0A 单角色 ARPG 替换收口**(登记 2026-08-18,codex 派单域我只跟不派):终态拍板已在案(不再测 3v3/不做两模式并存,见 `docs/dispatch/packages/2026-08-16_phase0a_qoder_production_wiring_followup.md`);未决=0A 六人主观 Gate + Windows 实机硬阻塞(用户已拍暂挂)、122 关/塔 49/旧 3v3 去留、旧屏删后「第八阶段真机观感目检」随之定谳。
+- **旧 3v3 → Phase 0A 单角色 ARPG 替换收口**(登记 2026-08-18,codex 派单域我只跟不派):**2026-08-19 §7.4 ADR 拍板路线 C 终态替换·前置排程**(终态拍板见 `docs/dispatch/packages/2026-08-16_phase0a_qoder_production_wiring_followup.md`;拆除范围事实底座 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md`)。硬前提=0A 六人主观 Gate + Windows 实机过线(用户已拍暂挂)+ Phase 1 纵切成立 + 共享层安置/headless 结算内核替代先于表现层拆除。**4 子项未决**:headless 内核替代方案/65 路由与目检证据归档处置/共享层落点(留 battle 还是迁 shared)/过渡期主线战斗空窗处置。另:122 关/塔 49 去留属内容迁移 ADR(独立决策);旧屏删后「第八阶段真机观感目检」随之定谳;GDD v1.26/CLAUDE v1.43 已加漂移指针,口径改写随执行批。
