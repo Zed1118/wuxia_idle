@@ -258,6 +258,13 @@ class NumbersConfig {
   /// 开局单人，弟子按主线关卡节点拜入。空段兜底 [LineageOnboardingConfig]（discipleJoins 空）。
   final LineageOnboardingConfig lineageOnboarding;
 
+  /// Phase 0A 竞技场形态调参(numbers.yaml `phase0a_arena`,Phase 1 纵切切片 1)。
+  ///
+  /// 单角色动作战斗的空间/能量/动作默认值,供 phase0a_stage_content_mapper
+  /// 把 stages.yaml 内容装配成 0A flow 时消费。fixture 不带该段时走
+  /// [Phase0aArenaConfig.empty](isEmpty=true,纵切 mapper 见空段 fail-fast)。
+  final Phase0aArenaConfig phase0aArena;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -314,6 +321,7 @@ class NumbersConfig {
     required this.battleReport,
     required this.heroCamera,
     required this.lineageOnboarding,
+    required this.phase0aArena,
     required this.raw,
   });
 
@@ -512,6 +520,9 @@ class NumbersConfig {
       ),
       lineageOnboarding: LineageOnboardingConfig.fromYaml(
         y['lineage_onboarding'] as Map<String, dynamic>?,
+      ),
+      phase0aArena: Phase0aArenaConfig.fromYaml(
+        (y['phase0a_arena'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
       raw: y,
     );
@@ -1710,6 +1721,164 @@ class EnemyDefaults {
       internalForceScale: scale,
       criticalRate: (y['critical_rate'] as num).toDouble(),
       evasionRate: (y['evasion_rate'] as num).toDouble(),
+    );
+  }
+}
+
+/// Phase 0A 竞技场形态调参(numbers.yaml `phase0a_arena`,Phase 1 纵切切片 1 ·
+/// spec 2026-08-19 P1=α 拍板)。空间/能量/动作默认值;内容面(stages.yaml
+/// 敌队)由 phase0a_stage_content_mapper 装配时消费本配置。
+///
+/// 缺段兜底 [Phase0aArenaConfig.empty]:旧 fixture 不带该段时 isEmpty=true,
+/// 存量行为零变化;纵切 mapper 消费时见空段 fail-fast(不得静默装配零参数竞技场)。
+class Phase0aArenaConfig {
+  // —— 竞技场边界 ——
+  final double arenaMinX;
+  final double arenaMaxX;
+  final double arenaMinY;
+  final double arenaMaxY;
+
+  // —— 玩家空间/动作 ——
+  final double playerMoveSpeed;
+  final double playerAttackRange;
+  final double playerAttackHalfArcRadians;
+  final double playerAttackCooldownSeconds;
+  final String gatherSlot;
+  final double gatherRingRadius;
+  final double gatherEffectRadius;
+  final int gatherQiCost;
+  final double gatherCooldownSeconds;
+  final String clearSlot;
+  final double clearEffectRadius;
+  final int clearQiCost;
+  final double clearCooldownSeconds;
+
+  // —— 敌人空间/AI 默认 ——
+  final double enemyMoveSpeed;
+  final double enemyAttackRange;
+  final double enemyAttackHalfArcRadians;
+  final double enemyAttackCooldownSeconds;
+  final double enemyInitialAttackCooldown;
+  final int enemyQi;
+
+  // —— 招式绑定(basic/clear 伤害招;gather 为 control-only 不在此) ——
+  final String basicSkillId;
+  final int basicPowerMultiplier;
+  final int basicQiDelta;
+  final String clearSkillId;
+  final int clearPowerMultiplier;
+  final int clearQiDelta;
+
+  const Phase0aArenaConfig({
+    required this.arenaMinX,
+    required this.arenaMaxX,
+    required this.arenaMinY,
+    required this.arenaMaxY,
+    required this.playerMoveSpeed,
+    required this.playerAttackRange,
+    required this.playerAttackHalfArcRadians,
+    required this.playerAttackCooldownSeconds,
+    required this.gatherSlot,
+    required this.gatherRingRadius,
+    required this.gatherEffectRadius,
+    required this.gatherQiCost,
+    required this.gatherCooldownSeconds,
+    required this.clearSlot,
+    required this.clearEffectRadius,
+    required this.clearQiCost,
+    required this.clearCooldownSeconds,
+    required this.enemyMoveSpeed,
+    required this.enemyAttackRange,
+    required this.enemyAttackHalfArcRadians,
+    required this.enemyAttackCooldownSeconds,
+    required this.enemyInitialAttackCooldown,
+    required this.enemyQi,
+    required this.basicSkillId,
+    required this.basicPowerMultiplier,
+    required this.basicQiDelta,
+    required this.clearSkillId,
+    required this.clearPowerMultiplier,
+    required this.clearQiDelta,
+  });
+
+  /// 缺段兜底:全零/空串,isEmpty=true(沿 FestivalConfig.empty 体例)。
+  static const Phase0aArenaConfig empty = Phase0aArenaConfig(
+    arenaMinX: 0,
+    arenaMaxX: 0,
+    arenaMinY: 0,
+    arenaMaxY: 0,
+    playerMoveSpeed: 0,
+    playerAttackRange: 0,
+    playerAttackHalfArcRadians: 0,
+    playerAttackCooldownSeconds: 0,
+    gatherSlot: '',
+    gatherRingRadius: 0,
+    gatherEffectRadius: 0,
+    gatherQiCost: 0,
+    gatherCooldownSeconds: 0,
+    clearSlot: '',
+    clearEffectRadius: 0,
+    clearQiCost: 0,
+    clearCooldownSeconds: 0,
+    enemyMoveSpeed: 0,
+    enemyAttackRange: 0,
+    enemyAttackHalfArcRadians: 0,
+    enemyAttackCooldownSeconds: 0,
+    enemyInitialAttackCooldown: 0,
+    enemyQi: 0,
+    basicSkillId: '',
+    basicPowerMultiplier: 0,
+    basicQiDelta: 0,
+    clearSkillId: '',
+    clearPowerMultiplier: 0,
+    clearQiDelta: 0,
+  );
+
+  bool get isEmpty => basicSkillId.isEmpty;
+
+  factory Phase0aArenaConfig.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    final arena = (y['arena'] as Map).cast<String, dynamic>();
+    final player = (y['player'] as Map).cast<String, dynamic>();
+    final enemy = (y['enemy'] as Map).cast<String, dynamic>();
+    final moves = (y['moves'] as Map).cast<String, dynamic>();
+    return Phase0aArenaConfig(
+      arenaMinX: (arena['min_x'] as num).toDouble(),
+      arenaMaxX: (arena['max_x'] as num).toDouble(),
+      arenaMinY: (arena['min_y'] as num).toDouble(),
+      arenaMaxY: (arena['max_y'] as num).toDouble(),
+      playerMoveSpeed: (player['move_speed'] as num).toDouble(),
+      playerAttackRange: (player['attack_range'] as num).toDouble(),
+      playerAttackHalfArcRadians: (player['attack_half_arc_radians'] as num)
+          .toDouble(),
+      playerAttackCooldownSeconds: (player['attack_cooldown_seconds'] as num)
+          .toDouble(),
+      gatherSlot: player['gather_slot'] as String,
+      gatherRingRadius: (player['gather_ring_radius'] as num).toDouble(),
+      gatherEffectRadius: (player['gather_effect_radius'] as num).toDouble(),
+      gatherQiCost: (player['gather_qi_cost'] as num).toInt(),
+      gatherCooldownSeconds: (player['gather_cooldown_seconds'] as num)
+          .toDouble(),
+      clearSlot: player['clear_slot'] as String,
+      clearEffectRadius: (player['clear_effect_radius'] as num).toDouble(),
+      clearQiCost: (player['clear_qi_cost'] as num).toInt(),
+      clearCooldownSeconds: (player['clear_cooldown_seconds'] as num)
+          .toDouble(),
+      enemyMoveSpeed: (enemy['move_speed'] as num).toDouble(),
+      enemyAttackRange: (enemy['attack_range'] as num).toDouble(),
+      enemyAttackHalfArcRadians: (enemy['attack_half_arc_radians'] as num)
+          .toDouble(),
+      enemyAttackCooldownSeconds: (enemy['attack_cooldown_seconds'] as num)
+          .toDouble(),
+      enemyInitialAttackCooldown: (enemy['initial_attack_cooldown'] as num)
+          .toDouble(),
+      enemyQi: (enemy['qi'] as num).toInt(),
+      basicSkillId: moves['basic_skill_id'] as String,
+      basicPowerMultiplier: (moves['basic_power_multiplier'] as num).toInt(),
+      basicQiDelta: (moves['basic_qi_delta'] as num).toInt(),
+      clearSkillId: moves['clear_skill_id'] as String,
+      clearPowerMultiplier: (moves['clear_power_multiplier'] as num).toInt(),
+      clearQiDelta: (moves['clear_qi_delta'] as num).toInt(),
     );
   }
 }
