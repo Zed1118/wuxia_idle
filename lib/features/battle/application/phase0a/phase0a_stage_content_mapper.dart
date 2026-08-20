@@ -3,6 +3,7 @@ import '../../../../data/defs/skill_def.dart';
 import '../../../../data/defs/stage_def.dart';
 import '../../../../data/numbers_config.dart';
 import '../../../../shared/battle_shared/combatant_snapshot.dart';
+import '../../../../shared/battle_shared/combatant_skill_loadout.dart';
 import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
@@ -10,6 +11,7 @@ import '../../domain/phase0a/phase0a_wave.dart';
 import '../enemy_combatant_snapshot_assembler.dart';
 import 'phase0a_battle_snapshot_factory.dart';
 import 'phase0a_enemy_ai_adapter.dart';
+import 'phase0a_numeric_skill_binding.dart';
 import 'phase0a_player_input_adapter.dart';
 
 /// Phase 1 纵切切片 1(spec 2026-08-19 · P1=α 主线 Ch1 · D1=α 机械映射):
@@ -31,6 +33,7 @@ final class Phase0aStageMapping {
     required this.moveBindings,
     required this.playerAdapter,
     required this.enemyAiAdapter,
+    required this.numericSkillBindings,
   });
 
   final Phase0aArenaState initialState;
@@ -39,6 +42,7 @@ final class Phase0aStageMapping {
   final Map<Phase0aDamageKind, SkillDef?> moveBindings;
   final Phase0aPlayerInputAdapter playerAdapter;
   final Phase0aEnemyAiAdapter enemyAiAdapter;
+  final Phase0aNumericSkillBindings numericSkillBindings;
 }
 
 final class Phase0aStageContentMapper {
@@ -71,6 +75,7 @@ final class Phase0aStageContentMapper {
     final enemySnapshots = EnemyCombatantSnapshotAssembler.assembleAll(
       stage.enemyTeam,
     );
+    final numericSkillBindings = _numericSkillBindings(playerSnapshot, arena);
 
     // —— 空间排布:确定性,玩家在左,敌人右侧按 slot 均匀散开 ——
     final playerPosition = ArenaVector(arena.arenaMinX * 0.5, 0);
@@ -119,17 +124,26 @@ final class Phase0aStageContentMapper {
         nextSeq: 1,
         player: playerActor,
         enemies: waveEnemies,
-        skillSlots: _skillSlots(arena),
+        skillSlots: _skillSlots(
+          arena,
+          numericSkillBindings,
+          playerSnapshot.currentQi,
+        ),
       ),
       waves: [Phase0aWave(enemies: waveEnemies)],
       combatants: List.unmodifiable(combatants),
-      moveBindings: _moveBindings(arena),
-      playerAdapter: _playerAdapter(arena: arena, playerId: playerId),
+      moveBindings: _moveBindings(arena, playerSnapshot, numericSkillBindings),
+      playerAdapter: _playerAdapter(
+        arena: arena,
+        playerId: playerId,
+        numericSkillBindings: numericSkillBindings,
+      ),
       enemyAiAdapter: Phase0aEnemyAiAdapter(
         attackRange: arena.enemyAttackRange,
         attackHalfArcRadians: arena.enemyAttackHalfArcRadians,
         attackCooldownSeconds: arena.enemyAttackCooldownSeconds,
       ),
+      numericSkillBindings: numericSkillBindings,
     );
   }
 
@@ -170,38 +184,89 @@ final class Phase0aStageContentMapper {
     );
   }
 
-  static List<Phase0aSkillSlot> _skillSlots(Phase0aArenaConfig arena) =>
-      List.unmodifiable([
-        Phase0aSkillSlot(
-          slot: arena.gatherSlot,
+  static List<Phase0aSkillSlot> _skillSlots(
+    Phase0aArenaConfig arena,
+    Phase0aNumericSkillBindings numericSkills,
+    int openingQi,
+  ) => List.unmodifiable([
+    Phase0aSkillSlot(
+      slot: arena.gatherSlot,
+      cooldownRemaining: 0,
+      qiCost: arena.gatherQiCost,
+      availability: Phase0aSkillAvailability.ready,
+    ),
+    Phase0aSkillSlot(
+      slot: arena.clearSlot,
+      cooldownRemaining: 0,
+      qiCost: arena.clearQiCost,
+      availability: Phase0aSkillAvailability.ready,
+    ),
+    for (final binding in numericSkills.equipped)
+      Phase0aSkillSlot(
+        slot: binding.slotId,
+        cooldownRemaining: 0,
+        qiCost: binding.skill.qiCost,
+        availability: availabilityOf(
           cooldownRemaining: 0,
-          qiCost: arena.gatherQiCost,
-          availability: Phase0aSkillAvailability.ready,
+          qiCurrent: openingQi,
+          qiCost: binding.skill.qiCost,
         ),
-        Phase0aSkillSlot(
-          slot: arena.clearSlot,
-          cooldownRemaining: 0,
-          qiCost: arena.clearQiCost,
-          availability: Phase0aSkillAvailability.ready,
-        ),
-      ]);
+      ),
+  ]);
 
   /// 招式绑定:basic/clear 伤害招走形态段倍率;gather 为 control-only(null)。
   static Map<Phase0aDamageKind, SkillDef?> _moveBindings(
     Phase0aArenaConfig arena,
+    CombatantSnapshot player,
+    Phase0aNumericSkillBindings numericSkills,
   ) => Map.unmodifiable({
-    Phase0aDamageKind.basic: _moveSkill(
-      id: arena.basicSkillId,
-      powerMultiplier: arena.basicPowerMultiplier,
-      qiDelta: arena.basicQiDelta,
-    ),
+    Phase0aDamageKind.basic:
+        player.skillLoadout.basicAttack ??
+        _moveSkill(
+          id: arena.basicSkillId,
+          powerMultiplier: arena.basicPowerMultiplier,
+          qiDelta: arena.basicQiDelta,
+        ),
     Phase0aDamageKind.gather: null,
     Phase0aDamageKind.clear: _moveSkill(
       id: arena.clearSkillId,
       powerMultiplier: arena.clearPowerMultiplier,
       qiDelta: arena.clearQiDelta,
     ),
+    for (final binding in numericSkills.equipped)
+      Phase0aDamageKindX.forSkillHotkey(binding.hotkey): binding.skill,
   });
+
+  static Phase0aNumericSkillBindings _numericSkillBindings(
+    CombatantSnapshot player,
+    Phase0aArenaConfig arena,
+  ) {
+    Phase0aNumericSkillBinding? binding(int hotkey) {
+      final loadoutSlot = CombatantSkillLoadout.numericSlots[hotkey - 1];
+      final skill = player.skillLoadout.skillFor(loadoutSlot);
+      if (skill == null) return null;
+      return Phase0aNumericSkillBinding(
+        hotkey: hotkey,
+        loadoutSlot: loadoutSlot,
+        skill: skill,
+        slotId: 'phase0a_skill_$hotkey',
+        attackRange: arena.playerAttackRange,
+        halfArc: arena.playerAttackHalfArcRadians,
+        effectRadius: arena.clearEffectRadius,
+        cooldownSeconds:
+            skill.cooldownTurns * arena.playerAttackCooldownSeconds,
+      );
+    }
+
+    return Phase0aNumericSkillBindings(
+      one: binding(1),
+      two: binding(2),
+      three: binding(3),
+      four: binding(4),
+      five: binding(5),
+      six: binding(6),
+    );
+  }
 
   static SkillDef _moveSkill({
     required String id,
@@ -222,6 +287,7 @@ final class Phase0aStageContentMapper {
   static Phase0aPlayerInputAdapter _playerAdapter({
     required Phase0aArenaConfig arena,
     required String playerId,
+    required Phase0aNumericSkillBindings numericSkillBindings,
   }) => Phase0aPlayerInputAdapter(
     playerId: playerId,
     attackRange: arena.playerAttackRange,
@@ -236,5 +302,6 @@ final class Phase0aStageContentMapper {
     clearEffectRadius: arena.clearEffectRadius,
     clearQiCost: arena.clearQiCost,
     clearCooldownSeconds: arena.clearCooldownSeconds,
+    numericSkillBindings: numericSkillBindings,
   );
 }

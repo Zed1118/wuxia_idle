@@ -18,6 +18,7 @@ SkillDef skill(String id) => SkillDef(
 void main() {
   test('reads all seven slots and keeps stable equipped order', () {
     final loadout = CombatantSkillLoadout(
+      basicAttack: skill('basic'),
       main1: skill('main1'),
       main2: skill('main2'),
       assist: skill('assist'),
@@ -28,6 +29,7 @@ void main() {
     );
 
     expect(loadout.skillFor(CombatantSkillSlot.key)?.id, 'key');
+    expect(loadout.basicAttack?.id, 'basic');
     expect(loadout.equippedSkills.map((s) => s.id), [
       'main1',
       'main2',

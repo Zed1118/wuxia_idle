@@ -14,6 +14,7 @@ enum CombatantSkillSlot {
 /// Immutable combat-facing view of the seven persisted skill slots.
 class CombatantSkillLoadout {
   const CombatantSkillLoadout({
+    this.basicAttack,
     this.main1,
     this.main2,
     this.assist,
@@ -24,7 +25,8 @@ class CombatantSkillLoadout {
   });
 
   const CombatantSkillLoadout.empty()
-    : main1 = null,
+    : basicAttack = null,
+      main1 = null,
       main2 = null,
       assist = null,
       resonance = null,
@@ -40,6 +42,9 @@ class CombatantSkillLoadout {
     CombatantSkillSlot.ultimate,
     CombatantSkillSlot.encounter,
   ];
+
+  /// 主修心法的真实普通攻击，不占数字 1–6 装配槽。
+  final SkillDef? basicAttack;
 
   final SkillDef? main1;
   final SkillDef? main2;

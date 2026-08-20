@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/player_combatant_snapshot_assembler.dart';
@@ -50,6 +51,8 @@ void main() {
       final character = (await IsarSetup.instance.characters.get(1))!;
 
       final loadout = snapshot.skillLoadout;
+      expect(loadout.basicAttack?.type, SkillType.normalAttack);
+      expect(loadout.basicAttack?.parentTechniqueDefId, isNotNull);
       expect(loadout.main1?.id, character.mainSkillId1);
       expect(loadout.main2?.id, character.mainSkillId2);
       expect(loadout.assist?.id, character.assistSkillId);

@@ -172,6 +172,14 @@ final class Phase0aVfxController {
           for (final outcome in event.outcomes) {
             pushPopup(outcome.target, outcome.resolvedDamage, false);
           }
+        case Phase0aSkillApplied():
+          for (final outcome in event.outcomes) {
+            pushPopup(
+              outcome.target,
+              outcome.resolvedDamage,
+              outcome.isCritical,
+            );
+          }
         case Phase0aEnemyDefeated():
           push(
             Phase0aVfxEntry(
@@ -206,6 +214,7 @@ final class Phase0aVfxController {
           );
           _sealed = true;
         case Phase0aAttackStarted():
+        case Phase0aSkillStarted():
         case Phase0aSkillAvailabilityChanged():
         case Phase0aWaveCleared():
           break;

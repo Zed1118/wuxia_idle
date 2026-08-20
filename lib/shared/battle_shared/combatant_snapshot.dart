@@ -116,6 +116,7 @@ final class CombatantSnapshot {
     double? defenseRate,
     int? totalEquipmentAttack,
     CombatantSkillLoadout? skillLoadout,
+    Map<String, int>? skillUses,
     List<SkillDef>? availableSkills,
     Map<String, int>? openingSkillCooldowns,
   }) => CombatantSnapshot(
@@ -141,7 +142,7 @@ final class CombatantSnapshot {
     skillLoadout: skillLoadout ?? this.skillLoadout,
     availableSkills: availableSkills ?? this.availableSkills,
     openingSkillCooldowns: openingSkillCooldowns ?? this.openingSkillCooldowns,
-    skillUses: skillUses,
+    skillUses: skillUses ?? this.skillUses,
     activeBuffs: activeBuffs,
     swordSongResonanceActive: swordSongResonanceActive,
     iconPath: iconPath,

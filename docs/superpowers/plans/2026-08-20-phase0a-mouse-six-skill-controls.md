@@ -28,15 +28,15 @@
 ### Slice 2 · 六槽身份与 fail-closed 输入
 
 1. [x] neutral snapshot 显式保存 7 槽身份，不靠压缩 `availableSkills` 猜槽位。
-2. [ ] 数字 1–6 → stable slot request；空槽/未装备严格拒绝，零 event/伤害/Qi/CD/RNG/熟练度。
-3. [ ] 六槽技能印可点击、键盘/鼠标同路；第七破招槽不占数字栏。
+2. [x] 数字 1–6 → stable slot request；空槽/未装备严格拒绝，零 event/伤害/Qi/CD/RNG/熟练度。
+3. [x] 六槽技能印可点击、键盘/鼠标同路；第七破招槽不占数字栏。
 
 ### Slice 3 · generic 真实技能结算
 
-1. [ ] `Phase0aSkillBinding` 深 Module：SkillDef + resolved geometry/Qi/CD/behavior。
-2. [ ] generic intent/reducer/event；真实 id/power/proficiency/targetType 贯穿。
+1. [x] `Phase0aSkillBinding` 深 Module：SkillDef + resolved geometry/Qi/CD/behavior。
+2. [x] generic intent/reducer/event；真实 id/power/proficiency/targetType 贯穿。
 3. [ ] Q pull/R stagger 从固定按键语义迁到显式 behavior binding；旧 gather/clear 作为迁移 Adapter 后删除。
-4. [ ] settlement 直接消费事件真实 skillId；live/headless skill casts 同 seed 一致。
+4. [x] settlement 直接消费事件真实 skillId；live/headless skill casts 同 seed 一致。
 
 ## 红线
 
@@ -48,6 +48,6 @@
 
 ## 当前恢复点
 
-- 最后完成：Slice 2 七槽身份第一段；新增 immutable `CombatantSkillLoadout`，玩家 assembler 在 autoFill 重读后逐槽灌入 neutral snapshot；数字顺序固定 main1/main2/assist/resonance/ultimate/encounter，key 独立；analyze 0，相关回归 48/48。
-- 下一步：提交七槽身份恢复点；实现数字 1–6 fail-closed request，再进入 generic 真实结算。
+- 最后完成：数字 1–6 generic 主链：真实 basic/六槽 binding、SkillDef Qi/CD/targetType、single/aoe reducer、真实事件/伤害/结算、bot、六技能印与键鼠同路；空槽/unsupported mechanics fail-closed；真 Isar e2e 与 Phase 0A 三层 **296/296**、analyze 0。
+- 下一步：提交 generic 技能恢复点；Q pull/R stagger 因 SkillDef 缺 behavior/geometry 仍保留迁移 Adapter，先跑全量与 Ch1 画像，再决定 schema 切片。
 - 阻塞：Slice 1 无；Slice 3 的 cooldownTurns→seconds 与 pull/stagger 数据归属需在进入该切片前冻结。

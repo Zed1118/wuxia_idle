@@ -189,6 +189,9 @@ class _Phase0aMainlineBattleHostState
     if (controller == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return Phase0aBattleScreen(controller: controller);
+    return Phase0aBattleScreen(
+      controller: controller,
+      numericSkillBindings: _mapping!.numericSkillBindings,
+    );
   }
 }

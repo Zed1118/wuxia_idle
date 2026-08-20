@@ -1,13 +1,14 @@
 import 'dart:math' as math;
 
+import '../../../../core/domain/enums.dart';
 import 'arena_vector.dart';
 import 'phase0a_combat_events.dart';
 import 'phase0a_combat_intent.dart';
 import 'phase0a_combat_model.dart';
+import 'phase0a_damage_kind.dart';
 import 'realtime_combat_rules.dart';
 
-/// 伤害结算种类(reducer → resolver 的语义入参)。
-enum Phase0aDamageKind { basic, gather, clear }
+export 'phase0a_damage_kind.dart';
 
 /// 一次结算的运行时结果:命中与否、暴击与否、伤害值全部由
 /// resolver(未来生产接 DamageCalculator)给出,reducer 不写第二套公式。
@@ -232,7 +233,7 @@ Phase0aStepResult reducePhase0aTick({
         final cast = _tryCastSkill(
           actor: actor,
           slotId: intent.slot,
-          qiCost: intent.qiCost,
+          qiDelta: -intent.qiCost,
           cooldownSeconds: intent.cooldownSeconds,
           slots: slots,
         );
@@ -328,7 +329,7 @@ Phase0aStepResult reducePhase0aTick({
         final cast = _tryCastSkill(
           actor: actor,
           slotId: intent.slot,
-          qiCost: intent.qiCost,
+          qiDelta: -intent.qiCost,
           cooldownSeconds: intent.cooldownSeconds,
           slots: slots,
         );
@@ -400,6 +401,113 @@ Phase0aStepResult reducePhase0aTick({
         } else {
           enemiesById[actorId] = cast.casterAfterQi;
         }
+      case Phase0aSkillIntent():
+        final hotkey = intent.kind.skillHotkey;
+        if (actor.side != Phase0aSide.player ||
+            hotkey == null ||
+            intent.skillId.isEmpty ||
+            !_isUsableNumber(intent.range) ||
+            !_isUsableNumber(intent.halfArcRadians) ||
+            !_isUsableNumber(intent.effectRadius) ||
+            !_isUsableNumber(intent.cooldownSeconds)) {
+          continue;
+        }
+        final cast = _tryCastSkill(
+          actor: actor,
+          slotId: intent.slot,
+          qiDelta: intent.qiDelta,
+          cooldownSeconds: intent.cooldownSeconds,
+          slots: slots,
+        );
+        if (cast == null) continue;
+        events.add(
+          Phase0aSkillStarted(
+            seq: seq++,
+            tick: tick,
+            actor: actorId,
+            hotkey: hotkey,
+            skillId: intent.skillId,
+          ),
+        );
+        final targets = switch (intent.targetType) {
+          TargetType.single => [
+            ?_selectStrikeTarget(
+              attacker: actor,
+              player: player,
+              enemiesById: enemiesById,
+              aimDirection: intent.aimDirection,
+              range: intent.range,
+              halfArcRadians: intent.halfArcRadians,
+            ),
+          ],
+          TargetType.aoe =>
+            _opposingTargets(
+                  casterSide: actor.side,
+                  player: player,
+                  enemiesById: enemiesById,
+                )
+                .where(
+                  (target) => _withinEffectRadius(
+                    origin: actor.position,
+                    position: target.position,
+                    effectRadius: intent.effectRadius,
+                  ),
+                )
+                .toList(),
+        };
+        final outcomes = <Phase0aSkillOutcome>[];
+        final deaths = <Phase0aActor>[];
+        for (final target in targets) {
+          final resolved = damageResolver.resolve(
+            attackerId: actorId,
+            targetId: target.id,
+            kind: intent.kind,
+          );
+          final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
+          final remaining = math.max(0, target.currentHealth - damage);
+          final updated = target.copyWith(currentHealth: remaining);
+          outcomes.add(
+            Phase0aSkillOutcome(
+              target: target.id,
+              resolvedDamage: damage,
+              isCritical: resolved.isHit && resolved.isCritical,
+              defeated: !updated.isAlive,
+              statusApplied: Phase0aSkillStatus.none,
+            ),
+          );
+          if (target.side == Phase0aSide.enemy) {
+            if (!updated.isAlive) {
+              enemiesById.remove(target.id);
+              deaths.add(target);
+            } else {
+              enemiesById[target.id] = updated;
+            }
+          } else {
+            player = updated;
+          }
+        }
+        events.add(
+          Phase0aSkillApplied(
+            seq: seq++,
+            tick: tick,
+            actor: actorId,
+            hotkey: hotkey,
+            skillId: intent.skillId,
+            outcomes: List.unmodifiable(outcomes),
+          ),
+        );
+        seq = _emitDefeats(events, seq, tick, deaths);
+        seq = _emitCastAvailability(
+          events: events,
+          seq: seq,
+          tick: tick,
+          cast: cast,
+          slots: slots,
+        );
+        final aimDirection = intent.aimDirection.lengthSquared > 0
+            ? intent.aimDirection.normalized()
+            : actor.facing;
+        player = cast.casterAfterQi.copyWith(facing: aimDirection);
     }
   }
 
@@ -523,10 +631,11 @@ final class _SkillCast {
 _SkillCast? _tryCastSkill({
   required Phase0aActor actor,
   required String slotId,
-  required int qiCost,
+  required int qiDelta,
   required double cooldownSeconds,
   required List<Phase0aSkillSlot> slots,
 }) {
+  final qiCost = qiDelta < 0 ? -qiDelta : 0;
   final index = slots.indexWhere((slot) => slot.slot == slotId);
   if (index < 0) return null;
   final slot = slots[index];
@@ -539,7 +648,9 @@ _SkillCast? _tryCastSkill({
   slots[index] = slotAfterCast;
   return _SkillCast(
     slot: slotId,
-    casterAfterQi: actor.copyWith(qiCurrent: actor.qiCurrent - qiCost),
+    casterAfterQi: actor.copyWith(
+      qiCurrent: (actor.qiCurrent + qiDelta).clamp(0, actor.qiMax),
+    ),
     slotAfterCast: slotAfterCast,
   );
 }

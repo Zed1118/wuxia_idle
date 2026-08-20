@@ -1,10 +1,14 @@
 import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/save_data.dart';
+import '../../../core/domain/skill_usage_entry.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/defs/synergy_def.dart';
+import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
@@ -205,8 +209,30 @@ final class PlayerCombatantSnapshotAssembler {
     final skillsById = {
       for (final skill in base.availableSkills) skill.id: skill,
     };
+    final mainDef = GameRepository.instance.getTechnique(mainTechnique.defId);
+    SkillDef? basicAttack;
+    for (final skillId in mainDef.skillIds) {
+      final skill = GameRepository.instance.skillDefs[skillId];
+      if (skill?.type == SkillType.normalAttack) {
+        basicAttack = skill;
+        break;
+      }
+    }
+    if (basicAttack == null) {
+      throw StateError('角色 ${character.name} 的主修 ${mainTechnique.defId} 缺普通攻击');
+    }
     final withLoadout = base.copyWith(
+      skillUses: {
+        ...base.skillUses,
+        basicAttack.id:
+            base.skillUses[basicAttack.id] ??
+            AttributeEffectPolicy(numbers.attributeEffects).effectiveUsageCount(
+              rawUses: mainTechnique.skillUsageCount.countOf(basicAttack.id),
+              enlightenment: character.attributes.enlightenment,
+            ),
+      },
       skillLoadout: CombatantSkillLoadout(
+        basicAttack: basicAttack,
         main1: skillsById[character.mainSkillId1],
         main2: skillsById[character.mainSkillId2],
         assist: skillsById[character.assistSkillId],

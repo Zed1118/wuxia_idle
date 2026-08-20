@@ -54,16 +54,18 @@ final class Phase0aSettlementAdapter {
       );
     }
 
-    void addSkillCast(String actorId, int tick, Phase0aDamageKind kind) {
+    void addSkillCastById(String actorId, int tick, String skillId) {
       final characterId = characterIdByActor[actorId];
-      final skillId = mapping.moveBindings[kind]?.id;
-      if (characterId == null || skillId == null) return;
+      if (characterId == null) return;
       final combatant = mapping.combatants.firstWhere(
         (entry) => entry.actorId == actorId,
       );
-      if (!combatant.snapshot.availableSkills.any(
+      final ownsSkill = combatant.snapshot.availableSkills.any(
         (skill) => skill.id == skillId,
-      )) {
+      );
+      final isBasic =
+          combatant.snapshot.skillLoadout.basicAttack?.id == skillId;
+      if (!ownsSkill && !isBasic) {
         return;
       }
       skillCasts.add(
@@ -73,6 +75,12 @@ final class Phase0aSettlementAdapter {
           skillId: skillId,
         ),
       );
+    }
+
+    void addSkillCast(String actorId, int tick, Phase0aDamageKind kind) {
+      final skillId = mapping.moveBindings[kind]?.id;
+      if (skillId == null) return;
+      addSkillCastById(actorId, tick, skillId);
     }
 
     for (final event in events) {
@@ -100,6 +108,17 @@ final class Phase0aSettlementAdapter {
           hadActions = true;
           addSkillCast(actor, tick, Phase0aDamageKind.clear);
         case Phase0aClearApplied(:final actor, :final outcomes):
+          for (final result in outcomes) {
+            addDamage(
+              actor,
+              result.resolvedDamage,
+              critical: result.isCritical,
+            );
+          }
+        case Phase0aSkillStarted(:final actor, :final tick, :final skillId):
+          hadActions = true;
+          addSkillCastById(actor, tick, skillId);
+        case Phase0aSkillApplied(:final actor, :final outcomes):
           for (final result in outcomes) {
             addDamage(
               actor,

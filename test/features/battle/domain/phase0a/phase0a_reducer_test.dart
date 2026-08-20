@@ -54,6 +54,17 @@ class FixedDamageResolver implements Phase0aDamageResolver {
           isCritical: false,
           damage: clearDamage,
         );
+      case Phase0aDamageKind.skill1:
+      case Phase0aDamageKind.skill2:
+      case Phase0aDamageKind.skill3:
+      case Phase0aDamageKind.skill4:
+      case Phase0aDamageKind.skill5:
+      case Phase0aDamageKind.skill6:
+        return Phase0aResolvedHit(
+          isHit: true,
+          isCritical: false,
+          damage: clearDamage,
+        );
     }
   }
 }
