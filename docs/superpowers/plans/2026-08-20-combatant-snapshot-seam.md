@@ -2,7 +2,7 @@
 
 > 日期：2026-08-20
 > 分支：`codex/stage-snapshot-seam-0820`
-> 状态：WIP
+> 状态：READY
 > 上位：路线 C 共享层/headless 前置排程；`docs/sessions/NEXT.md` P1.1
 
 ## 目标
@@ -22,7 +22,7 @@
 2. [x] 将 player interface 分为 `buildActivePlayerTeam` 与 `buildExactPlayerTeam`；兼容旧入口委托，显式 IDs 走 strict。
 3. [x] 提取敌方快照 module，旧 `StageBattleSetup.buildEnemyTeam` 保持兼容委托，旧 3 人 cap 不进入可复用 seam。
 4. [x] Phase 0A mapper/host 改走新 module；源码删除 Gate 禁止直接 import/引用 `StageBattleSetup`。
-5. targeted + analyze + 全量；更新 NEXT/PROGRESS。
+5. [x] targeted + analyze + 全量；更新 NEXT/PROGRESS。
 
 ## 验收（CLAUDE §8.2）
 
@@ -34,6 +34,6 @@
 ## 当前恢复点
 
 - 最后完成：`EnemyBattleCharacterAssembler`/`PlayerBattleCharacterAssembler` 两个深 Module 落地；旧 StageBattleSetup 降为 orchestration + legacy Adapter；0A、远征、断魂庄走新 seam；源码 Gate 禁旧 interface。
-- 下一步：全量验证后更新 NEXT/PROGRESS，打 READY 并走合并 Gate。
-- 已跑验证：StageBattleSetup+enemy parity 43、远征/断魂庄 11、Phase0A/source Gate 45 全过；analyze 0。
+- 下一步：打 `[READY]` 恢复点并走合并 Gate；合并态复跑 analyze、关键 targeted 与文档扫描。
+- 已跑验证：targeted 全绿；`flutter analyze` 0 issue；最终全量 **5213 pass / 0 fail**。
 - 阻塞：无。
