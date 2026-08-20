@@ -13,7 +13,7 @@ import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
-import '../../battle/application/stage_battle_setup.dart';
+import '../../battle/application/player_battle_character_assembler.dart';
 import '../../battle/domain/battle_state.dart' show BattleCharacter;
 import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
@@ -118,7 +118,7 @@ class _Phase0aMainlineBattleHostState
 
   /// 生产路径:单主角续传(D3=α)= 祖师一人出战。
   ///
-  /// 走 [StageBattleSetup.buildExactPlayerTeam] 复用旧引擎全套
+  /// 走 [PlayerBattleCharacterAssembler.loadExactRoster] 复用生产装配全套
   /// 口径(autoFill/祖师 buff/伤势/装备),零数值分叉。祖师 id 缺失
   /// (P1 种子档等)兜底取首个角色。
   Future<BattleCharacter> _buildPlayerCharacter() async {
@@ -132,9 +132,9 @@ class _Phase0aMainlineBattleHostState
       }
       playerId = fallback.id;
     }
-    final team = await StageBattleSetup(
+    final team = await PlayerBattleCharacterAssembler(
       isar: isar,
-    ).buildExactPlayerTeam([playerId]);
+    ).loadExactRoster([playerId]);
     if (team.isEmpty) {
       throw StateError('Phase0a 主线宿主: 玩家队伍装配为空');
     }

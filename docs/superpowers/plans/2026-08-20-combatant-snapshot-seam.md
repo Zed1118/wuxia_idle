@@ -20,20 +20,20 @@
 
 1. [x] 红测 exact IDs 为空、重复或缺失时 fail-fast，证明现有静默换人问题。
 2. [x] 将 player interface 分为 `buildActivePlayerTeam` 与 `buildExactPlayerTeam`；兼容旧入口委托，显式 IDs 走 strict。
-3. 提取敌方快照 module，旧 `StageBattleSetup.buildEnemyTeam` 保持兼容委托，旧 3 人 cap 不进入可复用 seam。
-4. Phase 0A mapper/host 改走新 module；源码删除 Gate 禁止直接 import/引用 `StageBattleSetup`。
+3. [x] 提取敌方快照 module，旧 `StageBattleSetup.buildEnemyTeam` 保持兼容委托，旧 3 人 cap 不进入可复用 seam。
+4. [x] Phase 0A mapper/host 改走新 module；源码删除 Gate 禁止直接 import/引用 `StageBattleSetup`。
 5. targeted + analyze + 全量；更新 NEXT/PROGRESS。
 
 ## 验收（CLAUDE §8.2）
 
-- [ ] 生产接线：Phase 0A 无 `StageBattleSetup` 直接依赖；旧主线/塔/扫荡行为不变。
-- [ ] Targeted：selection、enemy parity、Phase 0A Ch1 五关、远征/断魂庄 exact roster。
-- [ ] 红线：零 YAML/公式/数值调整；旧 3 人 cap 不污染 Phase 0A。
-- [ ] 残留风险：`BattleCharacter` 类型本身仍属旧 battle domain，后续再迁 engine-neutral `CombatantSnapshot`。
+- [x] 生产接线：Phase 0A 无 `StageBattleSetup` 直接依赖；旧主线/塔/扫荡行为不变。
+- [x] Targeted：selection、enemy parity、Phase 0A Ch1 五关、远征/断魂庄 exact roster。
+- [x] 红线：零 YAML/公式/数值调整；旧 3 人 cap 不污染 Phase 0A。
+- [x] 残留风险：`BattleCharacter` 类型本身仍属旧 battle domain，后续再迁 engine-neutral `CombatantSnapshot`。
 
 ## 当前恢复点
 
-- 最后完成：exact roster 三类静默 fallback 红测转绿；主线 active/fallback 与 0A/远征/断魂庄 exact/strict interface 分流，合法调用者定向回归全过。
-- 下一步：提取敌方快照深 Module，旧 StageBattleSetup 保兼容委托。
-- 已跑验证：StageBattleSetup 39、远征/断魂庄 11、Phase0A 27 全过；analyze 0。
+- 最后完成：`EnemyBattleCharacterAssembler`/`PlayerBattleCharacterAssembler` 两个深 Module 落地；旧 StageBattleSetup 降为 orchestration + legacy Adapter；0A、远征、断魂庄走新 seam；源码 Gate 禁旧 interface。
+- 下一步：全量验证后更新 NEXT/PROGRESS，打 READY 并走合并 Gate。
+- 已跑验证：StageBattleSetup+enemy parity 43、远征/断魂庄 11、Phase0A/source Gate 45 全过；analyze 0。
 - 阻塞：无。

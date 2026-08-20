@@ -1,7 +1,8 @@
 import 'package:isar_community/isar.dart';
 
 import '../../../data/game_repository.dart';
-import '../../battle/application/stage_battle_setup.dart';
+import '../../battle/application/enemy_battle_character_assembler.dart';
+import '../../battle/application/player_battle_character_assembler.dart';
 import '../../battle/domain/battle_state.dart';
 import '../domain/expedition_node.dart';
 import 'expedition_battle_runner.dart';
@@ -22,7 +23,7 @@ class ExpeditionCombatRunner implements ExpeditionCombat {
   List<BattleCharacter>? _baseTeam;
 
   Future<List<BattleCharacter>> _base(List<int> ids) async => _baseTeam ??=
-      await StageBattleSetup(isar: _isar).buildExactPlayerTeam(ids);
+      await PlayerBattleCharacterAssembler(isar: _isar).loadExactRoster(ids);
 
   @override
   Future<Map<int, ExpeditionMemberCaps>> memberCaps(List<int> ids) async {
@@ -57,7 +58,7 @@ class ExpeditionCombatRunner implements ExpeditionCombat {
     );
     // 批 B：远征属境界段推进入口（spec 拍板 #5），cycle≥2 敌境界整体抬升；
     // 深度 hp/atk 缩放（enemiesForNode 内）照旧叠加。
-    final enemies = StageBattleSetup.buildEnemyTeam(
+    final enemies = EnemyBattleCharacterAssembler.assembleAll(
       enemyDefs,
       cycleIndex: cycleIndex,
       advanceRealmPerCycle: true,

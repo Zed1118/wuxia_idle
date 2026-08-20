@@ -178,6 +178,29 @@ void main() {
     });
   });
 
+  test('Phase 0A 生产路径不得直接依赖 StageBattleSetup', () {
+    final files = <File>[
+      ...sourceFiles(appDir),
+      File(
+        'lib/features/mainline/presentation/'
+        'phase0a_mainline_battle_host.dart',
+      ),
+    ];
+    for (final file in files) {
+      final code = stripComments(file.readAsStringSync());
+      expect(
+        code.contains('stage_battle_setup.dart'),
+        isFalse,
+        reason: '${file.path} 不得 import 待退役 StageBattleSetup module',
+      );
+      expect(
+        RegExp(r'\bStageBattleSetup\b').hasMatch(code),
+        isFalse,
+        reason: '${file.path} 不得引用待退役 StageBattleSetup interface',
+      );
+    }
+  });
+
   /// 第五批(快照工厂)专属契约:工厂只做字段解析与 SkillProficiency 复用,
   /// 禁止第二套伤害公式、禁止回查仓库、禁止依赖旧 strategy。
   group('快照工厂源码契约(第五批)', () {
