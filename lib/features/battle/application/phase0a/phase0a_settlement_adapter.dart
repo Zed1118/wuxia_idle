@@ -90,14 +90,22 @@ final class Phase0aSettlementAdapter {
           hadActions = true;
         case Phase0aGatherApplied(:final actor, :final outcomes):
           for (final result in outcomes) {
-            addDamage(actor, result.resolvedDamage);
+            addDamage(
+              actor,
+              result.resolvedDamage,
+              critical: result.isCritical,
+            );
           }
         case Phase0aClearStarted(:final actor, :final tick):
           hadActions = true;
           addSkillCast(actor, tick, Phase0aDamageKind.clear);
         case Phase0aClearApplied(:final actor, :final outcomes):
           for (final result in outcomes) {
-            addDamage(actor, result.resolvedDamage);
+            addDamage(
+              actor,
+              result.resolvedDamage,
+              critical: result.isCritical,
+            );
           }
         case Phase0aEnemyDefeated() ||
             Phase0aSkillAvailabilityChanged() ||

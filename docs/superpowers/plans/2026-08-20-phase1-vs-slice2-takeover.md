@@ -42,7 +42,7 @@
 ## 当前恢复点
 
 - 状态：WIP，禁止合并，分支 tip 不打 `[READY]`。
-- 最后完成：灰度门收窄 Ch1 一周目；模拟步长/预算迁 `phase0a_arena.simulation` 并强校验；live/headless 五关同 seed 胜负、事件与末态 HP 一致；开场真气透传；Boss elite 语义恢复；中途退出零结算污染。
-- 下一步：跑既有 Phase 0A 双视口/0C 工程验证与批末全量；更新 PROGRESS/NEXT，完成分支交付收账。
-- 已跑验证：主线接线 15、真实 Isar 结算 14、mapper 11、headless 11、结算/controller/source-contract 相关组均过；`flutter analyze` 0 issue。
+- 最后完成：灰度门/时钟/结算全链收口；补群体技能 outcome 暴击位，战后 `criticalCount` 不再漏算 Q/R 暴击；双视口、0C 50 次进退/暂停/缩放均过。
+- 下一步：最后一轮全量后更新 PROGRESS/NEXT，完成分支交付收账。
+- 已跑验证：主线接线 15、真实 Isar 结算 14、mapper 12、headless 11、reducer/event/结算/controller/source-contract 相关组均过；`flutter analyze` 0 issue；上一轮全量在暴击位扩展前为 5206/0。
 - 阻塞项：无新增用户拍板；工程上被真实结算链缺口阻塞。

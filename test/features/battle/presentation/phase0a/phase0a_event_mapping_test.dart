@@ -199,12 +199,14 @@ void main() {
         Phase0aSkillOutcome(
           target: 'e1',
           resolvedDamage: 0,
+          isCritical: false,
           defeated: false,
           statusApplied: Phase0aSkillStatus.pulled,
         ),
         Phase0aSkillOutcome(
           target: 'e2',
           resolvedDamage: 0,
+          isCritical: false,
           defeated: false,
           statusApplied: Phase0aSkillStatus.none,
         ),
@@ -252,12 +254,14 @@ void main() {
             Phase0aSkillOutcome(
               target: 'e1',
               resolvedDamage: 88,
+              isCritical: true,
               defeated: false,
               statusApplied: Phase0aSkillStatus.staggered,
             ),
             Phase0aSkillOutcome(
               target: 'e2',
               resolvedDamage: 0,
+              isCritical: false,
               defeated: false,
               statusApplied: Phase0aSkillStatus.staggered,
             ),
@@ -520,18 +524,21 @@ void main() {
             Phase0aSkillOutcome(
               target: 'e1',
               resolvedDamage: 88,
+              isCritical: false,
               defeated: false,
               statusApplied: Phase0aSkillStatus.staggered,
             ),
             Phase0aSkillOutcome(
               target: 'e2',
               resolvedDamage: 55,
+              isCritical: false,
               defeated: false,
               statusApplied: Phase0aSkillStatus.staggered,
             ),
             Phase0aSkillOutcome(
               target: 'e3',
               resolvedDamage: 120,
+              isCritical: false,
               defeated: false,
               statusApplied: Phase0aSkillStatus.staggered,
             ),

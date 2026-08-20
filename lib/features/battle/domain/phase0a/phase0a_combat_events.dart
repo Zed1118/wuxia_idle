@@ -116,6 +116,7 @@ final class Phase0aSkillOutcome {
   const Phase0aSkillOutcome({
     required this.target,
     required this.resolvedDamage,
+    required this.isCritical,
     required this.defeated,
     required this.statusApplied,
   });
@@ -124,6 +125,7 @@ final class Phase0aSkillOutcome {
 
   /// 模拟核结算伤害;无伤害结算时为 0。
   final int resolvedDamage;
+  final bool isCritical;
 
   final bool defeated;
   final Phase0aSkillStatus statusApplied;
@@ -133,12 +135,13 @@ final class Phase0aSkillOutcome {
       other is Phase0aSkillOutcome &&
       other.target == target &&
       other.resolvedDamage == resolvedDamage &&
+      other.isCritical == isCritical &&
       other.defeated == defeated &&
       other.statusApplied == statusApplied;
 
   @override
   int get hashCode =>
-      Object.hash(target, resolvedDamage, defeated, statusApplied);
+      Object.hash(target, resolvedDamage, isCritical, defeated, statusApplied);
 }
 
 bool _outcomesEqual(List<Phase0aSkillOutcome> a, List<Phase0aSkillOutcome> b) {

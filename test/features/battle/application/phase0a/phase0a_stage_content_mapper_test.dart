@@ -13,6 +13,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlemen
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 
@@ -324,6 +325,44 @@ void main() {
       expect(settlement.participantFor(1)!.currentHp, greaterThan(0));
       final enemyId = mapping.combatants.last.character.characterId;
       expect(settlement.participantFor(enemyId)!.currentHp, 0);
+    });
+
+    test('群体技能暴击位进入战后 criticalCount', () {
+      final mapping = Phase0aStageContentMapper.map(
+        stage: repo.getStage('stage_01_01'),
+        playerCharacter: makeCh1Player(repo.numbers),
+        numbers: repo.numbers,
+      );
+      final settlement = Phase0aSettlementAdapter.fromMapping(
+        mapping: mapping,
+        outcome: Phase0aBattleOutcome.victory,
+        finalState: Phase0aArenaState(
+          tick: 1,
+          nextSeq: 3,
+          player: mapping.initialState.player,
+          enemies: const [],
+          skillSlots: mapping.initialState.skillSlots,
+        ),
+        events: const [
+          Phase0aClearStarted(seq: 1, tick: 1, actor: 'player'),
+          Phase0aClearApplied(
+            seq: 2,
+            tick: 1,
+            actor: 'player',
+            outcomes: [
+              Phase0aSkillOutcome(
+                target: 'enemy_xueTu_thug_a',
+                resolvedDamage: 88,
+                isCritical: true,
+                defeated: true,
+                statusApplied: Phase0aSkillStatus.staggered,
+              ),
+            ],
+          ),
+        ],
+      );
+      expect(settlement.totalDamage, 88);
+      expect(settlement.criticalCount, 1);
     });
 
     test('胜率画像:五关 × 五 seed 全胜(P3 双跑口径基线)', () {
