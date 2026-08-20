@@ -1,16 +1,16 @@
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/numbers_config.dart';
-import '../../domain/battle_state.dart' show BattleCharacter;
+import '../../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../../cultivation/domain/skill_proficiency.dart';
 import 'phase0a_damage_calculator_adapter.dart';
 
-/// Phase 0A 快照工厂的不可变输入:显式 Phase0a actor id + 对应战斗角色。
+/// Phase 0A 快照工厂的不可变输入:显式 Phase0a actor id + 中立角色快照。
 ///
 /// actorId 必须由调用方显式给出(与 arena actor id 一致),不得从旧
 /// characterId 自行猜测字符串 id(第五批协调计划冻结边界)。
 final class Phase0aCombatantInput {
-  Phase0aCombatantInput({required this.actorId, required this.character}) {
+  Phase0aCombatantInput({required this.actorId, required this.snapshot}) {
     if (actorId.isEmpty) {
       throw ArgumentError.value(actorId, 'actorId', 'Phase0a actor id 不得为空');
     }
@@ -19,8 +19,8 @@ final class Phase0aCombatantInput {
   /// 显式 Phase0a actor id(与 arena/reducer 侧 id 一致)。
   final String actorId;
 
-  /// 既有生产战斗快照(只读其稳定字段,不在本类持有期修改)。
-  final BattleCharacter character;
+  /// 引擎无关的开战前领域快照。
+  final CombatantSnapshot snapshot;
 }
 
 /// 工厂输出 bundle:`Phase0aDamageCalculatorAdapter` 的显式入参载体。
@@ -41,9 +41,9 @@ final class Phase0aBattleSnapshotBundle {
   final Map<Phase0aDamageKind, SkillDef?> moveBindings;
 }
 
-/// Phase 0A BattleCharacter 生产快照工厂(第五批派单)。
+/// Phase 0A 生产伤害快照工厂(第五批派单)。
 ///
-/// 只做「`BattleCharacter` 稳定字段解析 + 既有 `SkillProficiency` 调用」,
+/// 只做「`CombatantSnapshot` 稳定字段解析 + 既有 `SkillProficiency` 调用」,
 /// 不复制伤害/熟练度公式,不创建第二套伤害计算器——消费方仍必须实例化
 /// 既有 `Phase0aDamageCalculatorAdapter` 并传入本工厂产出的 bundle。
 ///
@@ -63,7 +63,7 @@ final class Phase0aBattleSnapshotFactory {
 
   final NumbersConfig _numbers;
 
-  /// 把显式 actor id + `BattleCharacter` 集合映射为不可变 bundle。
+  /// 把显式 actor id + [CombatantSnapshot] 集合映射为不可变 bundle。
   ///
   /// [moveBindings] 显式注入并做防御性副本;null 仍表示 control-only,
   /// 缺 kind 仍由既有 adapter fail-fast,本工厂不猜技能。
@@ -101,7 +101,7 @@ final class Phase0aBattleSnapshotFactory {
     Phase0aCombatantInput combatant,
     Map<String, SkillDef> boundSkills,
   ) {
-    final c = combatant.character;
+    final c = combatant.snapshot;
     final id = combatant.actorId;
     // —— 动态机制构造期 fail-fast(不静默填中性值冒充支持)——
     if (c.forgingLifestealPct != 0) {
@@ -122,13 +122,6 @@ final class Phase0aBattleSnapshotFactory {
         '静态快照无法正确承载,需 state-aware resolver',
       );
     }
-    if (c.staggerTicksRemaining > 0 || c.staggerDefenseDownOverride != null) {
-      throw StateError(
-        'Phase0a 快照工厂 $id: 活跃踉跄减防是战中动态状态,'
-        '静态快照无法正确承载,需 state-aware resolver',
-      );
-    }
-
     // 熟练度:只调 SkillProficiency.stageFor / combinedMult 与
     // SkillDef.proficiency.damagePctAt(与旧战斗内 adapter 同调用序),
     // 不复制推导公式;无使用记录 = uses 0 → 阶段表首阶语义。

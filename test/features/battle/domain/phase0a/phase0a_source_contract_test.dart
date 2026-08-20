@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   final sourceDir = Directory('lib/features/battle/domain/phase0a');
   final appDir = Directory('lib/features/battle/application/phase0a');
+  final presentationDir = Directory('lib/features/battle/presentation/phase0a');
 
   String stripComments(String source) {
     final noBlock = source.replaceAll(RegExp(r'/\*[\s\S]*?\*/'), '');
@@ -114,15 +115,17 @@ void main() {
       }
     });
 
-    // 第五批(快照工厂)调整:工厂需读 BattleCharacter 字段,允许
-    // `battle_state.dart show BattleCharacter` 收窄导入;旧 3v3 运行依赖
-    // 改按符号级锁死,不因同文件定义 BattleCharacter 而放宽。
-    test('不得依赖旧 3v3 的 BattleState / BattleAI / DefaultGroundStrategy', () {
+    test('不得依赖旧 3v3 domain 或 strategy', () {
       final legacyBattle = RegExp(
-        r'\b(BattleState|BattleAI|DefaultGroundStrategy)\b',
+        r'\b(BattleCharacter|BattleState|BattleAI|DefaultGroundStrategy)\b',
       );
       for (final file in sourceFiles(appDir)) {
         final code = stripComments(file.readAsStringSync());
+        expect(
+          code.contains('battle_state.dart'),
+          isFalse,
+          reason: '${file.path} import 旧 battle_state.dart',
+        );
         expect(
           code.contains('battle_ai.dart'),
           isFalse,
@@ -181,6 +184,7 @@ void main() {
   test('Phase 0A 生产路径不得直接依赖 StageBattleSetup', () {
     final files = <File>[
       ...sourceFiles(appDir),
+      ...sourceFiles(presentationDir),
       File(
         'lib/features/mainline/presentation/'
         'phase0a_mainline_battle_host.dart',
@@ -201,6 +205,36 @@ void main() {
     }
   });
 
+  test('Phase 0A 生产路径只消费 neutral snapshot，不得回流旧战斗角色', () {
+    final files = <File>[
+      ...sourceFiles(appDir),
+      ...sourceFiles(presentationDir),
+      File(
+        'lib/features/mainline/presentation/'
+        'phase0a_mainline_battle_host.dart',
+      ),
+    ];
+    final legacySymbol = RegExp(r'\bBattleCharacter\b');
+    for (final file in files) {
+      final code = stripComments(file.readAsStringSync());
+      expect(
+        code.contains('battle_state.dart'),
+        isFalse,
+        reason: '${file.path} 不得 import 旧 battle_state.dart',
+      );
+      expect(
+        code.contains('legacy_3v3_combatant_adapter.dart'),
+        isFalse,
+        reason: '${file.path} 不得绕 neutral seam 回接 legacy Adapter',
+      );
+      expect(
+        legacySymbol.firstMatch(code),
+        isNull,
+        reason: '${file.path} 不得引用旧 BattleCharacter 类型',
+      );
+    }
+  });
+
   /// 第五批(快照工厂)专属契约:工厂只做字段解析与 SkillProficiency 复用,
   /// 禁止第二套伤害公式、禁止回查仓库、禁止依赖旧 strategy。
   group('快照工厂源码契约(第五批)', () {
@@ -213,14 +247,17 @@ void main() {
       expect(factoryFile.existsSync(), isTrue);
     });
 
-    test('BattleCharacter 仅经 show 收窄导入', () {
+    test('工厂直接消费 CombatantSnapshot，禁止旧 BattleCharacter import', () {
       final code = factoryFile.readAsStringSync();
       expect(
-        code.contains(
-          "import '../../domain/battle_state.dart' show BattleCharacter;",
-        ),
+        code.contains('combatant_snapshot.dart'),
         isTrue,
-        reason: '工厂必须 show BattleCharacter 收窄导入,不得整文件引入旧状态符号',
+        reason: '工厂必须 import engine-neutral CombatantSnapshot',
+      );
+      expect(
+        code.contains('battle_state.dart'),
+        isFalse,
+        reason: '工厂不得回引旧 BattleCharacter/battle_state.dart',
       );
     });
 

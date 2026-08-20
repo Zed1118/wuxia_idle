@@ -20,6 +20,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/data/yaml_loader.dart';
 import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
@@ -370,7 +371,13 @@ void main() {
     final stage = GameRepository.instance.getStage('stage_01_01');
     final mapping = Phase0aStageContentMapper.map(
       stage: stage,
-      playerCharacter: battleChar(id: founderId, name: '祖师', teamSide: 0),
+      playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
+        battleChar(
+          id: founderId,
+          name: '祖师',
+          teamSide: 0,
+        ).copyWith(actionPoint: 0),
+      ),
       numbers: noRareBonusNumbers,
     );
     final flow = Phase0aProductionFlowAssembler.assemble(

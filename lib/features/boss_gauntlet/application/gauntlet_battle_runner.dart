@@ -1,6 +1,7 @@
 import '../../../data/defs/stage_def.dart';
 import '../../../data/numbers_config.dart';
-import '../../battle/application/enemy_battle_character_assembler.dart';
+import '../../battle/application/enemy_combatant_snapshot_assembler.dart';
+import '../../battle/application/legacy_3v3_combatant_adapter.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../expedition/application/expedition_battle_runner.dart';
 
@@ -17,14 +18,14 @@ class GauntletStageResult {
 
 /// 断魂庄单关战斗驱动（design §5.2-5.5）。
 ///
-/// = 敌队合成（[EnemyBattleCharacterAssembler]）+ [ExpeditionBattleRunner.runNodeBattle]
+/// = 敌队合成（[EnemyCombatantSnapshotAssembler]）+ [ExpeditionBattleRunner.runNodeBattle]
 /// （沿 Phase B 同 wiring · `Random(seed)` 逐 tick 确定性）。敌队机制（vulnerability
 /// 窗口 / guardianWard 结界 / bossPhases 三阶段）由 `buildEnemyTeam` 从 [EnemyDef] 灌入
 /// `BattleCharacter`（`vulnerabilityMult`/`guardianWardMult`/`bossPhases`），qi_drain 由
 /// `default_ground_strategy` 消费（C1.3.1）——**runner 不额外注入任何机制**。
 ///
 /// 玩家队伍（含当前 HP/qi/技能冷却）由 caller 从会话快照建好传入；Isar 载入 + 满血
-/// 基准队注入归 C2.1 service（`PlayerBattleCharacterAssembler` 同远征路径），
+/// 基准队注入归 C2.1 service（`PlayerCombatantSnapshotAssembler` 同远征路径），
 /// 保持本 runner 纯 + 确定性可测。
 class GauntletBattleRunner {
   const GauntletBattleRunner._();
@@ -38,11 +39,12 @@ class GauntletBattleRunner {
     int maxTicks = 240,
   }) {
     // 批 B：断魂庄属境界段推进入口（spec 拍板 #5），cycle≥2 敌境界整体抬升。
-    final enemies = EnemyBattleCharacterAssembler.assembleAll(
+    final enemySnapshots = EnemyCombatantSnapshotAssembler.assembleAll(
       enemyDefs,
       cycleIndex: cycleIndex,
       advanceRealmPerCycle: true,
     );
+    final enemies = Legacy3v3CombatantAdapter.enemyTeam(enemySnapshots);
     final result = ExpeditionBattleRunner.runNodeBattle(
       playerTeam: playerTeam,
       enemyTeam: enemies,

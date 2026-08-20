@@ -2,12 +2,12 @@ import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/defs/stage_def.dart';
 import '../../../../data/numbers_config.dart';
-import '../../domain/battle_state.dart';
+import '../../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
-import '../enemy_battle_character_assembler.dart';
+import '../enemy_combatant_snapshot_assembler.dart';
 import 'phase0a_battle_snapshot_factory.dart';
 import 'phase0a_enemy_ai_adapter.dart';
 import 'phase0a_player_input_adapter.dart';
@@ -17,7 +17,7 @@ import 'phase0a_player_input_adapter.dart';
 /// 的全套入参。
 ///
 /// 零口径复制原则:
-/// - 敌人 BattleCharacter 直接复用 [EnemyBattleCharacterAssembler](旧战斗
+/// - 敌人 neutral snapshot 直接复用 [EnemyCombatantSnapshotAssembler](旧战斗
 ///   同一口径:境界内力查表/红线 clamp/周目 scale=1 零回归),不重算任何数值;
 /// - 空间/能量/动作维度(stages.yaml 没有的 0A 特有轴)全部取
 ///   [NumbersConfig.phase0aArena] 段,不硬编码;
@@ -44,15 +44,15 @@ final class Phase0aStageMapping {
 final class Phase0aStageContentMapper {
   const Phase0aStageContentMapper._();
 
-  /// 装配一关的 0A 战斗输入。[playerCharacter] 由调用方构造(生产侧走
-  /// `BattleCharacter.fromCharacter` Isar 路径,纵切测试显式构造)。
+  /// 装配一关的 0A 战斗输入。[playerSnapshot] 由调用方构造(生产侧走
+  /// [PlayerCombatantSnapshotAssembler] Isar 路径,纵切测试显式构造)。
   ///
   /// fail-fast:`numbers.phase0aArena` 缺段(isEmpty)拒绝装配——纵切不得
   /// 静默用零参数竞技场冒充配置;`stage.enemyTeam` 为空拒绝(剧情空关
   /// 不走战斗装配)。
   static Phase0aStageMapping map({
     required StageDef stage,
-    required BattleCharacter playerCharacter,
+    required CombatantSnapshot playerSnapshot,
     required NumbersConfig numbers,
     String playerId = 'player',
   }) {
@@ -67,25 +67,25 @@ final class Phase0aStageContentMapper {
       throw ArgumentError.value(stage.id, 'stage', 'Phase0a 纵切装配拒绝空敌队关卡');
     }
 
-    // —— 敌人 BattleCharacter:复用旧战斗同一口径(零数值复制)——
-    final enemyCharacters = EnemyBattleCharacterAssembler.assembleAll(
+    // —— 敌人 neutral snapshot:复用旧战斗同一口径(零数值复制)——
+    final enemySnapshots = EnemyCombatantSnapshotAssembler.assembleAll(
       stage.enemyTeam,
     );
 
     // —— 空间排布:确定性,玩家在左,敌人右侧按 slot 均匀散开 ——
     final playerPosition = ArenaVector(arena.arenaMinX * 0.5, 0);
     final waveEnemies = <Phase0aActor>[
-      for (var i = 0; i < enemyCharacters.length; i++)
+      for (var i = 0; i < enemySnapshots.length; i++)
         _enemyActor(
           arena: arena,
-          character: enemyCharacters[i],
+          snapshot: enemySnapshots[i],
           actorId: stage.enemyTeam.length == 1
               ? stage.enemyTeam[i].id
               : '${stage.enemyTeam[i].id}_w0s$i',
           position: _enemyPosition(
             arena: arena,
             slot: i,
-            count: enemyCharacters.length,
+            count: enemySnapshots.length,
           ),
         ),
     ];
@@ -95,21 +95,21 @@ final class Phase0aStageContentMapper {
       side: Phase0aSide.player,
       position: playerPosition,
       facing: const ArenaVector(1, 0),
-      maxHealth: playerCharacter.maxHp,
-      currentHealth: playerCharacter.currentHp,
+      maxHealth: playerSnapshot.maxHp,
+      currentHealth: playerSnapshot.currentHp,
       moveSpeed: arena.playerMoveSpeed,
-      qiCurrent: playerCharacter.currentQi,
-      qiMax: playerCharacter.maxQi,
+      qiCurrent: playerSnapshot.currentQi,
+      qiMax: playerSnapshot.maxQi,
       attackCooldownRemaining: 0,
       defeatKind: Phase0aDefeatKind.normal,
     );
 
     final combatants = <Phase0aCombatantInput>[
-      Phase0aCombatantInput(actorId: playerId, character: playerCharacter),
-      for (var i = 0; i < enemyCharacters.length; i++)
+      Phase0aCombatantInput(actorId: playerId, snapshot: playerSnapshot),
+      for (var i = 0; i < enemySnapshots.length; i++)
         Phase0aCombatantInput(
           actorId: waveEnemies[i].id,
-          character: enemyCharacters[i],
+          snapshot: enemySnapshots[i],
         ),
     ];
 
@@ -148,7 +148,7 @@ final class Phase0aStageContentMapper {
 
   static Phase0aActor _enemyActor({
     required Phase0aArenaConfig arena,
-    required BattleCharacter character,
+    required CombatantSnapshot snapshot,
     required String actorId,
     required ArenaVector position,
   }) {
@@ -158,13 +158,13 @@ final class Phase0aStageContentMapper {
       side: Phase0aSide.enemy,
       position: position,
       facing: const ArenaVector(-1, 0),
-      maxHealth: character.maxHp,
-      currentHealth: character.currentHp,
+      maxHealth: snapshot.maxHp,
+      currentHealth: snapshot.currentHp,
       moveSpeed: arena.enemyMoveSpeed,
       qiCurrent: arena.enemyQi,
       qiMax: arena.enemyQi,
       attackCooldownRemaining: arena.enemyInitialAttackCooldown,
-      defeatKind: character.isBoss
+      defeatKind: snapshot.isBoss
           ? Phase0aDefeatKind.elite
           : Phase0aDefeatKind.normal,
     );

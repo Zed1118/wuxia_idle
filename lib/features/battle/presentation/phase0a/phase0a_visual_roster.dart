@@ -65,7 +65,7 @@ final class Phase0aVisualRoster {
       final isPlayer = combatant.actorId == playerId;
       final assetPath = isPlayer
           ? playerBattleAsset
-          : combatant.character.iconPath;
+          : combatant.snapshot.iconPath;
       if (assetPath == null || assetPath.isEmpty) {
         throw StateError(
           'Phase0a roster requires a non-empty asset: '
@@ -73,9 +73,9 @@ final class Phase0aVisualRoster {
         );
       }
       visuals[combatant.actorId] = Phase0aActorVisual(
-        name: combatant.character.name,
+        name: combatant.snapshot.name,
         assetPath: assetPath,
-        isElite: combatant.character.isBoss,
+        isElite: combatant.snapshot.isBoss,
       );
     }
     return Phase0aVisualRoster(visuals: visuals);

@@ -10,11 +10,11 @@ import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
+import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
-import '../../battle/application/player_battle_character_assembler.dart';
-import '../../battle/domain/battle_state.dart' show BattleCharacter;
+import '../../battle/application/player_combatant_snapshot_assembler.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
@@ -32,7 +32,7 @@ import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
 /// 重试语义走 runStageFlow 循环头(新 host 新装配新 seed),故屏内
 /// retryFlowBuilder 传 null(终局不出现「再战」,避免双轨重试)。
 ///
-/// [playerCharacterForTest] / [seedForTest] 仅供 widget test 注入,
+/// [playerSnapshotForTest] / [seedForTest] 仅供 widget test 注入,
 /// 生产端勿传(沿 stage_entry_flow DI 体例)。
 class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
   const Phase0aMainlineBattleHost({
@@ -40,7 +40,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
     required this.stage,
     required this.onVictory,
     required this.onDefeat,
-    this.playerCharacterForTest,
+    this.playerSnapshotForTest,
     this.seedForTest,
   });
 
@@ -49,7 +49,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
   final ValueChanged<CombatSettlementSnapshot> onDefeat;
 
   @visibleForTesting
-  final BattleCharacter? playerCharacterForTest;
+  final CombatantSnapshot? playerSnapshotForTest;
 
   @visibleForTesting
   final int? seedForTest;
@@ -72,13 +72,13 @@ class _Phase0aMainlineBattleHostState
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       try {
-        final playerCharacter =
-            widget.playerCharacterForTest ?? await _buildPlayerCharacter();
+        final playerSnapshot =
+            widget.playerSnapshotForTest ?? await _buildPlayerSnapshot();
         if (!mounted) return;
         final numbers = GameRepository.instance.numbers;
         final mapping = Phase0aStageContentMapper.map(
           stage: widget.stage,
-          playerCharacter: playerCharacter,
+          playerSnapshot: playerSnapshot,
           numbers: numbers,
         );
         final roster = Phase0aVisualRoster.fromMapping(mapping);
@@ -118,10 +118,10 @@ class _Phase0aMainlineBattleHostState
 
   /// 生产路径:单主角续传(D3=α)= 祖师一人出战。
   ///
-  /// 走 [PlayerBattleCharacterAssembler.loadExactRoster] 复用生产装配全套
+  /// 走 [PlayerCombatantSnapshotAssembler.loadExactRoster] 复用生产装配全套
   /// 口径(autoFill/祖师 buff/伤势/装备),零数值分叉。祖师 id 缺失
   /// (P1 种子档等)兜底取首个角色。
-  Future<BattleCharacter> _buildPlayerCharacter() async {
+  Future<CombatantSnapshot> _buildPlayerSnapshot() async {
     final isar = IsarSetup.instance;
     final save = await isar.saveDatas.get(0);
     var playerId = save?.founderCharacterId;
@@ -132,7 +132,7 @@ class _Phase0aMainlineBattleHostState
       }
       playerId = fallback.id;
     }
-    final team = await PlayerBattleCharacterAssembler(
+    final team = await PlayerCombatantSnapshotAssembler(
       isar: isar,
     ).loadExactRoster([playerId]);
     if (team.isEmpty) {

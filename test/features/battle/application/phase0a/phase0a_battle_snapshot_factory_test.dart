@@ -6,6 +6,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
+import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_combat_session.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_damage_calculator_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
@@ -142,7 +143,10 @@ void main() {
   }
 
   Phase0aCombatantInput input(String actorId, BattleCharacter character) =>
-      Phase0aCombatantInput(actorId: actorId, character: character);
+      Phase0aCombatantInput(
+        actorId: actorId,
+        snapshot: Legacy3v3CombatantAdapter.toSnapshot(character),
+      );
 
   group('稳定字段逐项映射(与 _calculateInBattle 口径同值)', () {
     test('永久内力/装备攻击/修炼层/流派/境界/防闪暴/双乘子/破甲逐项同值', () {

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -170,7 +171,10 @@ void main() {
   ) {
     return [
       for (final entry in characters.entries)
-        Phase0aCombatantInput(actorId: entry.key, character: entry.value),
+        Phase0aCombatantInput(
+          actorId: entry.key,
+          snapshot: Legacy3v3CombatantAdapter.toSnapshot(entry.value),
+        ),
     ];
   }
 
@@ -664,7 +668,9 @@ void main() {
       combatants.add(
         Phase0aCombatantInput(
           actorId: 'e9',
-          character: makeCharacter(characterId: 9),
+          snapshot: Legacy3v3CombatantAdapter.toSnapshot(
+            makeCharacter(characterId: 9),
+          ),
         ),
       );
       waves.add(
