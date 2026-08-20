@@ -274,6 +274,7 @@ Phase0aStepResult reducePhase0aTick({
             Phase0aSkillOutcome(
               target: target.id,
               resolvedDamage: damage,
+              isCritical: resolved.isHit && resolved.isCritical,
               defeated: !updated.isAlive,
               statusApplied: pulled
                   ? Phase0aSkillStatus.pulled
@@ -358,6 +359,7 @@ Phase0aStepResult reducePhase0aTick({
             Phase0aSkillOutcome(
               target: target.id,
               resolvedDamage: damage,
+              isCritical: resolved.isHit && resolved.isCritical,
               defeated: !updated.isAlive,
               statusApplied: Phase0aSkillStatus.staggered,
             ),

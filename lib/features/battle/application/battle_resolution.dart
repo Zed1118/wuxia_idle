@@ -17,6 +17,7 @@ import '../../dispel/application/dispel_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../injury/application/injury_service.dart';
 import '../../../features/equipment/application/drop_service.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 
 /// 战斗结算服务的汇总返回（phase2_tasks T26 §324-356）。
 ///
@@ -120,13 +121,102 @@ class BattleResolutionService {
     // 周目平衡 2026-06-26:cycle≥2 提高稀有彩头概率 + 普通掉落材料加成(主线/扫荡)。
     // 默认 1 = 一周目原行为;爬塔走独立 first-clear 路径不经本参。
     int cycle = 1,
+  }) => resolveSnapshot(
+    settlement: snapshotFromBattleState(finalState),
+    participatingCharacters: participatingCharacters,
+    equipmentsByCharacter: equipmentsByCharacter,
+    techniquesByCharacter: techniquesByCharacter,
+    rng: rng,
+    progressToNextMap: progressToNextMap,
+    techniqueDefLookup: techniqueDefLookup,
+    dropService: dropService,
+    stageDef: stageDef,
+    numbersConfig: numbersConfig,
+    isHardFight: isHardFight,
+    equipmentPoolByTier: equipmentPoolByTier,
+    equipmentTierForRealm: equipmentTierForRealm,
+    cycle: cycle,
+  );
+
+  static CombatSettlementSnapshot snapshotFromBattleState(
+    BattleState finalState,
+  ) {
+    var totalDamage = 0;
+    var criticalCount = 0;
+    final damageByCharacterId = <int, int>{};
+    final skillCasts = <CombatSkillCastSnapshot>[];
+    final countedSkillCasts = <String>{};
+    for (final action in finalState.actionLog) {
+      final attack = action.attackResult;
+      if (attack != null) {
+        totalDamage += attack.finalDamage;
+        if (attack.isCritical) criticalCount += 1;
+        damageByCharacterId.update(
+          action.actorId,
+          (damage) => damage + attack.finalDamage,
+          ifAbsent: () => attack.finalDamage,
+        );
+      }
+      final skillId = action.skill?.id;
+      if (skillId != null) {
+        if (action.targetId != null) {
+          final castKey = '${action.tick}|${action.actorId}|$skillId';
+          if (!countedSkillCasts.add(castKey)) continue;
+        }
+        skillCasts.add(
+          CombatSkillCastSnapshot(
+            tick: action.tick,
+            characterId: action.actorId,
+            skillId: skillId,
+          ),
+        );
+      }
+    }
+    return CombatSettlementSnapshot(
+      result: finalState.result,
+      totalTicks: finalState.tick,
+      hadActions: finalState.actionLog.isNotEmpty,
+      participants: [
+        for (final character in [
+          ...finalState.leftTeam,
+          ...finalState.rightTeam,
+        ])
+          CombatParticipantSnapshot(
+            characterId: character.characterId,
+            currentHp: character.currentHp,
+            maxHp: character.maxHp,
+          ),
+      ],
+      skillCasts: skillCasts,
+      totalDamage: totalDamage,
+      criticalCount: criticalCount,
+      damageByCharacterId: damageByCharacterId,
+    );
+  }
+
+  /// Executes post-combat effects from an engine-neutral terminal snapshot.
+  static BattleResolutionResult resolveSnapshot({
+    required CombatSettlementSnapshot settlement,
+    required List<Character> participatingCharacters,
+    required Map<int, List<Equipment>> equipmentsByCharacter,
+    required Map<int, List<Technique>> techniquesByCharacter,
+    required Rng rng,
+    required Map<CultivationLayer, int> progressToNextMap,
+    required TechniqueDef Function(String defId) techniqueDefLookup,
+    required DropService dropService,
+    StageDef? stageDef,
+    NumbersConfig? numbersConfig,
+    bool isHardFight = false,
+    List<EquipmentDef> Function(EquipmentTier)? equipmentPoolByTier,
+    EquipmentTier Function(RealmTier)? equipmentTierForRealm,
+    int cycle = 1,
   }) {
-    _assertAllParticipated(finalState, participatingCharacters);
-    final resolvedVictory = finalState.result == BattleResult.leftWin;
+    _assertAllParticipated(settlement, participatingCharacters);
+    final resolvedVictory = settlement.result == BattleResult.leftWin;
 
     // 只有至少完成一次行动的有效战斗才调息；失败新增的紊乱在下方
     // 惩罚分支后结算，避免“刚受惩罚就自动抵消一次”。
-    if (numbersConfig != null && finalState.actionLog.isNotEmpty) {
+    if (numbersConfig != null && settlement.hadActions) {
       for (final character in participatingCharacters) {
         InnerBreathDisorder.recover(
           character: character,
@@ -137,17 +227,10 @@ class BattleResolutionService {
 
     // 1. 反推 actionLog：actor → {skillId: 使用次数}
     final skillCountsByActor = <int, Map<String, int>>{};
-    final countedSkillCasts = <String>{};
-    for (final action in finalState.actionLog) {
-      final skillId = action.skill?.id;
-      if (skillId == null) continue; // 普通行动（无 skill）不计入修炼度
-      if (action.targetId != null) {
-        final castKey = '${action.tick}|${action.actorId}|$skillId';
-        if (!countedSkillCasts.add(castKey)) continue;
-      }
+    for (final cast in settlement.skillCasts) {
       skillCountsByActor
-          .putIfAbsent(action.actorId, () => <String, int>{})
-          .update(skillId, (v) => v + 1, ifAbsent: () => 1);
+          .putIfAbsent(cast.characterId, () => <String, int>{})
+          .update(cast.skillId, (v) => v + 1, ifAbsent: () => 1);
     }
 
     final updatedEquipmentIds = <int>[];
@@ -287,9 +370,12 @@ class BattleResolutionService {
     // （战败全员 / 惨胜低血存活者）。仅修改传入 Character 字段，持久化归 caller。
     // 与上方心魔 / Boss 散功分支并存：伤势是通用层，不依赖 stageType。
     if (numbersConfig != null && participatingCharacters.isNotEmpty) {
-      InjuryService.applyBattleInjuries(
+      InjuryService.applySettlementInjuries(
         participatingCharacters: participatingCharacters,
-        finalState: finalState,
+        participants: {
+          for (final participant in settlement.participants)
+            participant.characterId: participant,
+        },
         config: numbersConfig.injury,
         attributeEffects: numbersConfig.attributeEffects,
         isVictory: resolvedVictory,
@@ -312,13 +398,10 @@ class BattleResolutionService {
   /// 反向（finalState 中的角色未在 participating 里）不强制，因为 caller 可能
   /// 只关心 player 队，敌方不结算。
   static void _assertAllParticipated(
-    BattleState finalState,
+    CombatSettlementSnapshot settlement,
     List<Character> participatingCharacters,
   ) {
-    final liveIds = <int>{
-      ...finalState.leftTeam.map((c) => c.characterId),
-      ...finalState.rightTeam.map((c) => c.characterId),
-    };
+    final liveIds = settlement.participantCharacterIds;
     for (final c in participatingCharacters) {
       if (!liveIds.contains(c.id)) {
         throw StateError(

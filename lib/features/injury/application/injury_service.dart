@@ -2,6 +2,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/attribute_effect_policy.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../../data/defs/injury_config.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 
 /// 双层伤势设值纯函数（全静态，仿 InnerDemonService 体例）。
 ///
@@ -37,6 +38,32 @@ class InjuryService {
     required bool isVictory,
     required bool isHardFight,
   }) {
+    applySettlementInjuries(
+      participatingCharacters: participatingCharacters,
+      participants: {
+        for (final battleCharacter in finalState.leftTeam)
+          battleCharacter.characterId: CombatParticipantSnapshot(
+            characterId: battleCharacter.characterId,
+            currentHp: battleCharacter.currentHp,
+            maxHp: battleCharacter.maxHp,
+          ),
+      },
+      config: config,
+      attributeEffects: attributeEffects,
+      isVictory: isVictory,
+      isHardFight: isHardFight,
+    );
+  }
+
+  /// Engine-neutral injury settlement used by both legacy and Phase 0A.
+  static void applySettlementInjuries({
+    required List<Character> participatingCharacters,
+    required Map<int, CombatParticipantSnapshot> participants,
+    required InjuryConfig config,
+    required AttributeEffectRules attributeEffects,
+    required bool isVictory,
+    required bool isHardFight,
+  }) {
     // 连战轻伤：每场都累积。
     for (final ch in participatingCharacters) {
       accumulateLightInjury(ch, maxStacks: config.lightMaxStacks);
@@ -60,22 +87,13 @@ class InjuryService {
 
     // 硬仗惨胜：仅存活且低血角色重伤。
     for (final ch in participatingCharacters) {
-      final bc = _findBattleChar(finalState.leftTeam, ch.id);
-      if (bc == null) continue;
-      if (bc.isAlive &&
-          bc.currentHp < bc.maxHp * config.heavyWinHpThresholdPct) {
+      final participant = participants[ch.id];
+      if (participant == null) continue;
+      if (participant.isAlive &&
+          participant.currentHp <
+              participant.maxHp * config.heavyWinHpThresholdPct) {
         applyHeavyInjury(ch, recoveryHours: recoveryHoursFor(ch));
       }
     }
-  }
-
-  static BattleCharacter? _findBattleChar(
-    List<BattleCharacter> team,
-    int characterId,
-  ) {
-    for (final bc in team) {
-      if (bc.characterId == characterId) return bc;
-    }
-    return null;
   }
 }

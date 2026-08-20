@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,9 +20,15 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/data/yaml_loader.dart';
 import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
+import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 
 import '../../../support/isar_test_support.dart';
 import '../../../support/test_data.dart';
@@ -285,6 +292,137 @@ void main() {
     );
 
     expect(outcome, isNull, reason: 'finalState.isFinished == false → null');
+  });
+
+  testWidgets('显式 0A 末态胜利 → 不读未结束的旧 provider,只结算真实参战者', (tester) async {
+    final (founderId, reserveId) = (await tester.runAsync(() async {
+      final founder = await insertCharacter(name: '祖师');
+      final reserve = await insertCharacter(name: '替补');
+      await writeSaveData(activeIds: [founder, reserve], founderId: founder);
+      return (founder, reserve);
+    }))!;
+    final legacyOngoing = BattleState.initial(
+      leftTeam: [battleChar(id: founderId, name: '祖师', teamSide: 0)],
+      rightTeam: [battleChar(id: 9001, name: '木桩', teamSide: 1)],
+    );
+    final settlement = CombatSettlementSnapshot(
+      result: BattleResult.leftWin,
+      totalTicks: 12,
+      hadActions: true,
+      participants: [
+        CombatParticipantSnapshot(
+          characterId: founderId,
+          currentHp: 7000,
+          maxHp: 8000,
+        ),
+      ],
+      skillCasts: const [],
+      totalDamage: 321,
+      criticalCount: 2,
+      damageByCharacterId: {founderId: 321},
+    );
+    final stage = normalStage(
+      baseExpReward: 30,
+      dropTable: const [
+        ItemDrop(
+          inventoryItemDefId: 'item_silver',
+          quantityMin: 5,
+          quantityMax: 5,
+          dropChance: 1.0,
+        ),
+      ],
+    );
+
+    final outcome = await runWithRef(
+      tester,
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: stage,
+        settlementSnapshot: settlement,
+      ),
+      battleState: legacyOngoing,
+    );
+
+    expect(outcome, isNotNull, reason: '显式 0A 胜利末态必须驱动结算');
+    expect(outcome!.stats.totalDamage, 321);
+    expect(outcome.stats.critCount, 2);
+    expect(outcome.stats.totalTicks, 12);
+    expect(outcome.characters.map((character) => character.id), [founderId]);
+    await tester.runAsync(() async {
+      final founder = await IsarSetup.instance.characters.get(founderId);
+      final reserve = await IsarSetup.instance.characters.get(reserveId);
+      final silver = await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_silver',
+      );
+      expect(founder!.experience, 30, reason: '真实参战祖师获得经验');
+      expect(reserve!.experience, 0, reason: '未参战替补不得被结算');
+      expect(silver!.quantity, 5, reason: '0A 胜利照常发放关卡掉落');
+    });
+  });
+
+  testWidgets('真实 Ch1 映射 + headless 末态 → Isar 奖励/经验/伤势全链', (tester) async {
+    final (founderId, reserveId) = (await tester.runAsync(() async {
+      final founder = await insertCharacter(name: '祖师');
+      final reserve = await insertCharacter(name: '替补');
+      await writeSaveData(activeIds: [founder, reserve], founderId: founder);
+      return (founder, reserve);
+    }))!;
+    final stage = GameRepository.instance.getStage('stage_01_01');
+    final mapping = Phase0aStageContentMapper.map(
+      stage: stage,
+      playerCharacter: battleChar(id: founderId, name: '祖师', teamSide: 0),
+      numbers: noRareBonusNumbers,
+    );
+    final flow = Phase0aProductionFlowAssembler.assemble(
+      initialState: mapping.initialState,
+      waves: mapping.waves,
+      combatants: mapping.combatants,
+      moveBindings: mapping.moveBindings,
+      numbers: noRareBonusNumbers,
+      rng: Random(20260820),
+      playerAdapter: mapping.playerAdapter,
+      enemyAiAdapter: mapping.enemyAiAdapter,
+    );
+    final headless = Phase0aHeadlessRunner.runToEnd(
+      flow: flow,
+      bot: Phase0aPlayerBotAdapter(playerAdapter: mapping.playerAdapter),
+      deltaSeconds: noRareBonusNumbers.phase0aArena.fixedDeltaSeconds,
+      maxTicks: noRareBonusNumbers.phase0aArena.maxSimulationTicks,
+    );
+    final settlement = Phase0aSettlementAdapter.fromMapping(
+      mapping: mapping,
+      outcome: headless.outcome,
+      finalState: headless.finalState,
+      events: headless.events,
+    );
+
+    final outcome = await runWithRef(
+      tester,
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: stage,
+        settlementSnapshot: settlement,
+      ),
+    );
+
+    expect(settlement.result, BattleResult.leftWin);
+    expect(outcome, isNotNull);
+    expect(outcome!.characters.map((character) => character.id), [founderId]);
+    expect(outcome.drops.items, isNotEmpty, reason: 'stage_01_01 固定掉落应入结算');
+    await tester.runAsync(() async {
+      final founder = await IsarSetup.instance.characters.get(founderId);
+      final reserve = await IsarSetup.instance.characters.get(reserveId);
+      expect(founder!.experience, stage.baseExpReward);
+      expect(founder.lightInjuryStacks, 1, reason: '真实参战者累积连战轻伤');
+      expect(reserve!.experience, 0);
+      expect(reserve.lightInjuryStacks, 0, reason: '未参战替补零污染');
+      for (final item in outcome.drops.items) {
+        final stored = await IsarSetup.instance.inventoryItems.getByDefId(
+          item.defId,
+        );
+        expect(stored, isNotNull, reason: '${item.defId} 应写入 Isar');
+      }
+    });
   });
 
   testWidgets('SaveData 无 activeCharacterIds → 返回 null(L778-780)', (

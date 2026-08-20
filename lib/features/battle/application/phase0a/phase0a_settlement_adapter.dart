@@ -1,0 +1,135 @@
+import '../../../../shared/battle_shared/battle_result.dart';
+import '../../../../shared/battle_shared/combat_settlement_snapshot.dart';
+import '../../domain/phase0a/phase0a_combat_events.dart';
+import '../../domain/phase0a/phase0a_combat_model.dart';
+import '../../domain/phase0a/phase0a_combat_reducer.dart';
+import '../../domain/phase0a/phase0a_wave.dart';
+import 'phase0a_stage_content_mapper.dart';
+
+/// Converts Phase 0A terminal state and semantic events into settlement input.
+final class Phase0aSettlementAdapter {
+  const Phase0aSettlementAdapter._();
+
+  static CombatSettlementSnapshot fromMapping({
+    required Phase0aStageMapping mapping,
+    required Phase0aBattleOutcome outcome,
+    required Phase0aArenaState finalState,
+    required List<Phase0aEvent> events,
+  }) {
+    if (outcome == Phase0aBattleOutcome.ongoing) {
+      throw StateError('Cannot settle an ongoing Phase0a battle');
+    }
+    final characterIdByActor = {
+      for (final combatant in mapping.combatants)
+        combatant.actorId: combatant.character.characterId,
+    };
+    final currentActors = <String, Phase0aActor>{
+      finalState.player.id: finalState.player,
+      for (final enemy in finalState.enemies) enemy.id: enemy,
+    };
+    final participants = <CombatParticipantSnapshot>[
+      for (final combatant in mapping.combatants)
+        CombatParticipantSnapshot(
+          characterId: combatant.character.characterId,
+          currentHp: currentActors[combatant.actorId]?.currentHealth ?? 0,
+          maxHp: combatant.character.maxHp,
+        ),
+    ];
+
+    var totalDamage = 0;
+    var criticalCount = 0;
+    var hadActions = false;
+    final damageByCharacterId = <int, int>{};
+    final skillCasts = <CombatSkillCastSnapshot>[];
+
+    void addDamage(String actorId, int damage, {bool critical = false}) {
+      totalDamage += damage;
+      if (critical) criticalCount += 1;
+      final characterId = characterIdByActor[actorId];
+      if (characterId == null) return;
+      damageByCharacterId.update(
+        characterId,
+        (total) => total + damage,
+        ifAbsent: () => damage,
+      );
+    }
+
+    void addSkillCast(String actorId, int tick, Phase0aDamageKind kind) {
+      final characterId = characterIdByActor[actorId];
+      final skillId = mapping.moveBindings[kind]?.id;
+      if (characterId == null || skillId == null) return;
+      final combatant = mapping.combatants.firstWhere(
+        (entry) => entry.actorId == actorId,
+      );
+      if (!combatant.character.availableSkills.any(
+        (skill) => skill.id == skillId,
+      )) {
+        return;
+      }
+      skillCasts.add(
+        CombatSkillCastSnapshot(
+          tick: tick,
+          characterId: characterId,
+          skillId: skillId,
+        ),
+      );
+    }
+
+    for (final event in events) {
+      switch (event) {
+        case Phase0aAttackStarted(:final actor, :final tick):
+          hadActions = true;
+          addSkillCast(actor, tick, Phase0aDamageKind.basic);
+        case Phase0aHitLanded(
+          :final actor,
+          :final resolvedDamage,
+          :final isCritical,
+        ):
+          addDamage(actor, resolvedDamage, critical: isCritical);
+        case Phase0aGatherStarted():
+          hadActions = true;
+        case Phase0aGatherApplied(:final actor, :final outcomes):
+          for (final result in outcomes) {
+            addDamage(
+              actor,
+              result.resolvedDamage,
+              critical: result.isCritical,
+            );
+          }
+        case Phase0aClearStarted(:final actor, :final tick):
+          hadActions = true;
+          addSkillCast(actor, tick, Phase0aDamageKind.clear);
+        case Phase0aClearApplied(:final actor, :final outcomes):
+          for (final result in outcomes) {
+            addDamage(
+              actor,
+              result.resolvedDamage,
+              critical: result.isCritical,
+            );
+          }
+        case Phase0aEnemyDefeated() ||
+            Phase0aSkillAvailabilityChanged() ||
+            Phase0aWaveStarted() ||
+            Phase0aWaveCleared() ||
+            Phase0aBattleVictory() ||
+            Phase0aBattleDefeat():
+          break;
+      }
+    }
+
+    return CombatSettlementSnapshot(
+      result: switch (outcome) {
+        Phase0aBattleOutcome.victory => BattleResult.leftWin,
+        Phase0aBattleOutcome.defeat => BattleResult.rightWin,
+        Phase0aBattleOutcome.ongoing => null,
+      },
+      totalTicks: finalState.tick,
+      hadActions: hadActions,
+      participants: participants,
+      skillCasts: skillCasts,
+      totalDamage: totalDamage,
+      criticalCount: criticalCount,
+      damageByCharacterId: damageByCharacterId,
+    );
+  }
+}

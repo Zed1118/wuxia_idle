@@ -1,0 +1,194 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:isar_community/isar.dart';
+
+import '../../../core/domain/character.dart';
+import '../../../core/domain/save_data.dart';
+import '../../../data/defs/stage_def.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
+import '../../../shared/strings.dart';
+import '../../../shared/utils/math_random.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
+import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
+import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
+import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import '../../battle/application/stage_battle_setup.dart';
+import '../../battle/domain/battle_state.dart' show BattleCharacter;
+import '../../battle/domain/phase0a/phase0a_wave.dart';
+import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
+import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
+import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
+
+/// Phase 1 纵切实机接线(拍板 α 灰度门)的主线 0A 战斗宿主。
+///
+/// 与旧 _StageBattleHost(stage_entry_flow.dart 内私有) 平行存在,由
+/// [Phase0aMainlineGate] 分流;终局语义对齐旧宿主:
+/// - victory:只回调不 pop —— runStageFlow 胜利段收尾时统一 pop;
+/// - defeat:回调 + 自 pop(外层进战败重试/剧情分支);
+/// - 系统返回致 pop 未触发回调 → _runPhase0aBattle 的 completer 兜底
+///   记 (won:false, surrendered:false),与旧宿主同口径(零存档污染)。
+///
+/// 重试语义走 runStageFlow 循环头(新 host 新装配新 seed),故屏内
+/// retryFlowBuilder 传 null(终局不出现「再战」,避免双轨重试)。
+///
+/// [playerCharacterForTest] / [seedForTest] 仅供 widget test 注入,
+/// 生产端勿传(沿 stage_entry_flow DI 体例)。
+class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
+  const Phase0aMainlineBattleHost({
+    super.key,
+    required this.stage,
+    required this.onVictory,
+    required this.onDefeat,
+    this.playerCharacterForTest,
+    this.seedForTest,
+  });
+
+  final StageDef stage;
+  final ValueChanged<CombatSettlementSnapshot> onVictory;
+  final ValueChanged<CombatSettlementSnapshot> onDefeat;
+
+  @visibleForTesting
+  final BattleCharacter? playerCharacterForTest;
+
+  @visibleForTesting
+  final int? seedForTest;
+
+  @override
+  ConsumerState<Phase0aMainlineBattleHost> createState() =>
+      _Phase0aMainlineBattleHostState();
+}
+
+class _Phase0aMainlineBattleHostState
+    extends ConsumerState<Phase0aMainlineBattleHost> {
+  String? _setupError;
+  Phase0aBattleController? _controller;
+  Phase0aStageMapping? _mapping;
+  bool _exitNotified = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      try {
+        final playerCharacter =
+            widget.playerCharacterForTest ?? await _buildPlayerCharacter();
+        if (!mounted) return;
+        final numbers = GameRepository.instance.numbers;
+        final mapping = Phase0aStageContentMapper.map(
+          stage: widget.stage,
+          playerCharacter: playerCharacter,
+          numbers: numbers,
+        );
+        final roster = Phase0aVisualRoster.fromMapping(mapping);
+        for (final combatant in mapping.combatants) {
+          roster.visualFor(combatant.actorId);
+        }
+        final rng = widget.seedForTest == null
+            ? ref.read(mathRandomProvider)
+            : newMathRandom(seed: widget.seedForTest);
+        final flow = Phase0aProductionFlowAssembler.assemble(
+          initialState: mapping.initialState,
+          waves: mapping.waves,
+          combatants: mapping.combatants,
+          moveBindings: mapping.moveBindings,
+          numbers: numbers,
+          rng: rng,
+          playerAdapter: mapping.playerAdapter,
+          enemyAiAdapter: mapping.enemyAiAdapter,
+        );
+        if (!mounted) return;
+        final controller = Phase0aBattleController(
+          flow: flow,
+          roster: roster,
+          fixedDeltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+        );
+        controller.addListener(_onControllerChanged);
+        setState(() {
+          _mapping = mapping;
+          _controller = controller;
+        });
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _setupError = e.toString());
+      }
+    });
+  }
+
+  /// 生产路径:单主角续传(D3=α)= 祖师一人出战。
+  ///
+  /// 走 [StageBattleSetup.buildPlayerTeamForCharacters] 复用旧引擎全套
+  /// 口径(autoFill/祖师 buff/伤势/装备),零数值分叉。祖师 id 缺失
+  /// (P1 种子档等)兜底取首个角色。
+  Future<BattleCharacter> _buildPlayerCharacter() async {
+    final isar = IsarSetup.instance;
+    final save = await isar.saveDatas.get(0);
+    var playerId = save?.founderCharacterId;
+    if (playerId == null) {
+      final fallback = await isar.characters.where().findFirst();
+      if (fallback == null) {
+        throw StateError('Phase0a 主线宿主: Isar 没有任何 Character');
+      }
+      playerId = fallback.id;
+    }
+    final team = await StageBattleSetup(
+      isar: isar,
+    ).buildPlayerTeamForCharacters([playerId]);
+    if (team.isEmpty) {
+      throw StateError('Phase0a 主线宿主: 玩家队伍装配为空');
+    }
+    return team.first;
+  }
+
+  /// 终局一次性通知:victory 不 pop(外层胜利段收尾 pop),defeat 自 pop。
+  void _onControllerChanged() {
+    final controller = _controller;
+    if (controller == null || _exitNotified) return;
+    final outcome = controller.outcome;
+    if (outcome == Phase0aBattleOutcome.ongoing) return;
+    final mapping = _mapping;
+    if (mapping == null) return;
+    _exitNotified = true;
+    final settlement = Phase0aSettlementAdapter.fromMapping(
+      mapping: mapping,
+      outcome: outcome,
+      finalState: controller.state,
+      events: controller.events,
+    );
+    if (outcome == Phase0aBattleOutcome.victory) {
+      widget.onVictory(settlement);
+    } else {
+      widget.onDefeat(settlement);
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_setupError != null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(widget.stage.name)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: SelectableText(UiStrings.battleSetupFailed(_setupError!)),
+          ),
+        ),
+      );
+    }
+    final controller = _controller;
+    if (controller == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    return Phase0aBattleScreen(controller: controller);
+  }
+}

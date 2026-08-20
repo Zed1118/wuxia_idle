@@ -22,6 +22,7 @@ import '../../battle/application/combat_progression_settlement_service.dart';
 import '../../battle/application/post_combat_invalidation.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/auto_play_mode.dart';
+import '../../battle/domain/battle_state.dart' show BattleState;
 import '../../settings/application/gameplay_settings_provider.dart';
 import '../../../shared/battle_shared/enum_localizations.dart' show EnumL10n;
 import '../../battle/domain/strategy/light_foot_strategy.dart';
@@ -32,6 +33,7 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../../shared/battle_shared/derived_stats.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../cultivation/domain/advancement_entry.dart';
 import '../../cultivation/domain/skill_drop_result.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
@@ -54,6 +56,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
+import '../application/phase0a_mainline_gate.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_progress.dart';
 import '../../battle/domain/battle_stats.dart';
@@ -63,7 +66,14 @@ import '../../battle_record/application/boss_memory_hook.dart';
 import '../../weapon_codex/application/equipment_catalog_hook.dart';
 import '../../battle_record/domain/boss_memory_key.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
+import 'phase0a_mainline_battle_host.dart';
 import 'stage_victory_dialog.dart';
+
+typedef MainlineBattleExit = ({
+  bool won,
+  bool surrendered,
+  CombatSettlementSnapshot? settlement,
+});
 
 /// Phase 3 T37 关卡进入流程串联。
 ///
@@ -82,6 +92,8 @@ import 'stage_victory_dialog.dart';
 /// [battleRunnerForTest] / [victoryRecorderForTest] / [bossDefeatPenaltyForTest]
 /// 仅供 widget test 注入,生产端勿传。设计对齐爬塔 `runTowerFlow` DI 三件套
 /// ([@visibleForTesting])。
+/// [phase0aBattleOutcomeForTest] 仅在灰度门([Phase0aMainlineGate])开启的
+/// 0A 分支生效(纵切实机接线切片 2),同样仅供测试注入。
 /// D1: [targetCycle] 默认 1（零回归）。Task E 加 UI 后从 caller 传入。
 Future<void> runStageFlow({
   required BuildContext context,
@@ -91,6 +103,8 @@ Future<void> runStageFlow({
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
   Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
+  @visibleForTesting
+  Future<MainlineBattleExit> Function()? phase0aBattleOutcomeForTest,
   @visibleForTesting Future<bool> Function()? stageRetryDeciderForTest,
   @visibleForTesting
   Future<void> Function(String stageId)? victoryRecorderForTest,
@@ -115,25 +129,39 @@ Future<void> runStageFlow({
 
   // ── battle ──（M3:普通关战败可「立即重试」,opening 已在循环外播过一次,
   // 重试只重打本场不重看剧情。Boss 关不重试 —— 已实时结算散功,回滚复杂）。
+  CombatSettlementSnapshot? completedSettlement;
   while (true) {
     if (!context.mounted) return;
-    final ({bool won, bool surrendered}) battleExit;
+    final MainlineBattleExit battleExit;
     if (battleOutcomeForTest != null) {
-      battleExit = await battleOutcomeForTest();
+      final legacyExit = await battleOutcomeForTest();
+      battleExit = (
+        won: legacyExit.won,
+        surrendered: legacyExit.surrendered,
+        settlement: null,
+      );
     } else if (battleRunnerForTest != null) {
-      battleExit = (won: await battleRunnerForTest(), surrendered: false);
+      battleExit = (
+        won: await battleRunnerForTest(),
+        surrendered: false,
+        settlement: null,
+      );
     } else {
       battleExit = await _runBattle(
         context: context,
         ref: ref,
         stage: stage,
         targetCycle: targetCycle,
+        phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
       );
     }
 
     // H3 投降:host 已 pop 战斗屏,跳过所有战败结算直接返回,不记进度。
     if (battleExit.surrendered) return;
-    if (battleExit.won) break; // 胜利 → 跳出循环走 victory 流程
+    if (battleExit.won) {
+      completedSettlement = battleExit.settlement;
+      break; // 胜利 → 跳出循环走 victory 流程
+    }
 
     // ── defeat ──
     Widget? lossBanner;
@@ -141,7 +169,11 @@ Future<void> runStageFlow({
       // Phase 4 W10: Boss 关战败结算（被动散功 + battleCount + skillUsage 落地）。
       final summary = bossDefeatPenaltyForTest != null
           ? await bossDefeatPenaltyForTest(stage)
-          : await _applyBossDefeatPenalty(ref: ref, stage: stage);
+          : await _applyBossDefeatPenalty(
+              ref: ref,
+              stage: stage,
+              settlementSnapshot: battleExit.settlement,
+            );
       if (summary.isNotEmpty) {
         lossBanner = _DefeatLossBanner(entries: summary);
         // W13-v3 fix: writeTxn 写回 character.internalForce / mainTech.layer
@@ -191,6 +223,7 @@ Future<void> runStageFlow({
     ref: ref,
     stage: stage,
     cycle: targetCycle,
+    settlementSnapshot: completedSettlement,
   );
   // W13-v3 fix: 同 defeat 分支,invalidate character/equipment/technique family
   // + 主菜单隐藏入口门控 / 银两(体检批3 P0-5),统一走共享 helper。
@@ -365,13 +398,23 @@ Future<void> runStageFlow({
 /// 推 BattleScreen 并 wait 胜/败/投降回调；返回 (won, surrendered)。
 /// D1: [targetCycle] 默认 1（零回归）。H3: surrendered=true 时 won 恒 false,
 /// caller 据此跳过战败结算直接返回。
-Future<({bool won, bool surrendered})> _runBattle({
+///
+/// 纵切切片 2(拍板 α):灰度门开 + 主线关型 → 分流 [_runPhase0aBattle]
+/// (0A 引擎平行验证入口);其余仍走旧 3v3,正式原子切换留路线 C 第三序。
+Future<MainlineBattleExit> _runBattle({
   required BuildContext context,
   required WidgetRef ref,
   required StageDef stage,
   int targetCycle = 1,
+  Future<MainlineBattleExit> Function()? phase0aBattleOutcomeForTest,
 }) async {
-  final completer = Completer<({bool won, bool surrendered})>();
+  if (Phase0aMainlineGate.shouldUsePhase0a(stage, targetCycle: targetCycle)) {
+    if (phase0aBattleOutcomeForTest != null) {
+      return phase0aBattleOutcomeForTest();
+    }
+    return _runPhase0aBattle(context: context, stage: stage);
+  }
+  final completer = Completer<MainlineBattleExit>();
   // 不 await push:胜利时 BattleScreen 留在栈上,由 runStageFlow 播完胜利仪式/
   // 结算后再 pop(让爆品/简版勝盖在战斗场景上,而非退回列表后才弹)。失败/投降时 host 自 pop。
   Navigator.of(context)
@@ -382,17 +425,29 @@ Future<({bool won, bool surrendered})> _runBattle({
             targetCycle: targetCycle,
             onVictory: () {
               if (!completer.isCompleted) {
-                completer.complete((won: true, surrendered: false));
+                completer.complete((
+                  won: true,
+                  surrendered: false,
+                  settlement: null,
+                ));
               }
             },
             onDefeat: () {
               if (!completer.isCompleted) {
-                completer.complete((won: false, surrendered: false));
+                completer.complete((
+                  won: false,
+                  surrendered: false,
+                  settlement: null,
+                ));
               }
             },
             onSurrender: () {
               if (!completer.isCompleted) {
-                completer.complete((won: false, surrendered: true));
+                completer.complete((
+                  won: false,
+                  surrendered: true,
+                  settlement: null,
+                ));
               }
             },
           ),
@@ -401,7 +456,57 @@ Future<({bool won, bool surrendered})> _runBattle({
       .then((_) {
         // 兜底:BattleScreen 被 pop(系统返回/失败 host pop)而未触发回调 → 未胜非投降。
         if (!completer.isCompleted) {
-          completer.complete((won: false, surrendered: false));
+          completer.complete((
+            won: false,
+            surrendered: false,
+            settlement: null,
+          ));
+        }
+      });
+  return completer.future;
+}
+
+/// 纵切切片 2(拍板 α):推 0A 主线战斗宿主并 wait 胜/败回调。
+///
+/// 0A 屏无投降按钮(0C 键盘面只有 Esc 暂停):系统返回致 pop 而未触发
+/// 回调 → then 兜底记 surrendered=true,外层直接返回；中途退出不走
+/// Boss 战败惩罚、奖励或进度写入，保持零存档污染。
+/// 胜利时 host 不自 pop(与旧宿主一致),由胜利段收尾统一 pop。
+Future<MainlineBattleExit> _runPhase0aBattle({
+  required BuildContext context,
+  required StageDef stage,
+}) async {
+  final completer = Completer<MainlineBattleExit>();
+  Navigator.of(context)
+      .push<void>(
+        MaterialPageRoute(
+          builder: (_) => Phase0aMainlineBattleHost(
+            stage: stage,
+            onVictory: (settlement) {
+              if (!completer.isCompleted) {
+                completer.complete((
+                  won: true,
+                  surrendered: false,
+                  settlement: settlement,
+                ));
+              }
+            },
+            onDefeat: (settlement) {
+              if (!completer.isCompleted) {
+                completer.complete((
+                  won: false,
+                  surrendered: false,
+                  settlement: settlement,
+                ));
+              }
+            },
+          ),
+        ),
+      )
+      .then((_) {
+        // 兜底:只有系统返回会在无回调时 pop；按中途退出旁路所有结算。
+        if (!completer.isCompleted) {
+          completer.complete((won: false, surrendered: true, settlement: null));
         }
       });
   return completer.future;
@@ -768,15 +873,31 @@ applyVictoryResolution({
   required WidgetRef ref,
   required StageDef stage,
   int cycle = 1,
+  CombatSettlementSnapshot? settlementSnapshot,
 }) async {
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) return null;
-  final finalState = ref.read(battleProvider);
-  if (!finalState.isFinished) return null;
-  final stats = BattleStatsSummary.from(finalState);
+  final BattleState? legacyFinalState;
+  final CombatSettlementSnapshot combatSettlement;
+  if (settlementSnapshot != null) {
+    legacyFinalState = null;
+    combatSettlement = settlementSnapshot;
+  } else {
+    final finalState = ref.read(battleProvider);
+    if (!finalState.isFinished) return null;
+    legacyFinalState = finalState;
+    combatSettlement = BattleResolutionService.snapshotFromBattleState(
+      finalState,
+    );
+  }
+  if (!combatSettlement.isFinished) return null;
+  final stats = BattleStatsSummary.fromSettlement(combatSettlement);
 
   final save = await isar.saveDatas.get(0);
-  final ids = save?.activeCharacterIds ?? const <int>[];
+  final participantIds = combatSettlement.participantCharacterIds;
+  final ids = (save?.activeCharacterIds ?? const <int>[])
+      .where(participantIds.contains)
+      .toList(growable: false);
   if (ids.isEmpty) return null;
 
   final characters = <Character>[];
@@ -817,8 +938,8 @@ applyVictoryResolution({
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
 
-  final result = BattleResolutionService.resolve(
-    finalState: finalState,
+  final result = BattleResolutionService.resolveSnapshot(
+    settlement: combatSettlement,
     participatingCharacters: characters,
     equipmentsByCharacter: equipsByCh,
     techniquesByCharacter: techsByCh,
@@ -941,13 +1062,20 @@ applyVictoryResolution({
   });
 
   // 第七阶段 批一:派生英雄镜头数据（本场最高输出玩家）。纯展示，不改数值。
-  final heroCamera = deriveHeroCameraData(
-    finalState: finalState,
-    characters: characters,
-    bossName: stage.enemyTeam.isNotEmpty
-        ? stage.enemyTeam.last.name
-        : stage.name,
-  );
+  final bossName = stage.enemyTeam.isNotEmpty
+      ? stage.enemyTeam.last.name
+      : stage.name;
+  final heroCamera = legacyFinalState == null
+      ? deriveHeroCameraDataFromDamageTotals(
+          damageByCharacterId: combatSettlement.damageByCharacterId,
+          characters: characters,
+          bossName: bossName,
+        )
+      : deriveHeroCameraData(
+          finalState: legacyFinalState,
+          characters: characters,
+          bossName: bossName,
+        );
 
   // 第七阶段 批一 Task 6:计算利器首次获得的 extraDisplayTiers
   // (须在 putAll 入库后调用,判据:库存总数 ≤ 本次掉落件数)。
@@ -987,14 +1115,27 @@ ItemType _itemTypeOfMainline(String defId) => ItemType.fromDefId(defId);
 Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
   required WidgetRef ref,
   required StageDef stage,
+  CombatSettlementSnapshot? settlementSnapshot,
 }) async {
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) return const [];
-  final finalState = ref.read(battleProvider);
-  if (!finalState.isFinished) return const [];
+  final CombatSettlementSnapshot combatSettlement;
+  if (settlementSnapshot != null) {
+    combatSettlement = settlementSnapshot;
+  } else {
+    final finalState = ref.read(battleProvider);
+    if (!finalState.isFinished) return const [];
+    combatSettlement = BattleResolutionService.snapshotFromBattleState(
+      finalState,
+    );
+  }
+  if (!combatSettlement.isFinished) return const [];
 
   final save = await isar.saveDatas.get(0);
-  final ids = save?.activeCharacterIds ?? const <int>[];
+  final participantIds = combatSettlement.participantCharacterIds;
+  final ids = (save?.activeCharacterIds ?? const <int>[])
+      .where(participantIds.contains)
+      .toList(growable: false);
   if (ids.isEmpty) return const [];
 
   final characters = <Character>[];
@@ -1033,8 +1174,8 @@ Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
 
-  final result = BattleResolutionService.resolve(
-    finalState: finalState,
+  final result = BattleResolutionService.resolveSnapshot(
+    settlement: combatSettlement,
     participatingCharacters: characters,
     equipmentsByCharacter: equipsByCh,
     techniquesByCharacter: techsByCh,

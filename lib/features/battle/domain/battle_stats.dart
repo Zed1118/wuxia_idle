@@ -1,4 +1,5 @@
 import 'battle_state.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 
 /// 战斗统计汇总(总伤害 / 暴击数 / 节拍数),从 [BattleState.actionLog] 派生。
 ///
@@ -30,4 +31,12 @@ class BattleStatsSummary {
       totalTicks: state.tick,
     );
   }
+
+  factory BattleStatsSummary.fromSettlement(
+    CombatSettlementSnapshot settlement,
+  ) => BattleStatsSummary(
+    totalDamage: settlement.totalDamage,
+    critCount: settlement.criticalCount,
+    totalTicks: settlement.totalTicks,
+  );
 }

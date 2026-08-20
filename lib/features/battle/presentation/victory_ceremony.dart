@@ -42,6 +42,32 @@ HeroCameraData? deriveHeroCameraData({
   );
 }
 
+/// Engine-neutral hero camera derivation for Phase 0A settlement snapshots.
+HeroCameraData? deriveHeroCameraDataFromDamageTotals({
+  required Map<int, int> damageByCharacterId,
+  required List<Character> characters,
+  required String bossName,
+}) {
+  Character? hero;
+  var topDamage = -1;
+  for (final character in characters) {
+    final damage = damageByCharacterId[character.id];
+    if (damage == null) continue;
+    if (hero == null || damage > topDamage) {
+      hero = character;
+      topDamage = damage;
+    }
+  }
+  if (hero == null) return null;
+  return HeroCameraData(
+    portraitPath: hero.portraitPath,
+    heroName: hero.name,
+    realmLabel: EnumL10n.realmTier(hero.realmTier),
+    bossName: bossName,
+    topDamage: topDamage,
+  );
+}
+
 /// 简版「勝」淡入淡出(时序重排 spec 2026-06-12)。
 ///
 /// 普通/无掉落档的胜利仪式:印章符 + 「勝」题字,淡入→停→淡出 ~800ms 自动消失
