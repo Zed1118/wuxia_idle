@@ -7,7 +7,7 @@ import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
-import '../stage_battle_setup.dart';
+import '../enemy_battle_character_assembler.dart';
 import 'phase0a_battle_snapshot_factory.dart';
 import 'phase0a_enemy_ai_adapter.dart';
 import 'phase0a_player_input_adapter.dart';
@@ -17,7 +17,7 @@ import 'phase0a_player_input_adapter.dart';
 /// 的全套入参。
 ///
 /// 零口径复制原则:
-/// - 敌人 BattleCharacter 直接复用 [StageBattleSetup.buildEnemyTeam](旧战斗
+/// - 敌人 BattleCharacter 直接复用 [EnemyBattleCharacterAssembler](旧战斗
 ///   同一口径:境界内力查表/红线 clamp/周目 scale=1 零回归),不重算任何数值;
 /// - 空间/能量/动作维度(stages.yaml 没有的 0A 特有轴)全部取
 ///   [NumbersConfig.phase0aArena] 段,不硬编码;
@@ -68,7 +68,9 @@ final class Phase0aStageContentMapper {
     }
 
     // —— 敌人 BattleCharacter:复用旧战斗同一口径(零数值复制)——
-    final enemyCharacters = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
+    final enemyCharacters = EnemyBattleCharacterAssembler.assembleAll(
+      stage.enemyTeam,
+    );
 
     // —— 空间排布:确定性,玩家在左,敌人右侧按 slot 均匀散开 ——
     final playerPosition = ArenaVector(arena.arenaMinX * 0.5, 0);

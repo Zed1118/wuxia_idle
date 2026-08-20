@@ -2,35 +2,25 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:isar_community/isar.dart';
 
 import '../domain/battle_state.dart';
-import '../../../shared/battle_shared/derived_stats.dart' show RealmUtils;
-import '../domain/qi_cycle.dart';
-import '../../../data/defs/boss_phase_def.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/synergy_def.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
-import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
-import '../../../core/domain/equipment.dart';
 import '../../../core/domain/save_data.dart';
-import '../../../core/domain/technique.dart';
-import '../../activity/application/character_occupancy_service.dart';
-import '../../activity/domain/activity_occupancy.dart';
-import '../../cultivation/application/skill_loadout_resolver.dart';
-import '../../cultivation/application/skill_loadout_service.dart';
-import '../../cultivation/application/synergy_service.dart';
-import '../../inheritance/application/founder_buff_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../jianghu/application/enmity_battle_modifier.dart';
 import '../../jianghu/application/npc_relation_service.dart';
-import '../../sect/domain/sect.dart';
+import 'enemy_battle_character_assembler.dart';
+import 'player_battle_character_assembler.dart';
 
 /// 关卡战斗准备（Phase 3 T37，对应 PROGRESS #22 销账）。
 ///
-/// 负责把「持久化角色 + stage.enemyTeam」装配成 (左队, 右队) 两组
-/// [BattleCharacter] 快照，可直接喂给 `BattleNotifier.startBattle`。
+/// 负责主线/塔/心魔/恩怨 orchestration；玩家与敌人快照分别委托
+/// [PlayerBattleCharacterAssembler]/[EnemyBattleCharacterAssembler]，本类保留
+/// 旧 3v3 roster policy 与兼容 interface。
 ///
 /// - 左队（玩家）：从 Isar 拉 [SaveData.activeCharacterIds]，每个角色用
 ///   [BattleCharacter.fromCharacter] 接装备 + 主修；最少 1 人。
@@ -56,7 +46,7 @@ class StageBattleSetup {
     int cycleIndex = 1,
     bool readableFirstClearTuning = false,
   }) async {
-    var left = await _buildPlayerTeam();
+    var left = await buildActivePlayerTeam();
     if (readableFirstClearTuning) {
       left = _applyReadableFirstClearOpeningCooldown(left);
     }
@@ -102,7 +92,7 @@ class StageBattleSetup {
     TowerFloorDef floor, {
     int cycleIndex = 1,
   }) async {
-    final left = await _buildPlayerTeam();
+    final left = await buildActivePlayerTeam();
     final right = buildEnemyTeam(
       floor.enemyTeam,
       cycleIndex: cycleIndex,
@@ -117,10 +107,8 @@ class StageBattleSetup {
   /// 轻功对决 / 群战守城两个支线推进；主线 / 心魔不推进，爬塔走扩层（拍板 #3）。
   /// 断魂庄 / 远征不走 StageDef 路径，由各自 runner 显式传
   /// [buildEnemyTeam] 的 `advanceRealmPerCycle: true`。
-  static const Set<StageType> realmAdvanceStageTypes = {
-    StageType.lightFoot,
-    StageType.massBattle,
-  };
+  static const Set<StageType> realmAdvanceStageTypes =
+      EnemyBattleCharacterAssembler.realmAdvanceStageTypes;
 
   /// 主线 [buildTeams] 与爬塔 [buildTeamsForTower] 共用，避免重复。纯函数,保持 static。
   /// [cycleIndex] 默认 1（cycle-1 行为与旧版完全一致，零回归）；
@@ -134,23 +122,14 @@ class StageBattleSetup {
     String? stageNpcId,
     bool readableFirstClearTuning = false,
   }) {
-    final right = <BattleCharacter>[];
-    for (var i = 0; i < enemies.length && i < 3; i++) {
-      right.add(
-        _enemyToBattle(
-          enemy: enemies[i],
-          slotIndex: i,
-          characterIdOverride: i == 0 && stageNpcId != null
-              ? EnmityBattleModifier.targetIdForNpcId(stageNpcId)
-              : null,
-          cycleIndex: cycleIndex,
-          isTower: isTower,
-          advanceRealmPerCycle: advanceRealmPerCycle,
-          readableFirstClearTuning: readableFirstClearTuning,
-        ),
-      );
-    }
-    return right;
+    return EnemyBattleCharacterAssembler.assembleAll(
+      enemies,
+      cycleIndex: cycleIndex,
+      isTower: isTower,
+      advanceRealmPerCycle: advanceRealmPerCycle,
+      stageNpcId: stageNpcId,
+      readableFirstClearTuning: readableFirstClearTuning,
+    ).take(3).toList(growable: false);
   }
 
   /// 群战守城 per-wave 敌队生成。模板 [stage.enemyTeam] (3 templates) 循环填充
@@ -160,208 +139,21 @@ class StageBattleSetup {
     StageDef stage, {
     int cycleIndex = 1,
   }) {
-    final counts = stage.massBattleEnemyCounts;
-    if (counts == null || counts.isEmpty) return const [];
-    final templates = stage.enemyTeam;
-    if (templates.isEmpty) return const [];
-    var cursor = 0;
-    return [
-      for (final count in counts)
-        [
-          for (var j = 0; j < count; j++)
-            _enemyToBattle(
-              enemy: templates[j % templates.length],
-              slotIndex: j,
-              characterIdOverride: -10000 - (cursor++),
-              cycleIndex: cycleIndex,
-              isTower: false, // 群战守城属于主线场景，非爬塔
-              advanceRealmPerCycle: realmAdvanceStageTypes.contains(
-                stage.stageType,
-              ),
-            ),
-        ],
-    ];
-  }
-
-  /// 从指定角色 id 列表装配玩家队（非 `activeCharacterIds`）。远征按派遣成员
-  /// 装配（B2.2b），复用同一 autoFill/相生/祖师 buff/伤势路径，避免与主线分叉。
-  Future<List<BattleCharacter>> buildPlayerTeamForCharacters(
-    List<int> characterIds,
-  ) => _buildPlayerTeam(characterIds: characterIds);
-
-  /// 从 Isar 拉玩家方（左队）：[characterIds] 显式指定则用之，否则优先
-  /// activeCharacterIds，空则兜底 findFirst。
-  Future<List<BattleCharacter>> _buildPlayerTeam({
-    List<int>? characterIds,
-  }) async {
-    final save = await isar.saveDatas.get(0);
-    var ids = characterIds ?? save?.activeCharacterIds ?? const <int>[];
-    var dispatched = const <int>{};
-    if (characterIds == null) {
-      // 活动占用契约（companion §3.5/§8.1 Q5 · 07-21 审查 P1-5.1）：远征/
-      // 断魂庄在途成员不随主线/塔/心魔等战斗上场——活动战斗以出发快照为准，
-      // 放行会读实时角色造成双轨漂移。祖师不可派遣，过滤后仍可 solo 出战；
-      // 闭关占用不走此过滤（闭关锁只管编成增删，留阵参战是既有语义）。
-      final occupancy = await CharacterOccupancyService(isar).snapshot();
-      dispatched = <int>{
-        for (final e in occupancy.entries)
-          if (e.kind == ActivityKind.expedition ||
-              e.kind == ActivityKind.bossGauntlet)
-            ...e.characterIds,
-      };
-      if (dispatched.isNotEmpty) {
-        ids = [
-          for (final id in ids)
-            if (!dispatched.contains(id)) id,
-        ];
-      }
-    }
-    final players = <Character>[];
-    for (final cid in ids) {
-      final c = await isar.characters.get(cid);
-      if (c != null) players.add(c);
-    }
-    if (players.isEmpty) {
-      // 兜底：Phase 2 P1 种子是 id=1 单人，没设 activeCharacterIds。
-      // 兜底同样避开在途成员（全员在途 → 无 eligible 按无角色报错）。
-      final all = await isar.characters.where().findAll();
-      Character? fallback;
-      for (final c in all) {
-        if (!dispatched.contains(c.id)) {
-          fallback = c;
-          break;
-        }
-      }
-      if (fallback == null) {
-        throw StateError('StageBattleSetup: Isar 没有任何 Character（先跑 P1 种子）');
-      }
-      players.add(fallback);
-    }
-    // P4.1 1.1 founder_buff cross_sect(spec §3):per-character buff 算法
-    // 替换 P1.1 整队同一 bool · 沿 FounderBuffService.isBuffActiveFor API ·
-    // playerSectId 从 isar.sects.get(1) 直接拿(Demo 单 sect · sect null →
-    // fallback isInSect=false 路径 P1.1 R5 维持)。
-    final founderBuffSvc = FounderBuffService(isar);
-    final numbers = GameRepository.instance.numbers;
-    final sect = await isar.sects.get(1);
-    final playerSectId = sect?.id;
-    final founderBuffByChar = <int, bool>{};
-    for (final c in players) {
-      founderBuffByChar[c.id] = await founderBuffSvc.isBuffActiveFor(
-        target: c,
-        numbers: numbers,
-        playerSectId: playerSectId,
-      );
-    }
-    // P1b Task5:进战斗前对每个出战玩家角色调 applyAutoFill，补满空装配槽。
-    // 旧存档/未配置角色（5 槽全空）→ autoFill 填主修招，保证走装配路径而非 fallback。
-    final loadoutSvc = SkillLoadoutService(isar);
-    final resolver = SkillLoadoutResolver(isar: isar);
-    final repo = GameRepository.instance;
-    for (final c in players) {
-      // P1b Task5/Task9 共享 resolver：解析主修招 / 辅修招 / joint 共鸣招。
-      final sources = await resolver.resolve(
-        c,
-        repository: repo,
-        numbers: numbers,
-      );
-      // 第六阶段 Task 6 — 职责软引导：传入角色 lineage 身份，autoFill 按角色倾向填槽。
-      await loadoutSvc.applyAutoFill(
-        characterId: c.id,
-        mainTechniqueSkills: sources.mainTechniqueSkills,
-        assistTechniqueSkills: sources.assistTechniqueSkills,
-        jointSkill: sources.jointSkill,
-        ultimatePowerThreshold: numbers.loadoutUltimatePowerThreshold,
-        interruptSkills: sources.interruptSkills,
-        lineageRole: c.lineageRole,
-        isFounder: c.isFounder,
-      );
-    }
-
-    final left = <BattleCharacter>[];
-    for (var i = 0; i < players.length && i < 3; i++) {
-      // autoFill 已落库，重新从 Isar 读取（装配槽已更新的版本）。
-      final updated = await isar.characters.get(players[i].id) ?? players[i];
-      left.add(
-        await _playerToBattle(
-          character: updated,
-          slotIndex: i,
-          founderBuffActive: founderBuffByChar[players[i].id] ?? false,
-        ),
-      );
-    }
-    return left;
-  }
-
-  Future<BattleCharacter> _playerToBattle({
-    required Character character,
-    required int slotIndex,
-    bool founderBuffActive = false,
-  }) async {
-    final equipped = <Equipment>[];
-    for (final id in [
-      character.equippedWeaponId,
-      character.equippedArmorId,
-      character.equippedAccessoryId,
-    ]) {
-      if (id == null) continue;
-      final e = await isar.equipments.get(id);
-      if (e != null) equipped.add(e);
-    }
-
-    if (character.mainTechniqueId == null) {
-      throw StateError('StageBattleSetup: 角色 ${character.name} 未修主修，无法进入战斗');
-    }
-    final mainTech = await isar.techniques.get(character.mainTechniqueId!);
-    if (mainTech == null) {
-      throw StateError(
-        'StageBattleSetup: 角色 ${character.name} mainTechniqueId='
-        '${character.mainTechniqueId} 在 Isar 中找不到',
-      );
-    }
-
-    // W18-A1:加载全部辅修(若有)供 SynergyService 检测心法相生。
-    // assistTechniqueIds 为空 / Isar 找不到 → ownedTechniques 只含 main,
-    // detectActive 因 assist 缺失返 null,正常 fallthrough。
-    final ownedTechs = <Technique>[mainTech];
-    for (final assistId in character.assistTechniqueIds) {
-      final assistTech = await isar.techniques.get(assistId);
-      if (assistTech != null) ownedTechs.add(assistTech);
-    }
-
-    // 第八阶段 Task5：重伤 debuff → 攻击折扣。内息紊乱的有效内力和
-    // 开场真气在 BattleCharacter.fromCharacter 中独立烘焙。
-    final n = GameRepository.instance.numbers;
-    final heavyInjured = character.injuryHoursRemaining > 0;
-    final injuryAtkMult = heavyInjured
-        ? n.injury.heavyAttackOutputMultiplier
-        : 1.0;
-
-    final base = BattleCharacter.fromCharacter(
-      character: character,
-      equipped: equipped,
-      mainTechnique: mainTech,
-      numbers: n,
-      teamSide: 0,
-      slotIndex: slotIndex,
-      founderBuffActive: founderBuffActive,
-      outputMultiplier: injuryAtkMult,
-      heavyInjured: heavyInjured,
-      lightInjuryStacks: character.lightInjuryStacks,
+    return EnemyBattleCharacterAssembler.assembleWaves(
+      stage,
+      cycleIndex: cycleIndex,
     );
-
-    // W18-A1 心法相生 buff 注入(GDD §4.5)。命中即 copyWith 调整 maxHp/speed/
-    // totalEquipmentAttack/maxInternalForce/defenseRate 5 字段(W18-A1.2 补
-    // defensePct → defenseRate 加法叠加);internalForceGrowthPct 在
-    // [SeclusionService.computeOutputs] 消费(战斗 init 不涉)。
-    final synergy = SynergyService.detectActive(
-      character: character,
-      ownedTechniques: ownedTechs,
-      techDefLookup: (defId) => GameRepository.instance.techniqueDefs[defId],
-      synergies: GameRepository.instance.synergies,
-    );
-    return synergy == null ? base : applySynergy(base, synergy.multipliers);
   }
+
+  /// 当前出战阵容 interface：读取 activeCharacterIds，过滤活动占用；旧 seed
+  /// 未写 active 列表时允许 fallback 首个可用角色。
+  Future<List<BattleCharacter>> buildActivePlayerTeam() =>
+      PlayerBattleCharacterAssembler(isar: isar).loadActiveRoster();
+
+  /// 指定阵容 interface：严格保序装配传入 ids。空/重复/缺失一律 fail-fast，
+  /// 绝不 fallback 任意角色，避免远征/断魂庄/0A 坏会话静默换人。
+  Future<List<BattleCharacter>> buildExactPlayerTeam(List<int> characterIds) =>
+      PlayerBattleCharacterAssembler(isar: isar).loadExactRoster(characterIds);
 
   /// 把 [SynergyMultipliers] 应用到 [BattleCharacter] 4 个标量字段(view layer)。
   ///
@@ -392,33 +184,10 @@ class StageBattleSetup {
     SynergyMultipliers m, {
     NumbersConfig? numbers,
   }) {
-    final redLines =
-        (numbers ?? GameRepository.instance.numbers).combat.redLines;
-    var newMaxHp = (base.maxHp * (1 + m.hpPct)).round();
-    // §5.4 玩家血量红线(W18-A1.2 升级版加 · 2026-05-29 消 hardcode 走 config)
-    if (newMaxHp > redLines.playerHpMax) newMaxHp = redLines.playerHpMax;
-    final newSpeed = (base.speed * (1 + m.speedPct)).round();
-    final newAttack = (base.totalEquipmentAttack * (1 + m.attackPct)).round();
-    var newInternalForce = (base.internalForce * (1 + m.internalForceMaxPct))
-        .round();
-    // §5.4 内力红线(2026-05-29 消 hardcode 走 config)
-    if (newInternalForce > redLines.internalForceMax) {
-      newInternalForce = redLines.internalForceMax;
-    }
-    // W18-A1.2 加法叠加,clamp 防止减伤 100% 极端值(上限走 red_lines.combined_rate_cap)
-    final newDefenseRate = (base.defenseRate + m.defensePct).clamp(
-      0.0,
-      redLines.combinedRateCap,
-    );
-    // currentHp 起点跟 maxHp 一致(战斗起点满血,fromCharacter 保证)
-    final newCurHp = newMaxHp;
-    return base.copyWith(
-      maxHp: newMaxHp,
-      currentHp: newCurHp,
-      speed: newSpeed,
-      totalEquipmentAttack: newAttack,
-      internalForce: newInternalForce,
-      defenseRate: newDefenseRate,
+    return PlayerBattleCharacterAssembler.applySynergy(
+      base,
+      m,
+      numbers: numbers,
     );
   }
 
@@ -430,8 +199,11 @@ class StageBattleSetup {
     double scale,
     int redLineCap,
   ) {
-    final scaled = (realmInternalForceMax * scale).round();
-    return scaled.clamp(0, redLineCap);
+    return EnemyBattleCharacterAssembler.resolveInternalForce(
+      realmInternalForceMax,
+      scale,
+      redLineCap,
+    );
   }
 
   /// EnemyDef → BattleCharacter。
@@ -449,179 +221,6 @@ class StageBattleSetup {
   /// - 词条注入：御体→defenseRate↑（clamp≤cap）；真气→IF×(1+pct)（clamp最后）；
   ///   识破→chargeSkillId（仅敌无自带时）；凝甲/反震→仅透传 activeBuffs 标签（结算侧消费）。
   /// - [cycleIndex]=1（默认）行为与旧版完全一致（零回归）。
-  static BattleCharacter _enemyToBattle({
-    required EnemyDef enemy,
-    required int slotIndex,
-    int? characterIdOverride,
-    int cycleIndex = 1,
-    bool isTower = false,
-    bool advanceRealmPerCycle = false,
-    bool readableFirstClearTuning = false,
-  }) {
-    final numbers = GameRepository.instance.numbers;
-    final skills = enemy.skillIds
-        .map((id) => GameRepository.instance.getSkill(id))
-        .toList(growable: false);
-    final enemyDefaults = numbers.combat.enemyDefaults;
-
-    // ── 批 B 周目境界段推进（spec 2026-08-01 拍板 #5，仅支线 4 入口开启）────
-    // effTier = yaml 原值 + tiers_per_cycle×(cycle-1) 后 clamp 武圣；layer 保留。
-    // 三轴消费：境界内力派生(realm) / 防御率档(defenseRate) / 差距修正(realmTier)。
-    // 主线/爬塔 advanceRealmPerCycle=false → effTier 恒等原值（零回归）。
-    final advTiers = advanceRealmPerCycle
-        ? numbers.cycleEvolution.realmAdvance.tiersFor(cycleIndex)
-        : 0;
-    final advancedIndex = enemy.realmTier.index + advTiers;
-    final effTier = advancedIndex >= RealmTier.wuSheng.index
-        ? RealmTier.wuSheng
-        : RealmTier.values[advancedIndex];
-
-    final realm = GameRepository.instance.getRealm(effTier, enemy.realmLayer);
-    final redLineCap = numbers.combat.redLines.internalForceMax;
-
-    // ── 周目缩放系数（cycle 1 = 1.0，零变化）─────────────────────────────
-    final ce = numbers.cycleEvolution;
-    final scale = 1.0 + ce.scalePerCycle * (cycleIndex - 1);
-    final readable = numbers.combat.readableFirstClear;
-    final readableHpMult = readableFirstClearTuning
-        ? readable.hpMultiplierFor(isBoss: enemy.isBoss)
-        : 1.0;
-    final readableAttackMult = readableFirstClearTuning
-        ? readable.enemyAttackMultiplier
-        : 1.0;
-
-    // ── hp：baseHp × scale，clamp ≤ Boss HP 红线（§5.4，防终局周目越线）────
-    final scaledHp = (enemy.baseHp * scale * readableHpMult).toInt().clamp(
-      0,
-      numbers.combat.redLines.bossHpMax,
-    );
-
-    // ── attack：baseAttack × scale ────────────────────────────────────────
-    final scaledAttack = (enemy.baseAttack * scale * readableAttackMult)
-        .toInt();
-
-    // ── 永久内力：境界 IF × internalForceScale × scale ──
-    final baseIf =
-        (realm.internalForceMax * enemyDefaults.internalForceScale * scale)
-            .round();
-
-    // ── 词条分配（cycle ≤ 1 时 traitsFor 返回空集）────────────────────────
-    final traits = ce.traitsFor(
-      cycle: cycleIndex,
-      isBoss: enemy.isBoss,
-      isTower: isTower,
-    );
-
-    // ── 御体词条：defenseRate↑，按周目分档，clamp ≤ defenseRateCap ─────────
-    var defenseRate = RealmUtils.defenseRateOf(effTier);
-    if (traits.contains('yuti')) {
-      final yutiBonus = cycleIndex >= 3
-          ? ce.traits.yuti.defenseRateBonusC3
-          : ce.traits.yuti.defenseRateBonusC2;
-      defenseRate = (defenseRate + yutiBonus).clamp(0.0, ce.defenseRateCap);
-    }
-
-    // ── 历史“真气”周目词条仍强化永久内力快照，不放大战斗气海。──
-    var resolvedIf = baseIf;
-    if (traits.contains('zhenqi')) {
-      resolvedIf = (baseIf * (1 + ce.traits.zhenqi.internalForcePct)).round();
-    }
-    resolvedIf = resolvedIf.clamp(0, redLineCap);
-
-    // ── 识破词条：敌无自带 chargeSkillId 时注入 config 的蓄力技 id ──────────
-    // Fix: 同时把该技能追加到 availableSkills，否则 battle_ai._pickSkill 只迭代
-    // availableSkills，永远选不到 chargeSkillId，识破机制实质死机制。
-    final String? chargeSkillId;
-    List<SkillDef> resolvedSkills = skills;
-    if (traits.contains('shipo') && enemy.chargeSkillId == null) {
-      final shipoSkillId = ce.traits.shipo.chargeSkillId;
-      chargeSkillId = shipoSkillId;
-      // 若蓄力技不在 skills 列表中，追加一份可增长副本（保持原顺序）。
-      if (!skills.any((s) => s.id == shipoSkillId)) {
-        final shipoSkill = GameRepository.instance.getSkill(shipoSkillId);
-        resolvedSkills = [...skills, shipoSkill];
-      }
-    } else {
-      chargeSkillId = enemy.chargeSkillId; // 保留自带（P0 破招:招牌蓄力技透传）
-    }
-
-    // ── 词条标签：凝甲/反震仅携带标签，结算侧（Tasks C1/C2）消费 ───────────
-    final activeBuffs = traits.isEmpty
-        ? const <String>[]
-        : (traits.map((t) => 'cycle_$t').toList()..sort());
-
-    // ── 第七阶段批二 ① Task 3:Boss 阶段招式 pre-resolve ────────────────────
-    // 把每个 bossPhases[i].unlockSkillIds → List<SkillDef>(与 enemy.skillIds 同
-    // 一 getSkill 查法),与 bossPhases 下标对齐。战中 strategy 只读这些预解析字段,
-    // 不再回查 GameRepository(BattleCharacter 派生快照不查 Isar 约定)。
-    // 非 Boss / 未配 bossPhases → 三字段全默认(index 0 / null / null)。
-    final List<BossPhaseDef>? bossPhases = enemy.bossPhasesForCycle(cycleIndex);
-    final List<List<SkillDef>>? bossPhaseUnlockSkills = bossPhases == null
-        ? null
-        : [
-            for (final phase in bossPhases)
-              [
-                for (final sid in phase.unlockSkillIds)
-                  GameRepository.instance.getSkill(sid),
-              ],
-          ];
-
-    final battle = BattleCharacter(
-      characterId: characterIdOverride ?? -(slotIndex + 1),
-      name: enemy.name,
-      realmTier: effTier,
-      realmLayer: enemy.realmLayer,
-      school: enemy.school,
-      maxHp: scaledHp,
-      currentHp: scaledHp,
-      internalForce: resolvedIf,
-      maxQi: numbers.combat.qi.baseMax,
-      currentQi: QiCycle.openingQi(
-        maxQi: numbers.combat.qi.baseMax,
-        openingQi:
-            numbers.combat.qi.enemyOpeningQi +
-            (enemy.isBoss
-                ? (isTower
-                      ? numbers.combat.qi.towerBossOpeningBonus
-                      : numbers.combat.qi.bossOpeningBonus)
-                : 0),
-        openingCap: numbers.combat.qi.openingCap,
-      ),
-      autoUltimate: true,
-      speed: enemy.baseSpeed,
-      criticalRate: enemyDefaults.criticalRate,
-      evasionRate: enemyDefaults.evasionRate,
-      defenseRate: defenseRate,
-      totalEquipmentAttack: scaledAttack,
-      mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: resolvedSkills,
-      skillCooldowns: const {},
-      activeBuffs: activeBuffs,
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: 1,
-      slotIndex: slotIndex,
-      iconPath: enemy.iconPath,
-      isBoss: enemy.isBoss,
-      chargeSkillId: chargeSkillId,
-      bossPhaseIndex: 0,
-      bossPhases: bossPhases,
-      bossPhaseUnlockSkills: bossPhaseUnlockSkills,
-      schoolDamageTakenMult: enemy.schoolDamageTakenMult ?? const {},
-      enemyDefId: enemy.id,
-      guardianWardMult: enemy.guardianWard?.damageTakenMult,
-      guardianDefIds: enemy.guardianWard?.guardianIds ?? const [],
-      vulnerabilityMult: enemy
-          .vulnerabilityForCycle(cycleIndex)
-          ?.outOfWindowDamageMult,
-      // 第八阶段:协同掩护开关透传(玩家方 fromCharacter 不 expose 恒 false)。
-      guardInterceptsInterrupt: enemy.guardInterceptsInterrupt,
-    );
-    return readableFirstClearTuning
-        ? _applyReadableFirstClearOpeningCooldownToOne(battle)
-        : battle;
-  }
-
   static List<BattleCharacter> _applyReadableFirstClearOpeningCooldown(
     List<BattleCharacter> team,
   ) {
@@ -718,7 +317,7 @@ class StageBattleSetup {
     int cycleIndex = 1,
     bool isTower = false,
     bool readableFirstClearTuning = false,
-  }) => _enemyToBattle(
+  }) => EnemyBattleCharacterAssembler.assembleOne(
     enemy: enemy,
     slotIndex: slotIndex,
     cycleIndex: cycleIndex,

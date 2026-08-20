@@ -18,7 +18,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
-import '../../battle/application/stage_battle_setup.dart';
+import '../../battle/application/player_battle_character_assembler.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../cultivation/application/character_advancement_service.dart';
@@ -343,7 +343,7 @@ class GauntletService {
 
   /// 单场战斗驱动：驱动当前关次一场 headless 战斗并原子推进会话（C2.3a·§5.6/§9.2）。
   ///
-  /// load run → 从会话成员建满血基准队（`buildPlayerTeamForCharacters` 真生产路径：
+  /// load run → 从会话成员建满血基准队（`buildExactPlayerTeam` 真生产路径：
   /// autoFill/相生/祖师 buff/伤势）→ `GauntletController.stagePlayerTeam` 按快照装配
   /// （首关满血/关次间继承 生命·真气·冷却·剔阵亡）→ `GauntletBattleRunner.runStage`
   /// （seed 混 currentStage·`Random` 确定性）→ `GauntletController.advance` → 单
@@ -389,9 +389,9 @@ class GauntletService {
       throw StateError('断魂庄开打：关次 ${run.currentStage} 敌队为空（配置损坏）');
     }
     final memberIds = run.members.map((m) => m.characterId).toList();
-    final baseTeam = await StageBattleSetup(
+    final baseTeam = await PlayerBattleCharacterAssembler(
       isar: _isar,
-    ).buildPlayerTeamForCharacters(memberIds);
+    ).loadExactRoster(memberIds);
     final playerTeam = GauntletController.stagePlayerTeam(
       baseTeam: baseTeam,
       members: run.members,
