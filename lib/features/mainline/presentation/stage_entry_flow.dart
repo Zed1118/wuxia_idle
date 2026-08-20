@@ -54,6 +54,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
+import '../application/phase0a_mainline_gate.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_progress.dart';
 import '../../battle/domain/battle_stats.dart';
@@ -63,6 +64,7 @@ import '../../battle_record/application/boss_memory_hook.dart';
 import '../../weapon_codex/application/equipment_catalog_hook.dart';
 import '../../battle_record/domain/boss_memory_key.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
+import 'phase0a_mainline_battle_host.dart';
 import 'stage_victory_dialog.dart';
 
 /// Phase 3 T37 关卡进入流程串联。
@@ -82,6 +84,8 @@ import 'stage_victory_dialog.dart';
 /// [battleRunnerForTest] / [victoryRecorderForTest] / [bossDefeatPenaltyForTest]
 /// 仅供 widget test 注入,生产端勿传。设计对齐爬塔 `runTowerFlow` DI 三件套
 /// ([@visibleForTesting])。
+/// [phase0aBattleOutcomeForTest] 仅在灰度门([Phase0aMainlineGate])开启的
+/// 0A 分支生效(纵切实机接线切片 2),同样仅供测试注入。
 /// D1: [targetCycle] 默认 1（零回归）。Task E 加 UI 后从 caller 传入。
 Future<void> runStageFlow({
   required BuildContext context,
@@ -91,6 +95,9 @@ Future<void> runStageFlow({
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
   Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
+  @visibleForTesting
+  Future<({bool won, bool surrendered})> Function()?
+  phase0aBattleOutcomeForTest,
   @visibleForTesting Future<bool> Function()? stageRetryDeciderForTest,
   @visibleForTesting
   Future<void> Function(String stageId)? victoryRecorderForTest,
@@ -128,6 +135,7 @@ Future<void> runStageFlow({
         ref: ref,
         stage: stage,
         targetCycle: targetCycle,
+        phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
       );
     }
 
@@ -365,12 +373,23 @@ Future<void> runStageFlow({
 /// 推 BattleScreen 并 wait 胜/败/投降回调；返回 (won, surrendered)。
 /// D1: [targetCycle] 默认 1（零回归）。H3: surrendered=true 时 won 恒 false,
 /// caller 据此跳过战败结算直接返回。
+///
+/// 纵切切片 2(拍板 α):灰度门开 + 主线关型 → 分流 [_runPhase0aBattle]
+/// (0A 引擎平行验证入口);其余仍走旧 3v3,正式原子切换留路线 C 第三序。
 Future<({bool won, bool surrendered})> _runBattle({
   required BuildContext context,
   required WidgetRef ref,
   required StageDef stage,
   int targetCycle = 1,
+  Future<({bool won, bool surrendered})> Function()?
+  phase0aBattleOutcomeForTest,
 }) async {
+  if (Phase0aMainlineGate.shouldUsePhase0a(stage)) {
+    if (phase0aBattleOutcomeForTest != null) {
+      return phase0aBattleOutcomeForTest();
+    }
+    return _runPhase0aBattle(context: context, stage: stage);
+  }
   final completer = Completer<({bool won, bool surrendered})>();
   // 不 await push:胜利时 BattleScreen 留在栈上,由 runStageFlow 播完胜利仪式/
   // 结算后再 pop(让爆品/简版勝盖在战斗场景上,而非退回列表后才弹)。失败/投降时 host 自 pop。
@@ -400,6 +419,44 @@ Future<({bool won, bool surrendered})> _runBattle({
       )
       .then((_) {
         // 兜底:BattleScreen 被 pop(系统返回/失败 host pop)而未触发回调 → 未胜非投降。
+        if (!completer.isCompleted) {
+          completer.complete((won: false, surrendered: false));
+        }
+      });
+  return completer.future;
+}
+
+/// 纵切切片 2(拍板 α):推 0A 主线战斗宿主并 wait 胜/败回调。
+///
+/// 0A 屏无投降按钮(0C 键盘面只有 Esc 暂停):系统返回致 pop 而未触发
+/// 回调 → then 兜底记 (won:false, surrendered:false),与旧宿主 pop 兜底
+/// 同口径 —— 中途退出按战败走重试分支,零存档污染。
+/// 胜利时 host 不自 pop(与旧宿主一致),由胜利段收尾统一 pop。
+Future<({bool won, bool surrendered})> _runPhase0aBattle({
+  required BuildContext context,
+  required StageDef stage,
+}) async {
+  final completer = Completer<({bool won, bool surrendered})>();
+  Navigator.of(context)
+      .push<void>(
+        MaterialPageRoute(
+          builder: (_) => Phase0aMainlineBattleHost(
+            stage: stage,
+            onVictory: () {
+              if (!completer.isCompleted) {
+                completer.complete((won: true, surrendered: false));
+              }
+            },
+            onDefeat: () {
+              if (!completer.isCompleted) {
+                completer.complete((won: false, surrendered: false));
+              }
+            },
+          ),
+        ),
+      )
+      .then((_) {
+        // 兜底:host 被 pop(战败自 pop / 系统返回)而未触发回调 → 未胜非投降。
         if (!completer.isCompleted) {
           completer.complete((won: false, surrendered: false));
         }
