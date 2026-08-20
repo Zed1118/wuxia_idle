@@ -11,26 +11,25 @@ enum Phase0aDamageKind {
   skill6,
 }
 
-extension Phase0aDamageKindX on Phase0aDamageKind {
-  int? get skillHotkey => switch (this) {
-    Phase0aDamageKind.skill1 => 1,
-    Phase0aDamageKind.skill2 => 2,
-    Phase0aDamageKind.skill3 => 3,
-    Phase0aDamageKind.skill4 => 4,
-    Phase0aDamageKind.skill5 => 5,
-    Phase0aDamageKind.skill6 => 6,
-    Phase0aDamageKind.basic ||
-    Phase0aDamageKind.gather ||
-    Phase0aDamageKind.clear => null,
-  };
+int? phase0aSkillHotkeyOf(Phase0aDamageKind kind) => switch (kind) {
+  Phase0aDamageKind.skill1 => 1,
+  Phase0aDamageKind.skill2 => 2,
+  Phase0aDamageKind.skill3 => 3,
+  Phase0aDamageKind.skill4 => 4,
+  Phase0aDamageKind.skill5 => 5,
+  Phase0aDamageKind.skill6 => 6,
+  Phase0aDamageKind.basic ||
+  Phase0aDamageKind.gather ||
+  Phase0aDamageKind.clear => null,
+};
 
-  static Phase0aDamageKind forSkillHotkey(int hotkey) => switch (hotkey) {
-    1 => Phase0aDamageKind.skill1,
-    2 => Phase0aDamageKind.skill2,
-    3 => Phase0aDamageKind.skill3,
-    4 => Phase0aDamageKind.skill4,
-    5 => Phase0aDamageKind.skill5,
-    6 => Phase0aDamageKind.skill6,
-    _ => throw RangeError.range(hotkey, 1, 6, 'hotkey'),
-  };
-}
+Phase0aDamageKind phase0aDamageKindForSkillHotkey(int hotkey) =>
+    switch (hotkey) {
+      1 => Phase0aDamageKind.skill1,
+      2 => Phase0aDamageKind.skill2,
+      3 => Phase0aDamageKind.skill3,
+      4 => Phase0aDamageKind.skill4,
+      5 => Phase0aDamageKind.skill5,
+      6 => Phase0aDamageKind.skill6,
+      _ => throw RangeError.range(hotkey, 1, 6, 'hotkey'),
+    };

@@ -234,7 +234,7 @@ final class Phase0aStageContentMapper {
       qiDelta: arena.clearQiDelta,
     ),
     for (final binding in numericSkills.equipped)
-      Phase0aDamageKindX.forSkillHotkey(binding.hotkey): binding.skill,
+      phase0aDamageKindForSkillHotkey(binding.hotkey): binding.skill,
   });
 
   static Phase0aNumericSkillBindings _numericSkillBindings(

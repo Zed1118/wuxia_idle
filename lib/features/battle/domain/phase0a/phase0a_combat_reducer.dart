@@ -402,7 +402,7 @@ Phase0aStepResult reducePhase0aTick({
           enemiesById[actorId] = cast.casterAfterQi;
         }
       case Phase0aSkillIntent():
-        final hotkey = intent.kind.skillHotkey;
+        final hotkey = phase0aSkillHotkeyOf(intent.kind);
         if (actor.side != Phase0aSide.player ||
             hotkey == null ||
             intent.skillId.isEmpty ||

@@ -140,7 +140,7 @@ final class Phase0aPlayerInputAdapter {
         intents.add(
           Phase0aSkillIntent(
             actorId: playerId,
-            kind: Phase0aDamageKindX.forSkillHotkey(hotkey),
+            kind: phase0aDamageKindForSkillHotkey(hotkey),
             slot: binding.slotId,
             skillId: binding.skill.id,
             targetType: binding.targetType,

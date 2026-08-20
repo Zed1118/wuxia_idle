@@ -123,7 +123,7 @@ void main() {
       final intent = intents.single as Phase0aSkillIntent;
       final skill = mapping.numericSkillBindings.bindingFor(hotkey)!.skill;
       expect(intent.skillId, skill.id);
-      expect(intent.kind, Phase0aDamageKindX.forSkillHotkey(hotkey));
+      expect(intent.kind, phase0aDamageKindForSkillHotkey(hotkey));
       expect(intent.slot, 'phase0a_skill_$hotkey');
       expect(intent.qiDelta, skill.qiDelta);
       expect(intent.targetType, skill.targetType);

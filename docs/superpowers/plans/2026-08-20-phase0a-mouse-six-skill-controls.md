@@ -2,7 +2,7 @@
 
 > 日期：2026-08-20
 > 分支：`codex/phase0a-real-skill-bindings-0820`
-> 状态：WIP
+> 状态：READY（当前控制切片完成；Q/R behavior schema 后置）
 > 用户拍板：正式入口改为鼠标左键普攻；J 仅兼容；数字 1–6 触发真实技能；固定 Q/R 战术技长期并入真实技能效果。
 
 ## 目标
@@ -35,7 +35,7 @@
 
 1. [x] `Phase0aSkillBinding` 深 Module：SkillDef + resolved geometry/Qi/CD/behavior。
 2. [x] generic intent/reducer/event；真实 id/power/proficiency/targetType 贯穿。
-3. [ ] Q pull/R stagger 从固定按键语义迁到显式 behavior binding；旧 gather/clear 作为迁移 Adapter 后删除。
+3. [ ] **后置独立切片**：Q pull/R stagger 从固定按键语义迁到显式 behavior binding；旧 gather/clear 作为迁移 Adapter 后删除。
 4. [x] settlement 直接消费事件真实 skillId；live/headless skill casts 同 seed 一致。
 
 ## 红线
@@ -48,6 +48,6 @@
 
 ## 当前恢复点
 
-- 最后完成：数字 1–6 generic 主链：真实 basic/六槽 binding、SkillDef Qi/CD/targetType、single/aoe reducer、真实事件/伤害/结算、bot、六技能印与键鼠同路；空槽/unsupported mechanics fail-closed；真 Isar e2e 与 Phase 0A 三层 **296/296**、analyze 0。
-- 下一步：提交 generic 技能恢复点；Q pull/R stagger 因 SkillDef 缺 behavior/geometry 仍保留迁移 Adapter，先跑全量与 Ch1 画像，再决定 schema 切片。
+- 最后完成：鼠标左键 click/hold 瞄准普攻 + J 兼容；数字 1–6 真实 basic/六槽 binding、SkillDef Qi/CD/targetType、single/aoe reducer、真实事件/伤害/结算、bot、六技能印与键鼠同路；空槽/unsupported mechanics fail-closed；Phase 0A 三层 **296/296**、analyze 0、最终全量 **5244 pass / 0 fail**。
+- 下一步：文档收账并打 READY；合并后用真实技能版 headless 画像校准 Ch1，再为 Q pull/R stagger 设计显式 behavior/geometry schema。
 - 阻塞：Slice 1 无；Slice 3 的 cooldownTurns→seconds 与 pull/stagger 数据归属需在进入该切片前冻结。

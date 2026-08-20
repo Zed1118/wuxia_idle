@@ -133,7 +133,7 @@ final class Phase0aProductionFlowAssembler {
       );
     }
     for (final binding in numericSkills.equipped) {
-      final kind = Phase0aDamageKindX.forSkillHotkey(binding.hotkey);
+      final kind = phase0aDamageKindForSkillHotkey(binding.hotkey);
       final bound = moveBindings[kind];
       if (bound?.id != binding.skill.id) {
         throw ArgumentError(
