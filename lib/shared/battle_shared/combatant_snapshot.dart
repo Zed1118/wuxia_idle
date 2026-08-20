@@ -1,6 +1,7 @@
 import '../../core/domain/enums.dart';
 import '../../data/defs/boss_phase_def.dart';
 import '../../data/defs/skill_def.dart';
+import 'combatant_skill_loadout.dart';
 
 /// Engine-neutral, pre-battle facts for one combatant.
 final class CombatantSnapshot {
@@ -24,6 +25,7 @@ final class CombatantSnapshot {
     required this.defenseRate,
     required this.totalEquipmentAttack,
     required this.mainCultivationLayer,
+    this.skillLoadout = const CombatantSkillLoadout.empty(),
     required List<SkillDef> availableSkills,
     required Map<String, int> openingSkillCooldowns,
     required Map<String, int> skillUses,
@@ -86,6 +88,7 @@ final class CombatantSnapshot {
   final double criticalRate, evasionRate, defenseRate;
   final int totalEquipmentAttack;
   final CultivationLayer mainCultivationLayer;
+  final CombatantSkillLoadout skillLoadout;
   final List<SkillDef> availableSkills;
   final Map<String, int> openingSkillCooldowns, skillUses;
   final List<String> activeBuffs;
@@ -112,6 +115,7 @@ final class CombatantSnapshot {
     int? speed,
     double? defenseRate,
     int? totalEquipmentAttack,
+    CombatantSkillLoadout? skillLoadout,
     List<SkillDef>? availableSkills,
     Map<String, int>? openingSkillCooldowns,
   }) => CombatantSnapshot(
@@ -134,6 +138,7 @@ final class CombatantSnapshot {
     defenseRate: defenseRate ?? this.defenseRate,
     totalEquipmentAttack: totalEquipmentAttack ?? this.totalEquipmentAttack,
     mainCultivationLayer: mainCultivationLayer,
+    skillLoadout: skillLoadout ?? this.skillLoadout,
     availableSkills: availableSkills ?? this.availableSkills,
     openingSkillCooldowns: openingSkillCooldowns ?? this.openingSkillCooldowns,
     skillUses: skillUses,

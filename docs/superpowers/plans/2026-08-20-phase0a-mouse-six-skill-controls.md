@@ -27,7 +27,7 @@
 
 ### Slice 2 · 六槽身份与 fail-closed 输入
 
-1. [ ] neutral snapshot 显式保存 7 槽身份，不靠压缩 `availableSkills` 猜槽位。
+1. [x] neutral snapshot 显式保存 7 槽身份，不靠压缩 `availableSkills` 猜槽位。
 2. [ ] 数字 1–6 → stable slot request；空槽/未装备严格拒绝，零 event/伤害/Qi/CD/RNG/熟练度。
 3. [ ] 六槽技能印可点击、键盘/鼠标同路；第七破招槽不占数字栏。
 
@@ -48,6 +48,6 @@
 
 ## 当前恢复点
 
-- 最后完成：Slice 1 鼠标 aim production 接线；新增 screen↔world 逆变换、primary click/hold、J fallback、HUD/暂停/终局防冒泡；analyze 0，相关回归 86/86。
-- 下一步：提交 Slice 1 恢复点；进入 Slice 2 的 neutral 七槽身份与数字 1–6 fail-closed 请求。
+- 最后完成：Slice 2 七槽身份第一段；新增 immutable `CombatantSkillLoadout`，玩家 assembler 在 autoFill 重读后逐槽灌入 neutral snapshot；数字顺序固定 main1/main2/assist/resonance/ultimate/encounter，key 独立；analyze 0，相关回归 48/48。
+- 下一步：提交七槽身份恢复点；实现数字 1–6 fail-closed request，再进入 generic 真实结算。
 - 阻塞：Slice 1 无；Slice 3 的 cooldownTurns→seconds 与 pull/stagger 数据归属需在进入该切片前冻结。

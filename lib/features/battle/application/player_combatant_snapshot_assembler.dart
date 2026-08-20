@@ -8,6 +8,7 @@ import '../../../data/defs/synergy_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
+import '../../../shared/battle_shared/combatant_skill_loadout.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_occupancy.dart';
 import '../../cultivation/application/skill_loadout_resolver.dart';
@@ -201,6 +202,20 @@ final class PlayerCombatantSnapshotAssembler {
         lightInjuryStacks: character.lightInjuryStacks,
       ),
     );
+    final skillsById = {
+      for (final skill in base.availableSkills) skill.id: skill,
+    };
+    final withLoadout = base.copyWith(
+      skillLoadout: CombatantSkillLoadout(
+        main1: skillsById[character.mainSkillId1],
+        main2: skillsById[character.mainSkillId2],
+        assist: skillsById[character.assistSkillId],
+        resonance: skillsById[character.resonanceSkillId],
+        ultimate: skillsById[character.ultimateSkillId],
+        encounter: skillsById[character.equippedEncounterSkillId],
+        key: skillsById[character.keySkillId],
+      ),
+    );
     final synergy = SynergyService.detectActive(
       character: character,
       ownedTechniques: ownedTechniques,
@@ -208,8 +223,8 @@ final class PlayerCombatantSnapshotAssembler {
       synergies: GameRepository.instance.synergies,
     );
     return synergy == null
-        ? base
-        : applySynergy(base, synergy.multipliers, numbers: numbers);
+        ? withLoadout
+        : applySynergy(withLoadout, synergy.multipliers, numbers: numbers);
   }
 
   static CombatantSnapshot applySynergy(
