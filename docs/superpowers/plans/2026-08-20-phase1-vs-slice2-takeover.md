@@ -42,7 +42,7 @@
 ## 当前恢复点
 
 - 状态：WIP，禁止合并，分支 tip 不打 `[READY]`。
-- 最后完成：live controller 与 headless 均保留同源事件流；`Phase0aSettlementAdapter` 从真实事件/末态 HP 生成快照；宿主随胜负回传，主线胜利与 Boss 战败结算显式消费本场快照。
-- 下一步：灰度门收窄 Ch1 一周目；fixed delta 迁 YAML 并让 live/headless 同源；复核开场真气与 Boss 视觉语义。
-- 已跑验证：adapter 红测先因缺事件/类型编译红；实现后 mapper 9、headless 11、mainline 组合 28、controller/SFX 10 全过；`flutter analyze` 0 issue。
+- 最后完成：灰度门收窄 Ch1 一周目；模拟步长/预算迁 `phase0a_arena.simulation` 并强校验；live/headless 五关同 seed 胜负、事件与末态 HP 一致；开场真气透传；Boss elite 语义恢复；中途退出零结算污染。
+- 下一步：跑既有 Phase 0A 双视口/0C 工程验证与批末全量；更新 PROGRESS/NEXT，完成分支交付收账。
+- 已跑验证：主线接线 15、真实 Isar 结算 14、mapper 11、headless 11、结算/controller/source-contract 相关组均过；`flutter analyze` 0 issue。
 - 阻塞项：无新增用户拍板；工程上被真实结算链缺口阻塞。

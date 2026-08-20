@@ -5,6 +5,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
+import 'package:wuxia_idle/data/yaml_loader.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
@@ -52,9 +53,12 @@ BattleCharacter makeCh1Player(NumbersConfig numbers) => BattleCharacter(
 
 void main() {
   late GameRepository repo;
+  late Map<String, dynamic> phase0aArenaYaml;
 
   setUpAll(() async {
     repo = await loadTestGameRepository();
+    final numbersYaml = parseYamlMap(await loadTestAsset('data/numbers.yaml'));
+    phase0aArenaYaml = (numbersYaml['phase0a_arena'] as Map).cast();
   });
 
   group('映射结构(真实数据底座)', () {
@@ -101,6 +105,18 @@ void main() {
         ),
         isTrue,
       );
+    });
+
+    test('玩家开场真气透传 BattleCharacter.currentQi,不擅自补满', () {
+      final numbers = repo.numbers;
+      final player = makeCh1Player(numbers).copyWith(currentQi: 37);
+      final mapping = Phase0aStageContentMapper.map(
+        stage: repo.getStage('stage_01_01'),
+        playerCharacter: player,
+        numbers: numbers,
+      );
+      expect(mapping.initialState.player.qiCurrent, 37);
+      expect(mapping.initialState.player.qiMax, 100);
     });
 
     test('stage_01_03 三敌 → 三敌单波,id 加波次槽位后缀防撞', () {
@@ -157,6 +173,30 @@ void main() {
       expect(arena.enemyMoveSpeed, greaterThan(0));
       expect(arena.basicPowerMultiplier, greaterThan(0));
       expect(arena.clearPowerMultiplier, greaterThan(0));
+      expect(arena.fixedDeltaSeconds, 0.1);
+      expect(arena.maxBattleSeconds, 300);
+      expect(arena.maxSimulationTicks, 3000);
+    });
+
+    test('simulation 非正或非有限 → 解析期 fail-fast', () {
+      for (final value in [0.0, -0.1, double.nan, double.infinity]) {
+        final broken = Map<String, dynamic>.from(phase0aArenaYaml);
+        broken['simulation'] = <String, dynamic>{
+          ...((phase0aArenaYaml['simulation'] as Map).cast<String, dynamic>()),
+          'fixed_delta_seconds': value,
+        };
+        expect(
+          () => Phase0aArenaConfig.fromYaml(broken),
+          throwsArgumentError,
+          reason: 'fixed_delta_seconds=$value',
+        );
+      }
+      final broken = Map<String, dynamic>.from(phase0aArenaYaml);
+      broken['simulation'] = <String, dynamic>{
+        ...((phase0aArenaYaml['simulation'] as Map).cast<String, dynamic>()),
+        'max_battle_seconds': 0,
+      };
+      expect(() => Phase0aArenaConfig.fromYaml(broken), throwsArgumentError);
     });
   });
 
@@ -184,7 +224,12 @@ void main() {
         final bot = Phase0aPlayerBotAdapter(
           playerAdapter: mapping.playerAdapter,
         );
-        final result = Phase0aHeadlessRunner.runToEnd(flow: flow, bot: bot);
+        final result = Phase0aHeadlessRunner.runToEnd(
+          flow: flow,
+          bot: bot,
+          deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+          maxTicks: numbers.phase0aArena.maxSimulationTicks,
+        );
         expect(
           result.outcome,
           Phase0aBattleOutcome.victory,
@@ -218,6 +263,8 @@ void main() {
         return Phase0aHeadlessRunner.runToEnd(
           flow: flow,
           bot: Phase0aPlayerBotAdapter(playerAdapter: mapping.playerAdapter),
+          deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+          maxTicks: numbers.phase0aArena.maxSimulationTicks,
         );
       }
 
@@ -253,6 +300,8 @@ void main() {
       final result = Phase0aHeadlessRunner.runToEnd(
         flow: flow,
         bot: Phase0aPlayerBotAdapter(playerAdapter: mapping.playerAdapter),
+        deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+        maxTicks: numbers.phase0aArena.maxSimulationTicks,
       );
 
       final settlement = Phase0aSettlementAdapter.fromMapping(
@@ -267,6 +316,11 @@ void main() {
       expect(settlement.hadActions, isTrue);
       expect(settlement.totalDamage, greaterThan(0));
       expect(settlement.damageByCharacterId[1], greaterThan(0));
+      expect(
+        settlement.skillCasts,
+        isEmpty,
+        reason: '内部 phase0a move id 不得污染真实心法 skillUsageCount',
+      );
       expect(settlement.participantFor(1)!.currentHp, greaterThan(0));
       final enemyId = mapping.combatants.last.character.characterId;
       expect(settlement.participantFor(enemyId)!.currentHp, 0);
@@ -297,6 +351,8 @@ void main() {
           final result = Phase0aHeadlessRunner.runToEnd(
             flow: flow,
             bot: Phase0aPlayerBotAdapter(playerAdapter: mapping.playerAdapter),
+            deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+            maxTicks: numbers.phase0aArena.maxSimulationTicks,
           );
           total++;
           if (result.outcome == Phase0aBattleOutcome.victory) wins++;

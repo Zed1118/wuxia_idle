@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,8 +9,16 @@ import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_visual_roster.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_gate.dart';
 import 'package:wuxia_idle/features/mainline/presentation/phase0a_mainline_battle_host.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
@@ -52,12 +62,23 @@ BattleCharacter _makeCh1Player(NumbersConfig numbers) => BattleCharacter(
 );
 
 StageDef _flowStage() => const StageDef(
-  id: 'stage_test_phase0a_gate',
+  id: 'stage_01_01',
   name: '灰度门测试关',
   stageType: StageType.mainline,
   requiredRealm: RealmTier.xueTu,
   enemyTeam: [],
   isBossStage: false,
+  baseExpReward: 0,
+  difficultyMultiplier: 1.0,
+);
+
+StageDef _bossFlowStage() => const StageDef(
+  id: 'stage_01_05',
+  name: '灰度门 Boss 测试关',
+  stageType: StageType.mainline,
+  requiredRealm: RealmTier.xueTu,
+  enemyTeam: [],
+  isBossStage: true,
   baseExpReward: 0,
   difficultyMultiplier: 1.0,
 );
@@ -85,9 +106,30 @@ void main() {
       expect(Phase0aMainlineGate.enabled, isFalse);
     });
 
-    test('shouldUsePhase0a: 门开只放行主线关型', () {
+    test('shouldUsePhase0a: 门开只放行 Ch1 一周目', () {
       Phase0aMainlineGate.testOverride = true;
-      expect(Phase0aMainlineGate.shouldUsePhase0a(_flowStage()), isTrue);
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(_flowStage(), targetCycle: 1),
+        isTrue,
+      );
+      final chapter2 = StageDef(
+        id: 'stage_02_01',
+        name: _flowStage().name,
+        stageType: StageType.mainline,
+        requiredRealm: RealmTier.xueTu,
+        enemyTeam: const [],
+        isBossStage: false,
+        baseExpReward: 0,
+        difficultyMultiplier: 1.0,
+      );
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(chapter2, targetCycle: 1),
+        isFalse,
+      );
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(_flowStage(), targetCycle: 2),
+        isFalse,
+      );
       const towerStage = StageDef(
         id: 'stage_test_tower',
         name: '塔测试关',
@@ -98,9 +140,15 @@ void main() {
         baseExpReward: 0,
         difficultyMultiplier: 1.0,
       );
-      expect(Phase0aMainlineGate.shouldUsePhase0a(towerStage), isFalse);
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(towerStage, targetCycle: 1),
+        isFalse,
+      );
       Phase0aMainlineGate.testOverride = false;
-      expect(Phase0aMainlineGate.shouldUsePhase0a(_flowStage()), isFalse);
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(_flowStage(), targetCycle: 1),
+        isFalse,
+      );
     });
   });
 
@@ -136,6 +184,22 @@ void main() {
       for (final combatant in mapping.combatants) {
         expect(roster.visualFor(combatant.actorId).name, isNotEmpty);
       }
+    });
+
+    test('Boss 敌人保留 elite 视觉与 defeat kind', () {
+      final mapping = Phase0aStageContentMapper.map(
+        stage: repo.getStage('stage_01_05'),
+        playerCharacter: _makeCh1Player(repo.numbers),
+        numbers: repo.numbers,
+      );
+      final roster = Phase0aVisualRoster.fromMapping(mapping);
+      final boss = mapping.combatants.last;
+      expect(boss.character.isBoss, isTrue);
+      expect(roster.visualFor(boss.actorId).isElite, isTrue);
+      expect(
+        mapping.waves.first.enemies.last.defeatKind,
+        Phase0aDefeatKind.elite,
+      );
     });
 
     test('敌人 iconPath 空串 → fail-fast', () {
@@ -280,6 +344,125 @@ void main() {
       expect(find.text('enter'), findsOneWidget);
       expect(weakPlayer.name, '纵切玩家'); // fixture 锚点,防误删
     });
+
+    testWidgets('真实 Ch1 Boss 宿主在 1280×720 / 1440×900 无布局异常', (tester) async {
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      for (final viewport in const [Size(1280, 720), Size(1440, 900)]) {
+        await tester.binding.setSurfaceSize(viewport);
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: Phase0aMainlineBattleHost(
+                stage: repo.getStage('stage_01_05'),
+                playerCharacterForTest: _makeCh1Player(repo.numbers),
+                seedForTest: 20260820,
+                onVictory: (_) {},
+                onDefeat: (_) {},
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+        expect(find.byType(Phase0aBattleScreen), findsOneWidget);
+        expect(tester.takeException(), isNull, reason: '$viewport');
+      }
+    });
+  });
+
+  test('Ch1 五关同 seed: live controller 与 headless 胜负/末态 HP 一致', () {
+    final numbers = repo.numbers;
+    for (var stageIndex = 1; stageIndex <= 5; stageIndex++) {
+      final stage = repo.getStage('stage_01_0$stageIndex');
+      final seed = 20260820 + stageIndex;
+
+      Phase0aStageMapping makeMapping() => Phase0aStageContentMapper.map(
+        stage: stage,
+        playerCharacter: _makeCh1Player(numbers),
+        numbers: numbers,
+      );
+
+      final headlessMapping = makeMapping();
+      final headlessFlow = Phase0aProductionFlowAssembler.assemble(
+        initialState: headlessMapping.initialState,
+        waves: headlessMapping.waves,
+        combatants: headlessMapping.combatants,
+        moveBindings: headlessMapping.moveBindings,
+        numbers: numbers,
+        rng: Random(seed),
+        playerAdapter: headlessMapping.playerAdapter,
+        enemyAiAdapter: headlessMapping.enemyAiAdapter,
+      );
+      final headless = Phase0aHeadlessRunner.runToEnd(
+        flow: headlessFlow,
+        bot: Phase0aPlayerBotAdapter(
+          playerAdapter: headlessMapping.playerAdapter,
+        ),
+        deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+        maxTicks: numbers.phase0aArena.maxSimulationTicks,
+      );
+      final headlessSettlement = Phase0aSettlementAdapter.fromMapping(
+        mapping: headlessMapping,
+        outcome: headless.outcome,
+        finalState: headless.finalState,
+        events: headless.events,
+      );
+
+      final liveMapping = makeMapping();
+      final liveFlow = Phase0aProductionFlowAssembler.assemble(
+        initialState: liveMapping.initialState,
+        waves: liveMapping.waves,
+        combatants: liveMapping.combatants,
+        moveBindings: liveMapping.moveBindings,
+        numbers: numbers,
+        rng: Random(seed),
+        playerAdapter: liveMapping.playerAdapter,
+        enemyAiAdapter: liveMapping.enemyAiAdapter,
+      );
+      final liveController = Phase0aBattleController(
+        flow: liveFlow,
+        roster: Phase0aVisualRoster.fromMapping(liveMapping),
+        fixedDeltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+      );
+      final liveBot = Phase0aPlayerBotAdapter(
+        playerAdapter: liveMapping.playerAdapter,
+      );
+      var liveTicks = 0;
+      while (liveController.outcome == Phase0aBattleOutcome.ongoing &&
+          liveTicks < numbers.phase0aArena.maxSimulationTicks) {
+        liveController.step(liveBot.commandFor(liveController.state));
+        liveTicks += 1;
+      }
+      final liveSettlement = Phase0aSettlementAdapter.fromMapping(
+        mapping: liveMapping,
+        outcome: liveController.outcome,
+        finalState: liveController.state,
+        events: liveController.events,
+      );
+      addTearDown(liveController.dispose);
+
+      expect(
+        liveSettlement.result,
+        headlessSettlement.result,
+        reason: stage.id,
+      );
+      expect(
+        liveSettlement.totalTicks,
+        headlessSettlement.totalTicks,
+        reason: stage.id,
+      );
+      expect(
+        [
+          for (final participant in liveSettlement.participants)
+            (participant.characterId, participant.currentHp),
+        ],
+        [
+          for (final participant in headlessSettlement.participants)
+            (participant.characterId, participant.currentHp),
+        ],
+        reason: stage.id,
+      );
+      expect(liveController.events, headless.events, reason: stage.id);
+    }
   });
 
   group('runStageFlow 灰度分支', () {
@@ -296,7 +479,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('start'));
       await tester.pumpAndSettle();
-      expect(recordedStageId, equals('stage_test_phase0a_gate'));
+      expect(recordedStageId, equals('stage_01_01'));
       expect(find.text('done'), findsOneWidget);
     });
 
@@ -339,22 +522,51 @@ void main() {
       expect(oldConsumed, isTrue);
       expect(phase0aConsumed, isFalse);
     });
+
+    testWidgets('中途退出(surrendered) → Boss 惩罚/奖励/进度均不消费', (tester) async {
+      Phase0aMainlineGate.testOverride = true;
+      var penaltyCalled = false;
+      var victoryCalled = false;
+      await tester.pumpWidget(
+        _gateHarness(
+          stage: _bossFlowStage(),
+          phase0aBattleOutcome: () async =>
+              (won: false, surrendered: true, settlement: null),
+          victoryRecorder: (_) async => victoryCalled = true,
+          bossDefeatPenalty: (_) async {
+            penaltyCalled = true;
+            return const <DefeatLossEntry>[];
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('start'));
+      await tester.pumpAndSettle();
+      expect(penaltyCalled, isFalse);
+      expect(victoryCalled, isFalse);
+      expect(find.text('done'), findsOneWidget);
+    });
   });
 }
 
 /// 灰度分支专用 harness(沿 stage_entry_flow_test 体例):battleRunner/
 /// battleOutcome 均可缺省,只喂需要验证的注入器。
 Widget _gateHarness({
+  StageDef? stage,
   Future<({bool won, bool surrendered})> Function()? battleOutcome,
   Future<MainlineBattleExit> Function()? phase0aBattleOutcome,
   Future<void> Function(String stageId)? victoryRecorder,
+  Future<List<DefeatLossEntry>> Function(StageDef stage)? bossDefeatPenalty,
 }) {
   return ProviderScope(
     child: MaterialApp(
       home: _GateHarnessPage(
+        stage: stage ?? _flowStage(),
         battleOutcome: battleOutcome,
         phase0aBattleOutcome: phase0aBattleOutcome,
         victoryRecorder: victoryRecorder ?? (_) async {},
+        bossDefeatPenalty:
+            bossDefeatPenalty ?? (_) async => const <DefeatLossEntry>[],
       ),
     ),
   );
@@ -362,14 +574,19 @@ Widget _gateHarness({
 
 class _GateHarnessPage extends ConsumerStatefulWidget {
   const _GateHarnessPage({
+    required this.stage,
     required this.battleOutcome,
     required this.phase0aBattleOutcome,
     required this.victoryRecorder,
+    required this.bossDefeatPenalty,
   });
 
+  final StageDef stage;
   final Future<({bool won, bool surrendered})> Function()? battleOutcome;
   final Future<MainlineBattleExit> Function()? phase0aBattleOutcome;
   final Future<void> Function(String stageId) victoryRecorder;
+  final Future<List<DefeatLossEntry>> Function(StageDef stage)
+  bossDefeatPenalty;
 
   @override
   ConsumerState<_GateHarnessPage> createState() => _GateHarnessPageState();
@@ -391,13 +608,12 @@ class _GateHarnessPageState extends ConsumerState<_GateHarnessPage> {
                 await runStageFlow(
                   context: context,
                   ref: ref,
-                  stage: _flowStage(),
+                  stage: widget.stage,
                   battleOutcomeForTest: widget.battleOutcome,
                   phase0aBattleOutcomeForTest: widget.phase0aBattleOutcome,
                   stageRetryDeciderForTest: () async => false,
                   victoryRecorderForTest: widget.victoryRecorder,
-                  bossDefeatPenaltyForTest: (_) async =>
-                      const <DefeatLossEntry>[],
+                  bossDefeatPenaltyForTest: widget.bossDefeatPenalty,
                 );
                 if (mounted) setState(() => _status = 'done');
               } catch (e) {

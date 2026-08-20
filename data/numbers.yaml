@@ -508,6 +508,9 @@ realms:
 # 平衡校准批可独立调参。fixture 缺段走 Phase0aArenaConfig.empty。
 
 phase0a_arena:
+  simulation:
+    fixed_delta_seconds: 0.1
+    max_battle_seconds: 300.0
   arena:
     min_x: -640.0
     max_x: 640.0

@@ -96,7 +96,7 @@ final class Phase0aStageContentMapper {
       maxHealth: playerCharacter.maxHp,
       currentHealth: playerCharacter.currentHp,
       moveSpeed: arena.playerMoveSpeed,
-      qiCurrent: playerCharacter.maxQi,
+      qiCurrent: playerCharacter.currentQi,
       qiMax: playerCharacter.maxQi,
       attackCooldownRemaining: 0,
       defeatKind: Phase0aDefeatKind.normal,
@@ -162,7 +162,9 @@ final class Phase0aStageContentMapper {
       qiCurrent: arena.enemyQi,
       qiMax: arena.enemyQi,
       attackCooldownRemaining: arena.enemyInitialAttackCooldown,
-      defeatKind: Phase0aDefeatKind.normal,
+      defeatKind: character.isBoss
+          ? Phase0aDefeatKind.elite
+          : Phase0aDefeatKind.normal,
     );
   }
 

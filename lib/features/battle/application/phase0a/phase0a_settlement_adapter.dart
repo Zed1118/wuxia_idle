@@ -58,6 +58,14 @@ final class Phase0aSettlementAdapter {
       final characterId = characterIdByActor[actorId];
       final skillId = mapping.moveBindings[kind]?.id;
       if (characterId == null || skillId == null) return;
+      final combatant = mapping.combatants.firstWhere(
+        (entry) => entry.actorId == actorId,
+      );
+      if (!combatant.character.availableSkills.any(
+        (skill) => skill.id == skillId,
+      )) {
+        return;
+      }
       skillCasts.add(
         CombatSkillCastSnapshot(
           tick: tick,

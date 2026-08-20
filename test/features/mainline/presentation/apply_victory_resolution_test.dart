@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,6 +20,11 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/data/yaml_loader.dart';
 import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
@@ -351,6 +357,71 @@ void main() {
       expect(founder!.experience, 30, reason: '真实参战祖师获得经验');
       expect(reserve!.experience, 0, reason: '未参战替补不得被结算');
       expect(silver!.quantity, 5, reason: '0A 胜利照常发放关卡掉落');
+    });
+  });
+
+  testWidgets('真实 Ch1 映射 + headless 末态 → Isar 奖励/经验/伤势全链', (tester) async {
+    final (founderId, reserveId) = (await tester.runAsync(() async {
+      final founder = await insertCharacter(name: '祖师');
+      final reserve = await insertCharacter(name: '替补');
+      await writeSaveData(activeIds: [founder, reserve], founderId: founder);
+      return (founder, reserve);
+    }))!;
+    final stage = GameRepository.instance.getStage('stage_01_01');
+    final mapping = Phase0aStageContentMapper.map(
+      stage: stage,
+      playerCharacter: battleChar(id: founderId, name: '祖师', teamSide: 0),
+      numbers: noRareBonusNumbers,
+    );
+    final flow = Phase0aProductionFlowAssembler.assemble(
+      initialState: mapping.initialState,
+      waves: mapping.waves,
+      combatants: mapping.combatants,
+      moveBindings: mapping.moveBindings,
+      numbers: noRareBonusNumbers,
+      rng: Random(20260820),
+      playerAdapter: mapping.playerAdapter,
+      enemyAiAdapter: mapping.enemyAiAdapter,
+    );
+    final headless = Phase0aHeadlessRunner.runToEnd(
+      flow: flow,
+      bot: Phase0aPlayerBotAdapter(playerAdapter: mapping.playerAdapter),
+      deltaSeconds: noRareBonusNumbers.phase0aArena.fixedDeltaSeconds,
+      maxTicks: noRareBonusNumbers.phase0aArena.maxSimulationTicks,
+    );
+    final settlement = Phase0aSettlementAdapter.fromMapping(
+      mapping: mapping,
+      outcome: headless.outcome,
+      finalState: headless.finalState,
+      events: headless.events,
+    );
+
+    final outcome = await runWithRef(
+      tester,
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: stage,
+        settlementSnapshot: settlement,
+      ),
+    );
+
+    expect(settlement.result, BattleResult.leftWin);
+    expect(outcome, isNotNull);
+    expect(outcome!.characters.map((character) => character.id), [founderId]);
+    expect(outcome.drops.items, isNotEmpty, reason: 'stage_01_01 固定掉落应入结算');
+    await tester.runAsync(() async {
+      final founder = await IsarSetup.instance.characters.get(founderId);
+      final reserve = await IsarSetup.instance.characters.get(reserveId);
+      expect(founder!.experience, stage.baseExpReward);
+      expect(founder.lightInjuryStacks, 1, reason: '真实参战者累积连战轻伤');
+      expect(reserve!.experience, 0);
+      expect(reserve.lightInjuryStacks, 0, reason: '未参战替补零污染');
+      for (final item in outcome.drops.items) {
+        final stored = await IsarSetup.instance.inventoryItems.getByDefId(
+          item.defId,
+        );
+        expect(stored, isNotNull, reason: '${item.defId} 应写入 Isar');
+      }
     });
   });
 

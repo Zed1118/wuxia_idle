@@ -61,10 +61,6 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
 
 class _Phase0aMainlineBattleHostState
     extends ConsumerState<Phase0aMainlineBattleHost> {
-  /// 模拟步长:与 data/phase0a_debug_battle.yaml meta.fixed_delta_seconds
-  /// 同口径(Batch 1-8A 已验证),保 live/headless 帧推进一致。
-  static const double _fixedDeltaSeconds = 0.1;
-
   String? _setupError;
   Phase0aBattleController? _controller;
   Phase0aStageMapping? _mapping;
@@ -106,7 +102,7 @@ class _Phase0aMainlineBattleHostState
         final controller = Phase0aBattleController(
           flow: flow,
           roster: roster,
-          fixedDeltaSeconds: _fixedDeltaSeconds,
+          fixedDeltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
         );
         controller.addListener(_onControllerChanged);
         setState(() {

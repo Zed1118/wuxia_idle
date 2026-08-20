@@ -37,6 +37,9 @@ class CountingDamageResolver implements Phase0aDamageResolver {
   }
 }
 
+const _headlessDeltaSeconds = 1 / 30;
+const _headlessMaxTicks = 30 * 60 * 5;
+
 Phase0aActor makePlayer({int currentHealth = 100}) {
   return Phase0aActor(
     id: 'player',
@@ -264,6 +267,7 @@ void main() {
         flow: flow,
         bot: makeBot(),
         deltaSeconds: 1 / 30,
+        maxTicks: _headlessMaxTicks,
       );
       expect(result.outcome, Phase0aBattleOutcome.victory);
       expect(result.timedOut, isFalse);
@@ -281,7 +285,12 @@ void main() {
           [makeEnemy(id: 'e2', position: const ArenaVector(180, 30))],
         ],
       );
-      final result = Phase0aHeadlessRunner.runToEnd(flow: flow, bot: makeBot());
+      final result = Phase0aHeadlessRunner.runToEnd(
+        flow: flow,
+        bot: makeBot(),
+        deltaSeconds: _headlessDeltaSeconds,
+        maxTicks: _headlessMaxTicks,
+      );
       expect(result.outcome, Phase0aBattleOutcome.victory);
       expect(result.finalState.enemies, isEmpty);
       expect(result.finalState.player.isAlive, isTrue);
@@ -298,7 +307,12 @@ void main() {
         ],
         damageResolver: CountingDamageResolver(damage: 60),
       );
-      final result = Phase0aHeadlessRunner.runToEnd(flow: flow, bot: makeBot());
+      final result = Phase0aHeadlessRunner.runToEnd(
+        flow: flow,
+        bot: makeBot(),
+        deltaSeconds: _headlessDeltaSeconds,
+        maxTicks: _headlessMaxTicks,
+      );
       expect(result.outcome, Phase0aBattleOutcome.defeat);
       expect(result.finalState.player.isAlive, isFalse);
     });
@@ -316,6 +330,7 @@ void main() {
       final result = Phase0aHeadlessRunner.runToEnd(
         flow: flow,
         bot: makeBot(),
+        deltaSeconds: _headlessDeltaSeconds,
         maxTicks: 3,
       );
       expect(result.outcome, Phase0aBattleOutcome.ongoing);
@@ -330,6 +345,7 @@ void main() {
       final idle = Phase0aHeadlessRunner.runToEnd(
         flow: idleFlow,
         bot: makeBot(),
+        deltaSeconds: _headlessDeltaSeconds,
         maxTicks: 0,
       );
       expect(idle.ticks, 0);
@@ -348,6 +364,8 @@ void main() {
           ],
         ),
         bot: makeBot(),
+        deltaSeconds: _headlessDeltaSeconds,
+        maxTicks: _headlessMaxTicks,
       );
       final first = run();
       final second = run();
@@ -369,6 +387,7 @@ void main() {
             ),
             bot: makeBot(),
             deltaSeconds: delta,
+            maxTicks: _headlessMaxTicks,
           ),
           throwsArgumentError,
           reason: 'deltaSeconds=$delta 应 fail-fast',
@@ -382,6 +401,7 @@ void main() {
             ],
           ),
           bot: makeBot(),
+          deltaSeconds: _headlessDeltaSeconds,
           maxTicks: -1,
         ),
         throwsArgumentError,

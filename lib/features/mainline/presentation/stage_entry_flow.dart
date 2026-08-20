@@ -408,7 +408,7 @@ Future<MainlineBattleExit> _runBattle({
   int targetCycle = 1,
   Future<MainlineBattleExit> Function()? phase0aBattleOutcomeForTest,
 }) async {
-  if (Phase0aMainlineGate.shouldUsePhase0a(stage)) {
+  if (Phase0aMainlineGate.shouldUsePhase0a(stage, targetCycle: targetCycle)) {
     if (phase0aBattleOutcomeForTest != null) {
       return phase0aBattleOutcomeForTest();
     }
@@ -469,8 +469,8 @@ Future<MainlineBattleExit> _runBattle({
 /// 纵切切片 2(拍板 α):推 0A 主线战斗宿主并 wait 胜/败回调。
 ///
 /// 0A 屏无投降按钮(0C 键盘面只有 Esc 暂停):系统返回致 pop 而未触发
-/// 回调 → then 兜底记 (won:false, surrendered:false),与旧宿主 pop 兜底
-/// 同口径 —— 中途退出按战败走重试分支,零存档污染。
+/// 回调 → then 兜底记 surrendered=true,外层直接返回；中途退出不走
+/// Boss 战败惩罚、奖励或进度写入，保持零存档污染。
 /// 胜利时 host 不自 pop(与旧宿主一致),由胜利段收尾统一 pop。
 Future<MainlineBattleExit> _runPhase0aBattle({
   required BuildContext context,
@@ -504,13 +504,9 @@ Future<MainlineBattleExit> _runPhase0aBattle({
         ),
       )
       .then((_) {
-        // 兜底:host 被 pop(战败自 pop / 系统返回)而未触发回调 → 未胜非投降。
+        // 兜底:只有系统返回会在无回调时 pop；按中途退出旁路所有结算。
         if (!completer.isCompleted) {
-          completer.complete((
-            won: false,
-            surrendered: false,
-            settlement: null,
-          ));
+          completer.complete((won: false, surrendered: true, settlement: null));
         }
       });
   return completer.future;

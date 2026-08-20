@@ -37,8 +37,8 @@ final class Phase0aHeadlessRunner {
   static Phase0aHeadlessResult runToEnd({
     required Phase0aWaveBattleFlow flow,
     required Phase0aPlayerBotAdapter bot,
-    double deltaSeconds = 1 / 30,
-    int maxTicks = 30 * 60 * 5,
+    required double deltaSeconds,
+    required int maxTicks,
   }) {
     // 拍长必须有限且正:零/负值会让快进永不推进或反向,NaN 绕过一切比较。
     if (!(deltaSeconds.isFinite && deltaSeconds > 0)) {

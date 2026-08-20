@@ -1732,6 +1732,10 @@ class EnemyDefaults {
 /// 缺段兜底 [Phase0aArenaConfig.empty]:旧 fixture 不带该段时 isEmpty=true,
 /// 存量行为零变化;纵切 mapper 消费时见空段 fail-fast(不得静默装配零参数竞技场)。
 class Phase0aArenaConfig {
+  // —— 模拟时钟 ——
+  final double fixedDeltaSeconds;
+  final double maxBattleSeconds;
+
   // —— 竞技场边界 ——
   final double arenaMinX;
   final double arenaMaxX;
@@ -1770,6 +1774,8 @@ class Phase0aArenaConfig {
   final int clearQiDelta;
 
   const Phase0aArenaConfig({
+    required this.fixedDeltaSeconds,
+    required this.maxBattleSeconds,
     required this.arenaMinX,
     required this.arenaMaxX,
     required this.arenaMinY,
@@ -1803,6 +1809,8 @@ class Phase0aArenaConfig {
 
   /// 缺段兜底:全零/空串,isEmpty=true(沿 FestivalConfig.empty 体例)。
   static const Phase0aArenaConfig empty = Phase0aArenaConfig(
+    fixedDeltaSeconds: 0,
+    maxBattleSeconds: 0,
     arenaMinX: 0,
     arenaMaxX: 0,
     arenaMinY: 0,
@@ -1836,13 +1844,37 @@ class Phase0aArenaConfig {
 
   bool get isEmpty => basicSkillId.isEmpty;
 
+  int get maxSimulationTicks =>
+      isEmpty ? 0 : (maxBattleSeconds / fixedDeltaSeconds).ceil();
+
   factory Phase0aArenaConfig.fromYaml(Map<String, dynamic> y) {
     if (y.isEmpty) return empty;
+    final simulation = (y['simulation'] as Map).cast<String, dynamic>();
     final arena = (y['arena'] as Map).cast<String, dynamic>();
     final player = (y['player'] as Map).cast<String, dynamic>();
     final enemy = (y['enemy'] as Map).cast<String, dynamic>();
     final moves = (y['moves'] as Map).cast<String, dynamic>();
+    final fixedDeltaSeconds = (simulation['fixed_delta_seconds'] as num)
+        .toDouble();
+    final maxBattleSeconds = (simulation['max_battle_seconds'] as num)
+        .toDouble();
+    if (!(fixedDeltaSeconds.isFinite && fixedDeltaSeconds > 0)) {
+      throw ArgumentError.value(
+        fixedDeltaSeconds,
+        'fixed_delta_seconds',
+        'must be finite and positive',
+      );
+    }
+    if (!(maxBattleSeconds.isFinite && maxBattleSeconds > 0)) {
+      throw ArgumentError.value(
+        maxBattleSeconds,
+        'max_battle_seconds',
+        'must be finite and positive',
+      );
+    }
     return Phase0aArenaConfig(
+      fixedDeltaSeconds: fixedDeltaSeconds,
+      maxBattleSeconds: maxBattleSeconds,
       arenaMinX: (arena['min_x'] as num).toDouble(),
       arenaMaxX: (arena['max_x'] as num).toDouble(),
       arenaMinY: (arena['min_y'] as num).toDouble(),

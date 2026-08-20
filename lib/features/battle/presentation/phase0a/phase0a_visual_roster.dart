@@ -75,7 +75,7 @@ final class Phase0aVisualRoster {
       visuals[combatant.actorId] = Phase0aActorVisual(
         name: combatant.character.name,
         assetPath: assetPath,
-        isElite: false,
+        isElite: combatant.character.isBoss,
       );
     }
     return Phase0aVisualRoster(visuals: visuals);
