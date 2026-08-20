@@ -22,7 +22,7 @@ class ExpeditionCombatRunner implements ExpeditionCombat {
   List<BattleCharacter>? _baseTeam;
 
   Future<List<BattleCharacter>> _base(List<int> ids) async => _baseTeam ??=
-      await StageBattleSetup(isar: _isar).buildPlayerTeamForCharacters(ids);
+      await StageBattleSetup(isar: _isar).buildExactPlayerTeam(ids);
 
   @override
   Future<Map<int, ExpeditionMemberCaps>> memberCaps(List<int> ids) async {

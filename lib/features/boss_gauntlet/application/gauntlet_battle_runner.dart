@@ -24,7 +24,7 @@ class GauntletStageResult {
 /// `default_ground_strategy` 消费（C1.3.1）——**runner 不额外注入任何机制**。
 ///
 /// 玩家队伍（含当前 HP/qi/技能冷却）由 caller 从会话快照建好传入；Isar 载入 + 满血
-/// 基准队注入归 C2.1 service（`StageBattleSetup.buildPlayerTeamForCharacters` 同远征路径），
+/// 基准队注入归 C2.1 service（`StageBattleSetup.buildExactPlayerTeam` 同远征路径），
 /// 保持本 runner 纯 + 确定性可测。
 class GauntletBattleRunner {
   const GauntletBattleRunner._();

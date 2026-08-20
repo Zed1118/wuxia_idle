@@ -19,7 +19,7 @@ import '../../support/test_data.dart';
 /// C2.3a 单场战斗驱动生产路径 e2e（feedback_layered_bugs 守卫：pure 测过 ≠ 真落地）。
 ///
 /// `GauntletService.fightCurrentStage` = load run → 从真角色建满血基准队
-/// （`buildPlayerTeamForCharacters`）→ `stagePlayerTeam` 按快照装配 → `runStage`
+/// （`buildExactPlayerTeam`）→ `stagePlayerTeam` 按快照装配 → `runStage`
 /// （seed 混 currentStage）→ `advance` → **单事务原子持久化**。原子性即崩溃安全：
 /// 战斗中崩溃（内存态·未落事务）→ 无持久化 → 重开重打当前关。`continueToNextStage`
 /// = 整备页「继续闯关」（interlude→inBattle）。

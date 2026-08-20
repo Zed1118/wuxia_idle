@@ -7,7 +7,7 @@ import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_controlle
 
 /// C2.3a：断魂庄「快照 → 本关玩家队」纯装配（`GauntletController.stagePlayerTeam`）。
 ///
-/// 满血基准队（`buildPlayerTeamForCharacters` 产出）+ 会话成员快照 → 本关出战队：
+/// 满血基准队（`buildExactPlayerTeam` 产出）+ 会话成员快照 → 本关出战队：
 /// - 首关（member.maxHp==0 = enter 占位·无检查点）→ 满血基准全员进队，不覆盖；
 /// - 关次间（maxHp>0 = 有战末检查点）→ 按快照覆盖当前生命/真气/技能冷却；
 /// - 阵亡/血尽者剔除（残阵只带存活者·镜像 `ExpeditionCombatRunner.fight`）。

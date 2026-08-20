@@ -118,7 +118,7 @@ class _Phase0aMainlineBattleHostState
 
   /// 生产路径:单主角续传(D3=α)= 祖师一人出战。
   ///
-  /// 走 [StageBattleSetup.buildPlayerTeamForCharacters] 复用旧引擎全套
+  /// 走 [StageBattleSetup.buildExactPlayerTeam] 复用旧引擎全套
   /// 口径(autoFill/祖师 buff/伤势/装备),零数值分叉。祖师 id 缺失
   /// (P1 种子档等)兜底取首个角色。
   Future<BattleCharacter> _buildPlayerCharacter() async {
@@ -134,7 +134,7 @@ class _Phase0aMainlineBattleHostState
     }
     final team = await StageBattleSetup(
       isar: isar,
-    ).buildPlayerTeamForCharacters([playerId]);
+    ).buildExactPlayerTeam([playerId]);
     if (team.isEmpty) {
       throw StateError('Phase0a 主线宿主: 玩家队伍装配为空');
     }

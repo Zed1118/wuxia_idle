@@ -123,6 +123,44 @@ void main() {
     expect(left.first.characterId, 1);
   });
 
+  group('exact roster interface', () {
+    test('空 ids → ArgumentError,不得 fallback 任意角色', () async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      await expectLater(
+        StageBattleSetup(
+          isar: IsarSetup.instance,
+        ).buildExactPlayerTeam(const []),
+        throwsArgumentError,
+      );
+    });
+
+    test('缺失 id → StateError,不得静默换成现存角色', () async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      await expectLater(
+        StageBattleSetup(
+          isar: IsarSetup.instance,
+        ).buildExactPlayerTeam(const [999]),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            contains('999'),
+          ),
+        ),
+      );
+    });
+
+    test('重复 id → ArgumentError,不得重复装配同一角色', () async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      await expectLater(
+        StageBattleSetup(
+          isar: IsarSetup.instance,
+        ).buildExactPlayerTeam(const [1, 1]),
+        throwsArgumentError,
+      );
+    });
+  });
+
   test('Isar 没任何 Character → throw StateError', () async {
     final stage = GameRepository.instance.getStage('stage_01_01');
 

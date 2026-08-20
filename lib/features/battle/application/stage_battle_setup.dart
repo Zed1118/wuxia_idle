@@ -56,7 +56,7 @@ class StageBattleSetup {
     int cycleIndex = 1,
     bool readableFirstClearTuning = false,
   }) async {
-    var left = await _buildPlayerTeam();
+    var left = await buildActivePlayerTeam();
     if (readableFirstClearTuning) {
       left = _applyReadableFirstClearOpeningCooldown(left);
     }
@@ -102,7 +102,7 @@ class StageBattleSetup {
     TowerFloorDef floor, {
     int cycleIndex = 1,
   }) async {
-    final left = await _buildPlayerTeam();
+    final left = await buildActivePlayerTeam();
     final right = buildEnemyTeam(
       floor.enemyTeam,
       cycleIndex: cycleIndex,
@@ -183,16 +183,38 @@ class StageBattleSetup {
     ];
   }
 
-  /// 从指定角色 id 列表装配玩家队（非 `activeCharacterIds`）。远征按派遣成员
-  /// 装配（B2.2b），复用同一 autoFill/相生/祖师 buff/伤势路径，避免与主线分叉。
-  Future<List<BattleCharacter>> buildPlayerTeamForCharacters(
+  /// 当前出战阵容 interface：读取 activeCharacterIds，过滤活动占用；旧 seed
+  /// 未写 active 列表时允许 fallback 首个可用角色。
+  Future<List<BattleCharacter>> buildActivePlayerTeam() => _buildPlayerTeam();
+
+  /// 指定阵容 interface：严格保序装配传入 ids。空/重复/缺失一律 fail-fast，
+  /// 绝不 fallback 任意角色，避免远征/断魂庄/0A 坏会话静默换人。
+  Future<List<BattleCharacter>> buildExactPlayerTeam(
     List<int> characterIds,
-  ) => _buildPlayerTeam(characterIds: characterIds);
+  ) async {
+    if (characterIds.isEmpty) {
+      throw ArgumentError.value(
+        characterIds,
+        'characterIds',
+        'must not be empty',
+      );
+    }
+    final uniqueIds = characterIds.toSet();
+    if (uniqueIds.length != characterIds.length) {
+      throw ArgumentError.value(
+        characterIds,
+        'characterIds',
+        'must not contain duplicates',
+      );
+    }
+    return _buildPlayerTeam(characterIds: characterIds, strictExact: true);
+  }
 
   /// 从 Isar 拉玩家方（左队）：[characterIds] 显式指定则用之，否则优先
   /// activeCharacterIds，空则兜底 findFirst。
   Future<List<BattleCharacter>> _buildPlayerTeam({
     List<int>? characterIds,
+    bool strictExact = false,
   }) async {
     final save = await isar.saveDatas.get(0);
     var ids = characterIds ?? save?.activeCharacterIds ?? const <int>[];
@@ -220,6 +242,16 @@ class StageBattleSetup {
     for (final cid in ids) {
       final c = await isar.characters.get(cid);
       if (c != null) players.add(c);
+    }
+    if (strictExact && players.length != ids.length) {
+      final foundIds = {for (final player in players) player.id};
+      final missingIds = [
+        for (final id in ids)
+          if (!foundIds.contains(id)) id,
+      ];
+      throw StateError(
+        'StageBattleSetup: exact roster character ids not found: $missingIds',
+      );
     }
     if (players.isEmpty) {
       // 兜底：Phase 2 P1 种子是 id=1 单人，没设 activeCharacterIds。

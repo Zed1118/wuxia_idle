@@ -28,7 +28,7 @@ class GauntletController {
 
   /// 关次快照 → 本关玩家出战队（C2.3a·[snapshotAfterStage] 的逆向）。
   ///
-  /// [baseTeam] = `StageBattleSetup.buildPlayerTeamForCharacters` 满血基准队；按会话
+  /// [baseTeam] = `StageBattleSetup.buildExactPlayerTeam` 满血基准队；按会话
   /// [members] 快照装配本关出战队：
   /// - `member.maxHp==0`（enter 占位·首关无检查点）→ 保满血基准，不覆盖；
   /// - `maxHp>0`（关次间有战末检查点）→ `copyWith` 覆盖当前生命/真气/技能冷却；
