@@ -971,11 +971,11 @@ applyVictoryResolution({
       .findFirst();
   final clearedSet =
       mainlineProgressSnapshot?.clearedStageIds.toSet() ?? <String>{};
-  final progressionSettlement = CombatProgressionSettlementService(
+  final settlement = CombatProgressionSettlementService(
     GameRepository.instance,
   );
   // 主线重打仍发经验；首通门控只约束掉落与 Boss 事件。
-  final advancements = progressionSettlement.applyExperience(
+  final advancements = settlement.applyExperience(
     characters: characters,
     experienceReward: stage.baseExpReward,
     clearedStageIds: clearedSet,
@@ -1039,7 +1039,7 @@ applyVictoryResolution({
         equipment: drop,
       );
     }
-    resonanceUpgrades = await progressionSettlement.recordCommonEvents(
+    resonanceUpgrades = await settlement.recordCommonEvents(
       isar: isar,
       characters: characters,
       equipmentsByCharacter: equipsByCh,
