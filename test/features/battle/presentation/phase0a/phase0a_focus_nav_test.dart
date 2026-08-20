@@ -223,6 +223,13 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.keyW);
       controller.step();
       await tester.pump();
+      await tester.pump(
+        Duration(
+          microseconds:
+              (controller.fixedDeltaSeconds * Duration.microsecondsPerSecond)
+                  .round(),
+        ),
+      );
       final after = tester.getCenter(find.byKey(playerStandeeKey));
       expect(
         before.dy - after.dy,

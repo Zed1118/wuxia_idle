@@ -55,6 +55,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   Duration? _lastElapsed;
   double _accumulatorSeconds = 0;
   final List<_HeldFeedback> _heldFeedback = <_HeldFeedback>[];
+  int _nextFeedbackId = 0;
   final Map<String, double> _hitFlashRemaining = <String, double>{};
   final Map<String, double> _hpEmphasisRemaining = <String, double>{};
   bool _retryInFlight = false;
@@ -82,6 +83,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _lastElapsed = null;
     _accumulatorSeconds = 0;
     _heldFeedback.clear();
+    _nextFeedbackId = 0;
     _hitFlashRemaining.clear();
     _hpEmphasisRemaining.clear();
     _paused = false;
@@ -164,7 +166,13 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         } else if (_isSingletonFeedback(entry.kind)) {
           _heldFeedback.removeWhere((held) => held.entry.kind == entry.kind);
         }
-        _heldFeedback.add(_HeldFeedback(entry, widget.feedbackHoldSeconds));
+        _heldFeedback.add(
+          _HeldFeedback(
+            id: _nextFeedbackId++,
+            entry: entry,
+            lifetimeSeconds: _feedbackLifetime(entry.kind),
+          ),
+        );
       }
       final overflow =
           _heldFeedback.length - Phase0aPresentationTokens.maxEntries;
@@ -187,6 +195,26 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
 
   static bool _isAttackFeedback(Phase0aVfxKind kind) =>
       kind == Phase0aVfxKind.meleeSlash || kind == Phase0aVfxKind.palmTrail;
+
+  double _feedbackLifetime(Phase0aVfxKind kind) {
+    // 视觉验收路由会显式延长 hold，必须继续尊重该公开契约。
+    if (widget.feedbackHoldSeconds !=
+        Phase0aPresentationTokens.feedbackHoldSeconds) {
+      return widget.feedbackHoldSeconds;
+    }
+    return switch (kind) {
+      Phase0aVfxKind.damagePopup =>
+        Phase0aPresentationTokens.damagePopupSeconds,
+      Phase0aVfxKind.meleeSlash => Phase0aPresentationTokens.meleeVfxSeconds,
+      Phase0aVfxKind.palmTrail => Phase0aPresentationTokens.palmTrailSeconds,
+      Phase0aVfxKind.gatherVortex ||
+      Phase0aVfxKind.gatherPull => Phase0aPresentationTokens.gatherVfxSeconds,
+      Phase0aVfxKind.clearBurst => Phase0aPresentationTokens.clearVfxSeconds,
+      Phase0aVfxKind.defeatInk => Phase0aPresentationTokens.defeatVfxSeconds,
+      Phase0aVfxKind.waveBanner || Phase0aVfxKind.outcomeSeal =>
+        Phase0aPresentationTokens.feedbackHoldSeconds,
+    };
+  }
 
   static bool _advanceActorTimers(
     Map<String, double> timers,
@@ -368,9 +396,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                         _FeedbackLayer(
                           controller: controller,
                           stage: stage,
-                          entries: [
-                            for (final held in _heldFeedback) held.entry,
-                          ],
+                          entries: [..._heldFeedback],
                         ),
                       ],
                     ),
@@ -532,10 +558,19 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
 }
 
 final class _HeldFeedback {
-  _HeldFeedback(this.entry, this.remainingSeconds);
+  _HeldFeedback({
+    required this.id,
+    required this.entry,
+    required this.lifetimeSeconds,
+  }) : remainingSeconds = lifetimeSeconds;
 
+  final int id;
   final Phase0aVfxEntry entry;
+  final double lifetimeSeconds;
   double remainingSeconds;
+
+  double get progress =>
+      (1 - remainingSeconds / lifetimeSeconds).clamp(0.0, 1.0);
 }
 
 /// 终局「再战」纸签按钮(9B)。宣纸底 + 墨字 + 绛红描边,守水墨克制基调;
@@ -840,7 +875,7 @@ class _PlayerHud extends StatelessWidget {
   }
 }
 
-class _FeedbackLayer extends StatelessWidget {
+class _FeedbackLayer extends StatefulWidget {
   const _FeedbackLayer({
     required this.controller,
     required this.stage,
@@ -849,40 +884,64 @@ class _FeedbackLayer extends StatelessWidget {
 
   final Phase0aBattleController controller;
   final Phase0aStage stage;
-  final List<Phase0aVfxEntry> entries;
+  final List<_HeldFeedback> entries;
+
+  @override
+  State<_FeedbackLayer> createState() => _FeedbackLayerState();
+}
+
+class _FeedbackLayerState extends State<_FeedbackLayer>
+    with SingleTickerProviderStateMixin {
+  late final Ticker _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = createTicker((_) {
+      // 动画只重建反馈层，不牵动静态背景和角色树。
+      if (widget.entries.isNotEmpty && mounted) setState(() {});
+    })..start();
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final children = <Widget>[];
     var popupIndex = 0;
-    for (final entry in entries) {
+    for (final held in widget.entries) {
+      final entry = held.entry;
       switch (entry.kind) {
         case Phase0aVfxKind.damagePopup:
-          children.add(_damagePopup(entry, popupIndex++));
+          children.add(_damagePopup(held, popupIndex++));
         case Phase0aVfxKind.meleeSlash:
           children.add(
             _inkVfx(
-              entry,
+              held,
               _InkEffect.melee,
               vfxKey: const ValueKey('phase0a_melee_slash'),
             ),
           );
         case Phase0aVfxKind.palmTrail:
-          children.add(_palmTrail(entry));
+          children.add(_palmTrail(held));
         case Phase0aVfxKind.gatherVortex:
           children.add(
             _inkVfx(
-              entry,
+              held,
               _InkEffect.gather,
               vfxKey: const ValueKey('phase0a_gather_vortex'),
             ),
           );
         case Phase0aVfxKind.gatherPull:
-          children.add(_gatherPull(entry));
+          children.add(_gatherPull(held));
         case Phase0aVfxKind.clearBurst:
           children.add(
             _inkVfx(
-              entry,
+              held,
               _InkEffect.clear,
               vfxKey: const ValueKey('phase0a_clear_burst'),
             ),
@@ -890,7 +949,7 @@ class _FeedbackLayer extends StatelessWidget {
         case Phase0aVfxKind.defeatInk:
           children.add(
             _inkVfx(
-              entry,
+              held,
               _InkEffect.defeat,
               vfxKey: const ValueKey('phase0a_defeat_ink'),
               containerKey: ValueKey('phase0a_defeat_ink_${entry.targetId}'),
@@ -902,8 +961,8 @@ class _FeedbackLayer extends StatelessWidget {
           break;
       }
     }
-    if (controller.outcome != Phase0aBattleOutcome.ongoing) {
-      children.add(_outcomeSeal(controller.outcome));
+    if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
+      children.add(_outcomeSeal(widget.controller.outcome));
     }
     return Positioned.fill(
       child: IgnorePointer(
@@ -915,32 +974,50 @@ class _FeedbackLayer extends StatelessWidget {
     );
   }
 
-  Widget _damagePopup(Phase0aVfxEntry entry, int index) {
+  Widget _damagePopup(_HeldFeedback held, int index) {
+    final entry = held.entry;
     // 使用事件发生时的世界坐标快照(entry.anchor),不反查当前 state。
     // 目标死亡后已从 controller.state 移除,直接查 id 会 fallback
     // 到屏幕中心,导致伤害数字位置错误。
     final anchor = entry.anchor != null
-        ? stage.worldToScreen(entry.anchor!)
-        : stage.safeRect.center;
+        ? widget.stage.worldToScreen(entry.anchor!)
+        : widget.stage.safeRect.center;
     return Positioned(
-      key: ValueKey('phase0a_popup_$index'),
+      key: ValueKey('phase0a_popup_${held.id}'),
       left: anchor.dx,
       top:
           anchor.dy -
           Phase0aPresentationTokens.actorHeight -
           index * Phase0aPresentationTokens.vfxPopupGap,
-      child: Transform.translate(
-        offset: const Offset(-12, 0),
-        child: Text(
-          '${entry.damage}',
-          style: TextStyle(
-            color: entry.isCritical ? WuxiaUi.jiang : WuxiaUi.ink,
-            fontSize: Phase0aPresentationTokens.vfxPopupFontSize,
-            fontWeight: FontWeight.w900,
-            shadows: const [
-              Shadow(color: WuxiaUi.paper, blurRadius: 1),
-              Shadow(color: WuxiaUi.paper, blurRadius: 4),
-            ],
+      child: Opacity(
+        opacity: _feedbackOpacity(held.progress),
+        child: Transform.translate(
+          offset: Offset(-12, -held.progress * 34),
+          child: Transform.scale(
+            scale:
+                0.84 +
+                0.16 *
+                    Curves.easeOut.transform(
+                      (held.progress / 0.28).clamp(0.0, 1.0),
+                    ),
+            child: Text(
+              '${entry.damage}',
+              style: TextStyle(
+                color: entry.isCritical ? WuxiaUi.jiang : WuxiaUi.ink,
+                fontSize: Phase0aPresentationTokens.vfxPopupFontSize,
+                fontWeight: FontWeight.w900,
+                shadows: entry.isCritical
+                    ? const [
+                        Shadow(color: WuxiaUi.gold, blurRadius: 7),
+                        Shadow(color: WuxiaUi.paper, blurRadius: 2),
+                        Shadow(color: WuxiaUi.ink, blurRadius: 1),
+                      ]
+                    : const [
+                        Shadow(color: WuxiaUi.paper, blurRadius: 1),
+                        Shadow(color: WuxiaUi.paper, blurRadius: 4),
+                      ],
+              ),
+            ),
           ),
         ),
       ),
@@ -949,14 +1026,15 @@ class _FeedbackLayer extends StatelessWidget {
 
   /// 掌风轨迹:出手者→目标连线的世界坐标映射到屏幕,
   /// 以连线中点为中心、以连线方向为旋转角度绘制。
-  Widget _palmTrail(Phase0aVfxEntry entry) {
+  Widget _palmTrail(_HeldFeedback held) {
+    final entry = held.entry;
     final src = entry.source;
     final dst = entry.vfxTarget;
     if (src == null || dst == null) {
       return const SizedBox.shrink();
     }
-    final screenSrc = stage.worldToScreen(src);
-    final screenDst = stage.worldToScreen(dst);
+    final screenSrc = widget.stage.worldToScreen(src);
+    final screenDst = widget.stage.worldToScreen(dst);
     final mid = Offset(
       (screenSrc.dx + screenDst.dx) / 2,
       (screenSrc.dy + screenDst.dy) / 2,
@@ -965,33 +1043,43 @@ class _FeedbackLayer extends StatelessWidget {
       screenDst.dy - screenSrc.dy,
       screenDst.dx - screenSrc.dx,
     );
-    final size = Phase0aPresentationTokens.vfxCenterSize;
+    final distance = (screenDst - screenSrc).distance;
+    final width = distance + Phase0aPresentationTokens.palmTrailPadding * 2;
+    final height = Phase0aPresentationTokens.palmTrailHeight;
     return Positioned(
-      left: mid.dx - size / 2,
-      top: mid.dy - size / 2,
-      width: size,
-      height: size,
-      child: Transform.rotate(
-        angle: angle,
-        child: CustomPaint(
-          key: const ValueKey('phase0a_palm_trail'),
-          size: Size.square(size),
-          painter: const _InkEffectPainter(_InkEffect.palm),
+      key: ValueKey('phase0a_palm_trail_${held.id}'),
+      left: mid.dx - width / 2,
+      top: mid.dy - height / 2,
+      width: width,
+      height: height,
+      child: Opacity(
+        opacity: _feedbackOpacity(held.progress),
+        child: Transform.rotate(
+          angle: angle,
+          child: CustomPaint(
+            key: const ValueKey('phase0a_palm_trail'),
+            size: Size(width, height),
+            painter: _InkEffectPainter(
+              _InkEffect.palm,
+              progress: held.progress,
+            ),
+          ),
         ),
       ),
     );
   }
 
   /// Q 拉拢轨迹:以事件发生时的目标→玩家快照绘制弯曲墨线。
-  Widget _gatherPull(Phase0aVfxEntry entry) {
+  Widget _gatherPull(_HeldFeedback held) {
+    final entry = held.entry;
     final source = entry.source;
     final target = entry.vfxTarget;
     final targetId = entry.targetId;
     if (source == null || target == null || targetId == null) {
       return const SizedBox.shrink();
     }
-    final screenSource = stage.worldToScreen(source);
-    final screenTarget = stage.worldToScreen(target);
+    final screenSource = widget.stage.worldToScreen(source);
+    final screenTarget = widget.stage.worldToScreen(target);
     final padding = Phase0aPresentationTokens.gatherPullPadding;
     final left = math.min(screenSource.dx, screenTarget.dx) - padding;
     final top = math.min(screenSource.dy, screenTarget.dy) - padding;
@@ -1002,11 +1090,14 @@ class _FeedbackLayer extends StatelessWidget {
       top: top,
       width: width,
       height: height,
-      child: CustomPaint(
-        key: ValueKey('phase0a_gather_pull_$targetId'),
-        painter: _GatherPullPainter(
-          source: screenSource - Offset(left, top),
-          target: screenTarget - Offset(left, top),
+      child: Opacity(
+        opacity: _feedbackOpacity(held.progress),
+        child: CustomPaint(
+          key: ValueKey('phase0a_gather_pull_$targetId'),
+          painter: _GatherPullPainter(
+            source: screenSource - Offset(left, top),
+            target: screenTarget - Offset(left, top),
+          ),
         ),
       ),
     );
@@ -1015,16 +1106,17 @@ class _FeedbackLayer extends StatelessWidget {
   /// 单点水墨 VFX(近战墨痕 / Q 涡旋 / R 墨爆 / 死亡墨散):
   /// 以 [Phase0aVfxEntry.anchor] 的世界坐标快照映射到屏幕。
   Widget _inkVfx(
-    Phase0aVfxEntry entry,
+    _HeldFeedback held,
     _InkEffect effect, {
     required Key vfxKey,
     Key? containerKey,
   }) {
+    final entry = held.entry;
     final anchor = entry.anchor;
     if (anchor == null) {
       return const SizedBox.shrink();
     }
-    final screen = stage.worldToScreen(anchor);
+    final screen = widget.stage.worldToScreen(anchor);
     final size = switch (effect) {
       _InkEffect.melee => Phase0aPresentationTokens.vfxMeleeSize,
       _InkEffect.defeat when entry.defeatKind == Phase0aDefeatKind.elite =>
@@ -1036,22 +1128,37 @@ class _FeedbackLayer extends StatelessWidget {
       top: screen.dy - size / 2,
       width: size,
       height: size,
-      child: SizedBox.square(
-        key: containerKey,
-        dimension: size,
-        child: CustomPaint(
-          key: vfxKey,
-          size: Size.square(size),
-          painter: _InkEffectPainter(effect, defeatKind: entry.defeatKind),
+      child: Opacity(
+        opacity: _feedbackOpacity(held.progress),
+        child: Transform.scale(
+          scale: 0.78 + 0.22 * Curves.easeOut.transform(held.progress),
+          child: SizedBox.square(
+            key: containerKey,
+            dimension: size,
+            child: CustomPaint(
+              key: vfxKey,
+              size: Size.square(size),
+              painter: _InkEffectPainter(effect, defeatKind: entry.defeatKind),
+            ),
+          ),
         ),
       ),
     );
   }
 
+  static double _feedbackOpacity(double progress) {
+    if (progress < 0.16) return progress / 0.16;
+    if (progress < 0.68) return 1;
+    return (1 - progress) / 0.32;
+  }
+
   Widget _waveBanner(Phase0aVfxEntry entry) => Positioned(
     key: const ValueKey('phase0a_wave_banner'),
     top: Phase0aPresentationTokens.vfxBannerTop,
-    left: (stage.viewport.width - Phase0aPresentationTokens.vfxBannerWidth) / 2,
+    left:
+        (widget.stage.viewport.width -
+            Phase0aPresentationTokens.vfxBannerWidth) /
+        2,
     width: Phase0aPresentationTokens.vfxBannerWidth,
     height: Phase0aPresentationTokens.vfxBannerHeight,
     child: CustomPaint(
@@ -1096,10 +1203,11 @@ class _FeedbackLayer extends StatelessWidget {
 enum _InkEffect { melee, palm, gather, clear, defeat }
 
 class _InkEffectPainter extends CustomPainter {
-  const _InkEffectPainter(this.effect, {this.defeatKind});
+  const _InkEffectPainter(this.effect, {this.defeatKind, this.progress = 1});
 
   final _InkEffect effect;
   final Phase0aDefeatKind? defeatKind;
+  final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1146,6 +1254,7 @@ class _InkEffectPainter extends CustomPainter {
           Paint()..color = WuxiaUi.jiang.withValues(alpha: 0.58),
         );
       case _InkEffect.palm:
+        final reveal = Curves.easeOut.transform(progress.clamp(0.0, 1.0));
         final body = Path()
           ..moveTo(size.width * 0.07, size.height * 0.57)
           ..cubicTo(
@@ -1153,7 +1262,7 @@ class _InkEffectPainter extends CustomPainter {
             size.height * 0.24,
             size.width * 0.68,
             size.height * 0.25,
-            size.width * 0.93,
+            size.width * (0.20 + 0.73 * reveal),
             size.height * 0.43,
           )
           ..cubicTo(
@@ -1174,7 +1283,7 @@ class _InkEffectPainter extends CustomPainter {
           ..quadraticBezierTo(
             size.width * 0.48,
             size.height * 0.40,
-            size.width * 0.86,
+            size.width * (0.22 + 0.64 * reveal),
             size.height * 0.44,
           );
         canvas.drawPath(dryBrush, ink);
@@ -1255,7 +1364,9 @@ class _InkEffectPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _InkEffectPainter oldDelegate) =>
-      oldDelegate.effect != effect || oldDelegate.defeatKind != defeatKind;
+      oldDelegate.effect != effect ||
+      oldDelegate.defeatKind != defeatKind ||
+      oldDelegate.progress != progress;
 }
 
 class _GatherPullPainter extends CustomPainter {

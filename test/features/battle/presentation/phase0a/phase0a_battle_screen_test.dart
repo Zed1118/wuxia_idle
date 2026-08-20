@@ -82,11 +82,14 @@ void main() {
   Future<void> pumpScreen(
     WidgetTester tester, {
     Size viewport = const Size(1280, 720),
+    bool autoStep = true,
   }) async {
     await tester.binding.setSurfaceSize(viewport);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
-      MaterialApp(home: Phase0aBattleScreen(controller: controller)),
+      MaterialApp(
+        home: Phase0aBattleScreen(controller: controller, autoStep: autoStep),
+      ),
     );
     await tester.pump();
   }
@@ -712,6 +715,20 @@ void main() {
         );
 
         final actualCenter = tester.getCenter(find.byKey(palmTrailKey));
+        final actualSize = tester.getSize(find.byKey(palmTrailKey));
+        final expectedWidth =
+            (screenDst - screenSrc).distance +
+            Phase0aPresentationTokens.palmTrailPadding * 2;
+        expect(actualSize.width, closeTo(expectedWidth, epsilon));
+        expect(
+          actualSize.height,
+          closeTo(Phase0aPresentationTokens.palmTrailHeight, epsilon),
+          reason: '掌风必须是沿命中方向的窄带，不能再使用固定大方形画布',
+        );
+        expect(
+          actualSize.height,
+          lessThan(Phase0aPresentationTokens.vfxCenterSize / 2),
+        );
         expect(
           (actualCenter - expectedCenter).distance,
           lessThan(epsilon),
@@ -749,6 +766,52 @@ void main() {
         );
       },
     );
+
+    testWidgets('伤害数字在独立反馈层上浮淡出并按表现 token 到期移除', (tester) async {
+      await pumpScreen(tester, autoStep: false);
+
+      Phase0aHitLanded? hit;
+      for (var i = 0; i < 80 && hit == null; i++) {
+        final events = await stepAndPump(
+          tester,
+          attackTowardNearest(controller.state),
+        );
+        for (final event in events.whereType<Phase0aHitLanded>()) {
+          if (event.actor == 'player' && event.resolvedDamage > 0) {
+            hit = event;
+            break;
+          }
+        }
+      }
+      expect(hit, isNotNull);
+
+      final damageFinder = find.text('${hit!.resolvedDamage}').first;
+      expect(damageFinder, findsOneWidget);
+      final initialCenter = tester.getCenter(damageFinder);
+      final initialOpacity = tester.widget<Opacity>(
+        find.ancestor(of: damageFinder, matching: find.byType(Opacity)).first,
+      );
+
+      final halfLife = Duration(
+        microseconds:
+            (Phase0aPresentationTokens.damagePopupSeconds *
+                    Duration.microsecondsPerSecond /
+                    2)
+                .round(),
+      );
+      await tester.pump(halfLife);
+
+      final middleFinder = find.text('${hit.resolvedDamage}').first;
+      final middleCenter = tester.getCenter(middleFinder);
+      final middleOpacity = tester.widget<Opacity>(
+        find.ancestor(of: middleFinder, matching: find.byType(Opacity)).first,
+      );
+      expect(middleCenter.dy, lessThan(initialCenter.dy));
+      expect(middleOpacity.opacity, greaterThan(initialOpacity.opacity));
+
+      await tester.pump(halfLife + const Duration(milliseconds: 1));
+      expect(find.text('${hit.resolvedDamage}'), findsNothing);
+    });
 
     testWidgets(
       'Q 涡旋中心 = worldToScreen(anchor),且不在 safeRect.center (1280x720)',
