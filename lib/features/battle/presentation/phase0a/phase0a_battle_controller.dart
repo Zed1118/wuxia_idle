@@ -37,11 +37,13 @@ final class Phase0aBattleController extends ChangeNotifier {
 
   Phase0aPlayerCommand _pending = const Phase0aPlayerCommand();
   List<Phase0aEvent> _lastEvents = const <Phase0aEvent>[];
+  List<Phase0aEvent> _events = const <Phase0aEvent>[];
   List<Phase0aVfxEntry> _feedback = const <Phase0aVfxEntry>[];
 
   Phase0aArenaState get state => _flow.state;
   Phase0aBattleOutcome get outcome => _flow.outcome;
   List<Phase0aEvent> get lastEvents => _lastEvents;
+  List<Phase0aEvent> get events => _events;
   List<Phase0aVfxEntry> get feedback => _feedback;
 
   /// 终局重开(9B):换入调用方装配的全新 flow,重建排序器与 VFX 控制器,
@@ -53,6 +55,7 @@ final class Phase0aBattleController extends ChangeNotifier {
     _vfx = Phase0aVfxController();
     _pending = const Phase0aPlayerCommand();
     _lastEvents = const <Phase0aEvent>[];
+    _events = const <Phase0aEvent>[];
     _feedback = const <Phase0aVfxEntry>[];
     _vfx.syncActors(_flow.state);
     notifyListeners();
@@ -78,6 +81,7 @@ final class Phase0aBattleController extends ChangeNotifier {
     );
     final accepted = _sequencer.ingest(emitted);
     _lastEvents = List.unmodifiable(accepted);
+    _events = List.unmodifiable([..._events, ...accepted]);
     _feedback = List.unmodifiable(_vfx.consume(accepted));
     notifyListeners();
     return _lastEvents;

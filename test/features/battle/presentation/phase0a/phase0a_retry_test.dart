@@ -73,6 +73,7 @@ void main() {
         for (final enemy in controller.state.enemies) enemy.id,
       ], initialEnemyIds);
       expect(controller.lastEvents, isEmpty);
+      expect(controller.events, isEmpty);
       expect(controller.feedback, isEmpty);
 
       // 排序器已重建:新会话从同一初始 seq 起的事件不得被当重复吞掉。

@@ -1,4 +1,5 @@
 import '../../domain/phase0a/phase0a_combat_model.dart';
+import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import 'phase0a_player_bot_adapter.dart';
 import 'phase0a_wave_battle_flow.dart';
@@ -11,11 +12,13 @@ final class Phase0aHeadlessResult {
     required this.outcome,
     required this.ticks,
     required this.finalState,
+    required this.events,
   });
 
   final Phase0aBattleOutcome outcome;
   final int ticks;
   final Phase0aArenaState finalState;
+  final List<Phase0aEvent> events;
 
   bool get timedOut => outcome == Phase0aBattleOutcome.ongoing;
 }
@@ -49,10 +52,13 @@ final class Phase0aHeadlessRunner {
       throw ArgumentError.value(maxTicks, 'maxTicks', 'must be non-negative');
     }
     var ticks = 0;
+    final events = <Phase0aEvent>[];
     while (flow.outcome == Phase0aBattleOutcome.ongoing && ticks < maxTicks) {
-      flow.advance(
-        deltaSeconds: deltaSeconds,
-        command: bot.commandFor(flow.state),
+      events.addAll(
+        flow.advance(
+          deltaSeconds: deltaSeconds,
+          command: bot.commandFor(flow.state),
+        ),
       );
       ticks++;
     }
@@ -60,6 +66,7 @@ final class Phase0aHeadlessRunner {
       outcome: flow.outcome,
       ticks: ticks,
       finalState: flow.state,
+      events: List.unmodifiable(events),
     );
   }
 }

@@ -42,7 +42,7 @@
 ## 当前恢复点
 
 - 状态：WIP，禁止合并，分支 tip 不打 `[READY]`。
-- 最后完成：新增引擎无关 `CombatSettlementSnapshot`；旧 `BattleState` 经适配继续零行为变化；`applyVictoryResolution` 可显式消费本场快照并只结算真实参战者。
-- 下一步：让 Phase 0A controller/headless 累积同源事件，由 adapter 生成真实终局快照并随宿主退出返回。
-- 已跑验证：结算红测先因缺类型/参数编译红；实现后 `apply_victory_resolution_test` 13 pass，旧结算/心魔/伤势/统计/英雄镜头定向组 57 pass。
+- 最后完成：live controller 与 headless 均保留同源事件流；`Phase0aSettlementAdapter` 从真实事件/末态 HP 生成快照；宿主随胜负回传，主线胜利与 Boss 战败结算显式消费本场快照。
+- 下一步：灰度门收窄 Ch1 一周目；fixed delta 迁 YAML 并让 live/headless 同源；复核开场真气与 Boss 视觉语义。
+- 已跑验证：adapter 红测先因缺事件/类型编译红；实现后 mapper 9、headless 11、mainline 组合 28、controller/SFX 10 全过；`flutter analyze` 0 issue。
 - 阻塞项：无新增用户拍板；工程上被真实结算链缺口阻塞。

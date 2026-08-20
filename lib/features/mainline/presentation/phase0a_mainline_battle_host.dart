@@ -9,7 +9,9 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/math_random.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
+import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/battle_state.dart' show BattleCharacter;
@@ -43,8 +45,8 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
   });
 
   final StageDef stage;
-  final VoidCallback onVictory;
-  final VoidCallback onDefeat;
+  final ValueChanged<CombatSettlementSnapshot> onVictory;
+  final ValueChanged<CombatSettlementSnapshot> onDefeat;
 
   @visibleForTesting
   final BattleCharacter? playerCharacterForTest;
@@ -65,6 +67,7 @@ class _Phase0aMainlineBattleHostState
 
   String? _setupError;
   Phase0aBattleController? _controller;
+  Phase0aStageMapping? _mapping;
   bool _exitNotified = false;
 
   @override
@@ -106,7 +109,10 @@ class _Phase0aMainlineBattleHostState
           fixedDeltaSeconds: _fixedDeltaSeconds,
         );
         controller.addListener(_onControllerChanged);
-        setState(() => _controller = controller);
+        setState(() {
+          _mapping = mapping;
+          _controller = controller;
+        });
       } catch (e) {
         if (!mounted) return;
         setState(() => _setupError = e.toString());
@@ -145,11 +151,19 @@ class _Phase0aMainlineBattleHostState
     if (controller == null || _exitNotified) return;
     final outcome = controller.outcome;
     if (outcome == Phase0aBattleOutcome.ongoing) return;
+    final mapping = _mapping;
+    if (mapping == null) return;
     _exitNotified = true;
+    final settlement = Phase0aSettlementAdapter.fromMapping(
+      mapping: mapping,
+      outcome: outcome,
+      finalState: controller.state,
+      events: controller.events,
+    );
     if (outcome == Phase0aBattleOutcome.victory) {
-      widget.onVictory();
+      widget.onVictory(settlement);
     } else {
-      widget.onDefeat();
+      widget.onDefeat(settlement);
       if (mounted && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }

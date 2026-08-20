@@ -8,6 +8,7 @@ import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
@@ -229,6 +230,46 @@ void main() {
         a.finalState.player.currentHealth,
       );
       expect(b.finalState.tick, a.finalState.tick);
+      expect(b.events, a.events, reason: '同 seed 事件流必须可重放');
+    });
+
+    test('headless 真实事件 + 末态 → 引擎无关结算快照', () {
+      final numbers = repo.numbers;
+      final mapping = Phase0aStageContentMapper.map(
+        stage: repo.getStage('stage_01_01'),
+        playerCharacter: makeCh1Player(numbers),
+        numbers: numbers,
+      );
+      final flow = Phase0aProductionFlowAssembler.assemble(
+        initialState: mapping.initialState,
+        waves: mapping.waves,
+        combatants: mapping.combatants,
+        moveBindings: mapping.moveBindings,
+        numbers: numbers,
+        rng: Random(20260820),
+        playerAdapter: mapping.playerAdapter,
+        enemyAiAdapter: mapping.enemyAiAdapter,
+      );
+      final result = Phase0aHeadlessRunner.runToEnd(
+        flow: flow,
+        bot: Phase0aPlayerBotAdapter(playerAdapter: mapping.playerAdapter),
+      );
+
+      final settlement = Phase0aSettlementAdapter.fromMapping(
+        mapping: mapping,
+        outcome: result.outcome,
+        finalState: result.finalState,
+        events: result.events,
+      );
+
+      expect(settlement.result, BattleResult.leftWin);
+      expect(settlement.totalTicks, result.finalState.tick);
+      expect(settlement.hadActions, isTrue);
+      expect(settlement.totalDamage, greaterThan(0));
+      expect(settlement.damageByCharacterId[1], greaterThan(0));
+      expect(settlement.participantFor(1)!.currentHp, greaterThan(0));
+      final enemyId = mapping.combatants.last.character.characterId;
+      expect(settlement.participantFor(enemyId)!.currentHp, 0);
     });
 
     test('胜率画像:五关 × 五 seed 全胜(P3 双跑口径基线)', () {

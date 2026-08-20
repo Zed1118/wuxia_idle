@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_visual_r
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_gate.dart';
 import 'package:wuxia_idle/features/mainline/presentation/phase0a_mainline_battle_host.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
+import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 
 import '../../../support/test_data.dart';
 
@@ -174,6 +175,7 @@ void main() {
   group('Phase0aMainlineBattleHost 集成(注入玩家角色,真跑 0A flow)', () {
     testWidgets('stage_01_01 固定 seed → 键盘驾驶至 victory 回调', (tester) async {
       var victoryCalled = false;
+      CombatSettlementSnapshot? victorySettlement;
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
@@ -181,8 +183,11 @@ void main() {
               stage: repo.getStage('stage_01_01'),
               playerCharacterForTest: _makeCh1Player(repo.numbers),
               seedForTest: 20260819,
-              onVictory: () => victoryCalled = true,
-              onDefeat: () {},
+              onVictory: (settlement) {
+                victoryCalled = true;
+                victorySettlement = settlement;
+              },
+              onDefeat: (_) {},
             ),
           ),
         ),
@@ -203,6 +208,9 @@ void main() {
             'stage_01_01 键盘驾驶应在模拟 180s 内取胜'
             '(切片 1 headless bot 25/25 全胜同口径)',
       );
+      expect(victorySettlement!.result, BattleResult.leftWin);
+      expect(victorySettlement!.totalDamage, greaterThan(0));
+      expect(victorySettlement!.participantFor(1)!.currentHp, greaterThan(0));
     });
 
     testWidgets('极弱玩家 → defeat 回调且宿主自 pop', (tester) async {
@@ -243,8 +251,12 @@ void main() {
                         slotIndex: 0,
                       ),
                       seedForTest: 20260819,
-                      onVictory: () {},
-                      onDefeat: () => defeatCalled = true,
+                      onVictory: (_) {},
+                      onDefeat: (settlement) {
+                        defeatCalled = true;
+                        expect(settlement.result, BattleResult.rightWin);
+                        expect(settlement.participantFor(1)!.currentHp, 0);
+                      },
                     ),
                   ),
                 ),
@@ -276,7 +288,8 @@ void main() {
       String? recordedStageId;
       await tester.pumpWidget(
         _gateHarness(
-          phase0aBattleOutcome: () async => (won: true, surrendered: false),
+          phase0aBattleOutcome: () async =>
+              (won: true, surrendered: false, settlement: null),
           victoryRecorder: (stageId) async => recordedStageId = stageId,
         ),
       );
@@ -292,7 +305,8 @@ void main() {
       var victoryCalled = false;
       await tester.pumpWidget(
         _gateHarness(
-          phase0aBattleOutcome: () async => (won: false, surrendered: false),
+          phase0aBattleOutcome: () async =>
+              (won: false, surrendered: false, settlement: null),
           victoryRecorder: (_) async => victoryCalled = true,
         ),
       );
@@ -314,7 +328,7 @@ void main() {
           },
           phase0aBattleOutcome: () async {
             phase0aConsumed = true;
-            return (won: true, surrendered: false);
+            return (won: true, surrendered: false, settlement: null);
           },
           victoryRecorder: (_) async {},
         ),
@@ -332,7 +346,7 @@ void main() {
 /// battleOutcome 均可缺省,只喂需要验证的注入器。
 Widget _gateHarness({
   Future<({bool won, bool surrendered})> Function()? battleOutcome,
-  Future<({bool won, bool surrendered})> Function()? phase0aBattleOutcome,
+  Future<MainlineBattleExit> Function()? phase0aBattleOutcome,
   Future<void> Function(String stageId)? victoryRecorder,
 }) {
   return ProviderScope(
@@ -354,7 +368,7 @@ class _GateHarnessPage extends ConsumerStatefulWidget {
   });
 
   final Future<({bool won, bool surrendered})> Function()? battleOutcome;
-  final Future<({bool won, bool surrendered})> Function()? phase0aBattleOutcome;
+  final Future<MainlineBattleExit> Function()? phase0aBattleOutcome;
   final Future<void> Function(String stageId) victoryRecorder;
 
   @override
