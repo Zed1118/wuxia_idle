@@ -33,6 +33,14 @@ abstract final class Phase0aPresentationTokens {
   /// 命中闪白覆盖强度。
   static const double hitFlashOpacity = 0.76;
 
+  /// 仅表现层的受击压缩 / 出手前倾；不写回领域坐标。
+  static const double actorMotionTweenSeconds = 0.08;
+  static const double actorActionPulseSeconds = 0.16;
+  static const double actorHitScale = 0.94;
+  static const double actorActionScale = 1.035;
+  static const double actorHitSlideFraction = 0.018;
+  static const double actorActionSlideFraction = 0.024;
+
   /// 血条强调墨边宽度。
   static const double hpEmphasisBorderWidth = 2;
 
@@ -46,6 +54,10 @@ abstract final class Phase0aPresentationTokens {
 
   /// 单次 consume 全部 VFX entry 上限。
   static const int maxEntries = 160;
+
+  /// 同屏伤害数字居民池；只裁表现，不裁 controller 事件历史。
+  static const int maxResidentDamagePopups = 8;
+  static const int maxResidentDamagePopupsPerTarget = 3;
 
   // ── 技能印(skill_seals 切片):Q/R 两枚等宽等高水墨印章 ──
 
@@ -134,6 +146,14 @@ abstract final class Phase0aPresentationTokens {
   static const double depthShadowOpacity = 0.32;
   static const double depthShadowHeight = 18;
   static const double depthShadowWidth = 82;
+  static const double groundMarkWidth = 94;
+  static const double groundMarkEliteWidth = 104;
+  static const double groundMarkHeight = 22;
+  static const double groundMarkFillOpacity = 0.10;
+  static const double groundMarkBorderOpacity = 0.58;
+  static const double groundMarkBorderWidth = 1.3;
+  static const double enemyLabelIdleFillOpacity = 0.40;
+  static const double enemyLabelIdleBorderOpacity = 0.38;
   static const int vfxSpokeCount = 12;
   static const int maxCatchUpTicksPerFrame = 5;
   static const double feedbackHoldSeconds = 0.65;

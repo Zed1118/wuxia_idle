@@ -58,6 +58,12 @@ void main() {
       ValueKey<String>('phase0a_hit_flash_$actorId');
   ValueKey<String> hpEmphasisKey(String actorId) =>
       ValueKey<String>('phase0a_hp_emphasis_$actorId');
+  ValueKey<String> groundMarkKey(String actorId) =>
+      ValueKey<String>('phase0a_ground_mark_$actorId');
+  ValueKey<String> impactKey(String actorId) =>
+      ValueKey<String>('phase0a_impact_$actorId');
+  ValueKey<String> actionKey(String actorId) =>
+      ValueKey<String>('phase0a_action_$actorId');
   ValueKey<String> defeatInkTargetKey(String actorId) =>
       ValueKey<String>('phase0a_defeat_ink_$actorId');
 
@@ -83,12 +89,17 @@ void main() {
     WidgetTester tester, {
     Size viewport = const Size(1280, 720),
     bool autoStep = true,
+    double feedbackHoldSeconds = Phase0aPresentationTokens.feedbackHoldSeconds,
   }) async {
     await tester.binding.setSurfaceSize(viewport);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MaterialApp(
-        home: Phase0aBattleScreen(controller: controller, autoStep: autoStep),
+        home: Phase0aBattleScreen(
+          controller: controller,
+          autoStep: autoStep,
+          feedbackHoldSeconds: feedbackHoldSeconds,
+        ),
       ),
     );
     await tester.pump();
@@ -170,9 +181,11 @@ void main() {
             final hpBar = tester.widget<HpBar>(find.byKey(hpKey(enemy.id)));
             expect(hpBar.current, enemy.currentHealth);
             expect(hpBar.max, enemy.maxHealth);
+            expect(find.byKey(groundMarkKey(enemy.id)), findsOneWidget);
           }
 
           expect(find.byKey(playerHudKey), findsOneWidget);
+          expect(find.byKey(groundMarkKey(state.player.id)), findsOneWidget);
           final playerHp = tester.widget<HpBar>(find.byKey(hpKey('player')));
           expect(playerHp.current, state.player.currentHealth);
           expect(playerHp.max, state.player.maxHealth);
@@ -182,6 +195,48 @@ void main() {
         },
       );
     }
+
+    testWidgets('第二波精英使用更宽金色落地墨印，与普通敌人分层', (tester) async {
+      await pumpScreen(tester, autoStep: false);
+
+      var guard = 0;
+      while (!controller.state.enemies.any(
+            (enemy) => fixture.roster.visualFor(enemy.id).isElite,
+          ) &&
+          controller.outcome == Phase0aBattleOutcome.ongoing &&
+          guard < 400) {
+        await stepAndPump(tester, attackTowardNearest(controller.state));
+        guard++;
+      }
+
+      expect(
+        controller.state.enemies.any(
+          (enemy) => fixture.roster.visualFor(enemy.id).isElite,
+        ),
+        isTrue,
+      );
+
+      final elite = controller.state.enemies.firstWhere(
+        (enemy) => fixture.roster.visualFor(enemy.id).isElite,
+      );
+      final normal = controller.state.enemies.firstWhere(
+        (enemy) => !fixture.roster.visualFor(enemy.id).isElite,
+      );
+      final eliteMark = tester.widget<Container>(
+        find.byKey(groundMarkKey(elite.id)),
+      );
+      final normalMark = tester.widget<Container>(
+        find.byKey(groundMarkKey(normal.id)),
+      );
+      expect(
+        eliteMark.constraints!.maxWidth,
+        greaterThan(normalMark.constraints!.maxWidth),
+      );
+      expect(
+        eliteMark.constraints!.maxWidth,
+        Phase0aPresentationTokens.groundMarkEliteWidth,
+      );
+    });
   });
 
   group('键盘 WASD:手动步进改变屏幕脚点', () {
@@ -412,6 +467,7 @@ void main() {
       expect(survivingHit, isNotNull, reason: 'fixture 必须存在一次非致死玩家命中');
       final target = survivingHit!.target;
       expect(find.byKey(hitFlashKey(target)), findsOneWidget);
+      expect(find.byKey(impactKey(target)), findsOneWidget);
       expect(find.byKey(hpEmphasisKey(target)), findsOneWidget);
 
       await tester.pump(
@@ -421,6 +477,7 @@ void main() {
         ),
       );
       expect(find.byKey(hitFlashKey(target)), findsNothing);
+      expect(find.byKey(impactKey(target)), findsNothing);
       expect(find.byKey(hpEmphasisKey(target)), findsOneWidget);
 
       await tester.pump(
@@ -479,6 +536,7 @@ void main() {
           (e) => e.kind == Phase0aVfxKind.palmTrail,
         )) {
           trailSeen = true;
+          expect(find.byKey(actionKey('player')), findsOneWidget);
           expect(find.byKey(palmTrailKey), findsOneWidget);
           expect(find.byKey(meleeSlashKey), findsNothing);
         }
@@ -486,6 +544,7 @@ void main() {
           (e) => e.kind == Phase0aVfxKind.meleeSlash,
         )) {
           slashSeen = true;
+          expect(find.byKey(actionKey('player')), findsOneWidget);
           expect(find.byKey(meleeSlashKey), findsOneWidget);
           expect(find.byKey(palmTrailKey), findsNothing);
         }
@@ -493,6 +552,47 @@ void main() {
 
       expect(trailSeen, isTrue, reason: 'fixture 必含一次玩家远距命中');
       expect(slashSeen, isTrue, reason: 'fixture 必含一次玩家近距命中');
+    });
+  });
+
+  group('伤害飘字居民池', () {
+    testWidgets('高密度命中只裁表现居民，不丢 controller 完整事件', (tester) async {
+      await pumpScreen(tester, autoStep: false, feedbackHoldSeconds: 20);
+
+      var damageEventCount = 0;
+      for (
+        var i = 0;
+        i < 400 && controller.outcome == Phase0aBattleOutcome.ongoing;
+        i++
+      ) {
+        final events = await stepAndPump(
+          tester,
+          attackTowardNearest(controller.state),
+        );
+        damageEventCount += events
+            .whereType<Phase0aHitLanded>()
+            .where((event) => event.resolvedDamage > 0)
+            .length;
+      }
+
+      final popupFinder = find.byWidgetPredicate((widget) {
+        final key = widget.key;
+        return key is ValueKey<String> &&
+            key.value.startsWith('phase0a_popup_');
+      });
+      expect(
+        damageEventCount,
+        greaterThan(Phase0aPresentationTokens.maxResidentDamagePopups),
+      );
+      expect(
+        popupFinder.evaluate().length,
+        lessThanOrEqualTo(Phase0aPresentationTokens.maxResidentDamagePopups),
+      );
+      expect(
+        controller.events.whereType<Phase0aHitLanded>().length,
+        greaterThanOrEqualTo(damageEventCount),
+        reason: '表现裁剪不得污染结算事件历史',
+      );
     });
   });
 

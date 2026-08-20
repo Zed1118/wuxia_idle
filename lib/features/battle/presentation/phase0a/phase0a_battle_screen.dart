@@ -58,6 +58,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   int _nextFeedbackId = 0;
   final Map<String, double> _hitFlashRemaining = <String, double>{};
   final Map<String, double> _hpEmphasisRemaining = <String, double>{};
+  final Map<String, double> _actionPulseRemaining = <String, double>{};
   bool _retryInFlight = false;
   bool _primaryAttackHeld = false;
   ArenaVector? _pointerAimDirection;
@@ -86,6 +87,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _nextFeedbackId = 0;
     _hitFlashRemaining.clear();
     _hpEmphasisRemaining.clear();
+    _actionPulseRemaining.clear();
     _paused = false;
     _primaryAttackHeld = false;
     _pointerAimDirection = null;
@@ -152,6 +154,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     }
     if (widget.controller.feedback.isNotEmpty) {
       for (final entry in widget.controller.feedback) {
+        _trimDamagePopupResidents(entry);
         if (entry.kind == Phase0aVfxKind.damagePopup &&
             entry.targetId != null) {
           _hitFlashRemaining[entry.targetId!] =
@@ -160,6 +163,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
               Phase0aPresentationTokens.hpEmphasisSeconds;
         }
         if (_isAttackFeedback(entry.kind)) {
+          if (entry.actorId != null) {
+            _actionPulseRemaining[entry.actorId!] =
+                Phase0aPresentationTokens.actorActionPulseSeconds;
+          }
           _heldFeedback.removeWhere(
             (held) => _isAttackFeedback(held.entry.kind),
           );
@@ -179,6 +186,47 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       if (overflow > 0) _heldFeedback.removeRange(0, overflow);
     }
     if (mounted) setState(() {});
+  }
+
+  void _trimDamagePopupResidents(Phase0aVfxEntry incoming) {
+    if (incoming.kind != Phase0aVfxKind.damagePopup) return;
+    final targetId = incoming.targetId;
+    if (targetId != null) {
+      while (_heldFeedback
+              .where(
+                (held) =>
+                    held.entry.kind == Phase0aVfxKind.damagePopup &&
+                    held.entry.targetId == targetId,
+              )
+              .length >=
+          Phase0aPresentationTokens.maxResidentDamagePopupsPerTarget) {
+        final oldestForTarget = _heldFeedback.indexWhere(
+          (held) =>
+              held.entry.kind == Phase0aVfxKind.damagePopup &&
+              held.entry.targetId == targetId,
+        );
+        if (oldestForTarget < 0) break;
+        _heldFeedback.removeAt(oldestForTarget);
+      }
+    }
+
+    while (_heldFeedback
+            .where((held) => held.entry.kind == Phase0aVfxKind.damagePopup)
+            .length >=
+        Phase0aPresentationTokens.maxResidentDamagePopups) {
+      var oldest = _heldFeedback.indexWhere(
+        (held) =>
+            held.entry.kind == Phase0aVfxKind.damagePopup &&
+            !held.entry.isCritical,
+      );
+      oldest = oldest >= 0
+          ? oldest
+          : _heldFeedback.indexWhere(
+              (held) => held.entry.kind == Phase0aVfxKind.damagePopup,
+            );
+      if (oldest < 0) break;
+      _heldFeedback.removeAt(oldest);
+    }
   }
 
   static bool _isSingletonFeedback(Phase0aVfxKind kind) => switch (kind) {
@@ -250,7 +298,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _heldFeedback.removeWhere((held) => held.remainingSeconds <= 0);
     final transientChanged =
         _advanceActorTimers(_hitFlashRemaining, deltaSeconds) |
-        _advanceActorTimers(_hpEmphasisRemaining, deltaSeconds);
+        _advanceActorTimers(_hpEmphasisRemaining, deltaSeconds) |
+        _advanceActorTimers(_actionPulseRemaining, deltaSeconds);
     if ((previousFeedbackCount != _heldFeedback.length || transientChanged) &&
         mounted) {
       setState(() {});
@@ -288,6 +337,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       _heldFeedback.clear();
       _hitFlashRemaining.clear();
       _hpEmphasisRemaining.clear();
+      _actionPulseRemaining.clear();
       _accumulatorSeconds = 0;
       _lastElapsed = null;
       _paused = false;
@@ -538,6 +588,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
           visual: controller.roster.visualFor(actor.id),
           isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
           isHealthEmphasized: _hpEmphasisRemaining.containsKey(actor.id),
+          isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
         ),
       ),
     );
@@ -667,19 +718,72 @@ class _ActorStandee extends StatelessWidget {
     required this.visual,
     required this.isHitFlashing,
     required this.isHealthEmphasized,
+    required this.isActionPulsing,
   });
 
   final Phase0aActor actor;
   final Phase0aActorVisual visual;
   final bool isHitFlashing;
   final bool isHealthEmphasized;
+  final bool isActionPulsing;
 
   @override
   Widget build(BuildContext context) {
     final enemy = actor.side == Phase0aSide.enemy;
+    final accent = visual.isElite
+        ? WuxiaUi.gold
+        : enemy
+        ? WuxiaUi.jiang
+        : WuxiaUi.qingOnDark;
+    final motionOffset = isHitFlashing
+        ? Offset(
+            -actor.facing.x * Phase0aPresentationTokens.actorHitSlideFraction,
+            -actor.facing.y * Phase0aPresentationTokens.actorHitSlideFraction,
+          )
+        : isActionPulsing
+        ? Offset(
+            actor.facing.x * Phase0aPresentationTokens.actorActionSlideFraction,
+            actor.facing.y * Phase0aPresentationTokens.actorActionSlideFraction,
+          )
+        : Offset.zero;
+    final motionScale = isHitFlashing
+        ? Phase0aPresentationTokens.actorHitScale
+        : isActionPulsing
+        ? Phase0aPresentationTokens.actorActionScale
+        : 1.0;
+    final motionDuration = Duration(
+      microseconds:
+          (Phase0aPresentationTokens.actorMotionTweenSeconds *
+                  Duration.microsecondsPerSecond)
+              .round(),
+    );
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
+        Positioned(
+          bottom: 0,
+          child: Container(
+            key: ValueKey('phase0a_ground_mark_${actor.id}'),
+            width: visual.isElite
+                ? Phase0aPresentationTokens.groundMarkEliteWidth
+                : Phase0aPresentationTokens.groundMarkWidth,
+            height: Phase0aPresentationTokens.groundMarkHeight,
+            decoration: BoxDecoration(
+              color: accent.withValues(
+                alpha: Phase0aPresentationTokens.groundMarkFillOpacity,
+              ),
+              border: Border.all(
+                color: accent.withValues(
+                  alpha: Phase0aPresentationTokens.groundMarkBorderOpacity,
+                ),
+                width: Phase0aPresentationTokens.groundMarkBorderWidth,
+              ),
+              borderRadius: BorderRadius.circular(
+                Phase0aPresentationTokens.groundMarkHeight,
+              ),
+            ),
+          ),
+        ),
         Positioned(
           bottom: 0,
           child: Container(
@@ -700,23 +804,44 @@ class _ActorStandee extends StatelessWidget {
           height: Phase0aPresentationTokens.actorImageHeight,
           left: 0,
           right: 0,
-          child: ColorFiltered(
-            key: isHitFlashing
-                ? ValueKey('phase0a_hit_flash_${actor.id}')
-                : null,
-            colorFilter: ColorFilter.mode(
-              WuxiaUi.paper.withValues(
-                alpha: isHitFlashing
-                    ? Phase0aPresentationTokens.hitFlashOpacity
-                    : 0,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (isHitFlashing)
+                SizedBox(key: ValueKey('phase0a_impact_${actor.id}')),
+              if (isActionPulsing)
+                SizedBox(key: ValueKey('phase0a_action_${actor.id}')),
+              AnimatedSlide(
+                key: ValueKey('phase0a_actor_slide_${actor.id}'),
+                offset: motionOffset,
+                duration: motionDuration,
+                curve: Curves.easeOutCubic,
+                child: AnimatedScale(
+                  key: ValueKey('phase0a_actor_scale_${actor.id}'),
+                  scale: motionScale,
+                  duration: motionDuration,
+                  curve: Curves.easeOutBack,
+                  child: ColorFiltered(
+                    key: isHitFlashing
+                        ? ValueKey('phase0a_hit_flash_${actor.id}')
+                        : null,
+                    colorFilter: ColorFilter.mode(
+                      WuxiaUi.paper.withValues(
+                        alpha: isHitFlashing
+                            ? Phase0aPresentationTokens.hitFlashOpacity
+                            : 0,
+                      ),
+                      BlendMode.srcATop,
+                    ),
+                    child: Image.asset(
+                      visual.assetPath,
+                      fit: BoxFit.contain,
+                      filterQuality: FilterQuality.medium,
+                    ),
+                  ),
+                ),
               ),
-              BlendMode.srcATop,
-            ),
-            child: Image.asset(
-              visual.assetPath,
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.medium,
-            ),
+            ],
           ),
         ),
         if (enemy)
@@ -729,6 +854,13 @@ class _ActorStandee extends StatelessWidget {
                   ? ValueKey('phase0a_hp_emphasis_${actor.id}')
                   : null,
               active: isHealthEmphasized,
+              accentColor: accent,
+              idleFillColor: WuxiaUi.ink.withValues(
+                alpha: Phase0aPresentationTokens.enemyLabelIdleFillOpacity,
+              ),
+              idleBorderColor: accent.withValues(
+                alpha: Phase0aPresentationTokens.enemyLabelIdleBorderOpacity,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -736,11 +868,13 @@ class _ActorStandee extends StatelessWidget {
                     visual.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: WuxiaUi.paper,
+                    style: TextStyle(
+                      color: visual.isElite ? WuxiaUi.gold : WuxiaUi.paper,
                       fontSize: Phase0aPresentationTokens.actorNameFontSize,
                       fontWeight: FontWeight.w700,
-                      shadows: [Shadow(color: WuxiaUi.ink, blurRadius: 3)],
+                      shadows: const [
+                        Shadow(color: WuxiaUi.ink, blurRadius: 3),
+                      ],
                     ),
                   ),
                   const SizedBox(
@@ -770,21 +904,27 @@ class _HitEmphasisFrame extends StatelessWidget {
     super.key,
     required this.active,
     required this.child,
+    this.accentColor = WuxiaUi.qingOnDark,
+    this.idleFillColor = Colors.transparent,
+    this.idleBorderColor = Colors.transparent,
   });
 
   final bool active;
   final Widget child;
+  final Color accentColor;
+  final Color idleFillColor;
+  final Color idleBorderColor;
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
     decoration: BoxDecoration(
       color: active
-          ? WuxiaUi.paper.withValues(
+          ? accentColor.withValues(
               alpha: Phase0aPresentationTokens.hpEmphasisFillOpacity,
             )
-          : Colors.transparent,
+          : idleFillColor,
       border: Border.all(
-        color: active ? WuxiaUi.qingOnDark : Colors.transparent,
+        color: active ? accentColor : idleBorderColor,
         width: Phase0aPresentationTokens.hpEmphasisBorderWidth,
       ),
       borderRadius: BorderRadius.circular(
