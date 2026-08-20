@@ -96,6 +96,9 @@ final class Phase0aBattleController extends ChangeNotifier {
     up: left.up || right.up,
     down: left.down || right.down,
     attack: left.attack || right.attack,
+    attackAimDirection: right.attack
+        ? right.attackAimDirection
+        : left.attackAimDirection,
     gather: left.gather || right.gather,
     clear: left.clear || right.clear,
   );

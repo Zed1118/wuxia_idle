@@ -204,8 +204,12 @@ Phase0aStepResult reducePhase0aTick({
             }
           }
         }
+        final aimDirection = intent.aimDirection.lengthSquared > 0
+            ? intent.aimDirection.normalized()
+            : actor.facing;
         final recharged = actor.copyWith(
           attackCooldownRemaining: intent.cooldownSeconds,
+          facing: aimDirection,
         );
         if (isPlayer) {
           player = recharged;

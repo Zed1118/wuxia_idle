@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,7 @@ import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
 import '../../application/phase0a/phase0a_wave_battle_flow.dart';
+import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import '../hp_bar.dart';
@@ -52,6 +54,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   final Map<String, double> _hitFlashRemaining = <String, double>{};
   final Map<String, double> _hpEmphasisRemaining = <String, double>{};
   bool _retryInFlight = false;
+  bool _primaryAttackHeld = false;
+  ArenaVector? _pointerAimDirection;
 
   /// Esc 暂停态(0C):暂停期间帧回调零推进(不记性能样本),
   /// 键鼠指令均不受理;再按 Esc 恢复。
@@ -77,6 +81,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _hitFlashRemaining.clear();
     _hpEmphasisRemaining.clear();
     _paused = false;
+    _primaryAttackHeld = false;
+    _pointerAimDirection = null;
   }
 
   @override
@@ -85,6 +91,47 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _ticker.dispose();
     _focusNode.dispose();
     super.dispose();
+  }
+
+  bool get _acceptsBattleInput =>
+      !_paused && widget.controller.outcome == Phase0aBattleOutcome.ongoing;
+
+  ArenaVector _pointerAim(Offset localPosition, Phase0aStage stage) {
+    final player = widget.controller.state.player;
+    final delta = stage.screenToWorld(localPosition) - player.position;
+    return delta.lengthSquared > 0 ? delta.normalized() : player.facing;
+  }
+
+  void _enqueuePointerAttack() {
+    final aim = _pointerAimDirection;
+    if (!_acceptsBattleInput || aim == null) return;
+    widget.controller.enqueue(
+      Phase0aPlayerCommand(attack: true, attackAimDirection: aim),
+    );
+  }
+
+  void _onStagePointerDown(PointerDownEvent event, Phase0aStage stage) {
+    if ((event.buttons & kPrimaryMouseButton) == 0 || !_acceptsBattleInput) {
+      return;
+    }
+    _primaryAttackHeld = true;
+    _pointerAimDirection = _pointerAim(event.localPosition, stage);
+    _enqueuePointerAttack();
+    _focusNode.requestFocus();
+  }
+
+  void _onStagePointerMove(PointerMoveEvent event, Phase0aStage stage) {
+    if (!_primaryAttackHeld ||
+        (event.buttons & kPrimaryMouseButton) == 0 ||
+        !_acceptsBattleInput) {
+      return;
+    }
+    _pointerAimDirection = _pointerAim(event.localPosition, stage);
+  }
+
+  void _stopPointerAttack() {
+    _primaryAttackHeld = false;
+    _pointerAimDirection = null;
   }
 
   void _refresh() {
@@ -184,6 +231,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     var steps = 0;
     while (_accumulatorSeconds >= widget.controller.fixedDeltaSeconds &&
         steps < Phase0aPresentationTokens.maxCatchUpTicksPerFrame) {
+      if (_primaryAttackHeld) _enqueuePointerAttack();
       widget.controller.step();
       _accumulatorSeconds -= widget.controller.fixedDeltaSeconds;
       steps++;
@@ -236,6 +284,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     if (key == LogicalKeyboardKey.escape) {
       setState(() {
         _paused = !_paused;
+        if (_paused) _stopPointerAttack();
         if (!_paused) _lastElapsed = null; // 恢复首帧重建 delta 基准,不吞暂停时长
       });
       return KeyEventResult.handled;
@@ -273,18 +322,35 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
               key: const ValueKey('phase0a_battle_screen'),
               fit: StackFit.expand,
               children: [
-                Image.asset(
-                  'assets/scenes/battle_mountain_pass_stage_v2.png',
-                  fit: BoxFit.cover,
-                  filterQuality: FilterQuality.medium,
-                ),
-                const ColoredBox(color: Color(0x380F0E0B)),
-                const CustomPaint(painter: _StageWashPainter()),
-                ..._buildActors(controller, stage),
-                _FeedbackLayer(
-                  controller: controller,
-                  stage: stage,
-                  entries: [for (final held in _heldFeedback) held.entry],
+                Positioned.fill(
+                  child: Listener(
+                    key: const ValueKey('phase0a_stage_input_layer'),
+                    behavior: HitTestBehavior.opaque,
+                    onPointerDown: (event) => _onStagePointerDown(event, stage),
+                    onPointerMove: (event) => _onStagePointerMove(event, stage),
+                    onPointerUp: (_) => _stopPointerAttack(),
+                    onPointerCancel: (_) => _stopPointerAttack(),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.asset(
+                          'assets/scenes/battle_mountain_pass_stage_v2.png',
+                          fit: BoxFit.cover,
+                          filterQuality: FilterQuality.medium,
+                        ),
+                        const ColoredBox(color: Color(0x380F0E0B)),
+                        const CustomPaint(painter: _StageWashPainter()),
+                        ..._buildActors(controller, stage),
+                        _FeedbackLayer(
+                          controller: controller,
+                          stage: stage,
+                          entries: [
+                            for (final held in _heldFeedback) held.entry,
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 _PlayerHud(
                   controller: controller,

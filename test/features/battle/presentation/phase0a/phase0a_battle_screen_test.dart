@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -229,6 +230,105 @@ void main() {
   });
 
   group('键盘 J 普攻:伤害数字与 event 精确一致,血条来自 state', () {
+    testWidgets('舞台 primary click 入队一次普攻并按点击方向瞄准', (tester) async {
+      await pumpScreen(tester);
+      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      final player = stage.worldToScreen(controller.state.player.position);
+      final target = player + const Offset(240, -80);
+
+      await tester.tapAt(target);
+      await tester.pump();
+      final events = controller.step();
+      expect(events.whereType<Phase0aAttackStarted>(), hasLength(1));
+      expect(controller.state.player.facing.x, greaterThan(0));
+      expect(controller.state.player.facing.y, lessThan(0));
+    });
+
+    testWidgets('primary pointer down 持续攻击，pointer up 后停止重复攻击', (tester) async {
+      await pumpScreen(tester);
+      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      final target =
+          stage.worldToScreen(controller.state.player.position) +
+          const Offset(220, 0);
+      final gesture = await tester.startGesture(
+        target,
+        kind: PointerDeviceKind.mouse,
+        buttons: kPrimaryMouseButton,
+      );
+      for (var i = 0; i < 36; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      final heldCount = controller.events
+          .whereType<Phase0aAttackStarted>()
+          .where((event) => event.actor == 'player')
+          .length;
+      expect(heldCount, greaterThanOrEqualTo(2));
+
+      await gesture.up();
+      for (var i = 0; i < 36; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      final afterUpCount = controller.events
+          .whereType<Phase0aAttackStarted>()
+          .where((event) => event.actor == 'player')
+          .length;
+      expect(afterUpCount, heldCount);
+    });
+
+    testWidgets('非 primary、暂停、终局舞台点击均不产生普攻', (tester) async {
+      await pumpScreen(tester);
+      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      final target =
+          stage.worldToScreen(controller.state.player.position) +
+          const Offset(180, 20);
+      final before = controller.events.length;
+
+      // Secondary button must not be interpreted as a basic attack.
+      final gesture = await tester.startGesture(
+        target,
+        kind: PointerDeviceKind.mouse,
+        buttons: kSecondaryMouseButton,
+      );
+      await gesture.up();
+      await tester.pump();
+      expect(controller.step().whereType<Phase0aAttackStarted>(), isEmpty);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.tapAt(target);
+      await tester.pump();
+      expect(controller.step().whereType<Phase0aAttackStarted>(), isEmpty);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+
+      for (
+        var i = 0;
+        i < 300 && controller.outcome == Phase0aBattleOutcome.ongoing;
+        i++
+      ) {
+        controller.step(attackTowardNearest(controller.state));
+      }
+      expect(controller.outcome, isNot(Phase0aBattleOutcome.ongoing));
+      await tester.tapAt(target);
+      await tester.pump();
+      expect(controller.step().whereType<Phase0aAttackStarted>(), isEmpty);
+      expect(controller.events.length, greaterThanOrEqualTo(before));
+    });
+
+    testWidgets('点击技能印不额外触发 basic attack，J 仍按 facing 普攻', (tester) async {
+      await pumpScreen(tester);
+      await tester.tap(find.byKey(clearSealKey));
+      await tester.pump();
+      final clearEvents = controller.step();
+      expect(clearEvents.whereType<Phase0aClearStarted>(), hasLength(1));
+      expect(clearEvents.whereType<Phase0aAttackStarted>(), isEmpty);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyJ);
+      await tester.pump();
+      final jEvents = controller.step();
+      expect(jEvents.whereType<Phase0aAttackStarted>(), hasLength(1));
+      expect(controller.state.player.facing.x, greaterThan(0));
+      expect(controller.state.player.facing.y, closeTo(0, 0.001));
+    });
+
     testWidgets('命中弹出 resolvedDamage 原文数字,目标血条 == remainingHealth', (
       tester,
     ) async {

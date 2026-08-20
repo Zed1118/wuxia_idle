@@ -23,6 +23,20 @@ void main() {
   const viewports = [Size(1280, 720), Size(1440, 900)];
 
   group('Phase0aStage 世界→屏幕变换', () {
+    test('screenToWorld(worldToScreen(point)) 可逆，safeRect 外点击 clamp', () {
+      for (final viewport in viewports) {
+        final stage = Phase0aStage(viewport: viewport);
+        const point = ArenaVector(37, 88);
+        final roundTrip = stage.screenToWorld(stage.worldToScreen(point));
+        expect(roundTrip.x, closeTo(point.x, 0.01));
+        expect(roundTrip.y, closeTo(point.y, 0.01));
+
+        final outside = stage.screenToWorld(const Offset(-1000, 10000));
+        expect(outside.x, closeTo(stage.worldMin.x, 0.01));
+        expect(outside.y, closeTo(stage.worldMax.y, 0.01));
+      }
+    });
+
     for (final viewport in viewports) {
       test('世界四角映射后落在 safeRect 内 (${viewport.width}x${viewport.height})', () {
         final stage = Phase0aStage(viewport: viewport);

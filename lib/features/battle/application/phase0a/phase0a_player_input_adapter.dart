@@ -1,3 +1,4 @@
+import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/realtime_combat_rules.dart';
@@ -10,6 +11,7 @@ final class Phase0aPlayerCommand {
     this.up = false,
     this.down = false,
     this.attack = false,
+    this.attackAimDirection,
     this.gather = false,
     this.clear = false,
   });
@@ -21,6 +23,9 @@ final class Phase0aPlayerCommand {
 
   /// 普攻请求。
   final bool attack;
+
+  /// 鼠标普攻的世界空间瞄准方向；null = 键盘兼容路径沿用当前朝向。
+  final ArenaVector? attackAimDirection;
 
   /// Q 聚怪请求。
   final bool gather;
@@ -91,7 +96,7 @@ final class Phase0aPlayerInputAdapter {
           halfArcRadians: attackHalfArcRadians,
           cooldownSeconds: attackCooldownSeconds,
           moveKind: Phase0aMoveKind.light,
-          aimDirection: state.player.facing,
+          aimDirection: command.attackAimDirection ?? state.player.facing,
         ),
       );
     }
