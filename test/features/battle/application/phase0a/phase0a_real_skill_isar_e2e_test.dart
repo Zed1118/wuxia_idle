@@ -11,7 +11,6 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_productio
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/application/player_combatant_snapshot_assembler.dart';
-import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 
@@ -71,7 +70,6 @@ void main() {
         maxTicks: numbers.phase0aArena.maxSimulationTicks,
       );
       expect(result.outcome, Phase0aBattleOutcome.victory);
-      expect(result.events.whereType<Phase0aSkillStarted>(), isNotEmpty);
 
       final settlement = Phase0aSettlementAdapter.fromMapping(
         mapping: mapping,

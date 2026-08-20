@@ -133,4 +133,34 @@ void main() {
       );
     }
   });
+
+  test(
+    'normalAttack stays on mouse basic and is excluded from numeric slots',
+    () {
+      final numbers = repo.numbers;
+      final basic = repo.getSkill('skill_gangmeng_jichu_basic');
+      final snapshot = Legacy3v3CombatantAdapter.toSnapshot(player(numbers))
+          .copyWith(
+            skillLoadout: CombatantSkillLoadout(
+              basicAttack: basic,
+              main1: basic,
+            ),
+          );
+      final mapping = Phase0aStageContentMapper.map(
+        stage: repo.getStage('stage_01_01'),
+        playerSnapshot: snapshot,
+        numbers: numbers,
+      );
+
+      expect(mapping.moveBindings[Phase0aDamageKind.basic], same(basic));
+      expect(mapping.numericSkillBindings.equipped, isEmpty);
+      expect(
+        mapping.playerAdapter.intentsFor(
+          state: mapping.initialState,
+          command: const Phase0aPlayerCommand(skillHotkey: 1),
+        ),
+        isEmpty,
+      );
+    },
+  );
 }
