@@ -104,6 +104,24 @@ void main() {
     },
   );
 
+  test('events exposes one stable read-only view that grows incrementally', () {
+    final controller = Phase0aBattleController(
+      flow: fixture.flow,
+      roster: fixture.roster,
+      fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+    );
+    final view = controller.events;
+    expect(view, isEmpty);
+    expect(() => view.clear(), throwsUnsupportedError);
+    final firstLength = view.length;
+    controller.step(const Phase0aPlayerCommand(attack: true));
+    expect(controller.events, same(view));
+    expect(view.length, greaterThan(firstLength));
+    controller.restart(fixture.flow);
+    expect(controller.events, same(view));
+    expect(view, isEmpty);
+  });
+
   test('terminal state is lazy and preserves the unique outcome feedback', () {
     final controller = Phase0aBattleController(
       flow: fixture.flow,

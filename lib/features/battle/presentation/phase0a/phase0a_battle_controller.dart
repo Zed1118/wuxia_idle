@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/foundation.dart';
 
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
@@ -37,7 +39,8 @@ final class Phase0aBattleController extends ChangeNotifier {
 
   Phase0aPlayerCommand _pending = const Phase0aPlayerCommand();
   List<Phase0aEvent> _lastEvents = const <Phase0aEvent>[];
-  List<Phase0aEvent> _events = const <Phase0aEvent>[];
+  final List<Phase0aEvent> _eventBuffer = <Phase0aEvent>[];
+  late final List<Phase0aEvent> _events = UnmodifiableListView(_eventBuffer);
   List<Phase0aVfxEntry> _feedback = const <Phase0aVfxEntry>[];
 
   Phase0aArenaState get state => _flow.state;
@@ -55,7 +58,7 @@ final class Phase0aBattleController extends ChangeNotifier {
     _vfx = Phase0aVfxController();
     _pending = const Phase0aPlayerCommand();
     _lastEvents = const <Phase0aEvent>[];
-    _events = const <Phase0aEvent>[];
+    _eventBuffer.clear();
     _feedback = const <Phase0aVfxEntry>[];
     _vfx.syncActors(_flow.state);
     notifyListeners();
@@ -81,7 +84,7 @@ final class Phase0aBattleController extends ChangeNotifier {
     );
     final accepted = _sequencer.ingest(emitted);
     _lastEvents = List.unmodifiable(accepted);
-    _events = List.unmodifiable([..._events, ...accepted]);
+    _eventBuffer.addAll(accepted);
     _feedback = List.unmodifiable(_vfx.consume(accepted));
     notifyListeners();
     return _lastEvents;

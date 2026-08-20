@@ -218,7 +218,21 @@ void main() {
       for (final (key, delta, label) in cases) {
         final before = tester.getCenter(find.byKey(standeeKey('player')));
         await tester.sendKeyEvent(key);
-        await stepAndPump(tester);
+        final expectedDuration = Duration(
+          microseconds:
+              (controller.fixedDeltaSeconds * Duration.microsecondsPerSecond)
+                  .round(),
+        );
+        step(tester);
+        await tester.pump();
+        await tester.pump(expectedDuration ~/ 2);
+        final middle = tester.getCenter(find.byKey(standeeKey('player')));
+        expect(
+          delta(before, middle),
+          greaterThan(0),
+          reason: '$label:隐式动画中间帧必须朝目标移动',
+        );
+        await tester.pump(expectedDuration ~/ 2);
         final after = tester.getCenter(find.byKey(standeeKey('player')));
         expect(
           delta(before, after),

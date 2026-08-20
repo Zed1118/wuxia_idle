@@ -349,13 +349,21 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.asset(
-                          'assets/scenes/battle_mountain_pass_stage_v2.png',
-                          fit: BoxFit.cover,
-                          filterQuality: FilterQuality.medium,
+                        RepaintBoundary(
+                          key: const ValueKey('phase0a_static_background'),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.asset(
+                                'assets/scenes/battle_mountain_pass_stage_v2.png',
+                                fit: BoxFit.cover,
+                                filterQuality: FilterQuality.medium,
+                              ),
+                              const ColoredBox(color: Color(0x380F0E0B)),
+                              const CustomPaint(painter: _StageWashPainter()),
+                            ],
+                          ),
                         ),
-                        const ColoredBox(color: Color(0x380F0E0B)),
-                        const CustomPaint(painter: _StageWashPainter()),
                         ..._buildActors(controller, stage),
                         _FeedbackLayer(
                           controller: controller,
@@ -484,17 +492,27 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     final scale = stage.depthScale(actor.position.y);
     final width = Phase0aPresentationTokens.actorWidth * scale;
     final height = Phase0aPresentationTokens.actorHeight * scale;
-    return Positioned(
+    return AnimatedPositioned(
+      key: ValueKey('phase0a_actor_position_${actor.id}'),
+      duration: Duration(
+        microseconds:
+            (controller.fixedDeltaSeconds * Duration.microsecondsPerSecond)
+                .round(),
+      ),
+      curve: Curves.linear,
       left: foot.dx - width / 2,
       top: foot.dy - height,
       width: width,
       height: height,
-      child: _ActorStandee(
-        key: ValueKey('phase0a_standee_${actor.id}'),
-        actor: actor,
-        visual: controller.roster.visualFor(actor.id),
-        isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
-        isHealthEmphasized: _hpEmphasisRemaining.containsKey(actor.id),
+      child: RepaintBoundary(
+        key: ValueKey('phase0a_actor_${actor.id}'),
+        child: _ActorStandee(
+          key: ValueKey('phase0a_standee_${actor.id}'),
+          actor: actor,
+          visual: controller.roster.visualFor(actor.id),
+          isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
+          isHealthEmphasized: _hpEmphasisRemaining.containsKey(actor.id),
+        ),
       ),
     );
   }
@@ -888,7 +906,12 @@ class _FeedbackLayer extends StatelessWidget {
       children.add(_outcomeSeal(controller.outcome));
     }
     return Positioned.fill(
-      child: IgnorePointer(child: Stack(children: children)),
+      child: IgnorePointer(
+        child: RepaintBoundary(
+          key: const ValueKey('phase0a_feedback_layer'),
+          child: Stack(children: children),
+        ),
+      ),
     );
   }
 
