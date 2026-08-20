@@ -22,6 +22,7 @@ import '../../battle/application/combat_progression_settlement_service.dart';
 import '../../battle/application/post_combat_invalidation.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/auto_play_mode.dart';
+import '../../battle/domain/battle_state.dart' show BattleState;
 import '../../settings/application/gameplay_settings_provider.dart';
 import '../../../shared/battle_shared/enum_localizations.dart' show EnumL10n;
 import '../../battle/domain/strategy/light_foot_strategy.dart';
@@ -32,6 +33,7 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../../shared/battle_shared/derived_stats.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../cultivation/domain/advancement_entry.dart';
 import '../../cultivation/domain/skill_drop_result.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
@@ -825,15 +827,31 @@ applyVictoryResolution({
   required WidgetRef ref,
   required StageDef stage,
   int cycle = 1,
+  CombatSettlementSnapshot? settlementSnapshot,
 }) async {
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) return null;
-  final finalState = ref.read(battleProvider);
-  if (!finalState.isFinished) return null;
-  final stats = BattleStatsSummary.from(finalState);
+  final BattleState? legacyFinalState;
+  final CombatSettlementSnapshot combatSettlement;
+  if (settlementSnapshot != null) {
+    legacyFinalState = null;
+    combatSettlement = settlementSnapshot;
+  } else {
+    final finalState = ref.read(battleProvider);
+    if (!finalState.isFinished) return null;
+    legacyFinalState = finalState;
+    combatSettlement = BattleResolutionService.snapshotFromBattleState(
+      finalState,
+    );
+  }
+  if (!combatSettlement.isFinished) return null;
+  final stats = BattleStatsSummary.fromSettlement(combatSettlement);
 
   final save = await isar.saveDatas.get(0);
-  final ids = save?.activeCharacterIds ?? const <int>[];
+  final participantIds = combatSettlement.participantCharacterIds;
+  final ids = (save?.activeCharacterIds ?? const <int>[])
+      .where(participantIds.contains)
+      .toList(growable: false);
   if (ids.isEmpty) return null;
 
   final characters = <Character>[];
@@ -874,8 +892,8 @@ applyVictoryResolution({
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
 
-  final result = BattleResolutionService.resolve(
-    finalState: finalState,
+  final result = BattleResolutionService.resolveSnapshot(
+    settlement: combatSettlement,
     participatingCharacters: characters,
     equipmentsByCharacter: equipsByCh,
     techniquesByCharacter: techsByCh,
@@ -907,11 +925,11 @@ applyVictoryResolution({
       .findFirst();
   final clearedSet =
       mainlineProgressSnapshot?.clearedStageIds.toSet() ?? <String>{};
-  final settlement = CombatProgressionSettlementService(
+  final progressionSettlement = CombatProgressionSettlementService(
     GameRepository.instance,
   );
   // 主线重打仍发经验；首通门控只约束掉落与 Boss 事件。
-  final advancements = settlement.applyExperience(
+  final advancements = progressionSettlement.applyExperience(
     characters: characters,
     experienceReward: stage.baseExpReward,
     clearedStageIds: clearedSet,
@@ -975,7 +993,7 @@ applyVictoryResolution({
         equipment: drop,
       );
     }
-    resonanceUpgrades = await settlement.recordCommonEvents(
+    resonanceUpgrades = await progressionSettlement.recordCommonEvents(
       isar: isar,
       characters: characters,
       equipmentsByCharacter: equipsByCh,
@@ -998,13 +1016,20 @@ applyVictoryResolution({
   });
 
   // 第七阶段 批一:派生英雄镜头数据（本场最高输出玩家）。纯展示，不改数值。
-  final heroCamera = deriveHeroCameraData(
-    finalState: finalState,
-    characters: characters,
-    bossName: stage.enemyTeam.isNotEmpty
-        ? stage.enemyTeam.last.name
-        : stage.name,
-  );
+  final bossName = stage.enemyTeam.isNotEmpty
+      ? stage.enemyTeam.last.name
+      : stage.name;
+  final heroCamera = legacyFinalState == null
+      ? deriveHeroCameraDataFromDamageTotals(
+          damageByCharacterId: combatSettlement.damageByCharacterId,
+          characters: characters,
+          bossName: bossName,
+        )
+      : deriveHeroCameraData(
+          finalState: legacyFinalState,
+          characters: characters,
+          bossName: bossName,
+        );
 
   // 第七阶段 批一 Task 6:计算利器首次获得的 extraDisplayTiers
   // (须在 putAll 入库后调用,判据:库存总数 ≤ 本次掉落件数)。

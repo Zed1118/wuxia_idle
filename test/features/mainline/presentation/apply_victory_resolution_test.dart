@@ -22,6 +22,7 @@ import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
+import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 
 import '../../../support/isar_test_support.dart';
 import '../../../support/test_data.dart';
@@ -285,6 +286,72 @@ void main() {
     );
 
     expect(outcome, isNull, reason: 'finalState.isFinished == false → null');
+  });
+
+  testWidgets('显式 0A 末态胜利 → 不读未结束的旧 provider,只结算真实参战者', (tester) async {
+    final (founderId, reserveId) = (await tester.runAsync(() async {
+      final founder = await insertCharacter(name: '祖师');
+      final reserve = await insertCharacter(name: '替补');
+      await writeSaveData(activeIds: [founder, reserve], founderId: founder);
+      return (founder, reserve);
+    }))!;
+    final legacyOngoing = BattleState.initial(
+      leftTeam: [battleChar(id: founderId, name: '祖师', teamSide: 0)],
+      rightTeam: [battleChar(id: 9001, name: '木桩', teamSide: 1)],
+    );
+    final settlement = CombatSettlementSnapshot(
+      result: BattleResult.leftWin,
+      totalTicks: 12,
+      hadActions: true,
+      participants: [
+        CombatParticipantSnapshot(
+          characterId: founderId,
+          currentHp: 7000,
+          maxHp: 8000,
+        ),
+      ],
+      skillCasts: const [],
+      totalDamage: 321,
+      criticalCount: 2,
+      damageByCharacterId: {founderId: 321},
+    );
+    final stage = normalStage(
+      baseExpReward: 30,
+      dropTable: const [
+        ItemDrop(
+          inventoryItemDefId: 'item_silver',
+          quantityMin: 5,
+          quantityMax: 5,
+          dropChance: 1.0,
+        ),
+      ],
+    );
+
+    final outcome = await runWithRef(
+      tester,
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: stage,
+        settlementSnapshot: settlement,
+      ),
+      battleState: legacyOngoing,
+    );
+
+    expect(outcome, isNotNull, reason: '显式 0A 胜利末态必须驱动结算');
+    expect(outcome!.stats.totalDamage, 321);
+    expect(outcome.stats.critCount, 2);
+    expect(outcome.stats.totalTicks, 12);
+    expect(outcome.characters.map((character) => character.id), [founderId]);
+    await tester.runAsync(() async {
+      final founder = await IsarSetup.instance.characters.get(founderId);
+      final reserve = await IsarSetup.instance.characters.get(reserveId);
+      final silver = await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_silver',
+      );
+      expect(founder!.experience, 30, reason: '真实参战祖师获得经验');
+      expect(reserve!.experience, 0, reason: '未参战替补不得被结算');
+      expect(silver!.quantity, 5, reason: '0A 胜利照常发放关卡掉落');
+    });
   });
 
   testWidgets('SaveData 无 activeCharacterIds → 返回 null(L778-780)', (

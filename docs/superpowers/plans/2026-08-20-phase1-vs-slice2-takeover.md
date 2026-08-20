@@ -42,7 +42,7 @@
 ## 当前恢复点
 
 - 状态：WIP，禁止合并，分支 tip 不打 `[READY]`。
-- 最后完成：入口骨架与 11 条局部测试；接管后定位全量两红并做最小门禁修正。
-- 下一步：先设计并红测“0A 真实末态必须驱动结算”，再实现引擎无关结算输入。
-- 已跑验证：`dart format` 0 changed；`flutter analyze` 0 issue；新接线 targeted 11 pass；接管后全量 5197 pass / 0 fail。
+- 最后完成：新增引擎无关 `CombatSettlementSnapshot`；旧 `BattleState` 经适配继续零行为变化；`applyVictoryResolution` 可显式消费本场快照并只结算真实参战者。
+- 下一步：让 Phase 0A controller/headless 累积同源事件，由 adapter 生成真实终局快照并随宿主退出返回。
+- 已跑验证：结算红测先因缺类型/参数编译红；实现后 `apply_victory_resolution_test` 13 pass，旧结算/心魔/伤势/统计/英雄镜头定向组 57 pass。
 - 阻塞项：无新增用户拍板；工程上被真实结算链缺口阻塞。
