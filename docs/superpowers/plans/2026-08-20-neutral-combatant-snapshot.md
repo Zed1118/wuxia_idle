@@ -2,7 +2,7 @@
 
 > 日期：2026-08-20
 > 分支：`codex/combatant-snapshot-neutral-0820`
-> 状态：WIP
+> 状态：READY
 > 上位：路线 C 前置排程；内容迁移 ADR D1/D3/D4；前批 snapshot seam 深化
 
 ## 目标
@@ -30,7 +30,7 @@
 3. [x] 玩家/敌方 assembler 公共 Interface 改为 neutral；旧主线/塔/远征/断魂庄经 legacy Adapter 回旧引擎。
 4. [x] Phase 0A factory/mapper/visual/settlement/host/debug fixture 改直接消费 neutral。
 5. [x] source-contract 反转：Phase 0A 禁 `BattleCharacter`、`battle_state.dart` 与 legacy Adapter。
-6. [ ] targeted + analyze + 全量；更新 NEXT/PROGRESS/BACKLOG，打 READY 并合入干净 main。
+6. [x] targeted + analyze + 全量；更新 NEXT/PROGRESS/BACKLOG，打 READY 并合入干净 main。
 
 ## 验收
 
@@ -42,6 +42,6 @@
 
 ## 当前恢复点
 
-- 最后完成：neutral Module/legacy Adapter、assembler 公共 Interface、Phase 0A/旧引擎双 Adapter 接线及删除 Gate；analyze 0，相关 targeted 410/410，深不可变与 assembler 回归 46/46。
-- 下一步：提交生产迁移恢复点；跑 cycle/synergy 等扩展面与全量，文档收账后合并。
+- 最后完成：neutral Module/legacy Adapter、assembler 公共 Interface、Phase 0A/旧引擎双 Adapter 接线及删除 Gate；analyze 0，相关 targeted 410/410，cycle/synergy/orchestration 153/153，最终全量 **5219 pass / 0 fail**。
+- 下一步：完成文档扫描后打 `[READY]` 恢复点，合并态复验并清理 worktree。
 - 阻塞：无。
