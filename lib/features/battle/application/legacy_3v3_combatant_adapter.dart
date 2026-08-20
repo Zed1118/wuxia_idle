@@ -5,19 +5,57 @@ import '../domain/battle_state.dart';
 final class Legacy3v3CombatantAdapter {
   const Legacy3v3CombatantAdapter._();
 
+  static const _playerSide = 0;
+  static const _enemySide = 1;
+  static const _legacyTeamCapacity = 3;
+
+  static List<BattleCharacter> playerTeam(
+    Iterable<CombatantSnapshot> snapshots,
+  ) => _team(snapshots, teamSide: _playerSide, maxSize: _legacyTeamCapacity);
+
+  static List<BattleCharacter> enemyTeam(
+    Iterable<CombatantSnapshot> snapshots,
+  ) => _team(snapshots, teamSide: _enemySide, maxSize: _legacyTeamCapacity);
+
+  static List<BattleCharacter> enemyWave(
+    Iterable<CombatantSnapshot> snapshots,
+  ) => _team(snapshots, teamSide: _enemySide);
+
+  static List<BattleCharacter> _team(
+    Iterable<CombatantSnapshot> snapshots, {
+    required int teamSide,
+    int? maxSize,
+  }) {
+    final selected = maxSize == null ? snapshots : snapshots.take(maxSize);
+    return [
+      for (final (index, snapshot) in selected.indexed)
+        fromSnapshot(snapshot, teamSide: teamSide, slotIndex: index),
+    ];
+  }
+
   static CombatantSnapshot toSnapshot(BattleCharacter c) {
-    if (c.actionPoint != 0 ||
-        !c.isAlive ||
-        c.internalInjury != null ||
-        c.chargingSkill != null ||
-        c.chargeTicksRemaining != 0 ||
-        c.staggerTicksRemaining != 0 ||
-        c.staggerDefenseDownOverride != null ||
-        c.bossPhaseIndex != 0 ||
-        c.coopStrikeUsedInCharge ||
-        c.coopStrikeConsumedAtTick != null ||
-        c.attackPowerMultiplierSource != null) {
-      throw StateError('Legacy3v3 adapter requires an initial BattleCharacter');
+    if (c.actionPoint != 0) {
+      throw StateError('Legacy3v3 adapter: actionPoint 是战中动态状态');
+    }
+    if (!c.isAlive || c.internalInjury != null) {
+      throw StateError('Legacy3v3 adapter: 存活/内伤是战中动态状态');
+    }
+    if (c.chargingSkill != null || c.chargeTicksRemaining != 0) {
+      throw StateError('Legacy3v3 adapter: 蓄力是战中动态状态');
+    }
+    if (c.staggerTicksRemaining != 0 || c.staggerDefenseDownOverride != null) {
+      throw StateError('Legacy3v3 adapter: 踉跄是战中动态状态');
+    }
+    if (c.bossPhaseIndex != 0) {
+      throw StateError('Legacy3v3 adapter: Boss phase index 是战中动态状态');
+    }
+    if (c.coopStrikeUsedInCharge || c.coopStrikeConsumedAtTick != null) {
+      throw StateError('Legacy3v3 adapter: 合击消费标记是战中动态状态');
+    }
+    if (c.attackPowerMultiplierSource != null) {
+      throw StateError(
+        'Legacy3v3 adapter: 旧战报 multiplier source 不属 neutral seam',
+      );
     }
     return CombatantSnapshot(
       characterId: c.characterId,

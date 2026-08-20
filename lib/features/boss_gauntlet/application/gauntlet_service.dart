@@ -18,7 +18,8 @@ import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
-import '../../battle/application/player_battle_character_assembler.dart';
+import '../../battle/application/legacy_3v3_combatant_adapter.dart';
+import '../../battle/application/player_combatant_snapshot_assembler.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../cultivation/application/character_advancement_service.dart';
@@ -389,9 +390,10 @@ class GauntletService {
       throw StateError('断魂庄开打：关次 ${run.currentStage} 敌队为空（配置损坏）');
     }
     final memberIds = run.members.map((m) => m.characterId).toList();
-    final baseTeam = await PlayerBattleCharacterAssembler(
+    final baseSnapshots = await PlayerCombatantSnapshotAssembler(
       isar: _isar,
     ).loadExactRoster(memberIds);
+    final baseTeam = Legacy3v3CombatantAdapter.playerTeam(baseSnapshots);
     final playerTeam = GauntletController.stagePlayerTeam(
       baseTeam: baseTeam,
       members: run.members,

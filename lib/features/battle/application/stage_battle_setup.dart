@@ -13,14 +13,16 @@ import '../../../core/domain/save_data.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../jianghu/application/enmity_battle_modifier.dart';
 import '../../jianghu/application/npc_relation_service.dart';
-import 'enemy_battle_character_assembler.dart';
-import 'player_battle_character_assembler.dart';
+import 'enemy_combatant_snapshot_assembler.dart';
+import 'legacy_3v3_combatant_adapter.dart';
+import 'player_combatant_snapshot_assembler.dart';
 
 /// 关卡战斗准备（Phase 3 T37，对应 PROGRESS #22 销账）。
 ///
 /// 负责主线/塔/心魔/恩怨 orchestration；玩家与敌人快照分别委托
-/// [PlayerBattleCharacterAssembler]/[EnemyBattleCharacterAssembler]，本类保留
-/// 旧 3v3 roster policy 与兼容 interface。
+/// [PlayerCombatantSnapshotAssembler]/[EnemyCombatantSnapshotAssembler]，
+/// 本类通过 [Legacy3v3CombatantAdapter] 保留旧 3v3 roster policy 与兼容
+/// interface。
 ///
 /// - 左队（玩家）：从 Isar 拉 [SaveData.activeCharacterIds]，每个角色用
 ///   [BattleCharacter.fromCharacter] 接装备 + 主修；最少 1 人。
@@ -108,7 +110,7 @@ class StageBattleSetup {
   /// 断魂庄 / 远征不走 StageDef 路径，由各自 runner 显式传
   /// [buildEnemyTeam] 的 `advanceRealmPerCycle: true`。
   static const Set<StageType> realmAdvanceStageTypes =
-      EnemyBattleCharacterAssembler.realmAdvanceStageTypes;
+      EnemyCombatantSnapshotAssembler.realmAdvanceStageTypes;
 
   /// 主线 [buildTeams] 与爬塔 [buildTeamsForTower] 共用，避免重复。纯函数,保持 static。
   /// [cycleIndex] 默认 1（cycle-1 行为与旧版完全一致，零回归）；
@@ -122,14 +124,16 @@ class StageBattleSetup {
     String? stageNpcId,
     bool readableFirstClearTuning = false,
   }) {
-    return EnemyBattleCharacterAssembler.assembleAll(
-      enemies,
-      cycleIndex: cycleIndex,
-      isTower: isTower,
-      advanceRealmPerCycle: advanceRealmPerCycle,
-      stageNpcId: stageNpcId,
-      readableFirstClearTuning: readableFirstClearTuning,
-    ).take(3).toList(growable: false);
+    return Legacy3v3CombatantAdapter.enemyTeam(
+      EnemyCombatantSnapshotAssembler.assembleAll(
+        enemies,
+        cycleIndex: cycleIndex,
+        isTower: isTower,
+        advanceRealmPerCycle: advanceRealmPerCycle,
+        stageNpcId: stageNpcId,
+        readableFirstClearTuning: readableFirstClearTuning,
+      ),
+    );
   }
 
   /// 群战守城 per-wave 敌队生成。模板 [stage.enemyTeam] (3 templates) 循环填充
@@ -139,21 +143,34 @@ class StageBattleSetup {
     StageDef stage, {
     int cycleIndex = 1,
   }) {
-    return EnemyBattleCharacterAssembler.assembleWaves(
+    final waves = EnemyCombatantSnapshotAssembler.assembleWaves(
       stage,
       cycleIndex: cycleIndex,
     );
+    return [
+      for (final wave in waves) Legacy3v3CombatantAdapter.enemyWave(wave),
+    ];
   }
 
   /// 当前出战阵容 interface：读取 activeCharacterIds，过滤活动占用；旧 seed
   /// 未写 active 列表时允许 fallback 首个可用角色。
-  Future<List<BattleCharacter>> buildActivePlayerTeam() =>
-      PlayerBattleCharacterAssembler(isar: isar).loadActiveRoster();
+  Future<List<BattleCharacter>> buildActivePlayerTeam() async {
+    final snapshots = await PlayerCombatantSnapshotAssembler(
+      isar: isar,
+    ).loadActiveRoster();
+    return Legacy3v3CombatantAdapter.playerTeam(snapshots);
+  }
 
   /// 指定阵容 interface：严格保序装配传入 ids。空/重复/缺失一律 fail-fast，
   /// 绝不 fallback 任意角色，避免远征/断魂庄/0A 坏会话静默换人。
-  Future<List<BattleCharacter>> buildExactPlayerTeam(List<int> characterIds) =>
-      PlayerBattleCharacterAssembler(isar: isar).loadExactRoster(characterIds);
+  Future<List<BattleCharacter>> buildExactPlayerTeam(
+    List<int> characterIds,
+  ) async {
+    final snapshots = await PlayerCombatantSnapshotAssembler(
+      isar: isar,
+    ).loadExactRoster(characterIds);
+    return Legacy3v3CombatantAdapter.playerTeam(snapshots);
+  }
 
   /// 把 [SynergyMultipliers] 应用到 [BattleCharacter] 4 个标量字段(view layer)。
   ///
@@ -184,10 +201,16 @@ class StageBattleSetup {
     SynergyMultipliers m, {
     NumbersConfig? numbers,
   }) {
-    return PlayerBattleCharacterAssembler.applySynergy(
-      base,
+    final snapshot = Legacy3v3CombatantAdapter.toSnapshot(base);
+    final tuned = PlayerCombatantSnapshotAssembler.applySynergy(
+      snapshot,
       m,
       numbers: numbers,
+    );
+    return Legacy3v3CombatantAdapter.fromSnapshot(
+      tuned,
+      teamSide: base.teamSide,
+      slotIndex: base.slotIndex,
     );
   }
 
@@ -199,7 +222,7 @@ class StageBattleSetup {
     double scale,
     int redLineCap,
   ) {
-    return EnemyBattleCharacterAssembler.resolveInternalForce(
+    return EnemyCombatantSnapshotAssembler.resolveInternalForce(
       realmInternalForceMax,
       scale,
       redLineCap,
@@ -317,11 +340,15 @@ class StageBattleSetup {
     int cycleIndex = 1,
     bool isTower = false,
     bool readableFirstClearTuning = false,
-  }) => EnemyBattleCharacterAssembler.assembleOne(
-    enemy: enemy,
+  }) => Legacy3v3CombatantAdapter.fromSnapshot(
+    EnemyCombatantSnapshotAssembler.assembleOne(
+      enemy: enemy,
+      slotIndex: slotIndex,
+      cycleIndex: cycleIndex,
+      isTower: isTower,
+      readableFirstClearTuning: readableFirstClearTuning,
+    ),
+    teamSide: 1,
     slotIndex: slotIndex,
-    cycleIndex: cycleIndex,
-    isTower: isTower,
-    readableFirstClearTuning: readableFirstClearTuning,
   );
 }

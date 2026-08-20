@@ -9,6 +9,7 @@ import '../../battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_wave_battle_flow.dart';
+import '../../battle/application/legacy_3v3_combatant_adapter.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../battle/domain/phase0a/arena_vector.dart';
 import '../../battle/domain/phase0a/phase0a_combat_model.dart';
@@ -161,7 +162,9 @@ final class _DebugBattleConfig {
     final result = <Phase0aCombatantInput>[
       Phase0aCombatantInput(
         actorId: _text(player, 'id'),
-        character: _character(player, isPlayer: true),
+        snapshot: Legacy3v3CombatantAdapter.toSnapshot(
+          _character(player, isPlayer: true),
+        ),
       ),
     ];
     for (final wave in waveMaps) {
@@ -169,7 +172,9 @@ final class _DebugBattleConfig {
         result.add(
           Phase0aCombatantInput(
             actorId: _text(enemy, 'id'),
-            character: _character(enemy, isPlayer: false),
+            snapshot: Legacy3v3CombatantAdapter.toSnapshot(
+              _character(enemy, isPlayer: false),
+            ),
           ),
         );
       }

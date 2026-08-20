@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/boss_phase_def.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 
@@ -19,6 +20,7 @@ SkillDef skill(String id) => SkillDef(
 CombatantSnapshot fixture({
   required List<SkillDef> skills,
   required List<List<SkillDef>> unlocks,
+  List<BossPhaseDef>? phases,
 }) => CombatantSnapshot(
   characterId: -1,
   name: 'enemy',
@@ -49,7 +51,7 @@ CombatantSnapshot fixture({
   outputMultiplier: 1,
   isBoss: true,
   chargeSkillId: null,
-  bossPhases: null,
+  bossPhases: phases,
   bossPhaseUnlockSkills: unlocks,
   schoolDamageTakenMult: {},
   lineageRole: null,
@@ -68,11 +70,18 @@ void main() {
     final unlocks = <List<SkillDef>>[
       [skill('b')],
     ];
-    final snapshot = fixture(skills: skills, unlocks: unlocks);
+    final phaseSkillIds = <String>['phase_skill'];
+    final snapshot = fixture(
+      skills: skills,
+      unlocks: unlocks,
+      phases: [BossPhaseDef(hpThresholdPct: 1, unlockSkillIds: phaseSkillIds)],
+    );
     skills.add(skill('mutated'));
     unlocks.single.add(skill('nested'));
+    phaseSkillIds.add('mutated_phase');
     expect(snapshot.availableSkills, hasLength(1));
     expect(snapshot.bossPhaseUnlockSkills!.single, hasLength(1));
+    expect(snapshot.bossPhases!.single.unlockSkillIds, ['phase_skill']);
     expect(
       () => snapshot.availableSkills.add(skill('x')),
       throwsUnsupportedError,
@@ -85,12 +94,18 @@ void main() {
       () => snapshot.openingSkillCooldowns['x'] = 9,
       throwsUnsupportedError,
     );
+    expect(
+      () => snapshot.bossPhases!.single.unlockSkillIds.add('write'),
+      throwsUnsupportedError,
+    );
   });
 
   test('neutral schema 不暴露旧 3v3 运行态字段', () {
     final source = File(
       'lib/shared/battle_shared/combatant_snapshot.dart',
     ).readAsStringSync();
+    expect(source, isNot(contains('battle_state.dart')));
+    expect(source, isNot(contains('BattleCharacter')));
     for (final field in [
       'teamSide',
       'slotIndex',

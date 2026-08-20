@@ -1,8 +1,9 @@
 import 'package:isar_community/isar.dart';
 
 import '../../../data/game_repository.dart';
-import '../../battle/application/enemy_battle_character_assembler.dart';
-import '../../battle/application/player_battle_character_assembler.dart';
+import '../../battle/application/enemy_combatant_snapshot_assembler.dart';
+import '../../battle/application/legacy_3v3_combatant_adapter.dart';
+import '../../battle/application/player_combatant_snapshot_assembler.dart';
 import '../../battle/domain/battle_state.dart';
 import '../domain/expedition_node.dart';
 import 'expedition_battle_runner.dart';
@@ -22,8 +23,12 @@ class ExpeditionCombatRunner implements ExpeditionCombat {
 
   List<BattleCharacter>? _baseTeam;
 
-  Future<List<BattleCharacter>> _base(List<int> ids) async => _baseTeam ??=
-      await PlayerBattleCharacterAssembler(isar: _isar).loadExactRoster(ids);
+  Future<List<BattleCharacter>> _base(List<int> ids) async =>
+      _baseTeam ??= Legacy3v3CombatantAdapter.playerTeam(
+        await PlayerCombatantSnapshotAssembler(
+          isar: _isar,
+        ).loadExactRoster(ids),
+      );
 
   @override
   Future<Map<int, ExpeditionMemberCaps>> memberCaps(List<int> ids) async {
@@ -58,11 +63,12 @@ class ExpeditionCombatRunner implements ExpeditionCombat {
     );
     // 批 B：远征属境界段推进入口（spec 拍板 #5），cycle≥2 敌境界整体抬升；
     // 深度 hp/atk 缩放（enemiesForNode 内）照旧叠加。
-    final enemies = EnemyBattleCharacterAssembler.assembleAll(
+    final enemySnapshots = EnemyCombatantSnapshotAssembler.assembleAll(
       enemyDefs,
       cycleIndex: cycleIndex,
       advanceRealmPerCycle: true,
     );
+    final enemies = Legacy3v3CombatantAdapter.enemyTeam(enemySnapshots);
     final result = ExpeditionBattleRunner.runNodeBattle(
       playerTeam: players,
       enemyTeam: enemies,

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -157,7 +158,9 @@ void main() {
       final stage = repo.getStage('stage_01_01');
       final mapping = Phase0aStageContentMapper.map(
         stage: stage,
-        playerCharacter: _makeCh1Player(repo.numbers),
+        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
+          _makeCh1Player(repo.numbers),
+        ),
         numbers: repo.numbers,
       );
       final roster = Phase0aVisualRoster.fromMapping(mapping);
@@ -177,7 +180,9 @@ void main() {
       final stage = repo.getStage('stage_01_03');
       final mapping = Phase0aStageContentMapper.map(
         stage: stage,
-        playerCharacter: _makeCh1Player(repo.numbers),
+        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
+          _makeCh1Player(repo.numbers),
+        ),
         numbers: repo.numbers,
       );
       final roster = Phase0aVisualRoster.fromMapping(mapping);
@@ -189,12 +194,14 @@ void main() {
     test('Boss 敌人保留 elite 视觉与 defeat kind', () {
       final mapping = Phase0aStageContentMapper.map(
         stage: repo.getStage('stage_01_05'),
-        playerCharacter: _makeCh1Player(repo.numbers),
+        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
+          _makeCh1Player(repo.numbers),
+        ),
         numbers: repo.numbers,
       );
       final roster = Phase0aVisualRoster.fromMapping(mapping);
       final boss = mapping.combatants.last;
-      expect(boss.character.isBoss, isTrue);
+      expect(boss.snapshot.isBoss, isTrue);
       expect(roster.visualFor(boss.actorId).isElite, isTrue);
       expect(
         mapping.waves.first.enemies.last.defeatKind,
@@ -229,7 +236,9 @@ void main() {
       );
       final mapping = Phase0aStageContentMapper.map(
         stage: broken,
-        playerCharacter: _makeCh1Player(repo.numbers),
+        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
+          _makeCh1Player(repo.numbers),
+        ),
         numbers: repo.numbers,
       );
       expect(() => Phase0aVisualRoster.fromMapping(mapping), throwsStateError);
@@ -245,7 +254,9 @@ void main() {
           child: MaterialApp(
             home: Phase0aMainlineBattleHost(
               stage: repo.getStage('stage_01_01'),
-              playerCharacterForTest: _makeCh1Player(repo.numbers),
+              playerSnapshotForTest: Legacy3v3CombatantAdapter.toSnapshot(
+                _makeCh1Player(repo.numbers),
+              ),
               seedForTest: 20260819,
               onVictory: (settlement) {
                 victoryCalled = true;
@@ -289,31 +300,34 @@ void main() {
                   MaterialPageRoute(
                     builder: (_) => Phase0aMainlineBattleHost(
                       stage: repo.getStage('stage_01_01'),
-                      playerCharacterForTest: const BattleCharacter(
-                        characterId: 1,
-                        name: '脆皮玩家',
-                        realmTier: RealmTier.xueTu,
-                        realmLayer: RealmLayer.qiMeng,
-                        school: TechniqueSchool.gangMeng,
-                        maxHp: 1,
-                        currentHp: 1,
-                        internalForce: 0,
-                        maxQi: 0,
-                        currentQi: 0,
-                        speed: 100,
-                        criticalRate: 0,
-                        evasionRate: 0,
-                        defenseRate: 0,
-                        totalEquipmentAttack: 0,
-                        mainCultivationLayer: CultivationLayer.chuKui,
-                        availableSkills: [],
-                        skillCooldowns: {},
-                        activeBuffs: [],
-                        actionPoint: 0,
-                        isAlive: true,
-                        teamSide: 0,
-                        slotIndex: 0,
-                      ),
+                      playerSnapshotForTest:
+                          Legacy3v3CombatantAdapter.toSnapshot(
+                            const BattleCharacter(
+                              characterId: 1,
+                              name: '脆皮玩家',
+                              realmTier: RealmTier.xueTu,
+                              realmLayer: RealmLayer.qiMeng,
+                              school: TechniqueSchool.gangMeng,
+                              maxHp: 1,
+                              currentHp: 1,
+                              internalForce: 0,
+                              maxQi: 0,
+                              currentQi: 0,
+                              speed: 100,
+                              criticalRate: 0,
+                              evasionRate: 0,
+                              defenseRate: 0,
+                              totalEquipmentAttack: 0,
+                              mainCultivationLayer: CultivationLayer.chuKui,
+                              availableSkills: [],
+                              skillCooldowns: {},
+                              activeBuffs: [],
+                              actionPoint: 0,
+                              isAlive: true,
+                              teamSide: 0,
+                              slotIndex: 0,
+                            ),
+                          ),
                       seedForTest: 20260819,
                       onVictory: (_) {},
                       onDefeat: (settlement) {
@@ -354,7 +368,9 @@ void main() {
             child: MaterialApp(
               home: Phase0aMainlineBattleHost(
                 stage: repo.getStage('stage_01_05'),
-                playerCharacterForTest: _makeCh1Player(repo.numbers),
+                playerSnapshotForTest: Legacy3v3CombatantAdapter.toSnapshot(
+                  _makeCh1Player(repo.numbers),
+                ),
                 seedForTest: 20260820,
                 onVictory: (_) {},
                 onDefeat: (_) {},
@@ -377,7 +393,9 @@ void main() {
 
       Phase0aStageMapping makeMapping() => Phase0aStageContentMapper.map(
         stage: stage,
-        playerCharacter: _makeCh1Player(numbers),
+        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
+          _makeCh1Player(numbers),
+        ),
         numbers: numbers,
       );
 

@@ -21,7 +21,7 @@ final class Phase0aSettlementAdapter {
     }
     final characterIdByActor = {
       for (final combatant in mapping.combatants)
-        combatant.actorId: combatant.character.characterId,
+        combatant.actorId: combatant.snapshot.characterId,
     };
     final currentActors = <String, Phase0aActor>{
       finalState.player.id: finalState.player,
@@ -30,9 +30,9 @@ final class Phase0aSettlementAdapter {
     final participants = <CombatParticipantSnapshot>[
       for (final combatant in mapping.combatants)
         CombatParticipantSnapshot(
-          characterId: combatant.character.characterId,
+          characterId: combatant.snapshot.characterId,
           currentHp: currentActors[combatant.actorId]?.currentHealth ?? 0,
-          maxHp: combatant.character.maxHp,
+          maxHp: combatant.snapshot.maxHp,
         ),
     ];
 
@@ -61,7 +61,7 @@ final class Phase0aSettlementAdapter {
       final combatant = mapping.combatants.firstWhere(
         (entry) => entry.actorId == actorId,
       );
-      if (!combatant.character.availableSkills.any(
+      if (!combatant.snapshot.availableSkills.any(
         (skill) => skill.id == skillId,
       )) {
         return;

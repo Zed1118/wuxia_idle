@@ -7,6 +7,7 @@ import '../../../core/domain/technique.dart';
 import '../../../data/defs/synergy_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
+import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_occupancy.dart';
 import '../../cultivation/application/skill_loadout_resolver.dart';
@@ -15,20 +16,23 @@ import '../../cultivation/application/synergy_service.dart';
 import '../../inheritance/application/founder_buff_service.dart';
 import '../../sect/domain/sect.dart';
 import '../domain/battle_state.dart';
+import 'legacy_3v3_combatant_adapter.dart';
 
-/// 持久化玩家角色 → BattleCharacter 的深 Module。
+/// 持久化玩家角色 → [CombatantSnapshot] 的深 Module。
 ///
 /// active roster interface 负责 occupancy filter + 旧 seed fallback；exact roster
 /// interface 严格保序且缺失 fail-fast。Isar 读取、autoFill 写回、祖师 buff、
 /// 装备/主辅修、伤势与相生均隐藏在 implementation 内。
-final class PlayerBattleCharacterAssembler {
-  const PlayerBattleCharacterAssembler({required this.isar});
+final class PlayerCombatantSnapshotAssembler {
+  const PlayerCombatantSnapshotAssembler({required this.isar});
 
   final Isar isar;
 
-  Future<List<BattleCharacter>> loadActiveRoster() => _assemble();
+  Future<List<CombatantSnapshot>> loadActiveRoster() => _assemble();
 
-  Future<List<BattleCharacter>> loadExactRoster(List<int> characterIds) async {
+  Future<List<CombatantSnapshot>> loadExactRoster(
+    List<int> characterIds,
+  ) async {
     if (characterIds.isEmpty) {
       throw ArgumentError.value(
         characterIds,
@@ -46,7 +50,7 @@ final class PlayerBattleCharacterAssembler {
     return _assemble(characterIds: characterIds, strictExact: true);
   }
 
-  Future<List<BattleCharacter>> _assemble({
+  Future<List<CombatantSnapshot>> _assemble({
     List<int>? characterIds,
     bool strictExact = false,
   }) async {
@@ -131,14 +135,16 @@ final class PlayerBattleCharacterAssembler {
       );
     }
 
-    final snapshots = <BattleCharacter>[];
-    for (var index = 0; index < players.length && index < 3; index++) {
+    final snapshots = <CombatantSnapshot>[];
+    for (var index = 0; index < players.length; index++) {
       final updated =
           await isar.characters.get(players[index].id) ?? players[index];
       snapshots.add(
         await _assembleOne(
           character: updated,
-          slotIndex: index,
+          // BattleCharacter.fromCharacter 仍是迁移期内部 implementation，
+          // 其 slot assert 不得成为 neutral Interface 的 roster cap。
+          slotIndex: index.clamp(0, 2),
           founderBuffActive: founderBuffByCharacter[players[index].id] ?? false,
         ),
       );
@@ -146,7 +152,7 @@ final class PlayerBattleCharacterAssembler {
     return snapshots;
   }
 
-  Future<BattleCharacter> _assembleOne({
+  Future<CombatantSnapshot> _assembleOne({
     required Character character,
     required int slotIndex,
     required bool founderBuffActive,
@@ -179,19 +185,21 @@ final class PlayerBattleCharacterAssembler {
 
     final numbers = GameRepository.instance.numbers;
     final heavyInjured = character.injuryHoursRemaining > 0;
-    final base = BattleCharacter.fromCharacter(
-      character: character,
-      equipped: equipped,
-      mainTechnique: mainTechnique,
-      numbers: numbers,
-      teamSide: 0,
-      slotIndex: slotIndex,
-      founderBuffActive: founderBuffActive,
-      outputMultiplier: heavyInjured
-          ? numbers.injury.heavyAttackOutputMultiplier
-          : 1.0,
-      heavyInjured: heavyInjured,
-      lightInjuryStacks: character.lightInjuryStacks,
+    final base = Legacy3v3CombatantAdapter.toSnapshot(
+      BattleCharacter.fromCharacter(
+        character: character,
+        equipped: equipped,
+        mainTechnique: mainTechnique,
+        numbers: numbers,
+        teamSide: 0,
+        slotIndex: slotIndex,
+        founderBuffActive: founderBuffActive,
+        outputMultiplier: heavyInjured
+            ? numbers.injury.heavyAttackOutputMultiplier
+            : 1.0,
+        heavyInjured: heavyInjured,
+        lightInjuryStacks: character.lightInjuryStacks,
+      ),
     );
     final synergy = SynergyService.detectActive(
       character: character,
@@ -204,8 +212,8 @@ final class PlayerBattleCharacterAssembler {
         : applySynergy(base, synergy.multipliers, numbers: numbers);
   }
 
-  static BattleCharacter applySynergy(
-    BattleCharacter base,
+  static CombatantSnapshot applySynergy(
+    CombatantSnapshot base,
     SynergyMultipliers multipliers, {
     NumbersConfig? numbers,
   }) {

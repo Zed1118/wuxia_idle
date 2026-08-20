@@ -49,7 +49,21 @@ final class CombatantSnapshot {
        openingSkillCooldowns = Map.unmodifiable(openingSkillCooldowns),
        skillUses = Map.unmodifiable(skillUses),
        activeBuffs = List.unmodifiable(activeBuffs),
-       bossPhases = bossPhases == null ? null : List.unmodifiable(bossPhases),
+       bossPhases = bossPhases == null
+           ? null
+           : List<BossPhaseDef>.unmodifiable(
+               bossPhases.map(
+                 (phase) => BossPhaseDef(
+                   hpThresholdPct: phase.hpThresholdPct,
+                   unlockSkillIds: List<String>.unmodifiable(
+                     phase.unlockSkillIds,
+                   ),
+                   aiMode: phase.aiMode,
+                   onEnterMechanic: phase.onEnterMechanic,
+                   titleKey: phase.titleKey,
+                 ),
+               ),
+             ),
        bossPhaseUnlockSkills = bossPhaseUnlockSkills == null
            ? null
            : List<List<SkillDef>>.unmodifiable(

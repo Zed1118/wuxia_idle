@@ -11,6 +11,7 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
+import 'package:wuxia_idle/features/battle/application/player_combatant_snapshot_assembler.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
@@ -124,6 +125,18 @@ void main() {
   });
 
   group('exact roster interface', () {
+    test('neutral assembler 直接产出稳定领域快照', () async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      final snapshots = await PlayerCombatantSnapshotAssembler(
+        isar: IsarSetup.instance,
+      ).loadExactRoster(const [1]);
+
+      expect(snapshots, hasLength(1));
+      expect(snapshots.single.characterId, 1);
+      expect(snapshots.single.maxHp, greaterThan(0));
+      expect(snapshots.single.availableSkills, isNotEmpty);
+    });
+
     test('空 ids → ArgumentError,不得 fallback 任意角色', () async {
       await Phase2SeedService(isar: IsarSetup.instance).seedP3();
       await expectLater(

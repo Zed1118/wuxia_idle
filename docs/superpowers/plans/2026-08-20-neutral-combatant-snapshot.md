@@ -25,11 +25,11 @@
 
 ## 切片
 
-1. [ ] 红测 neutral immutable/interface 与 legacy round-trip parity。
-2. [ ] 新增 `CombatantSnapshot` 与 `Legacy3v3CombatantAdapter`。
-3. [ ] 玩家/敌方 assembler 公共 Interface 改为 neutral；旧主线/塔/远征/断魂庄经 legacy Adapter 回旧引擎。
-4. [ ] Phase 0A factory/mapper/visual/settlement/host/debug fixture 改直接消费 neutral。
-5. [ ] source-contract 反转：Phase 0A 禁 `BattleCharacter`、`battle_state.dart` 与 legacy Adapter。
+1. [x] 红测 neutral immutable/interface 与 legacy round-trip parity。
+2. [x] 新增 `CombatantSnapshot` 与 `Legacy3v3CombatantAdapter`。
+3. [x] 玩家/敌方 assembler 公共 Interface 改为 neutral；旧主线/塔/远征/断魂庄经 legacy Adapter 回旧引擎。
+4. [x] Phase 0A factory/mapper/visual/settlement/host/debug fixture 改直接消费 neutral。
+5. [x] source-contract 反转：Phase 0A 禁 `BattleCharacter`、`battle_state.dart` 与 legacy Adapter。
 6. [ ] targeted + analyze + 全量；更新 NEXT/PROGRESS/BACKLOG，打 READY 并合入干净 main。
 
 ## 验收
@@ -42,6 +42,6 @@
 
 ## 当前恢复点
 
-- 最后完成：低消工作流持久化；隔离 worktree 初始化；build runner 后 analyze 0、关键基线 71/71；3 个 Luna 只读审计完成。
-- 下一步：按 schema 并行落 neutral value/legacy Adapter 与红测，主 agent 迁移 assembler 和 Phase 0A。
+- 最后完成：neutral Module/legacy Adapter、assembler 公共 Interface、Phase 0A/旧引擎双 Adapter 接线及删除 Gate；analyze 0，相关 targeted 410/410，深不可变与 assembler 回归 46/46。
+- 下一步：提交生产迁移恢复点；跑 cycle/synergy 等扩展面与全量，文档收账后合并。
 - 阻塞：无。

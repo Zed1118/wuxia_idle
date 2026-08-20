@@ -3,19 +3,21 @@ import '../../../data/defs/boss_phase_def.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/battle_shared/derived_stats.dart' show RealmUtils;
 import '../../jianghu/application/enmity_battle_modifier.dart';
 import '../domain/battle_state.dart';
 import '../domain/qi_cycle.dart';
+import 'legacy_3v3_combatant_adapter.dart';
 
-/// EnemyDef → BattleCharacter 的深 Module。
+/// EnemyDef → [CombatantSnapshot] 的深 Module。
 ///
 /// Interface 只暴露「装配全部敌人」与「群战逐波装配」；周目缩放、境界推进、
 /// 词条、Boss phase、guardian/vulnerability、真气和首通可读调节全部隐藏在
 /// implementation 内。调用方决定 roster policy：旧 3v3 Adapter 截前三人，
 /// Phase 0A Adapter 保留全部敌人，旧形态容量不得污染此 seam。
-final class EnemyBattleCharacterAssembler {
-  const EnemyBattleCharacterAssembler._();
+final class EnemyCombatantSnapshotAssembler {
+  const EnemyCombatantSnapshotAssembler._();
 
   /// StageDef 系里仅轻功/群战按周目推进境界段。
   static const Set<StageType> realmAdvanceStageTypes = {
@@ -23,7 +25,7 @@ final class EnemyBattleCharacterAssembler {
     StageType.massBattle,
   };
 
-  static List<BattleCharacter> assembleAll(
+  static List<CombatantSnapshot> assembleAll(
     List<EnemyDef> enemies, {
     int cycleIndex = 1,
     bool isTower = false,
@@ -46,7 +48,7 @@ final class EnemyBattleCharacterAssembler {
   ];
 
   /// 群战守城 per-wave 敌队生成。模板循环填充每波人数，id 从 -10000 递减。
-  static List<List<BattleCharacter>> assembleWaves(
+  static List<List<CombatantSnapshot>> assembleWaves(
     StageDef stage, {
     int cycleIndex = 1,
   }) {
@@ -83,7 +85,7 @@ final class EnemyBattleCharacterAssembler {
     return scaled.clamp(0, redLineCap);
   }
 
-  static BattleCharacter assembleOne({
+  static CombatantSnapshot assembleOne({
     required EnemyDef enemy,
     required int slotIndex,
     int cycleIndex = 1,
@@ -97,7 +99,7 @@ final class EnemyBattleCharacterAssembler {
     readableFirstClearTuning: readableFirstClearTuning,
   );
 
-  static BattleCharacter _assembleOne({
+  static CombatantSnapshot _assembleOne({
     required EnemyDef enemy,
     required int slotIndex,
     int? characterIdOverride,
@@ -190,63 +192,65 @@ final class EnemyBattleCharacterAssembler {
               ],
           ];
 
-    final battle = BattleCharacter(
-      characterId: characterIdOverride ?? -(slotIndex + 1),
-      name: enemy.name,
-      realmTier: effTier,
-      realmLayer: enemy.realmLayer,
-      school: enemy.school,
-      maxHp: scaledHp,
-      currentHp: scaledHp,
-      internalForce: resolvedIf,
-      maxQi: numbers.combat.qi.baseMax,
-      currentQi: QiCycle.openingQi(
+    final snapshot = Legacy3v3CombatantAdapter.toSnapshot(
+      BattleCharacter(
+        characterId: characterIdOverride ?? -(slotIndex + 1),
+        name: enemy.name,
+        realmTier: effTier,
+        realmLayer: enemy.realmLayer,
+        school: enemy.school,
+        maxHp: scaledHp,
+        currentHp: scaledHp,
+        internalForce: resolvedIf,
         maxQi: numbers.combat.qi.baseMax,
-        openingQi:
-            numbers.combat.qi.enemyOpeningQi +
-            (enemy.isBoss
-                ? (isTower
-                      ? numbers.combat.qi.towerBossOpeningBonus
-                      : numbers.combat.qi.bossOpeningBonus)
-                : 0),
-        openingCap: numbers.combat.qi.openingCap,
+        currentQi: QiCycle.openingQi(
+          maxQi: numbers.combat.qi.baseMax,
+          openingQi:
+              numbers.combat.qi.enemyOpeningQi +
+              (enemy.isBoss
+                  ? (isTower
+                        ? numbers.combat.qi.towerBossOpeningBonus
+                        : numbers.combat.qi.bossOpeningBonus)
+                  : 0),
+          openingCap: numbers.combat.qi.openingCap,
+        ),
+        autoUltimate: true,
+        speed: enemy.baseSpeed,
+        criticalRate: enemyDefaults.criticalRate,
+        evasionRate: enemyDefaults.evasionRate,
+        defenseRate: defenseRate,
+        totalEquipmentAttack: scaledAttack,
+        mainCultivationLayer: CultivationLayer.daCheng,
+        availableSkills: resolvedSkills,
+        skillCooldowns: const {},
+        activeBuffs: activeBuffs,
+        actionPoint: 0,
+        isAlive: true,
+        teamSide: 1,
+        slotIndex: slotIndex,
+        iconPath: enemy.iconPath,
+        isBoss: enemy.isBoss,
+        chargeSkillId: chargeSkillId,
+        bossPhaseIndex: 0,
+        bossPhases: bossPhases,
+        bossPhaseUnlockSkills: bossPhaseUnlockSkills,
+        schoolDamageTakenMult: enemy.schoolDamageTakenMult ?? const {},
+        enemyDefId: enemy.id,
+        guardianWardMult: enemy.guardianWard?.damageTakenMult,
+        guardianDefIds: enemy.guardianWard?.guardianIds ?? const [],
+        vulnerabilityMult: enemy
+            .vulnerabilityForCycle(cycleIndex)
+            ?.outOfWindowDamageMult,
+        guardInterceptsInterrupt: enemy.guardInterceptsInterrupt,
       ),
-      autoUltimate: true,
-      speed: enemy.baseSpeed,
-      criticalRate: enemyDefaults.criticalRate,
-      evasionRate: enemyDefaults.evasionRate,
-      defenseRate: defenseRate,
-      totalEquipmentAttack: scaledAttack,
-      mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: resolvedSkills,
-      skillCooldowns: const {},
-      activeBuffs: activeBuffs,
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: 1,
-      slotIndex: slotIndex,
-      iconPath: enemy.iconPath,
-      isBoss: enemy.isBoss,
-      chargeSkillId: chargeSkillId,
-      bossPhaseIndex: 0,
-      bossPhases: bossPhases,
-      bossPhaseUnlockSkills: bossPhaseUnlockSkills,
-      schoolDamageTakenMult: enemy.schoolDamageTakenMult ?? const {},
-      enemyDefId: enemy.id,
-      guardianWardMult: enemy.guardianWard?.damageTakenMult,
-      guardianDefIds: enemy.guardianWard?.guardianIds ?? const [],
-      vulnerabilityMult: enemy
-          .vulnerabilityForCycle(cycleIndex)
-          ?.outOfWindowDamageMult,
-      guardInterceptsInterrupt: enemy.guardInterceptsInterrupt,
     );
     return readableFirstClearTuning
-        ? _applyReadableFirstClearOpeningCooldownToOne(battle)
-        : battle;
+        ? _applyReadableFirstClearOpeningCooldownToOne(snapshot)
+        : snapshot;
   }
 
-  static BattleCharacter _applyReadableFirstClearOpeningCooldownToOne(
-    BattleCharacter character,
+  static CombatantSnapshot _applyReadableFirstClearOpeningCooldownToOne(
+    CombatantSnapshot character,
   ) {
     final config = GameRepository.instance.numbers.combat.readableFirstClear;
     final tunedSkills = [
@@ -258,7 +262,7 @@ final class EnemyBattleCharacterAssembler {
     if (turns <= 0) return tuned;
     final ticksPerAction = (1000 / character.speed).ceil();
     final cooldownTicks = turns * ticksPerAction + 1;
-    final cooldowns = Map<String, int>.from(tuned.skillCooldowns);
+    final cooldowns = Map<String, int>.from(tuned.openingSkillCooldowns);
     for (final skill in tuned.availableSkills) {
       if (skill.requiresManualTrigger || skill.type == SkillType.normalAttack) {
         continue;
@@ -268,7 +272,7 @@ final class EnemyBattleCharacterAssembler {
     }
     return cooldowns.isEmpty
         ? tuned
-        : tuned.copyWith(skillCooldowns: Map.unmodifiable(cooldowns));
+        : tuned.copyWith(openingSkillCooldowns: Map.unmodifiable(cooldowns));
   }
 
   static SkillDef _tuneReadableFirstClearSkill(

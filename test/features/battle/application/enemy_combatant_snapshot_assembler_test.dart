@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/application/enemy_battle_character_assembler.dart';
+import 'package:wuxia_idle/features/battle/application/enemy_combatant_snapshot_assembler.dart';
+import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 
@@ -67,7 +68,7 @@ void main() {
             stageNpcId: stage.isBossStage ? stage.npcId : null,
             readableFirstClearTuning: readable,
           );
-          final extracted = EnemyBattleCharacterAssembler.assembleAll(
+          final extracted = EnemyCombatantSnapshotAssembler.assembleAll(
             stage.enemyTeam,
             cycleIndex: cycle,
             isTower: false,
@@ -76,7 +77,16 @@ void main() {
             readableFirstClearTuning: readable,
           );
           expect(
-            extracted.map(_shape).toList(),
+            [
+              for (final (index, snapshot) in extracted.indexed)
+                _shape(
+                  Legacy3v3CombatantAdapter.fromSnapshot(
+                    snapshot,
+                    teamSide: 1,
+                    slotIndex: index,
+                  ),
+                ),
+            ],
             legacy.map(_shape).toList(),
             reason: '$stageId cycle=$cycle readable=$readable',
           );
@@ -88,7 +98,7 @@ void main() {
   test('可复用 seam 不继承旧 3 人 cap；legacy Adapter 仍截前三人', () {
     final template = repo.getStage('stage_01_01').enemyTeam.single;
     final four = <EnemyDef>[template, template, template, template];
-    expect(EnemyBattleCharacterAssembler.assembleAll(four), hasLength(4));
+    expect(EnemyCombatantSnapshotAssembler.assembleAll(four), hasLength(4));
     expect(StageBattleSetup.buildEnemyTeam(four), hasLength(3));
   });
 }
