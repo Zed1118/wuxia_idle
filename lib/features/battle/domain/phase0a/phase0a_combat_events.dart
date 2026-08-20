@@ -243,6 +243,64 @@ final class Phase0aClearApplied extends Phase0aEvent {
   int get hashCode => Object.hash(seq, tick, actor, Object.hashAll(outcomes));
 }
 
+/// 数字 1–6 真实技能成功释放。skillId 来自装备槽，直接供结算/熟练度使用。
+final class Phase0aSkillStarted extends Phase0aEvent {
+  const Phase0aSkillStarted({
+    required super.seq,
+    required super.tick,
+    required this.actor,
+    required this.hotkey,
+    required this.skillId,
+  });
+
+  final String actor;
+  final int hotkey;
+  final String skillId;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aSkillStarted &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.actor == actor &&
+      other.hotkey == hotkey &&
+      other.skillId == skillId;
+
+  @override
+  int get hashCode => Object.hash(seq, tick, actor, hotkey, skillId);
+}
+
+/// 数字技能逐目标结算完成；单体技能 outcomes 至多一项，群体按 actor id 稳定序。
+final class Phase0aSkillApplied extends Phase0aEvent {
+  const Phase0aSkillApplied({
+    required super.seq,
+    required super.tick,
+    required this.actor,
+    required this.hotkey,
+    required this.skillId,
+    required this.outcomes,
+  });
+
+  final String actor;
+  final int hotkey;
+  final String skillId;
+  final List<Phase0aSkillOutcome> outcomes;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aSkillApplied &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.actor == actor &&
+      other.hotkey == hotkey &&
+      other.skillId == skillId &&
+      _outcomesEqual(other.outcomes, outcomes);
+
+  @override
+  int get hashCode =>
+      Object.hash(seq, tick, actor, hotkey, skillId, Object.hashAll(outcomes));
+}
+
 /// 技能印可用态迁移(对齐契约 skill_availability_changed)。
 ///
 /// cooldown 态必带 [cooldownRemaining];ready / qi 态携带

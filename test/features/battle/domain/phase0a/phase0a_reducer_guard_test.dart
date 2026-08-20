@@ -39,6 +39,12 @@ class GuardDamageResolver implements Phase0aDamageResolver {
       Phase0aDamageKind.basic => basicDamage,
       Phase0aDamageKind.gather => gatherDamage,
       Phase0aDamageKind.clear => clearDamage,
+      Phase0aDamageKind.skill1 ||
+      Phase0aDamageKind.skill2 ||
+      Phase0aDamageKind.skill3 ||
+      Phase0aDamageKind.skill4 ||
+      Phase0aDamageKind.skill5 ||
+      Phase0aDamageKind.skill6 => clearDamage,
     };
     return Phase0aResolvedHit(isHit: true, isCritical: false, damage: damage);
   }

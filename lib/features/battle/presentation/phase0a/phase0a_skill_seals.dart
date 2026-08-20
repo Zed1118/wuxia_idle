@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
+import '../../application/phase0a/phase0a_numeric_skill_binding.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import 'phase0a_presentation_tokens.dart';
 
@@ -74,6 +75,68 @@ final class Phase0aSkillSeals extends StatelessWidget {
   }
 }
 
+/// 数字 1–6 真实技能印。空槽保持原位置并禁用，不压缩后续键位。
+final class Phase0aNumericSkillSeals extends StatelessWidget {
+  const Phase0aNumericSkillSeals({
+    super.key,
+    required this.bindings,
+    required this.slots,
+    required this.qiCurrent,
+    required this.onPressed,
+  });
+
+  final Phase0aNumericSkillBindings bindings;
+  final Map<String, Phase0aSkillSlot> slots;
+  final int qiCurrent;
+  final ValueChanged<int> onPressed;
+
+  static ValueKey<String> keyFor(int hotkey) =>
+      ValueKey<String>('phase0a_seal_skill_$hotkey');
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var hotkey = 1; hotkey <= 6; hotkey++) ...[
+          if (hotkey > 1)
+            const SizedBox(
+              width: Phase0aPresentationTokens.numericSkillSealSpacing,
+            ),
+          _numericSeal(hotkey),
+        ],
+      ],
+    );
+  }
+
+  Widget _numericSeal(int hotkey) {
+    final binding = bindings.bindingFor(hotkey);
+    final slot = binding == null
+        ? const Phase0aSkillSlot(
+            slot: 'empty',
+            cooldownRemaining: 0,
+            qiCost: 0,
+            availability: Phase0aSkillAvailability.down,
+          )
+        : slots[binding.slotId] ??
+              Phase0aSkillSlot(
+                slot: binding.slotId,
+                cooldownRemaining: 0,
+                qiCost: binding.skill.qiCost,
+                availability: Phase0aSkillAvailability.down,
+              );
+    return _SkillSeal(
+      key: keyFor(hotkey),
+      slot: slot,
+      glyph: binding?.skill.name ?? UiStrings.slotEmpty,
+      keyCap: '$hotkey',
+      qiCurrent: qiCurrent,
+      size: Phase0aPresentationTokens.numericSkillSealSize,
+      onPressed: () => onPressed(hotkey),
+    );
+  }
+}
+
 /// 单枚技能印:固定边长的墨章,五态亮暗 + 状态行。
 ///
 /// 键盘体例对齐 PlaqueButton:FocusableActionDetector 的
@@ -87,6 +150,7 @@ class _SkillSeal extends StatefulWidget {
     required this.keyCap,
     required this.qiCurrent,
     required this.onPressed,
+    this.size = Phase0aPresentationTokens.skillSealSize,
   });
 
   final Phase0aSkillSlot slot;
@@ -94,6 +158,7 @@ class _SkillSeal extends StatefulWidget {
   final String keyCap;
   final int qiCurrent;
   final VoidCallback onPressed;
+  final double size;
 
   @override
   State<_SkillSeal> createState() => _SkillSealState();
@@ -153,8 +218,8 @@ class _SkillSealState extends State<_SkillSeal> {
             behavior: HitTestBehavior.opaque,
             onTap: enabled ? widget.onPressed : null,
             child: SizedBox(
-              width: Phase0aPresentationTokens.skillSealSize,
-              height: Phase0aPresentationTokens.skillSealSize,
+              width: widget.size,
+              height: widget.size,
               child: Stack(
                 children: [
                   Positioned.fill(
@@ -178,14 +243,18 @@ class _SkillSealState extends State<_SkillSeal> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          widget.glyph,
-                          style: TextStyle(
-                            color: foreground,
-                            fontSize: Phase0aPresentationTokens
-                                .skillSealGlyphFontSize,
-                            fontWeight: FontWeight.bold,
-                            height: 1.1,
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            widget.glyph,
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: foreground,
+                              fontSize: Phase0aPresentationTokens
+                                  .skillSealGlyphFontSize,
+                              fontWeight: FontWeight.bold,
+                              height: 1.1,
+                            ),
                           ),
                         ),
                         Text(

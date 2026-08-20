@@ -1,6 +1,9 @@
+import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
+import '../../domain/phase0a/phase0a_damage_kind.dart';
 import '../../domain/phase0a/realtime_combat_rules.dart';
+import 'phase0a_numeric_skill_binding.dart';
 
 /// 玩家一拍输入快照:四向按键 + 动作请求(语义按键,非数值)。
 final class Phase0aPlayerCommand {
@@ -10,6 +13,9 @@ final class Phase0aPlayerCommand {
     this.up = false,
     this.down = false,
     this.attack = false,
+    this.attackAimDirection,
+    this.skillHotkey,
+    this.skillAimDirection,
     this.gather = false,
     this.clear = false,
   });
@@ -21,6 +27,13 @@ final class Phase0aPlayerCommand {
 
   /// 普攻请求。
   final bool attack;
+
+  /// 鼠标普攻的世界空间瞄准方向；null = 键盘兼容路径沿用当前朝向。
+  final ArenaVector? attackAimDirection;
+
+  /// 数字 1–6 的真实技能槽请求；空槽由 input Adapter fail-closed。
+  final int? skillHotkey;
+  final ArenaVector? skillAimDirection;
 
   /// Q 聚怪请求。
   final bool gather;
@@ -49,6 +62,7 @@ final class Phase0aPlayerInputAdapter {
     required this.clearEffectRadius,
     required this.clearQiCost,
     required this.clearCooldownSeconds,
+    this.numericSkillBindings = const Phase0aNumericSkillBindings.empty(),
   });
 
   final String playerId;
@@ -68,6 +82,7 @@ final class Phase0aPlayerInputAdapter {
   final double clearEffectRadius;
   final int clearQiCost;
   final double clearCooldownSeconds;
+  final Phase0aNumericSkillBindings numericSkillBindings;
 
   List<Phase0aIntent> intentsFor({
     required Phase0aArenaState state,
@@ -91,7 +106,7 @@ final class Phase0aPlayerInputAdapter {
           halfArcRadians: attackHalfArcRadians,
           cooldownSeconds: attackCooldownSeconds,
           moveKind: Phase0aMoveKind.light,
-          aimDirection: state.player.facing,
+          aimDirection: command.attackAimDirection ?? state.player.facing,
         ),
       );
     }
@@ -117,6 +132,27 @@ final class Phase0aPlayerInputAdapter {
           cooldownSeconds: clearCooldownSeconds,
         ),
       );
+    }
+    final hotkey = command.skillHotkey;
+    if (hotkey != null) {
+      final binding = numericSkillBindings.bindingFor(hotkey);
+      if (binding != null) {
+        intents.add(
+          Phase0aSkillIntent(
+            actorId: playerId,
+            kind: phase0aDamageKindForSkillHotkey(hotkey),
+            slot: binding.slotId,
+            skillId: binding.skill.id,
+            targetType: binding.targetType,
+            aimDirection: command.skillAimDirection ?? state.player.facing,
+            range: binding.attackRange,
+            halfArcRadians: binding.halfArc,
+            effectRadius: binding.effectRadius,
+            qiDelta: binding.qiDelta,
+            cooldownSeconds: binding.cooldownSeconds,
+          ),
+        );
+      }
     }
     return intents;
   }

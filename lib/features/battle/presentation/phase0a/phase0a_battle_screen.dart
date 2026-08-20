@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +10,9 @@ import '../../../../shared/audio/sound_manager.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
+import '../../application/phase0a/phase0a_numeric_skill_binding.dart';
 import '../../application/phase0a/phase0a_wave_battle_flow.dart';
+import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import '../hp_bar.dart';
@@ -28,6 +31,7 @@ final class Phase0aBattleScreen extends StatefulWidget {
     this.autoStep = true,
     this.feedbackHoldSeconds = Phase0aPresentationTokens.feedbackHoldSeconds,
     this.retryFlowBuilder,
+    this.numericSkillBindings = const Phase0aNumericSkillBindings.empty(),
   }) : assert(feedbackHoldSeconds > 0);
 
   final Phase0aBattleController controller;
@@ -37,6 +41,8 @@ final class Phase0aBattleScreen extends StatefulWidget {
   /// 终局「再战」的新 flow 装配器;为 null 时终局不出现重试入口
   /// (静态验收路由等纯展示场景保持只读)。
   final Future<Phase0aWaveBattleFlow> Function()? retryFlowBuilder;
+
+  final Phase0aNumericSkillBindings numericSkillBindings;
 
   @override
   State<Phase0aBattleScreen> createState() => _Phase0aBattleScreenState();
@@ -52,6 +58,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   final Map<String, double> _hitFlashRemaining = <String, double>{};
   final Map<String, double> _hpEmphasisRemaining = <String, double>{};
   bool _retryInFlight = false;
+  bool _primaryAttackHeld = false;
+  ArenaVector? _pointerAimDirection;
 
   /// Esc 暂停态(0C):暂停期间帧回调零推进(不记性能样本),
   /// 键鼠指令均不受理;再按 Esc 恢复。
@@ -77,6 +85,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _hitFlashRemaining.clear();
     _hpEmphasisRemaining.clear();
     _paused = false;
+    _primaryAttackHeld = false;
+    _pointerAimDirection = null;
   }
 
   @override
@@ -85,6 +95,47 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _ticker.dispose();
     _focusNode.dispose();
     super.dispose();
+  }
+
+  bool get _acceptsBattleInput =>
+      !_paused && widget.controller.outcome == Phase0aBattleOutcome.ongoing;
+
+  ArenaVector _pointerAim(Offset localPosition, Phase0aStage stage) {
+    final player = widget.controller.state.player;
+    final delta = stage.screenToWorld(localPosition) - player.position;
+    return delta.lengthSquared > 0 ? delta.normalized() : player.facing;
+  }
+
+  void _enqueuePointerAttack() {
+    final aim = _pointerAimDirection;
+    if (!_acceptsBattleInput || aim == null) return;
+    widget.controller.enqueue(
+      Phase0aPlayerCommand(attack: true, attackAimDirection: aim),
+    );
+  }
+
+  void _onStagePointerDown(PointerDownEvent event, Phase0aStage stage) {
+    if ((event.buttons & kPrimaryMouseButton) == 0 || !_acceptsBattleInput) {
+      return;
+    }
+    _primaryAttackHeld = true;
+    _pointerAimDirection = _pointerAim(event.localPosition, stage);
+    _enqueuePointerAttack();
+    _focusNode.requestFocus();
+  }
+
+  void _onStagePointerMove(PointerMoveEvent event, Phase0aStage stage) {
+    if (!_primaryAttackHeld ||
+        (event.buttons & kPrimaryMouseButton) == 0 ||
+        !_acceptsBattleInput) {
+      return;
+    }
+    _pointerAimDirection = _pointerAim(event.localPosition, stage);
+  }
+
+  void _stopPointerAttack() {
+    _primaryAttackHeld = false;
+    _pointerAimDirection = null;
   }
 
   void _refresh() {
@@ -184,6 +235,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     var steps = 0;
     while (_accumulatorSeconds >= widget.controller.fixedDeltaSeconds &&
         steps < Phase0aPresentationTokens.maxCatchUpTicksPerFrame) {
+      if (_primaryAttackHeld) _enqueuePointerAttack();
       widget.controller.step();
       _accumulatorSeconds -= widget.controller.fixedDeltaSeconds;
       steps++;
@@ -236,6 +288,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     if (key == LogicalKeyboardKey.escape) {
       setState(() {
         _paused = !_paused;
+        if (_paused) _stopPointerAttack();
         if (!_paused) _lastElapsed = null; // 恢复首帧重建 delta 基准,不吞暂停时长
       });
       return KeyEventResult.handled;
@@ -249,6 +302,18 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       LogicalKeyboardKey.keyJ => const Phase0aPlayerCommand(attack: true),
       LogicalKeyboardKey.keyQ => const Phase0aPlayerCommand(gather: true),
       LogicalKeyboardKey.keyR => const Phase0aPlayerCommand(clear: true),
+      LogicalKeyboardKey.digit1 ||
+      LogicalKeyboardKey.numpad1 => const Phase0aPlayerCommand(skillHotkey: 1),
+      LogicalKeyboardKey.digit2 ||
+      LogicalKeyboardKey.numpad2 => const Phase0aPlayerCommand(skillHotkey: 2),
+      LogicalKeyboardKey.digit3 ||
+      LogicalKeyboardKey.numpad3 => const Phase0aPlayerCommand(skillHotkey: 3),
+      LogicalKeyboardKey.digit4 ||
+      LogicalKeyboardKey.numpad4 => const Phase0aPlayerCommand(skillHotkey: 4),
+      LogicalKeyboardKey.digit5 ||
+      LogicalKeyboardKey.numpad5 => const Phase0aPlayerCommand(skillHotkey: 5),
+      LogicalKeyboardKey.digit6 ||
+      LogicalKeyboardKey.numpad6 => const Phase0aPlayerCommand(skillHotkey: 6),
       _ => null,
     };
     if (command == null) return KeyEventResult.ignored;
@@ -273,18 +338,35 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
               key: const ValueKey('phase0a_battle_screen'),
               fit: StackFit.expand,
               children: [
-                Image.asset(
-                  'assets/scenes/battle_mountain_pass_stage_v2.png',
-                  fit: BoxFit.cover,
-                  filterQuality: FilterQuality.medium,
-                ),
-                const ColoredBox(color: Color(0x380F0E0B)),
-                const CustomPaint(painter: _StageWashPainter()),
-                ..._buildActors(controller, stage),
-                _FeedbackLayer(
-                  controller: controller,
-                  stage: stage,
-                  entries: [for (final held in _heldFeedback) held.entry],
+                Positioned.fill(
+                  child: Listener(
+                    key: const ValueKey('phase0a_stage_input_layer'),
+                    behavior: HitTestBehavior.opaque,
+                    onPointerDown: (event) => _onStagePointerDown(event, stage),
+                    onPointerMove: (event) => _onStagePointerMove(event, stage),
+                    onPointerUp: (_) => _stopPointerAttack(),
+                    onPointerCancel: (_) => _stopPointerAttack(),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.asset(
+                          'assets/scenes/battle_mountain_pass_stage_v2.png',
+                          fit: BoxFit.cover,
+                          filterQuality: FilterQuality.medium,
+                        ),
+                        const ColoredBox(color: Color(0x380F0E0B)),
+                        const CustomPaint(painter: _StageWashPainter()),
+                        ..._buildActors(controller, stage),
+                        _FeedbackLayer(
+                          controller: controller,
+                          stage: stage,
+                          entries: [
+                            for (final held in _heldFeedback) held.entry,
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 _PlayerHud(
                   controller: controller,
@@ -292,6 +374,28 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                     controller.state.player.id,
                   ),
                 ),
+                if (widget.numericSkillBindings.equipped.isNotEmpty)
+                  Positioned(
+                    left: Phase0aPresentationTokens.hudInset,
+                    right: Phase0aPresentationTokens.hudInset,
+                    bottom: Phase0aPresentationTokens.skillHudBottom,
+                    child: Center(
+                      child: Phase0aNumericSkillSeals(
+                        bindings: widget.numericSkillBindings,
+                        slots: {
+                          for (final slot in controller.state.skillSlots)
+                            slot.slot: slot,
+                        },
+                        qiCurrent: controller.state.player.qiCurrent,
+                        onPressed: (hotkey) {
+                          if (_paused) return;
+                          controller.enqueue(
+                            Phase0aPlayerCommand(skillHotkey: hotkey),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
                 Positioned(
                   right: Phase0aPresentationTokens.skillHudRight,
                   bottom: Phase0aPresentationTokens.skillHudBottom,

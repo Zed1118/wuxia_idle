@@ -9,6 +9,7 @@ import 'phase0a_battle_snapshot_factory.dart';
 import 'phase0a_combat_session.dart';
 import 'phase0a_damage_calculator_adapter.dart';
 import 'phase0a_enemy_ai_adapter.dart';
+import 'phase0a_numeric_skill_binding.dart';
 import 'phase0a_player_input_adapter.dart';
 import 'phase0a_wave_battle_flow.dart';
 
@@ -27,8 +28,8 @@ import 'phase0a_wave_battle_flow.dart';
 ///   [combatants] 的显式 actor ids 必须精确覆盖,missing/extra 均 fail-fast,
 ///   错误信息列出稳定排序后的 id。
 /// - `playerAdapter.playerId` 必须等于 `initialState.player.id`。
-/// - [moveBindings] 必须显式覆盖 `Phase0aDamageKind.values` 每一项;
-///   null 是合法 control-only(不猜技能、不当缺失),缺 key 才 fail-fast。
+/// - [moveBindings] 必须显式覆盖 basic/gather/clear；数字技能只在真实槽
+///   非空时出现，并与 player Adapter 的 skill id 精确一致。
 /// - 结构校验完成后才调快照工厂;其动态机制/吸血 fail-fast 原样穿透,
 ///   不包装、不延迟到首击。
 /// - 只创建一个伤害 adapter,并把同一个显式 [rng] 实例交给它;换波重建
@@ -64,7 +65,7 @@ final class Phase0aProductionFlowAssembler {
         'playerId 必须等于首态玩家 id(${initialState.player.id})',
       );
     }
-    _checkMoveBindings(moveBindings);
+    _checkMoveBindings(moveBindings, playerAdapter.numericSkillBindings);
 
     // —— 组合既有组件(工厂动态机制 fail-fast 原样穿透)——
     final bundle = Phase0aBattleSnapshotFactory(
@@ -114,9 +115,15 @@ final class Phase0aProductionFlowAssembler {
   /// control-only,缺 key 才 fail-fast。
   static void _checkMoveBindings(
     Map<Phase0aDamageKind, SkillDef?> moveBindings,
+    Phase0aNumericSkillBindings numericSkills,
   ) {
+    const requiredKinds = [
+      Phase0aDamageKind.basic,
+      Phase0aDamageKind.gather,
+      Phase0aDamageKind.clear,
+    ];
     final missing = <String>[
-      for (final kind in Phase0aDamageKind.values)
+      for (final kind in requiredKinds)
         if (!moveBindings.containsKey(kind)) kind.name,
     ];
     if (missing.isNotEmpty) {
@@ -124,6 +131,16 @@ final class Phase0aProductionFlowAssembler {
         'Phase0a 装配招式绑定缺失(按 enum 序): $missing;'
         'null 为合法 control-only 绑定,缺 key 不允许',
       );
+    }
+    for (final binding in numericSkills.equipped) {
+      final kind = phase0aDamageKindForSkillHotkey(binding.hotkey);
+      final bound = moveBindings[kind];
+      if (bound?.id != binding.skill.id) {
+        throw ArgumentError(
+          'Phase0a 数字技能绑定不一致: hotkey=${binding.hotkey}, '
+          'adapter=${binding.skill.id}, damage=${bound?.id}',
+        );
+      }
     }
   }
 }

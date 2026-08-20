@@ -47,6 +47,20 @@ final class Phase0aStage {
     return Offset(dx, dy);
   }
 
+  /// 屏幕点击位置 → 世界坐标。safeRect 外输入先 clamp，保证窗口边缘点击
+  /// 仍产生有限、可复现的世界方向；与 [worldToScreen] 使用同一线性变换。
+  ArenaVector screenToWorld(Offset screen) {
+    final rect = safeRect;
+    final dx = screen.dx.clamp(rect.left, rect.right);
+    final dy = screen.dy.clamp(rect.top, rect.bottom);
+    final tx = rect.width == 0 ? 0.0 : (dx - rect.left) / rect.width;
+    final ty = rect.height == 0 ? 0.0 : (dy - rect.top) / rect.height;
+    return ArenaVector(
+      worldMin.x + tx * (worldMax.x - worldMin.x),
+      worldMin.y + ty * (worldMax.y - worldMin.y),
+    );
+  }
+
   /// 纵深缩放:世界 y 越大单位越大,在线性插值区间内取值。
   double depthScale(double worldY) {
     final spanY = worldMax.y - worldMin.y;

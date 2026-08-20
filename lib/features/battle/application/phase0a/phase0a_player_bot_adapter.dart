@@ -38,6 +38,7 @@ final class Phase0aPlayerBotAdapter {
       attack: true,
       gather: _slotReady(state, playerAdapter.gatherSlot),
       clear: _slotReady(state, playerAdapter.clearSlot),
+      skillHotkey: _firstReadyNumericSkill(state),
     );
   }
 
@@ -63,5 +64,12 @@ final class Phase0aPlayerBotAdapter {
       }
     }
     return false;
+  }
+
+  int? _firstReadyNumericSkill(Phase0aArenaState state) {
+    for (final binding in playerAdapter.numericSkillBindings.equipped) {
+      if (_slotReady(state, binding.slotId)) return binding.hotkey;
+    }
+    return null;
   }
 }

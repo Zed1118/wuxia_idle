@@ -73,6 +73,10 @@ abstract final class Phase0aPresentationTokens {
   /// 状态行(CD 秒数 / 真气 / 禁用原因)字号。
   static const double skillSealStatusFontSize = 11;
 
+  /// 数字技能印略小于 Q/R 战术印，六枚在 1152px 验收视口内保持单行。
+  static const double numericSkillSealSize = 78;
+  static const double numericSkillSealSpacing = 8;
+
   static const double actorWidth = 112;
   static const double actorHeight = 158;
   static const double actorImageHeight = 118;

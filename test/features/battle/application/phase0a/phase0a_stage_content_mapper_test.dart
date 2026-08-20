@@ -86,11 +86,9 @@ void main() {
         mapping.combatants.map((c) => c.actorId),
         containsAll(['player', 'enemy_xueTu_thug_a']),
       );
-      // moveBindings 三 kind 全覆盖:gather 为 control-only。
-      expect(
-        mapping.moveBindings.keys,
-        hasLength(Phase0aDamageKind.values.length),
-      );
+      // 固定三 kind 全覆盖；fixture 无真实数字槽，numeric binding 保持空。
+      expect(mapping.moveBindings.keys, hasLength(3));
+      expect(mapping.numericSkillBindings.equipped, isEmpty);
       expect(mapping.moveBindings[Phase0aDamageKind.basic], isNotNull);
       expect(mapping.moveBindings[Phase0aDamageKind.gather], isNull);
       expect(mapping.moveBindings[Phase0aDamageKind.clear], isNotNull);

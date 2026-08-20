@@ -1,4 +1,6 @@
 import 'arena_vector.dart';
+import '../../../../core/domain/enums.dart';
+import 'phase0a_damage_kind.dart';
 import 'phase0a_combat_model.dart';
 
 /// Phase 0A 统一输入协议:玩家适配器与敌 AI 适配器产生同型 intent,
@@ -84,5 +86,34 @@ final class Phase0aClearIntent extends Phase0aIntent {
   final double effectRadius;
 
   final int qiCost;
+  final double cooldownSeconds;
+}
+
+/// 数字 1–6 真实技能请求。所有运行参数均由 application binding Adapter
+/// 预解析后显式携带；reducer 不回查仓库、不猜范围或冷却。
+final class Phase0aSkillIntent extends Phase0aIntent {
+  const Phase0aSkillIntent({
+    required super.actorId,
+    required this.kind,
+    required this.slot,
+    required this.skillId,
+    required this.targetType,
+    required this.aimDirection,
+    required this.range,
+    required this.halfArcRadians,
+    required this.effectRadius,
+    required this.qiDelta,
+    required this.cooldownSeconds,
+  });
+
+  final Phase0aDamageKind kind;
+  final String slot;
+  final String skillId;
+  final TargetType targetType;
+  final ArenaVector aimDirection;
+  final double range;
+  final double halfArcRadians;
+  final double effectRadius;
+  final int qiDelta;
   final double cooldownSeconds;
 }
