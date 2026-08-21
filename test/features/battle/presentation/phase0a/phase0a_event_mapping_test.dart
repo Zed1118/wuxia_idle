@@ -910,9 +910,7 @@ void main() {
 
     test('缺字段旧事件走同步状态回退', () {
       final controller = Phase0aVfxController()
-        ..syncActors(
-          _state(enemies: [_actor('e1', Phase0aSide.enemy, 40, 0)]),
-        );
+        ..syncActors(_state(enemies: [_actor('e1', Phase0aSide.enemy, 40, 0)]));
       final entries = controller.consume([
         // 无坐标字段的手工旧构造:必须回退同步状态,行为不变。
         _hit(seq: 1, actor: 'player', target: 'e1', damage: 25),

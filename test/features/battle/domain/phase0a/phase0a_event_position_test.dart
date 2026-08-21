@@ -200,14 +200,9 @@ void main() {
 
     test('敌方同拍 move+attack 也携带双坐标', () {
       final result = reducePhase0aTick(
-        state: _state(
-          enemies: [_enemy(position: const ArenaVector(-60, 0))],
-        ),
+        state: _state(enemies: [_enemy(position: const ArenaVector(-60, 0))]),
         intents: [
-          const Phase0aMoveIntent(
-            actorId: 'e1',
-            direction: ArenaVector(1, 0),
-          ),
+          const Phase0aMoveIntent(actorId: 'e1', direction: ArenaVector(1, 0)),
           _attack('e1'),
         ],
         deltaSeconds: 0.1,

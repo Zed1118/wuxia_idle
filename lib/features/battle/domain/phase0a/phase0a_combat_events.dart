@@ -134,7 +134,8 @@ final class Phase0aEnemyDefeated extends Phase0aEvent {
       other.targetPosition == targetPosition;
 
   @override
-  int get hashCode => Object.hash(seq, tick, target, defeatKind, targetPosition);
+  int get hashCode =>
+      Object.hash(seq, tick, target, defeatKind, targetPosition);
 }
 
 /// Boss crossed one HP threshold. [phaseIndex] is zero-based and
