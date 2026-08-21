@@ -43,25 +43,25 @@ Branch: `codex/phase0a-boss-phase-0821`
 
 ## Acceptance checklist
 
-- [ ] Production wiring: `StageDef/TowerFloorDef -> EnemyCombatantSnapshotAssembler
+- [x] Production wiring: `StageDef/TowerFloorDef -> EnemyCombatantSnapshotAssembler
   -> Phase0aStageContentMapper -> Phase0aProductionFlowAssembler -> reducer/AI ->
   headless` carries phase state and unlocked skills without fixture-only wiring.
-- [ ] Reducer advances exactly once per crossed threshold, supports crossing
+- [x] Reducer advances exactly once per crossed threshold, supports crossing
   multiple thresholds in one hit, does not transition dead/non-phase actors, and
   preserves deterministic event sequence/state equality.
-- [ ] Enemy AI consumes only currently unlocked phase skills, respects qi and
+- [x] Enemy AI consumes only currently unlocked phase skills, respects qi and
   cooldown, and keeps no-phase/basic-only behavior unchanged.
-- [ ] Enemy phase-skill damage uses the existing calculator; no second formula,
+- [x] Enemy phase-skill damage uses the existing calculator; no second formula,
   Chinese player text, or numeric combat defaults are added in Dart.
-- [ ] Capability manifest remains fail-closed for every entry that still has
+- [x] Capability manifest remains fail-closed for every entry that still has
   top-level charge or `chargeCounter`; no degraded run is reported as eligible.
-- [ ] Targeted tests cover model/reducer, mapper, production flow, headless, and
+- [x] Targeted tests cover model/reducer, mapper, production flow, headless, and
   manifest classification with per-file pass evidence; `flutter analyze` passes.
-- [ ] Red-line impact: no YAML/schema/save version/formula/balance/UI changes; no
+- [x] Red-line impact: no YAML/schema/save version/formula/balance/UI changes; no
   impact to three-system locks, online=offline, or anti-mainstream rules.
-- [ ] Residual risks explicitly retain charge/interrupt, vulnerability,
+- [x] Residual risks explicitly retain charge/interrupt, vulnerability,
   guardian, six-person subjective Gate, and Windows Gate.
-- [ ] Main review checks actual diff, production evidence, debug noise, temporary
+- [x] Main review checks actual diff, production evidence, debug noise, temporary
   files, and Chinese verb-object commit messages; branch tip is clean `[READY]`.
 
 ## Slices and recovery points
@@ -74,6 +74,11 @@ Branch: `codex/phase0a-boss-phase-0821`
 5. Update recovery pointers, run analyze/full verification, mark `[READY]`, and
    merge locally to `main`.
 
-Current recovery point: scope and matrix frozen. Fresh worktree setup completed;
-baseline analyze passed and five relevant test files passed (63/63). Next add
-the phase runtime model/reducer slice. No blockers.
+Current recovery point: implementation and main-agent diff review complete.
+Production tower 7 proves threshold -> unlock -> AI cast through the neutral
+flow/headless loop; no-phase enemies retain the old qi/cooldown path and the
+149-entry manifest remains fail-closed. Verification: targeted 67/67,
+`flutter analyze --no-pub` 0 issues, full `flutter test --no-pub -r compact`
+5271/5271. Next: commit this recovery update, mark `[READY]`, then locally merge
+to `main` and rerun merge-state analyze plus the focused production chain. No
+blockers.
