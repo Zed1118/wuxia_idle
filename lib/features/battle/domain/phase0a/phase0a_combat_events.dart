@@ -1,3 +1,4 @@
+import 'arena_vector.dart';
 import 'phase0a_combat_model.dart';
 
 /// Phase 0A 语义事件基类(对齐冻结反馈契约公共 payload)。
@@ -39,6 +40,10 @@ final class Phase0aAttackStarted extends Phase0aEvent {
 ///
 /// 合法未命中不发射本事件;[resolvedDamage] 与飘字一一对应,
 /// [remainingHealth] 为目标结算后剩余生命。
+///
+/// [actorPosition]/[targetPosition] 为动作结算时(本拍移动后)的出手点/
+/// 命中点世界坐标快照。生产 reducer 必填;手工构造缺省为 null 时,
+/// 表现层回退自身同步的竞技场状态(兼容旧构造)。
 final class Phase0aHitLanded extends Phase0aEvent {
   const Phase0aHitLanded({
     required super.seq,
@@ -50,6 +55,8 @@ final class Phase0aHitLanded extends Phase0aEvent {
     required this.isUltimate,
     required this.resolvedDamage,
     required this.remainingHealth,
+    this.actorPosition,
+    this.targetPosition,
   });
 
   final String actor;
@@ -59,6 +66,12 @@ final class Phase0aHitLanded extends Phase0aEvent {
   final bool isUltimate;
   final int resolvedDamage;
   final int remainingHealth;
+
+  /// 出手者结算时世界坐标(本拍移动后)。
+  final ArenaVector? actorPosition;
+
+  /// 被命中目标结算时世界坐标。
+  final ArenaVector? targetPosition;
 
   @override
   bool operator ==(Object other) =>
@@ -71,7 +84,9 @@ final class Phase0aHitLanded extends Phase0aEvent {
       other.isCritical == isCritical &&
       other.isUltimate == isUltimate &&
       other.resolvedDamage == resolvedDamage &&
-      other.remainingHealth == remainingHealth;
+      other.remainingHealth == remainingHealth &&
+      other.actorPosition == actorPosition &&
+      other.targetPosition == targetPosition;
 
   @override
   int get hashCode => Object.hash(
@@ -84,20 +99,30 @@ final class Phase0aHitLanded extends Phase0aEvent {
     isUltimate,
     resolvedDamage,
     remainingHealth,
+    actorPosition,
+    targetPosition,
   );
 }
 
 /// 敌方单位生命归零进入移除(对齐契约 enemy_defeated,全场至多一条)。
+///
+/// [targetPosition] 为死亡移除前的最终世界坐标快照(含本拍被位移的
+/// 落点)。生产 reducer 必填;手工构造缺省为 null 时,表现层回退自身
+/// 同步的竞技场状态(兼容旧构造)。
 final class Phase0aEnemyDefeated extends Phase0aEvent {
   const Phase0aEnemyDefeated({
     required super.seq,
     required super.tick,
     required this.target,
     required this.defeatKind,
+    this.targetPosition,
   });
 
   final String target;
   final Phase0aDefeatKind defeatKind;
+
+  /// 被击败单位移除前的最终世界坐标。
+  final ArenaVector? targetPosition;
 
   @override
   bool operator ==(Object other) =>
@@ -105,10 +130,11 @@ final class Phase0aEnemyDefeated extends Phase0aEvent {
       other.seq == seq &&
       other.tick == tick &&
       other.target == target &&
-      other.defeatKind == defeatKind;
+      other.defeatKind == defeatKind &&
+      other.targetPosition == targetPosition;
 
   @override
-  int get hashCode => Object.hash(seq, tick, target, defeatKind);
+  int get hashCode => Object.hash(seq, tick, target, defeatKind, targetPosition);
 }
 
 /// Boss crossed one HP threshold. [phaseIndex] is zero-based and
@@ -237,6 +263,12 @@ final class Phase0aEnemySkillStarted extends Phase0aEvent {
 }
 
 /// 技能逐目标结算结果(对齐契约 outcomes 项)。
+///
+/// [sourcePosition]/[targetPosition] 为结算时世界坐标快照:
+/// Q 聚怪 = 拉前位置 → 真实环点([gatherRingDestination] 落点,
+/// 不是玩家中心);R/数字技能 = 施放点 → 目标结算时位置。
+/// 生产 reducer 必填;手工构造缺省为 null 时,表现层回退自身同步的
+/// 竞技场状态(兼容旧构造)。
 final class Phase0aSkillOutcome {
   const Phase0aSkillOutcome({
     required this.target,
@@ -244,6 +276,8 @@ final class Phase0aSkillOutcome {
     required this.isCritical,
     required this.defeated,
     required this.statusApplied,
+    this.sourcePosition,
+    this.targetPosition,
   });
 
   final String target;
@@ -255,6 +289,12 @@ final class Phase0aSkillOutcome {
   final bool defeated;
   final Phase0aSkillStatus statusApplied;
 
+  /// Q = 目标被拉前位置;R/数字技能 = 施放者结算时位置。
+  final ArenaVector? sourcePosition;
+
+  /// Q = 真实环点落点;R/数字技能 = 目标结算时位置。
+  final ArenaVector? targetPosition;
+
   @override
   bool operator ==(Object other) =>
       other is Phase0aSkillOutcome &&
@@ -262,11 +302,20 @@ final class Phase0aSkillOutcome {
       other.resolvedDamage == resolvedDamage &&
       other.isCritical == isCritical &&
       other.defeated == defeated &&
-      other.statusApplied == statusApplied;
+      other.statusApplied == statusApplied &&
+      other.sourcePosition == sourcePosition &&
+      other.targetPosition == targetPosition;
 
   @override
-  int get hashCode =>
-      Object.hash(target, resolvedDamage, isCritical, defeated, statusApplied);
+  int get hashCode => Object.hash(
+    target,
+    resolvedDamage,
+    isCritical,
+    defeated,
+    statusApplied,
+    sourcePosition,
+    targetPosition,
+  );
 }
 
 bool _outcomesEqual(List<Phase0aSkillOutcome> a, List<Phase0aSkillOutcome> b) {
@@ -288,16 +337,23 @@ bool _stringListsEqual(List<String> a, List<String> b) {
 }
 
 /// Q 聚怪力场出现(对齐契约 gather_started)。
+///
+/// [actorPosition] 为施放时世界坐标快照。生产 reducer 必填;
+/// 手工构造缺省为 null 时,表现层回退自身同步的竞技场状态。
 final class Phase0aGatherStarted extends Phase0aEvent {
   const Phase0aGatherStarted({
     required super.seq,
     required super.tick,
     required this.actor,
     this.skillId = '',
+    this.actorPosition,
   });
 
   final String actor;
   final String skillId;
+
+  /// 施放者施放时世界坐标。
+  final ArenaVector? actorPosition;
 
   @override
   bool operator ==(Object other) =>
@@ -305,10 +361,11 @@ final class Phase0aGatherStarted extends Phase0aEvent {
       other.seq == seq &&
       other.tick == tick &&
       other.actor == actor &&
-      other.skillId == skillId;
+      other.skillId == skillId &&
+      other.actorPosition == actorPosition;
 
   @override
-  int get hashCode => Object.hash(seq, tick, actor, skillId);
+  int get hashCode => Object.hash(seq, tick, actor, skillId, actorPosition);
 }
 
 /// Q 聚怪结算生效,携带逐目标有序 outcomes(对齐契约 gather_applied)。
@@ -336,16 +393,23 @@ final class Phase0aGatherApplied extends Phase0aEvent {
 }
 
 /// R 清场释放(对齐契约 clear_started)。
+///
+/// [actorPosition] 为施放时世界坐标快照。生产 reducer 必填;
+/// 手工构造缺省为 null 时,表现层回退自身同步的竞技场状态。
 final class Phase0aClearStarted extends Phase0aEvent {
   const Phase0aClearStarted({
     required super.seq,
     required super.tick,
     required this.actor,
     this.skillId = '',
+    this.actorPosition,
   });
 
   final String actor;
   final String skillId;
+
+  /// 施放者施放时世界坐标。
+  final ArenaVector? actorPosition;
 
   @override
   bool operator ==(Object other) =>
@@ -353,10 +417,11 @@ final class Phase0aClearStarted extends Phase0aEvent {
       other.seq == seq &&
       other.tick == tick &&
       other.actor == actor &&
-      other.skillId == skillId;
+      other.skillId == skillId &&
+      other.actorPosition == actorPosition;
 
   @override
-  int get hashCode => Object.hash(seq, tick, actor, skillId);
+  int get hashCode => Object.hash(seq, tick, actor, skillId, actorPosition);
 }
 
 /// R 清场群体结算生效,携带逐目标有序 outcomes(对齐契约 clear_applied)。
