@@ -242,6 +242,8 @@ Phase0aStepResult reducePhase0aTick({
                 isUltimate: false,
                 resolvedDamage: damage,
                 remainingHealth: remaining,
+                actorPosition: actor.position,
+                targetPosition: target.position,
               ),
             );
             final updated = target.copyWith(currentHealth: remaining);
@@ -254,6 +256,7 @@ Phase0aStepResult reducePhase0aTick({
                     tick: tick,
                     target: target.id,
                     defeatKind: target.defeatKind,
+                    targetPosition: updated.position,
                   ),
                 );
               } else {
@@ -391,6 +394,8 @@ Phase0aStepResult reducePhase0aTick({
               isUltimate: intent.skill.type == SkillType.ultimate,
               resolvedDamage: damage,
               remainingHealth: remaining,
+              actorPosition: actor.position,
+              targetPosition: target.position,
             ),
           );
           if (target.side == Phase0aSide.player) {
@@ -441,6 +446,7 @@ Phase0aStepResult reducePhase0aTick({
             tick: tick,
             actor: actorId,
             skillId: intent.skillId,
+            actorPosition: actor.position,
           ),
         );
         final targets =
@@ -490,12 +496,16 @@ Phase0aStepResult reducePhase0aTick({
               statusApplied: pulled
                   ? Phase0aSkillStatus.pulled
                   : Phase0aSkillStatus.none,
+              sourcePosition: target.position,
+              targetPosition: destination,
             ),
           );
           if (target.side == Phase0aSide.enemy) {
             if (!updated.isAlive) {
               enemiesById.remove(target.id);
-              deaths.add(target);
+              // 死亡列表保留 updated 的最终位置(拉后环点),
+              // 不能丢回原 target 的拉前位置。
+              deaths.add(updated);
             } else {
               final advanced = _advanceBossPhases(
                 actor: updated,
@@ -553,6 +563,7 @@ Phase0aStepResult reducePhase0aTick({
             tick: tick,
             actor: actorId,
             skillId: intent.skillId,
+            actorPosition: actor.position,
           ),
         );
         final targets =
@@ -609,12 +620,15 @@ Phase0aStepResult reducePhase0aTick({
               isCritical: resolved.isHit && resolved.isCritical,
               defeated: !updated.isAlive,
               statusApplied: Phase0aSkillStatus.staggered,
+              sourcePosition: actor.position,
+              targetPosition: target.position,
             ),
           );
           if (target.side == Phase0aSide.enemy) {
             if (!updated.isAlive) {
               enemiesById.remove(target.id);
-              deaths.add(target);
+              // 死亡列表保留 updated 的最终位置(移除前坐标)。
+              deaths.add(updated);
             } else {
               final advanced = _advanceBossPhases(
                 actor: updated,
@@ -744,12 +758,15 @@ Phase0aStepResult reducePhase0aTick({
               isCritical: resolved.isHit && resolved.isCritical,
               defeated: !updated.isAlive,
               statusApplied: Phase0aSkillStatus.none,
+              sourcePosition: actor.position,
+              targetPosition: target.position,
             ),
           );
           if (target.side == Phase0aSide.enemy) {
             if (!updated.isAlive) {
               enemiesById.remove(target.id);
-              deaths.add(target);
+              // 死亡列表保留 updated 的最终位置(移除前坐标)。
+              deaths.add(updated);
             } else {
               final advanced = _advanceBossPhases(
                 actor: updated,
@@ -869,6 +886,8 @@ Phase0aStepResult reducePhase0aTick({
           isUltimate: cast.skill.type == SkillType.ultimate,
           resolvedDamage: damage,
           remainingHealth: remaining,
+          actorPosition: actor.position,
+          targetPosition: target.position,
         ),
       );
       if (target.side == Phase0aSide.player) {
@@ -1177,6 +1196,8 @@ int _emitDefeats(
         tick: tick,
         target: death.id,
         defeatKind: death.defeatKind,
+        // death 即调用方保留的 updated 最终位置(移除前坐标)。
+        targetPosition: death.position,
       ),
     );
   }
