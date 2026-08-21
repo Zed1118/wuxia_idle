@@ -1,5 +1,6 @@
 import 'arena_vector.dart';
 import '../../../../core/domain/enums.dart';
+import '../../../../data/defs/skill_def.dart';
 import 'phase0a_damage_kind.dart';
 import 'phase0a_combat_model.dart';
 
@@ -32,6 +33,7 @@ final class Phase0aAttackIntent extends Phase0aIntent {
     required this.cooldownSeconds,
     required this.moveKind,
     required this.aimDirection,
+    required this.qiDelta,
   });
 
   final double range;
@@ -39,6 +41,34 @@ final class Phase0aAttackIntent extends Phase0aIntent {
   final double cooldownSeconds;
   final Phase0aMoveKind moveKind;
   final ArenaVector aimDirection;
+
+  /// Pre-resolved qi delta for this basic attack. Zero preserves existing
+  /// fixtures; production mapping supplies the bound basic skill value.
+  final int qiDelta;
+}
+
+/// Enemy phase-unlocked skill request. Binding and policy are resolved in the
+/// application AI adapter; the reducer only validates runtime state and applies
+/// the injected skill through the production damage resolver.
+final class Phase0aEnemySkillIntent extends Phase0aIntent {
+  const Phase0aEnemySkillIntent({
+    required super.actorId,
+    required this.skill,
+    required this.aimDirection,
+    required this.range,
+    required this.halfArcRadians,
+    required this.effectRadius,
+    required this.cooldownSeconds,
+    required this.actionCooldownSeconds,
+  });
+
+  final SkillDef skill;
+  final ArenaVector aimDirection;
+  final double range;
+  final double halfArcRadians;
+  final double effectRadius;
+  final double cooldownSeconds;
+  final double actionCooldownSeconds;
 }
 
 /// Q 聚怪请求:作用半径内目标逐目标结算 outcomes;

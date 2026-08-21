@@ -83,6 +83,7 @@ final class Phase0aProductionFlowAssembler {
         playerAdapter: playerAdapter,
         enemyAiAdapter: enemyAiAdapter,
         damageResolver: damageResolver,
+        enemySkillDamageResolver: damageResolver,
       ),
       waves: waves,
     );

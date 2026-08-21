@@ -11,6 +11,7 @@ void main() {
     attackRange: 120,
     attackHalfArcRadians: 0.7853981633974483,
     attackCooldownSeconds: 1,
+    attackQiDelta: 0,
     gatherSlot: 'gather',
     gatherRingRadius: 90,
     gatherEffectRadius: 500,

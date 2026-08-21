@@ -100,7 +100,8 @@ final class Phase0aDamageSnapshot {
 /// - 缺 actor/缺绑定、负值/NaN/Infinity 快照、非零吸血一律计算前
 ///   fail-fast;`AttackResult.appliedEffects` 无 Phase0A 消费方,
 ///   本片登记残留风险、不扩状态系统。
-final class Phase0aDamageCalculatorAdapter implements Phase0aDamageResolver {
+final class Phase0aDamageCalculatorAdapter
+    implements Phase0aDamageResolver, Phase0aEnemySkillDamageResolver {
   Phase0aDamageCalculatorAdapter({
     required Map<String, Phase0aDamageSnapshot> combatants,
     required Map<Phase0aDamageKind, SkillDef?> moveBindings,
@@ -122,6 +123,32 @@ final class Phase0aDamageCalculatorAdapter implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
   }) {
+    if (!_moveBindings.containsKey(kind)) {
+      throw StateError('Phase0a 招式缺 kind 绑定: ${kind.name}');
+    }
+    return _resolveWithSkill(
+      attackerId: attackerId,
+      targetId: targetId,
+      skill: _moveBindings[kind],
+    );
+  }
+
+  @override
+  Phase0aResolvedHit resolveEnemySkill({
+    required String attackerId,
+    required String targetId,
+    required SkillDef skill,
+  }) => _resolveWithSkill(
+    attackerId: attackerId,
+    targetId: targetId,
+    skill: skill,
+  );
+
+  Phase0aResolvedHit _resolveWithSkill({
+    required String attackerId,
+    required String targetId,
+    required SkillDef? skill,
+  }) {
     final attacker = _combatants[attackerId];
     if (attacker == null) {
       throw StateError('Phase0a 伤害快照缺 attacker: $attackerId');
@@ -130,14 +157,10 @@ final class Phase0aDamageCalculatorAdapter implements Phase0aDamageResolver {
     if (target == null) {
       throw StateError('Phase0a 伤害快照缺 target: $targetId');
     }
-    if (!_moveBindings.containsKey(kind)) {
-      throw StateError('Phase0a 招式缺 kind 绑定: ${kind.name}');
-    }
     // control-only 同样先验:非法快照不得被零伤绑定静默掩盖(拍板Ⓐ)。
     _validateSnapshot(attacker, attackerId);
     _validateSnapshot(target, targetId);
 
-    final skill = _moveBindings[kind];
     if (skill == null) {
       // control-only 显式绑定:不调 calculator、不消费 RNG。
       return const Phase0aResolvedHit(

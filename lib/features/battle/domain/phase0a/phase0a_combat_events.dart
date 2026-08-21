@@ -111,6 +111,66 @@ final class Phase0aEnemyDefeated extends Phase0aEvent {
   int get hashCode => Object.hash(seq, tick, target, defeatKind);
 }
 
+/// Boss crossed one HP threshold. [phaseIndex] is zero-based and
+/// [unlockedSkillIds] contains only skills introduced by the entered phase.
+final class Phase0aBossPhaseChanged extends Phase0aEvent {
+  const Phase0aBossPhaseChanged({
+    required super.seq,
+    required super.tick,
+    required this.actor,
+    required this.phaseIndex,
+    required this.unlockedSkillIds,
+  });
+
+  final String actor;
+  final int phaseIndex;
+  final List<String> unlockedSkillIds;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aBossPhaseChanged &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.actor == actor &&
+      other.phaseIndex == phaseIndex &&
+      _stringListsEqual(other.unlockedSkillIds, unlockedSkillIds);
+
+  @override
+  int get hashCode => Object.hash(
+    seq,
+    tick,
+    actor,
+    phaseIndex,
+    Object.hashAll(unlockedSkillIds),
+  );
+}
+
+/// Enemy successfully started a phase-unlocked skill. Damage continues through
+/// [Phase0aHitLanded], so existing feedback and settlement consume the resolved
+/// hit without a parallel damage event contract.
+final class Phase0aEnemySkillStarted extends Phase0aEvent {
+  const Phase0aEnemySkillStarted({
+    required super.seq,
+    required super.tick,
+    required this.actor,
+    required this.skillId,
+  });
+
+  final String actor;
+  final String skillId;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aEnemySkillStarted &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.actor == actor &&
+      other.skillId == skillId;
+
+  @override
+  int get hashCode => Object.hash(seq, tick, actor, skillId);
+}
+
 /// 技能逐目标结算结果(对齐契约 outcomes 项)。
 final class Phase0aSkillOutcome {
   const Phase0aSkillOutcome({
@@ -145,6 +205,15 @@ final class Phase0aSkillOutcome {
 }
 
 bool _outcomesEqual(List<Phase0aSkillOutcome> a, List<Phase0aSkillOutcome> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
+}
+
+bool _stringListsEqual(List<String> a, List<String> b) {
   if (identical(a, b)) return true;
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {

@@ -153,6 +153,7 @@ Phase0aAttackIntent playerAttack({
     range: range,
     halfArcRadians: halfArcRadians,
     cooldownSeconds: cooldownSeconds,
+    qiDelta: 0,
     moveKind: Phase0aMoveKind.light,
     aimDirection: aimDirection,
   );
@@ -293,6 +294,7 @@ void main() {
             range: 80,
             halfArcRadians: 1.0,
             cooldownSeconds: 1,
+            qiDelta: 0,
             moveKind: Phase0aMoveKind.light,
             aimDirection: ArenaVector(-1, 0),
           ),

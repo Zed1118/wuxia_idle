@@ -12,6 +12,7 @@ import '../../domain/phase0a/phase0a_wave.dart';
 import '../enemy_combatant_snapshot_assembler.dart';
 import 'phase0a_battle_snapshot_factory.dart';
 import 'phase0a_enemy_ai_adapter.dart';
+import 'phase0a_enemy_skill_binding.dart';
 import 'phase0a_numeric_skill_binding.dart';
 import 'phase0a_player_input_adapter.dart';
 
@@ -144,6 +145,20 @@ final class Phase0aStageContentMapper {
       defeatKind: Phase0aDefeatKind.normal,
     );
 
+    final enemySkillBindingsByActor = <String, List<Phase0aEnemySkillBinding>>{
+      for (var i = 0; i < enemySnapshots.length; i++)
+        waveEnemies[i].id: _enemyPhaseSkillBindings(
+          arena: arena,
+          snapshot: enemySnapshots[i],
+        ),
+    };
+    final enemyBasicQiDeltaByActor = <String, int>{
+      for (var i = 0; i < enemySnapshots.length; i++)
+        waveEnemies[i].id: enemySnapshots[i].bossPhases == null
+            ? 0
+            : _basicSkillOf(enemySnapshots[i])?.qiDelta ?? 0,
+    };
+
     final combatants = <Phase0aCombatantInput>[
       Phase0aCombatantInput(actorId: playerId, snapshot: playerSnapshot),
       for (var i = 0; i < enemySnapshots.length; i++)
@@ -172,11 +187,14 @@ final class Phase0aStageContentMapper {
         arena: arena,
         playerId: playerId,
         numericSkillBindings: numericSkillBindings,
+        attackQiDelta: arena.basicQiDelta,
       ),
       enemyAiAdapter: Phase0aEnemyAiAdapter(
         attackRange: arena.enemyAttackRange,
         attackHalfArcRadians: arena.enemyAttackHalfArcRadians,
         attackCooldownSeconds: arena.enemyAttackCooldownSeconds,
+        skillBindingsByActor: Map.unmodifiable(enemySkillBindingsByActor),
+        basicQiDeltaByActor: Map.unmodifiable(enemyBasicQiDeltaByActor),
       ),
       numericSkillBindings: numericSkillBindings,
     );
@@ -201,7 +219,16 @@ final class Phase0aStageContentMapper {
     required String actorId,
     required ArenaVector position,
   }) {
-    // 敌人真气/CD 取形态默认段(Ch1 敌人不用技能,中性值)。
+    final phases = snapshot.bossPhases;
+    final initialUnlocks = phases == null || phases.isEmpty
+        ? const <String>[]
+        : List<String>.unmodifiable(phases.first.unlockSkillIds);
+    final openingCooldowns = <String, double>{
+      for (final entry in snapshot.openingSkillCooldowns.entries)
+        if (entry.value > 0)
+          entry.key: entry.value * arena.enemyAttackCooldownSeconds,
+    };
+    final hasPhases = phases != null;
     return Phase0aActor(
       id: actorId,
       side: Phase0aSide.enemy,
@@ -210,13 +237,54 @@ final class Phase0aStageContentMapper {
       maxHealth: snapshot.maxHp,
       currentHealth: snapshot.currentHp,
       moveSpeed: arena.enemyMoveSpeed,
-      qiCurrent: arena.enemyQi,
-      qiMax: arena.enemyQi,
+      qiCurrent: hasPhases ? snapshot.currentQi : arena.enemyQi,
+      qiMax: hasPhases ? snapshot.maxQi : arena.enemyQi,
       attackCooldownRemaining: arena.enemyInitialAttackCooldown,
       defeatKind: snapshot.isBoss
           ? Phase0aDefeatKind.elite
           : Phase0aDefeatKind.normal,
+      autoUltimate: snapshot.autoUltimate,
+      bossPhases: phases,
+      unlockedEnemySkillIds: initialUnlocks,
+      enemySkillCooldowns: hasPhases
+          ? Map.unmodifiable(openingCooldowns)
+          : const {},
     );
+  }
+
+  static List<Phase0aEnemySkillBinding> _enemyPhaseSkillBindings({
+    required Phase0aArenaConfig arena,
+    required CombatantSnapshot snapshot,
+  }) {
+    final phaseSkills = snapshot.bossPhaseUnlockSkills;
+    if (phaseSkills == null) return const [];
+    final byId = <String, SkillDef>{};
+    for (final skills in phaseSkills) {
+      for (final skill in skills) {
+        byId[skill.id] = skill;
+      }
+    }
+    final ids = byId.keys.toList()..sort();
+    return List.unmodifiable([
+      for (final id in ids)
+        Phase0aEnemySkillBinding(
+          skill: byId[id]!,
+          attackRange: arena.enemyAttackRange,
+          halfArcRadians: arena.enemyAttackHalfArcRadians,
+          effectRadius: arena.enemyAttackRange,
+          cooldownSeconds:
+              byId[id]!.cooldownTurns * arena.enemyAttackCooldownSeconds,
+        ),
+    ]);
+  }
+
+  static SkillDef? _basicSkillOf(CombatantSnapshot snapshot) {
+    final bound = snapshot.skillLoadout.basicAttack;
+    if (bound != null) return bound;
+    for (final skill in snapshot.availableSkills) {
+      if (skill.type == SkillType.normalAttack) return skill;
+    }
+    return null;
   }
 
   static List<Phase0aSkillSlot> _skillSlots(
@@ -326,11 +394,13 @@ final class Phase0aStageContentMapper {
     required Phase0aArenaConfig arena,
     required String playerId,
     required Phase0aNumericSkillBindings numericSkillBindings,
+    required int attackQiDelta,
   }) => Phase0aPlayerInputAdapter(
     playerId: playerId,
     attackRange: arena.playerAttackRange,
     attackHalfArcRadians: arena.playerAttackHalfArcRadians,
     attackCooldownSeconds: arena.playerAttackCooldownSeconds,
+    attackQiDelta: attackQiDelta,
     gatherSlot: arena.gatherSlot,
     gatherRingRadius: arena.gatherRingRadius,
     gatherEffectRadius: arena.gatherEffectRadius,

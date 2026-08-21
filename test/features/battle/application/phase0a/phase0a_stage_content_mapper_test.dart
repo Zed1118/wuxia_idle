@@ -9,6 +9,7 @@ import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/data/yaml_loader.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
@@ -43,6 +44,32 @@ BattleCharacter makeCh1Player(NumbersConfig numbers) => BattleCharacter(
   evasionRate: 0.0,
   defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0.0,
   totalEquipmentAttack: 130,
+  mainCultivationLayer: CultivationLayer.chuKui,
+  availableSkills: const [],
+  skillCooldowns: const {},
+  activeBuffs: const [],
+  actionPoint: 0,
+  isAlive: true,
+  teamSide: 0,
+  slotIndex: 0,
+);
+
+BattleCharacter makeBossPhasePlayer(NumbersConfig numbers) => BattleCharacter(
+  characterId: 1,
+  name: 'phase_player',
+  realmTier: RealmTier.xueTu,
+  realmLayer: RealmLayer.dengFeng,
+  school: TechniqueSchool.lingQiao,
+  maxHp: 20000,
+  currentHp: 20000,
+  internalForce: 300,
+  maxQi: 100,
+  currentQi: 100,
+  speed: 200,
+  criticalRate: numbers.combat.critical.baseRate,
+  evasionRate: 0,
+  defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0,
+  totalEquipmentAttack: 0,
   mainCultivationLayer: CultivationLayer.chuKui,
   availableSkills: const [],
   skillCooldowns: const {},
@@ -99,6 +126,12 @@ void main() {
       expect(mapping.initialState.player.maxHealth, 15000);
       // 敌 actor HP 口径 = buildEnemyTeam(cycleIndex=1 零回归 = baseHp)。
       expect(mapping.waves.first.enemies.single.maxHealth, 1500);
+      // 非阶段敌人保持旧的中性内力/CD 路径。
+      expect(
+        mapping.waves.first.enemies.single.qiCurrent,
+        numbers.phase0aArena.enemyQi,
+      );
+      expect(mapping.waves.first.enemies.single.enemySkillCooldowns, isEmpty);
       // 技能印双槽 ready。
       expect(mapping.initialState.skillSlots, hasLength(2));
       expect(
@@ -176,6 +209,16 @@ void main() {
         towerMapping.combatants[1].snapshot.currentQi,
         greaterThan(stageMapping.combatants[1].snapshot.currentQi),
       );
+      final boss = towerMapping.initialState.enemies.single;
+      expect(boss.bossPhases, hasLength(2));
+      expect(boss.bossPhaseIndex, 0);
+      expect(boss.qiCurrent, towerMapping.combatants[1].snapshot.currentQi);
+      expect(
+        towerMapping.enemyAiAdapter.skillBindingsByActor[boss.id]?.map(
+          (binding) => binding.skill.id,
+        ),
+        contains('skill_lingqiao_jichu_ult'),
+      );
     });
 
     test('空敌队关卡 fail-fast', () {
@@ -246,6 +289,85 @@ void main() {
   });
 
   group('headless 全链(Ch1 五关 bot 驾驶)', () {
+    test(
+      'production tower_7 headless phase threshold → unlock skill → AI cast',
+      () {
+        final numbers = repo.numbers;
+        final floor = repo.towerFloors.firstWhere(
+          (floor) => floor.floorIndex == 7,
+        );
+        final mapping = Phase0aStageContentMapper.mapTower(
+          floor: floor,
+          playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
+            makeBossPhasePlayer(numbers),
+          ),
+          numbers: numbers,
+        );
+        final flow = Phase0aProductionFlowAssembler.assemble(
+          initialState: mapping.initialState,
+          waves: mapping.waves,
+          combatants: mapping.combatants,
+          moveBindings: mapping.moveBindings,
+          numbers: numbers,
+          rng: Random(20260821),
+          playerAdapter: mapping.playerAdapter,
+          enemyAiAdapter: mapping.enemyAiAdapter,
+        );
+        final bot = Phase0aPlayerBotAdapter(
+          playerAdapter: mapping.playerAdapter,
+        );
+        final events = <Phase0aEvent>[];
+        var phaseEntered = false;
+        for (
+          var tick = 0;
+          tick < numbers.phase0aArena.maxSimulationTicks &&
+              flow.outcome == Phase0aBattleOutcome.ongoing;
+          tick++
+        ) {
+          final botCommand = bot.commandFor(flow.state);
+          final batch = flow.advance(
+            deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+            // Stop attacking after the production threshold is observed so the
+            // newly unlocked boss action gets a deterministic headless window;
+            // before that, use only the production-mapped basic attack so other
+            // same-tick player skills cannot kill the boss after phase entry.
+            command: phaseEntered
+                ? const Phase0aPlayerCommand()
+                : Phase0aPlayerCommand(
+                    left: botCommand.left,
+                    right: botCommand.right,
+                    up: botCommand.up,
+                    down: botCommand.down,
+                    attack: botCommand.attack,
+                    attackAimDirection: botCommand.attackAimDirection,
+                  ),
+          );
+          events.addAll(batch);
+          phaseEntered =
+              phaseEntered ||
+              batch.whereType<Phase0aBossPhaseChanged>().isNotEmpty;
+          if (events.whereType<Phase0aEnemySkillStarted>().isNotEmpty) break;
+        }
+
+        final phaseEvents = events
+            .whereType<Phase0aBossPhaseChanged>()
+            .where((event) => event.actor.startsWith('enemy_tower_boss_07'))
+            .toList();
+        expect(phaseEvents, isNotEmpty);
+        expect(phaseEvents.first.phaseIndex, 1);
+        expect(
+          phaseEvents.first.unlockedSkillIds,
+          contains('skill_lingqiao_jichu_ult'),
+        );
+        expect(
+          events.whereType<Phase0aEnemySkillStarted>().map(
+            (event) => event.skillId,
+          ),
+          contains('skill_lingqiao_jichu_ult'),
+        );
+      },
+    );
+
     test('五关全部 victory(纵切成立判据·headless 侧)', () {
       final numbers = repo.numbers;
       for (var i = 1; i <= 5; i++) {

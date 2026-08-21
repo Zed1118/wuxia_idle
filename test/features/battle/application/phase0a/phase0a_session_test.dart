@@ -108,6 +108,7 @@ Phase0aPlayerInputAdapter makePlayerAdapter() {
     attackRange: 120,
     attackHalfArcRadians: math.pi / 4,
     attackCooldownSeconds: 1,
+    attackQiDelta: 0,
     gatherSlot: 'gather',
     gatherRingRadius: 90,
     gatherEffectRadius: 500,

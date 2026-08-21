@@ -204,6 +204,7 @@ final class _DebugBattleConfig {
       attackRange: _number(attack, 'range'),
       attackHalfArcRadians: _number(attack, 'half_arc_radians'),
       attackCooldownSeconds: _number(attack, 'cooldown_seconds'),
+      attackQiDelta: _integer(defaults, 'basic_qi_delta'),
       gatherSlot: _text(gather, 'slot'),
       gatherRingRadius: _number(gather, 'ring_radius'),
       gatherEffectRadius: _number(gather, 'effect_radius'),

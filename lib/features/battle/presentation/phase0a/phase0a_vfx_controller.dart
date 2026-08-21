@@ -215,6 +215,8 @@ final class Phase0aVfxController {
           _sealed = true;
         case Phase0aAttackStarted():
         case Phase0aSkillStarted():
+        case Phase0aBossPhaseChanged():
+        case Phase0aEnemySkillStarted():
         case Phase0aSkillAvailabilityChanged():
         case Phase0aWaveCleared():
           break;

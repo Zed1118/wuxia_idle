@@ -53,6 +53,7 @@ final class Phase0aPlayerInputAdapter {
     required this.attackRange,
     required this.attackHalfArcRadians,
     required this.attackCooldownSeconds,
+    required this.attackQiDelta,
     required this.gatherSlot,
     required this.gatherRingRadius,
     required this.gatherEffectRadius,
@@ -69,6 +70,7 @@ final class Phase0aPlayerInputAdapter {
   final double attackRange;
   final double attackHalfArcRadians;
   final double attackCooldownSeconds;
+  final int attackQiDelta;
   final String gatherSlot;
   final double gatherRingRadius;
 
@@ -107,6 +109,7 @@ final class Phase0aPlayerInputAdapter {
           cooldownSeconds: attackCooldownSeconds,
           moveKind: Phase0aMoveKind.light,
           aimDirection: command.attackAimDirection ?? state.player.facing,
+          qiDelta: attackQiDelta,
         ),
       );
     }

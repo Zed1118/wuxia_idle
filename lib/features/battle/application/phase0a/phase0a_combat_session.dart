@@ -16,11 +16,13 @@ final class Phase0aCombatSession {
     required this.playerAdapter,
     required this.enemyAiAdapter,
     required this.damageResolver,
+    this.enemySkillDamageResolver,
   }) : _state = initialState;
 
   final Phase0aPlayerInputAdapter playerAdapter;
   final Phase0aEnemyAiAdapter enemyAiAdapter;
   final Phase0aDamageResolver damageResolver;
+  final Phase0aEnemySkillDamageResolver? enemySkillDamageResolver;
 
   Phase0aArenaState _state;
 
@@ -41,6 +43,7 @@ final class Phase0aCombatSession {
       intents: intents,
       deltaSeconds: deltaSeconds,
       damageResolver: damageResolver,
+      enemySkillDamageResolver: enemySkillDamageResolver,
     );
     _state = result.state;
     return result.events;

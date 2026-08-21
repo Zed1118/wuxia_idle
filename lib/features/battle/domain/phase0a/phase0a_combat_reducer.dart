@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../../../../core/domain/enums.dart';
+import '../../../../data/defs/skill_def.dart';
 import 'arena_vector.dart';
 import 'phase0a_combat_events.dart';
 import 'phase0a_combat_intent.dart';
@@ -34,6 +35,16 @@ abstract interface class Phase0aDamageResolver {
   });
 }
 
+/// Optional production extension for enemy skills whose identity cannot be
+/// represented by the fixed player hotkey damage kinds.
+abstract interface class Phase0aEnemySkillDamageResolver {
+  Phase0aResolvedHit resolveEnemySkill({
+    required String attackerId,
+    required String targetId,
+    required SkillDef skill,
+  });
+}
+
 /// 一拍结算输出:新状态 + 本拍事件(已按发射顺序排好,seq 单调)。
 final class Phase0aStepResult {
   const Phase0aStepResult({required this.state, required this.events});
@@ -53,6 +64,7 @@ Phase0aStepResult reducePhase0aTick({
   required List<Phase0aIntent> intents,
   required double deltaSeconds,
   required Phase0aDamageResolver damageResolver,
+  Phase0aEnemySkillDamageResolver? enemySkillDamageResolver,
 }) {
   // 拍长必须有限且非负:负值会让冷却反增/位移反向,NaN 会绕过一切比较。
   if (!(deltaSeconds.isFinite && deltaSeconds >= 0)) {
@@ -78,6 +90,10 @@ Phase0aStepResult reducePhase0aTick({
       enemy.id: enemy.copyWith(
         attackCooldownRemaining: _cooldownAfter(
           enemy.attackCooldownRemaining,
+          deltaSeconds,
+        ),
+        enemySkillCooldowns: _cooldownsAfter(
+          enemy.enemySkillCooldowns,
           deltaSeconds,
         ),
       ),
@@ -198,7 +214,14 @@ Phase0aStepResult reducePhase0aTick({
                   ),
                 );
               } else {
-                enemiesById[target.id] = updated;
+                final advanced = _advanceBossPhases(
+                  actor: updated,
+                  tick: tick,
+                  seq: seq,
+                  events: events,
+                );
+                enemiesById[target.id] = advanced.actor;
+                seq = advanced.nextSeq;
               }
             } else {
               player = updated;
@@ -211,12 +234,108 @@ Phase0aStepResult reducePhase0aTick({
         final recharged = actor.copyWith(
           attackCooldownRemaining: intent.cooldownSeconds,
           facing: aimDirection,
+          qiCurrent: (actor.qiCurrent + intent.qiDelta).clamp(0, actor.qiMax),
         );
         if (isPlayer) {
           player = recharged;
         } else {
           enemiesById[actorId] = recharged;
         }
+      case Phase0aEnemySkillIntent():
+        if (actor.side != Phase0aSide.enemy ||
+            enemySkillDamageResolver == null ||
+            intent.skill.id.isEmpty ||
+            !actor.unlockedEnemySkillIds.contains(intent.skill.id) ||
+            !_isUsableNumber(intent.range) ||
+            !_isUsableNumber(intent.halfArcRadians) ||
+            !_isUsableNumber(intent.effectRadius) ||
+            !_isUsableNumber(intent.cooldownSeconds) ||
+            !_isUsableNumber(intent.actionCooldownSeconds) ||
+            actor.attackCooldownRemaining > 0 ||
+            (actor.enemySkillCooldowns[intent.skill.id] ?? 0) > 0 ||
+            actor.qiCurrent < intent.skill.qiCost) {
+          continue;
+        }
+        final targets = switch (intent.skill.targetType) {
+          TargetType.single => [
+            ?_selectStrikeTarget(
+              attacker: actor,
+              player: player,
+              enemiesById: enemiesById,
+              aimDirection: intent.aimDirection,
+              range: intent.range,
+              halfArcRadians: intent.halfArcRadians,
+            ),
+          ],
+          TargetType.aoe =>
+            _opposingTargets(
+                  casterSide: actor.side,
+                  player: player,
+                  enemiesById: enemiesById,
+                )
+                .where(
+                  (target) => _withinEffectRadius(
+                    origin: actor.position,
+                    position: target.position,
+                    effectRadius: intent.effectRadius,
+                  ),
+                )
+                .toList(),
+        };
+        if (targets.isEmpty) continue;
+        events.add(
+          Phase0aEnemySkillStarted(
+            seq: seq++,
+            tick: tick,
+            actor: actorId,
+            skillId: intent.skill.id,
+          ),
+        );
+        var hitAny = false;
+        for (final target in targets) {
+          final resolved = enemySkillDamageResolver.resolveEnemySkill(
+            attackerId: actorId,
+            targetId: target.id,
+            skill: intent.skill,
+          );
+          if (!resolved.isHit) continue;
+          hitAny = true;
+          final damage = _checkedDamage(resolved);
+          final remaining = math.max(0, target.currentHealth - damage);
+          events.add(
+            Phase0aHitLanded(
+              seq: seq++,
+              tick: tick,
+              actor: actorId,
+              target: target.id,
+              moveKind: Phase0aMoveKind.heavy,
+              isCritical: resolved.isCritical,
+              isUltimate: intent.skill.type == SkillType.ultimate,
+              resolvedDamage: damage,
+              remainingHealth: remaining,
+            ),
+          );
+          if (target.side == Phase0aSide.player) {
+            player = target.copyWith(currentHealth: remaining);
+          }
+        }
+        final cooldowns = Map<String, double>.from(actor.enemySkillCooldowns);
+        if (intent.cooldownSeconds > 0) {
+          cooldowns[intent.skill.id] = intent.cooldownSeconds;
+        } else {
+          cooldowns.remove(intent.skill.id);
+        }
+        enemiesById[actorId] = actor.copyWith(
+          facing: intent.aimDirection.lengthSquared > 0
+              ? intent.aimDirection.normalized()
+              : actor.facing,
+          qiCurrent: (actor.qiCurrent + intent.skill.qiDelta).clamp(
+            0,
+            actor.qiMax,
+          ),
+          enemySkillCooldowns: Map.unmodifiable(cooldowns),
+          attackCooldownRemaining: hitAny ? intent.actionCooldownSeconds : 0,
+        );
       case Phase0aGatherIntent():
         // player-only 契约:技能印/真气循环是玩家全局态,敌方注入
         // gather/clear 一律拒绝,禁止静默污染玩家 skillSlots 与 HUD。
@@ -291,7 +410,14 @@ Phase0aStepResult reducePhase0aTick({
               enemiesById.remove(target.id);
               deaths.add(target);
             } else {
-              enemiesById[target.id] = updated;
+              final advanced = _advanceBossPhases(
+                actor: updated,
+                tick: tick,
+                seq: seq,
+                events: events,
+              );
+              enemiesById[target.id] = advanced.actor;
+              seq = advanced.nextSeq;
             }
           } else {
             player = updated;
@@ -374,7 +500,14 @@ Phase0aStepResult reducePhase0aTick({
               enemiesById.remove(target.id);
               deaths.add(target);
             } else {
-              enemiesById[target.id] = updated;
+              final advanced = _advanceBossPhases(
+                actor: updated,
+                tick: tick,
+                seq: seq,
+                events: events,
+              );
+              enemiesById[target.id] = advanced.actor;
+              seq = advanced.nextSeq;
             }
           } else {
             player = updated;
@@ -480,7 +613,14 @@ Phase0aStepResult reducePhase0aTick({
               enemiesById.remove(target.id);
               deaths.add(target);
             } else {
-              enemiesById[target.id] = updated;
+              final advanced = _advanceBossPhases(
+                actor: updated,
+                tick: tick,
+                seq: seq,
+                events: events,
+              );
+              enemiesById[target.id] = advanced.actor;
+              seq = advanced.nextSeq;
             }
           } else {
             player = updated;
@@ -521,6 +661,65 @@ Phase0aStepResult reducePhase0aTick({
     ),
     events: List.unmodifiable(events),
   );
+}
+
+Map<String, double> _cooldownsAfter(
+  Map<String, double> cooldowns,
+  double deltaSeconds,
+) {
+  if (cooldowns.isEmpty) return cooldowns;
+  final next = <String, double>{};
+  cooldowns.forEach((id, remaining) {
+    final value = _cooldownAfter(remaining, deltaSeconds);
+    if (value > 0) next[id] = value;
+  });
+  return Map.unmodifiable(next);
+}
+
+({Phase0aActor actor, int nextSeq}) _advanceBossPhases({
+  required Phase0aActor actor,
+  required int tick,
+  required int seq,
+  required List<Phase0aEvent> events,
+}) {
+  final phases = actor.bossPhases;
+  if (phases == null ||
+      phases.isEmpty ||
+      !actor.isAlive ||
+      actor.maxHealth <= 0) {
+    return (actor: actor, nextSeq: seq);
+  }
+  var current = actor;
+  var nextSeq = seq;
+  while (current.bossPhaseIndex < phases.length - 1) {
+    final nextIndex = current.bossPhaseIndex + 1;
+    if (current.currentHealth / current.maxHealth >
+        phases[nextIndex].hpThresholdPct) {
+      break;
+    }
+    final unlocked = List<String>.of(current.unlockedEnemySkillIds);
+    final newlyUnlocked = <String>[];
+    for (final id in phases[nextIndex].unlockSkillIds) {
+      if (!unlocked.contains(id)) {
+        unlocked.add(id);
+        newlyUnlocked.add(id);
+      }
+    }
+    current = current.copyWith(
+      bossPhaseIndex: nextIndex,
+      unlockedEnemySkillIds: List.unmodifiable(unlocked),
+    );
+    events.add(
+      Phase0aBossPhaseChanged(
+        seq: nextSeq++,
+        tick: tick,
+        actor: actor.id,
+        phaseIndex: nextIndex,
+        unlockedSkillIds: List.unmodifiable(newlyUnlocked),
+      ),
+    );
+  }
+  return (actor: current, nextSeq: nextSeq);
 }
 
 /// 可用态推导:冷却中优先,其次真气门槛,再次 ready。

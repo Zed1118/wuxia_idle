@@ -1,4 +1,7 @@
 import 'arena_vector.dart';
+import '../../../../data/defs/boss_phase_def.dart';
+
+const _initialBossPhaseIndex = 0;
 
 /// Phase 0A 竞技场阵营:单角色玩家对多敌。
 enum Phase0aSide { player, enemy }
@@ -43,6 +46,11 @@ final class Phase0aActor {
     required this.qiMax,
     required this.attackCooldownRemaining,
     required this.defeatKind,
+    this.autoUltimate = false,
+    this.bossPhases,
+    this.bossPhaseIndex = _initialBossPhaseIndex,
+    this.unlockedEnemySkillIds = const [],
+    this.enemySkillCooldowns = const {},
   });
 
   /// 语义 id,事件 actor/target 字段与稳定排序决胜键。
@@ -62,6 +70,14 @@ final class Phase0aActor {
   /// 该单位被击败时的语义档(事件 payload)。
   final Phase0aDefeatKind defeatKind;
 
+  /// Enemy-only pre-resolved Boss phase runtime. Player/non-phase actors keep
+  /// the neutral defaults; the reducer never queries repositories.
+  final bool autoUltimate;
+  final List<BossPhaseDef>? bossPhases;
+  final int bossPhaseIndex;
+  final List<String> unlockedEnemySkillIds;
+  final Map<String, double> enemySkillCooldowns;
+
   bool get isAlive => currentHealth > 0;
 
   Phase0aActor copyWith({
@@ -70,6 +86,9 @@ final class Phase0aActor {
     int? currentHealth,
     int? qiCurrent,
     double? attackCooldownRemaining,
+    int? bossPhaseIndex,
+    List<String>? unlockedEnemySkillIds,
+    Map<String, double>? enemySkillCooldowns,
   }) {
     return Phase0aActor(
       id: id,
@@ -84,6 +103,12 @@ final class Phase0aActor {
       attackCooldownRemaining:
           attackCooldownRemaining ?? this.attackCooldownRemaining,
       defeatKind: defeatKind,
+      autoUltimate: autoUltimate,
+      bossPhases: bossPhases,
+      bossPhaseIndex: bossPhaseIndex ?? this.bossPhaseIndex,
+      unlockedEnemySkillIds:
+          unlockedEnemySkillIds ?? this.unlockedEnemySkillIds,
+      enemySkillCooldowns: enemySkillCooldowns ?? this.enemySkillCooldowns,
     );
   }
 
@@ -100,7 +125,12 @@ final class Phase0aActor {
       other.qiCurrent == qiCurrent &&
       other.qiMax == qiMax &&
       other.attackCooldownRemaining == attackCooldownRemaining &&
-      other.defeatKind == defeatKind;
+      other.defeatKind == defeatKind &&
+      other.autoUltimate == autoUltimate &&
+      _bossPhasesEqual(other.bossPhases, bossPhases) &&
+      other.bossPhaseIndex == bossPhaseIndex &&
+      _listEquals(other.unlockedEnemySkillIds, unlockedEnemySkillIds) &&
+      _mapEquals(other.enemySkillCooldowns, enemySkillCooldowns);
 
   @override
   int get hashCode => Object.hash(
@@ -115,8 +145,59 @@ final class Phase0aActor {
     qiMax,
     attackCooldownRemaining,
     defeatKind,
+    autoUltimate,
+    _bossPhasesHash(bossPhases),
+    bossPhaseIndex,
+    _listHash(unlockedEnemySkillIds),
+    _mapHash(enemySkillCooldowns),
   );
 }
+
+bool _mapEquals<K, V>(Map<K, V> a, Map<K, V> b) {
+  if (identical(a, b)) return true;
+  if (a.length != b.length) return false;
+  for (final entry in a.entries) {
+    if (!b.containsKey(entry.key) || b[entry.key] != entry.value) return false;
+  }
+  return true;
+}
+
+int _mapHash<K, V>(Map<K, V> map) => Object.hashAll(
+  (map.entries.toList()..sort((a, b) => '${a.key}'.compareTo('${b.key}'))).map(
+    (entry) => Object.hash(entry.key, entry.value),
+  ),
+);
+
+bool _bossPhasesEqual(List<BossPhaseDef>? a, List<BossPhaseDef>? b) {
+  if (identical(a, b)) return true;
+  if (a == null || b == null || a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    final left = a[i];
+    final right = b[i];
+    if (left.hpThresholdPct != right.hpThresholdPct ||
+        !_listEquals(left.unlockSkillIds, right.unlockSkillIds) ||
+        left.aiMode != right.aiMode ||
+        left.onEnterMechanic != right.onEnterMechanic ||
+        left.titleKey != right.titleKey) {
+      return false;
+    }
+  }
+  return true;
+}
+
+int _bossPhasesHash(List<BossPhaseDef>? phases) => phases == null
+    ? 0
+    : Object.hashAll(
+        phases.map(
+          (phase) => Object.hash(
+            phase.hpThresholdPct,
+            Object.hashAll(phase.unlockSkillIds),
+            phase.aiMode,
+            phase.onEnterMechanic,
+            phase.titleKey,
+          ),
+        ),
+      );
 
 /// 玩家技能印运行态快照(slot 语义位 + 冷却剩余 + 真气门槛 + 可用态)。
 final class Phase0aSkillSlot {

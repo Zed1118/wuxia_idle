@@ -127,6 +127,8 @@ final class Phase0aSettlementAdapter {
             );
           }
         case Phase0aEnemyDefeated() ||
+            Phase0aBossPhaseChanged() ||
+            Phase0aEnemySkillStarted() ||
             Phase0aSkillAvailabilityChanged() ||
             Phase0aWaveStarted() ||
             Phase0aWaveCleared() ||

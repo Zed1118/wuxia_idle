@@ -126,6 +126,7 @@ Phase0aAttackIntent attackIntent({
     range: range,
     halfArcRadians: halfArcRadians,
     cooldownSeconds: cooldownSeconds,
+    qiDelta: 0,
     moveKind: Phase0aMoveKind.light,
     aimDirection: const ArenaVector(1, 0),
   );

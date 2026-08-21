@@ -157,6 +157,7 @@ final class Phase0aWaveBattleFlow {
       playerAdapter: previous.playerAdapter,
       enemyAiAdapter: previous.enemyAiAdapter,
       damageResolver: previous.damageResolver,
+      enemySkillDamageResolver: previous.enemySkillDamageResolver,
     );
   }
 
