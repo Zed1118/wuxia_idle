@@ -55,8 +55,12 @@ final class Phase0aBattleSnapshotBundle {
 /// state-aware resolver 切片):
 /// - 非零吸血(reducer 无回血输出,沿第三批口径提前到构造期);
 /// - 护法结界配置(承伤随护法存活变化);
-/// - 脆弱窗口配置(承伤随蓄力/踉跄变化);
 /// - 活跃踉跄(减防 override 是战中运行时状态)。
+///
+/// 脆弱窗口(2026-08-22 纵切)不再 fail-fast:窗口外承伤乘子冻结进快照
+/// `vulnerabilityOutMult`,窗口开合的运行态事实(蓄招/踉跄)由 reducer 传
+/// 状态、adapter 结算时折入 `defenderWardMult`(与旧引擎
+/// `DefaultGroundStrategy.vulnerabilityMultOf` 同语义),静态快照承载安全。
 final class Phase0aBattleSnapshotFactory {
   Phase0aBattleSnapshotFactory({required NumbersConfig numbers})
     : _numbers = numbers;
@@ -116,12 +120,6 @@ final class Phase0aBattleSnapshotFactory {
         '静态快照无法正确承载,需 state-aware resolver',
       );
     }
-    if (c.vulnerabilityMult != null) {
-      throw StateError(
-        'Phase0a 快照工厂 $id: 脆弱窗口配置随蓄力/踉跄变化,'
-        '静态快照无法正确承载,需 state-aware resolver',
-      );
-    }
     // 熟练度:只调 SkillProficiency.stageFor / combinedMult 与
     // SkillDef.proficiency.damagePctAt(与旧战斗内 adapter 同调用序),
     // 不复制推导公式;无使用记录 = uses 0 → 阶段表首阶语义。
@@ -155,8 +153,11 @@ final class Phase0aBattleSnapshotFactory {
       outputMultiplier: c.outputMultiplier,
       // 弱点/抗性表防御副本(快照构造器再做不可修改副本)。
       schoolDamageTakenMults: Map.of(c.schoolDamageTakenMult),
-      // 护法/脆弱配置已 fail-fast,中性乘子语义安全。
+      // 护法结界已 fail-fast,中性乘子语义安全。
       wardMult: 1.0,
+      // 脆弱窗口外承伤乘子原样透传(窗口开合由结算期运行态事实折入,
+      // 恒 cycle-1 基础值:mapper 无周目参数,周目覆盖未迁不消费)。
+      vulnerabilityOutMult: c.vulnerabilityMult,
       piercePct: c.forgingPiercePct,
       // 非零已在上方 fail-fast,恒 0(与 adapter 校验口径一致)。
       lifestealPct: 0.0,

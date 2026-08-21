@@ -58,6 +58,7 @@ final class _Resolver
   final int basicDamage;
   final bool hit;
   final List<String> staggeredTargets = [];
+  final List<String> chargingTargets = [];
 
   @override
   Phase0aResolvedHit resolve({
@@ -65,8 +66,10 @@ final class _Resolver
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
+    bool defenderCharging = false,
   }) {
     if (defenderStaggered) staggeredTargets.add(targetId);
+    if (defenderCharging) chargingTargets.add(targetId);
     return Phase0aResolvedHit(
       isHit: hit,
       isCritical: false,

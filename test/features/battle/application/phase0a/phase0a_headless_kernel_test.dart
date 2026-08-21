@@ -32,6 +32,7 @@ class CountingDamageResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
+    bool defenderCharging = false,
   }) {
     calls++;
     return Phase0aResolvedHit(isHit: true, isCritical: false, damage: damage);

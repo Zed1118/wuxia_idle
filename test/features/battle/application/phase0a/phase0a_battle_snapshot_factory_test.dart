@@ -26,8 +26,9 @@ import '../../../../support/test_data.dart';
 /// ① 稳定字段与 `_calculateInBattle` 口径逐项同值;凝甲/弱点/破甲精确;
 /// ② 熟练度只复用 SkillProficiency(多 bound skill / 无使用记录 1.0 /
 ///    null control-only 不产条目);
-/// ③ 重复/空 actorId、外部 mutation、非零吸血、guardian/vulnerability/
-///    活跃 stagger 构造期 fail-fast(动态机制禁止冻结成中性常量);
+/// ③ 重复/空 actorId、外部 mutation、非零吸血、guardian/活跃 stagger
+///    构造期 fail-fast(动态机制禁止冻结成中性常量);脆弱窗口乘子构造期
+///    支持(窗口开合由结算期运行态折入,2026-08-22 纵切);
 /// ④ 工厂 → Phase0aDamageCalculatorAdapter → Phase0aWaveBattleFlow →
 ///    session/reducer 真实穿透,与 direct `calculateResolved` 同 seed 同值。
 void main() {
@@ -383,16 +384,19 @@ void main() {
       );
     });
 
-    test('脆弱窗口 vulnerabilityMult 构造期 fail-fast', () {
-      expect(
-        () => makeFactory().create(
-          combatants: [input('boss', makeCharacter(vulnerabilityMult: 0.4))],
-          moveBindings: const {Phase0aDamageKind.basic: basicSkill},
-        ),
-        throwsA(
-          isA<StateError>().having((e) => e.message, 'm', contains('脆弱')),
-        ),
+    test('脆弱窗口 vulnerabilityMult 构造期支持:乘子原样进快照(2026-08-22)', () {
+      // 窗口开合是运行态事实(蓄招/踉跄),由结算期折入,静态快照只承载乘子。
+      final bundle = makeFactory().create(
+        combatants: [input('boss', makeCharacter(vulnerabilityMult: 0.4))],
+        moveBindings: const {Phase0aDamageKind.basic: basicSkill},
       );
+      expect(bundle.combatants['boss']!.vulnerabilityOutMult, 0.4);
+      // 无机制仍为 null(与 1.0 语义区分,保 fail-closed 可读性)。
+      final neutral = makeFactory().create(
+        combatants: [input('boss', makeCharacter())],
+        moveBindings: const {Phase0aDamageKind.basic: basicSkill},
+      );
+      expect(neutral.combatants['boss']!.vulnerabilityOutMult, isNull);
     });
 
     test('活跃踉跄(ticks 或减防 override)构造期 fail-fast', () {

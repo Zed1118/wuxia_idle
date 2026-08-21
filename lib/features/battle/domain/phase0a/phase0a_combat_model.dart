@@ -133,6 +133,7 @@ final class Phase0aActor {
     this.chargeCast,
     this.phaseChargeCasts = const [],
     this.staggerTicksTotal = _noStaggerTicks,
+    this.vulnerabilityMult,
     this.chargingCast,
     this.chargeTicksRemaining = _noChargeTicks,
     this.staggerTicksRemaining = _noStaggerTicks,
@@ -174,6 +175,14 @@ final class Phase0aActor {
 
   /// 被破招后踉跄窗口拍数(预解析自 numbers.combat.bossCharge)。
   final int staggerTicksTotal;
+
+  /// 脆弱窗口外承伤乘子(预解析自 EnemyDef.vulnerability,恒 cycle-1 基础值;
+  /// null = 无机制)。窗口开合的运行态事实 = [chargingCast] != null(蓄招中)
+  /// 或 [staggerTicksRemaining] > 0(破招踉跄),与旧引擎
+  /// `DefaultGroundStrategy.vulnerabilityMultOf` 同语义;乘子数值本身由伤害
+  /// 快照承载、结算时折入唯一 DamageCalculator 的 defenderWardMult,reducer
+  /// 只传事实不写数值。
+  final double? vulnerabilityMult;
 
   /// 运行态:正在蓄力的施放(null = 未蓄力)。不可变可回放。
   final Phase0aChargeCast? chargingCast;
@@ -222,6 +231,7 @@ final class Phase0aActor {
       chargeCast: chargeCast,
       phaseChargeCasts: phaseChargeCasts,
       staggerTicksTotal: staggerTicksTotal,
+      vulnerabilityMult: vulnerabilityMult,
       chargingCast: clearChargingCast
           ? null
           : (chargingCast ?? this.chargingCast),
@@ -253,6 +263,7 @@ final class Phase0aActor {
       other.chargeCast == chargeCast &&
       _listEquals(other.phaseChargeCasts, phaseChargeCasts) &&
       other.staggerTicksTotal == staggerTicksTotal &&
+      other.vulnerabilityMult == vulnerabilityMult &&
       other.chargingCast == chargingCast &&
       other.chargeTicksRemaining == chargeTicksRemaining &&
       other.staggerTicksRemaining == staggerTicksRemaining;
@@ -279,6 +290,7 @@ final class Phase0aActor {
       chargeCast,
       _listHash(phaseChargeCasts),
       staggerTicksTotal,
+      vulnerabilityMult,
       chargingCast,
       chargeTicksRemaining,
       staggerTicksRemaining,

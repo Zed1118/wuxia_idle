@@ -32,12 +32,18 @@ final class Phase0aResolvedHit {
 /// [defenderStaggered]:守方处于破招踉跄窗口(reducer 运行态事实)。
 /// 减防幅度由生产 adapter 读 numbers.combat.bossCharge 应用,reducer 只传
 /// 状态不写数值;测试实现可忽略(默认 false 口径)。
+///
+/// [defenderCharging]:守方处于蓄招状态(`chargingCast != null`,reducer
+/// 运行态事实)。与 [defenderStaggered] 同为脆弱窗口开合事实(窗口 =
+/// 蓄招中或踉跄中),由生产 adapter 折入承伤乘子,语义对齐旧引擎
+/// `DefaultGroundStrategy.vulnerabilityMultOf`;测试实现可忽略。
 abstract interface class Phase0aDamageResolver {
   Phase0aResolvedHit resolve({
     required String attackerId,
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
+    bool defenderCharging = false,
   });
 }
 
@@ -220,6 +226,7 @@ Phase0aStepResult reducePhase0aTick({
             defenderStaggered:
                 staggeredActorIds.contains(target.id) ||
                 target.staggerTicksRemaining > 0,
+            defenderCharging: target.chargingCast != null,
           );
           if (resolved.isHit) {
             final damage = _checkedDamage(resolved);
@@ -466,6 +473,7 @@ Phase0aStepResult reducePhase0aTick({
             defenderStaggered:
                 staggeredActorIds.contains(target.id) ||
                 target.staggerTicksRemaining > 0,
+            defenderCharging: target.chargingCast != null,
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);
@@ -571,6 +579,7 @@ Phase0aStepResult reducePhase0aTick({
             defenderStaggered:
                 staggeredActorIds.contains(target.id) ||
                 target.staggerTicksRemaining > 0,
+            defenderCharging: target.chargingCast != null,
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);
@@ -705,6 +714,7 @@ Phase0aStepResult reducePhase0aTick({
             defenderStaggered:
                 staggeredActorIds.contains(target.id) ||
                 target.staggerTicksRemaining > 0,
+            defenderCharging: target.chargingCast != null,
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);

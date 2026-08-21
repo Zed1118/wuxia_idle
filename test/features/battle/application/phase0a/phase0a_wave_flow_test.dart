@@ -41,6 +41,7 @@ class CountingDamageResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
+    bool defenderCharging = false,
   }) {
     calls++;
     return Phase0aResolvedHit(isHit: true, isCritical: false, damage: damage);
@@ -693,6 +694,7 @@ void main() {
         outputMultiplier: 1.0,
         schoolDamageTakenMults: const {},
         wardMult: 1.0,
+        vulnerabilityOutMult: null,
         piercePct: 0.0,
         lifestealPct: 0.0,
         critDamageTakenMult: 1.0,
@@ -715,6 +717,7 @@ void main() {
         outputMultiplier: 1.0,
         schoolDamageTakenMults: const {},
         wardMult: 1.0,
+        vulnerabilityOutMult: null,
         piercePct: 0.0,
         lifestealPct: 0.0,
         critDamageTakenMult: 1.0,

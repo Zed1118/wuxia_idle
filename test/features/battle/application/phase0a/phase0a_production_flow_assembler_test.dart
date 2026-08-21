@@ -701,7 +701,7 @@ void main() {
       expect(flowA.outcome, flowB.outcome);
     });
 
-    test('非零吸血/护法/脆弱/活跃踉跄经装配入口立即 fail-fast,RNG 未消费', () {
+    test('非零吸血/护法/活跃踉跄经装配入口立即 fail-fast,RNG 未消费', () {
       final cases =
           <(String, BattleCharacter Function(BattleCharacter), String)>[
             ('吸血', (c) => makeCharacter(forgingLifestealPct: 0.05), '吸血'),
@@ -711,7 +711,6 @@ void main() {
               (c) => makeCharacter(guardianDefIds: const ['guard_a']),
               '护法',
             ),
-            ('脆弱', (c) => makeCharacter(vulnerabilityMult: 0.4), '脆弱'),
             ('踉跄 ticks', (c) => makeCharacter(staggerTicksRemaining: 2), '踉跄'),
             (
               '踉跄减防',
@@ -737,6 +736,19 @@ void main() {
         );
         expectRngUntouched(rng, seed);
       }
+    });
+
+    test('脆弱窗口经装配入口支持:不再构造期拒绝(2026-08-22)', () {
+      // 窗口开合是运行态事实(蓄招/踉跄),由结算期折入;装配只冻结乘子,
+      // 乘子进快照的逐项断言在快照工厂测。此处钉装配入口翻转为放行。
+      const seed = 8;
+      final rng = math.Random(seed);
+      final characters = defaultCharacters();
+      characters['e1'] = makeCharacter(vulnerabilityMult: 0.4);
+      expect(
+        () => assemble(combatants: combatantsFrom(characters), rng: rng),
+        returnsNormally,
+      );
     });
   });
 }

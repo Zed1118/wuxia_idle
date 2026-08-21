@@ -48,6 +48,7 @@ final class _Resolver
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
+    bool defenderCharging = false,
   }) => Phase0aResolvedHit(isHit: true, isCritical: false, damage: basicDamage);
 
   @override

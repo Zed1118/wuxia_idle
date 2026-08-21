@@ -29,6 +29,7 @@ final class Phase0aDamageSnapshot {
     required this.outputMultiplier,
     required Map<TechniqueSchool, double> schoolDamageTakenMults,
     required this.wardMult,
+    required this.vulnerabilityOutMult,
     required this.piercePct,
     required this.lifestealPct,
     required this.critDamageTakenMult,
@@ -73,8 +74,16 @@ final class Phase0aDamageSnapshot {
   /// 纯查表,缺条目 1.0)。>1.0 弱点 / <1.0 抗性。
   final Map<TechniqueSchool, double> schoolDamageTakenMults;
 
-  /// 护法结界×脆弱窗口的合并承伤乘子(调用方已解析,无修饰传 1.0)。
+  /// 护法结界承伤乘子(调用方已解析,无修饰传 1.0)。护法结界在 0A
+  /// fail-closed(快照工厂拒绝),生产恒 1.0;脆弱窗口不冻结在此,见
+  /// [vulnerabilityOutMult]。
   final double wardMult;
+
+  /// 脆弱窗口外承伤乘子(调用方已解析;null = 无机制)。窗口开合是战中
+  /// 运行态事实(守方蓄招中或破招踉跄中),由 adapter 在结算时按 reducer
+  /// 传入的 `defenderStaggered`/`defenderCharging` 折入 `defenderWardMult`,
+  /// 与旧引擎 `DefaultGroundStrategy.vulnerabilityMultOf` 同语义。
+  final double? vulnerabilityOutMult;
 
   /// 开锋破甲:绝对减防御率(无破甲传 0.0)。
   final double piercePct;
@@ -124,6 +133,7 @@ final class Phase0aDamageCalculatorAdapter
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
+    bool defenderCharging = false,
   }) {
     if (!_moveBindings.containsKey(kind)) {
       throw StateError('Phase0a 招式缺 kind 绑定: ${kind.name}');
@@ -133,6 +143,7 @@ final class Phase0aDamageCalculatorAdapter
       targetId: targetId,
       skill: _moveBindings[kind],
       defenderStaggered: defenderStaggered,
+      defenderCharging: defenderCharging,
     );
   }
 
@@ -154,6 +165,7 @@ final class Phase0aDamageCalculatorAdapter
     required String targetId,
     required SkillDef? skill,
     required bool defenderStaggered,
+    bool defenderCharging = false,
   }) {
     final attacker = _combatants[attackerId];
     if (attacker == null) {
@@ -186,6 +198,18 @@ final class Phase0aDamageCalculatorAdapter
               (1 - _numbers.combat.bossCharge.staggerDefenseDown)
         : target.defenseRate;
 
+    // 脆弱窗口(与旧引擎 DefaultGroundStrategy.vulnerabilityMultOf 同语义):
+    // 守方带机制且当前不脆弱(未蓄招且未踉跄)→ 乘窗口外承伤乘子(减伤);
+    // 蓄招中/踉跄中(窗口开)或无机制(null)→ 1.0 全额。乘子折入现有
+    // defenderWardMult,不给 DamageCalculator 加参数。
+    final vulnerabilityOutMult = target.vulnerabilityOutMult;
+    final vulnerabilityWindowMult =
+        (vulnerabilityOutMult == null ||
+            defenderStaggered ||
+            defenderCharging)
+        ? 1.0
+        : vulnerabilityOutMult;
+
     final result = DamageCalculator.calculateResolved(
       attackerInternalForce: attacker.internalForce,
       attackerEquipmentAttack: attacker.equipmentAttack,
@@ -209,7 +233,7 @@ final class Phase0aDamageCalculatorAdapter
       outputMultiplier: attacker.outputMultiplier,
       defenderSchoolDamageMult:
           target.schoolDamageTakenMults[attacker.school] ?? 1.0,
-      defenderWardMult: target.wardMult,
+      defenderWardMult: target.wardMult * vulnerabilityWindowMult,
       attackerPiercePct: attacker.piercePct,
       attackerLifestealPct: attacker.lifestealPct, // 已 fail-fast,恒 0
     );
@@ -238,6 +262,13 @@ final class Phase0aDamageCalculatorAdapter
     _requireUsable(snapshot.attackPowerMultiplier, '$id.attackPowerMultiplier');
     _requireUsable(snapshot.outputMultiplier, '$id.outputMultiplier');
     _requireUsable(snapshot.wardMult, '$id.wardMult');
+    final vulnerabilityOutMult = snapshot.vulnerabilityOutMult;
+    if (vulnerabilityOutMult != null) {
+      _requireUsable(
+        vulnerabilityOutMult,
+        '$id.vulnerabilityOutMult',
+      );
+    }
     _requireUsable(snapshot.piercePct, '$id.piercePct');
     _requireUsable(snapshot.critDamageTakenMult, '$id.critDamageTakenMult');
     snapshot.proficiencyDamageMults.forEach((skillId, mult) {
