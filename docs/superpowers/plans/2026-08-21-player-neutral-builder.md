@@ -28,8 +28,9 @@ Branch: `codex/player-neutral-builder-0821`
 - [x] Direct builder tests cover the full snapshot field contract and legacy
   fallback behavior.
 - [x] Exact roster can assemble more than three neutral snapshots in order.
-- [ ] Targeted tests, `flutter analyze`, and batch-end verification pass.
-- [ ] Recovery pointers are updated and the branch tip is marked `[READY]`.
+- [x] Targeted tests (83/83), `flutter analyze` (0 issues), and the full suite
+  (5265/5265) pass.
+- [x] Recovery pointers are updated and the branch tip is marked `[READY]`.
 
 ## Slices and recovery points
 
@@ -38,5 +39,5 @@ Branch: `codex/player-neutral-builder-0821`
 3. Add source/roster regression gates and run targeted verification.
 4. Update `PROGRESS.md` and `docs/sessions/NEXT.md`, then run final verification.
 
-Current recovery point: slices 1–3 implemented; targeted 71/71 passed. Next run
-analyze, review the final diff, update progress pointers, and verify the batch.
+Current recovery point: slices 1–4 complete; targeted 83/83, analyze 0, and the
+full suite 5265/5265 passed. Branch is ready to merge to `main`.

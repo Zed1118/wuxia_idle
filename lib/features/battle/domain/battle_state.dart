@@ -7,7 +7,6 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/numbers_config.dart';
 import 'damage_calculator.dart';
-import '../../../shared/battle_shared/derived_stats.dart';
 import '../../../shared/battle_shared/battle_result.dart';
 import 'player_combatant_snapshot_builder.dart';
 
