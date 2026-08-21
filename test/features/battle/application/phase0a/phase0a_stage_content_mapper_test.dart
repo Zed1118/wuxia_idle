@@ -139,6 +139,45 @@ void main() {
       expect(allIds, hasLength(1 + stage.enemyTeam.length));
     });
 
+    test('塔薄适配复用同核并透传 isTower 敌方装配语义', () {
+      final numbers = repo.numbers;
+      final floor = repo.towerFloors.firstWhere(
+        (floor) => floor.floorIndex == 7,
+      );
+      final player = Legacy3v3CombatantAdapter.toSnapshot(
+        makeCh1Player(numbers),
+      );
+      final towerMapping = Phase0aStageContentMapper.mapTower(
+        floor: floor,
+        playerSnapshot: player,
+        numbers: numbers,
+      );
+      final stageMapping = Phase0aStageContentMapper.map(
+        stage: StageDef(
+          id: 'stage_fixture',
+          name: 'fixture',
+          stageType: StageType.mainline,
+          requiredRealm: floor.requiredRealm,
+          enemyTeam: floor.enemyTeam,
+          isBossStage: true,
+          baseExpReward: 0,
+          difficultyMultiplier: 1,
+        ),
+        playerSnapshot: player,
+        numbers: numbers,
+      );
+
+      expect(towerMapping.waves, hasLength(1));
+      expect(
+        towerMapping.combatants.map((combatant) => combatant.actorId),
+        stageMapping.combatants.map((combatant) => combatant.actorId),
+      );
+      expect(
+        towerMapping.combatants[1].snapshot.currentQi,
+        greaterThan(stageMapping.combatants[1].snapshot.currentQi),
+      );
+    });
+
     test('空敌队关卡 fail-fast', () {
       final numbers = repo.numbers;
       const emptyStage = StageDef(

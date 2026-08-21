@@ -1,6 +1,7 @@
 import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/defs/stage_def.dart';
+import '../../../../data/defs/tower_floor_def.dart';
 import '../../../../data/numbers_config.dart';
 import '../../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../../shared/battle_shared/combatant_skill_loadout.dart';
@@ -59,21 +60,55 @@ final class Phase0aStageContentMapper {
     required CombatantSnapshot playerSnapshot,
     required NumbersConfig numbers,
     String playerId = 'player',
+  }) => _mapContent(
+    contentId: stage.id,
+    enemyTeam: stage.enemyTeam,
+    isTower: false,
+    playerSnapshot: playerSnapshot,
+    numbers: numbers,
+    playerId: playerId,
+  );
+
+  /// 把一层生产塔定义装配到与主线相同的 Phase 0A 输入。这里只做 D1
+  /// 敌队机械映射；Boss 阶段、守护和破绽等动态机制须由调用方在进入 mapper
+  /// 前按能力 manifest 拦截，不能把可构造误报成语义已迁移。
+  static Phase0aStageMapping mapTower({
+    required TowerFloorDef floor,
+    required CombatantSnapshot playerSnapshot,
+    required NumbersConfig numbers,
+    String playerId = 'player',
+  }) => _mapContent(
+    contentId: 'tower_${floor.floorIndex}',
+    enemyTeam: floor.enemyTeam,
+    isTower: true,
+    playerSnapshot: playerSnapshot,
+    numbers: numbers,
+    playerId: playerId,
+  );
+
+  static Phase0aStageMapping _mapContent({
+    required String contentId,
+    required List<EnemyDef> enemyTeam,
+    required bool isTower,
+    required CombatantSnapshot playerSnapshot,
+    required NumbersConfig numbers,
+    required String playerId,
   }) {
     final arena = numbers.phase0aArena;
     if (arena.isEmpty) {
       throw StateError(
-        'Phase0a 纵切装配 ${stage.id}: numbers.yaml 缺 phase0a_arena 段,'
+        'Phase0a 纵切装配 $contentId: numbers.yaml 缺 phase0a_arena 段,'
         '不得静默装配零参数竞技场',
       );
     }
-    if (stage.enemyTeam.isEmpty) {
-      throw ArgumentError.value(stage.id, 'stage', 'Phase0a 纵切装配拒绝空敌队关卡');
+    if (enemyTeam.isEmpty) {
+      throw ArgumentError.value(contentId, 'content', 'Phase0a 纵切装配拒绝空敌队内容');
     }
 
     // —— 敌人 neutral snapshot:复用旧战斗同一口径(零数值复制)——
     final enemySnapshots = EnemyCombatantSnapshotAssembler.assembleAll(
-      stage.enemyTeam,
+      enemyTeam,
+      isTower: isTower,
     );
     final numericSkillBindings = _numericSkillBindings(playerSnapshot, arena);
 
@@ -84,9 +119,9 @@ final class Phase0aStageContentMapper {
         _enemyActor(
           arena: arena,
           snapshot: enemySnapshots[i],
-          actorId: stage.enemyTeam.length == 1
-              ? stage.enemyTeam[i].id
-              : '${stage.enemyTeam[i].id}_w0s$i',
+          actorId: enemyTeam.length == 1
+              ? enemyTeam[i].id
+              : '${enemyTeam[i].id}_w0s$i',
           position: _enemyPosition(
             arena: arena,
             slot: i,
