@@ -2,7 +2,7 @@
 
 > 日期：2026-08-21
 > 分支：`codex/enemy-neutral-snapshot-0821`
-> 状态：READY
+> 状态：MERGED（`37e058d6`）
 > 上位：路线 C 旧 3v3 → Phase 0A 单角色 ARPG 替换收口
 
 ## 目标
@@ -35,8 +35,8 @@
 
 ## 当前恢复点
 
-- 状态：READY
+- 状态：MERGED（`37e058d6`）
 - 最后完成：assembler 直构 `CombatantSnapshot`，源码 Gate 禁旧角色中转；PROGRESS/NEXT 已收账。
-- 下一步：主线审查并合并；低消后续优先 D5 全内容 headless 画像 harness。
+- 下一步：低消后续优先 D5 全内容 headless 画像 harness。
 - 已跑验证：敌方逐字段对照 3/3、Ch1 mapper/headless 12/12、production flow 10/10、主线接线 15/15；`flutter analyze` 0 issue；全量 **5257 pass / 0 fail**。
 - 阻塞项：无。
