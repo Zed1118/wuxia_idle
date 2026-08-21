@@ -643,4 +643,415 @@ void main() {
       });
     }
   });
+
+  group('Phase0aVfxController 事件坐标 event-first(本批)', () {
+    test('伤害飘字优先事件坐标,不反查错位的同步状态', () {
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(enemies: [_actor('e1', Phase0aSide.enemy, 999, 999)]),
+        );
+      final entries = controller.consume([
+        const Phase0aHitLanded(
+          seq: 1,
+          tick: 1,
+          actor: 'player',
+          target: 'e1',
+          moveKind: Phase0aMoveKind.light,
+          isCritical: false,
+          isUltimate: false,
+          resolvedDamage: 25,
+          remainingHealth: 75,
+          actorPosition: ArenaVector(40, 20),
+          targetPosition: ArenaVector(50, 25),
+        ),
+      ]);
+      final popups = _popups(entries);
+      expect(popups, hasLength(1));
+      expect(popups.single.anchor, const ArenaVector(50, 25));
+    });
+
+    test('双弧墨痕/掌风坐标 event-first,与同步位置无关', () {
+      final controller = Phase0aVfxController()..syncActors(_state());
+      final far = Phase0aVfxController.palmTrailMinDistance + 50;
+      final entries = controller.consume([
+        Phase0aHitLanded(
+          seq: 1,
+          tick: 1,
+          actor: 'player',
+          target: 'ghost',
+          moveKind: Phase0aMoveKind.light,
+          isCritical: false,
+          isUltimate: false,
+          resolvedDamage: 10,
+          remainingHealth: 90,
+          actorPosition: const ArenaVector(500, 0),
+          targetPosition: const ArenaVector(510, 0),
+        ),
+        Phase0aHitLanded(
+          seq: 2,
+          tick: 1,
+          actor: 'player',
+          target: 'ghost2',
+          moveKind: Phase0aMoveKind.light,
+          isCritical: false,
+          isUltimate: false,
+          resolvedDamage: 10,
+          remainingHealth: 90,
+          actorPosition: const ArenaVector(0, 0),
+          targetPosition: ArenaVector(far, 0),
+        ),
+      ]);
+      final slashes = entries
+          .where((e) => e.kind == Phase0aVfxKind.meleeSlash)
+          .toList();
+      expect(slashes, hasLength(1));
+      expect(slashes.single.anchor, const ArenaVector(510, 0));
+      final trails = entries
+          .where((e) => e.kind == Phase0aVfxKind.palmTrail)
+          .toList();
+      expect(trails, hasLength(1));
+      expect(trails.single.source, const ArenaVector(0, 0));
+      expect(trails.single.vfxTarget, ArenaVector(far, 0));
+    });
+
+    test('无同步状态时事件坐标仍可用(涡旋/死亡墨散)', () {
+      // 故意不 syncActors:_actors 为空,只能靠事件坐标。
+      final controller = Phase0aVfxController();
+      final entries = controller.consume([
+        const Phase0aGatherStarted(
+          seq: 1,
+          tick: 1,
+          actor: 'player',
+          actorPosition: ArenaVector(123, 45),
+        ),
+        const Phase0aEnemyDefeated(
+          seq: 2,
+          tick: 1,
+          target: 'e1',
+          defeatKind: Phase0aDefeatKind.normal,
+          targetPosition: ArenaVector(400, -100),
+        ),
+      ]);
+      final vortex = entries
+          .where((e) => e.kind == Phase0aVfxKind.gatherVortex)
+          .toList();
+      expect(vortex, hasLength(1));
+      expect(vortex.single.anchor, const ArenaVector(123, 45));
+      final ink = entries
+          .where((e) => e.kind == Phase0aVfxKind.defeatInk)
+          .toList();
+      expect(ink, hasLength(1));
+      expect(ink.single.anchor, const ArenaVector(400, -100));
+    });
+
+    test('Q 拉线端点取 outcome 拉前位置 → 真实环点,不是玩家中心', () {
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(enemies: [_actor('e1', Phase0aSide.enemy, 999, 999)]),
+        );
+      final entries = controller.consume([
+        const Phase0aGatherApplied(
+          seq: 1,
+          tick: 1,
+          actor: 'player',
+          outcomes: [
+            Phase0aSkillOutcome(
+              target: 'e1',
+              resolvedDamage: 0,
+              isCritical: false,
+              defeated: false,
+              statusApplied: Phase0aSkillStatus.pulled,
+              sourcePosition: ArenaVector(200, 0),
+              targetPosition: ArenaVector(90, 0),
+            ),
+          ],
+        ),
+      ]);
+      final pulls = entries
+          .where((e) => e.kind == Phase0aVfxKind.gatherPull)
+          .toList();
+      expect(pulls, hasLength(1));
+      expect(pulls.single.source, const ArenaVector(200, 0));
+      expect(pulls.single.vfxTarget, const ArenaVector(90, 0));
+      expect(pulls.single.vfxTarget, isNot(ArenaVector.zero));
+    });
+
+    test('R 墨爆与多目标飘字锚点均优先事件坐标', () {
+      final controller = Phase0aVfxController()..syncActors(_state());
+      final entries = controller.consume([
+        const Phase0aClearStarted(
+          seq: 1,
+          tick: 1,
+          actor: 'player',
+          actorPosition: ArenaVector(77, 88),
+        ),
+        const Phase0aClearApplied(
+          seq: 2,
+          tick: 1,
+          actor: 'player',
+          outcomes: [
+            Phase0aSkillOutcome(
+              target: 'e1',
+              resolvedDamage: 88,
+              isCritical: false,
+              defeated: false,
+              statusApplied: Phase0aSkillStatus.staggered,
+              targetPosition: ArenaVector(40, 0),
+            ),
+            Phase0aSkillOutcome(
+              target: 'e2',
+              resolvedDamage: 55,
+              isCritical: false,
+              defeated: false,
+              statusApplied: Phase0aSkillStatus.staggered,
+              targetPosition: ArenaVector(-30, 20),
+            ),
+          ],
+        ),
+      ]);
+      final burst = entries
+          .where((e) => e.kind == Phase0aVfxKind.clearBurst)
+          .toList();
+      expect(burst, hasLength(1));
+      expect(burst.single.anchor, const ArenaVector(77, 88));
+      final popups = _popups(entries);
+      expect(popups, hasLength(2));
+      expect(
+        popups.firstWhere((p) => p.targetId == 'e1').anchor,
+        const ArenaVector(40, 0),
+      );
+      expect(
+        popups.firstWhere((p) => p.targetId == 'e2').anchor,
+        const ArenaVector(-30, 20),
+      );
+    });
+
+    test('数字技能飘字锚点取 outcome.targetPosition', () {
+      final controller = Phase0aVfxController()..syncActors(_state());
+      final entries = controller.consume([
+        const Phase0aSkillApplied(
+          seq: 1,
+          tick: 1,
+          actor: 'player',
+          hotkey: 1,
+          skillId: 'skill_a',
+          outcomes: [
+            Phase0aSkillOutcome(
+              target: 'e1',
+              resolvedDamage: 12,
+              isCritical: true,
+              defeated: false,
+              statusApplied: Phase0aSkillStatus.none,
+              targetPosition: ArenaVector(30, 10),
+            ),
+            Phase0aSkillOutcome(
+              target: 'e2',
+              resolvedDamage: 0,
+              isCritical: false,
+              defeated: false,
+              statusApplied: Phase0aSkillStatus.none,
+              targetPosition: ArenaVector(-20, -40),
+            ),
+          ],
+        ),
+      ]);
+      final popups = _popups(entries);
+      expect(popups, hasLength(1));
+      expect(popups.single.anchor, const ArenaVector(30, 10));
+      expect(popups.single.isCritical, isTrue);
+    });
+
+    test('缺字段旧事件走同步状态回退', () {
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(enemies: [_actor('e1', Phase0aSide.enemy, 40, 0)]),
+        );
+      final entries = controller.consume([
+        // 无坐标字段的手工旧构造:必须回退同步状态,行为不变。
+        _hit(seq: 1, actor: 'player', target: 'e1', damage: 25),
+        const Phase0aGatherStarted(seq: 2, tick: 1, actor: 'player'),
+      ]);
+      final popups = _popups(entries);
+      expect(popups, hasLength(1));
+      expect(popups.single.anchor, const ArenaVector(40, 0));
+      final vortex = entries
+          .where((e) => e.kind == Phase0aVfxKind.gatherVortex)
+          .toList();
+      expect(vortex.single.anchor, ArenaVector.zero);
+    });
+
+    test('敌方命中携带事件坐标也不冒玩家专属 VFX', () {
+      final far = Phase0aVfxController.palmTrailMinDistance + 50;
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(enemies: [_actor('e1', Phase0aSide.enemy, far, 0)]),
+        );
+      final entries = controller.consume([
+        Phase0aHitLanded(
+          seq: 1,
+          tick: 1,
+          actor: 'e1',
+          target: 'player',
+          moveKind: Phase0aMoveKind.heavy,
+          isCritical: false,
+          isUltimate: false,
+          resolvedDamage: 25,
+          remainingHealth: 75,
+          actorPosition: ArenaVector(far, 0),
+          targetPosition: const ArenaVector(0, 0),
+        ),
+      ]);
+      expect(entries.where((e) => e.kind == Phase0aVfxKind.palmTrail), isEmpty);
+      expect(
+        entries.where((e) => e.kind == Phase0aVfxKind.meleeSlash),
+        isEmpty,
+      );
+      // 通用受击飘字仍然产出,锚点取事件目标坐标。
+      final popups = _popups(entries);
+      expect(popups, hasLength(1));
+      expect(popups.single.anchor, const ArenaVector(0, 0));
+    });
+  });
+
+  group('Phase0aVfxController Q 伤害飘字(同链补缺)', () {
+    test('Q 非零伤害逐目标飘字,anchor = 真实环点落点', () {
+      final controller = Phase0aVfxController()..syncActors(_state());
+      final entries = controller.consume([
+        const Phase0aGatherApplied(
+          seq: 1,
+          tick: 1,
+          actor: 'player',
+          outcomes: [
+            Phase0aSkillOutcome(
+              target: 'e1',
+              resolvedDamage: 35,
+              isCritical: false,
+              defeated: false,
+              statusApplied: Phase0aSkillStatus.pulled,
+              sourcePosition: ArenaVector(200, 0),
+              targetPosition: ArenaVector(90, 0),
+            ),
+            Phase0aSkillOutcome(
+              target: 'e2',
+              resolvedDamage: 0,
+              isCritical: false,
+              defeated: false,
+              statusApplied: Phase0aSkillStatus.pulled,
+              sourcePosition: ArenaVector(-150, 0),
+              targetPosition: ArenaVector(-90, 0),
+            ),
+          ],
+        ),
+      ]);
+      final popups = _popups(entries);
+      expect(popups, hasLength(1), reason: '零伤目标不飘字');
+      expect(popups.single.targetId, 'e1');
+      expect(popups.single.damage, 35);
+      expect(popups.single.anchor, const ArenaVector(90, 0));
+      final pulls = entries
+          .where((e) => e.kind == Phase0aVfxKind.gatherPull)
+          .toList();
+      expect(pulls, hasLength(2));
+    });
+
+    test('Q 超 48 个非零目标飘字精确截断为上限', () {
+      // 故意不 sync:锚点全部来自事件坐标,证明截断逻辑与回退无关。
+      final controller = Phase0aVfxController();
+      final entries = controller.consume([
+        Phase0aGatherApplied(
+          seq: 1,
+          tick: 1,
+          actor: 'player',
+          outcomes: [
+            for (var i = 1; i <= 60; i++)
+              Phase0aSkillOutcome(
+                target: 'g$i',
+                resolvedDamage: 10 + i,
+                isCritical: false,
+                defeated: false,
+                statusApplied: Phase0aSkillStatus.none,
+                targetPosition: ArenaVector(i * 10.0, 0),
+              ),
+          ],
+        ),
+      ]);
+      expect(_popups(entries).length, Phase0aVfxController.maxDamagePopups);
+    });
+
+    test('Q 飘字/拉线打满容量后终局封签不丢且总量不越界', () {
+      final controller = Phase0aVfxController()..syncActors(_state());
+      final events = <Phase0aEvent>[
+        Phase0aGatherApplied(
+          seq: 1,
+          tick: 1,
+          actor: 'player',
+          outcomes: [
+            for (var i = 1; i <= 60; i++)
+              Phase0aSkillOutcome(
+                target: 'g$i',
+                resolvedDamage: 10 + i,
+                isCritical: false,
+                defeated: false,
+                statusApplied: Phase0aSkillStatus.pulled,
+                sourcePosition: ArenaVector(i * 20.0, 0),
+                targetPosition: ArenaVector(i * 10.0, 0),
+              ),
+          ],
+        ),
+        for (var i = 2; i <= 62; i++)
+          Phase0aEnemyDefeated(
+            seq: i,
+            tick: 1,
+            target: 'g${i - 1}',
+            defeatKind: Phase0aDefeatKind.normal,
+            targetPosition: ArenaVector(i * 10.0, 0),
+          ),
+        const Phase0aBattleVictory(seq: 63, tick: 1),
+      ];
+      final entries = controller.consume(events);
+      expect(
+        entries.length,
+        lessThanOrEqualTo(Phase0aVfxController.maxEntries),
+      );
+      expect(_popups(entries).length, Phase0aVfxController.maxDamagePopups);
+      final seals = entries
+          .where((entry) => entry.kind == Phase0aVfxKind.outcomeSeal)
+          .toList();
+      expect(seals, hasLength(1));
+      expect(seals.single.isVictory, isTrue);
+      expect(entries.last.kind, Phase0aVfxKind.outcomeSeal);
+    });
+
+    test('sequencer 去重只看 seq,坐标字段不参与', () {
+      final sequencer = Phase0aEventSequencer();
+      const first = Phase0aHitLanded(
+        seq: 7,
+        tick: 1,
+        actor: 'player',
+        target: 'e1',
+        moveKind: Phase0aMoveKind.light,
+        isCritical: false,
+        isUltimate: false,
+        resolvedDamage: 10,
+        remainingHealth: 90,
+        targetPosition: ArenaVector(60, 0),
+      );
+      const duplicate = Phase0aHitLanded(
+        seq: 7,
+        tick: 1,
+        actor: 'player',
+        target: 'e1',
+        moveKind: Phase0aMoveKind.light,
+        isCritical: false,
+        isUltimate: false,
+        resolvedDamage: 10,
+        remainingHealth: 90,
+        targetPosition: ArenaVector(999, 0),
+      );
+      final accepted = sequencer.ingest([first, duplicate]);
+      expect(accepted, hasLength(1));
+      expect(identical(accepted.single, first), isTrue);
+      expect(sequencer.ingest([duplicate]), isEmpty);
+    });
+  });
 }
