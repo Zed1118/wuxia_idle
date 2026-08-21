@@ -369,7 +369,7 @@ void main() {
           ),
         ],
         deltaSeconds: 0.1,
-        damageResolver: const _Resolver(gatherDamage: 999),
+        damageResolver: const _Resolver(basicDamage: 25, gatherDamage: 999),
       );
       final defeated = result.events.whereType<Phase0aEnemyDefeated>().single;
       expect(defeated.targetPosition, const ArenaVector(90, 0));
@@ -395,7 +395,7 @@ void main() {
           ),
         ],
         deltaSeconds: 0.1,
-        damageResolver: const _Resolver(),
+        damageResolver: const _Resolver(clearDamage: 40),
       );
       final started = result.events.whereType<Phase0aClearStarted>().single;
       expect(started.actorPosition, const ArenaVector(0, 0));

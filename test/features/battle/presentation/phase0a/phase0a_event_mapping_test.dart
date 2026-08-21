@@ -674,7 +674,7 @@ void main() {
       final controller = Phase0aVfxController()..syncActors(_state());
       final far = Phase0aVfxController.palmTrailMinDistance + 50;
       final entries = controller.consume([
-        Phase0aHitLanded(
+        const Phase0aHitLanded(
           seq: 1,
           tick: 1,
           actor: 'player',
@@ -684,8 +684,8 @@ void main() {
           isUltimate: false,
           resolvedDamage: 10,
           remainingHealth: 90,
-          actorPosition: const ArenaVector(500, 0),
-          targetPosition: const ArenaVector(510, 0),
+          actorPosition: ArenaVector(500, 0),
+          targetPosition: ArenaVector(510, 0),
         ),
         Phase0aHitLanded(
           seq: 2,
