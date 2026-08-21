@@ -17,6 +17,7 @@ Branch: `codex/phase0a-product-decisions-0821`
       implementation impact.
 - [x] Record the user's decisions in the decision sheet.
 - [x] Slice the approved implementation without changing unrelated balance.
+- [x] Focused tests, refreshed 1500-run profile, analyze, and full suite pass.
 
 ## Recovery point
 
@@ -26,4 +27,8 @@ making the three founder techniques' power skills available at `chuKui` without
 raising founder cultivation, changing the global ultimate threshold, or tuning
 enemy values. That slice now passes its focused 23-test set and refreshed the
 1500-run profile with zero timeouts and max resolved damage 2446. The typed
-behavior slice remains separate; batch-end full verification is next.
+behavior slice remains separate. Batch-end verification is complete: focused
+23/23, refreshed profile 1500/1500
+classified with zero timeouts, `flutter analyze --no-pub` reports no issues,
+and the full suite passes at 5278/5278. Next: mark `[READY]`, fast-forward
+local main, rerun merge-state checks, and remove this worktree.

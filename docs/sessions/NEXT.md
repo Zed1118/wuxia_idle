@@ -27,7 +27,7 @@
 
 ## 最新验证
 
-1. 08-21 起手 powerSkill：旧行为红测命中；focused **23/23**、`flutter analyze` 0 issue；1500 局 evidence 全部完成，最终全量待批末核。
+1. 08-21 起手 powerSkill：旧行为红测命中；focused **23/23**、`flutter analyze` 0 issue；1500 局 evidence 全部完成；最终全量 **5278/0**。
 2. 08-21 玩家 neutral builder：逐字段/roster/主线真实 Isar/远征/断魂庄 targeted **83/83**；最终全量 **5265/0**。
 3. 08-21 生产预检：10-seed **3420 runs** = 555 胜/2865 负/0 timeout，最大单击 2056；最终全量 **5261/0**。
 4. 视觉证据：`build/visual_acceptance/phase0a_0821_closeout/`（gitignored）含双视口 PNG/log/manifest，两路均为原生 window-id 截图。
