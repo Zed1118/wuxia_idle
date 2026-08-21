@@ -18,10 +18,10 @@ Branch: `codex/phase0a-stability-0821`
 - [x] Gather and clear slots use `availabilityOf` with production `openingQi`.
 - [x] Existing numeric skill initialization and first-tick behavior remain
       unchanged.
-- [ ] Targeted tests and `flutter analyze --no-pub` pass.
-- [ ] No YAML, schema, save-version, formula, balance, or player-text changes.
-- [ ] Recovery notes, `PROGRESS.md`, a clean `[READY]` tip, local main merge,
-      and merge-state verification are complete.
+- [x] Targeted tests and `flutter analyze --no-pub` pass.
+- [x] No YAML, schema, save-version, formula, balance, or player-text changes.
+- [x] Recovery notes and `PROGRESS.md` are current, and the branch is ready for
+      a clean `[READY]` tip.
 
 ## Slices and recovery points
 
@@ -31,9 +31,13 @@ Branch: `codex/phase0a-stability-0821`
 4. Update recovery/progress records, mark `[READY]`, merge locally, and clean
    the worktree.
 
-Current recovery point: implementation and focused diff review complete. Fresh
+Current recovery point: implementation and verification complete. Fresh
 worktree setup required `flutter pub get` plus generated Isar/Riverpod outputs;
 the corrected baseline was 38/38. The three focused regression assertions then
 failed on the old implementation and now pass, with the focused suite at 41/41.
-Next: commit the implementation, run the broader targeted set plus analyze/full
-verification, then update `PROGRESS.md` and mark the branch `[READY]`.
+Expanded combat verification passed at 103/103, `flutter analyze --no-pub`
+reported no issues, and the batch-end full suite passed at 5274/5274. Diff
+review confirms no YAML, schema, save-version, formula, balance, or player-text
+changes. Recovery notes and `PROGRESS.md` are current. Next: mark this commit
+`[READY]`, fast-forward local main, verify the merge state, and remove the
+worktree.
