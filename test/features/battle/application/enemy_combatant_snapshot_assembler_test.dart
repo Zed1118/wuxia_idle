@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -100,5 +102,16 @@ void main() {
     final four = <EnemyDef>[template, template, template, template];
     expect(EnemyCombatantSnapshotAssembler.assembleAll(four), hasLength(4));
     expect(StageBattleSetup.buildEnemyTeam(four), hasLength(3));
+  });
+
+  test('assembler 直接构造 neutral snapshot，不回引旧战斗角色', () {
+    final source = File(
+      'lib/features/battle/application/enemy_combatant_snapshot_assembler.dart',
+    ).readAsStringSync();
+
+    expect(source, contains('CombatantSnapshot('));
+    expect(source, isNot(contains('battle_state.dart')));
+    expect(source, isNot(contains('legacy_3v3_combatant_adapter.dart')));
+    expect(source, isNot(matches(RegExp(r'\bBattleCharacter\b'))));
   });
 }

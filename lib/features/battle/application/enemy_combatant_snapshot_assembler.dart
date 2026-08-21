@@ -6,9 +6,7 @@ import '../../../data/game_repository.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/battle_shared/derived_stats.dart' show RealmUtils;
 import '../../jianghu/application/enmity_battle_modifier.dart';
-import '../domain/battle_state.dart';
 import '../domain/qi_cycle.dart';
-import 'legacy_3v3_combatant_adapter.dart';
 
 /// EnemyDef → [CombatantSnapshot] 的深 Module。
 ///
@@ -192,57 +190,59 @@ final class EnemyCombatantSnapshotAssembler {
               ],
           ];
 
-    final snapshot = Legacy3v3CombatantAdapter.toSnapshot(
-      BattleCharacter(
-        characterId: characterIdOverride ?? -(slotIndex + 1),
-        name: enemy.name,
-        realmTier: effTier,
-        realmLayer: enemy.realmLayer,
-        school: enemy.school,
-        maxHp: scaledHp,
-        currentHp: scaledHp,
-        internalForce: resolvedIf,
+    final snapshot = CombatantSnapshot(
+      characterId: characterIdOverride ?? -(slotIndex + 1),
+      name: enemy.name,
+      realmTier: effTier,
+      realmLayer: enemy.realmLayer,
+      school: enemy.school,
+      maxHp: scaledHp,
+      currentHp: scaledHp,
+      internalForce: resolvedIf,
+      maxQi: numbers.combat.qi.baseMax,
+      currentQi: QiCycle.openingQi(
         maxQi: numbers.combat.qi.baseMax,
-        currentQi: QiCycle.openingQi(
-          maxQi: numbers.combat.qi.baseMax,
-          openingQi:
-              numbers.combat.qi.enemyOpeningQi +
-              (enemy.isBoss
-                  ? (isTower
-                        ? numbers.combat.qi.towerBossOpeningBonus
-                        : numbers.combat.qi.bossOpeningBonus)
-                  : 0),
-          openingCap: numbers.combat.qi.openingCap,
-        ),
-        autoUltimate: true,
-        speed: enemy.baseSpeed,
-        criticalRate: enemyDefaults.criticalRate,
-        evasionRate: enemyDefaults.evasionRate,
-        defenseRate: defenseRate,
-        totalEquipmentAttack: scaledAttack,
-        mainCultivationLayer: CultivationLayer.daCheng,
-        availableSkills: resolvedSkills,
-        skillCooldowns: const {},
-        activeBuffs: activeBuffs,
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: 1,
-        slotIndex: slotIndex,
-        iconPath: enemy.iconPath,
-        isBoss: enemy.isBoss,
-        chargeSkillId: chargeSkillId,
-        bossPhaseIndex: 0,
-        bossPhases: bossPhases,
-        bossPhaseUnlockSkills: bossPhaseUnlockSkills,
-        schoolDamageTakenMult: enemy.schoolDamageTakenMult ?? const {},
-        enemyDefId: enemy.id,
-        guardianWardMult: enemy.guardianWard?.damageTakenMult,
-        guardianDefIds: enemy.guardianWard?.guardianIds ?? const [],
-        vulnerabilityMult: enemy
-            .vulnerabilityForCycle(cycleIndex)
-            ?.outOfWindowDamageMult,
-        guardInterceptsInterrupt: enemy.guardInterceptsInterrupt,
+        openingQi:
+            numbers.combat.qi.enemyOpeningQi +
+            (enemy.isBoss
+                ? (isTower
+                      ? numbers.combat.qi.towerBossOpeningBonus
+                      : numbers.combat.qi.bossOpeningBonus)
+                : 0),
+        openingCap: numbers.combat.qi.openingCap,
       ),
+      qiGainMultiplier: 1,
+      qiCostReductionPct: 0,
+      autoUltimate: true,
+      speed: enemy.baseSpeed,
+      criticalRate: enemyDefaults.criticalRate,
+      evasionRate: enemyDefaults.evasionRate,
+      defenseRate: defenseRate,
+      totalEquipmentAttack: scaledAttack,
+      mainCultivationLayer: CultivationLayer.daCheng,
+      availableSkills: resolvedSkills,
+      openingSkillCooldowns: const {},
+      skillUses: const {},
+      activeBuffs: activeBuffs,
+      swordSongResonanceActive: false,
+      iconPath: enemy.iconPath,
+      attackPowerMultiplier: 1,
+      outputMultiplier: 1,
+      isBoss: enemy.isBoss,
+      chargeSkillId: chargeSkillId,
+      bossPhases: bossPhases,
+      bossPhaseUnlockSkills: bossPhaseUnlockSkills,
+      schoolDamageTakenMult: enemy.schoolDamageTakenMult ?? const {},
+      lineageRole: null,
+      forgingPiercePct: 0,
+      forgingLifestealPct: 0,
+      enemyDefId: enemy.id,
+      guardianWardMult: enemy.guardianWard?.damageTakenMult,
+      guardianDefIds: enemy.guardianWard?.guardianIds ?? const [],
+      vulnerabilityMult: enemy
+          .vulnerabilityForCycle(cycleIndex)
+          ?.outOfWindowDamageMult,
+      guardInterceptsInterrupt: enemy.guardInterceptsInterrupt,
     );
     return readableFirstClearTuning
         ? _applyReadableFirstClearOpeningCooldownToOne(snapshot)
