@@ -1,48 +1,19 @@
 import '../../../data/defs/boss_phase_def.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/defs/stage_win_condition.dart';
-import '../../../data/game_repository.dart';
 import '../../../core/domain/character.dart';
-import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
-import '../../../core/domain/skill_usage_entry.dart';
 import '../../../data/numbers_config.dart';
 import 'damage_calculator.dart';
 import '../../../shared/battle_shared/derived_stats.dart';
 import '../../../shared/battle_shared/battle_result.dart';
-import 'qi_cycle.dart';
+import 'player_combatant_snapshot_builder.dart';
 
 // 2026-08-19 共享层拆分迁移批:BattleResult 已迁 lib/shared/battle_shared/battle_result.dart,
 // re-export 保持存量 63 处 `import battle_state.dart` 消费方口径不破。
 export '../../../shared/battle_shared/battle_result.dart' show BattleResult;
-
-// P1.1 候选 3-b:resonanceStages 查找的 orElse fallback(防御性,正常情况不触发,
-// numbers.yaml 4 stage 全配)。
-const _shengShuFallback = ResonanceStageConfig(
-  stage: ResonanceStage.shengShu,
-  minBattleCount: 0,
-  maxBattleCount: 0,
-  bonusMultiplier: 1.0,
-);
-
-/// 波A build gate:按流派匹配破招技(canInterrupt && style == school),
-/// 旧档 5 槽全空 fallback 路径用,与 P0.5「广发破势」行为等价升级。
-/// school null(无主修流派)→ null,不带破招技。
-Iterable<SkillDef>? _matchingInterruptSkill(
-  GameRepository repo,
-  TechniqueSchool? school,
-) {
-  if (school == null) return null;
-  for (final s in repo.skillDefs.values) {
-    if (s.canInterrupt && s.style == school) return [s];
-  }
-  return null;
-}
-
-/// 玩家方 teamSide(fromCharacter 唯一在 _playerToBattle 以 0 调用)。
-const _playerTeamSide = 0;
 
 /// attackPowerMultiplier 的来源，用于战报解释乘区。
 enum AttackPowerMultiplierSource { jianghuEnmity, terrain, formation }
@@ -362,9 +333,8 @@ class BattleCharacter {
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
   ///
-  /// **单一入口**：所有派生属性（maxHp / speed / criticalRate / evasionRate）
-  /// 走 [CharacterDerivedStats]，[NumbersConfig] 一次注入，避免战斗过程中不同
-  /// 字段口径不一致。
+  /// **Legacy 兼容入口**：派生事实委托给
+  /// [PlayerCombatantSnapshotBuilder]，这里只补旧 3v3 runtime 坐标与初始状态。
   ///
   /// - `character.school` 必须非空（无主修角色不应进入战斗）。
   /// - `availableSkills` 从主修心法 [TechniqueDef.skillIds] 解析（辅修不上场招式）。
@@ -412,185 +382,61 @@ class BattleCharacter {
       }
     }
 
-    final repo = GameRepository.instance;
-    final techDef = repo.getTechnique(mainTechnique.defId);
-    final qiConfig = numbers.combat.qi;
-    final profile = techDef.qiProfile;
-    final disorder = numbers.innerBreathDisorder;
-    final openingPenalty = QiCycle.disorderOpeningQiPenalty(
-      disorderHours: character.innerBreathDisorderHoursRemaining,
-      disorderMaxHours: disorder.maxHours,
-      maxPenalty: disorder.maxOpeningQiPenalty,
-    );
-    final maxQi = (qiConfig.baseMax + profile.maxBonus).clamp(
-      qiConfig.minMax,
-      qiConfig.maxCap,
-    );
-    final openingQi = QiCycle.openingQi(
-      maxQi: maxQi,
-      openingQi: qiConfig.openingQi + profile.openingBonus - openingPenalty,
-      openingCap: qiConfig.openingCap,
-    );
-    final qiGainMultiplier = (1 + profile.gainPct).clamp(
-      1.0,
-      qiConfig.gainMultiplierCap,
-    );
-    final qiCostReductionPct = profile.costReductionPct.clamp(
-      0.0,
-      qiConfig.costReductionCap,
-    );
-    final maxHp = CharacterDerivedStats.maxHp(
-      character,
-      equipped,
-      numbers,
+    final snapshot = PlayerCombatantSnapshotBuilder.build(
+      character: character,
+      equipped: equipped,
+      mainTechnique: mainTechnique,
+      numbers: numbers,
       founderBuffActive: founderBuffActive,
-    );
-    final speed = CharacterDerivedStats.speed(
-      character,
-      equipped,
-      mainTechnique,
-      numbers,
+      outputMultiplier: outputMultiplier,
       lightInjuryStacks: lightInjuryStacks,
+      includeLegacyPlayerInterruptFallback: teamSide == 0,
     );
-    final critRate = CharacterDerivedStats.criticalRate(
-      character,
-      numbers,
-      founderBuffActive: founderBuffActive,
-    );
-    final evRate = CharacterDerivedStats.evasionRate(character, numbers);
-    final defRate = RealmUtils.defenseRateOf(character.realmTier);
-    final totalEqAtk = equipped.fold<int>(
-      0,
-      (sum, e) =>
-          sum + CharacterDerivedStats.effectiveEquipmentAttack(e, numbers),
-    );
-    final forgingPiercePct = CharacterDerivedStats.forgingAggregatePct(
-      equipped,
-      ForgingSlotType.pierce,
-    );
-    final forgingLifestealPct = CharacterDerivedStats.forgingAggregatePct(
-      equipped,
-      ForgingSlotType.lifesteal,
-    );
-
-    // P1b 藏经阁:availableSkills = 6 装配槽非空技能(主修×2 / 辅修 / 共鸣 / 大招 /
-    // 奇遇)。getSkill 共享 skillDefs Map(skills.yaml + encounter_skills.yaml
-    // 加载合并),encounter skill 与心法招式 runtime 同型(SkillDef)。joint 现在走
-    // resonanceSkillId 槽,不再走 hasJointSkillUnlocked 特殊注入。
-    final loadoutIds = <String?>[
-      character.mainSkillId1,
-      character.mainSkillId2,
-      character.assistSkillId,
-      character.resonanceSkillId,
-      character.ultimateSkillId,
-      character.equippedEncounterSkillId,
-      character.keySkillId,
-    ];
-    var skills = <SkillDef>[
-      for (final id in loadoutIds)
-        if (id != null && repo.skillDefs.containsKey(id)) repo.getSkill(id),
-    ];
-    // 兼容兜底:5 个心法槽全空(从未 autoFill,旧存档/旧测试 fixture)→ fallback
-    // 回「主修心法全招 + 奇遇」,保持旧行为不破。autoFill(Task5 进战斗前调)补满
-    // 槽后,正常玩法自然走装配。
-    final allLoadoutSlotsEmpty =
-        character.mainSkillId1 == null &&
-        character.mainSkillId2 == null &&
-        character.assistSkillId == null &&
-        character.resonanceSkillId == null &&
-        character.ultimateSkillId == null;
-    if (allLoadoutSlotsEmpty) {
-      skills = <SkillDef>[
-        ...techDef.skillIds.map((id) => repo.getSkill(id)),
-        if (character.equippedEncounterSkillId != null &&
-            repo.skillDefs.containsKey(character.equippedEncounterSkillId!))
-          repo.getSkill(character.equippedEncounterSkillId!),
-        // 波A build gate 兜底等价:旧档未 autoFill 时,玩家方自动带本流派
-        // 破招技(与旧「广发破势」行为等价升级,流派不匹配则无,见 §1.4)。
-        if (teamSide == _playerTeamSide && character.keySkillId == null)
-          ...?_matchingInterruptSkill(repo, school),
-      ];
-    }
-    final skillIds = <String>{for (final s in skills) s.id};
-    for (final eq in equipped) {
-      for (final slot in eq.forgingSlots) {
-        if (!slot.unlocked ||
-            slot.type != ForgingSlotType.specialSkill ||
-            slot.specialSkillId == null) {
-          continue;
-        }
-        final skill = repo.skillDefs[slot.specialSkillId!];
-        if (skill == null ||
-            !skill.canEquipAtRealm(character.realmTier) ||
-            skillIds.contains(skill.id)) {
-          continue;
-        }
-        skills.add(skill);
-        skillIds.add(skill.id);
-      }
-    }
-    // P1.1 候选 3-c:玩家方/师徒 NPC 任一武器 resonanceStage 达到 hasSwordSongEffect
-    // 阶(numbers.yaml `resonance.stages` 心剑通灵)→ swordSongResonanceActive,
-    // xinJianTongLing 阶玩家暴击附带剑鸣浮字(buff,不是技能)。
-    var swordSongActive = false;
-    for (final e in equipped) {
-      if (e.slot != EquipmentSlot.weapon) continue;
-      final stage = e.resonanceStage(numbers);
-      final cfg = numbers.resonanceStages.firstWhere(
-        (c) => c.stage == stage,
-        orElse: () => _shengShuFallback,
-      );
-      if (cfg.hasSwordSongEffect) swordSongActive = true;
-    }
-    // 波A build gate:P0.5「破势广发」已拆——破招技走 keySkillId 第 7 装配槽
-    // (上方 loadoutIds 已含),装配 gate 见 SkillLoadoutService(canInterrupt &&
-    // style == school)。旧档 5 槽全空走上方 fallback 自动带本流派破招技。
-
     return BattleCharacter(
-      characterId: character.id,
-      name: character.name,
-      realmTier: character.realmTier,
-      realmLayer: character.realmLayer,
-      school: school,
-      maxHp: maxHp,
-      currentHp: maxHp,
-      internalForce: QiCycle.effectiveInnerForce(
-        actualInnerForce: character.internalForce,
-        disorderHours: character.innerBreathDisorderHoursRemaining,
-        disorderMaxHours: disorder.maxHours,
-        maxPenaltyPct: disorder.maxInnerForcePenaltyPct,
-      ),
-      maxQi: maxQi,
-      currentQi: openingQi,
-      qiGainMultiplier: qiGainMultiplier,
-      qiCostReductionPct: qiCostReductionPct,
-      speed: speed,
-      criticalRate: critRate,
-      evasionRate: evRate,
-      defenseRate: defRate,
-      totalEquipmentAttack: totalEqAtk,
-      mainCultivationLayer: mainTechnique.cultivationLayer,
-      availableSkills: List.unmodifiable(skills),
-      skillCooldowns: const {},
-      skillUses: {
-        for (final sk in skills)
-          sk.id: AttributeEffectPolicy(numbers.attributeEffects)
-              .effectiveUsageCount(
-                rawUses: mainTechnique.skillUsageCount.countOf(sk.id),
-                enlightenment: character.attributes.enlightenment,
-              ),
-      },
-      activeBuffs: const [],
+      characterId: snapshot.characterId,
+      name: snapshot.name,
+      realmTier: snapshot.realmTier,
+      realmLayer: snapshot.realmLayer,
+      school: snapshot.school,
+      maxHp: snapshot.maxHp,
+      currentHp: snapshot.currentHp,
+      internalForce: snapshot.internalForce,
+      maxQi: snapshot.maxQi,
+      currentQi: snapshot.currentQi,
+      qiGainMultiplier: snapshot.qiGainMultiplier,
+      qiCostReductionPct: snapshot.qiCostReductionPct,
+      autoUltimate: snapshot.autoUltimate,
+      speed: snapshot.speed,
+      criticalRate: snapshot.criticalRate,
+      evasionRate: snapshot.evasionRate,
+      defenseRate: snapshot.defenseRate,
+      totalEquipmentAttack: snapshot.totalEquipmentAttack,
+      mainCultivationLayer: snapshot.mainCultivationLayer,
+      availableSkills: snapshot.availableSkills,
+      skillCooldowns: snapshot.openingSkillCooldowns,
+      skillUses: snapshot.skillUses,
+      activeBuffs: snapshot.activeBuffs,
       actionPoint: 0,
       isAlive: true,
       teamSide: teamSide,
       slotIndex: slotIndex,
-      swordSongResonanceActive: swordSongActive,
-      iconPath: character.portraitPath,
-      outputMultiplier: outputMultiplier,
-      lineageRole: character.lineageRole,
-      forgingPiercePct: forgingPiercePct,
-      forgingLifestealPct: forgingLifestealPct,
+      swordSongResonanceActive: snapshot.swordSongResonanceActive,
+      iconPath: snapshot.iconPath,
+      attackPowerMultiplier: snapshot.attackPowerMultiplier,
+      outputMultiplier: snapshot.outputMultiplier,
+      isBoss: snapshot.isBoss,
+      chargeSkillId: snapshot.chargeSkillId,
+      bossPhases: snapshot.bossPhases,
+      bossPhaseUnlockSkills: snapshot.bossPhaseUnlockSkills,
+      schoolDamageTakenMult: snapshot.schoolDamageTakenMult,
+      lineageRole: snapshot.lineageRole,
+      forgingPiercePct: snapshot.forgingPiercePct,
+      forgingLifestealPct: snapshot.forgingLifestealPct,
+      enemyDefId: snapshot.enemyDefId,
+      guardianWardMult: snapshot.guardianWardMult,
+      guardianDefIds: snapshot.guardianDefIds,
+      vulnerabilityMult: snapshot.vulnerabilityMult,
+      guardInterceptsInterrupt: snapshot.guardInterceptsInterrupt,
     );
   }
 

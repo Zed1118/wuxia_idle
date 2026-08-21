@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+import 'package:wuxia_idle/features/battle/domain/player_combatant_snapshot_builder.dart';
+import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
+import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -37,6 +40,62 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────
 
   group('BattleCharacter.fromCharacter 派生属性', () {
+    test('neutral builder 与旧装配链逐字段等值', () {
+      final character =
+          _mkChar(
+              tier: RealmTier.erLiu,
+              layer: RealmLayer.yuanShu,
+              internalForce: 3000,
+              school: TechniqueSchool.gangMeng,
+              constitution: 8,
+              enlightenment: 10,
+              agility: 6,
+            )
+            ..portraitPath = 'assets/characters/founder.png'
+            ..lightInjuryStacks = 2
+            ..innerBreathDisorderHoursRemaining = 3;
+      final equipment = _mkEquip(
+        baseAttack: 580,
+        baseHealth: 200,
+        baseSpeed: 30,
+      );
+      final technique = _mkTech(
+        defId: 'tech_gangmeng_mingjia',
+        tier: TechniqueTier.mingJiaGong,
+        school: TechniqueSchool.gangMeng,
+      );
+      final skillId = GameRepository.instance
+          .getTechnique(technique.defId)
+          .skillIds
+          .first;
+      technique.skillUsageCount.increment(skillId, 10);
+
+      final expected = Legacy3v3CombatantAdapter.toSnapshot(
+        BattleCharacter.fromCharacter(
+          character: character,
+          equipped: [equipment],
+          mainTechnique: technique,
+          numbers: GameRepository.instance.numbers,
+          teamSide: 0,
+          slotIndex: 2,
+          founderBuffActive: true,
+          outputMultiplier: 0.65,
+          lightInjuryStacks: character.lightInjuryStacks,
+        ),
+      );
+      final actual = PlayerCombatantSnapshotBuilder.build(
+        character: character,
+        equipped: [equipment],
+        mainTechnique: technique,
+        numbers: GameRepository.instance.numbers,
+        founderBuffActive: true,
+        outputMultiplier: 0.65,
+        lightInjuryStacks: character.lightInjuryStacks,
+      );
+
+      _expectSnapshotsEqual(actual, expected);
+    });
+
     test('skillUses 按悟性派生有效次数，但心法仍保存真实次数', () {
       final c = _mkChar(
         tier: RealmTier.erLiu,
@@ -731,6 +790,53 @@ void main() {
 // ─────────────────────────────────────────────────────────────────────────────
 // fixture
 // ─────────────────────────────────────────────────────────────────────────────
+
+void _expectSnapshotsEqual(
+  CombatantSnapshot actual,
+  CombatantSnapshot expected,
+) {
+  expect(actual.characterId, expected.characterId);
+  expect(actual.name, expected.name);
+  expect(actual.realmTier, expected.realmTier);
+  expect(actual.realmLayer, expected.realmLayer);
+  expect(actual.school, expected.school);
+  expect(actual.maxHp, expected.maxHp);
+  expect(actual.currentHp, expected.currentHp);
+  expect(actual.internalForce, expected.internalForce);
+  expect(actual.maxQi, expected.maxQi);
+  expect(actual.currentQi, expected.currentQi);
+  expect(actual.qiGainMultiplier, expected.qiGainMultiplier);
+  expect(actual.qiCostReductionPct, expected.qiCostReductionPct);
+  expect(actual.autoUltimate, expected.autoUltimate);
+  expect(actual.speed, expected.speed);
+  expect(actual.criticalRate, expected.criticalRate);
+  expect(actual.evasionRate, expected.evasionRate);
+  expect(actual.defenseRate, expected.defenseRate);
+  expect(actual.totalEquipmentAttack, expected.totalEquipmentAttack);
+  expect(actual.mainCultivationLayer, expected.mainCultivationLayer);
+  expect(actual.skillLoadout, expected.skillLoadout);
+  expect(actual.availableSkills, expected.availableSkills);
+  expect(actual.openingSkillCooldowns, expected.openingSkillCooldowns);
+  expect(actual.skillUses, expected.skillUses);
+  expect(actual.activeBuffs, expected.activeBuffs);
+  expect(actual.swordSongResonanceActive, expected.swordSongResonanceActive);
+  expect(actual.iconPath, expected.iconPath);
+  expect(actual.attackPowerMultiplier, expected.attackPowerMultiplier);
+  expect(actual.outputMultiplier, expected.outputMultiplier);
+  expect(actual.isBoss, expected.isBoss);
+  expect(actual.chargeSkillId, expected.chargeSkillId);
+  expect(actual.bossPhases, expected.bossPhases);
+  expect(actual.bossPhaseUnlockSkills, expected.bossPhaseUnlockSkills);
+  expect(actual.schoolDamageTakenMult, expected.schoolDamageTakenMult);
+  expect(actual.lineageRole, expected.lineageRole);
+  expect(actual.forgingPiercePct, expected.forgingPiercePct);
+  expect(actual.forgingLifestealPct, expected.forgingLifestealPct);
+  expect(actual.enemyDefId, expected.enemyDefId);
+  expect(actual.guardianWardMult, expected.guardianWardMult);
+  expect(actual.guardianDefIds, expected.guardianDefIds);
+  expect(actual.vulnerabilityMult, expected.vulnerabilityMult);
+  expect(actual.guardInterceptsInterrupt, expected.guardInterceptsInterrupt);
+}
 
 BattleCharacter _mkBattleChar({
   String name = '测试角色',

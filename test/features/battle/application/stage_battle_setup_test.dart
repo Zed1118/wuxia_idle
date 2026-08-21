@@ -137,6 +137,51 @@ void main() {
       expect(snapshots.single.availableSkills, isNotEmpty);
     });
 
+    test('exact roster 可保序产出 4 人，不受 legacy 3-slot cap 限制', () async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
+      final fourth = Character.create(
+        name: '第四人',
+        realmTier: RealmTier.xueTu,
+        realmLayer: RealmLayer.ruMen,
+        attributes: Attributes()
+          ..constitution = 5
+          ..enlightenment = 5
+          ..agility = 5
+          ..fortune = 5,
+        rarity: RarityTier.biaoZhun,
+        lineageRole: LineageRole.disciple,
+        createdAt: DateTime(2026, 8, 21),
+        internalForce: 100,
+        school: TechniqueSchool.gangMeng,
+      );
+      await IsarSetup.instance.writeTxn(() async {
+        await IsarSetup.instance.characters.put(fourth);
+        final technique = Technique.create(
+          defId: 'tech_gangmeng_jichu',
+          ownerCharacterId: fourth.id,
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.gangMeng,
+          role: TechniqueRole.main,
+          learnedAt: DateTime(2026, 8, 21),
+        );
+        await IsarSetup.instance.techniques.put(technique);
+        fourth.mainTechniqueId = technique.id;
+        await IsarSetup.instance.characters.put(fourth);
+      });
+      final ids =
+          (await IsarSetup.instance.characters.where().findAll())
+              .map((character) => character.id)
+              .toList()
+            ..sort();
+
+      final snapshots = await PlayerCombatantSnapshotAssembler(
+        isar: IsarSetup.instance,
+      ).loadExactRoster(ids);
+
+      expect(ids, hasLength(4));
+      expect(snapshots.map((snapshot) => snapshot.characterId), ids);
+    });
+
     test('空 ids → ArgumentError,不得 fallback 任意角色', () async {
       await Phase2SeedService(isar: IsarSetup.instance).seedP3();
       await expectLater(
