@@ -15,12 +15,13 @@ Branch: `codex/phase0a-product-decisions-0821`
 - [x] Separate current facts from product choices.
 - [x] Give one recommended option for each blocking choice and spell out its
       implementation impact.
-- [ ] Record the user's decisions in the decision sheet.
+- [x] Record the user's decisions in the decision sheet.
 - [ ] Slice the approved implementation without changing unrelated balance.
 
 ## Recovery point
 
-The current implementation was inspected at main `699f61a8`. No Dart, YAML,
-save, schema, formula, or balance change has been made. The decision sheet is
-ready for human review; implementation remains blocked on the four choices.
-
+The current implementation was inspected at main `699f61a8`. The user approved
+D1-A / D2-A / D3-A / D4-A. The first implementation slice is restricted to
+making the three founder techniques' power skills available at `chuKui` without
+raising founder cultivation, changing the global ultimate threshold, or tuning
+enemy values. The typed behavior slice remains separate.
