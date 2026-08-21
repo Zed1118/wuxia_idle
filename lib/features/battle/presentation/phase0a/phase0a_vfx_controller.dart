@@ -215,7 +215,7 @@ final class Phase0aVfxController {
             pushPopup(
               outcome.target,
               outcome.resolvedDamage,
-              false,
+              outcome.isCritical,
               anchor: outcome.targetPosition,
             );
           }

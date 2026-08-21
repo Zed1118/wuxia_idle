@@ -277,6 +277,53 @@ void main() {
       expect(popups.single.targetId, 'e1');
       expect(popups.single.damage, 88);
     });
+
+    test('ClearApplied 飘字暴击标记逐 outcome 透传,不硬编码', () {
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(
+            enemies: [
+              _actor('e1', Phase0aSide.enemy, 40, 0),
+              _actor('e2', Phase0aSide.enemy, -40, 0),
+            ],
+          ),
+        );
+      final entries = controller.consume([
+        const Phase0aClearApplied(
+          seq: 1,
+          tick: 1,
+          actor: 'player',
+          outcomes: [
+            Phase0aSkillOutcome(
+              target: 'e1',
+              resolvedDamage: 88,
+              isCritical: true,
+              defeated: false,
+              statusApplied: Phase0aSkillStatus.staggered,
+            ),
+            Phase0aSkillOutcome(
+              target: 'e2',
+              resolvedDamage: 66,
+              isCritical: false,
+              defeated: false,
+              statusApplied: Phase0aSkillStatus.staggered,
+            ),
+          ],
+        ),
+      ]);
+      final popups = _popups(entries);
+      expect(popups, hasLength(2));
+      expect(
+        popups.firstWhere((p) => p.targetId == 'e1').isCritical,
+        isTrue,
+        reason: '暴击 R 飘字应标记 critical',
+      );
+      expect(
+        popups.firstWhere((p) => p.targetId == 'e2').isCritical,
+        isFalse,
+        reason: '非暴击 R 飘字不应标记 critical',
+      );
+    });
   });
 
   group('Phase0aVfxController 移除/波次/终局', () {
