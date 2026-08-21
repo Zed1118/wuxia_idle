@@ -23,14 +23,16 @@ void main() {
     expect(stages, hasLength(100));
     expect(
       stages.where((entry) => entry.status == Phase0aPreflightStatus.eligible),
-      // charge/破招纵切(2026-08-22):19 条 phase/charge 主线转 eligible。
-      hasLength(92),
+      // charge/破招纵切(2026-08-22):19 条 phase/charge 主线转 eligible;
+      // vulnerability 纵切(2026-08-22):7 条脆弱窗口主线再转 eligible。
+      hasLength(99),
     );
     expect(towers, hasLength(49));
     expect(
       towers.where((entry) => entry.status == Phase0aPreflightStatus.eligible),
-      // charge/破招纵切(2026-08-22):5 条 phase/charge 塔层转 eligible。
-      hasLength(46),
+      // charge/破招纵切(2026-08-22):5 条 phase/charge 塔层转 eligible;
+      // vulnerability 纵切(2026-08-22):tower_32 再转 eligible。
+      hasLength(47),
     );
     final all = [...stages, ...towers];
     expect(all.map((entry) => entry.key).toSet(), hasLength(all.length));
@@ -45,8 +47,8 @@ void main() {
       ),
     );
 
-    // 硬断言:剩余 skip 精确为 11 条 = vulnerability 8 + guardian 2 +
-    // unsupported_win_condition 1,不得出现第四种原因。
+    // 硬断言:剩余 skip 精确为 3 条 = guardian 2 + unsupported_win_condition 1,
+    // 不得出现第三种原因。
     final skipCounts = <String, int>{};
     for (final entry in all.where(
       (entry) => entry.status == Phase0aPreflightStatus.skipped,
@@ -58,7 +60,6 @@ void main() {
       );
     }
     expect(skipCounts, {
-      'unsupported_vulnerability_window': 8,
       'unsupported_guardian_ward': 2,
       'unsupported_win_condition': 1,
     });

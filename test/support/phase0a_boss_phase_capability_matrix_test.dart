@@ -48,7 +48,8 @@ void main() {
 
     // 真实 phase/charge 内容组(内容侧推导,不读 manifest 原因):
     // 敌队含 bossPhases 或顶层 chargeSkillId 且无更高优先级未迁机制的条目,
-    // 共 24 = 19 主线 + 5 塔,全部转 eligible——语义已迁移,不得伪报 skipped。
+    // 共 32 = 主线 26(19 phase/charge + 7 脆弱窗口) + 塔 6(5 phase/charge
+    // + tower_32 脆弱窗口),全部转 eligible——语义已迁移,不得伪报 skipped。
     List<EnemyDef> enemyTeamOf(Phase0aPreflightManifestEntry entry) =>
         switch (entry.kind) {
           Phase0aPreflightContentKind.stage =>
@@ -69,9 +70,30 @@ void main() {
         .where((entry) => entry.status == Phase0aPreflightStatus.eligible)
         .where(hasPhaseOrChargeContent)
         .toList();
-    expect(bossPhaseEntries, hasLength(24));
+    expect(bossPhaseEntries, hasLength(32));
 
-    // 潜在重叠:vulnerability/guardian 条目按 EnemyDef 联结校验必带蓄招途径,
+    // 脆弱窗口纵切(2026-08-22):基础 vulnerability 语义已迁移,8 条内容
+    // (主线 7 + tower_32)必须 eligible;cycleVulnerability 高周目覆盖在恒
+    // cycle-1 装配下惰性未迁,不构成跳过(与 cycleBossPhases 同口径)。
+    const vulnerabilityKeys = {
+      'stage/stage_17_05',
+      'stage/stage_18_04',
+      'stage/stage_18_05',
+      'stage/stage_19_05',
+      'stage/stage_20_04',
+      'stage/stage_20_05',
+      'stage/stage_21_04',
+      'tower/tower_32',
+    };
+    for (final key in vulnerabilityKeys) {
+      expect(
+        entries.singleWhere((entry) => entry.key == key).status,
+        Phase0aPreflightStatus.eligible,
+        reason: '$key 脆弱窗口语义已迁移,必须 eligible',
+      );
+    }
+
+    // 潜在重叠:guardian 条目按 EnemyDef 联结校验必带蓄招途径,
     // 它们保持 skipped 且原因必须是更高优先级机制,不得回落 phase/charge 原因。
     final latentPhaseSkipped = entries
         .where((entry) => entry.status == Phase0aPreflightStatus.skipped)
@@ -87,11 +109,11 @@ void main() {
     }
     expect(
       bossPhaseEntries.where((entry) => entry.kind.name == 'stage'),
-      hasLength(19),
+      hasLength(26),
     );
     expect(
       bossPhaseEntries.where((entry) => entry.kind.name == 'tower'),
-      hasLength(5),
+      hasLength(6),
     );
     for (final entry in bossPhaseEntries) {
       expect(
@@ -136,36 +158,38 @@ void main() {
       expect(hasTopLevelCharge, isFalse, reason: entry.key);
     }
 
-    // 其他未迁机制守恒:guardian ward / vulnerability / survive 胜负仍按
-    // 各自原因跳过,数量与优先级口径不回退。
+    // 其他未迁机制守恒:guardian ward / survive 胜负仍按各自原因跳过,
+    // 数量与优先级口径不回退;脆弱窗口语义已迁,不再构成跳过原因。
     final guardianEntries = entries
         .where((entry) => entry.skipReason == 'unsupported_guardian_ward')
-        .toList();
-    final vulnerabilityEntries = entries
-        .where(
-          (entry) => entry.skipReason == 'unsupported_vulnerability_window',
-        )
         .toList();
     final winConditionEntries = entries
         .where((entry) => entry.skipReason == 'unsupported_win_condition')
         .toList();
     expect(guardianEntries, hasLength(2));
-    expect(vulnerabilityEntries, hasLength(8));
     expect(winConditionEntries, hasLength(1));
-    // 硬断言:剩余 skip 精确为以上三类共 11 条,不得出现第四种原因
+    expect(
+      entries.where(
+        (entry) => entry.skipReason == 'unsupported_vulnerability_window',
+      ),
+      isEmpty,
+      reason: '脆弱窗口语义已迁移,任何条目不得再以该原因跳过',
+    );
+    // 硬断言:剩余 skip 精确为以上两类共 3 条,不得出现第三种原因
     // (任何新增未迁机制必须显式更新本矩阵,不得静默跳过)。
     final skippedEntries = entries
         .where((entry) => entry.status == Phase0aPreflightStatus.skipped)
         .toList();
-    expect(skippedEntries, hasLength(11));
+    expect(skippedEntries, hasLength(3));
     expect(skippedEntries.map((entry) => entry.skipReason).toSet(), {
-      'unsupported_vulnerability_window',
       'unsupported_guardian_ward',
       'unsupported_win_condition',
     });
     expect(
-      entries.singleWhere((entry) => entry.key == 'tower/tower_32').skipReason,
-      'unsupported_vulnerability_window',
+      entries
+          .singleWhere((entry) => entry.key == 'tower/tower_32')
+          .status,
+      Phase0aPreflightStatus.eligible,
     );
     expect(
       entries.singleWhere((entry) => entry.key == 'tower/tower_42').skipReason,
@@ -174,6 +198,12 @@ void main() {
     expect(
       entries.singleWhere((entry) => entry.key == 'tower/tower_49').skipReason,
       'unsupported_guardian_ward',
+    );
+    expect(
+      entries
+          .singleWhere((entry) => entry.key == 'stage/stage_21_05')
+          .skipReason,
+      'unsupported_win_condition',
     );
     expect(
       guardianEntries

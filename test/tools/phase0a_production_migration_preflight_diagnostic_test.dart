@@ -54,9 +54,10 @@ void main() {
 
       expect(manifest, hasLength(149));
       expect(manifest.map((entry) => entry.key).toSet(), hasLength(149));
-      // charge/破招纵切(2026-08-22):24 条 phase/charge 内容转 eligible。
-      expect(stageEntries.where(_isEligible), hasLength(92));
-      expect(towerEntries.where(_isEligible), hasLength(46));
+      // charge/破招纵切(2026-08-22):24 条 phase/charge 内容转 eligible;
+      // vulnerability 纵切(2026-08-22):8 条脆弱窗口内容再转 eligible。
+      expect(stageEntries.where(_isEligible), hasLength(99));
+      expect(towerEntries.where(_isEligible), hasLength(47));
 
       final arena = repo.numbers.phase0aArena;
       final delta = arena.fixedDeltaSeconds;
@@ -163,10 +164,9 @@ void main() {
           ifAbsent: () => 1,
         );
       }
-      // 硬断言:剩余 skip 精确为 vulnerability 8 + guardian 2 +
-      // unsupported_win_condition 1,不得出现第四种原因。
+      // 硬断言:剩余 skip 精确为 guardian 2 + unsupported_win_condition 1,
+      // 不得出现第三种原因。
       expect(skipCounts, {
-        'unsupported_vulnerability_window': 8,
         'unsupported_guardian_ward': 2,
         'unsupported_win_condition': 1,
       });

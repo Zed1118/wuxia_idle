@@ -72,12 +72,6 @@ final class Phase0aProductionPreflightManifest {
     )) {
       return 'unsupported_guardian_ward';
     }
-    if (enemies.any(
-      (enemy) =>
-          enemy.vulnerability != null || enemy.cycleVulnerability.isNotEmpty,
-    )) {
-      return 'unsupported_vulnerability_window';
-    }
     if (enemies.any(_hasUnsupportedBossPhaseOrChargeSemantics)) {
       return 'unsupported_boss_phase_or_charge_semantics';
     }
@@ -89,6 +83,12 @@ final class Phase0aProductionPreflightManifest {
   /// cycle-1(主线灰度门限一周目、mapper 无 cycle 参数)下惰性,但其机制
   /// 同样过支持性检查。穷尽 switch 表达式:未来新增 BossPhaseMechanic
   /// 枚举值 = 编译错误 = 强制 fail-closed 决策,不得静默放行。
+  ///
+  /// 脆弱窗口(2026-08-22 纵切):`EnemyDef.vulnerability` 基础值已经
+  /// mapper→快照→actor→reducer 运行态事实(蓄招/踉跄)折入唯一
+  /// DamageCalculator 消费,不再构成跳过原因;`cycleVulnerability` 高周目
+  /// 覆盖在恒 cycle-1 装配下惰性、未被消费(参数化延后,不声称已迁),
+  /// 与 cycleBossPhases 同口径不单独构成跳过原因。
   static bool _hasUnsupportedBossPhaseOrChargeSemantics(EnemyDef enemy) {
     for (final phase in enemy.bossPhases ?? const <BossPhaseDef>[]) {
       if (!_phaseMechanicSupported(phase.onEnterMechanic)) return true;
