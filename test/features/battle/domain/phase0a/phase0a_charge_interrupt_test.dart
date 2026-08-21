@@ -321,6 +321,40 @@ void main() {
     expect(boss.currentHealth, 90, reason: '破招命中仍结算清场伤害');
   });
 
+  test('同拍竞态:倒计时本拍归零已登记释放,玩家同拍破招命中 → 招牌技不释放', () {
+    // chargeTicksRemaining==1:pre-step 归零并把该敌登记进拍尾释放队列,
+    // 但 chargingCast 仍保留;玩家同拍 typed break 命中先清蓄力,拍尾释放
+    // 循环读得 chargingCast==null 即跳过——「完成仅一次」与「破招优先」并存。
+    final result = reducePhase0aTick(
+      state: _state(
+        _charger(chargeTicksRemaining: 1, chargingCast: _cast()),
+        slots: _clearSlot(),
+      ),
+      intents: [_clearIntent(breakPower: 1)],
+      deltaSeconds: 0.1,
+      damageResolver: _Resolver(basicDamage: 10),
+      enemySkillDamageResolver: _Resolver(basicDamage: 17),
+    );
+
+    // 招牌技未释放:无 EnemySkillStarted、无蓄力伤害 HitLanded。
+    expect(result.events.whereType<Phase0aEnemySkillStarted>(), isEmpty);
+    expect(result.events.whereType<Phase0aHitLanded>(), isEmpty);
+
+    // 蓄力被清除、进入踉跄、招牌技上 CD。
+    final boss = result.state.enemies.single;
+    expect(boss.chargingCast, isNull);
+    expect(boss.chargeTicksRemaining, 0);
+    expect(boss.staggerTicksRemaining, 2);
+    expect(boss.enemySkillCooldowns['charge_signature'], 4);
+
+    // 中断事件存在且指向被打断的招牌技。
+    final interrupted = result.events.whereType<Phase0aBossChargeInterrupted>();
+    expect(interrupted, hasLength(1));
+    expect(interrupted.single.target, 'boss');
+    expect(interrupted.single.skillId, 'charge_signature');
+    expect(interrupted.single.staggerTicks, 2);
+  });
+
   test('破招对非蓄力敌人 no-op;breakPower=0 与未命中不破招', () {
     // (a) 非蓄力:只结算伤害。
     final plain = reducePhase0aTick(

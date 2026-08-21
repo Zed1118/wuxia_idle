@@ -44,6 +44,24 @@ void main() {
         ),
       ),
     );
+
+    // 硬断言:剩余 skip 精确为 11 条 = vulnerability 8 + guardian 2 +
+    // unsupported_win_condition 1,不得出现第四种原因。
+    final skipCounts = <String, int>{};
+    for (final entry in all.where(
+      (entry) => entry.status == Phase0aPreflightStatus.skipped,
+    )) {
+      skipCounts.update(
+        entry.skipReason!,
+        (count) => count + 1,
+        ifAbsent: () => 1,
+      );
+    }
+    expect(skipCounts, {
+      'unsupported_vulnerability_window': 8,
+      'unsupported_guardian_ward': 2,
+      'unsupported_win_condition': 1,
+    });
   });
 
   test('clean 主线被列为 eligible', () {

@@ -163,6 +163,13 @@ void main() {
           ifAbsent: () => 1,
         );
       }
+      // 硬断言:剩余 skip 精确为 vulnerability 8 + guardian 2 +
+      // unsupported_win_condition 1,不得出现第四种原因。
+      expect(skipCounts, {
+        'unsupported_vulnerability_window': 8,
+        'unsupported_guardian_ward': 2,
+        'unsupported_win_condition': 1,
+      });
       print(
         'phase0a production preflight: manifest=${manifest.length}; '
         'eligible=${eligible.length}; skipped=${manifest.length - eligible.length}; '

@@ -225,19 +225,28 @@ source contract 禁数值默认值字面量):
     `Phase0aDamageCalculatorAdapter` 读
     `numbers.combat.bossCharge.staggerDefenseDown` 乘 `(1-x)` 后喂唯一
     `DamageCalculator.calculateResolved`。
-- 命令与通过数(本会话实测):
-  - focused `phase0a_charge_interrupt_test.dart` 12/12;
-  - 真内容接线 `phase0a_charge_production_wiring_test.dart` 3/3
+- 命令与通过数(本会话实测,含 2026-08-22 后审加固批):
+  - focused `phase0a_charge_interrupt_test.dart` **13/13**(加固新增
+    同拍归零竞态测:chargeTicksRemaining==1 本拍 pre-step 归零已登记释放,
+    玩家同拍 typed break 命中 → 无 EnemySkillStarted/HitLanded、蓄力清、
+    中断事件在);
+  - 真内容接线 `phase0a_charge_production_wiring_test.dart` **4/4**
     (stage_02_05 双入口蓄力+双招牌真实释放+确定性回放;tower_7 纯阶段
-    入口蓄力+释放+回放;装配断言含 breakPower>0);
+    入口蓄力+释放+回放;装配断言含 breakPower>0;**加固新增** stage_02_05
+    端到端真破招:真实 skills.yaml→TacticalBinding→PlayerInputAdapter→
+    生产 reducer/DamageCalculator 实际产出 ChargeInterrupted,阻断当拍招牌
+    释放并进踉跄,玩家指令驱动非随机 bot 时序);
+  - **加固新增** manifest/matrix/diagnostic 三处硬断言:剩余 skip reason
+    精确为 {vulnerability 8, guardian 2, unsupported_win_condition 1},
+    不得出现第四种原因;
   - phase0a 全领域定向(domain/application/presentation/debug fixture/
     mainline wiring/behavior/manifest/matrix)339/339;
   - 生产预检 diagnostic:manifest 149 / eligible 138(+24)/ skipped 11
     (vulnerability 8 + guardian 2 + win_condition 1 守恒)/ 414 局
     58 胜 356 负 0 timeout / maxDamage 2044;
-  - `dart format` 7 文件重排;`flutter analyze --no-pub lib test`
-    No issues found!;最终全量 `flutter test --no-pub` **5300 pass / 0 fail**
-    (= 上批基线 5285 + focused 12 + 接线 3 逐值吻合)。
+  - `dart format` 收敛;`flutter analyze --no-pub lib test`
+    No issues found!;最终全量 `flutter test --no-pub` **5302 pass / 0 fail**
+    (= 上批基线 5285 + focused 13 + 接线 4 逐值吻合)。
 - 红线:伤害唯一走 DamageCalculator(招牌技经既有 enemy skill 路径,零公式
   复制);蓄力/踉跄 tick 数与减防幅度全部预解析自
   `numbers.combat.boss_charge`(yaml 零新增字段);三系锁死/在线=离线/
@@ -252,5 +261,16 @@ source contract 禁数值默认值字面量):
   3. `break.points` 当前为破招资格载荷,窗口/减防统一基础值;按 points
      差异化窗口与熟练度 `interrupt_power_pct` 加深未迁(留内容批);
   4. 蓄力 telegraph 表现层 VFX 未接(事件已发射,随表现批);
-  5. 六人主观 Gate / Windows 实机 Gate 未触发;bot 不等真人。
+  5. 六人主观 Gate / Windows 实机 Gate 未触发;bot 不等真人;
+  6. 【后续审计观察·本批不改】R 命中非蓄力敌时的 `stagger` 效果
+     (`Phase0aSkillStatus.staggered`)目前仅为逐目标 outcome 标记,
+     未与踉跄运行态/表现反馈联动;待表现批与内容批评估是否升级为真实
+     失衡反馈,勿在本批静默扩义;
+  7. 【后续审计观察·本批不改】`SkillDef` 未实现值相等(== 为身份相等),
+     跨独立 mapping/快照比较蓄力 cast/技能时须按 id+字段值比对,不能直接
+     `==`;后续若引入跨 mapping 状态对比需先补值相等或显式比对器;
+  8. 【后续审计观察·本批不改】当前生产所有蓄力 Boss 均带阶段
+     (`usesSkillRuntime` 走 snapshot 真气),未来若出现无阶段顶层
+     `chargeSkillId` Boss,其真气回气只有基础技 `qiDelta` 一路,需在引入
+     该类内容前核回气闭环,避免招牌技放一次后永久无气。
 - 阻塞项:无。

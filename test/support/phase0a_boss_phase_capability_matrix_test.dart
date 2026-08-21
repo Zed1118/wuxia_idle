@@ -152,6 +152,17 @@ void main() {
     expect(guardianEntries, hasLength(2));
     expect(vulnerabilityEntries, hasLength(8));
     expect(winConditionEntries, hasLength(1));
+    // 硬断言:剩余 skip 精确为以上三类共 11 条,不得出现第四种原因
+    // (任何新增未迁机制必须显式更新本矩阵,不得静默跳过)。
+    final skippedEntries = entries
+        .where((entry) => entry.status == Phase0aPreflightStatus.skipped)
+        .toList();
+    expect(skippedEntries, hasLength(11));
+    expect(skippedEntries.map((entry) => entry.skipReason).toSet(), {
+      'unsupported_vulnerability_window',
+      'unsupported_guardian_ward',
+      'unsupported_win_condition',
+    });
     expect(
       entries.singleWhere((entry) => entry.key == 'tower/tower_32').skipReason,
       'unsupported_vulnerability_window',
