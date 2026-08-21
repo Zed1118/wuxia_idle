@@ -1,6 +1,6 @@
 # 新会话开局清单
 
-> 更新时间：2026-08-21 · Phase 0A 起手 powerSkill 批
+> 更新时间：2026-08-22 · 夜班收口（仅验证与事实同步）
 > 在途分支：无（本批完成后合回 `main`；未授权不 push）
 
 ## 当前结论
@@ -26,6 +26,7 @@
 - Q gather 每场一次且零伤，R clear 0 次；现有资源循环不支持长期固定 Q/R 战术印。
 
 ## 最新验证
+0. 08-22 夜班收口：`flutter test --no-pub` **5340/5340**（exit 0）；`flutter analyze --no-pub lib test` 0 issue；`git diff --check` 通过。全仓格式门禁 exit 1，命中仅为被忽略的 8 个历史 phase0minus 探针文件，未改动。
 
 1. 08-21 起手 powerSkill：旧行为红测命中；focused **23/23**、`flutter analyze` 0 issue；1500 局 evidence 全部完成；最终全量 **5278/0**。
 2. 08-21 玩家 neutral builder：逐字段/roster/主线真实 Isar/远征/断魂庄 targeted **83/83**；最终全量 **5265/0**。
@@ -43,7 +44,7 @@
 
 ### 后续工程
 
-1. 低消下一切片：对 24 条 Boss phase/charge skipped 内容先冻结 capability matrix，再选一个机制纵切接入 reducer/AI/headless；不得用降级运行冒充迁移。
-2. 随后拆 vulnerability/guardian，`stage_21_05` survive condition 单列。
+1. 低消下一切片：先做人类 Gate 与 Boss 蓄力/破招/踉跄/脆弱窗口可读性确认；不得用降级运行冒充迁移。
+2. 机制工程后续仍拆 guardian（`tower_49` 基础、`tower_42` 协同）与 `stage_21_05` survive condition；surviveTicks 禁止机械迁移。
 3. 按 ADR 迁远征、断魂庄单主角续传与扫荡 headless 直结；只消费 manifest eligible 内容。
 4. 六人主观 Gate、Windows 实机 Gate、Phase 0B MANUAL_RIG 继续依赖锁死；未授权不 push。

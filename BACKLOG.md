@@ -4,6 +4,7 @@
 > **准入三态**:待拍板 / 已解锁未做 / 依赖锁死——「本次没空做」不准进(CLAUDE §7 打磨期原则)。
 > **维护**:每批收账随 PROGRESS 同步更新;销账即删行(git 留历史);总行数 ≤80。
 > 2026-07-19 建账:散落储备(PROGRESS 挂账段 / playability_phase2_backlog / 两份 audit followup)已归纳至此,旧文件原地归档留指针。
+> 2026-08-22 夜班收口事实：Phase 0A 预检保持 149/146/3、438 runs/0 timeout/maxDamage 2044；最终全量 5340/0。surviveTicks、guardian ward、Boss 蓄力/破招/脆弱窗口专属表现及六人/Windows Gate 仍为后续依赖，不在本夜班解锁。
 
 ## 一 · 待拍板(拍一个解锁一个)
 
