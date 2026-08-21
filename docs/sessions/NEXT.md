@@ -1,6 +1,6 @@
 # 新会话开局清单
 
-> 更新时间：2026-08-21 · 生产内容迁移预检收口
+> 更新时间：2026-08-21 · 玩家 neutral builder 收口
 > 在途分支：无（本批完成后合回 `main`；未授权不 push）
 
 ## 当前结论
@@ -12,6 +12,7 @@
 - 08-21 表现层三批已在 main：演员位移插值/局部重绘、分类 VFX 生命期、飘字居民上限、命中/出手微动作、落地墨印与敌/我/精英可读性均成立。
 - 08-21 debug fixture 与敌方生产装配器已改为直接构造 `CombatantSnapshot`，不再内部绕旧 `BattleCharacter`；旧消费接口保持不变。
 - 生产预检 manifest 已覆盖 Ch2–Ch21 主线 100 关与塔 49 层：73+41 条 eligible 进入同核 headless；35 条动态机制 fail-closed skipped。
+- 玩家生产装配已直接使用 `PlayerCombatantSnapshotBuilder`；最后一处 `BattleCharacter.fromCharacter → toSnapshot` 内部中转及 neutral roster 的 3-slot 泄漏已清除，旧消费接口保持兼容。
 - 1280×720/1440×900 实窗口截图与 W/D/J/Q/R 动态 smoke 通过；无布局溢出、运行异常或缺图。
 - 正式替换仍锁六人主观 Gate、Windows 实机 Gate、其余消费面迁移。
 
@@ -26,10 +27,11 @@
 
 ## 最新验证
 
-1. 08-21 生产预检：targeted **19/19**；10-seed **3420 runs** = 555 胜/2865 负/0 timeout，最大单击 2056；`flutter analyze` 0 issue；最终全量 **5261/0**。
-2. 08-20 文档扫描：1318 个 md、8344 引用、dead 65。
-3. 视觉证据：`build/visual_acceptance/phase0a_0821_closeout/`（gitignored）含双视口 PNG/log/manifest，两路均为原生 window-id 截图。
-4. 动态键鼠 smoke：重开战斗后 W/D/J/Q/R 真实驱动至「破阵」，战中与终局 HUD/技能印/再战语义完整。
+1. 08-21 玩家 neutral builder：逐字段/roster/主线真实 Isar/远征/断魂庄 targeted **83/83**；`flutter analyze` 0 issue；最终全量 **5265/0**。
+2. 08-21 生产预检：targeted **19/19**；10-seed **3420 runs** = 555 胜/2865 负/0 timeout，最大单击 2056；最终全量 **5261/0**。
+3. 08-20 文档扫描：1318 个 md、8344 引用、dead 65。
+4. 视觉证据：`build/visual_acceptance/phase0a_0821_closeout/`（gitignored）含双视口 PNG/log/manifest，两路均为原生 window-id 截图。
+5. 动态键鼠 smoke：重开战斗后 W/D/J/Q/R 真实驱动至「破阵」，战中与终局 HUD/技能印/再战语义完整。
 
 ## 下一步任务（需人类判断优先）
 
@@ -42,7 +44,7 @@
 
 ### 后续工程
 
-1. 低消下一切片：单独抽玩家 neutral builder，替换 `BattleCharacter.fromCharacter → toSnapshot` 最后一个装配中转；不得与消费面迁移混做。
-2. 为 35 条 skipped 内容按能力依赖拆批：先 Boss phase/charge，再 vulnerability/guardian，`stage_21_05` survive condition 单列；不得用降级运行冒充迁移。
+1. 低消下一切片：对 24 条 Boss phase/charge skipped 内容先冻结 capability matrix，再选一个机制纵切接入 reducer/AI/headless；不得用降级运行冒充迁移。
+2. 随后拆 vulnerability/guardian，`stage_21_05` survive condition 单列。
 3. 按 ADR 迁远征、断魂庄单主角续传与扫荡 headless 直结；只消费 manifest eligible 内容。
 4. 六人主观 Gate、Windows 实机 Gate、Phase 0B MANUAL_RIG 继续依赖锁死；未授权不 push。

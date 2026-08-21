@@ -20,8 +20,7 @@ import '../../cultivation/application/skill_loadout_service.dart';
 import '../../cultivation/application/synergy_service.dart';
 import '../../inheritance/application/founder_buff_service.dart';
 import '../../sect/domain/sect.dart';
-import '../domain/battle_state.dart';
-import 'legacy_3v3_combatant_adapter.dart';
+import '../domain/player_combatant_snapshot_builder.dart';
 
 /// 持久化玩家角色 → [CombatantSnapshot] 的深 Module。
 ///
@@ -147,9 +146,6 @@ final class PlayerCombatantSnapshotAssembler {
       snapshots.add(
         await _assembleOne(
           character: updated,
-          // BattleCharacter.fromCharacter 仍是迁移期内部 implementation，
-          // 其 slot assert 不得成为 neutral Interface 的 roster cap。
-          slotIndex: index.clamp(0, 2),
           founderBuffActive: founderBuffByCharacter[players[index].id] ?? false,
         ),
       );
@@ -159,7 +155,6 @@ final class PlayerCombatantSnapshotAssembler {
 
   Future<CombatantSnapshot> _assembleOne({
     required Character character,
-    required int slotIndex,
     required bool founderBuffActive,
   }) async {
     final equipped = <Equipment>[];
@@ -190,21 +185,16 @@ final class PlayerCombatantSnapshotAssembler {
 
     final numbers = GameRepository.instance.numbers;
     final heavyInjured = character.injuryHoursRemaining > 0;
-    final base = Legacy3v3CombatantAdapter.toSnapshot(
-      BattleCharacter.fromCharacter(
-        character: character,
-        equipped: equipped,
-        mainTechnique: mainTechnique,
-        numbers: numbers,
-        teamSide: 0,
-        slotIndex: slotIndex,
-        founderBuffActive: founderBuffActive,
-        outputMultiplier: heavyInjured
-            ? numbers.injury.heavyAttackOutputMultiplier
-            : 1.0,
-        heavyInjured: heavyInjured,
-        lightInjuryStacks: character.lightInjuryStacks,
-      ),
+    final base = PlayerCombatantSnapshotBuilder.build(
+      character: character,
+      equipped: equipped,
+      mainTechnique: mainTechnique,
+      numbers: numbers,
+      founderBuffActive: founderBuffActive,
+      outputMultiplier: heavyInjured
+          ? numbers.injury.heavyAttackOutputMultiplier
+          : 1.0,
+      lightInjuryStacks: character.lightInjuryStacks,
     );
     final skillsById = {
       for (final skill in base.availableSkills) skill.id: skill,
