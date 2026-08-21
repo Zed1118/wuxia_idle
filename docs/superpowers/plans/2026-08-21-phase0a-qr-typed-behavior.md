@@ -29,7 +29,7 @@ Branch: `codex/phase0a-qr-behavior-0821`
 - [x] Reducer events and settlement preserve the real skill ids.
 - [x] Q remains control-only and R keeps the existing DamageCalculator path.
 - [x] Focused, analyze, profile, and full verification pass.
-- [ ] Recovery records, `[READY]`, local merge, and worktree cleanup complete.
+- [x] Recovery records, `[READY]`, local merge, and worktree cleanup complete.
 
 ## Task slices
 
@@ -62,8 +62,8 @@ Branch: `codex/phase0a-qr-behavior-0821`
 
 ## Recovery point
 
-Status: implementation and all verification gates complete, ready to commit and
-merge. Started from local main `f43c5421`. Last completed: full suite passed
-5,285/5,285 after correcting stale skill-count and AOE test contracts. Next:
-create the `[READY]` commit, fast-forward local `main`, verify merged state, and
-remove the worktree/branch. Blockers: none.
+Status: complete. Started from local main `f43c5421`; implementation froze as
+`[READY]` commit `698fad4a`, then fast-forwarded to local `main`. Full suite
+passed 5,285/5,285; merged-state targeted tests passed 48/48 and analyze stayed
+clean. The worktree and branch were removed. Next: open the separate
+charge/interrupt slice when requested. Blockers: none.
