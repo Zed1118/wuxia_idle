@@ -93,6 +93,10 @@ final class Phase0aVfxController {
   bool _sealed = false;
 
   /// 同步一拍竞技场全量状态,建立 id → 单位(位置/阵营)索引。
+  ///
+  /// 坐标读取为 event-first:事件携带的结算时坐标快照优先,字段为空
+  /// 才回退本索引(兼容手工构造的旧事件)。本索引仍是 actor.side
+  /// 阵营判定与坐标回退的唯一来源。
   void syncActors(Phase0aArenaState state) {
     _actors
       ..clear()
@@ -115,7 +119,12 @@ final class Phase0aVfxController {
       if (hasRoom()) entries.add(entry);
     }
 
-    void pushPopup(String targetId, int damage, bool isCritical) {
+    void pushPopup(
+      String targetId,
+      int damage,
+      bool isCritical, {
+      ArenaVector? anchor,
+    }) {
       if (damage <= 0 || popupCount >= maxDamagePopups) return;
       popupCount++;
       push(
@@ -124,9 +133,10 @@ final class Phase0aVfxController {
           targetId: targetId,
           damage: damage,
           isCritical: isCritical,
-          // 保存事件发生时目标的世界坐标快照。
-          // 渲染层不得通过 id 反查当前 state(目标可能已死亡/移除)。
-          anchor: _actors[targetId]?.position,
+          // 事件携带的结算时坐标快照优先;字段为空才回退同步状态
+          // (兼容旧事件)。渲染层不得通过 id 反查当前 state
+          // (目标可能已死亡/移除)。
+          anchor: anchor ?? _actors[targetId]?.position,
         ),
       );
     }
@@ -152,20 +162,35 @@ final class Phase0aVfxController {
       }
       switch (event) {
         case Phase0aHitLanded():
-          pushPopup(event.target, event.resolvedDamage, event.isCritical);
+          pushPopup(
+            event.target,
+            event.resolvedDamage,
+            event.isCritical,
+            anchor: event.targetPosition,
+          );
           _maybePushPlayerAttackVfx(event, push);
         case Phase0aGatherStarted():
           push(
             Phase0aVfxEntry(
               kind: Phase0aVfxKind.gatherVortex,
-              anchor: _actors[event.actor]?.position,
+              anchor: event.actorPosition ?? _actors[event.actor]?.position,
             ),
           );
         case Phase0aGatherApplied():
           for (final outcome in event.outcomes) {
+            // 同链补缺:Q 结算伤害与 Clear/Skill 同样逐目标飘字,
+            // anchor = 结算落点(真实环点),零伤不发。
+            pushPopup(
+              outcome.target,
+              outcome.resolvedDamage,
+              outcome.isCritical,
+              anchor: outcome.targetPosition,
+            );
             if (outcome.statusApplied == Phase0aSkillStatus.pulled) {
-              final source = _actors[outcome.target]?.position;
-              final target = _actors[event.actor]?.position;
+              final source =
+                  outcome.sourcePosition ?? _actors[outcome.target]?.position;
+              final target =
+                  outcome.targetPosition ?? _actors[event.actor]?.position;
               if (source == null || target == null) continue;
               push(
                 Phase0aVfxEntry(
@@ -182,12 +207,17 @@ final class Phase0aVfxController {
           push(
             Phase0aVfxEntry(
               kind: Phase0aVfxKind.clearBurst,
-              anchor: _actors[event.actor]?.position,
+              anchor: event.actorPosition ?? _actors[event.actor]?.position,
             ),
           );
         case Phase0aClearApplied():
           for (final outcome in event.outcomes) {
-            pushPopup(outcome.target, outcome.resolvedDamage, false);
+            pushPopup(
+              outcome.target,
+              outcome.resolvedDamage,
+              false,
+              anchor: outcome.targetPosition,
+            );
           }
         case Phase0aSkillApplied():
           for (final outcome in event.outcomes) {
@@ -195,6 +225,7 @@ final class Phase0aVfxController {
               outcome.target,
               outcome.resolvedDamage,
               outcome.isCritical,
+              anchor: outcome.targetPosition,
             );
           }
         case Phase0aEnemyDefeated():
@@ -203,7 +234,7 @@ final class Phase0aVfxController {
               kind: Phase0aVfxKind.defeatInk,
               targetId: event.target,
               defeatKind: event.defeatKind,
-              anchor: _actors[event.target]?.position,
+              anchor: event.targetPosition ?? _actors[event.target]?.position,
             ),
           );
         case Phase0aWaveStarted():
@@ -246,22 +277,27 @@ final class Phase0aVfxController {
 
   /// 玩家普攻按事件时距离二分表现:近距双弧墨痕,远距掌风;
   /// 敌方命中只触发通用受击反馈,不冒用玩家招式 VFX。
+  ///
+  /// 阵营判定仍从同步状态读取;坐标 event-first——事件携带的
+  /// 结算时快照优先,字段为空才回退同步状态。
   void _maybePushPlayerAttackVfx(
     Phase0aHitLanded event,
     void Function(Phase0aVfxEntry) push,
   ) {
     final actor = _actors[event.actor];
-    final target = _actors[event.target];
-    if (actor == null || target == null) return;
-    if (actor.side != Phase0aSide.player) return;
-    final ArenaVector delta = target.position - actor.position;
+    if (actor == null || actor.side != Phase0aSide.player) return;
+    final actorPosition = event.actorPosition ?? actor.position;
+    final targetPosition =
+        event.targetPosition ?? _actors[event.target]?.position;
+    if (targetPosition == null) return;
+    final ArenaVector delta = targetPosition - actorPosition;
     if (delta.length < palmTrailMinDistance) {
       push(
         Phase0aVfxEntry(
           kind: Phase0aVfxKind.meleeSlash,
           actorId: event.actor,
           targetId: event.target,
-          anchor: target.position,
+          anchor: targetPosition,
         ),
       );
       return;
@@ -271,8 +307,8 @@ final class Phase0aVfxController {
         kind: Phase0aVfxKind.palmTrail,
         actorId: event.actor,
         targetId: event.target,
-        source: actor.position,
-        vfxTarget: target.position,
+        source: actorPosition,
+        vfxTarget: targetPosition,
       ),
     );
   }
