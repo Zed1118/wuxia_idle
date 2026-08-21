@@ -2,6 +2,7 @@ import 'dart:math';
 
 import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/skill_def.dart';
+import '../../../../data/defs/phase0a_skill_behavior.dart';
 import '../../../../data/numbers_config.dart';
 import '../../domain/damage_calculator.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
@@ -161,7 +162,9 @@ final class Phase0aDamageCalculatorAdapter
     _validateSnapshot(attacker, attackerId);
     _validateSnapshot(target, targetId);
 
-    if (skill == null) {
+    if (skill == null ||
+        (skill.phase0aBehavior != null &&
+            !skill.phase0aBehavior!.hasEffect(Phase0aSkillEffectType.damage))) {
       // control-only 显式绑定:不调 calculator、不消费 RNG。
       return const Phase0aResolvedHit(
         isHit: true,

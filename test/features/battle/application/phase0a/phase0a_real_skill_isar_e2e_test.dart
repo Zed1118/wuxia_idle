@@ -81,13 +81,19 @@ void main() {
         ...player.skillLoadout.ids,
         ?player.skillLoadout.basicAttack?.id,
       };
+      final tacticalIds = {
+        mapping.playerAdapter.gatherSkillBinding!.skill.id,
+        mapping.playerAdapter.clearSkillBinding!.skill.id,
+      };
       expect(settlement.skillCasts, isNotEmpty);
       expect(
         settlement.skillCasts.every(
-          (cast) => equippedIds.contains(cast.skillId),
+          (cast) =>
+              equippedIds.contains(cast.skillId) ||
+              tacticalIds.contains(cast.skillId),
         ),
         isTrue,
-        reason: '内部 hotkey/kind 不得进入熟练度账本',
+        reason: '内部 hotkey/kind 不得进入熟练度账本，真实 Q/R id 允许记账',
       );
     },
   );

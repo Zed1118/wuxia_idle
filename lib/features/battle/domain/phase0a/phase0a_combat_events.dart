@@ -228,19 +228,22 @@ final class Phase0aGatherStarted extends Phase0aEvent {
     required super.seq,
     required super.tick,
     required this.actor,
+    this.skillId = '',
   });
 
   final String actor;
+  final String skillId;
 
   @override
   bool operator ==(Object other) =>
       other is Phase0aGatherStarted &&
       other.seq == seq &&
       other.tick == tick &&
-      other.actor == actor;
+      other.actor == actor &&
+      other.skillId == skillId;
 
   @override
-  int get hashCode => Object.hash(seq, tick, actor);
+  int get hashCode => Object.hash(seq, tick, actor, skillId);
 }
 
 /// Q 聚怪结算生效,携带逐目标有序 outcomes(对齐契约 gather_applied)。
@@ -273,19 +276,22 @@ final class Phase0aClearStarted extends Phase0aEvent {
     required super.seq,
     required super.tick,
     required this.actor,
+    this.skillId = '',
   });
 
   final String actor;
+  final String skillId;
 
   @override
   bool operator ==(Object other) =>
       other is Phase0aClearStarted &&
       other.seq == seq &&
       other.tick == tick &&
-      other.actor == actor;
+      other.actor == actor &&
+      other.skillId == skillId;
 
   @override
-  int get hashCode => Object.hash(seq, tick, actor);
+  int get hashCode => Object.hash(seq, tick, actor, skillId);
 }
 
 /// R 清场群体结算生效,携带逐目标有序 outcomes(对齐契约 clear_applied)。

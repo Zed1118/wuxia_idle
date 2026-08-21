@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -113,12 +114,27 @@ void main() {
         mapping.combatants.map((c) => c.actorId),
         containsAll(['player', 'enemy_xueTu_thug_a']),
       );
-      // 固定三 kind 全覆盖；fixture 无真实数字槽，numeric binding 保持空。
+      // 固定三 kind 全覆盖；Q/R 已由真实数据技能绑定，fixture 无数字槽。
       expect(mapping.moveBindings.keys, hasLength(3));
       expect(mapping.numericSkillBindings.equipped, isEmpty);
       expect(mapping.moveBindings[Phase0aDamageKind.basic], isNotNull);
-      expect(mapping.moveBindings[Phase0aDamageKind.gather], isNull);
-      expect(mapping.moveBindings[Phase0aDamageKind.clear], isNotNull);
+      expect(
+        mapping.moveBindings[Phase0aDamageKind.gather]?.id,
+        'skill_phase0a_gather',
+      );
+      expect(
+        mapping.moveBindings[Phase0aDamageKind.clear]?.id,
+        'skill_phase0a_clear',
+      );
+      final gatherBinding = mapping.playerAdapter.gatherSkillBinding!;
+      final clearBinding = mapping.playerAdapter.clearSkillBinding!;
+      expect(gatherBinding.effectRadius, 520);
+      expect(gatherBinding.destinationRadius, 120);
+      expect(gatherBinding.qiCost, 25);
+      expect(gatherBinding.cooldownSeconds, 5);
+      expect(clearBinding.effectRadius, 340);
+      expect(clearBinding.qiCost, 50);
+      expect(clearBinding.cooldownSeconds, 8);
       // 空间排布:玩家在左,敌在右。
       expect(mapping.initialState.player.position.x, lessThan(0));
       expect(mapping.waves.first.enemies.single.position.x, greaterThan(0));
@@ -152,6 +168,81 @@ void main() {
       );
       expect(mapping.initialState.player.qiCurrent, 37);
       expect(mapping.initialState.player.qiMax, 100);
+    });
+
+    test('Q/R 真实 skill id 经 intent 进入 reducer started 事件', () {
+      final numbers = repo.numbers;
+      final mapping = Phase0aStageContentMapper.map(
+        stage: repo.getStage('stage_01_01'),
+        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
+          makeCh1Player(numbers),
+        ),
+        numbers: numbers,
+      );
+      final flow = Phase0aProductionFlowAssembler.assemble(
+        initialState: mapping.initialState,
+        waves: mapping.waves,
+        combatants: mapping.combatants,
+        moveBindings: mapping.moveBindings,
+        numbers: numbers,
+        rng: Random(20260821),
+        playerAdapter: mapping.playerAdapter,
+        enemyAiAdapter: mapping.enemyAiAdapter,
+      );
+
+      final events = flow.advance(
+        deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+        command: const Phase0aPlayerCommand(gather: true, clear: true),
+      );
+
+      expect(
+        events.whereType<Phase0aGatherStarted>().single.skillId,
+        'skill_phase0a_gather',
+      );
+      expect(
+        events.whereType<Phase0aClearStarted>().single.skillId,
+        'skill_phase0a_clear',
+      );
+    });
+
+    test('production Q/R 尺寸、真气与 CD 不再读 legacy player 固定值', () {
+      final yaml = (jsonDecode(jsonEncode(repo.numbers.raw)) as Map)
+          .cast<String, dynamic>();
+      final arena = (yaml['phase0a_arena'] as Map).cast<String, dynamic>();
+      final player = (arena['player'] as Map).cast<String, dynamic>();
+      player
+        ..['gather_ring_radius'] = 0
+        ..['gather_effect_radius'] = 1
+        ..['gather_qi_cost'] = 1
+        ..['gather_cooldown_seconds'] = 1
+        ..['clear_effect_radius'] = 1
+        ..['clear_qi_cost'] = 1
+        ..['clear_cooldown_seconds'] = 1;
+      final numbers = NumbersConfig.fromYaml(yaml);
+
+      final mapping = Phase0aStageContentMapper.map(
+        stage: repo.getStage('stage_01_01'),
+        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
+          makeCh1Player(numbers),
+        ),
+        numbers: numbers,
+      );
+      final gather = mapping.playerAdapter.gatherSkillBinding!;
+      final clear = mapping.playerAdapter.clearSkillBinding!;
+
+      expect(
+        (
+          gather.destinationRadius,
+          gather.effectRadius,
+          gather.qiCost,
+          gather.cooldownSeconds,
+        ),
+        (120, 520, 25, 5),
+      );
+      expect(
+        (clear.effectRadius, clear.qiCost, clear.cooldownSeconds),
+        (340, 50, 8),
+      );
     });
 
     test('Q/R 首帧可用态按开场真气推导', () {
@@ -522,9 +613,9 @@ void main() {
       expect(settlement.totalDamage, greaterThan(0));
       expect(settlement.damageByCharacterId[1], greaterThan(0));
       expect(
-        settlement.skillCasts,
-        isEmpty,
-        reason: '内部 phase0a move id 不得污染真实心法 skillUsageCount',
+        settlement.skillCasts.map((cast) => cast.skillId).toSet(),
+        containsAll({'skill_phase0a_gather', 'skill_phase0a_clear'}),
+        reason: '数据定义的 Q/R 应进入真实技能结算记录',
       );
       expect(settlement.participantFor(1)!.currentHp, greaterThan(0));
       final enemyId = mapping.combatants.last.snapshot.characterId;

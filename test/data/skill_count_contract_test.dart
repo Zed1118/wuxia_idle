@@ -9,7 +9,7 @@ import '../support/test_data.dart';
 void main() {
   tearDownAll(GameRepository.resetForTest);
 
-  test('skills 219 + encounter skills 40 = merged SkillDef 259', () async {
+  test('skills 221 + encounter skills 40 = merged SkillDef 261', () async {
     Set<String> idsFrom(String path, String rootKey) {
       final yaml = loadYaml(File(path).readAsStringSync()) as YamlMap;
       final rows = yaml[rootKey] as YamlList;
@@ -25,7 +25,7 @@ void main() {
     );
     final overlap = genericIds.intersection(encounterIds);
 
-    expect(genericIds, hasLength(219));
+    expect(genericIds, hasLength(221));
     expect(encounterIds, hasLength(40));
     expect(
       overlap,
@@ -35,13 +35,13 @@ void main() {
 
     final repo = await loadTestGameRepository();
     final mergedIds = genericIds.union(encounterIds);
-    expect(mergedIds, hasLength(259));
+    expect(mergedIds, hasLength(261));
     expect(repo.skillDefs.keys.toSet(), mergedIds);
     expect(repo.encounterSkillIds, encounterIds);
 
     final gdd = File('GDD.md').readAsStringSync();
-    expect(gdd, contains('| 通用 / 战斗招式（skills.yaml） | 219 招 |'));
+    expect(gdd, contains('| 通用 / 战斗招式（skills.yaml） | 221 招 |'));
     expect(gdd, contains('| 奇遇专属武学领悟招式（encounter_skills.yaml） | 40 招 |'));
-    expect(gdd, contains('| 招式总池（SkillDef） | 259 招（219 + 40） |'));
+    expect(gdd, contains('| 招式总池（SkillDef） | 261 招（221 + 40） |'));
   });
 }

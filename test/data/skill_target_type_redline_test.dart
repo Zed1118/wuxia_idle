@@ -43,17 +43,21 @@ void main() {
       }
     });
 
-    test('aoe 群体技集合非空,且当前设计仅大招配 aoe(拖招红线 ②)', () {
+    test('aoe 群体技仅允许大招或 typed Phase 0A special 战术技(拖招红线 ②)', () {
       final repo = GameRepository.instance;
       final aoe = repo.skillDefs.values.where(
         (s) => s.targetType == TargetType.aoe,
       );
       expect(aoe, isNotEmpty, reason: 'production 应有群体技(防回填整体丢失)');
       for (final s in aoe) {
+        final isTypedPhase0aTactical =
+            s.type == SkillType.powerSkill &&
+            s.source == SkillSource.special &&
+            s.phase0aBehavior != null;
         expect(
-          s.type,
-          SkillType.ultimate,
-          reason: '${s.id} 当前设计群体技仅大招(普攻/power 单体)',
+          s.type == SkillType.ultimate || isTypedPhase0aTactical,
+          isTrue,
+          reason: '${s.id} 群体技必须是大招或 typed Phase 0A special 战术技',
         );
       }
     });

@@ -86,8 +86,12 @@ final class Phase0aGatherIntent extends Phase0aIntent {
     required this.effectRadius,
     required this.qiCost,
     required this.cooldownSeconds,
+    this.skillId = '',
   });
 
+  /// Production mappings carry the real data-defined tactical skill id.
+  /// Empty is reserved for isolated legacy fixtures.
+  final String skillId;
   final String slot;
   final double ringRadius;
 
@@ -108,8 +112,12 @@ final class Phase0aClearIntent extends Phase0aIntent {
     required this.effectRadius,
     required this.qiCost,
     required this.cooldownSeconds,
+    this.skillId = '',
   });
 
+  /// Production mappings carry the real data-defined tactical skill id.
+  /// Empty is reserved for isolated legacy fixtures.
+  final String skillId;
   final String slot;
 
   /// 作用半径:仅距 caster ≤ 该值的存活敌对单位进入结算(闭区间)。

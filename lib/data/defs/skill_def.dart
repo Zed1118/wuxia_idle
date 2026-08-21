@@ -1,4 +1,5 @@
 import '../../core/domain/enums.dart';
+import 'phase0a_skill_behavior.dart';
 
 /// 招式获取来源(波A A4 统一来源模型)。
 /// 红线:production 全招必有(loader fail-fast);消费方 = 红线自洽 +
@@ -98,6 +99,9 @@ class SkillDef {
   /// skills.yaml camelCase 例外(§4)。
   final double qiDrainPct;
 
+  /// Optional typed behavior for Phase 0A tactical Q/R bindings.
+  final Phase0aSkillBehavior? phase0aBehavior;
+
   const SkillDef({
     required this.id,
     required this.name,
@@ -122,6 +126,7 @@ class SkillDef {
     this.targetType = TargetType.single,
     this.defenseBreakPct = 0.0,
     this.qiDrainPct = 0.0,
+    this.phase0aBehavior,
   }) : assert(qiDelta != null || internalForceCost != null),
        qiDelta = qiDelta ?? -(internalForceCost ?? 0);
 
@@ -182,6 +187,11 @@ class SkillDef {
           : TargetType.single,
       defenseBreakPct: (y['defenseBreakPct'] as num?)?.toDouble() ?? 0.0,
       qiDrainPct: (y['qiDrainPct'] as num?)?.toDouble() ?? 0.0,
+      phase0aBehavior: y['phase0aBehavior'] == null
+          ? null
+          : Phase0aSkillBehavior.fromYaml(
+              Map<String, dynamic>.from(y['phase0aBehavior'] as Map),
+            ),
     );
   }
 

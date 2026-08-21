@@ -4,6 +4,7 @@ import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_damage_kind.dart';
 import '../../domain/phase0a/realtime_combat_rules.dart';
 import 'phase0a_numeric_skill_binding.dart';
+import 'phase0a_tactical_skill_binding.dart';
 
 /// 玩家一拍输入快照:四向按键 + 动作请求(语义按键,非数值)。
 final class Phase0aPlayerCommand {
@@ -63,6 +64,8 @@ final class Phase0aPlayerInputAdapter {
     required this.clearEffectRadius,
     required this.clearQiCost,
     required this.clearCooldownSeconds,
+    this.gatherSkillBinding,
+    this.clearSkillBinding,
     this.numericSkillBindings = const Phase0aNumericSkillBindings.empty(),
   });
 
@@ -84,6 +87,8 @@ final class Phase0aPlayerInputAdapter {
   final double clearEffectRadius;
   final int clearQiCost;
   final double clearCooldownSeconds;
+  final Phase0aTacticalSkillBinding? gatherSkillBinding;
+  final Phase0aTacticalSkillBinding? clearSkillBinding;
   final Phase0aNumericSkillBindings numericSkillBindings;
 
   List<Phase0aIntent> intentsFor({
@@ -114,25 +119,29 @@ final class Phase0aPlayerInputAdapter {
       );
     }
     if (command.gather) {
+      final binding = gatherSkillBinding;
       intents.add(
         Phase0aGatherIntent(
           actorId: playerId,
-          slot: gatherSlot,
-          ringRadius: gatherRingRadius,
-          effectRadius: gatherEffectRadius,
-          qiCost: gatherQiCost,
-          cooldownSeconds: gatherCooldownSeconds,
+          skillId: binding?.skill.id ?? '',
+          slot: binding?.slot ?? gatherSlot,
+          ringRadius: binding?.destinationRadius ?? gatherRingRadius,
+          effectRadius: binding?.effectRadius ?? gatherEffectRadius,
+          qiCost: binding?.qiCost ?? gatherQiCost,
+          cooldownSeconds: binding?.cooldownSeconds ?? gatherCooldownSeconds,
         ),
       );
     }
     if (command.clear) {
+      final binding = clearSkillBinding;
       intents.add(
         Phase0aClearIntent(
           actorId: playerId,
-          slot: clearSlot,
-          effectRadius: clearEffectRadius,
-          qiCost: clearQiCost,
-          cooldownSeconds: clearCooldownSeconds,
+          skillId: binding?.skill.id ?? '',
+          slot: binding?.slot ?? clearSlot,
+          effectRadius: binding?.effectRadius ?? clearEffectRadius,
+          qiCost: binding?.qiCost ?? clearQiCost,
+          cooldownSeconds: binding?.cooldownSeconds ?? clearCooldownSeconds,
         ),
       );
     }

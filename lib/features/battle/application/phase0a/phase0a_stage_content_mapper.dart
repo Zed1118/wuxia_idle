@@ -2,6 +2,7 @@ import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/defs/stage_def.dart';
 import '../../../../data/defs/tower_floor_def.dart';
+import '../../../../data/game_repository.dart';
 import '../../../../data/numbers_config.dart';
 import '../../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../../shared/battle_shared/combatant_skill_loadout.dart';
@@ -15,6 +16,7 @@ import 'phase0a_enemy_ai_adapter.dart';
 import 'phase0a_enemy_skill_binding.dart';
 import 'phase0a_numeric_skill_binding.dart';
 import 'phase0a_player_input_adapter.dart';
+import 'phase0a_tactical_skill_binding.dart';
 
 /// Phase 1 纵切切片 1(spec 2026-08-19 · P1=α 主线 Ch1 · D1=α 机械映射):
 /// 把生产关卡内容(StageDef)装配成 [Phase0aProductionFlowAssembler.assemble]
@@ -112,6 +114,7 @@ final class Phase0aStageContentMapper {
       isTower: isTower,
     );
     final numericSkillBindings = _numericSkillBindings(playerSnapshot, arena);
+    final tacticalSkillBindings = _tacticalSkillBindings(arena);
 
     // —— 空间排布:确定性,玩家在左,敌人右侧按 slot 均匀散开 ——
     final playerPosition = ArenaVector(arena.arenaMinX * 0.5, 0);
@@ -177,16 +180,23 @@ final class Phase0aStageContentMapper {
         skillSlots: _skillSlots(
           arena,
           numericSkillBindings,
+          tacticalSkillBindings,
           playerSnapshot.currentQi,
         ),
       ),
       waves: [Phase0aWave(enemies: waveEnemies)],
       combatants: List.unmodifiable(combatants),
-      moveBindings: _moveBindings(arena, playerSnapshot, numericSkillBindings),
+      moveBindings: _moveBindings(
+        arena,
+        playerSnapshot,
+        numericSkillBindings,
+        tacticalSkillBindings,
+      ),
       playerAdapter: _playerAdapter(
         arena: arena,
         playerId: playerId,
         numericSkillBindings: numericSkillBindings,
+        tacticalSkillBindings: tacticalSkillBindings,
         attackQiDelta: arena.basicQiDelta,
       ),
       enemyAiAdapter: Phase0aEnemyAiAdapter(
@@ -290,26 +300,27 @@ final class Phase0aStageContentMapper {
   static List<Phase0aSkillSlot> _skillSlots(
     Phase0aArenaConfig arena,
     Phase0aNumericSkillBindings numericSkills,
+    _Phase0aTacticalSkillBindings? tacticalSkills,
     int openingQi,
   ) => List.unmodifiable([
     Phase0aSkillSlot(
-      slot: arena.gatherSlot,
+      slot: tacticalSkills?.gather.slot ?? arena.gatherSlot,
       cooldownRemaining: 0,
-      qiCost: arena.gatherQiCost,
+      qiCost: tacticalSkills?.gather.qiCost ?? arena.gatherQiCost,
       availability: availabilityOf(
         cooldownRemaining: 0,
         qiCurrent: openingQi,
-        qiCost: arena.gatherQiCost,
+        qiCost: tacticalSkills?.gather.qiCost ?? arena.gatherQiCost,
       ),
     ),
     Phase0aSkillSlot(
-      slot: arena.clearSlot,
+      slot: tacticalSkills?.clear.slot ?? arena.clearSlot,
       cooldownRemaining: 0,
-      qiCost: arena.clearQiCost,
+      qiCost: tacticalSkills?.clear.qiCost ?? arena.clearQiCost,
       availability: availabilityOf(
         cooldownRemaining: 0,
         qiCurrent: openingQi,
-        qiCost: arena.clearQiCost,
+        qiCost: tacticalSkills?.clear.qiCost ?? arena.clearQiCost,
       ),
     ),
     for (final binding in numericSkills.equipped)
@@ -330,6 +341,7 @@ final class Phase0aStageContentMapper {
     Phase0aArenaConfig arena,
     CombatantSnapshot player,
     Phase0aNumericSkillBindings numericSkills,
+    _Phase0aTacticalSkillBindings? tacticalSkills,
   ) => Map.unmodifiable({
     Phase0aDamageKind.basic:
         player.skillLoadout.basicAttack ??
@@ -338,12 +350,14 @@ final class Phase0aStageContentMapper {
           powerMultiplier: arena.basicPowerMultiplier,
           qiDelta: arena.basicQiDelta,
         ),
-    Phase0aDamageKind.gather: null,
-    Phase0aDamageKind.clear: _moveSkill(
-      id: arena.clearSkillId,
-      powerMultiplier: arena.clearPowerMultiplier,
-      qiDelta: arena.clearQiDelta,
-    ),
+    Phase0aDamageKind.gather: tacticalSkills?.gather.skill,
+    Phase0aDamageKind.clear:
+        tacticalSkills?.clear.skill ??
+        _moveSkill(
+          id: arena.clearSkillId,
+          powerMultiplier: arena.clearPowerMultiplier,
+          qiDelta: arena.clearQiDelta,
+        ),
     for (final binding in numericSkills.equipped)
       phase0aDamageKindForSkillHotkey(binding.hotkey): binding.skill,
   });
@@ -382,6 +396,42 @@ final class Phase0aStageContentMapper {
     );
   }
 
+  /// Empty gather id is the explicit legacy-fixture escape hatch. Production
+  /// numbers define both ids and therefore must resolve and validate both real
+  /// SkillDefs; partial or unsupported configuration fails closed at mapping.
+  static _Phase0aTacticalSkillBindings? _tacticalSkillBindings(
+    Phase0aArenaConfig arena,
+  ) {
+    if (arena.gatherSkillId.isEmpty) return null;
+    if (arena.clearSkillId.isEmpty) {
+      throw StateError(
+        'Phase0a tactical skill ids must be configured together',
+      );
+    }
+    final skills = GameRepository.instance.skillDefs;
+    final gatherSkill = skills[arena.gatherSkillId];
+    final clearSkill = skills[arena.clearSkillId];
+    if (gatherSkill == null || clearSkill == null) {
+      throw StateError(
+        'Phase0a tactical skill missing: '
+        'gather=${arena.gatherSkillId}(${gatherSkill != null}), '
+        'clear=${arena.clearSkillId}(${clearSkill != null})',
+      );
+    }
+    return _Phase0aTacticalSkillBindings(
+      gather: Phase0aTacticalSkillBinding(
+        kind: Phase0aTacticalSkillKind.gather,
+        slot: arena.gatherSlot,
+        skill: gatherSkill,
+      ),
+      clear: Phase0aTacticalSkillBinding(
+        kind: Phase0aTacticalSkillKind.clear,
+        slot: arena.clearSlot,
+        skill: clearSkill,
+      ),
+    );
+  }
+
   static SkillDef _moveSkill({
     required String id,
     required int powerMultiplier,
@@ -402,6 +452,7 @@ final class Phase0aStageContentMapper {
     required Phase0aArenaConfig arena,
     required String playerId,
     required Phase0aNumericSkillBindings numericSkillBindings,
+    required _Phase0aTacticalSkillBindings? tacticalSkillBindings,
     required int attackQiDelta,
   }) => Phase0aPlayerInputAdapter(
     playerId: playerId,
@@ -418,6 +469,18 @@ final class Phase0aStageContentMapper {
     clearEffectRadius: arena.clearEffectRadius,
     clearQiCost: arena.clearQiCost,
     clearCooldownSeconds: arena.clearCooldownSeconds,
+    gatherSkillBinding: tacticalSkillBindings?.gather,
+    clearSkillBinding: tacticalSkillBindings?.clear,
     numericSkillBindings: numericSkillBindings,
   );
+}
+
+final class _Phase0aTacticalSkillBindings {
+  const _Phase0aTacticalSkillBindings({
+    required this.gather,
+    required this.clear,
+  });
+
+  final Phase0aTacticalSkillBinding gather;
+  final Phase0aTacticalSkillBinding clear;
 }

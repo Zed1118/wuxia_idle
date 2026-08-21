@@ -1,3 +1,4 @@
+import '../../../../data/defs/skill_def.dart';
 import '../../../../shared/battle_shared/battle_result.dart';
 import '../../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
@@ -54,7 +55,12 @@ final class Phase0aSettlementAdapter {
       );
     }
 
-    void addSkillCastById(String actorId, int tick, String skillId) {
+    void addSkillCastById(
+      String actorId,
+      int tick,
+      String skillId, {
+      Phase0aDamageKind? tacticalKind,
+    }) {
       final characterId = characterIdByActor[actorId];
       if (characterId == null) return;
       final combatant = mapping.combatants.firstWhere(
@@ -65,7 +71,15 @@ final class Phase0aSettlementAdapter {
       );
       final isBasic =
           combatant.snapshot.skillLoadout.basicAttack?.id == skillId;
-      if (!ownsSkill && !isBasic) {
+      final tacticalSkill = tacticalKind == null
+          ? null
+          : mapping.moveBindings[tacticalKind];
+      final isMappedTactical =
+          actorId == mapping.initialState.player.id &&
+          tacticalSkill?.id == skillId &&
+          tacticalSkill?.source == SkillSource.special &&
+          tacticalSkill?.phase0aBehavior != null;
+      if (!ownsSkill && !isBasic && !isMappedTactical) {
         return;
       }
       skillCasts.add(
@@ -94,8 +108,16 @@ final class Phase0aSettlementAdapter {
           :final isCritical,
         ):
           addDamage(actor, resolvedDamage, critical: isCritical);
-        case Phase0aGatherStarted():
+        case Phase0aGatherStarted(:final actor, :final tick, :final skillId):
           hadActions = true;
+          if (skillId.isNotEmpty) {
+            addSkillCastById(
+              actor,
+              tick,
+              skillId,
+              tacticalKind: Phase0aDamageKind.gather,
+            );
+          }
         case Phase0aGatherApplied(:final actor, :final outcomes):
           for (final result in outcomes) {
             addDamage(
@@ -104,9 +126,18 @@ final class Phase0aSettlementAdapter {
               critical: result.isCritical,
             );
           }
-        case Phase0aClearStarted(:final actor, :final tick):
+        case Phase0aClearStarted(:final actor, :final tick, :final skillId):
           hadActions = true;
-          addSkillCast(actor, tick, Phase0aDamageKind.clear);
+          if (skillId.isEmpty) {
+            addSkillCast(actor, tick, Phase0aDamageKind.clear);
+          } else {
+            addSkillCastById(
+              actor,
+              tick,
+              skillId,
+              tacticalKind: Phase0aDamageKind.clear,
+            );
+          }
         case Phase0aClearApplied(:final actor, :final outcomes):
           for (final result in outcomes) {
             addDamage(

@@ -1,7 +1,7 @@
 # =============================================================================
-# skills.yaml · 招式 fixture（P2.1 Batch 2 扩 147 心法招 + 19 独立招）
+# skills.yaml · 招式 fixture（147 心法招 + 74 独立/特殊招）
 # =============================================================================
-# 共 215 招（2026-07-24 Ch16 铁马冰河后实测,skill_count_contract_test 钉值）：基线 166
+# 共 221 招（2026-08-21 Phase 0A Q/R 过渡战术技 +2 后实测）：基线 166
 # （49 心法 × 3 = 147 + 18 轻功 + 1 joint_skill）+ 波A/波B 等后续批新增真解/残页/破招技
 # + 开锋槽3装备专属技 21 招 + 心魔蓄力技 + 断魂庄锁脉针 + Ch8-16 独立末Boss真解逐章累计。
 #
@@ -25,6 +25,43 @@
 # =============================================================================
 
 skills:
+
+  # Phase 0A 迁移期战术技：真实 SkillDef + typed behavior。
+  # 待内容技能覆盖 Q/R capability matrix 后删除，不作为永久全局能力。
+  - id: skill_phase0a_gather
+    name: 揽势
+    description: 气机回卷，将近处敌手牵至身前。
+    type: powerSkill
+    targetType: aoe
+    powerMultiplier: 0
+    qiDelta: -25
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: null
+    visualEffect: phase0a_gather
+    source: special
+    phase0aBehavior:
+      geometry: { shape: radial, anchor: caster, radius: 520.0 }
+      effects:
+        - { type: pull, destinationRadius: 120.0 }
+
+  - id: skill_phase0a_clear
+    name: 破阵
+    description: 真气震荡周身，重创近处敌手并令其失衡。
+    type: powerSkill
+    targetType: aoe
+    powerMultiplier: 1500
+    qiDelta: -50
+    cooldownTurns: 8
+    requiresManualTrigger: true
+    parentTechniqueDefId: null
+    visualEffect: phase0a_clear
+    source: special
+    phase0aBehavior:
+      geometry: { shape: radial, anchor: caster, radius: 340.0 }
+      effects:
+        - { type: damage }
+        - { type: stagger }
 
   # ───────────────────────────────────────────
   # 第 1 阶 入门功 · ruMenGong (cap=1500)

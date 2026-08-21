@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/phase0a_skill_behavior.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
@@ -478,6 +479,52 @@ void main() {
   });
 
   group('control-only 零伤绑定', () {
+    test('真实 pull SkillDef 无 damage effect 时仍零伤且不耗 RNG', () {
+      final gatherSkill = SkillDef(
+        id: 'phase0a_test_gather',
+        name: 'gather',
+        description: 'gather',
+        type: SkillType.powerSkill,
+        powerMultiplier: 0,
+        qiDelta: -10,
+        cooldownTurns: 3,
+        requiresManualTrigger: true,
+        visualEffect: '',
+        phase0aBehavior: Phase0aSkillBehavior.fromYaml({
+          'geometry': {'shape': 'radial', 'anchor': 'caster', 'radius': 10},
+          'effects': [
+            {'type': 'pull', 'destinationRadius': 2},
+          ],
+        }),
+      );
+      final adapter = makeAdapter(
+        seed: 42,
+        moveBindings: {
+          Phase0aDamageKind.basic: basicSkill,
+          Phase0aDamageKind.gather: gatherSkill,
+        },
+      );
+
+      final control = adapter.resolve(
+        attackerId: 'player',
+        targetId: 'e1',
+        kind: Phase0aDamageKind.gather,
+      );
+      expect(control.damage, 0);
+      final after = adapter.resolve(
+        attackerId: 'player',
+        targetId: 'e1',
+        kind: Phase0aDamageKind.basic,
+      );
+      final controlFree = directResolve(
+        attacker: makePlayerSnapshot(),
+        defender: makeEnemySnapshot(),
+        skill: basicSkill,
+        rng: math.Random(42),
+      );
+      expectResolvedEqualsDirect(after, controlFree);
+    });
+
     test('返回 hit=true/critical=false/damage=0 且不消费 RNG', () {
       final adapter = makeAdapter(
         seed: 42,

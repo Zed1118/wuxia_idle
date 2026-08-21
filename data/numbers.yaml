@@ -522,6 +522,8 @@ phase0a_arena:
     attack_half_arc_radians: 0.72
     attack_cooldown_seconds: 0.55
     gather_slot: gather
+    # 下列 Q/R 尺寸/真气/CD 仅供隔离 legacy fixture fallback；
+    # production 从 moves 绑定的 SkillDef.phase0aBehavior 与既有技能字段取值。
     gather_ring_radius: 120.0
     gather_effect_radius: 520.0
     gather_qi_cost: 25
@@ -541,10 +543,11 @@ phase0a_arena:
     basic_skill_id: phase0a_mainline_basic
     basic_power_multiplier: 500
     basic_qi_delta: 0
-    clear_skill_id: phase0a_mainline_clear
+    gather_skill_id: skill_phase0a_gather
+    clear_skill_id: skill_phase0a_clear
+    # 仅供隔离 legacy fixture 生成 synthetic clear SkillDef。
     clear_power_multiplier: 1500
     clear_qi_delta: 0
-    # gather 为 control-only(采气环无伤害),绑定 null 不配倍率
 
 # =============================================================================
 # 3. 装备系统

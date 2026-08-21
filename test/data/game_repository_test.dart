@@ -62,17 +62,18 @@ void main() {
       // + Ch19 黑石守镜人本命真解 skill_yi_jing_shuang_zhao = 217(tier7 首门 drop 招·新写)
       // + Ch20 守关老将本命真解 skill_gu_cheng_kai = 218(与 Ch15 孤城闭成对·新写)
       // + Ch21 循符少年本命真解 skill_shan_wai_wu_shan = 219(与 Ch13 一览众山成对·新写)
-      // + 40 encounter_skills.yaml = 259 total
+      // + Phase 0A Q/R 两招 = 221
+      // + 2 Phase 0A 过渡战术技 + 40 encounter_skills.yaml = 261 total
       expect(
         repo.skillDefs.length,
-        259,
+        261,
         reason:
-            '219 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+            '221 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
             ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技 + 1 断魂庄锁脉针'
             ' + 1 Ch8 灰袖回风 + 1 Ch9 沉沙一诀 + 1 Ch10 止水诀 + 1 Ch11 鎏金诀'
             ' + 1 Ch12 绵里藏针 + 1 Ch13 一览众山 + 1 Ch15 孤城闭'
             ' + 1 Ch16 铁马冰河 + 1 Ch17 平沙落雁 + 1 Ch19 一镜双照 + 1 Ch20 孤城开'
-            ' + 1 Ch21 山外无山) + 40 奇遇招',
+            ' + 1 Ch21 山外无山 + 2 Phase 0A 过渡战术技) + 40 奇遇招',
       );
       expect(
         repo.encounterSkillIds.length,

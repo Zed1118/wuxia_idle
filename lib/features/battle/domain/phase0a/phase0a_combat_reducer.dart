@@ -358,7 +358,12 @@ Phase0aStepResult reducePhase0aTick({
         );
         if (cast == null) continue;
         events.add(
-          Phase0aGatherStarted(seq: seq++, tick: tick, actor: actorId),
+          Phase0aGatherStarted(
+            seq: seq++,
+            tick: tick,
+            actor: actorId,
+            skillId: intent.skillId,
+          ),
         );
         final targets =
             _opposingTargets(
@@ -460,7 +465,14 @@ Phase0aStepResult reducePhase0aTick({
           slots: slots,
         );
         if (cast == null) continue;
-        events.add(Phase0aClearStarted(seq: seq++, tick: tick, actor: actorId));
+        events.add(
+          Phase0aClearStarted(
+            seq: seq++,
+            tick: tick,
+            actor: actorId,
+            skillId: intent.skillId,
+          ),
+        );
         final targets =
             _opposingTargets(
                   casterSide: actor.side,

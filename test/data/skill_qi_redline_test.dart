@@ -54,7 +54,7 @@ void main() {
     );
     final cap = repo.numbers.combat.qi.deltaAbsCap;
 
-    expect(repo.skillDefs, hasLength(259));
+    expect(repo.skillDefs, hasLength(261));
     for (final skill in repo.skillDefs.values) {
       expect(skill.qiDelta.abs(), lessThanOrEqualTo(cap), reason: skill.id);
       switch (skill.type) {

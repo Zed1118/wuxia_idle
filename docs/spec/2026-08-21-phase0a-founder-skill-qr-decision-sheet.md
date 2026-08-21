@@ -128,3 +128,15 @@ charge/破招的 24 条内容迁移必须排在这两批之后，并复用同一
 - D3：A——采用可组合效果 + 独立几何的 typed schema。
 - D4：A——首版使用 `anchor: caster`，鼠标落点另立后续切片。
 - 备注：按两个原子批执行；先做起手技能可见性，再做 behavior schema。
+
+## 5. D2 实装口径（2026-08-21）
+
+- `skills.yaml` 新增 `skill_phase0a_gather` / `skill_phase0a_clear`，Q/R
+  production 映射不再生成伪 `SkillDef`。
+- `phase0aBehavior.geometry` 当前只接受 `radial + caster + radius`；
+  `effects` 已定义 `damage` / `pull` / `stagger` / `break`。
+- 本切片只允许 Q=`pull`、R=`damage + stagger`；`break` 可解析但 binding
+  明确拒绝，待 charge/破招批再接 reducer 状态迁移。
+- 真气与冷却仍取 `SkillDef.qiDelta/cooldownTurns`，伤害仍取既有
+  `powerMultiplier` 并走唯一 `DamageCalculator`；Q 因无 `damage` effect
+  明确零伤且不消耗 RNG。

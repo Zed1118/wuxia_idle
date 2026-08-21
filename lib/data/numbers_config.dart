@@ -1748,6 +1748,7 @@ class Phase0aArenaConfig {
   final double playerAttackHalfArcRadians;
   final double playerAttackCooldownSeconds;
   final String gatherSlot;
+  final String gatherSkillId;
   final double gatherRingRadius;
   final double gatherEffectRadius;
   final int gatherQiCost;
@@ -1785,6 +1786,7 @@ class Phase0aArenaConfig {
     required this.playerAttackHalfArcRadians,
     required this.playerAttackCooldownSeconds,
     required this.gatherSlot,
+    this.gatherSkillId = '',
     required this.gatherRingRadius,
     required this.gatherEffectRadius,
     required this.gatherQiCost,
@@ -1820,6 +1822,7 @@ class Phase0aArenaConfig {
     playerAttackHalfArcRadians: 0,
     playerAttackCooldownSeconds: 0,
     gatherSlot: '',
+    gatherSkillId: '',
     gatherRingRadius: 0,
     gatherEffectRadius: 0,
     gatherQiCost: 0,
@@ -1886,6 +1889,7 @@ class Phase0aArenaConfig {
       playerAttackCooldownSeconds: (player['attack_cooldown_seconds'] as num)
           .toDouble(),
       gatherSlot: player['gather_slot'] as String,
+      gatherSkillId: moves['gather_skill_id'] as String? ?? '',
       gatherRingRadius: (player['gather_ring_radius'] as num).toDouble(),
       gatherEffectRadius: (player['gather_effect_radius'] as num).toDouble(),
       gatherQiCost: (player['gather_qi_cost'] as num).toInt(),

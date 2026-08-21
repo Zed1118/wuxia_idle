@@ -9,7 +9,6 @@ import 'phase0a_battle_snapshot_factory.dart';
 import 'phase0a_combat_session.dart';
 import 'phase0a_damage_calculator_adapter.dart';
 import 'phase0a_enemy_ai_adapter.dart';
-import 'phase0a_numeric_skill_binding.dart';
 import 'phase0a_player_input_adapter.dart';
 import 'phase0a_wave_battle_flow.dart';
 
@@ -65,7 +64,7 @@ final class Phase0aProductionFlowAssembler {
         'playerId 必须等于首态玩家 id(${initialState.player.id})',
       );
     }
-    _checkMoveBindings(moveBindings, playerAdapter.numericSkillBindings);
+    _checkMoveBindings(moveBindings, playerAdapter);
 
     // —— 组合既有组件(工厂动态机制 fail-fast 原样穿透)——
     final bundle = Phase0aBattleSnapshotFactory(
@@ -116,7 +115,7 @@ final class Phase0aProductionFlowAssembler {
   /// control-only,缺 key 才 fail-fast。
   static void _checkMoveBindings(
     Map<Phase0aDamageKind, SkillDef?> moveBindings,
-    Phase0aNumericSkillBindings numericSkills,
+    Phase0aPlayerInputAdapter playerAdapter,
   ) {
     const requiredKinds = [
       Phase0aDamageKind.basic,
@@ -133,7 +132,26 @@ final class Phase0aProductionFlowAssembler {
         'null 为合法 control-only 绑定,缺 key 不允许',
       );
     }
-    for (final binding in numericSkills.equipped) {
+    final gatherBinding = playerAdapter.gatherSkillBinding;
+    final clearBinding = playerAdapter.clearSkillBinding;
+    if ((gatherBinding == null) != (clearBinding == null)) {
+      throw ArgumentError(
+        'Phase0a tactical adapter bindings must be both present or both absent',
+      );
+    }
+    if (gatherBinding != null && clearBinding != null) {
+      final gatherDamageSkill = moveBindings[Phase0aDamageKind.gather];
+      final clearDamageSkill = moveBindings[Phase0aDamageKind.clear];
+      if (gatherDamageSkill?.id != gatherBinding.skill.id ||
+          clearDamageSkill?.id != clearBinding.skill.id) {
+        throw ArgumentError(
+          'Phase0a tactical skill binding mismatch: '
+          'adapter=${gatherBinding.skill.id}/${clearBinding.skill.id}, '
+          'damage=${gatherDamageSkill?.id}/${clearDamageSkill?.id}',
+        );
+      }
+    }
+    for (final binding in playerAdapter.numericSkillBindings.equipped) {
       final kind = phase0aDamageKindForSkillHotkey(binding.hotkey);
       final bound = moveBindings[kind];
       if (bound?.id != binding.skill.id) {
