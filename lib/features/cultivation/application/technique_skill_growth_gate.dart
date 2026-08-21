@@ -12,6 +12,8 @@ CultivationLayer requiredLayerForTechniqueSkill({
   required TechniqueDef techniqueDef,
   required String skillId,
 }) {
+  final override = techniqueDef.skillUnlockLayers[skillId];
+  if (override != null) return override;
   final index = techniqueDef.skillIds.indexOf(skillId);
   return switch (index) {
     0 => CultivationLayer.chuKui,

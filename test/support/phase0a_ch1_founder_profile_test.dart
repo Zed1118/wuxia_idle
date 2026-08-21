@@ -37,9 +37,10 @@ void main() {
         expect(snapshot.skillLoadout.main1, isNotNull);
         expect(
           snapshot.skillLoadout.main1!.type,
-          SkillType.normalAttack,
-          reason: 'Ch1 初窥解锁池当前只有主修 basic，autoFill 落 main1',
+          SkillType.powerSkill,
+          reason: 'Ch1 初窥应开放本流派入门 powerSkill 并由 autoFill 优先装入',
         );
+        expect(snapshot.skillLoadout.main2?.type, SkillType.normalAttack);
         expect(snapshot.skillLoadout.ultimate, isNull);
         expect(snapshot.totalEquipmentAttack, greaterThan(0));
         final mapping = Phase0aStageContentMapper.map(
@@ -49,8 +50,12 @@ void main() {
         );
         expect(
           mapping.numericSkillBindings.equipped,
-          isEmpty,
-          reason: '鼠标 basic 不得重复进入数字 1–6',
+          hasLength(1),
+          reason: '鼠标 basic 排除后数字栏应只保留真实 powerSkill',
+        );
+        expect(
+          mapping.numericSkillBindings.one?.skill.type,
+          SkillType.powerSkill,
         );
       } finally {
         await IsarSetup.close();

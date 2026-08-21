@@ -39,6 +39,11 @@ class TechniqueDef {
   final String description;
   final List<String> skillIds;
 
+  /// Per-skill cultivation-layer overrides. Skills not listed keep the
+  /// standard index rule: first=chuKui, second=xiaoCheng, third+=daCheng.
+  /// Keys must belong to [skillIds]; YAML parsing rejects dangling entries.
+  final Map<String, CultivationLayer> skillUnlockLayers;
+
   /// UNUSED(0 读取 · 审计 D1 2026-06-24):与 techniques.yaml 的 `tier` 注释一致,
   /// 此二字段为与 `numbers.yaml techniques.tiers` 对齐的镜像参考值。派生属性的真相源
   /// 是 numbers.yaml tiers(`internal_force_growth_bonus`/`speed_bonus` 按阶查),
@@ -63,6 +68,7 @@ class TechniqueDef {
     required this.school,
     required this.description,
     required this.skillIds,
+    this.skillUnlockLayers = const {},
     required this.internalForceGrowthBonus,
     required this.speedBonus,
     required this.acquireSourceTags,
@@ -71,15 +77,35 @@ class TechniqueDef {
   });
 
   factory TechniqueDef.fromYaml(Map<String, dynamic> y) {
+    final skillIds = List<String>.from(
+      (y['skillIds'] as List? ?? const []).map((e) => e as String),
+    );
+    final rawUnlockLayers = Map<String, dynamic>.from(
+      y['skillUnlockLayers'] as Map? ?? const {},
+    );
+    final skillUnlockLayers = <String, CultivationLayer>{};
+    for (final entry in rawUnlockLayers.entries) {
+      if (!skillIds.contains(entry.key)) {
+        throw StateError('心法 ${y['id']} skillUnlockLayers 悬空招式: ${entry.key}');
+      }
+      final rawLayer = entry.value;
+      if (rawLayer is! String) {
+        throw StateError('心法 ${y['id']} 招式 ${entry.key} 解锁层必须是字符串');
+      }
+      try {
+        skillUnlockLayers[entry.key] = CultivationLayer.values.byName(rawLayer);
+      } on ArgumentError {
+        throw StateError('心法 ${y['id']} 招式 ${entry.key} 未知解锁层: $rawLayer');
+      }
+    }
     return TechniqueDef(
       id: y['id'] as String,
       name: y['name'] as String,
       tier: TechniqueTier.values.byName(y['tier'] as String),
       school: TechniqueSchool.values.byName(y['school'] as String),
       description: y['description'] as String,
-      skillIds: List<String>.from(
-        (y['skillIds'] as List? ?? const []).map((e) => e as String),
-      ),
+      skillIds: skillIds,
+      skillUnlockLayers: Map.unmodifiable(skillUnlockLayers),
       internalForceGrowthBonus: (y['internalForceGrowthBonus'] as num)
           .toDouble(),
       speedBonus: (y['speedBonus'] as num).toInt(),

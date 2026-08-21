@@ -1406,6 +1406,7 @@ class EquipmentDef {
 | school | TechniqueSchool | ❌ | 流派 |
 | description | String | ❌ | 描述（来自 narratives yaml） |
 | skillIds | List\<String\> | ❌ | 该心法包含的招式 def id |
+| skillUnlockLayers | Map\<String, CultivationLayer\> | ✅ | 个别招式的修炼层解锁覆盖；key 必须属于 skillIds，未配沿第 1 招初窥/第 2 招小成/第 3 招起大成 |
 | internalForceGrowthBonus | double | ❌ | 内力增长加成（每秒/挂机） |
 | speedBonus | int | ❌ | 出手速度加成 |
 | acquireSourceTags | List\<String\> | ❌ | 获取来源标签 |
@@ -1418,6 +1419,7 @@ class TechniqueDef {
   final TechniqueSchool school;
   final String description;
   final List<String> skillIds;
+  final Map<String, CultivationLayer> skillUnlockLayers;
   final double internalForceGrowthBonus;
   final int speedBonus;
   final List<String> acquireSourceTags;
@@ -1434,6 +1436,7 @@ class TechniqueDef {
   "school": "gangMeng",
   "description": "少林七十二绝技之首，洗髓伐毛，固本培元。",
   "skillIds": ["skill_yi_jin_jing_1", "skill_yi_jin_jing_2", "skill_yi_jin_jing_3"],
+  "skillUnlockLayers": {"skill_yi_jin_jing_2": "chuKui"},
   "internalForceGrowthBonus": 1.30,
   "speedBonus": 0,
   "acquireSourceTags": ["chapter_3_boss", "shaolin_quest"]

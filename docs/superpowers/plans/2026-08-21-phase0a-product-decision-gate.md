@@ -16,7 +16,7 @@ Branch: `codex/phase0a-product-decisions-0821`
 - [x] Give one recommended option for each blocking choice and spell out its
       implementation impact.
 - [x] Record the user's decisions in the decision sheet.
-- [ ] Slice the approved implementation without changing unrelated balance.
+- [x] Slice the approved implementation without changing unrelated balance.
 
 ## Recovery point
 
@@ -24,4 +24,6 @@ The current implementation was inspected at main `699f61a8`. The user approved
 D1-A / D2-A / D3-A / D4-A. The first implementation slice is restricted to
 making the three founder techniques' power skills available at `chuKui` without
 raising founder cultivation, changing the global ultimate threshold, or tuning
-enemy values. The typed behavior slice remains separate.
+enemy values. That slice now passes its focused 23-test set and refreshed the
+1500-run profile with zero timeouts and max resolved damage 2446. The typed
+behavior slice remains separate; batch-end full verification is next.

@@ -30,6 +30,8 @@ techniques:
       - skill_gangmeng_jichu_basic
       - skill_gangmeng_jichu_skill
       - skill_gangmeng_jichu_ult
+    skillUnlockLayers:
+      skill_gangmeng_jichu_skill: chuKui
     internalForceGrowthBonus: 1.05
     speedBonus: 0
     qiProfile:
@@ -46,6 +48,8 @@ techniques:
       - skill_lingqiao_jichu_basic
       - skill_lingqiao_jichu_skill
       - skill_lingqiao_jichu_ult
+    skillUnlockLayers:
+      skill_lingqiao_jichu_skill: chuKui
     internalForceGrowthBonus: 1.05
     speedBonus: 0
     qiProfile:
@@ -62,6 +66,8 @@ techniques:
       - skill_yinrou_jichu_basic
       - skill_yinrou_jichu_skill
       - skill_yinrou_jichu_ult
+    skillUnlockLayers:
+      skill_yinrou_jichu_skill: chuKui
     internalForceGrowthBonus: 1.05
     speedBonus: 0
     qiProfile:

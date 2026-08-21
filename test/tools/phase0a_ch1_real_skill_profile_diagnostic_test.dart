@@ -185,12 +185,14 @@ String _markdown(
   double delta,
   int maxTicks,
 ) {
-  final b = StringBuffer('# Phase 0A Ch1 real-skill profile · 2026-08-20\n\n');
+  final b = StringBuffer(
+    '# Phase 0A Ch1 real-skill profile · refreshed 2026-08-21\n\n',
+  );
   b.writeln(
     'headless bot ≠ 真人；三个 profile 来自生产创建页，origin=mountain_wanderer，fate=balanced_seed，固定 rngSeed=20260820。',
   );
   b.writeln(
-    '当前 Ch1 autoFill 槽事实由生产 snapshot 生成；无数值调整。delta=${delta}s，maxTicks=$maxTicks。\n',
+    '当前 Ch1 autoFill 槽事实由生产 snapshot 生成；本批只调整三本入门心法的招式开放层，不调伤害、敌人与全局门槛。delta=${delta}s，maxTicks=$maxTicks。\n',
   );
   b.writeln('## Production loadout\n');
   for (final school in _schools) {
