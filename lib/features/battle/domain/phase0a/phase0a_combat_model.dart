@@ -1,7 +1,10 @@
 import 'arena_vector.dart';
 import '../../../../data/defs/boss_phase_def.dart';
+import '../../../../data/defs/skill_def.dart';
 
 const _initialBossPhaseIndex = 0;
+const _noChargeTicks = 0;
+const _noStaggerTicks = 0;
 
 /// Phase 0A 竞技场阵营:单角色玩家对多敌。
 enum Phase0aSide { player, enemy }
@@ -17,6 +20,82 @@ enum Phase0aSkillAvailability { ready, cooldown, qi, casting, down }
 
 /// 技能逐目标结算状态(对齐反馈契约 outcomes.status_applied)。
 enum Phase0aSkillStatus { none, pulled, staggered }
+
+/// 招牌蓄力招的预解析施放参数(application 层注入,reducer 不回查仓库)。
+///
+/// 承载「倒计时完成后走既有 enemy skill 路径」所需的全部静态参数:
+/// 伤害仍由 [SkillDef] 经唯一 DamageCalculator 结算,本对象不复制任何公式。
+final class Phase0aChargeCast {
+  Phase0aChargeCast({
+    required this.skill,
+    required this.chargeTicks,
+    required this.attackRange,
+    required this.halfArcRadians,
+    required this.effectRadius,
+    required this.cooldownSeconds,
+    required this.actionCooldownSeconds,
+  }) {
+    if (skill.id.isEmpty) {
+      throw ArgumentError.value(skill.id, 'skill.id', 'charge cast 需真实技能 id');
+    }
+    if (chargeTicks <= 0) {
+      throw ArgumentError.value(chargeTicks, 'chargeTicks', 'must be positive');
+    }
+    for (final entry in {
+      'attackRange': attackRange,
+      'halfArcRadians': halfArcRadians,
+      'effectRadius': effectRadius,
+      'cooldownSeconds': cooldownSeconds,
+      'actionCooldownSeconds': actionCooldownSeconds,
+    }.entries) {
+      final value = entry.value;
+      if (!(value.isFinite && value >= 0)) {
+        throw ArgumentError.value(
+          value,
+          entry.key,
+          'must be finite and non-negative',
+        );
+      }
+    }
+  }
+
+  /// 招牌技定义(伤害/真气/CD 字段沿用生产 SkillDef)。
+  final SkillDef skill;
+
+  /// 蓄力倒计时拍数(预解析自 numbers.combat.bossCharge.defaultChargeTicks)。
+  final int chargeTicks;
+
+  /// 释放时单体选目标参数(沿敌方技能绑定口径)。
+  final double attackRange;
+  final double halfArcRadians;
+  final double effectRadius;
+
+  /// 释放/被破招后写入 enemySkillCooldowns 的技能冷却(秒)。
+  final double cooldownSeconds;
+
+  /// 释放命中后的行动锁(秒,对齐敌方技能 intent 分支口径)。
+  final double actionCooldownSeconds;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aChargeCast &&
+      other.skill == skill &&
+      other.chargeTicks == chargeTicks &&
+      other.attackRange == attackRange &&
+      other.halfArcRadians == halfArcRadians &&
+      other.effectRadius == effectRadius &&
+      other.cooldownSeconds == cooldownSeconds &&
+      other.actionCooldownSeconds == actionCooldownSeconds;
+
+  @override
+  int get hashCode => Object.hash(
+    skill,
+    chargeTicks,
+    attackRange,
+    halfArcRadians,
+    Object.hash(effectRadius, cooldownSeconds, actionCooldownSeconds),
+  );
+}
 
 bool _listEquals<T>(List<T> a, List<T> b) {
   if (identical(a, b)) return true;
@@ -51,6 +130,12 @@ final class Phase0aActor {
     this.bossPhaseIndex = _initialBossPhaseIndex,
     this.unlockedEnemySkillIds = const [],
     this.enemySkillCooldowns = const {},
+    this.chargeCast,
+    this.phaseChargeCasts = const [],
+    this.staggerTicksTotal = _noStaggerTicks,
+    this.chargingCast,
+    this.chargeTicksRemaining = _noChargeTicks,
+    this.staggerTicksRemaining = _noStaggerTicks,
   });
 
   /// 语义 id,事件 actor/target 字段与稳定排序决胜键。
@@ -78,6 +163,27 @@ final class Phase0aActor {
   final List<String> unlockedEnemySkillIds;
   final Map<String, double> enemySkillCooldowns;
 
+  /// 顶层蓄力入口(EnemyDef.chargeSkillId 预解析):该敌人的招牌蓄力招施放
+  /// 参数。null = 无顶层蓄力。AI 选中此招时 reducer 改为起手蓄力。
+  final Phase0aChargeCast? chargeCast;
+
+  /// 阶段蓄力入口(BossPhaseMechanic.chargeCounter 预解析):下标对齐
+  /// [bossPhases],第 i 项非 null = 进入第 i 阶段即推入该招牌技蓄力。
+  /// 无阶段 = 空表。
+  final List<Phase0aChargeCast?> phaseChargeCasts;
+
+  /// 被破招后踉跄窗口拍数(预解析自 numbers.combat.bossCharge)。
+  final int staggerTicksTotal;
+
+  /// 运行态:正在蓄力的施放(null = 未蓄力)。不可变可回放。
+  final Phase0aChargeCast? chargingCast;
+
+  /// 运行态:蓄力倒计时剩余拍数(>0 = 蓄力中,reducer 每拍递减,归零释放)。
+  final int chargeTicksRemaining;
+
+  /// 运行态:踉跄剩余拍数(>0 = 跳过行动且承伤减防,reducer 每拍递减)。
+  final int staggerTicksRemaining;
+
   bool get isAlive => currentHealth > 0;
 
   Phase0aActor copyWith({
@@ -89,6 +195,10 @@ final class Phase0aActor {
     int? bossPhaseIndex,
     List<String>? unlockedEnemySkillIds,
     Map<String, double>? enemySkillCooldowns,
+    Phase0aChargeCast? chargingCast,
+    bool clearChargingCast = false,
+    int? chargeTicksRemaining,
+    int? staggerTicksRemaining,
   }) {
     return Phase0aActor(
       id: id,
@@ -109,6 +219,15 @@ final class Phase0aActor {
       unlockedEnemySkillIds:
           unlockedEnemySkillIds ?? this.unlockedEnemySkillIds,
       enemySkillCooldowns: enemySkillCooldowns ?? this.enemySkillCooldowns,
+      chargeCast: chargeCast,
+      phaseChargeCasts: phaseChargeCasts,
+      staggerTicksTotal: staggerTicksTotal,
+      chargingCast: clearChargingCast
+          ? null
+          : (chargingCast ?? this.chargingCast),
+      chargeTicksRemaining: chargeTicksRemaining ?? this.chargeTicksRemaining,
+      staggerTicksRemaining:
+          staggerTicksRemaining ?? this.staggerTicksRemaining,
     );
   }
 
@@ -130,7 +249,13 @@ final class Phase0aActor {
       _bossPhasesEqual(other.bossPhases, bossPhases) &&
       other.bossPhaseIndex == bossPhaseIndex &&
       _listEquals(other.unlockedEnemySkillIds, unlockedEnemySkillIds) &&
-      _mapEquals(other.enemySkillCooldowns, enemySkillCooldowns);
+      _mapEquals(other.enemySkillCooldowns, enemySkillCooldowns) &&
+      other.chargeCast == chargeCast &&
+      _listEquals(other.phaseChargeCasts, phaseChargeCasts) &&
+      other.staggerTicksTotal == staggerTicksTotal &&
+      other.chargingCast == chargingCast &&
+      other.chargeTicksRemaining == chargeTicksRemaining &&
+      other.staggerTicksRemaining == staggerTicksRemaining;
 
   @override
   int get hashCode => Object.hash(
@@ -150,6 +275,14 @@ final class Phase0aActor {
     bossPhaseIndex,
     _listHash(unlockedEnemySkillIds),
     _mapHash(enemySkillCooldowns),
+    Object.hash(
+      chargeCast,
+      _listHash(phaseChargeCasts),
+      staggerTicksTotal,
+      chargingCast,
+      chargeTicksRemaining,
+      staggerTicksRemaining,
+    ),
   );
 }
 

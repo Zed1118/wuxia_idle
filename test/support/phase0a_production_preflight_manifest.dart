@@ -1,4 +1,5 @@
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/boss_phase_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 
@@ -77,14 +78,32 @@ final class Phase0aProductionPreflightManifest {
     )) {
       return 'unsupported_vulnerability_window';
     }
-    if (enemies.any(
-      (enemy) =>
-          enemy.chargeSkillId != null ||
-          (enemy.bossPhases?.isNotEmpty ?? false) ||
-          enemy.cycleBossPhases.isNotEmpty,
-    )) {
+    if (enemies.any(_hasUnsupportedBossPhaseOrChargeSemantics)) {
       return 'unsupported_boss_phase_or_charge_semantics';
     }
     return null;
   }
+
+  /// 阶段/蓄力语义支持性(charge/破招纵切后):顶层 chargeSkillId 与
+  /// chargeCounter 阶段机制已由 reducer/AI 消费;周目覆盖在 0A 装配恒为
+  /// cycle-1(主线灰度门限一周目、mapper 无 cycle 参数)下惰性,但其机制
+  /// 同样过支持性检查。穷尽 switch 表达式:未来新增 BossPhaseMechanic
+  /// 枚举值 = 编译错误 = 强制 fail-closed 决策,不得静默放行。
+  static bool _hasUnsupportedBossPhaseOrChargeSemantics(EnemyDef enemy) {
+    for (final phase in enemy.bossPhases ?? const <BossPhaseDef>[]) {
+      if (!_phaseMechanicSupported(phase.onEnterMechanic)) return true;
+    }
+    for (final phases in enemy.cycleBossPhases.values) {
+      for (final phase in phases) {
+        if (!_phaseMechanicSupported(phase.onEnterMechanic)) return true;
+      }
+    }
+    return false;
+  }
+
+  static bool _phaseMechanicSupported(BossPhaseMechanic? mechanic) =>
+      switch (mechanic) {
+        null => true,
+        BossPhaseMechanic.chargeCounter => true,
+      };
 }

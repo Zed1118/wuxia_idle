@@ -54,8 +54,9 @@ void main() {
 
       expect(manifest, hasLength(149));
       expect(manifest.map((entry) => entry.key).toSet(), hasLength(149));
-      expect(stageEntries.where(_isEligible), hasLength(73));
-      expect(towerEntries.where(_isEligible), hasLength(41));
+      // charge/破招纵切(2026-08-22):24 条 phase/charge 内容转 eligible。
+      expect(stageEntries.where(_isEligible), hasLength(92));
+      expect(towerEntries.where(_isEligible), hasLength(46));
 
       final arena = repo.numbers.phase0aArena;
       final delta = arena.fixedDeltaSeconds;

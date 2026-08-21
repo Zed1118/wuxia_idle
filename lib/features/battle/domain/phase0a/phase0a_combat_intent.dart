@@ -4,6 +4,8 @@ import '../../../../data/defs/skill_def.dart';
 import 'phase0a_damage_kind.dart';
 import 'phase0a_combat_model.dart';
 
+const _noBreakPower = 0;
+
 /// Phase 0A 统一输入协议:玩家适配器与敌 AI 适配器产生同型 intent,
 /// 经同一 reducer 结算,不存在两套结算入口。
 ///
@@ -113,6 +115,7 @@ final class Phase0aClearIntent extends Phase0aIntent {
     required this.qiCost,
     required this.cooldownSeconds,
     this.skillId = '',
+    this.breakPower = _noBreakPower,
   });
 
   /// Production mappings carry the real data-defined tactical skill id.
@@ -125,6 +128,10 @@ final class Phase0aClearIntent extends Phase0aIntent {
 
   final int qiCost;
   final double cooldownSeconds;
+
+  /// typed break 契约载荷(skill behavior `break.points`):>0 时命中蓄力中
+  /// 敌人触发破招状态迁移;0 = 无破招语义(legacy fixture 口径不变)。
+  final int breakPower;
 }
 
 /// 数字 1–6 真实技能请求。所有运行参数均由 application binding Adapter
@@ -142,6 +149,7 @@ final class Phase0aSkillIntent extends Phase0aIntent {
     required this.effectRadius,
     required this.qiDelta,
     required this.cooldownSeconds,
+    this.breakPower = _noBreakPower,
   });
 
   final Phase0aDamageKind kind;
@@ -154,4 +162,8 @@ final class Phase0aSkillIntent extends Phase0aIntent {
   final double effectRadius;
   final int qiDelta;
   final double cooldownSeconds;
+
+  /// typed break 契约载荷(数字技能 binding 的 `break.points`):语义同
+  /// [Phase0aClearIntent.breakPower]。
+  final int breakPower;
 }

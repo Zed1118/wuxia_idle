@@ -93,7 +93,7 @@ void main() {
     );
   });
 
-  test('duplicates fail and future break parses but binding rejects it', () {
+  test('duplicates fail; break parses and clear binding consumes it', () {
     expect(
       () => Phase0aSkillBehavior.fromYaml({
         'geometry': {'shape': 'radial', 'anchor': 'caster', 'radius': 10},
@@ -105,7 +105,7 @@ void main() {
       throwsStateError,
     );
 
-    final future = Phase0aSkillBehavior.fromYaml({
+    final withBreak = Phase0aSkillBehavior.fromYaml({
       'geometry': {'shape': 'radial', 'anchor': 'caster', 'radius': 10},
       'effects': [
         {'type': 'damage'},
@@ -113,12 +113,42 @@ void main() {
         {'type': 'break', 'points': 1},
       ],
     });
-    expect(future.hasEffect(Phase0aSkillEffectType.breakPower), isTrue);
+    expect(withBreak.hasEffect(Phase0aSkillEffectType.breakPower), isTrue);
+
+    // charge/破招纵切(2026-08-22):clear 允许集 = damage+stagger+break,
+    // binding 暴露 typed break 载荷供 reducer 破招迁移消费。
+    expect(
+      Phase0aTacticalSkillBinding(
+        kind: Phase0aTacticalSkillKind.clear,
+        slot: 'clear',
+        skill: tacticalSkill(id: 'clear_break', behavior: withBreak),
+      ).breakPower,
+      1,
+    );
+
+    // Q 契约不变:gather 仍为纯 pull,带 break 拒绝(fail-closed)。
+    expect(
+      () => Phase0aTacticalSkillBinding(
+        kind: Phase0aTacticalSkillKind.gather,
+        slot: 'gather',
+        skill: tacticalSkill(id: 'gather_break', behavior: withBreak),
+      ),
+      throwsStateError,
+    );
+
+    // clear 缺 break 也不再合法(生产过渡 R 已带 break;精确集 fail-closed)。
+    final noBreak = Phase0aSkillBehavior.fromYaml({
+      'geometry': {'shape': 'radial', 'anchor': 'caster', 'radius': 10},
+      'effects': [
+        {'type': 'damage'},
+        {'type': 'stagger'},
+      ],
+    });
     expect(
       () => Phase0aTacticalSkillBinding(
         kind: Phase0aTacticalSkillKind.clear,
         slot: 'clear',
-        skill: tacticalSkill(id: 'future_break', behavior: future),
+        skill: tacticalSkill(id: 'clear_no_break', behavior: noBreak),
       ),
       throwsStateError,
     );

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/defs/boss_phase_def.dart';
+import 'package:wuxia_idle/data/defs/stage_def.dart';
 
 import 'phase0a_production_preflight_manifest.dart';
 
@@ -35,13 +36,55 @@ void main() {
     expect(entries, hasLength(149));
     expect(entries.map((entry) => entry.key).toSet(), hasLength(149));
 
+    // charge/破招纵切(2026-08-22):phase/charge 语义已由 reducer/AI 消费,
+    // 任何条目不得再以该原因跳过。
+    expect(
+      entries.where(
+        (entry) =>
+            entry.skipReason == 'unsupported_boss_phase_or_charge_semantics',
+      ),
+      isEmpty,
+    );
+
+    // 真实 phase/charge 内容组(内容侧推导,不读 manifest 原因):
+    // 敌队含 bossPhases 或顶层 chargeSkillId 且无更高优先级未迁机制的条目,
+    // 共 24 = 19 主线 + 5 塔,全部转 eligible——语义已迁移,不得伪报 skipped。
+    List<EnemyDef> enemyTeamOf(Phase0aPreflightManifestEntry entry) =>
+        switch (entry.kind) {
+          Phase0aPreflightContentKind.stage =>
+            repo.stageDefs[entry.id]!.enemyTeam,
+          Phase0aPreflightContentKind.tower =>
+            repo.towerFloors
+                .firstWhere((floor) => 'tower_${floor.floorIndex}' == entry.id)
+                .enemyTeam,
+        };
+    bool hasPhaseOrChargeContent(Phase0aPreflightManifestEntry entry) =>
+        enemyTeamOf(entry).any(
+          (enemy) =>
+              enemy.chargeSkillId != null ||
+              (enemy.bossPhases?.isNotEmpty ?? false) ||
+              enemy.cycleBossPhases.isNotEmpty,
+        );
     final bossPhaseEntries = entries
-        .where(
-          (entry) =>
-              entry.skipReason == 'unsupported_boss_phase_or_charge_semantics',
-        )
+        .where((entry) => entry.status == Phase0aPreflightStatus.eligible)
+        .where(hasPhaseOrChargeContent)
         .toList();
     expect(bossPhaseEntries, hasLength(24));
+
+    // 潜在重叠:vulnerability/guardian 条目按 EnemyDef 联结校验必带蓄招途径,
+    // 它们保持 skipped 且原因必须是更高优先级机制,不得回落 phase/charge 原因。
+    final latentPhaseSkipped = entries
+        .where((entry) => entry.status == Phase0aPreflightStatus.skipped)
+        .where(hasPhaseOrChargeContent)
+        .toList();
+    expect(latentPhaseSkipped, isNotEmpty);
+    for (final entry in latentPhaseSkipped) {
+      expect(
+        entry.skipReason,
+        isNot('unsupported_boss_phase_or_charge_semantics'),
+        reason: '${entry.key} 被更高优先级机制跳过',
+      );
+    }
     expect(
       bossPhaseEntries.where((entry) => entry.kind.name == 'stage'),
       hasLength(19),
@@ -50,19 +93,18 @@ void main() {
       bossPhaseEntries.where((entry) => entry.kind.name == 'tower'),
       hasLength(5),
     );
+    for (final entry in bossPhaseEntries) {
+      expect(
+        entry.status,
+        Phase0aPreflightStatus.eligible,
+        reason: '${entry.key} phase/charge 语义已迁移,必须 eligible',
+      );
+    }
 
     for (final entry in bossPhaseEntries) {
-      final phases = switch (entry.kind) {
-        Phase0aPreflightContentKind.stage =>
-          repo.stageDefs[entry.id]!.enemyTeam.expand(
-            (enemy) => enemy.bossPhases ?? const <BossPhaseDef>[],
-          ),
-        Phase0aPreflightContentKind.tower =>
-          repo.towerFloors
-              .firstWhere((floor) => 'tower_${floor.floorIndex}' == entry.id)
-              .enemyTeam
-              .expand((enemy) => enemy.bossPhases ?? const <BossPhaseDef>[]),
-      };
+      final phases = enemyTeamOf(
+        entry,
+      ).expand((enemy) => enemy.bossPhases ?? const <BossPhaseDef>[]);
       expect(
         phases,
         contains(
@@ -94,14 +136,22 @@ void main() {
       expect(hasTopLevelCharge, isFalse, reason: entry.key);
     }
 
-    final dynamicEntries = entries
+    // 其他未迁机制守恒:guardian ward / vulnerability / survive 胜负仍按
+    // 各自原因跳过,数量与优先级口径不回退。
+    final guardianEntries = entries
+        .where((entry) => entry.skipReason == 'unsupported_guardian_ward')
+        .toList();
+    final vulnerabilityEntries = entries
         .where(
-          (entry) =>
-              entry.skipReason == 'unsupported_vulnerability_window' ||
-              entry.skipReason == 'unsupported_guardian_ward',
+          (entry) => entry.skipReason == 'unsupported_vulnerability_window',
         )
         .toList();
-    expect(dynamicEntries, isNotEmpty);
+    final winConditionEntries = entries
+        .where((entry) => entry.skipReason == 'unsupported_win_condition')
+        .toList();
+    expect(guardianEntries, hasLength(2));
+    expect(vulnerabilityEntries, hasLength(8));
+    expect(winConditionEntries, hasLength(1));
     expect(
       entries.singleWhere((entry) => entry.key == 'tower/tower_32').skipReason,
       'unsupported_vulnerability_window',
@@ -115,12 +165,12 @@ void main() {
       'unsupported_guardian_ward',
     );
     expect(
-      dynamicEntries
+      guardianEntries
           .map((entry) => entry.key)
           .toSet()
           .intersection(bossPhaseEntries.map((entry) => entry.key).toSet()),
       isEmpty,
-      reason: 'guardian/vulnerability precedence must hide phase reason',
+      reason: 'guardian 优先级必须先于 phase/charge 分组',
     );
   });
 }

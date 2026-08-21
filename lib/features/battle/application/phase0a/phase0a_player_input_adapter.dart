@@ -6,6 +6,8 @@ import '../../domain/phase0a/realtime_combat_rules.dart';
 import 'phase0a_numeric_skill_binding.dart';
 import 'phase0a_tactical_skill_binding.dart';
 
+const _noBreakPower = 0;
+
 /// 玩家一拍输入快照:四向按键 + 动作请求(语义按键,非数值)。
 final class Phase0aPlayerCommand {
   const Phase0aPlayerCommand({
@@ -142,6 +144,7 @@ final class Phase0aPlayerInputAdapter {
           effectRadius: binding?.effectRadius ?? clearEffectRadius,
           qiCost: binding?.qiCost ?? clearQiCost,
           cooldownSeconds: binding?.cooldownSeconds ?? clearCooldownSeconds,
+          breakPower: binding?.breakPower ?? _noBreakPower,
         ),
       );
     }
@@ -162,6 +165,7 @@ final class Phase0aPlayerInputAdapter {
             effectRadius: binding.effectRadius,
             qiDelta: binding.qiDelta,
             cooldownSeconds: binding.cooldownSeconds,
+            breakPower: binding.breakPower,
           ),
         );
       }

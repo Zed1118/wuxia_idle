@@ -34,6 +34,7 @@ class FixedDamageResolver implements Phase0aDamageResolver {
     required String attackerId,
     required String targetId,
     required Phase0aDamageKind kind,
+    bool defenderStaggered = false,
   }) {
     switch (kind) {
       case Phase0aDamageKind.basic:
@@ -929,12 +930,14 @@ class _GatherDamageResolver implements Phase0aDamageResolver {
     required String attackerId,
     required String targetId,
     required Phase0aDamageKind kind,
+    bool defenderStaggered = false,
   }) {
     if (kind != Phase0aDamageKind.gather) {
       return inner.resolve(
         attackerId: attackerId,
         targetId: targetId,
         kind: kind,
+        defenderStaggered: defenderStaggered,
       );
     }
     return Phase0aResolvedHit(isHit: true, isCritical: false, damage: damage);

@@ -1,4 +1,5 @@
 import '../../../../core/domain/enums.dart';
+import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/defs/stage_def.dart';
 import '../../../../data/defs/tower_floor_def.dart';
@@ -116,6 +117,28 @@ final class Phase0aStageContentMapper {
     final numericSkillBindings = _numericSkillBindings(playerSnapshot, arena);
     final tacticalSkillBindings = _tacticalSkillBindings(arena);
 
+    // —— 蓄力/破招预解析(reducer 不回查仓库):顶层 chargeSkillId 招牌 cast +
+    // 阶段 chargeCounter 招牌 cast + 踉跄窗口拍数,全部来自 snapshot 已解析
+    // SkillDef 与 numbers.combat.bossCharge ——
+    final chargeTicks = numbers.combat.bossCharge.defaultChargeTicks;
+    final staggerTicksTotal = numbers.combat.bossCharge.defaultStaggerTicks;
+    final topLevelChargeCasts = <Phase0aChargeCast?>[
+      for (final snapshot in enemySnapshots)
+        _topLevelChargeCast(
+          snapshot: snapshot,
+          arena: arena,
+          chargeTicks: chargeTicks,
+        ),
+    ];
+    final phaseChargeCastsByEnemy = <List<Phase0aChargeCast?>>[
+      for (final snapshot in enemySnapshots)
+        _phaseChargeCasts(
+          snapshot: snapshot,
+          arena: arena,
+          chargeTicks: chargeTicks,
+        ),
+    ];
+
     // —— 空间排布:确定性,玩家在左,敌人右侧按 slot 均匀散开 ——
     final playerPosition = ArenaVector(arena.arenaMinX * 0.5, 0);
     final waveEnemies = <Phase0aActor>[
@@ -131,6 +154,9 @@ final class Phase0aStageContentMapper {
             slot: i,
             count: enemySnapshots.length,
           ),
+          chargeCast: topLevelChargeCasts[i],
+          phaseChargeCasts: phaseChargeCastsByEnemy[i],
+          staggerTicksTotal: staggerTicksTotal,
         ),
     ];
 
@@ -228,6 +254,9 @@ final class Phase0aStageContentMapper {
     required CombatantSnapshot snapshot,
     required String actorId,
     required ArenaVector position,
+    required Phase0aChargeCast? chargeCast,
+    required List<Phase0aChargeCast?> phaseChargeCasts,
+    required int staggerTicksTotal,
   }) {
     final phases = snapshot.bossPhases;
     final initialUnlocks = phases == null || phases.isEmpty
@@ -238,7 +267,9 @@ final class Phase0aStageContentMapper {
         if (entry.value > 0)
           entry.key: entry.value * arena.enemyAttackCooldownSeconds,
     };
-    final hasPhases = phases != null;
+    // 真气/技能 CD 运行态:阶段敌人走 snapshot 口径;无阶段但带顶层蓄力的
+    // 敌人同样需要真实真气门槛(否则招牌技永不可选 = 蓄力静默失效)。
+    final usesSkillRuntime = phases != null || chargeCast != null;
     return Phase0aActor(
       id: actorId,
       side: Phase0aSide.enemy,
@@ -247,8 +278,8 @@ final class Phase0aStageContentMapper {
       maxHealth: snapshot.maxHp,
       currentHealth: snapshot.currentHp,
       moveSpeed: arena.enemyMoveSpeed,
-      qiCurrent: hasPhases ? snapshot.currentQi : arena.enemyQi,
-      qiMax: hasPhases ? snapshot.maxQi : arena.enemyQi,
+      qiCurrent: usesSkillRuntime ? snapshot.currentQi : arena.enemyQi,
+      qiMax: usesSkillRuntime ? snapshot.maxQi : arena.enemyQi,
       attackCooldownRemaining: arena.enemyInitialAttackCooldown,
       defeatKind: snapshot.isBoss
           ? Phase0aDefeatKind.elite
@@ -256,24 +287,130 @@ final class Phase0aStageContentMapper {
       autoUltimate: snapshot.autoUltimate,
       bossPhases: phases,
       unlockedEnemySkillIds: initialUnlocks,
-      enemySkillCooldowns: hasPhases
+      enemySkillCooldowns: usesSkillRuntime
           ? Map.unmodifiable(openingCooldowns)
           : const {},
+      chargeCast: chargeCast,
+      phaseChargeCasts: phaseChargeCasts,
+      staggerTicksTotal: staggerTicksTotal,
     );
   }
+
+  /// 顶层蓄力入口(EnemyDef.chargeSkillId):从 snapshot 已解析技能表取招牌技
+  /// 并预解析施放参数;配了 chargeSkillId 但技能缺失 → fail-fast(loader
+  /// 红线 `_enforceBossChargeRedLines` 已保 ∈ skillIds,此处双保险)。
+  static Phase0aChargeCast? _topLevelChargeCast({
+    required CombatantSnapshot snapshot,
+    required Phase0aArenaConfig arena,
+    required int chargeTicks,
+  }) {
+    final chargeSkillId = snapshot.chargeSkillId;
+    if (chargeSkillId == null) return null;
+    SkillDef? chargeSkill;
+    for (final skill in snapshot.availableSkills) {
+      if (skill.id == chargeSkillId) {
+        chargeSkill = skill;
+        break;
+      }
+    }
+    if (chargeSkill == null) {
+      throw StateError(
+        'Phase0a 蓄力装配 ${snapshot.enemyDefId}: chargeSkillId '
+        '$chargeSkillId 不在 availableSkills,不得静默丢蓄力',
+      );
+    }
+    return _chargeCast(
+      skill: chargeSkill,
+      arena: arena,
+      chargeTicks: chargeTicks,
+    );
+  }
+
+  /// 阶段蓄力入口(BossPhaseMechanic.chargeCounter):逐阶段预解析招牌技
+  /// (= 该阶段解锁招里 powerMultiplier 最高者,对齐旧引擎;解锁招为空 →
+  /// null = no-op)。无阶段 = 空表。
+  static List<Phase0aChargeCast?> _phaseChargeCasts({
+    required CombatantSnapshot snapshot,
+    required Phase0aArenaConfig arena,
+    required int chargeTicks,
+  }) {
+    final phases = snapshot.bossPhases;
+    if (phases == null) return const [];
+    final unlocks = snapshot.bossPhaseUnlockSkills;
+    return List<Phase0aChargeCast?>.unmodifiable([
+      for (var i = 0; i < phases.length; i++)
+        if (phases[i].onEnterMechanic == BossPhaseMechanic.chargeCounter)
+          _phaseSignatureCast(
+            unlocks != null && i < unlocks.length
+                ? unlocks[i]
+                : const <SkillDef>[],
+            arena,
+            chargeTicks,
+          )
+        else
+          null,
+    ]);
+  }
+
+  static Phase0aChargeCast? _phaseSignatureCast(
+    List<SkillDef> skills,
+    Phase0aArenaConfig arena,
+    int chargeTicks,
+  ) {
+    SkillDef? signature;
+    for (final skill in skills) {
+      if (signature == null ||
+          skill.powerMultiplier > signature.powerMultiplier) {
+        signature = skill;
+      }
+    }
+    return signature == null
+        ? null
+        : _chargeCast(skill: signature, arena: arena, chargeTicks: chargeTicks);
+  }
+
+  /// 招牌技施放参数:空间值取竞技场敌攻口径(沿阶段技能绑定),CD 沿用
+  /// 「cooldownTurns × 敌行动拍秒」转换;伤害仍由 SkillDef 经唯一
+  /// DamageCalculator 结算,本对象不复制数值。
+  static Phase0aChargeCast _chargeCast({
+    required SkillDef skill,
+    required Phase0aArenaConfig arena,
+    required int chargeTicks,
+  }) => Phase0aChargeCast(
+    skill: skill,
+    chargeTicks: chargeTicks,
+    attackRange: arena.enemyAttackRange,
+    halfArcRadians: arena.enemyAttackHalfArcRadians,
+    effectRadius: arena.enemyAttackRange,
+    cooldownSeconds: skill.cooldownTurns * arena.enemyAttackCooldownSeconds,
+    actionCooldownSeconds: arena.enemyAttackCooldownSeconds,
+  );
 
   static List<Phase0aEnemySkillBinding> _enemyPhaseSkillBindings({
     required Phase0aArenaConfig arena,
     required CombatantSnapshot snapshot,
   }) {
-    final phaseSkills = snapshot.bossPhaseUnlockSkills;
-    if (phaseSkills == null) return const [];
     final byId = <String, SkillDef>{};
-    for (final skills in phaseSkills) {
-      for (final skill in skills) {
-        byId[skill.id] = skill;
+    final phaseSkills = snapshot.bossPhaseUnlockSkills;
+    if (phaseSkills != null) {
+      for (final skills in phaseSkills) {
+        for (final skill in skills) {
+          byId[skill.id] = skill;
+        }
       }
     }
+    // 顶层招牌蓄力技也须进 AI 绑定表,否则 BattleAI 永远不会选中它、
+    // 起手蓄力入口静默失效(与 _topLevelChargeCast 同源 fail-fast)。
+    final chargeSkillId = snapshot.chargeSkillId;
+    if (chargeSkillId != null && !byId.containsKey(chargeSkillId)) {
+      for (final skill in snapshot.availableSkills) {
+        if (skill.id == chargeSkillId) {
+          byId[chargeSkillId] = skill;
+          break;
+        }
+      }
+    }
+    if (byId.isEmpty) return const [];
     final ids = byId.keys.toList()..sort();
     return List.unmodifiable([
       for (final id in ids)

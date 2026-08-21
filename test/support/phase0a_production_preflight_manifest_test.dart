@@ -23,12 +23,14 @@ void main() {
     expect(stages, hasLength(100));
     expect(
       stages.where((entry) => entry.status == Phase0aPreflightStatus.eligible),
-      hasLength(73),
+      // charge/破招纵切(2026-08-22):19 条 phase/charge 主线转 eligible。
+      hasLength(92),
     );
     expect(towers, hasLength(49));
     expect(
       towers.where((entry) => entry.status == Phase0aPreflightStatus.eligible),
-      hasLength(41),
+      // charge/破招纵切(2026-08-22):5 条 phase/charge 塔层转 eligible。
+      hasLength(46),
     );
     final all = [...stages, ...towers];
     expect(all.map((entry) => entry.key).toSet(), hasLength(all.length));

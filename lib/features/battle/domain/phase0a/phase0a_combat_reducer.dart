@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../../../../core/domain/enums.dart';
+import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
 import 'arena_vector.dart';
 import 'phase0a_combat_events.dart';
@@ -27,11 +28,16 @@ final class Phase0aResolvedHit {
 
 /// 显式注入的伤害结算接口。本片测试用固定实现;
 /// 未来生产在同一接口上接 `DamageCalculator`,adapter/reducer 禁写公式。
+///
+/// [defenderStaggered]:守方处于破招踉跄窗口(reducer 运行态事实)。
+/// 减防幅度由生产 adapter 读 numbers.combat.bossCharge 应用,reducer 只传
+/// 状态不写数值;测试实现可忽略(默认 false 口径)。
 abstract interface class Phase0aDamageResolver {
   Phase0aResolvedHit resolve({
     required String attackerId,
     required String targetId,
     required Phase0aDamageKind kind,
+    bool defenderStaggered = false,
   });
 }
 
@@ -42,6 +48,7 @@ abstract interface class Phase0aEnemySkillDamageResolver {
     required String attackerId,
     required String targetId,
     required SkillDef skill,
+    bool defenderStaggered = false,
   });
 }
 
@@ -99,6 +106,30 @@ Phase0aStepResult reducePhase0aTick({
       ),
   };
 
+  // 蓄力/踉跄 pre-step(对齐旧引擎「踉跄判定必须先于蓄力」序):
+  // 踉跄中 → 本拍压制并递减(蓄力冻结);否则蓄力中 → 本拍压制并递减,
+  // 归零者登记拍尾释放招牌技。压制 = 移动/普攻/技能 intent 全拒收。
+  // [staggeredActorIds] 记录拍初踉跄事实(递减在先,伤害结算在后,
+  // 减防窗口必须与压制窗口同拍界)。
+  final suppressedActorIds = <String>{};
+  final staggeredActorIds = <String>{};
+  final chargeFireActorIds = <String>[];
+  for (final enemy in state.enemies) {
+    final current = enemiesById[enemy.id]!;
+    if (current.staggerTicksRemaining > 0) {
+      suppressedActorIds.add(enemy.id);
+      staggeredActorIds.add(enemy.id);
+      enemiesById[enemy.id] = current.copyWith(
+        staggerTicksRemaining: current.staggerTicksRemaining - 1,
+      );
+    } else if (current.chargeTicksRemaining > 0) {
+      suppressedActorIds.add(enemy.id);
+      final remaining = current.chargeTicksRemaining - 1;
+      enemiesById[enemy.id] = current.copyWith(chargeTicksRemaining: remaining);
+      if (remaining == 0) chargeFireActorIds.add(enemy.id);
+    }
+  }
+
   final slots = <Phase0aSkillSlot>[];
   for (final slot in state.skillSlots) {
     final cooldownRemaining = _cooldownAfter(
@@ -139,6 +170,8 @@ Phase0aStepResult reducePhase0aTick({
     final isPlayer = actorId == player.id;
     final actor = isPlayer ? player : enemiesById[actorId];
     if (actor == null || !actor.isAlive) continue;
+    // 蓄力/踉跄压制(reducer 权威:AI 停发之外的第二道闸,禁绕状态行动)。
+    if (suppressedActorIds.contains(actorId)) continue;
 
     switch (intent) {
       case Phase0aMoveIntent(:final direction):
@@ -184,6 +217,9 @@ Phase0aStepResult reducePhase0aTick({
             attackerId: actorId,
             targetId: target.id,
             kind: Phase0aDamageKind.basic,
+            defenderStaggered:
+                staggeredActorIds.contains(target.id) ||
+                target.staggerTicksRemaining > 0,
           );
           if (resolved.isHit) {
             final damage = _checkedDamage(resolved);
@@ -244,8 +280,43 @@ Phase0aStepResult reducePhase0aTick({
       case Phase0aEnemySkillIntent():
         if (actor.side != Phase0aSide.enemy ||
             enemySkillDamageResolver == null ||
-            intent.skill.id.isEmpty ||
-            !actor.unlockedEnemySkillIds.contains(intent.skill.id) ||
+            intent.skill.id.isEmpty) {
+          continue;
+        }
+        // 起手蓄力入口(顶层 chargeSkillId):AI 选中招牌技时不直接释放,
+        // 改为进入蓄力态——本拍无伤害、不上 CD、不耗真气(真气在倒计时
+        // 归零释放时结算,对齐旧引擎)。charge profile 即闸门,故此分支
+        // 旁路 unlockedEnemySkillIds 门。
+        final topChargeCast = actor.chargeCast;
+        if (topChargeCast != null &&
+            intent.skill.id == topChargeCast.skill.id) {
+          if (actor.chargingCast != null ||
+              !_isUsableNumber(intent.range) ||
+              !_isUsableNumber(intent.halfArcRadians) ||
+              !_isUsableNumber(intent.effectRadius) ||
+              !_isUsableNumber(intent.cooldownSeconds) ||
+              !_isUsableNumber(intent.actionCooldownSeconds) ||
+              actor.attackCooldownRemaining > 0 ||
+              (actor.enemySkillCooldowns[intent.skill.id] ?? 0) > 0 ||
+              actor.qiCurrent < intent.skill.qiCost) {
+            continue;
+          }
+          enemiesById[actorId] = actor.copyWith(
+            chargingCast: topChargeCast,
+            chargeTicksRemaining: topChargeCast.chargeTicks,
+          );
+          events.add(
+            Phase0aBossChargeStarted(
+              seq: seq++,
+              tick: tick,
+              actor: actorId,
+              skillId: topChargeCast.skill.id,
+              chargeTicks: topChargeCast.chargeTicks,
+            ),
+          );
+          continue;
+        }
+        if (!actor.unlockedEnemySkillIds.contains(intent.skill.id) ||
             !_isUsableNumber(intent.range) ||
             !_isUsableNumber(intent.halfArcRadians) ||
             !_isUsableNumber(intent.effectRadius) ||
@@ -392,6 +463,9 @@ Phase0aStepResult reducePhase0aTick({
             attackerId: actorId,
             targetId: target.id,
             kind: Phase0aDamageKind.gather,
+            defenderStaggered:
+                staggeredActorIds.contains(target.id) ||
+                target.staggerTicksRemaining > 0,
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);
@@ -494,10 +568,31 @@ Phase0aStepResult reducePhase0aTick({
             attackerId: actorId,
             targetId: target.id,
             kind: Phase0aDamageKind.clear,
+            defenderStaggered:
+                staggeredActorIds.contains(target.id) ||
+                target.staggerTicksRemaining > 0,
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);
-          final updated = target.copyWith(currentHealth: remaining);
+          var updated = target.copyWith(currentHealth: remaining);
+          final broken = _maybeApplyChargeBreak(
+            target: updated,
+            breakPower: intent.breakPower,
+            isHit: resolved.isHit,
+          );
+          if (broken != null) {
+            updated = broken.actor;
+            events.add(
+              Phase0aBossChargeInterrupted(
+                seq: seq++,
+                tick: tick,
+                actor: actorId,
+                target: target.id,
+                skillId: broken.skillId,
+                staggerTicks: broken.staggerTicks,
+              ),
+            );
+          }
           outcomes.add(
             Phase0aSkillOutcome(
               target: target.id,
@@ -607,10 +702,31 @@ Phase0aStepResult reducePhase0aTick({
             attackerId: actorId,
             targetId: target.id,
             kind: intent.kind,
+            defenderStaggered:
+                staggeredActorIds.contains(target.id) ||
+                target.staggerTicksRemaining > 0,
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);
-          final updated = target.copyWith(currentHealth: remaining);
+          var updated = target.copyWith(currentHealth: remaining);
+          final broken = _maybeApplyChargeBreak(
+            target: updated,
+            breakPower: intent.breakPower,
+            isHit: resolved.isHit,
+          );
+          if (broken != null) {
+            updated = broken.actor;
+            events.add(
+              Phase0aBossChargeInterrupted(
+                seq: seq++,
+                tick: tick,
+                actor: actorId,
+                target: target.id,
+                skillId: broken.skillId,
+                staggerTicks: broken.staggerTicks,
+              ),
+            );
+          }
           outcomes.add(
             Phase0aSkillOutcome(
               target: target.id,
@@ -663,6 +779,107 @@ Phase0aStepResult reducePhase0aTick({
     }
   }
 
+  // 蓄力拍尾释放(稳定敌序):pre-step 倒计时归零者在此走既有 enemy skill
+  // 结算路径(DamageCalculator 唯一真相源)。本拍 intent 阶段被破招/击败者
+  // chargingCast 已清/单位已移除,自动跳过——「完成仅一次」由状态保证。
+  for (final enemy in state.enemies) {
+    if (!chargeFireActorIds.contains(enemy.id)) continue;
+    final actor = enemiesById[enemy.id];
+    if (actor == null || !actor.isAlive) continue;
+    final cast = actor.chargingCast;
+    if (cast == null) continue;
+    if (enemySkillDamageResolver == null) {
+      // 防御性:无伤害 resolver 无法释放,清蓄力态避免永久压制死锁。
+      enemiesById[enemy.id] = actor.copyWith(clearChargingCast: true);
+      continue;
+    }
+    final toPlayer = player.position - actor.position;
+    final aimDirection = toPlayer.lengthSquared > 0
+        ? toPlayer.normalized()
+        : actor.facing;
+    final targets = switch (cast.skill.targetType) {
+      TargetType.single => [
+        ?_selectStrikeTarget(
+          attacker: actor,
+          player: player,
+          enemiesById: enemiesById,
+          aimDirection: aimDirection,
+          range: cast.attackRange,
+          halfArcRadians: cast.halfArcRadians,
+        ),
+      ],
+      TargetType.aoe =>
+        _opposingTargets(
+              casterSide: actor.side,
+              player: player,
+              enemiesById: enemiesById,
+            )
+            .where(
+              (target) => _withinEffectRadius(
+                origin: actor.position,
+                position: target.position,
+                effectRadius: cast.effectRadius,
+              ),
+            )
+            .toList(),
+    };
+    if (targets.isEmpty) {
+      // 蓄力散逸(无合法目标):清蓄力态,无事件无 CD(对齐 intent 分支
+      // targets.isEmpty 口径)。
+      enemiesById[enemy.id] = actor.copyWith(clearChargingCast: true);
+      continue;
+    }
+    events.add(
+      Phase0aEnemySkillStarted(
+        seq: seq++,
+        tick: tick,
+        actor: enemy.id,
+        skillId: cast.skill.id,
+      ),
+    );
+    var hitAny = false;
+    for (final target in targets) {
+      final resolved = enemySkillDamageResolver.resolveEnemySkill(
+        attackerId: enemy.id,
+        targetId: target.id,
+        skill: cast.skill,
+      );
+      if (!resolved.isHit) continue;
+      hitAny = true;
+      final damage = _checkedDamage(resolved);
+      final remaining = math.max(0, target.currentHealth - damage);
+      events.add(
+        Phase0aHitLanded(
+          seq: seq++,
+          tick: tick,
+          actor: enemy.id,
+          target: target.id,
+          moveKind: Phase0aMoveKind.heavy,
+          isCritical: resolved.isCritical,
+          isUltimate: cast.skill.type == SkillType.ultimate,
+          resolvedDamage: damage,
+          remainingHealth: remaining,
+        ),
+      );
+      if (target.side == Phase0aSide.player) {
+        player = target.copyWith(currentHealth: remaining);
+      }
+    }
+    final cooldowns = Map<String, double>.from(actor.enemySkillCooldowns);
+    if (cast.cooldownSeconds > 0) {
+      cooldowns[cast.skill.id] = cast.cooldownSeconds;
+    } else {
+      cooldowns.remove(cast.skill.id);
+    }
+    enemiesById[enemy.id] = actor.copyWith(
+      clearChargingCast: true,
+      facing: aimDirection,
+      qiCurrent: (actor.qiCurrent + cast.skill.qiDelta).clamp(0, actor.qiMax),
+      enemySkillCooldowns: Map.unmodifiable(cooldowns),
+      attackCooldownRemaining: hitAny ? cast.actionCooldownSeconds : 0,
+    );
+  }
+
   return Phase0aStepResult(
     state: Phase0aArenaState(
       tick: tick,
@@ -674,6 +891,52 @@ Phase0aStepResult reducePhase0aTick({
     events: List.unmodifiable(events),
   );
 }
+
+/// 破招状态迁移(唯一入口):typed `breakPower` 命中存活蓄力敌 → 清蓄力 +
+/// 招牌技上 CD + 进入踉跄窗口。不满足任一前提返 null(no-op,伤害照常)。
+///
+/// 前提(缺一即 no-op,fail-closed):
+/// - [breakPower] > 0(skill behavior `break.points`,reducer 不读名/描述);
+/// - 本次结算命中([isHit],闪避不破招,对齐旧引擎);
+/// - 目标存活且正在蓄力(`chargingCast != null`)。
+///
+/// 招牌技 CD 对齐旧引擎 `max(cooldownTurns, 1)`:cooldownSeconds 为 0 时
+/// 回落一个敌行动拍(actionCooldownSeconds)。踉跄窗口拍数取目标预解析的
+/// [Phase0aActor.staggerTicksTotal](numbers.combat.bossCharge),reducer 不写数值。
+({Phase0aActor actor, String skillId, int staggerTicks})?
+_maybeApplyChargeBreak({
+  required Phase0aActor target,
+  required int breakPower,
+  required bool isHit,
+}) {
+  if (breakPower <= 0 ||
+      !isHit ||
+      !target.isAlive ||
+      target.side != Phase0aSide.enemy) {
+    return null;
+  }
+  final cast = target.chargingCast;
+  if (cast == null) return null;
+  final cooldowns = Map<String, double>.from(target.enemySkillCooldowns);
+  final cooldownSeconds = cast.cooldownSeconds > 0
+      ? cast.cooldownSeconds
+      : cast.actionCooldownSeconds;
+  if (cooldownSeconds > 0) {
+    cooldowns[cast.skill.id] = cooldownSeconds;
+  }
+  return (
+    actor: target.copyWith(
+      clearChargingCast: true,
+      chargeTicksRemaining: _noChargeTicksRemaining,
+      staggerTicksRemaining: target.staggerTicksTotal,
+      enemySkillCooldowns: Map.unmodifiable(cooldowns),
+    ),
+    skillId: cast.skill.id,
+    staggerTicks: target.staggerTicksTotal,
+  );
+}
+
+const _noChargeTicksRemaining = 0;
 
 Map<String, double> _cooldownsAfter(
   Map<String, double> cooldowns,
@@ -730,6 +993,30 @@ Map<String, double> _cooldownsAfter(
         unlockedSkillIds: List.unmodifiable(newlyUnlocked),
       ),
     );
+    // 阶段蓄力入口:onEnterMechanic == chargeCounter → 进阶即把 Boss 推入
+    // 蓄力态(招牌 = application 预解析的该阶段最高倍率解锁招;未预解析 =
+    // 解锁招为空 no-op,对齐旧引擎)。已有蓄力则覆盖(一击跨多阈值以最后
+    // 阶段为准,对齐旧引擎 _advancePhases 覆写语义)。
+    if (phases[nextIndex].onEnterMechanic == BossPhaseMechanic.chargeCounter) {
+      final phaseCast = nextIndex < current.phaseChargeCasts.length
+          ? current.phaseChargeCasts[nextIndex]
+          : null;
+      if (phaseCast != null) {
+        current = current.copyWith(
+          chargingCast: phaseCast,
+          chargeTicksRemaining: phaseCast.chargeTicks,
+        );
+        events.add(
+          Phase0aBossChargeStarted(
+            seq: nextSeq++,
+            tick: tick,
+            actor: actor.id,
+            skillId: phaseCast.skill.id,
+            chargeTicks: phaseCast.chargeTicks,
+          ),
+        );
+      }
+    }
   }
   return (actor: current, nextSeq: nextSeq);
 }

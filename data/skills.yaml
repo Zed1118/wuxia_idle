@@ -47,7 +47,7 @@ skills:
 
   - id: skill_phase0a_clear
     name: 破阵
-    description: 真气震荡周身，重创近处敌手并令其失衡。
+    description: 真气震荡周身，重创近处敌手并令其失衡，亦可截断蓄力之招。
     type: powerSkill
     targetType: aoe
     powerMultiplier: 1500
@@ -62,6 +62,9 @@ skills:
       effects:
         - { type: damage }
         - { type: stagger }
+        # charge/破招纵切(2026-08-22):命中蓄力中敌人触发破招状态迁移
+        # (清蓄力+踉跄窗口+招牌技上CD),窗口/减防幅度走 numbers.combat.boss_charge。
+        - { type: break, points: 1 }
 
   # ───────────────────────────────────────────
   # 第 1 阶 入门功 · ruMenGong (cap=1500)

@@ -159,6 +159,8 @@ final class Phase0aSettlementAdapter {
           }
         case Phase0aEnemyDefeated() ||
             Phase0aBossPhaseChanged() ||
+            Phase0aBossChargeStarted() ||
+            Phase0aBossChargeInterrupted() ||
             Phase0aEnemySkillStarted() ||
             Phase0aSkillAvailabilityChanged() ||
             Phase0aWaveStarted() ||

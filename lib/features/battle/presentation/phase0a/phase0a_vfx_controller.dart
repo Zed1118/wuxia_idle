@@ -233,6 +233,8 @@ final class Phase0aVfxController {
         case Phase0aAttackStarted():
         case Phase0aSkillStarted():
         case Phase0aBossPhaseChanged():
+        case Phase0aBossChargeStarted():
+        case Phase0aBossChargeInterrupted():
         case Phase0aEnemySkillStarted():
         case Phase0aSkillAvailabilityChanged():
         case Phase0aWaveCleared():

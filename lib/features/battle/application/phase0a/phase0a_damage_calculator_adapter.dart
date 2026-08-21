@@ -123,6 +123,7 @@ final class Phase0aDamageCalculatorAdapter
     required String attackerId,
     required String targetId,
     required Phase0aDamageKind kind,
+    bool defenderStaggered = false,
   }) {
     if (!_moveBindings.containsKey(kind)) {
       throw StateError('Phase0a 招式缺 kind 绑定: ${kind.name}');
@@ -131,6 +132,7 @@ final class Phase0aDamageCalculatorAdapter
       attackerId: attackerId,
       targetId: targetId,
       skill: _moveBindings[kind],
+      defenderStaggered: defenderStaggered,
     );
   }
 
@@ -139,16 +141,19 @@ final class Phase0aDamageCalculatorAdapter
     required String attackerId,
     required String targetId,
     required SkillDef skill,
+    bool defenderStaggered = false,
   }) => _resolveWithSkill(
     attackerId: attackerId,
     targetId: targetId,
     skill: skill,
+    defenderStaggered: defenderStaggered,
   );
 
   Phase0aResolvedHit _resolveWithSkill({
     required String attackerId,
     required String targetId,
     required SkillDef? skill,
+    required bool defenderStaggered,
   }) {
     final attacker = _combatants[attackerId];
     if (attacker == null) {
@@ -173,6 +178,14 @@ final class Phase0aDamageCalculatorAdapter
       );
     }
 
+    // 破招踉跄窗口减防(numbers.combat.bossCharge.staggerDefenseDown):
+    // 守方防御率乘 (1 - 减防)。reducer 只传状态事实,幅度由此处查 numbers,
+    // 公式仍唯一走 DamageCalculator。
+    final defenderDefenseRate = defenderStaggered
+        ? target.defenseRate *
+              (1 - _numbers.combat.bossCharge.staggerDefenseDown)
+        : target.defenseRate;
+
     final result = DamageCalculator.calculateResolved(
       attackerInternalForce: attacker.internalForce,
       attackerEquipmentAttack: attacker.equipmentAttack,
@@ -183,7 +196,7 @@ final class Phase0aDamageCalculatorAdapter
       attackerRealmLayer: attacker.realmLayer,
       defenderRealmTier: target.realmTier,
       defenderRealmLayer: target.realmLayer,
-      defenderDefenseRate: target.defenseRate,
+      defenderDefenseRate: defenderDefenseRate,
       defenderEvasionRate: target.evasionRate,
       attackerCriticalRate: attacker.criticalRate,
       attackPowerMultiplier: attacker.attackPowerMultiplier,

@@ -34,6 +34,7 @@ class GuardDamageResolver implements Phase0aDamageResolver {
     required String attackerId,
     required String targetId,
     required Phase0aDamageKind kind,
+    bool defenderStaggered = false,
   }) {
     final damage = switch (kind) {
       Phase0aDamageKind.basic => basicDamage,

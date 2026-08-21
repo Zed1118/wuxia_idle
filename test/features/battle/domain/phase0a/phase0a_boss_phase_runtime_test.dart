@@ -47,6 +47,7 @@ final class _Resolver
     required String attackerId,
     required String targetId,
     required Phase0aDamageKind kind,
+    bool defenderStaggered = false,
   }) => Phase0aResolvedHit(isHit: true, isCritical: false, damage: basicDamage);
 
   @override
@@ -54,6 +55,7 @@ final class _Resolver
     required String attackerId,
     required String targetId,
     required SkillDef skill,
+    bool defenderStaggered = false,
   }) => const Phase0aResolvedHit(isHit: true, isCritical: false, damage: 17);
 }
 

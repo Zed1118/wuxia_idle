@@ -1,3 +1,4 @@
+import '../../../../data/defs/phase0a_skill_behavior.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../core/domain/enums.dart';
 import '../../../../shared/battle_shared/combatant_skill_loadout.dart';
@@ -22,11 +23,20 @@ class Phase0aNumericSkillBinding {
     if (slotId.trim().isEmpty) {
       throw ArgumentError.value(slotId, 'slotId', 'must not be empty');
     }
-    if (skill.canInterrupt ||
-        skill.defenseBreakPct != 0 ||
-        skill.qiDrainPct != 0) {
+    // canInterrupt 自 charge/破招批起只认 typed 契约:带 phase0aBehavior
+    // break 效果者放行(经 Phase0aSkillIntent.breakPower 进 reducer 破招
+    // 迁移),无 typed behavior 者仍大声拒绝(fail-closed,不猜名称/标志)。
+    if (skill.canInterrupt &&
+        !(skill.phase0aBehavior?.hasEffect(Phase0aSkillEffectType.breakPower) ??
+            false)) {
       throw StateError(
-        'Phase0a numeric skill ${skill.id}: interrupt/defenseBreak/qiDrain '
+        'Phase0a numeric skill ${skill.id}: canInterrupt 技能缺 '
+        'phase0aBehavior.break typed 契约，禁止静默丢失',
+      );
+    }
+    if (skill.defenseBreakPct != 0 || skill.qiDrainPct != 0) {
+      throw StateError(
+        'Phase0a numeric skill ${skill.id}: defenseBreak/qiDrain '
         '尚无 reducer 状态消费方，禁止静默丢失',
       );
     }
@@ -57,6 +67,13 @@ class Phase0aNumericSkillBinding {
 
   int get qiDelta => skill.qiDelta;
   TargetType get targetType => skill.targetType;
+
+  /// typed break 契约载荷(reducer 破招迁移唯一触发源);无 break 效果 = 0。
+  int get breakPower =>
+      skill.phase0aBehavior
+          ?.effectOf(Phase0aSkillEffectType.breakPower)
+          ?.points ??
+      0;
 }
 
 class Phase0aNumericSkillBindings {

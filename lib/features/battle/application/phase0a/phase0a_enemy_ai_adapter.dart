@@ -32,6 +32,13 @@ final class Phase0aEnemyAiAdapter {
       ..sort((a, b) => a.id.compareTo(b.id));
     for (final enemy in enemies) {
       if (!enemy.isAlive) continue;
+      // 蓄力/踉跄中整条行动跳过(对齐旧引擎「蓄力/踉跄跳过行动」):
+      // 不移动、不普攻、不放技能——reducer 另有同口径压制闸为双保险。
+      if (enemy.chargingCast != null ||
+          enemy.chargeTicksRemaining > 0 ||
+          enemy.staggerTicksRemaining > 0) {
+        continue;
+      }
       final delta = player.position - enemy.position;
       if (delta.lengthSquared > attackRange * attackRange) {
         intents.add(
@@ -80,7 +87,10 @@ final class Phase0aEnemyAiAdapter {
     Phase0aEnemySkillBinding? best;
     for (final binding in bindings) {
       final skill = binding.skill;
-      if (!actor.unlockedEnemySkillIds.contains(skill.id) ||
+      // 顶层招牌蓄力技旁路阶段 unlock 门(charge profile 即唯一闸门,
+      // reducer 起手蓄力分支同口径);其余技能仍按阶段解锁消费。
+      if ((!actor.unlockedEnemySkillIds.contains(skill.id) &&
+              skill.id != actor.chargeCast?.skill.id) ||
           !binding.isAutoSkill ||
           (skill.type == SkillType.ultimate && !actor.autoUltimate) ||
           skill.aiUsePolicy == AiUsePolicy.saveForInterrupt ||

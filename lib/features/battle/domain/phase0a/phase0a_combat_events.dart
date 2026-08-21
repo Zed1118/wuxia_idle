@@ -145,6 +145,71 @@ final class Phase0aBossPhaseChanged extends Phase0aEvent {
   );
 }
 
+/// Boss 起手蓄力(顶层 chargeSkillId 或阶段 chargeCounter 入口)。
+///
+/// [chargeTicks] 为本次蓄力倒计时总拍数(payload 直驱表现层读条);
+/// 倒计时归零后招牌技经既有 enemy skill 路径结算并发
+/// [Phase0aEnemySkillStarted],蓄力本身不产生独立伤害事件。
+final class Phase0aBossChargeStarted extends Phase0aEvent {
+  const Phase0aBossChargeStarted({
+    required super.seq,
+    required super.tick,
+    required this.actor,
+    required this.skillId,
+    required this.chargeTicks,
+  });
+
+  final String actor;
+  final String skillId;
+  final int chargeTicks;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aBossChargeStarted &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.actor == actor &&
+      other.skillId == skillId &&
+      other.chargeTicks == chargeTicks;
+
+  @override
+  int get hashCode => Object.hash(seq, tick, actor, skillId, chargeTicks);
+}
+
+/// 玩家破招命中蓄力中敌人:清蓄力 + 进入踉跄窗口 + 招牌技上冷却。
+///
+/// [actor] = 破招发起者(玩家),[target] = 被破招敌人,[skillId] = 被打断的
+/// 招牌技 id,[staggerTicks] = 本次踉跄窗口拍数(numbers.combat.bossCharge)。
+final class Phase0aBossChargeInterrupted extends Phase0aEvent {
+  const Phase0aBossChargeInterrupted({
+    required super.seq,
+    required super.tick,
+    required this.actor,
+    required this.target,
+    required this.skillId,
+    required this.staggerTicks,
+  });
+
+  final String actor;
+  final String target;
+  final String skillId;
+  final int staggerTicks;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aBossChargeInterrupted &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.actor == actor &&
+      other.target == target &&
+      other.skillId == skillId &&
+      other.staggerTicks == staggerTicks;
+
+  @override
+  int get hashCode =>
+      Object.hash(seq, tick, actor, target, skillId, staggerTicks);
+}
+
 /// Enemy successfully started a phase-unlocked skill. Damage continues through
 /// [Phase0aHitLanded], so existing feedback and settlement consume the resolved
 /// hit without a parallel damage event contract.

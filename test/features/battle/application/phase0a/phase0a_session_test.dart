@@ -24,6 +24,7 @@ class FixedDamageResolver implements Phase0aDamageResolver {
     required String attackerId,
     required String targetId,
     required Phase0aDamageKind kind,
+    bool defenderStaggered = false,
   }) {
     return Phase0aResolvedHit(
       isHit: true,

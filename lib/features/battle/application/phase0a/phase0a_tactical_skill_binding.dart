@@ -29,11 +29,14 @@ final class Phase0aTacticalSkillBinding {
       throw StateError('${skill.id} has unsupported tactical qi/cooldown');
     }
     final effectTypes = behavior.effects.map((effect) => effect.type).toSet();
+    // 精确集匹配仍 fail-closed:Q 保持纯 pull;R 自 charge/破招批起接受
+    // damage+stagger+break(break 经 reducer 破招状态迁移消费)。
     final expected = switch (kind) {
       Phase0aTacticalSkillKind.gather => {Phase0aSkillEffectType.pull},
       Phase0aTacticalSkillKind.clear => {
         Phase0aSkillEffectType.damage,
         Phase0aSkillEffectType.stagger,
+        Phase0aSkillEffectType.breakPower,
       },
     };
     if (effectTypes.length != expected.length ||
@@ -54,6 +57,10 @@ final class Phase0aTacticalSkillBinding {
   double? get destinationRadius =>
       behavior.effectOf(Phase0aSkillEffectType.pull)?.destinationRadius;
   int get qiCost => skill.qiCost;
+
+  /// typed break 契约载荷(reducer 破招迁移唯一触发源);无 break 效果 = 0。
+  int get breakPower =>
+      behavior.effectOf(Phase0aSkillEffectType.breakPower)?.points ?? 0;
 
   /// Transitional tactical skills interpret legacy cooldown turns as seconds.
   /// Numeric and enemy bindings retain their existing conversion policies.
