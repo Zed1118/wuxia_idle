@@ -204,9 +204,7 @@ final class Phase0aDamageCalculatorAdapter
     // defenderWardMult,不给 DamageCalculator 加参数。
     final vulnerabilityOutMult = target.vulnerabilityOutMult;
     final vulnerabilityWindowMult =
-        (vulnerabilityOutMult == null ||
-            defenderStaggered ||
-            defenderCharging)
+        (vulnerabilityOutMult == null || defenderStaggered || defenderCharging)
         ? 1.0
         : vulnerabilityOutMult;
 
@@ -264,10 +262,7 @@ final class Phase0aDamageCalculatorAdapter
     _requireUsable(snapshot.wardMult, '$id.wardMult');
     final vulnerabilityOutMult = snapshot.vulnerabilityOutMult;
     if (vulnerabilityOutMult != null) {
-      _requireUsable(
-        vulnerabilityOutMult,
-        '$id.vulnerabilityOutMult',
-      );
+      _requireUsable(vulnerabilityOutMult, '$id.vulnerabilityOutMult');
     }
     _requireUsable(snapshot.piercePct, '$id.piercePct');
     _requireUsable(snapshot.critDamageTakenMult, '$id.critDamageTakenMult');

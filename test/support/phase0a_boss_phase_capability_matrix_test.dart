@@ -186,9 +186,7 @@ void main() {
       'unsupported_win_condition',
     });
     expect(
-      entries
-          .singleWhere((entry) => entry.key == 'tower/tower_32')
-          .status,
+      entries.singleWhere((entry) => entry.key == 'tower/tower_32').status,
       Phase0aPreflightStatus.eligible,
     );
     expect(

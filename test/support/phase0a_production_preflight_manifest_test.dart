@@ -86,10 +86,9 @@ void main() {
         );
         final baseMult = enemy.vulnerability!.outOfWindowDamageMult;
         // 生产装配默认口径 = 恒 cycle-1:乘子解析成 base,不得解析成周目覆盖。
-        final snapshot = EnemyCombatantSnapshotAssembler.assembleAll(
-          [enemy],
-          isTower: isTower,
-        ).single;
+        final snapshot = EnemyCombatantSnapshotAssembler.assembleAll([
+          enemy,
+        ], isTower: isTower).single;
         expect(
           snapshot.vulnerabilityMult,
           baseMult,
@@ -116,11 +115,7 @@ void main() {
     for (final floor in repo.towerFloors) {
       checkTeam(floor.enemyTeam, isTower: true);
     }
-    expect(
-      cycleOverrideEnemies,
-      greaterThan(0),
-      reason: '守卫必须覆盖真实生产内容,不得空转',
-    );
+    expect(cycleOverrideEnemies, greaterThan(0), reason: '守卫必须覆盖真实生产内容,不得空转');
   });
 
   test('clean 主线被列为 eligible', () {
