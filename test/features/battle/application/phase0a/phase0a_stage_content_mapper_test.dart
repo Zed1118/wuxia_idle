@@ -154,6 +154,38 @@ void main() {
       expect(mapping.initialState.player.qiMax, 100);
     });
 
+    test('Q/R 首帧可用态按开场真气推导', () {
+      final numbers = repo.numbers;
+
+      for (final openingQi in [0, numbers.phase0aArena.gatherQiCost]) {
+        final player = makeCh1Player(numbers).copyWith(currentQi: openingQi);
+        final mapping = Phase0aStageContentMapper.map(
+          stage: repo.getStage('stage_01_01'),
+          playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(player),
+          numbers: numbers,
+        );
+        final gather = mapping.initialState.skillSlots.singleWhere(
+          (slot) => slot.slot == numbers.phase0aArena.gatherSlot,
+        );
+        final clear = mapping.initialState.skillSlots.singleWhere(
+          (slot) => slot.slot == numbers.phase0aArena.clearSlot,
+        );
+
+        expect(
+          gather.availability,
+          openingQi >= numbers.phase0aArena.gatherQiCost
+              ? Phase0aSkillAvailability.ready
+              : Phase0aSkillAvailability.qi,
+          reason: 'openingQi=$openingQi gather',
+        );
+        expect(
+          clear.availability,
+          Phase0aSkillAvailability.qi,
+          reason: 'openingQi=$openingQi clear',
+        );
+      }
+    });
+
     test('stage_01_03 三敌 → 三敌单波,id 加波次槽位后缀防撞', () {
       final stage = repo.getStage('stage_01_03');
       final numbers = repo.numbers;

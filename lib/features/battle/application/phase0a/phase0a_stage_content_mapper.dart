@@ -296,13 +296,21 @@ final class Phase0aStageContentMapper {
       slot: arena.gatherSlot,
       cooldownRemaining: 0,
       qiCost: arena.gatherQiCost,
-      availability: Phase0aSkillAvailability.ready,
+      availability: availabilityOf(
+        cooldownRemaining: 0,
+        qiCurrent: openingQi,
+        qiCost: arena.gatherQiCost,
+      ),
     ),
     Phase0aSkillSlot(
       slot: arena.clearSlot,
       cooldownRemaining: 0,
       qiCost: arena.clearQiCost,
-      availability: Phase0aSkillAvailability.ready,
+      availability: availabilityOf(
+        cooldownRemaining: 0,
+        qiCurrent: openingQi,
+        qiCost: arena.clearQiCost,
+      ),
     ),
     for (final binding in numericSkills.equipped)
       Phase0aSkillSlot(

@@ -132,7 +132,24 @@ final class Phase0aVfxController {
     }
 
     for (final event in events) {
-      if (_sealed || !hasRoom()) break;
+      if (_sealed) break;
+      if (!hasRoom()) {
+        final outcomeSeal = switch (event) {
+          Phase0aBattleVictory() => const Phase0aVfxEntry(
+            kind: Phase0aVfxKind.outcomeSeal,
+            isVictory: true,
+          ),
+          Phase0aBattleDefeat() => const Phase0aVfxEntry(
+            kind: Phase0aVfxKind.outcomeSeal,
+            isVictory: false,
+          ),
+          _ => null,
+        };
+        if (outcomeSeal == null) continue;
+        entries[entries.length - 1] = outcomeSeal;
+        _sealed = true;
+        break;
+      }
       switch (event) {
         case Phase0aHitLanded():
           pushPopup(event.target, event.resolvedDamage, event.isCritical);

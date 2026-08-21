@@ -613,5 +613,34 @@ void main() {
       final entries = controller.consume(events);
       expect(entries.length, Phase0aVfxController.maxEntries);
     });
+
+    for (final isVictory in [true, false]) {
+      test('容量已满仍保留${isVictory ? '胜利' : '败北'}终局封签且总量不越界', () {
+        final controller = Phase0aVfxController()..syncActors(_state());
+        final events = <Phase0aEvent>[
+          for (var i = 1; i <= Phase0aVfxController.maxEntries; i++)
+            Phase0aWaveStarted(
+              seq: i,
+              tick: i,
+              waveIndex: i,
+              waveTotal: Phase0aVfxController.maxEntries,
+            ),
+          if (isVictory)
+            const Phase0aBattleVictory(seq: 161, tick: 161)
+          else
+            const Phase0aBattleDefeat(seq: 161, tick: 161),
+        ];
+
+        final entries = controller.consume(events);
+
+        expect(entries, hasLength(Phase0aVfxController.maxEntries));
+        final seals = entries
+            .where((entry) => entry.kind == Phase0aVfxKind.outcomeSeal)
+            .toList();
+        expect(seals, hasLength(1));
+        expect(seals.single.isVictory, isVictory);
+        expect(entries.last.kind, Phase0aVfxKind.outcomeSeal);
+      });
+    }
   });
 }
