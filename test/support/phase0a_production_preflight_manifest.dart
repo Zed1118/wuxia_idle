@@ -86,9 +86,14 @@ final class Phase0aProductionPreflightManifest {
   ///
   /// 脆弱窗口(2026-08-22 纵切):`EnemyDef.vulnerability` 基础值已经
   /// mapper→快照→actor→reducer 运行态事实(蓄招/踉跄)折入唯一
-  /// DamageCalculator 消费,不再构成跳过原因;`cycleVulnerability` 高周目
-  /// 覆盖在恒 cycle-1 装配下惰性、未被消费(参数化延后,不声称已迁),
-  /// 与 cycleBossPhases 同口径不单独构成跳过原因。
+  /// DamageCalculator 消费,不再构成跳过原因。**本批只验证了 cycle-1
+  /// 装配**(主线灰度门限一周目、mapper/preflight 无 cycle 参数恒
+  /// `vulnerabilityForCycle(1)`):`cycleVulnerability` 高周目覆盖是纯数值
+  /// 覆盖,恒 cycle-1 装配下未被消费、惰性——参数化延后,**不声称
+  /// cycle2 已迁**。注意与 `cycleBossPhases` 口径不同:后者的周目覆盖
+  /// 仍逐一过机制支持性检查(见 [_hasUnsupportedBossPhaseOrChargeSemantics]
+  /// 对 cycleBossPhases 的遍历),而 cycleVulnerability 无独立机制可查;
+  /// 两者均不单独构成跳过原因,但校验路径不一样,不是「同口径」。
   static bool _hasUnsupportedBossPhaseOrChargeSemantics(EnemyDef enemy) {
     for (final phase in enemy.bossPhases ?? const <BossPhaseDef>[]) {
       if (!_phaseMechanicSupported(phase.onEnterMechanic)) return true;

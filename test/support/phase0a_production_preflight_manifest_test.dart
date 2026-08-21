@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
+import 'package:wuxia_idle/features/battle/application/enemy_combatant_snapshot_assembler.dart';
 
 import 'phase0a_production_preflight_manifest.dart';
 import 'test_data.dart';
@@ -63,6 +64,63 @@ void main() {
       'unsupported_guardian_ward': 2,
       'unsupported_win_condition': 1,
     });
+  });
+
+  test('cycleVulnerability 守卫:base 必有且装配恒取 cycle-1 基础值', () async {
+    // 本批只验证 cycle-1 装配(mapper/preflight 无 cycle 参数)。此守卫钉:
+    // ① 所有带非空 cycleVulnerability 的生产 EnemyDef 必须同时带 base
+    //    vulnerability(加载期 fromYaml 已校,此处对生产内容显式双保险,
+    //    防未来放宽后 cycle 覆盖失去基础锚);
+    // ② 生产装配默认口径(不传 cycle 参数)解析出的承伤乘子恒等于
+    //    cycle-1 base 值、绝不解析成周目覆盖值——不声称 cycle2 已迁。
+    final repo = await loadTestGameRepository();
+    var cycleOverrideEnemies = 0;
+    void checkTeam(List<EnemyDef> team, {required bool isTower}) {
+      for (final enemy in team) {
+        if (enemy.cycleVulnerability.isEmpty) continue;
+        cycleOverrideEnemies++;
+        expect(
+          enemy.vulnerability,
+          isNotNull,
+          reason: '${enemy.id} 配 cycleVulnerability 必须带 base vulnerability',
+        );
+        final baseMult = enemy.vulnerability!.outOfWindowDamageMult;
+        // 生产装配默认口径 = 恒 cycle-1:乘子解析成 base,不得解析成周目覆盖。
+        final snapshot = EnemyCombatantSnapshotAssembler.assembleAll(
+          [enemy],
+          isTower: isTower,
+        ).single;
+        expect(
+          snapshot.vulnerabilityMult,
+          baseMult,
+          reason: '${enemy.id} 装配必须恒取 cycle-1 base 值',
+        );
+        final cycle2 = enemy.cycleVulnerability[2]?.outOfWindowDamageMult;
+        if (cycle2 != null && cycle2 != baseMult) {
+          expect(
+            snapshot.vulnerabilityMult,
+            isNot(cycle2),
+            reason: '${enemy.id} 不得被误读成已迁 cycle2 覆盖',
+          );
+        }
+      }
+    }
+
+    for (final stage in repo.stageDefs.values.where(
+      (stage) =>
+          stage.stageType == StageType.mainline &&
+          (stage.chapterIndex ?? 0) >= 2,
+    )) {
+      checkTeam(stage.enemyTeam, isTower: false);
+    }
+    for (final floor in repo.towerFloors) {
+      checkTeam(floor.enemyTeam, isTower: true);
+    }
+    expect(
+      cycleOverrideEnemies,
+      greaterThan(0),
+      reason: '守卫必须覆盖真实生产内容,不得空转',
+    );
   });
 
   test('clean 主线被列为 eligible', () {

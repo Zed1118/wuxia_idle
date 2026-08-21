@@ -176,12 +176,16 @@ final class Phase0aActor {
   /// 被破招后踉跄窗口拍数(预解析自 numbers.combat.bossCharge)。
   final int staggerTicksTotal;
 
-  /// 脆弱窗口外承伤乘子(预解析自 EnemyDef.vulnerability,恒 cycle-1 基础值;
-  /// null = 无机制)。窗口开合的运行态事实 = [chargingCast] != null(蓄招中)
+  /// 脆弱窗口外承伤乘子:**内容预解析/可观测事实**(源 `EnemyDef.vulnerability`,
+  /// 恒 cycle-1 基础值;null = 无机制),与 [chargeCast]/[staggerTicksTotal]
+  /// 同为装配期内容事实,供内容保真断言与观测。
+  ///
+  /// **权威结算乘子在伤害快照** `Phase0aDamageSnapshot.vulnerabilityOutMult`
+  /// (快照工厂自同一 `CombatantSnapshot` 源透传);**reducer 从不读取本字段
+  /// 数值**,只向 resolver 传蓄招/踉跄运行态事实——结算数值单源快照,
+  /// 防 actor/快照双源漂移。窗口开合语义 = [chargingCast] != null(蓄招中)
   /// 或 [staggerTicksRemaining] > 0(破招踉跄),与旧引擎
-  /// `DefaultGroundStrategy.vulnerabilityMultOf` 同语义;乘子数值本身由伤害
-  /// 快照承载、结算时折入唯一 DamageCalculator 的 defenderWardMult,reducer
-  /// 只传事实不写数值。
+  /// `DefaultGroundStrategy.vulnerabilityMultOf` 同语义。
   final double? vulnerabilityMult;
 
   /// 运行态:正在蓄力的施放(null = 未蓄力)。不可变可回放。
