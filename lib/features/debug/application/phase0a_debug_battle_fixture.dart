@@ -4,13 +4,12 @@ import '../../../core/domain/enums.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/numbers_config.dart';
 import '../../../data/yaml_loader.dart';
+import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
 import '../../battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_wave_battle_flow.dart';
-import '../../battle/application/legacy_3v3_combatant_adapter.dart';
-import '../../battle/domain/battle_state.dart';
 import '../../battle/domain/phase0a/arena_vector.dart';
 import '../../battle/domain/phase0a/phase0a_combat_model.dart';
 import '../../battle/domain/phase0a/phase0a_combat_reducer.dart';
@@ -162,9 +161,7 @@ final class _DebugBattleConfig {
     final result = <Phase0aCombatantInput>[
       Phase0aCombatantInput(
         actorId: _text(player, 'id'),
-        snapshot: Legacy3v3CombatantAdapter.toSnapshot(
-          _character(player, isPlayer: true),
-        ),
+        snapshot: _combatantSnapshot(player, isPlayer: true),
       ),
     ];
     for (final wave in waveMaps) {
@@ -172,9 +169,7 @@ final class _DebugBattleConfig {
         result.add(
           Phase0aCombatantInput(
             actorId: _text(enemy, 'id'),
-            snapshot: Legacy3v3CombatantAdapter.toSnapshot(
-              _character(enemy, isPlayer: false),
-            ),
+            snapshot: _combatantSnapshot(enemy, isPlayer: false),
           ),
         );
       }
@@ -246,14 +241,14 @@ final class _DebugBattleConfig {
     );
   }
 
-  BattleCharacter _character(
+  CombatantSnapshot _combatantSnapshot(
     Map<String, dynamic> actor, {
     required bool isPlayer,
   }) {
     final stats = isPlayer ? actor : _enemyTemplate(actor);
     final hp = _integer(actor, 'max_health');
     final qi = _integer(stats, 'qi');
-    return BattleCharacter(
+    return CombatantSnapshot(
       characterId: _integer(actor, 'character_id'),
       name: _text(actor, 'id'),
       realmTier: RealmTier.values.byName(_text(defaults, 'realm_tier')),
@@ -266,6 +261,9 @@ final class _DebugBattleConfig {
       internalForce: _integer(stats, 'internal_force'),
       maxQi: qi,
       currentQi: qi,
+      qiGainMultiplier: 1,
+      qiCostReductionPct: 0,
+      autoUltimate: false,
       speed: _number(stats, 'move_speed').round(),
       criticalRate: _number(stats, 'critical_rate'),
       evasionRate: _number(stats, 'evasion_rate'),
@@ -275,21 +273,26 @@ final class _DebugBattleConfig {
         _text(defaults, 'cultivation_layer'),
       ),
       availableSkills: const [],
-      skillCooldowns: const {},
+      openingSkillCooldowns: const {},
+      skillUses: const {},
       activeBuffs: const [],
-      actionPoint: _integer(defaults, 'action_point'),
-      isAlive: true,
-      teamSide: _integer(
-        defaults,
-        isPlayer ? 'player_team_side' : 'enemy_team_side',
-      ),
-      slotIndex: isPlayer
-          ? _integer(defaults, 'player_slot_index')
-          : _integer(actor, 'slot_index'),
+      swordSongResonanceActive: false,
+      iconPath: null,
       attackPowerMultiplier: _number(defaults, 'attack_power_multiplier'),
       outputMultiplier: _number(defaults, 'output_multiplier'),
+      isBoss: false,
+      chargeSkillId: null,
+      bossPhases: null,
+      bossPhaseUnlockSkills: null,
+      schoolDamageTakenMult: const {},
+      lineageRole: null,
       forgingPiercePct: _number(defaults, 'forging_pierce_pct'),
       forgingLifestealPct: _number(defaults, 'forging_lifesteal_pct'),
+      enemyDefId: null,
+      guardianWardMult: null,
+      guardianDefIds: const [],
+      vulnerabilityMult: null,
+      guardInterceptsInterrupt: false,
     );
   }
 

@@ -235,6 +235,34 @@ void main() {
     }
   });
 
+  test('Phase 0A debug fixture 直接消费 neutral snapshot，不得回流旧战斗角色', () {
+    final fixtureFile = File(
+      'lib/features/debug/application/phase0a_debug_battle_fixture.dart',
+    );
+    final code = stripComments(fixtureFile.readAsStringSync());
+
+    expect(
+      code.contains('combatant_snapshot.dart'),
+      isTrue,
+      reason: 'debug fixture 必须直接构造 engine-neutral CombatantSnapshot',
+    );
+    expect(
+      code.contains('battle_state.dart'),
+      isFalse,
+      reason: 'debug fixture 不得 import 旧 battle_state.dart',
+    );
+    expect(
+      code.contains('legacy_3v3_combatant_adapter.dart'),
+      isFalse,
+      reason: 'debug fixture 不得绕 neutral seam 回接 legacy Adapter',
+    );
+    expect(
+      RegExp(r'\bBattleCharacter\b').firstMatch(code),
+      isNull,
+      reason: 'debug fixture 不得引用旧 BattleCharacter 类型',
+    );
+  });
+
   /// 第五批(快照工厂)专属契约:工厂只做字段解析与 SkillProficiency 复用,
   /// 禁止第二套伤害公式、禁止回查仓库、禁止依赖旧 strategy。
   group('快照工厂源码契约(第五批)', () {
