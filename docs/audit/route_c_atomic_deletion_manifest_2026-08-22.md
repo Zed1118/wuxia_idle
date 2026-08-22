@@ -1,7 +1,7 @@
 # 路线 C · 旧 3v3 原子删除清单
 
 > 初始基线：`c2c55784`；删除候选工程基线：`01bf00fe`（2026-08-22，北京时间）
-> 状态：`DELETE_CANDIDATE_MATERIALIZED / EXTERNAL_MERGE_GATE_LOCKED`
+> 状态：`MERGED_TO_MAIN / EXTERNAL_GATE_PASS`
 
 ## 已完成前置
 
@@ -27,9 +27,9 @@
   不得签 Route C Gate；根项目分析口径为 `flutter analyze lib test tool`，该嵌套包按自身
   `pubspec.yaml` 独立维护。
 
-## 候选已物化的删除包
+## 已合入的删除包
 
-以下内容已在独立候选中同批删除；本节保留为 merge 前范围核对，禁止拆成“先删源码、后修编译”的中间态：
+以下内容已在独立候选中同批删除，并于 `597a243b2506610b5cbb74e2919be79bbf99e283` 快进合入 `main`；本节保留为删除范围核对：
 
 1. `lib/features/battle/` 中除 `phase0a/` 外的旧 domain/application/presentation；基线统计 62 个 Dart 文件，候选中已删除。
 2. 旧 `BattleScreen` debug 菜单、visual route 与 62 个旧战斗验收路由；候选中已删除，历史截图原位保留并标注“路由已删”。
@@ -43,7 +43,7 @@
 4. 仅验证上述旧实现的测试与诊断；基线直接 import 核心旧入口的静态口径为 145 个
    测试文件，另有旧表现组件测试已按删除编译闭包纳入。共享 RPG、Phase 0A、战绩册、
    结算 UI 和群战内容测试未随旧核误删。
-5. GDD/CLAUDE/PROGRESS 当前态已随候选同步；fresh build_runner、全量 analyze/test、Mac build/Profile 必须在最终候选提交冻结后复跑，Windows 构建/实机复验仍待外部设备。
+5. GDD/CLAUDE/PROGRESS 当前态已同步；最终 Gate commit 的全量 test、analyze、Mac Profile 与 Windows Profile 实机矩阵均已复跑并通过。
 
 ## 硬 Gate
 
@@ -52,12 +52,12 @@
 定义的生产版预检。旧 `phase0minus_probe` 成绩和 `battle_tap_live` AB 包不得纳入
 Route C 删除裁决。
 
-全局删除候选仅在以下证据同时成立后 merge：
+本轮全局删除候选已满足以下证据并完成 merge：
 
 - 整合态 Mac 工程 Gate 与自动目检通过；
 - Windows 本地物理机按 `docs/phase0/phase0a-windows-physical-gate.md` 通过生产兼容性矩阵，且证据 commit 与本删除基线一致。
 
-2026-08-23 用户取消六人真人 Gate，并将 Windows 标准由目标最低档性能 Gate 改为本地物理机生产兼容性 Gate。当前联网实体机具备签字资格，但仍须取得与最终候选同 commit 的原始矩阵证据；本 Gate 不定义产品最低配置。证据完成前不能把候选误报为已合入主线或已发布。
+2026-08-23 用户取消六人真人 Gate，并将 Windows 标准由目标最低档性能 Gate 改为本地物理机生产兼容性 Gate。最终 commit `597a243b2506610b5cbb74e2919be79bbf99e283` 的 Mac/Windows 原始矩阵均 6/6 PASS，独立 preflight PASS，全量 4218/4218、analyze 0；Route C 已合入 `main`，但未 deploy。该 Windows Gate 不定义产品最低配置，完整证据见 `route_c_gate_closeout_2026-08-23.md`。
 
 ## 删除后负向核对
 

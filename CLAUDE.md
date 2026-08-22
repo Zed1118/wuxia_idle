@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.48**
+> v1.48 变更摘要(2026-08-23 路线 C 双平台 Gate 收口 · 0 改玩法数值):旧 3v3 原子删除已在 commit `597a243b2506610b5cbb74e2919be79bbf99e283` 快进合入 `main`；同 commit 的 Mac 与 Windows 本地物理机矩阵均为 1280×720/1440×900 各 3 轮、合计 6/6 PASS，独立 preflight PASS，全量 4218/4218、analyze 0。六人真人 Gate 已由用户取消；Windows 结果仅证明当前实体基线兼容，不定义产品最低配置。证据索引见 `docs/audit/route_c_gate_closeout_2026-08-23.md`。
 > **版本:v1.47**
 > v1.47 变更摘要(2026-08-23 路线 C Windows Gate 标准调整 · 0 改玩法数值):Route C 外部硬锁由目标最低档性能 Gate 改为 Windows 本地物理机生产兼容性 Gate；当前 Ryzen 7 5800X + RTX 4070 SUPER + 16GB + 143Hz 实体机具备签字资格。该结果不得外推为产品最低配置；RDP/VM/云机/隐藏 service session、混 commit/AOT、缺失主机事实或不实 attestation 仍直接否决。
 > **版本:v1.46**

@@ -1,7 +1,7 @@
 # 新会话开局清单
 
-> 更新时间：2026-08-22 · 夜班收口（仅验证与事实同步）
-> 在途分支：无（本批完成后合回 `main`；未授权不 push）
+> 更新时间：2026-08-23 · Route C 双平台 Gate 收口后
+> 当前主线：`main` 已含 Gate commit `597a243b2506610b5cbb74e2919be79bbf99e283`
 
 ## 当前结论
 
@@ -12,10 +12,10 @@
 - 修复校准逮到的接线问题：autoFill 的 normalAttack 不再同时进入鼠标 basic 与数字 1，旧 3v3 autoFill 语义不改。
 - 08-21 表现层三批已在 main：演员位移插值/局部重绘、分类 VFX 生命期、飘字居民上限、命中/出手微动作、落地墨印与敌/我/精英可读性均成立。
 - 08-21 debug fixture 与敌方生产装配器已改为直接构造 `CombatantSnapshot`，不再内部绕旧 `BattleCharacter`；旧消费接口保持不变。
-- 生产预检 manifest 已覆盖 Ch2–Ch21 主线 100 关与塔 49 层：73+41 条 eligible 进入同核 headless；35 条动态机制 fail-closed skipped。
+- 生产预检 manifest 已覆盖 Ch2–Ch21 主线 100 关与塔 49 层；Boss phase/charge、vulnerability、guardian 与 survive condition 补齐后达到 **149/149 eligible、0 skipped**，全部进入同核 headless。
 - 玩家生产装配已直接使用 `PlayerCombatantSnapshotBuilder`；最后一处 `BattleCharacter.fromCharacter → toSnapshot` 内部中转及 neutral roster 的 3-slot 泄漏已清除，旧消费接口保持兼容。
 - 1280×720/1440×900 实窗口截图与 W/D/J/Q/R 动态 smoke 通过；无布局溢出、运行异常或缺图。
-- 正式替换的消费面迁移已完成；用户于 2026-08-23 取消六人主观 Gate，并将外部硬锁改为 Windows 本地物理机生产兼容性 Gate；当前联网实体机可签，但不代表产品最低配置。
+- 正式替换、旧 3v3 原子删除与双平台 Gate 均已完成并合入 `main`；六人主观 Gate 已取消，Windows 结果不代表产品最低配置。
 
 ## 画像结论
 
@@ -26,7 +26,7 @@
 - Q gather 每场一次且零伤，R clear 0 次；现有资源循环不支持长期固定 Q/R 战术印。
 
 ## 最新验证
-0. 08-22 夜班收口：`flutter test --no-pub` **5340/5340**（exit 0）；`flutter analyze --no-pub lib test` 0 issue；`git diff --check` 通过。全仓格式门禁 exit 1，命中仅为被忽略的 8 个历史 phase0minus 探针文件，未改动。
+0. Route C Gate commit `597a243b`：`flutter test --no-pub` **4218/4218**，`flutter analyze --no-pub lib test tool` 0 issue；Mac/Windows 双视口各 3 轮均 **6/6 PASS**，独立 preflight PASS。完整证据见 `docs/audit/route_c_gate_closeout_2026-08-23.md`。
 
 1. 08-21 起手 powerSkill：旧行为红测命中；focused **23/23**、`flutter analyze` 0 issue；1500 局 evidence 全部完成；最终全量 **5278/0**。
 2. 08-21 玩家 neutral builder：逐字段/roster/主线真实 Isar/远征/断魂庄 targeted **83/83**；最终全量 **5265/0**。
@@ -35,16 +35,15 @@
 
 ## 下一步任务（需人类判断优先）
 
-### P0 · Ch1 真人小样与已拍方案落地
+### P0 · 已拍方案继续落地
 
-1. 刚猛/灵巧/阴柔各试玩 stage_01_01、01_03、01_05，记录耗时、受击、空技能栏理解和 Q/R 使用。
-2. 起手技能可见性 D1-A 已完成；下一原子批按 D2-A/D3-A/D4-A 实装 typed `Phase0aSkillBehavior`/geometry 纵切。
-3. 先各选一门真实 Q/R 技能贯通 YAML→loader→binding→intent→reducer→event/headless；coverage 未满前固定 Adapter 只作显式 fallback。
-4. 真人确认后才局部校准灵巧 Boss 分叉，禁止据 bot 单点全局削弱敌人。
+1. D1-A 与 Q/R typed behavior 纵切已完成；先审计 D2-A/D3-A/D4-A 的剩余覆盖，再按缺口开最小原子批。
+2. Boss 蓄力预警、破招/踉跄与脆弱窗口已有双视口动态 Gate；下一批只针对可复现的可读性缺口补表现或契约测试。
+3. 高周目 `cycleVulnerability` 已进入 mapper；补做高周期映射覆盖审计，缺测试才补回归，不重复实现生产逻辑。
+4. 禁止据 bot 单点全局削弱敌人；任何玩法数值调整仍需用户明确授权。
 
 ### 后续工程
 
-1. 低消下一切片：先做人类 Gate 与 Boss 蓄力/破招/踉跄/脆弱窗口可读性确认；不得用降级运行冒充迁移。
-2. 机制工程后续仍拆 guardian（`tower_49` 基础、`tower_42` 协同）与 `stage_21_05` survive condition；surviveTicks 禁止机械迁移。
-3. 按 ADR 迁远征、断魂庄单主角续传与扫荡 headless 直结；只消费 manifest eligible 内容。
-4. Route C 仍须同 commit 的 Mac 6/6 与 Windows 本地物理机 6/6；Phase 0B MANUAL_RIG 保持独立历史口径。
+1. `tower_49` guardian、`tower_42` 协同、`stage_21_05` survive condition、远征/断魂庄续传与扫荡 headless 均已完成，禁止按旧 TODO 重做。
+2. 先做表现可读性与高周期 vulnerability 覆盖的只读审计，再选择一个零数值、可自动验收的最小优化切片。
+3. Phase 0B MANUAL_RIG 保持独立历史口径，不得用于签署 Route C 或新的生产 Gate。

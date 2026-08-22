@@ -2,6 +2,10 @@
 
 > 2026-06-11 自 GDD.md 头部迁出(头部只留最近 2 版),逆时序。完整历史亦可 `git log GDD.md`。
 
+> **v1.29 变更**(2026-08-23 路线 C 外部 Gate 口径改判 · 0 改玩法数值):用户明确取消六人真人 Gate，不再采集 P01–P06，也不作为旧 3v3 原子删除的 merge 条件；历史问卷与 probe 工具仅留档。当时 Route C 唯一外部硬锁为最低档 Windows 物理机生产根应用矩阵，Mac 自动/动态目检仍保留；**该硬件档口径已被 v1.30 取代。**(2026-08-23 v1.31 批按体例迁入)
+
+> **v1.27 变更**(2026-08-19 §7.4 路线 C 四子项拍板 · 0 改代码数值):v1.26 批所遗「4 子项未决」同日调研拍板全收口(全 α 推荐项)——① headless 结算内核 = **复用 0A reducer**(补玩家 bot adapter + 快进循环,headless 与可玩共用同一模拟核;远征/断魂庄队伍续传语义需重设计,绑内容迁移 ADR)② 65 条旧战斗路由 = **删路由·证据原地标注**③ 共享层 = **拆分迁移**(enum_localizations/derived_stats/cycle_* 迁 lib/shared,战斗专属件留 battle 随引擎删)④ 过渡期主线战斗空窗 = **原子切换·零空窗**(0A 主线接线批与旧入口拆除批同次 merge)。调研事实与口径详 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md` §8;v1.25 摘要按体例迁 `docs/_archive/GDD_CHANGELOG.md`。(2026-08-23 v1.31 批按体例迁入)
+
 > **v1.28 变更**(2026-08-22 路线 C 生产切换与删除候选冻结 · 0 改玩法数值):主线、塔、扫荡、远征、断魂庄五个生产消费面统一切至 **Phase 0A 单角色横版 ARPG**，live 与 headless 共用 reducer；历史多人会话改为安全退役，不再启动旧 runner。旧 3v3 源码、路由、会启动旧路由的工具与专属测试已在删除候选原子移除，当前仅因**六人主观 Gate + 最低档 Windows 物理机 Gate**尚无原始证据而锁定 merge；隔离的 Phase 0/0B 历史观察包不属于产品旧核且不能签 Gate。§1.1/§5.1/§12.4.1 当前态口径与 GDD/CLAUDE/PROGRESS 漂移指针同步收口。删除清单见 `docs/audit/route_c_atomic_deletion_manifest_2026-08-22.md`；v1.26 摘要按体例迁 `docs/_archive/GDD_CHANGELOG.md`。(2026-08-23 v1.30 批按体例迁入)
 
 > **v1.26 变更**(2026-08-19 §7.4 ADR 拍板 + 战斗形态漂移指针 · 0 改代码数值):① 存量战斗 ADR 用户拍板**路线 C 终态替换·前置排程**——终态 = Phase 0A 单角色 ARPG 替换旧 3v3(不两模式并存),硬前提 = 6 人 Gate + Windows 实机过线(已后置)+ Phase 1 纵切成立 + 共享层安置/headless 结算内核替代先于表现层拆除;4 子项未决(headless 内核替代方案/65 路由与目检证据归档/共享层落点/过渡期主线战斗空窗处置),事实底座 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md`;② §1.1 战斗形态行/§5.1 加漂移指针注记(口径同步随 ADR 执行批,禁单独改写,详 `docs/audit/living_doc_drift_2026-08-18.md`);③ v1.24 摘要按体例迁 `docs/_archive/GDD_CHANGELOG.md`。(2026-08-22 v1.28 批按体例迁入)

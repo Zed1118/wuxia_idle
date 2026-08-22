@@ -4,10 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
-> **版本**:v1.30
+> **版本**:v1.31
+> **v1.31 变更**(2026-08-23 路线 C 双平台 Gate 收口 · 0 改玩法数值):旧 3v3 原子删除已在 `597a243b2506610b5cbb74e2919be79bbf99e283` 合入 `main`；同 commit 的 Mac 与 Windows 本地物理机生产兼容性矩阵均 6/6 PASS，独立 preflight PASS，全量 4218/4218、analyze 0。六人真人 Gate 已取消；Windows 结果不定义产品最低配置。证据索引见 `docs/audit/route_c_gate_closeout_2026-08-23.md`。
 > **v1.30 变更**(2026-08-23 路线 C Windows Gate 标准调整 · 0 改玩法数值):Route C 外部硬锁由目标最低档性能 Gate 改为 Windows 本地物理机生产兼容性 Gate；当前 Ryzen 7 5800X + RTX 4070 SUPER + 16GB + 143Hz 实体机可签本 Gate，但只能证明该物理基线兼容，不能外推为产品最低配置。实体机/本地 Console/非 RDP/非 VM/100% 缩放/真实主机事实与同 commit、同 AOT、双视口 6/6 原始证据仍为硬条件。
-> **v1.29 变更**(2026-08-23 路线 C 外部 Gate 口径改判 · 0 改玩法数值):用户明确取消六人真人 Gate，不再采集 P01–P06，也不作为旧 3v3 原子删除的 merge 条件；历史问卷与 probe 工具仅留档。当时 Route C 唯一外部硬锁为最低档 Windows 物理机生产根应用矩阵，Mac 自动/动态目检仍保留；**该硬件档口径已被 v1.30 取代。**
-> **v1.27 变更**(2026-08-19 §7.4 路线 C 四子项拍板 · 0 改代码数值):v1.26 批所遗「4 子项未决」同日调研拍板全收口(全 α 推荐项)——① headless 结算内核 = **复用 0A reducer**(补玩家 bot adapter + 快进循环,headless 与可玩共用同一模拟核;远征/断魂庄队伍续传语义需重设计,绑内容迁移 ADR)② 65 条旧战斗路由 = **删路由·证据原地标注**③ 共享层 = **拆分迁移**(enum_localizations/derived_stats/cycle_* 迁 lib/shared,战斗专属件留 battle 随引擎删)④ 过渡期主线战斗空窗 = **原子切换·零空窗**(0A 主线接线批与旧入口拆除批同次 merge)。调研事实与口径详 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md` §8;v1.25 摘要按体例迁 `docs/_archive/GDD_CHANGELOG.md`。
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
 > - 发布上限:绝对境界层 **49**(武圣·登峰 = 武圣段收官 = **主线终章**·49 为绝对终点无第 50 层;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)
@@ -292,7 +291,7 @@
 
 **Phase 0A 单角色横版水墨 ARPG**。玩家即时移动与普攻，以 Q/R、数字技能处理聚怪、破招、爆发和首领机制；Boss 蓄力、护法拦截、踉跄与脆弱窗口均由同一 reducer 驱动。自动战斗、扫荡、远征和断魂庄 headless 推演使用同核 bot adapter，保持“在线 = 离线”的规则一致性。
 
-> **路线 C 状态（2026-08-23）**：五个生产消费面已统一使用 Phase 0A；旧 3v3 源码、路由、会启动旧路由的工具与专属测试已在独立删除候选中原子移除。隔离的 Phase 0/0B 历史观察包不属于产品旧核且不能签 Gate。用户已取消六人主观 Gate，并将 Windows 外部标准改为本地物理机生产兼容性 Gate；候选 merge 仍须同 commit 的 Mac 矩阵与 Windows 双视口 6/6 原始证据通过。该 Gate 不定义产品最低配置。历史范围与决策链见 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md`。
+> **路线 C 状态（2026-08-23）**：五个生产消费面已统一使用 Phase 0A；旧 3v3 源码、路由、会启动旧路由的工具与专属测试已在 `597a243b2506610b5cbb74e2919be79bbf99e283` 原子删除并快进合入 `main`。同 commit 的 Mac 与 Windows 本地物理机矩阵均 6/6 PASS，独立 preflight PASS；六人主观 Gate 已取消。隔离的 Phase 0/0B 历史观察包不属于产品旧核且不能签 Gate；Windows 结果只证明当前实体基线兼容，不定义产品最低配置。证据索引见 `docs/audit/route_c_gate_closeout_2026-08-23.md`，历史范围与决策链见 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md`。
 
 ### 5.2 数值范围（重要约束）
 

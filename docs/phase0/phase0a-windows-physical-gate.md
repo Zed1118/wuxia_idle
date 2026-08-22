@@ -1,9 +1,10 @@
 # Phase 0A Windows 本地物理机生产兼容性 Gate 手册
 
-> 当前状态：`WINDOWS_PENDING`。2026-08-23 起，本 Gate 不再用于证明
-> i5-8250U/UHD 620/8GB 等产品最低配置，只验证被记录的 Windows 实体机生产兼容性。
+> 当前状态：`PASS @ 597a243b2506610b5cbb74e2919be79bbf99e283`。2026-08-23 起，本 Gate 不再用于证明
+> i5-8250U/UHD 620/8GB 等产品最低配置，只验证被记录的 Windows 实体机生产兼容性；后续 commit 或新 AOT 必须重新取证。
 > 当前 Route C 生产证据结构与独立裁决见
-> [`route-c-external-gate-preflight.md`](./route-c-external-gate-preflight.md)。
+> [`route-c-external-gate-preflight.md`](./route-c-external-gate-preflight.md)，本轮结果见
+> [`route_c_gate_closeout_2026-08-23.md`](../audit/route_c_gate_closeout_2026-08-23.md)。
 
 ## 1. 可签字设备
 

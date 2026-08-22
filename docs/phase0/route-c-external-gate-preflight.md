@@ -1,7 +1,6 @@
 # Route C 外部 Gate 预检
 
-> 状态：`WINDOWS_PENDING`。2026-08-23 用户取消六人真人 Gate；Route C 外部硬锁只剩
-> Windows 本地物理机生产兼容性矩阵。预检防串包、缺样本、虚假主机声明和旧 probe 冒签。
+> 状态：`PASS @ 597a243b2506610b5cbb74e2919be79bbf99e283`。2026-08-23 用户取消六人真人 Gate；同 commit 的 Mac 与 Windows 本地物理机生产兼容性矩阵均 6/6 PASS，独立预检 PASS，Route C 已快进合入 `main`。证据索引见 `docs/audit/route_c_gate_closeout_2026-08-23.md`。
 
 ## 对象纠偏
 
@@ -79,5 +78,5 @@ preflight 会重新读取原始帧和内存/GC 数据，独立计算样本数、
 重新散列主机 manifest、`app.so` 和 fixture，并拒绝旧 probe、串 commit、混二进制、
 RDP、VM、非 100% 缩放、隐藏服务会话或未完整记录的主机。
 
-退出码：`0=PASS`、`2=PENDING`、`1=INVALID`。候选树、生产消费者、Mac Gate 与 Windows
-本地物理兼容性 Gate 均通过后，才允许原子整合到主线并重跑全量验证。
+退出码：`0=PASS`、`2=PENDING`、`1=INVALID`。本轮候选树、生产消费者、Mac Gate 与 Windows
+本地物理兼容性 Gate 已在 `597a243b2506610b5cbb74e2919be79bbf99e283` 全部通过并完成原子整合；后续改动不得借用该证据冒签新的二进制。
