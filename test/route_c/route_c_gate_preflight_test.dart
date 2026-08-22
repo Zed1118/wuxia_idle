@@ -248,6 +248,26 @@ void main() {
     expect(derived?['gc_telemetry_status'], 'GC_TELEMETRY_COLLECTED');
   });
 
+  test('raw parser derives RSS from samples after the warmup marker', () async {
+    final directory = await Directory.systemTemp.createTemp(
+      'route-c-windows-warmup-test-',
+    );
+    addTearDown(() => directory.delete(recursive: true));
+    final frames = File('${directory.path}/frames.jsonl');
+    final memory = File('${directory.path}/memory_gc.jsonl');
+    await frames.writeAsString(
+      '{"build_us":400,"raster_us":600,"total_span_us":1000}\n',
+    );
+    await memory.writeAsString(
+      '${<String>['{"record_type":"memory_sample","rss_bytes":100,"gate_eligible":false}', '{"record_type":"memory_sample","rss_bytes":240,"gate_eligible":true}', '{"record_type":"memory_sample","rss_bytes":260,"gate_eligible":true}', '{"record_type":"gc_status","status":"GC_TELEMETRY_COLLECTED"}'].join('\n')}\n',
+    );
+
+    final derived = await deriveWindowsRawTelemetry(frames, memory);
+
+    expect(derived?['rss_start_bytes'], 240);
+    expect(derived?['rss_end_bytes'], 260);
+  });
+
   test('missing external evidence is pending, never pass', () {
     expect(
       validateHumanSessions(

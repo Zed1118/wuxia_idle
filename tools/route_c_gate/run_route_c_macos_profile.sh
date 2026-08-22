@@ -62,7 +62,8 @@ for ((index = 1; index <= repeat; index++)); do
   mkdir -p "$run_dir"
   rm -rf "$app_run_dir"
   mkdir -p "$app_run_dir"
-  caffeinate -dimsu "$binary" \
+  VISUAL_WINDOW_W="$expected_width" VISUAL_WINDOW_H="$expected_height" \
+    caffeinate -dimsu "$binary" \
     --visual-route=phase0a_battle_profile \
     --battle-profile-run-id="$run_id" \
     --battle-profile-output="$app_run_dir" \

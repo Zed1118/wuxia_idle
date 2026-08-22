@@ -987,8 +987,16 @@ Future<Map<String, Object?>?> deriveWindowsRawTelemetry(
   final percentileIndex = totalSpans.isEmpty
       ? null
       : ((totalSpans.length - 1) * 0.99).ceil();
-  final memorySamples = memoryGc
+  final allMemoryRecords = memoryGc
       .where((record) => record['record_type'] == 'memory_sample')
+      .toList(growable: false);
+  final markedGateSamples = allMemoryRecords
+      .where((record) => record['gate_eligible'] == true)
+      .toList(growable: false);
+  final gateMemoryRecords = markedGateSamples.isEmpty
+      ? allMemoryRecords
+      : markedGateSamples;
+  final memorySamples = gateMemoryRecords
       .map((record) => _asInt(record['rss_bytes']))
       .whereType<int>()
       .toList(growable: false);

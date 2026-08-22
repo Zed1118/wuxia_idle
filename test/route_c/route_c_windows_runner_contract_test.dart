@@ -67,6 +67,8 @@ void main() {
       expect(runner, contains('.p99_total_span_ms < 16.6'));
       expect(runner, contains('Library/Containers/com.pen.wuxia.wuxiaIdle'));
       expect(runner, contains('cp -R "\$app_run_dir/." "\$run_dir/"'));
+      expect(runner, contains('VISUAL_WINDOW_W="\$expected_width"'));
+      expect(runner, contains('VISUAL_WINDOW_H="\$expected_height"'));
       expect(runner, isNot(contains('phase0minus_probe.app')));
     },
   );
@@ -83,4 +85,21 @@ void main() {
     expect(matrix, contains('phase0a_debug_battle.yaml'));
     expect(matrix, contains('SHA256SUMS.txt'));
   });
+
+  test(
+    'macOS Profile can collect localhost GC telemetry without widening release',
+    () {
+      final profile = File(
+        'macos/Runner/DebugProfile.entitlements',
+      ).readAsStringSync();
+      final release = File(
+        'macos/Runner/Release.entitlements',
+      ).readAsStringSync();
+
+      expect(profile, contains('com.apple.security.network.client'));
+      expect(profile, contains('com.apple.security.network.server'));
+      expect(release, isNot(contains('com.apple.security.network.client')));
+      expect(release, isNot(contains('com.apple.security.network.server')));
+    },
+  );
 }

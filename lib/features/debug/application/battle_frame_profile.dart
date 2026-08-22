@@ -365,6 +365,7 @@ class _BattleFrameProfileProbeState extends State<BattleFrameProfileProbe> {
       'record_type': 'memory_sample',
       'elapsed_ms': _elapsed.elapsedMilliseconds,
       'rss_bytes': ProcessInfo.currentRss,
+      'gate_eligible': _elapsed.elapsed >= _profile.warmup,
     });
   }
 
@@ -415,6 +416,7 @@ class _BattleFrameProfileProbeState extends State<BattleFrameProfileProbe> {
       '${directory.path}/memory_gc.jsonl',
     ).writeAsString('${memoryGc.map(jsonEncode).join('\n')}\n');
     final rssValues = _memorySamples
+        .where((sample) => sample['gate_eligible'] == true)
         .map((sample) => sample['rss_bytes']! as int)
         .toList(growable: false);
     final payload = <String, Object?>{
