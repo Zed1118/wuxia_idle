@@ -48,4 +48,37 @@ void main() {
     expect(source, contains("'-hashfile'"));
     expect(source, contains("Process.run('shasum'"));
   });
+
+  test(
+    'macOS runner measures the same root production app and raw contract',
+    () {
+      final runner = File(
+        'tools/route_c_gate/run_route_c_macos_profile.sh',
+      ).readAsStringSync();
+
+      expect(runner, contains('wuxia_idle.app/Contents/MacOS/wuxia_idle'));
+      expect(runner, contains('phase0a_battle_profile'));
+      expect(runner, contains('data/phase0a_debug_battle.yaml'));
+      expect(runner, contains('sample-seconds=60'));
+      expect(runner, contains('warmup-seconds=12'));
+      expect(runner, contains('cooldown-seconds=30'));
+      expect(runner, contains('GC_TELEMETRY_COLLECTED'));
+      expect(runner, contains('.sampled_frames >= 3000'));
+      expect(runner, contains('.p99_total_span_ms < 16.6'));
+      expect(runner, isNot(contains('phase0minus_probe.app')));
+    },
+  );
+
+  test('macOS matrix is exactly two viewports times three production runs', () {
+    final matrix = File(
+      'tools/route_c_gate/run_route_c_macos_matrix.sh',
+    ).readAsStringSync();
+
+    expect(matrix, contains('1280x720 3'));
+    expect(matrix, contains('1440x900 3'));
+    expect(matrix, contains('ROUTE_C_SKIP_BUILD=true'));
+    expect(matrix, contains('wuxia_idle.app/Contents/MacOS/wuxia_idle'));
+    expect(matrix, contains('phase0a_debug_battle.yaml'));
+    expect(matrix, contains('SHA256SUMS.txt'));
+  });
 }

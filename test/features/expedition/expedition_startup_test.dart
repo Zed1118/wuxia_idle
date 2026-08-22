@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/inventory_item.dart';
+import 'package:wuxia_idle/core/domain/reward_entry.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -148,12 +150,60 @@ void main() {
       policy: ExpeditionPolicy.yanJingCaiYao,
       now: departedAt,
     );
+    final active = (await service.activeRun())!;
+    await IsarSetup.instance.writeTxn(() async {
+      final row = (await IsarSetup.instance.expeditionRuns.get(active.id))!
+        ..currentNode = 4
+        ..stagedRewards = [
+          RewardEntry()
+            ..rewardKey = 'exp'
+            ..quantity = 120,
+          RewardEntry()
+            ..rewardKey = 'item_yaocao'
+            ..quantity = 3,
+        ];
+      for (final member in row.members) {
+        member
+          ..currentHp = 0
+          ..isDowned = true;
+      }
+      await IsarSetup.instance.expeditionRuns.put(row);
+    });
+    final firstExpBefore = (await IsarSetup.instance.characters.get(
+      firstId,
+    ))!.experience;
+    final secondExpBefore = (await IsarSetup.instance.characters.get(
+      secondId,
+    ))!.experience;
 
     expect(
       await retireLegacyMultiplayerExpeditionOnOpen(service: service),
       isTrue,
     );
     expect(await service.activeRun(), isNull);
+
+    final first = (await IsarSetup.instance.characters.get(firstId))!;
+    final second = (await IsarSetup.instance.characters.get(secondId))!;
+    expect(first.experience, greaterThan(firstExpBefore));
+    expect(second.experience, greaterThan(secondExpBefore));
+    expect(first.injuryHoursRemaining, 0, reason: '历史清场不是战败，不应误加重伤');
+    expect(second.injuryHoursRemaining, 0, reason: '历史清场不是战败，不应误加重伤');
+    expect(first.lightInjuryStacks, 0, reason: '历史清场不是战败，不应误加轻伤');
+    expect(second.lightInjuryStacks, 0, reason: '历史清场不是战败，不应误加轻伤');
+    expect(
+      (await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_yaocao',
+      ))?.quantity,
+      3,
+    );
+
+    final nextRunId = await service.dispatch(
+      characterIds: [firstId],
+      policy: ExpeditionPolicy.yanJingCaiYao,
+      now: departedAt.add(const Duration(minutes: 1)),
+    );
+    expect(nextRunId, isNot(active.id), reason: '删除历史 run 后，成员占用必须释放');
+    await service.recall();
     expect(
       await retireLegacyMultiplayerExpeditionOnOpen(service: service),
       isFalse,

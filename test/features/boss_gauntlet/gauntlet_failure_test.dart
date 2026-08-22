@@ -103,12 +103,16 @@ void main() {
     });
   }
 
-  Future<void> putInventory(String defId, int qty) async {
+  Future<void> putInventory(
+    String defId,
+    int qty, {
+    ItemType itemType = ItemType.miscMaterial,
+  }) async {
     await IsarSetup.instance.writeTxn(() async {
       await IsarSetup.instance.inventoryItems.put(
         InventoryItem()
           ..defId = defId
-          ..itemType = ItemType.miscMaterial
+          ..itemType = itemType
           ..quantity = qty
           ..firstObtainedAt = DateTime(2026, 7, 17)
           ..lastObtainedAt = DateTime(2026, 7, 17),
@@ -286,6 +290,33 @@ void main() {
     expect(ch.injuryHoursRemaining, 0);
     expect(await qtyOf('item_liaoshangdan'), 1);
     expect(await svc().activeRun(), isNull);
+  });
+
+  test('路线 C 历史多人未开战会话：退帖、返托管并关闭', () async {
+    await putRun(
+      currentStage: 1,
+      members: [
+        member(maxHp: 0, currentHp: 0),
+        member(id: 999, maxHp: 0, currentHp: 0),
+      ],
+      escrowDefIds: ['item_liaoshangdan'],
+      escrowLoaded: [3],
+      escrowUsed: [1],
+    );
+    await putInventory(
+      GauntletService.ticketDefId,
+      0,
+      itemType: ItemType.ticket,
+    );
+    await putInventory('item_liaoshangdan', 0);
+
+    expect(
+      await svc().retireLegacyMultiplayer(config: config(), numbers: numbers()),
+      GauntletLegacyRetirement.refundedUnstarted,
+    );
+    expect(await qtyOf(GauntletService.ticketDefId), 1, reason: '未开战须退一张断魂帖');
+    expect(await qtyOf('item_liaoshangdan'), 2, reason: '返还 Loaded-Used 托管余量');
+    expect(await svc().activeRun(), isNull, reason: '退帖与返还完成后关闭历史会话');
   });
 
   test('路线 C 历史多人已胜 Boss：保留 awaitingRewardChoice 供玩家选奖', () async {

@@ -60,15 +60,21 @@ void main() {
     ..currentHp = 0
     ..isDowned = false;
 
-  Future<void> putRun(int currentStage) async {
+  Future<void> putRun(
+    int currentStage, {
+    GauntletPhase phase = GauntletPhase.inBattle,
+    List<ActivityMemberSnapshot>? members,
+    List<String> rewardCandidateDefIds = const [],
+  }) async {
     await IsarSetup.instance.writeTxn(() async {
       await IsarSetup.instance.bossGauntletRuns.put(
         BossGauntletRun()
           ..saveDataId = 0
           ..seed = 0
           ..currentStage = currentStage
-          ..sessionPhase = GauntletPhase.inBattle
-          ..members = [snap(1)],
+          ..sessionPhase = phase
+          ..members = members ?? [snap(1)]
+          ..rewardCandidateDefIds = List.of(rewardCandidateDefIds),
       );
     });
   }
@@ -210,6 +216,38 @@ void main() {
     expect(find.text(UiStrings.gauntletRewardSection), findsOneWidget);
     expect(find.text(UiStrings.gauntletRewardFirstClearBadge), findsOneWidget);
     final run = await readRun(tester);
+    expect(run?.sessionPhase, GauntletPhase.awaitingRewardChoice);
+  });
+
+  testWidgets('路线 C 历史多人已胜 Boss：入口流保留会话并进入奖励选择', (tester) async {
+    tester.view.physicalSize = const Size(1280, 720);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final config = singleBoss(baseHp: 1, baseAttack: 1);
+    await tester.runAsync(() async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      await putRun(
+        1,
+        phase: GauntletPhase.awaitingRewardChoice,
+        members: [snap(1), snap(999)],
+        rewardCandidateDefIds: config.rewardCandidateEquipmentIds,
+      );
+    });
+
+    await tester.pumpWidget(host(config));
+    await pumpUntilFound(tester, find.text(UiStrings.gauntletRewardSection));
+
+    expect(find.text(UiStrings.gauntletRewardSection), findsOneWidget);
+    final firstRewardName = GameRepository
+        .instance
+        .equipmentDefs[config.rewardCandidateEquipmentIds.first]!
+        .name;
+    expect(find.text(firstRewardName), findsOneWidget);
+    await tester.tap(find.text(firstRewardName));
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.gauntletRewardConfirmTitle), findsOneWidget);
+    final run = await readRun(tester);
+    expect(run?.members, hasLength(2), reason: '入口流不得提前删除待选奖励历史会话');
     expect(run?.sessionPhase, GauntletPhase.awaitingRewardChoice);
   });
 
