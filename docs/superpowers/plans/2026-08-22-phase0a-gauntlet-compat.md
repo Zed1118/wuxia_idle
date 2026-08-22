@@ -40,8 +40,13 @@
 
 ## 当前恢复点
 
-- 状态：已派发，待实现。
-- 最后完成：主 agent 冻结接口与文件边界。
-- 下一步：DeepSeek 先补红测，再实现灰度门/选择器。
-- 已跑验证：无。
-- 阻塞项：无。
+- 状态：B 任务已实现并验证，待主 agent 复核合并。
+- 最后完成：新增 `phase0a_gauntlet_gate.dart`（`enabled`/`shouldUsePhase0a`/`testOverride`，
+  `PHASE0A_GAUNTLET_GRAY`）+ `gauntlet_combat_selector.dart`（`enum GauntletCombatPath` +
+  `gauntletCombatPathFor`，sel 校验 1-3 人 fail-fast）+ 红测
+  `phase0a_gauntlet_gate_test.dart`。契约全落：默认关走旧 3v3；灰度开+单成员走 Phase 0A；
+  2/3 成员回落旧 runner；非法成员数 fail-fast；`testOverride` tearDown 复原。
+- 下一步：主 agent 评审并集成消费点（`gauntletCombatPathFor` 尚未接主线/entry flow，A/C 未完成）。
+- 已跑验证：`flutter test --no-pub test/features/boss_gauntlet/phase0a_gauntlet_gate_test.dart` —— **7 passed / 0 failed**；
+  `flutter analyze lib/features/boss_gauntlet/application/phase0a_gauntlet_gate.dart lib/features/boss_gauntlet/application/gauntlet_combat_selector.dart test/features/boss_gauntlet/phase0a_gauntlet_gate_test.dart` —— **0 issue**。未启动 GUI，未 merge/push/deploy。
+- 阻塞项：仅「集成消费点」属 A/C 后续切片，B 任务本身无阻塞。
