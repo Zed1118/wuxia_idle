@@ -18,9 +18,8 @@ import '../../support/test_data.dart';
 
 /// C2.3a 单场战斗驱动生产路径 e2e（feedback_layered_bugs 守卫：pure 测过 ≠ 真落地）。
 ///
-/// `GauntletService.fightCurrentStage` = load run → 从真角色建满血基准队
-/// （`buildExactPlayerTeam`）→ `stagePlayerTeam` 按快照装配 → `runStage`
-/// （seed 混 currentStage）→ `advance` → **单事务原子持久化**。原子性即崩溃安全：
+/// `GauntletService.fightCurrentStagePhase0a` = load run → 从真角色组装单角色快照
+/// → Phase 0A headless 战斗 → **单事务原子持久化**。原子性即崩溃安全：
 /// 战斗中崩溃（内存态·未落事务）→ 无持久化 → 重开重打当前关。`continueToNextStage`
 /// = 整备页「继续闯关」（interlude→inBattle）。
 void main() {
@@ -84,7 +83,7 @@ void main() {
     return id;
   }
 
-  test('fightCurrentStage 驱动真战斗并原子持久化战末快照（生产路径）', () async {
+  test('fightCurrentStagePhase0a 驱动真战斗并原子持久化战末快照（生产路径）', () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();
     final runId = await putRun(
       phase: GauntletPhase.inBattle,
@@ -96,7 +95,7 @@ void main() {
 
     final result = await GauntletService(
       IsarSetup.instance,
-    ).fightCurrentStage(config: config, numbers: numbers);
+    ).fightCurrentStagePhase0a(config: config, numbers: numbers);
 
     final run = (await IsarSetup.instance.bossGauntletRuns.get(runId))!;
     // 战末快照真落地：maxHp 由 0（占位）→ 战斗真值，证明真建队+真战斗+真持久化。
@@ -115,7 +114,7 @@ void main() {
     }
   });
 
-  test('fightCurrentStage 拒非 inBattle（整备页）→ 抛错', () async {
+  test('fightCurrentStagePhase0a 拒非 inBattle（整备页）→ 抛错', () async {
     await seedSave();
     await putRun(
       phase: GauntletPhase.interlude,
@@ -127,7 +126,7 @@ void main() {
     await expectLater(
       GauntletService(
         IsarSetup.instance,
-      ).fightCurrentStage(config: config, numbers: numbers),
+      ).fightCurrentStagePhase0a(config: config, numbers: numbers),
       throwsStateError,
     );
   });
@@ -186,17 +185,18 @@ void main() {
     },
   );
 
-  test('fightCurrentStage Boss 胜利固化三选一候选 + 首通判定（生产 wiring）', () async {
+  test('Phase0a Boss 胜利固化三选一候选 + 首通判定（生产 wiring）', () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();
     final runId = await putRun(
       phase: GauntletPhase.inBattle,
       currentStage: 1,
       members: [snap(1)],
     );
-    final result = await GauntletService(IsarSetup.instance).fightCurrentStage(
-      config: weakBossConfig(),
-      numbers: GameRepository.instance.numbers,
-    );
+    final result = await GauntletService(IsarSetup.instance)
+        .fightCurrentStagePhase0a(
+          config: weakBossConfig(),
+          numbers: GameRepository.instance.numbers,
+        );
     expect(result.leftWin, isTrue, reason: 'baseHp=1 弱 boss 必败于真角色');
     final run = (await IsarSetup.instance.bossGauntletRuns.get(runId))!;
     expect(run.sessionPhase, GauntletPhase.awaitingRewardChoice);
@@ -212,7 +212,7 @@ void main() {
     );
   });
 
-  test('fightCurrentStage Boss 胜利·已通关 → isFirstClearPending=false', () async {
+  test('Phase0a Boss 胜利·已通关 → isFirstClearPending=false', () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();
     await IsarSetup.instance.writeTxn(() async {
       final save = (await IsarSetup.instance.saveDatas.get(0))!
@@ -224,7 +224,7 @@ void main() {
       currentStage: 1,
       members: [snap(1)],
     );
-    await GauntletService(IsarSetup.instance).fightCurrentStage(
+    await GauntletService(IsarSetup.instance).fightCurrentStagePhase0a(
       config: weakBossConfig(),
       numbers: GameRepository.instance.numbers,
     );
@@ -233,28 +233,28 @@ void main() {
     expect(run.isFirstClearPending, isFalse, reason: '已通关 → 非首通');
   });
 
-  test('prepareStage 无存档 → 抛错', () async {
+  test('preparePhase0aStage 无存档 → 抛错', () async {
     // IsarSetup.init 自动建 SaveData id=0，须显式删除才是「无存档」。
     await IsarSetup.instance.writeTxn(() async {
       await IsarSetup.instance.saveDatas.delete(0);
     });
     final config = GameRepository.instance.bossGauntletConfig!;
     await expectLater(
-      GauntletService(IsarSetup.instance).prepareStage(config: config),
+      GauntletService(IsarSetup.instance).preparePhase0aStage(config: config),
       throwsStateError,
     );
   });
 
-  test('prepareStage 无进行中会话 → 抛错', () async {
+  test('preparePhase0aStage 无进行中会话 → 抛错', () async {
     await seedSave();
     final config = GameRepository.instance.bossGauntletConfig!;
     await expectLater(
-      GauntletService(IsarSetup.instance).prepareStage(config: config),
+      GauntletService(IsarSetup.instance).preparePhase0aStage(config: config),
       throwsStateError,
     );
   });
 
-  test('prepareStage 关次越界（currentStage > 配置关数）→ 抛错', () async {
+  test('preparePhase0aStage 关次越界（currentStage > 配置关数）→ 抛错', () async {
     await seedSave();
     await putRun(
       phase: GauntletPhase.inBattle,
@@ -263,12 +263,12 @@ void main() {
     );
     final config = GameRepository.instance.bossGauntletConfig!;
     await expectLater(
-      GauntletService(IsarSetup.instance).prepareStage(config: config),
+      GauntletService(IsarSetup.instance).preparePhase0aStage(config: config),
       throwsStateError,
     );
   });
 
-  test('prepareStage 敌队解析为空（配置损坏）→ 抛错', () async {
+  test('preparePhase0aStage 敌队解析为空（配置损坏）→ 抛错', () async {
     await seedSave();
     await putRun(
       phase: GauntletPhase.inBattle,
@@ -281,7 +281,9 @@ void main() {
       supplyCap: 3,
     );
     await expectLater(
-      GauntletService(IsarSetup.instance).prepareStage(config: brokenConfig),
+      GauntletService(
+        IsarSetup.instance,
+      ).preparePhase0aStage(config: brokenConfig),
       throwsStateError,
     );
   });

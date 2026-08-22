@@ -6,18 +6,17 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_battle_runner.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_controller.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/application/phase0a_gauntlet_stage_runner.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
 
-/// C2 组末环 wiring · Task 1：把 `fightCurrentStage` 拆出 `prepareStage`（事务外纯
-/// 建队）+ `settleStageResult`（单事务落 advance）的 seam，供 live BattleScreen 路复用。
-/// 拆分须 behavior-preserving：drive 测（fightCurrentStage）继续绿。
+/// Phase 0A 断魂庄 seam：事务外准备单角色战斗计划，战末只把引擎中立检查点
+/// 交给事务层，live 与 headless 路径共用同一结算入口。
 void main() {
   late Directory tempDir;
 
@@ -79,7 +78,7 @@ void main() {
     return id;
   }
 
-  test('prepareStage：事务外建当前关出战计划（队+敌+seed+isBoss）', () async {
+  test('preparePhase0aStage：事务外建当前关出战计划（角色+敌+seed+isBoss）', () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();
     await putRun(
       phase: GauntletPhase.inBattle,
@@ -90,9 +89,9 @@ void main() {
 
     final plan = await GauntletService(
       IsarSetup.instance,
-    ).prepareStage(config: config);
+    ).preparePhase0aStage(config: config);
 
-    expect(plan.playerTeam, isNotEmpty, reason: '真建队（含祖师/相生/伤势）');
+    expect(plan.playerSnapshot.characterId, 1, reason: '真单角色快照');
     expect(plan.enemyDefs, isNotEmpty, reason: '关次敌队非空');
     expect(
       plan.seed,
@@ -102,7 +101,7 @@ void main() {
     expect(plan.isBoss, config.stages[0].role == 'boss');
   });
 
-  test('prepareStage 拒非 inBattle（整备页）→ 抛错', () async {
+  test('preparePhase0aStage 拒非 inBattle（整备页）→ 抛错', () async {
     await seedSave();
     await putRun(
       phase: GauntletPhase.interlude,
@@ -111,12 +110,12 @@ void main() {
     );
     final config = GameRepository.instance.bossGauntletConfig!;
     await expectLater(
-      GauntletService(IsarSetup.instance).prepareStage(config: config),
+      GauntletService(IsarSetup.instance).preparePhase0aStage(config: config),
       throwsStateError,
     );
   });
 
-  test('prepareStage + runStage + settleStageResult == 原子推进战末快照', () async {
+  test('prepare + Phase0a run + settle == 原子推进战末快照', () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();
     final runId = await putRun(
       phase: GauntletPhase.inBattle,
@@ -127,15 +126,17 @@ void main() {
     final numbers = GameRepository.instance.numbers;
     final service = GauntletService(IsarSetup.instance);
 
-    final plan = await service.prepareStage(config: config);
-    final result = GauntletBattleRunner.runStage(
-      playerTeam: plan.playerTeam,
-      enemyDefs: plan.enemyDefs,
+    final plan = await service.preparePhase0aStage(config: config);
+    final result = await Phase0aGauntletStageRunner.run(
+      contentId: 'gauntlet_${plan.stage}',
+      playerSnapshot: plan.playerSnapshot,
+      enemyTeam: plan.enemyDefs,
       numbers: numbers,
       seed: plan.seed,
+      cycleIndex: plan.cycleIndex,
     );
-    await service.settleStageResult(
-      finalState: result.finalState,
+    await service.settlePhase0aStageResult(
+      result: result.settlement,
       config: config,
     );
 
@@ -150,14 +151,23 @@ void main() {
     }
   });
 
-  test('settleStageResult 会话已关闭 → 防御 no-op（不抛）', () async {
+  test('settlePhase0aStageResult 会话已关闭 → 防御 no-op（不抛）', () async {
     await seedSave();
-    // 无 active run → fresh 为 null → settleStageResult 内防御返回。
+    // 无 active run → fresh 为 null → settlement 内防御返回。
     final config = GameRepository.instance.bossGauntletConfig!;
-    final empty = BattleState.initial(leftTeam: const [], rightTeam: const []);
-    await GauntletService(
-      IsarSetup.instance,
-    ).settleStageResult(finalState: empty, config: config);
+    await GauntletService(IsarSetup.instance).settlePhase0aStageResult(
+      result: const GauntletStageSettlement(
+        leftWin: false,
+        checkpoint: GauntletMemberCheckpoint(
+          characterId: 1,
+          currentHp: 0,
+          currentQi: 0,
+          maxHp: 1,
+          maxQi: 1,
+        ),
+      ),
+      config: config,
+    );
     // 不抛即通过。
     expect(true, isTrue);
   });

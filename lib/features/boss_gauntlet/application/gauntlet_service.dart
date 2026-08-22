@@ -18,9 +18,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
-import '../../battle/application/legacy_3v3_combatant_adapter.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
-import '../../battle/domain/battle_state.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../cultivation/application/character_advancement_service.dart';
@@ -30,7 +28,6 @@ import '../../injury/application/injury_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
-import 'gauntlet_battle_runner.dart';
 import 'gauntlet_controller.dart';
 import 'phase0a_gauntlet_stage_runner.dart';
 
@@ -43,14 +40,6 @@ enum GauntletLegacyRetirement {
 
 /// 断魂庄当前关出战计划：`prepareStage` 事务外纯计算产出，供 live BattleScreen 路
 /// （`gauntlet_entry_flow`）与 headless [GauntletService.fightCurrentStage] 共用。
-typedef GauntletStagePlan = ({
-  List<BattleCharacter> playerTeam,
-  List<EnemyDef> enemyDefs,
-  int seed,
-  bool isBoss,
-  int cycleIndex,
-});
-
 typedef Phase0aGauntletStagePlan = ({
   CombatantSnapshot playerSnapshot,
   List<EnemyDef> enemyDefs,
@@ -385,32 +374,6 @@ class GauntletService {
     }
   }
 
-  /// 单场战斗驱动：驱动当前关次一场 headless 战斗并原子推进会话（C2.3a·§5.6/§9.2）。
-  ///
-  /// load run → 从会话成员建满血基准队（`buildExactPlayerTeam` 真生产路径：
-  /// autoFill/相生/祖师 buff/伤势）→ `GauntletController.stagePlayerTeam` 按快照装配
-  /// （首关满血/关次间继承 生命·真气·冷却·剔阵亡）→ `GauntletBattleRunner.runStage`
-  /// （seed 混 currentStage·`Random` 确定性）→ `GauntletController.advance` → 单
-  /// `writeTxn` 持久化。**建队/战斗在事务外**（纯计算），仅推进落一个原子事务——
-  /// 战斗中崩溃（未落事务）→ 会话留当前关开打前态·重开重打（§5.6）。
-  ///
-  /// [config]/[numbers] 由 caller 从 `GameRepository.instance` 注入（可测）。
-  Future<GauntletStageResult> fightCurrentStage({
-    required BossGauntletConfig config,
-    required NumbersConfig numbers,
-  }) async {
-    final plan = await prepareStage(config: config);
-    final result = GauntletBattleRunner.runStage(
-      playerTeam: plan.playerTeam,
-      enemyDefs: plan.enemyDefs,
-      numbers: numbers,
-      seed: plan.seed,
-      cycleIndex: plan.cycleIndex,
-    );
-    await settleStageResult(finalState: result.finalState, config: config);
-    return result;
-  }
-
   Future<Phase0aGauntletStageResult> fightCurrentStagePhase0a({
     required BossGauntletConfig config,
     required NumbersConfig numbers,
@@ -495,76 +458,6 @@ class GauntletService {
         run: fresh,
         checkpoint: result.checkpoint,
         leftWin: result.leftWin,
-        isBossStage: isBoss,
-      );
-      GauntletController.stageBossReward(
-        run: fresh,
-        config: config,
-        alreadyCleared: save.clearedGauntletIds.contains(gauntletId),
-      );
-      await _isar.bossGauntletRuns.put(fresh);
-    });
-  }
-
-  /// 事务外纯计算：load run → 校验 → 建当前关出战计划（满血基准队按会话快照继承
-  /// 生命·真气·冷却 + 关次敌队 + 混 currentStage 的确定性 seed + isBoss）。live
-  /// BattleScreen 路（`gauntlet_entry_flow`）与 headless [fightCurrentStage] 共用此段。
-  Future<GauntletStagePlan> prepareStage({
-    required BossGauntletConfig config,
-  }) async {
-    final save = await _isar.saveDatas.get(0);
-    if (save == null) throw StateError('断魂庄开打：无存档');
-    final run = await _activeRun(save.id);
-    if (run == null) throw StateError('断魂庄开打：无进行中会话');
-    if (run.sessionPhase != GauntletPhase.inBattle) {
-      throw StateError('断魂庄开打：仅关次开打态可战斗（当前 ${run.sessionPhase.name}）');
-    }
-    if (run.currentStage < 1 || run.currentStage > config.stages.length) {
-      throw StateError('断魂庄开打：关次越界 ${run.currentStage}');
-    }
-    final stageCfg = config.stages[run.currentStage - 1];
-    final enemyDefs = config.enemiesForTeam(stageCfg.enemyTeamId);
-    if (enemyDefs.isEmpty) {
-      throw StateError('断魂庄开打：关次 ${run.currentStage} 敌队为空（配置损坏）');
-    }
-    final memberIds = run.members.map((m) => m.characterId).toList();
-    final baseSnapshots = await PlayerCombatantSnapshotAssembler(
-      isar: _isar,
-    ).loadExactRoster(memberIds);
-    final baseTeam = Legacy3v3CombatantAdapter.playerTeam(baseSnapshots);
-    final playerTeam = GauntletController.stagePlayerTeam(
-      baseTeam: baseTeam,
-      members: run.members,
-    );
-    return (
-      playerTeam: playerTeam,
-      enemyDefs: enemyDefs,
-      seed: _stageSeed(run.seed, run.currentStage),
-      isBoss: stageCfg.role == 'boss',
-      cycleIndex: run.cycleIndex,
-    );
-  }
-
-  /// 消费当前关战末态 [finalState]（headless `runStage` 或 live BattleScreen 均可）：
-  /// 单 `writeTxn` 原子推进——re-load fresh → `advance`（战末快照继承 + 推进相位）→
-  /// `stageBossReward`（Boss 胜利固化三选一候选·非该相位 no-op）→ put。会话已并发
-  /// 关闭（fresh null）或关次越界 → 防御 no-op（§9.2 原子性即崩溃安全）。
-  Future<void> settleStageResult({
-    required BattleState finalState,
-    required BossGauntletConfig config,
-  }) async {
-    await _isar.writeTxn(() async {
-      final save = await _isar.saveDatas.get(0);
-      if (save == null) return;
-      final fresh = await _activeRun(save.id);
-      if (fresh == null) return; // 防御：会话已被并发关闭
-      if (fresh.currentStage < 1 || fresh.currentStage > config.stages.length) {
-        return; // 防御：关次越界（配置漂移）
-      }
-      final isBoss = config.stages[fresh.currentStage - 1].role == 'boss';
-      GauntletController.advance(
-        run: fresh,
-        finalState: finalState,
         isBossStage: isBoss,
       );
       GauntletController.stageBossReward(
