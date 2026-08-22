@@ -119,6 +119,16 @@ void main() {
     },
   );
 
+  test('macOS acceptance sizing pins every viewport to the main display', () {
+    final window = File(
+      'macos/Runner/MainFlutterWindow.swift',
+    ).readAsStringSync();
+
+    expect(window, contains('VISUAL_WINDOW_W'));
+    expect(window, contains('NSScreen.main ?? self.screen'));
+    expect(window, isNot(contains('self.screen ?? NSScreen.main')));
+  });
+
   test(
     'production profiler closes the desktop window after evidence flush',
     () {

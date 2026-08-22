@@ -20,7 +20,9 @@ class MainFlutterWindow: NSWindow {
       ).size
       var frame = windowFrame
       frame.size = outerSize
-      if let screen = self.screen ?? NSScreen.main {
+      // Acceptance runs must not inherit an XIB/saved origin on another
+      // monitor: mixed DPR/refresh-rate samples are not one physical Gate.
+      if let screen = NSScreen.main ?? self.screen {
         let vis = screen.visibleFrame
         frame.origin = NSPoint(
           x: vis.origin.x + (vis.size.width - outerSize.width) / 2,
