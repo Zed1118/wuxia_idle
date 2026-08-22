@@ -12,7 +12,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
-import '../../battle/domain/qi_cycle.dart';
+import '../../../shared/battle_shared/qi_cycle.dart';
 import 'lineage_widgets.dart';
 
 /// 门人档案（门派谱1.1 Task3）。

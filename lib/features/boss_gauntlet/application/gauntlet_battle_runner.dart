@@ -1,6 +1,6 @@
 import '../../../data/defs/stage_def.dart';
 import '../../../data/numbers_config.dart';
-import '../../battle/application/enemy_combatant_snapshot_assembler.dart';
+import '../../../shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 import '../../battle/application/legacy_3v3_combatant_adapter.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../expedition/application/expedition_battle_runner.dart';

@@ -1,12 +1,12 @@
-import '../../../core/domain/enums.dart';
-import '../../../data/defs/boss_phase_def.dart';
-import '../../../data/defs/skill_def.dart';
-import '../../../data/defs/stage_def.dart';
-import '../../../data/game_repository.dart';
-import '../../../shared/battle_shared/combatant_snapshot.dart';
-import '../../../shared/battle_shared/derived_stats.dart' show RealmUtils;
-import '../../jianghu/application/enmity_battle_modifier.dart';
-import '../domain/qi_cycle.dart';
+import '../../core/domain/enums.dart';
+import '../../data/defs/boss_phase_def.dart';
+import '../../data/defs/skill_def.dart';
+import '../../data/defs/stage_def.dart';
+import '../../data/game_repository.dart';
+import 'combatant_snapshot.dart';
+import 'derived_stats.dart' show RealmUtils;
+import 'enmity_target_id.dart';
+import 'qi_cycle.dart';
 
 /// EnemyDef → [CombatantSnapshot] 的深 Module。
 ///
@@ -36,7 +36,7 @@ final class EnemyCombatantSnapshotAssembler {
         enemy: enemies[i],
         slotIndex: i,
         characterIdOverride: i == 0 && stageNpcId != null
-            ? EnmityBattleModifier.targetIdForNpcId(stageNpcId)
+            ? EnmityTargetId.targetIdForNpcId(stageNpcId)
             : null,
         cycleIndex: cycleIndex,
         isTower: isTower,

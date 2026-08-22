@@ -1,6 +1,6 @@
 import 'battle_state.dart';
 import 'battle_ai.dart';
-import 'qi_cycle.dart';
+import '../../../shared/battle_shared/qi_cycle.dart';
 import '../../../data/defs/skill_def.dart';
 
 /// 角色在当前战斗快照中施放招式的实际耗气。

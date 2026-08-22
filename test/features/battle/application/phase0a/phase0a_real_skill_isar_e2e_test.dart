@@ -10,7 +10,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bo
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
-import 'package:wuxia_idle/features/battle/application/player_combatant_snapshot_assembler.dart';
+import 'package:wuxia_idle/shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 

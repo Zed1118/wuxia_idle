@@ -1,26 +1,26 @@
 import 'package:isar_community/isar.dart';
 
-import '../../../core/domain/character.dart';
-import '../../../core/domain/enums.dart';
-import '../../../core/domain/attribute_effect_policy.dart';
-import '../../../core/domain/equipment.dart';
-import '../../../core/domain/save_data.dart';
-import '../../../core/domain/skill_usage_entry.dart';
-import '../../../core/domain/technique.dart';
-import '../../../data/defs/synergy_def.dart';
-import '../../../data/defs/skill_def.dart';
-import '../../../data/game_repository.dart';
-import '../../../data/numbers_config.dart';
-import '../../../shared/battle_shared/combatant_snapshot.dart';
-import '../../../shared/battle_shared/combatant_skill_loadout.dart';
-import '../../activity/application/character_occupancy_service.dart';
-import '../../activity/domain/activity_occupancy.dart';
-import '../../cultivation/application/skill_loadout_resolver.dart';
-import '../../cultivation/application/skill_loadout_service.dart';
-import '../../cultivation/application/synergy_service.dart';
-import '../../inheritance/application/founder_buff_service.dart';
-import '../../sect/domain/sect.dart';
-import '../domain/player_combatant_snapshot_builder.dart';
+import '../../core/domain/character.dart';
+import '../../core/domain/enums.dart';
+import '../../core/domain/attribute_effect_policy.dart';
+import '../../core/domain/equipment.dart';
+import '../../core/domain/save_data.dart';
+import '../../core/domain/skill_usage_entry.dart';
+import '../../core/domain/technique.dart';
+import '../../data/defs/synergy_def.dart';
+import '../../data/defs/skill_def.dart';
+import '../../data/game_repository.dart';
+import '../../data/numbers_config.dart';
+import 'combatant_snapshot.dart';
+import 'combatant_skill_loadout.dart';
+import 'player_combatant_snapshot_builder.dart';
+import '../../features/activity/application/character_occupancy_service.dart';
+import '../../features/activity/domain/activity_occupancy.dart';
+import '../../features/cultivation/application/skill_loadout_resolver.dart';
+import '../../features/cultivation/application/skill_loadout_service.dart';
+import '../../features/cultivation/application/synergy_service.dart';
+import '../../features/inheritance/application/founder_buff_service.dart';
+import '../../features/sect/domain/sect.dart';
 
 /// 持久化玩家角色 → [CombatantSnapshot] 的深 Module。
 ///

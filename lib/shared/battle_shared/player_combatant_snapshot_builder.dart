@@ -1,14 +1,14 @@
-import '../../../core/domain/attribute_effect_policy.dart';
-import '../../../core/domain/character.dart';
-import '../../../core/domain/enums.dart';
-import '../../../core/domain/equipment.dart';
-import '../../../core/domain/skill_usage_entry.dart';
-import '../../../core/domain/technique.dart';
-import '../../../data/defs/skill_def.dart';
-import '../../../data/game_repository.dart';
-import '../../../data/numbers_config.dart';
-import '../../../shared/battle_shared/combatant_snapshot.dart';
-import '../../../shared/battle_shared/derived_stats.dart';
+import '../../core/domain/attribute_effect_policy.dart';
+import '../../core/domain/character.dart';
+import '../../core/domain/enums.dart';
+import '../../core/domain/equipment.dart';
+import '../../core/domain/skill_usage_entry.dart';
+import '../../core/domain/technique.dart';
+import '../../data/defs/skill_def.dart';
+import '../../data/game_repository.dart';
+import '../../data/numbers_config.dart';
+import 'combatant_snapshot.dart';
+import 'derived_stats.dart';
 import 'qi_cycle.dart';
 
 const _shengShuFallback = ResonanceStageConfig(

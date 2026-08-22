@@ -5,8 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('production player assembler 不回引 legacy battle character', () {
     final source = File(
-      'lib/features/battle/application/'
-      'player_combatant_snapshot_assembler.dart',
+      'lib/shared/battle_shared/player_combatant_snapshot_assembler.dart',
     ).readAsStringSync();
 
     expect(source, isNot(contains("domain/battle_state.dart")));
@@ -17,7 +16,7 @@ void main() {
 
   test('neutral builder API 不接受 legacy team/slot 坐标', () {
     final source = File(
-      'lib/features/battle/domain/player_combatant_snapshot_builder.dart',
+      'lib/shared/battle_shared/player_combatant_snapshot_builder.dart',
     ).readAsStringSync();
     final buildSignature = RegExp(
       r'static CombatantSnapshot build\(\{([\s\S]*?)\n  \}\)',

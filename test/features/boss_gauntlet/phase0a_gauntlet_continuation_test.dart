@@ -8,7 +8,7 @@ import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
-import 'package:wuxia_idle/features/battle/application/player_combatant_snapshot_assembler.dart';
+import 'package:wuxia_idle/shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_controller.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';

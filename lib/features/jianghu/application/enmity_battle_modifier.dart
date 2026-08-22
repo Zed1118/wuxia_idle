@@ -1,4 +1,5 @@
 import '../../battle/domain/battle_state.dart';
+import '../../../shared/battle_shared/enmity_target_id.dart';
 import 'npc_relation_service.dart';
 
 /// 江湖恩怨与战斗快照之间的装配层。
@@ -11,14 +12,8 @@ class EnmityBattleModifier {
   ///
   /// 使用独立负数空间，避免与玩家 Isar 正 id 以及普通 EnemyDef slot id
   /// (-1/-2/-3) 冲突。该 id 是 schema bridge，不是战斗数值。
-  static int targetIdForNpcId(String npcId) {
-    var hash = 0x811c9dc5;
-    for (final codeUnit in npcId.codeUnits) {
-      hash ^= codeUnit;
-      hash = (hash * 0x01000193) & 0x7fffffff;
-    }
-    return -1000000 - hash;
-  }
+  static int targetIdForNpcId(String npcId) =>
+      EnmityTargetId.targetIdForNpcId(npcId);
 
   /// P1.2 §5 江湖恩怨 attackPowerMultiplier 烘焙。
   ///

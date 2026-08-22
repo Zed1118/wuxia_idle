@@ -11,7 +11,7 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/application/player_combatant_snapshot_assembler.dart';
+import 'package:wuxia_idle/shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';

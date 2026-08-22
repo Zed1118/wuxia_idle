@@ -6,7 +6,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/battle/application/player_combatant_snapshot_assembler.dart';
+import 'package:wuxia_idle/shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_skill_loadout.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 

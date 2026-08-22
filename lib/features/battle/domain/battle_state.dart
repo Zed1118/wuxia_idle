@@ -8,7 +8,7 @@ import '../../../core/domain/technique.dart';
 import '../../../data/numbers_config.dart';
 import 'damage_calculator.dart';
 import '../../../shared/battle_shared/battle_result.dart';
-import 'player_combatant_snapshot_builder.dart';
+import '../../../shared/battle_shared/player_combatant_snapshot_builder.dart';
 
 // 2026-08-19 共享层拆分迁移批:BattleResult 已迁 lib/shared/battle_shared/battle_result.dart,
 // re-export 保持存量 63 处 `import battle_state.dart` 消费方口径不破。

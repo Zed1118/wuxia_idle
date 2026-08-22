@@ -8,7 +8,7 @@ import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/mass_battle_def.dart';
 import '../../../../shared/utils/math_random.dart';
 import '../battle_state.dart';
-import '../qi_cycle.dart';
+import '../../../../shared/battle_shared/qi_cycle.dart';
 import 'battle_strategy.dart';
 import 'default_ground_strategy.dart';
 

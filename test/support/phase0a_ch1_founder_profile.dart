@@ -2,7 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
-import 'package:wuxia_idle/features/battle/application/player_combatant_snapshot_assembler.dart';
+import 'package:wuxia_idle/shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
 import 'package:wuxia_idle/features/onboarding/domain/founder_creation_selection.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/application/enemy_combatant_snapshot_assembler.dart';
+import 'package:wuxia_idle/shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
@@ -106,7 +106,7 @@ void main() {
 
   test('assembler 直接构造 neutral snapshot，不回引旧战斗角色', () {
     final source = File(
-      'lib/features/battle/application/enemy_combatant_snapshot_assembler.dart',
+      'lib/shared/battle_shared/enemy_combatant_snapshot_assembler.dart',
     ).readAsStringSync();
 
     expect(source, contains('CombatantSnapshot('));

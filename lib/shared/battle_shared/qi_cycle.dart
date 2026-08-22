@@ -1,4 +1,4 @@
-import '../../../core/domain/enums.dart';
+import '../../core/domain/enums.dart';
 
 /// One resolved action's qi-relevant facts.
 ///

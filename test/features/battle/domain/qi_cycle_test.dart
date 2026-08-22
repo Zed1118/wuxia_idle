@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
-import 'package:wuxia_idle/features/battle/domain/qi_cycle.dart';
+import 'package:wuxia_idle/shared/battle_shared/qi_cycle.dart';
 
 void main() {
   group('QiCycle', () {

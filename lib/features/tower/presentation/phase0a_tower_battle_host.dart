@@ -14,7 +14,7 @@ import '../../../shared/utils/math_random.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
-import '../../battle/application/player_combatant_snapshot_assembler.dart';
+import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';

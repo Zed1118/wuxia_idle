@@ -1,9 +1,9 @@
 import 'package:isar_community/isar.dart';
 
 import '../../../data/game_repository.dart';
-import '../../battle/application/enemy_combatant_snapshot_assembler.dart';
+import '../../../shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 import '../../battle/application/legacy_3v3_combatant_adapter.dart';
-import '../../battle/application/player_combatant_snapshot_assembler.dart';
+import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../battle/domain/battle_state.dart';
 import '../domain/expedition_node.dart';
 import 'expedition_battle_runner.dart';

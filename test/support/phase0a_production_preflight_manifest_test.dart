@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
-import 'package:wuxia_idle/features/battle/application/enemy_combatant_snapshot_assembler.dart';
+import 'package:wuxia_idle/shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 
 import 'phase0a_production_preflight_manifest.dart';
 import 'test_data.dart';

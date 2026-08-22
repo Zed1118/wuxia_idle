@@ -19,7 +19,7 @@ import '../../../shared/utils/rng.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
 import '../../battle/application/legacy_3v3_combatant_adapter.dart';
-import '../../battle/application/player_combatant_snapshot_assembler.dart';
+import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';

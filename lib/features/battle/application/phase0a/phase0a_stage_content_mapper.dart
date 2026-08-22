@@ -16,7 +16,7 @@ import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
-import '../enemy_combatant_snapshot_assembler.dart';
+import '../../../../shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 import 'phase0a_battle_snapshot_factory.dart';
 import 'phase0a_enemy_ai_adapter.dart';
 import 'phase0a_enemy_skill_binding.dart';
