@@ -13,7 +13,6 @@ import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../shared/widgets/cycle_select_control.dart';
 import '../application/expedition_combat_selector.dart';
-import '../application/phase0a_expedition_gate.dart';
 import '../application/expedition_providers.dart';
 import '../application/expedition_startup.dart';
 import '../domain/expedition_rules.dart';
@@ -21,7 +20,7 @@ import '../domain/expedition_run.dart';
 import 'expedition_recap_screen.dart';
 
 /// 江湖远行总览（§7.1 · Phase B2.4）。百草岭卡两态：
-/// - 无 active 远征 → **派遣态**（择人 1-3 + 三方针 + 拔营出发）；
+/// - 无 active 远征 → **派遣态**（择单人 + 三方针 + 拔营出发）；
 /// - 有 active 远征 → **在途态**（深度 / 完成节点 / 下一节点剩余 / 召回）。
 ///
 /// dispatch/recall 是玩家唯一进出百草岭远征的入口。写路径经 [ExpeditionService]
@@ -76,7 +75,7 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
 
   Future<void> _dispatch(int cycleIndex) async {
     if (_selected.isEmpty || _submitting) return;
-    if (Phase0aExpeditionGate.enabled && _selected.length != 1) return;
+    if (_selected.length != 1) return;
     final service = ref.read(expeditionServiceProvider);
     if (service == null) return; // 测试旁路：未 init Isar
     setState(() => _submitting = true);
@@ -121,7 +120,7 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
     };
     _selected.removeWhere((id) => !dispatchableIds.contains(id));
     final canDispatch = _selected.isNotEmpty && !_submitting;
-    final maxMembers = Phase0aExpeditionGate.enabled ? 1 : 3;
+    const maxMembers = 1;
 
     // ── 批 B 周目选择：深度里程碑折算「已通」∩ 配置 cap ∩ 境界门槛。
     // 境界口径 = 当前已选队伍最高（未选人时取可派遣候选最高，乐观展示）；
@@ -465,7 +464,7 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
       var defeated = false;
       final isar = ref.read(isarProvider);
       final config = ref.read(expeditionConfigProvider);
-      if (isar != null && config != null) {
+      if (isar != null && config != null && run.members.length == 1) {
         final settle = await settleActiveExpeditionOnOpen(
           service: service,
           combat: expeditionCombatFor(isar, memberCount: run.members.length),

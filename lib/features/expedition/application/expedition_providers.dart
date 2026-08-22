@@ -15,7 +15,7 @@ part 'expedition_providers.g.dart';
 /// [ExpeditionService] provider（百草岭远征 · B2.4）。
 ///
 /// 沿 nullable propagation 链（`lineup_providers` 体例）：isar 为 null 时 service
-/// 也为 null，widget 端 `service == null` 短路。战斗协作者 [ExpeditionCombatRunner]
+/// 也为 null，widget 端 `service == null` 短路。战斗协作者
 /// 有跨节点缓存、按结算次创建，不入 provider（避免陈旧缓存）。
 @riverpod
 ExpeditionService? expeditionService(Ref ref) {

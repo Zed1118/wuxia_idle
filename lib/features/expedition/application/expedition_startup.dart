@@ -7,7 +7,6 @@ import 'expedition_combat.dart';
 import 'expedition_combat_selector.dart';
 import 'expedition_providers.dart';
 import 'expedition_service.dart';
-import 'phase0a_expedition_gate.dart';
 
 /// 离线追平 active 远征的**纯依赖核心**（单测友好：combat 注入 seam，隔离
 /// GameRepository/真实战斗）。用当前 [now] 循环分批结算至追平或战败；无 active
@@ -56,7 +55,7 @@ Future<void> maybeSettleExpedition(WidgetRef ref, {DateTime? now}) async {
   if (active == null) return;
   // 路线 C：灰度全量开启后，历史 2–3 人会话不再回落旧 3v3。
   // 只兑现已落库 stagedRewards；不依赖即将删除的旧 runner 追算未结节点。
-  if (Phase0aExpeditionGate.enabled && active.members.length != 1) {
+  if (active.members.length != 1) {
     await retireLegacyMultiplayerExpeditionOnOpen(service: service);
     ref.invalidate(activeExpeditionProvider);
     ref.invalidate(expeditionCandidatesProvider);

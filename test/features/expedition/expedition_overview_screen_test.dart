@@ -11,7 +11,6 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
-import 'package:wuxia_idle/features/expedition/application/phase0a_expedition_gate.dart';
 import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
@@ -86,9 +85,6 @@ ExpeditionRun _run({required int currentNode}) => ExpeditionRun()
   ..stagedRewards = [];
 
 void main() {
-  setUp(() => Phase0aExpeditionGate.testOverride = false);
-  tearDown(() => Phase0aExpeditionGate.testOverride = null);
-
   setUpAll(() => initializeTestIsarCore());
 
   final dispatchCandidates = [
@@ -134,7 +130,10 @@ void main() {
       findsOneWidget,
     );
     expect(find.text(UiStrings.expeditionDispatchButton), findsOneWidget);
-    expect(find.text(UiStrings.expeditionSelectedCount(0)), findsOneWidget);
+    expect(
+      find.text(UiStrings.expeditionSelectedCountWithMax(0, 1)),
+      findsOneWidget,
+    );
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
     expect(find.byType(InkPageHeader), findsOneWidget);
     expect(find.byType(InkSectionLabel), findsNWidgets(2));
@@ -166,17 +165,22 @@ void main() {
 
     await tester.tap(find.text('沈青'));
     await tester.pumpAndSettle();
-    expect(find.text(UiStrings.expeditionSelectedCount(1)), findsOneWidget);
+    expect(
+      find.text(UiStrings.expeditionSelectedCountWithMax(1, 1)),
+      findsOneWidget,
+    );
 
     // 占用者点了不入选（仍为 1）。
     await tester.tap(find.text('楚河'));
     await tester.pumpAndSettle();
-    expect(find.text(UiStrings.expeditionSelectedCount(1)), findsOneWidget);
+    expect(
+      find.text(UiStrings.expeditionSelectedCountWithMax(1, 1)),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Phase 0A 灰度派遣只允许选一人', (tester) async {
-    Phase0aExpeditionGate.testOverride = true;
+  testWidgets('路线 C 派遣只允许选一人', (tester) async {
     final candidates = [
       _cand(_char(1, '沈青', school: TechniqueSchool.lingQiao)),
       _cand(_char(2, '楚河', school: TechniqueSchool.gangMeng)),

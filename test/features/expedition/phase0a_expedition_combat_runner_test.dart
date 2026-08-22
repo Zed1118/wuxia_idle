@@ -11,10 +11,8 @@ import 'package:wuxia_idle/shared/battle_shared/player_combatant_snapshot_assemb
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_combat.dart';
-import 'package:wuxia_idle/features/expedition/application/expedition_combat_runner.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_combat_selector.dart';
 import 'package:wuxia_idle/features/expedition/application/phase0a_expedition_combat_runner.dart';
-import 'package:wuxia_idle/features/expedition/application/phase0a_expedition_gate.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_node.dart';
 
 import '../../support/isar_test_support.dart';
@@ -46,7 +44,6 @@ void main() {
   });
 
   tearDown(() async {
-    Phase0aExpeditionGate.testOverride = null;
     if (Isar.getInstance('wuxia_save_slot1') != null) {
       await IsarSetup.close();
     }
@@ -55,21 +52,14 @@ void main() {
     }
   });
 
-  test('路线 C 默认开启；单成员启用 Phase 0A', () {
-    expect(Phase0aExpeditionGate.enabled, isTrue);
-    expect(
-      expeditionCombatFor(IsarSetup.instance, memberCount: 1),
-      isA<Phase0aExpeditionCombatRunner>(),
-    );
-
-    Phase0aExpeditionGate.testOverride = true;
+  test('路线 C selector 只允许单成员 Phase 0A', () {
     expect(
       expeditionCombatFor(IsarSetup.instance, memberCount: 1),
       isA<Phase0aExpeditionCombatRunner>(),
     );
     expect(
-      expeditionCombatFor(IsarSetup.instance, memberCount: 2),
-      isA<ExpeditionCombatRunner>(),
+      () => expeditionCombatFor(IsarSetup.instance, memberCount: 2),
+      throwsStateError,
     );
   });
 
