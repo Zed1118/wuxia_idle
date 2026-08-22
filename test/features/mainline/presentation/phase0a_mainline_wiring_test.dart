@@ -20,7 +20,6 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_visual_roster.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
-import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_gate.dart';
 import 'package:wuxia_idle/features/mainline/presentation/phase0a_mainline_battle_host.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
 import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
@@ -102,113 +101,6 @@ void main() {
 
   setUpAll(() async {
     repo = await loadTestGameRepository();
-  });
-
-  tearDown(() {
-    Phase0aMainlineGate.testOverride = null;
-  });
-
-  group('Phase0aMainlineGate 灰度门', () {
-    test('测试环境 dart-define 未注入 → 路线 C 默认开', () {
-      expect(Phase0aMainlineGate.enabled, isTrue);
-    });
-
-    test('testOverride 开/还原', () {
-      Phase0aMainlineGate.testOverride = true;
-      expect(Phase0aMainlineGate.enabled, isTrue);
-      Phase0aMainlineGate.testOverride = null;
-      expect(Phase0aMainlineGate.enabled, isTrue);
-    });
-
-    test('shouldUsePhase0a: 门开放行全部主线非空敌队 + 合法 cycle(>=1)', () {
-      Phase0aMainlineGate.testOverride = true;
-      // Ch1 一周目与二周目(cycle>=1 合法)均放行。
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(_flowStage(), targetCycle: 1),
-        isTrue,
-      );
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(_flowStage(), targetCycle: 2),
-        isTrue,
-      );
-      // 真实 Ch1 / Ch21 主线(非空敌队)一周目放行。
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(
-          repo.getStage('stage_01_01'),
-          targetCycle: 1,
-        ),
-        isTrue,
-      );
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(
-          repo.getStage('stage_21_01'),
-          targetCycle: 1,
-        ),
-        isTrue,
-      );
-      // 心魔、轻功与群战走专属装配；塔仍拒绝。
-      const towerStage = StageDef(
-        id: 'stage_test_tower',
-        name: '塔测试关',
-        stageType: StageType.tower,
-        requiredRealm: RealmTier.xueTu,
-        enemyTeam: [_testEnemy],
-        isBossStage: false,
-        baseExpReward: 0,
-        difficultyMultiplier: 1.0,
-      );
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(towerStage, targetCycle: 1),
-        isFalse,
-      );
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(
-          repo.getStage('stage_inner_demon_01'),
-          targetCycle: 1,
-        ),
-        isTrue,
-      );
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(
-          repo.getStage('stage_light_foot_01'),
-          targetCycle: 1,
-        ),
-        isTrue,
-      );
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(
-          repo.getStage('stage_mass_battle_01'),
-          targetCycle: 1,
-        ),
-        isTrue,
-      );
-      // 空敌队(剧情关)拒绝。
-      const emptyStage = StageDef(
-        id: 'stage_empty_enemy',
-        name: '空敌队剧情关',
-        stageType: StageType.mainline,
-        requiredRealm: RealmTier.xueTu,
-        enemyTeam: [],
-        isBossStage: false,
-        baseExpReward: 0,
-        difficultyMultiplier: 1.0,
-      );
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(emptyStage, targetCycle: 1),
-        isFalse,
-      );
-      // 非法 cycle(0)拒绝。
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(_flowStage(), targetCycle: 0),
-        isFalse,
-      );
-      // 门关 → 一律拒绝。
-      Phase0aMainlineGate.testOverride = false;
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(_flowStage(), targetCycle: 1),
-        isFalse,
-      );
-    });
   });
 
   group('Phase0a 心魔镜像装配', () {
@@ -345,10 +237,6 @@ void main() {
         ),
         throwsArgumentError,
       );
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(malformed, targetCycle: 1),
-        isFalse,
-      );
     });
   });
 
@@ -419,10 +307,6 @@ void main() {
           numbers: repo.numbers,
         ),
         throwsArgumentError,
-      );
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(malformed, targetCycle: 1),
-        isFalse,
       );
     });
   });
@@ -759,7 +643,6 @@ void main() {
 
   group('runStageFlow 灰度分支', () {
     testWidgets('门开 + phase0a 注入器 victory → 进度记录链被调用', (tester) async {
-      Phase0aMainlineGate.testOverride = true;
       String? recordedStageId;
       await tester.pumpWidget(
         _gateHarness(
@@ -776,7 +659,6 @@ void main() {
     });
 
     testWidgets('门开 + phase0a 注入器 defeat 不重试 → 进度链零消费', (tester) async {
-      Phase0aMainlineGate.testOverride = true;
       var victoryCalled = false;
       await tester.pumpWidget(
         _gateHarness(
@@ -792,31 +674,7 @@ void main() {
       expect(find.text('done'), findsOneWidget);
     });
 
-    testWidgets('门关 → phase0a 注入器零消费(旧 battleOutcome 生效)', (tester) async {
-      var phase0aConsumed = false;
-      var oldConsumed = false;
-      await tester.pumpWidget(
-        _gateHarness(
-          battleOutcome: () async {
-            oldConsumed = true;
-            return (won: true, surrendered: false);
-          },
-          phase0aBattleOutcome: () async {
-            phase0aConsumed = true;
-            return (won: true, surrendered: false, settlement: null);
-          },
-          victoryRecorder: (_) async {},
-        ),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('start'));
-      await tester.pumpAndSettle();
-      expect(oldConsumed, isTrue);
-      expect(phase0aConsumed, isFalse);
-    });
-
     testWidgets('中途退出(surrendered) → Boss 惩罚/奖励/进度均不消费', (tester) async {
-      Phase0aMainlineGate.testOverride = true;
       var penaltyCalled = false;
       var victoryCalled = false;
       await tester.pumpWidget(
@@ -845,7 +703,6 @@ void main() {
 /// battleOutcome 均可缺省,只喂需要验证的注入器。
 Widget _gateHarness({
   StageDef? stage,
-  Future<({bool won, bool surrendered})> Function()? battleOutcome,
   Future<MainlineBattleExit> Function()? phase0aBattleOutcome,
   Future<void> Function(String stageId)? victoryRecorder,
   Future<List<DefeatLossEntry>> Function(StageDef stage)? bossDefeatPenalty,
@@ -854,7 +711,6 @@ Widget _gateHarness({
     child: MaterialApp(
       home: _GateHarnessPage(
         stage: stage ?? _flowStage(),
-        battleOutcome: battleOutcome,
         phase0aBattleOutcome: phase0aBattleOutcome,
         victoryRecorder: victoryRecorder ?? (_) async {},
         bossDefeatPenalty:
@@ -867,14 +723,12 @@ Widget _gateHarness({
 class _GateHarnessPage extends ConsumerStatefulWidget {
   const _GateHarnessPage({
     required this.stage,
-    required this.battleOutcome,
     required this.phase0aBattleOutcome,
     required this.victoryRecorder,
     required this.bossDefeatPenalty,
   });
 
   final StageDef stage;
-  final Future<({bool won, bool surrendered})> Function()? battleOutcome;
   final Future<MainlineBattleExit> Function()? phase0aBattleOutcome;
   final Future<void> Function(String stageId) victoryRecorder;
   final Future<List<DefeatLossEntry>> Function(StageDef stage)
@@ -901,7 +755,6 @@ class _GateHarnessPageState extends ConsumerState<_GateHarnessPage> {
                   context: context,
                   ref: ref,
                   stage: widget.stage,
-                  battleOutcomeForTest: widget.battleOutcome,
                   phase0aBattleOutcomeForTest: widget.phase0aBattleOutcome,
                   stageRetryDeciderForTest: () async => false,
                   victoryRecorderForTest: widget.victoryRecorder,

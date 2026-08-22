@@ -23,8 +23,7 @@ import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
 
 /// Phase 1 纵切实机接线(拍板 α 灰度门)的主线 0A 战斗宿主。
 ///
-/// 与旧 _StageBattleHost(stage_entry_flow.dart 内私有) 平行存在,由
-/// [Phase0aMainlineGate] 分流;终局语义对齐旧宿主:
+/// 主线唯一战斗宿主，终局语义保持既有主线流程:
 /// - victory:只回调不 pop —— runStageFlow 胜利段收尾时统一 pop;
 /// - defeat:回调 + 自 pop(外层进战败重试/剧情分支);
 /// - 系统返回致 pop 未触发回调 → _runPhase0aBattle 的 completer 兜底

@@ -20,6 +20,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/data/yaml_loader.dart';
 import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
+import 'package:wuxia_idle/features/battle/application/battle_resolution.dart';
 import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
@@ -274,7 +275,13 @@ void main() {
 
     final outcome = await runWithRef(
       tester,
-      (ref) => applyVictoryResolution(ref: ref, stage: normalStage()),
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: normalStage(),
+        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
+          finishedBattle([1]),
+        ),
+      ),
       battleState: finishedBattle([1]),
     );
 
@@ -282,14 +289,9 @@ void main() {
   });
 
   testWidgets('战斗未结束(result=null) → 返回 null(L774-775)', (tester) async {
-    final ongoing = BattleState.initial(
-      leftTeam: [battleChar(id: 1, name: '参战1', teamSide: 0)],
-      rightTeam: [battleChar(id: 9001, name: '木桩', teamSide: 1)],
-    );
     final outcome = await runWithRef(
       tester,
       (ref) => applyVictoryResolution(ref: ref, stage: normalStage()),
-      battleState: ongoing,
     );
 
     expect(outcome, isNull, reason: 'finalState.isFinished == false → null');
@@ -439,7 +441,13 @@ void main() {
 
     final outcome = await runWithRef(
       tester,
-      (ref) => applyVictoryResolution(ref: ref, stage: normalStage()),
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: normalStage(),
+        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
+          finishedBattle([1]),
+        ),
+      ),
       battleState: finishedBattle([1]),
     );
 
@@ -453,7 +461,13 @@ void main() {
 
     final outcome = await runWithRef(
       tester,
-      (ref) => applyVictoryResolution(ref: ref, stage: normalStage()),
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: normalStage(),
+        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
+          finishedBattle([777, 778]),
+        ),
+      ),
       battleState: finishedBattle([777, 778]),
     );
 
@@ -497,7 +511,13 @@ void main() {
 
     final outcome = await runWithRef(
       tester,
-      (ref) => applyVictoryResolution(ref: ref, stage: stage),
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: stage,
+        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
+          finishedBattle([charId]),
+        ),
+      ),
       battleState: finishedBattle([charId]),
     );
 
@@ -585,7 +605,13 @@ void main() {
 
     final outcome = await runWithRef(
       tester,
-      (ref) => applyVictoryResolution(ref: ref, stage: stage),
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: stage,
+        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
+          finishedBattle([charId]),
+        ),
+      ),
       battleState: finishedBattle([charId]),
     );
 
@@ -636,7 +662,13 @@ void main() {
 
     final outcome = await runWithRef(
       tester,
-      (ref) => applyVictoryResolution(ref: ref, stage: stage),
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: stage,
+        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
+          finishedBattle([charId]),
+        ),
+      ),
       battleState: finishedBattle([charId]),
     );
 
@@ -669,7 +701,13 @@ void main() {
 
     final outcome = await runWithRef(
       tester,
-      (ref) => applyVictoryResolution(ref: ref, stage: bossStage()),
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: bossStage(),
+        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
+          finishedBattle([charId]),
+        ),
+      ),
       battleState: finishedBattle([charId]),
     );
 
@@ -694,7 +732,13 @@ void main() {
 
     final outcome = await runWithRef(
       tester,
-      (ref) => applyVictoryResolution(ref: ref, stage: bossStage()),
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: bossStage(),
+        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
+          finishedBattle([charId]),
+        ),
+      ),
       battleState: finishedBattle([charId]),
     );
 
@@ -718,7 +762,13 @@ void main() {
 
     final outcome = await runWithRef(
       tester,
-      (ref) => applyVictoryResolution(ref: ref, stage: bossStage()),
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: bossStage(),
+        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
+          finishedBattle([charId]),
+        ),
+      ),
       battleState: finishedBattle([charId]),
     );
 
@@ -743,7 +793,13 @@ void main() {
 
     final outcome = await runWithRef(
       tester,
-      (ref) => applyVictoryResolution(ref: ref, stage: normalStage()),
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: normalStage(),
+        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
+          finishedBattle([charId]),
+        ),
+      ),
       battleState: finishedBattle([charId]),
     );
 
@@ -767,6 +823,9 @@ void main() {
       (ref) => applyVictoryResolution(
         ref: ref,
         stage: normalStage(baseExpReward: 30),
+        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
+          finishedBattle([charId]),
+        ),
       ),
       battleState: finishedBattle([charId]),
     );

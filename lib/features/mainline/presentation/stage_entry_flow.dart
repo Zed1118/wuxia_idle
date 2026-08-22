@@ -16,24 +16,15 @@ import '../../../core/domain/technique.dart';
 import '../../../data/narrative_loader.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
-import '../../battle/application/battle_providers.dart';
-import '../../battle/application/battle_resolution.dart';
 import '../../combat_shared/application/combat_resolution_service.dart'
-    show CombatResolutionService;
+    show BattleResolutionResult, CombatResolutionService;
+import '../../combat_shared/application/combat_content_providers.dart';
 import '../../battle/application/combat_progression_settlement_service.dart';
 import '../../battle/application/post_combat_invalidation.dart';
-import '../../battle/application/stage_battle_setup.dart';
-import '../../battle/domain/auto_play_mode.dart';
-import '../../battle/domain/battle_state.dart' show BattleState;
-import '../../settings/application/gameplay_settings_provider.dart';
 import '../../../shared/battle_shared/enum_localizations.dart' show EnumL10n;
-import '../../battle/domain/strategy/light_foot_strategy.dart';
-import '../../battle/domain/strategy/mass_battle_strategy.dart';
 import '../../mass_battle/application/mass_battle_service.dart';
 import '../../../data/defs/mass_battle_def.dart';
-import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
-import '../../battle/presentation/battle_screen.dart';
 import '../../../shared/battle_shared/derived_stats.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../cultivation/domain/advancement_entry.dart';
@@ -58,7 +49,6 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
-import '../application/phase0a_mainline_gate.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_progress.dart';
 import '../../battle/domain/battle_stats.dart';
@@ -82,8 +72,8 @@ typedef MainlineBattleExit = ({
 /// 状态机（async 串联，无中间 widget）：
 ///   1. opening：若 [StageDef.narrativeOpeningId] 非空，push NarrativeReaderScreen
 ///      → wait its pop
-///   2. battle：装配 (left, right) 战斗双方 → push BattleScreen → wait
-///      onVictory / onDefeat 回调（Completer 转 Future）
+///   2. battle：装配单主角 Phase0A 战斗 → wait onVictory / onDefeat
+///      回调（Completer 转 Future）
 ///   3a. victory：异步 recordVictory + invalidate progress provider；若
 ///       narrativeVictoryId 非空 → push 第二段剧情
 ///   3b. defeat：若 narrativeDefeatId 非空（章末 Boss 关）→ push 战败剧情；
@@ -91,11 +81,8 @@ typedef MainlineBattleExit = ({
 ///
 /// **不嵌套 widget**：每段结束后栈上仅剩 stage_list_screen，避免多层 pop。
 ///
-/// [battleRunnerForTest] / [victoryRecorderForTest] / [bossDefeatPenaltyForTest]
-/// 仅供 widget test 注入,生产端勿传。设计对齐爬塔 `runTowerFlow` DI 三件套
-/// ([@visibleForTesting])。
-/// [phase0aBattleOutcomeForTest] 仅在灰度门([Phase0aMainlineGate])开启的
-/// 0A 分支生效(纵切实机接线切片 2),同样仅供测试注入。
+/// [phase0aBattleOutcomeForTest] 仅供 widget test 注入，生产端始终使用
+/// [Phase0aMainlineBattleHost]。
 /// D1: [targetCycle] 默认 1（零回归）。Task E 加 UI 后从 caller 传入。
 Future<void> runStageFlow({
   required BuildContext context,
@@ -135,11 +122,13 @@ Future<void> runStageFlow({
   while (true) {
     if (!context.mounted) return;
     final MainlineBattleExit battleExit;
-    if (battleOutcomeForTest != null) {
-      final legacyExit = await battleOutcomeForTest();
+    if (phase0aBattleOutcomeForTest != null) {
+      battleExit = await phase0aBattleOutcomeForTest();
+    } else if (battleOutcomeForTest != null) {
+      final result = await battleOutcomeForTest();
       battleExit = (
-        won: legacyExit.won,
-        surrendered: legacyExit.surrendered,
+        won: result.won,
+        surrendered: result.surrendered,
         settlement: null,
       );
     } else if (battleRunnerForTest != null) {
@@ -151,10 +140,8 @@ Future<void> runStageFlow({
     } else {
       battleExit = await _runBattle(
         context: context,
-        ref: ref,
         stage: stage,
         targetCycle: targetCycle,
-        phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
       );
     }
 
@@ -397,82 +384,20 @@ Future<void> runStageFlow({
   invalidateAfterCombatSettlement(ref.invalidate);
 }
 
-/// 推 BattleScreen 并 wait 胜/败/投降回调；返回 (won, surrendered)。
-/// D1: [targetCycle] 默认 1（零回归）。H3: surrendered=true 时 won 恒 false,
-/// caller 据此跳过战败结算直接返回。
-///
-/// 纵切切片 2(拍板 α):灰度门开 + 主线关型 → 分流 [_runPhase0aBattle]
-/// (0A 引擎平行验证入口);其余仍走旧 3v3,正式原子切换留路线 C 第三序。
+/// 推 Phase0A 主线战斗宿主并 wait 胜/败/系统返回回调。
 Future<MainlineBattleExit> _runBattle({
   required BuildContext context,
-  required WidgetRef ref,
   required StageDef stage,
   int targetCycle = 1,
-  Future<MainlineBattleExit> Function()? phase0aBattleOutcomeForTest,
 }) async {
-  if (Phase0aMainlineGate.shouldUsePhase0a(stage, targetCycle: targetCycle)) {
-    if (phase0aBattleOutcomeForTest != null) {
-      return phase0aBattleOutcomeForTest();
-    }
-    return _runPhase0aBattle(
-      context: context,
-      stage: stage,
-      targetCycle: targetCycle,
-    );
-  }
-  final completer = Completer<MainlineBattleExit>();
-  // 不 await push:胜利时 BattleScreen 留在栈上,由 runStageFlow 播完胜利仪式/
-  // 结算后再 pop(让爆品/简版勝盖在战斗场景上,而非退回列表后才弹)。失败/投降时 host 自 pop。
-  Navigator.of(context)
-      .push<void>(
-        MaterialPageRoute(
-          builder: (_) => _StageBattleHost(
-            stage: stage,
-            targetCycle: targetCycle,
-            onVictory: () {
-              if (!completer.isCompleted) {
-                completer.complete((
-                  won: true,
-                  surrendered: false,
-                  settlement: null,
-                ));
-              }
-            },
-            onDefeat: () {
-              if (!completer.isCompleted) {
-                completer.complete((
-                  won: false,
-                  surrendered: false,
-                  settlement: null,
-                ));
-              }
-            },
-            onSurrender: () {
-              if (!completer.isCompleted) {
-                completer.complete((
-                  won: false,
-                  surrendered: true,
-                  settlement: null,
-                ));
-              }
-            },
-          ),
-        ),
-      )
-      .then((_) {
-        // 兜底:BattleScreen 被 pop(系统返回/失败 host pop)而未触发回调 → 未胜非投降。
-        if (!completer.isCompleted) {
-          completer.complete((
-            won: false,
-            surrendered: false,
-            settlement: null,
-          ));
-        }
-      });
-  return completer.future;
+  return _runPhase0aBattle(
+    context: context,
+    stage: stage,
+    targetCycle: targetCycle,
+  );
 }
 
-/// 纵切切片 2(拍板 α):推 0A 主线战斗宿主并 wait 胜/败回调。
+/// 推 0A 主线战斗宿主并 wait 胜/败回调。
 ///
 /// 0A 屏无投降按钮(0C 键盘面只有 Esc 暂停):系统返回致 pop 而未触发
 /// 回调 → then 兜底记 surrendered=true,外层直接返回；中途退出不走
@@ -555,187 +480,6 @@ Future<bool> _showStageRetryDialog(BuildContext context, StageDef stage) async {
     ],
   );
   return retry ?? false;
-}
-
-/// BattleScreen 的 setup 容器：initState 装配队伍 + startBattle，
-/// 然后渲染 [BattleScreen]。沿用 [BattleDemoLauncher] 的 postFrameCallback 模式。
-///
-/// [targetCycle] 默认 1（零回归）；D1 接入后 battleKey / isCleared / recordVictory
-/// / buildTeams 全部按周目维度工作。Task E 再加 UI 让玩家选更高周目。
-class _StageBattleHost extends ConsumerStatefulWidget {
-  const _StageBattleHost({
-    required this.stage,
-    required this.onVictory,
-    required this.onDefeat,
-    required this.onSurrender,
-    this.targetCycle = 1,
-  });
-
-  final StageDef stage;
-  final VoidCallback onVictory;
-  final VoidCallback onDefeat;
-  final VoidCallback onSurrender;
-
-  /// 目标周目编号，默认 1（行为与旧版完全一致）。
-  final int targetCycle;
-
-  @override
-  ConsumerState<_StageBattleHost> createState() => _StageBattleHostState();
-}
-
-class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
-  String? _setupError;
-
-  /// 战斗交互重做 Phase 3:本场进入模式(auto 纯挂机 / interactive 允许拖招)。
-  /// 默认 auto,initState 读全局设置后 setState 刷新。Phase 4
-  /// 拖招层以此门控;Phase 3 战斗无论如何都自动连续播放,本字段暂无可见行为差异。
-  AutoPlayMode _mode = AutoPlayMode.auto;
-
-  bool _readablePacing = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-      try {
-        // ── 入口决策:首通门控(2.5)优先 → 否则跟随全局设置 ──
-        final global = (await ref.read(
-          gameplaySettingsProvider.future,
-        )).autoPlayDefault;
-        if (!mounted) return;
-        // 2.5:本场 (stageId, cycle) 首通前强制 interactive(拖招层在场);首通后
-        // 按设置可纯 auto 复刷。Isar 用 IsarSetup.instance(同下方 buildTeams);若
-        // 未 ready 抛 StateError → 外层 catch 转 _setupError 页(与其它 init 失败一致)。
-        final progress = await MainlineProgressService(
-          isar: IsarSetup.instance,
-        ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
-        if (!mounted) return;
-        final firstClear = MainlineProgressService.isFirstClear(
-          progress,
-          widget.stage.id,
-          widget.targetCycle,
-        );
-        setState(() {
-          _readablePacing = firstClear;
-          _mode = resolveAutoPlayModeWithFirstClear(
-            isFirstClear: firstClear,
-            globalDefault: global,
-          );
-        });
-
-        final (left, right) = await StageBattleSetup(isar: IsarSetup.instance)
-            .buildTeams(
-              widget.stage,
-              cycleIndex: widget.targetCycle,
-              readableFirstClearTuning:
-                  firstClear && widget.stage.stageType == StageType.mainline,
-            );
-        if (!mounted) return;
-
-        if (widget.stage.stageType == StageType.massBattle) {
-          final enemyWaves = StageBattleSetup.buildEnemyTeamsPerWave(
-            widget.stage,
-            cycleIndex: widget.targetCycle,
-          );
-          final config = GameRepository.instance.numbers.massBattle;
-          final formation = await _pickFormation(context, widget.stage, config);
-          if (!mounted) return;
-          ref
-              .read(battleProvider.notifier)
-              .startBattle(
-                left,
-                right,
-                strategy: MassBattleStrategy(
-                  formation: formation,
-                  enemyTeamsPerWave: enemyWaves,
-                  config: config,
-                ),
-                winCondition: widget.stage.winCondition,
-              );
-        } else if (widget.stage.stageType == StageType.lightFoot &&
-            widget.stage.terrainBiome != null) {
-          ref
-              .read(battleProvider.notifier)
-              .startBattle(
-                left,
-                right,
-                strategy: LightFootStrategy(
-                  terrainBiome: widget.stage.terrainBiome!,
-                  config: GameRepository.instance.numbers.lightFoot,
-                ),
-                winCondition: widget.stage.winCondition,
-              );
-        } else {
-          ref
-              .read(battleProvider.notifier)
-              .startBattle(
-                left,
-                right,
-                winCondition: widget.stage.winCondition,
-              );
-        }
-      } catch (e) {
-        if (!mounted) return;
-        setState(() => _setupError = e.toString());
-      }
-    });
-  }
-
-  /// 拖招干预层是否启用:interactive 模式 + 非群战(spec 开放点③:群战拖招挂
-  /// backlog,massBattle 维持纯自动 runToEnd)。
-  bool get _allowIntervention =>
-      _mode == AutoPlayMode.interactive &&
-      widget.stage.stageType != StageType.massBattle;
-
-  @override
-  Widget build(BuildContext context) {
-    if (_setupError != null) {
-      return Scaffold(
-        appBar: AppBar(title: Text(widget.stage.name)),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: SelectableText(UiStrings.battleSetupFailed(_setupError!)),
-          ),
-        ),
-      );
-    }
-    return BattleScreen(
-      hint: widget.stage.name,
-      cycleHint: widget.targetCycle >= 2
-          ? UiStrings.battleCycleHint(widget.targetCycle)
-          : null,
-      sceneBackgroundPath: widget.stage.sceneBackgroundPath,
-      bgmTrack: bgmTrackForStage(
-        widget.stage.stageType,
-        isBoss: widget.stage.isBossStage,
-      ),
-      deferVictoryToCaller: true,
-      playback: BattleScreenPlaybackConfig(
-        allowPlayerIntervention: _allowIntervention,
-        readablePacing: _readablePacing,
-        // 首通展示帧与可读节奏同门控(本场为该 (stageId, cycle) 首通)。
-        firstClearShowcase: _readablePacing,
-      ),
-      onVictory: () {
-        widget.onVictory();
-        // 不 pop:胜利仪式由 runStageFlow 在战斗界面之上播完后再 pop。
-      },
-      onDefeat: () {
-        widget.onDefeat();
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-        }
-      },
-      onSurrender: () {
-        widget.onSurrender();
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-        }
-      },
-    );
-  }
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -896,19 +640,8 @@ applyVictoryResolution({
 }) async {
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) return null;
-  final BattleState? legacyFinalState;
-  final CombatSettlementSnapshot combatSettlement;
-  if (settlementSnapshot != null) {
-    legacyFinalState = null;
-    combatSettlement = settlementSnapshot;
-  } else {
-    final finalState = ref.read(battleProvider);
-    if (!finalState.isFinished) return null;
-    legacyFinalState = finalState;
-    combatSettlement = BattleResolutionService.snapshotFromBattleState(
-      finalState,
-    );
-  }
+  final combatSettlement = settlementSnapshot;
+  if (combatSettlement == null) return null;
   if (!combatSettlement.isFinished) return null;
   final stats = BattleStatsSummary.fromSettlement(combatSettlement);
 
@@ -1084,17 +817,11 @@ applyVictoryResolution({
   final bossName = stage.enemyTeam.isNotEmpty
       ? stage.enemyTeam.last.name
       : stage.name;
-  final heroCamera = legacyFinalState == null
-      ? deriveHeroCameraDataFromDamageTotals(
-          damageByCharacterId: combatSettlement.damageByCharacterId,
-          characters: characters,
-          bossName: bossName,
-        )
-      : deriveHeroCameraData(
-          finalState: legacyFinalState,
-          characters: characters,
-          bossName: bossName,
-        );
+  final heroCamera = deriveHeroCameraDataFromDamageTotals(
+    damageByCharacterId: combatSettlement.damageByCharacterId,
+    characters: characters,
+    bossName: bossName,
+  );
 
   // 第七阶段 批一 Task 6:计算利器首次获得的 extraDisplayTiers
   // (须在 putAll 入库后调用,判据:库存总数 ≤ 本次掉落件数)。
@@ -1138,16 +865,8 @@ Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
 }) async {
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) return const [];
-  final CombatSettlementSnapshot combatSettlement;
-  if (settlementSnapshot != null) {
-    combatSettlement = settlementSnapshot;
-  } else {
-    final finalState = ref.read(battleProvider);
-    if (!finalState.isFinished) return const [];
-    combatSettlement = BattleResolutionService.snapshotFromBattleState(
-      finalState,
-    );
-  }
+  final combatSettlement = settlementSnapshot;
+  if (combatSettlement == null) return const [];
   if (!combatSettlement.isFinished) return const [];
 
   final save = await isar.saveDatas.get(0);
