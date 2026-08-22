@@ -8,12 +8,13 @@ import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/data/isar_provider.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_combat.dart';
-import 'package:wuxia_idle/features/expedition/application/expedition_combat_runner.dart';
+import 'package:wuxia_idle/features/expedition/application/phase0a_expedition_combat_runner.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_startup.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_node.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
+import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 
 import '../../support/isar_test_support.dart';
 
@@ -172,7 +173,8 @@ void main() {
         defeated: false,
       );
       final service = _FakeExpeditionService(
-        active: ExpeditionRun(),
+        active: ExpeditionRun()
+          ..members = [ActivityMemberSnapshot()..characterId = 1],
         settleResult: expected,
       );
       final pump = pumpRefWith(
@@ -190,8 +192,8 @@ void main() {
       expect(service.settleCalls, 1);
       expect(
         service.lastCombat,
-        isA<ExpeditionCombatRunner>(),
-        reason: '生产入口须注入真 runner（非 fake combat）',
+        isA<Phase0aExpeditionCombatRunner>(),
+        reason: '路线 C 生产入口须注入 Phase 0A runner',
       );
       expect(service.lastNow, fixedNow, reason: '未传 now 时取 systemClock');
       expect(service.lastConfig, same(config));

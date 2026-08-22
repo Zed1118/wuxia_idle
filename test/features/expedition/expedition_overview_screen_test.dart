@@ -86,6 +86,9 @@ ExpeditionRun _run({required int currentNode}) => ExpeditionRun()
   ..stagedRewards = [];
 
 void main() {
+  setUp(() => Phase0aExpeditionGate.testOverride = false);
+  tearDown(() => Phase0aExpeditionGate.testOverride = null);
+
   setUpAll(() => initializeTestIsarCore());
 
   final dispatchCandidates = [
@@ -174,7 +177,6 @@ void main() {
 
   testWidgets('Phase 0A 灰度派遣只允许选一人', (tester) async {
     Phase0aExpeditionGate.testOverride = true;
-    addTearDown(() => Phase0aExpeditionGate.testOverride = null);
     final candidates = [
       _cand(_char(1, '沈青', school: TechniqueSchool.lingQiao)),
       _cand(_char(2, '楚河', school: TechniqueSchool.gangMeng)),

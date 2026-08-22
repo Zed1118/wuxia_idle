@@ -5,15 +5,15 @@ import 'package:wuxia_idle/features/boss_gauntlet/application/phase0a_gauntlet_g
 /// Phase 0A 断魂庄灰度门 + 战斗路径选择器契约测试。
 ///
 /// 冻结接口：`Phase0aGauntletGate.enabled` / `shouldUsePhase0a(memberCount:)`
-/// 与 `gauntletCombatPathFor(memberCount:)`。断言聚焦灰度路线：默认关走旧
-/// 3v3；灰度开 + 单成员走 Phase 0A；2/3 成员回落旧 runner；非法成员数
-/// fail-fast。开关经 `testOverride` 注入，tearDown 复原。
+/// 与 `gauntletCombatPathFor(memberCount:)`。路线 C 默认单角色；
+/// 2/3 成员仅保留删除前的可逆契约，生产入口会先安全退役；
+/// 非法成员数 fail-fast。开关经 `testOverride` 注入。
 void main() {
   tearDown(() => Phase0aGauntletGate.testOverride = null);
 
   group('Phase0aGauntletGate 灰度门', () {
-    test('默认关闭', () {
-      expect(Phase0aGauntletGate.enabled, isFalse);
+    test('路线 C 默认开启', () {
+      expect(Phase0aGauntletGate.enabled, isTrue);
     });
 
     test('testOverride 控制开关并在 tearDown 复原', () {
@@ -32,11 +32,8 @@ void main() {
   });
 
   group('gauntletCombatPathFor 战斗路径选择器', () {
-    test('默认关闭：所有会话走旧 3v3', () {
-      expect(
-        gauntletCombatPathFor(memberCount: 1),
-        GauntletCombatPath.legacy3v3,
-      );
+    test('默认开启：单成员走 Phase 0A，多成员保留可逆路径', () {
+      expect(gauntletCombatPathFor(memberCount: 1), GauntletCombatPath.phase0a);
       expect(
         gauntletCombatPathFor(memberCount: 2),
         GauntletCombatPath.legacy3v3,

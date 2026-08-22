@@ -84,8 +84,8 @@ void main() {
 
   // ── tests ─────────────────────────────────────────────────────────────────
 
-  test('Phase0aTowerGate 默认关，门开覆盖全部合法生产塔层', () {
-    expect(Phase0aTowerGate.enabled, isFalse);
+  test('Phase0aTowerGate 默认开，覆盖全部合法生产塔层', () {
+    expect(Phase0aTowerGate.enabled, isTrue);
     Phase0aTowerGate.testOverride = true;
     for (final floor in repo.towerFloors) {
       expect(

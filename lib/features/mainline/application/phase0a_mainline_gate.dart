@@ -5,11 +5,9 @@ import '../../../core/domain/enums.dart';
 
 /// Phase 1 纵切实机接线的灰度门(拍板 α:主线入口灰度开关)。
 ///
-/// 开关经 dart-define `PHASE0A_MAINLINE_GRAY=true` 编译期注入(沿
-/// `HITBOX_DEBUG` 体例):纵切期默认关 → 主线仍走旧 3v3 引擎;验收期
-/// `flutter run --dart-define=PHASE0A_MAINLINE_GRAY=true` 打开后主线
-/// 关走 0A 引擎全链。正式全量切换 + 旧入口拆除仍留路线 C 第三序
-/// (同次 merge,spec §5 非目标约束),本门届时整类删除。
+/// 路线 C 默认启用 Phase 0A。`PHASE0A_MAINLINE_GRAY=false` 仅作
+/// 删除旧引擎前的紧急回退保险；Windows 实机 Gate 通过后本门与
+/// 旧分支会同批删除。
 ///
 /// 门控面覆盖全部非空主线、心魔镜像、轻功地形与具备合法波次的群战关。
 /// 剧情空敌主线及配置不完整的特殊关继续拒绝。
@@ -18,6 +16,7 @@ final class Phase0aMainlineGate {
 
   static const bool _enabledFromEnv = bool.fromEnvironment(
     'PHASE0A_MAINLINE_GRAY',
+    defaultValue: true,
   );
 
   static bool? _testOverride;

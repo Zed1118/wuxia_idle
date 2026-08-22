@@ -6,13 +6,15 @@ final class Phase0aExpeditionGate {
 
   static const bool _enabledFromEnv = bool.fromEnvironment(
     'PHASE0A_EXPEDITION_GRAY',
+    defaultValue: true,
   );
 
   static bool? _testOverride;
 
   static bool get enabled => _testOverride ?? _enabledFromEnv;
 
-  /// 历史多成员在途会话继续走旧 3v3，避免灰度升级破坏既有会话。
+  /// 单成员会话走 Phase 0A；历史多成员会话由启动恢复事务
+  /// 安全召回，不再进入任何战斗 runner。
   static bool shouldUsePhase0a({required int memberCount}) =>
       enabled && memberCount == 1;
 

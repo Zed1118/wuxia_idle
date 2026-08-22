@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/battle_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/mass_battle_strategy.dart';
+import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_gate.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
@@ -37,6 +38,9 @@ import '../../../support/test_data.dart';
 /// （applyFormationTo 体例,不跑完整战斗）。真 Isar（fallback 单人队）+
 /// SharedPreferences mock 支撑 initState 装配链,全部真时钟交互收进 runAsync。
 void main() {
+  setUp(() => Phase0aMainlineGate.testOverride = false);
+  tearDown(() => Phase0aMainlineGate.testOverride = null);
+
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {

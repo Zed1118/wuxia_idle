@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/battle_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/light_foot_strategy.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
+import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_gate.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
 
 import '../../../support/battle_demo.dart';
@@ -34,6 +35,9 @@ import '../../../support/test_data.dart';
 /// `startBattle` 入参即行为级观测点;地形烘焙经 strategy.stepOne 直验
 /// (applyTerrainTo @visibleForTesting 体例)。
 void main() {
+  setUp(() => Phase0aMainlineGate.testOverride = false);
+  tearDown(() => Phase0aMainlineGate.testOverride = null);
+
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {

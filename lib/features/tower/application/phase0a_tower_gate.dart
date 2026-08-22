@@ -4,14 +4,14 @@ import '../../../data/defs/tower_floor_def.dart';
 
 /// Phase 0A 塔消费面灰度门。
 ///
-/// 默认关闭时全部塔层继续走旧 3v3；通过
-/// `--dart-define=PHASE0A_TOWER_GRAY=true` 开启后，生产定义中的塔层走
-/// 单角色 Phase 0A 宿主。正式全量切换与旧入口拆除不属于本纵切。
+/// 路线 C 默认启用 Phase 0A；`PHASE0A_TOWER_GRAY=false` 仅作
+/// Windows 实机 Gate 前的紧急回退保险。
 final class Phase0aTowerGate {
   const Phase0aTowerGate._();
 
   static const bool _enabledFromEnv = bool.fromEnvironment(
     'PHASE0A_TOWER_GRAY',
+    defaultValue: true,
   );
 
   static bool? _testOverride;

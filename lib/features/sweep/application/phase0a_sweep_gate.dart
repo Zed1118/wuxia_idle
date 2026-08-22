@@ -6,13 +6,15 @@ import '../../../data/defs/tower_floor_def.dart';
 
 /// Phase 0A 扫荡 headless 直结灰度门。
 ///
-/// 默认关闭时继续走旧 3v3 快进连播；显式开启后，仅支持 0A 的生产扫荡单位
-/// 走同核 headless runner。正式切换与旧扫荡屏拆除不属于本纵切。
+/// 路线 C 默认启用同核 headless runner；
+/// `PHASE0A_SWEEP_HEADLESS_GRAY=false` 仅作 Windows 实机 Gate 前的
+/// 紧急回退保险。
 final class Phase0aSweepGate {
   const Phase0aSweepGate._();
 
   static const bool _enabledFromEnv = bool.fromEnvironment(
     'PHASE0A_SWEEP_HEADLESS_GRAY',
+    defaultValue: true,
   );
 
   static bool? _testOverride;

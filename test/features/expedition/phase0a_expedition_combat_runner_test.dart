@@ -55,11 +55,11 @@ void main() {
     }
   });
 
-  test('灰度默认关闭；仅单成员启用，历史多成员会话回落旧 runner', () {
-    expect(Phase0aExpeditionGate.enabled, isFalse);
+  test('路线 C 默认开启；单成员启用 Phase 0A', () {
+    expect(Phase0aExpeditionGate.enabled, isTrue);
     expect(
       expeditionCombatFor(IsarSetup.instance, memberCount: 1),
-      isA<ExpeditionCombatRunner>(),
+      isA<Phase0aExpeditionCombatRunner>(),
     );
 
     Phase0aExpeditionGate.testOverride = true;

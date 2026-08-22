@@ -37,7 +37,7 @@ void main() {
     if (await tempDir.exists()) await tempDir.delete(recursive: true);
   });
 
-  test('灰度门默认关；开门后主线覆盖全部主线非空敌队 cycle>=1，塔覆盖合法层', () {
+  test('路线 C 默认开；主线覆盖非空敌队 cycle>=1，塔覆盖合法层', () {
     final repo = GameRepository.instance;
     final ch1 = repo.getStage('stage_01_01');
     final ch21 = repo.getStage('stage_21_01');
@@ -46,8 +46,8 @@ void main() {
     final light = repo.getStage('stage_light_foot_01');
     final mass = repo.getStage('stage_mass_battle_01');
 
-    expect(Phase0aSweepGate.enabled, isFalse);
-    expect(Phase0aSweepGate.shouldUseMainline(ch1, cycle: 1), isFalse);
+    expect(Phase0aSweepGate.enabled, isTrue);
+    expect(Phase0aSweepGate.shouldUseMainline(ch1, cycle: 1), isTrue);
     Phase0aSweepGate.testOverride = true;
     // Ch1 一周目 / 二周目(cycle>=1 合法)与真实 Ch21 主线均放行。
     expect(Phase0aSweepGate.shouldUseMainline(ch1, cycle: 1), isTrue);

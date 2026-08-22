@@ -28,7 +28,7 @@ import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart'
 import '../../../support/test_data.dart';
 
 /// Phase 1 纵切切片 2 红测(拍板 α 主线入口灰度开关):
-/// ① 灰度门:默认关 + testOverride + 关型过滤(只含 mainline);
+/// ① 路线 C 门:默认开 + testOverride + 关型过滤;
 /// ② roster.fromMapping:真实 Ch1 内容 → 玩家灰盒立绘/敌人 iconPath 零口径
 ///    复制 + 空 asset fail-fast;
 /// ③ host 集成:注入玩家角色 + 固定 seed 真跑 stage_01_01 → victory 回调;
@@ -109,15 +109,15 @@ void main() {
   });
 
   group('Phase0aMainlineGate 灰度门', () {
-    test('测试环境 dart-define 未注入 → 默认关', () {
-      expect(Phase0aMainlineGate.enabled, isFalse);
+    test('测试环境 dart-define 未注入 → 路线 C 默认开', () {
+      expect(Phase0aMainlineGate.enabled, isTrue);
     });
 
     test('testOverride 开/还原', () {
       Phase0aMainlineGate.testOverride = true;
       expect(Phase0aMainlineGate.enabled, isTrue);
       Phase0aMainlineGate.testOverride = null;
-      expect(Phase0aMainlineGate.enabled, isFalse);
+      expect(Phase0aMainlineGate.enabled, isTrue);
     });
 
     test('shouldUsePhase0a: 门开放行全部主线非空敌队 + 合法 cycle(>=1)', () {
