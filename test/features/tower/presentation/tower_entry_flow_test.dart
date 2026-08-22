@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/tower/application/phase0a_tower_gate.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
@@ -27,10 +26,6 @@ void main() {
 
   setUpAll(() async {
     repo = await loadTestGameRepository();
-  });
-
-  tearDown(() {
-    Phase0aTowerGate.testOverride = null;
   });
 
   // ── fixtures ─────────────────────────────────────────────────────────────
@@ -84,25 +79,7 @@ void main() {
 
   // ── tests ─────────────────────────────────────────────────────────────────
 
-  test('Phase0aTowerGate 默认开，覆盖全部合法生产塔层', () {
-    expect(Phase0aTowerGate.enabled, isTrue);
-    Phase0aTowerGate.testOverride = true;
-    for (final floor in repo.towerFloors) {
-      expect(
-        Phase0aTowerGate.shouldUsePhase0a(floor),
-        isTrue,
-        reason: 'tower_${floor.floorIndex}',
-      );
-    }
-    expect(
-      Phase0aTowerGate.shouldUsePhase0a(normalFloor),
-      isFalse,
-      reason: '空敌队 fixture 必须回落旧入口，不进入 0A 错误屏',
-    );
-  });
-
-  testWidgets('门开 + 0A victory → 复用原 clear/胜利仪式链', (tester) async {
-    Phase0aTowerGate.testOverride = true;
+  testWidgets('0A victory → 复用原 clear/胜利仪式链', (tester) async {
     final floor = repo.getTowerFloor(1);
     var phase0aConsumed = false;
     int? recordedFloor;
@@ -129,8 +106,7 @@ void main() {
     expect(find.text(UiStrings.towerVictoryConfirm), findsOneWidget);
   });
 
-  testWidgets('门开 + 0A 中途退出 → clear/defeat 均零消费', (tester) async {
-    Phase0aTowerGate.testOverride = true;
+  testWidgets('0A 中途退出 → clear/defeat 均零消费', (tester) async {
     final floor = repo.getTowerFloor(1);
     var clearCalled = false;
     var defeatCalled = false;

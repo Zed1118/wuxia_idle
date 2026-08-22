@@ -12,29 +12,15 @@ import '../../../data/game_repository.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
-import '../../../data/numbers_config.dart';
 import 'battle_resolution.dart';
-import '../../equipment/application/drop_service.dart';
+export '../../combat_shared/application/combat_content_providers.dart';
+import '../../combat_shared/application/combat_content_providers.dart';
 import '../../jianghu/application/enmity_battle_modifier.dart';
 import '../../jianghu/application/npc_relation_service.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../../shared/utils/rng.dart';
 
 part 'battle_providers.g.dart';
-
-/// numbers.yaml 配置（[GameRepository] 单例的 provider 包装）。
-///
-/// 启动时 `GameRepository.loadAllDefs()` 完成后即可读。测试中可通过
-/// `numbersConfigProvider.overrideWithValue(testNumbers)` 注入。
-@riverpod
-NumbersConfig numbersConfig(Ref ref) => GameRepository.instance.numbers;
-
-/// 装备掉落服务（T27 DropService）的 provider。
-///
-/// 走 [GameRepository] 单例查 EquipmentDef；测试中可 override 注入 mock。
-@riverpod
-DropService dropService(Ref ref) =>
-    DropService(equipmentDefLookup: GameRepository.instance.getEquipment);
 
 /// 战斗状态 Notifier（phase1_tasks T16.1）。
 ///

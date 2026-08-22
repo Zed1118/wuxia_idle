@@ -15,26 +15,20 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/narrative_loader.dart';
-import '../../battle/application/battle_providers.dart';
 import '../../../data/isar_provider.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
-import '../../battle/application/battle_resolution.dart';
 import '../../combat_shared/application/combat_resolution_service.dart'
     show CombatResolutionService;
+import '../../combat_shared/application/combat_content_providers.dart';
 import '../../battle/application/combat_progression_settlement_service.dart';
 import '../../battle/application/post_combat_invalidation.dart';
 import '../../../shared/battle_shared/derived_stats.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
-import '../../battle/domain/auto_play_mode.dart';
-import '../../battle/domain/battle_state.dart';
-import '../../settings/application/gameplay_settings_provider.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../features/equipment/application/drop_service.dart';
 import '../../../features/equipment/application/first_acquisition_tiers.dart';
 import '../../equipment/domain/resonance_upgrade_notice.dart';
-import '../../battle/application/stage_battle_setup.dart';
-import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/domain/advancement_entry.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../cultivation/domain/skill_drop_result.dart';
@@ -63,7 +57,6 @@ import '../../../shared/utils/math_random.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
-import '../application/phase0a_tower_gate.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../../weapon_codex/application/equipment_catalog_hook.dart';
 import 'phase0a_tower_battle_host.dart';
@@ -78,7 +71,7 @@ typedef TowerBattleExit = ({
 ///
 /// 状态机（async 串联）：
 ///   1. opening（仅 Boss 层且 narrativeOpeningId 非空）→ NarrativeReaderScreen
-///   2. battle → push BattleScreen → wait onVictory / onDefeat
+///   2. battle → push Phase0aBattleScreen → wait onVictory / onDefeat
 ///   3a. victory → recordClear(isFirstClear) → invalidate provider
 ///       → T44 接入：isFirstClear true 才发奖
 ///       → Boss + victoryNarrative → NarrativeReaderScreen
@@ -117,7 +110,7 @@ Future<void> runTowerFlow({
 
   // ── battle ──
   if (!context.mounted) return;
-  // P0.2 #40 Phase 2:计时本次战斗耗时(从 BattleScreen push 起到 onVictory/Defeat
+  // P0.2 #40 Phase 2:计时本次战斗耗时(从战斗屏 push 起到 onVictory/Defeat
   // 回调触发,含 push/pop 动画 ≈ 600ms 误差,可接受;不为 test 注入路径计时)
   final stopwatch = Stopwatch()..start();
   final TowerBattleExit battleExit;
@@ -137,7 +130,6 @@ Future<void> runTowerFlow({
   } else {
     battleExit = await _runTowerBattle(
       context: context,
-      ref: ref,
       floor: floor,
       phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
     );
@@ -385,67 +377,16 @@ Future<void> runTowerFlow({
   invalidateAfterCombatSettlement(ref.invalidate);
 }
 
-/// 推 BattleScreen 并 wait 胜/败/投降回调；返回 (won, surrendered)。
-/// H3: surrendered=true 时 caller 跳过 recordDefeat 统计直接返回。
+/// 推 Phase 0A 塔战并等待引擎中立结算；系统返回按中途退出处理。
 Future<TowerBattleExit> _runTowerBattle({
   required BuildContext context,
-  required WidgetRef ref,
   required TowerFloorDef floor,
   Future<TowerBattleExit> Function()? phase0aBattleOutcomeForTest,
 }) async {
-  if (Phase0aTowerGate.shouldUsePhase0a(floor)) {
-    if (phase0aBattleOutcomeForTest != null) {
-      return phase0aBattleOutcomeForTest();
-    }
-    return _runPhase0aTowerBattle(context: context, floor: floor);
+  if (phase0aBattleOutcomeForTest != null) {
+    return phase0aBattleOutcomeForTest();
   }
-  final completer = Completer<TowerBattleExit>();
-  // 不 await push:胜利时 BattleScreen 留栈,由 runTowerFlow 播完仪式/结算后再 pop。
-  Navigator.of(context)
-      .push<void>(
-        MaterialPageRoute(
-          builder: (_) => _TowerBattleHost(
-            floor: floor,
-            onVictory: () {
-              if (!completer.isCompleted) {
-                completer.complete((
-                  won: true,
-                  surrendered: false,
-                  settlement: null,
-                ));
-              }
-            },
-            onDefeat: () {
-              if (!completer.isCompleted) {
-                completer.complete((
-                  won: false,
-                  surrendered: false,
-                  settlement: null,
-                ));
-              }
-            },
-            onSurrender: () {
-              if (!completer.isCompleted) {
-                completer.complete((
-                  won: false,
-                  surrendered: true,
-                  settlement: null,
-                ));
-              }
-            },
-          ),
-        ),
-      )
-      .then((_) {
-        if (!completer.isCompleted) {
-          completer.complete((
-            won: false,
-            surrendered: false,
-            settlement: null,
-          ));
-        }
-      });
-  return completer.future;
+  return _runPhase0aTowerBattle(context: context, floor: floor);
 }
 
 Future<TowerBattleExit> _runPhase0aTowerBattle({
@@ -525,19 +466,8 @@ applyTowerVictoryResolution({
   );
   final isar = ref.read(isarProvider);
   if (isar == null) return empty;
-  final BattleState? legacyFinalState;
-  final CombatSettlementSnapshot combatSettlement;
-  if (settlementSnapshot != null) {
-    legacyFinalState = null;
-    combatSettlement = settlementSnapshot;
-  } else {
-    final finalState = ref.read(battleProvider);
-    if (!finalState.isFinished) return empty;
-    legacyFinalState = finalState;
-    combatSettlement = BattleResolutionService.snapshotFromBattleState(
-      finalState,
-    );
-  }
+  if (settlementSnapshot == null) return empty;
+  final combatSettlement = settlementSnapshot;
   if (!combatSettlement.isFinished) return empty;
   final stats = BattleStatsSummary.fromSettlement(combatSettlement);
 
@@ -657,17 +587,11 @@ applyTowerVictoryResolution({
   final bossName = floor.enemyTeam.isNotEmpty
       ? floor.enemyTeam.last.name
       : UiStrings.towerFloorLabel(floor.floorIndex);
-  final heroCamera = legacyFinalState == null
-      ? deriveHeroCameraDataFromDamageTotals(
-          damageByCharacterId: combatSettlement.damageByCharacterId,
-          characters: characters,
-          bossName: bossName,
-        )
-      : deriveHeroCameraData(
-          finalState: legacyFinalState,
-          characters: characters,
-          bossName: bossName,
-        );
+  final heroCamera = deriveHeroCameraDataFromDamageTotals(
+    damageByCharacterId: combatSettlement.damageByCharacterId,
+    characters: characters,
+    bossName: bossName,
+  );
 
   return (
     advancements: advancements,
@@ -878,108 +802,6 @@ class TowerVictoryContent extends StatelessWidget {
         ],
         const PostBattleHealingPanel(),
       ],
-    );
-  }
-}
-
-/// BattleScreen 的 setup 容器（爬塔版，对应主线 _StageBattleHost）。
-///
-/// D1: 从 [towerProgressProvider] 读取 [TowerProgress.currentCycleIndex] 并
-/// 用于 battleKey / isCleared / buildTeamsForTower。fresh save currentCycleIndex=1
-/// → 零回归（behavior byte-identical）。
-class _TowerBattleHost extends ConsumerStatefulWidget {
-  const _TowerBattleHost({
-    required this.floor,
-    required this.onVictory,
-    required this.onDefeat,
-    required this.onSurrender,
-  });
-
-  final TowerFloorDef floor;
-  final VoidCallback onVictory;
-  final VoidCallback onDefeat;
-  final VoidCallback onSurrender;
-
-  @override
-  ConsumerState<_TowerBattleHost> createState() => _TowerBattleHostState();
-}
-
-class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
-  String? _setupError;
-
-  /// 战斗交互重做 Phase 3:本场进入模式(auto / interactive,对应主线 host)。
-  AutoPlayMode _mode = AutoPlayMode.auto;
-
-  /// D1: 由 initState 从 TowerProgress.currentCycleIndex 读入，默认 1。
-  int _currentCycleIndex = 1;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-      try {
-        final progress = await ref.read(towerProgressProvider.future);
-        if (!mounted) return;
-        // D1: 读取当前周目（fresh save = 1，零回归）。
-        _currentCycleIndex = progress.currentCycleIndex;
-        // ── 入口决策:跟随全局设置 → auto / interactive ──
-        final global = (await ref.read(
-          gameplaySettingsProvider.future,
-        )).autoPlayDefault;
-        if (!mounted) return;
-        setState(() => _mode = resolveAutoPlayMode(globalDefault: global));
-
-        final (left, right) = await StageBattleSetup(
-          isar: IsarSetup.instance,
-        ).buildTeamsForTower(widget.floor, cycleIndex: _currentCycleIndex);
-        if (!mounted) return;
-        ref.read(battleProvider.notifier).startBattle(left, right);
-      } catch (e) {
-        if (!mounted) return;
-        setState(() => _setupError = e.toString());
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_setupError != null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(UiStrings.towerFloorLabel(widget.floor.floorIndex)),
-        ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: SelectableText(UiStrings.battleSetupFailed(_setupError!)),
-          ),
-        ),
-      );
-    }
-    return BattleScreen(
-      hint: UiStrings.towerFloorLabel(widget.floor.floorIndex),
-      sceneBackgroundPath: widget.floor.sceneBackgroundPath,
-      bgmTrack: BgmTrack.tower,
-      deferVictoryToCaller: true,
-      cycleHint: _currentCycleIndex >= 2
-          ? UiStrings.battleCycleHint(_currentCycleIndex)
-          : null,
-      playback: BattleScreenPlaybackConfig(
-        allowPlayerIntervention: _mode == AutoPlayMode.interactive,
-      ),
-      onVictory: () {
-        widget.onVictory();
-        // 不 pop:胜利仪式由 runTowerFlow 在战斗界面之上播完后再 pop。
-      },
-      onDefeat: () {
-        widget.onDefeat();
-        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-      },
-      onSurrender: () {
-        widget.onSurrender();
-        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-      },
     );
   }
 }
