@@ -6,6 +6,9 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import 'package:wuxia_idle/features/battle/application/player_combatant_snapshot_assembler.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_combat.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_combat_runner.dart';
@@ -109,5 +112,56 @@ void main() {
     final runner = Phase0aExpeditionCombatRunner(IsarSetup.instance);
 
     await expectLater(runner.memberCaps([1, 2]), throwsA(isA<StateError>()));
+  });
+
+  test('headless 超时 ongoing 沿旧 draw 口径映射为败停', () {
+    final outcome = Phase0aExpeditionCombatRunner.outcomeFromTerminal(
+      memberId: 1,
+      outcome: Phase0aBattleOutcome.ongoing,
+      hp: 9,
+      qi: 3,
+    );
+
+    expect(outcome.leftWin, isFalse);
+    expect(outcome.survivorHp, {1: 9});
+    expect(outcome.survivorQi, {1: 3});
+  });
+
+  test('远征 mapper 保留 cycle 境界段推进', () async {
+    final player = (await PlayerCombatantSnapshotAssembler(
+      isar: IsarSetup.instance,
+    ).loadExactRoster([1])).single;
+    final config = GameRepository.instance.expeditionConfig!;
+    final enemies = config.enemiesForNode(
+      nodeIndex: 5,
+      nodeSeed: 820225,
+      elite: true,
+    );
+
+    final firstCycle = Phase0aStageContentMapper.mapExpedition(
+      contentId: 'expedition_cycle_1',
+      enemyTeam: enemies,
+      playerSnapshot: player,
+      numbers: GameRepository.instance.numbers,
+      cycleIndex: 1,
+    );
+    final secondCycle = Phase0aStageContentMapper.mapExpedition(
+      contentId: 'expedition_cycle_2',
+      enemyTeam: enemies,
+      playerSnapshot: player,
+      numbers: GameRepository.instance.numbers,
+      cycleIndex: 2,
+    );
+    final firstEnemy = firstCycle.combatants[1].snapshot;
+    final secondEnemy = secondCycle.combatants[1].snapshot;
+
+    expect(
+      secondEnemy.realmTier.index * RealmLayer.values.length +
+          secondEnemy.realmLayer.index,
+      greaterThan(
+        firstEnemy.realmTier.index * RealmLayer.values.length +
+            firstEnemy.realmLayer.index,
+      ),
+    );
   });
 }

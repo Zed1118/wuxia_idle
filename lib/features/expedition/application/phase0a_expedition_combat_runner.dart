@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 
 import '../../../data/game_repository.dart';
@@ -88,10 +89,26 @@ final class Phase0aExpeditionCombatRunner implements ExpeditionCombat {
       yieldEveryTicks: _uiYieldEveryTicks,
     );
     final terminal = result.finalState.player;
+    return outcomeFromTerminal(
+      memberId: member.key,
+      outcome: result.outcome,
+      hp: terminal.currentHealth,
+      qi: terminal.qiCurrent,
+    );
+  }
+
+  /// headless 拍数耗尽保持 `ongoing`；远征沿旧 draw→defeat 口径败停。
+  @visibleForTesting
+  static ExpeditionNodeOutcome outcomeFromTerminal({
+    required int memberId,
+    required Phase0aBattleOutcome outcome,
+    required int hp,
+    required int qi,
+  }) {
     return ExpeditionNodeOutcome(
-      leftWin: result.outcome == Phase0aBattleOutcome.victory,
-      survivorHp: {member.key: terminal.currentHealth},
-      survivorQi: {member.key: terminal.qiCurrent},
+      leftWin: outcome == Phase0aBattleOutcome.victory,
+      survivorHp: {memberId: hp},
+      survivorQi: {memberId: qi},
     );
   }
 }
