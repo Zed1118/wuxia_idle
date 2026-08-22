@@ -2,27 +2,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/defs/stage_def.dart';
 import '../../../data/isar_setup.dart';
-import '../../battle/application/battle_providers.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
-import '../../battle/application/stage_battle_setup.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../domain/sweep_recap.dart';
 import 'sweep_settlement.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/battle_result.dart';
 import '../../../shared/utils/math_random.dart';
+import '../../combat_shared/application/combat_content_providers.dart';
 import 'phase0a_sweep_headless_runner.dart';
-import 'phase0a_sweep_gate.dart';
 
-/// 扫荡一个单位（主线一关 / 爬塔一层）。SweepScreen 逐个：
-/// [startBattle] 装配并起手战斗（强制 auto 连播）→ 战斗到 terminal →
-/// 胜利 [settle] 得 [SweepBattleOutcome]。
+/// 扫荡一个单位（主线一关 / 爬塔一层）。SweepScreen 逐个运行 Phase 0A
+/// headless runner，再把终局快照接回既有事务结算。
 abstract class SweepUnit {
   /// 进度展示用短标签（如「第3关 · 风波渡」「第5层」）。
   String get label;
 
-  /// BattleScreen 顶部提示。
+  /// 扫荡 HUD 顶部提示。
   String get battleHint;
 
   /// 战斗场景背景图（null 走兜底底色）。
@@ -30,20 +27,6 @@ abstract class SweepUnit {
 
   /// 战斗 BGM 轨。
   BgmTrack get bgmTrack;
-
-  /// 装配队伍并起手战斗（写入 battleProvider）。
-  Future<void> startBattle(WidgetRef ref);
-
-  /// 胜利结算，返回战果（null=结算异常）。
-  Future<SweepBattleOutcome?> settle(WidgetRef ref);
-}
-
-/// 可由 Phase 0A 同核 headless 直结的扫荡单位附加能力。
-///
-/// 与 [SweepUnit] 分离，保证旧假单位/第三方实现无需为默认关闭的灰度能力改签名。
-abstract interface class Phase0aHeadlessSweepUnit {
-  /// 本单位是否具备 production Phase 0A headless 映射资格。
-  bool get supportsPhase0aHeadless;
 
   /// 同核 headless 跑至终局；预算耗尽由结果显式标记。
   Future<Phase0aSweepRunResult> runPhase0aHeadless(WidgetRef ref);
@@ -56,7 +39,7 @@ abstract interface class Phase0aHeadlessSweepUnit {
 }
 
 /// 主线一关扫荡单位。
-class MainlineSweepUnit implements SweepUnit, Phase0aHeadlessSweepUnit {
+class MainlineSweepUnit implements SweepUnit {
   MainlineSweepUnit({required this.stage, required this.cycle});
 
   final StageDef stage;
@@ -76,21 +59,6 @@ class MainlineSweepUnit implements SweepUnit, Phase0aHeadlessSweepUnit {
       bgmTrackForStage(stage.stageType, isBoss: stage.isBossStage);
 
   @override
-  Future<void> startBattle(WidgetRef ref) async {
-    final (left, right) = await StageBattleSetup(
-      isar: IsarSetup.instance,
-    ).buildTeams(stage, cycleIndex: cycle);
-    ref.read(battleProvider.notifier).startBattle(left, right);
-  }
-
-  @override
-  Future<SweepBattleOutcome?> settle(WidgetRef ref) =>
-      settleMainlineSweepVictory(ref: ref, stage: stage, cycle: cycle);
-
-  @override
-  bool get supportsPhase0aHeadless =>
-      Phase0aSweepGate.shouldUseMainline(stage, cycle: cycle);
-
   @override
   Future<Phase0aSweepRunResult> runPhase0aHeadless(WidgetRef ref) =>
       Phase0aSweepHeadlessRunner(
@@ -115,7 +83,7 @@ class MainlineSweepUnit implements SweepUnit, Phase0aHeadlessSweepUnit {
 }
 
 /// 爬塔一层扫荡单位。
-class TowerSweepUnit implements SweepUnit, Phase0aHeadlessSweepUnit {
+class TowerSweepUnit implements SweepUnit {
   TowerSweepUnit({required this.floor, required this.cycleIndex});
 
   final TowerFloorDef floor;
@@ -134,20 +102,6 @@ class TowerSweepUnit implements SweepUnit, Phase0aHeadlessSweepUnit {
   BgmTrack get bgmTrack => BgmTrack.tower;
 
   @override
-  Future<void> startBattle(WidgetRef ref) async {
-    final (left, right) = await StageBattleSetup(
-      isar: IsarSetup.instance,
-    ).buildTeamsForTower(floor, cycleIndex: cycleIndex);
-    ref.read(battleProvider.notifier).startBattle(left, right);
-  }
-
-  @override
-  Future<SweepBattleOutcome?> settle(WidgetRef ref) =>
-      settleTowerSweepVictory(ref: ref, floor: floor);
-
-  @override
-  bool get supportsPhase0aHeadless => Phase0aSweepGate.shouldUseTower(floor);
-
   @override
   Future<Phase0aSweepRunResult> runPhase0aHeadless(WidgetRef ref) =>
       Phase0aSweepHeadlessRunner(

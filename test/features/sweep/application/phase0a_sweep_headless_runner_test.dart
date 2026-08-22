@@ -10,7 +10,6 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
-import 'package:wuxia_idle/features/sweep/application/phase0a_sweep_gate.dart';
 import 'package:wuxia_idle/features/sweep/application/phase0a_sweep_headless_runner.dart';
 
 import '../../../support/isar_test_support.dart';
@@ -31,34 +30,9 @@ void main() {
   });
 
   tearDown(() async {
-    Phase0aSweepGate.testOverride = null;
     await IsarSetup.close();
     IsarSetup.resetForTest();
     if (await tempDir.exists()) await tempDir.delete(recursive: true);
-  });
-
-  test('路线 C 默认开；主线覆盖非空敌队 cycle>=1，塔覆盖合法层', () {
-    final repo = GameRepository.instance;
-    final ch1 = repo.getStage('stage_01_01');
-    final ch21 = repo.getStage('stage_21_01');
-    final floor = repo.towerFloors.first;
-    final demon = repo.getStage('stage_inner_demon_01');
-    final light = repo.getStage('stage_light_foot_01');
-    final mass = repo.getStage('stage_mass_battle_01');
-
-    expect(Phase0aSweepGate.enabled, isTrue);
-    expect(Phase0aSweepGate.shouldUseMainline(ch1, cycle: 1), isTrue);
-    Phase0aSweepGate.testOverride = true;
-    // Ch1 一周目 / 二周目(cycle>=1 合法)与真实 Ch21 主线均放行。
-    expect(Phase0aSweepGate.shouldUseMainline(ch1, cycle: 1), isTrue);
-    expect(Phase0aSweepGate.shouldUseMainline(ch1, cycle: 2), isTrue);
-    expect(Phase0aSweepGate.shouldUseMainline(ch21, cycle: 1), isTrue);
-    // 心魔/轻功/群战拒绝，留主 agent 独立迁移。
-    expect(Phase0aSweepGate.shouldUseMainline(demon, cycle: 1), isFalse);
-    expect(Phase0aSweepGate.shouldUseMainline(light, cycle: 1), isFalse);
-    expect(Phase0aSweepGate.shouldUseMainline(mass, cycle: 1), isFalse);
-    // 塔全部合法层继续支持。
-    expect(Phase0aSweepGate.shouldUseTower(floor), isTrue);
   });
 
   test('真实 Ch1/Ch21、cycle 2 与代表塔层含机制 Boss 均终局，正 id 参与者只有祖师', () async {

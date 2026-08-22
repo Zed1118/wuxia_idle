@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../battle/application/battle_providers.dart';
+import '../../combat_shared/application/combat_content_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../battle/presentation/battle_screen.dart';
 import '../application/sweep_controller.dart';
 import '../application/sweep_unit.dart';
 import '../domain/sweep_recap.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
-import '../../../shared/battle_shared/battle_result.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
-import '../application/phase0a_sweep_gate.dart';
+import '../../../shared/battle_shared/battle_result.dart';
 
 /// 一键挂机扫荡屏：逐关托管真战斗，强制 auto + 快进连播，可中途停、战败 halt。
 ///
@@ -47,18 +45,11 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
   late final SweepController _controller;
   int _index = 0;
   bool _preparing = true;
-  int _battleKey = 0;
 
   @override
   void initState() {
     super.initState();
     _controller = SweepController(totalUnits: widget.units.length);
-    // battleProvider 是 autoDispose:`_preparing` spinner 期间本屏未挂 BattleScreen,
-    // 没有 watcher。逐关注入(`startBattle`)若发生在这段无监听窗口,注入的队伍会被
-    // autoDispose 回收重置回空团 → 后续挂出的 BattleScreen 拿到空团黑屏。挂一条永久
-    // 监听跨本屏整个生命周期保活 provider,使逐关注入不被回收(挂载顺序兜底见
-    // BattleScreen.initState 的 postFrame 自启 timer)。
-    ref.listenManual(battleProvider, (_, _) {});
     WidgetsBinding.instance.addPostFrameCallback((_) => _startCurrent());
   }
 
@@ -66,67 +57,37 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
     if (!mounted) return;
     setState(() => _preparing = true);
     final unit = widget.units[_index];
-    final headlessUnit = unit is Phase0aHeadlessSweepUnit
-        ? unit as Phase0aHeadlessSweepUnit
-        : null;
-    if (Phase0aSweepGate.enabled &&
-        headlessUnit != null &&
-        headlessUnit.supportsPhase0aHeadless) {
-      // 先还一拍给 UI，让「准备中」和停止按钮可绘制；runner 内部分块归还
-      // 事件循环，结束后才检查 stopRequested，保持“当前关打完后停”语义。
-      await Future<void>.delayed(Duration.zero);
-      try {
-        final result = await headlessUnit.runPhase0aHeadless(ref);
-        if (!mounted) return;
-        if (result.timedOut) {
-          _controller.recordTimeout();
-          setState(() => _preparing = false);
-          return;
-        }
-        final settlement = result.settlement;
-        if (settlement == null || settlement.result != BattleResult.leftWin) {
-          _controller.recordDefeat();
-          setState(() => _preparing = false);
-          return;
-        }
-        await _recordVictory(settlement);
-      } catch (e, st) {
-        debugPrint(
-          'SweepScreen Phase0a headless failed at index $_index: $e\n$st',
-        );
-        _controller.recordDefeat();
-        if (mounted) setState(() => _preparing = false);
-      }
-      return;
-    }
+    // 先还一拍给 UI，让「准备中」和停止按钮可绘制；runner 内部分块归还
+    // 事件循环，结束后才检查 stopRequested，保持“当前关打完后停”语义。
+    await Future<void>.delayed(Duration.zero);
     try {
-      await unit.startBattle(ref);
+      final result = await unit.runPhase0aHeadless(ref);
+      if (!mounted) return;
+      if (result.timedOut) {
+        _controller.recordTimeout();
+        setState(() => _preparing = false);
+        return;
+      }
+      final settlement = result.settlement;
+      if (settlement == null || settlement.result != BattleResult.leftWin) {
+        _controller.recordDefeat();
+        setState(() => _preparing = false);
+        return;
+      }
+      await _recordVictory(settlement);
     } catch (e, st) {
-      debugPrint('SweepScreen startBattle failed at index $_index: $e\n$st');
-      // 装配失败 → halt（停在该关）。
+      debugPrint(
+        'SweepScreen Phase0a headless failed at index $_index: $e\n$st',
+      );
       _controller.recordDefeat();
       if (mounted) setState(() => _preparing = false);
-      return;
     }
-    if (!mounted) return;
-    setState(() {
-      _preparing = false;
-      _battleKey++;
-    });
+    return;
   }
 
-  Future<void> _onVictory() async {
-    await _recordVictory(null);
-  }
-
-  Future<void> _recordVictory(CombatSettlementSnapshot? settlement) async {
+  Future<void> _recordVictory(CombatSettlementSnapshot settlement) async {
     final unit = widget.units[_index];
-    final outcome = settlement == null
-        ? await unit.settle(ref)
-        : await (unit as Phase0aHeadlessSweepUnit).settlePhase0a(
-            ref,
-            settlement,
-          );
+    final outcome = await unit.settlePhase0a(ref, settlement);
     // 战斗已胜；settle 异常（Isar 故障等）兜底空账继续，不阻塞连播。
     _controller.recordVictory(outcome ?? const SweepBattleOutcome());
     if (!mounted) return;
@@ -142,11 +103,6 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
     } else {
       setState(() {}); // 收工 → 显 recap
     }
-  }
-
-  void _onDefeat() {
-    _controller.recordDefeat();
-    if (mounted) setState(() {});
   }
 
   @override
@@ -168,7 +124,6 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
   }
 
   Widget _buildRunning() {
-    final unit = widget.units[_index];
     return Stack(
       children: [
         if (_preparing)
@@ -186,21 +141,7 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
             ),
           )
         else
-          // config 仅真正渲染 BattleScreen 时读（preparing spinner 不需要），
-          // 避免首帧（GameRepository 未就绪的轻量测）崩。
-          BattleScreen(
-            key: ValueKey('sweep_battle_$_battleKey'),
-            hint: unit.battleHint,
-            sceneBackgroundPath: unit.sceneBackgroundPath,
-            bgmTrack: unit.bgmTrack,
-            animConfig: ref.watch(numbersConfigProvider).animation,
-            playback: const BattleScreenPlaybackConfig.sweep(),
-            // 扫荡「先注入战斗、后挂本屏」:开启挂载后兜底自启,否则错过 startBattle
-            // 的 empty→非空边沿 → timer 不起黑屏 hang(配 initState listenManual 保活)。
-            deferVictoryToCaller: true,
-            onVictory: _onVictory,
-            onDefeat: _onDefeat,
-          ),
+          const Center(child: Text(UiStrings.sweepPreparing)),
         // 顶部进度 + 醒目停止按钮 overlay。
         Positioned(
           top: 8,

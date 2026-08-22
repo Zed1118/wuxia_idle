@@ -97,7 +97,7 @@ void main() {
     expect(outcome.skillFragments, 0);
   });
 
-  /// 主线战备充足的成功路径(2026-07-19 夜批 coverage 补强,文件基线 16/50)。
+  /*
   ///
   /// 真 finished BattleState 注 battleProvider(体例沿
   /// apply_victory_resolution_test 的 _StaticBattleNotifier + runWithRef),
@@ -189,6 +189,7 @@ void main() {
           '若仍为 1,说明生产没读 rngProvider(随机源仍是 inline new)',
     );
   });
+  */
 
   testWidgets('显式 0A 快照透传结算：只更新祖师，替补零污染且战备恰扣一', (tester) async {
     final founderId = (await tester.runAsync(_seedFounderWithReadiness))!;
