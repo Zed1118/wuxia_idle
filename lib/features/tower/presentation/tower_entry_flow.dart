@@ -20,6 +20,8 @@ import '../../../data/isar_provider.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
 import '../../battle/application/battle_resolution.dart';
+import '../../combat_shared/application/combat_resolution_service.dart'
+    show CombatResolutionService;
 import '../../battle/application/combat_progression_settlement_service.dart';
 import '../../battle/application/post_combat_invalidation.dart';
 import '../../../shared/battle_shared/derived_stats.dart';
@@ -584,7 +586,7 @@ applyTowerVictoryResolution({
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
 
-  final battleResult = BattleResolutionService.resolveSnapshot(
+  final battleResult = CombatResolutionService.resolveSnapshot(
     settlement: combatSettlement,
     participatingCharacters: characters,
     equipmentsByCharacter: equipsByCh,

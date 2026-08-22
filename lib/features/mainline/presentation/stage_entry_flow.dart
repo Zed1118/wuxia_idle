@@ -18,6 +18,8 @@ import '../../../shared/utils/math_random.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../battle/application/battle_providers.dart';
 import '../../battle/application/battle_resolution.dart';
+import '../../combat_shared/application/combat_resolution_service.dart'
+    show CombatResolutionService;
 import '../../battle/application/combat_progression_settlement_service.dart';
 import '../../battle/application/post_combat_invalidation.dart';
 import '../../battle/application/stage_battle_setup.dart';
@@ -955,7 +957,7 @@ applyVictoryResolution({
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
 
-  final result = BattleResolutionService.resolveSnapshot(
+  final result = CombatResolutionService.resolveSnapshot(
     settlement: combatSettlement,
     participatingCharacters: characters,
     equipmentsByCharacter: equipsByCh,
@@ -1191,7 +1193,7 @@ Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
 
-  final result = BattleResolutionService.resolveSnapshot(
+  final result = CombatResolutionService.resolveSnapshot(
     settlement: combatSettlement,
     participatingCharacters: characters,
     equipmentsByCharacter: equipsByCh,
