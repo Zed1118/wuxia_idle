@@ -1,14 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
-import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 
+import '../../../../support/combatant_snapshot_fixture.dart';
 import '../../../../support/test_data.dart';
 
 void main() async {
@@ -25,17 +24,15 @@ void main() async {
     requiresManualTrigger: false,
     visualEffect: '',
   );
-  final player = const BattleCharacter(
+  final player = testCombatantSnapshot(
     characterId: 1,
     name: 'settlement player',
     realmTier: RealmTier.xueTu,
     realmLayer: RealmLayer.qiMeng,
     school: TechniqueSchool.gangMeng,
     maxHp: 100,
-    currentHp: 100,
     internalForce: 10,
     maxQi: 100,
-    currentQi: 100,
     speed: 100,
     criticalRate: 0,
     evasionRate: 0,
@@ -43,16 +40,10 @@ void main() async {
     totalEquipmentAttack: 10,
     mainCultivationLayer: CultivationLayer.chuKui,
     availableSkills: [realSkill],
-    skillCooldowns: {},
-    activeBuffs: [],
-    actionPoint: 0,
-    isAlive: true,
-    teamSide: 0,
-    slotIndex: 0,
   );
   final mapping = Phase0aStageContentMapper.map(
     stage: repository.getStage('stage_01_01'),
-    playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(player),
+    playerSnapshot: player,
     numbers: numbers,
   );
 

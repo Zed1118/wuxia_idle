@@ -6,13 +6,11 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
-import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_combat_session.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_damage_calculator_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_wave_battle_flow.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/combat_shared/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
@@ -20,13 +18,15 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.d
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_proficiency.dart';
+import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
+import '../../../../support/combatant_snapshot_fixture.dart';
 import '../../../../support/test_data.dart';
 
-/// Phase 0A BattleCharacter 生产快照工厂红测(第五批派单 §必测):
+/// Phase 0A 中立 CombatantSnapshot 生产快照工厂红测(第五批派单 §必测):
 /// ① 稳定字段与 `_calculateInBattle` 口径逐项同值;凝甲/弱点/破甲精确;
 /// ② 熟练度只复用 SkillProficiency(多 bound skill / 无使用记录 1.0 /
 ///    null control-only 不产条目);
-/// ③ 重复/空 actorId、外部 mutation、非零吸血、guardian/活跃 stagger
+/// ③ 重复/空 actorId、外部 mutation、非零吸血与 guardian
 ///    构造期 fail-fast(动态机制禁止冻结成中性常量);脆弱窗口乘子构造期
 ///    支持(窗口开合由结算期运行态折入,2026-08-22 纵切);
 /// ④ 工厂 → Phase0aDamageCalculatorAdapter → Phase0aWaveBattleFlow →
@@ -81,7 +81,7 @@ void main() {
     proficiency: SkillProficiencyEffects({'huaJing': 0.20}, {}, {}, {}),
   );
 
-  BattleCharacter makeCharacter({
+  CombatantSnapshot makeCharacter({
     int characterId = 1,
     TechniqueSchool school = TechniqueSchool.gangMeng,
     int internalForce = 600,
@@ -102,34 +102,24 @@ void main() {
     double? guardianWardMult,
     List<String> guardianDefIds = const [],
     double? vulnerabilityMult,
-    int staggerTicksRemaining = 0,
-    double? staggerDefenseDownOverride,
   }) {
-    return BattleCharacter(
+    return testCombatantSnapshot(
       characterId: characterId,
       name: 'c$characterId',
       realmTier: realmTier,
       realmLayer: realmLayer,
       school: school,
       maxHp: 1000,
-      currentHp: 1000,
       internalForce: internalForce,
       maxQi: 100,
-      currentQi: 100,
       speed: 100,
       criticalRate: criticalRate,
       evasionRate: evasionRate,
       defenseRate: defenseRate,
       totalEquipmentAttack: totalEquipmentAttack,
       mainCultivationLayer: mainCultivationLayer,
-      availableSkills: const [],
-      skillCooldowns: const {},
       skillUses: skillUses,
       activeBuffs: activeBuffs,
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: 0,
-      slotIndex: 0,
       attackPowerMultiplier: attackPowerMultiplier,
       outputMultiplier: outputMultiplier,
       schoolDamageTakenMult: schoolDamageTakenMult,
@@ -138,16 +128,11 @@ void main() {
       guardianWardMult: guardianWardMult,
       guardianDefIds: guardianDefIds,
       vulnerabilityMult: vulnerabilityMult,
-      staggerTicksRemaining: staggerTicksRemaining,
-      staggerDefenseDownOverride: staggerDefenseDownOverride,
     );
   }
 
-  Phase0aCombatantInput input(String actorId, BattleCharacter character) =>
-      Phase0aCombatantInput(
-        actorId: actorId,
-        snapshot: Legacy3v3CombatantAdapter.toSnapshot(character),
-      );
+  Phase0aCombatantInput input(String actorId, CombatantSnapshot character) =>
+      Phase0aCombatantInput(actorId: actorId, snapshot: character);
 
   group('稳定字段逐项映射(与 _calculateInBattle 口径同值)', () {
     test('永久内力/装备攻击/修炼层/流派/境界/防闪暴/双乘子/破甲逐项同值', () {
@@ -390,29 +375,6 @@ void main() {
         moveBindings: const {Phase0aDamageKind.basic: basicSkill},
       );
       expect(neutral.combatants['boss']!.vulnerabilityOutMult, isNull);
-    });
-
-    test('活跃踉跄(ticks 或减防 override)构造期 fail-fast', () {
-      expect(
-        () => makeFactory().create(
-          combatants: [input('boss', makeCharacter(staggerTicksRemaining: 2))],
-          moveBindings: const {Phase0aDamageKind.basic: basicSkill},
-        ),
-        throwsA(
-          isA<StateError>().having((e) => e.message, 'm', contains('踉跄')),
-        ),
-      );
-      expect(
-        () => makeFactory().create(
-          combatants: [
-            input('boss', makeCharacter(staggerDefenseDownOverride: 0.3)),
-          ],
-          moveBindings: const {Phase0aDamageKind.basic: basicSkill},
-        ),
-        throwsA(
-          isA<StateError>().having((e) => e.message, 'm', contains('踉跄')),
-        ),
-      );
     });
 
     test('外部 combatants 列表与 moveBindings map 构造后 mutation 不影响 bundle', () {

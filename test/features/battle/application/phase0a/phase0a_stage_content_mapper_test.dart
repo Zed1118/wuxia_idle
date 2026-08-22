@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -14,12 +13,14 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_in
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
+import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
+import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 
+import '../../../../support/combatant_snapshot_fixture.dart';
 import '../../../../support/test_data.dart';
 
 /// Phase 1 纵切切片 1 红测(spec 2026-08-19 · P1=α 主线 Ch1 · D1=α 机械映射):
@@ -29,57 +30,40 @@ import '../../../../support/test_data.dart';
 /// ③ headless 全链:Ch1 五关 bot 驾驶全部 victory(P3 双跑口径地基);
 /// ④ 确定性:同 seed 两次运行 ticks/终局/末态玩家 HP 全等。
 
-BattleCharacter makeCh1Player(NumbersConfig numbers) => BattleCharacter(
+CombatantSnapshot makeCh1Player(NumbersConfig numbers) => testCombatantSnapshot(
   characterId: 1,
   name: '纵切玩家',
   realmTier: RealmTier.xueTu,
   realmLayer: RealmLayer.qiMeng,
   school: TechniqueSchool.gangMeng,
   maxHp: 15000,
-  currentHp: 15000,
   internalForce: 600,
   maxQi: 100,
-  currentQi: 100,
   speed: 100,
   criticalRate: numbers.combat.critical.baseRate,
   evasionRate: 0.0,
   defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0.0,
   totalEquipmentAttack: 130,
   mainCultivationLayer: CultivationLayer.chuKui,
-  availableSkills: const [],
-  skillCooldowns: const {},
-  activeBuffs: const [],
-  actionPoint: 0,
-  isAlive: true,
-  teamSide: 0,
-  slotIndex: 0,
 );
 
-BattleCharacter makeBossPhasePlayer(NumbersConfig numbers) => BattleCharacter(
-  characterId: 1,
-  name: 'phase_player',
-  realmTier: RealmTier.xueTu,
-  realmLayer: RealmLayer.dengFeng,
-  school: TechniqueSchool.lingQiao,
-  maxHp: 20000,
-  currentHp: 20000,
-  internalForce: 300,
-  maxQi: 100,
-  currentQi: 100,
-  speed: 200,
-  criticalRate: numbers.combat.critical.baseRate,
-  evasionRate: 0,
-  defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0,
-  totalEquipmentAttack: 0,
-  mainCultivationLayer: CultivationLayer.chuKui,
-  availableSkills: const [],
-  skillCooldowns: const {},
-  activeBuffs: const [],
-  actionPoint: 0,
-  isAlive: true,
-  teamSide: 0,
-  slotIndex: 0,
-);
+CombatantSnapshot makeBossPhasePlayer(NumbersConfig numbers) =>
+    testCombatantSnapshot(
+      characterId: 1,
+      name: 'phase_player',
+      realmTier: RealmTier.xueTu,
+      realmLayer: RealmLayer.dengFeng,
+      school: TechniqueSchool.lingQiao,
+      maxHp: 20000,
+      internalForce: 300,
+      maxQi: 100,
+      speed: 200,
+      criticalRate: numbers.combat.critical.baseRate,
+      evasionRate: 0,
+      defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0,
+      totalEquipmentAttack: 0,
+      mainCultivationLayer: CultivationLayer.chuKui,
+    );
 
 void main() {
   late GameRepository repo;
@@ -97,9 +81,7 @@ void main() {
       final numbers = repo.numbers;
       final mapping = Phase0aStageContentMapper.map(
         stage: stage,
-        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-          makeCh1Player(numbers),
-        ),
+        playerSnapshot: makeCh1Player(numbers),
         numbers: numbers,
       );
 
@@ -138,7 +120,7 @@ void main() {
       // 空间排布:玩家在左,敌在右。
       expect(mapping.initialState.player.position.x, lessThan(0));
       expect(mapping.waves.first.enemies.single.position.x, greaterThan(0));
-      // 玩家 actor HP 口径 = 玩家 BattleCharacter。
+      // 玩家 actor HP 口径 = 玩家中立快照。
       expect(mapping.initialState.player.maxHealth, 15000);
       // 敌 actor HP 口径 = buildEnemyTeam(cycleIndex=1 零回归 = baseHp)。
       expect(mapping.waves.first.enemies.single.maxHealth, 1500);
@@ -158,12 +140,12 @@ void main() {
       );
     });
 
-    test('玩家开场真气透传 BattleCharacter.currentQi,不擅自补满', () {
+    test('玩家开场真气透传 CombatantSnapshot.currentQi,不擅自补满', () {
       final numbers = repo.numbers;
       final player = makeCh1Player(numbers).copyWith(currentQi: 37);
       final mapping = Phase0aStageContentMapper.map(
         stage: repo.getStage('stage_01_01'),
-        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(player),
+        playerSnapshot: player,
         numbers: numbers,
       );
       expect(mapping.initialState.player.qiCurrent, 37);
@@ -174,9 +156,7 @@ void main() {
       final numbers = repo.numbers;
       final mapping = Phase0aStageContentMapper.map(
         stage: repo.getStage('stage_01_01'),
-        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-          makeCh1Player(numbers),
-        ),
+        playerSnapshot: makeCh1Player(numbers),
         numbers: numbers,
       );
       final flow = Phase0aProductionFlowAssembler.assemble(
@@ -222,9 +202,7 @@ void main() {
 
       final mapping = Phase0aStageContentMapper.map(
         stage: repo.getStage('stage_01_01'),
-        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-          makeCh1Player(numbers),
-        ),
+        playerSnapshot: makeCh1Player(numbers),
         numbers: numbers,
       );
       final gather = mapping.playerAdapter.gatherSkillBinding!;
@@ -252,7 +230,7 @@ void main() {
         final player = makeCh1Player(numbers).copyWith(currentQi: openingQi);
         final mapping = Phase0aStageContentMapper.map(
           stage: repo.getStage('stage_01_01'),
-          playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(player),
+          playerSnapshot: player,
           numbers: numbers,
         );
         final gather = mapping.initialState.skillSlots.singleWhere(
@@ -282,9 +260,7 @@ void main() {
       final numbers = repo.numbers;
       final mapping = Phase0aStageContentMapper.map(
         stage: stage,
-        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-          makeCh1Player(numbers),
-        ),
+        playerSnapshot: makeCh1Player(numbers),
         numbers: numbers,
       );
       expect(mapping.waves.first.enemies, hasLength(stage.enemyTeam.length));
@@ -300,9 +276,7 @@ void main() {
       final floor = repo.towerFloors.firstWhere(
         (floor) => floor.floorIndex == 7,
       );
-      final player = Legacy3v3CombatantAdapter.toSnapshot(
-        makeCh1Player(numbers),
-      );
+      final player = makeCh1Player(numbers);
       final towerMapping = Phase0aStageContentMapper.mapTower(
         floor: floor,
         playerSnapshot: player,
@@ -359,9 +333,7 @@ void main() {
       expect(
         () => Phase0aStageContentMapper.map(
           stage: emptyStage,
-          playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-            makeCh1Player(numbers),
-          ),
+          playerSnapshot: makeCh1Player(numbers),
           numbers: numbers,
         ),
         throwsArgumentError,
@@ -421,9 +393,7 @@ void main() {
         );
         final mapping = Phase0aStageContentMapper.mapTower(
           floor: floor,
-          playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-            makeBossPhasePlayer(numbers),
-          ),
+          playerSnapshot: makeBossPhasePlayer(numbers),
           numbers: numbers,
         );
         final flow = Phase0aProductionFlowAssembler.assemble(
@@ -498,9 +468,7 @@ void main() {
         final stage = repo.getStage(stageId);
         final mapping = Phase0aStageContentMapper.map(
           stage: stage,
-          playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-            makeCh1Player(numbers),
-          ),
+          playerSnapshot: makeCh1Player(numbers),
           numbers: numbers,
         );
         final flow = Phase0aProductionFlowAssembler.assemble(
@@ -539,9 +507,7 @@ void main() {
       Phase0aHeadlessResult run() {
         final mapping = Phase0aStageContentMapper.map(
           stage: stage,
-          playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-            makeCh1Player(numbers),
-          ),
+          playerSnapshot: makeCh1Player(numbers),
           numbers: numbers,
         );
         final flow = Phase0aProductionFlowAssembler.assemble(
@@ -578,9 +544,7 @@ void main() {
       final numbers = repo.numbers;
       final mapping = Phase0aStageContentMapper.map(
         stage: repo.getStage('stage_01_01'),
-        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-          makeCh1Player(numbers),
-        ),
+        playerSnapshot: makeCh1Player(numbers),
         numbers: numbers,
       );
       final flow = Phase0aProductionFlowAssembler.assemble(
@@ -625,9 +589,7 @@ void main() {
     test('群体技能暴击位进入战后 criticalCount', () {
       final mapping = Phase0aStageContentMapper.map(
         stage: repo.getStage('stage_01_01'),
-        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-          makeCh1Player(repo.numbers),
-        ),
+        playerSnapshot: makeCh1Player(repo.numbers),
         numbers: repo.numbers,
       );
       final settlement = Phase0aSettlementAdapter.fromMapping(
@@ -671,9 +633,7 @@ void main() {
         for (final seed in [1, 2, 3, 4, 5]) {
           final mapping = Phase0aStageContentMapper.map(
             stage: stage,
-            playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-              makeCh1Player(numbers),
-            ),
+            playerSnapshot: makeCh1Player(numbers),
             numbers: numbers,
           );
           final flow = Phase0aProductionFlowAssembler.assemble(
@@ -704,9 +664,7 @@ void main() {
       final numbers = repo.numbers;
       final mapping = Phase0aStageContentMapper.mapTower(
         floor: repo.getTowerFloor(42),
-        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-          makeCh1Player(numbers),
-        ),
+        playerSnapshot: makeCh1Player(numbers),
         numbers: numbers,
       );
       final boss = mapping.initialState.enemies.firstWhere(

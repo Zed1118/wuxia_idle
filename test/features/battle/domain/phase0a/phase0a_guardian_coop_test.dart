@@ -3,17 +3,16 @@ import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
-import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
+import '../../../../support/combatant_snapshot_fixture.dart';
 import '../../../../support/test_data.dart';
 
 void main() {
@@ -216,32 +215,21 @@ void main() {
     final numbers = repo.numbers;
     final mapping = Phase0aStageContentMapper.mapTower(
       floor: repo.getTowerFloor(42),
-      playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-        const BattleCharacter(
-          characterId: 42,
-          name: 'tower42_coop_probe',
-          realmTier: RealmTier.zongShi,
-          realmLayer: RealmLayer.dengFeng,
-          school: TechniqueSchool.gangMeng,
-          maxHp: 200000,
-          currentHp: 200000,
-          internalForce: 100,
-          maxQi: 15000,
-          currentQi: 15000,
-          speed: 200,
-          criticalRate: 0,
-          evasionRate: 0,
-          defenseRate: 0.2,
-          totalEquipmentAttack: 0,
-          mainCultivationLayer: CultivationLayer.daCheng,
-          availableSkills: [],
-          skillCooldowns: {},
-          activeBuffs: [],
-          actionPoint: 0,
-          isAlive: true,
-          teamSide: 0,
-          slotIndex: 0,
-        ),
+      playerSnapshot: testCombatantSnapshot(
+        characterId: 42,
+        name: 'tower42_coop_probe',
+        realmTier: RealmTier.zongShi,
+        realmLayer: RealmLayer.dengFeng,
+        school: TechniqueSchool.gangMeng,
+        maxHp: 200000,
+        internalForce: 100,
+        maxQi: 15000,
+        speed: 200,
+        criticalRate: 0,
+        evasionRate: 0,
+        defenseRate: 0.2,
+        totalEquipmentAttack: 0,
+        mainCultivationLayer: CultivationLayer.daCheng,
       ),
       numbers: numbers,
     );

@@ -4,19 +4,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
-import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
+import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 
+import '../../../../support/combatant_snapshot_fixture.dart';
 import '../../../../support/test_data.dart';
 
 /// Phase 0A charge/破招纵切生产接线测:真实 stage_02_05(顶层 chargeSkillId
@@ -24,41 +24,32 @@ import '../../../../support/test_data.dart';
 /// headless → settlement 全链,蓄力/破招事件携带真实 skill id,同 seed 可回放。
 
 /// 强档探针:快速压穿阈值(塔层口径)。
-BattleCharacter makeChargeProbePlayer(NumbersConfig numbers) =>
+CombatantSnapshot makeChargeProbePlayer(NumbersConfig numbers) =>
     _probe(numbers, internalForce: 900, equipmentAttack: 600);
 
 /// 均势档探针:战斗时长足以让招牌技倒计时走完并真实释放(主线口径)。
-BattleCharacter makeChargeProbeEvenPlayer(NumbersConfig numbers) =>
+CombatantSnapshot makeChargeProbeEvenPlayer(NumbersConfig numbers) =>
     _probe(numbers, internalForce: 350, equipmentAttack: 150);
 
-BattleCharacter _probe(
+CombatantSnapshot _probe(
   NumbersConfig numbers, {
   required int internalForce,
   required int equipmentAttack,
-}) => BattleCharacter(
+}) => testCombatantSnapshot(
   characterId: 1,
   name: 'charge_probe',
   realmTier: RealmTier.xueTu,
   realmLayer: RealmLayer.dengFeng,
   school: TechniqueSchool.lingQiao,
   maxHp: 20000,
-  currentHp: 20000,
   internalForce: internalForce,
   maxQi: 100,
-  currentQi: 100,
   speed: 200,
   criticalRate: numbers.combat.critical.baseRate,
   evasionRate: 0,
   defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0,
   totalEquipmentAttack: equipmentAttack,
   mainCultivationLayer: CultivationLayer.chuKui,
-  availableSkills: const [],
-  skillCooldowns: const {},
-  activeBuffs: const [],
-  actionPoint: 0,
-  isAlive: true,
-  teamSide: 0,
-  slotIndex: 0,
 );
 
 void main() {
@@ -72,9 +63,7 @@ void main() {
     final numbers = repo.numbers;
     final mapping = Phase0aStageContentMapper.map(
       stage: repo.getStage('stage_02_05'),
-      playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-        makeChargeProbePlayer(numbers),
-      ),
+      playerSnapshot: makeChargeProbePlayer(numbers),
       numbers: numbers,
     );
 
@@ -118,9 +107,7 @@ void main() {
   test('stage_02_05 headless:真实 skill id 贯穿蓄力事件与结算,可回放', () {
     final numbers = repo.numbers;
     // 均势档玩家:战斗时长足以让双入口蓄力倒计时走完并真实释放招牌技。
-    final playerSnapshot = Legacy3v3CombatantAdapter.toSnapshot(
-      makeChargeProbeEvenPlayer(numbers),
-    );
+    final playerSnapshot = makeChargeProbeEvenPlayer(numbers);
     final mapping = Phase0aStageContentMapper.map(
       stage: repo.getStage('stage_02_05'),
       playerSnapshot: playerSnapshot,
@@ -201,9 +188,7 @@ void main() {
     final floor = repo.towerFloors.firstWhere(
       (candidate) => candidate.floorIndex == 7,
     );
-    final playerSnapshot = Legacy3v3CombatantAdapter.toSnapshot(
-      makeChargeProbePlayer(numbers),
-    );
+    final playerSnapshot = makeChargeProbePlayer(numbers);
     final mapping = Phase0aStageContentMapper.mapTower(
       floor: floor,
       playerSnapshot: playerSnapshot,
@@ -265,9 +250,7 @@ void main() {
     final numbers = repo.numbers;
     final mapping = Phase0aStageContentMapper.map(
       stage: repo.getStage('stage_02_05'),
-      playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-        makeChargeProbeEvenPlayer(numbers),
-      ),
+      playerSnapshot: makeChargeProbeEvenPlayer(numbers),
       numbers: numbers,
     );
     final boss = mapping.initialState.enemies.single;

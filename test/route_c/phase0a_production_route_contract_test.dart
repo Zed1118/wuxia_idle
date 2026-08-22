@@ -100,4 +100,33 @@ void main() {
       reason: '生产模块不得依赖待删旧核:\n${violations.join('\n')}',
     );
   });
+
+  test('Phase 0A 核心测试 fixture 不得借用待删旧核', () {
+    const roots = [
+      'test/features/battle/application/phase0a',
+      'test/features/battle/domain/phase0a',
+      'test/features/battle/presentation/phase0a',
+    ];
+    final forbiddenImport = RegExp(
+      r'''^import\s+['"][^'"]*/battle/(?:application|domain|presentation)/(?!phase0a/)''',
+      multiLine: true,
+    );
+    final violations = <String>[];
+
+    for (final root in roots) {
+      for (final entity in Directory(root).listSync(recursive: true)) {
+        if (entity is! File || !entity.path.endsWith('.dart')) continue;
+        final source = entity.readAsStringSync();
+        for (final match in forbiddenImport.allMatches(source)) {
+          violations.add('${entity.path}: ${match.group(0)}');
+        }
+      }
+    }
+
+    expect(
+      violations,
+      isEmpty,
+      reason: 'Phase 0A 测试不得随旧核删除丢失:\n${violations.join('\n')}',
+    );
+  });
 }
