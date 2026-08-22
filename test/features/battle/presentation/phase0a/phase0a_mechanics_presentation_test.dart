@@ -5,6 +5,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import 'package:wuxia_idle/features/debug/application/phase0a_debug_battle_fixture.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
@@ -73,8 +74,10 @@ void main() {
       final laneOffsets = guardianLabelLanes
           .map((lane) => lane.transform.getTranslation().x)
           .toList();
-      expect(laneOffsets.any((offset) => offset < 0), isTrue);
-      expect(laneOffsets.any((offset) => offset > 0), isTrue);
+      expect(laneOffsets.toSet(), {
+        -Phase0aPresentationTokens.guardianLabelLaneOffset,
+        Phase0aPresentationTokens.guardianLabelLaneOffset,
+      });
 
       var breakSent = false;
       var sawIntercept = false;
