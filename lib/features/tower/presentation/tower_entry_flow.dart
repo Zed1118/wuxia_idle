@@ -23,7 +23,9 @@ import '../../battle/application/battle_resolution.dart';
 import '../../battle/application/combat_progression_settlement_service.dart';
 import '../../battle/application/post_combat_invalidation.dart';
 import '../../../shared/battle_shared/derived_stats.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../battle/domain/auto_play_mode.dart';
+import '../../battle/domain/battle_state.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../features/equipment/application/drop_service.dart';
@@ -59,8 +61,16 @@ import '../../../shared/utils/math_random.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
+import '../application/phase0a_tower_gate.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../../weapon_codex/application/equipment_catalog_hook.dart';
+import 'phase0a_tower_battle_host.dart';
+
+typedef TowerBattleExit = ({
+  bool won,
+  bool surrendered,
+  CombatSettlementSnapshot? settlement,
+});
 
 /// Phase 3 T43 爬塔进入流程串联。
 ///
@@ -82,6 +92,8 @@ Future<void> runTowerFlow({
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
   Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
+  @visibleForTesting
+  Future<TowerBattleExit> Function()? phase0aBattleOutcomeForTest,
   @visibleForTesting
   Future<TowerClearResult> Function(int floorIndex, int elapsedMs)?
   clearRecorderForTest,
@@ -106,16 +118,26 @@ Future<void> runTowerFlow({
   // P0.2 #40 Phase 2:计时本次战斗耗时(从 BattleScreen push 起到 onVictory/Defeat
   // 回调触发,含 push/pop 动画 ≈ 600ms 误差,可接受;不为 test 注入路径计时)
   final stopwatch = Stopwatch()..start();
-  final ({bool won, bool surrendered}) battleExit;
+  final TowerBattleExit battleExit;
   if (battleOutcomeForTest != null) {
-    battleExit = await battleOutcomeForTest();
+    final legacyExit = await battleOutcomeForTest();
+    battleExit = (
+      won: legacyExit.won,
+      surrendered: legacyExit.surrendered,
+      settlement: null,
+    );
   } else if (battleRunnerForTest != null) {
-    battleExit = (won: await battleRunnerForTest(), surrendered: false);
+    battleExit = (
+      won: await battleRunnerForTest(),
+      surrendered: false,
+      settlement: null,
+    );
   } else {
     battleExit = await _runTowerBattle(
       context: context,
       ref: ref,
       floor: floor,
+      phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
     );
   }
   stopwatch.stop();
@@ -208,6 +230,7 @@ Future<void> runTowerFlow({
     ref: ref,
     floor: floor,
     isFirstClear: clearResult.isFirstClear,
+    settlementSnapshot: battleExit.settlement,
   );
   final advancements = victoryRes.advancements;
   final resonanceUpgrades = victoryRes.resonanceUpgrades;
@@ -362,12 +385,19 @@ Future<void> runTowerFlow({
 
 /// 推 BattleScreen 并 wait 胜/败/投降回调；返回 (won, surrendered)。
 /// H3: surrendered=true 时 caller 跳过 recordDefeat 统计直接返回。
-Future<({bool won, bool surrendered})> _runTowerBattle({
+Future<TowerBattleExit> _runTowerBattle({
   required BuildContext context,
   required WidgetRef ref,
   required TowerFloorDef floor,
+  Future<TowerBattleExit> Function()? phase0aBattleOutcomeForTest,
 }) async {
-  final completer = Completer<({bool won, bool surrendered})>();
+  if (Phase0aTowerGate.shouldUsePhase0a(floor)) {
+    if (phase0aBattleOutcomeForTest != null) {
+      return phase0aBattleOutcomeForTest();
+    }
+    return _runPhase0aTowerBattle(context: context, floor: floor);
+  }
+  final completer = Completer<TowerBattleExit>();
   // 不 await push:胜利时 BattleScreen 留栈,由 runTowerFlow 播完仪式/结算后再 pop。
   Navigator.of(context)
       .push<void>(
@@ -376,17 +406,29 @@ Future<({bool won, bool surrendered})> _runTowerBattle({
             floor: floor,
             onVictory: () {
               if (!completer.isCompleted) {
-                completer.complete((won: true, surrendered: false));
+                completer.complete((
+                  won: true,
+                  surrendered: false,
+                  settlement: null,
+                ));
               }
             },
             onDefeat: () {
               if (!completer.isCompleted) {
-                completer.complete((won: false, surrendered: false));
+                completer.complete((
+                  won: false,
+                  surrendered: false,
+                  settlement: null,
+                ));
               }
             },
             onSurrender: () {
               if (!completer.isCompleted) {
-                completer.complete((won: false, surrendered: true));
+                completer.complete((
+                  won: false,
+                  surrendered: true,
+                  settlement: null,
+                ));
               }
             },
           ),
@@ -394,7 +436,50 @@ Future<({bool won, bool surrendered})> _runTowerBattle({
       )
       .then((_) {
         if (!completer.isCompleted) {
-          completer.complete((won: false, surrendered: false));
+          completer.complete((
+            won: false,
+            surrendered: false,
+            settlement: null,
+          ));
+        }
+      });
+  return completer.future;
+}
+
+Future<TowerBattleExit> _runPhase0aTowerBattle({
+  required BuildContext context,
+  required TowerFloorDef floor,
+}) async {
+  final completer = Completer<TowerBattleExit>();
+  Navigator.of(context)
+      .push<void>(
+        MaterialPageRoute(
+          builder: (_) => Phase0aTowerBattleHost(
+            floor: floor,
+            onVictory: (settlement) {
+              if (!completer.isCompleted) {
+                completer.complete((
+                  won: true,
+                  surrendered: false,
+                  settlement: settlement,
+                ));
+              }
+            },
+            onDefeat: (settlement) {
+              if (!completer.isCompleted) {
+                completer.complete((
+                  won: false,
+                  surrendered: false,
+                  settlement: settlement,
+                ));
+              }
+            },
+          ),
+        ),
+      )
+      .then((_) {
+        if (!completer.isCompleted) {
+          completer.complete((won: false, surrendered: true, settlement: null));
         }
       });
   return completer.future;
@@ -428,6 +513,7 @@ applyTowerVictoryResolution({
   required WidgetRef ref,
   required TowerFloorDef floor,
   required bool isFirstClear,
+  CombatSettlementSnapshot? settlementSnapshot,
 }) async {
   const empty = (
     advancements: <AdvancementEntry>[],
@@ -437,12 +523,27 @@ applyTowerVictoryResolution({
   );
   final isar = ref.read(isarProvider);
   if (isar == null) return empty;
-  final finalState = ref.read(battleProvider);
-  if (!finalState.isFinished) return empty;
-  final stats = BattleStatsSummary.from(finalState);
+  final BattleState? legacyFinalState;
+  final CombatSettlementSnapshot combatSettlement;
+  if (settlementSnapshot != null) {
+    legacyFinalState = null;
+    combatSettlement = settlementSnapshot;
+  } else {
+    final finalState = ref.read(battleProvider);
+    if (!finalState.isFinished) return empty;
+    legacyFinalState = finalState;
+    combatSettlement = BattleResolutionService.snapshotFromBattleState(
+      finalState,
+    );
+  }
+  if (!combatSettlement.isFinished) return empty;
+  final stats = BattleStatsSummary.fromSettlement(combatSettlement);
 
   final save = await isar.saveDatas.get(0);
-  final ids = save?.activeCharacterIds ?? const <int>[];
+  final participantIds = combatSettlement.participantCharacterIds;
+  final ids = (save?.activeCharacterIds ?? const <int>[])
+      .where(participantIds.contains)
+      .toList(growable: false);
   if (ids.isEmpty) return empty;
 
   final characters = <Character>[];
@@ -483,8 +584,8 @@ applyTowerVictoryResolution({
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
 
-  final battleResult = BattleResolutionService.resolve(
-    finalState: finalState,
+  final battleResult = BattleResolutionService.resolveSnapshot(
+    settlement: combatSettlement,
     participatingCharacters: characters,
     equipmentsByCharacter: equipsByCh,
     techniquesByCharacter: techsByCh,
@@ -551,13 +652,20 @@ applyTowerVictoryResolution({
   });
 
   // 第七阶段 批一:派生英雄镜头数据（本场最高输出玩家）。纯展示，不改数值。
-  final heroCamera = deriveHeroCameraData(
-    finalState: finalState,
-    characters: characters,
-    bossName: floor.enemyTeam.isNotEmpty
-        ? floor.enemyTeam.last.name
-        : UiStrings.towerFloorLabel(floor.floorIndex),
-  );
+  final bossName = floor.enemyTeam.isNotEmpty
+      ? floor.enemyTeam.last.name
+      : UiStrings.towerFloorLabel(floor.floorIndex);
+  final heroCamera = legacyFinalState == null
+      ? deriveHeroCameraDataFromDamageTotals(
+          damageByCharacterId: combatSettlement.damageByCharacterId,
+          characters: characters,
+          bossName: bossName,
+        )
+      : deriveHeroCameraData(
+          finalState: legacyFinalState,
+          characters: characters,
+          bossName: bossName,
+        );
 
   return (
     advancements: advancements,

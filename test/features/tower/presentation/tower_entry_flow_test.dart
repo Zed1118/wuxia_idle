@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/tower/application/phase0a_tower_gate.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
@@ -11,6 +13,8 @@ import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 
+import '../../../support/test_data.dart';
+
 /// T43 runTowerFlow widget 测试（@visibleForTesting DI 注入）。
 ///
 /// 全部测试走 battleRunnerForTest / clearRecorderForTest / defeatRecorderForTest
@@ -19,6 +23,16 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 /// 测试层 fixture 均用空 enemyTeam + null narrativeId，
 /// 确保 StageBattleSetup / NarrativeLoader 完全绕过。
 void main() {
+  late GameRepository repo;
+
+  setUpAll(() async {
+    repo = await loadTestGameRepository();
+  });
+
+  tearDown(() {
+    Phase0aTowerGate.testOverride = null;
+  });
+
   // ── fixtures ─────────────────────────────────────────────────────────────
 
   const normalFloor = TowerFloorDef(
@@ -44,7 +58,9 @@ void main() {
 
   Widget harness({
     required TowerFloorDef floor,
-    required Future<bool> Function() battleRunner,
+    Future<bool> Function()? battleRunner,
+    Future<({bool won, bool surrendered})> Function()? battleOutcome,
+    Future<TowerBattleExit> Function()? phase0aBattleOutcome,
     required Future<TowerClearResult> Function(int floorIndex, int elapsedMs)
     clearRecorder,
     required Future<void> Function() defeatRecorder,
@@ -57,6 +73,8 @@ void main() {
         home: _HarnessPage(
           floor: floor,
           battleRunner: battleRunner,
+          battleOutcome: battleOutcome,
+          phase0aBattleOutcome: phase0aBattleOutcome,
           clearRecorder: clearRecorder,
           defeatRecorder: defeatRecorder,
         ),
@@ -65,6 +83,77 @@ void main() {
   }
 
   // ── tests ─────────────────────────────────────────────────────────────────
+
+  test('Phase0aTowerGate 默认关，门开覆盖全部合法生产塔层', () {
+    expect(Phase0aTowerGate.enabled, isFalse);
+    Phase0aTowerGate.testOverride = true;
+    for (final floor in repo.towerFloors) {
+      expect(
+        Phase0aTowerGate.shouldUsePhase0a(floor),
+        isTrue,
+        reason: 'tower_${floor.floorIndex}',
+      );
+    }
+    expect(
+      Phase0aTowerGate.shouldUsePhase0a(normalFloor),
+      isFalse,
+      reason: '空敌队 fixture 必须回落旧入口，不进入 0A 错误屏',
+    );
+  });
+
+  testWidgets('门开 + 0A victory → 复用原 clear/胜利仪式链', (tester) async {
+    Phase0aTowerGate.testOverride = true;
+    final floor = repo.getTowerFloor(1);
+    var phase0aConsumed = false;
+    int? recordedFloor;
+    await tester.pumpWidget(
+      harness(
+        floor: floor,
+        phase0aBattleOutcome: () async {
+          phase0aConsumed = true;
+          return (won: true, surrendered: false, settlement: null);
+        },
+        clearRecorder: (floorIndex, _) async {
+          recordedFloor = floorIndex;
+          return (isFirstClear: true, highestAfter: floorIndex);
+        },
+        defeatRecorder: () async {},
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('start'));
+    await tester.pumpAndSettle();
+
+    expect(phase0aConsumed, isTrue);
+    expect(recordedFloor, floor.floorIndex);
+    expect(find.text(UiStrings.towerVictoryConfirm), findsOneWidget);
+  });
+
+  testWidgets('门开 + 0A 中途退出 → clear/defeat 均零消费', (tester) async {
+    Phase0aTowerGate.testOverride = true;
+    final floor = repo.getTowerFloor(1);
+    var clearCalled = false;
+    var defeatCalled = false;
+    await tester.pumpWidget(
+      harness(
+        floor: floor,
+        phase0aBattleOutcome: () async =>
+            (won: false, surrendered: true, settlement: null),
+        clearRecorder: (_, _) async {
+          clearCalled = true;
+          return (isFirstClear: false, highestAfter: 0);
+        },
+        defeatRecorder: () async => defeatCalled = true,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('start'));
+    await tester.pumpAndSettle();
+
+    expect(clearCalled, isFalse);
+    expect(defeatCalled, isFalse);
+    expect(find.text('done'), findsOneWidget);
+  });
 
   testWidgets('普通层胜利 → clearRecorder 以正确 floorIndex 被调用', (tester) async {
     int? recordedFloor;
@@ -221,12 +310,16 @@ class _HarnessPage extends ConsumerStatefulWidget {
   const _HarnessPage({
     required this.floor,
     required this.battleRunner,
+    required this.battleOutcome,
+    required this.phase0aBattleOutcome,
     required this.clearRecorder,
     required this.defeatRecorder,
   });
 
   final TowerFloorDef floor;
-  final Future<bool> Function() battleRunner;
+  final Future<bool> Function()? battleRunner;
+  final Future<({bool won, bool surrendered})> Function()? battleOutcome;
+  final Future<TowerBattleExit> Function()? phase0aBattleOutcome;
   final Future<TowerClearResult> Function(int floorIndex, int elapsedMs)
   clearRecorder;
   final Future<void> Function() defeatRecorder;
@@ -253,6 +346,8 @@ class _HarnessPageState extends ConsumerState<_HarnessPage> {
                   ref: ref,
                   floor: widget.floor,
                   battleRunnerForTest: widget.battleRunner,
+                  battleOutcomeForTest: widget.battleOutcome,
+                  phase0aBattleOutcomeForTest: widget.phase0aBattleOutcome,
                   clearRecorderForTest: widget.clearRecorder,
                   defeatRecorderForTest: widget.defeatRecorder,
                 );
