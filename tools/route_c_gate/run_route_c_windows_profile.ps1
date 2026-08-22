@@ -89,6 +89,7 @@ for ($Index = 1; $Index -le $Repeat; $Index++) {
     "--battle-profile-warmup-seconds=12",
     "--battle-profile-cooldown-seconds=30",
     "--battle-profile-viewport=$Viewport",
+    "--battle-profile-native-content-viewport=true",
     "--battle-profile-auto-close=true"
   )
   & $Launcher @Arguments 2>&1 | Tee-Object -FilePath (Join-Path $RunDirectory "run.log")

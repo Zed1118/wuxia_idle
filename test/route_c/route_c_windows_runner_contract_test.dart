@@ -18,6 +18,7 @@ void main() {
       expect(runner, contains('sample-seconds=60'));
       expect(runner, contains('warmup-seconds=12'));
       expect(runner, contains('cooldown-seconds=30'));
+      expect(runner, contains('native-content-viewport=true'));
       expect(runner, isNot(contains('phase0minus_probe.exe')));
       expect(runner, isNot(contains('probe_scenarios.yaml')));
       expect(runner, contains('GC_TELEMETRY_COLLECTED'));
@@ -41,6 +42,10 @@ void main() {
       source,
       contains('Scale(1280, scale_factor), Scale(720, scale_factor)'),
     );
+
+    final entrypoint = File('windows/runner/main.cpp').readAsStringSync();
+    expect(entrypoint, contains('ProfileViewportFromArguments'));
+    expect(entrypoint, contains('--battle-profile-viewport='));
   });
 
   test(
