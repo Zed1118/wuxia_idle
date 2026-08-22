@@ -13,10 +13,10 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/features/battle/application/legacy_inner_demon_mirror_builder.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/cultivation/application/progression_gate_service.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
-import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
 import "../support/isar_test_support.dart";
 import '../support/test_data.dart';
 
@@ -185,7 +185,7 @@ void main() {
 
         for (final (stageId, tier, layer) in stageLayers) {
           final left = buildPlayerTeam(tier, layer);
-          final right = InnerDemonService.buildMirrorEnemyTeam(
+          final right = LegacyInnerDemonMirrorBuilder.build(
             playerTeam: left,
             stageId: stageId,
             innerDemonDef: innerDemonDef,
@@ -278,7 +278,7 @@ void main() {
         // (R3 在 inner_demon_service_test 单测已验,本 R5.2 走真 yaml 数据)。
         final left = buildPlayerTeam(RealmTier.wuSheng, RealmLayer.dengFeng);
         final innerDemonDef = GameRepository.instance.numbers.innerDemon;
-        final right = InnerDemonService.buildMirrorEnemyTeam(
+        final right = LegacyInnerDemonMirrorBuilder.build(
           playerTeam: left,
           stageId: 'stage_inner_demon_07',
           innerDemonDef: innerDemonDef,

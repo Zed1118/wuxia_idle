@@ -10,11 +10,11 @@ import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
-import '../../inner_demon/application/inner_demon_service.dart';
 import '../../jianghu/application/npc_relation_service.dart';
 import '../../../shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 import 'legacy_3v3_combatant_adapter.dart';
 import 'legacy_enmity_battle_modifier.dart';
+import 'legacy_inner_demon_mirror_builder.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 
 /// 关卡战斗准备（Phase 3 T37，对应 PROGRESS #22 销账）。
@@ -39,7 +39,7 @@ class StageBattleSetup {
   /// 拼装 (left, right) 战斗双方，准备调 `startBattle`（主线 / 心魔版）。
   ///
   /// **心魔关分支**（1.0 P2.2 §12.1，Batch 2.2.B）：stageType == innerDemon
-  /// 时右队走 [InnerDemonService.buildMirrorEnemyTeam] 镜像左队 +10-20% 强化
+  /// 时右队走 [LegacyInnerDemonMirrorBuilder] 镜像左队 +10-20% 强化
   /// （§5.4 cap），不走 yaml `enemyTeam`（心魔关 yaml `enemyTeam: []`）。
   ///
   /// [cycleIndex] 默认 1（cycle-1 行为与旧版完全一致，零回归）。
@@ -53,7 +53,7 @@ class StageBattleSetup {
       left = _applyReadableFirstClearOpeningCooldown(left);
     }
     final right = stage.stageType == StageType.innerDemon
-        ? InnerDemonService.buildMirrorEnemyTeam(
+        ? LegacyInnerDemonMirrorBuilder.build(
             playerTeam: left,
             stageId: stage.id,
             innerDemonDef: GameRepository.instance.numbers.innerDemon,
@@ -79,7 +79,7 @@ class StageBattleSetup {
 
   /// 心魔关脆弱窗口蓄力技解析（05/06 机制化心魔）。config 配了
   /// `mirror_charge_skill_id` 时从 GameRepository 取 SkillDef 注入镜像；未配
-  /// （旧配置 / 无机制关）→ null。[InnerDemonService] 是纯函数不读 Isar，故在
+  /// （旧配置 / 无机制关）→ null。legacy builder 不读 Isar，故在
   /// 此 caller 侧解析后传入。
   static SkillDef? _resolveInnerDemonChargeSkill() {
     final id = GameRepository.instance.numbers.innerDemon.mirrorChargeSkillId;

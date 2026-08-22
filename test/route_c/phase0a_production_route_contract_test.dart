@@ -44,4 +44,32 @@ void main() {
       reason: '生产消费面必须永久单路由 Phase 0A:\n${violations.join('\n')}',
     );
   });
+
+  test('引擎中立服务不得反向依赖旧 3v3 状态', () {
+    const files = [
+      'lib/shared/audio/audio_assets.dart',
+      'lib/features/injury/application/injury_service.dart',
+      'lib/features/jianghu/application/enmity_battle_modifier.dart',
+      'lib/features/inner_demon/application/inner_demon_service.dart',
+    ];
+    final violations = <String>[];
+
+    for (final path in files) {
+      final source = File(path).readAsStringSync();
+      if (source.contains('battle/domain/battle_state.dart')) {
+        violations.add('$path: imports retired 3v3 state');
+      }
+      if (source.contains('BattleState') ||
+          source.contains('BattleAction') ||
+          source.contains('BattleCharacter')) {
+        violations.add('$path: mentions retired 3v3 domain types');
+      }
+    }
+
+    expect(
+      violations,
+      isEmpty,
+      reason: '中立服务必须可独立于旧 3v3 删除:\n${violations.join('\n')}',
+    );
+  });
 }

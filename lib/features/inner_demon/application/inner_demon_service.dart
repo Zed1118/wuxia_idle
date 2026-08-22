@@ -2,9 +2,6 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/technique.dart';
-import '../../../data/defs/skill_def.dart';
-import '../../../shared/strings.dart';
-import '../../battle/domain/battle_state.dart';
 import '../../../data/defs/inner_demon_def.dart';
 
 /// 心魔关战败惩罚结果（in-place 改 ch.internalForce + mainTech.cultivationProgress
@@ -28,7 +25,6 @@ class InnerDemonPenaltyResult {
 /// 心魔系统 application 层（1.0 P2.2 §12.1）。
 ///
 /// **已实装**：[isLayerLocked] 升层 unlock 拦截（Batch 2.2.A）、
-/// [buildMirrorEnemyTeam] 镜像敌队构造（Batch 2.2.B）、
 /// [applyFailurePenalty] 战败惩罚 + 余毒（M6，2026-06-16）。
 ///
 /// 设计要点（memory `feedback_avoid_over_engineer_abstraction`）：
@@ -65,86 +61,6 @@ class InnerDemonService {
 
   static int _absoluteIndex(RealmTier tier, RealmLayer layer) =>
       tier.index * RealmLayer.values.length + layer.index;
-
-  /// 心魔关右队镜像 enemy team 构造（Batch 2.2.B）。
-  ///
-  /// 深拷贝 [playerTeam] 为右队，按 [stageId] 查 mirror_buff_per_stage 强化
-  /// maxHp / internalForce / totalEquipmentAttack ×(1+buff)，clamp §5.4 红线
-  /// `mirror_caps`（HP ≤20k / IF ≤15k / attack ≤2k）。
-  ///
-  /// **重置字段**：
-  ///   - `characterId` → `-(slotIndex+1)`（避与玩家 Isar autoIncrement 冲突，
-  ///     沿 StageBattleSetup 现有约定）
-  ///   - `name` → `'心魔·<原名>'`
-  ///   - `currentHp` → 满值；真气保持玩家开战快照
-  ///   - `skillCooldowns` / `activeBuffs` → 空（镜像不继承玩家战中状态 + 不继承
-  ///     founderBuff，避免「玩家镜像比玩家自己更强」的双重 buff）
-  ///   - `actionPoint` → 0
-  ///   - `teamSide` → 1（右队）
-  ///   - `slotIndex` → 对应玩家 slot
-  ///   - `internalInjury` → null（开战无内伤）
-  ///   - `iconPath` → null（Batch 2.3 美术再决定，先走 character_avatar 首字降级）
-  ///
-  /// **保留字段**：realmTier / realmLayer / school / speed / criticalRate /
-  /// evasionRate / defenseRate / mainCultivationLayer / availableSkills /
-  /// swordSongResonanceActive（=「与自己一模一样的对手」语义）。
-  ///
-  /// **inner_demon_07 双镜像处理**（spec §一 末关）：当前实装为单副本 +20%
-  /// （与 inner_demon_06 同强化）。BattleState slot ∈ [0,2] 限 3v3，6 副本超
-  /// 上限；真正的双镜像（6v3 / 连战）留 Batch 2.5 R5 红线测时讨论。
-  ///
-  /// **终局机制型 Boss 批次3 · 脆弱窗口注入（05/06/07）**：当 [stageId] 在
-  /// `mirrorVulnerabilityPerStage` 有配置时（05/06/07 均已配），把该关的
-  /// `outOfWindowDamageMult` 注入镜像 `vulnerabilityMult`（窗口外承伤减免），
-  /// 并把 [mirrorChargeSkill] 注入镜像 `chargeSkillId` + `availableSkills`
-  /// （周期性蓄力开窗，CD 复发）。这是**有意的机制化心魔进阶形态**，非纯镜像：
-  /// 削弱「秒杀」，逼玩家在蓄力/踉跄窗口内爆发。01-04 无 vuln 配置 → 维持
-  /// 纯镜像（[mirrorChargeSkill] 传入也不注入，只对有 vuln 条目的关生效）。
-  ///
-  /// [InnerDemonService] 保持纯函数（不读 Isar/GameRepository），故 SkillDef
-  /// 由 caller（StageBattleSetup）解析后注入。缺省 [mirrorChargeSkill] 时
-  /// （现有 callsite / 单测 fixture）不注入蓄力技 → 零回归。
-  static List<BattleCharacter> buildMirrorEnemyTeam({
-    required List<BattleCharacter> playerTeam,
-    required String stageId,
-    required InnerDemonDef innerDemonDef,
-    SkillDef? mirrorChargeSkill,
-  }) {
-    final buff = innerDemonDef.mirrorBuffPerStage[stageId] ?? 0.0;
-    final caps = innerDemonDef.mirrorCaps;
-    final vuln = innerDemonDef.mirrorVulnerabilityPerStage[stageId];
-
-    // 脆弱窗口是「vuln 减伤 + 蓄力技开窗」的**耦合机制**：二者必须原子注入。
-    // 只注 vuln 不注蓄力技 → 镜像永不进蓄力态 → vulnerabilityMultOf 永远返窗口外
-    // 减伤 → 永久免疫无解（footgun，实测 balance R5.1 纯镜像 callsite 会踩）。
-    // 故仅当 caller 同时提供 [mirrorChargeSkill] 时注入（生产 StageBattleSetup
-    // 恒解析并传入）；未提供（旧 callsite / 纯镜像 balance 测）→ 退化纯镜像。
-    // fromYaml 已强制「配 vuln 必配 mirror_charge_skill_id」，此处是 service 层
-    // 的二次防御。
-    final injectMechanic = vuln != null && mirrorChargeSkill != null;
-
-    return [
-      for (var i = 0; i < playerTeam.length && i < 3; i++)
-        _mirror(
-          playerTeam[i],
-          buff: buff,
-          caps: caps,
-          slotIndex: i,
-          vulnerabilityMult: injectMechanic ? vuln.outOfWindowDamageMult : null,
-          chargeSkill: injectMechanic ? mirrorChargeSkill : null,
-          attackMultiplier: injectMechanic
-              ? innerDemonDef.mechanicMirrorAttackMultiplier
-              : 1 + buff,
-          outputMultiplier: injectMechanic
-              ? innerDemonDef.mechanicMirrorOutputMultiplierPerStage[stageId] ??
-                    1.0
-              : 1.0,
-          startActionPoint: injectMechanic
-              ? innerDemonDef.mechanicMirrorStartActionPoint
-              : 0,
-        ),
-    ];
-  }
 
   /// 心魔关战败惩罚（M6）。对单个**有主修**的参战角色调用一次。
   ///
@@ -189,59 +105,6 @@ class InnerDemonService {
       progressBefore: progressBefore,
       progressAfter: mainTech.cultivationProgress,
       residueHoursApplied: residueHours,
-    );
-  }
-
-  static BattleCharacter _mirror(
-    BattleCharacter src, {
-    required double buff,
-    required InnerDemonMirrorCaps caps,
-    required int slotIndex,
-    double? vulnerabilityMult,
-    SkillDef? chargeSkill,
-    required double attackMultiplier,
-    required double outputMultiplier,
-    required int startActionPoint,
-  }) {
-    final maxHp = (src.maxHp * (1 + buff)).round().clamp(1, caps.hpMax);
-    final internalForce = (src.internalForce * (1 + buff)).round().clamp(
-      1,
-      caps.internalForceMax,
-    );
-    final attack = (src.totalEquipmentAttack * attackMultiplier).round().clamp(
-      0,
-      caps.attackPowerMax,
-    );
-
-    // 脆弱窗口机制关（05/06/07）：追加蓄力技进 availableSkills（去重），否则
-    // battle_ai._pickSkill 只迭代 availableSkills，永远选不到 chargeSkillId，
-    // 蓄力=死机制、窗口永不开=永久免疫无解（镜像 stage_battle_setup.dart:448
-    // 识破 pattern）。
-    final skills =
-        chargeSkill != null &&
-            !src.availableSkills.any((s) => s.id == chargeSkill.id)
-        ? [...src.availableSkills, chargeSkill]
-        : src.availableSkills;
-
-    return src.copyWith(
-      characterId: -(slotIndex + 1),
-      name: UiStrings.innerDemonMirrorName(src.name),
-      maxHp: maxHp,
-      currentHp: maxHp,
-      internalForce: internalForce,
-      totalEquipmentAttack: attack,
-      outputMultiplier: src.outputMultiplier * outputMultiplier,
-      availableSkills: skills,
-      skillCooldowns: const {},
-      activeBuffs: const [],
-      actionPoint: startActionPoint,
-      isAlive: true,
-      teamSide: 1,
-      slotIndex: slotIndex,
-      internalInjury: null,
-      iconPath: null,
-      vulnerabilityMult: vulnerabilityMult,
-      chargeSkillId: chargeSkill?.id,
     );
   }
 }

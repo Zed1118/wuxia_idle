@@ -12,9 +12,9 @@ import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/features/battle/application/legacy_inner_demon_mirror_builder.dart';
 import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart'
     show RealmUtils;
-import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
 import '../support/test_data.dart';
 
 /// 终局机制型 Boss 批次3 · Task 5（修订）：心魔·真（stage_inner_demon_07）
@@ -230,7 +230,7 @@ List<_Outcome> _sweep(
   final charge = repo.getSkill('skill_inner_demon_charge');
   final out = <_Outcome>[];
   for (var seed = 0; seed < _seeds; seed++) {
-    final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+    final mirrors = LegacyInnerDemonMirrorBuilder.build(
       playerTeam: players,
       stageId: 'stage_inner_demon_07',
       innerDemonDef: def,
@@ -279,7 +279,7 @@ void main() {
 
     // 生产路径（buildMirrorEnemyTeam + 解析蓄力技）真的把窗口注到 07 镜像上。
     final players = _team(repo, 'tech_gangmeng_menpai', 25, 6);
-    final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+    final mirrors = LegacyInnerDemonMirrorBuilder.build(
       playerTeam: players,
       stageId: 'stage_inner_demon_07',
       innerDemonDef: id,

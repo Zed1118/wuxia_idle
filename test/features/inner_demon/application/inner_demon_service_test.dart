@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/features/battle/application/legacy_inner_demon_mirror_builder.dart';
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
 import 'package:wuxia_idle/data/defs/inner_demon_def.dart';
 
@@ -313,7 +314,7 @@ void main() {
         totalEquipmentAttack: 1500,
       );
       final def = _fullDef();
-      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+      final mirrors = LegacyInnerDemonMirrorBuilder.build(
         playerTeam: [player],
         stageId: 'stage_inner_demon_01',
         innerDemonDef: def,
@@ -352,7 +353,7 @@ void main() {
         _mockPlayer(slotIndex: 1, characterId: 101, name: '徒弟甲'),
         _mockPlayer(slotIndex: 2, characterId: 102, name: '徒弟乙'),
       ];
-      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+      final mirrors = LegacyInnerDemonMirrorBuilder.build(
         playerTeam: players,
         stageId: 'stage_inner_demon_06',
         innerDemonDef: _fullDef(),
@@ -374,7 +375,7 @@ void main() {
 
     test('R2.3 def 无该 stage_id 配置 → buff=0 镜像保持原样', () {
       final player = _mockPlayer(maxHp: 12000, totalEquipmentAttack: 1500);
-      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+      final mirrors = LegacyInnerDemonMirrorBuilder.build(
         playerTeam: [player],
         stageId: 'stage_unknown',
         innerDemonDef: _fullDef(),
@@ -388,7 +389,7 @@ void main() {
         5,
         (i) => _mockPlayer(slotIndex: i % 3, characterId: 100 + i, name: 'p$i'),
       );
-      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+      final mirrors = LegacyInnerDemonMirrorBuilder.build(
         playerTeam: players,
         stageId: 'stage_inner_demon_01',
         innerDemonDef: _fullDef(),
@@ -406,7 +407,7 @@ void main() {
         maxInternalForce: 14500,
         totalEquipmentAttack: 5500,
       );
-      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+      final mirrors = LegacyInnerDemonMirrorBuilder.build(
         playerTeam: [player],
         stageId: 'stage_inner_demon_07',
         innerDemonDef: _fullDef(),
@@ -435,7 +436,7 @@ void main() {
         maxInternalForce: 3000,
         totalEquipmentAttack: 800,
       );
-      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+      final mirrors = LegacyInnerDemonMirrorBuilder.build(
         playerTeam: [player],
         stageId: 'stage_inner_demon_07',
         innerDemonDef: _fullDef(),
@@ -448,7 +449,7 @@ void main() {
 
     test('R3.3 empty def(fixture 兼容)→ 0 buff 镜像保持原样不破', () {
       final player = _mockPlayer(maxHp: 12000, totalEquipmentAttack: 1500);
-      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+      final mirrors = LegacyInnerDemonMirrorBuilder.build(
         playerTeam: [player],
         stageId: 'stage_inner_demon_01',
         innerDemonDef: InnerDemonDef.empty(),

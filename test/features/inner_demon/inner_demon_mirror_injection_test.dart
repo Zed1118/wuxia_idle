@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
+import 'package:wuxia_idle/features/battle/application/legacy_inner_demon_mirror_builder.dart';
 import 'package:wuxia_idle/data/defs/inner_demon_def.dart';
 
 /// 终局机制型 Boss 批次3 · Task 4 Part A：镜像脆弱窗口 + 蓄力技注入单元。
@@ -96,7 +96,7 @@ void main() {
         ('stage_inner_demon_05', 0.16),
         ('stage_inner_demon_06', 0.16),
       ]) {
-        final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+        final mirrors = LegacyInnerDemonMirrorBuilder.build(
           playerTeam: _team(),
           stageId: stage,
           innerDemonDef: def,
@@ -122,7 +122,7 @@ void main() {
     test('Test2 未配 vuln 的关（02，不在合成 def 映射）→ 纯镜像（三者全空/null）', () {
       // 注：生产 07 已配窗口；此处用合成 def 未列的 02 验「不在映射→不注入」，
       // 不再拿 07 当反例（曾误导，见文件头注）。
-      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+      final mirrors = LegacyInnerDemonMirrorBuilder.build(
         playerTeam: _team(),
         stageId: 'stage_inner_demon_02',
         innerDemonDef: _vulnDef(),
@@ -140,7 +140,7 @@ void main() {
     });
 
     test('Test3 stage 01 无 vuln → 同 02 纯镜像', () {
-      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+      final mirrors = LegacyInnerDemonMirrorBuilder.build(
         playerTeam: _team(),
         stageId: 'stage_inner_demon_01',
         innerDemonDef: _vulnDef(),
@@ -159,7 +159,7 @@ void main() {
     test('Test4 mirrorChargeSkill 缺省 → 原子退化纯镜像（防永久免疫 footgun）', () {
       // 脆弱窗口是「vuln 减伤 + 蓄力开窗」耦合机制：无蓄力技 → 不注 vuln，
       // 否则镜像永不进蓄力态 = 永久免疫无解（balance R5.1 纯镜像 callsite 会踩）。
-      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+      final mirrors = LegacyInnerDemonMirrorBuilder.build(
         playerTeam: _team(),
         stageId: 'stage_inner_demon_05',
         innerDemonDef: _vulnDef(),
@@ -175,7 +175,7 @@ void main() {
     });
 
     test('P1-12 镜像显式清空 iconPath,走首字降级', () {
-      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+      final mirrors = LegacyInnerDemonMirrorBuilder.build(
         playerTeam: _team(),
         stageId: 'stage_inner_demon_01',
         innerDemonDef: _vulnDef(),
