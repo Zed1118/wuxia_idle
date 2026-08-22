@@ -230,6 +230,7 @@ void main() {
         defenseRate: 0.2,
         totalEquipmentAttack: 0,
         mainCultivationLayer: CultivationLayer.daCheng,
+        includeProductionBasicAttack: true,
       ),
       numbers: numbers,
     );

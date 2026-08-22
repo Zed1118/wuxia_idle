@@ -50,6 +50,7 @@ CombatantSnapshot _probe(
   defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0,
   totalEquipmentAttack: equipmentAttack,
   mainCultivationLayer: CultivationLayer.chuKui,
+  includeProductionBasicAttack: true,
 );
 
 void main() {

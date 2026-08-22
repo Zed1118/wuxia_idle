@@ -18,6 +18,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
+import 'package:wuxia_idle/shared/battle_shared/combatant_skill_loadout.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 
 import '../../../../support/combatant_snapshot_fixture.dart';
@@ -45,6 +46,10 @@ CombatantSnapshot makeCh1Player(NumbersConfig numbers) => testCombatantSnapshot(
   defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0.0,
   totalEquipmentAttack: 130,
   mainCultivationLayer: CultivationLayer.chuKui,
+  skillLoadout: CombatantSkillLoadout(
+    basicAttack:
+        GameRepository.instance.skillDefs['skill_gangmeng_jichu_basic'],
+  ),
 );
 
 CombatantSnapshot makeBossPhasePlayer(NumbersConfig numbers) =>
@@ -63,6 +68,10 @@ CombatantSnapshot makeBossPhasePlayer(NumbersConfig numbers) =>
       defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0,
       totalEquipmentAttack: 0,
       mainCultivationLayer: CultivationLayer.chuKui,
+      skillLoadout: CombatantSkillLoadout(
+        basicAttack:
+            GameRepository.instance.skillDefs['skill_lingqiao_jichu_basic'],
+      ),
     );
 
 void main() {
@@ -76,6 +85,26 @@ void main() {
   });
 
   group('映射结构(真实数据底座)', () {
+    test('玩家快照缺真实 basicAttack 时 mapper fail-closed', () {
+      final numbers = repo.numbers;
+      expect(
+        () => Phase0aStageContentMapper.map(
+          stage: repo.getStage('stage_01_01'),
+          playerSnapshot: makeCh1Player(
+            numbers,
+          ).copyWith(skillLoadout: const CombatantSkillLoadout.empty()),
+          numbers: numbers,
+        ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            contains('缺真实 basicAttack'),
+          ),
+        ),
+      );
+    });
+
     test('stage_01_01 单敌 → 单波装配,actor 覆盖与 HP 口径沿 buildEnemyTeam', () {
       final stage = repo.getStage('stage_01_01');
       final numbers = repo.numbers;

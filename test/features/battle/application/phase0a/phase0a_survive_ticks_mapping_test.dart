@@ -24,6 +24,7 @@ CombatantSnapshot makePlayer(NumbersConfig numbers) => testCombatantSnapshot(
   defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0,
   totalEquipmentAttack: 0,
   mainCultivationLayer: CultivationLayer.chuKui,
+  includeProductionBasicAttack: true,
 );
 
 void main() {

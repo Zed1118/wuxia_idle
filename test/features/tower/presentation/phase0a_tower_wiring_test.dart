@@ -40,6 +40,7 @@ CombatantSnapshot _player(NumbersConfig numbers) => testCombatantSnapshot(
   defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0,
   totalEquipmentAttack: 130,
   mainCultivationLayer: CultivationLayer.chuKui,
+  includeProductionBasicAttack: true,
   availableSkills: const [],
   openingSkillCooldowns: const {},
   activeBuffs: const [],

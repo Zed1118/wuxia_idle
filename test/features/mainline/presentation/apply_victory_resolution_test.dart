@@ -333,6 +333,7 @@ void main() {
         name: '祖师',
         maxHp: 8000,
         currentHp: 8000,
+        includeProductionBasicAttack: true,
       ),
       numbers: noRareBonusNumbers,
     );

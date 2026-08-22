@@ -149,3 +149,7 @@ charge/破招的 24 条内容迁移必须排在这两批之后，并复用同一
   loader 与 mapper 均要求双 ID 非空且解析为真实 `SkillDef`。2026-08-23
   可达性审计证明 mapper 的双空逃生口及 synthetic clear 分支已是死代码，现已删除；
   低层隔离 fixture 仍可直接构造无 typed binding 的 Adapter，不属于 production mapping。
+- 同日继续删除 mapper 的 synthetic basic fallback：五个生产消费面由 assembler
+  保证真实 `basicAttack`，缺失时 mapper fail-closed；相关 mapper fixture 已迁到
+  仓库真实三流派入门普攻。普攻真气仍沿既有 `phase0a_arena.basic_qi_delta=0`
+  口径，未随身份迁移擅改；与真实 SkillDef 的差异登记 BACKLOG #20 待拍板。

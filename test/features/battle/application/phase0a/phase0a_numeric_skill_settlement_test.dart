@@ -39,6 +39,7 @@ void main() async {
     defenseRate: 0,
     totalEquipmentAttack: 10,
     mainCultivationLayer: CultivationLayer.chuKui,
+    includeProductionBasicAttack: true,
     availableSkills: [realSkill],
   );
   final mapping = Phase0aStageContentMapper.map(

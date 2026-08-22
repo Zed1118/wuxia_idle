@@ -372,6 +372,13 @@ final class Phase0aStageContentMapper {
         '不得静默装配零参数竞技场',
       );
     }
+    final playerBasicSkill = playerSnapshot.skillLoadout.basicAttack;
+    if (playerBasicSkill == null) {
+      throw StateError(
+        'Phase0a 纵切装配 $contentId: 玩家快照缺真实 basicAttack，'
+        '禁止从 arena 数值生成 synthetic SkillDef',
+      );
+    }
     if (enemyTeam.isEmpty &&
         (enemySnapshotsOverride?.isEmpty ?? true) &&
         (enemySnapshotWavesOverride?.isEmpty ?? true)) {
@@ -533,8 +540,7 @@ final class Phase0aStageContentMapper {
       waves: [for (final actors in actorWaves) Phase0aWave(enemies: actors)],
       combatants: List.unmodifiable(combatants),
       moveBindings: _moveBindings(
-        arena,
-        playerSnapshot,
+        playerBasicSkill,
         numericSkillBindings,
         tacticalSkillBindings,
       ),
@@ -814,20 +820,13 @@ final class Phase0aStageContentMapper {
       ),
   ]);
 
-  /// 招式绑定:basic/clear 伤害招走形态段倍率;gather 为 control-only(null)。
+  /// 招式绑定:basic/Q/R 均保留仓库真实 SkillDef 身份与效果契约。
   static Map<Phase0aDamageKind, SkillDef?> _moveBindings(
-    Phase0aArenaConfig arena,
-    CombatantSnapshot player,
+    SkillDef playerBasicSkill,
     Phase0aNumericSkillBindings numericSkills,
     _Phase0aTacticalSkillBindings tacticalSkills,
   ) => Map.unmodifiable({
-    Phase0aDamageKind.basic:
-        player.skillLoadout.basicAttack ??
-        _moveSkill(
-          id: arena.basicSkillId,
-          powerMultiplier: arena.basicPowerMultiplier,
-          qiDelta: arena.basicQiDelta,
-        ),
+    Phase0aDamageKind.basic: playerBasicSkill,
     Phase0aDamageKind.gather: tacticalSkills.gather.skill,
     Phase0aDamageKind.clear: tacticalSkills.clear.skill,
     for (final binding in numericSkills.equipped)
@@ -904,22 +903,6 @@ final class Phase0aStageContentMapper {
       ),
     );
   }
-
-  static SkillDef _moveSkill({
-    required String id,
-    required int powerMultiplier,
-    required int qiDelta,
-  }) => SkillDef(
-    id: id,
-    name: id,
-    description: id,
-    type: SkillType.normalAttack,
-    powerMultiplier: powerMultiplier,
-    qiDelta: qiDelta,
-    cooldownTurns: 0,
-    requiresManualTrigger: false,
-    visualEffect: '',
-  );
 
   static Phase0aPlayerInputAdapter _playerAdapter({
     required Phase0aArenaConfig arena,
