@@ -29,7 +29,7 @@
 
 ## 当前恢复点
 
-- 状态：已完成，待收账提交。
+- 状态：已完成，fresh checkout 自举证据已收齐。
 - 最后完成：普通增量 release 构建成功但 deep verify 因外层签名时间 03:03、
   AOT 时间 03:48 而失败；`flutter clean` 后从零重建，deep verify 通过，
   universal x86_64+arm64、169M。
@@ -39,5 +39,8 @@
   launcher SHA-256 `fd82e843…b33dd`，AOT SHA-256 `b6f74ab4…2fb80`。
   契约测试 1/1、无参数 analyze 0 issue、`bash -n`、format/diff check 通过。
 - 后审发现：本机已有 64 个 gitignored `.g.dart`，首版脚本缺 build_runner，
-  fresh checkout 不自足；已补生成步骤，待全新临时 worktree 实证。
+  fresh checkout 不自足；已补生成步骤。全新 detached worktree 起始 0 个
+  `.g.dart`，脚本生成 126 outputs 后完整 PASS：commit `c0fec07c`、
+  x86_64+arm64、169M、launcher `1da2d4ac…431d9`、AOT
+  `e9293f98…769f4`；临时 worktree 已删除。
 - 阻塞项：无。
