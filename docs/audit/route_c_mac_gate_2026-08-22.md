@@ -4,7 +4,7 @@
 - 分支：`codex/deepseek-route-c-delete-rehearsal`
 - 工程基线：`01bf00feea1165ae90c4c9b0755519b2a806e1c9`
 - 裁决：`MAC_PRODUCTION_ROOT_PROFILE_GATE_PASS`
-- 边界：由 production root Profile runner 自动启动、采集并关闭应用，不代替用户点击；六人主观 Gate 不在本裁决内。
+- 边界：由 production root Profile runner 自动启动、采集并关闭应用；2026-08-23 用户取消六人主观 Gate。
 
 ## 当前整合态
 
@@ -27,7 +27,6 @@
 
 ## 尚未验收与删除闸门
 
-- 六人主观 Gate 尚无原始证据。
 - Windows 物理机 Gate 尚未执行。
 - 因此旧 3v3 原子删除只能停留在独立候选，不允许 merge 至主线。
-- 待两个外部 Gate 齐备后，按 `docs/audit/route_c_atomic_deletion_manifest_2026-08-22.md` 原子 merge，并在整合态重新执行 Mac/Windows 全量验证。
+- 待 Windows 外部 Gate 齐备后，按 `docs/audit/route_c_atomic_deletion_manifest_2026-08-22.md` 原子 merge，并在整合态重新执行 Mac/Windows 全量验证。

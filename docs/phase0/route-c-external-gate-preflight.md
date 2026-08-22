@@ -1,79 +1,54 @@
 # Route C 外部 Gate 预检
 
-> 状态：`HUMAN_PENDING / WINDOWS_PENDING`。预检只防串包、缺样本和旧 probe 冒签，
-> 不代替真人操作或 Windows 最低档物理机采样。
+> 状态：`WINDOWS_PENDING`。2026-08-23 用户取消六人真人 Gate；Route C 外部硬锁只剩
+> Windows 物理机矩阵。预检防串包、缺样本、虚假主机声明和旧 probe 冒签。
 
 ## 对象纠偏
 
-历史 `phase0a-playtest-protocol.md` 的“旧战斗→新灰盒” AB 对照，以及
-`tools/phase0minus_probe` 的 Windows 性能矩阵，均属早期隔离 probe 证据。它们可供
-历史追溯，但不能签 Route C 生产根应用删除 Gate。
+历史 `phase0a-playtest-protocol.md` 的 AB 对照、六人问卷工具以及
+`tools/phase0minus_probe` 的旧性能矩阵只保留作历史资料，均不参与当前 Route C 裁决。
 
-新证据必须同时绑定：
+Windows 证据必须同时绑定：
 
 - 待删候选 commit；
-- 根应用 `wuxia_idle` 的 Profile AOT 载荷 SHA-256（Mac 为
-  `App.framework/Versions/A/App`，Windows 为 `data/app.so`；启动壳不作为代码版本证据）；
-- 六人使用生产可玩路由 `phase0a_battle_playable`，Windows 使用同核循环负载
-  `phase0a_battle_profile`；
-- 六人全部同包，Windows 六次全部同 AOT 载荷。
+- 根应用 `wuxia_idle` 的 Profile AOT 载荷 `data/app.so` SHA-256；
+- 生产循环负载路由 `phase0a_battle_profile`；
+- 1280×720 与 1440×900 各三次，六次使用同一 AOT、fixture 与主机 manifest。
 
-## 六人原始样本
+## Windows 物理机资格
 
-每人一个 `human-session.json`，schema 为 `route-c-human-session-v1`，只用
-`P01`–`P06` 匿名编号。除既有爽感、可读性、再战意愿外，必须原始记录：
+最低档签字设备必须满足 `phase0a-windows-physical-gate.md`：Windows 10 22H2 或
+Windows 11 64-bit、CPU 不高于 i5-8250U 目标档、UHD 620 级核显、8 GB RAM、SSD、
+插电最佳性能、60 Hz、100% 缩放、本地 Console，且可完整容纳两个目标逻辑视口。
 
-- Boss 蓄力预警是否被看到；
-- 可打断反馈是否被理解；
-- 破招后硬直是否被看到；
-- vulnerability window 是否被理解；
-- 键鼠是否由测试者本人完成；
-- 是否无溢出、卡死、实现者代打或外部污染。
+RDP、虚拟机、云机、独显、明显更强 CPU、非 60 Hz 或不实 attestation 只能用于构建和
+兼容性 smoke，不能签最低档性能 Gate。不得通过限核、降频或伪填 manifest 冒充目标硬件。
 
-在待删候选的干净 Mac 工作树上一次性构建并复制冻结包；脚本只准备包，不启动 GUI：
+## Windows 执行
 
-```bash
-tools/route_c_gate/prepare_route_c_human_package.sh HEAD \
-  build/route_c_human_gate
-```
-
-六个会话必须使用包内同一 `wuxia_idle.app`，按生成的 P01–P06 模板填写。排期固定为
-两种视口各 3 人、`idle/arpg/mixed` 各 2 人。任何姓名、邮箱、账号、电话等 PII 字段
-都会令证据 `INCONCLUSIVE`；实现者代打、外部事件污染或问卷未完成的样本不得标记
-`valid=true`。
-
-六轮完成后，重新散列回传包内的实际 AOT 载荷与 fixture，再执行机械聚合：
-
-```bash
-dart run tool/route_c_human_gate.dart aggregate \
-  --candidate HEAD \
-  --sessions build/route_c_human_gate/sessions \
-  --manifest build/route_c_human_gate/package-manifest.json \
-  --app build/route_c_human_gate/package/wuxia_idle.app/Contents/Frameworks/App.framework/Versions/A/App \
-  --fixture build/route_c_human_gate/package/phase0a_debug_battle.yaml \
-  --output build/route_c_human_gate/human-gate-summary.json
-```
-
-机械阈值为：三项评分中位数均不低于 4；至少 4/6 愿意再战；蓄力预警、打断反馈、
-硬直和 vulnerability window 各至少 5/6 被识别；键鼠本人完成与无溢出/卡死均须
-6/6；至少 5/6 无协助完成三轮；任一直接否决项为 true 都是 `LOCAL_FAIL`。
-不足六个有效样本、串包、混 fixture、PII 或完整性矛盾均为 `INCONCLUSIVE`，不会冒充
-体验失败或通过。
-
-## Windows 物理机样本
-
-保留 `phase0a-windows-physical-gate.md` 的最低档硬件、本地 Console、60Hz、100% 缩放与
-两视口各三次要求，但采样对象改为根应用 Profile 构建。每次结果目录必须有
-`manifest.json`，schema 为 `route-c-windows-production-run-v1`，路由为
-`phase0a_battle_profile`，且组合性能 Gate 已由
-生产版采样器判为 `PASS`。旧 `phase0minus_probe.exe` 结果会被预检直接拒绝。
-
-在候选 commit 的干净 Windows 工作树上执行：
-主机信息从 `tools/route_c_gate/windows_minimum_spec_manifest.template.json` 复制填写，
-不得原样使用模板。
+在候选 commit 的干净 Windows 工作树上：
 
 ```powershell
+git fetch origin codex/deepseek-route-c-delete-rehearsal
+git switch --detach origin/codex/deepseek-route-c-delete-rehearsal
 $Commit = git rev-parse HEAD
+if (git status --porcelain) { throw "worktree must be clean" }
+
+Copy-Item .\tools\route_c_gate\windows_minimum_spec_manifest.template.json `
+  .\windows_minimum_spec_manifest.captured.json
+```
+
+据实填写捕获文件，不能原样使用模板：
+
+- `status: RECORDED`；
+- 清除全部 `FILL_*` / `UNKNOWN`；
+- 填入实际 OS、CPU、GPU、driver、RAM、存储、电源、renderer、刷新率和缩放；
+- 本地 Console、非 RDP、非 VM、核显、插电和最佳性能均须有真实依据；
+- 只有机器确实不高于目标档时，才可将 attestation 项设为 `true`。
+
+关闭浏览器、IDE、录屏、更新和其他高负载程序，保持窗口可见且不要操作采样窗口：
+
+```powershell
 $Fixture = (Get-FileHash -Algorithm SHA256 .\data\phase0a_debug_battle.yaml).Hash.ToLowerInvariant()
 .\tools\route_c_gate\run_route_c_windows_matrix.ps1 `
   -HostManifest .\windows_minimum_spec_manifest.captured.json `
@@ -81,26 +56,25 @@ $Fixture = (Get-FileHash -Algorithm SHA256 .\data\phase0a_debug_battle.yaml).Has
   -ExpectedFixtureChecksum $Fixture
 ```
 
-根应用只构建一次，每次执行 12s 预热 + 60s 采样 + 30s 冷却。组合 Gate
-严格要求有效帧数、p99 总帧时、严重慢帧连续峰值、GC telemetry 与 RSS 回落；
-任一项失败即中止并保留原始目录。
+根应用只构建一次。每轮执行 12 秒预热、60 秒采样、30 秒冷却；任一轮失败即中止并保留
+原始目录。输出目录必须包含六个 run 的 `frames.jsonl`、`memory_gc.jsonl`、
+`summary.json`、`manifest.json`、`run.log`，以及冻结的 `host_manifest.json`、`app.so`、
+fixture、preflight、`SHA256SUMS.txt` 和 zip。
 
-最终预检不直接信任每轮 `manifest.json` 自报的 `composite_gate=PASS`：它会重新读取
-`frames.jsonl` 与 `memory_gc.jsonl`，独立计算样本数、p99、build/raster/严重慢帧连续峰值、
-GC 状态和 RSS 首尾值，再与 `summary.json` 逐项对照；同时重新散列并校验
-`host_manifest.json`，拒绝独显、RDP、虚拟机、非 60Hz/100% 缩放或未填 renderer。
-矩阵包同时冻结承载 Dart 代码的 `app.so` 与 `phase0a_debug_battle.yaml`，最终预检会重新散列
-二者并与六轮 manifest 对照，不能只填写一个看似合法的 64 位哈希冒签。
+## 主端独立裁决
 
-## 执行
+回传完整 `build\route_c_windows_matrix\<timestamp>.zip`，不能只发截图或抄指标。主端执行：
 
 ```bash
 dart run tool/route_c_gate_preflight.dart \
   --candidate <candidate-ref> \
-  --human-dir <six-human-results> \
-  --windows-dir <windows-matrix-results> \
+  --windows-dir <解压后的矩阵目录> \
   --output <preflight-report.json>
 ```
 
-退出码：`0=PASS`、`2=PENDING`、`1=INVALID`。只有三项 Gate 都通过后，才能将候选
-删除提交原子整合到主线并重跑全量验证。
+preflight 会重新读取原始帧和内存/GC 数据，独立计算样本数、p99、连续慢帧、GC 与 RSS，
+重新散列主机 manifest、`app.so` 和 fixture，并拒绝旧 probe、串 commit、混二进制、独显、
+RDP、VM、非 60 Hz/100% 或不合格主机。
+
+退出码：`0=PASS`、`2=PENDING`、`1=INVALID`。候选树、生产消费者、Mac Gate 与最低档
+Windows 物理 Gate 均通过后，才允许原子整合到主线并重跑全量验证。

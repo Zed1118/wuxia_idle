@@ -760,7 +760,7 @@ Future<void> main(List<String> args) async {
     stderr.writeln(
       'Usage: dart run tool/route_c_gate_preflight.dart '
       '--candidate <git-ref> [--repository <path>] '
-      '[--human-dir <path>] [--windows-dir <path>] [--output <path>]',
+      '[--windows-dir <path>] [--output <path>]',
     );
     exitCode = 64;
     return;
@@ -799,28 +799,6 @@ Future<void> main(List<String> args) async {
     'lib/shared',
   ]);
 
-  final humanSessions = await _readEvidence(
-    options['human-dir'],
-    'human-session.json',
-  );
-  final humanPackages = await _readEvidence(
-    options['human-dir'],
-    'package-manifest.json',
-  );
-  final humanRoot = options['human-dir'];
-  final actualHumanBinary = humanRoot == null
-      ? null
-      : await _sha256IfExists(
-          File(
-            '$humanRoot/package/wuxia_idle.app/Contents/Frameworks/'
-            'App.framework/Versions/A/App',
-          ),
-        );
-  final actualHumanFixture = humanRoot == null
-      ? null
-      : await _sha256IfExists(
-          File('$humanRoot/package/phase0a_debug_battle.yaml'),
-        );
   final windowsRoot = options['windows-dir'];
   final windowsHostFile = windowsRoot == null
       ? null
@@ -846,13 +824,6 @@ Future<void> main(List<String> args) async {
     ),
     validateRouteCDeletionTree(candidateFiles.split('\n')),
     validateRouteCConsumerViolations(consumerViolations),
-    validateHumanEvidence(
-      humanSessions,
-      humanPackages,
-      expectedCommit: resolvedCandidate,
-      actualBinaryChecksum: actualHumanBinary,
-      actualFixtureChecksum: actualHumanFixture,
-    ),
     validateWindowsRuns(
       windowsRuns,
       expectedCommit: resolvedCandidate,
@@ -918,25 +889,6 @@ Future<String> _gitGrep(Directory repository, List<String> arguments) async {
     throw StateError((result.stderr as String).trim());
   }
   return (result.stdout as String).trim();
-}
-
-Future<List<Map<String, Object?>>> _readEvidence(
-  String? rootPath,
-  String fileName,
-) async {
-  if (rootPath == null) return const <Map<String, Object?>>[];
-  final root = Directory(rootPath);
-  if (!root.existsSync()) return const <Map<String, Object?>>[];
-  final records = <Map<String, Object?>>[];
-  await for (final entity in root.list(recursive: true, followLinks: false)) {
-    if (entity is! File || entity.uri.pathSegments.last != fileName) continue;
-    final decoded = jsonDecode(await entity.readAsString());
-    if (decoded is! Map<String, Object?>) {
-      throw FormatException('${entity.path} must contain a JSON object.');
-    }
-    records.add(decoded);
-  }
-  return records;
 }
 
 Future<String?> _sha256IfExists(File file) async {

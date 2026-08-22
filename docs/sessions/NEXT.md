@@ -15,7 +15,7 @@
 - 生产预检 manifest 已覆盖 Ch2–Ch21 主线 100 关与塔 49 层：73+41 条 eligible 进入同核 headless；35 条动态机制 fail-closed skipped。
 - 玩家生产装配已直接使用 `PlayerCombatantSnapshotBuilder`；最后一处 `BattleCharacter.fromCharacter → toSnapshot` 内部中转及 neutral roster 的 3-slot 泄漏已清除，旧消费接口保持兼容。
 - 1280×720/1440×900 实窗口截图与 W/D/J/Q/R 动态 smoke 通过；无布局溢出、运行异常或缺图。
-- 正式替换仍锁六人主观 Gate、Windows 实机 Gate、其余消费面迁移。
+- 正式替换的消费面迁移已完成；用户于 2026-08-23 取消六人主观 Gate，当前只锁最低档 Windows 实机 Gate。
 
 ## 画像结论
 
@@ -47,4 +47,4 @@
 1. 低消下一切片：先做人类 Gate 与 Boss 蓄力/破招/踉跄/脆弱窗口可读性确认；不得用降级运行冒充迁移。
 2. 机制工程后续仍拆 guardian（`tower_49` 基础、`tower_42` 协同）与 `stage_21_05` survive condition；surviveTicks 禁止机械迁移。
 3. 按 ADR 迁远征、断魂庄单主角续传与扫荡 headless 直结；只消费 manifest eligible 内容。
-4. 六人主观 Gate、Windows 实机 Gate、Phase 0B MANUAL_RIG 继续依赖锁死；未授权不 push。
+4. Route C 只剩最低档 Windows 实机 Gate；Phase 0B MANUAL_RIG 保持独立历史口径。

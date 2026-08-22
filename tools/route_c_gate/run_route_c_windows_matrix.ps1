@@ -50,4 +50,4 @@ Get-ChildItem -Path $OutputRoot -Recurse -File |
 $ArchivePath = "$OutputRoot.zip"
 Compress-Archive -Path (Join-Path $OutputRoot "*") -DestinationPath $ArchivePath
 Write-Host "ROUTE_C_WINDOWS_MATRIX_MECHANICAL_PASS $OutputRoot"
-Write-Host "Human Gate remains independent; archive: $ArchivePath"
+Write-Host "Route C external Gate archive: $ArchivePath"

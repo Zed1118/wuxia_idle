@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.46**
+> v1.46 变更摘要(2026-08-23 路线 C Gate 改判 · 0 改玩法数值):用户取消六人真人 Gate；当前 Route C merge 仅硬锁最低档 Windows 物理机生产根应用矩阵，历史真人工具与报告不参与 preflight。
 > **版本:v1.45**
 > v1.45 变更摘要(2026-08-22 路线 C 当前态同步 · 0 改玩法数值):五个生产战斗消费面统一使用 Phase 0A 单角色 ARPG，live/headless 共用 reducer；历史多人会话安全退役且不再回落旧 runner。旧 3v3 已在独立删除候选中原子移除，merge 仍硬锁六人主观 Gate 与最低档 Windows 物理机 Gate；§1 漂移指针已改为当前生产口径。
 > **版本:v1.44**

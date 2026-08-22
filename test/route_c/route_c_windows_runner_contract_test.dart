@@ -67,13 +67,24 @@ void main() {
     expect(source, contains("Process.run('certutil'"));
     expect(source, contains("'-hashfile'"));
     expect(source, contains("Process.run('shasum'"));
-    expect(source, contains('App.framework/Versions/A/App'));
     expect(source, contains("File('\$windowsRoot/app.so')"));
     expect(
       source,
       isNot(contains('package/wuxia_idle.app/Contents/MacOS/wuxia_idle')),
     );
     expect(source, isNot(contains("File('\$windowsRoot/wuxia_idle.exe')")));
+  });
+
+  test('Route C preflight no longer requires six human sessions', () {
+    final source = File('tool/route_c_gate_preflight.dart').readAsStringSync();
+    final mainSource = source.substring(source.indexOf('Future<void> main'));
+    final matrix = File(
+      'tools/route_c_gate/run_route_c_windows_matrix.ps1',
+    ).readAsStringSync();
+
+    expect(mainSource, isNot(contains("options['human-dir']")));
+    expect(mainSource, isNot(contains('validateHumanEvidence(')));
+    expect(matrix, isNot(contains('Human Gate remains independent')));
   });
 
   test(
