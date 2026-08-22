@@ -39,4 +39,13 @@ void main() {
       expect(matrix, contains('SHA256SUMS.txt'));
     },
   );
+
+  test('preflight hashing supports the Windows matrix host', () {
+    final source = File('tool/route_c_gate_preflight.dart').readAsStringSync();
+
+    expect(source, contains('Platform.isWindows'));
+    expect(source, contains("Process.run('certutil'"));
+    expect(source, contains("'-hashfile'"));
+    expect(source, contains("Process.run('shasum'"));
+  });
 }
