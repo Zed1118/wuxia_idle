@@ -25,6 +25,8 @@ dependencies:
   audioplayers: ^6.0.0
   shared_preferences: ^2.2.0
   window_manager: ^0.5.1
+  # Route C 生产 Profile Gate 只在显式 visual-route 采样时读 GC 事件。
+  vm_service: 15.2.0
 
 dev_dependencies:
   flutter_test:

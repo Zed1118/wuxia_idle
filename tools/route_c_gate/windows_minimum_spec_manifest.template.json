@@ -1,0 +1,42 @@
+{
+  "status": "UNVERIFIED_TEMPLATE",
+  "operator": "FILL_OPERATOR",
+  "captured_at_utc": "FILL_ISO_8601_UTC",
+  "device": {
+    "os_caption": "FILL_ACTUAL_WINDOWS_EDITION",
+    "os_version": "FILL_ACTUAL_VERSION",
+    "os_build": "FILL_ACTUAL_BUILD",
+    "cpu_model": "FILL_ACTUAL_CPU_MODEL",
+    "gpu_name": "FILL_ACTUAL_GPU_NAME",
+    "gpu_driver_version": "FILL_ACTUAL_DRIVER_VERSION",
+    "gpu_is_integrated": false,
+    "ram_gib": 0,
+    "storage_type": "FILL_ACTUAL_STORAGE_TYPE",
+    "power_mode": "FILL_ACTUAL_POWER_MODE",
+    "plugged_in": false
+  },
+  "display": {
+    "refresh_rate_hz": 0,
+    "scale_percent": 0,
+    "required_logical_viewports": ["1280x720", "1440x900"],
+    "local_interactive_session": false
+  },
+  "session": {
+    "session_name": "FILL_ACTUAL_SESSION",
+    "remote_desktop": true,
+    "virtual_machine": true
+  },
+  "runtime": {
+    "renderer": "FILL_FROM_FLUTTER_GPU_TRACE",
+    "flutter_version": "FILL_ACTUAL_FLUTTER_VERSION",
+    "dart_version": "FILL_ACTUAL_DART_VERSION"
+  },
+  "attestation": {
+    "valid_for_minimum_spec_gate": false,
+    "cpu_at_or_below_target": false,
+    "gpu_at_or_below_target": false,
+    "ram_matches_target": false,
+    "power_mode_confirmed_best_performance": false,
+    "validation_notes": "A stronger machine, discrete GPU, VM, cloud runner, RDP or unattested host cannot sign this gate."
+  }
+}

@@ -88,6 +88,7 @@ import '../../battle/presentation/battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_presentation_tokens.dart';
+import '../../battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
 import '../../battle/application/phase0a/phase0a_wave_battle_flow.dart';
 import '../../battle/domain/phase0a/phase0a_combat_events.dart';
@@ -531,6 +532,12 @@ Future<Widget> buildVisualTarget(
               }
             : null,
       );
+    case VisualRoute.phase0aBattleProfile:
+      final fixture = await Phase0aDebugBattleFixture.load(
+        assetLoader: rootBundle.loadString,
+        numbers: GameRepository.instance.numbers,
+      );
+      return _Phase0aProfilePreview(initialFixture: fixture);
     case VisualRoute.phase0aBattleBossMechanics:
       final fixture = await Phase0aDebugBattleFixture.load(
         assetLoader: rootBundle.loadString,
@@ -1530,6 +1537,84 @@ class _Phase0aFeedbackPreviewState extends State<_Phase0aFeedbackPreview> {
         ? Phase0aPresentationTokens.feedbackHoldSeconds
         : Phase0aPresentationTokens.visualRouteFeedbackHoldSeconds,
   );
+}
+
+/// Route C 物理机 Profile 专用负载：与生产 headless 共用 bot 指令，
+/// 但每拍仍经真实 controller/reducer 并由生产 [Phase0aBattleScreen] 渲染。
+/// 终局同 seed 重建 fixture，避免长矩阵在结算页空跑。
+class _Phase0aProfilePreview extends StatefulWidget {
+  const _Phase0aProfilePreview({required this.initialFixture});
+
+  final Phase0aDebugBattleFixture initialFixture;
+
+  @override
+  State<_Phase0aProfilePreview> createState() => _Phase0aProfilePreviewState();
+}
+
+class _Phase0aProfilePreviewState extends State<_Phase0aProfilePreview> {
+  late final Phase0aBattleController _controller;
+  late Phase0aPlayerBotAdapter _bot;
+  Timer? _timer;
+  bool _restarting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = _controllerFor(widget.initialFixture);
+    _bot = Phase0aPlayerBotAdapter(
+      playerAdapter: widget.initialFixture.playerAdapter,
+    );
+    _timer = Timer.periodic(
+      Duration(
+        milliseconds:
+            (_controller.fixedDeltaSeconds * Duration.millisecondsPerSecond)
+                .round(),
+      ),
+      (_) => _advance(),
+    );
+  }
+
+  Phase0aBattleController _controllerFor(Phase0aDebugBattleFixture fixture) =>
+      Phase0aBattleController(
+        flow: fixture.flow,
+        roster: fixture.roster,
+        fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+      );
+
+  void _advance() {
+    if (!mounted || _restarting) return;
+    if (_controller.outcome == Phase0aBattleOutcome.ongoing) {
+      _controller.step(_bot.commandFor(_controller.state));
+      return;
+    }
+    _restarting = true;
+    unawaited(_restart());
+  }
+
+  Future<void> _restart() async {
+    try {
+      final fixture = await Phase0aDebugBattleFixture.load(
+        assetLoader: rootBundle.loadString,
+        numbers: GameRepository.instance.numbers,
+      );
+      if (!mounted) return;
+      _bot = Phase0aPlayerBotAdapter(playerAdapter: fixture.playerAdapter);
+      _controller.restart(fixture.flow);
+    } finally {
+      _restarting = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      Phase0aBattleScreen(controller: _controller, autoStep: false);
 }
 
 /// Boss fixture driver:先让真实敌方 AI 起蓄力,观察到 charging 后立即发

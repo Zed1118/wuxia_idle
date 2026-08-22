@@ -13,7 +13,8 @@
 
 - 待删候选 commit；
 - 根应用 `wuxia_idle` 的 Profile binary SHA-256；
-- 生产 Phase 0A 可玩路由 `phase0a_battle_playable`；
+- 六人使用生产可玩路由 `phase0a_battle_playable`，Windows 使用同核循环负载
+  `phase0a_battle_profile`；
 - 六人全部同包，Windows 六次全部同 binary。
 
 ## 六人原始样本
@@ -32,8 +33,26 @@
 
 保留 `phase0a-windows-physical-gate.md` 的最低档硬件、本地 Console、60Hz、100% 缩放与
 两视口各三次要求，但采样对象改为根应用 Profile binary。每次结果目录必须有
-`manifest.json`，schema 为 `route-c-windows-production-run-v1`，且组合性能 Gate 已由
+`manifest.json`，schema 为 `route-c-windows-production-run-v1`，路由为
+`phase0a_battle_profile`，且组合性能 Gate 已由
 生产版采样器判为 `PASS`。旧 `phase0minus_probe.exe` 结果会被预检直接拒绝。
+
+在候选 commit 的干净 Windows 工作树上执行：
+主机信息从 `tools/route_c_gate/windows_minimum_spec_manifest.template.json` 复制填写，
+不得原样使用模板。
+
+```powershell
+$Commit = git rev-parse HEAD
+$Fixture = (Get-FileHash -Algorithm SHA256 .\data\phase0a_debug_battle.yaml).Hash.ToLowerInvariant()
+.\tools\route_c_gate\run_route_c_windows_matrix.ps1 `
+  -HostManifest .\windows_minimum_spec_manifest.captured.json `
+  -ExpectedCommit $Commit `
+  -ExpectedFixtureChecksum $Fixture
+```
+
+根应用只构建一次，每次执行 12s 预热 + 60s 采样 + 30s 冷却。组合 Gate
+严格要求有效帧数、p99 总帧时、严重慢帧连续峰值、GC telemetry 与 RSS 回落；
+任一项失败即中止并保留原始目录。
 
 ## 执行
 
