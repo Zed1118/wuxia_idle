@@ -1,9 +1,12 @@
 {
   "schema": "route-c-human-session-v1",
+  "session_id": "route-c-p01-REPLACE_WITH_RANDOM_SUFFIX",
   "participant_id": "P01",
   "commit": "REPLACE_WITH_CANDIDATE_COMMIT",
   "binary_sha256": "REPLACE_WITH_ROOT_APP_BINARY_SHA256",
+  "fixture_sha256": "REPLACE_WITH_PHASE0A_FIXTURE_SHA256",
   "route_id": "phase0a_battle_playable",
+  "viewport": "1280x720",
   "player_type": "idle",
   "ratings": {
     "release": 1,
@@ -24,6 +27,13 @@
     "two_core_actions_lack_role": false,
     "density_unreadable": false,
     "requires_forbidden_mechanic": false
+  },
+  "integrity": {
+    "completed_three_waves": false,
+    "participant_had_input_control": false,
+    "implementer_assisted": false,
+    "external_event_polluted": false,
+    "questionnaire_complete": false
   },
   "validity": {
     "valid": false,

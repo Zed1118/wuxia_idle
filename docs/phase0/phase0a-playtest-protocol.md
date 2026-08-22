@@ -3,6 +3,7 @@
 > **Route C 历史口径，禁止用于新取证。** 本表的 `battle_tap_live` AB 对照已随
 > 旧 3v3 路由退役。当前生产版 Gate 使用
 > [`route-c-external-gate-preflight.md`](./route-c-external-gate-preflight.md) 口径。
+> 下方旧 AB 表格与 `phase0a_human_gate` 命令只作历史追溯；Route C 不再执行它们。
 
 > 本表只用于隔离灰盒。不要填写姓名、账号或其他个人信息。测试者仅使用匿名编号。
 

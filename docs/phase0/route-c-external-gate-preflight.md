@@ -29,6 +29,36 @@
 - 键鼠是否由测试者本人完成；
 - 是否无溢出、卡死、实现者代打或外部污染。
 
+在待删候选的干净 Mac 工作树上一次性构建并复制冻结包；脚本只准备包，不启动 GUI：
+
+```bash
+tools/route_c_gate/prepare_route_c_human_package.sh HEAD \
+  build/route_c_human_gate
+```
+
+六个会话必须使用包内同一 `wuxia_idle.app`，按生成的 P01–P06 模板填写。排期固定为
+两种视口各 3 人、`idle/arpg/mixed` 各 2 人。任何姓名、邮箱、账号、电话等 PII 字段
+都会令证据 `INCONCLUSIVE`；实现者代打、外部事件污染或问卷未完成的样本不得标记
+`valid=true`。
+
+六轮完成后，重新散列回传包内的实际 executable 与 fixture，再执行机械聚合：
+
+```bash
+dart run tool/route_c_human_gate.dart aggregate \
+  --candidate HEAD \
+  --sessions build/route_c_human_gate/sessions \
+  --manifest build/route_c_human_gate/package-manifest.json \
+  --app build/route_c_human_gate/package/wuxia_idle.app/Contents/MacOS/wuxia_idle \
+  --fixture build/route_c_human_gate/package/phase0a_debug_battle.yaml \
+  --output build/route_c_human_gate/human-gate-summary.json
+```
+
+机械阈值为：三项评分中位数均不低于 4；至少 4/6 愿意再战；蓄力预警、打断反馈、
+硬直和 vulnerability window 各至少 5/6 被识别；键鼠本人完成与无溢出/卡死均须
+6/6；至少 5/6 无协助完成三轮；任一直接否决项为 true 都是 `LOCAL_FAIL`。
+不足六个有效样本、串包、混 fixture、PII 或完整性矛盾均为 `INCONCLUSIVE`，不会冒充
+体验失败或通过。
+
 ## Windows 物理机样本
 
 保留 `phase0a-windows-physical-gate.md` 的最低档硬件、本地 Console、60Hz、100% 缩放与
