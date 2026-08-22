@@ -9,6 +9,7 @@ void main() {
     expect(source, contains('git status --porcelain'));
     expect(source, contains('flutter clean'));
     expect(source, contains('flutter pub get'));
+    expect(source, contains('dart run build_runner build'));
     expect(source, contains('flutter build macos --release --no-pub'));
     expect(source, contains('codesign --verify --deep --strict'));
     expect(source, contains('lipo -archs'));

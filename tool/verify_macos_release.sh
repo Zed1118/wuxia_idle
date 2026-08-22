@@ -21,6 +21,7 @@ aot="$app/Contents/Frameworks/App.framework/Versions/A/App"
 echo "==> clean macOS release build @ $commit"
 flutter clean
 flutter pub get
+dart run build_runner build
 flutter build macos --release --no-pub
 
 [[ -x "$launcher" ]] || { echo "missing launcher: $launcher" >&2; exit 4; }

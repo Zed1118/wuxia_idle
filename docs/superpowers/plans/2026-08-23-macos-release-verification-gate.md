@@ -14,7 +14,7 @@
 
 - [x] 脚本拒绝脏工作区，输出被验证的 commit。
 - [x] 构建前执行 `flutter clean`，杜绝外层签名沿用旧产物。
-- [x] release 构建使用锁定依赖，不改依赖版本。
+- [x] release 构建使用锁定依赖，并从 fresh checkout 重建 gitignored 生成文件。
 - [x] `codesign --verify --deep --strict` 必须通过。
 - [x] 主启动器必须同时含 x86_64 与 arm64，并输出体积/AOT/launcher SHA-256。
 - [x] 契约测试防止 clean、deep verify 或双架构检查被静默删除。
@@ -38,4 +38,6 @@
   `MACOS_RELEASE_VERIFY_PASS`；deep codesign valid、x86_64+arm64、169M，
   launcher SHA-256 `fd82e843…b33dd`，AOT SHA-256 `b6f74ab4…2fb80`。
   契约测试 1/1、无参数 analyze 0 issue、`bash -n`、format/diff check 通过。
+- 后审发现：本机已有 64 个 gitignored `.g.dart`，首版脚本缺 build_runner，
+  fresh checkout 不自足；已补生成步骤，待全新临时 worktree 实证。
 - 阻塞项：无。
