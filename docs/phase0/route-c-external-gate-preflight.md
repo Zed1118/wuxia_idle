@@ -84,6 +84,13 @@ $Fixture = (Get-FileHash -Algorithm SHA256 .\data\phase0a_debug_battle.yaml).Has
 严格要求有效帧数、p99 总帧时、严重慢帧连续峰值、GC telemetry 与 RSS 回落；
 任一项失败即中止并保留原始目录。
 
+最终预检不直接信任每轮 `manifest.json` 自报的 `composite_gate=PASS`：它会重新读取
+`frames.jsonl` 与 `memory_gc.jsonl`，独立计算样本数、p99、build/raster/严重慢帧连续峰值、
+GC 状态和 RSS 首尾值，再与 `summary.json` 逐项对照；同时重新散列并校验
+`host_manifest.json`，拒绝独显、RDP、虚拟机、非 60Hz/100% 缩放或未填 renderer。
+矩阵包同时冻结 `wuxia_idle.exe` 与 `phase0a_debug_battle.yaml`，最终预检会重新散列
+二者并与六轮 manifest 对照，不能只填写一个看似合法的 64 位哈希冒签。
+
 ## 执行
 
 ```bash

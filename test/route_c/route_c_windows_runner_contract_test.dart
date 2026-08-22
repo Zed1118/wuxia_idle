@@ -33,6 +33,9 @@ void main() {
       expect(matrix, contains('-Viewport "1280x720"'));
       expect(matrix, contains('-Viewport "1440x900"'));
       expect(matrix, contains('route_c_gate_preflight.dart'));
+      expect(matrix, contains('wuxia_idle.exe'));
+      expect(matrix, contains('phase0a_debug_battle.yaml'));
+      expect(matrix, contains('Copy-Item -Force'));
       expect(matrix, contains('SHA256SUMS.txt'));
     },
   );
