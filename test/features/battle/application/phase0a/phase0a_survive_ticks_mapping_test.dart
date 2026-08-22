@@ -39,9 +39,11 @@ void main() {
 
     expect(stage.winCondition?.type, StageWinConditionType.surviveTicks);
     expect(stage.winCondition?.surviveTicksRequired, 10);
-    expect(mapping.winCondition?.type, Phase0aWinConditionType.surviveTicks);
-    expect(mapping.winCondition?.surviveTicksRequired, 10);
-    expect(mapping.initialState.winCondition, mapping.winCondition);
+    expect(
+      mapping.initialState.winCondition?.type,
+      Phase0aWinConditionType.surviveTicks,
+    );
+    expect(mapping.initialState.winCondition?.surviveTicksRequired, 10);
     expect(mapping.initialState.surviveTicksRemaining, 10);
   });
 }

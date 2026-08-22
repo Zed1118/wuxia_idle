@@ -163,10 +163,10 @@ void main() {
         numbers: repo.numbers,
       );
       expect(
-        mapping07.winCondition?.type,
+        mapping07.initialState.winCondition?.type,
         Phase0aWinConditionType.surviveTicks,
       );
-      expect(mapping07.winCondition?.surviveTicksRequired, 20);
+      expect(mapping07.initialState.winCondition?.surviveTicksRequired, 20);
     });
   });
 

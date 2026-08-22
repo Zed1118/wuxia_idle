@@ -87,7 +87,6 @@ void main() async {
         for (final combatant in mapping.combatants)
           if (combatant.actorId != mapping.initialState.player.id) combatant,
       ],
-      winCondition: mapping.winCondition,
       moveBindings: mapping.moveBindings,
       playerAdapter: mapping.playerAdapter,
       enemyAiAdapter: mapping.enemyAiAdapter,
