@@ -26,6 +26,8 @@ analyzer:
   exclude:
     - "**/*.g.dart"          # 生成代码不参与分析
     - "**/*.freezed.dart"
+    # 2026-07 一次性难度诊断附件；Route C 已删除其依赖的旧 runner。
+    - "docs/audit/early_difficulty_gate_probe_2026_07_05.dart"
 
 linter:
   rules:

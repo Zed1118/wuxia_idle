@@ -3,6 +3,7 @@
 > 总行数控制在 100 行内，超出归档到末尾。
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 ## 当前阶段
+> **2026-08-23 Route C 后 analyzer 边界修复**：无参数 `flutter analyze --no-pub` 的 12 个错误全部来自唯一一份 7 月一次性难度诊断附件；它明确“不入 test”，且仍引用 Route C 已删除的旧 `StageBattleSetup` / `BattleState` / ground strategy。现仅在 `analysis_options.yaml` 精确排除该文件，不扩大目录豁免，生产 `lib/`、测试 `test/`、工具 `tool/` 继续全量受检。无参数 analyze 与 `lib test tool` 标准范围均 **0 issue**；零运行代码、测试逻辑、数据或玩法数值改动。
 > **2026-08-23 Phase 0A 数字技能绑定单一来源**：全仓调用点确认 mapper 唯一生产构造把同一个 `Phase0aNumericSkillBindings` 实例同时交给 mapping 与 player adapter，既有测试还以 `same()` 固化该别名；现删除 mapping 顶层镜像，主线/塔/断魂庄三宿主与测试统一从输入 adapter 读取。不改技能装配、输入、UI、bot、结算、资源、YAML 或玩法数值。目标独立文件 **36/36**、Phase 0A application **139/139**、`flutter analyze --no-pub lib test` 0 issue、format/diff check 通过。
 > **2026-08-23 Phase 0A 胜负条件单一来源**：只读可达性审计确认 `Phase0aStageMapping.winCondition` 与 `initialState.winCondition` 必然同值且生产零读取；现删除 mapping 顶层重复镜像，survive-ticks、主线接线与 malformed mapping 回归统一读取初始竞技场状态。不改 reducer、AI、胜负逻辑、伤害、奖励、YAML、文案或玩法数值。目标三文件 **24/24**、Phase 0A application **139/139**、`flutter analyze --no-pub lib test` 0 issue、format/diff check 通过。
 > **2026-08-23 Phase 0A 敌方行动 `hadActions` 兼容**：全量枚举 21 类事件并对照旧 `actionLog.isNotEmpty` 后，伤害、AOE、截招、多波、数字技均证伪无缺口；唯一残差是敌方技能起手与 Boss 蓄力起手不置有效行动。玩家在生存关只移动/闪避且敌方走 skill-only 循环时，旧 runner 会战后调息，Phase 0A 会少恢复一次。现仅让 `Phase0aEnemySkillStarted` / `Phase0aBossChargeStarted` 置 `hadActions=true`，不改 reducer、AI、伤害、胜负、奖励或 YAML。targeted **156/156**、analyze 0、format/diff check 通过。
