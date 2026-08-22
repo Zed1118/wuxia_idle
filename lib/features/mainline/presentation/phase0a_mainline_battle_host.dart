@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
@@ -78,12 +79,19 @@ class _Phase0aMainlineBattleHostState
             widget.playerSnapshotForTest ?? await _buildPlayerSnapshot();
         if (!mounted) return;
         final numbers = GameRepository.instance.numbers;
-        final mapping = Phase0aStageContentMapper.map(
-          stage: widget.stage,
-          playerSnapshot: playerSnapshot,
-          numbers: numbers,
-          cycleIndex: widget.cycleIndex,
-        );
+        final mapping = widget.stage.stageType == StageType.innerDemon
+            ? Phase0aStageContentMapper.mapInnerDemon(
+                stage: widget.stage,
+                playerSnapshot: playerSnapshot,
+                numbers: numbers,
+                cycleIndex: widget.cycleIndex,
+              )
+            : Phase0aStageContentMapper.map(
+                stage: widget.stage,
+                playerSnapshot: playerSnapshot,
+                numbers: numbers,
+                cycleIndex: widget.cycleIndex,
+              );
         final roster = Phase0aVisualRoster.fromMapping(mapping);
         for (final combatant in mapping.combatants) {
           roster.visualFor(combatant.actorId);

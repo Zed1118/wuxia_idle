@@ -146,7 +146,7 @@ void main() {
         ),
         isTrue,
       );
-      // 非 mainline 类型(塔/心魔/轻功/群战)拒绝。
+      // 心魔走专属镜像装配；塔/轻功/群战仍拒绝。
       const towerStage = StageDef(
         id: 'stage_test_tower',
         name: '塔测试关',
@@ -161,11 +161,14 @@ void main() {
         Phase0aMainlineGate.shouldUsePhase0a(towerStage, targetCycle: 1),
         isFalse,
       );
-      for (final id in [
-        'stage_inner_demon_01',
-        'stage_light_foot_01',
-        'stage_mass_battle_01',
-      ]) {
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(
+          repo.getStage('stage_inner_demon_01'),
+          targetCycle: 1,
+        ),
+        isTrue,
+      );
+      for (final id in ['stage_light_foot_01', 'stage_mass_battle_01']) {
         expect(
           Phase0aMainlineGate.shouldUsePhase0a(
             repo.getStage(id),
@@ -201,6 +204,78 @@ void main() {
         Phase0aMainlineGate.shouldUsePhase0a(_flowStage(), targetCycle: 1),
         isFalse,
       );
+    });
+  });
+
+  group('Phase0a 心魔镜像装配', () {
+    test('01 复制单主角并按分关系数强化，YAML 空敌队不冒充剧情关', () {
+      final player = Legacy3v3CombatantAdapter.toSnapshot(
+        _makeCh1Player(repo.numbers),
+      );
+      final mapping = Phase0aStageContentMapper.mapInnerDemon(
+        stage: repo.getStage('stage_inner_demon_01'),
+        playerSnapshot: player,
+        numbers: repo.numbers,
+      );
+      final mirror = mapping.combatants.last.snapshot;
+      final buff =
+          repo.numbers.innerDemon.mirrorBuffPerStage['stage_inner_demon_01']!;
+
+      expect(mapping.combatants, hasLength(2));
+      expect(mirror.characterId, -1);
+      expect(mirror.maxHp, (player.maxHp * (1 + buff)).round());
+      expect(mirror.currentHp, mirror.maxHp);
+      expect(mirror.internalForce, (player.internalForce * (1 + buff)).round());
+      expect(
+        mirror.totalEquipmentAttack,
+        (player.totalEquipmentAttack * (1 + buff)).round(),
+      );
+      expect(mirror.isBoss, isTrue);
+      expect(() => Phase0aVisualRoster.fromMapping(mapping), returnsNormally);
+      expect(
+        mapping.waves.single.enemies.single.defeatKind,
+        Phase0aDefeatKind.elite,
+      );
+    });
+
+    test('05 原子注入蓄力技与脆弱窗口；07 保留 surviveTicks=20', () {
+      final player = Legacy3v3CombatantAdapter.toSnapshot(
+        _makeCh1Player(repo.numbers),
+      );
+      final stage05 = repo.getStage('stage_inner_demon_05');
+      final mapping05 = Phase0aStageContentMapper.mapInnerDemon(
+        stage: stage05,
+        playerSnapshot: player,
+        numbers: repo.numbers,
+      );
+      final mirror05 = mapping05.combatants.last.snapshot;
+      final chargeId = repo.numbers.innerDemon.mirrorChargeSkillId;
+
+      expect(mirror05.chargeSkillId, chargeId);
+      expect(
+        mirror05.availableSkills.map((skill) => skill.id),
+        contains(chargeId),
+      );
+      expect(
+        mirror05.vulnerabilityMult,
+        repo
+            .numbers
+            .innerDemon
+            .mirrorVulnerabilityPerStage[stage05.id]!
+            .outOfWindowDamageMult,
+      );
+      expect(mapping05.waves.single.enemies.single.chargeCast, isNotNull);
+
+      final mapping07 = Phase0aStageContentMapper.mapInnerDemon(
+        stage: repo.getStage('stage_inner_demon_07'),
+        playerSnapshot: player,
+        numbers: repo.numbers,
+      );
+      expect(
+        mapping07.winCondition?.type,
+        Phase0aWinConditionType.surviveTicks,
+      );
+      expect(mapping07.winCondition?.surviveTicksRequired, 20);
     });
   });
 

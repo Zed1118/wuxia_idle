@@ -11,10 +11,8 @@ import '../../../core/domain/enums.dart';
 /// 关走 0A 引擎全链。正式全量切换 + 旧入口拆除仍留路线 C 第三序
 /// (同次 merge,spec §5 非目标约束),本门届时整类删除。
 ///
-/// 门控面扩至全部主线:凡 `StageType.mainline` 且 `enemyTeam` 非空、
-/// 合法 cycle(>=1)即走 0A,不再限 Ch1 一周目。心魔(innerDemon)/轻功
-/// (lightFoot)/群战(massBattle)与剧情空敌关(stageType 非 mainline
-/// 或 enemyTeam 空)继续走旧入口,严格守边界。
+/// 门控面覆盖全部非空主线与心魔镜像关。轻功(lightFoot)/群战(massBattle)
+/// 在专属修正与波间契约迁完前继续走旧入口；剧情空敌主线同样拒绝。
 final class Phase0aMainlineGate {
   const Phase0aMainlineGate._();
 
@@ -31,10 +29,10 @@ final class Phase0aMainlineGate {
   @visibleForTesting
   static set testOverride(bool? value) => _testOverride = value;
 
-  /// 本关是否走 0A 主线战斗:灰度门开 + 全部主线 + 非空敌队 + 合法 cycle(>=1)。
+  /// 本关是否走 0A:灰度门开 + 合法 cycle，并且是非空主线或心魔关。
   static bool shouldUsePhase0a(StageDef stage, {required int targetCycle}) =>
       enabled &&
       targetCycle >= 1 &&
-      stage.stageType == StageType.mainline &&
-      stage.enemyTeam.isNotEmpty;
+      ((stage.stageType == StageType.mainline && stage.enemyTeam.isNotEmpty) ||
+          stage.stageType == StageType.innerDemon);
 }

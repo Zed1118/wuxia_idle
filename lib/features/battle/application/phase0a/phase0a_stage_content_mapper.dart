@@ -8,6 +8,8 @@ import '../../../../data/game_repository.dart';
 import '../../../../data/numbers_config.dart';
 import '../../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../../shared/battle_shared/combatant_skill_loadout.dart';
+import '../../../../shared/strings.dart';
+import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
@@ -80,6 +82,110 @@ final class Phase0aStageContentMapper {
     winCondition: _mapWinCondition(stage.winCondition),
   );
 
+  /// 心魔关以单主角开战快照生成同源镜像，不消费 YAML 的空 enemyTeam。
+  /// 强化、红线、机制化蓄力与脆弱窗口均复用 numbers.innerDemon 口径。
+  static Phase0aStageMapping mapInnerDemon({
+    required StageDef stage,
+    required CombatantSnapshot playerSnapshot,
+    required NumbersConfig numbers,
+    String playerId = 'player',
+    int? cycleIndex,
+  }) {
+    if (stage.stageType != StageType.innerDemon) {
+      throw ArgumentError.value(stage.id, 'stage', 'must be innerDemon');
+    }
+    final definition = numbers.innerDemon;
+    final buff = definition.mirrorBuffPerStage[stage.id] ?? 0.0;
+    final caps = definition.mirrorCaps;
+    final vulnerability = definition.mirrorVulnerabilityPerStage[stage.id];
+    final chargeSkillId = definition.mirrorChargeSkillId;
+    final chargeSkill = chargeSkillId == null
+        ? null
+        : GameRepository.instance.getSkill(chargeSkillId);
+    final injectMechanic = vulnerability != null && chargeSkill != null;
+    final attackMultiplier = injectMechanic
+        ? definition.mechanicMirrorAttackMultiplier
+        : 1 + buff;
+    final skills =
+        injectMechanic &&
+            !playerSnapshot.availableSkills.any(
+              (skill) => skill.id == chargeSkill.id,
+            )
+        ? [...playerSnapshot.availableSkills, chargeSkill]
+        : playerSnapshot.availableSkills;
+    final maxHp = (playerSnapshot.maxHp * (1 + buff)).round().clamp(
+      1,
+      caps.hpMax,
+    );
+    final internalForce = (playerSnapshot.internalForce * (1 + buff))
+        .round()
+        .clamp(1, caps.internalForceMax);
+    final attack = (playerSnapshot.totalEquipmentAttack * attackMultiplier)
+        .round()
+        .clamp(0, caps.attackPowerMax);
+    final outputMultiplier = injectMechanic
+        ? definition.mechanicMirrorOutputMultiplierPerStage[stage.id] ?? 1.0
+        : 1.0;
+    final mirror = CombatantSnapshot(
+      characterId: -1,
+      name: UiStrings.innerDemonMirrorName(playerSnapshot.name),
+      realmTier: playerSnapshot.realmTier,
+      realmLayer: playerSnapshot.realmLayer,
+      school: playerSnapshot.school,
+      maxHp: maxHp,
+      currentHp: maxHp,
+      internalForce: internalForce,
+      maxQi: playerSnapshot.maxQi,
+      currentQi: playerSnapshot.currentQi,
+      qiGainMultiplier: playerSnapshot.qiGainMultiplier,
+      qiCostReductionPct: playerSnapshot.qiCostReductionPct,
+      autoUltimate: playerSnapshot.autoUltimate,
+      speed: playerSnapshot.speed,
+      criticalRate: playerSnapshot.criticalRate,
+      evasionRate: playerSnapshot.evasionRate,
+      defenseRate: playerSnapshot.defenseRate,
+      totalEquipmentAttack: attack,
+      mainCultivationLayer: playerSnapshot.mainCultivationLayer,
+      skillLoadout: playerSnapshot.skillLoadout,
+      availableSkills: skills,
+      openingSkillCooldowns: const {},
+      skillUses: const {},
+      activeBuffs: const [],
+      swordSongResonanceActive: playerSnapshot.swordSongResonanceActive,
+      iconPath: WuxiaUi.battleFounderFallback,
+      attackPowerMultiplier: playerSnapshot.attackPowerMultiplier,
+      outputMultiplier: playerSnapshot.outputMultiplier * outputMultiplier,
+      isBoss: true,
+      chargeSkillId: injectMechanic ? chargeSkillId : null,
+      bossPhases: null,
+      bossPhaseUnlockSkills: null,
+      schoolDamageTakenMult: playerSnapshot.schoolDamageTakenMult,
+      lineageRole: null,
+      forgingPiercePct: playerSnapshot.forgingPiercePct,
+      forgingLifestealPct: playerSnapshot.forgingLifestealPct,
+      enemyDefId: stage.id,
+      guardianWardMult: null,
+      guardianDefIds: const [],
+      vulnerabilityMult: injectMechanic
+          ? vulnerability.outOfWindowDamageMult
+          : null,
+      guardInterceptsInterrupt: false,
+    );
+    return _mapContent(
+      contentId: stage.id,
+      enemyTeam: const [],
+      isTower: false,
+      playerSnapshot: playerSnapshot,
+      numbers: numbers,
+      playerId: playerId,
+      cycleIndex: cycleIndex ?? 1,
+      advanceRealmPerCycle: false,
+      winCondition: _mapWinCondition(stage.winCondition),
+      enemySnapshotsOverride: [mirror],
+      enemyActorIdsOverride: ['${stage.id}_mirror'],
+    );
+  }
+
   /// 把一层生产塔定义装配到与主线相同的 Phase 0A 输入。这里只做 D1
   /// 敌队机械映射；Boss 阶段/蓄力/破招、周目脆弱窗口与
   /// 护法结界动态 ward 均由 Phase 0A reducer/伤害 resolver 消费。
@@ -131,6 +237,8 @@ final class Phase0aStageContentMapper {
     required int cycleIndex,
     required bool advanceRealmPerCycle,
     required Phase0aWinCondition? winCondition,
+    List<CombatantSnapshot>? enemySnapshotsOverride,
+    List<String>? enemyActorIdsOverride,
   }) {
     if (cycleIndex < 1) {
       throw ArgumentError.value(cycleIndex, 'cycleIndex', 'must be >= 1');
@@ -142,17 +250,27 @@ final class Phase0aStageContentMapper {
         '不得静默装配零参数竞技场',
       );
     }
-    if (enemyTeam.isEmpty) {
+    if (enemyTeam.isEmpty && (enemySnapshotsOverride?.isEmpty ?? true)) {
       throw ArgumentError.value(contentId, 'content', 'Phase0a 纵切装配拒绝空敌队内容');
     }
 
     // —— 敌人 neutral snapshot:复用旧战斗同一口径(零数值复制)——
-    final enemySnapshots = EnemyCombatantSnapshotAssembler.assembleAll(
-      enemyTeam,
-      cycleIndex: cycleIndex,
-      isTower: isTower,
-      advanceRealmPerCycle: advanceRealmPerCycle,
-    );
+    final enemySnapshots =
+        enemySnapshotsOverride ??
+        EnemyCombatantSnapshotAssembler.assembleAll(
+          enemyTeam,
+          cycleIndex: cycleIndex,
+          isTower: isTower,
+          advanceRealmPerCycle: advanceRealmPerCycle,
+        );
+    if (enemyActorIdsOverride != null &&
+        enemyActorIdsOverride.length != enemySnapshots.length) {
+      throw ArgumentError.value(
+        enemyActorIdsOverride,
+        'enemyActorIdsOverride',
+        'must match enemySnapshots length',
+      );
+    }
     final numericSkillBindings = _numericSkillBindings(playerSnapshot, arena);
     final tacticalSkillBindings = _tacticalSkillBindings(arena);
 
@@ -185,9 +303,11 @@ final class Phase0aStageContentMapper {
         _enemyActor(
           arena: arena,
           snapshot: enemySnapshots[i],
-          actorId: enemyTeam.length == 1
-              ? enemyTeam[i].id
-              : '${enemyTeam[i].id}_w0s$i',
+          actorId:
+              enemyActorIdsOverride?[i] ??
+              (enemyTeam.length == 1
+                  ? enemyTeam[i].id
+                  : '${enemyTeam[i].id}_w0s$i'),
           position: _enemyPosition(
             arena: arena,
             slot: i,

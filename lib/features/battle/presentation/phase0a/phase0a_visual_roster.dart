@@ -1,4 +1,5 @@
 import '../../../../shared/strings.dart';
+import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../application/phase0a/phase0a_stage_content_mapper.dart';
 
 final class Phase0aActorVisual {
@@ -21,7 +22,7 @@ final class Phase0aVisualRoster {
     visuals: const {
       'player': Phase0aActorVisual(
         name: UiStrings.battleSampleFounder,
-        assetPath: 'assets/characters/battle_founder_v2.png',
+        assetPath: WuxiaUi.battleFounderFallback,
         isElite: false,
       ),
       'wave1_blade': Phase0aActorVisual(
@@ -58,7 +59,7 @@ final class Phase0aVisualRoster {
   /// 正式立绘绑定留美术批。敌人直接取 [mapping] combatant 的 iconPath
   /// (零口径复制自 EnemyDef);iconPath 空串 fail-fast,不静默降级。
   factory Phase0aVisualRoster.fromMapping(Phase0aStageMapping mapping) {
-    const playerBattleAsset = 'assets/characters/battle_founder_v2.png';
+    const playerBattleAsset = WuxiaUi.battleFounderFallback;
     final playerId = mapping.initialState.player.id;
     final visuals = <String, Phase0aActorVisual>{};
     for (final combatant in mapping.combatants) {
