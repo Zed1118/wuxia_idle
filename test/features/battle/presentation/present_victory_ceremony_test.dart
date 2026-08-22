@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/battle/presentation/victory_ceremony.dart';
+import 'package:wuxia_idle/features/combat_shared/presentation/victory_ceremony.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 
 void main() {

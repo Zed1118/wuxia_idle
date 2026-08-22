@@ -5,7 +5,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/combat_shared/domain/damage_calculator.dart';
-import 'package:wuxia_idle/features/battle/presentation/victory_ceremony.dart';
+import 'package:wuxia_idle/features/battle/presentation/legacy_hero_camera_deriver.dart';
 
 // ── Fixture builders (沿 top_damage_contributor_test.dart 体例) ──────────────
 
@@ -167,7 +167,7 @@ void main() {
       );
       final characters = [ch1, ch2];
 
-      final result = deriveHeroCameraData(
+      final result = deriveLegacyHeroCameraData(
         finalState: state,
         characters: characters,
         bossName: '山贼头子',
@@ -202,7 +202,7 @@ void main() {
       );
       final ch = _character(id: 1, name: '剑客甲');
 
-      final result = deriveHeroCameraData(
+      final result = deriveLegacyHeroCameraData(
         finalState: state,
         characters: [ch],
         bossName: '山贼头子',
@@ -231,7 +231,7 @@ void main() {
       // characters 列表中只有 id=99，不含 top actor(id=1)
       final ch = _character(id: 99, name: '路人甲');
 
-      final result = deriveHeroCameraData(
+      final result = deriveLegacyHeroCameraData(
         finalState: state,
         characters: [ch],
         bossName: '山贼头子',

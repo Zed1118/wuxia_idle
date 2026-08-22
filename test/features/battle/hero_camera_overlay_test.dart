@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/battle/presentation/hero_camera_overlay.dart';
+import 'package:wuxia_idle/features/combat_shared/presentation/hero_camera_overlay.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 // 测试用 HeroCameraData 工厂

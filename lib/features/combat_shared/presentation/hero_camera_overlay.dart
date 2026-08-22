@@ -8,7 +8,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 
-/// 英雄镜头数据值对象（第七阶段 批一）。
+/// 引擎中立英雄镜头数据值对象。
 /// 由 caller 从 TopDamageContributor 组装，纯数据无副作用。
 class HeroCameraData {
   final String? portraitPath;

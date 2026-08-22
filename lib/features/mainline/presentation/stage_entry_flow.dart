@@ -52,8 +52,9 @@ import '../application/mainline_providers.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_progress.dart';
 import '../../combat_shared/domain/combat_stats_summary.dart';
-import '../../battle/presentation/hero_camera_overlay.dart' show HeroCameraData;
-import '../../battle/presentation/victory_ceremony.dart';
+import '../../combat_shared/presentation/hero_camera_overlay.dart'
+    show HeroCameraData;
+import '../../combat_shared/presentation/victory_ceremony.dart';
 import '../../battle_record/application/boss_memory_hook.dart';
 import '../../weapon_codex/application/equipment_catalog_hook.dart';
 import '../../battle_record/domain/boss_memory_key.dart';

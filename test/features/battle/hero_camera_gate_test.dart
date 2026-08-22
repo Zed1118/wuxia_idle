@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:wuxia_idle/features/battle/presentation/hero_camera_overlay.dart';
-import 'package:wuxia_idle/features/battle/presentation/victory_ceremony.dart';
+import 'package:wuxia_idle/features/combat_shared/presentation/hero_camera_overlay.dart';
+import 'package:wuxia_idle/features/combat_shared/presentation/victory_ceremony.dart';
 
 void main() {
   final sampleData = const HeroCameraData(

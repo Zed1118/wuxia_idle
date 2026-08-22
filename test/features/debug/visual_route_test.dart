@@ -9,7 +9,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen_config.dart';
-import 'package:wuxia_idle/features/battle/presentation/hero_camera_overlay.dart';
+import 'package:wuxia_idle/features/combat_shared/presentation/hero_camera_overlay.dart';
 import 'package:wuxia_idle/features/debug/application/visual_route.dart';
 import 'package:wuxia_idle/features/debug/application/visual_acceptance_plan.dart';
 import 'package:wuxia_idle/features/debug/presentation/battle_test_menu.dart';

@@ -80,7 +80,7 @@ import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../data/narrative_loader.dart';
 import '../../mainline/domain/chapter_assets.dart';
 import '../../battle/presentation/character_avatar.dart';
-import '../../battle/presentation/hero_camera_overlay.dart';
+import '../../combat_shared/presentation/hero_camera_overlay.dart';
 import '../../../shared/battle_shared/enum_localizations.dart' show EnumL10n;
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/battle_state.dart';

@@ -42,8 +42,9 @@ import '../../encounter/presentation/encounter_hook.dart';
 import '../../event/application/game_event_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../combat_shared/domain/combat_stats_summary.dart';
-import '../../battle/presentation/hero_camera_overlay.dart' show HeroCameraData;
-import '../../battle/presentation/victory_ceremony.dart';
+import '../../combat_shared/presentation/hero_camera_overlay.dart'
+    show HeroCameraData;
+import '../../combat_shared/presentation/victory_ceremony.dart';
 import '../../mainline/presentation/stage_victory_dialog.dart'
     show FirstClearBanner, ResonanceUpgradeBanner;
 import '../../inventory/presentation/post_battle_healing_panel.dart';
