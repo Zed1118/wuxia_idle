@@ -189,4 +189,44 @@ void main() {
       );
     }
   });
+
+  test('Phase0aStageMapping 不得重建已删除的状态镜像', () {
+    final source = File(
+      'lib/features/battle/application/phase0a/'
+      'phase0a_stage_content_mapper.dart',
+    ).readAsStringSync();
+    final mappingStart = source.indexOf('final class Phase0aStageMapping');
+    final mapperStart = source.indexOf('final class Phase0aStageContentMapper');
+
+    expect(mappingStart, greaterThanOrEqualTo(0));
+    expect(mapperStart, greaterThan(mappingStart));
+
+    final mappingClass = source.substring(mappingStart, mapperStart);
+    expect(
+      mappingClass,
+      contains('final Phase0aArenaState initialState;'),
+      reason: '胜负条件唯一来源必须留在 initialState',
+    );
+    expect(
+      mappingClass,
+      contains('final Phase0aPlayerInputAdapter playerAdapter;'),
+      reason: '数字技能绑定唯一来源必须留在 playerAdapter',
+    );
+    expect(
+      mappingClass,
+      isNot(matches(RegExp(r'final\s+Phase0aWinCondition\?\s+winCondition\b'))),
+      reason: 'mapping 不得复制 initialState.winCondition',
+    );
+    expect(
+      mappingClass,
+      isNot(
+        matches(
+          RegExp(
+            r'final\s+Phase0aNumericSkillBindings\s+numericSkillBindings\b',
+          ),
+        ),
+      ),
+      reason: 'mapping 不得复制 playerAdapter.numericSkillBindings',
+    );
+  });
 }
