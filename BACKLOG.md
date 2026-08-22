@@ -4,7 +4,7 @@
 > **准入三态**:待拍板 / 已解锁未做 / 依赖锁死——「本次没空做」不准进(CLAUDE §7 打磨期原则)。
 > **维护**:每批收账随 PROGRESS 同步更新;销账即删行(git 留历史);总行数 ≤80。
 > 2026-07-19 建账:散落储备(PROGRESS 挂账段 / playability_phase2_backlog / 两份 audit followup)已归纳至此,旧文件原地归档留指针。
-> 2026-08-22 最新收口事实：Phase 0A 已补齐 guardian ward/拦截/合击、surviveTicks、Boss 蓄力/破招/脆弱窗口表现及高周目 cycleVulnerability；预检 **149/149 eligible、0 skipped、447 runs/0 timeout/maxDamage 2044**，最终全量 **5366/0**。正式入口仍仅 Ch1 一周目灰度门且默认关闭；六人/Windows Gate与塔/扫荡/远征/断魂庄消费面迁移仍为路线 C 依赖。
+> 2026-08-22 最新收口事实：Phase 0A 已补齐 guardian ward/拦截/合击、surviveTicks、Boss 蓄力/破招/脆弱窗口表现及高周目 cycleVulnerability；塔 49 层消费面已建立默认关闭的单祖师灰度纵切，neutral settlement 接回原塔结算且退出/替补零污染。预检 **149/149 eligible、0 skipped、447 runs/0 timeout/maxDamage 2044**，最终全量 **5373/0**。正式默认入口仍关闭；六人/Windows Gate 与扫荡/远征/断魂庄消费面迁移仍为路线 C 依赖。
 
 ## 一 · 待拍板(拍一个解锁一个)
 

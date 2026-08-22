@@ -25,3 +25,12 @@
 - 基线：`e1711f36 [READY] 收口 Phase 0A 护法标签与进度底账`
 - 分支：`codex/phase0a-tower-consumer-0822`
 - worktree：`/Users/a10506/Desktop/Projects/wt-phase0a-tower-consumer-0822`
+
+## 执行结果
+
+- 实现提交：`2f2a21b9 [Phase0A] 接通塔消费面灰度纵切`
+- 默认入口：`PHASE0A_TOWER_GRAY=false`；空敌队 fixture fail-closed 回落旧入口。
+- 结算：0A snapshot 走 engine-neutral `resolveSnapshot`，仅结算真实参战角色；旧 3v3 仍由 legacy snapshot 适配。
+- 退出：0A 系统返回记为 surrendered，clear/defeat/奖励均零消费。
+- 验证：塔表现与 mapper/preflight targeted 55/55；代表层 live/headless 一致；149/149、447 runs、0 timeout；双视口 widget Gate；macOS debug 灰度编译通过；全仓 analyze 0 issue；全量 5373/0。
+- 边界：未启动 GUI，未改 YAML/GDD/数值/掉落，未 merge/push/deploy，旧 3v3 未删除。
