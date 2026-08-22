@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../domain/battle_state.dart';
-import 'battle_typography_tokens.dart';
+import '../../../shared/theme/combat_typography.dart';
 
 /// 人物名帖旁的蓄势小印。每个蓄势者都保留自己的拍数，与只选
 /// 最近发动者的顶部横幅互补；不使用圆环，避免遮住头脸。

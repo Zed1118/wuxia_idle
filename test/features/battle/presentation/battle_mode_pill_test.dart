@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/presentation/widgets/battle_header.dart';
-import 'package:wuxia_idle/features/battle/presentation/battle_typography_tokens.dart';
+import 'package:wuxia_idle/shared/theme/combat_typography.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 void main() {

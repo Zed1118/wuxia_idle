@@ -6,7 +6,7 @@ import '../../mainline/domain/mainline_progress.dart';
 
 part 'selected_cycle_provider.g.dart';
 
-/// 章级「当前选定挑战周目」UI 状态(战斗交互重做 Phase 2 周目按章)。
+/// 章级「当前选定挑战周目」UI 状态。
 ///
 /// key = slotId + chapterKey(主线 `ch{N}` / 副本 `stageType.name`)。`null` = 玩家未显式
 /// 选择,caller 用 [resolveTargetCycle] 兜底(已通章→回放最高周目;未通章→cycle 1)。

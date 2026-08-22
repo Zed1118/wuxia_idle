@@ -11,7 +11,7 @@ import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../../../shared/widgets/wuxia_image.dart';
 import '../battle_layout_tokens.dart';
 import '../battle_screen_config.dart';
-import '../battle_typography_tokens.dart';
+import '../../../../shared/theme/combat_typography.dart';
 import 'battle_command_desk.dart';
 import 'battle_focus_rail.dart';
 import 'battle_pouch_rail.dart';

@@ -6,7 +6,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../battle/application/selected_cycle_provider.dart';
+import '../../combat_shared/application/selected_cycle_provider.dart';
 import '../../../shared/battle_shared/enum_localizations.dart' show EnumL10n;
 import '../../../shared/widgets/cycle_select_control.dart';
 import '../../mainline/application/mainline_providers.dart';

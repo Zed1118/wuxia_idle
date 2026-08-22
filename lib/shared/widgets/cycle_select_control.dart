@@ -6,7 +6,7 @@ import '../strings.dart';
 import '../theme/colors.dart';
 import '../../features/mainline/application/mainline_progress_service.dart';
 import '../../features/mainline/application/mainline_providers.dart';
-import '../../features/battle/application/selected_cycle_provider.dart';
+import '../../features/combat_shared/application/selected_cycle_provider.dart';
 
 /// 周目按章选择控件(战斗交互重做 Phase 2,从 per-stage 上移到章层)。
 ///

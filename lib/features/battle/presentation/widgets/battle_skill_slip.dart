@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../battle_layout_tokens.dart';
-import '../battle_typography_tokens.dart';
+import '../../../../shared/theme/combat_typography.dart';
 
 enum BattleSkillSlipVisualState {
   empty,

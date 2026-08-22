@@ -9,7 +9,7 @@ import '../../../../shared/theme/colors.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import '../battle_layout_tokens.dart';
-import '../battle_typography_tokens.dart';
+import '../../../../shared/theme/combat_typography.dart';
 
 /// surviveTicks 型胜负条件的需撑拍数；非该型（含未配 winCondition）返回 null，
 /// 调用点据此整行不渲染 —— 前 20 章全是 defeatAll 型，零影响。

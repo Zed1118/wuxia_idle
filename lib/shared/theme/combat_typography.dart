@@ -2,7 +2,7 @@ import 'dart:ui' show FontFeature;
 
 import 'package:flutter/material.dart';
 
-/// 战斗屏 T1～T5 字阶的单一真相源。
+/// 战斗 HUD T1～T5 字阶的单一真相源。
 ///
 /// 回退链不依赖 macOS 独占字体；数字样式统一使用等宽数字，
 /// 避免血量、真气与节拍变化时字面水平跳动。

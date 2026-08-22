@@ -6,7 +6,7 @@ import '../../../../shared/theme/colors.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../../../shared/widgets/asset_fallback.dart';
 import '../../../../shared/widgets/wuxia_image.dart';
-import '../battle_typography_tokens.dart';
+import '../../../../shared/theme/combat_typography.dart';
 
 /// 单体技待发态时,在技能格上方冒出的敌人快捷选择栏(存活敌人按 slotIndex 升序)。
 class TargetChipStrip extends StatelessWidget {

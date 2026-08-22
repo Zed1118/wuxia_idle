@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/battle/application/selected_cycle_provider.dart';
+import 'package:wuxia_idle/features/combat_shared/application/selected_cycle_provider.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 
 /// resolveTargetCycle 纯函数(战斗交互重做 Phase 2 周目按章):决定某章进入战斗

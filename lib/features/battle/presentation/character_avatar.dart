@@ -12,7 +12,7 @@ import 'battle_charge_seal.dart';
 import 'battle_layout_tokens.dart';
 import 'battle_stage_geometry.dart';
 import 'battle_standee_fusion.dart';
-import 'battle_typography_tokens.dart';
+import '../../../shared/theme/combat_typography.dart';
 import 'guardian_ward_presentation.dart';
 import '../../../shared/widgets/combat_hp_bar.dart';
 import '../../../shared/widgets/asset_fallback.dart';
