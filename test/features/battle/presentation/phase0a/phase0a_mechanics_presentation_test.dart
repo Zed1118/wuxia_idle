@@ -12,21 +12,10 @@ import 'package:wuxia_idle/shared/strings.dart';
 import '../../../../support/test_data.dart';
 
 void main() {
-  late Phase0aDebugBattleFixture fixture;
-  late Phase0aBattleController controller;
+  const viewports = [Size(1280, 720), Size(1440, 900)];
 
   setUp(() async {
     await loadTestGameRepository();
-    fixture = await Phase0aDebugBattleFixture.load(
-      assetLoader: loadTestAsset,
-      numbers: GameRepository.instance.numbers,
-      assetPath: 'data/phase0a_debug_guardian_mechanics.yaml',
-    );
-    controller = Phase0aBattleController(
-      flow: fixture.flow,
-      roster: fixture.roster,
-      fixedDeltaSeconds: fixture.fixedDeltaSeconds,
-    );
   });
 
   tearDown(GameRepository.resetForTest);
@@ -34,6 +23,19 @@ void main() {
   testWidgets(
     'guardian fixture renders a non-3v3 Phase0A ward and both VFX states',
     (tester) async {
+      final fixture = (await tester.runAsync(
+        () => Phase0aDebugBattleFixture.load(
+          assetLoader: loadTestAsset,
+          numbers: GameRepository.instance.numbers,
+          assetPath: 'data/phase0a_debug_guardian_mechanics.yaml',
+        ),
+      ))!;
+      final controller = Phase0aBattleController(
+        flow: fixture.flow,
+        roster: fixture.roster,
+        fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+      );
+      addTearDown(controller.dispose);
       await tester.binding.setSurfaceSize(const Size(1280, 720));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(
@@ -124,4 +126,88 @@ void main() {
       );
     },
   );
+
+  for (final viewport in viewports) {
+    testWidgets('boss feedback chain stays readable at '
+        '${viewport.width.toInt()}x${viewport.height.toInt()}', (tester) async {
+      final bossFixture = (await tester.runAsync(
+        () => Phase0aDebugBattleFixture.load(
+          assetLoader: loadTestAsset,
+          numbers: GameRepository.instance.numbers,
+          assetPath: 'data/phase0a_debug_boss_battle.yaml',
+        ),
+      ))!;
+      final bossController = Phase0aBattleController(
+        flow: bossFixture.flow,
+        roster: bossFixture.roster,
+        fixedDeltaSeconds: bossFixture.fixedDeltaSeconds,
+      );
+      addTearDown(bossController.dispose);
+
+      await tester.binding.setSurfaceSize(viewport);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Phase0aBattleScreen(
+            controller: bossController,
+            autoStep: false,
+            feedbackHoldSeconds: 5,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      const bossId = 'wave2_elite';
+      expect(
+        find.byKey(const ValueKey('phase0a_vulnerability_guarded_$bossId')),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.phase0aVulnerabilityGuarded), findsOneWidget);
+
+      var chargeStarted = false;
+      for (var i = 0; i < 80 && !chargeStarted; i++) {
+        final events = bossController.step();
+        chargeStarted = events.whereType<Phase0aBossChargeStarted>().isNotEmpty;
+        await tester.pump();
+      }
+      expect(chargeStarted, isTrue);
+      expect(
+        find.byKey(const ValueKey('phase0a_boss_charge_banner')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('phase0a_charge_warning_$bossId')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('phase0a_vulnerability_open_$bossId')),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.phase0aVulnerabilityOpen), findsOneWidget);
+
+      final interruptEvents = bossController.step(
+        const Phase0aPlayerCommand(clear: true),
+      );
+      await tester.pump();
+      expect(
+        interruptEvents.whereType<Phase0aBossChargeInterrupted>(),
+        hasLength(1),
+      );
+      expect(
+        find.byKey(const ValueKey('phase0a_boss_interrupt_banner')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('phase0a_staggered_$bossId')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('phase0a_vulnerability_open_$bossId')),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.phase0aBossChargeInterrupted), findsOneWidget);
+      expect(find.text(UiStrings.phase0aStaggered), findsNothing);
+      expect(find.textContaining(UiStrings.phase0aStaggered), findsOneWidget);
+    });
+  }
 }

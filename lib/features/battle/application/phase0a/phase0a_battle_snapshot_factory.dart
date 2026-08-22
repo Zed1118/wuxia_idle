@@ -149,8 +149,8 @@ final class Phase0aBattleSnapshotFactory {
       // 护法结界由 Phase0a reducer 按当前存活护法动态解析；
       // damage snapshot 保持静态中性值。
       wardMult: 1.0,
-      // 脆弱窗口外承伤乘子原样透传(窗口开合由结算期运行态事实折入,
-      // 恒 cycle-1 基础值:mapper 无周目参数,周目覆盖未迁不消费)。
+      // 脆弱窗口外承伤乘子原样透传(窗口开合由结算期运行态事实折入；
+      // mapper 已显式消费 cycleIndex,高周目值在敌方装配时完成解析)。
       vulnerabilityOutMult: c.vulnerabilityMult,
       piercePct: c.forgingPiercePct,
       // 非零已在上方 fail-fast,恒 0(与 adapter 校验口径一致)。
