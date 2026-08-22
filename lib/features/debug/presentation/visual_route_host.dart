@@ -16,24 +16,16 @@ import '../../../data/isar_setup.dart';
 import '../application/visual_route_isar_directory.dart';
 import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
-import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_app_theme.dart';
-import '../../../shared/theme/wuxia_typography.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/utils/rng.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
-import '../../cultivation/domain/advancement_entry.dart';
-import '../../equipment/domain/resonance_upgrade_notice.dart';
 import '../../equipment/application/equipment_factory.dart';
-import '../../equipment/application/drop_service.dart';
-import '../../equipment/presentation/treasure_drop_overlay.dart';
-import '../../equipment/domain/treasure_highlight.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../mainline/domain/mainline_progress.dart';
-import '../../mainline/presentation/stage_victory_dialog.dart';
 import '../../mainline/presentation/stage_list_screen.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../../main_menu/presentation/main_menu.dart';
@@ -67,7 +59,6 @@ import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../../resource_overview/presentation/resource_overview_screen.dart';
 import '../application/phase2_seed_service.dart';
 import '../application/battle_frame_profile.dart';
-import '../../../data/numbers_config.dart' show AnimationNumbers;
 import '../application/visual_route.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../data/narrative_loader.dart';
@@ -1258,7 +1249,7 @@ class _StageRetryDialogPreview extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        WuxiaImage(WuxiaUi.battleMountainPassStage, fit: BoxFit.cover),
+        const WuxiaImage(WuxiaUi.battleMountainPassStage, fit: BoxFit.cover),
         const ModalBarrier(color: Color(0x99000000)),
         Center(
           child: PaperDialog(
@@ -1702,7 +1693,10 @@ class _DiscipleJoinPreviewState extends State<_DiscipleJoinPreview> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          WuxiaImage('assets/scenes/battle_citywall.png', fit: BoxFit.cover),
+          const WuxiaImage(
+            'assets/scenes/battle_citywall.png',
+            fit: BoxFit.cover,
+          ),
           DiscipleJoinOverlay(
             key: ValueKey('disciple_join_$_replay'),
             portraitPath: e.portrait,
@@ -1781,7 +1775,10 @@ class _HeroCameraPreviewState extends State<_HeroCameraPreview> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          WuxiaImage('assets/scenes/battle_citywall.png', fit: BoxFit.cover),
+          const WuxiaImage(
+            'assets/scenes/battle_citywall.png',
+            fit: BoxFit.cover,
+          ),
           HeroCameraOverlay(
             key: ValueKey('hero_camera_$_replay'),
             data: data,
@@ -1793,9 +1790,7 @@ class _HeroCameraPreviewState extends State<_HeroCameraPreview> {
   }
 }
 
-/// 敌人立绘 gallery:枚举全 stageDefs 敌人(按 iconPath 去重),走生产
-/// [StageBattleSetup.buildEnemyTeam] 真转换 → [CharacterAvatar] 圆形头像滚动,
-/// 验全敌人图加载 + 圆形裁切 + 流派/Boss 边框(补 battle_scene 只 6 个的盲区)。
+/// 装备详情图册：按阶展示所有具有 detailPath 的装备素材。
 class _EquipmentDetailGallery extends StatelessWidget {
   const _EquipmentDetailGallery();
 

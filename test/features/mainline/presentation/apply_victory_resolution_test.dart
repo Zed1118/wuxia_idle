@@ -19,26 +19,24 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/data/yaml_loader.dart';
-import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
-import 'package:wuxia_idle/features/battle/application/battle_resolution.dart';
-import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/combat_shared/application/combat_content_providers.dart';
+import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
 import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 
 import '../../../support/isar_test_support.dart';
+import '../../../support/combatant_snapshot_fixture.dart';
 import '../../../support/test_data.dart';
 
 /// `applyVictoryResolution`（stage_entry_flow.dart L767-973）分支面直测。
 ///
-/// 真 Isar（tempDir + IsarSetup.init）+ 伪造 finished BattleState 注入
-/// battleProvider；覆盖：
+/// 真 Isar（tempDir + IsarSetup.init）+ engine-neutral settlement snapshot；覆盖：
 ///   - L772-773 Isar 未 ready → null
 ///   - L774-775 战斗未结束 → null
 ///   - L778-780 无 activeCharacterIds → null
@@ -119,54 +117,24 @@ void main() {
     difficultyMultiplier: 1.0,
   );
 
-  BattleCharacter battleChar({
-    required int id,
-    required String name,
-    required int teamSide,
-    int slotIndex = 0,
-  }) => BattleCharacter(
-    characterId: id,
-    name: name,
-    realmTier: RealmTier.xueTu,
-    realmLayer: RealmLayer.qiMeng,
-    school: TechniqueSchool.gangMeng,
-    maxHp: 8000,
-    currentHp: 8000,
-    maxInternalForce: 3000,
-    currentInternalForce: 3000,
-    speed: 200,
-    criticalRate: 0.1,
-    evasionRate: 0.05,
-    defenseRate: 0.10,
-    totalEquipmentAttack: 500,
-    mainCultivationLayer: CultivationLayer.chuKui,
-    availableSkills: const [],
-    skillCooldowns: const {},
-    activeBuffs: const [],
-    actionPoint: 300,
-    isAlive: true,
-    teamSide: teamSide,
-    slotIndex: slotIndex,
-  );
-
-  /// 造 finished BattleState：左队含全部参战 id（resolve 的
-  /// _assertAllParticipated 要求），右队一个木桩，result=leftWin。
-  BattleState finishedBattle(List<int> participantIds) {
-    final left = [
-      for (var i = 0; i < participantIds.length; i++)
-        battleChar(
-          id: participantIds[i],
-          name: '参战${participantIds[i]}',
-          teamSide: 0,
-          slotIndex: i,
-        ),
-    ];
-    final right = [battleChar(id: 9001, name: '木桩', teamSide: 1)];
-    return BattleState.initial(
-      leftTeam: left,
-      rightTeam: right,
-    ).copyWith(result: BattleResult.leftWin);
-  }
+  CombatSettlementSnapshot finishedSettlement(List<int> participantIds) =>
+      CombatSettlementSnapshot(
+        result: BattleResult.leftWin,
+        totalTicks: 1,
+        hadActions: true,
+        participants: [
+          for (final id in participantIds)
+            CombatParticipantSnapshot(
+              characterId: id,
+              currentHp: 8000,
+              maxHp: 8000,
+            ),
+        ],
+        skillCasts: const [],
+        totalDamage: 0,
+        criticalCount: 0,
+        damageByCharacterId: {for (final id in participantIds) id: 0},
+      );
 
   Future<void> writeSaveData({
     List<int> activeIds = const [],
@@ -237,19 +205,14 @@ void main() {
   /// 全部 Isar 交互统一收进 tester.runAsync。）
   Future<T> runWithRef<T>(
     WidgetTester tester,
-    Future<T> Function(WidgetRef ref) body, {
-    BattleState? battleState,
-  }) async {
+    Future<T> Function(WidgetRef ref) body,
+  ) async {
     WidgetRef? capturedRef;
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           // 全文件关稀有彩头 roll,消除 victory 结算的随机额外装备(见上方注释)。
           numbersConfigProvider.overrideWithValue(noRareBonusNumbers),
-          if (battleState != null)
-            battleProvider.overrideWith(
-              () => _StaticBattleNotifier(battleState),
-            ),
         ],
         child: MaterialApp(
           home: Scaffold(
@@ -278,11 +241,8 @@ void main() {
       (ref) => applyVictoryResolution(
         ref: ref,
         stage: normalStage(),
-        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
-          finishedBattle([1]),
-        ),
+        settlementSnapshot: finishedSettlement([1]),
       ),
-      battleState: finishedBattle([1]),
     );
 
     expect(outcome, isNull, reason: 'instanceOrNull == null → 早返 null');
@@ -304,10 +264,6 @@ void main() {
       await writeSaveData(activeIds: [founder, reserve], founderId: founder);
       return (founder, reserve);
     }))!;
-    final legacyOngoing = BattleState.initial(
-      leftTeam: [battleChar(id: founderId, name: '祖师', teamSide: 0)],
-      rightTeam: [battleChar(id: 9001, name: '木桩', teamSide: 1)],
-    );
     final settlement = CombatSettlementSnapshot(
       result: BattleResult.leftWin,
       totalTicks: 12,
@@ -343,7 +299,6 @@ void main() {
         stage: stage,
         settlementSnapshot: settlement,
       ),
-      battleState: legacyOngoing,
     );
 
     expect(outcome, isNotNull, reason: '显式 0A 胜利末态必须驱动结算');
@@ -373,12 +328,11 @@ void main() {
     final stage = GameRepository.instance.getStage('stage_01_01');
     final mapping = Phase0aStageContentMapper.map(
       stage: stage,
-      playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
-        battleChar(
-          id: founderId,
-          name: '祖师',
-          teamSide: 0,
-        ).copyWith(actionPoint: 0),
+      playerSnapshot: testCombatantSnapshot(
+        characterId: founderId,
+        name: '祖师',
+        maxHp: 8000,
+        currentHp: 8000,
       ),
       numbers: noRareBonusNumbers,
     );
@@ -444,11 +398,8 @@ void main() {
       (ref) => applyVictoryResolution(
         ref: ref,
         stage: normalStage(),
-        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
-          finishedBattle([1]),
-        ),
+        settlementSnapshot: finishedSettlement([1]),
       ),
-      battleState: finishedBattle([1]),
     );
 
     expect(outcome, isNull, reason: 'ids 空 → 早返 null');
@@ -464,11 +415,8 @@ void main() {
       (ref) => applyVictoryResolution(
         ref: ref,
         stage: normalStage(),
-        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
-          finishedBattle([777, 778]),
-        ),
+        settlementSnapshot: finishedSettlement([777, 778]),
       ),
-      battleState: finishedBattle([777, 778]),
     );
 
     expect(outcome, isNull, reason: 'characters.isEmpty → null');
@@ -514,11 +462,8 @@ void main() {
       (ref) => applyVictoryResolution(
         ref: ref,
         stage: stage,
-        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
-          finishedBattle([charId]),
-        ),
+        settlementSnapshot: finishedSettlement([charId]),
       ),
-      battleState: finishedBattle([charId]),
     );
 
     expect(outcome, isNotNull);
@@ -608,11 +553,8 @@ void main() {
       (ref) => applyVictoryResolution(
         ref: ref,
         stage: stage,
-        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
-          finishedBattle([charId]),
-        ),
+        settlementSnapshot: finishedSettlement([charId]),
       ),
-      battleState: finishedBattle([charId]),
     );
 
     expect(outcome, isNotNull);
@@ -665,11 +607,8 @@ void main() {
       (ref) => applyVictoryResolution(
         ref: ref,
         stage: stage,
-        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
-          finishedBattle([charId]),
-        ),
+        settlementSnapshot: finishedSettlement([charId]),
       ),
-      battleState: finishedBattle([charId]),
     );
 
     expect(outcome, isNotNull);
@@ -704,11 +643,8 @@ void main() {
       (ref) => applyVictoryResolution(
         ref: ref,
         stage: bossStage(),
-        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
-          finishedBattle([charId]),
-        ),
+        settlementSnapshot: finishedSettlement([charId]),
       ),
-      battleState: finishedBattle([charId]),
     );
 
     expect(outcome, isNotNull);
@@ -735,11 +671,8 @@ void main() {
       (ref) => applyVictoryResolution(
         ref: ref,
         stage: bossStage(),
-        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
-          finishedBattle([charId]),
-        ),
+        settlementSnapshot: finishedSettlement([charId]),
       ),
-      battleState: finishedBattle([charId]),
     );
 
     expect(outcome, isNotNull);
@@ -765,11 +698,8 @@ void main() {
       (ref) => applyVictoryResolution(
         ref: ref,
         stage: bossStage(),
-        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
-          finishedBattle([charId]),
-        ),
+        settlementSnapshot: finishedSettlement([charId]),
       ),
-      battleState: finishedBattle([charId]),
     );
 
     expect(outcome, isNotNull);
@@ -796,11 +726,8 @@ void main() {
       (ref) => applyVictoryResolution(
         ref: ref,
         stage: normalStage(),
-        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
-          finishedBattle([charId]),
-        ),
+        settlementSnapshot: finishedSettlement([charId]),
       ),
-      battleState: finishedBattle([charId]),
     );
 
     expect(outcome, isNotNull, reason: '部分悬空不清零,有效角色照常结算');
@@ -823,11 +750,8 @@ void main() {
       (ref) => applyVictoryResolution(
         ref: ref,
         stage: normalStage(baseExpReward: 30),
-        settlementSnapshot: BattleResolutionService.snapshotFromBattleState(
-          finishedBattle([charId]),
-        ),
+        settlementSnapshot: finishedSettlement([charId]),
       ),
-      battleState: finishedBattle([charId]),
     );
 
     expect(outcome, isNotNull);
@@ -854,23 +778,4 @@ void main() {
       expect(ch.realmLayer, RealmLayer.qiMeng, reason: '未升层,境界不变');
     });
   });
-}
-
-/// 静态 finished BattleState 的 BattleNotifier(对齐
-/// battle_playback_controller_test.dart 的 _NoopBattleNotifier 模式)。
-class _StaticBattleNotifier extends BattleNotifier {
-  _StaticBattleNotifier(this._initial);
-  final BattleState _initial;
-
-  @override
-  BattleState build() => _initial;
-
-  @override
-  void advance({int maxConsecutiveTicks = 100}) {}
-
-  @override
-  void advanceOneAction({int maxConsecutiveSteps = 300}) {}
-
-  @override
-  void step() {}
 }

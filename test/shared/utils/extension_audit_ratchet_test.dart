@@ -11,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// 已审计 N 处」钉成契约:新增 extension(任何文件,含已白名单文件)即红,
 /// 强制经过一次人工审计再更新本表白名单。
 ///
-/// 增量:2026-08-11 P11 资质三连 +1(character.dart 出生总点数),15 → 16。
+/// 增量:2026-08-11 P11 资质三连 +1，路线 C 删除旧 projectile trail -1，当前 15。
 /// 审计结论一律登记进 K1 附录 A 的「增量登记」段,再回来改本表。
 ///
 /// 口径:`extension` 关键字在 Dart 中只出现在声明处(含无名形式
@@ -20,7 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   /// extension 声明检测:行首(可缩进)extension 关键字。
   /// 覆盖:命名 `extension Foo on Bar` / 无名 `extension on Path`
-  /// (projectile_trail.dart:413 实证存在)/ `extension type`。
+  /// 以及 `extension type`。
   final extensionDecl = RegExp(r'^\s*extension\s+', multiLine: true);
 
   /// 剥掉注释(块注释 + 行注释),只留可执行代码参与扫描。
@@ -36,9 +36,8 @@ void main() {
   }
 
   group('K2 · extension 审计棘轮', () {
-    test('lib/ extension 声明全集 = K1 附录 A 已审计 16 处(新增即红待审计)', () {
-      // K1 附录 A 建表实测 15/15(2026-08-07 派单方重扫零漂移;K2 本会话复扫逐值吻合),
-      // 2026-08-11 P11 追加 1 处(character.dart 出生总点数)后为 16。
+    test('lib/ extension 声明全集 = K1 附录 A 已审计 15 处(新增即红待审计)', () {
+      // K1 附录 A 建表实测 15/15；P11 加 1，路线 C 删除旧 projectile trail 减 1。
       // 值 = 该文件内 extension 声明数;新文件出现 extension 或既有文件增减
       // 声明数都会红——红 = 「请先过一遍硬编码/归宿审计再更新本表」。
       const audited = {
@@ -60,12 +59,11 @@ void main() {
             1, // step 1-8 = GDD §10.1 领域定义(维持现状)
         'lib/features/settings/presentation/settings_panel.dart':
             1, // withFollowing 布局 helper
-        'lib/features/battle/presentation/projectile_trail.dart':
-            1, // 无名 extension on Path
         'lib/features/shop/presentation/shop_screen.dart':
             2, // 私有枚举 label(文案走 UiStrings)
       };
-      const totalAudited = 16; // 15(K1 建表)+ 1(2026-08-11 P11 追加)
+      // 路线 C 删除旧 projectile_trail 后，已审计声明由 16 降为 15。
+      const totalAudited = 15;
 
       final found = <String, int>{};
       for (final entity in Directory('lib').listSync(recursive: true)) {
@@ -98,7 +96,7 @@ void main() {
     test('扫描口径自控:命名/无名/extension type 必命中,注释字样必不命中', () {
       const hits = {
         'extension Foo on Bar {': '命名形式',
-        'extension on Path {': '无名形式(projectile_trail 实证)',
+        'extension on Path {': '无名形式',
         '  extension Indented on int {': '缩进变体',
         'extension type Meters(int) {}': 'extension type',
       };

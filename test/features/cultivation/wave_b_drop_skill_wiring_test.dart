@@ -9,7 +9,7 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/shared/battle_shared/player_combatant_snapshot_builder.dart';
 import 'package:wuxia_idle/features/cultivation/application/skill_loadout_resolver.dart';
 import 'package:wuxia_idle/features/cultivation/application/skill_loadout_service.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_unlock_service.dart';
@@ -25,7 +25,7 @@ import '../../support/test_data.dart';
 /// 2. equipSkill drop gate:未解锁 NotUnlocked / 流派不符 StyleLocked /
 ///    境界不足 TierLocked / 槽位限主修-大招 / 全过 Succeeded;
 /// 3. standalone 招使用计数落账主修 skillUsageCount(熟练度进度,波A 残留修复);
-/// 4. e2e:章末首通 hook → grantManual → 装配 → BattleState 战斗可用;
+/// 4. e2e:章末首通 hook → grantManual → neutral snapshot 战斗可用;
 /// 5. 章末重打残页:每胜 rng 累计,集齐阈值解锁(stage_04_05 挂载)。
 void main() {
   late Directory tempDir;
@@ -258,7 +258,7 @@ void main() {
       );
       expect(equip, isA<SlotEquipSucceeded>());
 
-      // 3. BattleState.fromCharacter 读装配槽 → 战斗可用。
+      // 3. neutral snapshot builder 读装配槽 → Phase 0A 战斗可用。
       final c = (await isar.characters.get(charId))!;
       final tech = Technique.create(
         defId: 'tech_yinrou_jichu',
@@ -268,16 +268,14 @@ void main() {
         role: TechniqueRole.main,
         learnedAt: DateTime(2026, 6, 11),
       );
-      final bc = BattleCharacter.fromCharacter(
+      final snapshot = PlayerCombatantSnapshotBuilder.build(
         character: c,
         equipped: const [],
         mainTechnique: tech,
         numbers: repo.numbers,
-        teamSide: 0,
-        slotIndex: 0,
       );
       expect(
-        bc.availableSkills.map((s) => s.id),
+        snapshot.availableSkills.map((s) => s.id),
         contains('skill_xie_yu_chuan_lian'),
         reason: '装配槽真解应进战斗 availableSkills',
       );

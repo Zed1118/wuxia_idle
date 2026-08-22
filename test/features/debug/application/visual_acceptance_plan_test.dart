@@ -19,7 +19,9 @@ void main() {
         'settings_panel_bottom',
         'settings_panel_disabled',
         'inventory',
-        'battle_scene',
+        'phase0a_battle_playable',
+        'phase0a_battle_boss_mechanics',
+        'phase0a_battle_guardian_mechanics',
         'technique_panel_tier_all',
         'shop',
         'seclusion_map_list',
@@ -37,7 +39,7 @@ void main() {
     expect(VisualRoute.splash.kind, VisualRouteKind.productionShell);
     expect(VisualRoute.saveSelectFilled.kind, VisualRouteKind.productionShell);
     expect(VisualRoute.redlineAudit.kind, VisualRouteKind.component);
-    expect(VisualRoute.enemyGallery.kind, VisualRouteKind.gallery);
+    expect(VisualRoute.equipmentDetailGallery.kind, VisualRouteKind.gallery);
     expect(
       VisualRoute.settingsPanelDisabled.kind,
       VisualRouteKind.transientOverlay,
@@ -66,41 +68,26 @@ void main() {
     expect(
       ids,
       containsAll(<String>[
-        'battle_v2_casualty_replacement',
-        'battle_v2_fast_forward_peak',
-        'battle_v2_pre_result',
-        'battle_v2_neutral_3v3',
-        'battle_v2_multi_charge',
-        'battle_identity_silhouette',
-        'battle_v2_resource_pressure',
+        'phase0a_battle_playable',
+        'phase0a_battle_attack_feedback',
+        'phase0a_battle_gather_feedback',
+        'phase0a_battle_clear_feedback',
+        'phase0a_battle_boss_mechanics',
+        'phase0a_battle_guardian_mechanics',
       ]),
     );
   });
 
-  test('battle suite 覆盖92动态战斗与7个确定性素材/状态 route', () {
+  test('battle suite 仅覆盖六个 Phase 0A 确定性目检 route', () {
     final ids = visualAcceptanceRouteIds(VisualAcceptanceSuite.battle);
 
-    // 批 A 塔 30→49 层:塔 audit route +19(30 主线 + 49 塔 + 5 轻功 + 5 群战
-    // + 3 断魂庄 = 92 动态)。
-    expect(ids, hasLength(99));
-    expect(ids.toSet(), hasLength(99));
-    expect(ids.first, 'battle_audit_stage_01_01');
-    expect(ids, contains('battle_audit_stage_06_05'));
-    expect(ids, contains('battle_audit_tower_01'));
-    expect(ids, contains('battle_audit_tower_30'));
-    expect(ids, contains('battle_audit_tower_49'));
-    expect(ids, contains('battle_audit_stage_light_foot_05'));
-    expect(ids, contains('battle_audit_stage_mass_battle_05'));
-    expect(ids, contains('battle_audit_gauntlet_01'));
-    expect(ids, contains('battle_audit_gauntlet_03'));
-    expect(ids.sublist(ids.length - 7), <String>[
-      'battle_v2_casualty_replacement',
-      'battle_v2_fast_forward_peak',
-      'battle_v2_pre_result',
-      'battle_v2_neutral_3v3',
-      'battle_v2_multi_charge',
-      'battle_identity_silhouette',
-      'battle_v2_resource_pressure',
+    expect(ids, <String>[
+      'phase0a_battle_playable',
+      'phase0a_battle_attack_feedback',
+      'phase0a_battle_gather_feedback',
+      'phase0a_battle_clear_feedback',
+      'phase0a_battle_boss_mechanics',
+      'phase0a_battle_guardian_mechanics',
     ]);
     for (final id in ids) {
       expect(parseVisualRoute(id), isNotNull, reason: id);

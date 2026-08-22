@@ -14,13 +14,9 @@
 # 不要直接删条目了事。
 
 # ── convenience:整屏遮罩,真操作在内部按钮上 ──
-lib/features/battle/presentation/widgets/battle_header.dart:371  # convenience · PauseOverlay 罩层「轻触任意处恢复」;同屏朱印 TextButton(onPressed: onResume) 已键盘可达
-lib/features/battle/presentation/widgets/battle_header.dart:615  # convenience · LogDrawer 外层 scrim「点外关闭」;抽屉内 WuxiaIconButton(Icons.close) 四项俱全已键盘可达
 lib/features/encounter/presentation/encounter_dialog.dart:488  # convenience · 奇遇弹窗「点外完成」;_ChoiceButton 走 InkWell(canRequestFocus)、_ConfirmButton 走 PlaqueButton(autofocus:true),外层再抢焦点会压掉确认键
 
 # ── noop:吞点不操作 ──
-lib/features/battle/presentation/widgets/battle_header.dart:390  # noop · PauseOverlay 纸笺内层 onTap:(){} 仅阻止点击冒泡到墨幕恢复战斗,不是控件
-lib/features/battle/presentation/widgets/battle_header.dart:621  # noop · LogDrawer 内层 onTap:(){} 仅阻止点击冒泡到 scrim 把抽屉关掉,不是控件
 
 # ── content-tap:内容区推进,另有按钮承载 ──
 lib/features/narrative/presentation/narrative_reader_screen.dart:153  # content-tap · 剧情正文区轻点推进;同屏另有「继续」按钮(onPressed:_next)与 AppBar「跳过」TextButton,均键盘可达

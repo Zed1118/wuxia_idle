@@ -4,7 +4,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/application/battle_resolution.dart';
+import 'package:wuxia_idle/features/combat_shared/application/combat_resolution_service.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';

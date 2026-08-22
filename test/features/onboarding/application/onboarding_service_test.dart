@@ -11,7 +11,8 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
+import 'package:wuxia_idle/shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
+import 'package:wuxia_idle/shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
 import "../../../support/isar_test_support.dart";
 import "../../../support/test_data.dart";
@@ -172,28 +173,25 @@ void main() {
     expect(founder.assistTechniqueIds.length, 1);
   });
 
-  test(
-    'R5.5 真战斗 e2e:StageBattleSetup._buildPlayerTeam 不抛 StateError',
-    () async {
-      final isar = IsarSetup.instance;
-      await OnboardingService(
-        isar: isar,
-      ).ensureFoundingMasters(soloStart: false);
+  test('R5.5 Phase 0A neutral roster 装配不抛 StateError', () async {
+    final isar = IsarSetup.instance;
+    await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
 
-      // audit P0-1 复现 → 修:onboarding 后 buildTeams 应返 (左 3, 右 ≥1)。
-      final stage = GameRepository.instance.getStage('stage_01_01');
-      final setup = StageBattleSetup(isar: isar);
-      final (left, right) = await setup.buildTeams(stage);
+    // onboarding 后玩家与敌人 neutral snapshot 均应完整装配。
+    final stage = GameRepository.instance.getStage('stage_01_01');
+    final left = await PlayerCombatantSnapshotAssembler(
+      isar: isar,
+    ).loadExactRoster(const [1, 2, 3]);
+    final right = EnemyCombatantSnapshotAssembler.assembleAll(stage.enemyTeam);
 
-      expect(left.length, 3); // 3 师徒入阵
-      expect(
-        right.length,
-        stage.enemyTeam.length,
-        reason: '右队逐一出装 stage.enemyTeam(P0-1 修复后不漏装)',
-      );
-      // 不抛 StateError = audit P0-1 修复成功
-    },
-  );
+    expect(left.length, 3); // 3 师徒入阵
+    expect(
+      right.length,
+      stage.enemyTeam.length,
+      reason: '右队逐一出装 stage.enemyTeam(P0-1 修复后不漏装)',
+    );
+    // 不抛 StateError = onboarding 持久化可被 Phase 0A 消费。
+  });
 
   test('R5.6 founder.id 严格锚定 1', () async {
     final isar = IsarSetup.instance;

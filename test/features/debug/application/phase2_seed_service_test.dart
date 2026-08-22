@@ -17,7 +17,8 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
-import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
+import 'package:wuxia_idle/shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
+import 'package:wuxia_idle/shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import 'package:wuxia_idle/features/cultivation/application/synergy_service.dart';
 import 'package:wuxia_idle/data/defs/synergy_def.dart';
 import "../../../support/isar_test_support.dart";
@@ -287,29 +288,27 @@ void main() {
     expect(founder!.discipleIds.length, 2);
   });
 
-  test(
-    '销账 #25：seedMasterDisciple 后 stage_01_01 buildTeams 不再 fail-fast',
-    () async {
-      await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
-      final stage = GameRepository.instance.getStage('stage_01_01');
+  test('销账 #25：seedMasterDisciple 后 neutral roster 不再 fail-fast', () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
+    final stage = GameRepository.instance.getStage('stage_01_01');
 
-      // 不抛"未修主修"——3 师徒都有 mainTechniqueId
-      final (left, right) = await StageBattleSetup(
-        isar: IsarSetup.instance,
-      ).buildTeams(stage);
-      expect(left.length, 3, reason: '玩家左队 3 师徒入阵');
-      expect(
-        right.length,
-        stage.enemyTeam.length,
-        reason: '右队逐一出装 stage.enemyTeam(数量与 def 对齐,不漏不增)',
-      );
-      expect(
-        right.every((e) => e.characterId < 0),
-        isTrue,
-        reason: '敌队 negative id 约定(stage_battle_setup 头注),不与玩家 id 撞',
-      );
-    },
-  );
+    // 不抛"未修主修"——3 师徒都有 mainTechniqueId
+    final left = await PlayerCombatantSnapshotAssembler(
+      isar: IsarSetup.instance,
+    ).loadExactRoster(const [1, 2, 3]);
+    final right = EnemyCombatantSnapshotAssembler.assembleAll(stage.enemyTeam);
+    expect(left.length, 3, reason: '玩家左队 3 师徒入阵');
+    expect(
+      right.length,
+      stage.enemyTeam.length,
+      reason: '敌人逐一装配 stage.enemyTeam(数量与 def 对齐,不漏不增)',
+    );
+    expect(
+      right.every((e) => e.characterId < 0),
+      isTrue,
+      reason: '敌人 neutral snapshot 使用负 id，不与玩家 id 撞',
+    );
+  });
 
   test(
     'seedMasterDisciple 后 P1 → 业务表清空但 SaveData.activeCharacterIds 不动',

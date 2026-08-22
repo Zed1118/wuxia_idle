@@ -250,9 +250,7 @@ enum VisualRoute {
 
   /// 需要由目标战斗状态控制 READY 的 V2 验收路由。
   bool get controlsReadiness => switch (this) {
-    settingsPanel ||
-    settingsPanelBottom ||
-    settingsPanelDisabled => true,
+    settingsPanel || settingsPanelBottom || settingsPanelDisabled => true,
     _ => false,
   };
 
@@ -260,8 +258,7 @@ enum VisualRoute {
   /// 同一套标准评分，因此在 manifest 中显式区分。
   VisualRouteKind get kind {
     if (id.contains('gallery')) return VisualRouteKind.gallery;
-    if (this == VisualRoute.redlineAudit ||
-        this == VisualRoute.hub) {
+    if (this == VisualRoute.redlineAudit || this == VisualRoute.hub) {
       return VisualRouteKind.component;
     }
     if (id.contains('dialog') ||
@@ -292,38 +289,7 @@ VisualRoute? parseVisualRoute(String raw) {
   return null;
 }
 
-const String battleAuditStagePrefix = 'battle_audit_stage_';
-const String battleAuditTowerPrefix = 'battle_audit_tower_';
-const String battleAuditGauntletPrefix = 'battle_audit_gauntlet_';
-
-/// 动态主线/轻功/群战验收 route → 真 stage id。
-String? battleAuditStageId(String routeId) {
-  if (!routeId.startsWith(battleAuditStagePrefix)) return null;
-  final suffix = routeId.substring(battleAuditStagePrefix.length);
-  return suffix.isEmpty ? null : 'stage_$suffix';
-}
-
-/// 动态爬塔验收 route → 1-based floor。
-int? battleAuditTowerFloor(String routeId) {
-  if (!routeId.startsWith(battleAuditTowerPrefix)) return null;
-  return int.tryParse(routeId.substring(battleAuditTowerPrefix.length));
-}
-
-/// 动态断魂庄验收 route → 1-based 关次序号。
-///
-/// 断魂庄敌队不在 `stageDefs` 里(随 `BossGauntletConfig.enemyTeams` 独立解析),
-/// 故不能复用 [battleAuditStageId] 那条 stage 查表路径,另起一条前缀。
-/// 非正数直接判无效——0/负数会让下游 `stages[i - 1]` 越界。
-int? battleAuditGauntletStage(String routeId) {
-  if (!routeId.startsWith(battleAuditGauntletPrefix)) return null;
-  final parsed = int.tryParse(
-    routeId.substring(battleAuditGauntletPrefix.length),
-  );
-  if (parsed == null || parsed < 1) return null;
-  return parsed;
-}
-
-/// 保留动态 route 的完整 id，供 host 取 stage/floor 参数并回报 READY。
+/// 保留 route 的完整 id，供 host 回报 READY。
 String visualRouteIdFromEnv() {
   const raw = String.fromEnvironment('VISUAL_ROUTE');
   return raw;

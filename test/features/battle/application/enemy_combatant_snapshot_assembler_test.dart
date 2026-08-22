@@ -4,51 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
-import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
-import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 
 import '../../../support/test_data.dart';
-
-Object _shape(BattleCharacter character) => (
-  characterId: character.characterId,
-  name: character.name,
-  realmTier: character.realmTier,
-  realmLayer: character.realmLayer,
-  school: character.school,
-  maxHp: character.maxHp,
-  currentHp: character.currentHp,
-  internalForce: character.internalForce,
-  maxQi: character.maxQi,
-  currentQi: character.currentQi,
-  speed: character.speed,
-  criticalRate: character.criticalRate,
-  evasionRate: character.evasionRate,
-  defenseRate: character.defenseRate,
-  totalEquipmentAttack: character.totalEquipmentAttack,
-  cultivation: character.mainCultivationLayer,
-  skills: character.availableSkills.map((skill) => skill.id).join(','),
-  cooldowns: character.skillCooldowns.toString(),
-  buffs: character.activeBuffs.join(','),
-  teamSide: character.teamSide,
-  slotIndex: character.slotIndex,
-  iconPath: character.iconPath,
-  isBoss: character.isBoss,
-  chargeSkillId: character.chargeSkillId,
-  bossPhaseIndex: character.bossPhaseIndex,
-  bossPhases: character.bossPhases
-      ?.map((phase) => '${phase.hpThresholdPct}:${phase.aiMode}')
-      .join(','),
-  phaseSkills: character.bossPhaseUnlockSkills
-      ?.map((skills) => skills.map((skill) => skill.id).join('+'))
-      .join(','),
-  weaknesses: character.schoolDamageTakenMult.toString(),
-  enemyDefId: character.enemyDefId,
-  guardianWardMult: character.guardianWardMult,
-  guardianDefIds: character.guardianDefIds.join(','),
-  vulnerabilityMult: character.vulnerabilityMult,
-  guardInterceptsInterrupt: character.guardInterceptsInterrupt,
-);
 
 void main() {
   late GameRepository repo;
@@ -57,54 +14,50 @@ void main() {
     repo = await loadTestGameRepository();
   });
 
-  test('新 Module 与旧 Adapter 在关键敌人矩阵逐字段同值', () {
+  test('代表关卡逐敌装配完整 neutral snapshot', () {
     for (final stageId in ['stage_01_01', 'stage_01_05', 'stage_17_05']) {
       final stage = repo.getStage(stageId);
-      for (final cycle in [1, 2, 3]) {
-        for (final readable in [false, true]) {
-          final legacy = StageBattleSetup.buildEnemyTeam(
-            stage.enemyTeam,
-            cycleIndex: cycle,
-            isTower: false,
-            advanceRealmPerCycle: false,
-            stageNpcId: stage.isBossStage ? stage.npcId : null,
-            readableFirstClearTuning: readable,
-          );
-          final extracted = EnemyCombatantSnapshotAssembler.assembleAll(
-            stage.enemyTeam,
-            cycleIndex: cycle,
-            isTower: false,
-            advanceRealmPerCycle: false,
-            stageNpcId: stage.isBossStage ? stage.npcId : null,
-            readableFirstClearTuning: readable,
-          );
-          expect(
-            [
-              for (final (index, snapshot) in extracted.indexed)
-                _shape(
-                  Legacy3v3CombatantAdapter.fromSnapshot(
-                    snapshot,
-                    teamSide: 1,
-                    slotIndex: index,
-                  ),
-                ),
-            ],
-            legacy.map(_shape).toList(),
-            reason: '$stageId cycle=$cycle readable=$readable',
-          );
-        }
+      final snapshots = EnemyCombatantSnapshotAssembler.assembleAll(
+        stage.enemyTeam,
+        stageNpcId: stage.isBossStage ? stage.npcId : null,
+      );
+
+      expect(snapshots, hasLength(stage.enemyTeam.length), reason: stageId);
+      for (final (index, snapshot) in snapshots.indexed) {
+        final enemy = stage.enemyTeam[index];
+        expect(snapshot.name, enemy.name, reason: stageId);
+        expect(snapshot.realmTier, enemy.realmTier, reason: stageId);
+        expect(snapshot.realmLayer, enemy.realmLayer, reason: stageId);
+        expect(snapshot.school, enemy.school, reason: stageId);
+        expect(snapshot.maxHp, enemy.baseHp, reason: stageId);
+        expect(snapshot.currentHp, snapshot.maxHp, reason: stageId);
+        expect(snapshot.speed, enemy.baseSpeed, reason: stageId);
+        expect(
+          snapshot.totalEquipmentAttack,
+          enemy.baseAttack,
+          reason: stageId,
+        );
+        expect(snapshot.isBoss, enemy.isBoss, reason: stageId);
+        expect(snapshot.chargeSkillId, enemy.chargeSkillId, reason: stageId);
+        expect(snapshot.enemyDefId, enemy.id, reason: stageId);
+        expect(snapshot.iconPath, enemy.iconPath, reason: stageId);
+        expect(
+          snapshot.availableSkills.map((skill) => skill.id),
+          containsAll(enemy.skillIds),
+          reason: stageId,
+        );
       }
     }
   });
 
-  test('可复用 seam 不继承旧 3 人 cap；legacy Adapter 仍截前三人', () {
+  test('neutral seam 保留全部敌人，不继承旧三人容量限制', () {
     final template = repo.getStage('stage_01_01').enemyTeam.single;
     final four = <EnemyDef>[template, template, template, template];
+
     expect(EnemyCombatantSnapshotAssembler.assembleAll(four), hasLength(4));
-    expect(StageBattleSetup.buildEnemyTeam(four), hasLength(3));
   });
 
-  test('assembler 直接构造 neutral snapshot，不回引旧战斗角色', () {
+  test('assembler 直接构造 neutral snapshot，不回引已退役战斗角色', () {
     final source = File(
       'lib/shared/battle_shared/enemy_combatant_snapshot_assembler.dart',
     ).readAsStringSync();

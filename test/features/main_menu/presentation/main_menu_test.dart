@@ -37,8 +37,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
 ///   - 菜单按钮 label 匹配（主线 / 问鼎九霄 / 排行榜 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法 / 藏经阁 / 桃花岛）
-///   - 23 个菜单入口 WuxiaInkButton（按钮全部可点）
-///   - Tap "Phase 1 战斗测试" → push BattleTestMenu
+///   - 22 个菜单入口 WuxiaInkButton（按钮全部可点）
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
 /// 主线 / 问鼎九霄 / 角色 / 师徒名单 / 装备 / 心法 按钮 push 的页面依赖 Isar（师徒名单经
@@ -94,7 +93,7 @@ void main() {
     expect(tickCount, 1);
   });
 
-  testWidgets('23 个菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('22 个菜单按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -108,7 +107,6 @@ void main() {
     expect(find.text(UiStrings.mainMenuLeaderboard), findsOneWidget);
     expect(find.text(UiStrings.mainMenuZangjuange), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSeclusion), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuPhase1), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase2), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSectRecruit), findsOneWidget);
     expect(find.text(UiStrings.mainMenuCharacterPanel), findsOneWidget);
@@ -175,9 +173,9 @@ void main() {
     );
   });
 
-  testWidgets('23 个菜单按钮均为 WuxiaInkButton（可点入口）', (tester) async {
+  testWidgets('22 个菜单按钮均为 WuxiaInkButton（可点入口）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(WuxiaInkButton), findsNWidgets(23));
+    expect(find.byType(WuxiaInkButton), findsNWidgets(22));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
@@ -317,22 +315,6 @@ void main() {
     );
     expect(find.text(UiStrings.mainMenuSeclusionReadyStatus), findsOneWidget);
   });
-
-  testWidgets(
-    'tap Phase 1 战斗测试 → 进入 BattleTestMenu（找到 testMenuTitle / scenarioA）',
-    (tester) async {
-      await tester.pumpWidget(app());
-      // P2.2 Batch 2.5.B 加心魔境按钮后 Phase 1 下移,800x600 viewport 临界
-      // 需 ensureVisible scroll 进可见区再 tap(沿 Phase 2 测同体例)
-      await tester.ensureVisible(find.text(UiStrings.mainMenuPhase1));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text(UiStrings.mainMenuPhase1));
-      await tester.pumpAndSettle();
-
-      expect(find.text(UiStrings.testMenuTitle), findsOneWidget);
-      expect(find.text(UiStrings.scenarioA), findsOneWidget);
-    },
-  );
 
   testWidgets('tap Phase 2 调试场景 → 进入 Phase2TestMenu（找到 scenarioP1 等 4 场景）', (
     tester,

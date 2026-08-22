@@ -12,8 +12,8 @@ import 'qi_cycle.dart';
 ///
 /// Interface 只暴露「装配全部敌人」与「群战逐波装配」；周目缩放、境界推进、
 /// 词条、Boss phase、guardian/vulnerability、真气和首通可读调节全部隐藏在
-/// implementation 内。调用方决定 roster policy：旧 3v3 Adapter 截前三人，
-/// Phase 0A Adapter 保留全部敌人，旧形态容量不得污染此 seam。
+/// implementation 内。调用方决定 roster policy；Phase 0A 保留全部敌人，
+/// 展示层容量不得污染此 seam。
 final class EnemyCombatantSnapshotAssembler {
   const EnemyCombatantSnapshotAssembler._();
 

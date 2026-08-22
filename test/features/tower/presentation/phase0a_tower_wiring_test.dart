@@ -7,22 +7,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
-import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_visual_roster.dart';
 import 'package:wuxia_idle/features/tower/presentation/phase0a_tower_battle_host.dart';
 import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
+import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
+import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 
 import '../../../support/test_data.dart';
+import '../../../support/combatant_snapshot_fixture.dart';
 
-BattleCharacter _player(NumbersConfig numbers) => BattleCharacter(
+CombatantSnapshot _player(NumbersConfig numbers) => testCombatantSnapshot(
   characterId: 1,
   name: '塔纵切玩家',
   realmTier: RealmTier.xueTu,
@@ -40,12 +41,8 @@ BattleCharacter _player(NumbersConfig numbers) => BattleCharacter(
   totalEquipmentAttack: 130,
   mainCultivationLayer: CultivationLayer.chuKui,
   availableSkills: const [],
-  skillCooldowns: const {},
+  openingSkillCooldowns: const {},
   activeBuffs: const [],
-  actionPoint: 0,
-  isAlive: true,
-  teamSide: 0,
-  slotIndex: 0,
 );
 
 void main() {
@@ -64,9 +61,7 @@ void main() {
           child: MaterialApp(
             home: Phase0aTowerBattleHost(
               floor: repo.getTowerFloor(10),
-              playerSnapshotForTest: Legacy3v3CombatantAdapter.toSnapshot(
-                _player(repo.numbers),
-              ),
+              playerSnapshotForTest: _player(repo.numbers),
               cycleIndexForTest: 1,
               seedForTest: 20260822,
               onVictory: (_) {},
@@ -88,9 +83,7 @@ void main() {
         child: MaterialApp(
           home: Phase0aTowerBattleHost(
             floor: repo.getTowerFloor(1),
-            playerSnapshotForTest: Legacy3v3CombatantAdapter.toSnapshot(
-              _player(repo.numbers),
-            ),
+            playerSnapshotForTest: _player(repo.numbers),
             cycleIndexForTest: 1,
             seedForTest: 20260822,
             onVictory: (settlement) => victory = settlement,
@@ -128,7 +121,7 @@ void main() {
 
       Phase0aStageMapping mapping() => Phase0aStageContentMapper.mapTower(
         floor: floor,
-        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(_player(numbers)),
+        playerSnapshot: _player(numbers),
         numbers: numbers,
         cycleIndex: case_.cycle,
       );
