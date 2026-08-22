@@ -17,6 +17,9 @@
   `lib/features/battle/`；对应中立服务不再 import 或提及旧状态类型。
 - 全局源码守卫已锁定：除 debug 与旧 battle 自身外，生产模块从 battle 目录只能
   import `application/domain/presentation/phase0a/`。
+- 删除演练已同步清除仍指向 `battle_tap_live` / `battle_scene` / `battle_v2_*` 的可执行
+  视觉工具、AB 主持脚本与专用测试；通用截图 manifest 写入器改为 route-neutral，
+  历史截图和报告只在 `docs/` 留档。负向守卫保证 `tools/` 不得重新启动退役 route。
 
 ## 当前剩余删除包
 

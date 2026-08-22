@@ -5,7 +5,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SWIFT_WINID="$REPO_ROOT/tools/visual_capture/window_id.swift"
 CROP_CONTENT="$REPO_ROOT/tools/visual_capture/crop_window_content.py"
 LOCK_STATE_HELPER="$REPO_ROOT/tools/visual_capture/lock_state.py"
-FIDELITY_ANALYZER="$REPO_ROOT/tools/visual_capture/analyze_battle_v2_fidelity.py"
+MANIFEST_WRITER="$REPO_ROOT/tools/visual_capture/write_visual_capture_manifest.py"
 APP_PROCESS_NAME="wuxia_idle"
 APP_EXECUTABLE="$REPO_ROOT/build/macos/Build/Products/Debug/wuxia_idle.app/Contents/MacOS/wuxia_idle"
 
@@ -298,11 +298,11 @@ if [[ "$WRITE_MANIFEST" -eq 1 ]]; then
     # --repo-root records the working-tree git tree id and a dirty flag.
     # Captures are usually taken before the edits are committed, so commit
     # alone names the previous code state and cannot pin what was rendered.
-    python3 "$FIDELITY_ANALYZER" \
+    python3 "$MANIFEST_WRITER" \
       --capture-root "$OUTPUT_DIR" \
       --commit "$commit" \
       --repo-root "$REPO_ROOT" \
-      --write-manifest "$manifest_path"
+      --output "$manifest_path"
     printf 'fidelity manifest: %s\n' "$manifest_path"
   fi
 fi

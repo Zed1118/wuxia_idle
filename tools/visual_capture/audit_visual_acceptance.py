@@ -88,7 +88,7 @@ EXPECTED_SCREENSHOT_DIMS = (
 EXPECTED_ISSUE_COUNTS = {"P1": 1, "P2": 8, "P3": 2}
 EXPECTED_HITBOX_ROUTES = {
     "hitbox_strong": (
-        "battle_scene",
+        "phase0a_battle_playable",
         "inventory",
         "main_menu",
         "seclusion_map_list",

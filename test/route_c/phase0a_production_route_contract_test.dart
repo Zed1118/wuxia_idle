@@ -129,4 +129,38 @@ void main() {
       reason: 'Phase 0A 测试不得随旧核删除丢失:\n${violations.join('\n')}',
     );
   });
+
+  test('active tools must not launch retired 3v3 visual routes', () {
+    final violations = <String>[];
+    final retiredRoute = RegExp(
+      r'\b(?:battle_tap_live|battle_scene|battle_v2_[a-z0-9_]+)\b',
+    );
+    for (final entity in Directory('tools').listSync(recursive: true)) {
+      if (entity is! File) continue;
+      if (!const <String>{
+        '.dart',
+        '.json',
+        '.md',
+        '.py',
+        '.sh',
+        '.ps1',
+      }.contains(
+        entity.uri.pathSegments.last.contains('.')
+            ? '.${entity.uri.pathSegments.last.split('.').last}'
+            : '',
+      )) {
+        continue;
+      }
+      final source = entity.readAsStringSync();
+      if (retiredRoute.hasMatch(source)) {
+        violations.add(entity.path);
+      }
+    }
+
+    expect(
+      violations,
+      isEmpty,
+      reason: '可执行工具不得再启动已删除的 3v3 route:\n${violations.join('\n')}',
+    );
+  });
 }

@@ -12,10 +12,11 @@ void main() {
     expect(parseVisualRoute(''), isNull);
     expect(parseVisualRoute('battle_scene'), isNull);
     expect(parseVisualRoute('battle_v2_neutral_3v3'), isNull);
+    expect(parseVisualRoute('battle_tap_live'), isNull);
     expect(parseVisualRoute('nope'), isNull);
   });
 
-  test('Phase 0A 六个目检入口完整且不含旧 3v3 命名', () {
+  test('Phase 0A 七个目检/采样入口完整且不含旧 3v3 命名', () {
     final ids = VisualRoute.values
         .where((route) => route.name.startsWith('phase0aBattle'))
         .map((route) => route.id)
@@ -23,6 +24,7 @@ void main() {
 
     expect(ids, <String>[
       'phase0a_battle_playable',
+      'phase0a_battle_profile',
       'phase0a_battle_attack_feedback',
       'phase0a_battle_gather_feedback',
       'phase0a_battle_clear_feedback',

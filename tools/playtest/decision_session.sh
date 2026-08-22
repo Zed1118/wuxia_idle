@@ -30,7 +30,7 @@ usage() {
 步号:
   1  A·一#17 桃花岛入口候选图(open 候选图 + 真机对照提示)
   2  A·一#19 资质 chip(视觉路由 lineage_character_detail)
-  3  A·二#7  立绘融合(视觉路由 battle_v2_neutral_3v3)
+  3  A·二#7  旧 3v3 立绘融合决策（路线 C 已退役）
   4  B·一#4  丹房强度(启游戏,玩丹房)
   5  B·一#5  残页集齐(启游戏,玩爬塔残页)
   6  B·一#6  高熟练度难度(启游戏,玩高熟练度)
@@ -242,23 +242,11 @@ step2() {
 # ── 步骤 3:二#7 立绘融合 ────────────────────────────────────────────
 step3() {
   echo "╔══════════════════════════════════════════════════════════════╗"
-  echo "║ 步 3 · A 组 · 二#7 战斗屏立绘融合观感                       ║"
+  echo "║ 步 3 · A 组 · 二#7 旧 3v3 立绘融合决策（已退役）            ║"
   echo "╚══════════════════════════════════════════════════════════════╝"
-  echo "要定什么:战斗屏我方立绘与背景的「大气融合」观感好不好,要不要调三常量。"
-  echo "选项:(a) 维持现状(三常量不动)/(b) 调整三常量(看完定值)"
-  echo
-  launch_route "battle_v2_neutral_3v3" "中性标准 3v3 静态帧(另可参考 battle_scene)"
-  echo "三常量位置:lib/features/battle/presentation/battle_standee_fusion.dart"
-  echo "  battleStandeeFusionLuminanceFloor = 125.0  (:92,明度下沿)"
-  echo "  battleStandeeFusionLuminanceCeil  = 195.0  (:96,明度上沿)"
-  echo "  battleStandeeFusionOpacityAtFull  = 0.85   (:104,满档 opacity)"
-  echo
-  echo "已有证据:16 个背景资产明度全表实测在案(:68-85);取样带跨数据集自校验"
-  echo "误差 5.9/最大 8.9/秩相关 0.80,精度 ±9;cliffwaterfall 侵入已证伪销"
-  echo "(docs/audit/cliffwaterfall_fusion_band_probe_2026-08-05.md);门禁测守边界"
-  echo "(test/features/battle/presentation/battle_standee_fusion_test.dart)。"
-  echo
-  echo "拍完之后:若选 (b),改三个常量值并同步门禁测;不触美术资产(杠杆全在立绘侧)。"
+  echo "该决策依赖的旧 Battle UI V2 路由、融合组件与测试已随路线 C 原子删除。"
+  echo "历史证据保留在 docs/audit；当前 Phase 0A 视觉验收请使用"
+  echo "phase0a_battle_playable / phase0a_battle_boss_mechanics。"
   echo
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "完成。下一步:tools/playtest/decision_session.sh 4"

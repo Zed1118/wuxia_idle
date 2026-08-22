@@ -43,8 +43,8 @@ tools/visual_capture/visual_capture.sh
 tools/visual_capture/visual_capture.sh --suite full
 tools/visual_capture/visual_capture.sh --route main_menu
 tools/visual_capture/visual_capture.sh --suite full --resolutions 1280x720,1440x900,1920x1080
-tools/visual_capture/visual_capture.sh --route battle_scene --hitbox
-tools/visual_capture/visual_capture.sh --route battle_scene --existing-window --all-spaces --resolutions 1440x900
+tools/visual_capture/visual_capture.sh --route phase0a_battle_playable --hitbox
+tools/visual_capture/visual_capture.sh --route phase0a_battle_playable --existing-window --all-spaces --resolutions 1440x900
 tools/visual_capture/visual_capture.sh --dry-run
 ```
 
@@ -134,54 +134,10 @@ flutter pub run tool/visual_acceptance.dart routes --suite full --format ids
 - Command Line Tools 的 `swift`，用于执行 `window_id.swift`。
 - Flutter macOS desktop。
 - Screen Recording 权限：`screencapture`/CGWindowID 捕获需要该权限；无权限时可能失败或退回兜底。
-- Python 侧需要 Pillow、NumPy 与 OpenCV (`cv2`)；OpenCV Canny 固定使用 50/150 阈值，
-  以复现报告中的边缘 IoU 基线。
+- Python 侧只需 Pillow，用于读取截图像素尺寸并推导 DPR。
 
-## Battle UI 95+ reference/current 证据
-
-`analyze_battle_v2_fidelity.py` 默认是严格 reference 模式：manifest 必须包含配置中的
-`battle_tap_live`，母版 SHA 必须匹配，且 current 与 reference 若为同一 PNG 会直接失败。
-它会把 Retina current 缩回逻辑视口、将唯一母版 cover-center 对齐，然后按母版
-`y=60 / y=700` 等比切分顶栏、战场和案台。
-
-```bash
-python3 tools/visual_capture/analyze_battle_v2_fidelity.py \
-  --manifest build/visual_acceptance/battle_sample_95/fidelity_manifest.json \
-  --output build/visual_acceptance/battle_sample_95/analysis
-```
-
-标准输出包包括：
-
-- `fidelity_manifest.json`：分析时消费的输入清单；
-- `fidelity_metrics.json`：RGB/LAB、Delta E、MAE、Canny 边缘 IoU、结构锚点与 Gate；
-- `fidelity_report.md`：机器证据与待填人工评分表；
-- `diff_full.png`、`diff_header.png`、`diff_field.png`、`diff_desk.png`；
-- `reference_current_side_by_side.png`；
-- `comparisons/<capture>/`：每条 capture 的完整比较图及可选 before/after ROI 证据；
-- `masks/`：人物与语义色诊断 mask。
-
-纯生产路由若只做布局、人物层或 before/after 诊断，必须显式使用
-`--diagnostics-only`；这不会关闭母版 SHA 校验，也不会跳过 manifest 中已有
-`battle_tap_live` 的 reference/current 比较。
-
-before/after 零回归使用 capture 条目的可选 `baseline` 字段，且 baseline 必须带 SHA：
-
-```json
-{
-  "baseline": {
-    "png": "/absolute/path/to/before.png",
-    "sha256": "...",
-    "allowed_change_mask": "/absolute/path/to/allowed.png",
-    "rois": {
-      "hud": {"x": 0, "y": 0, "width": 1672, "height": 60},
-      "field": {"x": 0, "y": 60, "width": 1672, "height": 640}
-    }
-  }
-}
-```
-
-报告会分别列出总变化、mask 内允许变化、mask 外意外变化以及各 ROI 计数；只有明确
-不在改动影响域内的 ROI 才应要求 `unexpected_pixels == 0`。
+旧 Battle UI V2 的 3v3 reference/current 专用分析器、配置和测试已随路线 C 删除。
+历史报告及截图仍留在 `docs/` 追溯，但不能再作为当前 Phase 0A 验收工具。
 
 ## 验证建议
 
