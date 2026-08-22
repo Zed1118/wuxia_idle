@@ -202,43 +202,7 @@ void main() {
 
   test('Windows gate re-derives raw telemetry and validates host facts', () {
     final runs = _windowsRuns(commit, checksum);
-    for (final run in runs) {
-      final viewport = (run['viewport']! as String).split('x');
-      run['_raw_files_present'] = true;
-      run['raw_evidence'] = <String, Object?>{
-        'frames_jsonl': 'frames.jsonl',
-        'memory_gc_jsonl': 'memory_gc.jsonl',
-        'summary_json': 'summary.json',
-        'run_log': 'run.log',
-      };
-      run['_summary'] = <String, Object?>{
-        'schema': 'route-c-production-profile-summary-v1',
-        'run_id': run['run_id'],
-        'sample_seconds': 60,
-        'warmup_seconds': 12,
-        'cooldown_seconds': 30,
-        'sampled_frames': 3600,
-        'p99_total_span_ms': 10.0,
-        'max_consecutive_severe_frames': 0,
-        'frame_streak_gate_passes': true,
-        'gc_telemetry_status': 'GC_TELEMETRY_COLLECTED',
-        'logical_width': int.parse(viewport[0]),
-        'logical_height': int.parse(viewport[1]),
-        'device_pixel_ratio': 1.0,
-        'rss_start_bytes': 100000000,
-        'rss_end_bytes': 110000000,
-      };
-      run['_derived'] = <String, Object?>{
-        'sampled_frames': 3600,
-        'p99_total_span_ms': 10.0,
-        'max_consecutive_severe_frames': 0,
-        'max_consecutive_build_over_budget': 0,
-        'max_consecutive_raster_over_budget': 0,
-        'gc_telemetry_status': 'GC_TELEMETRY_COLLECTED',
-        'rss_start_bytes': 100000000,
-        'rss_end_bytes': 110000000,
-      };
-    }
+    _addValidRawEvidence(runs);
     final host = _windowsHost();
 
     expect(
@@ -269,6 +233,44 @@ void main() {
       contains('raw telemetry fails the composite thresholds'),
     );
   });
+
+  test(
+    'Windows physical gate accepts recorded discrete-GPU host, rejects RDP',
+    () {
+      final runs = _windowsRuns(commit, checksum);
+      _addValidRawEvidence(runs);
+      final host = _windowsHost();
+
+      final passed = validateWindowsRuns(
+        runs,
+        expectedCommit: commit,
+        requireRawEvidence: true,
+        hostManifest: host,
+        actualHostManifestChecksum: checksum,
+        actualBinaryChecksum: checksum,
+        actualFixtureChecksum: checksum,
+      );
+      expect(passed.state, GateState.pass);
+
+      (host['session']! as Map<String, Object?>)['remote_desktop'] = true;
+      final failed = validateWindowsRuns(
+        runs,
+        expectedCommit: commit,
+        requireRawEvidence: true,
+        hostManifest: host,
+        actualHostManifestChecksum: checksum,
+        actualBinaryChecksum: checksum,
+        actualFixtureChecksum: checksum,
+      );
+      expect(failed.state, GateState.invalid);
+      expect(
+        failed.details,
+        contains(
+          'Windows host manifest fails physical-host/local-console rules',
+        ),
+      );
+    },
+  );
 
   test('Windows raw parser derives percentile, streak, GC and RSS', () async {
     final directory = await Directory.systemTemp.createTemp(
@@ -425,32 +427,83 @@ List<Map<String, Object?>> _windowsRuns(String commit, String checksum) =>
             'fixture_sha256': checksum,
             'host_manifest_sha256': checksum,
             'viewport': viewport,
-            'minimum_spec_attested': true,
+            'windows_physical_attested': true,
             'local_console': true,
             'renderer': 'impeller-d3d',
             'composite_gate': 'PASS',
           },
     ];
 
+void _addValidRawEvidence(List<Map<String, Object?>> runs) {
+  for (final run in runs) {
+    final viewport = (run['viewport']! as String).split('x');
+    run['_raw_files_present'] = true;
+    run['raw_evidence'] = <String, Object?>{
+      'frames_jsonl': 'frames.jsonl',
+      'memory_gc_jsonl': 'memory_gc.jsonl',
+      'summary_json': 'summary.json',
+      'run_log': 'run.log',
+    };
+    run['_summary'] = <String, Object?>{
+      'schema': 'route-c-production-profile-summary-v1',
+      'run_id': run['run_id'],
+      'sample_seconds': 60,
+      'warmup_seconds': 12,
+      'cooldown_seconds': 30,
+      'sampled_frames': 3600,
+      'p99_total_span_ms': 10.0,
+      'max_consecutive_severe_frames': 0,
+      'frame_streak_gate_passes': true,
+      'gc_telemetry_status': 'GC_TELEMETRY_COLLECTED',
+      'logical_width': int.parse(viewport[0]),
+      'logical_height': int.parse(viewport[1]),
+      'device_pixel_ratio': 1.0,
+      'rss_start_bytes': 100000000,
+      'rss_end_bytes': 110000000,
+    };
+    run['_derived'] = <String, Object?>{
+      'sampled_frames': 3600,
+      'p99_total_span_ms': 10.0,
+      'max_consecutive_severe_frames': 0,
+      'max_consecutive_build_over_budget': 0,
+      'max_consecutive_raster_over_budget': 0,
+      'gc_telemetry_status': 'GC_TELEMETRY_COLLECTED',
+      'rss_start_bytes': 100000000,
+      'rss_end_bytes': 110000000,
+    };
+  }
+}
+
 Map<String, Object?> _windowsHost() => <String, Object?>{
   'status': 'RECORDED',
-  'device': <String, Object?>{'gpu_is_integrated': true, 'plugged_in': true},
+  'device': <String, Object?>{
+    'os_caption': 'Windows 11 Pro',
+    'os_version': '10.0.26200',
+    'os_build': '26200',
+    'cpu_model': 'AMD Ryzen 7 5800X',
+    'gpu_name': 'NVIDIA GeForce RTX 4070 SUPER',
+    'gpu_driver_version': '32.0.16.1062',
+    'ram_gib': 16,
+    'storage_type': 'SSD',
+    'power_mode': 'High performance',
+    'plugged_in': true,
+  },
   'display': <String, Object?>{
-    'refresh_rate_hz': 60,
+    'refresh_rate_hz': 143,
     'scale_percent': 100,
     'required_logical_viewports': <String>['1280x720', '1440x900'],
     'local_interactive_session': true,
   },
   'session': <String, Object?>{
+    'session_name': 'Console',
     'remote_desktop': false,
     'virtual_machine': false,
   },
   'runtime': <String, Object?>{'renderer': 'impeller-d3d'},
   'attestation': <String, Object?>{
-    'valid_for_minimum_spec_gate': true,
-    'cpu_at_or_below_target': true,
-    'gpu_at_or_below_target': true,
-    'ram_matches_target': true,
+    'valid_for_windows_physical_gate': true,
+    'physical_machine_confirmed': true,
+    'local_console_confirmed': true,
     'power_mode_confirmed_best_performance': true,
   },
 };

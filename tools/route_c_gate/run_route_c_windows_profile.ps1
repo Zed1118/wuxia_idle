@@ -23,26 +23,47 @@ New-Item -ItemType Directory -Force -Path $ResultRoot | Out-Null
 
 $HostFacts = Get-Content -Raw -Path $HostManifest | ConvertFrom-Json
 if ($HostFacts.status -ne "RECORDED") { throw "Host manifest status must be RECORDED." }
-if (-not $HostFacts.attestation.valid_for_minimum_spec_gate) {
-  throw "Host manifest is not attested for the minimum-spec Gate."
+if (-not $HostFacts.attestation.valid_for_windows_physical_gate) {
+  throw "Host manifest is not attested for the Windows physical Gate."
 }
-if (-not $HostFacts.attestation.cpu_at_or_below_target -or
-    -not $HostFacts.attestation.gpu_at_or_below_target -or
-    -not $HostFacts.attestation.ram_matches_target -or
+if (-not $HostFacts.attestation.physical_machine_confirmed -or
+    -not $HostFacts.attestation.local_console_confirmed -or
     -not $HostFacts.attestation.power_mode_confirmed_best_performance -or
-    -not $HostFacts.device.gpu_is_integrated -or
     -not $HostFacts.device.plugged_in) {
-  throw "CPU, GPU, RAM, power, integrated-GPU and plugged-in attestations must all pass."
+  throw "Physical-machine, local-console, power and plugged-in attestations must all pass."
 }
 if (-not $HostFacts.display.local_interactive_session -or
     $HostFacts.session.remote_desktop -or $HostFacts.session.virtual_machine) {
   throw "The Gate requires a local physical Console session."
 }
-if ($HostFacts.display.refresh_rate_hz -ne 60 -or $HostFacts.display.scale_percent -ne 100) {
-  throw "The Gate requires 60Hz and 100% display scaling."
+$ActualSessionName = [string]$env:SESSIONNAME
+if ($ActualSessionName -ne "Console" -or
+    [string]$HostFacts.session.session_name -ne $ActualSessionName) {
+  throw "The Gate runner must execute in the recorded visible Console session, not an SSH service or RDP session."
 }
-if ($HostFacts.runtime.renderer -match "FILL_|UNKNOWN") {
+if ($HostFacts.display.refresh_rate_hz -le 0 -or $HostFacts.display.scale_percent -ne 100) {
+  throw "The Gate requires a recorded refresh rate and 100% display scaling."
+}
+if ([string]::IsNullOrWhiteSpace($HostFacts.runtime.renderer) -or
+    $HostFacts.runtime.renderer -match "FILL_|UNKNOWN") {
   throw "Record the actual Flutter renderer before running."
+}
+$RecordedHostValues = @(
+  $HostFacts.device.os_caption,
+  $HostFacts.device.os_version,
+  $HostFacts.device.os_build,
+  $HostFacts.device.cpu_model,
+  $HostFacts.device.gpu_name,
+  $HostFacts.device.gpu_driver_version,
+  $HostFacts.device.storage_type,
+  $HostFacts.device.power_mode
+  $HostFacts.session.session_name
+)
+if ($HostFacts.device.ram_gib -le 0 -or
+    ($RecordedHostValues | Where-Object {
+      [string]::IsNullOrWhiteSpace($_) -or $_ -match "FILL_|UNKNOWN"
+    })) {
+  throw "Record all physical Windows host facts before running."
 }
 
 $ActualCommit = (& git -C $RepositoryRoot rev-parse HEAD | Out-String).Trim()
@@ -111,7 +132,7 @@ for ($Index = 1; $Index -le $Repeat; $Index++) {
     [double]$Summary.rss_end_bytes -le $RssLimit
 
   $Manifest = [ordered]@{
-    schema = "route-c-windows-production-run-v1"
+    schema = "route-c-windows-production-run-v2"
     run_id = $RunId
     app_package = "wuxia_idle"
     route_id = "phase0a_battle_profile"
@@ -120,7 +141,7 @@ for ($Index = 1; $Index -le $Repeat; $Index++) {
     fixture_sha256 = $ActualFixtureChecksum
     host_manifest_sha256 = $HostChecksum
     viewport = $Viewport
-    minimum_spec_attested = [bool]$HostFacts.attestation.valid_for_minimum_spec_gate
+    windows_physical_attested = [bool]$HostFacts.attestation.valid_for_windows_physical_gate
     local_console = [bool]$HostFacts.display.local_interactive_session
     renderer = [string]$HostFacts.runtime.renderer
     composite_gate = $(if ($CompositePass) { "PASS" } else { "FAIL" })

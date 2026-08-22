@@ -1,5 +1,5 @@
 {
-  "schema": "route-c-windows-production-run-v1",
+  "schema": "route-c-windows-production-run-v2",
   "run_id": "REPLACE_WITH_UNIQUE_RUN_ID",
   "app_package": "wuxia_idle",
   "route_id": "phase0a_battle_profile",
@@ -8,7 +8,7 @@
   "fixture_sha256": "REPLACE_WITH_PHASE0A_DEBUG_FIXTURE_SHA256",
   "host_manifest_sha256": "REPLACE_WITH_HOST_MANIFEST_SHA256",
   "viewport": "1280x720",
-  "minimum_spec_attested": false,
+  "windows_physical_attested": false,
   "local_console": false,
   "renderer": "REPLACE_WITH_ACTUAL_RENDERER",
   "composite_gate": "PENDING",

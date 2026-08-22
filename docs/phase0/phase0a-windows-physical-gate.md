@@ -1,110 +1,85 @@
-# Phase 0A Windows 最低档物理机 Gate 手册
+# Phase 0A Windows 本地物理机生产兼容性 Gate 手册
 
-> 当前状态：`WINDOWS_PENDING`。本手册中 `tools/phase0minus_probe` 命令是历史 Flame
-> 探针口径，不能签 Route C 生产根应用。硬件资格与物理机约束仍有效；
-> 生产证据结构与预检见
-> [`route-c-external-gate-preflight.md`](./route-c-external-gate-preflight.md)。新的根应用采样器未落地前，
-> 不得执行下方旧矩阵并冒签。
+> 当前状态：`WINDOWS_PENDING`。2026-08-23 起，本 Gate 不再用于证明
+> i5-8250U/UHD 620/8GB 等产品最低配置，只验证被记录的 Windows 实体机生产兼容性。
+> 当前 Route C 生产证据结构与独立裁决见
+> [`route-c-external-gate-preflight.md`](./route-c-external-gate-preflight.md)。
 
 ## 1. 可签字设备
 
-首轮目标下界为：
+签字主机必须满足：
 
-- Windows 10 22H2 或 Windows 11 64-bit；
-- Intel Core i5-8250U 级或性能不高于该档的支持 CPU；
-- Intel UHD Graphics 620 级 DirectX 11 核显；
-- 8GB RAM、SSD；
+- Windows 10 22H2 或 Windows 11 64-bit 实体机；
+- 本地已登录 Console，可见交互桌面，非 RDP、非 VM、非云机；
 - 插电并使用最佳性能电源模式；
-- 60Hz、100% Windows 缩放；本地桌面能完整容纳 1280×720 与 1440×900 两个逻辑视口。
+- 100% Windows 缩放，桌面可完整容纳 1280×720 与 1440×900 两个逻辑视口；
+- OS、CPU、GPU、driver、RAM、SSD、电源、renderer、刷新率和会话事实全部据实记录。
 
-以下结果只能用于构建/脚本 smoke，不能签最低档性能 Gate：
+独显、更强 CPU、16GB+ RAM 和高刷新率不再否决。当前 Ryzen 7 5800X、RTX 4070 SUPER、
+16GB、143Hz 主机可以签本 Gate，但所得结果只能证明这台物理基线兼容，不能据此定义或
+宣传产品最低配置。
 
-- GitHub Actions、云主机、虚拟机或云桌面；
-- Remote Desktop/RDP 会话；
-- GTX/RTX 等独显或明显强于目标档的 CPU；
-- 1366×768 且没有 1440×900/60Hz 外接显示器的机器；
-- 窗口被最小化、完全遮挡、锁屏或进入节能状态的运行。
-
-SSH 可以用于传包和取回结果，但采样必须由物理机本地登录用户在可见交互桌面启动。SSH service session 中启动的不可见 GUI 进程不能签字。
+以下情况不能签字：GitHub Actions、虚拟机、云桌面、RDP、锁屏、最小化或完全遮挡的窗口、
+SSH service session 中不可见的 GUI，以及任何占位或不实 attestation。SSH 只用于传包、
+启动本地交互计划任务和取回结果；采样应用必须运行在物理机本地用户的可见 Console。
 
 ## 2. 冻结版本
 
-Windows 与 Mac 正式矩阵必须使用同一 git commit 和同一 `probe_scenarios.yaml` checksum。开始前记录：
+Windows 与 Mac 正式矩阵必须绑定同一干净 git commit。Windows 六轮还必须使用同一个
+Profile `app.so`、同一份 `data/phase0a_debug_battle.yaml` 和同一份冻结主机 manifest。
+任何 runner、文档合同或验收标准改动产生新 commit 后，旧 commit 的 Mac/Windows 成绩
+都不能代签。
+
+## 3. 主机信息
+
+在候选仓库根目录复制模板：
 
 ```powershell
-git rev-parse HEAD
-git status --porcelain
-Get-FileHash -Algorithm SHA256 .\tools\phase0minus_probe\assets\probe_scenarios.yaml
+Copy-Item .\tools\route_c_gate\windows_physical_gate_manifest.template.json `
+  .\windows_physical_gate_manifest.captured.json
 ```
 
-工作树必须为空。若为补 Windows runner 产生了新 commit，则必须在这个最终 commit 上重新生成 Mac 正式矩阵，不能以“运行时代码看起来没变”替代同 commit 规则。
+本地核对 Windows 设置、任务管理器、`dxdiag` 和 Flutter 运行日志后填写：
 
-## 3. 采集并人工确认主机信息
+- `status: RECORDED`，清除所有 `FILL_*` / `UNKNOWN`；
+- 记录实际 renderer、driver、显示刷新率、缩放、电源和硬件事实；
+- 仅在实体机、本地 Console、非 RDP、非 VM、插电最佳性能均真实成立时，将对应
+  `attestation` 项设为 `true`；
+- `validation_notes` 写清核对依据，不得只写空泛的“已确认”。
 
-在仓库根目录执行：
-
-```powershell
-cd .\tools\phase0minus_probe
-.\scripts\collect_phase0a_windows_host_manifest.ps1 `
-  -OutputPath .\config\windows_minimum_spec_manifest.captured.json
-```
-
-采集脚本故意输出 `CAPTURED_NOT_ATTESTED`，并把以下项目保持为失败值，防止机器仅“能运行”就被误签：
-
-- `runtime.renderer`；
-- `device.gpu_is_integrated`；
-- `attestation.*`。
-
-操作者须在本地核对任务管理器、`dxdiag`、Windows 显示设置和 Flutter GPU/DevTools 信息，再将捕获文件改为：
-
-- `status: RECORDED`；
-- 填入实际 renderer，不能保留 `FILL_*` / `UNKNOWN`；
-- 确认实际使用核显后设 `gpu_is_integrated: true`；
-- 确认没有 RDP/VM、为本地 Console 会话；
-- 只有机器确实不强于目标下界时，才把三项性能档 attestation 与 `valid_for_minimum_spec_gate` 改为 `true`；
-- 在 `validation_notes` 写明核对依据，不写空泛的“已确认”。
-
-模板位于 `config/windows_minimum_spec_manifest.template.json`。不得把模板原样当结果。
+捕获文件位于仓库根并被 gitignore，不能把模板原样当结果，也不能提交个人主机证据。
 
 ## 4. 执行正式矩阵
 
-关闭浏览器、IDE、录屏、系统更新和其他高负载程序；保持电源、60Hz、100% 缩放和屏幕常亮。不要操作采样窗口。
+关闭浏览器视频、录屏、系统更新和其他高负载程序；保持屏幕常亮、窗口可见，不操作采样窗口：
 
 ```powershell
-cd .\tools\phase0minus_probe
-$Commit = git -C ..\.. rev-parse HEAD
-$Checksum = (Get-FileHash -Algorithm SHA256 .\assets\probe_scenarios.yaml).Hash.ToLowerInvariant()
-.\scripts\run_phase0a_windows_matrix.ps1 `
-  -HostManifest .\config\windows_minimum_spec_manifest.captured.json `
+$Commit = git rev-parse HEAD
+if (git status --porcelain) { throw "worktree must be clean" }
+$Fixture = (Get-FileHash -Algorithm SHA256 .\data\phase0a_debug_battle.yaml).Hash.ToLowerInvariant()
+.\tools\route_c_gate\run_route_c_windows_matrix.ps1 `
+  -HostManifest .\windows_physical_gate_manifest.captured.json `
   -ExpectedCommit $Commit `
-  -ExpectedScenarioChecksum $Checksum
+  -ExpectedFixtureChecksum $Fixture
 ```
 
-脚本只构建一次 Profile binary，然后自动执行：
-
-- 1280×720 × 3 次；
-- 1440×900 × 3 次；
-- 每次固定 `PROBE_MODE=phase0a_replay`、DPR 1、60Hz、完整 12s warmup + 60s sample + 30s cooldown；
-- 每个 run 生成 `frames.jsonl`、`memory_gc.jsonl`、`summary.json`、`manifest.json`、`run.log`；
-- 最后严格验证并生成 `windows_gate_validation.{json,md}`、`SHA256SUMS.txt` 和 zip。
-
-任一 run 失败、窗口落错显示器、GC 缺失、checksum/commit 不一致、五项复合 Gate 非 PASS、结果少于 6 次，矩阵脚本必须非零退出。失败后保留原始目录供诊断，不挑最好成绩重签。
+脚本构建一次 Profile 根应用，然后运行 1280×720 ×3 与 1440×900 ×3。每轮固定 DPR 1、
+12 秒预热、60 秒采样、30 秒冷却；任一轮失败即中止并保留原始目录，不允许挑最好成绩重签。
+刷新率按主机实际值记录，不要求伪装为 60Hz。
 
 ## 5. 回传与裁决
 
-回传整个 `<timestamp>.zip`，不要只截图或只抄 p99。主窗口须复核：
+回传完整 zip，主端独立验证：
 
-- host manifest 的物理机资格与人工依据；
-- 6 个唯一 run、两视口各 3 次；
-- 同 commit、同 scenario checksum、同 binary checksum；
-- 原始文件 SHA-256；
-- `timing_gc`、`resident_pool`、`workload_coverage`、`rss`、`collision_workload` 全 PASS；
-- renderer、driver、DPR、刷新率和本地会话均有证据。
+- 六个唯一 run、两视口各三次；
+- 同 commit、fixture、host manifest 和 `app.so` checksum；
+- 原始帧、GC/RSS、对象池、碰撞负载与复合 Gate 全 PASS；
+- renderer、driver、DPR、刷新率、100% 缩放和本地 Console 证据完整。
 
-脚本输出 `PHASE0A_WINDOWS_MATRIX_PASS` 只表示 Windows 性能矩阵机械 Gate 通过。它不能代签 6 人爽感/可读性 Gate，也不自动批准进入 0B；最终仍由项目主人裁决。
+机械输出 PASS 只证明当前记录的 Windows 实体机生产兼容。它不证明更弱硬件可运行，
+不制定产品最低配置，也不代签玩法手感或未来正式素材负载。
 
 ## 6. CI 边界
 
-CI 可以做：Windows Profile 编译、Dart/Flutter 测试、PowerShell 语法 smoke、validator fixture、结果包结构与 checksum 校验。
-
-CI 绝不能代签：最低档物理硬件、实际核显/driver/renderer、60Hz 本地显示、前台窗口调度、真实帧时/GC/RSS/对象池/碰撞性能以及人工画面与手感。
+CI 可以验证 Windows Profile 编译、Dart/Flutter 测试、PowerShell 合同和证据包 checksum。
+CI 不能代签物理显示、前台窗口调度、真实 renderer/driver、实体机帧时或主机 attestation。

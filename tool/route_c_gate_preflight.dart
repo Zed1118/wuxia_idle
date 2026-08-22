@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 const routeCHumanSessionSchema = 'route-c-human-session-v1';
-const routeCWindowsRunSchema = 'route-c-windows-production-run-v1';
+const routeCWindowsRunSchema = 'route-c-windows-production-run-v2';
 const routeCProductionRoute = 'phase0a_battle_playable';
 const routeCProductionProfileRoute = 'phase0a_battle_profile';
 
@@ -509,7 +509,7 @@ GateCheck validateWindowsRuns(
   final records = runs.toList(growable: false);
   if (records.isEmpty) {
     return const GateCheck('windows_gate', GateState.pending, <String>[
-      'No minimum-spec Windows production-run evidence found.',
+      'No physical Windows production-run evidence found.',
     ]);
   }
   final problems = <String>[];
@@ -551,10 +551,10 @@ GateCheck validateWindowsRuns(
     }
     final viewport = record['viewport']?.toString() ?? '';
     viewportCounts[viewport] = (viewportCounts[viewport] ?? 0) + 1;
-    if (record['minimum_spec_attested'] != true ||
+    if (record['windows_physical_attested'] != true ||
         record['local_console'] != true ||
         record['composite_gate'] != 'PASS') {
-      problems.add('$id lacks minimum-spec/local-console/composite PASS');
+      problems.add('$id lacks physical-host/local-console/composite PASS');
     }
     if (requireRawEvidence) {
       _validateWindowsRawEvidence(record, id, viewport, problems);
@@ -603,7 +603,7 @@ GateCheck validateWindowsRuns(
     return GateCheck('windows_gate', GateState.invalid, problems);
   }
   return GateCheck('windows_gate', GateState.pass, <String>[
-    '6 minimum-spec runs use one root-app AOT payload at $expectedCommit.',
+    '6 physical Windows runs use one root-app AOT payload at $expectedCommit.',
   ]);
 }
 
@@ -723,17 +723,34 @@ void _validateWindowsHost(
   final attestation = _objectMap(host['attestation']) ?? const {};
   final renderer = runtime['renderer']?.toString() ?? '';
   final requiredViewports = display['required_logical_viewports'];
+  final recordedDeviceValues = <Object?>[
+    device['os_caption'],
+    device['os_version'],
+    device['os_build'],
+    device['cpu_model'],
+    device['gpu_name'],
+    device['gpu_driver_version'],
+    device['storage_type'],
+    device['power_mode'],
+  ];
+  final hasUnrecordedDeviceValue = recordedDeviceValues.any((value) {
+    final text = value?.toString() ?? '';
+    return text.isEmpty || text.contains('FILL_') || text.contains('UNKNOWN');
+  });
   if (host['status'] != 'RECORDED' ||
-      attestation['valid_for_minimum_spec_gate'] != true ||
-      attestation['cpu_at_or_below_target'] != true ||
-      attestation['gpu_at_or_below_target'] != true ||
-      attestation['ram_matches_target'] != true ||
+      attestation['valid_for_windows_physical_gate'] != true ||
+      attestation['physical_machine_confirmed'] != true ||
+      attestation['local_console_confirmed'] != true ||
       attestation['power_mode_confirmed_best_performance'] != true ||
-      device['gpu_is_integrated'] != true ||
       device['plugged_in'] != true ||
+      _asDouble(device['ram_gib']) == null ||
+      _asDouble(device['ram_gib'])! <= 0 ||
+      hasUnrecordedDeviceValue ||
       display['local_interactive_session'] != true ||
-      display['refresh_rate_hz'] != 60 ||
+      _asDouble(display['refresh_rate_hz']) == null ||
+      _asDouble(display['refresh_rate_hz'])! <= 0 ||
       display['scale_percent'] != 100 ||
+      session['session_name']?.toString().toLowerCase() != 'console' ||
       session['remote_desktop'] != false ||
       session['virtual_machine'] != false ||
       renderer.isEmpty ||
@@ -743,7 +760,7 @@ void _validateWindowsHost(
       !requiredViewports.contains('1280x720') ||
       !requiredViewports.contains('1440x900')) {
     problems.add(
-      'Windows host manifest fails minimum-spec/local-console rules',
+      'Windows host manifest fails physical-host/local-console rules',
     );
   }
 }

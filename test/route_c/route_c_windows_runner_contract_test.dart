@@ -24,6 +24,13 @@ void main() {
       expect(runner, contains('GC_TELEMETRY_COLLECTED'));
       expect(runner, contains('sampled_frames -ge 3000'));
       expect(runner, contains('p99_total_span_ms -lt 16.6'));
+      expect(runner, contains('valid_for_windows_physical_gate'));
+      expect(runner, contains('windows_physical_attested'));
+      expect(runner, contains(r'$env:SESSIONNAME'));
+      expect(runner, contains(r'$ActualSessionName -ne "Console"'));
+      expect(runner, isNot(contains('cpu_at_or_below_target')));
+      expect(runner, isNot(contains('gpu_at_or_below_target')));
+      expect(runner, isNot(contains('ram_matches_target')));
     },
   );
 
@@ -74,11 +81,11 @@ void main() {
 
     expect(
       handoff,
-      contains(r'-HostManifest .\windows_minimum_spec_manifest.captured.json'),
+      contains(r'-HostManifest .\windows_physical_gate_manifest.captured.json'),
     );
     expect(
       ignore.split('\n'),
-      contains('/windows_minimum_spec_manifest.captured.json'),
+      contains('/windows_physical_gate_manifest.captured.json'),
     );
   });
 

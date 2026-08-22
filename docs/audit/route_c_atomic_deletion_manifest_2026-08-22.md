@@ -55,9 +55,9 @@ Route C 删除裁决。
 全局删除候选仅在以下证据同时成立后 merge：
 
 - 整合态 Mac 工程 Gate 与自动目检通过；
-- 目标最低档 Windows 物理机按 `docs/phase0/phase0a-windows-physical-gate.md` 过线，且证据 commit 与本删除基线一致。
+- Windows 本地物理机按 `docs/phase0/phase0a-windows-physical-gate.md` 通过生产兼容性矩阵，且证据 commit 与本删除基线一致。
 
-2026-08-23 用户取消六人真人 Gate，历史问卷工具仅留档且不参与 preflight。目前最低档 Windows 物理证据尚未取得，因此本批只完成生产切换、删除候选物化与 Mac 工程取证；不能把候选误报为已合入主线或已发布。
+2026-08-23 用户取消六人真人 Gate，并将 Windows 标准由目标最低档性能 Gate 改为本地物理机生产兼容性 Gate。当前联网实体机具备签字资格，但仍须取得与最终候选同 commit 的原始矩阵证据；本 Gate 不定义产品最低配置。证据完成前不能把候选误报为已合入主线或已发布。
 
 ## 删除后负向核对
 

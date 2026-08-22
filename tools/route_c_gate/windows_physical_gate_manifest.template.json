@@ -9,7 +9,6 @@
     "cpu_model": "FILL_ACTUAL_CPU_MODEL",
     "gpu_name": "FILL_ACTUAL_GPU_NAME",
     "gpu_driver_version": "FILL_ACTUAL_DRIVER_VERSION",
-    "gpu_is_integrated": false,
     "ram_gib": 0,
     "storage_type": "FILL_ACTUAL_STORAGE_TYPE",
     "power_mode": "FILL_ACTUAL_POWER_MODE",
@@ -32,11 +31,10 @@
     "dart_version": "FILL_ACTUAL_DART_VERSION"
   },
   "attestation": {
-    "valid_for_minimum_spec_gate": false,
-    "cpu_at_or_below_target": false,
-    "gpu_at_or_below_target": false,
-    "ram_matches_target": false,
+    "valid_for_windows_physical_gate": false,
+    "physical_machine_confirmed": false,
+    "local_console_confirmed": false,
     "power_mode_confirmed_best_performance": false,
-    "validation_notes": "A stronger machine, discrete GPU, VM, cloud runner, RDP or unattested host cannot sign this gate."
+    "validation_notes": "Record the actual physical Windows host. VM, cloud runner, RDP, hidden service-session GUI or unattested host cannot sign this gate."
   }
 }
