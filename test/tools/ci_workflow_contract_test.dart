@@ -14,7 +14,7 @@ void main() {
     expect(ci, isNot(contains('--exclude-tags')));
   });
 
-  test('CI 依赖解析锁定 lockfile 且主分析覆盖默认全仓边界', () async {
+  test('CI 依赖解析锁定 lockfile 且主分析覆盖根应用工具边界', () async {
     final ci = await File('.github/workflows/ci.yml').readAsString();
     final windows = await File(
       '.github/workflows/windows-release.yml',
@@ -25,8 +25,9 @@ void main() {
       2,
     );
     expect(windows, contains('flutter pub get --enforce-lockfile'));
-    expect(ci, contains('run: flutter analyze --no-pub'));
+    expect(ci, contains('run: flutter analyze --no-pub lib test tool'));
     expect(ci, isNot(contains('run: flutter analyze lib/ test/')));
+    expect(ci, isNot(contains('run: flutter analyze --no-pub\n')));
   });
 
   test('覆盖率基线是带采样信息的正数', () async {
