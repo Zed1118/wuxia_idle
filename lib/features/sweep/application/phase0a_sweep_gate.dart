@@ -22,12 +22,11 @@ final class Phase0aSweepGate {
   @visibleForTesting
   static set testOverride(bool? value) => _testOverride = value;
 
-  /// 与手动 Phase 0A 主线纵切保持同一范围：一周目 Ch1 五关。
+  /// 主线扫荡范围与手动 Phase 0A 主线门对齐：全部主线 + 非空敌队 + 合法 cycle(>=1)。
   static bool shouldUseMainline(StageDef stage, {required int cycle}) =>
       enabled &&
-      cycle == 1 &&
+      cycle >= 1 &&
       stage.stageType == StageType.mainline &&
-      RegExp(r'^stage_01_0[1-5]$').hasMatch(stage.id) &&
       stage.enemyTeam.isNotEmpty;
 
   /// 与塔手动灰度面一致：全部合法生产塔层。

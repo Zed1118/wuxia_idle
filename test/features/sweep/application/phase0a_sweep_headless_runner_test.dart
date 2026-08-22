@@ -37,22 +37,31 @@ void main() {
     if (await tempDir.exists()) await tempDir.delete(recursive: true);
   });
 
-  test('灰度门默认关；开门后主线只覆盖一周目 Ch1，塔覆盖合法层', () {
+  test('灰度门默认关；开门后主线覆盖全部主线非空敌队 cycle>=1，塔覆盖合法层', () {
     final repo = GameRepository.instance;
     final ch1 = repo.getStage('stage_01_01');
-    final ch2 = repo.getStage('stage_02_01');
+    final ch21 = repo.getStage('stage_21_01');
     final floor = repo.towerFloors.first;
+    final demon = repo.getStage('stage_inner_demon_01');
+    final light = repo.getStage('stage_light_foot_01');
+    final mass = repo.getStage('stage_mass_battle_01');
 
     expect(Phase0aSweepGate.enabled, isFalse);
     expect(Phase0aSweepGate.shouldUseMainline(ch1, cycle: 1), isFalse);
     Phase0aSweepGate.testOverride = true;
+    // Ch1 一周目 / 二周目(cycle>=1 合法)与真实 Ch21 主线均放行。
     expect(Phase0aSweepGate.shouldUseMainline(ch1, cycle: 1), isTrue);
-    expect(Phase0aSweepGate.shouldUseMainline(ch1, cycle: 2), isFalse);
-    expect(Phase0aSweepGate.shouldUseMainline(ch2, cycle: 1), isFalse);
+    expect(Phase0aSweepGate.shouldUseMainline(ch1, cycle: 2), isTrue);
+    expect(Phase0aSweepGate.shouldUseMainline(ch21, cycle: 1), isTrue);
+    // 心魔/轻功/群战拒绝，留主 agent 独立迁移。
+    expect(Phase0aSweepGate.shouldUseMainline(demon, cycle: 1), isFalse);
+    expect(Phase0aSweepGate.shouldUseMainline(light, cycle: 1), isFalse);
+    expect(Phase0aSweepGate.shouldUseMainline(mass, cycle: 1), isFalse);
+    // 塔全部合法层继续支持。
     expect(Phase0aSweepGate.shouldUseTower(floor), isTrue);
   });
 
-  test('真实 Ch1 与代表塔层含机制 Boss 均终局，正 id 参与者只有祖师', () async {
+  test('真实 Ch1/Ch21、cycle 2 与代表塔层含机制 Boss 均终局，正 id 参与者只有祖师', () async {
     final isar = IsarSetup.instance;
     final save = await isar.saveDatas.get(0);
     final founderId =
@@ -71,6 +80,27 @@ void main() {
         ),
       );
     }
+    // 扩面：真实 Ch1 二周目(cycle 2)与 Ch21(武圣收官章)主线均须跑至终局。
+    results.add(
+      await Phase0aSweepHeadlessRunner(
+        isar: isar,
+        numbers: GameRepository.instance.numbers,
+        rng: Random(20260822),
+      ).runMainline(
+        stage: GameRepository.instance.getStage('stage_01_01'),
+        cycleIndex: 2,
+      ),
+    );
+    results.add(
+      await Phase0aSweepHeadlessRunner(
+        isar: isar,
+        numbers: GameRepository.instance.numbers,
+        rng: Random(20260822),
+      ).runMainline(
+        stage: GameRepository.instance.getStage('stage_21_01'),
+        cycleIndex: 1,
+      ),
+    );
     for (final floorIndex in [1, 25, 30, 49]) {
       results.add(
         await Phase0aSweepHeadlessRunner(

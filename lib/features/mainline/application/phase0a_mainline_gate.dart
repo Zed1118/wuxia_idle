@@ -11,8 +11,10 @@ import '../../../core/domain/enums.dart';
 /// 关走 0A 引擎全链。正式全量切换 + 旧入口拆除仍留路线 C 第三序
 /// (同次 merge,spec §5 非目标约束),本门届时整类删除。
 ///
-/// 门控面只含 Ch1 五关的一周目:塔/远征/断魂庄/群战/轻功、Ch2+ 与
-/// 二周目均继续走旧入口,严格守 Phase 1 纵切已拍范围。
+/// 门控面扩至全部主线:凡 `StageType.mainline` 且 `enemyTeam` 非空、
+/// 合法 cycle(>=1)即走 0A,不再限 Ch1 一周目。心魔(innerDemon)/轻功
+/// (lightFoot)/群战(massBattle)与剧情空敌关(stageType 非 mainline
+/// 或 enemyTeam 空)继续走旧入口,严格守边界。
 final class Phase0aMainlineGate {
   const Phase0aMainlineGate._();
 
@@ -29,10 +31,10 @@ final class Phase0aMainlineGate {
   @visibleForTesting
   static set testOverride(bool? value) => _testOverride = value;
 
-  /// 本关是否走 0A 主线战斗:灰度门开 + Ch1 五关 + 一周目。
+  /// 本关是否走 0A 主线战斗:灰度门开 + 全部主线 + 非空敌队 + 合法 cycle(>=1)。
   static bool shouldUsePhase0a(StageDef stage, {required int targetCycle}) =>
       enabled &&
-      targetCycle == 1 &&
+      targetCycle >= 1 &&
       stage.stageType == StageType.mainline &&
-      RegExp(r'^stage_01_0[1-5]$').hasMatch(stage.id);
+      stage.enemyTeam.isNotEmpty;
 }

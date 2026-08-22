@@ -62,12 +62,25 @@ BattleCharacter _makeCh1Player(NumbersConfig numbers) => BattleCharacter(
   slotIndex: 0,
 );
 
+const EnemyDef _testEnemy = EnemyDef(
+  id: 'enemy_test_thug',
+  name: '测试喽啰',
+  realmTier: RealmTier.xueTu,
+  realmLayer: RealmLayer.qiMeng,
+  school: TechniqueSchool.gangMeng,
+  baseHp: 1500,
+  baseAttack: 80,
+  baseSpeed: 100,
+  skillIds: [],
+  iconPath: 'assets/enemies/test_thug.png',
+);
+
 StageDef _flowStage() => const StageDef(
   id: 'stage_01_01',
   name: '灰度门测试关',
   stageType: StageType.mainline,
   requiredRealm: RealmTier.xueTu,
-  enemyTeam: [],
+  enemyTeam: [_testEnemy],
   isBossStage: false,
   baseExpReward: 0,
   difficultyMultiplier: 1.0,
@@ -78,7 +91,7 @@ StageDef _bossFlowStage() => const StageDef(
   name: '灰度门 Boss 测试关',
   stageType: StageType.mainline,
   requiredRealm: RealmTier.xueTu,
-  enemyTeam: [],
+  enemyTeam: [_testEnemy],
   isBossStage: true,
   baseExpReward: 0,
   difficultyMultiplier: 1.0,
@@ -107,36 +120,39 @@ void main() {
       expect(Phase0aMainlineGate.enabled, isFalse);
     });
 
-    test('shouldUsePhase0a: 门开只放行 Ch1 一周目', () {
+    test('shouldUsePhase0a: 门开放行全部主线非空敌队 + 合法 cycle(>=1)', () {
       Phase0aMainlineGate.testOverride = true;
+      // Ch1 一周目与二周目(cycle>=1 合法)均放行。
       expect(
         Phase0aMainlineGate.shouldUsePhase0a(_flowStage(), targetCycle: 1),
         isTrue,
       );
-      final chapter2 = StageDef(
-        id: 'stage_02_01',
-        name: _flowStage().name,
-        stageType: StageType.mainline,
-        requiredRealm: RealmTier.xueTu,
-        enemyTeam: const [],
-        isBossStage: false,
-        baseExpReward: 0,
-        difficultyMultiplier: 1.0,
-      );
-      expect(
-        Phase0aMainlineGate.shouldUsePhase0a(chapter2, targetCycle: 1),
-        isFalse,
-      );
       expect(
         Phase0aMainlineGate.shouldUsePhase0a(_flowStage(), targetCycle: 2),
-        isFalse,
+        isTrue,
       );
+      // 真实 Ch1 / Ch21 主线(非空敌队)一周目放行。
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(
+          repo.getStage('stage_01_01'),
+          targetCycle: 1,
+        ),
+        isTrue,
+      );
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(
+          repo.getStage('stage_21_01'),
+          targetCycle: 1,
+        ),
+        isTrue,
+      );
+      // 非 mainline 类型(塔/心魔/轻功/群战)拒绝。
       const towerStage = StageDef(
         id: 'stage_test_tower',
         name: '塔测试关',
         stageType: StageType.tower,
         requiredRealm: RealmTier.xueTu,
-        enemyTeam: [],
+        enemyTeam: [_testEnemy],
         isBossStage: false,
         baseExpReward: 0,
         difficultyMultiplier: 1.0,
@@ -145,6 +161,41 @@ void main() {
         Phase0aMainlineGate.shouldUsePhase0a(towerStage, targetCycle: 1),
         isFalse,
       );
+      for (final id in [
+        'stage_inner_demon_01',
+        'stage_light_foot_01',
+        'stage_mass_battle_01',
+      ]) {
+        expect(
+          Phase0aMainlineGate.shouldUsePhase0a(
+            repo.getStage(id),
+            targetCycle: 1,
+          ),
+          isFalse,
+          reason: id,
+        );
+      }
+      // 空敌队(剧情关)拒绝。
+      const emptyStage = StageDef(
+        id: 'stage_empty_enemy',
+        name: '空敌队剧情关',
+        stageType: StageType.mainline,
+        requiredRealm: RealmTier.xueTu,
+        enemyTeam: [],
+        isBossStage: false,
+        baseExpReward: 0,
+        difficultyMultiplier: 1.0,
+      );
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(emptyStage, targetCycle: 1),
+        isFalse,
+      );
+      // 非法 cycle(0)拒绝。
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(_flowStage(), targetCycle: 0),
+        isFalse,
+      );
+      // 门关 → 一律拒绝。
       Phase0aMainlineGate.testOverride = false;
       expect(
         Phase0aMainlineGate.shouldUsePhase0a(_flowStage(), targetCycle: 1),
