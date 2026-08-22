@@ -146,7 +146,7 @@ void main() {
         ),
         isTrue,
       );
-      // 心魔走专属镜像装配；塔/轻功/群战仍拒绝。
+      // 心魔与轻功走专属装配；塔/群战仍拒绝。
       const towerStage = StageDef(
         id: 'stage_test_tower',
         name: '塔测试关',
@@ -168,7 +168,14 @@ void main() {
         ),
         isTrue,
       );
-      for (final id in ['stage_light_foot_01', 'stage_mass_battle_01']) {
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(
+          repo.getStage('stage_light_foot_01'),
+          targetCycle: 1,
+        ),
+        isTrue,
+      );
+      for (final id in ['stage_mass_battle_01']) {
         expect(
           Phase0aMainlineGate.shouldUsePhase0a(
             repo.getStage(id),
@@ -276,6 +283,75 @@ void main() {
         Phase0aWinConditionType.surviveTicks,
       );
       expect(mapping07.winCondition?.surviveTicksRequired, 20);
+    });
+  });
+
+  group('Phase0a 轻功地形装配', () {
+    test('5 关均对称烘焙地形修正到主角与敌人', () {
+      final originalPlayer = Legacy3v3CombatantAdapter.toSnapshot(
+        _makeCh1Player(repo.numbers),
+      );
+      for (var index = 1; index <= 5; index++) {
+        final stage = repo.getStage('stage_light_foot_0$index');
+        final modifier =
+            repo.numbers.lightFoot.terrainModifiers[stage.terrainBiome!]!;
+        final mapping = Phase0aStageContentMapper.mapLightFoot(
+          stage: stage,
+          playerSnapshot: originalPlayer,
+          numbers: repo.numbers,
+        );
+        final player = mapping.combatants.first.snapshot;
+
+        expect(
+          player.attackPowerMultiplier,
+          modifier.damageMultiplier,
+          reason: stage.id,
+        );
+        expect(
+          player.criticalRate,
+          closeTo(
+            originalPlayer.criticalRate + modifier.criticalRateDelta,
+            1e-9,
+          ),
+          reason: stage.id,
+        );
+        for (final enemy in mapping.combatants.skip(1)) {
+          expect(
+            enemy.snapshot.attackPowerMultiplier,
+            modifier.damageMultiplier,
+            reason: '${stage.id}/${enemy.actorId}',
+          );
+        }
+      }
+    });
+
+    test('轻功缺 terrainBiome 时 fail-fast 且门控拒绝', () {
+      final stage = repo.getStage('stage_light_foot_01');
+      final malformed = StageDef(
+        id: stage.id,
+        name: stage.name,
+        stageType: stage.stageType,
+        requiredRealm: stage.requiredRealm,
+        enemyTeam: stage.enemyTeam,
+        isBossStage: stage.isBossStage,
+        baseExpReward: stage.baseExpReward,
+        difficultyMultiplier: stage.difficultyMultiplier,
+      );
+      final player = Legacy3v3CombatantAdapter.toSnapshot(
+        _makeCh1Player(repo.numbers),
+      );
+      expect(
+        () => Phase0aStageContentMapper.mapLightFoot(
+          stage: malformed,
+          playerSnapshot: player,
+          numbers: repo.numbers,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(malformed, targetCycle: 1),
+        isFalse,
+      );
     });
   });
 

@@ -79,19 +79,26 @@ class _Phase0aMainlineBattleHostState
             widget.playerSnapshotForTest ?? await _buildPlayerSnapshot();
         if (!mounted) return;
         final numbers = GameRepository.instance.numbers;
-        final mapping = widget.stage.stageType == StageType.innerDemon
-            ? Phase0aStageContentMapper.mapInnerDemon(
-                stage: widget.stage,
-                playerSnapshot: playerSnapshot,
-                numbers: numbers,
-                cycleIndex: widget.cycleIndex,
-              )
-            : Phase0aStageContentMapper.map(
-                stage: widget.stage,
-                playerSnapshot: playerSnapshot,
-                numbers: numbers,
-                cycleIndex: widget.cycleIndex,
-              );
+        final mapping = switch (widget.stage.stageType) {
+          StageType.innerDemon => Phase0aStageContentMapper.mapInnerDemon(
+            stage: widget.stage,
+            playerSnapshot: playerSnapshot,
+            numbers: numbers,
+            cycleIndex: widget.cycleIndex,
+          ),
+          StageType.lightFoot => Phase0aStageContentMapper.mapLightFoot(
+            stage: widget.stage,
+            playerSnapshot: playerSnapshot,
+            numbers: numbers,
+            cycleIndex: widget.cycleIndex,
+          ),
+          _ => Phase0aStageContentMapper.map(
+            stage: widget.stage,
+            playerSnapshot: playerSnapshot,
+            numbers: numbers,
+            cycleIndex: widget.cycleIndex,
+          ),
+        };
         final roster = Phase0aVisualRoster.fromMapping(mapping);
         for (final combatant in mapping.combatants) {
           roster.visualFor(combatant.actorId);

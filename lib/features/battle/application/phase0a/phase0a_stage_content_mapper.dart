@@ -1,5 +1,6 @@
 import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/boss_phase_def.dart';
+import '../../../../data/defs/light_foot_def.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/defs/stage_def.dart';
 import '../../../../data/defs/stage_win_condition.dart';
@@ -183,6 +184,60 @@ final class Phase0aStageContentMapper {
       winCondition: _mapWinCondition(stage.winCondition),
       enemySnapshotsOverride: [mirror],
       enemyActorIdsOverride: ['${stage.id}_mirror'],
+    );
+  }
+
+  /// 轻功对决把同一地形修正对称烘焙到主角与全部敌人，再进入标准单波 0A。
+  static Phase0aStageMapping mapLightFoot({
+    required StageDef stage,
+    required CombatantSnapshot playerSnapshot,
+    required NumbersConfig numbers,
+    String playerId = 'player',
+    int? cycleIndex,
+  }) {
+    if (stage.stageType != StageType.lightFoot || stage.terrainBiome == null) {
+      throw ArgumentError.value(
+        stage.id,
+        'stage',
+        'must be lightFoot with terrainBiome',
+      );
+    }
+    final cycle = cycleIndex ?? 1;
+    final modifier =
+        numbers.lightFoot.terrainModifiers[stage.terrainBiome!] ??
+        LightFootTerrainModifier.neutral();
+    final rateCap = numbers.combat.redLines.combinedRateCap;
+    CombatantSnapshot applyTerrain(CombatantSnapshot snapshot) =>
+        snapshot.copyWith(
+          criticalRate: (snapshot.criticalRate + modifier.criticalRateDelta)
+              .clamp(0.0, rateCap),
+          evasionRate: (snapshot.evasionRate + modifier.evasionRateDelta).clamp(
+            0.0,
+            rateCap,
+          ),
+          defenseRate: (snapshot.defenseRate + modifier.defenseRateDelta).clamp(
+            0.0,
+            rateCap,
+          ),
+          attackPowerMultiplier: modifier.damageMultiplier,
+        );
+    final enemies = EnemyCombatantSnapshotAssembler.assembleAll(
+      stage.enemyTeam,
+      cycleIndex: cycle,
+      isTower: false,
+      advanceRealmPerCycle: true,
+    ).map(applyTerrain).toList(growable: false);
+    return _mapContent(
+      contentId: stage.id,
+      enemyTeam: stage.enemyTeam,
+      isTower: false,
+      playerSnapshot: applyTerrain(playerSnapshot),
+      numbers: numbers,
+      playerId: playerId,
+      cycleIndex: cycle,
+      advanceRealmPerCycle: true,
+      winCondition: _mapWinCondition(stage.winCondition),
+      enemySnapshotsOverride: enemies,
     );
   }
 
