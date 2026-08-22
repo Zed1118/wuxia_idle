@@ -108,6 +108,8 @@ final class Phase0aSettlementAdapter {
           :final isCritical,
         ):
           addDamage(actor, resolvedDamage, critical: isCritical);
+        case Phase0aGuardianCoopStrike():
+          hadActions = true;
         case Phase0aGatherStarted(:final actor, :final tick, :final skillId):
           hadActions = true;
           if (skillId.isNotEmpty) {

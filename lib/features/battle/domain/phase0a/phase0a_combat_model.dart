@@ -136,6 +136,7 @@ final class Phase0aActor {
     this.guardianDefIds = const [],
     this.guardianWardMult,
     this.guardInterceptsInterrupt = false,
+    this.guardianCoopUsedInCharge = false,
     this.vulnerabilityMult,
     this.chargingCast,
     this.chargeTicksRemaining = _noChargeTicks,
@@ -189,6 +190,10 @@ final class Phase0aActor {
   /// the lowest-health live guardian instead of interrupting the boss.
   final bool guardInterceptsInterrupt;
 
+  /// Runtime phase latch for the guardian joint strike. It is reset whenever
+  /// this boss enters a new top-level or phase charge.
+  final bool guardianCoopUsedInCharge;
+
   /// 脆弱窗口外承伤乘子:**内容预解析/可观测事实**(源 `EnemyDef.vulnerability`,
   /// 恒 cycle-1 基础值;null = 无机制),与 [chargeCast]/[staggerTicksTotal]
   /// 同为装配期内容事实,供内容保真断言与观测。
@@ -221,6 +226,7 @@ final class Phase0aActor {
     int? bossPhaseIndex,
     List<String>? unlockedEnemySkillIds,
     Map<String, double>? enemySkillCooldowns,
+    bool? guardianCoopUsedInCharge,
     Phase0aChargeCast? chargingCast,
     bool clearChargingCast = false,
     int? chargeTicksRemaining,
@@ -251,6 +257,8 @@ final class Phase0aActor {
       guardianDefIds: guardianDefIds,
       guardianWardMult: guardianWardMult,
       guardInterceptsInterrupt: guardInterceptsInterrupt,
+      guardianCoopUsedInCharge:
+          guardianCoopUsedInCharge ?? this.guardianCoopUsedInCharge,
       vulnerabilityMult: vulnerabilityMult,
       chargingCast: clearChargingCast
           ? null
@@ -286,6 +294,7 @@ final class Phase0aActor {
       _listEquals(other.guardianDefIds, guardianDefIds) &&
       other.guardianWardMult == guardianWardMult &&
       other.guardInterceptsInterrupt == guardInterceptsInterrupt &&
+      other.guardianCoopUsedInCharge == guardianCoopUsedInCharge &&
       other.vulnerabilityMult == vulnerabilityMult &&
       other.chargingCast == chargingCast &&
       other.chargeTicksRemaining == chargeTicksRemaining &&
@@ -316,6 +325,7 @@ final class Phase0aActor {
       _listHash(guardianDefIds),
       guardianWardMult,
       guardInterceptsInterrupt,
+      guardianCoopUsedInCharge,
       vulnerabilityMult,
       chargingCast,
       chargeTicksRemaining,

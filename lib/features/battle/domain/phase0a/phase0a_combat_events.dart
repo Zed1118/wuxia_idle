@@ -203,6 +203,66 @@ final class Phase0aBossChargeStarted extends Phase0aEvent {
   int get hashCode => Object.hash(seq, tick, actor, skillId, chargeTicks);
 }
 
+/// 两名护法在 Boss 蓄力掩护相位内完成的一次合击。
+///
+/// 两次普攻 resolver 已按主护法、partner 顺序消费；[totalDamage] 是对
+/// 玩家一次扣血后的总量，表现层不得按两条普通命中再次结算。
+final class Phase0aGuardianCoopStrike extends Phase0aEvent {
+  const Phase0aGuardianCoopStrike({
+    required super.seq,
+    required super.tick,
+    required this.mainGuardian,
+    required this.partner,
+    required this.boss,
+    required this.target,
+    required this.totalDamage,
+    required this.mainGuardianPosition,
+    required this.partnerPosition,
+    required this.bossPosition,
+    required this.targetPosition,
+  });
+
+  final String mainGuardian;
+  final String partner;
+  final String boss;
+  final String target;
+  final int totalDamage;
+  final ArenaVector mainGuardianPosition;
+  final ArenaVector partnerPosition;
+  final ArenaVector bossPosition;
+  final ArenaVector targetPosition;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aGuardianCoopStrike &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.mainGuardian == mainGuardian &&
+      other.partner == partner &&
+      other.boss == boss &&
+      other.target == target &&
+      other.totalDamage == totalDamage &&
+      other.mainGuardianPosition == mainGuardianPosition &&
+      other.partnerPosition == partnerPosition &&
+      other.bossPosition == bossPosition &&
+      other.targetPosition == targetPosition;
+
+  @override
+  int get hashCode => Object.hash(
+    seq,
+    tick,
+    mainGuardian,
+    partner,
+    boss,
+    target,
+    totalDamage,
+    mainGuardianPosition,
+    partnerPosition,
+    bossPosition,
+    targetPosition,
+  );
+}
+
 /// 玩家破招命中蓄力中敌人:清蓄力 + 进入踉跄窗口 + 招牌技上冷却。
 ///
 /// [actor] = 破招发起者(玩家),[target] = 被破招敌人,[skillId] = 被打断的

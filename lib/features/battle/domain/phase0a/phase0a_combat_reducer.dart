@@ -189,8 +189,16 @@ Phase0aStepResult reducePhase0aTick({
   }
 
   final ordered = _stableOrderByActor(intents);
+  final attackIntentsByActor = <String, Phase0aAttackIntent>{};
+  for (final intent in ordered) {
+    if (intent is Phase0aAttackIntent) {
+      attackIntentsByActor.putIfAbsent(intent.actorId, () => intent);
+    }
+  }
+  final consumedIntentActorIds = <String>{};
   for (final intent in ordered) {
     final actorId = intent.actorId;
+    if (consumedIntentActorIds.contains(actorId)) continue;
     final isPlayer = actorId == player.id;
     final actor = isPlayer ? player : enemiesById[actorId];
     if (actor == null || !actor.isAlive) continue;
@@ -225,6 +233,74 @@ Phase0aStepResult reducePhase0aTick({
           continue;
         }
         if (actor.attackCooldownRemaining > 0) continue;
+        final coop = _guardianCoopContext(
+          actor: actor,
+          enemiesById: enemiesById,
+          attackIntentsByActor: attackIntentsByActor,
+          player: player,
+          suppressedActorIds: suppressedActorIds,
+        );
+        if (coop != null) {
+          final mainIntent = attackIntentsByActor[actor.id]!;
+          final partnerIntent = attackIntentsByActor[coop.partner.id]!;
+          final mainHit = damageResolver.resolve(
+            attackerId: actor.id,
+            targetId: player.id,
+            kind: Phase0aDamageKind.basic,
+            defenderCharging: player.chargingCast != null,
+          );
+          final partnerHit = damageResolver.resolve(
+            attackerId: coop.partner.id,
+            targetId: player.id,
+            kind: Phase0aDamageKind.basic,
+            defenderCharging: player.chargingCast != null,
+          );
+          final totalDamage =
+              (mainHit.isHit ? _checkedDamage(mainHit) : 0) +
+              (partnerHit.isHit ? _checkedDamage(partnerHit) : 0);
+          final remaining = math.max(0, player.currentHealth - totalDamage);
+          events.add(
+            Phase0aGuardianCoopStrike(
+              seq: seq++,
+              tick: tick,
+              mainGuardian: actor.id,
+              partner: coop.partner.id,
+              boss: coop.boss.id,
+              target: player.id,
+              totalDamage: totalDamage,
+              mainGuardianPosition: actor.position,
+              partnerPosition: coop.partner.position,
+              bossPosition: coop.boss.position,
+              targetPosition: player.position,
+            ),
+          );
+          player = player.copyWith(currentHealth: remaining);
+          enemiesById[actor.id] = actor.copyWith(
+            attackCooldownRemaining: mainIntent.cooldownSeconds,
+            facing: mainIntent.aimDirection.lengthSquared > 0
+                ? mainIntent.aimDirection.normalized()
+                : actor.facing,
+            qiCurrent: (actor.qiCurrent + mainIntent.qiDelta).clamp(
+              0,
+              actor.qiMax,
+            ),
+          );
+          enemiesById[coop.partner.id] = coop.partner.copyWith(
+            attackCooldownRemaining: partnerIntent.cooldownSeconds,
+            facing: partnerIntent.aimDirection.lengthSquared > 0
+                ? partnerIntent.aimDirection.normalized()
+                : coop.partner.facing,
+            qiCurrent: (coop.partner.qiCurrent + partnerIntent.qiDelta).clamp(
+              0,
+              coop.partner.qiMax,
+            ),
+          );
+          enemiesById[coop.boss.id] = coop.boss.copyWith(
+            guardianCoopUsedInCharge: true,
+          );
+          consumedIntentActorIds.add(coop.partner.id);
+          continue;
+        }
         events.add(
           Phase0aAttackStarted(
             seq: seq++,
@@ -338,6 +414,7 @@ Phase0aStepResult reducePhase0aTick({
           enemiesById[actorId] = actor.copyWith(
             chargingCast: topChargeCast,
             chargeTicksRemaining: topChargeCast.chargeTicks,
+            guardianCoopUsedInCharge: false,
           );
           events.add(
             Phase0aBossChargeStarted(
@@ -1051,6 +1128,69 @@ Map<String, double> _cooldownsAfter(
   return Map.unmodifiable(next);
 }
 
+({Phase0aActor boss, Phase0aActor partner})? _guardianCoopContext({
+  required Phase0aActor actor,
+  required Map<String, Phase0aActor> enemiesById,
+  required Map<String, Phase0aAttackIntent> attackIntentsByActor,
+  required Phase0aActor player,
+  required Set<String> suppressedActorIds,
+}) {
+  if (!player.isAlive || actor.side != Phase0aSide.enemy) return null;
+  final bosses = enemiesById.values.where((candidate) {
+    if (!candidate.isAlive ||
+        !candidate.guardInterceptsInterrupt ||
+        candidate.chargingCast == null ||
+        candidate.guardianCoopUsedInCharge ||
+        candidate.guardianDefIds.length != 2) {
+      return false;
+    }
+    return candidate.guardianDefIds.every(
+      (guardianId) => enemiesById.values.any(
+        (guardian) =>
+            guardian.isAlive &&
+            (guardian.id == guardianId ||
+                guardian.id.startsWith('${guardianId}_w')),
+      ),
+    );
+  }).toList()..sort((a, b) => a.id.compareTo(b.id));
+
+  for (final boss in bosses) {
+    final guardians = enemiesById.values.where((guardian) {
+      final registered = boss.guardianDefIds.any(
+        (guardianId) =>
+            guardian.id == guardianId ||
+            guardian.id.startsWith('${guardianId}_w'),
+      );
+      final basic = attackIntentsByActor[guardian.id];
+      final target = basic == null
+          ? null
+          : _selectStrikeTarget(
+              attacker: guardian,
+              player: player,
+              enemiesById: enemiesById,
+              aimDirection: basic.aimDirection,
+              range: basic.range,
+              halfArcRadians: basic.halfArcRadians,
+            );
+      return registered &&
+          guardian.isAlive &&
+          guardian.chargingCast == null &&
+          guardian.chargeTicksRemaining == 0 &&
+          !suppressedActorIds.contains(guardian.id) &&
+          guardian.staggerTicksRemaining == 0 &&
+          guardian.attackCooldownRemaining <= 0 &&
+          basic != null &&
+          _isUsableNumber(basic.range) &&
+          _isUsableNumber(basic.halfArcRadians) &&
+          _isUsableNumber(basic.cooldownSeconds) &&
+          target?.id == player.id;
+    }).toList()..sort((a, b) => a.id.compareTo(b.id));
+    if (guardians.length != 2 || guardians.first.id != actor.id) continue;
+    return (boss: boss, partner: guardians[1]);
+  }
+  return null;
+}
+
 ({Phase0aActor actor, int nextSeq}) _advanceBossPhases({
   required Phase0aActor actor,
   required int tick,
@@ -1105,6 +1245,7 @@ Map<String, double> _cooldownsAfter(
         current = current.copyWith(
           chargingCast: phaseCast,
           chargeTicksRemaining: phaseCast.chargeTicks,
+          guardianCoopUsedInCharge: false,
         );
         events.add(
           Phase0aBossChargeStarted(
