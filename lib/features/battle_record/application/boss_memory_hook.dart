@@ -5,7 +5,7 @@ import '../../../data/isar_setup.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
-import '../../battle/domain/battle_stats.dart';
+import '../../combat_shared/domain/combat_stats_summary.dart';
 import '../../equipment/application/drop_service.dart';
 import '../domain/boss_memory_source.dart';
 import 'boss_memory_service.dart';
@@ -28,7 +28,7 @@ Future<void> runBossMemoryHookAfterVictory({
   required String bossKey,
   required int groupIndex,
   required String bossName,
-  required BattleStatsSummary stats,
+  required CombatStatsSummary stats,
   required DropResult drops,
   String? topContributorName,
   int? topContributorDamage,

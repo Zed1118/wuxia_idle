@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_stats.dart';
+import 'package:wuxia_idle/features/combat_shared/domain/combat_stats_summary.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_entry_flow.dart';
@@ -72,7 +72,7 @@ void main() {
   });
 
   testWidgets('战斗摘要在宣纸底使用浅底墨色', (tester) async {
-    const stats = BattleStatsSummary(
+    const stats = CombatStatsSummary(
       totalDamage: 3047,
       critCount: 0,
       totalTicks: 5,

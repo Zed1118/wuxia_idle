@@ -9,7 +9,7 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_stats.dart';
+import 'package:wuxia_idle/features/combat_shared/domain/combat_stats_summary.dart';
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_hook.dart';
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_service.dart';
 import 'package:wuxia_idle/features/battle_record/domain/boss_memory_source.dart';
@@ -17,8 +17,8 @@ import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import "../../../support/isar_test_support.dart";
 import '../../../support/test_data.dart';
 
-/// 最简 BattleStatsSummary（无需 BattleState，直接 const）。
-const _testStats = BattleStatsSummary(
+/// 最简中立战斗统计（无需 BattleState，直接 const）。
+const _testStats = CombatStatsSummary(
   totalDamage: 18000,
   critCount: 5,
   totalTicks: 40,

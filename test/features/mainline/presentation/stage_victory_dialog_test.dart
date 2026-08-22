@@ -7,7 +7,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_stats.dart';
+import 'package:wuxia_idle/features/combat_shared/domain/combat_stats_summary.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/cultivation/domain/advancement_entry.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
@@ -454,7 +454,7 @@ void main() {
             body: StageVictoryContent(
               drops: DropResult(equipments: [], items: []),
               advancements: [],
-              stats: BattleStatsSummary(
+              stats: CombatStatsSummary(
                 totalDamage: 1234,
                 critCount: 3,
                 totalTicks: 9,
@@ -553,7 +553,7 @@ void main() {
                   newStage: ResonanceStage.moQi,
                 ),
               ],
-              stats: const BattleStatsSummary(
+              stats: const CombatStatsSummary(
                 totalDamage: 1234,
                 critCount: 3,
                 totalTicks: 9,
@@ -660,7 +660,7 @@ void main() {
                       result: _advanced(),
                     ),
                   ],
-                  stats: const BattleStatsSummary(
+                  stats: const CombatStatsSummary(
                     totalDamage: 1234,
                     critCount: 3,
                     totalTicks: 9,

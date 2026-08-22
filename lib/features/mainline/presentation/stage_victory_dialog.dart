@@ -13,7 +13,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
-import '../../battle/domain/battle_stats.dart';
+import '../../combat_shared/domain/combat_stats_summary.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../cultivation/domain/advancement_entry.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
@@ -41,7 +41,7 @@ Future<void> showStageVictoryDialog({
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
   String? firstClearTitle,
   String? firstClearSubtitle,
-  BattleStatsSummary? stats,
+  CombatStatsSummary? stats,
   List<Character> injurySummaryCharacters = const [],
   List<Character> equipmentHintCharacters = const [],
   String? skillFragmentLine,
@@ -178,7 +178,7 @@ class StageVictoryContent extends StatelessWidget {
   final List<ResonanceUpgradeNotice> resonanceUpgrades;
   final String? firstClearTitle;
   final String? firstClearSubtitle;
-  final BattleStatsSummary? stats;
+  final CombatStatsSummary? stats;
   final List<Character> injurySummaryCharacters;
   final List<Character> equipmentHintCharacters;
 

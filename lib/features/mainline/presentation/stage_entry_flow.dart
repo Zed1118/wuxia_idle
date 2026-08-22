@@ -51,7 +51,7 @@ import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_progress.dart';
-import '../../battle/domain/battle_stats.dart';
+import '../../combat_shared/domain/combat_stats_summary.dart';
 import '../../battle/presentation/hero_camera_overlay.dart' show HeroCameraData;
 import '../../battle/presentation/victory_ceremony.dart';
 import '../../battle_record/application/boss_memory_hook.dart';
@@ -626,7 +626,7 @@ Future<
     DropResult drops,
     List<AdvancementEntry> advancements,
     List<ResonanceUpgradeNotice> resonanceUpgrades,
-    BattleStatsSummary stats,
+    CombatStatsSummary stats,
     HeroCameraData? heroCamera,
     Set<EquipmentTier> extraDisplayTiers,
     List<Character> characters,
@@ -643,7 +643,7 @@ applyVictoryResolution({
   final combatSettlement = settlementSnapshot;
   if (combatSettlement == null) return null;
   if (!combatSettlement.isFinished) return null;
-  final stats = BattleStatsSummary.fromSettlement(combatSettlement);
+  final stats = CombatStatsSummary.fromSettlement(combatSettlement);
 
   final save = await isar.saveDatas.get(0);
   final participantIds = combatSettlement.participantCharacterIds;

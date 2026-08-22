@@ -41,7 +41,7 @@ import '../../cultivation/presentation/stage_skill_drop_hook.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../event/application/game_event_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
-import '../../battle/domain/battle_stats.dart';
+import '../../combat_shared/domain/combat_stats_summary.dart';
 import '../../battle/presentation/hero_camera_overlay.dart' show HeroCameraData;
 import '../../battle/presentation/victory_ceremony.dart';
 import '../../mainline/presentation/stage_victory_dialog.dart'
@@ -448,7 +448,7 @@ Future<
   ({
     List<AdvancementEntry> advancements,
     List<ResonanceUpgradeNotice> resonanceUpgrades,
-    BattleStatsSummary stats,
+    CombatStatsSummary stats,
     HeroCameraData? heroCamera,
   })
 >
@@ -461,7 +461,7 @@ applyTowerVictoryResolution({
   const empty = (
     advancements: <AdvancementEntry>[],
     resonanceUpgrades: <ResonanceUpgradeNotice>[],
-    stats: BattleStatsSummary(totalDamage: 0, critCount: 0, totalTicks: 0),
+    stats: CombatStatsSummary(totalDamage: 0, critCount: 0, totalTicks: 0),
     heroCamera: null,
   );
   final isar = ref.read(isarProvider);
@@ -469,7 +469,7 @@ applyTowerVictoryResolution({
   if (settlementSnapshot == null) return empty;
   final combatSettlement = settlementSnapshot;
   if (!combatSettlement.isFinished) return empty;
-  final stats = BattleStatsSummary.fromSettlement(combatSettlement);
+  final stats = CombatStatsSummary.fromSettlement(combatSettlement);
 
   final save = await isar.saveDatas.get(0);
   final participantIds = combatSettlement.participantCharacterIds;
@@ -676,7 +676,7 @@ Future<void> _showVictoryDialog({
   required DropResult drops,
   required List<AdvancementEntry> advancements,
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
-  BattleStatsSummary? stats,
+  CombatStatsSummary? stats,
   HeroCameraData? heroCamera,
   Set<EquipmentTier> extraDisplayTiers = const {},
   SkillDropResult skillDrop = SkillDropResult.none,
@@ -758,7 +758,7 @@ class TowerVictoryContent extends StatelessWidget {
   final DropResult drops;
   final List<AdvancementEntry> advancements;
   final List<ResonanceUpgradeNotice> resonanceUpgrades;
-  final BattleStatsSummary? stats;
+  final CombatStatsSummary? stats;
 
   /// 残页轻提示行(掉残页未集齐 → 小字一行);null=本场未掉残页或已走重仪式。
   final String? skillFragmentLine;

@@ -5,7 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_stats.dart';
+import 'package:wuxia_idle/features/combat_shared/domain/combat_stats_summary.dart';
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_hook.dart';
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_service.dart';
 import 'package:wuxia_idle/features/battle_record/domain/boss_memory_key.dart';
@@ -21,7 +21,7 @@ import '../../../support/test_data.dart';
 /// 接线守卫（bossKind != null 才调）在 tower_entry_flow.dart 生产代码中，
 /// 本测通过不传普通层 bossKey 间接验证——普通层由接线守卫保证不调 hook。
 
-const _testStats = BattleStatsSummary(
+const _testStats = CombatStatsSummary(
   totalDamage: 25000,
   critCount: 8,
   totalTicks: 50,
