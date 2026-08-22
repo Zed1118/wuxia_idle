@@ -114,12 +114,16 @@ GateCheck validateHumanEvidence(
   String? actualFixtureChecksum,
 }) {
   final records = sessions.toList(growable: false);
-  if (records.isEmpty) {
+  final manifests = packageManifests.toList(growable: false);
+  final noPackageEvidence =
+      manifests.isEmpty &&
+      actualBinaryChecksum == null &&
+      actualFixtureChecksum == null;
+  if (records.isEmpty && noPackageEvidence) {
     return const GateCheck('human_gate', GateState.pending, <String>[
       'No production Route C human-session evidence found.',
     ]);
   }
-  final manifests = packageManifests.toList(growable: false);
   if (manifests.length != 1) {
     return GateCheck('human_gate', GateState.invalid, <String>[
       'INCONCLUSIVE',
@@ -162,12 +166,46 @@ GateCheck validateHumanEvidence(
       ...problems,
     ]);
   }
+  if (records.isEmpty || records.every(_isUnfilledHumanSessionTemplate)) {
+    return const GateCheck('human_gate', GateState.pending, <String>[
+      'Human Gate package is valid; participant sessions are not filled yet.',
+    ]);
+  }
   return validateHumanSessions(
     records,
     expectedCommit: expectedCommit,
     expectedBinaryChecksum: binary,
     expectedFixtureChecksum: fixture,
   );
+}
+
+bool _isUnfilledHumanSessionTemplate(Map<String, Object?> record) {
+  final ratings = record['ratings'];
+  final mechanics = record['mechanics'];
+  final integrity = record['integrity'];
+  final validity = record['validity'];
+  if (ratings is! Map ||
+      mechanics is! Map ||
+      integrity is! Map ||
+      validity is! Map) {
+    return false;
+  }
+  final invalidReasons = validity['invalid_reasons'];
+  return record['schema'] == routeCHumanSessionSchema &&
+      ratings['release'] == 1 &&
+      ratings['readability'] == 1 &&
+      ratings['active_intent'] == 1 &&
+      record['replay_willing'] == false &&
+      mechanics.values.every((value) => value == false) &&
+      integrity['completed_three_waves'] == false &&
+      integrity['participant_had_input_control'] == false &&
+      integrity['implementer_assisted'] == false &&
+      integrity['external_event_polluted'] == false &&
+      integrity['questionnaire_complete'] == false &&
+      validity['valid'] == false &&
+      invalidReasons is List &&
+      invalidReasons.length == 1 &&
+      invalidReasons.single == 'NOT_FILLED';
 }
 
 HumanGateAggregation aggregateRouteCHumanGate(

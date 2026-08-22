@@ -149,6 +149,44 @@ void main() {
     );
   });
 
+  test('prepared human package remains pending until templates are filled', () {
+    final sessions = List<Map<String, Object?>>.generate(
+      6,
+      (index) => _unfilledHumanSession(index, commit, checksum),
+    );
+    final manifest = <String, Object?>{
+      'schema': 'route-c-human-package-v1',
+      'commit': commit,
+      'app_package': 'wuxia_idle',
+      'route_id': routeCProductionRoute,
+      'binary_sha256': checksum,
+      'fixture_sha256': checksum,
+    };
+
+    expect(
+      validateHumanEvidence(
+        sessions,
+        <Map<String, Object?>>[manifest],
+        expectedCommit: commit,
+        actualBinaryChecksum: checksum,
+        actualFixtureChecksum: checksum,
+      ).state,
+      GateState.pending,
+    );
+
+    sessions.first['schema'] = 'corrupt-template';
+    expect(
+      validateHumanEvidence(
+        sessions,
+        <Map<String, Object?>>[manifest],
+        expectedCommit: commit,
+        actualBinaryChecksum: checksum,
+        actualFixtureChecksum: checksum,
+      ).state,
+      GateState.invalid,
+    );
+  });
+
   test('Windows gate requires root app, two viewports and three runs each', () {
     final runs = _windowsRuns(commit, checksum);
     expect(
@@ -338,6 +376,40 @@ Map<String, Object?> _humanSession(
   },
   'validity': <String, Object?>{'valid': true, 'invalid_reasons': <String>[]},
 };
+
+Map<String, Object?> _unfilledHumanSession(
+  int index,
+  String commit,
+  String checksum,
+) {
+  final session = _humanSession(index, commit, checksum);
+  session['ratings'] = <String, Object?>{
+    'release': 1,
+    'readability': 1,
+    'active_intent': 1,
+  };
+  session['replay_willing'] = false;
+  session['mechanics'] = <String, Object?>{
+    'charge_warning_seen': false,
+    'interrupt_feedback_understood': false,
+    'stagger_seen': false,
+    'vulnerability_window_understood': false,
+    'keyboard_mouse_completed': false,
+    'no_layout_overflow_or_hang': false,
+  };
+  session['integrity'] = <String, Object?>{
+    'completed_three_waves': false,
+    'participant_had_input_control': false,
+    'implementer_assisted': false,
+    'external_event_polluted': false,
+    'questionnaire_complete': false,
+  };
+  session['validity'] = <String, Object?>{
+    'valid': false,
+    'invalid_reasons': <String>['NOT_FILLED'],
+  };
+  return session;
+}
 
 List<Map<String, Object?>> _windowsRuns(String commit, String checksum) =>
     <Map<String, Object?>>[
