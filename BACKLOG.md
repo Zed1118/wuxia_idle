@@ -4,7 +4,7 @@
 > **准入三态**:待拍板 / 已解锁未做 / 依赖锁死——「本次没空做」不准进(CLAUDE §7 打磨期原则)。
 > **维护**:每批收账随 PROGRESS 同步更新;销账即删行(git 留历史);总行数 ≤80。
 > 2026-07-19 建账:散落储备(PROGRESS 挂账段 / playability_phase2_backlog / 两份 audit followup)已归纳至此,旧文件原地归档留指针。
-> 2026-08-22 最新收口事实：Phase 0A 已补齐 guardian ward/拦截/合击、surviveTicks、Boss 蓄力/破招/脆弱窗口表现及高周目 cycleVulnerability；塔 49 层 live 消费面与扫荡 headless 直结均已建立默认关闭的单祖师灰度纵切，neutral settlement 接回原塔/主线重打结算，超时、退出、活动占用与替补污染均有 Gate。预检 **149/149 eligible、0 skipped、447 runs/0 timeout/maxDamage 2044**，最终全量 **5383/0**。正式默认入口仍关闭；六人/Windows Gate 与远征/断魂庄单主角续传仍为路线 C 依赖。
+> 2026-08-22 最新收口事实：Phase 0A 已补齐 guardian ward/拦截/合击、surviveTicks、Boss 蓄力/破招/脆弱窗口表现及高周目 cycleVulnerability；塔 49 层 live、扫荡 headless 直结与远征单角色 HP/真气跨节点续传均已建立默认关闭灰度纵切，旧 3v3 默认路径及历史多成员远征安全回落保持。预检 **149/149 eligible、0 skipped、447 runs/0 timeout/maxDamage 2044**，最终全量 **5390/0**。正式默认入口仍关闭；六人/Windows Gate 与断魂庄单主角续传仍为路线 C 依赖。
 
 ## 一 · 待拍板(拍一个解锁一个)
 
@@ -29,4 +29,4 @@
 
 ## 四 · 方向级候选(大活·需专注会话+xhigh)
 
-- **旧 3v3 → Phase 0A 单角色 ARPG 替换收口**(登记 2026-08-18,codex 派单域我只跟不派):**2026-08-19 §7.4 ADR 拍板路线 C 终态替换·前置排程**(终态拍板见 `docs/dispatch/packages/2026-08-16_phase0a_qoder_production_wiring_followup.md`;拆除范围事实底座 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md`)。硬前提=0A 六人主观 Gate + Windows 实机过线(用户已拍暂挂)+ Phase 1 纵切成立 + 共享层安置/headless 结算内核替代先于表现层拆除。**4 子项已拍**(2026-08-19 同日调研拍板,全 α 推荐项):① headless 内核=**复用 0A reducer**② 65 路由=**删路由·证据原地标注**③ 共享层=**拆分迁移**④ 空窗=**原子切换·零空窗**。内容迁移 D1–D5 已拍：122 关/塔 49 全保留、远征/断魂庄单主角续传、扫荡 headless 直结、曲线继承+bot 胜率验收。**当前能力底座**=Phase 1 Ch1 全链、neutral snapshot、正式控制、Boss/guardian/survive/cycle 语义及 Ch2–Ch21+塔 **149/149** 预检均成立，塔 live 与扫荡 headless 两个默认关闭消费面已收口；**当前真实入口**仍仅 Ch1 一周目灰度门且默认关闭。下一工程序=远征/断魂庄单主角续传；正式替换仍锁六人 Gate/Windows Gate，且必须与旧入口拆除同批原子切换。
+- **旧 3v3 → Phase 0A 单角色 ARPG 替换收口**(登记 2026-08-18,codex 派单域我只跟不派):**2026-08-19 §7.4 ADR 拍板路线 C 终态替换·前置排程**(终态拍板见 `docs/dispatch/packages/2026-08-16_phase0a_qoder_production_wiring_followup.md`;拆除范围事实底座 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md`)。硬前提=0A 六人主观 Gate + Windows 实机过线(用户已拍暂挂)+ Phase 1 纵切成立 + 共享层安置/headless 结算内核替代先于表现层拆除。**4 子项已拍**(2026-08-19 同日调研拍板,全 α 推荐项):① headless 内核=**复用 0A reducer**② 65 路由=**删路由·证据原地标注**③ 共享层=**拆分迁移**④ 空窗=**原子切换·零空窗**。内容迁移 D1–D5 已拍：122 关/塔 49 全保留、远征/断魂庄单主角续传、扫荡 headless 直结、曲线继承+bot 胜率验收。**当前能力底座**=Phase 1 Ch1 全链、neutral snapshot、正式控制、Boss/guardian/survive/cycle 语义及 Ch2–Ch21+塔 **149/149** 预检均成立，塔 live、扫荡 headless 与远征单角色续传三个默认关闭消费面已收口；**当前真实入口**仍仅 Ch1 一周目灰度门且默认关闭。下一工程序=断魂庄单主角续传；正式替换仍锁六人 Gate/Windows Gate，且必须与旧入口拆除同批原子切换。

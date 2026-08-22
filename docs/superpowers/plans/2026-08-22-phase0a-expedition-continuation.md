@@ -24,3 +24,10 @@
 - 基线：`9ce4e1d4 [READY] 收口 Phase 0A 扫荡无头直结`
 - 分支：`codex/phase0a-activity-continuation-0822`
 - worktree：`/Users/a10506/Desktop/Projects/wt-phase0a-activity-continuation-0822`
+
+## 完成证据
+
+- 实现提交：`229687d2`；口径加固：`78dcfa34`；随机注入契约：`1138e448`。
+- 远征全族 105/105；定向超时/周目/同 seed/回落证据全绿。
+- 149/149 预检；全仓 analyze 0；macOS 四灰度 debug 编译通过。
+- 最终全量 5390/5390；未启动 GUI，未 merge/push/deploy。
