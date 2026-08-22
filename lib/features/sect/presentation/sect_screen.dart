@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../battle/application/battle_providers.dart';
+import '../../combat_shared/application/combat_content_providers.dart';
 import '../../../core/domain/character.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';

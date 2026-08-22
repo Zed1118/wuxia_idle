@@ -7,7 +7,7 @@ import '../../../data/defs/equipment_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/forging_slot.dart';
-import '../../battle/application/battle_providers.dart';
+import '../../combat_shared/application/combat_content_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../inventory/presentation/material_source_note.dart';
 import '../../inventory/presentation/material_source_sheet.dart';

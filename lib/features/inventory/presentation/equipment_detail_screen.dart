@@ -14,7 +14,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/forging_slot.dart';
 import '../../../core/domain/lore.dart';
-import '../../battle/application/battle_providers.dart';
+import '../../combat_shared/application/combat_content_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/application/equipment_source_lookup.dart';

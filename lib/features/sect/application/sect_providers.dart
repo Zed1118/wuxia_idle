@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
-import '../../battle/application/battle_providers.dart';
+import '../../combat_shared/application/combat_content_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/system_clock_provider.dart';
 import '../../../core/domain/character.dart';

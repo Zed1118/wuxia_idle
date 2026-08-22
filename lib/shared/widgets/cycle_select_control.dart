@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/battle/application/battle_providers.dart';
+import '../../features/combat_shared/application/combat_content_providers.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
 import '../../features/mainline/application/mainline_progress_service.dart';
