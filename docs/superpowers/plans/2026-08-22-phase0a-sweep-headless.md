@@ -25,3 +25,12 @@
 - 基线：`1b1a46cb [READY] 收口 Phase 0A 塔消费面纵切`
 - 分支：`codex/phase0a-tower-sweep-0822`
 - worktree：`/Users/a10506/Desktop/Projects/wt-phase0a-tower-sweep-0822`
+
+## 完成证据
+
+- 实现：`a1ec6619`；Phase 0A 数值默认值红线修复：`d03c3bad`。
+- 灰度默认关闭；主线范围对齐一周目 Ch1，塔覆盖合法生产层，旧 3v3 回落保持。
+- headless 分块归还 UI 事件循环；超时、败北、系统返回、活动占用均有独立安全语义。
+- Ch1 1–5、塔 1/25/30/49 真内容终局；替补零污染，主线战备恰扣一。
+- 149/149 eligible、447 runs、0 timeout、maxDamage 2044；analyze 0；macOS 三灰度 debug 编译通过；全量 5383/0。
+- 未启动 GUI，未 merge/push/deploy。
