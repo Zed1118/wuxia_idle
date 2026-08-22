@@ -27,6 +27,8 @@ void main() {
       expect(runner, contains('valid_for_windows_physical_gate'));
       expect(runner, contains('windows_physical_attested'));
       expect(runner, contains(r'$env:SESSIONNAME'));
+      expect(runner, contains(r'(Get-Process -Id $PID).SessionId'));
+      expect(runner, contains(r'$ProcessSessionId -le 0'));
       expect(runner, contains(r'$ActualSessionName -ne "Console"'));
       expect(runner, isNot(contains('cpu_at_or_below_target')));
       expect(runner, isNot(contains('gpu_at_or_below_target')));

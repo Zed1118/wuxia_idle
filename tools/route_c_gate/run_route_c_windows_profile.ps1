@@ -37,8 +37,11 @@ if (-not $HostFacts.display.local_interactive_session -or
   throw "The Gate requires a local physical Console session."
 }
 $ActualSessionName = [string]$env:SESSIONNAME
-if ($ActualSessionName -ne "Console" -or
-    [string]$HostFacts.session.session_name -ne $ActualSessionName) {
+$ProcessSessionId = (Get-Process -Id $PID).SessionId
+if ($ProcessSessionId -le 0 -or
+    (-not [string]::IsNullOrWhiteSpace($ActualSessionName) -and
+      $ActualSessionName -ne "Console") -or
+    [string]$HostFacts.session.session_name -ne "Console") {
   throw "The Gate runner must execute in the recorded visible Console session, not an SSH service or RDP session."
 }
 if ($HostFacts.display.refresh_rate_hz -le 0 -or $HostFacts.display.scale_percent -ne 100) {
