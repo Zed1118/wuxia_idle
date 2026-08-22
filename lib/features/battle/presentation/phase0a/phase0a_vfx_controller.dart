@@ -35,6 +35,12 @@ enum Phase0aVfxKind {
   /// 玩家成功破招反馈。
   bossChargeInterrupted,
 
+  /// 破招被护法截走：Boss 不受破招，伤害落到护法。
+  guardIntercepted,
+
+  /// 两名护法在 Boss 蓄力掩护相位内完成合击。
+  guardianCoop,
+
   /// 终局封签(胜/败全场唯一)。
   outcomeSeal,
 }
@@ -270,6 +276,30 @@ final class Phase0aVfxController {
               targetId: event.target,
               statusTicks: event.staggerTicks,
               anchor: _actors[event.target]?.position,
+            ),
+          );
+        case Phase0aGuardIntercepted():
+          push(
+            Phase0aVfxEntry(
+              kind: Phase0aVfxKind.guardIntercepted,
+              actorId: event.actor,
+              targetId: event.guardian,
+              damage: event.resolvedDamage,
+              anchor: event.guardianPosition,
+              source: event.bossPosition,
+              vfxTarget: event.guardianPosition,
+            ),
+          );
+        case Phase0aGuardianCoopStrike():
+          push(
+            Phase0aVfxEntry(
+              kind: Phase0aVfxKind.guardianCoop,
+              actorId: event.mainGuardian,
+              targetId: event.target,
+              damage: event.totalDamage,
+              anchor: event.targetPosition,
+              source: event.mainGuardianPosition,
+              vfxTarget: event.partnerPosition,
             ),
           );
         case Phase0aBattleVictory():

@@ -263,6 +263,58 @@ final class Phase0aGuardianCoopStrike extends Phase0aEvent {
   );
 }
 
+/// 玩家破招被护法截走：Boss 仍保持蓄力，伤害与踉跄落在护法身上。
+///
+/// 该事件只表达一次重定向事实；结算伤害仍由同拍的既有命中/技能结果
+/// 携带，表现层不得据此再次扣血或生成第二个伤害飘字。
+final class Phase0aGuardIntercepted extends Phase0aEvent {
+  const Phase0aGuardIntercepted({
+    required super.seq,
+    required super.tick,
+    required this.actor,
+    required this.boss,
+    required this.guardian,
+    required this.skillId,
+    required this.resolvedDamage,
+    required this.bossPosition,
+    required this.guardianPosition,
+  });
+
+  final String actor;
+  final String boss;
+  final String guardian;
+  final String skillId;
+  final int resolvedDamage;
+  final ArenaVector bossPosition;
+  final ArenaVector guardianPosition;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aGuardIntercepted &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.actor == actor &&
+      other.boss == boss &&
+      other.guardian == guardian &&
+      other.skillId == skillId &&
+      other.resolvedDamage == resolvedDamage &&
+      other.bossPosition == bossPosition &&
+      other.guardianPosition == guardianPosition;
+
+  @override
+  int get hashCode => Object.hash(
+    seq,
+    tick,
+    actor,
+    boss,
+    guardian,
+    skillId,
+    resolvedDamage,
+    bossPosition,
+    guardianPosition,
+  );
+}
+
 /// 玩家破招命中蓄力中敌人:清蓄力 + 进入踉跄窗口 + 招牌技上冷却。
 ///
 /// [actor] = 破招发起者(玩家),[target] = 被破招敌人,[skillId] = 被打断的

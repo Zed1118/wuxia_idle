@@ -145,7 +145,10 @@ abstract final class Phase0aPresentationTokens {
   static const double bossStatusRadius = 3;
   static const double bossChargeFeedbackSeconds = 1.1;
   static const double bossInterruptFeedbackSeconds = 0.9;
+  static const double guardMechanicFeedbackSeconds = 1.0;
   static const double bossMechanicBannerTopGap = 12;
+  static const double guardianWardRingStrokeWidth = 2.4;
+  static const double guardianWardRingInset = 8;
 
   /// Boss 视觉验收路由在破招前保留蓄力态，供截图与人工观察。
   static const double bossFixtureChargeHoldSeconds = 8;

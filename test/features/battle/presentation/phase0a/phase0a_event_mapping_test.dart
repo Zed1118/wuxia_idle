@@ -64,6 +64,74 @@ List<Phase0aVfxEntry> _popups(List<Phase0aVfxEntry> entries) =>
 
 void main() {
   group('Phase0aVfxController Boss 机制反馈', () {
+    test('护法截招映射为护法连线与明确语义,不重复生成伤害数字', () {
+      const bossPosition = ArenaVector(80, 20);
+      const guardianPosition = ArenaVector(40, 20);
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(
+            enemies: [
+              _actor('boss', Phase0aSide.enemy, bossPosition.x, bossPosition.y),
+              _actor(
+                'guardian',
+                Phase0aSide.enemy,
+                guardianPosition.x,
+                guardianPosition.y,
+              ),
+            ],
+          ),
+        );
+
+      final entries = controller.consume(const [
+        Phase0aGuardIntercepted(
+          seq: 1,
+          tick: 2,
+          actor: 'player',
+          boss: 'boss',
+          guardian: 'guardian',
+          skillId: 'break_skill',
+          resolvedDamage: 17,
+          bossPosition: bossPosition,
+          guardianPosition: guardianPosition,
+        ),
+      ]);
+
+      expect(entries, hasLength(1));
+      expect(entries.single.kind, Phase0aVfxKind.guardIntercepted);
+      expect(entries.single.targetId, 'guardian');
+      expect(entries.single.damage, 17);
+      expect(entries.single.source, bossPosition);
+      expect(entries.single.vfxTarget, guardianPosition);
+      expect(_popups(entries), isEmpty);
+    });
+
+    test('护法合击映射为双护法连线与合击语义', () {
+      final controller = Phase0aVfxController()..syncActors(_state());
+      final entries = controller.consume(const [
+        Phase0aGuardianCoopStrike(
+          seq: 1,
+          tick: 2,
+          mainGuardian: 'guardian_a',
+          partner: 'guardian_b',
+          boss: 'boss',
+          target: 'player',
+          totalDamage: 31,
+          mainGuardianPosition: ArenaVector(20, 10),
+          partnerPosition: ArenaVector(35, 18),
+          bossPosition: ArenaVector(60, 12),
+          targetPosition: ArenaVector.zero,
+        ),
+      ]);
+
+      expect(entries, hasLength(1));
+      expect(entries.single.kind, Phase0aVfxKind.guardianCoop);
+      expect(entries.single.actorId, 'guardian_a');
+      expect(entries.single.targetId, 'player');
+      expect(entries.single.damage, 31);
+      expect(entries.single.source, const ArenaVector(20, 10));
+      expect(entries.single.vfxTarget, const ArenaVector(35, 18));
+    });
+
     test('蓄力起手映射为带倒计时与 Boss 锚点的预警', () {
       const bossPosition = ArenaVector(140, -20);
       final controller = Phase0aVfxController()

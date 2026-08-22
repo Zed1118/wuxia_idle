@@ -720,6 +720,21 @@ Phase0aStepResult reducePhase0aTick({
               staggerTicksRemaining: updated.staggerTicksTotal,
             );
           }
+          if (intercepted != null) {
+            events.add(
+              Phase0aGuardIntercepted(
+                seq: seq++,
+                tick: tick,
+                actor: actorId,
+                boss: target.id,
+                guardian: hitTarget.id,
+                skillId: intent.skillId,
+                resolvedDamage: damage,
+                bossPosition: target.position,
+                guardianPosition: hitTarget.position,
+              ),
+            );
+          }
           final broken = _maybeApplyChargeBreak(
             target: updated,
             breakPower: intercepted == null ? intent.breakPower : 0,
@@ -879,6 +894,21 @@ Phase0aStepResult reducePhase0aTick({
           if (intercepted != null && resolved.isHit) {
             updated = updated.copyWith(
               staggerTicksRemaining: updated.staggerTicksTotal,
+            );
+          }
+          if (intercepted != null) {
+            events.add(
+              Phase0aGuardIntercepted(
+                seq: seq++,
+                tick: tick,
+                actor: actorId,
+                boss: target.id,
+                guardian: hitTarget.id,
+                skillId: intent.skillId,
+                resolvedDamage: damage,
+                bossPosition: target.position,
+                guardianPosition: hitTarget.position,
+              ),
             );
           }
           final broken = _maybeApplyChargeBreak(

@@ -237,6 +237,13 @@ void main() {
       intercepted.events.whereType<Phase0aBossChargeInterrupted>(),
       isEmpty,
     );
+    final guardEvents = intercepted.events
+        .whereType<Phase0aGuardIntercepted>()
+        .toList();
+    expect(guardEvents, hasLength(1));
+    expect(guardEvents.single.boss, 'boss');
+    expect(guardEvents.single.guardian, 'guard_w0s1');
+    expect(guardEvents.single.resolvedDamage, 10);
 
     final interceptedAoe = reducePhase0aTick(
       state: _state(

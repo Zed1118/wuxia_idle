@@ -210,6 +210,7 @@ class UiStrings {
   static const String phase0aVulnerabilityOpen = '破绽 · 全力';
   static const String phase0aVulnerabilityGuarded = '护体 · 减伤';
   static const String phase0aStaggered = '踉跄';
+  static const String phase0aGuardianIntercepted = '护法截招';
 
   /// Esc 暂停横幅(0C):暂停时世界零推进,再按 Esc 继续。
   static const String phase0aPausedBanner = '稍歇 · Esc 继续';

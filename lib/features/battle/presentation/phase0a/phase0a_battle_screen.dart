@@ -240,6 +240,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aVfxKind.clearBurst ||
     Phase0aVfxKind.bossChargeWarning ||
     Phase0aVfxKind.bossChargeInterrupted ||
+    Phase0aVfxKind.guardIntercepted ||
+    Phase0aVfxKind.guardianCoop ||
     Phase0aVfxKind.waveBanner ||
     Phase0aVfxKind.outcomeSeal => true,
     Phase0aVfxKind.damagePopup ||
@@ -252,7 +254,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
 
   static bool _isBossMechanicFeedback(Phase0aVfxKind kind) =>
       kind == Phase0aVfxKind.bossChargeWarning ||
-      kind == Phase0aVfxKind.bossChargeInterrupted;
+      kind == Phase0aVfxKind.bossChargeInterrupted ||
+      kind == Phase0aVfxKind.guardIntercepted ||
+      kind == Phase0aVfxKind.guardianCoop;
 
   double _feedbackLifetime(Phase0aVfxKind kind) {
     // 视觉验收路由会显式延长 hold，必须继续尊重该公开契约。
@@ -273,6 +277,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         Phase0aPresentationTokens.bossChargeFeedbackSeconds,
       Phase0aVfxKind.bossChargeInterrupted =>
         Phase0aPresentationTokens.bossInterruptFeedbackSeconds,
+      Phase0aVfxKind.guardIntercepted =>
+        Phase0aPresentationTokens.guardMechanicFeedbackSeconds,
+      Phase0aVfxKind.guardianCoop =>
+        Phase0aPresentationTokens.guardMechanicFeedbackSeconds,
       Phase0aVfxKind.waveBanner || Phase0aVfxKind.outcomeSeal =>
         Phase0aPresentationTokens.feedbackHoldSeconds,
     };
@@ -582,6 +590,17 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     final scale = stage.depthScale(actor.position.y);
     final width = Phase0aPresentationTokens.actorWidth * scale;
     final height = Phase0aPresentationTokens.actorHeight * scale;
+    final guardianWardActive =
+        actor.side == Phase0aSide.enemy &&
+        actor.guardianWardMult != null &&
+        actor.guardianDefIds.isNotEmpty &&
+        controller.state.enemies.any(
+          (guardian) =>
+              guardian.isAlive &&
+              actor.guardianDefIds.any(
+                (id) => guardian.id == id || guardian.id.startsWith('${id}_w'),
+              ),
+        );
     return AnimatedPositioned(
       key: ValueKey('phase0a_actor_position_${actor.id}'),
       duration: Duration(
@@ -600,6 +619,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
           key: ValueKey('phase0a_standee_${actor.id}'),
           actor: actor,
           visual: controller.roster.visualFor(actor.id),
+          guardianWardActive: guardianWardActive,
           isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
           isHealthEmphasized: _hpEmphasisRemaining.containsKey(actor.id),
           isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
@@ -733,6 +753,7 @@ class _ActorStandee extends StatelessWidget {
     required this.isHitFlashing,
     required this.isHealthEmphasized,
     required this.isActionPulsing,
+    required this.guardianWardActive,
   });
 
   final Phase0aActor actor;
@@ -740,6 +761,7 @@ class _ActorStandee extends StatelessWidget {
   final bool isHitFlashing;
   final bool isHealthEmphasized;
   final bool isActionPulsing;
+  final bool guardianWardActive;
 
   @override
   Widget build(BuildContext context) {
@@ -821,6 +843,15 @@ class _ActorStandee extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
+              if (guardianWardActive)
+                const Positioned.fill(
+                  child: IgnorePointer(
+                    child: CustomPaint(
+                      key: ValueKey('phase0a_guardian_ward_ring'),
+                      painter: _GuardianWardRingPainter(),
+                    ),
+                  ),
+                ),
               if (isHitFlashing)
                 SizedBox(key: ValueKey('phase0a_impact_${actor.id}')),
               if (isActionPulsing)
@@ -970,6 +1001,22 @@ class _ActorStandee extends StatelessWidget {
               ),
             ),
           ),
+        if (enemy && guardianWardActive)
+          Positioned(
+            left: 0,
+            right: 0,
+            top:
+                Phase0aPresentationTokens.actorHpHeight +
+                Phase0aPresentationTokens.actorNameFontSize +
+                Phase0aPresentationTokens.bossStatusGap * 5,
+            child: Center(
+              child: _BossStatusTag(
+                key: ValueKey('phase0a_guardian_ward_${actor.id}'),
+                label: UiStrings.guardianWardActiveLabel,
+                accent: WuxiaUi.gold,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -1009,6 +1056,29 @@ class _BossStatusTag extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _GuardianWardRingPainter extends CustomPainter {
+  const _GuardianWardRingPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromLTWH(
+      Phase0aPresentationTokens.guardianWardRingInset,
+      Phase0aPresentationTokens.guardianWardRingInset,
+      size.width - Phase0aPresentationTokens.guardianWardRingInset * 2,
+      size.height - Phase0aPresentationTokens.guardianWardRingInset * 2,
+    );
+    final paint = Paint()
+      ..color = WuxiaUi.gold.withValues(alpha: 0.68)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = Phase0aPresentationTokens.guardianWardRingStrokeWidth;
+    canvas.drawOval(rect, paint);
+    canvas.drawArc(rect, -0.8, 1.8, false, paint..color = WuxiaUi.paper);
+  }
+
+  @override
+  bool shouldRepaint(covariant _GuardianWardRingPainter oldDelegate) => false;
 }
 
 class _HitEmphasisFrame extends StatelessWidget {
@@ -1225,6 +1295,24 @@ class _FeedbackLayerState extends State<_FeedbackLayer>
               accent: WuxiaUi.gold,
             ),
           );
+        case Phase0aVfxKind.guardIntercepted:
+          children.add(
+            _guardianMechanicVfx(
+              held,
+              key: ValueKey('phase0a_guard_intercept_${held.id}'),
+              label: UiStrings.phase0aGuardianIntercepted,
+              accent: WuxiaUi.gold,
+            ),
+          );
+        case Phase0aVfxKind.guardianCoop:
+          children.add(
+            _guardianMechanicVfx(
+              held,
+              key: ValueKey('phase0a_guardian_coop_${held.id}'),
+              label: UiStrings.coopStrikeCaption,
+              accent: WuxiaUi.jiang,
+            ),
+          );
         case Phase0aVfxKind.outcomeSeal:
           break;
       }
@@ -1282,6 +1370,46 @@ class _FeedbackLayerState extends State<_FeedbackLayer>
               fontSize: Phase0aPresentationTokens.vfxOutcomeFontSize,
               fontWeight: FontWeight.w900,
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _guardianMechanicVfx(
+    _HeldFeedback held, {
+    required Key key,
+    required String label,
+    required Color accent,
+  }) {
+    final entry = held.entry;
+    final source = entry.source;
+    final target = entry.vfxTarget;
+    if (source == null || target == null) return const SizedBox.shrink();
+    final screenSource = widget.stage.worldToScreen(source);
+    final screenTarget = widget.stage.worldToScreen(target);
+    final left = math.min(screenSource.dx, screenTarget.dx) - 48;
+    final top = math.min(screenSource.dy, screenTarget.dy) - 48;
+    final width = (screenSource.dx - screenTarget.dx).abs() + 96;
+    final height = (screenSource.dy - screenTarget.dy).abs() + 96;
+    return Positioned(
+      key: key,
+      left: left,
+      top: top,
+      width: width,
+      height: height,
+      child: Opacity(
+        opacity: _feedbackOpacity(held.progress),
+        child: CustomPaint(
+          painter: _GuardianMechanicPainter(
+            source: screenSource - Offset(left, top),
+            target: screenTarget - Offset(left, top),
+            accent: accent,
+            progress: held.progress,
+          ),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: _BossStatusTag(label: label, accent: accent),
           ),
         ),
       ),
@@ -1795,6 +1923,49 @@ class _GatherPullPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _GatherPullPainter oldDelegate) =>
       oldDelegate.source != source || oldDelegate.target != target;
+}
+
+class _GuardianMechanicPainter extends CustomPainter {
+  const _GuardianMechanicPainter({
+    required this.source,
+    required this.target,
+    required this.accent,
+    required this.progress,
+  });
+
+  final Offset source;
+  final Offset target;
+  final Color accent;
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = accent.withValues(alpha: 0.78 * (1 - progress * 0.35))
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth;
+    final midpoint = Offset(
+      (source.dx + target.dx) / 2,
+      (source.dy + target.dy) / 2,
+    );
+    final path = Path()
+      ..moveTo(source.dx, source.dy)
+      ..quadraticBezierTo(midpoint.dx, midpoint.dy - 24, target.dx, target.dy);
+    canvas.drawPath(path, paint);
+    canvas.drawCircle(
+      target,
+      10 + 8 * (1 - progress),
+      paint..style = PaintingStyle.fill,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _GuardianMechanicPainter oldDelegate) =>
+      oldDelegate.source != source ||
+      oldDelegate.target != target ||
+      oldDelegate.accent != accent ||
+      oldDelegate.progress != progress;
 }
 
 class _StageWashPainter extends CustomPainter {
