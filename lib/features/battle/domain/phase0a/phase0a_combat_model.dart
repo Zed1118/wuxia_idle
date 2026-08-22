@@ -133,6 +133,8 @@ final class Phase0aActor {
     this.chargeCast,
     this.phaseChargeCasts = const [],
     this.staggerTicksTotal = _noStaggerTicks,
+    this.guardianDefIds = const [],
+    this.guardianWardMult,
     this.vulnerabilityMult,
     this.chargingCast,
     this.chargeTicksRemaining = _noChargeTicks,
@@ -175,6 +177,12 @@ final class Phase0aActor {
 
   /// 被破招后踉跄窗口拍数(预解析自 numbers.combat.bossCharge)。
   final int staggerTicksTotal;
+
+  /// Boss guardian ids whose alive state dynamically protects this actor.
+  final List<String> guardianDefIds;
+
+  /// Damage taken multiplier while any configured guardian remains alive.
+  final double? guardianWardMult;
 
   /// 脆弱窗口外承伤乘子:**内容预解析/可观测事实**(源 `EnemyDef.vulnerability`,
   /// 恒 cycle-1 基础值;null = 无机制),与 [chargeCast]/[staggerTicksTotal]
@@ -235,6 +243,8 @@ final class Phase0aActor {
       chargeCast: chargeCast,
       phaseChargeCasts: phaseChargeCasts,
       staggerTicksTotal: staggerTicksTotal,
+      guardianDefIds: guardianDefIds,
+      guardianWardMult: guardianWardMult,
       vulnerabilityMult: vulnerabilityMult,
       chargingCast: clearChargingCast
           ? null
@@ -267,6 +277,8 @@ final class Phase0aActor {
       other.chargeCast == chargeCast &&
       _listEquals(other.phaseChargeCasts, phaseChargeCasts) &&
       other.staggerTicksTotal == staggerTicksTotal &&
+      _listEquals(other.guardianDefIds, guardianDefIds) &&
+      other.guardianWardMult == guardianWardMult &&
       other.vulnerabilityMult == vulnerabilityMult &&
       other.chargingCast == chargingCast &&
       other.chargeTicksRemaining == chargeTicksRemaining &&
@@ -294,6 +306,8 @@ final class Phase0aActor {
       chargeCast,
       _listHash(phaseChargeCasts),
       staggerTicksTotal,
+      _listHash(guardianDefIds),
+      guardianWardMult,
       vulnerabilityMult,
       chargingCast,
       chargeTicksRemaining,

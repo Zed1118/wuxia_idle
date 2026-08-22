@@ -701,16 +701,10 @@ void main() {
       expect(flowA.outcome, flowB.outcome);
     });
 
-    test('非零吸血/护法/活跃踉跄经装配入口立即 fail-fast,RNG 未消费', () {
+    test('非零吸血/活跃踉跄经装配入口立即 fail-fast,RNG 未消费', () {
       final cases =
           <(String, BattleCharacter Function(BattleCharacter), String)>[
             ('吸血', (c) => makeCharacter(forgingLifestealPct: 0.05), '吸血'),
-            ('护法 ward', (c) => makeCharacter(guardianWardMult: 0.5), '护法'),
-            (
-              '护法 ids',
-              (c) => makeCharacter(guardianDefIds: const ['guard_a']),
-              '护法',
-            ),
             ('踉跄 ticks', (c) => makeCharacter(staggerTicksRemaining: 2), '踉跄'),
             (
               '踉跄减防',

@@ -44,6 +44,7 @@ abstract interface class Phase0aDamageResolver {
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
     bool defenderCharging = false,
+    double defenderWardMult = 1.0,
   });
 }
 
@@ -111,6 +112,20 @@ Phase0aStepResult reducePhase0aTick({
         ),
       ),
   };
+
+  double defenderWardMultFor(Phase0aActor target) {
+    final wardMult = target.guardianWardMult;
+    if (wardMult == null || target.guardianDefIds.isEmpty) return 1.0;
+    final guardianAlive = target.guardianDefIds.any(
+      (guardianId) => enemiesById.values.any(
+        (candidate) =>
+            candidate.isAlive &&
+            (candidate.id == guardianId ||
+                candidate.id.startsWith('${guardianId}_w')),
+      ),
+    );
+    return guardianAlive ? wardMult : 1.0;
+  }
 
   // 蓄力/踉跄 pre-step(对齐旧引擎「踉跄判定必须先于蓄力」序):
   // 踉跄中 → 本拍压制并递减(蓄力冻结);否则蓄力中 → 本拍压制并递减,
@@ -227,6 +242,7 @@ Phase0aStepResult reducePhase0aTick({
                 staggeredActorIds.contains(target.id) ||
                 target.staggerTicksRemaining > 0,
             defenderCharging: target.chargingCast != null,
+            defenderWardMult: defenderWardMultFor(target),
           );
           if (resolved.isHit) {
             final damage = _checkedDamage(resolved);
@@ -480,6 +496,7 @@ Phase0aStepResult reducePhase0aTick({
                 staggeredActorIds.contains(target.id) ||
                 target.staggerTicksRemaining > 0,
             defenderCharging: target.chargingCast != null,
+            defenderWardMult: defenderWardMultFor(target),
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);
@@ -591,6 +608,7 @@ Phase0aStepResult reducePhase0aTick({
                 staggeredActorIds.contains(target.id) ||
                 target.staggerTicksRemaining > 0,
             defenderCharging: target.chargingCast != null,
+            defenderWardMult: defenderWardMultFor(target),
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);
@@ -729,6 +747,7 @@ Phase0aStepResult reducePhase0aTick({
                 staggeredActorIds.contains(target.id) ||
                 target.staggerTicksRemaining > 0,
             defenderCharging: target.chargingCast != null,
+            defenderWardMult: defenderWardMultFor(target),
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);

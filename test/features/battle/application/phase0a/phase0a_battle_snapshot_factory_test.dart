@@ -361,27 +361,20 @@ void main() {
       );
     });
 
-    test('护法结界(guardianWardMult / guardianDefIds)构造期 fail-fast', () {
-      expect(
-        () => makeFactory().create(
-          combatants: [input('boss', makeCharacter(guardianWardMult: 0.5))],
-          moveBindings: const {Phase0aDamageKind.basic: basicSkill},
-        ),
-        throwsA(
-          isA<StateError>().having((e) => e.message, 'm', contains('护法')),
-        ),
+    test('护法结界配置放行且静态 damage snapshot 保持中性 ward', () {
+      final bundle = makeFactory().create(
+        combatants: [
+          input(
+            'boss',
+            makeCharacter(
+              guardianWardMult: 0.5,
+              guardianDefIds: const ['guard_a'],
+            ),
+          ),
+        ],
+        moveBindings: const {Phase0aDamageKind.basic: basicSkill},
       );
-      expect(
-        () => makeFactory().create(
-          combatants: [
-            input('boss', makeCharacter(guardianDefIds: const ['guard_a'])),
-          ],
-          moveBindings: const {Phase0aDamageKind.basic: basicSkill},
-        ),
-        throwsA(
-          isA<StateError>().having((e) => e.message, 'm', contains('护法')),
-        ),
-      );
+      expect(bundle.combatants['boss']!.wardMult, 1.0);
     });
 
     test('脆弱窗口 vulnerabilityMult 构造期支持:乘子原样进快照(2026-08-22)', () {

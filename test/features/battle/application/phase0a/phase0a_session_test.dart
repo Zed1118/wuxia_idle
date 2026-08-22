@@ -26,6 +26,7 @@ class FixedDamageResolver implements Phase0aDamageResolver {
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
     bool defenderCharging = false,
+    double defenderWardMult = 1.0,
   }) {
     return Phase0aResolvedHit(
       isHit: true,

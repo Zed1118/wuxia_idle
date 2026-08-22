@@ -134,6 +134,7 @@ final class Phase0aDamageCalculatorAdapter
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
     bool defenderCharging = false,
+    double defenderWardMult = 1.0,
   }) {
     if (!_moveBindings.containsKey(kind)) {
       throw StateError('Phase0a 招式缺 kind 绑定: ${kind.name}');
@@ -144,6 +145,7 @@ final class Phase0aDamageCalculatorAdapter
       skill: _moveBindings[kind],
       defenderStaggered: defenderStaggered,
       defenderCharging: defenderCharging,
+      defenderWardMult: defenderWardMult,
     );
   }
 
@@ -153,11 +155,13 @@ final class Phase0aDamageCalculatorAdapter
     required String targetId,
     required SkillDef skill,
     bool defenderStaggered = false,
+    double defenderWardMult = 1.0,
   }) => _resolveWithSkill(
     attackerId: attackerId,
     targetId: targetId,
     skill: skill,
     defenderStaggered: defenderStaggered,
+    defenderWardMult: defenderWardMult,
   );
 
   Phase0aResolvedHit _resolveWithSkill({
@@ -166,6 +170,7 @@ final class Phase0aDamageCalculatorAdapter
     required SkillDef? skill,
     required bool defenderStaggered,
     bool defenderCharging = false,
+    required double defenderWardMult,
   }) {
     final attacker = _combatants[attackerId];
     if (attacker == null) {
@@ -231,7 +236,8 @@ final class Phase0aDamageCalculatorAdapter
       outputMultiplier: attacker.outputMultiplier,
       defenderSchoolDamageMult:
           target.schoolDamageTakenMults[attacker.school] ?? 1.0,
-      defenderWardMult: target.wardMult * vulnerabilityWindowMult,
+      defenderWardMult:
+          target.wardMult * defenderWardMult * vulnerabilityWindowMult,
       attackerPiercePct: attacker.piercePct,
       attackerLifestealPct: attacker.lifestealPct, // 已 fail-fast,恒 0
     );

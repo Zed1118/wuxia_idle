@@ -101,6 +101,8 @@ void main() {
     double evasionRate = 0.05,
     double criticalRate = 0.05,
     Map<TechniqueSchool, double> schoolDamageTakenMults = const {},
+    double wardMult = 1.0,
+    double? vulnerabilityOutMult,
   }) {
     return Phase0aDamageSnapshot(
       internalForce: internalForce,
@@ -116,8 +118,8 @@ void main() {
       proficiencyDamageMults: const {},
       outputMultiplier: 1.0,
       schoolDamageTakenMults: schoolDamageTakenMults,
-      wardMult: 1.0,
-      vulnerabilityOutMult: null,
+      wardMult: wardMult,
+      vulnerabilityOutMult: vulnerabilityOutMult,
       piercePct: 0.0,
       lifestealPct: 0.0,
       critDamageTakenMult: 1.0,
@@ -146,6 +148,7 @@ void main() {
     required Phase0aDamageSnapshot defender,
     required SkillDef skill,
     required math.Random rng,
+    double defenderWardMult = 1.0,
   }) {
     return DamageCalculator.calculateResolved(
       attackerInternalForce: attacker.internalForce,
@@ -170,7 +173,7 @@ void main() {
       outputMultiplier: attacker.outputMultiplier,
       defenderSchoolDamageMult:
           defender.schoolDamageTakenMults[attacker.school] ?? 1.0,
-      defenderWardMult: defender.wardMult,
+      defenderWardMult: defender.wardMult * defenderWardMult,
       attackerPiercePct: attacker.piercePct,
       attackerLifestealPct: attacker.lifestealPct,
     );
@@ -384,6 +387,31 @@ void main() {
         proficiencyDamageMult: zeroUseMult,
       );
       expectResolvedEqualsDirect(resolved, direct);
+    });
+
+    test('动态 defenderWardMult 与静态 ward/脆弱乘子共同传入唯一 calculator', () {
+      final defender = makeEnemySnapshot(
+        wardMult: 0.8,
+        vulnerabilityOutMult: 0.5,
+      );
+      final adapter = makeAdapter(
+        seed: 20260822,
+        combatants: {'player': makePlayerSnapshot(), 'e1': defender},
+      );
+      final actual = adapter.resolve(
+        attackerId: 'player',
+        targetId: 'e1',
+        kind: Phase0aDamageKind.basic,
+        defenderWardMult: 0.25,
+      );
+      final expected = directResolve(
+        attacker: makePlayerSnapshot(),
+        defender: defender,
+        skill: basicSkill,
+        rng: math.Random(20260822),
+        defenderWardMult: 0.25 * 0.5,
+      );
+      expectResolvedEqualsDirect(actual, expected);
     });
   });
 

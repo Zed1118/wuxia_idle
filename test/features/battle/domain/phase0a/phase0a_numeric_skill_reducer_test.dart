@@ -16,6 +16,7 @@ final class _Resolver implements Phase0aDamageResolver {
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
     bool defenderCharging = false,
+    double defenderWardMult = 1.0,
   }) {
     calls.add((attacker: attackerId, target: targetId, kind: kind));
     return const Phase0aResolvedHit(isHit: true, isCritical: false, damage: 10);

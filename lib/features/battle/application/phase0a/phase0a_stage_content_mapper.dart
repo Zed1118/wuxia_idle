@@ -74,9 +74,8 @@ final class Phase0aStageContentMapper {
   );
 
   /// 把一层生产塔定义装配到与主线相同的 Phase 0A 输入。这里只做 D1
-  /// 敌队机械映射；Boss 阶段/蓄力/破招与脆弱窗口(恒 cycle-1 基础值)已由
-  /// reducer/AI 消费;守护(guardian ward)等动态机制仍须由调用方在进入
-  /// mapper 前按能力 manifest 拦截，不能把可构造误报成语义已迁移。
+  /// 敌队机械映射；Boss 阶段/蓄力/破招、脆弱窗口(恒 cycle-1 基础值)与
+  /// 护法结界动态 ward 均由 Phase 0A reducer/伤害 resolver 消费。
   static Phase0aStageMapping mapTower({
     required TowerFloorDef floor,
     required CombatantSnapshot playerSnapshot,
@@ -158,6 +157,8 @@ final class Phase0aStageContentMapper {
           chargeCast: topLevelChargeCasts[i],
           phaseChargeCasts: phaseChargeCastsByEnemy[i],
           staggerTicksTotal: staggerTicksTotal,
+          guardianDefIds: enemySnapshots[i].guardianDefIds,
+          guardianWardMult: enemySnapshots[i].guardianWardMult,
           vulnerabilityMult: enemySnapshots[i].vulnerabilityMult,
         ),
     ];
@@ -259,6 +260,8 @@ final class Phase0aStageContentMapper {
     required Phase0aChargeCast? chargeCast,
     required List<Phase0aChargeCast?> phaseChargeCasts,
     required int staggerTicksTotal,
+    required List<String> guardianDefIds,
+    required double? guardianWardMult,
     required double? vulnerabilityMult,
   }) {
     final phases = snapshot.bossPhases;
@@ -296,6 +299,8 @@ final class Phase0aStageContentMapper {
       chargeCast: chargeCast,
       phaseChargeCasts: phaseChargeCasts,
       staggerTicksTotal: staggerTicksTotal,
+      guardianDefIds: guardianDefIds,
+      guardianWardMult: guardianWardMult,
       vulnerabilityMult: vulnerabilityMult,
     );
   }
