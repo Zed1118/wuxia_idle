@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/route_c_gate_preflight.dart';
@@ -22,6 +24,15 @@ void main() {
       ]).state,
       GateState.pass,
     );
+  });
+
+  test('candidate consumer audit rejects retired imports and gates', () {
+    expect(validateRouteCConsumerViolations('').state, GateState.pass);
+    final failed = validateRouteCConsumerViolations(
+      'lib/features/mainline/x.dart:4:import battle_state.dart',
+    );
+    expect(failed.state, GateState.invalid);
+    expect(failed.details.join('\n'), contains('battle_state.dart'));
   });
 
   test(
@@ -130,24 +141,7 @@ void main() {
   });
 
   test('Windows gate requires root app, two viewports and three runs each', () {
-    final runs = <Map<String, Object?>>[
-      for (final viewport in const <String>['1280x720', '1440x900'])
-        for (var index = 1; index <= 3; index++)
-          <String, Object?>{
-            'schema': routeCWindowsRunSchema,
-            'run_id': '$viewport-$index',
-            'app_package': 'wuxia_idle',
-            'route_id': routeCProductionProfileRoute,
-            'commit': commit,
-            'binary_sha256': checksum,
-            'fixture_sha256': checksum,
-            'host_manifest_sha256': checksum,
-            'viewport': viewport,
-            'minimum_spec_attested': true,
-            'local_console': true,
-            'composite_gate': 'PASS',
-          },
-    ];
+    final runs = _windowsRuns(commit, checksum);
     expect(
       validateWindowsRuns(runs, expectedCommit: commit).state,
       GateState.pass,
@@ -157,6 +151,101 @@ void main() {
       validateWindowsRuns(runs, expectedCommit: commit).state,
       GateState.invalid,
     );
+  });
+
+  test('Windows gate re-derives raw telemetry and validates host facts', () {
+    final runs = _windowsRuns(commit, checksum);
+    for (final run in runs) {
+      final viewport = (run['viewport']! as String).split('x');
+      run['_raw_files_present'] = true;
+      run['raw_evidence'] = <String, Object?>{
+        'frames_jsonl': 'frames.jsonl',
+        'memory_gc_jsonl': 'memory_gc.jsonl',
+        'summary_json': 'summary.json',
+        'run_log': 'run.log',
+      };
+      run['_summary'] = <String, Object?>{
+        'schema': 'route-c-production-profile-summary-v1',
+        'run_id': run['run_id'],
+        'sample_seconds': 60,
+        'warmup_seconds': 12,
+        'cooldown_seconds': 30,
+        'sampled_frames': 3600,
+        'p99_total_span_ms': 10.0,
+        'max_consecutive_severe_frames': 0,
+        'frame_streak_gate_passes': true,
+        'gc_telemetry_status': 'GC_TELEMETRY_COLLECTED',
+        'logical_width': int.parse(viewport[0]),
+        'logical_height': int.parse(viewport[1]),
+        'device_pixel_ratio': 1.0,
+        'rss_start_bytes': 100000000,
+        'rss_end_bytes': 110000000,
+      };
+      run['_derived'] = <String, Object?>{
+        'sampled_frames': 3600,
+        'p99_total_span_ms': 10.0,
+        'max_consecutive_severe_frames': 0,
+        'max_consecutive_build_over_budget': 0,
+        'max_consecutive_raster_over_budget': 0,
+        'gc_telemetry_status': 'GC_TELEMETRY_COLLECTED',
+        'rss_start_bytes': 100000000,
+        'rss_end_bytes': 110000000,
+      };
+    }
+    final host = _windowsHost();
+
+    expect(
+      validateWindowsRuns(
+        runs,
+        expectedCommit: commit,
+        requireRawEvidence: true,
+        hostManifest: host,
+        actualHostManifestChecksum: checksum,
+        actualBinaryChecksum: checksum,
+        actualFixtureChecksum: checksum,
+      ).state,
+      GateState.pass,
+    );
+    (runs.first['_derived']! as Map<String, Object?>)['sampled_frames'] = 1;
+    final failed = validateWindowsRuns(
+      runs,
+      expectedCommit: commit,
+      requireRawEvidence: true,
+      hostManifest: host,
+      actualHostManifestChecksum: checksum,
+      actualBinaryChecksum: checksum,
+      actualFixtureChecksum: checksum,
+    );
+    expect(failed.state, GateState.invalid);
+    expect(
+      failed.details.join('\n'),
+      contains('raw telemetry fails the composite thresholds'),
+    );
+  });
+
+  test('Windows raw parser derives percentile, streak, GC and RSS', () async {
+    final directory = await Directory.systemTemp.createTemp(
+      'route-c-windows-raw-test-',
+    );
+    addTearDown(() => directory.delete(recursive: true));
+    final frames = File('${directory.path}/frames.jsonl');
+    final memory = File('${directory.path}/memory_gc.jsonl');
+    await frames.writeAsString(
+      '${<String>['{"build_us":1000,"raster_us":1000,"total_span_us":10000}', '{"build_us":17000,"raster_us":1000,"total_span_us":33301}', '{"build_us":18000,"raster_us":1000,"total_span_us":34000}'].join('\n')}\n',
+    );
+    await memory.writeAsString(
+      '${<String>['{"record_type":"memory_sample","rss_bytes":100}', '{"record_type":"memory_sample","rss_bytes":110}', '{"record_type":"gc_status","status":"GC_TELEMETRY_COLLECTED"}'].join('\n')}\n',
+    );
+
+    final derived = await deriveWindowsRawTelemetry(frames, memory);
+
+    expect(derived?['sampled_frames'], 3);
+    expect(derived?['p99_total_span_ms'], 34.0);
+    expect(derived?['max_consecutive_severe_frames'], 2);
+    expect(derived?['max_consecutive_build_over_budget'], 2);
+    expect(derived?['rss_start_bytes'], 100);
+    expect(derived?['rss_end_bytes'], 110);
+    expect(derived?['gc_telemetry_status'], 'GC_TELEMETRY_COLLECTED');
   });
 
   test('missing external evidence is pending, never pass', () {
@@ -219,4 +308,48 @@ Map<String, Object?> _humanSession(
     'questionnaire_complete': true,
   },
   'validity': <String, Object?>{'valid': true, 'invalid_reasons': <String>[]},
+};
+
+List<Map<String, Object?>> _windowsRuns(String commit, String checksum) =>
+    <Map<String, Object?>>[
+      for (final viewport in const <String>['1280x720', '1440x900'])
+        for (var index = 1; index <= 3; index++)
+          <String, Object?>{
+            'schema': routeCWindowsRunSchema,
+            'run_id': '$viewport-$index',
+            'app_package': 'wuxia_idle',
+            'route_id': routeCProductionProfileRoute,
+            'commit': commit,
+            'binary_sha256': checksum,
+            'fixture_sha256': checksum,
+            'host_manifest_sha256': checksum,
+            'viewport': viewport,
+            'minimum_spec_attested': true,
+            'local_console': true,
+            'renderer': 'impeller-d3d',
+            'composite_gate': 'PASS',
+          },
+    ];
+
+Map<String, Object?> _windowsHost() => <String, Object?>{
+  'status': 'RECORDED',
+  'device': <String, Object?>{'gpu_is_integrated': true, 'plugged_in': true},
+  'display': <String, Object?>{
+    'refresh_rate_hz': 60,
+    'scale_percent': 100,
+    'required_logical_viewports': <String>['1280x720', '1440x900'],
+    'local_interactive_session': true,
+  },
+  'session': <String, Object?>{
+    'remote_desktop': false,
+    'virtual_machine': false,
+  },
+  'runtime': <String, Object?>{'renderer': 'impeller-d3d'},
+  'attestation': <String, Object?>{
+    'valid_for_minimum_spec_gate': true,
+    'cpu_at_or_below_target': true,
+    'gpu_at_or_below_target': true,
+    'ram_matches_target': true,
+    'power_mode_confirmed_best_performance': true,
+  },
 };

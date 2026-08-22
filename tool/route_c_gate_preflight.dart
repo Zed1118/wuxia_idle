@@ -50,6 +50,22 @@ GateCheck validateRouteCDeletionTree(Iterable<String> battleFiles) {
   ]);
 }
 
+GateCheck validateRouteCConsumerViolations(String grepOutput) {
+  final violations = grepOutput
+      .split('\n')
+      .where((line) => line.trim().isNotEmpty)
+      .toList(growable: false);
+  if (violations.isNotEmpty) {
+    return GateCheck('production_consumers', GateState.invalid, <String>[
+      'Candidate production consumers still reference retired 3v3 symbols.',
+      ...violations.take(20),
+    ]);
+  }
+  return const GateCheck('production_consumers', GateState.pass, <String>[
+    'Production consumers contain no retired 3v3 imports or route gates.',
+  ]);
+}
+
 GateCheck validateHumanSessions(
   Iterable<Map<String, Object?>> sessions, {
   required String expectedCommit,
@@ -446,6 +462,11 @@ double _metric(Map<String, Object?> metrics, String key) =>
 GateCheck validateWindowsRuns(
   Iterable<Map<String, Object?>> runs, {
   required String expectedCommit,
+  bool requireRawEvidence = false,
+  Map<String, Object?>? hostManifest,
+  String? actualHostManifestChecksum,
+  String? actualBinaryChecksum,
+  String? actualFixtureChecksum,
 }) {
   final records = runs.toList(growable: false);
   if (records.isEmpty) {
@@ -497,6 +518,9 @@ GateCheck validateWindowsRuns(
         record['composite_gate'] != 'PASS') {
       problems.add('$id lacks minimum-spec/local-console/composite PASS');
     }
+    if (requireRawEvidence) {
+      _validateWindowsRawEvidence(record, id, viewport, problems);
+    }
   }
   if (records.length != 6 || ids.length != 6) {
     problems.add('expected 6 unique Windows runs, found ${ids.length}');
@@ -517,6 +541,26 @@ GateCheck validateWindowsRuns(
   if (hosts.length > 1) {
     problems.add('Windows runs mix multiple host manifests');
   }
+  if (requireRawEvidence) {
+    if (actualBinaryChecksum == null ||
+        binaries.length != 1 ||
+        binaries.single != actualBinaryChecksum) {
+      problems.add(
+        'frozen Windows executable is missing or checksum mismatched',
+      );
+    }
+    if (actualFixtureChecksum == null ||
+        fixtures.length != 1 ||
+        fixtures.single != actualFixtureChecksum) {
+      problems.add('frozen Windows fixture is missing or checksum mismatched');
+    }
+    _validateWindowsHost(
+      hostManifest,
+      actualChecksum: actualHostManifestChecksum,
+      expectedChecksums: hosts,
+      problems: problems,
+    );
+  }
   if (problems.isNotEmpty) {
     return GateCheck('windows_gate', GateState.invalid, problems);
   }
@@ -524,6 +568,151 @@ GateCheck validateWindowsRuns(
     '6 minimum-spec runs use one root-app binary at $expectedCommit.',
   ]);
 }
+
+void _validateWindowsRawEvidence(
+  Map<String, Object?> record,
+  String id,
+  String viewport,
+  List<String> problems,
+) {
+  if (record['_raw_files_present'] != true) {
+    problems.add('$id is missing one or more raw evidence files');
+  }
+  final rawEvidence = _objectMap(record['raw_evidence']);
+  if (rawEvidence?['frames_jsonl'] != 'frames.jsonl' ||
+      rawEvidence?['memory_gc_jsonl'] != 'memory_gc.jsonl' ||
+      rawEvidence?['summary_json'] != 'summary.json' ||
+      rawEvidence?['run_log'] != 'run.log') {
+    problems.add('$id raw evidence paths are not the frozen filenames');
+  }
+  final summary = _objectMap(record['_summary']);
+  final derived = _objectMap(record['_derived']);
+  if (summary == null || derived == null) {
+    problems.add('$id lacks independently readable summary/raw telemetry');
+    return;
+  }
+  if (summary['schema'] != 'route-c-production-profile-summary-v1' ||
+      summary['run_id'] != id ||
+      summary['sample_seconds'] != 60 ||
+      summary['warmup_seconds'] != 12 ||
+      summary['cooldown_seconds'] != 30) {
+    problems.add('$id has invalid production summary metadata');
+  }
+  final viewportParts = viewport.split('x');
+  final expectedWidth = viewportParts.length == 2
+      ? int.tryParse(viewportParts[0])
+      : null;
+  final expectedHeight = viewportParts.length == 2
+      ? int.tryParse(viewportParts[1])
+      : null;
+  final sampledFrames = _asInt(summary['sampled_frames']);
+  final p99 = _asDouble(summary['p99_total_span_ms']);
+  final severe = _asInt(summary['max_consecutive_severe_frames']);
+  final rssStart = _asInt(summary['rss_start_bytes']);
+  final rssEnd = _asInt(summary['rss_end_bytes']);
+  final summaryPass =
+      sampledFrames != null &&
+      sampledFrames >= 3000 &&
+      p99 != null &&
+      p99 < 16.6 &&
+      severe != null &&
+      severe <= 1 &&
+      summary['frame_streak_gate_passes'] == true &&
+      summary['gc_telemetry_status'] == 'GC_TELEMETRY_COLLECTED' &&
+      _asDouble(summary['logical_width']) == expectedWidth &&
+      _asDouble(summary['logical_height']) == expectedHeight &&
+      _asDouble(summary['device_pixel_ratio']) == 1.0 &&
+      rssStart != null &&
+      rssEnd != null &&
+      rssEnd <= rssStart * 1.10 + 67108864;
+  if (!summaryPass) problems.add('$id summary fails the composite thresholds');
+
+  final derivedFrames = _asInt(derived['sampled_frames']);
+  final derivedP99 = _asDouble(derived['p99_total_span_ms']);
+  final derivedSevere = _asInt(derived['max_consecutive_severe_frames']);
+  final derivedBuild = _asInt(derived['max_consecutive_build_over_budget']);
+  final derivedRaster = _asInt(derived['max_consecutive_raster_over_budget']);
+  final derivedRssStart = _asInt(derived['rss_start_bytes']);
+  final derivedRssEnd = _asInt(derived['rss_end_bytes']);
+  final derivedPass =
+      derivedFrames != null &&
+      derivedFrames >= 3000 &&
+      derivedP99 != null &&
+      derivedP99 < 16.6 &&
+      derivedSevere != null &&
+      derivedSevere <= 1 &&
+      derivedBuild != null &&
+      derivedBuild < 3 &&
+      derivedRaster != null &&
+      derivedRaster < 3 &&
+      derived['gc_telemetry_status'] == 'GC_TELEMETRY_COLLECTED' &&
+      derivedRssStart != null &&
+      derivedRssEnd != null &&
+      derivedRssEnd <= derivedRssStart * 1.10 + 67108864;
+  if (!derivedPass) {
+    problems.add('$id raw telemetry fails the composite thresholds');
+  }
+  if (sampledFrames != derivedFrames ||
+      p99 == null ||
+      derivedP99 == null ||
+      (p99 - derivedP99).abs() > 0.001 ||
+      severe != derivedSevere ||
+      rssStart != derivedRssStart ||
+      rssEnd != derivedRssEnd ||
+      summary['gc_telemetry_status'] != derived['gc_telemetry_status']) {
+    problems.add('$id summary does not match independently derived telemetry');
+  }
+}
+
+void _validateWindowsHost(
+  Map<String, Object?>? host, {
+  required String? actualChecksum,
+  required Set<String> expectedChecksums,
+  required List<String> problems,
+}) {
+  if (host == null || actualChecksum == null) {
+    problems.add('Windows host_manifest.json is missing or unreadable');
+    return;
+  }
+  if (expectedChecksums.length != 1 ||
+      expectedChecksums.single != actualChecksum) {
+    problems.add('Windows host manifest checksum does not match all runs');
+  }
+  final device = _objectMap(host['device']) ?? const {};
+  final display = _objectMap(host['display']) ?? const {};
+  final session = _objectMap(host['session']) ?? const {};
+  final runtime = _objectMap(host['runtime']) ?? const {};
+  final attestation = _objectMap(host['attestation']) ?? const {};
+  final renderer = runtime['renderer']?.toString() ?? '';
+  final requiredViewports = display['required_logical_viewports'];
+  if (host['status'] != 'RECORDED' ||
+      attestation['valid_for_minimum_spec_gate'] != true ||
+      attestation['cpu_at_or_below_target'] != true ||
+      attestation['gpu_at_or_below_target'] != true ||
+      attestation['ram_matches_target'] != true ||
+      attestation['power_mode_confirmed_best_performance'] != true ||
+      device['gpu_is_integrated'] != true ||
+      device['plugged_in'] != true ||
+      display['local_interactive_session'] != true ||
+      display['refresh_rate_hz'] != 60 ||
+      display['scale_percent'] != 100 ||
+      session['remote_desktop'] != false ||
+      session['virtual_machine'] != false ||
+      renderer.isEmpty ||
+      renderer.contains('FILL_') ||
+      renderer.contains('UNKNOWN') ||
+      requiredViewports is! List ||
+      !requiredViewports.contains('1280x720') ||
+      !requiredViewports.contains('1440x900')) {
+    problems.add(
+      'Windows host manifest fails minimum-spec/local-console rules',
+    );
+  }
+}
+
+int? _asInt(Object? value) => value is num ? value.toInt() : null;
+
+double? _asDouble(Object? value) => value is num ? value.toDouble() : null;
 
 Future<void> main(List<String> args) async {
   final options = _parseArgs(args);
@@ -552,6 +741,25 @@ Future<void> main(List<String> args) async {
     '--',
     'lib/features/battle',
   ]);
+  final consumerViolations = await _gitGrep(repository, <String>[
+    '-n',
+    '-E',
+    r'^[[:space:]]*import.*battle/(application/(battle_providers|'
+        r'legacy_3v3_combatant_adapter|stage_battle_setup)|'
+        r'domain/battle_state|presentation/battle_screen)\.dart|'
+        r'Phase0a(Mainline|Tower|Sweep|Expedition|Gauntlet)Gate',
+    resolvedCandidate,
+    '--',
+    'lib/features/mainline',
+    'lib/features/tower',
+    'lib/features/sweep',
+    'lib/features/expedition',
+    'lib/features/boss_gauntlet',
+    'lib/features/injury',
+    'lib/features/jianghu',
+    'lib/features/inner_demon',
+    'lib/shared',
+  ]);
 
   final humanSessions = await _readEvidence(
     options['human-dir'],
@@ -572,6 +780,23 @@ Future<void> main(List<String> args) async {
       : await _sha256IfExists(
           File('$humanRoot/package/phase0a_debug_battle.yaml'),
         );
+  final windowsRoot = options['windows-dir'];
+  final windowsHostFile = windowsRoot == null
+      ? null
+      : File('$windowsRoot/host_manifest.json');
+  final windowsHost = windowsHostFile == null
+      ? null
+      : await _readJsonObjectIfExists(windowsHostFile);
+  final windowsHostChecksum = windowsHostFile == null
+      ? null
+      : await _sha256IfExists(windowsHostFile);
+  final windowsBinaryChecksum = windowsRoot == null
+      ? null
+      : await _sha256IfExists(File('$windowsRoot/wuxia_idle.exe'));
+  final windowsFixtureChecksum = windowsRoot == null
+      ? null
+      : await _sha256IfExists(File('$windowsRoot/phase0a_debug_battle.yaml'));
+  final windowsRuns = await _readWindowsEvidence(windowsRoot);
   final checks = <GateCheck>[
     GateCheck(
       'worktree',
@@ -579,6 +804,7 @@ Future<void> main(List<String> args) async {
       <String>[dirty.isEmpty ? 'Worktree is clean.' : 'Worktree is dirty.'],
     ),
     validateRouteCDeletionTree(candidateFiles.split('\n')),
+    validateRouteCConsumerViolations(consumerViolations),
     validateHumanEvidence(
       humanSessions,
       humanPackages,
@@ -587,8 +813,13 @@ Future<void> main(List<String> args) async {
       actualFixtureChecksum: actualHumanFixture,
     ),
     validateWindowsRuns(
-      await _readEvidence(options['windows-dir'], 'manifest.json'),
+      windowsRuns,
       expectedCommit: resolvedCandidate,
+      requireRawEvidence: windowsRoot != null,
+      hostManifest: windowsHost,
+      actualHostManifestChecksum: windowsHostChecksum,
+      actualBinaryChecksum: windowsBinaryChecksum,
+      actualFixtureChecksum: windowsFixtureChecksum,
     ),
   ];
   final state = checks.any((check) => check.state == GateState.invalid)
@@ -636,6 +867,18 @@ Future<String> _git(Directory repository, List<String> arguments) async {
   return (result.stdout as String).trim();
 }
 
+Future<String> _gitGrep(Directory repository, List<String> arguments) async {
+  final result = await Process.run('git', <String>[
+    'grep',
+    ...arguments,
+  ], workingDirectory: repository.path);
+  if (result.exitCode == 1) return '';
+  if (result.exitCode != 0) {
+    throw StateError((result.stderr as String).trim());
+  }
+  return (result.stdout as String).trim();
+}
+
 Future<List<Map<String, Object?>>> _readEvidence(
   String? rootPath,
   String fileName,
@@ -661,4 +904,113 @@ Future<String?> _sha256IfExists(File file) async {
   if (result.exitCode != 0) return null;
   final checksum = (result.stdout as String).trim().split(RegExp(r'\s+')).first;
   return RegExp(r'^[0-9a-f]{64}$').hasMatch(checksum) ? checksum : null;
+}
+
+Future<Map<String, Object?>?> _readJsonObjectIfExists(File file) async {
+  if (!file.existsSync()) return null;
+  final decoded = jsonDecode(await file.readAsString());
+  if (decoded is! Map) {
+    throw FormatException('${file.path} must contain a JSON object.');
+  }
+  return decoded.cast<String, Object?>();
+}
+
+Future<List<Map<String, Object?>>> _readWindowsEvidence(
+  String? rootPath,
+) async {
+  if (rootPath == null) return const <Map<String, Object?>>[];
+  final root = Directory(rootPath);
+  if (!root.existsSync()) return const <Map<String, Object?>>[];
+  final records = <Map<String, Object?>>[];
+  await for (final entity in root.list(recursive: true, followLinks: false)) {
+    if (entity is! File || entity.uri.pathSegments.last != 'manifest.json') {
+      continue;
+    }
+    final manifest = await _readJsonObjectIfExists(entity);
+    if (manifest == null) continue;
+    final directory = entity.parent;
+    final summaryFile = File('${directory.path}/summary.json');
+    final framesFile = File('${directory.path}/frames.jsonl');
+    final memoryFile = File('${directory.path}/memory_gc.jsonl');
+    final logFile = File('${directory.path}/run.log');
+    records.add(<String, Object?>{
+      ...manifest,
+      '_summary': await _readJsonObjectIfExists(summaryFile),
+      '_derived': await deriveWindowsRawTelemetry(framesFile, memoryFile),
+      '_raw_files_present':
+          summaryFile.existsSync() &&
+          framesFile.existsSync() &&
+          memoryFile.existsSync() &&
+          logFile.existsSync(),
+    });
+  }
+  return records;
+}
+
+Future<Map<String, Object?>?> deriveWindowsRawTelemetry(
+  File framesFile,
+  File memoryFile,
+) async {
+  if (!framesFile.existsSync() || !memoryFile.existsSync()) return null;
+  final frames = await _readJsonLines(framesFile);
+  final memoryGc = await _readJsonLines(memoryFile);
+  final totalSpans = <int>[];
+  var severeStreak = 0;
+  var maxSevereStreak = 0;
+  var buildStreak = 0;
+  var maxBuildStreak = 0;
+  var rasterStreak = 0;
+  var maxRasterStreak = 0;
+  for (final frame in frames) {
+    final total = _asInt(frame['total_span_us']);
+    final build = _asInt(frame['build_us']);
+    final raster = _asInt(frame['raster_us']);
+    if (total == null || build == null || raster == null) return null;
+    totalSpans.add(total);
+    severeStreak = total > 33300 ? severeStreak + 1 : 0;
+    buildStreak = build > 16600 ? buildStreak + 1 : 0;
+    rasterStreak = raster > 16600 ? rasterStreak + 1 : 0;
+    if (severeStreak > maxSevereStreak) maxSevereStreak = severeStreak;
+    if (buildStreak > maxBuildStreak) maxBuildStreak = buildStreak;
+    if (rasterStreak > maxRasterStreak) maxRasterStreak = rasterStreak;
+  }
+  totalSpans.sort();
+  final percentileIndex = totalSpans.isEmpty
+      ? null
+      : ((totalSpans.length - 1) * 0.99).ceil();
+  final memorySamples = memoryGc
+      .where((record) => record['record_type'] == 'memory_sample')
+      .map((record) => _asInt(record['rss_bytes']))
+      .whereType<int>()
+      .toList(growable: false);
+  final gcStatuses = memoryGc
+      .where((record) => record['record_type'] == 'gc_status')
+      .map((record) => record['status']?.toString())
+      .whereType<String>()
+      .toList(growable: false);
+  return <String, Object?>{
+    'sampled_frames': totalSpans.length,
+    'p99_total_span_ms': percentileIndex == null
+        ? null
+        : totalSpans[percentileIndex] / 1000,
+    'max_consecutive_severe_frames': maxSevereStreak,
+    'max_consecutive_build_over_budget': maxBuildStreak,
+    'max_consecutive_raster_over_budget': maxRasterStreak,
+    'rss_start_bytes': memorySamples.isEmpty ? null : memorySamples.first,
+    'rss_end_bytes': memorySamples.isEmpty ? null : memorySamples.last,
+    'gc_telemetry_status': gcStatuses.isEmpty ? null : gcStatuses.last,
+  };
+}
+
+Future<List<Map<String, Object?>>> _readJsonLines(File file) async {
+  final records = <Map<String, Object?>>[];
+  for (final line in const LineSplitter().convert(await file.readAsString())) {
+    if (line.trim().isEmpty) continue;
+    final decoded = jsonDecode(line);
+    if (decoded is! Map) {
+      throw FormatException('${file.path} contains a non-object JSON line.');
+    }
+    records.add(decoded.cast<String, Object?>());
+  }
+  return records;
 }
