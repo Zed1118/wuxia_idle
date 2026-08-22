@@ -26,6 +26,23 @@ void main() {
     },
   );
 
+  test('Windows native shell treats requested dimensions as client size', () {
+    final source = File('windows/runner/win32_window.cpp').readAsStringSync();
+
+    expect(source, contains('WindowRectForClientSize'));
+    expect(source, contains('AdjustWindowRectExForDpi'));
+    expect(
+      source,
+      contains(
+        'Scale(size.width, scale_factor), Scale(size.height, scale_factor)',
+      ),
+    );
+    expect(
+      source,
+      contains('Scale(1280, scale_factor), Scale(720, scale_factor)'),
+    );
+  });
+
   test(
     'matrix is exactly two viewports times three runs and remains fail closed',
     () {

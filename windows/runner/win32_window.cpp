@@ -37,6 +37,16 @@ int Scale(int source, double scale_factor) {
   return static_cast<int>(source * scale_factor);
 }
 
+RECT WindowRectForClientSize(int width, int height, UINT dpi) {
+  RECT rect = {0, 0, width, height};
+  if (!AdjustWindowRectExForDpi(&rect, WS_OVERLAPPEDWINDOW, FALSE, 0, dpi)) {
+    // Supported Windows versions provide the DPI-aware API. Keep a
+    // conservative fallback so window creation still succeeds if it fails.
+    AdjustWindowRectEx(&rect, WS_OVERLAPPEDWINDOW, FALSE, 0);
+  }
+  return rect;
+}
+
 // Dynamically loads the |EnableNonClientDpiScaling| from the User32 module.
 // This API is only needed for PerMonitor V1 awareness mode.
 void EnableFullDpiSupportIfAvailable(HWND hwnd) {
@@ -133,11 +143,14 @@ bool Win32Window::Create(const std::wstring& title,
   HMONITOR monitor = MonitorFromPoint(target_point, MONITOR_DEFAULTTONEAREST);
   UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
   double scale_factor = dpi / 96.0;
+  const RECT window_rect = WindowRectForClientSize(
+      Scale(size.width, scale_factor), Scale(size.height, scale_factor), dpi);
 
   HWND window = CreateWindow(
       window_class, title.c_str(), WS_OVERLAPPEDWINDOW,
       Scale(origin.x, scale_factor), Scale(origin.y, scale_factor),
-      Scale(size.width, scale_factor), Scale(size.height, scale_factor),
+      window_rect.right - window_rect.left,
+      window_rect.bottom - window_rect.top,
       nullptr, nullptr, GetModuleHandle(nullptr), this);
 
   if (!window) {
@@ -207,8 +220,12 @@ Win32Window::MessageHandler(HWND hwnd,
       HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
       UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
       double scale_factor = dpi / 96.0;
-      info->ptMinTrackSize.x = Scale(1280, scale_factor);
-      info->ptMinTrackSize.y = Scale(720, scale_factor);
+      const RECT minimum_window_rect = WindowRectForClientSize(
+          Scale(1280, scale_factor), Scale(720, scale_factor), dpi);
+      info->ptMinTrackSize.x =
+          minimum_window_rect.right - minimum_window_rect.left;
+      info->ptMinTrackSize.y =
+          minimum_window_rect.bottom - minimum_window_rect.top;
       return 0;
     }
     case WM_SIZE: {
