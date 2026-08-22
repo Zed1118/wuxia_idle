@@ -1,0 +1,135 @@
+# Phase 0A guardian mechanics visual acceptance fixture.
+# This is a debug-only route; all behavior still flows through the production
+# Phase0A assembler, reducer, and VFX controller.
+meta:
+  seed: 20260822
+  fixed_delta_seconds: 0.1
+  initial_tick: 0
+  initial_seq: 1
+
+arena:
+  min_x: -640.0
+  max_x: 640.0
+  min_y: -260.0
+  max_y: 260.0
+
+combat_defaults:
+  realm_tier: xueTu
+  realm_layer: ruMen
+  cultivation_layer: chuKui
+  player_school: gangMeng
+  enemy_school: yinRou
+  attack_power_multiplier: 1.0
+  output_multiplier: 1.0
+  forging_pierce_pct: 0.0
+  forging_lifesteal_pct: 0.0
+  action_point: 0
+  basic_qi_delta: 0
+  clear_qi_delta: -25
+  skill_cooldown_turns: 0
+
+win_condition:
+  type: surviveTicks
+  required_ticks: 80
+
+player:
+  id: player
+  character_id: 1
+  position: [-320.0, 0.0]
+  facing: [1.0, 0.0]
+  move_speed: 210.0
+  max_health: 15000
+  qi: 100
+  internal_force: 600
+  equipment_attack: 130
+  defense_rate: 0.15
+  critical_rate: 0.20
+  evasion_rate: 0.0
+  attack:
+    range: 360.0
+    half_arc_radians: 0.72
+    cooldown_seconds: 0.55
+    power_multiplier: 500
+  gather:
+    slot: gather
+    ring_radius: 120.0
+    effect_radius: 520.0
+    qi_cost: 25
+    cooldown_seconds: 5.0
+    phase0a_behavior:
+      geometry: {shape: radial, anchor: caster, radius: 520.0}
+      effects:
+        - {type: pull, destinationRadius: 120.0}
+  clear:
+    slot: clear
+    effect_radius: 520.0
+    qi_cost: 25
+    cooldown_seconds: 8.0
+    power_multiplier: 900
+    phase0a_behavior:
+      geometry: {shape: radial, anchor: caster, radius: 520.0}
+      effects:
+        - {type: damage}
+        - {type: stagger}
+        - {type: break, points: 1}
+
+enemy_ai:
+  attack_range: 82.0
+  attack_half_arc_radians: 0.9
+  attack_cooldown_seconds: 1.0
+
+enemy_templates:
+  boss:
+    internal_force: 260
+    equipment_attack: 80
+    defense_rate: 0.08
+    critical_rate: 0.0
+    evasion_rate: 0.0
+    qi: 40
+    move_speed: 110.0
+    initial_attack_cooldown: 0.0
+  guardian:
+    internal_force: 180
+    equipment_attack: 70
+    defense_rate: 0.06
+    critical_rate: 0.0
+    evasion_rate: 0.0
+    qi: 40
+    move_speed: 105.0
+    initial_attack_cooldown: 0.0
+
+waves:
+  - enemies:
+      - id: wave2_elite
+        character_id: 6
+        slot_index: 0
+        role: boss
+        max_health: 50000
+        position: [-100.0, 0.0]
+        boss:
+          charge_ticks: 40
+          stagger_ticks: 3
+          vulnerability_mult: 0.15
+          guardian_ward_mult: 0.15
+          guardian_ids: [wave1_blade, wave1_archer]
+          guard_intercepts_interrupt: true
+          charge_skill:
+            id: phase0a_debug_guardian_charge
+            name: phase0a_debug_guardian_charge
+            description: phase0a_debug_guardian_charge
+            type: powerSkill
+            power_multiplier: 1600
+            qi_delta: -20
+            cooldown_turns: 5
+      - id: wave1_blade
+        character_id: 7
+        slot_index: 1
+        role: guardian
+        max_health: 20000
+        position: [100.0, -90.0]
+      - id: wave1_archer
+        character_id: 8
+        slot_index: 2
+        role: guardian
+        max_health: 20000
+        position: [100.0, 90.0]

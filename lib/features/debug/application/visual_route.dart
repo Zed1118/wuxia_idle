@@ -80,6 +80,10 @@ enum VisualRoute {
     'phase0a_battle_boss_mechanics',
     'Phase 0A Boss charge / break / stagger / vulnerability fixture',
   ),
+  phase0aBattleGuardianMechanics(
+    'phase0a_battle_guardian_mechanics',
+    'Phase 0A guardian ward / intercept / coop visual fixture',
+  ),
   mainlineFirstClearBattle(
     'mainline_first_clear_battle',
     '主线首通真战斗验收·真 stage_01_03 + readable_first_clear 调参 + 起手暂停可单步',

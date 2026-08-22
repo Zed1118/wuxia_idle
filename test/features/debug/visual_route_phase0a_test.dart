@@ -23,6 +23,13 @@ void main() {
       );
     });
 
+    test('guardian 机制实机 route id 可解析', () {
+      expect(
+        parseVisualRoute('phase0a_battle_guardian_mechanics'),
+        VisualRoute.phase0aBattleGuardianMechanics,
+      );
+    });
+
     test('反馈静态验收路由 id 可解析', () {
       const routes = <VisualRoute, String>{
         VisualRoute.phase0aBattleAttackFeedback:
@@ -74,6 +81,15 @@ void main() {
         hostSource.contains('data/phase0a_debug_boss_battle.yaml'),
         isTrue,
       );
+      expect(
+        hostSource.contains('VisualRoute.phase0aBattleGuardianMechanics'),
+        isTrue,
+      );
+      expect(
+        hostSource.contains('data/phase0a_debug_guardian_mechanics.yaml'),
+        isTrue,
+      );
+      expect(hostSource.contains('_Phase0aGuardianMechanicsPreview'), isTrue);
     });
 
     test('main.dart 与 stage_entry_flow.dart 不引用该路由', () {

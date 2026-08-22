@@ -90,6 +90,7 @@ import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
 import '../../battle/application/phase0a/phase0a_wave_battle_flow.dart';
+import '../../battle/domain/phase0a/phase0a_combat_events.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../application/phase0a_debug_battle_fixture.dart';
 import '../../encounter/presentation/encounter_dialog.dart';
@@ -537,6 +538,20 @@ Future<Widget> buildVisualTarget(
         assetPath: 'data/phase0a_debug_boss_battle.yaml',
       );
       return _Phase0aBossMechanicsPreview(
+        controller: Phase0aBattleController(
+          flow: fixture.flow,
+          roster: fixture.roster,
+          fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+        ),
+        fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+      );
+    case VisualRoute.phase0aBattleGuardianMechanics:
+      final fixture = await Phase0aDebugBattleFixture.load(
+        assetLoader: rootBundle.loadString,
+        numbers: GameRepository.instance.numbers,
+        assetPath: 'data/phase0a_debug_guardian_mechanics.yaml',
+      );
+      return _Phase0aGuardianMechanicsPreview(
         controller: Phase0aBattleController(
           flow: fixture.flow,
           roster: fixture.roster,
@@ -1580,6 +1595,85 @@ class _Phase0aBossMechanicsPreviewState
           ? null
           : const Phase0aPlayerCommand(clear: true),
     );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Phase0aBattleScreen(
+    controller: widget.controller,
+    autoStep: false,
+    feedbackHoldSeconds:
+        Phase0aPresentationTokens.visualRouteFeedbackHoldSeconds,
+  );
+}
+
+/// Guardian fixture driver: hold the ward, let the Boss enter charge, spend
+/// the player's real clear action so the reducer redirects the break to a
+/// guardian, then advance until the reducer emits the two-guardian strike.
+class _Phase0aGuardianMechanicsPreview extends StatefulWidget {
+  const _Phase0aGuardianMechanicsPreview({
+    required this.controller,
+    required this.fixedDeltaSeconds,
+  });
+
+  final Phase0aBattleController controller;
+  final double fixedDeltaSeconds;
+
+  @override
+  State<_Phase0aGuardianMechanicsPreview> createState() =>
+      _Phase0aGuardianMechanicsPreviewState();
+}
+
+class _Phase0aGuardianMechanicsPreviewState
+    extends State<_Phase0aGuardianMechanicsPreview> {
+  Timer? _timer;
+  bool _breakSent = false;
+  bool _interceptSeen = false;
+  bool _coopSeen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(
+      Duration(
+        milliseconds:
+            (widget.fixedDeltaSeconds * Duration.millisecondsPerSecond).round(),
+      ),
+      (_) => _advanceGuardianFixture(),
+    );
+  }
+
+  void _advanceGuardianFixture() {
+    if (!mounted || widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
+      _timer?.cancel();
+      return;
+    }
+    _interceptSeen =
+        _interceptSeen ||
+        widget.controller.lastEvents.any(
+          (event) => event is Phase0aGuardIntercepted,
+        );
+    _coopSeen =
+        _coopSeen ||
+        widget.controller.lastEvents.any(
+          (event) => event is Phase0aGuardianCoopStrike,
+        );
+    if (_interceptSeen && _coopSeen) {
+      _timer?.cancel();
+      return;
+    }
+    final boss = widget.controller.state.enemies.first;
+    if (!_breakSent && boss.chargingCast != null) {
+      _breakSent = true;
+      widget.controller.step(const Phase0aPlayerCommand(clear: true));
+      return;
+    }
+    widget.controller.step();
   }
 
   @override

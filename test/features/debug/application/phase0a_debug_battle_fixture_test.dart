@@ -102,6 +102,49 @@ void main() {
   );
 
   test(
+    'guardian visual fixture reaches ward, intercept, and coop through real flow',
+    () async {
+      final guardianFixture = await Phase0aDebugBattleFixture.load(
+        assetLoader: loadTestAsset,
+        numbers: GameRepository.instance.numbers,
+        assetPath: 'data/phase0a_debug_guardian_mechanics.yaml',
+      );
+      final boss = guardianFixture.flow.state.enemies.first;
+      expect(boss.guardianWardMult, 0.15);
+      expect(boss.guardianDefIds, ['wave1_blade', 'wave1_archer']);
+      expect(boss.guardInterceptsInterrupt, isTrue);
+      expect(
+        guardianFixture.flow.state.winCondition,
+        const Phase0aWinCondition.surviveTicks(80),
+      );
+
+      final controller = Phase0aBattleController(
+        flow: guardianFixture.flow,
+        roster: guardianFixture.roster,
+        fixedDeltaSeconds: guardianFixture.fixedDeltaSeconds,
+      );
+      var breakSent = false;
+      final kinds = <Phase0aVfxKind>{};
+      for (var i = 0; i < 80; i++) {
+        final charging = controller.state.enemies.first.chargingCast != null;
+        controller.step(
+          !breakSent && charging
+              ? const Phase0aPlayerCommand(clear: true)
+              : null,
+        );
+        if (charging) breakSent = true;
+        kinds.addAll(controller.feedback.map((entry) => entry.kind));
+        if (kinds.contains(Phase0aVfxKind.guardIntercepted) &&
+            kinds.contains(Phase0aVfxKind.guardianCoop)) {
+          break;
+        }
+      }
+      expect(kinds, contains(Phase0aVfxKind.guardIntercepted));
+      expect(kinds, contains(Phase0aVfxKind.guardianCoop));
+    },
+  );
+
+  test(
     'controller merges queued input and consumes exact real-flow events',
     () {
       final controller = Phase0aBattleController(

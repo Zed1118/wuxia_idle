@@ -62,6 +62,7 @@ final class Phase0aDebugBattleFixture {
         player: playerActor,
         enemies: waves.first.enemies,
         skillSlots: config.skillSlots(),
+        winCondition: config.winCondition,
       ),
       waves: waves,
       combatants: combatants,
@@ -90,6 +91,7 @@ final class _DebugBattleConfig {
       player = _map(yaml, 'player'),
       enemyAi = _map(yaml, 'enemy_ai'),
       enemyTemplates = _map(yaml, 'enemy_templates'),
+      winCondition = _optionalWinCondition(yaml['win_condition']),
       waveMaps = _mapList(yaml, 'waves') {
     if (waveMaps.isEmpty) {
       throw const FormatException('waves must not be empty');
@@ -108,6 +110,7 @@ final class _DebugBattleConfig {
   final Map<String, dynamic> player;
   final Map<String, dynamic> enemyAi;
   final Map<String, dynamic> enemyTemplates;
+  final Phase0aWinCondition? winCondition;
   final List<Map<String, dynamic>> waveMaps;
 
   int get seed => _integer(meta, 'seed');
@@ -281,6 +284,15 @@ final class _DebugBattleConfig {
       vulnerabilityMult: bossConfig == null
           ? null
           : _number(bossConfig, 'vulnerability_mult'),
+      guardianWardMult: bossConfig == null
+          ? null
+          : _optionalNumber(bossConfig, 'guardian_ward_mult'),
+      guardianDefIds: bossConfig == null
+          ? const []
+          : _optionalStringList(bossConfig, 'guardian_ids'),
+      guardInterceptsInterrupt:
+          bossConfig != null &&
+          _optionalBool(bossConfig, 'guard_intercepts_interrupt'),
     );
   }
 
@@ -334,12 +346,18 @@ final class _DebugBattleConfig {
       forgingPiercePct: _number(defaults, 'forging_pierce_pct'),
       forgingLifestealPct: _number(defaults, 'forging_lifesteal_pct'),
       enemyDefId: isPlayer ? null : _text(actor, 'id'),
-      guardianWardMult: null,
-      guardianDefIds: const [],
+      guardianWardMult: boss && _map(actor, 'boss')['guardian_ward_mult'] is num
+          ? _number(_map(actor, 'boss'), 'guardian_ward_mult')
+          : null,
+      guardianDefIds: boss
+          ? _optionalStringList(_map(actor, 'boss'), 'guardian_ids')
+          : const [],
       vulnerabilityMult: boss
           ? _number(_map(actor, 'boss'), 'vulnerability_mult')
           : null,
-      guardInterceptsInterrupt: false,
+      guardInterceptsInterrupt:
+          boss &&
+          _optionalBool(_map(actor, 'boss'), 'guard_intercepts_interrupt'),
     );
   }
 
@@ -502,6 +520,44 @@ int _integer(Map<String, dynamic> source, String key) {
     throw FormatException('$key must be an integer');
   }
   return value.toInt();
+}
+
+double? _optionalNumber(Map<String, dynamic> source, String key) {
+  final value = source[key];
+  if (value == null) return null;
+  if (value is! num) throw FormatException('$key must be numeric');
+  return value.toDouble();
+}
+
+bool _optionalBool(Map<String, dynamic> source, String key) {
+  final value = source[key];
+  if (value == null) return false;
+  if (value is! bool) throw FormatException('$key must be boolean');
+  return value;
+}
+
+List<String> _optionalStringList(Map<String, dynamic> source, String key) {
+  final value = source[key];
+  if (value == null) return const [];
+  if (value is! List || value.any((item) => item is! String || item.isEmpty)) {
+    throw FormatException('$key must be a list of non-empty strings');
+  }
+  return List.unmodifiable(value.cast<String>());
+}
+
+Phase0aWinCondition? _optionalWinCondition(Object? raw) {
+  if (raw == null) return null;
+  if (raw is! Map) throw const FormatException('win_condition must be a map');
+  final value = Map<String, dynamic>.from(raw);
+  final type = value['type'];
+  if (type != 'surviveTicks') {
+    throw FormatException('unsupported debug win condition: $type');
+  }
+  final required = value['required_ticks'];
+  if (required is! num || required.toInt() != required || required <= 0) {
+    throw const FormatException('required_ticks must be a positive integer');
+  }
+  return Phase0aWinCondition.surviveTicks(required.toInt());
 }
 
 ArenaVector _vector(Map<String, dynamic> source, String key) {

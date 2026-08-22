@@ -480,6 +480,12 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                     controller.state.player.id,
                   ),
                 ),
+                if (controller.state.winCondition?.isSurviveTicks == true)
+                  _SurviveConditionBanner(
+                    requiredTicks:
+                        controller.state.winCondition!.surviveTicksRequired!,
+                    currentTick: controller.state.tick,
+                  ),
                 if (widget.numericSkillBindings.equipped.isNotEmpty)
                   Positioned(
                     left: Phase0aPresentationTokens.hudInset,
@@ -1628,7 +1634,10 @@ class _FeedbackLayerState extends State<_FeedbackLayer>
         dimension: Phase0aPresentationTokens.vfxOutcomeSize,
         child: Center(
           child: Text(
-            outcome == Phase0aBattleOutcome.victory
+            outcome == Phase0aBattleOutcome.victory &&
+                    widget.controller.state.winCondition?.isSurviveTicks == true
+                ? UiStrings.battleResultSurvived
+                : outcome == Phase0aBattleOutcome.victory
                 ? UiStrings.phase0aVictorySeal
                 : UiStrings.phase0aDefeatSeal,
             style: const TextStyle(
@@ -1641,6 +1650,58 @@ class _FeedbackLayerState extends State<_FeedbackLayer>
       ),
     ),
   );
+}
+
+final class _SurviveConditionBanner extends StatelessWidget {
+  const _SurviveConditionBanner({
+    required this.requiredTicks,
+    required this.currentTick,
+  });
+
+  final int requiredTicks;
+  final int currentTick;
+
+  @override
+  Widget build(BuildContext context) {
+    final remaining = (requiredTicks - currentTick).clamp(0, requiredTicks);
+    final met = remaining == 0;
+    return Positioned(
+      key: const ValueKey('phase0a_survive_condition_banner'),
+      top: Phase0aPresentationTokens.hudInset,
+      left: Phase0aPresentationTokens.hudInset,
+      child: Semantics(
+        label: met
+            ? UiStrings.surviveConditionMet(requiredTicks)
+            : UiStrings.surviveConditionRemaining(requiredTicks, remaining),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xD9E8D8B8),
+            border: Border.all(
+              color: met ? WuxiaUi.gold : const Color(0xB36D5940),
+            ),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            child: Text(
+              met
+                  ? UiStrings.surviveConditionMet(requiredTicks)
+                  : UiStrings.surviveConditionRemaining(
+                      requiredTicks,
+                      remaining,
+                    ),
+              style: TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 16,
+                fontWeight: met ? FontWeight.w700 : FontWeight.w500,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 enum _InkEffect { melee, palm, gather, clear, defeat }
