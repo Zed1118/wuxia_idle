@@ -1,10 +1,9 @@
-import 'dart:math';
-
 import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 
 import '../../../data/game_repository.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
+import '../../../shared/utils/math_random.dart';
 import '../../battle/application/phase0a/phase0a_headless_runner.dart';
 import '../../battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
@@ -76,7 +75,7 @@ final class Phase0aExpeditionCombatRunner implements ExpeditionCombat {
       combatants: mapping.combatants,
       moveBindings: mapping.moveBindings,
       numbers: GameRepository.instance.numbers,
-      rng: Random(nodeSeed),
+      rng: newMathRandom(seed: nodeSeed),
       playerAdapter: mapping.playerAdapter,
       enemyAiAdapter: mapping.enemyAiAdapter,
     );
