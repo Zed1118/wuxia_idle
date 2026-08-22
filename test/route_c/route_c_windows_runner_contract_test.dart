@@ -65,6 +65,8 @@ void main() {
       expect(runner, contains('GC_TELEMETRY_COLLECTED'));
       expect(runner, contains('.sampled_frames >= 3000'));
       expect(runner, contains('.p99_total_span_ms < 16.6'));
+      expect(runner, contains('Library/Containers/com.pen.wuxia.wuxiaIdle'));
+      expect(runner, contains('cp -R "\$app_run_dir/." "\$run_dir/"'));
       expect(runner, isNot(contains('phase0minus_probe.app')));
     },
   );

@@ -9,6 +9,8 @@ expected_commit="${3:?expected commit is required}"
 expected_fixture_checksum="${4:?expected fixture checksum is required}"
 result_root="${5:-$repository_root/build/route_c_macos_gate}"
 expected_dpr="${ROUTE_C_MACOS_DPR:-2}"
+app_container_root="${ROUTE_C_MACOS_APP_CONTAINER:-$HOME/Library/Containers/com.pen.wuxia.wuxiaIdle/Data}"
+app_evidence_root="$app_container_root/tmp/route_c_macos_gate"
 
 case "$viewport" in
   1280x720|1440x900) ;;
@@ -56,16 +58,22 @@ for ((index = 1; index <= repeat; index++)); do
   timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
   run_id="route-c-macos-${viewport}-r${index}-${timestamp}"
   run_dir="$result_root/$run_id"
+  app_run_dir="$app_evidence_root/$run_id"
   mkdir -p "$run_dir"
+  rm -rf "$app_run_dir"
+  mkdir -p "$app_run_dir"
   caffeinate -dimsu "$binary" \
     --visual-route=phase0a_battle_profile \
     --battle-profile-run-id="$run_id" \
-    --battle-profile-output="$run_dir" \
+    --battle-profile-output="$app_run_dir" \
     --battle-profile-sample-seconds=60 \
     --battle-profile-warmup-seconds=12 \
     --battle-profile-cooldown-seconds=30 \
     --battle-profile-viewport="$viewport" \
     --battle-profile-auto-close=true 2>&1 | tee "$run_dir/run.log"
+
+  cp -R "$app_run_dir/." "$run_dir/"
+  rm -rf "$app_run_dir"
 
   summary="$run_dir/summary.json"
   [[ -f "$summary" ]] || { echo "$run_id did not produce summary.json." >&2; exit 8; }
