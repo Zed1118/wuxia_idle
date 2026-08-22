@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/shared/audio/audio_assets.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+import 'package:wuxia_idle/features/battle/presentation/legacy_battle_sfx.dart';
 
 /// 造一个命中结果（按 AttackResult 真实全参构造器，无 .normal 工厂）。
 AttackResult _hit({required bool isCritical}) => AttackResult(

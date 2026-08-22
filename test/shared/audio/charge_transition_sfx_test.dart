@@ -3,6 +3,7 @@ import 'package:wuxia_idle/shared/audio/audio_assets.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
+import 'package:wuxia_idle/features/battle/presentation/legacy_battle_sfx.dart';
 
 /// 最小 BattleCharacter（沿 battle_character_charge_test 体例）。
 BattleCharacter _c({

@@ -30,6 +30,7 @@ import 'damage_popup.dart';
 import 'first_clear_showcase.dart';
 import 'impact_glyph_overlay.dart';
 import 'impact_profile.dart';
+import 'legacy_battle_sfx.dart';
 import 'projectile_trail_style.dart';
 import 'screen_flash.dart';
 import 'ultimate_caption_overlay.dart';

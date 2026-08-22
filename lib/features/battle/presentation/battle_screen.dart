@@ -25,6 +25,7 @@ import 'battle_layout_tokens.dart';
 import 'battle_scene_background.dart';
 import 'battle_standee_fusion.dart';
 import 'guardian_ward_presentation.dart';
+import 'legacy_battle_sfx.dart';
 import 'victory_overlay.dart';
 import '../../cangjingge/presentation/cangjingge_screen.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
