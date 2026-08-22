@@ -159,6 +159,7 @@ final class Phase0aStageContentMapper {
           staggerTicksTotal: staggerTicksTotal,
           guardianDefIds: enemySnapshots[i].guardianDefIds,
           guardianWardMult: enemySnapshots[i].guardianWardMult,
+          guardInterceptsInterrupt: enemySnapshots[i].guardInterceptsInterrupt,
           vulnerabilityMult: enemySnapshots[i].vulnerabilityMult,
         ),
     ];
@@ -262,6 +263,7 @@ final class Phase0aStageContentMapper {
     required int staggerTicksTotal,
     required List<String> guardianDefIds,
     required double? guardianWardMult,
+    required bool guardInterceptsInterrupt,
     required double? vulnerabilityMult,
   }) {
     final phases = snapshot.bossPhases;
@@ -301,6 +303,7 @@ final class Phase0aStageContentMapper {
       staggerTicksTotal: staggerTicksTotal,
       guardianDefIds: guardianDefIds,
       guardianWardMult: guardianWardMult,
+      guardInterceptsInterrupt: guardInterceptsInterrupt,
       vulnerabilityMult: vulnerabilityMult,
     );
   }

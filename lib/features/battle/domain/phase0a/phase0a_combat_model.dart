@@ -135,6 +135,7 @@ final class Phase0aActor {
     this.staggerTicksTotal = _noStaggerTicks,
     this.guardianDefIds = const [],
     this.guardianWardMult,
+    this.guardInterceptsInterrupt = false,
     this.vulnerabilityMult,
     this.chargingCast,
     this.chargeTicksRemaining = _noChargeTicks,
@@ -183,6 +184,10 @@ final class Phase0aActor {
 
   /// Damage taken multiplier while any configured guardian remains alive.
   final double? guardianWardMult;
+
+  /// Typed opt-in: a break action hitting a guarded charging boss is eaten by
+  /// the lowest-health live guardian instead of interrupting the boss.
+  final bool guardInterceptsInterrupt;
 
   /// 脆弱窗口外承伤乘子:**内容预解析/可观测事实**(源 `EnemyDef.vulnerability`,
   /// 恒 cycle-1 基础值;null = 无机制),与 [chargeCast]/[staggerTicksTotal]
@@ -245,6 +250,7 @@ final class Phase0aActor {
       staggerTicksTotal: staggerTicksTotal,
       guardianDefIds: guardianDefIds,
       guardianWardMult: guardianWardMult,
+      guardInterceptsInterrupt: guardInterceptsInterrupt,
       vulnerabilityMult: vulnerabilityMult,
       chargingCast: clearChargingCast
           ? null
@@ -279,6 +285,7 @@ final class Phase0aActor {
       other.staggerTicksTotal == staggerTicksTotal &&
       _listEquals(other.guardianDefIds, guardianDefIds) &&
       other.guardianWardMult == guardianWardMult &&
+      other.guardInterceptsInterrupt == guardInterceptsInterrupt &&
       other.vulnerabilityMult == vulnerabilityMult &&
       other.chargingCast == chargingCast &&
       other.chargeTicksRemaining == chargeTicksRemaining &&
@@ -308,6 +315,7 @@ final class Phase0aActor {
       staggerTicksTotal,
       _listHash(guardianDefIds),
       guardianWardMult,
+      guardInterceptsInterrupt,
       vulnerabilityMult,
       chargingCast,
       chargeTicksRemaining,

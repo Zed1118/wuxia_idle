@@ -113,11 +113,14 @@ Phase0aStepResult reducePhase0aTick({
       ),
   };
 
-  double defenderWardMultFor(Phase0aActor target) {
+  double defenderWardMultFor(
+    Phase0aActor target,
+    Map<String, Phase0aActor> defenderState,
+  ) {
     final wardMult = target.guardianWardMult;
     if (wardMult == null || target.guardianDefIds.isEmpty) return 1.0;
     final guardianAlive = target.guardianDefIds.any(
-      (guardianId) => enemiesById.values.any(
+      (guardianId) => defenderState.values.any(
         (candidate) =>
             candidate.isAlive &&
             (candidate.id == guardianId ||
@@ -193,6 +196,11 @@ Phase0aStepResult reducePhase0aTick({
     if (actor == null || !actor.isAlive) continue;
     // 蓄力/踉跄压制(reducer 权威:AI 停发之外的第二道闸,禁绕状态行动)。
     if (suppressedActorIds.contains(actorId)) continue;
+    // 同一 intent 的多目标结算共享行动前敌方快照：目标顺序不得让先阵亡的
+    // 护法在同一招内提前解除 Boss ward/破招拦截（对齐旧引擎 AOE 口径）。
+    final preIntentEnemies = Map<String, Phase0aActor>.unmodifiable(
+      Map.of(enemiesById),
+    );
 
     switch (intent) {
       case Phase0aMoveIntent(:final direction):
@@ -242,7 +250,7 @@ Phase0aStepResult reducePhase0aTick({
                 staggeredActorIds.contains(target.id) ||
                 target.staggerTicksRemaining > 0,
             defenderCharging: target.chargingCast != null,
-            defenderWardMult: defenderWardMultFor(target),
+            defenderWardMult: defenderWardMultFor(target, preIntentEnemies),
           );
           if (resolved.isHit) {
             final damage = _checkedDamage(resolved);
@@ -478,6 +486,7 @@ Phase0aStepResult reducePhase0aTick({
                     effectRadius: intent.effectRadius,
                   ),
                 )
+                .where((target) => !_isGuardedBoss(target, enemiesById))
                 .toList();
         final outcomes = <Phase0aSkillOutcome>[];
         final deaths = <Phase0aActor>[];
@@ -496,7 +505,7 @@ Phase0aStepResult reducePhase0aTick({
                 staggeredActorIds.contains(target.id) ||
                 target.staggerTicksRemaining > 0,
             defenderCharging: target.chargingCast != null,
-            defenderWardMult: defenderWardMultFor(target),
+            defenderWardMult: defenderWardMultFor(target, preIntentEnemies),
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);
@@ -583,7 +592,7 @@ Phase0aStepResult reducePhase0aTick({
             actorPosition: actor.position,
           ),
         );
-        final targets =
+        final rawTargets =
             _opposingTargets(
                   casterSide: actor.side,
                   player: player,
@@ -596,26 +605,47 @@ Phase0aStepResult reducePhase0aTick({
                     effectRadius: intent.effectRadius,
                   ),
                 )
+                .where(
+                  (target) =>
+                      intent.breakPower > 0 ||
+                      !_isGuardedBoss(target, enemiesById),
+                )
                 .toList();
+        final targets = _dedupeGuardInterceptTargets(
+          targets: rawTargets,
+          enemiesById: preIntentEnemies,
+          breakPower: intent.breakPower,
+        );
         final outcomes = <Phase0aSkillOutcome>[];
         final deaths = <Phase0aActor>[];
         for (final target in targets) {
+          final intercepted = _guardInterceptTarget(
+            target: target,
+            enemiesById: preIntentEnemies,
+            breakPower: intent.breakPower,
+          );
+          final hitTarget = intercepted ?? target;
           final resolved = damageResolver.resolve(
             attackerId: actorId,
-            targetId: target.id,
+            targetId: hitTarget.id,
             kind: Phase0aDamageKind.clear,
             defenderStaggered:
-                staggeredActorIds.contains(target.id) ||
-                target.staggerTicksRemaining > 0,
-            defenderCharging: target.chargingCast != null,
-            defenderWardMult: defenderWardMultFor(target),
+                staggeredActorIds.contains(hitTarget.id) ||
+                hitTarget.staggerTicksRemaining > 0,
+            defenderCharging: hitTarget.chargingCast != null,
+            defenderWardMult: defenderWardMultFor(hitTarget, preIntentEnemies),
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
-          final remaining = math.max(0, target.currentHealth - damage);
-          var updated = target.copyWith(currentHealth: remaining);
+          final remaining = math.max(0, hitTarget.currentHealth - damage);
+          var updated = hitTarget.copyWith(currentHealth: remaining);
+          if (intercepted != null && resolved.isHit) {
+            updated = updated.copyWith(
+              staggerTicksRemaining: updated.staggerTicksTotal,
+            );
+          }
           final broken = _maybeApplyChargeBreak(
             target: updated,
-            breakPower: intent.breakPower,
+            breakPower: intercepted == null ? intent.breakPower : 0,
             isHit: resolved.isHit,
           );
           if (broken != null) {
@@ -625,7 +655,7 @@ Phase0aStepResult reducePhase0aTick({
                 seq: seq++,
                 tick: tick,
                 actor: actorId,
-                target: target.id,
+                target: hitTarget.id,
                 skillId: broken.skillId,
                 staggerTicks: broken.staggerTicks,
               ),
@@ -633,18 +663,18 @@ Phase0aStepResult reducePhase0aTick({
           }
           outcomes.add(
             Phase0aSkillOutcome(
-              target: target.id,
+              target: hitTarget.id,
               resolvedDamage: damage,
               isCritical: resolved.isHit && resolved.isCritical,
               defeated: !updated.isAlive,
               statusApplied: Phase0aSkillStatus.staggered,
               sourcePosition: actor.position,
-              targetPosition: target.position,
+              targetPosition: hitTarget.position,
             ),
           );
-          if (target.side == Phase0aSide.enemy) {
+          if (hitTarget.side == Phase0aSide.enemy) {
             if (!updated.isAlive) {
-              enemiesById.remove(target.id);
+              enemiesById.remove(hitTarget.id);
               // 死亡列表保留 updated 的最终位置(移除前坐标)。
               deaths.add(updated);
             } else {
@@ -654,7 +684,7 @@ Phase0aStepResult reducePhase0aTick({
                 seq: seq,
                 events: events,
               );
-              enemiesById[target.id] = advanced.actor;
+              enemiesById[hitTarget.id] = advanced.actor;
               seq = advanced.nextSeq;
             }
           } else {
@@ -719,6 +749,7 @@ Phase0aStepResult reducePhase0aTick({
               aimDirection: intent.aimDirection,
               range: intent.range,
               halfArcRadians: intent.halfArcRadians,
+              allowGuardedBoss: intent.breakPower > 0,
             ),
           ],
           TargetType.aoe =>
@@ -734,27 +765,48 @@ Phase0aStepResult reducePhase0aTick({
                     effectRadius: intent.effectRadius,
                   ),
                 )
+                .where(
+                  (target) =>
+                      intent.breakPower > 0 ||
+                      !_isGuardedBoss(target, enemiesById),
+                )
                 .toList(),
         };
+        final effectiveTargets = _dedupeGuardInterceptTargets(
+          targets: targets,
+          enemiesById: preIntentEnemies,
+          breakPower: intent.breakPower,
+        );
         final outcomes = <Phase0aSkillOutcome>[];
         final deaths = <Phase0aActor>[];
-        for (final target in targets) {
+        for (final target in effectiveTargets) {
+          final intercepted = _guardInterceptTarget(
+            target: target,
+            enemiesById: preIntentEnemies,
+            breakPower: intent.breakPower,
+          );
+          final hitTarget = intercepted ?? target;
           final resolved = damageResolver.resolve(
             attackerId: actorId,
-            targetId: target.id,
+            targetId: hitTarget.id,
             kind: intent.kind,
             defenderStaggered:
-                staggeredActorIds.contains(target.id) ||
-                target.staggerTicksRemaining > 0,
-            defenderCharging: target.chargingCast != null,
-            defenderWardMult: defenderWardMultFor(target),
+                staggeredActorIds.contains(hitTarget.id) ||
+                hitTarget.staggerTicksRemaining > 0,
+            defenderCharging: hitTarget.chargingCast != null,
+            defenderWardMult: defenderWardMultFor(hitTarget, preIntentEnemies),
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
-          final remaining = math.max(0, target.currentHealth - damage);
-          var updated = target.copyWith(currentHealth: remaining);
+          final remaining = math.max(0, hitTarget.currentHealth - damage);
+          var updated = hitTarget.copyWith(currentHealth: remaining);
+          if (intercepted != null && resolved.isHit) {
+            updated = updated.copyWith(
+              staggerTicksRemaining: updated.staggerTicksTotal,
+            );
+          }
           final broken = _maybeApplyChargeBreak(
             target: updated,
-            breakPower: intent.breakPower,
+            breakPower: intercepted == null ? intent.breakPower : 0,
             isHit: resolved.isHit,
           );
           if (broken != null) {
@@ -764,7 +816,7 @@ Phase0aStepResult reducePhase0aTick({
                 seq: seq++,
                 tick: tick,
                 actor: actorId,
-                target: target.id,
+                target: hitTarget.id,
                 skillId: broken.skillId,
                 staggerTicks: broken.staggerTicks,
               ),
@@ -772,18 +824,18 @@ Phase0aStepResult reducePhase0aTick({
           }
           outcomes.add(
             Phase0aSkillOutcome(
-              target: target.id,
+              target: hitTarget.id,
               resolvedDamage: damage,
               isCritical: resolved.isHit && resolved.isCritical,
               defeated: !updated.isAlive,
               statusApplied: Phase0aSkillStatus.none,
               sourcePosition: actor.position,
-              targetPosition: target.position,
+              targetPosition: hitTarget.position,
             ),
           );
-          if (target.side == Phase0aSide.enemy) {
+          if (hitTarget.side == Phase0aSide.enemy) {
             if (!updated.isAlive) {
-              enemiesById.remove(target.id);
+              enemiesById.remove(hitTarget.id);
               // 死亡列表保留 updated 的最终位置(移除前坐标)。
               deaths.add(updated);
             } else {
@@ -793,7 +845,7 @@ Phase0aStepResult reducePhase0aTick({
                 seq: seq,
                 events: events,
               );
-              enemiesById[target.id] = advanced.actor;
+              enemiesById[hitTarget.id] = advanced.actor;
               seq = advanced.nextSeq;
             }
           } else {
@@ -1121,11 +1173,15 @@ Phase0aActor? _selectStrikeTarget({
   required ArenaVector aimDirection,
   required double range,
   required double halfArcRadians,
+  bool allowGuardedBoss = false,
 }) {
   final candidates = attacker.side == Phase0aSide.player
       ? enemiesById.values.where((enemy) => enemy.isAlive).toList()
       : (player.isAlive ? <Phase0aActor>[player] : <Phase0aActor>[]);
   final inArc = candidates
+      .where(
+        (target) => allowGuardedBoss || !_isGuardedBoss(target, enemiesById),
+      )
       .where(
         (target) => isTargetInsideStrikeArc(
           origin: attacker.position,
@@ -1144,6 +1200,89 @@ Phase0aActor? _selectStrikeTarget({
     return byDistance != 0 ? byDistance : a.id.compareTo(b.id);
   });
   return inArc.first;
+}
+
+bool _isGuardedBoss(
+  Phase0aActor candidate,
+  Map<String, Phase0aActor> enemiesById,
+) {
+  if (candidate.side != Phase0aSide.enemy ||
+      candidate.guardianWardMult == null ||
+      candidate.guardianDefIds.isEmpty) {
+    return false;
+  }
+  return candidate.guardianDefIds.any(
+    (guardianId) => enemiesById.values.any(
+      (guardian) =>
+          guardian.isAlive &&
+          (guardian.id == guardianId ||
+              guardian.id.startsWith('${guardianId}_w')),
+    ),
+  );
+}
+
+/// Typed break exception to the ordinary target gate. The resolver still
+/// settles the exact same damage once, but against the stable lowest-health
+/// live guardian; the boss remains charging and the guardian is staggered.
+Phase0aActor? _guardInterceptTarget({
+  required Phase0aActor target,
+  required Map<String, Phase0aActor> enemiesById,
+  required int breakPower,
+}) {
+  if (breakPower <= 0 ||
+      !target.isAlive ||
+      target.chargingCast == null ||
+      !target.guardInterceptsInterrupt ||
+      !_isGuardedBoss(target, enemiesById)) {
+    return null;
+  }
+  final guardians =
+      [
+        for (final guardian in enemiesById.values)
+          if (guardian.isAlive &&
+              target.guardianDefIds.any(
+                (guardianId) =>
+                    guardian.id == guardianId ||
+                    guardian.id.startsWith('${guardianId}_w'),
+              ))
+            guardian,
+      ]..sort((a, b) {
+        final byHealth = a.currentHealth.compareTo(b.currentHealth);
+        return byHealth != 0 ? byHealth : a.id.compareTo(b.id);
+      });
+  return guardians.isEmpty ? null : guardians.first;
+}
+
+/// A break-capable AOE may contain both the guarded Boss and the guardian that
+/// will intercept the Boss hit. Keep the redirected hit and drop the guardian's
+/// duplicate direct entry so one action never emits two outcomes for one actor
+/// or silently overwrites damage while applying the action snapshot.
+List<Phase0aActor> _dedupeGuardInterceptTargets({
+  required List<Phase0aActor> targets,
+  required Map<String, Phase0aActor> enemiesById,
+  required int breakPower,
+}) {
+  if (breakPower <= 0 || targets.length < 2) return targets;
+  final interceptedGuardianIds = <String>{
+    for (final target in targets)
+      ?_guardInterceptTarget(
+        target: target,
+        enemiesById: enemiesById,
+        breakPower: breakPower,
+      )?.id,
+  };
+  if (interceptedGuardianIds.isEmpty) return targets;
+  return [
+    for (final target in targets)
+      if (!interceptedGuardianIds.contains(target.id) ||
+          _guardInterceptTarget(
+                target: target,
+                enemiesById: enemiesById,
+                breakPower: breakPower,
+              ) !=
+              null)
+        target,
+  ];
 }
 
 /// 对方阵营存活单位,按 id 升序(outcomes 稳定顺序)。

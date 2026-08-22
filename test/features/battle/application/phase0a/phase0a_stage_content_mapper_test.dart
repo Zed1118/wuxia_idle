@@ -699,5 +699,51 @@ void main() {
       expect(total, 25);
       expect(wins, total, reason: 'Ch1 五关 × 五 seed bot 应全胜');
     });
+
+    test('真实塔42 mapper/flow 透传 guardian interrupt 配置并保留运行链', () {
+      final numbers = repo.numbers;
+      final mapping = Phase0aStageContentMapper.mapTower(
+        floor: repo.getTowerFloor(42),
+        playerSnapshot: Legacy3v3CombatantAdapter.toSnapshot(
+          makeCh1Player(numbers),
+        ),
+        numbers: numbers,
+      );
+      final boss = mapping.initialState.enemies.firstWhere(
+        (enemy) => enemy.guardInterceptsInterrupt,
+      );
+      expect(boss.guardianDefIds, isNotEmpty);
+      expect(boss.guardianWardMult, isNotNull);
+      expect(
+        mapping.initialState.enemies
+            .where((enemy) => enemy.id != boss.id)
+            .where(
+              (enemy) => boss.guardianDefIds.any(
+                (defId) => enemy.id.startsWith('${defId}_w'),
+              ),
+            )
+            .length,
+        greaterThanOrEqualTo(1),
+      );
+
+      final flow = Phase0aProductionFlowAssembler.assemble(
+        initialState: mapping.initialState,
+        waves: mapping.waves,
+        combatants: mapping.combatants,
+        moveBindings: mapping.moveBindings,
+        numbers: numbers,
+        rng: Random(42),
+        playerAdapter: mapping.playerAdapter,
+        enemyAiAdapter: mapping.enemyAiAdapter,
+      );
+      final result = Phase0aHeadlessRunner.runToEnd(
+        flow: flow,
+        bot: Phase0aPlayerBotAdapter(playerAdapter: mapping.playerAdapter),
+        deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+        maxTicks: numbers.phase0aArena.maxSimulationTicks,
+      );
+      expect(result.events, isNotEmpty);
+      expect(result.finalState.enemies, isNotEmpty);
+    });
   });
 }

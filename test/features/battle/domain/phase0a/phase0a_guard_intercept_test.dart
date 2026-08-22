@@ -1,0 +1,305 @@
+import 'dart:math' as math;
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/skill_def.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
+
+const _chargeSkill = SkillDef(
+  id: 'tower42_charge',
+  name: 'tower42_charge',
+  description: 'tower42_charge',
+  type: SkillType.powerSkill,
+  powerMultiplier: 2000,
+  qiDelta: -10,
+  cooldownTurns: 3,
+  requiresManualTrigger: false,
+  visualEffect: '',
+);
+
+final class _FixedResolver implements Phase0aDamageResolver {
+  const _FixedResolver(this.damage);
+
+  final int damage;
+
+  @override
+  Phase0aResolvedHit resolve({
+    required String attackerId,
+    required String targetId,
+    required Phase0aDamageKind kind,
+    bool defenderStaggered = false,
+    bool defenderCharging = false,
+    double defenderWardMult = 1.0,
+  }) => Phase0aResolvedHit(isHit: true, isCritical: false, damage: damage);
+}
+
+Phase0aActor _actor({
+  required String id,
+  required Phase0aSide side,
+  required ArenaVector position,
+  int hp = 100,
+  int staggerTicksTotal = 2,
+  Phase0aChargeCast? chargingCast,
+  int chargeTicksRemaining = 0,
+  List<String> guardianDefIds = const [],
+  double? guardianWardMult,
+  bool guardInterceptsInterrupt = false,
+}) => Phase0aActor(
+  id: id,
+  side: side,
+  position: position,
+  facing: side == Phase0aSide.player
+      ? const ArenaVector(1, 0)
+      : const ArenaVector(-1, 0),
+  maxHealth: hp,
+  currentHealth: hp,
+  moveSpeed: 0,
+  qiCurrent: 100,
+  qiMax: 100,
+  attackCooldownRemaining: 0,
+  defeatKind: side == Phase0aSide.enemy
+      ? Phase0aDefeatKind.elite
+      : Phase0aDefeatKind.normal,
+  chargeCast: chargingCast,
+  chargingCast: chargingCast,
+  chargeTicksRemaining: chargeTicksRemaining,
+  staggerTicksTotal: staggerTicksTotal,
+  guardianDefIds: guardianDefIds,
+  guardianWardMult: guardianWardMult,
+  guardInterceptsInterrupt: guardInterceptsInterrupt,
+);
+
+Phase0aArenaState _state({
+  required Phase0aActor boss,
+  required List<Phase0aActor> guardians,
+  List<Phase0aSkillSlot> skillSlots = const [
+    Phase0aSkillSlot(
+      slot: 'one',
+      cooldownRemaining: 0,
+      qiCost: 10,
+      availability: Phase0aSkillAvailability.ready,
+    ),
+  ],
+}) => Phase0aArenaState(
+  tick: 0,
+  nextSeq: 1,
+  player: _actor(
+    id: 'player',
+    side: Phase0aSide.player,
+    position: ArenaVector.zero,
+  ),
+  enemies: [boss, ...guardians],
+  skillSlots: skillSlots,
+);
+
+Phase0aSkillIntent _singleSkill({required int breakPower}) =>
+    Phase0aSkillIntent(
+      actorId: 'player',
+      kind: Phase0aDamageKind.skill1,
+      slot: 'one',
+      skillId: 'tower42_break',
+      targetType: TargetType.single,
+      aimDirection: const ArenaVector(1, 0),
+      range: 10,
+      halfArcRadians: math.pi / 2,
+      effectRadius: 10,
+      qiDelta: -10,
+      cooldownSeconds: 1,
+      breakPower: breakPower,
+    );
+
+Phase0aSkillIntent _aoeSkill({required int breakPower}) => Phase0aSkillIntent(
+  actorId: 'player',
+  kind: Phase0aDamageKind.skill1,
+  slot: 'one',
+  skillId: 'tower42_aoe',
+  targetType: TargetType.aoe,
+  aimDirection: const ArenaVector(1, 0),
+  range: 10,
+  halfArcRadians: math.pi / 2,
+  effectRadius: 10,
+  qiDelta: -10,
+  cooldownSeconds: 1,
+  breakPower: breakPower,
+);
+
+Phase0aClearIntent _rangeSkill({required int breakPower}) => Phase0aClearIntent(
+  actorId: 'player',
+  slot: 'clear',
+  effectRadius: 10,
+  qiCost: 10,
+  cooldownSeconds: 1,
+  skillId: 'tower42_range',
+  breakPower: breakPower,
+);
+
+void main() {
+  test('普通单体目标池不越过存活护法，破招才允许锁定 Boss', () {
+    final boss = _actor(
+      id: 'boss',
+      side: Phase0aSide.enemy,
+      position: const ArenaVector(1, 0),
+      chargingCast: Phase0aChargeCast(
+        skill: _chargeSkill,
+        chargeTicks: 3,
+        attackRange: 10,
+        halfArcRadians: 1,
+        effectRadius: 10,
+        cooldownSeconds: 3,
+        actionCooldownSeconds: 1,
+      ),
+      chargeTicksRemaining: 2,
+      guardianDefIds: const ['guard'],
+      guardianWardMult: 0.15,
+      guardInterceptsInterrupt: true,
+    );
+    final guard = _actor(
+      id: 'guard_w0s1',
+      side: Phase0aSide.enemy,
+      position: const ArenaVector(2, 0),
+      hp: 80,
+    );
+    final ordinary = reducePhase0aTick(
+      state: _state(boss: boss, guardians: [guard]),
+      intents: [_singleSkill(breakPower: 0)],
+      deltaSeconds: 0,
+      damageResolver: const _FixedResolver(10),
+    );
+    expect(
+      ordinary.events
+          .whereType<Phase0aSkillApplied>()
+          .single
+          .outcomes
+          .single
+          .target,
+      'guard_w0s1',
+    );
+    final ordinaryRange = reducePhase0aTick(
+      state: _state(
+        boss: boss,
+        guardians: [guard],
+        skillSlots: const [
+          Phase0aSkillSlot(
+            slot: 'clear',
+            cooldownRemaining: 0,
+            qiCost: 10,
+            availability: Phase0aSkillAvailability.ready,
+          ),
+        ],
+      ),
+      intents: [_rangeSkill(breakPower: 0)],
+      deltaSeconds: 0,
+      damageResolver: const _FixedResolver(10),
+    );
+    expect(
+      ordinaryRange.events.whereType<Phase0aClearApplied>().single.outcomes.map(
+        (outcome) => outcome.target,
+      ),
+      ['guard_w0s1'],
+    );
+    final ordinaryNumericAoe = reducePhase0aTick(
+      state: _state(boss: boss, guardians: [guard]),
+      intents: [_aoeSkill(breakPower: 0)],
+      deltaSeconds: 0,
+      damageResolver: const _FixedResolver(10),
+    );
+    expect(
+      ordinaryNumericAoe.events
+          .whereType<Phase0aSkillApplied>()
+          .single
+          .outcomes
+          .map((outcome) => outcome.target),
+      ['guard_w0s1'],
+    );
+
+    final intercepted = reducePhase0aTick(
+      state: _state(boss: boss, guardians: [guard]),
+      intents: [_singleSkill(breakPower: 1)],
+      deltaSeconds: 0,
+      damageResolver: const _FixedResolver(10),
+    );
+    final afterBoss = intercepted.state.enemies.firstWhere(
+      (e) => e.id == 'boss',
+    );
+    final afterGuard = intercepted.state.enemies.firstWhere(
+      (e) => e.id == 'guard_w0s1',
+    );
+    expect(afterBoss.currentHealth, 100);
+    expect(afterBoss.chargingCast, isNotNull);
+    expect(afterBoss.chargeTicksRemaining, 1, reason: '蓄力继续按既有拍前倒计时推进');
+    expect(afterGuard.currentHealth, 70);
+    expect(afterGuard.staggerTicksRemaining, 2);
+    expect(
+      intercepted.events.whereType<Phase0aBossChargeInterrupted>(),
+      isEmpty,
+    );
+
+    final interceptedAoe = reducePhase0aTick(
+      state: _state(
+        boss: boss,
+        guardians: [guard],
+        skillSlots: const [
+          Phase0aSkillSlot(
+            slot: 'clear',
+            cooldownRemaining: 0,
+            qiCost: 10,
+            availability: Phase0aSkillAvailability.ready,
+          ),
+        ],
+      ),
+      intents: [_rangeSkill(breakPower: 1)],
+      deltaSeconds: 0,
+      damageResolver: const _FixedResolver(10),
+    );
+    final aoeOutcomes = interceptedAoe.events
+        .whereType<Phase0aClearApplied>()
+        .single
+        .outcomes;
+    expect(aoeOutcomes.map((outcome) => outcome.target), ['guard_w0s1']);
+    expect(
+      interceptedAoe.state.enemies
+          .firstWhere((e) => e.id == 'boss')
+          .chargingCast,
+      isNotNull,
+    );
+  });
+
+  test('护法全灭后回落既有真打断，未配置路径保持直接命中', () {
+    final boss = _actor(
+      id: 'boss',
+      side: Phase0aSide.enemy,
+      position: const ArenaVector(1, 0),
+      chargingCast: Phase0aChargeCast(
+        skill: _chargeSkill,
+        chargeTicks: 3,
+        attackRange: 10,
+        halfArcRadians: 1,
+        effectRadius: 10,
+        cooldownSeconds: 3,
+        actionCooldownSeconds: 1,
+      ),
+      chargeTicksRemaining: 2,
+      guardianDefIds: const ['guard'],
+      guardianWardMult: 0.15,
+      guardInterceptsInterrupt: true,
+    );
+    final result = reducePhase0aTick(
+      state: _state(boss: boss, guardians: []),
+      intents: [_singleSkill(breakPower: 1)],
+      deltaSeconds: 0,
+      damageResolver: const _FixedResolver(10),
+    );
+    final after = result.state.enemies.single;
+    expect(after.currentHealth, 90);
+    expect(after.chargingCast, isNull);
+    expect(after.staggerTicksRemaining, 2);
+    expect(
+      result.events.whereType<Phase0aBossChargeInterrupted>(),
+      hasLength(1),
+    );
+  });
+}

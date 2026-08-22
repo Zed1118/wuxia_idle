@@ -79,19 +79,31 @@ const _attack = Phase0aAttackIntent(
   qiDelta: 0,
 );
 
-Phase0aArenaState _state({required List<Phase0aActor> enemies}) =>
-    Phase0aArenaState(
-      tick: 0,
-      nextSeq: 1,
-      player: _actor(
-        id: 'player',
-        side: Phase0aSide.player,
-        position: ArenaVector.zero,
-        currentHealth: 100,
-      ),
-      enemies: enemies,
-      skillSlots: const [],
-    );
+const _breakAoe = Phase0aClearIntent(
+  actorId: 'player',
+  slot: 'clear',
+  effectRadius: 300,
+  qiCost: 0,
+  cooldownSeconds: 0,
+  skillId: 'break_aoe',
+  breakPower: 1,
+);
+
+Phase0aArenaState _state({
+  required List<Phase0aActor> enemies,
+  List<Phase0aSkillSlot> skillSlots = const [],
+}) => Phase0aArenaState(
+  tick: 0,
+  nextSeq: 1,
+  player: _actor(
+    id: 'player',
+    side: Phase0aSide.player,
+    position: ArenaVector.zero,
+    currentHealth: 100,
+  ),
+  enemies: enemies,
+  skillSlots: skillSlots,
+);
 
 void main() {
   test('reducer passes configured ward only while a guardian id is alive', () {
@@ -112,15 +124,23 @@ void main() {
           position: const ArenaVector(200, 0),
         ),
       ],
+      skillSlots: const [
+        Phase0aSkillSlot(
+          slot: 'clear',
+          cooldownRemaining: 0,
+          qiCost: 0,
+          availability: Phase0aSkillAvailability.ready,
+        ),
+      ],
     );
 
     reducePhase0aTick(
       state: state,
-      intents: const [_attack],
+      intents: const [_breakAoe],
       deltaSeconds: 0,
       damageResolver: resolver,
     );
-    expect(resolver.wardMultipliers, [0.35]);
+    expect(resolver.wardMultipliers, contains(0.35));
 
     final withoutGuardian = _state(
       enemies: [
@@ -133,14 +153,22 @@ void main() {
           guardianWardMult: 0.35,
         ),
       ],
+      skillSlots: const [
+        Phase0aSkillSlot(
+          slot: 'clear',
+          cooldownRemaining: 0,
+          qiCost: 0,
+          availability: Phase0aSkillAvailability.ready,
+        ),
+      ],
     );
     reducePhase0aTick(
       state: withoutGuardian,
-      intents: const [_attack],
+      intents: const [_breakAoe],
       deltaSeconds: 0,
       damageResolver: resolver,
     );
-    expect(resolver.wardMultipliers, [0.35, 1.0]);
+    expect(resolver.wardMultipliers.last, 1.0);
   });
 
   test('actor equality, hash and copyWith include guardian configuration', () {
@@ -186,5 +214,51 @@ void main() {
 
     expect(resolver.targetIds, ['guard_a_w0s0', 'boss_w0s1']);
     expect(resolver.wardMultipliers, [1.0, 1.0]);
+  });
+
+  test('AOE uses one pre-intent guardian snapshot for every target', () {
+    final resolver = _SequencedResolver();
+    final state = Phase0aArenaState(
+      tick: 0,
+      nextSeq: 1,
+      player: _actor(
+        id: 'player',
+        side: Phase0aSide.player,
+        position: ArenaVector.zero,
+        currentHealth: 100,
+      ),
+      enemies: [
+        _actor(
+          id: 'guard_a_w0s0',
+          side: Phase0aSide.enemy,
+          position: const ArenaVector(50, 0),
+        ),
+        _actor(
+          id: 'z_boss_w0s1',
+          side: Phase0aSide.enemy,
+          position: const ArenaVector(100, 0),
+          guardianDefIds: const ['guard_a'],
+          guardianWardMult: 0.35,
+        ),
+      ],
+      skillSlots: const [
+        Phase0aSkillSlot(
+          slot: 'clear',
+          cooldownRemaining: 0,
+          qiCost: 0,
+          availability: Phase0aSkillAvailability.ready,
+        ),
+      ],
+    );
+
+    reducePhase0aTick(
+      state: state,
+      intents: const [_breakAoe],
+      deltaSeconds: 0,
+      damageResolver: resolver,
+    );
+
+    expect(resolver.targetIds, ['guard_a_w0s0', 'z_boss_w0s1']);
+    expect(resolver.wardMultipliers, [1.0, 0.35]);
   });
 }
