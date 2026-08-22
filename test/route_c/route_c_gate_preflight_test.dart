@@ -9,6 +9,15 @@ void main() {
   const checksum =
       'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 
+  test('SHA-256 parser accepts shasum and certutil output formats', () {
+    expect(parseSha256Output('$checksum  package/wuxia_idle\n'), checksum);
+    expect(
+      parseSha256Output('SHA256 hash of file:\n$checksum\nCertUtil: OK\n'),
+      checksum,
+    );
+    expect(parseSha256Output('not a checksum\n'), isNull);
+  });
+
   test('candidate tree rejects every non-Phase0A battle source', () {
     expect(
       validateRouteCDeletionTree(const <String>[

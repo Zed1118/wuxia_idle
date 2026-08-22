@@ -102,4 +102,20 @@ void main() {
       expect(release, isNot(contains('com.apple.security.network.server')));
     },
   );
+
+  test(
+    'production profiler closes the desktop window after evidence flush',
+    () {
+      final profiler = File(
+        'lib/features/debug/application/battle_frame_profile.dart',
+      ).readAsStringSync();
+
+      expect(profiler, contains('await windowManager.close()'));
+      expect(profiler, isNot(contains('SystemNavigator.pop()')));
+      expect(
+        profiler.indexOf('await _writeEvidence(config, summary)'),
+        lessThan(profiler.indexOf('await windowManager.close()')),
+      );
+    },
+  );
 }

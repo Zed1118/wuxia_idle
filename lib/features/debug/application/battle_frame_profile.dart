@@ -4,10 +4,10 @@ import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:vm_service/vm_service.dart';
 import 'package:vm_service/vm_service_io.dart';
+import 'package:window_manager/window_manager.dart';
 
 const _frameBudget = Duration(microseconds: 16600);
 const _severeFrame = Duration(microseconds: 33300);
@@ -390,7 +390,10 @@ class _BattleFrameProfileProbeState extends State<BattleFrameProfileProbe> {
     if (config != null) {
       await _writeEvidence(config, summary);
       debugPrint('BATTLE_FRAME_PROFILE_RESULT: ${config.outputDirectory}');
-      if (config.autoClose) await SystemNavigator.pop();
+      if (config.autoClose) {
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+        await windowManager.close();
+      }
     }
   }
 

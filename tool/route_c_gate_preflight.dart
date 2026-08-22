@@ -908,9 +908,13 @@ Future<String?> _sha256IfExists(File file) async {
         ])
       : await Process.run('shasum', <String>['-a', '256', file.path]);
   if (result.exitCode != 0) return null;
-  for (final line in const LineSplitter().convert(result.stdout as String)) {
-    final checksum = line.trim().toLowerCase();
-    if (RegExp(r'^[0-9a-f]{64}$').hasMatch(checksum)) return checksum;
+  return parseSha256Output(result.stdout as String);
+}
+
+String? parseSha256Output(String output) {
+  for (final line in const LineSplitter().convert(output)) {
+    final token = line.trim().split(RegExp(r'\s+')).first.toLowerCase();
+    if (RegExp(r'^[0-9a-f]{64}$').hasMatch(token)) return token;
   }
   return null;
 }
