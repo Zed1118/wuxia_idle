@@ -889,8 +889,8 @@ Future<Widget> buildVisualTarget(
       });
       return const ExpeditionOverviewScreen();
     case VisualRoute.gauntletInterlude:
-      // 断魂庄庄内整备(§7.2):造 active 会话推进到 interlude(第 2 关·一存活带冷却/
-      // 一倒下 + 托管补给余量),显成员状态 + 补给 + 使用/继续/认输。
+      // 断魂庄庄内整备(§7.2):造单角色 active 会话推进到 interlude
+      // (第 2 关·存活带冷却 + 托管补给余量),显角色状态 + 补给 + 使用/继续/认输。
       await Phase2SeedService(isar: isar).seedGauntletInterlude();
       return const GauntletInterludeScreen();
     case VisualRoute.gauntletReward:

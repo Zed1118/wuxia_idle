@@ -1189,40 +1189,48 @@ void main() {
     expect(await isar.bossGauntletRuns.count(), 0);
   });
 
-  test(
-    'seedGauntletInterlude → interlude 会话(一存活/一倒下+托管补给)·幂等恰 1 支不悬空',
-    () async {
-      final isar = IsarSetup.instance;
-      final svc = Phase2SeedService(isar: isar);
+  test('seedGauntletInterlude → 单角色 interlude 会话+托管补给·幂等恰 1 支不悬空', () async {
+    final isar = IsarSetup.instance;
+    final svc = Phase2SeedService(isar: isar);
 
-      await svc.seedGauntletInterlude();
-      var runs = await isar.bossGauntletRuns.where().findAll();
-      expect(runs.length, 1, reason: '恰 1 支断魂庄会话');
-      final run = runs.single;
-      expect(run.sessionPhase, GauntletPhase.interlude);
-      expect(run.currentStage, 2);
-      expect(run.members.length, 2, reason: '两成员');
-      expect(run.members.where((m) => m.isDowned).length, 1, reason: '一倒下');
-      expect(run.escrowItemDefIds, ['item_liaoshangdan', 'item_xingnang_buji']);
-      for (final m in run.members) {
-        expect(
-          await isar.characters.get(m.characterId),
-          isNotNull,
-          reason: '成员指向真角色（名可解析·非悬空）',
-        );
-      }
+    await svc.seedGauntletInterlude();
+    var runs = await isar.bossGauntletRuns.where().findAll();
+    expect(runs.length, 1, reason: '恰 1 支断魂庄会话');
+    final run = runs.single;
+    expect(run.sessionPhase, GauntletPhase.interlude);
+    expect(run.currentStage, 2);
+    expect(run.members, hasLength(1), reason: '路线 C 视觉种子也必须是单角色');
+    expect(run.members.single.isDowned, isFalse);
+    expect(run.escrowItemDefIds, ['item_liaoshangdan', 'item_xingnang_buji']);
+    for (final m in run.members) {
+      expect(
+        await isar.characters.get(m.characterId),
+        isNotNull,
+        reason: '成员指向真角色（名可解析·非悬空）',
+      );
+    }
 
-      // reseed：bossGauntletRuns.clear 生效 → 仍恰 1 支，成员指向新角色非旧悬空。
-      await svc.seedGauntletInterlude();
-      runs = await isar.bossGauntletRuns.where().findAll();
-      expect(runs.length, 1, reason: 'reseed 仍恰 1 支（旧残留已清）');
-      for (final m in runs.single.members) {
-        expect(
-          await isar.characters.get(m.characterId),
-          isNotNull,
-          reason: 'reseed 后成员指向新角色（非已删旧角色）',
-        );
-      }
-    },
-  );
+    // reseed：bossGauntletRuns.clear 生效 → 仍恰 1 支，成员指向新角色非旧悬空。
+    await svc.seedGauntletInterlude();
+    runs = await isar.bossGauntletRuns.where().findAll();
+    expect(runs.length, 1, reason: 'reseed 仍恰 1 支（旧残留已清）');
+    for (final m in runs.single.members) {
+      expect(
+        await isar.characters.get(m.characterId),
+        isNotNull,
+        reason: 'reseed 后成员指向新角色（非已删旧角色）',
+      );
+    }
+  });
+
+  test('seedGauntletReward → 当前奖励验收会话保持单角色', () async {
+    final isar = IsarSetup.instance;
+
+    await Phase2SeedService(isar: isar).seedGauntletReward();
+    final runs = await isar.bossGauntletRuns.where().findAll();
+
+    expect(runs, hasLength(1));
+    expect(runs.single.sessionPhase, GauntletPhase.awaitingRewardChoice);
+    expect(runs.single.members, hasLength(1));
+  });
 }

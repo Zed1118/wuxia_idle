@@ -1418,7 +1418,7 @@ class Phase2SeedService {
     });
   }
 
-  /// 江湖远行·派遣中 seed(§7.1):在 [seedTeamLineup] 基础上派遣两名带主修弟子,
+  /// 江湖远行·派遣中 seed(§7.1):在 [seedTeamLineup] 基础上派遣一名带主修弟子,
   /// 并把远征推进到第 8 节点,供总览屏「在途态」目检(深度/完成/方针/下一节点
   /// 剩余/召回)。departedAt 取 now-810min(=完成 8 节点累计时长),使「下一节点
   /// 剩余」≈90min 稳定可读,与 currentNode=8 自洽。
@@ -1433,7 +1433,7 @@ class Phase2SeedService {
         .where(
           (c) => c.mainTechniqueId != null && c.currentRetreatSessionId == null,
         )
-        .take(2)
+        .take(1)
         .map((c) => c.id)
         .toList();
     await service.dispatch(
@@ -1481,8 +1481,8 @@ class Phase2SeedService {
   }
 
   /// gauntlet_interlude 视觉验收 seed（§7.2·C2.5）：team_lineup 种子 + 造 active 会话推进
-  /// 到 interlude（第 2 关整备）——两成员（一存活带 1 招冷却 / 一倒下）+ 托管补给（疗伤丹
-  /// 装 2 用 1 → 余 1 / 行囊补给 装 1 用 0 → 余 1）。整备屏显成员状态 + 补给余量 + 三动作。
+  /// 到 interlude（第 2 关整备）——单角色存活并带 1 招冷却 + 托管补给（疗伤丹
+  /// 装 2 用 1 → 余 1 / 行囊补给 装 1 用 0 → 余 1）。整备屏显角色状态 + 补给余量 + 三动作。
   Future<void> seedGauntletInterlude() async {
     await seedTeamLineup();
     final chars = await isar.characters
@@ -1493,23 +1493,22 @@ class Phase2SeedService {
         .where(
           (c) => c.mainTechniqueId != null && c.currentRetreatSessionId == null,
         )
-        .take(2)
+        .take(1)
         .map((c) => c.id)
         .toList();
     await isar.writeTxn(() async {
       final members = <ActivityMemberSnapshot>[];
       for (var i = 0; i < ids.length; i++) {
-        final downed = i == 1; // 第二人倒下（演示阵亡态 + 疗伤须择存活目标）
         members.add(
           ActivityMemberSnapshot()
             ..characterId = ids[i]
             ..maxHp = 5000
-            ..currentHp = downed ? 0 : 3200
+            ..currentHp = 3200
             ..maxQi = 100
-            ..currentQi = downed ? 0 : 55
-            ..isDowned = downed
-            ..skillCooldownKeys = downed ? [] : ['skill_gangmeng_jichu_skill']
-            ..skillCooldownTurns = downed ? [] : [2],
+            ..currentQi = 55
+            ..isDowned = false
+            ..skillCooldownKeys = ['skill_gangmeng_jichu_skill']
+            ..skillCooldownTurns = [2],
         );
       }
       await isar.bossGauntletRuns.put(
@@ -1540,7 +1539,7 @@ class Phase2SeedService {
         .where(
           (c) => c.mainTechniqueId != null && c.currentRetreatSessionId == null,
         )
-        .take(2)
+        .take(1)
         .map((c) => c.id)
         .toList();
     await isar.writeTxn(() async {
