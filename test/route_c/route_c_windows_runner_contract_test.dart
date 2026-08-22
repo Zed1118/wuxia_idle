@@ -125,8 +125,9 @@ void main() {
     ).readAsStringSync();
 
     expect(window, contains('VISUAL_WINDOW_W'));
-    expect(window, contains('NSScreen.main ?? self.screen'));
-    expect(window, isNot(contains('self.screen ?? NSScreen.main')));
+    expect(window, contains('NSScreen.screens.first ?? self.screen'));
+    expect(window, isNot(contains('if let screen = NSScreen.main')));
+    expect(window, isNot(contains('self.screen ?? NSScreen.screens.first')));
   });
 
   test(
