@@ -30,7 +30,7 @@ final class CombatSkillCastSnapshot {
 
 /// Engine-neutral terminal input consumed by rewards and progression.
 ///
-/// Legacy 3v3 and Phase 0A each adapt their own runtime state into this value;
+/// Phase 0A live/headless paths adapt their runtime state into this value;
 /// downstream settlement must not reach back into an engine-specific provider.
 final class CombatSettlementSnapshot {
   CombatSettlementSnapshot({

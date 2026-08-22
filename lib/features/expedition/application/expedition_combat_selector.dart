@@ -7,7 +7,7 @@ import 'phase0a_expedition_combat_runner.dart';
 ///
 /// 历史多人会话必须先由 `retireLegacyMultiplayerExpeditionOnOpen`
 /// 发放已暂存奖励并释放占用；误入本 seam 直接 fail-fast，不再选择
-/// 旧 3v3 runner。
+/// 已退役队伍战 runner。
 ExpeditionCombat expeditionCombatFor(Isar isar, {required int memberCount}) {
   if (memberCount != 1) {
     throw StateError('路线 C 远征战斗只允许单角色，got $memberCount');

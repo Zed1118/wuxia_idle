@@ -164,6 +164,12 @@ void main() {
     );
   });
 
+  test('player-visible strings must not advertise the retired 3v3 mode', () {
+    final source = File('lib/shared/strings.dart').readAsStringSync();
+
+    expect(source, isNot(contains('3v3')), reason: '路线 C 终态不得保留旧模式的玩家可见入口或提示');
+  });
+
   test('远征与断魂庄只能新建单角色会话', () {
     const serviceFiles = [
       'lib/features/expedition/application/expedition_service.dart',

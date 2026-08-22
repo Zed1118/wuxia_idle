@@ -456,9 +456,6 @@ class UiStrings {
   static String mainMenuStatusMainlineDetail(int chapterIndex, String stage) =>
       '前往第$chapterIndex章 · $stage';
 
-  static const String mainMenuPhase1 = 'Phase 1 战斗测试';
-  static const String mainMenuPhase1Hint =
-      '4 个 3v3 战斗场景（基础对决 / 流派克制 / 装备影响 / 境界差距）';
   static const String mainMenuPhase2 = 'Phase 2 调试场景';
   static const String mainMenuPhase2Hint =
       '4 个数据种子场景（强化曲线 / 共鸣触发 / 散功代价 / 全栈对比）';

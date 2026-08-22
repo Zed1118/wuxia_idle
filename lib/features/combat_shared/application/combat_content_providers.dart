@@ -10,7 +10,7 @@ final numbersConfigProvider = Provider<NumbersConfig>(
   name: 'numbersConfigProvider',
 );
 
-/// 战斗结算共享的掉落服务，不依赖旧 3v3 状态或 notifier。
+/// 战斗结算共享的掉落服务，不依赖已退役队伍战状态或 notifier。
 final dropServiceProvider = Provider<DropService>(
   (ref) =>
       DropService(equipmentDefLookup: GameRepository.instance.getEquipment),

@@ -53,7 +53,7 @@ Future<void> maybeSettleExpedition(WidgetRef ref, {DateTime? now}) async {
   final clock = ref.read(systemClockProvider);
   final active = await service.activeRun();
   if (active == null) return;
-  // 路线 C：灰度全量开启后，历史 2–3 人会话不再回落旧 3v3。
+  // 路线 C：灰度全量开启后，历史 2–3 人会话不再回落已退役队伍战。
   // 只兑现已落库 stagedRewards；不依赖即将删除的旧 runner 追算未结节点。
   if (active.members.length != 1) {
     await retireLegacyMultiplayerExpeditionOnOpen(service: service);

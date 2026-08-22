@@ -22,6 +22,10 @@
 - 删除演练已同步清除仍指向 `battle_tap_live` / `battle_scene` / `battle_v2_*` 的可执行
   视觉工具、AB 主持脚本与专用测试；通用截图 manifest 写入器改为 route-neutral，
   历史截图和报告只在 `docs/` 留档。负向守卫保证 `tools/` 不得重新启动退役 route。
+- 隔离的 `tools/phase0minus_probe` 包保留 Phase 0/0B 历史性能与美术观察资产；它不接
+  生产存档、奖励或路由，也不是旧 3v3 产品引擎。其旧 AB 主持入口已删，剩余成绩明确
+  不得签 Route C Gate；根项目分析口径为 `flutter analyze lib test tool`，该嵌套包按自身
+  `pubspec.yaml` 独立维护。
 
 ## 候选已物化的删除包
 
