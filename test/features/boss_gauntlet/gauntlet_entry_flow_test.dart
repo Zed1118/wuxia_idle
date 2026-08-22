@@ -4,17 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:wuxia_idle/features/battle/application/battle_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_provider.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
-import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_controller.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
-import 'package:wuxia_idle/features/boss_gauntlet/application/phase0a_gauntlet_gate.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/application/phase0a_gauntlet_stage_runner.dart';
 import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/presentation/gauntlet_entry_flow.dart';
@@ -50,7 +48,6 @@ void main() {
   });
 
   tearDown(() async {
-    Phase0aGauntletGate.testOverride = null;
     if (Isar.getInstance('wuxia_save_slot1') != null) {
       await IsarSetup.close();
     }
@@ -159,26 +156,36 @@ void main() {
     },
   );
 
-  /// 注入的确定性 headless 战斗驱动：prepareStage → startBattle（混关次 seed）→
-  /// notifier.advance 排到战斗结束 → 返回是否取胜（finalState 落 battleProvider·同 live 路）。
-  Future<bool> Function() driveBattle(
+  /// 注入的确定性 Phase 0A headless 驱动，返回与 live 路相同的
+  /// HP/真气检查点。
+  Future<GauntletStageSettlement> Function() driveBattle(
     WidgetRef ref,
     BossGauntletConfig config,
   ) => () async {
     final service = ref.read(gauntletServiceProvider)!;
-    final plan = await service.prepareStage(config: config);
-    final notifier = ref.read(battleProvider.notifier);
-    notifier.startBattle(
-      plan.playerTeam,
-      StageBattleSetup.buildEnemyTeam(plan.enemyDefs),
+    final plan = await service.preparePhase0aStage(config: config);
+    final result = await Phase0aGauntletStageRunner.run(
+      contentId: 'gauntlet_test_${plan.stage}',
+      playerSnapshot: plan.playerSnapshot,
+      enemyTeam: plan.enemyDefs,
+      numbers: GameRepository.instance.numbers,
       seed: plan.seed,
+      cycleIndex: plan.cycleIndex,
     );
-    var guard = 0;
-    while (!ref.read(battleProvider).isFinished && guard++ < 2000) {
-      notifier.advance();
-    }
-    return ref.read(battleProvider).result == BattleResult.leftWin;
+    return result.settlement;
   };
+
+  GauntletStageSettlement forcedSettlement(bool leftWin) =>
+      GauntletStageSettlement(
+        leftWin: leftWin,
+        checkpoint: GauntletMemberCheckpoint(
+          characterId: 1,
+          currentHp: leftWin ? 1 : 0,
+          currentQi: 0,
+          maxHp: 1,
+          maxQi: 1,
+        ),
+      );
 
   Widget host(BossGauntletConfig config) => ProviderScope(
     overrides: [gauntletConfigProvider.overrideWithValue(config)],
@@ -206,11 +213,10 @@ void main() {
     expect(run?.sessionPhase, GauntletPhase.awaitingRewardChoice);
   });
 
-  testWidgets('灰度开启 + 单成员真实入口挂载 Phase 0A 战斗屏', (tester) async {
+  testWidgets('路线 C 单成员真实入口挂载 Phase 0A 战斗屏', (tester) async {
     tester.view.physicalSize = const Size(1280, 720);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
-    Phase0aGauntletGate.testOverride = true;
     await tester.runAsync(() async {
       await Phase2SeedService(isar: IsarSetup.instance).seedP3();
       await putRun(1);
@@ -272,15 +278,14 @@ void main() {
     });
     final config = singleBoss(baseHp: 1, baseAttack: 1);
 
-    // 战败路由不依赖战斗平衡：注入 fake 败（战末空态由 settleStageResult 优雅处理·
-    // advance 记败不推进）→ settleDefeat → 战败屏。
+    // 战败路由不依赖战斗平衡：注入含完整检查点的 Phase 0A 败北。
     await tester.pumpWidget(
       ProviderScope(
         overrides: [gauntletConfigProvider.overrideWithValue(config)],
         child: MaterialApp(
           home: _FlowHost(
             battle: (ref) =>
-                () async => false,
+                () async => forcedSettlement(false),
           ),
         ),
       ),
@@ -298,7 +303,7 @@ void main() {
         child: MaterialApp(
           home: _FlowHost(
             battle: (ref) =>
-                () async => true,
+                () async => forcedSettlement(true),
           ),
         ),
       ),
@@ -315,7 +320,8 @@ void main() {
 class _FlowHost extends ConsumerStatefulWidget {
   const _FlowHost({this.battle});
 
-  final Future<bool> Function() Function(WidgetRef ref)? battle;
+  final Future<GauntletStageSettlement> Function() Function(WidgetRef ref)?
+  battle;
 
   @override
   ConsumerState<_FlowHost> createState() => _FlowHostState();

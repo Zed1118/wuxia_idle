@@ -424,7 +424,7 @@ class GauntletService {
       seed: plan.seed,
       cycleIndex: plan.cycleIndex,
     );
-    await settlePhase0aStageResult(result: result, config: config);
+    await settlePhase0aStageResult(result: result.settlement, config: config);
     return result;
   }
 
@@ -477,7 +477,7 @@ class GauntletService {
   }
 
   Future<void> settlePhase0aStageResult({
-    required Phase0aGauntletStageResult result,
+    required GauntletStageSettlement result,
     required BossGauntletConfig config,
   }) async {
     await _isar.writeTxn(() async {

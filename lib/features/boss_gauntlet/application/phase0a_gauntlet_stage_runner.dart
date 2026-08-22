@@ -10,6 +10,20 @@ import '../../battle/domain/phase0a/phase0a_combat_model.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
 import 'gauntlet_controller.dart';
 
+/// 断魂庄单关事务只需要的引擎中立终局数据。
+///
+/// live 战斗从 [Phase0aGauntletStageResult] 派生，widget test 可直接构造；
+/// 两条路径因此共用同一 HP/真气检查点结算，不再依赖旧 BattleState。
+final class GauntletStageSettlement {
+  const GauntletStageSettlement({
+    required this.leftWin,
+    required this.checkpoint,
+  });
+
+  final bool leftWin;
+  final GauntletMemberCheckpoint checkpoint;
+}
+
 final class Phase0aGauntletStageResult {
   const Phase0aGauntletStageResult({
     required this.outcome,
@@ -35,6 +49,9 @@ final class Phase0aGauntletStageResult {
       maxQi: finalState.player.qiMax,
     );
   }
+
+  GauntletStageSettlement get settlement =>
+      GauntletStageSettlement(leftWin: leftWin, checkpoint: checkpoint);
 }
 
 /// 断魂庄 Phase 0A 单关 headless runner；会话与奖励事务仍归 GauntletService。

@@ -3,17 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../battle/application/battle_providers.dart';
 import '../../../data/game_repository.dart';
-import '../../../shared/audio/audio_assets.dart';
-import '../../../shared/strings.dart';
-import '../../battle/application/stage_battle_setup.dart';
-import '../../battle/presentation/battle_screen.dart';
 import '../application/gauntlet_providers.dart';
 import '../application/gauntlet_service.dart';
-import '../application/gauntlet_combat_selector.dart';
 import '../application/phase0a_gauntlet_stage_runner.dart';
-import '../application/phase0a_gauntlet_gate.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
 import 'gauntlet_defeat_screen.dart';
@@ -24,22 +17,22 @@ import 'phase0a_gauntlet_battle_host.dart';
 /// 断魂庄逐关战斗驱动编排器（#1 wiring Task 4 · spec §3.1）。装载入庄后由 loadout
 /// `_enter` 调起，按会话相位循环驱动三连战：
 ///
-/// - **inBattle**：现场跑一关 [BattleScreen]（设计 A·守战斗爽感主旋律）→ 战末态经
-///   [GauntletService.settleStageResult] 单事务原子推进（快照继承 + Boss 胜固化三选一
+/// - **inBattle**：现场跑一关 Phase 0A 单角色战斗 → 战末检查点经
+///   [GauntletService.settlePhase0aStageResult] 单事务原子推进（快照继承 + Boss 胜固化三选一
 ///   候选）→ 胜则回循环按新相位路由、败则 [GauntletService.settleDefeat] + 战败屏（终局）。
 /// - **interlude**：推整备屏（用药 / 继续闯关 / 认输），屏内各自写路径 + pop，回循环。
 /// - **awaitingRewardChoice**：推三选一奖励屏，屏内 chooseReward + pop → 回主菜单（终局）。
 ///
 /// widget 内零直接 Isar 写——全经 [GauntletService]；config 经 provider read（不构造期
-/// 定死·`feedback_flutter_async_config_race_controller_final`）。BattleScreen 不 await
-/// push（胜利留栈由 flow 推进后再 pop，镜像 `tower_entry_flow`）。
+/// 定死·`feedback_flutter_async_config_race_controller_final`）。
 ///
-/// [runStageBattleForTest] 仅供 widget test 注入确定性 headless 战斗驱动
-/// （seed + `notifier.advance`），绕过真 [BattleScreen]；生产端勿传。
+/// [runStageBattleForTest] 仅供 widget test 注入带完整 HP/真气检查点的
+/// Phase 0A headless 结果；生产端勿传。
 Future<void> runGauntletFlow({
   required BuildContext context,
   required WidgetRef ref,
-  @visibleForTesting Future<bool> Function()? runStageBattleForTest,
+  @visibleForTesting
+  Future<GauntletStageSettlement> Function()? runStageBattleForTest,
 }) async {
   final service = ref.read(gauntletServiceProvider);
   if (service == null) return; // 无 Isar 旁路（测试 / 未初始化）
@@ -54,7 +47,7 @@ Future<void> runGauntletFlow({
     if (run == null) return; // 会话已结束（选奖 / 离庄 / 认输）
     if (!context.mounted) return;
 
-    if (Phase0aGauntletGate.enabled && run.members.length != 1) {
+    if (run.members.length != 1) {
       final retired = await service.retireLegacyMultiplayer(
         config: config,
         numbers: numbers,
@@ -70,39 +63,23 @@ Future<void> runGauntletFlow({
 
     switch (run.sessionPhase) {
       case GauntletPhase.inBattle:
-        // ① 驱动本关战斗（live BattleScreen 或测试注入的确定性 headless 驱动）。
-        final bool won;
+        // ① live 与测试均产出同一引擎中立检查点。
+        final GauntletStageSettlement settlement;
         if (runStageBattleForTest != null) {
-          won = await runStageBattleForTest();
-          final finalState = ref.read(battleProvider);
-          await service.settleStageResult(
-            finalState: finalState,
-            config: config,
-          );
-        } else if (gauntletCombatPathFor(memberCount: run.members.length) ==
-            GauntletCombatPath.phase0a) {
+          settlement = await runStageBattleForTest();
+        } else {
           final result = await _runPhase0aStageBattleUI(
             context: context,
             config: config,
           );
           if (result == null) return;
-          won = result.leftWin;
-          await service.settlePhase0aStageResult(
-            result: result,
-            config: config,
-          );
-        } else {
-          won = await _runStageBattleUI(
-            context: context,
-            ref: ref,
-            config: config,
-          );
-          final finalState = ref.read(battleProvider);
-          await service.settleStageResult(
-            finalState: finalState,
-            config: config,
-          );
+          settlement = result.settlement;
         }
+        await service.settlePhase0aStageResult(
+          result: settlement,
+          config: config,
+        );
+        final won = settlement.leftWin;
         if (!context.mounted) return;
         ref.invalidate(activeGauntletProvider);
         // ③ 收起战斗屏（仅 live 路径推了屏；测试注入路径无屏）。
@@ -172,112 +149,4 @@ Future<Phase0aGauntletStageResult?> _runPhase0aStageBattleUI({
         }
       });
   return completer.future;
-}
-
-/// 推 [BattleScreen] 并 wait 胜/败回调；返回玩家是否取胜。BattleScreen 留栈由
-/// [runGauntletFlow] 战末推进后统一 pop（镜像 `tower_entry_flow._runTowerBattle`）。
-Future<bool> _runStageBattleUI({
-  required BuildContext context,
-  required WidgetRef ref,
-  required BossGauntletConfig config,
-}) async {
-  final completer = Completer<bool>();
-  Navigator.of(context)
-      .push<void>(
-        MaterialPageRoute(
-          builder: (_) => _GauntletBattleHost(
-            config: config,
-            onVictory: () {
-              if (!completer.isCompleted) completer.complete(true);
-            },
-            onDefeat: () {
-              if (!completer.isCompleted) completer.complete(false);
-            },
-          ),
-        ),
-      )
-      .then((_) {
-        // 系统返回等意外出栈 → 未决则按败处理（放弃即止）。
-        if (!completer.isCompleted) completer.complete(false);
-      });
-  return completer.future;
-}
-
-/// 断魂庄单关战斗 setup 容器（镜像主线 `_StageBattleHost` / 塔 `_TowerBattleHost`）。
-/// postFrame `prepareStage`（事务外纯建队）→ `startBattle`（混 currentStage 的确定性
-/// seed）→ [BattleScreen]（deferVictoryToCaller·胜负回调交 flow）。先挂空团、后
-/// postFrame startBattle：靠 BattleScreen 的 empty→非空边沿起 timer。
-class _GauntletBattleHost extends ConsumerStatefulWidget {
-  const _GauntletBattleHost({
-    required this.config,
-    required this.onVictory,
-    required this.onDefeat,
-  });
-
-  final BossGauntletConfig config;
-  final VoidCallback onVictory;
-  final VoidCallback onDefeat;
-
-  @override
-  ConsumerState<_GauntletBattleHost> createState() =>
-      _GauntletBattleHostState();
-}
-
-class _GauntletBattleHostState extends ConsumerState<_GauntletBattleHost> {
-  String? _setupError;
-  int _stage = 1;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-      try {
-        final service = ref.read(gauntletServiceProvider);
-        if (service == null) {
-          setState(() => _setupError = UiStrings.gauntletSessionNotReady);
-          return;
-        }
-        final run = await service.activeRun();
-        final plan = await service.prepareStage(config: widget.config);
-        if (!mounted) return;
-        // 批 B：断魂庄属境界段推进入口，live 路与 headless runner 同口径。
-        final enemyTeam = StageBattleSetup.buildEnemyTeam(
-          plan.enemyDefs,
-          cycleIndex: plan.cycleIndex,
-          advanceRealmPerCycle: true,
-        );
-        setState(() => _stage = run?.currentStage ?? 1);
-        ref
-            .read(battleProvider.notifier)
-            .startBattle(plan.playerTeam, enemyTeam, seed: plan.seed);
-      } catch (e) {
-        if (!mounted) return;
-        setState(() => _setupError = e.toString());
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_setupError != null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text(UiStrings.gauntletName)),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: SelectableText(UiStrings.battleSetupFailed(_setupError!)),
-          ),
-        ),
-      );
-    }
-    return BattleScreen(
-      hint:
-          '${UiStrings.gauntletName} · ${UiStrings.gauntletStageOrdinal(_stage)}',
-      bgmTrack: BgmTrack.boss,
-      deferVictoryToCaller: true,
-      onVictory: widget.onVictory,
-      onDefeat: widget.onDefeat,
-    );
-  }
 }
