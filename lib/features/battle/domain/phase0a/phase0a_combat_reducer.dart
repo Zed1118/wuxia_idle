@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
+import '../../../boss_gauntlet/domain/qi_drain_effect.dart';
 import 'arena_vector.dart';
 import 'phase0a_combat_events.dart';
 import 'phase0a_combat_intent.dart';
@@ -1073,6 +1074,15 @@ Phase0aStepResult reducePhase0aTick({
       if (target.side == Phase0aSide.player) {
         player = target.copyWith(currentHealth: remaining);
       }
+    }
+    // 断魂庄锁脉针：蓄力完整结束且未被破招即夺取玩家最大真气的一定比例。
+    // 与 legacy forcedSkill 路一致，不以本次伤害是否命中为额外门槛。
+    if (cast.skill.qiDrainPct > 0 && player.isAlive) {
+      player = player.copyWith(
+        qiCurrent: QiDrainEffect(
+          pct: cast.skill.qiDrainPct,
+        ).applyTo(currentQi: player.qiCurrent, maxQi: player.qiMax),
+      );
     }
     final cooldowns = Map<String, double>.from(actor.enemySkillCooldowns);
     if (cast.cooldownSeconds > 0) {

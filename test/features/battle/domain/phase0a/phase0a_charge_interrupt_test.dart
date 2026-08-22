@@ -40,6 +40,19 @@ const _phaseSignatureSkill = SkillDef(
   visualEffect: '',
 );
 
+const _qiDrainSkill = SkillDef(
+  id: 'charge_qi_drain',
+  name: 'charge_qi_drain',
+  description: 'charge_qi_drain',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1800,
+  qiDelta: -20,
+  cooldownTurns: 3,
+  requiresManualTrigger: false,
+  visualEffect: '',
+  qiDrainPct: 0.30,
+);
+
 Phase0aChargeCast _cast({SkillDef skill = _signatureSkill}) =>
     Phase0aChargeCast(
       skill: skill,
@@ -257,6 +270,30 @@ void main() {
       enemySkillDamageResolver: resolver,
     );
     expect(fourth.events.whereType<Phase0aEnemySkillStarted>(), isEmpty);
+  });
+
+  test('蓄力完整释放的 qiDrain 招式按玩家最大真气扣减', () {
+    final resolver = _Resolver(basicDamage: 5);
+    final result = reducePhase0aTick(
+      state: _state(
+        _charger(
+          chargeTicksRemaining: 1,
+          chargingCast: _cast(skill: _qiDrainSkill),
+        ),
+        player: _player(qiCurrent: 80),
+      ),
+      intents: const [],
+      deltaSeconds: 0.1,
+      damageResolver: resolver,
+      enemySkillDamageResolver: resolver,
+    );
+
+    expect(result.state.player.currentHealth, 183);
+    expect(result.state.player.qiCurrent, 50);
+    expect(
+      result.events.whereType<Phase0aEnemySkillStarted>().single.skillId,
+      _qiDrainSkill.id,
+    );
   });
 
   test('蓄力/踉跄期间移动、普攻、技能 intent 全部被拒', () {

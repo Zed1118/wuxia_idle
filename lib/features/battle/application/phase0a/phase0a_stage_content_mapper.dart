@@ -484,6 +484,8 @@ final class Phase0aStageContentMapper {
           effectRadius: arena.enemyAttackRange,
           cooldownSeconds:
               byId[id]!.cooldownTurns * arena.enemyAttackCooldownSeconds,
+          allowQiDrain:
+              snapshot.chargeSkillId == id && byId[id]!.qiDrainPct > 0,
         ),
     ]);
   }

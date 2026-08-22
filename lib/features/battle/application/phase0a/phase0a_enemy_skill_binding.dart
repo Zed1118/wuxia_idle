@@ -13,10 +13,11 @@ final class Phase0aEnemySkillBinding {
     required this.halfArcRadians,
     required this.effectRadius,
     required this.cooldownSeconds,
+    this.allowQiDrain = false,
   }) {
     if (skill.canInterrupt ||
         skill.defenseBreakPct != 0 ||
-        skill.qiDrainPct != 0) {
+        (skill.qiDrainPct != 0 && !allowQiDrain)) {
       throw StateError(
         'Phase0a enemy skill ${skill.id}: '
         'interrupt/defenseBreak/qiDrain is unsupported',
@@ -43,6 +44,7 @@ final class Phase0aEnemySkillBinding {
   final double halfArcRadians;
   final double effectRadius;
   final double cooldownSeconds;
+  final bool allowQiDrain;
 
   bool get isAutoSkill =>
       skill.type == SkillType.powerSkill || skill.type == SkillType.ultimate;
