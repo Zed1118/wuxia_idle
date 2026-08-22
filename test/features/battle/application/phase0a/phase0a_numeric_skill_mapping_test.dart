@@ -52,36 +52,19 @@ void main() {
       numbers: numbers,
     );
     final arena = numbers.phase0aArena;
+    final bindings = mapping.playerAdapter.numericSkillBindings;
 
     expect(
       mapping.moveBindings[Phase0aDamageKind.basic]?.id,
       'skill_gangmeng_jichu_basic',
     );
-    expect(
-      mapping.numericSkillBindings.one?.skill.id,
-      'skill_gangmeng_jichu_skill',
-    );
-    expect(
-      mapping.numericSkillBindings.three?.skill.id,
-      'skill_gangmeng_jichu_skill',
-    );
-    expect(
-      mapping.numericSkillBindings.five?.skill.id,
-      'skill_gangmeng_jichu_ult',
-    );
-    expect(mapping.numericSkillBindings.two, isNull);
-    expect(mapping.numericSkillBindings.four, isNull);
-    expect(mapping.numericSkillBindings.six, isNull);
-    expect(mapping.numericSkillBindings.equipped.map((b) => b.hotkey), [
-      1,
-      3,
-      5,
-    ]);
-    expect(
-      mapping.playerAdapter.numericSkillBindings,
-      same(mapping.numericSkillBindings),
-    );
-
+    expect(bindings.one?.skill.id, 'skill_gangmeng_jichu_skill');
+    expect(bindings.three?.skill.id, 'skill_gangmeng_jichu_skill');
+    expect(bindings.five?.skill.id, 'skill_gangmeng_jichu_ult');
+    expect(bindings.two, isNull);
+    expect(bindings.four, isNull);
+    expect(bindings.six, isNull);
+    expect(bindings.equipped.map((b) => b.hotkey), [1, 3, 5]);
     final slots = mapping.initialState.skillSlots;
     expect(slots.map((s) => s.slot), [
       arena.gatherSlot,
@@ -111,7 +94,7 @@ void main() {
         command: Phase0aPlayerCommand(skillHotkey: hotkey),
       );
       final intent = intents.single as Phase0aSkillIntent;
-      final skill = mapping.numericSkillBindings.bindingFor(hotkey)!.skill;
+      final skill = bindings.bindingFor(hotkey)!.skill;
       expect(intent.skillId, skill.id);
       expect(intent.kind, phase0aDamageKindForSkillHotkey(hotkey));
       expect(intent.slot, 'phase0a_skill_$hotkey');
@@ -139,7 +122,7 @@ void main() {
       );
 
       expect(mapping.moveBindings[Phase0aDamageKind.basic], same(basic));
-      expect(mapping.numericSkillBindings.equipped, isEmpty);
+      expect(mapping.playerAdapter.numericSkillBindings.equipped, isEmpty);
       expect(
         mapping.playerAdapter.intentsFor(
           state: mapping.initialState,

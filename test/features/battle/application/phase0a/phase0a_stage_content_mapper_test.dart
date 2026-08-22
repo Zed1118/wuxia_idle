@@ -127,7 +127,7 @@ void main() {
       );
       // 固定三 kind 全覆盖；Q/R 已由真实数据技能绑定，fixture 无数字槽。
       expect(mapping.moveBindings.keys, hasLength(3));
-      expect(mapping.numericSkillBindings.equipped, isEmpty);
+      expect(mapping.playerAdapter.numericSkillBindings.equipped, isEmpty);
       expect(mapping.moveBindings[Phase0aDamageKind.basic], isNotNull);
       expect(
         mapping.moveBindings[Phase0aDamageKind.gather]?.id,

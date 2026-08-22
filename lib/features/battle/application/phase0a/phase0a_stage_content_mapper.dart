@@ -44,7 +44,6 @@ final class Phase0aStageMapping {
     required this.moveBindings,
     required this.playerAdapter,
     required this.enemyAiAdapter,
-    required this.numericSkillBindings,
     this.waveTransitionPolicy,
   });
 
@@ -54,7 +53,6 @@ final class Phase0aStageMapping {
   final Map<Phase0aDamageKind, SkillDef?> moveBindings;
   final Phase0aPlayerInputAdapter playerAdapter;
   final Phase0aEnemyAiAdapter enemyAiAdapter;
-  final Phase0aNumericSkillBindings numericSkillBindings;
   final Phase0aWaveTransitionPolicy? waveTransitionPolicy;
 }
 
@@ -556,7 +554,6 @@ final class Phase0aStageContentMapper {
         skillBindingsByActor: Map.unmodifiable(enemySkillBindingsByActor),
         basicQiDeltaByActor: Map.unmodifiable(enemyBasicQiDeltaByActor),
       ),
-      numericSkillBindings: numericSkillBindings,
       waveTransitionPolicy: waveTransitionPolicy,
     );
   }

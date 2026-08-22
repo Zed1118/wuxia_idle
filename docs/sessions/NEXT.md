@@ -26,6 +26,7 @@
 - Q gather 每场一次且零伤，R clear 0 次；现有资源循环不支持长期固定 Q/R 战术印。
 
 ## 最新验证
+- 数字技能绑定单一来源：删除 `Phase0aStageMapping.numericSkillBindings` 镜像，主线/塔/断魂庄宿主与测试统一从 `playerAdapter.numericSkillBindings` 读取；对象实例与行为不变。目标独立文件 **36/36**、Phase 0A application **139/139**、`flutter analyze --no-pub lib test` 0 issue、format/diff check 通过。
 - 胜负条件单一来源：删除生产零读取且与初始状态必然同值的 `Phase0aStageMapping.winCondition` 镜像，survive-ticks 与主线接线回归统一读取 `initialState.winCondition`。目标三文件 **24/24**、Phase 0A application **139/139**、`flutter analyze --no-pub lib test` 0 issue、format/diff check 通过。
 - 敌方行动有效战斗兼容：`EnemySkillStarted` / `BossChargeStarted` 现与旧 runner 任一单位 actionLog 语义一致，玩家只移动/闪避且敌方 skill-only 时不再漏掉战后内息调息。其余 19 类事件的伤害、AOE、截招、多波、数字技已逐类证伪无迁移漏计。targeted **156/156**、analyze 0、format/diff check 通过。
 0. 护法合击战后统计兼容：旧 runner 的总伤害既定为双方完整 actionLog，普通敌伤计入不是 bug；Phase 0A 合击无伴随 HitLanded 才是唯一漏项。事件现保存主护法单次 damage/critical，settlement 按历史 `attackResult=r1` 精确恢复统计；双护法合计仍只供实际扣血/VFX。targeted **186/186**、analyze 0、diff check 通过；父提交全量 **4226/4226**、macOS release 174.1MB 构建成功。

@@ -77,7 +77,7 @@ void main() {
         home: Phase0aBattleScreen(
           controller: controller,
           autoStep: false,
-          numericSkillBindings: mapping.numericSkillBindings,
+          numericSkillBindings: mapping.playerAdapter.numericSkillBindings,
         ),
       ),
     );

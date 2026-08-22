@@ -51,7 +51,7 @@ void main() {
         playerSnapshot: player,
         numbers: numbers,
       );
-      expect(mapping.numericSkillBindings.equipped, isNotEmpty);
+      expect(mapping.playerAdapter.numericSkillBindings.equipped, isNotEmpty);
 
       final flow = Phase0aProductionFlowAssembler.assemble(
         initialState: mapping.initialState,

@@ -49,12 +49,12 @@ void main() {
           numbers: GameRepository.instance.numbers,
         );
         expect(
-          mapping.numericSkillBindings.equipped,
+          mapping.playerAdapter.numericSkillBindings.equipped,
           hasLength(1),
           reason: '鼠标 basic 排除后数字栏应只保留真实 powerSkill',
         );
         expect(
-          mapping.numericSkillBindings.one?.skill.type,
+          mapping.playerAdapter.numericSkillBindings.one?.skill.type,
           SkillType.powerSkill,
         );
       } finally {

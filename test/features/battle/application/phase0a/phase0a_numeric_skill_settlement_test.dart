@@ -90,7 +90,6 @@ void main() async {
       moveBindings: mapping.moveBindings,
       playerAdapter: mapping.playerAdapter,
       enemyAiAdapter: mapping.enemyAiAdapter,
-      numericSkillBindings: mapping.numericSkillBindings,
       waveTransitionPolicy: mapping.waveTransitionPolicy,
     );
 

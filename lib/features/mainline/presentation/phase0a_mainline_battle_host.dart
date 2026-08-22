@@ -218,7 +218,7 @@ class _Phase0aMainlineBattleHostState
     }
     return Phase0aBattleScreen(
       controller: controller,
-      numericSkillBindings: _mapping!.numericSkillBindings,
+      numericSkillBindings: _mapping!.playerAdapter.numericSkillBindings,
     );
   }
 }
