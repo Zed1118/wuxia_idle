@@ -1007,6 +1007,8 @@ class _Phase0aProfilePreview extends StatefulWidget {
 class _Phase0aProfilePreviewState extends State<_Phase0aProfilePreview> {
   late final Phase0aBattleController _controller;
   late Phase0aPlayerBotAdapter _bot;
+  late final List<Phase0aDebugBattleFixture> _restartFixtures;
+  int _nextRestartFixture = 0;
   Timer? _timer;
   bool _restarting = false;
 
@@ -1017,6 +1019,7 @@ class _Phase0aProfilePreviewState extends State<_Phase0aProfilePreview> {
     _bot = Phase0aPlayerBotAdapter(
       playerAdapter: widget.initialFixture.playerAdapter,
     );
+    _restartFixtures = widget.initialFixture.prewarmRestartPool();
     _timer = Timer.periodic(
       Duration(
         milliseconds:
@@ -1046,7 +1049,9 @@ class _Phase0aProfilePreviewState extends State<_Phase0aProfilePreview> {
 
   void _restart() {
     try {
-      final fixture = widget.initialFixture.fresh();
+      final fixture = _nextRestartFixture < _restartFixtures.length
+          ? _restartFixtures[_nextRestartFixture++]
+          : widget.initialFixture.fresh();
       if (!mounted) return;
       _bot = Phase0aPlayerBotAdapter(playerAdapter: fixture.playerAdapter);
       _controller.restart(fixture.flow);

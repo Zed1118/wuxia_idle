@@ -72,6 +72,18 @@ void main() {
     expect(rebuilt.flow.waves.length, fixture.flow.waves.length);
   });
 
+  test('profile restart pool is bounded and contains independent flows', () {
+    final pool = fixture.prewarmRestartPool(count: 4);
+
+    expect(pool, hasLength(4));
+    expect(pool.map((entry) => entry.flow).toSet(), hasLength(4));
+    expect(
+      pool.every((entry) => entry.flow.state.tick == fixture.flow.state.tick),
+      isTrue,
+    );
+    expect(() => fixture.prewarmRestartPool(count: -1), throwsArgumentError);
+  });
+
   test(
     'Boss fixture exposes chargeCast/vulnerability and breaks into stagger',
     () async {
