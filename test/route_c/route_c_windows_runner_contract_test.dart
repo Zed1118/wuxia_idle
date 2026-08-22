@@ -44,6 +44,22 @@ void main() {
     },
   );
 
+  test('documented Windows host capture does not dirty the candidate tree', () {
+    final ignore = File('.gitignore').readAsStringSync();
+    final handoff = File(
+      'docs/phase0/route-c-external-gate-preflight.md',
+    ).readAsStringSync();
+
+    expect(
+      handoff,
+      contains(r'-HostManifest .\windows_minimum_spec_manifest.captured.json'),
+    );
+    expect(
+      ignore.split('\n'),
+      contains('/windows_minimum_spec_manifest.captured.json'),
+    );
+  });
+
   test('preflight hashing supports the Windows matrix host', () {
     final source = File('tool/route_c_gate_preflight.dart').readAsStringSync();
 

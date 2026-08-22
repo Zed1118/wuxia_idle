@@ -44,6 +44,9 @@ macos/Flutter/ephemeral/
 # =====================================================================
 Thumbs.db
 desktop.ini
+# Route C physical Gate host facts are machine-local evidence. The documented
+# root-level capture path must remain invisible to the runner's clean-tree Gate.
+/windows_minimum_spec_manifest.captured.json
 
 # =====================================================================
 # 项目其它
