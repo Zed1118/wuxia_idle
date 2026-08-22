@@ -1,1 +1,0 @@
-enum ProjectileTrailStyle { normal, skill }

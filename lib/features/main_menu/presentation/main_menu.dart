@@ -19,7 +19,6 @@ import '../../cangjingge/presentation/cangjingge_screen.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
-import '../../debug/presentation/battle_test_menu.dart';
 import '../../debug/presentation/phase2_test_menu.dart';
 import '../../debug/presentation/redline_audit_screen.dart';
 import '../../debug/presentation/sect_recruit_debug_screen.dart';
@@ -640,12 +639,6 @@ class MainMenu extends ConsumerWidget {
   List<Widget> _debugItems(BuildContext context) {
     return kDebugMode
         ? <Widget>[
-            WuxiaInkButton(
-              label: UiStrings.mainMenuPhase1,
-              hint: UiStrings.mainMenuPhase1Hint,
-              icon: Icons.bug_report_outlined,
-              onTap: () => _push(context, const BattleTestMenu()),
-            ),
             WuxiaInkButton(
               label: UiStrings.mainMenuPhase2,
               hint: UiStrings.mainMenuPhase2Hint,

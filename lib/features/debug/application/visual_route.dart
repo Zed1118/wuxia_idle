@@ -56,10 +56,6 @@ enum VisualRoute {
   seclusionSetup('seclusion_setup', '闭关准备·地点 hero + 产出预览 + 无限时说明验收'),
   seclusionActive('seclusion_active', '闭关中·双阶段时长 + 装备节点 + 收功按钮验收'),
   seclusionResult('seclusion_result', '闭关收功·72h 闭关 + 接续挂机 + 装备节点验收'),
-  battleScene(
-    'battle_scene',
-    '战斗屏·背景 scrim + 胜负仪式验收(seed 3v3 带背景,自动播放到胜负 overlay)',
-  ),
   phase0aBattlePlayable(
     'phase0a_battle_playable',
     'Phase 0A 单角色水墨 ARPG·真实 flow 键鼠可玩验收',
@@ -83,76 +79,6 @@ enum VisualRoute {
   phase0aBattleGuardianMechanics(
     'phase0a_battle_guardian_mechanics',
     'Phase 0A guardian ward / intercept / coop visual fixture',
-  ),
-  mainlineFirstClearBattle(
-    'mainline_first_clear_battle',
-    '主线首通真战斗验收·真 stage_01_03 + readable_first_clear 调参 + 起手暂停可单步',
-  ),
-  mainlineFirstClearBattleAuto(
-    'mainline_first_clear_battle_auto',
-    '主线首通真战斗自动播放验收·真 stage_01_03 + readable_first_clear + 起手/爆发/胜利截图',
-  ),
-  battleUltimateCaption(
-    'battle_ultimate_caption',
-    '战斗屏·大招题字静态验收(玩家暖金 + 敌方绛红 两态)',
-  ),
-  battleBossFrame(
-    'battle_boss_frame',
-    '战斗屏·Boss 头像金色加粗边框验收(scenarioBoss 右队首位 Boss)',
-  ),
-  battleChargeBreak(
-    'battle_charge_break',
-    '战斗屏·青衫剑客蓄力青锋绝 + 玩家破招按钮高亮(静态验收破招 UI)',
-  ),
-  battleInnerDemonStage(
-    'battle_inner_demon_stage',
-    '战斗屏·心魔镜像墨色反相 + 敌方轮廓晕染静态验收',
-  ),
-  battleLightFootStage('battle_light_foot_stage', '战斗屏·轻功上下错层 + 加长交锋位移静态验收'),
-  battleMassBattleStage(
-    'battle_mass_battle_stage',
-    '战斗屏·群战三名主战立绘 + 余敌墨影队列静态验收',
-  ),
-  battleV2CasualtyReplacement(
-    'battle_v2_casualty_replacement',
-    '战斗界面 V2·固定 seed 回放至首次阵亡递补完成后暂停',
-  ),
-  battleV2FastForwardPeak(
-    'battle_v2_fast_forward_peak',
-    '战斗界面 V2·固定 seed 回放至同槽同拍双伤害峰值后暂停',
-  ),
-  battleV2PreResult(
-    'battle_v2_pre_result',
-    '战斗界面 V2·固定 seed 冻结在最后一次致胜 action 之前',
-  ),
-  battleV2Neutral3v3('battle_v2_neutral_3v3', '战斗界面 V2·中性标准 3v3 静态帧'),
-  battleV2MultiCharge(
-    'battle_v2_multi_charge',
-    'Battle V2 multi-charge static audit',
-  ),
-  battleIdentitySilhouette(
-    'battle_identity_silhouette',
-    '战斗人物素材门禁·三名未配专用站姿弟子使用透明身份剪影',
-  ),
-  battleV2ResourcePressure(
-    'battle_v2_resource_pressure',
-    '战斗界面 V2·冷却签与真气不足签同帧静态验收',
-  ),
-  battleV2AutoRotationFirst(
-    'battle_v2_auto_rotation_first',
-    '战斗界面 V2·自动案台第一名执招者与招式签亮起',
-  ),
-  battleV2AutoRotationSecond(
-    'battle_v2_auto_rotation_second',
-    '战斗界面 V2·自动案台第二名执招者与招式签轮转亮起',
-  ),
-  battleVictoryFirstClear(
-    'battle_victory_first_clear',
-    '胜利弹窗·Boss 首胜封签 + 掉落/升层/共鸣三段验收',
-  ),
-  enemyGallery(
-    'enemy_gallery',
-    '敌人立绘 gallery·全敌人圆形头像滚动验收(buildEnemyTeam 真转换 + CharacterAvatar)',
   ),
   equipmentDetailScreen(
     'equipment_detail_screen',
@@ -178,48 +104,11 @@ enum VisualRoute {
     'inventory',
     '仓库·装备格子化(部位分组武器/护甲/饰品 + tier 边框 + 强化徽章 + 师承标 + 境界锁灰化)',
   ),
-  battleInterruptCaption(
-    'battle_interrupt_caption',
-    '战斗屏·破招「破！」题字静态验收(破招方暖金 + 敌方绛红 两态)',
-  ),
-  battleFirstClearShowcase(
-    'battle_first_clear_showcase',
-    '战斗屏·首通展示帧题字静态验收(开局「初战」+ 敌方「蓄力可破」+ 破招 flourish 峰值字号三态,§十三 #2 T1)',
-  ),
-  battleDefeat('battle_defeat', '战斗屏·败北页验收(敗 题字 + 败北 + 破招提示 + 战报,战场背景上结算)'),
-  defeatInnerDemonResidue(
-    'defeat_inner_demon_residue',
-    'M6 心魔关战败损失摘要·余毒未消段排版验收(战败剧情屏顶 banner:混合「含主修最长行」+「仅内力」两条余毒 entry,验内力段·修炼度回退段·余毒未消段拼接换行)',
-  ),
-  battleTreasureGlowPeak(
-    'battle_treasure_glow_peak',
-    '爆品·神物金光峰值帧验收(t≈0.32 金闪迸发 + 双环涟漪 + 辉光升起,验是否太抢)',
-  ),
-  battleTreasureGlowRest(
-    'battle_treasure_glow_rest',
-    '爆品·神物金光末态验收(t=1.0 辉光驻留,验是否 wash out 盖住内容)',
-  ),
-  battleTreasureZhongqi(
-    'battle_treasure_zhongqi',
-    '爆品·重器对比验收(青虚剑,tier-gate 神物专属金光不启用)',
-  ),
   stageListCycle(
     'stage_list_cycle',
     '主线选关·章层周目控件 + 拖招真关卡入口(整章 Ch1 cycle1 全通 → 章头显周目控件;点 tile 进真战斗验纯自动流+拖招)',
   ),
   towerCycle('tower_cycle', '爬塔·问鼎轮回验收(通关 30 层 cycle1 → 显当前轮回 + 挑战下一轮回入口)'),
-  battleTapLive(
-    'battle_tap_live',
-    '两段点选交互真玩/验收(真战斗·已开干预·高血耐久敌久撑 → 点 single 强力技进待发态(软暂停)点敌头像出手 / 点 aoe 大招一键即对全体触发)',
-  ),
-  battleTapPreview(
-    'battle_tap_preview',
-    '两段点选交互静态预览(冻结态·single 技能待发高亮 + 敌头像可选标记 + 单体/群体角标)',
-  ),
-  battleDamagePopupGallery(
-    'battle_damage_popup_gallery',
-    '战斗飘字图册·普通/暴击/暴击+剑鸣/克制升降/闪避 同屏冻结在真战斗深底(暴击语义色专用验收位)',
-  ),
   offlineRecapActive(
     'offline_recap_active',
     'M2 闭关归来卡静态验收(active 闭关·长材料明细 +「稍后再说/前去收功」双操作)',
@@ -227,66 +116,6 @@ enum VisualRoute {
   offlineRecapPassive(
     'offline_recap_passive',
     'M2 离线被动归来卡静态验收(无 active 闭关·涓流入库告知卡:水墨 LightPaperPanel + 离线时长/磨剑石/经验 + 仅「知道了」按钮,无领取按钮守 §5.1)',
-  ),
-  battleBossPhase(
-    'battle_boss_phase',
-    '第七阶段批二目检·真 stage_01_05 撑伞高人 Boss(HP抬高)vs at-level 玩家队真玩:跌破50%背水一击转阶段+蓄力反扑 / 刚猛打弱点会心×1.25 / 灵巧吃抗性×0.75(已开干预层可拖招)',
-  ),
-  battleGuardianWard(
-    'battle_guardian_ward',
-    'floor30 护法结界目检·真终局塔队(九霄魔尊+左使/右使)vs 宗师 on-level:起手冻结在护罩生效帧看「护法结界」pill(内力色)+ boss 金边 + 流派克制标多 tag 堆叠;手动步进清完两护法 → 「结界破！」题字 + 破界闪白动效(单帧截不出手感须真机步进看)',
-  ),
-  battleTowerFloor13('battle_tower_floor_13', '敌人立绘验收·真塔13层（暗夜剑客 + 暗夜刀客）'),
-  battleTowerFloor14('battle_tower_floor_14', '敌人立绘验收·真塔14层（江湖前辈 + 师爷）'),
-  battleTowerFloor19('battle_tower_floor_19', '敌人立绘验收·真塔19层（武林前辈 + 武林宿老）'),
-  battleTowerFloor22('battle_tower_floor_22', '敌人立绘验收·真塔22层（绝顶护法甲 + 乙）'),
-  battleStage0102('battle_stage_01_02', '敌人立绘验收·真主线1-2（ruffian_a）'),
-  battleStage0103('battle_stage_01_03', '敌人立绘验收·真主线1-3（bandit_head）'),
-  battleStage0104('battle_stage_01_04', '敌人立绘验收·真主线1-4（qingshan）'),
-  battleTowerFloor02('battle_tower_floor_02', '敌人立绘验收·真塔2层（thug_b）'),
-  battleTowerFloor03('battle_tower_floor_03', '敌人立绘验收·真塔3层（thug_c）'),
-  battleTowerFloor08('battle_tower_floor_08', '敌人立绘验收·真塔8层（bandit_head）'),
-  battleStage0401('battle_stage_04_01', '敌人立绘验收·真主线4-1（liukou_a）'),
-  battleStage0402('battle_stage_04_02', '敌人立绘验收·真主线4-2（guard_a）'),
-  battleStage0403('battle_stage_04_03', '敌人立绘验收·真主线4-3（shafei_a）'),
-  battleStage0404('battle_stage_04_04', '敌人立绘验收·真主线4-4（xiliangboss）'),
-  battleStage0405('battle_stage_04_05', '敌人立绘验收·真主线4-5（xiliangbazhu）'),
-  battleStage0501('battle_stage_05_01', '敌人立绘验收·真主线5-1（tongguan_shoujiang）'),
-  battleStage0502('battle_stage_05_02', '敌人立绘验收·真主线5-2（songshan_daozong_dizi）'),
-  battleStage0503('battle_stage_05_03', '敌人立绘验收·真主线5-3（caobang_duozhu）'),
-  battleStage0504(
-    'battle_stage_05_04',
-    '敌人立绘验收·真主线5-4（zhongzhou_lunjian_xianfeng）',
-  ),
-  battleStage0505('battle_stage_05_05', '敌人立绘验收·真主线5-5（xiliang_sandizi）'),
-  battleStage0601(
-    'battle_stage_06_01',
-    '敌人立绘验收·真主线6-1（lunjian_sanchang_xunluo）',
-  ),
-  battleStage0602('battle_stage_06_02', '敌人立绘验收·真主线6-2（songshan_shouguan）'),
-  battleStage0603('battle_stage_06_03', '敌人立绘验收·真主线6-3（huanghe_yuantou_yufu）'),
-  battleStage0604(
-    'battle_stage_06_04',
-    '敌人立绘验收·真主线6-4（kunlun_waimen_shouguan）',
-  ),
-  battleStage0605('battle_stage_06_05', '敌人立绘验收·真主线6-5（xiliang_bazhu）'),
-  battleTowerFloor06('battle_tower_floor_06', '敌人立绘验收·真塔6层（bandit_b）'),
-  battleTowerFloor07('battle_tower_floor_07', '敌人立绘验收·真塔7层（bandit_c）'),
-  battleTowerFloor12(
-    'battle_tower_floor_12',
-    '敌人立绘验收·真塔12层（jianghu_a + jianghu_b）',
-  ),
-  battleStageAudit(
-    'battle_audit_stage',
-    '敌人立绘全关卡验收·动态真 stage（实际 id 形如 battle_audit_stage_01_01）',
-  ),
-  battleTowerAudit(
-    'battle_audit_tower',
-    '敌人立绘全塔层验收·动态真 floor（实际 id 形如 battle_audit_tower_01）',
-  ),
-  battleGauntletAudit(
-    'battle_audit_gauntlet',
-    '敌人立绘断魂庄三关验收·动态真关次（实际 id 形如 battle_audit_gauntlet_01）',
   ),
   discipleJoinCeremony(
     'disciple_join_ceremony',
@@ -423,16 +252,7 @@ enum VisualRoute {
   bool get controlsReadiness => switch (this) {
     settingsPanel ||
     settingsPanelBottom ||
-    settingsPanelDisabled ||
-    battleV2CasualtyReplacement ||
-    battleV2FastForwardPeak ||
-    battleV2PreResult ||
-    battleV2Neutral3v3 ||
-    battleV2MultiCharge ||
-    battleIdentitySilhouette ||
-    battleV2ResourcePressure ||
-    battleV2AutoRotationFirst ||
-    battleV2AutoRotationSecond => true,
+    settingsPanelDisabled => true,
     _ => false,
   };
 
@@ -441,8 +261,6 @@ enum VisualRoute {
   VisualRouteKind get kind {
     if (id.contains('gallery')) return VisualRouteKind.gallery;
     if (this == VisualRoute.redlineAudit ||
-        this == VisualRoute.battleTapPreview ||
-        this == VisualRoute.battleIdentitySilhouette ||
         this == VisualRoute.hub) {
       return VisualRouteKind.component;
     }
@@ -454,13 +272,6 @@ enum VisualRoute {
         this == VisualRoute.settingsPanelBottom ||
         this == VisualRoute.settingsPanelDisabled ||
         this == VisualRoute.encounterOutcomeSkillBanner ||
-        this == VisualRoute.battleVictoryFirstClear ||
-        this == VisualRoute.battleFirstClearShowcase ||
-        this == VisualRoute.battleDefeat ||
-        this == VisualRoute.defeatInnerDemonResidue ||
-        this == VisualRoute.battleTreasureGlowPeak ||
-        this == VisualRoute.battleTreasureGlowRest ||
-        this == VisualRoute.battleTreasureZhongqi ||
         this == VisualRoute.offlineRecapActive ||
         this == VisualRoute.offlineRecapPassive ||
         this == VisualRoute.discipleJoinCeremony ||
@@ -477,11 +288,6 @@ enum VisualRouteKind { productionShell, component, gallery, transientOverlay }
 VisualRoute? parseVisualRoute(String raw) {
   for (final r in VisualRoute.values) {
     if (r.id == raw) return r;
-  }
-  if (battleAuditStageId(raw) != null) return VisualRoute.battleStageAudit;
-  if (battleAuditTowerFloor(raw) != null) return VisualRoute.battleTowerAudit;
-  if (battleAuditGauntletStage(raw) != null) {
-    return VisualRoute.battleGauntletAudit;
   }
   return null;
 }
