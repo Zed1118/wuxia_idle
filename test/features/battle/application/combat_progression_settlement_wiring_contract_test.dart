@@ -30,7 +30,7 @@ void main() {
 
   test('shared settlement never owns a transaction', () async {
     final source = await File(
-      'lib/features/battle/application/combat_progression_settlement_service.dart',
+      'lib/features/combat_shared/application/combat_progression_settlement_service.dart',
     ).readAsString();
     expect(source, isNot(contains('writeTxn')));
   });

@@ -9,7 +9,7 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/game_event.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/battle/application/combat_progression_settlement_service.dart';
+import 'package:wuxia_idle/features/combat_shared/application/combat_progression_settlement_service.dart';
 import 'package:wuxia_idle/features/equipment/domain/resonance_upgrade_notice.dart';
 
 import '../../../support/test_data.dart';

@@ -6,7 +6,7 @@ import '../../combat_shared/application/combat_content_providers.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
-import '../../battle/application/post_combat_invalidation.dart';
+import '../../combat_shared/application/post_combat_invalidation.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
 import '../../cultivation/presentation/stage_skill_drop_hook.dart';
 import '../../mainline/application/mainline_progress_service.dart';

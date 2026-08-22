@@ -19,8 +19,8 @@ import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../combat_shared/application/combat_resolution_service.dart'
     show BattleResolutionResult, CombatResolutionService;
 import '../../combat_shared/application/combat_content_providers.dart';
-import '../../battle/application/combat_progression_settlement_service.dart';
-import '../../battle/application/post_combat_invalidation.dart';
+import '../../combat_shared/application/combat_progression_settlement_service.dart';
+import '../../combat_shared/application/post_combat_invalidation.dart';
 import '../../../shared/battle_shared/enum_localizations.dart' show EnumL10n;
 import '../../mass_battle/application/mass_battle_service.dart';
 import '../../../data/defs/mass_battle_def.dart';

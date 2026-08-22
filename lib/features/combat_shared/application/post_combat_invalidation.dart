@@ -6,7 +6,7 @@ import '../../battle_record/application/boss_memory_providers.dart';
 import '../../shop/application/shop_providers.dart';
 import '../../weapon_codex/application/equipment_catalog_providers.dart';
 
-/// 战斗 / 扫荡结算后统一失效的 provider 集合（体检批3 P0-5 单一事实源）。
+/// 战斗 / 扫荡结算后统一失效的 provider 集合。
 ///
 /// 此前主线（stage_entry_flow）、爬塔（tower_entry_flow）各自复制粘贴一份
 /// 「角色 family 失效」（W13-v3 fix），扫荡（sweep_settlement）只失效进度，

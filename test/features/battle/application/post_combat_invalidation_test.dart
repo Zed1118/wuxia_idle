@@ -9,7 +9,7 @@ import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/battle/application/post_combat_invalidation.dart';
+import 'package:wuxia_idle/features/combat_shared/application/post_combat_invalidation.dart';
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_providers.dart';
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_service.dart';
 import 'package:wuxia_idle/features/battle_record/domain/boss_memory_source.dart';

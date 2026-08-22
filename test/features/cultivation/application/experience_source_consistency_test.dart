@@ -8,7 +8,7 @@ void main() {
   test('all production experience gates include the release cap', () async {
     const gatePaths = {
       'combat':
-          'lib/features/battle/application/combat_progression_settlement_service.dart',
+          'lib/features/combat_shared/application/combat_progression_settlement_service.dart',
       'retreat': 'lib/features/seclusion/application/seclusion_service.dart',
       'offline':
           'lib/features/seclusion/application/offline_passive_service.dart',

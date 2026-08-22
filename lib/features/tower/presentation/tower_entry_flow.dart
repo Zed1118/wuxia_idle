@@ -21,8 +21,8 @@ import '../../../shared/audio/sound_manager.dart';
 import '../../combat_shared/application/combat_resolution_service.dart'
     show CombatResolutionService;
 import '../../combat_shared/application/combat_content_providers.dart';
-import '../../battle/application/combat_progression_settlement_service.dart';
-import '../../battle/application/post_combat_invalidation.dart';
+import '../../combat_shared/application/combat_progression_settlement_service.dart';
+import '../../combat_shared/application/post_combat_invalidation.dart';
 import '../../../shared/battle_shared/derived_stats.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
