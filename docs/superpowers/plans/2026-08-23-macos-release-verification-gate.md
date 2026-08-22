@@ -14,7 +14,8 @@
 
 - [x] 脚本拒绝脏工作区，输出被验证的 commit。
 - [x] 构建前执行 `flutter clean`，杜绝外层签名沿用旧产物。
-- [x] release 构建使用锁定依赖，并从 fresh checkout 重建 gitignored 生成文件。
+- [x] release 构建强制锁文件，并从 fresh checkout 重建 gitignored 生成文件。
+- [x] 构建后再次拒绝 tracked tree 漂移，PASS 产物严格绑定原 commit。
 - [x] `codesign --verify --deep --strict` 必须通过。
 - [x] 主启动器必须同时含 x86_64 与 arm64，并输出体积/AOT/launcher SHA-256。
 - [x] 契约测试防止 clean、deep verify 或双架构检查被静默删除。

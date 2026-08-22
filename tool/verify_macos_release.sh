@@ -20,7 +20,7 @@ aot="$app/Contents/Frameworks/App.framework/Versions/A/App"
 
 echo "==> clean macOS release build @ $commit"
 flutter clean
-flutter pub get
+flutter pub get --enforce-lockfile
 dart run build_runner build
 flutter build macos --release --no-pub
 
@@ -36,6 +36,11 @@ for required_arch in x86_64 arm64; do
     exit 5
   fi
 done
+
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "worktree changed during release verification" >&2
+  exit 6
+fi
 
 launcher_sha256="$(shasum -a 256 "$launcher" | awk '{print $1}')"
 aot_sha256="$(shasum -a 256 "$aot" | awk '{print $1}')"
