@@ -23,7 +23,23 @@ void main() {
     expect(config.autoClose, isTrue);
     expect(config.viewportWidth, 1280);
     expect(config.viewportHeight, 720);
+    expect(config.nativeContentViewport, isFalse);
   });
+
+  test(
+    'macOS runner can delegate exact content viewport sizing to native shell',
+    () {
+      final config = BattleFrameProfileRunConfig.tryParse(const <String>[
+        '--battle-profile-run-id=run-mac',
+        '--battle-profile-output=out',
+        '--battle-profile-sample-seconds=60',
+        '--battle-profile-viewport=1440x900',
+        '--battle-profile-native-content-viewport=true',
+      ]);
+
+      expect(config?.nativeContentViewport, isTrue);
+    },
+  );
 
   test('不允许负采样时长', () {
     expect(

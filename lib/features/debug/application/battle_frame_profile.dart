@@ -22,6 +22,7 @@ final class BattleFrameProfileRunConfig {
     required this.autoClose,
     required this.viewportWidth,
     required this.viewportHeight,
+    required this.nativeContentViewport,
   });
 
   final String runId;
@@ -32,6 +33,7 @@ final class BattleFrameProfileRunConfig {
   final bool autoClose;
   final double viewportWidth;
   final double viewportHeight;
+  final bool nativeContentViewport;
 
   Duration get total => warmup + sample + cooldown;
 
@@ -94,6 +96,8 @@ final class BattleFrameProfileRunConfig {
       autoClose: values['battle-profile-auto-close'] == 'true',
       viewportWidth: double.parse(viewport.group(1)!),
       viewportHeight: double.parse(viewport.group(2)!),
+      nativeContentViewport:
+          values['battle-profile-native-content-viewport'] == 'true',
     );
   }
 }

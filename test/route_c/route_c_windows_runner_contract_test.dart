@@ -69,6 +69,7 @@ void main() {
       expect(runner, contains('cp -R "\$app_run_dir/." "\$run_dir/"'));
       expect(runner, contains('VISUAL_WINDOW_W="\$expected_width"'));
       expect(runner, contains('VISUAL_WINDOW_H="\$expected_height"'));
+      expect(runner, contains('native-content-viewport=true'));
       expect(runner, isNot(contains('phase0minus_probe.app')));
     },
   );

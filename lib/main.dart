@@ -40,9 +40,11 @@ Future<void> main(List<String> args) async {
     final profile = BattleFrameProfileProbe.configureFromArgs(args);
     if (profile != null) {
       await windowManager.ensureInitialized();
-      await windowManager.setSize(
-        Size(profile.viewportWidth, profile.viewportHeight),
-      );
+      if (!profile.nativeContentViewport) {
+        await windowManager.setSize(
+          Size(profile.viewportWidth, profile.viewportHeight),
+        );
+      }
       await windowManager.center();
     }
     final routeId = visualRouteIdFromInputs(args);

@@ -71,6 +71,7 @@ for ((index = 1; index <= repeat; index++)); do
     --battle-profile-warmup-seconds=12 \
     --battle-profile-cooldown-seconds=30 \
     --battle-profile-viewport="$viewport" \
+    --battle-profile-native-content-viewport=true \
     --battle-profile-auto-close=true 2>&1 | tee "$run_dir/run.log"
 
   cp -R "$app_run_dir/." "$run_dir/"
