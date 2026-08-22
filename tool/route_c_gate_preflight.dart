@@ -900,10 +900,19 @@ Future<List<Map<String, Object?>>> _readEvidence(
 
 Future<String?> _sha256IfExists(File file) async {
   if (!file.existsSync()) return null;
-  final result = await Process.run('shasum', <String>['-a', '256', file.path]);
+  final result = Platform.isWindows
+      ? await Process.run('certutil', <String>[
+          '-hashfile',
+          file.path,
+          'SHA256',
+        ])
+      : await Process.run('shasum', <String>['-a', '256', file.path]);
   if (result.exitCode != 0) return null;
-  final checksum = (result.stdout as String).trim().split(RegExp(r'\s+')).first;
-  return RegExp(r'^[0-9a-f]{64}$').hasMatch(checksum) ? checksum : null;
+  for (final line in const LineSplitter().convert(result.stdout as String)) {
+    final checksum = line.trim().toLowerCase();
+    if (RegExp(r'^[0-9a-f]{64}$').hasMatch(checksum)) return checksum;
+  }
+  return null;
 }
 
 Future<Map<String, Object?>?> _readJsonObjectIfExists(File file) async {
