@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/battle/presentation/hp_bar.dart';
+import 'package:wuxia_idle/shared/widgets/combat_hp_bar.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 void main() {

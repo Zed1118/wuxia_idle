@@ -15,7 +15,7 @@ import '../../application/phase0a/phase0a_wave_battle_flow.dart';
 import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
-import '../hp_bar.dart';
+import '../../../../shared/widgets/combat_hp_bar.dart';
 import 'phase0a_battle_controller.dart';
 import 'phase0a_presentation_tokens.dart';
 import 'phase0a_sfx.dart';

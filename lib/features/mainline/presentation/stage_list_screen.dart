@@ -13,7 +13,7 @@ import '../../../shared/widgets/wuxia_ui/glossary_tip.dart';
 import '../../battle/application/selected_cycle_provider.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../shared/battle_shared/cycle_trait_intel.dart';
-import '../../battle/presentation/cycle_select_control.dart';
+import '../../../shared/widgets/cycle_select_control.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/domain/stage_difficulty.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';

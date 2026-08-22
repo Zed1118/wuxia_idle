@@ -2,8 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../shared/theme/wuxia_tokens.dart';
-import 'battle_typography_tokens.dart';
+import '../theme/wuxia_tokens.dart';
+import '../../features/battle/presentation/battle_typography_tokens.dart';
 
 /// 战斗纸本比例条。墨轨、干笔填充和数值墨托均由确定性
 /// [CustomPainter] 绘制，避免现代 HUD 的光滑圆角轨道。

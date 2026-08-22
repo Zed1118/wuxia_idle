@@ -11,7 +11,7 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
-import '../../battle/presentation/cycle_select_control.dart';
+import '../../../shared/widgets/cycle_select_control.dart';
 import '../application/expedition_combat_selector.dart';
 import '../application/phase0a_expedition_gate.dart';
 import '../application/expedition_providers.dart';

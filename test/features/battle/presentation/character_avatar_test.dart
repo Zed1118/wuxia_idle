@@ -5,7 +5,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
-import 'package:wuxia_idle/features/battle/presentation/hp_bar.dart';
+import 'package:wuxia_idle/shared/widgets/combat_hp_bar.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';

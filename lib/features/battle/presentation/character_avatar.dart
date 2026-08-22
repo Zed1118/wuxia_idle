@@ -14,7 +14,7 @@ import 'battle_stage_geometry.dart';
 import 'battle_standee_fusion.dart';
 import 'battle_typography_tokens.dart';
 import 'guardian_ward_presentation.dart';
-import 'hp_bar.dart';
+import '../../../shared/widgets/combat_hp_bar.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 

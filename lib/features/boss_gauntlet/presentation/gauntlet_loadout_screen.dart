@@ -10,7 +10,7 @@ import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
-import '../../battle/presentation/cycle_select_control.dart';
+import '../../../shared/widgets/cycle_select_control.dart';
 import '../application/gauntlet_providers.dart';
 import '../application/gauntlet_service.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
