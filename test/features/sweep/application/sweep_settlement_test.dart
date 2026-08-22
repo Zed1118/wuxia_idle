@@ -20,6 +20,7 @@ import 'package:wuxia_idle/features/tower/application/tower_progress_service.dar
 import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 import 'package:wuxia_idle/shared/utils/rng_provider.dart';
+import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 
 import '../../../support/isar_test_support.dart';
 import '../../../support/test_data.dart';
@@ -187,6 +188,73 @@ void main() {
           '固定掉落铁剑 1 件 + 必中 rng 下的稀有彩头 1 件;'
           '若仍为 1,说明生产没读 rngProvider(随机源仍是 inline new)',
     );
+  });
+
+  testWidgets('显式 0A 快照透传结算：只更新祖师，替补零污染且战备恰扣一', (tester) async {
+    final founderId = (await tester.runAsync(_seedFounderWithReadiness))!;
+    final reserveId = (await tester.runAsync(() async {
+      final reserve = Character.create(
+        name: '替补',
+        realmTier: RealmTier.xueTu,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: Attributes(),
+        rarity: RarityTier.biaoZhun,
+        lineageRole: LineageRole.disciple,
+        createdAt: DateTime(2026, 8, 22),
+        internalForce: 3000,
+      );
+      final id = await IsarSetup.instance.writeTxn(
+        () => IsarSetup.instance.characters.put(reserve),
+      );
+      final save = await IsarSetup.currentSaveData();
+      await IsarSetup.instance.writeTxn(() async {
+        save!.activeCharacterIds = [founderId, id];
+        await IsarSetup.instance.saveDatas.put(save);
+      });
+      return id;
+    }))!;
+    final settlement = CombatSettlementSnapshot(
+      result: BattleResult.leftWin,
+      totalTicks: 12,
+      hadActions: true,
+      participants: [
+        CombatParticipantSnapshot(
+          characterId: founderId,
+          currentHp: 7000,
+          maxHp: 8000,
+        ),
+      ],
+      skillCasts: const [],
+      totalDamage: 321,
+      criticalCount: 2,
+      damageByCharacterId: {founderId: 321},
+    );
+    late WidgetRef ref;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [rngProvider.overrideWithValue(_NoRareBonusRng())],
+        child: _RefHarness(onReady: (value) => ref = value),
+      ),
+    );
+
+    final outcome = await tester.runAsync(
+      () => settleMainlineSweepVictory(
+        ref: ref,
+        stage: _dropStage,
+        cycle: 1,
+        settlementSnapshot: settlement,
+      ),
+    );
+
+    expect(outcome, isNotNull);
+    await tester.runAsync(() async {
+      final founder = await IsarSetup.instance.characters.get(founderId);
+      final reserve = await IsarSetup.instance.characters.get(reserveId);
+      final save = await IsarSetup.currentSaveData();
+      expect(founder!.experience, greaterThan(0));
+      expect(reserve!.experience, 0);
+      expect(save!.sweepReadinessPoints, 2);
+    });
   });
 }
 

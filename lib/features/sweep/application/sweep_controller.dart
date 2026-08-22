@@ -13,6 +13,9 @@ enum SweepStatus {
 
   /// 某关战败 halt（停在该关）。
   stoppedByDefeat,
+
+  /// 某关达到模拟预算仍未分胜负（停在该关，不伪报战败）。
+  stoppedByTimeout,
 }
 
 /// 扫荡驱动状态机（纯逻辑，无 widget 依赖）。
@@ -61,5 +64,10 @@ class SweepController {
   void recordDefeat() {
     if (_status != SweepStatus.running) return;
     _status = SweepStatus.stoppedByDefeat;
+  }
+
+  void recordTimeout() {
+    if (_status != SweepStatus.running) return;
+    _status = SweepStatus.stoppedByTimeout;
   }
 }

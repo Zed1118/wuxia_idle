@@ -377,6 +377,35 @@ void main() {
       expect(second.ticks, first.ticks);
       expect(second.finalState, first.finalState);
     });
+
+    test('async 分块版与同步版终局、拍数和终态一致', () async {
+      Phase0aWaveBattleFlow flow() => makeFlow(
+        firstWaveEnemies: [
+          makeEnemy(id: 'e1', position: const ArenaVector(200, 0)),
+        ],
+        extraWaves: [
+          [makeEnemy(id: 'e2', position: const ArenaVector(160, -40))],
+        ],
+      );
+      final sync = Phase0aHeadlessRunner.runToEnd(
+        flow: flow(),
+        bot: makeBot(),
+        deltaSeconds: _headlessDeltaSeconds,
+        maxTicks: _headlessMaxTicks,
+      );
+      final async = await Phase0aHeadlessRunner.runToEndAsync(
+        flow: flow(),
+        bot: makeBot(),
+        deltaSeconds: _headlessDeltaSeconds,
+        maxTicks: _headlessMaxTicks,
+        yieldEveryTicks: 3,
+      );
+
+      expect(async.outcome, sync.outcome);
+      expect(async.ticks, sync.ticks);
+      expect(async.finalState, sync.finalState);
+      expect(async.events.length, sync.events.length);
+    });
   });
 
   group('runToEnd fail-fast', () {

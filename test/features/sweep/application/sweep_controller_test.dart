@@ -63,4 +63,12 @@ void main() {
     expect(c.recap.stagesCleared, 2);
     expect(c.currentIndex, 2);
   });
+
+  test('演算超时 → stoppedByTimeout，关号和收益均不前进', () {
+    final c = SweepController(totalUnits: 2);
+    c.recordTimeout();
+    expect(c.status, SweepStatus.stoppedByTimeout);
+    expect(c.currentIndex, 0);
+    expect(c.recap.stagesCleared, 0);
+  });
 }

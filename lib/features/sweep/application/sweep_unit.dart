@@ -9,6 +9,11 @@ import '../../battle/application/stage_battle_setup.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../domain/sweep_recap.dart';
 import 'sweep_settlement.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
+import '../../../shared/battle_shared/battle_result.dart';
+import '../../../shared/utils/math_random.dart';
+import 'phase0a_sweep_headless_runner.dart';
+import 'phase0a_sweep_gate.dart';
 
 /// 扫荡一个单位（主线一关 / 爬塔一层）。SweepScreen 逐个：
 /// [startBattle] 装配并起手战斗（强制 auto 连播）→ 战斗到 terminal →
@@ -33,8 +38,25 @@ abstract class SweepUnit {
   Future<SweepBattleOutcome?> settle(WidgetRef ref);
 }
 
+/// 可由 Phase 0A 同核 headless 直结的扫荡单位附加能力。
+///
+/// 与 [SweepUnit] 分离，保证旧假单位/第三方实现无需为默认关闭的灰度能力改签名。
+abstract interface class Phase0aHeadlessSweepUnit {
+  /// 本单位是否具备 production Phase 0A headless 映射资格。
+  bool get supportsPhase0aHeadless;
+
+  /// 同核 headless 跑至终局；预算耗尽由结果显式标记。
+  Future<Phase0aSweepRunResult> runPhase0aHeadless(WidgetRef ref);
+
+  /// 把 headless 终局接回既有重打结算。
+  Future<SweepBattleOutcome?> settlePhase0a(
+    WidgetRef ref,
+    CombatSettlementSnapshot settlement,
+  );
+}
+
 /// 主线一关扫荡单位。
-class MainlineSweepUnit implements SweepUnit {
+class MainlineSweepUnit implements SweepUnit, Phase0aHeadlessSweepUnit {
   MainlineSweepUnit({required this.stage, required this.cycle});
 
   final StageDef stage;
@@ -64,10 +86,36 @@ class MainlineSweepUnit implements SweepUnit {
   @override
   Future<SweepBattleOutcome?> settle(WidgetRef ref) =>
       settleMainlineSweepVictory(ref: ref, stage: stage, cycle: cycle);
+
+  @override
+  bool get supportsPhase0aHeadless =>
+      Phase0aSweepGate.shouldUseMainline(stage, cycle: cycle);
+
+  @override
+  Future<Phase0aSweepRunResult> runPhase0aHeadless(WidgetRef ref) =>
+      Phase0aSweepHeadlessRunner(
+        isar: IsarSetup.instance,
+        numbers: ref.read(numbersConfigProvider),
+        rng: ref.read(mathRandomProvider),
+      ).runMainline(stage: stage, cycleIndex: cycle);
+
+  @override
+  Future<SweepBattleOutcome?> settlePhase0a(
+    WidgetRef ref,
+    CombatSettlementSnapshot settlement,
+  ) {
+    if (settlement.result != BattleResult.leftWin) return Future.value(null);
+    return settleMainlineSweepVictory(
+      ref: ref,
+      stage: stage,
+      cycle: cycle,
+      settlementSnapshot: settlement,
+    );
+  }
 }
 
 /// 爬塔一层扫荡单位。
-class TowerSweepUnit implements SweepUnit {
+class TowerSweepUnit implements SweepUnit, Phase0aHeadlessSweepUnit {
   TowerSweepUnit({required this.floor, required this.cycleIndex});
 
   final TowerFloorDef floor;
@@ -96,4 +144,28 @@ class TowerSweepUnit implements SweepUnit {
   @override
   Future<SweepBattleOutcome?> settle(WidgetRef ref) =>
       settleTowerSweepVictory(ref: ref, floor: floor);
+
+  @override
+  bool get supportsPhase0aHeadless => Phase0aSweepGate.shouldUseTower(floor);
+
+  @override
+  Future<Phase0aSweepRunResult> runPhase0aHeadless(WidgetRef ref) =>
+      Phase0aSweepHeadlessRunner(
+        isar: IsarSetup.instance,
+        numbers: ref.read(numbersConfigProvider),
+        rng: ref.read(mathRandomProvider),
+      ).runTower(floor: floor, cycleIndex: cycleIndex);
+
+  @override
+  Future<SweepBattleOutcome?> settlePhase0a(
+    WidgetRef ref,
+    CombatSettlementSnapshot settlement,
+  ) {
+    if (settlement.result != BattleResult.leftWin) return Future.value(null);
+    return settleTowerSweepVictory(
+      ref: ref,
+      floor: floor,
+      settlementSnapshot: settlement,
+    );
+  }
 }

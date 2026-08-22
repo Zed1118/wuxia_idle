@@ -9,6 +9,9 @@ import '../application/sweep_controller.dart';
 import '../application/sweep_unit.dart';
 import '../domain/sweep_recap.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
+import '../../../shared/battle_shared/battle_result.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
+import '../application/phase0a_sweep_gate.dart';
 
 /// 一键挂机扫荡屏：逐关托管真战斗，强制 auto + 快进连播，可中途停、战败 halt。
 ///
@@ -62,8 +65,42 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
   Future<void> _startCurrent() async {
     if (!mounted) return;
     setState(() => _preparing = true);
+    final unit = widget.units[_index];
+    final headlessUnit = unit is Phase0aHeadlessSweepUnit
+        ? unit as Phase0aHeadlessSweepUnit
+        : null;
+    if (Phase0aSweepGate.enabled &&
+        headlessUnit != null &&
+        headlessUnit.supportsPhase0aHeadless) {
+      // 先还一拍给 UI，让「准备中」和停止按钮可绘制；runner 内部分块归还
+      // 事件循环，结束后才检查 stopRequested，保持“当前关打完后停”语义。
+      await Future<void>.delayed(Duration.zero);
+      try {
+        final result = await headlessUnit.runPhase0aHeadless(ref);
+        if (!mounted) return;
+        if (result.timedOut) {
+          _controller.recordTimeout();
+          setState(() => _preparing = false);
+          return;
+        }
+        final settlement = result.settlement;
+        if (settlement == null || settlement.result != BattleResult.leftWin) {
+          _controller.recordDefeat();
+          setState(() => _preparing = false);
+          return;
+        }
+        await _recordVictory(settlement);
+      } catch (e, st) {
+        debugPrint(
+          'SweepScreen Phase0a headless failed at index $_index: $e\n$st',
+        );
+        _controller.recordDefeat();
+        if (mounted) setState(() => _preparing = false);
+      }
+      return;
+    }
     try {
-      await widget.units[_index].startBattle(ref);
+      await unit.startBattle(ref);
     } catch (e, st) {
       debugPrint('SweepScreen startBattle failed at index $_index: $e\n$st');
       // 装配失败 → halt（停在该关）。
@@ -79,7 +116,17 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
   }
 
   Future<void> _onVictory() async {
-    final outcome = await widget.units[_index].settle(ref);
+    await _recordVictory(null);
+  }
+
+  Future<void> _recordVictory(CombatSettlementSnapshot? settlement) async {
+    final unit = widget.units[_index];
+    final outcome = settlement == null
+        ? await unit.settle(ref)
+        : await (unit as Phase0aHeadlessSweepUnit).settlePhase0a(
+            ref,
+            settlement,
+          );
     // 战斗已胜；settle 异常（Isar 故障等）兜底空账继续，不阻塞连播。
     _controller.recordVictory(outcome ?? const SweepBattleOutcome());
     if (!mounted) return;
@@ -104,12 +151,18 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: WuxiaColors.background,
-      body: SafeArea(
-        // config 仅连播分支需要（读 fastForward/gap）；recap 分支不读，
-        // 使「装配失败→战败 recap」路径在无 GameRepository 的轻量测下可达。
-        child: _controller.isRunning ? _buildRunning() : _buildRecap(),
+    return PopScope(
+      canPop: !_controller.isRunning,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _controller.isRunning) _controller.requestStop();
+      },
+      child: Scaffold(
+        backgroundColor: WuxiaColors.background,
+        body: SafeArea(
+          // config 仅连播分支需要（读 fastForward/gap）；recap 分支不读，
+          // 使「装配失败→战败 recap」路径在无 GameRepository 的轻量测下可达。
+          child: _controller.isRunning ? _buildRunning() : _buildRecap(),
+        ),
       ),
     );
   }
@@ -173,6 +226,7 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
     final r = _controller.recap;
     final String title;
     final bool defeated = _controller.status == SweepStatus.stoppedByDefeat;
+    final bool timedOut = _controller.status == SweepStatus.stoppedByTimeout;
     switch (_controller.status) {
       case SweepStatus.completed:
         title = UiStrings.sweepRecapCompleted;
@@ -180,6 +234,8 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
         title = UiStrings.sweepRecapStopped;
       case SweepStatus.stoppedByDefeat:
         title = UiStrings.sweepRecapDefeated(_index + 1);
+      case SweepStatus.stoppedByTimeout:
+        title = UiStrings.sweepRecapTimedOut(_index + 1);
       case SweepStatus.running:
         title = '';
     }
@@ -203,7 +259,9 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
               color: WuxiaColors.panel,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: defeated ? WuxiaColors.hpLow : WuxiaColors.bossFrame,
+                color: defeated || timedOut
+                    ? WuxiaColors.hpLow
+                    : WuxiaColors.bossFrame,
                 width: 1.5,
               ),
             ),
@@ -224,6 +282,17 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
                   const SizedBox(height: 8),
                   const Text(
                     UiStrings.sweepDefeatReason,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: WuxiaColors.textMuted,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+                if (timedOut) ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    UiStrings.sweepTimeoutReason,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: WuxiaColors.textMuted,

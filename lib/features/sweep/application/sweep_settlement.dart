@@ -21,6 +21,7 @@ import '../../tutorial/application/tutorial_providers.dart';
 import '../domain/sweep_recap.dart';
 import 'sweep_readiness_providers.dart';
 import 'sweep_readiness_service.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 
 /// 扫荡结算（复用既有 victory 数据路径，跳过全部 UI 仪式/剧情/弹窗）。
 ///
@@ -33,6 +34,7 @@ Future<SweepBattleOutcome?> settleMainlineSweepVictory({
   required WidgetRef ref,
   required StageDef stage,
   required int cycle,
+  CombatSettlementSnapshot? settlementSnapshot,
 }) async {
   final readinessSpent = await SweepReadinessService(
     isar: IsarSetup.instance,
@@ -48,6 +50,7 @@ Future<SweepBattleOutcome?> settleMainlineSweepVictory({
     ref: ref,
     stage: stage,
     cycle: cycle,
+    settlementSnapshot: settlementSnapshot,
   );
   if (outcome == null) return null;
 
@@ -109,6 +112,7 @@ Future<SweepBattleOutcome?> settleMainlineSweepVictory({
 Future<SweepBattleOutcome?> settleTowerSweepVictory({
   required WidgetRef ref,
   required TowerFloorDef floor,
+  CombatSettlementSnapshot? settlementSnapshot,
 }) async {
   // recordClear 幂等：重打 floor ≤ highestClearedFloor → isFirstClear=false。
   final svc = TowerProgressService(isar: IsarSetup.instance);
@@ -125,6 +129,7 @@ Future<SweepBattleOutcome?> settleTowerSweepVictory({
     ref: ref,
     floor: floor,
     isFirstClear: clearResult.isFirstClear,
+    settlementSnapshot: settlementSnapshot,
   );
   // 体检批3 P1-6:塔扫荡同样累 battleCount / skillUsage,失效角色 family + 门控。
   invalidateAfterCombatSettlement(ref.invalidate);

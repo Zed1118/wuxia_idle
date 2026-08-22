@@ -34,13 +34,7 @@ final class Phase0aHeadlessResult {
 final class Phase0aHeadlessRunner {
   const Phase0aHeadlessRunner._();
 
-  static Phase0aHeadlessResult runToEnd({
-    required Phase0aWaveBattleFlow flow,
-    required Phase0aPlayerBotAdapter bot,
-    required double deltaSeconds,
-    required int maxTicks,
-  }) {
-    // 拍长必须有限且正:零/负值会让快进永不推进或反向,NaN 绕过一切比较。
+  static void _validate({required double deltaSeconds, required int maxTicks}) {
     if (!(deltaSeconds.isFinite && deltaSeconds > 0)) {
       throw ArgumentError.value(
         deltaSeconds,
@@ -50,6 +44,52 @@ final class Phase0aHeadlessRunner {
     }
     if (maxTicks < 0) {
       throw ArgumentError.value(maxTicks, 'maxTicks', 'must be non-negative');
+    }
+  }
+
+  static Phase0aHeadlessResult runToEnd({
+    required Phase0aWaveBattleFlow flow,
+    required Phase0aPlayerBotAdapter bot,
+    required double deltaSeconds,
+    required int maxTicks,
+  }) {
+    // 拍长必须有限且正:零/负值会让快进永不推进或反向,NaN 绕过一切比较。
+    _validate(deltaSeconds: deltaSeconds, maxTicks: maxTicks);
+    var ticks = 0;
+    final events = <Phase0aEvent>[];
+    while (flow.outcome == Phase0aBattleOutcome.ongoing && ticks < maxTicks) {
+      events.addAll(
+        flow.advance(
+          deltaSeconds: deltaSeconds,
+          command: bot.commandFor(flow.state),
+        ),
+      );
+      ticks++;
+    }
+    return Phase0aHeadlessResult(
+      outcome: flow.outcome,
+      ticks: ticks,
+      finalState: flow.state,
+      events: List.unmodifiable(events),
+    );
+  }
+
+  /// 与 [runToEnd] 相同的 reducer/bot 循环，但按固定拍块归还事件循环，供 UI
+  /// isolate 上的批量消费面避免长关整段冻结。yield 不改变 flow/RNG 消费顺序。
+  static Future<Phase0aHeadlessResult> runToEndAsync({
+    required Phase0aWaveBattleFlow flow,
+    required Phase0aPlayerBotAdapter bot,
+    required double deltaSeconds,
+    required int maxTicks,
+    int yieldEveryTicks = 32,
+  }) async {
+    _validate(deltaSeconds: deltaSeconds, maxTicks: maxTicks);
+    if (yieldEveryTicks <= 0) {
+      throw ArgumentError.value(
+        yieldEveryTicks,
+        'yieldEveryTicks',
+        'must be positive',
+      );
     }
     var ticks = 0;
     final events = <Phase0aEvent>[];
@@ -61,6 +101,9 @@ final class Phase0aHeadlessRunner {
         ),
       );
       ticks++;
+      if (ticks % yieldEveryTicks == 0) {
+        await Future<void>.delayed(Duration.zero);
+      }
     }
     return Phase0aHeadlessResult(
       outcome: flow.outcome,

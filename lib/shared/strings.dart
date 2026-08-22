@@ -3696,6 +3696,11 @@ class UiStrings {
   /// 战败 halt 原因提示（伤势/内力累积）。
   static const String sweepDefeatReason = '战力不济（伤势 / 内力累积），已停在此关';
 
+  /// 无头模拟达到预算仍未分胜负。
+  static String sweepRecapTimedOut(int floorIndex) => '扫到第 $floorIndex 关未分胜负';
+
+  static const String sweepTimeoutReason = '本关达到演算时限，未结算胜负与收益';
+
   /// recap 行：成功扫过关数。
   static String sweepRecapStages(int n) => '通关 · $n 关';
 
