@@ -60,6 +60,18 @@ void main() {
     }
   });
 
+  test('fresh rebuilds independent mutable flow from cached config', () {
+    final rebuilt = fixture.fresh();
+
+    expect(rebuilt.seed, fixture.seed);
+    expect(rebuilt.fixedDeltaSeconds, fixture.fixedDeltaSeconds);
+    expect(rebuilt.flow, isNot(same(fixture.flow)));
+    expect(rebuilt.flow.state, isNot(same(fixture.flow.state)));
+    expect(rebuilt.flow.state.tick, fixture.flow.state.tick);
+    expect(rebuilt.flow.state.player, fixture.flow.state.player);
+    expect(rebuilt.flow.waves.length, fixture.flow.waves.length);
+  });
+
   test(
     'Boss fixture exposes chargeCast/vulnerability and breaks into stagger',
     () async {

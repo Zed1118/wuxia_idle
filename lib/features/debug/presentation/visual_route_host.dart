@@ -1041,15 +1041,12 @@ class _Phase0aProfilePreviewState extends State<_Phase0aProfilePreview> {
       return;
     }
     _restarting = true;
-    unawaited(_restart());
+    _restart();
   }
 
-  Future<void> _restart() async {
+  void _restart() {
     try {
-      final fixture = await Phase0aDebugBattleFixture.load(
-        assetLoader: rootBundle.loadString,
-        numbers: GameRepository.instance.numbers,
-      );
+      final fixture = widget.initialFixture.fresh();
       if (!mounted) return;
       _bot = Phase0aPlayerBotAdapter(playerAdapter: fixture.playerAdapter);
       _controller.restart(fixture.flow);

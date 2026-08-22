@@ -30,7 +30,10 @@ final class Phase0aDebugBattleFixture {
     required this.arenaMin,
     required this.arenaMax,
     required this.playerAdapter,
-  });
+    required _DebugBattleConfig config,
+    required NumbersConfig numbers,
+  }) : _config = config,
+       _numbers = numbers;
 
   static const String assetPath = 'data/phase0a_debug_battle.yaml';
 
@@ -41,6 +44,8 @@ final class Phase0aDebugBattleFixture {
   final ArenaVector arenaMin;
   final ArenaVector arenaMax;
   final Phase0aPlayerInputAdapter playerAdapter;
+  final _DebugBattleConfig _config;
+  final NumbersConfig _numbers;
 
   static Future<Phase0aDebugBattleFixture> load({
     required Phase0aDebugAssetLoader assetLoader,
@@ -50,6 +55,18 @@ final class Phase0aDebugBattleFixture {
     final config = _DebugBattleConfig.fromYaml(
       parseYamlMap(await assetLoader(assetPath)),
     );
+    return _fromConfig(config, numbers);
+  }
+
+  /// Rebuilds mutable combat state from the parsed fixture configuration.
+  /// Profile loops avoid repeated YAML I/O/parsing at battle boundaries so
+  /// debug-only allocation spikes do not contaminate production-frame data.
+  Phase0aDebugBattleFixture fresh() => _fromConfig(_config, _numbers);
+
+  static Phase0aDebugBattleFixture _fromConfig(
+    _DebugBattleConfig config,
+    NumbersConfig numbers,
+  ) {
     final roster = Phase0aVisualRoster.debugBattle();
     final playerActor = config.playerActor();
     final waves = config.waves();
@@ -83,6 +100,8 @@ final class Phase0aDebugBattleFixture {
       arenaMin: config.arenaMin,
       arenaMax: config.arenaMax,
       playerAdapter: playerAdapter,
+      config: config,
+      numbers: numbers,
     );
   }
 }
