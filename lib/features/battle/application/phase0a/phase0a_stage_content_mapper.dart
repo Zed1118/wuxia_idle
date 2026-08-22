@@ -67,7 +67,7 @@ final class Phase0aStageContentMapper {
     required CombatantSnapshot playerSnapshot,
     required NumbersConfig numbers,
     String playerId = 'player',
-    int cycleIndex = 1,
+    int? cycleIndex,
   }) => _mapContent(
     contentId: stage.id,
     enemyTeam: stage.enemyTeam,
@@ -75,7 +75,7 @@ final class Phase0aStageContentMapper {
     playerSnapshot: playerSnapshot,
     numbers: numbers,
     playerId: playerId,
-    cycleIndex: cycleIndex,
+    cycleIndex: cycleIndex ?? 1,
     winCondition: _mapWinCondition(stage.winCondition),
   );
 
@@ -87,7 +87,7 @@ final class Phase0aStageContentMapper {
     required CombatantSnapshot playerSnapshot,
     required NumbersConfig numbers,
     String playerId = 'player',
-    int cycleIndex = 1,
+    int? cycleIndex,
   }) => _mapContent(
     contentId: 'tower_${floor.floorIndex}',
     enemyTeam: floor.enemyTeam,
@@ -95,7 +95,7 @@ final class Phase0aStageContentMapper {
     playerSnapshot: playerSnapshot,
     numbers: numbers,
     playerId: playerId,
-    cycleIndex: cycleIndex,
+    cycleIndex: cycleIndex ?? 1,
     winCondition: null,
   );
 

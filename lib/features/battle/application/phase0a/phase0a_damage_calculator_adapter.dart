@@ -134,7 +134,7 @@ final class Phase0aDamageCalculatorAdapter
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
     bool defenderCharging = false,
-    double defenderWardMult = 1.0,
+    double? defenderWardMult,
   }) {
     if (!_moveBindings.containsKey(kind)) {
       throw StateError('Phase0a 招式缺 kind 绑定: ${kind.name}');
@@ -145,7 +145,7 @@ final class Phase0aDamageCalculatorAdapter
       skill: _moveBindings[kind],
       defenderStaggered: defenderStaggered,
       defenderCharging: defenderCharging,
-      defenderWardMult: defenderWardMult,
+      defenderWardMult: defenderWardMult ?? 1.0,
     );
   }
 
@@ -155,13 +155,12 @@ final class Phase0aDamageCalculatorAdapter
     required String targetId,
     required SkillDef skill,
     bool defenderStaggered = false,
-    double defenderWardMult = 1.0,
   }) => _resolveWithSkill(
     attackerId: attackerId,
     targetId: targetId,
     skill: skill,
     defenderStaggered: defenderStaggered,
-    defenderWardMult: defenderWardMult,
+    defenderWardMult: 1.0,
   );
 
   Phase0aResolvedHit _resolveWithSkill({

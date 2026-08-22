@@ -44,7 +44,7 @@ abstract interface class Phase0aDamageResolver {
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
     bool defenderCharging = false,
-    double defenderWardMult = 1.0,
+    required double defenderWardMult,
   });
 }
 
@@ -248,12 +248,14 @@ Phase0aStepResult reducePhase0aTick({
             targetId: player.id,
             kind: Phase0aDamageKind.basic,
             defenderCharging: player.chargingCast != null,
+            defenderWardMult: 1.0,
           );
           final partnerHit = damageResolver.resolve(
             attackerId: coop.partner.id,
             targetId: player.id,
             kind: Phase0aDamageKind.basic,
             defenderCharging: player.chargingCast != null,
+            defenderWardMult: 1.0,
           );
           final totalDamage =
               (mainHit.isHit ? _checkedDamage(mainHit) : 0) +
