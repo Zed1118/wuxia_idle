@@ -412,7 +412,11 @@ Future<MainlineBattleExit> _runBattle({
     if (phase0aBattleOutcomeForTest != null) {
       return phase0aBattleOutcomeForTest();
     }
-    return _runPhase0aBattle(context: context, stage: stage);
+    return _runPhase0aBattle(
+      context: context,
+      stage: stage,
+      targetCycle: targetCycle,
+    );
   }
   final completer = Completer<MainlineBattleExit>();
   // 不 await push:胜利时 BattleScreen 留在栈上,由 runStageFlow 播完胜利仪式/
@@ -475,6 +479,7 @@ Future<MainlineBattleExit> _runBattle({
 Future<MainlineBattleExit> _runPhase0aBattle({
   required BuildContext context,
   required StageDef stage,
+  required int targetCycle,
 }) async {
   final completer = Completer<MainlineBattleExit>();
   Navigator.of(context)
@@ -482,6 +487,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
         MaterialPageRoute(
           builder: (_) => Phase0aMainlineBattleHost(
             stage: stage,
+            cycleIndex: targetCycle,
             onVictory: (settlement) {
               if (!completer.isCompleted) {
                 completer.complete((

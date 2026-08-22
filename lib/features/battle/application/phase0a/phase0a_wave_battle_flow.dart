@@ -33,7 +33,6 @@ final class Phase0aWaveBattleFlow {
     required List<Phase0aWave> waves,
   }) : _session = session,
        _waves = _checkedWaves(waves, session.state) {
-    _winCondition = session.state.winCondition;
     // 首态防御性副本:外部 list(敌人/技能槽)构造后 mutation 不得污染
     // flow;敌人直接采用首波的已校验不可修改副本(内容一致性上面已验)。
     _rebuildSession(
@@ -50,7 +49,6 @@ final class Phase0aWaveBattleFlow {
 
   Phase0aCombatSession _session;
   final List<Phase0aWave> _waves;
-  late final Phase0aWinCondition? _winCondition;
 
   /// 当前波 0-based 内部游标(事件 payload 一律换算 1-based,不外泄)。
   int _waveCursor = 0;
@@ -91,8 +89,7 @@ final class Phase0aWaveBattleFlow {
       rethrow;
     }
 
-    final resolved = _withWinCondition(_session.state);
-    _rebuildSession(resolved);
+    final resolved = _session.state;
     final tick = resolved.tick;
     var nextSeq = resolved.nextSeq;
     final events = <Phase0aEvent>[];
@@ -181,17 +178,6 @@ final class Phase0aWaveBattleFlow {
       enemies: state.enemies,
       skillSlots: state.skillSlots,
       winCondition: state.winCondition,
-    );
-  }
-
-  Phase0aArenaState _withWinCondition(Phase0aArenaState state) {
-    return Phase0aArenaState(
-      tick: state.tick,
-      nextSeq: state.nextSeq,
-      player: state.player,
-      enemies: state.enemies,
-      skillSlots: state.skillSlots,
-      winCondition: _winCondition,
     );
   }
 

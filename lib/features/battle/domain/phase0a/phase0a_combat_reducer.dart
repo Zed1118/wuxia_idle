@@ -1094,6 +1094,7 @@ Phase0aStepResult reducePhase0aTick({
       player: player,
       enemies: List.unmodifiable(enemiesById.values.toList()),
       skillSlots: List.unmodifiable(slots),
+      winCondition: state.winCondition,
     ),
     events: List.unmodifiable(events),
   );

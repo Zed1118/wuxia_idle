@@ -40,6 +40,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
     required this.stage,
     required this.onVictory,
     required this.onDefeat,
+    this.cycleIndex = 1,
     this.playerSnapshotForTest,
     this.seedForTest,
   });
@@ -47,6 +48,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
   final StageDef stage;
   final ValueChanged<CombatSettlementSnapshot> onVictory;
   final ValueChanged<CombatSettlementSnapshot> onDefeat;
+  final int cycleIndex;
 
   @visibleForTesting
   final CombatantSnapshot? playerSnapshotForTest;
@@ -80,6 +82,7 @@ class _Phase0aMainlineBattleHostState
           stage: widget.stage,
           playerSnapshot: playerSnapshot,
           numbers: numbers,
+          cycleIndex: widget.cycleIndex,
         );
         final roster = Phase0aVisualRoster.fromMapping(mapping);
         for (final combatant in mapping.combatants) {

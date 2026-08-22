@@ -67,6 +67,7 @@ final class Phase0aStageContentMapper {
     required CombatantSnapshot playerSnapshot,
     required NumbersConfig numbers,
     String playerId = 'player',
+    int cycleIndex = 1,
   }) => _mapContent(
     contentId: stage.id,
     enemyTeam: stage.enemyTeam,
@@ -74,17 +75,19 @@ final class Phase0aStageContentMapper {
     playerSnapshot: playerSnapshot,
     numbers: numbers,
     playerId: playerId,
+    cycleIndex: cycleIndex,
     winCondition: _mapWinCondition(stage.winCondition),
   );
 
   /// 把一层生产塔定义装配到与主线相同的 Phase 0A 输入。这里只做 D1
-  /// 敌队机械映射；Boss 阶段/蓄力/破招、脆弱窗口(恒 cycle-1 基础值)与
+  /// 敌队机械映射；Boss 阶段/蓄力/破招、周目脆弱窗口与
   /// 护法结界动态 ward 均由 Phase 0A reducer/伤害 resolver 消费。
   static Phase0aStageMapping mapTower({
     required TowerFloorDef floor,
     required CombatantSnapshot playerSnapshot,
     required NumbersConfig numbers,
     String playerId = 'player',
+    int cycleIndex = 1,
   }) => _mapContent(
     contentId: 'tower_${floor.floorIndex}',
     enemyTeam: floor.enemyTeam,
@@ -92,6 +95,7 @@ final class Phase0aStageContentMapper {
     playerSnapshot: playerSnapshot,
     numbers: numbers,
     playerId: playerId,
+    cycleIndex: cycleIndex,
     winCondition: null,
   );
 
@@ -102,8 +106,12 @@ final class Phase0aStageContentMapper {
     required CombatantSnapshot playerSnapshot,
     required NumbersConfig numbers,
     required String playerId,
+    required int cycleIndex,
     required Phase0aWinCondition? winCondition,
   }) {
+    if (cycleIndex < 1) {
+      throw ArgumentError.value(cycleIndex, 'cycleIndex', 'must be >= 1');
+    }
     final arena = numbers.phase0aArena;
     if (arena.isEmpty) {
       throw StateError(
@@ -118,6 +126,7 @@ final class Phase0aStageContentMapper {
     // —— 敌人 neutral snapshot:复用旧战斗同一口径(零数值复制)——
     final enemySnapshots = EnemyCombatantSnapshotAssembler.assembleAll(
       enemyTeam,
+      cycleIndex: cycleIndex,
       isTower: isTower,
     );
     final numericSkillBindings = _numericSkillBindings(playerSnapshot, arena);

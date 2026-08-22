@@ -1,6 +1,7 @@
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/boss_phase_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
+import 'package:wuxia_idle/data/defs/stage_win_condition.dart';
 import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 
 enum Phase0aPreflightContentKind { stage, tower }
@@ -54,7 +55,9 @@ final class Phase0aProductionPreflightManifest {
 
   static String? _stageSkipReason(StageDef stage) {
     if (stage.enemyTeam.isEmpty) return 'empty_enemy_team';
-    if (stage.winCondition != null) return 'unsupported_win_condition';
+    if (!_winConditionSupported(stage.winCondition)) {
+      return 'unsupported_win_condition';
+    }
     if (stage.massBattleWaveCount != null ||
         stage.massBattleEnemyCounts != null) {
       return 'unsupported_waves';
@@ -67,30 +70,32 @@ final class Phase0aProductionPreflightManifest {
 
   static String? _enemyTeamSkipReason(List<EnemyDef> enemies) {
     if (enemies.isEmpty) return 'empty_enemy_team';
-    if (enemies.any(
-      (enemy) => enemy.guardianWard != null || enemy.guardInterceptsInterrupt,
-    )) {
-      return 'unsupported_guardian_ward';
-    }
     if (enemies.any(_hasUnsupportedBossPhaseOrChargeSemantics)) {
       return 'unsupported_boss_phase_or_charge_semantics';
     }
     return null;
   }
 
+  /// 穷尽生产胜负条件：两类均已由 Phase 0A flow 消费。
+  /// 未来扩枚举时 switch 编译失败，强制重新决策而非默认放行。
+  static bool _winConditionSupported(StageWinCondition? condition) =>
+      switch (condition?.type) {
+        null => true,
+        StageWinConditionType.defeatAll => true,
+        StageWinConditionType.surviveTicks => true,
+      };
+
   /// 阶段/蓄力语义支持性(charge/破招纵切后):顶层 chargeSkillId 与
   /// chargeCounter 阶段机制已由 reducer/AI 消费;周目覆盖在 0A 装配恒为
-  /// cycle-1(主线灰度门限一周目、mapper 无 cycle 参数)下惰性,但其机制
+  /// cycle-1 默认值下惰性,但其机制
   /// 同样过支持性检查。穷尽 switch 表达式:未来新增 BossPhaseMechanic
   /// 枚举值 = 编译错误 = 强制 fail-closed 决策,不得静默放行。
   ///
   /// 脆弱窗口(2026-08-22 纵切):`EnemyDef.vulnerability` 基础值已经
   /// mapper→快照→actor→reducer 运行态事实(蓄招/踉跄)折入唯一
-  /// DamageCalculator 消费,不再构成跳过原因。**本批只验证了 cycle-1
-  /// 装配**(主线灰度门限一周目、mapper/preflight 无 cycle 参数恒
-  /// `vulnerabilityForCycle(1)`):`cycleVulnerability` 高周目覆盖是纯数值
-  /// 覆盖,恒 cycle-1 装配下未被消费、惰性——参数化延后,**不声称
-  /// cycle2 已迁**。注意与 `cycleBossPhases` 口径不同:后者的周目覆盖
+  /// DamageCalculator 消费,不再构成跳过原因。mapper 已支持显式
+  /// cycleIndex；默认仍为 cycle-1 零回归，高周目取对应覆盖。
+  /// 注意与 `cycleBossPhases` 口径不同:后者的周目覆盖
   /// 仍逐一过机制支持性检查(见 [_hasUnsupportedBossPhaseOrChargeSemantics]
   /// 对 cycleBossPhases 的遍历),而 cycleVulnerability 无独立机制可查;
   /// 两者均不单独构成跳过原因,但校验路径不一样,不是「同口径」。

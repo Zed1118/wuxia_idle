@@ -26,14 +26,14 @@ void main() {
       stages.where((entry) => entry.status == Phase0aPreflightStatus.eligible),
       // charge/破招纵切(2026-08-22):19 条 phase/charge 主线转 eligible;
       // vulnerability 纵切(2026-08-22):7 条脆弱窗口主线再转 eligible。
-      hasLength(99),
+      hasLength(100),
     );
     expect(towers, hasLength(49));
     expect(
       towers.where((entry) => entry.status == Phase0aPreflightStatus.eligible),
       // charge/破招纵切(2026-08-22):5 条 phase/charge 塔层转 eligible;
       // vulnerability 纵切(2026-08-22):tower_32 再转 eligible。
-      hasLength(47),
+      hasLength(49),
     );
     final all = [...stages, ...towers];
     expect(all.map((entry) => entry.key).toSet(), hasLength(all.length));
@@ -48,8 +48,7 @@ void main() {
       ),
     );
 
-    // 硬断言:剩余 skip 精确为 3 条 = guardian 2 + unsupported_win_condition 1,
-    // 不得出现第三种原因。
+    // 护法与 surviveTicks 语义已迁移：Ch2–Ch21 + 49 层不得再 skip。
     final skipCounts = <String, int>{};
     for (final entry in all.where(
       (entry) => entry.status == Phase0aPreflightStatus.skipped,
@@ -60,19 +59,15 @@ void main() {
         ifAbsent: () => 1,
       );
     }
-    expect(skipCounts, {
-      'unsupported_guardian_ward': 2,
-      'unsupported_win_condition': 1,
-    });
+    expect(skipCounts, isEmpty);
   });
 
-  test('cycleVulnerability 守卫:base 必有且装配恒取 cycle-1 基础值', () async {
-    // 本批只验证 cycle-1 装配(mapper/preflight 无 cycle 参数)。此守卫钉:
+  test('cycleVulnerability 守卫:base 必有且装配支持 cycle-1/2', () async {
+    // 此守卫钉:
     // ① 所有带非空 cycleVulnerability 的生产 EnemyDef 必须同时带 base
     //    vulnerability(加载期 fromYaml 已校,此处对生产内容显式双保险,
     //    防未来放宽后 cycle 覆盖失去基础锚);
-    // ② 生产装配默认口径(不传 cycle 参数)解析出的承伤乘子恒等于
-    //    cycle-1 base 值、绝不解析成周目覆盖值——不声称 cycle2 已迁。
+    // ② 默认装配仍取 cycle-1 base，显式 cycle-2 取覆盖。
     final repo = await loadTestGameRepository();
     var cycleOverrideEnemies = 0;
     void checkTeam(List<EnemyDef> team, {required bool isTower}) {
@@ -85,21 +80,25 @@ void main() {
           reason: '${enemy.id} 配 cycleVulnerability 必须带 base vulnerability',
         );
         final baseMult = enemy.vulnerability!.outOfWindowDamageMult;
-        // 生产装配默认口径 = 恒 cycle-1:乘子解析成 base,不得解析成周目覆盖。
-        final snapshot = EnemyCombatantSnapshotAssembler.assembleAll([
+        final cycle1Snapshot = EnemyCombatantSnapshotAssembler.assembleAll([
           enemy,
         ], isTower: isTower).single;
         expect(
-          snapshot.vulnerabilityMult,
+          cycle1Snapshot.vulnerabilityMult,
           baseMult,
-          reason: '${enemy.id} 装配必须恒取 cycle-1 base 值',
+          reason: '${enemy.id} 默认装配必须取 cycle-1 base 值',
         );
         final cycle2 = enemy.cycleVulnerability[2]?.outOfWindowDamageMult;
-        if (cycle2 != null && cycle2 != baseMult) {
+        if (cycle2 != null) {
+          final cycle2Snapshot = EnemyCombatantSnapshotAssembler.assembleAll(
+            [enemy],
+            cycleIndex: 2,
+            isTower: isTower,
+          ).single;
           expect(
-            snapshot.vulnerabilityMult,
-            isNot(cycle2),
-            reason: '${enemy.id} 不得被误读成已迁 cycle2 覆盖',
+            cycle2Snapshot.vulnerabilityMult,
+            cycle2,
+            reason: '${enemy.id} 显式 cycle-2 必须取周目覆盖',
           );
         }
       }
