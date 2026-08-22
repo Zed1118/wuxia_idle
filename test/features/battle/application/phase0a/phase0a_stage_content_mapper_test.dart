@@ -250,6 +250,23 @@ void main() {
         (clear.effectRadius, clear.qiCost, clear.cooldownSeconds),
         (340, 50, 8),
       );
+      expect(
+        (
+          mapping.playerAdapter.gatherRingRadius,
+          mapping.playerAdapter.gatherEffectRadius,
+          mapping.playerAdapter.gatherQiCost,
+          mapping.playerAdapter.gatherCooldownSeconds,
+        ),
+        (120, 520, 25, 5),
+      );
+      expect(
+        (
+          mapping.playerAdapter.clearEffectRadius,
+          mapping.playerAdapter.clearQiCost,
+          mapping.playerAdapter.clearCooldownSeconds,
+        ),
+        (340, 50, 8),
+      );
     });
 
     test('Q/R skill id 缺失或空白时 loader fail-closed', () {

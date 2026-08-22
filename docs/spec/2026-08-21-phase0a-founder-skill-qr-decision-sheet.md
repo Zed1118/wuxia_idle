@@ -153,3 +153,6 @@ charge/破招的 24 条内容迁移必须排在这两批之后，并复用同一
   保证真实 `basicAttack`，缺失时 mapper fail-closed；相关 mapper fixture 已迁到
   仓库真实三流派入门普攻。普攻真气仍沿既有 `phase0a_arena.basic_qi_delta=0`
   口径，未随身份迁移擅改；与真实 SkillDef 的差异登记 BACKLOG #20 待拍板。
+- production mapper 构造 `Phase0aPlayerInputAdapter` 时，Q/R 的 slot、半径、真气与
+  冷却必填镜像也统一取 typed binding，不再读取 legacy player Q/R 数值；低层
+  无 binding fixture 的兼容字段仍保留，待配置治理批另行处理。

@@ -910,25 +910,29 @@ final class Phase0aStageContentMapper {
     required Phase0aNumericSkillBindings numericSkillBindings,
     required _Phase0aTacticalSkillBindings tacticalSkillBindings,
     required int attackQiDelta,
-  }) => Phase0aPlayerInputAdapter(
-    playerId: playerId,
-    attackRange: arena.playerAttackRange,
-    attackHalfArcRadians: arena.playerAttackHalfArcRadians,
-    attackCooldownSeconds: arena.playerAttackCooldownSeconds,
-    attackQiDelta: attackQiDelta,
-    gatherSlot: arena.gatherSlot,
-    gatherRingRadius: arena.gatherRingRadius,
-    gatherEffectRadius: arena.gatherEffectRadius,
-    gatherQiCost: arena.gatherQiCost,
-    gatherCooldownSeconds: arena.gatherCooldownSeconds,
-    clearSlot: arena.clearSlot,
-    clearEffectRadius: arena.clearEffectRadius,
-    clearQiCost: arena.clearQiCost,
-    clearCooldownSeconds: arena.clearCooldownSeconds,
-    gatherSkillBinding: tacticalSkillBindings.gather,
-    clearSkillBinding: tacticalSkillBindings.clear,
-    numericSkillBindings: numericSkillBindings,
-  );
+  }) {
+    final gather = tacticalSkillBindings.gather;
+    final clear = tacticalSkillBindings.clear;
+    return Phase0aPlayerInputAdapter(
+      playerId: playerId,
+      attackRange: arena.playerAttackRange,
+      attackHalfArcRadians: arena.playerAttackHalfArcRadians,
+      attackCooldownSeconds: arena.playerAttackCooldownSeconds,
+      attackQiDelta: attackQiDelta,
+      gatherSlot: gather.slot,
+      gatherRingRadius: gather.destinationRadius!,
+      gatherEffectRadius: gather.effectRadius,
+      gatherQiCost: gather.qiCost,
+      gatherCooldownSeconds: gather.cooldownSeconds,
+      clearSlot: clear.slot,
+      clearEffectRadius: clear.effectRadius,
+      clearQiCost: clear.qiCost,
+      clearCooldownSeconds: clear.cooldownSeconds,
+      gatherSkillBinding: gather,
+      clearSkillBinding: clear,
+      numericSkillBindings: numericSkillBindings,
+    );
+  }
 }
 
 final class _Phase0aTacticalSkillBindings {
