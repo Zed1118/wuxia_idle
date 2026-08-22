@@ -59,6 +59,22 @@ void main() {
         find.text(UiStrings.surviveConditionRemaining(80, 80)),
         findsOneWidget,
       );
+      final guardianLabelLanes = tester.widgetList<Transform>(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Transform &&
+              widget.key is ValueKey &&
+              (widget.key! as ValueKey).value.toString().startsWith(
+                'phase0a_guardian_label_lane_',
+              ),
+        ),
+      );
+      expect(guardianLabelLanes, hasLength(2));
+      final laneOffsets = guardianLabelLanes
+          .map((lane) => lane.transform.getTranslation().x)
+          .toList();
+      expect(laneOffsets.any((offset) => offset < 0), isTrue);
+      expect(laneOffsets.any((offset) => offset > 0), isTrue);
 
       var breakSent = false;
       var sawIntercept = false;

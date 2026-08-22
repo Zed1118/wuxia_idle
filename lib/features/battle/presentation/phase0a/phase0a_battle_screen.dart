@@ -596,6 +596,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     final scale = stage.depthScale(actor.position.y);
     final width = Phase0aPresentationTokens.actorWidth * scale;
     final height = Phase0aPresentationTokens.actorHeight * scale;
+    final guardianLabelOffsetX = _guardianLabelOffsetX(
+      controller.state.enemies,
+      actor,
+    );
     final guardianWardActive =
         actor.side == Phase0aSide.enemy &&
         actor.guardianWardMult != null &&
@@ -629,9 +633,37 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
           isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
           isHealthEmphasized: _hpEmphasisRemaining.containsKey(actor.id),
           isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
+          guardianLabelOffsetX: guardianLabelOffsetX,
         ),
       ),
     );
+  }
+
+  static double _guardianLabelOffsetX(
+    List<Phase0aActor> enemies,
+    Phase0aActor actor,
+  ) {
+    if (actor.side != Phase0aSide.enemy) return 0;
+    final guardianIds = <String>{
+      for (final boss in enemies) ...boss.guardianDefIds,
+    };
+    final guardians = enemies
+        .where(
+          (candidate) => guardianIds.any(
+            (id) => candidate.id == id || candidate.id.startsWith('${id}_w'),
+          ),
+        )
+        .toList();
+    final ordered = guardians.toList()
+      ..sort((a, b) {
+        final byY = a.position.y.compareTo(b.position.y);
+        return byY != 0 ? byY : a.id.compareTo(b.id);
+      });
+    final index = ordered.indexWhere((candidate) => candidate.id == actor.id);
+    if (index < 0) return 0;
+    final magnitude =
+        Phase0aPresentationTokens.guardianLabelLaneOffset * (index ~/ 2 + 1);
+    return index.isEven ? -magnitude : magnitude;
   }
 
   static Phase0aSkillSlot _slot(Phase0aArenaState state, String id) =>
@@ -760,6 +792,7 @@ class _ActorStandee extends StatelessWidget {
     required this.isHealthEmphasized,
     required this.isActionPulsing,
     required this.guardianWardActive,
+    required this.guardianLabelOffsetX,
   });
 
   final Phase0aActor actor;
@@ -768,6 +801,7 @@ class _ActorStandee extends StatelessWidget {
   final bool isHealthEmphasized;
   final bool isActionPulsing;
   final bool guardianWardActive;
+  final double guardianLabelOffsetX;
 
   @override
   Widget build(BuildContext context) {
@@ -801,6 +835,7 @@ class _ActorStandee extends StatelessWidget {
     );
     return Stack(
       alignment: Alignment.bottomCenter,
+      clipBehavior: Clip.none,
       children: [
         Positioned(
           bottom: 0,
@@ -900,48 +935,54 @@ class _ActorStandee extends StatelessWidget {
             left: 0,
             right: 0,
             top: 0,
-            child: _HitEmphasisFrame(
-              key: isHealthEmphasized
-                  ? ValueKey('phase0a_hp_emphasis_${actor.id}')
-                  : null,
-              active: isHealthEmphasized,
-              accentColor: accent,
-              idleFillColor: WuxiaUi.ink.withValues(
-                alpha: Phase0aPresentationTokens.enemyLabelIdleFillOpacity,
-              ),
-              idleBorderColor: accent.withValues(
-                alpha: Phase0aPresentationTokens.enemyLabelIdleBorderOpacity,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    visual.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: visual.isElite ? WuxiaUi.gold : WuxiaUi.paper,
-                      fontSize: Phase0aPresentationTokens.actorNameFontSize,
-                      fontWeight: FontWeight.w700,
-                      shadows: const [
-                        Shadow(color: WuxiaUi.ink, blurRadius: 3),
-                      ],
+            child: Transform.translate(
+              key: guardianLabelOffsetX == 0
+                  ? null
+                  : ValueKey('phase0a_guardian_label_lane_${actor.id}'),
+              offset: Offset(guardianLabelOffsetX, 0),
+              child: _HitEmphasisFrame(
+                key: isHealthEmphasized
+                    ? ValueKey('phase0a_hp_emphasis_${actor.id}')
+                    : null,
+                active: isHealthEmphasized,
+                accentColor: accent,
+                idleFillColor: WuxiaUi.ink.withValues(
+                  alpha: Phase0aPresentationTokens.enemyLabelIdleFillOpacity,
+                ),
+                idleBorderColor: accent.withValues(
+                  alpha: Phase0aPresentationTokens.enemyLabelIdleBorderOpacity,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      visual.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: visual.isElite ? WuxiaUi.gold : WuxiaUi.paper,
+                        fontSize: Phase0aPresentationTokens.actorNameFontSize,
+                        fontWeight: FontWeight.w700,
+                        shadows: const [
+                          Shadow(color: WuxiaUi.ink, blurRadius: 3),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(
-                    height: Phase0aPresentationTokens.actorLabelGap,
-                  ),
-                  SizedBox(
-                    width: Phase0aPresentationTokens.actorHpWidth,
-                    child: HpBar(
-                      key: ValueKey('phase0a_hp_${actor.id}'),
-                      current: actor.currentHealth,
-                      max: actor.maxHealth,
-                      height: Phase0aPresentationTokens.actorHpHeight,
-                      tightLabel: true,
+                    const SizedBox(
+                      height: Phase0aPresentationTokens.actorLabelGap,
                     ),
-                  ),
-                ],
+                    SizedBox(
+                      width: Phase0aPresentationTokens.actorHpWidth,
+                      child: HpBar(
+                        key: ValueKey('phase0a_hp_${actor.id}'),
+                        current: actor.currentHealth,
+                        max: actor.maxHealth,
+                        height: Phase0aPresentationTokens.actorHpHeight,
+                        tightLabel: true,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

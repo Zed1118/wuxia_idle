@@ -150,6 +150,9 @@ abstract final class Phase0aPresentationTokens {
   static const double guardianWardRingStrokeWidth = 2.4;
   static const double guardianWardRingInset = 8;
 
+  /// 护法贴近 Boss 时，姓名/血条左右错列的屏幕像素间距。
+  static const double guardianLabelLaneOffset = 58;
+
   /// Boss 视觉验收路由在破招前保留蓄力态，供截图与人工观察。
   static const double bossFixtureChargeHoldSeconds = 8;
   static const double bossFixtureGuardedHoldSeconds = 8;

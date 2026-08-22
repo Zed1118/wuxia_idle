@@ -4,7 +4,7 @@
 > **准入三态**:待拍板 / 已解锁未做 / 依赖锁死——「本次没空做」不准进(CLAUDE §7 打磨期原则)。
 > **维护**:每批收账随 PROGRESS 同步更新;销账即删行(git 留历史);总行数 ≤80。
 > 2026-07-19 建账:散落储备(PROGRESS 挂账段 / playability_phase2_backlog / 两份 audit followup)已归纳至此,旧文件原地归档留指针。
-> 2026-08-22 夜班收口事实：Phase 0A 预检保持 149/146/3、438 runs/0 timeout/maxDamage 2044；最终全量 5340/0。surviveTicks、guardian ward、Boss 蓄力/破招/脆弱窗口专属表现及六人/Windows Gate 仍为后续依赖，不在本夜班解锁。
+> 2026-08-22 最新收口事实：Phase 0A 已补齐 guardian ward/拦截/合击、surviveTicks、Boss 蓄力/破招/脆弱窗口表现及高周目 cycleVulnerability；预检 **149/149 eligible、0 skipped、447 runs/0 timeout/maxDamage 2044**，最终全量 **5366/0**。正式入口仍仅 Ch1 一周目灰度门且默认关闭；六人/Windows Gate与塔/扫荡/远征/断魂庄消费面迁移仍为路线 C 依赖。
 
 ## 一 · 待拍板(拍一个解锁一个)
 
@@ -17,7 +17,9 @@
 
 ## 二 · 已解锁可派
 
-（空——2026-08-18 二#7 B3 拍死删行:战斗终态=Phase 0A 单角色 ARPG 替换旧 3v3,旧屏调参项失去意义,全文见 git 历史）
+| # | 项 | 已具备 / 本批边界 |
+|---|---|---|
+| 1 | **Phase 0A 护法近身标签错列打磨** | 149/149 语义已齐；只调整护法姓名/血条左右车位与动态实机证据，不改坐标、AI、碰撞、数值或正式入口 |
 
 ## 三 · 依赖锁死(附再开条件)
 
@@ -29,4 +31,4 @@
 
 ## 四 · 方向级候选(大活·需专注会话+xhigh)
 
-- **旧 3v3 → Phase 0A 单角色 ARPG 替换收口**(登记 2026-08-18,codex 派单域我只跟不派):**2026-08-19 §7.4 ADR 拍板路线 C 终态替换·前置排程**(终态拍板见 `docs/dispatch/packages/2026-08-16_phase0a_qoder_production_wiring_followup.md`;拆除范围事实底座 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md`)。硬前提=0A 六人主观 Gate + Windows 实机过线(用户已拍暂挂)+ Phase 1 纵切成立 + 共享层安置/headless 结算内核替代先于表现层拆除。**4 子项已拍**(2026-08-19 同日调研拍板,全 α 推荐项):① headless 内核=**复用 0A reducer**(补玩家 bot adapter+快进循环,headless 与可玩共用同一模拟核;远征/断魂庄队伍续传语义需随之重设计,绑内容迁移 ADR)② 65 路由=**删路由·证据原地标注**(enum 条目随表现层拆除批删,截图留原位,归档文档加「路由已删·证据为历史快照」标注)③ 共享层=**拆分迁移**(enum_localizations/derived_stats/cycle_* 迁 lib/shared,战斗专属件留 battle 随引擎删)④ 空窗=**原子切换·零空窗**(0A 主线接线批与旧入口拆除批同次 merge)。调研事实详 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md` §8 拍板回声。另:122 关/塔 49 去留属内容迁移 ADR(独立决策);旧屏删后「第八阶段真机观感目检」随之定谳;GDD v1.26/CLAUDE v1.43 已加漂移指针,口径改写随执行批。**Phase 1 纵切/neutral/正式控制均成立(2026-08-20 Mac 工程口径)**；1500局真实新档画像已在案：灵巧Boss53%对刚猛/阴柔100%、新档数字槽全空、Q一次/R零次、p50 1.3–4.3秒。下一工程前置=真人三流派 Ch1 小样+起手技能可见性/Q-R behavior schema 拍板，再按 ADR 迁远征/断魂庄/扫荡；正式替换仍锁六人 Gate/Windows Gate/其余消费面迁移。
+- **旧 3v3 → Phase 0A 单角色 ARPG 替换收口**(登记 2026-08-18,codex 派单域我只跟不派):**2026-08-19 §7.4 ADR 拍板路线 C 终态替换·前置排程**(终态拍板见 `docs/dispatch/packages/2026-08-16_phase0a_qoder_production_wiring_followup.md`;拆除范围事实底座 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md`)。硬前提=0A 六人主观 Gate + Windows 实机过线(用户已拍暂挂)+ Phase 1 纵切成立 + 共享层安置/headless 结算内核替代先于表现层拆除。**4 子项已拍**(2026-08-19 同日调研拍板,全 α 推荐项):① headless 内核=**复用 0A reducer**② 65 路由=**删路由·证据原地标注**③ 共享层=**拆分迁移**④ 空窗=**原子切换·零空窗**。内容迁移 D1–D5 已拍：122 关/塔 49 全保留、远征/断魂庄单主角续传、扫荡 headless 直结、曲线继承+bot 胜率验收。**当前能力底座**=Phase 1 Ch1 全链、neutral snapshot、正式控制、Boss/guardian/survive/cycle 语义及 Ch2–Ch21+塔 **149/149** 预检均成立；**当前真实入口**仍仅 Ch1 一周目灰度门且默认关闭。下一工程序=护法标签表现收口→塔消费面纵切→扫荡 headless→远征/断魂庄单主角续传；正式替换仍锁六人 Gate/Windows Gate，且必须与旧入口拆除同批原子切换。
