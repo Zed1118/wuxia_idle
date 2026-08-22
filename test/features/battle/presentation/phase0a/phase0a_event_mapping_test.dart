@@ -115,6 +115,8 @@ void main() {
           partner: 'guardian_b',
           boss: 'boss',
           target: 'player',
+          mainGuardianDamage: 11,
+          mainGuardianCritical: false,
           totalDamage: 31,
           mainGuardianPosition: ArenaVector(20, 10),
           partnerPosition: ArenaVector(35, 18),

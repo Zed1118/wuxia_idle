@@ -3,6 +3,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
@@ -108,6 +109,40 @@ void main() async {
           contains('exactly one mapped player actor'),
         ),
       ),
+    );
+  });
+
+  test('guardian coop settles the main guardian attack result only', () {
+    final mainGuardian = mapping.combatants.last;
+    final settlement = Phase0aSettlementAdapter.fromMapping(
+      mapping: mapping,
+      outcome: Phase0aBattleOutcome.victory,
+      finalState: finalState(),
+      events: [
+        Phase0aGuardianCoopStrike(
+          seq: 1,
+          tick: 1,
+          mainGuardian: mainGuardian.actorId,
+          partner: 'compat_partner',
+          boss: 'compat_boss',
+          target: mapping.initialState.player.id,
+          mainGuardianDamage: 11,
+          mainGuardianCritical: true,
+          totalDamage: 31,
+          mainGuardianPosition: ArenaVector.zero,
+          partnerPosition: ArenaVector.zero,
+          bossPosition: ArenaVector.zero,
+          targetPosition: ArenaVector.zero,
+        ),
+      ],
+    );
+
+    expect(settlement.hadActions, isTrue);
+    expect(settlement.totalDamage, 11);
+    expect(settlement.criticalCount, 1);
+    expect(
+      settlement.damageByCharacterId[mainGuardian.snapshot.characterId],
+      11,
     );
   });
 

@@ -26,16 +26,17 @@
 - Q gather 每场一次且零伤，R clear 0 次；现有资源循环不支持长期固定 Q/R 战术印。
 
 ## 最新验证
-0. 结算玩家身份守卫：终态玩家 id/side 必须与映射一致，映射恰有一个玩家 combatant；玩家缺失不再静默回填 HP=0 后误加伤势。结算全消费面 **59/59**、两条守卫直测所在文件 **4/4**、analyze 0、diff check 通过。断魂庄恒定 seed 差异登记 BACKLOG #21，未改随机性口径。
-1. Q/R adapter 构造收口：production mapper 的 slot/radius/qi/cooldown 必填镜像改由真实 typed binding 派生，不再读取 legacy player Q/R 数值；`numbers.yaml` 与低层 fixture 均未改。mapper + preflight + Route C 契约 **28/28**，preflight **149/149 eligible、447 runs、0 timeout、maxDamage 2044**，analyze 0、diff check 通过。
-2. production basic 收口：五消费面 assembler 保证真实 basic，mapper 缺 basic fail-closed；9 个 mapper fixture 已迁仓库真实技能，最后一个 synthetic `_moveSkill` 删除。production preflight **149/149 eligible、447 runs、0 timeout、maxDamage 2044**；mapper 全消费面 **82/82**、装配器/Route C 契约 **8/8**、analyze 0、最终全量 **4224/4224**、diff check 通过。真实 basic `qiDelta=20` 与 Phase 0A adapter 配置 0 的差异登记 BACKLOG #20，未改值。
-3. Q/R typed binding 收口：loader 拒绝 Q/R 任一缺失或空白；legacy interrupt/qi-drain fail-closed 分支已有直接回归。随后 DeepSeek 与主 agent 双重可达性审计证明 mapper 双空逃生口及 synthetic clear 分支对 production、测试与 debug fixture 全部不可达，已删除并把 mapper 内 Q/R 类型收紧为非空；低层隔离 Adapter fixture 兼容不变。前批 targeted **42/42**、最终全量 **4223/4223**；删除批 production preflight **149/149 eligible、447 runs、0 timeout、maxDamage 2044**，联合 targeted/route contract **43/43**、analyze 0、diff check 通过。
-4. Route C 后加固批：Boss 双视口反馈链与 cycle-2 vulnerability 真实伤害覆盖 targeted **15/15**；全量 **4221/4221**、`flutter analyze --no-pub lib test tool` 0 issue、diff check 通过。Route C Gate commit `597a243b` 的 Mac/Windows 矩阵仍各 **6/6 PASS**；新 commit 不沿用该二进制 Gate 冒签。
+0. 护法合击战后统计兼容：旧 runner 的总伤害既定为双方完整 actionLog，普通敌伤计入不是 bug；Phase 0A 合击无伴随 HitLanded 才是唯一漏项。事件现保存主护法单次 damage/critical，settlement 按历史 `attackResult=r1` 精确恢复统计；双护法合计仍只供实际扣血/VFX。targeted **186/186**、analyze 0、diff check 通过；父提交全量 **4226/4226**、macOS release 174.1MB 构建成功。
+1. 结算玩家身份守卫：终态玩家 id/side 必须与映射一致，映射恰有一个玩家 combatant；玩家缺失不再静默回填 HP=0 后误加伤势。结算全消费面 **59/59**、两条守卫直测所在文件 **4/4**、analyze 0、diff check 通过。断魂庄恒定 seed 差异登记 BACKLOG #21，未改随机性口径。
+2. Q/R adapter 构造收口：production mapper 的 slot/radius/qi/cooldown 必填镜像改由真实 typed binding 派生，不再读取 legacy player Q/R 数值；`numbers.yaml` 与低层 fixture 均未改。mapper + preflight + Route C 契约 **28/28**，preflight **149/149 eligible、447 runs、0 timeout、maxDamage 2044**，analyze 0、diff check 通过。
+3. production basic 收口：五消费面 assembler 保证真实 basic，mapper 缺 basic fail-closed；9 个 mapper fixture 已迁仓库真实技能，最后一个 synthetic `_moveSkill` 删除。production preflight **149/149 eligible、447 runs、0 timeout、maxDamage 2044**；mapper 全消费面 **82/82**、装配器/Route C 契约 **8/8**、analyze 0、最终全量 **4224/4224**、diff check 通过。真实 basic `qiDelta=20` 与 Phase 0A adapter 配置 0 的差异登记 BACKLOG #20，未改值。
+4. Q/R typed binding 收口：loader 拒绝 Q/R 任一缺失或空白；legacy interrupt/qi-drain fail-closed 分支已有直接回归。随后 DeepSeek 与主 agent 双重可达性审计证明 mapper 双空逃生口及 synthetic clear 分支对 production、测试与 debug fixture 全部不可达，已删除并把 mapper 内 Q/R 类型收紧为非空；低层隔离 Adapter fixture 兼容不变。前批 targeted **42/42**、最终全量 **4223/4223**；删除批 production preflight **149/149 eligible、447 runs、0 timeout、maxDamage 2044**，联合 targeted/route contract **43/43**、analyze 0、diff check 通过。
+5. Route C 后加固批：Boss 双视口反馈链与 cycle-2 vulnerability 真实伤害覆盖 targeted **15/15**；全量 **4221/4221**、`flutter analyze --no-pub lib test tool` 0 issue、diff check 通过。Route C Gate commit `597a243b` 的 Mac/Windows 矩阵仍各 **6/6 PASS**；新 commit 不沿用该二进制 Gate 冒签。
 
-5. 08-21 起手 powerSkill：旧行为红测命中；focused **23/23**、`flutter analyze` 0 issue；1500 局 evidence 全部完成；最终全量 **5278/0**。
-6. 08-21 玩家 neutral builder：逐字段/roster/主线真实 Isar/远征/断魂庄 targeted **83/83**；最终全量 **5265/0**。
-7. 08-21 生产预检：10-seed **3420 runs** = 555 胜/2865 负/0 timeout，最大单击 2056；最终全量 **5261/0**。
-8. 视觉证据：`build/visual_acceptance/phase0a_0821_closeout/`（gitignored）含双视口 PNG/log/manifest，两路均为原生 window-id 截图。
+6. 08-21 起手 powerSkill：旧行为红测命中；focused **23/23**、`flutter analyze` 0 issue；1500 局 evidence 全部完成；最终全量 **5278/0**。
+7. 08-21 玩家 neutral builder：逐字段/roster/主线真实 Isar/远征/断魂庄 targeted **83/83**；最终全量 **5265/0**。
+8. 08-21 生产预检：10-seed **3420 runs** = 555 胜/2865 负/0 timeout，最大单击 2056；最终全量 **5261/0**。
+9. 视觉证据：`build/visual_acceptance/phase0a_0821_closeout/`（gitignored）含双视口 PNG/log/manifest，两路均为原生 window-id 截图。
 
 ## 下一步任务（需人类判断优先）
 

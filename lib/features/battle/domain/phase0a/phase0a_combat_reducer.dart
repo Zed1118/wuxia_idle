@@ -258,9 +258,11 @@ Phase0aStepResult reducePhase0aTick({
             defenderCharging: player.chargingCast != null,
             defenderWardMult: 1.0,
           );
-          final totalDamage =
-              (mainHit.isHit ? _checkedDamage(mainHit) : 0) +
-              (partnerHit.isHit ? _checkedDamage(partnerHit) : 0);
+          final mainDamage = mainHit.isHit ? _checkedDamage(mainHit) : 0;
+          final partnerDamage = partnerHit.isHit
+              ? _checkedDamage(partnerHit)
+              : 0;
+          final totalDamage = mainDamage + partnerDamage;
           final remaining = math.max(0, player.currentHealth - totalDamage);
           events.add(
             Phase0aGuardianCoopStrike(
@@ -270,6 +272,8 @@ Phase0aStepResult reducePhase0aTick({
               partner: coop.partner.id,
               boss: coop.boss.id,
               target: player.id,
+              mainGuardianDamage: mainDamage,
+              mainGuardianCritical: mainHit.isHit && mainHit.isCritical,
               totalDamage: totalDamage,
               mainGuardianPosition: actor.position,
               partnerPosition: coop.partner.position,

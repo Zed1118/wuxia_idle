@@ -215,6 +215,8 @@ final class Phase0aGuardianCoopStrike extends Phase0aEvent {
     required this.partner,
     required this.boss,
     required this.target,
+    required this.mainGuardianDamage,
+    required this.mainGuardianCritical,
     required this.totalDamage,
     required this.mainGuardianPosition,
     required this.partnerPosition,
@@ -226,6 +228,12 @@ final class Phase0aGuardianCoopStrike extends Phase0aEvent {
   final String partner;
   final String boss;
   final String target;
+
+  /// 旧 runner 的战后统计只消费主发起护法的 attackResult；保留该兼容事实。
+  final int mainGuardianDamage;
+  final bool mainGuardianCritical;
+
+  /// 双护法对玩家的实际合计扣血，供战斗表现展示，不替代兼容统计字段。
   final int totalDamage;
   final ArenaVector mainGuardianPosition;
   final ArenaVector partnerPosition;
@@ -241,6 +249,8 @@ final class Phase0aGuardianCoopStrike extends Phase0aEvent {
       other.partner == partner &&
       other.boss == boss &&
       other.target == target &&
+      other.mainGuardianDamage == mainGuardianDamage &&
+      other.mainGuardianCritical == mainGuardianCritical &&
       other.totalDamage == totalDamage &&
       other.mainGuardianPosition == mainGuardianPosition &&
       other.partnerPosition == partnerPosition &&
@@ -255,6 +265,8 @@ final class Phase0aGuardianCoopStrike extends Phase0aEvent {
     partner,
     boss,
     target,
+    mainGuardianDamage,
+    mainGuardianCritical,
     totalDamage,
     mainGuardianPosition,
     partnerPosition,

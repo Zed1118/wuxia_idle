@@ -148,6 +148,8 @@ void main() {
     expect(event.mainGuardian, 'g_a');
     expect(event.partner, 'g_b');
     expect(event.boss, 'boss');
+    expect(event.mainGuardianDamage, 11);
+    expect(event.mainGuardianCritical, isFalse);
     expect(event.totalDamage, 24);
     expect(result.state.player.currentHealth, 76);
     expect(result.state.enemies.firstWhere((e) => e.id == 'g_a').qiCurrent, 23);
