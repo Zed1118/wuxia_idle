@@ -81,7 +81,7 @@ final class Phase0aHeadlessRunner {
     required Phase0aPlayerBotAdapter bot,
     required double deltaSeconds,
     required int maxTicks,
-    int yieldEveryTicks = 32,
+    required int yieldEveryTicks,
   }) async {
     _validate(deltaSeconds: deltaSeconds, maxTicks: maxTicks);
     if (yieldEveryTicks <= 0) {

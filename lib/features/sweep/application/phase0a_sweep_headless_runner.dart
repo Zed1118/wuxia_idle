@@ -43,6 +43,8 @@ final class Phase0aSweepHeadlessRunner {
   final NumbersConfig numbers;
   final Random rng;
 
+  static const int _uiYieldEveryTicks = 32;
+
   Future<Phase0aSweepRunResult> runMainline({
     required StageDef stage,
     required int cycleIndex,
@@ -87,6 +89,7 @@ final class Phase0aSweepHeadlessRunner {
       bot: Phase0aPlayerBotAdapter(playerAdapter: mapping.playerAdapter),
       deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
       maxTicks: numbers.phase0aArena.maxSimulationTicks,
+      yieldEveryTicks: _uiYieldEveryTicks,
     );
     if (result.timedOut) {
       return const Phase0aSweepRunResult.timeout();
