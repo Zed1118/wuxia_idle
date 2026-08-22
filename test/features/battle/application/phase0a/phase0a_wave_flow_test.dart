@@ -104,6 +104,7 @@ Phase0aArenaState makeState({
   Phase0aActor? player,
   List<Phase0aActor>? enemies,
   List<Phase0aSkillSlot>? skillSlots,
+  Phase0aWinCondition? winCondition,
 }) {
   return Phase0aArenaState(
     tick: 0,
@@ -111,6 +112,7 @@ Phase0aArenaState makeState({
     player: player ?? makePlayer(),
     enemies: enemies ?? const [],
     skillSlots: skillSlots ?? defaultSkillSlots,
+    winCondition: winCondition,
   );
 }
 
@@ -166,6 +168,62 @@ void expectSeqContiguous(List<Phase0aEvent> events, int firstSeq) {
 
 void main() {
   group('单波胜利与终局唯一', () {
+    test('surviveTicks 达阈值且敌人仍存活 → victory,不发 wave_cleared', () {
+      final enemy = makeEnemy(
+        id: 'e1',
+        position: const ArenaVector(50, 0),
+        currentHealth: 1000,
+      );
+      final flow = makeFlow(
+        initialState: makeState(
+          enemies: [enemy],
+          winCondition: const Phase0aWinCondition.surviveTicks(1),
+        ),
+        waves: [
+          Phase0aWave(enemies: [enemy]),
+        ],
+      );
+      expect(flow.state.winCondition?.surviveTicksRequired, 1);
+
+      final events = flow.advance(
+        deltaSeconds: 0.1,
+        command: const Phase0aPlayerCommand(),
+      );
+      expect(flow.outcome, Phase0aBattleOutcome.victory);
+      expect(flow.state.enemies, isNotEmpty);
+      expect(flow.state.tick, 1);
+      expect(flow.state.surviveTicksRemaining, 0);
+      expect(events.whereType<Phase0aWaveCleared>(), isEmpty);
+      expect(events.last, isA<Phase0aBattleVictory>());
+    });
+
+    test('surviveTicks 同拍玩家死亡优先 → defeat', () {
+      final enemy = makeEnemy(
+        id: 'e1',
+        position: const ArenaVector(50, 0),
+        currentHealth: 1000,
+      );
+      final flow = makeFlow(
+        initialState: makeState(
+          player: makePlayer(currentHealth: 10),
+          enemies: [enemy],
+          winCondition: const Phase0aWinCondition.surviveTicks(1),
+        ),
+        waves: [
+          Phase0aWave(enemies: [enemy]),
+        ],
+      );
+
+      final events = flow.advance(
+        deltaSeconds: 0.1,
+        command: const Phase0aPlayerCommand(),
+      );
+
+      expect(flow.outcome, Phase0aBattleOutcome.defeat);
+      expect(events.last, isA<Phase0aBattleDefeat>());
+      expect(events.whereType<Phase0aBattleVictory>(), isEmpty);
+    });
+
     test('首个 advance 以 wave_started 开头,末敌死亡拍 cleared→victory seq 连续', () {
       final flow = makeFlow(
         initialState: makeState(

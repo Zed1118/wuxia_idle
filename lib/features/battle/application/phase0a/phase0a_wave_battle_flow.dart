@@ -18,6 +18,8 @@ import 'phase0a_player_input_adapter.dart';
 ///   不外泄。
 /// - 每拍 reducer 结束后唯一派生终局:玩家死亡优先 defeat(病态双方同时
 ///   为空也按 defeat),玩家存活且当前波清空才 cleared/推进/胜利。
+/// - `surviveTicks` 在 reducer 拍结束后判定:玩家同拍死亡优先失败;
+///   达到阈值且仍存活即 victory,不要求敌方清空。
 /// - 所有 flow 自发事件消耗的 seq 都持久化回 state(终局事件也不例外);
 ///   终局后 advance 返回空事件、不推进 tick/seq、不调用 adapter/resolver。
 /// - 换波只替换 enemies:玩家 HP/真气/普攻 CD、技能槽 CD/可用态、tick/seq
@@ -31,6 +33,7 @@ final class Phase0aWaveBattleFlow {
     required List<Phase0aWave> waves,
   }) : _session = session,
        _waves = _checkedWaves(waves, session.state) {
+    _winCondition = session.state.winCondition;
     // 首态防御性副本:外部 list(敌人/技能槽)构造后 mutation 不得污染
     // flow;敌人直接采用首波的已校验不可修改副本(内容一致性上面已验)。
     _rebuildSession(
@@ -40,12 +43,14 @@ final class Phase0aWaveBattleFlow {
         player: session.state.player,
         enemies: _waves.first.enemies,
         skillSlots: List.unmodifiable(List.of(session.state.skillSlots)),
+        winCondition: session.state.winCondition,
       ),
     );
   }
 
   Phase0aCombatSession _session;
   final List<Phase0aWave> _waves;
+  late final Phase0aWinCondition? _winCondition;
 
   /// 当前波 0-based 内部游标(事件 payload 一律换算 1-based,不外泄)。
   int _waveCursor = 0;
@@ -86,7 +91,8 @@ final class Phase0aWaveBattleFlow {
       rethrow;
     }
 
-    final resolved = _session.state;
+    final resolved = _withWinCondition(_session.state);
+    _rebuildSession(resolved);
     final tick = resolved.tick;
     var nextSeq = resolved.nextSeq;
     final events = <Phase0aEvent>[];
@@ -107,6 +113,11 @@ final class Phase0aWaveBattleFlow {
       // 玩家死亡优先:病态双方同时为空也按 defeat,禁止双终局。
       _outcome = Phase0aBattleOutcome.defeat;
       events.add(Phase0aBattleDefeat(seq: nextSeq, tick: tick));
+      nextSeq += 1;
+      _rebuildSession(_withNextSeq(resolved, nextSeq));
+    } else if (_surviveTicksReached(resolved)) {
+      _outcome = Phase0aBattleOutcome.victory;
+      events.add(Phase0aBattleVictory(seq: nextSeq, tick: tick));
       nextSeq += 1;
       _rebuildSession(_withNextSeq(resolved, nextSeq));
     } else if (resolved.enemies.isEmpty) {
@@ -142,6 +153,7 @@ final class Phase0aWaveBattleFlow {
             player: resolved.player,
             enemies: _waves[_waveCursor].enemies,
             skillSlots: resolved.skillSlots,
+            winCondition: resolved.winCondition,
           ),
         );
       }
@@ -168,7 +180,26 @@ final class Phase0aWaveBattleFlow {
       player: state.player,
       enemies: state.enemies,
       skillSlots: state.skillSlots,
+      winCondition: state.winCondition,
     );
+  }
+
+  Phase0aArenaState _withWinCondition(Phase0aArenaState state) {
+    return Phase0aArenaState(
+      tick: state.tick,
+      nextSeq: state.nextSeq,
+      player: state.player,
+      enemies: state.enemies,
+      skillSlots: state.skillSlots,
+      winCondition: _winCondition,
+    );
+  }
+
+  static bool _surviveTicksReached(Phase0aArenaState state) {
+    final condition = state.winCondition;
+    return condition?.isSurviveTicks == true &&
+        state.surviveTicksRemaining == 0 &&
+        state.player.isAlive;
   }
 
   /// 构造期 fail-fast:波次非空、首态玩家 side、首态 enemies 与首波一致、

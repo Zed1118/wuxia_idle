@@ -2,6 +2,7 @@ import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/defs/stage_def.dart';
+import '../../../../data/defs/stage_win_condition.dart';
 import '../../../../data/defs/tower_floor_def.dart';
 import '../../../../data/game_repository.dart';
 import '../../../../data/numbers_config.dart';
@@ -35,6 +36,7 @@ final class Phase0aStageMapping {
     required this.initialState,
     required this.waves,
     required this.combatants,
+    required this.winCondition,
     required this.moveBindings,
     required this.playerAdapter,
     required this.enemyAiAdapter,
@@ -44,6 +46,7 @@ final class Phase0aStageMapping {
   final Phase0aArenaState initialState;
   final List<Phase0aWave> waves;
   final List<Phase0aCombatantInput> combatants;
+  final Phase0aWinCondition? winCondition;
   final Map<Phase0aDamageKind, SkillDef?> moveBindings;
   final Phase0aPlayerInputAdapter playerAdapter;
   final Phase0aEnemyAiAdapter enemyAiAdapter;
@@ -71,6 +74,7 @@ final class Phase0aStageContentMapper {
     playerSnapshot: playerSnapshot,
     numbers: numbers,
     playerId: playerId,
+    winCondition: _mapWinCondition(stage.winCondition),
   );
 
   /// 把一层生产塔定义装配到与主线相同的 Phase 0A 输入。这里只做 D1
@@ -88,6 +92,7 @@ final class Phase0aStageContentMapper {
     playerSnapshot: playerSnapshot,
     numbers: numbers,
     playerId: playerId,
+    winCondition: null,
   );
 
   static Phase0aStageMapping _mapContent({
@@ -97,6 +102,7 @@ final class Phase0aStageContentMapper {
     required CombatantSnapshot playerSnapshot,
     required NumbersConfig numbers,
     required String playerId,
+    required Phase0aWinCondition? winCondition,
   }) {
     final arena = numbers.phase0aArena;
     if (arena.isEmpty) {
@@ -213,6 +219,7 @@ final class Phase0aStageContentMapper {
           tacticalSkillBindings,
           playerSnapshot.currentQi,
         ),
+        winCondition: winCondition,
       ),
       waves: [Phase0aWave(enemies: waveEnemies)],
       combatants: List.unmodifiable(combatants),
@@ -237,7 +244,18 @@ final class Phase0aStageContentMapper {
         basicQiDeltaByActor: Map.unmodifiable(enemyBasicQiDeltaByActor),
       ),
       numericSkillBindings: numericSkillBindings,
+      winCondition: winCondition,
     );
+  }
+
+  static Phase0aWinCondition? _mapWinCondition(StageWinCondition? condition) {
+    if (condition == null) return null;
+    return switch (condition.type) {
+      StageWinConditionType.defeatAll => const Phase0aWinCondition.defeatAll(),
+      StageWinConditionType.surviveTicks => Phase0aWinCondition.surviveTicks(
+        condition.surviveTicksRequired!,
+      ),
+    };
   }
 
   /// 敌人空间位:右侧纵深固定,纵向按 slot 数均匀展开(确定性,无 RNG)。

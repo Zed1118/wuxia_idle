@@ -430,6 +430,44 @@ final class Phase0aSkillSlot {
 ///
 /// [enemies] 只保存存活单位;被击败者移除,保证其后不再出现
 /// 以其为 actor/target 的事件。
+/// Phase 0A 的终局条件值对象。
+///
+/// 这是 domain 对生产 [StageWinCondition] 的无依赖投影：domain 不直接
+/// 依赖 data 层，application mapper 负责把配置映射到这里。缺省为 null，
+/// 继续使用既有 defeatAll 语义。
+enum Phase0aWinConditionType { defeatAll, surviveTicks }
+
+final class Phase0aWinCondition {
+  const Phase0aWinCondition({required this.type, this.surviveTicksRequired})
+    : assert(
+        type == Phase0aWinConditionType.defeatAll ||
+            (surviveTicksRequired != null && surviveTicksRequired > 0),
+      );
+
+  const Phase0aWinCondition.defeatAll()
+    : type = Phase0aWinConditionType.defeatAll,
+      surviveTicksRequired = null;
+
+  const Phase0aWinCondition.surviveTicks(int ticks)
+    : assert(ticks > 0),
+      type = Phase0aWinConditionType.surviveTicks,
+      surviveTicksRequired = ticks;
+
+  final Phase0aWinConditionType type;
+  final int? surviveTicksRequired;
+
+  bool get isSurviveTicks => type == Phase0aWinConditionType.surviveTicks;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aWinCondition &&
+      other.type == type &&
+      other.surviveTicksRequired == surviveTicksRequired;
+
+  @override
+  int get hashCode => Object.hash(type, surviveTicksRequired);
+}
+
 final class Phase0aArenaState {
   const Phase0aArenaState({
     required this.tick,
@@ -437,6 +475,7 @@ final class Phase0aArenaState {
     required this.player,
     required this.enemies,
     required this.skillSlots,
+    this.winCondition,
   });
 
   /// 模拟核逻辑拍,reducer 每次结算 +1。
@@ -449,6 +488,16 @@ final class Phase0aArenaState {
   final List<Phase0aActor> enemies;
   final List<Phase0aSkillSlot> skillSlots;
 
+  /// 当前关卡终局条件；null 与 [Phase0aWinConditionType.defeatAll] 等价。
+  final Phase0aWinCondition? winCondition;
+
+  /// 给未来表现层读取的剩余生存拍数，不改变模拟规则。
+  int? get surviveTicksRemaining {
+    final required = winCondition?.surviveTicksRequired;
+    if (required == null) return null;
+    return required - tick > 0 ? required - tick : 0;
+  }
+
   @override
   bool operator ==(Object other) =>
       other is Phase0aArenaState &&
@@ -456,7 +505,8 @@ final class Phase0aArenaState {
       other.nextSeq == nextSeq &&
       other.player == player &&
       _listEquals(other.enemies, enemies) &&
-      _listEquals(other.skillSlots, skillSlots);
+      _listEquals(other.skillSlots, skillSlots) &&
+      other.winCondition == winCondition;
 
   @override
   int get hashCode => Object.hash(
@@ -465,5 +515,6 @@ final class Phase0aArenaState {
     player,
     _listHash(enemies),
     _listHash(skillSlots),
+    winCondition,
   );
 }
