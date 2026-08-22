@@ -64,7 +64,7 @@ void main() {
     }
   });
 
-  test('远征敌队规模不超 3(3v3 装配截断守卫)', () {
+  test('单角色远征每个遭遇的敌人规模不超 3', () {
     final repo = GameRepository.instance;
     final config = repo.expeditionConfig!;
     for (final team in [
@@ -74,7 +74,7 @@ void main() {
       expect(
         team.enemies.length,
         lessThanOrEqualTo(3),
-        reason: '${team.id}: 3v3 装配最多取前 3(buildEnemyTeam 截断),超员即静默丢怪',
+        reason: '${team.id}: Phase 0A 遭遇最多装配 3 名敌人，超员会丢失内容',
       );
     }
   });

@@ -139,8 +139,8 @@ class GauntletService {
     required int supplyCap,
     int cycleIndex = 1,
   }) async {
-    if (characterIds.isEmpty || characterIds.length > 3) {
-      throw StateError('断魂庄入场：队伍须 1-3 人，got ${characterIds.length}');
+    if (characterIds.length != 1) {
+      throw StateError('断魂庄入场：路线 C 只允许单人，got ${characterIds.length}');
     }
     if (cycleIndex < 1) {
       throw StateError('断魂庄入场：周目须 ≥1，got $cycleIndex');

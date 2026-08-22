@@ -850,7 +850,7 @@ final class Phase0aStageContentMapper {
       final loadoutSlot = CombatantSkillLoadout.numericSlots[hotkey - 1];
       final skill = player.skillLoadout.skillFor(loadoutSlot);
       // 正式控制已拍板「鼠标左键 = 普攻」；autoFill 仍可能把 normalAttack
-      // 放进 main1/2（旧 3v3 兼容语义），Phase 0A 数字栏必须排除，避免同拍
+      // 放进 main1/2（历史技能槽语义），Phase 0A 数字栏必须排除，避免同拍
       // 鼠标 basic + 数字 basic 双入口重复结算。
       if (skill == null || skill.type == SkillType.normalAttack) return null;
       return Phase0aNumericSkillBinding(

@@ -163,4 +163,24 @@ void main() {
       reason: '可执行工具不得再启动已删除的 3v3 route:\n${violations.join('\n')}',
     );
   });
+
+  test('远征与断魂庄只能新建单角色会话', () {
+    const serviceFiles = [
+      'lib/features/expedition/application/expedition_service.dart',
+      'lib/features/boss_gauntlet/application/gauntlet_service.dart',
+    ];
+    for (final path in serviceFiles) {
+      final source = File(path).readAsStringSync();
+      expect(
+        source,
+        contains('characterIds.length != 1'),
+        reason: '$path 必须在应用服务边界拒绝新建多人会话',
+      );
+      expect(
+        source,
+        isNot(contains('characterIds.length > 3')),
+        reason: '$path 不得保留 1-3 人生产入口',
+      );
+    }
+  });
 }

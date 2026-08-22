@@ -5,9 +5,11 @@
 
 ## 已完成前置
 
-- 主线、爬塔、扫荡、远征、断魂庄五个生产消费面均永久走 Phase 0A。
+- 主线、爬塔、扫荡、远征、断魂庄五个生产消费面均永久走 Phase 0A；远征与
+  断魂庄的新建入口已在 UI 和应用服务边界锁为恰好一名角色。
 - 五个灰度门、旧 BattleScreen Host、模块旧 runner 与多人回退均已删除。
-- 历史多人远征/断魂庄会话在入口恢复时按既定事务安全退役；奖励选择态保留。
+- 历史多人远征/断魂庄会话仅作为旧存档兼容在入口恢复时按既定事务安全退役；
+  奖励选择态保留，现行生产 API 不再能制造新的多人会话。
 - HP/真气、补给、阶段、失败、恢复、奖励与门票事务继续由原应用服务持久化。
 - `numbersConfigProvider` / `dropServiceProvider` 已迁至 `combat_shared`；生产消费面负向守卫见
   `test/route_c/phase0a_production_route_contract_test.dart`。

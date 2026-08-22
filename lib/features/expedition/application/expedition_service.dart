@@ -34,7 +34,7 @@ class ExpeditionService {
   /// 派遣入场：单 `writeTxn` 校验占用 → 建 [ExpeditionRun] 快照 → `serial++` → put。
   /// 返回落库的 run id；任一校验不过抛 [StateError]，事务回滚。
   ///
-  /// 校验（§4.1）：队伍 1-3 人、无重复、不含祖师、成员未被其它活动占用、成员已修
+  /// 校验（路线 C）：恰好 1 人、不含祖师、成员未被其它活动占用、成员已修
   /// 主修；每存档最多一条 active 远征（§8.3）。成员生命/真气不在派遣期计算——
   /// `currentNode==0` 即「未开战」，B2.2 首战按 `BattleCharacter.fromCharacter`
   /// 满血起，之后写回快照 HP/qi（跨节点继承）。
@@ -47,8 +47,8 @@ class ExpeditionService {
     int cycleIndex = 1,
     DateTime? now,
   }) async {
-    if (characterIds.isEmpty || characterIds.length > 3) {
-      throw StateError('远征派遣：队伍须 1-3 人，got ${characterIds.length}');
+    if (characterIds.length != 1) {
+      throw StateError('远征派遣：路线 C 只允许单人，got ${characterIds.length}');
     }
     if (characterIds.toSet().length != characterIds.length) {
       throw StateError('远征派遣：队伍含重复角色');

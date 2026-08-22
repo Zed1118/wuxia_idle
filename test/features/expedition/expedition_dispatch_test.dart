@@ -136,13 +136,14 @@ void main() {
     );
   });
 
-  test('队伍超 3 人 → 抛错', () async {
-    final ids = [for (var i = 0; i < 4; i++) await putDisciple(mainTech: 5)];
+  test('路线 C 多于 1 人 → 抛错且不建新会话', () async {
+    final ids = [for (var i = 0; i < 2; i++) await putDisciple(mainTech: 5)];
     final svc = ExpeditionService(IsarSetup.instance);
     await expectLater(
       svc.dispatch(characterIds: ids, policy: ExpeditionPolicy.yanJingCaiYao),
       throwsStateError,
     );
+    expect(await IsarSetup.instance.expeditionRuns.count(), 0);
   });
 
   test('队伍含重复角色 → 抛错', () async {

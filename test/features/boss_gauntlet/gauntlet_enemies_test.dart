@@ -53,7 +53,7 @@ void main() {
         expect(
           team.length,
           lessThanOrEqualTo(3),
-          reason: '${stage.enemyTeamId}: 3v3 装配最多取前 3,超员即静默丢怪',
+          reason: '${stage.enemyTeamId}: Phase 0A 单角色遭遇最多装配 3 名敌人',
         );
       }
     });

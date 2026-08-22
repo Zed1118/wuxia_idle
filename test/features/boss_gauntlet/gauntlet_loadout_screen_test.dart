@@ -14,7 +14,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 import '../../support/test_data.dart';
 
-/// C2.5 断魂庄装载屏（§7.1）：帖库存 / 三关 Boss + 推荐境界 / 择人 1-3 / 补给装载 /
+/// C2.5 断魂庄装载屏（§7.1）：帖库存 / 三关 Boss + 推荐境界 / 单人选择 / 补给装载 /
 /// 持帖入庄。1280×720 与 1440×900 一屏无溢出。config 用真 GameRepository（三敌名真值）。
 Character _char(
   int id,
@@ -151,6 +151,22 @@ void main() {
 
     await tester.tap(find.text('楚河')); // 占用者
     await tester.pumpAndSettle();
+    expect(find.text(UiStrings.gauntletSelectedCount(1)), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('路线 C 装载屏只允许选一名弟子', (tester) async {
+    final selectable = [
+      _cand(_char(1, '沈青', school: TechniqueSchool.lingQiao)),
+      _cand(_char(2, '楚河', school: TechniqueSchool.gangMeng)),
+    ];
+    await _pump(tester, const Size(1280, 720), candidates: selectable);
+
+    await tester.tap(find.text('沈青'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('楚河'));
+    await tester.pumpAndSettle();
+
     expect(find.text(UiStrings.gauntletSelectedCount(1)), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

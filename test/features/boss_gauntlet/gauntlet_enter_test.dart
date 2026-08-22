@@ -134,14 +134,16 @@ void main() {
     );
   });
 
-  test('队伍超 3 人 → 抛错', () async {
-    final ids = [for (var i = 0; i < 4; i++) await putDisciple(mainTech: 5)];
+  test('路线 C 多于 1 人 → 抛错且不扣帖、不建新会话', () async {
+    final ids = [for (var i = 0; i < 2; i++) await putDisciple(mainTech: 5)];
     await putInventory('item_duanhuntie', ItemType.ticket, 1);
     final svc = GauntletService(IsarSetup.instance);
     await expectLater(
       svc.enter(characterIds: ids, supplyCap: 3),
       throwsStateError,
     );
+    expect(await qtyOf('item_duanhuntie'), 1);
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
   });
 
   test('队伍含重复角色 → 抛错', () async {

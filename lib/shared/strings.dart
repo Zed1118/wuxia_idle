@@ -3861,10 +3861,9 @@ class UiStrings {
   static const String expeditionBaicaoSubtitle = '整队远征，深入无尽药径';
   // 派遣态
   static const String expeditionDispatchTeamSection = '择人出征';
-  static const String expeditionDispatchTeamHint = '选 1-3 名门人同行；祖师坐镇门中，不亲赴远征。';
+  static const String expeditionDispatchTeamHint = '选 1 名门人独行；祖师坐镇门中，不亲赴远征。';
   static const String expeditionDispatchPolicySection = '出发方针';
   static const String expeditionDispatchButton = '拔营出发';
-  static String expeditionSelectedCount(int n) => '已择 $n / 3 人';
   static String expeditionSelectedCountWithMax(int n, int max) =>
       '已择 $n / $max 人';
   static const String expeditionCandidateOccupiedTag = '在外';
@@ -3903,8 +3902,8 @@ class UiStrings {
   static String gauntletRecommendedRealm(String realm) => '推荐境界 · $realm 上下';
   // 择人
   static const String gauntletTeamSection = '择人入庄';
-  static const String gauntletTeamHint = '选 1-3 名弟子闯庄；祖师坐镇门中，不亲入庄。';
-  static String gauntletSelectedCount(int n) => '已择 $n / 3 人';
+  static const String gauntletTeamHint = '选 1 名弟子闯庄；祖师坐镇门中，不亲入庄。';
+  static String gauntletSelectedCount(int n) => '已择 $n / 1 人';
   static const String gauntletCandidateOccupiedTag = '在外';
   static const String gauntletCandidateNoMainTag = '未修主修';
   static const String gauntletNoCandidates = '暂无可入庄弟子。招收弟子、研习主修之后再来。';

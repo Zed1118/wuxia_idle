@@ -116,7 +116,7 @@ Future<GauntletLoadoutInfo> gauntletLoadoutInfo(Ref ref) async {
   );
 }
 
-/// 单个入场候选（装载屏择人 1-3 用）：角色 + 可入场性标注（§5.1）。
+/// 单个入场候选（路线 C 装载屏单选）：角色 + 可入场性标注（§5.1）。
 class GauntletCandidate {
   const GauntletCandidate({
     required this.character,

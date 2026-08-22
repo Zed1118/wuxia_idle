@@ -19,7 +19,7 @@ import 'gauntlet_defeat_screen.dart';
 import 'gauntlet_entry_flow.dart';
 
 /// 断魂庄装载屏（§7.1 · C2.5）。断魂帖库存 / 庄中三关（三 Boss + 推荐境界）/ 择人
-/// 1-3（非祖师·已修主修）/ 补给装载（≤3 份托管）/ 持帖入庄。
+/// 单人（非祖师·已修主修）/ 补给装载（≤3 份托管）/ 持帖入庄。
 ///
 /// 入庄写路径经 [GauntletService.enter] 单事务（屏内零直接 Isar 写），成功后 invalidate
 /// active/candidates/loadoutInfo provider，随即 push [runGauntletFlow] 逐关战斗流
@@ -51,7 +51,7 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
   int get _loadedTotal => _supplyLoad.values.fold(0, (a, b) => a + b);
 
   Future<void> _enter(int ticketCount, int cycleIndex) async {
-    if (_selected.isEmpty || _submitting || ticketCount < 1) return;
+    if (_selected.length != 1 || _submitting || ticketCount < 1) return;
     final service = ref.read(gauntletServiceProvider);
     if (service == null) return; // 测试旁路：未 init Isar
     setState(() => _submitting = true);
@@ -205,7 +205,7 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
     final resuming = activeRun != null;
     final hasTicket = info.ticketCount >= 1;
     final canEnter =
-        !resuming && _selected.isNotEmpty && hasTicket && !_submitting;
+        !resuming && _selected.length == 1 && hasTicket && !_submitting;
 
     // ── 批 B 周目选择：可挑战上限 = 顺序解锁 ∩ 配置 cap ∩ 境界门槛。
     // 境界口径 = 当前已选队伍最高（未选人时取可入场候选最高，乐观展示）；
@@ -283,7 +283,7 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
                             final id = c.character.id;
                             if (_selected.contains(id)) {
                               _selected.remove(id);
-                            } else if (_selected.length < 3) {
+                            } else if (_selected.isEmpty) {
                               _selected.add(id);
                             }
                           })

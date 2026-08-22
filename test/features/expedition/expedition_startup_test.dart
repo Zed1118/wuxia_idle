@@ -9,6 +9,7 @@ import 'package:wuxia_idle/core/domain/reward_entry.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_combat.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_startup.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
@@ -146,7 +147,7 @@ void main() {
       secondId = await IsarSetup.instance.characters.put(_disciple());
     });
     await service.dispatch(
-      characterIds: [firstId, secondId],
+      characterIds: [firstId],
       policy: ExpeditionPolicy.yanJingCaiYao,
       now: departedAt,
     );
@@ -154,6 +155,15 @@ void main() {
     await IsarSetup.instance.writeTxn(() async {
       final row = (await IsarSetup.instance.expeditionRuns.get(active.id))!
         ..currentNode = 4
+        ..members = [
+          ...active.members,
+          ActivityMemberSnapshot()
+            ..characterId = secondId
+            ..reservedTechniqueIds = [5]
+            ..currentHp = 0
+            ..currentQi = 0
+            ..isDowned = true,
+        ]
         ..stagedRewards = [
           RewardEntry()
             ..rewardKey = 'exp'
