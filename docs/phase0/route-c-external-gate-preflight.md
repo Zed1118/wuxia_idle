@@ -12,10 +12,11 @@
 新证据必须同时绑定：
 
 - 待删候选 commit；
-- 根应用 `wuxia_idle` 的 Profile binary SHA-256；
+- 根应用 `wuxia_idle` 的 Profile AOT 载荷 SHA-256（Mac 为
+  `App.framework/Versions/A/App`，Windows 为 `data/app.so`；启动壳不作为代码版本证据）；
 - 六人使用生产可玩路由 `phase0a_battle_playable`，Windows 使用同核循环负载
   `phase0a_battle_profile`；
-- 六人全部同包，Windows 六次全部同 binary。
+- 六人全部同包，Windows 六次全部同 AOT 载荷。
 
 ## 六人原始样本
 
@@ -41,14 +42,14 @@ tools/route_c_gate/prepare_route_c_human_package.sh HEAD \
 都会令证据 `INCONCLUSIVE`；实现者代打、外部事件污染或问卷未完成的样本不得标记
 `valid=true`。
 
-六轮完成后，重新散列回传包内的实际 executable 与 fixture，再执行机械聚合：
+六轮完成后，重新散列回传包内的实际 AOT 载荷与 fixture，再执行机械聚合：
 
 ```bash
 dart run tool/route_c_human_gate.dart aggregate \
   --candidate HEAD \
   --sessions build/route_c_human_gate/sessions \
   --manifest build/route_c_human_gate/package-manifest.json \
-  --app build/route_c_human_gate/package/wuxia_idle.app/Contents/MacOS/wuxia_idle \
+  --app build/route_c_human_gate/package/wuxia_idle.app/Contents/Frameworks/App.framework/Versions/A/App \
   --fixture build/route_c_human_gate/package/phase0a_debug_battle.yaml \
   --output build/route_c_human_gate/human-gate-summary.json
 ```
@@ -62,7 +63,7 @@ dart run tool/route_c_human_gate.dart aggregate \
 ## Windows 物理机样本
 
 保留 `phase0a-windows-physical-gate.md` 的最低档硬件、本地 Console、60Hz、100% 缩放与
-两视口各三次要求，但采样对象改为根应用 Profile binary。每次结果目录必须有
+两视口各三次要求，但采样对象改为根应用 Profile 构建。每次结果目录必须有
 `manifest.json`，schema 为 `route-c-windows-production-run-v1`，路由为
 `phase0a_battle_profile`，且组合性能 Gate 已由
 生产版采样器判为 `PASS`。旧 `phase0minus_probe.exe` 结果会被预检直接拒绝。
@@ -88,7 +89,7 @@ $Fixture = (Get-FileHash -Algorithm SHA256 .\data\phase0a_debug_battle.yaml).Has
 `frames.jsonl` 与 `memory_gc.jsonl`，独立计算样本数、p99、build/raster/严重慢帧连续峰值、
 GC 状态和 RSS 首尾值，再与 `summary.json` 逐项对照；同时重新散列并校验
 `host_manifest.json`，拒绝独显、RDP、虚拟机、非 60Hz/100% 缩放或未填 renderer。
-矩阵包同时冻结 `wuxia_idle.exe` 与 `phase0a_debug_battle.yaml`，最终预检会重新散列
+矩阵包同时冻结承载 Dart 代码的 `app.so` 与 `phase0a_debug_battle.yaml`，最终预检会重新散列
 二者并与六轮 manifest 对照，不能只填写一个看似合法的 64 位哈希冒签。
 
 ## 执行

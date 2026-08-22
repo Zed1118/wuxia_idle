@@ -27,7 +27,7 @@ cp "$repository/data/phase0a_debug_battle.yaml" "$package_fixture"
 
 dart run tool/route_c_human_gate.dart prepare \
   --candidate "$commit" \
-  --app "$package_app/Contents/MacOS/wuxia_idle" \
+  --app "$package_app/Contents/Frameworks/App.framework/Versions/A/App" \
   --fixture "$package_fixture" \
   --output "$output"
 

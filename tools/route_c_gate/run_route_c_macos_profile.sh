@@ -48,9 +48,11 @@ if [[ "${ROUTE_C_SKIP_BUILD:-false}" != "true" ]]; then
   flutter pub get
   flutter build macos --profile
 fi
-binary="$repository_root/build/macos/Build/Products/Profile/wuxia_idle.app/Contents/MacOS/wuxia_idle"
-[[ -x "$binary" ]] || { echo "Root production Profile binary not found: $binary" >&2; exit 7; }
-binary_checksum="$(shasum -a 256 "$binary" | awk '{print $1}')"
+launcher="$repository_root/build/macos/Build/Products/Profile/wuxia_idle.app/Contents/MacOS/wuxia_idle"
+app_payload="$repository_root/build/macos/Build/Products/Profile/wuxia_idle.app/Contents/Frameworks/App.framework/Versions/A/App"
+[[ -x "$launcher" ]] || { echo "Root production Profile launcher not found: $launcher" >&2; exit 7; }
+[[ -f "$app_payload" ]] || { echo "Root production Profile AOT payload not found: $app_payload" >&2; exit 7; }
+binary_checksum="$(shasum -a 256 "$app_payload" | awk '{print $1}')"
 expected_width="${viewport%x*}"
 expected_height="${viewport#*x}"
 
@@ -63,7 +65,7 @@ for ((index = 1; index <= repeat; index++)); do
   rm -rf "$app_run_dir"
   mkdir -p "$app_run_dir"
   VISUAL_WINDOW_W="$expected_width" VISUAL_WINDOW_H="$expected_height" \
-    caffeinate -dimsu "$binary" \
+    caffeinate -dimsu "$launcher" \
     --visual-route=phase0a_battle_profile \
     --battle-profile-run-id="$run_id" \
     --battle-profile-output="$app_run_dir" \

@@ -23,8 +23,8 @@ $Runner = Join-Path $PSScriptRoot "run_route_c_windows_profile.ps1"
   -ExpectedCommit $ExpectedCommit -ExpectedFixtureChecksum $ExpectedFixtureChecksum `
   -ResultRoot $OutputRoot
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-$BuiltBinary = Join-Path $RepositoryRoot "build/windows/x64/runner/Profile/wuxia_idle.exe"
-Copy-Item -Force $BuiltBinary (Join-Path $OutputRoot "wuxia_idle.exe")
+$BuiltPayload = Join-Path $RepositoryRoot "build/windows/x64/runner/Profile/data/app.so"
+Copy-Item -Force $BuiltPayload (Join-Path $OutputRoot "app.so")
 Copy-Item -Force (Join-Path $RepositoryRoot "data/phase0a_debug_battle.yaml") `
   (Join-Path $OutputRoot "phase0a_debug_battle.yaml")
 & $Runner -Viewport "1440x900" -Repeat 3 -HostManifest $FrozenHost `

@@ -112,7 +112,7 @@ void main() {
     expect(errors, contains('1440x900 requires 3 human sessions'));
   });
 
-  test('human package binds sessions to returned executable and fixture', () {
+  test('human package binds sessions to returned AOT payload and fixture', () {
     final sessions = List<Map<String, Object?>>.generate(
       6,
       (index) => _humanSession(index, commit, checksum),
@@ -145,7 +145,7 @@ void main() {
             'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
         actualFixtureChecksum: checksum,
       ).details,
-      contains('human package executable checksum mismatch'),
+      contains('human package AOT payload checksum mismatch'),
     );
   });
 

@@ -14,8 +14,8 @@ mkdir -p "$output_root"
 ROUTE_C_SKIP_BUILD=true "$runner" 1440x900 3 \
   "$expected_commit" "$expected_fixture_checksum" "$output_root"
 
-cp "$repository_root/build/macos/Build/Products/Profile/wuxia_idle.app/Contents/MacOS/wuxia_idle" \
-  "$output_root/wuxia_idle"
+cp "$repository_root/build/macos/Build/Products/Profile/wuxia_idle.app/Contents/Frameworks/App.framework/Versions/A/App" \
+  "$output_root/app_aot_payload"
 cp "$repository_root/data/phase0a_debug_battle.yaml" "$output_root/phase0a_debug_battle.yaml"
 (
   cd "$output_root"

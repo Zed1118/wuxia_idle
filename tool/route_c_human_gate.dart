@@ -8,9 +8,9 @@ Future<void> main(List<String> args) async {
     stderr.writeln(
       'Usage:\n'
       '  dart run tool/route_c_human_gate.dart prepare --candidate <git-ref> '
-      '--app <executable> --fixture <yaml> --output <dir>\n'
+      '--app <aot-payload> --fixture <yaml> --output <dir>\n'
       '  dart run tool/route_c_human_gate.dart aggregate --candidate <git-ref> '
-      '--sessions <dir> --manifest <package-manifest.json> --app <executable> '
+      '--sessions <dir> --manifest <package-manifest.json> --app <aot-payload> '
       '--fixture <yaml> '
       '--output <summary.json>',
     );
@@ -53,7 +53,7 @@ Future<void> _prepare(
   final app = File(_required(options, 'app'));
   final fixture = File(_required(options, 'fixture'));
   if (!app.existsSync()) {
-    throw StateError('app executable does not exist: ${app.path}');
+    throw StateError('app AOT payload does not exist: ${app.path}');
   }
   if (!fixture.existsSync()) {
     throw StateError('fixture does not exist: ${fixture.path}');

@@ -66,9 +66,11 @@ if (-not $SkipBuild) {
   flutter build windows --profile
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
-$Binary = Join-Path $RepositoryRoot "build/windows/x64/runner/Profile/wuxia_idle.exe"
-if (-not (Test-Path $Binary)) { throw "Root production Profile binary not found: $Binary" }
-$BinaryChecksum = (Get-FileHash -Algorithm SHA256 $Binary).Hash.ToLowerInvariant()
+$Launcher = Join-Path $RepositoryRoot "build/windows/x64/runner/Profile/wuxia_idle.exe"
+$AppPayload = Join-Path $RepositoryRoot "build/windows/x64/runner/Profile/data/app.so"
+if (-not (Test-Path $Launcher)) { throw "Root production Profile launcher not found: $Launcher" }
+if (-not (Test-Path $AppPayload)) { throw "Root production Profile AOT payload not found: $AppPayload" }
+$BinaryChecksum = (Get-FileHash -Algorithm SHA256 $AppPayload).Hash.ToLowerInvariant()
 $HostChecksum = (Get-FileHash -Algorithm SHA256 $HostManifest).Hash.ToLowerInvariant()
 $ViewportParts = $Viewport.Split("x")
 $ExpectedWidth = [int]$ViewportParts[0]
@@ -89,7 +91,7 @@ for ($Index = 1; $Index -le $Repeat; $Index++) {
     "--battle-profile-viewport=$Viewport",
     "--battle-profile-auto-close=true"
   )
-  & $Binary @Arguments 2>&1 | Tee-Object -FilePath (Join-Path $RunDirectory "run.log")
+  & $Launcher @Arguments 2>&1 | Tee-Object -FilePath (Join-Path $RunDirectory "run.log")
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
   $SummaryPath = Join-Path $RunDirectory "summary.json"

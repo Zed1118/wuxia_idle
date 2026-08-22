@@ -10,6 +10,9 @@ void main() {
         'tools/route_c_gate/run_route_c_windows_profile.ps1',
       ).readAsStringSync();
       expect(runner, contains('wuxia_idle.exe'));
+      expect(runner, contains('Profile/data/app.so'));
+      expect(runner, contains(r'Get-FileHash -Algorithm SHA256 $AppPayload'));
+      expect(runner, contains(r'& $Launcher @Arguments'));
       expect(runner, contains('phase0a_battle_profile'));
       expect(runner, contains('data/phase0a_debug_battle.yaml'));
       expect(runner, contains('sample-seconds=60'));
@@ -33,7 +36,8 @@ void main() {
       expect(matrix, contains('-Viewport "1280x720"'));
       expect(matrix, contains('-Viewport "1440x900"'));
       expect(matrix, contains('route_c_gate_preflight.dart'));
-      expect(matrix, contains('wuxia_idle.exe'));
+      expect(matrix, contains('Profile/data/app.so'));
+      expect(matrix, contains('app.so'));
       expect(matrix, contains('phase0a_debug_battle.yaml'));
       expect(matrix, contains('Copy-Item -Force'));
       expect(matrix, contains('SHA256SUMS.txt'));
@@ -47,6 +51,13 @@ void main() {
     expect(source, contains("Process.run('certutil'"));
     expect(source, contains("'-hashfile'"));
     expect(source, contains("Process.run('shasum'"));
+    expect(source, contains('App.framework/Versions/A/App'));
+    expect(source, contains("File('\$windowsRoot/app.so')"));
+    expect(
+      source,
+      isNot(contains('package/wuxia_idle.app/Contents/MacOS/wuxia_idle')),
+    );
+    expect(source, isNot(contains("File('\$windowsRoot/wuxia_idle.exe')")));
   });
 
   test(
@@ -57,6 +68,9 @@ void main() {
       ).readAsStringSync();
 
       expect(runner, contains('wuxia_idle.app/Contents/MacOS/wuxia_idle'));
+      expect(runner, contains('App.framework/Versions/A/App'));
+      expect(runner, contains(r'shasum -a 256 "$app_payload"'));
+      expect(runner, contains(r'caffeinate -dimsu "$launcher"'));
       expect(runner, contains('phase0a_battle_profile'));
       expect(runner, contains('data/phase0a_debug_battle.yaml'));
       expect(runner, contains('sample-seconds=60'));
@@ -82,7 +96,8 @@ void main() {
     expect(matrix, contains('1280x720 3'));
     expect(matrix, contains('1440x900 3'));
     expect(matrix, contains('ROUTE_C_SKIP_BUILD=true'));
-    expect(matrix, contains('wuxia_idle.app/Contents/MacOS/wuxia_idle'));
+    expect(matrix, contains('App.framework/Versions/A/App'));
+    expect(matrix, contains('app_aot_payload'));
     expect(matrix, contains('phase0a_debug_battle.yaml'));
     expect(matrix, contains('SHA256SUMS.txt'));
   });

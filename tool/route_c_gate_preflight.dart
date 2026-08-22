@@ -101,7 +101,7 @@ GateCheck validateHumanSessions(
     ]);
   }
   return GateCheck('human_gate', GateState.pass, <String>[
-    'HUMAN_GATE_PASS: 6 valid anonymous sessions use one production binary '
+    'HUMAN_GATE_PASS: 6 valid anonymous sessions use one production AOT payload '
         'at $expectedCommit.',
   ]);
 }
@@ -151,9 +151,9 @@ GateCheck validateHumanEvidence(
     problems.add('human package has invalid fixture_sha256');
   }
   if (actualBinaryChecksum == null) {
-    problems.add('human package executable is missing');
+    problems.add('human package AOT payload is missing');
   } else if (binary != actualBinaryChecksum) {
-    problems.add('human package executable checksum mismatch');
+    problems.add('human package AOT payload checksum mismatch');
   }
   if (actualFixtureChecksum == null) {
     problems.add('human package fixture is missing');
@@ -584,7 +584,7 @@ GateCheck validateWindowsRuns(
         binaries.length != 1 ||
         binaries.single != actualBinaryChecksum) {
       problems.add(
-        'frozen Windows executable is missing or checksum mismatched',
+        'frozen Windows AOT payload is missing or checksum mismatched',
       );
     }
     if (actualFixtureChecksum == null ||
@@ -603,7 +603,7 @@ GateCheck validateWindowsRuns(
     return GateCheck('windows_gate', GateState.invalid, problems);
   }
   return GateCheck('windows_gate', GateState.pass, <String>[
-    '6 minimum-spec runs use one root-app binary at $expectedCommit.',
+    '6 minimum-spec runs use one root-app AOT payload at $expectedCommit.',
   ]);
 }
 
@@ -811,7 +811,10 @@ Future<void> main(List<String> args) async {
   final actualHumanBinary = humanRoot == null
       ? null
       : await _sha256IfExists(
-          File('$humanRoot/package/wuxia_idle.app/Contents/MacOS/wuxia_idle'),
+          File(
+            '$humanRoot/package/wuxia_idle.app/Contents/Frameworks/'
+            'App.framework/Versions/A/App',
+          ),
         );
   final actualHumanFixture = humanRoot == null
       ? null
@@ -830,7 +833,7 @@ Future<void> main(List<String> args) async {
       : await _sha256IfExists(windowsHostFile);
   final windowsBinaryChecksum = windowsRoot == null
       ? null
-      : await _sha256IfExists(File('$windowsRoot/wuxia_idle.exe'));
+      : await _sha256IfExists(File('$windowsRoot/app.so'));
   final windowsFixtureChecksum = windowsRoot == null
       ? null
       : await _sha256IfExists(File('$windowsRoot/phase0a_debug_battle.yaml'));
