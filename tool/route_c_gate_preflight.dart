@@ -22,6 +22,13 @@ final class GateCheck {
   };
 }
 
+final class HumanGateAggregation {
+  const HumanGateAggregation({required this.verdict, required this.summary});
+
+  final String verdict;
+  final Map<String, Object?> summary;
+}
+
 GateCheck validateRouteCDeletionTree(Iterable<String> battleFiles) {
   final files = battleFiles.where((path) => path.trim().isNotEmpty).toList();
   final legacy = files
@@ -46,6 +53,8 @@ GateCheck validateRouteCDeletionTree(Iterable<String> battleFiles) {
 GateCheck validateHumanSessions(
   Iterable<Map<String, Object?>> sessions, {
   required String expectedCommit,
+  String? expectedBinaryChecksum,
+  String? expectedFixtureChecksum,
 }) {
   final records = sessions.toList(growable: false);
   if (records.isEmpty) {
@@ -53,16 +62,142 @@ GateCheck validateHumanSessions(
       'No production Route C human-session evidence found.',
     ]);
   }
+  final aggregation = aggregateRouteCHumanGate(
+    records,
+    expectedCommit: expectedCommit,
+    expectedBinaryChecksum: expectedBinaryChecksum,
+    expectedFixtureChecksum: expectedFixtureChecksum,
+  );
+  final errors = (aggregation.summary['schema_errors']! as List<Object?>)
+      .cast<String>();
+  final failedChecks = (aggregation.summary['checks']! as Map<String, Object?>)
+      .entries
+      .where((entry) => entry.value != true)
+      .map((entry) => entry.key)
+      .toList(growable: false);
+  if (aggregation.verdict != 'HUMAN_GATE_PASS') {
+    return GateCheck('human_gate', GateState.invalid, <String>[
+      aggregation.verdict,
+      ...errors.take(20),
+      if (errors.length > 20) '${errors.length - 20} more schema errors',
+      if (errors.isEmpty && failedChecks.isNotEmpty)
+        'failed checks: ${failedChecks.join(', ')}',
+    ]);
+  }
+  return GateCheck('human_gate', GateState.pass, <String>[
+    'HUMAN_GATE_PASS: 6 valid anonymous sessions use one production binary '
+        'at $expectedCommit.',
+  ]);
+}
+
+GateCheck validateHumanEvidence(
+  Iterable<Map<String, Object?>> sessions,
+  Iterable<Map<String, Object?>> packageManifests, {
+  required String expectedCommit,
+  String? actualBinaryChecksum,
+  String? actualFixtureChecksum,
+}) {
+  final records = sessions.toList(growable: false);
+  if (records.isEmpty) {
+    return const GateCheck('human_gate', GateState.pending, <String>[
+      'No production Route C human-session evidence found.',
+    ]);
+  }
+  final manifests = packageManifests.toList(growable: false);
+  if (manifests.length != 1) {
+    return GateCheck('human_gate', GateState.invalid, <String>[
+      'INCONCLUSIVE',
+      'expected exactly one package-manifest.json, found ${manifests.length}',
+    ]);
+  }
+  final manifest = manifests.single;
+  final binary = manifest['binary_sha256']?.toString() ?? '';
+  final fixture = manifest['fixture_sha256']?.toString() ?? '';
+  final problems = <String>[];
+  if (manifest['schema'] != 'route-c-human-package-v1') {
+    problems.add('human package uses obsolete schema');
+  }
+  if (manifest['commit'] != expectedCommit) {
+    problems.add('human package commit mismatch');
+  }
+  if (manifest['app_package'] != 'wuxia_idle' ||
+      manifest['route_id'] != routeCProductionRoute) {
+    problems.add('human package does not target the root production route');
+  }
+  if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(binary)) {
+    problems.add('human package has invalid binary_sha256');
+  }
+  if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(fixture)) {
+    problems.add('human package has invalid fixture_sha256');
+  }
+  if (actualBinaryChecksum == null) {
+    problems.add('human package executable is missing');
+  } else if (binary != actualBinaryChecksum) {
+    problems.add('human package executable checksum mismatch');
+  }
+  if (actualFixtureChecksum == null) {
+    problems.add('human package fixture is missing');
+  } else if (fixture != actualFixtureChecksum) {
+    problems.add('human package fixture checksum mismatch');
+  }
+  if (problems.isNotEmpty) {
+    return GateCheck('human_gate', GateState.invalid, <String>[
+      'INCONCLUSIVE',
+      ...problems,
+    ]);
+  }
+  return validateHumanSessions(
+    records,
+    expectedCommit: expectedCommit,
+    expectedBinaryChecksum: binary,
+    expectedFixtureChecksum: fixture,
+  );
+}
+
+HumanGateAggregation aggregateRouteCHumanGate(
+  Iterable<Map<String, Object?>> sessions, {
+  required String expectedCommit,
+  String? expectedBinaryChecksum,
+  String? expectedFixtureChecksum,
+}) {
+  final records = sessions.toList(growable: false);
   final problems = <String>[];
   final participants = <String>{};
+  final sessionIds = <String>{};
   final binaries = <String>{};
+  final fixtures = <String>{};
+  final viewportCounts = <String, int>{};
+  final playerTypeCounts = <String, int>{};
+  final valid = <Map<String, Object?>>[];
   for (final record in records) {
     final participant = record['participant_id']?.toString() ?? '<missing>';
     if (!participants.add(participant)) {
       problems.add('duplicate participant_id: $participant');
     }
+    if (!RegExp(r'^P0[1-6]$').hasMatch(participant)) {
+      problems.add('$participant is not an anonymous P01..P06 id');
+    }
+    const forbiddenIdentityKeys = <String>{
+      'name',
+      'real_name',
+      'email',
+      'account',
+      'phone',
+      'device_owner',
+    };
+    for (final key in forbiddenIdentityKeys) {
+      if (record.containsKey(key)) {
+        problems.add('$participant contains forbidden identity key $key');
+      }
+    }
     if (record['schema'] != routeCHumanSessionSchema) {
       problems.add('$participant uses obsolete session schema');
+    }
+    final sessionId = record['session_id']?.toString() ?? '';
+    if (!RegExp(r'^[a-z0-9][a-z0-9_-]{7,63}$').hasMatch(sessionId)) {
+      problems.add('$participant has invalid session_id');
+    } else if (!sessionIds.add(sessionId)) {
+      problems.add('duplicate session_id: $sessionId');
     }
     if (record['commit'] != expectedCommit) {
       problems.add('$participant commit mismatch');
@@ -76,38 +211,237 @@ GateCheck validateHumanSessions(
     } else {
       binaries.add(binary);
     }
-    final mechanics = record['mechanics'];
-    if (mechanics is! Map<String, Object?> ||
-        const <String>{
-          'charge_warning_seen',
-          'interrupt_feedback_understood',
-          'stagger_seen',
-          'vulnerability_window_understood',
-          'keyboard_mouse_completed',
-          'no_layout_overflow_or_hang',
-        }.any((key) => mechanics[key] != true)) {
-      problems.add('$participant has incomplete mechanic observations');
+    if (expectedBinaryChecksum != null && binary != expectedBinaryChecksum) {
+      problems.add('$participant binary does not match package manifest');
     }
-    final validity = record['validity'];
-    if (validity is! Map<String, Object?> || validity['valid'] != true) {
-      problems.add('$participant is not a valid raw sample');
+    final fixture = record['fixture_sha256']?.toString() ?? '';
+    if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(fixture)) {
+      problems.add('$participant has invalid fixture_sha256');
+    } else {
+      fixtures.add(fixture);
+    }
+    if (expectedFixtureChecksum != null && fixture != expectedFixtureChecksum) {
+      problems.add('$participant fixture does not match package manifest');
+    }
+    final viewport = record['viewport']?.toString() ?? '';
+    viewportCounts[viewport] = (viewportCounts[viewport] ?? 0) + 1;
+    final playerType = record['player_type']?.toString() ?? '';
+    playerTypeCounts[playerType] = (playerTypeCounts[playerType] ?? 0) + 1;
+
+    final ratings = _objectMap(record['ratings']);
+    for (final key in const <String>[
+      'release',
+      'readability',
+      'active_intent',
+    ]) {
+      final value = ratings?[key];
+      if (value is! int || value < 1 || value > 5) {
+        problems.add('$participant ratings.$key must be 1..5');
+      }
+    }
+    if (record['replay_willing'] is! bool) {
+      problems.add('$participant replay_willing must be boolean');
+    }
+    final mechanics = record['mechanics'];
+    final mechanicMap = _objectMap(mechanics);
+    for (final key in const <String>[
+      'charge_warning_seen',
+      'interrupt_feedback_understood',
+      'stagger_seen',
+      'vulnerability_window_understood',
+      'keyboard_mouse_completed',
+      'no_layout_overflow_or_hang',
+    ]) {
+      if (mechanicMap?[key] is! bool) {
+        problems.add('$participant mechanics.$key must be boolean');
+      }
+    }
+    final veto = _objectMap(record['direct_veto']);
+    for (final key in const <String>[
+      'stationary_or_cooldown_only_is_optimal',
+      'two_core_actions_lack_role',
+      'density_unreadable',
+      'requires_forbidden_mechanic',
+    ]) {
+      if (veto?[key] is! bool) {
+        problems.add('$participant direct_veto.$key must be boolean');
+      }
+    }
+    final integrity = _objectMap(record['integrity']);
+    for (final key in const <String>[
+      'completed_three_waves',
+      'participant_had_input_control',
+      'implementer_assisted',
+      'external_event_polluted',
+      'questionnaire_complete',
+    ]) {
+      if (integrity?[key] is! bool) {
+        problems.add('$participant integrity.$key must be boolean');
+      }
+    }
+    final validity = _objectMap(record['validity']);
+    final invalidReasons = validity?['invalid_reasons'];
+    if (validity?['valid'] is! bool ||
+        invalidReasons is! List ||
+        invalidReasons.any((reason) => reason is! String)) {
+      problems.add('$participant has invalid validity metadata');
+    } else if (validity!['valid'] == true && invalidReasons.isNotEmpty) {
+      problems.add('$participant valid sample has invalid_reasons');
+    } else if (validity['valid'] == false && invalidReasons.isEmpty) {
+      problems.add('$participant invalid sample lacks invalid_reasons');
+    }
+    if (validity?['valid'] == true &&
+        (integrity?['participant_had_input_control'] != true ||
+            integrity?['implementer_assisted'] == true ||
+            integrity?['external_event_polluted'] == true ||
+            integrity?['questionnaire_complete'] != true)) {
+      problems.add('$participant validity contradicts integrity flags');
+    }
+    if (validity?['valid'] == true) {
+      valid.add(record);
     }
   }
-  if (records.length != 6 || participants.length != 6) {
-    problems.add(
-      'expected 6 unique participants, found ${participants.length}',
-    );
+  if (records.length != 6 || participants.length != 6 || valid.length != 6) {
+    problems.add('expected 6 unique valid participants, found ${valid.length}');
+  }
+  if (participants.length == 6 &&
+      !participants.containsAll(const <String>{
+        'P01',
+        'P02',
+        'P03',
+        'P04',
+        'P05',
+        'P06',
+      })) {
+    problems.add('participants must be exactly P01..P06');
   }
   if (binaries.length > 1) {
     problems.add('human sessions mix multiple production binaries');
   }
-  if (problems.isNotEmpty) {
-    return GateCheck('human_gate', GateState.invalid, problems);
+  if (fixtures.length > 1) {
+    problems.add('human sessions mix multiple production fixtures');
   }
-  return GateCheck('human_gate', GateState.pass, <String>[
-    '6 valid anonymous sessions use one production binary at $expectedCommit.',
-  ]);
+  for (final viewport in const <String>['1280x720', '1440x900']) {
+    if (viewportCounts[viewport] != 3) {
+      problems.add(
+        '$viewport requires 3 human sessions, found '
+        '${viewportCounts[viewport] ?? 0}',
+      );
+    }
+  }
+  for (final playerType in const <String>['idle', 'arpg', 'mixed']) {
+    if (playerTypeCounts[playerType] != 2) {
+      problems.add(
+        '$playerType requires 2 human sessions, found '
+        '${playerTypeCounts[playerType] ?? 0}',
+      );
+    }
+  }
+
+  final directVetos = <String>[];
+  for (final record in valid) {
+    final veto = _objectMap(record['direct_veto']) ?? const {};
+    for (final entry in veto.entries) {
+      if (entry.value == true) {
+        directVetos.add('${record['participant_id']}:${entry.key}');
+      }
+    }
+  }
+  final metrics = <String, Object?>{
+    'release_median': _medianRating(valid, 'release'),
+    'readability_median': _medianRating(valid, 'readability'),
+    'active_intent_median': _medianRating(valid, 'active_intent'),
+    'replay_willing_count': valid
+        .where((record) => record['replay_willing'] == true)
+        .length,
+    for (final key in const <String>[
+      'charge_warning_seen',
+      'interrupt_feedback_understood',
+      'stagger_seen',
+      'vulnerability_window_understood',
+      'keyboard_mouse_completed',
+      'no_layout_overflow_or_hang',
+    ])
+      '${key}_count': _countNestedTrue(valid, 'mechanics', key),
+    'completed_unassisted_count': valid.where((record) {
+      final integrity = _objectMap(record['integrity']) ?? const {};
+      return integrity['completed_three_waves'] == true &&
+          integrity['participant_had_input_control'] == true &&
+          integrity['implementer_assisted'] == false;
+    }).length,
+  };
+  final checks = <String, bool>{
+    'schema_and_provenance_valid': problems.isEmpty,
+    'ratings_median_at_least_4':
+        _metric(metrics, 'release_median') >= 4 &&
+        _metric(metrics, 'readability_median') >= 4 &&
+        _metric(metrics, 'active_intent_median') >= 4,
+    'replay_willing_4_of_6': (metrics['replay_willing_count'] as int) >= 4,
+    'charge_warning_seen_5_of_6':
+        (metrics['charge_warning_seen_count'] as int) >= 5,
+    'interrupt_understood_5_of_6':
+        (metrics['interrupt_feedback_understood_count'] as int) >= 5,
+    'stagger_seen_5_of_6': (metrics['stagger_seen_count'] as int) >= 5,
+    'vulnerability_understood_5_of_6':
+        (metrics['vulnerability_window_understood_count'] as int) >= 5,
+    'keyboard_mouse_6_of_6': metrics['keyboard_mouse_completed_count'] == 6,
+    'layout_and_hang_6_of_6': metrics['no_layout_overflow_or_hang_count'] == 6,
+    'completed_unassisted_5_of_6':
+        (metrics['completed_unassisted_count'] as int) >= 5,
+    'no_direct_veto': directVetos.isEmpty,
+  };
+  final enough = records.length == 6 && valid.length == 6;
+  final verdict = problems.isNotEmpty || !enough
+      ? 'INCONCLUSIVE'
+      : checks.values.every((passed) => passed)
+      ? 'HUMAN_GATE_PASS'
+      : 'LOCAL_FAIL';
+  return HumanGateAggregation(
+    verdict: verdict,
+    summary: <String, Object?>{
+      'schema': 'route-c-human-gate-summary-v1',
+      'verdict': verdict,
+      'commit': expectedCommit,
+      'valid_sample_count': valid.length,
+      'binary_sha256': binaries.length == 1 ? binaries.single : null,
+      'fixture_sha256': fixtures.length == 1 ? fixtures.single : null,
+      'schema_errors': problems,
+      'direct_vetos': directVetos,
+      'metrics': metrics,
+      'checks': checks,
+    },
+  );
 }
+
+Map<String, Object?>? _objectMap(Object? value) {
+  if (value is Map<String, Object?>) return value;
+  if (value is Map) return value.cast<String, Object?>();
+  return null;
+}
+
+double _medianRating(List<Map<String, Object?>> records, String key) {
+  final values =
+      records
+          .map((record) => _objectMap(record['ratings'])?[key])
+          .whereType<int>()
+          .map((value) => value.toDouble())
+          .toList()
+        ..sort();
+  if (values.length != records.length || values.isEmpty) return 0;
+  final middle = values.length ~/ 2;
+  return values.length.isOdd
+      ? values[middle]
+      : (values[middle - 1] + values[middle]) / 2;
+}
+
+int _countNestedTrue(
+  List<Map<String, Object?>> records,
+  String group,
+  String key,
+) => records.where((record) => _objectMap(record[group])?[key] == true).length;
+
+double _metric(Map<String, Object?> metrics, String key) =>
+    (metrics[key]! as num).toDouble();
 
 GateCheck validateWindowsRuns(
   Iterable<Map<String, Object?>> runs, {
@@ -219,6 +553,25 @@ Future<void> main(List<String> args) async {
     'lib/features/battle',
   ]);
 
+  final humanSessions = await _readEvidence(
+    options['human-dir'],
+    'human-session.json',
+  );
+  final humanPackages = await _readEvidence(
+    options['human-dir'],
+    'package-manifest.json',
+  );
+  final humanRoot = options['human-dir'];
+  final actualHumanBinary = humanRoot == null
+      ? null
+      : await _sha256IfExists(
+          File('$humanRoot/package/wuxia_idle.app/Contents/MacOS/wuxia_idle'),
+        );
+  final actualHumanFixture = humanRoot == null
+      ? null
+      : await _sha256IfExists(
+          File('$humanRoot/package/phase0a_debug_battle.yaml'),
+        );
   final checks = <GateCheck>[
     GateCheck(
       'worktree',
@@ -226,9 +579,12 @@ Future<void> main(List<String> args) async {
       <String>[dirty.isEmpty ? 'Worktree is clean.' : 'Worktree is dirty.'],
     ),
     validateRouteCDeletionTree(candidateFiles.split('\n')),
-    validateHumanSessions(
-      await _readEvidence(options['human-dir'], 'human-session.json'),
+    validateHumanEvidence(
+      humanSessions,
+      humanPackages,
       expectedCommit: resolvedCandidate,
+      actualBinaryChecksum: actualHumanBinary,
+      actualFixtureChecksum: actualHumanFixture,
     ),
     validateWindowsRuns(
       await _readEvidence(options['windows-dir'], 'manifest.json'),
@@ -297,4 +653,12 @@ Future<List<Map<String, Object?>>> _readEvidence(
     records.add(decoded);
   }
   return records;
+}
+
+Future<String?> _sha256IfExists(File file) async {
+  if (!file.existsSync()) return null;
+  final result = await Process.run('shasum', <String>['-a', '256', file.path]);
+  if (result.exitCode != 0) return null;
+  final checksum = (result.stdout as String).trim().split(RegExp(r'\s+')).first;
+  return RegExp(r'^[0-9a-f]{64}$').hasMatch(checksum) ? checksum : null;
 }
