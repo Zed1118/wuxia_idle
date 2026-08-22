@@ -22,6 +22,7 @@ import '../../battle/application/legacy_3v3_combatant_adapter.dart';
 import '../../battle/application/player_combatant_snapshot_assembler.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
+import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../equipment/application/equipment_factory.dart';
@@ -31,6 +32,7 @@ import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
 import 'gauntlet_battle_runner.dart';
 import 'gauntlet_controller.dart';
+import 'phase0a_gauntlet_stage_runner.dart';
 
 /// 断魂庄当前关出战计划：`prepareStage` 事务外纯计算产出，供 live BattleScreen 路
 /// （`gauntlet_entry_flow`）与 headless [GauntletService.fightCurrentStage] 共用。
@@ -40,6 +42,15 @@ typedef GauntletStagePlan = ({
   int seed,
   bool isBoss,
   int cycleIndex,
+});
+
+typedef Phase0aGauntletStagePlan = ({
+  CombatantSnapshot playerSnapshot,
+  List<EnemyDef> enemyDefs,
+  int seed,
+  bool isBoss,
+  int cycleIndex,
+  int stage,
 });
 
 /// 断魂庄崩溃恢复结果（C2.3b·§5.6/§10）。
@@ -366,6 +377,101 @@ class GauntletService {
     );
     await settleStageResult(finalState: result.finalState, config: config);
     return result;
+  }
+
+  Future<Phase0aGauntletStageResult> fightCurrentStagePhase0a({
+    required BossGauntletConfig config,
+    required NumbersConfig numbers,
+  }) async {
+    final plan = await preparePhase0aStage(config: config);
+    final result = await Phase0aGauntletStageRunner.run(
+      contentId: 'gauntlet_${plan.stage}',
+      playerSnapshot: plan.playerSnapshot,
+      enemyTeam: plan.enemyDefs,
+      numbers: numbers,
+      seed: plan.seed,
+      cycleIndex: plan.cycleIndex,
+    );
+    await settlePhase0aStageResult(result: result, config: config);
+    return result;
+  }
+
+  Future<Phase0aGauntletStagePlan> preparePhase0aStage({
+    required BossGauntletConfig config,
+  }) async {
+    final save = await _isar.saveDatas.get(0);
+    if (save == null) throw StateError('断魂庄开打：无存档');
+    final run = await _activeRun(save.id);
+    if (run == null) throw StateError('断魂庄开打：无进行中会话');
+    if (run.sessionPhase != GauntletPhase.inBattle) {
+      throw StateError('断魂庄开打：仅关次开打态可战斗（当前 ${run.sessionPhase.name}）');
+    }
+    if (run.members.length != 1) {
+      throw StateError('Phase0a gauntlet requires exactly one member');
+    }
+    if (run.currentStage < 1 || run.currentStage > config.stages.length) {
+      throw StateError('断魂庄开打：关次越界 ${run.currentStage}');
+    }
+    final stageCfg = config.stages[run.currentStage - 1];
+    final enemyDefs = config.enemiesForTeam(stageCfg.enemyTeamId);
+    if (enemyDefs.isEmpty) {
+      throw StateError('断魂庄开打：关次 ${run.currentStage} 敌队为空（配置损坏）');
+    }
+    final member = run.members.single;
+    final snapshots = await PlayerCombatantSnapshotAssembler(
+      isar: _isar,
+    ).loadExactRoster([member.characterId]);
+    var player = snapshots.single;
+    if (member.maxHp > 0) {
+      player = player.copyWith(
+        maxHp: member.maxHp,
+        currentHp: member.currentHp,
+        maxQi: member.maxQi,
+        currentQi: member.currentQi,
+        openingSkillCooldowns: {
+          for (var i = 0; i < member.skillCooldownKeys.length; i++)
+            member.skillCooldownKeys[i]: member.skillCooldownTurns[i],
+        },
+      );
+    }
+    return (
+      playerSnapshot: player,
+      enemyDefs: enemyDefs,
+      seed: _stageSeed(run.seed, run.currentStage),
+      isBoss: stageCfg.role == 'boss',
+      cycleIndex: run.cycleIndex,
+      stage: run.currentStage,
+    );
+  }
+
+  Future<void> settlePhase0aStageResult({
+    required Phase0aGauntletStageResult result,
+    required BossGauntletConfig config,
+  }) async {
+    await _isar.writeTxn(() async {
+      final save = await _isar.saveDatas.get(0);
+      if (save == null) return;
+      final fresh = await _activeRun(save.id);
+      if (fresh == null) return;
+      if (fresh.members.length != 1 ||
+          fresh.currentStage < 1 ||
+          fresh.currentStage > config.stages.length) {
+        return;
+      }
+      final isBoss = config.stages[fresh.currentStage - 1].role == 'boss';
+      GauntletController.advancePhase0a(
+        run: fresh,
+        checkpoint: result.checkpoint,
+        leftWin: result.leftWin,
+        isBossStage: isBoss,
+      );
+      GauntletController.stageBossReward(
+        run: fresh,
+        config: config,
+        alreadyCleared: save.clearedGauntletIds.contains(gauntletId),
+      );
+      await _isar.bossGauntletRuns.put(fresh);
+    });
   }
 
   /// 事务外纯计算：load run → 校验 → 建当前关出战计划（满血基准队按会话快照继承

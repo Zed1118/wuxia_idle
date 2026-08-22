@@ -99,6 +99,24 @@ class GauntletController {
     }
   }
 
+  /// Phase 0A 单角色终态检查点推进。会话/奖励相位语义与 [advance] 完全一致，
+  /// 仅把引擎专属终态换成已归一化的生命/真气检查点。
+  static void advancePhase0a({
+    required BossGauntletRun run,
+    required GauntletMemberCheckpoint checkpoint,
+    required bool leftWin,
+    required bool isBossStage,
+  }) {
+    run.members = [_mergeCheckpoint(run.members.single, checkpoint)];
+    if (!leftWin) return;
+    if (isBossStage) {
+      run.sessionPhase = GauntletPhase.awaitingRewardChoice;
+    } else {
+      run.currentStage += 1;
+      run.sessionPhase = GauntletPhase.interlude;
+    }
+  }
+
   /// Boss 胜利固化奖励（C2.4b·§9.2）：进入 [GauntletPhase.awaitingRewardChoice] 时把
   /// [config] 三选一命名装备候选固化进 [run]（选择前不可重抽）+ 记首通判定
   /// （[alreadyCleared]＝`SaveData.clearedGauntletIds` 是否已含本副本）。非该相位 no-op。
@@ -155,4 +173,36 @@ class GauntletController {
       ..skillCooldownKeys = keys
       ..skillCooldownTurns = turns;
   }
+
+  static ActivityMemberSnapshot _mergeCheckpoint(
+    ActivityMemberSnapshot prior,
+    GauntletMemberCheckpoint checkpoint,
+  ) => ActivityMemberSnapshot()
+    ..characterId = prior.characterId
+    ..reservedEquipmentIds = List<int>.from(prior.reservedEquipmentIds)
+    ..reservedTechniqueIds = List<int>.from(prior.reservedTechniqueIds)
+    ..currentHp = checkpoint.currentHp
+    ..currentQi = checkpoint.currentQi
+    ..maxHp = checkpoint.maxHp
+    ..maxQi = checkpoint.maxQi
+    ..isDowned = checkpoint.currentHp <= 0
+    ..skillCooldownKeys = List<String>.from(prior.skillCooldownKeys)
+    ..skillCooldownTurns = List<int>.from(prior.skillCooldownTurns);
+}
+
+/// Phase 0A 与断魂庄会话之间的最小关次边界事实。
+final class GauntletMemberCheckpoint {
+  const GauntletMemberCheckpoint({
+    required this.characterId,
+    required this.currentHp,
+    required this.currentQi,
+    required this.maxHp,
+    required this.maxQi,
+  });
+
+  final int characterId;
+  final int currentHp;
+  final int currentQi;
+  final int maxHp;
+  final int maxQi;
 }

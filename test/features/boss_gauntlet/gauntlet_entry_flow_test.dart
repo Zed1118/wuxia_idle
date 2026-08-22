@@ -14,9 +14,12 @@ import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dar
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/application/phase0a_gauntlet_gate.dart';
 import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/presentation/gauntlet_entry_flow.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/presentation/phase0a_gauntlet_battle_host.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
@@ -47,6 +50,7 @@ void main() {
   });
 
   tearDown(() async {
+    Phase0aGauntletGate.testOverride = null;
     if (Isar.getInstance('wuxia_save_slot1') != null) {
       await IsarSetup.close();
     }
@@ -202,6 +206,37 @@ void main() {
     expect(run?.sessionPhase, GauntletPhase.awaitingRewardChoice);
   });
 
+  testWidgets('灰度开启 + 单成员真实入口挂载 Phase 0A 战斗屏', (tester) async {
+    tester.view.physicalSize = const Size(1280, 720);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    Phase0aGauntletGate.testOverride = true;
+    await tester.runAsync(() async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      await putRun(1);
+    });
+    final config = GameRepository.instance.bossGauntletConfig!;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [gauntletConfigProvider.overrideWithValue(config)],
+        child: const MaterialApp(home: _FlowHost()),
+      ),
+    );
+    await pumpUntilFound(tester, find.byType(Phase0aBattleScreen));
+
+    expect(find.byType(Phase0aGauntletBattleHost), findsOneWidget);
+    expect(
+      find.byType(Phase0aBattleScreen),
+      findsOneWidget,
+      reason: tester
+          .widgetList<SelectableText>(find.byType(SelectableText))
+          .map((widget) => widget.data)
+          .join(' | '),
+    );
+    expect(find.text('flow-root'), findsNothing);
+  });
+
   testWidgets('全链：精英关胜 → 整备屏 → 继续闯关 → Boss 关胜 → 奖励屏', (tester) async {
     tester.view.physicalSize = const Size(1280, 720);
     tester.view.devicePixelRatio = 1.0;
@@ -278,9 +313,9 @@ void main() {
 
 /// 测试宿主：postFrame 起 runGauntletFlow（注入确定性战斗驱动）。
 class _FlowHost extends ConsumerStatefulWidget {
-  const _FlowHost({required this.battle});
+  const _FlowHost({this.battle});
 
-  final Future<bool> Function() Function(WidgetRef ref) battle;
+  final Future<bool> Function() Function(WidgetRef ref)? battle;
 
   @override
   ConsumerState<_FlowHost> createState() => _FlowHostState();
@@ -294,7 +329,7 @@ class _FlowHostState extends ConsumerState<_FlowHost> {
       runGauntletFlow(
         context: context,
         ref: ref,
-        runStageBattleForTest: widget.battle(ref),
+        runStageBattleForTest: widget.battle?.call(ref),
       );
     });
   }
