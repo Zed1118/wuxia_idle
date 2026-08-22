@@ -10,7 +10,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_damage_ca
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_wave_battle_flow.dart';
-import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+import 'package:wuxia_idle/features/combat_shared/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';

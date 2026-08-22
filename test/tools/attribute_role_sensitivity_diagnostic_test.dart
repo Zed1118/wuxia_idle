@@ -18,7 +18,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/battle_resolution.dart';
 import 'package:wuxia_idle/features/battle/application/legacy_battle_injury_adapter.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+import 'package:wuxia_idle/features/combat_shared/domain/damage_calculator.dart';
 import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart';
 import 'package:wuxia_idle/features/cultivation/application/cultivation_service.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_proficiency.dart';

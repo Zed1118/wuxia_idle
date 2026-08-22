@@ -6,7 +6,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/numbers_config.dart';
-import 'damage_calculator.dart';
+import '../../combat_shared/domain/damage_calculator.dart';
 import '../../../shared/battle_shared/battle_result.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_builder.dart';
 

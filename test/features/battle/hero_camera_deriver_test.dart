@@ -4,7 +4,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+import 'package:wuxia_idle/features/combat_shared/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/presentation/victory_ceremony.dart';
 
 // ── Fixture builders (沿 top_damage_contributor_test.dart 体例) ──────────────

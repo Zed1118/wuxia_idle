@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/battle_log.dart';
 import '../domain/battle_state.dart';
 import '../domain/battle_skill_utils.dart';
-import '../domain/damage_calculator.dart';
+import '../../combat_shared/domain/damage_calculator.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';

@@ -4,7 +4,7 @@ import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/defs/phase0a_skill_behavior.dart';
 import '../../../../data/numbers_config.dart';
-import '../../domain/damage_calculator.dart';
+import '../../../combat_shared/domain/damage_calculator.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 
 /// Phase 0A 伤害快照:不可变、显式注入的 `calculateResolved` 入参载体。

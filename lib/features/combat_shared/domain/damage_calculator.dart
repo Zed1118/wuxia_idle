@@ -12,7 +12,7 @@ import '../../../shared/utils/math_random.dart';
 import '../../cultivation/domain/skill_proficiency.dart';
 import '../../../shared/battle_shared/derived_stats.dart';
 
-/// 伤害计算器（phase1_tasks.md T10）。
+/// Engine-neutral damage calculator（phase1_tasks.md T10）。
 ///
 /// 实现 GDD §5.3 / §5.4 / §5.5 全套公式：
 /// 闪避判定 → 基础伤害 → 心法修炼度 → 流派克制 → 暴击 → 防御率 → 境界差。

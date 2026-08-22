@@ -14,7 +14,7 @@ import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
-import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+import 'package:wuxia_idle/features/combat_shared/domain/damage_calculator.dart';
 import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart'
     show RealmUtils;
 import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strategy.dart';

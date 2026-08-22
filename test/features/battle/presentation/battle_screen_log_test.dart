@@ -13,7 +13,7 @@ import 'package:wuxia_idle/features/battle/presentation/battle_atmosphere_overla
 import 'package:wuxia_idle/features/battle/presentation/battle_effect_sprite.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/projectile_trail.dart';
-import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
+import 'package:wuxia_idle/features/combat_shared/domain/damage_calculator.dart';
 import 'package:wuxia_idle/shared/audio/audio_assets.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';

@@ -10,7 +10,7 @@ import '../battle_ai.dart';
 import '../battle_skill_utils.dart';
 import '../../../../shared/battle_shared/enum_localizations.dart';
 import '../battle_state.dart';
-import '../damage_calculator.dart';
+import '../../../combat_shared/domain/damage_calculator.dart';
 import '../../../../shared/battle_shared/qi_cycle.dart';
 import '../../../cultivation/domain/skill_proficiency.dart';
 import '../../../boss_gauntlet/domain/qi_drain_effect.dart';

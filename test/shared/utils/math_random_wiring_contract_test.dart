@@ -145,7 +145,7 @@ void main() {
       const paths = [
         'lib/features/battle/domain/strategy/default_ground_strategy.dart',
         'lib/features/battle/domain/strategy/mass_battle_strategy.dart',
-        'lib/features/battle/domain/damage_calculator.dart',
+        'lib/features/combat_shared/domain/damage_calculator.dart',
         'lib/features/battle/application/battle_providers.dart',
         'lib/features/event/application/game_event_service.dart',
         'lib/features/expedition/application/phase0a_expedition_combat_runner.dart',
