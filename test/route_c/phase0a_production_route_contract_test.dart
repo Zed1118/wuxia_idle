@@ -72,4 +72,32 @@ void main() {
       reason: '中立服务必须可独立于旧 3v3 删除:\n${violations.join('\n')}',
     );
   });
+
+  test('全局生产模块只能从 battle 目录导入 Phase 0A', () {
+    final forbiddenImport = RegExp(
+      r'''^import\s+['"][^'"]*/battle/(?:application|domain|presentation)/(?!phase0a/)''',
+      multiLine: true,
+    );
+    final violations = <String>[];
+
+    for (final root in ['lib/features', 'lib/shared']) {
+      for (final entity in Directory(root).listSync(recursive: true)) {
+        if (entity is! File || !entity.path.endsWith('.dart')) continue;
+        if (entity.path.startsWith('lib/features/battle/') ||
+            entity.path.startsWith('lib/features/debug/')) {
+          continue;
+        }
+        final source = entity.readAsStringSync();
+        for (final match in forbiddenImport.allMatches(source)) {
+          violations.add('${entity.path}: ${match.group(0)}');
+        }
+      }
+    }
+
+    expect(
+      violations,
+      isEmpty,
+      reason: '生产模块不得依赖待删旧核:\n${violations.join('\n')}',
+    );
+  });
 }
