@@ -148,7 +148,7 @@ void main() {
         'lib/features/battle/domain/damage_calculator.dart',
         'lib/features/battle/application/battle_providers.dart',
         'lib/features/event/application/game_event_service.dart',
-        'lib/features/expedition/application/expedition_battle_runner.dart',
+        'lib/features/expedition/application/phase0a_expedition_combat_runner.dart',
       ];
       for (final path in paths) {
         final source = File(path).readAsStringSync();
