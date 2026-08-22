@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/battle/application/legacy_3v3_combatant_adapter.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -11,7 +10,6 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_ai_
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_wave_battle_flow.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/combat_shared/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
@@ -19,6 +17,8 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.d
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_proficiency.dart';
+import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
+import '../../../../support/combatant_snapshot_fixture.dart';
 import '../../../../support/test_data.dart';
 
 /// Phase 0A 生产 flow 装配器红测(第六批派单 §必测证伪点):
@@ -29,7 +29,7 @@ import '../../../../support/test_data.dart';
 ///    binding 装配期 fail-fast 且 RNG 下一值等于未消费对照;
 /// ③ null control-only 完整 binding 合法;外部 combatants/waves/bindings
 ///    mutation 不污染已装配 flow;
-/// ④ 非零吸血/动态 guardian/vulnerability/stagger 经装配入口立即 fail-fast。
+/// ④ 非零吸血经装配入口立即 fail-fast；guardian/vulnerability 由运行态处理。
 void main() {
   setUp(() async {
     await loadTestGameRepository();
@@ -71,7 +71,7 @@ void main() {
     Phase0aDamageKind.clear: null,
   };
 
-  BattleCharacter makeCharacter({
+  CombatantSnapshot makeCharacter({
     int characterId = 1,
     TechniqueSchool school = TechniqueSchool.gangMeng,
     int internalForce = 600,
@@ -92,34 +92,24 @@ void main() {
     double? guardianWardMult,
     List<String> guardianDefIds = const [],
     double? vulnerabilityMult,
-    int staggerTicksRemaining = 0,
-    double? staggerDefenseDownOverride,
   }) {
-    return BattleCharacter(
+    return testCombatantSnapshot(
       characterId: characterId,
       name: 'c$characterId',
       realmTier: realmTier,
       realmLayer: realmLayer,
       school: school,
       maxHp: 1000,
-      currentHp: 1000,
       internalForce: internalForce,
       maxQi: 100,
-      currentQi: 100,
       speed: 100,
       criticalRate: criticalRate,
       evasionRate: evasionRate,
       defenseRate: defenseRate,
       totalEquipmentAttack: totalEquipmentAttack,
       mainCultivationLayer: mainCultivationLayer,
-      availableSkills: const [],
-      skillCooldowns: const {},
       skillUses: skillUses,
       activeBuffs: activeBuffs,
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: 0,
-      slotIndex: 0,
       attackPowerMultiplier: attackPowerMultiplier,
       outputMultiplier: outputMultiplier,
       schoolDamageTakenMult: schoolDamageTakenMult,
@@ -128,14 +118,12 @@ void main() {
       guardianWardMult: guardianWardMult,
       guardianDefIds: guardianDefIds,
       vulnerabilityMult: vulnerabilityMult,
-      staggerTicksRemaining: staggerTicksRemaining,
-      staggerDefenseDownOverride: staggerDefenseDownOverride,
     );
   }
 
   /// 全场四个角色的生产快照源:玩家带 150 次普攻使用记录(熟练度非 1.0),
   /// 敌三各不同内力/装备/防御/暴击,保证逐击数值可区分。
-  Map<String, BattleCharacter> defaultCharacters() => {
+  Map<String, CombatantSnapshot> defaultCharacters() => {
     'player': makeCharacter(
       criticalRate: 0.5,
       skillUses: {basicSkill.id: 150},
@@ -167,14 +155,11 @@ void main() {
   };
 
   List<Phase0aCombatantInput> combatantsFrom(
-    Map<String, BattleCharacter> characters,
+    Map<String, CombatantSnapshot> characters,
   ) {
     return [
       for (final entry in characters.entries)
-        Phase0aCombatantInput(
-          actorId: entry.key,
-          snapshot: Legacy3v3CombatantAdapter.toSnapshot(entry.value),
-        ),
+        Phase0aCombatantInput(actorId: entry.key, snapshot: entry.value),
     ];
   }
 
@@ -304,8 +289,8 @@ void main() {
   /// direct 对照:与 adapter 冻结映射逐项同口径(内力/装备/修炼/流派/境界/
   /// 防闪暴/双乘子/破甲/弱点表),熟练度经同一 SkillProficiency 调用复算。
   (int, bool) directResolve({
-    required BattleCharacter attacker,
-    required BattleCharacter defender,
+    required CombatantSnapshot attacker,
+    required CombatantSnapshot defender,
     required math.Random rng,
   }) {
     final cfg = numbers().skillProficiency;
@@ -669,9 +654,7 @@ void main() {
       combatants.add(
         Phase0aCombatantInput(
           actorId: 'e9',
-          snapshot: Legacy3v3CombatantAdapter.toSnapshot(
-            makeCharacter(characterId: 9),
-          ),
+          snapshot: makeCharacter(characterId: 9),
         ),
       );
       waves.add(
@@ -701,35 +684,18 @@ void main() {
       expect(flowA.outcome, flowB.outcome);
     });
 
-    test('非零吸血/活跃踉跄经装配入口立即 fail-fast,RNG 未消费', () {
-      final cases =
-          <(String, BattleCharacter Function(BattleCharacter), String)>[
-            ('吸血', (c) => makeCharacter(forgingLifestealPct: 0.05), '吸血'),
-            ('踉跄 ticks', (c) => makeCharacter(staggerTicksRemaining: 2), '踉跄'),
-            (
-              '踉跄减防',
-              (c) => makeCharacter(staggerDefenseDownOverride: 0.3),
-              '踉跄',
-            ),
-          ];
-      for (final (label, make, needle) in cases) {
-        const seed = 8;
-        final rng = math.Random(seed);
-        final characters = defaultCharacters();
-        characters['e1'] = make(characters['e1']!);
-        expect(
-          () => assemble(combatants: combatantsFrom(characters), rng: rng),
-          throwsA(
-            isA<StateError>().having(
-              (e) => e.message,
-              'message',
-              contains(needle),
-            ),
-          ),
-          reason: '$label 必须经装配入口构造期 fail-fast',
-        );
-        expectRngUntouched(rng, seed);
-      }
+    test('非零吸血经装配入口立即 fail-fast,RNG 未消费', () {
+      const seed = 8;
+      final rng = math.Random(seed);
+      final characters = defaultCharacters();
+      characters['e1'] = makeCharacter(forgingLifestealPct: 0.05);
+      expect(
+        () => assemble(combatants: combatantsFrom(characters), rng: rng),
+        throwsA(
+          isA<StateError>().having((e) => e.message, 'message', contains('吸血')),
+        ),
+      );
+      expectRngUntouched(rng, seed);
     });
 
     test('脆弱窗口经装配入口支持:不再构造期拒绝(2026-08-22)', () {
