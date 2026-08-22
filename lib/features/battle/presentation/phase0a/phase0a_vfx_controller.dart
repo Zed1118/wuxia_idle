@@ -29,6 +29,12 @@ enum Phase0aVfxKind {
   /// 波次横幅(携带对外 1-based 波次序号与总波数)。
   waveBanner,
 
+  /// Boss 蓄力起手预警。
+  bossChargeWarning,
+
+  /// 玩家成功破招反馈。
+  bossChargeInterrupted,
+
   /// 终局封签(胜/败全场唯一)。
   outcomeSeal,
 }
@@ -49,6 +55,7 @@ final class Phase0aVfxEntry {
     this.waveIndex,
     this.waveTotal,
     this.isVictory,
+    this.statusTicks,
     this.anchor,
     this.source,
     this.vfxTarget,
@@ -63,6 +70,7 @@ final class Phase0aVfxEntry {
   final int? waveIndex;
   final int? waveTotal;
   final bool? isVictory;
+  final int? statusTicks;
 
   /// 单点 VFX 的世界坐标锚点(近战墨痕 / Q 涡旋 / R 墨爆 / 死亡墨散)。
   final ArenaVector? anchor;
@@ -245,6 +253,25 @@ final class Phase0aVfxController {
               waveTotal: event.waveTotal,
             ),
           );
+        case Phase0aBossChargeStarted():
+          push(
+            Phase0aVfxEntry(
+              kind: Phase0aVfxKind.bossChargeWarning,
+              actorId: event.actor,
+              statusTicks: event.chargeTicks,
+              anchor: _actors[event.actor]?.position,
+            ),
+          );
+        case Phase0aBossChargeInterrupted():
+          push(
+            Phase0aVfxEntry(
+              kind: Phase0aVfxKind.bossChargeInterrupted,
+              actorId: event.actor,
+              targetId: event.target,
+              statusTicks: event.staggerTicks,
+              anchor: _actors[event.target]?.position,
+            ),
+          );
         case Phase0aBattleVictory():
           push(
             const Phase0aVfxEntry(
@@ -264,8 +291,6 @@ final class Phase0aVfxController {
         case Phase0aAttackStarted():
         case Phase0aSkillStarted():
         case Phase0aBossPhaseChanged():
-        case Phase0aBossChargeStarted():
-        case Phase0aBossChargeInterrupted():
         case Phase0aEnemySkillStarted():
         case Phase0aSkillAvailabilityChanged():
         case Phase0aWaveCleared():

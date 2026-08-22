@@ -16,6 +16,13 @@ void main() {
       expect(VisualRoute.phase0aBattlePlayable.id, 'phase0a_battle_playable');
     });
 
+    test('Boss 机制实机 route id 可解析', () {
+      expect(
+        parseVisualRoute('phase0a_battle_boss_mechanics'),
+        VisualRoute.phase0aBattleBossMechanics,
+      );
+    });
+
     test('反馈静态验收路由 id 可解析', () {
       const routes = <VisualRoute, String>{
         VisualRoute.phase0aBattleAttackFeedback:
@@ -59,6 +66,14 @@ void main() {
         isTrue,
       );
       expect(hostSource.contains('visualRouteFeedbackHoldSeconds'), isTrue);
+      expect(
+        hostSource.contains('VisualRoute.phase0aBattleBossMechanics'),
+        isTrue,
+      );
+      expect(
+        hostSource.contains('data/phase0a_debug_boss_battle.yaml'),
+        isTrue,
+      );
     });
 
     test('main.dart 与 stage_entry_flow.dart 不引用该路由', () {

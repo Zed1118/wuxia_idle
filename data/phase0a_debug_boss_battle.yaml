@@ -1,0 +1,105 @@
+# Debug visual acceptance only. Boss mechanism fixture; never production balance.
+meta:
+  seed: 20260822
+  fixed_delta_seconds: 0.1
+  initial_tick: 0
+  initial_seq: 1
+
+arena:
+  min_x: -640.0
+  max_x: 640.0
+  min_y: -260.0
+  max_y: 260.0
+
+combat_defaults:
+  realm_tier: xueTu
+  realm_layer: ruMen
+  cultivation_layer: chuKui
+  player_school: gangMeng
+  enemy_school: yinRou
+  attack_power_multiplier: 1.0
+  output_multiplier: 1.0
+  forging_pierce_pct: 0.0
+  forging_lifesteal_pct: 0.0
+  action_point: 0
+  basic_qi_delta: 0
+  clear_qi_delta: -25
+  skill_cooldown_turns: 0
+
+player:
+  id: player
+  character_id: 1
+  position: [-320.0, 0.0]
+  facing: [1.0, 0.0]
+  move_speed: 210.0
+  max_health: 15000
+  qi: 100
+  internal_force: 600
+  equipment_attack: 130
+  defense_rate: 0.15
+  critical_rate: 0.20
+  evasion_rate: 0.0
+  attack:
+    range: 360.0
+    half_arc_radians: 0.72
+    cooldown_seconds: 0.55
+    power_multiplier: 500
+  gather:
+    slot: gather
+    ring_radius: 120.0
+    effect_radius: 520.0
+    qi_cost: 25
+    cooldown_seconds: 5.0
+    phase0a_behavior:
+      geometry: {shape: radial, anchor: caster, radius: 520.0}
+      effects:
+        - {type: pull, destinationRadius: 120.0}
+  clear:
+    slot: clear
+    effect_radius: 520.0
+    qi_cost: 25
+    cooldown_seconds: 8.0
+    power_multiplier: 900
+    phase0a_behavior:
+      geometry: {shape: radial, anchor: caster, radius: 520.0}
+      effects:
+        - {type: damage}
+        - {type: stagger}
+        - {type: break, points: 1}
+
+enemy_ai:
+  attack_range: 82.0
+  attack_half_arc_radians: 0.9
+  attack_cooldown_seconds: 1.0
+
+enemy_templates:
+  boss:
+    internal_force: 260
+    equipment_attack: 80
+    defense_rate: 0.08
+    critical_rate: 0.0
+    evasion_rate: 0.0
+    qi: 40
+    move_speed: 110.0
+    initial_attack_cooldown: 0.0
+
+waves:
+  - enemies:
+      - id: wave2_elite
+        character_id: 6
+        slot_index: 0
+        role: boss
+        max_health: 12000
+        position: [-240.0, 0.0]
+        boss:
+          charge_ticks: 3
+          stagger_ticks: 3
+          vulnerability_mult: 0.15
+          charge_skill:
+            id: phase0a_debug_boss_charge
+            name: 蓄势重击
+            description: Boss 蓄力招式
+            type: powerSkill
+            power_multiplier: 1600
+            qi_delta: -20
+            cooldown_turns: 5

@@ -90,6 +90,7 @@ import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
 import '../../battle/application/phase0a/phase0a_wave_battle_flow.dart';
+import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../application/phase0a_debug_battle_fixture.dart';
 import '../../encounter/presentation/encounter_dialog.dart';
 import '../../battle_record/domain/boss_memory.dart';
@@ -528,6 +529,20 @@ Future<Widget> buildVisualTarget(
                 return fresh.flow;
               }
             : null,
+      );
+    case VisualRoute.phase0aBattleBossMechanics:
+      final fixture = await Phase0aDebugBattleFixture.load(
+        assetLoader: rootBundle.loadString,
+        numbers: GameRepository.instance.numbers,
+        assetPath: 'data/phase0a_debug_boss_battle.yaml',
+      );
+      return _Phase0aBossMechanicsPreview(
+        controller: Phase0aBattleController(
+          flow: fixture.flow,
+          roster: fixture.roster,
+          fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+        ),
+        fixedDeltaSeconds: fixture.fixedDeltaSeconds,
       );
     case VisualRoute.mainlineFirstClearBattle:
       await isar.writeTxn(() => isar.mainlineProgress.clear());
@@ -1499,6 +1514,86 @@ class _Phase0aFeedbackPreviewState extends State<_Phase0aFeedbackPreview> {
     feedbackHoldSeconds: widget.initialCommand == null
         ? Phase0aPresentationTokens.feedbackHoldSeconds
         : Phase0aPresentationTokens.visualRouteFeedbackHoldSeconds,
+  );
+}
+
+/// Boss fixture driver:先让真实敌方 AI 起蓄力,观察到 charging 后立即发
+/// typed R 破招,并冻结在 stagger/vulnerability 窗口供目检。
+class _Phase0aBossMechanicsPreview extends StatefulWidget {
+  const _Phase0aBossMechanicsPreview({
+    required this.controller,
+    required this.fixedDeltaSeconds,
+  });
+
+  final Phase0aBattleController controller;
+  final double fixedDeltaSeconds;
+
+  @override
+  State<_Phase0aBossMechanicsPreview> createState() =>
+      _Phase0aBossMechanicsPreviewState();
+}
+
+class _Phase0aBossMechanicsPreviewState
+    extends State<_Phase0aBossMechanicsPreview> {
+  Timer? _timer;
+  int _guardedHoldTicks = 0;
+  int _chargeHoldTicks = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(
+      Duration(
+        milliseconds:
+            (widget.fixedDeltaSeconds * Duration.millisecondsPerSecond).round(),
+      ),
+      (_) => _advanceBossFixture(),
+    );
+  }
+
+  void _advanceBossFixture() {
+    if (!mounted || widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
+      _timer?.cancel();
+      return;
+    }
+    final boss = widget.controller.state.enemies.first;
+    if (boss.staggerTicksRemaining > 0) {
+      _timer?.cancel();
+      return;
+    }
+    if (widget.controller.events.isEmpty) {
+      final requiredGuardedTicks =
+          (Phase0aPresentationTokens.bossFixtureGuardedHoldSeconds /
+                  widget.fixedDeltaSeconds)
+              .ceil();
+      if (_guardedHoldTicks++ < requiredGuardedTicks) return;
+    }
+    if (boss.chargingCast != null) {
+      final requiredHoldTicks =
+          (Phase0aPresentationTokens.bossFixtureChargeHoldSeconds /
+                  widget.fixedDeltaSeconds)
+              .ceil();
+      if (_chargeHoldTicks++ < requiredHoldTicks) return;
+    }
+    widget.controller.step(
+      boss.chargingCast == null
+          ? null
+          : const Phase0aPlayerCommand(clear: true),
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Phase0aBattleScreen(
+    controller: widget.controller,
+    autoStep: false,
+    feedbackHoldSeconds:
+        Phase0aPresentationTokens.visualRouteFeedbackHoldSeconds,
   );
 }
 

@@ -170,6 +170,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
           _heldFeedback.removeWhere(
             (held) => _isAttackFeedback(held.entry.kind),
           );
+        } else if (_isBossMechanicFeedback(entry.kind)) {
+          _heldFeedback.removeWhere(
+            (held) => _isBossMechanicFeedback(held.entry.kind),
+          );
         } else if (_isSingletonFeedback(entry.kind)) {
           _heldFeedback.removeWhere((held) => held.entry.kind == entry.kind);
         }
@@ -234,6 +238,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aVfxKind.palmTrail ||
     Phase0aVfxKind.gatherVortex ||
     Phase0aVfxKind.clearBurst ||
+    Phase0aVfxKind.bossChargeWarning ||
+    Phase0aVfxKind.bossChargeInterrupted ||
     Phase0aVfxKind.waveBanner ||
     Phase0aVfxKind.outcomeSeal => true,
     Phase0aVfxKind.damagePopup ||
@@ -243,6 +249,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
 
   static bool _isAttackFeedback(Phase0aVfxKind kind) =>
       kind == Phase0aVfxKind.meleeSlash || kind == Phase0aVfxKind.palmTrail;
+
+  static bool _isBossMechanicFeedback(Phase0aVfxKind kind) =>
+      kind == Phase0aVfxKind.bossChargeWarning ||
+      kind == Phase0aVfxKind.bossChargeInterrupted;
 
   double _feedbackLifetime(Phase0aVfxKind kind) {
     // 视觉验收路由会显式延长 hold，必须继续尊重该公开契约。
@@ -259,6 +269,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       Phase0aVfxKind.gatherPull => Phase0aPresentationTokens.gatherVfxSeconds,
       Phase0aVfxKind.clearBurst => Phase0aPresentationTokens.clearVfxSeconds,
       Phase0aVfxKind.defeatInk => Phase0aPresentationTokens.defeatVfxSeconds,
+      Phase0aVfxKind.bossChargeWarning =>
+        Phase0aPresentationTokens.bossChargeFeedbackSeconds,
+      Phase0aVfxKind.bossChargeInterrupted =>
+        Phase0aPresentationTokens.bossInterruptFeedbackSeconds,
       Phase0aVfxKind.waveBanner || Phase0aVfxKind.outcomeSeal =>
         Phase0aPresentationTokens.feedbackHoldSeconds,
     };
@@ -894,9 +908,107 @@ class _ActorStandee extends StatelessWidget {
               ),
             ),
           ),
+        if (enemy && actor.vulnerabilityMult != null)
+          Positioned(
+            left: 0,
+            right: 0,
+            top:
+                Phase0aPresentationTokens.actorHpHeight +
+                Phase0aPresentationTokens.actorNameFontSize +
+                Phase0aPresentationTokens.bossStatusGap * 2,
+            child: Center(
+              child: _BossStatusTag(
+                key: ValueKey(
+                  actor.chargingCast != null || actor.staggerTicksRemaining > 0
+                      ? 'phase0a_vulnerability_open_${actor.id}'
+                      : 'phase0a_vulnerability_guarded_${actor.id}',
+                ),
+                label:
+                    actor.chargingCast != null ||
+                        actor.staggerTicksRemaining > 0
+                    ? UiStrings.phase0aVulnerabilityOpen
+                    : UiStrings.phase0aVulnerabilityGuarded,
+                accent:
+                    actor.chargingCast != null ||
+                        actor.staggerTicksRemaining > 0
+                    ? WuxiaUi.gold
+                    : WuxiaUi.qingOnDark,
+              ),
+            ),
+          ),
+        if (enemy && actor.chargingCast != null)
+          Positioned(
+            left: 0,
+            right: 0,
+            top:
+                Phase0aPresentationTokens.actorHpHeight +
+                Phase0aPresentationTokens.actorNameFontSize +
+                Phase0aPresentationTokens.bossStatusGap * 9,
+            child: Center(
+              child: _BossStatusTag(
+                key: ValueKey('phase0a_charge_warning_${actor.id}'),
+                label:
+                    '${UiStrings.phase0aBossChargeWarning} ${actor.chargeTicksRemaining}',
+                accent: WuxiaUi.jiang,
+              ),
+            ),
+          ),
+        if (enemy && actor.staggerTicksRemaining > 0)
+          Positioned(
+            left: 0,
+            right: 0,
+            top:
+                Phase0aPresentationTokens.actorHpHeight +
+                Phase0aPresentationTokens.actorNameFontSize +
+                Phase0aPresentationTokens.bossStatusGap * 9,
+            child: Center(
+              child: _BossStatusTag(
+                key: ValueKey('phase0a_staggered_${actor.id}'),
+                label:
+                    '${UiStrings.phase0aStaggered} ${actor.staggerTicksRemaining}',
+                accent: WuxiaUi.gold,
+              ),
+            ),
+          ),
       ],
     );
   }
+}
+
+class _BossStatusTag extends StatelessWidget {
+  const _BossStatusTag({super.key, required this.label, required this.accent});
+
+  final String label;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: WuxiaUi.ink.withValues(alpha: 0.82),
+      border: Border.all(
+        color: accent,
+        width: Phase0aPresentationTokens.bossStatusBorderWidth,
+      ),
+      borderRadius: BorderRadius.circular(
+        Phase0aPresentationTokens.bossStatusRadius,
+      ),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Phase0aPresentationTokens.bossStatusPaddingH,
+        vertical: Phase0aPresentationTokens.bossStatusPaddingV,
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        style: TextStyle(
+          color: accent,
+          fontSize: Phase0aPresentationTokens.bossStatusFontSize,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    ),
+  );
 }
 
 class _HitEmphasisFrame extends StatelessWidget {
@@ -1097,6 +1209,22 @@ class _FeedbackLayerState extends State<_FeedbackLayer>
           );
         case Phase0aVfxKind.waveBanner:
           children.add(_waveBanner(entry));
+        case Phase0aVfxKind.bossChargeWarning:
+          children.add(
+            _bossMechanicBanner(
+              key: const ValueKey('phase0a_boss_charge_banner'),
+              label: UiStrings.phase0aBossChargeWarning,
+              accent: WuxiaUi.jiang,
+            ),
+          );
+        case Phase0aVfxKind.bossChargeInterrupted:
+          children.add(
+            _bossMechanicBanner(
+              key: const ValueKey('phase0a_boss_interrupt_banner'),
+              label: UiStrings.phase0aBossChargeInterrupted,
+              accent: WuxiaUi.gold,
+            ),
+          );
         case Phase0aVfxKind.outcomeSeal:
           break;
       }
@@ -1109,6 +1237,52 @@ class _FeedbackLayerState extends State<_FeedbackLayer>
         child: RepaintBoundary(
           key: const ValueKey('phase0a_feedback_layer'),
           child: Stack(children: children),
+        ),
+      ),
+    );
+  }
+
+  Widget _bossMechanicBanner({
+    required Key key,
+    required String label,
+    required Color accent,
+  }) {
+    final left =
+        (widget.stage.safeRect.center.dx -
+                Phase0aPresentationTokens.vfxBannerWidth / 2)
+            .clamp(
+              widget.stage.safeRect.left,
+              widget.stage.safeRect.right -
+                  Phase0aPresentationTokens.vfxBannerWidth,
+            )
+            .toDouble();
+    final top =
+        (Phase0aPresentationTokens.vfxBannerTop +
+                Phase0aPresentationTokens.vfxBannerHeight +
+                Phase0aPresentationTokens.bossMechanicBannerTopGap)
+            .clamp(
+              widget.stage.safeRect.top,
+              widget.stage.safeRect.bottom -
+                  Phase0aPresentationTokens.vfxBannerHeight,
+            )
+            .toDouble();
+    return Positioned(
+      key: key,
+      left: left,
+      top: top,
+      width: Phase0aPresentationTokens.vfxBannerWidth,
+      height: Phase0aPresentationTokens.vfxBannerHeight,
+      child: CustomPaint(
+        painter: const _PaperBannerPainter(),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: accent,
+              fontSize: Phase0aPresentationTokens.vfxOutcomeFontSize,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
         ),
       ),
     );
@@ -1128,6 +1302,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer>
       top:
           anchor.dy -
           Phase0aPresentationTokens.actorHeight -
+          Phase0aPresentationTokens.vfxPopupLift -
           index * Phase0aPresentationTokens.vfxPopupGap,
       child: Opacity(
         opacity: _feedbackOpacity(held.progress),

@@ -61,6 +61,47 @@ void main() {
   });
 
   test(
+    'Boss fixture exposes chargeCast/vulnerability and breaks into stagger',
+    () async {
+      final bossFixture = await Phase0aDebugBattleFixture.load(
+        assetLoader: loadTestAsset,
+        numbers: GameRepository.instance.numbers,
+        assetPath: 'data/phase0a_debug_boss_battle.yaml',
+      );
+      final boss = bossFixture.flow.state.enemies.single;
+      expect(boss.chargeCast, isNotNull);
+      expect(boss.vulnerabilityMult, 0.15);
+      expect(boss.staggerTicksTotal, 3);
+      expect(bossFixture.flow.state.player.qiCurrent, 100);
+
+      final controller = Phase0aBattleController(
+        flow: bossFixture.flow,
+        roster: bossFixture.roster,
+        fixedDeltaSeconds: bossFixture.fixedDeltaSeconds,
+      );
+      final chargeEvents = controller.step();
+      expect(chargeEvents.whereType<Phase0aBossChargeStarted>(), hasLength(1));
+      expect(
+        controller.feedback.map((entry) => entry.kind),
+        contains(Phase0aVfxKind.bossChargeWarning),
+      );
+      expect(controller.state.enemies.single.chargingCast, isNotNull);
+
+      controller.step(const Phase0aPlayerCommand(clear: true));
+      expect(
+        controller.lastEvents.whereType<Phase0aBossChargeInterrupted>(),
+        hasLength(1),
+      );
+      expect(
+        controller.feedback.map((entry) => entry.kind),
+        contains(Phase0aVfxKind.bossChargeInterrupted),
+      );
+      expect(controller.state.enemies.single.chargingCast, isNull);
+      expect(controller.state.enemies.single.staggerTicksRemaining, 3);
+    },
+  );
+
+  test(
     'controller merges queued input and consumes exact real-flow events',
     () {
       final controller = Phase0aBattleController(

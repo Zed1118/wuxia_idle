@@ -124,6 +124,7 @@ abstract final class Phase0aPresentationTokens {
   static const double vfxStrokeWidth = 4;
   static const double vfxThinStrokeWidth = 2;
   static const double vfxPopupGap = 38;
+  static const double vfxPopupLift = 42;
   static const double vfxPopupFontSize = 32;
   static const double damagePopupSeconds = 0.42;
   static const double meleeVfxSeconds = 0.18;
@@ -136,6 +137,19 @@ abstract final class Phase0aPresentationTokens {
   static const double vfxBannerHeight = 54;
   static const double vfxOutcomeSize = 168;
   static const double vfxOutcomeFontSize = 30;
+  static const double bossStatusFontSize = 12;
+  static const double bossStatusPaddingH = 8;
+  static const double bossStatusPaddingV = 3;
+  static const double bossStatusGap = 4;
+  static const double bossStatusBorderWidth = 1.4;
+  static const double bossStatusRadius = 3;
+  static const double bossChargeFeedbackSeconds = 1.1;
+  static const double bossInterruptFeedbackSeconds = 0.9;
+  static const double bossMechanicBannerTopGap = 12;
+
+  /// Boss 视觉验收路由在破招前保留蓄力态，供截图与人工观察。
+  static const double bossFixtureChargeHoldSeconds = 8;
+  static const double bossFixtureGuardedHoldSeconds = 8;
 
   /// 键盘焦点金边环宽(PlaqueButton 同体例:桌面键盘导航可见落点)。
   static const double focusRingWidth = 2;

@@ -63,6 +63,65 @@ List<Phase0aVfxEntry> _popups(List<Phase0aVfxEntry> entries) =>
     entries.where((e) => e.kind == Phase0aVfxKind.damagePopup).toList();
 
 void main() {
+  group('Phase0aVfxController Boss 机制反馈', () {
+    test('蓄力起手映射为带倒计时与 Boss 锚点的预警', () {
+      const bossPosition = ArenaVector(140, -20);
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(
+            enemies: [
+              _actor('boss', Phase0aSide.enemy, bossPosition.x, bossPosition.y),
+            ],
+          ),
+        );
+
+      final entries = controller.consume(const [
+        Phase0aBossChargeStarted(
+          seq: 1,
+          tick: 3,
+          actor: 'boss',
+          skillId: 'boss_signature',
+          chargeTicks: 4,
+        ),
+      ]);
+
+      expect(entries, hasLength(1));
+      expect(entries.single.kind, Phase0aVfxKind.bossChargeWarning);
+      expect(entries.single.actorId, 'boss');
+      expect(entries.single.statusTicks, 4);
+      expect(entries.single.anchor, bossPosition);
+    });
+
+    test('破招映射为带踉跄拍数与目标锚点的反馈', () {
+      const bossPosition = ArenaVector(80, 40);
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(
+            enemies: [
+              _actor('boss', Phase0aSide.enemy, bossPosition.x, bossPosition.y),
+            ],
+          ),
+        );
+
+      final entries = controller.consume(const [
+        Phase0aBossChargeInterrupted(
+          seq: 2,
+          tick: 4,
+          actor: 'player',
+          target: 'boss',
+          skillId: 'boss_signature',
+          staggerTicks: 3,
+        ),
+      ]);
+
+      expect(entries, hasLength(1));
+      expect(entries.single.kind, Phase0aVfxKind.bossChargeInterrupted);
+      expect(entries.single.targetId, 'boss');
+      expect(entries.single.statusTicks, 3);
+      expect(entries.single.anchor, bossPosition);
+    });
+  });
+
   group('Phase0aEventSequencer seq 排序与去重', () {
     test('乱序 batch 按 seq 升序输出', () {
       final sequencer = Phase0aEventSequencer();

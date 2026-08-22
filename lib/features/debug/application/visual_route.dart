@@ -76,6 +76,10 @@ enum VisualRoute {
     'phase0a_battle_clear_feedback',
     'Phase 0A 单角色战斗·首拍 R 清场反馈静态验收',
   ),
+  phase0aBattleBossMechanics(
+    'phase0a_battle_boss_mechanics',
+    'Phase 0A Boss charge / break / stagger / vulnerability fixture',
+  ),
   mainlineFirstClearBattle(
     'mainline_first_clear_battle',
     '主线首通真战斗验收·真 stage_01_03 + readable_first_clear 调参 + 起手暂停可单步',

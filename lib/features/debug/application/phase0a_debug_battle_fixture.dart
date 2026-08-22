@@ -1,13 +1,16 @@
 import 'dart:math';
 
 import '../../../core/domain/enums.dart';
+import '../../../data/defs/phase0a_skill_behavior.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/numbers_config.dart';
 import '../../../data/yaml_loader.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
 import '../../battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
+import '../../battle/application/phase0a/phase0a_enemy_skill_binding.dart';
 import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
+import '../../battle/application/phase0a/phase0a_tactical_skill_binding.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_wave_battle_flow.dart';
 import '../../battle/domain/phase0a/arena_vector.dart';
@@ -40,6 +43,7 @@ final class Phase0aDebugBattleFixture {
   static Future<Phase0aDebugBattleFixture> load({
     required Phase0aDebugAssetLoader assetLoader,
     required NumbersConfig numbers,
+    String assetPath = Phase0aDebugBattleFixture.assetPath,
   }) async {
     final config = _DebugBattleConfig.fromYaml(
       parseYamlMap(await assetLoader(assetPath)),
@@ -179,19 +183,16 @@ final class _DebugBattleConfig {
 
   Map<Phase0aDamageKind, SkillDef?> moveBindings() {
     final attack = _map(player, 'attack');
-    final clear = _map(player, 'clear');
+    final clear = _clearSkill();
+    final tactical = _tacticalSkills();
     return Map.unmodifiable({
       Phase0aDamageKind.basic: _skill(
         id: 'phase0a_debug_basic',
         multiplier: _integer(attack, 'power_multiplier'),
         qiDelta: _integer(defaults, 'basic_qi_delta'),
       ),
-      Phase0aDamageKind.gather: null,
-      Phase0aDamageKind.clear: _skill(
-        id: 'phase0a_debug_clear',
-        multiplier: _integer(clear, 'power_multiplier'),
-        qiDelta: _integer(defaults, 'clear_qi_delta'),
-      ),
+      Phase0aDamageKind.gather: tactical?.gather.skill,
+      Phase0aDamageKind.clear: clear,
     });
   }
 
@@ -199,6 +200,7 @@ final class _DebugBattleConfig {
     final attack = _map(player, 'attack');
     final gather = _map(player, 'gather');
     final clear = _map(player, 'clear');
+    final tactical = _tacticalSkills();
     return Phase0aPlayerInputAdapter(
       playerId: _text(player, 'id'),
       attackRange: _number(attack, 'range'),
@@ -214,6 +216,8 @@ final class _DebugBattleConfig {
       clearEffectRadius: _number(clear, 'effect_radius'),
       clearQiCost: _integer(clear, 'qi_cost'),
       clearCooldownSeconds: _number(clear, 'cooldown_seconds'),
+      gatherSkillBinding: tactical?.gather,
+      clearSkillBinding: tactical?.clear,
     );
   }
 
@@ -221,12 +225,28 @@ final class _DebugBattleConfig {
     attackRange: _number(enemyAi, 'attack_range'),
     attackHalfArcRadians: _number(enemyAi, 'attack_half_arc_radians'),
     attackCooldownSeconds: _number(enemyAi, 'attack_cooldown_seconds'),
+    skillBindingsByActor: {
+      for (final wave in waveMaps)
+        for (final enemy in _mapList(wave, 'enemies'))
+          if (_bossSkill(enemy) case final SkillDef skill)
+            _text(enemy, 'id'): [
+              Phase0aEnemySkillBinding(
+                skill: skill,
+                attackRange: _number(enemyAi, 'attack_range'),
+                halfArcRadians: _number(enemyAi, 'attack_half_arc_radians'),
+                effectRadius: _number(enemyAi, 'attack_range'),
+                cooldownSeconds: _number(enemyAi, 'attack_cooldown_seconds'),
+              ),
+            ],
+    },
   );
 
   Phase0aActor _enemyActor(Map<String, dynamic> enemy) {
     final template = _enemyTemplate(enemy);
     final hp = _integer(enemy, 'max_health');
-    final elite = _text(enemy, 'role') == 'elite';
+    final role = _text(enemy, 'role');
+    final bossConfig = role == 'boss' ? _map(enemy, 'boss') : null;
+    final chargeSkill = _bossSkill(enemy);
     return Phase0aActor(
       id: _text(enemy, 'id'),
       side: Phase0aSide.enemy,
@@ -238,7 +258,29 @@ final class _DebugBattleConfig {
       qiCurrent: _integer(template, 'qi'),
       qiMax: _integer(template, 'qi'),
       attackCooldownRemaining: _number(template, 'initial_attack_cooldown'),
-      defeatKind: elite ? Phase0aDefeatKind.elite : Phase0aDefeatKind.normal,
+      defeatKind: role == 'elite' || role == 'boss'
+          ? Phase0aDefeatKind.elite
+          : Phase0aDefeatKind.normal,
+      chargeCast: chargeSkill == null
+          ? null
+          : Phase0aChargeCast(
+              skill: chargeSkill,
+              chargeTicks: _integer(bossConfig!, 'charge_ticks'),
+              attackRange: _number(enemyAi, 'attack_range'),
+              halfArcRadians: _number(enemyAi, 'attack_half_arc_radians'),
+              effectRadius: _number(enemyAi, 'attack_range'),
+              cooldownSeconds: _number(enemyAi, 'attack_cooldown_seconds'),
+              actionCooldownSeconds: _number(
+                enemyAi,
+                'attack_cooldown_seconds',
+              ),
+            ),
+      staggerTicksTotal: bossConfig == null
+          ? 0
+          : _integer(bossConfig, 'stagger_ticks'),
+      vulnerabilityMult: bossConfig == null
+          ? null
+          : _number(bossConfig, 'vulnerability_mult'),
     );
   }
 
@@ -249,6 +291,8 @@ final class _DebugBattleConfig {
     final stats = isPlayer ? actor : _enemyTemplate(actor);
     final hp = _integer(actor, 'max_health');
     final qi = _integer(stats, 'qi');
+    final boss = !isPlayer && _text(actor, 'role') == 'boss';
+    final bossSkill = boss ? _bossSkill(actor) : null;
     return CombatantSnapshot(
       characterId: _integer(actor, 'character_id'),
       name: _text(actor, 'id'),
@@ -273,7 +317,7 @@ final class _DebugBattleConfig {
       mainCultivationLayer: CultivationLayer.values.byName(
         _text(defaults, 'cultivation_layer'),
       ),
-      availableSkills: const [],
+      availableSkills: bossSkill == null ? const [] : [bossSkill],
       openingSkillCooldowns: const {},
       skillUses: const {},
       activeBuffs: const [],
@@ -281,18 +325,20 @@ final class _DebugBattleConfig {
       iconPath: null,
       attackPowerMultiplier: _number(defaults, 'attack_power_multiplier'),
       outputMultiplier: _number(defaults, 'output_multiplier'),
-      isBoss: false,
-      chargeSkillId: null,
+      isBoss: boss,
+      chargeSkillId: bossSkill?.id,
       bossPhases: null,
       bossPhaseUnlockSkills: null,
       schoolDamageTakenMult: const {},
       lineageRole: null,
       forgingPiercePct: _number(defaults, 'forging_pierce_pct'),
       forgingLifestealPct: _number(defaults, 'forging_lifesteal_pct'),
-      enemyDefId: null,
+      enemyDefId: isPlayer ? null : _text(actor, 'id'),
       guardianWardMult: null,
       guardianDefIds: const [],
-      vulnerabilityMult: null,
+      vulnerabilityMult: boss
+          ? _number(_map(actor, 'boss'), 'vulnerability_mult')
+          : null,
       guardInterceptsInterrupt: false,
     );
   }
@@ -321,6 +367,101 @@ final class _DebugBattleConfig {
     requiresManualTrigger: false,
     visualEffect: '',
   );
+
+  SkillDef? _bossSkill(Map<String, dynamic> enemy) {
+    if (_text(enemy, 'role') != 'boss') return null;
+    return _skillFromMap(_map(_map(enemy, 'boss'), 'charge_skill'));
+  }
+
+  SkillDef _clearSkill() {
+    final clear = _map(player, 'clear');
+    final behavior = clear['phase0a_behavior'];
+    if (behavior is! Map) {
+      return _skill(
+        id: 'phase0a_debug_clear',
+        multiplier: _integer(clear, 'power_multiplier'),
+        qiDelta: _integer(defaults, 'clear_qi_delta'),
+      );
+    }
+    return _skillFromMap({
+      'id': 'phase0a_debug_clear',
+      'name': 'phase0a_debug_clear',
+      'description': 'phase0a_debug_clear',
+      'type': 'normalAttack',
+      'power_multiplier': _integer(clear, 'power_multiplier'),
+      'qi_delta': _integer(defaults, 'clear_qi_delta'),
+      'cooldown_turns': _integer(defaults, 'skill_cooldown_turns'),
+      'phase0a_behavior': behavior,
+      'target_type': 'aoe',
+      'source': 'special',
+    });
+  }
+
+  _DebugTacticalSkills? _tacticalSkills() {
+    final gather = _map(player, 'gather')['phase0a_behavior'];
+    final clear = _map(player, 'clear')['phase0a_behavior'];
+    if (gather is! Map && clear is! Map) return null;
+    if (gather is! Map || clear is! Map) {
+      throw const FormatException(
+        'phase0a tactical gather and clear behaviors must be paired',
+      );
+    }
+    final gatherMap = <String, dynamic>{
+      'id': 'phase0a_debug_gather',
+      'name': 'phase0a_debug_gather',
+      'description': 'phase0a_debug_gather',
+      'type': 'normalAttack',
+      'power_multiplier': 0,
+      'qi_delta': -_integer(_map(player, 'gather'), 'qi_cost'),
+      'cooldown_turns': _integer(_map(player, 'gather'), 'cooldown_seconds'),
+      'phase0a_behavior': gather,
+      'target_type': 'aoe',
+      'source': 'special',
+    };
+    return _DebugTacticalSkills(
+      gather: Phase0aTacticalSkillBinding(
+        kind: Phase0aTacticalSkillKind.gather,
+        slot: _text(_map(player, 'gather'), 'slot'),
+        skill: _skillFromMap(gatherMap),
+      ),
+      clear: Phase0aTacticalSkillBinding(
+        kind: Phase0aTacticalSkillKind.clear,
+        slot: _text(_map(player, 'clear'), 'slot'),
+        skill: _clearSkill(),
+      ),
+    );
+  }
+
+  SkillDef _skillFromMap(Map<String, dynamic> raw) {
+    final behavior = raw['phase0a_behavior'];
+    return SkillDef(
+      id: _text(raw, 'id'),
+      name: _text(raw, 'name'),
+      description: _text(raw, 'description'),
+      type: SkillType.values.byName(raw['type'] as String),
+      powerMultiplier: _integer(raw, 'power_multiplier'),
+      qiDelta: _integer(raw, 'qi_delta'),
+      cooldownTurns: _integer(raw, 'cooldown_turns'),
+      requiresManualTrigger: false,
+      visualEffect: '',
+      source: raw['source'] == null
+          ? null
+          : SkillSource.values.byName(raw['source'] as String),
+      targetType: raw['target_type'] == null
+          ? TargetType.single
+          : TargetType.values.byName(raw['target_type'] as String),
+      phase0aBehavior: behavior is Map
+          ? Phase0aSkillBehavior.fromYaml(Map<String, dynamic>.from(behavior))
+          : null,
+    );
+  }
+}
+
+final class _DebugTacticalSkills {
+  const _DebugTacticalSkills({required this.gather, required this.clear});
+
+  final Phase0aTacticalSkillBinding gather;
+  final Phase0aTacticalSkillBinding clear;
 }
 
 Map<String, dynamic> _map(Map<String, dynamic> source, String key) {

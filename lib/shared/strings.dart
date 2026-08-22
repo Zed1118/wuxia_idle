@@ -205,6 +205,11 @@ class UiStrings {
   static const String phase0aVictorySeal = '破阵';
   static const String phase0aDefeatSeal = '败退';
   static const String phase0aRetryLabel = '再战';
+  static const String phase0aBossChargeWarning = '蓄力可破';
+  static const String phase0aBossChargeInterrupted = '破！';
+  static const String phase0aVulnerabilityOpen = '破绽 · 全力';
+  static const String phase0aVulnerabilityGuarded = '护体 · 减伤';
+  static const String phase0aStaggered = '踉跄';
 
   /// Esc 暂停横幅(0C):暂停时世界零推进,再按 Esc 继续。
   static const String phase0aPausedBanner = '稍歇 · Esc 继续';
