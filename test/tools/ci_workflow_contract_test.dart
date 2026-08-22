@@ -14,6 +14,21 @@ void main() {
     expect(ci, isNot(contains('--exclude-tags')));
   });
 
+  test('CI 依赖解析锁定 lockfile 且主分析覆盖默认全仓边界', () async {
+    final ci = await File('.github/workflows/ci.yml').readAsString();
+    final windows = await File(
+      '.github/workflows/windows-release.yml',
+    ).readAsString();
+
+    expect(
+      RegExp(r'flutter pub get --enforce-lockfile').allMatches(ci).length,
+      2,
+    );
+    expect(windows, contains('flutter pub get --enforce-lockfile'));
+    expect(ci, contains('run: flutter analyze --no-pub'));
+    expect(ci, isNot(contains('run: flutter analyze lib/ test/')));
+  });
+
   test('覆盖率基线是带采样信息的正数', () async {
     final json =
         jsonDecode(await File('.github/coverage-ratchet.json').readAsString())

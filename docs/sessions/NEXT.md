@@ -26,6 +26,7 @@
 - Q gather 每场一次且零伤，R clear 0 次；现有资源循环不支持长期固定 Q/R 战术印。
 
 ## 最新验证
+- CI 可复现性：主 CI/Windows release 均强制 `--enforce-lockfile`，主 CI 默认全仓 analyze 覆盖 `tool/`；新增契约先红后绿，workflow + macOS release 契约 **5/5**、YAML 解析通过、默认全仓 analyze 0 issue。
 - CI 同口径：`flutter test --coverage --no-pub` **4230/4230 PASS**；line coverage **83.66%（32921/39351）≥81.25%**，coverage ratchet 通过。
 - macOS release 门禁：增量构建曾复现外层签名陈旧、deep verify 失败；`tool/verify_macos_release.sh` 强制 clean tree/锁文件依赖/代码生成/clean build/deep codesign/双架构/哈希，并在构建后复核 tracked tree。最终 clean `main` commit `451bc883` 完整 PASS：生成 126 outputs、x86_64+arm64、169M、launcher `2a4ed520…46ac9`、AOT `722f39ee…16f35`；工作区仍 clean，不启动 GUI、不发布。
 - mapping 防回流：Route C 类体级源码门禁禁止重新声明 `winCondition` / `numericSkillBindings` 镜像，并要求 `initialState` / `playerAdapter` 单一来源存在；临时回添字段精确 1 红，还原复绿。Route C 契约 **8/8**、Phase 0A application **139/139**、无参数 analyze 0 issue；父提交全量 **4228/4228**。

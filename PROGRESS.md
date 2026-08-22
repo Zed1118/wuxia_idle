@@ -3,6 +3,7 @@
 > 总行数控制在 100 行内，超出归档到末尾。
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 ## 当前阶段
+> **2026-08-23 CI 可复现性收口**：主 CI 两个 job 与 Windows release workflow 的依赖安装统一改为 `flutter pub get --enforce-lockfile`，避免 checkout 后静默解析出锁文件外依赖；主 CI analyze 从仅 `lib/test` 对齐为默认全仓 `flutter analyze --no-pub`，将 `tool/` 与分析配置边界纳入远端门禁。新增源码契约先红后绿；workflow 契约 + macOS release 契约 **5/5**、两份 YAML 解析通过、默认全仓 analyze 0 issue、format/diff check 通过。零运行代码、依赖版本、玩法或数值改动。
 > **2026-08-23 最终 CI 同口径覆盖验证**：当前整合态 `flutter test --coverage --no-pub` **4230/4230 PASS**；coverage ratchet **83.66%（32921/39351）≥81.25%**，`coverage/` 保持 gitignored，工作区 clean。
 > **2026-08-23 macOS release 干净构建验签门禁**：现测发现普通增量 release 会更新 03:48 的 `App.framework`，却沿用 03:03 的外层 app 签名，导致 `codesign --verify --deep --strict` 报 nested code modified；单独框架签名有效，根因是可再生增量产物而非源码。新增 `tool/verify_macos_release.sh`：拒绝脏树、强制 `flutter clean`、fresh checkout 生成 gitignored 代码、锁定依赖构建、deep 验签、双架构与双 SHA 输出，不启动 GUI/不发布。全新 detached worktree 起始 `.g.dart=0` 的自举验证通过；最终 clean `main` commit `451bc883` 再次完整 **PASS**：生成 126 outputs、deep codesign valid、x86_64+arm64、169M、launcher `2a4ed520…46ac9`、AOT `722f39ee…16f35`，构建后 tracked tree 仍 clean；契约 1/1、analyze 0 issue。
 > **2026-08-23 Phase 0A mapping 单一来源防回流**：在既有 Route C 源码契约中只截取 `Phase0aStageMapping` 类体，明确要求 `initialState` / `playerAdapter` 两个真相源存在，并禁止重新声明 `winCondition` / `numericSkillBindings` 镜像。破坏证红：临时回添 `winCondition` 字段后新增测试精确 1 红，还原复绿。Route C 契约 **8/8**、Phase 0A application **139/139**、无参数 analyze 0 issue；父提交整合态全量 **4228/4228**。零运行代码、数据、文案或玩法数值改动。

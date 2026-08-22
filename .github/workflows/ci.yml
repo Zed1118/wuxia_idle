@@ -38,7 +38,7 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       # .g.dart 全部 gitignored,checkout 后不存在,必须先生成 Isar schema + Riverpod provider
       - name: Generate code (build_runner)
@@ -48,7 +48,7 @@ jobs:
         run: dart format --output=none --set-exit-if-changed lib test docs
 
       - name: Analyze
-        run: flutter analyze lib/ test/
+        run: flutter analyze --no-pub
 
       # 默认并发(每文件独立 isolate,本就隔离);Isar core 由测试内 download:true 拉取
       - name: Run tests with coverage
@@ -80,7 +80,7 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       - name: Generate code (build_runner)
         run: dart run build_runner build
