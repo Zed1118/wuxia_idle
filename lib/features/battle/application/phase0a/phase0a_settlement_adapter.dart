@@ -20,6 +20,24 @@ final class Phase0aSettlementAdapter {
     if (outcome == Phase0aBattleOutcome.ongoing) {
       throw StateError('Cannot settle an ongoing Phase0a battle');
     }
+    final playerActorId = mapping.initialState.player.id;
+    if (finalState.player.id != playerActorId ||
+        finalState.player.side != Phase0aSide.player) {
+      throw StateError(
+        'Phase0a settlement player actor mismatch: '
+        'expected=$playerActorId, actual=${finalState.player.id}/'
+        '${finalState.player.side.name}',
+      );
+    }
+    final mappedPlayerCount = mapping.combatants
+        .where((combatant) => combatant.actorId == playerActorId)
+        .length;
+    if (mappedPlayerCount != 1) {
+      throw StateError(
+        'Phase0a settlement requires exactly one mapped player actor: '
+        '$playerActorId count=$mappedPlayerCount',
+      );
+    }
     final characterIdByActor = {
       for (final combatant in mapping.combatants)
         combatant.actorId: combatant.snapshot.characterId,
@@ -32,7 +50,9 @@ final class Phase0aSettlementAdapter {
       for (final combatant in mapping.combatants)
         CombatParticipantSnapshot(
           characterId: combatant.snapshot.characterId,
-          currentHp: currentActors[combatant.actorId]?.currentHealth ?? 0,
+          currentHp: combatant.actorId == playerActorId
+              ? finalState.player.currentHealth
+              : currentActors[combatant.actorId]?.currentHealth ?? 0,
           maxHp: combatant.snapshot.maxHp,
         ),
     ];

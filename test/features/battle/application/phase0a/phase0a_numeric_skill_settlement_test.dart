@@ -50,6 +50,67 @@ void main() async {
 
   Phase0aArenaState finalState() => mapping.initialState;
 
+  test('terminal state missing the mapped player actor fails closed', () {
+    final state = finalState();
+    final malformed = Phase0aArenaState(
+      tick: state.tick,
+      nextSeq: state.nextSeq,
+      player: state.enemies.single,
+      enemies: state.enemies,
+      skillSlots: state.skillSlots,
+      winCondition: state.winCondition,
+    );
+
+    expect(
+      () => Phase0aSettlementAdapter.fromMapping(
+        mapping: mapping,
+        outcome: Phase0aBattleOutcome.victory,
+        finalState: malformed,
+        events: const [],
+      ),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          contains('player actor mismatch'),
+        ),
+      ),
+    );
+  });
+
+  test('mapping missing its player combatant fails closed', () {
+    final malformed = Phase0aStageMapping(
+      initialState: mapping.initialState,
+      waves: mapping.waves,
+      combatants: [
+        for (final combatant in mapping.combatants)
+          if (combatant.actorId != mapping.initialState.player.id) combatant,
+      ],
+      winCondition: mapping.winCondition,
+      moveBindings: mapping.moveBindings,
+      playerAdapter: mapping.playerAdapter,
+      enemyAiAdapter: mapping.enemyAiAdapter,
+      numericSkillBindings: mapping.numericSkillBindings,
+      waveTransitionPolicy: mapping.waveTransitionPolicy,
+    );
+
+    expect(
+      () => Phase0aSettlementAdapter.fromMapping(
+        mapping: malformed,
+        outcome: Phase0aBattleOutcome.victory,
+        finalState: finalState(),
+        events: const [],
+      ),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          contains('exactly one mapped player actor'),
+        ),
+      ),
+    );
+  });
+
   test(
     'numeric skill events settle by real skill id and actor character id',
     () {
