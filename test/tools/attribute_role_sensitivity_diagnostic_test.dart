@@ -16,6 +16,7 @@ import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/battle_resolution.dart';
+import 'package:wuxia_idle/features/battle/application/legacy_battle_injury_adapter.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart';
@@ -26,7 +27,6 @@ import 'package:wuxia_idle/data/defs/encounter_def.dart';
 import 'package:wuxia_idle/data/encounter_event_loader.dart';
 import 'package:wuxia_idle/features/encounter/presentation/encounter_dialog.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
-import 'package:wuxia_idle/features/injury/application/injury_service.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 import '../support/isar_test_support.dart';
@@ -373,7 +373,7 @@ void main() {
           rightTeam: const [],
         );
         for (final character in [pair.base, pair.raised]) {
-          InjuryService.applyBattleInjuries(
+          LegacyBattleInjuryAdapter.apply(
             participatingCharacters: [character],
             finalState: defeatedState,
             config: repository.numbers.injury,

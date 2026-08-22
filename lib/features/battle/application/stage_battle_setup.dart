@@ -11,10 +11,10 @@ import '../../../data/numbers_config.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
-import '../../jianghu/application/enmity_battle_modifier.dart';
 import '../../jianghu/application/npc_relation_service.dart';
 import '../../../shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 import 'legacy_3v3_combatant_adapter.dart';
+import 'legacy_enmity_battle_modifier.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 
 /// 关卡战斗准备（Phase 3 T37，对应 PROGRESS #22 销账）。
@@ -70,7 +70,7 @@ class StageBattleSetup {
             readableFirstClearTuning: readableFirstClearTuning,
           );
     if (!stage.isBossStage || stage.npcId == null) return (left, right);
-    return EnmityBattleModifier.bakeMultipliers(
+    return LegacyEnmityBattleModifier.bake(
       npcService: NpcRelationService(isar, GameRepository.instance.numbers),
       leftTeam: left,
       rightTeam: right,

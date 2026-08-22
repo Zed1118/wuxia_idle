@@ -15,8 +15,8 @@ import '../../../core/domain/technique.dart';
 import 'battle_resolution.dart';
 export '../../combat_shared/application/combat_content_providers.dart';
 import '../../combat_shared/application/combat_content_providers.dart';
-import '../../jianghu/application/enmity_battle_modifier.dart';
 import '../../jianghu/application/npc_relation_service.dart';
+import 'legacy_enmity_battle_modifier.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../../shared/utils/rng.dart';
 
@@ -225,13 +225,13 @@ BattleResult? battleResult(Ref ref) => ref.watch(battleProvider).result;
 
 /// P1.2 §5 江湖恩怨 attackPowerMultiplier 烘焙。
 ///
-/// 兼容旧测试入口；实际实现放在 [EnmityBattleModifier]，生产路径由
+/// 兼容旧测试入口；实际实现放在 [LegacyEnmityBattleModifier]，生产路径由
 /// `StageBattleSetup.buildTeams` 调用。
 Future<(List<BattleCharacter>, List<BattleCharacter>)> bakeEnmityMultipliers({
   required NpcRelationService npcService,
   required List<BattleCharacter> leftTeam,
   required List<BattleCharacter> rightTeam,
-}) => EnmityBattleModifier.bakeMultipliers(
+}) => LegacyEnmityBattleModifier.bake(
   npcService: npcService,
   leftTeam: leftTeam,
   rightTeam: rightTeam,

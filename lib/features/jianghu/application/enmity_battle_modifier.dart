@@ -1,10 +1,6 @@
-import '../../battle/domain/battle_state.dart';
 import '../../../shared/battle_shared/enmity_target_id.dart';
-import 'npc_relation_service.dart';
 
-/// 江湖恩怨与战斗快照之间的装配层。
-///
-/// 只负责把已存在的 [NpcRelationService] 状态烘焙到进场快照，不改持久化关系。
+/// 江湖恩怨的引擎中立战斗身份桥。
 class EnmityBattleModifier {
   EnmityBattleModifier._();
 
@@ -14,52 +10,4 @@ class EnmityBattleModifier {
   /// (-1/-2/-3) 冲突。该 id 是 schema bridge，不是战斗数值。
   static int targetIdForNpcId(String npcId) =>
       EnmityTargetId.targetIdForNpcId(npcId);
-
-  /// P1.2 §5 江湖恩怨 attackPowerMultiplier 烘焙。
-  ///
-  /// SET 语义：不叠乘已有 APM，直接把江湖恩怨档位写入快照；双方对等。
-  /// - enemy 端按 (player -> enemy) 各自 SET。
-  /// - player 端取 `max(across enemies)`，任一敌人有恩怨即享最高档。
-  /// - `NpcRelationService.attackPowerMultFor` 已按 numbers.yaml clamp 上限。
-  static Future<(List<BattleCharacter>, List<BattleCharacter>)>
-  bakeMultipliers({
-    required NpcRelationService npcService,
-    required List<BattleCharacter> leftTeam,
-    required List<BattleCharacter> rightTeam,
-  }) async {
-    if (leftTeam.isEmpty || rightTeam.isEmpty) return (leftTeam, rightTeam);
-    final playerCharId = leftTeam.first.characterId;
-    if (playerCharId < 0) return (leftTeam, rightTeam);
-
-    var maxMult = 1.0;
-    final newRight = <BattleCharacter>[];
-    for (final enemy in rightTeam) {
-      final mult = await npcService.attackPowerMultFor(
-        playerCharId,
-        enemy.characterId,
-      );
-      if (mult > 1.0) {
-        newRight.add(
-          enemy.copyWith(
-            attackPowerMultiplier: mult,
-            attackPowerMultiplierSource:
-                AttackPowerMultiplierSource.jianghuEnmity,
-          ),
-        );
-        if (mult > maxMult) maxMult = mult;
-      } else {
-        newRight.add(enemy);
-      }
-    }
-
-    if (maxMult <= 1.0) return (leftTeam, newRight);
-    final newLeft = <BattleCharacter>[
-      leftTeam.first.copyWith(
-        attackPowerMultiplier: maxMult,
-        attackPowerMultiplierSource: AttackPowerMultiplierSource.jianghuEnmity,
-      ),
-      ...leftTeam.skip(1),
-    ];
-    return (newLeft, newRight);
-  }
 }

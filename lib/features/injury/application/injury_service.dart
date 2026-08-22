@@ -1,6 +1,5 @@
 import '../../../core/domain/character.dart';
 import '../../../core/domain/attribute_effect_policy.dart';
-import '../../battle/domain/battle_state.dart';
 import '../../../data/defs/injury_config.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 
@@ -22,40 +21,7 @@ class InjuryService {
     c.lightInjuryStacks = n > maxStacks ? maxStacks : n;
   }
 
-  /// 战斗结算时对参战角色判定伤势（in-place 改字段，不写 Isar）。
-  ///
-  /// - **连战轻伤**：每场（无论胜负 / 是否硬仗）对全部参战角色 +1 轻伤层。
-  /// - **硬仗重伤**（仅 [isHardFight]）：
-  ///   - 战败（`!isVictory`）→ 全部参战角色重伤。
-  ///   - 惨胜（`isVictory`）→ 仅「存活且 endHp < maxHp * heavyWinHpThresholdPct」
-  ///     的角色重伤；按 `characterId == ch.id` 在 [finalState.leftTeam]（玩家队）
-  ///     定位对应 [BattleCharacter] 取 endHp。
-  static void applyBattleInjuries({
-    required List<Character> participatingCharacters,
-    required BattleState finalState,
-    required InjuryConfig config,
-    required AttributeEffectRules attributeEffects,
-    required bool isVictory,
-    required bool isHardFight,
-  }) {
-    applySettlementInjuries(
-      participatingCharacters: participatingCharacters,
-      participants: {
-        for (final battleCharacter in finalState.leftTeam)
-          battleCharacter.characterId: CombatParticipantSnapshot(
-            characterId: battleCharacter.characterId,
-            currentHp: battleCharacter.currentHp,
-            maxHp: battleCharacter.maxHp,
-          ),
-      },
-      config: config,
-      attributeEffects: attributeEffects,
-      isVictory: isVictory,
-      isHardFight: isHardFight,
-    );
-  }
-
-  /// Engine-neutral injury settlement used by both legacy and Phase 0A.
+  /// Engine-neutral injury settlement used by combat consumers.
   static void applySettlementInjuries({
     required List<Character> participatingCharacters,
     required Map<int, CombatParticipantSnapshot> participants,
