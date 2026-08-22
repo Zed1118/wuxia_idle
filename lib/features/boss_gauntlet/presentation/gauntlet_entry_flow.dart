@@ -13,6 +13,7 @@ import '../application/gauntlet_providers.dart';
 import '../application/gauntlet_service.dart';
 import '../application/gauntlet_combat_selector.dart';
 import '../application/phase0a_gauntlet_stage_runner.dart';
+import '../application/phase0a_gauntlet_gate.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
 import 'gauntlet_defeat_screen.dart';
@@ -52,6 +53,20 @@ Future<void> runGauntletFlow({
     final run = await service.activeRun();
     if (run == null) return; // 会话已结束（选奖 / 离庄 / 认输）
     if (!context.mounted) return;
+
+    if (Phase0aGauntletGate.enabled && run.members.length != 1) {
+      final retired = await service.retireLegacyMultiplayer(
+        config: config,
+        numbers: numbers,
+      );
+      if (!context.mounted) return;
+      if (retired != GauntletLegacyRetirement.preservedRewardChoice) {
+        ref.invalidate(activeGauntletProvider);
+        ref.invalidate(gauntletCandidatesProvider);
+        ref.invalidate(gauntletLoadoutInfoProvider);
+        return;
+      }
+    }
 
     switch (run.sessionPhase) {
       case GauntletPhase.inBattle:

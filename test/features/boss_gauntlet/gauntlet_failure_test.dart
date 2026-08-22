@@ -266,6 +266,44 @@ void main() {
     );
   });
 
+  test('路线 C 历史多人已推进会话：发精英经验、返托管、无附伤并关会话', () async {
+    await zeroExp(1);
+    await putRun(
+      members: [member(), member(id: 999, downed: true, currentHp: 0)],
+      escrowDefIds: ['item_liaoshangdan'],
+      escrowLoaded: [2],
+      escrowUsed: [1],
+    );
+    await putInventory('item_liaoshangdan', 0);
+
+    expect(
+      await svc().retireLegacyMultiplayer(config: config(), numbers: numbers()),
+      GauntletLegacyRetirement.settledProgress,
+    );
+    final ch = (await IsarSetup.instance.characters.get(1))!;
+    expect(ch.experience, 2 * config().eliteRewardExp);
+    expect(ch.lightInjuryStacks, 0);
+    expect(ch.injuryHoursRemaining, 0);
+    expect(await qtyOf('item_liaoshangdan'), 1);
+    expect(await svc().activeRun(), isNull);
+  });
+
+  test('路线 C 历史多人已胜 Boss：保留 awaitingRewardChoice 供玩家选奖', () async {
+    await putRun(
+      phase: GauntletPhase.awaitingRewardChoice,
+      members: [member(), member(id: 999)],
+    );
+
+    expect(
+      await svc().retireLegacyMultiplayer(config: config(), numbers: numbers()),
+      GauntletLegacyRetirement.preservedRewardChoice,
+    );
+    expect(
+      (await svc().activeRun())?.sessionPhase,
+      GauntletPhase.awaitingRewardChoice,
+    );
+  });
+
   test('幂等：无 active 会话 → no-op 不抛', () async {
     await svc().settleDefeat(config: config(), numbers: numbers());
     expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);

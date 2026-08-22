@@ -34,6 +34,13 @@ import 'gauntlet_battle_runner.dart';
 import 'gauntlet_controller.dart';
 import 'phase0a_gauntlet_stage_runner.dart';
 
+enum GauntletLegacyRetirement {
+  none,
+  preservedRewardChoice,
+  refundedUnstarted,
+  settledProgress,
+}
+
 /// 断魂庄当前关出战计划：`prepareStage` 事务外纯计算产出，供 live BattleScreen 路
 /// （`gauntlet_entry_flow`）与 headless [GauntletService.fightCurrentStage] 共用。
 typedef GauntletStagePlan = ({
@@ -322,6 +329,31 @@ class GauntletService {
       await _returnEscrow(run);
       await _isar.bossGauntletRuns.delete(run.id);
     });
+  }
+
+  /// 路线 C 一次性清理历史 2–3 人会话。Boss 已胜的待选奖励保留给玩家；
+  /// 未开战全额退帖，已推进会话发已获精英经验并返还剩余托管，但不因系统迁移附伤。
+  Future<GauntletLegacyRetirement> retireLegacyMultiplayer({
+    required BossGauntletConfig config,
+    required NumbersConfig numbers,
+  }) async {
+    final run = await activeRun();
+    if (run == null || run.members.length == 1) {
+      return GauntletLegacyRetirement.none;
+    }
+    if (run.sessionPhase == GauntletPhase.awaitingRewardChoice) {
+      return GauntletLegacyRetirement.preservedRewardChoice;
+    }
+    final hasFought =
+        run.currentStage > 1 ||
+        run.sessionPhase != GauntletPhase.inBattle ||
+        run.members.any((member) => member.maxHp > 0);
+    if (!hasFought) {
+      await _refundTicketAndClose(run);
+      return GauntletLegacyRetirement.refundedUnstarted;
+    }
+    await settleDefeat(config: config, numbers: numbers, applyInjuries: false);
+    return GauntletLegacyRetirement.settledProgress;
   }
 
   /// 把托管补给的 `Loaded - Used` 返还普通库存（**假定已在 `writeTxn` 内**）。
@@ -697,6 +729,7 @@ class GauntletService {
     required BossGauntletConfig config,
     required NumbersConfig numbers,
     DateTime? now,
+    bool applyInjuries = true,
   }) async {
     final save0 = await _isar.saveDatas.get(0);
     if (save0 == null) return GauntletDefeatSummary.empty; // 幂等：无存档
@@ -770,18 +803,20 @@ class GauntletService {
                 ),
           );
         }
-        // ② 按战末快照结算伤势：倒下者重伤·存活者轻伤（§6.3·不扣永久内力）。
-        if (downedById[id] == true) {
-          final hours = injuryPolicy.heavyInjuryHours(
-            baseHours: numbers.injury.heavyRecoveryHours,
-            constitution: ch.attributes.constitution,
-          );
-          InjuryService.applyHeavyInjury(ch, recoveryHours: hours);
-        } else {
-          InjuryService.accumulateLightInjury(
-            ch,
-            maxStacks: numbers.injury.lightMaxStacks,
-          );
+        // ② 正常战败附伤；系统迁移清场显式关闭，避免非玩家失败造成惩罚。
+        if (applyInjuries) {
+          if (downedById[id] == true) {
+            final hours = injuryPolicy.heavyInjuryHours(
+              baseHours: numbers.injury.heavyRecoveryHours,
+              constitution: ch.attributes.constitution,
+            );
+            InjuryService.applyHeavyInjury(ch, recoveryHours: hours);
+          } else {
+            InjuryService.accumulateLightInjury(
+              ch,
+              maxStacks: numbers.injury.lightMaxStacks,
+            );
+          }
         }
         await _isar.characters.put(ch);
       }
