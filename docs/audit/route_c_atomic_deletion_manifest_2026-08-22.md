@@ -1,7 +1,7 @@
 # 路线 C · 旧 3v3 原子删除清单
 
-> 初始基线：`c2c55784`；删除前置收口截至当前分支 HEAD（2026-08-22，北京时间）
-> 状态：`CONSUMER_CUTOVER_COMPLETE / GLOBAL_DELETE_GATE_LOCKED`
+> 初始基线：`c2c55784`；删除候选工程基线：`01bf00fe`（2026-08-22，北京时间）
+> 状态：`DELETE_CANDIDATE_MATERIALIZED / EXTERNAL_MERGE_GATE_LOCKED`
 
 ## 已完成前置
 
@@ -21,12 +21,12 @@
   视觉工具、AB 主持脚本与专用测试；通用截图 manifest 写入器改为 route-neutral，
   历史截图和报告只在 `docs/` 留档。负向守卫保证 `tools/` 不得重新启动退役 route。
 
-## 当前剩余删除包
+## 候选已物化的删除包
 
-以下内容必须在同一删除批完成，禁止拆成“先删源码、后修编译”的中间态：
+以下内容已在独立候选中同批删除；本节保留为 merge 前范围核对，禁止拆成“先删源码、后修编译”的中间态：
 
-1. `lib/features/battle/` 中除 `phase0a/` 外的旧 domain/application/presentation；当前 62 个 Dart 文件。
-2. 旧 `BattleScreen` debug 菜单、visual route 与 62 个旧战斗验收路由；历史截图原位保留并标注“路由已删”。
+1. `lib/features/battle/` 中除 `phase0a/` 外的旧 domain/application/presentation；基线统计 62 个 Dart 文件，候选中已删除。
+2. 旧 `BattleScreen` debug 菜单、visual route 与 62 个旧战斗验收路由；候选中已删除，历史截图原位保留并标注“路由已删”。
 3. 已收拢到旧 battle 目录、随旧核同批删除的临时适配：
    - `legacy_battle_injury_adapter.dart`；
    - `legacy_enmity_battle_modifier.dart`；
@@ -34,10 +34,10 @@
    - `legacy_battle_sfx.dart`；
    - `legacy_hero_camera_deriver.dart`；
    - `legacy_3v3_combatant_adapter.dart` 与 `battle_resolution.dart`。
-4. 仅验证上述旧实现的测试与诊断；当前直接 import 核心旧入口的静态口径为 145 个
-   测试文件，另有旧表现组件测试须按删除编译闭包纳入。共享 RPG、Phase 0A、战绩册、
-   结算 UI 和群战内容测试不随旧核误删。
-5. 删除后同步 GDD/CLAUDE/PROGRESS 的 3v3 漂移指针，并执行 fresh build_runner、全量 analyze/test、Mac build 与 Windows 构建/实机复验。
+4. 仅验证上述旧实现的测试与诊断；基线直接 import 核心旧入口的静态口径为 145 个
+   测试文件，另有旧表现组件测试已按删除编译闭包纳入。共享 RPG、Phase 0A、战绩册、
+   结算 UI 和群战内容测试未随旧核误删。
+5. GDD/CLAUDE/PROGRESS 当前态已随候选同步；fresh build_runner、全量 analyze/test、Mac build/Profile 必须在最终候选提交冻结后复跑，Windows 构建/实机复验仍待外部设备。
 
 ## 硬 Gate
 
@@ -46,13 +46,13 @@
 定义的生产版预检。旧 `phase0minus_probe` 成绩和 `battle_tap_live` AB 包不得纳入
 Route C 删除裁决。
 
-全局删除提交仅在以下证据同时成立后执行：
+全局删除候选仅在以下证据同时成立后 merge：
 
 - 整合态 Mac 工程 Gate 与自动目检通过；
 - 六人主观 Gate 具备有效原始记录；
 - 目标最低档 Windows 物理机按 `docs/phase0/phase0a-windows-physical-gate.md` 过线，且证据 commit 与本删除基线一致。
 
-目前 Windows 物理机与六人原始证据均未取得，因此本批只完成生产切换和删除包冻结，不能把旧全局引擎删除伪报为完成。
+目前 Windows 物理机与六人原始证据均未取得，因此本批只完成生产切换、删除候选物化与 Mac 工程取证；不能把候选误报为已合入主线或已发布。
 
 ## 删除后负向核对
 
@@ -67,5 +67,5 @@ flutter build windows --debug
 ```
 
 基线事实底座与历史定量口径见 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md`。
-最终删除时以 Gate 对应 commit 重新生成源码/测试闭包；不得沿用 08-18 或初始
-`c2c55784` 的旧计数直接 `git rm`。
+最终 merge 时以 Gate 对应候选 commit 重新核对源码/测试闭包；不得沿用 08-18 或初始
+`c2c55784` 的旧计数替代候选树与证据清单。
