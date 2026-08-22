@@ -1875,6 +1875,17 @@ class Phase0aArenaConfig {
         'must be finite and positive',
       );
     }
+    String tacticalSkillId(String key) {
+      final value = moves[key];
+      if (value is! String || value.trim().isEmpty) {
+        throw StateError(
+          'phase0a_arena.moves gather_skill_id and clear_skill_id '
+          'must both be non-empty',
+        );
+      }
+      return value;
+    }
+
     return Phase0aArenaConfig(
       fixedDeltaSeconds: fixedDeltaSeconds,
       maxBattleSeconds: maxBattleSeconds,
@@ -1889,7 +1900,7 @@ class Phase0aArenaConfig {
       playerAttackCooldownSeconds: (player['attack_cooldown_seconds'] as num)
           .toDouble(),
       gatherSlot: player['gather_slot'] as String,
-      gatherSkillId: moves['gather_skill_id'] as String? ?? '',
+      gatherSkillId: tacticalSkillId('gather_skill_id'),
       gatherRingRadius: (player['gather_ring_radius'] as num).toDouble(),
       gatherEffectRadius: (player['gather_effect_radius'] as num).toDouble(),
       gatherQiCost: (player['gather_qi_cost'] as num).toInt(),
@@ -1912,7 +1923,7 @@ class Phase0aArenaConfig {
       basicSkillId: moves['basic_skill_id'] as String,
       basicPowerMultiplier: (moves['basic_power_multiplier'] as num).toInt(),
       basicQiDelta: (moves['basic_qi_delta'] as num).toInt(),
-      clearSkillId: moves['clear_skill_id'] as String,
+      clearSkillId: tacticalSkillId('clear_skill_id'),
       clearPowerMultiplier: (moves['clear_power_multiplier'] as num).toInt(),
       clearQiDelta: (moves['clear_qi_delta'] as num).toInt(),
     );

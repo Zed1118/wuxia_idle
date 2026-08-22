@@ -26,18 +26,19 @@
 - Q gather 每场一次且零伤，R clear 0 次；现有资源循环不支持长期固定 Q/R 战术印。
 
 ## 最新验证
-0. Route C 后加固批：Boss 双视口反馈链与 cycle-2 vulnerability 真实伤害覆盖 targeted **15/15**；全量 **4221/4221**、`flutter analyze --no-pub lib test tool` 0 issue、diff check 通过。Route C Gate commit `597a243b` 的 Mac/Windows 矩阵仍各 **6/6 PASS**；新 commit 不沿用该二进制 Gate 冒签。
+0. Q/R typed binding 收口：loader 拒绝 Q/R 任一缺失或空白，mapper 只保留显式旧 fixture 的双空逃生口；legacy interrupt/qi-drain fail-closed 分支已有直接回归。targeted **42/42**、analyze 0、最终全量 **4223/4223**、diff check 通过。DeepSeek 审计判定 D3-A/D4-A 完整，D2-A 仅剩受内容能力矩阵约束的 legacy fallback 删除，不在本批强拆。
+1. Route C 后加固批：Boss 双视口反馈链与 cycle-2 vulnerability 真实伤害覆盖 targeted **15/15**；全量 **4221/4221**、`flutter analyze --no-pub lib test tool` 0 issue、diff check 通过。Route C Gate commit `597a243b` 的 Mac/Windows 矩阵仍各 **6/6 PASS**；新 commit 不沿用该二进制 Gate 冒签。
 
-1. 08-21 起手 powerSkill：旧行为红测命中；focused **23/23**、`flutter analyze` 0 issue；1500 局 evidence 全部完成；最终全量 **5278/0**。
-2. 08-21 玩家 neutral builder：逐字段/roster/主线真实 Isar/远征/断魂庄 targeted **83/83**；最终全量 **5265/0**。
-3. 08-21 生产预检：10-seed **3420 runs** = 555 胜/2865 负/0 timeout，最大单击 2056；最终全量 **5261/0**。
-4. 视觉证据：`build/visual_acceptance/phase0a_0821_closeout/`（gitignored）含双视口 PNG/log/manifest，两路均为原生 window-id 截图。
+2. 08-21 起手 powerSkill：旧行为红测命中；focused **23/23**、`flutter analyze` 0 issue；1500 局 evidence 全部完成；最终全量 **5278/0**。
+3. 08-21 玩家 neutral builder：逐字段/roster/主线真实 Isar/远征/断魂庄 targeted **83/83**；最终全量 **5265/0**。
+4. 08-21 生产预检：10-seed **3420 runs** = 555 胜/2865 负/0 timeout，最大单击 2056；最终全量 **5261/0**。
+5. 视觉证据：`build/visual_acceptance/phase0a_0821_closeout/`（gitignored）含双视口 PNG/log/manifest，两路均为原生 window-id 截图。
 
 ## 下一步任务（需人类判断优先）
 
 ### P0 · 已拍方案继续落地
 
-1. D1-A 与 Q/R typed behavior 纵切已完成；先审计 D2-A/D3-A/D4-A 的剩余覆盖，再按缺口开最小原子批。
+1. D1-A 与 Q/R typed behavior 纵切及 D2-A/D3-A/D4-A 审计已完成；legacy fixed adapter 删除仍受内容 Q/R capability matrix 前置约束，未满足前不得强拆。
 2. Boss 蓄力预警、破招/踉跄与脆弱窗口已有双视口动态 Gate，并已补真实 fixture widget 回归；后续只处理新的可复现缺口。
 3. 高周目 `cycleVulnerability` 生产链与 cycle-2 实际伤害回归均已覆盖，禁止重复实现。
 4. 禁止据 bot 单点全局削弱敌人；任何玩法数值调整仍需用户明确授权。

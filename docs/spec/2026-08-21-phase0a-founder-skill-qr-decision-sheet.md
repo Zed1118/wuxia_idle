@@ -129,14 +129,20 @@ charge/破招的 24 条内容迁移必须排在这两批之后，并复用同一
 - D4：A——首版使用 `anchor: caster`，鼠标落点另立后续切片。
 - 备注：按两个原子批执行；先做起手技能可见性，再做 behavior schema。
 
-## 5. D2 实装口径（2026-08-21）
+## 5. D2–D4 实装口径（2026-08-21，2026-08-23 现状回填）
 
 - `skills.yaml` 新增 `skill_phase0a_gather` / `skill_phase0a_clear`，Q/R
   production 映射不再生成伪 `SkillDef`。
 - `phase0aBehavior.geometry` 当前只接受 `radial + caster + radius`；
   `effects` 已定义 `damage` / `pull` / `stagger` / `break`。
-- 本切片只允许 Q=`pull`、R=`damage + stagger`；`break` 可解析但 binding
-  明确拒绝，待 charge/破招批再接 reducer 状态迁移。
+- 首切片只允许 Q=`pull`、R=`damage + stagger`；后续 charge/破招批已让
+  R 精确接受 `damage + stagger + break`，typed `break` 载荷由 reducer
+  消费并触发清蓄力、踉跄窗口与招牌技冷却。Q 仍严格为纯 `pull`，带
+  `break` 会 fail-closed。
 - 真气与冷却仍取 `SkillDef.qiDelta/cooldownTurns`，伤害仍取既有
   `powerMultiplier` 并走唯一 `DamageCalculator`；Q 因无 `damage` effect
   明确零伤且不消耗 RNG。
+- D4-A 已冻结为 `radial + caster`；未知 shape/anchor、非法半径、重复效果
+  与不受支持的效果组合均在 loader/binding 边界拒绝，不回查名称或描述猜语义。
+- 生产 `numbers.yaml` 已同时绑定 `skill_phase0a_gather` / `skill_phase0a_clear`；
+  空 skill id 仅保留为显式旧 fixture escape hatch，不是生产路径。

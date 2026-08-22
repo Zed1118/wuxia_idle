@@ -882,8 +882,10 @@ final class Phase0aStageContentMapper {
   static _Phase0aTacticalSkillBindings? _tacticalSkillBindings(
     Phase0aArenaConfig arena,
   ) {
-    if (arena.gatherSkillId.isEmpty) return null;
-    if (arena.clearSkillId.isEmpty) {
+    final gatherMissing = arena.gatherSkillId.isEmpty;
+    final clearMissing = arena.clearSkillId.isEmpty;
+    if (gatherMissing && clearMissing) return null;
+    if (gatherMissing || clearMissing) {
       throw StateError(
         'Phase0a tactical skill ids must be configured together',
       );

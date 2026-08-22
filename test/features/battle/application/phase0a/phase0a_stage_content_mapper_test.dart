@@ -223,6 +223,33 @@ void main() {
       );
     });
 
+    test('Q/R skill id 缺失或空白时 loader fail-closed', () {
+      for (final mutation in <String, void Function(Map<String, dynamic>)>{
+        'missing gather': (moves) => moves.remove('gather_skill_id'),
+        'missing clear': (moves) => moves.remove('clear_skill_id'),
+        'blank gather': (moves) => moves['gather_skill_id'] = '  ',
+        'blank clear': (moves) => moves['clear_skill_id'] = '',
+      }.entries) {
+        final yaml = (jsonDecode(jsonEncode(repo.numbers.raw)) as Map)
+            .cast<String, dynamic>();
+        final arena = (yaml['phase0a_arena'] as Map).cast<String, dynamic>();
+        final moves = (arena['moves'] as Map).cast<String, dynamic>();
+        mutation.value(moves);
+
+        expect(
+          () => NumbersConfig.fromYaml(yaml),
+          throwsA(
+            isA<StateError>().having(
+              (error) => error.message,
+              'message',
+              contains('must both be non-empty'),
+            ),
+          ),
+          reason: mutation.key,
+        );
+      }
+    });
+
     test('Q/R 首帧可用态按开场真气推导', () {
       final numbers = repo.numbers;
 

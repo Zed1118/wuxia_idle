@@ -109,6 +109,53 @@ void main() {
   });
 
   test(
+    'rejects legacy interrupt and qi-drain effects without typed consumers',
+    () {
+      const legacyInterrupt = SkillDef(
+        id: 'legacy_interrupt',
+        name: 'legacy_interrupt',
+        description: 'legacy_interrupt',
+        type: SkillType.powerSkill,
+        powerMultiplier: 1,
+        qiDelta: -30,
+        cooldownTurns: 1,
+        requiresManualTrigger: false,
+        visualEffect: '',
+        canInterrupt: true,
+      );
+      const legacyQiDrain = SkillDef(
+        id: 'legacy_qi_drain',
+        name: 'legacy_qi_drain',
+        description: 'legacy_qi_drain',
+        type: SkillType.powerSkill,
+        powerMultiplier: 1,
+        qiDelta: -30,
+        cooldownTurns: 1,
+        requiresManualTrigger: false,
+        visualEffect: '',
+        qiDrainPct: 0.1,
+      );
+
+      for (final skill in [legacyInterrupt, legacyQiDrain]) {
+        expect(
+          () => Phase0aNumericSkillBinding(
+            hotkey: 1,
+            loadoutSlot: CombatantSkillSlot.main1,
+            skill: skill,
+            slotId: 'x',
+            attackRange: 0,
+            halfArc: 0,
+            effectRadius: 0,
+            cooldownSeconds: 0,
+          ),
+          throwsStateError,
+          reason: skill.id,
+        );
+      }
+    },
+  );
+
+  test(
     'keeps stable hotkey order, empty slots, and an unmodifiable collection',
     () {
       const empty = Phase0aNumericSkillBindings.empty();
