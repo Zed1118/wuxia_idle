@@ -1,7 +1,7 @@
 # 新会话开局清单
 
 > 更新时间：2026-08-23 · Route C 双平台 Gate 收口后
-> 当前主线：`main` 已含 Gate commit `597a243b2506610b5cbb74e2919be79bbf99e283`
+> 当前主线：`main` 已包含最终 release 门禁 commit `451bc883975dbbb737d0f4cd72251f1c5379d8f3`
 
 ## 当前结论
 
@@ -27,7 +27,7 @@
 
 ## 最新验证
 - CI 同口径：`flutter test --coverage --no-pub` **4230/4230 PASS**；line coverage **83.66%（32921/39351）≥81.25%**，coverage ratchet 通过。
-- macOS release 门禁：增量构建曾复现外层签名陈旧、deep verify 失败；新 `tool/verify_macos_release.sh` 强制 clean tree/代码生成/clean build/deep codesign/双架构/哈希。全新 detached worktree 起始 `.g.dart=0`，生成 126 outputs 后 commit `c0fec07c` 自举 PASS：x86_64+arm64、169M、launcher `1da2d4ac…431d9`、AOT `e9293f98…769f4`；临时 worktree已删除，不启动 GUI、不发布。
+- macOS release 门禁：增量构建曾复现外层签名陈旧、deep verify 失败；`tool/verify_macos_release.sh` 强制 clean tree/锁文件依赖/代码生成/clean build/deep codesign/双架构/哈希，并在构建后复核 tracked tree。最终 clean `main` commit `451bc883` 完整 PASS：生成 126 outputs、x86_64+arm64、169M、launcher `2a4ed520…46ac9`、AOT `722f39ee…16f35`；工作区仍 clean，不启动 GUI、不发布。
 - mapping 防回流：Route C 类体级源码门禁禁止重新声明 `winCondition` / `numericSkillBindings` 镜像，并要求 `initialState` / `playerAdapter` 单一来源存在；临时回添字段精确 1 红，还原复绿。Route C 契约 **8/8**、Phase 0A application **139/139**、无参数 analyze 0 issue；父提交全量 **4228/4228**。
 - analyzer 边界：Route C 删除旧 runner 后，唯一一次性历史 `.dart` 探针使无参数 analyze 报 12 个旧符号错误；现仅精确排除该附件，不扩大目录豁免。`flutter analyze --no-pub` 与 `flutter analyze --no-pub lib test tool` 均 0 issue。
 - 数字技能绑定单一来源：删除 `Phase0aStageMapping.numericSkillBindings` 镜像，主线/塔/断魂庄宿主与测试统一从 `playerAdapter.numericSkillBindings` 读取；对象实例与行为不变。目标独立文件 **36/36**、Phase 0A application **139/139**、`flutter analyze --no-pub lib test` 0 issue、format/diff check 通过。

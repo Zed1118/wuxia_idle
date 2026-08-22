@@ -30,11 +30,11 @@
 
 ## 当前恢复点
 
-- 状态：已完成，fresh checkout 自举证据已收齐。
+- 状态：已完成，fresh checkout 自举与最终 clean `main` 自证均已收齐。
 - 最后完成：普通增量 release 构建成功但 deep verify 因外层签名时间 03:03、
   AOT 时间 03:48 而失败；`flutter clean` 后从零重建，deep verify 通过，
   universal x86_64+arm64、169M。
-- 下一步：更新总账并提交推送。
+- 下一步：无；总账同步后提交推送。
 - 已跑验证：脚本从 clean commit `20874398` 自举通过，输出
   `MACOS_RELEASE_VERIFY_PASS`；deep codesign valid、x86_64+arm64、169M，
   launcher SHA-256 `fd82e843…b33dd`，AOT SHA-256 `b6f74ab4…2fb80`。
@@ -44,4 +44,7 @@
   `.g.dart`，脚本生成 126 outputs 后完整 PASS：commit `c0fec07c`、
   x86_64+arm64、169M、launcher `1da2d4ac…431d9`、AOT
   `e9293f98…769f4`；临时 worktree 已删除。
+- 最终 hardened 脚本在 clean `main` commit `451bc883` 再次完整 PASS：
+  生成 126 outputs、deep codesign valid、x86_64+arm64、169M、launcher
+  `2a4ed520…46ac9`、AOT `722f39ee…16f35`；构建后 tracked tree 保持 clean。
 - 阻塞项：无。
