@@ -146,6 +146,39 @@ void main() async {
     );
   });
 
+  test('enemy skill and boss charge starts count as combat actions', () {
+    for (final event in const <Phase0aEvent>[
+      Phase0aEnemySkillStarted(
+        seq: 1,
+        tick: 1,
+        actor: 'enemy_xueTu_thug_a',
+        skillId: 'enemy_skill',
+      ),
+      Phase0aBossChargeStarted(
+        seq: 1,
+        tick: 1,
+        actor: 'enemy_xueTu_thug_a',
+        skillId: 'enemy_charge',
+        chargeTicks: 2,
+      ),
+    ]) {
+      final settlement = Phase0aSettlementAdapter.fromMapping(
+        mapping: mapping,
+        outcome: Phase0aBattleOutcome.defeat,
+        finalState: finalState(),
+        events: [event],
+      );
+
+      expect(
+        settlement.hadActions,
+        isTrue,
+        reason: event.runtimeType.toString(),
+      );
+      expect(settlement.totalDamage, 0);
+      expect(settlement.skillCasts, isEmpty);
+    }
+  });
+
   test(
     'numeric skill events settle by real skill id and actor character id',
     () {

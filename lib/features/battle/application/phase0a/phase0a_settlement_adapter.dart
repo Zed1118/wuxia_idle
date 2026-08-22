@@ -190,11 +190,11 @@ final class Phase0aSettlementAdapter {
               critical: result.isCritical,
             );
           }
+        case Phase0aBossChargeStarted() || Phase0aEnemySkillStarted():
+          hadActions = true;
         case Phase0aEnemyDefeated() ||
             Phase0aBossPhaseChanged() ||
-            Phase0aBossChargeStarted() ||
             Phase0aBossChargeInterrupted() ||
-            Phase0aEnemySkillStarted() ||
             Phase0aSkillAvailabilityChanged() ||
             Phase0aWaveStarted() ||
             Phase0aWaveCleared() ||
