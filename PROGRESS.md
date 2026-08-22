@@ -3,6 +3,7 @@
 > 总行数控制在 100 行内，超出归档到末尾。
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 ## 当前阶段
+> **2026-08-22 Phase 0A 断魂庄单角色续传灰度(分支 `codex/phase0a-gauntlet-main-0822`,实现 `3e40a715`/`84483aca`,兼容分流 `1f0983ab`)**：新增默认关闭的 `PHASE0A_GAUNTLET_GRAY`；单成员会话接入 Phase 0A live/headless 三连战，跨关续传 HP/真气、补给与会话阶段，失败、恢复、奖励选择及断魂帖事务继续复用原服务；历史多人会话安全回落旧 3v3 runner。生产首关锁脉针 `qiDrain` 已按原语义接入蓄力技，未破招释放时扣最大真气比例，mapper 仍只对顶层蓄力技显式放行。验证：断魂庄全族 183/183、相关事务 59/59、兼容分流 7/7、1280×720 新宿主 widget 无溢出、全仓 analyze 0 issue、五灰度 macOS debug 编译通过、最终全量 **5403 pass / 0 fail**。DeepSeek 施工 B 后由主 agent 独立复核整合；未启动 GUI，未 merge/push/deploy。剩余 Gate=用户 Mac 实机目检、六人主观 Gate、Windows 实机。
 > **2026-08-22 Phase 0A 远征单角色续传灰度(分支 `codex/phase0a-activity-continuation-0822`,实现 `229687d2`/口径 `78dcfa34`/随机契约 `1138e448`)**：新增默认关闭的 `PHASE0A_EXPEDITION_GRAY`；灰度开启时新派遣限单角色，历史多成员在途会话安全回落旧 3v3 runner。单角色远征复用 production neutral snapshot/mapper/reducer/bot/headless 内核，每节点按稳定 `nodeSeed` 通过 `newMathRandom` 新建独立 RNG，终态 HP/真气写回原离线状态机并跨节点续传；保留远征 cycle 境界段推进，headless 超时沿旧 draw→defeat 口径败停且失败节点不发奖。奖励/伤势/占用/事务游标与旧 runner 均未改。验证：远征全族 105/105、灰度选人 1280×720 无溢出、超时/周目/同 seed/多成员回落契约全绿；149/149 预检 447 runs/0 timeout/maxDamage 2044，全仓 analyze 0 issue，macOS 四灰度 debug 编译通过，最终全量 **5390 pass / 0 fail**。未启动 GUI，未 merge/push/deploy。下一消费面=断魂庄单主角续传。
 > **2026-08-22 Phase 0A 扫荡 headless 直结纵切(分支 `codex/phase0a-tower-sweep-0822`,实现 `a1ec6619`/红线修 `d03c3bad`)**：新增默认关闭的 `PHASE0A_SWEEP_HEADLESS_GRAY`；开启后仅一周目 Ch1 五关与全部合法塔层按既有顺序用单祖师 production mapping + 同核 bot 分块 headless 推演，`CombatSettlementSnapshot` 直入原重打结算/recap，全程不挂 `BattleScreen`；旧 3v3 默认路径保持。超时独立于战败报告且零结算，祖师远征/断魂庄占用 fail-fast，系统返回转“当前关结完后停止”，替补经验/伤势零污染；实际参战祖师承接单角色经验/成长口径。验证：扫荡定向 52/52、共享 async runner+扫荡联合 64/64、Ch1 1–5 与塔 1/25/30/49 真实终局、1280×720/1440×900 无溢出、149/149 预检 447 runs/0 timeout/maxDamage 2044、全仓 analyze 0 issue、macOS 三灰度 debug 编译通过、全量 **5383 pass / 0 fail**。DeepSeek 只读审计已消费并收敛 P0/P1；未启动 GUI，未 merge/push/deploy。下一消费面进入远征/断魂庄单主角续传。
 > **2026-08-22 Phase 0A 塔消费面纵切(分支 `codex/phase0a-tower-consumer-0822`,实现 `2f2a21b9`)**：新增默认关闭的 `PHASE0A_TOWER_GRAY` 灰度门；开启后 49 层真实 `TowerFloorDef` 经单祖师 neutral snapshot → `mapTower(cycleIndex)` → Phase 0A live 宿主，胜负 `CombatSettlementSnapshot` 接回既有塔首通、奖励、经验、共鸣、战绩与续层流程；旧 3v3 默认路径、掉落和数值不变。结算只处理真实参战角色，系统返回旁路 clear/defeat，替补经验/伤势零污染。验证：代表层 1/5/10/32(cycle1/2)/49 同 seed live=headless，塔一层键盘实战回调 settlement，1280×720/1440×900 宿主无溢出；149/149 预检 447 runs/0 timeout/maxDamage 2044；macOS debug 灰度编译通过；全仓 analyze 0 issue、全量 **5373 pass / 0 fail**。未启动 GUI，未 merge/push/deploy；正式默认入口仍关闭。下一消费面按既定顺序进入扫荡 headless 直结。
@@ -80,11 +81,9 @@
 
 ---
 ## 已知偏差 / 挂账事项
-
 - **任务储备总账 → 根目录 `BACKLOG.md`**(2026-07-19 建账):待拍板/已解锁可派/依赖锁死/方向级四段,每批收账随 PROGRESS 同步更新;原开放挂账(Riverpod TickerMode 断言)已迁其 §三。
 > 已销账条目(#1-#45)详见末尾归档。**P1 阶段全销账 ✅** + **Demo §8.4 14/14 全达标 ✅** + **1.0 ~95% release ready ✅**(A+B+C 全 PASS · 剩 D-G 留 M15-16)。
 ## 关键约束(每次开局必读)
-
 - 数值硬红线(配置基础表值·schema 拦截):装备基础攻击 ≤2000 / 玩家血 ≤20000 / 内力 ≤15000 / Boss 血 60000+(GDD §5.4)
 - 数值软红线(极值满 build 实战可见值·保可读):核心唯一线=不进百万膨胀(普攻真实峰值~13.5万 / 大招~21万,均六位可读)
 - 不硬编码数值/文案(走 numbers.yaml / data/narratives, lore, events)
@@ -92,13 +91,10 @@
 - 不动 GDD.md / CLAUDE.md / numbers.yaml / data_schema.md / IDS_REGISTRY.md(数值/规则层 · 改前 ask)
 - Mac 端写 lib/、data/(顶层)、test/、文案(v1.8 起 DeepSeek 退役)
 ## 远程仓库
-
 - GitHub:https://github.com/Zed1118/wuxia_idle · 主分支 main
 - 协作:Mac 单端代码+数值+文案;视觉验收 Mac 本地 Codex(Pen Windows AI 工具 2026-06-11 已下线)
 ## 归档
-
 ### 当前阶段旧条目(逆时序 · 从上方迁入;标「已压缩归档」的为摘要,全文见 git 历史)
-
 > **2026-07-20..23 九批已压缩归档并入(Ch14/Ch15 spec 起草拍板七项+八项全兑现于 PR #64/#67 / Ch14 整章 PR #64 `8cf1d168` 4652/0+美术 #65 `79aeea4e` 终判 11/11 PASS·绝顶段第二章全链闭环 / 日批五 PR #55-#59 4647/0 / kimi 三单 #60-#62+Ch13 美术 #61 4651/0 / 清账 #63 Ch13 webp / 夜批六 PR #49-#54 4626/0+mount_deferred A2+B1 拍定 / Ch10「中州」`8be841d0`/Ch11「名门之虚」`758a2637`+11 立绘/Ch12「名下之实」一流三章收官 / kimi 红线区考核首单 `591fb81b` / Ch9 立绘接线 PR #44 `01dae889`+kimi 测试硬化 `7cdd9e23`+4A 死字段清理 `0bc59ed5`)**:git log + PR #44-#67 body 可溯,均合 main;当时已知风险均由后续批销账。
 > **2026-08-04 批 A · A0 解爬塔层数硬编码已压缩归档(PR #114 merge `e36884f9`)**:范围 Phase 0 由 3 处修正为 11 处生产行为点(validator 启动崩 + isFirstClear 静默卡 30 两处比 plan 更硬);`GameRepository.towerMaxFloor` 唯一派生点+注入式 maxFloor;破坏证红 5 轮逐处对应;守卫缺口经非 30 fixture 常驻化;codegraph「未初始化」证伪(worktree 里查所致,索引在主 checkout,V8 OOM 加 NODE_OPTIONS 重建)。全量 4813/0。详 git log + PR #114 body。
 > **2026-07-24..25 宗师段(Ch16-18)spec 拍板冻结 + Ch16「凉州词」两批已压缩归档(spec `f8d52ae4`·main 直落·BACKLOG §一#9 销账 / 整章实装 PR #71 `a5d6ddba` / 美术 11 图接线 PR #72 `27b6d96d`)**:git log + `docs/spec/2026-07-24-zongshi-arc-ch16-18-design.md`(92 行·段级六项+Ch16 章级六项拍板全文)+ 各 PR body 可溯,均已合 main;宗师段首章全链闭环(5 关 stage_16_01..05·敌招零新增复用失传神功心法 9 门·真解「铁马冰河」·cap 35→38 cross-tier·16_05 相位 unlockSkillIds 主线首用·叙事 13 篇·~30 站点 reconcile·11 图接线+known_missing 清零),当时已知风险(11 图缺图 / 17M 待转码)已由 PR #77 销账。**仍在账**:① idle_horizon **s1 45.6 天/下沿 45 贴线**(Ch17 扩缺口必破须重校);② 16_05 相位配法与 Ch16 立绘真机战斗屏均未目检;③ Ch17/Ch18 章级细化未起(spec §8 前瞻已定向:cap 38→40→42·Ch17 末 Boss vulnerability 0.20 教学·Ch18 章中+末 0.12 全机制·真解 Ch17 新写 / Ch18 收编 `yang_guan`)。
