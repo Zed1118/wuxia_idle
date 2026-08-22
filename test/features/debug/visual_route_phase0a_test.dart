@@ -14,6 +14,11 @@ void main() {
   group('VisualRoute.phase0aBattlePlayable', () {
     test('id 稳定为 phase0a_battle_playable', () {
       expect(VisualRoute.phase0aBattlePlayable.id, 'phase0a_battle_playable');
+      expect(VisualRoute.phase0aBattleProfile.id, 'phase0a_battle_profile');
+      expect(
+        parseVisualRoute('phase0a_battle_profile'),
+        VisualRoute.phase0aBattleProfile,
+      );
     });
 
     test('Boss 机制实机 route id 可解析', () {
@@ -68,6 +73,8 @@ void main() {
         reason: 'visual_route_host.dart 的 buildVisualTarget 必须接新屏',
       );
       expect(hostSource.contains('_Phase0aFeedbackPreview'), isTrue);
+      expect(hostSource.contains('_Phase0aProfilePreview'), isTrue);
+      expect(hostSource.contains('Phase0aPlayerBotAdapter'), isTrue);
       expect(
         hostSource.contains('autoStep: widget.initialCommand == null'),
         isTrue,

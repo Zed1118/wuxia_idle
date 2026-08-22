@@ -29,6 +29,7 @@ final class Phase0aDebugBattleFixture {
     required this.seed,
     required this.arenaMin,
     required this.arenaMax,
+    required this.playerAdapter,
   });
 
   static const String assetPath = 'data/phase0a_debug_battle.yaml';
@@ -39,6 +40,7 @@ final class Phase0aDebugBattleFixture {
   final int seed;
   final ArenaVector arenaMin;
   final ArenaVector arenaMax;
+  final Phase0aPlayerInputAdapter playerAdapter;
 
   static Future<Phase0aDebugBattleFixture> load({
     required Phase0aDebugAssetLoader assetLoader,
@@ -55,6 +57,7 @@ final class Phase0aDebugBattleFixture {
     for (final combatant in combatants) {
       roster.visualFor(combatant.actorId);
     }
+    final playerAdapter = config.playerAdapter();
     final flow = Phase0aProductionFlowAssembler.assemble(
       initialState: Phase0aArenaState(
         tick: config.initialTick,
@@ -69,7 +72,7 @@ final class Phase0aDebugBattleFixture {
       moveBindings: config.moveBindings(),
       numbers: numbers,
       rng: Random(config.seed),
-      playerAdapter: config.playerAdapter(),
+      playerAdapter: playerAdapter,
       enemyAiAdapter: config.enemyAiAdapter(),
     );
     return Phase0aDebugBattleFixture._(
@@ -79,6 +82,7 @@ final class Phase0aDebugBattleFixture {
       seed: config.seed,
       arenaMin: config.arenaMin,
       arenaMax: config.arenaMax,
+      playerAdapter: playerAdapter,
     );
   }
 }

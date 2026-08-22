@@ -4,6 +4,7 @@ import 'dart:io';
 const routeCHumanSessionSchema = 'route-c-human-session-v1';
 const routeCWindowsRunSchema = 'route-c-windows-production-run-v1';
 const routeCProductionRoute = 'phase0a_battle_playable';
+const routeCProductionProfileRoute = 'phase0a_battle_profile';
 
 enum GateState { pass, pending, invalid }
 
@@ -121,6 +122,8 @@ GateCheck validateWindowsRuns(
   final problems = <String>[];
   final ids = <String>{};
   final binaries = <String>{};
+  final fixtures = <String>{};
+  final hosts = <String>{};
   final viewportCounts = <String, int>{};
   for (final record in records) {
     final id = record['run_id']?.toString() ?? '<missing>';
@@ -129,7 +132,7 @@ GateCheck validateWindowsRuns(
       problems.add('$id uses obsolete Windows run schema');
     }
     if (record['app_package'] != 'wuxia_idle' ||
-        record['route_id'] != routeCProductionRoute) {
+        record['route_id'] != routeCProductionProfileRoute) {
       problems.add('$id did not measure the root production app');
     }
     if (record['commit'] != expectedCommit) {
@@ -140,6 +143,18 @@ GateCheck validateWindowsRuns(
       problems.add('$id has invalid binary_sha256');
     } else {
       binaries.add(binary);
+    }
+    final fixture = record['fixture_sha256']?.toString() ?? '';
+    if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(fixture)) {
+      problems.add('$id has invalid fixture_sha256');
+    } else {
+      fixtures.add(fixture);
+    }
+    final host = record['host_manifest_sha256']?.toString() ?? '';
+    if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(host)) {
+      problems.add('$id has invalid host_manifest_sha256');
+    } else {
+      hosts.add(host);
     }
     final viewport = record['viewport']?.toString() ?? '';
     viewportCounts[viewport] = (viewportCounts[viewport] ?? 0) + 1;
@@ -161,6 +176,12 @@ GateCheck validateWindowsRuns(
   }
   if (binaries.length > 1) {
     problems.add('Windows runs mix multiple production binaries');
+  }
+  if (fixtures.length > 1) {
+    problems.add('Windows runs mix multiple production fixtures');
+  }
+  if (hosts.length > 1) {
+    problems.add('Windows runs mix multiple host manifests');
   }
   if (problems.isNotEmpty) {
     return GateCheck('windows_gate', GateState.invalid, problems);

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'features/debug/application/visual_route.dart';
+import 'features/debug/application/battle_frame_profile.dart';
 import 'features/debug/presentation/visual_route_host.dart';
 import 'features/seclusion/presentation/online_presence_lifecycle_hook.dart';
 import 'features/settings/application/audio_settings_service.dart';
@@ -36,6 +37,14 @@ Future<void> main(List<String> args) async {
   // (profile 下 kDebugMode=false → 隐藏 debug chrome,出干净 Steam 截图);
   // release / 无参数 → 短路(kReleaseMode),走下方正常启动,零影响。
   if (!kReleaseMode) {
+    final profile = BattleFrameProfileProbe.configureFromArgs(args);
+    if (profile != null) {
+      await windowManager.ensureInitialized();
+      await windowManager.setSize(
+        Size(profile.viewportWidth, profile.viewportHeight),
+      );
+      await windowManager.center();
+    }
     final routeId = visualRouteIdFromInputs(args);
     final route = parseVisualRoute(routeId);
     if (route != null) {

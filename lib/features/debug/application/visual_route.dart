@@ -60,6 +60,10 @@ enum VisualRoute {
     'phase0a_battle_playable',
     'Phase 0A 单角色水墨 ARPG·真实 flow 键鼠可玩验收',
   ),
+  phase0aBattleProfile(
+    'phase0a_battle_profile',
+    'Phase 0A 生产 Profile·同核 bot 循环负载与自动重开',
+  ),
   phase0aBattleAttackFeedback(
     'phase0a_battle_attack_feedback',
     'Phase 0A 单角色战斗·首拍 J 攻击反馈静态验收',
