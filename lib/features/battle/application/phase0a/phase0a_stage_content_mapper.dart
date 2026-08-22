@@ -524,7 +524,6 @@ final class Phase0aStageContentMapper {
         player: playerActor,
         enemies: actorWaves.first,
         skillSlots: _skillSlots(
-          arena,
           numericSkillBindings,
           tacticalSkillBindings,
           playerSnapshot.currentQi,
@@ -778,29 +777,28 @@ final class Phase0aStageContentMapper {
   }
 
   static List<Phase0aSkillSlot> _skillSlots(
-    Phase0aArenaConfig arena,
     Phase0aNumericSkillBindings numericSkills,
-    _Phase0aTacticalSkillBindings? tacticalSkills,
+    _Phase0aTacticalSkillBindings tacticalSkills,
     int openingQi,
   ) => List.unmodifiable([
     Phase0aSkillSlot(
-      slot: tacticalSkills?.gather.slot ?? arena.gatherSlot,
+      slot: tacticalSkills.gather.slot,
       cooldownRemaining: 0,
-      qiCost: tacticalSkills?.gather.qiCost ?? arena.gatherQiCost,
+      qiCost: tacticalSkills.gather.qiCost,
       availability: availabilityOf(
         cooldownRemaining: 0,
         qiCurrent: openingQi,
-        qiCost: tacticalSkills?.gather.qiCost ?? arena.gatherQiCost,
+        qiCost: tacticalSkills.gather.qiCost,
       ),
     ),
     Phase0aSkillSlot(
-      slot: tacticalSkills?.clear.slot ?? arena.clearSlot,
+      slot: tacticalSkills.clear.slot,
       cooldownRemaining: 0,
-      qiCost: tacticalSkills?.clear.qiCost ?? arena.clearQiCost,
+      qiCost: tacticalSkills.clear.qiCost,
       availability: availabilityOf(
         cooldownRemaining: 0,
         qiCurrent: openingQi,
-        qiCost: tacticalSkills?.clear.qiCost ?? arena.clearQiCost,
+        qiCost: tacticalSkills.clear.qiCost,
       ),
     ),
     for (final binding in numericSkills.equipped)
@@ -821,7 +819,7 @@ final class Phase0aStageContentMapper {
     Phase0aArenaConfig arena,
     CombatantSnapshot player,
     Phase0aNumericSkillBindings numericSkills,
-    _Phase0aTacticalSkillBindings? tacticalSkills,
+    _Phase0aTacticalSkillBindings tacticalSkills,
   ) => Map.unmodifiable({
     Phase0aDamageKind.basic:
         player.skillLoadout.basicAttack ??
@@ -830,14 +828,8 @@ final class Phase0aStageContentMapper {
           powerMultiplier: arena.basicPowerMultiplier,
           qiDelta: arena.basicQiDelta,
         ),
-    Phase0aDamageKind.gather: tacticalSkills?.gather.skill,
-    Phase0aDamageKind.clear:
-        tacticalSkills?.clear.skill ??
-        _moveSkill(
-          id: arena.clearSkillId,
-          powerMultiplier: arena.clearPowerMultiplier,
-          qiDelta: arena.clearQiDelta,
-        ),
+    Phase0aDamageKind.gather: tacticalSkills.gather.skill,
+    Phase0aDamageKind.clear: tacticalSkills.clear.skill,
     for (final binding in numericSkills.equipped)
       phase0aDamageKindForSkillHotkey(binding.hotkey): binding.skill,
   });
@@ -876,15 +868,14 @@ final class Phase0aStageContentMapper {
     );
   }
 
-  /// Empty gather id is the explicit legacy-fixture escape hatch. Production
-  /// numbers define both ids and therefore must resolve and validate both real
-  /// SkillDefs; partial or unsupported configuration fails closed at mapping.
-  static _Phase0aTacticalSkillBindings? _tacticalSkillBindings(
+  /// Production and mapper fixtures resolve both Q/R bindings from real
+  /// SkillDefs. Missing, partial, or unsupported configuration fails closed;
+  /// the retired synthetic-clear mapper path must not be reintroduced.
+  static _Phase0aTacticalSkillBindings _tacticalSkillBindings(
     Phase0aArenaConfig arena,
   ) {
     final gatherMissing = arena.gatherSkillId.isEmpty;
     final clearMissing = arena.clearSkillId.isEmpty;
-    if (gatherMissing && clearMissing) return null;
     if (gatherMissing || clearMissing) {
       throw StateError(
         'Phase0a tactical skill ids must be configured together',
@@ -934,7 +925,7 @@ final class Phase0aStageContentMapper {
     required Phase0aArenaConfig arena,
     required String playerId,
     required Phase0aNumericSkillBindings numericSkillBindings,
-    required _Phase0aTacticalSkillBindings? tacticalSkillBindings,
+    required _Phase0aTacticalSkillBindings tacticalSkillBindings,
     required int attackQiDelta,
   }) => Phase0aPlayerInputAdapter(
     playerId: playerId,
@@ -951,8 +942,8 @@ final class Phase0aStageContentMapper {
     clearEffectRadius: arena.clearEffectRadius,
     clearQiCost: arena.clearQiCost,
     clearCooldownSeconds: arena.clearCooldownSeconds,
-    gatherSkillBinding: tacticalSkillBindings?.gather,
-    clearSkillBinding: tacticalSkillBindings?.clear,
+    gatherSkillBinding: tacticalSkillBindings.gather,
+    clearSkillBinding: tacticalSkillBindings.clear,
     numericSkillBindings: numericSkillBindings,
   );
 }

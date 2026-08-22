@@ -41,7 +41,8 @@
 ### D2 · Q/R 与真实技能的关系
 
 **A（推荐）——保留 Q/R 作为战术键，但槽中必须绑定真实 `SkillDef`；
-固定 gather/clear Adapter 仅作迁移期 fallback，待内容覆盖后删除。**
+production mapper 不保留固定 gather/clear fallback；低层隔离 fixture 可直接构造
+Adapter，但不得进入 production mapping。**
 
 - Q/R 的键位记忆和现有表现可保留。
 - 真气、CD、伤害和技能身份来自真实技能；不再生成伪 `SkillDef`。
@@ -145,4 +146,6 @@ charge/破招的 24 条内容迁移必须排在这两批之后，并复用同一
 - D4-A 已冻结为 `radial + caster`；未知 shape/anchor、非法半径、重复效果
   与不受支持的效果组合均在 loader/binding 边界拒绝，不回查名称或描述猜语义。
 - 生产 `numbers.yaml` 已同时绑定 `skill_phase0a_gather` / `skill_phase0a_clear`；
-  空 skill id 仅保留为显式旧 fixture escape hatch，不是生产路径。
+  loader 与 mapper 均要求双 ID 非空且解析为真实 `SkillDef`。2026-08-23
+  可达性审计证明 mapper 的双空逃生口及 synthetic clear 分支已是死代码，现已删除；
+  低层隔离 fixture 仍可直接构造无 typed binding 的 Adapter，不属于 production mapping。

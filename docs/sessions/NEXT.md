@@ -26,7 +26,7 @@
 - Q gather 每场一次且零伤，R clear 0 次；现有资源循环不支持长期固定 Q/R 战术印。
 
 ## 最新验证
-0. Q/R typed binding 收口：loader 拒绝 Q/R 任一缺失或空白，mapper 只保留显式旧 fixture 的双空逃生口；legacy interrupt/qi-drain fail-closed 分支已有直接回归。targeted **42/42**、analyze 0、最终全量 **4223/4223**、diff check 通过。DeepSeek 审计判定 D3-A/D4-A 完整，D2-A 仅剩受内容能力矩阵约束的 legacy fallback 删除，不在本批强拆。
+0. Q/R typed binding 收口：loader 拒绝 Q/R 任一缺失或空白；legacy interrupt/qi-drain fail-closed 分支已有直接回归。随后 DeepSeek 与主 agent 双重可达性审计证明 mapper 双空逃生口及 synthetic clear 分支对 production、测试与 debug fixture 全部不可达，已删除并把 mapper 内 Q/R 类型收紧为非空；低层隔离 Adapter fixture 兼容不变。前批 targeted **42/42**、最终全量 **4223/4223**；删除批 production preflight **149/149 eligible、447 runs、0 timeout、maxDamage 2044**，联合 targeted/route contract **43/43**、analyze 0、diff check 通过。
 1. Route C 后加固批：Boss 双视口反馈链与 cycle-2 vulnerability 真实伤害覆盖 targeted **15/15**；全量 **4221/4221**、`flutter analyze --no-pub lib test tool` 0 issue、diff check 通过。Route C Gate commit `597a243b` 的 Mac/Windows 矩阵仍各 **6/6 PASS**；新 commit 不沿用该二进制 Gate 冒签。
 
 2. 08-21 起手 powerSkill：旧行为红测命中；focused **23/23**、`flutter analyze` 0 issue；1500 局 evidence 全部完成；最终全量 **5278/0**。
@@ -38,7 +38,7 @@
 
 ### P0 · 已拍方案继续落地
 
-1. D1-A 与 Q/R typed behavior 纵切及 D2-A/D3-A/D4-A 审计已完成；legacy fixed adapter 删除仍受内容 Q/R capability matrix 前置约束，未满足前不得强拆。
+1. D1-A 与 Q/R typed behavior 纵切及 D2-A/D3-A/D4-A 审计已完成；production mapper 的 legacy fixed clear fallback 已删除。低层隔离 Adapter fixture 仍保留兼容，不得误当 production 路径。
 2. Boss 蓄力预警、破招/踉跄与脆弱窗口已有双视口动态 Gate，并已补真实 fixture widget 回归；后续只处理新的可复现缺口。
 3. 高周目 `cycleVulnerability` 生产链与 cycle-2 实际伤害回归均已覆盖，禁止重复实现。
 4. 禁止据 bot 单点全局削弱敌人；任何玩法数值调整仍需用户明确授权。
