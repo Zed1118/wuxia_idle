@@ -29,11 +29,13 @@
 
 ## 当前恢复点
 
-- 状态：脚本与契约已完成，待提交后从 clean tree 实跑。
+- 状态：已完成，待收账提交。
 - 最后完成：普通增量 release 构建成功但 deep verify 因外层签名时间 03:03、
   AOT 时间 03:48 而失败；`flutter clean` 后从零重建，deep verify 通过，
   universal x86_64+arm64、169M。
-- 下一步：提交推送，随后从 clean tree 运行脚本并记录最终证据。
-- 已跑验证：契约测试 1/1、无参数 analyze 0 issue、`bash -n`、format/
-  diff check 通过；手工 clean build 的同等命令已 deep verify 通过。
+- 下一步：更新总账并提交推送。
+- 已跑验证：脚本从 clean commit `20874398` 自举通过，输出
+  `MACOS_RELEASE_VERIFY_PASS`；deep codesign valid、x86_64+arm64、169M，
+  launcher SHA-256 `fd82e843…b33dd`，AOT SHA-256 `b6f74ab4…2fb80`。
+  契约测试 1/1、无参数 analyze 0 issue、`bash -n`、format/diff check 通过。
 - 阻塞项：无。
