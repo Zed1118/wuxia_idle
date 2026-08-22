@@ -3865,6 +3865,8 @@ class UiStrings {
   static const String expeditionDispatchPolicySection = '出发方针';
   static const String expeditionDispatchButton = '拔营出发';
   static String expeditionSelectedCount(int n) => '已择 $n / 3 人';
+  static String expeditionSelectedCountWithMax(int n, int max) =>
+      '已择 $n / $max 人';
   static const String expeditionCandidateOccupiedTag = '在外';
   static const String expeditionCandidateNoMainTag = '未修主修';
   static const String expeditionNoCandidates = '暂无可出征门人。招收弟子、研习主修之后再来。';

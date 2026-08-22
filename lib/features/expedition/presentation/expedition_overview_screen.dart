@@ -12,7 +12,8 @@ import '../../../data/game_repository.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../battle/presentation/cycle_select_control.dart';
-import '../application/expedition_combat_runner.dart';
+import '../application/expedition_combat_selector.dart';
+import '../application/phase0a_expedition_gate.dart';
 import '../application/expedition_providers.dart';
 import '../application/expedition_startup.dart';
 import '../domain/expedition_rules.dart';
@@ -75,6 +76,7 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
 
   Future<void> _dispatch(int cycleIndex) async {
     if (_selected.isEmpty || _submitting) return;
+    if (Phase0aExpeditionGate.enabled && _selected.length != 1) return;
     final service = ref.read(expeditionServiceProvider);
     if (service == null) return; // 测试旁路：未 init Isar
     setState(() => _submitting = true);
@@ -119,6 +121,7 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
     };
     _selected.removeWhere((id) => !dispatchableIds.contains(id));
     final canDispatch = _selected.isNotEmpty && !_submitting;
+    final maxMembers = Phase0aExpeditionGate.enabled ? 1 : 3;
 
     // ── 批 B 周目选择：深度里程碑折算「已通」∩ 配置 cap ∩ 境界门槛。
     // 境界口径 = 当前已选队伍最高（未选人时取可派遣候选最高，乐观展示）；
@@ -190,7 +193,7 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
                             final id = c.character.id;
                             if (_selected.contains(id)) {
                               _selected.remove(id);
-                            } else if (_selected.length < 3) {
+                            } else if (_selected.length < maxMembers) {
                               _selected.add(id);
                             }
                           })
@@ -200,7 +203,10 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
                 ],
               const SizedBox(height: 2),
               Text(
-                UiStrings.expeditionSelectedCount(_selected.length),
+                UiStrings.expeditionSelectedCountWithMax(
+                  _selected.length,
+                  maxMembers,
+                ),
                 style: const TextStyle(
                   color: WuxiaColors.textSecondary,
                   fontSize: 12,
@@ -462,7 +468,7 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
       if (isar != null && config != null) {
         final settle = await settleActiveExpeditionOnOpen(
           service: service,
-          combat: ExpeditionCombatRunner(isar),
+          combat: expeditionCombatFor(isar, memberCount: run.members.length),
           config: config,
           now: ref.read(systemClockProvider).now(),
         );

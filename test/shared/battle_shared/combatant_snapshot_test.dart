@@ -65,6 +65,23 @@ CombatantSnapshot fixture({
 );
 
 void main() {
+  test('copyWith 可独立续传当前生命与真气且保留上限', () {
+    final original = fixture(skills: [skill('a')], unlocks: const []);
+
+    final continued = original.copyWith(currentHp: 41, currentQi: 7);
+
+    expect(continued.currentHp, 41);
+    expect(continued.currentQi, 7);
+    expect(continued.maxHp, original.maxHp);
+    expect(continued.maxQi, original.maxQi);
+    expect(
+      original.currentHp,
+      original.maxHp,
+      reason: 'neutral snapshot 必须保持不可变',
+    );
+    expect(original.currentQi, original.maxQi);
+  });
+
   test('所有输入集合（含 SkillDef 嵌套列表）防御性不可变', () {
     final skills = <SkillDef>[skill('a')];
     final unlocks = <List<SkillDef>>[

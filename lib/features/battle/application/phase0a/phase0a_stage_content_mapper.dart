@@ -76,6 +76,7 @@ final class Phase0aStageContentMapper {
     numbers: numbers,
     playerId: playerId,
     cycleIndex: cycleIndex ?? 1,
+    advanceRealmPerCycle: false,
     winCondition: _mapWinCondition(stage.winCondition),
   );
 
@@ -96,6 +97,27 @@ final class Phase0aStageContentMapper {
     numbers: numbers,
     playerId: playerId,
     cycleIndex: cycleIndex ?? 1,
+    advanceRealmPerCycle: false,
+    winCondition: null,
+  );
+
+  /// 远征节点敌队已含深度缩放；这里额外保留远征既有的周目境界段推进。
+  static Phase0aStageMapping mapExpedition({
+    required String contentId,
+    required List<EnemyDef> enemyTeam,
+    required CombatantSnapshot playerSnapshot,
+    required NumbersConfig numbers,
+    required int cycleIndex,
+    String playerId = 'player',
+  }) => _mapContent(
+    contentId: contentId,
+    enemyTeam: enemyTeam,
+    isTower: false,
+    playerSnapshot: playerSnapshot,
+    numbers: numbers,
+    playerId: playerId,
+    cycleIndex: cycleIndex,
+    advanceRealmPerCycle: true,
     winCondition: null,
   );
 
@@ -107,6 +129,7 @@ final class Phase0aStageContentMapper {
     required NumbersConfig numbers,
     required String playerId,
     required int cycleIndex,
+    required bool advanceRealmPerCycle,
     required Phase0aWinCondition? winCondition,
   }) {
     if (cycleIndex < 1) {
@@ -128,6 +151,7 @@ final class Phase0aStageContentMapper {
       enemyTeam,
       cycleIndex: cycleIndex,
       isTower: isTower,
+      advanceRealmPerCycle: advanceRealmPerCycle,
     );
     final numericSkillBindings = _numericSkillBindings(playerSnapshot, arena);
     final tacticalSkillBindings = _tacticalSkillBindings(arena);

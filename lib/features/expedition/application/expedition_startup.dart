@@ -4,7 +4,7 @@ import '../../../core/application/system_clock_provider.dart';
 import '../../../data/isar_provider.dart';
 import '../../../data/defs/expedition_config.dart';
 import 'expedition_combat.dart';
-import 'expedition_combat_runner.dart';
+import 'expedition_combat_selector.dart';
 import 'expedition_providers.dart';
 import 'expedition_service.dart';
 
@@ -41,9 +41,11 @@ Future<void> maybeSettleExpedition(WidgetRef ref, {DateTime? now}) async {
   final config = ref.read(expeditionConfigProvider);
   if (config == null) return;
   final clock = ref.read(systemClockProvider);
+  final active = await service.activeRun();
+  if (active == null) return;
   await settleActiveExpeditionOnOpen(
     service: service,
-    combat: ExpeditionCombatRunner(isar),
+    combat: expeditionCombatFor(isar, memberCount: active.members.length),
     config: config,
     now: now ?? clock.now(),
   );

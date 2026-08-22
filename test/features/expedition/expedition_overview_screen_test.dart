@@ -11,6 +11,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
+import 'package:wuxia_idle/features/expedition/application/phase0a_expedition_gate.dart';
 import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
@@ -168,6 +169,41 @@ void main() {
     await tester.tap(find.text('楚河'));
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.expeditionSelectedCount(1)), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Phase 0A 灰度派遣只允许选一人', (tester) async {
+    Phase0aExpeditionGate.testOverride = true;
+    addTearDown(() => Phase0aExpeditionGate.testOverride = null);
+    final candidates = [
+      _cand(_char(1, '沈青', school: TechniqueSchool.lingQiao)),
+      _cand(_char(2, '楚河', school: TechniqueSchool.gangMeng)),
+    ];
+    await _pump(
+      tester,
+      const Size(1280, 720),
+      ProviderScope(
+        overrides: [
+          activeExpeditionProvider.overrideWith((ref) async => null),
+          expeditionCandidatesProvider.overrideWith((ref) async => candidates),
+        ],
+        child: const MaterialApp(home: ExpeditionOverviewScreen()),
+      ),
+    );
+
+    expect(
+      find.text(UiStrings.expeditionSelectedCountWithMax(0, 1)),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('沈青'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('楚河'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(UiStrings.expeditionSelectedCountWithMax(1, 1)),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
