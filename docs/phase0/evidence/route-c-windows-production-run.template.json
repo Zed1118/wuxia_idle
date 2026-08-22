@@ -1,0 +1,19 @@
+{
+  "schema": "route-c-windows-production-run-v1",
+  "run_id": "REPLACE_WITH_UNIQUE_RUN_ID",
+  "app_package": "wuxia_idle",
+  "route_id": "phase0a_battle_playable",
+  "commit": "REPLACE_WITH_CANDIDATE_COMMIT",
+  "binary_sha256": "REPLACE_WITH_ROOT_APP_BINARY_SHA256",
+  "viewport": "1280x720",
+  "minimum_spec_attested": false,
+  "local_console": false,
+  "renderer": "REPLACE_WITH_ACTUAL_RENDERER",
+  "composite_gate": "PENDING",
+  "raw_evidence": {
+    "frames_jsonl": "frames.jsonl",
+    "memory_gc_jsonl": "memory_gc.jsonl",
+    "summary_json": "summary.json",
+    "run_log": "run.log"
+  }
+}

@@ -1,6 +1,10 @@
 # Phase 0A Windows 最低档物理机 Gate 手册
 
-> 当前状态：`WINDOWS_PENDING`。本手册和脚本只完成复跑准备，不代表 Windows 已通过。
+> 当前状态：`WINDOWS_PENDING`。本手册中 `tools/phase0minus_probe` 命令是历史 Flame
+> 探针口径，不能签 Route C 生产根应用。硬件资格与物理机约束仍有效；
+> 生产证据结构与预检见
+> [`route-c-external-gate-preflight.md`](./route-c-external-gate-preflight.md)。新的根应用采样器未落地前，
+> 不得执行下方旧矩阵并冒签。
 
 ## 1. 可签字设备
 

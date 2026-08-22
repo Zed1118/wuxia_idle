@@ -1,5 +1,9 @@
 # 《挂机武侠》Phase 0A 键位卡
 
+> **Route C 历史 AB 包键位卡。** 不得再启动“当前点招对照”。生产版六人 Gate
+> 只运行根应用 `phase0a_battle_playable`，详见
+> [`route-c-external-gate-preflight.md`](./route-c-external-gate-preflight.md)。
+
 目标：独自完成三轮围攻。请先自行尝试，不需要寻找队友或换人功能。
 
 正式测试由观察员使用包内 `主持试玩.command` 选择 P01–P06；工具会按

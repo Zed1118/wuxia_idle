@@ -38,6 +38,11 @@
 
 ## 硬 Gate
 
+取证前先执行
+[`docs/phase0/route-c-external-gate-preflight.md`](../phase0/route-c-external-gate-preflight.md)
+定义的生产版预检。旧 `phase0minus_probe` 成绩和 `battle_tap_live` AB 包不得纳入
+Route C 删除裁决。
+
 全局删除提交仅在以下证据同时成立后执行：
 
 - 整合态 Mac 工程 Gate 与自动目检通过；

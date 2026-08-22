@@ -1,0 +1,32 @@
+{
+  "schema": "route-c-human-session-v1",
+  "participant_id": "P01",
+  "commit": "REPLACE_WITH_CANDIDATE_COMMIT",
+  "binary_sha256": "REPLACE_WITH_ROOT_APP_BINARY_SHA256",
+  "route_id": "phase0a_battle_playable",
+  "player_type": "idle",
+  "ratings": {
+    "release": 1,
+    "readability": 1,
+    "active_intent": 1
+  },
+  "replay_willing": false,
+  "mechanics": {
+    "charge_warning_seen": false,
+    "interrupt_feedback_understood": false,
+    "stagger_seen": false,
+    "vulnerability_window_understood": false,
+    "keyboard_mouse_completed": false,
+    "no_layout_overflow_or_hang": false
+  },
+  "direct_veto": {
+    "stationary_or_cooldown_only_is_optimal": false,
+    "two_core_actions_lack_role": false,
+    "density_unreadable": false,
+    "requires_forbidden_mechanic": false
+  },
+  "validity": {
+    "valid": false,
+    "invalid_reasons": ["NOT_FILLED"]
+  }
+}
